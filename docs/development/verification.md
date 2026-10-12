@@ -284,6 +284,7 @@ Complete ordered PASS/FAIL lines are checked manually; timings are wall clock, n
 | `reloadtest` | Unmigrated: real wall-clock values in PASS labels across scene loads prevent reliable exact output comparison. Source-audited blocker, not a rendering exemption. | Not measured; no output normalization. |
 | `statsresettest` | Already standalone: real stats/score/persistence modules and DOM, no game iframe, apartment bootstrap or WebGL. No game test-mode migration applies. | Source audit only; no new browser run. |
 | `storetest` | Migrated: all 17 ordered PASS lines and ALL PASS identical at baseline `34b0d86`; no pageerrors (logs `/tmp/runtests-184368`). | 98s → 70s (runner-rounded seconds). |
+| `streetlighttest` | Migrated with tracked pre-existing failures (#762): all 11 ordered rows identical (9 PASS / 2 FAIL), SOME FAILED both; no pageerrors. Assertions unchanged. | 101s → 72s (runner-rounded seconds). |
 | `streetsigntest` | Exempt: compares actual renderer.info.render.calls with signs shown/hidden; requires original rendering and viewport. | Source audit only; no new browser run. |
 
 For the first four migrated fixtures (follow, placement, reset and TV), the runner resize init script raised a document-root
