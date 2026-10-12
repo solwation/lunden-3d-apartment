@@ -336,7 +336,7 @@ A `setPixelRatio` call or one final `render` call alone does not justify a rende
 | `eggtest.html` | Migrated (#785) | 27 identical ordered PASS rows, zero FAIL; actual 640×400 full/controller false → 480×300 test/controller true. 81.321 s → 71.104 s, single pair (`/tmp/runtests-279045`). Cooking/actions, colour/opacity and save/load preserved. |
 | `entrancedoortest.html` | Full rendering | 128×128 render-target pixel readback of handles/glazing. |
 | `entranceplantstest.html` | Candidate | Actual plant bounds, pots/floors and collision paths; DPR alone is not exclusion. |
-| `esctest.html` | Candidate | Escape/back state through actual DOM controls. |
+| `esctest.html` | Accepted in #819 | Complete original full/test logs byte-identical, five ordered PASS; actual 900×600/null controller versus 480×300/real test APIs. Authored synthetic Escape/arm click and pointer-lock request wrapper retained; no OS-input/native pointer-lock grant claim. |
 | `falltest.html` | Candidate | Fall, landing/damage, respawn and geometric paths. |
 | `fishtest.html` | Migrated (#785) | 29 exact ordered PASS rows, zero FAIL: original 900×600 iframe enters native fullscreen (actual 1280×800/controller false, 132.108 s). Compare test was 480×300/controller true, 74.350 s (`/tmp/runtests-281141`). Guarded written test in normal 1280×800 runner stays 480×300/controller true, 72.279 s (`/tmp/runtests-291884`); matches retained full `/tmp/runtests-281141`. Fish-finger actions and full cat walking/animation coverage retained; testMode-only fullscreen suppression. |
 | `flowtest.html` | Full rendering | Actual renderer geometry-memory growth assertion over cooking and reloads. |
@@ -1695,3 +1695,21 @@ is still executed by the default fixture. Reversing only conditional setup and
 its descriptive comment reproduces the exact frozen original; no assertions,
 matrices, quality overrides, seeds or normalization were added. Entrance plants
 and gables remain pending under #818; #739/#736 stay open.
+
+## Escape and native routes comparison (#819, partial)
+
+`esctest` is migrated by changing only iframe query/dimensions. On frozen
+`30ba542`, `/tmp/runtests-463514/` contains complete byte-identical raw logs:
+five ordered PASS and ALL PASS per mode, zero FAIL/pageerrors, independently
+monitored actual exit 0. Ready and final native snapshots verify one actual main
+document per mode, original 900×600/null controller versus 480×300/real test
+controller APIs, same URL/timeOrigin within each pass and no fullscreen.
+All authored DOM actions, synthetic Escape, pointer-lock request wrapper and
+arm.click are preserved: this is no OS-keyboard or native pointer-lock grant proof.
+Wall 100.864s → 78.177s includes two saved/inspected fullPage captures showing
+final courtyard/HUD and result text; raw logs retain every complete long row.
+No rendered-scene equivalence is claimed. Frozen source/helper hashes, native
+phases and independent PID/SID/PGID/exit are retained in
+`/tmp/lunden-routes819/esctest/`. Fall and garage remain pending; their complete
+original predicates, dynamic diagnostics and quality-coupled particle state must
+be compared separately. #739/#736 stay open.
