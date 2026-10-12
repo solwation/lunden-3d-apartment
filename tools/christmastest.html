@@ -108,5 +108,5 @@ try {
  check(!R.selected&&!X.tree.object.visible&&!R.ghost.visible,'7 Jan while moving the tree: the move is dropped, the tree gone');
 } catch(e) { check(false,e.stack||e); }
 localStorage.removeItem('lunden.furniture.layout');localStorage.removeItem('lunden.furniture.unlocked');
-document.getElementById('out').textContent=`${pass?'PASS':'FAIL'} christmastest\n${lines.join('\n')}`;
+document.getElementById('out').textContent=`${pass?'PASS':'FAIL'} christmastest\n${lines.join('\n')}\n${pass?'ALL PASS':'SOME FAILED'}`;
 </script></html>

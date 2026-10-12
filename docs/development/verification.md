@@ -226,6 +226,13 @@ Needs Playwright (`PLAYWRIGHT_MODULE=…` or a global install; `CHROME_PATH` opt
 `summary.json`, never the repo. `--jobs N` runs N tests at once (default 1, **max 2**: the VM is shared), `--list` shows the selection,
 `--verbose` prints each test's output.
 
+`christmastest.html` retains its original `PASS/FAIL christmastest` summary and every original ordered check row,
+then appends `ALL PASS` / `SOME FAILED` from the same final `pass` flag (#847). Its earlier summary alone was not a runner
+completion marker. The output assignment and actual runner parser/classifier were verified in native Chrome DOM for success
+with duplicate/dynamic rows, a late failure, a caught exception and both complete original raw logs from #813; all prior
+ordered rows stayed identical (five cases). This focused protocol check loads no apartment and does not establish
+season-state parity or new runtime timings.
+
 Output: PASS / KNOWN / FAIL / TIMEOUT per test with the time and the number of FAIL lines, then a summary. **KNOWN** = it fails only
 with lines listed in `tools/baseline.json` (`{ "test": ["FAIL line", …] }`: the exact known-red lines, **no times**, e.g. resttest's
 #302 lines); any FAIL line not in the baseline is printed as `NEW` and makes the exit code 1. `--update-baseline name…` rewrites those
