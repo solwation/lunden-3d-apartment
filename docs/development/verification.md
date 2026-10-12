@@ -866,10 +866,10 @@ mode migration. Source snapshots and the local evidence search are retained in
 
 ## Test-mode source inventory: #750 batch (#787)
 
-All eight #750 fixtures bootstrap the actual apartment and currently have no
-test-mode flag. This source audit adds six script comments only. No exact-name
+At the historical #787 source audit, all eight #750 fixtures bootstrapped the actual apartment and had no
+test-mode flag. That audit added six script comments only. No exact-name
 matching retained `/tmp/runtests-*/summary.json` evidence was found for these
-fixtures; no new run, timing or equivalence is claimed. The preserved green
+fixtures at that stage; that audit claimed no new run, timing or equivalence. The preserved green
 `tostarttest` pair from #776 is a different fixture from `toasttest` and
 `toastertest`, so it cannot supply their acceptance evidence.
 
@@ -896,24 +896,37 @@ No production, runner, baseline, assertion or changelog changed; no extra browse
 | terraintest | Migrated #794: ground/road/ramp/stair/plinth values, complete dense 5 cm OUTDOOR continuity pairs, native collision guards and tree-foot placement. All 25 ordered raw rows are identical. | Original 400×300 June noon → verified test 480×300; see [complete terrain scan evidence](#test-mode-comparison-complete-terrain-scan-794), including actual counts and screenshot overhead. |
 | thingtest | Migrated (#793): original bottle/glass transforms, hold/place/home, pouring/drinking, fill/color and reset assertions preserved. | Entire raw logs byte-identical: all 23 ordered PASS rows and ALL PASS, including measured heights/fill/tilt/material colors; no pageerrors. `/tmp/runtests-345423/`, frozen runtime `fb4c8a9` plus testMode-only fullscreen guard: runner wall 142.020s at actual native-fullscreen 1280×800/controller false → 80.808s at 480×300/controller true, including both saved fullPage fixture images. Original full path retained; only test mode suppresses fullscreen. |
 | toastertest | Migrated (#796): native slot glow/lever, drawer/cord/socket actions and persisted placement/plug state retained. | 32 exact ordered PASS rows and ALL PASS identical, including glow 0.51, popped lever 0.145 and real persisted reload. Original full: both actual 900×600/controller false; compare test: both 480×300/controller API true. `/tmp/runtests-360266/`: 167.595s → 131.353s. |
-| toasttest | Candidate: actual life-item bread slots, carriage, cooking/crumb events, names, butter/cheese actions and eating. Counted crumbs are domain events, not a particle/render measurement. | 900×600; preserve all cooking/actions and repeated eat rows, including duplicates. |
+| toasttest | Migrated (#797): all native bread-slot/carriage/cooking/crumb/topping/eat assertions preserved, including four duplicate eat rows. | 27 exact ordered PASS rows and ALL PASS identical; carriage −0.087, one crumb event and toasted names unchanged. `/tmp/runtests-365716/`: 139.734s at actual 900×600/controller false → 81.505s at 480×300/controller true, exit 0. Both fullPage images saved/reviewed. |
 | todotest | Migrated (#793): original committed sample order/title-cleaning, DOM visibility, focus/poster/fridge-door and F-state assertions retained. | Entire raw logs byte-identical: all 16 ordered PASS rows and ALL PASS, including 7 notes, exact priority order and 0.38 m door movement; no pageerrors. `/tmp/runtests-347634/`, frozen runtime `fb4c8a9` plus testMode-only fullscreen guard: runner wall 180.368s at actual native-fullscreen 1280×800/controller false → 93.405s at 480×300/controller true. Includes image attempts: full capture timed out after 60s, test image saved/inspected; no extra app run. This pair is excluded from speedup aggregation because only full wall time includes the unmatched 60s capture timeout. TODO sample unchanged, generated data absent. |
-| toilettest | Conditional native-state candidate: flush water position, sheet opacity/visibility and pool emissive intensity are assigned in `Flush.update(dt)` from refill time. No actual rendered-pixel/light analyser assertion. | 900×600, frozen noon; retain all material-state/flush/lid assertions and raw drop values. |
+| toilettest | Migrated (#797): all native Flush pool-drop/sheet-opacity/emissive/count/refill and lid-action assertions retained. | 17 exact ordered PASS rows and ALL PASS identical, including 4.4 cm water drop on both floors. `/tmp/runtests-367030/`: 184.390s at actual native-fullscreen 1280×800/controller false → 86.372s at 480×300/controller true, exit 0; authored original 900×600, noon/freeze retained. Both fullPage images saved/reviewed. |
+
+#797 froze the approved testMode-only fullscreen guards before both original full/test comparisons; they affect
+only test mode and leave each native full start path intact. After acceptance, only iframe dimensions/query flags
+were migrated. Entire ordered outputs were compared without normalization; all 247 runtime hashes match the frozen
+`d662121` source, and reversing loader/guard changes restores both original fixtures byte for byte. External final
+capture metadata and four images: `/tmp/lunden-toast797/`. Toast images show result text and its generic courtyard
+view, supporting captured layout/log evidence, not visual bread/toaster equivalence. Toilet images show the final
+closed lid, not mid-flush pixel equivalence. No production, runner, baseline, assertions or changelog changed.
+
+All eight #750 dispositions are now verified/migrated: terrace/thing/TODO (#793), terrain (#794), terrace decor (#795),
+toaster (#796) and toast/toilet (#797). Fresh child-state audit found #793–#796 closed before the final #797 delivery.
+The wider parents #741/#736 still have other groups to finish.
+
 
 Quality knobs in `main.js` change resolution, shadows, mirrors, weather particles
 and detail culling; they do not assign the above terrace bulb, toaster glow or
 flush material fields. That source separation does not prove runtime equivalence
-or override any genuine rendering/lighting exception: these three fixtures stay
-conditional until complete native-state results match in actual full/test runs.
+or override any genuine rendering/lighting exception: at the #787 audit these three fixtures remained
+conditional until complete native-state results matched in actual full/test runs.
 No generic DPR/render call is used to invent an exception, and no measured row
 may be normalized or omitted to manufacture a match.
 
-Suggested independent children: `terracetest` + `thingtest` + `todotest` (three
+Historical #787 suggested independent children: `terracetest` + `thingtest` + `todotest` (three
 ordinary fixtures), `terraintest` alone (large scan), `terracedecortest` alone
 (conditional gate/bulb state), `toastertest` alone (two real loads), and `toasttest`
 + conditional `toilettest` (two fixtures). Each child must inspect complete
 ordered, duplicate-sensitive rows with source/controller/actual-viewport
-provenance before migration to 480×300. #750, #741 and #736 remain open. Source
+provenance before migration to 480×300. #750, #741 and #736 remained open at that audit stage. Source
 snapshots, comment-byte checks and the local evidence search are retained in
 `/tmp/lunden-audit787/`.
 
