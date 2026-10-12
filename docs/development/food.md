@@ -166,3 +166,10 @@ at pixel ratio 1 (initial backbuffer 640×420), with the headless default warm-u
 `tools/grillinteractiontest.cjs` drives the HTML wrapper (Playwright module/Chrome path via env, dev server URL argument).
 Final base `a555dfb` preserves unrelated context-restore probe, combat-HUD and outdoor foliage updates; relevant cooking/focus classes
 were unchanged upstream and final source syntax/diff checks pass.
+
+
+Cooking regression fixture (#774): `tools/cooktest.html` binds `fridge`, `stats` and `smokeAlarm` from the real `__app`,
+including the air-fryer/fries checks. An asynchronous fixture exception produces `SOME FAILED` with its stack and all
+previous PASS/FAIL rows. The original cooking assertions and full-render 900×600 iframe remain unchanged. Actual run
+through `runtests cooktest --jobs 1`: **82 PASS, 0 FAIL**, 132.925 s, no pageerrors; loaded `/index.html` without `test`,
+controller false, measured viewport 900×600. Log and mode evidence: `/tmp/runtests-229228/cooktest.log`, `summary.json`.

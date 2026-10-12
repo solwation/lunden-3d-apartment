@@ -17,10 +17,11 @@ const f = document.createElement('iframe');
 f.width = 900; f.height = 600; f.src = '../index.html';
 document.body.append(f);
 f.onload = async () => {
+  const lines = [];
+  try {
   const w = f.contentWindow, d = f.contentDocument;
   while (!w.__app) await wait(100);
-  const { player, camera, step, world, scene, toggleFurniture, pan, heldItem, chicken } = w.__app;
-  const lines = [];
+  const { player, camera, step, world, scene, toggleFurniture, pan, heldItem, chicken, fridge, stats, smokeAlarm } = w.__app;
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
   d.getElementById('start-touch').click();
   await wait(50);
@@ -271,6 +272,10 @@ f.onload = async () => {
   toggleFurniture(); toggleFurniture();
   pass &= check(!fries.count && fries.heap.count === 0 && bag.left === FR.portions && !heldItem() && fries.bunches.every((b) => !b.model.visible) && !airFryer.running && !smokeAlarm.ringing && !fries.puffs.some((sp) => sp.visible), 'F: the basket empty, the bunch gone, a full bag, quiet');
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+  } catch (error) {
+    lines.push(`FAIL cook test crashed: ${error.stack || error}`);
+    out.textContent = `SOME FAILED\n${lines.join('\n')}`;
+  }
 };
 </script>
 </body>
