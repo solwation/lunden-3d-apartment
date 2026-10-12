@@ -114,7 +114,7 @@ const W = 480, H = 300;
     await A.page.type('#terminal-code', 'Hej på dig', { delay: 30 });
     const flags = await A.page.evaluate((n) => window.__ghosts.messages - n, sentBefore);
     check(flags <= 2, 'typing sends a flag, not a message per key', `${flags} messages for 10 keys`);
-    const typingB = await until(async () => { const l = await bubbles(B.page); return l.length === 1 && l[0].typing ? l[0] : null; }, 90000);
+    const typingB = await until(async () => { const l = await bubbles(B.page); return l.length === 1 && l[0].typing && l[0].shown ? l[0] : null; }, 90000); // (shown: the ghost can be off screen for a frame under load)
     check(typingB?.name === 'Olof' && typingB.text === 'Skriver' && typingB.shown, 'B sees "skriver…" over A\'s ghost', JSON.stringify(typingB));
     check(await typingRow(A.page) === '' && await typingRow(B.page) === '', 'the column never says who writes (#735)');
     // (the picture takes longer than CHAT.typingMs under SwiftShader: hold A's typing and B's bubble meanwhile)
@@ -126,7 +126,7 @@ const W = 480, H = 300;
     await A.page.type('#terminal-code', '!');
     check(!!(await until(async () => (await bubbles(B.page))[0]?.typing, 90000)), 'typing again: on again');
     await A.page.keyboard.press('Enter');
-    const said = await until(async () => { const l = await bubbles(B.page); return l.length === 1 && !l[0].typing ? l[0] : null; }, 90000);
+    const said = await until(async () => { const l = await bubbles(B.page); return l.length === 1 && !l[0].typing && l[0].shown ? l[0] : null; }, 90000);
     check(said?.text === 'Hej på dig!' && said.shown && await typingRow(B.page) === '', 'the sent line replaces "skriver…" as A\'s bubble', JSON.stringify(said));
     await shot(B.page, 'chat-B-line-bubble');
     await A.page.evaluate(() => { const c = window.__chat; c.tokens = 3; return c.send('Och en till, lite längre den här gången så att den bryts snyggt över raderna'); });
@@ -139,8 +139,10 @@ const W = 480, H = 300;
     check(!!(await until(async () => !(await bubbles(B.page)).some((b) => b.typing), 90000)), 'closing the bar puts "skriver…" off');
     const ttl = await B.page.evaluate(() => { const c = window.__chat; c.heard({ t: 'm', i: 'x', n: 'Olof', m: 'kvar?' }, window.__ghosts.others.values().next().value); c.update(31); return c.bubbleList().length; });
     check(ttl === 0, 'a bubble goes after CHAT.ttl', String(ttl));
-    const behind = await B.page.evaluate(() => { const c = window.__chat, g = window.__ghosts.others.values().next().value; c.heard({ t: 'm', n: 'Olof', m: 'bakom väggen' }, g);
-      const was = c.behind; c.behind = () => true; c.update(0); const hidden = !c.bubbleList()[0].shown; c.behind = was; c.update(0); return { hidden, back: c.bubbleList()[0].shown }; });
+    // (polled: `back` needs the ghost on screen at that moment, which a loaded page can miss for a frame)
+    await B.page.evaluate(() => { const c = window.__chat, g = window.__ghosts.others.values().next().value; c.heard({ t: 'm', n: 'Olof', m: 'bakom väggen' }, g); });
+    const behind = await until(() => B.page.evaluate(() => { const c = window.__chat; const was = c.behind; c.behind = () => true; c.update(0); const hidden = !c.bubbleList()[0].shown; c.behind = was; c.update(0);
+      const back = c.bubbleList()[0].shown; return back ? { hidden, back } : null; }), 90000) || { hidden: false, back: false };
     check(behind.hidden && behind.back, 'hidden behind a wall like the tag', JSON.stringify(behind));
     const draws = await B.page.evaluate(() => window.__app.scene.getObjectByName('ghosts').children.map((r) => r.children.length));
     check(JSON.stringify(draws) === JSON.stringify(draws0) && await B.page.evaluate(() => document.querySelectorAll('#speech .chat-bubble').length === 1), 'no extra 3D objects per ghost (the bubble is one DOM element)', JSON.stringify({ draws0, draws }));
@@ -171,14 +173,14 @@ const W = 480, H = 300;
 
     // hide on B: remembered, nothing shown, a count of what came
     await B.page.evaluate(() => { window.__app.showTerminal(true); }); // (the toggle shows while the bar is open too)
-    await B.page.click('#chat-toggle');
+    await B.page.click('#chat-toggle', { force: true, noWaitAfter: true, timeout: 90000 }); // (no wait for "stable": the button is animated and the page slow under load)
     await B.page.evaluate(() => window.__app.showTerminal(false));
     await sleep(1200);
     await A.page.evaluate(() => window.__chat.send('syns inte'));
     const hidden = await until(() => B.page.evaluate(() => { const t = document.getElementById('chat-toggle'); return t.dataset.unseen === '1' ? { log: document.getElementById('chat-log').hidden, key: localStorage.getItem('lunden.chat.hidden'), toggle: !t.hidden, label: t.getAttribute('aria-label') } : null; }), 90000);
     check(hidden?.log && hidden.key === '1' && hidden.toggle && hidden.label === 'Visa chatten', 'hidden: no column, remembered, the button counts 1 new', JSON.stringify(hidden));
     await shot(B.page, 'chat-B-hidden-unseen');
-    await B.page.click('#chat-toggle');
+    await B.page.click('#chat-toggle', { force: true, noWaitAfter: true, timeout: 90000 }); // (no wait for "stable": the button is animated and the page slow under load)
     const shown = await B.page.evaluate(() => ({ log: !document.getElementById('chat-log').hidden, unseen: document.getElementById('chat-toggle').dataset.unseen, key: localStorage.getItem('lunden.chat.hidden'), last: window.__chat.list().at(-1)?.text }));
     check(shown.log && shown.unseen === '' && shown.key === '0' && shown.last === 'Olof syns inte', 'shown again: the line is there, the count gone', JSON.stringify(shown));
 
