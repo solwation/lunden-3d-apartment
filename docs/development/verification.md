@@ -271,6 +271,13 @@ Actual unchanged `anontest.cjs` acceptance then passed through the runner with i
 324.104 s and exit 0 (`/tmp/runtests-226631/{anontest.log,summary.json}`; six screenshots under `shots/`).
 The dialog/start and privacy screenshots were reviewed; no fixture or production changes were needed.
 
+HTML cloud fixtures whose source advertises `cloudflare/dev.mjs` also get an owned Worker per job slot. The runner passes
+its URL through the fixture's existing top-page `?worker=` option (`cloudtest.html`, `resettest.html`), leaving game URLs
+and fixture wipe/assertions intact. `summary.json` records that URL as `worker`. Ordinary and compare runs use the same
+owned-port/startup/timeout/signal cleanup; HTML fixtures without that dependency start no Worker. The 14 light #777 checks
+use actual CLI/Chrome DOM, the production query parser and real Worker state/wipe, two slots, collision, timeout and signal
+cleanup (`/tmp/lunden-777-html-worker-probe.{txt,json}`), without apartment/WebGL startup.
+
 Migrating a test (#736): use a valid full/test comparison with identical complete ordered rows, then change the logic fixture's
 iframe to 480×300 with `?test…` (`.cjs`: `testkit.open`). Drawing, mirror, lighting, pixels and viewport checks retain full size
 and a `// no &test: <reason>` marker. Where a single step needs a real picture, use `shot()` / `__app.testMode.setFull(true)`.

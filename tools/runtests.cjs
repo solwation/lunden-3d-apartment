@@ -148,7 +148,7 @@ async function startServer(cmd, args, port) {
 
 // ---------- HTML tests ----------
 let browserType;
-async function runHtml(test, { asTest }, game) {
+async function runHtml(test, { asTest }, game, workerPort = null) {
   const pw = browserType ||= playwrightModule();
   const log = []; const t0 = Date.now();
   if (shuttingDown) throw new Error('runner is stopping');
@@ -200,7 +200,9 @@ async function runHtml(test, { asTest }, game) {
     });
     page.on('pageerror', (e) => log.push(`[pageerror] ${e.message}`));
     page.on('crash', () => log.push('[page crashed]'));
-    await page.goto(`${game}/tools/${test.file}`, { waitUntil: 'commit', timeout: opt.timeout * 60000 });
+    const fixtureURL = new URL(`${game}/tools/${test.file}`);
+    if (workerPort !== null) fixtureURL.searchParams.set('worker', `http://localhost:${workerPort}`);
+    await page.goto(fixtureURL.href, { waitUntil: 'commit', timeout: opt.timeout * 60000 });
     while (Date.now() - t0 < opt.timeout * 60000) {
       text = await page.evaluate(() => document.querySelector('#out')?.textContent ?? '').catch(() => text) || text;
       if (VERDICT.test(text)) { status = 'DONE'; break; }
@@ -218,7 +220,7 @@ async function runHtml(test, { asTest }, game) {
     load.test === asTest && (load.controller === null || load.controller === asTest));
   if (modeVerified === false) { status = 'ERROR'; log.push(`[runner] loaded game mode does not match ${mode}`); }
   if (opt.compare && !gameLoads.length) log.push('[runner] no game document loaded; mode comparison does not apply');
-  return { status, text, log, ms: Date.now() - t0, redirects, mode, gameLoads, modeVerified };
+  return { status, text, log, ms: Date.now() - t0, redirects, mode, gameLoads, modeVerified, worker: workerPort === null ? null : `http://localhost:${workerPort}` };
 }
 
 // ---------- .cjs tests ----------
@@ -291,7 +293,14 @@ async function main() {
       const j = jobs[next++]; if (!j) return;
       process.stdout.write(`  start ${j.t.name}${j.label ? ` [${j.label}]` : ''}\n`);
       let r;
-      try { r = j.t.kind === 'html' ? await runHtml(j.t, j, game) : await runCjs(j.t, game, slot); }
+      try {
+        if (j.t.kind === 'html') {
+          // Existing HTML cloud fixtures advertise dev.mjs and read ?worker from their top URL (#777).
+          const needsWorker = /cloudflare\/dev\.mjs/.test(fs.readFileSync(path.join(TOOLS, j.t.file), 'utf8'));
+          const ownedWorker = needsWorker ? await workerFor(slot) : null;
+          r = await runHtml(j.t, j, game, ownedWorker?.port ?? null);
+        } else r = await runCjs(j.t, game, slot);
+      }
       catch (e) { r = { status: 'ERROR', text: '', log: [`[runner] ${e.stack}`], ms: 0 }; }
       if (shuttingDown) return;
       classify(r, j.t.name, base); Object.assign(r, { name: j.t.name, file: j.t.file, label: j.label, asTest: j.asTest, kind: j.t.kind });
@@ -338,7 +347,7 @@ async function main() {
     const sorted = Object.fromEntries(Object.keys(nb).sort().map((k) => [k, nb[k]]));
     fs.writeFileSync(BASELINE, JSON.stringify(sorted, null, 2) + '\n'); console.log(`baseline updated: ${BASELINE}`);
   }
-  fs.writeFileSync(path.join(LOGDIR, 'summary.json'), JSON.stringify(results.map(({ name, file, kind, label, verdict, ms, fails, mode, gameLoads, modeVerified, comparison }) => ({ name, file, kind, label, verdict, ms, fails, mode, gameLoads, modeVerified, comparison })), null, 2));
+  fs.writeFileSync(path.join(LOGDIR, 'summary.json'), JSON.stringify(results.map(({ name, file, kind, label, verdict, ms, fails, mode, gameLoads, modeVerified, comparison, worker }) => ({ name, file, kind, label, verdict, ms, fails, mode, gameLoads, modeVerified, comparison, worker })), null, 2));
   const bad = comparisonFailed || results.some((r) => !['PASS', 'KNOWN'].includes(r.verdict));
   children.forEach(killGroup);
   process.exit(bad ? 1 : 0);
