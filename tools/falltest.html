@@ -13,8 +13,8 @@
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const f = document.createElement('iframe');
-f.width = 900; f.height = 600;
-f.src = '../index.html?shot';
+f.width = 480; f.height = 300;
+f.src = '../index.html?test&shot';
 document.body.append(f);
 f.onload = async () => {
   const w = f.contentWindow, d = f.contentDocument;

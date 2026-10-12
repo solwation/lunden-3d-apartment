@@ -350,7 +350,7 @@ actual ready/final phases, independent monitor PID/SID/exit and both PNGs: `/tmp
 | `entrancedoortest.html` | Full rendering | 128×128 render-target pixel readback of handles/glazing. |
 | `entranceplantstest.html` | Migrated (#818) | 15 identical ordered PASS rows, 0 FAIL; actual original 300×150/full → 480×300/test. Authored renderer/geometry/collision calls retained; native/capture evidence below. |
 | `esctest.html` | Accepted in #819 | Complete original full/test logs byte-identical, five ordered PASS; actual 900×600/null controller versus 480×300/real test APIs. Authored synthetic Escape/arm click and pointer-lock request wrapper retained; no OS-input/native pointer-lock grant claim. |
-| `falltest.html` | Candidate | Fall, landing/damage, respawn and geometric paths. |
+| `falltest.html` | Accepted in #819 | Complete original full/test logs byte-identical, all 27 ordered PASS including untouched numeric/conditional walk diagnostics; actual 900×600/null controller versus 480×300/real test APIs. Authored pointerLock getter and synthetic pointerlockchange retained. |
 | `fishtest.html` | Migrated (#785) | 29 exact ordered PASS rows, zero FAIL: original 900×600 iframe enters native fullscreen (actual 1280×800/controller false, 132.108 s). Compare test was 480×300/controller true, 74.350 s (`/tmp/runtests-281141`). Guarded written test in normal 1280×800 runner stays 480×300/controller true, 72.279 s (`/tmp/runtests-291884`); matches retained full `/tmp/runtests-281141`. Fish-finger actions and full cat walking/animation coverage retained; testMode-only fullscreen suppression. |
 | `flowtest.html` | Full rendering | Actual renderer geometry-memory growth assertion over cooking and reloads. |
 | `focusperftest.html` | Own fixture | 48×48 GPU shader compilation/reuse/disposal; no main iframe. Importmap blocked: #780. |
@@ -1723,9 +1723,9 @@ Wall 100.864s → 78.177s includes two saved/inspected fullPage captures showing
 final courtyard/HUD and result text; raw logs retain every complete long row.
 No rendered-scene equivalence is claimed. Frozen source/helper hashes, native
 phases and independent PID/SID/PGID/exit are retained in
-`/tmp/lunden-routes819/esctest/`. Fall and garage remain pending; their complete
-original predicates, dynamic diagnostics and quality-coupled particle state must
-be compared separately. #739/#736 stay open.
+`/tmp/lunden-routes819/esctest/`. Garage remains pending; its complete original
+predicates and quality-coupled particle state must be compared separately.
+#739/#736 stay open.
 
 ## Entry and east geometry: entrance plants acceptance (#818, partial)
 
@@ -1759,3 +1759,21 @@ The written fixture now explicitly uses 480×300/test; all native predicates and
 authored renderer calls are intact. Reversing only dimensions/query/descriptive
 comment exactly recreates the frozen original. Gable remains pending under
 #818; #739/#736 stay open.
+
+## Fall, landing and complete routes acceptance (#819, partial)
+
+`falltest` is migrated by changing only iframe query/dimensions. On frozen
+`8e27302`, `/tmp/runtests-468971/` has complete byte-identical raw logs: all 27
+ordered PASS and ALL PASS in each mode, zero FAIL/pageerrors, independently
+monitored actual exit 0. Every original numeric landing/damage/wake diagnostic,
+conditional up/down stair route (including east/park/NW), ramp, crouch, bunk and
+resume check remains unchanged, with no skipped path, normalization or new seed.
+Ready/final native evidence verifies one actual document per mode, original
+900×600/null controller versus 480×300/real test APIs, no fullscreen and stable
+URL/timeOrigin within each pass. The authored pointerLockElement getter and
+synthetic pointerlockchange are retained simulations, not a native pointer-lock
+grant. Wall 170.288s → 91.162s includes both saved/inspected fullPage images with
+complete output and final hall view; intermediate fall-cover pixels or rendered
+scene equivalence are not claimed. Frozen source/helper hashes, native phases
+and genuine PID/SID/PGID/exit: `/tmp/lunden-routes819/falltest/`. Garage remains
+pending under #819; #739/#736 remain open.
