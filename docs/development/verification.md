@@ -309,7 +309,7 @@ A `setPixelRatio` call or one final `render` call alone does not justify a rende
 | `lifttest.html` | Candidate | Lift/stair navigation, panel state, collisions and reload. |
 | `lighttest.html` | Full rendering | Pool/wash intensities, lamp fading and actual detail-culler visibility. |
 | `loadingtest.html` | Full startup | Early loading/resume covers versus __app readiness; test mode changes warmup lifecycle. |
-| `loosemirrorstest.html` | Conditional candidate | Reflector registration/transforms and lamp pool anchors; final render alone is not pixel verification. |
+| `loosemirrorstest.html` | Explicit reflection exclusion (#736) | Parent explicitly retains this mirror test; current assertions cover reflector registration/transforms and lamp pool anchors, without reflection-pixel sampling. |
 
 No valid paired d–l migration logs were found in retained `/tmp/runtests-*/summary.json` records
 (exact fixture-name matching). This is a local evidence search, not a claim that no external run exists.
@@ -320,6 +320,65 @@ in #780; this audit leaves them unchanged. Evidence and source line references a
 Suggested independent three-fixture batches and conditional followups are in #779's issue comment;
 #739 / #736 remain open. Dynamic rows (especially laundry's live programme time) must remain exact;
 no normalization, assertion removal or baseline mutation is permitted to make a pair match.
+
+### m–p source and recovered-branch inventory (#784; parent #740 / #736)
+
+Source audit only: the current tracked range has **31 HTML files**, including `perfcount.html`
+with 29 actual-main iframes and two independent fixtures.
+Their authored default game URLs do not select test mode. The three assigned CJS wrappers are counted separately.
+Every candidate still needs a complete ordered before/after pair covering original viewport and all reloads;
+no executable fixture changes or new browser results are part of this audit.
+
+| Fixture (`tools/`) | Audit disposition | Concrete source requirement / evidence limit |
+|---|---|---|
+| `bowtest.cjs` | Full screenshot rendering | Actual 960×600 game, box/drawn bow/in-flight/stuck arrow screenshots; quality=0 already, no testmode query. |
+| `ghostbadgetest.cjs` | Own rendering fixture | Bootstrap blocked; actual Worker/controlled THREE renderer, exact 7 calls/6 textures, cleanup and desktop/phone images. |
+| `ghosttest.cjs` | Full screenshot rendering; dynamic rows | Actual multi-page/Worker and visible ghost/name-tag screenshots; 320×200 already. PASS rows include elapsed wall time; no normalization permitted. |
+| `measuretest.html` | Unverified branch claim | dd8810d reports parity; ordered logs/actual viewport-controller evidence unavailable locally. Current 900×600 source equals its original baseline. |
+| `menutest.html` | Candidate; reported mismatch | Branch full-page crash versus test PASS is not parity; current original 900×600 menu/reset fixture retained. |
+| `mieletest.html` | Unverified branch claim | Reported parity lacks retained logs. getImageData samples its own coat-texture canvas, not the framebuffer; original 900×600 source retained. |
+| `milktest.html` | Unverified branch claim | Reported parity lacks retained logs; actual carton/pour/drink actions, original 900×600 source retained. |
+| `mirrortest.html` | Explicit reflection exclusion (#736) | Actual active Reflector and ghost before/after-mirror drawing hooks; retain reflection mode. |
+| `musicintegrationtest.html` | Candidate; trusted activation | Actual appliance/failed-recording media; requires real #music-test-start click and audio waits (old run reported >10 min). |
+| `musicreloadtest.html` | Candidate; trusted activation | Actual Sonos selection/playback after reload; requires real #music-test-start click in reloaded iframe. |
+| `musictest.html` | Own fixture | Actual audio recordings/decoding/analyser and module lifecycle, no apartment iframe. |
+| `neighboropeningstest.html` | Full reflection/lighting | Shared reflection envMap and night envMapIntensity/emission/window-colour checks for actual glazing. |
+| `nerfcombattest.html` | Own fixture | Own THREE/Combat/Ghosts/Worker/audio fixture and final 640×400 WebGL scene; no apartment iframe. |
+| `nerftest.html` | Candidate | Actual blaster use, flying dart camera layers, wall splash position/colour, floor drop and splash fade. |
+| `nesttest.html` | Conditional candidate; random rows | Smart speakers: mocked speechSynthesis, clock/weather answers, ducking, wall targets/F; random chosen answers and answer counts appear in rows, preserve them exactly. |
+| `nonpctest.html` | Candidate | Removed outdoor NPC/people.js, absent greeting targets, timed speech bubbles and retained old greets/score. |
+| `northbackdroptest.html` | Candidate | Actual mapped north footprints, outward-window rays, terrain/plinth/access bounds and triangle budget; no lowmem subcase. |
+| `notetest.html` | Viewport exclusion | Paper scrollHeight/clientHeight and numeric scroll positions/keyboard repeat rows depend on note-panel viewport. |
+| `olofcartest.html` | Conditional candidate; random rows | Actual driver/car travel, garage/doors/seats and scoring; randomly chosen dad-joke text is included in results. |
+| `oloftest.html` | Conditional candidate; random rows | Actual Olof seats/behavior/actions and non-repeating jokes; randomly chosen joke text is included in results. |
+| `opentest.html` | Candidate | Actual fronts/hinges/collisions and stored contents bounds/visibility. |
+| `oventest.html` | Candidate | Actual appliance actions, cooking/brewing timers and lamp state; retain all emissive checks. |
+| `papertest.html` | Candidate | Actual roll/strip/wad ray-actions, finite paper counts, flushing/stats and reset. |
+| `patiopalmtest.html` | Candidate | Actual plant/pot topology, bounds, material and collision footprint. |
+| `patiotest.html` | Candidate | Actual patio seasonal/object/action/storage flows. |
+| `pctest.html` | Candidate | Actual PC/game/rest interaction and monitor state. |
+| `perfcount.html` | Explicit performance exclusion (#736) | Actual renderBufferDirect screen calls/triangles, shadow/mirror/env passes and texture-memory budgets. |
+| `pettest.html` | Candidate | Actual pet action/geometry, star visibility/count and return-to-idle; preserve particle checks. |
+| `planttest.html` | Candidate | Actual plant/item ray-actions, placement, ownership and reset. |
+| `plantwindtest.html` | Full pixel rendering | 192×192 render-target readback asserts moving foliage, focused foliage and pixel-identical pottery. |
+| `portiktest.html` | Candidate | Actual portik/bin geometry, walk/actions, save/reload and reset. |
+| `posterplacementtest.html` | Candidate | Actual independent poster transforms/layout and optional cloud migration; preserve every cloud/reload subcase. |
+| `postertest.html` | Conditional candidate | Paper-canvas pointer drawing and geometry/actions; optional ?shots captures real renderer images and must keep full-render semantics. |
+| `powertest.html` | Full lighting | Actual pools/washes, flickering supply, emissive appliance lamps and night-window lighting through cut/repair/reload. |
+
+Recovered `origin/wip/740-tests-m-p` tip `dd8810d` has six fixture edits in its own commit:
+measure/menu/miele/milk URL/size changes and mirror/perf comments. The measured merge base with current main is `8c3712a`;
+compare the own commit, not its entire diff against today's main. All four original pre-edit HTML
+bodies are byte-identical to current main in this audit. Only dd8810d's six-file fixture commit is audited; older chat/changelog work is outside scope.
+The #740 handoff reports measure/miele/milk parity, but no exact matching retained local runner summaries
+or ordered raw logs were recovered. They remain **unverified**, with no claimed timing/speedup.
+Menutest's reported full crash versus test PASS is not a valid pair and its branch migration stays off main.
+No cherry-pick or branch rewrite occurred. Evidence/source references are in
+`/tmp/lunden-audit784/{inventory,source-evidence,recovered-740,retained-runner-evidence}.json`;
+the local evidence search does not rule out external logs. Small followup proposals are in #784's comment.
+#740 / #736 stay open; retain explicit mirror/performance exclusions, optional full screenshot paths,
+trusted audio activation/waits, random answer/joke rows and all original assertions. The earlier d–l loosemirrorstest row also now
+honors #736's explicit exclusion; it is not a future migration candidate.
 
 Current no-game-iframe HTML inventory: `basementfloortest`, `basementlayouttest`, `beershelfcachetest`, `cattest`, `combatremotetest`, `combatworldtest`, `focusperftest`, `grillchickentest`, `grilltasktest`, `hangtest`, `musictest`, `nerfcombattest`, `roomtest`, `startuptest`, `statsresettest`, `trapphusrailtest`, `walktest`, `wardrobetest`. They import actual modules or build their own fixture, so adding `&test` to the apartment URL has no benefit; `focusperftest` also measures performance. Their owners retain their existing verification scope.
 

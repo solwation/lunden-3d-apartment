@@ -1,4 +1,5 @@
 <!doctype html><html><meta charset="utf-8"><title>Plant wind</title><pre id="out">running…</pre><script type="module">
+// no &test: actual 192x192 render-target pixels assert foliage movement and stationary pottery (#784).
 const lines=[];let pass=true;const check=(ok,text)=>{lines.push((ok?'PASS':'FAIL')+' '+text);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
 try{
 const f=document.createElement('iframe');f.width=700;f.height=500;document.body.append(f);f.src='../index.html?life&shot&cloud=&weather=clear';await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);

@@ -1,6 +1,7 @@
 <!doctype html><meta charset="utf-8"><title>Recorded music test</title>
 <pre id="out">running…</pre>
 <script type="module">
+// no &test: standalone actual audio/module fixture; no apartment bootstrap or game iframe (#784).
 import { MUSIC, SONOS } from '../src/config.js';
 import { MusicFile, MusicLoop, failedFiles, trackSrc } from '../src/music.js';
 import { initAudio, audioParts, toggleMuted } from '../src/audio.js';
