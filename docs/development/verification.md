@@ -381,6 +381,34 @@ the local evidence search does not rule out external logs. Small followup propos
 trusted audio activation/waits, random answer/joke rows and all original assertions. The earlier d–l loosemirrorstest row also now
 honors #736's explicit exclusion; it is not a future migration candidate.
 
+### TV/chat/anonymous source audit (#798; parent #752 / #741 / #736)
+
+Source-only disposition of the three remaining #752 fixtures. All keep their authored URLs,
+viewports, runtime/Worker behavior, assertions and capture paths; no testkit or testcontroller is used.
+No app/browser was started in this audit and no fixture was migrated.
+
+| Fixture (`tools/`) | Disposition | Concrete checks and current evidence |
+|---|---|---|
+| `anontest.cjs` | Viewport/screenshots exclusion | Two sequential 640×420 real app contexts plus privacy bounds/close checks at 640×420, 390×844, 844×390 and 1280×720; six actual screenshots. Worker-generated identities/timestamps appear in result JSON. The second anonymous identity is a direct API POST, not a second simultaneous rendered app. |
+| `chattest.cjs` | Viewport/screenshots exclusion | Two independent 480×300 browsers against the Worker, `shot&quality=0&cloud` and fixed positions; actual line capacity/bubble visibility, 667×375 touch bounds and eight screenshots (default 960×600 desktop). PASS/FAIL rows include elapsed seconds and dynamic diagnostics; retain them exactly. |
+| `tvtest.html` | Exact-row blocker; Ambilight lighting-state review | Original 900×600/index and native touch/fullscreen behavior; actual additive Ambilight visibility/colour on/off, canvas texture-version updates, TV/remote ray-actions and wall/F checks. No framebuffer readback. Random channel/program names and texture-version values remain in rows. |
+
+Anontest's retained #772 **scripted** run has 23 PASS / 0 FAIL, 324.104 s
+(`/tmp/runtests-226631/{anontest.log,summary.json}`, six images under `shots/`). Its executable fixture
+is unchanged from the verified source; later application/HUD/chat changes prevent calling that old run
+current-runtime acceptance. It is not a full/test pair, and neither the runner's CJS `--compare` label
+nor unchanged source establishes parity. No new timing or speedup is claimed.
+Current chattest uses `#menu-chat-setting` and contains no `#chat-toggle` after #765.
+#744's removed-selector crash describes older source; its bubble-visibility failures were not
+reverified against the current app here and are not silently repaired or declared resolved.
+The CJS screenshot/viewport exceptions follow #736. TV's Ambilight glow/canvas-state assertions
+are not automatically a rendering exemption without pixel measurement; its exact random rows need
+a separately scoped disposition. No existing suite is a blanket 480×300 migration candidate.
+A later logic-only split or known-failure investigation needs a separately scoped
+child and complete actual evidence while retaining all original coverage and dynamic values.
+Source line evidence and retained-run provenance: `/tmp/lunden-audit798/{inventory,source-evidence,retained-runner-evidence}.json`.
+#752 / #741 / #736 remain open for the coordinator's remaining disposition work.
+
 Current no-game-iframe HTML inventory: `basementfloortest`, `basementlayouttest`, `beershelfcachetest`, `cattest`, `combatremotetest`, `combatworldtest`, `focusperftest`, `grillchickentest`, `grilltasktest`, `hangtest`, `musictest`, `nerfcombattest`, `roomtest`, `startuptest`, `statsresettest`, `trapphusrailtest`, `walktest`, `wardrobetest`. They import actual modules or build their own fixture, so adding `&test` to the apartment URL has no benefit; `focusperftest` also measures performance. Their owners retain their existing verification scope.
 
 Remaining CJS ownership: #738 owns a–c HTML; #739 owns d–l HTML plus `grillinteractiontest`; #740 owns m–p HTML plus `ghosttest`, `ghostbadgetest`, `bowtest`; #741 owns r–t HTML plus `chattest`/`anontest`. `combattest` and `crashtest` already use test mode. `glrestoretest` and `phonememtest` retain full rendering/performance semantics; `nocheathints` has no game bootstrap, and `basemententrytest` already opens its actual-main iframe in `&test=lazy`. No result or timing is inferred from these classifications. #736 remains open until all groups publish actual evidence.

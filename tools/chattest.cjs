@@ -1,3 +1,4 @@
+// no &test: actual multiplayer viewport/bubble/screenshots; elapsed and dynamic result rows stay exact (#798).
 // The chat (#675) and its bubbles (#676) on two headless pages against a local Worker. Start both first:
 //   python3 tools/devserve.py 8675 .          node cloudflare/dev.mjs 8147 testtoken
 //   PLAYWRIGHT_MODULE=/path/to/playwright [CHROME_PATH=…] [SHOTS=/dir] node tools/chattest.cjs http://localhost:8675 http://localhost:8147

@@ -1,3 +1,4 @@
+// no &test: four real privacy viewports and six screenshots; scripted PASS is not full/test parity (#798).
 // Anonymous players (#677): against a local Worker. Start first:
 //   python3 tools/devserve.py 8122 .          node cloudflare/dev.mjs 8145 tok
 //   PLAYWRIGHT_MODULE=… [CHROME_PATH=…] [SHOTS=/dir] node tools/anontest.cjs http://localhost:8122 http://localhost:8145 tok
