@@ -374,7 +374,7 @@ controlled benchmark. All 247 frozen source paths and exact fixture/helper hashe
 | `focusperftest.html` | Own fixture | 48×48 GPU shader compilation/reuse/disposal; no main iframe. Importmap blocked: #780. |
 | `foliagetest.html` | Full rendering | Actual crown readPixels/shade count, cut-out shadows and lowmem atlas. |
 | `gabletest.html` | Migrated (#818) | 40 identical ordered PASS rows, 0 FAIL; native original 400×300/full → 480×300/test. Gable-opening layout/bounds/drum-distance checks unchanged; actual evidence and missing captures below. |
-| `garagetest.html` | Candidate | Garage geometry/doors, player navigation and saved state. |
+| `garagetest.html` | Accepted in #819 | Complete original full/test logs byte-identical, all 51 ordered PASS including numeric geometry/doors/lighting/rain/exit diagnostics; actual 800×500/null controller versus 480×300/real test APIs. Original fullscreen suppression and quality-coupled particle predicates preserved. |
 | `grillchickentest.html` | Own fixture | Own 800×520 scene/render images (toDataURL), chicken/grill modules; #780 importmap blocker. |
 | `grillinteractiontest.cjs` | Full rendering | Real pointer lock/touch and desktop/touch/eating scene/HUD screenshots; keep its authored viewport/capture path. |
 | `grillinteractiontest.html` | Full rendering | CJS-controlled pointer lock/touch and actual scene/HUD screenshots; HTML requires run717 invocation. |
@@ -1741,8 +1741,7 @@ Wall 100.864s → 78.177s includes two saved/inspected fullPage captures showing
 final courtyard/HUD and result text; raw logs retain every complete long row.
 No rendered-scene equivalence is claimed. Frozen source/helper hashes, native
 phases and independent PID/SID/PGID/exit are retained in
-`/tmp/lunden-routes819/esctest/`. Garage remains pending; its complete original
-predicates and quality-coupled particle state must be compared separately.
+`/tmp/lunden-routes819/esctest/`. The garage comparison is completed below;
 #739/#736 stay open.
 
 ## Entry and east geometry: entrance plants acceptance (#818, partial)
@@ -1793,8 +1792,8 @@ synthetic pointerlockchange are retained simulations, not a native pointer-lock
 grant. Wall 170.288s → 91.162s includes both saved/inspected fullPage images with
 complete output and final hall view; intermediate fall-cover pixels or rendered
 scene equivalence are not claimed. Frozen source/helper hashes, native phases
-and genuine PID/SID/PGID/exit: `/tmp/lunden-routes819/falltest/`. Garage remains
-pending under #819; #739/#736 remain open.
+and genuine PID/SID/PGID/exit: `/tmp/lunden-routes819/falltest/`. The garage
+comparison is completed below; #739/#736 remain open.
 
 ## Entry and east geometry: gable acceptance (#818)
 
@@ -1827,3 +1826,26 @@ branch remains original 720×480/full and unexecuted by its default pair; its
 authored explicit FULL/LITE builder comparison is preserved and was executed.
 Capture limitations remain separate from native logical acceptance. Parents
 #739/#736 stay open.
+
+## Garage complete native state acceptance (#819)
+
+`garagetest` is migrated by changing only query/dimensions. Its original
+800×500/time=12/month=6/weather=rain and unconditional fullscreen suppression
+were preserved in the complete comparison at frozen `37306f8`. All current
+51 geometry/doors/walking/car/sensor/light/rain/escape/canvas/material predicates
+and numeric diagnostics remain untouched, including actual quality-coupled
+particle state: no seed, quality, matrix, timer, wait or normalization change.
+`/tmp/runtests-474447/` has complete byte-identical logs, 51 ordered PASS and
+ALL PASS in each mode, zero FAIL/pageerrors and independently monitored exit 0.
+Ready/final native snapshots verify one actual main document per mode with stable
+URL/timeOrigin, full 800×500/null controller versus 480×300/real test APIs,
+neither fullscreen. Wall 190.733s → 119.878s includes both saved/inspected
+fullPage images: result text plus final rainy patio/HUD. Long row completeness
+is established by raw logs, not the image's visible width; no intermediate garage
+visual inspection or rendered-scene equivalence is claimed. Frozen hashes,
+native phases and genuine PID/SID/PGID/exit:
+`/tmp/lunden-routes819/garagetest/`.
+
+All three #819 fixtures now have complete unchanged-predicate native full/test
+acceptance: ESC 5, fall 27 and garage 51 ordered PASS per mode. The bounded batch
+is complete; broader #739/#736 remain open.
