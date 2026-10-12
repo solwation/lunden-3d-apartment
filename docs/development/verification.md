@@ -981,7 +981,18 @@ that original fixture unchanged. Full 243.892s: first native load 900×600/contr
 all existing assertions were retained. Native observations cover removed and retained frames; both saved final
 images were inspected, without a can-visual-equivalence claim. Complete raw logs/summary: `/tmp/runtests-377641/`;
 fixture/runtime hashes, passive capture, exit record, native metadata, images and acceptance: `/tmp/lunden-beer807/`.
-All 247 frozen runtime hashes matched after this pair. Other #807 fixtures still need their own complete comparisons.
+All 247 frozen runtime hashes matched after this pair.
+
+#807 `beershelfmodeltest` is migrated after a complete accepted original full/test pair at frozen `081078d`:
+all 15 ordered PASS rows and ALL PASS are byte-identical, including prepared identities, native 512×256 label
+canvas dimensions, four nonoverlapping packages, door state and alternate 330/500 ml bottle geometry. Actual
+137.345s at 900×600/controller false → 80.238s at 480×300/real controller API, both without fullscreen;
+independently monitored runner exit 0; wall times include the successful final captures. Compared original
+`life&shot&cloud=` against the existing test flag; the final committed change only sets 480×300. The original
+unconditional fullscreen suppression and all assertions remain. Both saved fullPage PNGs were inspected: result text and kitchen
+view support capture/log evidence, not beer-label pixel equivalence. Raw logs/summary: `/tmp/runtests-390315/`;
+source/runtime/capture hashes, final native metadata, actual-exit and images: `/tmp/lunden-beer807/shelf-*` and
+`beershelfmodeltest-{full,test}.*`. Beer and bottle fixtures still need their own complete comparisons; #807 remains open.
 
 
 `bedcaretest`'s pixel-ratio setup is not a rendering assertion; its comment now
