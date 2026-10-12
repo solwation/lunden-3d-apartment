@@ -1865,3 +1865,17 @@ native phases and genuine PID/SID/PGID/exit:
 All three #819 fixtures now have complete unchanged-predicate native full/test
 acceptance: ESC 5, fall 27 and garage 51 ordered PASS per mode. The bounded batch
 is complete; broader #739/#736 remain open.
+
+
+## Kitten exception output protocol (#848)
+
+The original `kittentest.html` unhandled-rejection reason and stack are retained
+verbatim, followed by `FAIL unhandled rejection` and `SOME FAILED`. The existing
+public runner can finish and classify this path as failure. No normal-path
+assertions, actions, geometry, seeds, queries, viewport or runner code changed.
+Five native Chrome DOM cases dispatched genuine unhandled rejections (Error,
+string, null, undefined and an error containing an ALL PASS line); the actual
+runner parser/classifier reported FAIL in every case, with original output intact.
+Artifacts: `/tmp/lunden-protocol848/native-dom.json`. This isolated protocol
+verification loads no apartment renderer and makes no kitten gameplay, full/test
+parity, screenshot or timing claim. The complete #822 comparison remains separate.

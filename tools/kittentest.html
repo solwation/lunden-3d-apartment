@@ -11,7 +11,7 @@
 // (emptied, no deduction); hurt it runs faster still and the deduction is bigger.
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/kittentest.html
 const out = document.getElementById('out');
-addEventListener('unhandledrejection', (e) => { out.textContent = `ERROR ${e.reason?.message ?? e.reason}\n${e.reason?.stack ?? ''}`; });
+addEventListener('unhandledrejection', (e) => { out.textContent = `ERROR ${e.reason?.message ?? e.reason}\n${e.reason?.stack ?? ''}\nFAIL unhandled rejection\nSOME FAILED`; });
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 localStorage.removeItem('lunden.stats');
 const f = document.createElement('iframe');
