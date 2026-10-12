@@ -749,7 +749,7 @@ DPR setup and checks of gameplay/material state do not by themselves justify a r
 | `trapphusatest` | Comparison candidate; not migrated. | Stairs/lifts/doors/collision/save/HUD assertions are functional. The visible-door child count is built geometry, and power-cut material colour is direct state; neither measures rendered calls/pixels. Large fixture needs its own unchanged-assertion pair. |
 | `trapphusbctest` | Comparison candidate; not migrated. | Same functional distinction as A; retain independent B and C variants (`?house=C` on the fixture), every route/save/power assertion and complete exact ordered output. Both variants need full/test pairs. |
 | `trapphusrailtest` | Standalone; no game-mode migration applies. | Actual buildWorld/Core/Player modules and manual movement into the rail; no game iframe/bootstrap or WebGL renderer. Source inspection only, no runtime result claimed. |
-| `turbotest` | Comparison candidate; not migrated. | Deterministic injected coffee clock, speed/FOV, walking/wall-stop and expiry state; no framebuffer/pixel/performance assertion. Preserve dynamic distance/time/FOV labels and all original checks in a future pair. |
+| `turbotest` | Migrated (#799); original injected clock, coffee/speed/FOV/walk/wall/expiry assertions preserved. | All 10 ordered PASS rows and ALL PASS identical, including ×1.80, 78.0°, 2.38 m, wall x 0.71 and 115 → 150 s; no pageerrors. `/tmp/runtests-295099/`: 198.024s at actual full-screen 1280×800/controller null → 119.221s at 480×300/real controller. Both fullPage screenshots included; only test-mode controllers suppress native fullscreen. |
 | `turntest` | Rendering/performance exemption. | Actual warm-up and rendered frames gate WebGL program/texture counts and record uploads, shadows, mirrors and phase times; optional readPixels synchronization. Test mode changes the measured rendering workload. |
 
 Tostart provenance was checked against acceptance base `bcbf1ae`: the fixture and relevant
@@ -757,6 +757,6 @@ player/rest/jetpack/spidersuit/car/core/world blobs match exactly; the toStart h
 Later main/config differences are unrelated chat/compass UI changes; the whole source tree is not claimed
 identical. The source and exact-row audit is retained at `/tmp/lunden-audit788/tostart-provenance.json`.
 
-Suggested future comparison children: toys + turbo (split further if runtime warrants it), stairwell A alone,
-and stairwell B/C alone with both variants. These are proposals, not completed migrations or reservations.
+Remaining comparison children: stairwell A (#800) and stairwell B/C (#801) with both variants;
+these remain unverified and unreserved. Toys + turbo are now verified and migrated under #799.
 The parent #751 remains open until its remaining comparisons and dispositions are handled.

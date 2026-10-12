@@ -14,12 +14,13 @@ const lines = [];
 let pass = true;
 const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
 const f = document.createElement('iframe');
-f.width = 900; f.height = 600;
+f.width = 480; f.height = 300;
 document.body.append(f);
-f.src = `../index.html?v=${Math.random()}&shot`;
+f.src = `../index.html?test&v=${Math.random()}&shot`;
 f.onload = async () => { try {
   while (!f.contentWindow.__app) await wait(100);
   const w = f.contentWindow, d = f.contentDocument, app = w.__app, { turbo, cups, step, player, camera, stats, touch } = app;
+  if (w.__app.testMode) d.documentElement.requestFullscreen = undefined; // keep test-mode fixture at its intended size
   d.getElementById('start-touch').click(); await wait(50);
   let clock = 1000; turbo.now = () => clock;
   const run = (s) => { for (let t = 0; t < s; t += 0.1) { clock += 0.1; step(0.1); } };
