@@ -221,7 +221,12 @@ they do not replace #737's required game-test acceptance runs or claim a game ti
 The #776 native-fullscreen Chrome DOM probe reproduces the old 1280×800 test-pass escape and verifies the corrected
 480×300 context, actual Fullscreen API, production query parser, mode/controller evidence and preserved query options
 (`/tmp/lunden-776-fullscreen-probe.{txt,json}`). The first #773 rest pair is explicitly query-only at 1280×800 in both
-passes (`/tmp/runtests-230917`); it must not be described as a 480×300 test run. A corrected actual rest pass is still required.
+passes (`/tmp/runtests-230917`); it must not be described as a 480×300 test run. The corrected actual rest pass on
+`cd77387` is 480×300 with `?test`, controller true and verified mode: 569.040 s, 133 PASS / 19 old FAIL, KNOWN.
+All 152 ordered rows match the saved 745.511 s full pass at 1280×800. An export-only VM wrapper called the exact committed
+`runHtml`, `classify` and `compareLines`, avoiding a duplicate full run (`/tmp/lunden-776-rest-testpass.{txt,log,json}`).
+The fixture, rest/player modules and config outside unrelated CHAT/COMPASS UI changes match the full-pass source `bcbf1ae`;
+intervening chat/HUD changes are not represented as an identical production tree. No fixture or production code was changed.
 
 The resize stylesheet waits for the top document root (#760). Chrome DOM probes cover normal, inline-sized and dynamically
 inserted iframes: their actual frame and child viewport become 480×300 without init-script errors; child documents stay unmodified.
