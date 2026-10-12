@@ -392,6 +392,23 @@ sample, not a controlled benchmark. All 247 frozen source paths and exact fixtur
 `/tmp/lunden-objects820/item-*` and `itemtest-*`. All four #820 fixtures are accepted: grill 6, hold 80, inventory 18,
 item 64 identical PASS rows; this closes only the bounded #820 scope, not broader #739/#736.
 
+
+#823 laptop logical acceptance at frozen `b1d956b`: complete 553-byte raw logs match, all 13 ordered PASS rows and
+ALL PASS, independently monitored actual exit 0. All current screen/keyboard/wall/F, texture-update, automatic/manual
+swipe and per-kind score predicates and diagnostics remain unchanged, including texture v2→v8 and seeded clip order.
+Original native RAF and explicit steps are preserved; no new seed, clock/wait, quality, matrix, assertion or result
+normalization was applied. One actual document per mode has distinct child URL/timeOrigin at ready/final: full ready
+900×600/null controller → native fullscreen 1280×800 at final; test ready/final 480×300/real API/no fullscreen.
+The approved pre-pair testMode-only fullscreen guard immediately precedes the original touch start and is inert in
+full mode. The minimal migration adds the test query and 480×300 dimensions, retaining that guard.
+Full 120.034s and test 94.092s INCLUDE capture attempts: full screenshot failed after 60,000ms; its error is retained,
+only test PNG exists and was inspected (all 13 result rows, vanity and off laptop). No full-image review, playing-clip
+pixel equivalence or extra replacement app load is claimed. Asymmetrical capture cost excludes this pair from
+aggregate speedup calculations. All 247 frozen source paths and exact guarded fixture/helper hashes match.
+Raw logs/summary: `/tmp/runtests-496140/`; actual ready/final phases, source/provenance, independent PID/SID/exit,
+test PNG and full capture error: `/tmp/lunden-life823/laptop-*` and `laptoptest-*`. Laundry/life2 and #823/#739/#736
+remain open; their dynamic real-time values and full default section coverage still need separate comparisons.
+
 | Fixture (`tools/`) | Audit disposition | Concrete source requirement |
 |---|---|---|
 | `detailtest.html` | Full rendering | Detail culler: nearby doors drawn and distant details hidden. |
@@ -426,7 +443,7 @@ item 64 identical PASS rows; this closes only the bounded #820 scope, not broade
 | `jumpontest.html` | Accepted in #822 | Complete original full/test logs byte-identical, 35 ordered PASS plus exact full info furniture diagnostic; native original 900×600/null controller versus 480×300/real test APIs. Authored pointerLock getter/synthetic event retained. |
 | `keytest.html` | Candidate | Key/action access and saved state. |
 | `kittentest.html` | Candidate | Kitten behavior/actions and actual scene/state. |
-| `laptoptest.html` | Candidate | Actual laptop actions and DOM panel/state. |
+| `laptoptest.html` | Logical parity (#823); full capture failed | All 13 ordered PASS rows and ALL PASS byte-identical, including texture v2→v8 and seeded clip order. Full ready 900×600 → native fullscreen 1280×800/controller null; test 480×300/real API/no fullscreen. Actual exit 0; `/tmp/runtests-496140/`. Full screenshot timed out; test-only image, exclude speedup aggregation. |
 | `laundrytest.html` | Conditional candidate | Programme/actions/reloads with real-time values in rows; exact comparison may differ, no normalization. |
 | `life2test.html` | Candidate | Actual life/item action integration and persistence. |
 | `life3test.html` | Candidate | Actual life/item cooking/actions and persistence. |
