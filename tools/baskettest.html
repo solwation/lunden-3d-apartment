@@ -4,6 +4,7 @@
 <body>
 <pre id="out">running…</pre>
 <script>
+// no &test: actual full/test raw nearest-wall values differ (#802); early throw speed is unseeded.
 // Tilly's basketball (basket.js): the daybed's drawers open (shoes, hair things); the hoop is down; take the ball
 // from its holder → the hoop rises; dribble (down to the floor and back into the hand); throw it at the wall (it
 // bounces back off it, never through it, and is caught or comes to rest); outside, shots at the rim score a basket
@@ -12,7 +13,7 @@
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const f = document.createElement('iframe');
-f.width = 480; f.height = 300; f.src = '../index.html?test&time=12';
+f.width = 900; f.height = 600; f.src = '../index.html?time=12';
 document.body.append(f);
 f.onload = async () => {
   const w = f.contentWindow, d = f.contentDocument;

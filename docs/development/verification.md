@@ -526,6 +526,49 @@ Phone memory probe (#628): `python3 tools/devserve.py 8628 . &` then `PLAYWRIGHT
 
 Park basement entries (#729): run `PLAYWRIGHT_MODULE=/path/to/playwright CHROME_PATH=/path/to/chrome node tools/basemententrytest.cjs http://localhost:8729` after starting the development server. `SHOTS` overrides `/tmp/lunden-basement-entry/result.json`'s directory. The driver waits bounded initialization, clicks the real mouse-start button, obtains PointerLock and runs `tools/basemententrytest.html`: actual E focus from outside before below, closed/open/jamb traversal to both −1 landings and back, the touch action handler in controlled touch mode, far animated leaves, courtyard pick/collision exclusion, continuous park paving, tree/shrub-instance clearance and floor coverage. It uses `&test=lazy`, with no automatic rendering; this is not a physical-phone touch/FPS test. [Measured scope and manual full-quality images](../validation/issue-729/README.md).
 
+## Test-mode comparison: objects and motion (#802)
+
+Actual CLI `--compare baskettest cartest breaktest --jobs 1 --port 8737`
+ran on `b1c04e5`, preserving current assertions. Basket/car received temporary
+original 900×600/query restoration from `9645849^`; break already had original
+900×600/no-test source. Temporary basket/break fullscreen guards applied only
+when the actual test controller existed; their full-mode paths were preserved.
+These guards are removed from the final retained full-mode fixtures. Exact
+source copies, guard/query/dimension patches and duplicate-sensitive row checks
+are in `/tmp/lunden-motion802/`; complete raw logs and actual metadata are in
+`/tmp/runtests-297658/`.
+
+| Fixture | Observed full → test viewport | Actual rows / disposition | Full → test elapsed |
+| --- | --- | --- | --- |
+| baskettest | 1280×800 → 480×300 | 19 PASS each; row 11 differs (`x 0.334` → `x 0.339`). Restore full original 900×600/no-test source. | 85.221 → 80.631 s |
+| cartest | 900×600 → 480×300 | complete byte-identical 40 PASS, 0 FAIL; retain existing 480×300/test source. | 99.746 → 74.366 s |
+| breaktest | 1280×800 → 480×300 | full 20 PASS / 1 FAIL; test 18 PASS / 3 FAIL; retain full original 900×600/no-test source. | 101.227 → 77.756 s |
+
+Basket/break's full-mode native fullscreen expanded their source iframes to
+1280×800; the table reports observed sizes rather than claiming 900×600.
+Each full controller was false and each test controller true, with verified
+modes and no browser errors, crashes or timeouts. The CLI correctly exited 1
+for nonidentical pairs and break's failures. These timings are single shared-
+machine samples; they do not justify a performance claim for mismatched runs.
+
+Basket's early wall throw uses unseeded speed jitter before its later outside-
+shot random override; no positions or diagnostic rows were normalized.
+Break's random shard-on-table row differed `11 of 14` → `12 of 14`. Its
+`FAIL a Nerf dart breaks the glass` occurs in both modes. The test pass also
+fails `a shot from ~8 m breaks it` and the corresponding points row
+(`0 range points vs 0; +0 in all`), while full mode passes both. These are actual
+pair differences requiring separate investigation, not evidence of a proven
+mode-caused production defect or an interchangeable pair. The shared Nerf failure is tracked in #804; the test-only far rifle shot and
+consequent points mismatch are tracked in #805. No failure was added to baseline
+or assertion softened.
+
+Car's complete ordered radio gain/cutoff, screen state, interaction and route
+rows match. Its existing fullscreen suppression and every current source byte
+are unchanged after temporary baseline restoration; the actual test viewport
+is verified 480×300. Only car has migration acceptance here. Basket's unsafe
+after-only flag is removed; explicit comments preserve basket/break full-mode
+dispositions. #738 and #736 remain open.
+
 ## Test-mode comparison: actions (#792)
 
 Three actual full/test pairs now verify this bounded #738 batch. The CLI
