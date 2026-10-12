@@ -15,7 +15,7 @@ const lines = [];
 let pass = true;
 const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
 const f = document.createElement('iframe');
-f.width = 900; f.height = 600; f.src = '../index.html?life&shot';
+f.width = 480; f.height = 300; f.src = '../index.html?test&life&shot';
 document.body.append(f);
 f.onload = async () => {
   const w = f.contentWindow, d = f.contentDocument;
