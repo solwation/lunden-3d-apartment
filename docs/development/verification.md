@@ -88,7 +88,11 @@ tools/combattest.cjs   fights (#667): three pages (A, B, C) against dev.mjs: una
                        Pages drive ghosts / combat updates themselves (SwiftShader frames take seconds). combatsteps.cjs requires
                        reciprocal connected foes and propagated weapons before dependent shots (timeout throws), keeps peers
                        moving during both full-quality screenshots, and stops/restores camera yaw plus screenshot state in finally.
-                       Socket closes/reconnects are logged. Full PvP verification remains tracked by #721/#769.
+                       Socket closes/reconnects are logged. #769 uses test=lazy and paused automatic loops during gameplay,
+                       explicit real updates, and full rendering for both pictures. Its warm-cache setup verifies the actual
+                       Nerf muzzle arc clear within 30 s; every subsequent real shot keeps the production 2 s deadline.
+                       This does not certify cold first shots, rendered combat FPS or physical phones; see issue-769 evidence
+                       and the existing #714/#715 cold-cache limitation.
                        Worker protocol: node --test cloudflare/players.test.mjs (13 PASS in the #768 review).
 tools/combatstepstest.cjs (#768): no bootstrap/WebGL, real Ghosts/Combat and local dev.mjs sockets test readiness success,
                        actual disconnect/reconnect, timeout before action, callback/restoration throws and stopped keep-alive work.

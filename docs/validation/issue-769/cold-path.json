@@ -1,0 +1,112 @@
+{
+  "lastShot": {
+    "w": "nerf",
+    "o": [
+      1.6199787070263205,
+      1.4700000000000002,
+      11.341168437404344
+    ],
+    "d": [
+      0.642498550362597,
+      0.029986509105670994,
+      -0.7656999556311969
+    ],
+    "s": 30,
+    "to": null
+  },
+  "paths": [
+    {
+      "started": 133972.20000000298,
+      "deadline": 135963.90000000596,
+      "points": [
+        [
+          1.6199787070263205,
+          1.4700000000000002,
+          11.341168437404344
+        ],
+        [
+          2.0054778372438786,
+          1.4871919054634029,
+          10.881748464025625
+        ],
+        [
+          2.390976967461437,
+          1.5027838109268055,
+          10.422328490646906
+        ],
+        [
+          2.5035302485832385,
+          1.506868994901574,
+          10.288192713511734
+        ]
+      ],
+      "cancelBefore": false,
+      "result": null,
+      "elapsed": 4214.899999991059,
+      "cancelAfter": false,
+      "remaining": -2223.199999988079,
+      "metrics": {
+        "pending": 804,
+        "ready": 0,
+        "accountedBytes": 1048576,
+        "bitBytes": 524288,
+        "clusterBytes": 196608,
+        "spatialBytes": 14169196,
+        "spatialEntries": 804,
+        "spatialReady": 4,
+        "buildCpuMs": 8014.299999728799,
+        "maxChunkMs": 24.69999998807907,
+        "prunedQueries": 0,
+        "fallbackQueries": 0,
+        "pathInstances": 0,
+        "pathSelectedInstances": 0,
+        "asyncSlices": 67,
+        "maxAsyncSliceMs": 5.100000008940697
+      }
+    }
+  ],
+  "connected": true,
+  "connects": 1,
+  "candidate": "Probe B",
+  "firstSolid": null,
+  "metrics": {
+    "pending": 804,
+    "ready": 0,
+    "accountedBytes": 1048576,
+    "bitBytes": 524288,
+    "clusterBytes": 196608,
+    "spatialBytes": 14169196,
+    "spatialEntries": 804,
+    "spatialReady": 4,
+    "buildCpuMs": 8149.799999713898,
+    "maxChunkMs": 24.69999998807907,
+    "prunedQueries": 0,
+    "fallbackQueries": 0,
+    "pathInstances": 2176,
+    "pathSelectedInstances": 0,
+    "asyncSlices": 67,
+    "maxAsyncSliceMs": 5.100000008940697
+  },
+  "receiver": {
+    "hurts": 0,
+    "lives": 10,
+    "lastSeen": {
+      "w": "nerf",
+      "o": [
+        1.62,
+        1.47,
+        11.34
+      ],
+      "d": [
+        0.642,
+        0.03,
+        -0.766
+      ],
+      "s": 30,
+      "from": "f8ad95a5"
+    },
+    "connected": true
+  },
+  "sourceSha256": "abff8ad566f421380e2b3ea1f86c63154bdb17b3cf1091ce747b2a2a7331f9c0",
+  "scope": "Two real apartment pages, test=lazy, unchanged production deadline; wrapper records native result only."
+}

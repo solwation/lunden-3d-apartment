@@ -1,0 +1,15 @@
+# Issue #769: real combat integration and cold-path diagnosis
+
+The source-matched cold probe loaded two actual apartment pages against the local Worker on the Linux i7-7660U Surface (2 cores/4 threads), using `test=lazy`. A route wrapper appended timing around the fetched native `combatWorldPathBlocked`; it did not change its result, options, deadline or cancellation. The production source SHA-256 was `abff8ad566f421380e2b3ea1f86c63154bdb17b3cf1091ce747b2a2a7331f9c0` and matches main during this resumption.
+
+[Retained cold-path record](cold-path.json): connected reciprocal armed players, actual muzzle candidate Probe B, `blocked=null` after 4214.9 ms, unchanged 2 s deadline exceeded by 2223.2 ms, `cancelled=false`. The receiver saw the ordinary Nerf miss and kept 10 lives. A subsequent native synchronous path check found no solid obstacle. The cache had 804 pending entries and 4 spatial-ready entries. This confirms deadline expiration on this desktop; it does not measure phone FPS or establish bandwidth as the cause of the user's phone lag. Earlier source-matched fixed-pose and lazy probes independently returned null after 2032.5 ms and 3373 ms.
+
+This is the existing [#714 cold-cache limitation](../issue-714/README.md), tracked with the remaining physical-phone work in #715. Production logic and its 2 s deadline remain unchanged.
+
+`tools/combattest.cjs` now explicitly verifies warm-cache CPU/transport integration: three actual apartment pages, real Ghosts/Combat and local Worker, real weapon actions, original remote-projectile/life/score/death assertions. Automatic renderer loops pause during gameplay; real matrices, ghosts and combat updates are driven manually, while both screenshots still use full rendering. A bounded 30 s setup checks the actual future Nerf muzzle candidate and verifies its real world path is clear. This setup can fail on a wall, absent target or deadline; no missed shot is retried and no hit is forced. Every actual shot retains the production deadline.
+
+This scenario does not certify cold first shots, continuously rendered combat FPS or physical phones.
+
+Final actual-apartment run: **22 PASS, ALL PASS**, 382 s, with the scenario above. The clear setup path completed in 1297 ms. The bow removed the first life, nine real Nerf shots each arrived in less than one logged second, and B's life sequence was `[8,7,6,5,4,3,2,1,10]`. A recorded 10 hits and 10 PvP awards; B recorded 10 deductions and one death, returned to `[2.875,-12]`, and kept the saber and existing target counter. A stayed connected throughout the fight. Worker protocol: **13 PASS**, including weapon/range/rate denials, relayed shots and lives/death refill.
+
+Both 960×600 full-render screenshots were reviewed: the remote ball is visible in B's view, and two solid armed avatars plus the observer's wand/lives appear in C's view. Local evidence: `/tmp/lunden-combat-resume/fight.txt`, `combat-B-sees-A-ball.png`, `combat-two-armed-players.png`; fresh cold probe `/tmp/lunden-721-cold-diag.txt`. These pictures do not independently prove the life/score assertions.

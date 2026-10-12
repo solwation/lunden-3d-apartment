@@ -33,7 +33,7 @@ async function until(fn, ms = 60000) { const t = Date.now(); for (;;) { const v 
     page.on('console', (m) => { if (m.text().startsWith('[ws ')) console.log(`  +${Math.round((Date.now() - T0) / 1000)}s ${m.text()}`); });
     page.on('dialog', (d) => d.accept());
     page.on('pageerror', (e) => console.log(`  [${name || 'anon'} pageerror] ${e.message}`));
-    await page.goto(`${game}/?shot&test&quality=0&cloud=${worker}&at=${at}`, { waitUntil: 'commit' });
+    await page.goto(`${game}/?shot&test=lazy&quality=0&cloud=${worker}&at=${at}`, { waitUntil: 'commit' });
     await page.waitForFunction(() => window.__combat && window.__app?.renderer, null, { timeout: 1500000, polling: 100 });
     return { ctx, page };
   };
@@ -41,9 +41,12 @@ async function until(fn, ms = 60000) { const t = Date.now(); for (;;) { const v 
     step('loading three pages, one after another');
     const A = await open('Olof', '1.0,11.8,-40,0'), B = await open('', '2.6,9.9,140,0'), C = await open('Tuva', '4.9,10.2,97,-5'); // one at a time: three loading at once starve each other under SwiftShader
     const pages = [A.page, B.page, C.page];
+    // CPU/transport integration: drive updates explicitly, without three SwiftShader loops
+    // consuming the production obstacle-validation deadline. Pictures still use full rendering.
+    await Promise.all(pages.map(page => page.evaluate(() => window.__app.renderer.setAnimationLoop(null))));
     let wiggle = 0.05;
     let nudgeErr = 0;
-    const nudge = async () => { wiggle = -wiggle; for (const p of pages) await p.evaluate((w) => { window.__app.camera.rotation.y += w; window.__ghosts.update(); window.__combat.update(0); }, wiggle).catch((e) => { if (nudgeErr++ < 3) console.log('  nudge error:', e.message); }); };
+    const nudge = async () => { wiggle = -wiggle; for (const p of pages) await p.evaluate((w) => { window.__app.camera.rotation.y += w; window.__app.scene.updateMatrixWorld(true); window.__ghosts.update(); window.__combat.update(0); }, wiggle).catch((e) => { if (nudgeErr++ < 3) console.log('  nudge error:', e.message); }); };
     const view = (p) => p.evaluate(() => window.__ghosts.list().map((g) => ({ n: g.name, h: g.h, solid: g.solid, op: g.opacity })));
     const sees = (p, test, ms = 600000) => until(async () => { await nudge(); const l = await view(p); return test(l) ? l : null; }, ms);
     const ready = (key = 'nerf') => requireFoes([{ page: A.page, name: 'Anonym', weapon: 'saber', ownWeapon: key }, { page: B.page, name: 'Olof', weapon: key, ownWeapon: 'saber' }], nudge);
@@ -56,7 +59,7 @@ async function until(fn, ms = 60000) { const t = Date.now(); for (;;) { const v 
     const aSeesB = await sees(A.page, (l) => l.some((g) => g.n === 'Anonym' && !g.solid));
     const bSeesA = await sees(B.page, (l) => l.some((g) => g.n === 'Olof' && g.h === 'nerf' && !g.solid));
     check(!!aSeesB && !!bSeesA, 'armed A and unarmed B see each other as ghosts (B sees A carry the blaster)', JSON.stringify(bSeesA));
-    const fire = () => A.page.evaluate(() => { const b = window.__app.heldItem(); b.cool = 0; window.__app.click(0); return window.__ghosts.pendingShot || window.__ghosts.shots; });
+    const fire = () => A.page.evaluate(() => { const b = window.__app.heldItem(); b.tick(1); window.__app.camera.rotation.set(0, -40 * Math.PI / 180, 0, 'YXZ'); window.__app.scene.updateMatrixWorld(true); b.cool = 0; window.__app.click(0); return window.__ghosts.pendingShot || window.__ghosts.shots; });
     const aimed = await A.page.evaluate(() => { window.__app.heldItem().cool = 0; window.__app.click(0); return window.__ghosts.shots; });
     await sleep(3000);
     check(aimed === 0 && (await B.page.evaluate(() => window.__combat.hurts)) === 0, 'an unarmed player cannot be hit (no shot even sent)');
@@ -91,7 +94,7 @@ async function until(fn, ms = 60000) { const t = Date.now(); for (;;) { const v 
     // B's frames are driven by hand from here to the screenshot (a SwiftShader frame takes seconds, the ball ~0.3 s to fly by)
     let ballOnB;
     await withActivePeers(pages, async () => {
-      await B.page.evaluate(() => window.__app.testMode.setFull(true)); // full quality only for the picture (#703)
+      await B.page.evaluate(() => { window.__app.testMode.setFull(true); window.__app.renderer.setAnimationLoop(() => window.__app.frame(0)); }); // full quality only for the picture (#703)
       await B.page.setViewportSize({ width: 960, height: 600 });
       const fb = await B.page.evaluate(() => window.__app.renderer.info.render.frame);
       if (!await until(() => B.page.evaluate((f) => window.__app.renderer.info.render.frame >= f + 2, fb), 180000)) throw new Error('B screenshot frames timed out');
@@ -105,7 +108,7 @@ async function until(fn, ms = 60000) { const t = Date.now(); for (;;) { const v 
         return { pos: b.m.position.toArray().map((x) => +x.toFixed(2)), ndc: [+c.x.toFixed(2), +c.y.toFixed(2), +c.z.toFixed(3)], layer: b.m.layers.mask, flying: b.flying, life: +b.life.toFixed(2) }; }));
       await B.page.screenshot({ path: `${shots}/combat-B-sees-A-ball.png`, timeout: 240000 });
     }, { restore: async () => {
-      try { await B.page.evaluate(() => { window.__app.renderer.setAnimationLoop(() => window.__app.frame(0.016)); window.__app.testMode.setFull(false); }); }
+      try { await B.page.evaluate(() => { window.__app.renderer.setAnimationLoop(null); window.__app.testMode.setFull(false); }); }
       finally { await B.page.setViewportSize({ width: 320, height: 200 }); }
     } });
     check(ballOnB.length === 1 && ballOnB[0].ndc.every((x) => Math.abs(x) < 1), 'the ball is in view on B\'s screen (screenshot)', JSON.stringify(ballOnB));
@@ -126,13 +129,13 @@ async function until(fn, ms = 60000) { const t = Date.now(); for (;;) { const v 
     // screenshot: C's view of two solid armed players
     await sees(C.page, (l) => l.length === 2 && l.every((g) => g.solid));
     await withActivePeers(pages, async () => {
-      await C.page.evaluate(() => window.__app.testMode.setFull(true));
+      await C.page.evaluate(() => { window.__app.testMode.setFull(true); window.__app.renderer.setAnimationLoop(() => window.__app.frame(0)); });
       await C.page.setViewportSize({ width: 960, height: 600 });
       const f0 = await C.page.evaluate(() => window.__app.renderer.info.render.frame);
       if (!await until(() => C.page.evaluate((f) => window.__app.renderer.info.render.frame >= f + 2, f0), 180000)) throw new Error('C screenshot frames timed out');
       await C.page.screenshot({ path: `${shots}/combat-two-armed-players.png`, timeout: 240000 });
     }, { restore: async () => {
-      try { await C.page.evaluate(() => window.__app.testMode.setFull(false)); }
+      try { await C.page.evaluate(() => { window.__app.renderer.setAnimationLoop(null); window.__app.testMode.setFull(false); }); }
       finally { await C.page.setViewportSize({ width: 320, height: 200 }); }
     } });
     await sees(A.page, (l) => l.length === 2 && l.every((g) => g.solid)); // (back from any idle while the screenshot rendered)
@@ -141,6 +144,24 @@ async function until(fn, ms = 60000) { const t = Date.now(); for (;;) { const v 
     await B.page.evaluate(() => { window.__app.stats.target = (window.__app.stats.target ?? 0) + 200; }); // something to deduct from
     const lives = [];
     await ready();
+    // Cold-cache deadlines are a documented production limitation (#714/#715). This
+    // scenario verifies actual warm-cache shots, never retries a missed shot or raises
+    // its 2 s production budget. Preparation checks the same real muzzle arc for walls.
+    const preparation = await withActivePeers(pages, () => A.page.evaluate(async () => {
+      const T = await import('three'), W = await import('/src/combatworld.js'), { TOYS } = await import('/src/config.js');
+      const app = window.__app, combat = window.__combat, blaster = app.heldItem();
+      blaster.tick(1); app.camera.rotation.set(0, -40 * Math.PI / 180, 0, 'YXZ'); app.scene.updateMatrixWorld(true);
+      const dir = new T.Vector3(0, 0, -1).applyQuaternion(app.camera.quaternion);
+      const o = blaster.where().addScaledVector(dir, .3), d = dir.add(new T.Vector3(0, .03, 0)).normalize();
+      const candidate = combat.nerfCandidate({ o, d, s: TOYS.nerf.dart.speed }, combat.rules.weapons.nerf.range);
+      if (!candidate) throw new Error('Warm-cache setup has no actual muzzle candidate');
+      const started = performance.now();
+      const blocked = await W.combatWorldPathBlocked(app.scene, window.__ghosts.group, app.camera, candidate.points, app.camera.layers,
+        { deadline: started + 30000 });
+      if (blocked !== false) throw new Error(`Warm-cache path not verified clear: ${blocked}`);
+      return { target: candidate.target.name, elapsedMs: Math.round(performance.now() - started), o: o.toArray(), d: d.toArray(), metrics: W.combatWorldMetrics() };
+    }));
+    check(preparation.target === 'Anonym', 'actual Nerf muzzle path prepared clear (setup only, warm-cache scenario)', JSON.stringify(preparation));
     const connects = await A.page.evaluate(() => window.__ghosts.connects);
     step('ten hits');
     for (let i = 0; i < 9; i++) { // (the bow took the first life)
