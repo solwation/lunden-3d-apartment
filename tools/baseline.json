@@ -1,0 +1,23 @@
+{
+  "resttest": [
+    "FAIL dynboxen #0 @ (-70.84, 11.25): no free place from which it is a target",
+    "FAIL dynboxen #1 @ (-70.84, 11.85): no free place from which it is a target",
+    "FAIL #302 soffan #3 (turn 0, behind): up at (5.30, 10.22, y 0.00) floor true, clear true, outside furniture true, not across false, walks away true",
+    "FAIL #302 soffan #3 (turn 1, behind): up at (5.30, 10.22, y 0.00) floor true, clear true, outside furniture true, not across false, walks away true",
+    "FAIL #302 soffan #3 (turn -1, behind): up at (5.30, 10.22, y 0.00) floor true, clear true, outside furniture true, not across false, walks away true",
+    "FAIL #302 fåtöljen #0 (turn 0, behind): up at (0.57, 9.21, y 0.00) floor true, clear true, outside furniture true, not across false, walks away true",
+    "FAIL #302 dynboxen #0: could not sit",
+    "FAIL #302 dynboxen #0: could not sit",
+    "FAIL #302 dynboxen #0: could not sit",
+    "FAIL #302 dynboxen #0: could not sit",
+    "FAIL #302 dynboxen #0: could not sit",
+    "FAIL #302 dynboxen #0: could not sit",
+    "FAIL #302 dynboxen #1: could not sit",
+    "FAIL #302 dynboxen #1: could not sit",
+    "FAIL #302 dynboxen #1: could not sit",
+    "FAIL #302 dynboxen #1: could not sit",
+    "FAIL #302 dynboxen #1: could not sit",
+    "FAIL #302 dynboxen #1: could not sit",
+    "FAIL #302: 530 / 546 get-ups (every seat and bed, ahead and turned, from behind) on free floor, able to walk away"
+  ]
+}
