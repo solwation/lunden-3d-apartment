@@ -1,3 +1,4 @@
+// no &test: measures real phone startup compilation, uploads and loading-cover rendering.
 // Phone startup / loader regression (#697). BASELINE_DIR may contain main.js/warmup.js snapshots for an A/B count.
 // PLAYWRIGHT_MODULE=/tmp/lunden-testdeps/node_modules/playwright node tools/firstframetest.cjs http://localhost:8697
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');

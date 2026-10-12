@@ -1,3 +1,4 @@
+// no &test: tests real dialog bounds at multiple viewport sizes without game bootstrap.
 // Dialog cards must fit the viewport (#725). Static index.html only (scripts blocked, no game needed): every overlay
 // that holds a `.card` is shown on its own at several viewports, and the card's getBoundingClientRect() must lie inside
 // innerWidth × innerHeight. PLAYWRIGHT_MODULE=/path/to/playwright node tools/dialogtest.cjs http://localhost:8127 [/tmp/shots]

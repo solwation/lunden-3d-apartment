@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// no &test: tests real HUD viewport bounds; game bootstrap is suppressed.
 // Real index DOM/CSS and icon initialization; game bootstrap is deliberately suppressed.
 // This checks layout and real Combat life updates, not 3D rendering or network gameplay.
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');

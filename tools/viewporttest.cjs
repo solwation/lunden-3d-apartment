@@ -1,3 +1,4 @@
+// no &test: tests real viewport, camera/buffer size and adaptive resolution.
 // Browser integration for #567. Run against tools/devserve.py; no project npm install needed.
 // PLAYWRIGHT_MODULE=/path/to/playwright node tools/viewporttest.cjs http://localhost:8156
 // Optional CHROME_PATH chooses an existing Chromium. Screenshots/logs go outside the checkout.

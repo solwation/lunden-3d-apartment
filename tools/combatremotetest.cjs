@@ -1,3 +1,4 @@
+// no &test: module-only fixture, no apartment bootstrap or renderer to accelerate.
 // Exact historical helper baseline; no renderer, Worker or production code rewriting.
 const { chromium } = require('playwright');
 const { execFileSync } = require('node:child_process');
