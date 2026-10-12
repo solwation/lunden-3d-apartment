@@ -883,7 +883,8 @@ true inside its 480×300 parent; its second test load and both full loads did no
 not claimed as part of its source. Reversing the minimal loader/guard changes restores the original fixture byte for byte.
 The pair completed both ALL PASS verdicts and its exact-row comparison/summary, but the outer tool session reported
 exit 143; origin of that termination is unknown (its roughly 300s duration suggests an external deadline, unproven).
-No original-pair exit 0 is claimed. All 247 frozen runtime hashes remained unchanged for the written run. Complete
+No original-pair exit 0 is claimed. Pair timings are descriptive only; #796 is excluded from global speedup aggregation
+because its outer termination remains unexplained. All 247 frozen runtime hashes remained unchanged for the written run. Complete
 raw logs, original/written fixture hashes, native metadata, passive capture source and acceptance: `/tmp/lunden-toaster796/`.
 No production, runner, baseline, assertion or changelog changed; no extra browser load was used for screenshots.
 
