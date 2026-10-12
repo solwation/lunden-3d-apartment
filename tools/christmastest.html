@@ -9,7 +9,7 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
 try {
  localStorage.removeItem('lunden.furniture.layout');localStorage.removeItem('lunden.furniture.unlocked');
  const f=document.createElement('iframe');f.width=480;f.height=300;document.body.append(f);
- async function load(q){f.src=`../index.html?life&shot&time=12&freeze&${q}&r=${Math.random()}`;await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const A=f.contentWindow.__app,d=f.contentDocument;d.documentElement.requestFullscreen=undefined;d.getElementById('start-touch').click();A.step(1/60);return A;}
+ async function load(q){f.src=`../index.html?test&life&shot&time=12&freeze&${q}&r=${Math.random()}`;await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const A=f.contentWindow.__app,d=f.contentDocument;d.documentElement.requestFullscreen=undefined;d.getElementById('start-touch').click();A.step(1/60);return A;}
  let A=await load('month=11&day=30'),w=f.contentWindow,T=await w.eval("import('three')"),C=await w.eval("import(new URL('src/christmas.js', document.baseURI).href)");
  // the date rule itself
  const days=[[2026,11,30,false],[2026,12,1,true],[2026,12,24,true],[2026,12,31,true],[2027,1,1,true],[2027,1,6,true],[2027,1,7,false],[2027,6,15,false],[2028,2,29,false],[2026,11,31,false]];

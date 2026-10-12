@@ -1599,3 +1599,38 @@ recreates the frozen guarded fixture. Assertions and all native paths remain
 unchanged. All #811 dispositions are complete: cook's one raw basket-position
 difference and cup's three raw pattern differences retain full originals; cloud
 has exact current-assertion acceptance. #738 and #736 remain open.
+
+## Christmas complete native state comparison (#813)
+
+`christmastest` is accepted for logical test-mode migration: only `test` is added
+to its shared load URL. Original 480×300, all ten authored real loads, date/freeze/
+random-cache queries, unconditional fullscreen suppression, every season/move/
+cancel/hidden-target/collision/legacy-id predicate, active-light scores/slots and
+CPU-animated bulb colors remain unchanged. The fixed four-slot pool is not a
+quality knob; this acceptance comes from actual complete native results, not a
+material-name exemption or simplified subset.
+
+At frozen runtime `53826f4`, `/tmp/runtests-448157/` contains byte-identical full
+and test raw logs (2454 bytes each): 43 ordered PASS rows including the original
+`PASS christmastest` summary, hence 42 actual checks, zero FAIL/pageerrors. All
+20 actual game documents are verified by 20 app-ready + 18 trusted beforeunload
++ 18 trusted pagehide records, with unique URL/timeOrigin identities retaining
+original random query values. Every document is 480×300 without fullscreen;
+full controllers are null/false, every test controller exposes real draw/setFull/
+wantsFrame APIs. The runner's earlier detached controller=null records remain
+explicit, completed by passive native evidence. Three final snapshots (one full,
+two concurrent-close test captures) retain the correct final documents/controllers.
+
+The original output uses `PASS/FAIL christmastest`, while the public runner waits
+for `ALL PASS/SOME FAILED`: BOTH CLI verdicts are TIMEOUT, comparison is n/a and
+the independently monitored actual exit is 1. This protocol mismatch is tracked
+separately in #847; no sentinel/runner/assertion fix is included here. Wall times
+1218.924s/1320.458s include the original twenty-minute sentinel waits and capture
+attempts, and this pair is excluded from speedup aggregation. The full PNG was
+saved/inspected and shows all raw rows plus final kitchen/rearranging UI. Both
+test captures timed out after 60s; errors are retained, no test PNG/review or
+intermediate tree/light-pixel/rendered-scene equivalence is claimed, and no extra
+app was started. Source/fixture/runner/helper hashes, all native phases, capture
+errors and genuine setsid/Popen/wait PID/SID/PGID/exit are retained under
+`/tmp/lunden-christmas813/`. The query-only migration preserves the original
+fixture's output and checks; #847 owns the independent output-protocol correction.
