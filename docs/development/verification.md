@@ -267,13 +267,14 @@ Complete ordered PASS/FAIL lines are checked manually; timings are wall clock, n
 
 | Test | Status / reason | Before → after |
 |---|---|---|
-| `rearrangefollowtest` | Migrated: all 15 ordered PASS lines and ALL PASS identical at baseline `892c633` (logs `/tmp/runtests-160072`). | 3m52s → 3m23s (runner-rounded seconds). |
+| `rearrangefollowtest` | Migrated: all 15 ordered PASS lines and ALL PASS identical at baseline `892c633` (logs `/tmp/runtests-160072`). | 231.912s → 203.326s |
 | `rearrangemirrortest` | Exempt: reflection/render correctness needs original rendering settings. | Not run: deliberate rendering exemption. |
-| `rearrangeplacementtest` | Migrated: all 15 ordered PASS lines and ALL PASS identical (logs `/tmp/runtests-160072`). | 2m34s → 2m13s (runner-rounded seconds). |
-| `rearrangeresettest` | Migrated: all 17 ordered PASS lines and ALL PASS identical (logs `/tmp/runtests-160072`). | 1m21s → 1m10s (runner-rounded seconds). |
+| `rearrangeplacementtest` | Migrated: all 15 ordered PASS lines and ALL PASS identical (logs `/tmp/runtests-160072`). | 153.505s → 133.424s |
+| `rearrangeresettest` | Migrated: all 17 ordered PASS lines and ALL PASS identical (logs `/tmp/runtests-160072`). | 80.641s → 69.723s |
+| `rearrangetvtest` | Migrated: all 9 ordered PASS lines and ALL PASS identical (logs `/tmp/runtests-160072`). | 159.183s → 136.002s |
 | `rearrangeuitest` | Exempt: landscape-phone viewport and touch target layout need 844×390. | Not run: deliberate viewport exemption. |
 | `reloadtest` | Unmigrated: real wall-clock values in PASS labels across scene loads prevent reliable exact output comparison. Source-audited blocker, not a rendering exemption. | Not measured; no output normalization. |
 
-For the `rearrangefollowtest`, `rearrangeplacementtest` and `rearrangeresettest` comparisons, the runner resize init script raised a document-root
-`appendChild` pageerror (#760), so its CSS injection was skipped. The fixture already sets
+For these four migrated fixtures, the runner resize init script raised a document-root
+`appendChild` pageerror (#760), so its CSS injection was skipped. Each fixture already sets
 480×300 in both runs, keeping this dimension pair valid. The game URL redirect still enabled `&test`.
