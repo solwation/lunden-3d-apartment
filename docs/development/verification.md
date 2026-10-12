@@ -441,7 +441,7 @@ remain open; their dynamic real-time values and full default section coverage st
 | `itemtest.html` | Migrated (#820) | All 64 ordered PASS rows and ALL PASS byte-identical: 46 domain + 18 real-app adapter checks, both try/catch sections preserved. Actual full 800×500/controller null → test 480×300/real API, no fullscreen. 147.304s → 80.783s, actual exit 0; `/tmp/runtests-486410/`. |
 | `jetpacktest.html` | Accepted in #822 | Complete original full/test logs byte-identical, 37 ordered PASS with exact numeric flight/heat/roof/native keep/touch rows; native 900×600/null controller versus 480×300/real test APIs. Original input simulation and every state predicate retained. |
 | `jumpontest.html` | Accepted in #822 | Complete original full/test logs byte-identical, 35 ordered PASS plus exact full info furniture diagnostic; native original 900×600/null controller versus 480×300/real test APIs. Authored pointerLock getter/synthetic event retained. |
-| `keytest.html` | Candidate | Key/action access and saved state. |
+| `keytest.html` | Migrated (#821) | 21 identical ordered PASS rows, 0 FAIL; original authored 900×600/full enters native 1280×800 fullscreen → 480×300/test. Native cabinet/key, garage/asphalt/collision and DetailCuller layer/cut diagnostics preserved; evidence below. |
 | `kittentest.html` | Candidate | Kitten behavior/actions and actual scene/state. |
 | `laptoptest.html` | Logical parity (#823); full capture failed | All 13 ordered PASS rows and ALL PASS byte-identical, including texture v2→v8 and seeded clip order. Full ready 900×600 → native fullscreen 1280×800/controller null; test 480×300/real API/no fullscreen. Actual exit 0; `/tmp/runtests-496140/`. Full screenshot timed out; test-only image, exclude speedup aggregation. |
 | `laundrytest.html` | Conditional candidate | Programme/actions/reloads with real-time values in rows; exact comparison may differ, no normalization. |
@@ -1915,7 +1915,7 @@ Artifacts: `/tmp/lunden-protocol848/native-dom.json`. This isolated protocol
 verification loads no apartment renderer and makes no kitten gameplay, full/test
 parity, screenshot or timing claim. The complete #822 comparison remains separate.
 
-## Hall care and keys: hall-care acceptance (#821, partial)
+## Hall care and keys: hall-care acceptance (#821)
 
 One complete published jobs1 pair at frozen runtime `f109e19` used the whole
 original 480×300 fixture: life/shot/cloud-empty first load, then the two authored
@@ -1949,7 +1949,7 @@ frozen runtime/helper hashes, native phases, actual exit and images:
 Written hall-care now adds test only in the shared load query; all original
 queries/480×300/branches/assertions remain intact. Reversing only that prefix
 and descriptive comment recreates the exact frozen original. Hall-task and key
-remain pending under #821; #739/#736 stay open.
+acceptance is documented below; #739/#736 stay open.
 
 ## Jump-on complete native platform acceptance (#822, partial)
 
@@ -1976,7 +1976,7 @@ under #822; jetpack acceptance is recorded below. #739/#736 remain open. Kitten'
 protocol fix #848 is preserved separately from the approved pre-pair testMode-only
 fullscreen guard and unchanged authored random/seed behavior.
 
-## Hall care and keys: hall-task acceptance (#821, partial)
+## Hall care and keys: hall-task acceptance (#821)
 
 One complete published jobs1 pair at frozen runtime `fa20d4b` preserved the whole
 original 640×400/shared shot/cloud-empty/noon loader, all six actual main loads
@@ -2013,7 +2013,7 @@ phases/blank transitions, actual exit and images:
 Written hall-task now uses 480×300/test in the existing shared loader. Reversing
 only dimensions/query/descriptive comment recreates the exact frozen original;
 all actions, predicates and authored storage records remain unchanged. Key
-remains pending under #821; #739/#736 stay open.
+acceptance is documented below; #739/#736 stay open.
 
 ## Jetpack complete native flight acceptance (#822, partial)
 
@@ -2036,3 +2036,45 @@ is claimed. This pair is excluded from speedup aggregation because capture
 coverage differs. Frozen source/helper hashes, native snapshots and genuine
 monitor PID/SID/exit: `/tmp/lunden-flight822/jetpacktest/`. Kitten remains pending
 under #822; #739/#736 remain open.
+
+## Hall care and keys: key acceptance (#821)
+
+One complete published jobs1 pair at frozen runtime `3c5bfe9` preserved the
+original 900×600/plain-index setup and every cabinet/key/car/garage/asphalt/
+collision/DetailCuller-layer predicate and raw diagnostic. Only the reviewed
+actual-testMode fullscreen guard preceded the original touch; the guard had no
+effect in full mode. There was no quality/matrix/seed/wait/normalization or assertion change.
+The layer/cut checks were judged from actual outcomes, without an automatic
+renderer exemption.
+
+Both complete raw logs are byte-identical (1301 bytes, 21 PASS, 0 FAIL, ALL PASS),
+including 3667 arriving frames, 3357 leaving frames, 45 car meshes, zero hidden
+of 69345 arriving/street checks and zero hidden of 67500 leaving checks. Cabinet
+access/LED/beeps, native garage-door passage, asphalt/collision/parked positions
+and the second street call all completed unchanged. Runner modes were verified
+and the independent monitor exited 0, without raw pageerrors.
+
+Full app-ready was authored 900×600/controller false/no fullscreen; the same
+document's retained final was native fullscreen 1280×800. Test ready/final stayed
+480×300/no fullscreen with genuine draw/setFull/wantsFrame APIs, lazy/full false.
+Both unique native URL/timeOrigin identities matched; no observer errors or
+transport warnings, and both cloud URLs were empty.
+
+Elapsed full/test times were 120.204/105.717 seconds including successful final
+captures, a single uncontrolled sample. Capture timeout was 60 seconds in both
+modes before freezing. Both images were saved/reviewed: full is the native
+fullscreen outdoor night scene/HUD with no fixture result text; test is cropped
+top result text, later rows/scene below the image. Neither proves intermediate
+key-cabinet/car-mesh visuals or rendered-scene equivalence. Capture asymmetry
+excludes this pair from qualified timing aggregation. Complete logs/summary:
+`/tmp/runtests-497881/`; frozen runtime/helper hashes, native phases, actual exit
+and images: `/tmp/lunden-hall821/keytest/`. All frozen source blobs matched after
+the pair.
+
+Written key now uses 480×300/test and retains the reviewed mode-only fullscreen
+guard. Reversing only dimensions/query recreates the exact frozen guarded
+fixture, with all executable predicates intact. All three #821 dispositions are
+complete: hall-care 24, hall-task 17 and key 21 exact ordered PASS rows per mode,
+including the authored reload/reset/blank/storage flows and complete diagnostic
+rows. Capture
+limitations remain separate from native logical acceptance. #739/#736 stay open.
