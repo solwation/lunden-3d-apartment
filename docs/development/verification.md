@@ -327,6 +327,19 @@ including every reload, actual-main assertion and original viewport. #779 ran or
 subsequent verified migrations are recorded in their own rows below.
 A `setPixelRatio` call or one final `render` call alone does not justify a rendering exclusion.
 
+#820 grill acceptance at frozen `6f6ae93` is a single complete original-sized full/test pair, with unchanged
+current assertions and original random flame/spark/crackle behavior. The approved pre-pair testMode-only
+fullscreen guard immediately precedes the first original touch start; it is inert in full mode. Final migration
+adds the test query and 480×300 dimensions, retaining that guard. Native app-ready and final records prove one
+real document per mode with distinct child URL/timeOrigin: full ready 900×600/no controller before native touch
+fullscreen reached 1280×800; test remains 480×300 with real controller API, no fullscreen.
+Both successful end PNGs were inspected: full shows the fullscreen closed-grill/night scene (fixture text covered),
+test shows all six raw result rows plus the closed-grill/night scene. Neither proves intermediate flame/light/lid
+pixel equivalence. Timings include both captures and are one shared-machine sample, not a controlled benchmark.
+All 247 frozen source paths and frozen fixture/helper hashes match. Raw logs: `/tmp/runtests-465595/`; provenance,
+actual ready/final phases, independent monitor PID/SID/exit and both PNGs: `/tmp/lunden-objects820/grill-*` and
+`grilltest-*`. Hold, inventory and item still need their own complete pairs; #820/#739/#736 remain open.
+
 | Fixture (`tools/`) | Audit disposition | Concrete source requirement |
 |---|---|---|
 | `detailtest.html` | Full rendering | Detail culler: nearby doors drawn and distant details hidden. |
@@ -348,7 +361,7 @@ A `setPixelRatio` call or one final `render` call alone does not justify a rende
 | `grillinteractiontest.cjs` | Full rendering | Real pointer lock/touch and desktop/touch/eating scene/HUD screenshots; keep its authored viewport/capture path. |
 | `grillinteractiontest.html` | Full rendering | CJS-controlled pointer lock/touch and actual scene/HUD screenshots; HTML requires run717 invocation. |
 | `grilltasktest.html` | Own fixture | Task modules and paper-canvas image, no main iframe. |
-| `grilltest.html` | Candidate | Actual focus/actions and flame visibility, lamp k/lid state; preserve those properties. |
+| `grilltest.html` | Migrated (partial #820) | All 6 ordered PASS rows and ALL PASS byte-identical; real focus/action/flame/lamp/lid/F/burnout checks preserved, including 16 flames / light 0.79 / lid 1.90 rad. Actual full ready 900×600 → native fullscreen 1280×800, controller null; test 480×300/real API/no fullscreen. 102.908s → 82.333s, actual exit 0; `/tmp/runtests-465595/`. |
 | `hallcaretest.html` | Candidate | Care actions, item geometry, points and reload state. |
 | `halltasktest.html` | Candidate | Task cards/actions, inventory/restocking and multiple real reloads. |
 | `hangtest.html` | Own fixture | buildWorld and garment bounding boxes, no main iframe/renderer. |
