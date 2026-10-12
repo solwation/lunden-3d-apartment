@@ -422,7 +422,7 @@ item 64 identical PASS rows; this closes only the bounded #820 scope, not broade
 | `interactionoutlinetest.html` | Full rendering | 160×160 render-target brightness pixels, shader patches and draw-pass equality. |
 | `inventorytest.html` | Migrated (partial #820) | All 18 ordered PASS rows and ALL PASS byte-identical; original storage/scenario/integration/dynamic-key predicates preserved. Both actual full documents 700×450/controller null → both test 480×300/real API, no fullscreen. 186.611s → 143.456s, actual exit 0; `/tmp/runtests-477108/`. |
 | `itemtest.html` | Migrated (#820) | All 64 ordered PASS rows and ALL PASS byte-identical: 46 domain + 18 real-app adapter checks, both try/catch sections preserved. Actual full 800×500/controller null → test 480×300/real API, no fullscreen. 147.304s → 80.783s, actual exit 0; `/tmp/runtests-486410/`. |
-| `jetpacktest.html` | Candidate | Actual flight/collision/heat, flame visibility, controls and saved state. |
+| `jetpacktest.html` | Accepted in #822 | Complete original full/test logs byte-identical, 37 ordered PASS with exact numeric flight/heat/roof/native keep/touch rows; native 900×600/null controller versus 480×300/real test APIs. Original input simulation and every state predicate retained. |
 | `jumpontest.html` | Accepted in #822 | Complete original full/test logs byte-identical, 35 ordered PASS plus exact full info furniture diagnostic; native original 900×600/null controller versus 480×300/real test APIs. Authored pointerLock getter/synthetic event retained. |
 | `keytest.html` | Candidate | Key/action access and saved state. |
 | `kittentest.html` | Candidate | Kitten behavior/actions and actual scene/state. |
@@ -1954,8 +1954,8 @@ verdict or scene. This pair is excluded from speedup aggregation because capture
 coverage is asymmetrical. Complete row/diagnostic proof
 comes from raw logs, not image coverage; no platform-scene or pixel equivalence
 is claimed. Frozen source/helper hashes, native snapshots and genuine monitor
-PID/SID/exit: `/tmp/lunden-flight822/jumpontest/`. Jetpack and kitten remain
-pending under #822; #739/#736 remain open. Kitten's legitimate error-writer
+PID/SID/exit: `/tmp/lunden-flight822/jumpontest/`. Kitten remains pending
+under #822; jetpack acceptance is recorded below. #739/#736 remain open. Kitten's legitimate error-writer
 protocol fix #848 is preserved separately from the approved pre-pair testMode-only
 fullscreen guard and unchanged authored random/seed behavior.
 
@@ -1997,3 +1997,25 @@ Written hall-task now uses 480×300/test in the existing shared loader. Reversin
 only dimensions/query/descriptive comment recreates the exact frozen original;
 all actions, predicates and authored storage records remain unchanged. Key
 remains pending under #821; #739/#736 stay open.
+
+## Jetpack complete native flight acceptance (#822, partial)
+
+`jetpacktest` is migrated by changing only query/dimensions after original
+900×600/shot/time=12/month=6/freeze at frozen `a4b6e17`.
+`/tmp/runtests-493799/` retains complete byte-identical raw logs: all 37 ordered
+PASS and ALL PASS, zero FAIL/pageerrors, independently monitored actual exit 0.
+Every flight/garage/portik/roof/wall/heat/flame/keep-world/touch predicate and
+numeric row, including original F/portik and full landing JSON, stays unchanged.
+The authored pointerLock getter, synthetic change/keys/touch inputs are retained;
+no native OS-input or pointer-lock grant proof is claimed. Native ready/final
+records verify one actual main document per mode with stable URL/timeOrigin,
+full 900×600/null controller versus 480×300/real test APIs, no fullscreen.
+Wall 129.351s → 84.154s includes both saved/inspected viewport captures. Full
+shows all vertical rows, long rows clipped at the right, ALL PASS and partial
+final facade/HUD; test shows only approximately the top eighteen result rows,
+clipped at the right/bottom, with no final verdict or scene. Raw logs prove every
+complete diagnostic; no intermediate flight/flame or rendered-pixel equivalence
+is claimed. This pair is excluded from speedup aggregation because capture
+coverage differs. Frozen source/helper hashes, native snapshots and genuine
+monitor PID/SID/exit: `/tmp/lunden-flight822/jetpacktest/`. Kitten remains pending
+under #822; #739/#736 remain open.
