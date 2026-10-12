@@ -274,7 +274,7 @@ A `setPixelRatio` call or one final `render` call alone does not justify a rende
 | `dishrackpicktest.html` | Migrated (#785) | 30 identical ordered PASS rows, zero FAIL; actual 900×600 full/controller false → 480×300 test/controller true. 109.395 s → 77.926 s, single pair (`/tmp/runtests-277486`). Rack/cup rays, mouse/touch and inventory preserved. |
 | `drawtest.html` | Conditional candidate | Samples own 2D paper canvas via projected pointer coordinates, not WebGL pixels; retain pointer coverage. |
 | `eastbackdroptest.html` | Candidate | Campus source geometry/rays and full/lowmem model-detail parity (retain lowmem subcase). |
-| `eggtest.html` | Candidate | Cooking/item actions, colour/opacity properties and save/load. |
+| `eggtest.html` | Migrated (#785) | 27 identical ordered PASS rows, zero FAIL; actual 640×400 full/controller false → 480×300 test/controller true. 81.321 s → 71.104 s, single pair (`/tmp/runtests-279045`). Cooking/actions, colour/opacity and save/load preserved. |
 | `entrancedoortest.html` | Full rendering | 128×128 render-target pixel readback of handles/glazing. |
 | `entranceplantstest.html` | Candidate | Actual plant bounds, pots/floors and collision paths; DPR alone is not exclusion. |
 | `esctest.html` | Candidate | Escape/back state through actual DOM controls. |

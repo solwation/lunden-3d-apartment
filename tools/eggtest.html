@@ -1,7 +1,7 @@
 <!doctype html><html><meta charset="utf-8"><title>Eggs and frying (#484)</title><pre id="out">running…</pre><script type="module">
 const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS':'FAIL')+' '+s);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
 try{
- const frame=document.createElement('iframe');frame.width=640;frame.height=400;frame.src='../index.html?life&shot';document.body.append(frame);await new Promise(r=>frame.onload=r);while(!frame.contentWindow.__app)await wait(100);
+ const frame=document.createElement('iframe');frame.width=480;frame.height=300;frame.src='../index.html?life&shot&test';document.body.append(frame);await new Promise(r=>frame.onload=r);while(!frame.contentWindow.__app)await wait(100);
  const w=frame.contentWindow,A=w.__app,T=await w.eval("import('three')"),{EGG,LIFE}=await w.eval("import('../src/config.js')"),L=A.life,I=L.items,P=A.pan;
  frame.contentDocument.documentElement.requestFullscreen=undefined;frame.contentDocument.getElementById('start-touch').click();A.renderer.setAnimationLoop(null);
  const action=(target,id)=>L.options(target).find(a=>a.id===id),run=(target,id)=>action(target,id)?.run(),finish=s=>L.runner.update(s??1);
