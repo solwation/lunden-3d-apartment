@@ -4,6 +4,7 @@
 <body>
 <pre id="out">running…</pre>
 <script>
+// no &test: real wall-clock time appears in PASS labels across reloads; exact full/test rows cannot reliably match.
 // "Återställ" (#303) against the real Worker code run locally (cloudflare/dev.mjs, in-memory KV):
 //   node cloudflare/dev.mjs 8144 &       (then; the default admin token "testtoken" is what the wipe below sends)
 //   google-chrome --headless=new --virtual-time-budget=300000 --dump-dom http://localhost:8137/tools/resettest.html   (?worker=<url> for another one)
