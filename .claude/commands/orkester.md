@@ -100,6 +100,19 @@ Samordningen får aldrig vara skälet till att en agentplats står tom eller ett
 ## Orkestrering
 - Gruppera: issues som rör samma filer eller bygger på varandra ges till **en** agent som tar dem i tur och ordning
   (t.ex. livssimulatorns milstolpar M0 → M1 → …, eller flera ändringar på altanen). Oberoende issues får egna agenter.
+  **Men håll kedjorna korta: högst 2 issues per agent** (3 bara om varje är liten), och ge hellre två parallella agenter än en
+  lång kedja när issuesna rör olika data/filer (t.ex. Hus B och Hus C i var sin `CORE_*`-post, olika moduler, olika tester).
+  En agent som kör i flera timmar kan dö (spendgräns, krasch) och då hänger allt på vad som hunnit pushas.
+- **Bryt ner stora issues innan du ger dem till en agent.** En issue som ser ut att ta mer än ca en timme eller röra fler än
+  ca 8–10 filer, eller som innehåller flera oberoende delar (flera hus, flera skärmar, server + klient + docs), delas upp
+  i **delissues**: skapa små issues med `Lapp:`-rad, prioritet och hänvisning till föräldern (`Del av #N`), och ge dem till
+  olika agenter eller i tur och ordning. Delarna ska var och en kunna landa, testas och ge något användbart på egen hand
+  (vertikala skivor: data/modell → synligt i spelet → test/docs, inte "först all kod, sedan alla tester"). Föräldern
+  stängs när den sista delen landar (`Fixes` på sista delen, `Refs` på de andra). Beskriv i issuen vad som ingår och inte.
+- **Bevaka långa körningar.** Ser du att en agent hållit på länge utan att något landat (inga nya commits på main eller
+  kommentar på issuen), fråga den (SendMessage) vad som är klart och be den pusha det som är grönt nu; dör en agent finns
+  arbetet kvar i dess worktree (`.claude/worktrees/agent-<id>`): återuppta den (SendMessage) eller starta en ny som utgår
+  från worktreens commits (`git log origin/main..HEAD`) i stället för att göra om det.
 - Prioritera små issues som syns i spelet, så att det dyker upp något nytt ofta; stora kedjor en agent i taget.
 - Skriv varje agents prompt med: issuenumren och ordningen, vilka andra agenter som kör och vilka filer/områden de
   rör (undvik dem), agentens egen port och skärmdumpskatalog (utanför repot), och reglerna nedan.
@@ -115,8 +128,14 @@ Samordningen får aldrig vara skälet till att en agentplats står tom eller ett
    någon annan issue med `in-progress`. Sätt etiketten när du börjar på varje issue i kedjan, om den saknas (`gh api -X POST repos/solwation/lunden-3d-apartment/issues/N/labels -f 'labels[]=in-progress'`)
    och ta bort den när du är klar eller avbryter (`gh api -X DELETE …/issues/N/labels/in-progress`).
 2. Före varje issue: `git fetch origin main && git rebase origin/main`.
-3. En commit per issue som slutar med `Fixes #N` (+ commit-trailers enligt sessionens attribuering). Pusha direkt:
-   `git push origin HEAD:main`; vid avvisning rebasa igen och behåll båda sidor vid konflikt. Aldrig force-push.
+3. **Leverera i små bitar och pusha tidigt och ofta.** Dela upp varje issue i delsteg som var och en är grön (bygger,
+   testad, ingen halvfärdig kod på main) och pusha varje delsteg så fort det är verifierat, i stället för att samla allt
+   till slutet: en commit per delsteg (`Refs #N`, med den vanliga rebasen före pushen), sista commiten `Fixes #N`
+   (+ commit-trailers enligt sessionens attribuering). Skriv en kort kommentar på issuen efter varje pushad del (vad som
+   landat och vad som återstår), så att arbetet går att ta över om du dör (spendgräns, krasch). Inga "(WIP)"-commits på
+   main. Pusha direkt: `git push origin HEAD:main`; vid avvisning rebasa igen och behåll båda sidor vid konflikt. Aldrig
+   force-push. Blir issuen större än väntat: leverera den fungerande delmängden, lägg resten som nya delissues med
+   `Lapp:`-rad och prioritet (`Del av #N`) och stäng inte föräldern förrän allt är klart.
 4. Changelog (bara synliga ändringar): precis före pushen id = högsta id + 1, överst i listan.
 5. Testa bara det ändringen rimligen påverkar ([verifieringsguiden](../../docs/development/verification.md)); listan i prompten är ett maxtak.
 6. Problem utanför den egna issuen → en ny issue `Bugg: …` med en `Lapp:`-rad, vad som felar, hur det återskapas och
