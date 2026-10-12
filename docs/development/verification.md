@@ -441,7 +441,7 @@ child and complete actual evidence while retaining all original coverage and dyn
 Source line evidence and retained-run provenance: `/tmp/lunden-audit798/{inventory,source-evidence,retained-runner-evidence}.json`.
 #752 / #741 / #736 remain open for the coordinator's remaining disposition work.
 
-Current no-game-iframe HTML inventory: `basementfloortest`, `basementlayouttest`, `beershelfcachetest`, `cattest`, `combatremotetest`, `combatworldtest`, `focusperftest`, `grillchickentest`, `grilltasktest`, `hangtest`, `musictest`, `nerfcombattest`, `roomtest`, `startuptest`, `statsresettest`, `trapphusrailtest`, `walktest`, `wardrobetest`. They import actual modules or build their own fixture, so adding `&test` to the apartment URL has no benefit; `focusperftest` also measures performance. Their owners retain their existing verification scope.
+Current no-game-iframe HTML inventory: `basementfloortest`, `basementlayouttest`, `beershelfcachetest`, `cattest`, `combatremotetest`, `combatworldtest`, `focusperftest`, `grillchickentest`, `grilltasktest`, `hangtest`, `marksphysicstest`, `musictest`, `nerfcombattest`, `roomtest`, `startuptest`, `statsresettest`, `trapphusrailtest`, `walktest`, `wardrobetest`. They import actual modules or build their own fixture, so adding `&test` to the apartment URL has no benefit; `focusperftest` also measures performance. Their owners retain their existing verification scope.
 
 Remaining CJS ownership: #738 owns a–c HTML; #739 owns d–l HTML plus `grillinteractiontest`; #740 owns m–p HTML plus `ghosttest`, `ghostbadgetest`, `bowtest`; #741 owns r–t HTML plus `chattest`/`anontest`. `combattest` and `crashtest` already use test mode. `glrestoretest` and `phonememtest` retain full rendering/performance semantics; `nocheathints` has no game bootstrap, and `basemententrytest` already opens its actual-main iframe in `&test=lazy`. No result or timing is inferred from these classifications. #736 remains open until all groups publish actual evidence.
 
@@ -557,6 +557,51 @@ Viewport rotation (#567): `tools/viewporttest.cjs` uses Playwright against the r
 Phone memory probe (#628): `python3 tools/devserve.py 8628 . &` then `PLAYWRIGHT_MODULE=$(npm root -g)/playwright node tools/phonememtest.cjs http://localhost:8628 [--cpu 1,4,6] [--route living,mirrors,stairwell] [--dwell 800] [--shots] [--nowarm] [--budget-mb N] [--profile desktop] [--out DIR]`. iPhone 14 Pro profile (844×390 landscape, DPR 3, UA, touch), WebGL allocation totals (textures incl. mips, renderbuffers incl. MSAA, buffers, canvas), CPU canvases, geometry copies, JS heap, long tasks, CPU throttling via CDP, per-step table and the largest items; the iOS budget is a parameter and a *guess*. A run takes ~5 minutes (the start warm-up alone ~3 min under SwiftShader); start it in the background and poll, since foreground commands time out. Numbers and findings: [performance](performance.md).
 
 Park basement entries (#729): run `PLAYWRIGHT_MODULE=/path/to/playwright CHROME_PATH=/path/to/chrome node tools/basemententrytest.cjs http://localhost:8729` after starting the development server. `SHOTS` overrides `/tmp/lunden-basement-entry/result.json`'s directory. The driver waits bounded initialization, clicks the real mouse-start button, obtains PointerLock and runs `tools/basemententrytest.html`: actual E focus from outside before below, closed/open/jamb traversal to both −1 landings and back, the touch action handler in controlled touch mode, far animated leaves, courtyard pick/collision exclusion, continuous park paving, tree/shrub-instance clearance and floor coverage. It uses `&test=lazy`, with no automatic rendering; this is not a physical-phone touch/FPS test. [Measured scope and manual full-quality images](../validation/issue-729/README.md).
+
+## Physical ray/detail-layer regression (#805)
+
+Actual pass-through diagnostics on `967e58e` retained the #804 Nerf fix and
+all original break assertions. `/tmp/runtests-319008/` records full quality 3,
+scale 1, glass cutoff 11.069 m and layer mask 1 versus test quality 0, scale 0.6,
+cutoff 6.642 m and glass mask 128 (DetailCuller's hidden layer 7). The physical
+ray mask was 1 in both modes. Eye `[7.5, 1.62, -5.328203230275509]`, aim quaternion,
+actual shot endpoints, cooldown 0, ammo 29 and accepted shot increment were
+identical. Full mode broke the glass; test mode skipped it and hit a downstream
+object. The glass body's ancestors were visible. Native physical ray layer
+filtering, rather than shot acceptance or eye/aim drift, caused the missing hit.
+Full had 21 PASS; test retained the far-shot/points failures and a Nerf failure.
+No diagnostic updated transforms/caches, cast extra rays or replaced native hits.
+Temporary observation code was removed after the run.
+
+`DETAIL_HIDDEN_LAYER` exports the existing render-only layer 7. Only Marks'
+physical raycaster includes it. Renderer and ordinary focus masks, ancestor
+visibility and held/protected breakability policies retain their existing
+behaviour; the native path now agrees with the existing large-static TriGrid
+path. This also affects ordinary games using low detail, not just test mode.
+
+`tools/marksphysicstest.html` is a standalone native module/DOM/2D-canvas
+regression with no apartment or WebGL renderer. Actual Chrome serving the exact
+old Marks source (`967e58e`) gives 8 PASS / 1 FAIL for a culled dynamic Glass;
+fixed source gives **9 PASS / 0 FAIL**. It uses real Glass/Breaker/Marks hits,
+quality culling, unchanged renderer/focus exclusion, large-static TriGrid parity,
+F-style hidden ancestors, hidden targets and held-glass protection. Raw native
+evidence: `/tmp/lunden-rifle805/native-regression-probe.{cjs,json,txt}`; actual
+phase observations: `/tmp/lunden-rifle805/actual-phase-comparison.json`.
+Actual **uninstrumented** `--compare breaktest.html --jobs 1 --port 8737`
+acceptance on `7904a47` plus the physical-ray patch retained the exact #804
+fixture blob `5d5e8c6750b430e22b73dfcabac2d78ebaab30d6`, original 900×600
+iframe/no-test query and every assertion. `/tmp/runtests-330917/` records
+**21 PASS / 0 FAIL in each mode**, including the far rifle hit, +11 range points
+and actual Nerf hit. Full took 103251 ms with actual native-fullscreen 1280×800,
+no test parameter and controller false; test took 86457 ms with actual 480×300,
+test parameter and controller true. Both modes were verified, with no page,
+runner or crash errors. The complete ordered logs differ only at row 7:
+random shards on the table **7 of 14 → 8 of 14**. CLI exit 1 correctly preserves
+that mismatch; this is functional acceptance, not a fixture migration or
+raw-row equivalence claim. No seed, normalization, forced hit, retry or diagnostic
+instrumentation was used in this acceptance pair. Source/fixture hashes stayed
+frozen between modes (`/tmp/lunden-rifle805/fixed-provenance.json`). No new visual
+screenshot claim is made for this physical-ray change.
 
 ## Break fixture Nerf aim correction (#804)
 

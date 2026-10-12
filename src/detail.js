@@ -5,7 +5,7 @@ import { lowMemory } from './lowmemory.js';
 // Small-detail culling (#189): from the street the whole flat is in the view frustum (the walls don't stop three's
 // culling), so every handle, knob, bottle and trinket inside was a draw call of its own. A mesh smaller than
 // `PERF.detail.maxR` that would look tinier than `k` (its radius / distance) is moved to a layer the camera does
-// not render (nor the shadow camera, nor the raycaster — it is far beyond reach then: never nearer than `minDist`).
+// not render (nor the shadow camera or nearby focus rays: never nearer than `minDist`).
 // Checked when the camera has moved a little, not every frame.
 // From outside the flat, anything inside it is only drawn if the line from the eye to it passes through one of the
 // façade's openings (windows, doors; with a margin of its size): the walls hide the rest (a coarse occlusion test).
@@ -29,7 +29,7 @@ import { lowMemory } from './lowmemory.js';
 // On phones (`lowMemory`) the small things inside the flat seen from outside, through its windows, go at
 // `PERF.detail.lowMemoryOutside` × their usual distance (#695: the kitchen's cups and bottles from the street).
 
-const HIDDEN = 7; // the layer far-away details go to
+export const DETAIL_HIDDEN_LAYER = 7; // render-only culling; physical traces include this layer
 const D = PERF.detail;
 
 export class DetailCuller {
@@ -126,7 +126,7 @@ export class DetailCuller {
     const far = w.distanceToSquared(p) > cut * cut || (outside && !it.exteriorDoor && (this.hidden(p, w, it.r) || (it.box && this.boxHidden(p, it.box, it.o.matrixWorld))));
     if (far === it.far) return false;
     it.far = far;
-    for (const o of it.meshes ?? [it.o]) o.layers.set(far ? HIDDEN : 0);
+    for (const o of it.meshes ?? [it.o]) o.layers.set(far ? DETAIL_HIDDEN_LAYER : 0);
     return true;
   }
 

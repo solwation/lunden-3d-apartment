@@ -244,6 +244,8 @@ src/marks.js           marks on surfaces (MARKS, #96): `hit(from, to)` = first s
                        → none; the cat → meow), `add(kind, hit)` / `burn(hit)`; one ring buffer, an InstancedMesh per
                        kind (burn, glow, star, butterfly, splash) with a per-instance fade, a Points puff of smoke;
                        `magic(hit, eye)` = the wands' stars + fluttering butterflies (#97); darts splash paint (#98)
+                       Physical rays include DetailCuller's shared hidden-render layer (#805); semantic ancestor visibility,
+                       held/protected breakability and normal renderer/focus layers retain their existing policies.
 src/breaking.js        shooting things to pieces (#263, BREAK): glasses, bottles, cups, the jug and the beer are registered
                        (`breaker.add(item, kind)`); Marks.hit with `{ weapon }` (rifle / dart / saber / wand; `glass: true` =
                        the bullet goes through window panes) smashes one standing in the way (not held; darts only `light`

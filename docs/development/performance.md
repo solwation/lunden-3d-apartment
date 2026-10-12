@@ -26,7 +26,8 @@ Related: [graphics](graphics.md), [verification](verification.md).
   inside it is only drawn when the line to it passes a façade opening (the front door's leaf is solid while it is shut; open,
   the whole doorway counts, #210 — `tools/detailtest.html`). Start view
   1210 → ~410 calls, the other spots a little lower; screenshots differ by a few dozen pixels. Anything new that
-  raycasts at small things far away must allow for layer 7. Anything new that moves by itself (while the visitor may
+  raycasts at small things far away must allow for layer 7. Marks physical traces include the shared
+  `DETAIL_HIDDEN_LAYER` (#805), preserving hits on culled details; rendering and nearby focus-ray layers remain unchanged. Anything new that moves by itself (while the visitor may
   stand still) and exists when the culler is built needs `userData.moving` on its root (#267). A root whose `userData.detailUnit` is true is judged
   as one thing by its whole bounding sphere (#598, the car: its wheels went at ~40 m while the body drove on floating; out of
   its garage stall the whole car now stays drawn, up to ~20 more calls while it is in view far off). While the flag is false

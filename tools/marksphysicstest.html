@@ -1,0 +1,43 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Physical marks rays and detail culling</title><pre id="out">running…</pre>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"}}</script>
+<script type="module">
+// no &test: standalone native physical-ray/detail-culling regression; no apartment bootstrap or renderer.
+import * as THREE from 'three';
+import { Marks } from '../src/marks.js';
+import { DetailCuller } from '../src/detail.js';
+import { Glass } from '../src/things.js';
+import { Breaker } from '../src/breaking.js';
+const lines=[];let pass=true;
+const check=(ok,label)=>{lines.push(`${ok?'PASS':'FAIL'} ${label}`);pass&&=!!ok;};
+try {
+ const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(50,1,.1,100);
+ const geometry=new THREE.LatheGeometry([[.03,0],[.03,.004],[.004,.008],[.003,.08],[.02,.1],[.032,.14],[.03,.19],[.028,.19]].map(p=>new THREE.Vector2(...p)),14);
+ const model=new THREE.Mesh(geometry,new THREE.MeshStandardMaterial({transparent:true,side:THREE.DoubleSide}));model.position.set(10,.751,10);scene.add(model);
+ const glass=new Glass(scene,camera,{model,kind:'glass',name:'regression glass',back:'fixture'});
+ const large=new THREE.Mesh(new THREE.SphereGeometry(.1,32,16),new THREE.MeshBasicMaterial({side:THREE.DoubleSide}));large.position.set(12,.846,10);scene.add(large);
+ scene.updateMatrixWorld(true);
+ const marks=new Marks(scene,camera,[large]),breaker=new Breaker(scene,marks);marks.breaker=breaker;breaker.add(glass,'glass');
+ const detail=new DetailCuller(scene,{W:100,D:100,roof:100,floor1:3.25,doorHeight:2.1},{north:[],south:[]});
+ const center=()=>new THREE.Box3().setFromObject(glass.model).getCenter(new THREE.Vector3());
+ const place=()=>{breaker.reset();glass.placeAt(new THREE.Vector3(10,.75,10),0);scene.updateMatrixWorld(true);camera.position.set(10,1.62,18);camera.lookAt(center());camera.updateMatrixWorld(true);detail.refresh();detail.update(camera);};
+ place();detail.setQuality(1);detail.update(camera);
+ check(!!marks.hit(camera.position,center(),{weapon:'rifle',glass:true})?.broke&&glass.broken,'native full-detail physical hit shatters the actual Glass');
+ place();detail.setQuality(.6);detail.update(camera);
+ check(!camera.layers.test(glass.model.layers),'quality culling still excludes the small target from renderer camera layers');
+ const focusRay=new THREE.Raycaster(camera.position,center().sub(camera.position).normalize());
+ check(focusRay.intersectObject(glass.model,false).length===0,'ordinary focus ray retains its existing exclusion of render-culled detail');
+ check(!!marks.hit(camera.position,center(),{weapon:'rifle',glass:true})?.broke&&glass.broken,'quality-culled dynamic Glass is still shattered by the actual physical hit');
+ place();detail.setQuality(.6);detail.update(camera);
+ camera.position.set(12,1.62,18);camera.updateMatrixWorld(true);detail.refresh();detail.update(camera);
+ check(large.geometry.index.count/3>=200&&!large.userData.door&&!camera.layers.test(large.layers),'large static target retains the culled TriGrid setup');
+ check(marks.hit(camera.position,large.position)?.object===large,'large static TriGrid physical hit agrees with the culled dynamic target');
+ place();detail.setQuality(.6);detail.update(camera);
+ const furniture=new THREE.Group();scene.add(furniture);furniture.attach(glass.model);furniture.visible=false;scene.updateMatrixWorld(true);
+ check(!marks.hit(camera.position,center(),{weapon:'rifle',glass:true})&&!glass.broken,'F-style hidden ancestor remains excluded by semantic hit visibility');
+ furniture.visible=true;glass.model.visible=false;scene.updateMatrixWorld(true);
+ check(!marks.hit(camera.position,center(),{weapon:'rifle',glass:true})&&!glass.broken,'semantically hidden target remains excluded despite physical ray layers');
+ glass.model.visible=true;glass.take();scene.updateMatrixWorld(true);
+ check(!marks.hit(camera.position,center(),{weapon:'rifle',glass:true})&&!glass.broken,'held Glass remains protected by the actual breakability policy');
+} catch(e){check(false,e.stack);}
+document.querySelector('#out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+</script></html>

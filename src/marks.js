@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { MARKS as K } from './config.js';
 import { TriGrid } from './trigrid.js';
+import { DETAIL_HIDDEN_LAYER } from './detail.js';
 
 // Marks on surfaces (#96): burn marks from the lightsaber, and the shared decal system the wands (stars,
 // butterflies) and the Nerf darts (paint splashes) use. A mark is a small flat quad just off the surface
@@ -91,6 +92,7 @@ export class Marks {
   constructor(scene, camera, surfaces = [], cat = null) {
     Object.assign(this, { surfaces, cat, live: [], lastAt: new THREE.Vector3(1e9, 0, 0), lastT: -1, clock: 0 });
     this.ray = new THREE.Raycaster();
+    this.ray.layers.enable(DETAIL_HIDDEN_LAYER); // Keep physical hits independent of render-detail culling.
     this.ray.camera = camera; // sprites need it (they are looked through anyway)
     this.kinds = {};
     for (const [kind, k] of Object.entries(K.kinds)) {
