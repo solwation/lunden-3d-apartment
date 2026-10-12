@@ -1,8 +1,8 @@
 <!doctype html><html><meta charset="utf-8"><title>Entrance plants (#498)</title><pre id="out">running…</pre><script type="module">
-// #779 audit: compare candidate; checks geometry/collision, not rendered pixels. setPixelRatio alone is not an exclusion.
+// #818: native geometry/collision rows verified against original full setup; authored renderer calls remain unchanged.
 const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS':'FAIL')+' '+s);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
 try{
- const f=document.createElement('iframe');f.src='../index.html?phone&shot&cloud=';document.body.append(f);await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const w=f.contentWindow,A=w.__app,T=await w.eval("import('three')"),config=await w.eval("import('/src/config.js')"),C=config.ENTRANCE_PLANTS;
+ const f=document.createElement('iframe');f.width=480;f.height=300;f.src='../index.html?test&phone&shot&cloud=';document.body.append(f);await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const w=f.contentWindow,A=w.__app,T=await w.eval("import('three')"),config=await w.eval("import('/src/config.js')"),C=config.ENTRANCE_PLANTS;
  f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();A.renderer.setAnimationLoop(null);A.renderer.setPixelRatio(.15);A.renderer.setSize(180,120,false);
  const plants=A.scene.getObjectByName('entrance-plants'),records=plants.userData.records,ground=records.filter(r=>r.y<1),loft=records.filter(r=>r.y>1);
  const ids=config.VISIT_UNITS.map(U=>U.id),low=ids.filter(i=>/^L10/.test(i)).length,up=ids.filter(i=>/^L12/.test(i)).length; // a flat you can walk into is empty: no pot at its door (#574 L1004, #573 L1201: one each)

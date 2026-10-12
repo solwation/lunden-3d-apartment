@@ -348,7 +348,7 @@ actual ready/final phases, independent monitor PID/SID/exit and both PNGs: `/tmp
 | `eastbackdroptest.html` | Default migrated (#818); optional lowmem app stays full/unmeasured | 46 identical ordered PASS rows, 0 FAIL; native 720×480/full → 480×300/test, explicit FULL/LITE facade-builder checks preserved. Actual evidence and capture limits below. |
 | `eggtest.html` | Migrated (#785) | 27 identical ordered PASS rows, zero FAIL; actual 640×400 full/controller false → 480×300 test/controller true. 81.321 s → 71.104 s, single pair (`/tmp/runtests-279045`). Cooking/actions, colour/opacity and save/load preserved. |
 | `entrancedoortest.html` | Full rendering | 128×128 render-target pixel readback of handles/glazing. |
-| `entranceplantstest.html` | Candidate | Actual plant bounds, pots/floors and collision paths; DPR alone is not exclusion. |
+| `entranceplantstest.html` | Migrated (#818) | 15 identical ordered PASS rows, 0 FAIL; actual original 300×150/full → 480×300/test. Authored renderer/geometry/collision calls retained; native/capture evidence below. |
 | `esctest.html` | Accepted in #819 | Complete original full/test logs byte-identical, five ordered PASS; actual 900×600/null controller versus 480×300/real test APIs. Authored synthetic Escape/arm click and pointer-lock request wrapper retained; no OS-input/native pointer-lock grant claim. |
 | `falltest.html` | Candidate | Fall, landing/damage, respawn and geometric paths. |
 | `fishtest.html` | Migrated (#785) | 29 exact ordered PASS rows, zero FAIL: original 900×600 iframe enters native fullscreen (actual 1280×800/controller false, 132.108 s). Compare test was 480×300/controller true, 74.350 s (`/tmp/runtests-281141`). Guarded written test in normal 1280×800 runner stays 480×300/controller true, 72.279 s (`/tmp/runtests-291884`); matches retained full `/tmp/runtests-281141`. Fish-finger actions and full cat walking/animation coverage retained; testMode-only fullscreen suppression. |
@@ -1726,3 +1726,36 @@ phases and independent PID/SID/PGID/exit are retained in
 `/tmp/lunden-routes819/esctest/`. Fall and garage remain pending; their complete
 original predicates, dynamic diagnostics and quality-coupled particle state must
 be compared separately. #739/#736 stay open.
+
+## Entry and east geometry: entrance plants acceptance (#818, partial)
+
+At frozen runtime `e66690b`, one complete published jobs1 pair preserved the whole
+original fixture: no authored iframe dimensions, phone/shot/cloud-empty query,
+unconditional fullscreen suppression, setAnimationLoop(null), DPR .15 and
+setSize(180,120,false). These authored renderer calls remain unchanged; they
+do not prove every animation loop stopped or add wind/physical-phone coverage.
+Viewport and requested renderer size are separate quantities.
+
+Both complete raw logs are byte-identical (968 bytes, 15 PASS, 0 FAIL, ALL PASS),
+including 10 plants on each level, all native leaf/base/door/lane bounds, shared
+mesh geometry, both walking directions, ground/loft pot collisions and the real
+front-door passage. The independent monitor exited 0 and runner modes were
+verified, without raw pageerrors. Original app-ready/final viewport was actually
+300×150/controller false, not merely a source default estimate; test ready/final
+was 480×300 with native draw/setFull/wantsFrame functions, lazy/full false.
+Neither entered fullscreen. Unique URL/timeOrigin identities matched, with no
+observer errors or transport warnings; both final cloud URLs were empty.
+
+Elapsed full/test times were 89.626/74.245 seconds including successful final
+captures, a single uncontrolled sample. Both images were saved and reviewed.
+Full shows all result rows and HUD over blank sky; test shows all result rows
+vertically with long text clipped horizontally and only a cropped HUD below.
+Neither demonstrates plant artwork or rendered-scene/pixel equivalence. Complete
+logs/summary: `/tmp/runtests-467497/`; frozen runtime/helper hashes, native phases,
+actual exit and images: `/tmp/lunden-entry818/entranceplantstest/`. All frozen
+source blobs matched after the pair.
+
+The written fixture now explicitly uses 480×300/test; all native predicates and
+authored renderer calls are intact. Reversing only dimensions/query/descriptive
+comment exactly recreates the frozen original. Gable remains pending under
+#818; #739/#736 stay open.
