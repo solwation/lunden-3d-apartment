@@ -3,7 +3,7 @@ const cloud=new URLSearchParams(location.search).get('cloud')??'';
 const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS':'FAIL')+' '+s);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
 try{
  localStorage.removeItem('lunden.furniture.layout');const f=document.createElement('iframe');f.width=480;f.height=300;document.body.append(f);
- async function load(){f.src='../index.html?shot&cloud='+encodeURIComponent(cloud)+'&r='+Math.random();await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const A=f.contentWindow.__app;await A.rearrange.ready;f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();A.rearrange.unlock('olof is the goat');return A}
+ async function load(){f.src='../index.html?shot&test&cloud='+encodeURIComponent(cloud)+'&r='+Math.random();await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const A=f.contentWindow.__app;await A.rearrange.ready;f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();A.rearrange.unlock('olof is the goat');return A}
  let A=await load(),R=A.rearrange,T=await f.contentWindow.eval("import('three')");const close=(a,b)=>a.elements.every((v,i)=>Math.abs(v-b.elements[i])<.001);
  // #561: interaction/ghost targets are not physical plant geometry. Keep every actually visible mesh.
  const visibleMeshes=root=>{const meshes=[];root.updateWorldMatrix(true,true);root.traverse(m=>{if(!m.isMesh)return;for(let a=m;a;a=a.parent){if(a.userData.ghost||!a.visible)return;if(a===root)break;}meshes.push(m)});return meshes;};
