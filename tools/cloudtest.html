@@ -4,7 +4,7 @@
 <body>
 <pre id="out">running…</pre>
 <script>
-// no &test: measures drawing (toDataURL)
+// Native local Worker/storage behavior with fixed 420×297 own-canvas JPEGs; exact full/test rows verified in #811.
 // The shared world (#178, #119) against the real Worker code run locally (cloudflare/dev.mjs, in-memory KV):
 //   node cloudflare/dev.mjs 8144 &       (then; the default admin token "testtoken" is what the wipe below sends)
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/cloudtest.html   (?worker=<url> for another one)
@@ -23,9 +23,9 @@ const until = async (fn, ms = 6000) => { for (let t = 0; t < ms; t += 100) { if 
 const syncNow = async (app) => { await until(() => !app.cloud.pulling, 30000); await app.cloud.sync(); };
 const api = (path, opts) => fetch(W + path, opts).then((r) => r.json());
 const f = document.createElement('iframe');
-f.width = 900; f.height = 600;
+f.width = 480; f.height = 300;
 document.body.append(f);
-const load = (q) => new Promise((res) => { f.onload = async () => { while (!f.contentWindow.__app) await wait(100); res(f.contentWindow); }; f.src = `../index.html?v=${Math.random()}${q}`; });
+const load = (q) => new Promise((res) => { f.onload = async () => { while (!f.contentWindow.__app) await wait(100); res(f.contentWindow); }; f.src = `../index.html?test&v=${Math.random()}${q}`; });
 const sheet = (color) => { const c = document.createElement('canvas'); c.width = 420; c.height = 297; const g = c.getContext('2d'); g.fillStyle = '#fbfaf5'; g.fillRect(0, 0, 420, 297); g.fillStyle = color; g.fillRect(100, 80, 200, 120); return c.toDataURL('image/jpeg', 0.9); };
 
 (async () => {
@@ -37,6 +37,7 @@ const sheet = (color) => { const c = document.createElement('canvas'); c.width =
   let w = await load(`&cloud=${encodeURIComponent(W)}`), d = f.contentDocument, app = w.__app;
   await app.cloud.ready;
   check(app.cloud.on && app.cloud.url === W, 'the cloud is on with &cloud=');
+  if (app.testMode) d.documentElement.requestFullscreen = undefined; // Test-mode written runs retain the small iframe.
   d.getElementById('start-touch').click(); await wait(50);
   const btn = d.getElementById('action');
   const tapeInHall = () => {

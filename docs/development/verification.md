@@ -1023,7 +1023,7 @@ per issue). Each needs its own actual full/test runs and unchanged assertions:
 | Placement and stored photos (#808 accepted) | bestaplacementtest, artleveltest, boardtest; actual evidence below, default optional art cloud coverage remains unexecuted |
 | Care and persistence | bedcaretest, clothtest, colddrawertest |
 | Interaction | cheattest, booktest, crouchtest |
-| Cooking and cloud state | cooktest, cuptest, cloudtest |
+| Cooking and cloud state (#811 complete) | cooktest/cuptest retain original full mode after actual raw differences; cloudtest migrated with exact native evidence below |
 
 #812 `bestatest` is accepted after a complete original 900×600/`?time=12&freeze` comparison at frozen `7325270`:
 whole raw logs are byte-identical, all 11 ordered PASS rows and ALL PASS, independently monitored actual exit 0.
@@ -1553,3 +1553,49 @@ frozen hashes, native phases, actual exit and capture evidence:
 `/tmp/lunden-cooking811/cuptest/`. All frozen runtime blobs matched after the pair;
 removing only the temporary guard restores the exact original fixture. Cloud
 remains pending under #811; #738/#736 stay open.
+
+## Cooking and cloud state: cloud acceptance (#811)
+
+At frozen runtime `08ec9ae`, one published jobs1 comparison preserved the original
+900×600/cloud queries, every current assertion and all three native apartment
+loads, including the about:blank/IndexedDB transition. Only the pre-pair actual
+testMode fullscreen guard preceded the sole original touch; the full branch
+remained intact. Fixed 420×297 own-canvas JPEG inputs, native drawings/desk/queue/
+privacy/name/leaderboard paths, existing fetch logging and dead-localhost offline
+behavior were unchanged. An old drawing comment did not establish a renderer
+exception; the acceptance comes from actual native outcomes.
+
+Both entire raw logs are byte-identical (1025 bytes, 24 PASS, 0 FAIL, ALL PASS),
+including offline queue length 1, score 5, the cleaned/capped `Fuskimg src=x 3000`
+row and the full native top-list string with Anonym 13. Real PUT/DELETE/image/
+new-visitor/desk-sheet/personal-cat-photo/local-cloud-off checks all completed.
+Runner modes were verified; the independent monitor exited 0, with no raw
+pageerrors. The public runner reused one owned local Worker process across both
+modes. Each mode's existing DELETE `http://localhost:8738/admin/all` returned
+200 before application loading, freshly wiping local data; no fresh-process
+claim or extra state bypass is made.
+
+All six distinct app-ready documents have matched URLs/timeOrigins: full
+900×600/controller false, test 480×300 with genuine draw/setFull/wantsFrame APIs
+and lazy/full false. Eight native leave snapshots and two retained final
+snapshots were also captured. Full's first document leaves at native fullscreen
+1280×800; its second leaves and third remains final at 900×600/no fullscreen.
+All test phases stay 480×300/no fullscreen. Initial runner null controller
+records remain explicit, completed by passive native evidence. No observer
+errors or transport warnings occurred; final local-mode cloud URL is empty.
+
+Elapsed full/test times were 411.082/225.799 seconds including capture overhead.
+Full capture timed out after 10 seconds; the saved test viewport contains only
+cropped top text, with the leaderboard/final local-off rows below the image.
+No drawing/photo artwork or rendered-scene equivalence is claimed. Asymmetric
+capture excludes this pair from speedup aggregation. Complete logs/summary:
+`/tmp/runtests-445110/`; frozen runtime/local-Worker/helper hashes, native phases,
+wipes, actual exit, capture error and image: `/tmp/lunden-cooking811/cloudtest/`.
+All frozen source blobs matched after the pair.
+
+The written cloud fixture now uses 480×300/test and keeps the reviewed mode-only
+fullscreen guard; reversing only dimensions/query/descriptive comment exactly
+recreates the frozen guarded fixture. Assertions and all native paths remain
+unchanged. All #811 dispositions are complete: cook's one raw basket-position
+difference and cup's three raw pattern differences retain full originals; cloud
+has exact current-assertion acceptance. #738 and #736 remain open.
