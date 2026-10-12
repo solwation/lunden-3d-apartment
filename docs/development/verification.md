@@ -498,6 +498,36 @@ Phone memory probe (#628): `python3 tools/devserve.py 8628 . &` then `PLAYWRIGHT
 
 Park basement entries (#729): run `PLAYWRIGHT_MODULE=/path/to/playwright CHROME_PATH=/path/to/chrome node tools/basemententrytest.cjs http://localhost:8729` after starting the development server. `SHOTS` overrides `/tmp/lunden-basement-entry/result.json`'s directory. The driver waits bounded initialization, clicks the real mouse-start button, obtains PointerLock and runs `tools/basemententrytest.html`: actual E focus from outside before below, closed/open/jamb traversal to both −1 landings and back, the touch action handler in controlled touch mode, far animated leaves, courtyard pick/collision exclusion, continuous park paving, tree/shrub-instance clearance and floor coverage. It uses `&test=lazy`, with no automatic rendering; this is not a physical-phone touch/FPS test. [Measured scope and manual full-quality images](../validation/issue-729/README.md).
 
+## Test-mode comparison: actions (#792)
+
+Three actual full/test pairs now verify this bounded #738 batch. The CLI
+`runtests --compare actionlabeltest actiontest clicktest --jobs 1 --port 8737`
+exited 0 on `0d90eb6` with temporary **dimension/query-only** restoration from
+`9645849^`, retaining every current assertion. The previous after-only report
+is not used as comparison evidence. Exact patches, source blobs and preserved
+fixture copies are in `/tmp/lunden-actions792/baseline-provenance.json` and
+`*.dimension-query.diff`; actual raw logs and metadata are in
+`/tmp/runtests-284352/`.
+
+| Fixture | Observed full → test viewport | Complete ordered results | Full → test elapsed |
+| --- | --- | --- | --- |
+| actionlabeltest | 844×390 → 480×300 | identical 8 PASS, 0 FAIL | 94.643 → 75.385 s |
+| actiontest | 800×500 → 480×300 | identical 25 PASS, 0 FAIL | 95.032 → 70.331 s |
+| clicktest | 900×600 → 480×300 | identical 30 PASS, 0 FAIL | 111.496 → 85.834 s |
+
+Each full game loaded without `test` and with controller false; each test game
+loaded with `test` and controller true. All modes were verified, with no browser
+errors, crashes or timeouts. Manual comparison found each complete raw log
+byte-identical, including duplicate-sensitive ordering, measured positions,
+click counts and the action's actual `56 %` prompt. These are single shared-machine
+samples, not controlled performance benchmarks. Click's random cache-busting
+URL value naturally differs between loads; no result value was normalized.
+
+Action labels now use 480×300 in source. Action and click retain their existing
+480×300/test flags, now supported by actual original-sized full/test evidence;
+all executable assertions are unchanged. #738 and #736 remain open for the
+other source-inventory batches and dispositions.
+
 ## Test-mode source inventory: a–c (#778)
 
 This is a source audit of all 43 a–c HTML fixtures, not migration acceptance.
