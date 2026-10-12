@@ -901,32 +901,32 @@ remain open for actual migration work.
 
 ## Test-mode source inventory: #748 batch (#786)
 
-This bounded source audit covers all eight remaining #748 fixtures. It changes
-comments only; no URL, viewport, assertion or baseline was migrated. No matching
-local `/tmp/runtests-*/summary.json` records were found for these eight names,
-so no complete preserved full/test comparison is claimed. #748, #741 and #736
-remain open. Future comparisons must retain every complete ordered result row,
-including duplicates and measured values.
+HISTORICAL #786 source-only audit: the initial inspection covered eight remaining
+#748 fixtures, changed comments only, and found no complete preserved full/test
+records at that stage. It did not establish runtime parity. The final dispositions
+below now include the later actual #789/#790/#791/#836 comparisons and explicit
+source-only viewport/standalone exceptions. All eight #748 dispositions are
+complete; broader #741/#736 remain open. Complete ordered raw values, duplicates
+and diagnostic rows were retained in each actual comparison.
 
-| Fixture | Source disposition | Separate next step |
+| Fixture | Final disposition | Evidence / scope |
 | --- | --- | --- |
 | sabertest | Unmigrated (#836): actual pair differs only in the preserved raw elapsed-ms burn row (566 → 302 ms / 40 steps), not a performance-threshold or rendering exemption. Original 900×600/query/native-start setup retained byte-for-byte. | Both 10 PASS / ALL PASS, other 9 ordered rows identical, no pageerrors; `/tmp/runtests-355460/`, frozen source `3909abb`: runner wall 171.018s at actual native-fullscreen 1280×800/controller false → 86.852s at 480×300/controller true. Both images included; no normalization, migration or speedup aggregation claim. |
 | scoretest | Unmigrated (#789): actual full/test comparison differs in real HUD clock text on the first two PASS rows (17:25 → 17:27); preserve original full fixture and every assertion. Functional score/cat/penalty/reset checks are not a rendering exemption. | Both 33 PASS / ALL PASS, 31 remaining ordered rows byte-identical, no pageerrors; `/tmp/runtests-323761/`: runner wall time 164.251s at actual 1280×800 native fullscreen/controller false → 106.220s at 480×300/controller true. Temporary test-mode fullscreen guard removed; original 900×600 attributes/native path unchanged. Both fullPage screenshots included. No output normalization or new migration. |
 | secretarytest | Migrated (#836) after the first actual pair: all original unseeded opens, retained current item and later authored LCG seed=7 remain unchanged. This is measured parity, not a new determinism guarantee. | Entire raw logs byte-identical: all 32 ordered PASS rows, repeated drawer rows, exact ten-name sequence and ALL PASS; no pageerrors. `/tmp/runtests-358392/`, frozen source `3909abb`: runner wall 131.607s at actual 900×600/controller false/no fullscreen → 84.677s at 480×300/controller true/fullscreen. Both saved images inspected; test fullscreen overlays some parent text, complete raw rows retained. Only query/size changed. |
-| sonostest | Exact-row media blocker: real HTML media `currentTime`, gain, AudioContext/decoder state and fetched-file names appear in rows. AudioContext presence alone does not establish a renderer/audio-quality exception. Original iframe 900×600. | Own media evidence decision, preserving real playback and autoplay behaviour; no clock normalization. |
+| sonostest | Unmigrated (#836): first actual trusted-start full/test pair differs in five preserved real media-currentTime rows; other 32 ordered rows identical. Retain #839 full fixture byte-for-byte (authored 900×600). Not a rendering exemption. | Both 37 PASS / ALL PASS and no pageerrors, context running, all six real recording clocks advance; `/tmp/runtests-371691/`, frozen `fa51ae9`. Landed `sonosstart.cjs --compare sonostest.html --jobs 1 --port 8747` verifies two trusted native clicks after cover release and before first media play; both ready snapshots have phone=false and visible start-touch. Final actual native full 1280×800/controller false → test 480×300/controller true; runner wall 65.244s → 76.169s including both saved/inspected images. Wrapper/runner exit 1 comes from raw DIFFERENT, not activation failure. No guards, seed, normalization, retry, migration or speedup-aggregation claim. |
 | southbackdroptest | Migrated (#791): original mapped geometry/raycast/budget/camera/fog/weather/season/material-state assertions preserved. | Entire raw logs byte-identical: all 67 ordered PASS rows and ALL PASS, including 54 footprint rows and exact 10623 triangles; no pageerrors. `/tmp/runtests-338704/`, frozen source `ed7ff32`: runner wall 122.847s at actual 720×480/controller false → 72.916s at 480×300/controller true, including both saved fullPage fixture images. Only query/size changed; no rendering-quality exemption or output normalization. |
-| spidersuittest | Viewport exception: actual touch jump/crouch/web button rectangles and pixel gaps are asserted alongside extensive suit/physics flows. Original iframe 900×600, frozen June noon. | Own single-fixture disposition issue preserving original viewport; no blanket physics migration. |
+| spidersuittest | Final viewport exception: retain original 900×600 and frozen June noon. Existing actual touch jump/crouch/web rectangles, alignment and gaps (web directly above jump, <20 px) require the original view alongside suit/physics flows. | Source inspection only; no new runtime, timing or full/test parity claim. Every original assertion/setup retained; no blanket physics migration. |
 | stairtest | Migrated (#790): native stair/ground/collision/soffit/handrail geometry and distance assertions unchanged; switch references remain positions. | Entire raw logs byte-identical: all 37 ordered PASS rows, ALL PASS and both diagnostic lines; no pageerrors. `/tmp/runtests-333169/`, frozen source `7904a47`: runner wall 101.033s at actual 640×400/controller false → 84.379s at 480×300/controller true, including both saved fullPage screenshots. Only fixture query/size changed. Final rebase keeps relevant stairs/player/cleaning/config/world/main blobs; later #805 exports unchanged detail layer 7 and enables it for Marks physical rays, unused here (no whole-src identity claim). |
-| startuptest | Standalone `prepareStartup` module with injected fetch/navigation/storage/service-worker cases and real bounded timeout checks. No actual apartment bootstrap or renderer. | Standalone disposition; no apartment URL test flag needed. |
+| startuptest | Standalone `prepareStartup` module with injected fetch/navigation/storage/service-worker cases and real bounded timeout checks. No actual apartment bootstrap or renderer. | Final standalone source disposition; no apartment URL test flag needed. Source inspection only, no new runtime or parity claim. |
 
-Six correctly placed script comments record the standalone, viewport and
-conditional/blocker reasons. This is source evidence only, with no new runtime,
-performance or migration-equivalence result. Proposed work is three separate
-comparison children (`scoretest`, `stairtest`, conditional `southbackdroptest`),
-three separate blocker reviews (`sabertest`, `secretarytest`, `sonostest`), and a
-single-fixture viewport disposition for `spidersuittest`; `startuptest` needs no
-mode migration. Source snapshots and the local evidence search are retained in
-`/tmp/lunden-audit786/`.
+HISTORICAL #786 proposals were three comparison children (score/stair/south),
+three blocker reviews (saber/secretary/Sonos), a viewport disposition for spider,
+and standalone startup. Six audit comments and the source/search snapshots at
+`/tmp/lunden-audit786/` document that initial source scope only, not runtime parity.
+The final table records actual evidence from closed #789/#790/#791 and #836,
+plus the retained original spider viewport and standalone startup. No further
+#748 disposition issue remains; #741/#736 continue with their other groups.
 
 ## Test-mode source inventory: #750 batch (#787)
 
