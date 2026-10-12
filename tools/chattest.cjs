@@ -102,7 +102,8 @@ const W = 480, H = 300;
 
     // #676: "skriver…" over A's ghost on B while A types, off after a pause / on closing; the line replaces it
     const bubbles = (p) => p.evaluate(() => { window.__chat.update(0); return window.__chat.bubbleList(); });
-    const typingRow = (p) => p.evaluate(() => { const el = document.getElementById('chat-typing'); return el.hidden ? '' : el.textContent; });
+    // (#735: the log holds only lines; no "Du skriver" row anywhere in the column)
+    const typingRow = (p) => p.evaluate(() => (/skriver…$/m.test(document.getElementById('chat-log').textContent) || !!document.getElementById('chat-typing')) ? 'ROW' : '');
     const sentBefore = await A.page.evaluate(() => window.__ghosts.messages);
     const draws0 = await B.page.evaluate(() => window.__app.scene.getObjectByName('ghosts').children.map((r) => r.children.length));
     await A.page.evaluate(() => window.__app.showTerminal(true));
@@ -110,8 +111,8 @@ const W = 480, H = 300;
     const flags = await A.page.evaluate((n) => window.__ghosts.messages - n, sentBefore);
     check(flags <= 2, 'typing sends a flag, not a message per key', `${flags} messages for 10 keys`);
     const typingB = await until(async () => { const l = await bubbles(B.page); return l.length === 1 && l[0].typing ? l[0] : null; }, 90000);
-    check(typingB?.name === 'Olof' && typingB.text === 'skriver' && typingB.shown, 'B sees "skriver…" over A\'s ghost', JSON.stringify(typingB));
-    check(await typingRow(A.page) === 'Du skriver…' && await typingRow(B.page) === 'Olof skriver…', 'the column says who writes ("Du" on A, "Olof" on B)');
+    check(typingB?.name === 'Olof' && typingB.text === 'Skriver' && typingB.shown, 'B sees "skriver…" over A\'s ghost', JSON.stringify(typingB));
+    check(await typingRow(A.page) === '' && await typingRow(B.page) === '', 'the column never says who writes (#735)');
     // (the picture takes longer than CHAT.typingMs under SwiftShader: hold A's typing and B's bubble meanwhile)
     await A.page.evaluate(() => { window.__chat.lastKey = performance.now() + 600_000; });
     await B.page.evaluate(() => { for (const b of window.__chat.bubbles.values()) b.t = 600; });

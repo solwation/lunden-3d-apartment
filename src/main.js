@@ -2226,7 +2226,7 @@ function greetPlayer(g) {
 ghosts.onGreet = (m, g, other) => greet.say({ head: g.head, s: 1 }, GHOSTS.hello[m.k]?.replace('{n}', other ? other.name : (leaderboard.name || 'Anonym')) ?? 'Hej!', { pitch: 1.1, rate: 1.05, voice: 1 });
 window.__ghosts = ghosts; window.__combat = combat; window.__bow = bow; window.__arrows = arrows; window.__presence = presence;
 chat = new Chat({ ghosts, log: document.getElementById('chat-log'), toggle: document.getElementById('chat-toggle'), name: () => leaderboard.name, // #675
-  camera, layer: document.getElementById('speech'), hidden: (p) => behindWall(p), typingLine: document.getElementById('chat-typing') }); // bubbles over the ghosts (#676)
+  camera, layer: document.getElementById('speech'), hidden: (p) => behindWall(p) }); // bubbles over the ghosts (#676)
 terminalInput.addEventListener('input', () => chat.keyed()); // "skriver…" (#676): only in chat mode, only the flag
 window.__chat = chat;
 let statsPinned = false;

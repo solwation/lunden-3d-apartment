@@ -18,7 +18,7 @@ import { censor } from './chatfilter.js';
 // someone else's goes off by itself after CHAT.typingStale ms without word (a lost connection), and with their ghost.
 // Each bubble is one DOM element in the speech layer (greet.js's `.say` style, no draw calls), placed over the ghost's
 // tag, smaller further away, hidden with the tag (far away, behind a wall, off screen). There is no own body in first
-// person: your own "Du skriver…" and lines are in the column. Shown also while the column is hidden (#675's button).
+// person: your own lines are in the column (never a "Du skriver" row, #735). Shown also while the column is hidden (#675's button).
 const tmp = new THREE.Vector3();
 
 /** Plain text as the room cleans it (cloudflare/players.js `cleanText`): control, zero-width and bidi characters out,
@@ -34,8 +34,8 @@ const cleanName = (s) => (typeof s === 'string' ? s.replace(/[\u0000-\u001f<>&"]
 export class Chat {
   /** ghosts: the Ghosts; log: the column element; toggle: its hide / show button; name(): our name; camera + layer (the
    * speech bubbles' element) + hidden(p) (a wall between the eye and p) for the bubbles over the ghosts (#676). */
-  constructor({ ghosts, log, toggle, name = () => '', camera = null, layer = null, hidden = () => false, typingLine = null }) {
-    Object.assign(this, { ghosts, log, toggle, name, camera, layer, behind: hidden, typingLine, lines: [], unseen: 0, tokens: CHAT.burst, refilled: 0, open: false, sent: 0,
+  constructor({ ghosts, log, toggle, name = () => '', camera = null, layer = null, hidden = () => false }) {
+    Object.assign(this, { ghosts, log, toggle, name, camera, layer, behind: hidden, lines: [], unseen: 0, tokens: CHAT.burst, refilled: 0, open: false, sent: 0,
       bubbles: new Map(), typing: false, lastKey: 0, lastOn: 0, muted: new Set() });
     try { this.hidden = localStorage.getItem(CHAT.hiddenKey) === '1'; } catch { this.hidden = false; }
     ghosts.onTalk = (m, g) => this.heard(m, g);
@@ -71,7 +71,7 @@ export class Chat {
     if (!this.typing || t - this.lastOn >= CHAT.typingAgain) { // on, or again while still typing (theirs goes stale otherwise)
       if (!this.ghosts.talk({ t: 'k', on: true })) return;
       this.lastOn = t;
-      if (!this.typing) { this.typing = true; this.renderTyping(); }
+      this.typing = true;
     }
   }
 
@@ -79,7 +79,6 @@ export class Chat {
     if (!this.typing) return;
     this.typing = false;
     this.ghosts.talk({ t: 'k', on: false });
-    this.renderTyping();
   }
 
   isMuted(name) { return this.muted.size > 0 && this.muted.has(String(name).toLowerCase()); }
@@ -132,24 +131,13 @@ export class Chat {
       const dots = document.createElement('span');
       dots.className = 'dots';
       dots.append(document.createElement('i'), document.createElement('i'), document.createElement('i'));
-      b.el.replaceChildren(document.createTextNode('skriver'), dots);
+      b.el.replaceChildren(document.createTextNode('Skriver'), dots);
     } else b.el.textContent = text;
-    this.renderTyping();
   }
 
   unbubble(id) {
     this.bubbles.get(id)?.el.remove();
     this.bubbles.delete(id);
-    this.renderTyping();
-  }
-
-  /** The column's last row: who is writing now ("Du", and the others by name). */
-  renderTyping() {
-    if (!this.typingLine) return;
-    const who = [...(this.typing ? ['Du'] : []), ...[...this.bubbles.values()].filter((b) => b.typing).map((b) => b.ghost.name)];
-    const text = who.length ? `${who.join(', ')} skriver…` : '';
-    if (this.typingLine.textContent !== text) this.typingLine.textContent = text;
-    this.typingLine.hidden = !text;
   }
 
   add(name, text, mine = false, note = false) {
@@ -157,7 +145,7 @@ export class Chat {
     el.className = `chat-line${mine ? ' mine' : ''}${note ? ' note' : ''}`;
     if (name) { const b = document.createElement('b'); b.textContent = name; el.append(b, ' '); }
     el.append(document.createTextNode(text));
-    this.log.insertBefore(el, this.typingLine?.parentNode === this.log ? this.typingLine : null); // (the "skriver…" row stays last)
+    this.log.append(el); // (the log holds only lines; who writes is shown by the bubbles, never in the column, #735)
     this.lines.push({ el, t: CHAT.ttl });
     while (this.lines.length > CHAT.show) this.lines.shift().el.remove();
     if (this.hidden && !mine) this.unseen++;
