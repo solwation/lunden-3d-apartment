@@ -18,7 +18,7 @@ const lines = [];
 const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); out.textContent = `running…\n${lines.join('\n')}`; return ok; };
 const load = () => new Promise((resolve) => {
   const f = document.createElement('iframe');
-  f.width = 900; f.height = 600; f.src = '../index.html';
+  f.width = 480; f.height = 300; f.src = '../index.html?test';
   document.body.append(f);
   f.onload = async () => { while (!f.contentWindow.__app) await wait(100); resolve(f); };
 });
@@ -26,6 +26,7 @@ const load = () => new Promise((resolve) => {
   let f = await load();
   let w = f.contentWindow, d = f.contentDocument, app = w.__app;
   const { player, camera, step, world, scene, toggleFurniture, heldItem, toaster, stats, autoReload } = app;
+  if (app.testMode) d.documentElement.requestFullscreen = undefined; // keep the test iframe small; full mode keeps native fullscreen
   d.getElementById('start-touch').click();
   await wait(50);
   const btn = d.getElementById('action');
