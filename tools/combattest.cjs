@@ -8,6 +8,7 @@
 // ghosts / combat updates themselves where timing matters.
 const kit = require('./testkit.cjs'); // (#703) `&test` mode, small viewport; full quality only around the screenshots
 const { chromium } = kit;
+const { requireFoes, withActivePeers } = require('./combatsteps.cjs');
 const game = process.argv[2] || 'http://localhost:8137', worker = process.argv[3] || 'http://localhost:8146';
 const shots = process.env.SHOTS || '/tmp';
 let failed = 0;
@@ -25,11 +26,15 @@ async function until(fn, ms = 60000) { const t = Date.now(); for (;;) { const v 
   const open = async (name, at) => {
     const ctx = await browser.newContext({ viewport: { width: 320, height: 200 } });
     await ctx.addInitScript((n) => { if (n) localStorage.setItem('lunden.name', n); sessionStorage.setItem('lunden.nameSkipped', '1'); }, name);
+    // (#721) every socket close with its code, so a dropped connection says who closed it (1000: our idle / hidden; 40xx: the room)
+    await ctx.addInitScript((n) => { const W = window.WebSocket; window.WebSocket = class extends W { constructor(...a) { super(...a); const t0 = Date.now();
+      this.addEventListener('close', (e) => console.log(`[ws ${n}] closed ${e.code} ${e.reason} after ${Math.round((Date.now() - t0) / 1000)} s`)); } }; }, name || 'anon');
     const page = await ctx.newPage();
+    page.on('console', (m) => { if (m.text().startsWith('[ws ')) console.log(`  +${Math.round((Date.now() - T0) / 1000)}s ${m.text()}`); });
     page.on('dialog', (d) => d.accept());
     page.on('pageerror', (e) => console.log(`  [${name || 'anon'} pageerror] ${e.message}`));
     await page.goto(`${game}/?shot&test&quality=0&cloud=${worker}&at=${at}`, { waitUntil: 'commit' });
-    await page.waitForFunction(() => window.__combat && window.__app?.renderer, null, { timeout: 1500000 });
+    await page.waitForFunction(() => window.__combat && window.__app?.renderer, null, { timeout: 1500000, polling: 100 });
     return { ctx, page };
   };
   try {
@@ -41,6 +46,7 @@ async function until(fn, ms = 60000) { const t = Date.now(); for (;;) { const v 
     const nudge = async () => { wiggle = -wiggle; for (const p of pages) await p.evaluate((w) => { window.__app.camera.rotation.y += w; window.__ghosts.update(); window.__combat.update(0); }, wiggle).catch((e) => { if (nudgeErr++ < 3) console.log('  nudge error:', e.message); }); };
     const view = (p) => p.evaluate(() => window.__ghosts.list().map((g) => ({ n: g.name, h: g.h, solid: g.solid, op: g.opacity })));
     const sees = (p, test, ms = 600000) => until(async () => { await nudge(); const l = await view(p); return test(l) ? l : null; }, ms);
+    const ready = (key = 'nerf') => requireFoes([{ page: A.page, name: 'Anonym', weapon: 'saber', ownWeapon: key }, { page: B.page, name: 'Olof', weapon: key, ownWeapon: 'saber' }], nudge);
     step('pages loaded; waiting for A and B to see each other');
     const t1 = Date.now(), aB = await sees(A.page, (l) => l.some((g) => g.n === 'Anonym'), 1800000), t2 = Date.now(), bA = await sees(B.page, (l) => l.some((g) => g.n === 'Olof'));
     check(!!aB && !!bA, 'A and B connected and see each other', `${Math.round((t2 - t1) / 1000)} s + ${Math.round((Date.now() - t2) / 1000)} s; A: ${JSON.stringify(await view(A.page))} B: ${JSON.stringify(await view(B.page))} A state: ${await A.page.evaluate(() => { const g = window.__ghosts, t = performance.now(); return JSON.stringify({ conn: g.connected, ws: g.ws?.readyState ?? null, me: g.me, connects: g.connects, retryIn: Math.round(g.retryAt - t), still: Math.round(t - g.lastMove), backoff: g.backoff, overlay: document.getElementById('overlay').hidden }); })}`);
@@ -64,6 +70,7 @@ async function until(fn, ms = 60000) { const t = Date.now(); for (;;) { const v 
     check(!!(await sees(B.page, (l) => l.find((g) => g.n === 'Olof')?.solid)), 'B sees A fully visible');
     check(!!(await sees(C.page, (l) => l.length === 2 && l.every((g) => g.solid))), 'C sees both fully visible');
     check(await B.page.evaluate(() => { window.__combat.update(0); const e = document.getElementById('lives'); return !e.hidden && e.textContent.includes('10/10'); }), 'the hearts show during the fight (10/10)');
+    await ready();
     step('A misses with a dart');
     // the others' shots (#667): a miss from A (turned away) flies on B's screen the way it flew for A
     const shotSeen = (n) => until(async () => { await A.page.evaluate(() => { window.__ghosts.update(); window.__ghosts.sendShot(); }); return B.page.evaluate((k) => { window.__ghosts.update(); return window.__combat.seen >= k ? window.__combat.lastSeen : null; }, n); }, 180000);
@@ -82,26 +89,31 @@ async function until(fn, ms = 60000) { const t = Date.now(); for (;;) { const v 
     await A.page.evaluate(() => { const app = window.__app; app.heldItem().putBack(); app.ball.take(); });
     await sees(B.page, (l) => l.find((g) => g.n === 'Olof')?.h === 'ball');
     // B's frames are driven by hand from here to the screenshot (a SwiftShader frame takes seconds, the ball ~0.3 s to fly by)
-    await B.page.evaluate(() => window.__app.testMode.setFull(true)); // full quality only for the picture (#703)
-    await B.page.setViewportSize({ width: 960, height: 600 });
-    const fb = await B.page.evaluate(() => window.__app.renderer.info.render.frame);
-    await until(() => B.page.evaluate((f) => window.__app.renderer.info.render.frame >= f + 2, fb), 180000);
-    await B.page.evaluate(() => window.__app.renderer.setAnimationLoop(null));
-    await A.page.evaluate(() => { const app = window.__app; app.camera.rotation.y += 0.3; app.camera.rotation.x = 0.15; app.ball.cool = 0; app.click(0); app.camera.rotation.y -= 0.3; app.camera.rotation.x = 0; });
-    const seenBall = await shotSeen(2);
-    check(seenBall?.w === 'ball' && seenBall.s > 1, 'B sees A\'s ball thrown on its arc', JSON.stringify(seenBall));
-    await B.page.evaluate(() => { for (let i = 0; i < 3; i++) window.__app.frame(0.05); }); // 0.15 s of its flight
-    const ballOnB = await B.page.evaluate(() => window.__combat.balls.filter((b) => b.m.visible).map((b) => { const c = b.m.position.clone().project(window.__app.camera);
-      return { pos: b.m.position.toArray().map((x) => +x.toFixed(2)), ndc: [+c.x.toFixed(2), +c.y.toFixed(2), +c.z.toFixed(3)], layer: b.m.layers.mask, flying: b.flying, life: +b.life.toFixed(2) }; }));
-    await B.page.screenshot({ path: `${shots}/combat-B-sees-A-ball.png`, timeout: 240000 });
-    await B.page.evaluate(() => window.__app.renderer.setAnimationLoop(() => window.__app.frame(0.016)));
-    await B.page.evaluate(() => window.__app.testMode.setFull(false));
-    await B.page.setViewportSize({ width: 320, height: 200 });
+    let ballOnB;
+    await withActivePeers(pages, async () => {
+      await B.page.evaluate(() => window.__app.testMode.setFull(true)); // full quality only for the picture (#703)
+      await B.page.setViewportSize({ width: 960, height: 600 });
+      const fb = await B.page.evaluate(() => window.__app.renderer.info.render.frame);
+      if (!await until(() => B.page.evaluate((f) => window.__app.renderer.info.render.frame >= f + 2, fb), 180000)) throw new Error('B screenshot frames timed out');
+      await B.page.evaluate(() => window.__app.renderer.setAnimationLoop(null));
+      await ready('ball');
+      await A.page.evaluate(() => { const app = window.__app; app.camera.rotation.y += 0.3; app.camera.rotation.x = 0.15; app.ball.cool = 0; app.click(0); app.camera.rotation.y -= 0.3; app.camera.rotation.x = 0; });
+      const seenBall = await shotSeen(2);
+      check(seenBall?.w === 'ball' && seenBall.s > 1, 'B sees A\'s ball thrown on its arc', JSON.stringify(seenBall));
+      await B.page.evaluate(() => { for (let i = 0; i < 3; i++) window.__app.frame(0.05); }); // 0.15 s of its flight
+      ballOnB = await B.page.evaluate(() => window.__combat.balls.filter((b) => b.m.visible).map((b) => { const c = b.m.position.clone().project(window.__app.camera);
+        return { pos: b.m.position.toArray().map((x) => +x.toFixed(2)), ndc: [+c.x.toFixed(2), +c.y.toFixed(2), +c.z.toFixed(3)], layer: b.m.layers.mask, flying: b.flying, life: +b.life.toFixed(2) }; }));
+      await B.page.screenshot({ path: `${shots}/combat-B-sees-A-ball.png`, timeout: 240000 });
+    }, { restore: async () => {
+      try { await B.page.evaluate(() => { window.__app.renderer.setAnimationLoop(() => window.__app.frame(0.016)); window.__app.testMode.setFull(false); }); }
+      finally { await B.page.setViewportSize({ width: 320, height: 200 }); }
+    } });
     check(ballOnB.length === 1 && ballOnB[0].ndc.every((x) => Math.abs(x) < 1), 'the ball is in view on B\'s screen (screenshot)', JSON.stringify(ballOnB));
     // #690: the bow — A draws fully and looses at B: B sees the arrow and loses a life
     step('A shoots the bow');
     await A.page.evaluate(() => window.__bow.take());
     await sees(B.page, (l) => l.find((g) => g.n === 'Olof')?.h === 'bow');
+    await ready('bow');
     const bowShot = await A.page.evaluate(() => { const b = window.__bow; b.trigger(true); b.draw = 1; b.trigger(false); const c = window.__combat;
       return { ...c.lastShot, state: { held: b.held, conn: window.__ghosts.connected, weapon: c.weapon(), foes: c.foes().length, shots: b.shots } }; });
     const seenArrow = await shotSeen(3);
@@ -113,31 +125,40 @@ async function until(fn, ms = 60000) { const t = Date.now(); for (;;) { const v 
     step('C\'s screenshot');
     // screenshot: C's view of two solid armed players
     await sees(C.page, (l) => l.length === 2 && l.every((g) => g.solid));
-    await C.page.evaluate(() => window.__app.testMode.setFull(true));
-    await C.page.setViewportSize({ width: 960, height: 600 });
-    const f0 = await C.page.evaluate(() => window.__app.renderer.info.render.frame);
-    await until(() => C.page.evaluate((f) => window.__app.renderer.info.render.frame >= f + 2, f0), 180000);
-    await C.page.screenshot({ path: `${shots}/combat-two-armed-players.png`, timeout: 240000 });
-    await C.page.evaluate(() => window.__app.testMode.setFull(false));
-    await C.page.setViewportSize({ width: 320, height: 200 });
+    await withActivePeers(pages, async () => {
+      await C.page.evaluate(() => window.__app.testMode.setFull(true));
+      await C.page.setViewportSize({ width: 960, height: 600 });
+      const f0 = await C.page.evaluate(() => window.__app.renderer.info.render.frame);
+      if (!await until(() => C.page.evaluate((f) => window.__app.renderer.info.render.frame >= f + 2, f0), 180000)) throw new Error('C screenshot frames timed out');
+      await C.page.screenshot({ path: `${shots}/combat-two-armed-players.png`, timeout: 240000 });
+    }, { restore: async () => {
+      try { await C.page.evaluate(() => window.__app.testMode.setFull(false)); }
+      finally { await C.page.setViewportSize({ width: 320, height: 200 }); }
+    } });
     await sees(A.page, (l) => l.length === 2 && l.every((g) => g.solid)); // (back from any idle while the screenshot rendered)
     // ten hits (one arrow, nine darts): points for A, deductions and lives off for B, then B back at the start with all lives
     const before = { a: await A.page.evaluate(() => window.__app.stats.pvpHits ?? 0), bScore: await B.page.evaluate(() => window.__app.totalScore()) };
     await B.page.evaluate(() => { window.__app.stats.target = (window.__app.stats.target ?? 0) + 200; }); // something to deduct from
     const lives = [];
+    await ready();
+    const connects = await A.page.evaluate(() => window.__ghosts.connects);
     step('ten hits');
     for (let i = 0; i < 9; i++) { // (the bow took the first life)
       step(`hit ${i + 2}`);
-      const n = await B.page.evaluate(() => window.__combat.hurts);
+      const n = await B.page.evaluate(() => window.__combat.hurts), tf = Date.now();
+      await ready();
       await fire();
       const got = await until(async () => { wiggle = -wiggle; await A.page.evaluate((w) => { window.__app.camera.rotation.y += w; window.__ghosts.update(); window.__ghosts.sendShot(); }, wiggle); await B.page.evaluate((w) => { window.__app.camera.rotation.y += w; window.__ghosts.update(); }, wiggle); return (await B.page.evaluate(() => window.__combat.hurts)) > n; }, 180000);
       if (!got) {
-        check(false, `hit ${i + 2} arrives`, await A.page.evaluate(() => { const g = window.__ghosts; return JSON.stringify({ conn: g.connected, shots: g.shots, outbox: g.outbox, aim: window.__combat.aim('nerf')?.name ?? null, held: window.__app.heldItem()?.name, list: g.list() }); }));
+        check(false, `hit ${i + 2} arrives`, await A.page.evaluate(() => { const g = window.__ghosts, c = window.__combat; return JSON.stringify({ conn: g.connected, connects: g.connects, shots: g.shots, outbox: g.outbox, lastShot: c.lastShot, fired: c.fired, hits: c.hits, pending: c.nerfPending.length, aim: window.__combat.aim('nerf')?.name ?? null, held: window.__app.heldItem()?.name, list: g.list() }); }));
         break;
       }
       lives.push(await B.page.evaluate(() => window.__combat.lives));
+      step(`hit ${i + 2} arrived after ${Math.round((Date.now() - tf) / 1000)} s; B has ${lives.at(-1)} lives`);
       await sleep(500);
     }
+    check(await A.page.evaluate((n) => window.__ghosts.connected && window.__ghosts.connects === n, connects), 'A stays connected through the fight (never dropped for shooting)',
+      await A.page.evaluate(() => JSON.stringify({ conn: window.__ghosts.connected, connects: window.__ghosts.connects, messages: window.__ghosts.messages })));
     check(JSON.stringify(lives) === JSON.stringify([8, 7, 6, 5, 4, 3, 2, 1, 10]), 'each hit takes a life; the tenth sends B back with all lives', JSON.stringify(lives));
     const a = await A.page.evaluate(() => ({ hits: window.__combat.hits, pvp: window.__app.stats.pvpHits }));
     check(a.hits === 10 && a.pvp - before.a === 9, 'A scores each hit (stats pvpHits, SCORE.each; the bow\'s hit came before `before`)', JSON.stringify(a));

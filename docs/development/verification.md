@@ -85,7 +85,14 @@ tools/combattest.cjs   fights (#667): three pages (A, B, C) against dev.mjs: una
                        fight, B shown no shots while unarmed; A's missed dart drawn on B from the same start / direction / speed (the blasters'
                        pool, drawn only), A's thrown ball on B (screenshot), ten hits (points / deductions / lives), out of lives → start,
                        full lives, weapon and stats kept; C's screenshot.
-                       Pages drive ghosts / combat updates themselves (SwiftShader frames take seconds); ~10 min. Also players.test.mjs
+                       Pages drive ghosts / combat updates themselves (SwiftShader frames take seconds). combatsteps.cjs requires
+                       reciprocal connected foes and propagated weapons before dependent shots (timeout throws), keeps peers
+                       moving during both full-quality screenshots, and stops/restores camera yaw plus screenshot state in finally.
+                       Socket closes/reconnects are logged. Full PvP verification remains tracked by #721/#769.
+                       Worker protocol: node --test cloudflare/players.test.mjs (13 PASS in the #768 review).
+tools/combatstepstest.cjs (#768): no bootstrap/WebGL, real Ghosts/Combat and local dev.mjs sockets test readiness success,
+                       actual disconnect/reconnect, timeout before action, callback/restoration throws and stopped keep-alive work.
+                       Run PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/combatstepstest.cjs http://localhost:8721 http://localhost:8722.
 tools/combatworldtest.html combat collision (#715/#714), actual Three modules without WebGL: 462 focused checks cover native
                        hit/face/UV/normal equivalence, private grid/spatial-index quotas and ownership, authored bounds,
                        mutations/disposal, layers/custom propagation, instanced paths, curved finite segments, cooperative
