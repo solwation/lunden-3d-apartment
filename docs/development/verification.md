@@ -197,8 +197,10 @@ updates (`/tmp/lunden-773-baseline-probe.{txt,json}`); the lifecycle probes load
 
 Ordinary runs preserve the fixture's URL and viewport as written. `--compare` runs each HTML test twice: first removing only
 `test` from local game document URLs, then adding it when absent (retaining an explicit variant such as `test=lazy`). Other
-query options, including quality flags, stay intact. The first pass keeps the fixture viewport; the second injects a top-page
-stylesheet forcing iframes to 480×300. This is not a guarantee of full quality when the fixture itself requests lower quality.
+query options, including quality flags, stay intact. The first pass retains fixture sizing and its 1280×800 browser context;
+the second uses a 480×300 browser context plus a top-page iframe stylesheet. Native fullscreen can enlarge the first pass,
+while the second remains 480×300 even in fullscreen (#776). This is not a guarantee of full quality when the fixture itself
+requests lower quality.
 Use `--jobs 1` for sequential comparisons; with `--jobs 2` the passes share load.
 
 The comparison checks every ordered PASS/FAIL row, including duplicates and measured values. `DIFFERENT` makes the CLI exit 1
@@ -215,6 +217,11 @@ The #771 runner changes have 22 light DOM/CLI checks: actual Chrome document rou
 ordered/duplicate rows, CLI exit status, and same-named HTML/CJS logs. Probe artifacts are `/tmp/lunden-737-mode-probe.{txt,json}`,
 `/tmp/lunden-737-cli-probe.{txt,json}` and `/tmp/lunden-737-cli-duplicate-probe.{txt,json}`. These probes load no apartment or WebGL;
 they do not replace #737's required game-test acceptance runs or claim a game timing improvement.
+
+The #776 native-fullscreen Chrome DOM probe reproduces the old 1280×800 test-pass escape and verifies the corrected
+480×300 context, actual Fullscreen API, production query parser, mode/controller evidence and preserved query options
+(`/tmp/lunden-776-fullscreen-probe.{txt,json}`). The first #773 rest pair is explicitly query-only at 1280×800 in both
+passes (`/tmp/runtests-230917`); it must not be described as a 480×300 test run. A corrected actual rest pass is still required.
 
 The resize stylesheet waits for the top document root (#760). Chrome DOM probes cover normal, inline-sized and dynamically
 inserted iframes: their actual frame and child viewport become 480×300 without init-script errors; child documents stay unmodified.

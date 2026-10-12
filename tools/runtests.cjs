@@ -164,7 +164,9 @@ async function runHtml(test, { asTest }, game) {
   const origin = new URL(game).origin;
   const isGame = u => u.origin === origin && (u.pathname === '/index.html' || u.pathname === '/');
   try {
-    const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
+    // Fullscreen escapes iframe CSS, so the test context itself must stay small too (#776).
+    const viewport = asTest ? { width: 480, height: 300 } : { width: 1280, height: 800 };
+    const ctx = await browser.newContext({ viewport, deviceScaleFactor: 1 });
     if (opt.compare) {
       // A migrated fixture may already contain ?test. Force the first pass out of test mode too.
       await ctx.route(isGame, async route => {
