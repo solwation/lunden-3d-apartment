@@ -43,7 +43,7 @@ function check(ok, message) {
         const ratio = a ? a.renderer.getPixelRatio() : Math.min(devicePixelRatio, 1.5);
         return c.width === Math.floor(c.clientWidth * ratio) && c.height === Math.floor(c.clientHeight * ratio)
           && (!loaded || Math.abs(a.camera.aspect - c.clientWidth / c.clientHeight) < 1e-10);
-      }, loaded, { timeout: 20000 }); } catch (error) {
+      }, loaded, { timeout: 20000, polling: 100 }); } catch (error) {
         console.log('page errors', errors); console.log('Viewport diagnostic', await page.evaluate(() => {
           const c=document.getElementById('game-canvas'),a=window.__app;
           return {window:[innerWidth,innerHeight],css:[c.clientWidth,c.clientHeight],buffer:[c.width,c.height],ratio:a?.renderer.getPixelRatio(),aspect:a?.camera.aspect,errors:window.viewportResizeCalls};
