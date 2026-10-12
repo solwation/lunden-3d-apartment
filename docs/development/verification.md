@@ -373,7 +373,7 @@ controlled benchmark. All 247 frozen source paths and exact fixture/helper hashe
 | `flowtest.html` | Full rendering | Actual renderer geometry-memory growth assertion over cooking and reloads. |
 | `focusperftest.html` | Own fixture | 48×48 GPU shader compilation/reuse/disposal; no main iframe. Importmap blocked: #780. |
 | `foliagetest.html` | Full rendering | Actual crown readPixels/shade count, cut-out shadows and lowmem atlas. |
-| `gabletest.html` | Candidate | Actual gable geometry/layout and ray checks. |
+| `gabletest.html` | Migrated (#818) | 40 identical ordered PASS rows, 0 FAIL; native original 400×300/full → 480×300/test. Gable-opening layout/bounds/drum-distance checks unchanged; actual evidence and missing captures below. |
 | `garagetest.html` | Candidate | Garage geometry/doors, player navigation and saved state. |
 | `grillchickentest.html` | Own fixture | Own 800×520 scene/render images (toDataURL), chicken/grill modules; #780 importmap blocker. |
 | `grillinteractiontest.cjs` | Full rendering | Real pointer lock/touch and desktop/touch/eating scene/HUD screenshots; keep its authored viewport/capture path. |
@@ -1795,3 +1795,35 @@ complete output and final hall view; intermediate fall-cover pixels or rendered
 scene equivalence are not claimed. Frozen source/helper hashes, native phases
 and genuine PID/SID/PGID/exit: `/tmp/lunden-routes819/falltest/`. Garage remains
 pending under #819; #739/#736 remain open.
+
+## Entry and east geometry: gable acceptance (#818)
+
+One complete published jobs1 pair at frozen runtime `85d4672` used the whole
+original 400×300 and `?time=12&month=6` query, with no pre-pair edits or fullscreen
+guard. It preserved every native opening tag/end-flat/storey/slab/wall-boundary/
+drum-distance assertion and the existing hidden-opening/escape-stair cases.
+There was no added shot/cloud parameter, matrix update, seed or normalization.
+
+Both entire raw logs are byte-identical (4017 bytes, 40 PASS, 0 FAIL, ALL PASS),
+including all measured heights, wall extents and drum distances. Runner modes
+were verified and the independent monitor exited 0, without raw pageerrors.
+Full app-ready/retained final stayed 400×300/controller false; test ready/final
+stayed 480×300 with genuine draw/setFull/wantsFrame APIs, lazy/full false.
+Neither entered fullscreen. Unique URL/timeOrigin identities matched, with no
+observer errors or transport warnings; both final cloud URLs were empty.
+
+Elapsed full/test times were 64.132/71.929 seconds including capture overhead;
+the test sample was slower. Both final screenshots timed out after 10 seconds,
+so there is no PNG or gable/scene visual-equivalence evidence. This pair is
+excluded from speedup aggregation. Complete logs/summary: `/tmp/runtests-472999/`;
+frozen runtime/helper hashes, native phases, actual exit and capture errors:
+`/tmp/lunden-entry818/gabletest/`. All frozen source blobs matched after the pair.
+
+The written gable fixture now uses width 480/test; reversing only width/query
+reproduces the exact frozen original, with all executable assertions intact.
+All three #818 default dispositions have actual complete ordered acceptance:
+east 46 rows, entrance plants 15, gable 40. EAST's optional top `?lowmem` app
+branch remains original 720×480/full and unexecuted by its default pair; its
+authored explicit FULL/LITE builder comparison is preserved and was executed.
+Capture limitations remain separate from native logical acceptance. Parents
+#739/#736 stay open.
