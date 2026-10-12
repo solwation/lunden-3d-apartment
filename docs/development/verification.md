@@ -831,7 +831,7 @@ DPR setup and checks of gameplay/material state do not by themselves justify a r
 | `touchtest` | Viewport exemption. | First load uses fixed 900×600 touch coordinates (joystick 120,450 and look 700,300); shrinking to 480×300 changes the input regions and places points outside the view. Keep original first load and subsequent action-menu checks. |
 | `toystest` | Migrated (#799); all original blaster/wand/flashlight actions and assertions retained. | All 23 ordered PASS rows and ALL PASS identical, including dart/drop heights, sparkle count and beam direction; no pageerrors. `/tmp/runtests-292691/`: 132.243s at actual 900×600/controller null → 85.098s at 480×300/real controller. Both fullPage screenshots included; only test-mode controllers suppress native fullscreen. |
 | `trapphusatest` | Migrated (#800); original stairs/lifts/doors/collision/save/HUD/geometry/power-state assertions preserved. | All 60 ordered PASS rows and ALL PASS identical, including repeated stair/lift checks and exact coordinate/height/door/save values; no pageerrors. `/tmp/runtests-302672/`: 174.591s at actual 800×500/controller null → 106.810s at 480×300/real controller. Both fullPage screenshots included; existing fullscreen suppression unchanged. |
-| `trapphusbctest` | Comparison candidate; not migrated. | Same functional distinction as A; retain independent B and C variants (`?house=C` on the fixture), every route/save/power assertion and complete exact ordered output. Both variants need full/test pairs. |
+| `trapphusbctest` | Migrated (#801), both actual B and C variants; original actions/assertions/fullscreen suppression preserved. | B: 48 exact ordered PASS, 164.969s → 101.323s (`/tmp/runtests-313324/`). C: 61 exact ordered PASS, 182.024s → 112.617s (`/tmp/runtests-316578/`); actual topfixture `?house=C` via external goto hook. ALL PASS/no pageerrors in all four runs, actual 800×500/controller null → 480×300/real controller per variant. Times include four saved fullPage images. |
 | `trapphusrailtest` | Standalone; no game-mode migration applies. | Actual buildWorld/Core/Player modules and manual movement into the rail; no game iframe/bootstrap or WebGL renderer. Source inspection only, no runtime result claimed. |
 | `turbotest` | Migrated (#799); original injected clock, coffee/speed/FOV/walk/wall/expiry assertions preserved. | All 10 ordered PASS rows and ALL PASS identical, including ×1.80, 78.0°, 2.38 m, wall x 0.71 and 115 → 150 s; no pageerrors. `/tmp/runtests-295099/`: 198.024s at actual full-screen 1280×800/controller null → 119.221s at 480×300/real controller. Both fullPage screenshots included; only test-mode controllers suppress native fullscreen. |
 | `turntest` | Rendering/performance exemption. | Actual warm-up and rendered frames gate WebGL program/texture counts and record uploads, shadows, mirrors and phase times; optional readPixels synchronization. Test mode changes the measured rendering workload. |
@@ -841,6 +841,11 @@ player/rest/jetpack/spidersuit/car/core/world blobs match exactly; the toStart h
 Later main/config differences are unrelated chat/compass UI changes; the whole source tree is not claimed
 identical. The source and exact-row audit is retained at `/tmp/lunden-audit788/tostart-provenance.json`.
 
-Remaining comparison child: stairwell B/C (#801) with both variants remains unverified and unreserved.
-Toys + turbo (#799) and stairwell A (#800) are now verified and migrated.
-The parent #751 remains open until its remaining comparisons and dispositions are handled.
+All eight dispositions in this audit are now handled: historical tostart acceptance, touch/turn exemptions,
+standalone rail, and verified toys/turbo (#799), stairwell A (#800), stairwell B/C (#801) migrations.
+B used frozen base `3af9f37`; C used `967e58e` after #743. Relevant fixture/main/core/corehouse/player/world
+blobs match; config changed only the CHAT export. Chat/Ghosts mirror-typing code differs, so whole-src
+identity is not claimed. This fixture never opens/writes chat, and actual C probes report open=false/typing=false;
+the new predicate requires both. Separate source/URL/controller/image evidence: `/tmp/lunden-stair801/`.
+Parent #751 is complete after #799/#800/#801: all eight fixture dispositions are recorded above.
+The broader parents #741/#736 remain open for their other groups.
