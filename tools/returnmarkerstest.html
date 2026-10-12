@@ -1,7 +1,7 @@
 <!doctype html><html><meta charset="utf-8"><title>White placement and return contours (#487)</title><pre id="out">running…</pre><script type="module">
 const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS':'FAIL')+' '+s);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
 try{
- const f=document.createElement('iframe');f.width=640;f.height=400;f.src='../index.html?life&shot';document.body.append(f);await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);
+ const f=document.createElement('iframe');f.width=480;f.height=300;f.src='../index.html?test&life&shot';document.body.append(f);await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);
  const w=f.contentWindow,A=w.__app,T=await w.eval("import('three')"),V=T.Vector3,L=A.life,I=L.items,G=A.placement.ghost;
  f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();A.renderer.setAnimationLoop(null);
  const aim=(point,from)=>{A.player.spawn(from[0],from[1],0);A.step(0);A.scene.updateMatrixWorld(true);A.camera.lookAt(point);A.camera.updateMatrixWorld(true);A.step(0);return A.focus().focused;};
