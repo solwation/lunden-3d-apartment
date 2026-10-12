@@ -122,6 +122,8 @@
     #speech .say .dots i:nth-child(2) { animation-delay: .2s; } #speech .say .dots i:nth-child(3) { animation-delay: .4s; }
     @keyframes chatdot { 0%, 80%, 100% { opacity: .25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
     .card { max-height: calc(100vh - 32px); overflow: auto; margin: 16px; }
+    /* content-box cards (padding 28px top + bottom) would otherwise be 56px over the max-height and stick out of the screen (#726) */
+    #overlay .card, #install .card, #reset-confirm .card { max-height: calc(100vh - 32px - 56px); }
     .touch-help { display: none; }
     @media (any-pointer: coarse) { .touch-help { display: grid; } }
     @media (pointer: coarse) { #start-touch { order: -1; } }

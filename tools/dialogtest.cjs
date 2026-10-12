@@ -4,8 +4,7 @@
 // Optional CHROME_PATH. Set BEFORE=1 to force the old content-box on the #725 cards (shows the failure).
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const base = process.argv[2] || 'http://localhost:8127', out = process.argv[3];
-// Known, separately tracked: the start card is 24 px too tall (vertical only, #726); remove when #726 is fixed.
-const KNOWN_TALL = new Set(['overlay']);
+const KNOWN_TALL = new Set([]); // #overlay fixed in #726
 const SIZES = [[390, 844], [844, 390], [667, 375], [640, 420], [1280, 720]];
 (async () => {
   const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined, args: ['--no-sandbox'] });
