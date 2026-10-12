@@ -132,6 +132,11 @@ Rummet skickar `{ t: 'k', i, on }` till de andra, men bara vid en ändring: av a
 en påminnelse om att man fortfarande skriver tidigast efter 5 s (`CHAT.typingEveryMs` / `typingRepeatMs`); ett skickat
 meddelande slår av den. Högst ett par meddelanden per skrivpaus – samma budget och samma månadstak som allt annat, inget sparas.
 
+**Hälsningar (#673):** en spelare kan hälsa på en annan. Klienten skickar bara ett nummer på en fras ur en fast lista
+(aldrig fri text) och vem hälsningen gäller; rummet tar emot högst en hälsning var tredje sekund per spelare och bara till
+någon som finns i rummet, och skickar den vidare till alla andra (de ser den som hälsar vinka). Hälsningen går inom samma
+5-Hz-budget som positionerna, så kostnadsräkningen ovan ändras inte.
+
 **Stänga av:**
 - Klienten: `GHOSTS.enabled = false` i `src/config.js` (och pusha), eller `?mp=0` i adressen för en enskild besökare.
   Utan `CLOUD_URL` är den helt av.

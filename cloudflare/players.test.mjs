@@ -235,6 +235,27 @@ test('shots (#667): every shot goes to the armed others only, from near the shoo
   assert.deepEqual(shots(b).at(-1), { t: 'a', i: a.got[0].i, w: 'bow', o: [0, 1.5, 0], d: [0, 0.1, 0.995], s: 42 });
 });
 
+test('greetings (#673): to someone here, a phrase index only, not too often; everybody else sees it', async () => {
+  const env = setup();
+  const a = await connect(env, 'A'), b = await connect(env, 'B'), c = await connect(env, 'C');
+  const ia = a.got[0].i, ib = b.got[0].i;
+  const greets = (x) => x.got.filter((m) => m.t === 'g');
+  now += 5000;
+  a.send({ t: 'g', to: ib, k: 2 }); await settle(env);
+  assert.deepEqual(greets(b), [{ t: 'g', i: ia, to: ib, k: 2 }]);
+  assert.deepEqual(greets(c), [{ t: 'g', i: ia, to: ib, k: 2 }], 'the others see the greeter wave too');
+  assert.equal(greets(a).length, 0, 'not echoed');
+  a.send({ t: 'g', to: ib, k: 1 }); await settle(env);
+  assert.equal(greets(b).length, 1, 'not more often than greetEvery');
+  now += 5000;
+  a.send({ t: 'g', to: 'nobody', k: 1 }); a.send({ t: 'g', to: ib, k: 99 }); a.send({ t: 'g', to: ib, k: 'Hej!' }); a.send({ t: 'g', to: ia, k: 0 });
+  await settle(env);
+  assert.equal(greets(b).length, 1, 'unknown player, a phrase out of range, text, oneself: dropped');
+  now += 5000;
+  a.send({ t: 'g', to: ib, k: 0 }); await settle(env);
+  assert.equal(greets(b).length, 2);
+});
+
 test.after(() => { Date.now = realNow; });
 
 // Score rides the same bounded state: no new message type or billing path.

@@ -120,7 +120,7 @@ import { Ghosts } from './ghosts.js';
 import { Combat } from './combat.js';
 import { Bow, Arrows } from './bow.js';
 import { Chat } from './chat.js';
-import { COMBAT, CHAT } from './config.js';
+import { COMBAT, CHAT, GHOSTS } from './config.js';
 import { Basketball, Hoop } from './basket.js';
 import { Mess } from './mess.js';
 
@@ -1546,6 +1546,7 @@ function use(thing) {
     sfx.lid(thing.object.position, thing.isOpen);
   } else if (thing.kind === 'cat') { if (cat.isMiele && !heldItem()) miele.take(); else cat.pet(player.pos); } // Miele: into your arms (#328)
   else if (thing.kind === 'olofcar') { if (olofDriver.greet()) { greet.sayMine(OLOF.car.hello[Math.floor(Math.random() * OLOF.car.hello.length)]); if (olofDriver.claimScore()) bump('olof', 1, 'car'); } } // a dad joke, he sits on; points once per arrival (#599, #658)
+  else if (thing.kind === 'ghost') greetPlayer(thing.ghost); // another player (#673): a greeting, their avatar sees ours wave
   else if (thing.kind === 'olof') { if (olof.wave()) { greet.sayMine(OLOF.hello[Math.floor(Math.random() * OLOF.hello.length)]); bump('olof'); } } // wave to Olof: he goes (#586)
   else if (thing.kind === 'towel') handWash.dry(thing, focusPoint); // dry the hands (#437)
   else if (thing.kind === 'tap') {
@@ -1755,6 +1756,7 @@ function updateFocus() {
   // the car key only while its cabinet is open
   const extra = [...(cat.visible && !cat.held ? [cat.object] : []), ...(olof.waveable ? [olof.fig.pick] : []), ...(olofDriver.greetable(rest.active && rest.target?.car === car) ? [olofDriver.fig.pick] : []), ...(keyCabinet?.keyReachable ? [world.carKey.pickable] : []), ...car.targets(rest.target).map((t) => t.pickable), // our car's doors and front seats (#250)
     ...jetpack.targets(), // the jetpack on its hook / where it was stood down (#359)
+    ...ghosts.targets(), // the other players (#673): greet them
     ...suit.targets(), // the Spider-Man suit in its drawer / where it was laid (#597)
     ...world.courtyardTargets.map((t) => t.pickable), // the courtyard's benches (#438): F keeps them
     ...(power.reachable ? [power.target.pickable] : []), // the fuse box while its cabinet is open (#604)
@@ -2206,6 +2208,16 @@ for (const [key, items] of [['saber', [saber]], ['nerf', toys.blasters], ['wand'
 if (bow) bow.onShot = (o, v) => combat.fire('bow', flight(o, v), true); // (#690: an arrow on its arc)
 if (rifle) { const shot = rifle.onShot; rifle.onShot = () => { shot?.(); combat.fire('rifle'); }; }
 { const web = suit.onShot; suit.onShot = () => { web?.(); combat.fire('web'); }; }
+// greeting other players (#673): our line at the bottom (greet.js), one small message; the greeted and everyone else see
+// our avatar wave, with the line in a bubble over it. Points: SCORE.first.greets per player, once a session.
+const greetedPlayers = new Set();
+function greetPlayer(g) {
+  const line = ghosts.greet(g);
+  if (!line) return;
+  greet.sayMine(line);
+  if (!greetedPlayers.has(g.name)) { greetedPlayers.add(g.name); bump('greets', 1, `player:${g.name}`); }
+}
+ghosts.onGreet = (m, g, other) => greet.say({ head: g.head, s: 1 }, GHOSTS.hello[m.k]?.replace('{n}', other ? other.name : (leaderboard.name || 'Anonym')) ?? 'Hej!', { pitch: 1.1, rate: 1.05, voice: 1 });
 window.__ghosts = ghosts; window.__combat = combat; window.__bow = bow; window.__arrows = arrows; window.__presence = presence;
 chat = new Chat({ ghosts, log: document.getElementById('chat-log'), toggle: document.getElementById('chat-toggle'), name: () => leaderboard.name, // #675
   camera, layer: document.getElementById('speech'), hidden: (p) => behindWall(p), typingLine: document.getElementById('chat-typing') }); // bubbles over the ghosts (#676)

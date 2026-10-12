@@ -53,6 +53,7 @@ const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
 const lerpAngle = (a, b, t) => a + wrap(b - a) * t;
 const SWING = 0.35; // s the saber's cut lasts
 const tmpV = new THREE.Vector3();
+const pickMat = new THREE.MeshBasicMaterial();
 
 class Ghost {
   /** `self`: our own reflection in the mirrors (#691): no name tag, never shown to the main camera. */
@@ -71,7 +72,15 @@ class Ghost {
       this.tag.scale.set(G.tagWidth, G.tagHeight, 1);
       this.tag.position.y = G.tagY + (this.avatar.look.tall - 1) * 1.8; // (above the head of a taller / shorter avatar)
       this.root.add(this.tag);
+      // what the look ray hits to greet it (#673; main.js, an invisible box round the body: the raycaster ignores `visible`)
+      this.pick = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.8, 0.6), pickMat);
+      this.pick.position.y = 0.9;
+      this.pick.visible = false;
+      this.door = { name: this.name, kind: 'ghost', verb: 'hälsa på', ghost: this, pickable: this.pick };
+      this.pick.userData.door = this.door;
+      this.root.add(this.pick);
     }
+    this.waveT = 0;
     this.root.visible = false; // until its first state
     this.body = 0; this.speed = 0; this.have = false;
     parent.add(this.root);
@@ -102,6 +111,12 @@ class Ghost {
     this.prop = prop(h);
     if (this.prop) this.root.add(this.prop);
   }
+
+  /** A wave (#673): the right arm up and waving for GHOSTS.wave s (armTarget.up, the surface #705 left for it). */
+  wave() { this.waveT = G.wave; }
+
+  /** Over its head (the speech bubble's anchor, greet.js). */
+  get head() { return this.root.position.clone().setY(this.root.position.y + 1.78 * this.avatar.look.tall); }
 
   /** A swing of what it holds (#667: the saber's cut, seen by the others). */
   swing() { this.swingT = SWING; }
@@ -158,6 +173,10 @@ class Ghost {
       hands.R = armTarget.forward(-1, 0.04);
       hands.R.at[0] += 0.45 * sw; hands.R.at[1] += 0.1 * sw;
     }
+    if (this.waveT > 0) { // (#673) up for the wave, the hand going side to side; down again at the end
+      this.waveT = Math.max(0, this.waveT - dt);
+      hands.R = armTarget.up(-1, (G.wave - this.waveT) * 11);
+    }
     Object.assign(hands, this.hands);
     this.avatar.update(dt, { speed: this.speed, turn, hands });
     if (this.prop && this.prop.name !== 'ghost-prop:jetpack') {
@@ -176,7 +195,7 @@ export class Ghosts {
    * start screen); weapon(): the key (COMBAT.weapons) of what we hold or ''; score(): displayed points (defaults to stats.totalScore); onHit / onHurt: the room's word on a hit (#667). */
   constructor({ scene, camera, url, name = () => '', state, active = () => true, weapon = () => '', score = totalScore, onHit = () => {}, onHurt = () => {}, mirrored = () => true }) {
     Object.assign(this, { camera, name, state, active, weapon, score, onHit, onHurt, mirrored, mine: null, myGhost: null, rules: null, ws: null, me: null, others: new Map(), sent: null, prev: null,
-      lastSent: 0, lastBeat: 0, outbox: [], shots: 0, dropped: 0, lastMove: -Infinity, retryAt: 0, backoff: 0, openedAt: 0, connects: 0, messages: 0 });
+      lastSent: 0, lastBeat: 0, outbox: [], shots: 0, dropped: 0, greetAt: -1e9, greetsSeen: 0, lastMove: -Infinity, retryAt: 0, backoff: 0, openedAt: 0, connects: 0, messages: 0 });
     this.on = !!url && G.enabled && params.get('mp') !== '0';
     this.url = url ? `${url.replace(/^http/, 'ws')}/players` : '';
     this.group = new THREE.Group();
@@ -243,6 +262,7 @@ export class Ghosts {
     else if (m.t === 'hit') this.onHit(m, this.others.get(m.to));
     else if (m.t === 'hurt') this.onHurt(m, this.others.get(m.by));
     else if (m.t === 'a') { const g = this.others.get(m.i); if (g) this.onShot?.(m, g); }
+    else if (m.t === 'g') { const g = this.others.get(m.i); if (g) { g.wave(); this.greetsSeen++; this.onGreet?.(m, g, m.to === this.me ? null : this.others.get(m.to) ?? null); } }
     else if (m.t === 'm' || m.t === 'mx' || m.t === 'k') this.onTalk?.(m, this.others.get(m.i)); // chat (#675) and "skriver…" (#676), src/chat.js
   }
 
@@ -314,6 +334,22 @@ export class Ghosts {
 
   /** Our own saber cut, for the mirror image. */
   swingSelf() { this.myGhost?.swing(); }
+
+  /** The other players one can greet (#673): their invisible pick boxes (main.js adds them to what the look ray tries). */
+  targets() { return this.connected ? [...this.others.values()].filter((g) => g.pick && g.root.visible && g.snaps.length).map((g) => g.pick) : []; }
+
+  /** Greet `g` (#673): a phrase from GHOSTS.hello (an index, never free text), one message to the room, at most one every
+   * GHOSTS.greetEvery s. Returns the line said ("{n}" = their name), or null. */
+  greet(g) {
+    const t = performance.now();
+    if (!this.connected || t - this.greetAt < G.greetEvery * 1000 || !this.others.has(g.id)) return null;
+    this.greetAt = t;
+    const k = Math.floor(Math.random() * G.hello.length);
+    this.outbox.push({ t: 'g', to: g.id, k });
+    while (this.outbox.length > G.outbox) this.outbox.shift();
+    this.sendShot();
+    return G.hello[k].replace('{n}', g.name);
+  }
 
   /** A shot (#667): { w, o: [x, y, z], d: [dx, dy, dz] unit, s?: speed, to?: the id it hit }, every one, misses too, so
    * the others can draw it. Shots share the GHOSTS.hz budget with the states and go first; at most GHOSTS.outbox wait

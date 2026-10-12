@@ -168,6 +168,14 @@ src/bow.js             the bow (#690, BOW): our own recurve bow (one vertex-colo
                        are never hit) for BOW.stick s. In a fight it is weapon 'bow': each arrow is one shot message with its
                        speed; combat.js `aimArc` judges a hit along the arc, the others see the arrow in the same pool.
                        tools/bowtest.cjs (one page; frames driven by hand), combattest's bow step
+src/ghosts.js #673     greeting another player: each ghost has an invisible pick box (`Ghost.pick`, door { kind: 'ghost', verb
+                       'hälsa på', name }) that main.js adds to what the look ray tries (`ghosts.targets()`, connected only, within
+                       HOLD.reach like everything else); E / a tap → `greetPlayer`: `ghosts.greet(g)` picks a line from GHOSTS.hello
+                       ({n} = their name; at most one every GHOSTS.greetEvery s), greet.js `sayMine` shows it at the bottom (speech
+                       as for Olof), and one message { t: 'g', to, k } (k: the phrase's index, never text) goes through the outbox.
+                       Everybody else sees the greeter's avatar wave (`Ghost.wave`: the right hand to avatar.js `armTarget.up` for
+                       GHOSTS.wave s, no extra mesh or draw call) with the line in a bubble over it (greet.js `say`, `Ghost.head`). Points:
+                       bump('greets', 1, 'player:<name>') once per player and session (SCORE.first / again.greets). tools/ghosttest.cjs
 src/combat.js          fights between players (#667, on the ghosts of #666): only two players who BOTH hold a weapon (COMBAT.weapons:
                        saber, nerf, wand, rifle, ball, web = the suit with empty hands, jetpack = worn; main.js `weaponKey`, in that
                        order; remove a key to leave it out) are drawn solid for each other (ghosts.js `setSolid`, + a small prop in the

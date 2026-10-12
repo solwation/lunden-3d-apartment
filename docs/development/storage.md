@@ -47,6 +47,7 @@ src/ghosts.js          other players as ghosts with a name tag (#666), inert wit
                        depth-tested) + one name/score sprite (256 × 64 canvas shared per live name/score combination, "Anonym"). Close 4001 (month cap) →
                        localStorage 'lunden.mp.capMonth' = this month: no retry; 4003 (brake) / 4029 (full) wait; others back off.
                        No KV, nothing written per position (presence.js's KV counter #424 is untouched). `window.__ghosts` for tests
+                       #673: a greeting { t: 'g', to, k } through the same outbox (to another player here, at most PLAYERS.greetEvery);
                        #667: the state's `h` (weapon key or '') and one shot message per shot { t: 'a', w, o, d, s?, to? } go the
                        same way (outbox of GHOSTS.outbox, within the same 5 Hz); lives are
                        counted per connection in the room (a socket's attachment), nothing is stored about fights

@@ -16,6 +16,7 @@ import { TOYS } from '../src/config.js';
 // Protocol (JSON text; client → room): { p: [x, y, z] feet in metres, r: yaw (rad), h: weapon key or '', score: integer 0…1e7 } and a shot
 // { t: 'a', w, o, d, s?, to? } (#667, `cleanShot`; forwarded to the armed others as { t: 'a', i, w, o, d, s? }) — anything
 // else is dropped.
+// A greeting (#673) { t: 'g', to, k } goes to everybody else as { t: 'g', i, to, k } (k: a phrase index, no text).
 // Room → client: { t: 'w', i: your id, ps: [{ i, n, p, r, h, score }], c: { lives, weapons } } on joining; { t: 'j', i, n } someone
 // joined; { t: 's', i, p, r, h, score } a state; { t: 'x', i } someone left; 'hit' / 'hurt' (#667). n = the name ('' = "Anonym").
 // Chat (#675, `cleanTalk` / `talk`): { t: 'm', m: text } → the others get { t: 'm', i, n, m } (a sender over the limits gets
@@ -31,6 +32,8 @@ export const PLAYERS = {
   idleMs: 60_000,      // no message / heartbeat for this long: closed
   flushEvery: 100,     // messages between writes of the month's counter (at most this many go uncounted if the object is evicted)
   nameMax: 20,         // as the leaderboard
+  greetEvery: 3,       // #673: a greeting at most this often per connection (s; the client's GHOSTS.greetEvery)
+  greetPhrases: 16,    // #673: the phrase is an index below this into the client's fixed list, never text
 };
 
 // Combat (#667): only between two players who both hold a weapon (the state's `h`, one of COMBAT.weapons' keys). Every shot
@@ -86,6 +89,13 @@ export function cleanTalk(text) {
   if (m?.t !== 'm') return null;
   const t = cleanText(m.m);
   return t ? { t: 'm', m: t } : null;
+}
+
+/** A greeting (#673) { t: 'g', to: id, k: phrase index }, or null. */
+export function cleanGreet(text) {
+  let m;
+  try { m = JSON.parse(text); } catch { return null; }
+  return m?.t === 'g' && typeof m.to === 'string' && m.to.length <= 16 && Number.isInteger(m.k) && m.k >= 0 && m.k < PLAYERS.greetPhrases ? { to: m.to, k: m.k } : null;
 }
 
 /** A checked, rounded state from a client's message, or null. */
@@ -195,9 +205,14 @@ export class PlayerRoom {
       if (a.k >= PLAYERS.strikes) this.drop(ws, CLOSE.rate, 'rate');
       return;
     }
-    const talk = cleanTalk(message), shot = !talk && cleanShot(message);
+    const talk = cleanTalk(message), hello = !talk && cleanGreet(message), shot = !talk && !hello && cleanShot(message);
     if (talk) this.talk(ws, a, talk, now);
-    else if (shot) {
+    else if (hello) { // #673: to someone here, not too often; everybody else sees the greeter wave
+      if (now - (a.gt ?? 0) >= PLAYERS.greetEvery * 800 && hello.to !== a.i && this.open().some((x) => x !== ws && att(x).i === hello.to)) {
+        a.gt = now;
+        this.broadcast({ t: 'g', i: a.i, to: hello.to, k: hello.k }, ws);
+      }
+    } else if (shot) {
       // a shot is drawn by the others only from someone armed with that weapon, starting near where the room has them,
       // and only for those armed too (a fight is between two armed players)
       if (shot.t === 'a' && a.s?.h === shot.w && a.s.p && Math.hypot(shot.o[0] - a.s.p[0], shot.o[1] - a.s.p[1], shot.o[2] - a.s.p[2]) <= COMBAT.from) {

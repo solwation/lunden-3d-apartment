@@ -2778,7 +2778,7 @@ export const SCORE = {
     blinds: 2, // per window's blind, the first time it is drawn up or down (#273)
     curtains: 2, // Sovrum 1's curtains drawn (#342), like a blind
     cleanRoom: 15, // the first clean room: "Rent i köket!" (#390)
-    coats: 10, greets: 2, // greets: per person greeted (#247); nothing counts them since #670 — kept so old scores stay
+    coats: 10, greets: 2, // greets: per person greeted (#247); since #670 the other players (#673: once per player and session)
     catButts: 15, // a cat's bum seen from behind with its tail up (#262): per cat, then `again` per tail-up
     walkRain: 15, walkSnow: 25, walkHail: 40, walkStorm: 30, // out in the weather (#249): the first time, then `again` per shower
     shattered: 5, // per kind of thing shot to pieces (#263)
@@ -2871,7 +2871,11 @@ export const GHOSTS = { enabled: true, hz: 5, move: 0.02, turn: 0.03, beatMs: 10
   opacity: 0.25, delay: 200, far: 60, tagFar: 15, max: 30,
   tagWidth: 0.64, tagHeight: 0.16, tagY: 1.98, tagNamePx: 22, tagScorePx: 18, // #672: 20% smaller sprite; two compact lines (*guess*)
   scoreMax: 1e7, // matches the existing leaderboard validation in cloudflare/worker.js; display only, not authoritative
-  outbox: 3 }; // outbox: shots waiting for the 5 Hz budget (#667)
+  outbox: 3, // outbox: shots waiting for the 5 Hz budget (#667)
+  // #673: greeting another player (E on them): one of `hello` (an index goes to the room, never free text; {n} = their
+  // name), at most one every `greetEvery` s (the room allows the same), the greeter's ghost waves its right arm `wave` s for
+  // everybody who sees it. Our picks (*guess*).
+  hello: ['Hej {n}!', 'Tjena {n}!', 'Hallå där, {n}!', 'Hej {n}, vad kul att ses!', 'Hej hej!', 'Tjenare!'], greetEvery: 3, wave: 2.5 };
 // The players' avatars (#705, src/avatar.js): a neutral human figure (Olof's skeleton, src/olof.js) in the ghosts' place and in our
 // own mirror image (#691). Without a weapon only an outline: alpha `fill` inside (very faint) rising to `rim` at the silhouette
 // (a fresnel term of power `rimPower`, in the shader, no extra pass), a little emissive so it reads in the dark; armed and solid it
