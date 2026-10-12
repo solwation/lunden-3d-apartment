@@ -578,6 +578,52 @@ Phone memory probe (#628): `python3 tools/devserve.py 8628 . &` then `PLAYWRIGHT
 
 Park basement entries (#729): run `PLAYWRIGHT_MODULE=/path/to/playwright CHROME_PATH=/path/to/chrome node tools/basemententrytest.cjs http://localhost:8729` after starting the development server. `SHOTS` overrides `/tmp/lunden-basement-entry/result.json`'s directory. The driver waits bounded initialization, clicks the real mouse-start button, obtains PointerLock and runs `tools/basemententrytest.html`: actual E focus from outside before below, closed/open/jamb traversal to both −1 landings and back, the touch action handler in controlled touch mode, far animated leaves, courtyard pick/collision exclusion, continuous park paving, tree/shrub-instance clearance and floor coverage. It uses `&test=lazy`, with no automatic rendering; this is not a physical-phone touch/FPS test. [Measured scope and manual full-quality images](../validation/issue-729/README.md).
 
+## Reset actual clock/Worker disposition (#840)
+
+Exactly one complete original `resettest` full/test pair ran on clean `fcf3a7c`
+with the entire current fixture unchanged (original executable `9645849^`):
+900×600, random cache-bust URLs, local/offline Worker transitions, real reset
+reload, all storage/drawing/queue/name/photo/score assertions and native clock.
+`/tmp/runtests-381263/resettest{,.test}.log` contains **31 PASS / 0 FAIL each**.
+The complete ordered duplicate-sensitive comparison differs only at row 19:
+`PASS at START at the real time (20:15)` versus
+`PASS at START at the real time (20:21)`. Every other complete raw row matches,
+including the full retained storage-key list, unchanged score **15**, synced and
+queued drawings, cat photo, real reset and final reload. Independent monitor
+PID/session **381262** recorded actual runner **381263** exit **1**; the mismatch
+is preserved, with no clock freeze/normalization, seed, retry or migration.
+
+Passive external observations supplement the published runner's frame-reuse
+metadata. **All four main loads per mode** have actual URL/native timeOrigin
+identity guards and live controller readings. Full controllers were false;
+test controllers were real, with `draw`, `setFull` and `wantsFrame` functions,
+`lazy=false`, `full=false`. No controller method was invoked by observation.
+App-ready full dimensions were **900×600** on all four loads; native
+beforeunload/pagehide shows the first **two** later expanded to **1280×800**
+with fullscreen active. The third left at 900×600 without fullscreen; the final
+retained fourth frame was also 900×600/no fullscreen. All test app-ready,
+before-navigation and final dimensions stayed **480×300**, including active
+fullscreen on the first two. Manual pagehide is separately marked untrusted;
+native lifecycle events are trusted. No fixture fullscreen guard was added.
+
+The public runner reuses one owned local Worker process at **8738** across
+modes. Each mode's original `DELETE http://localhost:8738/admin/all` returned
+**200**, freshly wiping its isolated local data before testing; it is not a
+fresh process per mode. Original offline port **9** and the plain fourth dev
+load's empty cloud URL remain intact. No production Worker was contacted or
+wiped. The original authored wipe and reset behavior were unchanged.
+
+Reported wall times were **475740 ms → 296508 ms**, including passive observer
+and final-capture overhead; no speedup/parity claim is made for mismatched raw
+outputs. Full final screenshot timed out after 10 seconds; inspected
+`/tmp/lunden-reset840/reset-test.png` shows cropped result text only, with no
+reset-screen visual claim. No extra app run was made for an image.
+`/tmp/lunden-reset840/{run-provenance,verified-disposition,full-loads,test-loads,monitor}.json`
+retains all eight identities, lifecycle/final snapshots, native wipe statuses,
+complete raw differences and actual exit. The full-original fixture remains
+byte-identical; only this documentation changes. Global #736 remains open;
+#741 remains open for #842's independent actual reloadtest disposition.
+
 ## TV actual comparison disposition (#803 / #752)
 
 One complete `tvtest` full/test pair ran on `fa51ae9` with only a temporary
@@ -1066,7 +1112,7 @@ Complete ordered PASS/FAIL lines are checked manually; timings are wall clock, n
 | `rearrangetvtest` | Migrated: all 9 ordered PASS lines and ALL PASS identical (logs `/tmp/runtests-160072`). | 159.183s → 136.002s |
 | `rearrangeuitest` | Exempt: landscape-phone viewport and touch target layout need 844×390. | Not run: deliberate viewport exemption. |
 | `reloadtest` | Unmigrated: real wall-clock values in PASS labels across scene loads prevent reliable exact output comparison. Source-audited blocker, not a rendering exemption. | Not measured; no output normalization. |
-| `resettest` | Unmigrated: the real current clock is included in a PASS label across four game loads; reliable exact row comparison would require forbidden normalization. This is a source-audited comparison blocker, not a rendering exemption. | Source audit only; no new browser run or timing (#747). |
+| `resettest` | Retained full after actual #840 pair: 31 PASS each, with only raw real-clock row 19 differing 20:15→20:21. All eight native load/controller/lifecycle identities and local Worker wipe-success records verified; no normalization or migration. | [Actual reset disposition](#reset-actual-clockworker-disposition-840): 475740 ms→296508 ms including observation/capture overhead; no speedup claim. |
 | `resttest` | Already migrated (#703). Reused source-matched full/test acceptance: all 152 ordered rows identical, including duplicate known failures (133 PASS / 19 FAIL); SOME FAILED both. Fixture blob `9e9d34a`, rest/player unchanged from full base `bcbf1ae`; test evidence `/tmp/lunden-776-rest-testpass.{log,json,txt}`, preserved full `/tmp/runtests-230917/resttest.log`. | 745.511s at actual 1280×800 → 569.040s at actual 480×300; controller false → true (#747/#776). |
 | `returnmarkerstest` | Migrated: all 15 ordered PASS rows and ALL PASS identical; no pageerrors. Actual return/placement actions, contour material/transform checks and interaction-ray exclusion unchanged; `/tmp/runtests-254016/`. | 83.109s at 640×400 → 70.054s at 480×300; controller false → true; wall-clock times include end-of-run screenshots (#747). |
 | `rifletest` | Migrated: all 12 ordered PASS rows and ALL PASS identical, including exact shot/hole/ammo/reload/drop/target-score values; no pageerrors. Only test-mode controllers suppress native fullscreen so written ?test also retains the intended fixture size; original full-mode path and all actions/assertions preserved. `/tmp/runtests-263389/`. | 132.827s at actual 900×600 → 89.373s at actual 480×300; controller null → real controller; both fullPage screenshots included (#747). |
