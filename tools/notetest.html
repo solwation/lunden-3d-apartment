@@ -58,18 +58,20 @@ f.onload = async () => {
   r = markNew(D, s);
   pass &= check(fmt(r) === '7* 6* 4 3' && !('lunden.changelogSeenT' in s.o), `without t: file order, by id as before (${fmt(r)})`);
   // Exercise the real loader: truncate after publication sorting, retaining all source entries.
-  const fetchBefore=w.fetch,keys=['lunden.changelogSeen','lunden.changelogSeenT'],seenBefore=keys.map(k=>w.localStorage.getItem(k));
+  const fetchBefore=w.fetch,keys=['lunden.changelogSeen','lunden.changelogSeenT','lunden.changelogCache'],seenBefore=keys.map(k=>w.localStorage.getItem(k));
   try {
     const history=Array.from({length:251},(_,i)=>({id:i+1,t:i+100,date:'2026-10-08',text:`change ${i+1}`}));
     history[0].t=1000; // lowest id was actually published last
     w.localStorage.setItem(keys[1],'300');
-    w.fetch=async()=>({json:async()=>history});
+    const resp=(d)=>async()=>({ok:true,status:200,json:async()=>d,text:async()=>JSON.stringify(d)}); // like a real Response (#755: the loader checks ok)
+    w.fetch=resp(history);
     const latest=await loadChangelog();
     pass &= check(latest.length===100&&latest[0].id===1&&latest[1].id===251&&latest[99].id===153&&latest.filter(e=>e.isNew).length===51,
       'latest 100 selected after sorting by publication time, with correct New markers');
     pass &= check(history.length===251&&w.localStorage.getItem(keys[0])==='251'&&w.localStorage.getItem(keys[1])==='1000','full history and last-seen metadata retained');
     for(const n of [0,50,100]) {
-      w.fetch=async()=>({json:async()=>history.slice(0,n)});
+      w.localStorage.removeItem(keys[2]); // an empty answer is a failure (#655): the loader would fall back on the cached copy
+      w.fetch=resp(history.slice(0,n));
       pass &= check((await loadChangelog()).length===n,`history with ${n} changes displays all entries`);
     }
   } finally {w.fetch=fetchBefore;keys.forEach((k,i)=>seenBefore[i]===null?w.localStorage.removeItem(k):w.localStorage.setItem(k,seenBefore[i]));}
