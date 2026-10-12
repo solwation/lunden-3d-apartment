@@ -396,7 +396,7 @@ images: `/tmp/lunden-objects820/inventory-*` and `inventorytest-*`. Item and #82
 | `grillinteractiontest.html` | Full rendering | CJS-controlled pointer lock/touch and actual scene/HUD screenshots; HTML requires run717 invocation. |
 | `grilltasktest.html` | Own fixture | Task modules and paper-canvas image, no main iframe. |
 | `grilltest.html` | Migrated (partial #820) | All 6 ordered PASS rows and ALL PASS byte-identical; real focus/action/flame/lamp/lid/F/burnout checks preserved, including 16 flames / light 0.79 / lid 1.90 rad. Actual full ready 900×600 → native fullscreen 1280×800, controller null; test 480×300/real API/no fullscreen. 102.908s → 82.333s, actual exit 0; `/tmp/runtests-465595/`. |
-| `hallcaretest.html` | Candidate | Care actions, item geometry, points and reload state. |
+| `hallcaretest.html` | Migrated (#821) | 24 identical ordered PASS rows, 0 FAIL across three real loads per mode; original/test actual 480×300, genuine native controller/API evidence. Care, geometry, reload/reset and fallback actions preserved; evidence below. |
 | `halltasktest.html` | Candidate | Task cards/actions, inventory/restocking and multiple real reloads. |
 | `hangtest.html` | Own fixture | buildWorld and garment bounding boxes, no main iframe/renderer. |
 | `holdtest.html` | Migrated (partial #820) | All 80 ordered PASS rows and ALL PASS byte-identical; all hold/grip/hug/fruit/placement predicates and duplicate table/retake rows preserved. Full ready 900×600 → native fullscreen 1280×800/controller null; test 480×300/real API/no fullscreen. 166.267s → 90.448s, actual exit 0; `/tmp/runtests-470986/`. |
@@ -1879,3 +1879,39 @@ runner parser/classifier reported FAIL in every case, with original output intac
 Artifacts: `/tmp/lunden-protocol848/native-dom.json`. This isolated protocol
 verification loads no apartment renderer and makes no kitten gameplay, full/test
 parity, screenshot or timing claim. The complete #822 comparison remains separate.
+
+## Hall care and keys: hall-care acceptance (#821, partial)
+
+One complete published jobs1 pair at frozen runtime `f109e19` used the whole
+original 480×300 fixture: life/shot/cloud-empty first load, then the two authored
+shot/cloud-empty/noon loads for reload and reset. Original fullscreen suppression,
+DPR .15, matrix updates, fallback actions and resetHome.go stub were unchanged.
+No new seed, normalization, baseline, quality override or assertion was added.
+
+Both complete raw logs are byte-identical (1733 bytes, 24 PASS, 0 FAIL, ALL PASS),
+including native crouched touch/floor bounds, hook/shelf/wardrobe occupancy,
+wrong/full-target refusal, original item identities, reload and real reset.
+All six app-ready documents, eight beforeunload/pagehide snapshots and two
+retained final snapshots stayed 480×300 without fullscreen; same-URL reloads
+were distinguished by their native timeOrigins. Full controllers were false;
+every test document had real draw/setFull/wantsFrame APIs, lazy/full false.
+Earlier runner null controller records remain explicit, completed by passive
+native evidence. There were no observer errors/warnings or raw pageerrors;
+all native cloud URLs were empty. Runner modes were verified and the independent
+monitor exited 0.
+
+Elapsed full/test times were 249.236/206.070 seconds including successful final
+captures, a single uncontrolled sample. Read-only capture timeout was set to
+60 seconds for both modes before freezing; no old artifacts or fixture output
+were changed. Both images were saved/reviewed: full contains all 24 text rows,
+ALL PASS and courtyard/HUD; test is cropped top text with later rows/verdict
+and scene below the image. Neither visually demonstrates the hall-item actions
+or rendered-scene equivalence. This differently cropped pair is excluded from
+qualified timing aggregation. Complete logs/summary: `/tmp/runtests-480283/`;
+frozen runtime/helper hashes, native phases, actual exit and images:
+`/tmp/lunden-hall821/hallcaretest/`. All frozen source blobs matched after the pair.
+
+Written hall-care now adds test only in the shared load query; all original
+queries/480×300/branches/assertions remain intact. Reversing only that prefix
+and descriptive comment recreates the exact frozen original. Hall-task and key
+remain pending under #821; #739/#736 stay open.
