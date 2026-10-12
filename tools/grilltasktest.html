@@ -2,6 +2,7 @@
 <style>body{font:16px system-ui;background:#edf0e8;margin:16px}pre{white-space:pre-wrap}img{width:512px}</style><pre id="out">running…</pre>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
 <script type="module">
+// no &test: independent task/module and paper-canvas fixture; no apartment iframe to migrate (#779).
 import {runGrillTaskChecks} from './grilltaskchecks.js';
 const lines=[];let pass=true;const check=(ok,name)=>{lines.push(`${ok?'PASS':'FAIL'} ${name}`);pass&&=!!ok;};
 try{window.grillTaskTest=runGrillTaskChecks(check);const img=new Image();img.src=window.grillTaskTest.paper;document.body.prepend(img);document.querySelector('#out').textContent=(pass?'ALL PASS':'FAIL')+'\n'+lines.join('\n');}

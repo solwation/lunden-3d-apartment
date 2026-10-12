@@ -1,5 +1,5 @@
 <!doctype html><html><meta charset="utf-8"><title>Entrance plants (#498)</title><pre id="out">running…</pre><script type="module">
-// no &test: measures drawing (setPixelRatio)
+// #779 audit: compare candidate; checks geometry/collision, not rendered pixels. setPixelRatio alone is not an exclusion.
 const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS':'FAIL')+' '+s);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
 try{
  const f=document.createElement('iframe');f.src='../index.html?phone&shot&cloud=';document.body.append(f);await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const w=f.contentWindow,A=w.__app,T=await w.eval("import('three')"),config=await w.eval("import('/src/config.js')"),C=config.ENTRANCE_PLANTS;

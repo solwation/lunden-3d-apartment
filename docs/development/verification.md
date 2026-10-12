@@ -259,6 +259,68 @@ Excluded/no-benefit rows follow source inspection and claim no new browser run o
 | `westbackdroptest.html` | Migrated: all 25 ordered PASS rows identical, including raycast/geometry counts; no FAIL. | 97 s → 73 s (single pair) |
 | `zzplanttest.html` | Migrated: all 13 ordered PASS rows identical, no FAIL across 2 game loads; local-only (`cloud` unset). | 128 s → 135 s (single pair, no speedup) |
 
+### d–l source inventory (#779; parent #739 / #736)
+
+Source audit only: 40 HTML fixtures comprise 36 actual-main iframes and four independent fixtures.
+None of those 36 game URLs currently selects test mode. The CJS grill wrapper is counted separately.
+The table is alphabetical; **Candidate** means a full ordered before/after comparison is still required,
+including every reload, actual-main assertion and original viewport. No fixture was migrated or run here.
+A `setPixelRatio` call or one final `render` call alone does not justify a rendering exclusion.
+
+| Fixture (`tools/`) | Audit disposition | Concrete source requirement |
+|---|---|---|
+| `detailtest.html` | Full rendering | Detail culler: nearby doors drawn and distant details hidden. |
+| `dishrackpicktest.html` | Candidate | Rack/cup raycasts and touch actions; inventory audit. |
+| `drawtest.html` | Conditional candidate | Samples own 2D paper canvas via projected pointer coordinates, not WebGL pixels; retain pointer coverage. |
+| `eastbackdroptest.html` | Candidate | Campus source geometry/rays and full/lowmem model-detail parity (retain lowmem subcase). |
+| `eggtest.html` | Candidate | Cooking/item actions, colour/opacity properties and save/load. |
+| `entrancedoortest.html` | Full rendering | 128×128 render-target pixel readback of handles/glazing. |
+| `entranceplantstest.html` | Candidate | Actual plant bounds, pots/floors and collision paths; DPR alone is not exclusion. |
+| `esctest.html` | Candidate | Escape/back state through actual DOM controls. |
+| `falltest.html` | Candidate | Fall, landing/damage, respawn and geometric paths. |
+| `fishtest.html` | Candidate | Fishing/item actions, tackle and save/load. |
+| `flowtest.html` | Full rendering | Actual renderer geometry-memory growth assertion over cooking and reloads. |
+| `focusperftest.html` | Own fixture | 48×48 GPU shader compilation/reuse/disposal; no main iframe. Importmap blocked: #780. |
+| `foliagetest.html` | Full rendering | Actual crown readPixels/shade count, cut-out shadows and lowmem atlas. |
+| `gabletest.html` | Candidate | Actual gable geometry/layout and ray checks. |
+| `garagetest.html` | Candidate | Garage geometry/doors, player navigation and saved state. |
+| `grillchickentest.html` | Own fixture | Own 800×520 scene/render images (toDataURL), chicken/grill modules; #780 importmap blocker. |
+| `grillinteractiontest.cjs` | Full rendering | Real pointer lock/touch and desktop/touch/eating scene/HUD screenshots; keep its authored viewport/capture path. |
+| `grillinteractiontest.html` | Full rendering | CJS-controlled pointer lock/touch and actual scene/HUD screenshots; HTML requires run717 invocation. |
+| `grilltasktest.html` | Own fixture | Task modules and paper-canvas image, no main iframe. |
+| `grilltest.html` | Candidate | Actual focus/actions and flame visibility, lamp k/lid state; preserve those properties. |
+| `hallcaretest.html` | Candidate | Care actions, item geometry, points and reload state. |
+| `halltasktest.html` | Candidate | Task cards/actions, inventory/restocking and multiple real reloads. |
+| `hangtest.html` | Own fixture | buildWorld and garment bounding boxes, no main iframe/renderer. |
+| `holdtest.html` | Candidate | Held object actions, parenting/visibility and stored state. |
+| `hudiconstest.html` | Full rendering | 844×390 HUD bounds, 44px controls, blur fallback and scene draw-call equality. |
+| `interactionoutlinetest.html` | Full rendering | 160×160 render-target brightness pixels, shader patches and draw-pass equality. |
+| `inventorytest.html` | Candidate | Actual inventory/action invariants. |
+| `itemtest.html` | Candidate | Item/module checks plus real-app item integration; keep both. |
+| `jetpacktest.html` | Candidate | Actual flight/collision/heat, flame visibility, controls and saved state. |
+| `jumpontest.html` | Candidate | Jump/landing/collision cases and actual controls. |
+| `keytest.html` | Candidate | Key/action access and saved state. |
+| `kittentest.html` | Candidate | Kitten behavior/actions and actual scene/state. |
+| `laptoptest.html` | Candidate | Actual laptop actions and DOM panel/state. |
+| `laundrytest.html` | Conditional candidate | Programme/actions/reloads with real-time values in rows; exact comparison may differ, no normalization. |
+| `life2test.html` | Candidate | Actual life/item action integration and persistence. |
+| `life3test.html` | Candidate | Actual life/item cooking/actions and persistence. |
+| `lifetest.html` | Candidate | Full life inventory/food/storage/reload action flows. |
+| `lifttest.html` | Candidate | Lift/stair navigation, panel state, collisions and reload. |
+| `lighttest.html` | Full rendering | Pool/wash intensities, lamp fading and actual detail-culler visibility. |
+| `loadingtest.html` | Full startup | Early loading/resume covers versus __app readiness; test mode changes warmup lifecycle. |
+| `loosemirrorstest.html` | Conditional candidate | Reflector registration/transforms and lamp pool anchors; final render alone is not pixel verification. |
+
+No valid paired d–l migration logs were found in retained `/tmp/runtests-*/summary.json` records
+(exact fixture-name matching). This is a local evidence search, not a claim that no external run exists.
+Antigravity's 9645849 report contains 18 **after-only** migrated tests, all a–c; its d–l comments do not
+establish verification. The two invalid d–l importmaps and the matching a–c map are tracked separately
+in #780; this audit leaves them unchanged. Evidence and source line references are retained in
+`/tmp/lunden-audit779/{inventory,source-evidence,retained-runner-evidence}.json`.
+Suggested independent three-fixture batches and conditional followups are in #779's issue comment;
+#739 / #736 remain open. Dynamic rows (especially laundry's live programme time) must remain exact;
+no normalization, assertion removal or baseline mutation is permitted to make a pair match.
+
 Current no-game-iframe HTML inventory: `basementfloortest`, `basementlayouttest`, `beershelfcachetest`, `cattest`, `combatremotetest`, `combatworldtest`, `focusperftest`, `grillchickentest`, `grilltasktest`, `hangtest`, `musictest`, `nerfcombattest`, `roomtest`, `startuptest`, `statsresettest`, `trapphusrailtest`, `walktest`, `wardrobetest`. They import actual modules or build their own fixture, so adding `&test` to the apartment URL has no benefit; `focusperftest` also measures performance. Their owners retain their existing verification scope.
 
 Remaining CJS ownership: #738 owns a–c HTML; #739 owns d–l HTML plus `grillinteractiontest`; #740 owns m–p HTML plus `ghosttest`, `ghostbadgetest`, `bowtest`; #741 owns r–t HTML plus `chattest`/`anontest`. `combattest` and `crashtest` already use test mode. `glrestoretest` and `phonememtest` retain full rendering/performance semantics; `nocheathints` has no game bootstrap, and `basemententrytest` already opens its actual-main iframe in `&test=lazy`. No result or timing is inferred from these classifications. #736 remains open until all groups publish actual evidence.

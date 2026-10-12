@@ -1,5 +1,5 @@
 <!doctype html><html lang="sv"><meta charset="utf-8"><title>Hall care test</title><pre id="out">running…</pre><script type="module">
-// no &test: measures drawing (setPixelRatio)
+// #779 audit: compare candidate; checks care/actions, item geometry and saved state, not rendered pixels.
 const lines=[];let pass=true;const check=(ok,text)=>{lines.push((ok?'PASS':'FAIL')+' '+text);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
 try{
  const f=document.createElement('iframe');f.width=480;f.height=300;document.body.append(f);
