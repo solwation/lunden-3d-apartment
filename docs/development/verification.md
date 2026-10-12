@@ -279,7 +279,7 @@ A `setPixelRatio` call or one final `render` call alone does not justify a rende
 | `entranceplantstest.html` | Candidate | Actual plant bounds, pots/floors and collision paths; DPR alone is not exclusion. |
 | `esctest.html` | Candidate | Escape/back state through actual DOM controls. |
 | `falltest.html` | Candidate | Fall, landing/damage, respawn and geometric paths. |
-| `fishtest.html` | Candidate | Fishing/item actions, tackle and save/load. |
+| `fishtest.html` | Migrated (#785) | 29 exact ordered PASS rows, zero FAIL: original 900×600 iframe enters native fullscreen (actual 1280×800/controller false, 132.108 s). Compare test was 480×300/controller true, 74.350 s (`/tmp/runtests-281141`). Guarded written test in normal 1280×800 runner stays 480×300/controller true, 72.279 s (`/tmp/runtests-291884`); matches retained full `/tmp/runtests-281141`. Fish-finger actions and full cat walking/animation coverage retained; testMode-only fullscreen suppression. |
 | `flowtest.html` | Full rendering | Actual renderer geometry-memory growth assertion over cooking and reloads. |
 | `focusperftest.html` | Own fixture | 48×48 GPU shader compilation/reuse/disposal; no main iframe. Importmap blocked: #780. |
 | `foliagetest.html` | Full rendering | Actual crown readPixels/shade count, cut-out shadows and lowmem atlas. |
