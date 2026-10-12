@@ -2,7 +2,7 @@
 const lines=[];let pass=true;const check=(ok,text)=>{lines.push((ok?'PASS':'FAIL')+' '+text);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
 try{
  const f=document.createElement('iframe');f.width=480;f.height=300;document.body.append(f);
- async function load(q){await new Promise(r=>{f.onload=r;f.src='../index.html?'+q});while(!f.contentWindow.__app)await wait(100);f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();const a=f.contentWindow.__app;a.renderer.setPixelRatio(.15);return a;}
+ async function load(q){await new Promise(r=>{f.onload=r;f.src='../index.html?test&'+q});while(!f.contentWindow.__app)await wait(100);f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();const a=f.contentWindow.__app;a.renderer.setPixelRatio(.15);return a;}
  let A=await load('life&shot&cloud='),L=A.life,I=L.items,P=A.toiletPaper;const T=await f.contentWindow.eval("import('three')"),{LIFE,TOILET_PAPER:C}=await f.contentWindow.eval("import('/src/config.js')");
  const run=(t,id)=>L.options(t).find(a=>a.id===id)?.run();let h=P.holders[0],old=h.item,spare=I.ofType('toiletRoll').find(i=>i.place.store==='toiletRollSpare');const originalIds=I.ofType('toiletRoll').map(i=>i.id).sort().join(),oldId=old.id,spareId=spare.id;
  check(I.ofType('toiletRoll').length===7&&P.holders.every(h=>h.left===C.sheets)&&I.ofType('toiletRoll').filter(i=>i.place.store==='toiletRollSpare').length===5,'two installed rolls and the five original HAVBÄCK spares, with no decorative copies');
