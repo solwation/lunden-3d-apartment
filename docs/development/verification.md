@@ -171,6 +171,17 @@ that never opens `../index.html` prints `n/a`, as does a run that timed out. A t
 Result lines are compared as written (numbers in them included): a line that shows a measured value will differ between runs, so look at
 the `only full` / `only &test` lines before calling a migration safe.
 
+`.cjs` tests run as `node tools/<name>.cjs <game url> [<worker url> testtoken]` in their own process group with `PLAYWRIGHT_MODULE` inherited and
+`SHOTS=/tmp/runtests-<pid>/shots`; a test whose header mentions `cloudflare/dev.mjs` gets a Worker the runner starts (one per job slot, port
+`--port`+1+slot). Exit code and `PASS`/`FAIL` lines are read from the output; a non-zero exit without FAIL lines counts as FAIL. `--compare`
+does not apply to them (they open the game themselves: use `tools/testkit.cjs`). The runner is the only thing that kills processes, by PID /
+process group: never `pkill -f`.
+
+Migrating a test (#736): run `node tools/runtests.cjs --compare <name>`; if the result lines are IDENTICAL, change the test's iframe to
+`f.width = 480; f.height = 300; f.src = '../index.html?test…'` (`.cjs`: `testkit.open`). Tests that measure or compare drawing, mirrors,
+light/shadow or pixels, or viewport/resolution, stay at full size (`// no &test: <reason>` in the file). Where one step needs a real picture,
+use `shot()` / `__app.testMode.setFull(true)` just there. Timings are noisy on the shared VM (load average 12–25): repeat before concluding.
+
 ## Testing
 
 `tools/statsresettest.html` (#712) is a light DOM/real stats-module test: dynamically scored counters, reset object identity, rendered zero, immediate persistence, repeated reset and actual reload, including taskCounts/legacyTaskPoints and restored first/repeat task awards (#709). It runs without the apartment/game bootstrap or WebGL; it does not replace gameplay button tests.
