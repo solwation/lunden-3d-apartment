@@ -548,6 +548,35 @@ invalid JSON and unresolved bare `three` import without starting the apartment.
 #780 owns the parser fix (also focusperftest and grillchickentest); #738 and #736
 remain open for actual migration work.
 
+## Test-mode source inventory: #748 batch (#786)
+
+This bounded source audit covers all eight remaining #748 fixtures. It changes
+comments only; no URL, viewport, assertion or baseline was migrated. No matching
+local `/tmp/runtests-*/summary.json` records were found for these eight names,
+so no complete preserved full/test comparison is claimed. #748, #741 and #736
+remain open. Future comparisons must retain every complete ordered result row,
+including duplicates and measured values.
+
+| Fixture | Source disposition | Separate next step |
+| --- | --- | --- |
+| sabertest | Exact-row timing blocker: `performance.now()` elapsed milliseconds for 40 steps are printed in a PASS/FAIL row, but are not the predicate's performance threshold. This is not a renderer exception. Original iframe 900×600. | Own deterministic-evidence decision before comparison; do not strip the measurement. |
+| scoretest | Candidate: score arithmetic, HUD text, actual item/cat interactions and penalty/reset state; no pixel, analyser or viewport assertion. Original iframe 900×600. | Own comparison child; preserve all large interaction branches and measured rows. |
+| secretarytest | Exact-row randomness review: the ordered `seen` names are printed. The fixture assigns an LCG only after earlier drawer opens; `SecretDrawer.pick()` excludes the retained current item, and seeding does not reset that item. Thus earlier unseeded state can affect later seeded rows. Original iframe 900×600, frozen noon. | Own source/evidence review before comparison; preserve names and order, not just set membership. |
+| sonostest | Exact-row media blocker: real HTML media `currentTime`, gain, AudioContext/decoder state and fetched-file names appear in rows. AudioContext presence alone does not establish a renderer/audio-quality exception. Original iframe 900×600. | Own media evidence decision, preserving real playback and autoplay behaviour; no clock normalization. |
+| southbackdroptest | Conditional state candidate: native mapped polygons/geometry, raycasts, triangle budget, camera/fog visibility and seasonal instance/material state. No rendered-pixel sample. Quality knobs change resolution, shadows, mirrors, particles and detail culling; camera far/fog state is configured separately, and `daycycle.js` computes fog from overcast. Original iframe 720×480. | Own comparison child if all native state rows match; retain weather/season assertions and full source provenance. |
+| spidersuittest | Viewport exception: actual touch jump/crouch/web button rectangles and pixel gaps are asserted alongside extensive suit/physics flows. Original iframe 900×600, frozen June noon. | Own single-fixture disposition issue preserving original viewport; no blanket physics migration. |
+| stairtest | Large candidate: native stair walking/ground/collision/soffit/handrail geometry and distances. `lights.switches` supplies switch positions, not rendered light output. Original iframe 640×400. | Own single-fixture comparison child preserving every geometry result row and diagnostic line. |
+| startuptest | Standalone `prepareStartup` module with injected fetch/navigation/storage/service-worker cases and real bounded timeout checks. No actual apartment bootstrap or renderer. | Standalone disposition; no apartment URL test flag needed. |
+
+Six correctly placed script comments record the standalone, viewport and
+conditional/blocker reasons. This is source evidence only, with no new runtime,
+performance or migration-equivalence result. Proposed work is three separate
+comparison children (`scoretest`, `stairtest`, conditional `southbackdroptest`),
+three separate blocker reviews (`sabertest`, `secretarytest`, `sonostest`), and a
+single-fixture viewport disposition for `spidersuittest`; `startuptest` needs no
+mode migration. Source snapshots and the local evidence search are retained in
+`/tmp/lunden-audit786/`.
+
 ## Test-mode migration: r–t (#741)
 
 Exemptions below are source-audited, with no new browser run.

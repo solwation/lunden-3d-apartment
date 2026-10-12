@@ -1,4 +1,5 @@
 <!doctype html><html><meta charset="utf-8"><title>Startup update (#512)</title><pre id="out">running…</pre><script type="module">
+// no &test: standalone prepareStartup module checks; no apartment bootstrap or renderer.
 import { prepareStartup } from '../src/startup.js';
 const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS':'FAIL')+' '+s);pass&&=!!ok};
 const local={version:'old',content:'oldhash'},remote={version:'new',content:'newhash'},html='<script type="module" src="src/bootstrap.js?v=new"><\/script>';

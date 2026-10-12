@@ -4,6 +4,7 @@
 <body>
 <pre id="out">running…</pre>
 <script>
+// Exact-pair blocker (#786): elapsed performance.now() milliseconds are part of a result row; preserve them.
 // The lightsaber in Sovrum 2 (#78): aim at it on the wall, "Ta lightsabern" → held in view, lit; looking
 // around fast swings it; held into the wall it burns a mark (#96); aim at the empty hooks on the Nerf board (#324), "Hänga tillbaka …" → back on the wall, off.
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/sabertest.html
