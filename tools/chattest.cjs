@@ -50,11 +50,12 @@ const W = 480, H = 300;
     const B = await open('', `${q}&at=2.6,9.9,140,0`);
     let wiggle = 0.05; // both stood still while the other loaded: a small turn brings them back
     const nudge = async () => { wiggle = -wiggle; for (const p of [A.page, B.page]) await p.evaluate((w) => { window.__app.camera.rotation.y += w; }, wiggle); };
-    // SwiftShader frames take seconds (more with other tests running): the pages drive ghosts.update() themselves
-    const drive = (p) => p.evaluate(() => { window.__ghosts.update(); return { on: window.__ghosts.on, ws: window.__ghosts.ws?.readyState ?? null, me: window.__ghosts.me, others: window.__ghosts.list().length, avail: window.__chat.available, frame: window.__app.renderer.info.render.frame }; });
+    // Counts alone can precede the first state: require real placed/visible ghosts and tags before typing.
+    // SwiftShader frames take seconds: the pages drive ghosts.update() themselves
+    const drive = (p) => p.evaluate(() => { window.__ghosts.update(); const peers = window.__ghosts.list(); return { on: window.__ghosts.on, ws: window.__ghosts.ws?.readyState ?? null, me: window.__ghosts.me, others: peers.length, ready: peers.length === 1 && peers.every(g => g.visible && g.tag), avail: window.__chat.available, frame: window.__app.renderer.info.render.frame }; });
     let diag = null;
     let polls = 0;
-    const both = await until(async () => { await nudge(); const a = await drive(A.page), b = await drive(B.page); diag = { a, b }; if (polls++ % 10 === 0) log(JSON.stringify(diag)); return a.me && b.me && a.others === 1 && b.others === 1 && a.avail; }, 600000);
+    const both = await until(async () => { await nudge(); const a = await drive(A.page), b = await drive(B.page); diag = { a, b }; if (polls++ % 10 === 0) log(JSON.stringify(diag)); return a.me && b.me && a.others === 1 && b.others === 1 && a.ready && b.ready && a.avail; }, 600000);
     check(!!both, 'A and B are in the room and see each other', JSON.stringify(diag));
     const keepAlive = setInterval(() => { nudge().then(() => Promise.all([drive(A.page), drive(B.page)])).catch(() => {}); }, 3000); // (GHOSTS.idleMs; the sends)
     const lines = (p) => p.evaluate(() => window.__chat.list().map((l) => l.text));
@@ -115,7 +116,7 @@ const W = 480, H = 300;
     await A.page.type('#terminal-code', 'Hej på dig', { delay: 30 });
     const flags = await A.page.evaluate((n) => window.__ghosts.messages - n, sentBefore);
     check(flags <= 2, 'typing sends a flag, not a message per key', `${flags} messages for 10 keys`);
-    const typingB = await until(async () => { const l = await bubbles(B.page); return l.length === 1 && l[0].typing ? l[0] : null; }, 90000);
+    const typingB = await until(async () => { const l = await bubbles(B.page); return l.length === 1 && l[0].typing && l[0].shown ? l[0] : null; }, 90000);
     check(typingB?.name === 'Olof' && typingB.text === 'Skriver' && typingB.shown, 'B sees "skriver…" over A\'s ghost', JSON.stringify(typingB));
     check(await typingRow(A.page) === '' && await typingRow(B.page) === '', 'the column never says who writes (#735)');
     // (the picture takes longer than CHAT.typingMs under SwiftShader: hold A's typing and B's bubble meanwhile)
@@ -127,7 +128,7 @@ const W = 480, H = 300;
     await A.page.type('#terminal-code', '!');
     check(!!(await until(async () => (await bubbles(B.page))[0]?.typing, 90000)), 'typing again: on again');
     await A.page.keyboard.press('Enter');
-    const said = await until(async () => { const l = await bubbles(B.page); return l.length === 1 && !l[0].typing ? l[0] : null; }, 90000);
+    const said = await until(async () => { const l = await bubbles(B.page); return l.length === 1 && !l[0].typing && l[0].shown ? l[0] : null; }, 90000);
     check(said?.text === 'Hej på dig!' && said.shown && await typingRow(B.page) === '', 'the sent line replaces "skriver…" as A\'s bubble', JSON.stringify(said));
     await shot(B.page, 'chat-B-line-bubble');
     await A.page.evaluate(() => { const c = window.__chat; c.tokens = 3; return c.send('Och en till, lite längre den här gången så att den bryts snyggt över raderna'); });
@@ -140,8 +141,13 @@ const W = 480, H = 300;
     check(!!(await until(async () => !(await bubbles(B.page)).some((b) => b.typing), 90000)), 'closing the bar puts "skriver…" off');
     const ttl = await B.page.evaluate(() => { const c = window.__chat; c.heard({ t: 'm', i: 'x', n: 'Olof', m: 'kvar?' }, window.__ghosts.others.values().next().value); c.update(61); return c.bubbleList().length; });
     check(ttl === 0, 'a bubble goes after CHAT.ttl', String(ttl));
-    const behind = await B.page.evaluate(() => { const c = window.__chat, g = window.__ghosts.others.values().next().value; c.heard({ t: 'm', n: 'Olof', m: 'bakom väggen' }, g);
-      const was = c.behind; c.behind = () => true; c.update(0); const hidden = !c.bubbleList()[0].shown; c.behind = was; c.update(0); return { hidden, back: c.bubbleList()[0].shown }; });
+    // First establish a genuinely visible baseline, then atomically test the existing occlusion hook and restore it.
+    await B.page.evaluate(() => { const c = window.__chat, g = window.__ghosts.others.values().next().value; c.heard({ t: 'm', n: 'Olof', m: 'bakom väggen' }, g); });
+    const visibleBeforeWall = await until(async () => (await bubbles(B.page)).find(b => b.text === 'bakom väggen' && b.shown), 90000);
+    const behind = visibleBeforeWall ? await B.page.evaluate(() => { const c = window.__chat, was = c.behind;
+      try { c.behind = () => true; c.update(0); const hidden = !c.bubbleList()[0].shown; c.behind = was; c.update(0); return { hidden, back: c.bubbleList()[0].shown }; }
+      finally { c.behind = was; }
+    }) : { hidden: false, back: false };
     check(behind.hidden && behind.back, 'hidden behind a wall like the tag', JSON.stringify(behind));
     const draws = await B.page.evaluate(() => window.__app.scene.getObjectByName('ghosts').children.map((r) => r.children.length));
     check(JSON.stringify(draws) === JSON.stringify(draws0) && await B.page.evaluate(() => document.querySelectorAll('#speech .chat-bubble').length === 1), 'no extra 3D objects per ghost (the bubble is one DOM element)', JSON.stringify({ draws0, draws }));

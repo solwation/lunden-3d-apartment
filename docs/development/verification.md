@@ -123,6 +123,24 @@ tools/chattest.cjs     the chat (#675): two pages, a browser each (480×300, `&q
                        phone: the column clear of the buttons and the stick's corner, "Anonym"; #676 "skriver…" / line bubbles over the ghost
                        (flag only, pause, close, replace, TTL, wall, leave, no 3D objects); #719 the word filter, /tysta + /prata;
                        screenshots into SHOTS. ~10 min. Also `node --test cloudflare/chat.test.mjs` (word filter)
+                       #744 source preflight found that peer counts and received bubble presence did not establish rendered visibility.
+                       Its fixture now waits for actual placed/visible peer tags before input, visible typing/sent bubbles before their existing
+                       assertions, and a visible baseline before the existing wall-hide/restore check. Authored poses, quality 0, viewport sizes,
+                       network/input paths, assertions and screenshot/TTL behavior are retained; no forced visibility or production timeout change.
+                       Current pre-edit exclusive desktop diagnostic at source base 8b6a98f observed 7 received typing and 4 sent-line samples,
+                       all natively shown, with visible ghost/tags, clear actual wall predicate and in-view projection. The first 14 ms sample was
+                       still awaiting transport. Camera matrix refresh changed projected x slightly (0.04↔0.09), without hiding the bubble.
+                       This did not reproduce a current product visibility failure or the obsolete chat-toggle error (already replaced by #765).
+                       Evidence: /tmp/lunden-chat744/{preflight.json,current-bubble-diagnostic.json,current-bubble-diagnostic.png,diagnostic-log.txt}.
+                       Complete current written run: 40 PASS / 2 FAIL, terminal SOME FAILED (2), no page errors; final leave assertion +960 s.
+                       All 43 check call sites remain (42 normal assertions plus crash catch). Typing/sent/wall/TTL, commands, mute, layout,
+                       phone reply and leave pass. The new AV (+588 s) / PÅ (+666 s) missing-message failures are tracked separately in child #838;
+                       #744 stays open. The menu flow was unchanged in this partial readiness step; its reconnect/send timing is not yet diagnosed.
+                       Both contexts initially use 480×300; the existing screenshot helper enlarges the capture page for six 960×600 desktop
+                       images (five B, one A), and two 667×375 phone images, then restores 480×300. All eight PNG dimensions were checked
+                       and images visually reviewed; this is not an entire-run-at-480 claim. A's last image includes its own “Olof syns inte” line,
+                       while B's expected received list lacks it: #838 must measure B's native rejoin/peer membership at the first send.
+                       Full raw log, summary, eight PNGs and runtime/fixture SHA256 provenance: /tmp/lunden-chat744/full/.
 tools/chatsettingtest.cjs (#765) actual Chat module plus production index DOM/CSS, bootstrap suppressed, no apartment or WebGL:
                        menu PÅ/AV persistence across reload, log/speech/typing visibility with outgoing flags preserved (#735),
                        60-second TTL, wrapped row capacity after resize/rotation and while AV, safe areas at phone/desktop sizes.
