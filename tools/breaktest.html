@@ -101,7 +101,8 @@ f.onload = async () => { try {
   const blaster = toys.blasters[1];
   blaster.take();
   player.spawn(3.5, 3.6, 0); run(0.1);
-  const gc = centre(glass.model), eye = camera.position.clone(), dir = gc.clone().setY(gc.y + 0.15).sub(eye).normalize(); // over it: the dart drops
+  // The former +0.15 m aim cleared the actual glass rim at this dart speed (#804).
+  const gc = centre(glass.model), eye = camera.position.clone(), dir = gc.clone().sub(eye).normalize();
   toys.darts.fire(eye.clone().addScaledVector(dir, 0.3), dir);
   run(1);
   check(glass.broken, 'a Nerf dart breaks the glass');

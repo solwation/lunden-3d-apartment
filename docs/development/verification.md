@@ -526,6 +526,33 @@ Phone memory probe (#628): `python3 tools/devserve.py 8628 . &` then `PLAYWRIGHT
 
 Park basement entries (#729): run `PLAYWRIGHT_MODULE=/path/to/playwright CHROME_PATH=/path/to/chrome node tools/basemententrytest.cjs http://localhost:8729` after starting the development server. `SHOTS` overrides `/tmp/lunden-basement-entry/result.json`'s directory. The driver waits bounded initialization, clicks the real mouse-start button, obtains PointerLock and runs `tools/basemententrytest.html`: actual E focus from outside before below, closed/open/jamb traversal to both −1 landings and back, the touch action handler in controlled touch mode, far animated leaves, courtyard pick/collision exclusion, continuous park paving, tree/shrub-instance clearance and floor coverage. It uses `&test=lazy`, with no automatic rendering; this is not a physical-phone touch/FPS test. [Measured scope and manual full-quality images](../validation/issue-729/README.md).
 
+## Break fixture Nerf aim correction (#804)
+
+The shared full/test Nerf failure in #802 came from the fixture's manual aim:
+it targeted the glass center plus 0.15 m. A light preflight used the exact
+source-extracted first BESTÅ wine-glass LatheGeometry, actual `stepNerf`
+(speed 30 m/s, gravity 4 m/s²) and actual `Marks.segment` swept intersections.
+That original trajectory crossed the glass center plane about 47.5 mm above
+the rim, with no glass intersections; center aim produced two genuine bowl
+intersections. This preflight used no apartment renderer or forced hit.
+Source/module provenance is in `/tmp/lunden-nerf804/`.
+
+The only executable fixture change removes that vertical aim offset. The real
+`toys.darts.fire`, its launch offset and one-second simulation remain unchanged,
+as do every glass/bottle/shatter/score assertion and production module.
+One targeted actual CLI `runtests breaktest.html --jobs 1 --port 8737` on
+`3af9f37` plus this narrow patch exited 0: **21 PASS / 0 FAIL**, 104.451 s,
+with no browser errors, crashes or timeouts. Actual original URL contained no
+`test`, controller was false and observed viewport was **900×600**; native
+fullscreen did not expand this run. The runner reports `mode: written` and
+`modeVerified: null` because this was a single fixture acceptance, not a mode
+comparison. Raw evidence: `/tmp/runtests-306705/{breaktest.log,summary.json}`;
+source-byte/coverage checks: `/tmp/lunden-nerf804/actual-run-checks.json`.
+
+The existing no-test source and #802's comparison disposition remain in place.
+This fixes the manually elevated fixture shot; it does not establish migration
+parity or resolve the separate test-only far rifle shot/points issue #805.
+
 ## Test-mode comparison: objects and motion (#802)
 
 Actual CLI `--compare baskettest cartest breaktest --jobs 1 --port 8737`
