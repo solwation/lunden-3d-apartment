@@ -1285,3 +1285,32 @@ flagging is not parity evidence. First pair frozen runtime `a709ebb`; source/set
 | bridgetest | Existing `?test` accepted after original 720×480 `?shot&cloud=` baseline on frozen `ea86a20`; current fixture restored byte-for-byte. | `/tmp/runtests-408367`: 17 ordered PASS, 0 FAIL in each mode; complete logs byte-identical, including all joins, unchanged camera-layer water ray and exact 2770-triangle budget. Actual app-ready and final snapshots show full 720×480/null controller versus test 480×300/real controller API, neither fullscreen. Wall times 103.042s → 78.214s include both reviewed captures; independent monitor exit 0. Final images show native courtyard views, not a bridge visual inspection or rendered-scene equivalence claim. |
 
 All four #806 fixtures now have current-assertion full/test evidence; their previously committed test-mode setup is retained without source edits, new seeds, normalization or baseline changes. HUD proves native logical state, and the other pairs preserve complete ordered native results; captures do not establish rendered-scene equivalence.
+
+## Placement and stored photos: BESTÅ acceptance (#808, partial)
+
+`bestaplacementtest` now has actual original-full/test evidence supporting its
+existing 480×300/test loader. At frozen runtime `f766604`, the baseline restored
+only the original `?life&shot&r=` query from `9645849^`; both authored main loads,
+current assertions, random cache-busting values, and the original unconditional
+fullscreen suppression remained unchanged. The published runner used one job:
+`--compare bestaplacementtest.html --port 8737 --timeout 20 --verbose`.
+
+Both complete raw logs are byte-identical (11 PASS, 0 FAIL, ALL PASS), including
+the real wall preview/rotation, old floor-placement save, all six doors, loose
+contents, reload persistence, targeted restore and ceiling constraint. Both
+unique app-ready documents per mode, the first document's beforeunload/pagehide
+snapshots and the retained final document stayed 480×300 without fullscreen.
+Full controllers were false; test controllers were true with native draw,
+setFull and wantsFrame functions, lazy/full false. All URL/timeOrigin identities
+matched, with no observer errors or transport warnings. Runner modes were
+verified and the independently monitored process exited 0.
+
+Elapsed full/test times were 157.834/146.059 seconds, including passive capture
+overhead. Both final screenshots timed out after 10 seconds; no image or visual
+equivalence is claimed, and this pair is excluded from speedup aggregation.
+Complete logs/summary are in `/tmp/runtests-410251/`; frozen fixture/runtime
+hashes, helper hashes, native snapshots, capture errors and actual process exit
+are retained in `/tmp/lunden-placement808/besta/`. All frozen runtime blobs
+matched after the pair. The written loader returns to its existing test query;
+no executable assertion or placement behavior changed. Art-level and board
+comparisons remain pending under #808; #738 and #736 remain open.
