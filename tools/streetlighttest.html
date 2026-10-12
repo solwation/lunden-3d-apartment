@@ -19,7 +19,8 @@ async function run() {
   const w = f.contentWindow;
   while (!w.__app) await wait(100);
   const { world, scene } = w.__app;
-  const { SITE } = await w.eval(`import('${new URL('../src/config.js', location)}')`);
+  const { SITE, HUS_L } = await w.eval(`import('${new URL('../src/config.js', location)}')`);
+  const { husLLayout } = await w.eval(`import('${new URL('../src/exterior.js', location)}')`);
   const { groundY } = await w.eval(`import('${new URL('../src/surroundings.js', location)}')`);
   const lines = [];
   let pass = true;
@@ -33,18 +34,62 @@ async function run() {
   const pools = scene.getObjectByName('streetLampPools');
   const wash = scene.getObjectByName('doorLampWash'), doorPools = scene.getObjectByName('doorLampPools');
   check(!!pools, 'the street lamps\' pools exist');
-  check(wash && doorPools && wash.geometry.attributes.position.count === 8 * 6, `a door light by each of the eight front doors (${wash ? wash.geometry.attributes.position.count / 6 : 0} washes)`);
+  const DL = HUS_L.doorLamp, PL = HUS_L.portikLamp, layout = husLLayout(world.size.x);
+  const frontDoor = world.openings.north.find(o => o.y0 < 0.05 && o.y1 > 2);
+  // exterior appends one complete primitive per front door, then the portik parts.
+  // Verify each interval's own center/bounds: count alone cannot detect a missing or duplicated door.
+  const poolCount = rings => (2 * rings - 1) * 20 * 3; // only one triangle at the center (groundglow.js)
+  const frontVertices = poolCount(5), ceilingVertices = poolCount(4);
+  const wp = wash.geometry.attributes.position, dp = doorPools.geometry.attributes.position;
+  const near = (a, b) => Math.abs(a - b) < 1e-4;
+  const bounds = (pos, start, count) => {
+    const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
+    for (let i = start; i < start + count; i++) for (let axis = 0; axis < 3; axis++) {
+      const value = pos.getComponent(i, axis); min[axis] = Math.min(min[axis], value); max[axis] = Math.max(max[axis], value);
+    }
+    return { min, max, center: min.map((value, axis) => (value + max[axis]) / 2) };
+  };
+  check(!!frontDoor && layout.units.length === 8 && new Set(layout.units.map(u => u.lower)).size === 8 &&
+    wp.count === 8 * 6 + PL.z.length * 2 * 6 && dp.count === 8 * frontVertices + PL.z.length * (frontVertices + ceilingVertices),
+    'eight distinct front doors plus separately sized portik geometry intervals');
+  let frontInside = 0, frontGroundError = 0;
+  for (const [i, unit] of layout.units.entries()) {
+    const x = unit.ox + frontDoor.x1 + DL.dx, wb = bounds(wp, i * 6, 6), pb = bounds(dp, i * frontVertices, frontVertices);
+    check(near(wb.center[0], x) && near(wb.center[1], DL.wash.y) && wb.max[2] < -0.01 && near(wb.min[2], wb.max[2]) &&
+      near(wb.max[0] - wb.min[0], DL.wash.w) && near(wb.max[1] - wb.min[1], DL.wash.h),
+      `${unit.lower}: complete façade wash at its own front door's latch side`);
+    check(near(dp.getX(i * frontVertices), x - 0.3) && near(dp.getZ(i * frontVertices), DL.pool.z) &&
+      near(pb.center[0], x - 0.3) && near(pb.center[2], DL.pool.z) && near(pb.max[0] - pb.min[0], DL.pool.rx * 2) && near(pb.max[2] - pb.min[2], DL.pool.rz * 2),
+      `${unit.lower}: complete ground pool below its own door lamp`);
+    for (let j = i * frontVertices; j < (i + 1) * frontVertices; j++) {
+      if (dp.getZ(j) > -0.01) frontInside++;
+      frontGroundError = Math.max(frontGroundError, Math.abs(dp.getY(j) - groundY(dp.getX(j), dp.getZ(j)) - 0.05));
+    }
+  }
+  const [pk0, pk1] = layout.portik, pkx = (pk0 + pk1) / 2;
+  let portikOK = true;
+  for (const [i, z] of PL.z.entries()) {
+    for (const side of [0, 1]) {
+      const b = bounds(wp, (8 + i * 2 + side) * 6, 6), edge = side ? pk1 : pk0;
+      portikOK &&= Math.abs(b.center[0] - edge) < 0.05 && b.center[0] > pk0 && b.center[0] < pk1 && near(b.min[0], b.max[0]) &&
+        near(b.center[1], PL.wash.y) && near(b.center[2], z) && near(b.max[2] - b.min[2], PL.wash.w) && near(b.max[1] - b.min[1], PL.wash.h);
+    }
+    const start = 8 * frontVertices + i * (frontVertices + ceilingVertices);
+    portikOK &&= near(dp.getX(start), pkx) && near(dp.getZ(start), z) && near(dp.getX(start + frontVertices), pkx) && near(dp.getZ(start + frontVertices), z);
+    for (let j = start; j < start + frontVertices + ceilingVertices; j++) {
+      const expectedY = j < start + frontVertices ? groundY(dp.getX(j), dp.getZ(j)) + 0.05 : HUS_L.core.portikHeight - 0.012;
+      portikOK &&= Math.abs(dp.getY(j) - expectedY) < 1e-3;
+    }
+  }
+  check(portikOK, 'portik wall, ground and ceiling glows are separate legitimate geometry');
   await run(0, 1);
   check(!pools.visible, 'by day the pools are hidden');
   check(!wash.visible && !doorPools.visible, 'by day the door lights are off');
   await run(1, 2.5);
-  const DL = (await w.eval(`import('${new URL('../src/config.js', location)}')`)).HUS_L.doorLamp;
   check(wash.visible && doorPools.visible && Math.abs(wash.material.opacity - DL.wash.peak) < 1e-6 && Math.abs(doorPools.material.opacity - DL.pool.peak) < 1e-6,
     `after dusk the door lights are lit (wash ${wash.material.opacity.toFixed(2)}, pool ${doorPools.material.opacity.toFixed(2)})`);
-  const dp = doorPools.geometry.attributes.position;
-  let inside = 0;
-  for (let i = 0; i < dp.count; i++) if (dp.getZ(i) > -0.01) inside++;
-  check(inside === 0, `the door pools stay in front of the façade (${inside} vertices behind it)`);
+  check(frontInside === 0, `the eight front-door pools stay in front of the façade (${frontInside} vertices behind it)`);
+  check(frontGroundError < 1e-3, `all front-door pool vertices follow the actual ground (${frontGroundError.toFixed(4)} m off)`);
   const P = SITE.street.lamps.pool;
   check(pools.visible && Math.abs(pools.material.opacity - P.peak) < 1e-6, `at night they are lit (opacity ${pools.material.opacity.toFixed(2)} of ${P.peak})`);
   // every pool vertex lies just over the ground

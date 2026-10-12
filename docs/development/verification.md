@@ -373,3 +373,12 @@ Complete ordered PASS/FAIL lines are checked manually; timings are wall clock, n
 For the first four migrated fixtures (follow, placement, reset and TV), the runner resize init script raised a document-root
 `appendChild` pageerror (#760), so its CSS injection was skipped. Each fixture already sets
 480×300 in both runs, keeping this dimension pair valid. The game URL redirect still enabled `&test`.
+
+
+Street-light fixture correction (#762): `tools/streetlighttest.html` now validates each L1001–L1008 front-door wash
+and its complete ground-pool interval against the actual `world.openings` and `husLLayout` positions, rather than a
+combined batch count. Portik wall/floor/ceiling geometry is checked separately. All 4320 front-pool vertices remain
+in front of the façade and follow `groundY`; original day/night/fade/street-slope requirements remain. Actual app run:
+**29 PASS, 0 FAIL**, 71 s, no pageerrors, existing `&test` and 480×300 iframe unchanged. Evidence:
+`/tmp/runtests-252850/streetlighttest.log` and `summary.json`. The older migration pair above remains historical evidence;
+no production, migration, baseline or changelog changed, and no new surveyed/Peab measurement is claimed.
