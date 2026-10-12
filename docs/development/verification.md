@@ -83,7 +83,10 @@ tools/combattest.cjs   fights (#667): three pages (A, B, C) against dev.mjs: una
                        fight, B shown no shots while unarmed; A's missed dart drawn on B from the same start / direction / speed (the blasters'
                        pool, drawn only), A's thrown ball on B (screenshot), ten hits (points / deductions / lives), out of lives → start,
                        full lives, weapon and stats kept; C's screenshot.
-                       Pages drive ghosts / combat updates themselves (SwiftShader frames take seconds); ~10 min. Also players.test.mjs
+                       Pages drive ghosts / combat updates themselves (SwiftShader frames take seconds); ~10 min. A pause over
+                       GHOSTS.idleMs (a slow screenshot under load) disconnects the still pages, so before each shot that counts the
+                       test waits (`ready()`) until A and B each have the other in combat.foes() (#721: else the bow shot went
+                       nowhere); every socket close is logged with its code, and A must not reconnect during the ten hits. Also players.test.mjs
 tools/combatworldtest.html combat collision (#715/#714), actual Three modules without WebGL: 462 focused checks cover native
                        hit/face/UV/normal equivalence, private grid/spatial-index quotas and ownership, authored bounds,
                        mutations/disposal, layers/custom propagation, instanced paths, curved finite segments, cooperative
