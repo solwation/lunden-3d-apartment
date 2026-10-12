@@ -338,8 +338,8 @@ test shows all six raw result rows plus the closed-grill/night scene. Neither pr
 pixel equivalence. Timings include both captures and are one shared-machine sample, not a controlled benchmark.
 All 247 frozen source paths and frozen fixture/helper hashes match. Raw logs: `/tmp/runtests-465595/`; provenance,
 actual ready/final phases, independent monitor PID/SID/exit and both PNGs: `/tmp/lunden-objects820/grill-*` and
-`grilltest-*`. The later hold/inventory acceptances are recorded below; item still needs its own complete pair.
-#820/#739/#736 remain open.
+`grilltest-*`. The later hold/inventory/item acceptances are recorded below; the bounded #820 scope is now complete.
+Broader #739/#736 remain open.
 
 
 #820 hold acceptance at frozen `4f865cf`: complete 3348-byte raw logs are byte-identical, all 80 ordered PASS
@@ -356,7 +356,7 @@ covers the upper fixture text in full (later result rows remain visible); test s
 Neither establishes intermediate hand/hug/fruit/placement pixel equivalence. Single shared-machine sample, not a
 controlled benchmark. All 247 frozen source paths and exact fixture/helper hashes match. Raw logs:
 `/tmp/runtests-470986/`; provenance, actual ready/final phases, independent PID/SID/exit and both images:
-`/tmp/lunden-objects820/hold-*` and `holdtest-*`. Inventory acceptance follows; item and #820/#739/#736 remain open.
+`/tmp/lunden-objects820/hold-*` and `holdtest-*`. Inventory/item acceptances follow; broader #739/#736 remain open.
 
 
 #820 inventory acceptance at frozen `aa5b2c2`: all 18 ordered PASS rows and ALL PASS match in complete
@@ -372,7 +372,25 @@ Full 186.611s → test 143.456s include successful end captures. Both PNGs were 
 the normal-start house façade, not inventory-item or pixel equivalence. Single shared-machine sample, not a
 controlled benchmark. All 247 frozen source paths and exact fixture/helper hashes match. Raw logs:
 `/tmp/runtests-477108/`; actual per-load/pre-remove/final records, provenance, independent PID/SID/exit and both
-images: `/tmp/lunden-objects820/inventory-*` and `inventorytest-*`. Item and #820/#739/#736 remain open.
+images: `/tmp/lunden-objects820/inventory-*` and `inventorytest-*`. Item acceptance follows; broader #739/#736 remain open.
+
+
+#820 item acceptance at frozen `00e816c`: complete 3124-byte raw logs match, all 64 ordered PASS rows and
+ALL PASS, genuine independently monitored exit 0. This includes 46 domain and 18 real-app view-adapter rows,
+with both original try/catch sections, instance/amount/place/carrier/store/save/audit/event rules and model
+parenting/amount/holding/placement/fridge predicates unchanged. The source estimate of 65 counted an `I.check`
+domain-helper call; it was not an extra emitted assertion. Exact dynamic IDs/events and cucumber y0.754 remain.
+One actual main document per mode is proved by distinct child URL/timeOrigin at ready/final: full 800×500/controller
+null versus test 480×300/real controller API, both without fullscreen. Final migration changes only iframe dimensions
+and appends test to the original life/shot query. No guard, new seed, wait, pose/matrix/quality, domain/view assertion,
+storage or output normalization was added. The original module domain tests still run before the actual app adapter.
+Full 147.304s → test 80.783s include successful end captures. Both PNGs were inspected: all 64 rows vertically and
+final kitchen worktop with cucumber (some long test rows crop at the right edge), not intermediate carrier/hand/amount-change
+pixel equivalence. One shared-machine
+sample, not a controlled benchmark. All 247 frozen source paths and exact fixture/helper hashes match. Raw logs:
+`/tmp/runtests-486410/`; source/provenance, actual ready/final phases, independent PID/SID/exit and both images:
+`/tmp/lunden-objects820/item-*` and `itemtest-*`. All four #820 fixtures are accepted: grill 6, hold 80, inventory 18,
+item 64 identical PASS rows; this closes only the bounded #820 scope, not broader #739/#736.
 
 | Fixture (`tools/`) | Audit disposition | Concrete source requirement |
 |---|---|---|
@@ -403,7 +421,7 @@ images: `/tmp/lunden-objects820/inventory-*` and `inventorytest-*`. Item and #82
 | `hudiconstest.html` | Full rendering | 844×390 HUD bounds, 44px controls, blur fallback and scene draw-call equality. |
 | `interactionoutlinetest.html` | Full rendering | 160×160 render-target brightness pixels, shader patches and draw-pass equality. |
 | `inventorytest.html` | Migrated (partial #820) | All 18 ordered PASS rows and ALL PASS byte-identical; original storage/scenario/integration/dynamic-key predicates preserved. Both actual full documents 700×450/controller null → both test 480×300/real API, no fullscreen. 186.611s → 143.456s, actual exit 0; `/tmp/runtests-477108/`. |
-| `itemtest.html` | Candidate | Item/module checks plus real-app item integration; keep both. |
+| `itemtest.html` | Migrated (#820) | All 64 ordered PASS rows and ALL PASS byte-identical: 46 domain + 18 real-app adapter checks, both try/catch sections preserved. Actual full 800×500/controller null → test 480×300/real API, no fullscreen. 147.304s → 80.783s, actual exit 0; `/tmp/runtests-486410/`. |
 | `jetpacktest.html` | Candidate | Actual flight/collision/heat, flame visibility, controls and saved state. |
 | `jumpontest.html` | Accepted in #822 | Complete original full/test logs byte-identical, 35 ordered PASS plus exact full info furniture diagnostic; native original 900×600/null controller versus 480×300/real test APIs. Authored pointerLock getter/synthetic event retained. |
 | `keytest.html` | Candidate | Key/action access and saved state. |
