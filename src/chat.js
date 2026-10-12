@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { CHAT, GHOSTS } from './config.js';
-import { setIcon } from './hudicons.js';
 import { ANON } from './ghosts.js';
 import { gameView } from './viewport.js';
 import { censor } from './chatfilter.js';
@@ -14,8 +13,8 @@ export const COMMANDS = [
 // The chat (#675): while the players' room (#666, src/ghosts.js) is on, the console (>_ / § / Enter) sends what you write
 // to the others; a code or a line starting with '/' stays a cheat (src/cheats.js `isCommand`, run in main.js, never sent).
 // Lines show see-through in a column on the left (#chat-log, a DOM overlay: no draw calls), newest at the bottom, at most
-// CHAT.show, each fading out after CHAT.ttl s. The button beside it (#chat-toggle) hides / shows the column (remembered in
-// localStorage CHAT.hiddenKey); hidden, it counts what came in meanwhile. Text is plain text everywhere (textContent).
+// as many complete lines as fit in the viewport, each fading out after CHAT.ttl s. The main-menu setting hides the
+// column and ghost bubbles together (remembered in localStorage CHAT.hiddenKey). Text is plain text everywhere (textContent).
 // Without the room (no cloud, ?mp=0, the month's cap reached) none of this shows and the console is the old one.
 //
 // Bubbles (#676): while someone writes, "skriver…" (three dots) floats over their ghost; their sent line replaces it, for
@@ -24,7 +23,7 @@ export const COMMANDS = [
 // someone else's goes off by itself after CHAT.typingStale ms without word (a lost connection), and with their ghost.
 // Each bubble is one DOM element in the speech layer (greet.js's `.say` style, no draw calls), placed over the ghost's
 // tag, smaller further away, hidden with the tag (far away, behind a wall, off screen). There is no own body in first
-// person: your own lines are in the column (never a "Du skriver" row, #735). Shown also while the column is hidden (#675's button).
+// person: your own lines are in the column (never a "Du skriver" row, #735). Hidden together with the column by the main-menu setting (#765).
 const tmp = new THREE.Vector3();
 
 /** Plain text as the room cleans it (cloudflare/players.js `cleanText`): control, zero-width and bidi characters out,
@@ -38,14 +37,21 @@ export function cleanText(s) {
 const cleanName = (s) => (typeof s === 'string' ? s.replace(/[\u0000-\u001f<>&"]/g, '').trim().slice(0, 20) : '') || ANON;
 
 export class Chat {
-  /** ghosts: the Ghosts; log: the column element; toggle: its hide / show button; name(): our name; camera + layer (the
+  /** ghosts: the Ghosts; log: the column element; setting: the main-menu show-chat button; name(): our name; camera + layer (the
    * speech bubbles' element) + hidden(p) (a wall between the eye and p) for the bubbles over the ghosts (#676). */
-  constructor({ ghosts, log, toggle, name = () => '', camera = null, layer = null, hidden = () => false }) {
-    Object.assign(this, { ghosts, log, toggle, name, camera, layer, behind: hidden, lines: [], unseen: 0, tokens: CHAT.burst, refilled: 0, open: false, sent: 0,
+  constructor({ ghosts, log, setting, name = () => '', camera = null, layer = null, hidden = () => false }) {
+    Object.assign(this, { ghosts, log, setting, name, camera, layer, behind: hidden, lines: [], tokens: CHAT.burst, refilled: 0, open: false, sent: 0,
       bubbles: new Map(), typing: false, lastKey: 0, lastOn: 0, muted: new Set() });
     try { this.hidden = localStorage.getItem(CHAT.hiddenKey) === '1'; } catch { this.hidden = false; }
     ghosts.onTalk = (m, g) => this.heard(m, g);
-    toggle?.addEventListener('click', (e) => { e.preventDefault(); this.hide(!this.hidden); });
+    setting?.addEventListener('click', () => this.hide(!this.hidden));
+    const trim = () => this.trim();
+    window.addEventListener('resize', trim);
+    window.addEventListener('orientationchange', trim);
+    window.visualViewport?.addEventListener('resize', trim);
+    this.resizeObserver = new ResizeObserver(trim);
+    this.resizeObserver.observe(log.parentElement);
+    this.resizeObserver.observe(log);
     this.render();
   }
 
@@ -127,6 +133,7 @@ export class Chat {
     let b = this.bubbles.get(g.id);
     if (!b) {
       const el = document.createElement('div');
+      el.style.visibility = 'hidden'; // positioned on the next frame, never briefly visible while AV
       this.layer.append(el);
       b = { el, ghost: g };
       this.bubbles.set(g.id, b);
@@ -153,29 +160,48 @@ export class Chat {
     el.append(document.createTextNode(text));
     this.log.append(el); // (the log holds only lines; who writes is shown by the bubbles, never in the column, #735)
     this.lines.push({ el, t: CHAT.ttl });
-    while (this.lines.length > CHAT.show) this.lines.shift().el.remove();
-    if (this.hidden && !mine) this.unseen++;
     this.render();
   }
 
   hide(on) {
     this.hidden = on;
-    if (!on) this.unseen = 0;
     try { localStorage.setItem(CHAT.hiddenKey, on ? '1' : '0'); } catch { /* not remembered */ }
     this.render();
   }
 
-  /** The console is open in chat mode (the toggle shows then too). */
+  /** The console is open in chat mode. */
   opened(on) { this.open = on; if (!on) this.stopTyping(); this.render(); }
 
   render() {
     const avail = this.available;
     this.log.hidden = !avail || this.hidden;
-    if (!this.toggle) return;
-    this.toggle.hidden = !avail || !(this.open || this.lines.length || this.unseen || (this.hidden && this.open));
-    setIcon(this.toggle, this.hidden ? 'chat-off' : 'chat', this.hidden ? 'Visa chatten' : 'Dölj chatten');
-    this.toggle.setAttribute('aria-pressed', String(this.hidden));
-    this.toggle.dataset.unseen = this.hidden && this.unseen ? String(Math.min(this.unseen, 99)) : '';
+    if (this.setting) {
+      this.setting.querySelector('b').textContent = `Visa chat: ${this.hidden ? 'AV' : 'PÅ'}`;
+      this.setting.setAttribute('aria-pressed', String(!this.hidden));
+    }
+    this.trim();
+    if (this.camera && this.bubbles.size) this.place(0);
+  }
+
+  /** Measure actual wrapped rows, including while hidden; retain only complete newest messages (#765). */
+  trim() {
+    if (!this.lines.length || !this.log.parentElement.getClientRects().length) return;
+    const hidden = this.log.hidden, visibility = this.log.style.visibility;
+    this.log.style.visibility = 'hidden';
+    this.log.hidden = false;
+    const style = getComputedStyle(this.log);
+    const height = Math.max(0, Math.min(parseFloat(style.maxHeight) || 0,
+      (window.visualViewport?.height ?? innerHeight) - this.log.getBoundingClientRect().top));
+    const gap = parseFloat(style.rowGap) || 0;
+    let used = 0, keep = this.lines.length;
+    for (let i = this.lines.length - 1; i >= 0; i--) {
+      const next = this.lines[i].el.getBoundingClientRect().height + (used ? gap : 0);
+      if (used + next > height) break;
+      used += next; keep = i;
+    }
+    for (const line of this.lines.splice(0, keep)) line.el.remove();
+    this.log.hidden = hidden;
+    this.log.style.visibility = visibility;
   }
 
   /** Each frame: lines fade out and go after CHAT.ttl s; our "skriver…" off after a pause; the bubbles follow the ghosts. */
@@ -197,7 +223,7 @@ export class Chat {
       tmp.y += tagY + GHOSTS.tagHeight / 2 + CHAT.bubbleGap;
       const d = tmp.distanceTo(eye);
       tmp.project(this.camera);
-      const off = !g.root.visible || (g.tag && !g.tag.visible) || tmp.z > 1 || Math.abs(tmp.x) > 1.1 || Math.abs(tmp.y) > 1.1 || this.behind(g.root.position.clone().setY(g.root.position.y + tagY));
+      const off = this.hidden || !this.available || !g.root.visible || (g.tag && !g.tag.visible) || tmp.z > 1 || Math.abs(tmp.x) > 1.1 || Math.abs(tmp.y) > 1.1 || this.behind(g.root.position.clone().setY(g.root.position.y + tagY));
       b.el.style.visibility = off ? 'hidden' : 'visible';
       if (off) continue;
       const s = THREE.MathUtils.clamp(CHAT.bubbleNear / Math.max(d, 0.1), CHAT.bubbleMin, 1);
@@ -214,7 +240,7 @@ export class Chat {
       if (l.t < CHAT.fade) l.el.style.opacity = String(Math.max(0, l.t / CHAT.fade));
       if (l.t <= 0) { l.el.remove(); gone = true; }
     }
-    if (gone) { this.lines = this.lines.filter((l) => l.t > 0); if (!this.lines.length && this.hidden) this.unseen = 0; this.render(); }
+    if (gone) { this.lines = this.lines.filter((l) => l.t > 0); this.render(); }
   }
 
   /** For tests: what the column shows. */

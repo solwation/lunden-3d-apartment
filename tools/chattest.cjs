@@ -3,7 +3,7 @@
 //   PLAYWRIGHT_MODULE=/path/to/playwright [CHROME_PATH=…] [SHOTS=/dir] node tools/chattest.cjs http://localhost:8675 http://localhost:8147
 // Checks: the console opens as the chat bar (Enter); A writes, B sees the line in the column with A's name as plain text
 // (no HTML); a cheat code (`/day`, `day`, a secret code) runs on A and is never sent; an unknown `/x` is refused locally;
-// the client's rate limit; at most CHAT.show lines; the TTL fade; hiding the column (remembered, unseen count) and showing
+// the client's rate limit; complete rows within viewport height; the TTL fade; the remembered menu visibility setting and showing
 // it again. Screenshots (desktop, then B as a touch phone with the column open / hidden) into SHOTS.
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const game = process.argv[2] || 'http://localhost:8675', worker = process.argv[3] || 'http://localhost:8147';
@@ -137,7 +137,7 @@ const W = 480, H = 300;
     await until(async () => (await bubbles(B.page)).some((b) => b.typing), 90000);
     await A.page.evaluate(() => window.__app.showTerminal(false));
     check(!!(await until(async () => !(await bubbles(B.page)).some((b) => b.typing), 90000)), 'closing the bar puts "skriver…" off');
-    const ttl = await B.page.evaluate(() => { const c = window.__chat; c.heard({ t: 'm', i: 'x', n: 'Olof', m: 'kvar?' }, window.__ghosts.others.values().next().value); c.update(31); return c.bubbleList().length; });
+    const ttl = await B.page.evaluate(() => { const c = window.__chat; c.heard({ t: 'm', i: 'x', n: 'Olof', m: 'kvar?' }, window.__ghosts.others.values().next().value); c.update(61); return c.bubbleList().length; });
     check(ttl === 0, 'a bubble goes after CHAT.ttl', String(ttl));
     const behind = await B.page.evaluate(() => { const c = window.__chat, g = window.__ghosts.others.values().next().value; c.heard({ t: 'm', n: 'Olof', m: 'bakom väggen' }, g);
       const was = c.behind; c.behind = () => true; c.update(0); const hidden = !c.bubbleList()[0].shown; c.behind = was; c.update(0); return { hidden, back: c.bubbleList()[0].shown }; });
@@ -169,24 +169,29 @@ const W = 480, H = 300;
     await A.page.evaluate(() => { const c = window.__chat; c.tokens = 3; c.send('hörs igen'); });
     check(!!(await until(async () => (await lines(B.page)).at(-1) === 'Olof hörs igen', 90000)), '/prata Olof: A is heard again');
 
-    // hide on B: remembered, nothing shown, a count of what came
-    await B.page.evaluate(() => { window.__app.showTerminal(true); }); // (the toggle shows while the bar is open too)
-    await B.page.click('#chat-toggle');
-    await B.page.evaluate(() => window.__app.showTerminal(false));
+    // Main-menu setting hides both the log and bubbles, retaining the existing storage key.
+    await B.page.evaluate(() => { window.__app.showOverlay(true); });
+    await B.page.click('#menu-chat-setting');
+    await B.page.evaluate(() => window.__app.showOverlay(false));
     await sleep(1200);
     await A.page.evaluate(() => window.__chat.send('syns inte'));
-    const hidden = await until(() => B.page.evaluate(() => { const t = document.getElementById('chat-toggle'); return t.dataset.unseen === '1' ? { log: document.getElementById('chat-log').hidden, key: localStorage.getItem('lunden.chat.hidden'), toggle: !t.hidden, label: t.getAttribute('aria-label') } : null; }), 90000);
-    check(hidden?.log && hidden.key === '1' && hidden.toggle && hidden.label === 'Visa chatten', 'hidden: no column, remembered, the button counts 1 new', JSON.stringify(hidden));
-    await shot(B.page, 'chat-B-hidden-unseen');
-    await B.page.click('#chat-toggle');
-    const shown = await B.page.evaluate(() => ({ log: !document.getElementById('chat-log').hidden, unseen: document.getElementById('chat-toggle').dataset.unseen, key: localStorage.getItem('lunden.chat.hidden'), last: window.__chat.list().at(-1)?.text }));
-    check(shown.log && shown.unseen === '' && shown.key === '0' && shown.last === 'Olof syns inte', 'shown again: the line is there, the count gone', JSON.stringify(shown));
+    const hidden = await until(() => B.page.evaluate(() => window.__chat.list().at(-1)?.text === 'Olof syns inte' ? {
+      log: document.getElementById('chat-log').hidden, key: localStorage.getItem('lunden.chat.hidden'),
+      bubbles: window.__chat.bubbleList().every(b => !b.shown), label: document.querySelector('#menu-chat-setting b').textContent } : null), 90000);
+    check(hidden?.log && hidden.key === '1' && hidden.bubbles && hidden.label === 'Visa chat: AV', 'AV hides log and bubbles and is remembered', JSON.stringify(hidden));
+    await shot(B.page, 'chat-B-hidden');
+    await B.page.evaluate(() => window.__app.showOverlay(true));
+    await B.page.click('#menu-chat-setting');
+    await B.page.evaluate(() => window.__app.showOverlay(false));
+    const shown = await B.page.evaluate(() => ({ log: !document.getElementById('chat-log').hidden, key: localStorage.getItem('lunden.chat.hidden'), last: window.__chat.list().at(-1)?.text }));
+    check(shown.log && shown.key === '0' && shown.last === 'Olof syns inte', 'PÅ restores still-valid messages', JSON.stringify(shown));
 
-    // at most CHAT.show; TTL fades and removes
-    const most = await B.page.evaluate(() => { const c = window.__chat; for (let i = 0; i < 9; i++) c.heard({ t: 'm', n: 'Test', m: `rad ${i} ${'lång text '.repeat(i)}` }); return c.list().length; });
-    check(most === 6, 'at most CHAT.show (6) lines', String(most));
-    await shot(B.page, 'chat-B-six-lines');
-    const fade = await B.page.evaluate(() => { const c = window.__chat; c.update(30 - 1.5); const mid = c.list().map((l) => Number(l.opacity)); c.update(2); return { mid, left: c.list().length }; });
+    // Actual wrapped rows determine capacity; TTL fades and removes.
+    const most = await B.page.evaluate(() => { const c = window.__chat; for (let i = 0; i < 9; i++) c.heard({ t: 'm', n: 'Test', m: `rad ${i} ${'lång text '.repeat(i)}` });
+      const r=c.log.getBoundingClientRect(); return { count:c.lines.length, last:c.list().at(-1)?.text, fits:c.lines.every(l=>{ const b=l.el.getBoundingClientRect(); return b.top>=r.top-.1 && b.bottom<=r.bottom+.1; }) }; });
+    check(most.count > 0 && most.fits && most.last.startsWith('Test rad 8'), 'newest complete lines fit the viewport height', JSON.stringify(most));
+    await shot(B.page, 'chat-B-fitted-lines');
+    const fade = await B.page.evaluate(() => { const c = window.__chat; c.update(60 - 1.5); const mid = c.list().map((l) => Number(l.opacity)); c.update(2); return { mid, left: c.list().length }; });
     check(fade.mid.every((o) => o > 0 && o < 1) && fade.left === 0, 'fading in the last seconds, gone after the TTL', JSON.stringify(fade));
 
     // phone: B as touch, the column clear of the buttons on the right
@@ -196,7 +201,7 @@ const W = 480, H = 300;
     await sleep(500);
     const clear = await B.page.evaluate(() => {
       const box = document.getElementById('chat-log').getBoundingClientRect(), touch = document.body.classList.contains('touch');
-      const hits = [...document.querySelectorAll('#hud button')].filter((b) => b.offsetParent && b.id !== 'chat-toggle' && !b.closest('#score, #hud-top')).map((b) => [b.id, b.getBoundingClientRect()])
+      const hits = [...document.querySelectorAll('#hud button')].filter((b) => b.offsetParent && !b.closest('#score, #hud-top')).map((b) => [b.id, b.getBoundingClientRect()])
         .filter(([, r]) => r.left < box.right && r.right > box.left && r.top < box.bottom && r.bottom > box.top).map(([id]) => id);
       return { touch, box: [box.left, box.top, box.right, box.bottom].map(Math.round), hits, bottomGap: innerHeight - box.bottom };
     });

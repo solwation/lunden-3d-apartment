@@ -119,10 +119,15 @@ tools/ghosttest.cjs    other players as ghosts (#666; avatars since #705: outlin
                        Also `node --test cloudflare/players.test.mjs` (cap, limits, brake). ~5 min under SwiftShader
 tools/chattest.cjs     the chat (#675): two pages, a browser each (480×300, `&quality=0`), against dev.mjs: the console opens as the chat bar, A's line reaches B
                        as plain text with A's name, cheat codes (/day, bare codes, a secret, /unknown, /help) stay local and are never
-                       sent, the client's burst limit, ≤ CHAT.show lines, TTL fade, hide (remembered, unseen count) / show, B as a touch
+                       sent, the client's burst limit, complete newest rows fitting viewport height, 60-second TTL fade, menu PÅ/AV (remembered) / show, B as a touch
                        phone: the column clear of the buttons and the stick's corner, "Anonym"; #676 "skriver…" / line bubbles over the ghost
                        (flag only, pause, close, replace, TTL, wall, leave, no 3D objects); #719 the word filter, /tysta + /prata;
                        screenshots into SHOTS. ~10 min. Also `node --test cloudflare/chat.test.mjs` (word filter)
+tools/chatsettingtest.cjs (#765) actual Chat module plus production index DOM/CSS, bootstrap suppressed, no apartment or WebGL:
+                       menu PÅ/AV persistence across reload, log/speech/typing visibility with outgoing flags preserved (#735),
+                       60-second TTL, wrapped row capacity after resize/rotation and while AV, safe areas at phone/desktop sizes.
+                       PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/chatsettingtest.cjs http://localhost:8765 /tmp/lunden-chat765
+                       Does not replace the live two-player networking/game checks in chattest.
 tools/ghostbadgetest.cjs (#672) bounded real Ghosts + local PlayerRoom badge fixture without apartment bootstrap; name/score,
                        anonymous/max score, score-only rate/idle, sharing, texture-history disposal, draw counts and leave;
                        desktop/iPhone-size rendered screenshots. Same environment/arguments as ghosttest (no admin token needed)
