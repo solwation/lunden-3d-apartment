@@ -269,7 +269,7 @@
     #stats b { font-variant-numeric: tabular-nums; }
     #player-dialog, #leaderboard-dialog, #privacy-dialog { position: fixed; inset: 0; z-index: 45; display: grid; place-items: center; background: rgba(20, 35, 45, 0.7); }
     #player-dialog[hidden], #leaderboard-dialog[hidden], #privacy-dialog[hidden] { display: none; }
-    #player-dialog .card, #leaderboard-dialog .card { width: min(440px, calc(100vw - 32px)); }
+    #player-dialog .card, #leaderboard-dialog .card { width: min(440px, calc(100vw - 32px)); box-sizing: border-box; }
     #privacy-dialog .card { width: min(560px, calc(100vw - 32px)); box-sizing: border-box; padding: 24px; }
     #privacy-dialog h2 { font-size: 15px; margin: 14px 0 4px; }
     #privacy-dialog .priv-scroll { max-height: min(52vh, 420px); overflow-y: auto; font-size: 13.5px; line-height: 1.45; margin: 8px 0; padding-right: 6px; }
