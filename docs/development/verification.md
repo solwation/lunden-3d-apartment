@@ -1498,3 +1498,41 @@ aggregation. Complete logs/summary: `/tmp/runtests-433051/`; frozen source/helpe
 hashes, native phases, capture errors and actual monitor exit:
 `/tmp/lunden-cooking811/cooktest/`. All frozen runtime blobs matched after the
 pair. Cup and cloud comparisons remain pending under #811; #738/#736 stay open.
+
+## Cooking and cloud state: cup disposition (#811, partial)
+
+`cuptest` retains its exact original full-mode source and 900×600/no-query setup.
+One complete published jobs1 comparison at frozen runtime `80c9fa4` preserved
+all native coffee/mocca/scoop/water/cup/whisky/steam/refill/F predicates and loops.
+A temporary testMode-only fullscreen guard before the original touch was removed
+after the non-identical comparison. No retry, seed, normalization, baseline or
+assertion change was made.
+
+Both modes completed 75 ordered PASS rows, 0 FAIL, ALL PASS; the earlier syntactic
+67 check-call estimate is not a runtime count, because authored loops emit eight
+additional rows. The complete raw differences are:
+
+| Ordered result row | Full | Test |
+| --- | --- | --- |
+| 68 | `PASS three cups, three patterns (blue-white, olof, letter-K)` | `PASS three cups, three patterns (black-gold, hearts, lunden)` |
+| 69 | `PASS opened again: a new cup on the empty spot (olof, letter-K, black-gold), 1 out` | `PASS opened again: a new cup on the empty spot (hearts, lunden, mustard-stripes), 1 out` |
+| 72 | `PASS put back on the free spot, still "mustard-stripes"` | `PASS put back on the free spot, still "lunden"` |
+
+All other ordered rows match, including native physical aiming, vertex bounds,
+liquid/color/steam values, cabinet refills and held-state restoration. Both runner
+modes were verified; the independent monitor exited 1 for exact comparison,
+without raw pageerrors. This pair does not establish a cause for the differences.
+
+The native full document was app-ready at authored 900×600/controller false,
+then retained final 1280×800/fullscreen. Test app-ready/final stayed 480×300/no
+fullscreen with genuine draw/setFull/wantsFrame APIs, lazy/full false. Unique
+URL/timeOrigin identities matched without observer errors or transport warnings.
+Elapsed full/test times were 138.937/105.543 seconds including capture overhead.
+Full capture timed out after 10 seconds; the saved test viewport contains only
+the cropped top textual results, with differing pattern rows below the image.
+No cup artwork/rendered-scene equivalence is claimed. The non-identical pair is
+excluded from speedup aggregation. Complete logs/summary: `/tmp/runtests-440136/`;
+frozen hashes, native phases, actual exit and capture evidence:
+`/tmp/lunden-cooking811/cuptest/`. All frozen runtime blobs matched after the pair;
+removing only the temporary guard restores the exact original fixture. Cloud
+remains pending under #811; #738/#736 stay open.
