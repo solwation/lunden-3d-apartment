@@ -4,6 +4,7 @@
 <body>
 <pre id="out">running…</pre>
 <script>
+// no &test: measures drawing (toDataURL)
 // The shared world (#178, #119) against the real Worker code run locally (cloudflare/dev.mjs, in-memory KV):
 //   node cloudflare/dev.mjs 8144 &       (then; the default admin token "testtoken" is what the wipe below sends)
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/cloudtest.html   (?worker=<url> for another one)

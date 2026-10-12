@@ -10,7 +10,7 @@
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const f = document.createElement('iframe');
-f.width = 900; f.height = 600; f.src = '../index.html';
+f.width = 480; f.height = 300; f.src = '../index.html?test';
 document.body.append(f);
 f.onload = async () => {
   const w = f.contentWindow, d = f.contentDocument;
@@ -110,7 +110,7 @@ f.onload = async () => {
   // Persistence across reload with saved layout
   localStorage.setItem('lunden.furniture.layout', JSON.stringify(R.state));
   const f2 = document.createElement('iframe');
-  f2.width = 900; f2.height = 600; f2.src = '../index.html';
+  f2.width = 900; f2.height = 600; f2.src = '../index.html?test';
   document.body.append(f2);
   await new Promise(r => { f2.onload = r; });
   while (!f2.contentWindow.__app) await wait(100);

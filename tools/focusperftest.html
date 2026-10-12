@@ -1,5 +1,6 @@
 <!doctype html><html lang="sv"><meta charset="utf-8"><title>Focus shader reuse</title><pre id="out">running…</pre>
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"}}</script>
+<script type="importmap">
+// no &test: drawing/viewport-dependent test (listed in #736){"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"}}</script>
 <script type="module">
 import * as T from 'three';import {InteractionOutline} from '../src/interactionoutline.js';
 const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS ':'FAIL ')+s);pass&&=ok;};

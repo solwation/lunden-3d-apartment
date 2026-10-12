@@ -3,7 +3,7 @@ const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS':'FAIL')+
 const cloud=new URLSearchParams(location.search).get('cloud')??'';
 try{
  localStorage.removeItem('lunden.furniture.layout');const frames=[];
- async function load(f){f??=document.createElement('iframe');if(!f.parentNode){f.width=480;f.height=300;document.body.append(f);frames.push(f)}f.src='../index.html?shot&cloud='+encodeURIComponent(cloud)+'&r='+Math.random();await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const A=f.contentWindow.__app;await A.rearrange.ready;f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();A.rearrange.unlock('olof is the goat');return A}
+ async function load(f){f??=document.createElement('iframe');if(!f.parentNode){f.width=480;f.height=300;document.body.append(f);frames.push(f)}f.src='../index.html?test&shot&cloud='+encodeURIComponent(cloud)+'&r='+Math.random();await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const A=f.contentWindow.__app;await A.rearrange.ready;f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();A.rearrange.unlock('olof is the goat');return A}
  let A=await load(),R=A.rearrange,T=await frames[0].contentWindow.eval("import('three')");
  const close=(a,b)=>a.elements.every((v,i)=>Math.abs(v-b.elements[i])<.001);
  const p=R.pieces.find(p=>p.item.type==='kposters'),id=p.id,home=p.home.clone(),siblings=R.pieces.filter(q=>q.item.type==='kposters'&&q!==p).map(q=>[q,q.object.matrixWorld.clone()]);

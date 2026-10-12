@@ -1,7 +1,7 @@
 <!doctype html><html><meta charset="utf-8"><title>Basement HUD regression #549</title><pre id="out">running…</pre><script type="module">
 const lines=[];let pass=true;const check=(ok,label)=>{lines.push(`${ok?'PASS':'FAIL'} ${label}`);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
 try{
- const f=document.createElement('iframe');f.width=720;f.height=480;f.src='../index.html?shot&cloud=';document.body.append(f);await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);
+ const f=document.createElement('iframe');f.width=480;f.height=300;f.src='../index.html?test&shot&cloud=';document.body.append(f);await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);
  const w=f.contentWindow,d=f.contentDocument,A=w.__app,P=A.player;
  d.documentElement.requestFullscreen=undefined;d.getElementById('start-touch').click();A.renderer.setAnimationLoop(null);
  const rooms=()=>Object.keys(A.stats.visited);

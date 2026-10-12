@@ -2,7 +2,7 @@
 <script type="module">
 const lines=[];let pass=true;const check=(ok,text)=>{lines.push((ok?'PASS':'FAIL')+' '+text);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
 try {
-const f=document.createElement('iframe');f.width=844;f.height=600;f.src='../index.html?life&shot&cloud=';document.body.append(f);await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);
+const f=document.createElement('iframe');f.width=844;f.height=600;f.src='../index.html?test&life&shot&cloud=';document.body.append(f);await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);
 let w=f.contentWindow,d=f.contentDocument,A=w.__app;const V=A.player.pos.constructor,I=A.life.items;
 d.documentElement.requestFullscreen=undefined;d.getElementById('start-touch').click();
 const consoleTexts=[d.getElementById('terminal').textContent];
@@ -41,7 +41,7 @@ run('olof is the goat');check(A.rearrange.enabled,'original Olof secret still un
 check(consoleTexts.every(text=>!/källar|cykelförråd|klotter|bike|basement|fusk/i.test(text)),'console opening, help and every exercised command response contain no clue to the world note location');
 close();A.showOverlay(true);d.getElementById('to-start').click();check(!d.getElementById('to-start-done').hidden&&A.player.isFree(A.player.pos.x,A.player.pos.z,0),'ordinary menu still returns the player to the start');
 // Real reload, ordinary visit: no developer scenario or manually reloaded module state.
-f.src='../index.html?shot&cloud=';await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);w=f.contentWindow;d=f.contentDocument;A=w.__app;const after=A.life.items;
+f.src='../index.html?test&shot&cloud=';await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);w=f.contentWindow;d=f.contentDocument;A=w.__app;const after=A.life.items;
 check(!after.get(emptyPack.id)&&!after.get(bag.id)&&after.get(dirtyGlass.id)?.clean==='clean'&&after.get(dirtyGlass.id)?.amount===0,'actual normal-home reload keeps cleaned waste/dishes');check(after.get(fullGlass.id)?.amount===250&&JSON.stringify(after.get(cleanPlate.id)?.place)===cleanPose&&after.all().filter(it=>after.has(it,'bin')).every(it=>it.amount===0),'actual reload preserves arranged clean dishes/full drinks and empty bins');check(A.life.mess.spots.length===0&&!after.audit().length,'reload retains cleared mess with a valid inventory');
 } catch(e){check(false,e.stack||e.message);}
 document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');

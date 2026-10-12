@@ -90,7 +90,7 @@ try {
 // --- in the game (&life) ------------------------------------------------------------------------------
 try {
   const f = document.createElement('iframe');
-  f.width = 800; f.height = 500; f.src = '../index.html?life&shot';
+  f.width = 480; f.height = 300; f.src = '../index.html?test&life&shot';
   document.body.append(f);
   await new Promise((r) => { f.onload = r; });
   while (!f.contentWindow.__app) await wait(100);

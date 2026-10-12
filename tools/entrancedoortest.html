@@ -1,4 +1,5 @@
 <!doctype html><html><meta charset="utf-8"><title>Small high entrance panes (#497)</title><pre id="out">running…</pre><script type="module">
+// no &test: measures drawing (PixelRatio)
 const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS':'FAIL')+' '+s);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
 try{
  const f=document.createElement('iframe');f.width=480;f.height=300;document.body.append(f);f.src='../index.html?shot&cloud=&time=12&freeze';await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const A=f.contentWindow.__app,T=await f.contentWindow.eval("import('three')"),{ENTRY_DOOR:E,DOOR_HEIGHT}=await f.contentWindow.eval("import('/src/config.js')"),{entryMaterials}=await f.contentWindow.eval("import('/src/entrancedoor.js')");

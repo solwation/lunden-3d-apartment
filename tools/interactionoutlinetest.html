@@ -1,4 +1,5 @@
 <!doctype html><html><meta charset="utf-8"><title>Interaction target brightness (#531)</title><pre id="out">running…</pre><script type="module">
+// no &test: measures drawing (brightness)
 const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS':'FAIL')+' '+s);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
 try{
  const f=document.createElement('iframe');f.width=480;f.height=300;f.src='../index.html?life&shot&cloud=';document.body.append(f);await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const w=f.contentWindow,A=w.__app,T=await w.eval("import('three')"),V=T.Vector3,L=A.life,I=L.items,O=A.interactionOutline;

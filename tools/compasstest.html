@@ -1,4 +1,5 @@
 <!doctype html><html lang="sv"><meta charset="utf-8"><title>Geographic HUD compass (#528)</title><pre id="out">running…</pre><script type="module">
+// no &test: measures drawing (setPixelRatio)
 const out=document.getElementById('out'),lines=[];let pass=true;
 const check=(ok,name)=>{pass&&=!!ok;lines.push(`${ok?'PASS':'FAIL'} ${name}`)},wait=ms=>new Promise(r=>setTimeout(r,ms));
 try {

@@ -1,4 +1,5 @@
 <!doctype html><html><meta charset="utf-8"><title>Movable decorative mirrors (#479)</title><pre id="out">running…</pre><script type="module">
+// no &test: drawing/viewport-dependent test (listed in #736)
 const lines=[];let pass=true;const check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);pass&&=!!ok;};
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 try {
