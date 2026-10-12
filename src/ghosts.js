@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { GHOSTS as G, COMBAT, AVATAR } from './config.js';
+import { GHOSTS as G, COMBAT, AVATAR, CHAT } from './config.js';
 import { Avatar, armTarget } from './avatar.js';
 import { totalScore } from './stats.js';
 import { acquireBadge, releaseBadge, badgeScore } from './ghostbadge.js';
@@ -20,6 +20,50 @@ const CAP_KEY = 'lunden.mp.capMonth';
 const monthNow = () => new Date().toISOString().slice(0, 7);
 const params = new URLSearchParams(location.search);
 export const ANON = 'Anonym';
+
+// #743: remote chat bubbles are DOM. The local reflection uses one shared, lazily allocated sprite atlas instead.
+// Twelve pre-drawn dot phases fit in 512x96 pixels (192 KiB RGBA, no mipmaps); only UV offsets change during use.
+let mirrorTypingAtlas = null;
+function acquireMirrorTyping() {
+  if (!mirrorTypingAtlas) {
+    const C = CHAT.mirrorTyping, rows = Math.ceil(C.frames / C.columns), canvas = document.createElement('canvas');
+    canvas.width = C.frameWidth * C.columns; canvas.height = C.frameHeight * rows;
+    const ctx = canvas.getContext('2d');
+    ctx.font = `italic 500 ${C.fontPx}px system-ui, sans-serif`;
+    const textWidth = ctx.measureText('Skriver').width, dotPitch = C.dotPx + C.gapPx;
+    const width = textWidth + C.paddingPx * 2 + dotPitch * 3;
+    for (let f = 0; f < C.frames; f++) {
+      ctx.save(); ctx.translate((f % C.columns) * C.frameWidth, Math.floor(f / C.columns) * C.frameHeight);
+      const x = (C.frameWidth - width) / 2, bottom = C.frameHeight - C.dotPx;
+      ctx.fillStyle = '#fff'; ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(x, C.gapPx, width, bottom - C.gapPx, C.frameHeight / 4);
+      else ctx.rect(x, C.gapPx, width, bottom - C.gapPx);
+      ctx.fill();
+      ctx.beginPath(); ctx.moveTo(C.frameWidth / 2 - C.dotPx, bottom); ctx.lineTo(C.frameWidth / 2, C.frameHeight);
+      ctx.lineTo(C.frameWidth / 2 + C.dotPx, bottom); ctx.fill();
+      ctx.fillStyle = '#4a5560'; ctx.textBaseline = 'middle'; ctx.fillText('Skriver', x + C.paddingPx, bottom / 2);
+      for (let dot = 0; dot < 3; dot++) {
+        const phase = (f / C.frames - dot * C.stagger / C.period + 1) % 1;
+        const rise = phase < .4 ? phase / .4 : phase < .8 ? (.8 - phase) / .4 : 0;
+        const eased = (1 - Math.cos(Math.PI * rise)) / 2;
+        ctx.globalAlpha = C.dim + (1 - C.dim) * eased;
+        ctx.beginPath(); ctx.arc(x + C.paddingPx + textWidth + dotPitch * (dot + .5), bottom / 2 - C.dotLift * eased, C.dotPx / 2, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.restore();
+    }
+    const map = new THREE.CanvasTexture(canvas);
+    map.colorSpace = THREE.SRGBColorSpace; map.generateMipmaps = false; map.minFilter = map.magFilter = THREE.LinearFilter;
+    map.repeat.set(1 / C.columns, 1 / rows);
+    mirrorTypingAtlas = { material: new THREE.SpriteMaterial({ map, transparent: true, depthWrite: false }), users: 0, rows };
+  }
+  mirrorTypingAtlas.users++;
+  return mirrorTypingAtlas;
+}
+function releaseMirrorTyping(atlas) {
+  if (atlas && --atlas.users === 0) {
+    atlas.material.map.dispose(); atlas.material.dispose(); mirrorTypingAtlas = null;
+  }
+}
 
 /** A soft colour of its own per name (Anonym: a pale blue-white). */
 function tint(name) {
@@ -187,7 +231,29 @@ class Ghost {
     }
   }
 
-  dispose() { this.root.removeFromParent(); this.avatar.dispose(); if (this.badge) releaseBadge(this.badge); }
+  mirrorTyping(on, now) {
+    if (!on) { if (this.typingSprite) this.typingSprite.visible = false; return; }
+    if (!this.typingSprite) {
+      this.typingAtlas = acquireMirrorTyping();
+      this.typingSprite = new THREE.Sprite(this.typingAtlas.material);
+      this.typingSprite.name = 'mirror-typing'; this.typingSprite.userData.ghost = true;
+      this.typingSprite.raycast = () => {};
+      this.typingSprite.scale.set(G.tagWidth, G.tagHeight, 1);
+      // Own mirrors have no name tag: its existing above-head anchor leaves the bubble inside normal hall glass.
+      this.typingSprite.position.y = G.tagY + (this.avatar.look.tall - 1) * 1.8;
+      this.root.add(this.typingSprite);
+    }
+    const C = CHAT.mirrorTyping, frame = Math.floor((now % (C.period * 1000)) / (C.period * 1000) * C.frames);
+    this.typingAtlas.material.map.offset.set((frame % C.columns) / C.columns, 1 - (Math.floor(frame / C.columns) + 1) / this.typingAtlas.rows);
+    this.typingSprite.visible = true;
+  }
+
+  clearMirrorTyping() {
+    this.typingSprite?.removeFromParent(); releaseMirrorTyping(this.typingAtlas);
+    this.typingSprite = null; this.typingAtlas = null;
+  }
+
+  dispose() { this.clearMirrorTyping(); this.root.removeFromParent(); this.avatar.dispose(); if (this.badge) releaseBadge(this.badge); }
 }
 
 export class Ghosts {
@@ -233,7 +299,7 @@ export class Ghosts {
     this.reset();
   }
 
-  reset() { this.me = null; this.sent = null; this.outbox = []; this.talkbox = []; for (const g of this.others.values()) g.dispose(); this.others.clear(); }
+  reset() { this.myGhost?.clearMirrorTyping(); this.me = null; this.sent = null; this.outbox = []; this.talkbox = []; for (const g of this.others.values()) g.dispose(); this.others.clear(); this.onTypingReset?.(); }
 
   closed(ws, code) {
     if (ws !== this.ws) return;
@@ -327,10 +393,12 @@ export class Ghosts {
     g.root.position.copy(m.p);
     g.root.rotation.y = m.r;
     g.root.visible = true;
-    g.animate(performance.now(), 0, m.vx, m.vz);
+    const now = performance.now();
+    g.mirrorTyping(!!this.mirrorTyping?.(now), now);
+    g.animate(now, 0, m.vx, m.vz);
   }
 
-  afterMirror() { if (this.myGhost) this.myGhost.root.visible = false; }
+  afterMirror() { if (this.myGhost) { this.myGhost.root.visible = false; if (this.myGhost.typingSprite) this.myGhost.typingSprite.visible = false; } }
 
   /** Our own saber cut, for the mirror image. */
   swingSelf() { this.myGhost?.swing(); }

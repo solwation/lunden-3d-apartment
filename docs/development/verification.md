@@ -128,6 +128,20 @@ tools/chatsettingtest.cjs (#765) actual Chat module plus production index DOM/CS
                        60-second TTL, wrapped row capacity after resize/rotation and while AV, safe areas at phone/desktop sizes.
                        PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/chatsettingtest.cjs http://localhost:8765 /tmp/lunden-chat765
                        Does not replace the live two-player networking/game checks in chattest.
+tools/mirrortypingtest.cjs (#743) real Chat/Ghosts and local Worker: key/send/close/deadline/hidden/disconnect/reconnect,
+                       shared atlas leases, repeated reset, name replacement, older-canvas fallback, non-raycast sprite and UV changes without uploads.
+                       Default also loads the actual apartment at 900×600, quality 3, with controlled paused frames at the hall mirror:
+                       existing reflection hooks, actual sprite draw/main-camera exclusion, bounded texture/draw delta and lifecycle disappearance;
+                       SHOTS contains the actual mirror image and JSON evidence. --module-only suppresses bootstrap and does not verify rendered mirrors.
+                       PLAYWRIGHT_MODULE=… CHROME_PATH=… SHOTS=… node tools/mirrortypingtest.cjs BASE LOCAL_WORKER [--module-only]
+                       #743 desktop SwiftShader validation: corrected actual run 38 PASS, 0 FAIL, no page errors; single before/after pass,
+                       921→922 aggregate calls and 120→121 textures, texture.version 1; disconnect releases the typing texture.
+                       Actual reflected sprite corners fit hall glass at the normal 1.62 m standing eye. Send, close, deadline, hidden and
+                       disconnect each draw no typing; afterMirror hides both own objects. Final module-only run adds the explicit self-anchor
+                       check (27 PASS). The initial run had 37 PASS but image review exposed an above-glass anchor; this was corrected and
+                       rerun, rather than treating counters as visual evidence. Local artifacts: /tmp/lunden-mirror743/{corrected-log.txt,
+                       actual-results.json,actual-hall-mirror-typing.png,final-module-log.txt}; initial-clipped-* and full-log.txt retain the first run.
+                       Paused controlled desktop frames are lifecycle/draw checks, not phone performance or cold-frame timing claims.
 tools/ghostbadgetest.cjs (#672) bounded real Ghosts + local PlayerRoom badge fixture without apartment bootstrap; name/score,
                        anonymous/max score, score-only rate/idle, sharing, texture-history disposal, draw counts and leave;
                        desktop/iPhone-size rendered screenshots. Same environment/arguments as ghosttest (no admin token needed)

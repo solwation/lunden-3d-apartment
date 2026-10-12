@@ -44,6 +44,8 @@ export class Chat {
       bubbles: new Map(), typing: false, lastKey: 0, lastOn: 0, muted: new Set() });
     try { this.hidden = localStorage.getItem(CHAT.hiddenKey) === '1'; } catch { this.hidden = false; }
     ghosts.onTalk = (m, g) => this.heard(m, g);
+    ghosts.mirrorTyping = (now) => this.open && this.typing && !this.hidden && this.available && ghosts.connected && now - this.lastKey <= CHAT.typingMs;
+    ghosts.onTypingReset = () => this.stopTyping(); // reset has already cleared connected/me: no old off-event can enter a new room
     setting?.addEventListener('click', () => this.hide(!this.hidden));
     const trim = () => this.trim();
     window.addEventListener('resize', trim);

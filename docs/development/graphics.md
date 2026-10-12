@@ -111,6 +111,10 @@ src/reflections.js     mirror images: a Reflector per mirror, only the nearest o
                        by the ground speed of the last frames, poses it only then, and hides it again; the main camera never sees it. Same pass, same
                        target: +1 draw call and ≈ 3.7 k triangles in the mirror pass, nothing otherwise. Not while seated / lying (`mirrored`
                        callback), never in raycasts (hidden outside the pass, under the ghosts' group). Windows and glass use the env map, not a live image, so they show nothing.
+                       Own typing (#743) uses that same before/after hook and reflector pass: one non-raycast Sprite, hidden afterwards from the main camera.
+                       A lazy shared 512×96 RGBA atlas (192 KiB, no mipmaps) holds twelve pre-drawn “Skriver”/dot phases; frames change UV offsets,
+                       without repainting or marking the texture dirty. The sprite reuses ghost tag dimensions and its existing above-head anchor (there is no own name tag). Owners lease one
+                       material/texture; reset, self-name replacement and disposal release the lease, with the last owner disposing both resources.
 src/seasons.js         month → tree colours/leaf cover and snow on ground, roofs, hedges, paving (SEASON)
 src/huego.js           the Philips Hue Go on Sovrum 1's window board (#409, #428, HUE_GO): the classic frosted bowl, a lamp of its own; its
                        action menu (#367, an ActionSet; FloorLamp `options`) = Tänd/Släck + Byt färg (scenes), the colour kept by keep.js
