@@ -96,6 +96,10 @@ tools/ghosttest.cjs    other players as ghosts (#666): two Playwright pages agai
                        cloudflare/devws.mjs): ?mp=0 / no cloud off, see each other with tags Olof / "Anonym", position, standing still sends
                        nothing, a move arrives interpolated, the room's count, a closed / hidden tab disconnects; screenshots into SHOTS.
                        Also `node --test cloudflare/players.test.mjs` (cap, limits, brake). ~5 min under SwiftShader
+tools/chattest.cjs     the chat (#675): two pages (480×300, `&quality=0`) against dev.mjs: Enter opens the chat bar, A's line reaches B
+                       as plain text with A's name, cheat codes (/day, bare codes, a secret, /unknown, /help) stay local and are never
+                       sent, the client's burst limit, ≤ CHAT.show lines, TTL fade, hide (remembered, unseen count) / show, B as a touch
+                       phone: the column clear of the buttons and the stick's corner, "Anonym"; screenshots into SHOTS. ~5 min
 tools/ghostbadgetest.cjs (#672) bounded real Ghosts + local PlayerRoom badge fixture without apartment bootstrap; name/score,
                        anonymous/max score, score-only rate/idle, sharing, texture-history disposal, draw counts and leave;
                        desktop/iPhone-size rendered screenshots. Same environment/arguments as ghosttest (no admin token needed)

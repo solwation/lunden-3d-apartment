@@ -44,12 +44,17 @@ src/ghosts.js          other players as ghosts with a name tag (#666), inert wit
                        #667: the state's `h` (weapon key or '') and one shot message per shot { t: 'a', w, o, d, s?, to? } go the
                        same way (outbox of GHOSTS.outbox, within the same 5 Hz); lives are
                        counted per connection in the room (a socket's attachment), nothing is stored about fights
+                       #675: chat lines { t: 'm', m } (`talk`, a small talkbox sent first in the same 5 Hz budget; chatting keeps
+                       the connection as moving does); the room's { t: 'm', i, n, m } / { t: 'mx' } go to `onTalk` (src/chat.js)
 cloudflare/players.js  the PlayerRoom Durable Object (#666; binding PLAYERS, migration `player-room-v1`): one room 'world', hibernatable
                        sockets with attachments ({ i, n, s, rate window }), monthly billed-request counter 'bill:YYYY-MM' (requests +
                        messages/20, flushed every 100 messages) with the hard cap PLAYERS.monthlyCap, per-socket rate / size / idle limits,
                        max players, admin brake 'off' (DELETE/PUT/GET /admin/players, DELETE /admin/all); COMBAT (#667): the check of
                        a hit (both armed, range + slack, rate, points per minute), lives per socket; shots `cleanShot` (unit direction, speed ≤ 60,
-                       start ≤ COMBAT.from m from the shooter) forwarded only from someone holding that weapon to the armed others. Tests: cloudflare/players.test.mjs
+                       start ≤ COMBAT.from m from the shooter) forwarded only from someone holding that weapon to the armed others;
+                       CHAT (#675): `cleanTalk` / `cleanText` (plain text ≤ 140 characters) forwarded to the others with the
+                       cleaned name, per socket a burst of 3 then 1/s and ≤ 12/min, the room ≤ 120/min, over that { t: 'mx' };
+                       nothing stored, counted in the monthly cap like any message. Tests: cloudflare/players.test.mjs
                        (runtime stand-ins cloudflare/devws.mjs, also used by dev.mjs for real ws://), tools/ghosttest.cjs (two pages)
 cloudflare/crash.js    POST /crash, admin GET /crash and /crash/<id>, DELETE /admin/crash: size cap 16 kB, plain-data cleaning, per-IP hour
                        limit, one report per browser+signature+day, 400 reports in all, KV TTL 14 days (test: cloudflare/crash.test.mjs)

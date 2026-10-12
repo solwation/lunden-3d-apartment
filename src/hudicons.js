@@ -13,7 +13,9 @@ const paths={
  'volume-off':'<path d="M11 4 5 9H2v6h3l6 5Zm5 5 6 6m0-6-6 6"/>',
  'volume-down':'<path d="M11 4 5 9H2v6h3l6 5Zm5 8h6"/>',
  'volume-up':'<path d="M11 4 5 9H2v6h3l6 5Zm5 8h6m-3-3v6"/>',
- terminal:'<path d="m4 5 7 7-7 7m9 0h7"/>',close:'<path d="m6 6 12 12M18 6 6 18"/>',
+ terminal:'<path d="m4 5 7 7-7 7m9 0h7"/>',
+ chat:'<path d="M4 5h16v11H10l-5 4v-4H4Z"/>','chat-off':'<path d="M4 5h16v11H10l-5 4v-4H4ZM3 3l18 18"/>', // the chat column on / hidden (#675)
+ close:'<path d="m6 6 12 12M18 6 6 18"/>',
  previous:'<path d="M4 5v14m15-14-11 7 11 7Z"/>',next:'<path d="M20 5v14M5 5l11 7-11 7Z"/>',
  rewind:'<path d="m11 5-8 7 8 7Zm10 0-8 7 8 7Z"/>',forward:'<path d="m3 5 8 7-8 7Zm10 0 8 7-8 7Z"/>',
  pin:'<path d="m9 3 10 3-4 5v5l-8-3 3-4Zm2 12-5 7"/>',

@@ -2886,6 +2886,11 @@ export const COMBAT = { weapons: ['saber', 'nerf', 'wand', 'rifle', 'ball', 'bow
   // the others' shots drawn here: at most `lines` streaks (rifle, wand, web, flames) and `balls` balls at once, each gone
   // after `shotLife` s; their darts reuse the blasters' pool (in `dartColor`)
   lines: 16, balls: 3, shotLife: 4, dartColor: 0x1f6fff };
+// Chat (#675, src/chat.js): while the players' room (#666) is on, the console is a chat. Lines show see-through in a
+// column on the left for `ttl` s (fading out over the last `fade` s), at most `show` at once, newest at the bottom; `max`
+// characters (the room's CHAT.max in cloudflare/players.js, kept equal by hand); sent no faster than the room allows: a
+// burst of `burst`, then one per `everyMs`. The hide/show choice in localStorage `hiddenKey`. All our picks (*guess*).
+export const CHAT = { ttl: 30, fade: 3, show: 6, max: 140, burst: 3, everyMs: 1000, hiddenKey: 'lunden.chat.hidden' };
 
 // Drawing with crayons (#93, src/drawing.js): an A3 sheet in the middle of the ALEX desk in Sovrum 3. E on it:
 // the view goes down over the paper, the mouse is freed and you draw with crayons (palette at the bottom,

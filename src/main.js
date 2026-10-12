@@ -1,7 +1,7 @@
 import { crashlog } from './crashlog.js'; // first: its heartbeat and error hooks start before the rest loads (#629; inert without the cloud)
 import { bindGameViewport, gameView } from './viewport.js';
 import { PlantWind, windShadow } from './plantwind.js';
-import { runCheat, cheatHelp } from './cheats.js';
+import { runCheat, cheatHelp, isCommand } from './cheats.js';
 import { cleanHome } from './cheatclean.js';
 import { buildCheatNote } from './cheatnote.js';
 import { CHEAT_NOTE, LOW_MEMORY, QUALITY, STANDARD } from './config.js';
@@ -119,7 +119,8 @@ import { Presence } from './presence.js';
 import { Ghosts } from './ghosts.js';
 import { Combat } from './combat.js';
 import { Bow, Arrows } from './bow.js';
-import { COMBAT } from './config.js';
+import { Chat } from './chat.js';
+import { COMBAT, CHAT } from './config.js';
 import { Basketball, Hoop } from './basket.js';
 import { Mess } from './mess.js';
 
@@ -2009,6 +2010,7 @@ christmas.update(day, 0);
 const terminal = document.getElementById('terminal'), terminalInput = document.getElementById('terminal-code');
 const editHelp = document.getElementById('rearrange-help'), editToggle = document.getElementById('rearrange-toggle');
 let editMenuPiece = null, resetFurnitureRequest = null, editHUDKey = '';
+let chat = null; // the console as a chat (#675, src/chat.js), set up with the ghosts below
 function renderRearrangeHUD() {
   const p=rearrange.selected?.piece,key=`${rearrange.enabled}|${rearrange.saving}|${p?.id??''}|${reading}`;
   if(key===editHUDKey)return;editHUDKey=key;
@@ -2026,7 +2028,7 @@ function editUI() {
   document.getElementById('terminal-confirm').hidden = !resetFurnitureRequest;
   document.getElementById('terminal-close').hidden = !!resetFurnitureRequest;
   document.getElementById('terminal-restore-all').disabled = rearrange.saving;
-  document.getElementById('terminal-title').textContent = rearrange.enabled ? 'Möblera om' : 'Konsol';
+  document.getElementById('terminal-title').textContent = rearrange.enabled ? 'Möblera om' : chat?.available ? 'Chatt' : 'Konsol';
   document.getElementById('terminal-close').textContent = rearrange.enabled ? 'Fortsätt möblera' : 'Stäng';
   document.getElementById('terminal-restore').disabled = !editMenuPiece || rearrange.saving;
   document.getElementById('terminal-cancel-move').hidden = !rearrange.selected;
@@ -2042,10 +2044,22 @@ function showTerminal(show, byKey = 'button') {
   if (show && (reading || drawing.active)) return;
   resetFurnitureRequest = null;
   terminal.hidden = !show; reading = show; player.keys.clear(); touch.analog.x = touch.analog.y = 0;
+  chatMode(show);
   if (show) { editMenuPiece = rearrange.selected?.piece ?? rearrange.target?.piece ?? null; if (locked) { boardFreed = true; document.exitPointerLock(); } editUI(); (rearrange.enabled ? document.getElementById('terminal-close') : terminalInput).focus(); }
   else if (boardFreed) { boardFreed = false; if (byKey === 'Escape') { overlay.hidden = true; armEl.hidden = false; } else canvas.requestPointerLock()?.catch(() => { armEl.hidden = false; }); }
   renderRearrangeHUD();
 }
+/** #675: while the players' room is on (and not rearranging) the console is a slim chat bar at the top over the game. */
+function chatMode(show) {
+  const on = show && !!chat?.available && !rearrange.enabled, said = document.getElementById('terminal-message');
+  terminal.classList.toggle('chat', on); chat?.opened(on);
+  document.getElementById('terminal-run').textContent = on ? 'Skicka' : 'Kör';
+  document.querySelector('label[for="terminal-code"]').textContent = on ? 'Meddelande eller /fuskkod' : 'Fuskkod';
+  terminalInput.placeholder = on ? 'Skriv till de andra… (/help: fusk)' : '';
+  if (on) { terminalInput.maxLength = CHAT.max; if (said.textContent === 'Skriv help för fuskkoder.') said.textContent = ''; }
+  else terminalInput.removeAttribute('maxlength');
+}
+terminal.addEventListener('click', (e) => { if (e.target === terminal && terminal.classList.contains('chat')) showTerminal(false); }); // a tap beside the bar closes it
 document.getElementById('terminal-btn').addEventListener('click', () => showTerminal(true));
 document.getElementById('terminal-close').addEventListener('click', () => showTerminal(false));
 const cheats = {
@@ -2078,7 +2092,12 @@ const cheats = {
   },
 };
 document.getElementById('terminal-form').addEventListener('submit', e => {
-  e.preventDefault(); const message=runCheat(terminalInput.value,cheats);
+  e.preventDefault();
+  if (terminal.classList.contains('chat') && !isCommand(terminalInput.value)) { // a chat line (#675); a code stays local, never sent
+    const said = chat.send(terminalInput.value); // '' = sent (or nothing written): close; else why not, the text stays
+    document.getElementById('terminal-message').textContent = said; if (!said) { terminalInput.value = ''; showTerminal(false); } return;
+  }
+  const message=runCheat(terminalInput.value,cheats);
   document.getElementById('terminal-message').textContent=message;terminalInput.value='';life.flush();
 });
 function showCheatNote(show, byKey='button') {
@@ -2186,6 +2205,8 @@ if (bow) bow.onShot = (o, v) => combat.fire('bow', flight(o, v), true); // (#690
 if (rifle) { const shot = rifle.onShot; rifle.onShot = () => { shot?.(); combat.fire('rifle'); }; }
 { const web = suit.onShot; suit.onShot = () => { web?.(); combat.fire('web'); }; }
 window.__ghosts = ghosts; window.__combat = combat; window.__bow = bow; window.__arrows = arrows;
+chat = new Chat({ ghosts, log: document.getElementById('chat-log'), toggle: document.getElementById('chat-toggle'), name: () => leaderboard.name }); // #675
+window.__chat = chat;
 let statsPinned = false;
 // the minimap is part of the same "extra HUD" (#85): shown with the stats; K shows the map on its own
 let mapPinned = false;
@@ -2430,6 +2451,7 @@ function frame(raw) {
   step(dt);
   ghosts.update();
   combat.update(dt);
+  chat.update(dt); // the chat column fades (#675)
   hitch.phase('step');
   updateShadows(dt);
   // one mirror image at a time, none at the lower quality levels. Heavy passes are spread over frames (#592): the

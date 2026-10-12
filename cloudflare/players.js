@@ -18,6 +18,8 @@ import { TOYS } from '../src/config.js';
 // else is dropped.
 // Room → client: { t: 'w', i: your id, ps: [{ i, n, p, r, h, score }], c: { lives, weapons } } on joining; { t: 'j', i, n } someone
 // joined; { t: 's', i, p, r, h, score } a state; { t: 'x', i } someone left; 'hit' / 'hurt' (#667). n = the name ('' = "Anonym").
+// Chat (#675, `cleanTalk` / `talk`): { t: 'm', m: text } → the others get { t: 'm', i, n, m } (a sender over the limits gets
+// { t: 'mx' }). Nothing of it is stored.
 
 export const PLAYERS = {
   monthlyCap: 800_000, // billed requests per calendar month; Workers Paid includes 1 000 000 (price list, verify), so the room stays below it
@@ -53,12 +55,36 @@ export const COMBAT = {
   },
 };
 
+// Chat (#675): plain text only, at most `max` characters after cleaning (the client's CHAT.max, kept equal by hand); per
+// connection a burst of `burst`, then one per `everyMs`, at most `perMinute`; the whole room at most `roomPerMinute`.
+// Dropped: { t: 'mx' } back to the sender (outgoing, not billed). Every message counts in the monthly cap like any other
+// (1/20 request) and within perSecond. Our picks (*guess*).
+export const CHAT = { max: 140, burst: 3, everyMs: 1000, perMinute: 12, roomPerMinute: 120 };
+
 export const CLOSE = { idle: 4000, cap: 4001, off: 4003, rate: 4008, full: 4029, big: 1009 };
 
 const month = (t = Date.now()) => new Date(t).toISOString().slice(0, 7);
 const r2 = (v) => Math.round(v * 100) / 100;
 const fin = (v, lim) => typeof v === 'number' && Number.isFinite(v) && Math.abs(v) <= lim;
 export const cleanName = (s) => (typeof s === 'string' ? s.replace(/[\u0000-\u001f<>&"]/g, '').trim().slice(0, PLAYERS.nameMax) : '');
+
+/** Chat text as plain text: control, zero-width and bidi-override characters out, whitespace runs to one space, trimmed,
+ * at most CHAT.max characters (code points). The clients show it with textContent, never as HTML. */
+export function cleanText(s) {
+  if (typeof s !== 'string') return '';
+  const t = s.replace(/[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e\u2028\u2029\u2060-\u206f\ufeff\ufff9-\ufffb]/g, ' ').replace(/\s+/g, ' ').trim();
+  return Array.from(t).slice(0, CHAT.max).join('').trim();
+}
+
+/** A chat line { t: 'm', m } from a client, or null. */
+export function cleanTalk(text) {
+  if (typeof text !== 'string' || !text.startsWith('{"t":"')) return null; // (states are not parsed twice)
+  let m;
+  try { m = JSON.parse(text); } catch { return null; }
+  if (m?.t !== 'm') return null;
+  const t = cleanText(m.m);
+  return t ? { t: 'm', m: t } : null;
+}
 
 /** A checked, rounded state from a client's message, or null. */
 export function cleanState(text) {
@@ -167,8 +193,9 @@ export class PlayerRoom {
       if (a.k >= PLAYERS.strikes) this.drop(ws, CLOSE.rate, 'rate');
       return;
     }
-    const shot = cleanShot(message);
-    if (shot) {
+    const talk = cleanTalk(message), shot = !talk && cleanShot(message);
+    if (talk) this.talk(ws, a, talk, now);
+    else if (shot) {
       // a shot is drawn by the others only from someone armed with that weapon, starting near where the room has them,
       // and only for those armed too (a fight is between two armed players)
       if (shot.t === 'a' && a.s?.h === shot.w && a.s.p && Math.hypot(shot.o[0] - a.s.p[0], shot.o[1] - a.s.p[1], shot.o[2] - a.s.p[2]) <= COMBAT.from) {
@@ -183,6 +210,17 @@ export class PlayerRoom {
     }
     ws.serializeAttachment(a);
     this.sweep(now);
+  }
+
+  /** Chat (#675) to the others, within CHAT's limits; the sender's client shows its own line. */
+  talk(ws, a, m, now) {
+    const tokens = Math.min(CHAT.burst, (a.cb ?? CHAT.burst) + (now - (a.cr ?? now)) / CHAT.everyMs);
+    if (now - (a.cw ?? 0) >= 60_000) { a.cw = now; a.cn = 0; }
+    if (now - (this.rw ?? 0) >= 60_000) { this.rw = now; this.rn = 0; } // the room's minute (in memory: lost on hibernation, harmless)
+    a.cr = now; a.cb = tokens;
+    if (tokens < 1 || a.cn >= CHAT.perMinute || this.rn >= CHAT.roomPerMinute) { send(ws, '{"t":"mx"}'); return; }
+    a.cb = tokens - 1; a.cn++; this.rn++;
+    this.broadcast({ t: 'm', i: a.i, n: a.n, m: m.m }, ws);
   }
 
   /** A shot (#667): checked against what the room knows, then a life off the target and word to both. */

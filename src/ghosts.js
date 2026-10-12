@@ -191,7 +191,7 @@ export class Ghosts {
     this.reset();
   }
 
-  reset() { this.me = null; this.sent = null; this.outbox = []; for (const g of this.others.values()) g.dispose(); this.others.clear(); }
+  reset() { this.me = null; this.sent = null; this.outbox = []; this.talkbox = []; for (const g of this.others.values()) g.dispose(); this.others.clear(); }
 
   closed(ws, code) {
     if (ws !== this.ws) return;
@@ -220,6 +220,7 @@ export class Ghosts {
     else if (m.t === 'hit') this.onHit(m, this.others.get(m.to));
     else if (m.t === 'hurt') this.onHurt(m, this.others.get(m.by));
     else if (m.t === 'a') { const g = this.others.get(m.i); if (g) this.onShot?.(m, g); }
+    else if (m.t === 'm' || m.t === 'mx') this.onTalk?.(m, this.others.get(m.i)); // chat (#675, src/chat.js)
   }
 
   add(id, name) {
@@ -241,7 +242,7 @@ export class Ghosts {
     const playing = this.active() && !document.hidden && t - this.lastMove < G.idleMs;
     if (!playing) { if (this.ws) this.disconnect(); }
     else if (!this.ws && !this.capped && t >= this.retryAt) this.connect();
-    if (this.connected && !this.sendShot()) {
+    if (this.connected && !this.sendTalk() && !this.sendShot()) {
       const sent = this.sent;
       if (t - this.lastSent >= 1000 / G.hz && (!sent || sent !== this.prev)) {
         const p = this.prev ?? s;
@@ -274,6 +275,25 @@ export class Ghosts {
     if (!this.outbox.length || !this.connected || t - this.lastSent < 1000 / G.hz) return false;
     this.ws.send(JSON.stringify(this.outbox.shift()));
     this.lastSent = this.lastBeat = t; this.shots++; this.messages++;
+    return true;
+  }
+
+  /** Chat (#675): a message { t: 'm', m } for the room, in the same GHOSTS.hz budget as states and shots (sent first, a
+   * few at most waiting). Chatting counts as activity: we stay connected while typing. False when not connected. */
+  talk(msg) {
+    if (!this.connected) return false;
+    (this.talkbox ??= []).push(msg);
+    if (this.talkbox.length > 4) this.talkbox.shift();
+    this.lastMove = performance.now();
+    this.sendTalk();
+    return true;
+  }
+
+  sendTalk() {
+    const t = performance.now();
+    if (!this.talkbox?.length || !this.connected || t - this.lastSent < 1000 / G.hz) return false;
+    this.ws.send(JSON.stringify(this.talkbox.shift()));
+    this.lastSent = this.lastBeat = t; this.messages++;
     return true;
   }
 

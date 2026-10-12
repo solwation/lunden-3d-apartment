@@ -465,6 +465,29 @@
     #terminal details { border-top: 1px solid #648571; padding-top: 12px; margin-top: 16px; font: 13px/1.5 system-ui; }
     #terminal summary { cursor: pointer; }
     #terminal .terminal-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+    /* the chat (#675, src/chat.js): the console as a slim bar at the top, the game visible around it; the lines see-through
+       on the left under the badge, clear of the touch buttons (right) and the stick's corner (bottom left) */
+    #terminal.chat { background: transparent; place-items: start center; padding-top: calc(6px + var(--st)); box-sizing: border-box; }
+    #terminal.chat form { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; width: min(560px, calc(100vw - 16px - var(--sl) - var(--sr))); padding: 8px; background: rgba(23,35,34,.88); font: 15px/1.4 system-ui, sans-serif; }
+    #terminal.chat :is(h2, label) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; margin: 0; }
+    #terminal.chat :is(#terminal-unlock, .terminal-actions) { display: contents; }
+    #terminal.chat input { flex: 1 1 160px; width: auto; min-width: 0; min-height: 44px; }
+    #terminal.chat button { margin: 0; min-height: 44px; }
+    #terminal.chat #terminal-message { order: 9; flex-basis: 100%; margin: 0; font-size: 13px; }
+    #terminal.chat #terminal-message:empty { display: none; }
+    #chat-box { position: fixed; z-index: 21; left: calc(var(--badge-inset) + var(--sl)); top: calc(var(--hud-badge-bottom) + 34px); width: min(340px, 44vw);
+      max-height: calc(100dvh - var(--hud-badge-bottom) - 34px - 24px - var(--sb)); display: flex; align-items: flex-start; gap: 6px; pointer-events: none; }
+    body.touch #chat-box { max-height: calc(100dvh - var(--hud-badge-bottom) - 34px - 150px - var(--sb)); }
+    #chat-log { display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; gap: 3px; flex: 1 1 auto; min-width: 0; max-height: inherit; overflow: hidden; } /* too many: the oldest are cut off at the top */
+    #chat-log[hidden] { display: none; }
+    #chat-log .chat-line { max-width: 100%; box-sizing: border-box; padding: 3px 8px; border-radius: 8px; background: rgba(20,35,45,.38); color: #fff; font: 500 13px/1.3 system-ui, sans-serif;
+      text-shadow: 0 1px 2px rgba(0,0,0,.7); overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; flex: none; }
+    #chat-log .chat-line b { color: #ffd76a; font-weight: 700; }
+    #chat-log .chat-line.mine b { color: #9fdcff; }
+    #chat-log .chat-line.note { font-style: italic; opacity: .85; }
+    #hud #chat-toggle { position: relative; flex: none; pointer-events: auto; width: 44px; height: 44px; min-width: 44px; min-height: 44px; padding: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; touch-action: manipulation; }
+    #hud #chat-toggle .hud-icon { width: 20px; height: 20px; }
+    #hud #chat-toggle:not([data-unseen=""])::after { content: attr(data-unseen); position: absolute; top: -4px; right: -6px; min-width: 18px; height: 18px; padding: 0 4px; box-sizing: border-box; border-radius: 9px; background: #e5484d; color: #fff; font: 700 11px/18px system-ui, sans-serif; text-align: center; }
 
   </style>
   <link rel="stylesheet" href="src/hudicons.css">
@@ -778,7 +801,7 @@
     <form id="terminal-form"><h2 id="terminal-title">Konsol</h2>
       <div id="terminal-unlock"><label for="terminal-code">Fuskkod</label><input id="terminal-code" autocomplete="off" autocapitalize="off" spellcheck="false">
       <p id="terminal-message" aria-live="polite">Skriv help för fuskkoder.</p>
-      <button type="submit">Kör</button></div>
+      <button id="terminal-run" type="submit">Kör</button></div>
       <div id="terminal-edit" hidden>
         <p id="terminal-edit-status" aria-live="polite"></p>
         <button id="terminal-cancel-move" type="button">Avbryt flytten</button>
@@ -834,6 +857,7 @@
     <div id="prompt" hidden></div>
     <div id="choices" hidden aria-live="polite"></div>
     <div id="speech" aria-live="polite"></div>
+    <div id="chat-box"><button id="chat-toggle" type="button" hidden aria-label="Dölj chatten"></button><div id="chat-log" role="log" aria-live="polite" aria-label="Chatt" hidden></div></div>
     <div id="stick" hidden><div class="knob"></div></div>
     <button id="action" class="touch-only" hidden></button>
     <button id="power-btn" class="touch-only" hidden aria-label="Stäng av / slå på TV:n">⏻</button>

@@ -5,7 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { installRuntime, fakeNamespace } from './devws.mjs';
 import worker, { PlayerRoom } from './worker.js';
-import { PLAYERS, CLOSE, COMBAT } from './players.js';
+import { PLAYERS, CLOSE, COMBAT, CHAT, cleanText } from './players.js';
 
 installRuntime();
 const realNow = Date.now;
@@ -271,4 +271,49 @@ test('Nerf (#714): shared longer range accepts 22 m, rejects range/rate/unarmed 
   b.send({ p: [0, 0, -22], r: 0 }); await settle(env);
   now += 1000; a.send(shot); await settle(env);
   assert.equal(hits().length, 1, 'unarmed target is denied');
+});
+
+// Chat (#675): plain text to the others only, cleaned, within the per-connection and room limits, counted in the cap.
+test('chat (#675): forwarded to the others with the name, cleaned, limited, refused with mx, counted in the cap', async () => {
+  const env = setup();
+  const a = await connect(env, 'Olof<script>'), b = await connect(env), c = await connect(env, 'C');
+  const ia = a.got[0].i;
+  const chats = (x) => x.got.filter((m) => m.t === 'm'), refused = (x) => x.got.filter((m) => m.t === 'mx').length;
+  a.send({ t: 'm', m: '  Hej\u0000 <b>alla</b>\n\t\u202Eom\u200Bgänget  ' }); await settle(env);
+  assert.deepEqual(chats(b), [{ t: 'm', i: ia, n: 'Olofscript', m: 'Hej <b>alla</b> om gänget' }], 'controls/bidi out, whitespace folded; markup stays plain text');
+  assert.equal(chats(c).length, 1, 'to everyone else');
+  const later = async (ms) => { now += ms; b.send("p"); c.send("p"); await settle(env); }; // heartbeats: nobody idles out
+  assert.equal(chats(a).length, 0, 'never echoed to the sender');
+  assert.equal(cleanText('é'.repeat(CHAT.max + 50)).length, CHAT.max, 'at most CHAT.max characters');
+  assert.equal(Array.from(cleanText('😀'.repeat(CHAT.max + 5))).length, CHAT.max, 'counted in characters, not UTF-16 units');
+  for (const bad of [{ t: 'm', m: '   ' }, { t: 'm', m: 42 }, { t: 'm' }, { t: 'mx' }, { m: 'no type', t: 'm' }]) a.send(bad);
+  await settle(env);
+  assert.equal(chats(b).length, 1, 'empty / non-text / other shapes dropped');
+  // a burst, then one a second
+  now += 10_000;
+  for (let i = 0; i < CHAT.burst + 2; i++) a.send({ t: 'm', m: `burst ${i}` });
+  await settle(env);
+  assert.equal(chats(b).length, 1 + CHAT.burst, 'a burst of CHAT.burst passes');
+  assert.equal(refused(a), 2, 'the rest gets { t: "mx" }');
+  now += CHAT.everyMs; a.send({ t: 'm', m: 'after a second' }); await settle(env);
+  assert.equal(chats(b).at(-1).m, 'after a second');
+  // at most perMinute a minute
+  await later(61_000);
+  const n0 = chats(b).length;
+  for (let i = 0; i < CHAT.perMinute + 5; i++) { now += CHAT.everyMs; a.send({ t: 'm', m: `m${i}` }); await settle(env); }
+  assert.equal(chats(b).length - n0, CHAT.perMinute, 'at most perMinute in a minute');
+  await later(61_000); a.send({ t: 'm', m: 'new minute' }); await settle(env);
+  assert.equal(chats(b).at(-1).m, 'new minute');
+  // the room's total
+  const room = env.PLAYERS.object('world');
+  now += 2000; room.rw = now; room.rn = CHAT.roomPerMinute; c.send({ t: 'm', m: 'too many in the room' }); await settle(env);
+  assert.notEqual(chats(b).at(-1).m, 'too many in the room', 'the room-wide minute cap holds');
+  assert.equal(c.got.at(-1).t, 'mx');
+  // a chat line is billed like any message: over the monthly cap everyone is closed and nothing passes
+  await room.usage();
+  room.bill.req = PLAYERS.monthlyCap - 1; room.bill.msg = PLAYERS.msgPerRequest - 1; await room.save();
+  await later(61_000); a.send({ t: 'm', m: 'over the cap' }); await settle(env);
+  assert.equal(a.closed, CLOSE.cap); assert.equal(b.closed, CLOSE.cap);
+  assert.notEqual(chats(b).at(-1).m, 'over the cap', 'nothing passes over the cap');
+  assert.deepEqual([...env.PLAYERS.ctx('world').data.keys()].filter((k) => !k.startsWith('bill:')), [], 'nothing stored but the month counter');
 });

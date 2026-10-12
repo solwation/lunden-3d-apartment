@@ -99,7 +99,7 @@ kosta mer än de $5. Högst 100 meddelanden kan gå oräknade om objektet skulle
 **Gränser per anslutning:** högst 6 meddelanden/s (fler kastas, 5 sådana sekunder stänger anslutningen), högst 256 byte per
 meddelande, högst 30 spelare samtidigt, stängs efter 60 s utan meddelande eller hjärtslag. Bara sajtens ursprung (och
 localhost) får ansluta från en webbsida. Rummet tar bara emot position och riktning, kontrollerar och avrundar dem och skickar
-aldrig vidare annan text än det rensade namnet (högst 20 tecken, som topplistan).
+aldrig vidare annan text än det rensade namnet (högst 20 tecken, som topplistan) och rensad chattext (#675, nedan).
 
 **Strid (#667):** håller två spelare var sitt vapen syns de fullt för varandra och kan träffa varandra. Skytten skickar ett
 litet meddelande per skott, även missar (vapen, startpunkt, riktning, ev. fart och vem som träffades), så att den andra ser
@@ -110,6 +110,17 @@ från någon som håller det vapnet och bara till andra som håller vapen (utgå
 vapnets räckvidd, hur ofta och högst 60 poäng per minut (`COMBAT` i `cloudflare/players.js`) och svarar båda. Liv räknas per
 anslutning i rummet; inget om striderna sparas. Ryms helt inom samma månadstak.
 
+**Chatt (#675):** konsolen blir en chatt när rummet är på. Klienten skickar `{ t: 'm', m: text }`; rummet rensar texten
+(bara ren text: styr-, nollbredds- och riktningstecken bort, blanksteg hopslagna, högst 140 tecken) och skickar
+`{ t: 'm', i, n, m }` till de andra med det rensade namnet (`n` tomt = "Anonym"); klienterna visar den alltid som text,
+aldrig som HTML. Gränser (`CHAT` i `cloudflare/players.js`): per anslutning tre i rad, sedan en per sekund och högst 12 per
+minut; hela rummet högst 120 per minut. För många ger `{ t: 'mx' }` tillbaka (utgående, kostar inget). Ett chattmeddelande
+är ett vanligt inkommande meddelande: det räknas i månadstaket (1/20 anrop), ryms i samma 5 meddelanden/s som positionerna
+och kan inte vara större än 256 byte. Inget sparas: ingen historik, ingen KV-skrivning, nya spelare ser inget gammalt.
+Fuskkoder (`/day`, `help`, de hemliga) körs i webbläsaren och skickas aldrig. Kostnad: även 120 meddelanden i minuten
+dygnet runt vore ≈ 270 000 debiterade anrop i månaden (taket på 800 000 gäller ändå), men i praktiken gör de få som chattar det
+försumbart jämfört med positionerna.
+
 **Stänga av:**
 - Klienten: `GHOSTS.enabled = false` i `src/config.js` (och pusha), eller `?mp=0` i adressen för en enskild besökare.
   Utan `CLOUD_URL` är den helt av.
@@ -117,7 +128,7 @@ anslutning i rummet; inget om striderna sparas. Ryms helt inom samma månadstak.
   stänger alla anslutningar och nekar nya (kod 4003) tills den slås på igen med `curl -X PUT …/admin/players`.
   `DELETE /admin/all` drar samma broms. `curl -H "Authorization: Bearer …" <adress>/admin/players` visar månadens räkning.
 - Lokalt: `node cloudflare/dev.mjs 8146` kör rummet med WebSocket på Node (`cloudflare/devws.mjs`); tester:
-  `node --test cloudflare/players.test.mjs` och `tools/ghosttest.cjs` (två webbläsarsidor).
+  `node --test cloudflare/players.test.mjs`, `tools/ghosttest.cjs` och `tools/chattest.cjs` (två webbläsarsidor).
 
 ## API
 
