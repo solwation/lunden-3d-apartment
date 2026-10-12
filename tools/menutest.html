@@ -17,8 +17,8 @@ const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); ret
   let pass = true;
 
   const f = document.createElement('iframe');
-  f.width = 900; f.height = 600;
-  f.src = '../index.html';
+  f.width = 480; f.height = 300; // small (#703)
+  f.src = '../index.html?test';
   document.body.append(f);
 
   while (!f.contentWindow?.__app) await wait(50);
