@@ -1060,8 +1060,24 @@ saving, reload and second-start behavior are unchanged. Final source retains the
 second iframe 480×300 too, plus that narrow guard. Both final PNGs were inspected: generic patio/result layout,
 not beer-pixel equivalence; wall times include those successful captures. Raw logs/summary: `/tmp/runtests-405778/`;
 source/runtime/capture hashes, native phase records, monitor PID/SID/exit and images: `/tmp/lunden-beer807/beer-*`
-and `beertest-*`. No errors were observed in capture or page execution. Bottle still needs its complete comparison;
-#807 remains open and #841's separate incomplete beer-can result is unchanged.
+and `beertest-*`. No errors were observed in capture or page execution; #841's separate incomplete beer-can result is unchanged.
+
+#807 `bottletest` has byte-identical whole raw logs: 22 ordered PASS rows and ALL PASS, including all named
+bottles/counts, take/place/return interactions, whisky fill 0.20 and reset. Original reconstructed full/test pair
+at frozen `f0c07cc`: 104.895s → 77.917s, independently monitored actual exit 0. Authored original 900×600/noquery
+became actual native-fullscreen 1280×800/controller false; test stayed 480×300/real controller API/no fullscreen.
+The approved testMode-only first-start guard was frozen before the pair. Existing test URL/dimensions are retained
+in the final source, with only that guard added; all assertions and actions remain unchanged. Both final images
+were inspected: full capture shows a sky-only game surface and HUD, while test shows result text and the generic
+outdoor scene. They do not establish bottle-pixel or scene-image equivalence; no extra app run was made for images.
+Times include successful end captures. Complete raw logs/summary: `/tmp/runtests-413426/`; original/final hashes,
+capture source, actual PID/SID/exit, native child/fixture phase metadata and images: `/tmp/lunden-beer807/bottle-*`
+and `bottletest-*`. All 247 frozen runtime hashes match after the pair; no page or observer errors occurred.
+
+All four #807 dispositions are now recorded: shelf/beer/bottle accepted logical migrations, beer-can original
+full-mode fixture retained with interrupted persistence checks and separate open bug #841. The red beer-can pair
+is descriptive evidence only and excluded from successful speedup aggregation; no all-green batch claim is made.
+The comparison/disposition batch #807 is complete; #841 and broader #738/#736 remain open for their own work.
 
 
 `bedcaretest`'s pixel-ratio setup is not a rendering assertion; its comment now
