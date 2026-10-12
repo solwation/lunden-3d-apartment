@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { DAY, COMPASS as P } from './config.js';
+import { DAY } from './config.js';
 
 // Plan-up (−z) faces 58° ENE on FOJAB's situation/overview north arrows.
 // Positive Three.js yaw turns left: bearing is planNorth − yaw, clockwise from true N.
@@ -11,10 +11,18 @@ export class Compass {
     this.camera=camera;this.element=element;this.direction=new THREE.Vector3();this.bearing=DAY.planNorth;
     this.badges=document.getElementById('badges');
     this.blockers=['update','reloaded','countdown'].map(id=>document.getElementById(id)).filter(Boolean);
-    for(const [key,value] of Object.entries({size:P.size,compact:P.compactSize,top:P.top,'narrow-top':P.narrowTop})) {
-      element.style.setProperty(`--compass-${key}`,`${value}px`);
-      document.documentElement.style.setProperty(`--compass-${key}`,`${value}px`); // shared HUD positioning (#716)
-    }
+    // The right-hand grid owns placement; lives follow its measured compass center.
+    // Observe both its content and viewport so safe areas and hidden HUD startup work.
+    const row = element.parentElement;
+    const layout = () => {
+      const bounds = row.getBoundingClientRect(), size = parseFloat(getComputedStyle(element).width);
+      if (bounds.width && Number.isFinite(size))
+        document.documentElement.style.setProperty('--compass-center-x', `${bounds.left + size / 2}px`);
+    };
+    this.layoutObserver = new ResizeObserver(layout);
+    this.layoutObserver.observe(row);
+    this.layoutObserver.observe(document.documentElement);
+    layout();
     this.update();
   }
   update() {

@@ -899,18 +899,6 @@
       <div class="rearrange-actions"><button id="rearrange-rotate" hidden>Vrid</button><button id="rearrange-cancel" hidden>Avbryt flytt</button><button id="rearrange-menu">Meny</button><button id="rearrange-finish" class="primary">Klart</button></div>
       <small class="keyboard-hint">E: välj / placera · R: vrid · X: avbryt · §: meny · Esc: klart</small>
     </div>
-    <div id="compass" role="img" aria-label="Geografisk kompass" title="Geografisk kompass">
-      <svg viewBox="0 0 64 64" class="compass-rose" aria-hidden="true">
-        <path d="M32 14 28 32 32 28 36 32Z" class="compass-north"/>
-        <path d="M32 50 29 33 32 36 35 33Z" class="compass-south"/>
-        <path d="M17 32H25M39 32H47" fill="none" stroke="currentColor" stroke-width="1.5"/>
-        <circle cx="32" cy="32" r="2" fill="currentColor"/>
-      </svg>
-      <span class="compass-letter" style="--cardinal:0deg" aria-hidden="true">N</span>
-      <span class="compass-letter" style="--cardinal:90deg" aria-hidden="true">Ö</span>
-      <span class="compass-letter" style="--cardinal:180deg" aria-hidden="true">S</span>
-      <span class="compass-letter" style="--cardinal:270deg" aria-hidden="true">V</span>
-    </div>
     <div id="crosshair"></div>
     <div id="stats" aria-live="off" hidden>
       <div class="stats-header">
@@ -944,11 +932,25 @@
     <button id="web-btn" class="touch-only" hidden aria-label="Skjut nät">🕸</button>
     <button id="jump-btn" class="touch-only" aria-label="Hoppa">⤒</button>
     <!-- #707: the same segmented shortcuts on touch and desktop; existing IDs/listeners stay in place. -->
+    <div id="hud-right">
+    <div id="compass" role="img" aria-label="Geografisk kompass" title="Geografisk kompass">
+      <svg viewBox="0 0 64 64" class="compass-rose" aria-hidden="true">
+        <path d="M32 14 28 32 32 28 36 32Z" class="compass-north"/>
+        <path d="M32 50 29 33 32 36 35 33Z" class="compass-south"/>
+        <path d="M17 32H25M39 32H47" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <circle cx="32" cy="32" r="2" fill="currentColor"/>
+      </svg>
+      <span class="compass-letter" style="--cardinal:0deg" aria-hidden="true">N</span>
+      <span class="compass-letter" style="--cardinal:90deg" aria-hidden="true">Ö</span>
+      <span class="compass-letter" style="--cardinal:180deg" aria-hidden="true">S</span>
+      <span class="compass-letter" style="--cardinal:270deg" aria-hidden="true">V</span>
+    </div>
     <div id="hud-top" role="group" aria-label="Snabbknappar">
       <button id="furniture-btn" class="touch-only" aria-label="Möbler och prylar av/på">🛋</button>
       <button id="stats-btn" class="touch-only" aria-label="Statistik">📊</button>
       <button id="mute" aria-label="Stäng av ljud">🔊</button>
       <button id="pause" class="touch-only" aria-label="Paus">❚❚</button>
+    </div>
     </div>
   </div>
   <script type="module" src="src/bootstrap.js"></script>

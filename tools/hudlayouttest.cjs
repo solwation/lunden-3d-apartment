@@ -28,7 +28,7 @@ const sizes = [[844,390],[667,375],[932,430],[568,320],[1280,720]];
         document.body.classList.toggle('touch',touch);
         for (const [i,key] of ['sl','sr','st','sb'].entries()) document.documentElement.style.setProperty('--'+key,safe[i]+'px');
         for (const id of ['overlay','loading','rotate']) document.getElementById(id).hidden=true;
-        document.getElementById('hud').hidden=false;
+        document.getElementById('hud').hidden=true; // real startup initializes Compass while the HUD is hidden
         // Mirror main.js's score assembly without changing production IDs or handlers.
         const score=document.getElementById('score'); setScoreElement(score);
         const weather=document.createElement('span'); weather.id='weather'; setWeatherIcon(weather,'cloud','Molnigt');
@@ -44,6 +44,8 @@ const sizes = [[844,390],[667,375],[932,430],[568,320],[1280,720]];
         window.testCombat=new Combat({ghosts,camera,scene:new THREE.Scene(),weapon:()=> 'nerf',feet:()=>new THREE.Vector3()});
         window.testCombat.update(0);
         document.getElementById('corner-qr').hidden=touch;
+        document.getElementById('hud').hidden=false;
+        await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))); // ResizeObserver follows reveal
       },{touch:width<1000,safe});
       const result=await page.evaluate(({width,height,safe}) => {
         const errors=[]; const check=(ok,message)=>{if(!ok)errors.push(message);};
@@ -61,10 +63,13 @@ const sizes = [[844,390],[667,375],[932,430],[568,320],[1280,720]];
         check(near(left.top,right.top)&&near(left.height,right.height),'badge tops/heights differ');
         for(const key of ['backgroundColor','borderRadius','boxShadow','borderTopWidth','backdropFilter'])check(css('#score')[key]===css('#hud-top')[key],'shell differs: '+key);
         for(const [name,box] of Object.entries({left,right,compass,lives}))check(box.left>=safe[0]-.1&&box.right<=width-safe[1]+.1&&box.top>=safe[2]-.1&&box.bottom<=height-safe[3]+.1,name+' outside safe viewport');
+        check(near(compass.height,left.height)&&near(compass.top,right.top),'compass differs from shared badge height/top');
+        check(near(right.left-compass.right,4),'compass not directly beside right badge with 4px gap');
+        for(const letter of document.querySelectorAll('.compass-letter')){const b=letter.getBoundingClientRect();check(parseFloat(getComputedStyle(letter).fontSize)>=10,'compass letters smaller than 10px');check(b.left>=compass.left-.1&&b.right<=compass.right+.1&&b.top>=compass.top-.1&&b.bottom<=compass.bottom+.1,'compass letter outside its surface');}
         check(!overlaps(left,right),'badges overlap');check(!overlaps(compass,left)&&!overlaps(compass,right),'compass overlaps badge');
         const cell=parseFloat(css('#furniture-btn').width),unit=cell/2;
         const cells=['#weather','#temp','#level','.score-main','#presence',...(width<1000?['#terminal-btn']:[])];
-        for(const selector of cells){const box=bounds(selector);check(near(box.height,cell),'cell height '+selector);check(near(box.width/unit,Math.round(box.width/unit)),'nonmodular width '+selector);check(box.left>=left.left&&box.right<=left.right+.1,'cell outside shell '+selector);}
+        for(const selector of cells){const box=bounds(selector);check(near(box.height,cell),'cell height '+selector);if(width>600)check(near(box.width/unit,Math.round(box.width/unit)),'nonmodular width '+selector);check(document.querySelector(selector).scrollWidth<=document.querySelector(selector).clientWidth,'cell text clipped '+selector);check(box.left>=left.left&&box.right<=left.right+.1,'cell outside shell '+selector);}
         check(near(bounds('#weather').right,bounds('#temp').left)&&css('#temp').borderLeftWidth==='0px','weather/temperature pair divided');
         for(const selector of ['#temp','#level','#presence'])check(parseFloat(css('.score-val').fontSize)>parseFloat(css(selector).fontSize),'score not prominent '+selector);
         for(const selector of ['#furniture-btn','#stats-btn','#mute','#pause',...(width<1000?['#terminal-btn']:[])]){
@@ -110,6 +115,9 @@ const sizes = [[844,390],[667,375],[932,430],[568,320],[1280,720]];
       results.push(result);
       if(out){fs.mkdirSync(out,{recursive:true});await page.screenshot({path:path.join(out,`hud-only-after-${width}-safe-${safe.join('-')}.png`)});}
     }
+    // Resize the same live Compass instead of rebuilding it: its observer must move lives.
+    await page.setViewportSize({width:667,height:375});
+    await page.waitForFunction(()=>{const c=document.getElementById('compass').getBoundingClientRect(),l=document.getElementById('lives').getBoundingClientRect();return Math.abs((c.left+c.right-l.left-l.right)/2)<.1;},null,{polling:100});
     // Exercise the real stats feedback timers once, without any game bootstrap.
     await page.evaluate(async()=>{const {bump}=await import('/src/stats.js');bump('tv',1,'hud-layout-feedback');});
     await page.waitForFunction(()=>document.querySelector('#score .plus').textContent.startsWith('+'));

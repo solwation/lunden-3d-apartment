@@ -28,25 +28,25 @@ body.hud-no-blur .hud-button, body.hud-no-blur #choices button { backdrop-filter
 #cal-panel .days button { min-height: 44px; }
 
 /* #528: north follows the world; upright letters stay legible as the rose turns. */
-:root { --compass-layout-top: calc(var(--compass-top, 8px) + var(--st)); --compass-layout-size: var(--compass-size, 64px); --lives-gap: 12px; } /* #716: spacing is a visual guess. */
-#compass { --compass-angle: 0deg; position: fixed; top: var(--compass-layout-top); left: calc(50% + (var(--sl) - var(--sr)) / 2); width: var(--compass-layout-size); height: var(--compass-layout-size); transform: translateX(-50%); border-radius: 50%; box-sizing: border-box; color: #fff; background: var(--hud-glass); border: 1px solid var(--hud-edge); box-shadow: 0 2px 8px rgba(0,0,0,.2); pointer-events: none; z-index: 2; }
-#lives { line-height: 20px; top: calc(var(--compass-layout-top) + var(--compass-layout-size) + var(--lives-gap)); left: calc(50% + (var(--sl) - var(--sr)) / 2); }
+:root { --compass-layout-top: var(--badge-top); --compass-layout-size: var(--badge-height); --lives-gap: 12px; } /* #716: spacing is a visual guess. */
+#compass { --compass-angle: 0deg; position: relative; top: auto; left: auto; width: var(--compass-layout-size); height: var(--compass-layout-size); transform: none; border-radius: 50%; box-sizing: border-box; color: #fff; background: var(--hud-glass); border: 1px solid var(--hud-edge); box-shadow: 0 2px 8px rgba(0,0,0,.2); pointer-events: none; z-index: 2; }
+#lives { line-height: 20px; top: calc(var(--compass-layout-top) + var(--compass-layout-size) + var(--lives-gap)); left: var(--compass-center-x, 50%); }
 #compass[hidden] { display: none; }
 .compass-rose { display: block; width: 100%; height: 100%; transform: rotate(var(--compass-angle)); }
 .compass-north { fill: #f46b70; stroke: #391b20; stroke-width: .65; }
 .compass-south { fill: rgba(255,255,255,.65); }
-.compass-letter { position: absolute; left: 50%; top: 50%; font: 600 10px/1 system-ui,sans-serif; text-shadow: 0 1px 2px #000; transform: translate(-50%,-50%) rotate(calc(var(--compass-angle) + var(--cardinal))) translateY(calc(var(--compass-size) * -.37)) rotate(calc(0deg - var(--compass-angle) - var(--cardinal))); }
+.compass-letter { position: absolute; left: 50%; top: 50%; font: 600 10px/1 system-ui,sans-serif; text-shadow: 0 1px 2px #000; transform: translate(-50%,-50%) rotate(calc(var(--compass-angle) + var(--cardinal))) translateY(calc(var(--compass-layout-size) * -.37)) rotate(calc(0deg - var(--compass-angle) - var(--cardinal))); }
 
 /* #707: shared badge shell and half-cell width module. Weather + temperature form an undivided pair;
    clock and visitors use one cell, points two, and every shortcut one. No DOM replacement/listener changes. */
 :root {
   --badge-bg: rgba(20,35,45,.55); --badge-radius: 8px; --badge-edge: 1px solid rgba(255,255,255,.18);
   --badge-shadow: 0 2px 6px rgba(0,0,0,.18); --badge-divider: 1px solid rgba(255,255,255,.22);
-  --badge-cell: 48px; --badge-unit: calc(var(--badge-cell) / 2); --badge-inset: 4px;
+  --badge-cell: 48px; --badge-height: calc(var(--badge-cell) + 2px); --badge-unit: calc(var(--badge-cell) / 2); --badge-inset: 4px;
   --badge-top: calc(16px + var(--st)); --hud-badge-bottom: calc(var(--badge-top) + var(--badge-cell) + 10px);
 }
 #hud #score, #hud #hud-top {
-  position: fixed; top: var(--badge-top); height: calc(var(--badge-cell) + 2px); padding: 0; margin: 0;
+  position: fixed; top: var(--badge-top); height: var(--badge-height); padding: 0; margin: 0;
   color: #fff; background: var(--badge-bg); border: var(--badge-edge); border-radius: var(--badge-radius);
   box-shadow: var(--badge-shadow); box-sizing: border-box; overflow: hidden;
   backdrop-filter: blur(var(--hud-blur)); -webkit-backdrop-filter: blur(var(--hud-blur));
@@ -73,7 +73,8 @@ body.touch #hud #score { grid-template-columns: var(--badge-unit) var(--badge-ce
 #hud #score #presence { grid-column: 5; grid-row: 1; gap: 4px; border-left: var(--badge-divider); font-size: 11px; opacity: .85; }
 #hud #presence .presence-count { font-size: 12px; font-weight: 600; }
 #hud #score #terminal-btn { display: none; }
-#hud #hud-top { right: calc(var(--badge-inset) + var(--sr)); display: flex; }
+#hud-right { position: fixed; top: var(--badge-top); right: calc(var(--badge-inset) + var(--sr)); display: grid; grid-template-columns: var(--badge-height) max-content; gap: var(--badge-inset); align-items: start; }
+#hud #hud-top { position: static; display: flex; grid-column: 2; }
 body #hud #hud-top > .hud-button, body.touch #hud #score #terminal-btn {
   display: flex; align-items: center; justify-content: center; position: static; flex: none;
   width: var(--badge-cell); height: var(--badge-cell); min-width: var(--badge-cell); min-height: var(--badge-cell);
@@ -92,25 +93,23 @@ body.hud-no-blur #hud #hud-top > .hud-button, body.hud-no-blur.touch #hud #score
 body.hud-no-blur #hud #hud-top > .hud-button:is(.on,[aria-pressed=true]) { background: rgba(255,255,255,.26) !important; }
 body.hud-no-blur #hud #hud-top > .hud-button:active { background: rgba(255,255,255,.4) !important; }
 @media (max-width: 740px) {
-  :root { --compass-layout-top: var(--hud-badge-bottom); --compass-layout-size: var(--compass-compact, 56px); }
-  .compass-letter { transform: translate(-50%,-50%) rotate(calc(var(--compass-angle) + var(--cardinal))) translateY(calc(var(--compass-compact) * -.37)) rotate(calc(0deg - var(--compass-angle) - var(--cardinal))); }
   body.touch #jet-up { top: calc(var(--hud-badge-bottom) + 64px); bottom: auto; }
   body.touch #jet-down { top: calc(var(--hud-badge-bottom) + 124px); bottom: auto; }
   body.touch #web-btn, body.touch #jet-up:not([hidden]) ~ #web-btn { right: calc(170px + var(--sr)); top: calc(var(--hud-badge-bottom) + 8px); bottom: auto; }
 }
-@media (max-width: 600px) { :root { --badge-cell: 44px; } }
-/* A short landscape screen leaves one clean row for the compass, with suit controls alongside it. */
-@media (max-height: 360px) and (max-width: 740px) {
-  :root { --compass-layout-size: 44px; --compass-layout-top: calc(var(--hud-badge-bottom) - 6px); }
-  .compass-letter { transform: translate(-50%,-50%) rotate(calc(var(--compass-angle) + var(--cardinal))) translateY(-16px) rotate(calc(0deg - var(--compass-angle) - var(--cardinal))); }
+@media (max-width: 600px) {
+  :root { --badge-cell: 44px; }
+  /* Visual fit for a 568px landscape viewport with two 44px safe areas: all data
+     remains visible, while interactive cells keep their full 44px target. */
+  body.touch #hud #score { grid-template-columns: var(--badge-unit) 36px 34px 70px 30px var(--badge-cell); }
+  #hud #score #temp { font-size: 14px; }
+  #hud #score #presence { gap: calc(var(--badge-inset) / 2); }
+  #hud #score .plus.minus { font-size: 9.5px; line-height: 1.05; padding: 2px; }
 }
-
-/* Armed-player lives need their own row on narrow touch screens (#716).
-   Keep the existing two control rows below it; the web button stays beside the compass. */
-@media (max-width: 740px) {
+/* #716/#767: armed-player controls use two rows below the lives on every touch
+   viewport, including wide landscape where the old web position crossed lives. */
   body.touch:has(#lives:not([hidden])) { --combat-controls-top: calc(var(--compass-layout-top) + var(--compass-layout-size) + var(--lives-gap) + 26px + 12px); }
   body.touch:has(#lives:not([hidden])) :is(#jet-up,#measure-btn) { top: var(--combat-controls-top); bottom: auto; }
   body.touch:has(#lives:not([hidden])) :is(#jet-down,#crouch-btn) { top: calc(var(--combat-controls-top) + 60px); bottom: auto; }
   body.touch:has(#lives:not([hidden])) #jump-btn { top: calc(var(--combat-controls-top) + 60px); }
-  body.touch:has(#lives:not([hidden])) #web-btn { top: var(--compass-layout-top); }
-}
+  body.touch:has(#lives:not([hidden])) #web-btn { right: calc(170px + var(--sr)); top: var(--combat-controls-top); bottom: auto; }

@@ -4,7 +4,7 @@ const out=document.getElementById('out'),lines=[];let pass=true;
 const check=(ok,name)=>{pass&&=!!ok;lines.push(`${ok?'PASS':'FAIL'} ${name}`)},wait=ms=>new Promise(r=>setTimeout(r,ms));
 try {
  const f=document.createElement('iframe');f.width=900;f.height=600;f.src='../index.html?shot&cloud=';document.body.append(f);await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);
- const w=f.contentWindow,d=f.contentDocument,A=w.__app,T=await w.eval("import('three')"),{DAY,COMPASS}=await w.eval("import('/src/config.js')"),C=A.compass,el=d.getElementById('compass');
+ const w=f.contentWindow,d=f.contentDocument,A=w.__app,T=await w.eval("import('three')"),{DAY}=await w.eval("import('/src/config.js')"),C=A.compass,el=d.getElementById('compass');
  d.documentElement.requestFullscreen=undefined;d.getElementById('start-touch').click();A.renderer.setAnimationLoop(null);A.renderer.setPixelRatio(.15);A.renderer.setSize(180,120,false);
  for(const id of ['update','reloaded','countdown'])d.getElementById(id).hidden=true;
  C.update();check(!el.hidden&&[...el.querySelectorAll('.compass-letter')].map(x=>x.textContent).join('')==='NÖSV','compass has all four Swedish cardinal letters');
@@ -27,10 +27,11 @@ try {
  for(const width of [480,600,720,844,1280]) {
   f.width=width;await wait(50);C.update();const r=el.getBoundingClientRect();
   const controls=['level','score','furniture-btn','stats-btn','mute','pause','terminal-btn'].map(id=>d.getElementById(id)).filter(e=>w.getComputedStyle(e).display!=='none');
-  check(r.width===(width<=740?COMPASS.compactSize:COMPASS.size)&&controls.every(e=>!overlap(r,e.getBoundingClientRect())),`${width}px touch view: compact readable compass leaves all HUD controls clear`);
+  const right=d.getElementById('hud-top').getBoundingClientRect();
+  check(Math.abs(r.height-right.height)<.1&&Math.abs(r.top-right.top)<.1&&Math.abs(right.left-r.right-4)<.1&&controls.every(e=>!overlap(r,e.getBoundingClientRect())),`${width}px touch view: shared-height compass directly beside shortcuts leaves all HUD controls clear`);
  }
  f.width=844;d.documentElement.style.setProperty('--st','18px');d.documentElement.style.setProperty('--sl','34px');d.documentElement.style.setProperty('--sr','24px');await wait(50);
- let r=el.getBoundingClientRect();check(r.top===COMPASS.top+18&&Math.abs((r.left+r.right)/2-(844+34-24)/2)<2,'safe areas shift the compass into the usable screen center');
+ let r=el.getBoundingClientRect(),right=d.getElementById('hud-top').getBoundingClientRect();check(Math.abs(r.top-right.top)<.1&&Math.abs(right.left-r.right-4)<.1&&Math.abs(right.right-(844-24-4))<.1,'safe areas keep the compass directly beside the right badge');
  for(const id of ['update','reloaded','countdown']) {
   d.getElementById(id).hidden=false;C.update();check(el.hidden,`${id}: centered update message takes precedence`);d.getElementById(id).hidden=true;
  }
