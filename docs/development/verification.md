@@ -194,7 +194,9 @@ only viewport/query changed in the subsequent fixture migration. At the 2026-10-
 The migrations retained those red assertions. Baseline JSON contains only exact FAIL strings, no timings.
 After the separate fixture fixes, `streetlighttest` is 29 PASS / 0 FAIL in 70.582 s on `7f3aa05`
 (`/tmp/runtests-252850`), and `taskstest` is 96 PASS / 0 FAIL in 73.245 s on `7488651`
-(`/tmp/runtests-244812`). Their source-matched green runs remove both resolved entries; `stucktest` remains tracked by #763.
+(`/tmp/runtests-244812`). Their source-matched green runs remove both resolved entries. After #763, the unchanged `15ae17c` stuck fixture
+also passed: 61 PASS / 0 FAIL, 148 real walking checks, 183.456 s (`/tmp/runtests-259368`). Its source-matched
+green run removes the last resolved entry; the current baseline retains exactly resttest's 19 old FAIL occurrences.
 21 classification/provenance/actual CLI checks pass, including extra duplicate/reorder exit 1 and excluded timeout/signal-crash
 updates (`/tmp/lunden-773-baseline-probe.{txt,json}`); the lifecycle probes load no browser or apartment.
 
