@@ -578,6 +578,43 @@ single-fixture viewport disposition for `spidersuittest`; `startuptest` needs no
 mode migration. Source snapshots and the local evidence search are retained in
 `/tmp/lunden-audit786/`.
 
+## Test-mode source inventory: #750 batch (#787)
+
+All eight #750 fixtures bootstrap the actual apartment and currently have no
+test-mode flag. This source audit adds six script comments only. No exact-name
+matching retained `/tmp/runtests-*/summary.json` evidence was found for these
+fixtures; no new run, timing or equivalence is claimed. The preserved green
+`tostarttest` pair from #776 is a different fixture from `toasttest` and
+`toastertest`, so it cannot supply their acceptance evidence.
+
+| Fixture | Source disposition | Original iframe / evidence required |
+| --- | --- | --- |
+| terracedecortest | Conditional native-state candidate: finite merged geometry/triangle budget, terrace bounds and explicit `TerraceGate.update(camera)` layer tests. Bulb colors are assigned by `exterior.userData.update(night, power)`; a final render does not assert framebuffer output. No measured frame-time threshold. | 400×300, frozen June noon/shot; preserve gate and day/night/power-cut color rows, check actual state parity before any migration. |
+| terracetest | Candidate: terrace polygons/areas/joins and actual railing geometry bounding-box height. No viewport or pixel assertion. | 400×300, June noon; complete ordered geometry rows. |
+| terraintest | Large candidate: ground/road/ramp/stair/plinth values, dense 5 cm OUTDOOR continuity pairs, collision guards and tree-foot placement. The pair count and sampled discrepancies are actual printed values. | 400×300, June noon; own single-fixture comparison, preserve the complete scan and all raw values. |
+| thingtest | Candidate: actual bottle/glass transforms, held/place/home actions, fill/color material data, pouring/drinking and reset state. A material color field is not a sampled rendered pixel. | 900×600; all native interaction/state rows. |
+| toastertest | Conditional native-state candidate: slot glow opacity and lever positions are assigned in `Toaster.update(dt)` independently of quality knobs. Actual drawer/cord/socket actions and a second main load validate persisted placement/plug state. | 900×600 on both loads; preserve glow assertions and real reload, verify both actual mode/viewports. |
+| toasttest | Candidate: actual life-item bread slots, carriage, cooking/crumb events, names, butter/cheese actions and eating. Counted crumbs are domain events, not a particle/render measurement. | 900×600; preserve all cooking/actions and repeated eat rows, including duplicates. |
+| todotest | Candidate: committed sample-data priority order/title cleaning, DOM panel visibility, native focus/poster and fridge-door transforms. `offsetHeight > 0` checks visibility, not fixed viewport/pixel spacing. | 900×600; use the same local sample source (published `data/todo.json` can differ), preserve names/order/focus text. |
+| toilettest | Conditional native-state candidate: flush water position, sheet opacity/visibility and pool emissive intensity are assigned in `Flush.update(dt)` from refill time. No actual rendered-pixel/light analyser assertion. | 900×600, frozen noon; retain all material-state/flush/lid assertions and raw drop values. |
+
+Quality knobs in `main.js` change resolution, shadows, mirrors, weather particles
+and detail culling; they do not assign the above terrace bulb, toaster glow or
+flush material fields. That source separation does not prove runtime equivalence
+or override any genuine rendering/lighting exception: these three fixtures stay
+conditional until complete native-state results match in actual full/test runs.
+No generic DPR/render call is used to invent an exception, and no measured row
+may be normalized or omitted to manufacture a match.
+
+Suggested independent children: `terracetest` + `thingtest` + `todotest` (three
+ordinary fixtures), `terraintest` alone (large scan), `terracedecortest` alone
+(conditional gate/bulb state), `toastertest` alone (two real loads), and `toasttest`
++ conditional `toilettest` (two fixtures). Each child must inspect complete
+ordered, duplicate-sensitive rows with source/controller/actual-viewport
+provenance before migration to 480×300. #750, #741 and #736 remain open. Source
+snapshots, comment-byte checks and the local evidence search are retained in
+`/tmp/lunden-audit787/`.
+
 ## Test-mode migration: r–t (#741)
 
 Exemptions below are source-audited, with no new browser run.
