@@ -1,4 +1,4 @@
-<!doctype html><html lang="sv"><meta charset="utf-8"><title>Cold drawers</title><pre id="out">running…</pre><iframe id="f" src="../index.html?life&shot&cloud=" width="900" height="600"></iframe>
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Cold drawers</title><pre id="out">running…</pre><iframe id="f" src="../index.html?test&life&shot&cloud=" width="480" height="300"></iframe>
 <script>
 const f=document.getElementById('f'),out=document.getElementById('out'),lines=[];let pass=true;
 const check=(ok,name)=>{lines.push(`${ok?'PASS':'FAIL'} ${name}`);pass&&=!!ok;out.textContent=lines.join('\n');};
@@ -15,7 +15,7 @@ const movingFront=front.clone().add(drawer.out);check(aim(movingFront,drawer),`$
 const freezer=owners.find(o=>o.freezer),legacy=life.create('cheese',{at:'slot',store:'freezer',slot:0},{amount:321});check(legacy&&Math.abs(life.view(legacy).where().y-freezer.shelves[1])<.01,'legacy freezer slot zero now has a real shelf instead of an anonymous block');
 const stockPeas=life.items.ofType('peas').find(i=>i.home?.store==='freezer');check(stockPeas?.home.slot===3,'original pea shelf home retains its store and slot id');
 // Fresh normal visit: same persisted instances, empty hands, closed fronts, no duplicate restocking.
-w.localStorage.setItem('lunden.life',JSON.stringify(life.serialize()));await new Promise(resolve=>{f.onload=resolve;f.src='../index.html?shot&cloud=';});w=f.contentWindow;while(!w.__app)await new Promise(r=>setTimeout(r,100));const B=w.__app;f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();
+w.localStorage.setItem('lunden.life',JSON.stringify(life.serialize()));await new Promise(resolve=>{f.onload=resolve;f.src='../index.html?test&shot&cloud=';});w=f.contentWindow;while(!w.__app)await new Promise(r=>setTimeout(r,100));const B=w.__app;f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();
 for(const s of saved){const item=B.life.items.get(s.id),other=B.life.items.get(s.other),drawer=B.world.lids.find(l=>l.storeId===s.store);check(item?.place.store===s.store&&item.amount===s.amount&&other?.place.store===s.store,`${s.store} reload retains exact instances and amounts`);check(!drawer.isOpen&&!drawer.coldOwner.isOpen&&!!B.life.view(item).shutReason(),`${s.store} fresh visit closes the fronts and retains access rules`);}
 check(B.life.items.get(legacy.id)?.amount===321&&B.life.items.get(legacy.id)?.place.store==='freezer','legacy shelf contents survive the real reload');
 for(const owner of B.world.lids.filter(o=>o.kind==='fridge')){owner.isOpen=true;for(let i=0;i<60;i++)owner.update(1/60);for(const drawer of owner.drawers){drawer.isOpen=true;for(let i=0;i<60;i++)drawer.update(1/60);}}
