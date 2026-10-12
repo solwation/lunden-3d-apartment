@@ -443,7 +443,7 @@ No app/browser was started in this audit and no fixture was migrated.
 |---|---|---|
 | `anontest.cjs` | Viewport/screenshots exclusion | Two sequential 640×420 real app contexts plus privacy bounds/close checks at 640×420, 390×844, 844×390 and 1280×720; six actual screenshots. Worker-generated identities/timestamps appear in result JSON. The second anonymous identity is a direct API POST, not a second simultaneous rendered app. |
 | `chattest.cjs` | Viewport/screenshots exclusion | Two independent 480×300 browsers against the Worker, `shot&quality=0&cloud` and fixed positions; actual line capacity/bubble visibility, 667×375 touch bounds and eight screenshots (default 960×600 desktop). PASS/FAIL rows include elapsed seconds and dynamic diagnostics; retain them exactly. |
-| `tvtest.html` | Exact-row blocker; Ambilight lighting-state review | Original 900×600/index and native touch/fullscreen behavior; actual additive Ambilight visibility/colour on/off, canvas texture-version updates, TV/remote ray-actions and wall/F checks. No framebuffer readback. Random channel/program names and texture-version values remain in rows. |
+| `tvtest.html` | Retained full after actual #803 mismatch | Original 900×600/index and native touch/fullscreen; 19 PASS per mode but three complete random programme/channel rows differ. Native Ambilight/texture/ray/action/F coverage retained without pixel exemption; see [actual TV disposition](#tv-actual-comparison-disposition-803--752). |
 
 Anontest's retained #772 **scripted** run has 23 PASS / 0 FAIL, 324.104 s
 (`/tmp/runtests-226631/{anontest.log,summary.json}`, six images under `shots/`). Its executable fixture
@@ -577,6 +577,48 @@ Viewport rotation (#567): `tools/viewporttest.cjs` uses Playwright against the r
 Phone memory probe (#628): `python3 tools/devserve.py 8628 . &` then `PLAYWRIGHT_MODULE=$(npm root -g)/playwright node tools/phonememtest.cjs http://localhost:8628 [--cpu 1,4,6] [--route living,mirrors,stairwell] [--dwell 800] [--shots] [--nowarm] [--budget-mb N] [--profile desktop] [--out DIR]`. iPhone 14 Pro profile (844×390 landscape, DPR 3, UA, touch), WebGL allocation totals (textures incl. mips, renderbuffers incl. MSAA, buffers, canvas), CPU canvases, geometry copies, JS heap, long tasks, CPU throttling via CDP, per-step table and the largest items; the iOS budget is a parameter and a *guess*. A run takes ~5 minutes (the start warm-up alone ~3 min under SwiftShader); start it in the background and poll, since foreground commands time out. Numbers and findings: [performance](performance.md).
 
 Park basement entries (#729): run `PLAYWRIGHT_MODULE=/path/to/playwright CHROME_PATH=/path/to/chrome node tools/basemententrytest.cjs http://localhost:8729` after starting the development server. `SHOTS` overrides `/tmp/lunden-basement-entry/result.json`'s directory. The driver waits bounded initialization, clicks the real mouse-start button, obtains PointerLock and runs `tools/basemententrytest.html`: actual E focus from outside before below, closed/open/jamb traversal to both −1 landings and back, the touch action handler in controlled touch mode, far animated leaves, courtyard pick/collision exclusion, continuous park paving, tree/shrub-instance clearance and floor coverage. It uses `&test=lazy`, with no automatic rendering; this is not a physical-phone touch/FPS test. [Measured scope and manual full-quality images](../validation/issue-729/README.md).
+
+## TV actual comparison disposition (#803 / #752)
+
+One complete `tvtest` full/test pair ran on `fa51ae9` with only a temporary
+testMode-only fullscreen guard before its original touch-start. The original
+900×600/no-query full branch and every native action/ray/wall/F, random
+programme/channel, texture-version and Ambilight-state assertion were retained.
+`/tmp/runtests-373561/tvtest{,.test}.log` has **19 PASS / 0 FAIL per mode**;
+controller/mode metadata verifies actual **900×600**, no test parameter,
+controller false versus **480×300**, test parameter, controller true. Native
+fullscreen did not expand the full frame in this run. The complete ordered,
+duplicate-sensitive raw comparison differs at exactly three rows:
+
+| Row | Original full | Test |
+|---|---|---|
+| 6 | `a new programme each time (färgvirvlar: 2 → 0)` | `a new programme each time (superhjältar: 6 → 3)` |
+| 8 | `Sovrum 3 TV on: undervattensvärld` | `Sovrum 3 TV on: neonracet` |
+| 10 | `Sovrum 1 TV at (2.75, 4.55, 2.55): "Slå på tv:n", on true, new programme 5 → 3, off` | `Sovrum 1 TV at (2.75, 4.55, 2.55): "Slå på tv:n", on true, new programme 6 → 5, off` |
+
+Every other complete result row is identical, including actual texture
+**v2 → v8**, Ambilight visible/color-sum on and dark-off **true/true**, remote
+channel **1 → 4**, positions and **201** hidden loose items. The original
+`Screen.tune` randomness was neither seeded nor normalized; no rerun sought a
+match. CLI exit **1** correctly reports this raw mismatch despite both PASS
+verdicts. Therefore the temporary guard was removed and **the entire current
+full-original fixture file is retained byte-identically**; no migration or
+baseline/assertion/production change was made.
+
+The raw reported times were **99891 ms → 76028 ms**, including a failed
+10-second final screenshot attempt in **each** mode. Both capture errors are
+preserved in `/tmp/lunden-tv803/screenshots.txt`; no image was obtained, no
+extra app was run for screenshots, and no speedup or rendered Ambilight/pixel
+claim is made. Native glow visibility/material-color and texture-update checks
+are functional state coverage, not an automatic renderer exemption.
+Frozen runtime source and exact differences are recorded in
+`/tmp/lunden-tv803/{run-provenance,verified-disposition}.json`.
+
+#752's remaining TV disposition is now measured and retained full. Its
+`anontest.cjs` and `chattest.cjs` viewport/screenshots exceptions remain recorded
+in the #798 inventory below; those independent CJS suites are not migrated by
+this comparison. #741 remains open specifically for #840's missing actual
+resettest disposition; global #736 retains its other independent fixture work.
 
 ## Sonos trusted fixture activation (#839)
 
