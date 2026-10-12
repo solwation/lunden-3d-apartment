@@ -17,7 +17,7 @@ const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pas
 function load(src) {
   return new Promise((res) => {
     const f = document.createElement('iframe');
-    f.width = 700; f.height = 450; f.src = src;
+    f.width = 480; f.height = 300; f.src = src;
     document.body.append(f);
     f.onload = async () => { while (!f.contentWindow.__app) await wait(100); res(f); };
   });
@@ -27,7 +27,7 @@ function load(src) {
   const rec = JSON.stringify({ x: 1, z: 1, feetY: 0, yaw: 0, pitch: 0, mode: 'touch', ts: Date.now() });
   sessionStorage.removeItem('lunden.session');
   localStorage.setItem('lunden.resume', rec); sessionStorage.setItem('lunden.resume', rec);
-  const f = await load('../index.html?life&shot');
+  const f = await load('../index.html?life&shot&test');
   const w = f.contentWindow, A = w.__app;
   const { world, cups, things, milk, player, day, cat, fridge, heldItem } = A;
   const V = A.camera.position.constructor;
@@ -62,7 +62,7 @@ function load(src) {
   f.remove();
   localStorage.removeItem('lunden.resume'); sessionStorage.removeItem('lunden.resume');
   // without &life: the game as before
-  const g = await load('../index.html?shot&time=12&freeze');
+  const g = await load('../index.html?shot&time=12&freeze&test');
   const B = g.contentWindow.__app;
   const START = { x: B.player.pos.x, z: B.player.pos.z };
   check(B.player.pos.z < -5 && B.cups.cups.filter((c) => c.state === 'cabinet').length === 3 && !B.milk.placed, `no &life: outside at START (${START.x.toFixed(1)}, ${START.z.toFixed(1)}), cups in the cabinet, the milk in the fridge`);

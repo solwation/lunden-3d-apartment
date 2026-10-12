@@ -338,7 +338,7 @@ test shows all six raw result rows plus the closed-grill/night scene. Neither pr
 pixel equivalence. Timings include both captures and are one shared-machine sample, not a controlled benchmark.
 All 247 frozen source paths and frozen fixture/helper hashes match. Raw logs: `/tmp/runtests-465595/`; provenance,
 actual ready/final phases, independent monitor PID/SID/exit and both PNGs: `/tmp/lunden-objects820/grill-*` and
-`grilltest-*`. The later hold acceptance is recorded below; inventory and item still need their own complete pairs.
+`grilltest-*`. The later hold/inventory acceptances are recorded below; item still needs its own complete pair.
 #820/#739/#736 remain open.
 
 
@@ -356,7 +356,23 @@ covers the upper fixture text in full (later result rows remain visible); test s
 Neither establishes intermediate hand/hug/fruit/placement pixel equivalence. Single shared-machine sample, not a
 controlled benchmark. All 247 frozen source paths and exact fixture/helper hashes match. Raw logs:
 `/tmp/runtests-470986/`; provenance, actual ready/final phases, independent PID/SID/exit and both images:
-`/tmp/lunden-objects820/hold-*` and `holdtest-*`. Inventory/item and #820/#739/#736 remain open.
+`/tmp/lunden-objects820/hold-*` and `holdtest-*`. Inventory acceptance follows; item and #820/#739/#736 remain open.
+
+
+#820 inventory acceptance at frozen `aa5b2c2`: all 18 ordered PASS rows and ALL PASS match in complete
+961-byte raw logs; independently monitored actual exit 0. Original life/no-life queries, real local/session-storage
+resume-record preservation, no-F5-record check, 2500ms wait, stock/integration invariants and dynamic stock/world
+record-key diagnostics remain unchanged. Each mode loads TWO separate actual iframes (life scenario then normal
+START), removes the first and retains the second. Four unique child URL/timeOrigin identities at app-ready,
+first-frame passive pre-remove/pagehide and second-frame final records prove both full documents 700×450/controller
+null and both test documents 480×300/real controller API, all without fullscreen. Final migration changes only the
+shared iframe dimensions and adds test to both original queries; no guard, fixture instrumentation, wait/clock/seed,
+storage, quality, matrix, assertion or result changes. The existing uncaught-error behavior is preserved.
+Full 186.611s → test 143.456s include successful end captures. Both PNGs were inspected: all 18 result rows and
+the normal-start house façade, not inventory-item or pixel equivalence. Single shared-machine sample, not a
+controlled benchmark. All 247 frozen source paths and exact fixture/helper hashes match. Raw logs:
+`/tmp/runtests-477108/`; actual per-load/pre-remove/final records, provenance, independent PID/SID/exit and both
+images: `/tmp/lunden-objects820/inventory-*` and `inventorytest-*`. Item and #820/#739/#736 remain open.
 
 | Fixture (`tools/`) | Audit disposition | Concrete source requirement |
 |---|---|---|
@@ -386,7 +402,7 @@ controlled benchmark. All 247 frozen source paths and exact fixture/helper hashe
 | `holdtest.html` | Migrated (partial #820) | All 80 ordered PASS rows and ALL PASS byte-identical; all hold/grip/hug/fruit/placement predicates and duplicate table/retake rows preserved. Full ready 900×600 → native fullscreen 1280×800/controller null; test 480×300/real API/no fullscreen. 166.267s → 90.448s, actual exit 0; `/tmp/runtests-470986/`. |
 | `hudiconstest.html` | Full rendering | 844×390 HUD bounds, 44px controls, blur fallback and scene draw-call equality. |
 | `interactionoutlinetest.html` | Full rendering | 160×160 render-target brightness pixels, shader patches and draw-pass equality. |
-| `inventorytest.html` | Candidate | Actual inventory/action invariants. |
+| `inventorytest.html` | Migrated (partial #820) | All 18 ordered PASS rows and ALL PASS byte-identical; original storage/scenario/integration/dynamic-key predicates preserved. Both actual full documents 700×450/controller null → both test 480×300/real API, no fullscreen. 186.611s → 143.456s, actual exit 0; `/tmp/runtests-477108/`. |
 | `itemtest.html` | Candidate | Item/module checks plus real-app item integration; keep both. |
 | `jetpacktest.html` | Candidate | Actual flight/collision/heat, flame visibility, controls and saved state. |
 | `jumpontest.html` | Candidate | Jump/landing/collision cases and actual controls. |
