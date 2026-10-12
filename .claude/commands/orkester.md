@@ -53,7 +53,31 @@ Andra `/orkester`-sessioner kör på egna VM:ar och kan inte nås med SendMessag
   din reservation: finns en äldre `Reserverad av orkester …` från en annan session (och den har inte släppt den) är
   issuen deras — ta bort din kommentar och din etikett (om den inte redan fanns före) och välj något annat.
 - En statuskommentar som inte uppdaterats på 3 timmar räknas som övergiven; dess issues får tas över efter en kommentar.
-- Rör ditt nästa val samma filer/område som en annan sessions pågående kedja? Välj något annat eller vänta.
+- Rör ditt nästa val samma filer/område som en annan sessions pågående kedja? Välj något annat. Står inget annat att
+  välja: ta det ändå om ändringarna kan delas upp (olika block/moduler, se nedan) i stället för att stå still.
+
+### Så att inget låser sig (förtydligande 2026-10-12, ur användarens önskan: allt ska bli klart så fort som möjligt)
+Samordningen får aldrig vara skälet till att en agentplats står tom eller ett issue ligger still. Därför:
+- **Fråga inte användaren** om du ska fylla en ledig plats. Har du färre agenter än taket (3 per VM) och finns något
+  ledigt eller övertagbart: starta en agent direkt. Att välja nästa issue är ditt val, inte användarens.
+- **Reservationer går ut snabbt:**
+  - En reservationskommentar utan `in-progress` där ingen agent startat inom **30 minuter** är **ledig** – vem som helst
+    med ledig plats får ta den (kommentar `Övertagen …` på issuen och i #420).
+  - En issue med `in-progress` utan commit, kommentar eller statusuppdatering på **90 minuter** (inte 3 timmar) får
+    tas över efter en kommentar, om dess agent inte syns köra (status i #420 saknar agenten, eller sessionen har
+    uppdaterat sin kommentar senast för mer än 90 minuter sedan).
+  - Reservera bara det en agent **startar på nu** plus högst **två** issues närmast därefter i kedjan; resten får vara
+    oreserverade tills det finns en agent till dem.
+- **Väntande på användaren eller en fysisk enhet** (t.ex. iPhone-test) ska inte hålla en reservation: släpp issuen med
+  `Väntar på: <vad>` som kommentar och i #420, och ta den inte själv förrän svaret finns. Den räknas inte som arbete
+  att fylla en plats med.
+- **Avbruten agent** (API-fel, spend limit, krasch): återuppta den (SendMessage) eller släpp dess issues inom 30 minuter;
+  ta bort etiketten `in-progress` från det den lämnat.
+- **Filkonflikt är inget skäl att vänta.** Dela upp efter ansvar i #420 (egna moduler/block per issue, t.ex. `CORE_B` mot
+  `CORE_C`), rebasa före varje push, behåll båda sidor vid konflikt. Samma fil, olika issues: den som pushar först vinner,
+  den andra rebasar – ingen behöver be om lov.
+- **Skriv alltid hur många platser som är lediga** i raden `Senast uppdaterad` i din statuskommentar (`lediga platser: N`),
+  så att andra orkestrar ser var det finns kapacitet.
 - **Dela kapaciteten — ta hellre över och släpp hellre än att stå still.** Målet är att alla orkestrar håller sina
   agentplatser fyllda (3 per VM) och att inget arbete ligger reserverat utan att någon kör det. Kolla på varje
   agent-klar och varje gång du har färre än 3 agenter igång:
@@ -81,8 +105,9 @@ Andra `/orkester`-sessioner kör på egna VM:ar och kan inte nås med SendMessag
   rör (undvik dem), agentens egen port och skärmdumpskatalog (utanför repot), och reglerna nedan.
 - När en agent rapporterar: titta på dess skärmdump, kör om de viktigaste testerna på main om agenten inte gjorde det
   efter sin sista rebase, och sammanfatta kort för mig. Skicka sedan nästa issue till en ledig plats.
-- Val som är mina att göra: fråga mig med AskUserQuestion — flera alternativ, ett markerat "(Recommended)" — och skicka
-  svaret vidare till agenten (SendMessage).
+- Val som är mina att göra (produktbeslut, t.ex. hur något ska se ut): fråga mig med AskUserQuestion — flera alternativ,
+  ett markerat "(Recommended)" — och skicka svaret vidare till agenten (SendMessage). **Orkestreringsval** (vilket issue,
+  vilken plats, ta över/släpp) är inte mina att göra: avgör själv och fyll platserna utan att fråga.
 - Om en agent ber dig göra något den nekades behörighet till: gör det inte, fråga mig.
 
 ## Regler att ge varje agent
