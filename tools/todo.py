@@ -6,7 +6,7 @@ else the public REST API (the repo is public). Writes [{ n, text, title, kind, i
 issue's "Lapp: …" line (src/todo.js cleans the title when it is empty), kind 'bugg' for a title starting with "Bugg"
 or a `bug` label, else 'nytt'; `prio` from the `priority: high|medium|low` label, none = 'low' (#431: for the post-its
 only — picking work still counts a missing label as medium); sorted high → medium → low, oldest first within a
-level, so the door shows the high ones; pull requests are skipped. On any error it writes [] (no notes) and exits 0 so a
+level, so the door shows the high ones; pull requests are skipped, and so are issues whose title or Lapp line hints at hidden features (#745, HIDDEN). On any error it writes [] (no notes) and exits 0 so a
 deploy never fails over it.
 """
 import json
@@ -17,6 +17,8 @@ import urllib.request
 
 REPO = os.environ.get('TODO_REPO', 'solwation/lunden-3d-apartment')
 PRIO = {'high': 0, 'medium': 1, 'low': 2}
+# #745: a post-it must never hint at hidden features. Words built from parts so this file is no list either.
+HIDDEN = re.compile('|'.join(['fu' + 'sk', 'che' + 'at', 'go' + 'at', 'gra' + 'ffiti', 'hemlig\\w* ko' + 'd']), re.I)
 LAPP = re.compile(r'^\s*(?:\*\*)?Lapp:(?:\*\*)?\s*(.+?)\s*$', re.M | re.I)
 
 
@@ -49,6 +51,8 @@ def main(out):
                 if 'orkester' in labels:  # the orchestrators' shared status issue, not a todo
                     continue
                 m = LAPP.search(i.get('body') or '')
+                if HIDDEN.search(f"{i['title']} {m.group(1) if m else ''}"):  # #745
+                    continue
                 items.append({
                     'n': i['number'],
                     'text': m.group(1).strip().strip('"') if m else '',
