@@ -1046,8 +1046,28 @@ Full 154.887s → test 84.142s, including successful end captures: both PNGs wer
 cabinet in its closed final state), not door-motion or intermediate glow/shadow pixel equivalence. This is one
 shared-machine sample, not a controlled benchmark. All 247 frozen runtime hashes and fixture/helper hashes match.
 Raw logs/summary: `/tmp/runtests-442389/`; source/provenance, app-ready/final native phases, independent PID/SID/exit
-and both PNGs: `/tmp/lunden-lighting812/besta-*` and `bestatest-*`. `blindtest` still needs its own complete pair;
-#812 and broader #738/#736 remain open.
+and both PNGs: `/tmp/lunden-lighting812/besta-*` and `bestatest-*`. The later blind comparison below completes
+the bounded #812 scope; broader #738/#736 remain open.
+
+#812 `blindtest` is accepted after a complete original 900×600/noon/month 6/day 21/frozen clear-weather pair at
+frozen `88d22bb`: whole 1404-byte raw logs match, all 31 ordered PASS rows and ALL PASS, actual independent exit 0.
+All current coverage, shadow-property, slim-pack, real action/panel, held-control/timing, no-walking, score, sash,
+close/reopen, dimming, emissive and persistence checks remain unchanged. Exact diagnostics include dark dim 0.85 /
+hemi 0.35, light dim 0.30, white glow 0.23 / black 0.00, 41% after 2s, rail/head 5.496/5.500 and every saved blind value.
+Each mode really loaded TWO main documents in the same iframe, proved by four unique child URL/timeOrigin
+identities at app-ready, first-document beforeunload/pagehide and final records. Full first loaded at 900×600,
+then native touch-start fullscreen reached 1280×800 before its reload; the second full document and final phase
+returned to 900×600, controller null/no fullscreen. Both test documents and phases were 480×300 with real controller
+API/no fullscreen. The approved pre-pair testMode-only fullscreen guard precedes the first original touch start;
+full mode stays inert, the second original reload/start behavior remains unchanged. Final source keeps its existing
+test query and dimensions; the only net fixture change adds that guard. No assertion, wait, aim/matrix, quality,
+seed, lighting value, baseline or result normalization was changed.
+Full 179.647s → test 136.102s include successful end captures. Both PNGs were inspected: all raw result rows and
+the generic outdoor scene after reload, not blind-motion, room-shadow or glow pixel equivalence. This is one
+shared-machine sample, not a controlled benchmark. All 247 frozen source paths and frozen fixture/helpers match.
+Raw logs/summary: `/tmp/runtests-457979/`; native per-document/final phases, source/provenance, independent PID/SID/exit
+and both PNGs: `/tmp/lunden-lighting812/blind-*` and `blindtest-*`. BESTÅ and blind acceptance completes #812;
+this does not close #738/#736 or establish equivalence for other lighting fixtures.
 
 #810 `booktest` retains its original full-mode 900×600/noquery fixture, byte-identical to current HEAD after
 removing the approved compare-only testMode fullscreen guard. One complete original full/test pair at frozen

@@ -45,6 +45,7 @@ async function run() {
   const packH = Math.max(...list.map((b) => b.top.position.y - b.y0));
   check(packH < 0.08, `the folded pack is slim (≤ ${(packH * 100).toFixed(1)} cm over the board)`);
 
+  if (w.__app.testMode) d.documentElement.requestFullscreen = undefined;
   d.getElementById('start-touch').click();
   await wait(50);
   // Sovrum 1's blind: stand 1.3 m in front of it, look at the folded pack's top rail
