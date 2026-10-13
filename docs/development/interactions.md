@@ -299,6 +299,12 @@ src/turbo.js           Kaffeturbo (#217, TURBO): TURBO.cups cups' worth of coffe
                        TURBO.window real seconds → `player.boost` = TURBO.speed (indoors too) for TURBO.seconds, the fov wider,
                        #turbo ("Kaffeturbo!" pops, then a small label with a bar) + #turbo-edge rainbow glow, our own
                        CC0 chiptune (generated fallback; Sonos ducked meanwhile); real time (`turbo.now`), `&turbo`
+src/statspanel.js      interactive statistics (#886): Tab opens while held; releasing it closes. T pins the panel;
+                       Tab/Shift-Tab then move focus inside it. Wheel, touch drag, arrows, PageUp/Down and Home/End
+                       scroll the vertically constrained contents; existing ✕ and Escape close. Opening releases
+                       pointer lock, held trigger/joystick and gameplay keys. It pauses movement/focus actions,
+                       without opening the pause menu or disconnecting the room. Mouse return requires the existing
+                       return affordance (click or Enter/Space); touch resumes its existing mode.
 src/stats.js           visitor statistics (localStorage), "+1" badges per event, the HUD panel
                        (hidden; Tab held / T / 📊 shows it; touch, #245: narrower than the right-hand controls, scrolls with a
                        finger — touch.js ignores #stats — ⤢ full screen in columns, ✕ closes; rows go into #stats-body)

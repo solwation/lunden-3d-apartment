@@ -26,6 +26,7 @@ import { HallCare } from './hallcare.js';
 import { Rearrange } from './rearrange.js';
 import { Player, inPoly, crosses } from './player.js';
 import { Fall } from './fall.js';
+import { StatsPanel } from './statspanel.js';
 import { respawnOutdoors } from './respawn.js';
 import { setupTouch } from './touch.js';
 import { watchForUpdates, BUILD } from './version.js';
@@ -1096,6 +1097,7 @@ if (params.has('clip')) renderer.clippingPlanes = [new THREE.Plane(new THREE.Vec
 const canvas = renderer.domElement;
 const stickEl = document.getElementById('stick');
 let locked = false;
+let statsOpen = false, statsFreed = false;
 export const isPhoneDevice = () => document.body?.classList?.contains('phone')
   || (window.matchMedia?.('(pointer: coarse) and (hover: none)').matches ?? false)
   || /Mobi|Android.*Mobile|iPhone|iPod/i.test(navigator.userAgent)
@@ -1113,7 +1115,7 @@ window.addEventListener('pointerdown', (e) => {
 }, { capture: true, passive: true });
 const touch = setupTouch({ onLook: (dx, dy) => look(dx * 0.005, dy * 0.005) });
 if (params0.has('spidersuit')) suit.putOn(); // &spidersuit (#597): the suit on from the start; after `touch`, which its badge reads (#601)
-const active = () => locked || touch.enabled;
+const active = () => !statsOpen && (locked || touch.enabled);
 
 function look(dyaw, dpitch) {
   camera.rotation.y -= dyaw;
@@ -1199,6 +1201,9 @@ document.addEventListener('keydown', (e) => {
   e.preventDefault();
   overlay.hidden = true;
   armEl.hidden = false;
+});
+armEl.addEventListener('keydown', e => {
+  if (e.code === 'Enter' || e.code === 'Space') { e.preventDefault(); armEl.hidden = true; startMouse(); }
 });
 armEl.addEventListener('click', (e) => {
   if (isPhoneDevice() || lastPointerType === 'touch' || e.pointerType === 'touch') {
@@ -1479,7 +1484,7 @@ function moveChoice(d) {
   renderChoices();
   return true;
 }
-document.addEventListener('wheel', (e) => { if (locked && !reading && choices.rows && moveChoice(Math.sign(e.deltaY))) e.preventDefault(); }, { passive: false });
+document.addEventListener('wheel', (e) => { if (locked && !statsOpen && !reading && choices.rows && moveChoice(Math.sign(e.deltaY))) e.preventDefault(); }, { passive: false });
 
 /** E / the action button on what you look at: doors toggle, the note opens. */
 function use(thing) {
@@ -1588,15 +1593,15 @@ document.addEventListener('pointerlockchange', () => {
   const wasLocked = locked;
   locked = document.pointerLockElement === canvas;
   if (!locked) unlockedAt = performance.now();
-  if (wasLocked && !locked && !boardFreed && !reading) onEditPointerUnlock?.();
-  armEl.hidden = true;
-  if (locked) touch.enabled = false;
-  if (!drawing.active && !boardFreed) showOverlay(!locked); // drawing and the board panel free the mouse on purpose: no start screen
-  if (!locked) { player.keys.clear(); holdStats(false); if (!touch.enabled) player.crouch = false; }
+  if (wasLocked && !locked && !boardFreed && !reading && !statsFreed) onEditPointerUnlock?.();
+  armEl.hidden = locked || !statsFreed || statsOpen;
+  if (locked) { touch.enabled = false; statsFreed = false; }
+  if (!drawing.active && !boardFreed && !statsFreed) showOverlay(!locked); // drawing and the board panel free the mouse on purpose: no start screen
+  if (!locked) { player.keys.clear(); if (!statsFreed) holdStats(false); if (!touch.enabled) player.crouch = false; }
   if (!locked && reading && !boardFreed) showNote(false);
 });
 document.addEventListener('mousemove', (e) => {
-  if (locked) look(e.movementX * PLAYER.mouseSens, e.movementY * PLAYER.mouseSens);
+  if (locked && !statsOpen) look(e.movementX * PLAYER.mouseSens, e.movementY * PLAYER.mouseSens);
 });
 /**
  * A mouse click (#443), the one rule for mouse & keyboard (touch has its own buttons):
@@ -1609,6 +1614,7 @@ document.addEventListener('mousemove', (e) => {
  * Returns what it did (tools/clicktest.html).
  */
 function click(button) {
+  if (statsOpen) return 'none';
   const held = heldItem(), focused = clickTarget();
   if (button === 2) {
     if (reading) return 'none';
@@ -1631,7 +1637,7 @@ function click(button) {
 const clickTarget = () => (focused === jetpack.dropTarget || focused === suit.dropTarget || (focused?.kind === 'ghost' && weaponKey()) ? null : focused);
 /** Does a left click do E on what is in focus now (the prompt says "Klicka")? */
 const clickIsE = () => !!clickTarget() && !focused.blocked && !heldItem()?.clickIsUse;
-document.addEventListener('mousedown', (e) => { if (locked && (e.button === 0 || e.button === 2)) click(e.button); });
+document.addEventListener('mousedown', (e) => { if (locked && !statsOpen && (e.button === 0 || e.button === 2)) click(e.button); });
 document.addEventListener('contextmenu', (e) => { if (locked) e.preventDefault(); });
 document.addEventListener('mouseup', (e) => { if (e.button === 0) { heldItem()?.trigger?.(false); power.release(); } });
 // touch: holding the action button keeps the rifle firing (#196)
@@ -1647,7 +1653,7 @@ document.getElementById('jump-btn').addEventListener('pointerdown', (e) => { e.p
 const stripKeys = new Set(); // keys pressed while a strip / the note is open
 const isCtrl = (code) => code === 'ControlLeft' || code === 'ControlRight';
 document.addEventListener('keydown', (e) => {
-  if (!locked) return;
+  if (!locked || statsOpen) return;
   if (reading) {
     // WASD drive the strips (#120): auto-repeat of a key already held while walking up to them is ignored
     if (!e.repeat) stripKeys.add(e.code);
@@ -2257,18 +2263,27 @@ chat = new Chat({ ghosts, log: document.getElementById('chat-log'), setting: doc
   camera, layer: document.getElementById('speech'), hidden: (p) => behindWall(p) }); // bubbles over the ghosts (#676)
 terminalInput.addEventListener('input', () => chat.keyed()); // "skriver…" (#676): only in chat mode, only the flag
 window.__chat = chat;
-let statsPinned = false;
 // the minimap is part of the same "extra HUD" (#85): shown with the stats; K shows the map on its own
 let mapPinned = false;
-function showStats(show) {
-  if (show && statsEl.hidden) renderStats(statsBody);
-  statsEl.hidden = !show;
-  document.getElementById('minimap').hidden = !(show || mapPinned);
-}
-function toggleStats() { statsPinned = !statsPinned; showStats(statsPinned); }
-const holdStats = (down) => showStats(down || statsPinned);
+const statsPanel = new StatsPanel({ el: statsEl, body: statsBody, render: () => renderStats(statsBody),
+  opened: () => {
+    statsOpen = true;
+    player.keys.clear(); player.analog.x = player.analog.y = 0;
+    const wasTouch = touch.enabled; touch.enabled = false; touch.enabled = wasTouch; // cancel an already-held joystick/look
+    heldItem()?.trigger?.(false); power.release();
+    if (!wasTouch) player.crouch = false;
+    if (locked) { statsFreed = true; document.exitPointerLock(); }
+  },
+  closed: () => {
+    statsOpen = false;
+    if (statsFreed && !touch.enabled) { armEl.hidden = false; armEl.focus({ preventScroll: true }); }
+  },
+  changed: show => { document.getElementById('minimap').hidden = !(show || mapPinned); },
+});
+function showStats(show) { if (show) statsPanel.show(true); else statsPanel.close(); }
+function toggleStats() { statsPanel.toggle(); }
+const holdStats = down => statsPanel.hold(down);
 document.getElementById('stats-btn').addEventListener('click', () => toggleStats());
-document.getElementById('stats-close').addEventListener('click', () => { statsPinned = false; showStats(false); });
 document.getElementById('stats-reset').addEventListener('click', () => {
   if (confirm('Nollställa statistiken?')) { resetStats(); tasks.reset({ newChicken: true }); renderStats(statsBody); }
 });
@@ -2633,7 +2648,7 @@ document.addEventListener('keydown', (e) => {
   else if (e.code === 'Escape' && privacyDialog && !privacyDialog.hidden) { e.preventDefault(); privacyDialog.hidden = true; }
   else if (e.code === 'Escape' && leaderboard?.lbDialog && !leaderboard.lbDialog.hidden) { e.preventDefault(); leaderboard.closeLeaderboardDialog(); }
   else if (e.code === 'Escape' && leaderboard?.dialog && !leaderboard.dialog.hidden) { e.preventDefault(); leaderboard.handleSkip(); }
-  else if (e.code === 'Escape' && !statsEl.hidden) { e.preventDefault(); showStats(false); statsPinned = false; }
+  else if (e.code === 'Escape' && !statsEl.hidden) { e.preventDefault(); showStats(false); }
 });
 const resetDone = takeResetDone();
 const resetHideMode = takeResetHideMenu();

@@ -21,7 +21,7 @@ const parts = {
   release: section("document.addEventListener('mouseup', (e) => { if (e.button === 0)", '// touch: holding'),
   keyRelease: section("document.addEventListener('keyup', (e) => {\n  player.keys.delete", "window.addEventListener('blur'"),
   mouse: section("document.addEventListener('mousedown', (e) => { if (locked", "document.addEventListener('contextmenu'"),
-  keyboard: section("document.addEventListener('keydown', (e) => {\n  if (!locked) return;", "document.addEventListener('keyup', (e) => {\n  player.keys.delete")
+  keyboard: section("document.addEventListener('keydown', (e) => {\n  if (!locked", "document.addEventListener('keyup', (e) => {\n  player.keys.delete")
 };
 fs.writeFileSync(path.join(out,'source-proof.json'),JSON.stringify({mainSha256:crypto.createHash('sha256').update(source).digest('hex'),parts:Object.fromEntries(Object.entries(parts).map(([k,v])=>[k,crypto.createHash('sha256').update(v).digest('hex')])),note:'Complete source spans injected verbatim; no branch rewrites. Native DOM only, no apartment or actual projectile/hit acceptance.'},null,2));
 let failures=0;
@@ -53,7 +53,7 @@ const check=(ok,text)=>{console.log(`${ok?'PASS':'FAIL'} ${text}`);if(!ok)failur
    window.suit={worn:false,canTakeOff:false,dropTarget:{},targets:()=>[],shoot:()=>effects.weapon++};
    window.jetpack={worn:false,canTakeOff:false,dropTarget:{},targets:()=>[]};
    window.toys={blasters:[nerf],wands:[wand]};
-   window.focused=null;window.focusPoint=null;window.reading=false;window.locked=false;window.viewing=null;
+   window.focused=null;window.focusPoint=null;window.reading=false;window.locked=false;window.statsOpen=false;window.viewing=null;
    window.book={reading:false};window.rest={active:false};window.touch={enabled:true};
    window.player={pos:new THREE.Vector3(),level:0,keys:new Set(),crouch:false};
    window.shadowState={};window.hand={reach:()=>{}};window.greetedPlayers=new Set();window.greet={sayMine:line=>effects.lines.push(line)};window.bump=()=>effects.points++;

@@ -4090,3 +4090,25 @@ Cameras x1.8/y1.62/z14 and z28; fixed midday June, no `&test`, actual Quality.se
 Before routes retain original73757cc Core/CoreHouse; after uses the change. Each result checkpoints before its picture; after explicitly completes GL with finish().
 The unchanged nearby glass/lobby remains visible; the distant view loses the background lawn/trees through the house and hits the actual opaque wallz38.9.
 This proves geometry/culling acceptance, not newer main HUD changes, live FPS or a physical phone.
+
+### Interactive statistics (#886)
+
+Run `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/statspaneltest.cjs game artifacts`.
+The driver serves the original index DOM/CSS without apartment bootstrap, imports the real Player,
+touch controller, statistics and StatsPanel, and executes complete production main input/panel blocks
+verbatim. It acquires real browser pointer lock using the original start button, checks held Tab
+including its close button/release, pinned T with Tab/Shift-Tab focus, wheel/keyboard scrolling,
+Escape, click/Enter return, and native touch gestures. Gameplay collaborators and a small Player
+world are controlled stand-ins; this is no apartment/render/network-combat proof. Statistics exist
+only in a fresh browser context; cancellation of the existing menu reset dialog preserves them.
+Native touch scroll inertia must settle by measured scrollTop before the close-button tap.
+`--before` runs the historical b2efbc5 index/main blocks to reproduce retained pointer lock,
+non-scrolling wheel/focus selection and a held trigger; failure is expected.
+
+The armed greeting fixture keeps its original 22 assertions; its source anchor and fixture globals
+include the new stats input guard so it still extracts the production handler. No room, touch mode,
+port, fullscreen or existing PASS/FAIL contract is replaced.
+
+Native evidence: 22 checks PASS, CLI 0, no page errors; reviewed held/touch PNGs. The
+unchanged armed-greeting actions/assertions also report 22 PASS, CLI 0. These native checks
+do not claim an apartment/WebGL run or physical-phone verification.

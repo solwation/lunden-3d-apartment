@@ -254,7 +254,9 @@
     #stats .stats-header button { border: 0; border-radius: 6px; padding: 6px 14px; min-height: 38px; cursor: pointer; font: 600 13px system-ui, sans-serif; background: rgba(255,255,255,.15); color: #fff; }
     #stats .stats-header button:hover { background: rgba(255,255,255,.25); }
     #stats .stats-header button#stats-close { width: 38px; height: 38px; padding: 0; border-radius: 50%; font-size: 18px; }
-    #stats-body { flex: 1 1 0; min-height: 0; height: 100%; overflow-y: auto; overscroll-behavior: contain; column-width: 290px; column-gap: 36px; padding-right: 4px; }
+    #stats-body { flex: 1 1 0; min-height: 0; height: 100%; overflow-y: auto; overscroll-behavior: contain; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); align-content: start; gap: 0 36px; padding-right: 4px; }
+    #stats-body > .lb, #stats-body > .lb-head, #stats-body > .lb-presence { grid-column: 1 / -1; }
+    #stats-body:focus-visible { outline: 2px solid #fff; outline-offset: -2px; }
     #stats-body > div { break-inside: avoid; margin-bottom: 6px; }
     /* Badge layout and shared shell live in src/hudicons.css (#707). Existing score IDs stay intact. */
     /* #884: two vertical cells inside the existing visitors column, without changing badge geometry. */
@@ -619,7 +621,7 @@
             <span><kbd>M</kbd></span><span>ljud av/på</span>
             <span><kbd>F</kbd></span><span>möbler och prylar av/på (visa den tomma lägenheten)</span>
             <span><kbd>Q</kbd></span><span>mät: sätt en punkt, sedan nästa (Q en tredje gång rensar)</span>
-            <span><kbd>Tab</kbd></span><span>håll inne för att se statistiken och kartan (<kbd>T</kbd> låter dem ligga kvar)</span>
+            <span><kbd>Tab</kbd></span><span>håll för statistik och karta; <kbd>T</kbd> behåller dem. Musen blir fri. Bläddra med hjul eller piltangenter; stäng med <kbd>Esc</kbd>. Klicka eller tryck <kbd>Enter</kbd> för att styra igen</span>
             <span><kbd>K</kbd></span><span>visa/dölj bara kartan</span>
             <span><kbd>Enter</kbd> eller <kbd>§</kbd></span><span>öppna konsolen</span>
             <span><kbd>Esc</kbd></span><span>släpp musen — här på startskärmen: börja med mus &amp; tangentbord</span>
@@ -776,7 +778,7 @@
       </div>
     </div>
   </div>
-  <div id="arm" hidden role="button"><div><span class="arm-label">Klicka för att styra med musen</span> <button type="button" id="arm-touch" class="arm-switch-btn" aria-label="Byt till touchkontroller">Touch</button></div></div>
+  <div id="arm" tabindex="0" role="button" aria-label="Fortsätt med mus och tangentbord" hidden role="button"><div><span class="arm-label">Klicka för att styra med musen</span> <button type="button" id="arm-touch" class="arm-switch-btn" aria-label="Byt till touchkontroller">Touch</button></div></div>
   <div id="rotate" role="alert">
     <div>
       <span class="ico">📱</span>
