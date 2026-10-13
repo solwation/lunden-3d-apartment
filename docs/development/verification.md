@@ -496,7 +496,7 @@ mismatch; life2 has 137 identical PASS rows. This is not an all-migrated or spee
 | `laundrytest.html` | Retain original full (#823); real-time row differs | Complete 61 PASS / ALL PASS in both modes, but exact row 28 differs (left 26.50/ran 8.52 versus left 26.45/ran 5.04). Seven real documents per mode, original 480×300/full controller null versus test real API/no fullscreen. Actual compare exit 1; `/tmp/runtests-503245/`. No migration or speedup aggregation. |
 | `life2test.html` | Migrated (#823) | All 137 ordered PASS rows and ALL PASS byte-identical; six complete default sections/six actual removed frames per mode, all action/save/audit/timer/score diagnostics and optional filter preserved. Full ready 900×600/controller null (five later native fullscreen1280×800) → test480×300/real API/no fullscreen. 387.369s →403.815s, actual exit0, no speedup claim; `/tmp/runtests-513972/`. |
 | `life3test.html` | Original full retained (#824); independent dust bug #849 | Complete default six-app pair: full67 PASS/1 dust FAIL versus test68 PASS; exact differences at rows6/10/11. Native vacuum/cloth/bin/mess coverage retained; no migration or normalization. Actual evidence below. |
-| `lifetest.html` | Candidate | Full life inventory/food/storage/reload action flows. |
+| `lifetest.html` | Original full retained (#824); independent fixture-contract bug #850 | Complete thirteen-app pair, whole7566-byte logs identical but red:132 PASS/1 eggCarton FAIL each. All original default flows/current assertions preserved; no migration from red equality. Actual evidence below. |
 | `lifttest.html` | Migrated (#824) | 24 identical ordered PASS rows, 0 FAIL; native original 800×500/full → 480×300/test. One actual main document per mode; lift.loadState is native state restoration, not an app reload. Doors/panel/collision/ride/stair predicates preserved; evidence below. |
 | `lighttest.html` | Full rendering | Pool/wash intensities, lamp fading and actual detail-culler visibility. |
 | `loadingtest.html` | Full startup | Early loading/resume covers versus __app readiness; test mode changes warmup lifecycle. |
@@ -2189,7 +2189,7 @@ All three bounded #822 dispositions are complete: jump-on 35 and jetpack 37
 identical PASS rows accepted; kitten retains original full after two distinct
 but individually passing complete results. #739/#736 remain open.
 
-## Life simulation and lift: lift acceptance (#824, partial)
+## Life simulation and lift: lift acceptance (#824)
 
 One complete published jobs1 pair at frozen runtime `d12b74d` used the whole
 original 800×500 and exact time12/month6 query, with no shot/cloud/freeze additions
@@ -2220,8 +2220,8 @@ matched after the pair.
 
 Written lift now uses 480×300/test; reversing only dimensions/query reproduces
 the exact frozen original with all executable predicates intact. LIFE3 and LIFE
-remain pending under #824; their whole default flows and optional source filters
-are preserved in preparation. #739/#736 stay open.
+actual dispositions are documented below with whole default flows and original
+source filters preserved. #739/#736 stay open.
 
 ## Drawing complete native pixel-count disposition (#825)
 
@@ -2293,7 +2293,7 @@ changelog's original compact format was restored with identical parsed tested da
 The old #810 blocked disposition is superseded by this actual current comparison;
 #738/#736 remain open.
 
-## Life simulation and lift: LIFE3 disposition (#824, partial)
+## Life simulation and lift: LIFE3 disposition (#824)
 
 One complete published jobs1 default pair at frozen runtime `945e95a` preserved
 the whole original 900×600, all five sections/six apps and original removals.
@@ -2336,8 +2336,8 @@ below both viewport images; no app scene is retained. No dust/vacuum/cloth visua
 equivalence or qualified timing aggregation is claimed. Complete logs/summary:
 `/tmp/runtests-523326/`; frozen source/helper hashes, native phases, complete raw
 diffs, actual exit and images: `/tmp/lunden-life824/life3test/`. All frozen source
-blobs matched after the pair. LIFE remains pending under #824; #849 stays open
-as a separate bug, and #739/#736 remain open.
+blobs matched after the pair. LIFE disposition is documented below; #849 stays
+open as a separate bug, and #739/#736 remain open.
 
 ## Tape measure complete native acceptance (#826, partial)
 
@@ -2361,3 +2361,52 @@ raw/native records and genuine setsid/Popen/wait PID/SID/exit:
 `/tmp/lunden-measure826/measuretest/`. Miele and milk remain pending under #826;
 #740/#736 remain open. No shorter `only=fireworks` Miele result will substitute
 for its full default action/rarity/photo flow.
+
+## Life simulation and lift: LIFE disposition (#824)
+
+One complete published jobs1 default pair at frozen runtime `a48c856` preserved
+the whole original 900×600, all nine M1 sections, two-load own-home session-resume
+flow and separate two-load persistence flow: thirteen actual apps per mode.
+All stock/tool loops, actions/reasons, carrying/mass balance, geometry/material/
+layers, score/events/audits and original storage/Date.now/world records remained
+unchanged. Native life.load/keep-record restoration is not another app reload;
+the authored remove/new-load flows are actual apps. There was no seed, clock/
+normalization, quality/matrix, wait or cleanup override.
+
+The whole raw logs are byte-identical (7566 bytes), but both are red:133 ordered
+result rows =132 PASS/1 FAIL/SOME FAILED. Exact row7 is
+`FAIL eggCarton: in fridge slot 2, 6 count`. Terminal verdict and trailing blank
+are not result rows. All later default checks completed, without exception or
+short-circuit. This red equality does not establish migration acceptance. The
+temporary approved guard was removed; whole written LIFE is byte-for-byte
+original full source. No baseline mask or repeat-to-green was added.
+
+Independent fixture-contract bug #850 records the actual quantity6 and source
+expected value undefined: LIFE_FOOD.stock includes eggCarton, while
+LIFE_FOOD.amounts lacks that key; canonical ITEMS uses EGG.count. The amount
+comparison therefore fails, while other native place/store/slot conjuncts were
+not separately instrumented. This is not evidence of corrupted stock or a
+quality/viewport cause, and no sidefix was made in #824.
+
+All twenty-six app-ready documents have distinct native timeOrigins and matched
+URLs: full ready900×600/controller false, test ready480×300 with genuine
+draw/setFull/wantsFrame APIs, lazy/full false. Twenty-six trusted pagehide
+snapshots confirm all original removals: every full leaves1280×800/native
+fullscreen, every test leaves480×300/no fullscreen. Both final retained-frame
+arrays are empty. Earlier runner null controllers remain explicit, completed by
+native evidence with no observer errors/warnings; all cloud URLs were empty.
+Runner modes were verified and the independent monitor exited 1.
+
+Elapsed full/test times were 857.679/855.317 seconds including successful final
+captures, with a 60-second bound in both modes. Both images were saved/reviewed:
+full cropped top text and test cropped top/right text show the egg FAIL, while
+later rows/terminal verdicts are below both viewport images; no scene remains.
+No food/life-item visual equivalence or qualified timing aggregate is claimed.
+Complete logs/summary: `/tmp/runtests-534447/`; frozen runtime/helper hashes,
+native phases, exact original-restoration proof, actual exit and images:
+`/tmp/lunden-life824/lifetest/`. All frozen source blobs matched after the pair.
+
+All #824 dispositions are complete: lift's24 exact PASS rows support its small
+setup; LIFE3 retains original full after raw random/dust differences and #849;
+LIFE retains original full after identical red output and #850. Those bugs stay
+open independently; broader #739/#736 remain open.
