@@ -1,3 +1,4 @@
+import { isPrivateCode, layoutWriteCredential } from './privatecodes.js';
 import * as THREE from 'three';
 import { LEVELS, LIFE, REARRANGE } from './config.js';
 import { cloudUrl } from './cloud.js';
@@ -56,7 +57,7 @@ export class Rearrange {
     addEventListener('online', () => this.sync());
   }
   unlock(code) {
-    if (!['olof is the goat', 'sarah is the goat'].includes(code.trim())) return false;
+    if (!isPrivateCode(code.trim())) return false;
     this.unlocked = true; try { localStorage.setItem(UNLOCK, 'true'); } catch {}
     this.enable(true); return true;
   }
@@ -199,7 +200,7 @@ export class Rearrange {
   }
   async write(moves, extra = {}) {
     if (this.url) {
-      const r = await fetch(this.url + '/furniture', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: 'olof is the goat', moves, ...extra }) });
+      const r = await fetch(this.url + '/furniture', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ credential: layoutWriteCredential(), moves, ...extra }) });
       const body = await r.json();
       if (r.status === 409 && body.state) { this.pending = body.state; throw Error('Någon annan ändrade möbleringen. Försök igen.'); }
       if (!r.ok) throw Error('Kunde inte spara. Försök igen när anslutningen fungerar.');
