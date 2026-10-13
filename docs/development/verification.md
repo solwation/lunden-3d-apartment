@@ -219,6 +219,40 @@ after, ALL PASS in 16 min. `crashtest.cjs` 514 s → 459 s. `resttest.html` 442 
 frame of `shot()` compiles the shadow programs (~3 min under that load); later shots are cheap. resttest has 4 pre-existing FAILs
 ("#302 … not across false", `soffan #3`, `fåtöljen #0`), identical with and without `&test`.
 
+## Explicit private fixture inputs (#854)
+
+Private-code fixtures use tools-only `secret-test-inputs.js` and external HTML companion
+`tools/secretfixture.cjs`. Provision an untracked JSON file **outside the checkout** with exactly
+`{"codes":["first private input","second private input"]}` (replace both placeholders with the actual
+original inputs, in original first/second order). Set `LUNDEN_SECRET_TEST_INPUTS` to its absolute path.
+The shared Node loader `tools/secret-test-inputs.cjs` exports `loadSecretTestInputs`,
+`validateSecretTestInputs` and `redact`; Node Worker fixtures can reuse it. No input derivation/fallback is
+performed by any runner. Missing/unreadable/invalid/inside-checkout provision is FAIL, never a skip;
+input strings are passed exactly, without normalization. Keep private JSON out of source control/logs.
+
+Start the normal isolated `tools/devserve.py`, then run, for example:
+
+```sh
+LUNDEN_SECRET_TEST_INPUTS=/absolute/private-inputs.json PLAYWRIGHT_MODULE=/path/to/playwright \
+  node tools/secretfixture.cjs http://localhost:8813 cheattest /tmp/private-fixture-shots
+```
+
+The companion installs input only on `/tools/` documents before fixture execution; app documents receive
+no injected global. It uses the usual runner's 1280×800 top viewport/DPR1 and Chromium flags, with no
+query/frame dimensions/test-mode override. Fixture-authored actions, parser/form inputs and reloads run
+normally. Ordinary failed assertion rows do not terminate execution: authored final ALL PASS/SOME FAILED
+is required. Rearrangetest's existing caught Error-stack output is explicitly terminal without a verdict.
+Classification uses original output before optional privacy redaction, which cannot change acceptance;
+logs/screenshots/native reload URL/timeOrigin/mode/viewport records go to the external output directory.
+Do not infer logical or pixel parity from sanitized output. Both actual input values must still traverse the
+production console/parser; the rearrangement setup helper does not substitute for them.
+
+Loader preflight: 14 Node cases for malformed/missing/external path, exact strings and redaction; five
+native Chrome cases for missing-input failure before app construction, exact frozen provider values and
+non-tools gating. Actual companion CLI stub DOM success/failure runs verify terminal status and exits.
+These lightweight checks do not construct/render the apartment or establish gameplay/state parity.
+Whole gameplay verification remains tracked in #854 until both authored fixtures complete.
+
 ## Test runner (`tools/runtests.cjs`, #737 / #736)
 
 `node tools/runtests.cjs resttest tostarttest cooktest` (or `--group a-c|d-l|m-p|r-t|u-z`, the file name's first letter) runs the named
