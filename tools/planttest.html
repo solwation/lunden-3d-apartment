@@ -11,7 +11,7 @@
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const f = document.createElement('iframe');
-f.width = 900; f.height = 600; f.src = '../index.html';
+f.width = 480; f.height = 300; f.src = '../index.html?test';
 document.body.append(f);
 f.onload = async () => {
  try {

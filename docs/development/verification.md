@@ -551,7 +551,7 @@ no executable fixture changes or new browser results are part of this audit.
 | `pctest.html` | Accepted in #831 | Complete original full/test logs byte-identical, all 9 ordered PASS; actual900×600/null versus480×300/real APIs. Current screen CanvasTexture/fan-colour, chair/bunk actions and yaw/facing predicates retained; capture coverage differs. |
 | `perfcount.html` | Explicit performance exclusion (#736) | Actual renderBufferDirect screen calls/triangles, shadow/mirror/env passes and texture-memory budgets. |
 | `pettest.html` | Original full retained (#832) | Actual complete two-live-app pair: 17 PASS per mode; full/test badge row differs by room prefix. Native pet/hand/eyes/photo JPEG/IndexedDB/stats/rare stars and all unseeded values retained; see actual evidence below. |
-| `planttest.html` | Candidate | Actual plant/item ray-actions, placement, ownership and reset. |
+| `planttest.html` | Accepted in #832 | Complete original full/test logs byte-identical: 23 PASS, 1035 bytes; native 900×600/null controller versus 480×300/real test APIs. All original held/merged-vertex/placement/focus/F checks retained; capture scope differs. |
 | `plantwindtest.html` | Full pixel rendering | 192×192 render-target readback asserts moving foliage, focused foliage and pixel-identical pottery. |
 | `portiktest.html` | Candidate | Actual portik/bin geometry, walk/actions, save/reload and reset. |
 | `posterplacementtest.html` | Original full red; comparison incomplete (#833) | Actual original full stopped after four PASS, two preview FAIL and a caught TypeError; writer lacks terminal (#858), preview tracked in #857. Explicit interrupted CLI143 is not a completed pair or migration. Original cloud/reload coverage remains pending. |
@@ -3433,7 +3433,7 @@ hand contact or rising stars; no directed pose/photo/pixel equivalence is
 claimed. Samples 318.124 s and 164.671 s include successful captures (60-second
 bound in both modes); unequal capture coverage excludes qualified speedup
 aggregation. Source/native/monitor/capture/cleanup evidence remains in
-`/tmp/lunden-pets832/pettest`. Plant and Portik remain pending in #832;
+`/tmp/lunden-pets832/pettest`. Plant is documented below; Portik remains pending in #832;
 parents #740 and #736 remain open.
 
 ## Detailed patio palm native acceptance (#831, partial)
@@ -3522,3 +3522,42 @@ excluded from qualified speedup aggregation because capture coverage differs.
 All bounded #831 dispositions are complete: Palm15, Patio33 and PC9 ordered
 PASS per mode with whole byte-identical logs. Their distinct frozen bases and
 native/capture limits are retained above. Parents #740/#736 remain open.
+
+
+### Plant placement verified pair (#832, partial)
+
+One complete original full/test `planttest.html` pair ran on frozen `3fc6188`,
+without any preparatory source guard or other change. Full retained original
+900×600/plain index and existing unconditional fullscreen suppression; test
+used 480×300/`?test`. All original 23 checks, required-feature errors, actions,
+matrix calls, native focus/held state, merged-vertex counts/model visibility,
+placement heights and cafe absence/double-F return remained. No seed,
+normalization, branch removal, extra wait, matrix or quality override was added.
+
+Both whole ordered logs are byte-identical, 1035 bytes, 23 PASS/0 FAIL and ALL PASS.
+The duplicate "in the hand" and dining-table rows remain in their exact order.
+Native values include 11 pots/5 merged meshes, 63252→55602 vertices, table y 0.755,
+board y 0.801, lower-shelf y 1.850 and F-restored 63252 vertices. Public raw logs:
+`/tmp/runtests-661924/planttest.log` and `planttest.test.log`. Independent
+monitor exited 0 at 09:08:30 UTC; all owned session processes ended and port 8737
+was verified without listener and reusable. The final fixture changes only
+iframe 900×600→480×300 and plain index→`?test`; reversing those bytes reproduces
+the entire frozen original. All executable predicates/actions remain unchanged.
+
+One actual app per mode has matching ready/final URL and timeOrigin: full
+900×600/null controller versus test 480×300/real draw/setFull/wantsFrame APIs,
+lazy/full false. All four native snapshots show no fullscreen and empty
+cloudURL, no leave/reload events or readiness errors. All 229 frozen native
+source/data/index/runner/fixture Git blobs and three helper hashes physically
+match before migration. Native quality/detail/focus coupling remains; accepted
+logical rows do not establish rendered-plant pixel equality.
+
+Both actual PNGs were inspected. Full shows ALL PASS and all 23 vertical rows
+plus the final shelves/plants/face pot/HUD; test shows only the top 18 rows,
+clips long text right and retains no scene. F-return predicates have complete
+raw evidence but lie below the test capture. No placed-pot or scene pixel
+comparison is claimed. Samples 107.945 s and 69.435 s include successful captures
+with 60-second bounds in both modes; unequal image coverage excludes qualified
+speedup aggregation. Source/native/monitor/image/inverse/cleanup evidence
+remains in `/tmp/lunden-pets832/planttest`. Portik remains pending in #832;
+parents #740/#736 stay open. No production/runner/baseline changes.
