@@ -801,3 +801,33 @@ test('#938 named optional regions preserve legacy front/rear/default/undefined/n
   assert.equal(C.rifleHeadContact(...args,{allowFront:false,allowRear:false}),false);
   assert.equal(C.rifleHeadContact(...args,{}),true,'named absent permissions retain front/rear defaults');
 });
+
+test('lower central nose band: authoritative damage, legacy fallback, one fatal award and retained recovery contract', async()=>{
+  const {avatarLook,rifleNoseEntry,rifleNoseRegion,rifleNoseBandRegion,PVP_RIFLE_HEAD:H}=await import('../src/config.js');
+  const env=setup(),a=await connect(env,'Band nose shooter'),b=await connect(env,'Target'),id=b.got[0].i;
+  a.send({p:[0,0,-4],r:0,h:'rifle'});b.send({p:[0,0,0],r:0,h:'rifle'});await settle(env);now+=1000;
+  const state={p:[0,0,0],r:0},look=avatarLook(id);let shot;
+  // Select an r2/r3 packet within the unchanged 6mm entry guard on the assigned canonical profile.
+  // The 3mm forward offset is a room-only guard control; independent native skin proof establishes physical support.
+  // Browser skin/nearest-face/cell proof is independent; this room test covers authoritative semantics.
+  for(const oy of [1.60,1.61,1.62,1.63,1.64])for(const oz of [-4,-3,-2])for(const ox of [0,-.01,.01])for(const dx of [0,-.002,.002])for(const dy of [.0815,.082,.0825]){
+    const o=[ox,oy,oz],raw=[dx*[.93,1,1.08][look.build]-ox,(H.headY+dy)*look.tall-o[1],-oz-.134*[.93,1,1.08][look.build]],length=Math.hypot(...raw),d=raw.map(v=>+(v/length).toFixed(3)),unit=d.map(v=>v/Math.hypot(...d)),entry=rifleNoseEntry(id,state,o,d);
+    if(entry===null)continue;const hc=[1,...o.map((v,i)=>+(v+unit[i]*(entry-.003)).toFixed(3))];
+    if(!shot&&!rifleNoseRegion(id,state,hc.slice(1))&&rifleNoseBandRegion(id,state,hc.slice(1)))shot={t:'a',w:'rifle',o,d,hc,to:id};
+  }
+  assert.ok(shot,'bounded native-profile ray exists for the assigned appearance');const{hc}=shot;assert.equal((await import('../src/config.js')).rifleNoseExtraRegion(id,state,hc.slice(1)),false);
+  assert.equal(rifleNoseRegion(id,state,hc.slice(1)),false,'this is genuinely outside the published nose support');
+  assert.equal(rifleNoseBandRegion(id,state,hc.slice(1)),true);assert.ok(Buffer.byteLength(JSON.stringify(shot))<=PLAYERS.maxBytes);
+  const shoot=async m=>{now+=1000;a.send(m);await settle(env);return a.got.filter(m=>m.t==='hit').at(-1);};
+  let hit=await shoot(shot);assert.equal(hit.head,true);assert.equal(hit.l,8);assert.equal(hit.award.points,5);assert.equal(hit.dead,false);
+  assert.equal(b.got.filter(m=>m.t==='hurt').at(-1).l,8);
+  hit=await shoot({...shot,hc:undefined,head:true,damage:999});assert.equal(hit.head,undefined);assert.equal(hit.l,7,'contact-less old client still takes body damage only');
+  hit=await shoot({...shot,hc:[2,...hc.slice(1)]});assert.equal(hit.head,undefined);assert.equal(hit.l,6,'unknown version stays body-only');
+  b.send({p:[0,0,0],r:0,h:'rifle',c:true});await settle(env);hit=await shoot(shot);assert.equal(hit.head,undefined);assert.equal(hit.l,5);
+  b.send({p:[0,0,0],r:0,h:'rifle'});await settle(env);now+=1000;
+  env.PLAYERS.hibernate('world');
+  const server=env.PLAYERS.object('world'),target=[...server.ctx.getWebSockets()].find(s=>s.deserializeAttachment().i===id),attachment=target.deserializeAttachment();attachment.l=1;target.serializeAttachment(attachment);
+  hit=await shoot(shot);assert.equal(hit.head,true);assert.equal(hit.l,-1);assert.equal(hit.dead,true);assert.match(hit.kill,/^[0-9a-f-]{36}$/);assert.equal(hit.award.seq,5);
+  const count=a.got.filter(m=>m.t==='hit').length;a.send(shot);await settle(env);assert.equal(a.got.filter(m=>m.t==='hit').length,count,'same tick cannot produce another death or award');
+  const observer=await connect(env);assert.equal(observer.got[0].ps.find(p=>p.i===id).l,COMBAT.lives);
+});

@@ -186,6 +186,8 @@ Nerfpilar når upp till 25 meter och en bekräftad spelarträff hörs med en ege
 
 Dyra browserprov sparar avslutade delresultat före bilder, med källhashar och separat status för scenario, bilder, städning och faktisk CLI-exit. [Artifact-konvention](docs/development/verification.md#artifact-checkpoints-881).
 
+En verifierad smal nedre mittdel av näsan kan också ta två hjärtan när spelaren står still. Celler utanför stödet fortsätter ge vanlig skada; figurens form ändras inte.
+
 Gevärsträffar på verifierade främre sidoceller av spelarfigurens näsa kan också
 ge dubbel skada. Täckta, osäkra eller ännu overifierade celler ger fortsatt vanlig
 kroppsskada; detta är inte ett löfte om hela näsan eller alla animationstillstånd.

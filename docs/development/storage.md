@@ -558,3 +558,11 @@ run38444479768/job115459174790 completed successfully, including the actual
 succeeded. This establishes publication of the optional public enum contract,
 not a physical iPhone viewport/crash fix or a live-client crash reproduction.
 Older reports without the field keep their previous public representation.
+
+### Lower central nose band compatibility (#937)
+
+The additive band uses existing version1 hc:[1,x,y,z], o:r2/d:r3/contact:r3 and256-byte input cap. It reuses the exact original Nose profile/front-entry/direction/6mm guard, canonical appearance and shared life/recovery/award/kill receipt handling. No PlayerRoom runtime, wire field, state/history/storage key, message, alarm or cost rule is added. Unknown/absent contact, moving/crouched targets, unsupported regions and an older validator keep authoritative body1. Client classification requires the actual closest original Nose surface; the server validates the reported profile/ray within its existing responsibilities, not full authoritative avatar physics.
+
+The new PlayerRoom case exercises a bounded quantized packet within the original entry guard, both legacy fallbacks, crouch, one low-life kill UUID/award, immediate public life reset, hibernation and duplicate suppression. Its3mm profile offset is explicitly a room-only guard control; independent actual browser skin/closest-surface proof establishes physical support. A fixed origin first failed to find a narrow whole cell for a randomly assigned height, so the fixture now searches bounded legal r2 origins rather than widening policy.
+
+Fresh old023f4ca validation returned actual new-client body1/local-public9HP and an ordinary replay-safe marker (7 native checks/CLI0); an external loader supplies its recorded original pure config, never a stale module cache. Final fresh current Worker/native protocol24/CLI0 and Worker/recovery36/CLI0 preserve published front/rear history and named allowFront/allowRear/allowGreetingLeft options. They do not globally gate the independent Nose band. Own runtime changes are only the new canonical constant/region and existing internal Nose surface dispatch; no message or periodic work is added.

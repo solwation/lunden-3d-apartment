@@ -4570,6 +4570,7 @@ export const PVP_RIFLE_HEAD = {
   jaw: { radius: .088, width: 8, height: 6, scale: [1, .8, 1], centre: [0, .052, .03] }, // unchanged rigid head-bone jaw mesh
   nose: { radius: .02, width: 8, height: 6, scale: [.8, 1.1, 1.15], centre: [0, .092, .113] }, // unchanged Avatar nose
   front: { styles: [0, 1, 2, 3], x: [.061, .075], y: [.078, .105], z: [.036, .11], approach: .08 }, // #931 *guess* finite extra-front contact/ray policy, actual nearest-surface grid required
+  noseBandPatch: { across: .005, low: .080, high: .084, front: .132 }, // #937 *guess* lower central whole-cell band; unchanged nose profile and 6mm entry guard
   noseExtraPatch: { across: .011, low: .083, high: .101, front: .13 }, // *guess* exposed frontal side cells; original vertical/front/direction/entry guards unchanged
   nosePatch: { across: .005, low: .083, high: .101, front: .13, direction: .2, surface: .006 }, // *guess* fail-closed frontal core, actual nearest-surface/pose/wire grid required
   rear: {
@@ -4641,7 +4642,7 @@ export function rifleHeadContact(seed,state,shot,shooterFeet,range,maxOrigin,all
   if(Math.hypot(...o.map((v,i)=>v-shooterFeet[i]))>maxOrigin)return false;
   const length=Math.hypot(...d),unit=d.map(v=>v/length),delta=hc.slice(1).map((v,i)=>v-o[i]),along=delta.reduce((s,v,i)=>s+v*unit[i],0);
   if(along<0||along>range||Math.hypot(...delta.map((v,i)=>v-along*unit[i]))>H.wireMetres)return false;
-  const jaw=rifleJawRegion(seed,state,hc.slice(1),o,d),nose=rifleNoseRegion(seed,state,hc.slice(1))||rifleNoseExtraRegion(seed,state,hc.slice(1));
+  const jaw=rifleJawRegion(seed,state,hc.slice(1),o,d),nose=rifleNoseRegion(seed,state,hc.slice(1))||rifleNoseExtraRegion(seed,state,hc.slice(1))||rifleNoseBandRegion(seed,state,hc.slice(1));
   if(!jaw && !nose && !rifleHeadRegion(seed,state,hc.slice(1),o,d,allowLateral,options))return false;
   const front=jaw ? rifleJawEntry(seed,state,o,d) : nose ? rifleNoseEntry(seed,state,o,d) : rifleSkullEntry(seed,state,o,d);
   return front!==null&&Math.abs(front-along)<=(jaw ? H.jawPatch.surface : nose ? H.nosePatch.surface : H.surfaceMetres);
@@ -4757,6 +4758,14 @@ export function rifleHeadGreetingLeftRegion(seed,state,point,origin,direction) {
 /** #934: additive frontal side family; original nose core/entry stay unchanged. */
 export function rifleNoseExtraRegion(seed,state,point) {
   const H=PVP_RIFLE_HEAD,N=H.noseExtraPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
+  const [x,y,z]=point.map((v,i)=>v-state.p[i]);
+  const lx=(c*x-s*z)/width,ly=y/look.tall-H.headY,lz=(s*x+c*z)/width;
+  return Math.abs(lx)+H.wireMetres/width<=N.across && ly-H.wireMetres/look.tall>=N.low && ly+H.wireMetres/look.tall<=N.high && lz-H.wireMetres/width>=N.front;
+}
+
+/** #937: additive lower central standing band; original nose core/entry stay unchanged. */
+export function rifleNoseBandRegion(seed,state,point) {
+  const H=PVP_RIFLE_HEAD,N=H.noseBandPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
   const [x,y,z]=point.map((v,i)=>v-state.p[i]);
   const lx=(c*x-s*z)/width,ly=y/look.tall-H.headY,lz=(s*x+c*z)/width;
   return Math.abs(lx)+H.wireMetres/width<=N.across && ly-H.wireMetres/look.tall>=N.low && ly+H.wireMetres/look.tall<=N.high && lz-H.wireMetres/width>=N.front;
