@@ -23,6 +23,7 @@ src/detail.js          DetailCuller (#189): far-away small meshes and things ins
                        box projection onto the façade, the flat's walls and the floor between the storeys, and outline lines too
 tools/jumpontest.html  the plain jump's apex vs the suit's (#696) and landing on benches / sofa / armchair / ottoman (#693) and the TV bench, bed and daybed (#699; backrest / headboard / ends are walls, the TV does not block the bench), the patio lounge (backs and arms are walls) and slatted table, the coffee table and the courtyard's raised beds (#701, #702), kerbs under the step-up: stable, jump on, walk off, hurt by a 4 m drop, no climbing by walking, table and wall hold
 src/testmode.js        `&test` (#703): cheap drawing for headless test runs, game logic unchanged (see "Test mode" below); `__app.testMode`
+tools/rearrangesetup.js synchronous tools-only setup (#814): native unlocked/persist/real enable state, usable in full mode; no console/Worker bypass
 tools/runtests.cjs     test runner (#737): runs chosen HTML / .cjs tests headless, times them, compares FAIL lines with `tools/baseline.json` (see "Test runner" below)
 tools/baseline.json    the KNOWN red lines per test (no times), read by runtests.cjs
 tools/testkit.cjs      shared Playwright helper (#703): `launch()`, `open(browser, url, { viewport = 480×300, test = true, lazy, init, arg })` (DPR 1, `&test` added), `shot(page, path)` (full size + shadows + quality 3, then back)
@@ -1162,6 +1163,44 @@ per issue). Each needs its own actual full/test runs and unchanged assertions:
 | Care and persistence | bedcaretest, clothtest, colddrawertest |
 | Interaction | cheattest, booktest, crouchtest |
 | Cooking and cloud state (#811 complete) | cooktest/cuptest retain original full mode after actual raw differences; cloudtest migrated with exact native evidence below |
+
+#814 replaces ONLY ordinary rearrangement setup in artleveltest, bestaplacementtest, beertest,
+returnmarkerstest and zzplanttest. The shared classic tools/rearrangesetup.js preserves each original script
+kind and synchronous call position: unlocked=true, same child native localStorage boolean key with caught
+storage getter/set failure, actual enable(true), original true return even when busy/saving refuses activation.
+The helper is gated to parent /tools/ pages and excluded from the published site by tools/stamp.sh; it works
+without a testMode flag. Production code parsing and Worker credential checks remain unchanged;
+no renderer/quality/query change is introduced. Undoing script include and setup-call replacement yields all five current
+original fixture bodies exactly, including every assertion/action/timer/storage/reload and optional cloud case.
+
+A lightweight native module probe at frozen 2b548e0 gave 11 PASS/ALL PASS, actual exit 0, 4.075765s. Actual THREE/
+Rearrange classes use an explicit empty-world/offline constructor, no apartment/WebGL/Worker; both original
+reference inputs are provisioned in untracked external JSON and never printed/published. Free/busy/saving,
+selected-preview cancellation, repeated setup, native persistence and new-instance unlocked-but-disabled
+state match original valid unlock exactly. Unavailable storage getter is an explicitly simulated harness
+case, not a measured browser-security failure. Native timers and owned browser/server were closed. The
+inspected image shows all eleven semantic result rows only; no placement/render/Worker claim. Relevant
+R/config/stamp/helper/probe hashes remain unchanged after rebase.
+
+One representative complete returnmarkerstest used current source at frozen b72c279 with ONLY its existing
+test flag temporarily removed. Actual authored 480×300/one app, original unconditional fullscreen suppression,
+manual animation stop, matrix/control/contour/placement/raycast logic and all fifteen unchanged raw checks
+were retained: 15 PASS/ALL PASS, actual independent runner exit 0, 78.587s (monitor 79.554587s). One actual app-
+ready and one final record retain the same URL/timeOrigin: life&shot,480×300/null controller/no fullscreen.
+No historical 640/900 reconstruction, comparison pair, timing improvement or quality override is claimed.
+The inspected fullPage image shows all fifteen result rows/ALL PASS and final kitchen/cup cabinet/HUD;
+intermediate contours or scene-pixel equivalence are not claimed. Before restoring source, all 247 frozen
+source paths, three passive-helper hashes, exact measured full fixture 6fe20e18 and setup helper 2c2dd621
+matched. The WHOLE authored default 480/test setup was then restored exactly 1d0df9d9; final commit changes
+only the helper/include/setup calls and this documentation, not test modes or other source behavior.
+
+The other four full runtime suites and optional real-cloud branches were NOT rerun by this bounded setup
+issue. They retain their complete original assertions/queries/actions and are supported here by whole-source
+inverse and actual generic setup-state equivalence, not fabricated runtime claims. Code-parser/private inputs,
+actual client/Worker writes and console coverage remain separate in #817/#853–#856; #756 stays open.
+Native module/source/provenance/process/exit/image evidence: `/tmp/lunden-setup814/native-*`; representative
+complete raw/summary: `/tmp/runtests-628913/`, source/helpers/native identity/image/cleanup:
+`/tmp/lunden-setup814/representative-*`, `returnmarkers-*` and `returnmarkerstest-full.*`.
 
 #852 `musicreloadtest` migrated after one complete original two-document full/test pair at frozen `3b9dffb`:
 all three PASS rows and ALL PASS are byte-identical in the complete 249-byte raw logs. Actual public runner 0

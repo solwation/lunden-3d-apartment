@@ -1,4 +1,4 @@
-<!doctype html><html><meta charset="utf-8"><title>White placement and return contours (#487)</title><pre id="out">running…</pre><script type="module">
+<!doctype html><html><meta charset="utf-8"><title>White placement and return contours (#487)</title><pre id="out">running…</pre><script src="./rearrangesetup.js"></script><script type="module">
 const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS':'FAIL')+' '+s);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
 try{
  const f=document.createElement('iframe');f.width=480;f.height=300;f.src='../index.html?test&life&shot';document.body.append(f);await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);
@@ -18,7 +18,7 @@ try{
  A.fridge.toggle();for(let i=0;i<20;i++)A.fridge.update(.1);target=aim(mp,from);
  check(target===milk.backTarget&&outlined(),'open fridge exposes actual milk return contour');const mm=snapshot();A.use(target);A.step(0);check(near(milk.model.matrixWorld,mm)&&!G.visible,'milk returns exactly to contour and marker disappears');
  // Move a support through the real rearrangement flow, then place on its moved surface.
- const R=A.rearrange,p=R.pieces.find(p=>p.item.type==='coffeetable'&&p.level===0);R.unlock('olof is the goat');R.begin(p);
+ const R=A.rearrange,p=R.pieces.find(p=>p.item.type==='coffeetable'&&p.level===0);setupRearrangeForFixture(R, w);R.begin(p);
  const move=p.object.matrixWorld.clone();move.elements[12]+=.3;move.elements[14]+=.2;R.candidate=move;R.valid=true;await R.confirm();R.enable(false);
  const surface=R.world.furniture.surfaces.find(s=>{for(let o=s;o;o=o.parent)if(o===p.object)return true;return false;});
  const box=new T.Box3().setFromObject(surface),at=box.getCenter(new V()).setY(surface.userData.surface);

@@ -3,6 +3,7 @@
 <head><meta charset="utf-8"><title>Beer test</title></head>
 <body>
 <pre id="out">running…</pre>
+<script src="./rearrangesetup.js"></script>
 <script>
 // The big beer (#117): sit down in the lounge sofa → a full tankard on the lounge table; take it, drink it empty
 // with clicks (the level drops, gulps are counted), back on the table = full again. A coffee cup drinks too.
@@ -64,7 +65,7 @@ f.onload = async () => {
   pass &= check(beer.model.visible, 'beer re-served after sitting down again');
 
   const R = w.__app.rearrange;
-  R.unlock('sarah is the goat');
+  setupRearrangeForFixture(R, w);
   const table = R.pieces.find(p => p.item.type === 'slattable');
   pass &= check(!!table, 'patio slat table found in rearrange pieces');
 

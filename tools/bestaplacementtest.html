@@ -1,10 +1,10 @@
-<!doctype html><html><meta charset="utf-8"><title>BESTÅ wall placement (#492)</title><pre id="out">running…</pre><script type="module">
+<!doctype html><html><meta charset="utf-8"><title>BESTÅ wall placement (#492)</title><pre id="out">running…</pre><script src="./rearrangesetup.js"></script><script type="module">
 const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS':'FAIL')+' '+s);pass&&=!!ok};
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 try {
  localStorage.removeItem('lunden.furniture.layout');
  const f=document.createElement('iframe');f.width=480;f.height=300;document.body.append(f);
- async function load(){f.src='../index.html?test&life&shot&r='+Math.random();await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();const A=f.contentWindow.__app;A.rearrange.unlock('sarah is the goat');return A}
+ async function load(){f.src='../index.html?test&life&shot&r='+Math.random();await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();const A=f.contentWindow.__app;setupRearrangeForFixture(A.rearrange, f.contentWindow);return A}
  let A=await load(),R=A.rearrange,T=await f.contentWindow.eval("import('three')");
  const close=(a,b)=>a.elements.every((v,i)=>Math.abs(v-b.elements[i])<.001);
  let p=R.pieces.find(p=>p.item.type==='besta');const id=p.id,home=p.home.clone();
