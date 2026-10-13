@@ -2,14 +2,19 @@
 // Start devserve and cloudflare/dev.mjs, then node tools/ghostlivestest.cjs game worker [artifacts].
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const fs = require('node:fs');
+const { ArtifactCheckpoint } = require('./artifactcheckpoint.cjs');
+let artifact, driverError; const assertions=[];
 const game = process.argv[2] || 'http://localhost:8851', worker = process.argv[3] || 'http://localhost:8852';
 const output = process.argv[4] || '/tmp/lunden-ghost-lives';
 const render = process.argv.includes('--render'); // optional exclusive-slot controlled scene, never the apartment
 let failures = 0, checks = 0;
-const check = (ok, text) => { checks++; console.log(`${ok ? 'PASS' : 'FAIL'} ${text}`); if (!ok) failures++; };
+const check = (ok, text) => { checks++; console.log(`${ok ? 'PASS' : 'FAIL'} ${text}`); if (!ok) failures++; assertions.push({ok:!!ok,text}); artifact?.snapshot('completed assertion',{checks,failures,assertions:[...assertions]}); };
 (async () => {
   fs.mkdirSync(output, { recursive: true });
+  artifact=new ArtifactCheckpoint({output,mode:render?'native then controlled Ghosts WebGL, no apartment':'native DOM/canvas, no apartment/WebGL',scenario:'authoritative opponent-life badges',sourceTrees:['src','cloudflare'],sources:['tools/ghostlivestest.cjs','tools/artifactcheckpoint.cjs','index.html','src/combat.js','src/ghosts.js','src/config.js','cloudflare/players.js','cloudflare/worker.js','cloudflare/devws.mjs']});
+  process.once('exit',code=>artifact.finish(code,driverError)); // actual process exit, not an earlier logical PASS
   const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined, args: render ? ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] : ['--no-sandbox', '--disable-gpu'] });
+  artifact.resourcesAcquired();
   const pages = [], errors = [];
   try {
     for (const [i, name] of ['A', 'B', 'Observer'].entries()) {
@@ -50,7 +55,8 @@ const check = (ok, text) => { checks++; console.log(`${ok ? 'PASS' : 'FAIL'} ${t
     const base = await a.evaluate(() => inspect('B'));
     check(base.name === 'B' && base.score === 123 && base.canvasHeight === 96, 'name and score preserved beside third authoritative life row');
     check(Math.abs(base.y - base.tagY - base.height / 2 + .08) < 1e-9, 'name/score world placement is retained while life row expands above');
-    await a.evaluate(() => display('B')); await a.screenshot({ path: `${output}/armed-native.png` });
+    artifact.snapshot('armed badge measurements',{base,checks,failures,assertions:[...assertions],errors:[...errors]});
+    await a.evaluate(() => display('B')); await artifact.capture('armed native badge',`${output}/armed-native.png`,()=>a.screenshot({ path: `${output}/armed-native.png` }));
     const fire = () => a.evaluate(() => ghosts.fire({ w: 'nerf', o: [0, 1, 0], d: [1, 0, 0], to: find('B').id }));
     await fire();
     await b.waitForFunction(() => combat.hurts === 1);
@@ -62,7 +68,8 @@ const check = (ok, text) => { checks++; console.log(`${ok ? 'PASS' : 'FAIL'} ${t
     check((await observer.evaluate(() => inspect('B'))).shown === await b.evaluate(() => combat.lives), 'observer weapon pickup reveals already current authoritative lives');
     await a.evaluate(() => window.ownWeapon = ''); await a.waitForFunction(() => find('B').badge.lives === null);
     check((await a.evaluate(() => inspect('B'))).canvasHeight === 64, 'putting away local weapon removes life row and restores compact name/score');
-    await a.evaluate(() => display('B')); await a.screenshot({ path: `${output}/unarmed-native.png` });
+    artifact.snapshot('unarmed badge measurements',{badge:await a.evaluate(()=>inspect('B')),checks,failures,errors:[...errors]});
+    await a.evaluate(() => display('B')); await artifact.capture('unarmed native badge',`${output}/unarmed-native.png`,()=>a.screenshot({ path: `${output}/unarmed-native.png` }));
     await a.evaluate(() => window.ownWeapon = 'nerf'); await a.waitForFunction(() => find('B').badge.lives !== null);
     await b.evaluate(() => window.ownWeapon = ''); await a.waitForFunction(() => find('B').h === '' && find('B').badge.lives === null);
     check((await a.evaluate(() => inspect('B'))).lives === await b.evaluate(() => combat.lives), 'unarmed target hides indicator without resetting authoritative damage');
@@ -94,6 +101,7 @@ const check = (ok, text) => { checks++; console.log(`${ok ? 'PASS' : 'FAIL'} ${t
     await a.waitForFunction(() => find('B')?.badge.lives === combat.maxLives);
     check(await b.evaluate(() => combat.lives === combat.maxLives), 'reconnection starts at authoritative full count in badge and Combat');
     check((await Promise.all(pages.map(p => p.evaluate(() => webglCalls)))).every(n => n === 0), 'zero WebGL calls; no apartment/bootstrap rendering');
+    artifact.snapshot('native checks before optional rendering',{checks,failures,assertions:[...assertions],badge:await a.evaluate(()=>inspect('B')),errors:[...errors]});
     if (render) {
       await a.evaluate(async () => {
         HTMLCanvasElement.prototype.getContext = nativeGetContext; // explicit optional rendered phase only
@@ -110,18 +118,20 @@ const check = (ok, text) => { checks++; console.log(`${ok ? 'PASS' : 'FAIL'} ${t
       });
       for (const [label, width, height] of [['desktop-armed', 1280, 720], ['phone-armed', 844, 390]]) {
         await a.setViewportSize({ width, height }); await a.evaluate(({ width, height }) => paint(width, height), { width, height });
-        await a.locator('canvas').screenshot({ path: `${output}/${label}.png` });
+        await artifact.capture(label,`${output}/${label}.png`,()=>a.locator('canvas').screenshot({ path: `${output}/${label}.png` }));
       }
       await a.evaluate(() => window.ownWeapon = ''); await a.waitForFunction(() => find('B').badge.lives === null);
-      await a.evaluate(() => paint(844, 390)); await a.locator('canvas').screenshot({ path: `${output}/phone-unarmed.png` });
+      await a.evaluate(() => paint(844, 390)); await artifact.capture('phone unarmed',`${output}/phone-unarmed.png`,()=>a.locator('canvas').screenshot({ path: `${output}/phone-unarmed.png` }));
       check(await a.evaluate(() => find('B').badge.lives === null && renderer.info.render.calls > 0), 'actual optional renderer draws current ghosts and unarmed badge');
       await a.evaluate(() => renderer.dispose());
     }
     check(errors.length === 0, `zero page errors (${errors.length})`);
-    fs.writeFileSync(`${output}/result.json`, JSON.stringify({ checks, failures, errors, mode: render ? 'native checks then optional controlled Ghosts WebGL, no apartment' : 'native DOM/canvas, no apartment/WebGL' }, null, 2));
+    artifact.logicComplete({ checks, failures, errors, mode: render ? 'native checks then optional controlled Ghosts WebGL, no apartment' : 'native DOM/canvas, no apartment/WebGL' },failures===0);
+    artifact.imagesComplete();
   } finally {
     for (const page of pages) await page.evaluate(() => { clearInterval(window.tick); window.ghosts?.disconnect(); }).catch(() => {});
     await browser.close();
+    artifact.cleanupComplete();
   }
   console.log(`${failures ? 'FAILED' : 'ALL PASS'} ${checks} checks, ${failures} FAIL`); process.exitCode = failures ? 1 : 0;
-})().catch(e => { console.error(e); process.exitCode = 1; });
+})().catch(e => { driverError=e; console.error(e); process.exitCode = 1; });

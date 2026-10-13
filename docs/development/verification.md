@@ -4017,3 +4017,45 @@ Shared fall integration (#869): start own devserve/Worker, then `PLAYWRIGHT_MODU
 #869 final validation: 34 native PASS and 38 actual app/World PASS, zero FAIL/page errors and actual CLI exit 0. Separate changed `respawntest.cjs` passed all 19 native checks, exit 0; its existing direct lethal hurt setup now explicitly passes `true`. Full World covers lower damage/death with and without the actual held blaster, suit protection, unchanged penalties, single checked outdoor wake, original jolt/black/fade, all stairs/ramp/crouch/bunk/resume paths. The four 484×304 iframe-border captures (480×300 app viewport) were visually reviewed: unarmed red 5/10 at the landing street, armed 5/10 with the blaster, fatal black, safe wake. The parent final image records all 38 results with its paused last draw; final native identity has lives10/deaths3/no pending/t=-1, without claiming a later reset paint in that image. All 258 recorded runtime/fixture paths stayed byte-identical across the final run. Artifacts: `/tmp/lunden-fall869-surface/final-frame`, `final-frame.log`, `final-frame-exit.txt`, `final-summary.json`, `runtime-frame-before.json`, and `respawn/`/logs. Earlier harness locator/clock-past failures are separate from this green run. Existing misleading wake copy is tracked in #883, outside this slice.
 
 #869 publication rebase: after integrating the later kill-receipt/statistics, hit-marker, armed-ghost-focus and cold-triangle allocation changes, the complete Fall source and both main landing/Combat-fall callback blocks matched the tested versions exactly. The actual combined native probe passed34 again on merged Combat and a restarted merged Worker, exit0. Incoming inactive shot/greeting branches were preserved; no additional whole-World run or blanket whole-file match is claimed. Rebase proof: `/tmp/lunden-fall869-surface/rebase-source-proof.json`; final native output: `rebased-native/`, `rebased-native.log`, `rebased-native-exit.txt`.
+
+## Artifact checkpoints (#881)
+
+`tools/artifactcheckpoint.cjs` supplies a synchronous atomic checkpoint for `recoverytest.cjs` and
+`ghostlivestest.cjs`. It writes a temporary JSON file and renames it over `result.json`; serialization
+or rename failure leaves the previous JSON readable. Each invocation starts a new runId with no reused
+assertions/result, no automatic resume and no skipped checks. Existing respawn/nerf early-write paths
+are left as they were.
+
+The schema keeps `provenance` (checkout git revision, explicitly whitelisted code-file SHA256 hashes,
+aggregate JS/MJS tree hashes for src/cloudflare, fixed mode/scenario), completed raw `snapshots`, final
+`result`, and separate `stages.logic`, `stages.images.captures`, `stages.cleanup` and `stages.cli`. The
+final result's previous driver fields now live under `result`; intermediate records are under snapshots.
+Logic complete+passed, image completion and browser cleanup cannot substitute for whole CLI completion.
+Drivers write the CLI status from Node's actual exit event, after finally cleanup. A later phase failure
+leaves earlier snapshots and completed-image records intact while logic/scenario remains incomplete and
+the actual CLI is failed. An abrupt process termination leaves the last checkpoint's CLI incomplete.
+
+`capture` writes the pending-image record before calling the original screenshot operation and records
+its success/failure afterward. All original screenshot modes, assertions, game checks and viewport
+policies remain. PNG files must still be viewed; earlier PASS rows never authorize an image skip or a
+green CLI after a screenshot failure. Caller fields are explicitly limited to fixture results; do not
+add environment dumps, raw command arguments, private fixture inputs or credentials. Error metadata
+records only an allowed error type, not arbitrary messages/stacks. Source hashes describe the local
+checkout: serve that same checkout and start the matching local Worker; rerun after runtime changes.
+They do not hash the browser binary or externally installed dependencies and do not prove a remote
+server ran those files.
+
+Verify the helper with `node --test tools/artifactcheckpoint.test.cjs`. Run the actual native receipt/
+badge subprocess failure proof with `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/artifactcheckpointtest.cjs game worker artifacts`.
+It runs the unchanged native ghost-life assertions to success, then injects a first-PNG failure and a
+later-phase failure using a test-only Playwright preload. It independently witnesses actual browser
+closure and actual subprocess exits 0/1, retained pre-image raw badge measurements/provenance and exact
+image/logic/CLI statuses. It also injects recovery's first PNG error after a real shot and authoritative
+local/remote damage synchronization, leaving the not-yet-run real-minute scenario incomplete. No new
+real-minute recovery or optional controlled-WebGL execution is claimed by this process-only proof.
+The fault subprocesses use owned process groups for their wall-time bound.
+
+Native #881 evidence: six Node cases PASS; 22 fault-harness checks PASS, harness exit 0; successful
+ghost-life scenario retains all 14 original native assertions and its reviewed PNGs, actual CLI 0.
+The three expected failing drivers have actual CLI 1 and closed owned browsers. Artifacts are under
+`/tmp/lunden-artifact881-surface/exit-proof/` and final rebase proof as reported on the issue.

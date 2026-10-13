@@ -1,12 +1,17 @@
 // #867 real minute, native Ghosts/Combat/DOM and local Worker; no WebGL/apartment.
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const fs = require('node:fs');
+const { ArtifactCheckpoint } = require('./artifactcheckpoint.cjs');
+let artifact, driverError;
 const game = process.argv[2] || 'http://localhost:8871', worker = process.argv[3] || 'http://localhost:8872';
 const output = process.argv[4] || '/tmp/lunden-recovery867-surface';
 const fall = process.argv.includes('--fall');
 (async () => {
   fs.mkdirSync(output, { recursive: true });
+  artifact=new ArtifactCheckpoint({output,mode:'native DOM/textures, real sockets, no WebGL/apartment',scenario:fall?'real-minute shared shot/fall':'real-minute shot',sourceTrees:['src','cloudflare'],sources:['tools/recoverytest.cjs','tools/artifactcheckpoint.cjs','index.html','src/combat.js','src/ghosts.js','src/config.js','src/falldamage.js','cloudflare/players.js','cloudflare/worker.js','cloudflare/devws.mjs']});
+  process.once('exit',code=>artifact.finish(code,driverError)); // actual process exit, not an earlier logical PASS
   const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH, args: ['--no-sandbox', '--disable-gpu'] });
+  artifact.resourcesAcquired();
   const errors = [], pages = [];
   try {
     for (const [i, name] of ['Recovery A', 'Recovery B'].entries()) {
@@ -43,16 +48,19 @@ const fall = process.argv.includes('--fall');
       damaged -= Math.ceil(await b.evaluate(() => combat.maxLives) / 2);
       if (!result || result.dead || result.l !== damaged) throw Error(`shared shot/fall health: ${JSON.stringify(result)}`);
       await a.waitForFunction(l => peer().lives === l, damaged);
+      artifact.snapshot('shared fall result verified',{result,damaged});
     }
     await b.waitForFunction(l => !combat.el.hidden && combat.el.textContent === `❤ ${l}/${combat.maxLives}`, damaged);
-    await b.screenshot({ path: `${output}/damaged-native-hud.png` });
+    artifact.snapshot('damaged HUD preconditions completed',{damaged,local:await b.evaluate(()=>combat.lives),remote:await a.evaluate(()=>peer().lives),hud:await b.evaluate(()=>combat.el.textContent),errors:[...errors]});
+    await artifact.capture('damaged native HUD',`${output}/damaged-native-hud.png`,()=>b.screenshot({ path: `${output}/damaged-native-hud.png` }));
     await b.evaluate(() => window.weapon = '');
     await a.waitForFunction(() => peer().h === '');
     const recovered = Math.min(await b.evaluate(() => combat.maxLives), damaged + 1);
     await b.waitForFunction(l => combat.lives === l, recovered, { timeout: 65000 });
     const elapsed = Date.now() - before;
     await b.waitForFunction(l => !combat.el.hidden && combat.el.textContent === `❤ ${l}/${combat.maxLives}`, recovered);
-    await b.screenshot({ path: `${output}/recovered-local-native-hud.png` });
+    artifact.snapshot('recovered local HUD preconditions completed',{elapsedMs:elapsed,recovered,local:await b.evaluate(()=>combat.lives),hud:await b.evaluate(()=>combat.el.textContent),errors:[...errors]});
+    await artifact.capture('recovered local native HUD',`${output}/recovered-local-native-hud.png`,()=>b.screenshot({ path: `${output}/recovered-local-native-hud.png` }));
     if (elapsed < 59_000 || elapsed > 66_000) throw Error(`minute outside bound: ${elapsed}ms`);
     await a.waitForFunction(l => peer().lives === l, recovered);
     if (await b.evaluate(() => combat.hurts !== 1 || combat.deaths !== 0)) throw Error('recovery changed damage/death semantics');
@@ -64,7 +72,8 @@ const fall = process.argv.includes('--fall');
       canvas.style.cssText = 'position:fixed;top:155px;left:20px'; document.body.append(canvas);
     });
     await a.waitForFunction(() => !combat.el.hidden && combat.el.textContent === `❤ ${combat.maxLives}/${combat.maxLives}`);
-    await a.screenshot({ path: `${output}/recovered-native-hud-badge.png` });
+    artifact.snapshot('recovered remote badge preconditions completed',{elapsedMs:elapsed,recovered,local:await b.evaluate(()=>combat.lives),remote:await a.evaluate(()=>peer().lives),badge:await a.evaluate(()=>peer().badge.lives),errors:[...errors]});
+    await artifact.capture('recovered native HUD badge',`${output}/recovered-native-hud-badge.png`,()=>a.screenshot({ path: `${output}/recovered-native-hud-badge.png` }));
     const synchronized = { local: await b.evaluate(() => combat.lives), remote: await a.evaluate(() => peer().lives) };
     let onlineFallDeath = null;
     if (fall) {
@@ -97,10 +106,12 @@ const fall = process.argv.includes('--fall');
     await b.evaluate(() => { active = true; ghosts.retryAt = 0; ghosts.lastMove = performance.now(); ghosts.connect(); timer = setInterval(() => { ghosts.update(); combat.update(0); },100); });
     await b.waitForFunction(() => ghosts.connected && combat.lives === combat.maxLives && combat.healAt === undefined);
     if (errors.length) throw Error(errors.join('\n'));
-    fs.writeFileSync(`${output}/result.json`, JSON.stringify({ elapsedMs: elapsed, ...synchronized, errors, offline, onlineFallDeath, evidence: 'Native DOM/textures, real sockets and server minute; no WebGL/apartment/physical phone' }, null, 2));
+    artifact.logicComplete({ elapsedMs: elapsed, ...synchronized, errors, offline, onlineFallDeath, evidence: 'Native DOM/textures, real sockets and server minute; no WebGL/apartment/physical phone' });
+    artifact.imagesComplete();
     console.log(`PASS real minute ${elapsed}ms (${fall ? "shared fall/shot" : "shot"}): unarmed local recovery, immediate remote sync, armed badge, no damage/death side effects or browser errors`);
   } finally {
     for (const p of pages) await p.evaluate(() => { clearInterval(timer); ghosts.disconnect(); }).catch(() => {});
     await browser.close();
+    artifact.cleanupComplete();
   }
-})().catch(e => { console.error(e); process.exitCode = 1; });
+})().catch(e => { driverError=e; console.error(e); process.exitCode = 1; });
