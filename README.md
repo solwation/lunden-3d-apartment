@@ -162,7 +162,7 @@ Northern surroundings (#530): `SITE.north`/`sitebackdrop.js` add three missing e
 
 HUD-badgarna har samma skal och modulära cellbredder, tydligare poäng och plats för kompassen även på smala liggande skärmar.
 
-Andra spelare har mindre namnskyltar med sina poäng, uppdaterade i samma spökskylt.
+Andra spelare har mindre namnskyltar med sina poäng, uppdaterade i samma spökskylt. Deras figurer hukar när de faktiskt är nere, även under rörelse; samma pose syns i din spegel.
 
 Skadade liv återhämtas med ett liv per verklig minut upp till max, även utan vapen. I flerspelarläget håller servern din livmätare och motspelarnas indikatorer i synk; utan anslutning använder spelet samma lokala liv.
 

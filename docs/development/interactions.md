@@ -595,3 +595,13 @@ Native #875 verification at `69c5d64` plus marker: 16 PASS, driver exit 0, no pa
 receipt 844×390 and optional-head layout 568×320/667×375/1280×720 captures were inspected; they are HUD-only,
 not apartment/gameplay/physical-phone pictures. Local artifacts: `/tmp/lunden-hit875-surface/final/`.
 The driver derives rapid-hit pacing from the actual Worker welcome cadence; it does not relax server limits.
+
+#878 shared crouch: `Player.crouched` is the actual physics/input result sent by the
+main Ghosts state callback as optional literal-true `c`; requested `Player.crouch` alone
+never determines the remote pose. The existing Avatar crouch solver now receives the
+interpolated remote pose, or the actual local pose in a mirror. Lowered head/torso,
+bent knees, held hand/weapon and walking use the production skeleton and skinning.
+Standing/legacy clients, name/score/life badge anchors and greeting anchors retain
+their existing behavior. `tools/crouchposetest.cjs` uses actual Player/Ghosts/Avatar
+modules to exercise stationary input, headroom release, moving crouch and native
+welcome; the controlled-world native fixture does not boot the apartment.

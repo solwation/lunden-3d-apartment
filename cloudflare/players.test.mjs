@@ -432,3 +432,22 @@ test('shared life: own welcome, unarmed half/fatal falls and weapon-state/forger
   assert.equal(fallDamage(4,2,11),6,'ceil(max/2) kills odd full health in two damaging falls');
   assert.equal(Math.max(0,11-2*fallDamage(4,2,11)),0);
 });
+
+test('crouch pose uses literal actual true in states/late welcome and survives hibernation without changing health', async () => {
+  const env = setup(), a = await connect(env, 'Crouch'), b = await connect(env, 'Observer');
+  const state = { p:[0,0,0], r:0, h:'nerf', score:123 };
+  a.send({ ...state, c:true }); await settle(env);
+  assert.equal(b.states().at(-1).c, true); assert.equal(b.states().at(-1).l, COMBAT.lives);
+  const late = await connect(env, 'Late');
+  assert.equal(late.got[0].ps.find(p => p.i === a.got[0].i).c, true);
+  env.PLAYERS.hibernate('world');
+  now += 200; a.send({ ...state, c:true }); await settle(env);
+  assert.equal(b.states().at(-1).c, true);
+  for (const c of [false, undefined, 1, -1, Infinity, 'true', {}, null]) {
+    now += 200; a.send({ ...state, c, l:999 }); await settle(env);
+    const got = b.states().at(-1);
+    assert.equal(got.c, undefined, 'invalid/false/legacy pose is standing');
+    assert.equal(got.l, COMBAT.lives); assert.equal(got.h, 'nerf'); assert.equal(got.score, 123);
+    assert.deepEqual(got.p, state.p);
+  }
+});

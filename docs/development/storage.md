@@ -220,3 +220,23 @@ Server lethal-hit receipts (#871, protocol-first): PlayerRoom adds an opaque UUI
 
 
 Kill statistics (#871): `Combat.hit` independently passes the server receipt to `stats.recordPlayerKill` before any hit-award handling. Only a true lethal hit with a valid server UUID, nonpositive finite remaining health and another target counts. Missing/legacy/malformed ids, ordinary hits, own deaths, falls and passive health add none. Existing hit callback/points remain unchanged; kills award no additional points. `pvpKills` and consumed `killReceipts` persist synchronously together in the existing `lunden.stats` JSON record. As for the other local statistics, blocked/full localStorage cannot promise durability. A visible-statistics reset clears `pvpKills` and ordinary counters but retains receipt metadata; replaying an old receipt after reset/reload/reconnect cannot restore the counter. The existing home-reset whitelist preserves that same statistics record. No new storage key, player identity, room history or network acknowledgement is added; interrupted delivery before the result reaches the client is not backfilled. Old saves start with zero kills rather than inferring deaths from hit counts. `statRows`/`renderStats` show “Dödade spelare” in the existing panel.
+
+## Shared actual crouch pose (#878)
+
+`main.js` reports `c: player.crouched`, the actual Player decision, rather than the
+wanted `player.crouch` input. Low headroom or kneeling may keep the player down after
+the key is released; jetpack flight suppresses actual crouch. Ghosts treats a pose change
+as activity/state change even at unchanged feet/yaw and sends it in the existing 5 Hz
+state slot. Only literal `c: true` is retained by `cleanState`; false, missing and all
+invalid values are standing and omitted. Welcome retains the latest pose through the
+existing attachment state; no additional connection, message type, counter or storage.
+Weapon/score/lives and their authoritative rules are unchanged.
+
+`Ghost.push` stores pose0/1 beside each position/rotation sample (including gap fill).
+`Ghost.draw` interpolates it with the same delayed snapshot k, exposing render fraction
+`Ghost.crouch`0…1. `Ghost.animate` gives that fraction to the existing
+`Avatar.update(dt,{speed,turn,hands,crouch})`. Local mirror tracking applies the same
+actual pose while retaining its existing hidden/render-pass lifecycle and arm/prop hooks.
+For future #879 head contact use the actual `avatar.bones.head` and skinned vertices;
+`Ghost.head` remains the previous fixed greeting anchor and is not a headshot surface.
+No hit classification/damage or head-height guesses are introduced here.

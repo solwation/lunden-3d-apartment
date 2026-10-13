@@ -3969,3 +3969,23 @@ Initial native runs passed the logic but their images remained under the loader/
 
 
 #871 final native acceptance on `42d7c31`: 25 PASS, zero FAIL/pageerrors/WebGL requests, actual exit0 with no signal or timeout. Two real accepted lethal hits crossed PlayerRoom→Ghosts→Combat→statistics; the extra finite-negative/missing/NaN/positive remaining-health check calls the receipt reducer with explicitly synthetic fresh UUIDs and is not a third server kill. The final reviewed original-panel image shows “Dödade spelare 1”; actual visibility and viewport bounds passed. Seven frozen Combat/stats/config/Ghosts/PlayerRoom/index/driver hashes stayed identical through publication. Final artifacts: `/tmp/lunden-priority-871/final/{native.log,result.json,statistics.png,exit.json,process.json}`, `final-source-hashes.json`. Its bounded-process wall duration is a test observation, not a performance comparison. The server-first `339b173` automatic Cloudflare run 38399861493 and actual wrangler-action step completed successfully; no manual deployment or live room/physical-phone acceptance is claimed. The earlier covered captures remain separately recorded and are not accepted UI evidence.
+
+## Shared crouch pose (#878)
+
+`node --test cloudflare/players.test.mjs cloudflare/recovery.test.mjs` includes pose
+validation, standing legacy/default/invalid input, late welcome, hibernation and
+preserved health/weapon/score. Start devserve8871 and dev.mjs8872, then run
+`PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/crouchposetest.cjs http://localhost:8871 http://localhost:8872 /tmp/crouch`.
+Actual Player/Ghosts/Avatar/Worker checks cover stationary crouch with exactly one
+state message, actual rather than wanted crouch under controlled low headroom,
+returning standing, moving crouch, pose interpolation, actual head-bone/skinned-head
+vertex positions, weapon-hand attachment, mirror visibility restoration and late
+welcome. All native checks forbid WebGL and suppress apartment bootstrap; complete
+metrics remain in result.json and a compact native readout PNG. Measurements belong
+to that run's actual randomized avatar appearance, not universal head heights.
+
+After an exclusive graphics grant, `--render` adds two controlled actual-avatar
+standing/crouching pictures with the same actual peer/model, camera framing, skeleton,
+material and held prop. It does not replace the player shape. The renderer completes
+with `gl.finish()` before capture; this phase is measured and fails above60s. These
+component renders are neither apartment nor physical-phone performance acceptance.
