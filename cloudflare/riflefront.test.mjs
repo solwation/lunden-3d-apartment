@@ -2,7 +2,7 @@
 // the admin brake. Runs the real Worker + PlayerRoom on Node with the runtime stand-ins in devws.mjs.
 //   node --test cloudflare/players.test.mjs
 import { test } from 'node:test';
-import { PVP_SCORE, SCORE, pvpHitPoints, avatarLook, rifleHeadFrontRegion, rifleHeadContact, rifleSkullEntry, PVP_RIFLE_HEAD as H } from '../src/config.js';
+import { PVP_SCORE, SCORE, pvpHitPoints, avatarLook, rifleHeadFrontRegion, rifleHeadGreetingFrontRegion, rifleHeadContact, rifleSkullEntry, PVP_RIFLE_HEAD as H } from '../src/config.js';
 import assert from 'node:assert/strict';
 import { installRuntime, fakeNamespace } from './devws.mjs';
 import worker, { PlayerRoom } from './worker.js';
@@ -65,15 +65,15 @@ test('front cell/ray/wire guards preserve all60 canonical appearances and maximu
  }assert.equal(seen.size,60);
 });
 
-function frontWire(id,state={p:[0,0,0],r:0}) {
- const look=avatarLook(id),width=[.93,1,1.08][look.build],c=Math.cos(state.r),s=Math.sin(state.r),turn=([x,y,z])=>[c*x+s*z,y,-s*x+c*z],o=turn([0,1.62,-4]).map((v,i)=>+(v+state.p[i]).toFixed(2)),point=turn([-.068*width,(H.headY+.09)*look.tall,0]).map((v,i)=>v+state.p[i]),v=point.map((x,i)=>x-o[i]),d=v.map(x=>+(x/Math.hypot(...v)).toFixed(3)),unit=d.map(x=>x/Math.hypot(...d)),t=rifleSkullEntry(id,state,o,d);
+function frontWire(id,state={p:[0,0,0],r:0},sample=-.068,vertical=.09,distance=-4) {
+ const look=avatarLook(id),width=[.93,1,1.08][look.build],c=Math.cos(state.r),s=Math.sin(state.r),turn=([x,y,z])=>[c*x+s*z,y,-s*x+c*z],o=turn([0,1.62,distance]).map((v,i)=>+(v+state.p[i]).toFixed(2)),point=turn([sample*width,(H.headY+vertical)*look.tall,0]).map((v,i)=>v+state.p[i]),v=point.map((x,i)=>x-o[i]),d=v.map(x=>+(x/Math.hypot(...v)).toFixed(3)),unit=d.map(x=>x/Math.hypot(...d)),t=rifleSkullEntry(id,state,o,d);
  return {t:'a',w:'rifle',to:id,o,d,hc:[1,...o.map((x,i)=>+(x+unit[i]*t).toFixed(3))]};
 }
-async function historyFixture(initial=0) {
+async function historyFixture(initial=0,sample=-.068) {
  const env=setup(),a=await connect(env),b=await connect(env),id=b.got[0].i,server=b.ws.peer;
  assert.equal(server.deserializeAttachment().turned,false,'known history initialized at NEW connection, before state');
  b.send({p:[0,0,0],r:initial,h:'rifle'});a.send({p:[0,0,-4],r:0,h:'rifle'});await settle(env);now+=1000;
- const shoot=async()=>{const state=server.deserializeAttachment().s,wire=frontWire(id,state),feet=[wire.o[0],wire.o[1]-1.62,wire.o[2]];a.send({p:feet,r:0,h:'rifle'});await settle(env);now+=1000;a.send(wire);await settle(env);return a.got.filter(x=>x.t==='hit').at(-1);};
+ const shoot=async()=>{const state=server.deserializeAttachment().s,wire=sample===true ? greetingWire(id,state) : frontWire(id,state,sample),feet=[wire.o[0],wire.o[1]-1.62,wire.o[2]];a.send({p:feet,r:0,h:'rifle'});await settle(env);now+=1000;a.send(wire);await settle(env);return a.got.filter(x=>x.t==='hit').at(-1);};
  const close=async()=>{a.ws.close();b.ws.close();await settle(env);};return{env,a,b,id,server,shoot,close};
 }
 test('front private history: first heading, invalid/rounded/rate-rejected states, monotone turn and hibernation',async()=>{
@@ -92,8 +92,8 @@ test('front legacy unknown attachments fail closed, including old pending first 
  state=f.server.deserializeAttachment();state.s=null;delete state.turned;f.server.serializeAttachment(state);now+=1000;f.b.send({p:[0,0,0],r:3.14,h:'rifle'});await settle(f.env);assert.equal(f.server.deserializeAttachment().turned,undefined,'old unknown pending attachment never gains false trusted history');const pending=await f.shoot();assert.equal(pending.head,undefined);await f.close();
  const fresh=await historyFixture(3.14);const hit=await fresh.shoot();assert.equal(hit.head,true);assert.equal(hit.l,8);await fresh.close();
 });
-test('front accepted greeting permanently suppresses only new front; late observer and client flags cannot reset it',async()=>{
- const f=await historyFixture();const first=await f.shoot();assert.equal(first.head,true);
+test('original Front outside new greeting band stays suppressed; late observer and client flags cannot reset it',async()=>{
+ const f=await historyFixture(0,-.073);const first=await f.shoot();assert.equal(first.head,true);
  now+=1000;f.b.send({t:'g',to:f.a.got[0].i,k:0});await settle(f.env);assert.equal(typeof f.server.deserializeAttachment().gt,'number');
  const observer=await connect(f.env);assert.ok(observer.got[0].ps.some(p=>p.i===f.id));assert.ok(observer.got[0].ps.every(p=>!('turned' in p)&&!('gt' in p)),'history remains PRIVATE, not client authority');
  now+=1000;f.b.send({p:[0,0,0],r:0,h:'rifle',gt:null,turned:false,allowFront:true});await settle(f.env);f.env.PLAYERS.hibernate('world');const denied=await f.shoot();assert.equal(denied.head,undefined);assert.equal(denied.l,7);observer.ws.close();await f.close();
@@ -103,3 +103,35 @@ test('denied post-turn Front keeps one body-only kill/award/reset and normal rec
  const results=[];for(let i=0;i<8;i++)results.push(await f.shoot());assert.ok(results.every(h=>h.head===undefined));assert.equal(results.filter(h=>h.dead).length,1);assert.equal(typeof results.at(-1).kill,'string');assert.equal(results.at(-1).award.seq,9);assert.equal(f.server.deserializeAttachment().l,COMBAT.lives);assert.equal(f.server.deserializeAttachment().turned,true);
  const after=await f.shoot();assert.equal(after.head,undefined);assert.equal(after.l,9);now+=60000;for(const ws of f.env.PLAYERS.ctx('world').getWebSockets())ws.autoAt=new Date(now);await f.env.PLAYERS.ctx('world').fireAlarm();await settle(f.env);assert.equal(f.server.deserializeAttachment().l,COMBAT.lives);assert.equal(f.server.deserializeAttachment().turned,true);await f.close();
 });
+
+test('greeting-Front uses existing immutable private history, keeps first arbitrary heading and never trusts public/client permission',async()=>{
+ const f=await historyFixture(.83,true);assert.equal(f.server.deserializeAttachment().headPoseFixed,true);
+ f.b.send({t:'g',to:f.a.got[0].i,k:0});await settle(f.env);now+=1000;
+ const hit=await f.shoot();assert.equal(hit.head,true);assert.equal(hit.l,8);assert.ok(f.server.deserializeAttachment().gt);
+ f.b.send({p:[0,0,0],r:.830001,h:'rifle',sp:true,score:20,headPoseFixed:false,turned:true});await settle(f.env);now+=1000;
+ assert.equal(f.server.deserializeAttachment().headPoseFixed,true);assert.equal(f.server.deserializeAttachment().turned,false);
+ f.env.PLAYERS.hibernate('world');const observer=await connect(f.env);const publicState=observer.got[0].ps.find(p=>p.i===f.id);for(const k of ['gt','turned','headPoseFixed'])assert.equal(k in publicState,false);
+ assert.equal((await f.shoot()).head,true,'hibernate preserves supported greeting family');observer.ws.close();await f.close();
+});
+test('greeting-Front stays body-only after normalized p/r/c changes, returns, or unknown legacy history',async()=>{
+ for(const changed of [{p:[.1,0,0],r:0},{p:[0,0,0],r:.02},{p:[0,0,0],r:0,c:true}]){
+  const f=await historyFixture(0,true);f.b.send({t:'g',to:f.a.got[0].i,k:0});await settle(f.env);now+=1000;assert.equal((await f.shoot()).head,true);
+  f.b.send({...changed,h:'rifle',headPoseFixed:true,turned:false});await settle(f.env);assert.equal(f.server.deserializeAttachment().headPoseFixed,false);now+=1000;
+  f.b.send({p:[0,0,0],r:0,h:'rifle',headPoseFixed:true});await settle(f.env);now+=1000;f.env.PLAYERS.hibernate('world');assert.equal((await f.shoot()).head,undefined);await f.close();
+ }
+ for(const missing of ['headPoseFixed','turned']){
+  const f=await historyFixture(0,true);f.b.send({t:'g',to:f.a.got[0].i,k:0});await settle(f.env);now+=1000;const a=f.server.deserializeAttachment();delete a[missing];f.server.serializeAttachment(a);f.env.PLAYERS.hibernate('world');assert.equal((await f.shoot()).head,undefined,'unknown legacy history never gains greeting-Front');await f.close();
+ }
+});
+test('greeting-Front shares exactly one lethal award/reset and real recovery without clearing fixed history',async()=>{
+ const f=await historyFixture(0,true);f.b.send({t:'g',to:f.a.got[0].i,k:0});await settle(f.env);now+=1000;const a=f.server.deserializeAttachment();a.l=1;f.server.serializeAttachment(a);
+ const hit=await f.shoot();assert.equal(hit.head,true);assert.equal(hit.dead,true);assert.equal(hit.l,-1);assert.match(hit.kill,/^[0-9a-f-]{36}$/);assert.equal(hit.award.seq,1);assert.equal(f.b.got.filter(x=>x.t==='hurt'&&x.dead).length,1);
+ const count=f.a.got.filter(x=>x.t==='hit').length;f.a.send(frontWire(f.id,f.server.deserializeAttachment().s));await settle(f.env);assert.equal(f.a.got.filter(x=>x.t==='hit').length,count);
+ assert.equal(f.server.deserializeAttachment().headPoseFixed,true);assert.equal(f.server.deserializeAttachment().turned,false);assert.ok(f.server.deserializeAttachment().gt);assert.equal((await f.shoot()).l,8);
+ for(const expected of [9,10]){now+=60000;for(const ws of f.env.PLAYERS.ctx('world').getWebSockets())ws.autoAt=new Date(now);await f.env.PLAYERS.ctx('world').fireAlarm();await settle(f.env);assert.ok(f.b.got.some(x=>x.t==='life'&&x.l===expected));}assert.equal((await f.shoot()).head,true);await f.close();
+});
+
+function greetingWire(id,state){
+ for(const distance of [-2,-3,-4])for(let step=0;step<=20;step++)for(const sign of [-1,1])for(const y of [.088,.089,.09,.091,.092]){const w=frontWire(id,state,sign*(.065+step*.0005),y,distance);if(rifleHeadGreetingFrontRegion(id,state,w.hc.slice(1),w.o,w.d))return w;}
+ throw Error('no supported snapped profile ray for actual assigned appearance');
+}

@@ -4721,3 +4721,60 @@ Artifacts remain under `/tmp/lunden-nose937-surface/`. Initial empty lower-tip c
 Scoped completed results: protocol2/23 checks/CLI0 (all four actual server-id hairstyles, actual serialized cap/precision, public/self health, one lethal UUID/award/reset/replay, wall/miss/body/invalid/crouch); highworld2/4/CLI0 (76 accepted translated contacts and40 explicitly unsupported whole cells,0unexpected); forgery2/4/CLI0 (9528 observed FIRSTpureNose deeper points behind closer hair1299/skull351/eye2816/jaw2924/neck67/torso1355/other716,0bonus); legacy/7/CLI0 (fresh original023f4ca config via an external loader gives actual new-client body1/ordinary marker/replay-safe health). Worker/recovery33 passed/CLI0 before final incoming-history integration. The inspected protocol2 marker/HUD image and legacy ordinary-marker image are genuine native DOM captures. Final `publication-ready/` passed24 checks/actual Node exit0 after incoming front/rear history and named greeting-left integration on5025da0a; both actual receiver8/10 and shooter authoritative Huvudträff native PNGs were inspected. Final Worker/recovery36/36 also passed/CLI0. `publication-source-proof.json` reverses only the own band additions to reproduce entire origin config/Avatar exactly, verifies all PlayerRoom/Worker/Ghosts/Combat/Olof bytes against origin and all13 physical/profile/nose/jaw/band helpers against the original geometry producer. Earlier whole config/source hashes differ only because of the documented incoming guards; they are not falsely called current hashes. `publication/` is a separate failed connection attempt: the stopped transient Worker unit had been collected, so restart failed before room connection. A new uniquely named bounded owned publication Worker was created and its ready GET/players426/PID/start record preceded the successful final client logic. Earlier failed commands/captures remain separate. These images are real diagnostic DOM/receipts, not rendered-avatar/apartment or physical-phone/FPS proof.
 
 Published runtime e385c6cc0e928d5a7ecafde6a868e94f43603b57 includes the Swedish visible entry750 in the same commit. All seven final native runtime/driver hashes match it exactly after the last07bfb171 documentation rebase; no broader geometry rerun or claim of a green original full-stage exit was made. Genuine Worker run38444878563/job115460536183 completed with the actual `Run cloudflare/wrangler-action@v3` step successful; Pages38444878523 also succeeded. This deploy evidence is separate from the actual native local acceptance and establishes neither a live-client write nor physical-phone verification.
+
+
+### Bounded immutable greeting-Front acceptance (#943)
+
+Command: `PLAYWRIGHT_MODULE=... CHROME_PATH=... node tools/riflefrontgreetingtest.cjs
+http://localhost:8878 http://localhost:8879 /tmp/front-greeting [CLEAN_GRID_PROOF]`.
+Default measures again. Explicit replay rejects different complete grid function
+hash, ANY production path/hash mismatch, failed/incomplete phase or incomplete
+60-look matrix; it never declares a failed whole run accepted. Actual helper
+probe passed7 checks including six deliberately corrupted proof controls.
+
+Read-only feasibility:207,360 narrow-band rays, all60 canonical variants/four
+first headings, held/saber/wave/repeat/6s delayed/capped paused draw; every nearest
+contact Skull, but no hidden contacts, so this alone was ONLY positive feasibility.
+Native1 independently measured the wider actual grid:146,655 rays,21,608 supported
+nearestSkull positives,38,090 nearer unsupported surfaces,33,035 FIRST pureSkull
+hidden forgeries,17,216 actual eight-corner contacts, all60 styles/builds/heights,
+zero bad/cornerBad. Maximum profile/quantization residual3.175494mm under unchanged
+15mm bound. Actual first heading variants include r2=3.14; no later heading is
+assumed settled. Actual wave/saber/repeated/delayed/capped draw and oblique/outer
+rays keep hair/nose/face/arm/body present throughout; no removed occluder.
+
+Native1 whole CLI1 is retained: its live aim fixture passed Vector3 to the
+array-only predicate, so no bounded aim was selected after the clean grid phase.
+Native2 explicitly reused ONLY that fully hash-bound clean grid phase, confirmed
+real pre-greet/greet/repeated-wave head2, then whole CLI1 because an immediately
+queued body shot lacked a reopened ordinary5Hz send slot while drawing was paused.
+Native3 preserves both failed artifacts and runs fresh owned Worker/protocol/
+HUD with explicit valid send scheduling:21 PASS/0 FAIL, actual CLI0, zero errors/
+WebGL. No new dense grid is claimed in2/3; producer function/runtime hashes remain
+unchanged. Raw original producer/phase extraction/packet/receipt/provenance and
+actual exits are saved under `/tmp/lunden-priority-943/`.
+
+Real client shots confirm before-greet head8, after-greet head6, repeated delayed
+capped-wave head4; contactless/version body3/2, one low-HP lethal UUID/award/reset,
+no receipt replay effect, moved-and-returned body9, fresh greeted socket head8,
+public+self health and late welcome privacy. Inspected actual native HUD shows
+these rows and the authoritative Huvudträff marker.234 runtime/driver hashes
+match the preboot source freeze; owned Worker PID1841312 owned its8879 listen
+socket and exited after this run. This is real modules/local room native evidence,
+not a rendered avatar/World, phone/FPS or universal anti-cheat/pose proof.
+
+Focused Front/recovery Node:15 PASS/CLI0. Final combined Front/players/recovery:
+45 PASS/CLI0. Earlier Node1/2 fixture failures remain: a coarse fixed snapped
+profile aim was replaced by bounded actual assigned-profile input selection;
+recovery from8 is correctly9 after60s and10 after120s; the original general-Front
+greeting suppression case now tests a point OUTSIDE the newly supported subset.
+An independent old lateral test can conflict with published938's reopened left
+family on random appearances: exact e385c6c baseline sources reproduced CLI1 at
+players.test.mjs:657 before943 code, filed #945 and not fixed here. Final45/0 is
+an actual different random-id run, not proof that the baseline flaw is resolved.
+
+Strict legacy unknown/hibernate/first arbitrary heading/rounded states, changed
+p/r/c and return, client claims/private fields, one lethal award and two real
+controlled minute-alarm recovery steps are covered. #943 closes only this narrow
+useful greeting family; #939/#931/#917 and post-turn944 remain open. Deployment
+provenance and final rebase composition are recorded independently below.

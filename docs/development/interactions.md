@@ -901,3 +901,28 @@ This does not infer when a wave ends: paused and repeated waves remain possible.
 The read-only candidate survey found660 actual standing cells outside both published nose regions, with5280 correct corners and≤5.0284mm residual. The broader frozen native geometry stage measured720 new contacts over60 appearances/four headings/bind+three standing samples,5760 correct corners and71552 unsupported nearest contacts with0false bonus; its CLI1 retains an obsolete bind-only high-coordinate fixture expectation. The band has no measured bind support. A separate actual Ghost.push/draw/wave/held/saber/body-turn/paused-firstdraw grid measured8520 supported nearest Nose contacts/68160 correct corners over21600 rays,≤3.2714mm residual, no observed nearer-other arm case. Corrected moving/crouch samples4320 had0band cells and observed moving speed.5/gait.8; moving/crouching retain existing body-only gates. These are sampled poses, not all-animation/World/phone acceptance.
 
 Remaining unsupported upper/lower/lateral cells stay body1; the broader nose parent #920 remains open. Native stage outcomes, exact packet/receipt proofs and source provenance are documented in verification/storage.
+
+
+### Immutable after-greeting Front band (#943)
+
+A separate `rifleHeadGreetingFrontRegion`/`greetingFrontPatch` reopens only a
+narrow subset of the original Front strips after greeting. Canonical absx
+.065–.071, y.086–.094 above headY, and frontal lateral/vertical cone.04 are
+conservative *guess* policy values. Existing Front/profile/entry/wire padding
+and all other surface branches are unchanged; no geometry, bone or draw changes.
+The actual snapped origin/direction and entire r3 contact cell must fit.
+
+PlayerRoom enables named `allowGreetingFront` only with accepted gt, existing
+`headPoseFixed === true` and known fresh `turned === false`. This reuses938's
+first REAL standing snapshot/immutable normalized p/r/c history, never competing
+history or a client flag. No earlier visible default/no-snap pose is trusted.
+Later movement/heading/crouch change stays body1 here even after returning,
+hibernation, death or healing; legacy unknown history also stays body1. The old
+pre-greeting Front policy remains intact and after-turn support is #944.
+
+`tools/riflefrontgreetingtest.cjs GAME WORKER OUTPUT [GRID_PHASE_PROOF]` measures
+actual Ghost push/draw/animate/wave/swing, repeated/delayed wave and capped first
+draw, nearest surface/hidden pureSkull/cell corners, then real Combat/2WS Worker
+receipts and HUD. Default always measures; explicit clean-grid reuse is strictly
+bound to the complete producer function and every imported production hash.
+This is bounded native geometry/DOM evidence, not rendered World/phone/allpose.

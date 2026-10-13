@@ -568,3 +568,22 @@ The new PlayerRoom case exercises a bounded quantized packet within the original
 Fresh old023f4ca validation returned actual new-client body1/local-public9HP and an ordinary replay-safe marker (7 native checks/CLI0); an external loader supplies its recorded original pure config, never a stale module cache. Final fresh current Worker/native protocol24/CLI0 and Worker/recovery36/CLI0 preserve published front/rear history and named allowFront/allowRear/allowGreetingLeft options. They do not globally gate the independent Nose band. Own runtime changes are only the new canonical constant/region and existing internal Nose surface dispatch; no message or periodic work is added.
 
 Runtime e385c6cc was genuinely deployed by Worker run38444878563/job115460536183: actualwrangler-action step success, not skipped. Final byte-frozen native24/CLI0 and Node36/CLI0 precede this deployment; documentation-only completion adds no runtime or changelog entry. The narrow band completes #937; the broader #920 nose request remains open for unsupported surfaces/poses.
+
+
+### Private immutable greeting-Front eligibility (#943)
+
+No wire/storage key, HP counter or animation clock is added. The existing938
+`headPoseFixed` and931 `turned` attachments are reused without initialization or
+migration edits. Accepted gt presence AND strict fixed/false history permits
+only the new narrow greeting-Front branch; named `allowGreetingFront` is appended
+to existing options while lateral7 and legacy bool Front8/Rear9 compatibility
+remain. Unknown already-posed legacy history never retroactively reopens it.
+Public welcome/state omit all three private fields; rejected/client-claimed
+values cannot establish eligibility. A fresh socket/first standing snapshot
+can reopen its own family, whereas reset/recovery does not reset history.
+
+Actual native Combat/Ghosts shots use unchanged r2 origin/r3 direction/contact,
+hc-v1 and256-byte cap. One real low-HP death/killUUID/award/reset and replay-safe
+marker are retained; focused real room tests cover hibernate/latejoin/invalid
+states and9→10 one-per-minute recovery after a two-HP injury. Genuine deployment
+is recorded separately from publication and local owned Worker evidence.
