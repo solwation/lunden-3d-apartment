@@ -1,8 +1,8 @@
 # Global test-mode inventory and measured evidence (#764)
 
-Inventory snapshot: `e5e1928` (2026-10-13), with published GitHub state read during this audit. This is documentation/source/evidence review only: no browser, test run, runtime change, new timing or changelog. Group owners' alphabetical rows in [verification.md](verification.md) are preserved. Later commits do not turn a historical frozen pair into current-runtime acceptance.
+Inventory snapshot: `a44752a` (2026-10-13), with published GitHub state read during this audit. This is documentation/source/evidence review only: no browser, test run, runtime change, new timing or changelog. Group owners' alphabetical rows in [verification.md](verification.md) are preserved. Later commits do not turn a historical frozen pair into current-runtime acceptance.
 
-All 205 current `tools/*.html`/`*.cjs` filenames are accounted for: 178 HTML fixtures (including the explicitly chosen `perfcount.html`), 22 CJS tests/drivers and five support modules. The runner's `test.*` discovery excludes some explicit-entry tools; inventory membership is broader than automatic discovery. A test-mode flag by itself is never parity proof.
+All 209 current `tools/*.html`/`*.cjs` filenames are accounted for: 178 HTML fixtures (including the explicitly chosen `perfcount.html`), 24 CJS tests/drivers and seven support modules. The runner's `test.*` discovery excludes some explicit-entry tools; inventory membership is broader than automatic discovery. A test-mode flag by itself is never parity proof.
 
 The later #669 crash snapshot DOM test and #861 standalone-verdict parser/helper are included as source-only current entries. Their local DOM/unit results are not apartment comparison pairs; historical runner TIMEOUT/exit records are not reclassified by the newer parser.
 
@@ -11,13 +11,13 @@ The later #669 crash snapshot DOM test and #861 standalone-verdict parser/helper
 | Published group | Evidence and disposition | Current coordination status |
 |---|---|---|
 | [#738 a–c](https://github.com/solwation/lunden-3d-apartment/issues/738) | #792/#802/#806–#813/#835/#837/#841/#843/#844/#846; complete accepted, original-full, standalone and explicit exceptions; [owner details](verification.md). | Closed group; protocol/timeouts and red histories remain qualified |
-| [#739 d–l](https://github.com/solwation/lunden-3d-apartment/issues/739) | #785/#818–#825; includes actual random/timing differences and separate #848/#849/#850; [owner details](verification.md). | Closed group; no new Life pair inferred from written-full133 PASS |
-| [#740 m–p](https://github.com/solwation/lunden-3d-apartment/issues/740) | #826–#831/#834 plus published #832/#833 partials; [owner details](verification.md). | Open: Portik #832 and posterplacement #833 incomplete; CJS/render/viewport exceptions retained |
+| [#739 d–l](https://github.com/solwation/lunden-3d-apartment/issues/739) | #785/#818–#825; includes actual random/timing differences and separate #848/#849/#850; [owner details](verification.md). | Closed group; no new Life pair inferred from written-full 133 PASS |
+| [#740 m–p](https://github.com/solwation/lunden-3d-apartment/issues/740) | #826–#832/#834 plus published #833 partials; [owner details](verification.md). | Open: #832 Pet/Plant/Portik dispositions complete; posterplacement #833 incomplete; CJS/render/viewport exceptions retained |
 | [#741 r–t](https://github.com/solwation/lunden-3d-apartment/issues/741) | #747–#752/#789–#801/#803/#840/#842 plus earlier exact known-red migrations; [owner details](verification.md). | Closed group disposition; clock/exception/red results were retained |
 | [#742 u–z and remaining CJS](https://github.com/solwation/lunden-3d-apartment/issues/742) | #753/#754/#757–#759; seven exact native pairs and explicit exceptions; [owner details](verification.md). | Open with #764; no global parent closure |
 | [#737 runner](https://github.com/solwation/lunden-3d-apartment/issues/737) | #773/#776/#777; native mode/fullscreen/Worker routing and actual rest/tostart evidence; [owner details](verification.md). | Closed runner scope; light routing tests are not game parity |
 
-The old #738 after-only `9645849` handoff and recovered #740 branch are historical, not valid before/after evidence. Later explicit group deliveries supersede those claims. #832's Plant acceptance is published; Portik remains pending. #833's original placement interruption and poster red/incomplete comparison remain visible, with separate #857/#858. No missing cloud/reload/optional screenshot path is invented as executed. Broader #736 remains open.
+The old #738 after-only `9645849` handoff and recovered #740 branch are historical, not valid before/after evidence. Later explicit group deliveries supersede those claims. #832's final Pet/Plant/Portik dispositions are published in `1db61eb` ([delivery/source](https://github.com/solwation/lunden-3d-apartment/issues/832#issuecomment-6142694422)); Portik is now accepted, while Pet retains original full after its badge difference. #833's original placement interruption and poster red/incomplete comparison remain visible, with separate #857/#858. No missing cloud/reload/optional screenshot path is invented as executed. Broader #736 remains open.
 
 ## Current filename inventory
 
@@ -121,7 +121,7 @@ The old #738 after-only `9645849` handoff and recovered #740 branch are historic
 | [laundrytest.html](../../tools/laundrytest.html) | Retained full / actual difference | Complete native comparison differs; actual values/assertions preserved, no normalization or new migration. [measured evidence](#published-native-pairs) |
 | [life2test.html](../../tools/life2test.html) | Migrated / measured | Complete published native full/test acceptance; image/timing/optional-path limitations remain in owner evidence. [measured evidence](#published-native-pairs) |
 | [life3test.html](../../tools/life3test.html) | Retained full / actual difference | Complete native comparison differs; actual values/assertions preserved, no normalization or new migration. [measured evidence](#published-native-pairs) |
-| [lifetest.html](../../tools/lifetest.html) | Retained full / red historical pair | Original identical-red pair retained; #850 later written-full133 PASS, no new complete mode pair. [measured evidence](#published-native-pairs) |
+| [lifetest.html](../../tools/lifetest.html) | Retained full / red historical pair | Original identical-red pair retained; #850 later written-full 133 PASS, no new complete mode pair. [measured evidence](#published-native-pairs) |
 | [lifttest.html](../../tools/lifttest.html) | Migrated / measured | Complete published native full/test acceptance; image/timing/optional-path limitations remain in owner evidence. [measured evidence](#published-native-pairs) |
 | [lighttest.html](../../tools/lighttest.html) | Intentional exception | Actual light-pool/wash fade and DetailCuller visibility. [owner scope](verification.md) |
 | [loadingtest.html](../../tools/loadingtest.html) | Intentional exception | Loading/resume-cover versus app readiness and warmup lifecycle. [owner scope](verification.md) |
@@ -158,10 +158,11 @@ The old #738 after-only `9645849` handoff and recovered #740 branch are historic
 | [phonememtest.cjs](../../tools/phonememtest.cjs) | Intentional exception | Phone resolution/texture memory and rendering performance. [owner scope](verification.md) |
 | [planttest.html](../../tools/planttest.html) | Migrated / measured | Complete published native full/test acceptance; image/timing/optional-path limitations remain in owner evidence. [measured evidence](#published-native-pairs) |
 | [plantwindtest.html](../../tools/plantwindtest.html) | Intentional exception | 192×192 foliage and pottery render-target pixel readback. [owner scope](verification.md) |
-| [portiktest.html](../../tools/portiktest.html) | Pending | Current original native pair not yet published; #832 remains open. [#832](https://github.com/solwation/lunden-3d-apartment/issues/832) |
+| [portiktest.html](../../tools/portiktest.html) | Migrated / measured | Published whole 1704-byte logs/36 PASS per mode, actual exit0; six480×300 app identities, full/null versus real test APIs. Two URL flags only; crop-qualified timings. [#832 final source/evidence](https://github.com/solwation/lunden-3d-apartment/issues/832#issuecomment-6142694422) |
 | [posterplacementtest.html](../../tools/posterplacementtest.html) | Blocked / incomplete | Original full preview FAIL/TypeError and interrupted CLI143; no complete pair, #857/#858. [#833](https://github.com/solwation/lunden-3d-apartment/issues/833) |
-| [postertest.html](../../tools/postertest.html) | Retained full / incomplete red flow | Full24 PASS/4 FAIL then TypeError (last9 checks unexecuted), test37 PASS; no complete logical migration. [measured evidence](#published-native-pairs) |
+| [postertest.html](../../tools/postertest.html) | Retained full / incomplete red flow | Full24 PASS/4 FAIL then TypeError (last9 checks unexecuted), test 37 PASS; no complete logical migration. [measured evidence](#published-native-pairs) |
 | [powertest.html](../../tools/powertest.html) | Intentional exception | Real light pools/washes, supply/fade and night-window allocation. [owner scope](verification.md) |
+| [privatecodetest.cjs](../../tools/privatecodetest.cjs) | Standalone | Native SHA/verifier and local Worker PUT/read/reload, no apartment/WebGL; private inputs are mandatory external JSON. [source](../../tools/privatecodetest.cjs) |
 | [rearrangefollowtest.html](../../tools/rearrangefollowtest.html) | Migrated / measured | Complete published native full/test acceptance; image/timing/optional-path limitations remain in owner evidence. [measured evidence](#published-native-pairs) |
 | [rearrangemirrortest.html](../../tools/rearrangemirrortest.html) | Intentional exception | Original reflection-following-glass correctness. [owner scope](verification.md) |
 | [rearrangeplacementtest.html](../../tools/rearrangeplacementtest.html) | Migrated / measured | Complete published native full/test acceptance; image/timing/optional-path limitations remain in owner evidence. [measured evidence](#published-native-pairs) |
@@ -178,13 +179,16 @@ The old #738 after-only `9645849` handoff and recovered #740 branch are historic
 | [rollreplacetest.html](../../tools/rollreplacetest.html) | Migrated / measured | Complete published native full/test acceptance; image/timing/optional-path limitations remain in owner evidence. [measured evidence](#published-native-pairs) |
 | [rooftest.html](../../tools/rooftest.html) | Intentional exception | Full lamp-pool allocation and quality-dependent DetailCuller visibility. [owner scope](verification.md) |
 | [roomtest.html](../../tools/roomtest.html) | Standalone | Actual modules/own scene, CPU, canvas, storage or audio; no apartment iframe. [source](../../tools/roomtest.html) |
+| [runneriteration.test.cjs](../../tools/runneriteration.test.cjs) | Standalone | Actual CLI/server/browser native DOM/query/reload/isolation in temporary repo; no apartment/WebGL. [#860 scope](verification.md#test-runner-toolsruntestscjs--737--736) |
 | [runnerverdict.cjs](../../tools/runnerverdict.cjs) | Support | Runner, activation driver, peer orchestration or testkit; not an independent migration fixture. [runner](verification.md#test-runner-toolsruntestscjs--737--736) |
 | [runnerverdict.test.cjs](../../tools/runnerverdict.test.cjs) | Standalone | Own module/controlled DOM fixture; no apartment bootstrap. [source](../../tools/runnerverdict.test.cjs) |
 | [runtests.cjs](../../tools/runtests.cjs) | Support | Runner, activation driver, peer orchestration or testkit; not an independent migration fixture. [runner](verification.md#test-runner-toolsruntestscjs--737--736) |
 | [sabertest.html](../../tools/sabertest.html) | Retained full / actual difference | Complete native comparison differs; actual values/assertions preserved, no normalization or new migration. [measured evidence](#published-native-pairs) |
 | [savecompacttest.html](../../tools/savecompacttest.html) | Standalone | Actual modules/own scene, CPU, canvas, storage or audio; no apartment iframe. [source](../../tools/savecompacttest.html) |
 | [scoretest.html](../../tools/scoretest.html) | Retained full / actual difference | Complete native comparison differs; actual values/assertions preserved, no normalization or new migration. [measured evidence](#published-native-pairs) |
+| [secret-test-inputs.cjs](../../tools/secret-test-inputs.cjs) | Support | Explicit external private fixture input validation/redaction; no independent migration fixture. [source](../../tools/secret-test-inputs.cjs) |
 | [secretarytest.html](../../tools/secretarytest.html) | Migrated / measured | Complete published native full/test acceptance; image/timing/optional-path limitations remain in owner evidence. [measured evidence](#published-native-pairs) |
+| [secretfixture.cjs](../../tools/secretfixture.cjs) | Support | Native HTML companion provisions only authored fixture inputs and preserves app setup; no standalone acceptance inferred. [source](../../tools/secretfixture.cjs) |
 | [sonosstart.cjs](../../tools/sonosstart.cjs) | Support | Runner, activation driver, peer orchestration or testkit; not an independent migration fixture. [runner](verification.md#test-runner-toolsruntestscjs--737--736) |
 | [sonostest.html](../../tools/sonostest.html) | Retained full / actual difference | Complete native comparison differs; actual values/assertions preserved, no normalization or new migration. [measured evidence](#published-native-pairs) |
 | [southbackdroptest.html](../../tools/southbackdroptest.html) | Migrated / measured | Complete published native full/test acceptance; image/timing/optional-path limitations remain in owner evidence. [measured evidence](#published-native-pairs) |
@@ -233,7 +237,7 @@ The old #738 after-only `9645849` handoff and recovered #740 branch are historic
 
 ## Published native pairs
 
-The table records one latest published disposition per fixture and both independent stairwell B/C variants; earlier diagnostic/failure attempts remain in owner evidence and are not double-counted. It contains 126 paired records for 125 distinct HTML names, **not 126 successful completed migrations**: original Christmas CLI timeouts, known-red pairs and poster's incomplete full flow remain explicit. The separate required basement CJS-driver pair follows. Every raw PASS/FAIL duplicate and dynamic value is retained; no result normalization was used. Times are actual runner wall samples, including capture attempts where authored external helpers were used.
+The table records one selected published acceptance/disposition per fixture and both independent stairwell B/C variants; earlier diagnostic/failure attempts remain in owner evidence and are not double-counted. It contains 127 paired records for 126 distinct HTML names, **not 127 successful completed migrations**: original Christmas CLI timeouts, known-red pairs and poster's incomplete full flow remain explicit. The separate required basement CJS-driver pair follows. Every raw PASS/FAIL duplicate and dynamic value is retained; no result normalization was used. Times are actual runner wall samples, including capture attempts where authored external helpers were used.
 
 | Fixture / variant | Ordered full / test result rows | Whole ordered equality; runner verdicts | Full → test wall (s) | Published frozen-source / raw evidence |
 |---|---|---|---:|---|
@@ -316,6 +320,7 @@ The table records one latest published disposition per fixture and both independ
 | `pctest` | 9 PASS/0 FAIL / 9 PASS/0 FAIL | identical; PASS/PASS | 119.928 → 77.898 | [source/mode/capture limits](verification.md#gaming-pc-native-acceptance-831-final); `/tmp/runtests-658034/` |
 | `pettest` | 17 PASS/0 FAIL / 17 PASS/0 FAIL | different; PASS/PASS | 318.124 → 164.671 | [source/mode/capture limits](verification.md#cat-petting-actual-disposition-832-partial); `/tmp/runtests-640536/` |
 | `planttest` | 23 PASS/0 FAIL / 23 PASS/0 FAIL | identical; PASS/PASS | 107.945 → 69.435 | [source/mode/capture limits](verification.md#plant-placement-verified-pair-832-partial); `/tmp/runtests-661924/` |
+| `portiktest` | 36 PASS/0 FAIL / 36 PASS/0 FAIL | entire1704-byte logs identical; PASS/PASS, actual monitor 0 | 163.061 → 161.266 | [#832 final source/native/capture limits](https://github.com/solwation/lunden-3d-apartment/issues/832#issuecomment-6142694422); frozen `6cab681`, `/tmp/runtests-669376/`, `/tmp/lunden-pets832/portiktest/` |
 | `postertest` | 24 PASS/4 FAIL / 37 PASS/0 FAIL | different; FAIL/PASS; full flow interrupted by caught error | 298.014 → 197.933 | [source/mode/capture limits](verification.md#poster-drawing-actual-disposition-833-partial); `/tmp/runtests-647020/` |
 | `rearrangefollowtest` | 15 PASS/0 FAIL / 15 PASS/0 FAIL | identical; PASS/PASS | 231.912 → 203.326 | [source/mode/capture limits](verification.md#test-mode-migration-rt-741); `/tmp/runtests-160072/` |
 | `rearrangeplacementtest` | 15 PASS/0 FAIL / 15 PASS/0 FAIL | identical; PASS/PASS | 153.505 → 133.424 | [source/mode/capture limits](verification.md#test-mode-migration-rt-741); `/tmp/runtests-160072/` |
@@ -324,7 +329,7 @@ The table records one latest published disposition per fixture and both independ
 | `rearrangetvtest` | 9 PASS/0 FAIL / 9 PASS/0 FAIL | identical; PASS/PASS | 159.183 → 136.002 | [source/mode/capture limits](verification.md#test-mode-migration-rt-741); `/tmp/runtests-160072/` |
 | `reloadtest` | 43 PASS/1 FAIL / 43 PASS/1 FAIL | different; FAIL/FAIL | 1246.028 → 1097.220 | [source/mode/capture limits](verification.md#reload-actual-clockworld-disposition-842); `/tmp/runtests-392089/` |
 | `resettest` | 31 PASS/0 FAIL / 31 PASS/0 FAIL | different; PASS/PASS | 475.740 → 296.508 | [source/mode/capture limits](verification.md#reset-actual-clockworker-disposition-840); `/tmp/runtests-381263/` |
-| `resttest` | 133 PASS/19 FAIL / 133 PASS/19 FAIL | identical; KNOWN/KNOWN; corrected #776 test480 evidence | 745.511 → 569.040 | [source/mode/capture limits](verification.md#test-runner-toolsruntestscjs-737--736); `/tmp/runtests-230917/` + `/tmp/lunden-776-rest-testpass.log` |
+| `resttest` | 133 PASS/19 FAIL / 133 PASS/19 FAIL | identical; KNOWN/KNOWN; corrected #776 test 480 evidence | 745.511 → 569.040 | [source/mode/capture limits](verification.md#test-runner-toolsruntestscjs-737--736); `/tmp/runtests-230917/` + `/tmp/lunden-776-rest-testpass.log` |
 | `returnmarkerstest` | 15 PASS/0 FAIL / 15 PASS/0 FAIL | identical; PASS/PASS | 83.109 → 70.054 | [source/mode/capture limits](verification.md#test-mode-migration-rt-741); `/tmp/runtests-254016/` |
 | `rifletest` | 12 PASS/0 FAIL / 12 PASS/0 FAIL | identical; PASS/PASS | 132.827 → 89.373 | [source/mode/capture limits](verification.md#test-mode-migration-rt-741); `/tmp/runtests-263389/` |
 | `riverparktest` | 19 PASS/0 FAIL / 19 PASS/0 FAIL | identical; PASS/PASS | 112.386 → 78.847 | [source/mode/capture limits](verification.md#test-mode-migration-rt-741); `/tmp/runtests-261347/` |
@@ -363,7 +368,7 @@ The table records one latest published disposition per fixture and both independ
 | `watertest` | 57 PASS/0 FAIL / 57 PASS/0 FAIL | identical; PASS/PASS | 200.243 → 138.195 | [source/mode/capture limits](verification.md#remaining-test-audit-742--754); `/tmp/runtests-177430/`; [#753 published exact times](https://github.com/solwation/lunden-3d-apartment/issues/753#issuecomment-6121113181) |
 | `westbackdroptest` | 25 PASS/0 FAIL / 25 PASS/0 FAIL | identical; PASS/PASS | 97.129 → 73.490 | [source/mode/capture limits](verification.md#remaining-test-audit-742--754); `/tmp/runtests-171102/`; [#753 published exact times](https://github.com/solwation/lunden-3d-apartment/issues/753#issuecomment-6121113181) |
 | `zzplanttest` | 13 PASS/0 FAIL / 13 PASS/0 FAIL | identical; PASS/PASS | 127.582 → 134.601 | [source/mode/capture limits](verification.md#remaining-test-audit-742--754); `/tmp/runtests-177430/`; [#753 published exact times](https://github.com/solwation/lunden-3d-apartment/issues/753#issuecomment-6121113181) |
-| `basemententrytest.cjs` + HTML | 56 PASS/0 FAIL in both | entire3969-byte logs identical; actual monitor/runner0 | 100.790 → 60.877 | [#837 delivery/source/native input](https://github.com/solwation/lunden-3d-apartment/issues/837); `/tmp/lunden-basement837/`; excluded timing aggregate |
+| `basemententrytest.cjs` + HTML | 56 PASS/0 FAIL in both | entire3969-byte logs identical; actual monitor/runner 0 | 100.790 → 60.877 | [#837 delivery/source/native input](https://github.com/solwation/lunden-3d-apartment/issues/837); `/tmp/lunden-basement837/`; excluded timing aggregate |
 
 ## Measured timing summary and limits
 
@@ -375,13 +380,32 @@ Only the explicitly published #753 seven-pair cohort is pooled here. Its complet
 
 Verona was **slower** (58.904→72.699 s), as was ZZ-plant (127.582→134.601 s); the other five were faster in those samples. This is a sum of those recorded executions, not a general speedup, repeated benchmark, FPS claim or physical-device qualification. The u–z/remaining audit labels its machine Surface/Chrome/SwiftShader and jobs1; instantaneous load is not supplied for every pair. Historical #703 evidence came from a four-CPU VM at load13–22: aborted combat versus successful-after is not a comparable pair; its old crash/rest numbers are not pooled with these records. Hardware, native fullscreen/viewports, source versions, startup work and shared load differ across the wider evidence.
 
-No grand wall-time total is calculated for the 126-table-record set. Actual raw differences, incomplete/error flows, protocol timeouts, interrupted outer sessions, unequal screenshots, missing full captures, differing capture bounds and native source/driver provenance prevent treating it as one qualified timing cohort. Late group owners explicitly exclude their cropped/failed/asymmetric captures; those exclusions remain. Other exact pairs are individually descriptive and **not silently promoted** into the #753 aggregate. Full wall time may be longer while still providing logical mode acceptance (for example HUD59.028→71.476 s, gable64.132→71.929 s and life2 387.369→403.815 s); gable and life2 have their own capture qualifications.
+No grand wall-time total is calculated for the 127-table-record set. Actual raw differences, incomplete/error flows, protocol timeouts, interrupted outer sessions, unequal screenshots, missing full captures, differing capture bounds and native source/driver provenance prevent treating it as one qualified timing cohort. Late group owners explicitly exclude their cropped/failed/asymmetric captures; those exclusions remain. Other exact pairs are individually descriptive and **not silently promoted** into the #753 aggregate. Full wall time may be longer while still providing logical mode acceptance (for example HUD59.028→71.476 s, gable64.132→71.929 s and life2 387.369→403.815 s); gable and life2 have their own capture qualifications.
 
-Known red history is retained: rest133 PASS/19 FAIL, streetlight9/2, stuck8/9 and tasks92/1 matched their original mode pairs. Separate later fixes/written acceptances do not erase those rows or manufacture new full/test pairs. Life's identical-red history and later written-full133 PASS, Life3's original failure/followup raw difference, book/beer-can earlier failures and postertest's unexecuted late checks remain in [owner evidence](verification.md). All comparisons are source-specific; no current global all-green verdict is asserted.
+Known red history is retained: rest133 PASS/19 FAIL, streetlight9/2, stuck8/9 and tasks92/1 matched their original mode pairs. Separate later fixes/written acceptances do not erase those rows or manufacture new full/test pairs. Life's identical-red history and later written-full 133 PASS, Life3's original failure/followup raw difference, book/beer-can earlier failures and postertest's unexecuted late checks remain in [owner evidence](verification.md). All comparisons are source-specific; no current global all-green verdict is asserted.
+
+## Separate iteration-workflow observation (#860)
+
+The newer published [#860 representative PC workflow](verification.md#test-runner-toolsruntestscjs--737--736)
+on frozen `297f9e8` is kept separate from the historical PC acceptance above and
+from the #753 cohort. One current unchanged-PC pair had9 identical PASS/ALL PASS,
+actual CLI0: full 46.342s + test 30.282s, process 77.233 s, captures 9.150/5.079 s.
+A separate `--test-only` invocation had9 PASS/CLI0, runner 30.599s/process31.233s,
+capture 5.381 s. It deliberately omitted the full pass and has no comparison
+object; it is not a second mode-parity pair or suite-wide speedup.
+
+The owner reviewed all three native documents/images and232 frozen hashes;
+full was observed in1280×800 native fullscreen/null controller, test/iteration
+had real480×300 APIs without fullscreen. Full scene/no parent results differs
+from cropped-right fullPage test result images. These are published external
+records at `/tmp/lunden-priority-860`, `/tmp/runtests-1472694` and
+`/tmp/runtests-1474199`; those raw directories were not locally available to
+this inventory audit, so no independent physical reread or new run is claimed.
+Source/version/load/capture scope remains separate; none is added to #753 totals.
 
 ## Pending publication and parent status
 
-- `portiktest.html`: #832 native original/current pair is pending publication at this snapshot; no timing/result invented.
+- #832 is complete: Pet retains original full; Plant23 and Portik36 have complete exact native pairs. Portik capture coverage differs, so its163.061→161.266s sample is descriptive only and excluded from the qualified timing pool.
 - `posterplacementtest.html`: #833 original preview failures/caught TypeError/interruptedCLI143 are not a completed comparison; #857 preview and #858 writer are separate scopes.
 - Optional shared cloud, lowmem, shot/fullrender and directed scene-image paths retain each owner's explicit executed/unexecuted limits. Source helpers/DOM protocol checks do not fill missing apartment results.
 - #740/#742/#736 remain open. This inventory can be updated incrementally as missing owner evidence lands; no reservation should wait for an outside group without useful independent work.
