@@ -25,7 +25,7 @@
 //       fills up, full it keeps the waste in the hand, a knife / a plate is never thrown away; then the WHOLE M1 flow in
 //       the visitor's own home with a page-made reload in the middle.
 //   chromium --headless=new --dump-dom http://localhost:8137/tools/lifetest.html
-import { LIFE_FOOD, LIFE_TOOLS } from '../src/config.js';
+import { ITEMS, LIFE_FOOD, LIFE_TOOLS } from '../src/config.js';
 const out = document.getElementById('out');
 const lines = [];
 let pass = true;
@@ -72,7 +72,7 @@ try {
   // every starting thing in its home slot, named in the prompt once its store is open
   for (const [type, store, slot] of LIFE_FOOD.stock) {
     const it = home(type), v = life.view(it);
-    check(it && it.place.at === 'slot' && it.place.store === store && it.place.slot === slot && it.amount === LIFE_FOOD.amounts[type], `${type}: in ${store} slot ${slot}, ${it?.amount} ${it?.unit}`);
+    check(it && it.place.at === 'slot' && it.place.store === store && it.place.slot === slot && it.amount === ITEMS[type].amount, `${type}: in ${store} slot ${slot}, ${it?.amount} ${it?.unit}`);
     const o = opener[store]; o.toggle(); settle(o);
     const p = v.where(); p.y += 0.02;
     const name = I.name(it), stands = store === 'pantry' ? [[4.6, p.z], [4.5, p.z - 0.3], [4.5, p.z + 0.3]] : [[p.x, 3.9], [p.x - 0.2, 3.8], [p.x + 0.2, 3.75], [p.x, 4.15]];

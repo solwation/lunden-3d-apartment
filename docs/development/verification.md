@@ -496,7 +496,7 @@ mismatch; life2 has 137 identical PASS rows. This is not an all-migrated or spee
 | `laundrytest.html` | Retain original full (#823); real-time row differs | Complete 61 PASS / ALL PASS in both modes, but exact row 28 differs (left 26.50/ran 8.52 versus left 26.45/ran 5.04). Seven real documents per mode, original 480×300/full controller null versus test real API/no fullscreen. Actual compare exit 1; `/tmp/runtests-503245/`. No migration or speedup aggregation. |
 | `life2test.html` | Migrated (#823) | All 137 ordered PASS rows and ALL PASS byte-identical; six complete default sections/six actual removed frames per mode, all action/save/audit/timer/score diagnostics and optional filter preserved. Full ready 900×600/controller null (five later native fullscreen1280×800) → test480×300/real API/no fullscreen. 387.369s →403.815s, actual exit0, no speedup claim; `/tmp/runtests-513972/`. |
 | `life3test.html` | Original full retained (#824); dust admission fixed (#849) | Subsequent complete default fix-verification has68 PASS each; strict raw rows6/11 still differ, so no migration/normalization. Native boundary regression14 PASS/2 FAIL→16 PASS proves the separate admission/storage fix; old unrecorded failed spot remains unknown. Evidence below. |
-| `lifetest.html` | Original full retained (#824); independent fixture-contract bug #850 | Complete thirteen-app pair, whole7566-byte logs identical but red:132 PASS/1 eggCarton FAIL each. All original default flows/current assertions preserved; no migration from red equality. Actual evidence below. |
+| `lifetest.html` | Original full retained (#824); canonical stock amount check corrected (#850) | Subsequent complete written-full acceptance has133 PASS/0 FAIL, including intact eggCarton place/store/slot/amount predicate. Historical identical-red pair is retained below; no new test-mode pair or migration. All original thirteen-app default flows preserved. |
 | `lifttest.html` | Migrated (#824) | 24 identical ordered PASS rows, 0 FAIL; native original 800×500/full → 480×300/test. One actual main document per mode; lift.loadState is native state restoration, not an app reload. Doors/panel/collision/ride/stair predicates preserved; evidence below. |
 | `lighttest.html` | Full rendering | Pool/wash intensities, lamp fading and actual detail-culler visibility. |
 | `loadingtest.html` | Full startup | Early loading/resume covers versus __app readiness; test mode changes warmup lifecycle. |
@@ -2490,7 +2490,7 @@ native phases, exact original-restoration proof, actual exit and images:
 All #824 dispositions are complete: lift's24 exact PASS rows support its small
 setup; LIFE3 retains original full after raw random/dust differences and #849;
 LIFE retains original full after identical red output and #850. The later #849
-admission/storage fix is documented separately; #850 and broader #739/#736 remain open.
+admission/storage fix and #850 canonical-amount correction are documented separately; broader #739/#736 remain open.
 
 ## Miele complete default native acceptance (#826, partial)
 
@@ -2689,7 +2689,7 @@ Complete ordered logs/summary: `/tmp/runtests-563581/`; frozen runtime/helper
 hashes, actual exit/cleanup, native ready/leave/final records, raw differences
 and images: `/tmp/lunden-dust849/default-pair/`. All230 frozen native/new-test
 blobs and three helper hashes matched after this pair. The original whole
-Life3 fixture remains full, while broader #739/#736 and independent #850 stay open.
+Life3 fixture remains full; the later #850 fixture correction is documented below, while broader #739/#736 remain open.
 
 ## Basement entry native input-driver acceptance (#837)
 
@@ -2788,3 +2788,59 @@ only the upper final canvas. No intermediate speech-bubble or rendered-scene
 pixel equivalence is claimed. Wall 107.714 s and 78.889 s includes both captures;
 this pair is excluded from speedup aggregation because scene capture coverage
 differs. North remains pending its own complete pair; #828/#740/#736 stay open.
+
+## Canonical starting-food amount assertion (#850)
+
+`lifetest` now checks each starting stock amount against the existing canonical
+`ITEMS[type].amount`, using the same config module already imported. Every
+native item/place.at/store/slot conjunct and exact raw label is retained. No
+production quantity/configuration is changed or duplicated. Mechanically undoing
+the import and amount-lookup changes reproduces the whole original fixture
+byte-for-byte, including its thirteen authored app loads, all action/stock/tool/
+mass-balance/audit/session-resume/persistence flows, catches and final verdict.
+There is no filter, fullscreen guard, seed, normalization, baseline or migration.
+
+The prior #824 complete original pair remains preserved: each mode had
+132 PASS/1 FAIL/SOME FAILED, whole 7566-byte logs identical, including row 7
+`FAIL eggCarton: in fridge slot 2, 6 count`. Its expected lookup was undefined,
+because eggCarton is absent from `LIFE_FOOD.amounts`; the item definition already
+uses `EGG.count` (6). The old label alone did not separately measure the other
+place/store/slot constituents or prove stock corruption or a viewport cause.
+
+A native Node amount-contract preflight imported the unchanged actual Items
+and config modules and created all six stock types in a controlled world place:
+cheese500 g, cucumber300 g, butter500 g, eggCarton6 count, peas500 g and breadBag12
+count. Every native created amount matches the canonical definition; all five
+old defined values are unchanged and only the old eggCarton lookup is missing.
+This is an amount-contract preflight, not app/store/slot/lifecycle proof. Exact
+source script/JSON/provenance and whole-fixture inverse:
+`/tmp/lunden-egg850/`. No DOM, renderer or app was started for this preflight.
+
+One complete original written-full default acceptance at `c161596` plus only
+the approved two-line fixture correction completed all thirteen actual apps and
+133 ordered PASS rows/0 FAIL/ALL PASS, with actual monitor exit 0. Row 7 is now
+`PASS eggCarton: in fridge slot 2, 6 count`; its complete native compound predicate
+remains intact. All stock/tool/cutting/sandwich/waste/audit and session-resume/
+persistence flows completed without exceptions or short-circuit. Comparing
+the entire historical full133-row log to this log finds only row 7 FAIL→PASS
+and the terminal verdict; the runtimes differ, so this is not mode/migration
+parity. No new test-mode pair was run for this fixture-contract correction.
+
+All thirteen native app-ready documents have distinct matching URL/timeOrigins,
+900×600/controller false/API null/no fullscreen and empty cloudURL: nine life/
+shot, two shot/time12/freeze and two shot. Thirteen matching trusted pagehide
+snapshots confirm removals: the first and last remain900×600/no fullscreen;
+the middle eleven leave1280×800/native fullscreen. No source guard was added.
+Final retained frames are empty, with no observer errors/warnings. Runner's
+written-mode `modeVerified:null` and initial null controllers remain explicit;
+this is one full acceptance, not a verified mode comparison.
+
+Actual elapsed834.305 seconds includes the successful final60-second-bounded
+capture. The saved PNG was reviewed: top~52 text rows, including the egg PASS,
+with some long right-cropped lines; later rows/terminal verdict are below the
+image and no scene remains. No egg/food/apartment pixel proof or qualified
+timing aggregation is claimed. Complete raw/summary: `/tmp/runtests-584133/`;
+actual exit/cleanup, all native phases, image, source/helper hashes and whole
+fixture inverse: `/tmp/lunden-egg850/acceptance/`. All229 frozen native/fixture
+blobs and three helper hashes physically matched after the run. The fixture
+retains original full sizing/queries; broader #739/#736 remain open.
