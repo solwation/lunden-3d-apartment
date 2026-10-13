@@ -2,7 +2,8 @@
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
 <script type="module">
 import * as T from 'three';
-import { TriGrid } from '../src/trigrid.js?profile=a336e30';
+const ref=new URLSearchParams(location.search).get('ref')||'a336e30';
+const {TriGrid}=await import('../src/trigrid.js?profile='+encodeURIComponent(ref));
 import { buildFurniture } from '../src/furniture.js';
 const result={samples:[],checks:[],pass:false};
 const check=(ok,label)=>result.checks.push(`${ok?'PASS':'FAIL'} ${label}`);

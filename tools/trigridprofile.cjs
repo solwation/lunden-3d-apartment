@@ -2,12 +2,14 @@
 // PLAYWRIGHT_MODULE=… CHROME_PATH=… SHOTS=/tmp/profile node tools/trigridprofile.cjs http://localhost:8873
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 const {execFileSync}=require('node:child_process');const fs=require('node:fs'),path=require('node:path');
-const source=execFileSync('git',['show','a336e30:src/trigrid.js'],{cwd:path.join(__dirname,'..'),encoding:'utf8'});
+const ref=process.env.PROFILE_REF||'a336e30';
+const source=ref==='current'?fs.readFileSync(path.join(__dirname,'../src/trigrid.js'),'utf8'):execFileSync('git',['show',`${ref}:src/trigrid.js`],{cwd:path.join(__dirname,'..'),encoding:'utf8'});
+for(const anchor of ['constructor(mesh) {','this.cells = new Map();','this.q = 0;'])if(source.split(anchor).length!==2)throw Error('ambiguous phase anchor '+anchor);
 const profile=source.replace('constructor(mesh) {','constructor(mesh) { const phaseStart=performance.now();').replace('this.cells = new Map();','const copiedAt=performance.now(); this.cells = new Map();').replace('this.q = 0;','this.q = 0; this.__phases={copyMs:copiedAt-phaseStart,binMs:performance.now()-copiedAt,totalMs:performance.now()-phaseStart};');
 const output=process.env.SHOTS||'/tmp/lunden-trigrid-profile';fs.mkdirSync(output,{recursive:true});
 (async()=>{const browser=await chromium.launch({executablePath:process.env.CHROME_PATH||undefined,args:['--no-sandbox']});try{
 const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
-await page.route('**/src/trigrid.js?profile=a336e30',route=>route.fulfill({contentType:'application/javascript',body:profile}));
-await page.goto((process.argv[2]||'http://localhost:8873')+'/tools/trigridprofile.html');await page.waitForFunction(()=>window.result,null,{timeout:90000});
-const result=await page.evaluate(()=>window.result);result.errors=errors;fs.writeFileSync(path.join(output,'profile.json'),JSON.stringify(result,null,2));await page.screenshot({path:path.join(output,'profile.png'),fullPage:true});console.log(result.checks.join('\n'));console.log(JSON.stringify(result.samples));process.exitCode=result.pass&&!errors.length?0:1;
+await page.route('**/src/trigrid.js?profile='+ref,route=>route.fulfill({contentType:'application/javascript',body:profile}));
+await page.goto((process.argv[2]||'http://localhost:8873')+'/tools/trigridprofile.html?ref='+encodeURIComponent(ref));await page.waitForFunction(()=>window.result,null,{timeout:90000});
+const result=await page.evaluate(()=>window.result);result.errors=errors;result.sourceRef=ref;result.sourceSha256=require('node:crypto').createHash('sha256').update(source).digest('hex');fs.writeFileSync(path.join(output,'profile.json'),JSON.stringify(result,null,2));await page.screenshot({path:path.join(output,'profile.png'),fullPage:true});console.log(result.checks.join('\n'));console.log(JSON.stringify(result.samples));process.exitCode=result.pass&&!errors.length?0:1;
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1});

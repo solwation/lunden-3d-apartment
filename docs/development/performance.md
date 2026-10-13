@@ -585,3 +585,6 @@ usual rendering. Shadow time accumulates over skipped draws; simulation time and
 multiplayer updates are not throttled. `tools/phonepaneltest.cjs` uses the real app,
 real WebGL and a controlled clock to compare draw/pass counts, not physical FPS or
 proof of a fixed iPhone watchdog failure.
+
+
+Current local cold Marks diagnosis (#715): after private-bounds rejection and scalar TriGrid copying, the native production-furniture component's actual Marks mesh collector still spends most cold overlapping/distant query time scanning private bounds. The diagnostics driver separates instrumented scan/grid/hits/native/residual intervals from uninstrumented query/Darts timing; it changes no production runtime. See [current samples, reproduction and limits](../validation/issue-715/README.md#current-private-bounds-diagnosis-2026-10-13). These component intervals neither attribute the previous full apartment 625 ms spike nor measure phone FPS.

@@ -1,0 +1,42 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Current cold Marks profile</title><pre id="out">running…</pre>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<script type="module">
+import * as T from 'three';import {Marks} from '../src/marks.js';import {Marks as Profile} from '../src/marks.js?markscoldprofile';import {buildFurniture} from '../src/furniture.js';import {buildToys} from '../src/toys.js';
+const result={checks:[],instrumented:[],uninstrumented:[],effects:[],pass:false};const check=(ok,label)=>result.checks.push(`${ok?'PASS':'FAIL'} ${label}`);
+const original=HTMLCanvasElement.prototype.getContext;let glCalls=0;HTMLCanvasElement.prototype.getContext=function(kind,...args){if(/webgl/i.test(kind)){glCalls++;throw Error('no renderer permitted');}return original.call(this,kind,...args);};
+const equalHits=(a,b)=>a.length===b.length&&a.every((x,i)=>x.object===b[i].object&&x.materialIndex===b[i].materialIndex&&Object.is(x.distance,b[i].distance)&&x.point.equals(b[i].point)&&x.normal.equals(b[i].normal));
+try{
+ const furniture=buildFurniture(),scene=new T.Scene(),camera=new T.PerspectiveCamera();scene.add(furniture.object);scene.updateMatrixWorld(true);
+ const collector=new Marks(scene,camera,[furniture.object]);const meshes=collector.meshes();const triangles=o=>(o.geometry.index?.count??o.geometry.attributes.position.count)/3;meshes.sort((a,b)=>triangles(b)-triangles(a));
+ const local=new T.Box3().setFromBufferAttribute(meshes[0].geometry.attributes.position).applyMatrix4(meshes[0].matrixWorld),centre=local.getCenter(new T.Vector3());
+ const all=new T.Box3().setFromObject(furniture.object);
+ const cases=[{label:'overlapping largest production mesh',list:[meshes[0]],from:centre.clone().setZ(local.max.z+.3),to:centre.clone().setZ(local.min.z-.3)},
+ {label:'same overlapping segment / entire production furniture',list:meshes,from:centre.clone().setZ(local.max.z+.3),to:centre.clone().setZ(local.min.z-.3)},
+ {label:'distant segment / entire production furniture',list:meshes,from:all.max.clone().addScalar(10),to:all.max.clone().addScalar(11)}];
+ result.geometry={meshCount:meshes.length,triangles:meshes.reduce((s,o)=>s+triangles(o),0),largestTriangles:triangles(meshes[0]),largestIndexed:!!meshes[0].geometry.index};
+ for(const c of cases){const original=new Marks(scene,camera,[furniture.object]),profile=new Profile(scene,camera,[furniture.object]);
+  for(let repetition=0;repetition<8;repetition++){
+   original.invalidate(furniture.object);profile.invalidate(furniture.object);
+   const expected=original.segment(c.from,c.to,c.list),hits=profile.segment(c.from,c.to,c.list),cold={...globalThis.__marksPhases};
+   check(equalHits(expected,hits),'instrumented cold exact native result '+c.label+'/'+repetition);
+   const warm=profile.segment(c.from,c.to,c.list),retained={...globalThis.__marksPhases};check(equalHits(expected,warm),'instrumented retained exact native result '+c.label+'/'+repetition);
+   check(cold.totalMs>=0&&cold.residualMs>=-.01&&retained.bounds===0&&retained.grids===0,'accounting and no warm rebuild '+c.label+'/'+repetition);
+   result.instrumented.push({label:c.label,repetition,cold,retained,hits:hits.length});
+  }
+  // No clock probes or vertex counters in this separately imported production Marks/TriGrid timing path.
+  for(let repetition=0;repetition<12;repetition++){
+   original.invalidate(furniture.object);let start=performance.now();const cold=original.segment(c.from,c.to,c.list);const coldMs=performance.now()-start;
+   start=performance.now();const warm=original.segment(c.from,c.to,c.list);const retainedMs=performance.now()-start;
+   check(equalHits(cold,warm),'uninstrumented cold/retained exact results '+c.label+'/'+repetition);result.uninstrumented.push({label:c.label,repetition,coldMs,retainedMs,hits:cold.length});
+  }
+ }
+ const effectFrom=centre.clone().setZ(local.max.z+.3),direction=new T.Vector3(0,0,-1);
+ for(let repetition=0;repetition<6;repetition++){
+  const marks=new Marks(scene,camera,[furniture.object]),darts=buildToys(scene).darts;darts.marks=marks;marks.invalidate(furniture.object);darts.fire(effectFrom,direction);darts.fire(effectFrom.clone().add(new T.Vector3(.01,0,0)),direction);const intervals=[];
+  for(let i=0;i<60;i++){const start=performance.now();darts.update(1/60);marks.update(1/60);intervals.push(performance.now()-start);}
+  result.effects.push({repetition,intervals,firstMs:intervals[0],sumMs:intervals.reduce((a,b)=>a+b),active:darts.list.filter(d=>d.flying).length});
+ }
+ check(glCalls===0,'no WebGL renderer or apartment bootstrap');result.pass=result.checks.every(x=>x.startsWith('PASS'));
+}catch(error){result.checks.push('FAIL '+error.stack);}
+window.result=result;document.querySelector('#out').textContent=(result.pass?'ALL PASS':'SOME FAILED')+'\n'+JSON.stringify(result.geometry)+'\n'+result.checks.join('\n');
+</script></html>

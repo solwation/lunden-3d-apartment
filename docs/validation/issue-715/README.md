@@ -259,3 +259,24 @@ The phase/copy baseline is pinned to a336e30; no historical reference is generat
 After rebasing onto `0dc54e8`, the candidate copy fixture was rerun: **93 PASS**, exit 0, no page errors;
 the physical Marks fixture was rerun: **9 PASS**, exit 0, no page errors. These final verification artifacts
 are in `/tmp/lunden-trigrid715-surface/final/`; the earlier timing table retains the original measured samples.
+
+
+## Current private-bounds diagnosis, 2026-10-13
+
+After `8d0da26` and `71ec067`, native Chromium measured the **current** Marks/TriGrid path at `69c5d64`. This is production `buildFurniture()` and the actual `Marks.meshes()` collector: 979 meshes, 720,463 geometry triangles, 261 cold large-mesh bounds. It is not a full apartment/renderer/phone benchmark and does not attribute the earlier 625.1 ms app spike. A preliminary manual traversal included opt-out meshes (1,028); its samples are retained separately and excluded here. Every effect repetition creates fresh Marks/Darts to avoid accumulated marks affecting later runs.
+
+`PROFILE_REF=current ... node tools/trigridprofile.cjs http://localhost:8874` profiles the current constructor rather than the default historical `a336e30`. For the largest 57,120-triangle mesh, five instrumented repetitions gave medians 7.1 ms copy/transform and 3.6 ms binning (10.7ms total). Current Marks diagnosis is `SHOTS=/tmp/marks-cold PLAYWRIGHT_MODULE=... node tools/markscoldprofile.cjs http://localhost:8874`. Strict unique anchors add timing/count probes only in separately routed module copies; production modules provide the separate uninstrumented series. The marked path matches their exact object/material/distance/point/normal hit results, and retained queries build no bounds/grids. Eight phase repetitions and 12 uninstrumented cold/retained repetitions per segment are kept as raw samples; medians below are not additive across runs.
+
+| Component segment | Uninstrumented cold / retained median | Instrumented cold bounds | Grid construction | Grid hits |
+|---|---:|---:|---:|---:|
+| Largest furniture mesh only |17.70 /2.15ms|4.25ms|11.30ms|2.55ms|
+| Same segment, entire Marks furniture list |41.65 /2.35ms|29.30ms|11.50ms|2.40ms|
+| Distant segment, entire Marks furniture list |32.30 /0.30ms|29.55ms|0ms|0ms|
+
+The overlapping whole-list query rejected 257 of 261 large meshes and constructed four grids (61,440 triangles); its instrumented grid medians split 7.75 ms copy/transform and 3.75 ms bins. Native small-mesh raycasts/boxes were 0.25/0.45 ms and residual traversal/accounting 0.75 ms. The distant query rejected all 261 and built no grid: bounds still dominated. These are elapsed wall intervals around synchronous JS, with clock-probe overhead in the instrumented series; they are not measured thread CPU or GPU time. Six fresh uninstrumented actual Darts/Marks repetitions, two local darts and 60 equal updates, gave first-update median 52.50 ms and sum 60.05 ms. No before/after runtime benefit is claimed in this diagnostics-only commit.
+
+Actual process results: current phase 35 PASS, cold-profile 109 PASS, unchanged historical TriGrid copy parity 93 PASS, all drivers exit 0/no pageerrors; real Marks/Glass/Breaker physics 9 PASS through the public runner, exit 0, no game document. Native text screenshots reviewed. Source/version hashes and raw JSON are saved before diagnostic capture where applicable under `/tmp/lunden-priority-715-followup/current-phase`, `marks-final`, `copy`, with final proof under `~/.local/state/lunden-orkester/20261013-priority/715-followup-diagnostics.json`.
+
+This establishes a concrete next optimization target: the current private bounds scan in these components. A possible scalar extrema scan must first preserve native normalized/interleaved attribute, empty/NaN/Infinity, authored bounds, transforms, invalidation and actual-hit/projectile semantics under independent baseline parity and balanced uninstrumented A/B. Nothing in this diagnosis changes collision behavior, budget or fallback. #715 remains open; actual phone idle/one/two-shooter frame/render/transport comparison and current full-world cold-cache cost remain unverified, while further native diagnosis is startable without a new user answer.
+
+Final diagnostics rebase `6fba51f` preserved the measured Marks/TriGrid/furniture/toys and driver bytes. The hash audit explicitly differed for `src/config.js`: incoming #875 only added COMBAT.hitMarker duration/offset, outside this component path. Measurements retain their original recorded source version rather than asserting every final source file matched.
