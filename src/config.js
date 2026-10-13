@@ -4523,3 +4523,7 @@ export const NEIGHBOR_OPENINGS = {frame: .06, depth: .1, sash: .045, sashDepth: 
 // opening progress gates wind, rain/snow/hail strengthen it; easing prevents abrupt changes.
 export const PLANT_WIND={calm:.025,wetBoost:2,stormBoost:.5,easeSeconds:1.2,sleepThreshold:.00001,
   heightCap:1.5,maxDisplacement:.06,variationMin:.75,variationRange:.4,speedMin:1.1,speedRange:.65};
+
+// Startup recovery (#864): generous wall-clock allowance for sliced phone warm-up;
+// optional JSON requests get a shorter budget. Safeguards, not measured device limits.
+export const STARTUP = { dataTimeout: 5000, planTimeout: 15000, recoveryTimeout: 120000 };

@@ -4,7 +4,7 @@ Gå runt i lägenheten L1007 (Kv. Lunden, Peab) i webbläsaren som i ett FPS-spe
 övre plan med trappan emellan, byggt direkt från den måttsatta planritningen
 (`L1007_mattsatt_planritning.pdf`).
 
-På telefonen ligger laddningsskärmen kvar medan grafiken förbereds i små steg, tills hela den första 3D-bilden är klar.
+På telefonen ligger laddningsskärmen kvar medan grafiken förbereds i små steg, tills hela den första 3D-bilden är klar. Om starten misslyckas eller fastnar visas ”Försök igen”, utan att din sparade plats eller ditt hem raderas.
 
 **▶ Öppna: https://solwation.github.io/lunden-3d-apartment/**
 

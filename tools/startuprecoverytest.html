@@ -1,0 +1,48 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Startup recovery test</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"}}</script>
+<pre id="out">running…</pre>
+<div id="loading"><div class="loading-card"><h1>Loading</h1><p>Waiting</p><div class="loading-bar"></div></div></div>
+<script type="module">
+import { fetchStartupJSON, watchStartup } from '../src/startuprecovery.js';
+import { loadTodo } from '../src/todo.js';
+import { loadBeerShelf } from '../src/beershelfdata.js';
+const lines=[], check=(ok,text)=>lines.push(`${ok?'PASS':'FAIL'} ${text}`);
+const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+const response=value=>({ok:true,json:async()=>value});
+try {
+  let signal;
+  try { await fetchStartupJSON('stall',{timeout:30,fetcher:(_,opts)=>{signal=opts.signal;return new Promise(()=>{});}});check(false,'request must time out'); }
+  catch { check(signal.aborted,'stalled request ignoring abort still rejects and aborts'); }
+  try { await fetchStartupJSON('stall-body',{timeout:30,fetcher:async()=>({ok:true,json:()=>new Promise(()=>{})})});check(false,'body must time out'); }
+  catch { check(true,'stalled JSON body has the same bounded deadline'); }
+  check((await fetchStartupJSON('retry',{fetcher:async()=>response({ready:true})})).ready,'a subsequent successful fetch works');
+  let calls=[];
+  const notes=await loadTodo({timeout:30,fetcher:async url=>{calls.push(url);return calls.length===1?new Promise(()=>{}):response([{n:2,text:'Note',prio:'high'}]);}});
+  check(calls.length===2&&notes.length===1&&notes[0].n===2,'stalled published notes fall back to local sample');
+  check((await loadTodo({timeout:30,fetcher:()=>new Promise(()=>{})})).length===0,'two stalled optional note sources continue with empty notes');
+  const cacheDescriptor=Object.getOwnPropertyDescriptor(globalThis,'caches');
+  Object.defineProperty(globalThis,'caches',{configurable:true,value:{open:async()=>({match:async()=>({json:()=>new Promise(()=>{})}),put:()=>new Promise(()=>{})})}});
+  const shelf=await loadBeerShelf({timeout:1000,refresh:false,fetcher:(_,options)=>fetch('../data/beer-shelf-default.json',options)});
+  check(shelf.record.beers.length===4&&shelf.images.length===4,'stalled cached body and cache write still return complete local beer labels');
+  if(cacheDescriptor)Object.defineProperty(globalThis,'caches',cacheDescriptor);else delete globalThis.caches;
+  const loading=document.getElementById('loading');
+  const key='lunden.startupRecoveryTest';sessionStorage.setItem(key,'saved-place');localStorage.setItem(key,'saved-home');
+  document.documentElement.classList.add('resuming');let retries=0;
+  watchStartup({timeout:30,retry:()=>{retries++;}});
+  await wait(80);
+  const button=loading.querySelector('button');
+  check(!!button&&!loading.hidden&&!document.documentElement.classList.contains('resuming'),'stalled resumed startup exposes recovery while keeping scene covered');
+  check(sessionStorage.getItem(key)==='saved-place'&&localStorage.getItem(key)==='saved-home','recovery preserves saved position and home');
+  button.click();check(retries===1,'visible retry button invokes retry');
+  loading.querySelector('h1').textContent='Loading';button.remove();loading.hidden=false;
+  const guard=watchStartup({timeout:30});guard.fail();guard.fail();
+  check(loading.querySelectorAll('button').length===1,'import failure offers one immediate retry');
+  loading.querySelector('button').remove();loading.querySelector('h1').textContent='Ready';
+  watchStartup({timeout:30});loading.classList.add('done');await wait(80);
+  check(!loading.querySelector('button')&&loading.querySelector('h1').textContent==='Ready','normal loading dismissal cancels recovery deadline');
+  loading.classList.remove('done');watchStartup({timeout:30});loading.hidden=true;await wait(80);
+  check(!loading.querySelector('button'),'hidden loading cover also cancels recovery');
+  sessionStorage.removeItem(key);localStorage.removeItem(key);
+}catch(error){check(false,error.stack);}
+document.getElementById('out').textContent=lines.join('\n')+'\n'+(lines.some(line=>line.startsWith('FAIL'))?'SOME FAILED':'ALL PASS');
+</script></html>

@@ -45,7 +45,7 @@ async function readBeerShelf({ endpoint = P.endpoint, cacheName = P.cache, now =
   if (persist) try {
     cache = await deadline(caches.open(cacheName), timeout);
     const response = await deadline(cache.match(CACHE_URL), timeout);
-    if (response) previous = await decodeBeerShelf(await response.json());
+    if (response) previous = await decodeBeerShelf(await deadline(response.json(), timeout));
   } catch { /* unusable cache is not a successful update */ }
   if (previous?.record.fetchedAt && previous.record.day === beerDay(now)) return previous;
   // Start the prepared snapshot while the bounded daily refresh runs, so a first offline load has labels ready.
@@ -71,6 +71,6 @@ async function readBeerShelf({ endpoint = P.endpoint, cacheName = P.cache, now =
   // A complete local batch is not a live-refresh request. Busy startup may delay Image.onload
   // beyond the network deadline; keep its exact labels instead of rejecting the whole app.
   const chosen = await fallback;
-  if (!previous && cache && chosen.record.beers.length === 4) try { await cache.put(CACHE_URL, new Response(JSON.stringify(chosen.record))); } catch { /* static snapshot still displays */ }
+  if (!previous && cache && chosen.record.beers.length === 4) try { await deadline(cache.put(CACHE_URL, new Response(JSON.stringify(chosen.record))), timeout); } catch { /* static snapshot still displays */ }
   return chosen;
 }

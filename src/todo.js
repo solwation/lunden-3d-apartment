@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { TODO_NOTES } from './config.js';
+import { fetchStartupJSON } from './startuprecovery.js';
 
 // The TODO post-its on the fridge door (#340): the repo's open GitHub issues as small sticky notes. No live sync:
 // tools/stamp.sh (tools/todo.py) writes data/todo.json from the issues when the site is published, outside the
@@ -13,12 +14,10 @@ const PRIO = { high: 0, medium: 1, low: 2 };
 /** high → medium → low (missing = low), oldest (lowest number) first within a level (#431). */
 export const byPriority = (a, b) => (PRIO[a.prio] ?? 2) - (PRIO[b.prio] ?? 2) || a.n - b.n;
 
-export async function loadTodo() {
+export async function loadTodo(options) {
   for (const url of ['data/todo.json', 'data/todo.sample.json']) {
     try {
-      const r = await fetch(url);
-      if (!r.ok) continue;
-      const list = await r.json();
+      const list = await fetchStartupJSON(url, options);
       if (!Array.isArray(list)) continue;
       return list.map((t) => ({ ...t, prio: t.prio in PRIO ? t.prio : 'low', text: t.text || cleanTitle(t.title ?? ''), kind: t.kind ?? (/^bugg/i.test(t.title ?? '') ? 'bugg' : 'nytt') }))
         .sort(byPriority);

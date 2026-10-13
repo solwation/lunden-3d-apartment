@@ -9,6 +9,7 @@ Related: [storage](storage.md), [verification](verification.md).
 src/viewport.js        renderer/camera sizing is attached before scene loading, including rotations during awaits (#567)
 src/warmup.js          phone shader/geometry warm-up runs in slices before the first complete scene (#697);
                        main.js keeps the loading/resume cover until that scene has rendered
+src/startuprecovery.js bounded startup JSON requests and covered retry after import failure/stalled loading (#864)
 src/bootstrap.js       lightweight startup gate: bounded version check before importing main.js (#512)
 src/startup.js         fresh HTML/build check + cache-busted early update; loop guards; no scene on outgoing page
 src/version.js         BUILD/CONTENT stamps + polling for publications later during a visit
@@ -104,3 +105,5 @@ Phone first view (#697): low-memory devices start sliced warm-up immediately. Or
 
 
 Shared layout verifier (#853): `.github/workflows/cloud.yml` also watches `src/privatecodes.js` (alongside the shared beer-shelf schema). Its compatible Worker accepts both exact legacy input and version-1 hash credentials; deploy it before the later credential-sending client (#856), because independent Pages/Worker jobs can complete in either order. Keep legacy support for cached older clients. The public hash credential is replayable game behavior, not authentication; see [protocol and explicit test inputs](storage.md#versioned-layout-credentials-853).
+
+Startup recovery (#864): optional fridge issue-list requests and their JSON bodies each get 5 s, then try the local sample and finally an empty list. Beer-shelf cached JSON and final prepared-snapshot cache writes use the existing 8 s deadline; label decoding still finishes normally without a short image timeout. Bootstrap catches failed scene imports and offers “Försök igen” on the loading cover. A 120 s watchdog also offers that retry if an import or phone warm-up never finishes; it never starts an incomplete scene, and cancels on normal loading-cover dismissal. Resumed visits show the same recovery card without clearing saved position/home. Required plan data uses a separate 15 s budget. These are safeguards, not a confirmed diagnosis of the physical phone report. `tools/startuprecoverytest.html` verifies request/body/cache stalls, fallbacks, preserved storage, resume recovery and normal cancellation without WebGL; `.cjs` exercises real bootstrap with failed/stalled module requests and actual retry navigation using stub scene imports.

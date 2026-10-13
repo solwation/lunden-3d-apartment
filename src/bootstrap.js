@@ -1,5 +1,6 @@
 import { prepareStartup } from './startup.js';
 import { BUILD } from './version.js';
+import { watchStartup } from './startuprecovery.js';
 
 const title = document.querySelector('#loading h1');
 const description = document.querySelector('#loading p');
@@ -9,5 +10,7 @@ if(start){
   if(description)description.textContent='Förbereder 3D-modellen och planritningen.';
   const moduleURL = new URL('./main.js',import.meta.url);
   if(BUILD!=='dev') moduleURL.searchParams.set('v',BUILD);
-  await import(moduleURL.href);
+  const recovery = watchStartup();
+  try { await import(moduleURL.href); }
+  catch(error) { console.error('Startup failed', error); recovery.fail(); }
 }
