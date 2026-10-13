@@ -2995,6 +2995,16 @@ export const PLAYER = {
   // no longer holds once the feet are within this of its top (knees tucked, *guess*).
   jump: 3.7, hurdle: 0.22,
 };
+// Random death destinations (#863): sampling zones derived from the existing lot/block/walkable extents.
+// Insets/search counts are gameplay choices (guess), not surveyed safe points; every candidate is collision/terrain checked.
+const respawnA = SITE.blocks.find(block => block.name === 'Hus A'), respawnB = SITE.blocks.find(block => block.name === 'Hus B');
+export const RESPAWN = { samples: 8, grid: 5, ringEdges: 64, regions: [
+  { id: 'parking', x0: SITE.life.lot.x0 + .5, x1: SITE.life.lot.x1 - .5,
+    z0: Math.max(SITE.life.lot.z0, OUTDOOR.z0) + .5, z1: SITE.life.lot.z0 + SITE.life.lot.depth - .5 },
+  { id: 'green', x0: respawnB.x1 + 1, x1: respawnA.x0 - 1, z0: Math.max(respawnA.z0, respawnB.z0) + 1, z1: Math.min(respawnA.z1, respawnB.z1) - 1 },
+  { id: 'river-side', x0: respawnB.x0 + 1, x1: respawnA.x1 - 1, z0: Math.max(respawnA.z1, respawnB.z1) + 1, z1: OUTDOOR.z1 - .5 },
+] };
+
 // Falling (#361, src/fall.js; player.js tracks `fall`: the highest feet since leaving the ground and the deepest free
 // drop under them). A drop of more than `hurt` m hurts (the issue's 3 m): a thud + "aj", the view jolts down, red, then
 // black, and the visitor wakes outside our front door (`wake`: 4 m north of the door at x ≈ 1.3 m, the walk test's way
