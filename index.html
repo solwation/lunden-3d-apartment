@@ -257,6 +257,20 @@
     #stats-body { flex: 1 1 0; min-height: 0; height: 100%; overflow-y: auto; overscroll-behavior: contain; column-width: 290px; column-gap: 36px; padding-right: 4px; }
     #stats-body > div { break-inside: avoid; margin-bottom: 6px; }
     /* Badge layout and shared shell live in src/hudicons.css (#707). Existing score IDs stay intact. */
+    /* #884: two vertical cells inside the existing visitors column, without changing badge geometry. */
+    #hud #score span#presence { flex-direction: column; gap: 0; }
+    #hud #score #presence > :is(.presence-online,.presence-fps) { width: 100%; min-width: 0; flex: 1; display: flex; align-items: center; justify-content: center; gap: 3px; box-sizing: border-box; }
+    #hud #score #presence .presence-fps { border-top: var(--badge-divider); font-size: 10px; gap: 2px; }
+    #hud #score #presence .fps-value { font-weight: 650; }
+    #hud #score #presence .fps-unit { font-size: 8px; opacity: .85; }
+    #hud #score #presence .presence-icon { width: 12px; height: 12px; }
+    @media (max-width: 600px) {
+      #hud #score #presence > :is(.presence-online,.presence-fps) { gap: 1px; }
+      #hud #score #presence .presence-count { font-size: 10px; }
+      #hud #score #presence .presence-icon { width: 9px; height: 9px; }
+      #hud #score #presence .presence-fps { font-size: 8px; }
+      #hud #score #presence .fps-unit { font-size: 7px; }
+    }
     #presence .presence-icon { width: 14px; height: 14px; display: inline-flex; align-items: center; justify-content: center; flex: none; }
     #presence .presence-icon svg { width: 100%; height: 100%; fill: currentColor; display: block; }
     #score .plus.pop { animation: pop .25s ease-out; }

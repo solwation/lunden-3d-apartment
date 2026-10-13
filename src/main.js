@@ -118,6 +118,8 @@ import { PaperBalls } from './paperball.js';
 import { Cloud } from './cloud.js';
 import { Leaderboard } from './leaderboard.js';
 import { Presence } from './presence.js';
+import { FrameRate } from './fps.js';
+let resetFrameRate = () => {}; // safe before the HUD is initialized during startup
 import { Ghosts } from './ghosts.js';
 import { Combat } from './combat.js';
 import { Bow, Arrows } from './bow.js';
@@ -1121,6 +1123,7 @@ function look(dyaw, dpitch) {
 
 let played = false; // left the start screen at least once this visit (an F5 then carries on, #203)
 function showOverlay(show) {
+  resetFrameRate();
   if (!show) { played = true; document.getElementById('reset-done').hidden = true; if (loadingEl && startupSceneReady) loadingEl.hidden = true; } // "Hemmet är återställt" only until the visit starts (#303)
   overlay.hidden = !show;
   hud.hidden = show;
@@ -2203,6 +2206,15 @@ const presence = new Presence(cloud.url, document.getElementById('presence'), {
   onUpdate: (p) => renderMenuPresence(p)
 });
 leaderboard.activePlayers = () => presence.names;
+const frameRate = new FrameRate(), fpsEl = presence.el.querySelector('.fps-value');
+resetFrameRate = () => { frameRate.reset(); fpsEl.textContent = '—'; };
+document.addEventListener('visibilitychange', resetFrameRate);
+function showFrameRate(now, drawn, active) {
+  const previous = frameRate.value;
+  const value = frameRate.sample(now, drawn, active);
+  if (value !== previous) fpsEl.textContent = value === null ? '—' : String(value);
+}
+
 // other players as ghosts with a name tag (#666, src/ghosts.js): a WebSocket to the Worker's players' room, only while playing
 // fights between two armed players (#667, src/combat.js): which weapon we hold (COMBAT.weapons, in that order)
 const weaponIs = { saber: (h) => h === saber, nerf: (h) => toys.blasters.includes(h), wand: (h) => toys.wands.includes(h),
@@ -2511,9 +2523,11 @@ function frame(raw) {
   hitch.phase('update');
   if (hitch.enabled) Object.assign(hitch.frameInfo, { shadow: renderer.shadowMap.needsUpdate, mirror: mirror ? (reflectors().find((m) => m.r.visible)?.name || 'yes') + (mirrorSkip ? ' (held)' : '') : '', quality: quality.level,
     yaw: Math.round(camera.rotation.y * 180 / Math.PI), at: `${camera.position.x.toFixed(1)},${camera.position.z.toFixed(1)}` });
+  let drewView = false;
   if (!warm.blocksView) {
     if (viewDue && (testMode?.wantsFrame() ?? true)) {
       renderer.render(scene, camera);
+      drewView = true;
       lastViewDraw = f0;
     } else scene.updateMatrixWorld(); // (#703: `&test=lazy` draws only on request)
     if (!startupSceneReady) {
@@ -2522,6 +2536,7 @@ function frame(raw) {
       hideLoading(); // the full scene is now on the canvas; sliced uploads never show through the cover
     }
   }
+  showFrameRate(performance.now(), drewView, warm.done && startupSceneReady && overlay.hidden && !document.hidden && !portraitCover.matches);
   hitch.phase('render');
   hitch.end();
   const fMs = performance.now() - f0;
@@ -2762,4 +2777,4 @@ hideLoading();
 
 crashlog.attach({ renderer, camera, quality, player, world, sun, scene, mirrorTarget, frameDiag }); // what the crash heartbeat shows (#629)
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { testMode, visitLights, power, olof, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };
+window.__app = { frameRate, testMode, visitLights, power, olof, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };

@@ -2451,6 +2451,8 @@ export const WARM = { frames: 3, sliceMs: 8, programs: 4, compileMs: 20, batch: 
 // only on purpose, with the reason in the commit.
 // `detail.lowMemoryOutside` (#695): on phones, small things inside the flat seen from outside it (through its windows) are cut at
 // this share of their usual distance — the start view from the street drew the kitchen's cups and jars at 15 m (*guess*).
+// #884: half-second display windows keep the always-visible FPS readable (UI choice, not a hardware target).
+export const HUD_FPS = { everyMs: 500 };
 export const PERF = { detail: { maxR: 0.5, k: 0.009, minDist: 3.2, maxOcclude: 4, move: 0.3, lowMemoryOutside: 0.7 }, hitch: { ms: 50, keep: 100 },
   budget: { calls: 520, tris: 1000000, texMB: 320, lowMemory: { calls: 370, tris: 950000, texMB: 225 } } };
 

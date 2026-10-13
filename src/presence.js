@@ -12,6 +12,11 @@ const visitorId = () => {
 export class Presence {
   constructor(url, el, { getName = () => '', getScore = () => 0, onUpdate = () => {} } = {}) {
     Object.assign(this, { url, el, getName, getScore, onUpdate, id: visitorId(), timer: null, count: 0, names: [], players: [] });
+    // #884: own both stacked cells once; heartbeat responses update only the online count.
+    if (el && !el.querySelector('.presence-online')) {
+      el.setAttribute('aria-label', 'Besökare online och bildfrekvens');
+      el.innerHTML = `<span class="presence-online" aria-label="Besökare online"><span class="presence-icon" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm-5.784 6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/></svg></span><b class="presence-count">—</b></span><span class="presence-fps" aria-label="Bildfrekvens"><b class="fps-value">—</b><span class="fps-unit">FPS</span></span>`;
+    }
     if (!this.on) return;
     this.beat();
     this.timer = setInterval(() => this.beat(), EVERY);
@@ -31,7 +36,7 @@ export class Presence {
         if (Number.isInteger(data.count)) {
           this.count = data.count;
           if (this.el) {
-            this.el.innerHTML = `<span class="presence-icon" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm-5.784 6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/></svg></span><b class="presence-count">${data.count}</b>`;
+            this.el.querySelector('.presence-count').textContent = String(data.count);
           }
         }
         if (Array.isArray(data.names)) {
