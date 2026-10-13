@@ -3931,9 +3931,18 @@ Bootstrap is suppressed and WebGL forbidden; these captures are neither apartmen
 rendering nor physical phone acceptance. Recovery does not change hit/death counters.
 
 The same recovery browser fixture also checks offline use of the actual Combat replica
-at 59,999/60,000 ms, preserved phase after new damage, fractional health, delayed
+at 59,999/60,000 ms, preserved phase after new damage, delayed
 catch-up/max, death reset and actual WebSocket reconnection clearing the offline phase.
 Its injected offline clock supplies boundary evidence; no actual Fall.land integration
 is claimed by that fixture alone. Captures wait for actual HUD text before saving.
 
 #865 validation: the native fixture passed 14 checks, the existing combat lifecycle helper passed 17 checks, and PlayerRoom passed 14 Node regressions (including forged lives/hibernation/death). After integrating the later shared recovery/startup and #863 respawn changes on `f5a33be`, one bounded owned monitor ran the exact published `ghostlivestest.cjs --render`: 15 PASS, 0 FAIL, 0 page errors and actual Node exit 0. The original 14 native checks ran before WebGL was permitted, followed by one real small Ghosts/Three render phase and three visually reviewed 1280×720/844×390 armed/unarmed images. The armed images show `❤ 10` over B/123 p and Observer/246 p; the unarmed image keeps both name/score tags and removes lives. The three owned processes exited (runner 0, server/Worker terminated in monitor finally); artifacts, actual exit/cleanup and 246 frozen runtime/Worker/fixture hashes are in `/tmp/lunden-priority-865/render`. This is source-specific room/label regression evidence, not apartment gameplay, physical-iPhone acceptance, authentication or FPS evidence. Fall damage/minute recovery are separate issues; #865 adds neither.
+
+Use `--fall` with recoverytest for the shared fall channel from #868. Real clients
+combine one PvP hit with an unarmed lower fall (10→9→4), then receive the same
+minute recovery (4→5) locally and remotely, and the second lower fall confirms
+actual death/reset to max. Offline uses actual `Combat.fall`: lower fall10→5,
+controlled due minute5→6, second lower fall6→1 surviving, then fatal fall→max
+and no remaining recovery phase. This is the actual damage channel/replica, not
+a replacement damage model; actual `Fall.land`/world/spawn coverage remains #869.
+The combined harness captures native HUD4/10 and restored remote badge5.

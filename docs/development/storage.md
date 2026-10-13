@@ -170,7 +170,7 @@ The first direct tool-session harness was interrupted with exit143 after writing
 
 Public combat lives (#865): PlayerRoom appends server-owned `l` to welcome snapshots, join and ordinary `t:'s'` state. `cleanState` ignores client `l`; values come from the same hibernating socket attachment used by `shot`, defaulting only on the server to its current COMBAT rule. `publishState(ws, attachment)` publishes position/weapon/score and actual remaining lives after an accepted hit or immediate death reset, so stationary targets and observers update without a new client message, timer or billed incoming request. Future server damage/recovery can serialize the same attachment and call this publication path; #865 implements neither fall damage nor a recovery timer. Leaving removes the connection; rejoining starts with the server rule count. This additive protocol is compatible with cached clients; deploy the Worker before the life-reading client. Older Workers omit `l`, so the new client hides unknown health rather than guessing a maximum.
 
-## Server life recovery (#867, online slice)
+## Shared life recovery (#867)
 
 PlayerRoom's existing socket attachment `l` remains authoritative. `recoveryClock(a, now)`
 starts `healAt` 60,000 ms after the first damage from full health. Further damage retains
@@ -186,9 +186,9 @@ grant another life. Runtime delays can combine due minutes into one capped updat
 Pause/background/idle that closes the existing Ghosts socket ends that connection's
 health and recovery phase. Reconnection starts full, as before; there is no persisted
 fight record or offline catch-up for an old socket. The local event changes health only,
-without hurt flashes, scores or death callbacks. #868/#869 provide the common fall-damage
-channel; their damage path must settle due recovery, mutate the same attachment, call
-`recoveryClock`, serialize, and await `scheduleRecovery`.
+without hurt flashes, scores or death callbacks. #868 provides the common fall-damage channel (`await Combat.fall(drop, gap)`);
+#869 wires the actual landing caller. The channel settles due recovery, mutates the
+same attachment, calls `recoveryClock`, serializes, and awaits `scheduleRecovery`.
 
 No polling writes were added: unchanged phase reuses the cached alarm. Ordinary
 position/chat traffic reads scheduling only once after hibernation or a failed storage
@@ -210,7 +210,7 @@ and from the existing update loop. No additional timer runs. Offline pause/backg
 wall-clock minutes are applied on the next update, capped at max. Connected clients
 clear the local phase and receive health only from the server; the existing welcome
 reset clears it on reconnect. Full/death reset clears it too. The common offline
-fall-damage reducer must settle before mutation and call recoveryClock after mutation.
+fall-damage reducer settles before mutation and calls recoveryClock after mutation.
 
 
 Own health and fall request protocol (#868): a newly accepted socket explicitly starts with the server COMBAT.lives and supplies own `l` in welcome. Passive `t:'life'` and fall result `t:'fall',id,l,dead` use the same attachment and local Combat replica as shots. Fall geometry is bounded finite client input; `src/falldamage.js` computes the damage, while client `l` remains ignored. The room settles due #867 recovery before damage, invokes recoveryClock after mutation, serializes the attachment before scheduling the alarm, and publishes stationary peer state. Actual death reports zero in the result while immediately resetting the shared attachment/replica to max, as shot death already does. Fall requests do not award shot points or emit hit/hurt. No new storage key, health counter, healing interval or authentication mechanism is added. Deployment must carry the additive Worker protocol before this client; a cached Worker without fall support produces a bounded null acknowledgement rather than locally applying guessed damage. Workflow dependency #870 tracks shared module/config changes. `cloudflare/players.test.mjs` checks real Worker damage, ignored client HP, preserved weapon-state health, own welcome and harmless/invalid measurements; the native browser contract test is `tools/combatstepstest.cjs`.
