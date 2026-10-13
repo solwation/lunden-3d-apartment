@@ -602,3 +602,64 @@ test('lower-front jaw: actual room validates damage/legacy/forgery/replay/one le
   hit=await shoot({...high,o:[4000,highO[1],highO[2]],damage:999});assert.equal(hit.l,7);assert.equal(hit.head,undefined,'forged origin never validates jaw');
   assert.deepEqual(H.jaw,{radius:.088,width:8,height:6,scale:[1,.8,1],centre:[0,.052,.03]});
 });
+
+test('lateral skull: both-side approach, whole-cell boundaries and missing ray fail closed for canonical variants', async()=>{
+  const {avatarLook,rifleSkullEntry,rifleHeadLateralRegion,rifleHeadContact,PVP_RIFLE_HEAD:H}=await import('../src/config.js');
+  const variants=new Set(),state={p:[0,0,0],r:0};
+  for(let n=0;n<3000&&variants.size<60;n++){
+    const id='lateral-'+n,look=avatarLook(id),key=[look.style,look.build,look.tall].join('/');if(variants.has(key))continue;variants.add(key);
+    const width=[.93,1,1.08][look.build];
+    for(const side of [-1,1]){
+      const o=[-side*3,+((H.headY+.095)*look.tall).toFixed(2),+(-.065*width).toFixed(2)],d=[side,0,0];
+      const entry=rifleSkullEntry(id,state,o,d);assert.ok(entry>0);
+      const point=o.map((v,k)=>+(v+d[k]*entry).toFixed(3)),shot={t:'a',w:'rifle',o,d,hc:[1,...point]};
+      assert.equal(rifleHeadLateralRegion(id,state,point,o,d),true);
+      assert.equal(rifleHeadContact(id,state,shot,o,40,4),true);
+      assert.equal(rifleHeadLateralRegion(id,state,point),false);
+      for(const direction of [[0,0,0],[-side,0,0],[0,0,1],[side,.2,0],[side,0,.3]])assert.equal(rifleHeadLateralRegion(id,state,point,o,direction),false);
+      assert.equal(rifleHeadLateralRegion(id,state,point,point,d),false,'inside-surface origin cannot establish side approach');
+      const edge=[-side*H.lateralPatch.across[0]*width,point[1],point[2]];
+      assert.equal(rifleHeadLateralRegion(id,state,edge,o,d),false,'boundary rounding cell is not wholly supported');
+    }
+  }
+  assert.equal(variants.size,60);
+});
+
+test('lateral skull room: canonical actual socket, alternating sides, shared lethal receipt and old-client fallback',async()=>{
+  const {avatarLook,rifleSkullEntry,PVP_RIFLE_HEAD:H}=await import('../src/config.js');
+  const env=setup(),a=await connect(env,'Side shooter'),b=await connect(env,'Side target');
+  const id=b.got.find(m=>m.t==='w').i,look=avatarLook(id),width=[.93,1,1.08][look.build],state={p:[0,0,0],r:0};
+  b.send({...state,h:'rifle'});await settle(env);
+  let last;
+  for(let i=0;i<5;i++){
+    const side=i%2?-1:1,feet=[-side*3,0,0];a.send({p:feet,r:0,h:'rifle'});await settle(env);now+=1000;
+    const o=[feet[0],+((H.headY+.095)*look.tall).toFixed(2),+(-.065*width).toFixed(2)],d=[side,0,0],entry=rifleSkullEntry(id,state,o,d);
+    last={t:'a',w:'rifle',o,d,to:id,hc:[1,...o.map((v,k)=>+(v+d[k]*entry).toFixed(3))]};
+    a.send(last);await settle(env);const hit=a.got.filter(m=>m.t==='hit').at(-1);
+    assert.equal(hit.head,true);assert.equal(hit.l,10-(i+1)*2);assert.equal(hit.dead,i===4);assert.equal(hit.award.seq,i+1);
+    assert.equal(b.got.filter(m=>m.t==='hurt').at(-1).l,hit.l);
+  }
+  const hits=a.got.filter(m=>m.t==='hit'),kill=hits.at(-1).kill;assert.match(kill,/^[0-9a-f-]{36}$/);
+  assert.equal(hits.filter(m=>m.dead).length,1);
+  a.send(last);await settle(env);assert.equal(a.got.filter(m=>m.t==='hit').length,5,'same-timestamp replay cannot kill twice');
+  now+=1000;a.send({...last,hc:undefined,head:true,damage:99});await settle(env);
+  const legacy=a.got.filter(m=>m.t==='hit').at(-1);assert.equal(legacy.l,9);assert.equal(legacy.head,undefined);
+  a.ws.close();b.ws.close();await settle(env);
+});
+
+test('lateral skull greeting exclusion is attachment-authoritative, persists after time/hibernate, and leaves other profiles independent',async()=>{
+  const {avatarLook,rifleSkullEntry,rifleHeadContact,PVP_RIFLE_HEAD:H}=await import('../src/config.js');
+  const env=setup(),a=await connect(env,'Shooter'),b=await connect(env,'Greeter'),id=b.got.find(m=>m.t==='w').i,look=avatarLook(id),width=[.93,1,1.08][look.build];
+  const state={p:[0,0,0],r:0};b.send({...state,h:'rifle'});a.send({p:[-3,0,0],r:0,h:'rifle'});await settle(env);now+=1000;
+  const shoot=async side=>{const feet=[-side*3,0,0];a.send({p:feet,r:0,h:'rifle'});await settle(env);now+=1000;const o=[feet[0],+((H.headY+.095)*look.tall).toFixed(2),+(-.065*width).toFixed(2)],d=[side,0,0],entry=rifleSkullEntry(id,state,o,d),shot={t:'a',w:'rifle',to:id,o,d,hc:[1,...o.map((v,k)=>+(v+d[k]*entry).toFixed(3))],gt:undefined,head:true};a.send(shot);await settle(env);return a.got.filter(m=>m.t==='hit').at(-1);};
+  assert.equal((await shoot(1)).head,true);
+  b.send({t:'g',to:a.got.find(m=>m.t==='w').i,k:0});await settle(env);assert.equal(a.got.filter(m=>m.t==='g').length,1);
+  for(const side of [-1,1]){const hit=await shoot(side);assert.equal(hit.head,undefined);}
+  now+=3000;env.PLAYERS.hibernate('world');assert.equal((await shoot(1)).head,undefined,'elapsed wave time and hibernation never reopen the unknown animation');
+  const observer=await connect(env,'Late observer');assert.equal(observer.got.find(m=>m.t==='w').ps.find(p=>p.i===id).l,5);
+  b.send({t:'g',to:a.got.find(m=>m.t==='w').i,k:0});await settle(env);assert.equal((await shoot(-1)).head,undefined,'repeat greeting stays body-only');
+  // Only lateral is disabled: the separate actual nasal front entry remains valid with allowLateral=false.
+  const {rifleNoseEntry}=await import('../src/config.js'),o=[0,+((H.headY+.092)*look.tall).toFixed(2),-3],d=[0,0,1],entry=rifleNoseEntry(id,state,o,d);
+  assert.equal(rifleHeadContact(id,state,{t:'a',w:'rifle',o,d,hc:[1,...o.map((v,k)=>+(v+d[k]*entry).toFixed(3))]},o,40,4,false),true);
+  for(const peer of [a,b,observer])peer.ws.close();await settle(env);
+});

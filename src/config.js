@@ -4577,6 +4577,8 @@ export const PVP_RIFLE_HEAD = {
     direction: .05, originBack: .25,
   }, // *guess* conservative rear-only policy; actual pose/hidden-first-contact/cell grids required, no wider surface tolerance
   patch: { across: .008, low: .148, high: .158 }, // *guess* canonical support core; actual positive/negative nearest-surface grid checks it
+  // #932: conservative side support policy guesses; actual posed nearest-surface/whole-cell/occlusion grids required.
+  lateralPatch: { across: [.075, .105], vertical: [.085, .112], front: [.036, .09], directionZ: .18, directionY: .05, originSide: .3 },
   // .001 derives from sqrt(3)/2000 maximum r3 contact error on the already-snapped o:r2/d:r3 ray.
   // Head anchor is the midpoint of existing bind1.54 / settled1.52; surface/pose limits are conservative *guess*
   // safeguards checked by the actual native fixture, not model measurements or guaranteed anti-cheat physics.
@@ -4627,14 +4629,14 @@ export function rifleProfileEntry(triangles,seed,state,origin,direction) {
   return Number.isFinite(first)?first:null;
 }
 /** Seed/model/ray proof for this bounded surface; no trusted client damage/head or model override. */
-export function rifleHeadContact(seed,state,shot,shooterFeet,range,maxOrigin) {
+export function rifleHeadContact(seed,state,shot,shooterFeet,range,maxOrigin,allowLateral = true) {
   const H=PVP_RIFLE_HEAD,{hc,o,d}=shot;
   if(!Number.isFinite(range)||!Number.isFinite(maxOrigin)||shot.t!=='a'||shot.w!=='rifle'||!hc||hc[0]!==H.version||state.c)return false;
   if(Math.hypot(...o.map((v,i)=>v-shooterFeet[i]))>maxOrigin)return false;
   const length=Math.hypot(...d),unit=d.map(v=>v/length),delta=hc.slice(1).map((v,i)=>v-o[i]),along=delta.reduce((s,v,i)=>s+v*unit[i],0);
   if(along<0||along>range||Math.hypot(...delta.map((v,i)=>v-along*unit[i]))>H.wireMetres)return false;
   const jaw=rifleJawRegion(seed,state,hc.slice(1),o,d),nose=rifleNoseRegion(seed,state,hc.slice(1));
-  if(!jaw && !nose && !rifleHeadRegion(seed,state,hc.slice(1),o,d))return false;
+  if(!jaw && !nose && !rifleHeadRegion(seed,state,hc.slice(1),o,d,allowLateral))return false;
   const front=jaw ? rifleJawEntry(seed,state,o,d) : nose ? rifleNoseEntry(seed,state,o,d) : rifleSkullEntry(seed,state,o,d);
   return front!==null&&Math.abs(front-along)<=(jaw ? H.jawPatch.surface : nose ? H.nosePatch.surface : H.surfaceMetres);
 }
@@ -4686,7 +4688,7 @@ export function rifleHeadFrontRegion(seed,state,point,origin,direction) {
 }
 
 // Shared dispatch: #916 owns the central core; #917 can add its independent extra-region branch here.
-export function rifleHeadRegion(seed,state,point,origin,direction) { return rifleHeadCoreRegion(seed,state,point,origin,direction) || rifleHeadRearRegion(seed,state,point,origin,direction) || rifleHeadFrontRegion(seed,state,point,origin,direction); }
+export function rifleHeadRegion(seed,state,point,origin,direction,allowLateral = true) { return rifleHeadCoreRegion(seed,state,point,origin,direction) || rifleHeadRearRegion(seed,state,point,origin,direction) || rifleHeadFrontRegion(seed,state,point,origin,direction) || (allowLateral && rifleHeadLateralRegion(seed,state,point,origin,direction)); }
 
 /** Exposed lower rear skull only, with the same snapped ray as the actual native contact. */
 export function rifleHeadRearRegion(seed,state,point,origin,direction) {
@@ -4718,3 +4720,21 @@ export function rifleJawRegion(seed,state,point,origin,direction) {
 export function rifleJawEntry(seed,state,origin,direction) {
   return rifleJawDirection(state,direction) ? rifleProfileEntry(rifleJawProfile(),seed,state,origin,direction) : null;
 }
+
+/** Both exposed side temples; missing rays fail closed without changing legacy core/nose callers. */
+export function rifleHeadLateralRegion(seed,state,point,origin,direction) {
+  if(!Array.isArray(origin)||!Array.isArray(direction)||origin.length!==3||direction.length!==3||
+    !origin.every(Number.isFinite)||!direction.every(Number.isFinite))return false;
+  const H=PVP_RIFLE_HEAD,L=H.lateralPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
+  const [x,y,z]=point.map((v,i)=>v-state.p[i]);
+  const lx=(c*x-s*z)/width,ly=y/look.tall-H.headY,lz=(s*x+c*z)/width,e=H.wireMetres/width,ey=H.wireMetres/look.tall;
+  if(Math.abs(lx)-e<L.across[0]||Math.abs(lx)+e>L.across[1]||ly-ey<L.vertical[0]||ly+ey>L.vertical[1]||lz-e<L.front[0]||lz+e>L.front[1])return false;
+  const n=Math.hypot(...direction);if(!n)return false;
+  const dx=(c*direction[0]-s*direction[2])/n,dy=direction[1]/n,dz=(s*direction[0]+c*direction[2])/n;
+  const ox=(c*(origin[0]-state.p[0])-s*(origin[2]-state.p[2]))/width;
+  return lx*dx<0&&lx*ox>0&&Math.abs(ox)>=L.originSide&&Math.abs(dz)<=L.directionZ&&Math.abs(dy)<=L.directionY;
+}
+
+
+
+

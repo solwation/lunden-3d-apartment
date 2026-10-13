@@ -346,7 +346,9 @@ export class PlayerRoom {
     a.f = now; a.pp += points;
     const award = { i: a.i, seq: a.awardSeq = (a.awardSeq ?? 0) + 1, distance: d, points };
     this.recoverLife(target, b, now); // a delayed alarm must not let due health be lost before this hit
-    const head = now - (b.movedAt ?? now) >= RH.stationaryMs && rifleHeadContact(b.i, b.s, shot, a.s.p, W.range, COMBAT.from);
+    // #932: a greeting's wave may be paused/delayed on another replica. Never infer its end from wall time.
+    // Only the new lateral branch is body-only thereafter; existing core/nose/rear profiles stay independent.
+    const head = now - (b.movedAt ?? now) >= RH.stationaryMs && rifleHeadContact(b.i, b.s, shot, a.s.p, W.range, COMBAT.from, b.gt === undefined);
     const left = (b.l ?? COMBAT.lives) - (head ? RH.headDamage : RH.bodyDamage), dead = left <= 0;
     b.l = dead ? COMBAT.lives : left;
     this.recoveryClock(b, now);
