@@ -4848,3 +4848,13 @@ raw packets/producers/PNG: `/tmp/lunden-priority-946/` and persistent946-proof.j
 Parents935/932/917 remain open. This is bounded actual native geometry/DOM/local
 room evidence, not rendered World/phone/FPS/all-continuous-pose/full anti-cheat.
 Final publication parity and genuine deployment are recorded separately below.
+
+#946 runtime6bd8cc904f5810ee1090bcb47112d062ddeaa855 genuinely deployed:
+Worker run38451685554/job115483907934, actual cloudflare/wrangler-action@v3
+step SUCCESS, Uploaded/Deployed19:03:09Z, version
+`224d8211-0329-4748-9c3d-8cb7f225a4ec`. Raw job JSON/log retained under
+`/tmp/lunden-priority-946/`. Final docs-only rebase preserves all234 actual
+runtime/driver hashes and the original clean grid producer/runtime hashes.
+Owned Worker/browser/game-server processes stopped. Only this bounded immutable
+right/back family completes; parent935/932/917 stay open for other families.
+Deployment evidence is separate from live-phone/World/continuous-pose claims.
