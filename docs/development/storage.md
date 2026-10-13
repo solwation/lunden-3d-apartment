@@ -41,6 +41,9 @@ src/crashlog.js        crash reports (#629), inert without the cloud (same switc
                        actual heartbeat (not a CPU/GPU loss-frame measurement). Loss/restore reports include current `layout`
                        measures and `context.surface` = last actual resize/orientation event `{kind, up}`; absent event is null.
                        These establish temporal observations, not a rotation/shader cause. Only heartbeat consumes frameDiag.
+                       #930 validates buffer allocation using the exact renderer pixel ratio internally; public layout/snapshot/history
+                       ratios and fault messages retain two decimals. Rounding 1.125 to 1.13 is never used for that comparison.
+                       Buffer/aspect/viewport tolerances, pinch-zoom policy and report caps are unchanged.
                        WebGL loss/recovery pairs carry an episode number and recovery duration; each episode and abrupt ending has its
                        own dedup signature. Caps: 12 per page, 20 per day; ordinary errors still once per signature/day (CRASHLOG in config). Keys: lunden.crash.pid
                        (random id), .sent, .out kept by Återställ (RESET_KEEP), .beat dropped. main.js: the import (first) and one

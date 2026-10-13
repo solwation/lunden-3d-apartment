@@ -208,7 +208,7 @@ class CrashLog {
   // ---------- layout (#567): the canvas not filling the surface (white strip, half width after a rotation) ----------
 
   /** The measures that tell why the canvas and the real surface disagree (all cheap reads; the safe-area probe only for a report). */
-  layoutMeasure(withInsets) {
+  layoutMeasure(withInsets, exactRatio = false) {
     const cv = document.getElementById('game-canvas'), r = cv?.getBoundingClientRect(), vv = window.visualViewport, de = document.documentElement;
     const m = {
       up: round((performance.now() - T0) / 1000, 1), loaded: this.ctx ? 1 : 0,
@@ -220,7 +220,9 @@ class CrashLog {
     };
     const c = this.ctx;
     if (c?.camera) m.aspect = round(c.camera.aspect, 3);
-    if (c?.renderer) m.px = round(c.renderer.getPixelRatio(), 2);
+    // Validate the allocated buffer with the renderer's exact ratio (#930).
+    // Ordinary snapshots/reports retain their bounded public precision.
+    if (c?.renderer) { const px = c.renderer.getPixelRatio(); m.px = exactRatio ? px : round(px, 2); }
     if (withInsets) {
       try {
         const p = document.createElement('div');
@@ -242,13 +244,13 @@ class CrashLog {
     if (Math.abs(m.css[0] - m.inner[0]) > T || Math.abs(m.css[1] - m.inner[1]) > T) return `canvas ${m.css[0]}x${m.css[1]} vs window ${m.inner[0]}x${m.inner[1]}`;
     if (m.vv && (Math.abs(m.css[0] - m.vv.w) > T || Math.abs(m.css[1] - m.vv.h) > T)) return `canvas ${m.css[0]}x${m.css[1]} vs visualViewport ${m.vv.w}x${m.vv.h}`;
     if (m.aspect && Math.abs(m.aspect - m.css[0] / m.css[1]) > 0.01) return `aspect ${m.aspect} vs canvas ${round(m.css[0] / m.css[1], 3)}`;
-    if (m.buf && m.px && (Math.abs(m.buf[0] - m.css[0] * m.px) > T * m.px + 1 || Math.abs(m.buf[1] - m.css[1] * m.px) > T * m.px + 1)) return `buffer ${m.buf[0]}x${m.buf[1]} vs canvas ${m.css[0]}x${m.css[1]} at ${m.px}`;
+    if (m.buf && m.px && (Math.abs(m.buf[0] - m.css[0] * m.px) > T * m.px + 1 || Math.abs(m.buf[1] - m.css[1] * m.px) > T * m.px + 1)) return `buffer ${m.buf[0]}x${m.buf[1]} vs canvas ${m.css[0]}x${m.css[1]} at ${round(m.px, 2)}`;
     return '';
   }
 
   /** `confirm`: report only if the previous check found it too (the periodic check); the event path waits C.layoutSettleMs instead. */
   layoutCheck(why, confirm = false) {
-    const fault = this.layoutFault(this.layoutMeasure(false));
+    const fault = this.layoutFault(this.layoutMeasure(false, true));
     const was = this.layoutWas;
     this.layoutWas = fault;
     if (!fault || (confirm && !was)) return false;
