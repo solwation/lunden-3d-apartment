@@ -411,3 +411,44 @@ single-life/fatal/award handling stay unchanged. Cached contact-less clients and
 cached older Workers retain body1 for the additive rear surface. Actual native
 contact/full-obstacle checks on the modern client remain necessary: the server
 does not reproduce the whole animated scene or provide full anti-cheat physics.
+### Restricted lower-front rifle jaw contact (#928)
+
+`PVP_RIFLE_HEAD.jaw` shares the unchanged production radius0.088,8×6 sphere
+segments, scale[1,0.8,1], centre[0,0.052,0.03] with Avatar. Its rigid head bone,
+material/shade0.97 and normals remain unchanged. The separate byte `rifleJaw`
+marks ONLY those vertices; sixty old/new canonical appearances matched420
+position/normal/skin/color/skull/nose arrays byte-for-byte.
+`rifleJawProfile` reuses the already shared Float32 sphere math; `rifleJawEntry`
+reuses the existing finite first-front-triangle math, with no Three/DOM in Worker.
+
+The named `jawPatch` bounds are *guess* policy guards selected from actual native
+positive/negative contacts: canonical x within±0.008m, y1.53+0.032–0.048m,
+front z≥0.107m (width/height/heading applied). The WHOLE r3 contact cell must fit
+these bounds with the existing0.001m wire guard. Both lateral and vertical ray
+components must be≤0.08 times its front component. Missing/side/back/steep rays
+stay body1. Jaw surface residual is bounded by0.008m, below the unchanged skull
+0.015m limit; no existing tolerance is raised. Actual Combat o:r2/d:r3 is passed
+through Avatar and the server as before; hc-v1,256-byte cap and origin/range
+checks remain unchanged. The common validator selects the matching jaw profile
+only for that supported core, preserving separate nose and skull branches.
+Hair, mouth, neck, side/back jaw and ambiguous cells cannot supply a jaw bonus.
+This is a sampled restricted-profile contract, not complete scene/pose anti-cheat.
+
+The native CPU grid covers all60 actual canonical appearances, seven bind/standing
+breath/head-pitch samples and four headings:16352 admitted nearest jaw contacts
+with zero lost proofs;119568 unsupported nearest contacts and56624 forged FIRST
+pure-jaw entries behind unsupported actual surfaces with zero false jaw heads;
+160 actual misses with zero false jaw heads.13440 sampled full r3-cell corner rays
+across every model/pose/heading stay on the actual jaw. Pure vertex error is at
+most3.73e-8m and admitted entry residual at most0.006933m. A canonical profile
+entry deeper than a supported actual JAW contact is normal pose tolerance, not
+an unsupported-surface forgery; the negative grid distinguishes those cases.
+
+One actual Ghosts/Combat→fresh local Worker shot confirms head2/public+local8HP
+for every canonical style; existing body1/wall/miss/invalid/legacy receipts, one
+low-HP death/reset/kill UUID/award and marker replay stay intact. Existing Node
+rate/recovery/score-cap cases stay green. Geometry CPU runs before fresh actual
+gameplay attachments via real page reload; no heartbeat, idle clock, health or
+server budget is overridden. An earlier180s partial grid and its misclassified
+supported-jaw negative counter/idle-disconnect attempt are retained as failed
+investigation, not acceptance. No WebGL/apartment/physical-phone/FPS claim follows.

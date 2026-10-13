@@ -801,3 +801,15 @@ optional origin/direction arguments; Combat supplies the SAME ray used for the
 actual first SkinnedMesh contact and wire. Legacy core/nose calls remain compatible.
 Rear uses unchanged original skull first-entry and15mm guard; nose retains6mm.
 No new damage/recovery/scoring/kill mechanics or wire fields are introduced.
+#928 adds only the measured lower-FRONT jaw core to settled standing rifle
+contacts. Avatar's exact existing jaw receives its own `rifleJaw` byte identity;
+raycast surfaces, vertex positions/normals/materials/head bones remain unchanged.
+The shared helper applies whole r3-cell/actual frontal-ray guards, then the room
+validates the FIRST canonical jaw triangle on the same o:r2/d:r3 ray. Side/back,
+steep, covered and ambiguous jaw points keep body1; independently supported nose
+and skull branches keep their own profile/region dispatch. Head2 still subtracts
+from the single authoritative lives counter and only accepted receipts show the
+existing “Huvudträff!” marker. Score budget, kill UUID, recovery and replay are
+unchanged. `tools/riflejawtest.cjs` verifies actual skinned contact/ray/Worker/
+Ghosts/Combat and HUD DOM without game bootstrap/WebGL; its screenshot is
+receipt/HUD evidence rather than a rendered-avatar or physical-phone claim.

@@ -4566,6 +4566,8 @@ export const PVP_RIFLE_HEAD = {
   coreStyles: [0, 1, 2, 3],
   corePatches: { 3: { across: .008, low: .132, high: .140, maxVertical: .08 } }, // *guess* lower exposed beanie core and ray-angle policy; actual nearest-surface/hidden-skull grids bound coverage
   skull: { radius: .11, width: 14, height: 10, scale: [.94, 1.1, .98], centre: [0, .1, .01] },
+  jawPatch: { across: .008, low: .032, high: .048, front: .107, direction: .08, surface: .008 }, // *guess* sampled lower-front jaw core/ray guards, not physical dimensions
+  jaw: { radius: .088, width: 8, height: 6, scale: [1, .8, 1], centre: [0, .052, .03] }, // unchanged rigid head-bone jaw mesh
   nose: { radius: .02, width: 8, height: 6, scale: [.8, 1.1, 1.15], centre: [0, .092, .113] }, // unchanged Avatar nose
   nosePatch: { across: .005, low: .083, high: .101, front: .13, direction: .2, surface: .006 }, // *guess* fail-closed frontal core, actual nearest-surface/pose/wire grid required
   rear: {
@@ -4630,10 +4632,10 @@ export function rifleHeadContact(seed,state,shot,shooterFeet,range,maxOrigin) {
   if(Math.hypot(...o.map((v,i)=>v-shooterFeet[i]))>maxOrigin)return false;
   const length=Math.hypot(...d),unit=d.map(v=>v/length),delta=hc.slice(1).map((v,i)=>v-o[i]),along=delta.reduce((s,v,i)=>s+v*unit[i],0);
   if(along<0||along>range||Math.hypot(...delta.map((v,i)=>v-along*unit[i]))>H.wireMetres)return false;
-  const nose=rifleNoseRegion(seed,state,hc.slice(1));
-  if(!nose && !rifleHeadRegion(seed,state,hc.slice(1),o,d))return false;
-  const front=nose ? rifleNoseEntry(seed,state,o,d) : rifleSkullEntry(seed,state,o,d);
-  return front!==null&&Math.abs(front-along)<=(nose ? H.nosePatch.surface : H.surfaceMetres);
+  const jaw=rifleJawRegion(seed,state,hc.slice(1),o,d),nose=rifleNoseRegion(seed,state,hc.slice(1));
+  if(!jaw && !nose && !rifleHeadRegion(seed,state,hc.slice(1),o,d))return false;
+  const front=jaw ? rifleJawEntry(seed,state,o,d) : nose ? rifleNoseEntry(seed,state,o,d) : rifleSkullEntry(seed,state,o,d);
+  return front!==null&&Math.abs(front-along)<=(jaw ? H.jawPatch.surface : nose ? H.nosePatch.surface : H.surfaceMetres);
 }
 
 /** A quantized cell wholly inside the canonical core; boundary cells fail closed instead of inflating the patch. */
@@ -4685,4 +4687,23 @@ export function rifleHeadRearRegion(seed,state,point,origin,direction) {
   const n=Math.hypot(...direction),[dx,dy,dz]=direction.map(v=>v/n),ox=origin[0]-state.p[0],oz=origin[2]-state.p[2];
   if(!n||(s*dx+c*dz)<=0||Math.abs(c*dx-s*dz)>R.direction||Math.abs(dy)>R.direction||(s*ox+c*oz)/width>-R.originBack)return false;
   return Math.abs(lx)+H.wireMetres/width<=P.across && ly-H.wireMetres/look.tall>=P.low && ly+H.wireMetres/look.tall<=P.high && lz-H.wireMetres/width>=P.back && lz+H.wireMetres/width<=P.front;
+}
+
+let rifleJawTriangles;
+export function rifleJawProfile() { return rifleJawTriangles ??= rifleSphereProfile(PVP_RIFLE_HEAD.jaw); }
+/** Only the measured front approach, on the same actual r3 wire direction. No presentation pose from the shooter. */
+function rifleJawDirection(state,direction) {
+  if(!Array.isArray(direction)||direction.length!==3||!direction.every(Number.isFinite))return false;
+  const a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),n=Math.hypot(...direction);if(!n)return false;
+  const [x,y,z]=direction.map(v=>v/n),forward=s*x+c*z,lateral=c*x-s*z,D=PVP_RIFLE_HEAD.jawPatch.direction;
+  return forward<0 && Math.abs(lateral)<=-forward*D && Math.abs(y)<=-forward*D;
+}
+export function rifleJawRegion(seed,state,point,origin,direction) {
+  if(!rifleJawDirection(state,direction))return false;
+  const H=PVP_RIFLE_HEAD,J=H.jawPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
+  const [x,y,z]=point.map((v,i)=>v-state.p[i]),lx=(c*x-s*z)/width,ly=y/look.tall-H.headY,lz=(s*x+c*z)/width;
+  return Math.abs(lx)+H.wireMetres/width<=J.across && ly-H.wireMetres/look.tall>=J.low && ly+H.wireMetres/look.tall<=J.high && lz-H.wireMetres/width>=J.front;
+}
+export function rifleJawEntry(seed,state,origin,direction) {
+  return rifleJawDirection(state,direction) ? rifleProfileEntry(rifleJawProfile(),seed,state,origin,direction) : null;
 }

@@ -581,3 +581,24 @@ test('central cores: all actual server seed styles confirm 2 HP, style0 core unc
     b.ws.close();await settle(env);
   }
 });
+
+test('lower-front jaw: actual room validates damage/legacy/forgery/replay/one lethal receipt and bounded high coordinates',async()=>{
+  const {avatarLook,PVP_RIFLE_HEAD:H,rifleJawEntry,rifleJawRegion}=await import('../src/config.js');
+  const env=setup(),a=await connect(env,'Jaw shooter'),b=await connect(env,'Jaw target'),id=b.got[0].i,state={p:[0,0,0],r:0};
+  a.send({p:[0,0,-4],r:0,h:'rifle'});b.send({p:[0,0,0],r:0,h:'rifle'});await settle(env);now+=1000;
+  const look=avatarLook(id),y=(H.headY+.04)*look.tall,o=[0,1.62,-4],n=Math.hypot(y-o[1],3.89),d=[0,+((y-o[1])/n).toFixed(3),+(3.89/n).toFixed(3)],unit=d.map(v=>v/Math.hypot(...d)),t=rifleJawEntry(id,state,o,d),point=o.map((v,i)=>+(v+unit[i]*t).toFixed(3)),shot={t:'a',w:'rifle',to:id,o,d,hc:[1,...point]};
+  assert.equal(rifleJawRegion(id,state,point,o,d),true);assert.equal(rifleJawRegion(id,state,point),false,'missing actual ray keeps jaw unsupported');
+  const shoot=async m=>{now+=1000;a.send(m);await settle(env);return a.got.filter(x=>x.t==='hit').at(-1);};
+  let hit=await shoot({...shot,damage:999,head:true,model:'invented'});assert.equal(hit.l,8);assert.equal(hit.head,true);assert.equal(hit.award.points,5);assert.equal(b.got.filter(x=>x.t==='hurt').at(-1).head,true);
+  hit=await shoot({...shot,hc:undefined,head:true});assert.equal(hit.l,7);assert.equal(hit.head,undefined,'old contact-less client body path retained');
+  hit=await shoot({...shot,hc:[2,...point],damage:999});assert.equal(hit.l,6);assert.equal(hit.head,undefined,'unknown contact version does not widen jaw');
+  const count=a.got.filter(x=>x.t==='hit').length;a.send(shot);await settle(env);assert.equal(a.got.filter(x=>x.t==='hit').length,count,'same-slot replay has no damage or award');
+  for(let i=0;i<5;i++)hit=await shoot({...shot,hc:undefined});assert.equal(hit.l,1);
+  hit=await shoot(shot);assert.equal(hit.l,-1);assert.equal(hit.dead,true);assert.match(hit.kill,/^[0-9a-f-]{36}$/);assert.equal(b.got.filter(x=>x.t==='hurt'&&x.dead).length,1);assert.equal(a.states().filter(x=>x.i===id).at(-1).l,10,'actual published reset follows the single lethal receipt');
+  const observer=await connect(env,'Public jaw');assert.equal(observer.got[0].ps.find(p=>p.i===id).l,10,'same authoritative shared health reset');
+  a.send({p:[4999,4998,4995],r:0,h:'rifle'});b.send({p:[4999,4998,4999],r:0,h:'rifle'});await settle(env);now+=1000;
+  const highState={p:[4999,4998,4999],r:0},highO=[4999,4999.62,4995],highT=rifleJawEntry(id,highState,highO,d),high={...shot,o:highO,hc:[1,...highO.map((v,i)=>+(v+unit[i]*highT).toFixed(3))]};
+  assert.ok(Buffer.byteLength(JSON.stringify(high))<=PLAYERS.maxBytes);hit=await shoot(high);assert.equal(hit.l,8);assert.equal(hit.head,true,'actual bounded r2/r3 large-world contact');
+  hit=await shoot({...high,o:[4000,highO[1],highO[2]],damage:999});assert.equal(hit.l,7);assert.equal(hit.head,undefined,'forged origin never validates jaw');
+  assert.deepEqual(H.jaw,{radius:.088,width:8,height:6,scale:[1,.8,1],centre:[0,.052,.03]});
+});
