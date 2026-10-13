@@ -709,10 +709,12 @@ test('rear arm safety: accepted greeting is private, permanent across pause/hibe
   assert.equal(attach().gt,undefined,'self, absent target and invalid kind never set authoritative greeting');
   assert.equal((await shoot()).head,true,'pre-greet actual rear profile still gives two HP');
   b.send({t:'g',to:a.got[0].i,k:0});await settle(env);const gt=attach().gt;assert.equal(gt,now);
-  assert.equal((await shoot()).head,undefined,'accepted greeting gives body-only rear');
+  assert.equal((await shoot()).head,true,'immutable first-standing pose keeps verified rear2 after accepted greeting');
+  b.send({...state,r:3.15,h:'rifle'});await settle(env);b.send({...state,h:'rifle'});await settle(env);assert.equal(attach().headPoseFixed,false,'accepted heading change and return permanently break immutable history');
+  assert.equal((await shoot()).head,undefined,'returned changed pose keeps rear body1');
   b.send({t:'g',to:a.got[0].i,k:0});await settle(env);assert.equal(attach().gt,gt,'rate-rejected repeat cannot alter private history');
   now+=10000;env.PLAYERS.hibernate('world');assert.equal((await shoot()).head,undefined,'elapsed wall time and hibernation cannot prove rendered wave completion');
-  const observer=await connect(env,'Late observer'),publicTarget=observer.got[0].ps.find(p=>p.i===id);assert.equal(publicTarget.gt,undefined);assert.equal(publicTarget.l,6);
+  const observer=await connect(env,'Late observer'),publicTarget=observer.got[0].ps.find(p=>p.i===id);assert.equal(publicTarget.gt,undefined);assert.equal(publicTarget.l,4);
   b.send({...state,h:'rifle',gt:null});await settle(env);assert.equal(attach().gt,gt,'cleaned state cannot erase accepted greeting');
   assert.equal((await shoot()).head,undefined,'latejoin and attempted reset cannot reopen the rear profile');
   // Independent front anatomical profiles are not blanket-disabled by the rear permission.
@@ -981,4 +983,29 @@ test('#953 accepted larger standing turn after greeting gives authoritative LEFT
  att=target.deserializeAttachment();delete att.leftTinyTurn;delete att.leftStandingTurn;target.serializeAttachment(att);env.PLAYERS.hibernate('world');hit=await fire(shot);assert.equal(hit.head,undefined);assert.equal(hit.l,9,'legacy resumed attachment cannot acquire LEFT permission');
  await send(b,{...first,r:1.11});await send(b,{...first,r:1.10});hit=await fire(shot);assert.equal(hit.head,undefined);assert.equal(hit.l,8,'out-of-band and return stay body1');
  a.ws.close();b.ws.close();await settle(env);
+});
+
+test('#951 immutable Rear greeting uses existing private history; changed/legacy return, healing and death never reopen it',async()=>{
+  const C=await import('../src/config.js'),env=setup(),a=await connect(env,'Rear shooter'),peers=[a],state={p:[0,0,0],r:3.14,h:'rifle'};
+  const send=async(c,m)=>{now+=1000;c.send(m);await settle(env);};
+  const join=async()=>{for(let n=0;n<80;n++){const b=await connect(env,'Rear target');if(C.avatarLook(b.got[0].i).style===2){peers.push(b);return b;}b.ws.close();await settle(env);}throw Error('no bounded canonical style2');};
+  const attachment=b=>b.ws.peer.deserializeAttachment();
+  const shotFor=id=>{const lk=C.avatarLook(id);for(const yy of[.021,.022,.023])for(const distance of[3.07,3.5,4,4.5]){const o=[0,1.55,-distance],aim=[0,(C.PVP_RIFLE_HEAD.headY+yy)*lk.tall,-.065],v=aim.map((x,i)=>x-o[i]),d=v.map(x=>+(x/Math.hypot(...v)).toFixed(3)),unit=d.map(x=>x/Math.hypot(...d)),entry=C.rifleSkullEntry(id,state,o,d);if(entry===null)continue;const hc=[1,...o.map((x,i)=>+(x+unit[i]*entry).toFixed(3))];if(C.rifleHeadRearRegion(id,state,hc.slice(1),o,d))return{t:'a',w:'rifle',to:id,o,d,hc};}throw Error('no bounded actual production Rear cell');};
+  const fire=async b=>{const s=shotFor(b.got[0].i);await send(a,{p:[s.o[0],0,s.o[2]],r:0,h:'rifle'});await send(a,s);return a.got.filter(m=>m.t==='hit').at(-1);};
+  try{
+    const b=await join();await send(b,state);await send(b,{t:'g',to:a.got[0].i,k:0});assert.equal(attachment(b).headPoseFixed,true);assert.ok(attachment(b).gt);
+    let hit=await fire(b);assert.equal(hit.head,true);assert.equal(hit.l,8);
+    env.PLAYERS.hibernate('world');await send(b,{...state,h:'saber',score:17,sp:true});hit=await fire(b);assert.equal(hit.head,true);assert.equal(hit.l,6);
+    const low=attachment(b);low.l=1;b.ws.peer.serializeAttachment(low);hit=await fire(b);assert.equal(hit.head,true);assert.equal(hit.l,-1);assert.equal(hit.dead,true);assert.match(hit.kill,/^[0-9a-f-]{36}$/);assert.equal(attachment(b).headPoseFixed,true,'death does not manufacture or clear immutable pose');
+    const count=a.got.filter(m=>m.t==='hit').length;a.send(shotFor(b.got[0].i));await settle(env);assert.equal(a.got.filter(m=>m.t==='hit').length,count,'same-tick replay has no duplicate death/award');
+    for(const delta of[{p:[.01,0,0]},{r:3.15},{c:true}]){
+      const changed=await join();await send(changed,state);await send(changed,{t:'g',to:a.got[0].i,k:0});await send(changed,{...state,...delta});await send(changed,state);assert.equal(attachment(changed).headPoseFixed,false);
+      env.PLAYERS.hibernate('world');hit=await fire(changed);assert.equal(hit.head,undefined);assert.equal(hit.l,9,'accepted p/r/c change and return keeps verified Rear body1');
+      now=attachment(changed).healAt;a.send('p');changed.send('p');await settle(env);await env.PLAYERS.object('world').alarm();await settle(env);assert.equal(attachment(changed).headPoseFixed,false,'healing does not reconstruct history');assert.equal(attachment(changed).l,10);
+      let low=attachment(changed);low.l=1;changed.ws.peer.serializeAttachment(low);hit=await fire(changed);assert.equal(hit.head,undefined);assert.equal(hit.dead,true);assert.equal(hit.l,0);assert.equal(attachment(changed).headPoseFixed,false,'death cannot reopen changed history');
+    }
+    for(const history of[undefined,null,false,1,'true']){const legacy=await join();await send(legacy,state);await send(legacy,{t:'g',to:a.got[0].i,k:0});const raw=attachment(legacy);if(history===undefined)delete raw.headPoseFixed;else raw.headPoseFixed=history;legacy.ws.peer.serializeAttachment(raw);env.PLAYERS.hibernate('world');await send(legacy,state);assert.notEqual(attachment(legacy).headPoseFixed,true);assert.equal((await fire(legacy)).head,undefined,'unknown/malformed legacy flag remains body1');}
+    const fresh=await join();await send(fresh,state);await send(fresh,{t:'g',to:a.got[0].i,k:0});assert.equal((await fire(fresh)).head,true,'genuine new socket establishes its own immutable history');
+    const observer=await connect(env,'Late');peers.push(observer);for(const s of observer.got[0].ps)assert.equal(Object.hasOwn(s,'headPoseFixed'),false);
+  }finally{for(const p of peers)p.ws.close();await settle(env);}
 });

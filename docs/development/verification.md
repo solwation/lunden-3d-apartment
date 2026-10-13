@@ -5180,3 +5180,71 @@ unchanged. Parent #935 and its larger/RIGHT/moving/crouching remainder remain op
 
 
 #715-screen actual ordinary run d4b8fc8: first targettrue/clear297.6ms(active88.2/yield209.4/cache0), real2WS twohit/twohurt each/bothHP8. Checkpoint35normaldraws/actual warmStateskipped/all22coversreleased. Four actual local BODY/TIP main-camera/null-screen-target submissions from two flights, zero observed incoming;23checks22PASS/1FAIL. Independent ready/uncovered natural CDP canvas capture then times out15s: logicfailed/imagesfailed, noPNG, wholeNode1/wrapper1/no globaltimeout87.587s. Draw-submission is not visible-pixel/FPS/phone evidence. Exact1351pathfreeze, freshWorker1923208/PID/startticks/tcp+tcp6 ownedlistener; all nine owned processes/profile/HTTP/Worker cleaned. No retry, product/cull/TTL/quality/budget change. Concrete next native incoming first-step/camera-crossing/age diagnosis is proposed, not executed here; physical phone and successful canvas criteria remain separate.
+
+### Immutable Rear after greeting (#951)
+
+`tools/riflereargreetingtest.cjs` exercises the actual unchanged Three SkinnedMesh,
+Ghost push/draw/wave/swing and Combat/Worker path without an apartment or WebGL.
+Run against a separately started, freshly source-frozen owned local Worker:
+
+```sh
+node tools/riflereargreetingtest.cjs http://localhost:8876 http://localhost:8877 /tmp/rear-greeting --matrix-only
+node tools/riflereargreetingtest.cjs http://localhost:8876 http://localhost:8877 /tmp/rear-room
+node tools/reararmtest.cjs http://localhost:8876 http://localhost:8877 /tmp/rear-arm
+node --test cloudflare/players.test.mjs
+```
+
+Use the verification environment's explicit `PLAYWRIGHT_MODULE` and `CHROME_PATH`;
+`--legacy-only` exercises the actual new client against a separately archived and
+freshly started pre-951 Worker. Matrix/browser limits are finite (900/180 seconds),
+with completed five-model checkpoints saved before the next chunk.
+
+Own source-bound read-only baseline on d4b8fc8: all 60 canonical appearances, four
+accepted r2 first headings (0/.8/3.14/−1.6), 12 actual first/wave/capped-pause/repeat/
+held/saber/idle/late-welcome phases, 43,200 rays, 14,688 admitted Skull-first contacts
+and 117,504 independently raycast cell corners, zero wrong/corner contacts.
+10,800 FIRST pureSkull entries behind observed earlier long-hair surfaces all
+failed the full contact check; max admitted first-entry residual 10.325 mm is
+below the unchanged 15 mm guard. Join/no-default, first state and late-welcome
+body alignment each cover 240 cases. The four executed geometry/animation paths
+remain byte-identical; the committed matrix function matches that producer.
+
+A separate centre-Y oblique grid retains whole CLI1: 6,000 rays, 2,282 admitted
+contacts, 18,256 corners and 1,500 rejected deeper hair claims with zero safety
+mismatches, but two short/narrow models admitted no centre-Y positive. A disjoint
+two-model broader-Y supplement returned CLI0 with 600 rays/100 admitted contacts/
+800 corners and no mismatch. Its launcher initially had an ENOENT typo; that
+failed attempt is retained. Neither original counts nor exits are rewritten.
+
+The unchanged genuine 0 → 3.14 paused Ghost `reararmtest` passed 10 checks both
+before and after the candidate gate: actual elbowR precedes FIRST pureSkull, the
+original client rejects its head tag, a real serialized deeper proof receives
+body1/HP9, and one body death/award/reset/replay remains unchanged. This explicitly
+contrasts immutable permission with changed-heading rejection.
+
+Candidate current-room fixture: 25 PASS, actual CLI0, owned fresh Node born after
+a recorded source-freeze BOOTTIME, IPv4/IPv6 listener checks and exact runtime/
+driver freeze. Genuine immutable pre/greet/paused/saber contacts give HP8/6/4/2;
+a legacy missing-hc shot leaves HP1; one lethal head gives HP−1, one UUID/award6
+and normal receiver reset, with replay-safe effects. A real late observer has
+body=first public heading and no private flag. Ordinary heading, position and
+stance changes/returns give body1 (HP9/8/7); native wall/miss cause no hit or
+award, invalid hc version gives body1, and real r2/r3/v1 packets remain ≤256 bytes.
+Both the actual head and final body marker PNGs were inspected. The fresh archived
+d4b8fc8 Worker/new-client compatibility probe returned 6 PASS/CLI0: pre-greet
+head2/HP8 but greeted immutable actual hc still body1/HP7.
+
+Node returned 37 PASS/CLI0, retaining named/positional/default/null and unrelated
+branches and adding changed p/r/c return, unknown/malformed legacy, hibernation,
+healing/death, fresh socket and private snapshot controls. The directly affected
+older Rear Node case retains first state/greeting actions, updates immutable
+post-greeting head2 and then performs an actual heading change/return before its
+permanent body1 checks. No #945 expectation is altered.
+
+First candidate protocol retains actual CLI1 (completed=false): earlier current
+HP/death/heading checks passed, then the fixture incorrectly indexed Vector3.p[0]
+and timed out; the corrected predicate uses p.x. Original output, sources and
+exit remain separate. All raw producers/results/PNGs/provenance are saved under
+`/tmp/lunden-priority-951`. These are finite source-bound samples, not all
+continuous poses, physical phone, World, FPS, server-side full skin physics or
+changed-history restoration claims. Parents #941/#936 stay open.

@@ -879,12 +879,13 @@ The actual paused Ghost.draw greeting pose can put elbowR before a deeper pureSk
 entry. A serialized96-byte r2-origin/r3-direction/r3-hc rifle proof previously
 received head:true and2HP despite that first arm surface. The existing Avatar
 classifier already rejects that actual arm face; no Ghost animation or model changes
-are needed. The Worker independently disables only the rear region after the
-target attachment has an accepted private gt. This lasts for that attachment,
-including pause, hibernation and observers joining after the greeting. Wall time
+are needed. The initial #936 Worker independently disabled only the rear region after the
+target attachment had an accepted private gt. #951 now restores only the verified
+immutable first-standing exception; changed or unknown history retains that
+fallback through pause, hibernation and observers joining after the greeting. Wall time
 does not prove that replica draws completed the wave. Invalid/self/absent/rate-
 rejected greetings do not set gt; a genuinely new socket starts fresh. Core/nose/jaw
-remain independent. Safe rear2HP after an accepted greeting remains #941, so the
+remain independent. Immutable standing rear support is now delivered by #951; changed-history support remains #941, so the
 full #936 parent stays open. This is a bounded safety fix, not full animated-world
 intersection validation.
 
@@ -1053,3 +1054,19 @@ An original tiny history can be permanently false while the independent larger
 history remains valid, so the old .02-and-return room scenario now receives 2 HP;
 .31 escape-and-return remains body 1. Larger turns outside the corridor, general
 translation/crouching and RIGHT changed-pose support remain in #935/#954.
+
+### Immutable Rear after greeting (#951)
+
+The two existing bounded Rear patches can confirm rifle head damage after an
+accepted greeting if normalized p/r/c never changed from the first valid standing
+state on that connection. This uses the original `headPoseFixed === true`, not a
+client pose flag or elapsed wave time. Actual held-item, greeting, repeated wave,
+paused draw and late-welcome sampling supports this narrow permission. Changed
+position, heading or stance permanently retains body-only Rear damage even after
+return, healing, life reset or hibernation. The known 0 → 3.14 paused elbow-first
+forgery remains body-only. Long hair and unsupported cells are unchanged.
+
+`tools/riflereargreetingtest.cjs` checks actual first-surface/corner geometry and
+ordinary Ghosts/Combat/Worker receipts without WebGL. It introduces no Avatar,
+Ghosts, wire or Contact API changes. Other Front/LEFT/RIGHT/Nose/Jaw permissions
+remain independent; #941/#936 retain the remaining changed-history scope.

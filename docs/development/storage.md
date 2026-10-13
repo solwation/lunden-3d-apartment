@@ -510,13 +510,15 @@ This is genuine deployment evidence, not a live-client write/phone/World test.
 No new message or public pose/state field is added. The existing accepted greeting
 attachment timestamp gt is used only as presence evidence: rifleHeadContact's
 optional permissions are lateral7/front8/rear9, and rifleHeadRegion's are6/7/8
-(after its five original arguments). The rear permission is b.gt===undefined;
+(after its five original arguments). The original rear permission was b.gt===undefined; #951 also permits explicit
+private headPoseFixed===true after a greeting;
 default true preserves older pure-classifier call signatures. Worker attachments
 serialize accepted gt through hibernation, whereas state cleaning ignores client
 gt and welcome/public snapshots omit it. Core/nose/jaw proofs ignore these branch
 permissions. Existing r2/r3/v1/256-byte bounds, shot rate, health/recovery, score
-and kill receipts remain unchanged. No elapsed-time or heading-history assumption
-is introduced for rear support. Post-greet restoration is tracked by #941.
+and kill receipts remain unchanged. No elapsed-time or client animation-phase assumption
+is introduced. Immutable standing restoration is delivered by #951; the
+changed-history remainder stays in #941.
 
 ### Immutable standing history for the narrow greeting-left receipt (#938)
 
@@ -677,3 +679,22 @@ metadata in welcome. The old-client missing-hc path, one lethal UUID/award/reset
 replay and recovery retain the existing authority. Simulated pre-feature legacy
 fixtures omit both newer LEFT histories; no private history is restored for a
 successful assertion.
+
+### Existing immutable history for Rear (#951)
+
+PlayerRoom changes only its existing named `allowRear` value to
+`gt === undefined || headPoseFixed === true`. The original first real standing
+state is the sole initializer; normalized p/r/c changes permanently invalidate
+the same private attachment flag. Neither h/sp/score nor accepted greetings
+invalidate it. Missing/unknown legacy history does not become eligible after
+state receipt, hibernation or reset. Healing/death do not reconstruct history.
+Fresh real sockets establish independent histories. The field remains absent
+from public/welcome state and ignored in client input. There is no new state,
+KV write, timer, request or animation authority. Positional/named/default/null
+Contact calls and all other named region gates are unchanged. Old clients without
+hc and new clients against the archived pre-951 Worker retain body-only fallback.
+
+The native matrix uses actual Ghost first snapshots, not a visible default pose;
+a fresh actual late observer also receives the immutable heading without private
+metadata. Protocol and failed-run provenance are recorded in the
+[verification section](verification.md#immutable-rear-after-greeting-951).
