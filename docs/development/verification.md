@@ -1306,7 +1306,8 @@ its original full fixture after 12 PASS versus 10 PASS + two FAIL. The later #84
 This is not an all-green batch or closure of the broader #738/#736 migration work.
 
 
-#807 beer-object comparison: `beercantest` retains its original full-mode loader and dedicated `?shots` path.
+#807 historical beer-object comparison retained the original full-mode loader and dedicated `?shots` path.
+The current #841 fix and complete accepted comparison below supersede that blocked disposition.
 The first guarded full/test pair at frozen runtime `e8e3fc2` has byte-identical raw logs: 18 PASS plus one TypeError
 FAIL (19 ordered rows), SOME FAILED in both modes, actual runner exit 1. The exception occurs at the post-reload
 `o2.placed` access because `B.beerCans[idx]` is undefined; the two persistence assertions do not complete.
@@ -1341,7 +1342,7 @@ saving, reload and second-start behavior are unchanged. Final source retains the
 second iframe 480×300 too, plus that narrow guard. Both final PNGs were inspected: generic patio/result layout,
 not beer-pixel equivalence; wall times include those successful captures. Raw logs/summary: `/tmp/runtests-405778/`;
 source/runtime/capture hashes, native phase records, monitor PID/SID/exit and images: `/tmp/lunden-beer807/beer-*`
-and `beertest-*`. No errors were observed in capture or page execution; #841's separate incomplete beer-can result is unchanged.
+and `beertest-*`. No errors were observed in this capture or page execution; #841's later beer-can fix is documented below.
 
 #807 `bottletest` has byte-identical whole raw logs: 22 ordered PASS rows and ALL PASS, including all named
 bottles/counts, take/place/return interactions, whisky fill 0.20 and reset. Original reconstructed full/test pair
@@ -1355,10 +1356,10 @@ Times include successful end captures. Complete raw logs/summary: `/tmp/runtests
 capture source, actual PID/SID/exit, native child/fixture phase metadata and images: `/tmp/lunden-beer807/bottle-*`
 and `bottletest-*`. All 247 frozen runtime hashes match after the pair; no page or observer errors occurred.
 
-All four #807 dispositions are now recorded: shelf/beer/bottle accepted logical migrations, beer-can original
-full-mode fixture retained with interrupted persistence checks and separate open bug #841. The red beer-can pair
-is descriptive evidence only and excluded from successful speedup aggregation; no all-green batch claim is made.
-The comparison/disposition batch #807 is complete; #841 and broader #738/#736 remain open for their own work.
+All four original #807 dispositions were recorded: shelf/beer/bottle accepted logical migrations, beer-can
+retained with interrupted persistence checks. That red pair remains excluded from successful timing aggregation.
+The later #841 fix and complete native comparison below supersede the blocked beer-can disposition; broader
+#738/#736 remain open. No all-green claim is made for the original historical batch.
 
 
 `bedcaretest`'s pixel-ratio setup is not a rendering assertion; its comment now
@@ -2459,3 +2460,48 @@ rendered-scene equivalence is claimed. This pair is excluded from speedup
 aggregation because capture coverage differs. Frozen source/helper hashes,
 complete raw/native records and genuine setsid/Popen/wait PID/SID/exit:
 `/tmp/lunden-measure826/mieletest/`. Milk remains pending; #826/#740/#736 stay open.
+
+
+## Beer-can reload: startup-order fix and complete native acceptance (#841)
+
+The distinct stage diagnosis at frozen `a3971a5` reproduced full 20 PASS versus
+test 18 PASS then the original reload TypeError, actual exit 1 (`/tmp/runtests-546191/`).
+Cache open/match succeeded with no prior entry. The prepared request started at
+2056.6 ms with its original 8000 ms timeout; its HTTP200 handler and JSON read ran
+at 36539.0/36539.2 ms. The delayed abort timer fired at 36547.8 ms, JSON rejected with
+AbortError at 36548.3 ms, and fallback selected zero beers at 36550.2 ms. All six native
+prepared responses contained the same original 688157-byte/four-beer data. The
+logging-only module had an exact inverse and one disclosed passive JSON observer;
+this was cause diagnosis, not migration or performance evidence. Original raw
+stages, bodies, mode records and images remain in `/tmp/lunden-beer841-stage/`.
+
+Main now awaits its existing beerShelfData promise immediately before synchronous
+buildWorld(plan). Cache, endpoints, decoding, fallback and every existing timeout
+remain unchanged. An uncached unavailable refresh can defer construction until
+its existing bound; this change prevents heavy construction from starving pending
+network/body callbacks. No labels, restore keys or saved-state amounts are changed.
+
+The uninstrumented whole original fixture at frozen `fa54745` plus this fix and
+changelog 703 has byte-identical 996-byte logs: all 20 ordered PASS and ALL PASS
+per mode, independently monitored exit 0 (`/tmp/runtests-551600/`). No loader source
+routing or fixture diagnostic injection was present. Both real save/remove/reload
+flows complete, including worktop 264 ml and held 378 ml. Four distinct native ready
+documents verify original 900×600/null controller versus 480×300/real three-method
+API, lazy/full false in test; all four shelves/packages/can arrays contain four.
+Four trusted removal records show full's first 900/no fullscreen and second 1280
+fullscreen, versus both test 480/no fullscreen; final arrays are empty.
+
+Both actual fullPage captures were inspected with all 20 rows vertically and
+ALL PASS; test's longest row is clipped at the right edge. Full 1280×800 and
+test 673×341 contain text only because original apps are removed. Neither is
+beer-pixel or scene-image equivalence. Elapsed 190.690/137.552 s includes capture,
+descriptive only and excluded from qualified timing aggregation. All 229 frozen
+runtime files and three helper hashes match. Complete provenance, native phases,
+actual PID/SID/exit, raw logs and images: `/tmp/lunden-beer841-fixed/`.
+
+Written default setup uses 480×300/test and retains the tested full-inert FS guard;
+undoing only loader dimensions/query reconstructs the whole tested original.
+The authored ?shots path keeps its original 900×600/full queries, camera/step and
+retained reload; that branch was source-verified, not run as another screenshot
+app. Every current assertion, original action and both persistence checks remain.
+This current acceptance supersedes #807's interrupted result; #738/#736 stay open.

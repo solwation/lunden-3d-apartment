@@ -14,10 +14,12 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const shots = new URLSearchParams(location.search).has('shots');
 async function load(q = 'life&shot&cloud=') {
   const fr = document.createElement('iframe');
-  fr.width = 900; fr.height = 600; fr.src = `../index.html?${q}`;
+  fr.width = shots ? 900 : 480; fr.height = shots ? 600 : 300;
+  fr.src = `../index.html?${q}${shots ? '' : '&test'}`;
   document.body.append(fr);
   await new Promise((r) => { fr.onload = r; });
   while (!fr.contentWindow.__app) await wait(100);
+  if (fr.contentWindow.__app.testMode) fr.contentDocument.documentElement.requestFullscreen = undefined; // full mode keeps native fullscreen
   fr.contentDocument.getElementById('start-touch').click();
   await wait(50);
   return fr;

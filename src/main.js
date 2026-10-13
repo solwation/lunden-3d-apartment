@@ -126,7 +126,7 @@ import { Mess } from './mess.js';
 import { readTestMode, makeTestController } from './testmode.js';
 
 const overlay = document.getElementById('overlay');
-// Start the daily read alongside scene construction; dev scenarios use the prepared snapshot only.
+// Start the bounded shelf read while the renderer and plan are prepared; dev scenarios use only the prepared snapshot.
 const beerParams = new URLSearchParams(location.search);
 const beerShelfData = loadBeerShelf({ endpoint: beerParams.get('beers') || undefined, refresh: !beerParams.has('life') || beerParams.has('beers'), persist: !beerParams.has('life') });
 const loadingEl = document.getElementById('loading');
@@ -179,6 +179,8 @@ scene.add(fill);
 
 const params0 = new URLSearchParams(location.search);
 const plan = await fetch('data/plan.json').then((r) => r.json());
+// Finish network/cache callbacks before CPU-heavy construction can starve them past their existing deadlines.
+await beerShelfData;
 const world = buildWorld(plan);
 scene.add(world.object);
 const garage = world.garage = new Garage(); // the garage and the förråd under the courtyard (#357)
