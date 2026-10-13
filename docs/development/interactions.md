@@ -655,3 +655,9 @@ The same peer/base-colour hash and3746 body triangles are retained in all four: 
 variants; do not infer one GPU program or live FPS. Actual GL/capture phase1300ms, hard20s browser-close bound. The initial accepted state checks
 had a raster-only speckling error from exact comparison of interpolated float bone IDs; final floor(id+0.5) uses actual single-bone-per-triangle
 data and corrected all four reviewed pictures. Original #892 canonical look, geometry-parts and pose functions remain byte-identical.
+
+Compact HUD data (#902): at <=600px, noninteractive columns are 18/39/40/72/26px,
+with the console still 44px. The weather glyph is 18px, clock 12px, score 15.4px; temperature 14px.
+Online/FPS remain two divided logical rows; compact FPS number/unit occupy two lines within its
+existing lower row, with 1px separation. The wider modular columns and all touch targets remain unchanged.
+See [native evidence](../validation/issue-902/README.md); the independent marker/lives overlap is #904.

@@ -4147,3 +4147,15 @@ Final FPS rebase preserved incoming statistics keyboard interactions, canonical 
 #900 current contract: `oloftest.html` now tests car-only Olof, legacy `?olof=0` inertness, free apartment seats, unchanged shared driver figure, arrival/greeting/score and saved-car restoration. `resttest.html` no longer disables a removed indoor actor; `nonpctest.html` exercises its existing speech/old-greeting-save checks through OlofDriver. Historical #829 comparisons above describe the old fixture and are not current indoor-spawn acceptance.
 
 #900 source/native step: a non-repository diagnostic `/tmp/lunden-priority-900/probe.cjs` executes the complete current main driver-init span and whole `use` function verbatim in real index DOM, with actual Car, Greetings, OlofDriver and Avatar, without bootstrap/WebGL. It completed 26 PASS, actual Node exit 0 and no page errors: native arrival, greeting/once-per-arrival scoring, saved parked/arriving/leaving restoration, garage seat release, independent pre-change driver/Avatar geometry and bone-pose parity. Shared figure/skeleton/IK/pose prefix and driver implementation remain byte-identical except descriptive comments. The first 22-check attempt passed assertions but exited 1 on diagnostic circular-result serialization; the corrected final run is separate. Its result image is a text-only native summary, not rendered gameplay. Actual full-app verification is still pending an exclusive run.
+
+
+### Compact HUD text acceptance (#902)
+
+The unchanged published #896 `hudlayouttest.cjs` now completes all 15 viewport/inset cases with
+zero errors and CLI 0. Compact temp/clock/score client/scroll widths are 39/39,39/39,71/71,
+respectively, at 568×320/safe 44. Original `fpstest.cjs` native 47 assertions also pass/CLI 0;
+actual Presence values 0/9/60/144/— and count 99 fit the compact lower FPS row without glyph
+overlap. No fixture assertion/value, JavaScript runtime or >600px layout was changed.
+See [proof and reviewed pictures](../validation/issue-902/README.md). These are native DOM/Combat
+checks with bootstrap suppressed, not WebGL, actual device FPS or physical-phone acceptance.
+The independently reproduced 7px lives/head-hit-text overlap remains #904 and was not fixed here.
