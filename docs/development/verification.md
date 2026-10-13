@@ -535,9 +535,9 @@ no executable fixture changes or new browser results are part of this audit.
 | `musictest.html` | Own fixture | Actual audio recordings/decoding/analyser and module lifecycle, no apartment iframe. |
 | `neighboropeningstest.html` | Full reflection/lighting | Shared reflection envMap and night envMapIntensity/emission/window-colour checks for actual glazing. |
 | `nerfcombattest.html` | Own fixture | Own THREE/Combat/Ghosts/Worker/audio fixture and final 640×400 WebGL scene; no apartment iframe. |
-| `nerftest.html` | Candidate | Actual blaster use, flying dart camera layers, wall splash position/colour, floor drop and splash fade. |
+| `nerftest.html` | Accepted in #828 | Complete original full/test logs byte-identical, all 7 ordered PASS; actual 900×600/null controller versus 480×300/real test APIs. Blaster, flight layers, wall splash position/colour, floor drop and fade retained; capture coverage differs. |
 | `nesttest.html` | Conditional candidate; random rows | Smart speakers: mocked speechSynthesis, clock/weather answers, ducking, wall targets/F; random chosen answers and answer counts appear in rows, preserve them exactly. |
-| `nonpctest.html` | Candidate | Removed outdoor NPC/people.js, absent greeting targets, timed speech bubbles and retained old greets/score. |
+| `nonpctest.html` | Accepted in #828 | Complete original full/test logs byte-identical, all 10 ordered PASS; actual 900×600/null controller versus 480×300/real test APIs. Missing People fetch, greeting/speech expiry and original old-save score/storage flow retained. |
 | `northbackdroptest.html` | Candidate | Actual mapped north footprints, outward-window rays, terrain/plinth/access bounds and triangle budget; no lowmem subcase. |
 | `notetest.html` | Viewport exclusion | Paper scrollHeight/clientHeight and numeric scroll positions/keyboard repeat rows depend on note-panel viewport. |
 | `olofcartest.html` | Conditional candidate; random rows | Actual driver/car travel, garage/doors/seats and scoring; randomly chosen dad-joke text is included in results. |
@@ -2733,3 +2733,58 @@ that later change and its changelog do not alter this fixture's asserted routes
 or its unchanged CJS driver. Final migration changes only HTML dimensions to
 480×300; reversing that line restores the entire original fixture. Existing
 test=lazy and original renderer.setAnimationLoop(null) remain. #738/#736 stay open.
+
+## Nerf complete native acceptance (#828, partial)
+
+On frozen `874faa6d59e83ba9bc84713eccce5e0bf2f776aa`, the complete original
+900×600/plain index Nerf flow and 480×300/test flow produced byte-identical
+281-byte logs: all seven ordered PASS and ALL PASS, actual monitor exit 0.
+Evidence: `/tmp/runtests-579449` and `/tmp/lunden-north828/nerftest`.
+Original flight-layer `true,true`, splash count 1, wall x 2.752, colour r 0.01,
+floor y 3.258 and lifetime rows remain exact, with every authored step and
+matrix update unchanged. No new seed, normalization or quality override.
+
+Both actual ready/final pairs have stable URL/timeOrigin identities: full
+900×600/null controller and test 480×300/real draw/setFull/wantsFrame APIs,
+lazy/full false, no fullscreen and empty cloud query. The single prepair
+`requestFullscreen = undefined` guard applies only with actual testMode before
+original start-touch; original touch behavior in full mode is preserved.
+Migration changes only iframe query/dimensions beyond that approved setup;
+reversing them reproduces the entire frozen guarded fixture. Source/data/index,
+runner and helper hashes match the measured base.
+
+Both inspected PNGs show all seven vertical result rows and ALL PASS. Full
+shows the final dark bedroom blaster rack/HUD; test clips the long flight-layer
+row on the right and the final canvas below its upper portion. No intermediate
+dart/splash pixel or rendered-scene equivalence is claimed. Wall times
+132.917 s and 83.153 s include both successful captures; this pair is excluded
+from speedup aggregation because capture coverage differs. Nonpc acceptance follows below; north
+remains pending its separate complete pair; #828/#740/#736 remain open.
+
+
+## No-neighbours complete native acceptance (#828, partial)
+
+The complete original default flow on frozen
+`874faa6d59e83ba9bc84713eccce5e0bf2f776aa` produced identical 385-byte logs:
+all ten ordered PASS and ALL PASS in both modes, actual monitor exit 0.
+Original 900×600/time12/month6 and 480×300/test retained the real missing-People
+404 fetch, no greeting target, both authored speech strings and expiry, old
+`greets` 3/score 4, stats row and no-page-errors predicate. Original localStorage
+write/removal, actions, loops, waits and caught exception stack remain intact.
+No new seed, output normalization or quality override was added.
+
+Actual ready/final snapshots retain one stable URL/timeOrigin per mode:
+900×600/null controller versus 480×300/real draw/setFull/wantsFrame APIs with
+lazy/full false, no fullscreen and empty cloud query. The prepair single
+undefined requestFullscreen guard applies only with actual testMode before
+original start-touch; original full-mode touch behavior remains. Reversing
+query/dimensions reproduces the whole frozen guarded fixture; native runtime,
+runner and helpers match its recorded hashes. Evidence:
+`/tmp/runtests-581153` and `/tmp/lunden-north828/nonpctest`.
+
+Both inspected PNGs show all ten rows and ALL PASS without observed result
+text crop. Full shows the final empty bench/house facade and HUD; test captures
+only the upper final canvas. No intermediate speech-bubble or rendered-scene
+pixel equivalence is claimed. Wall 107.714 s and 78.889 s includes both captures;
+this pair is excluded from speedup aggregation because scene capture coverage
+differs. North remains pending its own complete pair; #828/#740/#736 stay open.

@@ -17,7 +17,7 @@ const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); ret
 try { localStorage.setItem('lunden.stats', JSON.stringify({ greets: 3, seen: { greets: { fig0: 1, fig3: 1 } } })); } catch { /* */ }
 const errors = [];
 const f = document.createElement('iframe');
-f.width = 900; f.height = 600; f.src = '../index.html?time=12&month=6';
+f.width = 480; f.height = 300; f.src = '../index.html?time=12&month=6&test';
 document.body.append(f);
 f.onload = async () => {
   const w = f.contentWindow, d = f.contentDocument;
@@ -25,6 +25,7 @@ f.onload = async () => {
   while (!w.__app) await wait(100);
   const { player, camera, step, greet, stats, totalScore, olof, focus } = w.__app;
   try {
+    if (w.__app.testMode) d.documentElement.requestFullscreen = undefined;
     d.getElementById('start-touch').click();
     await wait(50);
     for (let i = 0; i < 3; i++) step(1 / 60);
