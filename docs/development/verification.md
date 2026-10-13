@@ -547,7 +547,7 @@ no executable fixture changes or new browser results are part of this audit.
 | `oventest.html` | Accepted in #830 | Complete original full/test logs byte-identical, all 19 ordered PASS; actual 900×600/null controller versus 480×300/real APIs. Appliance actions/angles/emissive lamps, stats and whole coffee brewing/water/grounds flow retained. |
 | `papertest.html` | Accepted in #830 | Complete original full/test logs byte-identical, all 22 ordered PASS; full starts 900×600/null and finishes native fullscreen 1280×800, test remains 480×300/real APIs. Whole roll/strip/wad/ray/quantity/flush/stats/F flows retained; full capture timed out. |
 | `patiopalmtest.html` | Accepted in #831 | Complete original full/test logs byte-identical, all 15 ordered PASS; actual 720×480/null controller versus 480×300/real APIs. Whole pot/soil/ray/bump/wind/canopy/collision/native geometry predicates retained, 10632 triangles/2.62 m canopy. |
-| `patiotest.html` | Candidate | Actual patio seasonal/object/action/storage flows. |
+| `patiotest.html` | Accepted in #831 | Complete original full/test logs byte-identical, all 33 ordered PASS; actual900×600/null versus480×300/real APIs. Whole season/weather/collision/seat/shade/lid/cup native loops and original optional parent shot branch retained. |
 | `pctest.html` | Candidate | Actual PC/game/rest interaction and monitor state. |
 | `perfcount.html` | Explicit performance exclusion (#736) | Actual renderBufferDirect screen calls/triangles, shadow/mirror/env passes and texture-memory budgets. |
 | `pettest.html` | Original full retained (#832) | Actual complete two-live-app pair: 17 PASS per mode; full/test badge row differs by room prefix. Native pet/hand/eyes/photo JPEG/IndexedDB/stats/rare stars and all unseeded values retained; see actual evidence below. |
@@ -3459,5 +3459,36 @@ the final near apartment facade, while test clips long rows right and the canvas
 below its upper strip. Neither is a directed Palm image; no leaf/material/palm
 or rendered-scene pixel equivalence is claimed. Wall 108.851 s and 83.638 s
 includes both successful captures; excluded from qualified speedup aggregation
-because capture coverage differs. Patio and PC remain pending separate complete
-pairs; #831/#740/#736 stay open.
+because capture coverage differs. Patio acceptance follows below; PC remains pending its separate complete
+pair; #831/#740/#736 stay open.
+
+## Patio complete native acceptance (#831, partial)
+
+On frozen `5fdef73f3cc825936193d6f0227a3dc30e6f4ab5`, the complete original
+900×600/shot default flow and 480×300/test flow produced identical 2543-byte
+logs: all 33 ordered PASS and ALL PASS, actual monitor exit 0. Every authored
+season/weather state JSON, cushion/F, native box-lid/geometry, collision/seat/
+window/door/gap loop, two string-light months, parasol automatic/manual cases,
+shade rays (4/7/7/6 seats) and cup/lid surface action remains unchanged.
+No guard, new seed, normalization, timer, quality or matrix override was added.
+The original optional parent-fixture `?shot` branch still returns SHOT after
+the cup placement; it was not selected in this complete default comparison.
+Original nested caught stack and outer error behavior were preserved in the
+measured source; the separate bounded catch-writer issue #859 is not a gameplay
+failure claim or an invisible change to this pair.
+
+One actual ready/final document per mode retains stable URL/timeOrigin:
+900×600/null controller versus 480×300/real draw/setFull/wantsFrame APIs,
+lazy/full false, no fullscreen and empty cloud query. No reload or leave event
+was authored/observed. Physical source/data/index, fixture/runner and helper
+hashes match the recorded base; reversing only query/dimensions reproduces the
+whole measured original. Evidence: `/tmp/runtests-655303` and
+`/tmp/lunden-patio831/patiotest`.
+
+Both inspected PNGs show ALL PASS. Full shows all33 vertical rows with long
+text clipped right and a partial final open-lid/parasol-pole scene; test shows
+only top~18 rows with right crop and no scene/late checks. Complete raw logs
+preserve all33 rows. No intermediate seasonal/string-light/shade or rendered-
+scene pixel equivalence is claimed. Wall113.105s and79.045s includes both saved
+captures; excluded from qualified speedup aggregation because coverage differs.
+PC remains pending; #831/#740/#736 stay open.
