@@ -4704,3 +4704,10 @@ body remains byte-identical (SHA2567b59b437b3f12a95be38ae48a68db5c280bcdf3691337
 and CRASHLOG policy is unchanged. Independently published head-config code and
 helper/test-driver cleanup/isolation account for the stated full-file deltas;
 there was no new GPU run and earlier producer exits/hashes were never rewritten.
+
+Final #940 runtime publication ffd0886 retains the inspected native9/CLI0 and
+Worker17/CLI0 proof, recorded successful owned cleanup, explicit configuration
+exception/unchanged CRASHLOG policy and unchanged earlier scene producer body.
+Worker38444479768/job115459174790/actual Wrangler step and Pages38444479778
+succeeded. This closes the diagnostic category slice only; #669 remains open
+for the physical landscape-return question and unreproduced square CSS state.

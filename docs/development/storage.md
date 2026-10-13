@@ -551,3 +551,10 @@ was a projection mismatch; first visible measurement and landscape return
 recovered correctly. The iPhone/PWA's square CSS fault was not reproduced.
 #669 remains open for the physical landscape-return question; this diagnostic
 slice does not resolve the reported iPhone crash.
+
+The additive classification runtime landed in ffd0886. Genuine Worker
+run38444479768/job115459174790 completed successfully, including the actual
+`Run cloudflare/wrangler-action@v3` step (not skipped); Pages38444479778 also
+succeeded. This establishes publication of the optional public enum contract,
+not a physical iPhone viewport/crash fix or a live-client crash reproduction.
+Older reports without the field keep their previous public representation.
