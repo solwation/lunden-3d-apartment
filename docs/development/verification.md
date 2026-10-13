@@ -2587,5 +2587,3 @@ seed, normalization or quality override was added. Migration changes only the
 iframe query and dimensions. Reversing those two lines reproduces the entire
 frozen original fixture; runtime source/data, runner and helper hashes match
 that pair's recorded base. Parent #740 and #736 remain open.
-  f.width = 480; f.height = 300;
-  f.src = '../index.html?test';
