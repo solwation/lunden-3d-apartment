@@ -678,19 +678,22 @@ no executable fixture changes or new browser results are part of this audit.
 | `postertest.html` | Complete pair verified (#833) | Full/test each 37 ordered PASS; only row 19 differs in panel clock minute (12:22/12:26), with modes verified. Full/test screenshots reviewed; no parity/migration claim. Original pointer drawing/IndexedDB/actions preserved; see actual evidence below. |
 | `powertest.html` | Full lighting | Actual pools/washes, flickering supply, emissive appliance lamps and night-window lighting through cut/repair/reload. |
 
-Recovered `origin/wip/740-tests-m-p` tip `dd8810d` has six fixture edits in its own commit:
-measure/menu/miele/milk URL/size changes and mirror/perf comments. The measured merge base with current main is `8c3712a`;
-compare the own commit, not its entire diff against today's main. All four original pre-edit HTML
-bodies are byte-identical to current main in this audit. Only dd8810d's six-file fixture commit is audited; older chat/changelog work is outside scope.
-The #740 handoff reports measure/miele/milk parity, but no exact matching retained local runner summaries
-or ordered raw logs were recovered. They remain **unverified**, with no claimed timing/speedup.
-Menutest's reported full crash versus test PASS is not a valid pair and its branch migration stays off main.
-No cherry-pick or branch rewrite occurred. Evidence/source references are in
-`/tmp/lunden-audit784/{inventory,source-evidence,recovered-740,retained-runner-evidence}.json`;
-the local evidence search does not rule out external logs. Small followup proposals are in #784's comment.
-#740 / #736 stay open; retain explicit mirror/performance exclusions, optional full screenshot paths,
-trusted audio activation/waits, random answer/joke rows and all original assertions. The earlier d–l loosemirrorstest row also now
-honors #736's explicit exclusion; it is not a future migration candidate.
+Historical recovery audit: `origin/wip/740-tests-m-p` tip `dd8810d` contained six fixture edits
+(measure/menu/miele/milk URL/size changes and mirror/perf comments). Its measured merge base was
+`8c3712a`; no cherry-pick or branch rewrite was performed. The earlier evidence search did not recover
+matching local raw logs for the four fixtures, so that branch was not accepted from its handoff alone.
+Those historical limitations are superseded by the actual disposition below and the linked child issues.
+Evidence/source references for the old audit remain in
+`/tmp/lunden-audit784/{inventory,source-evidence,recovered-740,retained-runner-evidence}.json`.
+The earlier d–l loosemirrorstest exclusion also remains required by #736.
+
+**Current #740 disposition:** all nine split issues #826–#834 are closed, and every m–p fixture now has
+a current entry in the alphabetic table above. Accepted migrations are backed by complete ordered full/test
+results in their child issue reports. Original full behavior is retained for actual differences or visual,
+reflection, lighting and viewport dependencies; `ghosttest.cjs`, `ghostbadgetest.cjs` and `bowtest.cjs`
+remain separate rendering fixtures as documented. The completed #833 poster comparison records 15 identical
+placement rows and 37 drawing rows per mode with only the panel clock minute different. No blanket mode parity
+or aggregate performance claim is made. This closes the m–p group; parent #736 remains open for other groups.
 
 ### TV/chat/anonymous source audit (#798; parent #752 / #741 / #736)
 
