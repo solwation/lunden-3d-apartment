@@ -5265,3 +5265,10 @@ every older timestamp. Entry758 uses the runtime commit time. No published
 history was rewritten; these checks prevent older entries being marked “Nytt”.
 The failed oblique/protocol/launcher exits and reconstructed first-producer mtime
 remain separately documented. #941/#936 remain open for other pose histories.
+
+
+### #715 real incoming WS/selected first-step native replay
+
+Use `WORLD_REPLAY_REFERENCE=/absolute/saved/world/result.json SHOTS=/tmp/output node tools/nerfreciprocaltest.cjs http://localhost:8878 http://localhost:8879 --incoming-step-replay` with the installed Playwright/Chromium environment. Start a fresh owned local Worker after source freeze and verify PID/start ticks/listening fd through both tcp/tcp6 before Node; local-only routing intercepts public score/crash POSTs. Explicit reference poses/launch/camera are inputs, never instructions. This native mode uses actual Ghosts/Combat/Blaster, unversioned Nerf WS packets and original Darts.update; .005/.010/1/60/.033/.050 are selected inputs, not measured earlier World dt. The actual main cap .050 is source-checked. Original4s wall expiry is a separate real delayed zero-step control, without born/TTL reset.
+
+Measured native5: actual Node0/13checks, six real hit/hurt receipts, HP 10→4, zero WebGL. Slow steps remain eligible;1/60 leaves the native frustum before camera crossing, .033/.050 cross behind while unexpired, real wall expiry independently hides the final effect. This does not measure screen-render/pixel/occlusion/FPS or establish the earlier missing incoming submission's cause. `/tmp/lunden-priority-715-replay/` preserves native1–4 whole CLI 1 (cadence/report failures), native5 JSON/upper-readable but lower-clipped text PNG, and exact runtime/tool/backend proofs. See the issue715 validation README for counts, transport spacing, source-freeze composition and unresolved hardware/user criteria. No runtime/culling/TTL/budget/quality change or new World attempt is included.
