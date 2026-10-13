@@ -170,7 +170,7 @@ test('combat (#667): only armed vs armed, range, rate, points per minute; lives 
   const a = await connect(env, 'A'), b = await connect(env, 'B');
   const ia = a.got[0].i, ib = b.got[0].i;
   const hits = () => a.got.filter((m) => m.t === 'hit'), hurts = () => b.got.filter((m) => m.t === 'hurt');
-  const fire = async (w = 'nerf') => { now += 1000; b.send('p'); a.send({ t: 'f', w, to: ib }); await settle(env); };
+  const fire = async (w = 'nerf') => { now += 1000; b.send('p'); a.send({ t: 'f', w, to: ib, kill: '00000000-0000-4000-8000-000000000000' }); await settle(env); };
   a.send({ p: [0, 0, 0], r: 0, h: 'nerf' }); b.send({ p: [0, 0, 6], r: 0, h: '' }); await settle(env);
   await fire();
   assert.equal(hits().length, 0, 'an unarmed target cannot be hit');
@@ -196,6 +196,12 @@ test('combat (#667): only armed vs armed, range, rate, points per minute; lives 
   const ls = hurts().map((h) => h.l), died = hurts().findIndex((h) => h.dead);
   assert.deepEqual(ls.slice(0, COMBAT.lives), Array.from({ length: COMBAT.lives }, (_, k) => COMBAT.lives - 1 - k), 'one life per hit');
   assert.equal(died, COMBAT.lives - 1, 'out of lives on the last one');
+  const kills = hits().filter(h => h.dead);
+  assert.ok(kills.length > 0 && kills.every(h => /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(h.kill)), 'each accepted lethal hit has a server UUID receipt');
+  assert.equal(new Set(kills.map(h => h.kill)).size, kills.length, 'distinct lethal hits have distinct receipts');
+  assert.ok(kills.every(h => h.kill !== '00000000-0000-4000-8000-000000000000'), 'client-supplied kill receipt is ignored');
+  assert.ok(hits().filter(h => !h.dead).every(h => !('kill' in h)), 'ordinary hits carry no death receipt');
+  assert.ok(hurts().every(h => !('kill' in h)), 'victim hurt/death messages cannot award the shooter-only receipt');
   assert.equal(ls[died + 1], COMBAT.lives - 1, 'full lives again after dying');
   now += 60_000;
   const n = hits().length;
@@ -413,6 +419,7 @@ test('shared life: own welcome, unarmed half/fatal falls and weapon-state/forger
   for(const h of ['nerf','','saber']) { now += 1000; a.send(state(h)); await settle(env); assert.equal(b.states().at(-1).l,5); }
   now += 1000; a.send({t:'fall',id:2,drop:4,gap:2}); await settle(env);
   assert.deepEqual(a.got.filter(m=>m.t==='fall').at(-1),{t:'fall',id:2,l:0,dead:true});
+  assert.ok(a.got.filter(m=>m.t==='fall'||m.t==='life').every(m=>!('kill' in m)), 'fall and passive health never carry combat kill receipts');
   assert.equal(b.states().at(-1).l,COMBAT.lives);
   now += 1000; a.send({t:'fall',id:3,drop:8,gap:2}); await settle(env);
   assert.equal(a.got.filter(m=>m.t==='fall').at(-1).dead,true);

@@ -343,7 +343,8 @@ export class PlayerRoom {
     this.recoveryClock(b, now);
     target.serializeAttachment(b);
     this.publishState(target, b); // observers see damage/reset immediately, even if the target stands still
-    send(ws, JSON.stringify({ t: 'hit', to, w, l: left, dead }));
+    // #871: receipt exists only for this accepted lethal hit, never client input or fall damage.
+    send(ws, JSON.stringify({ t: 'hit', to, w, l: left, dead, ...(dead ? { kill: crypto.randomUUID() } : {}) }));
     send(target, JSON.stringify({ t: 'hurt', by: a.i, n: a.n, w, l: left, dead }));
   }
 
