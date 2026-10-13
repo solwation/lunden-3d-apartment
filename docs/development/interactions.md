@@ -201,7 +201,7 @@ src/combat.js          fights between players (#667, on the ghosts of #666): onl
                        avatar's hand, the jetpack's flames down), the saber as a swing of the avatar's prop (ghosts.js `swing`).
                        The room checks a hit (cloudflare/players.js COMBAT: armed both, distance ≤ range +
                        slack, `every`, ≤ perMinute points a minute) and tells both: hit → bump('pvpHits') (unchanged SCORE.each.pvpHits base),
-                       plus the confirmed shared distance bonus (#873), a splat, the badge; hurt → penalize('pvpHurt'), a red edge flash, sfx.ouch, a life off;
+                       plus the confirmed shared distance bonus (#873), a splat, the badge; hurt → penalize('pvpHurt'), a red edge flash, sfx.ouch, checked life damage;
                        out of lives → main.js goToStart (#665: only the place) with all lives again, badge. #lives (made by
                        combat.js, top centre) shows ❤ n/10 while a fight is on or the local player is injured, including unarmed play. tools/combattest.cjs (three pages)
 src/nerf.js            shared Nerf analytic step: configured gravity/speed/range, clipped floor contact and travel cap.
@@ -661,3 +661,34 @@ with the console still 44px. The weather glyph is 18px, clock 12px, score 15.4px
 Online/FPS remain two divided logical rows; compact FPS number/unit occupy two lines within its
 existing lower row, with 1px separation. The wider modular columns and all touch targets remain unchanged.
 See [native evidence](../validation/issue-902/README.md); the independent marker/lives overlap is #904.
+
+### Restricted standing rifle head contact (#897)
+
+Rifle checks the nearest actual posed `SkinnedMesh` face of each settled standing
+armed ghost. The world-obstacle ray ends at that exact contact, with no capsule's
+old 0.3m clearance gap. Moving/crouched ghosts keep the earlier body capsule path;
+other weapons keep their existing paths. Only canonical short hair (`style:0`)
+and a central FRONT skull face qualify for v1: the whole r3 rounding cell must
+fit the canonical feet/world frame x within±0.008m, y1.53+0.148–0.158m
+(unscaled; avatar width/height and heading are applied), positive z, with the
+actual internal `rifleSkull` vertex identity. This world-frame core replaces the
+failed bone-local patch plus inflated pose extent. Boundary cells stay body1.
+Hair, hat, nose, ears, other skull areas and all other seed styles stay body1.
+`PVP_RIFLE_HEAD.skull` supplies the unchanged radius/segments/scale/centre to Avatar
+and the pure Worker triangle profile. The added byte vertex attribute is shared
+with the geometry, does not change normals/colours/materials or add a draw call.
+
+`Combat.rifleContact` rounds origin to r2 and raw direction to r3 BEFORE its native
+raycast, then sends that same ray with optional `hc:[1,x,y,z]` (world contact r3).
+Head markers remain receipts: only the room's validated `head:true` creates
+“Huvudträff!”. A predicted/forged head flag never changes the marker or damage.
+The existing score/kill/replay gate and one-hit sound/marker effects are retained.
+No draw, apartment-FPS or physical-phone acceptance follows from the native tests.
+
+`tools/rifleheadtest.cjs gameURL workerURL artifactDir` runs real Avatar/Ghosts/
+Combat and the local Worker without bootstrap/WebGL. It verifies the restricted
+geometry profile and actual acknowledged head2/body1, nearest face, a real wall
+within the old 0.3m gap, miss, forged point/version, crouch fallback, overkill from
+1HP, shared reset, one kill/award and idempotent effects. Its PNG shows the actual
+receipt marker/HUD and bounded measured protocol rows, not a rendered avatar.
+Parents #892/#879/#874 remain open for #898/#899 and their other weapon/pose parts.

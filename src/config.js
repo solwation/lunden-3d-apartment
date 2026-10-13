@@ -4558,3 +4558,69 @@ export function avatarLook(seed) {
   return { style, sleeves, skin, hair, top, pants, shoes, build, tall: 0.95 + pick(5) * 0.025 };
 }
 
+// #897: v1 supports only the exposed central front of the short-haired standing skull.
+// Existing physical mesh dimensions, shared with Avatar. Other parts/styles stay body-only.
+export const PVP_RIFLE_HEAD = {
+  version: 1, style: 0, bodyDamage: 1, headDamage: 2,
+  skull: { radius: .11, width: 14, height: 10, scale: [.94, 1.1, .98], centre: [0, .1, .01] },
+  patch: { across: .008, low: .148, high: .158 }, // *guess* canonical support core; actual positive/negative nearest-surface grid checks it
+  // .001 derives from sqrt(3)/2000 maximum r3 contact error on the already-snapped o:r2/d:r3 ray.
+  // Head anchor is the midpoint of existing bind1.54 / settled1.52; surface/pose limits are conservative *guess*
+  // safeguards checked by the actual native fixture, not model measurements or guaranteed anti-cheat physics.
+  headY: 1.53, wireMetres: .001, surfaceMetres: .015,
+  stationaryMs: 500, stationarySpeed: .25, gait: .01, maxCoordinate: 5002, // policy gates *guess*, coordinate cap bounds existing feet5000 + actual headheight<2
+};
+let rifleSkullTriangles;
+/** The existing SphereGeometry tessellation, pure math and cached once; verified against actual Avatar vertices. */
+export function rifleSkullProfile() {
+  if (rifleSkullTriangles) return rifleSkullTriangles;
+  const { radius, width, height, scale, centre } = PVP_RIFLE_HEAD.skull, points = [], triangles = [];
+  for (let y = 0; y <= height; y++) for (let x = 0; x <= width; x++) {
+    const a=x/width*Math.PI*2,b=y/height*Math.PI;
+    const point=[-radius*Math.cos(a)*Math.sin(b),radius*Math.cos(b),radius*Math.sin(a)*Math.sin(b)];
+    points.push(point.map((v,i)=>Math.fround(Math.fround(Math.fround(v)*scale[i])+centre[i])));
+  }
+  for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+    const a=y*(width+1)+x+1,b=a-1,c=b+width+1,d=a+width+1;
+    if(y!==0)triangles.push([points[a],points[b],points[d]]);
+    if(y!==height-1)triangles.push([points[b],points[c],points[d]]);
+  }
+  return rifleSkullTriangles=triangles;
+}
+/** First FRONT triangle contact, t remains WORLD metres after inverse avatar scaling. */
+export function rifleSkullEntry(seed,state,origin,direction) {
+  const look=avatarLook(seed),width=[.93,1,1.08][look.build],a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),length=Math.hypot(...direction);
+  const turn=([x,y,z])=>[(c*x-s*z)/width,y/look.tall,(s*x+c*z)/width];
+  const o=turn(origin.map((v,i)=>v-state.p[i]));o[1]-=PVP_RIFLE_HEAD.headY;
+  const dir=turn(direction.map(v=>v/length));let first=Infinity;
+  for(const [a,b,c] of rifleSkullProfile()) {
+    const x=b[0]-a[0],y=b[1]-a[1],z=b[2]-a[2],u=c[0]-a[0],v=c[1]-a[1],w=c[2]-a[2];
+    const px=dir[1]*w-dir[2]*v,py=dir[2]*u-dir[0]*w,pz=dir[0]*v-dir[1]*u,det=x*px+y*py+z*pz;
+    if(det<=1e-12)continue;
+    const sx=o[0]-a[0],sy=o[1]-a[1],sz=o[2]-a[2],bary=(sx*px+sy*py+sz*pz)/det;
+    if(bary<0||bary>1)continue;
+    const qx=sy*z-sz*y,qy=sz*x-sx*z,qz=sx*y-sy*x,other=(dir[0]*qx+dir[1]*qy+dir[2]*qz)/det;
+    if(other<0||bary+other>1)continue;
+    const t=(u*qx+v*qy+w*qz)/det;if(t>=0)first=Math.min(first,t);
+  }
+  return Number.isFinite(first)?first:null;
+}
+/** Seed/model/ray proof for this bounded surface; no trusted client damage/head or model override. */
+export function rifleHeadContact(seed,state,shot,shooterFeet,range,maxOrigin) {
+  const H=PVP_RIFLE_HEAD,{hc,o,d}=shot,look=avatarLook(seed);
+  if(!Number.isFinite(range)||!Number.isFinite(maxOrigin)||shot.t!=='a'||shot.w!=='rifle'||!hc||hc[0]!==H.version||look.style!==H.style||state.c)return false;
+  if(Math.hypot(...o.map((v,i)=>v-shooterFeet[i]))>maxOrigin)return false;
+  const length=Math.hypot(...d),unit=d.map(v=>v/length),delta=hc.slice(1).map((v,i)=>v-o[i]),along=delta.reduce((s,v,i)=>s+v*unit[i],0);
+  if(along<0||along>range||Math.hypot(...delta.map((v,i)=>v-along*unit[i]))>H.wireMetres)return false;
+  if(!rifleHeadRegion(seed,state,hc.slice(1)))return false;
+  const front=rifleSkullEntry(seed,state,o,d);
+  return front!==null&&Math.abs(front-along)<=H.surfaceMetres;
+}
+
+/** A quantized cell wholly inside the canonical core; boundary cells fail closed instead of inflating the patch. */
+export function rifleHeadRegion(seed,state,point) {
+  const H=PVP_RIFLE_HEAD,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
+  const [x,y,z]=point.map((v,i)=>v-state.p[i]);
+  const lx=(c*x-s*z)/width,ly=y/look.tall-H.headY,lz=(s*x+c*z)/width;
+  return Math.abs(lx)+H.wireMetres/width<=H.patch.across && ly-H.wireMetres/look.tall>=H.patch.low && ly+H.wireMetres/look.tall<=H.patch.high && lz>0;
+}

@@ -1,5 +1,5 @@
 import { fallDamage } from '../src/falldamage.js';
-import { TOYS, SCORE, pvpHitPoints } from '../src/config.js';
+import { TOYS, SCORE, pvpHitPoints, PVP_RIFLE_HEAD as RH, rifleHeadContact } from '../src/config.js';
 
 // Other players as ghosts (#666): one Durable Object room for everybody (`idFromName('world')`), WebSockets with the
 // Hibernation API. A client sends its position / heading at most 5 times a second and only when it changed (a heartbeat
@@ -130,7 +130,7 @@ export function cleanShot(text) {
   if (!Array.isArray(m.o) || m.o.length !== 3 || !m.o.every((v) => fin(v, 5000)) || !Array.isArray(m.d) || m.d.length !== 3 || !m.d.every((v) => fin(v, 1.01))) return null;
   const len = Math.hypot(...m.d);
   if (len < 0.9 || len > 1.1 || (m.s !== undefined && !(fin(m.s, 60) && m.s >= 0))) return null;
-  return { t: 'a', w: m.w, o: m.o.map(r2), d: m.d.map((v) => Math.round(v * 1000) / 1000), ...(m.s ? { s: r2(m.s) } : {}), ...(m.to ? { to: m.to } : {}) };
+  return { t: 'a', w: m.w, o: m.o.map(r2), d: m.d.map((v) => Math.round(v * 1000) / 1000), ...(m.s ? { s: r2(m.s) } : {}), ...(m.to ? { to: m.to } : {}), ...(Array.isArray(m.hc) && m.hc.length === 4 && m.hc[0] === RH.version && m.hc.slice(1).every(v => fin(v, RH.maxCoordinate)) ? { hc: [m.hc[0], ...m.hc.slice(1).map(v => Math.round(v * 1000) / 1000)] } : {}) };
 }
 
 /** A WebSocket that is accepted and at once closed with `code`: how a refusal reaches the browser with its reason. */
@@ -303,7 +303,10 @@ export class PlayerRoom {
     }
     else {
       const s = cleanState(message);
-      if (s) { a.s = s; this.publishState(ws, a); }
+      if (s) {
+        if (!a.s || s.r !== a.s.r || s.p.some((v, i) => v !== a.s.p[i])) a.movedAt = now;
+        a.s = s; this.publishState(ws, a);
+      }
     }
     ws.serializeAttachment(a);
     if (lifeChanged) await this.scheduleRecovery();
@@ -329,7 +332,8 @@ export class PlayerRoom {
   }
 
   /** A shot (#667): checked against what the room knows, then a life off the target and word to both. */
-  shot(ws, a, { w, to }, now) {
+  shot(ws, a, shot, now) {
+    const { w, to } = shot;
     const W = COMBAT.weapons[w];
     const target = this.open().find((x) => x !== ws && att(x).i === to);
     const b = target && att(target);
@@ -342,14 +346,15 @@ export class PlayerRoom {
     a.f = now; a.pp += points;
     const award = { i: a.i, seq: a.awardSeq = (a.awardSeq ?? 0) + 1, distance: d, points };
     this.recoverLife(target, b, now); // a delayed alarm must not let due health be lost before this hit
-    const left = (b.l ?? COMBAT.lives) - 1, dead = left <= 0;
+    const head = now - (b.movedAt ?? now) >= RH.stationaryMs && rifleHeadContact(b.i, b.s, shot, a.s.p, W.range, COMBAT.from);
+    const left = (b.l ?? COMBAT.lives) - (head ? RH.headDamage : RH.bodyDamage), dead = left <= 0;
     b.l = dead ? COMBAT.lives : left;
     this.recoveryClock(b, now);
     target.serializeAttachment(b);
     this.publishState(target, b); // observers see damage/reset immediately, even if the target stands still
     // #871: receipt exists only for this accepted lethal hit, never client input or fall damage.
-    send(ws, JSON.stringify({ t: 'hit', to, w, l: left, dead, award, ...(dead ? { kill: crypto.randomUUID() } : {}) }));
-    send(target, JSON.stringify({ t: 'hurt', by: a.i, n: a.n, w, l: left, dead }));
+    send(ws, JSON.stringify({ t: 'hit', to, w, l: left, dead, award, ...(head ? { head: true } : {}), ...(dead ? { kill: crypto.randomUUID() } : {}) }));
+    send(target, JSON.stringify({ t: 'hurt', by: a.i, n: a.n, w, l: left, dead, ...(head ? { head: true } : {}) }));
   }
 
   async webSocketClose(ws, code) {

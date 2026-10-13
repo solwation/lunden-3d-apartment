@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { AVATAR as A, SPIDER, avatarLook } from './config.js';
+import { AVATAR as A, SPIDER, avatarLook, PVP_RIFLE_HEAD as RH, rifleHeadRegion } from './config.js';
 import { topTexture } from './spidersuit.js';
 import { NAMES, HIP, UPPER, FORE, HAND, SH, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
 
@@ -46,7 +46,9 @@ function parts(style, sleeves) {
   add(new THREE.TorusGeometry(0.052, 0.017, 5, 12).rotateX(Math.PI / 2), 'top', 'torso', [0, 0.605, 0], 0.8); // the collar
   // the head: neck, head, ears, face, hair
   add(new THREE.CylinderGeometry(0.05, 0.055, 0.12, 8), 'skin', 'head', [0, 0.02, 0]);
-  add(sphere(0.11, 14, 10).scale(0.94, 1.1, 0.98), 'skin', 'head', [0, H, 0.01]);
+  const skullShape = RH.skull;
+  add(sphere(skullShape.radius, skullShape.width, skullShape.height).scale(...skullShape.scale), 'skin', 'head', skullShape.centre);
+  P[P.length - 1].rifleSkull = true;
   add(sphere(0.088, 8, 6).scale(1, 0.8, 1), 'skin', 'head', [0, H - 0.048, 0.03], 0.97); // the jaw
   for (const s of [-1, 1]) {
     add(sphere(0.028, 8, 5).scale(0.55, 1, 0.72), 'skin', 'head', [s * 0.1, H - 0.005, 0], 0.94); // ears
@@ -117,16 +119,17 @@ function base(style, sleeves) {
     }
     const g = g0.index ? g0.toNonIndexed() : g0;
     const n = g.attributes.position.count, k = NAMES.indexOf(part.bone), c = new THREE.Color(fixed);
-    const col = new Float32Array(n * 3), reg = new Float32Array(n), si = new Uint16Array(n * 4), sw = new Float32Array(n * 4);
+    const col = new Float32Array(n * 3), reg = new Float32Array(n), si = new Uint16Array(n * 4), sw = new Float32Array(n * 4), contact = new Uint8Array(n);
     for (let i = 0; i < n; i++) {
       if (region === REGION.fixed && !part.shoe) { col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b; } else col.fill(shade, i * 3, i * 3 + 3);
-      reg[i] = part.shoe ? 5 : region; si[i * 4] = k; sw[i * 4] = 1;
+      contact[i] = part.rifleSkull ? 1 : 0; reg[i] = part.shoe ? 5 : region; si[i * 4] = k; sw[i * 4] = 1;
     }
     g.setAttribute('color', new THREE.BufferAttribute(col, 3));
     g.setAttribute('region', new THREE.BufferAttribute(reg, 1));
     g.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(si, 4));
     g.setAttribute('skinWeight', new THREE.BufferAttribute(sw, 4));
-    for (const a of Object.keys(g.attributes)) if (!['position', 'normal', 'color', 'region', 'skinIndex', 'skinWeight'].includes(a)) g.deleteAttribute(a);
+    g.setAttribute('rifleSkull', new THREE.Uint8BufferAttribute(contact, 1));
+    for (const a of Object.keys(g.attributes)) if (!['position', 'normal', 'color', 'region', 'skinIndex', 'skinWeight', 'rifleSkull'].includes(a)) g.deleteAttribute(a);
     geos.push(g);
   }
   b = mergeGeometries(geos);
@@ -147,7 +150,7 @@ function geometryFor(lk) {
     col[i * 3] = c.r * s; col[i * 3 + 1] = c.g * s; col[i * 3 + 2] = c.b * s;
   }
   const g = new THREE.BufferGeometry();
-  for (const name of ['position', 'normal', 'skinIndex', 'skinWeight']) g.setAttribute(name, b.attributes[name]);
+  for (const name of ['position', 'normal', 'skinIndex', 'skinWeight', 'rifleSkull']) g.setAttribute(name, b.attributes[name]);
   g.setAttribute('color', new THREE.BufferAttribute(col, 3));
   g.userData.headProjection = b.userData.headProjection;
   g.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0.95, 0), 1.3); // limbs and a raised arm stay inside (culling by the root)
@@ -235,6 +238,12 @@ export class Avatar {
     this.head = new THREE.Vector3();
     this.phase = 0; this.solid = false; this.time = 0;
     this.pos = new THREE.Vector3(); this.known = false;
+  }
+
+  /** #897: internal surface identity, never a head boolean accepted by the server. */
+  rifleHeadContact(hit, state, seed) {
+    if (this.look.style !== RH.style || !this.mesh.geometry.attributes.rifleSkull.getX(hit.face.a)) return false;
+    return rifleHeadRegion(seed, state, hit.point.toArray().map(v => Math.round(v * 1000) / 1000));
   }
 
   /** Solid (lit, opaque; `opacity` 1) or an outline (see-through, nothing written to the depth buffer). */

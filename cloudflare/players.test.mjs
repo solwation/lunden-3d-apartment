@@ -490,3 +490,72 @@ test('authoritative distance awards: actual geometry, forged client points, unch
   for (const c of [a,b]) c.ws.close(1000); await settle(env);
 
 });
+
+test('standing rifle contact: seeded front surface, bounded wire, body fallback, shared low-health death and receipt', async () => {
+  const { avatarLook, rifleSkullEntry, PVP_RIFLE_HEAD } = await import('../src/config.js');
+  const { cleanShot } = await import('./players.js');
+  const env=setup(),a=await connect(env,'Shooter'); let b,target;
+  for(let tries=0;tries<40;tries++) { b=await connect(env,'Target');target=b.got.find(m=>m.t==='w').i;if(avatarLook(target).style===0)break;b.ws.close();await settle(env); }
+  assert.equal(avatarLook(target).style,0);
+
+  a.send({p:[0,0,-4],r:0,h:'rifle'});b.send({p:[0,0,0],r:0,h:'rifle'});await settle(env);now+=1000;
+  const state={p:[0,0,0],r:0}, y=(1.53+.153)*avatarLook(target).tall;
+  const o=[0,1.62,-4],length=Math.hypot(y-1.62,3.894),d=[0,Math.round((y-1.62)/length*1000)/1000,Math.round(3.894/length*1000)/1000];
+  const unit=d.map(v=>v/Math.hypot(...d)),entry=rifleSkullEntry(target,state,o,d);
+  assert.ok(entry>3.8&&entry<4.1);
+  const shot={t:'a',w:'rifle',to:target,o,d,hc:[1,...o.map((v,i)=>Math.round((v+unit[i]*entry)*1000)/1000)]};
+  assert.ok(Buffer.byteLength(JSON.stringify(shot))<=PLAYERS.maxBytes);
+  const shoot=async m=>{now+=1000;a.send(m);await settle(env);return a.got.filter(m=>m.t==='hit').at(-1);};
+  let hit=await shoot({...shot,head:true,damage:999});assert.equal(hit.l,8);assert.equal(hit.head,true);assert.equal(hit.dead,false);assert.equal(hit.award.points,5);
+  const hurt=b.got.filter(m=>m.t==='hurt').at(-1);assert.equal(hurt.l,8);assert.equal(hurt.head,true);
+  for(const forged of [undefined,[9,...shot.hc.slice(1)],[1,0,o[1],0],[1,0,o[1],.1],[1,1,o[1],shot.hc[3]],[1,5003,0,0]]) {
+    hit=await shoot({...shot,hc:forged,head:true,damage:999});assert.equal(hit.head,undefined);
+  }
+  assert.equal(hit.l,2,'six invalid proofs take one life each, never trusted client damage');
+  hit=await shoot(shot);assert.equal(hit.l,0);assert.equal(hit.dead,true);assert.match(hit.kill,/^[0-9a-f-]{36}$/);
+  assert.equal(b.states().length>0,true); // existing public state remains available to observers
+  const welcome=await connect(env,'Observer');assert.equal(welcome.got.find(m=>m.t==='w').ps.find(p=>p.i===target).l,10);
+  const rejectCount=a.got.filter(m=>m.t==='hit').length;
+  a.send(shot);await settle(env);assert.equal(a.got.filter(m=>m.t==='hit').length,rejectCount,'same timestamp cannot damage/die twice');
+  // Actual pose change gates head validation, including after the room hibernates.
+  b.send({p:[0,0,0],r:0,h:'rifle',c:true});await settle(env);hit=await shoot(shot);assert.equal(hit.l,9);assert.equal(hit.head,undefined);
+  b.send({p:[.01,0,0],r:0,h:'rifle'});await settle(env);now+=300;
+  a.send(shot);await settle(env);hit=a.got.filter(m=>m.t==='hit').at(-1);assert.equal(hit.head,undefined,'recent target movement stays body-only');
+  env.PLAYERS.hibernate('world');now+=1000;
+  hit=await shoot({...shot,o:[4000,o[1],0]});assert.equal(hit.head,undefined,'origin far from actual shooter cannot qualify as head');
+  a.send({p:[4999,4998,4995],r:0,h:'rifle'});b.send({p:[4999,4998,4999],r:0,h:'rifle'});await settle(env);now+=1000;
+  const highState={p:[4999,4998,4999],r:0},highO=[4999,4999.62,4995],highEntry=rifleSkullEntry(target,highState,highO,d);
+  const high={t:'a',w:'rifle',to:target,o:highO,d,hc:[1,...highO.map((v,i)=>Math.round((v+unit[i]*highEntry)*1000)/1000)]};
+  assert.ok(Buffer.byteLength(JSON.stringify(high))<=PLAYERS.maxBytes);
+  hit=await shoot(high);assert.equal(hit.head,true);assert.equal(hit.l,5,'real room accepts bounded rounded high-world central geometry exactly once');
+
+  assert.equal(cleanShot(JSON.stringify({...shot,hc:[1,5002,-5002,5002]})).hc[1],5002);
+  assert.equal(cleanShot(JSON.stringify({...shot,hc:[1,5002.01,0,0]})).hc,undefined);
+  assert.equal(PVP_RIFLE_HEAD.bodyDamage,1);assert.equal(PVP_RIFLE_HEAD.headDamage,2);
+});
+
+test('restricted rifle profile: unsupported server seed, other weapons, origin/ray/version bounds and actual 256-byte packet', async()=>{
+  const {avatarLook,rifleSkullEntry,rifleHeadContact,PVP_RIFLE_HEAD:H}=await import('../src/config.js');
+  const {cleanShot}=await import('./players.js');
+  const env=setup(),a=await connect(env,'Shooter');let b,id;
+  for(let tries=0;tries<40;tries++){b=await connect(env,'Other hair');id=b.got[0].i;if(avatarLook(id).style!==0)break;b.ws.close();await settle(env);}
+  assert.notEqual(avatarLook(id).style,0);
+  a.send({p:[0,0,-4],r:0,h:'rifle'});b.send({p:[0,0,0],r:0,h:'rifle'});await settle(env);now+=1000;
+  const supported=Array.from({length:50},(_,i)=>'central-'+i).find(s=>avatarLook(s).style===0);
+  const state={p:[0,0,0],r:0},o=[0,+(1.69*avatarLook(id).tall).toFixed(2),-4],d=[0,0,1];
+  const entry=rifleSkullEntry(id,state,o,d),hc=[1,0,o[1],+(-4+entry).toFixed(2)];
+  a.send({t:'a',w:'rifle',o,d,to:id,hc,head:true,damage:999,model:supported});await settle(env);
+  const hit=a.got.filter(m=>m.t==='hit').at(-1);assert.equal(hit.l,9);assert.equal(hit.head,undefined,'client model cannot replace actual server-assigned style');
+  a.send({p:[0,0,-4],r:0,h:'wand'});await settle(env);now+=1000;
+  a.send({t:'a',w:'wand',o,d,to:id,hc,head:true});await settle(env);assert.equal(a.got.filter(m=>m.t==='hit').at(-1).l,8);assert.equal(a.got.filter(m=>m.t==='hit').at(-1).head,undefined);
+  const size=JSON.stringify({t:'a',w:'rifle',o:[-5000,5000,-5000],d:[-.999,.032,.004],to:'1234567890123456',hc:[1,-5002,5002,-5002]});
+  assert.ok(Buffer.byteLength(size)<=PLAYERS.maxBytes);assert.deepEqual(cleanShot(size).hc,[1,-5002,5002,-5002]);
+  const y=+(1.683*avatarLook(supported).tall).toFixed(3),so=[0,1.62,-4],length=Math.hypot(y-1.62,3.894),direction=[0,+( (y-1.62)/length ).toFixed(3),+(3.894/length).toFixed(3)],unit=direction.map(v=>v/Math.hypot(...direction));
+  const front=rifleSkullEntry(supported,state,so,direction),valid={t:'a',w:'rifle',o:so,d:direction,hc:[1,...so.map((v,i)=>+(v+unit[i]*front).toFixed(3))]};
+  assert.equal(rifleHeadContact(supported,state,valid,[0,0,-4],COMBAT.weapons.rifle.range,COMBAT.from),true);
+  for(const forged of [{...valid,d:[1,0,0]},{...valid,o:[0,y,-49]},{...valid,hc:[2,...valid.hc.slice(1)]},{...valid,hc:[1,0,y,0]},{...valid,hc:[1,0,y,.11]},{...valid,hc:[1,1,y,valid.hc[3]]},{...valid,w:'wand'}])assert.equal(rifleHeadContact(supported,state,forged,[0,0,-4],COMBAT.weapons.rifle.range,COMBAT.from),false);
+  assert.equal(cleanShot(JSON.stringify({...valid,o:[0,5000.01,0]})),null);
+  assert.equal(cleanShot(JSON.stringify({...valid,hc:[1,0,5002.01,0]})).hc,undefined);
+  const snap=cleanShot(JSON.stringify({...valid,o:[0,y+.001,-4],d:[.0001,0,.9999],hc:[1,.0001,y+.0001,valid.hc[3]+.0001]}));
+  assert.equal(snap.o[1],Math.round((y+.001)*100)/100);assert.deepEqual(snap.d,[0,0,1]);assert.deepEqual(snap.hc,[1,0,+(y+.0001).toFixed(3),valid.hc[3]]);assert.equal(H.headDamage,2);
+});

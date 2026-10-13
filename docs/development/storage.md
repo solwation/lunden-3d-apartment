@@ -264,3 +264,50 @@ restores worn equipment before connecting after reload. No new storage key, chan
 Avatar.setSuit uses one reference-counted 256×192 existing own artwork canvas shared among current wearers, with the existing SPIDER colours.
 The original one SkinnedMesh/geometry/bones/head envelope/base-colour attribute remain, and one common shader handles on/off; the last wearer
 releases the atlas. Its mask projection uses the actual existing head sphere bounds and the existing canvas eye band, not new body measurements.
+
+
+### Restricted rifle contact receipt (#897)
+
+An optional modern shot field `hc:[1,x,y,z]` is whitelisted only at version1 with
+finite world coordinates within ±5002m, rounded to r3. Existing origin bounds
+±5000m, direction r3/norm, incoming256bytes and shared5Hz/cost/rate/point limits
+are unchanged. Wrong/missing contact versions are stripped and retain body1;
+invalid ordinary shot geometry is still rejected. No client-selected damage,
+head boolean, seed, style or model enters authoritative damage.
+
+The room's existing connection attachment records `movedAt` on a changed feet
+position or heading, not on health/score/weapon-only updates. Head acceptance
+requires a known stable position/heading for500ms (*guess* conservative gate),
+standing state and target's canonical server-id-derived short-hair look. It checks
+origin near actual shooter feet, contact within the rifle's40m ray, ≤0.001m wire
+residual (sqrt(3)/2000: r3 contact on the ALREADY snapped r2/r3 ray). The complete
+r3 rounding cell must fit the canonical feet/world-frame core x±0.008m,
+y1.53+0.148–0.158m after width/height/heading. This is the explicitly supported
+actual central skull region, not a broad head-bone-local band plus pose expansion.
+No client animation anchor/pitch is accepted. The first positive FRONT triangle
+entry uses the same skull radius/segments/scale/centre as Avatar. Its anchor1.53m
+is midway between actual bind1.54 and settled1.52; a separate0.015m *guess* surface
+guard covers the sampled breathing/head pitch and wire residual. Physical mesh
+parameters remain unchanged. The support/temporal/surface guards are policy
+choices, not measured anatomy or guaranteed anti-cheat physics.
+
+Native actual checks covered2160 eligible central front contacts over all15
+style0 build/height combinations, four headings and bind/three updated standing
+poses. Pure triangles differed from production vertices by at most5.32e-8m;
+first-surface/wire residual was at most0.010830m. The same actual nearest-surface
+grid tested7138 unsupported jaw/face/brow/hair/outside-core contacts with zero
+false head acceptance. Quantization-boundary cells fail closed; other head areas,
+styles, moving/crouched poses and older contact-less clients retain body1. These
+are sampled restricted-model checks, not a server scene/wall/body-occlusion or
+complete anti-cheat simulation, nor allvariant/phone/rendered-apartment evidence.
+The earlier wider patch failed1273/7198 negatives and was discarded before any
+publication; its evidence is separate from the green canonical-core result.
+
+An accepted head subtracts2 from the SAME server lives after `recoverLife`; body
+subtracts1. Recovery scheduling/public state and the existing one `award`/fatal
+UUID remain unchanged. Both `hit` and `hurt` add `head:true` only on validated
+heads; existing clients still understand l/dead, and cached older Workers simply
+return body1. The additive Worker must deploy before head-capable clients for live
+benefit. No new timer/KV write or persisted contact history is added. Older room
+attachments without `movedAt` conservatively stay body-only until a position or
+heading state change provides an observed timestamp.

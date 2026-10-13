@@ -463,7 +463,7 @@ export class Ghosts {
   fire(shot) {
     if (!this.connected) return false;
     const r2 = (v) => Math.round(v * 100) / 100, r3 = (v) => Math.round(v * 1000) / 1000;
-    this.outbox.push({ t: 'a', w: shot.w, o: shot.o.map(r2), d: shot.d.map(r3), ...(shot.s ? { s: r2(shot.s) } : {}), ...(shot.to ? { to: shot.to } : {}) });
+    this.outbox.push({ t: 'a', w: shot.w, o: shot.o.map(r2), d: shot.d.map(r3), ...(shot.s ? { s: r2(shot.s) } : {}), ...(shot.to ? { to: shot.to } : {}), ...(shot.hc ? { hc: [shot.hc[0], ...shot.hc.slice(1).map(r3)] } : {}) });
     while (this.outbox.length > G.outbox) {
       const miss = this.outbox.findIndex((x) => x.t !== 'fall' && !x.to);
       this.outbox.splice(miss >= 0 ? miss : this.outbox.findIndex(x => x.t !== 'fall'), 1);

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { fallDamage } from './falldamage.js';
 import { recordPlayerKill, awardPvpRange } from './stats.js';
 import { HitMarker } from './hitmarker.js';
-import { COMBAT as C, TOYS, pvpHitPoints } from './config.js';
+import { COMBAT as C, TOYS, pvpHitPoints, PVP_RIFLE_HEAD as RH } from './config.js';
 import { stepNerf, nerfFloor } from './nerf.js';
 import { combatWorldHits, combatWorldPath, combatWorldPathBlocked, prepareCombatWorld } from './combatworld.js';
 
@@ -169,11 +169,44 @@ export class Combat {
     return target;
   }
 
+  /** #897: settled standing rifle uses the actual nearest skinned face, on the SAME rounded ray sent to the room. */
+  rifleContact() {
+    this.camera.getWorldPosition(eye); this.camera.getWorldDirection(dir);
+    const round = (v, n) => Math.round(v * n) / n;
+    const o = eye.clone().set(...eye.toArray().map(v => round(v, 100)));
+    const raw = dir.clone().set(...dir.toArray().map(v => round(v, 1000))), direction = raw.clone().normalize();
+    const range = this.rules.weapons.rifle.range;
+    ray.set(o, direction); ray.far = range; ray.layers.mask = this.camera.layers.mask; ray.camera = this.camera;
+    let best = null;
+    for (const g of this.foes()) {
+      const standing = !g.crouch && (g.speed ?? 0) <= RH.stationarySpeed && (g.avatar.gait ?? 0) < RH.gait;
+      if (standing) {
+        g.root.updateMatrixWorld(true);
+        // Raycaster's native SkinnedMesh path calls getVertexPosition: no bind-pose proxy or capsule head guess.
+        const contact = ray.intersectObject(g.avatar.mesh, false)[0];
+        if (contact && (!best || contact.distance < best.along)) {
+          const head = g.avatar.rifleHeadContact(contact, { p: g.feet.toArray(), r: g.root.rotation.y }, g.id);
+          best = { g, along: contact.distance, hc: head ? [RH.version, ...contact.point.toArray()] : null };
+        }
+      } else { // Moving/crouching keeps the earlier body-only capsule until its own follow-up slice.
+        const a = g.feet.clone().setY(g.feet.y + C.body[0]), b = g.feet.clone().setY(g.feet.y + C.body[1]);
+        const [distance, along] = rayToSegment(o, direction, range, a, b);
+        if (distance <= C.hitRadius && (!best || along < best.along)) best = { g, along, hc: null };
+      }
+    }
+    if (best) {
+      ray.set(o, direction); ray.far = best.along; // EXACT contact distance: no earlier clear() 0.3 m gap.
+      if (combatWorldHits(this.scene, this.ghosts.group, this.camera, ray).length) best = null;
+    }
+    return { o, d: raw, target: best?.g ?? null, hc: best?.hc ?? null };
+  }
+
   /** Whom `key` hits now: the nearest armed player along the view (the saber: in front within reach; the bow: on the
    * arrow's arc, `shot`), or null. */
   aim(key, shot = null) {
     const W = this.rules.weapons?.[key];
     if (!W) return null;
+    if (key === 'rifle') return this.rifleContact().target;
     if (key === 'nerf' && shot) return this.aimNerf(shot, W.range);
     if (key === 'bow' && shot?.s) return this.aimArc(shot.o, shot.d.clone().multiplyScalar(shot.s), W.range);
     this.camera.getWorldPosition(eye);
@@ -226,6 +259,12 @@ export class Combat {
           job.finish(blocked === false ? candidate.target : null);
         }, () => job.finish(null));
       return null;
+    }
+    if (key === 'rifle') {
+      const contact = this.rifleContact(), g = contact.target;
+      const wire = { w: key, o: contact.o.toArray(), d: contact.d.toArray(), to: g?.id, ...(contact.hc ? { hc: contact.hc } : {}) };
+      this.lastShot = { ...wire, to: g?.id ?? null }; this.ghosts.fire(wire); this.fired++;
+      return g;
     }
     const g = this.aim(key, shot);
     this.camera.getWorldPosition(eye);
