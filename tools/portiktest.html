@@ -1,7 +1,7 @@
 <!doctype html><html><meta charset="utf-8"><title>Portik rooms (#520)</title><pre id="out">running…</pre><script type="module">
 const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS':'FAIL')+' '+s);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
 try{
- const f=document.createElement('iframe');f.src='../index.html?life&shot&cloud=';f.width=480;f.height=300;document.body.append(f);await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const w=f.contentWindow,A=w.__app,T=await w.eval("import('three')"),V=T.Vector3,P=A.world.portik,D=P.doorTarget;
+ const f=document.createElement('iframe');f.src='../index.html?life&shot&cloud=&test';f.width=480;f.height=300;document.body.append(f);await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const w=f.contentWindow,A=w.__app,T=await w.eval("import('three')"),V=T.Vector3,P=A.world.portik,D=P.doorTarget;
  f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();A.renderer.setAnimationLoop(null);A.renderer.setPixelRatio(.15);A.renderer.setSize(180,120,false);
  const at=(x,z)=>{A.player.spawn(x,z,0);A.step(0)},near=(x,z)=>Math.hypot(A.player.pos.x-x,A.player.pos.z-z)<.2;
  const walk=(x,z,seconds=8)=>{for(let i=0;i<seconds*60&&!near(x,z);i++){A.camera.rotation.set(0,Math.atan2(-(x-A.player.pos.x),-(z-A.player.pos.z)),0,'YXZ');A.player.keys.add('KeyW');A.step(1/60)}A.player.keys.clear();A.step(0);return near(x,z)};
@@ -28,7 +28,7 @@ try{
  for(const target of B.targets){const bag=A.life.create('rubbishBag',{at:'hand'},{amount:1,parts:[],machine:{sort:target.dropoff}});A.step(0);const p=target.pickable.getWorldPosition(new V());p.y+=.03;at(p.x+normal.x*1.1,p.z+normal.z*1.1);check(aim(p)===target&&A.life.run(target)&&!A.life.items.get(bag.id),'bag reaches and empties into '+target.dropoff+' container');B.update(.45);const lidBounds=new T.Box3().setFromObject(target.pickable);check(lidBounds.max.x<P.spaces[1].x1,'open lid clears apartment wall on '+target.dropoff);check(target.pickable.parent.rotation.x<-.5,'lid lifts freely on '+target.dropoff);B.update(.45);check(Math.abs(target.pickable.parent.rotation.x)<.001,'lid closes on '+target.dropoff)}
  J.putOn();const reloadState=JSON.parse(JSON.stringify(A.keepWorld()));
  w.sessionStorage.setItem('lunden.resume',JSON.stringify({ts:Date.now(),x:-15,z:4,feetY:0,yaw:0,pitch:0,mode:'touch',world:reloadState}));
- f.src='../index.html?shot&cloud=&reload='+Math.random();await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const BApp=f.contentWindow.__app;BApp.renderer.setAnimationLoop(null);BApp.renderer.setPixelRatio(.15);BApp.renderer.setSize(180,120,false);
+ f.src='../index.html?shot&cloud=&test&reload='+Math.random();await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const BApp=f.contentWindow.__app;BApp.renderer.setAnimationLoop(null);BApp.renderer.setPixelRatio(.15);BApp.renderer.setSize(180,120,false);
  check(BApp.jetpack.worn&&BApp.world.portik.doorTarget.isOpen,'real page reload restores worn jetpack and room door');
  check(correctlyPlaced(BApp.dropoff)&&BApp.world.portik.contains(BApp.dropoff.object.position.x,BApp.dropoff.object.position.z),'real reload builds containers at their new position');
  check(correctlyPlaced(BApp.dropoff),'saved visit does not restore obsolete bin position');

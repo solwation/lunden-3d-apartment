@@ -593,7 +593,7 @@ no executable fixture changes or new browser results are part of this audit.
 | `pettest.html` | Original full retained (#832) | Actual complete two-live-app pair: 17 PASS per mode; full/test badge row differs by room prefix. Native pet/hand/eyes/photo JPEG/IndexedDB/stats/rare stars and all unseeded values retained; see actual evidence below. |
 | `planttest.html` | Accepted in #832 | Complete original full/test logs byte-identical: 23 PASS, 1035 bytes; native 900×600/null controller versus 480×300/real test APIs. All original held/merged-vertex/placement/focus/F checks retained; capture scope differs. |
 | `plantwindtest.html` | Full pixel rendering | 192×192 render-target readback asserts moving foliage, focused foliage and pixel-identical pottery. |
-| `portiktest.html` | Candidate | Actual portik/bin geometry, walk/actions, save/reload and reset. |
+| `portiktest.html` | Accepted in #832 | Complete original three-load full/test pair: 36 ordered PASS, whole 1704-byte logs identical. Native 480×300 in all six documents, full/null versus real test APIs; actual collision/geometry/door/jetpack/bin/bag/reload/reset coverage retained. See qualified evidence below. |
 | `posterplacementtest.html` | Original full red; comparison incomplete (#833) | Actual original full stopped after four PASS, two preview FAIL and a caught TypeError; writer lacks terminal (#858), preview tracked in #857. Explicit interrupted CLI143 is not a completed pair or migration. Original cloud/reload coverage remains pending. |
 | `postertest.html` | Original full retained (#833) | Actual pair: full 24 PASS/4 FAIL then caught TypeError, test complete 37 PASS. After-reload storage/count failures and clock row differ; no migration. Original pointer drawing/IndexedDB/actions/optional shots/panel paths preserved; see actual evidence below. |
 | `powertest.html` | Full lighting | Actual pools/washes, flickering supply, emissive appliance lamps and night-window lighting through cut/repair/reload. |
@@ -3510,7 +3510,7 @@ hand contact or rising stars; no directed pose/photo/pixel equivalence is
 claimed. Samples 318.124 s and 164.671 s include successful captures (60-second
 bound in both modes); unequal capture coverage excludes qualified speedup
 aggregation. Source/native/monitor/capture/cleanup evidence remains in
-`/tmp/lunden-pets832/pettest`. Plant is documented below; Portik remains pending in #832;
+`/tmp/lunden-pets832/pettest`. Plant and Portik are documented below;
 parents #740 and #736 remain open.
 
 ## Detailed patio palm native acceptance (#831, partial)
@@ -3636,5 +3636,54 @@ raw evidence but lie below the test capture. No placed-pot or scene pixel
 comparison is claimed. Samples 107.945 s and 69.435 s include successful captures
 with 60-second bounds in both modes; unequal image coverage excludes qualified
 speedup aggregation. Source/native/monitor/image/inverse/cleanup evidence
-remains in `/tmp/lunden-pets832/planttest`. Portik remains pending in #832;
+remains in `/tmp/lunden-pets832/planttest`. Portik is documented below;
 parents #740/#736 stay open. No production/runner/baseline changes.
+
+
+### Portik verified pair (#832, final)
+
+One complete original full/test `portiktest.html` pair ran on frozen `6cab681`,
+with the entire original 480×300 fixture unchanged, no new guard. All native
+walking/collision/opaque-geometry rays, door/lid/jetpack/waste actions, original
+matrix calls, renderer loop/DPR/setSize setup, three-container loops, world
+record restore and actual resume/reload/reset flows remained. No seed,
+normalization, branch removal or extra ray/matrix/step/wait was added.
+
+Both whole logs are byte-identical: 1704 bytes, 36 ordered PASS, 0 FAIL and
+terminal ALL PASS, including all duplicated container/lid checks. Raw files:
+`/tmp/runtests-669376/portiktest.log` and `portiktest.test.log`. Independent
+monitor exited 0 at 09:28:15 UTC; all owned session processes ended and port
+8737 was verified without listener and reusable. The proposed written fixture
+adds only test flags to the two original explicit URLs; iframe dimensions,
+Math.random reload suffix, native reset navigation and all other bytes remain.
+Reversing those two flags reconstructs the entire frozen original.
+
+All six actual app documents have distinct timeOrigins and real readiness
+snapshots at 480×300: full/null controller versus real test draw/setFull/
+wantsFrame functions, lazy/full false. Each mode has four trusted native
+beforeunload/pagehide snapshots plus one retained final, matching URL/identity,
+all without fullscreen and with empty cloudURL. The third reset document
+actually reuses the second reload URL, with a new timeOrigin. Early public
+metadata has null controller for the first two loads; separate passive actual
+app-ready API snapshots establish those identities/modes. No readiness errors.
+All 229 frozen source/data/index/runner/fixture blobs and three helper hashes
+match the acceptance source; the fixture remains original until reviewed.
+
+Rebase to `d57d739` preserves later owner changes. Only frozen-file deltas are
+CombatWorld path diagnostic telemetry outside Portik's native action path and
+the public runner's stricter verdict helper. Both retained complete Portik logs
+pass that new parser's completion/success checks without another app run.
+Measured source remains explicitly `6cab681`; no claim of remeasuring new main.
+
+Both actual PNGs were inspected. Full shows all 36 rows and ALL PASS with a
+limited final blank-sky/HUD strip; test shows only the first 19 rows, clips
+long text right and retains no scene. No directed room/bin/jetpack image or
+scene pixel equivalence is claimed. Samples 163.061 s and 161.266 s include
+successful captures (60-second bound both modes); unequal image coverage
+excludes qualified speedup aggregation. All source/native/monitor/image/
+ordered/inverse/cleanup proof remains in `/tmp/lunden-pets832/portiktest`.
+
+All bounded #832 dispositions are complete: Pet retains original full after
+17 PASS per mode but one raw badge mismatch; Plant and Portik accept identical
+23/36 PASS pairs respectively. No production/runner/baseline fix is included.
+Parents #740/#736 remain open.
