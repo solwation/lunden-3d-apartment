@@ -542,7 +542,7 @@ no executable fixture changes or new browser results are part of this audit.
 | `northbackdroptest.html` | Accepted in #828 | Complete original full/test logs byte-identical, all 14 ordered PASS; actual 720×480/null controller versus 480×300/real test APIs. All mapped footprints, 426/426 window rays, 39 trees and 8380-triangle budget retained; no lowmem subset. |
 | `notetest.html` | Viewport exclusion | Paper scrollHeight/clientHeight and numeric scroll positions/keyboard repeat rows depend on note-panel viewport. |
 | `olofcartest.html` | Original full retained (#829) | Actual complete pair: 31 PASS per mode; greeting and dad-joke rows differ. Whole original 900×600/time12/month6 fixture, existing fullscreen suppression, native car/driver/door/seat/scoring and record restoration retained. See actual evidence below. |
-| `oloftest.html` | Conditional candidate; random rows | Actual Olof seats/behavior/actions and non-repeating jokes; randomly chosen joke text is included in results. |
+| `oloftest.html` | Original full retained (#829) | Actual complete pair: 21 PASS per mode plus identical geometry diagnostic; greeting/joke rows differ. Whole original 900×600/time12/month6/olof0 fixture, authored canSee mock/forced scenario and 200 unseeded joke checks retained. See actual evidence below. |
 | `opentest.html` | Accepted in #830 | Complete original full/test logs byte-identical, all 189 ordered PASS; actual 900×600/null controller versus 480×300/real APIs. All 90 fronts, conditional action labels, clashes/poster sweeps, free-floor and contents loops retained; captures show only early rows. |
 | `oventest.html` | Accepted in #830 | Complete original full/test logs byte-identical, all 19 ordered PASS; actual 900×600/null controller versus 480×300/real APIs. Appliance actions/angles/emissive lamps, stats and whole coffee brewing/water/grounds flow retained. |
 | `papertest.html` | Candidate | Actual roll/strip/wad ray-actions, finite paper counts, flushing/stats and reset. |
@@ -3027,7 +3027,7 @@ image or rendered-scene pixel equivalence is claimed. Samples 114.512 s and
 90.619 s include successful captures (60-second bound in both modes); unequal
 capture coverage excludes this pair from qualified speedup aggregation.
 Source, native snapshots, monitor and images remain in
-`/tmp/lunden-smart829/nesttest`. Olofcar/Olof remain pending in #829;
+`/tmp/lunden-smart829/nesttest`. Olofcar/Olof dispositions are documented below;
 parents #740 and #736 remain open.
 
 ## Openable-front complete native acceptance (#830, partial)
@@ -3155,8 +3155,8 @@ long text cropped on the right and no scene. Neither is a directed final
 car/driver image; no rendered-car pixel equivalence is claimed. Samples
 126.147 s and 86.568 s include successful captures (60-second bound in both
 modes); unequal capture coverage excludes qualified speedup aggregation.
-Nest and Olofcar now have honest original-full dispositions; Olof remains
-pending in #829. Parents #740 and #736 remain open.
+Nest and Olofcar have honest original-full dispositions; the Olof outcome is
+documented below. Parents #740 and #736 remain open.
 
 ## Oven and coffee complete native acceptance (#830, partial)
 
@@ -3186,3 +3186,49 @@ logs preserve that final row. No intermediate appliance-lamp/brewing pixel or
 rendered-scene equivalence is claimed. Wall 135.958 s and 84.926 s includes both
 successful captures; excluded from speedup aggregation because capture coverage
 differs. Paper remains pending; #830/#740/#736 stay open.
+
+
+### Olof actual disposition (#829, final)
+
+`oloftest.html` was measured once with the complete original full/test
+comparison, one public fixture job and a 20-minute bound per mode. Frozen
+base `967d691` plus only the reviewed pre-pair testMode-only fullscreen guard
+preserved original 900×600 `?time=12&month=6&olof=0`, all native seat/mesh/IK/
+hand/action/scoring/state predicates and matrix calls, the authored temporary
+canSee mock and forced appearance, and 200 unseeded no-repeat joke selections.
+No new seed, mock, normalization, filter or retry was added.
+
+Both whole logs contain 21 ordered PASS, ALL PASS and the same standalone
+geometry diagnostic: 5650 triangles, 16950 vertices, 1.10 MiB of CPU/GPU vertex
+buffers. Whole-file comparison, including that non-PASS diagnostic, differs
+only at check rows 13/14 (physical file lines 15/16): "Hallå där, Olof!" versus
+"Skål, Olof!", and the television/sofa joke versus the sofa/support joke.
+All exact strings remain in `/tmp/runtests-630744/oloftest.log` and
+`oloftest.test.log`; complete differences are retained under
+`/tmp/lunden-smart829/oloftest/ordered-differences.json`. The independent
+monitor exited 1 at 06:24:13 UTC for the nonidentical comparison; no functional
+FAIL occurred. The temporary guard was removed and the entire original full
+fixture restored byte-for-byte, without migration or exact equivalence claim.
+
+Each mode has one retained native main document with matching ready/final
+URL and timeOrigin: full 900×600/null controller, test 480×300 with real
+three controller functions and lazy/full false. All four snapshots show no
+fullscreen and empty cloudURL, with no leave/reload event or readiness error.
+All 229 frozen native source/data/index/runner/fixture blobs and three helper
+hashes match the measured source. Native detail/camera/viewport coupling
+remained; geometry/state checks do not imply rendered-figure pixel equality.
+
+Both actual PNGs were inspected. Full shows ALL PASS, all 21 checks and the
+geometry row above a partial final sofa/window/HUD scene after Olof has gone.
+Test shows only the top roughly 17 checks, clips long text on the right and
+retains no scene; late checks lie below the viewport. Neither is a directed
+image of Olof's earlier pose. Samples 123.771 s and 83.384 s include successful
+captures (60-second bound in both modes); unequal capture coverage excludes
+qualified speedup aggregation. All source/native/monitor/image evidence remains
+in `/tmp/lunden-smart829/oloftest`.
+
+All three bounded #829 dispositions are complete: Nest 31, Olofcar 31 and
+Olof 21 PASS per mode, with each actual raw mismatch preserved and each entire
+original full fixture retained. No sidebug, production/runner/baseline change
+or migration is inferred from these green-but-different outcomes. Parents
+#740 and #736 remain open.
