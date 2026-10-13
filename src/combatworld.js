@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { COMBAT } from './config.js';
+import { coldNativeView, coldNativeUnchanged, coldNativeChunks } from './combatcold.js';
 
 // Conservative empty-space rejection only: Three remains authoritative for every possible hit.
 // Private bounds never change geometry.boundingBox (curtains and DetailCuller share authored boxes).
@@ -510,6 +511,7 @@ export async function combatWorldPathBlocked(scene, ghosts, camera, points, laye
     for (let p = object; p; p = p.parent) if (!p.visible || p === ghosts || p === camera || p.userData.moving) return true;
     return false;
   };
+  const coldViews = new Map();
   const pending = new Set(), waiting = new Set(), overlaps = new Map(), instanceCache = new WeakMap(), pathBox = new THREE.Box3().setFromPoints(points);
   const query = new THREE.Raycaster(); query.camera = camera; query.layers.mask = layers.mask;
   try {
@@ -521,11 +523,15 @@ export async function combatWorldPathBlocked(scene, ghosts, camera, points, laye
       if (!excluded(object)) {
         if (safe(object) && accepts(object, ghosts, camera) && query.layers.test(object.layers) && !nativePathBoxMiss(object, points) && !emptyPath(object, points)) {
           const entry = cache.get(object.geometry);
-          if (entry?.spatial && !entry.spatialReady && !entry.settled) { if (!pending.has(entry)) { entry.urgentUsers = (entry.urgentUsers ?? 0) + 1; entry.urgent = true; pending.add(entry); waiting.add(entry); overlaps.set(entry, []); } overlaps.get(entry).push(object); scheduleUrgent(); }
+          if (entry?.spatial && !entry.spatialReady && !entry.settled) { if (!pending.has(entry)) { entry.urgentUsers = (entry.urgentUsers ?? 0) + 1; entry.urgent = true; pending.add(entry); waiting.add(entry); overlaps.set(entry, []); } overlaps.get(entry).push(object); if (!coldViews.has(object) && coldViews.size < C.maxSpatialEntries) { const view = coldNativeView(object, entry); if (view) coldViews.set(object, view); } scheduleUrgent(); }
         }
         stack.push(...object.children);
       }
       if (performance.now() - slice >= C.buildMs && await pause()) return finish(null);
+    }
+    // Only release a shared entry's wait when EVERY original occurrence can use bounded native chunks.
+    for (const entry of waiting) if (overlaps.get(entry).every(mesh => coldViews.has(mesh))) {
+      waiting.delete(entry); entry.urgentUsers--; entry.urgent = entry.urgentUsers > 0;
     }
     diagnostic.stage = 'cache';
     while ([...waiting].some(entry => !entry.spatialReady && !entry.settled && !entry.cancelled)) {
@@ -592,6 +598,22 @@ export async function combatWorldPathBlocked(scene, ghosts, camera, points, laye
                 for (let i = before; i < hits.length; i++) { hits[i].object = object; hits[i].instanceId = id; }
                 if (performance.now() - slice >= C.buildMs && await pause()) return finish(null);
               }
+            } else if (coldViews.has(object)) {
+              const view = coldViews.get(object);
+              if (!coldNativeUnchanged(view)) return finish(null, 'cache-invalidated');
+              if (view.entry.ready || view.entry.spatialReady) { if (!empty(object, query)) rangedHits(object, query, hits, null); }
+              else if (!empty(object, query)) {
+                const chunks = coldNativeChunks(view, query);
+                for (;;) {
+                  // Validate BEFORE resuming a native chunk after a yield, and again before using its hits.
+                  if (!coldNativeUnchanged(view) || stopped()) return finish(null, stopReason ?? 'cache-invalidated');
+                  const chunk = chunks.next(); if (chunk.done) break;
+                  if (!coldNativeUnchanged(view) || stopped()) return finish(null, stopReason ?? 'cache-invalidated');
+                  if (chunk.value.some(hit => accepts(hit.object, ghosts, camera))) return finish(true, 'blocked');
+                  if (performance.now() - slice >= C.buildMs && await pause()) return finish(null);
+                }
+              }
+              if (!coldNativeUnchanged(view)) return finish(null, 'cache-invalidated');
             } else if (!empty(object, query)) rangedHits(object, query, hits, null);
             if (hits.some(hit => accepts(hit.object, ghosts, camera))) return stopped() ? finish(null) : finish(true, 'blocked');
           } else if (!native && !nativeNonMeshes.has(object.raycast)) {
@@ -606,6 +628,7 @@ export async function combatWorldPathBlocked(scene, ghosts, camera, points, laye
     metrics.maxAsyncSliceMs = Math.max(metrics.maxAsyncSliceMs, performance.now() - slice);
     return stopped() ? finish(null) : finish(false, 'clear');
   } finally {
+    for (const view of coldViews.values()) view.release();
     const ended = performance.now(), active = ended - slice;
     diagnostic.activeMs += active; diagnostic.maxSliceMs = Math.max(diagnostic.maxSliceMs, active);
     diagnostic.promotedCaches = pending.size;
