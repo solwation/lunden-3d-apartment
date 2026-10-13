@@ -504,3 +504,16 @@ protocol21/21, hidden-contact3/3 (3940/0 false) and players/recovery32/32 have
 actualCLI0 on bee59bb. Worker run38437605050/job115435582084 completed success,
 including the actual `Run cloudflare/wrangler-action@v3` step; it was not skipped.
 This is genuine deployment evidence, not a live-client write/phone/World test.
+
+
+### Private rear permission (#936)
+No new message or public pose/state field is added. The existing accepted greeting
+attachment timestamp gt is used only as presence evidence: rifleHeadContact's
+optional permissions are lateral7/front8/rear9, and rifleHeadRegion's are6/7/8
+(after its five original arguments). The rear permission is b.gt===undefined;
+default true preserves older pure-classifier call signatures. Worker attachments
+serialize accepted gt through hibernation, whereas state cleaning ignores client
+gt and welcome/public snapshots omit it. Core/nose/jaw proofs ignore these branch
+permissions. Existing r2/r3/v1/256-byte bounds, shot rate, health/recovery, score
+and kill receipts remain unchanged. No elapsed-time or heading-history assumption
+is introduced for rear support. Post-greet restoration is tracked by #941.

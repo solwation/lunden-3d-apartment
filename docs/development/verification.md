@@ -4507,3 +4507,21 @@ attempts into successful exits. No new dense whole-grid or GPU test was run
 after the independent Jaw/Rear/Front/Lateral/cache integration.
 
 `tools/spatialcachetest.{cjs,html}` (#715) loads unchanged published `1c5a079` and current combatworld builders with actual Three and no WebGL. Pass an external ≤16MiB saved `largest-geometry.json` as third CLI argument. It records source/served/input hashes, completed raw results before PNG, exact old/current spatial/private buffers, source-expression counts (not actual heap allocation), independent native hit metadata and normal/normalized/interleaved/custom/invalid/mutation/dispose/group/drawRange controls. Matched reversed-order timings use unchanged production advance bodies with native clocks in a controlled stepped builder; they do not execute ordinary idle scheduling or measure World/phone/FPS. Final source-byte checks include both fixture files. Reproduce: `PLAYWRIGHT_MODULE=... CHROME_PATH=... SHOTS=/tmp/spatial-cache node tools/spatialcachetest.cjs http://localhost:8873 /path/to/largest-geometry.json`. Existing `tools/combatcachetest.cjs http://localhost:8873 world` remains the broader485-check native collision regression.
+
+
+### Actual rear arm-first regression (#936)
+Start a fresh owned local Worker AFTER freezing its imported backend/config bytes
+and serve the same tree. Run `node --test cloudflare/players.test.mjs`, then
+`PLAYWRIGHT_MODULE=/path/to/playwright CHROME_PATH=/path/to/chrome node tools/reararmtest.cjs http://localhost:8870 http://localhost:8871 /tmp/rear-arm`.
+The native CPU/DOM fixture uses real Avatar/Ghosts.draw/Combat and actual sockets,
+finds an actual server-assigned appearance in bounded reconnects, accepts a genuine
+greeting and r2 heading3.14, then performs a real paused draw. It proves elbowR
+first, native head rejection, and the original96-byte deeper-skull proof receiving
+body1, public/self health, one lethal kill/award and idempotent body marker. It
+checks zero WebGL/pageerrors and saves the actual HUD PNG. The bounded650ms quiet
+wait satisfies the existing server stationary gate only; it is not evidence of
+completed animation draws. Separately run the unchanged `tools/riflereartest.cjs`
+with explicit game/Worker/artifact args and `--protocol-only` for existing pre-greet
+rear2HP, body/wall/miss/legacy/lethal/style/near-max controls. Keep pre-fix failing
+logs separate. Node covers invalid/rate greetings, long pause, hibernate, latejoin,
+fresh attachment and independent core/nose/jaw. No apartment/phone/FPS claim.

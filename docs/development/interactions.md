@@ -870,3 +870,18 @@ contact it never found; neither is actual Ghost paused-wave acceptance.
 The bounded safe family landed in bee59bb; further exposed band/pose surfaces
 are tracked independently in #937 (inherited medium), rather than being marked
 covered or silently accepted. #920/#918/#898/#892/#879/#874 remain open.
+
+
+### Rear arm-first safety (#936, restoration #941)
+The actual paused Ghost.draw greeting pose can put elbowR before a deeper pureSkull
+entry. A serialized96-byte r2-origin/r3-direction/r3-hc rifle proof previously
+received head:true and2HP despite that first arm surface. The existing Avatar
+classifier already rejects that actual arm face; no Ghost animation or model changes
+are needed. The Worker independently disables only the rear region after the
+target attachment has an accepted private gt. This lasts for that attachment,
+including pause, hibernation and observers joining after the greeting. Wall time
+does not prove that replica draws completed the wave. Invalid/self/absent/rate-
+rejected greetings do not set gt; a genuinely new socket starts fresh. Core/nose/jaw
+remain independent. Safe rear2HP after an accepted greeting remains #941, so the
+full #936 parent stays open. This is a bounded safety fix, not full animated-world
+intersection validation.

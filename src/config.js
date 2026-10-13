@@ -4630,14 +4630,14 @@ export function rifleProfileEntry(triangles,seed,state,origin,direction) {
   return Number.isFinite(first)?first:null;
 }
 /** Seed/model/ray proof for this bounded surface; no trusted client damage/head or model override. */
-export function rifleHeadContact(seed,state,shot,shooterFeet,range,maxOrigin,allowLateral = true) {
+export function rifleHeadContact(seed,state,shot,shooterFeet,range,maxOrigin,allowLateral = true,allowFront = true,allowRear = true) {
   const H=PVP_RIFLE_HEAD,{hc,o,d}=shot;
   if(!Number.isFinite(range)||!Number.isFinite(maxOrigin)||shot.t!=='a'||shot.w!=='rifle'||!hc||hc[0]!==H.version||state.c)return false;
   if(Math.hypot(...o.map((v,i)=>v-shooterFeet[i]))>maxOrigin)return false;
   const length=Math.hypot(...d),unit=d.map(v=>v/length),delta=hc.slice(1).map((v,i)=>v-o[i]),along=delta.reduce((s,v,i)=>s+v*unit[i],0);
   if(along<0||along>range||Math.hypot(...delta.map((v,i)=>v-along*unit[i]))>H.wireMetres)return false;
   const jaw=rifleJawRegion(seed,state,hc.slice(1),o,d),nose=rifleNoseRegion(seed,state,hc.slice(1))||rifleNoseExtraRegion(seed,state,hc.slice(1));
-  if(!jaw && !nose && !rifleHeadRegion(seed,state,hc.slice(1),o,d,allowLateral))return false;
+  if(!jaw && !nose && !rifleHeadRegion(seed,state,hc.slice(1),o,d,allowLateral,allowFront,allowRear))return false;
   const front=jaw ? rifleJawEntry(seed,state,o,d) : nose ? rifleNoseEntry(seed,state,o,d) : rifleSkullEntry(seed,state,o,d);
   return front!==null&&Math.abs(front-along)<=(jaw ? H.jawPatch.surface : nose ? H.nosePatch.surface : H.surfaceMetres);
 }
@@ -4689,7 +4689,7 @@ export function rifleHeadFrontRegion(seed,state,point,origin,direction) {
 }
 
 // Shared dispatch: #916 owns the central core; #917 can add its independent extra-region branch here.
-export function rifleHeadRegion(seed,state,point,origin,direction,allowLateral = true) { return rifleHeadCoreRegion(seed,state,point,origin,direction) || rifleHeadRearRegion(seed,state,point,origin,direction) || rifleHeadFrontRegion(seed,state,point,origin,direction) || (allowLateral && rifleHeadLateralRegion(seed,state,point,origin,direction)); }
+export function rifleHeadRegion(seed,state,point,origin,direction,allowLateral = true,allowFront = true,allowRear = true) { return rifleHeadCoreRegion(seed,state,point,origin,direction) || (allowRear && rifleHeadRearRegion(seed,state,point,origin,direction)) || (allowFront && rifleHeadFrontRegion(seed,state,point,origin,direction)) || (allowLateral && rifleHeadLateralRegion(seed,state,point,origin,direction)); }
 
 /** Exposed lower rear skull only, with the same snapped ray as the actual native contact. */
 export function rifleHeadRearRegion(seed,state,point,origin,direction) {

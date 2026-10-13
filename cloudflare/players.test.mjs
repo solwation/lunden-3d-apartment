@@ -692,3 +692,42 @@ test('extra frontal nose cell: authoritative damage, legacy fallback, one fatal 
   const count=a.got.filter(m=>m.t==='hit').length;a.send(shot);await settle(env);assert.equal(a.got.filter(m=>m.t==='hit').length,count,'same tick cannot produce another death or award');
   const observer=await connect(env);assert.equal(observer.got[0].ps.find(p=>p.i===id).l,COMBAT.lives);
 });
+
+test('rear arm safety: accepted greeting is private, permanent across pause/hibernate/latejoin, and fresh attachment restores eligibility',async()=>{
+  const {avatarLook,rifleSkullEntry,rifleHeadContact,rifleJawEntry,rifleNoseEntry,PVP_RIFLE_HEAD:H}=await import('../src/config.js');
+  const env=setup(),a=await connect(env,'Rear shooter');let b,id;
+  for(let tries=0;tries<80;tries++){b=await connect(env,'Rear target');id=b.got[0].i;if(avatarLook(id).style===2)break;b.ws.close();await settle(env);}assert.equal(avatarLook(id).style,2);
+  const state={p:[0,0,0],r:3.14},look=avatarLook(id);
+  a.send({p:[0,0,-4],r:0,h:'rifle'});b.send({...state,h:'rifle',gt:0});await settle(env);now+=1000;
+  const rearShot=(id)=>{const lk=avatarLook(id);for(const dy of [.021,.022,.023])for(const dz of [3.07,3.5,4,4.5]){const o=[0,1.55,-dz],raw=[0,(H.headY+dy)*lk.tall-o[1],dz-.065],n=Math.hypot(...raw),d=raw.map(v=>+(v/n).toFixed(3)),unit=d.map(v=>v/Math.hypot(...d)),entry=rifleSkullEntry(id,state,o,d),hc=[1,...o.map((v,i)=>+(v+unit[i]*entry).toFixed(3))],shot={t:'a',w:'rifle',to:id,o,d,hc};if(rifleHeadContact(id,state,shot,[0,0,-4],40,4))return shot;}throw Error('no bounded supported rounded rear ray');};
+  const shot=rearShot(id);
+  assert.equal(rifleHeadContact(id,state,shot,[0,0,-4],40,4,true,true,true),true);
+  assert.equal(rifleHeadContact(id,state,shot,[0,0,-4],40,4,true,true,false),false,'separate rear permission fails closed');
+  const shoot=async()=>{now+=1000;a.send(shot);await settle(env);return a.got.filter(m=>m.t==='hit').at(-1);};
+  const attach=()=>[...env.PLAYERS.object('world').ctx.getWebSockets()].find(s=>s.deserializeAttachment().i===id).deserializeAttachment();
+  b.send({t:'g',to:id,k:0});b.send({t:'g',to:'absent',k:0});b.send({t:'g',to:a.got[0].i,k:-1});await settle(env);
+  assert.equal(attach().gt,undefined,'self, absent target and invalid kind never set authoritative greeting');
+  assert.equal((await shoot()).head,true,'pre-greet actual rear profile still gives two HP');
+  b.send({t:'g',to:a.got[0].i,k:0});await settle(env);const gt=attach().gt;assert.equal(gt,now);
+  assert.equal((await shoot()).head,undefined,'accepted greeting gives body-only rear');
+  b.send({t:'g',to:a.got[0].i,k:0});await settle(env);assert.equal(attach().gt,gt,'rate-rejected repeat cannot alter private history');
+  now+=10000;env.PLAYERS.hibernate('world');assert.equal((await shoot()).head,undefined,'elapsed wall time and hibernation cannot prove rendered wave completion');
+  const observer=await connect(env,'Late observer'),publicTarget=observer.got[0].ps.find(p=>p.i===id);assert.equal(publicTarget.gt,undefined);assert.equal(publicTarget.l,6);
+  b.send({...state,h:'rifle',gt:null});await settle(env);assert.equal(attach().gt,gt,'cleaned state cannot erase accepted greeting');
+  assert.equal((await shoot()).head,undefined,'latejoin and attempted reset cannot reopen the rear profile');
+  // Independent front anatomical profiles are not blanket-disabled by the rear permission.
+  const frontState={p:[0,0,0],r:0};
+  for(const [y,entryFn] of [[.04,rifleJawEntry],[.092,rifleNoseEntry],[.153,rifleSkullEntry]]){
+    const fy=(H.headY+y)*look.tall,fo=[0,1.62,-4],raw=[0,fy-fo[1],3.89],n=Math.hypot(...raw),fd=raw.map(v=>+(v/n).toFixed(3)),unit=fd.map(v=>v/Math.hypot(...fd)),t=entryFn(id,frontState,fo,fd),hc=[1,...fo.map((v,i)=>+(v+unit[i]*t).toFixed(3))];
+    assert.equal(rifleHeadContact(id,frontState,{t:'a',w:'rifle',o:fo,d:fd,hc},[0,0,-4],40,4,false,false,false),true,'core/nose/jaw remain independent of private optional permissions');
+  }
+  b.ws.close();await settle(env);let fresh;
+  for(let tries=0;tries<80;tries++){fresh=await connect(env,'Fresh target');if(avatarLook(fresh.got[0].i).style===2)break;fresh.ws.close();await settle(env);}id=fresh.got[0].i;assert.equal(avatarLook(id).style,2);fresh.send({...state,h:'rifle'});await settle(env);now+=1000;
+  Object.assign(shot,rearShot(id));
+  assert.equal((await shoot()).head,true,'new actual socket has fresh authoritative greeting history');
+  // A greeting rejected by the packet-rate gate cannot disable an otherwise fresh branch.
+  const limited=await connect(env,'Rate target'),limitedId=limited.got[0].i;now+=1000;
+  for(let n=0;n<PLAYERS.perSecond;n++)limited.send({p:[0,0,0],r:0,h:'rifle'});limited.send({t:'g',to:a.got[0].i,k:0});await settle(env);
+  const limitedAttachment=[...env.PLAYERS.object('world').ctx.getWebSockets()].find(s=>s.deserializeAttachment().i===limitedId).deserializeAttachment();assert.equal(limitedAttachment.gt,undefined,'rate-rejected first greeting never sets the private gate');
+  for(const peer of [a,fresh,observer,limited])peer.ws.close();await settle(env);
+});
