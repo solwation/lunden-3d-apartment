@@ -55,6 +55,7 @@ export function computeDetailBounds(geometry) {
 function release(entry) {
   if (entry.cancelled) return;
   entry.cancelled = true;
+  if (entry.spatial) entry.spatial.scratch = null;
   metrics.accountedBytes -= entry.charge;
   metrics.bitBytes -= entry.bits.byteLength;
   metrics.clusterBytes -= entry.clusterBounds.byteLength;
@@ -134,21 +135,25 @@ function advanceSpatial(entry) {
       spatial.cursor.set(spatial.offsets.subarray(0, 64)); spatial.triangle = 0; spatial.phase = 1;
     } else {
       spatial.attribute = new THREE.BufferAttribute(spatial.indices, 1);
+      spatial.scratch = null;
       entry.spatialReady = true; metrics.spatialReady++; makeView(entry);
     }
     return;
   }
-  const indices = [0, 0, 0], lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity], center = [0, 0, 0];
+  // Per-entry scratch is needed only while the two spatial passes are unfinished.
+  const scratch = spatial.scratch ??= { indices: [0, 0, 0], lo: [0, 0, 0], hi: [0, 0, 0], center: [0, 0, 0], values: [0, 0, 0], cell: [0, 0, 0] };
+  const { indices, lo, hi, center, values, cell } = scratch;
+  lo[0] = lo[1] = lo[2] = Infinity; hi[0] = hi[1] = hi[2] = -Infinity; center[0] = center[1] = center[2] = 0;
   for (let corner = 0; corner < 3; corner++) {
     const at = spatial.triangle * 3 + corner, n = entry.index ? entry.index.getX(at) : at;
     if (!Number.isInteger(n) || n < 0 || n >= entry.position.count) { entry.valid = false; return; }
     indices[corner] = n;
-    const values = [entry.position.getX(n), entry.position.getY(n), entry.position.getZ(n)];
+    values[0] = entry.position.getX(n); values[1] = entry.position.getY(n); values[2] = entry.position.getZ(n);
     if (!values.every(Number.isFinite)) { entry.valid = false; return; }
     for (let axis = 0; axis < 3; axis++) { center[axis] += values[axis] / 3; lo[axis] = Math.min(lo[axis], values[axis]); hi[axis] = Math.max(hi[axis], values[axis]); }
   }
-  const cell = center.map((value, axis) => Math.max(0, Math.min(spatial.divisions[axis] - 1,
-    Math.floor((value - entry.min[axis]) / (entry.max[axis] - entry.min[axis] || 1) * spatial.divisions[axis]))));
+  for (let axis = 0; axis < 3; axis++) cell[axis] = Math.max(0, Math.min(spatial.divisions[axis] - 1,
+    Math.floor((center[axis] - entry.min[axis]) / (entry.max[axis] - entry.min[axis] || 1) * spatial.divisions[axis])));
   const bucket = cell[0] + spatial.divisions[0] * (cell[1] + spatial.divisions[1] * cell[2]);
   if (!spatial.phase) spatial.counts[bucket]++;
   else {
@@ -174,6 +179,7 @@ function advance(entry) {
   if (!entry.valid || !entry.bits.length || entry.triangle >= entry.count) {
     entry.ready = entry.valid && !!entry.bits.length;
     entry.settled = true;
+    if (entry.spatial) entry.spatial.scratch = null;
     metrics.pending--;
     if (entry.ready) metrics.ready++;
     if (entry.ready) {
