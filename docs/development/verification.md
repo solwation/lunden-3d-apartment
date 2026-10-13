@@ -472,7 +472,7 @@ not a rendering exemption or fixed product defect. Life2 and #823/#739/#736 rema
 | `life2test.html` | Candidate | Actual life/item action integration and persistence. |
 | `life3test.html` | Candidate | Actual life/item cooking/actions and persistence. |
 | `lifetest.html` | Candidate | Full life inventory/food/storage/reload action flows. |
-| `lifttest.html` | Candidate | Lift/stair navigation, panel state, collisions and reload. |
+| `lifttest.html` | Migrated (#824) | 24 identical ordered PASS rows, 0 FAIL; native original 800×500/full → 480×300/test. One actual main document per mode; lift.loadState is native state restoration, not an app reload. Doors/panel/collision/ride/stair predicates preserved; evidence below. |
 | `lighttest.html` | Full rendering | Pool/wash intensities, lamp fading and actual detail-culler visibility. |
 | `loadingtest.html` | Full startup | Early loading/resume covers versus __app readiness; test mode changes warmup lifecycle. |
 | `loosemirrorstest.html` | Explicit reflection exclusion (#736) | Parent explicitly retains this mirror test; current assertions cover reflector registration/transforms and lamp pool anchors, without reflection-pixel sampling. |
@@ -2134,3 +2134,37 @@ actual native phases and genuine monitor PID/SID/exit:
 All three bounded #822 dispositions are complete: jump-on 35 and jetpack 37
 identical PASS rows accepted; kitten retains original full after two distinct
 but individually passing complete results. #739/#736 remain open.
+
+## Life simulation and lift: lift acceptance (#824, partial)
+
+One complete published jobs1 pair at frozen runtime `d12b74d` used the whole
+original 800×500 and exact time12/month6 query, with no shot/cloud/freeze additions
+or pre-pair edits. Original unconditional fullscreen suppression and every
+native door/panel/lit-state/collision/lift/stair/ride-count predicate remained
+unchanged. The authored lift.loadState mid-ride operation restores a native
+state record; its raw "reload mid-ride" label does not mean another app load.
+
+Both entire raw logs are byte-identical (1129 bytes, 24 PASS, 0 FAIL, ALL PASS),
+including all measured positions/heights/door states, zero falls and ride-floor
+keys v0/v3. There was one actual app-ready document and matching retained final
+per mode: full 800×500/controller false, test 480×300 with genuine draw/setFull/
+wantsFrame APIs, lazy/full false. Neither entered fullscreen; native URL/
+timeOrigin identities matched without observer errors/warnings. Both cloud URLs
+were empty. Runner modes were verified and the independent monitor exited 0,
+without raw pageerrors.
+
+Elapsed full/test times were 137.890/89.181 seconds including successful final
+captures, a single uncontrolled sample. Capture timeout was 60 seconds in both
+modes before freezing. Both images were saved/reviewed: full shows all 24 rows/
+ALL PASS and a cropped final stair-wall/HUD view; test shows cropped top text
+with later checks and scene below the image. Neither demonstrates every
+intermediate door/ride/stair visual or rendered-scene equivalence. Capture
+asymmetry excludes the pair from qualified timing aggregation. Complete logs/
+summary: `/tmp/runtests-509679/`; frozen runtime/helper hashes, native phases,
+actual exit and images: `/tmp/lunden-life824/lifttest/`. All frozen source blobs
+matched after the pair.
+
+Written lift now uses 480×300/test; reversing only dimensions/query reproduces
+the exact frozen original with all executable predicates intact. LIFE3 and LIFE
+remain pending under #824; their whole default flows and optional source filters
+are preserved in preparation. #739/#736 stay open.
