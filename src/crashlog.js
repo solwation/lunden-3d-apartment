@@ -223,39 +223,50 @@ class CrashLog {
     // Validate the allocated buffer with the renderer's exact ratio (#930).
     // Ordinary snapshots/reports retain their bounded public precision.
     if (c?.renderer) { const px = c.renderer.getPixelRatio(); m.px = exactRatio ? px : round(px, 2); }
-    if (withInsets) {
-      try {
-        const p = document.createElement('div');
-        p.style.cssText = 'position:fixed;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)';
-        document.body.append(p);
-        const cs = getComputedStyle(p);
-        m.safe = [cs.paddingTop, cs.paddingRight, cs.paddingBottom, cs.paddingLeft].map((x) => parseFloat(x) || 0);
-        p.remove();
-      } catch { /* ignore */ }
-    }
+    if (withInsets) m.safe = this.layoutInsets();
     return m;
   }
 
+  /** Safe-area probe only; does not replace the canvas/window/buffer measurement. */
+  layoutInsets() {
+    try {
+      const p = document.createElement('div');
+      p.style.cssText = 'position:fixed;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)';
+      document.body.append(p);
+      const cs = getComputedStyle(p);
+      const safe = [cs.paddingTop, cs.paddingRight, cs.paddingBottom, cs.paddingLeft].map((x) => parseFloat(x) || 0);
+      p.remove();
+      return safe;
+    } catch { /* ignore */ }
+  }
+
   /** Why the canvas does not fit, or ''. Pinch zoom (visualViewport scale ≠ 1) is the visitor's, not a fault. */
-  layoutFault(m) {
-    if (!m.css || m.css[0] <= 0 || m.css[1] <= 0) return '';
-    if (m.vv && Math.abs(m.vv.scale - 1) > 0.01) return '';
+  layoutFault(m) { return this.layoutFaultDetail(m).msg; }
+
+  /** #940: category of the SAME fault/measurement, not a cause or a visibility exemption. */
+  layoutFaultDetail(m, hidden = document.hidden) {
+    const none = { msg: '', faultClass: null };
+    if (!m.css || m.css[0] <= 0 || m.css[1] <= 0) return none;
+    if (m.vv && Math.abs(m.vv.scale - 1) > 0.01) return none;
     const T = C.layoutTolerance;
-    if (Math.abs(m.css[0] - m.inner[0]) > T || Math.abs(m.css[1] - m.inner[1]) > T) return `canvas ${m.css[0]}x${m.css[1]} vs window ${m.inner[0]}x${m.inner[1]}`;
-    if (m.vv && (Math.abs(m.css[0] - m.vv.w) > T || Math.abs(m.css[1] - m.vv.h) > T)) return `canvas ${m.css[0]}x${m.css[1]} vs visualViewport ${m.vv.w}x${m.vv.h}`;
-    if (m.aspect && Math.abs(m.aspect - m.css[0] / m.css[1]) > 0.01) return `aspect ${m.aspect} vs canvas ${round(m.css[0] / m.css[1], 3)}`;
-    if (m.buf && m.px && (Math.abs(m.buf[0] - m.css[0] * m.px) > T * m.px + 1 || Math.abs(m.buf[1] - m.css[1] * m.px) > T * m.px + 1)) return `buffer ${m.buf[0]}x${m.buf[1]} vs canvas ${m.css[0]}x${m.css[1]} at ${round(m.px, 2)}`;
-    return '';
+    if (Math.abs(m.css[0] - m.inner[0]) > T || Math.abs(m.css[1] - m.inner[1]) > T) return { msg: `canvas ${m.css[0]}x${m.css[1]} vs window ${m.inner[0]}x${m.inner[1]}`, faultClass: 'surface-css' };
+    if (m.vv && (Math.abs(m.css[0] - m.vv.w) > T || Math.abs(m.css[1] - m.vv.h) > T)) return { msg: `canvas ${m.css[0]}x${m.css[1]} vs visualViewport ${m.vv.w}x${m.vv.h}`, faultClass: 'surface-vv' };
+    const faultClass = hidden ? 'background-projection' : 'foreground-projection';
+    if (m.aspect && Math.abs(m.aspect - m.css[0] / m.css[1]) > 0.01) return { msg: `aspect ${m.aspect} vs canvas ${round(m.css[0] / m.css[1], 3)}`, faultClass };
+    if (m.buf && m.px && (Math.abs(m.buf[0] - m.css[0] * m.px) > T * m.px + 1 || Math.abs(m.buf[1] - m.css[1] * m.px) > T * m.px + 1)) return { msg: `buffer ${m.buf[0]}x${m.buf[1]} vs canvas ${m.css[0]}x${m.css[1]} at ${round(m.px, 2)}`, faultClass };
+    return none;
   }
 
   /** `confirm`: report only if the previous check found it too (the periodic check); the event path waits C.layoutSettleMs instead. */
   layoutCheck(why, confirm = false) {
-    const fault = this.layoutFault(this.layoutMeasure(false, true));
+    const hidden = document.hidden, measured = this.layoutMeasure(false, true);
+    const { msg: fault, faultClass } = this.layoutFaultDetail(measured, hidden);
     const was = this.layoutWas;
     this.layoutWas = fault;
     if (!fault || (confirm && !was)) return false;
     if (this.layoutSent >= C.layoutPerSession) return false;
-    const m = this.layoutMeasure(true);
+    const m = { ...measured, safe: this.layoutInsets(), faultClass };
+    if ('px' in m) m.px = round(m.px, 2); // retain existing report precision; judgement used the exact ratio
     this.layoutSent++;
     return this.report('layout', 'canvas', { msg: fault, why, layout: m });
   }

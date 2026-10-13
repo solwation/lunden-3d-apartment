@@ -287,3 +287,21 @@ test('#669: malformed and missing snapshot/surface diagnostics remain bounded', 
   assert.equal(publicView({ snap: { beatAgeMs: Infinity } }).state.beatAgeMs, null);
   assert.equal(publicView({ context: { surface: { kind: 'window-resize', up: -1 } } }).context.surface, null);
 });
+
+test('#940: public layout fault classes are strict additive data; legacy/malformed fields and privacy stay bounded', async () => {
+  const classes=['surface-css','surface-vv','foreground-projection','background-projection'];
+  const env={LUNDEN:kv(),ADMIN_TOKEN:'tok'};
+  for (const [i,faultClass] of classes.entries()) {
+    const layout={css:[393,852],inner:[393,852],buf:[639,294],aspect:2.168,px:.75,faultClass,pid:'private',hiddenReason:'private'};
+    const {id}=await(await post(env,{v:2,typ:'layout',kind:'canvas',pid:'private',sig:'940-'+i,msg:'aspect 2.168 vs canvas 0.461',why:'event',layout,snap:{hidden:1}},'9.4.0.1')).json();
+    const stored=await(await get(env,'/crash/'+id,'tok')).json(),visible=publicView(stored);
+    assert.equal(visible.layout.faultClass,faultClass);assert.deepEqual(visible.layout.css,layout.css);
+    assert.equal(visible.msg,'aspect 2.168 vs canvas 0.461');assert.equal(visible.kind,'canvas');assert.equal(visible.state.background,1);
+    assert.equal(visible.layout.pid,undefined);assert.equal(visible.layout.hiddenReason,undefined);assert.equal(visible.pid,undefined);
+  }
+  for (const faultClass of [undefined,null,0,true,{},['surface-css'],'Surface-css','surface-css extra','private-name']) {
+    const layout=publicView({layout:{css:[393,852],inner:[393,852],faultClass}}).layout;
+    assert.equal(Object.hasOwn(layout,'faultClass'),false,'legacy/malformed class is omitted, not silently normalized');
+    assert.deepEqual(layout.css,[393,852]);
+  }
+});

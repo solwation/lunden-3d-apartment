@@ -131,6 +131,7 @@ const beat = (page) => page.evaluate(() => { try { return JSON.parse(localStorag
     const lay = await layouts();
     check(lay.length === 1, 'a canvas not filling the window is reported once', lay[0]?.msg);
     const L = lay[0]?.layout;
+    check(L?.faultClass === 'surface-css', 'actual CSS/window deviation keeps additive surface-css class');
     check(!!L && L.css && L.rect && L.buf && L.inner && L.doc && L.vv && L.scr && 'dpr' in L && 'portrait' in L && 'standalone' in L && Array.isArray(L.safe) && 'aspect' in L && 'up' in L && L.loaded === 1,
       'the layout report carries canvas, rect, buffer, aspect, window, document, visualViewport, screen, orientation, dpr, standalone, safe-area', JSON.stringify(L));
     await page.evaluate(() => { document.getElementById('game-canvas').style.width = ''; });

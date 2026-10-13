@@ -523,3 +523,31 @@ is introduced for rear support. Post-greet restoration is tracked by #941.
 PlayerRoom records private `headPoseFixed` in its existing hibernating socket attachment. Only `s === null` followed by a first valid standing `cleanState` can initialize true. Every later strict difference in normalized p/r/c permanently sets it false; returning to the earlier pose, greeting again, life reset or hibernation cannot restore it. Existing attachments with a state but no history flag fail closed and are never initialized retroactively. A new socket starts its own history. The field is never accepted from client state and never sent in snapshots; h/sp/score changes do not count as body changes.
 
 The existing `allowLateral` argument is preserved. Shared contact/region dispatch accepts named `allowFront`/`allowRear`/`allowGreetingLeft` options while preserving published positional front/rear callers, including default/undefined front with explicit rear=false and falsy null front; only `allowGreetingLeft === true` can select the narrow left leaf. PlayerRoom supplies that key only for a greeted target with explicit true immutable history. It introduces no wire, KV write, timer or billed message. Join has no default p, welcome omits p for `s:null`, and `Ghost.draw` cannot pose an avatar before a valid snapshot: its first actual visible state initializes body=gaze. Legacy clients remain compatible.
+
+### Layout fault categories (#940)
+
+Layout reports retain their existing `typ`, `kind`, message, measurements,
+confirmation/deduplication/caps, pinch exemption and numerical tolerances.
+`layout.faultClass` adds only a bounded diagnostic category: `surface-css`
+(canvas/window disagreement), `surface-vv` (canvas/visualViewport disagreement),
+`foreground-projection` or `background-projection` (aspect/buffer disagreement
+when the surface sizes agree). Surface checks have priority EVEN while hidden;
+the iPhone report's CSS852×852 versus window393×852 is not reclassified as an
+expected projection transition. These names describe the observed state, not
+Safari, GPU, process-death or WebGL-loss causes. No report is suppressed.
+
+CrashLog derives the category and legacy message from one exact-ratio core
+measurement, then reuses those SAME canvas/window/buffer/aspect values in the
+report. A separate safe-inset probe changes no core sample; the public pixel
+ratio retains its previous rounded precision. Worker public output permits only
+the four exact class strings; missing/unknown/malformed legacy values are omitted
+without discarding the report or exposing additional private layout fields.
+No saved-home field, rendering timer, viewport behavior or game rule changes.
+
+The baseline real native Chromium145 tab test observed30s hidden rotation with
+CSS/inner/vv393×852 consistent but the preceding landscape639×294 buffer and
+2.168 aspect unchanged while rAF stood still. Its actual local CrashLog report
+was a projection mismatch; first visible measurement and landscape return
+recovered correctly. The iPhone/PWA's square CSS fault was not reproduced.
+#669 remains open for the physical landscape-return question; this diagnostic
+slice does not resolve the reported iPhone crash.

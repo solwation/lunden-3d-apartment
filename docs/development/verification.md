@@ -4647,3 +4647,60 @@ The pre-runtime fixture covered all60 canonical appearances: 10,260 nearest skul
 Final #938 current-source room-only proof after integrating d0bbb9e and all three named history permissions:29 checks, CLI0, no page errors/WebGL, ten ordinary shots with ≤104-byte r2/r3/r3 packets. The actual left receipts after greeting/paused/repeat/item-suit-score changes take2HP; right takes1HP; low1HP left produces one UUID/death/reset/award; a transmitted .1m change and return take1HP with actual client hc still present after rendered-feet/speed/gait settle, and crouching remains body-only. Reconnect establishes fresh eligible history. Late observer uses its own scene/camera; public/local HP and replay-safe real HUD marker are verified. `node --test --test-name-pattern="#938" cloudflare/players.test.mjs` commits two private-history and named/legacy-default guard regressions (CLI0); incoming `riflefront.test.mjs` six cases also pass.
 
 Artifacts `/tmp/lunden-left938-surface/final/` include current result/source hashes, all receipts/wires, progress checkpoint and inspected actual DOM HUD PNG. Its changed/returned annotation prints undefined/undefined because body acknowledgements intentionally omit head; assertions correctly normalize that omission to body-only. Failed initial assertion, .01m unsent movement, shared-observer-scene obstruction and received-versus-rendered gait waits are retained; these harness corrections changed no runtime geometry or precision guard. Use `--native-only` with a sibling `native/` directory before `--room-only` into `final/`: reuse requires exact unchanged Avatar/Ghosts/Olof bytes, production shape/profile/leaf/bounds/canonical-look contract and native-function bytes. The API/default changes are verified by fresh ordinary room/Node execution, not assumed covered by an old runtime source hash. No all60 grid was repeated for independent incoming front/rear gates.
+
+### Layout diagnostic classification (#940)
+
+`tools/layoutdiagnostictest.cjs GAME EXTERNAL_OUTPUT` uses an owned native
+Chromium default context via `nativefixturebrowser.cjs` (Playwright≥1.60,
+full Chrome executable), original index-CSS/viewport/CrashLog and one small
+real WebGL scene. No apartment/bootstrap is loaded. Two tabs are created BEFORE
+CDP mobile metrics; bringing the other tab forward causes actual visibility
+changes. It rotates852×393→393×852 during30s hidden time, then resumes and
+returns to landscape. Direct CDP screenshots check unchanged CSS/inner/buffer
+before/after capture; portrait PNG shows the ORIGINAL rotation curtain rather
+than an interactive portrait game. Local intercepted POSTs never reach public
+crash storage. Browser-close bound120s; external runner bound150s recommended.
+
+Additional intentional diagnostic fixtures test a real hidden canvas-width
+fault, foreground camera misprojection, one core measurement per emitted
+report and the unchanged three-layout-report cap. Pure measurement inputs
+cover hidden visualViewport disagreement, pinch/tolerance and buffer/aspect
+classification; they are NOT a physical visualViewport or Safari reproduction.
+`cloudflare/crash.test.mjs` tests actual Worker POST/public classification,
+legacy/malformed enum omission and privacy. `tools/crashtest.cjs` keeps all
+original actions/assertions and also checks surface-css on its existing width
+fault; its broad apartment suite is separate from this targeted verification.
+
+Baseline artifacts `/tmp/lunden-priority-669-rotation/actual-cdp-capture/`
+have10 checks/actualNode0/36.563s and three inspected PNGs. Earlier `actual/`
+retains the first capture/new-tab-size fixture limitation and its blank edge;
+it is not an application white-strip bug. These local durations are fixture
+execution times, not FPS/CPU benchmarks, physical phone results or a crash fix.
+
+The #940 after-code scene's geometry/rotation/capture/background classification
+passed, but its original full driver exit was1: later controlled cases reused
+a quota already consumed by one background report and two existing start-check
+duplicates. That producer and its hashes/PNG remain unchanged. The default driver
+now isolates controlled classification in a fresh native DOM page with a normal
+new CrashLog quota; `--classification` runs ONLY that page with WebGL forbidden.
+No quota is reset and no second GPU run is required for this isolation correction.
+The observed eight classification assertions passed; its process still exited1
+when the pre-existing native browser helper's profile removal threw ENOTEMPTY
+(#942). These are separate facts, not a green full exit. The actual scene-function
+body and six runtime/test paths matched the compositional producer exactly;
+only the test driver's isolation/entry changed. Native helper cleanup is outside
+this diagnostic-data change. `cloudflare/crash.test.mjs` passed17/17 with exit0.
+
+After #942's bounded cleanup was published, the isolated native classification
+phase passed9 checks with actual process exit0, no WebGL calls and an inspected
+`classification.png`; existing Worker crash tests passed17/17 with exit0. The
+feature driver adopts `close(primaryError)` in catch/finally, rethrows the original
+failure and records actual process/profile absence and any cleanup error. Final
+`cleanup.json` records both absent and null primary/cleanup errors. Its controlled
+DOM/camera/CSS inputs are labelled explicitly; no physical iOS fault was reproduced.
+Artifacts: `/tmp/lunden-priority-940/classification-after-942/`, corresponding
+exit/log files and `after-942-composition-proof.json`. The original actual scene
+body remains byte-identical (SHA2567b59b437b3f12a95be38ae48a68db5c280bcdf36913376fbb9482ab97a2e90de)
+and CRASHLOG policy is unchanged. Independently published head-config code and
+helper/test-driver cleanup/isolation account for the stated full-file deltas;
+there was no new GPU run and earlier producer exits/hashes were never rewritten.
