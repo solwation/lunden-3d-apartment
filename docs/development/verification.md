@@ -191,6 +191,8 @@ tools/veronatest.html  the patio's Verona lounge as three movable parts: seven s
                        the east screen wall (x 5.68), sitting, independent rotation/cushion following, rearranging and layout migration
 ```
 
+[Global filename inventory and measured summary (#764)](test-mode-inventory.md) records all current HTML/CJS dispositions, published pairs and pending evidence; group-owner rows below remain authoritative.
+
 ## Test mode (`&test`, #703)
 
 Under SwiftShader most tests check function (positions, state, messages), not pictures, yet every frame is drawn in full.
