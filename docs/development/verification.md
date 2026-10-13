@@ -5097,3 +5097,71 @@ criteria and safety are met;931's declared Front support/precision/nearest/
 obstacle/lifecycle/compatibility/deployment matrix is met with the stated body
 fallbacks.917 and broader/lateral/rear parents remain independent and open.956
 is not an automatic prerequisite or an invented arbitrary-turn/allpose claim.
+
+### Bounded larger standing LEFT family (#953)
+
+`tools/riflestandinglefttest.cjs GAME_BASE WORKER_HTTP_BASE OUT` uses actual
+Avatar/Ghosts/Combat and an owned fresh Worker, with bootstrap/WebGL suppressed.
+`--normalized-only` evaluates twelve disjoint five-model chunks, all 60 canonical
+appearances and every 61 accepted base 0.8 r2 offset from -0.30 through+0.30.
+Five actual interpolation, endpoint, capped paused draw, repeat and saber phases
+completed 18,300 nearest-Skull/shared-Contact positives and 146,400 independent
+rounded-cell corner rays, zero earlier surfaces/corner errors, actual CLI 0.
+Checkpoints and source manifest are retained. This is a finite point/phase matrix,
+not every continuous animation or arbitrary history.
+
+Separate targeted negatives: +0.30 produced 25,920 rays and 9,155 FIRST-pure-Skull
+forgeries behind hair 6,755/jaw 2,400. A +0.10 facial/arm matrix produced 17,280 rays
+and 4,649 behind Nose 1,920/face-neck 720/arm 2,001/hair 8. An actual reverse arrival
+from visible -0.30 to accepted+0.30, retaining old geometry before its next draw,
+produced 17,280 rays and 3,389 behind hair 779/face-neck 1,170/Nose 1,440. Every forged
+point was evaluated with the new option disabled and enabled: zero accepted in
+either. Actual translated near-maximum contacts passed in each phase. All three
+finite probes had CLI 0, frozen sources and zero WebGL; category counts remain
+separate, and zero candidate-hidden cells are not substituted for full Contact
+calls. Both wrapped headings±3.14→∓2.85 separately completed 600 positives/4,800
+corners over all 60 appearances, CLI 0. These limited probes do not establish every
+ray direction, extreme world coordinate or continuous pose history.
+
+The scalar+0.30 producer retained whole CLI 1: its copied tiny-family assertion
+incorrectly required 60 physically blocked RIGHT samples. Actual LEFT data were
+10,260 rays/0 bad,16,512 admitted corners/0 bad and support in all 60; actual
+rightBlocked was 0 at this pose. The new driver separates LEFT acceptance from that
+obsolete physical RIGHT expectation; its identical pose-function/physical contract
+reuses the source-bound LEFT phase without rewriting the original result, exit,
+hashes or observations. Actual canonical RIGHT representative contact still
+received body 1 in the current Worker, with the rotated r3 wirepoint recorded.
+
+Fresh current-Worker ordinary protocol 31/CLI 0 and post-#955-rebase protocol 31/CLI 0
+cover normal yaw-only 0.30 publication, self/public 2 HP, paused/repeated wave and
+held/suit/score, late welcome, one lethal UUID/award/reset, receipt replay,
+0.31 escape/return, crouch and fresh socket. Original capture's undefined returned
+head captions are presentation omissions, not proof: receipts 7/8 show missing
+head normalized false, HP 9/8 and actual hc. The inspected post-rebase native HUD
+prints those values explicitly and shows the genuine Huvudträff marker. It is a
+DOM receipt image, not a rendered avatar/apartment. The directly affected older
+`rifletinylefttest` keeps its actions and now expects the legitimate wider2 HP at
+0.02/return; its scoped current room 31/CLI 0 passed, while Node still checks the
+original tiny history stays permanently false. Final pre-rebase Node 35/CLI 0;
+post-#955 Node 36/CLI 0, including all normalized history quanta, reversals/wrapped
+aliases and independent Front/tiny histories. No unrelated #945 test assertion
+was modified or hidden.
+
+Artifacts: `/tmp/lunden-priority-953/`, separate normalized/scalarCLI 1/negative/
+wrap/current/old-tiny/source manifests. No World/GPU/physical-phone/FPS claim.
+Parents #935/#932/#917 remain open. Original Worker fallback, publication parity
+and actual deployment evidence follow separately.
+
+Final #953 compatibility/parity: a fresh owned historical fc7fd0b Worker (external
+immutable config/PlayerRoom loader, started after its source manifest) with the
+new client completed 12 checks/CLI0: before greeting head2/HP8, after ordinary
+larger yaw body1/HP7 and genuine Träff marker. Current post-rebase seven
+runtime/driver paths match their run manifests exactly. Both normalized and scalar
+pose functions match their original producer copies; no old result/hash/exit was
+rewritten. All head/Avatar/Ghosts/Combat constants and 21 of 22 rifle functions match
+the geometry producer. The explicit exception is the shared wrapper's independent
+published #955 greeting-after-turn Front option; its leaf/history were preserved,
+and fresh current Worker 31 plus Node 36 were rerun after integration. Reversing only
+the two own runtime additions reproduces preceding published config/PlayerRoom
+exactly, including independent Front/RIGHT/tiny state and callbacks. Deployment is
+recorded separately after the actual workflow step succeeds.

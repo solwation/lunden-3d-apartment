@@ -850,7 +850,7 @@ test('#947 tiny LEFT turn anchor stays private, normalized, permanent and indepe
       const bad=await join();await send(bad,state);const raw=attachment(bad);raw.leftTinyTurn=malformed;bad.ws.peer.serializeAttachment(raw);
       await send(bad,{...state,r:.81});assert.equal(attachment(bad).leftTinyTurn===false||attachment(bad).leftTinyTurn===null,true,'malformed legacy metadata cannot gain corridor eligibility');
     }
-    const legacy=await join();await send(legacy,state);const old=attachment(legacy);delete old.leftTinyTurn;legacy.ws.peer.serializeAttachment(old);env.PLAYERS.hibernate('world');await send(legacy,{...state,r:.81});assert.equal(attachment(legacy).leftTinyTurn,undefined);
+    const legacy=await join();await send(legacy,state);const old=attachment(legacy);delete old.leftTinyTurn;delete old.leftStandingTurn;legacy.ws.peer.serializeAttachment(old);env.PLAYERS.hibernate('world');await send(legacy,{...state,r:.81});assert.equal(attachment(legacy).leftTinyTurn,undefined);
     const late=await join();for(const s of late.got[0].ps){assert.equal(Object.hasOwn(s,'leftTinyTurn'),false);assert.equal(Object.hasOwn(s,'headPoseFixed'),false);}
   }finally{for(const c of peers)c.ws.close();await settle(env);}
 });
@@ -867,7 +867,7 @@ test('#947 accepted normalized tiny turn after greeting gives authoritative LEFT
  hit=await fire({...shot,hc:undefined});assert.equal(hit.head,undefined);assert.equal(hit.l,7,'old client body fallback');
  env.PLAYERS.hibernate('world');const room=env.PLAYERS.object('world'),target=room.open().find(w=>w.deserializeAttachment().i===id);let att=target.deserializeAttachment();att.l=1;target.serializeAttachment(att);hit=await fire(shot);assert.equal(hit.head,true);assert.equal(hit.dead,true);assert.equal(hit.l,-1);assert.match(hit.kill,/^[0-9a-f-]{36}$/);assert.equal(hit.award.seq,3);
  const count=a.got.filter(m=>m.t==='hit').length;a.send(shot);await settle(env);assert.equal(a.got.filter(m=>m.t==='hit').length,count,'replay gives no second award/death');
- att=target.deserializeAttachment();delete att.leftTinyTurn;target.serializeAttachment(att);env.PLAYERS.hibernate('world');hit=await fire(shot);assert.equal(hit.head,undefined);assert.equal(hit.l,9,'legacy resumed attachment cannot acquire tiny LEFT permission');
+ att=target.deserializeAttachment();delete att.leftTinyTurn;delete att.leftStandingTurn;target.serializeAttachment(att);env.PLAYERS.hibernate('world');hit=await fire(shot);assert.equal(hit.head,undefined);assert.equal(hit.l,9,'legacy resumed attachment cannot acquire LEFT permission');
  await send(b,{...first,r:.82});await send(b,{...first,r:.81});hit=await fire(shot);assert.equal(hit.head,undefined);assert.equal(hit.l,8,'out-of-band and return stay body1');
  a.ws.close();b.ws.close();await settle(env);
 });
@@ -938,4 +938,47 @@ test('#955 greeted post-turn Front: normalized authority, history, lethal/replay
     const shot=shotFor(.01,cid);shot.allowGreetingAfterTurnFront=true;sender.send({p:[shot.o[0],0,shot.o[2]],r:0,h:'rifle'});await settle(env);now+=1000;sender.send(shot);await settle(env);const body=sender.got.filter(m=>m.t==='hit').at(-1);assert.equal(body.head,undefined,'client named permission cannot override invalid private anchor');assert.equal(body.l,9);changed.ws.close();sender.ws.close();await settle(env);
   }
   for(const peer of [a,fresh,late])peer.ws.close();await settle(env);
+});
+
+test('#953 larger LEFT standing turn anchor stays private, normalized, permanent and independent through hibernation',async()=>{
+  const env=setup(),peers=[],join=async()=>{const c=await connect(env);peers.push(c);return c;},attachment=c=>c.ws.peer.deserializeAttachment();
+  const state={p:[1.234,0,3.456],r:.804,h:'rifle'},send=async(c,m)=>{now+=1000;c.send(m);await settle(env);};
+  try{
+    for(const [anchor,yaw]of[[.8,1.10],[.8,.50],[3.14,-2.85],[-3.14,2.85]]){
+      const c=await join();assert.equal(attachment(c).leftStandingTurn,null);await send(c,{...state,r:anchor});
+      await send(c,{...state,r:yaw,h:'saber',sp:true,score:4});assert.deepEqual(attachment(c).leftStandingTurn,{p:[1.23,0,3.46],r:anchor});
+      assert.equal(attachment(c).s.r,yaw);assert.equal(attachment(c).headPoseFixed,false);assert.equal(attachment(c).turned,true);assert.equal(attachment(c).leftTinyTurn,false);
+      env.PLAYERS.hibernate('world');await send(c,{...state,r:yaw});assert.equal(attachment(c).leftStandingTurn.r,anchor);
+      // Every accepted r2 quantum in the standing corridor, including reverse traversal and wrapped aliases.
+      for(const direction of [1,-1])for(let step=0;step<=60;step++){const q=direction*(step-30),raw=+(anchor+q/100).toFixed(2);for(const r of [raw,+Math.atan2(Math.sin(raw),Math.cos(raw)).toFixed(2)]){if(Math.abs(Math.atan2(Math.sin(r-anchor),Math.cos(r-anchor)))>.30&&Math.abs(Math.round((r-anchor)*100))>30)continue;await send(c,{...state,r});assert.equal(attachment(c).s.r,r);assert.deepEqual(attachment(c).leftStandingTurn,{p:[1.23,0,3.46],r:anchor});}}
+      const outside=anchor+.31;await send(c,{...state,r:outside});assert.equal(attachment(c).leftStandingTurn,false);
+      await send(c,{...state,r:anchor});assert.equal(attachment(c).leftStandingTurn,false,'return does not restore tiny-turn history');
+    }
+    for(const delta of[{p:[1.25,0,3.46]},{c:true}]){const c=await join();await send(c,state);await send(c,{...state,...delta});await send(c,state);assert.equal(attachment(c).leftStandingTurn,false);}
+    const crouched=await join();await send(crouched,{...state,c:true});await send(crouched,state);assert.equal(attachment(crouched).leftStandingTurn,false);
+    for (const malformed of [null,true,false,{}, {p:[5000.01,0,0],r:.8},{p:[1.23,0,3.46],r:100.01},{p:[1.234,0,3.46],r:.8},{p:[1.23,0,3.46],r:.805}]) {
+      const bad=await join();await send(bad,state);const raw=attachment(bad);raw.leftStandingTurn=malformed;bad.ws.peer.serializeAttachment(raw);
+      await send(bad,{...state,r:1.10});assert.equal(attachment(bad).leftStandingTurn===false||attachment(bad).leftStandingTurn===null,true,'malformed legacy metadata cannot gain corridor eligibility');
+    }
+    const legacy=await join();await send(legacy,state);const old=attachment(legacy);delete old.leftStandingTurn;legacy.ws.peer.serializeAttachment(old);env.PLAYERS.hibernate('world');await send(legacy,{...state,r:1.10});assert.equal(attachment(legacy).leftStandingTurn,undefined);
+    const late=await join();for(const s of late.got[0].ps){assert.equal(Object.hasOwn(s,'leftStandingTurn'),false);assert.equal(Object.hasOwn(s,'headPoseFixed'),false);}
+  }finally{for(const c of peers)c.ws.close();await settle(env);}
+});
+
+
+test('#953 accepted larger standing turn after greeting gives authoritative LEFT2, legacy/invalid returns remain body1',async()=>{
+ const C=await import('../src/config.js'),env=setup(),a=await connect(env),b=await connect(env),id=b.got[0].i;const send=async(c,m)=>{now+=1000;c.send(m);await settle(env);};
+ const first={p:[0,0,0],r:.8,h:'rifle'},state={p:[0,0,0],r:1.10};await send(a,{p:[-4,0,0],r:0,h:'rifle'});await send(b,first);await send(b,{t:'g',to:a.got[0].i,k:0});await send(b,{...first,r:1.10,h:'saber',sp:true,score:4});
+ const look=C.avatarLook(id),width=[.93,1,1.08][look.build],r2=v=>+(v).toFixed(2),r3=v=>+(v).toFixed(3);let shot;
+ for(const yy of[.098,.099,.100,.101,.102])for(const zz of[.067,.068,.069,.070,.071,.072,.073]){
+  const y=(C.PVP_RIFLE_HEAD.headY+yy)*look.tall,o=[r2(-4*Math.cos(state.r)-zz*width*Math.sin(state.r)),r2(y),r2(4*Math.sin(state.r)-zz*width*Math.cos(state.r))],d=[r3(Math.cos(state.r)),0,r3(-Math.sin(state.r))],unit=d.map(v=>v/Math.hypot(...d)),entry=C.rifleSkullEntry(id,state,o,d);if(entry===null)continue;const hc=[1,...o.map((v,i)=>r3(v+unit[i]*entry))];if(!shot&&C.rifleHeadGreetingLeftRegion(id,state,hc.slice(1),o,d))shot={t:'a',w:'rifle',o,d,hc,to:id};
+ }
+ assert.ok(shot,'actual assigned appearance has a bounded pure-profile LEFT cell');await send(a,{p:[shot.o[0],0,shot.o[2]],r:0,h:'rifle'});
+ const fire=async(s)=>{await send(a,s);return a.got.filter(m=>m.t==='hit').at(-1);};let hit=await fire(shot);assert.equal(hit.head,true);assert.equal(hit.l,8);assert.equal(b.got.filter(m=>m.t==='hurt').at(-1).l,8);assert.ok(Buffer.byteLength(JSON.stringify(shot))<=256);
+ hit=await fire({...shot,hc:undefined});assert.equal(hit.head,undefined);assert.equal(hit.l,7,'old client body fallback');
+ env.PLAYERS.hibernate('world');const room=env.PLAYERS.object('world'),target=room.open().find(w=>w.deserializeAttachment().i===id);let att=target.deserializeAttachment();att.l=1;target.serializeAttachment(att);hit=await fire(shot);assert.equal(hit.head,true);assert.equal(hit.dead,true);assert.equal(hit.l,-1);assert.match(hit.kill,/^[0-9a-f-]{36}$/);assert.equal(hit.award.seq,3);
+ const count=a.got.filter(m=>m.t==='hit').length;a.send(shot);await settle(env);assert.equal(a.got.filter(m=>m.t==='hit').length,count,'replay gives no second award/death');
+ att=target.deserializeAttachment();delete att.leftTinyTurn;delete att.leftStandingTurn;target.serializeAttachment(att);env.PLAYERS.hibernate('world');hit=await fire(shot);assert.equal(hit.head,undefined);assert.equal(hit.l,9,'legacy resumed attachment cannot acquire LEFT permission');
+ await send(b,{...first,r:1.11});await send(b,{...first,r:1.10});hit=await fire(shot);assert.equal(hit.head,undefined);assert.equal(hit.l,8,'out-of-band and return stay body1');
+ a.ws.close();b.ws.close();await settle(env);
 });

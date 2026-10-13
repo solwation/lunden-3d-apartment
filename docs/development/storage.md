@@ -657,3 +657,23 @@ permanent normalized p/c/heading invalidation survive hibernation, healing and
 death unchanged; missing/null/malformed legacy anchors do not grant permission.
 Rejected/invalid greetings and states do not manufacture a new history. Other
 named and legacy positional/bool/default/null options keep their original rules.
+
+### Independent larger LEFT standing corridor (#953)
+
+Fresh sockets add private `leftStandingTurn:null`. Only the first accepted
+standing cleanState initializes `{p,r}`; every accepted p/c change or wrapped
+heading escape from the guessed 0.30 corridor permanently changes it to false.
+Missing legacy metadata never initializes retroactively. Strict finite normalized
+r2 coordinates within ±5000 and headings within ±100 are required; null, booleans,
+malformed or out-of-range anchors cannot grant permission. Existing
+`leftTinyTurn`, `headPoseFixed`, `turned`, `frontTurn` and all named independent
+surface permissions remain unchanged. No new KV, public field, wire or timer.
+
+Strict default-false `allowGreetingLeftTurn` selects the exact existing LEFT leaf
+only for a greeted eligible socket. It does not widen the surface or precision
+policy. Node tests traverse all 61 normalized offsets in both directions, including
+wrapped aliases, hibernation, permanent escape/return, missing legacy and hidden
+metadata in welcome. The old-client missing-hc path, one lethal UUID/award/reset,
+replay and recovery retain the existing authority. Simulated pre-feature legacy
+fixtures omit both newer LEFT histories; no private history is restored for a
+successful assertion.

@@ -1036,3 +1036,20 @@ families remain independent. Moving/crouch/other weapons belong893–895.
 now supplies it. Parent closure is an explicit criterion audit, not a claim that
 every initially proposed surface/turn must be positive.956 tracks possible larger
 standing-turn support without becoming an automatic new parent requirement.
+
+### Larger standing LEFT turns after greeting (#953)
+
+A separate private first-standing history permits the existing narrow LEFT leaf
+within a guessed ±0.30-rad accepted heading corridor (about 17 degrees). Its
+normalized first p and standing c must remain fixed. Movement, crouching or
+leaving the corridor permanently closes this additional permission; returning,
+waiting or greeting again cannot restore it. The existing 0.01 tiny history and
+fixed RIGHT/Front/Rear rules remain independent. This changes permission only,
+with no geometry, animation, packet or entry/wire tolerance change.
+
+The larger yaw naturally exceeds the unchanged ordinary Ghosts publication
+threshold. Missing/malformed legacy history and unsupported contacts keep body 1.
+An original tiny history can be permanently false while the independent larger
+history remains valid, so the old .02-and-return room scenario now receives 2 HP;
+.31 escape-and-return remains body 1. Larger turns outside the corridor, general
+translation/crouching and RIGHT changed-pose support remain in #935/#954.

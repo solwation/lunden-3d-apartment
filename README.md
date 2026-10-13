@@ -220,3 +220,10 @@ movement/crouch and unknown history keep the extra Front body fallback. See the
 [declared matrix](docs/development/interactions.md) and
 [criterion evidence](docs/development/verification.md); parent closure does not
 imply arbitrary all-pose support or close other head-surface families.
+
+A separate bounded standing-turn history now supports the same narrow left-temple
+surface after a larger turn following greeting. It preserves the older tiny-turn
+rule and permanently closes on accepted movement, crouching or corridor escape.
+See [interaction rules](docs/development/interactions.md) and
+[verification](docs/development/verification.md); larger lateral remainders remain
+tracked in #935.
