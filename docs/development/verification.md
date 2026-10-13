@@ -4904,3 +4904,18 @@ checkpointed negatives, ordinary protocol/legacy JSON and inspected native PNGs.
 All results are finite source-bound native/DOM samples; no World, physical-phone,
 FPS or all-pose acceptance is claimed. Parents #935/#932 remain open for the larger
 lateral remainder. Deployment and final publication parity are recorded separately.
+
+#947 publication: runtime 9c4908440aadfa0e9b67eb5319926c8dc2761abd. Genuine Worker
+workflow 38452843968, job 115487878261 and its actual
+`cloudflare/wrangler-action@v3` step completed successfully (not skipped). This
+confirms deployment, not a live phone/network match. Final Node32/CLI0 includes
+an explicit resumed legacy attachment actual body1 assertion added after the
+31-check browser completed. Its test-file hash delta is separate from the six
+unchanged runtime/driver paths at that stage. A later #715 rebase changed only
+`COMBAT.collision.nativeChunkTriangles`; all 21 rifle functions, PVP_RIFLE_HEAD,
+AVATAR and GHOSTS remain identical to the green current-Worker baseline, and
+final Node32 again passed. The original whole-config hashes remain their original
+measurements, not rewritten final hashes. Reversing the two own runtime additions
+reproduced the preceding published config/PlayerRoom, preserving #943/#946 and
+all independent surface families. Parent #935 remains open for larger turns,
+movement and crouching; no timeout can reopen this private corridor.
