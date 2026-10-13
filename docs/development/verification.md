@@ -729,7 +729,36 @@ requestFullscreen function and touch/input state. `FIXTURE_VIEWPORT_ARTIFACTS=/t
 DOM-only screenshots. On Chrome149.0.7827.55 the old direct resize reproduced Browser.setWindowBounds's fullscreen
 error; the synchronized path passed. Both native PNGs were inspected and show the button/input at requested sizes;
 no apartment, WebGL, physical phone or game screenshot acceptance is established by this regression.
-Whole authored two-client/Worker chat acceptance remains required separately before #862 closure.
+Whole #862 acceptance completed on frozen `d1036f9` with an explicit validation-only #855 input overlay:
+combined driver SHA-256 `6b47d8b53fe9b7c42ff20668e9a1e7ec83cdccf0cab4f4ac37752541bf7d8fdc`, published native
+helper `bc723daefb803568d14b81d5538201f198c855f9b548748d3617815ae38ec2f4`. The byte-inverse proof retains all
+43 original check sites (including catch) and eight captures in exact authored order; only the five approved #855
+checks/preflight/redaction/ready observation are added. That overlay is preserved for #855 and is not committed as #862.
+
+Attempt1 reached 46 PASS and seven reviewed captures, then its direct exec session and server reported SIGTERM/143
+without a test catch/verdict or Node exit file. Signal sender is unknown; the original 60-minute driver deadline was
+not reached, and no 300/360-second tool limit is established. This interrupted run supplies no whole acceptance.
+A separately authorized attempt2 used the same exact source/driver and an owned bounded test monitor (900 seconds,
+15-second heartbeat, own process groups only). Actual Node and wrapper exited0, ALL PASS47/0 FAIL, no page errors,
+all eight original PNG and final leave completed. Final monitor wall413.379 seconds includes readiness and cleanup;
+this is test lifecycle time, not phone frame time or a speedup measurement. Both actual app-ready observations were
+480×300, full rendering/no test mode. The phone sequence logged actual `leftFullscreen:true` then 667×375 and passed
+its original non-overlap/bottom-gap check; anonymous reply and final ghost/bubble leave also passed.
+
+All eight attempt2 PNG were inspected: six original960×600 desktop captures show literal markup, typing/line bubbles,
+hidden chat, fitted rows and the final anonymous reply in A's night scene; the two667×375 phone captures show actual
+lines/controls and the open input bar. No virtual-keyboard, physical-phone or rendered-pixel parity claim is made.
+All1261 tracked source hashes matched the measured freeze before/after that whole run. Later final rebase differs
+exactly in `docs/development/test-mode-inventory.md`, `docs/development/verification.md` (incoming completed-group/
+poster dispositions plus this final note), `tools/posterplacementtest.html` (unrelated fixture precondition fix), and
+`tools/chattest.cjs` (intentional removal of this agent's #855 validation overlay to published #862 bytes). All other
+frozen files, including chat/runtime/Worker/private-input provider and native helper/test, remain byte-identical;
+no blanket full-freeze or fresh whole rerun after these unrelated docs/fixture changes is claimed. The measured
+combined bytes remain saved for #855's controlled publication; its input changes are not part of #862's final commit.
+
+Evidence: `/tmp/lunden-priority-862/attempt-1/` (interrupted), `attempt-2/` (complete raw log/eight PNG/monitor actual
+exit and cleanup), `frozen-whole.json`, `combined-proof.json` and `final-rebase-proof.json` alongside them. Only owned
+server/Worker groups were terminated by the successful monitor's finally cleanup; no client/browser/listener remains.
 
 #744's removed-selector crash describes older source; its bubble-visibility failures were not
 reverified against the current app here and are not silently repaired or declared resolved.
