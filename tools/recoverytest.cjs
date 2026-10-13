@@ -11,9 +11,9 @@ const fall = process.argv.includes('--fall');
   artifact=new ArtifactCheckpoint({output,mode:'native DOM/textures, real sockets, no WebGL/apartment',scenario:fall?'real-minute shared shot/fall':'real-minute shot',sourceTrees:['src','cloudflare'],sources:['tools/recoverytest.cjs','tools/artifactcheckpoint.cjs','index.html','src/combat.js','src/ghosts.js','src/config.js','src/falldamage.js','cloudflare/players.js','cloudflare/worker.js','cloudflare/devws.mjs']});
   process.once('exit',code=>artifact.finish(code,driverError)); // actual process exit, not an earlier logical PASS
   const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH, args: ['--no-sandbox', '--disable-gpu'] });
-  artifact.resourcesAcquired();
   const errors = [], pages = [];
   try {
+    artifact.resourcesAcquired();
     for (const [i, name] of ['Recovery A', 'Recovery B'].entries()) {
       const page = await browser.newPage({ viewport: { width: 844, height: 390 } }); pages.push(page);
       page.on('pageerror', e => errors.push(e.message));

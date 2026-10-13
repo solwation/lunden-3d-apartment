@@ -14,9 +14,9 @@ const check = (ok, text) => { checks++; console.log(`${ok ? 'PASS' : 'FAIL'} ${t
   artifact=new ArtifactCheckpoint({output,mode:render?'native then controlled Ghosts WebGL, no apartment':'native DOM/canvas, no apartment/WebGL',scenario:'authoritative opponent-life badges',sourceTrees:['src','cloudflare'],sources:['tools/ghostlivestest.cjs','tools/artifactcheckpoint.cjs','index.html','src/combat.js','src/ghosts.js','src/config.js','cloudflare/players.js','cloudflare/worker.js','cloudflare/devws.mjs']});
   process.once('exit',code=>artifact.finish(code,driverError)); // actual process exit, not an earlier logical PASS
   const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined, args: render ? ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] : ['--no-sandbox', '--disable-gpu'] });
-  artifact.resourcesAcquired();
   const pages = [], errors = [];
   try {
+    artifact.resourcesAcquired();
     for (const [i, name] of ['A', 'B', 'Observer'].entries()) {
       const page = await browser.newPage({ viewport: { width: 844, height: 390 } }); pages.push(page);
       page.on('pageerror', e => errors.push(e.message));

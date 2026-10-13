@@ -4047,7 +4047,7 @@ server ran those files.
 
 Verify the helper with `node --test tools/artifactcheckpoint.test.cjs`. Run the actual native receipt/
 badge subprocess failure proof with `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/artifactcheckpointtest.cjs game worker artifacts`.
-It runs the unchanged native ghost-life assertions to success, then injects a first-PNG failure and a
+It runs the unchanged native ghost-life assertions to success, then injects a first-PNG failure, a post-browser-acquisition checkpoint write failure and a
 later-phase failure using a test-only Playwright preload. It independently witnesses actual browser
 closure and actual subprocess exits 0/1, retained pre-image raw badge measurements/provenance and exact
 image/logic/CLI statuses. It also injects recovery's first PNG error after a real shot and authoritative
@@ -4055,7 +4055,10 @@ local/remote damage synchronization, leaving the not-yet-run real-minute scenari
 real-minute recovery or optional controlled-WebGL execution is claimed by this process-only proof.
 The fault subprocesses use owned process groups for their wall-time bound.
 
-Native #881 evidence: six Node cases PASS; 22 fault-harness checks PASS, harness exit 0; successful
+Native #881 evidence: six Node cases PASS; 28 fault-harness checks PASS, harness exit 0; successful
 ghost-life scenario retains all 14 original native assertions and its reviewed PNGs, actual CLI 0.
-The three expected failing drivers have actual CLI 1 and closed owned browsers. Artifacts are under
+The four expected failing drivers have actual CLI 1 and closed owned browsers. Artifacts are under
 `/tmp/lunden-artifact881-surface/exit-proof/` and final rebase proof as reported on the issue.
+
+The resource-acquisition checkpoint write stays inside the same browser try/finally guard; a one-shot
+rename failure there also exits 1 with an independently closed browser, no fake scenario/image completion.
