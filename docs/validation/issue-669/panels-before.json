@@ -1,0 +1,300 @@
+{
+  "baseline": true,
+  "testMode": null,
+  "walking": {
+    "renders": 6,
+    "shadows": 6,
+    "rows": [
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      }
+    ]
+  },
+  "reading": {
+    "renders": 12,
+    "shadows": 12,
+    "rows": [
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      }
+    ]
+  },
+  "resumed": {
+    "renders": 6,
+    "shadows": 6,
+    "rows": [
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      }
+    ]
+  },
+  "paused": {
+    "renders": 12,
+    "shadows": 12,
+    "rows": [
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      }
+    ]
+  },
+  "portrait": {
+    "renders": 4,
+    "shadows": 4,
+    "rows": [
+      {
+        "shadow": true,
+        "calls": 638,
+        "tris": 890775,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 638,
+        "tris": 890775,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 638,
+        "tris": 890775,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 638,
+        "tris": 890775,
+        "ms": 0
+      }
+    ]
+  },
+  "landscapeAgain": {
+    "renders": 3,
+    "shadows": 3,
+    "rows": [
+      {
+        "shadow": true,
+        "calls": 638,
+        "tris": 890775,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 638,
+        "tris": 890775,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 638,
+        "tris": 890775,
+        "ms": 0
+      }
+    ]
+  },
+  "rotateDisplay": "grid",
+  "errors": []
+}

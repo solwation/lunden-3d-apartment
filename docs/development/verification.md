@@ -3896,3 +3896,19 @@ Parents #740/#736 remain open.
 Start `python3 tools/devserve.py 8851 .` and `node cloudflare/dev.mjs 8852`, then `PLAYWRIGHT_MODULE=/path/to/playwright CHROME_PATH=/path/to/chrome node tools/ghostlivestest.cjs http://localhost:8851 http://localhost:8852 /tmp/ghost-lives`. The default uses actual Ghosts/Combat and three WebSocket clients with native 2D textures, blocks WebGL, and suppresses only the apartment bootstrap. It checks authoritative damage, observer pickup, both weapon removals, death/reset, reconnection/departure, nondefault/invalid counts and cached resource release. It preserves existing combat participant rules and reports page errors. `node --test cloudflare/players.test.mjs` also covers forged client lives, late welcome, hibernation and generic server publication.
 
 Optional `--render` adds one small controlled actual Ghosts/Three scene after the native checks, with desktop/phone-size armed and phone-size unarmed captures; it requires an exclusive graphics slot. It never boots the apartment. Native texture captures are not rendered-game evidence, and phone-size Chromium images are not a physical iPhone acceptance or performance measurement.
+
+
+## Phone note/pause rendering regression (#669)
+
+`PLAYWRIGHT_MODULE=… CHROME_PATH=… PHONE_PANEL_OUTPUT=/tmp/panels node tools/phonepaneltest.cjs http://localhost:8840`
+loads one real apartment with `lowmem`, touch/coarse-pointer emulation, quality 0 and
+no `&test`/`&shot`. After a complete visible startup it stops the automatic render
+loop, installs Playwright's controlled clock and drives actual `frame()` callbacks.
+The render wrapper calls the original renderer and records shadow requests/draws;
+there is no replacement scene or renderer. Covers real note-open/use, its DOM close
+button, pause, opaque portrait rotation and immediate return to normal drawing.
+The clock allows deterministic frequency checks without claiming GPU time/FPS.
+Three screenshots record note, pause and portrait states. `BASELINE_MAIN=/tmp/main-before.js`
+can route the exact previous main source to demonstrate the old unnecessary shadow
+hold and covered draws. Report the source baseline and any changed imported modules;
+this is a narrow draw-policy comparison, not complete build or pixel equivalence.

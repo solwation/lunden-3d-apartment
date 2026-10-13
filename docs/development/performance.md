@@ -554,3 +554,23 @@ Combat collision (#715) uses a capped conservative private occupancy grid, prepa
 Cold-path diagnosis (#715): `combatWorldMetrics().lastPath` holds one copied record of the latest **completed** asynchronous obstacle query (completion order, not start order for concurrent callers). It records `result`, `reason` (`clear`, `blocked`, `deadline`, `cancelled`, `cache-invalidated`, `instance-mutated`, or `error`) and final `stage` (`prepare`, `cache`, `traversal`), plus elapsed time, active intervals between yields, total yielded wall time, the subset spent awaiting promoted cache entries, maximum active slice, promoted-cache count and deadline overrun. Read it with `const { combatWorldMetrics } = await import('./src/combatworld.js'); combatWorldMetrics().lastPath` on the game page after the shot resolves. Active intervals are wall-clock measurements, **not thread CPU or GPU time**; yielded time includes other tasks, cache construction and scheduling delays and does not isolate each cause. No scene objects, player identifiers, paths or history are retained or uploaded. A delayed deadline callback can overrun while the query is yielded; elapsed time alone does not prove one long synchronous raycast. The native 2 s deadline, scheduling and hit decisions are unchanged. See [new evidence and scope](../validation/issue-715/README.md#cold-path-diagnosis-2026-10-13).
 
 Nerf (#714) adds bounded private spatial indices and per-shot instanced selection, with cooperative obstacle validation and a conservative 2 s deadline. [CPU-only apartment validation, preparation and cold-miss limitations](../validation/issue-714/README.md) separate the actual scene from small-module/Worker tests; no measured FPS or physical-phone claim.
+
+
+## Phone panels and covered rendering (#669)
+
+Reading the freezer note previously set the moving-shadow hold for 1.5 seconds even
+though it only opened DOM. This requested the full shadow pass on every frame.
+The note no longer requests that hold. Doors and other moving shadow casters keep it.
+After startup and warm-up, phones keep simulation, DOM and network updates running
+while drawing at most once per `LOW_MEMORY.coveredFrameMs` under reading/pause panels
+(100 ms, a conservative assumption rather than a device measurement). The opaque
+portrait instruction and hidden document suppress those regular scene/mirror/shadow
+renders. Closing the panel or returning to landscape draws the next gameplay frame
+immediately. Quality adaptation is reset while the phone view is covered; fast
+logic-only callbacks must not be mistaken for spare GPU capacity.
+
+Warm-up, the first complete visible frame and explicit `&shot` mode retain their
+usual rendering. Shadow time accumulates over skipped draws; simulation time and
+multiplayer updates are not throttled. `tools/phonepaneltest.cjs` uses the real app,
+real WebGL and a controlled clock to compare draw/pass counts, not physical FPS or
+proof of a fixed iPhone watchdog failure.

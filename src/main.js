@@ -4,7 +4,8 @@ import { PlantWind, windShadow } from './plantwind.js';
 import { runCheat, cheatList, isCommand } from './cheats.js';
 import { cleanHome } from './cheatclean.js';
 import { buildCheatNote } from './cheatnote.js';
-import { CHEAT_NOTE, LOW_MEMORY, QUALITY, STANDARD } from './config.js';
+import { CHEAT_NOTE, LOW_MEMORY, QUALITY, STANDARD, STARTUP } from './config.js';
+import { fetchStartupJSON } from './startuprecovery.js';
 import { lowMemory, reloadOnContextRestore, freeSceneGeometryCopies } from './lowmemory.js';
 import { loadBeerShelf } from './beershelfdata.js';
 import { BeerShelf } from './beershelf.js';
@@ -178,7 +179,7 @@ fill.position.set(8, 6, -5);
 scene.add(fill);
 
 const params0 = new URLSearchParams(location.search);
-const plan = await fetch('data/plan.json').then((r) => r.json());
+const plan = await fetchStartupJSON('data/plan.json', { timeout: STARTUP.planTimeout });
 // Finish network/cache callbacks before CPU-heavy construction can starve them past their existing deadlines.
 await beerShelfData;
 const world = buildWorld(plan);
@@ -1481,7 +1482,7 @@ function use(thing) {
   if (thing.kind === 'rearrange') { rearrange.act(thing); return; }
   if (thing.kind === 'fusebox') { thing.power.use(); return; } // the power cut (#604): trip it, or mend it while held
   if (thing.visit) { visitUse(thing); return; } // a visited flat's door, window or lid (#574)
-  shadowState.hold = 1.5; // whatever moves now casts a moving shadow
+  if (thing.kind !== 'note') shadowState.hold = 1.5; // reading the DOM note moves no shadow caster (#669)
   if (!heldItem() && !['rest', 'place', 'note', 'taskNote', 'clock', 'calendar', 'board', 'poster', 'paper'].includes(thing.kind) && focusPoint && thing === focused) hand.reach(focusPoint); // the arm reaches out (#195)
   if (thing.options && thing.kind !== 'life' && choices.rows && choices.target === thing) { // a lamp with a choice (#428): the marked row
     runChoice(choices.sel);
@@ -2463,12 +2464,16 @@ freeSceneGeometryCopies(scene, renderer); // phone: normals / uv / colours leave
 let mirrorFrame = 0;
 // The slowest frame since the crash heartbeat last looked (#669): its CPU time, the new programs it compiled, whether it redrew the shadow map and the warm-up state
 const frameDiag = { ms: 0, progs: 0, shadow: 0, warm: '' };
+// The portrait instruction covers the entire game surface; use the same media query as #rotate in index.html.
+const portraitCover = window.matchMedia('(orientation: portrait) and (pointer: coarse) and (max-width: 1100px)');
+let lastViewDraw = -Infinity, shadowElapsed = 0;
 /** One frame of the game loop; `raw` = seconds since the last one (tools/turntest.html calls it with the loop stopped). */
 function frame(raw) {
   const dt = Math.min(raw, 0.05), f0 = performance.now(), p0 = renderer.info.programs?.length ?? 0;
   hitch.begin();
   // only while playing, after the warm-up, and not with a pinned level
-  if (!overlay.hidden || document.hidden || pinned !== null || !warm.done) quality.reset();
+  if (!overlay.hidden || document.hidden || pinned !== null || !warm.done
+    || (lowMemory && (reading || portraitCover.matches))) quality.reset();
   else quality.update(raw);
   if (!warm.done && warm.tick()) hitch.frameInfo.warm = true;
   hitch.phase('adapt');
@@ -2477,17 +2482,27 @@ function frame(raw) {
   combat.update(dt);
   chat.update(dt); // the chat column fades (#675)
   hitch.phase('step');
-  updateShadows(dt);
+  // Keep simulation/network/DOM running, but give the GPU a rest while a phone visitor reads or pauses.
+  // Warm-up and the first full view must finish normally, and screenshot mode keeps its normal drawing.
+  const coveredPhone = lowMemory && !shotMode && warm.done && startupSceneReady;
+  const viewHidden = coveredPhone && (document.hidden || portraitCover.matches);
+  const viewDue = !viewHidden && (!coveredPhone || (!reading && overlay.hidden)
+    || f0 - lastViewDraw >= LOW_MEMORY.coveredFrameMs);
+  shadowElapsed += dt;
+  if (viewDue) { updateShadows(shadowElapsed); shadowElapsed = 0; }
   // one mirror image at a time, none at the lower quality levels. Heavy passes are spread over frames (#592): the
   // mirror keeps last frame's image in a frame that redraws the shadow map, and at level 2 draws every other frame.
   const mirrorSkip = renderer.shadowMap.needsUpdate || ++mirrorFrame % QUALITY.mirrorEvery[quality.level] !== 0;
-  const mirror = updateReflections(camera, player.aloft ? -1 : Math.max(0, player.level), QUALITY.mirror[quality.level] > 0 && !warm.blocksView, mirrorSkip);
+  const mirror = viewDue && updateReflections(camera, player.aloft ? -1 : Math.max(0, player.level), QUALITY.mirror[quality.level] > 0 && !warm.blocksView, mirrorSkip);
   updateListener(camera);
   hitch.phase('update');
   if (hitch.enabled) Object.assign(hitch.frameInfo, { shadow: renderer.shadowMap.needsUpdate, mirror: mirror ? (reflectors().find((m) => m.r.visible)?.name || 'yes') + (mirrorSkip ? ' (held)' : '') : '', quality: quality.level,
     yaw: Math.round(camera.rotation.y * 180 / Math.PI), at: `${camera.position.x.toFixed(1)},${camera.position.z.toFixed(1)}` });
   if (!warm.blocksView) {
-    if (testMode?.wantsFrame() ?? true) renderer.render(scene, camera); else scene.updateMatrixWorld(); // (#703: `&test=lazy` draws only on request)
+    if (viewDue && (testMode?.wantsFrame() ?? true)) {
+      renderer.render(scene, camera);
+      lastViewDraw = f0;
+    } else scene.updateMatrixWorld(); // (#703: `&test=lazy` draws only on request)
     if (!startupSceneReady) {
       startupSceneReady = true;
       document.documentElement.classList.remove('resuming');

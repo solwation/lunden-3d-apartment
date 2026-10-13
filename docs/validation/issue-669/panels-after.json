@@ -1,0 +1,155 @@
+{
+  "baseline": false,
+  "testMode": null,
+  "walking": {
+    "renders": 6,
+    "shadows": 6,
+    "rows": [
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      }
+    ]
+  },
+  "reading": {
+    "renders": 2,
+    "shadows": 2,
+    "rows": [
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      }
+    ]
+  },
+  "resumed": {
+    "renders": 6,
+    "shadows": 6,
+    "rows": [
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      }
+    ]
+  },
+  "paused": {
+    "renders": 2,
+    "shadows": 2,
+    "rows": [
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 801,
+        "tris": 958029,
+        "ms": 0
+      }
+    ]
+  },
+  "portrait": {
+    "renders": 0,
+    "shadows": 0,
+    "rows": []
+  },
+  "landscapeAgain": {
+    "renders": 3,
+    "shadows": 3,
+    "rows": [
+      {
+        "shadow": true,
+        "calls": 638,
+        "tris": 890775,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 796,
+        "tris": 946481,
+        "ms": 0
+      },
+      {
+        "shadow": true,
+        "calls": 796,
+        "tris": 946481,
+        "ms": 0
+      }
+    ]
+  },
+  "rotateDisplay": "grid",
+  "errors": []
+}

@@ -1,0 +1,12 @@
+{
+  "src/main.js": "f4763269cbf33055db7b5365f318d35990cc9d61aa98fbf76aab6da937c91ed4",
+  "src/config.js": "f4b44ddb8ae1d7bfec91b9fe38343957ccca27ed2e4d3ebb07b9ee478e0e7f20",
+  "src/bootstrap.js": "01bc888f0e5a22a626dcbe38e7b799364db7273de550dff5241f57ce7b4ba8f2",
+  "src/startuprecovery.js": "6aed64931e8674c87bd8a65fc24ee275335ac0b8fce6b13364bd5d070c2181cf",
+  "src/todo.js": "542a9bac83def4287ed817da96f29b898154845844839a940c008aff1072d400",
+  "src/beershelfdata.js": "fe2bcc56eba890501f785e6c35487a017255b716aa38f442ffc3c63cd3ecb7db",
+  "src/viewport.js": "6007adfbd2585df0c31bb951ffa26dd7cc40a0408852ee22441afe8904e313a0",
+  "src/warmup.js": "5cef7753186a4142d64bfdedee745fda491610125821a62c1ce8748a4f693983",
+  "tools/phonepaneltest.cjs": "cced14a20e660dd5a49dfaf9021d98a0abd57bd9dc58bed07d0be74b12dabb57",
+  "baseline-main": "14d69b8849494a9b7e23808bc00d8a09613ee681571b4cbd52f1f7b50d40ca3d"
+}
