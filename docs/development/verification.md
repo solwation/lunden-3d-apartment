@@ -1273,6 +1273,9 @@ persisted boolean true and enabled=false; final setup had enabled=true with the 
 The inspected fullPage image shows all nine rows and the final kitchen/HUD/rearrangement overlay, not TV
 placement pixels or intermediate movement. All 229 frozen src/data/index/helper/actual full-fixture hashes
 matched after the run. The authored default test-query fixture was then restored byte-for-byte.
+Final rebase preserved the concurrent combatworld/crashlog diagnostics; these two runtime files differ
+from the frozen full run. Rearrange, its setup helper/config/data and all four whole-source inverses remain
+unchanged. The final rebased app was not rerun; the full result belongs to the stated frozen source.
 
 The other three complete runtime suites were not rerun. This is full-mode setup acceptance, with source
 inversion and module-state equivalence, not historical parity, a speedup, cloud/physical-device coverage or
