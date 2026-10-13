@@ -674,8 +674,8 @@ no executable fixture changes or new browser results are part of this audit.
 | `planttest.html` | Accepted in #832 | Complete original full/test logs byte-identical: 23 PASS, 1035 bytes; native 900×600/null controller versus 480×300/real test APIs. All original held/merged-vertex/placement/focus/F checks retained; capture scope differs. |
 | `plantwindtest.html` | Full pixel rendering | 192×192 render-target readback asserts moving foliage, focused foliage and pixel-identical pottery. |
 | `portiktest.html` | Accepted in #832 | Complete original three-load full/test pair: 36 ordered PASS, whole 1704-byte logs identical. Native 480×300 in all six documents, full/null versus real test APIs; actual collision/geometry/door/jetpack/bin/bag/reload/reset coverage retained. See qualified evidence below. |
-| `posterplacementtest.html` | Original full red; comparison incomplete (#833) | Actual original full stopped after four PASS, two preview FAIL and a caught TypeError; writer lacks terminal (#858), preview tracked in #857. Explicit interrupted CLI143 is not a completed pair or migration. Original cloud/reload coverage remains pending. |
-| `postertest.html` | Original full retained (#833) | Actual pair: full 24 PASS/4 FAIL then caught TypeError, test complete 37 PASS. After-reload storage/count failures and clock row differ; no migration. Original pointer drawing/IndexedDB/actions/optional shots/panel paths preserved; see actual evidence below. |
+| `posterplacementtest.html` | Fixture precondition corrected (#857); complete pair (#833) | On frozen `2fc232f` plus fixture-only in-flat level1 start, full/test each 15 ordered PASS; complete raw logs identical, modes verified. Full/test screenshots reviewed. No product code change. |
+| `postertest.html` | Complete pair verified (#833) | Full/test each 37 ordered PASS; only row 19 differs in panel clock minute (12:22/12:26), with modes verified. Full/test screenshots reviewed; no parity/migration claim. Original pointer drawing/IndexedDB/actions preserved; see actual evidence below. |
 | `powertest.html` | Full lighting | Actual pools/washes, flickering supply, emissive appliance lamps and night-window lighting through cut/repair/reload. |
 
 Recovered `origin/wip/740-tests-m-p` tip `dd8810d` has six fixture edits in its own commit:
@@ -3490,7 +3490,9 @@ bases and qualified native/capture scope are recorded above; no rerun of earlier
 pairs after legitimate later source changes is claimed. Parents #740/#736 stay
 open.
 
-## Poster placement original failure (#833, partial)
+## Poster placement original failure (#833, historical partial)
+
+Superseded by the complete verified pair in “Poster comparison completed” below. This records the earlier failure before #857 identified and corrected the fixture precondition.
 
 The first complete-source comparison attempt used frozen `9cdaa49` and the
 whole original `9645849^` fixture, authored 480×300/shot/cloud-empty. No setup,
@@ -3520,7 +3522,9 @@ The drawing-poster comparison and complete placement acceptance remain pending;
 #833/#740/#736 stay open.
 
 
-## Poster drawing actual disposition (#833, partial)
+## Poster drawing earlier disposition (#833, historical partial)
+
+Superseded by the complete verified pair in “Poster comparison completed” below. The following preserves the earlier red full-run evidence; it is not the final disposition.
 
 One unchanged default `postertest.html` full/test pair ran on frozen `eea338a`
 plus only the approved pre-pair testMode fullscreen suppression in the original
@@ -3566,6 +3570,15 @@ full flow and unequal capture coverage exclude qualified speedup aggregation.
 Complete source/native/monitor/capture/restoration proof remains in
 `/tmp/lunden-posters833/postertest`. #833 remains open for placement followup;
 #740/#736 remain open. No source/runner/baseline fix was made in this disposition.
+
+
+## Poster comparison completed (#833, #857)
+
+The original placement-preview failure was caused by its fixture placing the player at the outdoor spawn while only raising `y` to the apartment's upper floor. Native `Player.level` correctly returned 0 outside the apartment footprint, so the level-1 poster candidate was rejected and the fixture then dereferenced a null candidate. `tools/posterplacementtest.html` now initializes the fixture player at `(2.875, 3.25, 10.2)`, inside the apartment on level 1. Assertions, actions, waits, query, viewport, and production code are unchanged. The exact one-file fixture patch and 1,259 tracked-file freeze are recorded in `/tmp/lunden-preview857-source/compare-freeze-before.json` and `compare-freeze-after.json`; the hashes match after both test and screenshot runs.
+
+On frozen `2fc232f` plus that fixture-only change, the complete serial `--compare` returned 1 because the drawing test reports a wall-clock string. `posterplacementtest.html` passed all 15 ordered checks in full and test; its 748-byte raw logs are byte-identical and both loaded modes were verified. `postertest.html` passed all 37 ordered checks in both modes; its 1,588-byte logs differ only at row 19, panel clock `Ritad 13 okt 12:22` versus `Ritad 13 okt 12:26`. No failure or missing row occurred. Primary comparison logs and `summary.json` are in `/tmp/runtests-679880`; measured fixture times were 229.506→191.214 s and 281.017→156.988 s, respectively, excluding the separate screenshot pass.
+
+A later one-browser serial pass captured the four full/test final states without changing fixture actions. All ten parent/iframe PNGs in `/tmp/runtests-679880/shots2` were inspected. Placement captures show all 15 result rows and the retained app views; drawing captures show the full apartment scene and the test viewport scene. These are final-state captures, not pixel-equivalence evidence. The screenshot pass re-ran each fixture; both pairs again passed with the same ordered counts and the same sole clock-row difference. Its runner was restored byte-for-byte afterwards; `git diff --check` is clean and port 8847 is free. No production source, runner, baseline or runtime data changed. #833/#857 can close on these complete results; parent #740/#736 remain open.
 
 
 ### Cat petting actual disposition (#832, partial)
