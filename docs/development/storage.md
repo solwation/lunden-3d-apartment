@@ -608,3 +608,22 @@ One actual lethal UUID/award/reset and replay-safe receipt marker remain; real
 room Node tests exercise rate rejection, history/hibernate/latewelcome/legacy/
 fresh identity and9→10 recovery in two controlled minute-alarm steps after2HP.
 Genuine deployment is recorded separately before a live publication claim.
+
+### Private LEFT tiny-yaw history (#947)
+
+A new socket starts with `leftTinyTurn:null`; only its first accepted standing
+state initializes private `{p,r}` from existing r2 normalization. Every later p/c
+change or wrapped yaw outside the guessed 0.01 corridor permanently changes it
+to `false`. A missing field on an older resumed attachment never initializes
+retroactively. Null, boolean, malformed, non-r2, out-of-range coordinate (>5000)
+or heading (>100) anchors cannot grant permission. This metadata survives ordinary
+Durable Object hibernation, is absent from welcome/state publications, and adds no
+KV key, timer, public field or message.
+
+`allowGreetingLeftTinyTurn` selects the existing LEFT leaf only for a greeted
+eligible attachment. It does not modify `headPoseFixed`, `turned` or other named
+families. Direct one-quantum arithmetic avoids floating subtraction rejecting
+valid r2 endpoints; wrapped comparisons cover the ±π crossing. Zero yaw is
+intentionally eligible too, redundantly with the independent original immutable
+LEFT rule; it cannot restore invalidated metadata. Damage, recovery, one lethal
+UUID, award sequencing and life reset remain the existing authoritative paths.

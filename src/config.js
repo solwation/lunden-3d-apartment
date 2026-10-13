@@ -4587,6 +4587,7 @@ export const PVP_RIFLE_HEAD = {
   greetingLeftPatch: { vertical: [.096, .104], front: [.065, .075] },
   // #946: separate conservative *guess* at the exposed RIGHT/BACK temple; actual immutable wave/cell/hidden proof.
   greetingRightPatch: { vertical: [.098, .102], front: [.038, .042], directionZ: .05, directionY: .025 },
+  greetingLeftTinyTurn: .01, // #947 *guess* one accepted r2 yaw quantum from the first standing anchor; no projection/entry tolerance change
   // #943: narrow conservative *guess* inside Front; actual immutable-heading wave/pause/cell proof, not elapsed pose settling.
   greetingFrontPatch: { across: [.065, .071], vertical: [.086, .094], direction: .04 },
   // .001 derives from sqrt(3)/2000 maximum r3 contact error on the already-snapped o:r2/d:r3 ray.
@@ -4700,7 +4701,7 @@ export function rifleHeadFrontRegion(seed,state,point,origin,direction) {
 }
 
 // Shared dispatch: #916 owns the central core; #917 can add its independent extra-region branch here.
-export function rifleHeadRegion(seed,state,point,origin,direction,allowLateral = true,options = true,legacyRear = true) { if(options===null||typeof options!=='object')options={allowFront:options,allowRear:legacyRear}; return rifleHeadCoreRegion(seed,state,point,origin,direction) || ((options.allowRear === undefined || options.allowRear) && rifleHeadRearRegion(seed,state,point,origin,direction)) || ((options.allowFront === undefined || options.allowFront) && rifleHeadFrontRegion(seed,state,point,origin,direction)) || (allowLateral && rifleHeadLateralRegion(seed,state,point,origin,direction)) || (options?.allowGreetingLeft === true && rifleHeadGreetingLeftRegion(seed,state,point,origin,direction)) || (options?.allowGreetingFront === true && rifleHeadGreetingFrontRegion(seed,state,point,origin,direction)) || (options?.allowGreetingRight === true && rifleHeadGreetingRightRegion(seed,state,point,origin,direction)); }
+export function rifleHeadRegion(seed,state,point,origin,direction,allowLateral = true,options = true,legacyRear = true) { if(options===null||typeof options!=='object')options={allowFront:options,allowRear:legacyRear}; return rifleHeadCoreRegion(seed,state,point,origin,direction) || ((options.allowRear === undefined || options.allowRear) && rifleHeadRearRegion(seed,state,point,origin,direction)) || ((options.allowFront === undefined || options.allowFront) && rifleHeadFrontRegion(seed,state,point,origin,direction)) || (allowLateral && rifleHeadLateralRegion(seed,state,point,origin,direction)) || ((options?.allowGreetingLeft === true || options?.allowGreetingLeftTinyTurn === true) && rifleHeadGreetingLeftRegion(seed,state,point,origin,direction)) || (options?.allowGreetingFront === true && rifleHeadGreetingFrontRegion(seed,state,point,origin,direction)) || (options?.allowGreetingRight === true && rifleHeadGreetingRightRegion(seed,state,point,origin,direction)); }
 
 /** Exposed lower rear skull only, with the same snapped ray as the actual native contact. */
 export function rifleHeadRearRegion(seed,state,point,origin,direction) {

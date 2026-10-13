@@ -198,3 +198,9 @@ Layout crash diagnostics also label surface-size faults separately from hidden
 or visible projection mismatches; all original reports and thresholds remain.
 See [storage](docs/development/storage.md) and the targeted
 [`layoutdiagnostictest`](tools/layoutdiagnostictest.cjs) verification.
+
+A narrow left-temple rifle contact also supports one server-normalized yaw quantum
+from the first standing pose after greeting. Movement, crouching or leaving that
+private corridor permanently closes this additional permission; it adds no pose
+timer or animation change. See [interaction rules](docs/development/interactions.md)
+and [targeted verification](docs/development/verification.md).

@@ -954,3 +954,21 @@ a fresh owned older-config validator for separate body-fallback compatibility;
 it is not a stale external Worker or evidence of an actual cached live client.
 Near-max positive/corner proof records240 finite cases at0.6m side origins; it
 does not promise every distance/coordinate/continuous pose. No WebGL/World/phone.
+
+### Narrow LEFT tiny-yaw family (#947)
+
+The existing #938 left-temple patch can now retain its two-heart rifle receipt
+when a greeted target changes only its normalized heading within 0.01 rad of its
+first standing heading. This corridor is a conservative *guess*, verified for the
+sampled ordinary Ghosts poses; the patch, surface entry and wire tolerances stay
+unchanged. Coordinates and crouch state must remain exactly fixed. Leaving the
+corridor, moving or crouching permanently closes this separate permission until
+a fresh socket; returning, greeting again or waiting does not reopen it. Original
+immutable LEFT, RIGHT, Front and Rear permissions remain independent.
+
+A yaw-only 0.01 change is below the unchanged normal Ghosts publication threshold.
+The supported server state can arrive with an ordinary score, held-weapon or suit
+publication; no forced send or new message is introduced. Unknown legacy history
+and clients without the optional head contact keep ordinary body damage. This
+bounded slice does not establish larger-turn, moving or crouching lateral support;
+#935 retains those remaining families.

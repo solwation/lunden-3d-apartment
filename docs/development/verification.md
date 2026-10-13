@@ -4860,3 +4860,47 @@ right/back family completes; parent935/932/917 stay open for other families.
 Deployment evidence is separate from live-phone/World/continuous-pose claims.
 
 `tools/coldnativepathtest.{cjs,html}` (#715) verifies query-local native triangle chunks against actual Three0.170 Mesh.raycast. Supply saved external ≤16MiB `largest-geometry.json` as third argument. It retains original group order/overlap/integer triangle phase/final partial, indexed/nonindexed/normalized/interleaved data, Front/Back/DoubleSide, undersized authored boxes, negative/nonuniform matrices and exact object/worldpoint/normal/face/material/UV/uv1/barycentric metadata. Native timers mutate geometry/layout/index/Infinity range/material/ancestor/matrix/layer/dispose across yields; cancellation and shared-geometry all-occurrence/urgency/lifetime controls must fail closed. Builder callbacks are retained only for controlled cold-policy tests, with native clocks/deadlines; no World/phone benchmark or fake hit. Raw outcomes/source/input/probe hashes precede PNG. Reproduce with `PLAYWRIGHT_MODULE=... CHROME_PATH=... SHOTS=/tmp/cold-native node tools/coldnativepathtest.cjs http://localhost:8873 /path/to/largest-geometry.json`; existing `tools/combatcachetest.cjs http://localhost:8873 world` remains485 native regression. The separately recorded pre-existing unsafe warm `_computeIntersections` limitation is #949, not cold-native acceptance.
+
+### Bounded LEFT tiny-yaw acceptance (#947)
+
+`tools/rifletinylefttest.cjs GAME_BASE WORKER_HTTP_BASE OUT` uses the original
+Avatar/Ghosts/Combat and an owned fresh Worker without WebGL. `--room-only` reuses
+a sibling `native/` pose phase only when its exact physical/profile contract and
+native-function bytes match; it preserves that producer's whole result, including
+failure. `--legacy-only` tests the new client against a separately frozen original
+Worker rather than a cached module or external service. Worker bases omit
+`/players`, which Ghosts appends itself.
+
+Read-only feasibility on 5eab20e sampled all 60 appearances at .80→.81, .80→.79 and
+both ±3.14 wrap directions: 41,040 actual first-surface rays, 63,456 independent
+rounded-cell corner rays, zero wrong nearest surfaces/corners. Actual Ghost
+first/delayed/paused/repeated wave, held/saber/suit and late welcome were used.
+The old first-state counter compares against the endpoint heading; only its 60
+late-welcome alignments are claimed. A first oversized negative matrix hit its
+180-second owned browser-close bound, actual CLI1, with no completed counts.
+The separate checkpointed .80→.81 negative phase completed 60 appearances and
+12,960 rays: 3,930 FIRST-pure-Skull points behind observed hair (3,690) or arm (240),
+3,930 paired full Contact evaluations with the new option disabled/enabled, zero
+accepted in either, zero hidden LEFT candidates, and 240 actual translated
+near-maximum contacts without mismatch. Other face/Nose categories and continuous
+poses were not established by that limited negative matrix.
+
+The first composed driver retained CLI1 after its native phase passed: its caller
+supplied a `/players` URL, producing `/players/players` and no room receipts. The
+corrected HTTP-base protocol and fresh post-#946-rebase protocol each completed
+31 checks, actual CLI0, no page errors: unsent yaw-only quantum; genuine score-carried
+normalized .01 state; local/public 2HP; paused/repeat/held/suit; late welcome;
+one lethal UUID/award/reset; receipt replay; permanent .02-and-return rejection;
+crouch; fresh socket; original packet cap/r2/r3. The inspected native HUD image
+shows Huvudträff and actual receipt summary, not a rendered avatar/world. Its
+undefined/undefined returned-head annotation reflects omitted body-only fields.
+A separate fresh original 5eab20e Worker with the new client passed 12 checks/CLI0,
+showing ordinary Träff and HP7 after tiny yaw. The real PlayerRoom Node suite
+passed 32 tests/CLI0, including old-client missing-hc fallback, private history
+bounds, malformed/legacy attachments, hibernation and permanent invalidation.
+
+Artifacts: `/tmp/lunden-priority-947/`, with separate failed runs, source manifests,
+checkpointed negatives, ordinary protocol/legacy JSON and inspected native PNGs.
+All results are finite source-bound native/DOM samples; no World, physical-phone,
+FPS or all-pose acceptance is claimed. Parents #935/#932 remain open for the larger
+lateral remainder. Deployment and final publication parity are recorded separately.

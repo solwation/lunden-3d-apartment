@@ -142,6 +142,19 @@ export function refuse(code, reason) {
 }
 
 const send = (ws, data) => { try { ws.send(data); } catch { /* closing */ } };
+// #947: private first-standing corridor, independent of fixed-pose and Front histories.
+// Inputs already use ordinary r2 state normalization. Direct one-quantum comparison avoids
+// floating subtraction rejecting .81-.80; wrapped crossings keep the same .01 rad policy.
+const leftTinyPoseFits = (anchor, s) => {
+  const normalized = (v, limit) => fin(v, limit) && v === r2(v);
+  if (!anchor || typeof anchor !== 'object' || Array.isArray(anchor)
+    || !Array.isArray(anchor.p) || anchor.p.length !== 3 || !anchor.p.every(v => normalized(v, 5000))
+    || !normalized(anchor.r, 100) || !s || s.c === true || !Array.isArray(s.p)
+    || s.p.length !== 3 || !s.p.every((v, i) => normalized(v, 5000) && v === anchor.p[i]) || !normalized(s.r, 100)) return false;
+  const delta = s.r - anchor.r;
+  return Math.abs(Math.round(delta * 100)) <= Math.round(RH.greetingLeftTinyTurn * 100)
+    || Math.abs(Math.atan2(Math.sin(delta), Math.cos(delta))) <= RH.greetingLeftTinyTurn;
+};
 const att = (ws) => { try { return ws.deserializeAttachment() ?? null; } catch { return null; } };
 
 export class PlayerRoom {
@@ -246,7 +259,7 @@ export class PlayerRoom {
     const [client, server] = Object.values(new WebSocketPair());
     this.ctx.acceptWebSocket(server);
     const i = crypto.randomUUID().slice(0, 8), n = cleanName(url.searchParams.get('n'));
-    const attachment = { i, n, s: null, turned: false, l: COMBAT.lives, t: now, w: now, c: 0, k: 0, over: false };
+    const attachment = { i, n, s: null, turned: false, leftTinyTurn: null, l: COMBAT.lives, t: now, w: now, c: 0, k: 0, over: false };
     server.serializeAttachment(attachment);
     send(server, JSON.stringify({ t: 'w', i, l: attachment.l, ps: others.map(att).map((a) => ({ i: a.i, n: a.n, ...(a.s ?? {}), l: a.l ?? COMBAT.lives })), c: { lives: COMBAT.lives, weapons: COMBAT.weapons } }));
     this.broadcast({ t: 'j', i, n, l: COMBAT.lives }, server);
@@ -312,6 +325,9 @@ export class PlayerRoom {
         // Existing legacy attachments with s already set and no flag never gain eligibility retroactively.
         if (a.s === null) a.headPoseFixed = s.c !== true;
         else if (a.headPoseFixed === true && (s.r !== a.s.r || s.p.some((v, i) => v !== a.s.p[i]) || !!s.c !== !!a.s.c)) a.headPoseFixed = false;
+        // A known fresh null sentinel is required; missing legacy history never initializes.
+        if (a.s === null && a.leftTinyTurn === null) a.leftTinyTurn = s.c === true ? false : { p: s.p.slice(), r: s.r };
+        else if (a.leftTinyTurn && !leftTinyPoseFits(a.leftTinyTurn, s)) a.leftTinyTurn = false;
         if (!a.s || s.r !== a.s.r || s.p.some((v, i) => v !== a.s.p[i])) a.movedAt = now;
         a.s = s; this.publishState(ws, a);
       }
@@ -357,7 +373,7 @@ export class PlayerRoom {
     // #932: a greeting's wave may be paused/delayed on another replica. Never infer its end from wall time.
     // #938 reopens only a narrow left temple when first-standing p/r/c never changed; no wave-end inference.
     // Right/changed/legacy lateral contacts retain the permanent gt fallback; #931 front/#936 rear gates stay independent.
-    const head = now - (b.movedAt ?? now) >= RH.stationaryMs && rifleHeadContact(b.i, b.s, shot, a.s.p, W.range, COMBAT.from, b.gt === undefined, { allowGreetingLeft: b.gt !== undefined && b.headPoseFixed === true, allowGreetingFront: b.gt !== undefined && b.headPoseFixed === true && b.turned === false, allowGreetingRight: b.gt !== undefined && b.headPoseFixed === true && b.turned === false, allowFront: b.gt === undefined && b.turned === false, allowRear: b.gt === undefined });
+    const head = now - (b.movedAt ?? now) >= RH.stationaryMs && rifleHeadContact(b.i, b.s, shot, a.s.p, W.range, COMBAT.from, b.gt === undefined, { allowGreetingLeftTinyTurn: b.gt !== undefined && leftTinyPoseFits(b.leftTinyTurn, b.s), allowGreetingLeft: b.gt !== undefined && b.headPoseFixed === true, allowGreetingFront: b.gt !== undefined && b.headPoseFixed === true && b.turned === false, allowGreetingRight: b.gt !== undefined && b.headPoseFixed === true && b.turned === false, allowFront: b.gt === undefined && b.turned === false, allowRear: b.gt === undefined });
     const left = (b.l ?? COMBAT.lives) - (head ? RH.headDamage : RH.bodyDamage), dead = left <= 0;
     b.l = dead ? COMBAT.lives : left;
     this.recoveryClock(b, now);

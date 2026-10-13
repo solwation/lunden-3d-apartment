@@ -831,3 +831,43 @@ test('lower central nose band: authoritative damage, legacy fallback, one fatal 
   const count=a.got.filter(m=>m.t==='hit').length;a.send(shot);await settle(env);assert.equal(a.got.filter(m=>m.t==='hit').length,count,'same tick cannot produce another death or award');
   const observer=await connect(env);assert.equal(observer.got[0].ps.find(p=>p.i===id).l,COMBAT.lives);
 });
+
+test('#947 tiny LEFT turn anchor stays private, normalized, permanent and independent through hibernation',async()=>{
+  const env=setup(),peers=[],join=async()=>{const c=await connect(env);peers.push(c);return c;},attachment=c=>c.ws.peer.deserializeAttachment();
+  const state={p:[1.234,0,3.456],r:.804,h:'rifle'},send=async(c,m)=>{now+=1000;c.send(m);await settle(env);};
+  try{
+    for(const [anchor,yaw]of[[.8,.81],[.8,.79],[3.14,-3.14],[-3.14,3.14]]){
+      const c=await join();assert.equal(attachment(c).leftTinyTurn,null);await send(c,{...state,r:anchor});
+      await send(c,{...state,r:yaw,h:'saber',sp:true,score:4});assert.deepEqual(attachment(c).leftTinyTurn,{p:[1.23,0,3.46],r:anchor});
+      assert.equal(attachment(c).s.r,yaw);assert.equal(attachment(c).headPoseFixed,false);assert.equal(attachment(c).turned,true);
+      env.PLAYERS.hibernate('world');await send(c,{...state,r:yaw});assert.equal(attachment(c).leftTinyTurn.r,anchor);
+      const outside=anchor===.8?.82:anchor+1;await send(c,{...state,r:outside});assert.equal(attachment(c).leftTinyTurn,false);
+      await send(c,{...state,r:anchor});assert.equal(attachment(c).leftTinyTurn,false,'return does not restore tiny-turn history');
+    }
+    for(const delta of[{p:[1.25,0,3.46]},{c:true}]){const c=await join();await send(c,state);await send(c,{...state,...delta});await send(c,state);assert.equal(attachment(c).leftTinyTurn,false);}
+    const crouched=await join();await send(crouched,{...state,c:true});await send(crouched,state);assert.equal(attachment(crouched).leftTinyTurn,false);
+    for (const malformed of [null,true,false,{}, {p:[5000.01,0,0],r:.8},{p:[1.23,0,3.46],r:100.01},{p:[1.234,0,3.46],r:.8},{p:[1.23,0,3.46],r:.805}]) {
+      const bad=await join();await send(bad,state);const raw=attachment(bad);raw.leftTinyTurn=malformed;bad.ws.peer.serializeAttachment(raw);
+      await send(bad,{...state,r:.81});assert.equal(attachment(bad).leftTinyTurn===false||attachment(bad).leftTinyTurn===null,true,'malformed legacy metadata cannot gain corridor eligibility');
+    }
+    const legacy=await join();await send(legacy,state);const old=attachment(legacy);delete old.leftTinyTurn;legacy.ws.peer.serializeAttachment(old);env.PLAYERS.hibernate('world');await send(legacy,{...state,r:.81});assert.equal(attachment(legacy).leftTinyTurn,undefined);
+    const late=await join();for(const s of late.got[0].ps){assert.equal(Object.hasOwn(s,'leftTinyTurn'),false);assert.equal(Object.hasOwn(s,'headPoseFixed'),false);}
+  }finally{for(const c of peers)c.ws.close();await settle(env);}
+});
+
+test('#947 accepted normalized tiny turn after greeting gives authoritative LEFT2, legacy/invalid returns remain body1',async()=>{
+ const C=await import('../src/config.js'),env=setup(),a=await connect(env),b=await connect(env),id=b.got[0].i;const send=async(c,m)=>{now+=1000;c.send(m);await settle(env);};
+ const first={p:[0,0,0],r:.8,h:'rifle'},state={p:[0,0,0],r:.81};await send(a,{p:[-4,0,0],r:0,h:'rifle'});await send(b,first);await send(b,{t:'g',to:a.got[0].i,k:0});await send(b,{...first,r:.81,h:'saber',sp:true,score:4});
+ const look=C.avatarLook(id),width=[.93,1,1.08][look.build],r2=v=>+(v).toFixed(2),r3=v=>+(v).toFixed(3);let shot;
+ for(const yy of[.098,.099,.100,.101,.102])for(const zz of[.067,.068,.069,.070,.071,.072,.073]){
+  const y=(C.PVP_RIFLE_HEAD.headY+yy)*look.tall,o=[r2(-4*Math.cos(state.r)-zz*width*Math.sin(state.r)),r2(y),r2(4*Math.sin(state.r)-zz*width*Math.cos(state.r))],d=[r3(Math.cos(state.r)),0,r3(-Math.sin(state.r))],unit=d.map(v=>v/Math.hypot(...d)),entry=C.rifleSkullEntry(id,state,o,d);if(entry===null)continue;const hc=[1,...o.map((v,i)=>r3(v+unit[i]*entry))];if(!shot&&C.rifleHeadGreetingLeftRegion(id,state,hc.slice(1),o,d))shot={t:'a',w:'rifle',o,d,hc,to:id};
+ }
+ assert.ok(shot,'actual assigned appearance has a bounded pure-profile LEFT cell');await send(a,{p:[shot.o[0],0,shot.o[2]],r:0,h:'rifle'});
+ const fire=async(s)=>{await send(a,s);return a.got.filter(m=>m.t==='hit').at(-1);};let hit=await fire(shot);assert.equal(hit.head,true);assert.equal(hit.l,8);assert.equal(b.got.filter(m=>m.t==='hurt').at(-1).l,8);assert.ok(Buffer.byteLength(JSON.stringify(shot))<=256);
+ hit=await fire({...shot,hc:undefined});assert.equal(hit.head,undefined);assert.equal(hit.l,7,'old client body fallback');
+ env.PLAYERS.hibernate('world');const room=env.PLAYERS.object('world'),target=room.open().find(w=>w.deserializeAttachment().i===id);let att=target.deserializeAttachment();att.l=1;target.serializeAttachment(att);hit=await fire(shot);assert.equal(hit.head,true);assert.equal(hit.dead,true);assert.equal(hit.l,-1);assert.match(hit.kill,/^[0-9a-f-]{36}$/);assert.equal(hit.award.seq,3);
+ const count=a.got.filter(m=>m.t==='hit').length;a.send(shot);await settle(env);assert.equal(a.got.filter(m=>m.t==='hit').length,count,'replay gives no second award/death');
+ att=target.deserializeAttachment();delete att.leftTinyTurn;target.serializeAttachment(att);env.PLAYERS.hibernate('world');hit=await fire(shot);assert.equal(hit.head,undefined);assert.equal(hit.l,9,'legacy resumed attachment cannot acquire tiny LEFT permission');
+ await send(b,{...first,r:.82});await send(b,{...first,r:.81});hit=await fire(shot);assert.equal(hit.head,undefined);assert.equal(hit.l,8,'out-of-band and return stay body1');
+ a.ws.close();b.ws.close();await settle(env);
+});
