@@ -420,18 +420,26 @@ try {
   const sameAsync = async (points,label) => {
     const expected = pathSame(points,label + ' sync comparison').some(h => h.length);
     const blocked = await combatWorldPathBlocked(scene,ghosts,camera,points,ray.layers,{ deadline: performance.now()+2000 });
-    check(blocked === expected,label + ' async blocked result matches'); return blocked;
+    check(blocked === expected,label + ' async blocked result matches');
+    const diagnostic = combatWorldMetrics().lastPath;
+    check(diagnostic.result === blocked && diagnostic.reason === (blocked ? 'blocked' : 'clear') && diagnostic.stage === 'traversal', label + ' diagnosis preserves completed result and stage');
+    check(diagnostic.activeMs >= 0 && diagnostic.yieldMs >= 0 && diagnostic.cacheWaitMs <= diagnostic.yieldMs &&
+      Math.abs(diagnostic.elapsedMs - diagnostic.activeMs - diagnostic.yieldMs) < 2, label + ' query time partitions active slices and task waits');
+    return blocked;
   };
   clear(); const asyncGeometry = new T.BoxGeometry(2,2,2,5,5,5); asyncGeometry.clearGroups();
   scene.add(new T.Mesh(asyncGeometry,material()));
   await sameAsync(curve(),'pending async geometry');
+  check(combatWorldMetrics().lastPath.promotedCaches > 0 && combatWorldMetrics().lastPath.cacheWaitMs > 0, 'cold diagnosis records overlapping cache promotion and wait');
   check(combatWorldState(asyncGeometry).spatialReady, 'async validation waits for overlapping pending spatial cache');
   await sameAsync(curve(),'ready async geometry');
   await sameAsync([new T.Vector3(5,5,1),new T.Vector3(5,5,-1)],'clear async path');
   const zero = [new T.Vector3(0,0,1),new T.Vector3(0,0,1)];
   await sameAsync(zero,'zero-length boundary async path');
   check(await combatWorldPathBlocked(scene,ghosts,camera,curve(),ray.layers,{cancelled:()=>true}) === null,'explicit initial cancellation returnsnull');
+  check(combatWorldMetrics().lastPath.reason === 'cancelled' && combatWorldMetrics().lastPath.stage === 'prepare', 'initial cancellation diagnosis is distinct from deadline');
   check(await combatWorldPathBlocked(scene,ghosts,camera,curve(),ray.layers,{deadline:performance.now()-1}) === null,'already expired deadline returnsnull');
+  check(combatWorldMetrics().lastPath.reason === 'deadline' && combatWorldMetrics().lastPath.deadlineOverrunMs > 0, 'expired deadline diagnosis records overrun');
   asyncGeometry.dispose();
 
   clear(); const parentAsync = new T.Group(); parentAsync.raycast = () => false; parentAsync.add(mesh()); scene.add(parentAsync);
@@ -469,6 +477,10 @@ try {
   let invoke = 0;
   slowCustom.raycast = (_rc,hits) => { invoke++; const until=performance.now()+15; while(performance.now()<until){}; hits.push({distance:0,object:reported,point:new T.Vector3()}); };
   check(await combatWorldPathBlocked(scene,ghosts,camera,[new T.Vector3(0,0,1),new T.Vector3(0,0,-1)],ray.layers,{deadline:performance.now()+10}) === null && invoke>0,'deadline overrun inside custom raycast conservatively returnsnull');
+  const customDiagnostic = combatWorldMetrics().lastPath;
+  check(customDiagnostic.reason === 'deadline' && customDiagnostic.stage === 'traversal' && customDiagnostic.maxSliceMs >= 15 && customDiagnostic.deadlineOverrunMs > 0, 'synchronous custom overrun is recorded as active traversal slice');
+  customDiagnostic.reason = 'changed by caller';
+  check(combatWorldMetrics().lastPath.reason === 'deadline', 'metrics snapshot cannot mutate retained path diagnosis');
 
   // Shared urgency is a caller-owned priority, and invalidation cannot transfer an ownerless lease.
   const waitingGeometry = () => {
@@ -482,6 +494,7 @@ try {
   const secondWaiter = combatWorldPathBlocked(scene,ghosts,camera,waitPath,ray.layers,{cancelled:()=>cancelSecond,deadline:performance.now()+2000});
   check(combatWorldState(waiting).urgentUsers === 2 && combatWorldState(waiting).urgent,'two pending callers own one shared urgent cache');
   cancelFirst = true; check(await firstWaiter === null,'first urgent caller cancellation returnsnull');
+  check(combatWorldMetrics().lastPath.reason === 'cancelled' && combatWorldMetrics().lastPath.stage === 'cache' && combatWorldMetrics().lastPath.cacheWaitMs > 0, 'pending caller cancellation records cache-wait stage');
   check(combatWorldState(waiting).urgentUsers === 1 && combatWorldState(waiting).urgent,'remaining caller retains shared urgency');
   cancelSecond = true; check(await secondWaiter === null,'last urgent caller cancellation returnsnull');
   check(combatWorldState(waiting).urgentUsers === 0 && !combatWorldState(waiting).urgent,'last cancellation releases urgent priority'); waiting.dispose();
@@ -493,6 +506,7 @@ try {
   check(combatWorldState(waiting).urgentUsers === 1,'pending invalidation probe acquires urgency');
   waiting.attributes.position.setX(0,-2); waiting.attributes.position.needsUpdate = true;
   check(await invalidatingWaiter === null,'invalidated pending entry conservatively cancels query');
+  check(combatWorldMetrics().lastPath.reason === 'cache-invalidated' && combatWorldMetrics().lastPath.stage === 'cache', 'cache invalidation diagnosis differs from user cancellation');
   check(combatWorldState(waiting).urgentUsers === 0 && !combatWorldState(waiting).urgent,'invalidated replacement never inherits ownerless urgent priority'); waiting.dispose();
   // Remote Darts use combatWorldHits, not the prepared arc-path API. Prove that
   // its overlapping segment consumes spatial-ready views before any bitmap exists.

@@ -8,7 +8,7 @@ const cache = new WeakMap(), jobs = [];
 const nativeMeshes = new Set([THREE.Mesh.prototype.raycast, THREE.InstancedMesh.prototype.raycast, THREE.SkinnedMesh.prototype.raycast]);
 const nativeNonMeshes = new Set([THREE.Object3D.prototype.raycast, THREE.Sprite.prototype.raycast, THREE.Line.prototype.raycast, THREE.Points.prototype.raycast]);
 const metrics = { pending: 0, ready: 0, accountedBytes: 0, bitBytes: 0, clusterBytes: 0, spatialBytes: 0, spatialEntries: 0, spatialReady: 0, buildCpuMs: 0, maxChunkMs: 0, prunedQueries: 0, fallbackQueries: 0, pathInstances: 0, pathSelectedInstances: 0, asyncSlices: 0, maxAsyncSliceMs: 0 };
-let scheduled = false, urgentScheduled = false;
+let scheduled = false, urgentScheduled = false, lastPath = null;
 const inverse = new THREE.Matrix4(), a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
 
 function stamp(geometry) {
@@ -240,7 +240,7 @@ export function prepareCombatWorld(scene, ghosts, camera) {
   // Admit the large merged scenery first; this temporary list is discarded immediately.
   for (const [geometry] of [...candidates].sort((a, b) => b[1] - a[1])) queue(geometry);
 }
-export function combatWorldMetrics() { return { ...metrics }; }
+export function combatWorldMetrics() { return { ...metrics, lastPath: lastPath && { ...lastPath } }; }
 export function combatWorldState(geometry) {
   const entry = cache.get(geometry);
   return { spatialReady: !!entry?.spatialReady && same(entry, geometry), ready: !!entry?.ready && same(entry, geometry), pending: !!entry?.geometry, urgent: !!entry?.urgent, urgentUsers: entry?.urgentUsers ?? 0, valid: entry?.valid ?? false };
@@ -421,12 +421,22 @@ export function combatWorldHits(scene, ghosts, camera, ray) {
 
 /** Cold and warm Nerf validation yields between current-world nodes; null is cancellation/deadline. */
 export async function combatWorldPathBlocked(scene, ghosts, camera, points, layers, { cancelled = () => false, deadline = performance.now() + 2000 } = {}) {
-  let expired = false, slice = performance.now();
+  const started = performance.now();
+  const diagnostic = { result: null, reason: 'error', stage: 'prepare', elapsedMs: 0, activeMs: 0,
+    yieldMs: 0, cacheWaitMs: 0, maxSliceMs: 0, promotedCaches: 0, deadlineOverrunMs: 0 };
+  let expired = false, slice = started, stopReason = null;
+  const finish = (result, reason = stopReason) => { diagnostic.result = result; diagnostic.reason = reason; return result; };
   const timer = setTimeout(() => { expired = true; }, Math.max(0, deadline - performance.now()));
-  const stopped = () => expired || performance.now() >= deadline || cancelled();
+  const stopped = () => {
+    if (expired || performance.now() >= deadline) { stopReason = 'deadline'; return true; }
+    if (cancelled()) { stopReason = 'cancelled'; return true; }
+    return false;
+  };
   const pause = async (force = false) => {
     const elapsed = performance.now() - slice;
     if (force || elapsed >= C.buildMs) {
+      diagnostic.activeMs += elapsed; diagnostic.maxSliceMs = Math.max(diagnostic.maxSliceMs, elapsed);
+      const waiting = slice + elapsed;
       metrics.asyncSlices++; metrics.maxAsyncSliceMs = Math.max(metrics.maxAsyncSliceMs, elapsed);
       await new Promise(resolve => {
         let done = false;
@@ -437,6 +447,8 @@ export async function combatWorldPathBlocked(scene, ghosts, camera, points, laye
         if (force && globalThis.requestAnimationFrame) requestAnimationFrame(finish);
       });
       slice = performance.now();
+      diagnostic.yieldMs += slice - waiting;
+      if (force) diagnostic.cacheWaitMs += slice - waiting;
     }
     return stopped();
   };
@@ -450,7 +462,7 @@ export async function combatWorldPathBlocked(scene, ghosts, camera, points, laye
     // Only potentially overlapping native geometry is promoted; no synchronous triangle build.
     const stack = [...scene.children];
     while (stack.length) {
-      if (stopped()) return null;
+      if (stopped()) return finish(null);
       const object = stack.pop();
       if (!excluded(object)) {
         if (safe(object) && accepts(object, ghosts, camera) && query.layers.test(object.layers) && !emptyPath(object, points)) {
@@ -459,16 +471,18 @@ export async function combatWorldPathBlocked(scene, ghosts, camera, points, laye
         }
         stack.push(...object.children);
       }
-      if (performance.now() - slice >= C.buildMs && await pause()) return null;
+      if (performance.now() - slice >= C.buildMs && await pause()) return finish(null);
     }
-    while ([...pending].some(entry => !entry.spatialReady && !entry.settled && !entry.cancelled)) if (await pause(true)) return null;
-    if ([...pending].some(entry => entry.cancelled)) return null;
+    diagnostic.stage = 'cache';
+    while ([...pending].some(entry => !entry.spatialReady && !entry.settled && !entry.cancelled)) if (await pause(true)) return finish(null);
+    if ([...pending].some(entry => entry.cancelled)) return finish(null, 'cache-invalidated');
+    diagnostic.stage = 'traversal';
     for (let segment = 1; segment < points.length; segment++) {
       const delta = points[segment].clone().sub(points[segment - 1]), length = delta.length();
       query.set(points[segment - 1], length ? delta.divideScalar(length) : new THREE.Vector3(0, 0, -1)); query.far = length;
       const nodes = [...scene.children].reverse();
       while (nodes.length) {
-        if (stopped()) return null;
+        if (stopped()) return finish(null);
         const object = nodes.pop(); let propagate = true;
         if (excluded(object)) continue;
         if (query.layers.test(object.layers)) {
@@ -493,35 +507,42 @@ export async function combatWorldPathBlocked(scene, ghosts, camera, points, laye
                   if (!(Number.isFinite(distance) && Number.isFinite(sphere.radius) && distance > sphere.radius + padding)) {
                     const proxy = new THREE.Mesh(object.geometry, object.material); proxy.matrixWorld.copy(world); instances.push({ proxy, id: i });
                   }
-                  if (i % 128 === 127 && performance.now() - slice >= C.buildMs && await pause()) return null;
+                  if (i % 128 === 127 && performance.now() - slice >= C.buildMs && await pause()) return finish(null);
                 }
                 metrics.pathSelectedInstances += instances.length;
                 const current = [object.raycast, object.getMatrixAt, object.morphTexture, object.morphTargetInfluences, object.morphTargetInfluences?.length, object.geometry.morphAttributes.position, object.geometry.morphAttributes.position?.length,
                 object.count, object.instanceMatrix, object.instanceMatrix.array, object.instanceMatrix.version, object.geometry, object.material,
                   ...object.matrixWorld.elements, ...object.geometry.boundingSphere.center.toArray(), object.geometry.boundingSphere.radius];
-                if (!signature.every((value, i) => value === current[i])) return null;
+                if (!signature.every((value, i) => value === current[i])) return finish(null, 'instance-mutated');
                 instanceCache.set(object, { signature, instances });
               }
               const sphere = object.boundingSphere.clone().applyMatrix4(object.matrixWorld);
               if (query.ray.intersectsSphere(sphere)) for (const { proxy, id } of instances) {
                 const before = hits.length; THREE.Mesh.prototype.raycast.call(proxy, query, hits);
                 for (let i = before; i < hits.length; i++) { hits[i].object = object; hits[i].instanceId = id; }
-                if (performance.now() - slice >= C.buildMs && await pause()) return null;
+                if (performance.now() - slice >= C.buildMs && await pause()) return finish(null);
               }
             } else if (!empty(object, query)) rangedHits(object, query, hits, null);
-            if (hits.some(hit => accepts(hit.object, ghosts, camera))) return stopped() ? null : true;
+            if (hits.some(hit => accepts(hit.object, ghosts, camera))) return stopped() ? finish(null) : finish(true, 'blocked');
           } else if (!native && !nativeNonMeshes.has(object.raycast)) {
             propagate = object.raycast(query, hits) !== false;
-            if (hits.some(hit => accepts(hit.object, ghosts, camera))) return stopped() ? null : true;
+            if (hits.some(hit => accepts(hit.object, ghosts, camera))) return stopped() ? finish(null) : finish(true, 'blocked');
           }
         }
         if (propagate) for (let i = object.children.length - 1; i >= 0; i--) nodes.push(object.children[i]);
-        if (performance.now() - slice >= C.buildMs && await pause()) return null;
+        if (performance.now() - slice >= C.buildMs && await pause()) return finish(null);
       }
     }
     metrics.maxAsyncSliceMs = Math.max(metrics.maxAsyncSliceMs, performance.now() - slice);
-    return stopped() ? null : false;
+    return stopped() ? finish(null) : finish(false, 'clear');
   } finally {
+    const ended = performance.now(), active = ended - slice;
+    diagnostic.activeMs += active; diagnostic.maxSliceMs = Math.max(diagnostic.maxSliceMs, active);
+    diagnostic.promotedCaches = pending.size;
+    diagnostic.elapsedMs = ended - started;
+    diagnostic.deadlineOverrunMs = Math.max(0, ended - deadline);
+    // One bounded, non-identifying record; cache-builder tasks during yields are outside the active intervals.
+    lastPath = diagnostic;
     for (const entry of pending) { entry.urgentUsers--; entry.urgent = entry.urgentUsers > 0; }
     metrics.maxAsyncSliceMs = Math.max(metrics.maxAsyncSliceMs, performance.now() - slice); clearTimeout(timer);
   }
