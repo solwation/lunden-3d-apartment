@@ -546,7 +546,7 @@ no executable fixture changes or new browser results are part of this audit.
 | `opentest.html` | Accepted in #830 | Complete original full/test logs byte-identical, all 189 ordered PASS; actual 900×600/null controller versus 480×300/real APIs. All 90 fronts, conditional action labels, clashes/poster sweeps, free-floor and contents loops retained; captures show only early rows. |
 | `oventest.html` | Accepted in #830 | Complete original full/test logs byte-identical, all 19 ordered PASS; actual 900×600/null controller versus 480×300/real APIs. Appliance actions/angles/emissive lamps, stats and whole coffee brewing/water/grounds flow retained. |
 | `papertest.html` | Accepted in #830 | Complete original full/test logs byte-identical, all 22 ordered PASS; full starts 900×600/null and finishes native fullscreen 1280×800, test remains 480×300/real APIs. Whole roll/strip/wad/ray/quantity/flush/stats/F flows retained; full capture timed out. |
-| `patiopalmtest.html` | Candidate | Actual plant/pot topology, bounds, material and collision footprint. |
+| `patiopalmtest.html` | Accepted in #831 | Complete original full/test logs byte-identical, all 15 ordered PASS; actual 720×480/null controller versus 480×300/real APIs. Whole pot/soil/ray/bump/wind/canopy/collision/native geometry predicates retained, 10632 triangles/2.62 m canopy. |
 | `patiotest.html` | Candidate | Actual patio seasonal/object/action/storage flows. |
 | `pctest.html` | Candidate | Actual PC/game/rest interaction and monitor state. |
 | `perfcount.html` | Explicit performance exclusion (#736) | Actual renderBufferDirect screen calls/triangles, shadow/mirror/env passes and texture-memory budgets. |
@@ -3435,3 +3435,29 @@ bound in both modes); unequal capture coverage excludes qualified speedup
 aggregation. Source/native/monitor/capture/cleanup evidence remains in
 `/tmp/lunden-pets832/pettest`. Plant and Portik remain pending in #832;
 parents #740 and #736 remain open.
+
+## Detailed patio palm native acceptance (#831, partial)
+
+On frozen `5fdef73f3cc825936193d6f0227a3dc30e6f4ab5`, the complete original
+720×480/shot/cloud-empty and 480×300/test flows produced identical 935-byte logs:
+all 15 ordered PASS and ALL PASS, actual monitor exit 0. Original pot profile,
+48-segment geometry, recessed-soil ray, own bump textures, leaf shades/wind
+buffers, curved trunk, actual canopy/wall bounds and collision footprint remain
+unchanged; native triangle budget is 10632 and canopy height 2.62 m. No guard,
+new seed, normalization, quality override, matrix or assertion changes.
+
+One actual ready/final document per mode retains stable URL/timeOrigin:
+720×480/null controller versus 480×300/real draw/setFull/wantsFrame APIs,
+lazy/full false, no fullscreen and empty cloud query. No reload or leave event
+was authored or observed. Native source/data/index, runner and helper hashes
+match the measured base. Reversing only iframe query/dimensions reproduces the
+whole frozen original. Evidence: `/tmp/runtests-651062` and
+`/tmp/lunden-patio831/patiopalmtest`.
+
+Both inspected PNGs show all 15 vertical result rows and ALL PASS. Full shows
+the final near apartment facade, while test clips long rows right and the canvas
+below its upper strip. Neither is a directed Palm image; no leaf/material/palm
+or rendered-scene pixel equivalence is claimed. Wall 108.851 s and 83.638 s
+includes both successful captures; excluded from qualified speedup aggregation
+because capture coverage differs. Patio and PC remain pending separate complete
+pairs; #831/#740/#736 stay open.
