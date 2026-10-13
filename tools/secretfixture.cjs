@@ -32,9 +32,9 @@ async function main() {
         return { text: document.querySelector('#out')?.textContent || '', apps };
       });
       for (const app of snapshot.apps) if (!records.some(row => row.timeOrigin === app.timeOrigin)) records.push({ phase: 'ready', ...app });
-      // Rearrangetest's authored catch writes a terminal Error stack without a verdict.
+      // The rearrangement fixtures' authored catches writes a terminal Error stack without a verdict.
       // Ordinary FAIL assertion rows never stop remaining fixture actions/reloads.
-      const caughtFixtureFailure = fixture === 'rearrangetest' && /^FAIL (?:[A-Za-z]*Error):/m.test(snapshot.text);
+      const caughtFixtureFailure = ['rearrangetest', 'rearrangeuitest'].includes(fixture) && /^FAIL (?:[A-Za-z]*Error):/m.test(snapshot.text);
       if (/^(ALL PASS|SOME FAILED)$/m.test(snapshot.text) || caughtFixtureFailure) {
         succeeded = /^ALL PASS$/m.test(snapshot.text) && !/^FAIL\b/m.test(snapshot.text);
         result = input.redact(snapshot.text, inputs);

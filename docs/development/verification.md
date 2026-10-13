@@ -241,7 +241,7 @@ The companion installs input only on `/tools/` documents before fixture executio
 no injected global. It uses the usual runner's 1280×800 top viewport/DPR1 and Chromium flags, with no
 query/frame dimensions/test-mode override. Fixture-authored actions, parser/form inputs and reloads run
 normally. Ordinary failed assertion rows do not terminate execution: authored final ALL PASS/SOME FAILED
-is required. Rearrangetest's existing caught Error-stack output is explicitly terminal without a verdict.
+is required. Rearrangetest/rearrangeuitest's existing caught Error-stack output is explicitly terminal without a verdict.
 Classification uses original output before optional privacy redaction, which cannot change acceptance;
 logs/screenshots/native reload URL/timeOrigin/mode/viewport records go to the external output directory.
 Do not infer logical or pixel parity from sanitized output. Both actual input values must still traverse the
@@ -275,6 +275,14 @@ Artifacts: `/tmp/lunden-priority-854/{inputs.json,loader.cjs,native.cjs,native.j
 latefail-native.cjs,frozen-cheat.json,frozen-rearrange.json,cheat-exit.txt,rearrange-exit.txt}` plus
 `cheattest/` and `rearrangetest/` complete logs/native metadata/inspected PNGs. The private inputs.json is
 untracked and external; never publish its content. Owned browser/runner/server were stopped after runs.
+
+#855 extends the companion's explicit authored Error-catch terminal support to rearrangeuitest, whose
+original catch also has no ALL PASS/SOME FAILED marker. A native stub-DOM actual companion CLI run
+retains its Error stack and exits1 without starting an apartment. Direct native UI missing-input failure
+occurs before any app iframe; chattest's missing-input Node entry exits1 before requiring Playwright.
+The shared provider and exact supplied strings/near-slash value were checked without printing them.
+Whole original chattest CJS/two-client Worker and rearrangeuitest runtime acceptance remains tracked in
+#855 until their actual complete suites run; this helper preparation alone makes no gameplay claim.
 
 ## Test runner (`tools/runtests.cjs`, #737 / #736)
 
