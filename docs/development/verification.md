@@ -4778,3 +4778,13 @@ p/r/c and return, client claims/private fields, one lethal award and two real
 controlled minute-alarm recovery steps are covered. #943 closes only this narrow
 useful greeting family; #939/#931/#917 and post-turn944 remain open. Deployment
 provenance and final rebase composition are recorded independently below.
+
+#943 runtime c504cf1992a4ebff469aaa65a0af18db4f4c9c62 genuinely deployed in
+Worker run38447595668/job115469916248: actual cloudflare/wrangler-action@v3
+step SUCCESS, Uploaded/Deployed output18:33:10Z, version
+`c4dcaba3-496a-4ca3-abd8-c50fc90d6654`. Raw job log/JSON and actual exits are
+retained under `/tmp/lunden-priority-943/`; publication/final docs-only rebase
+keeps all234 runtime/driver hashes and the original clean-grid producer/runtime
+hashes exact. The bounded greeting slice is complete; parent939/931/917 and
+post-turn944 remain separate/open. Owned Worker/browser/game-server processes
+were stopped. This is genuine deployment evidence, not a live phone/World test.
