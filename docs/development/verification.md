@@ -104,6 +104,12 @@ tools/nerfapartmentprobe.cjs (#715): bounded actual apartment local Blaster/Dart
                        production drawing at quality0 (no test mode), paused automatic loop, cold/local-warm effect intervals,
                        separately reported remote-cache readiness and 2s obstacle query, JSON before screenshot. No network,
                        physical-phone/FPS or native-parity claim; see docs/validation/issue-715/README.md.
+tools/trigridprofile.cjs / .html (#715): native Three, production furniture component + controlled sphere; historical
+                       a336e30 constructor phase copy/bin diagnosis, not a full apartment or GPU benchmark.
+tools/trigridcopytest.cjs / .html (#715): independent unchanged a336e30 TriGrid reference; exact Float32/material/cell/big
+                       membership and hit parity, indexed/transformed/BackSide/drawRange/authored-bounds preservation;
+                       balanced reversed-order uninstrumented construction and actual local Marks/Darts cold/warm samples.
+                       No renderer/app/physical phone; run marksphysicstest.html too after TriGrid changes.
 tools/combatworldtest.html combat collision (#715/#714), actual Three modules without WebGL: 462 focused checks cover native
                        hit/face/UV/normal equivalence, private grid/spatial-index quotas and ownership, authored bounds,
                        mutations/disposal, layers/custom propagation, instanced paths, curved finite segments, cooperative

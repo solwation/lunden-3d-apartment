@@ -186,3 +186,76 @@ only for this final capture. This provides rendered integration evidence,
 without turning the excluded earlier renderer intervals into a visible-effects
 benchmark. Reproduce only the picture with `--picture-only`; it skips the timing
 phases and obstacle query.
+
+## Cold triangle-copy follow-up, 2026-10-13
+
+The preceding apartment's 625.1 ms effect spike justified investigating local cold work. The subsequent
+**native, no-WebGL component profile does not attribute that 625.1 ms**: it calls the unchanged production
+`buildFurniture()` without world/app bootstrap and profiles its six largest meshes plus one controlled
+sphere. The historical `a336e30` TriGrid constructor is served with three timing boundaries only. Its copying
+phase includes array/group allocation, world transforms, Float32 copies and private-box expansion; its
+binning phase includes cells, big-triangle lists and the stamp array. These are wall intervals with JIT/GC
+context, not isolated thread-CPU or measured heap/GC pauses.
+
+Five phase repetitions per case gave the following median intervals:
+
+| Profile case | Triangles | Transform/copy | Cell/bin phase |
+|---|---:|---:|---:|
+| Production furniture largest 1 | 57,120 | 20.5 ms | 4.5 ms |
+| Production furniture largest 2 | 18,900 | 6.7 ms | 1.9 ms |
+| Production furniture largest 3 | 15,288 | 5.2 ms | 1.6 ms |
+| Production furniture largest 4 | 15,288 | 5.0 ms | 1.6 ms |
+| Production furniture largest 5 | 11,832 | 4.2 ms | 1.3 ms |
+| Production furniture largest 6 | 11,400 | 4.0 ms | 1.1 ms |
+| Controlled sphere, not apartment | 16,128 | 9.2 ms | 2.1 ms |
+
+The results support a smaller intervention than changing collision scheduling. Each vertex previously
+allocated `[p.x, p.y, p.z]` and called `tri.set` into its world-triangle buffer. Three direct assignments now
+produce the identical Float32 values without that temporary array. The same transform operations, group
+bytes, private box, cell map, big list and native historical TriGrid hit routine remain. There is no async
+cache lifetime, fallback raycast, admission quota or gameplay deadline change.
+
+`trigridcopytest` supplies the **unchanged historical TriGrid source** via `git show a336e30:src/trigrid.js`.
+The historical Marks source has only its import pointed to that reference. Eight mesh cases cover the
+six real furniture meshes, a transformed indexed multi-material box with BackSide materials, a restricted
+drawRange and deliberately incorrect authored boundingBox, and an indexed sphere. **93 checks ALL PASS**:
+exact Float32 triangle/material/private-box/cell membership and order/big-list identity; exact object,
+material, point, normal and distance for six axes/sign rays per case; and twelve actual local Darts/Marks
+cold/warm active-count/end-state/splash-count comparisons. Historical drawRange/BackSide behaviour is
+preserved, not corrected or substituted with Three's native raycaster.
+
+Construction timings use neither injected phase timestamps nor vertex counters. Twelve repetitions per
+case alternate reference-first and candidate-first equally. Cold effect timings likewise alternate order
+across six repetitions of two actual local darts and 60 effect steps, against the production furniture
+component. Geometry construction and toy/mark setup stay outside those measured intervals. Cold runs
+invalidate furniture caches; warm runs retain the preceding cold run's caches. They exercise physical
+surface contacts and equal final projectile state; this particular contact leaves zero paint marks in both
+versions. The physics fixture separately checks real breakable objects and visibility.
+
+| Uninstrumented component sample, median across repetitions | Reference | Scalar copy |
+|---|---:|---:|
+| Construct 57,120-triangle production grid | 27.0 ms | 14.8 ms |
+| Construct 18,900-triangle production grid | 8.0 ms | 4.8 ms |
+| Construct 16,128-triangle controlled-sphere grid | 10.25 ms | 4.8 ms |
+| Cold local Darts/Marks first update | 78.15 ms | 56.3 ms |
+| Cold local Darts/Marks sum of 60 updates | 91.0 ms | 66.4 ms |
+| Warm local Darts/Marks first update | 16.3 ms | 17.35 ms |
+| Warm local Darts/Marks sum of 60 updates | 31.05 ms | 30.95 ms |
+
+The warm samples establish no improvement; do not extrapolate the cold component gains to the apartment's 625 ms,
+rendered FPS, remote-cache readiness or the physical phone. The remaining synchronous allocation/binning,
+private-bound scans and other ray paths still exist. #715 remains open.
+
+Phase driver: **35 PASS**, exit 0, no page errors. Copy driver: **93 PASS**, exit 0, no page errors.
+Actual `marksphysicstest.html`: **9 PASS**, exit 0, no page errors; real Glass/Breaker contact, large static
+TriGrid, render-only hidden layer, hidden ancestors/objects and held-glass protection. The native text
+screenshots were inspected; they are fixture evidence, not rendered apartment pictures.
+
+Reproduce on the local dev server with `PLAYWRIGHT_MODULE=… CHROME_PATH=… SHOTS=/tmp/profile node tools/trigridprofile.cjs http://localhost:8873`
+and `… node tools/trigridcopytest.cjs http://localhost:8873`. Detailed measured inputs, per-repetition results,
+checks and inspected images are local artifacts `/tmp/lunden-trigrid715-surface/{profile.json,profile.png,copy.json,copy.png,physics.txt,physics.png}`.
+The phase/copy baseline is pinned to a336e30; no historical reference is generated from the candidate itself.
+
+After rebasing onto `0dc54e8`, the candidate copy fixture was rerun: **93 PASS**, exit 0, no page errors;
+the physical Marks fixture was rerun: **9 PASS**, exit 0, no page errors. These final verification artifacts
+are in `/tmp/lunden-trigrid715-surface/final/`; the earlier timing table retains the original measured samples.

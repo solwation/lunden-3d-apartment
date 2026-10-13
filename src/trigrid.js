@@ -24,7 +24,11 @@ export class TriGrid {
     for (let t = 0; t < n; t++) for (let k = 0; k < 3; k++) {
       const i = idx ? idx.getX(t * 3 + k) : t * 3 + k;
       p.fromBufferAttribute(pos, i).applyMatrix4(mesh.matrixWorld);
-      this.tri.set([p.x, p.y, p.z], t * 9 + k * 3);
+      // Keep the same float32 world vertices without a temporary array for every vertex (#715).
+      const offset = t * 9 + k * 3;
+      this.tri[offset] = p.x;
+      this.tri[offset + 1] = p.y;
+      this.tri[offset + 2] = p.z;
       this.box.expandByPoint(p);
     }
     this.cells = new Map();

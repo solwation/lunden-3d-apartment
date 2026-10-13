@@ -172,5 +172,5 @@ Uppdragslappen visar tre aktiva vardagsuppdrag med sina poäng och delmål; klar
 
 Nollställning av statistiken rensar även dynamiska räknare, så inga gamla poäng ligger kvar.
 
-Stridens skottkontroller kan hoppa över tomma delar av stora modeller efter en begränsad bakgrundsförberedelse; fysisk telefonverifiering återstår. [Mätning och begränsningar](docs/validation/issue-715/README.md).
+Stridens skottkontroller kan hoppa över tomma delar av stora modeller efter en begränsad bakgrundsförberedelse; lokala träffytor kopierar världskoordinater utan en tillfällig array per hörn; fysisk telefonverifiering återstår. [Mätning och begränsningar](docs/validation/issue-715/README.md).
 Nerfpilar når upp till 25 meter och en bekräftad spelarträff hörs med en egen tydlig ton. De första skotten kan räknas som bom medan hinderdata förbereds. [Verifiering och begränsningar](docs/validation/issue-714/README.md).

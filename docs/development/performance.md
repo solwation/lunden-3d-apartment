@@ -556,6 +556,17 @@ Cold-path diagnosis (#715): `combatWorldMetrics().lastPath` holds one copied rec
 Nerf (#714) adds bounded private spatial indices and per-shot instanced selection, with cooperative obstacle validation and a conservative 2 s deadline. [CPU-only apartment validation, preparation and cold-miss limitations](../validation/issue-714/README.md) separate the actual scene from small-module/Worker tests; no measured FPS or physical-phone claim.
 
 
+## Cold triangle copying (#715, 2026-10-13)
+
+TriGrid still constructs the same Float32 world-space triangles and synchronous cell map. Copying a world
+vertex now uses three scalar stores instead of allocating `[x, y, z]` and calling `Float32Array.set` for every
+vertex. Groups, private bounds, binning, hit traversal and invalidation are unchanged; no new background jobs,
+quotas or readiness states are introduced. Separate native constructor-phase measurements on the production
+furniture component found transformation/copying dominated the tested cases, rather than cell binning.
+Independent historical-source parity and balanced uninstrumented construction/actual Darts samples establish
+less cold work in those component fixtures; no measured reduction of the earlier full apartment's 625 ms spike
+or physical-phone FPS is asserted. [Measurements and limits](../validation/issue-715/README.md#cold-triangle-copy-follow-up-2026-10-13).
+
 ## Phone panels and covered rendering (#669)
 
 Reading the freezer note previously set the moving-shadow hold for 1.5 seconds even
