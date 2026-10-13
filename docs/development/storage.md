@@ -245,3 +245,15 @@ No hit classification/damage or head-height guesses are introduced here.
 Confirmed distance reward state (#873): the server attachment adds only a monotonic `awardSeq` alongside the existing per-minute accepted-point counter. It survives room hibernation, increments only on an accepted hit and starts again with a new connection. Hit acknowledgements carry `award:{i,seq,distance,points}`; all values come from the server's accepted geometry and the shared config rule, not request fields. Neither shots nor bonuses introduce KV writes or timers.
 
 The existing `lunden.stats` record gains `pvpRangePoints` (default0), containing extra distance points only. Existing `pvpHits` still stores integer events and yields its unchanged base reward, so old saves do not lose or double previously earned points. Both values follow the existing save/pagehide/reload/reset path. Combat's score high-watermark is per current connection; no growing or persisted score-receipt map is added. The separate #871 `killReceipts` map retains its existing persistence/reset semantics. The additive Worker protocol should deploy before the new client; a cached older Worker gives the existing base-only reward until updated.
+
+### Canonical avatar appearance (#892 preparation)
+
+`config.js.avatarLook(seed)` is the single deterministic palette/style/sleeves/build/height
+implementation. `avatar.js` reexports it as the existing `look` API and uses it directly.
+The extraction preserves the original pick sequence, colours, physical scale and all
+mesh attributes; it introduces no head classifier, contact field or damage change.
+Visible stationary-rifle head damage remains pending #897 → #898 → #899, under #892.
+The original 10,009-seed look outputs and native Avatar geometry/material/scale for
+80 seeds across all eight geometry variants were compared exactly (400 attribute
+arrays, zero WebGL calls/page errors); this is math/DOM evidence, not rendered
+apartment or physical-phone acceptance.

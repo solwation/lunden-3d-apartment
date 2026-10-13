@@ -4550,3 +4550,28 @@ export const PLANT_WIND={calm:.025,wetBoost:2,stormBoost:.5,easeSeconds:1.2,slee
 // Startup recovery (#864): generous wall-clock allowance for sliced phone warm-up;
 // optional JSON requests get a shorter budget. Safeguards, not measured device limits.
 export const STARTUP = { dataTimeout: 5000, planTimeout: 15000, recoveryTimeout: 120000 };
+
+// #892: canonical appearance shared by Avatar and future authoritative contact profiles.
+const SKIN = [0xf1c9a8, 0xe0ae8a, 0xc68863, 0x9a6643, 0x6b4430];
+const HAIR = [0x2b2118, 0x4a3320, 0x7a5532, 0xb79052, 0xd9c28a, 0x8a8c90, 0x6b2d1f, 0x15151a];
+const TOPS = [0x2f6db5, 0xb5372f, 0x3c8a4e, 0xe0a82e, 0x7a4fb0, 0xe07a9a, 0x2e9aa8, 0xe8e8e0, 0x3a3f4a, 0xd9722e];
+const PANTS = [0x2c3140, 0x3a3c41, 0x4b5a78, 0x6d5a45, 0x23272e, 0x5b6068];
+const SHOES = [0x2a2523, 0xe8e8e8, 0x40342b, 0x1f3a5c];
+
+/** The tiny deterministic hash of a seed string. */
+function hash(seed) {
+  let h = 2166136261;
+  for (const ch of String(seed)) h = Math.imul(h ^ ch.codePointAt(0), 16777619) >>> 0;
+  return h;
+}
+
+/** What a seed looks like: { skin, hair, top, pants, shoes (colours), style (hairstyle), sleeves (0 short / 1 long), build }. */
+export function avatarLook(seed) {
+  let h = hash(seed || 'anon');
+  const pick = (n) => { const v = h % n; h = Math.imul(h ^ (h >>> 15), 2246822519) >>> 0; return v; };
+  const style = pick(4), sleeves = pick(2);
+  const skin = SKIN[pick(SKIN.length)], hair = HAIR[pick(HAIR.length)], top = TOPS[pick(TOPS.length)], pants = PANTS[pick(PANTS.length)], shoes = SHOES[pick(SHOES.length)];
+  const build = pick(3); // 0 slim, 1 average, 2 broad
+  return { style, sleeves, skin, hair, top, pants, shoes, build, tall: 0.95 + pick(5) * 0.025 };
+}
+

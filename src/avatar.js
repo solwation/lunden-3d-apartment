@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { AVATAR as A } from './config.js';
+import { AVATAR as A, avatarLook } from './config.js';
 import { NAMES, HIP, UPPER, FORE, HAND, SH, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
 
 // The players' avatars (#705): a neutral human figure for the other players (src/ghosts.js) and for our own reflection in the
@@ -21,31 +21,10 @@ import { NAMES, HIP, UPPER, FORE, HAND, SH, bindAt, lathe, torsoR, attachSkeleto
 // hand target per side (`{ at: [x, y, z], pole: [x, y, z] }` in the figure's frame, see `armTarget`) that replaces the
 // walking swing / the rest pose for that arm (a wave, a held weapon, a bow).
 
-const SKIN = [0xf1c9a8, 0xe0ae8a, 0xc68863, 0x9a6643, 0x6b4430];
-const HAIR = [0x2b2118, 0x4a3320, 0x7a5532, 0xb79052, 0xd9c28a, 0x8a8c90, 0x6b2d1f, 0x15151a];
-const TOPS = [0x2f6db5, 0xb5372f, 0x3c8a4e, 0xe0a82e, 0x7a4fb0, 0xe07a9a, 0x2e9aa8, 0xe8e8e0, 0x3a3f4a, 0xd9722e];
-const PANTS = [0x2c3140, 0x3a3c41, 0x4b5a78, 0x6d5a45, 0x23272e, 0x5b6068];
-const SHOES = [0x2a2523, 0xe8e8e8, 0x40342b, 0x1f3a5c];
-
+export { avatarLook as look } from './config.js';
+const look = avatarLook;
 const REGION = { skin: 0, top: 1, pants: 2, hair: 3, fixed: 4 };
-const HAIR_STYLES = 4, H = 0.1; // H: the head's centre above the neck bone (as Olof's)
-
-/** The tiny deterministic hash of a seed string. */
-function hash(seed) {
-  let h = 2166136261;
-  for (const ch of String(seed)) h = Math.imul(h ^ ch.codePointAt(0), 16777619) >>> 0;
-  return h;
-}
-
-/** What a seed looks like: { skin, hair, top, pants, shoes (colours), style (hairstyle), sleeves (0 short / 1 long), build }. */
-export function look(seed) {
-  let h = hash(seed || 'anon');
-  const pick = (n) => { const v = h % n; h = Math.imul(h ^ (h >>> 15), 2246822519) >>> 0; return v; };
-  const style = pick(HAIR_STYLES), sleeves = pick(2);
-  const skin = SKIN[pick(SKIN.length)], hair = HAIR[pick(HAIR.length)], top = TOPS[pick(TOPS.length)], pants = PANTS[pick(PANTS.length)], shoes = SHOES[pick(SHOES.length)];
-  const build = pick(3); // 0 slim, 1 average, 2 broad
-  return { style, sleeves, skin, hair, top, pants, shoes, build, tall: 0.95 + pick(5) * 0.025 };
-}
+const H = 0.1; // Existing head geometry remains unchanged.
 
 // --- the geometry (built once per variant) -----------------------------------------------------------------------------
 const bases = new Map();
