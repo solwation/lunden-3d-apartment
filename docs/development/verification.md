@@ -4971,3 +4971,6 @@ fresh integration run (owned Worker1875754 started19:18:11.634Z after freezing).
 Only this final documentation changes afterwards; no extra broad grid is claimed.
 This proves deployment and the scoped native contract, not a live phone match.
 The full parent families939/931/917 remain open for larger turns and other poses.
+
+
+#715 post-cold first-shot diagnostic: `nerfreciprocaltest.cjs --apartment --membership --post-cold-capture` preserves one real held-use/WS shot, captures first outcome before bounded membership/native oracle, then one actual manual World render+GL-finish and bounded CDP image. Requires an exclusive180s supervised slot and fresh source-frozen own Worker. Frozenfc7fd0b: actual Node/wrapper0,11checks; targettrue/clear391.5ms, server hit/hurt peer10→9. Registration-paused Scene is not ordinary running gameplay/FPS. The saved PNG is substantially covered by the real leaderboard name modal: loading/menu/rotate-only cover PASS does not certify unobstructed rendering. Preserve raw result and image, no rerun/second shot or phone acceptance. See issue715 validation README and `/tmp/lunden-priority-715-postcold/` for exact source/exits/provenance and remaining rendered/physical criteria.
