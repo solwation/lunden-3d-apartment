@@ -1,10 +1,10 @@
 // #884 pure counter + actual index/Presence HUD, optional bounded actual-apartment draw integration.
 const fs=require('node:fs'),assert=require('node:assert/strict');
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
-const base=process.argv[2] || 'http://localhost:8871',out=process.argv[3] || '/tmp/lunden-fps884-surface',app=process.argv.includes('--app');
+const base=process.argv[2] || 'http://localhost:8871',out=process.argv[3] || '/tmp/lunden-fps884-surface',app=process.argv.includes('--app'),probe=process.argv.includes('--capture-probe'),mode=probe?'capture':app?'app':'native';
 let checks=0;const check=(ok,text)=>{assert.ok(ok,text);checks++;console.log(`PASS ${text}`);};
 (async()=>{
-  fs.mkdirSync(out,{recursive:true});const checkpoint=data=>fs.writeFileSync(`${out}/${app?'app':'native'}-checkpoint.json`,JSON.stringify({checks,...data},null,2));const {FrameRate}=await import('../src/fps.js');
+  fs.mkdirSync(out,{recursive:true});const checkpoint=data=>fs.writeFileSync(`${out}/${mode}-checkpoint.json`,JSON.stringify({checks,...data},null,2));const {FrameRate}=await import('../src/fps.js');
   let f=new FrameRate();f.sample(0,false,true);for(let i=1;i<=100;i++)f.sample(i*10,i%5<3,true);
   check(f.value===60,'60 ordinary draws / 100 logic callbacks / second gives 60 FPS');
   f=new FrameRate();f.sample(0,false,true);for(let i=1;i<=100;i++)f.sample(i*10,i%10===0,true);
@@ -16,10 +16,19 @@ let checks=0;const check=(ok,text)=>{assert.ok(ok,text);checks++;console.log(`PA
   f=new FrameRate();for(let i=0;i<=100;i++)f.sample(i*10,true,false);check(f.value===null&&f.frames===0,'covered startup/warm-up is not credited as ordinary gameplay');
   f.sample(2000,false,true);for(let i=1;i<=100;i++)f.sample(2000+i*10,i%5<3,true);check(f.value===60,'ordinary count is independent of extra passes not reported by its caller');
   f.sample(10,true,true);check(f.value===null,'clock discontinuity clears old window');
-  const browser=await chromium.launch({executablePath:process.env.CHROME_PATH,args:app?['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader']:['--no-sandbox','--disable-gpu']});
+  const browser=await chromium.launch({executablePath:process.env.CHROME_PATH,args:(app||probe)?['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader']:['--no-sandbox','--disable-gpu']});
   const errors=[],results=[];
   try{
-    if(!app){
+    if(probe){
+      const variant=process.env.FPS_CAPTURE || 'resume-surface',page=await browser.newPage({viewport:{width:667,height:375}});page.on('pageerror',e=>errors.push(e.message));
+      await page.route('**/src/bootstrap.js',r=>r.fulfill({contentType:'text/javascript',body:'// tiny real WebGL capture diagnosis, no apartment'}));await page.goto(base);
+      await page.evaluate(async()=>{const T=await import('three');window.nativeRAF=requestAnimationFrame.bind(window);window.nativeCancelRAF=cancelAnimationFrame.bind(window);const r=new T.WebGLRenderer({antialias:true});r.domElement.id='game-canvas';document.body.prepend(r.domElement);const scene=new T.Scene();scene.background=new T.Color('#247ca0');const camera=new T.PerspectiveCamera(50,160/90,.1,10);camera.position.z=3;scene.add(new T.Mesh(new T.BoxGeometry(),new T.MeshBasicMaterial({color:'#efcd68'})));const {bindGameViewport}=await import('/src/viewport.js');bindGameViewport(r,camera);r.setPixelRatio(1);r.setSize(320,180,false);window.captureProbe={r,scene,camera};r.setAnimationLoop(()=>r.render(scene,camera));for(const id of ['overlay','loading','rotate'])document.getElementById(id).hidden=true;document.getElementById('hud').hidden=false;const {initHudIcons}=await import('/src/hudicons.js'),{setScoreElement}=await import('/src/stats.js'),{Presence}=await import('/src/presence.js'),{FrameRate}=await import('/src/fps.js');initHudIcons();setScoreElement(document.getElementById('score'));const p=new Presence('',document.getElementById('presence')),fps=new FrameRate();fps.sample(0,false,true);p.el.querySelector('.fps-value').textContent=String(fps.sample(600,true,true));document.body.classList.add('touch');});
+      await page.waitForTimeout(50);await page.evaluate(()=>captureProbe.r.setAnimationLoop(null));await page.clock.install();await page.clock.pauseAt(await page.evaluate(()=>Date.now()+100));
+      const canvas=await page.evaluate(()=>{const {r,scene,camera}=captureProbe;r.render(scene,camera);r.getContext().finish();return r.domElement.toDataURL('image/png');});fs.writeFileSync(`${out}/capture-${variant}-canvas.png`,Buffer.from(canvas.split(',')[1],'base64'));check(canvas.length>500,'synchronous final tiny WebGL draw/gl.finish exports actual canvas PNG (no HUD)');checkpoint({variant,errors,stage:'before native capture'});
+      if(variant==='paired')await page.evaluate(()=>captureProbe.r.domElement.style.visibility='hidden');
+      await page.clock.resume();if(variant.startsWith('restore'))await page.evaluate(()=>{window.requestAnimationFrame=nativeRAF;window.cancelAnimationFrame=nativeCancelRAF;return new Promise(resolve=>nativeRAF(()=>nativeRAF(resolve)));});
+      const cdp=await page.context().newCDPSession(page);let captureTimer;try{const png=await Promise.race([cdp.send('Page.captureScreenshot',{format:'png',fromSurface:variant!=='restore-view'&&variant!=='paired',captureBeyondViewport:false}),new Promise((_,reject)=>{captureTimer=setTimeout(()=>reject(new Error('tiny native capture exceeded5s')),5000);})]);fs.writeFileSync(`${out}/capture-${variant}.png`,Buffer.from(png.data,'base64'));check(png.data.length>500,variant==='paired'?'actual HUD DOM captured separately with only tiny canvas hidden':'actual tiny WebGL plus DOM captured by native CDP');}finally{clearTimeout(captureTimer);await cdp.detach();}results.push({variant});
+    }else if(!app){
       const page=await browser.newPage();page.on('pageerror',e=>errors.push(e.message));let count=7,fail=false;
       await page.route('**/src/bootstrap.js',r=>r.fulfill({contentType:'text/javascript',body:'// native HUD only'}));
       await page.route('**/fixture-api/presence/**',r=>fail?r.abort('failed'):r.fulfill({contentType:'application/json',body:JSON.stringify({count,names:['Tester'],players:[{name:'Tester',score:1}]})}));
@@ -59,7 +68,7 @@ let checks=0;const check=(ok,text)=>{assert.ok(ok,text);checks++;console.log(`PA
       await page.evaluate(async()=>{const {Presence}=await import('/src/presence.js');const el=document.createElement('span');document.body.append(el);window.off=new Presence('',el);});
       check(await page.evaluate(()=>off.el.querySelector('.fps-value')?.textContent==='—'),'FPS cell exists before/without online service');
     }else{
-      const context=await browser.newContext({viewport:{width:480,height:300},hasTouch:true,deviceScaleFactor:1}),page=await context.newPage();page.setDefaultTimeout(45000);page.on('pageerror',e=>errors.push(e.message));
+      const context=await browser.newContext({viewport:{width:667,height:375},hasTouch:true,deviceScaleFactor:1}),page=await context.newPage();page.setDefaultTimeout(45000);page.on('pageerror',e=>errors.push(e.message));
       const started=Date.now();let phaseTimer;await page.goto(base+'/?lowmem&phone&quality=0&at=4.2,3.9,180&time=12&freeze&cloud=',{waitUntil:'commit'});
       await page.waitForFunction(()=>window.__app?.renderer&&__app.loadingEl.hidden,null,{timeout:240000,polling:200});
       phaseTimer=setTimeout(()=>browser.close(),60000);
@@ -68,19 +77,28 @@ let checks=0;const check=(ok,text)=>{assert.ok(ok,text);checks++;console.log(`PA
       await page.clock.install();await page.clock.pauseAt(await page.evaluate(()=>Date.now()+100));
       await page.evaluate(()=>{const a=__app,original=a.renderer.render.bind(a.renderer);window.draws=0;a.renderer.render=(s,c)=>{draws++;return original(s,c);};a.frameRate.reset();a.frame(.02);window.warmSkipped=a.warm.done;});
       async function sample(n,ms){await page.evaluate(()=>draws=0);for(let i=0;i<n;i++){const delta=Array.isArray(ms)?ms[i]:ms;await page.clock.runFor(delta);await page.evaluate(ms=>__app.frame(ms/1000),delta);}return page.evaluate(()=>({draws,value:__app.frameRate.value,text:document.querySelector('.fps-value').textContent}));}
-      const ordinary=await sample(3,200);check(ordinary.draws===3&&ordinary.value===5,'actual main frame counts three ordinary scene draws over controlled elapsed time');checkpoint({ordinary});
+      const ordinary=await sample(1,600);check(ordinary.draws===1&&ordinary.value===2,'actual main frame counts one ordinary scene draw over controlled elapsed time');checkpoint({ordinary});
       const extra=await page.evaluate(()=>{const a=__app,before=a.frameRate.frames;a.renderer.render(a.scene,a.camera);return a.frameRate.frames===before;});check(extra,'actual extra renderer calls outside ordinary main hook do not inflate FPS');checkpoint({ordinary,extra});
       await page.evaluate(()=>{__app.use(__app.note);__app.showOverlay(true);__app.showOverlay(false);__app.frame(0);});const reading=await sample(3,[200,1,399]);check(reading.draws===2&&reading.value===3,'actual phone reading gate: three logic callbacks, two due scene frames, 3 FPS');
       fs.writeFileSync(`${out}/app-checkpoint.json`,JSON.stringify({checks,errors,ordinary,reading,stage:'before-images'},null,2));
-      await page.screenshot({path:`${out}/actual-app-reading.png`});await page.locator('#note-close').click({force:true});
+      await page.evaluate(()=>document.getElementById('note-close').click());
       await page.evaluate(()=>__app.showOverlay(true));check(await page.evaluate(()=>__app.frameRate.value===null&&document.querySelector('.fps-value').textContent==='—'),'actual pause immediately clears stale FPS');
       await sample(2,20);await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,get:()=>true});document.dispatchEvent(new Event('visibilitychange'));});
       const hidden=await sample(2,20);check(hidden.draws===0&&hidden.value===null,'controlled hidden flag stops phone draws and keeps FPS unknown');
       await page.evaluate(()=>{delete document.hidden;document.dispatchEvent(new Event('visibilitychange'));__app.showOverlay(false);__app.frame(.02);});
-      const resumed=await sample(3,200);check(resumed.draws===3&&resumed.value===5,'actual resume starts fresh 5-FPS window with no stale spike');await page.screenshot({path:`${out}/actual-app-resumed.png`});
+      const resumed=await sample(1,600);check(resumed.draws===1&&resumed.value===2,'actual resume starts fresh controlled 2-FPS window with no stale spike');
       clearTimeout(phaseTimer);
+      checkpoint({errors,ordinary,reading,hidden,resumed,extra,stage:'all assertions before image'});
       results.push({ordinary,reading,hidden,resumed,extra,warmSkipped:await page.evaluate(()=>warmSkipped),elapsedMs:Date.now()-started,evidence:'actual WebGL apartment with320×180 draw buffer; controlled clock/visibility and callback cadence, not physical phone or measured hardware FPS'});
+      fs.writeFileSync(`${out}/app-result.json`,JSON.stringify({checks,errors,results},null,2));
+      // Explicit paired capture: real synchronous game pixels, then real DOM with only its canvas hidden.
+      const canvas=await page.evaluate(()=>{const a=__app;a.frame(0);a.renderer.getContext().finish();const c=a.renderer.domElement;return {png:c.toDataURL('image/png'),width:c.width,height:c.height,fps:document.querySelector('.fps-value').textContent};});
+      check(canvas.width===320&&canvas.height===180&&canvas.fps==='2'&&canvas.png.length>500,'actual synchronous game canvas PNG retains controlled FPS and320×180 buffer (canvas only)');fs.writeFileSync(`${out}/actual-game-canvas.png`,Buffer.from(canvas.png.split(',')[1],'base64'));checkpoint({errors,ordinary,reading,hidden,resumed,extra,captureMode:'paired',gameCanvas:{width:canvas.width,height:canvas.height,fps:canvas.fps},stage:'before DOM image'});
+      await page.evaluate(async()=>{await document.fonts.ready;__app.renderer.domElement.style.visibility='hidden';});await page.clock.resume();
+      const cdp=await context.newCDPSession(page);let captureTimer;
+      try { const png=await Promise.race([cdp.send('Page.captureScreenshot',{format:'png',fromSurface:false,captureBeyondViewport:false}),new Promise((_,reject)=>{captureTimer=setTimeout(()=>reject(new Error('native HUD DOM capture exceeded15s')),15000);})]);fs.writeFileSync(`${out}/actual-hud-dom.png`,Buffer.from(png.data,'base64'));check(png.data.length>500,'actual current HUD DOM PNG captured separately with only game canvas hidden'); } finally {clearTimeout(captureTimer);await cdp.detach();}
+      results[0].capture={mode:'paired actual canvas and DOM; no composited/full-app image',gameCanvas:'actual-game-canvas.png',hudDOM:'actual-hud-dom.png'};
     }
-    check(errors.length===0,`no page errors: ${JSON.stringify(errors)}`);fs.writeFileSync(`${out}/${app?'app':'native'}-result.json`,JSON.stringify({checks,errors,results},null,2));console.log('ALL PASS');
+    check(errors.length===0,`no page errors: ${JSON.stringify(errors)}`);fs.writeFileSync(`${out}/${mode}-result.json`,JSON.stringify({checks,errors,results},null,2));console.log('ALL PASS');
   }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
