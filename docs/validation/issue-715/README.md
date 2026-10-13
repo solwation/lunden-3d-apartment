@@ -50,3 +50,39 @@ The production helper now retains one non-identifying, copied `combatWorldMetric
 The remaining acceptance requires the same idle / one shooter / two simultaneous shooters scenario on a physical phone, with frame/long-frame, transport and effect/render measurements before/after. Today's loss/restore pairs provide none of those PvP comparisons. The added diagnosis supports a next cold-query measurement; it is not a phone fix or evidence of improved phone FPS.
 
 Standalone actual-Three/no-WebGL regression: **ALL PASS, 485 checks**, including 23 new diagnosis checks for successful results, cold cache promotion/wait, active/yield partition, initial cancellation, deadline overrun in a synchronous custom raycast, copied snapshots, pending-wait cancellation and cache invalidation. A separate bounded Playwright driver waited on the fixture's authored `window.result`, exited 0 and recorded no page errors; `/tmp/lunden-priority-715/result.json` and the reviewed full-page text-fixture screenshot `/tmp/lunden-priority-715/fixture.png` are local artifacts. This is a module regression, not a rendered apartment or phone benchmark. The generic runner separately timed out despite the authored ALL PASS terminal because its exact-line detector rejects the existing suffixed summary; that independent runner bug is tracked in [#861](https://github.com/solwation/lunden-3d-apartment/issues/861) and was not changed here.
+
+## Local cold-shot mitigation, 2026-10-13
+
+The user reported recurring phone PvP lag yesterday evening and requested a concrete attempted fix. Inspection found
+that the earlier remote-shot indexes leave local Darts → Marks.hit → Marks.segment unaffected: the first local shot
+synchronously constructed a full TriGrid for every large static surface, including distant scenery, before any box rejection.
+
+The candidate performs a private conservative position-bound rejection before constructing a grid. Authored boxes
+remain intact; float32 world-coordinate rounding is included; existing furniture invalidation clears both caches.
+Moving/native paths, physical-render-layer independence, hit sorting and hit point/normal/object/material metadata remain.
+
+Verification: real Chromium, actual Three, Marks and Darts, no apartment bootstrap or WebGL renderer. Baseline source
+is exactly `524ebc9:src/marks.js`, supplied by `tools/marksbroadphasetest.cjs`. The ten-check fixture covers transformed
+static contact, miss, endpoint, deliberately wrong authored bounds, render-culled surfaces, furniture invalidation,
+moving door contact, separate vertex-read proof and two identical local shots through distant scenery. Eight separate
+16,128-triangle spheres per cold run; 60 Darts.update steps; no vertex counters during timing.
+
+| Measured update work | Previous | Candidate |
+|---|---:|---:|
+| Cold first two-local-dart update | 47.3 ms | 1.7 ms |
+| Sum of 60 updates | 48.6 ms | 2.9 ms |
+
+All active counts and final dart positions/velocities/range/visibility/flight/spent flags and splash count match.
+The separate distant indexed-sphere probe counts 11,904 versus 2,145 position reads: the candidate scans positions
+once for conservative bounds and avoids triangle/cell allocation. All ten checks passed without page errors;
+`marksphysicstest.html` also passed through the public runner, exit 0, no game document.
+Local evidence: `/tmp/lunden-715-candidate-final/result.json`, inspected `marks-broad-phase.png`, and
+`/tmp/runtests-1549801/marksphysicstest.log`/`summary.json`.
+
+This establishes a real reduction in unnecessary cold local-shot CPU work in a controlled scene. It does not establish
+phone FPS or prove the user's sole lag cause. Overlapping cold grids can still build synchronously. The candidate is
+published for normal gameplay feedback; physical-phone acceptance is not used to block shipping the improvement.
+
+The broader rendered-apartment `nerftest.html` was deferred to keep one exclusive app/browser workload on the shared VM.
+The native actual Marks/Darts and physical Glass checks above are the performed acceptance for this narrow change; no
+rendered apartment Nerf result is claimed. #715 stays open to monitor the candidate during normal play.

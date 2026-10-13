@@ -46,6 +46,28 @@ Related: [graphics](graphics.md), [verification](verification.md).
 - Dynamic resolution: replaced by the adaptive quality level (#592, below); off with `&shot`.
 
 
+## Local shot cold collision preparation (#715, 2026-10-13)
+
+Local Nerf darts call `Marks.hit` while flying. Previously `Marks.segment` created a `TriGrid` synchronously for every
+static surface with at least 200 triangles before asking whether its bounds intersected the short dart segment.
+That transformed every triangle and populated world-cell Maps even for scenery far outside the shot. The remote
+combat spatial fixes did not cover this local path. It is a concrete source of first-shot CPU work, including during PvP.
+
+`src/marks.js` now checks a private conservative position-derived world box before creating that grid. It ignores
+and preserves authored `geometry.boundingBox`, includes float32 rounding used by TriGrid's world vertices, and is
+invalidated alongside the grid when furniture moves. Moving/instanced/skinned surfaces retain the existing path;
+render-detail layers and physical hit decisions retain their existing policies. Overlapping cold grids still build
+synchronously; this change removes distant preparation, not every possible shot hitch.
+
+`tools/marksbroadphasetest.cjs` supplies unmodified `524ebc9:src/marks.js` to the companion module-only browser fixture.
+Two actual local Darts/Marks shots, 60 identical steps and eight distant 16,128-triangle spheres: cold first update
+**47.3 → 1.7 ms**, total update work **48.6 → 2.9 ms** in Chromium. Every active-dart count and final position, velocity,
+travelled distance, visibility/flight/spent flag and splash count match. Separate instrumented proof: 2,145 position
+reads versus 11,904 for a distant indexed sphere. All ten checks passed; actual physical-marks regression also passed.
+This controlled CPU result is not apartment FPS or a physical-phone measurement. It supports publishing a candidate
+against the user's recurring shooting lag without treating another user test as a prerequisite for implementation.
+
+
 Focus regression (#558): #531 created then disposed a temporary brightness material on every target exit, releasing its last GPU program. A real WebGL createProgram counter reproduced 30 new programs for 30 target/clear switches (and 30 for greeted figures). InteractionOutline now caches variants in a WeakMap by source material/instance index, restoring originals on clear and releasing cached GPU resources on source disposal. Different figure indices use an integer uniform in one shared shader. focusperftest checks zero new programs after warm-up, shared-source reuse, first visits to other figure indices and disposal. interactionoutlinetest checks actual pixel restoration, current lamp hooks, geometry animation and index changes. This removes measured shader churn; desktop SwiftShader is not a claim of measured phone FPS.
 
 Southern backdrop (#536): `SITE.south`/`southbackdrop.js` add 54 existing mapped footprints, a real courtyard hole, simple landmark windows and hip/gable roof silhouettes, sourced roads/open fields and 70 low-detail seasonal woodland trees. Four merged surfaces plus two instanced meshes, no new textures/lights/interiors or OUTDOOR expansion. Clear-weather fog ends at 650 m; camera far 1000 m, outer ground edges hidden. Rain retains its 80 m fog target. Untagged dimensions/height/roof details remain assumptions; proposed Hunnerup 30 buildings excluded. `southbackdroptest` checks sources, real courtyard aperture and seasonal buffers. [Sources, budgets and before/after](../validation/issue-536/README.md).

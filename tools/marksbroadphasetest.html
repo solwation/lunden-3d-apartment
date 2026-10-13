@@ -1,0 +1,59 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Local dart cold broad phase</title><pre id="out">running…</pre>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<script type="module">
+import * as T from 'three';
+import { Marks } from '../src/marks.js';
+import { Marks as Previous } from '../src/marks.js?baseline=524ebc9';
+import { buildToys } from '../src/toys.js';
+const lines=[];let failures=0;
+const check=(ok,label)=>{lines.push(`${ok?'PASS':'FAIL'} ${label}`);failures+=!ok;};
+const summary=samples=>{const sorted=[...samples].sort((a,b)=>a-b);return {totalMs:samples.reduce((a,b)=>a+b,0),firstMs:samples[0],medianMs:sorted[Math.floor(sorted.length*.5)],p95Ms:sorted[Math.floor(sorted.length*.95)]};};
+const state=darts=>darts.list.slice(0,2).map(d=>({position:d.g.position.toArray(),velocity:d.v.toArray(),travelled:d.travelled,flying:d.flying,visible:d.g.visible,spent:d.spent}));
+try{
+ const camera=new T.PerspectiveCamera(),scene=new T.Scene();
+ const previous=new Previous(scene,camera),current=new Marks(scene,camera);
+ const mesh=new T.Mesh(new T.SphereGeometry(1,32,16),new T.MeshBasicMaterial({side:T.DoubleSide}));
+ mesh.position.set(1,2,3);mesh.scale.set(1.2,.8,1.3);mesh.rotation.set(.2,.4,.1);scene.add(mesh);scene.updateMatrixWorld(true);
+ // Authored bounds are deliberately wrong; the candidate must inspect physical position data privately.
+ mesh.geometry.boundingBox=new T.Box3(new T.Vector3(100,100,100),new T.Vector3(101,101,101));
+ const authored=mesh.geometry.boundingBox.clone();
+ const same=(a,b)=>a.length===b.length&&a.every((h,i)=>h.object===b[i].object&&h.materialIndex===b[i].materialIndex&&Math.abs(h.distance-b[i].distance)<1e-8&&h.point.distanceTo(b[i].point)<1e-8&&h.normal.distanceTo(b[i].normal)<1e-8);
+ for(const [label,from,to] of [
+  ['rotated scaled static contact',new T.Vector3(1,2,0),new T.Vector3(1,2,6)],
+  ['empty distant segment',new T.Vector3(30,2,0),new T.Vector3(30,2,6)],
+  ['surface endpoint',new T.Vector3(1,2,0),new T.Vector3(1,2,3)]
+ ])check(same(previous.segment(from,to,[mesh]),current.segment(from,to,[mesh])),label+' retains original point/normal/object/material/distance');
+ check(mesh.geometry.boundingBox.equals(authored),'private broad phase preserves authored boundingBox');
+ mesh.layers.set(7);
+ check(same(previous.segment(new T.Vector3(1,2,0),new T.Vector3(1,2,6),[mesh]),current.segment(new T.Vector3(1,2,0),new T.Vector3(1,2,6),[mesh])),'render-culled static triangles retain physical contact');
+ mesh.position.x=8;scene.updateMatrixWorld(true);previous.invalidate(mesh);current.invalidate(mesh);
+ check(same(previous.segment(new T.Vector3(8,2,0),new T.Vector3(8,2,6),[mesh]),current.segment(new T.Vector3(8,2,0),new T.Vector3(8,2,6),[mesh])),'furniture invalidation refreshes bounds and actual grid');
+ const door=new T.Mesh(new T.BoxGeometry(1,2,.1),new T.MeshBasicMaterial({side:T.DoubleSide}));door.userData.door={kind:'door'};scene.add(door);scene.updateMatrixWorld(true);
+ check(same(previous.segment(new T.Vector3(0,0,-1),new T.Vector3(0,0,1),[door]),current.segment(new T.Vector3(0,0,-1),new T.Vector3(0,0,1),[door])),'moving door retains native contact path');
+ // Separate vertex-read proof from uninstrumented timings: distant grids read indexed triangles repeatedly.
+ const distant=new T.Mesh(new T.SphereGeometry(1,64,32),new T.MeshBasicMaterial());distant.position.set(100,10,100);distant.updateMatrixWorld(true);
+ const p=distant.geometry.attributes.position,get=p.getX;let reads=0;p.getX=function(i){reads++;return get.call(this,i);};
+ current.segment(new T.Vector3(),new T.Vector3(0,1,0),[distant]);const candidateReads=reads;reads=0;
+ previous.segment(new T.Vector3(),new T.Vector3(0,1,0),[distant]);const previousReads=reads;p.getX=get;
+ check(candidateReads===p.count&&previousReads>candidateReads,'distant candidate reads positions once and skips triangle/cell construction');
+ lines.push(JSON.stringify({vertexReads:{candidate:candidateReads,previous:previousReads}}));
+ // Actual local Darts.update/Marks.hit, identical two shots, 60 steps, newly built surfaces in each cold run.
+ const toys=buildToys(scene,camera);
+ const run=Type=>{
+  const surfaces=Array.from({length:8},(_,i)=>{const m=new T.Mesh(new T.SphereGeometry(1,128,64),new T.MeshBasicMaterial());m.position.set(80+i*4,10,80);m.updateMatrixWorld(true);return m;});
+  const marks=new Type(new T.Scene(),camera,surfaces);toys.darts.hide();toys.darts.next=0;toys.darts.marks=marks;
+  for(const x of [0,.1])toys.darts.fire(new T.Vector3(x,1.5,0),new T.Vector3(0,0,1));
+  const samples=[],active=[];
+  for(let step=0;step<60;step++){active.push(toys.darts.list.filter(d=>d.flying&&d.g.visible).length);const start=performance.now();toys.darts.update(1/60);samples.push(performance.now()-start);}
+  return {samples,active,end:state(toys.darts),splashes:marks.live.length};
+ };
+ const before=run(Previous),after=run(Marks);
+ check(JSON.stringify(before.active)===JSON.stringify(after.active)&&JSON.stringify(before.end)===JSON.stringify(after.end)&&before.splashes===after.splashes,'actual two local darts preserve every active count and final pose/velocity/travel/flight/visibility/splashes');
+ const timings={previous:summary(before.samples),candidate:summary(after.samples)};
+ check(timings.candidate.firstMs<timings.previous.firstMs,'candidate reduces measured cold first actual local-dart update in controlled distant scenery');
+ lines.push(JSON.stringify({scope:'actual local Darts.update and Marks.hit; two same shots, 60 steps, eight distant 16128-triangle spheres; uninstrumented cold runs; CPU only, no apartment/FPS/phone claim',timings}));
+ window.timings=timings;
+}catch(error){check(false,error.stack||String(error));}
+lines.push(`${failures?'SOME FAILED':'ALL PASS'} ${lines.filter(l=>l.startsWith('PASS')||l.startsWith('FAIL')).length} checks`);
+document.querySelector('#out').textContent=lines.join('\n');window.result={pass:!failures,lines,timings:window.timings};
+</script></html>

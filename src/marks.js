@@ -118,7 +118,7 @@ export class Marks {
   get count() { return this.live.length; }
 
   /** Furniture was moved: its cached world-space acceleration data is no longer valid (#465). */
-  invalidate(root) { root.traverse((o) => { grids.delete(o); boxes.delete(o); }); }
+  invalidate(root) { root.traverse((o) => { grids.delete(o); boxes.delete(o); gridBoxes.delete(o); }); }
 
   /**
    * The first thing on the segment from → to: { point, normal, object } on a surface that takes marks,
@@ -174,6 +174,18 @@ export class Marks {
     segBox.setFromPoints([from, to]);
     for (const o of meshes) {
       if (!dynamic(o) && !o.isInstancedMesh && !o.isSkinnedMesh && triCount(o) >= 200) {
+        // Reject distant scenery before building its triangle/cell index (#715). Use private position bounds:
+        // authored geometry.boundingBox can intentionally be narrower than the physical triangles.
+        let bounds = gridBoxes.get(o);
+        if (!bounds) {
+          o.updateWorldMatrix(true, false);
+          bounds = new THREE.Box3().setFromBufferAttribute(o.geometry.attributes.position).applyMatrix4(o.matrixWorld);
+          // TriGrid stores world coordinates as float32; include that rounding at segment boundaries.
+          const padding = 8 * 2 ** -23 * Math.max(1, ...bounds.min.toArray().map(Math.abs), ...bounds.max.toArray().map(Math.abs));
+          bounds.expandByScalar(padding);
+          gridBoxes.set(o, bounds);
+        }
+        if (!bounds.intersectsBox(segBox)) continue;
         let g = grids.get(o);
         if (!g) grids.set(o, (g = new TriGrid(o)));
         g.hits(this.ray.ray, far, segBox, o.material.side, out);
@@ -342,7 +354,7 @@ class Flutter {
   }
 }
 
-const grids = new WeakMap(), boxes = new WeakMap(), segBox = new THREE.Box3();
+const grids = new WeakMap(), boxes = new WeakMap(), gridBoxes = new WeakMap(), segBox = new THREE.Box3();
 const triCount = (o) => (o.geometry.index ? o.geometry.index.count : o.geometry.attributes.position.count) / 3;
 /** Things that move or toggle (doors, lids, the parasol …) — E targets other than seats, beds and the Nerf target. */
 const moving = (o) => !!o.userData.door && o.userData.door.kind !== 'rest' && o.userData.door.kind !== 'target';
