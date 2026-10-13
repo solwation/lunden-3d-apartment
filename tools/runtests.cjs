@@ -7,6 +7,8 @@
 //   node tools/runtests.cjs resttest tostarttest cooktest        names (no extension), or tools/x.html / x.cjs
 //   node tools/runtests.cjs --group a-c [--jobs 2]               first letter of the file name in a range: a-c d-l m-p r-t u-z
 //   node tools/runtests.cjs --compare resttest tostarttest       each HTML test twice: without `&test`, then with it + a 480x300 iframe
+//   node tools/runtests.cjs --test-only pctest.html             HTML-only iteration: actual &test + 480x300, NOT full/test parity
+//       Incompatible with --compare or --update-baseline; select explicit .html when a name has both formats.
 //   node tools/runtests.cjs --list [names…]                      what would run
 // Explicit .html/.cjs filenames select one file; a bare name selects all matching formats.
 //   node tools/runtests.cjs --update-baseline name…              rewrite those tests' entries in tools/baseline.json from this run
@@ -21,7 +23,7 @@ const BASELINE = path.join(TOOLS, 'baseline.json');
 
 // ---------- arguments ----------
 const argv = process.argv.slice(2);
-const opt = { jobs: 1, timeout: 20, port: 8133, group: null, compare: false, list: false, update: false, verbose: false, names: [] };
+const opt = { jobs: 1, timeout: 20, port: 8133, group: null, compare: false, testOnly: false, list: false, update: false, verbose: false, names: [] };
 for (let i = 0; i < argv.length; i++) {
   const a = argv[i];
   if (a === '--jobs') opt.jobs = Math.max(1, Math.min(2, Number(argv[++i]) || 1));
@@ -29,12 +31,19 @@ for (let i = 0; i < argv.length; i++) {
   else if (a === '--port') opt.port = Number(argv[++i]) || 8133;
   else if (a === '--group') opt.group = argv[++i];
   else if (a === '--compare') opt.compare = true;
+  else if (a === '--test-only') opt.testOnly = true;
   else if (a === '--list') opt.list = true;
   else if (a === '--update-baseline') opt.update = true;
   else if (a === '--verbose') opt.verbose = true;
   else if (a.startsWith('--')) { console.error(`unknown option ${a}`); process.exit(2); }
   else opt.names.push(a);
 }
+
+if (opt.testOnly && (opt.compare || opt.update)) {
+  console.error('--test-only is HTML-only iteration, NOT full/test parity; cannot combine with --compare or --update-baseline');
+  process.exit(2);
+}
+const ITERATION_SCOPE = 'iteration/test-only, NOT full/test parity';
 
 // ---------- test discovery ----------
 const GROUPS = { 'a-c': ['a', 'c'], 'd-l': ['d', 'l'], 'm-p': ['m', 'p'], 'r-t': ['r', 't'], 'u-z': ['u', 'z'] };
@@ -150,7 +159,7 @@ async function startServer(cmd, args, port) {
 let browserType;
 async function runHtml(test, { asTest }, game, workerPort = null) {
   const pw = browserType ||= playwrightModule();
-  const log = []; const t0 = Date.now();
+  const log = opt.testOnly ? [`[runner] ${ITERATION_SCOPE}`] : []; const t0 = Date.now();
   if (shuttingDown) throw new Error('runner is stopping');
   const launch = pw.chromium.launch({ timeout: opt.timeout * 60000, executablePath: process.env.CHROME_PATH || undefined,
     args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
@@ -160,18 +169,19 @@ async function runHtml(test, { asTest }, game, workerPort = null) {
   finally { launches.delete(launch); }
   const killer = setTimeout(() => browser.close().catch(() => {}), opt.timeout * 60000 + 30000);
   let text = '', status = 'TIMEOUT', redirects = 0;
-  const mode = opt.compare ? (asTest ? 'test' : 'full') : 'written', gameLoads = [];
+  const explicitMode = opt.compare || opt.testOnly;
+  const mode = opt.testOnly ? 'test-only' : opt.compare ? (asTest ? 'test' : 'full') : 'written', gameLoads = [];
   const origin = new URL(game).origin;
   const isGame = u => u.origin === origin && (u.pathname === '/index.html' || u.pathname === '/');
   try {
     // Fullscreen escapes iframe CSS, so the test context itself must stay small too (#776).
     const viewport = asTest ? { width: 480, height: 300 } : { width: 1280, height: 800 };
     const ctx = await browser.newContext({ viewport, deviceScaleFactor: 1 });
-    if (opt.compare) {
+    if (explicitMode) {
       // A migrated fixture may already contain ?test. Force the first pass out of test mode too.
       await ctx.route(isGame, async route => {
         if (route.request().resourceType() !== 'document') return route.continue();
-        const href = route.request().url(), normalized = gameModeUrl(href, mode);
+        const href = route.request().url(), normalized = gameModeUrl(href, asTest ? 'test' : 'full');
         if (normalized === href) return route.continue();
         redirects++;
         await route.fulfill({ status: 302, headers: { location: normalized } });
@@ -216,10 +226,11 @@ async function runHtml(test, { asTest }, game, workerPort = null) {
     }));
   } catch (e) { log.push(`[runner] ${e.message}`); status = 'ERROR'; }
   clearTimeout(killer); await browser.close().catch(() => {}); browsers.delete(browser);
-  const modeVerified = !opt.compare || !gameLoads.length ? null : gameLoads.every(load =>
+  const modeVerified = !explicitMode || !gameLoads.length ? null : gameLoads.every(load =>
     load.test === asTest && (load.controller === null || load.controller === asTest));
   if (modeVerified === false) { status = 'ERROR'; log.push(`[runner] loaded game mode does not match ${mode}`); }
   if (opt.compare && !gameLoads.length) log.push('[runner] no game document loaded; mode comparison does not apply');
+  else if (opt.testOnly && !gameLoads.length) log.push('[runner] no game document loaded; game mode verification does not apply');
   return { status, text, log, ms: Date.now() - t0, redirects, mode, gameLoads, modeVerified, worker: workerPort === null ? null : `http://localhost:${workerPort}` };
 }
 
@@ -274,16 +285,21 @@ function classify(r, name, base) {
 
 async function main() {
   const tests = select();
+  if (opt.testOnly && tests.some(test => test.kind !== 'html')) {
+    console.error('--test-only requires HTML fixtures only; .cjs scripts define their own mode. Select explicit .html filenames.');
+    process.exit(2);
+  }
   if (opt.list) { for (const t of tests) console.log(t.file); return; }
   fs.mkdirSync(path.join(LOGDIR, 'shots'), { recursive: true });
   await startServer('python3', ['tools/devserve.py', String(opt.port), ROOT], opt.port);
   const game = `http://localhost:${opt.port}`, base = readBaseline();
-  console.log(`runtests: ${tests.length} test(s), jobs ${opt.jobs}, timeout ${opt.timeout} min, server :${opt.port}, logs ${LOGDIR}`);
+  console.log(`runtests: ${tests.length} test(s), jobs ${opt.jobs}, timeout ${opt.timeout} min, server :${opt.port}, logs ${LOGDIR}${opt.testOnly ? `; ${ITERATION_SCOPE}` : ''}`);
 
   // The work list: one job per run (a compare of one test is two jobs, in order, on the same load).
   const jobs = [];
   for (const t of tests) {
     if (opt.compare && t.kind === 'html') jobs.push({ t, asTest: false, label: 'full' }, { t, asTest: true, label: '&test' });
+    else if (opt.testOnly) jobs.push({ t, asTest: true, label: ITERATION_SCOPE });
     else jobs.push({ t, asTest: false, label: opt.compare ? 'scripted (no compare: .cjs)' : '' });
   }
   const results = []; let next = 0;
@@ -303,7 +319,8 @@ async function main() {
       }
       catch (e) { r = { status: 'ERROR', text: '', log: [`[runner] ${e.stack}`], ms: 0 }; }
       if (shuttingDown) return;
-      classify(r, j.t.name, base); Object.assign(r, { name: j.t.name, file: j.t.file, label: j.label, asTest: j.asTest, kind: j.t.kind });
+      if (opt.testOnly && !r.log.includes(`[runner] ${ITERATION_SCOPE}`)) r.log.unshift(`[runner] ${ITERATION_SCOPE}`);
+      classify(r, j.t.name, base); Object.assign(r, { name: j.t.name, file: j.t.file, label: j.label, asTest: j.asTest, kind: j.t.kind, ...(opt.testOnly ? { scope: ITERATION_SCOPE } : {}) });
       const logName = tests.filter(t => t.name === j.t.name).length > 1 ? j.t.file : j.t.name;
       fs.writeFileSync(path.join(LOGDIR, `${logName}${j.asTest ? '.test' : ''}.log`), `${r.text}\n${r.log.join('\n')}\n`);
       console.log(`  ${r.verdict.padEnd(7)} ${j.t.name}${j.label ? ` [${j.label}]` : ''}  ${fmt(r.ms)}  FAIL lines: ${r.fails.length}${r.newFails.length ? ` (${r.newFails.length} not in baseline)` : ''}`);
@@ -315,7 +332,7 @@ async function main() {
   if (shuttingDown) return;
 
   // ---------- summary ----------
-  console.log('\nSummary');
+  console.log(`\nSummary${opt.testOnly ? ` — ${ITERATION_SCOPE}` : ''}`);
   const order = (r) => tests.findIndex((t) => t.file === r.file) * 2 + (r.asTest ? 1 : 0);
   results.sort((a, b) => order(a) - order(b));
   for (const r of results) {
@@ -347,7 +364,7 @@ async function main() {
     const sorted = Object.fromEntries(Object.keys(nb).sort().map((k) => [k, nb[k]]));
     fs.writeFileSync(BASELINE, JSON.stringify(sorted, null, 2) + '\n'); console.log(`baseline updated: ${BASELINE}`);
   }
-  fs.writeFileSync(path.join(LOGDIR, 'summary.json'), JSON.stringify(results.map(({ name, file, kind, label, verdict, ms, fails, mode, gameLoads, modeVerified, comparison, worker }) => ({ name, file, kind, label, verdict, ms, fails, mode, gameLoads, modeVerified, comparison, worker })), null, 2));
+  fs.writeFileSync(path.join(LOGDIR, 'summary.json'), JSON.stringify(results.map(({ name, file, kind, label, verdict, ms, fails, mode, gameLoads, modeVerified, comparison, worker, scope }) => ({ name, file, kind, label, verdict, ms, fails, mode, gameLoads, modeVerified, comparison, worker, scope })), null, 2));
   const bad = comparisonFailed || results.some((r) => !['PASS', 'KNOWN'].includes(r.verdict));
   children.forEach(killGroup);
   process.exit(bad ? 1 : 0);

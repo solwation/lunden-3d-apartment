@@ -267,6 +267,18 @@ Needs Playwright (`PLAYWRIGHT_MODULE=…` or a global install; `CHROME_PATH` opt
 `summary.json`, never the repo. `--jobs N` runs N tests at once (default 1, **max 2**: the VM is shared), `--list` shows the selection,
 `--verbose` prints each test's output.
 
+`node tools/runtests.cjs --test-only pctest.html` (#860) is an optional **iteration** run: each selected HTML fixture runs
+once with actual `&test`, DPR 1, a 480×300 context and the same iframe override/URL normalization/mode verification as
+`--compare`'s test half. Authored query variants such as `test=lazy` remain; actions and assertions are not rewritten.
+Console, per-fixture logs and JSON summaries explicitly say `iteration/test-only, NOT full/test parity`; the JSON mode
+is `test-only`, with no comparison object. A standalone fixture that loads no game has null mode verification.
+`--compare` still runs both modes for acceptance. `--test-only` rejects `--compare`, `--update-baseline` and any selected
+`.cjs` script (scripts own their mode); choose explicit `.html` names if a bare name selects both formats. It reads the
+ordinary failure baseline without modifying it. `node --test tools/runneriteration.test.cjs` exercises actual CLI,
+server and browser native DOM/query/reload/isolation and controller evidence in a minimal temporary repo, without
+loading the apartment/WebGL. This protocol regression supplies no game parity or performance claim.
+
+
 `christmastest.html` retains its original `PASS/FAIL christmastest` summary and every original ordered check row,
 then appends `ALL PASS` / `SOME FAILED` from the same final `pass` flag (#847). Its earlier summary alone was not a runner
 completion marker. The output assignment and actual runner parser/classifier were verified in native Chrome DOM for success
