@@ -349,7 +349,7 @@ tools/resttest.html    headless test (Olof is switched off in it, #645: he turns
 tools/stucktest.html   headless test (#314): a 5 cm scan of both floors (doors open; the free floor in one piece, pockets out of
                        reach listed), getting up from every seat / bed with the old spot inside it, F putting the sofa / bed back
                        round you, the car parking on you, the hoop rising under you, a door shut on you, a resume record in the bed
-tools/falltest.html    headless test (#361): a 2.5 m drop is soft, a 5 m drop hurts (red, black, no walking, awake at the front door,
+tools/falltest.html    headless test (#361): a 2.5 m drop is soft, a 5 m drop hurts (red, black, no walking, awake at checked outdoor ground,
                        counted + a deduction); the stair up / down (also crouched), the ramp,
                        the outdoor stairs (#355), out of the top bunk, a resume record: no free fall
 tools/jetpacktest.html headless test (#359): the jetpack on its hook in the portik room, E puts it on (hands free, HUD), Space lifts
