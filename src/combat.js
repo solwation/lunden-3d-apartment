@@ -185,7 +185,7 @@ export class Combat {
         // Raycaster's native SkinnedMesh path calls getVertexPosition: no bind-pose proxy or capsule head guess.
         const contact = ray.intersectObject(g.avatar.mesh, false)[0];
         if (contact && (!best || contact.distance < best.along)) {
-          const head = g.avatar.rifleHeadContact(contact, { p: g.feet.toArray(), r: g.root.rotation.y }, g.id);
+          const head = g.avatar.rifleHeadContact(contact, { p: g.feet.toArray(), r: g.root.rotation.y }, g.id, o.toArray(), raw.toArray());
           best = { g, along: contact.distance, hc: head ? [RH.version, ...contact.point.toArray()] : null };
         }
       } else { // Moving/crouching keeps the earlier body-only capsule until its own follow-up slice.

@@ -244,11 +244,11 @@ export class Avatar {
   }
 
   /** #897: internal surface identity, never a head boolean accepted by the server. */
-  rifleHeadContact(hit, state, seed) {
+  rifleHeadContact(hit, state, seed, origin, direction) {
     const point = hit.point.toArray().map(v => Math.round(v * 1000) / 1000);
     if (this.mesh.geometry.attributes.rifleNose.getX(hit.face.a)) return rifleNoseRegion(seed, state, point);
-    if (this.look.style !== RH.style || !this.mesh.geometry.attributes.rifleSkull.getX(hit.face.a)) return false;
-    return rifleHeadRegion(seed, state, point);
+    if (!this.mesh.geometry.attributes.rifleSkull.getX(hit.face.a)) return false;
+    return rifleHeadRegion(seed, state, point, origin, direction);
   }
 
   /** Solid (lit, opaque; `opacity` 1) or an outline (see-through, nothing written to the depth buffer). */

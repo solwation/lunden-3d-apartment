@@ -4559,10 +4559,12 @@ export function avatarLook(seed) {
   return { style, sleeves, skin, hair, top, pants, shoes, build, tall: 0.95 + pick(5) * 0.025 };
 }
 
-// #897: v1 supports only the exposed central front of the short-haired standing skull.
-// Existing physical mesh dimensions, shared with Avatar. Other parts/styles stay body-only.
+// #897/#916: v1 supports only measured exposed central fronts of the standing skull.
+// Existing physical mesh dimensions, shared with Avatar. Other unsupported parts stay body-only.
 export const PVP_RIFLE_HEAD = {
   version: 1, style: 0, bodyDamage: 1, headDamage: 2,
+  coreStyles: [0, 1, 2, 3],
+  corePatches: { 3: { across: .008, low: .132, high: .140, maxVertical: .08 } }, // *guess* lower exposed beanie core and ray-angle policy; actual nearest-surface/hidden-skull grids bound coverage
   skull: { radius: .11, width: 14, height: 10, scale: [.94, 1.1, .98], centre: [0, .1, .01] },
   nose: { radius: .02, width: 8, height: 6, scale: [.8, 1.1, 1.15], centre: [0, .092, .113] }, // unchanged Avatar nose
   nosePatch: { across: .005, low: .083, high: .101, front: .13, direction: .2, surface: .006 }, // *guess* fail-closed frontal core, actual nearest-surface/pose/wire grid required
@@ -4618,23 +4620,27 @@ export function rifleProfileEntry(triangles,seed,state,origin,direction) {
 }
 /** Seed/model/ray proof for this bounded surface; no trusted client damage/head or model override. */
 export function rifleHeadContact(seed,state,shot,shooterFeet,range,maxOrigin) {
-  const H=PVP_RIFLE_HEAD,{hc,o,d}=shot,look=avatarLook(seed);
+  const H=PVP_RIFLE_HEAD,{hc,o,d}=shot;
   if(!Number.isFinite(range)||!Number.isFinite(maxOrigin)||shot.t!=='a'||shot.w!=='rifle'||!hc||hc[0]!==H.version||state.c)return false;
   if(Math.hypot(...o.map((v,i)=>v-shooterFeet[i]))>maxOrigin)return false;
   const length=Math.hypot(...d),unit=d.map(v=>v/length),delta=hc.slice(1).map((v,i)=>v-o[i]),along=delta.reduce((s,v,i)=>s+v*unit[i],0);
   if(along<0||along>range||Math.hypot(...delta.map((v,i)=>v-along*unit[i]))>H.wireMetres)return false;
   const nose=rifleNoseRegion(seed,state,hc.slice(1));
-  if(!nose && (look.style!==H.style || !rifleHeadRegion(seed,state,hc.slice(1))))return false;
+  if(!nose && !rifleHeadRegion(seed,state,hc.slice(1),o,d))return false;
   const front=nose ? rifleNoseEntry(seed,state,o,d) : rifleSkullEntry(seed,state,o,d);
   return front!==null&&Math.abs(front-along)<=(nose ? H.nosePatch.surface : H.surfaceMetres);
 }
 
 /** A quantized cell wholly inside the canonical core; boundary cells fail closed instead of inflating the patch. */
-export function rifleHeadRegion(seed,state,point) {
+export function rifleHeadCoreRegion(seed,state,point,origin,direction) {
   const H=PVP_RIFLE_HEAD,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
+  if(!H.coreStyles.includes(look.style))return false;
+  const patch=H.corePatches[look.style]??H.patch;
+  // Beanie-facing core is body-only on steep rays: a nearer brim/nose can hide the primary skull.
+  if(patch.maxVertical!==undefined && (!Array.isArray(direction)||direction.length!==3||!direction.every(Number.isFinite)||Math.hypot(...direction)===0||Math.abs(direction[1])/Math.hypot(...direction)>patch.maxVertical))return false;
   const [x,y,z]=point.map((v,i)=>v-state.p[i]);
   const lx=(c*x-s*z)/width,ly=y/look.tall-H.headY,lz=(s*x+c*z)/width;
-  return Math.abs(lx)+H.wireMetres/width<=H.patch.across && ly-H.wireMetres/look.tall>=H.patch.low && ly+H.wireMetres/look.tall<=H.patch.high && lz>0;
+  return Math.abs(lx)+H.wireMetres/width<=patch.across && ly-H.wireMetres/look.tall>=patch.low && ly+H.wireMetres/look.tall<=patch.high && lz>0;
 }
 
 // #903: first existing NW bicycle. Handling/clearances are game-value guesses; model wheels at -.50/.42,
@@ -4660,3 +4666,6 @@ export function rifleNoseEntry(seed,state,origin,direction) {
   if((s*x+c*z)>=0 || Math.abs(c*x-s*z)>N.direction || Math.abs(y)>N.direction)return null;
   return rifleProfileEntry(rifleNoseProfile(),seed,state,origin,direction);
 }
+
+// Shared dispatch: #916 owns the central core; #917 can add its independent extra-region branch here.
+export function rifleHeadRegion(seed,state,point,origin,direction) { return rifleHeadCoreRegion(seed,state,point,origin,direction); }

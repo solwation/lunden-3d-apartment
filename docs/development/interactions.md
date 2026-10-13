@@ -767,3 +767,18 @@ guards validated on the actual sampled model, not anatomical measurements.
 The nose alone uses a6mm surface guard; the earlier skull15mm guard is unchanged.
 No client pose/state/version/channel or new damage/life counter is introduced.
 The same authoritative receipt controls marker, life, award and one fatal UUID.
+#916 extends only the exposed central rifle skull core to canonical styles1/2/3.
+Long hair and bun use the unchanged short-hair core; beanie uses a lower measured
+core and a named guess vertical-ray bound0.08. Combat passes the original r2
+origin/raw r3 direction to Avatar's classifier; the backend uses the same ray
+with its existing range/origin/profile guards. Beanie shots without that ray or
+on steeper angles stay body1, even if a client supplies a hidden-skull contact.
+The internal tag and actual nearest posed face still reject nearer hair/hat.
+Nothing changes weapon participation, wall/nearest-hit selection, score budget,
+one lethal UUID, life recovery, or authoritative hit-marker receipts.
+`tools/rifleheadtest.cjs` now includes all60 canonical variants, rounded nearest
+unsupported/hidden-contact grids, a dense beanie oblique regression and actual
+Worker/Ghosts/Combat new-style head2/covered-beanie-body1/steep-forgery-body1.
+The DOM screenshot verifies the real head marker and measured protocol rows,
+without WebGL, apartment rendering or a physical-phone claim. #898/#892/#879/
+#874 remain open for independently assigned other surfaces and weapon/pose parts.

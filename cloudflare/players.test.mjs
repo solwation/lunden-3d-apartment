@@ -534,7 +534,7 @@ test('standing rifle contact: seeded front surface, bounded wire, body fallback,
   assert.equal(PVP_RIFLE_HEAD.bodyDamage,1);assert.equal(PVP_RIFLE_HEAD.headDamage,2);
 });
 
-test('restricted rifle profile: unsupported server seed, other weapons, origin/ray/version bounds and actual 256-byte packet', async()=>{
+test('restricted rifle profile: forged model cannot widen core, other weapons, ray/version/256-byte bounds', async()=>{
   const {avatarLook,rifleSkullEntry,rifleHeadContact,PVP_RIFLE_HEAD:H}=await import('../src/config.js');
   const {cleanShot}=await import('./players.js');
   const env=setup(),a=await connect(env,'Shooter');let b,id;
@@ -542,10 +542,10 @@ test('restricted rifle profile: unsupported server seed, other weapons, origin/r
   assert.notEqual(avatarLook(id).style,0);
   a.send({p:[0,0,-4],r:0,h:'rifle'});b.send({p:[0,0,0],r:0,h:'rifle'});await settle(env);now+=1000;
   const supported=Array.from({length:50},(_,i)=>'central-'+i).find(s=>avatarLook(s).style===0);
-  const state={p:[0,0,0],r:0},o=[0,+(1.69*avatarLook(id).tall).toFixed(2),-4],d=[0,0,1];
+  const state={p:[0,0,0],r:0},o=[0,+(1.85*avatarLook(id).tall).toFixed(2),-4],d=[0,0,1];
   const entry=rifleSkullEntry(id,state,o,d),hc=[1,0,o[1],+(-4+entry).toFixed(2)];
   a.send({t:'a',w:'rifle',o,d,to:id,hc,head:true,damage:999,model:supported});await settle(env);
-  const hit=a.got.filter(m=>m.t==='hit').at(-1);assert.equal(hit.l,9);assert.equal(hit.head,undefined,'client model cannot replace actual server-assigned style');
+  const hit=a.got.filter(m=>m.t==='hit').at(-1);assert.equal(hit.l,9);assert.equal(hit.head,undefined,'client model cannot widen actual server-assigned style core');
   a.send({p:[0,0,-4],r:0,h:'wand'});await settle(env);now+=1000;
   a.send({t:'a',w:'wand',o,d,to:id,hc,head:true});await settle(env);assert.equal(a.got.filter(m=>m.t==='hit').at(-1).l,8);assert.equal(a.got.filter(m=>m.t==='hit').at(-1).head,undefined);
   const size=JSON.stringify({t:'a',w:'rifle',o:[-5000,5000,-5000],d:[-.999,.032,.004],to:'1234567890123456',hc:[1,-5002,5002,-5002]});
@@ -558,4 +558,26 @@ test('restricted rifle profile: unsupported server seed, other weapons, origin/r
   assert.equal(cleanShot(JSON.stringify({...valid,hc:[1,0,5002.01,0]})).hc,undefined);
   const snap=cleanShot(JSON.stringify({...valid,o:[0,y+.001,-4],d:[.0001,0,.9999],hc:[1,.0001,y+.0001,valid.hc[3]+.0001]}));
   assert.equal(snap.o[1],Math.round((y+.001)*100)/100);assert.deepEqual(snap.d,[0,0,1]);assert.deepEqual(snap.hc,[1,0,+(y+.0001).toFixed(3),valid.hc[3]]);assert.equal(H.headDamage,2);
+});
+
+test('central cores: all actual server seed styles confirm 2 HP, style0 core unchanged and beanie old-core fallback',async()=>{
+  const {avatarLook,PVP_RIFLE_HEAD:H,rifleSkullEntry,rifleHeadCoreRegion}=await import('../src/config.js');
+  assert.deepEqual(H.patch,{across:.008,low:.148,high:.158});
+  const env=setup(),a=await connect(env,'Shooter');a.send({p:[0,0,-4],r:0,h:'rifle'});await settle(env);
+  for(const style of [0,1,2,3]){
+    let b,id;
+    for(let tries=0;tries<40;tries++){b=await connect(env,'Target');id=b.got[0].i;if(avatarLook(id).style===style)break;b.ws.close();await settle(env);}
+    assert.equal(avatarLook(id).style,style);b.send({p:[0,0,0],r:0,h:'rifle'});await settle(env);now+=1000;
+    const look=avatarLook(id),patch=H.corePatches[style]??H.patch,state={p:[0,0,0],r:0},y=(H.headY+(patch.low+patch.high)/2)*look.tall,o=[0,1.62,-4],length=Math.hypot(y-1.62,3.89),raw=[0,+( (y-1.62)/length ).toFixed(3),+(3.89/length).toFixed(3)],unit=raw.map(v=>v/Math.hypot(...raw)),t=rifleSkullEntry(id,state,o,raw),point=o.map((v,i)=>+(v+unit[i]*t).toFixed(3));
+    assert.equal(rifleHeadCoreRegion(id,state,point,o,raw),true);assert.equal(rifleHeadCoreRegion(id,state,point),style!==3,"missing actual ray keeps beanie body-only and old styles unchanged");const count=a.got.filter(m=>m.t==='hit').length;
+    a.send({t:'a',w:'rifle',o,d:raw,to:id,hc:[1,...point],style:0,damage:999});await settle(env);
+    const hits=a.got.filter(m=>m.t==='hit');assert.equal(hits.length,count+1);assert.equal(hits.at(-1).head,true);assert.equal(hits.at(-1).l,8);assert.equal(hits.at(-1).award.points,5);assert.equal(b.got.filter(m=>m.t==='hurt').at(-1).head,true);
+    if(style===3){now+=1000;const oldY=H.headY+.153,oldPoint=[0,+(oldY*look.tall).toFixed(3),-.1];assert.equal(rifleHeadCoreRegion(id,state,oldPoint),false);a.send({t:'a',w:'rifle',o,d:raw,to:id,hc:[1,...oldPoint],style:0});await settle(env);assert.equal(a.got.filter(m=>m.t==='hit').at(-1).l,7);assert.equal(a.got.filter(m=>m.t==='hit').at(-1).head,undefined);
+      // An actual nearest face/brim can cover the low core on steep rays: forged hidden skull must remain body damage.
+      const steepO=[0,+(y+2).toFixed(2),-1],steepD=[0,-.894,.447],steepT=rifleSkullEntry(id,state,steepO,steepD),steepUnit=steepD.map(v=>v/Math.hypot(...steepD)),steepPoint=steepO.map((v,i)=>+(v+steepUnit[i]*steepT).toFixed(3));
+      assert.equal(rifleHeadCoreRegion(id,state,steepPoint,steepO,steepD),false);now+=1000;a.send({p:[0,0,-1],r:0,h:'rifle'});await settle(env);
+      a.send({t:'a',w:'rifle',o:steepO,d:steepD,to:id,hc:[1,...steepPoint]});await settle(env);assert.equal(a.got.filter(m=>m.t==='hit').at(-1).l,6);assert.equal(a.got.filter(m=>m.t==='hit').at(-1).head,undefined);
+    }
+    b.ws.close();await settle(env);
+  }
 });

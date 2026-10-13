@@ -350,3 +350,31 @@ Worker also returns body1 for the additive nose proof. New clients accept that
 ordinary receipt without a predicted head marker. Actual nearer unsupported
 surfaces, rear/side approaches, walls and invalid proofs cannot create nose2HP.
 This bounded validation does not replicate the authoritative animated scene.
+### #916: central cores for the remaining canonical hair styles
+
+`rifleHeadCoreRegion` now selects the actual server-seeded look across all60
+style/build/height combinations. Styles0/1/2 retain #897's exact central rounding
+cell and tolerances; style3's measured exposed lower core is y1.53+0.132–0.140m
+with the same ±0.008m width. Its named `maxVertical:0.08` is a *guess* policy
+limit on abs(normalized wire direction.y), not a physical head dimension.
+Missing actual direction and steeper beanie rays stay body1: a nearer brim/nose
+can otherwise hide a first primary-skull entry. The same actual rounded ray is
+passed through Combat → Avatar and through the Worker to the shared core helper.
+No new contact fields, presentation pose, sphere inflation or damage model is
+introduced. The OR-dispatch helper leaves other regions to their own slices.
+
+Measured actual mesh checks cover8624 eligible nearest contacts with zero failed
+proofs,28726 unsupported nearest contacts and16821 hidden-skull forgeries with
+zero false heads across all60 variants, four headings and four standing/bind
+poses. The248 separately supported actual nose contacts introduced by #920 are
+excluded only by its explicit internal surface tag and shared nose-region check. A separate actual oblique grid covers8505 rays across all15 beanie
+build/heights and seven standing phases;400 nearer unsupported contacts hiding
+a primary-skull entry receive no head bonus. These are sampled restricted-core
+checks; they do not establish full server scene occlusion or all animation/angle
+anti-cheat coverage. An earlier unguarded oblique trial accepted28 hidden skull
+forgeries and was discarded before publication. Its failed evidence is retained
+separately. Hair/hat, face outside the separately delivered #920 nose core, ears, remaining
+skull regions, boundary/ambiguous cells,
+moving/crouching and other weapons continue body1. Actual local Worker receipts
+verify new-style head2, covered beanie body1 and a forged steep beanie ray body1
+with unchanged awards, kills, marker replay and recovery.
