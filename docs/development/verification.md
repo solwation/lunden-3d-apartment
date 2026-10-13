@@ -5040,3 +5040,60 @@ unrestricted positive requirement. No further functional issue is started.
 
 
 #715 ordinary attempt on2c700323: real UI releases22covers; original loop40actualviewdraws and two actual Worker/WS hit+hurt receipts each bring both peers10→8. Firstsend targettrue/clear305.9ms (active89.8/yield216.1/cache0), before any post-outcome copy/hash/oracle. WholeNode1/wrapper1/no timeout77.462s,20PASS/1FAIL, noPNG: final exacttwo-groups/four-visible-mesh guard from paused fixture is inappropriate under legitimate moving-detail layer7 and natural remote expiry/frustum. Preserve raw failure; no product bug, ordinary rendered image or phone/FPS acceptance is inferred. Source inventory1350=1349tracked+1explicitcompanion matches, all nine owned processes/profile/HTTP/Worker cleaned. Next actual screen-effect callback observation is proposed separately, not executed here.
+
+### Front parent criterion audit (#939 / #931)
+
+The criterion audit after943/944/955 separates positive support from deliberate
+body fallback. Original931/history14 proves useful fresh pre-greet head2 and
+actual paused3.14 Nose-first forgedSkull body1.943 native21 proves immutable
+after-greet head8/6/4, repeated delayed/capped waves, latewelcome and real fresh
+socket.944 whole native23 and final focused19 prove useful ungreeted tiny turn.
+955 whole native27 proves the combined accepted greeting+turn, nearer actual wall,
+self/public health, ONE lethal UUID/award/reset/replay and exact60/min cap; its
+large-turn-proof retains actual Nose first→forgedSkull body9 and return body8.
+
+| Source-bound measured phase | Positive | Earlier unsupported | FIRST hidden Skull | Cell corners |
+| --- | ---: | ---: | ---: | ---: |
+|943 all60/four first headings,146655 rays |21608 |38090 |33035 |17216 |
+|944 all60/four headings,126720 rays |11480 |29874 |24290 |7648 |
+|955 all60/four headings,151200 rays |34440 |34042 |23654 |22960 |
+
+All recorded bad counters are zero.955 additionally measures60 near-max
+translated actual Ghost snapshot contacts/480 corners/zero bad. These are
+finite sampled held/saber/wave/intermediate/capped-pause matrices, not World/
+phone/FPS/all-continuous-pose physics. Earlier failed whole producers for943/944
+remain failed, with clean geometry phases explicitly hash-bound and separate from
+the successful protocol run.955 itself is actual27/CLI0,225.007s/no timeout.
+
+Three compatibility claims are distinct: actual943 browser contact-less cached
+client packet gives body1; actual943 version2 hc gives body1; a SMALL actual
+Node Worker/PlayerRoom historical-validator control adds10/CLI0 current and
+10/CLI0 historicalfc7fd0b. It uses the EXACT saved955100byte wire, deterministic
+server appearance, complete normalized p/r/h/score/c/sp state and ordinary
+greeting/weapon transitions; no private history injection. Current gives
+head2/HP8, preceding validator body1/HP9; both independently keep contactless and
+version2 body1 and correct late public HP. An explicit loader substitutes only
+byte-hashed historical players.js/config.js; remaining actual runtime and
+installRuntime/fakeNamespace transport are current. This is not another browser,
+physical cache or live deployment test. Audit artifacts: /tmp/lunden-priority-939-final.
+
+Actual recovery-related PlayerRoom Node8 uses a controlled alarm clock; no live
+minute timing is inferred.955 focused6 includes hibernate/legacy/endpoints and
+move/crouch/escape+return/client-forged permission body9. The broader955 Node
+33PASS/1FAIL/CLI1 is known outside945, deterministically reproduced on unchanged
+upstream; no complete-suite-green claim. HUD images were inspected:955's final
+visible marker is BODY Träff!, with earlier actual head8/lifecycle receipt rows.
+Genuine Wrangler success jobs are115469916248/115492225312/115507608002.
+
+Source audit on2c700323: Avatar byte-identical since943/944, eight pure shape/
+Front/contact helpers and13 relevant policy constants identical; AfterTurnFront
+helper identical since944. Latest955235/235 runtime/driver hashes match. Older
+whole config/PlayerRoom hashes are NOT rewritten as identical: independent named
+permissions/history/surface additions are composed explicitly. No new runtime,
+geometry, wire, policy or tests in the repository change for this audit.
+
+Closure proposals are separate:939's useful bounded after-greet/turn/combined
+criteria and safety are met;931's declared Front support/precision/nearest/
+obstacle/lifecycle/compatibility/deployment matrix is met with the stated body
+fallbacks.917 and broader/lateral/rear parents remain independent and open.956
+is not an automatic prerequisite or an invented arbitrary-turn/allpose claim.

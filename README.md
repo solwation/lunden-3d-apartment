@@ -212,3 +212,11 @@ leaving that corridor, movement, crouching or unknown history stays body-only.
 `tools/riflefrontcombotest.cjs` verifies actual native wave/turn contacts and a
 fresh Worker receipt. No timer restores pose eligibility or changes publication
 thresholds, geometry, damage counters or other surface families.
+
+Front rifle head support is explicitly bounded: fresh unturned before greeting,
+immutable standing after greeting, the trusted first-heading±.02 standing turn,
+and their greeted-turn combination. Unsupported points/rays, larger turns,
+movement/crouch and unknown history keep the extra Front body fallback. See the
+[declared matrix](docs/development/interactions.md) and
+[criterion evidence](docs/development/verification.md); parent closure does not
+imply arbitrary all-pose support or close other head-surface families.

@@ -1008,3 +1008,31 @@ yaw-only publication still requires the original .03 threshold; a normal held
 weapon/suit/score update can carry a smaller accepted yaw without forced state.
 Larger turns and unsupported poses retain body1; this is a finite support family,
 not arbitrary-turn or all-pose restoration.
+
+### Declared Front support and safety fallback (#939 / #931 audit)
+
+All families use the unchanged actual nearest skinned Skull face, full obstacle
+ray, shared triangles and whole rounded hc cell. The initial931 policy box was a
+*guess* candidate, not a promise that every exposed point or pose gives head2.
+
+| Target's accepted history | Front family | Bounded support |
+| --- | --- | --- |
+| Fresh, no gt, never turned | Original931 Front | Existing x.061–.075/y.078–.105/z.036–.11, cone.08 and complete-cell/profile guards |
+| Accepted gt, immutable first standing p/r/c, known never-turned |943 greeting-Front | Narrow x.065–.071/y.086–.094/cone.04 |
+| No gt, known first-standing anchor, accepted turn |944 turn-Front | Same narrow band; every accepted yaw within first±.02, fixed normalized p/c |
+| Accepted gt AND accepted turn, same valid anchor |955 combined Front | Same narrow band/corridor; independent named permission |
+
+Every value remains a conservative policy *guess* backed by the recorded finite
+actual model/pose/cell matrix, not anatomical accuracy or continuous all-animation
+validation. Moving/crouching, unknown/malformed history, leaving the corridor
+and returning, wider unsupported cells/rays and arbitrary larger turns retain
+body1 for these extra Front branches. This preserves the observed paused3.14
+Nose-before-deeperSkull safety case; quiet time never proves rendering completed.
+Normal tiny yaw-only publication still needs the original .03 threshold; ordinary
+weapon/suit/score publication can carry the accepted smaller yaw. Other surface
+families remain independent. Moving/crouch/other weapons belong893–895.
+
+939's stated useful turn/greeting requirement includes the combined case;955
+now supplies it. Parent closure is an explicit criterion audit, not a claim that
+every initially proposed surface/turn must be positive.956 tracks possible larger
+standing-turn support without becoming an automatic new parent requirement.
