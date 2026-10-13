@@ -281,8 +281,21 @@ original catch also has no ALL PASS/SOME FAILED marker. A native stub-DOM actual
 retains its Error stack and exits1 without starting an apartment. Direct native UI missing-input failure
 occurs before any app iframe; chattest's missing-input Node entry exits1 before requiring Playwright.
 The shared provider and exact supplied strings/near-slash value were checked without printing them.
-Whole original chattest CJS/two-client Worker and rearrangeuitest runtime acceptance remains tracked in
-#855 until their actual complete suites run; this helper preparation alone makes no gameplay claim.
+Whole rearrangeuitest at frozen a44752a plus provider/input and three additional private-input assertions:
+26 PASS/ALL PASS (all23 original rows plus3), actual exit0,44.847s including capture, no pageerrors.
+Actual ready/final preserve ONE844×390 full-mode life&shot&cloud= document, no fullscreen, same native
+URL/timeOrigin. All254 frozen src/data/cloudflare/index/helper/fixture paths matched after the run.
+The inspected fullPage PNG shows all26 rows plus final kitchen/HUD and rearrangement status overlay;
+its final direct disable precedes the next UI step, so the rendered overlay is not a post-disable paint proof.
+There is no pixel-parity, physical-phone, Worker-write or timing-improvement claim. Both inputs use the
+original actual form/parser; extra assertions check real unlocked/enable/persist and public exclusion.
+Reversing only provider/input and those explicit additional checks/actions restores the complete original
+source exactly, including its authored key/menu/preview/reset/landscape-layout actions and predicates.
+Evidence: `/tmp/lunden-priority-855/ui/{rearrangeuitest.log,rearrangeuitest.json,rearrangeuitest.png}`,
+`ui-exit.txt` and `frozen-ui.json`. Owned runner/browser/server stopped after the short UI grant.
+
+Whole original chattest CJS/two-client Worker acceptance remains pending #855; its input changes are not
+published or claimed as run by this UI step. It must use its actual driver/Worker, not an HTML comparison.
 
 ## Test runner (`tools/runtests.cjs`, #737 / #736)
 
