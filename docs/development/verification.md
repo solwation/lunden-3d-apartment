@@ -540,7 +540,7 @@ no executable fixture changes or new browser results are part of this audit.
 | `nonpctest.html` | Accepted in #828 | Complete original full/test logs byte-identical, all 10 ordered PASS; actual 900×600/null controller versus 480×300/real test APIs. Missing People fetch, greeting/speech expiry and original old-save score/storage flow retained. |
 | `northbackdroptest.html` | Accepted in #828 | Complete original full/test logs byte-identical, all 14 ordered PASS; actual 720×480/null controller versus 480×300/real test APIs. All mapped footprints, 426/426 window rays, 39 trees and 8380-triangle budget retained; no lowmem subset. |
 | `notetest.html` | Viewport exclusion | Paper scrollHeight/clientHeight and numeric scroll positions/keyboard repeat rows depend on note-panel viewport. |
-| `olofcartest.html` | Conditional candidate; random rows | Actual driver/car travel, garage/doors/seats and scoring; randomly chosen dad-joke text is included in results. |
+| `olofcartest.html` | Original full retained (#829) | Actual complete pair: 31 PASS per mode; greeting and dad-joke rows differ. Whole original 900×600/time12/month6 fixture, existing fullscreen suppression, native car/driver/door/seat/scoring and record restoration retained. See actual evidence below. |
 | `oloftest.html` | Conditional candidate; random rows | Actual Olof seats/behavior/actions and non-repeating jokes; randomly chosen joke text is included in results. |
 | `opentest.html` | Accepted in #830 | Complete original full/test logs byte-identical, all 189 ordered PASS; actual 900×600/null controller versus 480×300/real APIs. All 90 fronts, conditional action labels, clashes/poster sweeps, free-floor and contents loops retained; captures show only early rows. |
 | `oventest.html` | Candidate | Actual appliance actions, cooking/brewing timers and lamp state; retain all emissive checks. |
@@ -3079,3 +3079,42 @@ monitor and capture remain in `/tmp/lunden-world845/reload-written` and
 fix across the complete reload flow; it is not a new full/test comparison,
 pixel-equivalence result or eligible speedup sample. The original full fixture
 is retained under its earlier #842 disposition.
+
+
+### Olof driver actual disposition (#829, partial)
+
+`olofcartest.html` was measured once with the complete original full/test
+comparison, one public fixture job and a 20-minute bound per mode. Frozen
+base `2b548e0` preserved the entire original 900×600 `?time=12&month=6`
+fixture, including its existing unconditional fullscreen suppression. All
+native car travel, driver poses/distances, greetings, scoring, four-door loop,
+visitor seats and original saveState/loadState actions remained. loadState
+restores a state record within the same app; it is not a main-page reload.
+No seed, normalization, extra mock, subset or retry was added.
+
+Both complete logs contain 31 ordered PASS and ALL PASS; only check rows
+7 and 8 differ. Full says "Hallå där, Olof!" and the parking joke; test says
+"Tjena Olof!" and the wall/corner joke. The complete original strings remain
+in `/tmp/runtests-623035/olofcartest.log` and `olofcartest.test.log`, with
+whole-file differences in `/tmp/lunden-smart829/olofcartest/ordered-differences.json`.
+The independent monitor exited 1 at 06:10:18 UTC for the nonidentical comparison;
+there were no functional FAIL rows. The entire original full fixture remains
+byte-identical to HEAD, without migration or exact mode-equivalence claim.
+
+Each mode has one retained native app with matching ready/final URL and
+timeOrigin: full 900×600/null controller, test 480×300 with real draw/setFull/
+wantsFrame functions and lazy/full false. All four snapshots show no fullscreen
+and empty cloudURL, without a leave/reload event or readiness error. All 229
+frozen native source/data/index/runner/fixture blobs and three helper hashes
+match the measured source; native detail/camera/viewport coupling was retained.
+Evidence and monitor ownership cleanup remain in
+`/tmp/lunden-smart829/olofcartest`.
+
+Both actual PNGs were inspected. Full shows ALL PASS and all 31 text rows
+plus a partial final facade/trees/HUD; test shows only the top 18 rows with
+long text cropped on the right and no scene. Neither is a directed final
+car/driver image; no rendered-car pixel equivalence is claimed. Samples
+126.147 s and 86.568 s include successful captures (60-second bound in both
+modes); unequal capture coverage excludes qualified speedup aggregation.
+Nest and Olofcar now have honest original-full dispositions; Olof remains
+pending in #829. Parents #740 and #736 remain open.
