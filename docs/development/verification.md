@@ -550,7 +550,7 @@ no executable fixture changes or new browser results are part of this audit.
 | `patiotest.html` | Candidate | Actual patio seasonal/object/action/storage flows. |
 | `pctest.html` | Candidate | Actual PC/game/rest interaction and monitor state. |
 | `perfcount.html` | Explicit performance exclusion (#736) | Actual renderBufferDirect screen calls/triangles, shadow/mirror/env passes and texture-memory budgets. |
-| `pettest.html` | Candidate | Actual pet action/geometry, star visibility/count and return-to-idle; preserve particle checks. |
+| `pettest.html` | Original full retained (#832) | Actual complete two-live-app pair: 17 PASS per mode; full/test badge row differs by room prefix. Native pet/hand/eyes/photo JPEG/IndexedDB/stats/rare stars and all unseeded values retained; see actual evidence below. |
 | `planttest.html` | Candidate | Actual plant/item ray-actions, placement, ownership and reset. |
 | `plantwindtest.html` | Full pixel rendering | 192×192 render-target readback asserts moving foliage, focused foliage and pixel-identical pottery. |
 | `portiktest.html` | Candidate | Actual portik/bin geometry, walk/actions, save/reload and reset. |
@@ -3391,3 +3391,47 @@ full flow and unequal capture coverage exclude qualified speedup aggregation.
 Complete source/native/monitor/capture/restoration proof remains in
 `/tmp/lunden-posters833/postertest`. #833 remains open for placement followup;
 #740/#736 remain open. No source/runner/baseline fix was made in this disposition.
+
+
+### Cat petting actual disposition (#832, partial)
+
+`pettest.html` was measured once with the complete original full/test
+comparison, one public fixture job and a 20-minute bound per mode. Frozen
+base `1fb73e8` plus only two reviewed pre-pair testMode-only fullscreen guards
+preserved both original simultaneous 900×600 app frames: plain index followed
+by `?cat=2.8,9.8,180&catb=6`. All original actions, matrix calls, stats deletion,
+real board/JPEG/IndexedDB/photo waits, ordinary/rare cat predicates and
+unseeded star values remained. No seed, normalization, subset or retry was added.
+
+Both complete logs contain 17 ordered PASS and ALL PASS. Whole-file comparison
+differs only at check row 3 (physical file line 4): full badge is
+"✋ Klappat katt +1", test badge is
+"🏠 Nytt rum: Vardagsrum✋ Klappat katt +1". Both report wrist distance
+0.065 m, walk distance 0.80→1.79 m, photo 0→1 named Misse, petted count 1,
+sphynx voice rasp and 26 lit stars/top y 0.61. The exact difference is retained;
+no viewport/quality/timing cause is inferred from this one pair. Raw files:
+`/tmp/runtests-640536/pettest.log` and `pettest.test.log`. The independent
+monitor exited 1 at 06:54:49 UTC for nonidentical comparison, with no functional
+FAIL. Both temporary guards were removed and the entire original full fixture
+restored byte-for-byte; no migration or exact mode equivalence is claimed.
+
+All four actual app documents have matching ready/final URLs and timeOrigins.
+Full ready dimensions are 900×600/null controller/no fullscreen; both full
+final documents report native 1280×800/fullscreen HTML. All test ready/final
+snapshots remain 480×300 with real draw/setFull/wantsFrame APIs and lazy/full
+false, no fullscreen. All cloudURL values are empty; no leave/reload event or
+readiness error was recorded. All 229 frozen native source/data/index/runner/
+fixture blobs and three helper hashes match the measured source. The original
+real renderer photo snapshot and native quality/detail/camera coupling remain;
+JPEG presence and particle state are not rendered-photo equivalence claims.
+
+Both actual PNGs were inspected. Full native fullscreen shows the final rare
+cat near the sofa/coffee table/rug/HUD, without parent result text. Test shows
+ALL PASS and all 17 rows vertically, clips long text on the right and retains
+only a thin frame edge/no scene. Neither captures the earlier active petting,
+hand contact or rising stars; no directed pose/photo/pixel equivalence is
+claimed. Samples 318.124 s and 164.671 s include successful captures (60-second
+bound in both modes); unequal capture coverage excludes qualified speedup
+aggregation. Source/native/monitor/capture/cleanup evidence remains in
+`/tmp/lunden-pets832/pettest`. Plant and Portik remain pending in #832;
+parents #740 and #736 remain open.
