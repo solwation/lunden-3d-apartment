@@ -12,6 +12,35 @@ Du är orkestrerare för repot solwation/lunden-3d-apartment. Läs CLAUDE.md fö
 Implementera öppna GitHub-issues med subagenter (Agent-verktyget, `isolation: "worktree"` i molnet, egen ext4-worktree lokalt i WSL, i bakgrunden) tills inga
 issues inom området finns kvar. Nya issues dyker upp löpande — lista om varje gång en agent blir klar.
 
+## Prioritetsordning — styr varje nytt issueval
+- **Hög → medel → låg, äldst först inom varje nivå** enligt `created_at` (därefter issuenummer).
+  Etiketterna är `priority: high`, `priority: medium`, `priority: low`; utan prioritet räknas som medel.
+  Ändra inte befintliga prioriteter utan användarens uppdrag. Storlek, synlighet i spelet, filområde, korta kedjor,
+  reservationer och önskan att fylla platser får inte sätta denna ordning ur spel.
+- **Hämta hela kön före varje tilldelning, reservation, övertagande och kedjefortsättning:**
+  `gh api --paginate 'repos/solwation/lunden-3d-apartment/issues?state=open&per_page=100'`.
+  Filtrera bort pull requests, #420/etiketten `orkester` (samordning, inte implementationsarbete) och issues utanför
+  användarens område. Sortera uttryckligen på prioritet och `created_at`; GitHubs listordning, `updated_at` och
+  standardgränsen för `gh issue list` är inte prioritetsordning. Kontrollera vald issues aktuella etiketter och
+  reservationer igen precis före start.
+- **Ta det första startbara ärendet i den sorterade kön.** Ett ärende får hoppas över bara om det redan arbetas på
+  (`in-progress`/aktiv annan agent), har en giltig annan reservation enligt samordningsreglerna, eller är konkret
+  blockerat av ett olöst beroende, ett användarsvar eller en fysisk enhet som saknas. Kontrollera aktuell body,
+  kommentarer och #420; anta inte att ett svårt eller stort ärende är blockerat. Ett föräldraärende med återstående
+  delissues hanteras via sina delar; välj högst prioriterade startbara del och notera varför föräldern inte startas.
+- **Redovisa varje överhoppat högre prioriterat eller äldre ärende i #420:** nummer, prioritet, konkret hinder och
+  vad som krävs för att det ska bli startbart. Skriv också prioritet och skapandetid för varje valt ärende.
+  Kontrollera hindren igen vid nästa tilldelning; en gammal anteckning om väntan räcker inte. Lägre prioritet får
+  startas först när alla ärenden före det valda ärendet är hanterade eller har dokumenterade hinder.
+- **Kedjor är förslag, inte en förtur.** Efter varje färdig issue rapporterar agenten till orkestern och inväntar
+  ett nytt val från den uppdaterade kön innan nästa issue startas, även om nästa är reserverad i samma kedja.
+  Släpp eller flytta väntande reservationer om ett högre prioriterat eller äldre startbart ärende kommit in.
+  Avbryt inte redan påbörjat arbete bara för att kön ändrats; den nya ordningen gäller nästa start.
+- **Beroenden och nedbrytning:** nya delissues ärver förälderns prioritet vid skapandet. Krävs ett befintligt lägre
+  prioriterat beroende för att låsa upp ett högre prioriterat ärende, dokumentera sambandet och varför beroendet
+  måste göras först i #420; ändra inte dess etikett. Välj annars startbart arbete i ordinarie prioritetsordning.
+  Filkonflikter hanteras genom ansvarsfördelning och rebase, inte genom att välja lägre prioritet för enkelhetens skull.
+
 ## Miljö (molnsession)
 - Ingen google-chrome: använd installerad Playwright Chromium med flaggorna i [verifieringsguiden](../../docs/development/verification.md).
 - cdn.jsdelivr.net är blockerad: servera med `python3 tools/devserve.py <port> <katalog>`. Varje agent har en egen port
@@ -53,11 +82,13 @@ Andra `/orkester`-sessioner kör på egna VM:ar och kan inte nås med SendMessag
   din reservation: finns en äldre `Reserverad av orkester …` från en annan session (och den har inte släppt den) är
   issuen deras — ta bort din kommentar och din etikett (om den inte redan fanns före) och välj något annat.
 - En statuskommentar som inte uppdaterats på 3 timmar räknas som övergiven; dess issues får tas över efter en kommentar.
-- Rör ditt nästa val samma filer/område som en annan sessions pågående kedja? Välj något annat. Står inget annat att
-  välja: ta det ändå om ändringarna kan delas upp (olika block/moduler, se nedan) i stället för att stå still.
+- Rör det högst prioriterade startbara ärendet samma filer/område som en annan sessions pågående kedja? Dela upp
+  ansvaret i olika block/moduler enligt nedan. Välj inte ett lägre prioriterat eller yngre ärende bara för att undvika
+  samma fil; endast en konkret beroendeblockering får motivera att det hoppas över, och den redovisas i #420.
 
 ### Så att inget låser sig (förtydligande 2026-10-12, ur användarens önskan: allt ska bli klart så fort som möjligt)
 Samordningen får aldrig vara skälet till att en agentplats står tom eller ett issue ligger still. Därför:
+- Alla regler om att fylla platser, reservera och ta över nedan tillämpas **efter prioritetsordningen ovan**.
 - **Fråga inte användaren** om du ska fylla en ledig plats. Har du färre agenter än taket (3 per VM) och finns något
   ledigt eller övertagbart: starta en agent direkt. Att välja nästa issue är ditt val, inte användarens.
 - **Reservationer går ut snabbt:**
@@ -82,8 +113,8 @@ Samordningen får aldrig vara skälet till att en agentplats står tom eller ett
   agentplatser fyllda (3 per VM) och att inget arbete ligger reserverat utan att någon kör det. Kolla på varje
   agent-klar och varje gång du har färre än 3 agenter igång:
   - **Du har ledig plats** och inget eget att starta → ta över arbete som en annan session reserverat men **inte
-    påbörjat** (issue med bara reservationskommentar eller bara i dess "Kö", utan `in-progress`), helst från
-    **slutet** av en lång kedja och särskilt när den sessionen redan kör alla sina platser. Skriv en kommentar i #420
+    påbörjat** (issue med bara reservationskommentar eller bara i dess "Kö", utan `in-progress`). Välj
+    den högst prioriterade startbara issuen, äldst först, även om den ligger tidigt i kedjan. Skriv en kommentar i #420
     (vad du tar, vad de behåller, vilka filer ni båda rör) och `Övertagen av orkester <session> (tidigare reserverad av
     <andra>) …` på varje issue. Rör aldrig en issue som har `in-progress` eller som en agent är mitt i.
   - **Du har mer reserverat än du hinner köra** (issues långt bak i en kedja som inte startar inom ca 30 minuter) och
@@ -113,7 +144,8 @@ Samordningen får aldrig vara skälet till att en agentplats står tom eller ett
   kommentar på issuen), fråga den (SendMessage) vad som är klart och be den pusha det som är grönt nu; dör en agent finns
   arbetet kvar i dess worktree (`.claude/worktrees/agent-<id>`): återuppta den (SendMessage) eller starta en ny som utgår
   från worktreens commits (`git log origin/main..HEAD`) i stället för att göra om det.
-- Prioritera små issues som syns i spelet, så att det dyker upp något nytt ofta; stora kedjor en agent i taget.
+- Leverera små fungerande steg inom det högst prioriterade startbara ärendet, så att nytt syns ofta; välj inte
+  mindre eller mer synliga issues framför högre prioritet eller äldre skapandetid.
 - Skriv varje agents prompt med: issuenumren och ordningen, vilka andra agenter som kör och vilka filer/områden de
   rör (undvik dem), agentens egen port och skärmdumpskatalog (utanför repot), och reglerna nedan.
 - När en agent rapporterar: titta på dess skärmdump, kör om de viktigaste testerna på main om agenten inte gjorde det
@@ -124,7 +156,9 @@ Samordningen får aldrig vara skälet till att en agentplats står tom eller ett
 - Om en agent ber dig göra något den nekades behörighet till: gör det inte, fråga mig.
 
 ## Regler att ge varje agent
-1. Ta bara de issues orkestern gav dig (de är reserverade med en kommentar, och bara den första har `in-progress`). Ta aldrig
+1. Ta bara de issues orkestern gav dig (de är reserverade med en kommentar, och bara den första har `in-progress`).
+   Efter varje färdig issue inväntar du orkesterns nya tilldelning; fortsätt aldrig automatiskt en reserverad kedja.
+   Orkestern kontrollerar hög → medel → låg, äldst först, mot en nyhämtad komplett kö före varje start. Ta aldrig
    någon annan issue med `in-progress`. Sätt etiketten när du börjar på varje issue i kedjan, om den saknas (`gh api -X POST repos/solwation/lunden-3d-apartment/issues/N/labels -f 'labels[]=in-progress'`)
    och ta bort den när du är klar eller avbryter (`gh api -X DELETE …/issues/N/labels/in-progress`).
 2. Före varje issue: `git fetch origin main && git rebase origin/main`.
