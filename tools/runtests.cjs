@@ -80,7 +80,7 @@ function gameModeUrl(href, mode) {
   else if (mode === 'test' && !u.searchParams.has('test')) u.searchParams.set('test', '');
   return u.href;
 }
-const VERDICT = /^(ALL PASS|SOME FAILED)\s*$/m;
+const { isComplete, hasSuccess } = require('./runnerverdict.cjs');
 
 function playwrightPath() {
   const tries = [process.env.PLAYWRIGHT_MODULE, 'playwright'];
@@ -205,7 +205,7 @@ async function runHtml(test, { asTest }, game, workerPort = null) {
     await page.goto(fixtureURL.href, { waitUntil: 'commit', timeout: opt.timeout * 60000 });
     while (Date.now() - t0 < opt.timeout * 60000) {
       text = await page.evaluate(() => document.querySelector('#out')?.textContent ?? '').catch(() => text) || text;
-      if (VERDICT.test(text)) { status = 'DONE'; break; }
+      if (isComplete(text)) { status = 'DONE'; break; }
       if (log.includes('[page crashed]')) { status = 'CRASH'; break; }
       await sleep(2000);
     }
@@ -268,7 +268,7 @@ function classify(r, name, base) {
   if (r.status === 'TIMEOUT' || r.status === 'CRASH' || r.status === 'ERROR') r.verdict = r.status;
   else if (r.code === null) r.verdict = 'CRASH';
   else if (r.code !== undefined) r.verdict = r.code === 0 && !fails.length ? 'PASS' : (r.code !== 0 && !fails.length) || r.newFails.length ? 'FAIL' : 'KNOWN';
-  else r.verdict = /^ALL PASS/m.test(r.text) && !fails.length ? 'PASS' : r.newFails.length || !fails.length ? 'FAIL' : 'KNOWN';
+  else r.verdict = hasSuccess(r.text) && !fails.length ? 'PASS' : r.newFails.length || !fails.length ? 'FAIL' : 'KNOWN';
   return r;
 }
 

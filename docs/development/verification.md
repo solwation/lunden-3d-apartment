@@ -223,6 +223,10 @@ frame of `shot()` compiles the shadow programs (~3 min under that load); later s
 `tools/*test*.html` / `*.cjs` tests. It starts its own `tools/devserve.py` (`--port`, default 8133) and kills only the PIDs it started
 (process groups, so a test's Chromium goes too). HTML tests run in headless Playwright Chromium (SwiftShader flags, DPR 1; 1280×800 context normally, 480×300 in the compare test pass);
 the runner polls `#out` every 2 s until `ALL PASS` / `SOME FAILED`, or reports TIMEOUT (`--timeout MIN`, default 20) / CRASH.
+The standalone combat/Nerf fixtures also finish with `ALL PASS N checks` or `FAIL N checks`; combatworld adds the
+literal suffix `; actual Three, no WebGL`. `tools/runnerverdict.cjs` accepts exactly these whole-line summaries (#861),
+with no arbitrary success suffix. Both completion and success classification use this grammar; raw FAIL rows and
+baseline comparison are unchanged. `node --test tools/runnerverdict.test.cjs` checks accepted and rejected summaries.
 Needs Playwright (`PLAYWRIGHT_MODULE=…` or a global install; `CHROME_PATH` optional). Logs: `/tmp/runtests-<pid>/<test>.log` and
 `summary.json`, never the repo. `--jobs N` runs N tests at once (default 1, **max 2**: the VM is shared), `--list` shows the selection,
 `--verbose` prints each test's output.
