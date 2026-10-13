@@ -44,7 +44,9 @@ class CrashLog {
     this.history = [];
     this.contextEpisode = 0;
     this.contextLoss = null;
+    this.surfaceEvent = null; // last actual resize/orientation event, not the delayed layout check
     this.lastBeatAt = performance.now();
+    this.lastSampleAt = null;
     this.lastFrame = { n: 0, t: performance.now(), fps: 0 };
     if (this.on) { try { this.start(); } catch (e) { this.on = false; if (debug) console.log('[crash] off', e); } }
   }
@@ -90,7 +92,7 @@ class CrashLog {
       t: now, tab: this.tab, s: 'run', n: this.stats.beats, up: round((performance.now() - T0) / 1000, 0), build: BUILD,
       ua: clip(navigator.userAgent, 200), scr: [screen.width, screen.height, round(devicePixelRatio, 2)],
       vp: [innerWidth, innerHeight], low: lowMemory ? 1 : 0, acts: this.acts.slice(), errs: this.errs.slice(-5),
-      history: this.history.slice(), hidden: document.hidden ? 1 : 0,
+      history: this.history.slice(), beatAgeMs: this.lastSampleAt === null ? null : Math.max(0, round(performance.now() - this.lastSampleAt, 0)), worst: this.pendingWorst(), hidden: document.hidden ? 1 : 0,
       standalone: (navigator.standalone || matchMedia('(display-mode: standalone)').matches) ? 1 : 0,
     };
     if (this.glLost) s.gl = 'lost';
@@ -176,13 +178,20 @@ class CrashLog {
     later(slice);
   }
 
+  /** Completed CPU frames since the last heartbeat; not GPU time or necessarily the loss-causing frame. */
+  pendingWorst() {
+    const fd = this.ctx?.frameDiag;
+    return fd && fd.ms >= 50 ? [round(fd.ms, 0), fd.progs, fd.shadow, fd.warm] : undefined;
+  }
+
   beat() {
     const t0 = performance.now();
     try {
       const s = this.snapshot();
       const lagMs = Math.max(0, round(t0 - this.lastBeatAt - C.beatMs, 0));
       this.lastBeatAt = t0;
-      const fd = this.ctx?.frameDiag, worst = fd && fd.ms >= 50 ? [round(fd.ms, 0), fd.progs, fd.shadow, fd.warm] : undefined; // the slowest frame since the last beat: [CPU ms, new programs, shadow redraw, warm-up state] (#669)
+      this.lastSampleAt = t0;
+      const fd = this.ctx?.frameDiag, worst = s.worst; // snapshot reads the pending diagnostic without consuming it (#669)
       if (fd) fd.ms = 0;
       this.history.push({ up: s.up, phase: s.phase, warm: s.warm, worst, frame: s.frame, q: s.q?.lvl, px: s.px,
         fps: s.fps, geo: s.gl3?.geo, tex: s.gl3?.tex, prog: s.gl3?.prog, calls: s.gl3?.calls,
@@ -264,8 +273,12 @@ class CrashLog {
 
   hookLayout() {
     this.layoutSent = 0; this.layoutWas = '';
-    const settle = () => this.layoutSettle();
-    for (const [t, e] of [[window, 'resize'], [window, 'orientationchange'], [window.visualViewport, 'resize'], [screen.orientation, 'change']]) t?.addEventListener(e, settle);
+    for (const [target, event, kind] of [[window, 'resize', 'window-resize'], [window, 'orientationchange', 'orientationchange'], [window.visualViewport, 'resize', 'viewport-resize'], [screen.orientation, 'change', 'orientation-change']]) {
+      target?.addEventListener(event, () => {
+        this.surfaceEvent = { kind, up: round((performance.now() - T0) / 1000, 1) };
+        this.layoutSettle();
+      });
+    }
     setTimeout(() => this.layoutCheck('start', true), 4000); setTimeout(() => this.layoutCheck('start', true), 8000);
   }
 
@@ -310,7 +323,8 @@ class CrashLog {
     this.report('fel', lost ? 'webglcontextlost' : 'webglcontextrestored', {
       context: { episode: loss?.episode ?? 0, lossUp: loss?.up ?? null,
         durationMs: lost || !loss ? null : round(now - loss.at, 0),
-        status: clip(e.statusMessage, 160), missingLoss: !loss },
+        status: clip(e.statusMessage, 160), missingLoss: !loss, surface: this.surfaceEvent },
+      layout: this.layoutMeasure(false), // current CSS/viewport/buffer at loss and restore; no forced GL work
     });
     if (!lost) this.contextLoss = null;
   }

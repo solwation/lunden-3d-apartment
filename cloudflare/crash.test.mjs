@@ -249,3 +249,41 @@ test('#720: diagnostic exception keeps first 30 ingest rows and last 12 public r
   assert.equal(visible.length, 12); assert.deepEqual(visible.map(row => row.up), Array.from({ length: 12 }, (_, i) => i + 18));
   assert.deepEqual(visible.map(row => row.worst), stored.slice(-12).map(row => row.worst));
 });
+
+test('#669: event snapshot diagnostics and surface timing survive POST/KV/public', async () => {
+  const env = { LUNDEN: kv(), ADMIN_TOKEN: 'tok' };
+  const report = { v: 2, typ: 'fel', kind: 'webglcontextlost', pid: 'event669', sig: 'event669',
+    snap: { worst: [3349.125, 1, false, 'done'], beatAgeMs: 2499, history: [{ up: 10, phase: 'done' }] },
+    context: { episode: 1, lossUp: 12.5, surface: { kind: 'viewport-resize', up: 11.1, secret: 'private' } },
+    layout: { inner: [393, 793], css: [393, 793], buf: [294, 594] } };
+  const { id } = await (await post(env, report, '66.9.0.1')).json();
+  const stored = await (await get(env, `/crash/${id}`, 'tok')).json();
+  assert.deepEqual(stored.snap.worst, [3349.13, 1, 0, 'done']);
+  const [visible] = await (await get(env, '/crash/public')).json();
+  assert.deepEqual(visible.state.worst, stored.snap.worst);
+  assert.equal(visible.state.beatAgeMs, 2499);
+  assert.equal(visible.state.history[0].worst, undefined, 'pending frame is not rewritten into an earlier heartbeat');
+  assert.deepEqual(visible.context.surface, { kind: 'viewport-resize', up: 11.1 });
+  assert.deepEqual(visible.layout.inner, [393, 793]);
+  assert.equal(visible.context.surface.secret, undefined);
+});
+
+test('#669: malformed and missing snapshot/surface diagnostics remain bounded', async () => {
+  const env = { LUNDEN: kv(), ADMIN_TOKEN: 'tok' };
+  const { id } = await (await post(env, { v: 2, typ: 'fel', pid: 'bad669', sig: 'bad669',
+    snap: { worst: [51, 0, 0, 'private-player'], beatAgeMs: -1 },
+    context: { surface: { kind: 'private-player', up: 1 } } }, '66.9.0.2')).json();
+  const stored = await (await get(env, `/crash/${id}`, 'tok')).json();
+  assert.equal(stored.snap.worst, undefined);
+  const [visible] = await (await get(env, '/crash/public')).json();
+  assert.equal(visible.state.worst, undefined);
+  assert.equal(visible.state.beatAgeMs, null);
+  assert.equal(visible.context.surface, null);
+  for (const value of [[600001, 0, 0, 'done'], [51, 10001, 0, 'done'], [51, 0, 2, 'done'], [51, 0, 0, 'done', 5]]) {
+    assert.equal(publicView({ snap: { worst: value } }).state.worst, undefined);
+  }
+  assert.equal(publicView({ snap: {}, context: {} }).state.worst, undefined);
+  assert.equal(publicView({ snap: {}, context: {} }).context.surface, null);
+  assert.equal(publicView({ snap: { beatAgeMs: Infinity } }).state.beatAgeMs, null);
+  assert.equal(publicView({ context: { surface: { kind: 'window-resize', up: -1 } } }).context.surface, null);
+});

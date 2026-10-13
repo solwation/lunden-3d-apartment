@@ -36,6 +36,10 @@ src/crashlog.js        crash reports (#629), inert without the cloud (same switc
                        in 'lunden.crash.out'); v2 keeps 12 heartbeat samples (~24 s) with frame progress, load phase and timer lag.
                        Since #669 each sample also has `warm` (the sliced warm-up's position, e.g. `compiling 12/113`) and `worst` = the slowest
                        frame since the last beat when it took 50 ms or more: [CPU ms, new shader programs, shadow-map redraw 0/1, warm-up state].
+                       #669 also reads pending `worst` non-destructively in event snapshots, with `beatAgeMs` since the last
+                       actual heartbeat (not a CPU/GPU loss-frame measurement). Loss/restore reports include current `layout`
+                       measures and `context.surface` = last actual resize/orientation event `{kind, up}`; absent event is null.
+                       These establish temporal observations, not a rotation/shader cause. Only heartbeat consumes frameDiag.
                        WebGL loss/recovery pairs carry an episode number and recovery duration; each episode and abrupt ending has its
                        own dedup signature. Caps: 12 per page, 20 per day; ordinary errors still once per signature/day (CRASHLOG in config). Keys: lunden.crash.pid
                        (random id), .sent, .out kept by Återställ (RESET_KEEP), .beat dropped. main.js: the import (first) and one
@@ -75,6 +79,11 @@ cloudflare/crash.js    POST /crash, admin GET /crash and /crash/<id>, DELETE /ad
                        shadow 0/1 (booleans normalized), technical warm detail]. Arbitrary text and malformed tuples are omitted.
                        Previously discarded worst cannot be recovered from old KV records; preservation applies to newly
                        submitted reports after Worker deployment. Already stored valid warm becomes visible in the public view.
+                       #669 uses the same bounded worst grammar for snapshot/beat `worst`; public `beatAgeMs` is finite/nonnegative,
+                       surface kinds are window-resize/viewport-resize/orientationchange/orientation-change with finite nonnegative up.
+                       Additive v2 fields: older reports stay readable, missing worst omitted and age/surface null.
+                       `tools/crashsnapshottest.cjs` tests production CrashLog with native browser DOM/events and synthetic renderer
+                       counters/context events, without loading the apartment or WebGL; not a physical phone reproduction.
 cloudflare/            the Worker (NOT published on Pages): worker.js (API, limits, CORS, admin emergency brake), wrangler.toml,
                        setup.sh (the user's one-command setup: login, KV, deploy, ADMIN_TOKEN, CLOUD_URL into config),
                        dev.mjs (the same Worker on Node with an in-memory KV, for tests), README.md (Swedish, for the user);

@@ -67,6 +67,12 @@ den är pushad. Skriptet går att köra om hur många gånger som helst – det 
   kan inte återskapas; fixen gäller rapporter som skickas in efter Worker-driftsättningen. Giltigt `warm` som redan
   lagrats kan däremot bli synligt. Saknad äldre diagnostik betyder inte att en lång bildruta aldrig inträffade.
   Typen `layout` (#567) skickas när spelets canvas inte fyller skärmen (vit remsa efter rotation) och innehåller alla mått.
+  Grafikhändelsernas ögonblicksbild kan också visa `worst` för den långsammaste färdiga CPU-bildrutan sedan
+  senaste hjärtslaget och `beatAgeMs` för provets ålder. `layout` visar aktuella skärmmått och `context.surface`
+  senaste storleks-/rotationshändelsens typ och tid sedan sidstart. Detta mäter inte GPU-tid eller kraschorsak;
+  gamla rapporter saknar de nya fälten. Publicera Worker-vitlistan före klienten när de publiceras separat.
+  Diagnostiken kan läsas offentligt först när både uppdaterad Worker och klient kör; den vanliga repo-publiceringen
+  sköter respektive tjänst, och en lokal test betyder inte att Worker redan publicerats.
   Anonymiserad, öppen läsning utan nyckel: `curl <adress>/crash/public`. Läs dem med nödbromsnyckeln: `curl -H "Authorization: Bearer $(cat ~/.config/lunden-l1007/admin-token)" <adress>/crash`
   (lista, nyast först) och `<adress>/crash/<id>` (hela rapporten). Töm dem: `curl -X DELETE -H "Authorization: Bearer …" <adress>/admin/crash`.
 - **Automatisk omdriftsättning (valfritt):** `.github/workflows/cloud.yml` driftsätter om workern när

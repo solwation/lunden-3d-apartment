@@ -74,6 +74,10 @@ function keepDiagnostics(report, source) {
     delete state.warm;
     const warm = warmView(raw.warm);
     if (keptWarm && warm !== undefined) state.warm = warm;
+    const keptWorst = Object.hasOwn(state, 'worst');
+    delete state.worst;
+    const worst = worstView(raw.worst);
+    if (keptWorst && worst !== undefined) state.worst = worst;
     if (!Array.isArray(raw.history) || !Array.isArray(state.history)) continue;
     state.history.forEach((row, i) => {
       if (!row || typeof row !== 'object' || Array.isArray(row)) return;
@@ -104,6 +108,9 @@ export function device(ua) {
 function stateView(b) {
   if (!b || typeof b !== 'object') return null;
   const o = { up: nm(b.up), fps: nm(b.fps), px: nm(b.px), low: b.low ? 1 : 0, gl: b.gl === 'lost' ? 'lost' : undefined, scr: nums(b.scr, 3), vp: nums(b.vp, 2), jsMB: nums(b.jsMB, 2) };
+  const worst = worstView(b.worst);
+  if (worst !== undefined) o.worst = worst;
+  o.beatAgeMs = typeof b.beatAgeMs === 'number' && b.beatAgeMs >= 0 ? nm(b.beatAgeMs) : null;
   o.phase = txt(b.phase, 16); o.frame = nm(b.frame); o.buffer = nums(b.buffer, 2);
   o.background = b.hidden ? 1 : 0; o.standalone = b.standalone ? 1 : 0; o.maxTextureSize = nm(b.maxTextureSize);
   const warm = warmView(b.warm);
@@ -137,6 +144,9 @@ export function publicView(r) {
     context: r.context && typeof r.context === 'object' ? {
       episode: nm(r.context.episode), lossUp: nm(r.context.lossUp), durationMs: nm(r.context.durationMs),
       status: txt(r.context.status, 160), missingLoss: r.context.missingLoss === true,
+      surface: ['window-resize', 'viewport-resize', 'orientationchange', 'orientation-change'].includes(r.context.surface?.kind) &&
+        Number.isFinite(r.context.surface.up) && r.context.surface.up >= 0
+        ? { kind: r.context.surface.kind, up: nm(r.context.surface.up) } : null,
     } : null,
     state: stateView(state), layout: layoutView(r.layout), errs: Array.isArray(r.errs) ? r.errs.slice(-5).map((e) => txt(e, 100)) : undefined };
 }
