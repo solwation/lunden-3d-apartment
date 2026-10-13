@@ -17,8 +17,8 @@ import { TOYS } from '../src/config.js';
 // { t: 'a', w, o, d, s?, to? } (#667, `cleanShot`; forwarded to the armed others as { t: 'a', i, w, o, d, s? }) — anything
 // else is dropped.
 // A greeting (#673) { t: 'g', to, k } goes to everybody else as { t: 'g', i, to, k } (k: a phrase index, no text).
-// Room → client: { t: 'w', i: your id, ps: [{ i, n, p, r, h, score }], c: { lives, weapons } } on joining; { t: 'j', i, n } someone
-// joined; { t: 's', i, p, r, h, score } a state; { t: 'x', i } someone left; 'hit' / 'hurt' (#667). n = the name ('' = "Anonym").
+// Room → client: { t: 'w', i: your id, ps: [{ i, n, p, r, h, score, l }], c: { lives, weapons } } on joining; { t: 'j', i, n, l } someone
+// joined; { t: 's', i, p, r, h, score, l } a state (l = server-owned remaining lives); { t: 'x', i } someone left; 'hit' / 'hurt' (#667). n = the name ('' = "Anonym").
 // Chat (#675, `cleanTalk` / `talk`): { t: 'm', m: text } → the others get { t: 'm', i, n, m } (a sender over the limits gets
 // { t: 'mx' }); "skriver…" (#676): { t: 'k', on } → the others get { t: 'k', i, on }. Nothing of it is stored.
 
@@ -155,6 +155,10 @@ export class PlayerRoom {
   async save() { this.unsaved = 0; await this.ctx.storage.put(`bill:${this.bill.m}`, this.bill); }
   open() { return this.ctx.getWebSockets().filter((ws) => ws.readyState === 1 && att(ws)); }
   broadcast(msg, except) { const s = JSON.stringify(msg); for (const ws of this.open()) if (ws !== except) send(ws, s); }
+  // #865: also used after a server-owned life change; clients cannot write l through cleanState.
+  publishState(ws, a) {
+    if (a.s) this.broadcast({ t: 's', i: a.i, ...a.s, l: a.l ?? COMBAT.lives }, ws);
+  }
   drop(ws, code, reason) {
     const a = att(ws);
     try { ws.close(code, reason); } catch { /* gone */ }
@@ -190,8 +194,8 @@ export class PlayerRoom {
     this.ctx.acceptWebSocket(server);
     const i = crypto.randomUUID().slice(0, 8), n = cleanName(url.searchParams.get('n'));
     server.serializeAttachment({ i, n, s: null, t: now, w: now, c: 0, k: 0, over: false });
-    send(server, JSON.stringify({ t: 'w', i, ps: others.map(att).map((a) => ({ i: a.i, n: a.n, ...(a.s ?? {}) })), c: { lives: COMBAT.lives, weapons: COMBAT.weapons } }));
-    this.broadcast({ t: 'j', i, n }, server);
+    send(server, JSON.stringify({ t: 'w', i, ps: others.map(att).map((a) => ({ i: a.i, n: a.n, ...(a.s ?? {}), l: a.l ?? COMBAT.lives })), c: { lives: COMBAT.lives, weapons: COMBAT.weapons } }));
+    this.broadcast({ t: 'j', i, n, l: COMBAT.lives }, server);
     return new Response(null, { status: 101, webSocket: client });
   }
 
@@ -230,7 +234,7 @@ export class PlayerRoom {
     }
     else {
       const s = cleanState(message);
-      if (s) { a.s = s; this.broadcast({ t: 's', i: a.i, ...s }, ws); }
+      if (s) { a.s = s; this.publishState(ws, a); }
     }
     ws.serializeAttachment(a);
     this.sweep(now);
@@ -267,6 +271,7 @@ export class PlayerRoom {
     const left = (b.l ?? COMBAT.lives) - 1, dead = left <= 0;
     b.l = dead ? COMBAT.lives : left;
     target.serializeAttachment(b);
+    this.publishState(target, b); // observers see damage/reset immediately, even if the target stands still
     send(ws, JSON.stringify({ t: 'hit', to, w, l: left, dead }));
     send(target, JSON.stringify({ t: 'hurt', by: a.i, n: a.n, w, l: left, dead }));
   }

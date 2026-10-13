@@ -42,13 +42,13 @@ test('two players see each other: welcome, join, forwarded and cleaned states, l
   a.send({ p: [1.234, 0.5, 9.876], r: 0.5, junk: 'x'.repeat(50) });
   await settle(env);
   const b = await connect(env); // no name: shown as "Anonym" by the clients
-  assert.deepEqual(b.got[0].ps, [{ i: a.got[0].i, n: 'Olofb', p: [1.23, 0.5, 9.88], r: 0.5, score: 0, h: '' }]);
+  assert.deepEqual(b.got[0].ps, [{ i: a.got[0].i, n: 'Olofb', p: [1.23, 0.5, 9.88], r: 0.5, score: 0, h: '', l: COMBAT.lives }]);
   assert.equal(b.got[0].c.lives, COMBAT.lives);
-  assert.deepEqual(a.got.at(-1), { t: 'j', i: b.got[0].i, n: '' });
+  assert.deepEqual(a.got.at(-1), { t: 'j', i: b.got[0].i, n: '', l: COMBAT.lives });
   b.send({ p: [2, 0, 3], r: -1 });
   b.send('not json'); b.send({ p: [1, 2], r: 0 }); b.send({ p: [1e9, 0, 0], r: 0 });
   await settle(env);
-  assert.deepEqual(a.states(), [{ t: 's', i: b.got[0].i, p: [2, 0, 3], r: -1, score: 0, h: '' }]);
+  assert.deepEqual(a.states(), [{ t: 's', i: b.got[0].i, p: [2, 0, 3], r: -1, score: 0, h: '', l: COMBAT.lives }]);
   assert.equal(b.states().length, 0, 'never echoed to the sender');
   b.ws.close(1000);
   await settle(env);
@@ -364,4 +364,38 @@ test('typing (#676): on / off forwarded, repeats limited, off by a line, never e
   for (let i = 0; i < 10; i++) { now += 100; a.send({ t: 'k', on: i % 2 === 0 }); }
   await settle(env);
   assert.ok(ty().length <= 4 + 4, `toggling fast stays limited (${ty().length - 4} passed)`);
+});
+
+// Public lives come from the same attachment as damage, never from client state.
+test('public lives: observers, late join, forged state, hibernation and death reset', async () => {
+  const previous = COMBAT.lives; COMBAT.lives = 3;
+  try {
+    const env = setup(), a = await connect(env, 'A'), b = await connect(env, 'B'), observer = await connect(env, 'Observer');
+    const id = b.got[0].i;
+    a.send({ p: [0, 0, 0], r: 0, h: 'nerf' });
+    b.send({ p: [0, 0, 2], r: 0, h: 'nerf', l: 999 }); await settle(env);
+    assert.equal(observer.states().at(-1).l, 3, 'client cannot invent lives');
+    const fire = async () => { now += 1000; a.send({ t: 'f', w: 'nerf', to: id }); await settle(env); };
+    await fire();
+    assert.equal(observer.states().at(-1).l, 2, 'unarmed observer gets immediate stationary-target damage');
+    assert.equal(a.states().at(-1).l, 2, 'attacker also gets public state');
+    const late = await connect(env, 'Late');
+    assert.equal(late.got[0].ps.find(p => p.i === id).l, 2, 'welcome uses damaged authoritative lives');
+    env.PLAYERS.hibernate('world'); now += 1000;
+    b.send({ p: [0, 0, 2], r: 0, h: 'nerf', l: 999 }); await settle(env);
+    assert.equal(observer.states().at(-1).l, 2, 'hibernation and new client state preserve damage');
+    await fire(); await fire();
+    assert.equal(b.got.filter(m => m.t === 'hurt').at(-1).dead, true);
+    assert.equal(observer.states().at(-1).l, 3, 'death publishes actual immediate server reset, not zero');
+    // A future server recovery uses this same publication path, not a new client life model.
+    const room = env.PLAYERS.object('world'), socket = room.open().find(ws => ws.deserializeAttachment().i === id);
+    const attachment = socket.deserializeAttachment(); attachment.l = 2; socket.serializeAttachment(attachment);
+    room.publishState(socket, attachment); await settle(env);
+    assert.equal(observer.states().at(-1).l, 2);
+    b.ws.close(1000); await settle(env);
+    assert.equal(observer.got.at(-1).t, 'x');
+    const rejoined = await connect(env, 'B');
+    assert.equal(observer.got.at(-1).l, 3, 'new connection starts with server rule count');
+    for (const c of [a, observer, late, rejoined]) c.ws.close(1000); await settle(env);
+  } finally { COMBAT.lives = previous; }
 });
