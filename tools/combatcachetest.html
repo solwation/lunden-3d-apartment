@@ -1,0 +1,50 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Native cache scheduler component</title><pre id="out">running…</pre>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"}}</script>
+<script type="module">
+import * as T from 'three';import {COMBAT} from '../src/config.js';
+const lines=[],runs=[];let failures=0,checks=0;const check=(ok,label)=>{checks++;failures+=!ok;lines.push(`${ok?'PASS':'FAIL'} ${label}`)};
+const load=(version,mode,id)=>import(`../src/combatworld.js?cacheprobe=${version}-${mode}-${id}`);
+function scene(count){const scene=new T.Scene(),ghosts=new T.Group(),camera=new T.PerspectiveCamera(),geometries=[];scene.add(ghosts,camera);for(let i=0;i<count;i++){const g=new T.SphereGeometry(1,i===0?64:16,i===0?32:8);g.name=String(i);geometries.push(g);const m=new T.Mesh(g,new T.MeshBasicMaterial({side:T.DoubleSide}));m.position.set(i*4,0,0);scene.add(m);}scene.updateMatrixWorld(true);return {scene,ghosts,camera,geometries};}
+async function run(version,mode,id,count,maxSlices=100000){const mod=await load(version,mode,id),s=scene(count);mod.prepareCombatWorld(s.scene,s.ghosts,s.camera);const start=performance.now();let slices=0,work=0;while(slices<maxSlices&&mod.combatWorldMetrics().pending&&performance.now()-start<20000){const at=performance.now();mod.cacheProbe.pump();work+=performance.now()-at;slices++;if(slices%100===0)await new Promise(r=>setTimeout(r,0));}const result={version,mode,count,slices,elapsedMs:performance.now()-start,workMs:work,metrics:mod.combatWorldMetrics(),state:mod.cacheProbe.snapshot()};runs.push(result);return {mod,s,result};}
+try{
+ // Diagnose unchanged source first. Fixed 100 callbacks, with real 2ms production slice budget.
+ const diagnosis=await run('reference','counts','diagnosis',804,100);check(diagnosis.result.metrics.pending>0,'bounded historical diagnosis retains pending jobs');check(diagnosis.result.state.probe.visits>diagnosis.result.state.probe.operations*100,'historical repeated queue selection scans over 100 entries per operation');diagnosis.s.geometries.forEach(g=>g.dispose());
+ if(new URL(location.href).searchParams.has('diagnosis')){lines.push('Diagnosis only; no candidate claim');}
+ else{
+ const a=await run('reference','sequence','parity',8),b=await run('current','sequence','parity',8);check(a.result.metrics.pending===0&&b.result.metrics.pending===0,'both historical and candidate finish bounded deterministic work');check(a.result.state.probe.operations===b.result.state.probe.operations&&JSON.stringify(a.mod.cacheProbe.sequence())===JSON.stringify(b.mod.cacheProbe.sequence()),'exact full operation sequence and count preserved');check(JSON.stringify(a.s.geometries.map(g=>a.mod.cacheProbe.buffers(g)))===JSON.stringify(b.s.geometries.map(g=>b.mod.cacheProbe.buffers(g))),'all bitmaps, spatial indices/face mapping/bounds/offsets and extrema exactly equal');
+ for(const active of [a,b]){const ray=new T.Raycaster(new T.Vector3(0,0,3),new T.Vector3(0,0,-1),0,6);ray.camera=active.s.camera;const native=ray.intersectObjects(active.s.scene.children,true),actual=active.mod.combatWorldHits(active.s.scene,active.s.ghosts,active.s.camera,ray);check(native.length===actual.length&&native.every((h,i)=>h.object===actual[i].object&&h.faceIndex===actual[i].faceIndex&&h.distance===actual[i].distance&&h.point.equals(actual[i].point)&&h.normal.equals(actual[i].normal)&&h.uv.equals(actual[i].uv)&&JSON.stringify(h.face)===JSON.stringify(actual[i].face)),active.result.version+' ready hits match independent native metadata');active.s.geometries.forEach(g=>g.dispose());check(active.mod.combatWorldMetrics().pending===0&&active.mod.combatWorldMetrics().spatialEntries===0,'dispose releases all ready jobs and storage');}
+ // Mutate/dispose between callbacks and promote another job: exact historical priority sequence.
+ const special=[];
+ for(const version of ['reference','current']){
+  const mod=await load(version,'sequence','urgent-mutation'),s=scene(6);mod.prepareCombatWorld(s.scene,s.ghosts,s.camera);
+  mod.cacheProbe.pump();mod.cacheProbe.promote(s.geometries[5]);
+  s.geometries[0].attributes.position.needsUpdate=true;s.geometries[2].dispose();s.geometries[3].attributes.position.array[0]=NaN;s.geometries[3].attributes.position.needsUpdate=true;
+  let slices=0;while(mod.combatWorldMetrics().pending&&slices++<10000)mod.cacheProbe.pump();
+  check(mod.combatWorldMetrics().pending===0,version+' urgent/mutation/disposal workload completes');
+  special.push({trace:mod.cacheProbe.sequence(),buffers:s.geometries.map(g=>mod.cacheProbe.buffers(g))});
+  s.geometries.forEach(g=>g.dispose());const before=mod.cacheProbe.snapshot().probe.operations;for(let i=0;i<20;i++)mod.cacheProbe.pump();
+  check(mod.cacheProbe.snapshot().probe.operations===before&&mod.combatWorldMetrics().spatialEntries===0,version+' leftover callbacks perform no disposed work');
+ }
+ check(JSON.stringify(special[0])===JSON.stringify(special[1]),'urgent promotion, invalidation/requeue and disposal preserve exact historical operation sequence and buffers');
+ // A single triangle AABB spans all 32^3 bitmap cells; selection reuse must still yield.
+ const huge=[];
+ for(const version of ['reference','current']){
+  const mod=await load(version,'sequence','huge'),s=scene(0),vertices=[-10,-10,-10,10,-10,10,0,10,0];
+  for(let i=0;i<200;i++)vertices.push(-10,-10,-10,-10,-10,-10,-10,-10,-10);
+  const g=new T.BufferGeometry().setAttribute('position',new T.Float32BufferAttribute(vertices,3));g.name='huge';s.scene.add(new T.Mesh(g,new T.MeshBasicMaterial({side:T.DoubleSide})));s.scene.updateMatrixWorld(true);mod.prepareCombatWorld(s.scene,s.ghosts,s.camera);
+  let slices=0,maxOps=0;while(mod.combatWorldMetrics().pending&&slices++<10000){const before=mod.cacheProbe.snapshot().probe.operations;mod.cacheProbe.pump();maxOps=Math.max(maxOps,mod.cacheProbe.snapshot().probe.operations-before);}
+  check(!mod.combatWorldMetrics().pending&&slices>1&&maxOps<=2000,version+' full-volume triangle fill keeps between-operation slice checks');huge.push({sequence:mod.cacheProbe.sequence(),buffers:mod.cacheProbe.buffers(g)});g.dispose();
+ }
+ check(JSON.stringify(huge[0])===JSON.stringify(huge[1]),'full-volume triangle exact bitmap/spatial work and buffers match historical');
+ for(let repeat=0;repeat<4;repeat++){for(const version of repeat%2?['current','reference']:['reference','current']){const active=await run(version,'timing','perf'+repeat,804,100);
+  const rays=Array.from({length:24},(_,i)=>new T.Raycaster(new T.Vector3((i+1)*4,.1,3),new T.Vector3(0,0,-1),0,6));
+  const expected=rays.map(ray=>ray.intersectObjects(active.s.scene.children,true));
+  const before=active.mod.combatWorldMetrics(),start=performance.now();let same=true;
+  for(let i=0;i<72;i++){const at=i%24,hits=active.mod.combatWorldHits(active.s.scene,active.s.ghosts,active.s.camera,rays[at]);same&&=hits.length===expected[at].length&&hits.every((h,j)=>h.object===expected[at][j].object&&h.faceIndex===expected[at][j].faceIndex&&Math.abs(h.distance-expected[at][j].distance)<1e-10&&h.point.distanceTo(expected[at][j].point)<1e-10&&h.normal.distanceTo(expected[at][j].normal)<1e-10&&h.uv.distanceTo(expected[at][j].uv)<1e-10);}
+  const after=active.mod.combatWorldMetrics();active.result.partialCacheQueries={calls:72,elapsedMs:performance.now()-start,fallbackCounter:after.fallbackQueries-before.fallbackQueries,pruned:after.prunedQueries-before.prunedQueries};
+  check(same,version+' repetition '+repeat+' partially-ready solid query metadata matches independent native');
+  active.s.geometries.forEach(g=>g.dispose());}}
+ }
+}catch(e){check(false,e.stack||String(e));}
+lines.push(`${failures?'FAIL':'ALL PASS'} ${checks} checks; actual Three; controlled scheduler; no renderer/WebGL`);document.getElementById('out').textContent=lines.join('\n');window.result={pass:failures===0,checks,failures,lines,runs};
+</script>

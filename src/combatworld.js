@@ -190,17 +190,18 @@ function schedule() {
     scheduled = false;
     const start = performance.now();
     // Check between bounded scan/cell operations, including unusually large triangle AABBs.
-    let checked = null;
+    let selected = null, spatialPending = false;
     while (jobs.length && performance.now() - start < C.buildMs) {
-      const urgent = jobs.findIndex(job => job.urgent && job.spatial && !job.spatialReady);
-      const early = urgent >= 0 ? urgent : jobs.findIndex(job => job.spatial && !job.spatialReady);
-      if (early > 0) jobs.unshift(...jobs.splice(early, 1));
-      const entry = jobs[0];
-      if (checked !== entry) {
-        checked = entry;
-        if (!same(entry, entry.geometry)) { const geometry = entry.geometry; release(entry); queue(geometry); continue; }
+      // No external priority change can interleave inside this synchronous callback.
+      // Re-select on head replacement or spatial completion, before any bitmap work.
+      if (selected !== jobs[0] || spatialPending && selected.spatialReady) {
+        const urgent = jobs.findIndex(job => job.urgent && job.spatial && !job.spatialReady);
+        const early = urgent >= 0 ? urgent : jobs.findIndex(job => job.spatial && !job.spatialReady);
+        if (early > 0) jobs.unshift(...jobs.splice(early, 1));
+        selected = jobs[0]; spatialPending = !!selected.spatial && !selected.spatialReady;
+        if (!same(selected, selected.geometry)) { const geometry = selected.geometry; release(selected); queue(geometry); continue; }
       }
-      advance(entry);
+      advance(selected);
     }
     const elapsed = performance.now() - start;
     metrics.buildCpuMs += elapsed; metrics.maxChunkMs = Math.max(metrics.maxChunkMs, elapsed);
@@ -215,13 +216,16 @@ function scheduleUrgent() {
   const run = () => {
     urgentScheduled = false;
     const start = performance.now();
+    let selected = null;
     while (performance.now() - start < C.buildMs) {
-      const at = jobs.findIndex(entry => entry.urgent && !entry.spatialReady);
-      if (at === -1) break;
-      if (at) jobs.unshift(...jobs.splice(at, 1));
-      const entry = jobs[0];
-      if (!same(entry, entry.geometry)) { const geometry = entry.geometry; release(entry); queue(geometry); }
-      else advance(entry);
+      if (selected !== jobs[0] || selected?.spatialReady) {
+        const at = jobs.findIndex(entry => entry.urgent && !entry.spatialReady);
+        if (at === -1) break;
+        if (at) jobs.unshift(...jobs.splice(at, 1));
+        selected = jobs[0];
+        if (!same(selected, selected.geometry)) { const geometry = selected.geometry; release(selected); queue(geometry); continue; }
+      }
+      advance(selected);
     }
     const elapsed = performance.now() - start;
     metrics.buildCpuMs += elapsed; metrics.maxChunkMs = Math.max(metrics.maxChunkMs, elapsed);
