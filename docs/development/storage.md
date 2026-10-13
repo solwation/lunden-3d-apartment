@@ -334,7 +334,10 @@ is safe, they retain the earlier session rather than write bicycle saddle feet.
 A genuine reload rebuilds the original bicycle matrices and resumes the player
 standing. Existing home/world data, life and worn equipment rules remain unchanged.
 The native bicycle driver checks the real resume module across browser reload,
-blocked-exit/session retention and real spawn releasing the cycling mode.
+blocked-exit/session retention and real spawn releasing the cycling mode. These
+checks pass in the final34-check native run; the separate actual World run uses
+one World construction and does not claim another whole-app reload or remote
+bicycle pose. #877 remains open for the other existing bicycles.
 
 ### Additive nose region (#920)
 

@@ -719,8 +719,38 @@ Pause/zero dt preserves the bicycle pose.
 actual StreetLife/Player, complete original input/save handlers and real touch
 pointer gestures without WebGL. Controlled world/focus/lock collaborators are
 explicit; it does not prove pointer lock, full World graphics or remote bike pose.
-The source/native stage passed29 checks with actual exit0; whole-World visual
-acceptance is still pending and #903 remains open.
+The initial source/native stage passed29 checks (actual exit0). Final source/native
+passed34 checks on `6f35db5`: original control/save paths plus mounted target
+exclusion, exit labels and original CSS geometry at900×600,568×320,390×844.
+Portrait keeps the existing rotate curtain; its check is underlying DOM geometry,
+not interactive portrait gameplay. The short stand caption remains at least44px
+and clear of measure/jump/crouch/action controls; the short touch prompt is also
+clear. Full accessible exit text remains “Kliv av cykeln”.
+
+`--app` is a separately coordinated, bounded heavy run: one real World,240s
+readiness/300s driver guard and an external320s finite wrapper. Final actual
+World passed22 checks with Node/wrapper exit0, no page errors: real ray focus,
+touch action mount, visible original handlebars, supported6m in one simulated
+second, actual pause button, safe touch stand exit and all other eight matrices
+unchanged. Four guarded images are separate480×320 actual scene/camera renders
+and900×600 DOM captures with the canvas explicitly `display:none`; they are
+not composites. Existing four batches retain nine instances each; the invisible
+interaction pick helper adds no rendered bike model.
+
+Two earlier app attempts exited1: Touch→E was a fixture mode mismatch, then
+calling showOverlay directly missed the actual pause handler's touch shutdown.
+Their logs/images remain under `/tmp/lunden-priority-903`; early “hud” images
+still included the canvas because the hidden attribute was overridden by CSS.
+The final World HUD still used the longer stand/prompt captions; their measured
+overlap was subsequently corrected and verified by the final DOM-only native
+images. No extra World run followed those two text-only changes. Reversing exactly
+those caption edits restores the tested main.js hash; Player/StreetLife/World
+bytes match, while config additionally received unrelated #920 rifle nose/head
+validation (BICYCLE unchanged, final native repeated). No blanket source parity,
+measured hardware FPS, physical phone, remote cycling pose or all69-bike claim.
+The real door-location rejection can also involve adjacent walls; the pause
+probe adds controlled KeyW after a real pause tap, not a held joystick gesture.
+
 
 ### Bounded frontal nose contact (#920)
 

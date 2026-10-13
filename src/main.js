@@ -1740,6 +1740,19 @@ function behindWall(p) {
   });
 }
 
+const bicyclePickables = () => world.bicycles.filter(b => !b.ridden).map(b => b.pick);
+function updateBicycleControls() {
+  const label = player.riding ? 'Kliv av cykeln' : 'Res dig';
+  const shortLabel = player.riding ? 'Kliv av' : 'Res dig';
+  if (standBtn.textContent !== shortLabel) standBtn.textContent = shortLabel;
+  standBtn.setAttribute('aria-label', label); standBtn.title = label;
+  if (player.riding && !reading) {
+    if ((!focused || focused.kind === 'bicycle') && !heldItem()?.useLabel) actionBtn.textContent = label;
+    promptEl.hidden = false;
+    promptEl.textContent = touch.enabled ? 'Cyklar' : 'Cyklar · WASD · E / mellanslag för att kliva av';
+  }
+}
+
 function updateFocus() {
   setPressed(document.getElementById('furniture-btn'),world.furnitureOn);
   setPressed(document.getElementById('measure-btn'),measure.active);
@@ -1768,7 +1781,7 @@ function updateFocus() {
     ...(!weaponKey() ? ghosts.targets() : []), // only unarmed visitors greet other players (#872)
     ...suit.targets(), // the Spider-Man suit in its drawer / where it was laid (#597)
     ...world.courtyardTargets.map((t) => t.pickable),
-    ...world.bicycles.map(b => b.pick), // the courtyard's benches (#438): F keeps them
+    ...bicyclePickables(), // the courtyard's benches (#438): F keeps them
     ...(power.reachable ? [power.target.pickable] : []), // the fuse box while its cabinet is open (#604)
     ...(world.furnitureOn ? [...(target.object.visible ? [target.target] : []), ...patio.targets, ...world.furnitureTargets, ...holdables.map((h) => h.target), drawing.target, ...posters.targets].map((t) => t.pickable) : [])]; // parasol, TV, seats, beds, toys — unless F hid the furniture
   // the nearest hit on something actually shown (F hides the loose items, the raycaster doesn't care)
@@ -1929,11 +1942,9 @@ function updateFocus() {
   if (seated && !focused && !holding) actionBtn.textContent = player.riding ? 'Kliv av cykeln' : 'Res dig';
   if (seated && !touch.enabled) promptEl.textContent = focused && !focused.blocked ? `${promptEl.textContent} · Mellanslag – res dig` : focused?.blocked ? promptEl.textContent : 'Tryck E för att resa dig';
   standBtn.hidden = !touch.enabled || !seated || (!focused && !holding && !player.riding);
-  if (player.riding && !reading) { promptEl.textContent = 'Cyklar · WASD / joystick · E eller mellanslag för att kliva av'; standBtn.setAttribute('aria-label','Kliv av cykeln'); standBtn.title = 'Kliv av cykeln'; }
-  else { standBtn.setAttribute('aria-label','Res dig'); standBtn.title = 'Res dig'; }
   if (reading && touch.enabled) actionBtn.textContent = 'Stäng';
   promptEl.hidden = (!focused && !seated && !holding) || touch.enabled || reading || (!!choices.rows && !seated);
-  if (player.riding && !reading) { promptEl.hidden = false; promptEl.textContent = touch.enabled ? 'Cyklar · kliv av med knappen' : 'Cyklar · WASD · E / mellanslag för att kliva av'; }
+  updateBicycleControls();
   const job = life.runner.job; // a timed life action going on (#372): what and how far
   if (job && !reading) { promptEl.textContent = `${job.label[0].toUpperCase()}${job.label.slice(1)} … ${Math.round(Math.min(1, job.t / Math.max(job.duration, 1e-6)) * 100)} %`; promptEl.hidden = false; }
   if (remoteAim && !touch.enabled && !reading) { promptEl.textContent = 'Klicka för att byta kanal · högerklick: av/på'; promptEl.hidden = false; }
