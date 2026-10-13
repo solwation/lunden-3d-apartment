@@ -1276,6 +1276,11 @@ matched after the run. The authored default test-query fixture was then restored
 Final rebase preserved the concurrent combatworld/crashlog diagnostics; these two runtime files differ
 from the frozen full run. Rearrange, its setup helper/config/data and all four whole-source inverses remain
 unchanged. The final rebased app was not rerun; the full result belongs to the stated frozen source.
+The twelve lightweight native semantic checks were rerun on final rebased 068db63: 12 PASS/ALL PASS,
+exit 0, image inspected, no WebGL. The broad 229-file post-rebase assertion failed on those two concurrent
+diagnostic files; a shell sequencing error let the already-reviewed push continue despite that assertion.
+This is not an all-source-match claim. Frozen pre-rebase files and current relevant setup contracts remain
+separately verified. No extra full run was requested for these unrelated diagnostics.
 
 The other three complete runtime suites were not rerun. This is full-mode setup acceptance, with source
 inversion and module-state equivalence, not historical parity, a speedup, cloud/physical-device coverage or
