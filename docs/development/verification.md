@@ -554,7 +554,7 @@ no executable fixture changes or new browser results are part of this audit.
 | `planttest.html` | Candidate | Actual plant/item ray-actions, placement, ownership and reset. |
 | `plantwindtest.html` | Full pixel rendering | 192×192 render-target readback asserts moving foliage, focused foliage and pixel-identical pottery. |
 | `portiktest.html` | Candidate | Actual portik/bin geometry, walk/actions, save/reload and reset. |
-| `posterplacementtest.html` | Candidate | Actual independent poster transforms/layout and optional cloud migration; preserve every cloud/reload subcase. |
+| `posterplacementtest.html` | Original full red; comparison incomplete (#833) | Actual original full stopped after four PASS, two preview FAIL and a caught TypeError; writer lacks terminal (#858), preview tracked in #857. Explicit interrupted CLI143 is not a completed pair or migration. Original cloud/reload coverage remains pending. |
 | `postertest.html` | Conditional candidate | Paper-canvas pointer drawing and geometry/actions; optional ?shots captures real renderer images and must keep full-render semantics. |
 | `powertest.html` | Full lighting | Actual pools/washes, flickering supply, emissive appliance lamps and night-window lighting through cut/repair/reload. |
 
@@ -3265,3 +3265,32 @@ ordered PASS per mode with whole byte-identical raw logs. Their distinct frozen
 bases and qualified native/capture scope are recorded above; no rerun of earlier
 pairs after legitimate later source changes is claimed. Parents #740/#736 stay
 open.
+
+## Poster placement original failure (#833, partial)
+
+The first complete-source comparison attempt used frozen `9cdaa49` and the
+whole original `9645849^` fixture, authored 480×300/shot/cloud-empty. No setup,
+action, matrix, assertion, seed, query or timing change was applied to this
+fixture. Actual first app readiness proved the original full URL, 480×300,
+null controller and no fullscreen. The first four checks passed; wall preview
+and rotation failed, then `R.candidate.clone()` threw a caught TypeError.
+The whole failure output is retained in
+`/tmp/lunden-posters833/posterplacementtest/full-progress.json`.
+
+The original catch writes accumulated checks and the stack but no standard
+terminal, so the runner kept waiting after fixture execution had ended. Root
+explicitly requested SIGTERM; actual runner 637111 exited 143 at 06:40:34 UTC
+(start 06:34:15). This is an interrupted run, not a native timeout, a completed
+full/test pair, a new baseline, migration or timing sample. No test-mode pass,
+other two authored documents or optional Worker branch completed in this run.
+Final observation reports the closed-frame error; no PNG was retained or
+visually reviewed. All 229 source/fixture/runner SHA-256 hashes and three
+passive helper hashes were independently verified unchanged after cleanup.
+
+Preview cause is unestablished and tracked separately in #857; missing failure
+terminal is #858. The original checks remain. Later #815 changes only the
+fixture's ordinary setup helper/include, separately verified and documented;
+that change is absent from this historical failure. Native source, monitor,
+owned signal request and helpers remain beside the complete observed output.
+The drawing-poster comparison and complete placement acceptance remain pending;
+#833/#740/#736 stay open.
