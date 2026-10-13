@@ -378,3 +378,21 @@ skull regions, boundary/ambiguous cells,
 moving/crouching and other weapons continue body1. Actual local Worker receipts
 verify new-style head2, covered beanie body1 and a forged steep beanie ray body1
 with unchanged awards, kills, marker replay and recovery.
+
+#916 delivery acceptance: runtime `7d27292` passed21 actual Worker Node tests
+and26 native checks against owned fresh Worker PID1751542 (started after the
+server/config freeze at2026-10-13T16:03:27Z), with zero errors/WebGL. Root reviewed
+the actual HUD/receipt PNG and the corrected15 unique canonical beanie seeds,
+seven phases,8505 oblique rays/400 hidden contacts/zero false heads. The final
+native fixture selects an actual exposed bounded-core contact before ONE real
+shot; it retains covered-beanie and forged-steep-ray body1 assertions. An earlier
+fixed-middle-aim run timed out and is not accepted evidence; likewise the obsolete
+oblique height list's seed fallback/counts are discarded. All failed logs remain
+separate from the definitive green run. After final rebase249/250 frozen paths
+match exactly; only `src/main.js` changed for bicycle captions and is not loaded
+by the native bootstrap-free harness. All actual server/client/helper/fixture
+imports match the executed bytes. Genuine Worker run38428499817/job115404135281
+and its `Run cloudflare/wrangler-action@v3` step succeeded; Pages38428499888 also
+succeeded. This confirms deployment of the additive core contract, without a
+physical-phone or rendered-apartment claim. #916 closes this central-core slice;
+#898/#892/#879/#874 and independently assigned remaining surface slices stay open.
