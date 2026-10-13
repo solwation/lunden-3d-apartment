@@ -11,8 +11,8 @@
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const f = document.createElement('iframe');
-f.width = 900; f.height = 600;
-f.src = '../index.html?time=7'; // a visit starts at the browser's time (#95): fix it at 07:00 here
+f.width = 480; f.height = 300;
+f.src = '../index.html?time=7&test'; // a visit starts at the browser's time (#95): fix it at 07:00 here
 document.body.append(f);
 f.onload = async () => {
   const w = f.contentWindow, d = f.contentDocument;
@@ -30,6 +30,7 @@ f.onload = async () => {
   const want = day.hour % 12, wantMin = day.hour % 1;
   const minOk = Math.min(Math.abs(minuteFrac - wantMin), 1 - Math.abs(minuteFrac - wantMin)) < 0.02;
   pass &= check(Math.abs(day.hour - 7) < 0.1 && Math.abs(hourAngle - want) < 0.02 && minOk, `hands show the time, ~7:00 (${day.clock}; hour hand ${hourAngle.toFixed(3)} vs ${want.toFixed(3)}, minute ${minuteFrac.toFixed(3)} vs ${wantMin.toFixed(3)})`);
+  if (w.__app.testMode) d.documentElement.requestFullscreen = undefined;
   d.getElementById('start-touch').click();
   await wait(50);
   // stand 1.2 m east of the clock, facing west (yaw 90), eye level with it

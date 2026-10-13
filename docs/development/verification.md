@@ -1184,13 +1184,35 @@ Full 151.360s / test 86.420s include capture attempts, descriptive only and excl
 no extra replacement app load or retry was run. All 247 frozen source paths and exact guarded fixture/helper
 hashes match. Raw logs/summary: `/tmp/runtests-530119/`; original/frozen source proof, native ready/final phases,
 independent PID/SID/exit, test image and full capture error: `/tmp/lunden-clocks835/calendar-*` and `calendartest-*`.
-This is a blocked live-row migration disposition, not a rendering exemption or fixed product defect. Clock and
-#835/#738/#736 remain open; its original time/hand-angle diagnostics still need a separate complete pair.
+This is a blocked live-row migration disposition, not a rendering exemption or fixed product defect. Clock acceptance
+follows; the bounded #835 scope is complete, while broader #738/#736 remain open.
 
 | #835 fixture | Current disposition |
 | --- | --- |
 | `calendartest.html` | Original full retained; complete 13 PASS per mode with two live-clock raw differences, actual compare exit 1. |
-| `clocktest.html` | Source prepared only; original 900×600/time=7 and all current hand-angle/date/panel checks retained, no actual pair yet. |
+| `clocktest.html` | Qualified logical acceptance: all 18 ordered PASS rows and ALL PASS byte-identical, native original900→fullscreen1280/null versus test480/real API/no fullscreen. Full capture failed, test-only image, timings excluded; details below. |
+
+#835 clock has qualified logical acceptance after one complete original 900×600/time=7 pair at frozen `a48c856`:
+all 18 ordered PASS rows and ALL PASS are byte-identical in the complete 719-byte raw logs, actual independent exit 0.
+All original hand-snapshot/date, action/panel/no-walking, pace/pause, pointer/key spool, sun/info and close predicates
+and diagnostic values remain unchanged. This sample's hands are 7.000/7.000 and minutes 0.000/0.000; no clock,
+date/angle normalization, extra seed/wait/timer, matrix, quality, baseline or assertion change was made, and no
+future loading-time invariance is claimed. The approved pre-pair testMode-only fullscreen guard remains AFTER
+the original hand snapshot and BEFORE the original touch start, inert in full mode. Final migration changes only
+iframe dimensions to 480×300 and appends test to the original time=7 query, retaining that guard.
+Two distinct child document identities at actual ready/final, with matching URL/timeOrigin, prove one load per mode:
+full ready 900×600/controller null/no fullscreen → final native fullscreen 1280×800; test ready/final 480×300 with
+real controller API/no fullscreen. The observer records those values; no absent lazy/full/event-isTrusted fields are inferred.
+Full screenshot failed after 60,000ms, error retained and no full PNG; only test PNG was inspected (all 18 rows
+vertically and clock-wall/HUD scene, long result row cropped at the right edge). The screenshot error's font-log
+text establishes no cause. There is no full-image review or visual full/test-equivalence claim and no replacement app run.
+Full 131.764s / test 96.255s include capture attempts, descriptive only; unequal captures exclude qualified timing
+aggregation. All 247 frozen source paths and exact guarded fixture/helper hashes match. Raw logs/summary:
+`/tmp/runtests-543909/`; source/provenance, actual ready/final phases, independent PID/SID/exit, test PNG and full
+capture error: `/tmp/lunden-clocks835/clock-*` and `clocktest-*`.
+The bounded #835 scope is complete: calendar keeps original 900×600/plain current body after 13 PASS per mode
+with two live-clock raw differences, clock has 18 exact logical PASS rows with full capture missing. This does not
+claim both migrated, visual equivalence or a speedup; #738/#736 remain open.
 
 #812 `bestatest` is accepted after a complete original 900×600/`?time=12&freeze` comparison at frozen `7325270`:
 whole raw logs are byte-identical, all 11 ordered PASS rows and ALL PASS, independently monitored actual exit 0.
