@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><title>Native dust boundary component reproduction</title>
+<pre id="out">running…</pre>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { Mess } from '../src/mess.js';
+import { Player, segDist } from '../src/player.js';
+import { LIFE_MESS, LEVELS, PLAYER } from '../src/config.js';
+const out=document.getElementById('out'),rows=[];
+let good=true;
+const check=(ok,label)=>{rows.push(`${ok?'PASS':'FAIL'} ${label}`);good&&=!!ok;};
+// Component domain: one actual plan wall, no furniture/doors/visited units, one explicit domain room.
+// No main app, renderer, global RNG replacement, fixture rewrite, seed, extra step or transform update.
+const plan=await fetch('../data/plan.json').then(r=>r.json());
+const segment=[.4919,7.1492,.4919,7.0543];
+check(plan.floors[1].walls.some(w=>w.outer.some(([x,z],i)=>{
+  const [bx,bz]=w.outer[(i+1)%w.outer.length];
+  return x===segment[0]&&z===segment[1]&&bx===segment[2]&&bz===segment[3];
+})), 'boundary segment is present in the current source plan');
+const world={size:{x:5.75,z:12.7},levels:LEVELS.map((_,i)=>({segments:i===1?[segment]:[],footprints:[]})),doors:[]};
+const player=new Player(world,new THREE.PerspectiveCamera());
+player.pos.set(1,0,1);
+const clearance=PLAYER.radius+LIFE_MESS.margin;
+const cases=[
+  {name:'inner clearance boundary',candidate:[.4117,7.10175],fallback:[.4,7.102]},
+  {name:'outer wall-distance boundary',candidate:[.94189,7.10175],fallback:[.9,7.102]},
+  {name:'ordinary reachable point',candidate:[.4,7.102],fallback:[.4,7.102]},
+];
+const evidence=[];
+for(const test of cases){
+  const meshGroup=new THREE.Group();
+  const mess=new Mess({group:meshGroup,roomAt:()=> 'boundary-domain',walls:level=>level===1?[segment]:[],
+    isFree:(x,z,level,margin)=>player.isFree(x,z,level,margin)});
+  const values=[.75,test.candidate[0]/5.75,test.candidate[1]/12.7,.75,test.fallback[0]/5.75,test.fallback[1]/12.7];
+  let calls=0;
+  // Fixed arguments to Mess's existing injected rng API are regression input, not a production/fixture seed.
+  const rng=()=>{if(calls===values.length)throw Error('unexpected extra candidate sampling');return values[calls++];};
+  const rawFree=player.isFree(...test.candidate,1,LIFE_MESS.margin),rawDistance=segDist(...test.candidate,segment);
+  check(rawFree&&rawDistance<LIFE_MESS.dust.wall,`${test.name}: supplied raw candidate is reachable and near the native wall`);
+  const spot=mess.dust(rng);
+  const storedFree=spot&&player.isFree(spot.x,spot.z,spot.level,LIFE_MESS.margin);
+  const storedDistance=spot&&segDist(spot.x,spot.z,segment);
+  check(!!spot&&storedFree,`${test.name}: stored dust remains reachable`);
+  check(!!spot&&storedDistance<LIFE_MESS.dust.wall+1e-6,`${test.name}: stored dust remains near the wall`);
+  check(!!spot&&spot.y===LEVELS[spot.level].floor&&spot.room==='boundary-domain',`${test.name}: native floor and room are retained`);
+  check(mess.meshes.dust.count===1&&mess.spots.length===1,`${test.name}: one native stored spot and mesh instance`);
+  evidence.push({name:test.name,candidate:test.candidate,rawFree,rawDistance,spot:{...spot},storedFree,storedDistance,calls,clearance});
+}
+console.log('[dust849-domain] '+JSON.stringify({scope:'Controlled native component domain; not the original app/failed-spot evidence.',segment,evidence}));
+out.textContent=rows.join('\n')+`\n${good?'ALL PASS':'SOME FAILED'}`;
+</script></html>

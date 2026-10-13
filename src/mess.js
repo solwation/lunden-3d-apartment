@@ -218,7 +218,8 @@ export class Mess {
     const D = M.dust;
     for (let tries = 0; tries < 40; tries++) {
       const level = rng() < 0.5 ? 0 : 1, B = this.box;
-      const x = B.x0 + rng() * (B.x1 - B.x0), z = B.z0 + rng() * (B.z1 - B.z0), room = this.roomAt(level, x, z);
+      // Validate the millimetre coordinates add() stores, including clearance and wall proximity (#849).
+      const x = round(B.x0 + rng() * (B.x1 - B.x0)), z = round(B.z0 + rng() * (B.z1 - B.z0)), room = this.roomAt(level, x, z);
       if (!room || !this.isFree(x, z, level, M.margin)) continue;
       if (!this.walls(level).some((sg) => segDist(x, z, sg) < D.wall)) continue; // (in the corners and along the walls)
       const here = this.spots.filter((s) => s.kind === 'dust' && s.room === room && s.level === level);

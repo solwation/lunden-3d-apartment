@@ -187,10 +187,16 @@ src/mess.js            crumbs and dust (#388, LIFE-024, M3; LIFE_MESS): spots { 
                        table / worktop under the food, else the floor at the eater's feet — the flat's floors only, where player.js
                        `isFree` with LIFE_MESS.margin says the visitor reaches, else `nearestFree`), a cut on the board (beside it on
                        the worktop), a slice out of the bread bag; dust now and then (`update`: one bit every dust.every s near a
-                       wall, at most dust.perRoom spots a room). A spot near another of its kind grows (merge); past `max` the
+                       wall, at most dust.perRoom spots a room). Dust candidates are rounded to the stored millimetre coordinates
+                       before room/free-space/wall checks (#849), so admission validates the actual saved and drawn position.
+                       A spot near another of its kind grows (merge); past `max` the
                        nearest grows instead: never unbounded, the draw calls fixed (perfcount's "mess cap" line). `take(x, z, r,
                        { level, y, rate, kinds, ok })` removes it (the vacuum, the cloth), events 'add' / 'take'. Saved by amount as
                        the life record's `x.mess` (keepPart). Off: LIFE.rules.mess = false or `&mess=0`; &life starts clean
+tools/messplacementtest.html native component regression (#849): actual Mess/Player methods in a controlled one-wall domain,
+                       with a real plan segment and explicit domain room, no main app/WebGL renderer. Fixed inputs to dust's
+                       existing rng callback check stored reachability/wall bounds/floor/room/mesh count at two quantization
+                       boundaries and an ordinary point; global randomness and random rotations are not replaced or asserted.
 tools/watertest.html   headless test: aim at every tap/shower, turn it on and off; at every basin wash the hands (#437: the menu,
                        rubbing, wet), the tap off next, dry them on the nearest towel (it swings), counted once; drying by itself
 tools/toilettest.html  headless test: flush both toilets (counted, not again until refilled), the lid still opens; mid-flush

@@ -495,7 +495,7 @@ mismatch; life2 has 137 identical PASS rows. This is not an all-migrated or spee
 | `laptoptest.html` | Logical parity (#823); full capture failed | All 13 ordered PASS rows and ALL PASS byte-identical, including texture v2→v8 and seeded clip order. Full ready 900×600 → native fullscreen 1280×800/controller null; test 480×300/real API/no fullscreen. Actual exit 0; `/tmp/runtests-496140/`. Full screenshot timed out; test-only image, exclude speedup aggregation. |
 | `laundrytest.html` | Retain original full (#823); real-time row differs | Complete 61 PASS / ALL PASS in both modes, but exact row 28 differs (left 26.50/ran 8.52 versus left 26.45/ran 5.04). Seven real documents per mode, original 480×300/full controller null versus test real API/no fullscreen. Actual compare exit 1; `/tmp/runtests-503245/`. No migration or speedup aggregation. |
 | `life2test.html` | Migrated (#823) | All 137 ordered PASS rows and ALL PASS byte-identical; six complete default sections/six actual removed frames per mode, all action/save/audit/timer/score diagnostics and optional filter preserved. Full ready 900×600/controller null (five later native fullscreen1280×800) → test480×300/real API/no fullscreen. 387.369s →403.815s, actual exit0, no speedup claim; `/tmp/runtests-513972/`. |
-| `life3test.html` | Original full retained (#824); independent dust bug #849 | Complete default six-app pair: full67 PASS/1 dust FAIL versus test68 PASS; exact differences at rows6/10/11. Native vacuum/cloth/bin/mess coverage retained; no migration or normalization. Actual evidence below. |
+| `life3test.html` | Original full retained (#824); dust admission fixed (#849) | Subsequent complete default fix-verification has68 PASS each; strict raw rows6/11 still differ, so no migration/normalization. Native boundary regression14 PASS/2 FAIL→16 PASS proves the separate admission/storage fix; old unrecorded failed spot remains unknown. Evidence below. |
 | `lifetest.html` | Original full retained (#824); independent fixture-contract bug #850 | Complete thirteen-app pair, whole7566-byte logs identical but red:132 PASS/1 eggCarton FAIL each. All original default flows/current assertions preserved; no migration from red equality. Actual evidence below. |
 | `lifttest.html` | Migrated (#824) | 24 identical ordered PASS rows, 0 FAIL; native original 800×500/full → 480×300/test. One actual main document per mode; lift.loadState is native state restoration, not an app reload. Doors/panel/collision/ride/stair predicates preserved; evidence below. |
 | `lighttest.html` | Full rendering | Pool/wash intensities, lamp fading and actual detail-culler visibility. |
@@ -2385,8 +2385,9 @@ below both viewport images; no app scene is retained. No dust/vacuum/cloth visua
 equivalence or qualified timing aggregation is claimed. Complete logs/summary:
 `/tmp/runtests-523326/`; frozen source/helper hashes, native phases, complete raw
 diffs, actual exit and images: `/tmp/lunden-life824/life3test/`. All frozen source
-blobs matched after the pair. LIFE disposition is documented below; #849 stays
-open as a separate bug, and #739/#736 remain open.
+blobs matched after the pair. LIFE disposition is documented below; subsequent
+#849 native component proof and complete product verification are documented
+separately below, without identifying this old failed spot. #739/#736 remain open.
 
 ## Tape measure complete native acceptance (#826, partial)
 
@@ -2457,8 +2458,8 @@ native phases, exact original-restoration proof, actual exit and images:
 
 All #824 dispositions are complete: lift's24 exact PASS rows support its small
 setup; LIFE3 retains original full after raw random/dust differences and #849;
-LIFE retains original full after identical red output and #850. Those bugs stay
-open independently; broader #739/#736 remain open.
+LIFE retains original full after identical red output and #850. The later #849
+admission/storage fix is documented separately; #850 and broader #739/#736 remain open.
 
 ## Miele complete default native acceptance (#826, partial)
 
@@ -2587,3 +2588,79 @@ seed, normalization or quality override was added. Migration changes only the
 iframe query and dimensions. Reversing those two lines reproduces the entire
 frozen original fixture; runtime source/data, runner and helper hashes match
 that pair's recorded base. Parent #740 and #736 remain open.
+<<<<<<< Updated upstream
+=======
+  f.width = 480; f.height = 300;
+  f.src = '../index.html?test';
+
+## Native dust placement admission (#849)
+
+`Mess.dust` now rounds candidate x/z with the existing millimetre `round()` before
+room/free-space/wall validation, matching the coordinates subsequently stored
+and drawn by `add()`. The clearance/wall thresholds, per-room/cap/merge rules,
+RNG calls per candidate and rejection loop are unchanged. The original complete
+`life3test.html` remains unchanged; this product fix is not a fixture migration.
+
+The old #824 dust failure has no recorded per-spot constituents. One original
+full diagnostic using the authored `only=388` filter completed both apps and
+all 15 section rows with PASS: all 32 stored dust spots satisfied floor, room,
+native free-space and wall criteria. A transparent wrapper observed only the
+32 calls naturally made by the unchanged predicate and restored method identity
+and ownership in `finally`. The failure did not reproduce; there was no retry,
+and no old failed spot or viewport/quality cause was identified. Actual exit 0,
+native phases and text-only PNG: `/tmp/runtests-555809/` and
+`/tmp/lunden-dust849/`. This filtered diagnosis is not default/migration proof.
+
+`messplacementtest.html` reproduces a separate admission/storage defect using
+actual Mess/Player methods in an explicit controlled one-wall domain: one
+verified segment from the current plan, no other furniture/doors/visited units,
+and a named domain room. No main app or WebGL renderer is created. Fixed inputs
+to the existing `dust(rng)` callback are regression data; global randomness and
+native random rotation are not replaced or asserted. With the unchanged native
+test source, current source `06adc19` produced 14 PASS/2 FAIL/exit 1: a reachable
+raw candidate at .0802 m was stored at .07990000000000003 m, below native
+.07999999999999999 m clearance; a near-wall raw candidate at .44999 m was stored
+at .45009999999999994 m, beyond the .45 m wall bound plus the fixture's 1e-6.
+The ordinary point and all floor/room/native mesh-count checks passed.
+
+After the minimal source fix, the identical 16 criteria/inputs produce 16 PASS,
+0 FAIL/ALL PASS/actual exit 0. Each rejected boundary candidate consumes its
+original three callback values before the next valid candidate is accepted
+(six total); the ordinary case still consumes three. Both genuine PNGs show
+all 16 rows/verdicts, with no apartment/scene claim. Complete raw/JSON/source,
+helper hashes and actual cleanup: `/tmp/runtests-558678/`,
+`/tmp/runtests-560475/`, `/tmp/lunden-dust849/component-before/` and
+`/tmp/lunden-dust849/component-after/`. All frozen component source/helper
+hashes matched; these controlled-domain failures do not identify the old
+unrecorded failed spot.
+
+One complete original default Life3 fix-verification pair at `4daabbb` plus the
+approved product patch ran all five sections/six actual apps per mode, without
+an only-filter, fixture edit or fullscreen guard. Both complete 68-row logs have
+68 PASS/0 FAIL/ALL PASS, including dust row 10 and the original vacuum, cloth,
+bin, cap/conservation, save/load and diagnostic flows. Strict comparison still
+exits 1: row 6 retains raw cut coordinates `5.46,2.09` versus `5.25,2.47`, and row
+11 retains different complete per-room dictionaries. Those unseeded values are
+not normalized or retried, and no exact migration parity is claimed.
+
+All twelve native app-ready documents have distinct matched URL/timeOrigins:
+full six ready900×600/controller false/no fullscreen; first two trusted pagehide
+snapshots remain900×600/no fullscreen, last four leave1280×800/native fullscreen.
+Test all six ready480×300 have real draw/setFull/wantsFrame functions, lazy/full
+false/no fullscreen; all six trusted pagehide snapshots remain480×300 but have
+native fullscreen active. No source guard was used; the public test context
+constrains that fullscreen viewport. Both final retained-frame arrays are empty,
+all cloud URLs empty, and there are no observer errors/warnings. Earlier runner
+null controllers remain explicit and are completed by these native snapshots.
+
+Actual elapsed full/test423.667/391.501 seconds includes final captures with the
+same60-second bound. Both saved PNGs were reviewed: full top~52 textual rows,
+test top~19 with right/bottom cropping; the dust PASS is visible, later rows and
+terminal verdicts are below both images and no scene remains. No dust, vacuum,
+cloth or apartment pixel proof or qualified timing aggregation is claimed.
+Complete ordered logs/summary: `/tmp/runtests-563581/`; frozen runtime/helper
+hashes, actual exit/cleanup, native ready/leave/final records, raw differences
+and images: `/tmp/lunden-dust849/default-pair/`. All230 frozen native/new-test
+blobs and three helper hashes matched after this pair. The original whole
+Life3 fixture remains full, while broader #739/#736 and independent #850 stay open.
+>>>>>>> Stashed changes
