@@ -1480,6 +1480,12 @@ document.addEventListener('wheel', (e) => { if (locked && !reading && choices.ro
 
 /** E / the action button on what you look at: doors toggle, the note opens. */
 function use(thing) {
+  if (thing.kind === 'ghost' && weaponKey()) { // focus may predate a weapon change (#872)
+    const held = heldItem();
+    if (!held && suit.worn) suit.shoot();
+    else held?.use(); // E/touch click is one use; pointer listeners own automatic trigger/release
+    return;
+  }
   if (thing.kind === 'rearrange') { rearrange.act(thing); return; }
   if (thing.kind === 'fusebox') { thing.power.use(); return; } // the power cut (#604): trip it, or mend it while held
   if (thing.visit) { visitUse(thing); return; } // a visited flat's door, window or lid (#574)
@@ -1619,14 +1625,14 @@ function click(button) {
   return 'e';
 }
 /** What a left click may do E on: the focus, but not the jetpack's "stand it down" (E's fallback with nothing in focus). */
-const clickTarget = () => (focused === jetpack.dropTarget || focused === suit.dropTarget ? null : focused);
+const clickTarget = () => (focused === jetpack.dropTarget || focused === suit.dropTarget || (focused?.kind === 'ghost' && weaponKey()) ? null : focused);
 /** Does a left click do E on what is in focus now (the prompt says "Klicka")? */
 const clickIsE = () => !!clickTarget() && !focused.blocked && !heldItem()?.clickIsUse;
 document.addEventListener('mousedown', (e) => { if (locked && (e.button === 0 || e.button === 2)) click(e.button); });
 document.addEventListener('contextmenu', (e) => { if (locked) e.preventDefault(); });
 document.addEventListener('mouseup', (e) => { if (e.button === 0) { heldItem()?.trigger?.(false); power.release(); } });
 // touch: holding the action button keeps the rifle firing (#196)
-actionBtn.addEventListener('pointerdown', () => { if (!focused && heldItem()?.trigger) heldItem().trigger(true); if (focused?.kind === 'fusebox' && !power.on) power.use(); }); // … and mending the fuse box (#604)
+actionBtn.addEventListener('pointerdown', () => { if ((!focused || (focused.kind === 'ghost' && weaponKey())) && heldItem()?.trigger) heldItem().trigger(true); if (focused?.kind === 'fusebox' && !power.on) power.use(); }); // … and mending the fuse box (#604)
 for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) actionBtn.addEventListener(ev, () => { heldItem()?.trigger?.(false); power.release(); });
 // touch: the remote's power button beside the action button while it is held
 const powerBtn = document.getElementById('power-btn');
@@ -1765,7 +1771,7 @@ function updateFocus() {
   // the car key only while its cabinet is open
   const extra = [...(cat.visible && !cat.held ? [cat.object] : []), ...(olof.waveable ? [olof.fig.pick] : []), ...(olofDriver.greetable(rest.active && rest.target?.car === car) ? [olofDriver.fig.pick] : []), ...(keyCabinet?.keyReachable ? [world.carKey.pickable] : []), ...car.targets(rest.target).map((t) => t.pickable), // our car's doors and front seats (#250)
     ...jetpack.targets(), // the jetpack on its hook / where it was stood down (#359)
-    ...ghosts.targets(), // the other players (#673): greet them
+    ...(!weaponKey() ? ghosts.targets() : []), // only unarmed visitors greet other players (#872)
     ...suit.targets(), // the Spider-Man suit in its drawer / where it was laid (#597)
     ...world.courtyardTargets.map((t) => t.pickable), // the courtyard's benches (#438): F keeps them
     ...(power.reachable ? [power.target.pickable] : []), // the fuse box while its cabinet is open (#604)
@@ -2222,6 +2228,7 @@ if (rifle) { const shot = rifle.onShot; rifle.onShot = () => { shot?.(); combat.
 // our avatar wave, with the line in a bubble over it. Points: SCORE.first.greets per player, once a session.
 const greetedPlayers = new Set();
 function greetPlayer(g) {
+  if (weaponKey()) return; // guard the current hand, including calls with an old target (#872)
   const line = ghosts.greet(g);
   if (!line) return;
   greet.sayMine(line);
