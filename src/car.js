@@ -253,7 +253,27 @@ export class Car {
     const yaw = this.object.rotation.y, fx = Math.cos(yaw), fz = -Math.sin(yaw);
     const dx = player.pos.x - this.object.position.x, dz = player.pos.z - this.object.position.z;
     const ahead = dx * fx + dz * fz, side = Math.abs(-dx * fz + dz * fx);
-    return ahead > 0 && ahead < C.l / 2 + 3 && side < C.w / 2 + 0.6;
+    // #915: the existing safety margin also needs the distance this speed takes
+    // to stop under the actual controller's 1.5*brake deceleration.
+    const stopping = this.speed ** 2 / (2 * C.brake * 1.5);
+    const reach = C.l / 2 + 3 + stopping, radius = C.w / 2 + 0.6;
+    if (this.path) {
+      // Follow the unchanged route through bends/reverse legs: a tangent cone can
+      // briefly lose the same obstacle during a turn and accelerate into it.
+      const { pts, len } = this.path, end = Math.min(this.total(), this.d + reach);
+      for (let k = 1; k < pts.length && len[k - 1] <= end; k++) {
+        if (len[k] <= this.d) continue;
+        const [ax, az] = pts[k - 1], [bx, bz] = pts[k], sx = bx - ax, sz = bz - az, length = len[k] - len[k - 1];
+        if (length < 1e-6) continue;
+        const lo = Math.max(0, (this.d - len[k - 1]) / length), hi = Math.min(1, (end - len[k - 1]) / length);
+        const projected = ((player.pos.x - ax) * sx + (player.pos.z - az) * sz) / (length * length);
+        if (len[k - 1] + projected * length <= this.d) continue; // behind current travel, as before
+        const u = Math.max(lo, Math.min(hi, projected));
+        if (Math.hypot(player.pos.x - ax - u * sx, player.pos.z - az - u * sz) < radius) return true;
+      }
+      return false;
+    }
+    return ahead > 0 && ahead < reach && side < radius;
   }
 
   update(dt, night, player) {

@@ -83,7 +83,10 @@ src/carmodel.js        car bodies from a side profile (#250, MEGANE: `top` / `be
                        `lite` (#251) = coarser (~5k triangles) for the parked cars (streetlife.js: paint / trim in vertex
                        colours / glass / tyres, instanced, a little variety in size)
 src/car.js             our white Renault Megane E-Tech (CAR, #173; the model from carmodel.js, #250). Olof drives it when called (#599, src/olof.js
-                       `OlofDriver`, see animals-audio.md). #358: it lives in its stall (7) in the
+                       `OlofDriver`, see animals-audio.md). #915: Player protection checks the existing upcoming route polyline rather than only the car's
+                       current tangent. The original clearance includes speed²/(2×actual controller deceleration), keeping the same obstacle in a bend/reverse leg
+                       and permitting a stop before it; vertical/lateral/behind exclusions remain. No route, original8m/s cruise/3m/s garage/brake2, parking or
+                       door logic changes. #358: it lives in its stall (7) in the
                        garage (state 'garage', `toGarage`; doors / seats work there too, `parked`); the key sends it OUT — it backs
                        out (`CAR.garage.reverse`, a cusp: `route` pieces, `revEnd`), the garage door opens for it (it waits / stops
                        short), up the drive, Karpvägen north, Sankt Lars väg east and on as before to our door; sent away it goes

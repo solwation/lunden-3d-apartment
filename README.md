@@ -8,6 +8,8 @@ På telefonen ligger laddningsskärmen kvar medan grafiken förbereds i små ste
 
 I rutan uppe till vänster visas antalet besökare över bildfrekvensen (FPS). FPS räknar visade 3D-bilder, uppdateras lugnt och visar ett streck när spelet är pausat eller dolt. Träfftexten håller sig fri från livsrutan även på små skärmar.
 
+Bilen stannar för spelare i sin körväg även i svängar och vid backning.
+
 **▶ Öppna: https://solwation.github.io/lunden-3d-apartment/**
 
 På insidan av koppskåpets lucka i köket sitter en **uppdragslapp** med tre frivilliga vardagsuppdrag: gör en macka, återställ köket och städa efter mellanmålet. Delarna kan göras i valfri ordning och framstegen sparas. Tips går att stänga av; ett klart uppdrag ger 30 poäng första gången och 5 poäng när du väljer **Gör igen**. Tomma sopkärl behöver inte tömmas. Soppåsarna lämnas i de tre behållarna längs portikväggen mot lägenheten.

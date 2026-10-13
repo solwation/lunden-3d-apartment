@@ -4179,3 +4179,19 @@ Bow grip component (#910): `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/bow
 #910 after-component acceptance: 32 PASS, zero FAIL/page errors, actual Node and monitor exit 0 in 1.219 s. All four 480×300/FOV72 images were inspected: the hand now closes at the modeled dark leather middle grip at rest, full pull, release and the moved/turned camera. Every paired before/after whole held-model matrix, string coordinates, nocked-arrow coordinates and visibility flag is exactly equal; only hand contact/curl changes. Before render was 26 PASS/exit 0 in 1.469 s. Renderer guards preserve original projection/layers and ancestry; gl.finish/results/source hashes precede captures and all eight tested source paths remain unchanged during each run. This is component rendering with plain background/lighting, not the apartment, physical device, network or persisted-save/reload acceptance; actual placement/dynbox home methods are checked natively and the unchanged firing/raycast paths are compared with independently loaded published 79a5749 Bow. Owned monitor/Node/Chromium/server processes were stopped. Source/result/image provenance: `/tmp/lunden-priority-910/{before-render,after-render}/`, `*-exit.json`, and `~/.local/state/lunden-orkester/20261013-priority/910-proof.json`.
 
 Final #910 rebase preserved #904 combat hit-marker configuration. Of eight recorded component source paths, only `src/config.js` differs, solely in unrelated hit-marker settings; BOW/HAND and all held-model/firing/hand/dispatch bytes remain unchanged. A final native repeat completed 29 PASS, actual exit 0, no errors/WebGL on the rebased checkout. No further render run was made. Published source step: 06dae34; final proof is path-specific rather than an all-source match.
+
+## Original-speed car protection (#915)
+
+Start a private devserve, then `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/carsafetytest.cjs BASE OUTPUT`.
+This loads actual Car/Player/GarageDoor/OlofDriver with real garage inside/terrain queries; the minimal controlled World only supplies Player's
+existing constructor collaborators. No apartment or WebGL. Player is stationary on the exact actual route at20m; simulation uses1/60s steps.
+Checks cover stop/hold/resume, vertical/lateral/near-behind exclusions, reverse garage, closed/actual-opening GarageDoor, unchanged clear timings,
+parking/braking, existing save/load including null default-garage sentinel, driver/passenger seats, greeting and close-before-departure.
+For the before control use `--baseline-car /path/to/frozen-original-car.js`; its condition explicitly checks crossing, not successful protection.
+The failure's original Car bytes match1b188d3/59d8689. Baseline24 checks and final26 checks passed with actual CLI0/no page errors/zeroWebGL.
+At original8/3/brake2, center separation changes0.025m/no stop→6.5216277m with a stop at3.0666667 simulated seconds, route distance13.4391667.
+Stationary hold stays exactly stopped; moving the actual Player away releases it. Exact path/timing/park records match: clear street15.75s and
+full garage62.1333333s. These are controller-simulation observations, not CPU/GPU/FPS or physical-driver measurements.
+Artifacts `/tmp/lunden-car915-surface/{baseline,final2}` include rawJSON/source hashes, actual exits and inspected text-only nativePNG; they are not
+rendered gameplay pictures. The first candidate allowed a nearby behind-player to block forward travel; final projected-distance exclusion corrected
+that regression without weakening the original behind assertion. No sign, speed, main, model, Olof/shared skeleton/pose or head-contact edits.
