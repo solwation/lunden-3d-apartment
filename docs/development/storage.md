@@ -311,3 +311,13 @@ return body1. The additive Worker must deploy before head-capable clients for li
 benefit. No new timer/KV write or persisted contact history is added. Older room
 attachments without `movedAt` conservatively stay body-only until a position or
 heading state change provides an observed timestamp.
+
+#897 delivery acceptance: runtime `18f8fd0` passed20 actual Worker Node tests and
+19 native checks after integrating #891's suit, with zero errors/WebGL and the
+reviewed authoritative-marker/HUD PNG. All250 frozen runtime/server/index/fixture
+paths remained byte-identical through the final rebase (incoming only other docs
+and #902 PNG). The genuine Worker deployment run38417835953/job115366906831,
+including `Run cloudflare/wrangler-action@v3`, completed successfully; Pages
+run38417835821 also succeeded. This verifies publication of the additive server
+contract, not a new physical-device gameplay test. #897 closes only this restricted
+central style0 slice; #892/#879/#874 and #898/#899's remaining head surfaces stay open.
