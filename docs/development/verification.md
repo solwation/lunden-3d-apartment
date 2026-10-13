@@ -548,7 +548,7 @@ no executable fixture changes or new browser results are part of this audit.
 | `papertest.html` | Accepted in #830 | Complete original full/test logs byte-identical, all 22 ordered PASS; full starts 900×600/null and finishes native fullscreen 1280×800, test remains 480×300/real APIs. Whole roll/strip/wad/ray/quantity/flush/stats/F flows retained; full capture timed out. |
 | `patiopalmtest.html` | Accepted in #831 | Complete original full/test logs byte-identical, all 15 ordered PASS; actual 720×480/null controller versus 480×300/real APIs. Whole pot/soil/ray/bump/wind/canopy/collision/native geometry predicates retained, 10632 triangles/2.62 m canopy. |
 | `patiotest.html` | Accepted in #831 | Complete original full/test logs byte-identical, all 33 ordered PASS; actual900×600/null versus480×300/real APIs. Whole season/weather/collision/seat/shade/lid/cup native loops and original optional parent shot branch retained. |
-| `pctest.html` | Candidate | Actual PC/game/rest interaction and monitor state. |
+| `pctest.html` | Accepted in #831 | Complete original full/test logs byte-identical, all 9 ordered PASS; actual900×600/null versus480×300/real APIs. Current screen CanvasTexture/fan-colour, chair/bunk actions and yaw/facing predicates retained; capture coverage differs. |
 | `perfcount.html` | Explicit performance exclusion (#736) | Actual renderBufferDirect screen calls/triangles, shadow/mirror/env passes and texture-memory budgets. |
 | `pettest.html` | Original full retained (#832) | Actual complete two-live-app pair: 17 PASS per mode; full/test badge row differs by room prefix. Native pet/hand/eyes/photo JPEG/IndexedDB/stats/rare stars and all unseeded values retained; see actual evidence below. |
 | `planttest.html` | Candidate | Actual plant/item ray-actions, placement, ownership and reset. |
@@ -3459,8 +3459,7 @@ the final near apartment facade, while test clips long rows right and the canvas
 below its upper strip. Neither is a directed Palm image; no leaf/material/palm
 or rendered-scene pixel equivalence is claimed. Wall 108.851 s and 83.638 s
 includes both successful captures; excluded from qualified speedup aggregation
-because capture coverage differs. Patio acceptance follows below; PC remains pending its separate complete
-pair; #831/#740/#736 stay open.
+because capture coverage differs. Patio acceptance follows below; PC acceptance follows below; parents #740/#736 stay open.
 
 ## Patio complete native acceptance (#831, partial)
 
@@ -3491,4 +3490,35 @@ only top~18 rows with right crop and no scene/late checks. Complete raw logs
 preserve all33 rows. No intermediate seasonal/string-light/shade or rendered-
 scene pixel equivalence is claimed. Wall113.105s and79.045s includes both saved
 captures; excluded from qualified speedup aggregation because coverage differs.
-PC remains pending; #831/#740/#736 stay open.
+PC acceptance follows below; parents #740/#736 stay open.
+
+
+## Gaming PC native acceptance (#831, final)
+
+On frozen `1e4bd17c0770ae83fe26b25b57b129ec8a069aca`, the complete original
+900×600/plain index and 480×300/test flows produced identical 445-byte logs:
+all nine ordered PASS and ALL PASS, actual monitor exit 0. Original PC button,
+actual screen CanvasTexture-version and fan-colour changes, dark-screen/off,
+chair/bunk seat actions, native monitor yaw0.02/facing1.000 and stand-up state
+remain unchanged. Original matrices, waits, loops and uncaught exceptions are
+retained; no new seed, normalization or quality override.
+
+One actual ready/final document per mode retains stable URL/timeOrigin:
+900×600/null controller versus480×300/real draw/setFull/wantsFrame APIs,
+lazy/full false, no fullscreen and empty cloud query. The approved single
+undefined requestFullscreen guard applies only with actual testMode before
+original touch; full-mode behavior remains unchanged. Query/dimension inverse
+reproduces the whole frozen guarded fixture; removing only that guard reproduces
+whole original/current HEAD. Native227 source/data/index paths, fixture/runner
+and all three helper hashes match the recorded base. Evidence:
+`/tmp/runtests-658034` and `/tmp/lunden-patio831/pctest`.
+
+Both inspected PNGs show all nine vertical result rows and ALL PASS. Full shows
+the final game/PC/bedroom display rack/HUD; test clips long rows right and retains
+only the upper scene. No intermediate film/seat/fan or rendered-scene pixel
+equivalence is claimed. Wall119.928s and77.898s includes both successful captures;
+excluded from qualified speedup aggregation because capture coverage differs.
+
+All bounded #831 dispositions are complete: Palm15, Patio33 and PC9 ordered
+PASS per mode with whole byte-identical logs. Their distinct frozen bases and
+native/capture limits are retained above. Parents #740/#736 remain open.
