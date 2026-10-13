@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { GHOSTS as G, COMBAT, AVATAR, CHAT } from './config.js';
 import { Avatar, armTarget } from './avatar.js';
 import { totalScore } from './stats.js';
-import { acquireBadge, releaseBadge, badgeScore } from './ghostbadge.js';
+import { acquireBadge, releaseBadge, badgeScore, badgeLives } from './ghostbadge.js';
 import { setMirrorExtra } from './reflections.js';
 
 // Other players as ghosts (#666): a WebSocket to the Worker's players' room (cloudflare/players.js, one Durable Object for
@@ -111,10 +111,11 @@ class Ghost {
     this.root.add(this.avatar.object);
     if (!self) {
       this.badge = acquireBadge(this.name, 0);
-      this.score = 0;
+      this.score = 0; this.lives = null;
       this.tag = new THREE.Sprite(this.badge.material);
       this.tag.scale.set(G.tagWidth, G.tagHeight, 1);
-      this.tag.position.y = G.tagY + (this.avatar.look.tall - 1) * 1.8; // (above the head of a taller / shorter avatar)
+      this.tagY = G.tagY + (this.avatar.look.tall - 1) * 1.8;
+      this.tag.position.y = this.tagY; // (above the head of a taller / shorter avatar)
       this.root.add(this.tag);
       // what the look ray hits to greet it (#673; main.js, an invisible box round the body: the raycaster ignores `visible`)
       this.pick = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.8, 0.6), pickMat);
@@ -131,20 +132,29 @@ class Ghost {
   }
 
   /** A state from the room at time t (ms). After a pause the last one is repeated just before it, so it walks off smoothly. */
-  push({ p, r, h = '', score = 0 }, t) {
-    score = badgeScore(score);
-    if (this.badge && score !== this.score) {
-      const previous = this.badge;
-      this.badge = acquireBadge(this.name, score);
-      this.tag.material = this.badge.material;
-      this.score = score;
-      releaseBadge(previous);
-    }
+  push({ p, r, h = '', score = 0, l }, t) {
+    this.score = badgeScore(score);
+    this.lives = badgeLives(l); // never infer remote health from a client's default maximum
     this.setHeld(h);
+    this.refreshBadge();
     const last = this.snaps.at(-1);
     if (last && t - last.t > 1000 / G.hz * 1.5) this.snaps.push({ t: t - 1000 / G.hz, p: last.p, r: last.r });
     this.snaps.push({ t, p: new THREE.Vector3(...p), r });
     if (this.snaps.length > 8) this.snaps.splice(0, this.snaps.length - 8);
+  }
+
+  /** One cached sprite: lives only during the existing armed-vs-armed encounter. */
+  refreshBadge() {
+    if (!this.badge) return; // local reflection has no label
+    const lives = this.solid && this.h ? this.lives : null;
+    if (this.badge.score === this.score && this.badge.lives === lives) return;
+    const previous = this.badge;
+    this.badge = acquireBadge(this.name, this.score, lives);
+    this.tag.material = this.badge.material;
+    const height = G.tagHeight * this.badge.height / 64;
+    this.tag.scale.y = height;
+    this.tag.position.y = this.tagY + (height - G.tagHeight) / 2; // name/score keep their original world positions
+    releaseBadge(previous);
   }
 
   /** A weapon in the hand (#667): the prop follows the avatar's right hand (the jetpack sits on the back). */
@@ -170,6 +180,7 @@ class Ghost {
     if (on === this.solid) return;
     this.solid = on;
     this.avatar.setSolid(on, COMBAT.solid);
+    this.refreshBadge();
   }
 
   /** Where its body is now (world): feet and the top of the hit capsule. */
@@ -469,7 +480,7 @@ export class Ghosts {
 
   /** For tests: what is shown. */
   list() {
-    return [...this.others.values()].map((g) => ({ id: g.id, name: g.name, score: g.score, visible: g.root.visible, tag: g.tag.visible,
+    return [...this.others.values()].map((g) => ({ id: g.id, name: g.name, score: g.score, lives: g.lives, lifeShown: g.badge.lives !== null, visible: g.root.visible, tag: g.tag.visible,
       pos: g.root.position.toArray().map((v) => Math.round(v * 100) / 100), opacity: g.solid ? COMBAT.solid : AVATAR.fill, outline: !g.solid, speed: Math.round(g.speed * 100) / 100, h: g.h, solid: g.solid }));
   }
 }

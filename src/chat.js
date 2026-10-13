@@ -222,7 +222,7 @@ export class Chat {
       if (!g || g !== b.ghost || b.t <= 0) { this.unbubble(id); continue; }
       tmp.copy(g.root.position);
       const tagY = g.tag?.position.y ?? GHOSTS.tagY; // (#705: the tag sits over a taller / shorter avatar's head)
-      tmp.y += tagY + GHOSTS.tagHeight / 2 + CHAT.bubbleGap;
+      tmp.y += tagY + (g.tag?.scale.y ?? GHOSTS.tagHeight) / 2 + CHAT.bubbleGap;
       const d = tmp.distanceTo(eye);
       tmp.project(this.camera);
       const off = this.hidden || !this.available || !g.root.visible || (g.tag && !g.tag.visible) || tmp.z > 1 || Math.abs(tmp.x) > 1.1 || Math.abs(tmp.y) > 1.1 || this.behind(g.root.position.clone().setY(g.root.position.y + tagY));

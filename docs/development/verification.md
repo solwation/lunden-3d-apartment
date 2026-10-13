@@ -3889,3 +3889,10 @@ All bounded #832 dispositions are complete: Pet retains original full after
 17 PASS per mode but one raw badge mismatch; Plant and Portik accept identical
 23/36 PASS pairs respectively. No production/runner/baseline fix is included.
 Parents #740/#736 remain open.
+
+
+## Opponent lives (#865)
+
+Start `python3 tools/devserve.py 8851 .` and `node cloudflare/dev.mjs 8852`, then `PLAYWRIGHT_MODULE=/path/to/playwright CHROME_PATH=/path/to/chrome node tools/ghostlivestest.cjs http://localhost:8851 http://localhost:8852 /tmp/ghost-lives`. The default uses actual Ghosts/Combat and three WebSocket clients with native 2D textures, blocks WebGL, and suppresses only the apartment bootstrap. It checks authoritative damage, observer pickup, both weapon removals, death/reset, reconnection/departure, nondefault/invalid counts and cached resource release. It preserves existing combat participant rules and reports page errors. `node --test cloudflare/players.test.mjs` also covers forged client lives, late welcome, hibernation and generic server publication.
+
+Optional `--render` adds one small controlled actual Ghosts/Three scene after the native checks, with desktop/phone-size armed and phone-size unarmed captures; it requires an exclusive graphics slot. It never boots the apartment. Native texture captures are not rendered-game evidence, and phone-size Chromium images are not a physical iPhone acceptance or performance measurement.
