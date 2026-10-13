@@ -305,7 +305,8 @@ export class Items {
     const items = this.all().map((i) => {
       const e = { id: i.id, type: i.type, place: clonePlace(i.place) };
       if (i.amount !== (this.defs[i.type]?.amount ?? 1)) e.amount = i.amount; // (#387: compact — a default amount and a home that is the place are left out; create() gives them back)
-      for (const k of ['pkg', 'prep', 'clean', 'moisture']) if (i[k] !== null && i[k] !== undefined) e[k] = i[k];
+      // create() restores type defaults, just as it restores a default amount.
+      for (const k of ['pkg', 'prep', 'clean', 'moisture']) if (i[k] !== null && i[k] !== undefined && i[k] !== this.defs[i.type]?.[k]) e[k] = i[k];
       if (i.toasted) e.toasted = true;
       if (Object.keys(i.machine).length) e.machine = { ...i.machine };
       if (i.home && !(i.place?.at === 'slot' && samePlace(i.home, i.place))) e.home = clonePlace(i.home);

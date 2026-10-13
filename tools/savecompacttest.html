@@ -1,0 +1,82 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Compact save roundtrips #845</title>
+<pre id="out">running…</pre>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"}}</script>
+<script type="module">
+// Independent native data-module regression: controlled world places and a Life
+// event/keepPart adapter, no apartment, renderer, audio gesture or score award.
+import { Items } from '../src/items.js';
+import { ITEMS } from '../src/config.js';
+import { TasksManager } from '../src/tasks.js';
+const lines = []; let pass = true;
+const check = (ok, text) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${text}`); pass &&= !!ok; };
+const json = JSON.stringify, own = (o, k) => Object.hasOwn(o, k);
+const at = x => ({ at: 'world', pos: [x, 0, 0], yaw: 0 });
+const state = manager => ({ elapsed: manager.elapsed, tasks: manager.tasks.map(t => ({
+  id: t.id, goals: [...t.completedGoals], completions: t.completions, readyAt: t.readyAt,
+  done: t.isDone, shown: t.shown, active: t.active, placedBird: t.placedBird,
+  grilledBird: t.grilledBird, replenished: t.replenished, failed: t.failed,
+})) });
+const manager = () => new TasksManager({ life: { keepPart() {}, emit() {}, items: new Items(ITEMS) } });
+try {
+  const items = new Items(ITEMS);
+  Object.keys(ITEMS).forEach((type, n) => check(!!items.create(type, at(n)), `native default ${type} created`));
+  const saved = items.serialize(), restored = new Items(ITEMS);
+  restored.load(saved);
+  check(json(items.all()) === json(restored.all()), 'all item type defaults roundtrip with every native property');
+  check(saved.items.every(e => ['pkg', 'prep', 'clean', 'moisture'].every(k => !own(e, k))), 'type-default flags omitted from compact record');
+  const changed = new Items(ITEMS);
+  changed.create('butter', at(1), { amount: 185, pkg: 'open' });
+  changed.create('cucumber', at(2), { amount: 280, prep: 'sliced' });
+  changed.create('plate', at(3), { clean: 'used' });
+  changed.create('laundryClothes', at(4), { clean: 'clean', moisture: 'wet', machine: { left: 12 } });
+  const changeRecord = changed.serialize(), changedAgain = new Items(ITEMS); changedAgain.load(changeRecord);
+  check(json(changed.all()) === json(changedAgain.all()), 'changed quantities/package/preparation/cleanliness/moisture/machine roundtrip');
+  check(changeRecord.items[0].pkg === 'open' && changeRecord.items[1].prep === 'sliced'
+    && changeRecord.items[2].clean === 'used' && changeRecord.items[3].moisture === 'wet', 'nondefault item flags retained explicitly');
+  const legacyItems = { ...saved, items: items.all().map(i => ({ ...saved.items.find(e => e.id === i.id),
+    pkg: i.pkg, prep: i.prep, clean: i.clean, moisture: i.moisture })) };
+  const legacyAgain = new Items(ITEMS); legacyAgain.load(legacyItems);
+  check(json(items.all()) === json(legacyAgain.all()), 'old explicit item flags remain readable');
+  const tasks = manager(), fresh = tasks.save(), freshAgain = manager(); freshAgain.load(fresh);
+  check(json(state(tasks)) === json(state(freshAgain)), 'untouched tasks restore goals/pool/visibility/timing exactly');
+  check(Object.keys(fresh.tasks).length === 0, 'untouched per-task defaults omitted without losing pool');
+  const legacy = { ...fresh, tasks: Object.fromEntries(tasks.tasks.map(t => [t.id, {
+    goals: [], completions: 0, readyAt: 0, done: false, placedBird: null,
+    grilledBird: null, replenished: false, failed: false,
+  }])) };
+  const legacyTasks = manager(); legacyTasks.load(legacy);
+  check(json(state(tasks)) === json(state(legacyTasks)), 'old explicit version2 task defaults remain readable');
+  const progress = manager(); progress.elapsed = 20;
+  const sandwich = progress.tasks.find(t => t.id === 'makeSandwich'); sandwich.completedGoals.add('prep');
+  const hall = progress.tasks.find(t => t.id === 'tidyHall'); hall.shown = true; hall.readyAt = 200;
+  const bird = progress.tasks.find(t => t.id === 'grillChicken');
+  bird.shown = true; bird.failed = bird.isDone = true; bird.readyAt = 200;
+  bird.completions = 0; bird.placedBird = bird.grilledBird = 'chicken#4'; bird.replenished = true;
+  const cycle = progress.save(), cycleAgain = manager(); cycleAgain.load(cycle);
+  check(json(state(progress)) === json(state(cycleAgain)), 'partial goals/hidden discovery/chicken failure/cooldown/ids/replenishment roundtrip');
+  check(cycle.tasks.grillChicken.completions === 0, 'completed task explicit zero count retained against load fallback');
+  // A completed task may intentionally have deadline zero. Fill active slots so
+  // native refill does not recycle it when loading; the zero must remain zero.
+  const zero = manager(), z = zero.tasks.find(t => t.id === 'grillChicken');
+  z.shown = true; z.failed = z.isDone = true; z.readyAt = 0; z.completions = 0;
+  const zeroRecord = zero.save(), zeroAgain = manager(); zeroAgain.load(zeroRecord);
+  check(zeroRecord.tasks.grillChicken.readyAt === 0 && json(state(zero)) === json(state(zeroAgain)), 'completed task explicit zero deadline/count preserved');
+  // load derives completion from goals even if a transient done flag is stale.
+  const goalOnly = manager(), g = goalOnly.tasks.find(t => t.id === 'grillChicken');
+  g.shown = true; g.goals.forEach(goal => g.completedGoals.add(goal.id));
+  const goalRecord = goalOnly.save(), goalAgain = manager(); goalAgain.load(goalRecord);
+  const loadedGoal = goalAgain.tasks.find(t => t.id === 'grillChicken');
+  check(goalRecord.tasks.grillChicken.completions === 0 && goalRecord.tasks.grillChicken.readyAt === 0
+    && loadedGoal.isDone && loadedGoal.completions === 0 && loadedGoal.readyAt === 0,
+    'goal-derived completion preserves explicit zeros against load inference');
+  const v1 = manager(); v1.load({ v: 1, elapsed: 12, goals: { makeSandwich: ['prep'] } });
+  check(v1.tasks.find(t => t.id === 'makeSandwich').completedGoals.has('prep'), 'version1 task progress migration remains readable');
+  const corrupt = manager(); corrupt.load({ v: 2, elapsed: NaN, tasks: { makeSandwich: {
+    goals: ['prep', 'unknown'], completions: -3, readyAt: -10, placedBird: 7, grilledBird: 'other',
+  } } });
+  const c = corrupt.tasks.find(t => t.id === 'makeSandwich');
+  check(corrupt.elapsed === 0 && json([...c.completedGoals]) === '["prep"]' && c.completions === 0
+    && c.readyAt === 0 && c.placedBird === null && c.grilledBird === null, 'corrupt task fields keep existing tolerant defaults');
+} catch (error) { check(false, error.stack); }
+document.getElementById('out').textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+</script></html>

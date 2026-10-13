@@ -252,8 +252,24 @@ export class TasksManager {
   }
 
   save() {
+    // load() reconstructs untouched task fields; retain every changed field and
+    // explicit zero counters/deadlines on completed tasks (their load defaults differ).
+    const tasks = {};
+    for (const t of this.tasks) {
+      const state = {};
+      const completed = t.isDone || t.failed || t.goals.every(g => t.completedGoals.has(g.id));
+      if (t.completedGoals.size) state.goals = [...t.completedGoals];
+      if (t.completions || completed) state.completions = t.completions;
+      if (t.readyAt || completed) state.readyAt = t.readyAt;
+      if (t.isDone) state.done = true;
+      if (t.placedBird !== null) state.placedBird = t.placedBird;
+      if (t.grilledBird !== null) state.grilledBird = t.grilledBird;
+      if (t.replenished) state.replenished = true;
+      if (t.failed) state.failed = true;
+      if (Object.keys(state).length) tasks[t.id] = state;
+    }
     return { v: 2, elapsed: this.elapsed, active: this.activeTasks().map((t) => t.id), shown: this.shownIds(),
-      tasks: Object.fromEntries(this.tasks.map((t) => [t.id, { goals: [...t.completedGoals], completions: t.completions, readyAt: t.readyAt, done: t.isDone, placedBird: t.placedBird, grilledBird: t.grilledBird, replenished: t.replenished, failed: t.failed }])) };
+      tasks };
   }
 
   load(record) {

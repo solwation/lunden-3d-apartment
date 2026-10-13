@@ -3018,3 +3018,64 @@ poster or rendered-scene pixel equivalence is claimed. Wall 162.368 s and
 121.823 s includes both successful captures; this pair is excluded from speedup
 aggregation because capture coverage differs. Oven and paper remain pending
 separate complete pairs; #830/#740/#736 remain open.
+
+## Lossless compact world records (#845)
+
+`Items.serialize()` now omits only package/preparation/cleanliness/moisture
+values equal to their type defaults, which `create()` already restores.
+`TasksManager.save()` omits untouched per-task defaults while retaining all
+changed fields, top-level pool/visibility/time, and explicit zero counters and
+deadlines when completion or failure changes the load fallback. Readers remain
+unchanged and accept earlier version 1/2 records. The original world-size
+assertion remains `< 6000`; no rounding, truncation or threshold increase.
+
+The original full-mode diagnostic on frozen `8ad5bc7` (runner 592892) measured
+7090 UTF-16 code units and failed the size assertion. It later timed out at the
+original 20-minute bound: its raw log has 39 PASS and one FAIL, not a completed
+44-check verdict. The last capture contains an additional late plate check.
+This failed history remains in `/tmp/lunden-world845` and
+`/tmp/runtests-592892`. An offline native data-module reconstruction of that
+actual snapshot reduces 7090 to 5723 code units and preserves all 37 items and
+task state; permissive storage/event adapters make this a serialization proof,
+not an apartment-placement or reload measurement.
+
+The new standalone `tools/savecompacttest.html` uses real Items/Tasks classes
+with disclosed Life event/storage adapters and no renderer. Its initial
+39-check body gave 37 PASS/2 FAIL against the old serializers and 39 PASS after
+the fix. The final 40-check body adds goal-derived completion with explicit
+zeros and passed all 40 natively (probe 615265, exit 0). Default fields for all
+26 item types, changed flags/amounts/machine data, old explicit records, pool,
+partial goals, failure/replenishment, deadlines and tolerant migration are covered.
+
+Unchanged whole `taskstest.html` and `itemstest.html` passed all 96 and 64 checks
+respectively in one public written run (runner 612056, exit 0). Actual children
+were test-mode 480×300 with real draw/setFull/wantsFrame APIs and no fullscreen,
+despite normal parent viewport and helper filename `full`. Their complete PNGs
+were inspected. The later goal-derived completion safeguard was added after
+these two regressions and covered by the new 40th module check and the complete
+world acceptance below; no claim that their frozen task hash includes that
+later change.
+
+Complete world acceptance used one public written run, runner 615882, on
+`0d2e7f6` plus the final serializers and a temporary fixture setup. Every
+original assertion, action, record, timer, branch, size threshold and all 44
+checks remained. Setup alone changed child dimensions to 480×300, appended
+`test` to the original queries and suppressed fullscreen only with actual
+testMode before original touch activation. All 44 PASS and ALL PASS were
+recorded, exit 0, 05:39:51–05:57:52 UTC. The native record measured 5713 UTF-16
+code units (the existing label says bytes). All 16 actual document identities
+have native pagehide and 15 pre-remove snapshots; 14 have app-ready snapshots
+and the F5 source has beforeunload. All observed children retain their actual
+URLs/timeOrigins, 480×300, real controller APIs and no fullscreen. No trusted
+lifecycle flag or lazy/full telemetry was recorded by these helpers. All frames
+were removed by the fixture before the final empty-frame snapshot.
+
+All 229 frozen source/fixture/runner SHA-256 hashes and three helper hashes
+were independently verified before restoring the whole original 900×600/full
+fixture byte-for-byte. The full-page PNG was inspected: all 44 rows and ALL
+PASS are visible, with no retained scene. Logs, helpers, source hashes,
+monitor and capture remain in `/tmp/lunden-world845/reload-written` and
+`/tmp/runtests-615882`. This single temporary test-mode acceptance proves the
+fix across the complete reload flow; it is not a new full/test comparison,
+pixel-equivalence result or eligible speedup sample. The original full fixture
+is retained under its earlier #842 disposition.
