@@ -4580,6 +4580,9 @@ export const PVP_RIFLE_HEAD = {
   patch: { across: .008, low: .148, high: .158 }, // *guess* canonical support core; actual positive/negative nearest-surface grid checks it
   // #932: conservative side support policy guesses; actual posed nearest-surface/whole-cell/occlusion grids required.
   lateralPatch: { across: [.075, .105], vertical: [.085, .112], front: [.036, .09], directionZ: .18, directionY: .05, originSide: .3 },
+  // #938: conservative *guess* inside the existing lateral policy; actual immutable-standing Ghosts pose/cell fixture.
+  // Only the left temple (positive model x), with authoritative never-changed p/r/c history, can reopen after greeting.
+  greetingLeftPatch: { vertical: [.096, .104], front: [.065, .075] },
   // .001 derives from sqrt(3)/2000 maximum r3 contact error on the already-snapped o:r2/d:r3 ray.
   // Head anchor is the midpoint of existing bind1.54 / settled1.52; surface/pose limits are conservative *guess*
   // safeguards checked by the actual native fixture, not model measurements or guaranteed anti-cheat physics.
@@ -4630,14 +4633,16 @@ export function rifleProfileEntry(triangles,seed,state,origin,direction) {
   return Number.isFinite(first)?first:null;
 }
 /** Seed/model/ray proof for this bounded surface; no trusted client damage/head or model override. */
-export function rifleHeadContact(seed,state,shot,shooterFeet,range,maxOrigin,allowLateral = true,allowFront = true,allowRear = true) {
+export function rifleHeadContact(seed,state,shot,shooterFeet,range,maxOrigin,allowLateral = true,options = true,legacyRear = true) {
+  // Compatibility with published #931/#936 positional front/rear callers; new server additions use named options.
+  if(options===null||typeof options!=='object')options={allowFront:options,allowRear:legacyRear};
   const H=PVP_RIFLE_HEAD,{hc,o,d}=shot;
   if(!Number.isFinite(range)||!Number.isFinite(maxOrigin)||shot.t!=='a'||shot.w!=='rifle'||!hc||hc[0]!==H.version||state.c)return false;
   if(Math.hypot(...o.map((v,i)=>v-shooterFeet[i]))>maxOrigin)return false;
   const length=Math.hypot(...d),unit=d.map(v=>v/length),delta=hc.slice(1).map((v,i)=>v-o[i]),along=delta.reduce((s,v,i)=>s+v*unit[i],0);
   if(along<0||along>range||Math.hypot(...delta.map((v,i)=>v-along*unit[i]))>H.wireMetres)return false;
   const jaw=rifleJawRegion(seed,state,hc.slice(1),o,d),nose=rifleNoseRegion(seed,state,hc.slice(1))||rifleNoseExtraRegion(seed,state,hc.slice(1));
-  if(!jaw && !nose && !rifleHeadRegion(seed,state,hc.slice(1),o,d,allowLateral,allowFront,allowRear))return false;
+  if(!jaw && !nose && !rifleHeadRegion(seed,state,hc.slice(1),o,d,allowLateral,options))return false;
   const front=jaw ? rifleJawEntry(seed,state,o,d) : nose ? rifleNoseEntry(seed,state,o,d) : rifleSkullEntry(seed,state,o,d);
   return front!==null&&Math.abs(front-along)<=(jaw ? H.jawPatch.surface : nose ? H.nosePatch.surface : H.surfaceMetres);
 }
@@ -4689,7 +4694,7 @@ export function rifleHeadFrontRegion(seed,state,point,origin,direction) {
 }
 
 // Shared dispatch: #916 owns the central core; #917 can add its independent extra-region branch here.
-export function rifleHeadRegion(seed,state,point,origin,direction,allowLateral = true,allowFront = true,allowRear = true) { return rifleHeadCoreRegion(seed,state,point,origin,direction) || (allowRear && rifleHeadRearRegion(seed,state,point,origin,direction)) || (allowFront && rifleHeadFrontRegion(seed,state,point,origin,direction)) || (allowLateral && rifleHeadLateralRegion(seed,state,point,origin,direction)); }
+export function rifleHeadRegion(seed,state,point,origin,direction,allowLateral = true,options = true,legacyRear = true) { if(options===null||typeof options!=='object')options={allowFront:options,allowRear:legacyRear}; return rifleHeadCoreRegion(seed,state,point,origin,direction) || ((options.allowRear === undefined || options.allowRear) && rifleHeadRearRegion(seed,state,point,origin,direction)) || ((options.allowFront === undefined || options.allowFront) && rifleHeadFrontRegion(seed,state,point,origin,direction)) || (allowLateral && rifleHeadLateralRegion(seed,state,point,origin,direction)) || (options?.allowGreetingLeft === true && rifleHeadGreetingLeftRegion(seed,state,point,origin,direction)); }
 
 /** Exposed lower rear skull only, with the same snapped ray as the actual native contact. */
 export function rifleHeadRearRegion(seed,state,point,origin,direction) {
@@ -4734,6 +4739,15 @@ export function rifleHeadLateralRegion(seed,state,point,origin,direction) {
   const dx=(c*direction[0]-s*direction[2])/n,dy=direction[1]/n,dz=(s*direction[0]+c*direction[2])/n;
   const ox=(c*(origin[0]-state.p[0])-s*(origin[2]-state.p[2]))/width;
   return lx*dx<0&&lx*ox>0&&Math.abs(ox)>=L.originSide&&Math.abs(dz)<=L.directionZ&&Math.abs(dy)<=L.directionY;
+}
+
+/** #938: left only, inside the original ray/profile guard; eligibility belongs to the server attachment, not the wire. */
+export function rifleHeadGreetingLeftRegion(seed,state,point,origin,direction) {
+  if(!rifleHeadLateralRegion(seed,state,point,origin,direction))return false;
+  const H=PVP_RIFLE_HEAD,L=H.greetingLeftPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
+  const [x,y,z]=point.map((v,i)=>v-state.p[i]);
+  const lx=(c*x-s*z)/width,ly=y/look.tall-H.headY,lz=(s*x+c*z)/width,e=H.wireMetres/width,ey=H.wireMetres/look.tall;
+  return lx>0&&ly-ey>=L.vertical[0]&&ly+ey<=L.vertical[1]&&lz-e>=L.front[0]&&lz+e<=L.front[1];
 }
 
 

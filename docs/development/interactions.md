@@ -887,3 +887,9 @@ rejected greetings do not set gt; a genuinely new socket starts fresh. Core/nose
 remain independent. Safe rear2HP after an accepted greeting remains #941, so the
 full #936 parent stays open. This is a bounded safety fix, not full animated-world
 intersection validation.
+
+### Left temple after a greeting with immutable standing pose (#938)
+
+A narrow left temple can additionally be confirmed after greeting only when the target's first valid state was standing and its normalized position, yaw and crouch state have never changed on that socket. The left (positive model-x) subregion stays inside the existing lateral ray, shape and 15mm entry guards; its named `greetingLeftPatch` vertical/front bounds are conservative game-policy guesses, tested against the actual unchanged Avatar/Ghosts family. The ordinary nearest-skinned-face client path still rejects a nearer arm, hair or face. The waving right side and any changed/crouched/legacy target retain #932's permanent post-greeting lateral fallback. Other head regions are independent.
+
+This does not infer when a wave ends: paused and repeated waves remain possible. Held-weapon/suit/score changes alone preserve the history because they do not move the standing body/head; actual held-rifle and saber-swing poses are in the native verification. #935 remains open for the remaining after-greeting lateral family. There is no new geometry, animation clock, wire field, damage counter or rendering work.

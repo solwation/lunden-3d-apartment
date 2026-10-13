@@ -189,3 +189,5 @@ Dyra browserprov sparar avslutade delresultat före bilder, med källhashar och 
 Gevärsträffar på verifierade främre sidoceller av spelarfigurens näsa kan också
 ge dubbel skada. Täckta, osäkra eller ännu overifierade celler ger fortsatt vanlig
 kroppsskada; detta är inte ett löfte om hela näsan eller alla animationstillstånd.
+
+#938 adds a narrow left-temple confirmation after a greeting for targets whose first valid standing p/r/c never changed on that connection. A private permanent history flag survives hibernation; right/changed/crouched/legacy targets retain #932's post-greeting fallback. Actual native pose/history and ordinary Worker/HP/receipt verification lives in `tools/riflelefttest.cjs`; no geometry, animation timer or wire changes. #935 remains open for the remaining family.

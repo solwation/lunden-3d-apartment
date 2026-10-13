@@ -517,3 +517,9 @@ gt and welcome/public snapshots omit it. Core/nose/jaw proofs ignore these branc
 permissions. Existing r2/r3/v1/256-byte bounds, shot rate, health/recovery, score
 and kill receipts remain unchanged. No elapsed-time or heading-history assumption
 is introduced for rear support. Post-greet restoration is tracked by #941.
+
+### Immutable standing history for the narrow greeting-left receipt (#938)
+
+PlayerRoom records private `headPoseFixed` in its existing hibernating socket attachment. Only `s === null` followed by a first valid standing `cleanState` can initialize true. Every later strict difference in normalized p/r/c permanently sets it false; returning to the earlier pose, greeting again, life reset or hibernation cannot restore it. Existing attachments with a state but no history flag fail closed and are never initialized retroactively. A new socket starts its own history. The field is never accepted from client state and never sent in snapshots; h/sp/score changes do not count as body changes.
+
+The existing `allowLateral` argument is preserved. Shared contact/region dispatch accepts named `allowFront`/`allowRear`/`allowGreetingLeft` options while preserving published positional front/rear callers, including default/undefined front with explicit rear=false and falsy null front; only `allowGreetingLeft === true` can select the narrow left leaf. PlayerRoom supplies that key only for a greeted target with explicit true immutable history. It introduces no wire, KV write, timer or billed message. Join has no default p, welcome omits p for `s:null`, and `Ghost.draw` cannot pose an avatar before a valid snapshot: its first actual visible state initializes body=gaze. Legacy clients remain compatible.

@@ -731,3 +731,73 @@ test('rear arm safety: accepted greeting is private, permanent across pause/hibe
   const limitedAttachment=[...env.PLAYERS.object('world').ctx.getWebSockets()].find(s=>s.deserializeAttachment().i===limitedId).deserializeAttachment();assert.equal(limitedAttachment.gt,undefined,'rate-rejected first greeting never sets the private gate');
   for(const peer of [a,fresh,observer,limited])peer.ws.close();await settle(env);
 });
+
+test('#938 immutable standing history: first real state, normalized changes, legacy and private hibernation', async()=>{
+  const env=setup(), peers=[];
+  const join=async()=>{const c=await connect(env);peers.push(c);return c;};
+  const attachment=c=>c.ws.peer.deserializeAttachment();
+  const state={p:[1.234,0,3.456],r:.834,h:'rifle'};
+  const send=async(c,m)=>{now+=1000;c.send(m);await settle(env);};
+  try {
+    const target=await join(),viewer=await join();
+    assert.equal(attachment(target).s,null);assert.equal(attachment(target).headPoseFixed,undefined);
+    assert.equal(viewer.got[0].ps[0].p,undefined,'no default pose can enter a welcome before first state');
+    await send(target,state);assert.equal(attachment(target).headPoseFixed,true);
+    assert.deepEqual(attachment(target).s.p,[1.23,0,3.46]);assert.equal(attachment(target).s.r,.83);
+    await send(target,{...state,p:[1.231,0,3.459],r:.831,h:'saber',score:9,sp:true});
+    assert.equal(attachment(target).headPoseFixed,true,'same normalized pose; held item, suit and score do not break history');
+    await send(target,{t:'g',to:viewer.got[0].i,k:0});assert.equal(attachment(target).headPoseFixed,true);assert.ok(attachment(target).gt);
+    env.PLAYERS.hibernate('world');await send(target,state);
+    assert.equal(attachment(target).headPoseFixed,true);assert.ok(attachment(target).gt);
+    const late=await join(),snapshot=late.got[0].ps.find(p=>p.i===target.got[0].i);
+    assert.equal(snapshot.r,.83);assert.equal(Object.hasOwn(snapshot,'headPoseFixed'),false,'eligibility stays private');
+    for(const [name,delta] of [['position',{p:[1.25,0,3.46]}],['heading',{r:.85}],['stance',{c:true}]]){
+      const c=await join();await send(c,state);await send(c,{...state,...delta});
+      assert.equal(attachment(c).headPoseFixed,false,`${name} change breaks history`);
+      await send(c,state);env.PLAYERS.hibernate('world');await send(c,state);
+      assert.equal(attachment(c).headPoseFixed,false,`${name} return/hibernate never restore history`);c.ws.close();await settle(env);
+    }
+    const crouched=await join();await send(crouched,{...state,c:true});await send(crouched,state);
+    assert.equal(attachment(crouched).headPoseFixed,false,'first crouched pose never gains standing eligibility');crouched.ws.close();await settle(env);
+    const legacy=await join();await send(legacy,state);const old=attachment(legacy);delete old.headPoseFixed;legacy.ws.peer.serializeAttachment(old);
+    env.PLAYERS.hibernate('world');await send(legacy,state);
+    assert.equal(attachment(legacy).headPoseFixed,undefined,'existing legacy state never initializes missing history retroactively');legacy.ws.close();await settle(env);
+    const beforeState=await join();await send(beforeState,{t:'g',to:target.got[0].i,k:0});
+    assert.equal(attachment(beforeState).s,null);assert.equal(attachment(beforeState).headPoseFixed,undefined);
+    await send(beforeState,state);assert.equal(attachment(beforeState).headPoseFixed,true,'first real standing snapshot after greeting initializes history');beforeState.ws.close();await settle(env);
+    await send(target,{...state,r:.85});target.ws.close();await settle(env);
+    const fresh=await join();await send(fresh,state);assert.equal(attachment(fresh).headPoseFixed,true);assert.equal(attachment(fresh).gt,undefined);
+  } finally { for(const c of peers)c.ws.close();await settle(env); }
+});
+
+test('#938 named optional regions preserve legacy front/rear/default/undefined/null guard semantics', async()=>{
+  const C=await import('../src/config.js'),id='lateral-1',look=C.avatarLook(id),H=C.PVP_RIFLE_HEAD,width=[.93,1,1.08][look.build],state={p:[0,0,0],r:0};
+  // Pure guard fixtures use the shared exact production profile. Actual nearest-surface evidence is in riflelefttest.cjs.
+  const ray=(o,d)=>{const unit=d.map(v=>v/Math.hypot(...d)),entry=C.rifleSkullEntry(id,state,o,d);return{t:'a',w:'rifle',o,d,hc:[1,...o.map((v,i)=>+(v+unit[i]*entry).toFixed(3))]};};
+  const left=ray([-4,(H.headY+.1)*look.tall,-.07*width],[1,0,0]),feet=[-4,0,-.07*width];
+  assert.equal(C.rifleHeadGreetingLeftRegion(id,state,left.hc.slice(1),left.o,left.d),true);
+  assert.equal(C.rifleHeadContact(id,state,left,feet,40,4,false),false);
+  assert.equal(C.rifleHeadContact(id,state,left,feet,40,4,false,{allowGreetingLeft:true,allowFront:false,allowRear:false}),true);
+  assert.equal(C.rifleHeadContact(id,state,left,feet,40,4,false,{allowGreetingLeft:false}),false);
+  const right=ray([4,left.o[1],left.o[2]],[-1,0,0]);
+  assert.equal(C.rifleHeadContact(id,state,right,[4,0,left.o[2]],40,4,false,{allowGreetingLeft:true}),false,'named left permission never opens right');
+  let rear;for(const yy of [.021,.022,.023])for(const distance of [3.07,3.5,4,4.5]){
+    const o=[0,1.55,distance],target=[0,(H.headY+yy)*look.tall,.065],v=target.map((x,i)=>x-o[i]),d=v.map(x=>+(x/Math.hypot(...v)).toFixed(3)),q=ray(o,d);
+    if(C.rifleHeadRearRegion(id,state,q.hc.slice(1),o,d)){rear=q;break;}
+  }
+  assert.ok(rear,'genuinely supported production rear guard fixture');
+  const rearArgs=[id,state,rear,[0,0,4],40,4,false];
+  assert.equal(C.rifleHeadContact(...rearArgs),true);
+  assert.equal(C.rifleHeadContact(...rearArgs,true,true),true);
+  assert.equal(C.rifleHeadContact(...rearArgs,true,false),false);
+  assert.equal(C.rifleHeadContact(...rearArgs,undefined,false),false,'legacy undefined front still respects explicit rear=false');
+  assert.equal(C.rifleHeadContact(...rearArgs,{allowRear:false}),false);
+  assert.equal(C.rifleHeadRegion(id,state,rear.hc.slice(1),rear.o,rear.d,false,undefined,false),false,'region legacy undefined/front and rear=false also preserved');
+  const o=[0,1.62,-4],target=[-.068*width,(H.headY+.09)*look.tall,0],v=target.map((x,i)=>x-o[i]),d=v.map(x=>+(x/Math.hypot(...v)).toFixed(3)),front=ray(o,d),args=[id,state,front,[0,0,-4],40,4,false];
+  assert.equal(C.rifleHeadFrontRegion(id,state,front.hc.slice(1),o,d),true);
+  assert.equal(C.rifleHeadContact(...args,undefined,false),true,'legacy undefined front retains default true');
+  assert.equal(C.rifleHeadContact(...args,null,false),false,'legacy null front remains falsy');
+  assert.equal(C.rifleHeadContact(...args,false,false),false);
+  assert.equal(C.rifleHeadContact(...args,{allowFront:false,allowRear:false}),false);
+  assert.equal(C.rifleHeadContact(...args,{}),true,'named absent permissions retain front/rear defaults');
+});

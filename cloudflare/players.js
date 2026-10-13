@@ -307,6 +307,11 @@ export class PlayerRoom {
         // #931: rendering may stay paused after a valid turn; never infer pose completion from wall time.
         // Known history is initialized ONLY in a fresh connection's attachment; legacy missing history stays unknown.
         if (a.s && s.r !== a.s.r) a.turned = true;
+        // #938: the first real standing snapshot is also every observer's first visible pose (s:null/no-snaps before it).
+        // Any later normalized p/r/c change breaks this history permanently, including an eventual return to the start.
+        // Existing legacy attachments with s already set and no flag never gain eligibility retroactively.
+        if (a.s === null) a.headPoseFixed = s.c !== true;
+        else if (a.headPoseFixed === true && (s.r !== a.s.r || s.p.some((v, i) => v !== a.s.p[i]) || !!s.c !== !!a.s.c)) a.headPoseFixed = false;
         if (!a.s || s.r !== a.s.r || s.p.some((v, i) => v !== a.s.p[i])) a.movedAt = now;
         a.s = s; this.publishState(ws, a);
       }
@@ -350,8 +355,9 @@ export class PlayerRoom {
     const award = { i: a.i, seq: a.awardSeq = (a.awardSeq ?? 0) + 1, distance: d, points };
     this.recoverLife(target, b, now); // a delayed alarm must not let due health be lost before this hit
     // #932: a greeting's wave may be paused/delayed on another replica. Never infer its end from wall time.
-    // #936: rear arm contact has the same problem. Gate the rear branch independently; core/nose/jaw stay eligible.
-    const head = now - (b.movedAt ?? now) >= RH.stationaryMs && rifleHeadContact(b.i, b.s, shot, a.s.p, W.range, COMBAT.from, b.gt === undefined, b.gt === undefined && b.turned === false, b.gt === undefined);
+    // #938 reopens only a narrow left temple when first-standing p/r/c never changed; no wave-end inference.
+    // Right/changed/legacy lateral contacts retain the permanent gt fallback; #931 front/#936 rear gates stay independent.
+    const head = now - (b.movedAt ?? now) >= RH.stationaryMs && rifleHeadContact(b.i, b.s, shot, a.s.p, W.range, COMBAT.from, b.gt === undefined, { allowGreetingLeft: b.gt !== undefined && b.headPoseFixed === true, allowFront: b.gt === undefined && b.turned === false, allowRear: b.gt === undefined });
     const left = (b.l ?? COMBAT.lives) - (head ? RH.headDamage : RH.bodyDamage), dead = left <= 0;
     b.l = dead ? COMBAT.lives : left;
     this.recoveryClock(b, now);
