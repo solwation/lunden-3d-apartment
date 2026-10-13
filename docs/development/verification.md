@@ -1202,6 +1202,37 @@ Native module/source/provenance/process/exit/image evidence: `/tmp/lunden-setup8
 complete raw/summary: `/tmp/runtests-628913/`, source/helpers/native identity/image/cleanup:
 `/tmp/lunden-setup814/representative-*`, `returnmarkers-*` and `returnmarkerstest-full.*`.
 
+#815 extends ONLY ordinary rearrangement setup to christmastest, loosemirrorstest,
+rearrangemirrortest, veronatest and posterplacementtest. Five classic includes and seven synchronous setup
+calls retain original script kinds/call positions. The shared helper is unchanged from #814: unlocked=true,
+child native boolean persistence with storage failure caught, actual enable(true), and original true return
+even when busy/saving refuses activation. No query, dimensions, renderer, quality, wait, action, assertion,
+output, reload or optional cloud branch changes. Whole inverse of only includes/setup calls reproduces all
+five complete original fixture bodies. Posterplacement query/dimension disposition belongs separately to
+#833; this issue changes only its setup include/call. Explicit #736 full/reflection exclusions remain.
+
+The unchanged helper reuses #814's actual eleven-check native THREE/Rearrange empty-world/offline semantic
+probe with both privately provisioned legacy references. Free/busy/saving/selected cancellation, repeat,
+boolean persistence and new-instance unlocked-but-disabled state matched original valid unlock. The
+unavailable storage getter was explicitly simulated, not a measured browser-security failure. Actual exit0
+and inspected text-only image cover that bounded module behavior; no additional module run is claimed.
+
+One complete representative loosemirrorstest at frozen 1fb73e8 retained current authored480×300/life&shot,
+original full mode and unconditional fullscreen suppression, ONE actual document, all seven movable
+mirrors/fixed bathroom mirrors/night-light anchors/cabinet exclusions, real confirm/restore and final native
+renderer.render. All35 unchanged raw checks PASS/ALLPASS, independent runner exit0,104.386s (monitor105.390937s).
+ONE actual-ready and ONE final record have the same URL/timeOrigin,480×300/null controller/no fullscreen.
+The inspected successful fullPage PNG retains all35 rows/ALLPASS plus final kitchen/rearrangement overlay;
+intermediate mirror movement, reflection/shadow pixels or framebuffer equivalence are not claimed. All247
+frozen source paths, three passive helpers, exact measured fixture and unchanged setup helper match before
+publication. This is one full-mode setup acceptance, not a comparison pair or timing improvement.
+
+The other four complete runtime suites and optional real-cloud branches were NOT rerun. Whole-source
+inverse and generic native setup-state equivalence support their retained setup semantics, not fabricated
+runtime claims. Private console parsing and actual Worker credential/protocol coverage remain separate in
+#817/#853–#856; #756 stays open. Source/setup/helper/native/image/exit evidence is `/tmp/lunden-setup815/`;
+complete raw/summary `/tmp/runtests-638864/`; reusable module evidence `/tmp/lunden-setup814/native-*`.
+
 #852 `musicreloadtest` migrated after one complete original two-document full/test pair at frozen `3b9dffb`:
 all three PASS rows and ALL PASS are byte-identical in the complete 249-byte raw logs. Actual public runner 0
 and companion 0, full 197.164s/test 144.358s (independent monitor 343.633s), including both successful captures.

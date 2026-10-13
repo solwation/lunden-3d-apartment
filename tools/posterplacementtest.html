@@ -1,4 +1,4 @@
-<!doctype html><html><meta charset="utf-8"><title>Individual posters and layout migration (#493)</title><pre id="out">running…</pre><script type="module">
+<!doctype html><html><meta charset="utf-8"><title>Individual posters and layout migration (#493)</title><pre id="out">running…</pre><script src="./rearrangesetup.js"></script><script type="module">
 const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS':'FAIL')+' '+s);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
 const cloud=new URLSearchParams(location.search).get('cloud')??'';
 try{
@@ -6,7 +6,7 @@ try{
  localStorage.setItem('lunden.furniture.layout',JSON.stringify({revision:4,pieces:{[legacy]:{revision:4,pos:[20,30,20],quat:[0,0,0,1]}}}));
  const frames=[];
  async function load(f){f??=document.createElement('iframe');if(!f.parentNode){f.width=480;f.height=300;document.body.append(f);frames.push(f)}
- f.src='../index.html?shot&cloud='+encodeURIComponent(cloud)+'&r='+Math.random();await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const A=f.contentWindow.__app;await A.rearrange.ready;f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();A.rearrange.unlock('olof is the goat');A.player.pos.y=3.25;return A}
+ f.src='../index.html?shot&cloud='+encodeURIComponent(cloud)+'&r='+Math.random();await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const A=f.contentWindow.__app;await A.rearrange.ready;f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();setupRearrangeForFixture(A.rearrange, f.contentWindow);A.player.pos.y=3.25;return A}
  let A=await load(),R=A.rearrange,T=await frames[0].contentWindow.eval("import('three')");
  const close=(a,b)=>a.elements.every((v,i)=>Math.abs(v-b.elements[i])<.001);
  const posters=R.pieces.filter(p=>p.item.type==='kposters'),p=posters[0],id=p.id,home=p.home.clone();

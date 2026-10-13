@@ -1,4 +1,4 @@
-<!doctype html><html><meta charset="utf-8"><title>Christmas tree season (#571)</title><pre id="out">running…</pre><script type="module">
+<!doctype html><html><meta charset="utf-8"><title>Christmas tree season (#571)</title><pre id="out">running…</pre><script src="./rearrangesetup.js"></script><script type="module">
 // The Christmas tree (#571; default spot in the armchair corner #591): up 1 Dec – 6 Jan inclusive by the game's date (directly and after a reload), hidden, unpickable,
 // without collision or light the rest of the year; the furniture under its crown (and what stands on it) hidden for the
 // time being without touching its saved pose; the tree moves in Möblera om, a confirmed move survives reloads and the
@@ -33,7 +33,7 @@ try {
  check(shown(corner)&&!X.hiddenPieces.length,'30 Nov: the armchair, the stool, the floor lamp and the tray table in their corner');
  check(!treeFoot()&&inFoot(ottoman.object.position.x,ottoman.object.position.z),'30 Nov: no collision of its own where the tree would stand; the stool blocks');
  check(!litTree()&&X.lamp.room.lamps.every(l=>!A.lights.slots.some(s=>s.lamp===l)),'30 Nov: the tree gives no light');
- R.unlock('olof is the goat');
+ setupRearrangeForFixture(R, f.contentWindow);
  const look=(x,y,z)=>{const e=A.camera.position;A.camera.rotation.set(Math.atan2(y-e.y,Math.hypot(x-e.x,z-e.z)),Math.atan2(-(x-e.x),-(z-e.z)),0,'YXZ');A.camera.updateMatrixWorld();};
  A.player.spawn(tx+1.3,tz+1.3,Math.PI);A.step(1/60);look(tx,1.2,tz);R.update();
  check(R.target?.piece!==tree,'30 Nov: the hidden tree cannot be picked in Möblera om');
@@ -103,7 +103,7 @@ try {
  old(1.08,11.5);A=await load('month=12&day=10');
  check(Math.hypot(at(A)[0]-tx,at(A)[1]-tz)<1e-6&&!A.rearrange.pieces.find(p=>p.item.type==='armchair').object.visible&&A.rearrange.pieces.find(p=>p.item.type==='palm').object.visible,'old layout id: an entry at the old default gives the new default (armchair corner)');
  // the season ending under a tree being moved drops the move
- A=await load('month=1&day=6');R=A.rearrange;X=A.christmas;R.unlock('olof is the goat');
+ A=await load('month=1&day=6');R=A.rearrange;X=A.christmas;setupRearrangeForFixture(R, f.contentWindow);
  R.begin(X.tree);A.day.addDays(1);A.step(1/60);
  check(!R.selected&&!X.tree.object.visible&&!R.ghost.visible,'7 Jan while moving the tree: the move is dropped, the tree gone');
 } catch(e) { check(false,e.stack||e); }

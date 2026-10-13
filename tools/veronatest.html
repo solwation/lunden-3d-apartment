@@ -3,6 +3,7 @@
 <head><meta charset="utf-8"><title>Verona Sofa Test #489</title></head>
 <body>
 <pre id="out">running…</pre>
+<script src="./rearrangesetup.js"></script>
 <script>
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -60,7 +61,7 @@ f.onload = async () => {
     }
 
     // 4. Rearrange: move, rotate, cushions follow, restore original
-    R.unlock('olof is the goat');
+    setupRearrangeForFixture(R, f.contentWindow);
     const piece = R.pieces.find(p => p.item.type === 'veronasofa' && p.item.part === 'sofa');
     pass &= check(!!piece, 'veronasofa piece found in rearrange');
 
