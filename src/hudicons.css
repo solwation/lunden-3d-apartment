@@ -101,9 +101,16 @@ body.hud-no-blur #hud #hud-top > .hud-button:active { background: rgba(255,255,2
   :root { --badge-cell: 44px; }
   /* Visual fit for a 568px landscape viewport with two 44px safe areas: all data
      remains visible, while interactive cells keep their full 44px target. */
-  body.touch #hud #score { grid-template-columns: var(--badge-unit) 36px 34px 70px 30px var(--badge-cell); }
+  /* #902: leave room for the rendered temperature/clock/score plus their dividers;
+     redistribute only noninteractive columns, preserving 44px shortcuts and safe-area edges. */
+  body.touch #hud #score { grid-template-columns: 18px 39px 40px 72px 26px var(--badge-cell); }
   #hud #score #temp { font-size: 14px; }
+  #hud #score #weather .hud-icon { width: 18px; height: 18px; }
+  #hud #score #level { font-size: 12px; }
+  #hud #score .score-val, #hud #score .plus:not(.minus) { font-size: calc(var(--badge-cell) * .35); }
   #hud #score #presence { gap: calc(var(--badge-inset) / 2); }
+  /* Keep even three-digit FPS legible inside the compact lower half-cell. */
+  #hud #score #presence .presence-fps { flex-direction: column; gap: 1px; }
   #hud #score .plus.minus { font-size: 9.5px; line-height: 1.05; padding: 2px; }
 }
 /* #716/#767: armed-player controls use two rows below the lives on every touch
