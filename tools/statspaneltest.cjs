@@ -6,7 +6,7 @@ const root=path.resolve(__dirname,'..'),read=p=>before?execFileSync('git',['show
 const source=read('src/main.js'),html=read('index.html');
 function span(start,end){const a=source.indexOf(start),b=source.indexOf(end,a+start.length);if(a<0||b<0||source.indexOf(start,a+1)>=0)throw Error('ambiguous source anchor '+start);return source.slice(a,b).trim();}
 const parts={active:span('const active =','\n\nfunction look'),start:span('function startMouse() {','// Esc on the start screen'),
- arm:span(before?"armEl.addEventListener('click'":"armEl.addEventListener('keydown'",'const armTouchBtn ='),error:span("document.addEventListener('pointerlockerror'","document.getElementById('start-touch').addEventListener"),
+ arm:span(before?"armEl.addEventListener('click'":"armEl.addEventListener('keydown'",'// refused (Chrome'),touchStart:span("document.getElementById('start-touch').addEventListener","document.getElementById('start-go').addEventListener"),error:span("document.addEventListener('pointerlockerror'","document.getElementById('start-touch').addEventListener"),
  lock:span("document.addEventListener('pointerlockchange', () => {\n  const wasLocked",'/**\n * A mouse click'),
  click:span('function click(button) {',"document.addEventListener('contextmenu'"),
  wheel:span(before?"document.addEventListener('wheel', (e) => { if (locked && !reading":"document.addEventListener('wheel', (e) => { if (locked && !statsOpen && !reading",'\n\n'),
@@ -74,6 +74,12 @@ if(before){await page.screenshot({path:out+'/before.png'});}else{
  // Native touch scrolling has inertia; wait for its measured scroll position to settle before tapping.
  await page.waitForFunction(()=>{const n=statsBody.scrollTop;if(window.lastTouchScroll===n)window.touchSettled=(window.touchSettled||0)+1;else window.touchSettled=0;window.lastTouchScroll=n;return window.touchSettled>=3;},null,{timeout:3000,polling:50});
  await tap('#stats-close');await page.waitForFunction(()=>statsEl.hidden,null,{timeout:1500,polling:50});check(await page.evaluate(()=>statsEl.hidden&&touch.enabled&&fns.active()),'original touch close button resumes the existing touch mode');
+ for(const key of ['Enter','Space']) {
+  await page.evaluate(()=>{touch.enabled=false;armEl.hidden=false;statsFreed=false;document.getElementById('arm-touch').focus();});
+  await page.keyboard.press(key);await page.waitForFunction(()=>touch.enabled&&armEl.hidden,null,{timeout:1500,polling:50});
+  check(await page.evaluate(()=>activeMode==='touch'&&!document.pointerLockElement),'native Touch child-button '+key+' activation preserves touch mode without mouse lock');
+  await page.evaluate(async()=>{if(document.fullscreenElement)await document.exitFullscreen();});
+ }
  // Existing menu reset dialog is dismissed in this isolated context; no visitor data or reset behavior changes.
  await page.evaluate(()=>{touch.enabled=false;armEl.hidden=true;showOverlay(true);for(const d of document.querySelectorAll('details'))d.open=true;});let dialogs=0;page.on('dialog',async dialog=>{dialogs++;await dialog.dismiss();});await page.locator('#stats-reset').click();
  check(dialogs===1&&await page.evaluate(()=>S.stats.target===123&&S.stats.cats===37&&effects.reset===0),'existing menu reset confirmation remains usable and cancellation preserves isolated statistics');

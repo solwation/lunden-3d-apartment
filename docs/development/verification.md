@@ -4112,3 +4112,18 @@ port, fullscreen or existing PASS/FAIL contract is replaced.
 Native evidence: 22 checks PASS, CLI 0, no page errors; reviewed held/touch PNGs. The
 unchanged armed-greeting actions/assertions also report 22 PASS, CLI 0. These native checks
 do not claim an apartment/WebGL run or physical-phone verification.
+
+#886 final provenance: source slice `ba28eb4` retains 22 native PASS/CLI 0 and 22
+armed-greeting PASS/CLI 0 after the last runtime rebase. Historical b2efbc5 main/index
+reproduces three expected failures (CLI 1, no page errors). Raw outputs and inspected
+held/touch/before PNGs are under `/tmp/lunden-priority-886/{rebased,before-final,armed-rebased}`;
+`publication-proof.json` records the tested paths. The subsequent #715 commit8237269 changes
+none of these ten paths; this is path-specific evidence, not whole-application parity.
+Owned browser processes and the native server were stopped after the runs.
+
+Final review correction keeps the Touch child button's native Enter/Space activation: only a key
+targeted at the return surface itself requests mouse resume. Its duplicate role attribute is removed.
+The complete original arm-child/start-touch handlers are included verbatim in the native fixture.
+The final run has **24 PASS / CLI 0**, including both real keyboard Touch activations, with all
+previous 22 assertions preserved; artifacts are `/tmp/lunden-priority-886/final-publication`. The last rebase preserves the
+#892 avatarLook/config addition; final native checks run on that checkout.

@@ -1203,7 +1203,7 @@ document.addEventListener('keydown', (e) => {
   armEl.hidden = false;
 });
 armEl.addEventListener('keydown', e => {
-  if (e.code === 'Enter' || e.code === 'Space') { e.preventDefault(); armEl.hidden = true; startMouse(); }
+  if (e.target === armEl && (e.code === 'Enter' || e.code === 'Space')) { e.preventDefault(); armEl.hidden = true; startMouse(); }
 });
 armEl.addEventListener('click', (e) => {
   if (isPhoneDevice() || lastPointerType === 'touch' || e.pointerType === 'touch') {
