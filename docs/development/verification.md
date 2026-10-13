@@ -525,7 +525,7 @@ no executable fixture changes or new browser results are part of this audit.
 | `bowtest.cjs` | Full screenshot rendering | Actual 960×600 game, box/drawn bow/in-flight/stuck arrow screenshots; quality=0 already, no testmode query. |
 | `ghostbadgetest.cjs` | Own rendering fixture | Bootstrap blocked; actual Worker/controlled THREE renderer, exact 7 calls/6 textures, cleanup and desktop/phone images. |
 | `ghosttest.cjs` | Full screenshot rendering; dynamic rows | Actual multi-page/Worker and visible ghost/name-tag screenshots; 320×200 already. PASS rows include elapsed wall time; no normalization permitted. |
-| `measuretest.html` | Unverified branch claim | dd8810d reports parity; ordered logs/actual viewport-controller evidence unavailable locally. Current 900×600 source equals its original baseline. |
+| `measuretest.html` | Accepted in #826 | Actual complete original full/test logs byte-identical, all 3 ordered PASS; native original 900×600/null controller versus 480×300/real test APIs. Current wall-distance/DOM-label/third-clear actions retained, superseding the earlier unverified branch claim. |
 | `menutest.html` | Candidate; reported mismatch | Branch full-page crash versus test PASS is not parity; current original 900×600 menu/reset fixture retained. |
 | `mieletest.html` | Unverified branch claim | Reported parity lacks retained logs. getImageData samples its own coat-texture canvas, not the framebuffer; original 900×600 source retained. |
 | `milktest.html` | Unverified branch claim | Reported parity lacks retained logs; actual carton/pour/drink actions, original 900×600 source retained. |
@@ -2309,3 +2309,26 @@ equivalence or qualified timing aggregation is claimed. Complete logs/summary:
 diffs, actual exit and images: `/tmp/lunden-life824/life3test/`. All frozen source
 blobs matched after the pair. LIFE remains pending under #824; #849 stays open
 as a separate bug, and #739/#736 remain open.
+
+## Tape measure complete native acceptance (#826, partial)
+
+`measuretest` is migrated by changing query/dimensions and retaining the approved
+pre-pair testMode-only fullscreen suppression before original touch, full-false
+behavior unchanged. On frozen `945e95a` (current holdable fix/changelog702 included)
+plus the guard, `/tmp/runtests-527971/` has complete byte-identical raw logs:
+three ordered PASS and ALL PASS in each mode, zero FAIL/pageerrors, independently
+monitored actual exit 0. Original center-ray geometry, matrices, exact 5.349 m
+readout, `5,35 m` DOM label and third-clear action/predicates remain unchanged;
+no native OS-touch/input grant or renderer-pixel equivalence is claimed.
+Two actual ready and two final snapshots verify one app document per mode,
+original 900×600/null controller versus 480×300/real draw/setFull/wantsFrame APIs,
+no fullscreen, empty cloud URL and matching URL/timeOrigin identities.
+Wall 163.185s → 78.950s includes two saved/inspected viewport captures: full shows
+all three result rows/ALL PASS and final living-room/HUD; test shows all results
+but only an upper canvas strip. No intermediate measuring-line or label-pixel
+inspection is claimed. This pair is excluded from speedup aggregation because
+capture coverage differs. Frozen current/guarded fixture/helper hashes, complete
+raw/native records and genuine setsid/Popen/wait PID/SID/exit:
+`/tmp/lunden-measure826/measuretest/`. Miele and milk remain pending under #826;
+#740/#736 remain open. No shorter `only=fireworks` Miele result will substitute
+for its full default action/rarity/photo flow.
