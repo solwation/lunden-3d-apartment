@@ -2918,6 +2918,8 @@ export const AVATAR = { fill: 0.07, rim: 0.85, rimPower: 2.2, emissiveOutline: 0
 // flames hit someone `jetBelow` [min, max] m under you and within `jetAcross` m sideways while it thrusts. `lives` until the
 // room's welcome says otherwise. The HUD's hearts only while a fight is on. All our picks (*guess*).
 export const COMBAT = { weapons: ['saber', 'nerf', 'wand', 'rifle', 'ball', 'bow', 'web', 'jetpack'], lives: 10, solid: 1,
+  // Confirmed-hit HUD duration/spacing: brief, clear of the crosshair (UX assumptions, #875).
+  hitMarker: { lifeMs: 700, offsetPx: 20 },
   // Technical collision limits: fixed bitsets plus reserved bookkeeping, built during short idle slices (#715).
   collision: { cells: 32, clusters: 32, spatialBudgetBytes: 16 * 1024 * 1024, maxSpatialEntries: 1024, predictionMs: 2000, budgetBytes: 1024 * 1024, recordReserve: 4096, buildMs: 2, minTriangles: 200, queryCells: 512 },
   body: [0.25, 1.75], hitRadius: 0.4, saberCone: 0.5, jetBelow: [0.3, 4], jetAcross: 1.2, flash: 0.35,

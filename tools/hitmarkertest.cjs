@@ -1,0 +1,34 @@
+// Actual index DOM + Ghosts/Combat and local Worker sockets; no bootstrap/WebGL.
+// PLAYWRIGHT_MODULE=… CHROME_PATH=… SHOTS=/tmp/hits node tools/hitmarkertest.cjs game worker
+const{chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');const fs=require('node:fs'),path=require('node:path');
+const game=process.argv[2]||'http://localhost:8873',worker=process.argv[3]||'http://localhost:8874',output=process.env.SHOTS||'/tmp/lunden-hitmarker';fs.mkdirSync(output,{recursive:true});
+const checks=[];const check=(ok,label)=>{checks.push(`${ok?'PASS':'FAIL'} ${label}`);if(!ok)throw Error(label);};
+(async()=>{const browser=await chromium.launch({executablePath:process.env.CHROME_PATH||undefined,args:['--no-sandbox','--disable-gpu']});const errors=[];try{const p=await browser.newPage({viewport:{width:844,height:390}});p.on('pageerror',e=>errors.push(e.message));await p.route('**/src/bootstrap.js',r=>r.fulfill({contentType:'application/javascript',body:'// Native receipt/HUD fixture: no WebGL'}));await p.goto(game);
+await p.evaluate(async(worker)=>{
+const T=await import('three'),{Ghosts}=await import('/src/ghosts.js'),{Combat}=await import('/src/combat.js'),{initHudIcons}=await import('/src/hudicons.js');initHudIcons();
+for(const id of['overlay','loading','rotate'])document.getElementById(id).hidden=true;document.getElementById('hud').hidden=false;document.body.classList.add('touch');document.body.style.background='linear-gradient(130deg,#384858,#173039)';document.getElementById('prompt').hidden=false;document.getElementById('prompt').textContent='Skjut med Nerf';document.getElementById('action').hidden=false;document.getElementById('action').textContent='Skjut';window.actionClicks=0;document.getElementById('action').addEventListener('click',()=>actionClicks++);
+const scene=new T.Scene(),camera=new T.PerspectiveCamera();camera.position.set(0,1.62,0);let cues=0,score=0;
+const make=(name,x)=>new Ghosts({scene,camera,url:worker,name:()=>name,mirrored:()=>false,weapon:()=> 'nerf',score:()=>0,state:()=>({p:[x,0,0],r:0})});
+const a=make('Marker shooter',0),b=make('Marker target',2);const c=new Combat({scene,camera,ghosts:a,weapon:()=> 'nerf',feet:()=>new T.Vector3(),sfx:{playerHit:()=>cues++},onHit:()=>score++});
+window.fixture={a,b,c,get cues(){return cues},get score(){return score}};window.peerTimer=setInterval(()=>{a.update();b.update();c.update(0)},25);
+},worker);
+await p.waitForFunction(()=>fixture.a.connected&&fixture.b.connected&&fixture.a.others.size&&fixture.b.others.size&&[...fixture.a.others.values()].some(x=>x.h));
+check(await p.evaluate(()=>fixture.c.hitMarker.el.hidden),'no marker from connect or armed peers');
+await p.evaluate(()=>{const{a,b}=fixture;a.fire({w:'nerf',o:[0,1.5,0],d:[0,0,-1]});});await p.waitForTimeout(200);
+check(await p.evaluate(()=>fixture.c.hits===0&&fixture.c.hitMarker.el.hidden),'actual miss receipt gives no marker');
+await p.evaluate(()=>fixture.a.ws.send(JSON.stringify({t:'a',w:'rifle',o:[0,1.5,0],d:[1,0,0],to:fixture.b.me})));await p.waitForTimeout(200);
+check(await p.evaluate(()=>fixture.c.hits===0&&fixture.c.hitMarker.el.hidden),'Worker rejected weapon mismatch gives no false confirmation');
+const fire=()=>p.evaluate(()=>fixture.a.fire({w:'nerf',o:[0,1.5,0],d:[1,0,0],s:25,to:fixture.b.me}));await fire();await p.waitForFunction(()=>fixture.c.hits===1&&!fixture.c.hitMarker.el.hidden);
+check(await p.evaluate(()=>fixture.c.hitMarker.el.textContent==='Träff!'&&fixture.cues===1&&fixture.score===1),'actual Worker→Ghosts→Combat hit preserves sound/score and shows Träff');
+await p.waitForTimeout(await p.evaluate(()=>Math.ceil(fixture.c.rules.weapons.nerf.every*1000)+30));await fire();await p.waitForFunction(()=>fixture.c.hits===2);await p.waitForTimeout(430);
+check(await p.evaluate(()=>!fixture.c.hitMarker.el.hidden&&fixture.cues===2&&fixture.score===2),'second server confirmation extends old deadline without duplicate score/audio');
+await p.waitForFunction(()=>fixture.c.hitMarker.el.hidden);check(true,'marker expires after latest receipt');
+// Optional future server field: explicit Combat receipt only, not a claim of current server head classification.
+await p.evaluate(()=>fixture.c.hit({w:'nerf',head:true}));check(await p.evaluate(()=>fixture.c.hitMarker.el.textContent==='Huvudträff!'),'explicit head confirmation has distinct text');
+await p.evaluate(()=>fixture.c.hit({w:'nerf',head:'true'}));check(await p.evaluate(()=>fixture.c.hitMarker.el.textContent==='Träff!'),'unknown/nonboolean head flag safely stays body');
+for(const [width,height]of[[844,390],[667,375],[568,320],[1280,720]]){await p.setViewportSize({width,height});await p.evaluate((touch)=>{document.body.classList.toggle('touch',touch);fixture.c.hit({w:'nerf',head:true});},width<1000);const layout=await p.evaluate(()=>{const el=fixture.c.hitMarker.el,b=el.getBoundingClientRect(),cross=document.querySelector('#crosshair').getBoundingClientRect(),overlap=x=>{const q=x.getBoundingClientRect();return q.width&&q.height&&Math.min(b.right,q.right)>Math.max(b.left,q.left)&&Math.min(b.bottom,q.bottom)>Math.max(b.top,q.top)};return{inView:b.left>=0&&b.right<=innerWidth&&b.top>=0&&b.bottom<=innerHeight,center:Math.abs((b.left+b.right)/2-innerWidth/2)<.1,above:b.bottom<cross.top,pointer:getComputedStyle(el).pointerEvents==='none',clear:['#prompt','#hud-top','#score','#compass','#action','#jump-btn','#crouch-btn','#lives'].every(sel=>{const x=document.querySelector(sel);return!x||!overlap(x)}),readable:parseFloat(getComputedStyle(el).fontSize)>=16};});check(Object.values(layout).every(Boolean),`actual HUD marker bounds/readability/pointer and controls ${width}x${height}`);await p.screenshot({path:path.join(output,`marker-${width}x${height}.png`)});}
+await p.setViewportSize({width:844,height:390});await p.evaluate(()=>document.body.classList.add('touch'));const hitCount=await p.evaluate(()=>fixture.c.hits);await fire();await p.waitForFunction(n=>fixture.c.hits>n,hitCount);await p.screenshot({path:path.join(output,'marker-confirmed-body.png')});await p.click('#action');check(await p.evaluate(()=>actionClicks===1&&!fixture.c.hitMarker.el.hidden),'marker leaves actual shooting button clickable');
+await p.evaluate(()=>{fixture.c.reset();});check(await p.evaluate(()=>fixture.c.hitMarker.el.hidden),'welcome/reset clears stale marker');
+await p.evaluate(()=>{fixture.c.hit({w:'nerf'});clearInterval(peerTimer);});await p.waitForFunction(()=>fixture.c.hitMarker.el.hidden);check(true,'wall timer hides with Combat updates paused');
+await p.evaluate(()=>{fixture.a.disconnect();fixture.b.disconnect()});check(!errors.length,'no page errors');fs.writeFileSync(path.join(output,'result.json'),JSON.stringify({checks,errors},null,2));console.log(checks.join('\n'));
+}finally{await browser.close();}})().catch(e=>{console.error(checks.join('\n'));console.error(e);process.exitCode=1});

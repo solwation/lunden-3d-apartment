@@ -573,3 +573,25 @@ Armed greeting/action priority (#872): main.js only offers ghost greeting pick b
 #872 native verification (2026-10-13): final complete driver 22 PASS/zero FAIL/pageerrors, ALL PASS, actual exit0; original c25c564 main against the same driver 13 FAIL/exit1. Reviewed844×390 `/tmp/lunden-priority-872/armed-touch.png` shows “Skjut”, with no greeting label. Earlier22PASS before explicit latched-trigger checks is superseded by native5/final, which test pointerdown→pointerup→click and E→keyup firing state. Original/fixed source snapshots, raw logs and verbatim source-span hashes are retained under `/tmp/lunden-priority-872`, with final proof in `~/.local/state/lunden-orkester/20261013-priority/872-final-proof.json`. Final rebase preserved Surface's fall/recovery block and matched the tested complete main source; no actual-world/projectile or physical-phone result is claimed.
 
 Defeated-player statistics (#871): the existing Ghosts server-hit delivery reaches `Combat.hit`; `recordPlayerKill` consumes only the server-generated lethal-hit UUID for another player. The original hit/score callback, victim death/wake, fall and recovery behavior are unchanged. The existing statistics panel gains “Dödade spelare”, with persistent count and receipt metadata; resetting visible statistics gives zero while old receipts remain consumed. [Persistence/protocol](storage.md) remains local statistics, not authentication or a new server fight log.
+#872 native verification (2026-10-13): final complete driver 22 PASS/zero FAIL/pageerrors, ALL PASS, actual exit 0; original c25c564 main against the same driver 13 FAIL/exit1. Reviewed844×390 `/tmp/lunden-priority-872/armed-touch.png` shows “Skjut”, with no greeting label. Earlier22PASS before explicit latched-trigger checks is superseded by native5/final, which test pointerdown→pointerup→click and E→keyup firing state. Original/fixed source snapshots, raw logs and verbatim source-span hashes are retained under `/tmp/lunden-priority-872`, with final proof in `~/.local/state/lunden-orkester/20261013-priority/872-final-proof.json`. Final rebase preserved Surface's fall/recovery block and matched the tested complete main source; no actual-world/projectile or physical-phone result is claimed.
+## Confirmed-hit marker (#875)
+
+`src/hitmarker.js` owns the brief Swedish text above the crosshair, attached only to `Combat.hit` (the
+Ghosts server-receipt callback), never local firing/prediction/remote projectile rendering. Every confirmation
+renews a wall-clock timer; `Combat.update` also checks expiry, and welcome/reset clears it. Timers therefore
+expire with paused logic. `COMBAT.hitMarker` sets the 700 ms duration and 20 px offset (UX assumptions).
+Missing/unknown `m.head` gives “Träff!”; strict server `m.head === true` gives “Huvudträff!” for the future
+head-contact protocol. Score, damage and existing Nerf `sfx.playerHit` callbacks remain on their existing path.
+The pointer-transparent fixed marker leaves the aim dot, prompt, HUD and shooting controls clear. Its polite
+status region does not rewrite unchanged labels for quick repeated confirmations.
+
+`tools/hitmarkertest.cjs` uses actual index DOM/styles, actual Ghosts/Combat and a local PlayerRoom via native
+WebSockets, with bootstrap suppressed and no WebGL. Accepted receipts, actual misses and rejected weapon
+mismatches test the confirmation boundary; explicit optional head-receipt tests do not assert server head
+classification. Phone 844×390/667×375/568×320 and desktop 1280×720 layout captures, real action-button clicks,
+renewal/expiry and paused-logic/reset are covered.
+
+Native #875 verification at `69c5d64` plus marker: 16 PASS, driver exit 0, no page errors. Real accepted-body
+receipt 844×390 and optional-head layout 568×320/667×375/1280×720 captures were inspected; they are HUD-only,
+not apartment/gameplay/physical-phone pictures. Local artifacts: `/tmp/lunden-hit875-surface/final/`.
+The driver derives rapid-hit pacing from the actual Worker welcome cadence; it does not relax server limits.

@@ -112,6 +112,10 @@ tools/trigridcopytest.cjs / .html (#715): independent unchanged a336e30 TriGrid 
                        membership and hit parity, indexed/transformed/BackSide/drawRange/authored-bounds preservation;
                        balanced reversed-order uninstrumented construction and actual local Marks/Darts cold/warm samples.
                        No renderer/app/physical phone; run marksphysicstest.html too after TriGrid changes.
+tools/hitmarkertest.cjs (#875): actual index DOM/Ghosts/Combat with local Worker WebSocket receipts, no bootstrap/WebGL;
+                       accepted hit+sound/score callback, miss/rejected weapon, renew/expire/reset/paused timer, optional head
+                       receipt, phone 844×390/667×375/568×320 + desktop 1280×720 layout/pointer/action-click captures.
+                       Run game and Worker URLs as first/second args; PLAYWRIGHT_MODULE/CHROME_PATH/SHOTS supported.
 tools/combatworldtest.html combat collision (#715/#714), actual Three modules without WebGL: 462 focused checks cover native
                        hit/face/UV/normal equivalence, private grid/spatial-index quotas and ownership, authored bounds,
                        mutations/disposal, layers/custom propagation, instanced paths, curved finite segments, cooperative

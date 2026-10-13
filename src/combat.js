@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { fallDamage } from './falldamage.js';
 import { recordPlayerKill } from './stats.js';
+import { HitMarker } from './hitmarker.js';
 import { COMBAT as C, TOYS } from './config.js';
 import { stepNerf, nerfFloor } from './nerf.js';
 import { combatWorldHits, combatWorldPath, combatWorldPathBlocked, prepareCombatWorld } from './combatworld.js';
@@ -83,6 +84,7 @@ export class Combat {
     Object.assign(this.flashEl.style, { position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 19, opacity: 0,
       background: 'radial-gradient(ellipse at center, rgba(200,0,0,0) 45%, rgba(200,0,0,0.55) 100%)' });
     document.body.append(this.el, this.flashEl);
+    this.hitMarker = new HitMarker();
   }
 
   get rules() { return this.ghosts.rules ?? { lives: C.lives, weapons: {} }; }
@@ -309,6 +311,7 @@ export class Combat {
   }
 
   update(dt) {
+    this.hitMarker.update();
     this.recoverOffline();
     this.jetT = Math.max(0, this.jetT - dt);
     const jet = this.jetpack;
@@ -334,6 +337,7 @@ export class Combat {
   /** The room: our shot hit someone. */
   hit(m, g) {
     recordPlayerKill(m, this.ghosts.me); // server lethal-hit receipt only; separate from hit points (#871)
+    this.hitMarker.show(m);
     this.hits++;
     this.onHitCb(m, g);
     if (m.w === 'nerf') this.sfx?.playerHit?.();
@@ -374,6 +378,7 @@ export class Combat {
 
   /** A new server attachment starts full; missing legacy own-state keeps the existing replica. */
   reset(value) {
+    this.hitMarker.clear();
     this.life(value);
     delete this.healAt;
     for (const job of [...this.nerfPending]) { job.cancel = true; job.finish(null); }
