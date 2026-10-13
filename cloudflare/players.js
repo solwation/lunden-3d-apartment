@@ -246,7 +246,7 @@ export class PlayerRoom {
     const [client, server] = Object.values(new WebSocketPair());
     this.ctx.acceptWebSocket(server);
     const i = crypto.randomUUID().slice(0, 8), n = cleanName(url.searchParams.get('n'));
-    const attachment = { i, n, s: null, l: COMBAT.lives, t: now, w: now, c: 0, k: 0, over: false };
+    const attachment = { i, n, s: null, turned: false, l: COMBAT.lives, t: now, w: now, c: 0, k: 0, over: false };
     server.serializeAttachment(attachment);
     send(server, JSON.stringify({ t: 'w', i, l: attachment.l, ps: others.map(att).map((a) => ({ i: a.i, n: a.n, ...(a.s ?? {}), l: a.l ?? COMBAT.lives })), c: { lives: COMBAT.lives, weapons: COMBAT.weapons } }));
     this.broadcast({ t: 'j', i, n, l: COMBAT.lives }, server);
@@ -304,6 +304,9 @@ export class PlayerRoom {
     else {
       const s = cleanState(message);
       if (s) {
+        // #931: rendering may stay paused after a valid turn; never infer pose completion from wall time.
+        // Known history is initialized ONLY in a fresh connection's attachment; legacy missing history stays unknown.
+        if (a.s && s.r !== a.s.r) a.turned = true;
         if (!a.s || s.r !== a.s.r || s.p.some((v, i) => v !== a.s.p[i])) a.movedAt = now;
         a.s = s; this.publishState(ws, a);
       }
@@ -348,7 +351,7 @@ export class PlayerRoom {
     this.recoverLife(target, b, now); // a delayed alarm must not let due health be lost before this hit
     // #932: a greeting's wave may be paused/delayed on another replica. Never infer its end from wall time.
     // #936: rear arm contact has the same problem. Gate the rear branch independently; core/nose/jaw stay eligible.
-    const head = now - (b.movedAt ?? now) >= RH.stationaryMs && rifleHeadContact(b.i, b.s, shot, a.s.p, W.range, COMBAT.from, b.gt === undefined, true, b.gt === undefined);
+    const head = now - (b.movedAt ?? now) >= RH.stationaryMs && rifleHeadContact(b.i, b.s, shot, a.s.p, W.range, COMBAT.from, b.gt === undefined, b.gt === undefined && b.turned === false, b.gt === undefined);
     const left = (b.l ?? COMBAT.lives) - (head ? RH.headDamage : RH.bodyDamage), dead = left <= 0;
     b.l = dead ? COMBAT.lives : left;
     this.recoveryClock(b, now);

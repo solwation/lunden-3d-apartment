@@ -4543,3 +4543,57 @@ Runtime `ecf8ffb` was deployed by Worker-run38441111720/job115447621923: the
 actual cloudflare/wrangler-action step completed SUCCESS, not merely a green
 workflow or skipped deploy. Final published execution manifest remained250/250
 byte-identical. This confirms deployment of the bounded private rear gate only.
+
+
+### Front history correction after posed counterexample (#931, partial)
+
+The earlier3313c5d grid is finite standing-pose evidence, not all-pose acceptance.
+A separate actual Ghosts forward/saber/greeting/body-turn/paused-draw probe found
+19,995 unsupported-first/deeper-Front classifications among90,720 rays (CLI1).
+A fresh owned two-WebSocket Worker PoC froze the same real Nose-first pose after
+an accepted r2 heading change and650ms quiet: the actual client body packet took
+1HP, but forged deeper skull hc took2HP (9→7). Its diagnostic exit0 asserts this
+bug, not safety. The nearest surface was the real rotated nose/head; no generic
+claim that all failures were arms or that wall-clock quiet settles pose is made.
+Original artifacts remain under `/tmp/lunden-priority-931/front-turn-frozen-before/`.
+
+The bounded correction admits ONLY this new Front branch for a known fresh,
+ungreeted, unturned attachment. First valid heading is distinct from later valid
+heading changes; unknown legacy history fails closed. State/history persists
+across hibernation, returning to the old heading, death and recovery. Client
+claims and invalid/rate-rejected states cannot restore it. Core/nose/jaw/rear/
+lateral remain separate, and no wire field, animation or generic tolerance changes.
+Full restored post-turn/greeting Front support is the functional remainder #939;
+#931 and its parents remain open.
+
+`tools/riflefronttest.cjs ... --history` runs a separate focused fresh-owned native
+protocol/DOM scenario, not another whole geometry grid. history2:14 PASS/0 FAIL,
+actual CLI0, zero page errors/WebGL and234 runtime/driver hashes unchanged before
+PNG. Real client head2 precedes the turn; the same paused Nose-first/body packet
+and forged deeper hc both take body1 afterwards, replay adds no effect, a new
+socket/first heading restores head2, accepted greeting blocks Front, and a late
+observer sees no private history. Actual raw packet/acks/pose/provenance are saved
+before capture; the inspected native HUD shows the corrected receipts and fresh
+head marker. Independent frozen after-PoC confirms body9→forged body8.
+
+Focused Node front/players/recovery cases:38 PASS/0 FAIL, actual CLI0, including
+first-heading/rate/invalid/rounded input, legacy pending/hibernated attachments,
+fresh id, greeting privacy, one body-only lethal UUID/award and recovery. history1
+remains CLI1: three fixture failures exposed unsynchronized cached heading and
+rate-limited position publication at reconnect; history2 synchronizes real
+accepted state before reconnect/shooting, without changing product rules.
+Default full-grid and strict replay/producer-hash guards are preserved unchanged;
+these focused checks do not erase the earlier failed runs or measure a new grid.
+Artifacts: `/tmp/lunden-priority-931/{history1,history2,front-turn-after}/`,
+`guard-node2.log` and persistent `931-history-proof.json`. This is real imported
+Avatar/Ghosts/Combat, actual local Worker and native HUD evidence, not rendered
+World, phone/FPS, complete server physics or all-pose headshot support. Deployment
+of the corrective commit must be recorded independently from3313c5d's prior deploy.
+
+After incoming936/ecf8ffb, the independent Rear permission is retained as argument9,
+with strict private Front permission in argument8. A new focused merged-byte
+`history-merged` run again returned14 PASS/0 FAIL and actual CLI0; Node cases now
+return39 PASS/0 FAIL/CLI0 because the incoming Rear test is included.234 runtime/
+driver hashes match the fresh-owned Worker freeze, its listening PID exited and
+the actual HUD PNG was inspected. Earlier history2/38 results remain historical;
+this is new focused integration evidence, not a repeated full geometry grid.

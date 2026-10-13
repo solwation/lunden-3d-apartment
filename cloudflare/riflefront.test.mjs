@@ -64,3 +64,42 @@ test('front cell/ray/wire guards preserve all60 canonical appearances and maximu
   }
  }assert.equal(seen.size,60);
 });
+
+function frontWire(id,state={p:[0,0,0],r:0}) {
+ const look=avatarLook(id),width=[.93,1,1.08][look.build],c=Math.cos(state.r),s=Math.sin(state.r),turn=([x,y,z])=>[c*x+s*z,y,-s*x+c*z],o=turn([0,1.62,-4]).map((v,i)=>+(v+state.p[i]).toFixed(2)),point=turn([-.068*width,(H.headY+.09)*look.tall,0]).map((v,i)=>v+state.p[i]),v=point.map((x,i)=>x-o[i]),d=v.map(x=>+(x/Math.hypot(...v)).toFixed(3)),unit=d.map(x=>x/Math.hypot(...d)),t=rifleSkullEntry(id,state,o,d);
+ return {t:'a',w:'rifle',to:id,o,d,hc:[1,...o.map((x,i)=>+(x+unit[i]*t).toFixed(3))]};
+}
+async function historyFixture(initial=0) {
+ const env=setup(),a=await connect(env),b=await connect(env),id=b.got[0].i,server=b.ws.peer;
+ assert.equal(server.deserializeAttachment().turned,false,'known history initialized at NEW connection, before state');
+ b.send({p:[0,0,0],r:initial,h:'rifle'});a.send({p:[0,0,-4],r:0,h:'rifle'});await settle(env);now+=1000;
+ const shoot=async()=>{const state=server.deserializeAttachment().s,wire=frontWire(id,state),feet=[wire.o[0],wire.o[1]-1.62,wire.o[2]];a.send({p:feet,r:0,h:'rifle'});await settle(env);now+=1000;a.send(wire);await settle(env);return a.got.filter(x=>x.t==='hit').at(-1);};
+ const close=async()=>{a.ws.close();b.ws.close();await settle(env);};return{env,a,b,id,server,shoot,close};
+}
+test('front private history: first heading, invalid/rounded/rate-rejected states, monotone turn and hibernation',async()=>{
+ const f=await historyFixture(1.23);assert.equal(f.server.deserializeAttachment().turned,false);
+ const before=await f.shoot();assert.equal(before.head,true);assert.equal(before.l,8);
+ f.b.send({p:[0,0,0],r:'invalid',h:'rifle',turned:false});await settle(f.env);assert.equal(f.server.deserializeAttachment().turned,false);
+ now+=1000;f.b.send({p:[0,0,0],r:1.23001,h:'rifle',turned:true});await settle(f.env);assert.equal(f.server.deserializeAttachment().turned,false,'same CLEAN r2 heading is not a turn');
+ now+=1000;for(let i=0;i<PLAYERS.perSecond;i++)f.b.send({p:[0,0,0],r:1.23,h:'rifle'});f.b.send({p:[0,0,0],r:3.14,h:'rifle'});await settle(f.env);assert.equal(f.server.deserializeAttachment().turned,false,'rate-rejected heading cannot corrupt private history');
+ now+=1000;f.b.send({p:[0,0,0],r:3.14,h:'rifle',turned:false});await settle(f.env);assert.equal(f.server.deserializeAttachment().turned,true);
+ const denied=await f.shoot();assert.equal(denied.head,undefined);assert.equal(denied.l,7);
+ now+=1000;f.b.send({p:[0,0,0],r:1.23,h:'rifle',turned:false});await settle(f.env);assert.equal(f.server.deserializeAttachment().turned,true,'turning back cannot reset history');
+ f.env.PLAYERS.hibernate('world');const resumed=await f.shoot();assert.equal(resumed.head,undefined);assert.equal(resumed.l,6);assert.equal(f.server.deserializeAttachment().turned,true);await f.close();
+});
+test('front legacy unknown attachments fail closed, including old pending first state; new socket remains eligible',async()=>{
+ const f=await historyFixture();let state=f.server.deserializeAttachment();delete state.turned;f.server.serializeAttachment(state);f.env.PLAYERS.hibernate('world');const legacy=await f.shoot();assert.equal(legacy.head,undefined);assert.equal(legacy.l,9);
+ state=f.server.deserializeAttachment();state.s=null;delete state.turned;f.server.serializeAttachment(state);now+=1000;f.b.send({p:[0,0,0],r:3.14,h:'rifle'});await settle(f.env);assert.equal(f.server.deserializeAttachment().turned,undefined,'old unknown pending attachment never gains false trusted history');const pending=await f.shoot();assert.equal(pending.head,undefined);await f.close();
+ const fresh=await historyFixture(3.14);const hit=await fresh.shoot();assert.equal(hit.head,true);assert.equal(hit.l,8);await fresh.close();
+});
+test('front accepted greeting permanently suppresses only new front; late observer and client flags cannot reset it',async()=>{
+ const f=await historyFixture();const first=await f.shoot();assert.equal(first.head,true);
+ now+=1000;f.b.send({t:'g',to:f.a.got[0].i,k:0});await settle(f.env);assert.equal(typeof f.server.deserializeAttachment().gt,'number');
+ const observer=await connect(f.env);assert.ok(observer.got[0].ps.some(p=>p.i===f.id));assert.ok(observer.got[0].ps.every(p=>!('turned' in p)&&!('gt' in p)),'history remains PRIVATE, not client authority');
+ now+=1000;f.b.send({p:[0,0,0],r:0,h:'rifle',gt:null,turned:false,allowFront:true});await settle(f.env);f.env.PLAYERS.hibernate('world');const denied=await f.shoot();assert.equal(denied.head,undefined);assert.equal(denied.l,7);observer.ws.close();await f.close();
+});
+test('denied post-turn Front keeps one body-only kill/award/reset and normal recovery without restoring permission',async()=>{
+ const f=await historyFixture();assert.equal((await f.shoot()).l,8);now+=1000;f.b.send({p:[0,0,0],r:3.14,h:'rifle'});await settle(f.env);
+ const results=[];for(let i=0;i<8;i++)results.push(await f.shoot());assert.ok(results.every(h=>h.head===undefined));assert.equal(results.filter(h=>h.dead).length,1);assert.equal(typeof results.at(-1).kill,'string');assert.equal(results.at(-1).award.seq,9);assert.equal(f.server.deserializeAttachment().l,COMBAT.lives);assert.equal(f.server.deserializeAttachment().turned,true);
+ const after=await f.shoot();assert.equal(after.head,undefined);assert.equal(after.l,9);now+=60000;for(const ws of f.env.PLAYERS.ctx('world').getWebSockets())ws.autoAt=new Date(now);await f.env.PLAYERS.ctx('world').fireAlarm();await settle(f.env);assert.equal(f.server.deserializeAttachment().l,COMBAT.lives);assert.equal(f.server.deserializeAttachment().turned,true);await f.close();
+});
