@@ -4623,3 +4623,17 @@ leave profiles behind. A separate real early-error process must retain actual
 CLI1/original error after successful cleanup, rather than relabelling it PASS.
 These controlled faults test the error contract; they do not prove the OS cause
 of #940's two observed ENOTEMPTY races. No app/WebGL/performance acceptance.
+
+#942 scoped acceptance: combined six cleanup tests plus the original viewport
+test passed7/CLI0 under `/tmp/lunden-priority-942/frozen.log`; all three selected
+source hashes stayed exact. Normal and early-error owned masters exited and their
+profiles were removed. Controlled transient ENOTEMPTY succeeded after3 calls;
+permanent ENOTEMPTY failed after6 attempts/approximately1.5s of configured retry
+wait and still rejected repeated close. EACCES failed in1 attempt. Startup
+ENOENT survived successful cleanup and remained cause/first error when controlled
+cleanup also failed. A separate real native DOM early-error driver retained
+actual CLI1/original EARLY_FIXTURE_PRIMARY_942 with own profile removed. Native
+normal.png and original phone/desktop PNGs were inspected. All recorded own
+profiles were absent afterward. The first broad fs mock also affected Playwright
+internal temporary cleanup and failed two assertions; retained as failed, then
+restricted to the exact owned profile. No unobserved ENOTEMPTY OS cause is claimed.
