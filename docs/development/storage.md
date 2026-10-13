@@ -240,3 +240,8 @@ actual pose while retaining its existing hidden/render-pass lifecycle and arm/pr
 For future #879 head contact use the actual `avatar.bones.head` and skinned vertices;
 `Ghost.head` remains the previous fixed greeting anchor and is not a headshot surface.
 No hit classification/damage or head-height guesses are introduced here.
+
+
+Confirmed distance reward state (#873): the server attachment adds only a monotonic `awardSeq` alongside the existing per-minute accepted-point counter. It survives room hibernation, increments only on an accepted hit and starts again with a new connection. Hit acknowledgements carry `award:{i,seq,distance,points}`; all values come from the server's accepted geometry and the shared config rule, not request fields. Neither shots nor bonuses introduce KV writes or timers.
+
+The existing `lunden.stats` record gains `pvpRangePoints` (default0), containing extra distance points only. Existing `pvpHits` still stores integer events and yields its unchanged base reward, so old saves do not lose or double previously earned points. Both values follow the existing save/pagehide/reload/reset path. Combat's score high-watermark is per current connection; no growing or persisted score-receipt map is added. The separate #871 `killReceipts` map retains its existing persistence/reset semantics. The additive Worker protocol should deploy before the new client; a cached older Worker gives the existing base-only reward until updated.

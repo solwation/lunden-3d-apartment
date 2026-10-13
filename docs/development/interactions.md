@@ -194,8 +194,8 @@ src/combat.js          fights between players (#667, on the ghosts of #666): onl
                        streaks in one LineSegments (COMBAT.lines: rifle tracer, wand + toys.sparkles burst, the web from the
                        avatar's hand, the jetpack's flames down), the saber as a swing of the avatar's prop (ghosts.js `swing`).
                        The room checks a hit (cloudflare/players.js COMBAT: armed both, distance ≤ range +
-                       slack, `every`, ≤ perMinute points a minute) and tells both: hit → bump('pvpHits') (SCORE.each.pvpHits = the
-                       room's `points`), a splat, the badge; hurt → penalize('pvpHurt'), a red edge flash, sfx.ouch, a life off;
+                       slack, `every`, ≤ perMinute points a minute) and tells both: hit → bump('pvpHits') (unchanged SCORE.each.pvpHits base),
+                       plus the confirmed shared distance bonus (#873), a splat, the badge; hurt → penalize('pvpHurt'), a red edge flash, sfx.ouch, a life off;
                        out of lives → main.js goToStart (#665: only the place) with all lives again, badge. #lives (made by
                        combat.js, top centre) shows ❤ n/10 while a fight is on or the local player is injured, including unarmed play. tools/combattest.cjs (three pages)
 src/nerf.js            shared Nerf analytic step: configured gravity/speed/range, clipped floor contact and travel cap.
@@ -605,3 +605,10 @@ Standing/legacy clients, name/score/life badge anchors and greeting anchors reta
 their existing behavior. `tools/crouchposetest.cjs` uses actual Player/Ghosts/Avatar
 modules to exercise stationary input, headroom release, moving crouch and native
 welcome; the controlled-world native fixture does not boot the apartment.
+
+
+Distance rewards for confirmed player hits (#873): `PVP_SCORE` and pure `pvpHitPoints(distance)` in the already Worker-watched `src/config.js` are shared by PlayerRoom and Combat. The balance values are *guess*: the existing 5-point base is retained, with one extra point for each complete 2 m beyond 5 m, capped at 15 extra (7 m → 6, 15 m → 10, ≥35 m → 20). Geometry is the room's already accepted last-known shooter-feet→target-feet distance in 3D, the same distance used for the existing range/slack check; projectile origin/trajectory and obstacle predicates are not changed. Requests cannot supply reward points or award sequence. Actual awarded points consume the existing 60/minute cap; a hit above the remaining budget is refused rather than clipped. Existing per-weapon rates, participation, misses and damage rules remain.
+
+The server appends `award:{i,seq,distance,points}` to its existing hit acknowledgement. `i` identifies the shooting connection and `seq` increases only for accepted hits in its hibernating attachment. Combat validates the shared formula and current `Ghosts.me`, then checks a scalar high-watermark before base callback, range bonus, hit counter, hit-marker restart or sounds. Ordered same-socket replay and late acknowledgements from an old socket add nothing. The independent #871 `kill` UUID receipt remains first and persistently idempotent, including when an unseen kill receipt arrives with an already-consumed score acknowledgement. A reconnect starts a new server sequence; an old connection cannot replay after reload. Cached old Workers without `award` keep the previous base-only callback. This is current-connection score dedup, not persisted hit receipt history or an authentication claim.
+
+`stats.pvpHits` remains an integer hit count with its existing base contribution; `pvpRangePoints` is the separately saved extra amount added once by `rawScore`. Legacy saves retain already-earned base points, and reset clears both counts/extra points while #871's kill receipt replay protection stays intact. The original statistics panel adds “Träffar på spelare”, showing the hit count and a separate “avståndspoäng” subline. `tools/pvppointstest.cjs` checks the actual Worker/Ghosts/Combat/statistics DOM without apartment bootstrap/WebGL, including a real native raycast obstacle miss, confirmed short/middle/long shots, exact budget/refusal, controlled receipt replay, reconnect, reload and the visible original panel.
