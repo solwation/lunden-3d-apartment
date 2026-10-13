@@ -168,7 +168,7 @@ src/target.js          the Nerf target on the lawn behind the hedge (TARGET, #99
                        only while a holdable with `hitsTarget` (blasters, lightsaber, wands) is in the hand and sinks
                        under it otherwise (#144, #179); saber cuts and wand magic on it score too
 src/bow.js             the bow (#690, BOW): our own recurve bow (one vertex-coloured mesh, a Line string, a nocked arrow while
-                       drawing) + a quiver in the cushion box at the NW stair (patio.js `dynbox` inside 'bow'); seen / takeable only
+                       drawing), with explicit BOW.grip at the modeled leather grip centre (#910), + a quiver in the cushion box at the NW stair (patio.js `dynbox` inside 'bow'); seen / takeable only
                        while the lid is open, E on the box puts it back. `trigger(true/false)` (mouse button / touch action button,
                        main.js as the rifle) draws to full in BOW.drawTime and looses; under BOW.minDraw nothing; a click / tap
                        without a hold (`use`) looses at BOW.tap. Arrows (one pool `Arrows`, BOW.arrows) fly under gravity, point

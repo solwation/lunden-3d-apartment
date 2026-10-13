@@ -2477,7 +2477,8 @@ export const CAMPUS_LOD = { curve: 3, roofGrid: 2, maxTris: 36000 };
 // goes); unlimited. `held`: the bow's place in the view (camera space), shown at `heldScale` (a full-size bow would fill the
 // view). All our picks (*guess*).
 export const BOW = { held: { x: 0.09, y: -0.06, z: -0.7 }, heldScale: 0.6, drawTime: 0.9, minDraw: 0.15, speed: [14, 42], tap: 0.5, gravity: 9.81,
-  len: 0.72, stick: 20, flight: 6, arrows: 12, pull: 0.32 };
+  len: 0.72, stick: 20, flight: 6, arrows: 12, pull: 0.32,
+  grip: [0, -0.02, -0.005] }; // model-local leather-cylinder centre; hand fit is a visual guess (#910)
 export const RIFLE = { mag: 30, rpm: 600, spread: 0.012, range: 60, reloadDelay: 0.25, reloadSeconds: 1.6, magLife: 120, maxDrops: 6,
   held: { x: 0.17, y: -0.24, z: -0.56 } };
 export const MARKS = {

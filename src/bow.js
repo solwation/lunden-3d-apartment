@@ -156,7 +156,7 @@ export class Bow extends Holdable {
       home: { pos: homePos, rot: new THREE.Euler().setFromQuaternion(qHome) },
       heldPose: { pos: new THREE.Vector3(B.held.x, B.held.y, B.held.z), rot: new THREE.Euler(0, 0, -0.3) }, // canted, as archers hold it
       pick: { pos: pickPos, size: [info.L * 0.9, info.hb, info.D * 0.8] },
-      cooldown: 0, useLabel: 'Skjut',
+      cooldown: 0, useLabel: 'Skjut', grip: B.grip,
     });
     Object.assign(this, { isBow: true, clickIsUse: true, shoots: true, arrows, string, nocked, box: info, drawing: false, draw: 0, releasedAt: -1e9, shots: 0 });
     // the quiver lies beside it, drawn with the box's contents (only while the lid is open)
