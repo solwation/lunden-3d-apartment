@@ -110,6 +110,13 @@ tools/nerfapartmentprobe.cjs (#715): bounded actual apartment local Blaster/Dart
                        production drawing at quality0 (no test mode), paused automatic loop, cold/local-warm effect intervals,
                        separately reported remote-cache readiness and 2s obstacle query, JSON before screenshot. No network,
                        physical-phone/FPS or native-parity claim; see docs/validation/issue-715/README.md.
+tools/nerfreciprocaltest.cjs (#715): two actual native Ghosts/Combat/held Nerf clients and local Worker sockets,
+                       18 checks: two shots each, authoritative reciprocal receipts/lives, remote darts, cadence and real p/q.
+                       --apartment substitutes one ordinary World for one native peer; support/headroom/native segment preflight,
+                       two final draws/one bounded CDP image only after actual confirmations. Current World attempt is CLI 1:
+                       first pending shot becomes targetless after 2002ms; logic/image incomplete, no reciprocal World acceptance.
+                       Future failures record actual muzzle and production lastPath; those fields were absent from that World run.
+                       Source checkpoints/actual exits retained; see docs/validation/issue-715/README.md.
 tools/trigridprofile.cjs / .html (#715): native Three, production furniture component + controlled sphere; historical
                        a336e30 constructor phase copy/bin diagnosis; PROFILE_REF=current selects current source. Not full apartment/GPU.
 tools/markscoldprofile.cjs / .html (#715): actual Marks.meshes/buildFurniture, current instrumented bounds/grid/copy/bin/hits/native/residual phases versus separate uninstrumented cold/retained queries and fresh actual Darts. Strict anchors, exact result parity, raw JSON before screenshot; no production timing hooks or renderer/phone claim.
