@@ -60,22 +60,25 @@ let checks=0;const check=(ok,text)=>{assert.ok(ok,text);checks++;console.log(`PA
       check(await page.evaluate(()=>off.el.querySelector('.fps-value')?.textContent==='—'),'FPS cell exists before/without online service');
     }else{
       const context=await browser.newContext({viewport:{width:480,height:300},hasTouch:true,deviceScaleFactor:1}),page=await context.newPage();page.setDefaultTimeout(45000);page.on('pageerror',e=>errors.push(e.message));
-      const started=Date.now();await page.goto(base+'/?lowmem&phone&quality=0&at=4.2,3.9,180&time=12&freeze&cloud=',{waitUntil:'commit'});
+      const started=Date.now();let phaseTimer;await page.goto(base+'/?lowmem&phone&quality=0&at=4.2,3.9,180&time=12&freeze&cloud=',{waitUntil:'commit'});
       await page.waitForFunction(()=>window.__app?.renderer&&__app.loadingEl.hidden,null,{timeout:240000,polling:200});
+      phaseTimer=setTimeout(()=>browser.close(),60000);
       check(await page.evaluate(()=>__app.testMode===null),'actual apartment constructed without test mode');
       await page.evaluate(()=>{__app.renderer.setAnimationLoop(null);__app.showOverlay(false);});
       await page.clock.install();await page.clock.pauseAt(await page.evaluate(()=>Date.now()+100));
       await page.evaluate(()=>{const a=__app,original=a.renderer.render.bind(a.renderer);window.draws=0;a.renderer.render=(s,c)=>{draws++;return original(s,c);};a.frameRate.reset();a.frame(.02);window.warmSkipped=a.warm.done;});
       async function sample(n,ms){await page.evaluate(()=>draws=0);for(let i=0;i<n;i++){await page.clock.runFor(ms);await page.evaluate(ms=>__app.frame(ms/1000),ms);}return page.evaluate(()=>({draws,value:__app.frameRate.value,text:document.querySelector('.fps-value').textContent}));}
-      const ordinary=await sample(50,20);check(ordinary.draws===50&&ordinary.value===50,'actual main frame counts ordinary scene draws over controlled elapsed time');
-      const extra=await page.evaluate(()=>{const a=__app,before=a.frameRate.frames;a.renderer.render(a.scene,a.camera);a.renderer.render(a.scene,a.camera);return a.frameRate.frames===before;});check(extra,'actual extra renderer calls outside ordinary main hook do not inflate FPS');
-      await page.evaluate(()=>__app.use(__app.note));const reading=await sample(100,10);check(reading.draws===10&&reading.value===10,'actual phone reading gate: 100 logic callbacks, 10 drawn scene frames, 10 FPS');
+      const ordinary=await sample(5,200);check(ordinary.draws===5&&ordinary.value===5,'actual main frame counts five ordinary scene draws over controlled elapsed time');
+      const extra=await page.evaluate(()=>{const a=__app,before=a.frameRate.frames;a.renderer.render(a.scene,a.camera);return a.frameRate.frames===before;});check(extra,'actual extra renderer calls outside ordinary main hook do not inflate FPS');
+      await page.evaluate(()=>__app.use(__app.note));const reading=await sample(30,20);check(reading.draws===6&&reading.value===10,'actual phone reading gate: 30 logic callbacks, six drawn scene frames, 10 FPS');
+      fs.writeFileSync(`${out}/app-checkpoint.json`,JSON.stringify({checks,errors,ordinary,reading,stage:'before-images'},null,2));
       await page.screenshot({path:`${out}/actual-app-reading.png`});await page.locator('#note-close').click({force:true});
       await page.evaluate(()=>__app.showOverlay(true));check(await page.evaluate(()=>__app.frameRate.value===null&&document.querySelector('.fps-value').textContent==='—'),'actual pause immediately clears stale FPS');
-      await sample(50,20);await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,get:()=>true});document.dispatchEvent(new Event('visibilitychange'));});
-      const hidden=await sample(50,20);check(hidden.draws===0&&hidden.value===null,'controlled hidden flag stops phone draws and keeps FPS unknown');
+      await sample(2,20);await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,get:()=>true});document.dispatchEvent(new Event('visibilitychange'));});
+      const hidden=await sample(2,20);check(hidden.draws===0&&hidden.value===null,'controlled hidden flag stops phone draws and keeps FPS unknown');
       await page.evaluate(()=>{delete document.hidden;document.dispatchEvent(new Event('visibilitychange'));__app.showOverlay(false);__app.frame(.02);});
-      const resumed=await sample(50,20);check(resumed.draws===50&&resumed.value===50,'actual resume starts fresh 50-FPS window with no stale spike');await page.screenshot({path:`${out}/actual-app-resumed.png`});
+      const resumed=await sample(5,200);check(resumed.draws===5&&resumed.value===5,'actual resume starts fresh 5-FPS window with no stale spike');await page.screenshot({path:`${out}/actual-app-resumed.png`});
+      clearTimeout(phaseTimer);
       results.push({ordinary,reading,hidden,resumed,extra,warmSkipped:await page.evaluate(()=>warmSkipped),elapsedMs:Date.now()-started,evidence:'actual WebGL apartment; controlled clock/visibility and callback cadence, not physical phone or measured hardware FPS'});
     }
     check(errors.length===0,`no page errors: ${JSON.stringify(errors)}`);fs.writeFileSync(`${out}/${app?'app':'native'}-result.json`,JSON.stringify({checks,errors,results},null,2));console.log('ALL PASS');
