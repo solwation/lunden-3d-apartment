@@ -301,6 +301,30 @@ ordinary failure baseline without modifying it. `node --test tools/runneriterati
 server and browser native DOM/query/reload/isolation and controller evidence in a minimal temporary repo, without
 loading the apartment/WebGL. This protocol regression supplies no game parity or performance claim.
 
+Representative #860 measurement on frozen `297f9e8` used the unchanged current `pctest.html` and exactly three
+real app documents: one `--compare` full/test pair, then a separate `--test-only` invocation. Both CLI processes exited
+0; the pair retained all nine identical ordered PASS rows and its own ordinary mode-verified comparison. The separate
+iteration run also completed nine PASS rows, actual `?test`/480×300 controller, explicit iteration scope and no
+comparison object. All 232 recorded source/data/index/runner/fixture/server hashes remained unchanged throughout.
+
+| Workflow | Actual process wall time | Actual runner times (capture included) | Passive capture time |
+|---|---:|---:|---:|
+| `--compare pctest.html` | 77.233 s | full 46.342 s + test 30.282 s | 9.150 s + 5.079 s |
+| `--test-only pctest.html` | 31.233 s | test-only 30.599 s | 5.381 s |
+
+These are one observed sample per workflow, with the same 60-second fullPage capture bound after completion; no
+suite-wide or rendering speedup is inferred. Test-only deliberately omits the full run. Capture coverage differs:
+the inspected full PNG is 1280×800 native fullscreen with the final PC/weapon-wall/HUD scene and no parent results;
+both test PNGs are 830×492 fullPage captures showing all nine rows vertically (long text clips at the right) and the
+480×300 final iframe. The parent capture width is not the app viewport. No rendered-pixel equivalence or intermediate
+PC-action image is claimed. Each retained document has matching observed ready/final URL and timeOrigin, empty cloud,
+no page errors; full observations already show fullscreen/null controller, test observations have the real draw/setFull/
+wantsFrame controller and no fullscreen. No earlier full initial viewport is inferred from those later observations.
+
+Source freeze, native identities, raw output, three reviewed PNGs, helper hashes and timings are retained in
+`/tmp/lunden-priority-860/`; actual paired runner logs are `/tmp/runtests-1472694/`, separate iteration logs
+`/tmp/runtests-1474199/`. The latter is iteration evidence only; it does not replace full/test acceptance for #736.
+
 
 `christmastest.html` retains its original `PASS/FAIL christmastest` summary and every original ordered check row,
 then appends `ALL PASS` / `SOME FAILED` from the same final `pass` flag (#847). Its earlier summary alone was not a runner
