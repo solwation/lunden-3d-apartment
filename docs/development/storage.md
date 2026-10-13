@@ -627,3 +627,22 @@ valid r2 endpoints; wrapped comparisons cover the ±π crossing. Zero yaw is
 intentionally eligible too, redundantly with the independent original immutable
 LEFT rule; it cannot restore invalidated metadata. Damage, recovery, one lethal
 UUID, award sequencing and life reset remain the existing authoritative paths.
+
+### Private bounded after-turn anchor (#944)
+New socket attachments start with `frontTurn:null`. Only that known fresh sentinel
+with s:null followed by first accepted standing cleanState establishes immutable
+`{p:[x,y,z],r}`. Accepted normalized p/c changes or wrapped yaw outside the guessed
+.02rad corridor permanently replace the anchor with false. Missing legacy history
+is not reconstructed; null with an existing state and malformed history fail closed.
+`knownFrontTurn` explicitly requires a p[3]/r object inside the existing state
+numerical bounds. Client fields cannot overwrite it and public/join/welcome state
+never includes it. Existing headPoseFixed/turned histories are preserved exactly.
+
+The independent named `allowAfterTurnFront` requires known anchor, turned===true
+and gt absence. It never changes the older bool/default options or other named
+greeting/region guards. Normal hibernate serializes the anchor; accepted movement,
+life reset or elapsed quiet time cannot silently recreate broken history. No new
+message, public model/phase, health counter, timer or KV write is added.
+Number.EPSILON×128 only guards floating subtraction/trigonometric wrap at equal
+r2 corridor endpoints (under the unchanged finite r≤100 bound); it does not change
+normalized state, hc/ray precision or model/wire/surface tolerances.

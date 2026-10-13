@@ -972,3 +972,22 @@ publication; no forced send or new message is introduced. Unknown legacy history
 and clients without the optional head contact keep ordinary body damage. This
 bounded slice does not establish larger-turn, moving or crouching lateral support;
 #935 retains those remaining families.
+
+### Narrow after-turn Front family (#944)
+A separate measured subset of the old front skull patch can give rifle2HP after
+a genuinely accepted small yaw change. `afterTurnFrontPatch` x .065–.071,
+y .086–.094, cone .04 and first-yaw corridor .02rad are conservative *guesses*,
+not physical measurements. The entire rounded hc cell must fit the old Front
+shape and these smaller limits; original first-triangle/ray/range guards apply.
+Avatar/Combat still requires the actual nearest Skull-tagged skinned surface and
+the full obstacle ray. No bones, shape, material, motion or wire tolerance changes.
+
+Eligibility requires a known private first-standing p/r anchor, unchanged normalized
+p/c, every accepted heading inside ±.02rad of that first heading, at least one
+accepted yaw change, and no accepted greeting on that attachment. An excursion,
+movement or crouch permanently breaks the family; returning and waiting do not
+restore it. This does not restore arbitrary body/head turns. Existing core/nose/jaw,
+rear/lateral and greeting-Front permissions remain independent. A yaw-only change
+this small does not cross the unchanged client .03rad send threshold; an ordinary
+weapon/suit/score publication can carry the new yaw. The native protocol explicitly
+uses a real saber→rifle switch, never forced previous state or an altered budget.

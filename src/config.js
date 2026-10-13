@@ -4590,6 +4590,8 @@ export const PVP_RIFLE_HEAD = {
   greetingLeftTinyTurn: .01, // #947 *guess* one accepted r2 yaw quantum from the first standing anchor; no projection/entry tolerance change
   // #943: narrow conservative *guess* inside Front; actual immutable-heading wave/pause/cell proof, not elapsed pose settling.
   greetingFrontPatch: { across: [.065, .071], vertical: [.086, .094], direction: .04 },
+  // #944 *guess*: tiny first-yaw corridor and a whole-cell subset of the original frontal patch; actual posed/hidden/corner proofs required.
+  afterTurnFrontPatch: { x: [.065, .071], y: [.086, .094], approach: .04, yaw: .02 },
   // .001 derives from sqrt(3)/2000 maximum r3 contact error on the already-snapped o:r2/d:r3 ray.
   // Head anchor is the midpoint of existing bind1.54 / settled1.52; surface/pose limits are conservative *guess*
   // safeguards checked by the actual native fixture, not model measurements or guaranteed anti-cheat physics.
@@ -4700,8 +4702,18 @@ export function rifleHeadFrontRegion(seed,state,point,origin,direction) {
   return [F.x,F.y,F.z].every(([low,high],i)=>q[i]-e[i]>=low&&q[i]+e[i]<=high);
 }
 
+/** #944: independent measured subset, never an override of existing private front eligibility. */
+export function rifleHeadAfterTurnFrontRegion(seed,state,point,origin,direction) {
+  if(!rifleHeadFrontRegion(seed,state,point,origin,direction))return false;
+  const H=PVP_RIFLE_HEAD,F=H.afterTurnFrontPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),w=[.93,1,1.08][look.build];
+  const front=s*direction[0]+c*direction[2],side=c*direction[0]-s*direction[2];
+  if(Math.abs(side)>-front*F.approach||Math.abs(direction[1])>-front*F.approach)return false;
+  const [x,y,z]=point.map((v,i)=>v-state.p[i]),qx=Math.abs((c*x-s*z)/w),qy=y/look.tall-H.headY;
+  return qx-H.wireMetres/w>=F.x[0]&&qx+H.wireMetres/w<=F.x[1]&&qy-H.wireMetres/look.tall>=F.y[0]&&qy+H.wireMetres/look.tall<=F.y[1];
+}
+
 // Shared dispatch: #916 owns the central core; #917 can add its independent extra-region branch here.
-export function rifleHeadRegion(seed,state,point,origin,direction,allowLateral = true,options = true,legacyRear = true) { if(options===null||typeof options!=='object')options={allowFront:options,allowRear:legacyRear}; return rifleHeadCoreRegion(seed,state,point,origin,direction) || ((options.allowRear === undefined || options.allowRear) && rifleHeadRearRegion(seed,state,point,origin,direction)) || ((options.allowFront === undefined || options.allowFront) && rifleHeadFrontRegion(seed,state,point,origin,direction)) || (allowLateral && rifleHeadLateralRegion(seed,state,point,origin,direction)) || ((options?.allowGreetingLeft === true || options?.allowGreetingLeftTinyTurn === true) && rifleHeadGreetingLeftRegion(seed,state,point,origin,direction)) || (options?.allowGreetingFront === true && rifleHeadGreetingFrontRegion(seed,state,point,origin,direction)) || (options?.allowGreetingRight === true && rifleHeadGreetingRightRegion(seed,state,point,origin,direction)); }
+export function rifleHeadRegion(seed,state,point,origin,direction,allowLateral = true,options = true,legacyRear = true) { if(options===null||typeof options!=='object')options={allowFront:options,allowRear:legacyRear}; return rifleHeadCoreRegion(seed,state,point,origin,direction) || ((options.allowRear === undefined || options.allowRear) && rifleHeadRearRegion(seed,state,point,origin,direction)) || ((options.allowFront === undefined || options.allowFront) && rifleHeadFrontRegion(seed,state,point,origin,direction)) || (allowLateral && rifleHeadLateralRegion(seed,state,point,origin,direction)) || ((options?.allowGreetingLeft === true || options?.allowGreetingLeftTinyTurn === true) && rifleHeadGreetingLeftRegion(seed,state,point,origin,direction)) || (options?.allowGreetingFront === true && rifleHeadGreetingFrontRegion(seed,state,point,origin,direction)) || (options?.allowGreetingRight === true && rifleHeadGreetingRightRegion(seed,state,point,origin,direction)) || (options?.allowAfterTurnFront === true && rifleHeadAfterTurnFrontRegion(seed,state,point,origin,direction)); }
 
 /** Exposed lower rear skull only, with the same snapped ray as the actual native contact. */
 export function rifleHeadRearRegion(seed,state,point,origin,direction) {

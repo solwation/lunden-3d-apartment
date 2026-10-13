@@ -871,3 +871,29 @@ test('#947 accepted normalized tiny turn after greeting gives authoritative LEFT
  await send(b,{...first,r:.82});await send(b,{...first,r:.81});hit=await fire(shot);assert.equal(hit.head,undefined);assert.equal(hit.l,8,'out-of-band and return stay body1');
  a.ws.close();b.ws.close();await settle(env);
 });
+
+test('post-turn frontal corridor: private first-standing anchor, permanent escape, legacy failure and independent regions',async()=>{
+  const {avatarLook,PVP_RIFLE_HEAD:H,rifleSkullEntry,rifleHeadAfterTurnFrontRegion}=await import('../src/config.js');
+  const env=setup(),a=await connect(env,'Small-turn shooter'),b=await connect(env,'Small-turn target'),id=b.got[0].i;
+  a.send({p:[0,0,-3],r:0,h:'rifle'});b.send({p:[0,0,0],r:0,h:'rifle'});await settle(env);now+=1000;
+  const socket=()=>[...env.PLAYERS.object('world').ctx.getWebSockets()].find(ws=>ws.deserializeAttachment().i===id),attachment=()=>socket().deserializeAttachment();
+  assert.deepEqual(attachment().frontTurn,{p:[0,0,0],r:0});
+  const shotFor=(r,seed=id)=>{const look=avatarLook(seed),w=[.93,1,1.08][look.build],state={p:[0,0,0],r};for(const x of [-.067,.067])for(const dy of [.089,.09,.091])for(const distance of [3,3.5,4]){
+    const c=Math.cos(r),s=Math.sin(r),target=[-x*w*c-.08*w*s,(H.headY+dy)*look.tall,x*w*s-.08*w*c],o=[+(target[0]-distance*s).toFixed(2),1.62,+(target[2]-distance*c).toFixed(2)],raw=target.map((v,i)=>v-o[i]),n=Math.hypot(...raw),d=raw.map(v=>+(v/n).toFixed(3)),unit=d.map(v=>v/Math.hypot(...d)),first=rifleSkullEntry(seed,state,o,d);if(first===null)continue;const hc=[1,...o.map((v,i)=>+(v+unit[i]*first).toFixed(3))];if(rifleHeadAfterTurnFrontRegion(seed,state,hc.slice(1),o,d))return{t:'a',w:'rifle',to:seed,o,d,hc};
+  }throw Error('no rounded narrow frontal corridor contact');};
+  const shoot=async (r,seed=id)=>{const shot=shotFor(r,seed);a.send({p:[shot.o[0],0,shot.o[2]],r:0,h:'rifle'});await settle(env);now+=1000;a.send(shot);await settle(env);return a.got.filter(m=>m.t==='hit').at(-1);};
+  b.send({p:[0,0,0],r:.01,h:'rifle',frontTurn:{p:[0,0,0],r:999},turned:false});await settle(env);now+=1000;
+  assert.equal(attachment().turned,true);assert.equal(attachment().headPoseFixed,false);assert.deepEqual(attachment().frontTurn,{p:[0,0,0],r:0},'cleaned state cannot replace private anchor');
+  let hit=await shoot(.01);assert.equal(hit.head,true);assert.equal(hit.l,8);assert.equal(hit.award.points,5);
+  env.PLAYERS.hibernate('world');b.send({p:[0,0,0],r:-.02,h:'saber',score:99});await settle(env);assert.deepEqual(attachment().frontTurn,{p:[0,0,0],r:0});
+  b.send({p:[0,0,0],r:-.02,h:'rifle'});await settle(env);hit=await shoot(-.02);assert.equal(hit.head,true);assert.equal(hit.l,6,'opposite corridor boundary remains supported after hibernation');
+  const late=await connect(env,'Late observer'),published=late.got[0].ps.find(p=>p.i===id);assert.equal(published.frontTurn,undefined);assert.equal(published.turned,undefined);
+  b.send({p:[0,0,0],r:3.14,h:'rifle'});await settle(env);assert.equal(attachment().frontTurn,false);
+  b.send({p:[0,0,0],r:.01,h:'rifle'});await settle(env);hit=await shoot(.01);assert.equal(hit.head,undefined);assert.equal(hit.l,5,'returning from larger turn never restores corridor');
+  b.ws.close();await settle(env);const fresh=await connect(env,'Fresh history'),fid=fresh.got[0].i;fresh.send({p:[0,0,0],r:3.14,h:'rifle'});await settle(env);
+  const getFresh=()=>[...env.PLAYERS.object('world').ctx.getWebSockets()].find(ws=>ws.deserializeAttachment().i===fid);
+  assert.deepEqual(getFresh().deserializeAttachment().frontTurn,{p:[0,0,0],r:3.14});fresh.send({p:[0,0,0],r:3.16,h:'rifle'});await settle(env);assert.ok(getFresh().deserializeAttachment().frontTurn);
+  // Legacy unknown history is not reconstructed from current position or a later good heading.
+  for(const history of [undefined,null,true,{p:[0,0],r:3.14}]){let old=getFresh().deserializeAttachment();if(history===undefined)delete old.frontTurn;else old.frontTurn=history;getFresh().serializeAttachment(old);fresh.send({p:[0,0,0],r:3.15,h:'rifle'});await settle(env);assert.ok(!getFresh().deserializeAttachment().frontTurn,'unknown/malformed legacy is not reconstructed');assert.equal((await shoot(3.15,fid)).head,undefined,'supported ray on unknown/null/malformed history remains body-only');}
+  for(const peer of [a,fresh,late])peer.ws.close();await settle(env);
+});

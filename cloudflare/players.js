@@ -73,6 +73,8 @@ export const CLOSE = { idle: 4000, cap: 4001, off: 4003, rate: 4008, full: 4029,
 const month = (t = Date.now()) => new Date(t).toISOString().slice(0, 7);
 const r2 = (v) => Math.round(v * 100) / 100;
 const fin = (v, lim) => typeof v === 'number' && Number.isFinite(v) && Math.abs(v) <= lim;
+// #944: legacy/malformed private history cannot acquire front permission from truthiness.
+const knownFrontTurn = h => h !== null && typeof h === 'object' && Array.isArray(h.p) && h.p.length === 3 && h.p.every(v => fin(v, 5000)) && fin(h.r, 100);
 export const cleanName = (s) => (typeof s === 'string' ? s.replace(/[\u0000-\u001f<>&"]/g, '').trim().slice(0, PLAYERS.nameMax) : '');
 
 /** Chat text as plain text: control, zero-width and bidi-override characters out, whitespace runs to one space, trimmed,
@@ -259,7 +261,7 @@ export class PlayerRoom {
     const [client, server] = Object.values(new WebSocketPair());
     this.ctx.acceptWebSocket(server);
     const i = crypto.randomUUID().slice(0, 8), n = cleanName(url.searchParams.get('n'));
-    const attachment = { i, n, s: null, turned: false, leftTinyTurn: null, l: COMBAT.lives, t: now, w: now, c: 0, k: 0, over: false };
+    const attachment = { i, n, s: null, turned: false, leftTinyTurn: null, frontTurn: null, l: COMBAT.lives, t: now, w: now, c: 0, k: 0, over: false };
     server.serializeAttachment(attachment);
     send(server, JSON.stringify({ t: 'w', i, l: attachment.l, ps: others.map(att).map((a) => ({ i: a.i, n: a.n, ...(a.s ?? {}), l: a.l ?? COMBAT.lives })), c: { lives: COMBAT.lives, weapons: COMBAT.weapons } }));
     this.broadcast({ t: 'j', i, n, l: COMBAT.lives }, server);
@@ -328,6 +330,13 @@ export class PlayerRoom {
         // A known fresh null sentinel is required; missing legacy history never initializes.
         if (a.s === null && a.leftTinyTurn === null) a.leftTinyTurn = s.c === true ? false : { p: s.p.slice(), r: s.r };
         else if (a.leftTinyTurn && !leftTinyPoseFits(a.leftTinyTurn, s)) a.leftTinyTurn = false;
+
+        // #944: first-standing pose anchors a tiny yaw corridor; movement/crouch/escape invalidates it forever.
+        // Missing legacy history is never initialized; only a fresh known null sentinel with no prior state can start.
+        // EPSILON *128 covers floating subtraction/trigonometric wrap at r2 equality endpoints, not a pose/wire tolerance.
+        if (a.frontTurn === null && a.s === null) a.frontTurn = s.c ? false : { p: s.p.slice(), r: s.r };
+        else if (a.frontTurn !== undefined && a.frontTurn !== false && (!knownFrontTurn(a.frontTurn) || s.c || s.p.some((v, i) => v !== a.frontTurn.p[i]) ||
+          Math.abs(Math.atan2(Math.sin(s.r-a.frontTurn.r),Math.cos(s.r-a.frontTurn.r))) > RH.afterTurnFrontPatch.yaw + Number.EPSILON * 128)) a.frontTurn = false;
         if (!a.s || s.r !== a.s.r || s.p.some((v, i) => v !== a.s.p[i])) a.movedAt = now;
         a.s = s; this.publishState(ws, a);
       }
@@ -373,7 +382,7 @@ export class PlayerRoom {
     // #932: a greeting's wave may be paused/delayed on another replica. Never infer its end from wall time.
     // #938 reopens only a narrow left temple when first-standing p/r/c never changed; no wave-end inference.
     // Right/changed/legacy lateral contacts retain the permanent gt fallback; #931 front/#936 rear gates stay independent.
-    const head = now - (b.movedAt ?? now) >= RH.stationaryMs && rifleHeadContact(b.i, b.s, shot, a.s.p, W.range, COMBAT.from, b.gt === undefined, { allowGreetingLeftTinyTurn: b.gt !== undefined && leftTinyPoseFits(b.leftTinyTurn, b.s), allowGreetingLeft: b.gt !== undefined && b.headPoseFixed === true, allowGreetingFront: b.gt !== undefined && b.headPoseFixed === true && b.turned === false, allowGreetingRight: b.gt !== undefined && b.headPoseFixed === true && b.turned === false, allowFront: b.gt === undefined && b.turned === false, allowRear: b.gt === undefined });
+    const head = now - (b.movedAt ?? now) >= RH.stationaryMs && rifleHeadContact(b.i, b.s, shot, a.s.p, W.range, COMBAT.from, b.gt === undefined, { allowGreetingLeftTinyTurn: b.gt !== undefined && leftTinyPoseFits(b.leftTinyTurn, b.s), allowGreetingLeft: b.gt !== undefined && b.headPoseFixed === true, allowGreetingFront: b.gt !== undefined && b.headPoseFixed === true && b.turned === false, allowGreetingRight: b.gt !== undefined && b.headPoseFixed === true && b.turned === false, allowFront: b.gt === undefined && b.turned === false, allowRear: b.gt === undefined, allowAfterTurnFront: b.gt === undefined && b.turned === true && knownFrontTurn(b.frontTurn) });
     const left = (b.l ?? COMBAT.lives) - (head ? RH.headDamage : RH.bodyDamage), dead = left <= 0;
     b.l = dead ? COMBAT.lives : left;
     this.recoveryClock(b, now);

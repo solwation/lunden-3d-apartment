@@ -4919,3 +4919,46 @@ measurements, not rewritten final hashes. Reversing the two own runtime addition
 reproduced the preceding published config/PlayerRoom, preserving #943/#946 and
 all independent surface families. Parent #935 remains open for larger turns,
 movement and crouching; no timeout can reopen this private corridor.
+
+### Actual tiny-turn Front family (#944)
+Serve the owned tree, then run `PLAYWRIGHT_MODULE=/path/to/playwright CHROME_PATH=/path/to/chrome node tools/rifleturnfronttest.cjs http://localhost:8870 http://localhost:8871 /tmp/rifle-tiny-turn`.
+The actual native Ghosts matrix uses all60 canonical seed/style/build/height
+combinations, four base headings, accepted r2 endpoints ±.02, intermediate
+interpolation and capped paused first draws, held rifle/saber swing and actual
+nearest skin faces. Independent forged FIRST pureSkull entries behind earlier
+other surfaces and rounded-cell corner raycasts must stay safe. A180s finite
+CPU budget retains a checkpoint per completed model; incomplete data is not
+acceptance. The native driver starts and proves its own fresh Worker only AFTER
+source freezing and geometry, avoiding stale modules and idle sockets.
+
+The protocol carries .01rad using a genuine weapon change because unchanged
+Ghosts.update does not publish yaw-only differences below .03. It verifies actual
+Combat nearest-contact→serialized hc→Worker2HP, self/public life, body1, one lethal
+kill/award/reset and replay, then the actual paused r2=3.14 Nose-first/deeperSkull
+forgery must get body1 and returning inside the corridor must remain disabled.
+Save raw receipts, source hashes, owned PID/socket provenance, actual exit and
+original native HUD PNG. Node tests additionally cover endpoints, hibernate,
+latewelcome and missing/null/malformed legacy history on supported rays. Preserve
+all older greeting/core/nose/jaw/rear/lateral contracts; this is neither arbitrary
+turn restoration, rendered World, phone/FPS nor full server avatar physics.
+
+#944 measured matrix: 60 looks,126720 rays,11480 positives,29874 unsupported
+nearest surfaces,24290 forged first pureSkull contacts behind earlier surfaces,
+and7648 independent rounded-cell corners; all bad counters zero. The original
+whole producers exited1 later in protocol scheduling; their complete source-bound
+grid phase is measured evidence, not a successful whole run. The corrected
+current-frame whole native run passed23 checks. After independent #946/#947 and
+#715 integration, explicit `--protocol-only` passed19 checks with a newly started
+owned Worker and235 exact source hashes; it does not rerun or pretend to replay
+the older grid. All20 measured pure helpers and the original region/constant
+projection are identical, and both private turn histories/options are preserved.
+
+Final focused Node5/CLI0 covers own corridor and related histories. The complete
+33-test suite actually returned32 PASS/1 FAIL: known #945 lateral greeting test
+expects body on a contact within the already reopened fixed-left family. An
+external deterministic UUID preload selects target00000002 (style3/build1/tall1);
+identical inputs reproduce the same assertion failure on byte-loaded upstream
+480e883 and this candidate. No side fix or complete-suite-green claim is made.
+The inspected native HUD image shows the last body marker `Träff!`; its separate
+receipt rows report the earlier head2/HP8, body1/HP7 and single fatal receipt.
+No World, WebGL, phone, FPS or arbitrary-turn restoration was tested.
