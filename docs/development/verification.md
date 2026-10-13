@@ -4607,3 +4607,19 @@ This confirms publication/deployment of the bounded restriction, not live-device
 or full post-turn support. #931/#939 remain open. The final docs-only rebase
 preserves all234 measured runtime/driver hashes, and owned Worker/browser/server
 processes were stopped.
+
+
+### Owned native browser cleanup regression (#942)
+Run `PLAYWRIGHT_MODULE=/path/to/playwright CHROME_PATH=/path/to/chrome NATIVE_BROWSER_ARTIFACTS=/tmp/native-browser-check node --test tools/nativefixturebrowser.test.cjs`,
+and the existing `tools/fixtureviewport.test.cjs` with its own artifact directory.
+The helper regression uses actual owned Chrome/default-context DOM for normal
+and early-error closure, controlled transient/permanent ENOTEMPTY and nonretryable
+removal failure, repeat-close rejection, and startup original/combined failures.
+Fault injection is restricted to the exact owned profile, leaving Playwright's
+other internal temporary cleanup untouched. Each record saves actual pid/profile,
+master exit, profile status and source hash. Failed-removal controls retain the
+profile as proof until their own test finally restores real removal; they do not
+leave profiles behind. A separate real early-error process must retain actual
+CLI1/original error after successful cleanup, rather than relabelling it PASS.
+These controlled faults test the error contract; they do not prove the OS cause
+of #940's two observed ENOTEMPTY races. No app/WebGL/performance acceptance.

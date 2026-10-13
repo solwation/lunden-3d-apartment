@@ -15,19 +15,57 @@ async function launchNativeFixtureBrowser() {
     '--user-data-dir=' + profile, '--no-first-run', '--no-default-browser-check',
     '--use-angle=swiftshader', '--enable-unsafe-swiftshader', 'about:blank'
   ], { stdio: ['ignore', 'ignore', 'pipe'] });
-  let browser, closed = false;
+  let browser, closePromise;
   const exited = new Promise(resolve => { child.once('exit', resolve); child.once('error', resolve); });
-  async function close() {
-    if (closed) return;
-    closed = true;
-    try { if (browser) await browser.close(); }
-    finally {
-      if (child.exitCode === null && child.signalCode === null) child.kill('SIGTERM');
+  async function cleanup() {
+    const errors = [];
+    if (browser) {
       let timer;
-      await Promise.race([exited, new Promise(resolve => { timer = setTimeout(() => { child.kill('SIGKILL'); resolve(); }, 3000); })]);
+      try {
+        await Promise.race([browser.close(), new Promise((_, reject) => {
+          timer = setTimeout(() => reject(Error('Native fixture browser close timed out')), 3000);
+        })]);
+      } catch (error) { errors.push(error); }
+      finally { clearTimeout(timer); }
+    }
+    // Bound only our spawned master, never other browsers or profiles.
+    if (child.exitCode === null && child.signalCode === null) child.kill('SIGTERM');
+    let timer;
+    let stopped = await Promise.race([exited.then(() => true), new Promise(resolve => {
+      timer = setTimeout(() => resolve(false), 3000);
+    })]);
+    clearTimeout(timer);
+    if (!stopped) {
+      child.kill('SIGKILL');
+      stopped = await Promise.race([exited.then(() => true), new Promise(resolve => {
+        timer = setTimeout(() => resolve(false), 1000);
+      })]);
       clearTimeout(timer);
-      await exited;
-      fs.rmSync(profile, { recursive: true, force: true });
+    }
+    if (!stopped) errors.push(Error('Owned native fixture browser did not exit after SIGKILL'));
+    else {
+      try {
+        // A terminated master does not prove that its profile directory has stopped changing.
+        // Bound ENOTEMPTY retries across the WHOLE owned profile, not independently per child directory.
+        for (let retry = 0; ; retry++) {
+          try { await fs.promises.rm(profile, { recursive: true, force: true, maxRetries: 0 }); break; }
+          catch (error) {
+            if (error.code !== 'ENOTEMPTY' || retry === 5) throw error;
+            await new Promise(resolve => setTimeout(resolve, (retry + 1) * 100));
+          }
+        }
+      } catch (error) { errors.push(error); }
+    }
+    if (errors.length === 1) throw errors[0];
+    if (errors.length) throw new AggregateError(errors, 'Native fixture cleanup failed');
+  }
+  async function close(primaryError) {
+    closePromise ||= cleanup();
+    try { await closePromise; }
+    catch (cleanupError) {
+      if (primaryError) throw new AggregateError([primaryError, cleanupError],
+        'Native fixture failed and cleanup also failed', { cause: primaryError });
+      throw cleanupError;
     }
   }
   try {
@@ -44,7 +82,7 @@ async function launchNativeFixtureBrowser() {
     const context = browser.contexts()[0];
     const page = context.pages()[0];
     if (!page) throw Error('Native fixture default page missing');
-    return { browser, page, playwrightVersion: version, close };
-  } catch (error) { await close(); throw error; }
+    return { browser, page, playwrightVersion: version, pid: child.pid, profile, close };
+  } catch (error) { await close(error); throw error; }
 }
 module.exports = { launchNativeFixtureBrowser };

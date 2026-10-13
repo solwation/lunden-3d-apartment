@@ -17,6 +17,7 @@ test('native fullscreen exits before authored phone/screenshot dimensions; produ
   process.once('exit', code => evidence.finish(code));
   const native = await launchNativeFixtureBrowser();
   const { browser, page } = native;
+  let primaryError;
   try {
     evidence.resourcesAcquired();
     evidence.snapshot('browser', { browserVersion: browser.version(), playwrightVersion: native.playwrightVersion });
@@ -61,5 +62,6 @@ test('native fullscreen exits before authored phone/screenshot dimensions; produ
     evidence.imagesComplete();
     console.log('native fullscreen evidence and DOM-only PNGs: ' + out);
     await cdp.detach();
-  } finally { await native.close(); evidence.cleanupComplete(); }
+  } catch (error) { primaryError = error; throw error; }
+  finally { await native.close(primaryError); evidence.cleanupComplete(); }
 });

@@ -63,3 +63,32 @@ Run `PLAYWRIGHT_MODULE=/path/to/playwright CHROME_PATH=/path/to/chrome FIXTURE_V
 Normal Playwright page initialization enables focus emulation. Chromium treats that as visible capture and deliberately enters fullscreen *within the tab*; DOM fullscreen can stay true while the browser window stays normal indefinitely. Waiting longer for window fullscreen does not fix that mode. The isolated `noDefaults` connection prevents that override, so the existing entry function requests genuine window fullscreen. The original DOM/window assertions, native exit, 667×375 phone / 480×300 restore / 960×600 desktop dimensions, text value, touch class and repeated episodes remain required. `setFixtureViewport` and product entry/exit code are unchanged. See the [official Playwright option](https://playwright.dev/docs/api/class-browsertype#browser-type-connect-over-cdp-option-no-defaults), Chromium's [focus capture handler](https://chromium.googlesource.com/chromium/src/+/main/content/browser/devtools/protocol/emulation_handler.cc) and [fullscreen-within-tab controller](https://chromium.googlesource.com/chromium/src/+/main/chrome/browser/ui/exclusive_access/fullscreen_controller.cc).
 
 Current raw evidence is `result.json` (replacing this fixture's old `native.json`) plus `phone.png` and `desktop.png`. The checkpoint records exact whitelisted source hashes, source revision, browser/Playwright versions and completed snapshots before screenshots, with separate logic/image/cleanup/actual CLI states. A later failure remains failed or incomplete. The helper closes its owned browser process and removes its profile even if connection or test phases fail. These native DOM captures establish fixture behavior, not apartment imagery, performance or physical-phone acceptance.
+
+
+### Native fixture teardown and primary failures (#942)
+The native fixture helper keeps an owned `pid`/`profile` for provenance. It bounds
+its browser-close wait to3s, then waits3s for its own master after SIGTERM and1s
+after SIGKILL. It does not remove the profile if that master still has not exited.
+After exit, asynchronous recursive removal retries only ENOTEMPTY at most five
+times, with100/200/300/400/500ms waits for the whole profile (no per-directory
+retry multiplication). Other removal errors fail immediately. This handles a
+transient directory-not-empty race without asserting that child-process teardown
+was the proven cause. Launch flags, noDefaults, fullscreen and viewport behavior
+are unchanged. No global browser killing or other profile removal is permitted.
+
+`close()` remains compatible. The same cleanup promise is reused, so a permanent
+cleanup failure is still an error on a second call. For external finally blocks,
+explicitly retain and pass the primary error:
+```js
+let primaryError;
+try { /* fixture */ }
+catch (error) { primaryError = error; throw error; }
+finally { await native.close(primaryError); }
+```
+Successful cleanup returns normally, preserving the caller's original throw. If
+cleanup also fails, `close(primaryError)` throws AggregateError with original
+error as cause and first errors element, followed by cleanup error. The startup
+catch uses the same contract. A plain external `finally { await close(); }` cannot
+infer a caller's prior exception; migrate only the explicit error tracking, never
+silently swallow cleanup errors or claim a false CLI0. `fixtureviewport.test.cjs`
+adopts this contract without changing any existing fullscreen assertions.
