@@ -6,14 +6,18 @@
 // (no HTML); a cheat code (`/day`, `day`, a secret code) runs on A and is never sent; an unknown `/x` is refused locally;
 // the client's rate limit; complete rows within viewport height; the TTL fade; the remembered menu visibility setting and showing
 // it again. Screenshots (desktop, then B as a touch phone with the column open / hidden) into SHOTS.
+const { loadSecretTestInputs, redact } = require('./secret-test-inputs.cjs');
+let inputs;
+try { inputs = loadSecretTestInputs(); } catch { console.error('FAIL missing or invalid explicit private fixture input'); process.exit(1); }
+const { codes } = inputs, safe = text => redact(text, inputs);
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const { setFixtureViewport } = require('./fixtureviewport.cjs');
 const game = process.argv[2] || 'http://localhost:8675', worker = process.argv[3] || 'http://localhost:8147';
 const shots = process.env.SHOTS || '/tmp';
 let failed = 0;
 const T0 = Date.now();
-const log = (msg) => console.log(`     +${Math.round((Date.now() - T0) / 1000)}s ${msg}`);
-const check = (ok, msg, extra = '') => { console.log(`${ok ? 'PASS' : 'FAIL'} +${Math.round((Date.now() - T0) / 1000)}s ${msg}${extra ? ` — ${extra}` : ''}`); if (!ok) failed++; };
+const log = (msg) => console.log(safe(`     +${Math.round((Date.now() - T0) / 1000)}s ${msg}`));
+const check = (ok, msg, extra = '') => { console.log(safe(`${ok ? 'PASS' : 'FAIL'} +${Math.round((Date.now() - T0) / 1000)}s ${msg}${extra ? ` — ${extra}` : ''}`)); if (!ok) failed++; };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 async function until(fn, ms = 60000) { const t = Date.now(); for (;;) { const v = await fn().catch(() => null); if (v) return v; if (Date.now() - t > ms) return null; await sleep(300); } }
 const W = 480, H = 300;
@@ -28,12 +32,13 @@ const W = 480, H = 300;
     await ctx.addInitScript((n) => { if (n) localStorage.setItem('lunden.name', n); sessionStorage.setItem('lunden.nameSkipped', '1'); }, name);
     const page = await ctx.newPage();
     page.on('dialog', (d) => d.accept());
-    page.on('pageerror', (e) => console.log(`  [${name || 'anon'} pageerror] ${e.message}`));
+    page.on('pageerror', (e) => console.log(safe(`  [${name || 'anon'} pageerror] ${e.message}`)));
     await page.goto(`${game}/?${query}`, { waitUntil: 'commit' });
     const ready = () => page.waitForFunction(() => window.__chat && window.__app?.renderer, null, { timeout: 900000 }); // (slow when other tests share the machine)
     await ready().catch(async () => { log(`${name || 'anon'} stuck loading: reload once`); await page.reload({ waitUntil: 'commit' }); await ready(); });
     await page.evaluate(() => window.__app.showOverlay(false)); // &shot hides the start but leaves the HUD hidden: the HUD as in play
     log(`${name || 'anon'} loaded`);
+    log('native app-ready '+JSON.stringify(await page.evaluate(() => ({url:location.href,timeOrigin:performance.timeOrigin,width:innerWidth,height:innerHeight,testMode:!!window.__app.testMode,fullscreen:!!document.fullscreenElement}))));
     return { ctx, page };
   };
   const shot = async (p, file, w = 960, h = 600) => { // a bigger frame only for the picture
@@ -75,6 +80,13 @@ const W = 480, H = 300;
     check(dom.tags.join() === 'B' && dom.imgs === 0 && dom.log, 'shown as plain text (only the name is an element), no HTML interpreted', JSON.stringify(dom));
     await shot(B.page, 'chat-B-sees-line');
 
+    // Ordinary bare unknown text remains a genuine chat line, before the local-command baseline.
+    await A.page.evaluate(() => window.__app.showTerminal(true));
+    await A.page.fill('#terminal-code', 'en vanlig okänd rad');
+    await A.page.keyboard.press('Enter');
+    const bareUnknown = await until(async () => (await lines(B.page)).at(-1) === 'Olof en vanlig okänd rad', 90000);
+    check(!!bareUnknown && (await lines(A.page)).at(-1) === 'Olof en vanlig okänd rad', 'bare unknown text is sent as an ordinary chat line to both columns');
+
     // cheats stay local
     const nB = (await lines(B.page)).length;
     const run = async (code) => { await A.page.evaluate(() => window.__app.showTerminal(true)); await A.page.fill('#terminal-code', code); await A.page.keyboard.press('Enter');
@@ -88,18 +100,27 @@ const W = 480, H = 300;
     check(unknown.msg === 'Okänt kommando.', 'an unknown /command is refused locally', JSON.stringify(unknown));
     const help = await run('/help');
     check(help.msg.includes('/tysta') && !/day|jetpack|clean|fusk|kod|goat|sarah/i.test(help.msg), 'help lists only the ordinary commands, no cheat code and no secret', JSON.stringify(help.msg.slice(-60)));
-    const secretish = await run('/sarah is the goa');
+    const secretish = await run('/'+codes[1].slice(0,-1));
     check(secretish.msg === unknown.msg, 'a refused near-secret line gets the same answer as an unknown one');
     const label = await A.page.evaluate(() => [document.querySelector('label[for="terminal-code"]').textContent, document.getElementById('terminal-code').placeholder].join('|'));
     check(!/fusk|help/i.test(label), 'chat bar label and placeholder give no cheat hint', label);
-    await run('olof is the goat');
+    await run(codes[0]);
     check(await A.page.evaluate(() => window.__app.rearrange.enabled), 'a secret code still unlocks rearranging');
+    check(await A.page.evaluate(() => window.__app.rearrange.unlocked && localStorage.getItem('lunden.furniture.unlocked') === 'true'), 'first private input persists the real unlocked state');
+    await A.page.evaluate(() => { window.__app.rearrange.enable(false); window.__app.showTerminal(false); });
+    await A.page.evaluate(() => { window.__app.rearrange.unlocked = false; localStorage.removeItem('lunden.furniture.unlocked'); });
+    await run(codes[1]);
+    check(await A.page.evaluate(() => window.__app.rearrange.enabled && window.__app.rearrange.unlocked && localStorage.getItem('lunden.furniture.unlocked') === 'true'), 'second private input uses the real form and persists unlocked/enable state');
+    const publicLists = await A.page.evaluate(() => ({ commands: window.__app.cheatNote.commands.map(c => c.code), note: document.getElementById('cheat-note-text').textContent }));
+    check(codes.every(code => !publicLists.commands.includes(code) && !publicLists.note.includes(code) && !help.msg.includes(code)), 'neither private input is listed on help or the graffiti');
     await A.page.evaluate(() => { window.__app.rearrange.enable(false); window.__app.showTerminal(false); });
     await sleep(3000);
     const after = await lines(B.page);
     check(after.length === nB && !after.some((t) => /day|night|flyg|help|goat/i.test(t)), 'no cheat code, help or secret reached B', JSON.stringify(after));
     const ownA = (await lines(A.page)).filter((t) => /goat|day|night/i.test(t));
     check(ownA.length === 0, 'and none is shown in A\'s own column', JSON.stringify(ownA));
+    const privateColumns = [...after, ...await lines(A.page)];
+    check(codes.every(code => !privateColumns.some(line => line.includes(code))), 'neither actual private input is stored in either chat column');
 
     // the client's rate limit: a burst of CHAT.burst, then a pause
     const burst = await A.page.evaluate(() => { const c = window.__chat; c.tokens = 3; c.refilled = performance.now(); return ['ett', 'två', 'tre', 'fyra'].map((m) => c.send(m)); });

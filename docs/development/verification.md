@@ -294,8 +294,65 @@ source exactly, including its authored key/menu/preview/reset/landscape-layout a
 Evidence: `/tmp/lunden-priority-855/ui/{rearrangeuitest.log,rearrangeuitest.json,rearrangeuitest.png}`,
 `ui-exit.txt` and `frozen-ui.json`. Owned runner/browser/server stopped after the short UI grant.
 
-Whole original chattest CJS/two-client Worker acceptance remains pending #855; its input changes are not
-published or claimed as run by this UI step. It must use its actual driver/Worker, not an HTML comparison.
+The separate original chattest attempt before #862 produced44 PASS then a native fullscreen resize crash,
+SOME FAILED(1), exit1 at+244s, zero pageerrors. Five actual960×600 images were reviewed; the final three
+captures and phone/Anonym/leave assertions did not run. Its whole CJS acceptance was explicitly blocked,
+not passed or published. Source/partial log/exit/PNG evidence remains `/tmp/lunden-priority-855/`.
+
+After #862 published its scoped native viewport fix c802339, the preserved private-input candidate was
+integrated by controlled stash/fetch/rebase in its own checkout. Candidate SHA256
+`6b47d8b53fe9b7c42ff20668e9a1e7ec83cdccf0cab4f4ac37752541bf7d8fdc` exactly matches the durable
+862-combined-validation.cjs/proof reference. All43 original check call sites remain in original order with
+five explicit added private-input/bare-unknown checks (48 total including crash catch), and all eight capture
+names/call paths remain. The shared helper SHA256 is bc723daefb803568d14b81d5538201f198c855f9b548748d3617815ae38ec2f4.
+Input provision is explicit LUNDEN_SECRET_TEST_INPUTS absolute external JSON, with no fallback/skip or
+normalization. Missing provision fails before Playwright; Node-only preflight also checks malformed/path
+provision and exact original private input/near-slash equivalence without logging values.
+
+Run the actual two-client CJS driver against isolated devserve/Worker, retaining original shot&quality=0&cloud
+URLs/poses, both480×300 normal pages, six960×600 desktop and two667×375 phone captures:
+
+```sh
+LUNDEN_SECRET_TEST_INPUTS=/absolute/private-inputs.json PLAYWRIGHT_MODULE=/path/to/playwright \
+  SHOTS=/tmp/private-chat-shots node tools/chattest.cjs http://localhost:8813 http://localhost:8823
+```
+
+Both canonical inputs still traverse original actual form/parser; added checks cover first/second real
+unlocked/enable/persist, absence from help/graffiti/both chat columns, and ordinary bare unknown text as a
+real transmitted chat line. Original neutral near-slash refusal, Enter/input/room/bubble/menu/TTL/rate-limit
+and leave logic remains intact. Original result predicates/counters classify before private output redaction;
+no sanitized-log parity claim. Passive app-ready metadata records native URL/timeOrigin/mode/viewport,
+without input/app overrides.
+
+Complete combined acceptance was then run by the #862 worker on frozen d1036f9 plus the exact above
+combined candidate at devserve8812/Worker8822. Attempt2:47 PASS,0FAIL,ALL PASS, actual Node/wrapper
+exit0, zero pageerrors, all8 captures and final native leave/bubble-removal assertion at+389s. Independent
+monitor wall413.379s includes cleanup (not a CPU/render benchmark); all1261 frozen-file hashes matched
+at the run. Actual app-ready records retain both authored480×300/full-mode shot&quality=0&cloud URLs,
+poses/timeOrigins and no fullscreen. Phone transition natively exited real fullscreen then reached667×375;
+all old viewport/menu/bubble/TTL/network/input/capture checks and five added private-input checks passed.
+
+All eight attempt2 images were reviewed by the orchestrator and fixture owner: six960×600 desktop and
+two667×375 phone captures, including actual typing/sent bubbles, hidden/fitted log, phone chat and the
+nighttime A view showing the Anonym response. Pictures are their capture-time views, not proof of all
+intermediate pixels or rendered-scene equivalence. The final leave is verified by the native assertion;
+there is no separate post-leave image. No physical-phone, production layout-Worker write, authentication,
+client-hash migration or speedup claim. Runtime client migration remains #856.
+
+Keep the independent incomplete attempt1 separate: tool exit143/SIGTERM, sender unknown,46PASS,
+zeroFAIL,7captures,no final verdict/leave and no measured Node exit. It is not a completed suite or product
+failure; the reason for that interruption is unknown. Both attempts/raw progress and source proof remain
+in `/tmp/lunden-priority-862/{attempt-1,attempt-2,frozen-whole.json,combined-proof.json,
+interrupted-attempt-1.json}`. The successful monitor is `attempt-2/monitor.json`; original failed-fullscreen
+attempt and separate successful UI evidence remain `/tmp/lunden-priority-855/`. Owned processes were
+closed after each attempt. The published final driver must match combinedSHA and relevant runtime bytes;
+final rebase provenance records unrelated documentation/fixture changes separately from tested source.
+Final rebase onto0ba00b9 retained both #862/#855 sections and the exact measured combined driver.
+Full1261-file freeze comparison has exactly three differences: test-mode-inventory.md and verification.md
+(documentation), plus unrelated tools/posterplacementtest.html. No new tracked files. The conservative
+253-path set (all src/data/cloudflare, index, devserve, viewport helper, private-input loader and exact driver)
+remains byte-identical; all CSS under src is included. The full freeze is not a blanket match. Durable proof:
+`/home/devcontainers/.local/state/lunden-orkester/20261013-priority/855-final-rebase-proof.json`.
 
 ## Test runner (`tools/runtests.cjs`, #737 / #736)
 
