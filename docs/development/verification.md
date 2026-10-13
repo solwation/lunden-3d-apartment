@@ -250,8 +250,31 @@ production console/parser; the rearrangement setup helper does not substitute fo
 Loader preflight: 14 Node cases for malformed/missing/external path, exact strings and redaction; five
 native Chrome cases for missing-input failure before app construction, exact frozen provider values and
 non-tools gating. Actual companion CLI stub DOM success/failure runs verify terminal status and exits.
+An additional actual companion stub-DOM case writes an early FAIL, then a later action and final SOME
+FAILED; the companion retains the later action and exits1 only at terminal. Final rebase preserved concurrent
+runner/doc disposition updates; all232 frozen runtime/provider/fixture hashes still match.
 These lightweight checks do not construct/render the apartment or establish gameplay/state parity.
-Whole gameplay verification remains tracked in #854 until both authored fixtures complete.
+Both complete authored fixtures then ran at frozen 694e099 plus only provider/include/input/log-label
+substitutions: cheattest 50 PASS/ALL PASS, exit0,54.196s; rearrangetest28 PASS/ALL PASS,exit0,30.740s
+including captures, zero pageerrors. Whole-source inversion of those substitutions restores both originals
+exactly; assertion predicates/actions/real console/form/parser/help/graffiti/neutral refusal/enable/layout
+persistence/reset/life reload remain unchanged. All232 frozen runtime/data/index/helper/fixture paths match
+following both runs. Cheattest's three original near-miss values are derived exactly from the private inputs;
+only their public result labels change to near input1–3 to avoid exposing private near-values. No raw-log
+parity, seed/baseline normalization, quality change or parser/setup bypass is claimed.
+
+Native records show cheattest's TWO actual documents with authored test&life&shot&cloud= and later
+ordinary test&shot&cloud=,480×300/real testMode/no fullscreen. Rearrangetest keeps its ONE actual
+480×300/test&life&shot/testMode/no fullscreen document, same ready/final URL/timeOrigin. The inspected
+fullPage PNGs show all50/28 rows plus final native courtyard/living room-HUD views respectively, not
+intermediate graffiti/cleanup/movement pixels or rendered-scene equivalence. These are original test-mode
+whole-suite runs, not full-render comparisons, Worker writes or physical-device coverage. Runtime hashing
+and further multiplayer/console fixture changes belong to #853/#855/#856, not this input preparation.
+
+Artifacts: `/tmp/lunden-priority-854/{inputs.json,loader.cjs,native.cjs,native.json,companion-native.cjs,
+latefail-native.cjs,frozen-cheat.json,frozen-rearrange.json,cheat-exit.txt,rearrange-exit.txt}` plus
+`cheattest/` and `rearrangetest/` complete logs/native metadata/inspected PNGs. The private inputs.json is
+untracked and external; never publish its content. Owned browser/runner/server were stopped after runs.
 
 ## Test runner (`tools/runtests.cjs`, #737 / #736)
 
