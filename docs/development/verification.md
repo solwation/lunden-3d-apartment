@@ -4962,3 +4962,12 @@ identical inputs reproduce the same assertion failure on byte-loaded upstream
 The inspected native HUD image shows the last body marker `Träff!`; its separate
 receipt rows report the earlier head2/HP8, body1/HP7 and single fatal receipt.
 No World, WebGL, phone, FPS or arbitrary-turn restoration was tested.
+
+#944 publication: runtime e5ce50a90806d52060900824bf65a69c47d0ba54,
+changelog755. Worker workflow38454099331, job115492225312 and the actual
+`cloudflare/wrangler-action@v3` step completed successfully, not skipped.
+Final fetched main has235/235 executed runtime/driver hashes identical to the
+fresh integration run (owned Worker1875754 started19:18:11.634Z after freezing).
+Only this final documentation changes afterwards; no extra broad grid is claimed.
+This proves deployment and the scoped native contract, not a live phone match.
+The full parent families939/931/917 remain open for larger turns and other poses.
