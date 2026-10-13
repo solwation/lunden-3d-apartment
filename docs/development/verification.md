@@ -121,6 +121,11 @@ tools/nerfreciprocaltest.cjs (#715): two actual native Ghosts/Combat/held Nerf c
                        Pre/post-remedy actual diagnostic CLI 0 validates capture; both still deadline/cache with no gameplay hit.
                        Source checkpoints/actual exits retained;
                        see docs/validation/issue-715/README.md.
+tools/cachephasetest.cjs / .html (#715): actual buildWorld(plan)+main Garage/Core/CoreHouse/Player/Detail component,
+                       zero WebGL, native 2s query with recorded real short arc; passive promoted scan/spatial/occurrence
+                       checkpoint before largest unfinished geometry serialization (16MiB cap) and isolated replay.
+                       Unchanged 84c268e/native parity traps for undersized authored boxes beyondfar/behindnear, singular,
+                       missing/invalid/empty boxes, custom/instanced/skinned/material/layers. No full-main/phone identity claim.
 tools/cachewaittest.cjs / .html (#715): unchanged 4b2a75e reference versus candidate wait re-pruning;
                        controlled builder callbacks, actual query clocks, independent native arcs, shared/transform/floor,
                        membership/version/dispose/cancel, concurrent urgency and real dispose immediately after early drop.

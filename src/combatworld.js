@@ -423,6 +423,24 @@ export function combatWorldHits(scene, ghosts, camera, ray) {
   return hits.filter((hit) => accepts(hit.object, ghosts, camera)).sort((a, b) => a.distance - b.distance);
 }
 
+// Match native Mesh's authored-box EARLY rejection: the local ray is infinite/forward.
+// Clipping to segment far (or moving the origin to near) strengthens intentionally small authored boxes.
+const pathBoxRay = new THREE.Ray(), pathBoxInverse = new THREE.Matrix4(), pathBoxDirection = new THREE.Vector3();
+function nativePathBoxMiss(mesh, points) {
+  if (!safe(mesh)) return false;
+  const box = mesh.geometry.boundingBox, determinant = mesh.matrixWorld.determinant();
+  if (!box || !Number.isFinite(determinant) || determinant === 0 || !mesh.matrixWorld.elements.every(Number.isFinite) ||
+      ![...box.min.toArray(), ...box.max.toArray()].every(Number.isFinite) ||
+      box.min.x > box.max.x || box.min.y > box.max.y || box.min.z > box.max.z) return false;
+  pathBoxInverse.copy(mesh.matrixWorld).invert();
+  for (let i = 1; i < points.length; i++) {
+    pathBoxDirection.subVectors(points[i], points[i - 1]);
+    pathBoxRay.set(points[i - 1], pathBoxDirection.length() ? pathBoxDirection.normalize() : pathBoxDirection.set(0, 0, -1));
+    pathBoxRay.applyMatrix4(pathBoxInverse);
+    if (![...pathBoxRay.origin.toArray(), ...pathBoxRay.direction.toArray()].every(Number.isFinite) || pathBoxRay.intersectsBox(box)) return false;
+  }
+  return points.length > 1;
+}
 /** Cold and warm Nerf validation yields between current-world nodes; null is cancellation/deadline. */
 export async function combatWorldPathBlocked(scene, ghosts, camera, points, layers, { cancelled = () => false, deadline = performance.now() + 2000 } = {}) {
   const started = performance.now();
@@ -469,7 +487,7 @@ export async function combatWorldPathBlocked(scene, ghosts, camera, points, laye
       if (stopped()) return finish(null);
       const object = stack.pop();
       if (!excluded(object)) {
-        if (safe(object) && accepts(object, ghosts, camera) && query.layers.test(object.layers) && !emptyPath(object, points)) {
+        if (safe(object) && accepts(object, ghosts, camera) && query.layers.test(object.layers) && !nativePathBoxMiss(object, points) && !emptyPath(object, points)) {
           const entry = cache.get(object.geometry);
           if (entry?.spatial && !entry.spatialReady && !entry.settled) { if (!pending.has(entry)) { entry.urgentUsers = (entry.urgentUsers ?? 0) + 1; entry.urgent = true; pending.add(entry); waiting.add(entry); overlaps.set(entry, []); } overlaps.get(entry).push(object); scheduleUrgent(); }
         }
@@ -487,7 +505,7 @@ export async function combatWorldPathBlocked(scene, ghosts, camera, points, laye
         if (!entry.valid || entry.scan < entry.position.count || entry.spatialReady || entry.settled) continue;
         let prune = true;
         for (const mesh of overlaps.get(entry)) {
-          if (!emptyPath(mesh, points)) prune = false;
+          if (!nativePathBoxMiss(mesh, points) && !emptyPath(mesh, points)) prune = false;
           if (entry.cancelled) return finish(null, 'cache-invalidated');
           if (performance.now() - slice >= C.buildMs && await pause()) return finish(null);
           if (!prune) break;
