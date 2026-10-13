@@ -1,4 +1,5 @@
 [
+  {"id": 723, "date": "2026-10-13", "text": "Bildfrekvensen visas under antal besökare i samma ruta uppe till vänster."},
   {"id": 722, "date": "2026-10-13", "text": "Första Nerf-skottet gör mindre beräkningsarbete för avlägsna möbler."},
   {"id": 721, "date": "2026-10-13", "text": "Lägre fall tar nu halva maxliven och bara dödliga fall ger en säker återstart utomhus."},
   {"id": 720, "date": "2026-10-13", "text": "Fallmeddelandet beskriver nu den säkra återstarten utomhus."},
