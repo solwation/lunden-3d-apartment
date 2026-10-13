@@ -5248,3 +5248,20 @@ exit remain separate. All raw producers/results/PNGs/provenance are saved under
 `/tmp/lunden-priority-951`. These are finite source-bound samples, not all
 continuous poses, physical phone, World, FPS, server-side full skin physics or
 changed-history restoration claims. Parents #941/#936 stay open.
+
+#951 published runtime: e981213dd7d9d5f73e9a67167ababd8ff862eeea. Genuine Worker
+run 38467670943 / job 115538518672 completed successfully; the actual job log
+contains `Run cloudflare/wrangler-action@v3`, `Uploaded lunden-l1007` and
+`Deployed lunden-l1007 triggers` (step arrays returned empty, so the saved log is
+the step evidence). This is deployment evidence, not a live phone/World probe.
+All six executed current runtime/driver hashes match both this commit and the
+format-only 3e718ecc3bcf3851254d5f21bbd39e6b9515b9e4 follow-up.
+
+The initial publication inadvertently expanded compact changelog entries. The
+immediate format-only follow-up restores exact pre-951 bytes after removing only
+new entry758, preserves all 756 older entry values and unique descending IDs,
+and the actual historical/current `changelog_stamp.id_times` comparison preserves
+every older timestamp. Entry758 uses the runtime commit time. No published
+history was rewritten; these checks prevent older entries being marked “Nytt”.
+The failed oblique/protocol/launcher exits and reconstructed first-producer mtime
+remain separately documented. #941/#936 remain open for other pose histories.
