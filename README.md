@@ -185,3 +185,7 @@ Gevär ger dubbel skada på verifierade delar av näsans framsida och en smal de
 Nerfpilar når upp till 25 meter och en bekräftad spelarträff hörs med en egen tydlig ton. De första skotten kan räknas som bom medan hinderdata förbereds. [Verifiering och begränsningar](docs/validation/issue-714/README.md).
 
 Dyra browserprov sparar avslutade delresultat före bilder, med källhashar och separat status för scenario, bilder, städning och faktisk CLI-exit. [Artifact-konvention](docs/development/verification.md#artifact-checkpoints-881).
+
+Gevärsträffar på verifierade främre sidoceller av spelarfigurens näsa kan också
+ge dubbel skada. Täckta, osäkra eller ännu overifierade celler ger fortsatt vanlig
+kroppsskada; detta är inte ett löfte om hela näsan eller alla animationstillstånd.

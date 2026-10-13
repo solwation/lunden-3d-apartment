@@ -473,3 +473,27 @@ open until their independently assigned surfaces are completed.
 The unchanged hc-v1 shot schema now also accepts the explicitly supported exposed left/right temple patch and side approach described in [interactions](interactions.md). Canonical look still comes from the actual server socket id; no model/animation override is accepted. The lateral region uses the existing first FRONT skull triangle entry and15mm surface bound; the separate nose entry retains its6mm bound, and original core/range/origin/stationary/crouch/version/wire/rate/award/recovery gates remain unchanged. Missing optional native-client ray fails closed only for the new branch. Actual serialized shots still use origin:r2/direction:r3/contact:r3 within256bytes. Cached old clients/workers retain body1 for this additional surface. Source publication is distinct from genuine Worker deployment; no live benefit is claimed until its Wrangler step is confirmed.
 
 #932's final first slice adds a server-only optional `allowLateral` argument to shared contact/region dispatch, supplied as `b.gt === undefined` from the existing attachment. Only the new lateral predicate is skipped when false; original core/nose/rear guards remain. No extra persisted field, KV write, wire property, timer or billable request. An accepted greeting already stores gt; hibernation and life reset retain it. Delayed/clamped/frozen remote waves cannot be inferred complete after2.5s, so the fallback lasts that socket. #935 tracks safe support after greeting; this Refs932 slice does not close its parent.
+
+### Extra nose validator compatibility (#934)
+
+No new wire/profile version or client-trusted head flag is introduced. Extra
+frontal side cells use existing `hc:[1,x,y,z]`, o:r2/d:r3/contact:r3,256-byte cap,
+origin/range/stationary/crouch, ordinary damage/award and shared recovery rules.
+The backend PlayerRoom/worker/dev bytes match6f35db5; the additive validator
+changes only config and Avatar's internal surface classification. A fresh local
+Worker intentionally loading the published6f35db5 config (hash recorded before
+boot) returned body1/local+public9HP to the new actual client, an ordinary marker
+and one replay-safe hit:6 native checks/CLI0. It used a test-only external Node
+loader, not a stale module cache or external service. No live old-Worker or
+physical-device claim follows. Existing player/recovery Node suites plus the
+new outside-core room case passed28 checks/CLI0. An earlier guessed packet
+failed on a random appearance; the fixture now selects a bounded serialized ray
+on that actual seed's unchanged physical profile. Runtime guards were unchanged.
+
+The integrated Jaw/Rear/Front version retains their dispatch and exact original
+NoseRegion/Profile/Entry, sphere/profile entry functions and nose/nosePatch
+bytes. Fresh own current Worker PID1788249 booted after the recorded backend
+freeze; its real module protocol passed21 native checks/CLI0, and Node
+PlayerRoom/recovery passed29/29/CLI0. The previous28-check result predates the
+additional published jaw case. This local evidence is distinct from deployment
+and from the intentionally older validator's6-check compatibility result.

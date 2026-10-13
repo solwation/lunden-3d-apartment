@@ -824,3 +824,45 @@ Stationary standing rifle contacts additionally support both exposed lateral sku
 The conservative support patch is a policy guess, not a physical measurement: canonical |x|0.075–0.105, y0.085–0.112 above existing headY1.53, z0.036–0.09, with the existing0.001m whole-cell margin after width/height/heading. Side approach must point inward from the matching side at canonical |origin.x|≥0.3, normalized |direction.z|≤0.18 and |direction.y|≤0.05. Unsupported sides/angles, hair/beanie/ear/face-first contacts, moving/crouched ghosts and old contact-less clients remain body1. Other head surface families remain in their own issues. Server confirmation still owns head2/body1, lives, award, lethal UUID and marker; no extra network budget, timer or scene ray is added.
 
 The delivered lateral subset is restricted to target sockets that have NEVER sent an accepted greeting on their current attachment. PlayerRoom derives `allowLateral` from the absence of its existing authoritative `gt`; no client field, timer, animation anchor or elapsed-wave estimate is used. A paused/delayed right-arm wave can otherwise stand before the skull. After any greeting BOTH lateral sides remain body1 for that connection, including after death/hibernation; core/nose/rear remain independent. A fresh target socket starts without gt. Safe lateral re-enabling is tracked in #935; #932 stays open.
+
+### Exposed frontal nose side cells (#934)
+
+An additive `noseExtraPatch`/`rifleNoseExtraRegion` admits whole wire cells in
+canonical x±.011, keeping the original y1.53+.083–.101, z≥.13, frontal direction
+limit.2 and6mm exact first-Nose entry guard. These are fail-closed game-policy
+*guesses*, not new geometry or an anatomical measurement. The original nose
+core/profile/entry and physical nose/bones/material remain unchanged; Avatar
+requires the actual nearest Nose-tagged skinned face and Combat's full obstacle
+ray, while the Worker independently checks the same version1 serialized ray.
+Upper/lower bands, wider lateral surfaces and animated phases without a whole
+supported wire cell stay body1; this is not universal nose/pose coverage.
+
+The initial wider y/front proposal failed640 exact-entry checks (13.33mm maximum),
+so it was rejected without increasing tolerance. The narrowed actual60-appearance,
+four-heading/four bind/standing-pose inventory admitted2,968 native contacts,
+888 outside the old core. All23,744 independent cell-corner contacts stayed Nose;
+207,643 unsupported nearest contacts gave no bonus and144 actually translated
+near-limit contacts passed. Original position/normal/color/skin/skull arrays match
+an independently loaded historical Avatar. Maximum admitted pose/wire residual
+is4.789mm. The full attempt's CLI1 is retained: its taxonomy initially lacked a
+Jaw-first route, followed by a coarse live-aim fixture failure. Supplementary
+focused native proof covers3,940 earlier actual hair/skull/eye/jaw/neck/torso
+contacts with no forged deeper-Nose bonus (CLI0).
+
+Real Ghosts/Combat and a fresh owned local Worker passed21 protocol checks/CLI0:
+new outside-core2HP, public/local health, body1, nearest body/obstacle/miss, legacy
+client/invalid/crouch fallback, one low-HP kill UUID/award/reset and replay
+idempotence on all four server-generated hairstyles. Fixture aiming reads actual
+current skinned Nose triangles and waits at most12s for an admissible natural
+standing phase; it overrides no bones/pose or policy. The inspected PNG is real
+marker/HUD DOM with measured receipt rows, not a rendered avatar or apartment.
+
+After integration with published Jaw/Rear/Front dispatch, a separate actual
+Ghost push/draw/wave/swing probe sampled60 canonical appearances, r2 headings
+0/.8/3.14/−1.6, armed/saber/wave phases and16/600ms first-draw delays. Its
+40,320 rays contained7,784 outside-core actual Nose positives,29,976 Nose-first
+contacts, no nearer-other/hidden-extra contact and no mismatch; CLI0/errors0.
+This is not an observed arm-forgery case. The independent3940 hidden-contact
+negative inventory remains the observed occlusion evidence. Earlier controlled
+Avatar-pose runs are separate diagnostics: the first CLI1 required a hidden
+contact it never found; neither is actual Ghost paused-wave acceptance.

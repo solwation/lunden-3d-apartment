@@ -4456,3 +4456,38 @@ Final scoped-mode artifacts: `/tmp/lunden-lateral932-surface/greeting-fixed/`, `
 Final publication rebase preserved incoming #928 jaw dispatch/attributes and all core/nose/rear/jaw entry helpers. The repeated focused greeting mode on that combined source passed15/actual Node exit0, with retained named-unit normal-exit status and reviewed PNG in `/tmp/lunden-lateral932-surface/publication-ready/`; complete Worker suite passed25/exit0. The first post-rebase mode invocation failed before logic when the deliberately bounded owned HTTP unit had expired; its CLI1 is retained in `publication-cli.txt`. The successful retry starts a fresh owned server and verifies HTTP200 before launching. `publication-scoped-proof.json` separates unchanged shared helper/Avatar/Combat/Ghosts bytes from the new lateral policy/context dispatch; it does not assert whole config identity with the earlier28-check run.
 
 For #715 `tools/nerfreciprocaltest.cjs --projection-plan` runs real native two-client Worker/WS receipts plus final actual local/incoming dart projection under main72° camera (no WebGL). `--apartment` requires a separately approved single240s heavy run: first-send checkpoint precedes early clear/target guard;2×2 actual confirmation/lives checks precede two final draws and CDP PNG. Final retained real effects step1/240; no TTL or frustum changes. A first cache deadline remains CLI1 with incomplete logic/images and completed cleanup, even when native20 and component118/485 are green. See issue715 validation for the preserved post-remedy failure.
+
+### Extra frontal nose cell verification (#934)
+
+Use `tools/riflenoseextratest.cjs GAME WORKER EXTERNAL_OUTPUT` with explicit
+Playwright/Chromium paths. Default runs geometry and protocol; `--geometry`,
+`--protocol`, `--forgery` and `--legacy` are separately named diagnostic stages,
+not whole-suite success or automatic fallbacks. Every result records its mode,
+actual failures/completion and selected source hashes; native geometry has a7min
+browser-close bound and streaming partial checkpoints. Start an owned Worker
+AFTER the backend freeze and retain PID/cwd/start time/loaded validator hash.
+The legacy mode expects a freshly booted old validator, never the current Worker.
+
+The dense native inventory observes actual triangles and all eight corners for
+every admitted cell, actual translated near-limit geometry, unchanged historical
+mesh arrays and canonical styles/builds/heights/standing samples. A test-only
+export of private part ranges from historical4b2a75e Avatar provides semantic
+first-face taxonomy; it changes no production geometry or geometry formulas.
+Distinct failed attempts remain in `/tmp/lunden-priority-934`: the overbroad
+bounds; the old fixture omitted #916's required o/d comparison; its first part
+taxonomy incorrectly expected a public region attribute; coarse live aiming
+missed admissible natural phases. None is relabelled a green full run. The actual
+6mm policy was never increased. Follow the scoped stage evidence in interactions
+and storage; no WebGL/World, physical phone, hardware performance or all-pose
+acceptance is claimed.
+
+Final integration artifacts are `/tmp/lunden-priority-934/protocol-rebased/`,
+`forgery-rebased/`, `ghost-arm-final/`, `legacy-native/`,
+`rebased-worker-provenance.json`, `rebased-original-nose-parity.json` and
+`/tmp/lunden-priority-934-node-rebased.log`. The actual Ghost arm probe is an
+external one-off driver with a180s browser-close bound; its first contact proof
+is the shared first pure Nose entry on the exact serialized ray. Controlled
+Avatar-pose diagnostics remain external, and their labels do not establish
+actual Ghost timelines. `full/` retains CLI1 despite its four completed green
+geometry blocks; later separately named protocol/forgery stages supply scoped
+compositional acceptance, not a rewritten full-suite exit or fresh dense grid.
