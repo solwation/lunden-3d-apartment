@@ -118,7 +118,8 @@ tools/nerfreciprocaltest.cjs (#715): two actual native Ghosts/Combat/held Nerf c
                        Future failures record actual muzzle and production lastPath; those fields were absent from that World run.
                        --first-shot-only: one real use/send with immediate Node checkpoint of actual public candidate points,
                        muzzle/completed lastPath/cache, then bounded independent native arc; no HP wait/rounds/image required.
-                       Diagnostic CLI 0 validates capture, not a gameplay hit. Source checkpoints/actual exits retained;
+                       Pre/post-remedy actual diagnostic CLI 0 validates capture; both still deadline/cache with no gameplay hit.
+                       Source checkpoints/actual exits retained;
                        see docs/validation/issue-715/README.md.
 tools/cachewaittest.cjs / .html (#715): unchanged 4b2a75e reference versus candidate wait re-pruning;
                        controlled builder callbacks, actual query clocks, independent native arcs, shared/transform/floor,
