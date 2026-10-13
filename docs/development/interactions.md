@@ -813,3 +813,6 @@ existing “Huvudträff!” marker. Score budget, kill UUID, recovery and replay
 unchanged. `tools/riflejawtest.cjs` verifies actual skinned contact/ray/Worker/
 Ghosts/Combat and HUD DOM without game bootstrap/WebGL; its screenshot is
 receipt/HUD evidence rather than a rendered-avatar or physical-phone claim.
+### Extra exposed frontal skull (#931)
+
+Rifle head damage also admits two narrow exposed skull strips beside the frontal face, using `PVP_RIFLE_HEAD.front` and `rifleHeadFrontRegion`. This additive branch requires the actual serialized origin/direction and a finite frontal cone; missing rays fail closed. The entire rounded contact cell must fit the canonical strip. Hair, nose/face, body, crouch and oblique hidden-skull contacts remain body-only in this branch. It shares the unchanged v1/range/first-skull-entry guards and two-HP authoritative receipt; no client damage/model/head flag is trusted. Existing central-core and frontal-nose branches remain separate. Bounds/cone are game-policy guesses validated against the stated actual production-model inventory, not an all-pose physics guarantee.

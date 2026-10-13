@@ -466,3 +466,4 @@ This confirms deployment of the additive lower-front core, not physical-phone,
 apartment/FPS, all jaw surfaces or full server-physics acceptance. #928 closes
 only this measured lower-front slice; #921/#929 and the other head parents remain
 open until their independently assigned surfaces are completed.
+#931 adds no saved key or packet field. Existing rifle `hc:[1,x,y,z]`, r2 origin, r3 direction/contact and the 256-byte maximum remain unchanged. `front` is an additive server/client canonical contact policy; server-assigned appearance and actual target state determine acceptance. A newly owned local Worker must start after a runtime source freeze; the native driver verifies its PID owns its listening socket and checks the frozen bytes again before capture. Existing server-authoritative lives, one lethal UUID/award and recovery clock are reused.

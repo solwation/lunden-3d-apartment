@@ -4569,6 +4569,7 @@ export const PVP_RIFLE_HEAD = {
   jawPatch: { across: .008, low: .032, high: .048, front: .107, direction: .08, surface: .008 }, // *guess* sampled lower-front jaw core/ray guards, not physical dimensions
   jaw: { radius: .088, width: 8, height: 6, scale: [1, .8, 1], centre: [0, .052, .03] }, // unchanged rigid head-bone jaw mesh
   nose: { radius: .02, width: 8, height: 6, scale: [.8, 1.1, 1.15], centre: [0, .092, .113] }, // unchanged Avatar nose
+  front: { styles: [0, 1, 2, 3], x: [.061, .075], y: [.078, .105], z: [.036, .11], approach: .08 }, // #931 *guess* finite extra-front contact/ray policy, actual nearest-surface grid required
   nosePatch: { across: .005, low: .083, high: .101, front: .13, direction: .2, surface: .006 }, // *guess* fail-closed frontal core, actual nearest-surface/pose/wire grid required
   rear: {
     lower: { across: .008, low: .020, high: .024, back: -.09, front: -.05 },
@@ -4674,8 +4675,18 @@ export function rifleNoseEntry(seed,state,origin,direction) {
   return rifleProfileEntry(rifleNoseProfile(),seed,state,origin,direction);
 }
 
+export function rifleHeadFrontRegion(seed,state,point,origin,direction) {
+  const H=PVP_RIFLE_HEAD,F=H.front,look=avatarLook(seed);
+  if(state.c||!F.styles.includes(look.style)||![origin,direction].every(v=>Array.isArray(v)&&v.length===3&&v.every(Number.isFinite)))return false;
+  const a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),w=[.93,1,1.08][look.build];
+  const [dx,dy,dz]=direction,front=s*dx+c*dz,side=c*dx-s*dz;
+  if(!(front<0)||Math.abs(side)>-front*F.approach||Math.abs(dy)>-front*F.approach)return false;
+  const [x,y,z]=point.map((v,i)=>v-state.p[i]),q=[Math.abs((c*x-s*z)/w),y/look.tall-H.headY,(s*x+c*z)/w],e=[H.wireMetres/w,H.wireMetres/look.tall,H.wireMetres/w];
+  return [F.x,F.y,F.z].every(([low,high],i)=>q[i]-e[i]>=low&&q[i]+e[i]<=high);
+}
+
 // Shared dispatch: #916 owns the central core; #917 can add its independent extra-region branch here.
-export function rifleHeadRegion(seed,state,point,origin,direction) { return rifleHeadCoreRegion(seed,state,point,origin,direction) || rifleHeadRearRegion(seed,state,point,origin,direction); }
+export function rifleHeadRegion(seed,state,point,origin,direction) { return rifleHeadCoreRegion(seed,state,point,origin,direction) || rifleHeadRearRegion(seed,state,point,origin,direction) || rifleHeadFrontRegion(seed,state,point,origin,direction); }
 
 /** Exposed lower rear skull only, with the same snapped ray as the actual native contact. */
 export function rifleHeadRearRegion(seed,state,point,origin,direction) {

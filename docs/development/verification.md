@@ -4343,3 +4343,95 @@ Output includes parity/result JSON, actual receipt/wire/style logs and reviewed
 legacy/version/rate replay/lethal/public-reset/bounded-high-world/origin receipts,
 while preserving prior recovery/rate/points cases. Keep FAILED partial/idle/proof
 attempts separate; a green geometry result alone is not the vertical acceptance.
+### Exposed frontal skull strips (#931)
+
+`node tools/riflefronttest.cjs http://localhost:8878 http://localhost:8879 /tmp/rifle-front`
+uses actual Avatar/Ghosts/Combat and index DOM without World/bootstrap/WebGL. It starts
+its own fresh Worker after freezing runtime sources, verifies Linux PID/socket
+ownership and checks those bytes before capture; an externally running Worker is
+not acceptance. Default mode always measures both full inventories. An optional
+fourth argument is a clean measured-grid-phase manifest. Replay fails closed on
+any full producer-function SHA or complete runtime pathset/hash mismatch, incomplete
+60-style/build/height Cartesian support, mismatched per-model totals or grid failure.
+The full producer function is3,909 bytes, SHA256
+`9bb88966acfa44d5ea7b1bd8a102a0cce3b9e6e388d283861a9f225adf698030`.
+Replay measures the separate horizontal/diagonal inventory, actual eight-corner/
+max-coordinate checks and whole fresh two-client protocol/HUD again. Real transmitted
+packets, sender/target IDs, armed/forwarded state and acknowledgments are saved before
+awaiting each acknowledgment.
+
+Full native7 on2cbc250 measured60,532 admitted skull contacts,218,705 nearest
+unsupported contacts and32,412 forged first-skull contacts behind nearer real
+non-skull surfaces, all with zero lost proofs/false bonuses.103,680 vertical-oblique
+contacts were included. All60 appearances/four headings/bind plus three standing
+updates had positive support; actual vertex error≤5.313e-8m, entry residual≤6.778mm.
+Native7 whole23 checks/CLI0 included new2,160 cells/17,280 projected actual corner
+rays, including both near-maximum coordinate signs, all supported.
+
+Native9 replayed only native7's exact measured primary grid phase, then newly
+measured the independent horizontal/diagonal plus wide unsupported inventory:
+143,824 admitted contacts,130,673 unsupported nearest contacts and15,439 hidden
+first-skull forgeries, all60 appearances/poses/headings and zero errors. Its whole
+24-check cell/protocol/HUD run had actual CLI0/zero page errors/WebGL. This is finite
+sampled support for named guess bounds/cone, not all-pose anti-cheat physics.
+
+Earlier whole failures remain separate: native1 lost its peer after the real120s
+idle rule; native2's first protocol shot lacked an acknowledgment/CLI1 (exact cause
+not established); native3 rejected an incorrect function locator. Native4/5/6 had
+real clean cell/protocol results, but their replay hash locator covered only the
+function prefix ending at an internal initializer, not the whole function. That
+harness binding defect was corrected before final publication. Native7 remeasured
+the full inventory without replay, and native9 uses the correct full-function hash.
+Native8 kept its hidden-sample requirement and exited1: tight ROI horizontal rays
+had136,144 positives/71,216 negatives but zero covered contacts. Native9 added
+independent wider negative inputs without removing that requirement. No product
+failure or physical-phone cause is inferred from these harness failures.
+
+Rebase to933/e097d108 adds an independent rear branch. Original producer hashes
+were preserved; the changed config hashes are:
+
+- Measured config SHA256: `d15b18d5f9d19b00a85c1003497262d086befa77402eae70db0bb764f6a25f91`.
+- Merged config SHA256: `be97a4fb1f9f0c1e4282bd27db0c5290e4849975d99a9f262d6fb37e043e7fec`.
+
+Eleven relevant functions (front/core/contact, skull/nose profiles/entry, shared
+sphere/profile entry and avatarLook) are byte-identical; the entire original head
+policy is deeply equal after removing the added rear policy. Rear requires local
+forward>0; every measured frontal inventory ray has forward<0, so this added branch
+cannot affect those cases. The standard replay guard still rejects this changed
+config; no producer hash was rewritten and no new fullgrid on merged bytes is claimed.
+A separately recorded temporary integration companion measures the whole18 actual
+cell/max-coordinate/fresh-Worker/protocol/HUD checks on merged bytes: PASS/CLI0,
+zero page errors/WebGL. Node front/players/recovery passed29 tests/CLI0 on merged
+bytes. The root and worker inspected its actual “Huvudträff!” DOM image.
+
+The real local room confirmed2HP/public and local8HP, body/version/interior/crouch
+fallbacks1HP, wall/miss none, one lowHP lethal UUID/award/reset and replay without
+extra effects. A real transmitted first packet was103 bytes with r2 origin/r3
+direction/contact. Recovery tests use an explicit controlled server clock with
+heartbeat time advanced separately. Artifacts: `/tmp/lunden-priority-931/`, immutable
+native7 producer driver/manifest, native9 logs and JSON, integration companion,
+rebase-compatibility/source proof and visually inspected PNG. This is native
+geometry/DOM/local-Worker evidence, not World/rendered-avatar/phone/FPS/all-pose proof.
+Deployment is recorded separately before a live-Worker claim.
+
+A second integration rebase to928/599c9f adds the separate Jaw core. Its canonical
+absx≤.008/y.032–.048 cannot overlap Front absx≥.061/y.078–.105. The changed merged
+config SHA is `019a2f7213cededc50a482abb932a9f4ab24ce4ac6a165264284a48f9877918d`;
+measured Avatar SHA was `bacc5d9b334f99bf8a88f1279ef10839db262d358d5faf5c904b1aea0e89f118`,
+merged Avatar SHA is `1090e861549fd1f7df5a75411fad698aee9798e6f223ab17b46dc5b9ef5cc038`.
+The former11-function equality now applies to10 functions; generic Contact adds
+Jaw-first profile dispatch. The original entire head policy is deeply equal after
+removing additive Rear/Jaw/JawPatch fields. Independent historical Avatar2cbc250
+versus merged actual modules: all60 appearances,420 original position/normal/color/
+skin/Skull/Nose arrays and240 bone matrices across bind/three standing updates
+match exactly; new Jaw and Skull tags never overlap. Thus Jaw cannot replace an
+accepted Front contact, and nearest production geometry is unchanged. The separate
+`integration-jaw` phase again measured all18 cell/maxcoord/fresh-room/protocol/HUD
+checks on these merged bytes, actual CLI0/zero errors/WebGL; Node front/players/
+recovery passed30/CLI0 (new Jaw test accounts for the extra test). Current234
+runtime/driver hashes match that integration freeze. Comparison to old native9
+has explicit config/Avatar exceptions plus one scoped-negative-log-label correction
+in the driver; no blanket byte match, rewritten producer hashes or new merged
+fullgrid is claimed. `jaw-rebase-compatibility.json`, `jaw-compat.{cjs,log}`,
+`jaw-geometry-parity.json` and `integration-jaw{.cjs,.log,/}` retain this additional
+compositional proof. Standard full tests and strict replay guards stay intact.
