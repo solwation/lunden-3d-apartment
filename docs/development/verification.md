@@ -103,6 +103,10 @@ tools/combatstepstest.cjs (#768): no bootstrap/WebGL, real Ghosts/Combat and loc
                        actual disconnect/reconnect, timeout before action, callback/restoration throws and stopped keep-alive work.
                        Run PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/combatstepstest.cjs http://localhost:8721 http://localhost:8722.
 tools/nerfapartmentprobe.cjs (#715): bounded actual apartment local Blaster/Darts/Marks plus injected Combat.remote/Darts/reach;
+                       --cache-acceptance: ordinary 480x300/DPR1 native 30s cache progress, independent before/after solid-hit
+                       metadata, real 60-step two-source effects, 2s obstacle and two manual draws; direct CDP PNG bounded 15s.
+                       Two body/tip meshes per dart (four combined), actual child layers/frustum/quality/covers/source hashes.
+                       Checkpoints before PNG; cleanup/actual CLI separate; failed first fixture guard remains CLI 1/image incomplete.
                        production drawing at quality0 (no test mode), paused automatic loop, cold/local-warm effect intervals,
                        separately reported remote-cache readiness and 2s obstacle query, JSON before screenshot. No network,
                        physical-phone/FPS or native-parity claim; see docs/validation/issue-715/README.md.
