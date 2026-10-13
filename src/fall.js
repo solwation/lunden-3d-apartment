@@ -1,27 +1,28 @@
-// Falling (#361, FALL in config): player.js tracks the drop (`fall`: the highest feet since leaving the ground and the
-// deepest free gap under them) and calls `land` on landing. Over FALL.hurt m of real free fall it hurts: a thud + "aj",
-// the view jolts down, the screen goes red, then black; the visitor wakes at a checked random outdoor spot with
-// "Du slog dig …" while it fades back in. Only the place is reset (and whatever registers in `onWake`, e.g. the jetpack
-// of #359 going home) — not the home: doors, lamps, cups stay. A deduction (SCORE.penalties.fall) + stats `falls`.
-// Over FALL.soft m: a soft thud and a knee-bend. With the Spider-Man suit on (#600) every drop is a soft one. While `active` main.js lets nobody walk.
+// Falling: harmful free drops request the same Combat life damage as shots. Only a confirmed death blacks out
+// and wakes at the shared safe outdoor spawn. A survivor gets the red/jolt reaction and fall penalty in place.
+// Spider-Man's suit keeps every drop soft; stairs and small gaps do not request damage.
 import { FALL, PLAYER } from './config.js';
 import { sfx } from './audio.js';
 import { respawnOutdoors } from './respawn.js';
 
 export class Fall {
   /** `el` = #fall (the cover with its text), `onHurt()` = the deduction etc. */
-  constructor({ el, player, camera, onHurt }) {
-    Object.assign(this, { el, player, camera, onHurt, t: -1, onWake: [] });
+  constructor({ el, player, camera, onHurt, onDamage = null }) {
+    Object.assign(this, { el, player, camera, onHurt, onDamage, t: -1, fatal: false, pending: null, onWake: [] });
     this.text = el.querySelector('p');
   }
 
-  get active() { return this.t >= 0 && this.t < FALL.red + FALL.black + FALL.hold; }
+  get active() { return this.fatal && this.t >= 0 && this.t < FALL.red + FALL.black + FALL.hold; }
 
   /** Landed after a drop of `drop` m; `gap` = the deepest free drop under the feet on the way (stairs never reach FALL.free). */
   land(drop, gap) {
-    if (gap < FALL.free || this.t >= 0) return null;
+    if (gap < FALL.free || this.pending || (this.fatal && this.t >= 0)) return null;
     const suit = !!this.player.suit?.worn; // the Spider-Man suit (#600): never hurt, a soft landing with a knee-bend
-    if (drop > FALL.hurt && !suit) { this.hurt(drop); return 'hurt'; }
+    if (drop > FALL.hurt && !suit) {
+      this.pending = { drop };
+      this.onDamage?.(drop, gap);
+      return 'hurt';
+    }
     if (drop > FALL.soft) {
       sfx.landing(Math.min(1, (drop - FALL.soft) / (FALL.hurt - FALL.soft)) * 0.5);
       this.player.eyeY -= FALL.dip; // the eye eases back up by itself (player.update)
@@ -30,8 +31,18 @@ export class Fall {
     return null;
   }
 
-  hurt(drop) {
+  /** Combat's confirmed fall result (online server or the same offline life holder). Ignore repeated responses. */
+  resolve(result) {
+    if (!this.pending) return;
+    const { drop } = this.pending;
+    this.pending = null;
+    if (!result) return; // A cancelled request is not damage or a death.
+    this.hurt(drop, result.dead === true);
+  }
+
+  hurt(drop, fatal) {
     this.drop = drop;
+    this.fatal = fatal;
     this.t = 0;
     sfx.landing(1);
     sfx.ouch();
@@ -46,6 +57,12 @@ export class Fall {
   paint(t) {
     const F = FALL, s = this.el.style;
     let red = 1, a;
+    if (!this.fatal) {
+      // An ordinary injury fades red in place; it never becomes black or displays the wake text.
+      a = t < F.red ? 0.55 * t / F.red : 0.55 * Math.max(0, 1 - (t - F.red) / F.back);
+      s.background = `rgba(150, 0, 0, ${a.toFixed(3)})`;
+      return;
+    }
     if (t < F.red) a = 0.55 * t / F.red;                                                 // red
     else if (t < F.red + F.black) { const k = (t - F.red) / F.black; red = 1 - k; a = 0.55 + 0.45 * k; } // → black
     else if (t < F.red + F.black + F.hold) { red = 0; a = 1; }                           // out
@@ -71,8 +88,8 @@ export class Fall {
       this.camera.position.y = this.player.pos.y + PLAYER.eye - F.jolt * k * k;
       this.player.eyeY = this.camera.position.y;
     }
-    if (before < out && this.t >= out) this.wake();
+    if (this.fatal && before < out && this.t >= out) this.wake();
     this.paint(this.t);
-    if (this.t >= out + F.text) { this.t = -1; this.el.hidden = true; }
+    if (this.t >= (this.fatal ? out + F.text : F.red + F.back)) { this.t = -1; this.el.hidden = true; }
   }
 }

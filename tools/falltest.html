@@ -4,8 +4,8 @@
 <body>
 <pre id="out">running…</pre>
 <script>
-// #361: falling more than FALL.hurt (3 m) hurts — the view jolts, red, black, the visitor wakes outside our front door
-// facing the house with "Du slog dig …", a deduction and stats.falls. A 2.5 m drop does not hurt (a soft knee-bend).
+// #869: a harmful lower free fall takes half the shared lives with red/jolt in place. Two lower falls without
+// recovery kill; only death blacks out and wakes at a checked shared outdoor point. High falls kill directly.
 // Walking the stair up and down (also crouched), the ramp and the outdoor stairs, getting up from the top bunk, a resume
 // record: never a fall. (Nothing in the world can drop you 3 m yet — the jetpack #359 and the roofs #360 will; the test
 // lifts the feet, like `&fall=h`.) The outdoor stairs are walkable since #355.
@@ -20,9 +20,12 @@ f.onload = async () => {
   const w = f.contentWindow, d = f.contentDocument;
   while (!w.__app) await wait(100);
   const { player, fall, world, step, stats, camera, rest, standUp, renderer } = w.__app;
+  if (window.prepareFall) await window.prepareFall();
   const mod = (p) => w.eval(`import('${new URL(p, location.href).href}')`); // the page's own module instances
   const { FALL, START, SITE, STAIR, LEVELS, PLAYER, RESPAWN } = await mod('../src/config.js');
   const { safeRespawnPoint } = await mod('../src/respawn.js');
+  const combat = w.__combat;
+  let wakes = 0; fall.onWake.push(() => wakes++);
   const lines = [];
   let pass = true;
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
@@ -36,7 +39,14 @@ f.onload = async () => {
   const land0 = player.onLand;
   player.onLand = (drop, gap) => { const r = land0(drop, gap); landings.push({ drop, gap, r, at: [player.pos.x, player.pos.y, player.pos.z] }); return r; };
   const dt = 1 / 60;
-  const falls0 = stats.falls ?? 0, pen0 = stats.penalties.fall ?? 0;
+  // Manual simulation loops must yield after a real landing so the asynchronous Combat response can complete.
+  const landUntil = async () => {
+    let t = 0;
+    while (!landings.length && t < 3) { step(dt); t += dt; }
+    await wait(0);
+    return t;
+  };
+  const falls0 = stats.falls ?? 0, pen0 = stats.penalties.fall ?? 0, pvp0 = stats.penalties.pvpHurt ?? 0;
 
   // (1) a 2.5 m drop outdoors on the street: no hurt, a soft landing
   player.spawn(START.x, -8, Math.PI);
@@ -46,14 +56,28 @@ f.onload = async () => {
   check(landings.length === 1 && Math.abs(landings[0].drop - 2.5) < 0.05 && landings[0].r === 'soft' && fall.t < 0 && d.getElementById('fall').hidden
     && (stats.falls ?? 0) === falls0, `2.5 m: a soft landing (drop ${f2(landings[0]?.drop ?? 0)} m), not hurt`);
 
-  // (2) a 5 m drop: hurt, black-out, awake at a checked outdoor position
+  // First lower fall: injury without any wake/teleport or black-out.
+  player.spawn(START.x, -8, Math.PI / 2);
+  const survivingAt = player.pos.clone();
+  player.pos.y += 4;
+  landings.length = 0;
+  await landUntil();
+  for (let i = 0; i < 10; i++) step(dt);
+  if (window.captureFall) await window.captureFall('surviving-lower');
+  for (let i = 0; i < 180; i++) step(dt);
+  check(landings.length === 1 && landings[0].r === 'hurt' && Math.abs(landings[0].drop - 4) < .05
+    && combat.lives === combat.maxLives - Math.ceil(combat.maxLives / 2), 'first lower fall removes half the same Combat lives');
+  check(wakes === 0 && player.pos.distanceTo(survivingAt) < .01 && !fall.active && !fall.fatal && fall.t < 0,
+    'survived lower fall stays at the actual landing position without fatal sequence');
+  check((stats.falls ?? 0) === falls0 + 1 && (stats.penalties.fall ?? 0) === pen0 + 1, 'surviving fall counted once with its existing deduction');
+
+  // Second lower fall without recovery: actual death, black-out and safe shared wake.
   player.spawn(START.x, -8, Math.PI / 2);
   player.pos.y += 5;
   landings.length = 0;
-  let t = 0;
-  while (fall.t < 0 && t < 3) { step(dt); t += dt; }
+  const t = await landUntil();
   check(landings.length === 1 && landings[0].r === 'hurt' && Math.abs(landings[0].drop - 5) < 0.05, `5 m: hurt (drop ${f2(landings[0]?.drop ?? 0)} m, after ${f2(t)} s)`);
-  check((stats.falls ?? 0) === falls0 + 1 && (stats.penalties.fall ?? 0) === pen0 + 1, 'counted: stats.falls + 1, a "fall" deduction');
+  check((stats.falls ?? 0) === falls0 + 2 && (stats.penalties.fall ?? 0) === pen0 + 2 && combat.lives === combat.maxLives, 'second lower fall kills, resets shared lives and counts only its fall deduction');
   const el = d.getElementById('fall');
   for (let i = 0; i < 9; i++) step(dt);
   const jolt = camera.position.y - player.pos.y;
@@ -67,10 +91,13 @@ f.onload = async () => {
   check(Math.abs(player.pos.x - x0) < 1e-6 && fall.active, 'no walking during the black-out');
   while (fall.t < FALL.red + FALL.black + FALL.hold - 0.05) step(dt);
   check(/^rgba?\(0, 0, 0(, 1)?\)$/.test(el.style.background), `black (${el.style.background})`);
+  if (window.captureFall) await window.captureFall('fatal-black');
   for (let i = 0; i < 10; i++) step(dt);
   const yaw = ((camera.rotation.y * 180 / Math.PI) % 360 + 360) % 360;
-  check(!!safeRespawnPoint(player, player.pos.x, player.pos.z) && RESPAWN.regions.some(r => player.pos.x >= r.x0 && player.pos.x <= r.x1 && player.pos.z >= r.z0 && player.pos.z <= r.z1) && Math.abs(yaw - 180) < 1,
-    `awake at a checked outdoor position (${f2(player.pos.x)}, ${f2(player.pos.z)}), facing the house (yaw ${yaw.toFixed(0)}°)`);
+  check(wakes === 1 && !!safeRespawnPoint(player, player.pos.x, player.pos.z)
+    && RESPAWN.regions.some(r => player.pos.x >= r.x0 && player.pos.x <= r.x1 && player.pos.z >= r.z0 && player.pos.z <= r.z1) && Math.abs(yaw - 180) < 1,
+    `one actual safe outdoor wake (${f2(player.pos.x)}, ${f2(player.pos.y)}, ${f2(player.pos.z)})`);
+  if (window.captureFall) await window.captureFall('safe-wake');
   check(!el.hidden && !el.querySelector('p').hidden && /Du slog dig/.test(el.textContent), `"${el.querySelector('p').textContent}" shown`);
   for (let i = 0; i < (FALL.back + 0.1) * 60; i++) step(dt);
   check(!fall.active && /, 0\)$|, 0.000\)$/.test(el.style.background) || /0\)$/.test(el.style.background), `faded back in (${el.style.background})`);
@@ -81,6 +108,41 @@ f.onload = async () => {
   for (let i = 0; i < 20; i++) step(dt);
   player.keys = new Set();
   check(Math.abs(player.pos.z - z0) > 0.1, 'walking again');
+
+  // Real suit keeps a high fall soft, without touching the shared life count.
+  const suit = w.__app.suit;
+  suit.putOn(); player.spawn(START.x, -8, 0); player.pos.y += 8; landings.length = 0;
+  for (let i = 0; i < 180; i++) step(dt);
+  check(landings.length === 1 && landings[0].r === 'soft' && combat.lives === combat.maxLives && wakes === 1
+    && (stats.falls ?? 0) === falls0 + 2, 'actual Spider-Man suit keeps a high fall soft without damage/wake/penalty');
+  suit.goHome();
+
+  const blaster = w.__app.toys.blasters[0]; blaster.take();
+  check(w.__app.heldItem() === blaster && combat.lives === combat.maxLives, 'taking the actual weapon does not change shared lives');
+
+  // A higher fall is fatal even from full shared lives.
+  player.spawn(START.x, -8, 0); player.pos.y += 8; landings.length = 0;
+  await landUntil();
+  for (let i = 0; i < 600; i++) step(dt);
+  check(landings.length === 1 && landings[0].r === 'hurt' && wakes === 2 && combat.lives === combat.maxLives
+    && !!safeRespawnPoint(player, player.pos.x, player.pos.z) && fall.t < 0,
+    'high fall kills from full lives and completes exactly one safe outdoor wake');
+  check(w.__app.heldItem() === blaster, 'fatal fall preserves the actually held weapon');
+
+  // The same lower damage and two-fall death while holding the real blaster.
+  player.spawn(START.x, -8, 0); const armedAt = player.pos.clone(); player.pos.y += 4; landings.length = 0;
+  await landUntil();
+  for (let i = 0; i < 180; i++) step(dt);
+  check(combat.lives === combat.maxLives - Math.ceil(combat.maxLives / 2) && player.pos.distanceTo(armedAt) < .01
+    && wakes === 2 && !fall.fatal && w.__app.heldItem() === blaster, 'armed lower fall has the same half damage and survives at the landing position');
+  if (window.captureFall) await window.captureFall('armed-survival');
+  player.spawn(START.x, -8, 0); player.pos.y += 4; landings.length = 0;
+  await landUntil();
+  for (let i = 0; i < 600; i++) step(dt);
+  check(combat.lives === combat.maxLives && wakes === 3 && !!safeRespawnPoint(player, player.pos.x, player.pos.z)
+    && w.__app.heldItem() === blaster && fall.t < 0, 'two armed lower falls cause one death/safe wake, preserving the weapon');
+  blaster.putBack();
+  check(!w.__app.heldItem() && combat.lives === combat.maxLives, 'putting down the actual weapon does not reset/change shared lives');
 
   // walking: never hurt, never even a free fall
   const walk = (name, start, pts, { crouch = false } = {}) => {
@@ -151,7 +213,8 @@ f.onload = async () => {
   player.spawn(1.3, 2.4, 0); player.pos.y = 0.25; landings.length = 0;
   for (let i = 0; i < 60; i++) step(dt);
   check(!landings.some((l) => l.r) && fall.t < 0, `feet 0.25 m over the hall floor (a resume record): no fall (gap ${f2(landings[0]?.gap ?? 0)})`);
-  check((stats.falls ?? 0) === falls0 + 1, `in all only the one hurting fall (stats.falls ${stats.falls})`);
+  check((stats.falls ?? 0) === falls0 + 5 && (stats.penalties.fall ?? 0) === pen0 + 5 && wakes === 3, `only five actual harmful falls, three deaths and no extra stair/rest/resume penalty (stats.falls ${stats.falls})`);
+  check((stats.penalties.pvpHurt ?? 0) === pvp0, 'fall damage never also charges the PvP hurt penalty');
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>

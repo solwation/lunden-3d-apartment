@@ -46,6 +46,8 @@ Tryck **Enter** eller **§** (eller **>_** i poängbrickan på touch) för att �
 
 Spindelmannendräkten ligger i en byrålåda i Walter och Kians rum; med den klättrar man på ytterväggar och skjuter nät.
 
+Skott och fall använder samma liv. Ett lägre skadligt fall tar halva maxliven; två sådana fall utan återhämtning dödar. Ett högre fall dödar direkt. Överlever du får du en skadereaktion och stannar där du landade; bara död ger svart bild och återstart utomhus. Det gäller även utan vapen, medan spindelmannendräkten behåller sin mjuka landning.
+
 En liten kompass överst visar N, S, V och Ö. Den röda pilen pekar mot geografiskt norr när du vänder dig. Kompassen döljs tillfälligt medan notiser visas.
 
 Diskreta kantlinjer på väggar, dörrar och fast inredning gör hörn och rumsgeometri lättare att urskilja, även i trapphuset och hissen. Skarvar mellan byggdelar på samma plana väggyta filtreras bort; verkliga hörn och öppningar behåller sina accenter.

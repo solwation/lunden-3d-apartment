@@ -29,12 +29,13 @@ src/player.js          WASD/arrow/joystick movement, circle-vs-segment collision
                        (outdoors > ROOFS.aloft m over the ground, over our flat above UNIT_TOP − 0.3) = `outdoors`, level 0, the
                        roofs' walls instead of a level's segments, no obstacles; `groundAt` takes the highest roof ≤ feet + stepUp
 src/fall.js            falling (#361, FALL): player.js keeps `fall` (the highest feet since leaving the ground + the deepest free gap
-                       under them) and calls `onLand(drop, gap)`; only a gap over FALL.free counts (the stair's risers, the ramp never).
-                       Over FALL.hurt (3 m): sfx.landing + sfx.ouch ("aj"), the view jolts, #fall goes red then black, no walking, the
-                       visitor wakes at a checked random outdoor RESPAWN point (#863), "Du slog dig …" while it fades in; only the
-                       place is reset (`onWake` hooks, e.g. the jetpack of #359 going home), a deduction `fall` + stats `falls`. Over
-                       FALL.soft: a soft thud and a knee-bend. Off a roof's edge (#360) or the jetpack's thrust cut high up (#359; with
-                       it on, the drop = the landing speed v² / 2g); `&fall=h` drops you from h m (falltest.html)
+                       under them) and calls `onLand(drop, gap)`; only a gap at least FALL.free counts (the stair's risers, the ramp never).
+                       Over FALL.hurt (3 m) without the suit: request shared Combat damage; only a confirmed result calls the
+                       existing fall penalty + stats once. A survivor gets sfx.landing/ouch, red and a jolt in place, can walk,
+                       and never blacks out or invokes onWake. A confirmed death alone runs red/black/hold/wake/fade; the shared
+                       checked outdoor respawn keeps the home intact and retains existing onWake hooks (jetpack home).
+                       FALL.soft: a soft thud/knee-bend, including every suit landing. Off a roof/jetpack edge uses the real
+                       drop (jetpack: landing speed v² / 2g); `&fall=h` drops from h m. No life counter or recovery timer in Fall.
 src/jetpack.js         the jetpack (#359, JETPACK): our own unbranded pack (one vertex-coloured mesh) on the east wall of the portik's small room
                        (#520: `JETPACK.hook`, `face: -1`, `floor: 0`) under the yellow sign
                        "Låna Jetpack på eget ansvar. Se upp för fiskmåsar." (`sign`); E puts it on (hands free; outdoors and in the
@@ -351,6 +352,10 @@ tools/stucktest.html   headless test (#314): a 5 cm scan of both floors (doors o
                        round you, the car parking on you, the hoop rising under you, a door shut on you, a resume record in the bed
 tools/falltest.html    headless test (#361): a 2.5 m drop is soft, a 5 m drop hurts (red, black, no walking, awake at checked outdoor ground,
                        counted + a deduction); the stair up / down (also crouched), the ramp,
+
+tools/falltest.html    actual app/World fall regression (#869): 2.5 m soft, first lower fall survives in place with half shared lives,
+                       second lower fall dies/red/black/no walking/safe wake, high fall dies from full; existing penalty/jolt/fade;
+                       the stair up / down (also crouched), the ramp,
                        the outdoor stairs (#355), out of the top bunk, a resume record: no free fall
 tools/jetpacktest.html headless test (#359): the jetpack on its hook in the portik room, E puts it on (hands free, HUD), Space lifts
                        (the climb cap, flames, heat, the first flight counted), letting go falls, a soft landing, the ceiling, C down faster,
@@ -612,3 +617,7 @@ Distance rewards for confirmed player hits (#873): `PVP_SCORE` and pure `pvpHitP
 The server appends `award:{i,seq,distance,points}` to its existing hit acknowledgement. `i` identifies the shooting connection and `seq` increases only for accepted hits in its hibernating attachment. Combat validates the shared formula and current `Ghosts.me`, then checks a scalar high-watermark before base callback, range bonus, hit counter, hit-marker restart or sounds. Ordered same-socket replay and late acknowledgements from an old socket add nothing. The independent #871 `kill` UUID receipt remains first and persistently idempotent, including when an unseen kill receipt arrives with an already-consumed score acknowledgement. A reconnect starts a new server sequence; an old connection cannot replay after reload. Cached old Workers without `award` keep the previous base-only callback. This is current-connection score dedup, not persisted hit receipt history or an authentication claim.
 
 `stats.pvpHits` remains an integer hit count with its existing base contribution; `pvpRangePoints` is the separately saved extra amount added once by `rawScore`. Legacy saves retain already-earned base points, and reset clears both counts/extra points while #871's kill receipt replay protection stays intact. The original statistics panel adds “Träffar på spelare”, showing the hit count and a separate “avståndspoäng” subline. `tools/pvppointstest.cjs` checks the actual Worker/Ghosts/Combat/statistics DOM without apartment bootstrap/WebGL, including a real native raycast obstacle miss, confirmed short/middle/long shots, exact budget/refusal, controlled receipt replay, reconnect, reload and the visible original panel.
+
+Shared fall integration (#869): `Fall.land` requests damage only for harmful unsuited free fall. `Fall.resolve(null)` releases a cancelled request without speculative injury; a confirmed response clears pending before starting the reaction, so duplicate completion cannot trigger a second penalty/wake. Main awaits `Combat.fall(drop,gap)` and passes its result/null to Fall.resolve. The Combat/Ghosts channel owns response matching, health and recovery. Survival red fades without stopping movement or changing pose/home/held weapon; only death runs the existing fatal sequence and #863 shared outdoor wake. `fallintegrationtest.cjs` separates native actual Player/Fall response/reaction checks from real Combat/Worker channel checks; `falltest.html` keeps the full-world route, stairs, rest and resume coverage.
+
+#869 validation: actual Player/Fall/Ghosts/Combat/Worker native probe passed34; authored actual app/World fall fixture passed38; changed native respawn fixture passed19. All actual CLI exits0, no page errors. Reviewed full-render checkpoints show the same5/10 life HUD without a weapon and with the held blaster, death-only black and one safe outdoor wake; unchanged stairs/rest/resume and no extra PvP penalty also pass. Same health/recovery holder is used throughout; see [scope and source proof](verification.md).

@@ -51,7 +51,7 @@ const game=process.argv[2]||'http://localhost:8841',out=process.env.RESPAWN_OUTP
    check(player.jet===gear&&gear.worn&&!player.flying&&player.fall===null&&player.swing===null&&player.vy===0,'existing spawn resets movement but retains worn equipment');
    const inRegion=()=>RESPAWN.regions.some(r=>player.pos.x>=r.x0&&player.pos.x<=r.x1&&player.pos.z>=r.z0&&player.pos.z<=r.z1);
    let wakes=0,hurts=0;const fall=new Fall({el:document.getElementById('fall'),player,camera,onHurt:()=>hurts++});fall.onWake.push(()=>wakes++);
-   fall.hurt(5);fall.wake();check(hurts===1&&wakes===1&&inRegion()&&!!safeRespawnPoint(player,player.pos.x,player.pos.z),'actual lethal-fall hurt/wake uses checked outdoor spawn and preserves callbacks');
+   fall.hurt(5, true);fall.wake();check(hurts===1&&wakes===1&&inRegion()&&!!safeRespawnPoint(player,player.pos.x,player.pos.z),'actual lethal-fall hurt/wake uses checked outdoor spawn and preserves callbacks');
    const ghosts={group:new T.Group(),others:new Map(),rules:{lives:COMBAT.lives,weapons:{}}};let deaths=0,deductions=0;
    const combat=new Combat({ghosts,camera,scene,weapon:()=> 'nerf',feet:()=>player.pos,onDie:()=>{deaths++;respawnOutdoors(player);},onHurt:()=>deductions++});
    combat.hurt({dead:true,l:0});check(deaths===1&&combat.deaths===1&&deductions===1&&combat.lives===COMBAT.lives&&gear.worn&&inRegion()&&!!safeRespawnPoint(player,player.pos.x,player.pos.z),'actual combat lethal hurt retains life refill/deduction/equipment and shares checked spawn');

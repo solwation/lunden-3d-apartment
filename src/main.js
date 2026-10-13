@@ -379,7 +379,7 @@ let inShower = false, shriekAt = 0;
 for (const t of taps) scene.add(t.object);
 
 const player = new Player(world, camera);
-// falling more than FALL.hurt hurts (#361): black-out, awake outside the front door; a deduction
+// Harmful free falls request shared lives; only confirmed death blacks out and wakes outdoors.
 const fall = new Fall({ el: document.getElementById('fall'), player, camera, onHurt: () => { bump('falls'); penalize('fall'); } });
 player.onLand = (drop, gap) => fall.land(drop, gap);
 // the jetpack on its hook by the garage door (#359): worn on the back, flies; home again after a bad fall
@@ -2213,6 +2213,11 @@ const ghosts = new Ghosts({ scene, camera, url: cloud.url, name: () => leaderboa
 const combat = new Combat({ ghosts, camera, scene, weapon: weaponKey, feet: () => player.pos, jetpack, sfx, darts: toys.darts, sparkles: toys.sparkles, arrows,
   onHit: () => bump('pvpHits'), onHurt: () => penalize('pvpHurt'),
   onDie: () => { goToStart(() => respawnOutdoors(player)); badge('💀 Slut på liv – du lever igen', false); } }); // only the place changes (#665)
+// Fall owns injury/death timing; Combat owns the same authoritative or offline health as shots.
+fall.onDamage = async (drop, gap) => {
+  try { fall.resolve(await combat.fall(drop, gap)); }
+  catch (error) { console.error('Fall damage failed', error); fall.resolve(null); }
+};
 // each weapon's use is one shot message (hit or miss) for the others in the fight; the room decides a hit. Things that fly
 // on an arc send where they started and their velocity (a dart: the last one of the blasters' pool; the ball)
 const flight = (from, v) => ({ o: from.clone(), d: v.clone().normalize(), s: v.length() });
