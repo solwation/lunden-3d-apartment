@@ -34,5 +34,5 @@ try{
  check(siblings.every(({id,m})=>close(R.byId.get(id).object.matrixWorld,m)),'restore leaves all sibling posters unchanged');
  if(cloud){const one=await(await fetch(cloud+'/furniture')).json(),two=await(await fetch(cloud+'/furniture')).json();check(!one.pieces[legacy]&&one.revision===two.revision,'shared group migration is durable and does not rerun')}
  document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
-}catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack}
+}catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack+'\nSOME FAILED'}
 </script></html>

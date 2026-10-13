@@ -1202,6 +1202,14 @@ Native module/source/provenance/process/exit/image evidence: `/tmp/lunden-setup8
 complete raw/summary: `/tmp/runtests-628913/`, source/helpers/native identity/image/cleanup:
 `/tmp/lunden-setup814/representative-*`, `returnmarkers-*` and `returnmarkerstest-full.*`.
 
+#858 changes only posterplacementtest's catch writer: accumulated PASS/FAIL rows and the complete error
+stack are retained byte-for-byte, followed by the standard SOME FAILED terminal. A native Chrome static-DOM
+probe gave seven PASS/ALL PASS, actual exit0: original missing-terminal counterexample, expected multiline
+stack, exact previously captured actual preview-FAIL/TypeError text, one new terminal, and both unchanged
+normal success/assertion-failure terminals. The inspected image shows those seven writer-only results;
+no apartment/gameplay rerun or fix of #857's preview failures is claimed. Whole source inverse removes only
+the appended terminal; evidence `/tmp/lunden-protocol858/` and preserved actual #833 full-progress text.
+
 #815 extends ONLY ordinary rearrangement setup to christmastest, loosemirrorstest,
 rearrangemirrortest, veronatest and posterplacementtest. Five classic includes and seven synchronous setup
 calls retain original script kinds/call positions. The shared helper is unchanged from #814: unlocked=true,
