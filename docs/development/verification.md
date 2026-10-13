@@ -542,7 +542,7 @@ no executable fixture changes or new browser results are part of this audit.
 | `notetest.html` | Viewport exclusion | Paper scrollHeight/clientHeight and numeric scroll positions/keyboard repeat rows depend on note-panel viewport. |
 | `olofcartest.html` | Conditional candidate; random rows | Actual driver/car travel, garage/doors/seats and scoring; randomly chosen dad-joke text is included in results. |
 | `oloftest.html` | Conditional candidate; random rows | Actual Olof seats/behavior/actions and non-repeating jokes; randomly chosen joke text is included in results. |
-| `opentest.html` | Candidate | Actual fronts/hinges/collisions and stored contents bounds/visibility. |
+| `opentest.html` | Accepted in #830 | Complete original full/test logs byte-identical, all 189 ordered PASS; actual 900×600/null controller versus 480×300/real APIs. All 90 fronts, conditional action labels, clashes/poster sweeps, free-floor and contents loops retained; captures show only early rows. |
 | `oventest.html` | Candidate | Actual appliance actions, cooking/brewing timers and lamp state; retain all emissive checks. |
 | `papertest.html` | Candidate | Actual roll/strip/wad ray-actions, finite paper counts, flushing/stats and reset. |
 | `patiopalmtest.html` | Candidate | Actual plant/pot topology, bounds, material and collision footprint. |
@@ -2957,3 +2957,31 @@ capture coverage excludes this pair from qualified speedup aggregation.
 Source, native snapshots, monitor and images remain in
 `/tmp/lunden-smart829/nesttest`. Olofcar/Olof remain pending in #829;
 parents #740 and #736 remain open.
+
+## Openable-front complete native acceptance (#830, partial)
+
+On frozen `1a8d210dc8623b538a123964ffb79524b1c51fc9`, the complete original
+900×600/time12/freeze flow and 480×300/test flow produced identical 9072-byte
+logs: all 189 ordered PASS and ALL PASS, actual monitor exit 0. All 90 fronts,
+conditional opening/closing labels (including repeated rows), neighbour/wall
+AABB and poster sweeps, original free-floor searches/reacquisition and contents
+loops remain intact. Original dynamic rows retain 31 kitchen fronts/21 filled,
+45 other fronts with contents and both dishwasher rack depths. No new seed,
+normalization, quality override, matrix, wait or assertion change.
+
+Actual ready/final pairs retain stable URL/timeOrigin identities: full
+900×600/null controller versus test 480×300/real draw/setFull/wantsFrame APIs,
+lazy/full false, no fullscreen and empty cloud query. The single approved
+undefined requestFullscreen guard applies only with actual testMode before
+original start-touch; original full behavior and uncaught async exceptions
+remain. Reversing query/dimensions reproduces the whole frozen guarded source;
+native source/data/index, runner and three helper hashes match that base.
+Evidence: `/tmp/runtests-608329` and `/tmp/lunden-open830/opentest`.
+
+Both inspected viewport PNGs show ALL PASS and only early result rows: full
+shows about 51 rows and test about 18; remaining checks and the final scene lie
+below both captures. Complete raw logs preserve all 189 rows. No cabinet-state,
+poster or rendered-scene pixel equivalence is claimed. Wall 162.368 s and
+121.823 s includes both successful captures; this pair is excluded from speedup
+aggregation because capture coverage differs. Oven and paper remain pending
+separate complete pairs; #830/#740/#736 remain open.
