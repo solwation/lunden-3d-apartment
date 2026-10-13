@@ -173,9 +173,14 @@ export class PlayerRoom {
     if (this.recoveryAlarm === undefined) this.recoveryAlarm = await this.ctx.storage.getAlarm();
     const current = this.recoveryAlarm;
     if (next !== current) {
-      if (next === null) await this.ctx.storage.deleteAlarm();
-      else await this.ctx.storage.setAlarm(next);
-      this.recoveryAlarm = next;
+      try {
+        if (next === null) await this.ctx.storage.deleteAlarm();
+        else await this.ctx.storage.setAlarm(next);
+        this.recoveryAlarm = next;
+      } catch (error) {
+        this.recoveryAlarm = undefined; // next traffic repairs a failed schedule, also after hibernation
+        throw error;
+      }
     }
   }
 
@@ -283,7 +288,7 @@ export class PlayerRoom {
     }
     ws.serializeAttachment(a);
     this.sweep(now);
-    if (shot?.to) await this.scheduleRecovery();
+    if (shot?.to || this.recoveryAlarm === undefined) await this.scheduleRecovery();
   }
 
   /** Chat (#675) and "skriver…" (#676) to the others, within CHAT's limits; the sender's client shows its own line. */

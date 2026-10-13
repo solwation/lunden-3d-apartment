@@ -76,8 +76,8 @@ test('off→on reschedules same deadline; failed scheduling/retry and ordinary t
   const set = ctx.storage.setAlarm; let writes = 0;
   ctx.storage.setAlarm = async at => { writes++; if (writes === 1) throw Error('storage failure'); return set(at); };
   await assert.rejects(ns.object('world').scheduleRecovery(), /storage failure/);
-  assert.equal(ns.object('world').recoveryAlarm, null, 'cache updated only after successful scheduling');
-  await ns.object('world').scheduleRecovery(); assert.equal(await ctx.storage.getAlarm(), due);
+  assert.equal(ns.object('world').recoveryAlarm, undefined, 'failed schedule invalidates cache for next traffic');
+  await ns.object('world').webSocketMessage(socket, JSON.stringify({ p:[0,0,0],r:0 })); assert.equal(await ctx.storage.getAlarm(), due);
   await ns.object('world').scheduleRecovery(); assert.equal(writes, 2, 'unchanged phase performs no extra setAlarm write');
   now = due; alive();
   const schedule = ns.object('world').scheduleRecovery;

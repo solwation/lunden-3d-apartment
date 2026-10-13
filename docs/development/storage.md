@@ -190,8 +190,9 @@ without hurt flashes, scores or death callbacks. #868/#869 provide the common fa
 channel; their damage path must settle due recovery, mutate the same attachment, call
 `recoveryClock`, serialize, and await `scheduleRecovery`.
 
-No polling writes were added: unchanged phase reuses the cached alarm, and ordinary
-position/chat traffic does not schedule/read an alarm. Close/idle/no eligible player
+No polling writes were added: unchanged phase reuses the cached alarm. Ordinary
+position/chat traffic reads scheduling only once after hibernation or a failed storage
+operation to repair missing scheduling; steady traffic does not read/write an alarm. Close/idle/no eligible player
 clear it; the admin brake clears both storage and cache. Alarms consume one conservative
 `bill.req`, obey the existing monthly cap and stop at the cap/off switch. Storage alarm
 writes occur only when the earliest deadline changes. Billing semantics checked
