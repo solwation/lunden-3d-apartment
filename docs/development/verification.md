@@ -406,8 +406,32 @@ only test PNG exists and was inspected (all 13 result rows, vanity and off lapto
 pixel equivalence or extra replacement app load is claimed. Asymmetrical capture cost excludes this pair from
 aggregate speedup calculations. All 247 frozen source paths and exact guarded fixture/helper hashes match.
 Raw logs/summary: `/tmp/runtests-496140/`; actual ready/final phases, source/provenance, independent PID/SID/exit,
-test PNG and full capture error: `/tmp/lunden-life823/laptop-*` and `laptoptest-*`. Laundry/life2 and #823/#739/#736
-remain open; their dynamic real-time values and full default section coverage still need separate comparisons.
+test PNG and full capture error: `/tmp/lunden-life823/laptop-*` and `laptoptest-*`. Laundry disposition follows;
+life2 and #823/#739/#736 remain open, with full default section coverage still needing its separate comparison.
+
+
+#823 laundry retains its WHOLE original executable at frozen `d390634` (no new test query or guard). The one
+complete original full/test pair has 61 PASS rows and ALL PASS in both modes, but DIFFERENT raw output and
+actual independent compare exit 1. The sole difference is original real-time diagnostic row 28:
+
+| Full | Test |
+| --- | --- |
+| `PASS actual reload keeps exact game time and original start load without offline progress (left 26.50 of 26.5 s, at most 8.52 s run since the app was up)` | `PASS actual reload keeps exact game time and original start load without offline progress (left 26.45 of 26.5 s, at most 5.04 s run since the app was up)` |
+
+All other 60 ordered rows and terminal verdict match; no functional assertion failed. No output normalization,
+seed, extra wait/timer/matrix/quality adjustment, baseline mask or retry was made, and no product cause is established.
+All seven actual SAME-iframe documents per mode completed (two original life/shot/cloud-empty and five
+shot/cloud-empty/time12 URLs): 14 unique child identities at ready, 12 beforeunload observations and 12 pagehide phases,
+and both final records prove original full 480×300/null controller versus test 480×300/real API, all without fullscreen.
+Original unconditional fullscreen suppression, DPR .15, storage/programme/member-id/pause/replacement/fold/wardrobe
+coverage and real performance.now ran/left diagnostics remain unchanged. Authored resetHome.go is a stub; the final
+explicit load is the real new document. Original catch-only FAIL stack behavior was preserved and did not execute.
+Full 634.573s and test 477.422s include successful captures but are descriptive only, excluded from speedup aggregation.
+Both PNGs were inspected: all 61 rows and generic final house façade at original low DPR, no intermediate garment/
+programme/folding pixel equivalence. All 247 frozen source paths and exact unchanged fixture/helper hashes match.
+Raw logs/summary: `/tmp/runtests-503245/`; source/provenance, all actual ready/leave/final phases, independent PID/SID/exit
+and both PNGs: `/tmp/lunden-life823/laundry-*` and `laundrytest-*`. This is a blocked exact-row migration disposition,
+not a rendering exemption or fixed product defect. Life2 and #823/#739/#736 remain open.
 
 | Fixture (`tools/`) | Audit disposition | Concrete source requirement |
 |---|---|---|
@@ -444,7 +468,7 @@ remain open; their dynamic real-time values and full default section coverage st
 | `keytest.html` | Migrated (#821) | 21 identical ordered PASS rows, 0 FAIL; original authored 900×600/full enters native 1280×800 fullscreen → 480×300/test. Native cabinet/key, garage/asphalt/collision and DetailCuller layer/cut diagnostics preserved; evidence below. |
 | `kittentest.html` | Original full retained (#822) | Both complete modes have 16 PASS, but exact raw rows 2/12 differ in native cat name/breed/score/badge and photo name. Comparison exit 1; no normalization, migration or proven product bug/cause. Current original including #848 writer restored byte-for-byte, pre-pair guard removed. |
 | `laptoptest.html` | Logical parity (#823); full capture failed | All 13 ordered PASS rows and ALL PASS byte-identical, including texture v2→v8 and seeded clip order. Full ready 900×600 → native fullscreen 1280×800/controller null; test 480×300/real API/no fullscreen. Actual exit 0; `/tmp/runtests-496140/`. Full screenshot timed out; test-only image, exclude speedup aggregation. |
-| `laundrytest.html` | Conditional candidate | Programme/actions/reloads with real-time values in rows; exact comparison may differ, no normalization. |
+| `laundrytest.html` | Retain original full (#823); real-time row differs | Complete 61 PASS / ALL PASS in both modes, but exact row 28 differs (left 26.50/ran 8.52 versus left 26.45/ran 5.04). Seven real documents per mode, original 480×300/full controller null versus test real API/no fullscreen. Actual compare exit 1; `/tmp/runtests-503245/`. No migration or speedup aggregation. |
 | `life2test.html` | Candidate | Actual life/item action integration and persistence. |
 | `life3test.html` | Candidate | Actual life/item cooking/actions and persistence. |
 | `lifetest.html` | Candidate | Full life inventory/food/storage/reload action flows. |
