@@ -538,7 +538,7 @@ no executable fixture changes or new browser results are part of this audit.
 | `nerftest.html` | Accepted in #828 | Complete original full/test logs byte-identical, all 7 ordered PASS; actual 900×600/null controller versus 480×300/real test APIs. Blaster, flight layers, wall splash position/colour, floor drop and fade retained; capture coverage differs. |
 | `nesttest.html` | Conditional candidate; random rows | Smart speakers: mocked speechSynthesis, clock/weather answers, ducking, wall targets/F; random chosen answers and answer counts appear in rows, preserve them exactly. |
 | `nonpctest.html` | Accepted in #828 | Complete original full/test logs byte-identical, all 10 ordered PASS; actual 900×600/null controller versus 480×300/real test APIs. Missing People fetch, greeting/speech expiry and original old-save score/storage flow retained. |
-| `northbackdroptest.html` | Candidate | Actual mapped north footprints, outward-window rays, terrain/plinth/access bounds and triangle budget; no lowmem subcase. |
+| `northbackdroptest.html` | Accepted in #828 | Complete original full/test logs byte-identical, all 14 ordered PASS; actual 720×480/null controller versus 480×300/real test APIs. All mapped footprints, 426/426 window rays, 39 trees and 8380-triangle budget retained; no lowmem subset. |
 | `notetest.html` | Viewport exclusion | Paper scrollHeight/clientHeight and numeric scroll positions/keyboard repeat rows depend on note-panel viewport. |
 | `olofcartest.html` | Conditional candidate; random rows | Actual driver/car travel, garage/doors/seats and scoring; randomly chosen dad-joke text is included in results. |
 | `oloftest.html` | Conditional candidate; random rows | Actual Olof seats/behavior/actions and non-repeating jokes; randomly chosen joke text is included in results. |
@@ -2758,8 +2758,7 @@ shows the final dark bedroom blaster rack/HUD; test clips the long flight-layer
 row on the right and the final canvas below its upper portion. No intermediate
 dart/splash pixel or rendered-scene equivalence is claimed. Wall times
 132.917 s and 83.153 s include both successful captures; this pair is excluded
-from speedup aggregation because capture coverage differs. Nonpc acceptance follows below; north
-remains pending its separate complete pair; #828/#740/#736 remain open.
+from speedup aggregation because capture coverage differs. Nonpc and north acceptance follow below; parent #740/#736 remain open.
 
 
 ## No-neighbours complete native acceptance (#828, partial)
@@ -2787,7 +2786,7 @@ text crop. Full shows the final empty bench/house facade and HUD; test captures
 only the upper final canvas. No intermediate speech-bubble or rendered-scene
 pixel equivalence is claimed. Wall 107.714 s and 78.889 s includes both captures;
 this pair is excluded from speedup aggregation because scene capture coverage
-differs. North remains pending its own complete pair; #828/#740/#736 stay open.
+differs. North acceptance follows below; parent #740/#736 remain open.
 
 ## Canonical starting-food amount assertion (#850)
 
@@ -2844,3 +2843,33 @@ actual exit/cleanup, all native phases, image, source/helper hashes and whole
 fixture inverse: `/tmp/lunden-egg850/acceptance/`. All229 frozen native/fixture
 blobs and three helper hashes physically matched after the run. The fixture
 retains original full sizing/queries; broader #739/#736 remain open.
+
+## Northern backdrop complete native acceptance (#828, final)
+
+On frozen `8ad5bc7ee43d64e3408cc72b21a8cfb8118de094`, the complete original
+720×480/shot/month6/cloud-empty flow and 480×300/test flow produced identical
+830-byte logs: all 14 ordered PASS and ALL PASS, actual monitor exit 0.
+All three actual mapped footprint rows, five material batches, ground/plinth
+bounds, outward window rays 426/426, road/access/source predicates, 39 clear
+trees, walking boundary and actual 8380-triangle budget remain unchanged.
+There is no lowmem subset, seed, normalization, quality override or new guard.
+Original matrix updates and geometry loops are intact; reversing query and
+iframe dimensions reproduces the entire measured original fixture.
+
+Both actual ready/final pairs retain stable URL/timeOrigin identities:
+720×480/null controller versus 480×300/real draw/setFull/wantsFrame APIs,
+lazy/full false, no fullscreen and empty cloud query. Native source/data/index,
+runner and three helper hashes match that measured base. Evidence:
+`/tmp/runtests-590124` and `/tmp/lunden-north828/northbackdroptest`.
+
+Both inspected PNGs show all 14 vertical rows and ALL PASS. Full shows the
+final near apartment facade; test clips long rows on the right and the canvas
+below its upper strip. Neither is a directed image of the mapped northern
+buildings; no north-building or rendered-scene pixel equivalence is claimed.
+Wall 106.741 s and 74.015 s includes both successful captures; this pair is
+excluded from speedup aggregation because capture coverage differs.
+
+All three bounded #828 dispositions are complete: Nerf 7, nonpc 10 and north
+14 ordered PASS per mode with whole byte-identical logs. Each frozen base is
+recorded above; all authored actions, storage flows, diagnostics and original
+assertions remain. Parent #740 and #736 stay open.
