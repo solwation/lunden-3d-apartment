@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { PERF } from './config.js';
+import { computeDetailBounds } from './combatworld.js';
 import { lowMemory } from './lowmemory.js';
 
 // Small-detail culling (#189): from the street the whole flat is in the view frustum (the walls don't stop three's
@@ -58,7 +59,7 @@ export class DetailCuller {
       for (const c of o.children) walk(c, moving, unit);
       if (!(o.isMesh || (o.isLineSegments && o.userData.architectureEdges)) || o.isInstancedMesh || !o.geometry) return;
       if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere();
-      if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
+      if (!o.geometry.boundingBox) computeDetailBounds(o.geometry);
       const s = o.geometry.boundingSphere;
       const r = s.radius * o.matrixWorld.getMaxScaleOnAxis();
       if (!(r > 0 && r < D.maxOcclude)) return;
@@ -82,7 +83,7 @@ export class DetailCuller {
     root.traverse((o) => {
       if (!o.isMesh || o.isInstancedMesh || !o.geometry) return;
       meshes.push(o);
-      if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
+      if (!o.geometry.boundingBox) computeDetailBounds(o.geometry);
       box.union(o.geometry.boundingBox.clone().applyMatrix4(o.matrixWorld));
     });
     const s = box.isEmpty() ? new THREE.Sphere() : box.getBoundingSphere(new THREE.Sphere());

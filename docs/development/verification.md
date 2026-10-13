@@ -124,6 +124,9 @@ tools/nerfreciprocaltest.cjs (#715): two actual native Ghosts/Combat/held Nerf c
 tools/cachephasetest.cjs / .html (#715): actual buildWorld(plan)+main Garage/Core/CoreHouse/Player/Detail component,
                        zero WebGL, native 2s query with recorded real short arc; passive promoted scan/spatial/occurrence
                        checkpoint before largest unfinished geometry serialization (16MiB cap) and isolated replay.
+                       Post-outcome bounded independent full-position scans and native Detail-call provenance distinguish
+                       finite-arc overlap from unknown authored boxes. Queued-only fresh-bound reuse compares unchanged2cbc250
+                       exact completed buffer bytes/operation counts and mutation/fallback guards.
                        Unchanged 84c268e/native parity traps for undersized authored boxes beyondfar/behindnear, singular,
                        missing/invalid/empty boxes, custom/instanced/skinned/material/layers. No full-main/phone identity claim.
 tools/cachewaittest.cjs / .html (#715): unchanged 4b2a75e reference versus candidate wait re-pruning;

@@ -26,6 +26,32 @@ function safe(mesh) {
   return mesh.raycast === THREE.Mesh.prototype.raycast && mesh.getVertexPosition === THREE.Mesh.prototype.getVertexPosition && !mesh.isInstancedMesh && !mesh.isSkinnedMesh &&
     !mesh.morphTargetInfluences?.length && !mesh.geometry?.morphAttributes.position?.length;
 }
+// Detail already computes missing native bounds. Reuse that exact pass only for a queued, unstarted spatial job.
+const nativeComputeBox = THREE.BufferGeometry.prototype.computeBoundingBox;
+const attributeGetters = [THREE.BufferAttribute.prototype.getX, THREE.BufferAttribute.prototype.getY, THREE.BufferAttribute.prototype.getZ];
+const interleavedGetters = [THREE.InterleavedBufferAttribute.prototype.getX, THREE.InterleavedBufferAttribute.prototype.getY, THREE.InterleavedBufferAttribute.prototype.getZ];
+function boundsRead(position) {
+  if (!position) return null;
+  const buffer = position.isInterleavedBufferAttribute ? position.data : position;
+  return [position, buffer, buffer?.array, buffer?.version, position.count, position.itemSize, position.normalized,
+    position.offset, buffer?.stride, position.getX, position.getY, position.getZ];
+}
+export function computeDetailBounds(geometry) {
+  if (geometry.boundingBox) return; // Existing authored boxes are never proof of full position bounds.
+  const entry = cache.get(geometry), before = boundsRead(geometry.attributes.position), method = geometry.computeBoundingBox;
+  const result = method.call(geometry); // The same existing call, including unsupported/custom behavior and exceptions.
+  const after = boundsRead(geometry.attributes.position), box = geometry.boundingBox;
+  if (!entry || entry.scan !== 0 || entry.cancelled || entry.settled || !entry.valid || cache.get(geometry) !== entry || !same(entry, geometry) ||
+      method !== nativeComputeBox || !before || !after || before.length !== after.length ||
+      !before.every((v, i) => v === after[i] && v === entry.boundsRead[i]) || before[5] !== 3 ||
+      geometry.attributes.position.isGLBufferAttribute || geometry.morphAttributes.position?.length ||
+      entry.spatialReady || entry.spatial?.phase || entry.spatial?.triangle || entry.triangle || entry.fill ||
+      !box || ![...box.min.toArray(), ...box.max.toArray()].every(Number.isFinite)) return result;
+  const getters = geometry.attributes.position.isInterleavedBufferAttribute ? interleavedGetters : attributeGetters;
+  if (!getters.every((getter, i) => before[9 + i] === getter)) return result;
+  entry.min = box.min.toArray(); entry.max = box.max.toArray(); entry.scan = entry.position.count;
+  return result;
+}
 function release(entry) {
   if (entry.cancelled) return;
   entry.cancelled = true;
@@ -55,7 +81,7 @@ function queue(geometry) {
   const hasSpatial = metrics.spatialBytes + spatialBytes <= C.spatialBudgetBytes && metrics.spatialEntries < C.maxSpatialEntries;
   if (!hasGrid && !hasSpatial) return null;
   const charge = hasGrid ? bytes + C.recordReserve : 0;
-  const entry = { geometry, stamp: stamp(geometry), position, index, bits: new Uint32Array(hasGrid ? bytes / 4 : 0), charge,
+  const entry = { geometry, stamp: stamp(geometry), boundsRead: boundsRead(position), position, index, bits: new Uint32Array(hasGrid ? bytes / 4 : 0), charge,
     min: [Infinity, Infinity, Infinity], max: [-Infinity, -Infinity, -Infinity], scan: 0, triangle: 0,
     clusterBounds: new Float64Array(hasGrid ? C.clusters * 6 : 0), clusterSpan: Math.ceil(Math.floor(count / 3) / C.clusters),
     count: Math.floor(count / 3), fill: null, ready: false, cancelled: false, valid: true };
