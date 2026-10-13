@@ -4491,3 +4491,17 @@ Avatar-pose diagnostics remain external, and their labels do not establish
 actual Ghost timelines. `full/` retains CLI1 despite its four completed green
 geometry blocks; later separately named protocol/forgery stages supply scoped
 compositional acceptance, not a rewritten full-suite exit or fresh dense grid.
+
+Publication proof uses `protocol-publication/` (21/CLI0 and inspected native
+HUD PNG), `forgery-publication/` (3/CLI0), `publication-freeze.json`,
+`publication-worker-provenance.json`, `worker-deploy-jobs.json` and
+`/tmp/lunden-priority-934-node-publication.log` (32/CLI0). PID1793463 owns
+8877 after the shell ran Python source selection/manifest write and THEN the
+final Node command. `/proc/PID/stat` birth time belongs to the inherited shell
+process and is not a Node-exec/module-import timestamp; its integer-btime
+estimate also loses fractional boot epoch precision. Both original estimates
+and this limitation are retained, with no producer hash rewritten. The actual
+script order and unchanged manifest/runtime bytes establish the fresh-module
+provenance. The final proof does not turn earlier full/controlled-pose failed
+attempts into successful exits. No new dense whole-grid or GPU test was run
+after the independent Jaw/Rear/Front/Lateral/cache integration.

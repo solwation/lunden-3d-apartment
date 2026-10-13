@@ -497,3 +497,10 @@ freeze; its real module protocol passed21 native checks/CLI0, and Node
 PlayerRoom/recovery passed29/29/CLI0. The previous28-check result predates the
 additional published jaw case. This local evidence is distinct from deployment
 and from the intentionally older validator's6-check compatibility result.
+
+The final publication integrates the later lateral target-greeting contract
+and cache changes while preserving the separate Nose path. Fresh current
+protocol21/21, hidden-contact3/3 (3940/0 false) and players/recovery32/32 have
+actualCLI0 on bee59bb. Worker run38437605050/job115435582084 completed success,
+including the actual `Run cloudflare/wrangler-action@v3` step; it was not skipped.
+This is genuine deployment evidence, not a live-client write/phone/World test.

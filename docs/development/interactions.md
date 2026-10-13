@@ -866,3 +866,7 @@ This is not an observed arm-forgery case. The independent3940 hidden-contact
 negative inventory remains the observed occlusion evidence. Earlier controlled
 Avatar-pose runs are separate diagnostics: the first CLI1 required a hidden
 contact it never found; neither is actual Ghost paused-wave acceptance.
+
+The bounded safe family landed in bee59bb; further exposed band/pose surfaces
+are tracked independently in #937 (inherited medium), rather than being marked
+covered or silently accepted. #920/#918/#898/#892/#879/#874 remain open.
