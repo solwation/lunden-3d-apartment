@@ -1144,7 +1144,7 @@ from its parent in a temporary baseline; do not restore obsolete assertions.
 | --- | --- | --- |
 | Standalone (6) | basementfloortest, basementlayouttest, beershelfcachetest, cattest, combatremotetest, combatworldtest | No apartment bootstrap or WebGL renderer. Floor/layout/cat test native world geometry; combat tests preserve CPU/raycast/cache timing assertions. Remote combat needs its CJS driver's historical helper. Beer-shelf cache tests browser cache, image decoding and texture-label data; its invalid import map is tracked in #780. Five executable-module comments now identify the standalone reasons. |
 | Companion driver (1) | basemententrytest | Existing `test=lazy`, 900×600, real pointer-lock/touch/walking checks. The CJS companion invokes `runBasementEntries`; the HTML runner alone does not execute its checks. Needs driver-specific comparison. |
-| Full rendering/audio/viewport exceptions (5) | architecturetest, carsoundtest, compasstest, cupshadetest, curtaintest | Architecture and cup shade read rendered pixels; car sound measures real analyser/RMS audio and rain workload; compass asserts changing viewport/safe-area bounds; curtain asserts daylight/shadow/texture behaviour. Preserve their full-quality behaviour. |
+| Historical full-quality classifications (5) | architecturetest, carsoundtest, compasstest, cupshadetest, curtaintest | Architecture/cup shade read scene pixels, car sound measures analyser/RMS/rain workload, compass asserts viewport/safe-area bounds. Curtain state/own-texture pixels were included at this audit; its later complete #844 pair supports test-mode migration below. Preserve the other four fixtures' full behavior. |
 | Lighting-state review (3) | bestatest, blindtest, christmastest | Emissive/daylight state, hemisphere intensity or active light slots affect assertions. Existing test flags in the first two do not establish safe equivalence; decide coupling before migration. |
 | Raw clock-row blockers (2) | calendartest, clocktest | Current time/date or advancing clock/angle values appear in result rows. A deterministic source change needs separate review before exact comparisons; do not normalize measured output. |
 | Exact-pair candidates (26) | Listed in the batches below | Source inspection found no framebuffer/audio/viewport assertion requiring full mode. This is a candidate classification, not a passing comparison. |
@@ -1162,6 +1162,32 @@ per issue). Each needs its own actual full/test runs and unchanged assertions:
 | Care and persistence | bedcaretest, clothtest, colddrawertest |
 | Interaction | cheattest, booktest, crouchtest |
 | Cooking and cloud state (#811 complete) | cooktest/cuptest retain original full mode after actual raw differences; cloudtest migrated with exact native evidence below |
+
+#844 `curtaintest` is accepted after one complete original 900×600/noon/June21/frozen clear-weather pair at
+frozen `06adc19`: all 99 ordered PASS rows and ALL PASS are byte-identical in the complete 5563-byte raw logs,
+actual independently monitored exit 0. All current six-room/valance geometry and wall clearance, real panel/actions,
+pointer/key/timing, score, daylight/emissive, saved-six-pose real reload, UV/material/glow/transmission predicates
+and exact diagnostics remain unchanged. The texture read is `living.tex.image`'s own 2D `getImageData`, not scene
+framebuffer pixels; actual print values 69.2% ink / 30.3% white and all repeated loops match without new seed,
+clock/wait/timer, pose/matrix, quality, baseline, normalization or assertion edits. The obsolete exclusion comment
+now describes the actual own-texture comparison. Final migration changes shared dimensions to 480×300 and appends
+test to original URL0 (also inherited by original &r=1 reload), retaining the approved pre-pair testMode-only guard
+before FIRST original touch start. Full mode is inert; no second touch or new reload behavior was added.
+Each mode really loads TWO documents in the same iframe: four unique child URL/timeOrigin identities at ready,
+first-document beforeunload/pagehide observations and final records verify full first ready 900×600/controller null →
+native fullscreen 1280×800 at leave, reload ready/final 900×600/no fullscreen. Every test phase is 480×300 with real
+controller API/no fullscreen. No absent lazy/full/event-isTrusted fields are claimed.
+Both successful fullPage PNGs were inspected: all 99 rows/ALL PASS and final patterned-bedroom curtain/HUD (test
+long line near the right edge), not intermediate movement/shadow/framebuffer equivalence. Full 232.442s and test
+172.067s include both captures; these are descriptive shared-machine samples pending final #764 timing qualification,
+not a controlled benchmark or aggregate speedup claim. All 247 frozen source paths and exact guarded fixture/helper
+hashes match. Raw logs/summary: `/tmp/runtests-557057/`; source/provenance, native ready/navigation/final phases,
+independent PID/SID/exit and both PNGs: `/tmp/lunden-curtains844/curtain-*` and `curtaintest-*`.
+This completes bounded #844; broader #738/#736 remain open.
+
+| #844 fixture | Current disposition |
+| --- | --- |
+| `curtaintest.html` | Migrated after 99 complete identical PASS rows; own 2D print and every current reload/state/interaction assertion preserved. Actual full first 900→nativeFS1280, reload 900/noFS versus test 480/realAPI/noFS; no intermediate scene-pixel claim. |
 
 #835 calendar retains original 900×600/plain-index setup and the whole current assertion body after one complete
 original full/test pair at frozen `e4c0feb`. Both modes produced 13 PASS rows and ALL PASS, but exact comparison

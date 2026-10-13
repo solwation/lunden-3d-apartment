@@ -4,7 +4,7 @@
 <body>
 <pre id="out">running…</pre>
 <script>
-// no &test: measures drawing (getImageData)
+// #844: getImageData reads the own 2D texture; all 99 full/test result rows match.
 // Curtains test (#342, #362): Sovrum 1's two panels on one ceiling track (from the west wall) start open, parked one at
 // each side: the west stack against its end stop by the west wall (#403: the RÅGRUND chair moved south out of its way),
 // the east one at the track's end, both clear of the glass; E on one opens the strip (#blind-panel, sideways); no walking then; ◀ held
@@ -20,8 +20,8 @@ const lines = [];
 let pass = true;
 const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
 const f = document.createElement('iframe');
-f.width = 900; f.height = 600;
-const URL0 = '../index.html?time=12&month=6&day=21&freeze&weather=clear';
+f.width = 480; f.height = 300;
+const URL0 = '../index.html?time=12&month=6&day=21&freeze&weather=clear&test';
 const loaded = new Promise((r) => { f.onload = r; });
 f.src = URL0;
 document.body.append(f);
@@ -59,6 +59,7 @@ async function run() {
   check(ymin - fl > 0.005 && ymin - fl < 0.05 && ymax - fl < 2.4, `floor-length under the soffit (${(ymin - fl).toFixed(3)} … ${(ymax - fl).toFixed(3)} m)`);
   check(c.west.mesh.castShadow && c.east.mesh.castShadow, 'the fabric casts the sun\'s shadow');
 
+  if (app.testMode) d.documentElement.requestFullscreen = undefined;
   d.getElementById('start-touch').click();
   await wait(50);
   // stand in front of the parked stacks and look at them
