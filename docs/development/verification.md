@@ -3925,3 +3925,9 @@ The actual Ghosts/Combat/Worker fixture waits one real server minute, checks loc
 recovery and immediate remote state/badge sync, and captures native HUD/texture evidence.
 Bootstrap is suppressed and WebGL forbidden; these captures are neither apartment
 rendering nor physical phone acceptance. Recovery does not change hit/death counters.
+
+The same recovery browser fixture also checks offline use of the actual Combat replica
+at 59,999/60,000 ms, preserved phase after new damage, fractional health, delayed
+catch-up/max, death reset and actual WebSocket reconnection clearing the offline phase.
+Its injected offline clock supplies boundary evidence; no actual Fall.land integration
+is claimed by that fixture alone. Captures wait for actual HUD text before saving.

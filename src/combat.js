@@ -293,7 +293,23 @@ export class Combat {
   }
 
   /** Each frame: the jetpack's flames on whoever is under us, the hearts, the red flash fading. */
+  // #867 offline uses this same Combat replica; online health is only written by room events.
+  recoveryClock(now = Date.now()) {
+    if (this.ghosts.connected || this.lives >= this.maxLives) delete this.healAt;
+    else if (!Number.isFinite(this.healAt)) this.healAt = now + 60_000; // user's real minute
+  }
+
+  recoverOffline(now = Date.now()) {
+    this.recoveryClock(now);
+    if (this.ghosts.connected || !Number.isFinite(this.healAt) || now < this.healAt) return;
+    const minutes = 1 + Math.floor((now - this.healAt) / 60_000);
+    this.lives = Math.min(this.maxLives, this.lives + minutes);
+    this.healAt += minutes * 60_000;
+    this.recoveryClock(now);
+  }
+
   update(dt) {
+    this.recoverOffline();
     this.jetT = Math.max(0, this.jetT - dt);
     const jet = this.jetpack;
     if (jet?.thrusting && this.weapon() === 'jetpack' && this.jetT === 0) {
@@ -337,6 +353,7 @@ export class Combat {
   /** A new connection starts with full lives (the room's count does too). */
   reset() {
     this.lives = this.maxLives;
+    delete this.healAt;
     for (const job of [...this.nerfPending]) { job.cancel = true; job.finish(null); }
   }
 }

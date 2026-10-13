@@ -201,3 +201,12 @@ writes occur only when the earliest deadline changes. Billing semantics checked
 at-least-once delivery, so recovery is timestamp-idempotent. No per-player timer or KV
 fight persistence is introduced. `cloudflare/devws.mjs` supplies matching shared alarm
 scheduling for local real WebSocket verification.
+
+Offline recovery uses the existing `Combat.lives` replica, never another health counter.
+`Combat.recoveryClock(now)` starts/preserves its first-damage phase;
+`Combat.recoverOffline(now)` settles due whole real minutes before new offline damage
+and from the existing update loop. No additional timer runs. Offline pause/background
+wall-clock minutes are applied on the next update, capped at max. Connected clients
+clear the local phase and receive health only from the server; the existing welcome
+reset clears it on reconnect. Full/death reset clears it too. The common offline
+fall-damage reducer must settle before mutation and call recoveryClock after mutation.
