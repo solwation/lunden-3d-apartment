@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { FALL } from './config.js';
 import { GHOSTS as G, COMBAT, AVATAR, CHAT } from './config.js';
 import { Avatar, armTarget } from './avatar.js';
 import { totalScore } from './stats.js';
@@ -298,7 +299,7 @@ export class Ghosts {
     const n = this.name() || '';
     const ws = new WebSocket(`${this.url}${n ? `?n=${encodeURIComponent(n)}` : ''}`);
     this.ws = ws; this.openedAt = performance.now(); this.connects++;
-    ws.onmessage = (e) => this.message(e.data);
+    ws.onmessage = (e) => { if (ws === this.ws) this.message(e.data); };
     ws.onclose = (e) => this.closed(ws, e.code);
   }
 
@@ -310,7 +311,7 @@ export class Ghosts {
     this.reset();
   }
 
-  reset() { this.myGhost?.clearMirrorTyping(); this.me = null; this.sent = null; this.outbox = []; this.talkbox = []; for (const g of this.others.values()) g.dispose(); this.others.clear(); this.onTypingReset?.(); }
+  reset() { this.finishFall(null); this.myGhost?.clearMirrorTyping(); this.me = null; this.sent = null; this.outbox = []; this.talkbox = []; for (const g of this.others.values()) g.dispose(); this.others.clear(); this.onTypingReset?.(); }
 
   closed(ws, code) {
     if (ws !== this.ws) return;
@@ -331,13 +332,14 @@ export class Ghosts {
     try { m = JSON.parse(data); } catch { return; }
     const t = performance.now();
     if (m.t === 'w') {
-      this.me = m.i; this.rules = m.c ?? null; this.onWelcome?.();
+      this.me = m.i; this.rules = m.c ?? null; this.onWelcome?.(m);
       for (const p of m.ps ?? []) { const g = this.add(p.i, p.n); if (g && p.p) g.push(p, t); }
     } else if (m.t === 'j') this.add(m.i, m.n);
     else if (m.t === 's') (this.others.get(m.i) ?? this.add(m.i, ''))?.push(m, t);
     else if (m.t === 'x') { this.others.get(m.i)?.dispose(); this.others.delete(m.i); }
     else if (m.t === 'hit') this.onHit(m, this.others.get(m.to));
     else if (m.t === 'life') this.onLife?.(m);
+    else if (m.t === 'fall') { if (m.id === this.pendingFall?.id) this.finishFall(m); }
     else if (m.t === 'hurt') this.onHurt(m, this.others.get(m.by));
     else if (m.t === 'a') { const g = this.others.get(m.i); if (g) this.onShot?.(m, g); }
     else if (m.t === 'g') { const g = this.others.get(m.i); if (g) { g.wave(); this.greetsSeen++; this.onGreet?.(m, g, m.to === this.me ? null : this.others.get(m.to) ?? null); } }
@@ -412,6 +414,24 @@ export class Ghosts {
 
   afterMirror() { if (this.myGhost) { this.myGhost.root.visible = false; if (this.myGhost.typingSprite) this.myGhost.typingSprite.visible = false; } }
 
+  /** One bounded self-damage request; never send client HP or replay it after a disconnect. */
+  fall(drop, gap) {
+    if (!this.connected || this.pendingFall) return Promise.resolve(null);
+    const id = this.fallId = (this.fallId ?? 0) + 1;
+    return new Promise(resolve => {
+      this.pendingFall = { id, resolve, timer: setTimeout(() => this.finishFall(null), FALL.ackMs) };
+      this.outbox.unshift({ t: 'fall', id, drop, gap });
+      this.sendShot();
+    });
+  }
+  finishFall(result) {
+    const pending = this.pendingFall;
+    if (!pending) return;
+    clearTimeout(pending.timer); this.pendingFall = null;
+    this.outbox = this.outbox.filter(m => m.t !== 'fall' || m.id !== pending.id);
+    pending.resolve(result);
+  }
+
   /** Our own saber cut, for the mirror image. */
   swingSelf() { this.myGhost?.swing(); }
 
@@ -426,7 +446,7 @@ export class Ghosts {
     this.greetAt = t;
     const k = Math.floor(Math.random() * G.hello.length);
     this.outbox.push({ t: 'g', to: g.id, k });
-    while (this.outbox.length > G.outbox) this.outbox.shift();
+    while (this.outbox.length > G.outbox) this.outbox.splice(this.outbox.findIndex(m => m.t !== 'fall'), 1);
     this.sendShot();
     return G.hello[k].replace('{n}', g.name);
   }
@@ -439,8 +459,8 @@ export class Ghosts {
     const r2 = (v) => Math.round(v * 100) / 100, r3 = (v) => Math.round(v * 1000) / 1000;
     this.outbox.push({ t: 'a', w: shot.w, o: shot.o.map(r2), d: shot.d.map(r3), ...(shot.s ? { s: r2(shot.s) } : {}), ...(shot.to ? { to: shot.to } : {}) });
     while (this.outbox.length > G.outbox) {
-      const miss = this.outbox.findIndex((x) => !x.to);
-      this.outbox.splice(miss >= 0 ? miss : 0, 1);
+      const miss = this.outbox.findIndex((x) => x.t !== 'fall' && !x.to);
+      this.outbox.splice(miss >= 0 ? miss : this.outbox.findIndex(x => x.t !== 'fall'), 1);
       this.dropped++;
     }
     this.sendShot();
@@ -450,8 +470,9 @@ export class Ghosts {
   sendShot() {
     const t = performance.now();
     if (!this.outbox.length || !this.connected || t - this.lastSent < 1000 / G.hz) return false;
-    this.ws.send(JSON.stringify(this.outbox.shift()));
-    this.lastSent = this.lastBeat = t; this.shots++; this.messages++;
+    const message = this.outbox.shift();
+    this.ws.send(JSON.stringify(message));
+    this.lastSent = this.lastBeat = t; if (message.t !== 'fall') this.shots++; this.messages++;
     return true;
   }
 

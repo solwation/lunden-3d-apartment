@@ -399,3 +399,29 @@ test('public lives: observers, late join, forged state, hibernation and death re
     for (const c of [a, observer, late, rejoined]) c.ws.close(1000); await settle(env);
   } finally { COMBAT.lives = previous; }
 });
+
+
+test('shared life: own welcome, unarmed half/fatal falls and weapon-state/forgery invariants', async () => {
+  const env = setup(), a = await connect(env, 'A'), b = await connect(env, 'B');
+  assert.equal(a.got[0].l, COMBAT.lives);
+  const state = h => ({p:[0,0,0],r:0,h,l:999});
+  a.send(state('')); await settle(env);
+  a.send({t:'fall',id:1,drop:4,gap:2,l:999}); await settle(env);
+  assert.deepEqual(a.got.find(m=>m.t==='fall'),{t:'fall',id:1,l:COMBAT.lives-Math.ceil(COMBAT.lives/2),dead:false});
+  assert.equal(a.got.filter(m=>m.t==='life').at(-1).l,5);
+  assert.equal(b.states().at(-1).l,5);
+  for(const h of ['nerf','','saber']) { now += 1000; a.send(state(h)); await settle(env); assert.equal(b.states().at(-1).l,5); }
+  now += 1000; a.send({t:'fall',id:2,drop:4,gap:2}); await settle(env);
+  assert.deepEqual(a.got.filter(m=>m.t==='fall').at(-1),{t:'fall',id:2,l:0,dead:true});
+  assert.equal(b.states().at(-1).l,COMBAT.lives);
+  now += 1000; a.send({t:'fall',id:3,drop:8,gap:2}); await settle(env);
+  assert.equal(a.got.filter(m=>m.t==='fall').at(-1).dead,true);
+  assert.equal(a.got.filter(m=>m.t==='hurt'||m.t==='hit').length,0,'falls award no PvP hurt/hit effects');
+  for(const [drop,gap] of [[2.5,2],[20,.5]]) { now += 1000; a.send({t:'fall',id:4,drop,gap}); await settle(env); assert.equal(a.got.filter(m=>m.t==='life').at(-1).l,COMBAT.lives); }
+  const count=a.got.filter(m=>m.t==='fall').length;
+  for(const bad of [{drop:null,gap:2},{drop:101,gap:2},{drop:4,gap:-1}]) {now+=1000;a.send({t:'fall',id:5,...bad});await settle(env);}
+  assert.equal(a.got.filter(m=>m.t==='fall').length,count);
+  const {fallDamage}=await import('../src/falldamage.js');
+  assert.equal(fallDamage(4,2,11),6,'ceil(max/2) kills odd full health in two damaging falls');
+  assert.equal(Math.max(0,11-2*fallDamage(4,2,11)),0);
+});

@@ -3010,7 +3010,8 @@ export const RESPAWN = { samples: 8, grid: 5, ringEdges: 64, regions: [
 // black, and the visitor wakes at a checked random outdoor point (RESPAWN) — only the place is reset, not the home. Over `soft` m: a soft thud and a knee-bend. Only a
 // real free fall counts: the gap under the feet must once have been more than `free` m (going down the stair the feet
 // are at most ~two risers, 0.43 m, over a tread; the ramp 0). Timings in seconds; all our own choices.
-export const FALL = { hurt: 3, soft: 1, free: 1,
+// #868: fatal 6 m is a gameplay assumption (twice existing hurt); ack timeout bounds a lost network result, not healing. maxReport 100 m is a generous input limit (guess).
+export const FALL = { hurt: 3, fatal: 6, maxReport: 100, ackMs: 10000, soft: 1, free: 1,
   red: 0.3, black: 1.0, hold: 0.8, back: 1.2, text: 3.5, jolt: 0.9, dip: 0.3 };
 // Up on the roofs (#360, src/roofs.js): outdoors, feet more than `aloft` m over the ground (over our flat: above its
 // top, UNIT_TOP) = up there — the roofs' own walls collide instead of the ground's. Our choice (above every outdoor

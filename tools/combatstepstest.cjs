@@ -5,6 +5,7 @@ const { requireFoes, withActivePeers } = require('./combatsteps.cjs');
 const game = process.argv[2] || 'http://localhost:8721', worker = process.argv[3] || 'http://localhost:8722';
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 let failures = 0;
+async function until(fn, timeout=15000) { const end=Date.now()+timeout; while(Date.now()<end) { if(await fn())return true; await new Promise(r=>setTimeout(r,50)); } return false; }
 const check = (ok, text) => { console.log(`${ok ? 'PASS' : 'FAIL'} ${text}`); if (!ok) failures++; };
 (async () => {
   const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined, args: ['--no-sandbox', '--disable-gpu'] });
@@ -89,6 +90,49 @@ const check = (ok, text) => { console.log(`${ok ? 'PASS' : 'FAIL'} ${text}`); if
     catch (error) { restoreError = error; }
     snapshot = await updates(); await sleep(150);
     check(restoreError?.message === 'restore failed' && JSON.stringify(await updates()) === JSON.stringify(snapshot), 'restoration throw still stops keep-alive before rejection');
+    // #868: same actual room and Combat replica; no Fall/world wiring or healing timer.
+    await pages[0].evaluate(() => { window.fixtureWeapon=''; const c=window.__combat; c.life(c.maxLives); window.lifeEffects={hurt:0,die:0}; c.onHurtCb=()=>window.lifeEffects.hurt++; c.onDie=()=>window.lifeEffects.die++; });
+    await until(async()=>{await nudge();return pages[1].evaluate(()=>[...window.__ghosts.others.values()].every(g=>!g.h));},15000);
+    const falling=async(drop,gap)=>{
+      await pages[0].evaluate(({drop,gap})=>{window.fallResult=undefined;window.__combat.fall(drop,gap).then(result=>window.fallResult=result);},{drop,gap});
+      const done=await until(async()=>{await nudge();return pages[0].evaluate(()=>window.fallResult!==undefined);},15000);
+      if(!done)throw Error('fall result did not arrive');
+      return pages[0].evaluate(()=>({result:window.fallResult,lives:window.__combat.lives}));
+    };
+    const half=await falling(4,2);
+    check(half.result?.l===5&&!half.result.dead&&half.lives===5,'unarmed real fall API takes ceil(max/2) from authoritative server');
+    await pages[0].evaluate(()=>{ // show native HUD DOM only; the fixture deliberately suppresses game bootstrap
+      document.getElementById('loading').hidden=true; document.getElementById('overlay').hidden=true;
+      document.getElementById('hud').hidden=false; window.__combat.update(0);
+    });
+    check(await pages[0].evaluate(()=>!window.__combat.el.hidden&&window.__combat.el.textContent==='❤ 5/10'),'injured unarmed own HUD shows the same remaining life');
+    check(await pages[0].evaluate(()=>{const el=window.__combat.el,r=el.getBoundingClientRect();return r.width>0&&r.height>0&&r.left>=0&&r.right<=innerWidth&&getComputedStyle(el).visibility==='visible'&&getComputedStyle(el).display!=='none';}),'injured unarmed health is actually visible in native HUD DOM');
+    await pages[0].screenshot({path:process.env.LIFE_SHOT||'/tmp/lunden-life868-native.png'});
+    for(const weapon of ['saber','','nerf']){
+      await pages[0].evaluate(weapon=>window.fixtureWeapon=weapon,weapon);
+      await until(async()=>{await nudge();return pages[1].evaluate(weapon=>[...window.__ghosts.others.values()][0]?.h===weapon,weapon);},15000);
+      check(await pages[0].evaluate(()=>window.__combat.lives===5),'weapon transition keeps own health '+(weapon||'unarmed'));
+    }
+    const second=await falling(4,2);
+    check(second.result?.dead&&second.result.l===0&&second.lives===10,'second half fall reports actual death and shared server death reset');
+    const fatal=await falling(8,2);
+    check(fatal.result?.dead&&fatal.lives===10,'higher fall is fatal through the same authoritative channel');
+    check((await falling(2.5,2)).lives===10&&(await falling(20,.5)).lives===10,'small drops and stair-sized free gaps cost no life');
+    check(await pages[0].evaluate(()=>window.lifeEffects.hurt===0&&window.lifeEffects.die===0&&window.__combat.hurts===0),'fall API never adds PvP points/hurt or prematurely invokes spawn');
+    await pages[0].evaluate(()=>{window.__ghosts.message(JSON.stringify({t:'life',l:7}));window.__combat.update(0);});
+    check(await pages[0].evaluate(()=>window.__combat.lives===7&&window.lifeEffects.hurt===0&&window.lifeEffects.die===0),'passive life reducer accepts heal state without hurt/death effects');
+    await pages[0].evaluate(()=>{window.__ghosts.message(JSON.stringify({t:'life',l:999}));});
+    check(await pages[0].evaluate(()=>window.__combat.lives===10),'passive life reducer clamps to authoritative maximum');
+    const cancelled=await pages[0].evaluate(async()=>{
+      const g=window.__ghosts,c=window.__combat; g.lastSent=performance.now();
+      const pending=c.fall(4,2),id=g.pendingFall.id; window.fixtureActive=false;g.disconnect();
+      const result=await pending;g.message(JSON.stringify({t:'fall',id,l:0,dead:true}));
+      return {result,lives:c.lives,pending:g.pendingFall,queued:g.outbox.length};
+    });
+    check(cancelled.result===null&&cancelled.lives===10&&!cancelled.pending&&cancelled.queued===0,'disconnect resolves pending fall without fallback damage; late result is ignored');
+    await pages[0].evaluate(()=>{window.__combat.life(10);});
+    const offline=await pages[0].evaluate(async()=>{const c=window.__combat;const first=await c.fall(4,2),second=await c.fall(4,2);return {first,second,lives:c.lives};});
+    check(offline.first.l===5&&offline.second.dead&&offline.lives===10,'offline mode uses the same single Combat replica and shared rule');
     check(errors.length === 0, 'no page errors: ' + JSON.stringify(errors));
   } catch (error) { check(false, error.stack); }
   finally { await browser.close(); }

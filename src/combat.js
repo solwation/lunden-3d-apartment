@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { fallDamage } from './falldamage.js';
 import { COMBAT as C, TOYS } from './config.js';
 import { stepNerf, nerfFloor } from './nerf.js';
 import { combatWorldHits, combatWorldPath, combatWorldPathBlocked, prepareCombatWorld } from './combatworld.js';
@@ -70,10 +71,8 @@ export class Combat {
     scene.add(this.lineMesh);
     ghosts.onHit = (m, g) => this.hit(m, g);
     ghosts.onHurt = (m, g) => this.hurt(m, g);
-    ghosts.onWelcome = () => this.reset();
-    ghosts.onLife = (m) => {
-      if (Number.isFinite(m.l)) this.lives = Math.min(this.maxLives, Math.max(0, m.l));
-    };
+    ghosts.onWelcome = m => this.reset(m?.l);
+    ghosts.onLife = m => this.life(m.l);
     this.el = document.createElement('div');
     this.el.id = 'lives';
     this.el.hidden = true;
@@ -325,7 +324,7 @@ export class Combat {
     }
     for (const job of [...this.nerfPending]) if (!this.ghosts.connected || this.weapon() !== 'nerf') { job.cancel = true; job.finish(null); }
     this.moveShots(dt);
-    const on = this.active;
+    const on = this.active || this.lives < this.maxLives;
     this.el.hidden = !on;
     if (on) this.el.textContent = `❤ ${this.lives}/${this.maxLives}`;
     if (this.flashT > 0) { this.flashT = Math.max(0, this.flashT - dt); this.flashEl.style.opacity = String(this.flashT / C.flash); }
@@ -350,9 +349,30 @@ export class Combat {
     if (m.dead) { this.deaths++; this.onDie(m); }
   }
 
-  /** A new connection starts with full lives (the room's count does too). */
-  reset() {
-    this.lives = this.maxLives;
+  /** Passive authoritative updates, including healing: no hurt/score/death side effects. */
+  life(value) {
+    if (!Number.isSafeInteger(value)) return false;
+    this.lives = Math.max(0, Math.min(this.maxLives, value));
+    return true;
+  }
+
+  /** API for #869; the landing caller owns suit protection, visuals and fatal respawn timing. */
+  async fall(drop, gap) {
+    const damage = fallDamage(drop, gap, this.maxLives);
+    if (damage === null) return null;
+    this.recoverOffline();
+    const result = this.ghosts.connected ? await this.ghosts.fall(drop, gap)
+      : { l: Math.max(0, this.lives - damage), dead: damage > 0 && this.lives <= damage };
+    if (!result || !Number.isSafeInteger(result.l) || typeof result.dead !== 'boolean') return null;
+    this.life(result.dead ? this.maxLives : result.l);
+    this.recoveryClock();
+    if (result.dead) this.deaths++;
+    return result; // no PvP hurt penalty or immediate onDie; #869 handles actual fatal landing wake
+  }
+
+  /** A new server attachment starts full; missing legacy own-state keeps the existing replica. */
+  reset(value) {
+    this.life(value);
     delete this.healAt;
     for (const job of [...this.nerfPending]) { job.cancel = true; job.finish(null); }
   }

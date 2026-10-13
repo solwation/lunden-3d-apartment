@@ -1,3 +1,4 @@
+import { fallDamage } from '../src/falldamage.js';
 import { TOYS } from '../src/config.js';
 
 // Other players as ghosts (#666): one Durable Object room for everybody (`idFromName('world')`), WebSockets with the
@@ -243,8 +244,9 @@ export class PlayerRoom {
     const [client, server] = Object.values(new WebSocketPair());
     this.ctx.acceptWebSocket(server);
     const i = crypto.randomUUID().slice(0, 8), n = cleanName(url.searchParams.get('n'));
-    server.serializeAttachment({ i, n, s: null, t: now, w: now, c: 0, k: 0, over: false });
-    send(server, JSON.stringify({ t: 'w', i, ps: others.map(att).map((a) => ({ i: a.i, n: a.n, ...(a.s ?? {}), l: a.l ?? COMBAT.lives })), c: { lives: COMBAT.lives, weapons: COMBAT.weapons } }));
+    const attachment = { i, n, s: null, l: COMBAT.lives, t: now, w: now, c: 0, k: 0, over: false };
+    server.serializeAttachment(attachment);
+    send(server, JSON.stringify({ t: 'w', i, l: attachment.l, ps: others.map(att).map((a) => ({ i: a.i, n: a.n, ...(a.s ?? {}), l: a.l ?? COMBAT.lives })), c: { lives: COMBAT.lives, weapons: COMBAT.weapons } }));
     this.broadcast({ t: 'j', i, n, l: COMBAT.lives }, server);
     return new Response(null, { status: 101, webSocket: client });
   }
@@ -266,8 +268,23 @@ export class PlayerRoom {
       if (a.k >= PLAYERS.strikes) this.drop(ws, CLOSE.rate, 'rate');
       return;
     }
+    let falling;
+    try { const m = JSON.parse(message); if (m?.t === 'fall' && Number.isSafeInteger(m.id) && m.id > 0) falling = m; } catch {}
+    let lifeChanged = false;
     const talk = cleanTalk(message), hello = !talk && cleanGreet(message), shot = !talk && !hello && cleanShot(message);
-    if (talk) this.talk(ws, a, talk, now);
+    if (falling) {
+      const damage = fallDamage(falling.drop, falling.gap, COMBAT.lives);
+      if (damage !== null) {
+        this.recoverLife(ws, a, now);
+        const left = Math.max(0, (a.l ?? COMBAT.lives) - damage), dead = left === 0;
+        a.l = dead ? COMBAT.lives : left;
+        this.recoveryClock(a, now); lifeChanged = true;
+        this.publishState(ws, a);
+        send(ws, JSON.stringify({ t: 'life', l: a.l }));
+        send(ws, JSON.stringify({ t: 'fall', id: falling.id, l: left, dead }));
+      }
+    }
+    else if (talk) this.talk(ws, a, talk, now);
     else if (hello) { // #673: to someone here, not too often; everybody else sees the greeter wave
       if (now - (a.gt ?? 0) >= PLAYERS.greetEvery * 800 && hello.to !== a.i && this.open().some((x) => x !== ws && att(x).i === hello.to)) {
         a.gt = now;
@@ -287,6 +304,7 @@ export class PlayerRoom {
       if (s) { a.s = s; this.publishState(ws, a); }
     }
     ws.serializeAttachment(a);
+    if (lifeChanged) await this.scheduleRecovery();
     this.sweep(now);
     if (shot?.to || this.recoveryAlarm === undefined) await this.scheduleRecovery();
   }
