@@ -926,3 +926,31 @@ draw, nearest surface/hidden pureSkull/cell corners, then real Combat/2WS Worker
 receipts and HUD. Default always measures; explicit clean-grid reuse is strictly
 bound to the complete producer function and every imported production hash.
 This is bounded native geometry/DOM evidence, not rendered World/phone/allpose.
+
+
+### Immutable after-greeting right/back temple (#946)
+
+`rifleHeadGreetingRightRegion`/`greetingRightPatch` adds a separate right-only
+subset of the original lateral policy: canonical x<0, y.098–.102 above headY,
+z.038–.042, normalized side-ray depth≤.05/vertical≤.025. These are conservative
+*guess* game-policy values based on actual sampled exposed rearward temple, not
+anatomical measurements or a mirror of the broader left band. Original inward
+side/range/origin/profile/whole-cell padding remains unchanged. The covered
+z.055/.070 wave-elbow strip does not reopen. Geometry/animation/draws are intact.
+
+PlayerRoom supplies named `allowGreetingRight` only for accepted gt, existing
+`headPoseFixed === true` and known fresh `turned === false`. First real standing
+snapshot/no-snap visibility and permanent normalized p/r/c history are unchanged.
+Unknown legacy, moved/turned/crouched and returned targets stay body1 here; death,
+healing and hibernation do not reset eligibility. Other named and legacy options
+remain independent. Bigger changed families remain in935/947, not declared solved.
+
+`tools/riflerighttest.cjs GAME WORKER OUTPUT [CLEAN_GRID_PROOF]` measures actual
+Ghost held/wave/repeat/delayed/saber/suit/first-state/late-welcome poses, independent
+nearest/hidden/corner negatives, then fresh owned actual Combat/2WS Worker/HUD.
+Default measures; explicit grid reuse is strict function/runtime/complete-matrix
+bound. `... OUTPUT --old-worker /absolute/older-config.js` intentionally boots
+a fresh owned older-config validator for separate body-fallback compatibility;
+it is not a stale external Worker or evidence of an actual cached live client.
+Near-max positive/corner proof records240 finite cases at0.6m side origins; it
+does not promise every distance/coordinate/continuous pose. No WebGL/World/phone.

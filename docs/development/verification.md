@@ -4788,3 +4788,63 @@ keeps all234 runtime/driver hashes and the original clean-grid producer/runtime
 hashes exact. The bounded greeting slice is complete; parent939/931/917 and
 post-turn944 remain separate/open. Owned Worker/browser/game-server processes
 were stopped. This is genuine deployment evidence, not a live phone/World test.
+
+
+### Bounded right/back greeting temple (#946)
+
+Run `PLAYWRIGHT_MODULE=... CHROME_PATH=... node tools/riflerighttest.cjs
+http://localhost:8878 http://localhost:8879 /tmp/right-greeting [GRID_PHASE_PROOF]`.
+Default always measures. Explicit replay fails closed on complete producer
+function or any production path/hash change, incomplete/failed matrix or negatives;
+only an extracted clean grid phase is reused, never a failed whole-run verdict.
+
+Original native1 measured all60 canonical styles/builds/heights, six first headings
+0/.79/.8/.81/3.14/−1.6, actual Ghost held/saber/wave/repeat/6s-delayed/paused first
+draw/first-state/late-welcome/suit and natural bind/head/breath pose updates:
+197,678 rays,18,276 admitted nearestSkull,73,702 earlier unsupported surfaces,
+66,104 FIRST pureSkull hidden forgeries,12,192 actual8corner contacts, zero
+bad/cornerBad. Max entry/rounding residual3.123145mm under unchanged15mm guard.
+Occluding arms/hair/face/nose/body remain present; the deliberately covered
+z.055/.070 rows and oblique/outside cells are independently negative.
+
+WHOLE native1 remains CLI1: the initial live test origin followed unrounded
+target z, so real Combat r2 origin rounding could put d.z=0 outside the4mm band.
+The fixture now uses an actually r2-aligned camera origin BEFORE lookAt, preserving
+production rounding and its exact transmitted ray; no tolerance/policy change.
+Native2 reused that clean measured phase, completed real protocol/HUD but whole
+CLI1 on max sampler144/240 at fixed3m (1,152 corners,0 wrong corners);96 cases
+had no admissible sampled packet. These logs/producer/failure facts are retained.
+Bounded closer actual inputs subsequently prove all240 near-max cases at recorded
+0.6m side origin,1,920 corners/0 wrong. Both coordinate signs and headings0/.8
+cover all60 appearances. Every chosen distance/origin/r3 direction/hc is saved;
+this is finite support, not all-range/coordinate coverage or a proven universal
+explanation of the earlier3m sampler gaps.
+
+Native3 returned23/CLI0. Final exact driver returns24 PASS/0 FAIL/actualCLI0,
+zero errors/WebGL: fresh owned Worker after sourcefreeze, genuine Combat/Ghosts
+2WS, head8 before greeting, head6 after, repeat delayed/capped-wave head4, public/
+self HP, cached/version body3/2, one low-HP death/UUID/award/reset, replay no extra
+effects, moved-returned body9, fresh greeted socket head8 and private-history-free
+late welcome. A physical mesh0.01m before exact native contact, inside the old
+0.3m clearance gap, blocks the entire actual world-obstacle ray. Nine captured
+transmitted packets independently satisfy256byte/o:r2/d:r3/hc:r3. Actual HUD PNG
+was inspected and shows real Huvudträff and measured protocol rows.
+
+Separate `... OUTPUT --old-worker /tmp/old-config-5eab20e.js` returned6/CLI0.
+Current real client→fresh OWN Worker intentionally importing exact older5eab20e
+config: pre-greet head8, after-greet body7 with actual hc; inspected ordinary
+Träff marker/HUD. Override hash/preboot order/listening PID and unchanged current
+backend/client hashes are explicit, not a cached-module or external-service claim.
+
+Focused right/recovery Node10/CLI0; combined right/front/players/recovery49/CLI0.
+Node1 CLI1 was a misplaced raw-region crouch assertion: the unchanged shared
+authoritative Contact crouch gate is now tested with the new named permission,
+not a weakened crouch outcome or product change. Real room tests cover first
+arbitrary heading, rate/invalid/client claims, immutable p/r/c changes/return,
+legacy/private/hibernate/latewelcome, one lethal award and9/10 minute recovery.
+Original broad grid is measured only in native1; later focused runs explicitly
+reuse its source-bound phase. Artifacts/actual exits/grid extraction/full hashes/
+raw packets/producers/PNG: `/tmp/lunden-priority-946/` and persistent946-proof.json.
+Parents935/932/917 remain open. This is bounded actual native geometry/DOM/local
+room evidence, not rendered World/phone/FPS/all-continuous-pose/full anti-cheat.
+Final publication parity and genuine deployment are recorded separately below.

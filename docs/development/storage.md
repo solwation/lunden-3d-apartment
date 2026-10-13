@@ -587,3 +587,24 @@ hc-v1 and256-byte cap. One real low-HP death/killUUID/award/reset and replay-saf
 marker are retained; focused real room tests cover hibernate/latejoin/invalid
 states and9→10 one-per-minute recovery after a two-HP injury. Genuine deployment
 is recorded separately from publication and local owned Worker evidence.
+
+
+### Private immutable right/back eligibility (#946)
+
+Only named `allowGreetingRight` and its separate canonical subset are added to
+existing option dispatch. Attachment headPoseFixed/turned/gt are REUSED exactly,
+not initialized, reset or migrated differently. Eligibility requires strict
+fixed=true/turned=false/gt-present; public welcome/state still omit these fields
+and client claims cannot restore them. Other surfaces and bool Front8/Rear9
+compatibility remain unchanged. No new wire/key/counter/timer/billing write.
+
+Actual hc-v1 origin:r2/direction:r3/contact:r3 packets stay within256bytes.
+Contact-less/unknown-version clients keep body1, as does the intentionally
+older5eab20e-config validator after greeting while the current client supplies
+the actual hc. The owned test Worker imports that explicitly hashed external
+config through a test loader; all other code remains frozen/current. This is
+a finite compatibility control, not a production old-Worker/live-phone claim.
+One actual lethal UUID/award/reset and replay-safe receipt marker remain; real
+room Node tests exercise rate rejection, history/hibernate/latewelcome/legacy/
+fresh identity and9→10 recovery in two controlled minute-alarm steps after2HP.
+Genuine deployment is recorded separately before a live publication claim.
