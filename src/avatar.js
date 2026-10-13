@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { AVATAR as A, avatarLook } from './config.js';
+import { AVATAR as A, SPIDER, avatarLook } from './config.js';
+import { topTexture } from './spidersuit.js';
 import { NAMES, HIP, UPPER, FORE, HAND, SH, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
 
 // The players' avatars (#705): a neutral human figure for the other players (src/ghosts.js) and for our own reflection in the
@@ -9,7 +10,7 @@ import { NAMES, HIP, UPPER, FORE, HAND, SH, bindAt, lathe, torsoR, attachSkeleto
 // long-sleeved top with a collar and a hem, trousers with a belt, shoes and one of four hairstyles / a hat. Colours (skin,
 // hair, top, trousers, shoes) and the build come from the player's seed (the name or the id), so players can be told apart.
 //
-// Cost: ONE SkinnedMesh (one draw call) per avatar with its own small skeleton and material, no texture. The geometry is
+// Cost: ONE SkinnedMesh (one draw call) per avatar with its own small skeleton and material; only current suit wearers share one existing-artwork atlas (#891). The geometry is
 // built once per variant (hairstyle × sleeves = 8, lazily) and shared; an avatar only owns a small colour attribute
 // (the `region` of every vertex picks skin / top / trousers / hair / fixed from the player's palette). The material is a
 // MeshLambertMaterial patched with a rim term: `setSolid(false)` draws only an outline (a light fresnel edge and a very
@@ -108,9 +109,13 @@ function base(style, sleeves) {
   const key = style * 2 + sleeves;
   let b = bases.get(key);
   if (b) return b;
-  const list = parts(style, sleeves), geos = [];
+  const list = parts(style, sleeves), geos = []; let headProjection = null, headRadius = 0;
   for (const part of list) {
-    const [g0, region, shade, fixed] = part, g = g0.index ? g0.toNonIndexed() : g0;
+    const [g0, region, shade, fixed] = part;
+    if (part.bone === 'head' && region === REGION.skin && g0.type === 'SphereGeometry' && g0.parameters.radius > headRadius) {
+      g0.computeBoundingBox(); headProjection = g0.boundingBox.clone(); headRadius = g0.parameters.radius;
+    }
+    const g = g0.index ? g0.toNonIndexed() : g0;
     const n = g.attributes.position.count, k = NAMES.indexOf(part.bone), c = new THREE.Color(fixed);
     const col = new Float32Array(n * 3), reg = new Float32Array(n), si = new Uint16Array(n * 4), sw = new Float32Array(n * 4);
     for (let i = 0; i < n; i++) {
@@ -125,6 +130,7 @@ function base(style, sleeves) {
     geos.push(g);
   }
   b = mergeGeometries(geos);
+  b.userData.headProjection = headProjection;
   bases.set(key, b);
   return b;
 }
@@ -143,6 +149,7 @@ function geometryFor(lk) {
   const g = new THREE.BufferGeometry();
   for (const name of ['position', 'normal', 'skinIndex', 'skinWeight']) g.setAttribute(name, b.attributes[name]);
   g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  g.userData.headProjection = b.userData.headProjection;
   g.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0.95, 0), 1.3); // limbs and a raised arm stay inside (culling by the root)
   return g;
 }
@@ -153,20 +160,47 @@ export const avatarTriangles = (variant = 0) => base(variant >> 1, variant & 1).
 // --- the material: lit solid, or an outline -----------------------------------------------------------------------------
 /** MeshLambertMaterial with a rim: `uOutline` 1 → alpha = `uFill` inside and up to `uRim` at the edges (fresnel) with the
  * rim colour; 0 → the plain lit figure. One program for all (customProgramCacheKey). */
-function makeMaterial(rim) {
-  const u = { uOutline: { value: 1 }, uFill: { value: A.fill }, uRim: { value: A.rim }, uRimColor: { value: rim } };
+let suitTexture = null, suitUsers = 0;
+function acquireSuitTexture() { suitUsers++; return suitTexture ??= topTexture(); }
+function releaseSuitTexture() { if (--suitUsers === 0) { suitTexture.dispose(); suitTexture = null; } }
+
+function makeMaterial(rim, headProjection) {
+  const headMin = headProjection.min, headSize = headProjection.getSize(new THREE.Vector3()), headFront = headProjection.getCenter(new THREE.Vector3()).z;
+  const u = { uOutline: { value: 1 }, uFill: { value: A.fill }, uRim: { value: A.rim }, uRimColor: { value: rim }, uSuit: { value: 0 }, uSuitTexture: { value: null }, uSuitMaskBand: { value: 0 } };
   const m = new THREE.MeshLambertMaterial({ vertexColors: true, transparent: true, depthWrite: false });
   m.userData.u = u;
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, u);
+    // Bind-pose coordinates follow the original skin: colours/own canvas only, no new
+    // geometry, skeleton, head envelope or per-avatar colour-buffer replacement (#891).
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vSuitAt; varying float vSuitBone;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvSuitAt = position; vSuitBone = skinIndex.x;');
     sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', '#include <common>\nuniform float uOutline, uFill, uRim;\nuniform vec3 uRimColor;')
+      .replace('#include <common>', '#include <common>\nuniform float uOutline, uFill, uRim;\nuniform vec3 uRimColor;\nuniform float uSuit, uSuitMaskBand; uniform sampler2D uSuitTexture; varying vec3 vSuitAt; varying float vSuitBone;')
+      .replace('#include <color_fragment>', `#include <color_fragment>
+      if (uSuit > 0.5) {
+        vec3 red = vec3(${new THREE.Color(SPIDER.colors.red).toArray().join(',')}), blue = vec3(${new THREE.Color(SPIDER.colors.blue).toArray().join(',')});
+        diffuseColor.rgb = blue;
+        // Integer bone IDs travel through an interpolated float varying. Round before
+        // classification so rasterization precision cannot speckle one part blue/red.
+        float suitBone = floor(vSuitBone + 0.5);
+        if (suitBone == ${NAMES.indexOf('torso')}.0) {
+          vec2 uv = vec2(vSuitAt.x / ${2 * Math.max(...TORSO_PROFILE.map(p => p[0])) * 1.15} + 0.5, (vSuitAt.y - ${bindAt('torso').y}) / ${TORSO_PROFILE.at(-1)[1]} * (1.0 - uSuitMaskBand));
+          diffuseColor.rgb = texture2D(uSuitTexture, clamp(uv, 0.0, 1.0)).rgb;
+        } else if (suitBone == ${NAMES.indexOf('head')}.0) {
+          diffuseColor.rgb = red;
+          if (vSuitAt.z > ${headFront}) {
+            vec2 uv = vec2((vSuitAt.x - ${headMin.x}) / ${headSize.x}, 1.0 - uSuitMaskBand + (vSuitAt.y - ${headMin.y}) / ${headSize.y} * uSuitMaskBand);
+            diffuseColor.rgb = texture2D(uSuitTexture, clamp(uv, 0.0, 1.0)).rgb;
+          }
+        } else if (suitBone == ${NAMES.indexOf('handL')}.0 || suitBone == ${NAMES.indexOf('handR')}.0 || suitBone == ${NAMES.indexOf('kneeL')}.0 || suitBone == ${NAMES.indexOf('kneeR')}.0) diffuseColor.rgb = red;
+      }`)
       .replace('#include <opaque_fragment>', `float edge = pow(1.0 - clamp(abs(dot(normalize(normal), normalize(vViewPosition))), 0.0, 1.0), ${A.rimPower.toFixed(2)});
       outgoingLight = mix(outgoingLight, uRimColor, uOutline * edge);
       diffuseColor.a = mix(diffuseColor.a, mix(uFill, uRim, edge), uOutline);
       #include <opaque_fragment>`);
   };
-  m.customProgramCacheKey = () => 'avatar-outline';
+  m.customProgramCacheKey = () => 'avatar-outline-suit-v1';
   return m;
 }
 
@@ -186,8 +220,9 @@ export class Avatar {
   constructor(seed, rim = 0xcfe6ff) {
     const lk = look(seed);
     this.look = lk;
-    this.material = makeMaterial(new THREE.Color(rim));
-    this.mesh = new THREE.SkinnedMesh(geometryFor(lk), this.material);
+    const geometry = geometryFor(lk);
+    this.material = makeMaterial(new THREE.Color(rim), geometry.userData.headProjection);
+    this.mesh = new THREE.SkinnedMesh(geometry, this.material);
     this.bones = attachSkeleton(this.mesh);
     this.mesh.castShadow = this.mesh.receiveShadow = false;
     this.mesh.name = 'avatar';
@@ -205,11 +240,24 @@ export class Avatar {
   /** Solid (lit, opaque; `opacity` 1) or an outline (see-through, nothing written to the depth buffer). */
   setSolid(on, opacity = 1) {
     const m = this.material;
-    if (on === this.solid && m.opacity === opacity) return;
+    const drawnSolid = on || !!this.suit, drawnOpacity = on ? opacity : 1;
+    if (on === this.solid && m.opacity === drawnOpacity && m.userData.u.uOutline.value === (drawnSolid ? 0 : 1)) return;
     this.solid = on;
-    m.userData.u.uOutline.value = on ? 0 : 1;
-    Object.assign(m, { transparent: !on || opacity < 1, opacity: on ? opacity : 1, depthWrite: on, needsUpdate: true });
-    m.emissive.setScalar(on ? A.emissiveSolid : A.emissiveOutline);
+    m.userData.u.uOutline.value = drawnSolid ? 0 : 1;
+    Object.assign(m, { transparent: !drawnSolid || drawnOpacity < 1, opacity: drawnOpacity, depthWrite: drawnSolid, needsUpdate: true });
+    m.emissive.setScalar(drawnSolid ? A.emissiveSolid : A.emissiveOutline);
+  }
+
+  /** A temporary visual outfit; the selected base look/geometry and combat solid flag stay intact. */
+  setSuit(on) {
+    on = on === true;
+    if (on === !!this.suit) return;
+    this.suit = on;
+    this.material.userData.u.uSuit.value = on ? 1 : 0;
+    this.material.userData.u.uSuitTexture.value = on ? acquireSuitTexture() : null;
+    if (on) this.material.userData.u.uSuitMaskBand.value = suitTexture.userData.avatarMaskBand;
+    else releaseSuitTexture();
+    this.setSolid(this.solid, this.material.opacity);
   }
 
   /** Pose it. `speed`: m/s along the ground (walks when above A.walkSpeed, the legs' phase follows the distance), `turn`:
@@ -233,5 +281,5 @@ export class Avatar {
   /** The world position of a hand's centre (side 'L' / 'R' as in the figure's own frame: R = the figure's right, the ghost's +x). */
   hand(side, out = new THREE.Vector3()) { return this.bones['hand' + side].getWorldPosition(out); }
 
-  dispose() { this.material.dispose(); this.mesh.skeleton?.dispose(); this.mesh.geometry.dispose?.(); }
+  dispose() { if (this.suit) releaseSuitTexture(); this.material.dispose(); this.mesh.skeleton?.dispose(); this.mesh.geometry.dispose?.(); }
 }

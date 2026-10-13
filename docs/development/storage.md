@@ -257,3 +257,10 @@ The original 10,009-seed look outputs and native Avatar geometry/material/scale 
 80 seeds across all eight geometry variants were compared exactly (400 attribute
 arrays, zero WebGL calls/page errors); this is math/DOM evidence, not rendered
 apartment or physical-phone acceptance.
+Spider suit state (#891): Ghosts forwards actual `suit.worn` as optional `sp:true` within the existing change-only 5Hz state/shot budget.
+On/off changes at unchanged feet count as equipment activity. PlayerRoom accepts only literal true, retains it in the existing socket state/attachment
+and late welcome, and omits it when off/legacy/invalid. Reconnect republishes the actual current suit; existing SpiderSuit.saveState/loadState
+restores worn equipment before connecting after reload. No new storage key, channel, timer, power or authoritative combat rule.
+Avatar.setSuit uses one reference-counted 256×192 existing own artwork canvas shared among current wearers, with the existing SPIDER colours.
+The original one SkinnedMesh/geometry/bones/head envelope/base-colour attribute remain, and one common shader handles on/off; the last wearer
+releases the atlas. Its mask projection uses the actual existing head sphere bounds and the existing canvas eye band, not new body measurements.

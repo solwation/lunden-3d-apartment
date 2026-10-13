@@ -61,6 +61,11 @@ src/spidersuit.js      the Spider-Man suit (#597, SPIDER, all values *guess*): o
                        nothing in focus and empty hands (`click` → 'web') or the touch 🕸 (#web-btn) raycasts the drawn scene up to
                        `web.range`; a strand (one Line) flies out at `web.speed`, a splat (one plane) sticks on the hit face for
                        `web.life` s, at most `web.max`; sfx.thwip. `&spidersuit` = on from the start (tools/spidersuittest.html)
+                       #891: actual `suit.worn` is the optional `sp:true` in the existing Ghosts state. Avatar.setSuit overlays the existing red/blue
+                       colours and own folded-suit canvas artwork on the original skinned figure: red mask/white eyes, chest spider/webs, gloves/boots.
+                       The base look/colour attribute, skeleton, head silhouette, crouch and held props are untouched; removal restores the existing
+                       solid/outline appearance. A suited unarmed figure is visually solid, while Ghost.solid/HP/combat eligibility keeps its armed rule.
+                       The same temporary outfit appears in the local mirror; powers/fall/combat mechanics do not change.
                        #600: with it on fall.js never hurts (a soft landing). Space / the touch jump button (#jump-btn, directly left of 🧎, #657; the jetpack ⬆⬇ one step further left, 🕸 above it or above ⤒,
                        on touch always, #636) is a *press* (`player.spaceDown` / `jumpPress`): standing it jumps at `jump` m/s (indoors
                        too, the ceiling stops it, `player.ceilingAt`); without the suit it is the low jump `PLAYER.jump`; on a wall it
@@ -635,3 +640,18 @@ The existing top-left presence cell has two stacked rows: online visitors above 
 
 
 HUD layout fixture health contract (#896): `tools/hudlayouttest.cjs` uses actual Combat updates and a mutable weapon input to distinguish full unarmed (hidden) from injured unarmed/offline (visible) and full armed combat (visible). Its original 15 viewport/safe-area geometry checks remain strict. The life-only correction passes its checks, but the complete native suite still exits 1 on nine pre-existing compact-cell clipping failures tracked in #902; no HUD runtime or geometry was altered by #896.
+Spider avatar verification (#891): `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/spideravatartest.cjs BASE WORKER OUTPUT [--render]`.
+Default uses actual SpiderSuit/Player/Ghosts/Avatar and two real local PlayerRoom sockets without apartment startup or WebGL. It checks on/off,
+equipped-before-connect, late welcome, reconnect, genuine reload through existing suit save/load, crouch/prop/name/health/base-colour preservation,
+strict Worker booleans and shared atlas lifecycle. `--render` requires the graphics slot and adds four completed 640×420 actual remote-avatar images
+(unarmed on/off, armed crouching on/off), saving raw facts before each capture and completing GL explicitly. This is component evidence, not
+whole-apartment/live-FPS or a physical-phone claim.
+
+#891 final bounded acceptance:20 native checks and21 checks including actual shader/render PASS, CLI0, zero page/console errors or context loss.
+Four actual-peer pictures in `/tmp/lunden-suit891-surface/final-render/` were inspected: stable red mask/white eyes, spider/web chest, blue
+limbs/red gloves/boots; removal restores the original purple beanie/top/trousers, outline when unarmed, held prop/HP10/name when armed.
+The same peer/base-colour hash and3746 body triangles are retained in all four: two completed view calls unarmed (body+badge), three armed
+(body+badge+prop); total3748/3760 triangles respectively, no outfit mesh/pass. Renderer programs2→3→4→4 include original outline/solid and prop
+variants; do not infer one GPU program or live FPS. Actual GL/capture phase1300ms, hard20s browser-close bound. The initial accepted state checks
+had a raster-only speckling error from exact comparison of interpolated float bone IDs; final floor(id+0.5) uses actual single-bone-per-triangle
+data and corrected all four reviewed pictures. Original #892 canonical look, geometry-parts and pose functions remain byte-identical.

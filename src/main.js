@@ -2227,7 +2227,7 @@ const weaponIs = { saber: (h) => h === saber, nerf: (h) => toys.blasters.include
   rifle: (h) => !!h?.isRifle, ball: (h) => h === ball, bow: (h) => !!bow && h === bow, web: (h) => !h && suit.worn, jetpack: () => jetpack.worn };
 const weaponKey = () => { const h = heldItem(); return COMBAT.weapons.find((k) => weaponIs[k]?.(h)) ?? ''; };
 const ghosts = new Ghosts({ scene, camera, url: cloud.url, name: () => leaderboard.name, active: () => overlay.hidden, weapon: weaponKey, mirrored: () => !rest.active,
-  state: () => ({ p: [player.pos.x, player.pos.y, player.pos.z], r: camera.rotation.y, c: player.crouched }) });
+  state: () => ({ p: [player.pos.x, player.pos.y, player.pos.z], r: camera.rotation.y, c: player.crouched, sp: suit.worn }) });
 const combat = new Combat({ ghosts, camera, scene, weapon: weaponKey, feet: () => player.pos, jetpack, sfx, darts: toys.darts, sparkles: toys.sparkles, arrows,
   onHit: () => bump('pvpHits'), onHurt: () => penalize('pvpHurt'),
   onDie: () => { goToStart(() => respawnOutdoors(player)); badge('💀 Slut på liv – du lever igen', false); } }); // only the place changes (#665)

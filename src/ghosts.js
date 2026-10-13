@@ -133,10 +133,11 @@ class Ghost {
   }
 
   /** A state from the room at time t (ms). After a pause the last one is repeated just before it, so it walks off smoothly. */
-  push({ p, r, h = '', score = 0, l, c = false }, t) {
+  push({ p, r, h = '', score = 0, l, c = false, sp = false }, t) {
     this.score = badgeScore(score);
     this.lives = badgeLives(l); // never infer remote health from a client's default maximum
     this.setHeld(h);
+    this.avatar.setSuit(sp);
     this.refreshBadge();
     const last = this.snaps.at(-1);
     if (last && t - last.t > 1000 / G.hz * 1.5) this.snaps.push({ t: t - 1000 / G.hz, p: last.p, r: last.r, c: last.c });
@@ -359,11 +360,12 @@ export class Ghosts {
     const t = performance.now(), s = this.state(), w = this.weapon();
     s.h = COMBAT.weapons.includes(w) ? w : '';
     s.c = s.c === true;
+    s.sp = s.sp === true;
     this.track(s, t);
     if (!this.on) return;
     s.score = badgeScore(this.score());
     const prev = this.prev;
-    if (!prev || Math.hypot(s.p[0] - prev.p[0], s.p[1] - prev.p[1], s.p[2] - prev.p[2]) > G.move || Math.abs(s.r - prev.r) > G.turn || s.h !== prev.h || s.c !== prev.c) { this.lastMove = t; this.prev = s; }
+    if (!prev || Math.hypot(s.p[0] - prev.p[0], s.p[1] - prev.p[1], s.p[2] - prev.p[2]) > G.move || Math.abs(s.r - prev.r) > G.turn || s.h !== prev.h || s.c !== prev.c || s.sp !== prev.sp) { this.lastMove = t; this.prev = s; }
     if (this.prev?.score !== s.score) this.prev = s; // score changes use the same 5 Hz slot; do not reset movement idle time
     const playing = this.active() && !document.hidden && t - this.lastMove < G.idleMs;
     if (!playing) { if (this.ws) this.disconnect(); }
@@ -372,7 +374,7 @@ export class Ghosts {
       const sent = this.sent;
       if (t - this.lastSent >= 1000 / G.hz && (!sent || sent !== this.prev)) {
         const p = this.prev ?? s;
-        this.ws.send(JSON.stringify({ p: p.p.map((v) => Math.round(v * 100) / 100), r: Math.round(p.r * 100) / 100, score: p.score, ...(p.h ? { h: p.h } : {}), ...(p.c ? { c: true } : {}) }));
+        this.ws.send(JSON.stringify({ p: p.p.map((v) => Math.round(v * 100) / 100), r: Math.round(p.r * 100) / 100, score: p.score, ...(p.h ? { h: p.h } : {}), ...(p.c ? { c: true } : {}), ...(p.sp ? { sp: true } : {}) }));
         this.sent = p; this.lastSent = this.lastBeat = t; this.messages++;
       }
     }
@@ -390,7 +392,7 @@ export class Ghosts {
       const k = Math.min(1, dt * 8);
       m.vx += ((far ? 0 : vx) - m.vx) * k; m.vz += ((far ? 0 : vz) - m.vz) * k;
     }
-    m.p.set(...s.p); m.r = s.r; m.h = s.h; m.c = s.c; m.t = t;
+    m.p.set(...s.p); m.r = s.r; m.h = s.h; m.c = s.c; m.sp = s.sp; m.t = t;
   }
 
   /** Our avatar for the mirrors: one per name (the look comes from it); hidden but for the mirror's pass. */
@@ -406,6 +408,7 @@ export class Ghosts {
     if (!m || !this.mirrored()) return;
     const g = this.selfGhost();
     g.setHeld(m.h);
+    g.avatar.setSuit(m.sp);
     g.root.position.copy(m.p);
     g.root.rotation.y = m.r;
     g.crouch = m.c ? 1 : 0;

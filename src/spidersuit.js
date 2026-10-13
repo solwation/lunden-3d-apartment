@@ -22,7 +22,7 @@ import { suitHands } from './hand.js';
 const FOLD = { w: 0.32, h: 0.07, d: 0.24 }; // the folded suit (*guess*: a child's suit folded in four)
 
 /** The folded suit's top: red, black web lines from the centre, the spider in the middle, the mask's eyes at one end. */
-function topTexture() {
+export function topTexture() {
   const c = document.createElement('canvas'); c.width = 256; c.height = 192;
   const g = c.getContext('2d'), red = `#${new THREE.Color(S.colors.red).getHexString()}`, line = '#140a0a';
   g.fillStyle = red; g.fillRect(0, 0, 256, 192);
@@ -41,11 +41,13 @@ function topTexture() {
   for (const s of [-1, 1]) for (const [a, b] of [[-0.9, -1.5], [-0.3, -0.6], [0.3, 0.5], [0.9, 1.4]]) {
     g.beginPath(); g.moveTo(cx + s * 6, cy + a * 8); g.lineTo(cx + s * 24, cy + a * 14); g.lineTo(cx + s * 34, cy + b * 22); g.stroke();
   }
+  const maskY = 26, maskRadius = 22; // existing artwork pixel positions; also delimit the avatar mask atlas band
   for (const s of [-1, 1]) { // the mask's eyes, at the far end
-    g.fillStyle = '#111'; g.beginPath(); g.ellipse(cx + s * 34, 26, 22, 13, s * 0.35, 0, Math.PI * 2); g.fill();
-    g.fillStyle = '#f4f4f4'; g.beginPath(); g.ellipse(cx + s * 34, 26, 17, 9, s * 0.35, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#111'; g.beginPath(); g.ellipse(cx + s * 34, maskY, maskRadius, 13, s * 0.35, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#f4f4f4'; g.beginPath(); g.ellipse(cx + s * 34, maskY, 17, 9, s * 0.35, 0, Math.PI * 2); g.fill();
   }
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  t.userData.avatarMaskBand = (maskY + maskRadius) / c.height;
   return t;
 }
 
