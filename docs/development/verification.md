@@ -108,7 +108,8 @@ tools/nerfapartmentprobe.cjs (#715): bounded actual apartment local Blaster/Dart
                        physical-phone/FPS or native-parity claim; see docs/validation/issue-715/README.md.
 tools/trigridprofile.cjs / .html (#715): native Three, production furniture component + controlled sphere; historical
                        a336e30 constructor phase copy/bin diagnosis; PROFILE_REF=current selects current source. Not full apartment/GPU.
-tools/markscoldprofile.cjs / .html (#715): actual Marks.meshes/buildFurniture, current instrumented bounds/grid/copy/bin/hits/native/residual phases versus separate uninstrumented cold/retained queries and fresh actual Darts. Strict anchors, exact result parity, raw JSON before screenshot; no production runtime mutation or renderer/phone claim.
+tools/markscoldprofile.cjs / .html (#715): actual Marks.meshes/buildFurniture, current instrumented bounds/grid/copy/bin/hits/native/residual phases versus separate uninstrumented cold/retained queries and fresh actual Darts. Strict anchors, exact result parity, raw JSON before screenshot; no production timing hooks or renderer/phone claim.
+                       COMPARE_REF=<published SHA> adds unchanged Marks reference, native extrema edge cases and balanced natural-RNG A/B; separately recorded/replayed RNG provides exact original-edge Darts/splash/fits parity, not benchmark timings.
 tools/trigridcopytest.cjs / .html (#715): independent unchanged a336e30 TriGrid reference; exact Float32/material/cell/big
                        membership and hit parity, indexed/transformed/BackSide/drawRange/authored-bounds preservation;
                        balanced reversed-order uninstrumented construction and actual local Marks/Darts cold/warm samples.

@@ -20,14 +20,20 @@ marks=replaceOnce(marks,'for (const h of this.ray.intersectObject(o, false)) {',
 marks=replaceOnce(marks,'materialIndex: h.face.materialIndex });\n      }','materialIndex: h.face.materialIndex });\n      }diag.nativeMs+=performance.now()-nativeStart;');
 marks=replaceOnce(marks,'return out.sort((x, y) => x.distance - y.distance);',`const sortStart=performance.now();const sorted=out.sort((x, y) => x.distance - y.distance);diag.sortMs=performance.now()-sortStart;diag.totalMs=performance.now()-diagStart;
  diag.residualMs=diag.totalMs-diag.boundsMs-diag.gridMs-diag.hitsMs-diag.nativeMs-diag.smallBoxMs-diag.sortMs;return sorted;`);
+const compareRef=process.env.COMPARE_REF||null;
+const reference=compareRef?execFileSync('git',['show',`${compareRef}:src/marks.js`],{cwd:root,encoding:'utf8'}):null;
+const hasBoundsHelper=rawMarks.includes('function positionBounds(attribute) {');
 const hashes=Object.fromEntries(['src/marks.js','src/trigrid.js','src/furniture.js','src/config.js','src/toys.js','tools/markscoldprofile.html','tools/markscoldprofile.cjs'].map(p=>[p,crypto.createHash('sha256').update(fs.readFileSync(path.join(root,p))).digest('hex')]));
 (async()=>{const browser=await chromium.launch({executablePath:process.env.CHROME_PATH||undefined,args:['--no-sandbox','--disable-gpu']});try{
  const page=await browser.newPage({viewport:{width:960,height:600}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.addInitScript(opts=>window.profileOptions=opts,{compareRef,hasBoundsHelper});
+ if(compareRef)await page.route('**/src/marks.js?boundsreference='+compareRef,r=>r.fulfill({contentType:'text/javascript',body:reference}));
+ if(hasBoundsHelper)await page.route('**/src/marks.js?boundstest',r=>r.fulfill({contentType:'text/javascript',body:rawMarks+'\nexport {positionBounds};'}));
  await page.route('**/src/marks.js?markscoldprofile',r=>r.fulfill({contentType:'text/javascript',body:marks}));
  await page.route('**/src/trigrid.js?markscoldprofile',r=>r.fulfill({contentType:'text/javascript',body:grid}));
  await page.goto((process.argv[2]||'http://localhost:8874')+'/tools/markscoldprofile.html');
  await page.waitForFunction(()=>window.result,null,{timeout:90000});const result=await page.evaluate(()=>window.result);
- result.errors=errors;result.sourceBase=execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim();result.sourceHashes=hashes;result.actualVerdict=result.pass&&!errors.length?'PASS':'FAIL';
+ result.errors=errors;result.sourceBase=execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim();result.sourceHashes=hashes;result.compareRef=compareRef;result.referenceSha256=reference?crypto.createHash('sha256').update(reference).digest('hex'):null;result.actualVerdict=result.pass&&!errors.length?'PASS':'FAIL';
  fs.writeFileSync(path.join(output,'cold.json'),JSON.stringify(result,null,2));console.log(result.checks.join('\n'));console.log(result.pass?'ALL PASS':'SOME FAILED');
  process.exitCode=result.pass&&!errors.length?0:1;
  await page.screenshot({path:path.join(output,'cold.png'),fullPage:true});

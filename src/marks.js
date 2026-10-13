@@ -87,6 +87,18 @@ const shown = (o) => { for (let p = o; p; p = p.parent) if (!p.visible) return f
 const Z = new THREE.Vector3(0, 0, 1), m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), qs = new THREE.Quaternion(), sv = new THREE.Vector3();
 const zero = new THREE.Matrix4().makeScale(0, 0, 0);
 
+// Same native attribute extrema, without writing a temporary Vector3 and expanding a Box3 for every vertex (#715).
+// Keep getters for normalized/interleaved data; Math.min/max preserve empty, NaN, Infinity and signed-zero behavior.
+function positionBounds(attribute) {
+  let x0 = Infinity, y0 = Infinity, z0 = Infinity, x1 = -Infinity, y1 = -Infinity, z1 = -Infinity;
+  for (let i = 0, n = attribute.count; i < n; i++) {
+    const x = attribute.getX(i), y = attribute.getY(i), z = attribute.getZ(i);
+    x0 = Math.min(x0, x); y0 = Math.min(y0, y); z0 = Math.min(z0, z);
+    x1 = Math.max(x1, x); y1 = Math.max(y1, y); z1 = Math.max(z1, z);
+  }
+  return new THREE.Box3(new THREE.Vector3(x0, y0, z0), new THREE.Vector3(x1, y1, z1));
+}
+
 export class Marks {
   /** `surfaces`: roots whose meshes take marks; `cat` (optional): a hit on it is a meow instead. */
   constructor(scene, camera, surfaces = [], cat = null) {
@@ -179,7 +191,7 @@ export class Marks {
         let bounds = gridBoxes.get(o);
         if (!bounds) {
           o.updateWorldMatrix(true, false);
-          bounds = new THREE.Box3().setFromBufferAttribute(o.geometry.attributes.position).applyMatrix4(o.matrixWorld);
+          bounds = positionBounds(o.geometry.attributes.position).applyMatrix4(o.matrixWorld);
           // TriGrid stores world coordinates as float32; include that rounding at segment boundaries.
           const padding = 8 * 2 ** -23 * Math.max(1, ...bounds.min.toArray().map(Math.abs), ...bounds.max.toArray().map(Math.abs));
           bounds.expandByScalar(padding);

@@ -2,10 +2,20 @@
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
 <script type="module">
 import * as T from 'three';import {Marks} from '../src/marks.js';import {Marks as Profile} from '../src/marks.js?markscoldprofile';import {buildFurniture} from '../src/furniture.js';import {buildToys} from '../src/toys.js';
-const result={checks:[],instrumented:[],uninstrumented:[],effects:[],pass:false};const check=(ok,label)=>result.checks.push(`${ok?'PASS':'FAIL'} ${label}`);
+const result={checks:[],instrumented:[],uninstrumented:[],effects:[],comparison:[],effectComparison:[],effectParity:[],referenceSelf:[],referenceSelfAdd:[],pass:false};const check=(ok,label)=>result.checks.push(`${ok?'PASS':'FAIL'} ${label}`);
 const original=HTMLCanvasElement.prototype.getContext;let glCalls=0;HTMLCanvasElement.prototype.getContext=function(kind,...args){if(/webgl/i.test(kind)){glCalls++;throw Error('no renderer permitted');}return original.call(this,kind,...args);};
 const equalHits=(a,b)=>a.length===b.length&&a.every((x,i)=>x.object===b[i].object&&x.materialIndex===b[i].materialIndex&&Object.is(x.distance,b[i].distance)&&x.point.equals(b[i].point)&&x.normal.equals(b[i].normal));
 try{
+ const opts=window.profileOptions||{};
+ const Reference=opts.compareRef?(await import('../src/marks.js?boundsreference='+opts.compareRef)).Marks:null;
+ if(opts.hasBoundsHelper){
+  const {positionBounds}=await import('../src/marks.js?boundstest');
+  const sameBox=(a,b)=>[...a.min.toArray(),...a.max.toArray()].every((x,i)=>Object.is(x,[...b.min.toArray(),...b.max.toArray()][i]));
+  const interleaved=new T.InterleavedBufferAttribute(new T.InterleavedBuffer(new Float32Array([91,1,2,3,92,91,-4,5,-6,92]),5),3,1);
+  const attributes=[{label:'empty',a:new T.BufferAttribute(new Float32Array(),3)},{label:'signed zero',a:new T.BufferAttribute(new Float32Array([-0,-0,-0]),3)},{label:'NaN Infinity',a:new T.BufferAttribute(new Float32Array([NaN,Infinity,-Infinity,1,2,3]),3)},{label:'normalized int16',a:new T.BufferAttribute(new Int16Array([-32768,-1,32767,32767,0,-100]),3,true)},{label:'interleaved offset/stride',a:interleaved},{label:'normalized interleaved',a:new T.InterleavedBufferAttribute(new T.InterleavedBuffer(new Uint8Array([0,128,255,9,255,0,1,9]),4),3,0,true)},{label:'Float64 large coordinates',a:new T.BufferAttribute(new Float64Array([100000.13,-5.7,-12.125,-99999.9,100000.9,100000.9]),3)}];
+  const matrix=new T.Matrix4().makeRotationY(.3).scale(new T.Vector3(1.2,.8,1.7)).setPosition(5,6,7);
+  for(const {a,label}of attributes){const expected=new T.Box3().setFromBufferAttribute(a),actual=positionBounds(a);check(sameBox(expected,actual),'exact native extrema '+label);check(sameBox(expected.applyMatrix4(matrix),actual.applyMatrix4(matrix)),'exact native world bounds '+label);}
+ }
  const furniture=buildFurniture(),scene=new T.Scene(),camera=new T.PerspectiveCamera();scene.add(furniture.object);scene.updateMatrixWorld(true);
  const collector=new Marks(scene,camera,[furniture.object]);const meshes=collector.meshes();const triangles=o=>(o.geometry.index?.count??o.geometry.attributes.position.count)/3;meshes.sort((a,b)=>triangles(b)-triangles(a));
  const local=new T.Box3().setFromBufferAttribute(meshes[0].geometry.attributes.position).applyMatrix4(meshes[0].matrixWorld),centre=local.getCenter(new T.Vector3());
@@ -23,6 +33,16 @@ try{
    check(cold.totalMs>=0&&cold.residualMs>=-.01&&retained.bounds===0&&retained.grids===0,'accounting and no warm rebuild '+c.label+'/'+repetition);
    result.instrumented.push({label:c.label,repetition,cold,retained,hits:hits.length});
   }
+  if(Reference){const reference=new Reference(scene,camera,[furniture.object]);
+   for(let repetition=0;repetition<12;repetition++){
+    const runs={};for(const [name,M]of repetition%2?[['candidate',original],['reference',reference]]:[['reference',reference],['candidate',original]]){
+     M.invalidate(furniture.object);let start=performance.now();const cold=M.segment(c.from,c.to,c.list);const coldMs=performance.now()-start;
+     start=performance.now();const retained=M.segment(c.from,c.to,c.list);const retainedMs=performance.now()-start;runs[name]={cold,retained,coldMs,retainedMs};
+    }
+    check(equalHits(runs.reference.cold,runs.candidate.cold)&&equalHits(runs.reference.retained,runs.candidate.retained),'independent reference exact cold/retained '+c.label+'/'+repetition);
+    result.comparison.push({label:c.label,repetition,first:repetition%2?'candidate':'reference',reference:{coldMs:runs.reference.coldMs,retainedMs:runs.reference.retainedMs},candidate:{coldMs:runs.candidate.coldMs,retainedMs:runs.candidate.retainedMs}});
+   }
+  }
   // No clock probes or vertex counters in this separately imported production Marks/TriGrid timing path.
   for(let repetition=0;repetition<12;repetition++){
    original.invalidate(furniture.object);let start=performance.now();const cold=original.segment(c.from,c.to,c.list);const coldMs=performance.now()-start;
@@ -35,6 +55,49 @@ try{
   const marks=new Marks(scene,camera,[furniture.object]),darts=buildToys(scene).darts;darts.marks=marks;marks.invalidate(furniture.object);darts.fire(effectFrom,direction);darts.fire(effectFrom.clone().add(new T.Vector3(.01,0,0)),direction);const intervals=[];
   for(let i=0;i<60;i++){const start=performance.now();darts.update(1/60);marks.update(1/60);intervals.push(performance.now()-start);}
   result.effects.push({repetition,intervals,firstMs:intervals[0],sumMs:intervals.reduce((a,b)=>a+b),active:darts.list.filter(d=>d.flying).length});
+ }
+ if(Reference){
+  const state=d=>d.list.slice(0,2).map(x=>({pos:x.g.position.toArray(),v:x.v.toArray(),flying:x.flying,visible:x.g.visible,spent:x.spent,travelled:x.travelled}));
+  const edgeHits=new Map();
+  const run=(C,traceFits=false)=>{const M=new C(scene,camera,[furniture.object]),D=buildToys(scene).darts;const fits=[];if(traceFits){const actualFits=M.fits;M.fits=function(object,point,normal,size,angle){const accepted=actualFits.call(this,object,point,normal,size,angle);edgeHits.set(object.uuid+':'+point.toArray().join(','),{object,point:point.clone(),normal:normal.clone()});fits.push({point:point.toArray(),normal:normal.toArray(),size,angle,accepted});return accepted;};}D.marks=M;M.invalidate(furniture.object);D.fire(effectFrom,direction);D.fire(effectFrom.clone().add(new T.Vector3(.01,0,0)),direction);const intervals=[],active=[];
+   for(let i=0;i<60;i++){const start=performance.now();D.update(1/60);M.update(1/60);intervals.push(performance.now()-start);active.push(D.list.filter(d=>d.flying).length);}return {intervals,active,state:state(D),splashes:D.splashes,marks:M.live.length,fits};};
+  // Retain the original furniture-edge input. First diagnose natural-RNG variability with reference vs itself.
+  for(let repetition=0;repetition<32;repetition++){const first=run(Reference,true),second=run(Reference,true),different=first.splashes!==second.splashes||first.marks!==second.marks;
+   result.referenceSelf.push({repetition,different,first,second});if(different)break;
+  }
+  check(result.referenceSelf.every(x=>JSON.stringify([x.first.active,x.first.state])===JSON.stringify([x.second.active,x.second.state])),'unchanged reference/self natural-RNG projectile results agree');
+  // Use those exact actual Darts edge hits, with unchanged reference.add and naturally selected decal inputs.
+  for(const hit of edgeHits.values()){
+   const M=new Reference(scene,camera,[furniture.object]),attempts=[];let accepted=0,rejected=0,inputs=[];const actualFits=M.fits;
+   M.fits=function(object,point,normal,size,angle){const ok=actualFits.call(this,object,point,normal,size,angle);inputs.push({size,angle,accepted:ok});return ok;};
+   for(let attempt=0;attempt<512;attempt++){inputs=[];const ok=M.add('splash',hit,{color:0x1f6fff,force:true});if(ok)accepted++;else rejected++;attempts.push({attempt,accepted:ok,fits:inputs});if(accepted&&rejected)break;}
+   result.referenceSelfAdd.push({point:hit.point.toArray(),normal:hit.normal.toArray(),triangles:triangles(hit.object),accepted,rejected,attempts});
+  }
+  // Stable regression inputs recorded from actual candidate-3 Reference.add observations, not synthesized geometry.
+  // Natural variation above is diagnostic only: its occurrence is never a future probabilistic PASS gate.
+  const edgePoint=new T.Vector3(0.40134066611528396,0.8498398646859429,11.507691348919327),edgeNormal=new T.Vector3(0.3785535602249779,-0.1352415964773698,0.9156456261148449);
+  const referenceFits=new Reference(scene,camera,[furniture.object]),candidateFits=new Marks(scene,camera,[furniture.object]);
+  for(const input of [{size:0.10594898769158125,angle:1.3152227136511858,accepted:true},{size:0.12475387202946586,angle:3.1624033135018803,accepted:false},{size:0.06237693601473293,angle:3.1624033135018803,accepted:false}]){
+   const before=referenceFits.fits(meshes[0],edgePoint,edgeNormal,input.size,input.angle),after=candidateFits.fits(meshes[0],edgePoint,edgeNormal,input.size,input.angle);
+   check(before===input.accepted&&after===input.accepted,'recorded actual edge native/reference fits expected '+input.accepted+'/'+input.size);
+  }
+
+
+  // Identical recorded Math.random values are test input only; no timings from this traced/replayed path are compared.
+  const naturalRandom=Math.random;
+  for(let repetition=0;repetition<8;repetition++){const tape=[];let consumed=0,reference,candidate;
+   try{Math.random=()=>{const value=naturalRandom();tape.push(value);return value;};reference=run(Reference,true);
+    Math.random=()=>{if(consumed>=tape.length)throw Error('candidate consumed extra random input');return tape[consumed++];};candidate=run(Marks,true);
+   }finally{Math.random=naturalRandom;}
+   check(consumed===tape.length,'same complete random input count '+repetition);
+   check(JSON.stringify([reference.active,reference.state,reference.splashes,reference.marks,reference.fits])===JSON.stringify([candidate.active,candidate.state,candidate.splashes,candidate.marks,candidate.fits]),'independent reference actual Darts active/end/splash/fits parity with identical random input '+repetition);
+   result.effectParity.push({repetition,randomInput:tape,consumed,reference,candidate});
+  }
+  // Separate balanced uninstrumented series: natural RNG, no trace wrapper/replay/counters/clock probes.
+  for(let repetition=0;repetition<8;repetition++){const runs={};for(const [name,C]of repetition%2?[['candidate',Marks],['reference',Reference]]:[['reference',Reference],['candidate',Marks]])runs[name]=run(C);
+   check(JSON.stringify([runs.reference.active,runs.reference.state])===JSON.stringify([runs.candidate.active,runs.candidate.state]),'uninstrumented natural-RNG projectile active/end parity '+repetition);
+   result.effectComparison.push({repetition,first:repetition%2?'candidate':'reference',...runs});
+  }
  }
  check(glCalls===0,'no WebGL renderer or apartment bootstrap');result.pass=result.checks.every(x=>x.startsWith('PASS'));
 }catch(error){result.checks.push('FAIL '+error.stack);}

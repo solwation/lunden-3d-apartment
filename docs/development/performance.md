@@ -588,3 +588,6 @@ proof of a fixed iPhone watchdog failure.
 
 
 Current local cold Marks diagnosis (#715): after private-bounds rejection and scalar TriGrid copying, the native production-furniture component's actual Marks mesh collector still spends most cold overlapping/distant query time scanning private bounds. The diagnostics driver separates instrumented scan/grid/hits/native/residual intervals from uninstrumented query/Darts timing; it changes no production runtime. See [current samples, reproduction and limits](../validation/issue-715/README.md#current-private-bounds-diagnosis-2026-10-13). These component intervals neither attribute the previous full apartment 625 ms spike nor measure phone FPS.
+
+
+The subsequent #715 scalar-bounds mitigation keeps native getter/extrema semantics and all transforms/padding/cache behavior. Independent baseline/native parity and balanced uninstrumented furniture-component runs reduce whole-list cold query/Darts work, with no warm gain and a measured regression for the isolated largest mesh. [Exact samples, retained failed stochastic attempt, deterministic parity inputs and limitations](../validation/issue-715/README.md#scalar-private-position-bounds-candidate-2026-10-13) prevent extending that result into an unmeasured apartment/phone claim.
