@@ -536,7 +536,7 @@ no executable fixture changes or new browser results are part of this audit.
 | `neighboropeningstest.html` | Full reflection/lighting | Shared reflection envMap and night envMapIntensity/emission/window-colour checks for actual glazing. |
 | `nerfcombattest.html` | Own fixture | Own THREE/Combat/Ghosts/Worker/audio fixture and final 640×400 WebGL scene; no apartment iframe. |
 | `nerftest.html` | Accepted in #828 | Complete original full/test logs byte-identical, all 7 ordered PASS; actual 900×600/null controller versus 480×300/real test APIs. Blaster, flight layers, wall splash position/colour, floor drop and fade retained; capture coverage differs. |
-| `nesttest.html` | Conditional candidate; random rows | Smart speakers: mocked speechSynthesis, clock/weather answers, ducking, wall targets/F; random chosen answers and answer counts appear in rows, preserve them exactly. |
+| `nesttest.html` | Original full retained (#829) | Actual complete pair: 31 PASS per mode, nine ordered random-answer/speech/caption rows differ. Original 900×600/rain/time fixture retained; original speech mock, clock/weather, ducking, wall/F and 300 presses preserved. See actual evidence below. |
 | `nonpctest.html` | Accepted in #828 | Complete original full/test logs byte-identical, all 10 ordered PASS; actual 900×600/null controller versus 480×300/real test APIs. Missing People fetch, greeting/speech expiry and original old-save score/storage flow retained. |
 | `northbackdroptest.html` | Accepted in #828 | Complete original full/test logs byte-identical, all 14 ordered PASS; actual 720×480/null controller versus 480×300/real test APIs. All mapped footprints, 426/426 window rays, 39 trees and 8380-triangle budget retained; no lowmem subset. |
 | `notetest.html` | Viewport exclusion | Paper scrollHeight/clientHeight and numeric scroll positions/keyboard repeat rows depend on note-panel viewport. |
@@ -2916,3 +2916,44 @@ All three bounded #828 dispositions are complete: Nerf 7, nonpc 10 and north
 14 ordered PASS per mode with whole byte-identical logs. Each frozen base is
 recorded above; all authored actions, storage flows, diagnostics and original
 assertions remain. Parent #740 and #736 stay open.
+
+
+### Smart speaker actual disposition (#829, partial)
+
+`nesttest.html` was measured once with the public runner's complete original
+full/test comparison, one fixture job and a 20-minute bound per mode. Frozen
+base `1a8d210` plus only the reviewed pre-pair testMode-only fullscreen guard
+preserved the whole original 900×600 `?time=12&weather=rain` fixture. All
+existing actions, matrix calls, speechSynthesis mock, speaker loops, authored
+clock/weather cases, mute/ducking/wall/F checks and 300 unseeded presses remained.
+There was no new seed, normalization, subset or retry.
+
+Both complete logs contain 31 ordered PASS and ALL PASS, but nine rows differ:
+3–5 choose fanfare/sound/caption versus joke-lemon/speech/caption; 10–12 choose
+time/speech/bubble versus lund-cathedral/speech/bubble; 17–19 choose
+stlars/speech/bubble versus pep-day/speech/bubble. Both 300-press rows report
+0 repeats and 32 different answers. All exact strings and duplicate rows remain
+in `/tmp/runtests-604659/nesttest.log` and `nesttest.test.log`; whole log sizes
+and differences are recorded in `/tmp/lunden-smart829/nesttest/ordered-differences.json`.
+The independent monitor exited 1 at 05:04:59 UTC because comparison was
+nonidentical, despite both functional verdicts being green. The temporary
+guard was removed and the entire original full fixture restored byte-for-byte;
+no migration or exact mode equivalence is claimed.
+
+Each mode has one actual main document with matching ready/final URL and
+timeOrigin: full 900×600/null controller, test 480×300 with real draw/setFull/
+wantsFrame functions and lazy/full false. All four snapshots show no fullscreen
+and empty cloudURL; no leave event or reload was recorded. All 229 frozen
+native source/data/index/runner/fixture blobs and three helper hashes match
+the measured source. Native DetailCuller quality, camera projection and
+viewport-based bubble placement were retained, without a renderer exemption.
+
+Both actual PNGs were inspected. Full shows ALL PASS and all 31 rows plus a
+partial final window/courtyard/HUD scene; test shows only the top roughly
+18 rows, clips long text on the right and retains no scene. No directed speaker
+image or rendered-scene pixel equivalence is claimed. Samples 114.512 s and
+90.619 s include successful captures (60-second bound in both modes); unequal
+capture coverage excludes this pair from qualified speedup aggregation.
+Source, native snapshots, monitor and images remain in
+`/tmp/lunden-smart829/nesttest`. Olofcar/Olof remain pending in #829;
+parents #740 and #736 remain open.
