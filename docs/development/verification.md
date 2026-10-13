@@ -543,7 +543,7 @@ no executable fixture changes or new browser results are part of this audit.
 | `olofcartest.html` | Original full retained (#829) | Actual complete pair: 31 PASS per mode; greeting and dad-joke rows differ. Whole original 900×600/time12/month6 fixture, existing fullscreen suppression, native car/driver/door/seat/scoring and record restoration retained. See actual evidence below. |
 | `oloftest.html` | Conditional candidate; random rows | Actual Olof seats/behavior/actions and non-repeating jokes; randomly chosen joke text is included in results. |
 | `opentest.html` | Accepted in #830 | Complete original full/test logs byte-identical, all 189 ordered PASS; actual 900×600/null controller versus 480×300/real APIs. All 90 fronts, conditional action labels, clashes/poster sweeps, free-floor and contents loops retained; captures show only early rows. |
-| `oventest.html` | Candidate | Actual appliance actions, cooking/brewing timers and lamp state; retain all emissive checks. |
+| `oventest.html` | Accepted in #830 | Complete original full/test logs byte-identical, all 19 ordered PASS; actual 900×600/null controller versus 480×300/real APIs. Appliance actions/angles/emissive lamps, stats and whole coffee brewing/water/grounds flow retained. |
 | `papertest.html` | Candidate | Actual roll/strip/wad ray-actions, finite paper counts, flushing/stats and reset. |
 | `patiopalmtest.html` | Candidate | Actual plant/pot topology, bounds, material and collision footprint. |
 | `patiotest.html` | Candidate | Actual patio seasonal/object/action/storage flows. |
@@ -3016,8 +3016,8 @@ shows about 51 rows and test about 18; remaining checks and the final scene lie
 below both captures. Complete raw logs preserve all 189 rows. No cabinet-state,
 poster or rendered-scene pixel equivalence is claimed. Wall 162.368 s and
 121.823 s includes both successful captures; this pair is excluded from speedup
-aggregation because capture coverage differs. Oven and paper remain pending
-separate complete pairs; #830/#740/#736 remain open.
+aggregation because capture coverage differs. Oven acceptance follows below; paper remains pending
+its separate complete pair; #830/#740/#736 remain open.
 
 ## Lossless compact world records (#845)
 
@@ -3118,3 +3118,32 @@ car/driver image; no rendered-car pixel equivalence is claimed. Samples
 modes); unequal capture coverage excludes qualified speedup aggregation.
 Nest and Olofcar now have honest original-full dispositions; Olof remains
 pending in #829. Parents #740 and #736 remain open.
+
+## Oven and coffee complete native acceptance (#830, partial)
+
+On frozen `60ffd9aeafc4e929cbea1a6c82ff45a14d347ed7`, the complete original
+900×600/plain index and 480×300/test flows produced identical 709-byte logs:
+all 19 ordered PASS and ALL PASS, actual monitor exit 0. Both original appliance
+button/open/close actions, 88°/85° angles and emissive intensity 1.1, appliance/
+toilet-lid stats, all missing-water/grounds prompts, native 0.50→1.00 jug fill,
+light switching and spent-grounds predicates remain unchanged. Original steps,
+waits, matrices, coffee steam randomness and natural uncaught exceptions remain;
+no new seed, normalization or quality override.
+
+Both actual ready/final pairs retain stable URL/timeOrigin identities:
+900×600/null controller versus 480×300/real draw/setFull/wantsFrame APIs,
+lazy/full false, no fullscreen and empty cloud query. The approved single
+undefined requestFullscreen guard applies only with actual testMode before
+original start-touch, preserving original full behavior. Reversing query and
+iframe dimensions reproduces the whole frozen guarded source. Native runtime,
+runner and helper hashes match this distinct base, including the legitimate
+#845 Items/Tasks serializer fix; no repeat of the earlier Open pair is claimed.
+Evidence: `/tmp/runtests-625439` and `/tmp/lunden-open830/oventest`.
+
+Both inspected PNGs show ALL PASS. Full shows all 19 rows and the final coffee
+maker/counter/HUD, with lower canvas below the capture; test shows about 18
+rows, with the final used-grounds row and scene below the capture. Complete raw
+logs preserve that final row. No intermediate appliance-lamp/brewing pixel or
+rendered-scene equivalence is claimed. Wall 135.958 s and 84.926 s includes both
+successful captures; excluded from speedup aggregation because capture coverage
+differs. Paper remains pending; #830/#740/#736 stay open.
