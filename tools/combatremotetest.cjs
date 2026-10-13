@@ -1,5 +1,6 @@
 // no &test: module-only fixture, no apartment bootstrap or renderer to accelerate.
 // Exact historical helper baseline; no renderer, Worker or production code rewriting.
+const { waitForState } = require('./semanticwait.cjs');
 const { chromium } = require('playwright');
 const { execFileSync } = require('node:child_process');
 const path = require('node:path');
@@ -17,7 +18,7 @@ const source = execFileSync('git', ['show', `${sha}:src/combatworld.js`], { cwd:
     });
     page.on('pageerror', error => console.error(error.message));
     await page.goto(`${process.env.BASE || 'http://127.0.0.1:8714'}/tools/combatremotetest.html`);
-    await page.waitForFunction(() => window.result, null, { timeout: 45000 });
+    await waitForState(page, () => window.result, null, { timeout: 45000 });
     const result = await page.evaluate(() => window.result);
     console.log(result.lines.join('\n')); process.exitCode = result.pass ? 0 : 1;
   } finally { await browser.close(); }

@@ -3,6 +3,7 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs'), path = require('node:path'), os = require('node:os');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const { waitForState } = require('./semanticwait.cjs');
 const { setFixtureViewport } = require('./fixtureviewport.cjs');
 
 test('native fullscreen exits before authored phone/screenshot dimensions; product entry remains real', { timeout: 60000 }, async () => {
@@ -22,11 +23,11 @@ test('native fullscreen exits before authored phone/screenshot dimensions; produ
       requestUnchanged: document.documentElement.requestFullscreen === originalRequestFullscreen, events: events.slice(),
       text: document.getElementById('terminal-code').value })), window: await cdp.send('Browser.getWindowForTarget') });
     await page.evaluate(() => document.getElementById('start-touch').click());
-    await page.waitForFunction(() => !!document.fullscreenElement);
+    await waitForState(page, () => !!document.fullscreenElement);
     const entered = await state();
     assert.equal(entered.dom.fullscreen, true);assert.equal(entered.window.bounds.windowState, 'fullscreen');
     const phone = await setFixtureViewport(page, { width: 667, height: 375 });
-    await page.waitForFunction(() => events.length === 2);
+    await waitForState(page, () => events.length === 2);
     const after = await state();
     assert.equal(phone.leftFullscreen, true);
     assert.deepEqual(phone.viewport, { width: 667, height: 375 });
@@ -40,9 +41,9 @@ test('native fullscreen exits before authored phone/screenshot dimensions; produ
     assert.equal(desktop.leftFullscreen, false);assert.deepEqual(desktop.viewport, { width: 960, height: 600 });
     await page.screenshot({ path: path.join(out, 'desktop.png') });
     // A later genuine touch entry still works after the helper, including repeated episodes.
-    await page.evaluate(() => document.getElementById('start-touch').click());await page.waitForFunction(() => !!document.fullscreenElement);
+    await page.evaluate(() => document.getElementById('start-touch').click());await waitForState(page, () => !!document.fullscreenElement);
     const second = await setFixtureViewport(page, { width: 667, height: 375 });assert.equal(second.leftFullscreen, true);
-    await page.waitForFunction(() => events.length === 4);
+    await waitForState(page, () => events.length === 4);
     const final = await state();assert.deepEqual(final.dom.events, ['entered', 'exited', 'entered', 'exited']);
     assert.equal(final.dom.requestUnchanged, true);assert.equal(final.window.bounds.windowState, 'normal');
     fs.writeFileSync(path.join(out, 'native.json'), JSON.stringify({ browserVersion: browser.version(), entered, after, restored, desktop, final }, null, 2));

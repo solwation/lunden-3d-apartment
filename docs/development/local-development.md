@@ -47,3 +47,10 @@ URL parameters (debugging / screenshots):
 - `&clip=y` — clip everything above height y (cut-away plan view, e.g.
   `?shot&at=2.87,6.35,0,-90,16&clip=2.5` for Entréplan from above, `clip=5.6` + feet 19 for Övre plan).
 
+
+
+## Semantic fixture waits (#880)
+
+`tools/semanticwait.cjs` exports `waitForState(pageOrFrame, predicate, arg = null, { timeout = 30000, polling = 100 })`. Use it only for semantic readiness/result/DOM-state markers that do not require a painted frame or layout calculation. It returns Playwright's usual JSHandle and preserves its timeout failure; both budgets must be finite positive numbers, so zero/infinite waits and `raf` polling cannot sneak in. Pass the caller's existing timeout unchanged. Timer polling can observe state while rAF callbacks stop; it cannot unblock a synchronously stalled page thread. Read raw fixture output with `textContent`/`page.evaluate` when visible layout is not the assertion.
+
+`testkit.open` uses this helper for `__app.renderer`, keeping its original 1,500,000 ms default and every caller override, URL/test/lazy/viewport/context option and wait:false behavior. `fixtureviewport` still exits genuine DOM fullscreen and sets the browser viewport before checking the same dimensions with its original 10,000 ms budget. Only `fixtureviewport.test.cjs` (its original 30,000 ms default waits) and `combatremotetest.cjs` (45,000 ms result marker) are additionally routed here. Their predicates/assertions/modes/ports are unchanged and their existing result reads already avoid innerText; #869's separate raw-text fix is retained. `testkit.shot` keeps actual rAF/draw/screenshot requirements. Do not substitute semantic readiness for pixels, visibility/layout assertions, first full draw or physical-device acceptance.
