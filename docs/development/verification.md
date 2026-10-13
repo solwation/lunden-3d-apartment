@@ -1251,6 +1251,35 @@ runtime claims. Private console parsing and actual Worker credential/protocol co
 #817/#853–#856; #756 stays open. Source/setup/helper/native/image/exit evidence is `/tmp/lunden-setup815/`;
 complete raw/summary `/tmp/runtests-638864/`; reusable module evidence `/tmp/lunden-setup814/native-*`.
 
+
+#816 reuses the unchanged tools-only setup helper in rearrangefollowtest, rearrangeplacementtest,
+rearrangeresettest and rearrangetvtest. Only four classic includes and four synchronous setup call sites
+change; reversing those substitutions reproduces each complete original source exactly. Authored queries,
+480×300 frames, actions, assertions, storage/reset/hidden-state behavior and real reloads remain intact.
+Production parsing, Worker credentials, seeds and baselines are untouched; the helper remains tools-gated,
+excluded from publication and independent of testMode.
+
+A fresh lightweight native THREE/Rearrange empty-world/offline probe gave 12 PASS/ALL PASS, exit 0:
+both original valid inputs (privately extracted, not published) matched free/busy/saving, selected-preview
+cancellation and repeat state, including actual enable/status and true return. Native boolean persistence
+restored a new controller unlocked but disabled. An unavailable localStorage getter was explicitly simulated,
+not an observed browser-security failure. The inspected native PNG shows these twelve text rows only.
+
+One complete representative rearrangetvtest ran at frozen e254f78 plus these setup substitutions with ONLY
+its existing test query temporarily removed. All nine unchanged checks PASS/ALL PASS, actual harness exit 0,
+67.784 s including capture; no pageerrors. Two actual app-ready documents and the final snapshot retained
+480×300/null test controller/no fullscreen. The second ready state natively restored unlocked=true with
+persisted boolean true and enabled=false; final setup had enabled=true with the same reload URL/timeOrigin.
+The inspected fullPage image shows all nine rows and the final kitchen/HUD/rearrangement overlay, not TV
+placement pixels or intermediate movement. All 229 frozen src/data/index/helper/actual full-fixture hashes
+matched after the run. The authored default test-query fixture was then restored byte-for-byte.
+
+The other three complete runtime suites were not rerun. This is full-mode setup acceptance, with source
+inversion and module-state equivalence, not historical parity, a speedup, cloud/physical-device coverage or
+rendered-scene equivalence. Evidence: `/tmp/lunden-priority-816/{native.cjs,native.json,native.png,full.cjs,
+full.log,full.json,full.png,exit.txt,frozen.json,tv-default.html}`. Owned browser/runner/server were stopped.
+
+
 #852 `musicreloadtest` migrated after one complete original two-document full/test pair at frozen `3b9dffb`:
 all three PASS rows and ALL PASS are byte-identical in the complete 249-byte raw logs. Actual public runner 0
 and companion 0, full 197.164s/test 144.358s (independent monitor 343.633s), including both successful captures.

@@ -1,4 +1,4 @@
-<!doctype html><html><meta charset="utf-8"><title>Furniture followers and restore (#475)</title><pre id="out">running…</pre><script type="module">
+<!doctype html><html><meta charset="utf-8"><title>Furniture followers and restore (#475)</title><pre id="out">running…</pre><script src="./rearrangesetup.js"></script><script type="module">
 const lines=[];let pass=true;const check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);pass&&=!!ok;};
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 try {
@@ -14,7 +14,7 @@ try {
  // Simulate a layout already saved by the old version, which had left the bowl and palm behind.
  localStorage.setItem('lunden.furniture.layout',JSON.stringify(stored));
  A=await load();R=A.rearrange;const w=f.contentWindow,d=f.contentDocument;
- d.documentElement.requestFullscreen=undefined;d.getElementById('start-touch').click();R.unlock('sarah is the goat');
+ d.documentElement.requestFullscreen=undefined;d.getElementById('start-touch').click();setupRearrangeForFixture(R,f.contentWindow);
  const newTable=find('coffeetable'),newSecretary=find('secretary'),newPalm=A.things.find(t=>t.name==='yuccapalmen');
  check(pos(A.fruit.group).distanceTo(bowlHome.clone().add(new T.Vector3(.3,0,-.2)))<.001,'old saved table layout retroactively carries bowl');
  check(pos(newPalm.model).distanceTo(palmHome.clone().add(new T.Vector3(.3,0,-.2)))<.001,'old saved secretary layout retroactively carries yucca');

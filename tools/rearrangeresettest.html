@@ -1,4 +1,4 @@
-<!doctype html><html><meta charset="utf-8"><title>Furniture reset confirmations (#481)</title><pre id="out">running…</pre><script type="module">
+<!doctype html><html><meta charset="utf-8"><title>Furniture reset confirmations (#481)</title><pre id="out">running…</pre><script src="./rearrangesetup.js"></script><script type="module">
 const lines=[];let pass=true;const check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);pass&&=!!ok;};
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 try {
@@ -6,7 +6,7 @@ try {
  const f=document.createElement('iframe');f.width=480;f.height=300;f.src='../index.html?test&life&shot';document.body.append(f);
  await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);
  const w=f.contentWindow,d=f.contentDocument,A=w.__app,R=A.rearrange,T=await w.eval("import('three')");
- d.documentElement.requestFullscreen=undefined;d.getElementById('start-touch').click();R.unlock('olof is the goat');
+ d.documentElement.requestFullscreen=undefined;d.getElementById('start-touch').click();setupRearrangeForFixture(R,f.contentWindow);
  const click=id=>d.getElementById(id).click(),home=p=>p.object.matrixWorld.elements.every((v,i)=>Math.abs(v-p.home.elements[i])<.0001);
  const table=R.pieces.find(p=>p.item.type==='coffeetable'),upstairs=R.pieces.find(p=>p.level===1&&!p.picture),picture=R.pieces.find(p=>p.picture);
  const bowlHome=A.fruit.group.getWorldPosition(new T.Vector3());
