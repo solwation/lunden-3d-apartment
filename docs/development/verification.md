@@ -527,7 +527,7 @@ no executable fixture changes or new browser results are part of this audit.
 | `ghosttest.cjs` | Full screenshot rendering; dynamic rows | Actual multi-page/Worker and visible ghost/name-tag screenshots; 320×200 already. PASS rows include elapsed wall time; no normalization permitted. |
 | `measuretest.html` | Accepted in #826 | Actual complete original full/test logs byte-identical, all 3 ordered PASS; native original 900×600/null controller versus 480×300/real test APIs. Current wall-distance/DOM-label/third-clear actions retained, superseding the earlier unverified branch claim. |
 | `menutest.html` | Candidate; reported mismatch | Branch full-page crash versus test PASS is not parity; current original 900×600 menu/reset fixture retained. |
-| `mieletest.html` | Unverified branch claim | Reported parity lacks retained logs. getImageData samples its own coat-texture canvas, not the framebuffer; original 900×600 source retained. |
+| `mieletest.html` | Accepted in #826 | Complete full DEFAULT action/photo/fireworks/rarity flow has byte-identical logs, all 29 PASS; actual original 900×600/null controller versus 480×300/real APIs. No only=fireworks shortcut; unchanged own-coat-canvas/native colors/hand/action predicates supersede unverified branch claim. |
 | `milktest.html` | Unverified branch claim | Reported parity lacks retained logs; actual carton/pour/drink actions, original 900×600 source retained. |
 | `mirrortest.html` | Explicit reflection exclusion (#736) | Actual active Reflector and ghost before/after-mirror drawing hooks; retain reflection mode. |
 | `musicintegrationtest.html` | Candidate; trusted activation | Actual appliance/failed-recording media; requires real #music-test-start click and audio waits (old run reported >10 min). |
@@ -2380,7 +2380,8 @@ but only an upper canvas strip. No intermediate measuring-line or label-pixel
 inspection is claimed. This pair is excluded from speedup aggregation because
 capture coverage differs. Frozen current/guarded fixture/helper hashes, complete
 raw/native records and genuine setsid/Popen/wait PID/SID/exit:
-`/tmp/lunden-measure826/measuretest/`. Miele and milk remain pending under #826;
+`/tmp/lunden-measure826/measuretest/`. Milk remains pending under #826; Miele
+acceptance follows below;
 #740/#736 remain open. No shorter `only=fireworks` Miele result will substitute
 for its full default action/rarity/photo flow.
 
@@ -2432,3 +2433,29 @@ All #824 dispositions are complete: lift's24 exact PASS rows support its small
 setup; LIFE3 retains original full after raw random/dust differences and #849;
 LIFE retains original full after identical red output and #850. Those bugs stay
 open independently; broader #739/#736 remain open.
+
+## Miele complete default native acceptance (#826, partial)
+
+`mieletest` is migrated by changing only query/dimensions and retaining the
+approved pre-pair testMode-only fullscreen suppression, original touch behavior
+in full mode unchanged. At frozen `e51e120` plus guard, `/tmp/runtests-549594/`
+has entire byte-identical raw logs, all 29 ordered PASS and ALL PASS per mode,
+zero FAIL/pageerrors and independently monitored actual exit 0. The DEFAULT
+whole fixture ran: no `only=fireworks` filter. Every coat/own-2D-texture/eye,
+actual discovery score/badge, native CPU heart-color/timing, original random
+endpoint loops, carry/hand/held-shot/photo/hug/not-table/drop/walk-off/reappear/F,
+seed12345 rarity4000 and lock2000 predicate remains unchanged. Original RNG
+restoration and optional shorter filter path are preserved, with no new seed,
+normalization, subset or quality/clock/matrix/wait modification.
+Two actual ready and two final records verify one app document per mode, original
+900×600/null controller versus 480×300/real draw/setFull/wantsFrame APIs, stable
+URL/timeOrigin, no fullscreen and empty cloud URL. Wall 284.932s → 198.814s
+includes both saved/inspected viewport captures: full shows all twenty-nine
+vertical rows/ALL PASS and final hall/HUD; test shows roughly eighteen upper
+result rows, clipped right/bottom; ALL PASS is visible at the top, while later
+checks and the scene lie below the capture. Raw logs prove
+complete diagnostics; no intermediate cat/fireworks/holding/action-pixel or
+rendered-scene equivalence is claimed. This pair is excluded from speedup
+aggregation because capture coverage differs. Frozen source/helper hashes,
+complete raw/native records and genuine setsid/Popen/wait PID/SID/exit:
+`/tmp/lunden-measure826/mieletest/`. Milk remains pending; #826/#740/#736 stay open.
