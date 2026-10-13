@@ -39,6 +39,8 @@ export function restPose(model) {
   const lift = -tmpBox.setFromObject(model).min.y;
   model.position.copy(pos); model.quaternion.copy(quat);
   parent?.add(model);
+  // Bounds sampling must restore world matrices before detail culling sees the held model.
+  model.updateWorldMatrix(true, true);
   return { q, lift };
 }
 

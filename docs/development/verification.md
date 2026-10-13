@@ -1200,12 +1200,12 @@ Raw logs/summary: `/tmp/runtests-457979/`; native per-document/final phases, sou
 and both PNGs: `/tmp/lunden-lighting812/blind-*` and `blindtest-*`. BESTÅ and blind acceptance completes #812;
 this does not close #738/#736 or establish equivalence for other lighting fixtures.
 
-#810 `booktest` retains its original full-mode 900×600/noquery fixture, byte-identical to current HEAD after
+#810 initially retained the original full-mode 900×600/noquery `booktest` fixture, byte-identical to that HEAD after
 removing the approved compare-only testMode fullscreen guard. One complete original full/test pair at frozen
 `570f8b8` is DIFFERENT: full 12 PASS / ALL PASS versus test 10 PASS + `FAIL taken again ("(hidden)")` and
 `FAIL back on the side table` / SOME FAILED. All 12 checks executed; the first ten raw rows match, including
 placement y0.485. The full helper offered “Ta boken” at re-take, while the test action was hidden. Separate open
-bug #846 preserves this observation; cause is unknown because test flag and 480×300 changed together.
+bug #846 preserved this observation; that pair alone did not isolate the cause because test flag and 480×300 changed together.
 The original aim's `scene.updateMatrixWorld(true)` and `book.where()` world-position read remain unchanged;
 source inspection does not establish a missing-matrix cause. No query/dimension migration, override, normalization,
 assertion weakening, baseline masking or retry was made. This is a functional comparison blocker, not an invented
@@ -1215,7 +1215,7 @@ Both app-ready and final native phases proved actual full 900×600/null controll
 inspected: raw outcomes/living room capture, not a read-spread or pixel-equivalence claim; times include captures.
 All 247 runtime hashes and the exact guarded fixture matched the frozen pair. Raw logs/summary:
 `/tmp/runtests-422743/`; source/provenance, native load/final data, PID/SID/exit, helpers and images:
-`/tmp/lunden-codes810/book-*` and `booktest-*`; #846 remains open.
+`/tmp/lunden-codes810/book-*` and `booktest-*`. The later #846 follow-up below resolves the matrix-restoration bug.
 
 #810 `cheattest` is accepted after comparing the original 844×600 queries against test mode at 480×300:
 whole raw logs are byte-identical, all 50 ordered PASS rows and ALL PASS preserved, including repeated rejection
@@ -1250,8 +1250,8 @@ cost excludes this pair from aggregate speedup calculations; no extra app load w
 All 247 runtime hashes and exact frozen fixture/helper hashes match. Raw logs/summary: `/tmp/runtests-435043/`;
 source/provenance, independent PID/SID/exit, actual phases with child identity, test PNG and full capture error:
 `/tmp/lunden-codes810/crouch-*` and `crouchtest-*`.
-The bounded #810 comparison scope is complete: cheat 50 PASS and crouch 13 PASS are accepted; book retains
-its original full fixture after 12 PASS versus 10 PASS + two FAIL, with #846 still open and cause unknown.
+The bounded #810 comparison scope is complete: cheat 50 PASS and crouch 13 PASS were accepted; book initially retained
+its original full fixture after 12 PASS versus 10 PASS + two FAIL. The later #846 source fix and current comparison follow below.
 This is not an all-green batch or closure of the broader #738/#736 migration work.
 
 
@@ -2220,3 +2220,46 @@ count or action-pixel equivalence; raw predicates retain those native measuremen
 Frozen source/helper hashes, complete raw difference, native phases and genuine
 setsid/Popen/wait PID/SID/exit: `/tmp/lunden-draw825/`. This bounded disposition
 is complete; #739/#736 remain open.
+
+
+## Book placement and low-quality follow-up (#846)
+
+The original guarded 900×600/plain-index fixture reproduced both old failures at
+`d95eede`: full 12 PASS versus test 10 PASS/2 FAIL, actual exit 1. Passive native
+observations preserved original step/use/raycast calls and recorded their actual
+results. The first placement preview's restPose temporarily detached the model
+and measured it at the origin, then restored local pose/parent without restoring
+world matrices. At original steps 12–16 its four mesh matrices still described
+the origin. Quality 0's detail distances hid those meshes on layer 7; the unchanged
+camera let the cached hidden state persist even after the fixture's original
+scene-matrix update. The focus ray on layer 0 returned no book hit. Full quality
+3 kept the same meshes on layer 0 and hit the book at 1.5388 m. This is a measured
+state sequence, not an inference solely from the simultaneous flag/viewport change.
+
+restPose now updates the model's world matrices after restoring its parent/pose.
+No quality override, culling threshold, ray layer, wait, seed or assertion changed.
+A fresh current pair at `eef495a` plus this fix/changelog 702 used the exact same
+guarded original fixture and observers. Both complete logs are byte-identical:
+371 bytes, 12 PASS/ALL PASS, zero FAIL, actual monitor exit 0. Native observations
+show restored held-world coordinates instead of the origin, all four meshes on
+layer 0 and the actual “Ta boken” focus at the original retake action in both modes.
+Each mode had one actual document: full ready 900×600/null controller, native
+fullscreen 1280×800 at final; test 480×300 with real draw/setFull/wantsFrame APIs,
+lazy/full false and no fullscreen. URL/timeOrigin identities remain stable.
+
+Both PNGs were inspected: full native fullscreen shows sky/HUD without parent
+results; test shows all twelve results/ALL PASS and the final room/table view.
+Neither proves intermediate reading-spread/table pixels or scene equivalence.
+Instrumented wall times 92.493/82.174 seconds include captures; diagnostic and
+capture asymmetry exclude them from qualified timing aggregation. Original red
+evidence remains `/tmp/runtests-519443/` and `/tmp/lunden-book846/`; fixed current
+logs are `/tmp/runtests-521617/`, with native states, frozen hashes, actual exit,
+images and semantic-only changelog formatting proof in `/tmp/lunden-book846-fixed/`.
+All 229 frozen source paths matched before final setup/formatting edits.
+
+Written booktest now uses 480×300/test with the approved pre-pair fullscreen guard.
+Reversing only its query/dimensions exactly reproduces the tested guarded original;
+all twelve executable predicates and original scene updates remain intact. The
+changelog's original compact format was restored with identical parsed tested data.
+The old #810 blocked disposition is superseded by this actual current comparison;
+#738/#736 remain open.
