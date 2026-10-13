@@ -15,11 +15,11 @@ f.width = 900; f.height = 600;
 f.src = '../index.html?shot';
 document.body.append(f);
 f.onload = async () => {
+  const lines = [];
   try {
   const w = f.contentWindow;
   while (!w.__app) await wait(100);
   const { day, patio, step, player, world, camera, use } = w.__app;
-  const lines = [];
   const check = (ok, name) => { const s = `${ok ? 'PASS' : 'FAIL'} ${name}`; lines.push(s); out.textContent = lines.join('\n'); return ok; };
   const at = (month, hour, secs = 4) => { day.month = month; day.hour = hour; day.paused = true; for (let i = 0; i < secs * 20; i++) step(0.05); return patio.state; };
   let pass = true, s;
@@ -215,7 +215,7 @@ f.onload = async () => {
   } catch (e) { pass = false; lines.push(`FAIL cushion box surface error ${e.stack}`); }
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
   } catch (err) {
-    out.textContent = `FAIL error: ${err.message}\n${err.stack}\n${lines?.join('\n') || ''}`;
+    out.textContent = `FAIL error: ${err.message}\n${err.stack}\n${lines?.join('\n') || ''}\nSOME FAILED`;
   }
 };
 </script>

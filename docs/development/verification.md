@@ -1202,6 +1202,16 @@ Native module/source/provenance/process/exit/image evidence: `/tmp/lunden-setup8
 complete raw/summary: `/tmp/runtests-628913/`, source/helpers/native identity/image/cleanup:
 `/tmp/lunden-setup814/representative-*`, `returnmarkers-*` and `returnmarkerstest-full.*`.
 
+#859 moves patiottest's existing lines array to the same onload callback scope before its outer try,
+so the unchanged reason/stack/prior-row writer can reach it even if loading fails before any check. The
+catch appends only SOME FAILED; normal writers, gameplay/actions/loops and optional SHOT return remain
+unchanged. Native Chrome static-DOM lexical/writer probe: seven PASS/ALL PASS, actual exit0. The original
+ReferenceError/running-output counterexample is retained; explicitly thrown cases before first check and
+after accumulated PASS/FAIL rows preserve the complete stack/reason/rows and one terminal. Normal success
+and assertion-failure text match exactly. The inspected image shows seven writer-only results; no natural
+apartment exception or gameplay-fix claim. Whole inverse restores original source. Evidence
+`/tmp/lunden-protocol859/`; original counterexample `/tmp/lunden-patio831/patio-writer-probe.{cjs,json}`.
+
 #858 changes only posterplacementtest's catch writer: accumulated PASS/FAIL rows and the complete error
 stack are retained byte-for-byte, followed by the standard SOME FAILED terminal. A native Chrome static-DOM
 probe gave seven PASS/ALL PASS, actual exit0: original missing-terminal counterexample, expected multiline
