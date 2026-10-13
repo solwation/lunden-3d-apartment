@@ -531,7 +531,7 @@ no executable fixture changes or new browser results are part of this audit.
 | `milktest.html` | Accepted in #826 | Complete original full/test logs byte-identical, all 16 ordered PASS; native 900×600/null controller versus 480×300/real APIs. Actual carton/pour/fill/hex/contents/drink/held/F actions retained; no rendered-liquid pixel comparison. |
 | `mirrortest.html` | Explicit reflection exclusion (#736) | Actual active Reflector and ghost before/after-mirror drawing hooks; retain reflection mode. |
 | `musicintegrationtest.html` | Migrated (#851); trusted activation | Complete original pair and final written test each preserve 17 PASS/ALL PASS and identical 921-byte logs. Real native button/media preserved; original companion exit1 CDP errors retained, written runner/companion0 with separate native OS policy evidence. No qualified timing or scene-pixel equivalence claim. |
-| `musicreloadtest.html` | Candidate; trusted activation | Actual Sonos selection/playback after reload; requires real #music-test-start click in reloaded iframe. |
+| `musicreloadtest.html` | Migrated (#852); trusted activation | Complete 3 PASS/ALL PASS and identical 249-byte logs; original two actual 480×300 documents/DPR.15/first play-save preserved, one trusted second-document click per mode. Actual runner/companion0 and OS argv policy verified; no new media/analyser or pixel-equivalence claim. |
 | `musictest.html` | Own fixture | Actual audio recordings/decoding/analyser and module lifecycle, no apartment iframe. |
 | `neighboropeningstest.html` | Full reflection/lighting | Shared reflection envMap and night envMapIntensity/emission/window-colour checks for actual glazing. |
 | `nerfcombattest.html` | Own fixture | Own THREE/Combat/Ghosts/Worker/audio fixture and final 640×400 WebGL scene; no apartment iframe. |
@@ -1163,6 +1163,39 @@ per issue). Each needs its own actual full/test runs and unchanged assertions:
 | Interaction | cheattest, booktest, crouchtest |
 | Cooking and cloud state (#811 complete) | cooktest/cuptest retain original full mode after actual raw differences; cloudtest migrated with exact native evidence below |
 
+#852 `musicreloadtest` migrated after one complete original two-document full/test pair at frozen `3b9dffb`:
+all three PASS rows and ALL PASS are byte-identical in the complete 249-byte raw logs. Actual public runner 0
+and companion 0, full 197.164s/test 144.358s (independent monitor 343.633s), including both successful captures.
+These are descriptive shared-machine samples pending final #764 timing qualification, not a controlled
+benchmark or automatic aggregate speedup claim. Original 480×300, renderer DPR.15 in BOTH loads,
+shot/cloudempty/time12 then same-iframe real reload=1, first unconditional fullscreen suppression/synthetic
+touch-start, Sonos channel 3/volume 7/play and native saveResume/world are preserved byte-for-byte apart from
+appending test in the shared original URL prefix. No new guard or first-document click was inserted.
+All four actual app-ready records retain four unique URL/timeOrigin identities, first-document beforeunload
+and pagehide observations and retained-second final records: full 480×300/null controller versus test 480×300
+with real draw/setFull/wantsFrame API Boolean, no fullscreen in any observed phase. Exactly one trusted normal
+locator click per mode targets ONLY the second actual reload=1 document's existing music-test-start gate;
+actual isTrusted/userActivation and same-document identity/removal recorded. First original play/save remains
+unchanged; second button only removes itself/resolves and native resumed pointerdown activates production audio.
+Native clock/title behavior and original 20 step.01/wait50ms loop remain unchanged, as do all three predicates:
+six original channel IDs, channel index 3/new matching genre/volume 7/playing restoration, recording/artist title.
+There is no invented media-currentTime/RMS/analyser assertion where this fixture does not have one.
+Both CDP Browser.getBrowserCommandLine queries failed (--enable-automation absent) and are retained as
+diagnostic-only. Separate /proc fallback records each actual newly owned Chrome 613795/614538, parent public
+runner 613768, executable and Chrome's ONE joined argv, with no autoplay-policy/Autoplay-feature override;
+caller arguments unchanged. No flags, AudioContext/media stubs, seed/clock/timer changes, new waits, quality/
+matrix override, result normalization, baseline or assertion edits. Original catchFAILstack WITHOUT verdict is
+also retained; it did not execute here and is not silently repaired into a completion marker.
+Both actual fullPage PNGs were inspected: full 1280×800 and test 791×402 show all three vertical result rows,
+ALL PASS and final low-DPR entry façade/HUD (test's long second result line meets the right edge). They support
+native capture/result/final-layout evidence, not intermediate speaker/playback or scene-pixel equivalence.
+All 247 frozen source paths, exact original fixture and four helper hashes match. Undoing ONLY shared query
+addition reproduces the WHOLE frozen original. Raw/summary: `/tmp/runtests-613768/`; original/final source proof,
+actual per-document lifecycle, trusted inputs, separate CDP/OS policy, PID/SID/runner-versus-companion exits,
+cleanup and both images: `/tmp/lunden-music852/`. The reviewed external companion uses the PUBLIC HTML runner;
+its activation/policy accounting never rewrites fixture results. Parent #834's two fixtures now have concrete
+complete dispositions (#851 and #852); broader #740/#736 remain open.
+
 #851 `musicintegrationtest` migrated after one complete original plain-index/default-iframe full/test pair at
 frozen `1a8d210` and one meaningful final written-context verification. Every current 17 PASS row and ALL PASS
 matches in the complete 921-byte raw logs, including the native running AudioContext and actual recording path
@@ -1204,7 +1237,7 @@ OS-policy/input/final identity, runner-versus-companion exits, image and proofs:
 The existing gate still needs a trusted real click; the reviewed external companion forks the PUBLIC HTML
 runner and separately accounts activation/policy failures without rewriting its output or media. Its written
 monitor invokes musicintegrationstart-v2.cjs with no --compare; the historical original monitor used --compare.
-This completes bounded #851; #834's separate musicreload work (#852), #740 and #736 remain open.
+This completes bounded #851. #834's separate musicreload work was completed later in #852; #740/#736 remain open.
 
 #843 `carsoundtest` retains its entire original 900×600/car/rain/time14/October5 fixture after one complete
 actual full/test pair at frozen `7b3a972`. Both modes produced all 13 PASS rows and ALL PASS, but the two
