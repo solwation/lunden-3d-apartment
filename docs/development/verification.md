@@ -437,7 +437,7 @@ not a rendering exemption or fixed product defect. Life2 and #823/#739/#736 rema
 |---|---|---|
 | `detailtest.html` | Full rendering | Detail culler: nearby doors drawn and distant details hidden. |
 | `dishrackpicktest.html` | Migrated (#785) | 30 identical ordered PASS rows, zero FAIL; actual 900×600 full/controller false → 480×300 test/controller true. 109.395 s → 77.926 s, single pair (`/tmp/runtests-277486`). Rack/cup rays, mouse/touch and inventory preserved. |
-| `drawtest.html` | Conditional candidate | Samples own 2D paper canvas via projected pointer coordinates, not WebGL pixels; retain pointer coverage. |
+| `drawtest.html` | Original full retained (#825) | Both complete modes have 8 PASS, but actual red-pixel count row 5 differs (393 versus 379); other 7 rows exact. Comparison exit 1. Whole current original query/dimensions/executable restored and pre-pair guard removed; no normalization, migration or proven product bug/cause. |
 | `eastbackdroptest.html` | Default migrated (#818); optional lowmem app stays full/unmeasured | 46 identical ordered PASS rows, 0 FAIL; native 720×480/full → 480×300/test, explicit FULL/LITE facade-builder checks preserved. Actual evidence and capture limits below. |
 | `eggtest.html` | Migrated (#785) | 27 identical ordered PASS rows, zero FAIL; actual 640×400 full/controller false → 480×300 test/controller true. 81.321 s → 71.104 s, single pair (`/tmp/runtests-279045`). Cooking/actions, colour/opacity and save/load preserved. |
 | `entrancedoortest.html` | Full rendering | 128×128 render-target pixel readback of handles/glazing. |
@@ -2168,3 +2168,30 @@ Written lift now uses 480×300/test; reversing only dimensions/query reproduces
 the exact frozen original with all executable predicates intact. LIFE3 and LIFE
 remain pending under #824; their whole default flows and optional source filters
 are preserved in preparation. #739/#736 stay open.
+
+## Drawing complete native pixel-count disposition (#825)
+
+`drawtest` retains its whole current original 900×600/plain-index full setup and
+executable, including the existing audit comment; approved pre-pair testMode-only
+fullscreen guard removed, fixture bytes exactly HEAD. On frozen `1c9f120` plus
+the guard, `/tmp/runtests-511316/` completed both modes with 8 ordered PASS and
+ALL PASS, zero FAIL/pageerrors. Exact comparison is DIFFERENT and the independent
+monitor exited 1: only row 5 differs, 393 versus 379 actual red pixels; all other
+seven rows are exact. The original own 840×594 paper canvas/getImageData,
+normalized synthetic pointer path, CSS-rect/camera-raycast mapping, crayon
+Math.random alpha/radius/scatter, ink/state/clear/camera-return and local storage
+checks remain untouched. No new seed, normalization, retry or cause/product-failure
+claim is made; sampling its own 2D canvas does not establish a generic renderer
+exemption or rendered-scene equivalence.
+
+Two actual ready and two final native records verify one app document per mode,
+full 900×600/null controller versus test 480×300/real draw/setFull/wantsFrame APIs,
+no fullscreen and stable URL/timeOrigin identity. Wall 154.452s/83.204s includes
+both saved/inspected viewport captures and is excluded from speedup aggregation
+because raw results differ and image coverage is asymmetrical. Full shows all
+results and final desk/room/HUD; test shows all eight vertical rows/ALL PASS but
+only the upper canvas strip. Neither image proves the intermediate paper-pixel
+count or action-pixel equivalence; raw predicates retain those native measurements.
+Frozen source/helper hashes, complete raw difference, native phases and genuine
+setsid/Popen/wait PID/SID/exit: `/tmp/lunden-draw825/`. This bounded disposition
+is complete; #739/#736 remain open.
