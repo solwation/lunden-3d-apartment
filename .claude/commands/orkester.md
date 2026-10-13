@@ -28,6 +28,12 @@ issues inom området finns kvar. Nya issues dyker upp löpande — lista om varj
   blockerat av ett olöst beroende, ett användarsvar eller en fysisk enhet som saknas. Kontrollera aktuell body,
   kommentarer och #420; anta inte att ett svårt eller stort ärende är blockerat. Ett föräldraärende med återstående
   delissues hanteras via sina delar; välj högst prioriterade startbara del och notera varför föräldern inte startas.
+- **Saknad fysisk enhet blockerar inte automatiskt felsökning eller implementation.** Användarens krasch/lagg är
+  redan ett felunderlag: bilda en tydligt märkt teori, granska kod och rapporter, verifiera den riskabla kodvägen med
+  tillgängliga verktyg och leverera en avgränsad, reversibel åtgärd när det finns stöd för den. Enbart mer telemetri
+  och en vag begäran att användaren ska testa får inte ersätta möjlig egen felsökning. Markera fysisk verifiering
+  som kvarvarande acceptans, inte hela ärendet som blockerat, så länge konkreta diagnos-/åtgärdssteg finns. Efter
+  leverans: ange vilken publicerad ändring som ska provas, ett kort konkret förlopp och vad användaren ska observera.
 - **Redovisa varje överhoppat högre prioriterat eller äldre ärende i #420:** nummer, prioritet, konkret hinder och
   vad som krävs för att det ska bli startbart. Skriv också prioritet och skapandetid för varje valt ärende.
   Kontrollera hindren igen vid nästa tilldelning; en gammal anteckning om väntan räcker inte. Lägre prioritet får
