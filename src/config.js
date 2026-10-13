@@ -1531,28 +1531,11 @@ export const WEATHER = {
 // removed in #670 (with their lines and `reach`).
 export const GREET = { bubble: 2.8 };
 
-// Olof (#586, src/olof.js): a figure that now and then sits in the sofa or the armchair with a beer; wave to him and he waves
-// back, gets up and fades away. Timings and odds are our *guess* (tuned by feel, not measured). Every `every` s (the first
-// check after `first` s) he turns up with odds `chance`, never where the visitor can see the seat; after leaving he stays
-// away at least `away` s. Sips every `sip` [min, max] s. Colours from the issue's description: ash-blond hair, grey full
-// beard, burgundy zip hoodie over a grey T-shirt, dark grey jeans.
+// Olof at the wheel (#900): shared figure colours and the existing car greeting/pose rules.
 export const OLOF = {
-  first: 40, every: 50, chance: 0.35, away: 240, sip: [5, 11], sipTime: 2.4,
-  riseTime: 1.1, goTime: 1.6, // s: he gets up, steps away fading (his wave and joke: `seat`)
-  seats: ['soffan', 'fåtöljen'], sofaSpots: 3, // the sofa's three seats, not the chaise's (his feet would be in its cushion)
-  forward: { 'fåtöljen': 0.12 }, // m his hips sit forward of the usual: the armchair's two cushions fill its back (*guess*, by eye)
   colors: { hoodie: 0x5a2029, cuff: 0x4a1a22, tee: 0x606063, zip: 0xb9bcc0, jeans: 0x3a3c41, shoe: 0x2a2523, skin: 0xe2b59b,
     hair: 0x9c8b63, beard: 0x7f776d, beardLight: 0x999087, ear: 0xc78f77,
     eye: 0x2a2420, can: 0xc9cdd2, canBand: 0x1f5e3a, canTop: 0x9aa0a6 },
-  hello: ['Hej Olof!', 'Tjena Olof!', 'Hallå där, Olof!', 'Skål, Olof!'],
-  // the dad joke he tells in the sofa / armchair before he goes (#659): in a `.say.long` bubble for `jokeTime` s (his goodbye line
-  // `bye` was dropped), the hand up for `waveHold` s of it; never the same one twice in a row. Texts and times our *guess*.
-  seat: { jokeTime: 5, waveHold: 1.6,
-    jokes: ['Varför är soffan så lugn? Den har alltid någon som stöttar den.', 'Jag sa till soffan att jag skulle komma tillbaka. Den tog det ganska lugnt.',
-      'Vad sa ölburken till soffan? Du är riktigt bekväm att ligga på!', 'Jag har slutat titta på tv. Nu tittar jag bara på hur det går med soffan.',
-      'Varför gillar fåtöljen fotboll? Den har alltid en bra plats på läktaren.', 'Vad sa glaset till ölen? Du är riktigt skummande!',
-      'Jag ville bygga om vardagsrummet, men jag fastnade på första raden: soffan.', 'Min kudde sa att jag skulle vila mer. Jag lyssnade, jag har ju huvudet på rätt ställe.',
-      'Varför ska man aldrig lita på en tv-bänk? Den har alltid något på gång.', 'Vad sa Hus L till soffan? Vi ses vid nästa avsnitt!'] },
   // at the wheel of our car (#599, src/olof.js OlofDriver): `at` [x, z] his hips in the car's frame (facing +x) (the driving seat's cushion, carmodel.js seats: x −0.04, z −0.37; seat top 0.54),
   // `floor` the foot well (carmodel.js: 0.29 + half its 0.05), `seat` the cushion's top above it, `wheel` [x, y, z] where his
   // hands hold it (carmodel.js: the wheel's centre 0.42, 0.93, −0.37, tilted 0.42 rad), `pedals` how far forward his feet are,
@@ -2816,7 +2799,7 @@ export const SCORE = {
     kittens: 300, // a kitten found (#363): the first one, then `again` per kitten (on top of its breed's points)
     miele: 1000, mieleHugs: 20, // Miele found (#328): the rarest find there is (4 × a sphynx), then `again` per find; a hug
     carMusic: 3, // per song played in the car (#268), like the speakers' songs
-    olof: 25, // waving to Olof in the sofa (#586): the first time, then `again` per wave
+    olof: 25, // greeting our driver: the first arrival, then `again` per new arrival
     airfried: 6, // a batch of fish fingers done in the air fryer (#287): the first time, then `again` per batch
     friesCooked: 8, // a basket of Aviko fries cooked golden (#301): the first time, then `again` per batch
     toaster: 5, // the toaster's lever pushed down, plugged in (#401): the first time, then `again` per toast

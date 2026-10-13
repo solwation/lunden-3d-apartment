@@ -4,11 +4,8 @@
 <body>
 <pre id="out">running…</pre>
 <script>
-// Olof in the sofa (#586): ?olof=0 seats him in the sofa's first seat; he is shown there seated (hips near the seat, the
-// feet on the floor), the seat is taken (rest.js) and the cat does not pick it; looking at him gives "Vinka till Olof",
-// pressing it scores, he answers in a bubble, waves, gets up and is gone after a few seconds, the seat free again. He
-// never turns up in a seat the visitor can see; the sofa's three seats and the armchair are his.
-//   chrome --headless=new --dump-dom http://localhost:8137/tools/oloftest.html
+// #900: legacy ?olof=0 cannot create an indoor actor. Olof exists only in the car;
+// shared geometry, free apartment seats, driver greeting and saved-car restoration remain.
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const f = document.createElement('iframe');
@@ -17,70 +14,41 @@ document.body.append(f);
 f.onload = async () => {
   const w = f.contentWindow, d = f.contentDocument;
   while (!w.__app) await wait(100);
-  const { player, camera, step, olof, stats, totalScore, cat } = w.__app;
+  const { step, olofDriver: driver, car, world, cat, use, stats } = w.__app;
   const lines = [];
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
-  d.getElementById('start-touch').click();
-  await wait(50);
-  const V = camera.position.constructor;
-  for (let i = 0; i < 3; i++) step(1 / 60);
-  let pass = check(olof.seats().length === 4, `four seats for him (the sofa's three, the armchair): ${olof.seats().length}`);
-  pass &= check(olof.state === 'sit' && olof.object.visible, `he sits there (${olof.state})`);
-  const tris = olof.fig.mesh.geometry.attributes.position.count / 3;
-  const figureMeshes = olof.object.children.filter((x) => x.isSkinnedMesh).length;
-  const meshBytes = Object.values(olof.fig.mesh.geometry.attributes).reduce((sum, a) => sum + a.array.byteLength, 0);
-  lines.push(`figure geometry: ${tris} triangles, ${olof.fig.mesh.geometry.attributes.position.count} vertices, ${(meshBytes / 1048576).toFixed(2)} MiB of CPU/GPU vertex buffers`);
-  pass &= check(figureMeshes === 1, `one skinned figure mesh / colour draw call (${figureMeshes})`);
-  pass &= check(tris <= 8000, `figure stays within the 8,000 triangle budget (${tris})`);
-  const sp = olof.spot, B = olof.fig.bones, hips = B.hips.getWorldPosition(new V()), foot = new V();
-  olof.fig.mesh.getVertexPosition(olof.fig.mesh.geometry.attributes.position.count - 1, foot); // a vertex of a shoe, skinned
-  foot.applyMatrix4(olof.fig.mesh.matrixWorld);
-  const floor = olof.object.position.y;
-  pass &= check(Math.abs(hips.y - (floor + sp.y)) < 0.15, `seated: hips ${(hips.y - floor).toFixed(2)} m over the floor, the seat at ${sp.y}`);
-  pass &= check(foot.y - floor < 0.12, `the feet on the floor (${(foot.y - floor).toFixed(2)})`);
-  pass &= check(sp.taken() === true, 'his seat is taken for the visitor');
-  pass &= check(cat.seatTaken(sp.pos.x, sp.pos.z) === true, 'the cat does not pick it');
-  // he only turns up out of sight
-  olof.hide(1e9);
-  pass &= check(!sp.taken?.(), 'gone: the seat is free');
-  const see = olof.canSee;
-  olof.canSee = () => true;
-  pass &= check(olof.appear() === false && olof.state === 'away', 'never where the visitor would see him');
-  olof.canSee = see;
-  olof.appear(0, true);
-  // look at him: "Vinka till Olof"
-  const btn = d.getElementById('action');
-  player.spawn(sp.pos.x + 0.3, sp.pos.z - 2.2, 0);
-  for (let i = 0; i < 3; i++) step(1 / 60);
-  const lookAt = (p) => { const dx = p.x - camera.position.x, dz = p.z - camera.position.z; camera.rotation.set(Math.atan2(p.y - camera.position.y, Math.hypot(dx, dz)), Math.atan2(-dx, -dz), 0, 'YXZ'); };
-  lookAt(B.torso.getWorldPosition(new V()).add(new V(0, 0.3, 0)));
-  step(1 / 60);
-  pass &= check(!btn.hidden && /vinka till olof/i.test(btn.textContent), `the button on him: "${btn.textContent}"`);
-  const before = stats.olof ?? 0, score0 = totalScore();
-  btn.click();
-  step(1 / 60);
-  pass &= check((stats.olof ?? 0) === before + 1 && totalScore() > score0, `scored (${score0} → ${totalScore()})`);
-  const mine = d.querySelector('#speech .say.mine');
-  pass &= check(mine && !mine.hidden && /olof/i.test(mine.textContent), `you say "${mine?.textContent}"`);
-  for (let i = 0; i < 60; i++) step(1 / 60);
-  const theirs = [...d.querySelectorAll('#speech .say.theirs')].at(-1);
-  const jokes = (await import('../src/config.js')).OLOF.seat.jokes;
-  pass &= check(olof.state === 'wave' && theirs && jokes.includes(theirs.textContent) && theirs.classList.contains('long'), `he tells a dad joke "${theirs?.textContent}" (long bubble) and waves`);
-  pass &= check(jokes.length >= 8 && new Set(jokes).size === jokes.length, `${jokes.length} different jokes`);
-  const hand = B.handL.getWorldPosition(new V()), shoulder = B.shoulderL.getWorldPosition(new V());
-  pass &= check(hand.y > shoulder.y + 0.15, `his hand is up (${hand.y.toFixed(2)} > ${shoulder.y.toFixed(2)})`);
-  step(1 / 60);
-  pass &= check(btn.hidden || !/olof/i.test(btn.textContent), 'no second wave while he goes');
-  for (let i = 0; i < 60 * 3; i++) step(1 / 60);
-  pass &= check(olof.state === 'wave' && theirs && !theirs.hidden && theirs.isConnected, 'he is still telling it after 4 s (not rushed off)');
-  for (let i = 0; i < 60 * 6; i++) step(1 / 60);
-  pass &= check(olof.state === 'away' && !olof.object.visible, 'after a few seconds he is gone');
-  pass &= check(!sp.taken?.(), 'the seat is free again');
-  // never the same joke twice in a row
-  let same = false, prev = null;
-  for (let i = 0; i < 200; i++) { const j = olof.pickJoke(); if (j === prev) same = true; prev = j; }
-  pass &= check(!same, 'never the same joke twice in a row');
-  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+  try {
+    d.documentElement.requestFullscreen = undefined;
+    d.getElementById('start-touch').click();
+    await wait(50);
+    for (let i = 0; i < 3; i++) step(1 / 60);
+    let pass = check(w.__app.olof === undefined, 'legacy ?olof=0 exposes no indoor actor');
+    const mod = await w.eval("import('/src/olof.js')");
+    pass &= check(mod.Olof === undefined, 'no indoor constructor or force/appear API');
+    const seats = world.furnitureTargets.filter(t => t.kind === 'rest' && ['soffan', 'fåtöljen'].includes(t.name)).flatMap(t => t.spots);
+    pass &= check(seats.length >= 4 && seats.every(s => !s.taken?.()), 'sofa and armchair are not reserved');
+    pass &= check(cat.seatTaken === undefined, 'no indoor Olof reservation callback for cat');
+    for (let i = 0; i < 60; i++) step(1);
+    pass &= check(w.__app.olof === undefined && seats.every(s => !s.taken?.()), 'normal updates cannot create indoor Olof');
+    const fig = driver.fig, tris = fig.mesh.geometry.attributes.position.count / 3;
+    pass &= check(fig.object.children.filter(x => x.isSkinnedMesh).length === 1 && tris <= 8000, `shared driver figure: one mesh, ${tris} triangles`);
+    pass &= check(car.state === 'garage' && !driver.visible, 'garage has no driver');
+    use(world.carKey);
+    pass &= check(car.state === 'arriving' && driver.visible && fig.object.parent === car.object, 'key calls car with its driver');
+    for (let i = 0; i < 4000 && !car.parked; i++) step(1 / 30);
+    pass &= check(car.state === 'parked' && driver.visible, 'car arrives and parks with Olof');
+    const n = stats.olof ?? 0;
+    use(driver.interact);
+    for (let i = 0; i < 60; i++) step(1 / 60);
+    pass &= check((stats.olof ?? 0) === n + 1 && d.querySelector('.say.theirs')?.textContent.length > 20, 'driver greeting keeps score and dad joke');
+    for (let i = 0; i < 420; i++) step(1 / 60);
+    pass &= check(driver.state === 'drive' && driver.visible, 'driver stays after greeting');
+    const saved = JSON.parse(JSON.stringify(car.saveState()));
+    driver.hide(); car.toGarage(); car.loadState(saved); step(1 / 60);
+    pass &= check(car.state === 'parked' && driver.visible && w.__app.olof === undefined, 'saved parked car restores only its driver');
+    pass &= check(!JSON.stringify(saved).includes('olof'), 'save has no separate indoor actor representation');
+    out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+  } catch (e) { out.textContent = `SOME FAILED\n${lines.join('\n')}\nFAIL ${e.stack}`; }
 };
 </script>
 </body>

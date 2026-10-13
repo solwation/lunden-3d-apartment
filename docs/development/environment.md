@@ -12,7 +12,7 @@ src/courtyard.js       the courtyard on the garage box (COURTYARD): walks, pergo
                        benches, raised beds, instanced shrubs; collision for what you can walk into. #683 shares streetlife.js's city-bike geometry,
                        shaped steel wheel holders and spoke alpha texture; rack collision is unchanged. #438: every bench is a seat
                        (`targets`: invisible pick boxes with rest.js spots, `world.courtyardTargets`, kept with F; since #670 no
-                       neighbour sits on them, so only Olof's own seats indoors are ever `taken`), the pergola tables
+                       neighbour sits on them; #900 also removes indoor Olof seat reservations), the pergola tables
                        and the grill's side table are put-down surfaces (`surfaces` → world.cupSurfaces); the benches' / tables'
                        collision is `seats` (segments + footprints outside `fixedSegments`, so getting up works as for furniture)
                        #682: `bench()` is a park bench (COURTYARD.bench, sizes *guess*): five eased seat slats, three back slats
@@ -43,7 +43,7 @@ src/surroundings.js    the site (SITE): Hus A/B/C + buildings around, roads, pav
                        Höje å, instanced trees (leaf-card crowns, branching trunks: foliage.js, #679), lit windows, cloudy sky; #604: windows of Hus A–C are `lunden` and go dark in a power
                        cut (`update(hour, night, power)`), the rest of the site and the street lamps do not; world.windowLights passes
                        `power` on to the courtyard's bulbs / bollards and exterior.js's lanterns, lit glass and front-door lights
-src/greet.js           speech bubbles (GREET, #247): `sayMine` (your line at the bottom), `say` (a line over a head — Olof, #586/#599),
+src/greet.js           speech bubbles (GREET, #247): `sayMine` (your line at the bottom), `say` (a line over a head — our car driver Olof, #599/#900),
                        speech = Web Speech API sv-SE (silent when muted); `occluders` (the houses as boxes) for weather.js.
                        Greeting neighbours was removed with them in #670; an old save's stats `greets` still scores
 src/roads.js           the roads' shapes (SITE.roads, #257): rectangles, centre lines (`path` [x, z, r]: corners rounded to arcs,
@@ -125,7 +125,7 @@ tools/nonpctest.html   headless test (#670): no People / PEOPLE, nothing to gree
 
 ## No neighbours outside (#670)
 
-There are no figures outside except Olof (#586/#599) and the cats: the walkers with the dog, the cyclist on Sankt Lars väg (and its
+There are no figures outside except our car driver Olof (#599/#900) and the cats: the walkers with the dog, the cyclist on Sankt Lars väg (and its
 bell), the bench sitter by Hus A and the loft neighbour (src/people.js, `PEOPLE`, #114/#239/#521) were removed because the
 low-poly figures broke the realism (the user, 2026-10-11). Playgrounds, sandboxes, benches and walks stay; every courtyard bench
 spot is free for the visitor (resttest #670 block). The greeting action went with them; an old save's `greets` keeps its points

@@ -1,12 +1,9 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { OLOF as O, REST } from './config.js';
+import { OLOF as O } from './config.js';
 
-// Olof (#586): a figure that now and then turns up in the sofa or the armchair with a can of beer, the way the cats turn up
-// (src/cat.js) — never where the visitor can see the seat. He sips now and then; look at him and the action is "Vinka till
-// Olof": he waves back, gets up, takes a step and fades away, and the wave scores (SCORE `olof`). While he sits there the
-// seat is taken (rest.js `taken`) and the cat does not pick it (cat.js `seatTaken`).
+// Olof is only the driver of our car (#900). Shared figure, skeleton and IK also serve Avatar.
 //
 // The figure is low-poly like the neighbours (src/people.js) but one SkinnedMesh — one draw call (+ one in the shadow
 // map) — with a rigid skeleton (every vertex follows one bone): hips, torso, head, two arms (shoulder, elbow, hand) and
@@ -225,155 +222,8 @@ export function seatedPose(seat, { w = 0, wave = 0, ph = 0, up = 0, fwd = 0 } = 
   return { hip, lean, head: 0.28 * ease(w), feet, hands: [handL, handR], can };
 }
 
-/** The look that sees a seat: (world point) => true when the visitor would see it (main.js). */
-export class Olof {
-  /** `world`: World (its furnitureTargets); `rand`: random numbers (tests). */
-  constructor(world, rand = Math.random) {
-    Object.assign(this, { world, rand });
-    this.fig = buildOlof();
-    this.object = this.fig.object;
-    this.object.visible = false;
-    this.state = 'away'; // away / sit / wave / rise / go
-    this.wait = O.first;
-    this.t = 0;
-    this.drink = 0;      // 0 … 1 the can at the mouth
-    this.nextSip = this.sipWait();
-    this.sipT = -1;
-    this.spot = null; this.target = null; this.seat = 0;
-    this.interact = { name: 'Olof', kind: 'olof', verb: 'vinka till', pickable: this.fig.pick };
-    this.fig.pick.userData.door = this.interact;
-    this.canSee = () => false;      // (world point) => the visitor would see it (main.js: in view and not behind a wall)
-    this.catAt = () => null;        // () => where the cat is, or null
-    this.visitorSeat = () => null;  // () => the spot the visitor sits in, or null
-    this.enabled = () => true;      // () => the furniture is shown (F)
-    this.onSay = null;              // (line) => {} his line in a speech bubble (main.js → greet.js)
-    this.busy = () => false;        // () => he is elsewhere now (main.js: at the wheel of our car, #599)
-  }
-
-  sipWait() { return O.sip[0] + this.rand() * (O.sip[1] - O.sip[0]); }
-
-  /** The seats he can sit in: the sofa's three, the armchair's one (OLOF.seats), as { target, spot }. */
-  seats() {
-    const out = [];
-    for (const t of this.world.furnitureTargets ?? []) {
-      if (t.kind !== 'rest' || t.rest !== 'sit' || !O.seats.includes(t.name)) continue;
-      t.spots.forEach((sp, i) => { if (t.name !== 'soffan' || i < O.sofaSpots) out.push({ target: t, spot: sp }); });
-    }
-    return out;
-  }
-
-  /** Free for him: not the visitor's seat, no cat on it, not already taken. */
-  free({ spot }) {
-    const me = this.visitorSeat(), cat = this.catAt();
-    if (me && Math.hypot(me.x - spot.pos.x, me.z - spot.pos.z) < 0.4) return false;
-    if (cat && Math.hypot(cat.x - spot.pos.x, cat.z - spot.pos.z) < 0.5 && Math.abs(cat.y - spot.pos.y) < 1.2) return false;
-    return !spot.taken?.();
-  }
-
-  /** Is he in (or getting up from) the seat at (x, z)? (cat.js: not where he sits; rest.js `taken`.) */
-  sitsNear(x, z, r = 0.4) { return this.state !== 'away' && !!this.spot && Math.hypot(this.spot.pos.x - x, this.spot.pos.z - z) < r; }
-
-  /** Turn up now in seat `pick` (index into `seats()`), or a random free one out of sight (`force`: even in sight). */
-  appear(pick = null, force = false) {
-    if (this.state !== 'away') return false;
-    const all = this.seats();
-    let cands = pick != null ? [all[pick]].filter(Boolean) : all.filter((s) => this.free(s) && (force || !this.canSee(s.spot.pos)));
-    if (!cands.length) return false;
-    const { target, spot } = cands[Math.floor(this.rand() * cands.length)];
-    this.target = target; this.spot = spot; this.seat = spot.y; this.spotAt = spot.pos.clone();
-    const prev = spot.taken, self = this;
-    spot.taken = function () { return (self.spot === spot && self.state !== 'away') || !!prev?.(); }; // nobody sits on his lap
-    this.restore = () => { spot.taken = prev; };
-    const floor = spot.pos.y - REST.sitEye - spot.y;
-    this.object.position.set(spot.pos.x, floor, spot.pos.z);
-    this.object.rotation.set(0, spot.yaw + Math.PI, 0); // (the spot's yaw is the camera's: facing the other way round)
-    this.fig.material.opacity = 1;
-    this.object.visible = true;
-    this.state = 'sit'; this.t = 0; this.drink = 0; this.sipT = -1; this.nextSip = 1 + this.sipWait() * 0.5;
-    this.pose();
-    return true;
-  }
-
-  /** Gone (out of sight, the seat free again); `wait` s until he may turn up again. */
-  hide(wait = O.away) {
-    if (this.state === 'away') return;
-    this.restore?.(); this.restore = null;
-    this.state = 'away'; this.spot = null; this.target = null;
-    this.object.visible = false;
-    this.wait = wait;
-  }
-
-  /** Can he be waved to now (sitting there)? */
-  get waveable() { return this.state === 'sit' && this.object.visible; }
-
-  /** The visitor waves (E on him): he waves back, tells a dad joke (#659), gets up and goes. True if it counted. */
-  wave() {
-    if (!this.waveable) return false;
-    this.state = 'wave'; this.t = 0; this.said = false;
-    return true;
-  }
-
-  /** A dad joke for the seat (OLOF.seat.jokes), never the one he told last. */
-  pickJoke() {
-    const all = O.seat.jokes, pool = all.filter((j) => j !== this.lastJoke);
-    return (this.lastJoke = pool[Math.floor(this.rand() * pool.length)]);
-  }
-
-  pose() {
-    const s = this.state, t = this.t;
-    const hold = O.seat.waveHold, wave = s === 'wave' ? Math.min(1, t / 0.4) * (t > hold - 0.3 ? Math.max(0, (hold - t) / 0.3) : 1) : 0; // (the hand comes down while he tells it)
-    const up = s === 'rise' ? t / O.riseTime : s === 'go' ? 1 : 0;
-    const p = seatedPose(this.seat, { w: this.drink, wave, ph: t * 9, up, fwd: O.forward[this.target?.name] ?? 0 });
-    if (s === 'go') { // a couple of steps sideways along the seat's front, turning; fading meanwhile
-      const k = Math.min(1, t / O.goTime), step = Math.sin(t * 9) * 0.16;
-      p.hip = [HIP - 0.02, 0];
-      p.feet = [[0.11, 0.05 + Math.max(0, step) * 0.25, step], [-0.11, 0.05 + Math.max(0, -step) * 0.25, -step]];
-      p.hands[0].at = [0.2, HIP - 0.05, 0.08 - step * 0.5]; p.hands[0].pole = [0.3, -0.3, -1];
-      p.hands[1].at = [-0.2, HIP - 0.05, 0.12 + step * 0.5];
-      p.lean = 0.04;
-      this.object.rotation.y = this.yaw0 + k * Math.PI / 2;
-      this.object.position.copy(this.go0).addScaledVector(this.goDir, k * 0.7);
-    }
-    poseOlof(this.fig, p);
-  }
-
-  update(dt) {
-    const c = this.car;
-    if (this.state === 'away') {
-      if (!this.enabled()) return;
-      this.wait -= dt;
-      if (this.wait <= 0) { this.wait = O.every; if (this.rand() < O.chance && !this.busy()) this.appear(); } // (not while he drives our car, #599)
-      return;
-    }
-    if (!this.enabled()) { this.hide(O.every); return; }
-    // the seat was moved away (rearranging, #—): he is gone
-    if (this.state === 'sit' && (!this.world.furnitureTargets?.includes(this.target) || this.spot.pos.distanceTo(this.spotAt) > 0.05)) { this.hide(O.every); return; }
-    this.t += dt;
-    // sipping: up to the mouth, a moment, down again
-    if (this.state === 'sit') {
-      if (this.sipT < 0 && (this.nextSip -= dt) <= 0) this.sipT = 0;
-      if (this.sipT >= 0) { this.sipT += dt; if (this.sipT > O.sipTime) { this.sipT = -1; this.nextSip = this.sipWait(); } }
-    } else this.sipT = -1;
-    const want = this.sipT >= 0 && this.sipT < O.sipTime - 0.7 ? 1 : 0;
-    this.drink += THREE.MathUtils.clamp(want - this.drink, -dt / 0.6, dt / 0.7);
-    if (this.state === 'wave') {
-      if (!this.said && this.t > 0.5) { this.said = true; this.onSay?.(this.pickJoke(), O.seat.jokeTime); } // the joke instead of the goodbye (#659)
-      if (this.t >= 0.5 + O.seat.jokeTime + 0.2) { this.state = 'rise'; this.t = 0; }
-    } else if (this.state === 'rise' && this.t >= O.riseTime) {
-      this.state = 'go'; this.t = 0;
-      this.yaw0 = this.object.rotation.y;
-      this.go0 = this.object.position.clone().add(new THREE.Vector3(Math.sin(this.yaw0), 0, Math.cos(this.yaw0)).multiplyScalar(0.5 + (O.forward[this.target?.name] ?? 0))); // where he stands
-      this.goDir = new THREE.Vector3(Math.cos(this.yaw0), 0, -Math.sin(this.yaw0)); // his left (+x in his own frame)
-    } else if (this.state === 'go') {
-      this.fig.material.opacity = Math.max(0, 1 - this.t / O.goTime);
-      if (this.t >= O.goTime) { this.hide(); return; }
-    }
-    this.pose();
-  }
-}
-
 // --- Olof driving our car (#599) ----------------------------------------------------------------------------------
-// When the car is called (the key in the hall) he sits in the driving seat (the figure above, a second one, child of the
+// When the car is called (the key in the hall) he sits in the driving seat (the figure above, child of the
 // car's group so it drives with it): hands on the wheel, now and then a look sideways. Greet him while it is parked:
 // "Hälsa på Olof" → your hello, a dad joke from OLOF.car.jokes in a bubble while he waves, then he sits on at the wheel
 // (#658): greet him again for a new joke (points once per arrival), and the key sends the car off with him in it. He is

@@ -45,8 +45,7 @@ f.onload = async () => {
     }
     pass &= check(ways.filter((o) => o.kind === 'loggia').length >= 2 && !bad.length, `#453: ${COURTYARD.benches.length} benches clear of ${ways.length} ways in${bad.length ? ': ' + bad.join('; ') : ''}`);
   }
-  // (#645) Olof turns up in the sofa / the armchair at random (src/olof.js, #586) and takes the seat: no Olof in this test
-  w.__app.olof.enabled = () => false; w.__app.olof.update(0);
+  // #900: Olof is car-only; no indoor actor can reserve an apartment seat.
   const segsOf = (lv) => world.levels[lv].segments;
   const inQuad = (q, x, z) => { let p = 0, n = 0; for (let i = 0; i < 4; i++) { const [ax, az] = q[i], [bx, bz] = q[(i + 1) % 4], c = (bx - ax) * (z - az) - (bz - az) * (x - ax); if (c > 0) p++; else if (c < 0) n++; } return !(p && n); };
   const feetOf = (lv) => world.levels[lv].footprints ?? []; // furniture footprints (#302): their middle is far from every edge

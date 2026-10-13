@@ -9,13 +9,10 @@ Related: [interactions](interactions.md), [graphics](graphics.md).
 src/cat.js             the cat: random coat, washing animation, appears/moves/vanishes behind doors
 src/miele.js           Miele (#328): `HeartFireworks` (heart shells that pop into small hearts) and `MieleHeld` (a Holdable with no
                        home: the cat object rides in it, hand.js 'hug'; click / "Krama" hugs; put down she walks off)
-src/olof.js            Olof (#586/#671, OLOF): a figure with a beer can in the sofa / armchair now and then; one SkinnedMesh (rigid
-                       13-bone skeleton, vertex colours, one material), posed by two-bone IK each frame (`poseOlof`, `seatedPose`);
-                       #671 adds a more readable face, ears, fingers/thumbs, hoodie cords and pocket without another material or draw call;
-                       5,650 triangles / 16,950 vertices, 1.10 MiB of vertex attributes (+0.23 MiB from 4,454 triangles / 13,362 vertices),
-                       no added bones, textures or draw calls; the geometry increase is small against the scene's phone triangle budget
-tools/oloftest.html    headless test (#586): ?olof=0 seats him, seated pose, seat taken for visitor and cat, never turns up in
-                       sight, "Vinka till Olof" scores, he tells a dad joke (10 different, none twice in a row), waves, gets up and is gone, the seat free again
+src/olof.js            OlofDriver only (#900): existing car driver/greeting; shared single SkinnedMesh, 13-bone skeleton,
+                       figure geometry and pose/IK exports also serve Avatar unchanged. No indoor Olof constructor or seat reservations.
+tools/oloftest.html    car-only regression (#900): legacy ?olof=0 cannot spawn/reserve indoor seats; normal updates, driver geometry,
+                       arrival, greeting/score and saved parked-car restoration. Original car sequence stays in olofcartest.
 tools/olofcartest.html headless test (#599): the key brings the car with Olof at the wheel (seat, hands on the wheel), "Hälsa på
                        Olof" → a dad joke, he sits on (again: new joke, no points); the car drives off with him; the driver's door and seat work after; back with the next call; he stays when a door opens and when you sit beside him (#663), a restored parked car has him, the driving seat is free only in the garage
 tools/carsoundtest.html headless test (#664): rain level (AnalyserNode RMS) outdoors / in the car with a door open / all doors shut, gradual change, mute, no streaks in the cabin (needs `--autoplay-policy=no-user-gesture-required`)
@@ -76,25 +73,12 @@ tools/kittentest.html  headless test of kittens (#363): the seeded draw (~KITTEN
                        fast scamper, a cup on the floor batted over (no deduction), hurt: faster and a bigger deduction
 ```
 
-## Olof (#586)
+## Olof, car-only (#900)
 
-- `Olof` (src/olof.js): every `OLOF.every` s (first after `OLOF.first`) with odds `OLOF.chance` he turns up in a free seat
-  among the sofa's three (not the chaise) and the armchair — never one `canSee` reports (main.js: in the camera's view and
-  not behind a wall, or within 1.5 m), the visitor's own or the cat's. Away again for at least `OLOF.away` s after leaving;
-  F (furniture off) sends him away. All timings and odds are *guesses*.
-- While he sits there his spot's `taken` is true (rest.js: the visitor cannot sit on him) and `cat.seatTaken` keeps the cat
-  off it. He sips now and then (the can to the lips, the head back).
-- Looking at him gives "Vinka till Olof" (kind `olof`, an invisible pick box round the seated figure; only while he sits):
-  your line ("Hej Olof!") at the bottom, then (#659) a dad joke from `OLOF.seat.jokes` (10, never the same twice in a row,
-  `pickJoke`) in a wide bubble (`.say.long`, `OLOF.seat.jokeTime` s) over his head (greet.js `sayMine` / `say`), stats `olof`
-  (SCORE first 25, again 5, none extra for the joke); he waves with the free hand for `waveHold` s, tells it, then gets up,
-  turns and steps off fading out. The old `bye` lines are gone. He has no timer of his own that sends him off (only F, a
-  moved seat and a greeting end a stay), so there is no joke-on-own-departure case.
-- The figure: one SkinnedMesh, every vertex weighted to one bone, so one draw call (+ the shadow pass). `poseOlof` takes
-  hip height / forward, lean, head pitch, ankle targets and wrist targets with a pole each; `seatedPose` builds those for
-  a seat height (`OLOF.forward` per seat: the armchair's cushions push him forward). Reuse it for other seats (#599).
-- `?olof[=i]` seats him at once (i: 0–2 the sofa, 3 the armchair), even in sight (tests, screenshots).
-- At the wheel (#599, `OlofDriver`): a second instance of the same figure, a child of the car's group, shown when the key
+- The indoor random actor, sofa/armchair reservation and forced `?olof[=i]` spawn are removed. Apartment seats are never
+  occupied by Olof. The old constructor/appear/wave API is absent, including from the app diagnostic export.
+- Shared `buildOlof`, skeleton, proportions, `poseOlof`, IK and pose helpers remain unchanged for OlofDriver and Avatar.
+- At the wheel (#599, `OlofDriver`): the shared figure, a child of the car's group, shown when the key
   calls the car (car.js `call` → 'arriving'); `drivingPose` puts his hips on the driving seat's cushion, the feet at the
   pedals and both hands on the wheel (`OLOF.car`, placed by eye; the can's vertices collapsed into the fist). Parked,
   "Hälsa på Olof" (kind `olofcar`, a pick box out through the driver's window above the door handle so the door still
@@ -106,7 +90,7 @@ tools/kittentest.html  headless test of kittens (#363): the seeded draw (~KITTEN
   does not remove him (the driving seat is his: `car.driverTaken` keeps it out of `car.targets`, you sit beside him in the
   passenger seat; in the garage, where nobody is in the car, the driving seat is free), and a car restored arriving / parked /
   leaving gets him back (`update`: state `away` + `carOut` → `show()`). Only in its stall / gone is he away. Power cuts, night and light do not touch
-  him. The sofa Olof does not turn up meanwhile (`olof.busy`). `&car&olofcar` for screenshots.
+  him. `&car&olofcar` still selects the driver for screenshots; old `&olof` has no effect.
 
 ## Cat and sound
 

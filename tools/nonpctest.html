@@ -23,7 +23,7 @@ f.onload = async () => {
   const w = f.contentWindow, d = f.contentDocument;
   w.addEventListener('error', (e) => errors.push(e.message));
   while (!w.__app) await wait(100);
-  const { player, camera, step, greet, stats, totalScore, olof, focus } = w.__app;
+  const { player, camera, step, greet, stats, totalScore, olofDriver, focus } = w.__app;
   try {
     if (w.__app.testMode) d.documentElement.requestFullscreen = undefined;
     d.getElementById('start-touch').click();
@@ -45,7 +45,7 @@ f.onload = async () => {
     pass &= check(fo?.kind !== 'greet' && !/hälsa på/i.test(btn.hidden ? '' : btn.textContent), `nothing to greet at the bench (${fo?.kind ?? 'nothing'}: "${btn.hidden ? '' : btn.textContent}")`);
     // the bubbles (Olof's and your own)
     greet.sayMine('Hej Olof!');
-    olof.onSay('Ett test', 2);
+    olofDriver.onSay('Ett test', 2);
     step(1 / 60);
     const mine = d.querySelector('#speech .say.mine'), theirs = d.querySelector('#speech .say.theirs');
     pass &= check(mine && !mine.hidden && mine.textContent === 'Hej Olof!', `your line at the bottom "${mine?.textContent}"`);
