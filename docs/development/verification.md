@@ -4597,3 +4597,13 @@ return39 PASS/0 FAIL/CLI0 because the incoming Rear test is included.234 runtime
 driver hashes match the fresh-owned Worker freeze, its listening PID exited and
 the actual HUD PNG was inspected. Earlier history2/38 results remain historical;
 this is new focused integration evidence, not a repeated full geometry grid.
+
+Corrective publication5c86a1747e2bddd25c5b60424bee367d29a41114 was genuinely
+deployed: Worker run38441650472/job115449468074 has SUCCESS on the actual
+`cloudflare/wrangler-action@v3` step, with Uploaded/Deployed output at17:49:06Z
+and version `c8831a7d-aff1-475b-bb93-bf670f6ede58`. Log and job JSON are retained
+in `/tmp/lunden-priority-931/history-{wrangler-job.log,deploy-jobs.json}`.
+This confirms publication/deployment of the bounded restriction, not live-device
+or full post-turn support. #931/#939 remain open. The final docs-only rebase
+preserves all234 measured runtime/driver hashes, and owned Worker/browser/server
+processes were stopped.
