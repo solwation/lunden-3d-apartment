@@ -5,7 +5,8 @@ import { SECRET, SCORE } from './config.js';
 const KEY = 'lunden.stats';
 
 const fresh = () => ({ pvpKills: 0, killReceipts: {}, cats: 0, rare: 0, byVariant: {}, petted: 0, doors: 0, lids: 0, flushes: 0, taps: 0, fridge: 0, appliances: 0, cabinets: 0, beer: 0, coffee: 0, fish: 0, turbo: 0, shots: 0, fried: 0, burnt: 0, catFish: 0, chicken: 0, wine: 0, champagne: 0, whisky: 0, milk: 0, kask: 0, posted: 0, thrown: 0, lights: 0, sat: 0, lay: 0, steps: 0, metres: 0, stairs: 0, seconds: 0, visited: {}, secrets: 0, secretKinds: {}, catPhotos: 0, grill: 0, hood: 0, songs: 0, carMusic: 0, read: 0, car: 0, magic: 0, target: 0, baskets: 0, threes: 0,
-  byBreed: {}, seen: {}, secretRare: {}, tv: 0, pc: 0, parasol: 0, clock: 0, calendar: 0, cooked: 0, brews: 0, drawn: 0, splashes: 0, cuts: 0, dribbles: 0, catButts: 0, shattered: 0, shatterRange: 0, pingpingHugs: 0, blinds: 0, curtains: 0, airfried: 0, clips: 0, penalties: {}, penaltyPoints: 0, kittens: 0, kittenPets: 0, vacuumed: 0, tasks: 0, taskCounts: {}, legacyTaskPoints: 0 });
+  byBreed: {}, seen: {}, secretRare: {}, tv: 0, pc: 0, parasol: 0, clock: 0, calendar: 0, cooked: 0, brews: 0, drawn: 0, splashes: 0, cuts: 0, dribbles: 0, catButts: 0, shattered: 0, shatterRange: 0, pingpingHugs: 0, blinds: 0, curtains: 0, airfried: 0, clips: 0, penalties: {}, penaltyPoints: 0, kittens: 0, kittenPets: 0, vacuumed: 0, tasks: 0, taskCounts: {}, legacyTaskPoints: 0, pvpRangePoints: 0 });
+
 
 function load() {
   try {
@@ -109,6 +110,7 @@ export function rawScore() {
   const S = SCORE, n = (o) => Object.keys(o ?? {}).length;
   let t = 0;
   for (const [k, pts] of Object.entries(S.each)) t += (stats[k] ?? 0) * pts;
+  t += stats.pvpRangePoints ?? 0; // #873: extra distance reward; legacy pvpHits still supply the unchanged base
   t += stats.legacyTaskPoints ?? 0;
   for (const [id, count] of Object.entries(stats.taskCounts ?? {})) {
     const reward = S.tasks[id];
@@ -139,6 +141,16 @@ export function bump(key, n = 1, id = key) {
   renderScore();
   if (BADGES[key] && fresh) badge(BADGES[key]);
   if (key === 'steps' && stats.steps % STEP_BADGE === 0) badge(`👣 ${stats.steps} steg`, false);
+}
+
+/** The server-confirmed extra distance points, in the existing saved statistics record. */
+export function awardPvpRange(points) {
+  const bonus = points - SCORE.each.pvpHits;
+  if (!Number.isSafeInteger(bonus) || bonus <= 0) return false;
+  stats.pvpRangePoints = (stats.pvpRangePoints ?? 0) + bonus;
+  dirty = true;
+  renderScore();
+  return true;
 }
 
 /** Next task reward, including the usual smaller repeat bonus (#709). */
@@ -310,6 +322,7 @@ export function statRows() {
     ['🏀 Korgar', `${stats.baskets}`, stats.threes ? `${stats.threes} trepoängare` : ''],
     ['🏀 Studsar', `${stats.dribbles}`],
     ['💥 Nerf-pilar som träffat', `${stats.splashes}`],
+    ['🎯 Träffar på spelare', `${stats.pvpHits ?? 0}`, stats.pvpRangePoints ? `${stats.pvpRangePoints} avståndspoäng` : ''],
     ['⚔️ Lightsaber-hugg', `${stats.cuts}`],
     ['💥 Saker sönderskjutna', `${stats.shattered ?? 0}`, stats.shatterRange ? `${stats.shatterRange} avståndspoäng` : ''],
     ['🍗 Hela kycklingar stekta', `${stats.cooked}`],

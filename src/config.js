@@ -2917,6 +2917,14 @@ export const AVATAR = { fill: 0.07, rim: 0.85, rimPower: 2.2, emissiveOutline: 0
 // lightsaber is a swing (anything within its range and `saberCone`, the cosine of the half-angle, in front); the jetpack's
 // flames hit someone `jetBelow` [min, max] m under you and within `jetAcross` m sideways while it thrusts. `lives` until the
 // room's welcome says otherwise. The HUD's hearts only while a fight is on. All our picks (*guess*).
+// #873: gameplay balance guesses, not surveyed distances: first 5 m retain the existing 5-point hit;
+// each complete 2 m thereafter adds 1 point, capped at 15 extra. Geometry is the room's accepted feet-to-feet distance.
+export const PVP_SCORE = { nearMetres: 5, metresPerPoint: 2, maxBonus: 15 };
+/** Shared authoritative hit reward; invalid geometry cannot award points. */
+export function pvpHitPoints(distance) {
+  if (!Number.isFinite(distance) || distance < 0) return 0;
+  return SCORE.each.pvpHits + Math.min(PVP_SCORE.maxBonus, Math.floor(Math.max(0, distance - PVP_SCORE.nearMetres) / PVP_SCORE.metresPerPoint));
+}
 export const COMBAT = { weapons: ['saber', 'nerf', 'wand', 'rifle', 'ball', 'bow', 'web', 'jetpack'], lives: 10, solid: 1,
   // Confirmed-hit HUD duration/spacing: brief, clear of the crosshair (UX assumptions, #875).
   hitMarker: { lifeMs: 700, offsetPx: 20 },

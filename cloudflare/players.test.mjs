@@ -2,6 +2,7 @@
 // the admin brake. Runs the real Worker + PlayerRoom on Node with the runtime stand-ins in devws.mjs.
 //   node --test cloudflare/players.test.mjs
 import { test } from 'node:test';
+import { PVP_SCORE, SCORE, pvpHitPoints } from '../src/config.js';
 import assert from 'node:assert/strict';
 import { installRuntime, fakeNamespace } from './devws.mjs';
 import worker, { PlayerRoom } from './worker.js';
@@ -182,7 +183,7 @@ test('combat (#667): only armed vs armed, range, rate, points per minute; lives 
   await fire('rifle');
   assert.equal(hits().length, 0, 'the shooter must hold the weapon it claims');
   await fire();
-  assert.deepEqual(hits().at(-1), { t: 'hit', to: ib, w: 'nerf', l: COMBAT.lives - 1, dead: false });
+  assert.deepEqual(hits().at(-1), { t: 'hit', to: ib, w: 'nerf', l: COMBAT.lives - 1, dead: false, award: { i: ia, seq: 1, distance: 6, points: COMBAT.points } });
   assert.deepEqual(hurts().at(-1), { t: 'hurt', by: ia, n: 'A', w: 'nerf', l: COMBAT.lives - 1, dead: false });
   a.send({ t: 'f', w: 'nerf', to: ib }); await settle(env);
   assert.equal(hits().length, 1, 'not sooner than `every`');
@@ -450,4 +451,42 @@ test('crouch pose uses literal actual true in states/late welcome and survives h
     assert.equal(got.l, COMBAT.lives); assert.equal(got.h, 'nerf'); assert.equal(got.score, 123);
     assert.deepEqual(got.p, state.p);
   }
+});
+
+test('distance reward shared rule: near, first bonus, middle, cap, invalid and monotonic geometry', () => {
+  assert.equal(COMBAT.points, SCORE.each.pvpHits);
+  for (const d of [0, 2, PVP_SCORE.nearMetres, PVP_SCORE.nearMetres + PVP_SCORE.metresPerPoint - .001]) assert.equal(pvpHitPoints(d), COMBAT.points);
+  assert.equal(pvpHitPoints(7), 6); assert.equal(pvpHitPoints(15), 10);
+  assert.equal(pvpHitPoints(35), 20); assert.equal(pvpHitPoints(60), 20);
+  for (const d of [-1, NaN, Infinity, '15', null]) assert.equal(pvpHitPoints(d), 0);
+  let previous = 0;
+  for (let d = 0; d <= 70; d += .125) { const points = pvpHitPoints(d); assert.ok(points >= previous); previous = points; }
+});
+
+test('authoritative distance awards: actual geometry, forged client points, unchanged rejects and exact minute budget', async () => {
+  const env = setup(), a = await connect(env, 'A'), b = await connect(env, 'B');
+  const ia = a.got[0].i, ib = b.got[0].i, hits = () => a.got.filter(m => m.t === 'hit');
+  const state = async (d, h = 'bow') => { now += 1000; a.send({ p: [0, 0, 0], r: 0, h: 'bow' }); b.send({ p: [d, 0, 0], r: 0, h }); await settle(env); };
+  const fire = async (extra = {}) => { now += 1000; a.send({ t: 'a', w: 'bow', o: [0, 1, 0], d: [1, 0, 0], to: ib, points: 9999, distance: 9999, award: { i: ia, seq: 999 }, ...extra }); await settle(env); };
+  await state(2); await fire();
+  assert.deepEqual(hits().at(-1).award, { i: ia, seq: 1, distance: 2, points: 5 });
+  await state(15); await fire(); assert.equal(hits().at(-1).award.points, 10);
+  await state(35); await fire(); assert.equal(hits().at(-1).award.points, 20);
+  await state(62.5); await fire(); assert.equal(hits().at(-1).award.points, 20, 'existing range + slack boundary accepted');
+  await state(2); await fire(); assert.equal(hits().at(-1).award.seq, 5);
+  const room = env.PLAYERS.object('world'), shooter = room.open().find(ws => ws.deserializeAttachment().i === ia);
+  assert.equal(shooter.deserializeAttachment().pp, 60, 'actual rewards, not base count, consume the unchanged cap');
+  await fire(); assert.equal(hits().length, 5, 'next hit over exactly 60 is refused');
+  now += 60_000; a.send('p'); b.send('p'); await settle(env); await state(2); await fire();
+  assert.equal(hits().at(-1).award.seq, 6, 'new minute permits next monotonic accepted award');
+  a.send({ t: 'f', w: 'bow', to: ib }); await settle(env);
+  assert.equal(hits().length, 6, 'unchanged hit-rate rejection');
+  await state(62.51); await fire(); assert.equal(hits().length, 6, 'outside range + slack rejected');
+  await state(2, ''); await fire(); assert.equal(hits().length, 6, 'unarmed target rejected');
+  await state(2); await fire({ w: 'nerf' }); assert.equal(hits().length, 6, 'wrong held weapon rejected');
+  await fire({ to: undefined }); assert.equal(hits().length, 6, 'miss has no award or damage');
+  env.PLAYERS.hibernate('world'); await fire();
+  assert.equal(hits().at(-1).award.seq, 7, 'sequence survives hibernation with attachment');
+  for (const c of [a,b]) c.ws.close(1000); await settle(env);
+
 });

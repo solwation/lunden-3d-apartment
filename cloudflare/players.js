@@ -1,5 +1,5 @@
 import { fallDamage } from '../src/falldamage.js';
-import { TOYS } from '../src/config.js';
+import { TOYS, SCORE, pvpHitPoints } from '../src/config.js';
 
 // Other players as ghosts (#666): one Durable Object room for everybody (`idFromName('world')`), WebSockets with the
 // Hibernation API. A client sends its position / heading at most 5 times a second and only when it changed (a heartbeat
@@ -44,10 +44,11 @@ export const PLAYERS = {
 // `every` s (× 0.8 for jitter) after the shooter's last hit, and at most `perMinute` points a minute — then takes one of
 // the target's `lives` and tells both: { t: 'hit', to, w, l, dead } / { t: 'hurt', by, n, w, l, dead }. Out of lives the
 // target "dies" (its client goes to the start) and has all of them again. `points` = what a hit is worth (the client's
-// SCORE.each.pvpHits, kept equal by hand). Ranges and rates are our picks (*guess*), sent to the client in the welcome.
+// SCORE.each.pvpHits directly). #873 adds the shared distance bonus; the actual reward consumes the same minute cap.
+// Ranges and rates are our picks (*guess*), sent to the client in the welcome.
 export const COMBAT = {
   // #867: user-requested one life per real minute, timed by the authoritative room.
-  lives: 10, recoverMs: 60_000, slack: 2.5, perMinute: 60, points: 5, from: 4, // from: a shot starts at most this far (m) from the shooter's last known feet
+  lives: 10, recoverMs: 60_000, slack: 2.5, perMinute: 60, points: SCORE.each.pvpHits, from: 4, // from: a shot starts at most this far (m) from the shooter's last known feet
   weapons: {
     saber: { range: 2.5, every: 0.5 },   // the lightsaber: a swing at arm's length
     nerf: { range: TOYS.nerf.dart.range, every: 0.4 },     // a Nerf blaster's dart
@@ -336,8 +337,10 @@ export class PlayerRoom {
     const d = Math.hypot(a.s.p[0] - b.s.p[0], a.s.p[1] - b.s.p[1], a.s.p[2] - b.s.p[2]);
     if (d > W.range + COMBAT.slack || now - (a.f ?? 0) < W.every * 800) return;
     if (now - (a.pw ?? 0) >= 60_000) { a.pw = now; a.pp = 0; }
-    if ((a.pp ?? 0) + COMBAT.points > COMBAT.perMinute) return; // the points cap, like the leaderboard's
-    a.f = now; a.pp += COMBAT.points;
+    const points = pvpHitPoints(d); // server-known accepted geometry, never a client-provided reward
+    if ((a.pp ?? 0) + points > COMBAT.perMinute) return; // the points cap, like the leaderboard's
+    a.f = now; a.pp += points;
+    const award = { i: a.i, seq: a.awardSeq = (a.awardSeq ?? 0) + 1, distance: d, points };
     this.recoverLife(target, b, now); // a delayed alarm must not let due health be lost before this hit
     const left = (b.l ?? COMBAT.lives) - 1, dead = left <= 0;
     b.l = dead ? COMBAT.lives : left;
@@ -345,7 +348,7 @@ export class PlayerRoom {
     target.serializeAttachment(b);
     this.publishState(target, b); // observers see damage/reset immediately, even if the target stands still
     // #871: receipt exists only for this accepted lethal hit, never client input or fall damage.
-    send(ws, JSON.stringify({ t: 'hit', to, w, l: left, dead, ...(dead ? { kill: crypto.randomUUID() } : {}) }));
+    send(ws, JSON.stringify({ t: 'hit', to, w, l: left, dead, award, ...(dead ? { kill: crypto.randomUUID() } : {}) }));
     send(target, JSON.stringify({ t: 'hurt', by: a.i, n: a.n, w, l: left, dead }));
   }
 

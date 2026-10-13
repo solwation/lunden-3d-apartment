@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import { fallDamage } from './falldamage.js';
-import { recordPlayerKill } from './stats.js';
+import { recordPlayerKill, awardPvpRange } from './stats.js';
 import { HitMarker } from './hitmarker.js';
-import { COMBAT as C, TOYS } from './config.js';
+import { COMBAT as C, TOYS, pvpHitPoints } from './config.js';
 import { stepNerf, nerfFloor } from './nerf.js';
 import { combatWorldHits, combatWorldPath, combatWorldPathBlocked, prepareCombatWorld } from './combatworld.js';
 
@@ -337,7 +337,18 @@ export class Combat {
   /** The room: our shot hit someone. */
   hit(m, g) {
     recordPlayerKill(m, this.ghosts.me); // server lethal-hit receipt only; separate from hit points (#871)
+    const award = m.award;
+    if (award !== undefined) {
+      if (!award || award.i !== this.ghosts.me || !this.ghosts.connected || !Number.isSafeInteger(award.seq) || award.seq < 1
+        || award.points !== pvpHitPoints(award.distance) || award.points <= 0) return;
+      if (this.awardOwner !== award.i) { this.awardOwner = award.i; this.awardSeq = 0; }
+      if (award.seq <= this.awardSeq) return; // one ordered server connection: no base/bonus/sound repeat
+      this.awardSeq = award.seq;
+      awardPvpRange(award.points);
+    } // older Workers retain the existing base-only callback
+
     this.hitMarker.show(m);
+
     this.hits++;
     this.onHitCb(m, g);
     if (m.w === 'nerf') this.sfx?.playerHit?.();
