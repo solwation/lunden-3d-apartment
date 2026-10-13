@@ -545,7 +545,7 @@ no executable fixture changes or new browser results are part of this audit.
 | `oloftest.html` | Original full retained (#829) | Actual complete pair: 21 PASS per mode plus identical geometry diagnostic; greeting/joke rows differ. Whole original 900×600/time12/month6/olof0 fixture, authored canSee mock/forced scenario and 200 unseeded joke checks retained. See actual evidence below. |
 | `opentest.html` | Accepted in #830 | Complete original full/test logs byte-identical, all 189 ordered PASS; actual 900×600/null controller versus 480×300/real APIs. All 90 fronts, conditional action labels, clashes/poster sweeps, free-floor and contents loops retained; captures show only early rows. |
 | `oventest.html` | Accepted in #830 | Complete original full/test logs byte-identical, all 19 ordered PASS; actual 900×600/null controller versus 480×300/real APIs. Appliance actions/angles/emissive lamps, stats and whole coffee brewing/water/grounds flow retained. |
-| `papertest.html` | Candidate | Actual roll/strip/wad ray-actions, finite paper counts, flushing/stats and reset. |
+| `papertest.html` | Accepted in #830 | Complete original full/test logs byte-identical, all 22 ordered PASS; full starts 900×600/null and finishes native fullscreen 1280×800, test remains 480×300/real APIs. Whole roll/strip/wad/ray/quantity/flush/stats/F flows retained; full capture timed out. |
 | `patiopalmtest.html` | Candidate | Actual plant/pot topology, bounds, material and collision footprint. |
 | `patiotest.html` | Candidate | Actual patio seasonal/object/action/storage flows. |
 | `pctest.html` | Candidate | Actual PC/game/rest interaction and monitor state. |
@@ -3055,8 +3055,7 @@ shows about 51 rows and test about 18; remaining checks and the final scene lie
 below both captures. Complete raw logs preserve all 189 rows. No cabinet-state,
 poster or rendered-scene pixel equivalence is claimed. Wall 162.368 s and
 121.823 s includes both successful captures; this pair is excluded from speedup
-aggregation because capture coverage differs. Oven acceptance follows below; paper remains pending
-its separate complete pair; #830/#740/#736 remain open.
+aggregation because capture coverage differs. Oven and paper acceptance follow below; #830/#740/#736 remain open.
 
 ## Lossless compact world records (#845)
 
@@ -3185,7 +3184,7 @@ rows, with the final used-grounds row and scene below the capture. Complete raw
 logs preserve that final row. No intermediate appliance-lamp/brewing pixel or
 rendered-scene equivalence is claimed. Wall 135.958 s and 84.926 s includes both
 successful captures; excluded from speedup aggregation because capture coverage
-differs. Paper remains pending; #830/#740/#736 stay open.
+differs. Paper acceptance follows below; parents #740/#736 stay open.
 
 
 ### Olof actual disposition (#829, final)
@@ -3232,3 +3231,37 @@ Olof 21 PASS per mode, with each actual raw mismatch preserved and each entire
 original full fixture retained. No sidebug, production/runner/baseline change
 or migration is inferred from these green-but-different outcomes. Parents
 #740 and #736 remain open.
+
+## Toilet-paper complete native acceptance (#830, final)
+
+On frozen `ea95ae4c6e4100a2cad2d08890f7cacb64b7b196`, the complete original
+900×600/life-shot-time12-freeze and 480×300/test flows produced identical
+1440-byte logs: all 22 ordered PASS and ALL PASS, actual monitor exit 0.
+Both holders retain every authored native ray/action/sheet/strip/wad/flush/stat
+loop and original matrix/wait calls: length 0.145, roll turn 2.01 rad, radius
+55.0→54.4 mm, toiletPaper stats 1/2 and finite used quantities preserved by F.
+No new seed, output normalization, quality override or assertion change.
+
+Ready/final records retain one stable URL/timeOrigin per mode. Original full
+starts at 900×600/null controller without fullscreen and finishes in actual
+native HTML fullscreen at 1280×800/null controller. Test remains 480×300 with
+real draw/setFull/wantsFrame APIs, lazy/full false and no fullscreen; cloud query
+is empty in both. The approved single undefined requestFullscreen guard applies
+only with actual testMode before original touch; native full behavior remains.
+Reversing query/dimensions reproduces the whole frozen guarded source. Runtime
+source/data/index, runner and all helper hashes match that recorded base.
+Evidence: `/tmp/runtests-633490` and `/tmp/lunden-open830/papertest`.
+
+The full screenshot timed out after its 60-second bound; no full PNG exists or
+was visually reviewed. The saved/inspected test PNG shows ALL PASS and about
+18 early rows, with long lines clipped right and the last four checks/scene
+below the capture. All 22 raw rows remain complete. No paper/wad/intermediate
+flush or rendered-scene pixel equivalence is claimed. Wall 173.381 s and
+84.117 s includes those capture attempts; this pair is excluded from speedup
+aggregation because of the unmatched full capture timeout and coverage limits.
+
+All bounded #830 dispositions are complete: Open 189, Oven 19 and Paper 22
+ordered PASS per mode with whole byte-identical raw logs. Their distinct frozen
+bases and qualified native/capture scope are recorded above; no rerun of earlier
+pairs after legitimate later source changes is claimed. Parents #740/#736 stay
+open.
