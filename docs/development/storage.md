@@ -169,3 +169,35 @@ The first direct tool-session harness was interrupted with exit143 after writing
 
 
 Public combat lives (#865): PlayerRoom appends server-owned `l` to welcome snapshots, join and ordinary `t:'s'` state. `cleanState` ignores client `l`; values come from the same hibernating socket attachment used by `shot`, defaulting only on the server to its current COMBAT rule. `publishState(ws, attachment)` publishes position/weapon/score and actual remaining lives after an accepted hit or immediate death reset, so stationary targets and observers update without a new client message, timer or billed incoming request. Future server damage/recovery can serialize the same attachment and call this publication path; #865 implements neither fall damage nor a recovery timer. Leaving removes the connection; rejoining starts with the server rule count. This additive protocol is compatible with cached clients; deploy the Worker before the life-reading client. Older Workers omit `l`, so the new client hides unknown health rather than guessing a maximum.
+
+## Server life recovery (#867, online slice)
+
+PlayerRoom's existing socket attachment `l` remains authoritative. `recoveryClock(a, now)`
+starts `healAt` 60,000 ms after the first damage from full health. Further damage retains
+the phase; full health or actual death/reset clears it. `recoverLife(ws, a, now)` settles
+all due whole minutes up to max, including before a fresh shot if an alarm was delayed.
+The room's server wall clock counts while the connection exists, including stationary
+and unarmed play. One earliest-deadline Durable Object alarm serves all damaged sockets;
+no interval timer keeps the object awake. Attachments and the alarm survive hibernation.
+The handler commits the advanced timestamp before sending `{t:'life', l}` to the local
+Combat replica and `publishState` to other players, so duplicate alarm delivery cannot
+grant another life. Runtime delays can combine due minutes into one capped update.
+
+Pause/background/idle that closes the existing Ghosts socket ends that connection's
+health and recovery phase. Reconnection starts full, as before; there is no persisted
+fight record or offline catch-up for an old socket. The local event changes health only,
+without hurt flashes, scores or death callbacks. #868/#869 provide the common fall-damage
+channel; their damage path must settle due recovery, mutate the same attachment, call
+`recoveryClock`, serialize, and await `scheduleRecovery`.
+
+No polling writes were added: unchanged phase reuses the cached alarm, and ordinary
+position/chat traffic does not schedule/read an alarm. Close/idle/no eligible player
+clear it; the admin brake clears both storage and cache. Alarms consume one conservative
+`bill.req`, obey the existing monthly cap and stop at the cap/off switch. Storage alarm
+writes occur only when the earliest deadline changes. Billing semantics checked
+2026-10-13 against [Cloudflare pricing](https://developers.cloudflare.com/durable-objects/platform/pricing/)
+(alarm invocations count as requests, setAlarm as a write);
+[alarms](https://developers.cloudflare.com/durable-objects/api/alarms/) guarantee
+at-least-once delivery, so recovery is timestamp-idempotent. No per-player timer or KV
+fight persistence is introduced. `cloudflare/devws.mjs` supplies matching shared alarm
+scheduling for local real WebSocket verification.

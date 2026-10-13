@@ -3912,3 +3912,16 @@ Three screenshots record note, pause and portrait states. `BASELINE_MAIN=/tmp/ma
 can route the exact previous main source to demonstrate the old unnecessary shadow
 hold and covered draws. Report the source baseline and any changed imported modules;
 this is a narrow draw-policy comparison, not complete build or pixel equivalence.
+
+## Life recovery (#867)
+
+`node --test cloudflare/recovery.test.mjs cloudflare/players.test.mjs` verifies exact
+minute boundaries, more damage without phase reset, hibernation, late/duplicate alarms,
+max, fractional shared-health values, death/reset, disconnect/idle, admin off→on, cap,
+scheduling failure and retry after committed health, and due recovery before fresh damage.
+Run local devserve8871 and dev.mjs8872, then
+`PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/recoverytest.cjs http://localhost:8871 http://localhost:8872 /tmp/recovery`.
+The actual Ghosts/Combat/Worker fixture waits one real server minute, checks local unarmed
+recovery and immediate remote state/badge sync, and captures native HUD/texture evidence.
+Bootstrap is suppressed and WebGL forbidden; these captures are neither apartment
+rendering nor physical phone acceptance. Recovery does not change hit/death counters.

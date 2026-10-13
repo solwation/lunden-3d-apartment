@@ -164,6 +164,8 @@ HUD-badgarna har samma skal och modulära cellbredder, tydligare poäng och plat
 
 Andra spelare har mindre namnskyltar med sina poäng, uppdaterade i samma spökskylt.
 
+Vid flerspelarspel återfås ett liv per verklig minut upp till max, även utan vapen; servern håller din livmätare och motspelarnas indikatorer i synk.
+
 Ölhyllans lokala etiketter får avkodas klart även när tung uppstart passerar nätverkets tidsgräns.
 
 Uppdragslappen visar tre aktiva vardagsuppdrag med sina poäng och delmål; klara uppdrag ersätts direkt och får en väntetid innan de kan återkomma.

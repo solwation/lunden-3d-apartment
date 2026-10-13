@@ -3,7 +3,7 @@ import { TOYS } from '../src/config.js';
 // Other players as ghosts (#666): one Durable Object room for everybody (`idFromName('world')`), WebSockets with the
 // Hibernation API. A client sends its position / heading at most 5 times a second and only when it changed (a heartbeat
 // 'p' every 10 s is answered by the runtime's auto-response 'q', which never wakes the object); the room passes each
-// state on to the others (outgoing messages are not billed). No KV, no timers, no alarms.
+// state on to the others (outgoing messages are not billed). No KV or interval timers; one shared recovery alarm only while lives are below max.
 //
 // Cost guard (the user: Workers Paid, $5/month, must not get dearer). Billing as in Cloudflare's price list (verify):
 // every request to the object counts 1, every INCOMING WebSocket message 1/20. The room counts exactly that per calendar
@@ -45,7 +45,8 @@ export const PLAYERS = {
 // target "dies" (its client goes to the start) and has all of them again. `points` = what a hit is worth (the client's
 // SCORE.each.pvpHits, kept equal by hand). Ranges and rates are our picks (*guess*), sent to the client in the welcome.
 export const COMBAT = {
-  lives: 10, slack: 2.5, perMinute: 60, points: 5, from: 4, // from: a shot starts at most this far (m) from the shooter's last known feet
+  // #867: user-requested one life per real minute, timed by the authoritative room.
+  lives: 10, recoverMs: 60_000, slack: 2.5, perMinute: 60, points: 5, from: 4, // from: a shot starts at most this far (m) from the shooter's last known feet
   weapons: {
     saber: { range: 2.5, every: 0.5 },   // the lightsaber: a swing at arm's length
     nerf: { range: TOYS.nerf.dart.range, every: 0.4 },     // a Nerf blaster's dart
@@ -159,6 +160,50 @@ export class PlayerRoom {
   publishState(ws, a) {
     if (a.s) this.broadcast({ t: 's', i: a.i, ...a.s, l: a.l ?? COMBAT.lives }, ws);
   }
+  // #867: same server-owned lives as all damage. First loss starts the minute;
+  // more damage keeps its phase, death/full health clears it. Socket attachments survive hibernation.
+  recoveryClock(a, now = Date.now()) {
+    if ((a.l ?? COMBAT.lives) >= COMBAT.lives) delete a.healAt;
+    else if (!Number.isFinite(a.healAt)) a.healAt = now + COMBAT.recoverMs;
+  }
+
+  async scheduleRecovery() {
+    const times = this.open().map(att).filter(a => a.l < COMBAT.lives && Number.isFinite(a.healAt)).map(a => a.healAt);
+    const next = times.length ? Math.min(...times) : null;
+    if (this.recoveryAlarm === undefined) this.recoveryAlarm = await this.ctx.storage.getAlarm();
+    const current = this.recoveryAlarm;
+    if (next !== current) {
+      if (next === null) await this.ctx.storage.deleteAlarm();
+      else await this.ctx.storage.setAlarm(next);
+      this.recoveryAlarm = next;
+    }
+  }
+
+  recoverLife(ws, a, now) {
+    if (!(a.l < COMBAT.lives) || !Number.isFinite(a.healAt) || a.healAt > now) return;
+    const minutes = 1 + Math.floor((now - a.healAt) / COMBAT.recoverMs);
+    a.l = Math.min(COMBAT.lives, a.l + minutes);
+    a.healAt += minutes * COMBAT.recoverMs;
+    this.recoveryClock(a, now);
+    ws.serializeAttachment(a); // advance before sending: alarm retries cannot grant twice
+    send(ws, JSON.stringify({ t: 'life', l: a.l }));
+    this.publishState(ws, a);
+  }
+
+  async alarm() {
+    this.recoveryAlarm = null; // runtime consumes the scheduled alarm before this handler
+    const bill = await this.usage();
+    bill.req++; await this.save(); // alarm requests obey the same conservative monthly budget
+    if (this.billed() >= PLAYERS.monthlyCap || await this.ctx.storage.get('off')) {
+      this.closeAll(this.billed() >= PLAYERS.monthlyCap ? CLOSE.cap : CLOSE.off, 'recovery stopped');
+      await this.ctx.storage.deleteAlarm(); return;
+    }
+    const now = Date.now();
+    this.sweep(now);
+    for (const ws of this.open()) this.recoverLife(ws, att(ws), now);
+    await this.scheduleRecovery();
+  }
+
   drop(ws, code, reason) {
     const a = att(ws);
     try { ws.close(code, reason); } catch { /* gone */ }
@@ -179,7 +224,7 @@ export class PlayerRoom {
     const b = await this.usage();
     b.req++; await this.save(); // every request to the object is billed
     if (url.pathname === '/admin') { // the Worker checked the admin token
-      if (request.method === 'DELETE') { await storage.put('off', true); this.closeAll(CLOSE.off, 'off'); }
+      if (request.method === 'DELETE') { await storage.put('off', true); this.closeAll(CLOSE.off, 'off'); await storage.deleteAlarm(); this.recoveryAlarm = null; }
       if (request.method === 'PUT') await storage.delete('off');
       return Response.json({ month: b.m, billed: Math.ceil(this.billed()), cap: PLAYERS.monthlyCap, players: this.open().length, off: !!(await storage.get('off')) });
     }
@@ -203,7 +248,7 @@ export class PlayerRoom {
     const b = await this.usage();
     b.msg++;
     if (++this.unsaved >= PLAYERS.flushEvery) await this.save();
-    if (this.billed() >= PLAYERS.monthlyCap) { await this.save(); this.closeAll(CLOSE.cap, 'cap'); return; }
+    if (this.billed() >= PLAYERS.monthlyCap) { await this.save(); this.closeAll(CLOSE.cap, 'cap'); await this.ctx.storage.deleteAlarm(); this.recoveryAlarm = null; return; }
     const a = att(ws);
     if (!a) return;
     if (typeof message !== 'string' || message.length > PLAYERS.maxBytes) { this.drop(ws, CLOSE.big, 'too big'); return; }
@@ -238,6 +283,7 @@ export class PlayerRoom {
     }
     ws.serializeAttachment(a);
     this.sweep(now);
+    if (shot?.to) await this.scheduleRecovery();
   }
 
   /** Chat (#675) and "skriver…" (#676) to the others, within CHAT's limits; the sender's client shows its own line. */
@@ -268,8 +314,10 @@ export class PlayerRoom {
     if (now - (a.pw ?? 0) >= 60_000) { a.pw = now; a.pp = 0; }
     if ((a.pp ?? 0) + COMBAT.points > COMBAT.perMinute) return; // the points cap, like the leaderboard's
     a.f = now; a.pp += COMBAT.points;
+    this.recoverLife(target, b, now); // a delayed alarm must not let due health be lost before this hit
     const left = (b.l ?? COMBAT.lives) - 1, dead = left <= 0;
     b.l = dead ? COMBAT.lives : left;
+    this.recoveryClock(b, now);
     target.serializeAttachment(b);
     this.publishState(target, b); // observers see damage/reset immediately, even if the target stands still
     send(ws, JSON.stringify({ t: 'hit', to, w, l: left, dead }));
@@ -282,6 +330,7 @@ export class PlayerRoom {
     const a = att(ws);
     try { ws.close(code === 1005 || code === 1006 ? 1000 : code, 'bye'); } catch { /* already closed */ }
     if (a) this.broadcast({ t: 'x', i: a.i }, ws);
+    await this.scheduleRecovery();
   }
 
   webSocketError(ws) { return this.webSocketClose(ws, 1006); }

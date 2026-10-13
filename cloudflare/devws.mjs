@@ -61,11 +61,19 @@ export function installRuntime() {
 
 /** A Durable Object's ctx: Map storage, hibernatable sockets, auto-response. */
 export function fakeCtx(data = new Map()) {
-  let gate = Promise.resolve(), auto = null;
+  let gate = Promise.resolve(), auto = null, alarmTimer = null;
   const sockets = new Set();
   const ctx = {
     room: null, data,
-    storage: { get: async (k) => structuredClone(data.get(k)), put: async (k, v) => { data.set(k, structuredClone(v)); }, delete: async (k) => data.delete(k) },
+    storage: {
+      getAlarm: async () => data.get('__alarm') ?? null,
+      setAlarm: async (at) => {
+        data.set('__alarm', at); clearTimeout(alarmTimer);
+        alarmTimer = setTimeout(() => ctx.fireAlarm(), Math.max(0, at - Date.now()));
+        alarmTimer.unref?.();
+      },
+      deleteAlarm: async () => { data.delete('__alarm'); clearTimeout(alarmTimer); alarmTimer = null; },
+      get: async (k) => structuredClone(data.get(k)), put: async (k, v) => { data.set(k, structuredClone(v)); }, delete: async (k) => data.delete(k) },
     blockConcurrencyWhile(fn) { const r = gate.then(fn); gate = r.catch(() => {}); return r; },
     acceptWebSocket(ws) { ws.accept(); sockets.add(ws); ws.room = ctx; },
     getWebSockets() { return [...sockets].filter((ws) => ws.readyState === 1); },
@@ -76,6 +84,10 @@ export function fakeCtx(data = new Map()) {
       ctx.blockConcurrencyWhile(() => ctx.room.webSocketMessage(ws, data));
     },
     deliverClose(ws, code, reason) { sockets.delete(ws); ctx.blockConcurrencyWhile(() => ctx.room.webSocketClose(ws, code, reason, true)); },
+    fireAlarm() {
+      clearTimeout(alarmTimer); alarmTimer = null; data.delete('__alarm');
+      return ctx.blockConcurrencyWhile(() => ctx.room.alarm());
+    },
     idle: () => gate,
   };
   return ctx;

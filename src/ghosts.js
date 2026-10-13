@@ -337,6 +337,7 @@ export class Ghosts {
     else if (m.t === 's') (this.others.get(m.i) ?? this.add(m.i, ''))?.push(m, t);
     else if (m.t === 'x') { this.others.get(m.i)?.dispose(); this.others.delete(m.i); }
     else if (m.t === 'hit') this.onHit(m, this.others.get(m.to));
+    else if (m.t === 'life') this.onLife?.(m);
     else if (m.t === 'hurt') this.onHurt(m, this.others.get(m.by));
     else if (m.t === 'a') { const g = this.others.get(m.i); if (g) this.onShot?.(m, g); }
     else if (m.t === 'g') { const g = this.others.get(m.i); if (g) { g.wave(); this.greetsSeen++; this.onGreet?.(m, g, m.to === this.me ? null : this.others.get(m.to) ?? null); } }

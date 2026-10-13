@@ -71,6 +71,9 @@ export class Combat {
     ghosts.onHit = (m, g) => this.hit(m, g);
     ghosts.onHurt = (m, g) => this.hurt(m, g);
     ghosts.onWelcome = () => this.reset();
+    ghosts.onLife = (m) => {
+      if (Number.isFinite(m.l)) this.lives = Math.min(this.maxLives, Math.max(0, m.l));
+    };
     this.el = document.createElement('div');
     this.el.id = 'lives';
     this.el.hidden = true;
