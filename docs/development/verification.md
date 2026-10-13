@@ -34,7 +34,7 @@ tools/visitlightstest.html  the visitable flats' lamps (#620): a switch with a w
 tools/perfcount.html   draw calls / triangles at a few spots (compare before/after optimising); fails past PERF.budget (#592), `?lowmem&w=390&h=844` for phones;
                        counts each draw to the screen (#695: `renderer.info` was reset by nested renders and under-counted the start view)
 tools/startuprecoverytest.html / .cjs (#864) native request/body/cache stalls, optional fallbacks, retry and saved storage;
-                       .cjs uses actual index/bootstrap with stub scene imports (no WebGL/physical phone evidence)
+                       .cjs aborts/stalls bootstrap and five dependency/scene requests in actual index DOM, clicks retry, checks resume/home and normal hidden/done cancellation; clock advances the real 120 s budget, scene only stubbed (no WebGL/physical phone evidence)
 tools/firstframetest.cjs (#697) phone startup, program/buffer/texture counts and loading-cover order before the first full view;
                        `PLAYWRIGHT_MODULE=… node tools/firstframetest.cjs http://localhost:8697`, STARTUP_OUTPUT outside repo
 tools/turntest.html    turn-around hitches (#592): after the warm-up, 360° turns at nine spots; 0 new programs / textures (Playwright)

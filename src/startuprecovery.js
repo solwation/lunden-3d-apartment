@@ -19,7 +19,11 @@ export async function fetchStartupJSON(url, { fetcher = globalThis.fetch, timeou
 }
 
 /** Keep the scene covered, but offer recovery for failed imports or stalled startup/warm-up. */
-export function watchStartup({ timeout = STARTUP.recoveryTimeout, retry = () => location.reload() } = {}) {
+export function watchStartup(options = {}) {
+  // The real index starts its dependency-free guard before bootstrap is even requested.
+  // Reuse it rather than creating another timer/button handler after module loading.
+  if (globalThis.__lundenStartupRecovery && !Object.keys(options).length) return globalThis.__lundenStartupRecovery;
+  const { timeout = STARTUP.recoveryTimeout, retry = () => location.reload() } = options;
   const loading = document.getElementById('loading');
   if (!loading) return { fail() {} };
   let timer;

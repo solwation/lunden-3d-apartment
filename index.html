@@ -953,6 +953,37 @@
     </div>
     </div>
   </div>
-  <script type="module" src="src/bootstrap.js"></script>
+  <script>
+    // This guard must run without module/network dependencies: even bootstrap's imports can stall.
+    // Keep the 120 s budget in sync with STARTUP.recoveryTimeout in src/config.js.
+    (() => {
+      const loading = document.getElementById('loading');
+      let timer;
+      const finished = () => loading.hidden || loading.classList.contains('done');
+      const stop = () => { clearTimeout(timer); observer.disconnect(); };
+      const observer = new MutationObserver(() => { if (finished()) stop(); });
+      const fail = () => {
+        stop();
+        if (finished()) return;
+        document.documentElement.classList.remove('resuming');
+        loading.querySelector('h1').textContent = 'Starten kunde inte slutföras';
+        loading.querySelector('p').textContent = 'Försök ladda igen. Din sparade plats och ditt hem finns kvar.';
+        loading.querySelector('.loading-bar').hidden = true;
+        if (!loading.querySelector('[data-startup-retry]')) {
+          const button = document.createElement('button');
+          button.textContent = 'Försök igen';
+          button.dataset.startupRetry = '';
+          button.style.cssText = 'min-height:44px;padding:12px 20px;touch-action:manipulation';
+          button.addEventListener('click', () => location.reload());
+          loading.querySelector('.loading-card').append(button);
+        }
+      };
+      window.__lundenStartupRecovery = { fail };
+      observer.observe(loading, { attributes: true, attributeFilter: ['hidden', 'class'] });
+      timer = setTimeout(fail, 120000);
+      if (finished()) stop();
+    })();
+  </script>
+  <script type="module" src="src/bootstrap.js" onerror="window.__lundenStartupRecovery.fail()"></script>
 </body>
 </html>
