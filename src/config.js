@@ -4564,6 +4564,8 @@ export function avatarLook(seed) {
 export const PVP_RIFLE_HEAD = {
   version: 1, style: 0, bodyDamage: 1, headDamage: 2,
   skull: { radius: .11, width: 14, height: 10, scale: [.94, 1.1, .98], centre: [0, .1, .01] },
+  nose: { radius: .02, width: 8, height: 6, scale: [.8, 1.1, 1.15], centre: [0, .092, .113] }, // unchanged Avatar nose
+  nosePatch: { across: .005, low: .083, high: .101, front: .13, direction: .2, surface: .006 }, // *guess* fail-closed frontal core, actual nearest-surface/pose/wire grid required
   patch: { across: .008, low: .148, high: .158 }, // *guess* canonical support core; actual positive/negative nearest-surface grid checks it
   // .001 derives from sqrt(3)/2000 maximum r3 contact error on the already-snapped o:r2/d:r3 ray.
   // Head anchor is the midpoint of existing bind1.54 / settled1.52; surface/pose limits are conservative *guess*
@@ -4575,7 +4577,11 @@ let rifleSkullTriangles;
 /** The existing SphereGeometry tessellation, pure math and cached once; verified against actual Avatar vertices. */
 export function rifleSkullProfile() {
   if (rifleSkullTriangles) return rifleSkullTriangles;
-  const { radius, width, height, scale, centre } = PVP_RIFLE_HEAD.skull, points = [], triangles = [];
+  return rifleSkullTriangles = rifleSphereProfile(PVP_RIFLE_HEAD.skull);
+}
+/** Existing SphereGeometry Float32 vertex operations, shared by bounded surface profiles. */
+export function rifleSphereProfile(shape) {
+  const { radius, width, height, scale, centre } = shape, points = [], triangles = [];
   for (let y = 0; y <= height; y++) for (let x = 0; x <= width; x++) {
     const a=x/width*Math.PI*2,b=y/height*Math.PI;
     const point=[-radius*Math.cos(a)*Math.sin(b),radius*Math.cos(b),radius*Math.sin(a)*Math.sin(b)];
@@ -4586,15 +4592,19 @@ export function rifleSkullProfile() {
     if(y!==0)triangles.push([points[a],points[b],points[d]]);
     if(y!==height-1)triangles.push([points[b],points[c],points[d]]);
   }
-  return rifleSkullTriangles=triangles;
+  return triangles;
 }
 /** First FRONT triangle contact, t remains WORLD metres after inverse avatar scaling. */
 export function rifleSkullEntry(seed,state,origin,direction) {
+  return rifleProfileEntry(rifleSkullProfile(),seed,state,origin,direction);
+}
+/** Shared finite front-triangle entry; profile is canonical head-bind-relative. */
+export function rifleProfileEntry(triangles,seed,state,origin,direction) {
   const look=avatarLook(seed),width=[.93,1,1.08][look.build],a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),length=Math.hypot(...direction);
   const turn=([x,y,z])=>[(c*x-s*z)/width,y/look.tall,(s*x+c*z)/width];
   const o=turn(origin.map((v,i)=>v-state.p[i]));o[1]-=PVP_RIFLE_HEAD.headY;
   const dir=turn(direction.map(v=>v/length));let first=Infinity;
-  for(const [a,b,c] of rifleSkullProfile()) {
+  for(const [a,b,c] of triangles) {
     const x=b[0]-a[0],y=b[1]-a[1],z=b[2]-a[2],u=c[0]-a[0],v=c[1]-a[1],w=c[2]-a[2];
     const px=dir[1]*w-dir[2]*v,py=dir[2]*u-dir[0]*w,pz=dir[0]*v-dir[1]*u,det=x*px+y*py+z*pz;
     if(det<=1e-12)continue;
@@ -4609,13 +4619,14 @@ export function rifleSkullEntry(seed,state,origin,direction) {
 /** Seed/model/ray proof for this bounded surface; no trusted client damage/head or model override. */
 export function rifleHeadContact(seed,state,shot,shooterFeet,range,maxOrigin) {
   const H=PVP_RIFLE_HEAD,{hc,o,d}=shot,look=avatarLook(seed);
-  if(!Number.isFinite(range)||!Number.isFinite(maxOrigin)||shot.t!=='a'||shot.w!=='rifle'||!hc||hc[0]!==H.version||look.style!==H.style||state.c)return false;
+  if(!Number.isFinite(range)||!Number.isFinite(maxOrigin)||shot.t!=='a'||shot.w!=='rifle'||!hc||hc[0]!==H.version||state.c)return false;
   if(Math.hypot(...o.map((v,i)=>v-shooterFeet[i]))>maxOrigin)return false;
   const length=Math.hypot(...d),unit=d.map(v=>v/length),delta=hc.slice(1).map((v,i)=>v-o[i]),along=delta.reduce((s,v,i)=>s+v*unit[i],0);
   if(along<0||along>range||Math.hypot(...delta.map((v,i)=>v-along*unit[i]))>H.wireMetres)return false;
-  if(!rifleHeadRegion(seed,state,hc.slice(1)))return false;
-  const front=rifleSkullEntry(seed,state,o,d);
-  return front!==null&&Math.abs(front-along)<=H.surfaceMetres;
+  const nose=rifleNoseRegion(seed,state,hc.slice(1));
+  if(!nose && (look.style!==H.style || !rifleHeadRegion(seed,state,hc.slice(1))))return false;
+  const front=nose ? rifleNoseEntry(seed,state,o,d) : rifleSkullEntry(seed,state,o,d);
+  return front!==null&&Math.abs(front-along)<=(nose ? H.nosePatch.surface : H.surfaceMetres);
 }
 
 /** A quantized cell wholly inside the canonical core; boundary cells fail closed instead of inflating the patch. */
@@ -4631,3 +4642,21 @@ export function rifleHeadRegion(seed,state,point) {
 export const BICYCLE = { maxDt: .1, extractStep: .1, height: 1.1, speed: 6, reverse: 2, turn: 1.6, step: .05, radius: .31, samples: 12,
   rear: -.54, front: .46, eye: 1.25, cameraBack: .14, pitch: -.25, maxRise: .15,
   maxDrop: .15, wheelSlope: .02, extract: 3, mountReach: 2.6, stand: [.9, 1.2, 1.5] };
+
+let rifleNoseTriangles;
+export function rifleNoseProfile() {
+  return rifleNoseTriangles ??= rifleSphereProfile(PVP_RIFLE_HEAD.nose);
+}
+/** Only the measured frontal nose core; no side/back/hidden-surface claim. */
+export function rifleNoseRegion(seed,state,point) {
+  const H=PVP_RIFLE_HEAD,N=H.nosePatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
+  const [x,y,z]=point.map((v,i)=>v-state.p[i]);
+  const lx=(c*x-s*z)/width,ly=y/look.tall-H.headY,lz=(s*x+c*z)/width;
+  return Math.abs(lx)+H.wireMetres/width<=N.across && ly-H.wireMetres/look.tall>=N.low && ly+H.wireMetres/look.tall<=N.high && lz-H.wireMetres/width>=N.front;
+}
+export function rifleNoseEntry(seed,state,origin,direction) {
+  const a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),n=Math.hypot(...direction),[x,y,z]=direction.map(v=>v/n),N=PVP_RIFLE_HEAD.nosePatch;
+  // A frontal ray is essential: the profile alone cannot establish earlier hair/body occlusion behind it.
+  if((s*x+c*z)>=0 || Math.abs(c*x-s*z)>N.direction || Math.abs(y)>N.direction)return null;
+  return rifleProfileEntry(rifleNoseProfile(),seed,state,origin,direction);
+}

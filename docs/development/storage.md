@@ -335,3 +335,15 @@ A genuine reload rebuilds the original bicycle matrices and resumes the player
 standing. Existing home/world data, life and worn equipment rules remain unchanged.
 The native bicycle driver checks the real resume module across browser reload,
 blocked-exit/session retention and real spawn releasing the cycling mode.
+
+### Additive nose region (#920)
+
+The same bounded `hc:[1,x,y,z]` may prove the separately supported frontal nose
+core on canonical appearances. Matching nose entry uses shared exact physical
+sphere parameters and a6mm guard; central skull validation remains independent.
+Stationary/crouch/origin/range/wire/cost/score/recovery gates and shared health
+remain unchanged. Cached clients without nose contact keep body1; a cached old
+Worker also returns body1 for the additive nose proof. New clients accept that
+ordinary receipt without a predicted head marker. Actual nearer unsupported
+surfaces, rear/side approaches, walls and invalid proofs cannot create nose2HP.
+This bounded validation does not replicate the authoritative animated scene.

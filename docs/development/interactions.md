@@ -678,7 +678,7 @@ fit the canonical feet/world frame x within±0.008m, y1.53+0.148–0.158m
 (unscaled; avatar width/height and heading are applied), positive z, with the
 actual internal `rifleSkull` vertex identity. This world-frame core replaces the
 failed bone-local patch plus inflated pose extent. Boundary cells stay body1.
-Hair, hat, nose, ears, other skull areas and all other seed styles stay body1.
+That original core remains unchanged; #920 adds the separately bounded frontal nose core described below. Hair, hats, ears and other unsupported surfaces retain body1.
 `PVP_RIFLE_HEAD.skull` supplies the unchanged radius/segments/scale/centre to Avatar
 and the pure Worker triangle profile. The added byte vertex attribute is shared
 with the geometry, does not change normals/colours/materials or add a draw call.
@@ -721,3 +721,19 @@ pointer gestures without WebGL. Controlled world/focus/lock collaborators are
 explicit; it does not prove pointer lock, full World graphics or remote bike pose.
 The source/native stage passed29 checks with actual exit0; whole-World visual
 acceptance is still pending and #903 remains open.
+
+### Bounded frontal nose contact (#920)
+
+`PVP_RIFLE_HEAD.nose` supplies the exact existing8×6 sphere radius/scale/centre to
+Avatar and cached `rifleNoseProfile`. Shared `rifleSphereProfile(shape)` and
+`rifleProfileEntry(triangles,seed,state,o,d)` retain the original skull Float32
+operations and front-triangle entry. An additive byte `rifleNose` identifies the
+actual nearest production face without changing positions/normals/colours/bones
+or suit shaders. Only a whole quantized cell in the small canonical front core
+x±.005, y1.53+.083–.101, z≥.13 (width/height/heading applied) can qualify.
+A frontal direction gate limits horizontal/vertical normalized components to.2;
+side/back and covered boundaries stay body1. These are conservative *guess* policy
+guards validated on the actual sampled model, not anatomical measurements.
+The nose alone uses a6mm surface guard; the earlier skull15mm guard is unchanged.
+No client pose/state/version/channel or new damage/life counter is introduced.
+The same authoritative receipt controls marker, life, award and one fatal UUID.

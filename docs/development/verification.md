@@ -4216,3 +4216,45 @@ that regression without weakening the original behind assertion. No sign, speed,
 Run `PLAYWRIGHT_MODULE=/path/to/playwright CHROME_PATH=/path/to/chrome node tools/crashlayouttest.cjs http://localhost:8871 /tmp/layout`. This focused native fixture loads production CrashLog with actual browser canvas/DOM/viewport dimensions and a renderer-ratio stand-in, without apartment startup or WebGL. It checks 35 allocations (five portrait/landscape sizes × seven quality ratios), actual deliberate buffer-width/buffer-height/aspect/CSS-window faults, an independent visualViewport mismatch, preserved pinch-zoom/integer-allocation tolerance, the actual layoutCheck/report path, public two-decimal precision and unchanged source hashes. The correct 360×664 canvas with buffer405×747 uses exact1.125 internally and public1.13.
 
 The original source produced a real native false buffer report for those dimensions; its driver exited1 and its raw result/PNG remain at `/tmp/lunden-precision930-surface/before/`. The fixed run exited0, all35 allocations passed, actual negative faults remained detectable and the inspected native canvas image says Valid layout. Final result/PNG and CLI are under `/tmp/lunden-precision930-surface/after/` and `after-cli.txt`; production loss/restore snapshot regression `crashsnapshottest.cjs` also exited0. Images are native diagnostic-fixture evidence, not gameplay or physical-phone screenshots. This corrects a diagnostic false-positive path; it does not establish the cause or fix of #669's WebGL context loss, and that parent stays open. No renderer/startup change, tolerance increase or public precision expansion was made.
+
+### Actual frontal nose contact (#920)
+
+Start native static8875 and local Worker8876 after the tested config is saved, then
+run `PLAYWRIGHT_MODULE=/path/to/playwright CHROME_PATH=/path/to/chrome node tools/riflenosetest.cjs http://localhost:8875 http://localhost:8876 /tmp/rifle-nose`.
+The driver obtains the original model directly from historical production commit
+4b2a75e for exact position/normal/color/bone/skull-identity array parity, not a
+copied geometry fixture. No apartment/bootstrap/WebGL is used. Native actual
+triangles cover60 canonical appearances, bind/three standing updates and four
+headings, actual first-contact positives/negatives, serialized r2/r3 rays and
+r3 contact near maximum coordinates. Independent eight-corner rays inspect real
+nearest faces around accepted contact cells; forged deeper-nose points are tested
+behind actual nearer unsupported production surfaces. Two real Ghosts/Combat
+WebSockets verify the Worker2HP/body1 receipt, public/local health, obstacle/miss,
+invalid/interior/crouch fallbacks and one low-HP death/award/replay. The PNG is
+actual marker/HUD DOM with measured protocol rows, not rendered avatar/gameplay.
+
+Earlier diagnostic failures are retained: the first Worker process held the old
+config while browser modules had advanced; a short fresh-Worker attempt fired
+before the real500ms stable-state gate. These are not accepted full-suite runs.
+The short protocol diagnostic then passed19 checks; full final coverage follows
+in the issue evidence. No hardware/FPS/physical-phone/allpose claim follows.
+
+#920 frozen native acceptance:24 PASS, actual CLI0, zero page errors/WebGL.
+984 admitted nose contacts and39,816 unsupported nearest contacts yielded zero
+false bonuses or lost admitted proofs across60 appearances/four headings/four
+bind/standing samples. Independent488 actual eight-corner projected native
+contacts stayed on nose;772 deeper-nose proofs with an earlier actual unsupported
+contact were rejected. Sixty near-max-coordinate positives passed. Nose profile
+vertex error≤5.13e-8m and pose/wire entry residual≤4.789mm; unchanged original
+position/normal/color/skin/skull-identity arrays matched exactly. A separate replay
+of the initial actual native contact inventory against the final pure helper
+admitted244 positives spanning all60 appearances. The real local room/client
+checks confirmed2HP/public+local8HP for all four canonical hairstyles using real
+server-generated IDs, not model overrides. Twenty existing Worker tests also
+passed/CLI0, including contact-less/invalid-v1 compatibility and real256-byte
+packets. `/tmp/lunden-nose920-surface/final2/` retains full log, parity/style/first
+shot/result JSON and the visually inspected `rifle-nose-native.png`;
+`source-freeze.json` records the exact tested runtime/driver. Earlier failed runs
+remain separate. The final harness connects the room only after its long native
+geometry inventory, preserving the real120s movement-idle rule. No World/rendered
+avatar, physical-phone, allpose or hardware-performance acceptance is claimed.

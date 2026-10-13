@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { AVATAR as A, SPIDER, avatarLook, PVP_RIFLE_HEAD as RH, rifleHeadRegion } from './config.js';
+import { AVATAR as A, SPIDER, avatarLook, PVP_RIFLE_HEAD as RH, rifleHeadRegion, rifleNoseRegion } from './config.js';
 import { topTexture } from './spidersuit.js';
 import { NAMES, HIP, UPPER, FORE, HAND, SH, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
 
@@ -56,7 +56,9 @@ function parts(style, sleeves) {
     add(sphere(0.0105, 6, 5), 'fixed', 'head', [s * 0.036, H + 0.018, 0.1085], 1, 0x2a2420);   // the pupils
     add(new THREE.BoxGeometry(0.032, 0.0075, 0.01).rotateZ(s * -0.12), 'hair', 'head', [s * 0.037, H + 0.045, 0.103], 0.85); // brows
   }
-  add(sphere(0.02, 8, 6).scale(0.8, 1.1, 1.15), 'skin', 'head', [0, H - 0.008, 0.113], 0.96); // the nose
+  const noseShape = RH.nose;
+  add(sphere(noseShape.radius, noseShape.width, noseShape.height).scale(...noseShape.scale), 'skin', 'head', noseShape.centre, 0.96);
+  P[P.length - 1].rifleNose = true; // exact internal surface, no trusted wire flag
   add(new THREE.BoxGeometry(0.04, 0.007, 0.008), 'fixed', 'head', [0, H - 0.058, 0.106], 1, 0x9a5a52); // the mouth
   // hair: a cap over the skull in every style; then a style's own parts (all hair-coloured, the beanie in the top's colour)
   const skull = () => sphere(0.12, 14, 8, 0, Math.PI * 2, 0, Math.PI * 0.5).rotateX(-0.62).scale(0.96, 1.02, 1.04);
@@ -119,17 +121,18 @@ function base(style, sleeves) {
     }
     const g = g0.index ? g0.toNonIndexed() : g0;
     const n = g.attributes.position.count, k = NAMES.indexOf(part.bone), c = new THREE.Color(fixed);
-    const col = new Float32Array(n * 3), reg = new Float32Array(n), si = new Uint16Array(n * 4), sw = new Float32Array(n * 4), contact = new Uint8Array(n);
+    const col = new Float32Array(n * 3), reg = new Float32Array(n), si = new Uint16Array(n * 4), sw = new Float32Array(n * 4), contact = new Uint8Array(n), nose = new Uint8Array(n);
     for (let i = 0; i < n; i++) {
       if (region === REGION.fixed && !part.shoe) { col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b; } else col.fill(shade, i * 3, i * 3 + 3);
-      contact[i] = part.rifleSkull ? 1 : 0; reg[i] = part.shoe ? 5 : region; si[i * 4] = k; sw[i * 4] = 1;
+      nose[i] = part.rifleNose ? 1 : 0; contact[i] = part.rifleSkull ? 1 : 0; reg[i] = part.shoe ? 5 : region; si[i * 4] = k; sw[i * 4] = 1;
     }
     g.setAttribute('color', new THREE.BufferAttribute(col, 3));
     g.setAttribute('region', new THREE.BufferAttribute(reg, 1));
     g.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(si, 4));
     g.setAttribute('skinWeight', new THREE.BufferAttribute(sw, 4));
+    g.setAttribute('rifleNose', new THREE.Uint8BufferAttribute(nose, 1));
     g.setAttribute('rifleSkull', new THREE.Uint8BufferAttribute(contact, 1));
-    for (const a of Object.keys(g.attributes)) if (!['position', 'normal', 'color', 'region', 'skinIndex', 'skinWeight', 'rifleSkull'].includes(a)) g.deleteAttribute(a);
+    for (const a of Object.keys(g.attributes)) if (!['position', 'normal', 'color', 'region', 'skinIndex', 'skinWeight', 'rifleSkull', 'rifleNose'].includes(a)) g.deleteAttribute(a);
     geos.push(g);
   }
   b = mergeGeometries(geos);
@@ -150,7 +153,7 @@ function geometryFor(lk) {
     col[i * 3] = c.r * s; col[i * 3 + 1] = c.g * s; col[i * 3 + 2] = c.b * s;
   }
   const g = new THREE.BufferGeometry();
-  for (const name of ['position', 'normal', 'skinIndex', 'skinWeight', 'rifleSkull']) g.setAttribute(name, b.attributes[name]);
+  for (const name of ['position', 'normal', 'skinIndex', 'skinWeight', 'rifleSkull', 'rifleNose']) g.setAttribute(name, b.attributes[name]);
   g.setAttribute('color', new THREE.BufferAttribute(col, 3));
   g.userData.headProjection = b.userData.headProjection;
   g.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0.95, 0), 1.3); // limbs and a raised arm stay inside (culling by the root)
@@ -242,8 +245,10 @@ export class Avatar {
 
   /** #897: internal surface identity, never a head boolean accepted by the server. */
   rifleHeadContact(hit, state, seed) {
+    const point = hit.point.toArray().map(v => Math.round(v * 1000) / 1000);
+    if (this.mesh.geometry.attributes.rifleNose.getX(hit.face.a)) return rifleNoseRegion(seed, state, point);
     if (this.look.style !== RH.style || !this.mesh.geometry.attributes.rifleSkull.getX(hit.face.a)) return false;
-    return rifleHeadRegion(seed, state, hit.point.toArray().map(v => Math.round(v * 1000) / 1000));
+    return rifleHeadRegion(seed, state, point);
   }
 
   /** Solid (lit, opaque; `opacity` 1) or an outline (see-through, nothing written to the depth buffer). */
