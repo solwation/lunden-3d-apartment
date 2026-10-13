@@ -1144,7 +1144,7 @@ from its parent in a temporary baseline; do not restore obsolete assertions.
 | --- | --- | --- |
 | Standalone (6) | basementfloortest, basementlayouttest, beershelfcachetest, cattest, combatremotetest, combatworldtest | No apartment bootstrap or WebGL renderer. Floor/layout/cat test native world geometry; combat tests preserve CPU/raycast/cache timing assertions. Remote combat needs its CJS driver's historical helper. Beer-shelf cache tests browser cache, image decoding and texture-label data; its invalid import map is tracked in #780. Five executable-module comments now identify the standalone reasons. |
 | Companion driver (1) | basemententrytest | #837 verifies all 56 current native checks with the whole original CJS inputdriver: full900/controller null versus480/test=lazy/real APIs, real mouse-start and PointerLock retained. Entire raw logs match; HTML alone does not invoke the checks. Evidence below. |
-| Historical full-quality classifications (5) | architecturetest, carsoundtest, compasstest, cupshadetest, curtaintest | Architecture/cup shade read scene pixels, car sound measures analyser/RMS/rain workload, compass asserts viewport/safe-area bounds. Curtain state/own-texture pixels were included at this audit; its later complete #844 pair supports test-mode migration below. Preserve the other four fixtures' full behavior. |
+| Historical full-quality classifications (5) | architecturetest, carsoundtest, compasstest, cupshadetest, curtaintest | Architecture/cup shade read scene pixels, car sound measures analyser/RMS/rain workload (later #843 retains original after three actual raw differences), compass asserts viewport/safe-area bounds. Curtain state/own-texture pixels were included at this audit; its later complete #844 pair supports test-mode migration below. Preserve the other four fixtures' full behavior. |
 | Lighting-state review (3) | bestatest, blindtest, christmastest | Emissive/daylight state, hemisphere intensity or active light slots affect assertions. Existing test flags in the first two do not establish safe equivalence; decide coupling before migration. |
 | Raw clock-row blockers (2) | calendartest, clocktest | Current time/date or advancing clock/angle values appear in result rows. A deterministic source change needs separate review before exact comparisons; do not normalize measured output. |
 | Exact-pair candidates (26) | Listed in the batches below | Source inspection found no framebuffer/audio/viewport assertion requiring full mode. This is a candidate classification, not a passing comparison. |
@@ -1162,6 +1162,37 @@ per issue). Each needs its own actual full/test runs and unchanged assertions:
 | Care and persistence | bedcaretest, clothtest, colddrawertest |
 | Interaction | cheattest, booktest, crouchtest |
 | Cooking and cloud state (#811 complete) | cooktest/cuptest retain original full mode after actual raw differences; cloudtest migrated with exact native evidence below |
+
+#843 `carsoundtest` retains its entire original 900×600/car/rain/time14/October5 fixture after one complete
+actual full/test pair at frozen `7b3a972`. Both modes produced all 13 PASS rows and ALL PASS, but the two
+complete 557-byte raw logs differ in three preserved measured rows: outdoors RMS 0.0544 → 0.0547; open-door
+RMS 0.0360 versus 0.0544 → 0.0357 versus 0.0547; shut-door RMS remains 0.0025 but relative level is
+-26.6 → -26.8 dB. The other ten result rows match exactly, including rain 0.8, openness 1.00/0.000,
+gradual cabin gain 0.414 → 0.126, zero cabin rain streaks in 120 frames and mute RMS 0.00000.
+Actual independently monitored comparison exit is 1 for DIFFERENT, not a failed fixture assertion.
+No normalization, seed, retry, timer/quality/matrix override or source migration was applied; the complete
+fixture remains byte-for-byte original. This native result supplies a concrete full-mode disposition,
+not an automatic audio/render exception or a proven cause of the small RMS differences.
+The fixture-authored Chrome flag `--autoplay-policy=no-user-gesture-required` was forwarded identically
+in both launches by the external companion; actual argument lists were recorded. This is specific to
+carsound's existing authored environment and supplies no autoplay override for #834/#851/#852 music tests.
+Original real AudioContext/AnalyserNode FFT2048, native settling/sampling waits, all door/seat/standUp/mute
+and cabin-particle scans remain untouched. Source quality scales the active particle count; these native
+observations do not record that count or prove why measured audio differs.
+Two actual app-ready records and two final records retain matching URL/timeOrigin identities: full 900×600,
+null controller/no fullscreen versus test 480×300 with the real three-method controller API/no fullscreen.
+The original unconditional fullscreen suppression is unchanged. Both successful fullPage PNGs were
+inspected: all thirteen rows/ALL PASS and the final rainy car/exterior/HUD; no intermediate cabin/door
+animation or pixel equivalence claim. Full 143.207s and test 89.882s (monitor 234.084s) include both captures;
+these are descriptive samples only and excluded from speedup aggregation because raw parity failed.
+All 247 frozen source paths, exact whole fixture and four helper hashes match. Complete logs/summary:
+`/tmp/runtests-575769/`; provenance, actual launch arguments, native identities/finals, PID/SID/exit,
+cleanup, both PNGs and exact raw diff: `/tmp/lunden-carsound843/`. This completes bounded #843's concrete
+disposition; broader #738/#736 remain open.
+
+| #843 fixture | Current disposition |
+| --- | --- |
+| `carsoundtest.html` | Original full retained after 13 PASS/ALL PASS each but three real RMS/dB raw differences; original authored autoplay flag is identical in both modes. Actual full 900/null versus test 480/real API, no fullscreen; no migration or aggregate speedup claim. |
 
 #844 `curtaintest` is accepted after one complete original 900×600/noon/June21/frozen clear-weather pair at
 frozen `06adc19`: all 99 ordered PASS rows and ALL PASS are byte-identical in the complete 5563-byte raw logs,
