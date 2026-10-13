@@ -555,7 +555,7 @@ no executable fixture changes or new browser results are part of this audit.
 | `plantwindtest.html` | Full pixel rendering | 192×192 render-target readback asserts moving foliage, focused foliage and pixel-identical pottery. |
 | `portiktest.html` | Candidate | Actual portik/bin geometry, walk/actions, save/reload and reset. |
 | `posterplacementtest.html` | Original full red; comparison incomplete (#833) | Actual original full stopped after four PASS, two preview FAIL and a caught TypeError; writer lacks terminal (#858), preview tracked in #857. Explicit interrupted CLI143 is not a completed pair or migration. Original cloud/reload coverage remains pending. |
-| `postertest.html` | Conditional candidate | Paper-canvas pointer drawing and geometry/actions; optional ?shots captures real renderer images and must keep full-render semantics. |
+| `postertest.html` | Original full retained (#833) | Actual pair: full 24 PASS/4 FAIL then caught TypeError, test complete 37 PASS. After-reload storage/count failures and clock row differ; no migration. Original pointer drawing/IndexedDB/actions/optional shots/panel paths preserved; see actual evidence below. |
 | `powertest.html` | Full lighting | Actual pools/washes, flickering supply, emissive appliance lamps and night-window lighting through cut/repair/reload. |
 
 Recovered `origin/wip/740-tests-m-p` tip `dd8810d` has six fixture edits in its own commit:
@@ -3343,3 +3343,51 @@ that change is absent from this historical failure. Native source, monitor,
 owned signal request and helpers remain beside the complete observed output.
 The drawing-poster comparison and complete placement acceptance remain pending;
 #833/#740/#736 stay open.
+
+
+## Poster drawing actual disposition (#833, partial)
+
+One unchanged default `postertest.html` full/test pair ran on frozen `eea338a`
+plus only the approved pre-pair testMode fullscreen suppression in the original
+load helper. Original 900×600, both Math.random cache-busting loads, all current
+pointer drawing, wall/fridge/door actions, native IndexedDB, panel/throw/re-tape/
+bunk predicates and optional `?shots`/`?panel` branches remained. Those optional
+branches were not executed by the default pair. No seed, normalization, subset,
+retry or new wait was added.
+
+Full produced 28 authored rows: 24 PASS and four FAIL, then original catch
+SOME FAILED and TypeError at fixture line 188:43, reading `fq.rec` from undefined.
+Failures are after-reload wall only/stored1, × close, E/Esc close and thrown
+storage0. It never reached the final nine take-down/re-tape/bunk checks.
+Test completed all 37 PASS and ALL PASS, including both duplicated bunk flows.
+Check rows 17/21/22/23 differ by failures/storage; row19 is the actual panel
+clock 10:32 versus 10:36; full lacks rows 29–37. All raw strings, duplicates,
+error and unexecuted scope remain in `/tmp/runtests-647020/postertest.log` and
+`postertest.test.log`. The independent monitor exited 1 at 08:38:25 UTC. A green
+complete test half does not make a red truncated full half equivalent: the
+whole original full fixture is restored byte-for-byte, guard removed, no
+migration. The after-reload failure is distinct from #857's earlier placement
+preview issue; no causal or mode/quality/viewport diagnosis is inferred.
+
+The passive live full checkpoint copied actual catch-written #out text, not
+runner completion; later public logs and monitor establish the final result.
+All four actual document identities have native app-ready evidence: full
+900×600/null controller, test 480×300/real draw/setFull/wantsFrame APIs and
+lazy/full false. First documents have matching trusted beforeunload/pagehide:
+full 900×600/no fullscreen, test 480×300/no fullscreen. Retained second full
+final is 1280×800/native fullscreen HTML; test final remains 480×300/no fullscreen.
+All URLs/timeOrigins match their native identities and all cloudURL values
+are empty, with no readiness errors. Early public metadata has controller:null
+for first loads; the separate passive real app-ready API snapshots supply
+those observations. All 229 frozen source/data/index/runner/fixture Git blobs
+and three helpers physically match before restoring the entire original.
+
+Both actual PNGs were inspected: full native fullscreen shows final door/floor/
+HUD, without parent results or a directed drawing image. Test shows ALL PASS
+and top 18 text rows, clips long text right and retains no scene. Neither proves
+rendered-drawing pixels or coverage of optional shots. Samples 298.014 s and
+197.933 s include successful captures (60 s bound both modes); red incomplete
+full flow and unequal capture coverage exclude qualified speedup aggregation.
+Complete source/native/monitor/capture/restoration proof remains in
+`/tmp/lunden-posters833/postertest`. #833 remains open for placement followup;
+#740/#736 remain open. No source/runner/baseline fix was made in this disposition.
