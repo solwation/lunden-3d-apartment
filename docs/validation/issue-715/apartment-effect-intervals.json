@@ -1,0 +1,1929 @@
+{
+  "records": [
+    {
+      "phase": "one-cold",
+      "updates": [
+        625.0999999940395,
+        11.5,
+        6.5999999940395355,
+        19.599999994039536,
+        13.200000017881393,
+        10.800000011920929,
+        9.300000011920929,
+        11.5,
+        0.10000002384185791,
+        0.09999999403953552,
+        0,
+        0.10000002384185791,
+        6.4000000059604645,
+        4.5,
+        4.4000000059604645,
+        12.5,
+        10.900000005960464,
+        6.4000000059604645,
+        9.099999994039536,
+        6.0999999940395355,
+        0.20000001788139343,
+        0.10000002384185791,
+        0.09999999403953552,
+        0,
+        3.9000000059604645,
+        4.4000000059604645,
+        3.300000011920929,
+        7.5999999940395355,
+        9.199999988079071,
+        5.5,
+        6.5,
+        3,
+        0.09999999403953552,
+        0,
+        0.09999999403953552,
+        0.09999999403953552,
+        1.9000000059604645,
+        5.399999976158142,
+        4.4000000059604645,
+        11.200000017881393,
+        11.699999988079071,
+        12.200000017881393,
+        11.700000017881393,
+        5.300000011920929,
+        0.09999999403953552,
+        0.20000001788139343,
+        0,
+        0.09999999403953552,
+        4.799999982118607,
+        4.800000011920929,
+        4.300000011920929,
+        13.800000011920929,
+        12.300000011920929,
+        6.0999999940395355,
+        9.5,
+        4.0999999940395355,
+        0.19999998807907104,
+        0.09999999403953552,
+        0.09999999403953552,
+        0.10000002384185791
+      ],
+      "renders": [
+        11628.199999988079,
+        88.2000000178814
+      ],
+      "active": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "counts": [
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 209,
+          "triangles": 528932
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        }
+      ],
+      "pendingEffects": 0,
+      "splashes": 5,
+      "final": [
+        {
+          "remote": false,
+          "pos": [
+            0.5490000226534906,
+            0.04754151224530087,
+            8.82
+          ],
+          "flying": true,
+          "spent": true
+        },
+        {
+          "remote": false,
+          "pos": [
+            0.4290000226534905,
+            0.6608748455786346,
+            8.82
+          ],
+          "flying": true,
+          "spent": true
+        },
+        {
+          "remote": false,
+          "pos": [
+            0.3090000226534904,
+            1.1142081789119678,
+            8.82
+          ],
+          "flying": true,
+          "spent": true
+        },
+        {
+          "remote": false,
+          "pos": [
+            0.18900002265349033,
+            1.407541512245302,
+            8.82
+          ],
+          "flying": true,
+          "spent": true
+        },
+        {
+          "remote": false,
+          "pos": [
+            0.06900002265349031,
+            1.5408748455786365,
+            8.82
+          ],
+          "flying": true,
+          "spent": true
+        }
+      ],
+      "metrics": {
+        "pending": 804,
+        "ready": 0,
+        "accountedBytes": 1048576,
+        "bitBytes": 524288,
+        "clusterBytes": 196608,
+        "spatialBytes": 14169196,
+        "spatialEntries": 804,
+        "spatialReady": 0,
+        "buildCpuMs": 4,
+        "maxChunkMs": 2,
+        "prunedQueries": 0,
+        "fallbackQueries": 0,
+        "pathInstances": 0,
+        "pathSelectedInstances": 0,
+        "asyncSlices": 0,
+        "maxAsyncSliceMs": 0,
+        "lastPath": null
+      }
+    },
+    {
+      "phase": "two-cold",
+      "updates": [
+        346.09999999403954,
+        86.80000001192093,
+        62.70000001788139,
+        78.7000000178814,
+        85.40000000596046,
+        67.09999999403954,
+        11.200000017881393,
+        5.5,
+        0,
+        0.10000002384185791,
+        0.09999999403953552,
+        0.09999999403953552,
+        69.09999999403954,
+        60,
+        62.79999998211861,
+        68.80000001192093,
+        51.19999998807907,
+        41.900000005960464,
+        7,
+        2.9000000059604645,
+        0,
+        0.09999999403953552,
+        0,
+        0.09999999403953552,
+        48.19999998807907,
+        68.7000000178814,
+        41,
+        42.400000005960464,
+        39.80000001192093,
+        38.79999998211861,
+        6.699999988079071,
+        3,
+        0.09999999403953552,
+        0.09999999403953552,
+        0,
+        0.09999999403953552,
+        49.5,
+        47.20000001788139,
+        37.69999998807907,
+        44,
+        38.5,
+        41.5,
+        7.799999982118607,
+        4.600000023841858,
+        0,
+        0,
+        0.09999999403953552,
+        0,
+        82.7999999821186,
+        81.09999999403954,
+        80.60000002384186,
+        53.69999998807907,
+        61.900000005960464,
+        41.69999998807907,
+        7.4000000059604645,
+        2.800000011920929,
+        0.09999999403953552,
+        0,
+        0.09999999403953552,
+        0
+      ],
+      "renders": [
+        37.79999998211861,
+        31.400000005960464
+      ],
+      "active": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        3,
+        3,
+        3,
+        3,
+        3,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        4,
+        4,
+        4,
+        4,
+        4,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        5,
+        5,
+        5,
+        5,
+        5,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        5,
+        5,
+        5,
+        5,
+        5,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "counts": [
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        }
+      ],
+      "pendingEffects": 0,
+      "splashes": 10,
+      "final": [
+        {
+          "remote": true,
+          "pos": [
+            5.498875758805916,
+            1.524966272764177,
+            9.12
+          ],
+          "flying": false,
+          "spent": false
+        },
+        {
+          "remote": false,
+          "pos": [
+            0.3090000226534904,
+            1.1142081789119678,
+            8.82
+          ],
+          "flying": true,
+          "spent": true
+        },
+        {
+          "remote": true,
+          "pos": [
+            5.498875758805916,
+            1.524966272764177,
+            9.12
+          ],
+          "flying": false,
+          "spent": false
+        },
+        {
+          "remote": false,
+          "pos": [
+            0.18900002265349033,
+            1.407541512245302,
+            8.82
+          ],
+          "flying": true,
+          "spent": true
+        },
+        {
+          "remote": true,
+          "pos": [
+            5.498875758805916,
+            1.524966272764177,
+            9.12
+          ],
+          "flying": false,
+          "spent": false
+        },
+        {
+          "remote": false,
+          "pos": [
+            0.06900002265349031,
+            1.5408748455786365,
+            8.82
+          ],
+          "flying": true,
+          "spent": true
+        },
+        {
+          "remote": true,
+          "pos": [
+            5.498875758805916,
+            1.524966272764177,
+            9.12
+          ],
+          "flying": false,
+          "spent": false
+        },
+        {
+          "remote": false,
+          "pos": [
+            0.4290000226534905,
+            0.6608748455786346,
+            8.82
+          ],
+          "flying": true,
+          "spent": true
+        }
+      ],
+      "metrics": {
+        "pending": 804,
+        "ready": 0,
+        "accountedBytes": 1048576,
+        "bitBytes": 524288,
+        "clusterBytes": 196608,
+        "spatialBytes": 14169196,
+        "spatialEntries": 804,
+        "spatialReady": 0,
+        "buildCpuMs": 4,
+        "maxChunkMs": 2,
+        "prunedQueries": 35975,
+        "fallbackQueries": 2995,
+        "pathInstances": 0,
+        "pathSelectedInstances": 0,
+        "asyncSlices": 0,
+        "maxAsyncSliceMs": 0,
+        "lastPath": null
+      }
+    },
+    {
+      "phase": "one-local-warm",
+      "updates": [
+        5.899999976158142,
+        6.700000017881393,
+        2.4000000059604645,
+        5.300000011920929,
+        6.4000000059604645,
+        10.300000011920929,
+        14.400000005960464,
+        4.200000017881393,
+        0,
+        0.09999999403953552,
+        0,
+        0,
+        3.4000000059604645,
+        5,
+        3.800000011920929,
+        13.800000011920929,
+        12.900000005960464,
+        12.599999994039536,
+        12.599999994039536,
+        4.0999999940395355,
+        0.09999999403953552,
+        0,
+        0.10000002384185791,
+        0,
+        4.4000000059604645,
+        5,
+        4.399999976158142,
+        12.900000005960464,
+        13.599999994039536,
+        20.299999982118607,
+        12.899999976158142,
+        4.799999982118607,
+        0.09999999403953552,
+        0,
+        0,
+        0.7000000178813934,
+        4.200000017881393,
+        4.100000023841858,
+        4.799999982118607,
+        14.100000023841858,
+        12.400000005960464,
+        12.600000023841858,
+        13.099999994039536,
+        5.5999999940395355,
+        0,
+        0.10000002384185791,
+        0.09999999403953552,
+        1.0999999940395355,
+        3.9000000059604645,
+        3.9000000059604645,
+        4.300000011920929,
+        12.599999994039536,
+        15.199999988079071,
+        13,
+        12.200000017881393,
+        3.800000011920929,
+        0,
+        0.09999999403953552,
+        0,
+        0.10000002384185791
+      ],
+      "renders": [
+        41.5,
+        23.899999976158142
+      ],
+      "active": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "counts": [
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        }
+      ],
+      "pendingEffects": 0,
+      "splashes": 15,
+      "final": [
+        {
+          "remote": false,
+          "pos": [
+            0.4290000226534905,
+            0.6608748455786346,
+            8.82
+          ],
+          "flying": true,
+          "spent": true
+        },
+        {
+          "remote": false,
+          "pos": [
+            0.3090000226534904,
+            1.1142081789119678,
+            8.82
+          ],
+          "flying": true,
+          "spent": true
+        },
+        {
+          "remote": false,
+          "pos": [
+            0.18900002265349033,
+            1.407541512245302,
+            8.82
+          ],
+          "flying": true,
+          "spent": true
+        },
+        {
+          "remote": false,
+          "pos": [
+            0.06900002265349031,
+            1.5408748455786365,
+            8.82
+          ],
+          "flying": true,
+          "spent": true
+        },
+        {
+          "remote": false,
+          "pos": [
+            0.5490000226534906,
+            0.04754151224530087,
+            8.82
+          ],
+          "flying": true,
+          "spent": true
+        }
+      ],
+      "metrics": {
+        "pending": 804,
+        "ready": 0,
+        "accountedBytes": 1048576,
+        "bitBytes": 524288,
+        "clusterBytes": 196608,
+        "spatialBytes": 14169196,
+        "spatialEntries": 804,
+        "spatialReady": 0,
+        "buildCpuMs": 74.40000000596046,
+        "maxChunkMs": 6.300000011920929,
+        "prunedQueries": 35975,
+        "fallbackQueries": 2995,
+        "pathInstances": 0,
+        "pathSelectedInstances": 0,
+        "asyncSlices": 0,
+        "maxAsyncSliceMs": 0,
+        "lastPath": null
+      }
+    },
+    {
+      "phase": "two-local-warm",
+      "updates": [
+        77.7000000178814,
+        65,
+        68.80000001192093,
+        91.7999999821186,
+        57,
+        61.79999998211861,
+        13.5,
+        3.4000000059604645,
+        0,
+        0,
+        0.09999999403953552,
+        0,
+        54.79999998211861,
+        39.60000002384186,
+        50,
+        62.599999994039536,
+        73.09999999403954,
+        75.59999999403954,
+        12.599999994039536,
+        3.5999999940395355,
+        0,
+        0.09999999403953552,
+        0,
+        0,
+        39.30000001192093,
+        53.400000005960464,
+        36.900000005960464,
+        73.09999999403954,
+        58.69999998807907,
+        47.099999994039536,
+        10.299999982118607,
+        2.899999976158142,
+        0,
+        0,
+        0.09999999403953552,
+        0,
+        44.30000001192093,
+        39.400000005960464,
+        41.29999998211861,
+        53.30000001192093,
+        61.79999998211861,
+        66.7000000178814,
+        11.200000017881393,
+        3.2000000178813934,
+        0.09999999403953552,
+        0.10000002384185791,
+        0,
+        0,
+        79.2999999821186,
+        74,
+        42.29999998211861,
+        53.39999997615814,
+        38.5,
+        47.20000001788139,
+        6.5999999940395355,
+        2.800000011920929,
+        0,
+        0.09999999403953552,
+        0.10000002384185791,
+        0.10000002384185791
+      ],
+      "renders": [
+        26,
+        13.099999994039536
+      ],
+      "active": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        3,
+        3,
+        3,
+        3,
+        3,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        4,
+        4,
+        4,
+        4,
+        4,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        5,
+        5,
+        5,
+        5,
+        5,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        5,
+        5,
+        5,
+        5,
+        5,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "counts": [
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 484,
+          "triangles": 929020
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        },
+        {
+          "calls": 485,
+          "triangles": 929140
+        }
+      ],
+      "pendingEffects": 0,
+      "splashes": 20,
+      "final": [
+        {
+          "remote": false,
+          "pos": [
+            0.3090000226534904,
+            1.1142081789119678,
+            8.82
+          ],
+          "flying": true,
+          "spent": true
+        },
+        {
+          "remote": true,
+          "pos": [
+            5.498875758805916,
+            1.524966272764177,
+            9.12
+          ],
+          "flying": false,
+          "spent": false
+        },
+        {
+          "remote": false,
+          "pos": [
+            0.18900002265349033,
+            1.407541512245302,
+            8.82
+          ],
+          "flying": true,
+          "spent": true
+        },
+        {
+          "remote": true,
+          "pos": [
+            5.498875758805916,
+            1.524966272764177,
+            9.12
+          ],
+          "flying": false,
+          "spent": false
+        },
+        {
+          "remote": false,
+          "pos": [
+            0.06900002265349031,
+            1.5408748455786365,
+            8.82
+          ],
+          "flying": true,
+          "spent": true
+        },
+        {
+          "remote": true,
+          "pos": [
+            5.498875758805916,
+            1.524966272764177,
+            9.12
+          ],
+          "flying": false,
+          "spent": false
+        },
+        {
+          "remote": false,
+          "pos": [
+            0.4290000226534905,
+            0.6608748455786346,
+            8.82
+          ],
+          "flying": true,
+          "spent": true
+        },
+        {
+          "remote": true,
+          "pos": [
+            5.498875758805916,
+            1.524966272764177,
+            9.12
+          ],
+          "flying": false,
+          "spent": false
+        }
+      ],
+      "metrics": {
+        "pending": 804,
+        "ready": 0,
+        "accountedBytes": 1048576,
+        "bitBytes": 524288,
+        "clusterBytes": 196608,
+        "spatialBytes": 14169196,
+        "spatialEntries": 804,
+        "spatialReady": 0,
+        "buildCpuMs": 74.40000000596046,
+        "maxChunkMs": 6.300000011920929,
+        "prunedQueries": 71950,
+        "fallbackQueries": 5990,
+        "pathInstances": 0,
+        "pathSelectedInstances": 0,
+        "asyncSlices": 0,
+        "maxAsyncSliceMs": 0,
+        "lastPath": null
+      }
+    }
+  ],
+  "obstacle": {
+    "result": null,
+    "elapsedMs": 2003.699999988079,
+    "metrics": {
+      "pending": 804,
+      "ready": 0,
+      "accountedBytes": 1048576,
+      "bitBytes": 524288,
+      "clusterBytes": 196608,
+      "spatialBytes": 14169196,
+      "spatialEntries": 804,
+      "spatialReady": 0,
+      "buildCpuMs": 117,
+      "maxChunkMs": 6.300000011920929,
+      "prunedQueries": 71950,
+      "fallbackQueries": 5990,
+      "pathInstances": 0,
+      "pathSelectedInstances": 0,
+      "asyncSlices": 68,
+      "maxAsyncSliceMs": 2.199999988079071,
+      "lastPath": {
+        "result": null,
+        "reason": "deadline",
+        "stage": "cache",
+        "elapsedMs": 2002.5999999940395,
+        "activeMs": 11.399999976158142,
+        "yieldMs": 1991.2000000178814,
+        "cacheWaitMs": 1988.2000000178814,
+        "maxSliceMs": 2.199999988079071,
+        "promotedCaches": 56,
+        "deadlineOverrunMs": 3.5
+      }
+    }
+  },
+  "camera": [
+    4.4,
+    1.62,
+    9
+  ],
+  "incomingY": 1.4700000000000002,
+  "renderer": "WebKit WebGL",
+  "quality": 0,
+  "viewport": [
+    480,
+    300
+  ],
+  "visibleDarts": [
+    {
+      "pos": [
+        3.150224848238817,
+        1.48443769899728,
+        8.82
+      ],
+      "ndc": [
+        0.1238966591988971,
+        -0.14929525517824446,
+        0.9200816112043054
+      ],
+      "remote": false
+    },
+    {
+      "pos": [
+        3.4164792931343193,
+        1.481938823238474,
+        9.12
+      ],
+      "ndc": [
+        -0.10495828233684235,
+        -0.19320885293723775,
+        0.8984193799235173
+      ],
+      "remote": true
+    }
+  ],
+  "errors": [],
+  "capture": {
+    "source": "33e7dfda55082a284b5e1566713c95688717cfac",
+    "date": "2026-10-13",
+    "driverExit": 0,
+    "caveat": "Effect intervals are retained; renderer intervals/counts and this run's picture do not establish visible incoming/local darts because native DetailCuller was not updated after spawning. A separate picture-only capture corrects that; no timing rerun is asserted."
+  }
+}

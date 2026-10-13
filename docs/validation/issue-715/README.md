@@ -86,3 +86,103 @@ published for normal gameplay feedback; physical-phone acceptance is not used to
 The broader rendered-apartment `nerftest.html` was deferred to keep one exclusive app/browser workload on the shared VM.
 The native actual Marks/Darts and physical Glass checks above are the performed acceptance for this narrow change; no
 rendered apartment Nerf result is claimed. #715 stays open to monitor the candidate during normal play.
+
+## Actual apartment Nerf integration, 2026-10-13
+
+`tools/nerftest.html` was run against the actual apartment at source `4259bb7`:
+**ALL PASS, seven checks** (held blaster, visible in-flight meshes, wall paint,
+colour, floor landing and fade). The embedded rendered view and terminal text
+were inspected. This fills the explicitly deferred apartment Nerf regression for
+`8d0da26`; it does not establish phone PvP acceptance.
+
+`tools/nerfapartmentprobe.cjs` runs a separate bounded normal-production scene,
+without `&test`, at quality 0 and 480×300. Only the automatic animation-loop
+registration is paused through a served-source hook; it drives actual local
+Blaster → Darts → Marks and incoming Combat.remote → Darts → Combat.reach.
+The incoming launch height is derived from the actual held blaster. Each phase
+uses five shots per shooter, 60 fixed 1/60-second effect steps and two explicit
+renderer calls. A remote effect's visual TTL is extended to 600 seconds to keep
+host rendering delays from expiring it. This is one actual apartment with an
+injected incoming peer record: no second browser, network transport, avatar,
+server hit approval or physical phone is represented.
+
+Cold phases invalidate the actual scene's Marks caches. "Local warm" means those
+local caches are retained; remote cache readiness is reported independently.
+The probe permits a 1.5-second scheduler gap before the local-warm phases and
+separately performs a same-room finite-segment obstacle query with the production
+2-second deadline. This query is diagnostic, not a server-confirmed PvP hit.
+
+The captured update intervals include Darts and Marks only. Renderer-call wall
+intervals are CPU submission/possible driver waiting, including first-use shader
+work; they are neither measured GPU duration nor rendered frame/FPS. Raw
+`renderer.info` counts are retained for diagnosis and are not a total-pass budget
+measurement (nested passes can reset that counter). Simulation, lighting,
+shadows, network and all the other normal frame work are outside the effect
+intervals. No historical native parity or before/after phone gain is claimed.
+
+Reproduce using `python3 tools/devserve.py 8873 <checkout>` followed by
+`PLAYWRIGHT_MODULE=… CHROME_PATH=… SHOTS=/tmp/nerf-apartment node tools/nerfapartmentprobe.cjs http://localhost:8873`.
+The driver has a 240-second wall limit and writes JSON before taking the picture,
+so a screenshot failure cannot discard completed measurement records.
+
+Two exploratory runs are excluded: a lazy-test cost attempt was stopped, and a
+normal-render attempt placed the incoming dart on another floor (outside the
+camera). Its corrected driver completed but that scenario cannot establish a
+same-room two-shooter view. An earlier final quality-3 screenshot also timed out;
+its unsaved timing values are not used. Local excluded artifacts remain in
+`/tmp/lunden-nerf715-surface/` for the audit trail.
+
+The retained effect-interval run used source `33e7dfd`; diagnostic driver exit 0,
+no page errors. The [raw samples](apartment-effect-intervals.json) retain every
+step, active-effect count and cache snapshot:
+
+| Actual apartment effect steps | First / median / p95 | Maximum | Sum of 60 |
+|---|---:|---:|---:|
+| One local shooter, cold Marks | 625.1 / 4.6 / 13.2 ms | 625.1 ms | 936.7 ms |
+| Local + incoming, cold Marks | 346.1 / 24.5 / 82.8 ms | 346.1 ms | 2079.7 ms |
+| One local shooter, retained Marks | 5.9 / 4.3 / 14.1 ms | 20.3 ms | 344.5 ms |
+| Local + incoming, retained Marks | 77.7 / 25.2 / 75.6 ms | 91.8 ms | 1798.7 ms |
+
+These are contextual single-run samples, not a native before/after benchmark.
+There were 804 pending remote cache entries and zero spatial-ready/ready entries
+in every phase. The scheduler gap did not establish a warm remote workload.
+Pending Nerf approval effects were zero throughout: the injected incoming record
+exercises remote visual collision, not reciprocal multiplayer approval.
+
+The separate 2-second finite-segment obstacle query returned `null` after
+2003.7 ms. Its lastPath result was deadline/cache: active intervals 11.4 ms,
+yielded 1991.2 ms, cache-wait subset 1988.2 ms, maximum active slice 2.2 ms,
+56 promoted entries and deadline overrun 3.5 ms. This establishes cache waiting
+in that cold diagnostic, not a single synchronous 2-second raycast. Cache-builder
+active wall intervals are not thread-CPU measurements.
+
+Inspection caught another rendering limitation after recording those effect
+intervals: manual Darts updates had not run the actual DetailCuller, so spawned
+children retained their old hidden render layer. Both dart origins projected
+inside the viewport, but projection/group visibility alone did not prove actual
+rendering. The render timings/counts and screenshot of that run are therefore
+**excluded from visible two-shooter render-cost evidence**. The reusable probe
+now calls the native culler before draws; a separate `--picture-only` capture
+checks actual child render layers and finishes the native GPU commands before
+its screenshot. The effect-timing suite was not repeated to invent new render
+figures.
+
+This verifies the published mitigation's apartment Nerf regression and supplies
+concrete remaining work: cold local collision work still makes a large spike,
+and unready remote caches still matter. No additional collision algorithm was
+changed on the strength of these samples alone. #715 remains open; the physical
+phone's reported lag and a full rendered reciprocal-PvP before/after comparison
+remain unverified.
+
+The separate final picture-only capture completed with driver exit 0 and no page
+errors at source `33e7dfd`, 960×600, production quality 0. The
+[reviewed apartment image](apartment-two-darts.png) shows the actual held Nerf,
+local dart and incoming dart in the dining/living view. The
+[capture metadata](apartment-picture.json) records all four child render-layer
+checks as true, local NDC `(0.124, -0.149, 0.920)` and incoming NDC
+`(-0.105, -0.193, 0.898)`. Both tiny blue/orange darts can be seen ahead of the
+blaster. The native culler was updated before drawing, and `gl.finish()` was used
+only for this final capture. This provides rendered integration evidence,
+without turning the excluded earlier renderer intervals into a visible-effects
+benchmark. Reproduce only the picture with `--picture-only`; it skips the timing
+phases and obstacle query.

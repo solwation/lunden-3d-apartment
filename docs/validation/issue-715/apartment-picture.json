@@ -1,0 +1,75 @@
+{
+  "records": [],
+  "obstacle": {
+    "result": null,
+    "elapsedMs": 0,
+    "metrics": {
+      "pending": 804,
+      "ready": 0,
+      "accountedBytes": 1048576,
+      "bitBytes": 524288,
+      "clusterBytes": 196608,
+      "spatialBytes": 14169196,
+      "spatialEntries": 804,
+      "spatialReady": 0,
+      "buildCpuMs": 4,
+      "maxChunkMs": 2,
+      "prunedQueries": 0,
+      "fallbackQueries": 0,
+      "pathInstances": 0,
+      "pathSelectedInstances": 0,
+      "asyncSlices": 0,
+      "maxAsyncSliceMs": 0,
+      "lastPath": null
+    }
+  },
+  "camera": [
+    4.4,
+    1.62,
+    9
+  ],
+  "incomingY": 1.4700000000000002,
+  "renderer": "WebKit WebGL",
+  "quality": 0,
+  "viewport": [
+    960,
+    600
+  ],
+  "visibleDarts": [
+    {
+      "layers": [
+        true,
+        true
+      ],
+      "pos": [
+        3.150224848238817,
+        1.48443769899728,
+        8.82
+      ],
+      "ndc": [
+        0.1238966591988971,
+        -0.14929525517824446,
+        0.9200816112043054
+      ],
+      "remote": false
+    },
+    {
+      "layers": [
+        true,
+        true
+      ],
+      "pos": [
+        3.4164792931343193,
+        1.481938823238474,
+        9.12
+      ],
+      "ndc": [
+        -0.10495828233684235,
+        -0.19320885293723775,
+        0.8984193799235173
+      ],
+      "remote": true
+    }
+  ],
+  "errors": []
+}

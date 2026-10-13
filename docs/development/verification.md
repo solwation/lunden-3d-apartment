@@ -100,6 +100,10 @@ tools/combattest.cjs   fights (#667): three pages (A, B, C) against dev.mjs: una
 tools/combatstepstest.cjs (#768): no bootstrap/WebGL, real Ghosts/Combat and local dev.mjs sockets test readiness success,
                        actual disconnect/reconnect, timeout before action, callback/restoration throws and stopped keep-alive work.
                        Run PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/combatstepstest.cjs http://localhost:8721 http://localhost:8722.
+tools/nerfapartmentprobe.cjs (#715): bounded actual apartment local Blaster/Darts/Marks plus injected Combat.remote/Darts/reach;
+                       production drawing at quality0 (no test mode), paused automatic loop, cold/local-warm effect intervals,
+                       separately reported remote-cache readiness and 2s obstacle query, JSON before screenshot. No network,
+                       physical-phone/FPS or native-parity claim; see docs/validation/issue-715/README.md.
 tools/combatworldtest.html combat collision (#715/#714), actual Three modules without WebGL: 462 focused checks cover native
                        hit/face/UV/normal equivalence, private grid/spatial-index quotas and ownership, authored bounds,
                        mutations/disposal, layers/custom propagation, instanced paths, curved finite segments, cooperative
