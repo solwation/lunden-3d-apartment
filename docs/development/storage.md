@@ -452,3 +452,17 @@ gameplay attachments via real page reload; no heartbeat, idle clock, health or
 server budget is overridden. An earlier180s partial grid and its misclassified
 supported-jaw negative counter/idle-disconnect attempt are retained as failed
 investigation, not acceptance. No WebGL/apartment/physical-phone/FPS claim follows.
+
+#928 delivery acceptance: runtime `599c9f5` passed22 actual Worker Node tests
+and26 native checks after the incoming #933 rear-region integration. The owned
+Worker PID1776381 started at2026-10-13T16:46:04Z AFTER the250-path backend/client/
+fixture freeze; all250 paths stayed byte-identical through test and final rebase.
+The actual marker/HUD PNG and complete60-model/first-contact/hidden-forgery/cell
+proof were reviewed by root, with zero page errors/WebGL and actual CLI0. Older
+partial/misclassified-supported-jaw/idle attempts remain separate FAILED evidence.
+The genuine Worker run38434568930/job115425087460 completed successfully, including
+the actual `Run cloudflare/wrangler-action@v3` step; Pages38434568942 also succeeded.
+This confirms deployment of the additive lower-front core, not physical-phone,
+apartment/FPS, all jaw surfaces or full server-physics acceptance. #928 closes
+only this measured lower-front slice; #921/#929 and the other head parents remain
+open until their independently assigned surfaces are completed.
