@@ -600,6 +600,11 @@ Missing/unknown `m.head` gives “Träff!”; strict server `m.head === true` gi
 head-contact protocol. Score, damage and existing Nerf `sfx.playerHit` callbacks remain on their existing path.
 The pointer-transparent fixed marker leaves the aim dot, prompt, HUD and shooting controls clear. Its polite
 status region does not rewrite unchanged labels for quick repeated confirmations.
+#904: on a confirmed receipt or actual viewport/HUD/lives resize, placement first restores the centered lane,
+then checks real marker/lives rectangles. Only an overlap shifts it left by the required distance plus
+`COMBAT.hitMarker.livesGapPx` (6 px, UI choice). The original 20 px above-reticle gap remains. ResizeObserver
+accounts for the compass publishing its center after row layout; placement is coalesced and absent from
+the Combat frame loop. Clear/reset cancel pending placement and restore the centered state.
 
 `tools/hitmarkertest.cjs` uses actual index DOM/styles, actual Ghosts/Combat and a local PlayerRoom via native
 WebSockets, with bootstrap suppressed and no WebGL. Accepted receipts, actual misses and rejected weapon

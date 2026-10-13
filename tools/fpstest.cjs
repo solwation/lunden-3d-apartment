@@ -1,7 +1,7 @@
 // #884 pure counter + actual index/Presence HUD, optional bounded actual-apartment draw integration.
 const fs=require('node:fs'),assert=require('node:assert/strict');
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
-const base=process.argv[2] || 'http://localhost:8871',out=process.argv[3] || '/tmp/lunden-fps884-surface',app=process.argv.includes('--app'),probe=process.argv.includes('--capture-probe'),mode=probe?'capture':app?'app':'native';
+const base=process.argv[2] || 'http://localhost:8871',out=process.argv[3] || '/tmp/lunden-fps884-surface',app=process.argv.includes('--app'),probe=process.argv.includes('--capture-probe'),mode=probe?'capture':app?'app':'native',baselineMarker=process.argv.includes('--baseline-marker');
 let checks=0;const check=(ok,text)=>{assert.ok(ok,text);checks++;console.log(`PASS ${text}`);};
 (async()=>{
   fs.mkdirSync(out,{recursive:true});const checkpoint=data=>fs.writeFileSync(`${out}/${mode}-checkpoint.json`,JSON.stringify({checks,...data},null,2));const {FrameRate}=await import('../src/fps.js');
@@ -30,6 +30,7 @@ let checks=0;const check=(ok,text)=>{assert.ok(ok,text);checks++;console.log(`PA
       const cdp=await page.context().newCDPSession(page);let captureTimer;try{const png=await Promise.race([cdp.send('Page.captureScreenshot',{format:'png',fromSurface:variant!=='restore-view'&&variant!=='paired',captureBeyondViewport:false}),new Promise((_,reject)=>{captureTimer=setTimeout(()=>reject(new Error('tiny native capture exceeded5s')),5000);})]);fs.writeFileSync(`${out}/capture-${variant}.png`,Buffer.from(png.data,'base64'));check(png.data.length>500,variant==='paired'?'actual HUD DOM captured separately with only tiny canvas hidden':'actual tiny WebGL plus DOM captured by native CDP');}finally{clearTimeout(captureTimer);await cdp.detach();}results.push({variant});
     }else if(!app){
       const page=await browser.newPage();page.on('pageerror',e=>errors.push(e.message));let count=7,fail=false;
+      if(baselineMarker&&process.env.BASELINE_MARKER)await page.route('**/src/hitmarker.js',r=>r.fulfill({contentType:'text/javascript',body:fs.readFileSync(process.env.BASELINE_MARKER,'utf8')}));
       await page.route('**/src/bootstrap.js',r=>r.fulfill({contentType:'text/javascript',body:'// native HUD only'}));
       await page.route('**/fixture-api/presence/**',r=>fail?r.abort('failed'):r.fulfill({contentType:'application/json',body:JSON.stringify({count,names:['Tester'],players:[{name:'Tester',score:1}]})}));
       for(const [width,height] of [[568,320],[667,375],[844,390],[1280,720]])for(const safe of [[0,0,0,0],[44,44,20,20],[44,0,18,0]]){
@@ -59,11 +60,28 @@ let checks=0;const check=(ok,text)=>{assert.ok(ok,text);checks++;console.log(`PA
           const glyph=s=>{const r=document.createRange();r.selectNodeContents(document.querySelector(s));return r.getBoundingClientRect().toJSON();};
           return {width,height,safe,online,fps,box,score,right,compass,lives,marker,stack:online.top<fps.top&&Math.abs(online.bottom-fps.top)<.2&&inside(online,box)&&inside(fps,box),divider:parseFloat(getComputedStyle(document.querySelector('.presence-fps')).borderTopWidth)>0,
             glyphs:inside(glyph('.fps-value'),fps)&&inside(glyph('.fps-unit'),fps)&&inside(glyph('.presence-count'),online),edges:Math.abs(score.left-safe[0]-4)<.2&&Math.abs(right.right-width+safe[1]+4)<.2,
+            markerLivesClear:!overlap(marker,lives),
             clearance:!overlap(score,right)&&!overlap(lives,score)&&!overlap(lives,right)&&Math.abs(lives.top-compass.bottom-12)<.2&&!overlap(marker,score)&&!overlap(marker,right)&&(cross.top+cross.bottom)/2-marker.bottom>=20-.2};
         },{width,height,safe});
         if(!(row.stack&&row.divider&&row.glyphs&&row.edges&&row.clearance)) console.log(JSON.stringify(row,null,2));
         check(row.stack&&row.divider&&row.glyphs&&row.edges&&row.clearance,`${width}: stacked divided cells fit same badge, safe areas and other HUD/marker`);results.push(row);
+        const affected=width===568&&safe[2]>0;check(baselineMarker&&affected?!row.markerLivesClear:row.markerLivesClear,`${width}: ${baselineMarker&&affected?'baseline reproduces marker/lives overlap':'actual marker clears lives'}`);
+        if(width===568&&safe[2]===20){checkpoint({errors,results});await page.screenshot({path:`${out}/marker-safe-568.png`});}
         if(safe[0]===0){checkpoint({errors,results});await page.screenshot({path:`${out}/hud-${width}.png`});}
+      }
+      if(!baselineMarker){
+        await page.setViewportSize({width:568,height:320});
+        await page.evaluate(()=>{for(const [k,v]of Object.entries({sl:44,sr:44,st:20,sb:20}))document.documentElement.style.setProperty('--'+k,v+'px');document.body.classList.add('touch');combat.hit({w:'rifle',head:true,to:'foe',l:9,dead:false});return new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));});
+        check(await page.evaluate(async()=>{const m=combat.hitMarker.el.getBoundingClientRect(),l=document.getElementById('lives').getBoundingClientRect();return l.left-m.right>=(await import('/src/config.js')).COMBAT.hitMarker.livesGapPx-.2&&getComputedStyle(combat.hitMarker.el).pointerEvents==='none';}),'overlapping receipt moves only far enough left for named lives clearance');
+        check(await page.evaluate(()=>{const el=combat.hitMarker.el,original=el.getBoundingClientRect;let reads=0;el.getBoundingClientRect=function(){reads++;return original.call(this);};for(let i=0;i<100;i++)combat.update(0);delete el.getBoundingClientRect;return reads===0;}),'100 actual Combat updates perform no marker geometry reads');
+        await page.evaluate(()=>{const r=combat.hitMarker.el.getBoundingClientRect(),b=document.createElement('button');b.id='marker-click-probe';b.style.cssText=`position:fixed;left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px;z-index:19`;window.markerClicks=0;b.addEventListener('click',()=>markerClicks++);document.body.append(b);});
+        const at=await page.evaluate(()=>{const r=combat.hitMarker.el.getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2};});await page.mouse.click(at.x,at.y);
+        check(await page.evaluate(()=>markerClicks===1&&!combat.hitMarker.el.hidden),'actual mouse click passes through relocated visible marker');await page.evaluate(()=>document.getElementById('marker-click-probe').remove());
+        await page.setViewportSize({width:667,height:375});await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
+        check(await page.evaluate(()=>{const r=combat.hitMarker.el.getBoundingClientRect();return !combat.hitMarker.el.hidden&&Math.abs((r.left+r.right)/2-innerWidth/2)<.2&&combat.hitMarker.el.style.marginLeft==='0px';}),'viewport resize recenters the same still-live receipt when clear');
+        await page.setViewportSize({width:568,height:320});await page.evaluate(()=>{combat.hit({w:'rifle',head:true});combat.hitMarker.clear();});
+        check(await page.evaluate(()=>combat.hitMarker.el.hidden&&combat.hitMarker.layoutFrame===0&&combat.hitMarker.el.style.marginLeft==='0px'),'clear cancels pending placement and centered state is restored');
+        await page.evaluate(()=>{combat.hit({w:'rifle',head:true});combat.reset();});check(await page.evaluate(()=>combat.hitMarker.el.hidden&&combat.hitMarker.layoutFrame===0),'actual Combat reset clears receipt and queued placement');
       }
       await page.evaluate(async()=>{const {Presence}=await import('/src/presence.js');const el=document.createElement('span');document.body.append(el);window.off=new Presence('',el);});
       check(await page.evaluate(()=>off.el.querySelector('.fps-value')?.textContent==='—'),'FPS cell exists before/without online service');
