@@ -8,6 +8,7 @@
 // Needs PLAYWRIGHT_MODULE (path to playwright) and optionally CHROME_PATH, like the other .cjs tests.
 // Do NOT use it for tests that measure drawing (perfcount, turntest, phonememtest, glrestoretest, pixel comparisons):
 // pass `{ test: false }` or open the page yourself.
+const { waitForState } = require('./semanticwait.cjs');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 
 const SMALL = { width: 480, height: 300 }, FULL = { width: 1280, height: 800 };
@@ -24,7 +25,7 @@ async function open(browser, url, { viewport = SMALL, test = true, lazy = false,
   const page = await ctx.newPage();
   const sep = url.includes('?') ? '&' : '?';
   await page.goto(test && !/[?&]test\b/.test(url) ? `${url}${sep}test${lazy ? '=lazy' : ''}` : url, { waitUntil: 'commit' });
-  if (wait) await page.waitForFunction(() => window.__app?.renderer, null, { timeout });
+  if (wait) await waitForState(page, () => window.__app?.renderer, null, { timeout });
   return { ctx, page };
 }
 
