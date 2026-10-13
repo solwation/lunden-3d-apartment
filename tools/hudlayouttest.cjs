@@ -10,15 +10,22 @@ const out = process.argv[3];
 const sizes = [[844,390],[667,375],[932,430],[568,320],[1280,720]];
 (async () => {
   const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || '/usr/bin/google-chrome', headless: true });
-  const results = [];
+  const results = [], pageErrors = [];
   try {
     const page = await browser.newPage();
     page.setDefaultTimeout(15000);
+    page.on('pageerror', error => pageErrors.push(error.message));
     await page.route('**/src/bootstrap.js', route => route.fulfill({ contentType: 'text/javascript', body: '// HUD-only test: no game renderer.' }));
     for (const [width,height] of sizes) for (const safe of [[0,0,0,0],[44,44,20,20],[44,0,18,0]]) {
       await page.setViewportSize({width,height});
       await page.goto(`${base}/index.html`);
       await page.evaluate(async ({touch,safe}) => {
+        const originalContext = HTMLCanvasElement.prototype.getContext;
+        window.testWebglCalls = 0;
+        HTMLCanvasElement.prototype.getContext = function (kind, ...args) {
+          if (/webgl/i.test(kind)) { window.testWebglCalls++; throw new Error('No WebGL permitted in HUD layout fixture'); }
+          return originalContext.call(this, kind, ...args);
+        };
         const {initHudIcons,setWeatherIcon} = await import('/src/hudicons.js');
         const {setScoreElement} = await import('/src/stats.js');
         const THREE = await import('three');
@@ -41,7 +48,8 @@ const sizes = [[844,390],[667,375],[932,430],[568,320],[1280,720]];
         const camera=new THREE.PerspectiveCamera();
         window.testCompass=new Compass(camera,compass);
         const ghosts={connected:true,others:new Map([['foe',{h:'nerf',root:{visible:true},snaps:[{}]}]])};
-        window.testCombat=new Combat({ghosts,camera,scene:new THREE.Scene(),weapon:()=> 'nerf',feet:()=>new THREE.Vector3()});
+        window.testWeapon='nerf';
+        window.testCombat=new Combat({ghosts,camera,scene:new THREE.Scene(),weapon:()=>window.testWeapon,feet:()=>new THREE.Vector3()});
         window.testCombat.update(0);
         document.getElementById('corner-qr').hidden=touch;
         document.getElementById('hud').hidden=false;
@@ -107,10 +115,22 @@ const sizes = [[844,390],[667,375],[932,430],[568,320],[1280,720]];
         document.body.classList.add('hud-no-blur');check(css('#score').backdropFilter==='none'&&css('#hud-top').backdropFilter==='none','blur fallback');document.body.classList.remove('hud-no-blur');
         const button=document.getElementById('furniture-btn');button.disabled=true;check(Number(getComputedStyle(button).opacity)<.5,'disabled state');button.disabled=false;
         const normal=getComputedStyle(button).backgroundColor;button.setAttribute('aria-pressed','true');check(getComputedStyle(button).backgroundColor!==normal,'pressed state');button.removeAttribute('aria-pressed');
-        window.testCombat.ghosts.connected=false;window.testCombat.update(0);
-        check(document.getElementById('lives').hidden,'lives stay visible outside combat');
-        window.testCombat.ghosts.connected=true;window.testCombat.update(0);
-        return {width,height,safe,cell,left,right,compass,lives,errors};
+        // #896: test the actual current weapon and life policy, not merely a disconnected armed player.
+        const lifeStates=[],lifeState=label=>lifeStates.push({label,weapon:window.testWeapon,connected:window.testCombat.ghosts.connected,lives:window.testCombat.lives,hidden:document.getElementById('lives').hidden,text:document.getElementById('lives').textContent});
+        window.testWeapon='';window.testCombat.update(0);lifeState('injured-unarmed');
+        check(!document.getElementById('lives').hidden&&!window.testCombat.active,'injured unarmed lives are not visible outside combat');
+        check(document.getElementById('lives').textContent.endsWith('7/'+window.testCombat.maxLives),'injured unarmed life count differs');
+        window.testCombat.life(window.testCombat.maxLives);window.testCombat.update(0);lifeState('full-unarmed');
+        check(document.getElementById('lives').hidden,'full unarmed lives remain visible outside combat');
+        window.testCombat.life(7);window.testCombat.ghosts.connected=false;window.testCombat.update(0);lifeState('injured-unarmed-offline');
+        check(!document.getElementById('lives').hidden,'injured unarmed offline lives are hidden');
+        window.testCombat.life(window.testCombat.maxLives);window.testWeapon='nerf';window.testCombat.ghosts.connected=true;window.testCombat.update(0);lifeState('full-armed-combat');
+        check(!document.getElementById('lives').hidden&&window.testCombat.active,'armed combat full life visibility does not restore');
+        // Keep a real injured/unarmed HUD for the saved image; no forced visibility or guessed counter.
+        window.testWeapon='';window.testCombat.life(7);window.testCombat.update(0);
+        check(window.testWebglCalls===0,'HUD fixture attempted WebGL');
+        const fontMetrics=Object.fromEntries(['#temp','#level','.score-main'].map(selector=>{const el=document.querySelector(selector),style=getComputedStyle(el);return[selector,{clientWidth:el.clientWidth,scrollWidth:el.scrollWidth,bounds:bounds(selector),fontFamily:style.fontFamily,fontSize:style.fontSize,fontWeight:style.fontWeight}];}));
+        return {width,height,safe,cell,left,right,compass,lives,lifeStates,fontMetrics,errors};
       },{width,height,safe});
       results.push(result);
       if(out){fs.mkdirSync(out,{recursive:true});await page.screenshot({path:path.join(out,`hud-only-after-${width}-safe-${safe.join('-')}.png`)});}
@@ -128,6 +148,7 @@ const sizes = [[844,390],[667,375],[932,430],[568,320],[1280,720]];
     await page.waitForFunction(()=>document.querySelector('#score .plus').textContent==='',{},{timeout:4000});
     if(!await page.evaluate(()=>getComputedStyle(document.querySelector('.score-val')).visibility==='visible'))throw new Error('real deduction timer did not restore score');
     if(out)fs.writeFileSync(path.join(out,'layout-results.json'),JSON.stringify(results,null,2));
+    if(pageErrors.length)throw new Error('page errors: '+JSON.stringify(pageErrors));
     const failures=results.flatMap(r=>r.errors.map(e=>`${r.width}x${r.height} safe=${r.safe}: ${e}`));
     if(failures.length)throw new Error(failures.join('\n'));
     console.log(`PASS: ${results.length} real HUD DOM/CSS layouts, five viewports, three safe-area cases; game renderer suppressed.`);
