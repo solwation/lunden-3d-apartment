@@ -98,3 +98,18 @@ test('a new hit settles due recovery first, including delayed alarm after lethal
   assert.equal(b.server.deserializeAttachment().healAt, now + COMBAT.recoverMs);
   await ctx.storage.deleteAlarm(); for (const socket of ctx.getWebSockets()) socket.close(); await settle(ctx);
 });
+test('staggered players share one earliest alarm; unarmed recovery and life notifications stay independent', async () => {
+  const { ctx, ns, a, b, alive } = await fixture();
+  const room = ns.object('world'), first = now + COMBAT.recoverMs;
+  let sa = a.server.deserializeAttachment(); sa.l = 9; sa.s.h = ''; room.recoveryClock(sa, now); a.server.serializeAttachment(sa);
+  let sb = b.server.deserializeAttachment(); sb.l = 8; room.recoveryClock(sb, now + 15_000); b.server.serializeAttachment(sb);
+  await room.scheduleRecovery(); assert.equal(await ctx.storage.getAlarm(), first);
+  now = first; alive(); await ctx.fireAlarm(); await settle(ctx);
+  assert.equal(a.server.deserializeAttachment().l, 10); assert.equal(b.server.deserializeAttachment().l, 8);
+  assert.equal(a.got.filter(m => m?.t === 'life').at(-1).l, 10);
+  assert.equal(await ctx.storage.getAlarm(), first + 15_000);
+  now += 15_000; alive(); await ctx.fireAlarm(); await settle(ctx);
+  assert.equal(b.server.deserializeAttachment().l, 9); assert.equal(await ctx.storage.getAlarm(), first + 75_000);
+  assert.equal(a.got.filter(m => m?.t === 's').at(-1).l, 9);
+  for (const ws of ctx.getWebSockets()) ws.close(); await ctx.storage.deleteAlarm(); await settle(ctx);
+});
