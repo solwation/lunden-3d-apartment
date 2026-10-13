@@ -502,7 +502,7 @@ export class Core {
 
   /** Another house's stair core (Hus A's, #637): the same interface; this one answers for it too, so player.js / main.js
    *  keep asking `world.core`. */
-  attach(part) { this.parts.push(part); this.object.add(part.object); this.targets.push(...part.targets); return part; }
+  attach(part) { this.parts.push(part); this.object.add(part.object); if (part.exterior) this.object.add(part.exterior); this.targets.push(...part.targets); return part; }
   /** The core the point (x, z) belongs to, else Hus L's own. */
   partAt(x, z, y) { return this.parts.find((c) => c.contains(x, z, y)) ?? null; }
 

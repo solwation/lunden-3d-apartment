@@ -10,7 +10,7 @@ import { architectureEdges } from './architectureedges.js';
 // `covers` (plan), `contains` (plan + height: then walls collide), `heights` (every floor / flight /
 // the car at a point), `segments` (the walls in the way), `dynamic` (the door leaf, the lift's doors), `snap` (riding), `roomAt`,
 // `update`. The walls are DATA (#652: Hus A's too, CORE_A; the former corea.js is gone): wall runs with openings (config `walls`), drawn as boxes (or, `thin`, planes) with the lights baked
-// into vertex colours (MeshBasic, like core.js) and drawn only near the camera. The stair is the same everywhere: two flights side by
+// into vertex colours (MeshBasic, like core.js); full detail is drawn only near the camera (#887 keeps Hus A's entrance/lobby outside that gate). The stair is the same everywhere: two flights side by
 // side along z from the hall's south end, the winders round the stringer's end (#644), the stringer between the flights.
 // The lift is north of the hall with its door south (`lift.side` 's', Hus A and Hus B) or west of it with its door east ('e', Hus C: the
 // shaft is built in its own frame turned 90°, see Lift's `rot`).
@@ -25,6 +25,10 @@ export class CoreHouse {
   constructor(C) {
     this.C = C; this.house = C.house;
     const group = new THREE.Group(); this.object = group;
+    // #887: the courtyard skin has a real opening here. Keep Hus A's actual glazed
+    // port and single-storey lobby outside the lift/detail gate, without duplicating them.
+    this.exterior = C.house === 'Hus A' ? new THREE.Group() : null;
+    if (this.exterior) this.exterior.name = 'Hus A entrance and lobby';
     const Y = this.Y = C.stops, LAB = C.labels, NS = Y.length, H = Y[1] - Y[0];
     const B = this.B = C.band, ST = this.ST = C.stair, SLAB = C.slab, CEILTOP = this.CEILTOP = Y[NS - 1] + C.ceilingTop;
     const [WL0, WL1] = ST.well, WM = (WL0 + WL1) / 2, XM = (B.x0 + B.x1) / 2;
@@ -91,14 +95,15 @@ export class CoreHouse {
     };
 
     const geo = { solid: [], light: [], glass: [] }, src = []; // `src`: plain construction boxes for the edge lines (cheaper than the cut-up ones)
+    const outsideSolid = [], outsideSources = []; let outside = false;
     this.walls = []; // { s: [ax, az, bx, bz], y0, y1 }
     const FLATS = []; // the flats' doors { j: stop, x: the wall's hall face, sd: +1 on a wall the hall lies east of, z0, z1, h, hinge: 'n' | 's', label }
     // (#656: `az` = a door in a wall along x, the hall's north end: then x is that wall's z, sd +1 = the hall lies south, z0 … z1 its x range, hinge 'w' | 'e', `into` = swings away from the hall)
     this.zones = []; // the openings through the walls: { r: [x0, x1, z0, z1], j: stop }
     const WALL = 0xeeeeea, STAIR = 0xb9b6ae, RAIL = 0x7f868c, FRAME = 0x3b4247, CEILC = 0xdedcd6, CELL = 0x8c8982;
     /** A box that is only drawn (`plain` = false: its edges are taken from the baked, e.g. turned, geometry). */
-    const draw = (x0, x1, y0, y1, z0, z1, hex) => { if (x1 - x0 < 1e-3 || y1 - y0 < 1e-3 || z1 - z0 < 1e-3) return; geo.solid.push(bake(sbox(x0, x1, y0, y1, z0, z1), hex)); src.push(box(x0, x1, y0, y1, z0, z1)); };
-    const drawGeo = (g, hex) => { const b = bake(g, hex); geo.solid.push(b); src.push(b); };
+    const draw = (x0, x1, y0, y1, z0, z1, hex) => { if (x1 - x0 < 1e-3 || y1 - y0 < 1e-3 || z1 - z0 < 1e-3) return; (outside ? outsideSolid : geo.solid).push(bake(sbox(x0, x1, y0, y1, z0, z1), hex)); (outside ? outsideSources : src).push(box(x0, x1, y0, y1, z0, z1)); };
+    const drawGeo = (g, hex) => { const b = bake(g, hex); (outside ? outsideSolid : geo.solid).push(b); (outside ? outsideSources : src).push(b); };
     /** The four sides of a box as collision segments. */
     const block = (x0, x1, z0, z1, y0, y1) => {
       for (const s of [[x0, z0, x1, z0], [x1, z0, x1, z1], [x1, z1, x0, z1], [x0, z1, x0, z0]]) this.walls.push({ s, y0, y1 });
@@ -108,6 +113,7 @@ export class CoreHouse {
 
     // ---- the wall runs (config `walls`): continuous from the first stop's floor to the last stop's ceiling, with the openings cut
     for (const w of C.walls) {
+      outside = !!this.exterior && w.s[0] === 1 && w.s[1] === 1;
       const [s0, s1] = w.s, y0 = Y[s0], y1 = s1 >= NS - 1 ? CEILTOP : yTop(s1);
       const rect = (pa, pb) => (w.ax === 'x' ? [w.t[0], w.t[1], pa, pb] : [pa, pb, w.t[0], w.t[1]]);
       const hs = [];
@@ -149,6 +155,8 @@ export class CoreHouse {
       }
     }
 
+    outside = false;
+
     // ---- the flats' doors (#653): the architrave and the number sign (core.js buildFlatDoors), a dark entrance cell behind each that you cannot enter
     const NUM = FLATS.filter((f) => !f.plain); NUM.forEach((f, i) => { f.ci = i; }); // (the plain doors have no sign: their leaf takes the atlas' white texel)
     const FD = C.flatDoors, signs = NUM.length ? buildFlatDoors({ rail: geo.solid }, { doors: NUM.map((f) => [f.j, f.z0, f.z1, f.label, f.x, f.sd, f.hinge === 'n' || f.hinge === 'w', f.az]), Ys: Y, bk: bake, fixed: false, cols: 4, sc: FD.scale, strip: 8 }) : null;
@@ -172,7 +180,8 @@ export class CoreHouse {
     }
     draw(B.x0, B.x1, Y[0] - 0.05, Y[0] + 0.003, B.z0, B.z1, STAIR); // våning −1's floor (the garage leaves this rect's floor to us)
     this.floors = C.floors ?? [];
-    for (const f of this.floors) { slab(...f.r, Y[f.s]); slab(...f.r, Y[f.s + 1]); }
+    for (const f of this.floors) { outside = !!this.exterior && f.s === 1; slab(...f.r, Y[f.s]); slab(...f.r, Y[f.s + 1]); }
+    outside = false;
     draw(B.x0, B.x1, CEILTOP, CEILTOP + 0.05, B.z0, B.z1, CEILC); // the top storey's ceiling over the hall and the stair
     if (C.cap) draw(C.cap[0], C.cap[1], CEILTOP, CEILTOP + 0.1, C.cap[2], C.cap[3], CEILC); // … and over the shaft
 
@@ -239,18 +248,19 @@ export class CoreHouse {
       for (let i = 0; i < uv.count; i++) uv.setXY(i, (k + uv.getX(i)) / NS, uv.getY(i));
       return g;
     });
-    const add = (geos, mat, edgeSources) => { if (!geos.length) return; const m = new THREE.Mesh(mergeGeometries(geos), mat); if (edgeSources) m.userData.edgeSources = edgeSources; m.raycast = () => {}; group.add(m); return m; };
+    const add = (geos, mat, edgeSources, parent = group) => { if (!geos.length) return; const m = new THREE.Mesh(mergeGeometries(geos), mat); if (edgeSources) m.userData.edgeSources = edgeSources; m.raycast = () => {}; parent.add(m); return m; };
     this.mats = { wall: new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide }), light: new THREE.MeshBasicMaterial({ color: 0xffffff }) };
     add(geo.solid, this.mats.wall, src);
+    if (this.exterior) add(outsideSolid, this.mats.wall, outsideSources, this.exterior);
     add(geo.light, this.mats.light);
     add(numGeos, new THREE.MeshBasicMaterial({ map: nums.t }), numGeos); // (the plates, signs and panes get outlines, as Hus A's did, #652)
     if (signs) { this.mats.sign = new THREE.MeshBasicMaterial({ map: signs.tex }); add(signs.geos, this.mats.sign, signs.geos); }
-    add(geo.glass, new THREE.MeshBasicMaterial({ color: 0xbfd3dc, transparent: true, opacity: 0.35, side: THREE.DoubleSide, depthWrite: false }), geo.glass);
+    add(geo.glass, new THREE.MeshBasicMaterial({ color: 0xbfd3dc, transparent: true, opacity: 0.35, side: THREE.DoubleSide, depthWrite: false }), geo.glass, this.exterior ?? group);
 
     // ---- the entrance door: glazed, hinged at its `hinge` end, opening out into the recess
     const E = C.entrance, nzf = E.face === 'n', hi = E.hinge === 'hi', hingeA = hi ? E.door[1] : E.door[0], sgn = hi ? -1 : 1;
     this.entrance = E;
-    this.doors = [makeDoor(group, { hx: nzf ? hingeA : E.line, hz: nzf ? E.line : hingeA, dir: nzf ? [sgn, 0] : [0, sgn], out: nzf ? [0, -1] : [1, 0], w: E.door[1] - E.door[0], y: Y[1], name: E.name, glazed: true })];
+    this.doors = [makeDoor(this.exterior ?? group, { hx: nzf ? hingeA : E.line, hz: nzf ? E.line : hingeA, dir: nzf ? [sgn, 0] : [0, sgn], out: nzf ? [0, -1] : [1, 0], w: E.door[1] - E.door[0], y: Y[1], name: E.name, glazed: true })];
     /** #653 (from Hus A's #643): merge a makeDoor leaf's parts into ONE mesh (vertex colours with the light baked in at the hinge, a white texel of the
      *  shared number atlas for the plain parts, the flat's brass number plate on its hall side) and drop the originals: one draw call a leaf. */
     const leafify = (t, mat, cell, hall) => {
@@ -299,6 +309,10 @@ export class CoreHouse {
     this.lift = new Lift(group, spec);
     this.targets = [...this.doors, ...this.lift.targets];
     this.edgeLines = architectureEdges(group, { moving: [...this.doors.map((t) => t.door.pivot), this.lift.car, ...this.lift.carDoors, ...this.lift.landing.flat()] });
+    if (this.exterior) {
+      architectureEdges(this.exterior, { moving: [this.doors[0].door.pivot] });
+      this.exterior.traverse((o) => { delete o.userData.edgeSources; });
+    }
     group.traverse((o) => { delete o.userData.edgeSources; });
 
     // where the camera must be for it to be drawn: within 6 m of the core, or out in front of the entrance (the lobby shows through the glass

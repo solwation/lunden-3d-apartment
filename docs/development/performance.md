@@ -46,6 +46,18 @@ Related: [graphics](graphics.md), [verification](verification.md).
 - Dynamic resolution: replaced by the adaptive quality level (#592, below); off with `&shot`.
 
 
+## Hus A entrance outside the detail gate (#887)
+
+The courtyard façade cuts a permanent entrance opening. Hiding all of CoreHouse A beyond its original 14 m front rectangle left
+that opening empty from L1007's patio. Only the actual ground-floor lobby/entrance geometry now remains beside the culled detail group:
+one merged opaque batch, fixed glass, the same animated leaf, and their outlines. No extra triangles, invented blocking plane or wider
+lift/stair detail radius. Static batches keep native frustum culling and their existing shadow flags; no extra reflection pass.
+Native source geometry at x1.8/z14 retains 8 meshes/572 triangles, versus the complete near core's 10,946 triangles. Near splitting
+adds one opaque mesh (80 versus 79 total meshes), preserving the same summed triangles. These are mesh/triangle counts, not measured FPS.
+The bounded actual World comparison at 900×560 DPR1 (quality0/3, no test mode) adds 10 completed-view draw calls at the patio
+(118→128) and 562 rendered triangles; near adds two calls (174→176 /176→178) with unchanged rendered triangles.
+These frozen-camera counts do not establish live FPS or phone performance.
+
 ## Local shot cold collision preparation (#715, 2026-10-13)
 
 Local Nerf darts call `Marks.hit` while flying. Previously `Marks.segment` created a `TriGrid` synchronously for every

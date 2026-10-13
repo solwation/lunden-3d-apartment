@@ -56,7 +56,7 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
 
 ## Project orientation
 
-Static ES-module Three.js site, with no framework or development build step. Scene geometry comes from `data/plan.json`, extracted from the dimensioned PDF. Coordinates: x east, z south, y up; north is −z. `src/config.js` holds shared measurements and tunables. `index.html` starts a dependency-free covered-retry guard before loading bootstrap. `src/bootstrap.js` checks published versions before `src/main.js` builds the scene.
+Static ES-module Three.js site, with no framework or development build step. Scene geometry comes from `data/plan.json`, extracted from the dimensioned PDF. Coordinates: x east, z south, y up; north is −z. Hus A's actual entrance/lobby remains in CoreHouse.exterior when its lift/stair detail group is culled; preserve the intentional glass and passages. `src/config.js` holds shared measurements and tunables. `index.html` starts a dependency-free covered-retry guard before loading bootstrap. `src/bootstrap.js` checks published versions before `src/main.js` builds the scene.
 
 ## Cheat-code maintenance
 

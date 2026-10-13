@@ -115,6 +115,10 @@ src/corehouse.js       Hus A's, B's and C's stair cores (#637, #638, #639, #652;
                        fire doors, the flats behind the doors (#653: the flats' doors open like Hus A's: a `leaf` hole's `hinge` ('n' | 's') and `flats` (the number per stop) in CORE_B / CORE_C make a `makeDoor` leaf per storey, merged to one mesh (`leafify`), `buildFlatDoors` for the architrave / number signs, a 1.3 m dark entrance cell behind each that the doorway collision keeps you out of; `HOUSE_FLAT_DOORS`: 25 leaves in Hus C, 12 in Hus B; #656: a `leaf` hole may sit in a wall along x too, Hus C's fifth flat in the hall's north end, `hinge` 'w' | 'e', `into` = swings away from the hall, `buildFlatDoors`' 8th tuple entry `alongX`); Hus A's former class CoreA (src/corea.js) is gone (#652): CORE_A is data like the others. Cost (SwiftShader, loaded VM): about 0.3–0.6 s
                        to build one, 52–67 meshes / 7.5–12 k triangles, drawn only while the camera is within 6 m of the core or
                        up to 14 m out in front of the entrance door (`near`; the wider 12 m first used put perfcount's 'park' spot at 517 of 520 calls).
+                       #887: Hus A's actual glazed entrance, fixed sidelight and single-storey lobby (`walls` with s [1,1], lobby floors at stop 1)
+                       live in `CoreHouse.exterior`, attached beside its detail object by `Core.attach`. The same opaque walls/floor/ceiling and moving door
+                       remain frustum-tested from L1007's patio; the lift, stairs and upper floors keep the original `near` gate. Nothing closes the intentional
+                       glass or passages, and no collision/source dimensions change. The original triangles are partitioned, not duplicated.
                        Hus C stands at y 0: its stair well has a hole in the terrain mesh (surroundings.js `TERRAIN_PITS` = `CORE_C.pit`; the grass
                        would cover the flights below våning 1) and aHouse drops the body's underside cap of a walk-in house; the floors' tops lie 6 mm over
                        their levels (the grass at y 0 inside the footprint fought with våning 1's floor).

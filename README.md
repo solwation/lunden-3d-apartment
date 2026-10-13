@@ -12,6 +12,8 @@ I rutan uppe till vänster visas antalet besökare över bildfrekvensen (FPS). F
 
 På insidan av koppskåpets lucka i köket sitter en **uppdragslapp** med tre frivilliga vardagsuppdrag: gör en macka, återställ köket och städa efter mellanmålet. Delarna kan göras i valfri ordning och framstegen sparas. Tips går att stänga av; ett klart uppdrag ger 30 poäng första gången och 5 poäng när du väljer **Gör igen**. Tomma sopkärl behöver inte tömmas. Soppåsarna lämnas i de tre behållarna längs portikväggen mot lägenheten.
 
+Hus A:s glasade port och väggarna bakom den syns även från L1007:s uteplats.
+
 Häckarna vid våra och grannarnas uteplatser har lövstruktur, rundade hörn och en lätt ojämn ovankant.
 
 Grannlägenheternas fönster och dörrar på L-husets fyra våningar har karmar, bågar, tätningar och glasreflektioner. Grannarnas glas döljer insidorna; L1007:s öppningsbara fönster och dörrar behåller sin genomsikt. Ytterdörrens handtag syns även när dörren är stängd.
