@@ -6,6 +6,7 @@ Related: [deployment](deployment.md), [life](life.md).
 ## Module and test map
 
 ```text
+src/privatecodes.js     shared synchronous UTF-8 SHA-256 and exact private-code/layout-credential verifier (#853)
 src/layoutmigrations.js  retire old grouped poster layout ids while preserving later individual moves (#493)
 src/keep.js            the world's state across a page-made reload (#277): saveWorld / loadWorld, one part per module
 src/realweather.js    the weather cache (#674): localStorage `lunden.weather.<YYYY-MM>` = `{ v:1, at, final, d:{ y, m, t, p, s, c } }` (hourly temperature, precipitation, snowfall, weather code of one month, ~15–20 KB); archive months (`final`) never expire, forecast months are used for 3 h and refreshed in the background; at most `WEATHER.real.keepMonths` (12) kept, the oldest dropped first, and all of them if the quota is full; a bad/short entry is ignored. Not in RESET_KEEP: "Återställ" clears it (it is only a cache)
@@ -87,7 +88,7 @@ cloudflare/crash.js    POST /crash, admin GET /crash and /crash/<id>, DELETE /ad
 cloudflare/            the Worker (NOT published on Pages): worker.js (API, limits, CORS, admin emergency brake), wrangler.toml,
                        setup.sh (the user's one-command setup: login, KV, deploy, ADMIN_TOKEN, CLOUD_URL into config),
                        dev.mjs (the same Worker on Node with an in-memory KV, for tests), README.md (Swedish, for the user);
-                       .github/workflows/cloud.yml redeploys on cloudflare/** changes when the repo has Cloudflare secrets
+                       .github/workflows/cloud.yml redeploys on cloudflare/** and shared schema/verifier changes when the repo has Cloudflare secrets
 tools/glrestoretest.cjs  phone WebGL context loss (#628): a restored context makes the page reload once through the ordinary resume
                        (`reloadOnContextRestore`, src/lowmemory.js; same place and world, no "Ny version" note; max one per 60 s, sessionStorage `lunden.glReloadAt`)
 tools/reloadtest.html  headless test: resume after "Ladda om", F5 starts at START, "Börja från start", bad record;
@@ -143,3 +144,18 @@ v1 goals/shown migrate, with completed tasks initially cooling down. `lunden.sta
 statistics reset clears both counters and task state, while home reset clears the existing Life/statistics records.
 
 #708: `Life.x.chicken` keeps raw/golden/burnt progress, off-grill pose or courtyard grate placement, missing/eaten parts and completion/penalty flags. The generic holdable snapshot still excludes chicken to avoid a second restore. `keep.js` restores grill heat before Life; saved grill relighting and chicken loading emit no task progress. F returns the existing bird rather than creating a fresh rewardable one.
+
+
+## Versioned layout credentials (#853)
+
+`src/privatecodes.js` provides synchronous `sha256(text)` (TextEncoder UTF-8, lowercase SHA-256 hex), exact `isPrivateCode(input)`, `privateCodeCredential(input)` and strict `isPrivateCredential(value)`. Version 1 hashes the bytes of public salt `lunden/private-layout/v1`, one NUL byte, then the exact input. The two public digests replace only the Worker's plaintext list in this slice. No normalization happens inside these helpers: the legacy Worker continues to require exact case/spacing; the direct unlock's existing trim-only behavior and console's separate slash/case/whitespace normalization remain client responsibilities. Invalid types/strings return false/null; SHA itself requires a string.
+
+`PUT /furniture` accepts the original `{code, moves, ...}` or `{credential: {version: 1, digest: <accepted lowercase hex>}, moves, ...}`. Either valid path is sufficient. Credential version/type/digest and the two-field shape are checked before the existing reset/revision/pose/conflict/retired-id/atomic batch rules. `layoutWriteCredential()` returns a fresh default credential for the existing fixed layout writer's later migration. Public tokens are replayable; this is the existing game mechanism and **no authentication guarantee**. GET, storage schema, migrations and old-client writes are unchanged.
+
+Deploy the compatible Worker before the credential-sending client (#856). `cloud.yml` watches the shared verifier as well as `cloudflare/**`; Pages and Worker jobs can finish independently. Keep legacy input support while older clients remain. This slice does not change the public command catalogue or any client unlock/console/save path.
+
+Tests require an **external, untracked** UTF-8 JSON file `{ "codes": [<first canonical input>, <second canonical input>] }`, passed as `LUNDEN_SECRET_TEST_INPUTS=/absolute/path/inputs.json`; the first is the existing fixed writer's input. There is no committed default, production-source fallback or skip. Missing/unreadable/malformed input fails, and noncanonical input fails verifier checks. The shared test-only loader is `tools/secret-test-inputs.cjs` (#854). Run `LUNDEN_SECRET_TEST_INPUTS=/path/inputs.json node --test cloudflare/privatecodes.test.mjs cloudflare/layout.test.mjs` for known SHA/UTF-8 answers (including astral and lone-surrogate replacement), both real inputs and all existing serialization/reset/revision/conflict/migration/pose rules.
+
+For a native browser and actual local Worker HTTP write/read/reload (no apartment/WebGL), start `python3 tools/devserve.py 8811 .` and `node cloudflare/dev.mjs 8821`, then run `LUNDEN_SECRET_TEST_INPUTS=/path/inputs.json PLAYWRIGHT_MODULE=/path/to/playwright node tools/privatecodetest.cjs http://localhost:8811 http://localhost:8821`. `PRIVATE_CODE_OUTPUT` selects artifacts (default `/tmp/lunden-private-codes`). The probe tests both real inputs via exact legacy and versioned credentials, rejection and persistence across a genuine browser reload. Outputs contain labels/results, never input values. Local development storage is in memory; this is not a live Cloudflare deployment or a measured physical-device test.
+
+#853 verification: 12 targeted Node tests passed, preserving all original layout tests; a source-matched pre-change Worker comparison returned identical statuses for 20 cases across both real inputs (canonical 200, altered case/spacing/slash/types 403). Missing, unreadable, malformed and wrong-canonical external provisioning each exited nonzero. Native Chromium + local Worker HTTP probe passed all 16 checks, including both actual inputs through legacy and credential PUT, rejected version, GET persistence and actual browser reload; reviewed text-fixture image. Local artifacts: `/tmp/lunden-priority-853/result.json`, `fixture.png`, `legacy-parity.json` and provision logs. This certifies the shared verifier/Worker-first slice only; actual application console/direct unlock/client credential sending remain later #854–#856 work. No live Worker deployment, rendered gameplay or physical-phone result is claimed.

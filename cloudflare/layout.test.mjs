@@ -1,7 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+import { privateCodeCredential, isPrivateCode } from '../src/privatecodes.js';
+const { loadSecretTestInputs } = createRequire(import.meta.url)('../tools/secret-test-inputs.cjs');
+const { codes } = loadSecretTestInputs();
+if (!codes.every(isPrivateCode)) throw new Error('Secret test input does not match the current verifier');
 import { DrawingRoom } from './worker.js';
-const request = (moves, code='olof is the goat') => new Request('https://test/furniture', { method:'PUT', body:JSON.stringify({code,moves}) });
+const request = (moves, code=codes[0], ip='local') => new Request('https://test/furniture', { method:'PUT', headers:{'CF-Connecting-IP':ip}, body:JSON.stringify({code,moves}) });
 const move = (id, base=0, x=3) => ({id,base,pos:[x,0,3],quat:[0,0,0,1]});
 function room() {
  const data=new Map();let gate=Promise.resolve();
@@ -24,7 +29,7 @@ test('reject wrong code, bad geometry and duplicate ids without changing state',
 });
 
 test('both public cheat codes can save furniture',async()=>{
- for (const code of ['olof is the goat','sarah is the goat']) {
+ for (const code of codes) {
   const {instance:r}=room();
   const response=await r.fetch(request([move('f-sofa-0')],code));
   assert.equal(response.status,200);
@@ -32,7 +37,7 @@ test('both public cheat codes can save furniture',async()=>{
  }
 });
 
-const reset = (moves, expectedRevision) => new Request('https://test/furniture', {method:'PUT',body:JSON.stringify({code:'sarah is the goat',resetAll:true,expectedRevision,moves})});
+const reset = (moves, expectedRevision) => new Request('https://test/furniture', {method:'PUT',body:JSON.stringify({code:codes[1],resetAll:true,expectedRevision,moves})});
 test('whole-home reset is one durable revision and supports more than 100 pieces',async()=>{
  const {instance:r,ctx}=room();
  const moves=Array.from({length:150},(_,i)=>move(`f-piece-${i}`));
@@ -102,4 +107,35 @@ test('legacy default Verona pose is retired without moving the new default parts
  const first=await(await r.fetch(new Request('https://test/furniture'))).json();
  assert.equal(first.migrations.veronaModules,1);assert.equal(first.pieces[old],undefined);
  assert.deepEqual(Object.keys(first.pieces),[]);
+});
+
+
+const credentialRequest = (moves, credential, extra={}) => new Request('https://test/furniture', {
+ method:'PUT', headers:{'CF-Connecting-IP':'layout-credential-probe'}, body:JSON.stringify({credential,moves,...extra})
+});
+test('both versioned credentials write/read/reload through the real serialized DrawingRoom',async()=>{
+ for (const code of codes) {
+  const {ctx,instance:r}=room();
+  const credential=privateCodeCredential(code);
+  assert.equal((await r.fetch(credentialRequest([move('f-protocol')],credential))).status,200);
+  const loaded=await(await new DrawingRoom(ctx,{}).fetch(new Request('https://test/furniture'))).json();
+  assert.equal(loaded.revision,1);assert.equal(loaded.pieces['f-protocol'].pos[0],3);
+  assert.equal((await r.fetch(credentialRequest([move('f-protocol',0,8)],credential))).status,409);
+  assert.equal((await r.fetch(credentialRequest([move('f-protocol',1,8)],credential,{resetAll:true,expectedRevision:1}))).status,200);
+  assert.equal((await r.fetch(credentialRequest([{...move('f-bad'),quat:[0,0,0,0]}],credential))).status,400);
+  assert.equal((await r.fetch(credentialRequest([move('f-kposters-1-0-0-0-0')],credential))).status,410);
+  assert.equal((await(await new DrawingRoom(ctx,{}).fetch(new Request('https://test/furniture'))).json()).revision,2);
+ }
+});
+test('legacy inputs retain exact case/spacing and malformed credentials are refused without writes',async()=>{
+ const {instance:r}=room();
+ for (const code of codes) for (const input of [code.toUpperCase(),` ${code}`,`${code} `,code.replace(' ','  '),`/${code}`]) {
+  assert.equal((await r.fetch(request([move('f-rejected')],input,'layout-input-probe'))).status,403);
+ }
+ const valid=privateCodeCredential(codes[0]);
+ for (const credential of [null,{},valid.digest,{...valid,version:2},{...valid,version:'1'},{...valid,digest:valid.digest.toUpperCase()},
+  {...valid,digest:'0'.repeat(64)},{...valid,extra:true},[valid],{version:1,digest:42}]) {
+  assert.equal((await r.fetch(credentialRequest([move('f-rejected')],credential))).status,403);
+ }
+ assert.equal((await(await r.fetch(new Request('https://test/furniture'))).json()).revision,0);
 });
