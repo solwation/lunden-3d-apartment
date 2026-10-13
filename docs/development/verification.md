@@ -1143,7 +1143,7 @@ from its parent in a temporary baseline; do not restore obsolete assertions.
 | Disposition | Fixtures | Source evidence / next step |
 | --- | --- | --- |
 | Standalone (6) | basementfloortest, basementlayouttest, beershelfcachetest, cattest, combatremotetest, combatworldtest | No apartment bootstrap or WebGL renderer. Floor/layout/cat test native world geometry; combat tests preserve CPU/raycast/cache timing assertions. Remote combat needs its CJS driver's historical helper. Beer-shelf cache tests browser cache, image decoding and texture-label data; its invalid import map is tracked in #780. Five executable-module comments now identify the standalone reasons. |
-| Companion driver (1) | basemententrytest | Existing `test=lazy`, 900×600, real pointer-lock/touch/walking checks. The CJS companion invokes `runBasementEntries`; the HTML runner alone does not execute its checks. Needs driver-specific comparison. |
+| Companion driver (1) | basemententrytest | #837 verifies all 56 current native checks with the whole original CJS inputdriver: full900/controller null versus480/test=lazy/real APIs, real mouse-start and PointerLock retained. Entire raw logs match; HTML alone does not invoke the checks. Evidence below. |
 | Historical full-quality classifications (5) | architecturetest, carsoundtest, compasstest, cupshadetest, curtaintest | Architecture/cup shade read scene pixels, car sound measures analyser/RMS/rain workload, compass asserts viewport/safe-area bounds. Curtain state/own-texture pixels were included at this audit; its later complete #844 pair supports test-mode migration below. Preserve the other four fixtures' full behavior. |
 | Lighting-state review (3) | bestatest, blindtest, christmastest | Emissive/daylight state, hemisphere intensity or active light slots affect assertions. Existing test flags in the first two do not establish safe equivalence; decide coupling before migration. |
 | Raw clock-row blockers (2) | calendartest, clocktest | Current time/date or advancing clock/angle values appear in result rows. A deterministic source change needs separate review before exact comparisons; do not normalize measured output. |
@@ -2659,3 +2659,46 @@ hashes, actual exit/cleanup, native ready/leave/final records, raw differences
 and images: `/tmp/lunden-dust849/default-pair/`. All230 frozen native/new-test
 blobs and three helper hashes matched after this pair. The original whole
 Life3 fixture remains full, while broader #739/#736 and independent #850 stay open.
+
+## Basement entry native input-driver acceptance (#837)
+
+The original whole basemententrytest.cjs driver ran the complete current HTML
+body at frozen d7f0497: a full900×600/shot/cloud-empty baseline (only removing
+the original test=lazy flag) and the480×300 candidate with its existing authored
+shot/test=lazy/cloud-empty query. Both entire CJS logs, including the original
+loading/input messages, are3969 bytes and byte-identical: all56 PASS, ALL PASS,
+zero failures or page errors. Both result.json records are identical. Each
+independent runner exits0; the setsid monitor's actual exit is0. No ordinary
+CJS --compare support is assumed or added.
+
+The original normal Playwright click on the actual mouse-start button and
+bounded native PointerLock wait are unchanged. Read-only native snapshots at
+ready, after that click and after all checks have stable URL/timeOrigins:
+full900×600/controller false versus test480×300/real draw/setFull/wantsFrame,
+lazy true/full false. PointerLock is false at ready and true after activation
+and at final in both; fullscreen remains false and cloud URL empty. One actual
+document per mode is retained. Original E KeyboardEvents and the fixture's
+controlled touch.enabled/activeMode assignments are authored synthetic input,
+not physical-phone gestures.
+
+All HouseA/B closed/open/far-leaf/focus/E/touch/jamb/courtyard checks, physical
+Player/corridor/landing/connected-paving routes, shrub-instance/tree clearance,
+native normals, coplanar overlap and floor support remain. The no-invented-C-door
+predicate remains too. No source assertion, diagnostic, matrix, pose, random
+seed, quality, wait, renderer loop or input handler was changed. The original
+driver's240s entry-ready,10s PointerLock and15s default bounds are unchanged;
+the external monitor permits20min per mode and adds only three read-only
+metadata snapshots and the same60s final viewport capture.
+
+Both actual950×950 parent PNGs were inspected: all56 result rows and ALL PASS
+are visible, with only an upper app/HUD strip below them. There is no intermediate
+door/movement or scene-pixel comparison. Whole driver wall100.790s versus60.877s
+includes those external observations/captures; these descriptive samples are
+excluded from aggregate timing because the driver was instrumented. Native
+phase/result/raw/image/source/helper/PID/SID/exit/cleanup evidence is retained in
+/tmp/lunden-basement837/. All230 frozen source paths and four helper hashes
+matched physically. This baseline preceded the independent #849 Mess.dust fix;
+that later change and its changelog do not alter this fixture's asserted routes
+or its unchanged CJS driver. Final migration changes only HTML dimensions to
+480×300; reversing that line restores the entire original fixture. Existing
+test=lazy and original renderer.setAnimationLoop(null) remain. #738/#736 stay open.
