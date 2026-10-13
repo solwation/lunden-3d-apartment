@@ -7,7 +7,7 @@ name: Deploy the shared-world Worker
 on:
   push:
     branches: [main]
-    paths: ['cloudflare/**', 'src/beershelfschema.js', 'src/privatecodes.js']
+    paths: ['cloudflare/**', 'src/beershelfschema.js', 'src/privatecodes.js', 'src/falldamage.js', 'src/config.js']
   workflow_dispatch:
 
 permissions:
