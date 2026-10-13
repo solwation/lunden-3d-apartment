@@ -4,7 +4,7 @@
 import { SECRET, SCORE } from './config.js';
 const KEY = 'lunden.stats';
 
-const fresh = () => ({ cats: 0, rare: 0, byVariant: {}, petted: 0, doors: 0, lids: 0, flushes: 0, taps: 0, fridge: 0, appliances: 0, cabinets: 0, beer: 0, coffee: 0, fish: 0, turbo: 0, shots: 0, fried: 0, burnt: 0, catFish: 0, chicken: 0, wine: 0, champagne: 0, whisky: 0, milk: 0, kask: 0, posted: 0, thrown: 0, lights: 0, sat: 0, lay: 0, steps: 0, metres: 0, stairs: 0, seconds: 0, visited: {}, secrets: 0, secretKinds: {}, catPhotos: 0, grill: 0, hood: 0, songs: 0, carMusic: 0, read: 0, car: 0, magic: 0, target: 0, baskets: 0, threes: 0,
+const fresh = () => ({ pvpKills: 0, killReceipts: {}, cats: 0, rare: 0, byVariant: {}, petted: 0, doors: 0, lids: 0, flushes: 0, taps: 0, fridge: 0, appliances: 0, cabinets: 0, beer: 0, coffee: 0, fish: 0, turbo: 0, shots: 0, fried: 0, burnt: 0, catFish: 0, chicken: 0, wine: 0, champagne: 0, whisky: 0, milk: 0, kask: 0, posted: 0, thrown: 0, lights: 0, sat: 0, lay: 0, steps: 0, metres: 0, stairs: 0, seconds: 0, visited: {}, secrets: 0, secretKinds: {}, catPhotos: 0, grill: 0, hood: 0, songs: 0, carMusic: 0, read: 0, car: 0, magic: 0, target: 0, baskets: 0, threes: 0,
   byBreed: {}, seen: {}, secretRare: {}, tv: 0, pc: 0, parasol: 0, clock: 0, calendar: 0, cooked: 0, brews: 0, drawn: 0, splashes: 0, cuts: 0, dribbles: 0, catButts: 0, shattered: 0, shatterRange: 0, pingpingHugs: 0, blinds: 0, curtains: 0, airfried: 0, clips: 0, penalties: {}, penaltyPoints: 0, kittens: 0, kittenPets: 0, vacuumed: 0, tasks: 0, taskCounts: {}, legacyTaskPoints: 0 });
 
 function load() {
@@ -18,6 +18,8 @@ function load() {
       const distinct = Object.keys(s.seen.tasks ?? {}).length;
       s.legacyTaskPoints = distinct * SCORE.first.tasks + Math.max(0, s.tasks - distinct) * SCORE.again.tasks;
     }
+    if (!s.killReceipts || typeof s.killReceipts !== 'object' || Array.isArray(s.killReceipts)) s.killReceipts = {};
+    if (!Number.isSafeInteger(s.pvpKills) || s.pvpKills < 0) s.pvpKills = 0;
     return s;
   } catch {
     return fresh();
@@ -210,11 +212,26 @@ export function visitRoom(key) {
   badge(`🏠 Nytt rum: ${key.split(':').slice(1).join(':')}`, false);
 }
 
+/** A server-confirmed lethal hit, persisted together with its receipt in the existing statistics record (#871).
+ * Receipt metadata is not a score/counter: visible-stat reset retains it to reject old deliveries. */
+export function recordPlayerKill(message, self) {
+  if (message?.t !== 'hit' || message.dead !== true || !Number.isFinite(message.l) || message.l > 0 || typeof message.to !== 'string' || !message.to || message.to === self ||
+    typeof message.kill !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(message.kill)) return false;
+  const receipts = stats.killReceipts;
+  if (receipts[message.kill]) return false;
+  receipts[message.kill] = true;
+  stats.pvpKills = (stats.pvpKills ?? 0) + 1;
+  dirty = true;
+  save(); // one existing localStorage record holds count and dedup metadata atomically
+  return true;
+}
+
 export function resetStats() {
+  const receipts = stats.killReceipts;
   // Counters are also created dynamically (sandwiches, washed, cleanRoom…). Keep the exported
   // object identity, but remove every old key before restoring the current fresh schema (#712).
   for (const key of Object.keys(stats)) delete stats[key];
-  Object.assign(stats, fresh());
+  Object.assign(stats, fresh(), { killReceipts: receipts });
   dirty = true;
   lastScore = null;
   renderScore();
@@ -303,6 +320,7 @@ export function statRows() {
     ['🔊 Frågat de smarta högtalarna', `${stats.nest ?? 0}`],
     ['👣 Steg', `${stats.steps}`, `${Math.round(stats.metres)} m`],
     ['🪜 Trappturer', `${stats.stairs}`],
+    ['⚔️ Dödade spelare', `${stats.pvpKills}`],
     ['🤕 Fall', `${stats.falls ?? 0}`],
     ['🏠 Rum besökta', `${Object.keys(stats.visited).length}${roomTotal ? ` av ${roomTotal}` : ''}`],
     ['⏱ Tid i lägenheten', fmtTime(stats.seconds)],

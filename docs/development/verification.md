@@ -3954,3 +3954,10 @@ controlled due minute5→6, second lower fall6→1 surviving, then fatal fall→
 and no remaining recovery phase. This is the actual damage channel/replica, not
 a replacement damage model; actual `Fall.land`/world/spawn coverage remains #869.
 The combined harness captures native HUD4/10 and restored remote badge5.
+
+
+## Defeated-player statistics (#871)
+
+Run `node --test cloudflare/players.test.mjs` for accepted lethal receipt UUIDs, unique deaths, ignored client receipts and no ordinary/victim/fall receipt, alongside all existing room/life rules. Start `python3 tools/devserve.py 8865 .` and `node cloudflare/dev.mjs 8866`, then `PLAYWRIGHT_MODULE=/path/to/playwright CHROME_PATH=/path/to/chrome node tools/killstest.cjs http://localhost:8865 http://localhost:8866 /tmp/lunden-player-kills`. The native fixture uses real Ghosts/Combat/Worker with two actual WebSockets, original index statistics DOM/CSS and browser localStorage, while suppressing only apartment bootstrap and refusing WebGL. It checks real ordinary/two lethal results, unchanged per-hit points, immediate count/receipt persistence, invalid/legacy/own/hurt/fall results, actual reconnect and two genuine reloads, home-reset whitelist and statistics reset with retained receipts. The actual Swedish row must be visible and inside the viewport before the native DOM image is captured.
+
+Initial native runs passed the logic but their images remained under the loader/hidden HUD and are not accepted statistics-image evidence. The corrected `native-hud` run passed all 24 checks with actual exit0/no pageerrors and zero WebGL calls; its reviewed image shows “Dödade spelare 1” in the original panel. Artifacts: `/tmp/lunden-priority-871/{native,native-visible,native-hud}`. This is actual native room/storage/statistics evidence, not apartment gameplay, a live deployment or a physical-phone measurement.

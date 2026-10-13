@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { fallDamage } from './falldamage.js';
+import { recordPlayerKill } from './stats.js';
 import { COMBAT as C, TOYS } from './config.js';
 import { stepNerf, nerfFloor } from './nerf.js';
 import { combatWorldHits, combatWorldPath, combatWorldPathBlocked, prepareCombatWorld } from './combatworld.js';
@@ -332,6 +333,7 @@ export class Combat {
 
   /** The room: our shot hit someone. */
   hit(m, g) {
+    recordPlayerKill(m, this.ghosts.me); // server lethal-hit receipt only; separate from hit points (#871)
     this.hits++;
     this.onHitCb(m, g);
     if (m.w === 'nerf') this.sfx?.playerHit?.();
