@@ -407,7 +407,7 @@ pixel equivalence or extra replacement app load is claimed. Asymmetrical capture
 aggregate speedup calculations. All 247 frozen source paths and exact guarded fixture/helper hashes match.
 Raw logs/summary: `/tmp/runtests-496140/`; actual ready/final phases, source/provenance, independent PID/SID/exit,
 test PNG and full capture error: `/tmp/lunden-life823/laptop-*` and `laptoptest-*`. Laundry disposition follows;
-life2 and #823/#739/#736 remain open, with full default section coverage still needing its separate comparison.
+Life2 acceptance follows; the bounded #823 scope is complete, while broader #739/#736 remain open.
 
 
 #823 laundry retains its WHOLE original executable at frozen `d390634` (no new test query or guard). The one
@@ -431,7 +431,32 @@ Both PNGs were inspected: all 61 rows and generic final house façade at origina
 programme/folding pixel equivalence. All 247 frozen source paths and exact unchanged fixture/helper hashes match.
 Raw logs/summary: `/tmp/runtests-503245/`; source/provenance, all actual ready/leave/final phases, independent PID/SID/exit
 and both PNGs: `/tmp/lunden-life823/laundry-*` and `laundrytest-*`. This is a blocked exact-row migration disposition,
-not a rendering exemption or fixed product defect. Life2 and #823/#739/#736 remain open.
+not a rendering exemption or fixed product defect. Life2 acceptance follows; broader #739/#736 remain open.
+
+
+#823 life2 acceptance at frozen `30cebbe`: complete 6482-byte raw logs match, all 137 ordered PASS rows and
+ALL PASS, genuine independently monitored exit 0. The default pair ran ALL six original sections, each in its own
+real life/shot iframe, with every current action, store/carrier, drink/clean/rack/programme, bin/drop-off, score,
+record-roundtrip, repeated audit and dynamic diagnostic retained. The optional `only` section filter remains unchanged;
+serialize/load checks restore records and are not extra app-document loads. The approved pre-pair testMode-only
+fullscreen guard remains immediately before each original loader touch-start, inert in full mode. Final migration
+changes only shared iframe dimensions and appends test to the original query template; no new seed, normalization,
+wait/timer, matrix, quality, baseline or assertion change.
+Twelve unique child document identities at ready, twelve pagehide observations and twelve passive pre-remove records
+prove SIX actual loads/removals per mode. All full ready phases were 900×600/controller null/no fullscreen; the first
+full pre-remove remained 900×600/no fullscreen, the other five reached native fullscreen 1280×800. Every test ready/
+pre-remove phase was 480×300 with real controller API/no fullscreen. Final native frames are EMPTY in both modes,
+as authored: all six frames were removed. No recorded lazy/full fields or event-isTrusted claim is made.
+Both successful fullPage PNGs were inspected: all 137 rows vertically and ALL PASS, text only (some long test rows
+crop at the right edge), no app-scene or intermediate-item pixel equivalence. Full 387.369s → test 403.815s includes
+captures; test was slower in this single shared-machine sample, so no speedup claim.
+Unequal horizontal result coverage excludes this pair from qualified timing aggregation. All 247 frozen source paths and
+exact guarded fixture/helper hashes match. Raw logs/summary: `/tmp/runtests-513972/`; source/provenance, all actual
+ready/pagehide/pre-remove/final phases, independent PID/SID/exit and both text PNGs:
+`/tmp/lunden-life823/life2-*` and `life2test-*`.
+The bounded #823 scope is complete: laptop has 13 identical logical PASS rows with full capture missing and no visual/
+aggregate claim; laundry retains its whole original full fixture after 61 PASS per mode with one real-time raw-row
+mismatch; life2 has 137 identical PASS rows. This is not an all-migrated or speedup claim; #739/#736 remain open.
 
 | Fixture (`tools/`) | Audit disposition | Concrete source requirement |
 |---|---|---|
@@ -469,7 +494,7 @@ not a rendering exemption or fixed product defect. Life2 and #823/#739/#736 rema
 | `kittentest.html` | Original full retained (#822) | Both complete modes have 16 PASS, but exact raw rows 2/12 differ in native cat name/breed/score/badge and photo name. Comparison exit 1; no normalization, migration or proven product bug/cause. Current original including #848 writer restored byte-for-byte, pre-pair guard removed. |
 | `laptoptest.html` | Logical parity (#823); full capture failed | All 13 ordered PASS rows and ALL PASS byte-identical, including texture v2→v8 and seeded clip order. Full ready 900×600 → native fullscreen 1280×800/controller null; test 480×300/real API/no fullscreen. Actual exit 0; `/tmp/runtests-496140/`. Full screenshot timed out; test-only image, exclude speedup aggregation. |
 | `laundrytest.html` | Retain original full (#823); real-time row differs | Complete 61 PASS / ALL PASS in both modes, but exact row 28 differs (left 26.50/ran 8.52 versus left 26.45/ran 5.04). Seven real documents per mode, original 480×300/full controller null versus test real API/no fullscreen. Actual compare exit 1; `/tmp/runtests-503245/`. No migration or speedup aggregation. |
-| `life2test.html` | Candidate | Actual life/item action integration and persistence. |
+| `life2test.html` | Migrated (#823) | All 137 ordered PASS rows and ALL PASS byte-identical; six complete default sections/six actual removed frames per mode, all action/save/audit/timer/score diagnostics and optional filter preserved. Full ready 900×600/controller null (five later native fullscreen1280×800) → test480×300/real API/no fullscreen. 387.369s →403.815s, actual exit0, no speedup claim; `/tmp/runtests-513972/`. |
 | `life3test.html` | Candidate | Actual life/item cooking/actions and persistence. |
 | `lifetest.html` | Candidate | Full life inventory/food/storage/reload action flows. |
 | `lifttest.html` | Migrated (#824) | 24 identical ordered PASS rows, 0 FAIL; native original 800×500/full → 480×300/test. One actual main document per mode; lift.loadState is native state restoration, not an app reload. Doors/panel/collision/ride/stair predicates preserved; evidence below. |
