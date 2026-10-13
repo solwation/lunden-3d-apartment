@@ -4525,3 +4525,21 @@ with explicit game/Worker/artifact args and `--protocol-only` for existing pre-g
 rear2HP, body/wall/miss/legacy/lethal/style/near-max controls. Keep pre-fix failing
 logs separate. Node covers invalid/rate greetings, long pause, hibernate, latejoin,
 fresh attachment and independent core/nose/jaw. No apartment/phone/FPS claim.
+
+#936 correcting acceptance (parent remains open): `native-rebased/` passed10/CLI0
+and unchanged `rear-control-rebased/` passed20/CLI0; Node passed27/CLI0. Both actual
+HUD PNGs were inspected, zero pageerrors/WebGL. The owned fresh Worker1808358
+started17:42:21Z after `rebased-freeze.json`; all250 manifest paths matched after
+both runs. The imported #715 combatworld change justified these narrow reruns;
+no geometry was changed or broad grid repeated. Before-fix `worker-repro.json`
+retains its real head:true/l8 failing result separately. Finite actual Ghost pose
+diagnosis over60 models/4860 rays found204 arm-first deeper claims during paused
+waves, zero in sampled quiet/turn/saber cases; this does not establish all-pose
+coverage and did not justify a new rear heading restriction. Artifacts stay under
+`/tmp/lunden-priority-936/`. Post-greet rear restoration is #941, so this correcting
+Refs step does not close #936 or its head-feature parents.
+
+Runtime `ecf8ffb` was deployed by Worker-run38441111720/job115447621923: the
+actual cloudflare/wrangler-action step completed SUCCESS, not merely a green
+workflow or skipped deploy. Final published execution manifest remained250/250
+byte-identical. This confirms deployment of the bounded private rear gate only.
