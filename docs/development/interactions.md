@@ -991,3 +991,20 @@ rear/lateral and greeting-Front permissions remain independent. A yaw-only chang
 this small does not cross the unchanged client .03rad send threshold; an ordinary
 weapon/suit/score publication can carry the new yaw. The native protocol explicitly
 uses a real saber→rifle switch, never forced previous state or an altered budget.
+
+### Greeting combined with a tiny standing turn (#955)
+
+The separate default-false named `allowGreetingAfterTurnFront` reuses exactly
+`rifleHeadAfterTurnFrontRegion`: the whole rounded cell, original triangles/ray
+entry and the existing guessed x/y/cone limits remain unchanged. This selects
+the bounded Front band after an accepted greeting AND an accepted small yaw
+change, while preserving the independent immutable-greeting943 and ungreeted
+turn944 branches. No model, bone, animation, phase or wire changes are introduced.
+
+The same known first-standing `frontTurn` anchor must remain valid. Position and
+crouch cannot change; every accepted heading remains inside the existing guessed
+±.02rad corridor. Movement/crouch/escape and return never restore it. Ordinary
+yaw-only publication still requires the original .03 threshold; a normal held
+weapon/suit/score update can carry a smaller accepted yaw without forced state.
+Larger turns and unsupported poses retain body1; this is a finite support family,
+not arbitrary-turn or all-pose restoration.

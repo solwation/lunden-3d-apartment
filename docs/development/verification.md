@@ -4974,3 +4974,55 @@ The full parent families939/931/917 remain open for larger turns and other poses
 
 
 #715 post-cold first-shot diagnostic: `nerfreciprocaltest.cjs --apartment --membership --post-cold-capture` preserves one real held-use/WS shot, captures first outcome before bounded membership/native oracle, then one actual manual World render+GL-finish and bounded CDP image. Requires an exclusive180s supervised slot and fresh source-frozen own Worker. Frozenfc7fd0b: actual Node/wrapper0,11checks; targettrue/clear391.5ms, server hit/hurt peer10→9. Registration-paused Scene is not ordinary running gameplay/FPS. The saved PNG is substantially covered by the real leaderboard name modal: loading/menu/rotate-only cover PASS does not certify unobstructed rendering. Preserve raw result and image, no rerun/second shot or phone acceptance. See issue715 validation README and `/tmp/lunden-priority-715-postcold/` for exact source/exits/provenance and remaining rendered/physical criteria.
+
+### Combined greeting and tiny-turn Front (#955)
+
+Run `tools/riflefrontcombotest.cjs GAME_URL WORKER_URL OUTPUT` with the usual
+PLAYWRIGHT_MODULE/CHROME_PATH environment. It measures actual native Ghosts
+push/draw/animate/wave/swing over all60 canonical appearances, four headings,
+standing yaw endpoints, intermediate/capped first draws and before/repeated/late
+waves. A finite300s geometry budget writes per-model checkpoints; timeout or
+incomplete matrices fail. Independent earlier-other→FIRSTpureSkull forgeries,
+eight rounded-cell corners and translated actual snapshots near coordinate limits
+must remain safe. No WebGL or apartment is loaded.
+
+A newly owned Worker starts after source freezing and geometry. Normal greeting
+and a genuine saber→rifle publication carry the accepted .01 heading; no forced
+prev/send state or modified thresholds. Actual nearest Combat contact must yield
+2HP, self/public health, one lethal UUID/award/reset and replay; torso and legacy
+remain body1, repeated greeting does not reset private history, a nearer actual
+wall blocks the complete ray, and the paused large-turn Nose-first forged Skull
+stays body1 after escape/return. Existing exact60/min score cap still applies.
+
+The optional complete clean-grid proof is accepted only with exact measured
+function/runtime hashes; it is explicitly a phase proof, not a rewritten original
+whole outcome. `--protocol-only` is a scoped integration check with no grid
+execution/replay claim. Preserve incomplete/failed runs and the separate known
+#945 lateral fixture conflict honestly. Native HUD evidence is not World/phone/
+FPS/all-pose physics. Publication results and genuine Wrangler are recorded below.
+
+#955 actual whole native acceptance: all60 canonical appearances/four headings,
+151200 rays,34440 actual nearest Skull positives/0bad,34042 earlier unsupported
+surfaces/0false,23654 FIRSTpureSkull hidden-forgeries/0false,22960 eight-cell
+corners/0bad. Near-max translated actual Ghost snapshots retained60 supported
+models/480 corners/0bad. The300s geometry limit completed without timeout.
+Whole native27/CLI0, no page errors or WebGL; owned Worker1895424 started
+19:50:12.254Z after sourcefreeze and grid. Bounded monitor actual Node0 and
+225.007s wall time; owned Worker/browser exited and all235 source hashes match.
+
+Normal accepted greeting + saber→rifle carrying .01 yaw gave head2/HP8, torso7,
+one lethal -1 UUID/award/reset/replay. Repeated ordinary greeting, actual nearer
+wall, paused3.14 Nose-first forged deeper Skull body9, escape/return body8, legacy
+body7 and exact60/min next-hit rejection all passed. The inspected HUD picture
+shows the last body marker Träff! with separate earlier receipt rows; no avatar
+render/World/phone/FPS/all-pose claim. Focused Node6/CLI0 plus recovery-related
+Node8/CLI0; broader Node33PASS/1FAIL/CLI1 retains known945. Same deterministic
+UUID00000002/input reproduces that old lateral expectation on unchangedfc7fd0b.
+An intermediate expanded Node failure was an artificial61s test-clock jump
+expiring an old shooter normally; independent fresh shooters corrected only the
+fixture. That failed output is retained, not accepted as green.
+
+Final rebase preserves incoming7296a9b changes only in verification.md,
+docs/validation/issue-715/README.md and tools/nerfreciprocaltest.cjs; all235
+executed runtime/driver bytes remain identical. No unnecessary broad-grid rerun
+or rewritten old provenance is claimed. Deployment is recorded separately.

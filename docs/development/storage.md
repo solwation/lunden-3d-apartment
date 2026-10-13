@@ -646,3 +646,14 @@ message, public model/phase, health counter, timer or KV write is added.
 Number.EPSILON×128 only guards floating subtraction/trigonometric wrap at equal
 r2 corridor endpoints (under the unchanged finite r≤100 bound); it does not change
 normalized state, hc/ray precision or model/wire/surface tolerances.
+
+### Combined greeting/turn permission (#955)
+
+PlayerRoom adds only `allowGreetingAfterTurnFront`, derived from private accepted
+`gt` presence, `turned === true` and the existing `knownFrontTurn(frontTurn)`
+object contract. No new attachment field, initialization, migration, public
+property, KV write, timer or message is added. Existing first-standing anchor and
+permanent normalized p/c/heading invalidation survive hibernation, healing and
+death unchanged; missing/null/malformed legacy anchors do not grant permission.
+Rejected/invalid greetings and states do not manufacture a new history. Other
+named and legacy positional/bool/default/null options keep their original rules.

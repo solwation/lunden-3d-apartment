@@ -204,3 +204,11 @@ from the first standing pose after greeting. Movement, crouching or leaving that
 private corridor permanently closes this additional permission; it adds no pose
 timer or animation change. See [interaction rules](docs/development/interactions.md)
 and [targeted verification](docs/development/verification.md).
+
+The narrow Front skull band also supports an accepted greeting combined with
+a standing yaw change inside the original private first-heading ±.02 corridor
+(#955). It uses a separate server permission and the unchanged measured region;
+leaving that corridor, movement, crouching or unknown history stays body-only.
+`tools/riflefrontcombotest.cjs` verifies actual native wave/turn contacts and a
+fresh Worker receipt. No timer restores pose eligibility or changes publication
+thresholds, geometry, damage counters or other surface families.
