@@ -460,7 +460,7 @@ export async function combatWorldPathBlocked(scene, ghosts, camera, points, laye
     for (let p = object; p; p = p.parent) if (!p.visible || p === ghosts || p === camera || p.userData.moving) return true;
     return false;
   };
-  const pending = new Set(), instanceCache = new WeakMap(), pathBox = new THREE.Box3().setFromPoints(points);
+  const pending = new Set(), waiting = new Set(), overlaps = new Map(), instanceCache = new WeakMap(), pathBox = new THREE.Box3().setFromPoints(points);
   const query = new THREE.Raycaster(); query.camera = camera; query.layers.mask = layers.mask;
   try {
     // Only potentially overlapping native geometry is promoted; no synchronous triangle build.
@@ -471,14 +471,30 @@ export async function combatWorldPathBlocked(scene, ghosts, camera, points, laye
       if (!excluded(object)) {
         if (safe(object) && accepts(object, ghosts, camera) && query.layers.test(object.layers) && !emptyPath(object, points)) {
           const entry = cache.get(object.geometry);
-          if (entry?.spatial && !entry.spatialReady && !entry.settled) { if (!pending.has(entry)) { entry.urgentUsers = (entry.urgentUsers ?? 0) + 1; entry.urgent = true; pending.add(entry); } scheduleUrgent(); }
+          if (entry?.spatial && !entry.spatialReady && !entry.settled) { if (!pending.has(entry)) { entry.urgentUsers = (entry.urgentUsers ?? 0) + 1; entry.urgent = true; pending.add(entry); waiting.add(entry); overlaps.set(entry, []); } overlaps.get(entry).push(object); scheduleUrgent(); }
         }
         stack.push(...object.children);
       }
       if (performance.now() - slice >= C.buildMs && await pause()) return finish(null);
     }
     diagnostic.stage = 'cache';
-    while ([...pending].some(entry => !entry.spatialReady && !entry.settled && !entry.cancelled)) if (await pause(true)) return finish(null);
+    while ([...waiting].some(entry => !entry.spatialReady && !entry.settled && !entry.cancelled)) {
+      if (await pause(true)) return finish(null);
+      // A cold sphere may overlap even when newly scanned private vertex bounds do not.
+      // Shared geometry stays urgent until EVERY originally overlapping occurrence prunes.
+      for (const entry of waiting) {
+        if (entry.cancelled) return finish(null, 'cache-invalidated');
+        if (!entry.valid || entry.scan < entry.position.count || entry.spatialReady || entry.settled) continue;
+        let prune = true;
+        for (const mesh of overlaps.get(entry)) {
+          if (!emptyPath(mesh, points)) prune = false;
+          if (entry.cancelled) return finish(null, 'cache-invalidated');
+          if (performance.now() - slice >= C.buildMs && await pause()) return finish(null);
+          if (!prune) break;
+        }
+        if (prune) { waiting.delete(entry); entry.urgentUsers--; entry.urgent = entry.urgentUsers > 0; }
+      }
+    }
     if ([...pending].some(entry => entry.cancelled)) return finish(null, 'cache-invalidated');
     diagnostic.stage = 'traversal';
     for (let segment = 1; segment < points.length; segment++) {
@@ -547,7 +563,7 @@ export async function combatWorldPathBlocked(scene, ghosts, camera, points, laye
     diagnostic.deadlineOverrunMs = Math.max(0, ended - deadline);
     // One bounded, non-identifying record; cache-builder tasks during yields are outside the active intervals.
     lastPath = diagnostic;
-    for (const entry of pending) { entry.urgentUsers--; entry.urgent = entry.urgentUsers > 0; }
+    for (const entry of waiting) { entry.urgentUsers--; entry.urgent = entry.urgentUsers > 0; }
     metrics.maxAsyncSliceMs = Math.max(metrics.maxAsyncSliceMs, performance.now() - slice); clearTimeout(timer);
   }
 }
