@@ -528,7 +528,7 @@ no executable fixture changes or new browser results are part of this audit.
 | `measuretest.html` | Accepted in #826 | Actual complete original full/test logs byte-identical, all 3 ordered PASS; native original 900×600/null controller versus 480×300/real test APIs. Current wall-distance/DOM-label/third-clear actions retained, superseding the earlier unverified branch claim. |
 | `menutest.html` | Candidate; reported mismatch | Branch full-page crash versus test PASS is not parity; current original 900×600 menu/reset fixture retained. |
 | `mieletest.html` | Accepted in #826 | Complete full DEFAULT action/photo/fireworks/rarity flow has byte-identical logs, all 29 PASS; actual original 900×600/null controller versus 480×300/real APIs. No only=fireworks shortcut; unchanged own-coat-canvas/native colors/hand/action predicates supersede unverified branch claim. |
-| `milktest.html` | Unverified branch claim | Reported parity lacks retained logs; actual carton/pour/drink actions, original 900×600 source retained. |
+| `milktest.html` | Accepted in #826 | Complete original full/test logs byte-identical, all 16 ordered PASS; native 900×600/null controller versus 480×300/real APIs. Actual carton/pour/fill/hex/contents/drink/held/F actions retained; no rendered-liquid pixel comparison. |
 | `mirrortest.html` | Explicit reflection exclusion (#736) | Actual active Reflector and ghost before/after-mirror drawing hooks; retain reflection mode. |
 | `musicintegrationtest.html` | Candidate; trusted activation | Actual appliance/failed-recording media; requires real #music-test-start click and audio waits (old run reported >10 min). |
 | `musicreloadtest.html` | Candidate; trusted activation | Actual Sonos selection/playback after reload; requires real #music-test-start click in reloaded iframe. |
@@ -2381,8 +2381,7 @@ but only an upper canvas strip. No intermediate measuring-line or label-pixel
 inspection is claimed. This pair is excluded from speedup aggregation because
 capture coverage differs. Frozen current/guarded fixture/helper hashes, complete
 raw/native records and genuine setsid/Popen/wait PID/SID/exit:
-`/tmp/lunden-measure826/measuretest/`. Milk remains pending under #826; Miele
-acceptance follows below;
+`/tmp/lunden-measure826/measuretest/`. Miele and milk acceptance follow below;
 #740/#736 remain open. No shorter `only=fireworks` Miele result will substitute
 for its full default action/rarity/photo flow.
 
@@ -2459,7 +2458,7 @@ complete diagnostics; no intermediate cat/fireworks/holding/action-pixel or
 rendered-scene equivalence is claimed. This pair is excluded from speedup
 aggregation because capture coverage differs. Frozen source/helper hashes,
 complete raw/native records and genuine setsid/Popen/wait PID/SID/exit:
-`/tmp/lunden-measure826/mieletest/`. Milk remains pending; #826/#740/#736 stay open.
+`/tmp/lunden-measure826/mieletest/`. Milk acceptance follows below; #740/#736 stay open.
 
 
 ## Beer-can reload: startup-order fix and complete native acceptance (#841)
@@ -2505,3 +2504,29 @@ The authored ?shots path keeps its original 900×600/full queries, camera/step a
 retained reload; that branch was source-verified, not run as another screenshot
 app. Every current assertion, original action and both persistence checks remain.
 This current acceptance supersedes #807's interrupted result; #738/#736 stay open.
+
+## Milk complete native action acceptance (#826, final)
+
+`milktest` is migrated by changing only query/dimensions and retaining the approved
+pre-pair testMode-only fullscreen suppression before original touch, original
+full-mode behavior unchanged. At frozen `06adc19` plus guard (existing beer-shelf
+startup barrier and changelog703 included), `/tmp/runtests-554030/` has entire
+byte-identical logs: all 16 ordered PASS and ALL PASS per mode, zero FAIL/pageerrors,
+independently monitored actual exit 0. Every current stand-search, matrix, door/
+carton/held/pour/tilt/native fill/color-hex/contents/sip/F predicate and diagnostic
+remains untouched; no seed, normalization, timer, wait, quality or matrix override.
+Two actual ready and two final records verify one main document per mode, original
+900×600/null controller versus 480×300/real draw/setFull/wantsFrame APIs, stable
+URL/timeOrigin identities, no fullscreen and empty cloud URL.
+Wall 137.067s → 84.697s includes both saved/inspected viewport captures. Both show
+all sixteen vertical result rows and ALL PASS; full shows final fridge/carton/
+beer-shelf/HUD, while test has long text clipped right and only a thin canvas
+edge. No intermediate pour/liquid-pixel/action-scene equivalence is claimed.
+This pair is excluded from speedup aggregation because capture coverage differs.
+Frozen source/helper hashes, complete raw/native records and genuine monitor
+PID/SID/exit: `/tmp/lunden-measure826/milktest/`.
+
+All three bounded #826 fixtures have complete unchanged-predicate native parity:
+measure 3, full DEFAULT Miele 29 and milk 16 ordered PASS per mode. Each pair has
+its recorded frozen runtime; milk includes the later `06adc19` startup fix, and
+no repeat of the earlier pairs is claimed. #740/#736 remain open.
