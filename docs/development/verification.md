@@ -526,7 +526,7 @@ no executable fixture changes or new browser results are part of this audit.
 | `ghostbadgetest.cjs` | Own rendering fixture | Bootstrap blocked; actual Worker/controlled THREE renderer, exact 7 calls/6 textures, cleanup and desktop/phone images. |
 | `ghosttest.cjs` | Full screenshot rendering; dynamic rows | Actual multi-page/Worker and visible ghost/name-tag screenshots; 320×200 already. PASS rows include elapsed wall time; no normalization permitted. |
 | `measuretest.html` | Accepted in #826 | Actual complete original full/test logs byte-identical, all 3 ordered PASS; native original 900×600/null controller versus 480×300/real test APIs. Current wall-distance/DOM-label/third-clear actions retained, superseding the earlier unverified branch claim. |
-| `menutest.html` | Candidate; reported mismatch | Branch full-page crash versus test PASS is not parity; current original 900×600 menu/reset fixture retained. |
+| `menutest.html` | Accepted in #827 | Complete original full/test logs byte-identical, all 18 ordered PASS; actual 900×600/null controller versus 480×300/real test APIs before authored iframe removal. Original menu/reset actions and reset navigation stub retained; supersedes the earlier unverified branch claim. |
 | `mieletest.html` | Accepted in #826 | Complete full DEFAULT action/photo/fireworks/rarity flow has byte-identical logs, all 29 PASS; actual original 900×600/null controller versus 480×300/real APIs. No only=fireworks shortcut; unchanged own-coat-canvas/native colors/hand/action predicates supersede unverified branch claim. |
 | `milktest.html` | Accepted in #826 | Complete original full/test logs byte-identical, all 16 ordered PASS; native 900×600/null controller versus 480×300/real APIs. Actual carton/pour/fill/hex/contents/drink/held/F actions retained; no rendered-liquid pixel comparison. |
 | `mirrortest.html` | Explicit reflection exclusion (#736) | Actual active Reflector and ghost before/after-mirror drawing hooks; retain reflection mode. |
@@ -2556,3 +2556,36 @@ All three bounded #826 fixtures have complete unchanged-predicate native parity:
 measure 3, full DEFAULT Miele 29 and milk 16 ordered PASS per mode. Each pair has
 its recorded frozen runtime; milk includes the later `06adc19` startup fix, and
 no repeat of the earlier pairs is claimed. #740/#736 remain open.
+
+## Menu complete native acceptance (#827)
+
+The complete original default `menutest.html` was compared on frozen
+`4daabbb6a80ce0a47bf2641b64596a2b517b2bb5`, with its original 900×600/plain
+index setup and the 480×300/test setup. Both logs contain all 18 ordered PASS
+rows and `ALL PASS`; the entire 797-byte outputs are identical. The independent
+monitor recorded actual exit 0. Evidence is retained in `/tmp/runtests-561485`
+and `/tmp/lunden-menu827`; observed runner wall times were 82.830 s and 72.916 s,
+including both successful captures. These are descriptive measurements pending
+#764 timing qualification.
+
+The passive observer recorded one actual app document per mode: original
+900×600/null controller and 480×300/real draw/setFull/wantsFrame APIs, with
+stable URL/timeOrigin identities, no fullscreen and empty cloud query.
+Both ready snapshots and trusted removal-pagehide snapshots retain those
+identities. The original fixture removes the iframe before publishing results,
+so final app-frame snapshots are empty. Runner `controller: null` is retained
+and supplemented by the observer's actual pre-removal API evidence.
+
+Both actual PNGs show all 18 result rows and `ALL PASS`, with no observed
+right/bottom crop. They show the text-only final document after iframe removal;
+there is no rendered scene or intermediate menu-state pixel comparison.
+All original button, instructions, to-start, confirmation/cancellation and
+session-storage predicates remain unchanged. The original `resetHome.go` stub
+remains: this checks the authored reset flow, not actual reset navigation.
+Natural uncaught exceptions, actions and waits are unchanged; no guard, new
+seed, normalization or quality override was added. Migration changes only the
+iframe query and dimensions. Reversing those two lines reproduces the entire
+frozen original fixture; runtime source/data, runner and helper hashes match
+that pair's recorded base. Parent #740 and #736 remain open.
+  f.width = 480; f.height = 300;
+  f.src = '../index.html?test';
