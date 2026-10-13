@@ -5026,3 +5026,12 @@ Final rebase preserves incoming7296a9b changes only in verification.md,
 docs/validation/issue-715/README.md and tools/nerfreciprocaltest.cjs; all235
 executed runtime/driver bytes remain identical. No unnecessary broad-grid rerun
 or rewritten old provenance is claimed. Deployment is recorded separately.
+
+#955 deployed runtime557cff15da5cb596ff23a129bc5ee1efa613bc27, changelog756.
+Worker workflow38458600007/job115507608002 and the actual
+`cloudflare/wrangler-action@v3` step completed SUCCESS, not skipped. Final
+fetch/rebase retained235/235 exact executed runtime/driver hashes; this final
+commit changes documentation only. Deployment is not a live phone-match claim.
+Only955 closes here;939/931/917 stay open for the orchestrator's explicit
+criterion-by-criterion support/fallback audit.956 is not an automatic chain or
+unrestricted positive requirement. No further functional issue is started.
