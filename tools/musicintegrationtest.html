@@ -1,13 +1,14 @@
 <!doctype html><meta charset="utf-8"><title>Music appliance integration test</title><pre id="out">running…</pre>
 <script>
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-const frame = document.createElement('iframe'); frame.src = '../index.html'; document.body.append(frame);
+const frame = document.createElement('iframe'); frame.width = 480; frame.height = 300; frame.src = '../index.html?test'; document.body.append(frame);
 frame.onload = async () => {
   if (document.readyState !== 'complete') await new Promise((r) => window.addEventListener('load', r, { once: true })); // media loads after the outer test document
   const w = frame.contentWindow, lines = [], check = (v, s) => lines.push(`${v ? 'PASS' : 'FAIL'} ${s}`);
   const until = async (fn) => { for (let i = 0; i < 400 && !fn(); i++) await wait(50); return fn(); };
   try {
     await until(() => w.__app); const app = w.__app;
+    if (app.testMode) frame.contentDocument.documentElement.requestFullscreen = undefined;
     app.renderer.setAnimationLoop(null);
     // Real activation, as in a visit: Chromium may defer the first media pipeline in an unactivated iframe.
     // Click this button in a browser (or via Playwright); synthetic .click() is not a user gesture.

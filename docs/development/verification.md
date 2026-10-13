@@ -530,7 +530,7 @@ no executable fixture changes or new browser results are part of this audit.
 | `mieletest.html` | Accepted in #826 | Complete full DEFAULT action/photo/fireworks/rarity flow has byte-identical logs, all 29 PASS; actual original 900×600/null controller versus 480×300/real APIs. No only=fireworks shortcut; unchanged own-coat-canvas/native colors/hand/action predicates supersede unverified branch claim. |
 | `milktest.html` | Accepted in #826 | Complete original full/test logs byte-identical, all 16 ordered PASS; native 900×600/null controller versus 480×300/real APIs. Actual carton/pour/fill/hex/contents/drink/held/F actions retained; no rendered-liquid pixel comparison. |
 | `mirrortest.html` | Explicit reflection exclusion (#736) | Actual active Reflector and ghost before/after-mirror drawing hooks; retain reflection mode. |
-| `musicintegrationtest.html` | Candidate; trusted activation | Actual appliance/failed-recording media; requires real #music-test-start click and audio waits (old run reported >10 min). |
+| `musicintegrationtest.html` | Migrated (#851); trusted activation | Complete original pair and final written test each preserve 17 PASS/ALL PASS and identical 921-byte logs. Real native button/media preserved; original companion exit1 CDP errors retained, written runner/companion0 with separate native OS policy evidence. No qualified timing or scene-pixel equivalence claim. |
 | `musicreloadtest.html` | Candidate; trusted activation | Actual Sonos selection/playback after reload; requires real #music-test-start click in reloaded iframe. |
 | `musictest.html` | Own fixture | Actual audio recordings/decoding/analyser and module lifecycle, no apartment iframe. |
 | `neighboropeningstest.html` | Full reflection/lighting | Shared reflection envMap and night envMapIntensity/emission/window-colour checks for actual glazing. |
@@ -1162,6 +1162,49 @@ per issue). Each needs its own actual full/test runs and unchanged assertions:
 | Care and persistence | bedcaretest, clothtest, colddrawertest |
 | Interaction | cheattest, booktest, crouchtest |
 | Cooking and cloud state (#811 complete) | cooktest/cuptest retain original full mode after actual raw differences; cloudtest migrated with exact native evidence below |
+
+#851 `musicintegrationtest` migrated after one complete original plain-index/default-iframe full/test pair at
+frozen `1a8d210` and one meaningful final written-context verification. Every current 17 PASS row and ALL PASS
+matches in the complete 921-byte raw logs, including the native running AudioContext and actual recording path
+`music/morning-blue.ogg`, radio rotation/wrap, PC/laptop/Kaffeturbo streaming/release, playbackRate 1.25,
+failed-file silent fallback and zero generated notes. Original real media clocks/waits and authored turbo.now
+manual test clock, synthetic ended events, failedFiles and native oscillator counter remain exact; no new
+seed, clock/wait, quality/matrix, media/AudioContext, baseline, normalization or assertion changes.
+The original fixture did not author 900×600: its one plain-index iframe had default 300×150. Final source sets
+480×300 and test query; one later-reviewed testMode-only fullscreen suppression follows app lookup, BEFORE
+the original renderer.setAnimationLoop(null) and existing music-test-start gate. Full mode is inert, and the
+whole inverse of ONLY dimensions/query/guard equals the original frozen executable. Renderer stopping before
+the gate remains authored behavior; it is not an output marker or a measured native stop-field claim.
+Both original modes received exactly one native normal button click, with actual isTrusted/userActivation
+and matching URL/timeOrigin evidence. Full ready 300×150/null controller → after-click/final 1280×800/fullscreen;
+original test ready 480×300/real three-method API → after-click/final 480×300/fullscreen. Original public runner
+exit 0 is separate from companion exit 1: BOTH CDP Browser.getBrowserCommandLine queries failed because
+--enable-automation was absent. Those failures are retained. Separate native Linux /proc reads of owned
+Chrome PIDs 602997 and 603524 (parent runner 602960) found no autoplay-policy/Autoplay-feature override; these
+observations are in the orchestration tool transcript, not a successful CDP record or the absent watch file.
+The two successful original PNGs were inspected: full is fullscreen sky/HUD covering ALL parent result text;
+test shows a fullscreen 480 HUD/dark façade over the left and only right-edge raw-text fragments. They prove
+capture/layout state, not recording/action/scene-pixel equivalence. Original full85.299s/test77.483s and
+monitor165.030s are descriptive only; unequal horizontal result coverage excludes this pair from qualified
+speedup aggregation. No app was rerun merely to hide the policy-query failures or replace those images.
+The one final written test uses the normal 1280×800 public-runner parent, new frozen candidate source and
+separately versioned companion. Actual ready/click/after/final remains 480×300/test API/no fullscreen;
+one same-document trusted click, all 17 PASS/ALL PASS and whole raw 921 bytes equal retained original full.
+Actual public runner 0 AND companion 0, 75.212s (independent monitor77.330s). CDP still fails and is explicitly
+preserved as diagnostic-only: separate /proc fallback records actual owned Chrome 607130/parent runner 607104,
+executable and Chrome's one joined argv plus original caller arguments, with no autoplay override. No flag
+was added. The successful written PNG shows all 17 result row/ALL PASS and a final dark façade/HUD/toasts;
+no intermediate music/appliance-pixel or controlled timing claim. Its capture observer's intendedMode/file
+suffix full means normal 1280 parent; actual URL?test/controller and public summary mode written identify the
+real test mode. No absent lazy/full/isTrusted lifecycle fields are invented.
+All 247 frozen source paths, each exact fixture and versioned helper hashes match; original four pair helpers
+remain untouched. Original raw/summary: `/tmp/runtests-602960/`, original PID/SID/exit, native inputs/finals,
+CDP failures and both PNGs: `/tmp/lunden-music851/`. Written raw/summary: `/tmp/runtests-607104/`; guarded source,
+OS-policy/input/final identity, runner-versus-companion exits, image and proofs: `/tmp/lunden-music851-written/`.
+The existing gate still needs a trusted real click; the reviewed external companion forks the PUBLIC HTML
+runner and separately accounts activation/policy failures without rewriting its output or media. Its written
+monitor invokes musicintegrationstart-v2.cjs with no --compare; the historical original monitor used --compare.
+This completes bounded #851; #834's separate musicreload work (#852), #740 and #736 remain open.
 
 #843 `carsoundtest` retains its entire original 900×600/car/rain/time14/October5 fixture after one complete
 actual full/test pair at frozen `7b3a972`. Both modes produced all 13 PASS rows and ALL PASS, but the two
