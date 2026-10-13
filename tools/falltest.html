@@ -21,7 +21,8 @@ f.onload = async () => {
   while (!w.__app) await wait(100);
   const { player, fall, world, step, stats, camera, rest, standUp, renderer } = w.__app;
   const mod = (p) => w.eval(`import('${new URL(p, location.href).href}')`); // the page's own module instances
-  const { FALL, START, SITE, STAIR, LEVELS, PLAYER } = await mod('../src/config.js');
+  const { FALL, START, SITE, STAIR, LEVELS, PLAYER, RESPAWN } = await mod('../src/config.js');
+  const { safeRespawnPoint } = await mod('../src/respawn.js');
   const lines = [];
   let pass = true;
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
@@ -45,7 +46,7 @@ f.onload = async () => {
   check(landings.length === 1 && Math.abs(landings[0].drop - 2.5) < 0.05 && landings[0].r === 'soft' && fall.t < 0 && d.getElementById('fall').hidden
     && (stats.falls ?? 0) === falls0, `2.5 m: a soft landing (drop ${f2(landings[0]?.drop ?? 0)} m), not hurt`);
 
-  // (2) a 5 m drop: hurt, black-out, awake at the front door
+  // (2) a 5 m drop: hurt, black-out, awake at a checked outdoor position
   player.spawn(START.x, -8, Math.PI / 2);
   player.pos.y += 5;
   landings.length = 0;
@@ -68,8 +69,8 @@ f.onload = async () => {
   check(/^rgba?\(0, 0, 0(, 1)?\)$/.test(el.style.background), `black (${el.style.background})`);
   for (let i = 0; i < 10; i++) step(dt);
   const yaw = ((camera.rotation.y * 180 / Math.PI) % 360 + 360) % 360;
-  check(Math.hypot(player.pos.x - FALL.wake.x, player.pos.z - FALL.wake.z) < 0.3 && Math.abs(player.pos.y) < 0.01 && Math.abs(yaw - FALL.wake.yawDeg) < 1,
-    `awake at the front door (${f2(player.pos.x)}, ${f2(player.pos.z)}), facing the house (yaw ${yaw.toFixed(0)}°)`);
+  check(!!safeRespawnPoint(player, player.pos.x, player.pos.z) && RESPAWN.regions.some(r => player.pos.x >= r.x0 && player.pos.x <= r.x1 && player.pos.z >= r.z0 && player.pos.z <= r.z1) && Math.abs(yaw - 180) < 1,
+    `awake at a checked outdoor position (${f2(player.pos.x)}, ${f2(player.pos.z)}), facing the house (yaw ${yaw.toFixed(0)}°)`);
   check(!el.hidden && !el.querySelector('p').hidden && /Du slog dig/.test(el.textContent), `"${el.querySelector('p').textContent}" shown`);
   for (let i = 0; i < (FALL.back + 0.1) * 60; i++) step(dt);
   check(!fall.active && /, 0\)$|, 0.000\)$/.test(el.style.background) || /0\)$/.test(el.style.background), `faded back in (${el.style.background})`);

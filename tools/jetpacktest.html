@@ -8,7 +8,7 @@
 // the first flight counts), letting go falls, C pushes down; the ceiling and OUTDOOR's edge hold; no flying through
 // Hus L or into Hus A's façade; a soft landing on Hus C's roof (the roof counts); E stands it down there and it stays,
 // E on it again; walking in through the front door stands it down outside; overheating cuts the thrust; a cut high up
-// is a fall that hurts and wakes you outside the door with the jetpack back on its hook; F sends it home; keep.js
+// is a fall that hurts and wakes you on checked outdoor ground with the jetpack back on its hook; F sends it home; keep.js
 // round trip; touch: ⬆ / ⬇ and "Ta av dig jetpacken".
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/jetpacktest.html
 const out = document.getElementById('out');
@@ -23,7 +23,8 @@ async function run() {
   while (!w.__app) await wait(100);
   const { player, fall, world, step, stats, camera, renderer, jetpack, toggleFurniture, touch, keepWorld } = w.__app;
   const mod = (p) => w.eval(`import('${new URL(p, location.href).href}')`);
-  const { FALL, PLAYER, JETPACK, OUTDOOR, SITE, GARAGE } = await mod('../src/config.js');
+  const { FALL, PLAYER, JETPACK, OUTDOOR, SITE, GARAGE, RESPAWN } = await mod('../src/config.js');
+  const { safeRespawnPoint } = await mod('../src/respawn.js');
   const lines = [];
   let pass = true;
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
@@ -188,7 +189,7 @@ async function run() {
   run(6);
   check(landings.some((l) => l.r === 'hurt'), `thrust cut at ${f2(high)} m: hurt`);
   settle();
-  check(jetpack.state === 'hook' && !player.jet && Math.hypot(player.pos.x - FALL.wake.x, player.pos.z - FALL.wake.z) < 0.6, 'awake outside the front door; the jetpack is back on its hook');
+  check(jetpack.state === 'hook' && !player.jet && !!safeRespawnPoint(player, player.pos.x, player.pos.z) && RESPAWN.regions.some(r => player.pos.x >= r.x0 && player.pos.x <= r.x1 && player.pos.z >= r.z0 && player.pos.z <= r.z1), 'awake on checked outdoor ground; the jetpack is back on its hook');
 
   // (10) in through the front door with it on: stood down outside
   const door = world.doors.find((dd) => dd.name === 'ytterdörren' && Math.abs(dd.object.getWorldPosition(camera.position.clone()).z) < 0.5);

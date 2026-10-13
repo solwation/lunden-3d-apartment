@@ -3,7 +3,7 @@
 //   PLAYWRIGHT_MODULE=/path/to/playwright [CHROME_PATH=…] [SHOTS=/dir] node tools/combattest.cjs http://localhost:8137 http://localhost:8146 testtoken
 // A (Olof) and B (no name) stand 2.5 m apart facing each other, C (Tuva) watches. Checks: unarmed B is a ghost and cannot be
 // hit; armed A and B (and C) are drawn solid for each other, the hearts show only then; each hit gives A points and B a
-// deduction and a life less; out of lives B is back at the start with all lives, still holding its weapon and keeping its
+// deduction and a life less; out of lives B wakes at a checked random outdoor point with all lives, still holding its weapon and keeping its
 // score. Screenshot (C's view) of two solid armed players into SHOTS. SwiftShader frames take seconds: the pages drive
 // ghosts / combat updates themselves where timing matters.
 const kit = require('./testkit.cjs'); // (#703) `&test` mode, small viewport; full quality only around the screenshots
@@ -139,7 +139,7 @@ async function until(fn, ms = 60000) { const t = Date.now(); for (;;) { const v 
       finally { await C.page.setViewportSize({ width: 320, height: 200 }); }
     } });
     await sees(A.page, (l) => l.length === 2 && l.every((g) => g.solid)); // (back from any idle while the screenshot rendered)
-    // ten hits (one arrow, nine darts): points for A, deductions and lives off for B, then B back at the start with all lives
+    // ten hits (one arrow, nine darts): points for A, deductions and lives off for B, then B wakes on checked outdoor ground with all lives
     const before = { a: await A.page.evaluate(() => window.__app.stats.pvpHits ?? 0), bScore: await B.page.evaluate(() => window.__app.totalScore()) };
     await B.page.evaluate(() => { window.__app.stats.target = (window.__app.stats.target ?? 0) + 200; }); // something to deduct from
     const lives = [];
@@ -183,9 +183,13 @@ async function until(fn, ms = 60000) { const t = Date.now(); for (;;) { const v 
     check(JSON.stringify(lives) === JSON.stringify([8, 7, 6, 5, 4, 3, 2, 1, 10]), 'each hit takes a life; the tenth sends B back with all lives', JSON.stringify(lives));
     const a = await A.page.evaluate(() => ({ hits: window.__combat.hits, pvp: window.__app.stats.pvpHits }));
     check(a.hits === 10 && a.pvp - before.a === 9, 'A scores each hit (stats pvpHits, SCORE.each; the bow\'s hit came before `before`)', JSON.stringify(a));
-    const b = await B.page.evaluate(() => ({ pen: window.__app.stats.penalties['pvpHurt'], deaths: window.__combat.deaths, pos: [window.__app.player.pos.x, window.__app.player.pos.z], held: window.__app.heldItem() === window.__app.saber, target: window.__app.stats.target }));
+    const b = await B.page.evaluate(async () => {
+      const A=window.__app, {safeRespawnPoint}=await import('./src/respawn.js'), {RESPAWN}=await import('./src/config.js'), {x,z}=A.player.pos;
+      return {pen:A.stats.penalties['pvpHurt'],deaths:window.__combat.deaths,pos:[x,z],held:A.heldItem()===A.saber,target:A.stats.target,
+        safeSpawn:!!safeRespawnPoint(A.player,x,z)&&RESPAWN.regions.some(r=>x>=r.x0&&x<=r.x1&&z>=r.z0&&z<=r.z1)};
+    });
     check(b.pen === 10, 'B gets a deduction per hit', JSON.stringify(b));
-    check(b.deaths === 1 && Math.hypot(b.pos[0] - 2.875, b.pos[1] + 12) < 0.6, 'out of lives: B is at the start', JSON.stringify(b.pos));
+    check(b.deaths === 1 && b.safeSpawn, 'out of lives: B wakes on checked outdoor ground', JSON.stringify(b.pos));
     check(b.held && b.target >= 200, 'nothing else is reset: B still holds the saber and keeps its stats');
   } catch (e) { check(false, 'test crashed', e.stack); }
   await browser.close();

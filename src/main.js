@@ -26,6 +26,7 @@ import { HallCare } from './hallcare.js';
 import { Rearrange } from './rearrange.js';
 import { Player, inPoly, crosses } from './player.js';
 import { Fall } from './fall.js';
+import { respawnOutdoors } from './respawn.js';
 import { setupTouch } from './touch.js';
 import { watchForUpdates, BUILD } from './version.js';
 import { CatSpawner, VARIANTS, BREEDS, kittenName } from './cat.js';
@@ -995,11 +996,11 @@ document.getElementById('restart')?.addEventListener('click', () => {
 /** "Gå till startplatsen" in the menu (#665): only the place changes — out of a seat / bed / the car the usual way, off a
  * wall or strand, out of the lift or the air, to START. The clock, the weather, what you hold, the suit / jetpack and
  * everything else carry on as they were. */
-function goToStart() {
+function goToStart(spawn = spawnAtStart) {
   if (rest.active) standUp(); // (the TV / the film monitor as on getting up)
   const sh = suit.shot;
   if (sh && !sh.stuck) { sh.stuck = true; sh.at = sh.t; } // a web still on its way sticks to nothing (no swing from afar)
-  spawnAtStart(); // (spawn: no fall, flight, climb, swing or glide; the feet on the ground there)
+  spawn(); // (spawn: no fall, flight, climb, swing or glide; the feet on the ground there)
   player.unstick(0, true); // (our car parked right there, #314)
 }
 document.getElementById('to-start')?.addEventListener('click', () => {
@@ -2205,7 +2206,7 @@ const ghosts = new Ghosts({ scene, camera, url: cloud.url, name: () => leaderboa
   state: () => ({ p: [player.pos.x, player.pos.y, player.pos.z], r: camera.rotation.y }) });
 const combat = new Combat({ ghosts, camera, scene, weapon: weaponKey, feet: () => player.pos, jetpack, sfx, darts: toys.darts, sparkles: toys.sparkles, arrows,
   onHit: () => bump('pvpHits'), onHurt: () => penalize('pvpHurt'),
-  onDie: () => { goToStart(); badge('💀 Slut på liv – tillbaka vid start', false); } }); // only the place changes (#665)
+  onDie: () => { goToStart(() => respawnOutdoors(player)); badge('💀 Slut på liv – du lever igen', false); } }); // only the place changes (#665)
 // each weapon's use is one shot message (hit or miss) for the others in the fight; the room decides a hit. Things that fly
 // on an arc send where they started and their velocity (a dart: the last one of the blasters' pool; the ball)
 const flight = (from, v) => ({ o: from.clone(), d: v.clone().normalize(), s: v.length() });

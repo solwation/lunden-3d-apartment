@@ -1,12 +1,12 @@
 // Falling (#361, FALL in config): player.js tracks the drop (`fall`: the highest feet since leaving the ground and the
 // deepest free gap under them) and calls `land` on landing. Over FALL.hurt m of real free fall it hurts: a thud + "aj",
-// the view jolts down, the screen goes red, then black; the visitor wakes outside our front door facing the house with
+// the view jolts down, the screen goes red, then black; the visitor wakes at a checked random outdoor spot with
 // "Du slog dig …" while it fades back in. Only the place is reset (and whatever registers in `onWake`, e.g. the jetpack
 // of #359 going home) — not the home: doors, lamps, cups stay. A deduction (SCORE.penalties.fall) + stats `falls`.
 // Over FALL.soft m: a soft thud and a knee-bend. With the Spider-Man suit on (#600) every drop is a soft one. While `active` main.js lets nobody walk.
-import * as THREE from 'three';
 import { FALL, PLAYER } from './config.js';
 import { sfx } from './audio.js';
+import { respawnOutdoors } from './respawn.js';
 
 export class Fall {
   /** `el` = #fall (the cover with its text), `onHurt()` = the deduction etc. */
@@ -53,11 +53,9 @@ export class Fall {
     s.background = `rgba(${Math.round(150 * red)}, 0, 0, ${a.toFixed(3)})`;
   }
 
-  /** Wake up outside the front door facing the house. */
+  /** Wake on checked outdoor ground, using the same regions as a combat death (#863). */
   wake() {
-    const { x, z, yawDeg } = FALL.wake, p = this.player;
-    p.spawn(x, z, THREE.MathUtils.degToRad(yawDeg));
-    p.unstick(0, true); // (our car parked right there, #314)
+    respawnOutdoors(this.player);
     this.camera.rotation.x = 0;
     for (const f of this.onWake) f();
     this.text.hidden = false;

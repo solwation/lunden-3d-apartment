@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// #863: actual Player/shared spawn helpers on a controlled native Three scene; no apartment bootstrap/WebGL.
+// #863: actual Player/Fall/Combat on a controlled native Three scene; no apartment bootstrap/WebGL.
 const fs=require('node:fs');
 const kit=require('./testkit.cjs');
 const game=process.argv[2]||'http://localhost:8841',out=process.env.RESPAWN_OUTPUT||'/tmp/lunden-respawn';
@@ -11,8 +11,8 @@ const game=process.argv[2]||'http://localhost:8841',out=process.env.RESPAWN_OUTP
   await page.goto(game+'/docs/development/interactions.md');
   await page.setContent('<!doctype html><pre id="out"></pre><div id="fall"><p>Du slog dig</p></div><script type="importmap">{"imports":{"three":"/__three/build/three.module.js","three/addons/":"/__three/examples/jsm/"}}</script>');
   const result=await page.evaluate(async()=>{
-   const T=await import('three'),{Player}=await import('/src/player.js');
-   const {RESPAWN,PLAYER,OUTDOOR,SITE}=await import('/src/config.js');
+   const T=await import('three'),{Player}=await import('/src/player.js'),{Fall}=await import('/src/fall.js'),{Combat}=await import('/src/combat.js');
+   const {RESPAWN,PLAYER,OUTDOOR,SITE,COMBAT}=await import('/src/config.js');
    const {chooseRespawn,safeRespawnPoint,respawnOutdoors}=await import('/src/respawn.js'),{groundY}=await import('/src/surroundings.js');
    const lines=[],check=(ok,label)=>lines.push(`${ok?'PASS':'FAIL'} ${label}`);
    const scene=new T.Scene(),camera=new T.PerspectiveCamera(),world={object:scene,size:{x:5.75,z:12.1},levels:[{segments:[],footprints:[]},{segments:[],footprints:[]}],doors:[]};
@@ -49,6 +49,12 @@ const game=process.argv[2]||'http://localhost:8841',out=process.env.RESPAWN_OUTP
    const gear={worn:true};player.jet=gear;player.flying=true;player.fall={top:9,gap:9};player.vy=-4;player.swing={};
    const point=respawnOutdoors(player,random);check(!!point&&player.pos.y===point.y&&player.eyeY===point.y+PLAYER.eye&&camera.position.y===player.eyeY,'real spawn sets standing terrain, feet and camera consistently');
    check(player.jet===gear&&gear.worn&&!player.flying&&player.fall===null&&player.swing===null&&player.vy===0,'existing spawn resets movement but retains worn equipment');
+   const inRegion=()=>RESPAWN.regions.some(r=>player.pos.x>=r.x0&&player.pos.x<=r.x1&&player.pos.z>=r.z0&&player.pos.z<=r.z1);
+   let wakes=0,hurts=0;const fall=new Fall({el:document.getElementById('fall'),player,camera,onHurt:()=>hurts++});fall.onWake.push(()=>wakes++);
+   fall.hurt(5);fall.wake();check(hurts===1&&wakes===1&&inRegion()&&!!safeRespawnPoint(player,player.pos.x,player.pos.z),'actual lethal-fall hurt/wake uses checked outdoor spawn and preserves callbacks');
+   const ghosts={group:new T.Group(),others:new Map(),rules:{lives:COMBAT.lives,weapons:{}}};let deaths=0,deductions=0;
+   const combat=new Combat({ghosts,camera,scene,weapon:()=> 'nerf',feet:()=>player.pos,onDie:()=>{deaths++;respawnOutdoors(player);},onHurt:()=>deductions++});
+   combat.hurt({dead:true,l:0});check(deaths===1&&combat.deaths===1&&deductions===1&&combat.lives===COMBAT.lives&&gear.worn&&inRegion()&&!!safeRespawnPoint(player,player.pos.x,player.pos.z),'actual combat lethal hurt retains life refill/deduction/equipment and shares checked spawn');
    const pass=lines.every(line=>line.startsWith('PASS'));document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');return {pass,lines,regions:[...regions],uniquePositions:positions.size};
   });
   fs.mkdirSync(out,{recursive:true});fs.writeFileSync(out+'/native.json',JSON.stringify({...result,errors},null,2));
