@@ -710,6 +710,24 @@ is unchanged from the verified source; later application/HUD/chat changes preven
 current-runtime acceptance. It is not a full/test pair, and neither the runner's CJS `--compare` label
 nor unchanged source establishes parity. No new timing or speedup is claimed.
 Current chattest uses `#menu-chat-setting` and contains no `#chat-toggle` after #765.
+
+`tools/fixtureviewport.cjs` (#862) synchronizes the headless chat driver's three existing viewport call sites:
+leave actual fullscreen with the real `document.exitFullscreen()` promise, set the original target size, then wait
+for actual nonfullscreen DOM width/height (10-second bound, errors propagate). The phone sequence still clicks the
+real start-touch control, waits for its actual async fullscreen entry (10-second bound), inserts the same messages,
+and exits that native mode before applying the authored 667×375 viewport. Screenshot grow/restore targets,
+render-frame waits, all eight captures, original assertions/actions/queries and product requestFullscreen stay intact.
+No feature stub, rendering/mode override or ignored failure is added. This fixes the Chromium native window contract,
+not a phone-rendering performance issue.
+
+`PLAYWRIGHT_MODULE=... node --test tools/fixtureviewport.test.cjs` verifies native DOM-only Chromium entry/windowState
+fullscreen, real exit/windowState normal, actual 667×375/480×300/960×600 transitions, repeated native entry, preserved
+requestFullscreen function and touch/input state. `FIXTURE_VIEWPORT_ARTIFACTS=/tmp/...` retains native JSON and two
+DOM-only screenshots. On Chrome149.0.7827.55 the old direct resize reproduced Browser.setWindowBounds's fullscreen
+error; the synchronized path passed. Both native PNGs were inspected and show the button/input at requested sizes;
+no apartment, WebGL, physical phone or game screenshot acceptance is established by this regression.
+Whole authored two-client/Worker chat acceptance remains required separately before #862 closure.
+
 #744's removed-selector crash describes older source; its bubble-visibility failures were not
 reverified against the current app here and are not silently repaired or declared resolved.
 The CJS screenshot/viewport exceptions follow #736. TV's Ambilight glow/canvas-state assertions

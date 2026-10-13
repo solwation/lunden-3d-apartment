@@ -7,6 +7,7 @@
 // the client's rate limit; complete rows within viewport height; the TTL fade; the remembered menu visibility setting and showing
 // it again. Screenshots (desktop, then B as a touch phone with the column open / hidden) into SHOTS.
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const { setFixtureViewport } = require('./fixtureviewport.cjs');
 const game = process.argv[2] || 'http://localhost:8675', worker = process.argv[3] || 'http://localhost:8147';
 const shots = process.env.SHOTS || '/tmp';
 let failed = 0;
@@ -36,11 +37,11 @@ const W = 480, H = 300;
     return { ctx, page };
   };
   const shot = async (p, file, w = 960, h = 600) => { // a bigger frame only for the picture
-    await p.setViewportSize({ width: w, height: h });
+    await setFixtureViewport(p, { width: w, height: h });
     const f0 = await p.evaluate(() => window.__app.renderer.info.render.frame);
     await until(() => p.evaluate((f) => window.__app.renderer.info.render.frame >= f + 2, f0), 120000);
     await p.screenshot({ path: `${shots}/${file}.png`, timeout: 240000 });
-    await p.setViewportSize({ width: W, height: H });
+    await setFixtureViewport(p, { width: W, height: H });
     log(`screenshot ${file}`);
   };
   const timer = setTimeout(() => { console.log('FAIL total timeout'); process.exit(1); }, 60 * 60_000);
@@ -208,8 +209,11 @@ const W = 480, H = 300;
 
     // phone: B as touch, the column clear of the buttons on the right
     await B.page.evaluate(() => { document.getElementById('start-touch').click(); });
+    // Synchronize the real async native entry before the fixture exits it to apply the authored phone viewport.
+    await B.page.waitForFunction(() => !!document.fullscreenElement, null, { timeout: 10000 });
     await B.page.evaluate(() => { for (let i = 0; i < 4; i++) window.__chat.heard({ t: 'm', n: 'Olof', m: ['Hej!', 'Kom till uteplatsen', 'Vem har bollen? Jag letar överallt i trädgården och hittar den inte', 'ok'][i] }); });
-    await B.page.setViewportSize({ width: 667, height: 375 });
+    const phoneViewport = await setFixtureViewport(B.page, { width: 667, height: 375 });
+    log(`phone viewport native transition ${JSON.stringify(phoneViewport)}`);
     await sleep(500);
     const clear = await B.page.evaluate(() => {
       const box = document.getElementById('chat-log').getBoundingClientRect(), touch = document.body.classList.contains('touch');
