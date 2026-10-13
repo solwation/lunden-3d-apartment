@@ -591,3 +591,6 @@ Current local cold Marks diagnosis (#715): after private-bounds rejection and sc
 
 
 The subsequent #715 scalar-bounds mitigation keeps native getter/extrema semantics and all transforms/padding/cache behavior. Independent baseline/native parity and balanced uninstrumented furniture-component runs reduce whole-list cold query/Darts work, with no warm gain and a measured regression for the isolated largest mesh. [Exact samples, retained failed stochastic attempt, deterministic parity inputs and limitations](../validation/issue-715/README.md#scalar-private-position-bounds-candidate-2026-10-13) prevent extending that result into an unmeasured apartment/phone claim.
+
+
+Current full-apartment diagnostic (#715, source d962618b) retains a local cache-cold 90.4 ms effect-update spike and incoming/obstacle cache waiting after a 30 s scheduler window. It is one no-test/quality 0 same-browser injected-effect sample, not reciprocal combat, a native before/after or phone-FPS proof. Idle startup rendering, shadow intervals and later render calls are separated and retain their actual different draw counts. [Raw-case summary, provenance and finite remaining investigation](../validation/issue-715/README.md#current-actual-apartment-diagnosis-after-scalar-bounds-2026-10-13) records no remote-warm claim and no additional runtime change.

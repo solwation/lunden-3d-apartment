@@ -310,3 +310,40 @@ Additional unchanged public regressions: independent a336e30 TriGrid/actual Dart
 The candidate's controlled final rebase to `327ae5f` retained six of seven measured source/driver hashes exactly. The explicit mismatch is `src/config.js`: incoming #873 only adds PVP_SCORE/pvpHitPoints; no measured Marks/TOYS/furniture/collision values changed. The retained timing/parity run was performed on the recorded `c269a6c6` base plus this candidate, rather than a new complete app test on final main.
 
 Final push rebase `bc5c46f` preserved all seven source/driver hashes from the stable 187-run exactly; incoming changes were outside this native component path. This final hash claim is specifically for that run, while the earlier 185-run benchmark retains its separate explicit PvP-config mismatch/version record.
+
+
+## Current actual-apartment diagnosis after scalar bounds, 2026-10-13
+
+One bounded actual apartment run at `d962618bca9051eeb96e106f6cfda50b4fd77c27` completed Node/externally bounded wrapper exit 0 in 57.565 s. No `&test`: original `?shot&quality=0&mp=0&time=12&weather=clear&mess=0`, 480×300, Chromium/SwiftShader. The native automatic-loop registration alone is paused; the same production player spawn/blaster, actual Blaster→Darts→Marks and same-browser injected Combat.remote→Darts→Combat.reach run. This is **not** two browsers, reciprocal WebSocket combat, server hit/head approval or a physical phone. No production runtime changed in this diagnostics step.
+
+The driver records full 1299-file hashes and original/served-main hashes before launching Chrome; phase/cache/obstacle checkpoints and final result are written before screenshot. During the run all hashes match, pageerrors 0, testMode false, loading/menu covers hidden. Real DetailCuller and quality 0 mirror policy run before each draw; final native GPU commands complete before capture. Both actual dart groups have all four child render-layer checks true and are in view (NDC local 0.124/−0.149/0.920; incoming −0.105/−0.193/0.898). Reviewed `/tmp/lunden-priority-715-app/apartment-two-darts.png` shows the actual apartment, held Nerf and tiny effects. This provides scoped real-render evidence, not phone performance certification.
+
+Five fixed phases each drive 60 effect steps at 1/60 s and two manual renderer calls; shot phases emit five shots per shooter. Cold phases explicitly invalidate local Marks caches; retained phases reuse them. Incoming effect TTL remains 600 s to avoid host-delay expiry, as in the original probe. A bounded 30 s scheduler window occurs before local-retained phases. Natural RNG remains unmodified. These are single contextual current observations, **not a before/after comparison** with the older 625.1 ms sample or the preceding no-renderer furniture component.
+
+| Effect-update elapsed wall interval, ms | First | Median | p95 | Max | Sum of 60 |
+|---|---:|---:|---:|---:|---:|
+| Idle/no shots |0.0|0.0|0.1|0.1|0.5|
+| One local, cold Marks |90.4|1.9|7.0|90.4|210.5|
+| Local + injected incoming, cold Marks |93.9|11.4|35.7|93.9|728.8|
+| One local, retained Marks |3.0|1.4|3.3|4.2|94.0|
+| Local + incoming, retained Marks |31.8|17.9|37.0|45.4|1014.5|
+
+The two-source retained phase was slower than its cold-labelled phase in this contextual series; no remote warming or universal improvement is claimed. Pending approval effects remained zero. Actual active counts/final state, splashes and all 60 intervals are retained rather than normalized.
+
+### Cache readiness and obstacle deadline
+
+The scheduler window actually elapsed 30000.7 ms. Aggregate remote cache state remained 804 pending/0 bitmap-ready; spatial-ready progressed 0→1. Reported builder-work accumulation increased 1280.6 ms during that gap (metric name `buildCpuMs`, but accumulated elapsed wall slices rather than measured thread CPU). Maximum observed builder slice was 2.2 ms before the later obstacle promotion. The scene has 14,169,196 accounted spatial bytes across 804 entries plus 1,048,576 accounted bitmap/bookkeeping bytes; these are accounting figures, not JS-heap measurements. No truly remote-warm phase occurred.
+
+Two-source cold queries added 35,975 pruned and 2995 native-fallback counters; retained added 36,005/2965. These aggregate counts do not identify a particular mesh as the bottleneck. The unchanged 2 s obstacle query returned null after 2002.2 ms. lastPath was **deadline/cache**, active intervals 9.1 ms, yielded 1992.3 ms, cache-wait subset 1991.9 ms, maximum active slice 2.0 ms, 55 promoted caches, deadline overrun 2.1 ms. Spatial-ready rose to 13, bitmap-ready remained 0. This is predominantly waiting for caches, not a synchronous 2 s raycast or thread-CPU/GPU measurement.
+
+### Render-call observations and limits
+
+The first manually submitted idle renderer call in this loop-paused fixture took 4489.3 ms: the transparent native shadow observer accounted 242.5 ms, with 4246.8 ms remaining in the outer render-call interval. Nested offscreen/initial renderer work also occurs; this remainder is **not** isolated main-scene-only GPU or CPU time. The initial draw counts were 209 calls/528,932 triangles; the second idle draw was 484/929,020. The normal warm-up phase was not sampled. This call must not be treated as an ordinary gameplay frame, phone-lag cause, shot-effect cost or fixed-workload idle/shot rendering delta.
+
+Subsequent manual render calls were 8.9–20.7 ms elapsed wall. The one-source draws were 486–487 calls/929,084–929,204 triangles, two-source 488–489/929,148–929,268. Native shadow state was enabled, autoUpdate false, needsUpdate false after the first call; subsequent shadow observer intervals were 0–0.1 ms. No mirror was selected at production quality 0. The final capture call was 12.6 ms before gl.finish. These call intervals include submission/driver effects and are not measured thread CPU, GPU execution, full main-frame times or FPS.
+
+Reproduce with `PLAYWRIGHT_MODULE=... SHOTS=/tmp/nerf-apartment node tools/nerfapartmentprobe.cjs http://localhost:8874`, serving this own checkout with tools/devserve.py. A finite external 240 s guard also supervises cleanup; timeout/SIGTERM is never green even if an internal completion file says 0. Raw result/provenance/checkpoints/completion/run log and inspected PNG are retained in `/tmp/lunden-priority-715-app`; stable process/source proof is `~/.local/state/lunden-orkester/20261013-priority/715-app-proof.json`. All own Node/browser/server processes and the temporary Chrome profile were removed before releasing the shared heavy slot.
+
+#715 remains open. The current observed local cold spike and unready incoming/obstacle caches are concrete remaining investigation targets; choosing another change requires geometry/cache-stage attribution and a finite new scope. There is no extra user answer blocking that technical diagnosis. Full reciprocal visible-PvP/render/transport and physical-phone idle/one/two-shooter acceptance remain separate, unfinished requirements. This step ends at documented diagnosis, not an unlimited optimization chain.
+
+Final diagnostics rebase to `73757cc` differs from the executed 1299-path freeze in six files: README, this validation/performance/verification documentation and unrelated ghostlivestest/recoverytest drivers from #881. Additional incoming tracked files are recorded in the proof; no measured src/data/cloudflare/index runtime or nerfapartmentprobe driver differs. The execution remains explicitly attributed to `d962618b`; no repeat app run on final main is claimed.
