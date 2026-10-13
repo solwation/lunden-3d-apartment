@@ -4263,3 +4263,63 @@ shot/result JSON and the visually inspected `rifle-nose-native.png`;
 remain separate. The final harness connects the room only after its long native
 geometry inventory, preserving the real120s movement-idle rule. No World/rendered
 avatar, physical-phone, allpose or hardware-performance acceptance is claimed.
+
+### Actual exposed rear skull (#933)
+
+Start private static8875 and fresh localWorker8876 AFTER saved runtime edits, then
+run `PLAYWRIGHT_MODULE=/path/to/playwright CHROME_PATH=/path/to/chrome node tools/riflereartest.cjs http://localhost:8875 http://localhost:8876 /tmp/rifle-rear`.
+The original production model is extracted from6f35db5 for exact array parity,
+not a copied shape/seed fixture. Native actual60 appearance/four heading/four
+bind/standing samples cover nearest skull contacts and unsupported surfaces.
+Independent eight-corner rays project accepted r3 cells onto actual first faces;
+forgeries target the FIRST pureSkullEntry BEHIND actual hair/neck/other first
+contacts, rather than testing only hc at the closer surface. Missing snapped ray,
+front/side/steep approaches, long hair, boundary and near-max-coordinate cases
+are explicit. Actual WebSocket serialized r2/r3/hc/256byte constraints are checked.
+Three real server-generated hairstyle IDs get2HP through Ghosts/Combat/Worker;
+long hair gets1HP. Actual public/local health, closest body, full obstacle ray,
+miss/interior/version/crouch, one lowHPdeath/killUUID/award/replay and marker/HUD
+are covered. Final beanie packet and room receipt use legal near-max coordinates.
+The image is actual marker/HUD DOM, not rendered avatar/World/phone evidence.
+
+Readonly diagnosis before runtime edits:20,160 rear native rays over60 appearances
+and four bind/standing samples. The original proposed lower.024–.028 guess was
+unsafe:12 actual earlier-hair rays admitted forged first pureSkullEntry points.
+It was never product code. The supported lower band was narrowed to.020–.024;
+a separate65-sample joint standing-breath/head-frequency cycle on four canonical
+styles and8,060 rays, then15,600 near-cone rays (168 exposed positives/8,354
+non-skull first contacts), found no admitted hidden-skull proof. The unchanged
+15mm surface guard was retained. These are sampled conservative support checks,
+not all continuous pose/scene/phone/FPS/anti-cheat certification. Raw diagnosis
+and failed native-driver attempts remain under `/tmp/lunden-rear933-surface/`.
+
+#933 final integrated acceptance:26 checks PASS, actual CLI0, zero pageerrors/
+WebGL on the source-frozen core916+rear tree.7,659 admitted rear contacts and
+38,181 unsupported nearest/approach cases produced zero lost bonuses or false
+heads.11,652 forgeries at first pure skull entry behind a closer non-skull face
+were rejected;2,552 independent cell-corner projections stayed on skull. All45
+supported styles0/2/3 build/height appearances had actual positives;15 long-hair
+appearances remained body-only (10,800 sampled nearest negatives).255 legal
+near-max-coordinate native cases passed; actual serialized beanie packet also
+produced Worker2HP with r2/r3/256byte/origin5000/contact5002 bounds. Entry residual
+max13.0532mm remains below unchanged15mm; skull vertex error≤5.32e-8m and original
+position/normal/color/skin/skull/nose arrays matched exactly.21 updated Worker
+tests passed/CLI0. Artifact directory `/tmp/lunden-rear933-surface/final-complete`
+contains parity/styles/first-shot/serialized-wires/result JSON and the inspected
+850×500 `rifle-rear-native.png`; sibling .log/.exit record ALL PASS26/actual0.
+`source-freeze.json` hashes the exact runtime/driver. Historical6f35db5 gate replay
+of six actual recorded shot JSONs and current contact-less gates yielded zero
+rear heads (`cached-gate-proof.json`); this is exact gate compatibility, not a new
+live cached-Worker transport session.
+
+Earlier failures remain separate: original fixture closer/wall points retained
+front-shot−z coordinates; HTTP service then ended143 and one navigation refused
+(no own termination command/product conclusion); a fixed4m snapped ray could
+skip the narrow whole-cell kernel on one random model. Final fixture chooses real
+legal shooter feet/camera distances and waits for ordinary5Hz publication, never
+widening the patch/guard or overriding target pose. The first high-coordinate
+fixture moved feet but left its camera far away, so genuine distance culling hid
+the target; final moves both together and waits for ordinary visibility. The
+intentional invalid-version9 rejection control is checked separately from valid
+version1 packets. `--protocol-only` runs just the real transport/DOM assertions
+for diagnosis; the final accepted run uses the complete default path.

@@ -181,7 +181,7 @@ Uppdragslappen visar tre aktiva vardagsuppdrag med sina poäng och delmål; klar
 Nollställning av statistiken rensar även dynamiska räknare, så inga gamla poäng ligger kvar.
 
 Stridens skottkontroller kan hoppa över tomma delar av stora modeller efter en begränsad bakgrundsförberedelse; lokala träffytor kopierar världskoordinater utan en tillfällig array per hörn; fysisk telefonverifiering återstår. [Mätning och begränsningar](docs/validation/issue-715/README.md).
-Gevär ger dubbel skada på en verifierad främre näsyta hos stillastående spelare, utöver den tidigare begränsade skallytan. Bekräftade spelarträffar visar kort ”Träff!” ovanför siktet; bekräftad huvudträff får en egen text när servern anger det.
+Gevär ger dubbel skada på en verifierad främre näsyta hos stillastående spelare, utöver den tidigare begränsade skallytan. En verifierad liten bakre skallyta kan också ta två hjärtan; täckande hår ger fortsatt enkel skada. Bekräftade spelarträffar visar kort ”Träff!” ovanför siktet; bekräftad huvudträff får en egen text när servern anger det.
 Nerfpilar når upp till 25 meter och en bekräftad spelarträff hörs med en egen tydlig ton. De första skotten kan räknas som bom medan hinderdata förbereds. [Verifiering och begränsningar](docs/validation/issue-714/README.md).
 
 Dyra browserprov sparar avslutade delresultat före bilder, med källhashar och separat status för scenario, bilder, städning och faktisk CLI-exit. [Artifact-konvention](docs/development/verification.md#artifact-checkpoints-881).

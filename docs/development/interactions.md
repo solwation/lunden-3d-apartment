@@ -782,3 +782,22 @@ Worker/Ghosts/Combat new-style head2/covered-beanie-body1/steep-forgery-body1.
 The DOM screenshot verifies the real head marker and measured protocol rows,
 without WebGL, apartment rendering or a physical-phone claim. #898/#892/#879/
 #874 remain open for independently assigned other surfaces and weapon/pose parts.
+
+
+### Exposed lower rear skull (#933)
+
+The original actual skull mesh/profile is reused without geometry/material/bone
+changes. `rifleHeadRearRegion(seed,state,point,origin,direction)` adds two bounded
+whole-cell rear patches: canonical short hair/bun styles0/2 x±.008, y1.53+.020–.024,
+z−.09..−.05; beanie style3 x±.012, y1.53+.04–.055, z−.105..−.065. Width/height and
+heading use canonical server-ID appearance. Long hair style1 has no rear bonus;
+its actual hair remains present and first. These narrow guards are conservative
+*guess* policy choices measured on sampled native contacts, not anatomical facts.
+A rear approach must start at least.25 canonical metres behind the head, travel
+forward with normalized lateral/vertical components≤.05, and include the exact
+snapped `origin:r2`/`direction:r3` arrays. Missing ray, side/front/steep/interior
+approaches and region boundaries fail closed. `Avatar.rifleHeadContact` accepts
+optional origin/direction arguments; Combat supplies the SAME ray used for the
+actual first SkinnedMesh contact and wire. Legacy core/nose calls remain compatible.
+Rear uses unchanged original skull first-entry and15mm guard; nose retains6mm.
+No new damage/recovery/scoring/kill mechanics or wire fields are introduced.

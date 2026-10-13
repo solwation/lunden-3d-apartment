@@ -4568,6 +4568,11 @@ export const PVP_RIFLE_HEAD = {
   skull: { radius: .11, width: 14, height: 10, scale: [.94, 1.1, .98], centre: [0, .1, .01] },
   nose: { radius: .02, width: 8, height: 6, scale: [.8, 1.1, 1.15], centre: [0, .092, .113] }, // unchanged Avatar nose
   nosePatch: { across: .005, low: .083, high: .101, front: .13, direction: .2, surface: .006 }, // *guess* fail-closed frontal core, actual nearest-surface/pose/wire grid required
+  rear: {
+    lower: { across: .008, low: .020, high: .024, back: -.09, front: -.05 },
+    beanie: { across: .012, low: .04, high: .055, back: -.105, front: -.065 },
+    direction: .05, originBack: .25,
+  }, // *guess* conservative rear-only policy; actual pose/hidden-first-contact/cell grids required, no wider surface tolerance
   patch: { across: .008, low: .148, high: .158 }, // *guess* canonical support core; actual positive/negative nearest-surface grid checks it
   // .001 derives from sqrt(3)/2000 maximum r3 contact error on the already-snapped o:r2/d:r3 ray.
   // Head anchor is the midpoint of existing bind1.54 / settled1.52; surface/pose limits are conservative *guess*
@@ -4668,4 +4673,16 @@ export function rifleNoseEntry(seed,state,origin,direction) {
 }
 
 // Shared dispatch: #916 owns the central core; #917 can add its independent extra-region branch here.
-export function rifleHeadRegion(seed,state,point,origin,direction) { return rifleHeadCoreRegion(seed,state,point,origin,direction); }
+export function rifleHeadRegion(seed,state,point,origin,direction) { return rifleHeadCoreRegion(seed,state,point,origin,direction) || rifleHeadRearRegion(seed,state,point,origin,direction); }
+
+/** Exposed lower rear skull only, with the same snapped ray as the actual native contact. */
+export function rifleHeadRearRegion(seed,state,point,origin,direction) {
+  if(!Array.isArray(origin)||!Array.isArray(direction)||origin.length!==3||direction.length!==3||![...origin,...direction].every(Number.isFinite))return false;
+  const H=PVP_RIFLE_HEAD,R=H.rear,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
+  if(look.style===1)return false; // Actual long hair is first; no invented exposed back surface.
+  const P=look.style===3?R.beanie:R.lower,[x,y,z]=point.map((v,i)=>v-state.p[i]);
+  const lx=(c*x-s*z)/width,ly=y/look.tall-H.headY,lz=(s*x+c*z)/width;
+  const n=Math.hypot(...direction),[dx,dy,dz]=direction.map(v=>v/n),ox=origin[0]-state.p[0],oz=origin[2]-state.p[2];
+  if(!n||(s*dx+c*dz)<=0||Math.abs(c*dx-s*dz)>R.direction||Math.abs(dy)>R.direction||(s*ox+c*oz)/width>-R.originBack)return false;
+  return Math.abs(lx)+H.wireMetres/width<=P.across && ly-H.wireMetres/look.tall>=P.low && ly+H.wireMetres/look.tall<=P.high && lz-H.wireMetres/width>=P.back && lz+H.wireMetres/width<=P.front;
+}

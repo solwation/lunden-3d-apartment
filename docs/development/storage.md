@@ -396,3 +396,18 @@ and its `Run cloudflare/wrangler-action@v3` step succeeded; Pages38428499888 als
 succeeded. This confirms deployment of the additive core contract, without a
 physical-phone or rendered-apartment claim. #916 closes this central-core slice;
 #898/#892/#879/#874 and independently assigned remaining surface slices stay open.
+
+
+### Bounded rear skull receipt (#933)
+
+The same optional v1 contact proof can support a separately measured exposed
+lower-rear skull region on styles0/2/3. The server applies its own canonical
+appearance, whole-cell patch and snapped-ray approach guard before matching the
+original first skull profile entry; the unchanged15mm guard is used. Long hair
+style1, hair/hat/neck/body-first, missing/invalid proofs and other approaches keep
+body1. No target animation phase, client head/damage/model or new pose parameter
+is trusted. The room's stationary/crouch/origin/range/wire/rate/score/recovery and
+single-life/fatal/award handling stay unchanged. Cached contact-less clients and
+cached older Workers retain body1 for the additive rear surface. Actual native
+contact/full-obstacle checks on the modern client remain necessary: the server
+does not reproduce the whole animated scene or provide full anti-cheat physics.
