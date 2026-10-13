@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { LEVELS, PLAYER, STAIR, UNIT_TOP, ROOFS, GARAGE, JETPACK, SPIDER, SOFFITS } from './config.js';
+import { LEVELS, PLAYER, STAIR, UNIT_TOP, ROOFS, GARAGE, JETPACK, SPIDER, SOFFITS, BICYCLE } from './config.js';
 import { stairHeight, stairUnderside } from './stairs.js';
 import { groundY } from './surroundings.js';
 
@@ -67,10 +67,12 @@ export class Player {
     this.fling = null;     // after letting go of a strand (#600): { x, z } m/s kept in the air until the landing
     this.spaceDown = false; // Space held last frame (a press = a jump / letting go, #600)
     this.jumpPress = false; // the touch jump button was pressed (#600, main.js)
+    this.riding = null; // #903: transient bicycle mode, never persisted
     this.onJump = null;     // (suit: boolean) the feet left the ground on a jump (#636)
   }
 
   spawn(x, z, yaw) {
+    if (this.riding) { this.riding.bike.ridden = false; this.riding.bike.pick.visible = true; this.riding = null; }
     this.pos.set(x, this.groundAt(x, z, 0) ?? 0, z);
     this.vy = 0;
     this.glide = null; // (an unstick under way is for the old place, #314)
@@ -172,6 +174,11 @@ export class Player {
   }
 
   segments() {
+    const [a,b] = this.walkSegments();
+    return [a, [...b, ...(this.world.bicycleSegments?.(this.pos.y, PLAYER.headroom, PLAYER.hurdle) ?? [])]];
+  }
+
+  walkSegments() {
     if (this.aloft) { // up on the roofs (#360): the walls that stand in the way of the body, feet + step … head
       const y = this.pos.y;
       return [this.world.roofs?.walls(y + PLAYER.stepUp, y + PLAYER.headroom) ?? [], [...(this.world.core?.dynamic(y) ?? []), // (+ the stairwell's door onto the loftgång, #415)
@@ -221,18 +228,20 @@ export class Player {
   }
 
   /** Can the visitor stand at (x, z) on `level` (#314)? Clear of every segment by the radius + `margin`, inside no obstacle. */
-  isFree(x, z, level = this.level, margin = 0.02) {
-    if (this.inCore) { const [a, b] = this.world.core.segments(this.pos.y); return this.world.core.covers(x, z) && ![...a, ...b].some((sg) => segDist(x, z, sg) < PLAYER.radius + margin); } // (#415)
+  isFree(x, z, level = this.level, margin = 0.02, ignored = []) {
+    if ((this.world.bicycleSegments?.(this.pos.y, PLAYER.headroom, PLAYER.hurdle) ?? []).some(s => segDist(x,z,s) < PLAYER.radius + margin)
+      || (this.world.bicyclePolys?.(this.pos.y, PLAYER.headroom, PLAYER.hurdle) ?? []).some(p => inPoly(p,x,z))) return false;
+    if (this.inCore) { const [a, b] = this.world.core.segments(this.pos.y); return this.world.core.covers(x, z) && ![...a, ...b].some((sg) => !ignored.includes(sg) && segDist(x, z, sg) < PLAYER.radius + margin); } // (#415)
     if (this.below) { // in the garage (#357): its walls, the förråd doors, the cars
       const g = this.world.garage;
-      return g.inside(x, z) && ![...g.segments, ...g.dynamic()].some((sg) => segDist(x, z, sg) < PLAYER.radius + margin) && !g.obstacles().some((q) => inPoly(q, x, z));
+      return g.inside(x, z) && ![...g.segments, ...g.dynamic()].some((sg) => !ignored.includes(sg) && segDist(x, z, sg) < PLAYER.radius + margin) && !g.obstacles().some((q) => inPoly(q, x, z));
     }
     const u = this.unit; // in a visited flat, off the street (#574, #573)
-    if (u && (!u.ground || u.levelAt(this.pos.y) > 0)) { const lv = u.levelAt(this.pos.y); return u.contains(x, z, this.pos.y) && !(lv && u.inHole(x, z)) && ![...u.fixed[lv], ...u.doorSegments(lv)].some((sg) => segDist(x, z, sg) < PLAYER.radius + margin); }
+    if (u && (!u.ground || u.levelAt(this.pos.y) > 0)) { const lv = u.levelAt(this.pos.y); return u.contains(x, z, this.pos.y) && !(lv && u.inHole(x, z)) && ![...u.fixed[lv], ...u.doorSegments(lv)].some((sg) => !ignored.includes(sg) && segDist(x, z, sg) < PLAYER.radius + margin); }
     const lvl = this.world.levels[level];
     const doorSegs = this.world.doors.filter((d) => (d.object.position.y < LEVELS[0].floor + 1.6 ? 0 : 1) === level).map((d) => d.segment());
     const segs = [...lvl.segments, ...doorSegs, ...(this.world.movingSegments?.(level) ?? [])];
-    if (segs.some((sg) => segDist(x, z, sg) < PLAYER.radius + margin)) return false;
+    if (segs.some((sg) => !ignored.includes(sg) && segDist(x, z, sg) < PLAYER.radius + margin)) return false;
     if (this.obstacles(level).some((q) => inPoly(q, x, z))) return false;
     if (level === 1) { const h = STAIR.hole; if (x > h.x0 && x < h.x1 && z > h.z0 && z < h.z1) return false; }
     return true;
@@ -435,7 +444,118 @@ export class Player {
     return true;
   }
 
+  /** Query the existing support/collision context at an arbitrary feet position, without moving the player. */
+  bikeClear(p, radius = PLAYER.radius, ignored = []) {
+    const old = this.pos.clone(), own = this.riding?.bike, oldQuery = own?.selfQuery; this.pos.copy(p);
+    if (own) own.selfQuery = true;
+    try {
+      return Number.isFinite(p.y) && this.isFree(p.x, p.z, this.level, radius - PLAYER.radius + .02, ignored)
+        && this.roomToStand() && !this.blockedByStair(p.x, p.z, p.y)
+        && (this.world.roofs?.above(p.x, p.z, p.y + PLAYER.stepUp) ?? Infinity) >= p.y + PLAYER.headroom;
+    } finally { this.pos.copy(old); if (own) own.selfQuery = oldQuery; }
+  }
+
+  /** Conservative full wheelbase capsule, not just camera/player-center collision. */
+  bikeHull(p, yaw, ignored = []) {
+    const C = BICYCLE, dx = Math.cos(yaw), dz = -Math.sin(yaw);
+    for (let i = 0; i <= C.samples; i++) {
+      const t = C.rear + (C.front - C.rear) * i / C.samples;
+      const q = new THREE.Vector3(p.x + dx * t, p.y, p.z + dz * t), g = this.groundAt(q.x, q.z, p.y);
+      if (!Number.isFinite(g) || Math.abs(g - p.y) > C.wheelSlope || !this.bikeClear(q, C.radius, ignored)) return false;
+    }
+    return true;
+  }
+
+  bikePath(a, b, yaw, ignored = []) {
+    const n = Math.max(1, Math.ceil(a.distanceTo(b) / BICYCLE.step));
+    for (let i = 0; i <= n; i++) if (!this.bikeHull(a.clone().lerp(b, i / n), yaw, ignored)) return false;
+    return true;
+  }
+
+  mountBicycle(bike) {
+    if (this.riding || this.flying || this.climb || this.swing || this.fall || !bike || this.pos.distanceTo(bike.position) > BICYCLE.mountReach) return false;
+    const standing = this.pos.clone();
+    if (!this.bikeClear(standing) || Math.abs(this.groundAt(standing.x, standing.z, standing.y) - standing.y) > .02) return false;
+    bike.ridden = true; bike.selfQuery = true; // omit only this bicycle's own body during its mounting query
+    try {
+    let chosen = null;
+    const dir = new THREE.Vector3(-Math.cos(bike.yaw), 0, Math.sin(bike.yaw));
+    const ignored = bike.atSource ? bike.rackSegments : []; // ONLY the initial extraction, never later riding
+    for (let d = 0; d <= BICYCLE.extract; d += BICYCLE.extractStep) {
+      const p = bike.position.clone().addScaledVector(dir, d); p.y = this.groundAt(p.x, p.z, standing.y);
+      if (!this.bikeClear(p, Math.max(-BICYCLE.rear, BICYCLE.front) + BICYCLE.radius) || !this.bikeHull(p, bike.yaw) || !this.bikePath(bike.position, p, bike.yaw, ignored)) continue;
+      const n = Math.max(1, Math.ceil(standing.distanceTo(p) / BICYCLE.step)); let safe = true;
+      for (let i = 0; i <= n; i++) { const q = standing.clone().lerp(p, i / n); q.y = this.groundAt(q.x, q.z, standing.y); if (!this.bikeClear(q)) { safe = false; break; } }
+      if (safe) { chosen = p; break; }
+    }
+    if (!chosen) { bike.ridden = false; return false; }
+    this.riding = { bike, lastStanding: standing, yaw: bike.yaw };
+    bike.atSource = false; bike.pick.visible = false;
+    this.pos.copy(chosen); this.vy = 0; this.crouch = this.crouched = this.kneel = false;
+    this.camera.rotation.set(BICYCLE.pitch, bike.yaw - Math.PI / 2, 0, 'YXZ');
+    this.keys.clear(); this.analog.x = this.analog.y = 0;
+    this.bikePose(); return true;
+    } finally { bike.selfQuery = false; if (this.riding?.bike !== bike) bike.ridden = false; }
+  }
+
+  bikeStanding() {
+    const r = this.riding; if (!r) return this.pos.clone();
+    const C = BICYCLE, dx = Math.cos(r.yaw), dz = -Math.sin(r.yaw);
+    for (const d of C.stand) for (const sign of [1, -1]) {
+      const q = this.pos.clone().add(new THREE.Vector3(-dz * d * sign, 0, dx * d * sign));
+      q.y = this.groundAt(q.x, q.z, this.pos.y);
+      if (!Number.isFinite(q.y) || Math.abs(q.y - this.pos.y) > C.maxDrop || !this.bikeClear(q)) continue;
+      const n = Math.ceil(d / C.step); let safe = true;
+      for (let i = 0; i <= n; i++) { const p = this.pos.clone().lerp(q, i / n); p.y = this.groundAt(p.x, p.z, this.pos.y); if (!this.bikeClear(p)) { safe = false; break; } }
+      if (safe) return q;
+    }
+    return null;
+  }
+
+  bicycleSavePlace() {
+    if (!this.riding) return this.pos.clone();
+    const q = this.bikeStanding(); if (q) return q;
+    const last = this.riding.lastStanding;
+    return this.bikeClear(last) && Math.abs(this.groundAt(last.x, last.z, last.y) - last.y) < .02 ? last.clone() : null;
+  }
+
+  dismountBicycle() {
+    if (!this.riding) return false;
+    const q = this.bikeStanding(); if (!q) return false;
+    const bike = this.riding.bike; bike.ridden = false; bike.pick.visible = true; this.riding = null;
+    this.pos.copy(q); this.vy = 0; this.fall = null; this.keys.clear(); this.analog.x = this.analog.y = 0;
+    this.eyeY = q.y + PLAYER.eye; this.camera.position.set(q.x, this.eyeY, q.z); return true;
+  }
+
+  bikePose() {
+    const r = this.riding, C = BICYCLE;
+    r.bike.place(this.pos, r.yaw);
+    this.eyeY = this.pos.y + C.eye;
+    this.camera.position.set(this.pos.x - Math.cos(r.yaw) * C.cameraBack, this.eyeY, this.pos.z + Math.sin(r.yaw) * C.cameraBack);
+  }
+
+  bikeStep(dt) {
+    dt = Math.max(0, Math.min(BICYCLE.maxDt, Number.isFinite(dt) ? dt : 0));
+    const r = this.riding, C = BICYCLE, k = this.keys;
+    if (dt === 0) { this.bikePose(); return; }
+    const side = (k.has('KeyA') || k.has('ArrowLeft') ? 1 : 0) - (k.has('KeyD') || k.has('ArrowRight') ? 1 : 0) || -this.analog.x;
+    const fwd = (k.has('KeyW') || k.has('ArrowUp') ? 1 : 0) - (k.has('KeyS') || k.has('ArrowDown') ? 1 : 0) || this.analog.y;
+    const desired = this.camera.rotation.y + Math.PI / 2 + side * C.turn * dt;
+    const rawAngle = Math.atan2(Math.sin(desired - r.yaw), Math.cos(desired - r.yaw)), angle = Math.abs(rawAngle) < 1e-9 ? 0 : rawAngle;
+    const travel = (fwd >= 0 ? C.speed : C.reverse) * fwd * dt;
+    const n = Math.max(1, Math.ceil((Math.abs(travel) + Math.abs(angle) * (Math.max(-C.rear, C.front) + C.radius)) / C.step));
+    for (let i = 0; i < n; i++) {
+      const yaw = r.yaw + angle / n, p = this.pos.clone().add(new THREE.Vector3(Math.cos(yaw) * travel / n, 0, -Math.sin(yaw) * travel / n));
+      p.y = this.groundAt(p.x, p.z, this.pos.y);
+      if (p.y - this.pos.y > C.maxRise || this.pos.y - p.y > C.maxDrop || !this.bikeHull(p, yaw)) break;
+      this.pos.copy(p); r.yaw = yaw;
+    }
+    this.camera.rotation.y = r.yaw - Math.PI / 2; this.sprinting = false; this.jumpPress = false; this.crouch = this.crouched = false;
+    this.bikePose();
+  }
+
   update(dt) {
+    if (this.riding) { this.bikeStep(dt); return; }
     if (this.unstick(dt)) return; // pushed out of a piece of furniture / the car first (#314)
     const k = this.keys;
     // ← → turn (useful when the touchpad is disabled while typing), ↑ ↓ walk

@@ -321,3 +321,14 @@ including `Run cloudflare/wrangler-action@v3`, completed successfully; Pages
 run38417835821 also succeeded. This verifies publication of the additive server
 contract, not a new physical-device gameplay test. #897 closes only this restricted
 central style0 slice; #892/#879/#874 and #898/#899's remaining head surfaces stay open.
+
+## Bicycle resume policy (#903)
+
+Cycling is transient Player state and introduces no storage key or mounted resume.
+The existing place/session writers save an actually supported, collision-clear
+standing exit, otherwise the still-clear original standing mount place. If neither
+is safe, they retain the earlier session rather than write bicycle saddle feet.
+A genuine reload rebuilds the original bicycle matrices and resumes the player
+standing. Existing home/world data, life and worn equipment rules remain unchanged.
+The native bicycle driver checks the real resume module across browser reload,
+blocked-exit/session retention and real spawn releasing the cycling mode.

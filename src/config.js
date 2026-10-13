@@ -4625,3 +4625,9 @@ export function rifleHeadRegion(seed,state,point) {
   const lx=(c*x-s*z)/width,ly=y/look.tall-H.headY,lz=(s*x+c*z)/width;
   return Math.abs(lx)+H.wireMetres/width<=H.patch.across && ly-H.wireMetres/look.tall>=H.patch.low && ly+H.wireMetres/look.tall<=H.patch.high && lz>0;
 }
+
+// #903: first existing NW bicycle. Handling/clearances are game-value guesses; model wheels at -.50/.42,
+// radii .35, handlebar half-width .28 and saddle .80 come from bikeGeometry, not surveyed dimensions.
+export const BICYCLE = { maxDt: .1, extractStep: .1, height: 1.1, speed: 6, reverse: 2, turn: 1.6, step: .05, radius: .31, samples: 12,
+  rear: -.54, front: .46, eye: 1.25, cameraBack: .14, pitch: -.25, maxRise: .15,
+  maxDrop: .15, wheelSlope: .02, extract: 3, mountReach: 2.6, stand: [.9, 1.2, 1.5] };

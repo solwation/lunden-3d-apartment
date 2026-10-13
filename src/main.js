@@ -1376,6 +1376,7 @@ function standFree(seat, x, z, path) {
   return true;
 }
 function standUp() {
+  if (player.riding) { if (!player.dismountBicycle()) greet.sayMine('Här finns ingen säker plats att kliva av.'); return; }
   const film = rest.spot?.pc === 'film';
   const bed = rest.target?.rest === 'lie'; // lying or sitting up in a bed (#213)
   const seat = rest.spot?.pos.clone(), lying = rest.kind === 'lie', inCar = rest.spot?.car; // out of the car: back where you stood, by the door (#250)
@@ -1471,6 +1472,7 @@ document.addEventListener('wheel', (e) => { if (locked && !statsOpen && !reading
 
 /** E / the action button on what you look at: doors toggle, the note opens. */
 function use(thing) {
+  if (thing.kind === 'bicycle') { if (player.riding) { standUp(); return; } if (rest.active) return; if (!player.mountBicycle(thing.bicycle)) greet.sayMine('Här går det inte att ta ut cykeln säkert.'); return; }
   if (thing.kind === 'ghost' && weaponKey()) { // focus may predate a weapon change (#872)
     const held = heldItem();
     if (!held && suit.worn) suit.shoot();
@@ -1560,9 +1562,9 @@ function use(thing) {
   }
   else useDoor(thing);
 }
-actionBtn.addEventListener('click', () => { if (reading) showNote(false); else if (focused?.kind === 'fusebox' && !power.on) return; /* held, not clicked (#604) */ else if (focused) use(focused); else if (heldItem()?.useLabel) heldItem().use(); else if (rest.active) standUp(); });
+actionBtn.addEventListener('click', () => { if (reading) showNote(false); else if (focused?.kind === 'fusebox' && !power.on) return; /* held, not clicked (#604) */ else if (focused) use(focused); else if (heldItem()?.useLabel) heldItem().use(); else if (rest.active || player.riding) standUp(); });
 const standBtn = document.getElementById('stand-btn'); // touch, sitting with something in reach or in the hand: get up (#184)
-standBtn.addEventListener('click', () => { if (rest.active) standUp(); });
+standBtn.addEventListener('click', () => { if (rest.active || player.riding) standUp(); });
 const muteBtn = document.getElementById('mute');
 function updateMute(m = isMuted()) {
   setIcon(muteBtn,m?'volume-off':'volume',m?'Slå på ljud':'Stäng av ljud');
@@ -1658,10 +1660,11 @@ document.addEventListener('keydown', (e) => {
   if (isCtrl(e.code)) player.crouch = true;
   else if (e.ctrlKey) e.preventDefault();
   if (choices.rows && /^Digit[1-9]$/.test(e.code) && runChoice(Number(e.code.slice(5)) - 1)) e.preventDefault(); // a menu row (#367)
-  if (e.code === 'KeyE' && focused) { if (!(e.repeat && focused.kind === 'fusebox')) use(focused); } // also while sitting: what is within reach (#184); the fuse box: a fresh press (#604)
+  if (e.code === 'KeyE' && (player.riding || focused?.kind === 'bicycle')) { if (!e.repeat) { if (player.riding) standUp(); else use(focused); } }
+  else if (e.code === 'KeyE' && focused) { if (!(e.repeat && focused.kind === 'fusebox')) use(focused); } // also while sitting: what is within reach (#184); the fuse box: a fresh press (#604)
   else if (e.code === 'KeyE' && heldItem()?.useLabel) heldItem().use();
   else if (e.code === 'KeyE' && rest.active) standUp();
-  else if ((e.code === 'Space' || e.code === 'KeyC') && rest.active) { e.preventDefault(); player.keys.delete(e.code); standUp(); } // seated, C gets you up (the Space that does it is no jump, #636)
+  else if ((e.code === 'Space' || e.code === 'KeyC') && (rest.active || player.riding)) { e.preventDefault(); player.keys.delete(e.code); standUp(); } // seated, C gets you up (the Space that does it is no jump, #636)
   else if (e.code === 'KeyC' && !e.repeat) player.crouch = true; // (the repeats of the C that just stood you up do not crouch)
   if (e.code === 'KeyM') updateMute(toggleMuted());
   if (e.code === 'KeyT') toggleStats();
@@ -1764,7 +1767,8 @@ function updateFocus() {
     ...jetpack.targets(), // the jetpack on its hook / where it was stood down (#359)
     ...(!weaponKey() ? ghosts.targets() : []), // only unarmed visitors greet other players (#872)
     ...suit.targets(), // the Spider-Man suit in its drawer / where it was laid (#597)
-    ...world.courtyardTargets.map((t) => t.pickable), // the courtyard's benches (#438): F keeps them
+    ...world.courtyardTargets.map((t) => t.pickable),
+    ...world.bicycles.map(b => b.pick), // the courtyard's benches (#438): F keeps them
     ...(power.reachable ? [power.target.pickable] : []), // the fuse box while its cabinet is open (#604)
     ...(world.furnitureOn ? [...(target.object.visible ? [target.target] : []), ...patio.targets, ...world.furnitureTargets, ...holdables.map((h) => h.target), drawing.target, ...posters.targets].map((t) => t.pickable) : [])]; // parasol, TV, seats, beds, toys — unless F hid the furniture
   // the nearest hit on something actually shown (F hides the loose items, the raycaster doesn't care)
@@ -1916,17 +1920,20 @@ function updateFocus() {
     const own = heldItem()?.useLabel && !heldItem().useAlt && !heldItem().clickIsUse ? ` · högerklick: ${heldItem().useLabel.toLowerCase()}` : ''; // (#443)
     promptEl.textContent = clickIsE() ? `Klicka för att ${verb}${named}${own}` : `Tryck E för att ${verb}${named}`;
   }
-  const seated = rest.active && !reading; // sitting / lying: E with nothing in reach gets you up; Space / C always do
+  const seated = (rest.active || player.riding) && !reading; // sitting / lying: E with nothing in reach gets you up; Space / C always do
   const holding = !focused && heldItem()?.useLabel ? heldItem() : null; // touch: the button uses what you hold (fire, wave, light); a cup or the jug has no use of its own
   if (holding && touch.enabled) actionBtn.textContent = holding.useLabel;
   if (holding && !touch.enabled && !reading && !focused && !seated) {
     promptEl.textContent = clickIsE() ? `Klicka för att ${holding.useLabel.toLowerCase()}` : `Tryck E för att ${holding.useLabel.toLowerCase()}`;
   }
-  if (seated && !focused && !holding) actionBtn.textContent = 'Res dig';
+  if (seated && !focused && !holding) actionBtn.textContent = player.riding ? 'Kliv av cykeln' : 'Res dig';
   if (seated && !touch.enabled) promptEl.textContent = focused && !focused.blocked ? `${promptEl.textContent} · Mellanslag – res dig` : focused?.blocked ? promptEl.textContent : 'Tryck E för att resa dig';
-  standBtn.hidden = !touch.enabled || !seated || (!focused && !holding);
+  standBtn.hidden = !touch.enabled || !seated || (!focused && !holding && !player.riding);
+  if (player.riding && !reading) { promptEl.textContent = 'Cyklar · WASD / joystick · E eller mellanslag för att kliva av'; standBtn.setAttribute('aria-label','Kliv av cykeln'); standBtn.title = 'Kliv av cykeln'; }
+  else { standBtn.setAttribute('aria-label','Res dig'); standBtn.title = 'Res dig'; }
   if (reading && touch.enabled) actionBtn.textContent = 'Stäng';
   promptEl.hidden = (!focused && !seated && !holding) || touch.enabled || reading || (!!choices.rows && !seated);
+  if (player.riding && !reading) { promptEl.hidden = false; promptEl.textContent = touch.enabled ? 'Cyklar · kliv av med knappen' : 'Cyklar · WASD · E / mellanslag för att kliva av'; }
   const job = life.runner.job; // a timed life action going on (#372): what and how far
   if (job && !reading) { promptEl.textContent = `${job.label[0].toUpperCase()}${job.label.slice(1)} … ${Math.round(Math.min(1, job.t / Math.max(job.duration, 1e-6)) * 100)} %`; promptEl.hidden = false; }
   if (remoteAim && !touch.enabled && !reading) { promptEl.textContent = 'Klicka för att byta kanal · högerklick: av/på'; promptEl.hidden = false; }
@@ -2386,7 +2393,7 @@ function step(dt) {
     player.analog.y = touch.analog.y;
     player.update(dt);
     stickEl.classList.toggle('sprint', touch.enabled && player.sprinting); // joystick knob turns green
-    footsteps();
+    if (!player.riding) footsteps();
     updateFocus();
   }
   power.update(dt, focused === power.target); // the power cut (#604): flicker, bang, mending (after the focus: mending needs it)
@@ -2563,11 +2570,16 @@ function onTap(el, fn) {
 }
 // reload to a fresh URL, so neither the browser's nor GitHub Pages' cache hands back the old page
 /** Where the visitor is, for a reload: place, view, mute, mode (none = still on the first start screen), the build. */
-const placeNow = () => ({ x: player.pos.x, z: player.pos.z, feetY: player.restY(), yaw: camera.rotation.y, pitch: camera.rotation.x,
-  hour: day.hour, month: day.month, muted: isMuted(), fullscreen: !!document.fullscreenElement, build: BUILD,
-  mode: isPhoneDevice() ? 'touch' : (activeMode ?? (touch.enabled ? 'touch' : locked ? 'mouse' : (!armEl.hidden || played) ? 'mouse' : undefined)) });
+const placeNow = () => {
+  const p = player.riding ? player.bicycleSavePlace() : player.pos;
+  if (!p) return null; // no safe standing save: retain the earlier session/default start, never saddle feet
+  return { x: p.x, z: p.z, feetY: player.riding ? p.y : player.restY(), yaw: camera.rotation.y, pitch: camera.rotation.x,
+    hour: day.hour, month: day.month, muted: isMuted(), fullscreen: !!document.fullscreenElement, build: BUILD,
+    mode: isPhoneDevice() ? 'touch' : (activeMode ?? (touch.enabled ? 'touch' : locked ? 'mouse' : (!armEl.hidden || played) ? 'mouse' : undefined)) };
+};
+function saveCurrentResume(extra) { const p = placeNow(); if (p) saveResume({ ...p, ...extra }); }
 // F5 carries on (#203): the place goes to this tab's sessionStorage every 2 s and when the page goes away
-const keepSession = () => { if (played && !resetHome.going) saveSession(placeNow()); };
+const keepSession = () => { const p = played && !resetHome.going && placeNow(); if (p) saveSession(p); };
 setInterval(keepSession, 2000);
 window.addEventListener('pagehide', keepSession);
 window.addEventListener('pagehide', () => { if (life.dirty) life.flush(); }); // the life sim's stock (#371)
@@ -2650,7 +2662,7 @@ if (resetDone) {
 }
 onTap(document.getElementById('update-reload'), () => {
   reloading = true;
-  saveResume({ ...placeNow(), build: null, world: keepWorld() }); // a new version for sure; the world as it is (#277)
+  saveCurrentResume({ build: null, world: keepWorld() }); // a new version for sure; the world as it is (#277)
   const url = new URL(location.href);
   url.searchParams.set('v', latestVersion ?? Date.now());
   location.replace(url.href);
@@ -2705,7 +2717,7 @@ const autoReload = {
     void fadeEl.offsetWidth; // (a reflow, so the change of opacity is animated)
     fadeEl.style.opacity = '1';
     setTimeout(() => {
-      saveResume({ ...placeNow(), build: null, world: keepWorld() }); // a new version for sure; the world as it is (#277)
+      saveCurrentResume({ build: null, world: keepWorld() }); // a new version for sure; the world as it is (#277)
       reloading = true;
       const url = new URL(location.href);
       url.searchParams.set('v', this.version);
@@ -2761,7 +2773,7 @@ function keepWorld() { try { return saveWorld(keepApp); } catch (e) { console.wa
 // build, so no "Ny version" note; the place and the world come back as after "Ladda om".
 reloadOnContextRestore(renderer.domElement, () => {
   reloading = true;
-  saveResume({ ...placeNow(), world: keepWorld() });
+  saveCurrentResume({ world: keepWorld() });
   location.reload();
 });
 if (resumeOk && resumed.mode && resumed.world) loadWorld(keepApp, resumed.world); // mid-visit only: the game's clock too (a new visit: real time, #143)

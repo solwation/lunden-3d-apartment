@@ -697,3 +697,27 @@ within the old 0.3m gap, miss, forged point/version, crouch fallback, overkill f
 1HP, shared reset, one kill/award and idempotent effects. Its PNG shows the actual
 receipt marker/HUD and bounded measured protocol rows, not a rendered avatar.
 Parents #892/#879/#874 remain open for #898/#899 and their other weapon/pose parts.
+
+## First NW bicycle (#903)
+
+Only the existing `yard-0-2` bicycle can be ridden: its four original instanced
+components move together; the other eight NW bicycles and rack collision stay fixed.
+Aim at it and use E, the ordinary left-click action or the touch action button.
+WASD/arrows or the existing touch joystick steer and drive; E/Space/C or the
+existing stand button safely dismount. Repeated E is ignored for this bicycle
+interaction only. Cycling has a saddle/handlebar camera and an explicit prompt,
+without borrowing the crouch pose.
+
+`BICYCLE` handling values are game-value guesses, not survey measurements. The
+full wheelbase capsule and swept turn/travel substeps use actual Player collision,
+reachable ground and headroom. Uneven wheel support is conservatively refused.
+Only initial physical extraction can ignore the selected rack's four edges;
+subsequent riding ignores no rack/wall/door. Unsafe mount or dismount is refused.
+Pause/zero dt preserves the bicycle pose.
+
+`tools/bicycletest.cjs <base> <external-output>` runs the original index DOM,
+actual StreetLife/Player, complete original input/save handlers and real touch
+pointer gestures without WebGL. Controlled world/focus/lock collaborators are
+explicit; it does not prove pointer lock, full World graphics or remote bike pose.
+The source/native stage passed29 checks with actual exit0; whole-World visual
+acceptance is still pending and #903 remains open.

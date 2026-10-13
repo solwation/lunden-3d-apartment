@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { SITE, SEASON } from './config.js';
+import { SITE, SEASON, BICYCLE } from './config.js';
 import { pavingTexture } from './patio.js';
 import { registerSnow } from './seasons.js';
 import { grassMaterial, grassUV } from './grass.js';
@@ -189,26 +189,51 @@ export function buildStreetLife({ entrances = [] } = {}) {
     group.add(cm);
   }
   // #529: bicycles only in the plan's yard racks (front wheel in the rack), never along entrances.
-  const bikes = [], bikeColors = [], cols = [0x1d3c6e, 0xb02a2a, 0x2a2a2a, 0xe2e2dc, 0x3c7a4a, 0x8a8f96, 0xd8a020];
+  const bikes = [], bikeColors = [], bikeRecords = [], cols = [0x1d3c6e, 0xb02a2a, 0x2a2a2a, 0xe2e2dc, 0x3c7a4a, 0x8a8f96, 0xd8a020];
   const put = (x, z, yaw, lean) => { bikes.push(new THREE.Matrix4().compose(new THREE.Vector3(x, 0, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(lean, yaw, 0, 'YXZ')), new THREE.Vector3(1, 1, 1))); bikeColors.push(cols[Math.floor(R() * cols.length)]); };
-  const rack = [];
-  for (const r of L.racks) {
+  const rack = [], rackSegments = [];
+  for (const [ri, r] of L.racks.entries()) {
     const len = (r.n - 1) * r.gap + 0.5, cz = r.z0 + (r.n - 1) * r.gap / 2;
     rack.push(new THREE.CylinderGeometry(0.014, 0.014, len, 8).rotateX(Math.PI / 2).translate(r.x, 0.03, cz));
     for (let k = 0; k < r.n; k++) {
       const z = r.z0 + k * r.gap;
       rack.push(standGeometry().rotateY(r.dir > 0 ? 0 : Math.PI).translate(r.x - r.dir * 0.42, 0, z));
-      if (R() < 0.7) put(r.x - r.dir * 0.42, z, r.dir > 0 ? 0 : Math.PI, 0); // the front wheel (local +0.42) at the rack
+      if (R() < 0.7) { put(r.x - r.dir * 0.42, z, r.dir > 0 ? 0 : Math.PI, 0); bikeRecords.push({ id: `yard-${ri}-${k}`, index: bikes.length - 1, rack: ri }); } // the front wheel (local +0.42) at the rack
     }
     // the rack and its bikes as one block to walk round
     const xa = Math.min(r.x, r.x - r.dir * 1.3), xb = Math.max(r.x, r.x - r.dir * 1.3), za = r.z0 - 0.3, zb = r.z0 + (r.n - 1) * r.gap + 0.3;
     const c = [[xa, za], [xb, za], [xb, zb], [xa, zb]];
-    c.forEach((p, i) => segments.push([...p, ...c[(i + 1) % 4]]));
+    const edges = c.map((p, i) => [...p, ...c[(i + 1) % 4]]); rackSegments.push(edges); segments.push(...edges);
   }
   group.add(new THREE.Mesh(merge(rack), new THREE.MeshStandardMaterial({ color: 0xb4b9bd, roughness: 0.4, metalness: 0.7 })));
   const [frame, tyres, metal, spokes] = bikeGeometry();
-  group.add(instanced(metal, new THREE.MeshStandardMaterial({ color: 0xb4b9bd, roughness: 0.4, metalness: 0.7 }), bikes), instanced(frame, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.4, metalness: 0.3 }), bikes, bikeColors),
+  const components = [instanced(metal, new THREE.MeshStandardMaterial({ color: 0xb4b9bd, roughness: 0.4, metalness: 0.7 }), bikes), instanced(frame, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.4, metalness: 0.3 }), bikes, bikeColors),
     instanced(tyres, new THREE.MeshStandardMaterial({ color: 0x141414, roughness: 0.8 }), bikes),
-    instanced(spokes, new THREE.MeshStandardMaterial({ color: 0xb4b9bd, alphaMap: bikeSpokeTexture(), alphaTest: 0.35, side: THREE.DoubleSide, metalness: 0.35, roughness: 0.5 }), bikes));
-  return { object: group, segments };
+    instanced(spokes, new THREE.MeshStandardMaterial({ color: 0xb4b9bd, alphaMap: bikeSpokeTexture(), alphaTest: 0.35, side: THREE.DoubleSide, metalness: 0.35, roughness: 0.5 }), bikes)];
+  group.add(...components);
+  // #903: the first EXISTING seeded model; shared batches/counts/materials remain intact.
+  const first = bikeRecords[0], original = bikes[first.index].clone(), pos = new THREE.Vector3(), q = new THREE.Quaternion(), scale = new THREE.Vector3();
+  original.decompose(pos, q, scale);
+  const pick = new THREE.Mesh(new THREE.BoxGeometry(1.7, 1.05, .6), new THREE.MeshBasicMaterial({ visible: false }));
+  pick.userData.moving = true; // interaction helper, never an invisible projectile obstacle
+  group.add(pick);
+  const bicycle = { ...first, position: pos, yaw: Math.PI, original, rackSegments: rackSegments[first.rack], atSource: true, ridden: false,
+    place(p, yaw) {
+      if (this.matrix && this.position.equals(p) && this.yaw === yaw) return;
+      this.position.copy(p); this.yaw = yaw;
+      const matrix = new THREE.Matrix4().compose(p, new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw), scale);
+      this.matrix = matrix;
+      for (const mesh of components) { mesh.setMatrixAt(this.index, matrix); mesh.instanceMatrix.needsUpdate = true; mesh.computeBoundingSphere(); }
+      pick.position.copy(p); pick.position.y += .525; pick.rotation.y = yaw;
+    },
+    footprint(feet, headroom, hurdle) {
+      if (this.selfQuery || this.atSource || this.position.y > feet + headroom || this.position.y + BICYCLE.height <= feet - hurdle) return [];
+      const dx = Math.cos(this.yaw), dz = -Math.sin(this.yaw), r = BICYCLE.radius;
+      return [[BICYCLE.rear-r,-r],[BICYCLE.front+r,-r],[BICYCLE.front+r,r],[BICYCLE.rear-r,r]].map(([x,z]) => [this.position.x + dx*x-dz*z, this.position.z + dz*x+dx*z]);
+    }, components, pick,
+  };
+  bicycle.target = { name: 'Cykeln', kind: 'bicycle', verb: 'cykla', bicycle, pickable: pick };
+  pick.userData.door = bicycle.target;
+  bicycle.place(pos.clone(), bicycle.yaw);
+  return { object: group, segments, bicycles: [bicycle] };
 }
