@@ -2588,10 +2588,6 @@ seed, normalization or quality override was added. Migration changes only the
 iframe query and dimensions. Reversing those two lines reproduces the entire
 frozen original fixture; runtime source/data, runner and helper hashes match
 that pair's recorded base. Parent #740 and #736 remain open.
-<<<<<<< Updated upstream
-=======
-  f.width = 480; f.height = 300;
-  f.src = '../index.html?test';
 
 ## Native dust placement admission (#849)
 
@@ -2663,4 +2659,3 @@ hashes, actual exit/cleanup, native ready/leave/final records, raw differences
 and images: `/tmp/lunden-dust849/default-pair/`. All230 frozen native/new-test
 blobs and three helper hashes matched after this pair. The original whole
 Life3 fixture remains full, while broader #739/#736 and independent #850 stay open.
->>>>>>> Stashed changes
