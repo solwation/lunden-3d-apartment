@@ -5165,3 +5165,13 @@ and fresh current Worker 31 plus Node 36 were rerun after integration. Reversing
 the two own runtime additions reproduces preceding published config/PlayerRoom
 exactly, including independent Front/RIGHT/tiny state and callbacks. Deployment is
 recorded separately after the actual workflow step succeeds.
+
+#953 deployed runtime: ccfa77aaeec5ed7d0ec03266d0a3e2eb5eefe01e. Genuine Worker
+workflow 38462027300/job 115519360550 and its actual
+`cloudflare/wrangler-action@v3` step completed successfully (not skipped),
+independently checked by the orchestrator. All seven final runtime/driver paths
+match the post-rebase current Worker proof exactly; final intervening #715/#939
+changes were only preserved document appends. This establishes publication of the
+bounded contract, not a live match, physical phone, World render or all-pose claim.
+Original scalar whole CLI1, source-bound chunks and scope limitations remain
+unchanged. Parent #935 and its larger/RIGHT/moving/crouching remainder remain open.
