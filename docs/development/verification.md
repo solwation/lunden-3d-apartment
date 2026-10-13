@@ -1163,6 +1163,35 @@ per issue). Each needs its own actual full/test runs and unchanged assertions:
 | Interaction | cheattest, booktest, crouchtest |
 | Cooking and cloud state (#811 complete) | cooktest/cuptest retain original full mode after actual raw differences; cloudtest migrated with exact native evidence below |
 
+#835 calendar retains original 900×600/plain-index setup and the whole current assertion body after one complete
+original full/test pair at frozen `e4c0feb`. Both modes produced 13 PASS rows and ALL PASS, but exact comparison
+is DIFFERENT, actual independent exit 1. Only raw result rows 1 and 4 differ:
+
+| Result | Full | Test |
+| --- | --- | --- |
+| Browser time/date | `PASS starts at the browser's time and date (03:19, 13/10)` | `PASS starts at the browser's time and date (03:22, 13/10)` |
+| Chosen date preserves time | `PASS 21 June chosen, the time unchanged (03:19)` | `PASS 21 June chosen, the time unchanged (03:22)` |
+
+The other 11 rows and terminal verdict match, including original panel/key/date/sun/midnight/close checks; no
+functional assertion failed. Real date/clock values were preserved without seed, clock/date/angle normalization,
+wait, quality, matrix, baseline or assertion changes. The approved compare-only testMode fullscreen guard was
+removed; this keeps the ORIGINAL full setup, not the old unverified 480×300/test default from `9645849`.
+One actual child document per mode at ready/final, with matching URL/timeOrigin, proves full 900×600/controller
+null versus test 480×300/real controller API, both without fullscreen. Full screenshot failed after 60,000ms,
+with error retained and no full PNG; only test PNG was inspected (13 rows vertically, a long sun row cropped at
+the right edge, final dark calendar/kitchen scene). No full-image review or visual full/test equivalence is claimed.
+Full 151.360s / test 86.420s include capture attempts, descriptive only and excluded from timing aggregation;
+no extra replacement app load or retry was run. All 247 frozen source paths and exact guarded fixture/helper
+hashes match. Raw logs/summary: `/tmp/runtests-530119/`; original/frozen source proof, native ready/final phases,
+independent PID/SID/exit, test image and full capture error: `/tmp/lunden-clocks835/calendar-*` and `calendartest-*`.
+This is a blocked live-row migration disposition, not a rendering exemption or fixed product defect. Clock and
+#835/#738/#736 remain open; its original time/hand-angle diagnostics still need a separate complete pair.
+
+| #835 fixture | Current disposition |
+| --- | --- |
+| `calendartest.html` | Original full retained; complete 13 PASS per mode with two live-clock raw differences, actual compare exit 1. |
+| `clocktest.html` | Source prepared only; original 900×600/time=7 and all current hand-angle/date/panel checks retained, no actual pair yet. |
+
 #812 `bestatest` is accepted after a complete original 900×600/`?time=12&freeze` comparison at frozen `7325270`:
 whole raw logs are byte-identical, all 11 ordered PASS rows and ALL PASS, independently monitored actual exit 0.
 All six doors retain their original action-label, open, reacquire-the-open-leaf and shut predicates and raw
