@@ -975,3 +975,7 @@ The fresh66-report source (SHA794a06afbbcf9dd603fcefe804e417378264ffb11a008c6425
 ### Canopy and cloth-shade layout surfaces (#1026)
 
 SHADE_CANOPY_TEXTILES and SHADE_CANOPY_SURFACES whitelist only the actual tubelamp shade, DANI shade and parasol canopy IDs. They reuse version1/cloth presets, ordinary edit access, local0PUT preview/cancel and revision-controlled shared confirmation, with independent legacy pose fields, stale409 and offline accepted cache. Original restores each existing finish without resetting pose. Parasol’s existing manual/manualAuto save record stays separate from shared material choice; lamp glow/on/off remains with the existing small-lamp controller. Worker-first3d147087afb313f6a0e0a707aa3f4fe3f0a988fd actually deployed2026-10-14T13:02:08.0341293Z (run38568403820/job115866882862, version27b64635-32fa-4774-8ccc-f81a278d1729) before requiring client publication. All test writes use only an explicitly local Worker.
+
+### Hanging-towel material identities (#1029)
+
+`TOWEL_MATERIAL_SURFACES` whitelists seven surfaces on the four actual ragrund/towelhooks IDs plus explicitly NEW fixed `f-kitchen-oven-towel`. Kitchen registers the existing oven-child object only; it never enters movable furniture poses. Existing materialVersion1/klädsel choices, revision-controlled side-map, legacy pose preservation and capability guard are reused. No towel/HandWash/oven placement or new save policy is introduced; hand wetness remains transient. Local HTTP/schema verification makes no production writes.

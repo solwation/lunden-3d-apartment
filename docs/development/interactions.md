@@ -1448,3 +1448,9 @@ collaborators do not certify apartment geometry or physical phones.
 ### Long-pile preview and supported objects (#1009)
 
 The living-room rug library adds Blågrå långlugg through the existing local preview/confirm/cancel controls. `applyMaterialSurface` brackets height-affecting local previews and cancellation with actual snapshotRugSupport/reconcileRugSupport and refresh/changed hooks; accepted remote applies use #1008’s existing boundary. Derived furniture/stack/loose/rest/lamp heights need no extra PUT or revision. The floor-loose detector compares against current rugLift, so repeated pile previews/cancellation find items already standing on the taller rug. Original keeps the accepted rug pose. Main step synchronizes visible non-held/non-released floor cats immediately before existing cat.update; followRug’s null rugY leaves furniture-supported cats alone. The normal step runs while the library is reading; no new cat physics or held/release policy is added.
+
+### Existing hanging-towel materials (#1029)
+
+Seven existing towels reuse the shared library/surface selector and klädsel presets. `towelhooks` owns independent `towel-{seed}` surfaces; RÅGRUND owns `towel`. The existing `HandWash.kitchen` child uses the explicitly NEW `KITCHEN_TOWEL_MATERIAL` identity as a material-only target, without a second object or movable pose. Ordinary locked visitors receive shared choices without edit access. Preview/cancel stay local; confirm uses existing per-surface revisions.
+
+Builder-owned private body/band/loop handles retain distinct Original colors/maps, UV0 and folds. `towelTarget`, keep/targets, six actual drying interactions, hand wetness/timing/swing, the oven-door child and chair rest/footprint remain unchanged; RÅGRUND gains no drying interaction. No garments, stored towels or cleaning cloths are added.

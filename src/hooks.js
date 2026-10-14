@@ -4,6 +4,7 @@
 // red print and a cap, Sovrum 3 a pink zip hoodie and a tote bag with a rainbow. Built by furniture.js (FURNITURE type
 // 'hookrail'), merged per material there; a loose item (hidden with F), no collision.
 import * as THREE from 'three';
+import { upholsterySurface } from './upholstery.js';
 import { HOOKS, KID_HOOKS, TOWEL_HOOKS } from './config.js';
 
 /** A small tileable cloth texture (grey levels, multiplied by the material colour): `kind` 'waffle' (terry waffle
@@ -303,9 +304,11 @@ function towelCloth(color, kind, cell) {
 
 /** A terry hand towel hung by its loop from (0, 0, hookZ) (#424): pinched at the loop, widening and falling in soft
  * folds, a smoother woven border band across it near the top and the hem, the hem a little uneven. */
-export function towel(spec, hookZ) {
+export function towel(spec, hookZ, surface = null) {
   const g = new THREE.Group();
-  const m = towelCloth(spec.color, 'terry', 0.03), band = towelCloth(spec.band ?? spec.color, 'rib', 0.006);
+  surface ??= spec.materialSurface ? upholsterySurface(g, spec.materialSurface.name, spec.materialSurface) : null;
+  const material = m => surface ? surface.material(m) : m, part = m => surface ? surface.part(m) : m;
+  const m = material(towelCloth(spec.color, 'terry', 0.03)), band = material(towelCloth(spec.band ?? spec.color, 'rib', 0.006));
   const len = spec.len, W = spec.w / 2, sd = spec.seed ?? 1;
   const hw = (v) => 0.022 + (W - 0.022) * smooth(0, 0.22, v) + 0.01 * smooth(0.6, 1, v);
   const hd = (v) => 0.007 + 0.012 * smooth(0, 0.2, v) + 0.005 * Math.sin(v * 7 + sd);
@@ -323,17 +326,17 @@ export function towel(spec, hookZ) {
     geo.computeVertexNormals();
     return geo;
   };
-  g.add(mesh(bend(drape(len, { hw, hd, out, folds, seed: sd, nu: 32, nv: 30 }), 0), m));
+  g.add(part(mesh(bend(drape(len, { hw, hd, out, folds, seed: sd, nu: 32, nv: 30 }), 0), m)));
   // the woven border bands: thin sleeves just over the terry
   for (const vb of spec.bands ?? [0.24, 0.9]) {
     const dy = -vb * len + 0.011;
     const bb = drape(0.022, { hw: () => hw(vb) + 0.0015, hd: () => hd(vb) + 0.0015, out: () => out(vb), folds: () => folds(vb), seed: sd, nu: 32, nv: 1 });
-    g.add(mesh(bend(bb, dy), band, 0, dy, -0.0015));
+    g.add(part(mesh(bend(bb, dy), band, 0, dy, -0.0015)));
   }
   // the hanging loop over the hook
   const loop = mesh(new THREE.TorusGeometry(0.016, 0.0035, 6, 14), band, 0, 0.004, hookZ - 0.008);
   loop.rotation.y = Math.PI / 2; loop.scale.set(1, 1.4, 1);
-  g.add(loop);
+  g.add(part(loop));
   return g;
 }
 
@@ -386,7 +389,8 @@ export function towelhooks(item) {
     g.add(rose, pin, end);
   }
   c.towels.forEach((t, i) => {
-    const o = towel({ ...c.towel, ...t }, H.roseT + H.len * 0.6);
+    const surface = upholsterySurface(g, `Handduk ${i + 1}`, { id: `towel-${t.seed}` });
+    const o = towel({ ...c.towel, ...t }, H.roseT + H.len * 0.6, surface);
     o.position.set(xs[i], c.y - H.pin - 0.002, 0.002);
     g.add(o);
     // dry your hands on it (#437, handwash.js): its own E target, kept out of the merge so it can swing

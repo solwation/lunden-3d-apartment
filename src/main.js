@@ -5,7 +5,7 @@ import { PlantWind, windShadow } from './plantwind.js';
 import { runCheat, cheatList, isCommand } from './cheats.js';
 import { cleanHome } from './cheatclean.js';
 import { buildCheatNote } from './cheatnote.js';
-import { CHEAT_NOTE, LOW_MEMORY, QUALITY, STANDARD, STARTUP } from './config.js';
+import { CHEAT_NOTE, LOW_MEMORY, QUALITY, STANDARD, STARTUP, KITCHEN_TOWEL_MATERIAL } from './config.js';
 import { fetchStartupJSON } from './startuprecovery.js';
 import { lowMemory, reloadOnContextRestore, freeSceneGeometryCopies } from './lowmemory.js';
 import { loadBeerShelf } from './beershelfdata.js';
@@ -2025,11 +2025,15 @@ document.getElementById('furniture-btn').addEventListener('click', () => toggleF
 // #997: fixed cloth targets have stable material IDs, never furniture poses.
 const curtainMaterialTargets = blinds.curtains.map(c => ({ id: c.spec.materialId, object: c.object,
   item: { type: 'curtain', level: c.level }, level: c.level, name: `${c.name} (${c.spec.room})`, materialOnly: true }));
+// #1029: NEW material-only identity; the existing towel remains the oven door's child.
+const towelMaterialTargets = handWash.kitchen ? [{ id: KITCHEN_TOWEL_MATERIAL.id, object: handWash.kitchen.object,
+  item: { type: 'kitchen-towel', level: KITCHEN_TOWEL_MATERIAL.level }, level: KITCHEN_TOWEL_MATERIAL.level,
+  name: KITCHEN_TOWEL_MATERIAL.name, materialOnly: true }] : [];
 // #995: new rug variants join both existing light washes before their first render.
-for (const piece of [...world.furniture.movable, ...curtainMaterialTargets]) for (const surface of piece.object.userData.materialSurfaces ?? []) {
+for (const piece of [...world.furniture.movable, ...curtainMaterialTargets, ...towelMaterialTargets]) for (const surface of piece.object.userData.materialSurfaces ?? []) {
   surface.prepare = mesh => { lights.wash?.patch(mesh); visitLights.wash?.patch(mesh); };
 }
-const rearrange = new Rearrange({ scene, camera, world, player, life, marks, materialOnly: curtainMaterialTargets,
+const rearrange = new Rearrange({ scene, camera, world, player, life, marks, materialOnly: [...curtainMaterialTargets, ...towelMaterialTargets],
   carryables: () => [...holdables, ...cups.cups, ...life.views.values(), fruit.carryable, ...fruit.placed],
   busy: () => !!heldItem() || rest.active || drawing.active || !world.furnitureOn,
   changed: (changes) => {

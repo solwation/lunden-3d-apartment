@@ -3663,7 +3663,7 @@ export const TAP_LEVER = { seconds: 0.24, angle: 38, pickRadius: 0.075, pickHeig
 // #1029 NEW material-only identity for the existing oven-handle towel (not FURNITURE).
 export const KITCHEN_TOWEL_MATERIAL = { id: 'f-kitchen-oven-towel', surface: 'towel', name: 'Kökshandduken', level: 0 };
 export const HANDWASH = { wash: 2.2, dry: 1.6, wetFor: 60, fade: 20, swing: 0.12, kitchenTowelAt: 0.14,
-  kitchenTowel: { color: 0xe6dfd2, band: 0x4b6683, w: 0.2, len: 0.42, seed: 3.3, slant: 0.2 } };
+  kitchenTowel: { color: 0xe6dfd2, band: 0x4b6683, w: 0.2, len: 0.42, seed: 3.3, slant: 0.2, materialSurface: { id: KITCHEN_TOWEL_MATERIAL.surface, name: KITCHEN_TOWEL_MATERIAL.name } } };
 // Day cycle (src/daycycle.js): one day in `minutes` real minutes (60, the user #125). The sun follows the real solar
 // path for the date (declination, hour angle) at Kv. Lunden, Karpvägen / S:t Lars väg in Lund
 // (55.70° N, 13.17° E, docs/tomten-google-maps.jpg). planNorth = compass bearing of the plan's

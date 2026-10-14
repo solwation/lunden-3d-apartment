@@ -1583,9 +1583,10 @@ function ragrund(item) {
     g.add(rod);
   }
   // a towel folded over the top bar, hanging down on both sides
-  const towel = new THREE.MeshStandardMaterial({ color: item.towel ?? 0x9fb8c9, roughness: 1 });
-  for (const s of [-1, 1]) g.add(rbox(0.32, 0.36, 0.012, 0, H - 0.04 - 0.18, -hz + s * 0.016, towel, 0.004));
-  g.add(rbox(0.32, 0.02, 0.045, 0, H - 0.03, -hz, towel, 0.008));
+  const surface = upholsterySurface(g, 'Handduken', { id: 'towel' });
+  const towel = surface.material(new THREE.MeshStandardMaterial({ color: item.towel ?? 0x9fb8c9, roughness: 1 }));
+  for (const s of [-1, 1]) g.add(surface.part(rbox(0.32, 0.36, 0.012, 0, H - 0.04 - 0.18, -hz + s * 0.016, towel, 0.004)));
+  g.add(surface.part(rbox(0.32, 0.02, 0.045, 0, H - 0.03, -hz, towel, 0.008)));
   g.userData.footprint = [{ x0: -W / 2, x1: W / 2, z0: -D / 2, z1: D / 2 }];
   return g;
 }

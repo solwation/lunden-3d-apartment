@@ -345,3 +345,5 @@ stickade högtalarbas och de tre Nest-enheternas tyg kan väljas separat i
 **Möblera om → Meny → Välj tyg och mönster**. Förhandsvisa och bekräfta
 för alla besökare eller välj Original. Lampglas, skärmar och reglage
 behåller sina material; musik, smarta svar och lampans ljus fungerar som tidigare.
+
+Handdukarnas tyg kan väljas i materialbiblioteket: badrummens två par, Tvätts vita handduk, handduken över RÅGRUND och den befintliga kökshandduken på ugnens handtag. Varje handduk har egen yta; Original återställer dess ursprungliga tyg och band. Torkning, lucka och stol fungerar som tidigare.
