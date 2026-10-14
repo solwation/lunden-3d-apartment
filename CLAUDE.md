@@ -6,6 +6,11 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
 
 ## Workflow rules
 
+- **Material-library scope (user, 2026-10-14):** #991 covers furniture upholstery/visible furnishing textiles,
+  rugs and curtains; hanging towels are also approved. Do not add material editing for garments, wardrobe/cupboard/drawer
+  contents, stored textiles/towels or cleaning cloths. #1028/#1030/#1031/#1032/#1033 are cancelled, not prerequisites.
+  Preserve already delivered features and unfinished checkpoints; stop cancelled work without further implementation/push.
+  The old all-textiles inventory/acceptance in #1001 is superseded. Do not recreate it as replacement child issues.
 - **Headshot scope (user, 2026-10-14):** unfinished headshot refinements and their child/test stories are low priority.
   Replace further eye/pupil/hair/polygon-specific work with a reasonable shared three-box head collider
   (lower, middle, smaller top), preserving implemented gameplay. Old per-polygon acceptance demands are superseded;

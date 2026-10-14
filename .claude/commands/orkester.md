@@ -127,6 +127,16 @@ Andra `/orkester`-sessioner kör på egna VM:ar och kan inte nås med SendMessag
   ansvaret i olika block/moduler enligt nedan. Välj inte ett lägre prioriterat eller yngre ärende bara för att undvika
   samma fil; endast en konkret beroendeblockering får motivera att det hoppas över, och den redovisas i #420.
 
+### Avgränsat materialbibliotek (användaren, 2026-10-14)
+
+#991 avser möblernas beklädnad/synliga inredningstextilier, mattor och gardiner. Hängande handdukar är också
+uttryckligen godkända. Plagg, garderobs-/skåp-/lådinnehåll, förvarade textilier/handdukar och städtrasor ingår
+inte. #1028/#1030/#1031/#1032/#1033 är bortvalda och ska stängas som not_planned; stoppa eventuella egna agenter
+vid säker checkpoint utan ytterligare implementation/push, bevara filer/resultat och släpp aktiva etiketter/reservationer.
+#1029 hängande handdukar fortsätter. Gamla all-textilier-/åttafamiljsacceptanser i #1001 är ersatta, inte krav
+som blockerar #991. Redan levererad funktion bevaras. Skapa inga nya ersättningsbarn för samma bortvalda inventering.
+Lediga platser fylls enligt vanlig färsk prioritetskö.
+
 ### Samma layoutbugg i andra hus (användaren, 2026-10-14)
 
 När en agent rättar layout/geometri i ett hus ska den automatiskt kontrollera motsvarande delar i övriga
