@@ -337,3 +337,6 @@ tygval i Möblera om. Original återställer varje textils ursprungliga utföran
 trästomme och lådor behåller sina material.
 
 Crash diagnostics (#669): `tools/crashviewporttest.cjs` checks real console focus and startup navigation with explicitly simulated visual-viewport insets; this does not certify an Android keyboard or fix the still-open physical iPhone context-loss issue.
+Parasollväven och långlampans respektive DANI-lampans tygskärm kan väljas i
+Möblera om. Original behåller vävdetaljerna; parasollets vikning och lampornas
+vanliga tändning och glöd fungerar som tidigare.

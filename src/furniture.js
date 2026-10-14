@@ -1,6 +1,6 @@
 import { upholsterySurface } from './upholstery.js';
 import { materialChoice } from './materialcatalog.js';
-import { MATERIAL_LIBRARY, LONG_PILE } from './config.js';
+import { MATERIAL_LIBRARY, LONG_PILE, SHADE_CANOPY_TEXTILES } from './config.js';
 import { windPlant, windMaterial } from './plantwind.js';
 import { MusicLoop } from './music.js';
 import { MUSIC, STAND_ON } from './config.js';
@@ -276,11 +276,20 @@ function floorlamp(item, lights) {
 
 /** Långlampan's shade textures (#270): the coarse linen weave with the spiral wire as dark wavy lines; `glow` = the
  * emissive map (dimmer weave, the bulbs as bright soft spots round u = 0.5, the wire dark against them). */
-function linenTextures(S) {
+function linenTextures(S, choice) {
   const W = 256, H = 512, mk = () => { const c = document.createElement('canvas'); c.width = W; c.height = H; return c; };
   const col = mk(), glow = mk(), a = col.getContext('2d'), b = glow.getContext('2d');
-  const base = new THREE.Color(S.linen);
+  const base = new THREE.Color(choice?.color ?? S.linen);
   a.fillStyle = `#${base.getHexString()}`; a.fillRect(0, 0, W, H);
+  // #1026: colour/pattern only below the unchanged weave, wire and bulb detail passes.
+  if (choice?.pattern) {
+    const tw = MATERIAL_LIBRARY.upholsteryTile / (2 * Math.PI * S.r) * W, th = MATERIAL_LIBRARY.upholsteryTile / S.h * H;
+    a.fillStyle = choice.ink;
+    for (let x = 0; x < W; x += tw) {
+      if (choice.pattern === 'stripe') a.fillRect(x, 0, tw / 4, H);
+      else for (let y = 0; y < H; y += th) { a.fillRect(x, y, tw / 2, th / 2); a.fillRect(x + tw / 2, y + th / 2, tw / 2, th / 2); }
+    }
+  }
   b.fillStyle = '#4c4c4c'; b.fillRect(0, 0, W, H);
   let seed = 7;
   const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
@@ -315,7 +324,7 @@ function linenTextures(S) {
   }
   const tex = (c) => { const t = new THREE.CanvasTexture(c); t.anisotropy = 4; return t; };
   const map = tex(col); map.colorSpace = THREE.SRGBColorSpace;
-  return { map, glow: tex(glow) };
+  return { map, glow: choice ? null : tex(glow) }; // alternatives reuse the original emissive texture, allocating only their colour map
 }
 
 /** An additive wash of light: a soft ellipse brightest at `f` across (u) and in the middle up (v). */
@@ -334,6 +343,7 @@ function washTexture(f) {
  * Its own lamp (lights.js FloorLamp: dusk on/off, E on the shade, a pool light). Built world-aligned in `w`. */
 function tubelamp(item, lights) {
   const S = LANGLAMPA, g = new THREE.Group(), w = new THREE.Group();
+  const cloth = upholsterySurface(g, SHADE_CANOPY_TEXTILES.tubelamp.name, { id: SHADE_CANOPY_TEXTILES.tubelamp.id });
   w.rotation.y = -(THREE.MathUtils.degToRad(item.rot ?? 0) + Math.PI); // undo the group's yaw: children in world axes
   g.add(w);
   const metal = new THREE.MeshStandardMaterial({ color: S.metal, roughness: 0.45, metalness: 0.5 });
@@ -342,8 +352,17 @@ function tubelamp(item, lights) {
   add(new THREE.Mesh(new THREE.CylinderGeometry(S.foot.r, S.foot.r, S.foot.h, 32), metal), S.foot.h / 2);
   add(new THREE.Mesh(new THREE.CylinderGeometry(S.stem, S.stem, S.bottom + 0.05, 10), metal), (S.bottom + 0.05) / 2);
   const { map, glow } = linenTextures(S);
-  const linen = new THREE.MeshStandardMaterial({ map, color: 0xffffff, roughness: 0.95, emissive: S.glow, emissiveMap: glow,
-    emissiveIntensity: 0.04, side: THREE.DoubleSide });
+  const linen = cloth.material(new THREE.MeshStandardMaterial({ map, color: 0xffffff, roughness: 0.95, emissive: S.glow, emissiveMap: glow,
+    emissiveIntensity: 0.04, side: THREE.DoubleSide }));
+  const originals = cloth.apply, variants = new Map();
+  cloth.apply = id => {
+    const choice = materialChoice(id);
+    if (choice?.category !== 'klädsel' || choice.id === 'original') { originals('original'); return; }
+    if (!variants.has(id)) variants.set(id, linenTextures(S, choice).map);
+    const next = variants.get(id); linen.color.setHex(0xffffff);
+    if (linen.map !== next) { linen.map = next; linen.needsUpdate = true; }
+    cloth.choice = choice.id;
+  };
   const shade = add(new THREE.Mesh(new THREE.CylinderGeometry(S.r, S.r, S.h, 40, 1, true), linen), S.bottom + S.h / 2);
   // the bulbs (u = 0.5 of the texture) towards the sofa
   shade.rotation.y = Math.atan2(4.1 - item.x, 11.7 - item.z) - Math.PI;
@@ -396,6 +415,7 @@ function daniWashTexture(cu, cv, fall, stripes, aspect) {
  * `item.edge` = the x where the floor ends east of it (the stair hole). */
 function dani(item, lights) {
   const S = DANI, g = new THREE.Group(), Hc = S.h - S.legH, y0 = S.legH;
+  const cloth = upholsterySurface(g, SHADE_CANOPY_TEXTILES.dani.name, { id: SHADE_CANOPY_TEXTILES.dani.id });
   const rattan = new THREE.MeshStandardMaterial({ color: S.rattan, roughness: 0.75 });
   const wood = new THREE.MeshStandardMaterial({ color: S.wood, roughness: 0.6 });
   const add = (m) => { m.castShadow = true; g.add(m); return m; };
@@ -439,11 +459,15 @@ function dani(item, lights) {
     leg.position.copy(top).add(foot).multiplyScalar(0.5);
   }
   // the white fabric cylinder inside (the lamp's glow) + a disc at its foot; an invisible pick cylinder round the cage
-  const fabric = new THREE.MeshStandardMaterial({ color: S.fabric, roughness: 0.95, emissive: S.glow, emissiveIntensity: 0.04, side: THREE.DoubleSide });
+  const fabric = cloth.material(new THREE.MeshStandardMaterial({ color: S.fabric, roughness: 0.95, emissive: S.glow, emissiveIntensity: 0.04, side: THREE.DoubleSide }));
   const lamp = new THREE.Group(), iy0 = y0 + S.inner.y0 * Hc, iy1 = y0 + S.inner.y1 * Hc;
   lamp.position.y = (iy0 + iy1) / 2;
   const inner = new THREE.Mesh(new THREE.CylinderGeometry(S.inner.r, S.inner.r, iy1 - iy0, 32, 1, true), fabric);
   const cap = new THREE.Mesh(new THREE.CircleGeometry(S.inner.r, 32).rotateX(-Math.PI / 2), fabric);
+  cloth.part(inner); cloth.part(cap);
+  // Cylinder's true circumference/height in metres; original UV0 and cap shape stay intact.
+  const uv0 = inner.geometry.attributes.uv, uv1 = inner.geometry.attributes.uv1;
+  for (let i = 0; i < uv0.count; i++) uv1.setXY(i, uv0.getX(i) * 2 * Math.PI * S.inner.r, uv0.getY(i) * (iy1 - iy0));
   cap.position.y = -(iy1 - iy0) / 2 + 0.002;
   const pick = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.12, Hc, 16), new THREE.MeshBasicMaterial());
   pick.position.y = y0 + Hc / 2 - lamp.position.y;

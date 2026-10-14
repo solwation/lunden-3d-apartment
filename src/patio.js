@@ -3,7 +3,7 @@ import { windPlant } from './plantwind.js';
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { PATIO as P } from './config.js';
+import { PATIO as P, SHADE_CANOPY_TEXTILES } from './config.js';
 import { addCushions, addFoldedThrow } from './cushions.js';
 import { Openable } from './openables.js';
 
@@ -300,6 +300,7 @@ export function slattable(item = {}) {
  * flat and wide when up, narrow and long when folded. */
 export function parasol(item = {}) {
   const g = new THREE.Group();
+  const cloth = upholsterySurface(g, SHADE_CANOPY_TEXTILES.parasol.name, { id: SHADE_CANOPY_TEXTILES.parasol.id });
   const { radius, height, color } = P.parasol;
   const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, height, 12), frameMat);
   pole.position.y = height / 2;
@@ -312,7 +313,10 @@ export function parasol(item = {}) {
   g.add(rbox(0.36, 0.06, 0.36, 0, 0.08, 0, new THREE.MeshStandardMaterial({ color: 0x8d8f8c, roughness: 0.9 }), 0.01)); // weight
   const geo = new THREE.ConeGeometry(1, 1, 8, 1, true);
   geo.translate(0, -0.5, 0); // apex at the origin
-  const canopy = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color, roughness: 0.9, side: THREE.DoubleSide }));
+  const canopy = cloth.part(new THREE.Mesh(geo, cloth.material(new THREE.MeshStandardMaterial({ color, roughness: 0.9, side: THREE.DoubleSide }))));
+  // Planar metres on the actual fully opened radius; folding keeps this cloth UV reference.
+  const uv = geo.attributes.uv1, pos = geo.attributes.position;
+  for (let i = 0; i < pos.count; i++) uv.setXY(i, pos.getX(i) * radius, pos.getZ(i) * radius);
   canopy.position.y = height;
   canopy.castShadow = true;
   const finial = new THREE.Mesh(new THREE.SphereGeometry(0.03, 10, 8), frameMat);
