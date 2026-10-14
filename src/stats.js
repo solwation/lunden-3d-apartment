@@ -5,7 +5,7 @@ import { SECRET, SCORE } from './config.js';
 const KEY = 'lunden.stats';
 
 const fresh = () => ({ pvpKills: 0, killReceipts: {}, cats: 0, rare: 0, byVariant: {}, petted: 0, doors: 0, lids: 0, flushes: 0, taps: 0, fridge: 0, appliances: 0, cabinets: 0, beer: 0, coffee: 0, fish: 0, turbo: 0, shots: 0, fried: 0, burnt: 0, catFish: 0, chicken: 0, wine: 0, champagne: 0, whisky: 0, milk: 0, kask: 0, posted: 0, thrown: 0, lights: 0, sat: 0, lay: 0, steps: 0, metres: 0, stairs: 0, seconds: 0, visited: {}, secrets: 0, secretKinds: {}, catPhotos: 0, grill: 0, hood: 0, songs: 0, carMusic: 0, read: 0, car: 0, magic: 0, target: 0, baskets: 0, threes: 0,
-  byBreed: {}, seen: {}, secretRare: {}, tv: 0, pc: 0, parasol: 0, clock: 0, calendar: 0, cooked: 0, brews: 0, drawn: 0, splashes: 0, cuts: 0, dribbles: 0, catButts: 0, shattered: 0, shatterRange: 0, pingpingHugs: 0, blinds: 0, curtains: 0, airfried: 0, clips: 0, penalties: {}, penaltyPoints: 0, kittens: 0, kittenPets: 0, vacuumed: 0, tasks: 0, taskCounts: {}, taskRewardDays: {}, taskDay: null, legacyTaskPoints: 0, pvpRangePoints: 0 });
+  byBreed: {}, seen: {}, secretRare: {}, tv: 0, pc: 0, parasol: 0, clock: 0, calendar: 0, cooked: 0, brews: 0, drawn: 0, splashes: 0, cuts: 0, dribbles: 0, catButts: 0, shattered: 0, shatterRange: 0, pingpingHugs: 0, blinds: 0, curtains: 0, airfried: 0, clips: 0, penalties: {}, penaltyPoints: 0, kittens: 0, kittenPets: 0, vacuumed: 0, tasks: 0, taskCounts: {}, taskRewardDays: {}, taskBonusDays: {}, taskBonusPoints: 0, taskDay: null, legacyTaskPoints: 0, pvpRangePoints: 0 });
 
 
 function load() {
@@ -20,6 +20,8 @@ function load() {
       s.legacyTaskPoints = distinct * SCORE.first.tasks + Math.max(0, s.tasks - distinct) * SCORE.again.tasks;
     }
     if (!s.taskRewardDays || typeof s.taskRewardDays !== 'object' || Array.isArray(s.taskRewardDays)) s.taskRewardDays = {};
+    if (!s.taskBonusDays || typeof s.taskBonusDays !== 'object' || Array.isArray(s.taskBonusDays)) s.taskBonusDays = {};
+    if (!Number.isFinite(s.taskBonusPoints) || s.taskBonusPoints < 0) s.taskBonusPoints = 0;
     if (!s.killReceipts || typeof s.killReceipts !== 'object' || Array.isArray(s.killReceipts)) s.killReceipts = {};
     if (!Number.isSafeInteger(s.pvpKills) || s.pvpKills < 0) s.pvpKills = 0;
     return s;
@@ -113,6 +115,7 @@ export function rawScore() {
   for (const [k, pts] of Object.entries(S.each)) t += (stats[k] ?? 0) * pts;
   t += stats.pvpRangePoints ?? 0; // #873: extra distance reward; legacy pvpHits still supply the unchanged base
   t += stats.legacyTaskPoints ?? 0;
+  t += stats.taskBonusPoints ?? 0; // awarded amounts survive later tuning of SCORE.taskDayBonus
   for (const [id, count] of Object.entries(stats.taskCounts ?? {})) {
     const reward = S.tasks[id];
     if (reward && count > 0) t += stats.seen.tasks?.[id] ? count * reward.again : reward.first + (count - 1) * reward.again;
@@ -167,21 +170,54 @@ export function keepTaskDay(record) {
 }
 export function taskPaid(id, day) { return Array.isArray(stats.taskRewardDays[day]) && stats.taskRewardDays[day].includes(id); }
 
+/** The actual amount awarded that day, not today's configurable amount. */
+export function taskBonusFor(day) {
+  const points = stats.taskBonusDays[day];
+  return Object.hasOwn(stats.taskBonusDays, day) && Number.isFinite(points) && points >= 0 ? points : null;
+}
+
+// Mutate the score/day together; the caller chooses the single atomic save boundary.
+function addTaskDayBonus(day, record) {
+  const selected = record?.selected;
+  if (record?.v !== 3 || record.day !== day || !Array.isArray(selected) || selected.length !== 3 ||
+      new Set(selected).size !== 3 || !selected.every(task => SCORE.tasks[task] && record.tasks?.[task]?.done && taskPaid(task, day)) ||
+      taskBonusFor(day) !== null) return null;
+  const points = SCORE.taskDayBonus;
+  stats.taskBonusDays[day] = points;
+  stats.taskBonusPoints += points;
+  record.bonusPoints = points;
+  return points;
+}
+
+/** Reconcile an actual paid v3 set completed before #994; never replay individual rewards. */
+export function reconcileTaskDay(record) {
+  const points = addTaskDayBonus(record?.day, record);
+  if (points === null) return false;
+  stats.taskDay = record; dirty = true; save();
+  renderScore(); badge(`Alla uppdrag avklarade · +${points}`, false);
+  return true;
+}
+
 export function awardTask(id, title, day = null, record = null) {
   if (day && taskPaid(id, day)) return 0;
   const points = taskReward(id);
   stats.taskCounts[id] = (stats.taskCounts[id] ?? 0) + 1;
   stats.tasks++;
+  let dailyBonus = null;
   if (day) {
     if (!Array.isArray(stats.taskRewardDays[day])) stats.taskRewardDays[day] = [];
     stats.taskRewardDays[day].push(id);
-    if (record) stats.taskDay = record;
+    if (record) {
+      dailyBonus = addTaskDayBonus(day, record);
+      stats.taskDay = record;
+    }
   }
   dirty = true;
   if (day) save(); // count + receipt + completed daily task commit in one localStorage write
 
   renderScore();
   badge(`📋 Uppdrag klart: ${title} · +${points}`, false);
+  if (dailyBonus !== null) badge(`Alla uppdrag avklarade · +${dailyBonus}`, false);
   return points;
 }
 

@@ -294,7 +294,13 @@ same `lunden.stats` write. Initial selection and partial progress persist immedi
 before the home save timer. v3 state also remains in `life.keepPart('tasks')`; old v1/v2 goals/discovery migrate silently,
 keeping already-completed goals without retrospective reward. Ordinary home restore prefers the current daily score record.
 Only explicit statistics/new-player reset clears that score/day state. The one-mesh 512×640 paper and existing touch/modal,
-hints and ordered domain subgoals remain. The separate #994 owns the whole-set bonus; #993 includes no such bonus.
+hints and ordered domain subgoals remain. Whole-set bonus (#994): when exactly three unique selected tasks all have their actual individual paid receipts for
+the day, the third award includes `SCORE.taskDayBonus` (15, a game-design *guess* matching the first sandwich/bed reward).
+The individual count/receipt, bonus amount/receipt and daily state share a single atomic statistics write. The panel, paper
+and badge show “Alla uppdrag avklarade”. Paid day/amount and cumulative bonus points survive reload, stale home and
+future config changes; a later real local day may earn its own bonus. A smaller pool and old already-complete v1/v2 tasks
+without today’s individual receipts do not earn a retrospective whole-set bonus. A legitimate already-paid #993 v3 set
+completed today reconciles its missing bonus once on load/update, without replaying any individual award.
 
 
 Chicken discovery task (#710): `grillChicken`, titled “Gör något gott av kycklingen”, stays hidden when the note is read.

@@ -222,7 +222,12 @@ localStorage write; partial goals/initial selection also save immediately withou
 retains paid ids per real day to reject stale progress/dates; it is reset with normal explicit score reset. Rollover clears
 only daily state, preserving total counters, seen ids and legacyTaskPoints. v1/v2 goals/discovery and completed tasks migrate
 without reward; the former played-time deadlines no longer control selection. `SCORE.tasks[id].first/again` retain existing
-lifetime reward amounts. The separate #994 will add whole-set bonus state; it is not implemented here.
+lifetime reward amounts. Whole-set bonus (#994) adds `taskBonusDays` (paid day → actual awarded amount), cumulative `taskBonusPoints` and
+`taskDay.bonusPoints` (null until earned). They are saved atomically with the third individual award. Score uses cumulative
+awarded bonus points, so later `SCORE.taskDayBonus` tuning cannot rewrite earlier totals or the displayed earned amount.
+Exactly three unique complete selected ids and today’s three individual receipts are required; v1/v2 and smaller pools
+never retroactively earn a bonus. An already-paid #993 v3 set can reconcile one missing bonus atomically on load/update
+without running individual awards again. Day rollover clears daily bonus display while retaining paid-day receipts and earned points.
 
 #708: `Life.x.chicken` keeps raw/golden/burnt progress, off-grill pose or courtyard grate placement, missing/eaten parts and completion/penalty flags. The generic holdable snapshot still excludes chicken to avoid a second restore. `keep.js` restores grill heat before Life; saved grill relighting and chicken loading emit no task progress. F returns the existing bird rather than creating a fresh rewardable one.
 

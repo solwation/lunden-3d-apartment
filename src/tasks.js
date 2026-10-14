@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { awardTask, taskReward, taskPaid, keepTaskDay, stats } from './stats.js';
+import { awardTask, taskReward, taskPaid, keepTaskDay, taskBonusFor, reconcileTaskDay, stats } from './stats.js';
 import { TASK_NOTE, TASK_POOL, HALL_CARE } from './config.js';
 import { sfx } from './audio.js';
 
@@ -89,7 +89,7 @@ export class TasksManager {
       placedBird: null, grilledBird: null, replenished: false, failed: false,
     }));
 
-    this.elapsed = 0; this.day = null; this.selected = []; this.renewChicken = false;
+    this.elapsed = 0; this.day = null; this.bonusPoints = null; this.selected = []; this.renewChicken = false;
     const cachedAtStart = stats.taskDay?.v === 3 ? stats.taskDay : null;
     if (!cachedAtStart) this.ensureDay();
     this.onTaskCompleted = null;
@@ -240,7 +240,7 @@ export class TasksManager {
   ensureDay() {
     const day = this.localDay();
     if (this.day === day) return false;
-    this.day = day;
+    this.day = day; this.bonusPoints = null;
     for (const t of this.tasks) {
       t.completedGoals.clear(); t.isDone = t.active = t.failed = t.replenished = false;
       t.completions = t.readyAt = 0; t.points = null; t.placedBird = t.grilledBird = null;
@@ -258,10 +258,19 @@ export class TasksManager {
   }
 
   applyReceipts() {
+    this.bonusPoints = taskBonusFor(this.day) ?? this.bonusPoints;
     for (const t of this.activeTasks()) if (taskPaid(t.id, this.day)) {
       t.isDone = true; t.failed = false; t.completedGoals = new Set(t.goals.map(g => g.id));
     }
     if (this.tasks.find(t => t.id === 'grillChicken')?.isDone) this.renewChicken = false;
+  }
+
+  reconcileBonus() {
+    if (this.bonusPoints !== null || this.selected.length !== 3 || !this.activeTasks().every(t => t.isDone)) return false;
+    const record = this.save();
+    if (!reconcileTaskDay(record)) return false;
+    this.bonusPoints = record.bonusPoints;
+    return true;
   }
 
   persist() {
@@ -273,6 +282,7 @@ export class TasksManager {
   update(dt) {
     this.elapsed += Math.max(0, dt);
     const changed = this.ensureDay();
+    const bonusChanged = this.reconcileBonus();
     // Registration/restoration of the real chicken finishes before the first ordinary frame.
     // A saved pending renewal is cleared before emit, so repeated updates/reloads do not duplicate it.
     if (this.renewChicken) {
@@ -288,7 +298,7 @@ export class TasksManager {
         }
       }
       this.life.dirty = true; this.persist(); this.renderUI();
-    } else if (changed) this.renderUI();
+    } else if (changed || bonusChanged) this.renderUI();
   }
 
   save() {
@@ -304,12 +314,13 @@ export class TasksManager {
       if (t.failed) state.failed = true;
       if (Object.keys(state).length) tasks[t.id] = state;
     }
-    return { v: 3, day: this.day, selected: [...this.selected], shown: this.shownIds(),
+    return { v: 3, day: this.day, bonusPoints: this.bonusPoints, selected: [...this.selected], shown: this.shownIds(),
       renewChicken: this.renewChicken, tasks };
   }
 
   load(record) {
     if (![1, 2, 3].includes(record?.v)) return;
+    this.bonusPoints = record.v === 3 && Number.isFinite(record.bonusPoints) && record.bonusPoints >= 0 ? record.bonusPoints : null;
     for (const t of this.tasks) {
       const saved = record.v === 1 ? record.goals?.[t.id] : record.tasks?.[t.id]?.goals;
       t.completedGoals = new Set((Array.isArray(saved) ? saved : []).filter(id => t.goals.some(g => g.id === id)));
@@ -341,8 +352,9 @@ export class TasksManager {
       this.renewChicken = record.v === 3 ? !!record.renewChicken : !!this.tasks.find(t => t.active && t.id === 'grillChicken' && (t.isDone || t.failed));
       this.applyReceipts();
     }
+    if (record.v === 3 && record.day === this.day) this.reconcileBonus();
     this.life.emit('tasksShown', { ids: this.shownIds(), added: [], restored: true });
-    this.persist(); this.renderUI(); // restoring progress never awards points
+    this.persist(); this.renderUI(); // no individual replay; a legitimate paid v3 set may reconcile its missing one-time bonus
   }
 
   reset({ newChicken = false } = {}) {
@@ -378,7 +390,9 @@ export class TasksManager {
 
   triggerTaskComplete(task) {
     sfx.pling?.(null, 1.2);
-    awardTask(task.id, task.title, this.day, this.save());
+    const record = this.save();
+    awardTask(task.id, task.title, this.day, record);
+    this.bonusPoints = record.bonusPoints ?? null;
     if (this.onTaskCompleted) this.onTaskCompleted(task);
   }
 
@@ -433,6 +447,12 @@ export class TasksManager {
     heading.textContent = `Dagens uppdrag · ${this.day}`;
     if (this.selected.length < TASK_POOL.active) heading.textContent += ` · ${this.selected.length} tillgängliga`;
     this.listEl.append(heading);
+    if (this.bonusPoints !== null) {
+      const bonus = document.createElement('p');
+      bonus.className = 'task-bonus';
+      bonus.textContent = `Alla uppdrag avklarade · +${this.bonusPoints}`;
+      this.listEl.append(bonus);
+    }
     for (const task of this.tasks) {
       if (!task.active) continue;
       const card = document.createElement('div');
@@ -480,7 +500,7 @@ export class TasksManager {
       g.fillStyle = '#23324a';
       g.font = 'bold 36px system-ui, sans-serif';
       g.fillText('📋 DAGENS UPPDRAG', 24, 55);
-      g.font = '20px system-ui, sans-serif'; g.fillText(this.day, 24, 82);
+      g.font = '20px system-ui, sans-serif'; g.fillText(this.bonusPoints !== null ? `Alla uppdrag avklarade · +${this.bonusPoints}` : this.day, 24, 82);
 
       let y = 105;
       for (const t of this.activeTasks()) {

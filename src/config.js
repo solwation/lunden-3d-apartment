@@ -2768,6 +2768,7 @@ export const BEER_CAN = { held: { x: 0.2, y: -0.27, z: -0.44 }, sips: 5, lift: 0
 //          korthår 7, maine coon 6, norsk skogkatt 5, perser 3, sphynx 1 of 100); `first.coats` once per new coat.
 //  secrets: the secret drawer — `kinds` once per surprise kind found, `rare` once more per rare kind (+ each.secrets).
 export const SCORE = {
+  taskDayBonus: 15, // #994: completed three-task daily set (*guess*, ordinary first sandwich/bed reward scale).
   // #709: points per task, first completion / later daily completions (*guess*).
   tasks: {
     grillChicken: { first: 45, again: 8 }, // #710: hard discovery task (*guess*, suggested 40–50); one reward per local calendar day
