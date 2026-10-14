@@ -6374,3 +6374,67 @@ byte-exact final3-native inputs. All799 old changelog row bytes and actual
 changelog_stamp.py publication times remain unchanged. Last rebase added1012
 completion documentation only; every frozen final3 input remained exact.
 Own processes/profiles and TCP/TCP6 listeners8878/8879 are clear.
+
+
+## IDANÄS linen (#1019)
+
+`tools/bedlinentest.cjs GAME LOCAL_WORKER OUT` exercises the actual double-bed
+builder/merge, source-bound main selector/controls, ordinary Rearrange and two
+real local HTTP visitors. It requires the existing external secret-test inputs
+and rejects non-local write endpoints. Native forbids WebGL. One proof context
+compares the actual original1ff0c4a per-part positions/normals/UV0/index/care
+attributes/poses/finishes/rest/footprints; peers still build actual models and
+controllers without repeating that baseline comparison. MYDAL×2 and HEMNES are
+unchanged helper-default controls. No whole-World/phone/FPS test is implied.
+
+Native2 passed52/52 actualCLI0 in30.503s. All five surfaces preserve exact
+distinct Original handles/maps/flags/UV0 and non-target neighbors. Actual
+Openables and Pingping/soft surfaces remain original; per-bed ordinary mesh count
+is25→26 through explicit material isolation. HTTP tests cover preview0PUT/
+cancel, ordinary/new/reloaded visitors, independent sheet/duvet/pillowcase/
+footthrow/frame selection, simultaneous pose/material, stale409/offline/old
+capability, keyboard/touch and ordinary move. The first native run reached21
+green checks but timed out at60.675s during a peer wait; it remainsCLI1, with
+its source/producer/owner record retained, never counted as successful.
+
+Actual Life/Rest/BedCare/Runner and a held watering-can LifeItem test lie→rumple,
+blocking while resting/holding, timed half-make/interruption, double press, exact
+make restore, sitting, three repeated cycles and Life.serialize/flush followed
+by genuine same-context reload/restore. Both marked merged sections (530+9216
+vertices: foot throw and duvet/fold) deform under their original care-index0;
+every unmarked vertex remains exact. Every original position and smooth normal
+restores after making. Per-part care/index parity is measured before merge;
+material splitting may reorder merged indices, so no byte-identical merged-index
+order is claimed. Schema19/19 passed actualCLI0. Render/final integration evidence
+is appended only after those actual runs.
+
+
+The sole #1019 component renderer passed17/17 actualCLI0 in34.639s with
+no timeout/live owners. Six inspected900×560/DPR1 side-by-side PNGs show
+individual sheet, pillowcase, duvet/fold, footthrow and accent choices, then all
+Original from the other side. The visible sheet rim changes, both pillow types
+follow the shared case choice, duvet/fold and footthrow remain distinct, and
+frame/Pingping stay original. Each actual component before/after screen pass
+costs23→24 calls with23648 triangles unchanged; ordinary mesh25→26 is a
+different model counter. ShaderUV1/link and clip corners pass. These are
+components, not an apartment, phone or hardwareFPS test.
+
+Render-only setup saves the legitimate initial HTTP GET/accepted state, then
+stops component polling and restores local originals; native visitor polling
+is unchanged. Runtime/source/driver/external-supervisor freezes, raw per-view
+JSON before PNG and exact PID/PPid/startticks/cwd/socketFD/tcp/tcp6 evidence
+are retained under `/tmp/lunden-priority-1019/`. The actual child-exit record
+controls success rather than the supervisor's ownCLI0. The exact temporary
+render browser profile is absent after cleanup.
+
+
+Final integration pins f116267c05905f6a59e3d6491337ec784d54d2ce, including
+both other bed families' backward-compatible catalogue entries. Actual final
+native52/52CLI0 passed in14.456s; final Worker schema21/21CLI0 passed. All
+239 final-native inputs are frozen with source bytes/producer/runner manifest.
+Only config.js/materialcatalog.js differ from the executed renderer through
+those additive family definitions/whitelists; full addMattress/addDuvet and
+double-bed bodies, helper, shapes, rest/care/life and UI remain byte-exact.
+Images retain their executed component source rather than a rerender or a
+whole-World certification of the other new families. The final native DOM
+library image was also opened and inspected.

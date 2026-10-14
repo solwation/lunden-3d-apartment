@@ -947,3 +947,14 @@ keep their existing per-surface concurrency and conflict semantics.
 ### Compatible long-pile selection (#1009)
 
 The new stable `rug-longpile-bluegrey` enum is whitelisted only for the explicit original living-room rug ID; all six old rug choices/IDs, version1 and other families remain intact. Object-aware materialChoices(category,objectId) exposes the choice only to that rug; older calls without an object ID do not offer it. Existing clients preserve unknown stored material fields in legacy pose-only writes; understood Original/default leaves position untouched. Worker-first d13e45ae692ce512429544b51f72d7f39c656753 actually deployed2026-10-14T11:26:00.488Z, version9cd0f3a4-0036-4af3-8666-cab383de6d66, run38556470520/job115826762245 before the requiring client. Native acceptance uses two genuine LOCAL browser/Worker HTTP visitors for active/new/reload/original and concurrent pose/material fields; no production test write is made. Derived support height is not saved as extra moves. The pre-existing #1013 loose reload-XZ defect remains explicitly open.
+
+
+### Double-bed linen identities (#1019)
+
+`DOUBLE_BED_LINEN` names the five existing IDANÄS linen groups and
+`DOUBLE_BED_LINEN_SURFACES` whitelists their IDs only on the actual double bed.
+The existing `textile` frame choice remains separate. Version1 material revisions,
+legacy furniture poses, accepted cache/conflicts and the existing surface selector
+are reused. BedCare still saves only the original stable rumpled-bed ID in Life's
+`x.beds`; linen choices remain in the shared material record rather than that
+local care record. No new saving or stow policy is introduced.

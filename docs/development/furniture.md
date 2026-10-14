@@ -201,3 +201,20 @@ unchanged. Native evidence compares all three actual parts and one real neighbor
 against source-bound originals, then exercises actual Patio summer/rain/winter
 visibility while fixed-pad choice remains. Native per-part merged meshes stay
 3→3. Decorative cushion/box material editing belongs to separate #1015.
+
+
+## IDANÄS linen (#1019)
+
+The one actual double bed adds five semantic surfaces after its existing frame
+`textile`: fitted sheet, pillowcases (head and hotel originals), duvet/fold,
+knitted foot throw and accent pillow. Each explicit builder-owned handle preserves
+its original finishes; pillowcases retain separate printed and plain-white
+original materials. Existing generic upholstery choices/metric UV1 are reused.
+`addMattress` accepts a final optional surface only for the fitted layer, never
+the ticking; `addDuvet` accepts `o.surface` before its unchanged care tag for both
+main/fold shapes. Default callers and actual MYDAL/HEMNES controls remain original.
+
+No shape, seed, pillow-top stacking, Pingping home, drawer action/interior, rest
+spot, footprint or soft-placement data changes. Both duvet/fold and foot throw
+retain care-index0 in the same original bed unit. Independent material bindings
+change merged grouping, not original per-part geometry or UV0.

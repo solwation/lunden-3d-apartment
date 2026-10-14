@@ -326,3 +326,8 @@ Uteplatsens dekorativa kuddgrupper och dynboxens fleecepläd kan väljas separat
 i möbleringens befintliga tygyteväljare. Kuddvalet följer med till dynboxens
 förvarade kopior genom väder och årstider; Original återställer originaltyget.
 Vardagsrumsmattan kan nu väljas som blågrå långlugg i Möblera om (#1009). Luggen har verklig mjuk geometri; förhandsvisning, avbryt och Original uppdaterar också stödet under möbler och lösa föremål. Bekräftat val delas med besökarna, och mattans sparade placering behålls.
+
+
+Dubbelsängens lakan, örngott, täcke, stickade fotpläd och lilla kudde har separata
+tygval i Möblera om. Stommens tyg väljs som tidigare; Original återställer varje
+linnegrupp för sig, och bäddning och sparning behåller sitt vanliga beteende.

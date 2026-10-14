@@ -14,7 +14,7 @@ import { copperPot } from './plantpots.js';
 import { restTarget } from './rest.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { addCushions, addFoldedThrow, addDrapedThrow } from './cushions.js';
-import { CUSHIONS, FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, PILLOWS, BEDDING, PINGPING, MYDAL, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO, YUCCA, LANGLAMPA, VANITY, HEMNES_DAYBED, KPOP_POSTERS, SMASTAD, PHOTO_FRAME, COFFEE_TABLE, DANI } from './config.js';
+import { CUSHIONS, DOUBLE_BED_LINEN, FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, PILLOWS, BEDDING, PINGPING, MYDAL, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO, YUCCA, LANGLAMPA, VANITY, HEMNES_DAYBED, KPOP_POSTERS, SMASTAD, PHOTO_FRAME, COFFEE_TABLE, DANI } from './config.js';
 import { litMirrorMaterial, litEmissive, litReflect } from './mirror.js';
 import { addReflector } from './reflections.js';
 import { veronasofa, linkPatioTextiles, slattable, parasol, planter, dynbox } from './patio.js';
@@ -725,22 +725,24 @@ const fittedSheet = (kind) => (fittedMats[kind] ??= new THREE.MeshStandardMateri
 
 /** A mattress with rounded edges (#309): pale ticking, a fitted sheet over its top part (its elastic edge shows above
  * the ticking). `y` = its top. */
-function addMattress(g, w, h, l, x, y, z, sheet) {
+function addMattress(g, w, h, l, x, y, z, sheet, surface = null) {
   const r = Math.min(BEDDING.mattressR, h / 2 - 0.005), sh = h * BEDDING.sheetH;
   // the ticking's top 4 mm under the sheet's: level with it, the two flickered through each other (#335)
   g.add(rbox(w - 0.008, h - 0.004, l - 0.008, x, y - 0.004 - (h - 0.004) / 2, z, ticking, r));
-  g.add(rbox(w, sh, l, x, y - sh / 2, z, sheet, r));
+  const fitted = rbox(w, sh, l, x, y - sh / 2, z, surface ? surface.material(sheet) : sheet, r);
+  g.add(surface ? surface.part(fitted) : fitted);
 }
 
 /** A thick, soft duvet on a mattress `w` wide with its top at `y` (#309, `duvet` in bedding.js): from its head end at
  * z `zh`, `len` long, hanging `D.drop` over the sides; turned back `D.fold` m at the head end, the fold lying on it and
  * crumpled a little. `o` goes on to the duvet shape (seed, uv, drops). */
 function addDuvet(g, mat, w, y, zh, len, D, o = {}) {
+  if (o.surface) mat = o.surface.material(mat);
   const add = (geo, x, yy, z) => {
     const m = new THREE.Mesh(geo, mat);
     m.position.set(x, yy, z);
     m.castShadow = m.receiveShadow = true;
-    g.add(m);tagBedding(g,m,o.care??0);
+    g.add(o.surface ? o.surface.part(m) : m);tagBedding(g,m,o.care??0);
   };
   const r = o.r ?? BEDDING.mattressR;
   add(duvetShape(w, len, D.th, { drop: D.drop, crumple: 0, ...o, r }), o.x ?? 0, y, zh + len / 2);
@@ -756,10 +758,13 @@ function addDuvet(g, mat, w, y, zh, len, D, o = {}) {
 export function bed(item) {
   const g = new THREE.Group();
   const w = item.w, l = item.l, z0 = -l / 2;
+  let linenSurfaces = null;
   let top = 0.52; // mattress top (the plain bed)
   if (item.model === 'idanas') {
     top = idanasFrame(g, item);
-    addMattress(g, w, IDANAS.mattressH, l, 0, top, 0, fittedSheet(item.bedding?.pattern ?? 'plain'));
+    // Keep the existing frame textile first; linen has five independent builder-owned surfaces.
+    linenSurfaces = Object.fromEntries(DOUBLE_BED_LINEN.map(spec => [spec.id, upholsterySurface(g, spec.name, { id: spec.id, replaceDetails: true })]));
+    addMattress(g, w, IDANAS.mattressH, l, 0, top, 0, fittedSheet(item.bedding?.pattern ?? 'plain'), linenSurfaces['linen-sheet']);
   } else {
     g.add(rbox(w + 0.04, 0.22, l + 0.04, 0, 0.1 + 0.11, 0, bedFabric, 0.02));
     addMattress(g, w, 0.2, l, 0, 0.52, 0, fittedSheet('plain'));
@@ -772,7 +777,7 @@ export function bed(item) {
     const check = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.95 });
     // the duvet (#309): thick and soft, down to the frame's edge at the sides, turned back in front of the pillows
     const D = BEDDING.double, zh = z0 + 0.62;
-    addDuvet(g, check, w, top, zh, -z0 - zh, D, { seed: 3 });
+    addDuvet(g, check, w, top, zh, -z0 - zh, D, { seed: 3, surface: linenSurfaces?.['linen-duvet'] });
     // two pillows in the set's cases (#308: real pillow shapes, `pillow` in bedding.js; planar UVs in metres, so the
     // print matches the duvet's); in Sovrum 1 each lies on a white 70 × 100 hotel pillow (`item.hotel`)
     const H = PILLOWS.head, pz = z0 + 0.3;
@@ -785,7 +790,8 @@ export function bed(item) {
         const below = hotelTops[0], onSheet = (x) => 0.003 - 12 * Math.max(0, Math.abs(hx + x) - w / 2) ** 2;
         const hg = pillow(P.w, P.d, P.h, { seed: 11 + k, p: 4, under: 0.12, pinch: 0.035,
           base: below ? (x, z) => Math.max(onSheet(x), below(x + hx, z + hz) + 0.006) : onSheet });
-        const hot = new THREE.Mesh(hg, linen);
+        const hot = new THREE.Mesh(hg, linenSurfaces ? linenSurfaces['linen-pillows'].material(linen) : linen);
+        linenSurfaces?.['linen-pillows'].part(hot);
         hot.position.set(hx, top, hz);
         hot.castShadow = hot.receiveShadow = true;
         g.add(hot);
@@ -793,13 +799,16 @@ export function bed(item) {
         base = (x, z) => hg.userData.top(x + px - hx, z + pz - hz) + 0.004;
       }
       const pil = new THREE.Mesh(pillow(H.w, H.d, H.h, { seed: 3 + k * 5, under: item.hotel ? 0.15 : 0.3, base,
-        dent: { x: 0, z: 0.03, r: 0.14, depth: H.dent } }), check);
+        dent: { x: 0, z: 0.03, r: 0.14, depth: H.dent } }), linenSurfaces ? linenSurfaces['linen-pillows'].material(check) : check);
+      linenSurfaces?.['linen-pillows'].part(pil);
       pil.position.set(px, top, pz);
       pil.castShadow = pil.receiveShadow = true;
       g.add(pil);
     });
     // a small cushion lying on the fold in front of the pillows, its back edge up against them
-    const cushion = new THREE.Mesh(pillow(0.42, 0.3, 0.1, { seed: 23, under: 0.4 }), new THREE.MeshStandardMaterial({ color: b.cushion, roughness: 0.9 }));
+    const accent = new THREE.MeshStandardMaterial({ color: b.cushion, roughness: 0.9 });
+    const cushion = new THREE.Mesh(pillow(0.42, 0.3, 0.1, { seed: 23, under: 0.4 }), linenSurfaces ? linenSurfaces['linen-accent'].material(accent) : accent);
+    linenSurfaces?.['linen-accent'].part(cushion);
     cushion.position.set(-0.05, top + D.th * 1.85 + 0.05, zh + 0.16);
     cushion.rotation.set(0.45, 0.15, 0.05);
     cushion.castShadow = cushion.receiveShadow = true;
@@ -807,7 +816,7 @@ export function bed(item) {
     // a knitted throw across the foot end on the duvet, hanging down the side
     const knit = new THREE.MeshStandardMaterial({ color: b.throw, roughness: 1 });
     addDuvet(g, knit, w + 2 * D.th, top + D.th + 0.012, -z0 - 0.52, 0.42, { th: 0.03, drop: 0.3 },
-      { r: BEDDING.mattressR + D.th, extentL: w * 0.38, bump: 0.003, seed: 9 });
+      { r: BEDDING.mattressR + D.th, extentL: w * 0.38, bump: 0.003, seed: 9, surface: linenSurfaces?.['linen-footthrow'] });
   } else {
     addDuvet(g, duvet, w, 0.52, z0 + 0.6, l - 0.6, BEDDING.double, { seed: 4 });
     for (const px of w > 1.2 ? [-w / 4, w / 4] : [0]) {
