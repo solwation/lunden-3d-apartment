@@ -5869,3 +5869,15 @@ Ghosts/Combat peers and local Worker sockets: three box levels, body, miss, soli
 wall, movement/turn/crouch, points/marker and lethal/replay controls. It creates no
 WebGL or apartment; the inspected PNG is native HUD evidence, not a rendered player,
 physical-phone or FPS claim. Existing deferred obstacle deadlines remain unchanged.
+
+The #894 final native run passed 29/29 with CLI 0 and no WebGL/page errors;
+nine old `nerfContact` body rays retained their entry within 1 µm, including valid
+capsule rays outside the cosmetic mesh. Focused Node tests passed 52/52, and existing
+head-box geometry controls 15/15. A separate rising-path regression verifies that
+an earlier body contact prevents a forged claim for a later head box. The first
+chosen rising-ray fixture was actually head-first and failed as expected; that raw
+CLI 1 is preserved, then corrected to a genuine body-first input. Runtime commit
+`ae64de9` reached actual Wrangler deploy (run 38539777610, uploaded/deployed, version
+`a15cd7cd-2cd3-400a-ac85-ad0ea799ab64`) and actual Pages deployment
+38539777623. Source/producer hashes, raw exits and the inspected native HUD image are
+retained under `/tmp/lunden-priority-894/`; no live shot, World or phone test is claimed.

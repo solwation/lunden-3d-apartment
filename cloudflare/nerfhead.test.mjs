@@ -55,7 +55,7 @@ test('Nerf head boxes keep authoritative damage, movement, recovery and lethal r
       a.send(shot); await settle(env);
       return a.got.filter(m => m.t === 'hit').at(-1);
     };
-    const rising=[2,.72,0], norm=Math.hypot(...rising);
+    const rising=[2,2*(1.51*tall-.92)/1.6,0], norm=Math.hypot(...rising);
     now+=1000;
     a.send({t:'a',w:'nerf',o:[0,.9,0],d:rising.map(x=>x/norm),to:b.id,hc:[2,2,1.6,0]}); await settle(env);
     const risingHit=a.got.filter(m=>m.t==='hit').at(-1);
