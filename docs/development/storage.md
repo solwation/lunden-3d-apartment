@@ -711,3 +711,7 @@ attachment, message, timer, storage write or billed operation is introduced.
 Legacy bool/default/null Front/Rear arguments and all other named permissions
 retain their behavior; the new option defaults false and selects the same Rear
 leaf. The immutable #951 branch remains separate.
+
+### Immutable central Nose depth compatibility (#950)
+
+The new strict named option `allowImmutableNoseDepth` reads only the already private permanent `headPoseFixed === true`. It adds no attachment field, message, persistence key, alarm or periodic work. Missing/malformed legacy history is never initialized retroactively; accepted p/r/c changes and returns remain ineligible across hibernation, recovery and death. Shared state snapshots omit private eligibility. Existing null/bool/positional option behavior, other named permissions, old Nose families, life/recovery/award/kill handling, v1 contact precision and256byte cap remain unchanged. A cached older validator gives ordinary body1 for this newly recognized contact; the new client follows its authoritative ordinary marker and health receipt.

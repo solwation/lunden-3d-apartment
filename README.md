@@ -246,3 +246,5 @@ The existing Rear patches also accept a greeted standing player's small accepted
 yaw correction when the unchanged private first-standing corridor remains valid
 (#952). This separate permission does not reopen larger turns or position/stance
 changes; see the [finite verification](docs/development/verification.md#small-yaw-rear-after-greeting-952).
+
+#950 adds a narrow central Nose depth family for rifle hits on a player whose first standing position, heading and crouch state have never changed on that connection. It reuses private immutable history and the original Nose geometry/6mm entry guard; other Nose families and ordinary body fallback stay independent. See [verification](docs/development/verification.md#immutable-central-nose-depth-950).

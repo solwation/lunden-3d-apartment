@@ -1083,3 +1083,7 @@ at the opposite endpoint are sampled across the resulting .04 rad visible span.
 Larger turns and position/stance changes remain outside this family (#941).
 The historical #951 results describe its immutable permission at that revision;
 a small turn can now qualify through this additional independent branch.
+
+### Immutable central Nose depth (#950)
+
+`noseDepthPatch` / `rifleNoseDepthRegion` describe a *guess* conservative central contact family: canonical x±.005, y.087–.092 relative to headY, z.127–.132, with the entire existing wire error margin inside each bound. Avatar only tags the actual nearest original Nose triangle. The shared validator admits this additive family only with strict `allowImmutableNoseDepth: true`; PlayerRoom derives that option from existing private `headPoseFixed === true`. First standing p/r/c must remain unchanged; any accepted change and return, crouching, or missing legacy history keeps this new family body-only. No new client state, animation authority, phase timer, geometry, triangles, cone, damage or tolerance is introduced. Original NoseCore/Extra/Band, Skull and Jaw dispatch remain independent. The finite native matrix includes all60 canonical appearances, initial/late states, wave/repeat/capped pause, held/saber and idle; it does not establish all continuous poses. Broader Nose coverage remains #920.
