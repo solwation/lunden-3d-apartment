@@ -7,6 +7,10 @@ Related: [plan-material](plan-material.md), [interactions](interactions.md), [pl
 
 ```text
 src/furniture.js       loose furniture from FURNITURE in config (IKEA LANDSKRONA sofa/armchair …)
+src/upholstery.js      #1010 explicit builder-owned cloth handles for sofa/armchair/ottoman/gamingchair/kidchair/vanitystool;
+                       private material identity survives merge and light washes, original color/map/roughness/UV0 retained,
+                       generic patterns use separate metre UV1/map.channel1. No traversal/global-material recoloring.
+                       materialSurfaces appends textile/category klädsel to support independent semantic surfaces.
 src/cleaning.js        the Klk under the stair on Entréplan (#338, CLEANING in config): `cleaningFittings` (world.js, stay with F: a white
                        wall shelf on the north wall, a tool rail on the east wall, the vacuum's dock) + the `cleaning` builder (a loose
                        item: toilet paper, kitchen roll, labelled bins Städ / Tvål / Påsar, bottles, a mop bucket with its mop, broom,
@@ -139,3 +143,25 @@ is idempotent and does not write the shared layout. Fresh-page native evidence
 covers support Y, not full-position reload: pre-existing #1013 double-carries a
 saved loose plate in XZ during initial layout restoration, reproduced with the
 unchanged pre-1008 apply. That separate defect is not fixed or accepted here.
+
+## Indoor upholstery choices (#1010)
+
+All six actual movable indoor padded seats expose their own `textile` surface
+through the existing material library and revision-checked furniture protocol:
+LANDSKRONA sofa/armchair, ottoman, gaming chair, kids chair and vanity stool.
+Each builder explicitly passes its cloth parts/private material handles to
+`upholsterySurface`; decorative cushions/throws, oak/dark/gold legs, white chair
+frame and gaming plastic/base/armrests keep their materials. The ottoman's
+piping and gaming chair's integrated upholstered accents restore their distinct
+original finishes. Cloth material color/map changes in place, so merged meshes,
+focus outlines and both lamp-wash hooks retain identity. Original UV0 is never
+changed; UV1 preserves metre scale for the two shared128px procedural patterns
+(`MATERIAL_LIBRARY.upholsteryTile`, visual guess). No per-frame scene walk.
+
+The six stable IDs are derived from the same FURNITURE type/level/coordinates/
+serial/suffix as buildFurniture, separately whitelisted in materialcatalog for
+Worker validation. Existing version1, rug/curtain IDs and pose/material revision
+separation remain intact. Katalog/Worker44f3be6 was actually deployed before
+this client. Bed frames and patio seat pads remain in #1011/#1012; wood beds,
+paper-cord SKANSNÄS, ABORG steel, bamboo, bedlinen/bedCare and loose cushions
+are not silently enrolled. Browser/model evidence and limits are in verification.md.

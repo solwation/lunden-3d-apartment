@@ -6126,3 +6126,61 @@ actual actions/deploy-pages for this exact SHA and reported success at
 11:17:35.9657595Z on2026-10-14. No Worker source/contract changed, so this client
 change did not require a Worker deployment. Across retained native/render runs,
 81 owned child records are gone and their temporary Chrome profiles removed.
+
+
+### Indoor seat upholstery (#1010)
+
+`LUNDEN_SECRET_TEST_INPUTS=/external/private/inputs.json PLAYWRIGHT_MODULE=...
+CHROME_PATH=... node tools/upholsterytest.cjs http://localhost:8878
+http://localhost:8879 /tmp/upholstery-native` requires own devserve8878 and
+local `node cloudflare/dev.mjs 8879 TOKEN`. It
+executes six actual exported factory functions, actual mergeStatic/Rearrange,
+original index DOM/source-bound main material controls, both real lamp washes
+and two real local Worker-HTTP visitors. World/placement collaborators are
+controlled; the ordinary begin/ghost/confirm move supplies a valid fixture
+position, not an apartment collision/phone certification. Baseline factory
+source is read from immutable44f3be6:src/furniture.js via git; the source bytes
+match the preserved pre-edit file. Additive export aliases expose these same
+original functions in the fixture, without rewriting their bodies. The checkout
+therefore needs that commit's Git history. No production writes.
+
+Native31/31/CLI0: original positions/normals/UV0/index/local poses/rest/footprints/
+finishes equal the six original factories, exact handle/map/roughness/UV0 restore
+after every preset, noncloth/decorative materials unchanged during preview,
+merged UV1 complete/map.channel1, both actual wash hooks retained,600 previews
+reuse one sofa material and only two pattern maps. Mouse/key/touch original UI
+checks preview0PUT/cancel0PUT/one confirmed PUT, active ordinary peer/new visit/
+real same-context reload, concurrent pose/material writes,409, offline/cache
+preservation, original without pose reset and ordinary controller move. Native
+webglCalls0, no page errors. A first backend command had CLI1 before the suite
+because the explicit external private-input environment variable was missing;
+it is retained separately. Corrected schema13/13/CLI0, same authorized external
+fixture, unchanged limiter/credential behavior.
+
+One source-frozen component render passed14checks/CLI0/3.974s with six inspected
+side-by-side original/pattern PNGs,18 small before/after/pair draws and linked
+UV1 attribute/complete bounds. Renderer900×560/DPR1; actual screenshot viewport
+was900×600, leaving40px fixture background below the canvas (not an application
+edge). Before→after calls/triangles: sofa4/11256→4/11256, armchair4/6696→4/6696,
+ottoman3/1480→3/1480, kidchair3/4744→3/4744, gaming3/7096→4/7096,
+vanitystool3/1248→3/1248. The one extra gaming draw isolates padded seat/back
+from the formerly shared plastic base; no extra triangles. These local fixture
+durations/counters are not World FPS, device memory or physical-phone results.
+
+Artifacts `/tmp/lunden-priority-1010/` include original failures, native/raw model
+proofs, six render PNG/JSON,257-source freezes and content-addressed executed
+source bytes, PID/PPid/startticks/cwd/ports/actual exits and cleanup. The final
+driver's only baseline-path change replaces the session-specific file with the
+byte-identical immutable Git source; its render function/cloth runtime remains
+traceable to the executed image producer. No extra renderer retry is claimed.
+
+
+Final #1010 rebase included #1008's rug-support/floorRugLift metadata and
+Rearrange/rugs changes plus #1004's independent food/Combat/Ghosts/players
+changes. Both appended documentation sections were retained. Final native
+31/31/CLI0 (8.010s) and schema13/13/CLI0 passed on that source. Ten original
+render-freeze whole paths differ (including the portable driver baseline-read
+change); the full cloth helper and all six complete factory bodies plus
+seatModule match the executed image source byte-for-byte. Images remain
+component evidence for their earlier freeze, not new-import or whole-World
+render acceptance. Raw drift and balanced-body parity are retained separately.

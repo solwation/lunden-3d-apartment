@@ -1,3 +1,4 @@
+import { upholsterySurface } from './upholstery.js';
 import { materialChoice } from './materialcatalog.js';
 import { MATERIAL_LIBRARY } from './config.js';
 import { windPlant, windMaterial } from './plantwind.js';
@@ -111,14 +112,15 @@ function leg(x, z, h = L.legHeight, material = oak) {
  * LANDSKRONA-style seat module: frame, seat cushion(s), back cushion(s), armrests.
  * `arms` = which ends get an armrest ('left' is the sitter's left = +x).
  */
-function seatModule(g, { x0, x1, depth, cushions, arms, armDepth = depth }) {
+function seatModule(g, textile, { x0, x1, depth, cushions, arms, armDepth = depth }) {
+  const cloth = textile.material(fabric), box = (...args) => textile.part(rbox(...args));
   const legH = L.legHeight, D = L.depth;
   const z0 = -D / 2, zF = z0 + depth; // back … front
   const base = L.seatHeight - 0.14;   // top of the frame under the seat cushion
   const backT = D - L.seatDepth - 0.06; // back frame + cushion thickness
   // frame
-  g.add(rbox(x1 - x0, base - legH, depth, (x0 + x1) / 2, (legH + base) / 2, (z0 + zF) / 2, fabric, 0.02));
-  g.add(rbox(x1 - x0, 0.3, 0.14, (x0 + x1) / 2, base + 0.15, z0 + 0.07, fabric, 0.03));
+  g.add(box(x1 - x0, base - legH, depth, (x0 + x1) / 2, (legH + base) / 2, (z0 + zF) / 2, cloth, 0.02));
+  g.add(box(x1 - x0, 0.3, 0.14, (x0 + x1) / 2, base + 0.15, z0 + 0.07, cloth, 0.03));
   // seat + back cushions
   const aw = L.armWidth;
   // a short arm (the chaise's): the seat cushion runs the full width, out past the arm's end
@@ -127,15 +129,15 @@ function seatModule(g, { x0, x1, depth, cushions, arms, armDepth = depth }) {
   const cw = (ix1 - ix0) / cushions;
   for (let i = 0; i < cushions; i++) {
     const cx = ix0 + cw * (i + 0.5);
-    g.add(rbox(cw - 0.01, 0.15, depth - backT + 0.02, cx, base + 0.075, zF - (depth - backT) / 2, fabric, 0.05));
-    const back = rbox(cw - 0.02, 0.42, 0.2, cx, L.seatHeight + 0.19, z0 + 0.14 + 0.1, fabric, 0.07);
+    g.add(box(cw - 0.01, 0.15, depth - backT + 0.02, cx, base + 0.075, zF - (depth - backT) / 2, cloth, 0.05));
+    const back = box(cw - 0.02, 0.42, 0.2, cx, L.seatHeight + 0.19, z0 + 0.14 + 0.1, cloth, 0.07);
     back.rotation.x = -0.14;
     g.add(back);
   }
   // armrests: sitter's right = −x, left = +x; `armDepth` from the back (the chaise's ends with the sofa's seats, #279)
   for (const side of arms) {
     const ax = side === 'right' ? x0 + aw / 2 : x1 - aw / 2;
-    g.add(rbox(aw, L.armHeight - legH, armDepth, ax, (L.armHeight + legH) / 2, z0 + armDepth / 2, fabric, 0.05));
+    g.add(box(aw, L.armHeight - legH, armDepth, ax, (L.armHeight + legH) / 2, z0 + armDepth / 2, cloth, 0.05));
   }
   // legs
   for (const lx of [x0 + 0.06, x1 - 0.06]) for (const lz of [z0 + 0.06, zF - 0.06]) g.add(leg(lx, lz));
@@ -154,16 +156,16 @@ function seatRects({ x0, x1, depth, arms, armDepth = depth }) {
   return rects;
 }
 
-function sofa(item) {
-  const g = new THREE.Group();
+export function sofa(item) {
+  const g = new THREE.Group(), textile = upholsterySurface(g);
   const W = L.sofaWidth, D = L.depth;
   // chaise on the sitter's right (−x) or left (+x)
   const right = item.chaise === 'right';
   const cw = L.chaiseWidth;
   const [mainX0, mainX1] = right ? [-W / 2 + cw, W / 2] : [-W / 2, W / 2 - cw];
   const [chX0, chX1] = right ? [-W / 2, -W / 2 + cw] : [W / 2 - cw, W / 2];
-  seatModule(g, { x0: mainX0, x1: mainX1, depth: D, cushions: 2, arms: [right ? 'left' : 'right'] });
-  seatModule(g, { x0: chX0, x1: chX1, depth: L.chaiseDepth, cushions: 1, arms: [right ? 'right' : 'left'], armDepth: L.chaiseArmDepth });
+  seatModule(g, textile, { x0: mainX0, x1: mainX1, depth: D, cushions: 2, arms: [right ? 'left' : 'right'] });
+  seatModule(g, textile, { x0: chX0, x1: chX1, depth: L.chaiseDepth, cushions: 1, arms: [right ? 'right' : 'left'], armDepth: L.chaiseArmDepth });
   // three places on the sofa and one on the chaise (#71), local x, seat height, z, facing +z; spread over the seat
   // short of the arm and the cushion in its corner (#278)
   const [sx0, sx1] = right ? [mainX0, mainX1 - L.armWidth - 0.14] : [mainX0 + L.armWidth + 0.14, mainX1];
@@ -186,10 +188,10 @@ function sofa(item) {
   return g;
 }
 
-function armchair() {
-  const g = new THREE.Group();
+export function armchair() {
+  const g = new THREE.Group(), textile = upholsterySurface(g);
   const W = L.chairWidth;
-  seatModule(g, { x0: -W / 2, x1: W / 2, depth: L.depth, cushions: 1, arms: ['left', 'right'] });
+  seatModule(g, textile, { x0: -W / 2, x1: W / 2, depth: L.depth, cushions: 1, arms: ['left', 'right'] });
   // two cushions and the grey fleece throw over the sitter's right arm onto the seat, as in the user's photo (#278)
   const seatTop = L.seatHeight + 0.01, ax = -W / 2, ai = ax + L.armWidth, top = L.armHeight, T = CUSHIONS.chairThrow;
   addCushions(g, CUSHIONS.armchair, { backZ: -L.depth / 2 + 0.35, seatY: seatTop });
@@ -203,20 +205,20 @@ function armchair() {
 
 /** The dark red upholstered stool in front of the armchair (#180, after the user's photo): an upholstered frame
  * on short dark tapered legs, a loose cushion on top that sticks out a little, a welt seam round its edges. */
-function ottoman(item) {
-  const g = new THREE.Group();
+export function ottoman(item) {
+  const g = new THREE.Group(), textile = upholsterySurface(g);
   const O = OTTOMAN, { w, d, h, legH, cushion: c, overhang: o } = O;
-  const cloth = new THREE.MeshStandardMaterial({ color: O.color, roughness: 0.97 });
-  const welt = new THREE.MeshStandardMaterial({ color: O.welt, roughness: 0.9 });
+  const cloth = textile.material(new THREE.MeshStandardMaterial({ color: O.color, roughness: 0.97 }));
+  const welt = textile.material(new THREE.MeshStandardMaterial({ color: O.welt, roughness: 0.9 }));
   const legMat = new THREE.MeshStandardMaterial({ color: O.legColor, roughness: 0.5 });
   const frameH = h - legH - c;
-  g.add(rbox(w, frameH, d, 0, legH + frameH / 2, 0, cloth, 0.015));
+  g.add(textile.part(rbox(w, frameH, d, 0, legH + frameH / 2, 0, cloth, 0.015)));
   const cw = w + 2 * o, cd = d + 2 * o, cy = h - c / 2;
-  g.add(rbox(cw, c, cd, 0, cy, 0, cloth, 0.03));
+  g.add(textile.part(rbox(cw, c, cd, 0, cy, 0, cloth, 0.03)));
   // the welt round the cushion's top and bottom edges, and the seam low on the frame
   const band = (W, D, y, r) => {
     for (const [sx, sz, x, z] of [[W, r, 0, D / 2], [W, r, 0, -D / 2], [r, D, W / 2, 0], [r, D, -W / 2, 0]]) {
-      const m = new THREE.Mesh(new THREE.BoxGeometry(sx, r, sz), welt); m.position.set(x, y, z); g.add(m);
+      const m = new THREE.Mesh(new THREE.BoxGeometry(sx, r, sz), welt); m.position.set(x, y, z); g.add(textile.part(m));
     }
   };
   band(cw - 0.02, cd - 0.02, h - 0.012, 0.008);
@@ -2264,19 +2266,19 @@ function gamingdesk(item) {
 
 /** Gaming chair (black with green stripes): five-star base, seat, tall back with wings. Faces local +z.
  * A seat for sitting down (#71). */
-function gamingchair() {
-  const g = new THREE.Group();
-  const green = new THREE.MeshStandardMaterial({ color: neon, roughness: 0.6 });
+export function gamingchair() {
+  const g = new THREE.Group(), textile = upholsterySurface(g), cloth = textile.material(nearBlack);
+  const green = textile.material(new THREE.MeshStandardMaterial({ color: neon, roughness: 0.6 }));
   for (let k = 0; k < 5; k++) {
     const a = (k / 5) * Math.PI * 2, leg = rbox(0.3, 0.03, 0.04, Math.cos(a) * 0.15, 0.06, Math.sin(a) * 0.15, nearBlack, 0.01);
     leg.rotation.y = -a;
     g.add(leg);
   }
   g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.36, 10), nearBlack).translateY(0.24));
-  g.add(rbox(0.52, 0.09, 0.5, 0, 0.46, 0.02, nearBlack, 0.03));
-  g.add(rbox(0.5, 0.82, 0.1, 0, 0.92, -0.22, nearBlack, 0.04));
-  for (const x of [-0.12, 0.12]) g.add(rbox(0.04, 0.78, 0.005, x, 0.92, -0.168, green, 0.002)); // stripes
-  g.add(rbox(0.3, 0.12, 0.05, 0, 1.2, -0.16, green, 0.02)); // headrest pillow
+  g.add(textile.part(rbox(0.52, 0.09, 0.5, 0, 0.46, 0.02, cloth, 0.03)));
+  g.add(textile.part(rbox(0.5, 0.82, 0.1, 0, 0.92, -0.22, cloth, 0.04)));
+  for (const x of [-0.12, 0.12]) g.add(textile.part(rbox(0.04, 0.78, 0.005, x, 0.92, -0.168, green, 0.002))); // stripes
+  g.add(textile.part(rbox(0.3, 0.12, 0.05, 0, 1.2, -0.16, green, 0.02))); // headrest pillow
   for (const x of [-0.27, 0.27]) g.add(rbox(0.06, 0.04, 0.3, x, 0.66, 0, nearBlack, 0.015)); // arm rests
   // pc: sitting down switches the PC at the desk on (and brings its monitor back from the bunk)
   g.userData.rest = { kind: 'sit', name: 'gamingstolen', verb: 'sätta dig i', spots: [{ x: 0, y: 0.5, z: -0.04, pc: 'game' }] };
@@ -2501,13 +2503,13 @@ function alex(item) {
 }
 
 /** A white kids' swivel chair with a pink seat cushion (a seat, #71). Faces local +z. */
-function kidchair() {
-  const g = new THREE.Group();
+export function kidchair() {
+  const g = new THREE.Group(), textile = upholsterySurface(g);
   const white = new THREE.MeshStandardMaterial({ color: 0xf6f6f3, roughness: 0.4 });
-  const pink = new THREE.MeshStandardMaterial({ color: 0xf6a8c8, roughness: 0.9 });
+  const pink = textile.material(new THREE.MeshStandardMaterial({ color: 0xf6a8c8, roughness: 0.9 }));
   for (let k = 0; k < 5; k++) { const a = (k / 5) * Math.PI * 2, leg = rbox(0.24, 0.025, 0.035, Math.cos(a) * 0.12, 0.05, Math.sin(a) * 0.12, white, 0.008); leg.rotation.y = -a; g.add(leg); }
   g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.32, 10), white).translateY(0.22));
-  g.add(rbox(0.42, 0.05, 0.4, 0, 0.42, 0.02, white, 0.02), rbox(0.38, 0.03, 0.36, 0, 0.46, 0.02, pink, 0.015));
+  g.add(rbox(0.42, 0.05, 0.4, 0, 0.42, 0.02, white, 0.02), textile.part(rbox(0.38, 0.03, 0.36, 0, 0.46, 0.02, pink, 0.015)));
   g.add(rbox(0.4, 0.3, 0.04, 0, 0.7, -0.18, white, 0.02));
   g.userData.rest = { kind: 'sit', name: 'stolen', verb: 'sätta dig på', spots: [{ x: 0, y: 0.47, z: -0.02 }] };
   g.userData.footprint = [{ x0: -0.22, x1: 0.22, z0: -0.22, z1: 0.22 }];
@@ -2620,9 +2622,9 @@ function vanity(item, lights) {
 }
 
 /** A small round velvet stool (#282): a padded drum with a domed top on short gold legs; a seat facing local +z. */
-function vanitystool() {
-  const S = VANITY.stool, g = new THREE.Group();
-  const velvet = new THREE.MeshStandardMaterial({ color: S.color, roughness: 0.85 });
+export function vanitystool() {
+  const S = VANITY.stool, g = new THREE.Group(), textile = upholsterySurface(g);
+  const velvet = textile.material(new THREE.MeshStandardMaterial({ color: S.color, roughness: 0.85 }));
   const gold = new THREE.MeshStandardMaterial({ color: 0xd4af37, roughness: 0.3, metalness: 0.85 });
   const legH = 0.06, bodyH = S.h - legH;
   const prof = [];
@@ -2632,7 +2634,7 @@ function vanitystool() {
   const body = new THREE.Mesh(new THREE.LatheGeometry(prof, 32), velvet);
   body.position.y = legH;
   body.castShadow = body.receiveShadow = true;
-  g.add(body);
+  g.add(textile.part(body));
   const ring = new THREE.Mesh(new THREE.TorusGeometry(S.r - 0.004, 0.005, 6, 32).rotateX(Math.PI / 2), gold); // piping at the bottom
   ring.position.y = legH + 0.005;
   g.add(ring);
