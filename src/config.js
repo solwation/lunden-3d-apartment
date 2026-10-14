@@ -4882,3 +4882,65 @@ export function rifleNoseSideRegion(seed,state,point,origin,direction) {
   }
   return true;
 }
+
+// #974: ordinary gameplay approximation, independent of hair, facial polygons and animation history.
+// Three stacked head boxes (metres in the unscaled standing avatar), narrower at the crown; *guess* by the existing head.
+export const PVP_HEAD_BOXES = {
+  version: 2, maxCoordinate: 5002,
+  boxes: [
+    { low: 1.51, high: 1.59, halfWidth: .085, back: -.10, front: .12 },
+    { low: 1.59, high: 1.69, halfWidth: .105, back: -.11, front: .14 },
+    { low: 1.69, high: 1.76, halfWidth: .075, back: -.085, front: .085 },
+  ],
+  // Existing Avatar.update/poseOlof crouch: hips at .9-.02-.2*c, local z .04*c, torso rotation X=-.45*c.
+  hipY: .88, hipDrop: .2, hipForward: .04, crouchLean: .45,
+};
+
+function rifleBoxPose(seed, state) {
+  const vector = v => Array.isArray(v) && v.length === 3 && v.every(x => Number.isFinite(x) && Math.abs(x) <= PVP_HEAD_BOXES.maxCoordinate);
+  if (!state || !vector(state.p) || !Number.isFinite(state.r) || Math.abs(state.r) > 100) return null;
+  const crouch = state.c === undefined || state.c === false ? 0 : state.c === true ? 1 : state.c;
+  if (!Number.isFinite(crouch) || crouch < 0 || crouch > 1) return null;
+  const look = avatarLook(seed), yaw = state.r + Math.PI, lean = PVP_HEAD_BOXES.crouchLean * crouch;
+  return { width: [.93, 1, 1.08][look.build], tall: look.tall, yawCos: Math.cos(yaw), yawSin: Math.sin(yaw),
+    leanCos: Math.cos(lean), leanSin: Math.sin(lean), crouch };
+}
+
+/** Lowest world height of the logical head: body mesh contacts below this remain ordinary body hits. */
+export function rifleHeadBaseY(seed, state) {
+  const pose = rifleBoxPose(seed, state);
+  if (!pose) return null;
+  const H = PVP_HEAD_BOXES;
+  return state.p[1] + pose.tall * Math.min(...H.boxes.map(box => H.hipY - H.hipDrop * pose.crouch +
+    pose.leanCos * (box.low - H.hipY) + Math.min(pose.leanSin * box.back, pose.leanSin * box.front)));
+}
+
+/** First entry into any logical head box. The ray is normalized before scaling, so distance remains WORLD metres. */
+export function rifleBoxHeadContact(seed, state, origin, direction, range) {
+  const pose = rifleBoxPose(seed, state), H = PVP_HEAD_BOXES;
+  const vector = v => Array.isArray(v) && v.length === 3 && v.every(Number.isFinite);
+  if (!pose || !vector(origin) || origin.some(x => Math.abs(x) > H.maxCoordinate) || !vector(direction) || !Number.isFinite(range) || range < 0) return null;
+  const length = Math.hypot(...direction);
+  if (!Number.isFinite(length) || length === 0) return null;
+  const unit = direction.map(x => x / length);
+  // Invert heading, appearance scale and the simple crouch transform, retaining a world-distance ray parameter.
+  const inverse = (v, point) => {
+    const x = (pose.yawCos * v[0] - pose.yawSin * v[2]) / pose.width;
+    const y = v[1] / pose.tall - (point ? H.hipY - H.hipDrop * pose.crouch : 0);
+    const z = (pose.yawSin * v[0] + pose.yawCos * v[2]) / pose.width - (point ? H.hipForward * pose.crouch : 0);
+    return [x, pose.leanCos * y - pose.leanSin * z + (point ? H.hipY : 0), pose.leanSin * y + pose.leanCos * z];
+  };
+  const o = inverse(origin.map((x, i) => x - state.p[i]), true), d = inverse(unit, false);
+  let first = Infinity;
+  for (const box of H.boxes) {
+    const low = [-box.halfWidth, box.low, box.back], high = [box.halfWidth, box.high, box.front];
+    let near = 0, far = range;
+    for (let axis = 0; axis < 3 && near <= far; axis++) {
+      if (d[axis] === 0) { if (o[axis] < low[axis] || o[axis] > high[axis]) far = -1; continue; }
+      const a = (low[axis] - o[axis]) / d[axis], b = (high[axis] - o[axis]) / d[axis];
+      near = Math.max(near, Math.min(a, b)); far = Math.min(far, Math.max(a, b));
+    }
+    if (near <= far) first = Math.min(first, near);
+  }
+  return Number.isFinite(first) ? { distance: first, point: origin.map((x, i) => x + unit[i] * first) } : null;
+}
