@@ -849,3 +849,20 @@ prism. Private history, server wiring, style0, #946 and every other region are
 unchanged. Style1 remains denied: its actual historical #957 unsupported corner
 intersects this prism, so functional child #973 must derive a different safe
 geometric subset. Style3 remains #969; #968 stays open until #973 is delivered.
+
+
+## Additive rug-material layout contract (#995)
+
+The compatible Worker advertises `materialVersion: 1` on GET/successful PUT of
+`/furniture`. Optional `materials: [{id, surface, choice, base}]` patches update
+`state.materials[id][surface] = {choice, revision}` in the same serialized atomic
+layout transaction. The shared `src/materialcatalog.js` whitelists six existing
+rug IDs, their `textile` surface and compact catalog choices; textures stay local.
+Each surface base is independent of its furniture pose base, so simultaneous
+move/material edits preserve both. Legacy move-only requests preserve materials,
+and material-only requests preserve poses; stale same-surface edits return409.
+Missing selections mean the exact original. Existing unknown stored selections
+are retained by legacy writes. Reset-all continues to reset positions only.
+`cloudflare/layout.test.mjs` retains the original external-input credential and
+pose/migration tests and adds real DrawingRoom material/legacy/concurrency checks.
+This Worker-first contract precedes the requiring client within the same issue.

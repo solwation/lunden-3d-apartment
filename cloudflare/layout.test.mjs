@@ -139,3 +139,30 @@ test('legacy inputs retain exact case/spacing and malformed credentials are refu
  }
  assert.equal((await(await r.fetch(new Request('https://test/furniture'))).json()).revision,0);
 });
+
+// #995: the same real serialized layout room accepts independent surface patches.
+test('shared rug material edits preserve old moves, concurrent fields and rejected atomic batches', async () => {
+ const {RUG_MATERIAL_IDS}=await import('../src/materialcatalog.js');const id=RUG_MATERIAL_IDS[0],other=RUG_MATERIAL_IDS[1];
+ const {instance:r,ctx}=room();
+ let requests=0;const put=b=>r.fetch(new Request('https://test/furniture',{method:'PUT',headers:{'CF-Connecting-IP':`995-${++requests}`},body:JSON.stringify({code:codes[0],...b})}));
+ const get=async()=>await(await r.fetch(new Request('https://test/furniture'))).json();
+ const material=(choice,base=0,target=id)=>({id:target,surface:'textile',choice,base});
+ assert.equal((await get()).materialVersion,1);assert.equal((await get()).materials,undefined);
+ const parallel=await Promise.all([put({moves:[move(id)]}),put({materials:[material('rug-bluegrey')]})]);
+ assert.deepEqual(parallel.map(x=>x.status),[200,200]);
+ let state=await get();assert.equal(state.pieces[id].pos[0],3);assert.equal(state.materials[id].textile.choice,'rug-bluegrey');
+ assert.equal((await put({moves:[move(id,state.pieces[id].revision,5)]})).status,200);
+ state=await get();assert.equal(state.materials[id].textile.choice,'rug-bluegrey');assert.equal(state.pieces[id].pos[0],5);
+ const before=structuredClone(state);assert.equal((await put({moves:[move(other)],materials:[material('rug-sand',0)]})).status,409);
+ assert.deepEqual(await get(),before);
+ for(const materials of [[material('unknown')],[{...material('rug-sand'),surface:'wood'}],[material('rug-sand',0,'f-sofa-0')],[material('rug-sand'),material('rug-olive')],[{...material('original'),base:-1}],{}])assert.equal((await put({materials})).status,400);
+ assert.deepEqual(await get(),before);
+ const results=await Promise.all([put({materials:[material('rug-check',state.materials[id].textile.revision)]}),put({materials:[material('rug-stripe',state.materials[id].textile.revision)]})]);
+ assert.deepEqual(results.map(x=>x.status),[200,409]);assert.equal((await results[1].json()).state.materialVersion,1);
+ state=await get();assert.equal((await put({materials:[material('original',state.materials[id].textile.revision)]})).status,200);
+ const reloaded=await(await new DrawingRoom(ctx,{}).fetch(new Request('https://test/furniture'))).json();
+ assert.equal(reloaded.materials[id].textile.choice,'original');assert.equal(reloaded.pieces[id].pos[0],5);
+ // Future/unrecognized stored choices are retained by a cached old client's pose-only PUT.
+ const raw=await ctx.storage.get('furniture-layout');raw.materials['f-future']={cloth:{choice:'future-v2',revision:raw.revision}};await ctx.storage.put('furniture-layout',raw);
+ assert.equal((await put({moves:[move(other)]})).status,200);assert.deepEqual((await get()).materials['f-future'],raw.materials['f-future']);
+});

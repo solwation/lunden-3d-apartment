@@ -1,3 +1,4 @@
+import { MATERIAL_VERSION, validMaterialChoice } from '../src/materialcatalog.js';
 import { isPrivateCode, isPrivateCredential } from '../src/privatecodes.js';
 import { LEGACY_POSTER_GROUP, migratePosterLayout, migrateVeronaLayout } from '../src/layoutmigrations.js';
 
@@ -5,12 +6,13 @@ import { LEGACY_POSTER_GROUP, migratePosterLayout, migrateVeronaLayout } from '.
 // The public cheat is a game mechanic, not authentication; bound all input and retain server authority.
 const idOK = (id) => typeof id === 'string' && /^f-[a-zA-Z0-9.-]{1,100}$/.test(id);
 const vec = (v, n, lo, hi) => Array.isArray(v) && v.length === n && v.every((x) => typeof x === 'number' && Number.isFinite(x) && x >= lo && x <= hi);
+const view = state => ({ ...state, materialVersion: MATERIAL_VERSION });
 export async function layoutFetch(request, storage, headers = {}) {
   const reply = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...headers, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
   let state = await storage.get('furniture-layout') ?? { revision: 0, pieces: {} };
   const migrated = migrateVeronaLayout(migratePosterLayout(state));
   if (migrated !== state) { await storage.put('furniture-layout', migrated); state = migrated; }
-  if (request.method === 'GET') return reply(state);
+  if (request.method === 'GET') return reply(view(state));
   if (request.method !== 'PUT') return reply({ error: 'method' }, 405);
   const raw = await request.text();
   if (raw.length > 128000) return reply({ error: 'too big' }, 413);
@@ -18,18 +20,30 @@ export async function layoutFetch(request, storage, headers = {}) {
   if (!isPrivateCode(b?.code) && !isPrivateCredential(b?.credential)) return reply({ error: 'code' }, 403);
   if (b.resetAll !== undefined && b.resetAll !== true) return reply({ error: 'reset' }, 400);
   if (b.resetAll && (!Number.isInteger(b.expectedRevision) || b.expectedRevision < 0)) return reply({ error: 'revision' }, 400);
-  if (b.resetAll && b.expectedRevision !== state.revision) return reply({ error: 'conflict', state }, 409);
-  if (!Array.isArray(b.moves) || !b.moves.length || b.moves.length > (b.resetAll ? 500 : 100) || new Set(b.moves.map((m) => m?.id)).size !== b.moves.length) return reply({ error: 'moves' }, 400);
-  if (b.moves.some(m => m?.id === LEGACY_POSTER_GROUP)) return reply({ error: 'poster group retired', state }, 410);
-  if (b.moves.some(m => m?.id?.startsWith('f-veronasofa-0-4.29-13.09-'))) return reply({ error: 'Verona sofa modules retired', state }, 410);
-  for (const m of b.moves) {
+  if (b.resetAll && b.expectedRevision !== state.revision) return reply({ error: 'conflict', state: view(state) }, 409);
+  const moves = b.moves === undefined ? [] : b.moves, materials = b.materials === undefined ? [] : b.materials;
+  if (!Array.isArray(moves) || !Array.isArray(materials) || (!moves.length && !materials.length)
+    || (b.resetAll && !moves.length) || moves.length > (b.resetAll ? 500 : 100) || materials.length > 100
+    || new Set(moves.map(m => m?.id)).size !== moves.length
+    || new Set(materials.map(m => `${m?.id}/${m?.surface}`)).size !== materials.length) return reply({ error: 'moves' }, 400);
+  if (moves.some(m => m?.id === LEGACY_POSTER_GROUP)) return reply({ error: 'poster group retired', state: view(state) }, 410);
+  if (moves.some(m => m?.id?.startsWith('f-veronasofa-0-4.29-13.09-'))) return reply({ error: 'Verona sofa modules retired', state: view(state) }, 410);
+  for (const m of moves) {
     if (!m || !idOK(m.id) || !Number.isInteger(m.base) || m.base < 0 || !vec(m.pos, 3, -100, 100) || !vec(m.quat, 4, -1, 1)
       || Math.abs(m.quat.reduce((s, x) => s + x*x, 0) - 1) > 0.001) return reply({ error: 'pose' }, 400);
-    if ((state.pieces[m.id]?.revision ?? 0) !== m.base) return reply({ error: 'conflict', state }, 409);
+    if ((state.pieces[m.id]?.revision ?? 0) !== m.base) return reply({ error: 'conflict', state: view(state) }, 409);
   }
-  if (new Set([...Object.keys(state.pieces), ...b.moves.map((m) => m.id)]).size > 1000) return reply({ error: 'full' }, 409);
+  for (const m of materials) {
+    if (!m || !validMaterialChoice(m.id, m.surface, m.choice) || !Number.isInteger(m.base) || m.base < 0) return reply({ error: 'material' }, 400);
+    if ((state.materials?.[m.id]?.[m.surface]?.revision ?? 0) !== m.base) return reply({ error: 'conflict', state: view(state) }, 409);
+  }
+  if (new Set([...Object.keys(state.pieces), ...moves.map((m) => m.id)]).size > 1000) return reply({ error: 'full' }, 409);
   state.revision++;
-  for (const m of b.moves) state.pieces[m.id] = { pos: m.pos, quat: m.quat, revision: state.revision };
+  for (const m of moves) state.pieces[m.id] = { pos: m.pos, quat: m.quat, revision: state.revision };
+  for (const m of materials) {
+    state.materials ??= {}; state.materials[m.id] ??= {};
+    state.materials[m.id][m.surface] = { choice: m.choice, revision: state.revision };
+  }
   await storage.put('furniture-layout', state);
-  return reply(state);
+  return reply(view(state));
 }
