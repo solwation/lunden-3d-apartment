@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { fallDamage } from './falldamage.js';
 import { recordPlayerKill, awardPvpRange } from './stats.js';
 import { HitMarker } from './hitmarker.js';
-import { COMBAT as C, TOYS, pvpHitPoints, PVP_RIFLE_HEAD as RH } from './config.js';
+import { COMBAT as C, TOYS, pvpHitPoints, PVP_HEAD_BOXES as HB, rifleBoxHeadContact, rifleHeadBaseY } from './config.js';
 import { stepNerf, nerfFloor } from './nerf.js';
 import { combatWorldHits, combatWorldPath, combatWorldPathBlocked, prepareCombatWorld } from './combatworld.js';
 
@@ -169,7 +169,7 @@ export class Combat {
     return target;
   }
 
-  /** #897: settled standing rifle uses the actual nearest skinned face, on the SAME rounded ray sent to the room. */
+  /** Shared logical head boxes; native body contact below the neck keeps torso/limb obstruction. */
   rifleContact() {
     this.camera.getWorldPosition(eye); this.camera.getWorldDirection(dir);
     const round = (v, n) => Math.round(v * n) / n;
@@ -179,23 +179,21 @@ export class Combat {
     ray.set(o, direction); ray.far = range; ray.layers.mask = this.camera.layers.mask; ray.camera = this.camera;
     let best = null;
     for (const g of this.foes()) {
-      const standing = !g.crouch && (g.speed ?? 0) <= RH.stationarySpeed && (g.avatar.gait ?? 0) < RH.gait;
-      if (standing) {
-        g.root.updateMatrixWorld(true);
-        // Raycaster's native SkinnedMesh path calls getVertexPosition: no bind-pose proxy or capsule head guess.
-        const contact = ray.intersectObject(g.avatar.mesh, false)[0];
-        if (contact && (!best || contact.distance < best.along)) {
-          const head = g.avatar.rifleHeadContact(contact, { p: g.feet.toArray(), r: g.root.rotation.y }, g.id, o.toArray(), raw.toArray());
-          best = { g, along: contact.distance, hc: head ? [RH.version, ...contact.point.toArray()] : null };
-        }
-      } else { // Moving/crouching keeps the earlier body-only capsule until its own follow-up slice.
-        const a = g.feet.clone().setY(g.feet.y + C.body[0]), b = g.feet.clone().setY(g.feet.y + C.body[1]);
-        const [distance, along] = rayToSegment(o, direction, range, a, b);
-        if (distance <= C.hitRadius && (!best || along < best.along)) best = { g, along, hc: null };
+      const state = { p: g.feet.toArray(), r: g.root.rotation.y, c: g.crouch ?? 0 };
+      const head = rifleBoxHeadContact(g.id, state, o.toArray(), raw.toArray(), range);
+      const neck = rifleHeadBaseY(g.id, state);
+      g.root.updateMatrixWorld(true);
+      // The old full-height capsule encloses the head. Instead keep real body surfaces
+      // below the logical neck; cosmetic hair/eyes cannot veto a box hit or become damage regions.
+      const body = ray.intersectObject(g.avatar.mesh, false).find(hit => hit.point.y < neck);
+      const isHead = head && (!body || head.distance < body.distance);
+      const along = isHead ? head.distance : body?.distance;
+      if (along !== undefined && (!best || along < best.along)) {
+        best = { g, along, hc: isHead ? [HB.version, ...head.point] : null };
       }
     }
     if (best) {
-      ray.set(o, direction); ray.far = best.along; // EXACT contact distance: no earlier clear() 0.3 m gap.
+      ray.set(o, direction); ray.far = best.along;
       if (combatWorldHits(this.scene, this.ghosts.group, this.camera, ray).length) best = null;
     }
     return { o, d: raw, target: best?.g ?? null, hc: best?.hc ?? null };

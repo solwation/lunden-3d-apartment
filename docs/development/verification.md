@@ -7,6 +7,18 @@ HUD layout only (#707, #716): `PLAYWRIGHT_MODULE=/path/to/playwright node tools/
 
 Armed greeting priority (#872): `PLAYWRIGHT_MODULE=/path/to/playwright node tools/armedgreettest.cjs http://localhost:8867 /tmp/armed-greet` runs complete verbatim main.js production functions/listener bodies with current weapon checks, actual index DOM/THREE/Ghosts and source identity checks. It covers unarmed greeting, close armed touch, old ghost focus after weapon changes, E/keyup and pointer release (no latched rifle), primary mouse, suit/web/jetpack and preserved ordinary object E. Bootstrap/WebGL are suppressed; world collaborators and weapon effects are stand-ins, so the screenshot certifies action-label DOM rather than an actual-world shot/physical phone. No baseline or assertions are relaxed.
 
+## Three-box head verification (#974)
+
+`node tools/headboxestest.cjs` checks ordinary shared geometry and invalid inputs.
+`node --test cloudflare/headboxes.test.mjs cloudflare/players.test.mjs` checks actual
+PlayerRoom damage/recovery/kill semantics and retains cached-v1 coverage. Unknown
+contact-version fixtures use version 9 now that version 2 is published.
+`PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/headboxesbrowsertest.cjs game worker output`
+uses actual Ghosts/Combat and a local Worker in two browser peers, suppressing only
+apartment bootstrap. Its Avatar/box picture renders real geometry in a small debug
+scene. It does not certify the apartment, mobile stability or rendering performance.
+Existing polygon certificates are historical v1 evidence, not requirements for v2.
+
 ## Module and test map
 
 ```text

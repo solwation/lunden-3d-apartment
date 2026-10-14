@@ -183,12 +183,14 @@ Uppdragslappen visar tre aktiva vardagsuppdrag med sina poäng och delmål; klar
 Nollställning av statistiken rensar även dynamiska räknare, så inga gamla poäng ligger kvar.
 
 Stridens skottkontroller kan hoppa över tomma delar av stora modeller efter en begränsad bakgrundsförberedelse; lokala träffytor kopierar världskoordinater utan en tillfällig array per hörn; fysisk telefonverifiering återstår. [Mätning och begränsningar](docs/validation/issue-715/README.md).
-Gevär ger dubbel skada på verifierade delar av näsans framsida och smala sidoremsor längst fram på käken när målet står kvar i sin första pose, utöver verifierade centrala skallytor och smala exponerade främre skallremsor. De extra främre skallytorna kräver en nära frontal skottriktning och en ny anslutning som ännu inte bytt riktning; ett smalt band kan även ge dubbel skada efter små riktningsändringar före första hälsningen, medan position och stående förblivit oförändrade; ett smalt främre band kan också ge dubbel skada efter hälsning om spelaren inte flyttat, vridit eller hukat sig sedan sin första stående pose; täckande hår och ansikte ger ingen sådan skallbonus. Verifierade sidoträffar på exponerade tinningar kan ge dubbel skada före spelarens första hälsning i anslutningen. Efter hälsning kan också ett smalt bakre högerband ge dubbel skada om spelaren inte flyttat, vridit eller hukat sig sedan sin första stående pose. En verifierad liten bakre skallyta kan också ta två hjärtan före spelarens första accepterade hälsning i anslutningen; efter hälsning kan samma verifierade yta också ge dubbel skada om spelaren aldrig flyttat, vridit eller hukat sig sedan sin första stående pose. Täckande hår ger fortsatt enkel skada. Bekräftade spelarträffar visar kort ”Träff!” ovanför siktet; bekräftad huvudträff får en egen text när servern anger det.
+Gevärets huvudträffar använder tre enkla boxar för huvudets nederdel, mitt och smalare topp. De följer spelarens storlek, riktning och hukning; hår, ögon och små animationer påverkar inte skadan. En huvudträff tar två hjärtan, en kroppsträff ett. Väggar stoppar skott och serverbekräftade träffar visar ”Träff!” eller ”Huvudträff!”.
 Skott behåller föremålens egna träffregler även när hinderkontrollen är uppvärmd.
 
 Nerfpilar når upp till 25 meter och en bekräftad spelarträff hörs med en egen tydlig ton. De första skotten kan räknas som bom medan hinderdata förbereds. [Verifiering och begränsningar](docs/validation/issue-714/README.md).
 
 Dyra browserprov sparar avslutade delresultat före bilder, med källhashar och separat status för scenario, bilder, städning och faktisk CLI-exit. [Artifact-konvention](docs/development/verification.md#artifact-checkpoints-881).
+
+Historik för äldre cachade klienter (v1): följande detaljer om huvudregioner ersätts i nya klienter av de tre boxarna ovan.
 
 En verifierad smal nedre mittdel av näsan kan också ta två hjärtan när spelaren står still. Celler utanför stödet fortsätter ge vanlig skada; figurens form ändras inte.
 
@@ -251,7 +253,7 @@ yaw correction when the unchanged private first-standing corridor remains valid
 (#952). This separate permission does not reopen larger turns or position/stance
 changes; see the [finite verification](docs/development/verification.md#small-yaw-rear-after-greeting-952).
 
-The independent first-turn Rear permission (#962) also supports a first exact
+Legacy cached clients only: the independent first-turn Rear permission (#962) also supports a first exact
 serialized ±.04 rad heading change after greeting, followed by that same heading.
 Ordinary Ghosts publication needs no weapon swap. Other accepted heading/p/c
 changes permanently invalidate only this new branch. Rounded ±π aliases such
@@ -259,13 +261,13 @@ as 3.14 → −3.10 remain body1; unwrapped 3.14 → 3.18 is supported. Broader
 turn/recovery behavior remains #941. See the
 [finite verification](docs/development/verification.md#first-ordinary-turn-rear-962).
 
-#950 adds a narrow central Nose depth family for rifle hits on a player whose first standing position, heading and crouch state have never changed on that connection. It reuses private immutable history and the original Nose geometry/6mm entry guard; other Nose families and ordinary body fallback stay independent. See [verification](docs/development/verification.md#immutable-central-nose-depth-950).
+Legacy cached clients only: #950 adds a narrow central Nose depth family for rifle hits on a player whose first standing position, heading and crouch state have never changed on that connection. It reuses private immutable history and the original Nose geometry/6mm entry guard; other Nose families and ordinary body fallback stay independent. See [verification](docs/development/verification.md#immutable-central-nose-depth-950).
 
-#967 adds a separate style0 RIGHT head-hit family after one small negative standing
+Legacy cached clients only: #967 adds a separate style0 RIGHT head-hit family after one small negative standing
 turn following a greeting. A conservative whole-cell prism guard keeps uncertain
 contacts at body1; later movement, crouch or another turn disables this family.
-Style2 now uses the same rule (#968); long hair remains separate in #973.
+Style2 now uses the same rule (#968); old long-hair refinement #973 is superseded by #974.
 Existing head-hit families keep their own rules. See the
 [source-bound certificate](docs/development/verification.md#continuous-style0-right-cell-967).
 
-#971 adds a source-derived immutable Nose ray prism alongside the four existing Nose families. It covers additional central-side cells without changing the original 6mm entry guard; the originally requested outer shoulders remain open in #971. See [verification](docs/development/verification.md#immutable-nose-prism-971).
+Legacy cached clients only: #971 adds a source-derived immutable Nose ray prism alongside the four existing Nose families. It covers additional central-side cells without changing the original 6mm entry guard; the remaining anatomical details are superseded by #974. See [verification](docs/development/verification.md#immutable-nose-prism-971).

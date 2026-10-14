@@ -3,6 +3,34 @@
 Read [CLAUDE.md](../../CLAUDE.md) first for shared workflow rules. Paths in code spans and module maps are relative to the repository root.
 
 Related: [life](life.md), [storage](storage.md), [verification](verification.md).
+## Current rifle head contract (#974)
+
+Version 2 uses three shared logical head boxes from `PVP_HEAD_BOXES` in `src/config.js`:
+lower, middle and a smaller crown. Dimensions are gameplay approximations, not exact
+mesh anatomy. `rifleBoxHeadContact` transforms the rounded shot by heading, existing
+build/height scale and a simple crouch hip/lean transform, then finds the first slab
+intersection. It has no hair, eye, greeting, idle-phase or standing-history gates.
+Client `Combat.rifleContact` compares the boxes with actual skinned body contacts below
+`rifleHeadBaseY`; the old capsule must not swallow head hits. World obstacles still
+stop the nearest contact. Contacts above the neck outside the boxes, including
+cosmetic hair, are misses rather than separate damage regions.
+
+The client sends `hc:[2,x,y,z]`. `PlayerRoom` recomputes the head intersection from its
+accepted target state and rounded shot; the coordinates in `hc` do not award damage.
+Confirmed head/body damage stays 2/1; range, rate, points, marker, life recovery and
+kill receipts are unchanged. Interpolated client poses can differ from the server's
+latest snapshot, so a predicted head hit may still receive body damage. This does
+not promise exact mesh contact or lag compensation. Other weapon trajectories keep
+their existing body damage for now.
+
+Version 1 and its historical helpers remain only for cached older clients. The
+per-polygon notes below describe that legacy contract; their refinement requirements
+are superseded by version 2. Deploy the compatible Worker before publishing a v2
+client. Verify with `node tools/headboxestest.cjs`, `node --test cloudflare/headboxes.test.mjs
+cloudflare/players.test.mjs` and `tools/headboxesbrowsertest.cjs` (two actual native
+Ghosts/Combat peers and local Worker, plus a rendered Avatar/box debug view; no full
+apartment or physical-phone performance claim).
+
 ## Module and test map
 
 ```text

@@ -1,0 +1,9 @@
+{
+  "src/config.js": "d0ab53547fd073f18d790a75331d1d6ac6fd33b1ce1c597b4976c455aa36488e",
+  "src/combat.js": "098361489b4560d4107af70d123462351fc0c13e3bf613a587ae9d5185f20db4",
+  "cloudflare/players.js": "3bbe0961ba7afaaa1d30edf56c70af9a4a6db9c2f4a638641c1da4f4db565117",
+  "tools/headboxestest.cjs": "4d8f9134a6ee5f0009483fc03d4740b883552c5404747f14bf4eb37a77daf07e",
+  "tools/headboxesbrowsertest.cjs": "bdbe6f1c39ef41bbac362100cafeb1450c053f1abc8d5d47aba453f5cffec89a",
+  "cloudflare/headboxes.test.mjs": "5844833bca177aec953229eb696668d134393055d9f434148309de7ca61b4868",
+  "cloudflare/players.test.mjs": "4ab6ed4afbe4e14727ed554cd5e4b306589a7233f2a1eb53c09c848f5ba57110"
+}

@@ -1,0 +1,315 @@
+TAP version 13
+# Subtest: version 2 head boxes keep authoritative damage, movement, recovery and lethal receipt
+ok 1 - version 2 head boxes keep authoritative damage, movement, recovery and lethal receipt
+  ---
+  duration_ms: 93.316657
+  type: 'test'
+  ...
+# Subtest: cleanShot accepts legacy and box contact versions, drops unknown versions
+ok 2 - cleanShot accepts legacy and box contact versions, drops unknown versions
+  ---
+  duration_ms: 0.369899
+  type: 'test'
+  ...
+# Subtest: two players see each other: welcome, join, forwarded and cleaned states, leave
+ok 3 - two players see each other: welcome, join, forwarded and cleaned states, leave
+  ---
+  duration_ms: 46.586829
+  type: 'test'
+  ...
+# Subtest: requests and messages are counted (1 + 1/20); heartbeats are auto-answered and not counted; counter survives hibernation
+ok 4 - requests and messages are counted (1 + 1/20); heartbeats are auto-answered and not counted; counter survives hibernation
+  ---
+  duration_ms: 35.363969
+  type: 'test'
+  ...
+# Subtest: rate limit: over perSecond dropped, repeated seconds close (4008); oversized closes (1009)
+ok 5 - rate limit: over perSecond dropped, repeated seconds close (4008); oversized closes (1009)
+  ---
+  duration_ms: 190.567399
+  type: 'test'
+  ...
+# Subtest: max players; idle sockets closed; bad origin and plain requests refused
+ok 6 - max players; idle sockets closed; bad origin and plain requests refused
+  ---
+  duration_ms: 316.086537
+  type: 'test'
+  ...
+# Subtest: monthly cap: crossing it closes everybody (4001), new sockets refused without reaching the room, back next month
+ok 7 - monthly cap: crossing it closes everybody (4001), new sockets refused without reaching the room, back next month
+  ---
+  duration_ms: 55.882495
+  type: 'test'
+  ...
+# Subtest: admin brake: DELETE /admin/players and /admin/all close and switch off, PUT switches on, token required
+ok 8 - admin brake: DELETE /admin/players and /admin/all close and switch off, PUT switches on, token required
+  ---
+  duration_ms: 41.742546
+  type: 'test'
+  ...
+# Subtest: combat (\#667): only armed vs armed, range, rate, points per minute; lives count down, death refills
+ok 9 - combat (\#667): only armed vs armed, range, rate, points per minute; lives count down, death refills
+  ---
+  duration_ms: 237.085427
+  type: 'test'
+  ...
+# Subtest: shots (\#667): every shot goes to the armed others only, from near the shooter, checked; `to` scores as a hit
+ok 10 - shots (\#667): every shot goes to the armed others only, from near the shooter, checked; `to` scores as a hit
+  ---
+  duration_ms: 58.982383
+  type: 'test'
+  ...
+# Subtest: greetings (\#673): to someone here, a phrase index only, not too often; everybody else sees it
+ok 11 - greetings (\#673): to someone here, a phrase index only, not too often; everybody else sees it
+  ---
+  duration_ms: 41.097349
+  type: 'test'
+  ...
+# Subtest: ghost score is forwarded, included on welcome and bounded like leaderboard
+ok 12 - ghost score is forwarded, included on welcome and bounded like leaderboard
+  ---
+  duration_ms: 50.182715
+  type: 'test'
+  ...
+# Subtest: Nerf (\#714): shared longer range accepts 22 m, rejects range/rate/unarmed and relays misses without hits
+ok 13 - Nerf (\#714): shared longer range accepts 22 m, rejects range/rate/unarmed and relays misses without hits
+  ---
+  duration_ms: 78.304212
+  type: 'test'
+  ...
+# Subtest: chat (\#675): forwarded to the others with the name, cleaned, limited, refused with mx, counted in the cap
+ok 14 - chat (\#675): forwarded to the others with the name, cleaned, limited, refused with mx, counted in the cap
+  ---
+  duration_ms: 223.575177
+  type: 'test'
+  ...
+# Subtest: typing (\#676): on / off forwarded, repeats limited, off by a line, never echoed, no text
+ok 15 - typing (\#676): on / off forwarded, repeats limited, off by a line, never echoed, no text
+  ---
+  duration_ms: 70.162042
+  type: 'test'
+  ...
+# Subtest: public lives: observers, late join, forged state, hibernation and death reset
+ok 16 - public lives: observers, late join, forged state, hibernation and death reset
+  ---
+  duration_ms: 98.336438
+  type: 'test'
+  ...
+# Subtest: shared life: own welcome, unarmed half/fatal falls and weapon-state/forgery invariants
+ok 17 - shared life: own welcome, unarmed half/fatal falls and weapon-state/forgery invariants
+  ---
+  duration_ms: 95.359949
+  type: 'test'
+  ...
+# Subtest: crouch pose uses literal actual true in states/late welcome and survives hibernation without changing health
+ok 18 - crouch pose uses literal actual true in states/late welcome and survives hibernation without changing health
+  ---
+  duration_ms: 90.781466
+  type: 'test'
+  ...
+# Subtest: distance reward shared rule: near, first bonus, middle, cap, invalid and monotonic geometry
+ok 19 - distance reward shared rule: near, first bonus, middle, cap, invalid and monotonic geometry
+  ---
+  duration_ms: 0.586897
+  type: 'test'
+  ...
+# Subtest: authoritative distance awards: actual geometry, forged client points, unchanged rejects and exact minute budget
+ok 20 - authoritative distance awards: actual geometry, forged client points, unchanged rejects and exact minute budget
+  ---
+  duration_ms: 151.861541
+  type: 'test'
+  ...
+# Subtest: standing rifle contact: seeded front surface, bounded wire, body fallback, shared low-health death and receipt
+ok 21 - standing rifle contact: seeded front surface, bounded wire, body fallback, shared low-health death and receipt
+  ---
+  duration_ms: 226.769666
+  type: 'test'
+  ...
+# Subtest: restricted rifle profile: forged model cannot widen core, other weapons, ray/version/256-byte bounds
+ok 22 - restricted rifle profile: forged model cannot widen core, other weapons, ray/version/256-byte bounds
+  ---
+  duration_ms: 59.140083
+  type: 'test'
+  ...
+# Subtest: central cores: all actual server seed styles confirm 2 HP, style0 core unchanged and beanie old-core fallback
+ok 23 - central cores: all actual server seed styles confirm 2 HP, style0 core unchanged and beanie old-core fallback
+  ---
+  duration_ms: 270.780904
+  type: 'test'
+  ...
+# Subtest: lower-front jaw: actual room validates damage/legacy/forgery/replay/one lethal receipt and bounded high coordinates
+ok 24 - lower-front jaw: actual room validates damage/legacy/forgery/replay/one lethal receipt and bounded high coordinates
+  ---
+  duration_ms: 116.513071
+  type: 'test'
+  ...
+# Subtest: lateral skull: both-side approach, whole-cell boundaries and missing ray fail closed for canonical variants
+ok 25 - lateral skull: both-side approach, whole-cell boundaries and missing ray fail closed for canonical variants
+  ---
+  duration_ms: 20.555824
+  type: 'test'
+  ...
+# Subtest: lateral skull room: canonical actual socket, alternating sides, shared lethal receipt and old-client fallback
+ok 26 - lateral skull room: canonical actual socket, alternating sides, shared lethal receipt and old-client fallback
+  ---
+  duration_ms: 104.248316
+  type: 'test'
+  ...
+# Subtest: lateral skull greeting exclusion is attachment-authoritative, persists after time/hibernate, and leaves other profiles independent
+not ok 27 - lateral skull greeting exclusion is attachment-authoritative, persists after time/hibernate, and leaves other profiles independent
+  ---
+  duration_ms: 70.157141
+  type: 'test'
+  location: '/home/devcontainers/lunden-headboxes/cloudflare/players.test.mjs:650:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + true
+    - undefined
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/devcontainers/lunden-headboxes/cloudflare/players.test.mjs:657:64)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: extra frontal nose cell: authoritative damage, legacy fallback, one fatal award and retained recovery contract
+ok 28 - extra frontal nose cell: authoritative damage, legacy fallback, one fatal award and retained recovery contract
+  ---
+  duration_ms: 87.458678
+  type: 'test'
+  ...
+# Subtest: rear arm safety: accepted greeting is private, permanent across pause/hibernate/latejoin, and fresh attachment restores eligibility
+ok 29 - rear arm safety: accepted greeting is private, permanent across pause/hibernate/latejoin, and fresh attachment restores eligibility
+  ---
+  duration_ms: 374.397322
+  type: 'test'
+  ...
+# Subtest: \#938 immutable standing history: first real state, normalized changes, legacy and private hibernation
+ok 30 - \#938 immutable standing history: first real state, normalized changes, legacy and private hibernation
+  ---
+  duration_ms: 283.906555
+  type: 'test'
+  ...
+# Subtest: \#938 named optional regions preserve legacy front/rear/default/undefined/null guard semantics
+ok 31 - \#938 named optional regions preserve legacy front/rear/default/undefined/null guard semantics
+  ---
+  duration_ms: 3.142789
+  type: 'test'
+  ...
+# Subtest: lower central nose band: authoritative damage, legacy fallback, one fatal award and retained recovery contract
+ok 32 - lower central nose band: authoritative damage, legacy fallback, one fatal award and retained recovery contract
+  ---
+  duration_ms: 84.786188
+  type: 'test'
+  ...
+# Subtest: \#947 tiny LEFT turn anchor stays private, normalized, permanent and independent through hibernation
+ok 33 - \#947 tiny LEFT turn anchor stays private, normalized, permanent and independent through hibernation
+  ---
+  duration_ms: 422.821944
+  type: 'test'
+  ...
+# Subtest: \#947 accepted normalized tiny turn after greeting gives authoritative LEFT2, legacy/invalid returns remain body1
+ok 34 - \#947 accepted normalized tiny turn after greeting gives authoritative LEFT2, legacy/invalid returns remain body1
+  ---
+  duration_ms: 99.117735
+  type: 'test'
+  ...
+# Subtest: post-turn frontal corridor: private first-standing anchor, permanent escape, legacy failure and independent regions
+ok 35 - post-turn frontal corridor: private first-standing anchor, permanent escape, legacy failure and independent regions
+  ---
+  duration_ms: 214.073012
+  type: 'test'
+  ...
+# Subtest: \#955 greeted post-turn Front: normalized authority, history, lethal/replay and legacy independence
+ok 36 - \#955 greeted post-turn Front: normalized authority, history, lethal/replay and legacy independence
+  ---
+  duration_ms: 513.961108
+  type: 'test'
+  ...
+# Subtest: \#953 larger LEFT standing turn anchor stays private, normalized, permanent and independent through hibernation
+ok 37 - \#953 larger LEFT standing turn anchor stays private, normalized, permanent and independent through hibernation
+  ---
+  duration_ms: 6765.394448
+  type: 'test'
+  ...
+# Subtest: \#953 accepted larger standing turn after greeting gives authoritative LEFT2, legacy/invalid returns remain body1
+ok 38 - \#953 accepted larger standing turn after greeting gives authoritative LEFT2, legacy/invalid returns remain body1
+  ---
+  duration_ms: 92.698864
+  type: 'test'
+  ...
+# Subtest: \#951 immutable Rear greeting uses existing private history; changed/legacy return, healing and death never reopen it
+ok 39 - \#951 immutable Rear greeting uses existing private history; changed/legacy return, healing and death never reopen it
+  ---
+  duration_ms: 805.022284
+  type: 'test'
+  ...
+# Subtest: \#952 greeted post-turn Rear: normalized authority, history, lethal/replay and legacy independence
+ok 40 - \#952 greeted post-turn Rear: normalized authority, history, lethal/replay and legacy independence
+  ---
+  duration_ms: 421.484773
+  type: 'test'
+  ...
+# Subtest: \#950 immutable Nose depth uses existing private history; changed/legacy return, healing and death never reopen it
+ok 41 - \#950 immutable Nose depth uses existing private history; changed/legacy return, healing and death never reopen it
+  ---
+  duration_ms: 2013.778414
+  type: 'test'
+  ...
+# Subtest: \#959 Jaw strip strict named permission defaults closed and never changes original Jaw/legacy guards
+ok 42 - \#959 Jaw strip strict named permission defaults closed and never changes original Jaw/legacy guards
+  ---
+  duration_ms: 0.821597
+  type: 'test'
+  ...
+# Subtest: \#959 immutable Jaw strip retains real room HP/hibernate/private history/death/replay and legacy fallback
+ok 43 - \#959 immutable Jaw strip retains real room HP/hibernate/private history/death/replay and legacy fallback
+  ---
+  duration_ms: 218.981108
+  type: 'test'
+  ...
+# Subtest: \#962 first ordinary-turn Rear: normalized authority, history, lethal/replay and legacy independence
+ok 44 - \#962 first ordinary-turn Rear: normalized authority, history, lethal/replay and legacy independence
+  ---
+  duration_ms: 1213.388412
+  type: 'test'
+  ...
+# Subtest: \#967 first RIGHT turn is private, accepted-only, single-use and permanent through hibernation
+ok 45 - \#967 first RIGHT turn is private, accepted-only, single-use and permanent through hibernation
+  ---
+  duration_ms: 543.979233
+  type: 'test'
+  ...
+# Subtest: \#967 source-derived style0 whole-cell admission preserves old regions and defaults closed
+ok 46 - \#967 source-derived style0 whole-cell admission preserves old regions and defaults closed
+  ---
+  duration_ms: 3.043489
+  type: 'test'
+  ...
+# Subtest: \#971 immutable Nose prism uses existing private history; changed/legacy return, healing and death never reopen it
+ok 47 - \#971 immutable Nose prism uses existing private history; changed/legacy return, healing and death never reopen it
+  ---
+  duration_ms: 2014.625316
+  type: 'test'
+  ...
+# Subtest: \#968 style2 reuses the certified RIGHT cell while long hair stays denied
+ok 48 - \#968 style2 reuses the certified RIGHT cell while long hair stays denied
+  ---
+  duration_ms: 0.590898
+  type: 'test'
+  ...
+1..48
+# tests 48
+# suites 0
+# pass 47
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 19036.811846

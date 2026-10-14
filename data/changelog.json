@@ -1,4 +1,5 @@
 [
+  {"id": 771, "date": "2026-10-14", "text": "Gevärets huvudträffar fungerar med tre enkla träffytor även när spelaren går, vrider sig eller hukar.", "group": "head-hits"},
   {"id": 770, "date": "2026-10-14", "text": "Tid och väder delar nu en smalare ruta i statusraden."},
   {"id": 769, "date": "2026-10-14", "text": "Skott följer föremålens egna träffregler även när hinderkontrollen är uppvärmd.", "group": "nerf-improvements"},
   {"id": 768, "date": "2026-10-14", "text": "Huvudträffar fungerar efter en liten vridning vid hälsning även med hårknut.", "group": "head-hits"},

@@ -1,0 +1,836 @@
+{
+  "checks": 28,
+  "failures": 0,
+  "errors": [],
+  "records": [
+    {
+      "label": "Head box 1",
+      "aim": {
+        "center": [
+          2,
+          1.5887499999999999,
+          -0.009299999999999996
+        ],
+        "c": 0,
+        "speed": 0,
+        "yaw": 0,
+        "seed": "08b3ab8d",
+        "contact": [
+          2,
+          1.92095,
+          1.59,
+          -0.01
+        ],
+        "skin": true
+      },
+      "before": {
+        "hits": 0,
+        "lives": 10,
+        "markers": 0,
+        "score": 0,
+        "kills": 0,
+        "counted": 0,
+        "bonus": 0,
+        "deaths": 0,
+        "wire": {
+          "w": "rifle",
+          "o": [
+            0,
+            1.68,
+            -0.01
+          ],
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "to": null
+        }
+      },
+      "after": {
+        "hits": 1,
+        "lives": 10,
+        "markers": 1,
+        "score": 5,
+        "kills": 0,
+        "counted": 1,
+        "bonus": 0,
+        "deaths": 0,
+        "last": {
+          "t": "hit",
+          "to": "08b3ab8d",
+          "w": "rifle",
+          "l": 8,
+          "dead": false,
+          "award": {
+            "i": "bd6437ae",
+            "seq": 1,
+            "distance": 2,
+            "points": 5
+          },
+          "head": true
+        },
+        "wire": {
+          "w": "rifle",
+          "o": [
+            0,
+            1.59,
+            -0.01
+          ],
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "to": "08b3ab8d",
+          "hc": [
+            2,
+            1.92095,
+            1.59,
+            -0.01
+          ]
+        }
+      },
+      "target": {
+        "hits": 0,
+        "lives": 8,
+        "markers": 0,
+        "score": 0,
+        "kills": 0,
+        "counted": 0,
+        "bonus": 0,
+        "deaths": 0,
+        "wire": null
+      },
+      "health": 10
+    },
+    {
+      "label": "Head box 2",
+      "aim": {
+        "center": [
+          2,
+          1.681,
+          -0.013950000000000008
+        ],
+        "c": 0,
+        "speed": 0,
+        "yaw": 0,
+        "seed": "08b3ab8d",
+        "contact": [
+          2,
+          1.90235,
+          1.68,
+          -0.01
+        ],
+        "skin": true
+      },
+      "before": {
+        "hits": 1,
+        "lives": 10,
+        "markers": 1,
+        "score": 5,
+        "kills": 0,
+        "counted": 1,
+        "bonus": 0,
+        "deaths": 0,
+        "last": {
+          "t": "hit",
+          "to": "08b3ab8d",
+          "w": "rifle",
+          "l": 8,
+          "dead": false,
+          "award": {
+            "i": "bd6437ae",
+            "seq": 1,
+            "distance": 2,
+            "points": 5
+          },
+          "head": true
+        },
+        "wire": {
+          "w": "rifle",
+          "o": [
+            0,
+            1.59,
+            -0.01
+          ],
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "to": "08b3ab8d",
+          "hc": [
+            2,
+            1.92095,
+            1.59,
+            -0.01
+          ]
+        }
+      },
+      "after": {
+        "hits": 2,
+        "lives": 10,
+        "markers": 2,
+        "score": 10,
+        "kills": 0,
+        "counted": 2,
+        "bonus": 0,
+        "deaths": 0,
+        "last": {
+          "t": "hit",
+          "to": "08b3ab8d",
+          "w": "rifle",
+          "l": 6,
+          "dead": false,
+          "award": {
+            "i": "bd6437ae",
+            "seq": 2,
+            "distance": 2,
+            "points": 5
+          },
+          "head": true
+        },
+        "wire": {
+          "w": "rifle",
+          "o": [
+            0,
+            1.68,
+            -0.01
+          ],
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "to": "08b3ab8d",
+          "hc": [
+            2,
+            1.90235,
+            1.68,
+            -0.01
+          ]
+        }
+      },
+      "target": {
+        "hits": 0,
+        "lives": 6,
+        "markers": 0,
+        "score": 0,
+        "kills": 0,
+        "counted": 0,
+        "bonus": 0,
+        "deaths": 0,
+        "wire": null
+      },
+      "health": 8
+    },
+    {
+      "label": "Head box 3",
+      "aim": {
+        "center": [
+          2,
+          1.768125,
+          0
+        ],
+        "c": 0,
+        "speed": 0,
+        "yaw": 0,
+        "seed": "08b3ab8d",
+        "contact": [
+          2,
+          1.9302499999999998,
+          1.77,
+          0
+        ],
+        "skin": true
+      },
+      "before": {
+        "hits": 2,
+        "lives": 10,
+        "markers": 2,
+        "score": 10,
+        "kills": 0,
+        "counted": 2,
+        "bonus": 0,
+        "deaths": 0,
+        "last": {
+          "t": "hit",
+          "to": "08b3ab8d",
+          "w": "rifle",
+          "l": 6,
+          "dead": false,
+          "award": {
+            "i": "bd6437ae",
+            "seq": 2,
+            "distance": 2,
+            "points": 5
+          },
+          "head": true
+        },
+        "wire": {
+          "w": "rifle",
+          "o": [
+            0,
+            1.68,
+            -0.01
+          ],
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "to": "08b3ab8d",
+          "hc": [
+            2,
+            1.90235,
+            1.68,
+            -0.01
+          ]
+        }
+      },
+      "after": {
+        "hits": 3,
+        "lives": 10,
+        "markers": 3,
+        "score": 15,
+        "kills": 0,
+        "counted": 3,
+        "bonus": 0,
+        "deaths": 0,
+        "last": {
+          "t": "hit",
+          "to": "08b3ab8d",
+          "w": "rifle",
+          "l": 4,
+          "dead": false,
+          "award": {
+            "i": "bd6437ae",
+            "seq": 3,
+            "distance": 2,
+            "points": 5
+          },
+          "head": true
+        },
+        "wire": {
+          "w": "rifle",
+          "o": [
+            0,
+            1.77,
+            0
+          ],
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "to": "08b3ab8d",
+          "hc": [
+            2,
+            1.9302499999999998,
+            1.77,
+            0
+          ]
+        }
+      },
+      "target": {
+        "hits": 0,
+        "lives": 4,
+        "markers": 0,
+        "score": 0,
+        "kills": 0,
+        "counted": 0,
+        "bonus": 0,
+        "deaths": 0,
+        "wire": null
+      },
+      "health": 6
+    },
+    {
+      "label": "Body",
+      "aim": {
+        "center": [
+          2,
+          0.95,
+          0
+        ],
+        "c": 0,
+        "speed": 0,
+        "yaw": 0,
+        "seed": "08b3ab8d",
+        "contact": null,
+        "skin": true
+      },
+      "before": {
+        "hits": 3,
+        "lives": 10,
+        "markers": 3,
+        "score": 15,
+        "kills": 0,
+        "counted": 3,
+        "bonus": 0,
+        "deaths": 0,
+        "last": {
+          "t": "hit",
+          "to": "08b3ab8d",
+          "w": "rifle",
+          "l": 4,
+          "dead": false,
+          "award": {
+            "i": "bd6437ae",
+            "seq": 3,
+            "distance": 2,
+            "points": 5
+          },
+          "head": true
+        },
+        "wire": {
+          "w": "rifle",
+          "o": [
+            0,
+            1.77,
+            0
+          ],
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "to": "08b3ab8d",
+          "hc": [
+            2,
+            1.9302499999999998,
+            1.77,
+            0
+          ]
+        }
+      },
+      "after": {
+        "hits": 4,
+        "lives": 10,
+        "markers": 4,
+        "score": 20,
+        "kills": 0,
+        "counted": 4,
+        "bonus": 0,
+        "deaths": 0,
+        "last": {
+          "t": "hit",
+          "to": "08b3ab8d",
+          "w": "rifle",
+          "l": 3,
+          "dead": false,
+          "award": {
+            "i": "bd6437ae",
+            "seq": 4,
+            "distance": 2,
+            "points": 5
+          }
+        },
+        "wire": {
+          "w": "rifle",
+          "o": [
+            0,
+            0.95,
+            0
+          ],
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "to": "08b3ab8d"
+        }
+      },
+      "target": {
+        "hits": 0,
+        "lives": 3,
+        "markers": 0,
+        "score": 0,
+        "kills": 0,
+        "counted": 0,
+        "bonus": 0,
+        "deaths": 0,
+        "wire": null
+      },
+      "health": 4
+    },
+    {
+      "label": "Turned head",
+      "aim": {
+        "center": [
+          1.9860500044231009,
+          1.681,
+          -0.000011108757614727155
+        ],
+        "c": 0,
+        "speed": 0,
+        "yaw": 1.57,
+        "seed": "08b3ab8d",
+        "contact": [
+          2,
+          1.8697999587177117,
+          1.68,
+          0
+        ],
+        "skin": true
+      },
+      "before": {
+        "hits": 4,
+        "lives": 10,
+        "markers": 4,
+        "score": 20,
+        "kills": 0,
+        "counted": 4,
+        "bonus": 0,
+        "deaths": 0,
+        "last": {
+          "t": "hit",
+          "to": "08b3ab8d",
+          "w": "rifle",
+          "l": 3,
+          "dead": false,
+          "award": {
+            "i": "bd6437ae",
+            "seq": 4,
+            "distance": 2,
+            "points": 5
+          }
+        },
+        "wire": {
+          "w": "rifle",
+          "o": [
+            0,
+            0.95,
+            0
+          ],
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "to": "08b3ab8d"
+        }
+      },
+      "after": {
+        "hits": 5,
+        "lives": 10,
+        "markers": 5,
+        "score": 25,
+        "kills": 0,
+        "counted": 5,
+        "bonus": 0,
+        "deaths": 0,
+        "last": {
+          "t": "hit",
+          "to": "08b3ab8d",
+          "w": "rifle",
+          "l": 1,
+          "dead": false,
+          "award": {
+            "i": "bd6437ae",
+            "seq": 5,
+            "distance": 2,
+            "points": 5
+          },
+          "head": true
+        },
+        "wire": {
+          "w": "rifle",
+          "o": [
+            0,
+            1.68,
+            0
+          ],
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "to": "08b3ab8d",
+          "hc": [
+            2,
+            1.8697999587177117,
+            1.68,
+            0
+          ]
+        }
+      },
+      "target": {
+        "hits": 0,
+        "lives": 1,
+        "markers": 0,
+        "score": 0,
+        "kills": 0,
+        "counted": 0,
+        "bonus": 0,
+        "deaths": 0,
+        "wire": null
+      },
+      "health": 3
+    },
+    {
+      "label": "Moving head",
+      "aim": {
+        "center": [
+          2.193860949702664,
+          1.681,
+          -0.000011108757614727155
+        ],
+        "c": 0,
+        "speed": 0.49382229221404217,
+        "yaw": 1.57,
+        "seed": "08b3ab8d",
+        "contact": [
+          2,
+          2.0776109039972748,
+          1.68,
+          0
+        ],
+        "skin": true
+      },
+      "before": {
+        "hits": 5,
+        "lives": 10,
+        "markers": 5,
+        "score": 25,
+        "kills": 0,
+        "counted": 5,
+        "bonus": 0,
+        "deaths": 0,
+        "last": {
+          "t": "hit",
+          "to": "08b3ab8d",
+          "w": "rifle",
+          "l": 1,
+          "dead": false,
+          "award": {
+            "i": "bd6437ae",
+            "seq": 5,
+            "distance": 2,
+            "points": 5
+          },
+          "head": true
+        },
+        "wire": {
+          "w": "rifle",
+          "o": [
+            0,
+            1.68,
+            0
+          ],
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "to": "08b3ab8d",
+          "hc": [
+            2,
+            1.8697999587177117,
+            1.68,
+            0
+          ]
+        }
+      },
+      "after": {
+        "hits": 6,
+        "lives": 10,
+        "markers": 6,
+        "score": 30,
+        "kills": 1,
+        "counted": 6,
+        "bonus": 0,
+        "deaths": 0,
+        "last": {
+          "t": "hit",
+          "to": "08b3ab8d",
+          "w": "rifle",
+          "l": -1,
+          "dead": true,
+          "award": {
+            "i": "bd6437ae",
+            "seq": 6,
+            "distance": 2.24,
+            "points": 5
+          },
+          "head": true,
+          "kill": "d50ded2a-3812-4aad-b84c-0a6b8e5cce23"
+        },
+        "wire": {
+          "w": "rifle",
+          "o": [
+            0,
+            1.68,
+            0
+          ],
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "to": "08b3ab8d",
+          "hc": [
+            2,
+            2.0776109039972748,
+            1.68,
+            0
+          ]
+        }
+      },
+      "target": {
+        "hits": 0,
+        "lives": 10,
+        "markers": 0,
+        "score": 0,
+        "kills": 0,
+        "counted": 0,
+        "bonus": 0,
+        "deaths": 1,
+        "wire": null
+      },
+      "health": 1
+    },
+    {
+      "label": "Crouched head",
+      "aim": {
+        "center": [
+          2.4,
+          1.4051358878196953,
+          0.2576724024319978
+        ],
+        "c": 1,
+        "speed": 0.003944356726429719,
+        "yaw": 0,
+        "seed": "08b3ab8d",
+        "contact": [
+          2,
+          2.30235,
+          1.41,
+          0.26
+        ],
+        "skin": true
+      },
+      "before": {
+        "hits": 6,
+        "lives": 10,
+        "markers": 6,
+        "score": 30,
+        "kills": 1,
+        "counted": 6,
+        "bonus": 0,
+        "deaths": 0,
+        "last": {
+          "t": "hit",
+          "to": "08b3ab8d",
+          "w": "rifle",
+          "l": -1,
+          "dead": true,
+          "award": {
+            "i": "bd6437ae",
+            "seq": 6,
+            "distance": 2.24,
+            "points": 5
+          },
+          "head": true,
+          "kill": "d50ded2a-3812-4aad-b84c-0a6b8e5cce23"
+        },
+        "wire": {
+          "w": "rifle",
+          "o": [
+            0,
+            1.68,
+            0
+          ],
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "to": "08b3ab8d",
+          "hc": [
+            2,
+            2.0776109039972748,
+            1.68,
+            0
+          ]
+        }
+      },
+      "after": {
+        "hits": 7,
+        "lives": 10,
+        "markers": 7,
+        "score": 35,
+        "kills": 1,
+        "counted": 7,
+        "bonus": 0,
+        "deaths": 0,
+        "last": {
+          "t": "hit",
+          "to": "08b3ab8d",
+          "w": "rifle",
+          "l": 8,
+          "dead": false,
+          "award": {
+            "i": "bd6437ae",
+            "seq": 7,
+            "distance": 2.4,
+            "points": 5
+          },
+          "head": true
+        },
+        "wire": {
+          "w": "rifle",
+          "o": [
+            0,
+            1.41,
+            0.26
+          ],
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "to": "08b3ab8d",
+          "hc": [
+            2,
+            2.30235,
+            1.41,
+            0.26
+          ]
+        }
+      },
+      "target": {
+        "hits": 0,
+        "lives": 8,
+        "markers": 0,
+        "score": 0,
+        "kills": 0,
+        "counted": 0,
+        "bonus": 0,
+        "deaths": 1,
+        "wire": null
+      },
+      "health": 10
+    }
+  ],
+  "visualInfo": {
+    "seed": "08b3ab8d",
+    "look": {
+      "style": 1,
+      "sleeves": 1,
+      "skin": 7029808,
+      "hair": 4862752,
+      "top": 3817290,
+      "pants": 4938360,
+      "shoes": 2046556,
+      "build": 0,
+      "tall": 1.025
+    },
+    "boxCount": 3,
+    "width": 360,
+    "height": 360,
+    "triangles": 3730
+  },
+  "scope": "ordinary two-peer Combat/Worker functional checks; one native Avatar debug-box render, no apartment/physical-phone/anatomy proof"
+}
