@@ -1056,8 +1056,8 @@ export function buildWorld(plan) {
 
   return {
     object: scene,
-    bicycles: life.bicycles,
-    bicyclePolys(feet, headroom, hurdle) { return life.bicycles.map(b => b.footprint(feet, headroom, hurdle)).filter(p => p.length); },
+    bicycles: [...life.bicycles, ...courtyard.bicycles],
+    bicyclePolys(feet, headroom, hurdle) { return this.bicycles.map(b => b.footprint(feet, headroom, hurdle)).filter(p => p.length); },
     bicycleSegments(feet, headroom, hurdle) { return this.bicyclePolys(feet, headroom, hurdle).flatMap(p => p.map((a,i) => [...a,...p[(i+1)%p.length]])); },
     edgeLines,
     hallWardrobes,

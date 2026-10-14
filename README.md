@@ -274,3 +274,5 @@ Existing head-hit families keep their own rules. See the
 [source-bound certificate](docs/development/verification.md#continuous-style0-right-cell-967).
 
 Legacy cached clients only: #971 adds a source-derived immutable Nose ray prism alongside the four existing Nose families. It covers additional central-side cells without changing the original 6mm entry guard; the remaining anatomical details are superseded by #974. See [verification](docs/development/verification.md#immutable-nose-prism-971).
+
+The five existing courtyard bicycles can also be ridden with E or the touch action, using the same controls and safe standing reload as the NW bicycles (#906).

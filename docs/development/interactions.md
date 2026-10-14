@@ -1184,3 +1184,7 @@ This useful conservative family adds cells around canonical |x|=.0065–.0075;
 it does not satisfy #971's original outer-shoulder inventory |x|>.011. That residual
 remains open, alongside #920's other upper/lower, changed-heading and standing-return
 scope. Active movement #893 does not circularly block a later standing return.
+
+## Courtyard bicycles (#906)
+
+All five existing courtyard bicycles use the same E/action, joystick/WASD, explicit cycling prompt, saddle camera and safe dismount as the NW bicycles. Their `courtyard-0` through `courtyard-4` identities keep the original rack coordinates. The shared world register now contains both groups; its collision polygons include every extracted bicycle. No new save key or mounted resume is introduced: reload returns bicycles to their original rack and restores the rider safely standing.

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { COURTYARD as C, COLORS, SITE, PLAYER } from './config.js';
+import { COURTYARD as C, COLORS, SITE, PLAYER, BICYCLE } from './config.js';
 import { pavingTexture } from './patio.js';
 import { registerSnow, registerTrees } from './seasons.js';
 import { SEASON } from './config.js';
@@ -288,7 +288,8 @@ export function buildCourtyard() {
   for (const r of C.beds) { geos.wood.push(box(r.x0, r.x1, 0, BED_Y, r.z0, r.z1)); solid(r.x0, r.x1, r.z0, r.z1, BED_Y); geos.soil.push(plate({ x0: r.x0 + 0.05, x1: r.x1 - 0.05, z0: r.z0 + 0.05, z1: r.z1 - 0.05 }, 0.48)); }
 
   // #112: bollards along the walks (a glowing band under the cap), the playhouse, the bike rack
-  const glow = [], paint = [], bikes = [], bikeSpokes = [];
+  const glow = [], paint = [], bikes = [], bikeSpokes = [], bicycles = [];
+  let bicycleRack;
   for (const row of C.bollards.rows) for (let x = row.x0; x <= row.x1; x += row.step) {
     const { h, r } = C.bollards;
     geos.metal.push(new THREE.CylinderGeometry(r, r, h - 0.12, 12).translate(x, (h - 0.12) / 2, row.z), new THREE.CylinderGeometry(r + 0.01, r + 0.01, 0.04, 12).translate(x, h - 0.02, row.z));
@@ -381,11 +382,13 @@ export function buildCourtyard() {
     for (let k = 0; k < B.n; k++) {
       const z = B.z0 + k * B.gap, col = B.colors[k % B.colors.length], yaw = 0, x = B.x - 0.42;
       geos.metal.push(stall.clone().translate(x, 0, z));
+      bicycles.push({ id: `courtyard-${k}`, index: k, position: new THREE.Vector3(x, 0, z), yaw });
       const move = (g, hex) => bikes.push(tint(g.clone().rotateY(yaw).translate(x, 0, z), hex));
       move(bikeFrame, col); move(bikeTyres, 0x141414); move(bikeMetal, 0xb4b9bd);
       bikeSpokes.push(tint(spokeGeo.clone().translate(x, 0, z), 0xb4b9bd));
     }
-    segments.push(...rectSegs(B.x - 0.9, B.x + 0.85, B.z0 - 0.3, B.z0 + len + 0.3));
+    bicycleRack = rectSegs(B.x - 0.9, B.x + 0.85, B.z0 - 0.3, B.z0 + len + 0.3);
+    segments.push(...bicycleRack);
   }
 
   const paveTex = pavingTexture();
@@ -410,12 +413,52 @@ export function buildCourtyard() {
     mesh.receiveShadow = true;
     group.add(mesh);
   }
-  const add = (list, mat, shadow = true) => { const mesh = new THREE.Mesh(mergeGeometries(list.map((g) => (g.index ? g.toNonIndexed() : g))), mat); mesh.castShadow = shadow; mesh.receiveShadow = true; group.add(mesh); };
+  const add = (list, mat, shadow = true) => { const mesh = new THREE.Mesh(mergeGeometries(list.map((g) => (g.index ? g.toNonIndexed() : g))), mat); mesh.castShadow = shadow; mesh.receiveShadow = true; group.add(mesh); return mesh; };
   add(paint, new THREE.MeshStandardMaterial({ color: C.playhouse.color, roughness: 0.85, side: THREE.DoubleSide }));
-  add([...bikes, ...toys], new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.4, metalness: 0.3 })); // + the playground's plastic (#681)
-  if (bikeSpokes.length) {
-    const spokes = new THREE.Mesh(mergeGeometries(bikeSpokes.map((g) => (g.index ? g.toNonIndexed() : g))), new THREE.MeshStandardMaterial({ vertexColors: true, alphaMap: bikeSpokeTexture(), alphaTest: 0.35, side: THREE.DoubleSide, metalness: 0.35, roughness: 0.5 }));
-    spokes.castShadow = false; spokes.receiveShadow = false; group.add(spokes);
+  // #906: keep the same two batches/materials. Each existing bicycle owns only its
+  // contiguous vertex ranges; the toy tail, colours, UVs and all other bikes stay untouched.
+  const solidBikes = add([...bikes, ...toys], new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.4, metalness: 0.3 }));
+  const spokes = new THREE.Mesh(mergeGeometries(bikeSpokes.map(g => g.index ? g.toNonIndexed() : g)), new THREE.MeshStandardMaterial({ vertexColors: true, alphaMap: bikeSpokeTexture(), alphaTest: 0.35, side: THREE.DoubleSide, metalness: 0.35, roughness: 0.5 }));
+  spokes.castShadow = false; spokes.receiveShadow = false; group.add(spokes);
+  const components = [solidBikes, spokes];
+  for (const mesh of components) mesh.userData.moving = true; // culling follows changed batch bounds
+  const counts = [bikes.slice(0, 3).reduce((n, g) => n + (g.index?.count ?? g.attributes.position.count), 0),
+    bikeSpokes[0].index?.count ?? bikeSpokes[0].attributes.position.count];
+  for (const bicycle of bicycles) {
+    const original = new THREE.Matrix4().makeTranslation(...bicycle.position.toArray());
+    const pick = new THREE.Mesh(new THREE.BoxGeometry(1.7, 1.05, .6), new THREE.MeshBasicMaterial({ visible: false }));
+    pick.userData.moving = true; group.add(pick);
+    const ranges = components.map((mesh, k) => {
+      const start = bicycle.index * counts[k], count = counts[k], a = mesh.geometry.attributes;
+      return { start, count, position: a.position.array.slice(start * 3, (start + count) * 3),
+        normal: a.normal.array.slice(start * 3, (start + count) * 3) };
+    });
+    Object.assign(bicycle, { original, matrix: original.clone(), rackSegments: bicycleRack, atSource: true, ridden: false,
+      components, ranges, pick,
+      place(p, yaw) {
+        if (this.position.equals(p) && this.yaw === yaw) return;
+        const delta = new THREE.Matrix4().makeRotationY(yaw).setPosition(p).multiply(original.clone().invert());
+        const normal = new THREE.Matrix3().getNormalMatrix(delta), v = new THREE.Vector3();
+        components.forEach((mesh, k) => {
+          const range = ranges[k], a = mesh.geometry.attributes;
+          for (let i = 0; i < range.count; i++) {
+            v.fromArray(range.position, i * 3).applyMatrix4(delta); a.position.setXYZ(range.start + i, v.x, v.y, v.z);
+            v.fromArray(range.normal, i * 3).applyMatrix3(normal); a.normal.setXYZ(range.start + i, v.x, v.y, v.z);
+          }
+          a.position.needsUpdate = a.normal.needsUpdate = true;
+          mesh.geometry.computeBoundingBox(); mesh.geometry.computeBoundingSphere();
+        });
+        this.position.copy(p); this.yaw = yaw; this.matrix.makeRotationY(yaw).setPosition(p);
+        pick.position.copy(p); pick.position.y += .525; pick.rotation.y = yaw;
+      },
+      footprint(feet, headroom, hurdle) {
+        if (this.selfQuery || this.atSource || this.position.y > feet + headroom || this.position.y + BICYCLE.height <= feet - hurdle) return [];
+        const dx = Math.cos(this.yaw), dz = -Math.sin(this.yaw), r = BICYCLE.radius;
+        return [[BICYCLE.rear-r,-r],[BICYCLE.front+r,-r],[BICYCLE.front+r,r],[BICYCLE.rear-r,r]].map(([x,z]) => [this.position.x + dx*x-dz*z, this.position.z + dz*x+dx*z]);
+      },
+    });
+    bicycle.target = { name: 'Cykeln', kind: 'bicycle', verb: 'cykla', bicycle, pickable: pick };
+    pick.userData.door = bicycle.target; pick.position.copy(bicycle.position); pick.position.y += .525;
   }
   const bollardGlow = new THREE.MeshBasicMaterial({ color: 0x8d8b84, toneMapped: false });
   add(glow, bollardGlow, false);
@@ -453,7 +496,7 @@ export function buildCourtyard() {
   bulbs.forEach(([x, y, z], i) => bulb.setMatrixAt(i, m.makeTranslation(x, y, z)));
   group.add(vine, bulb);
   const lit = new THREE.Color(0xffd08a), off = new THREE.Color(0x2a2620); const bollardOff = new THREE.Color(0x8d8b84);
-  return { object: group, segments, seats, targets, surfaces,
+  return { object: group, segments, seats, targets, surfaces, bicycles,
     /** night 0 … 1 (with the window lights): the pergola's bulbs glow after dusk (no lights, colour only). */
     update(night, power = true) { const on = night > 0.35 && power; bulbMat.color.copy(on ? lit : off); bollardGlow.color.copy(on ? lit : bollardOff); } }; // the bollards too (#112); power: not in a power cut (#604)
 }

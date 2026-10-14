@@ -4,7 +4,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 const base=process.argv[2]||'http://localhost:8876',out=process.argv[3]||'/tmp/lunden-bicycle',app=process.argv.includes('--app'),small=process.argv.includes('--small');
 const root=path.resolve(__dirname,'..'),main=fs.readFileSync(path.join(root,'src/main.js'),'utf8'),worldSource=fs.readFileSync(path.join(root,'src/world.js'),'utf8');
 function span(source,start,end){const a=source.indexOf(start),b=source.indexOf(end,a+start.length);if(a<0||b<0||source.indexOf(start,a+1)>=0)throw Error('ambiguous source anchor '+start);return source.slice(a,b).trim();}
-const parts={bicycleControls:span(main,'const bicyclePickables =','function updateFocus() {'),active:span(main,'const active =','\n\nfunction look'),stand:span(main,'function standUp() {','/** A drink run over'),use:span(main,'function use(thing) {',"actionBtn.addEventListener('click'"),buttons:span(main,"actionBtn.addEventListener('click'",'const muteBtn ='),mouse:span(main,'function click(button) {',"document.addEventListener('contextmenu'"),keys:span(main,"document.addEventListener('keydown', (e) => {\n  if (!locked", "window.addEventListener('blur'"),save:span(main,'const placeNow =','setInterval(keepSession, 2000);'),registry:span(worldSource,'bicycles: life.bicycles,','edgeLines,')};
+const parts={bicycleControls:span(main,'const bicyclePickables =','function updateFocus() {'),active:span(main,'const active =','\n\nfunction look'),stand:span(main,'function standUp() {','/** A drink run over'),use:span(main,'function use(thing) {',"actionBtn.addEventListener('click'"),buttons:span(main,"actionBtn.addEventListener('click'",'const muteBtn ='),mouse:span(main,'function click(button) {',"document.addEventListener('contextmenu'"),keys:span(main,"document.addEventListener('keydown', (e) => {\n  if (!locked", "window.addEventListener('blur'"),save:span(main,'const placeNow =','setInterval(keepSession, 2000);'),registry:span(worldSource,'bicycles:','edgeLines,')};
 fs.mkdirSync(out,{recursive:true});let failures=0;const lines=[];function check(ok,name){lines.push((ok?'PASS':'FAIL')+' '+name);console.log(lines.at(-1));if(!ok)failures++;}
 async function actualWorld(browser){
  const context=await browser.newContext({viewport:{width:900,height:600},hasTouch:true}),page=await context.newPage(),errors=[];page.setDefaultTimeout(10000);page.on('pageerror',e=>errors.push(e.message));
@@ -23,7 +23,7 @@ async function actualWorld(browser){
   await page.goto(base+'/?lowmem&phone&quality=0&at=-56.4,3.1,90&time=12&freeze&cloud=',{waitUntil:'commit'});
   await page.waitForFunction(()=>window.__app?.renderer&&__app.loadingEl.hidden,null,{timeout:240000,polling:200});
   for(const f of ['src/player.js','src/main.js','src/config.js','src/streetlife.js','src/world.js']){const r=await page.request.get(base+'/'+f);check(r.ok()&&crypto.createHash('sha256').update(await r.body()).digest('hex')===source[f],'served source matches authored runtime '+f);}
-  check(await page.evaluate(()=>__app.testMode===null&&__app.world.bicycles.length===9),'actual whole World ready without a test mode or partial scene');
+  check(await page.evaluate(()=>__app.testMode===null&&__app.world.bicycles.length===14),'actual whole World ready without a test mode or partial scene');
   await page.locator('#start-go').tap();
   await page.evaluate(()=>{__app.renderer.setAnimationLoop(null);__app.renderer.setPixelRatio(1);__app.renderer.setSize(480,320,false);});
   await page.clock.install();await page.clock.pauseAt(await page.evaluate(()=>Date.now()+100));
@@ -58,7 +58,7 @@ const context=await browser.newContext({viewport:{width:900,height:600},hasTouch
 async function setup(){await page.goto(base);await page.evaluate(async parts=>{
  const T=await import('three'),{buildStreetLife}=await import('/src/streetlife.js'),{Player}=await import('/src/player.js'),C=await import('/src/config.js'),R=await import('/src/resume.js'),{setupTouch}=await import('/src/touch.js');(await import('/src/hudicons.js')).initHudIcons();
  window.webglCalls=0;const originalContext=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(kind,...args){if(/webgl/i.test(kind)){webglCalls++;if(!window.allowSmallRender)throw Error('No WebGL in native bike fixture');}return originalContext.call(this,kind,...args);};
- window.T=T;window.C=C;window.PLAYER=C.PLAYER;window.life=buildStreetLife();window.bike=life.bicycles[0];window.camera=new T.PerspectiveCamera();
+ window.T=T;window.C=C;window.PLAYER=C.PLAYER;window.life=buildStreetLife();window.courtyard={bicycles:[]};window.bike=life.bicycles[0];window.camera=new T.PerspectiveCamera();
  window.world={size:{x:5.75,z:12.1},levels:[{segments:life.segments,footprints:[]},{segments:[],footprints:[]}],doors:[],roofs:{above:()=>Infinity,under:()=>null}};Object.assign(world,(0,eval)('({'+parts.registry+'})'));
  window.player=new Player(world,camera);player.spawn(-56.4,3.1,Math.PI/2);
  window.matrices=()=>bike.components.map(m=>Array.from({length:m.count},(_,i)=>{const x=new T.Matrix4();m.getMatrixAt(i,x);return x.elements.slice();}));window.originalMatrices=matrices();window.originalSegments=JSON.stringify(life.segments);
