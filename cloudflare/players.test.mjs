@@ -1291,3 +1291,35 @@ test('#968 style2 reuses the certified RIGHT cell while long hair stays denied',
   const bad={o:[3.12,1.67,-2.68],d:[-.765,0,.644],hc:[1,.046,1.67,-.092]};
   assert.equal(C.rifleHeadGreetingRightCellRegion('front-0',{p:[0,0,0],r:.7},bad.hc.slice(1),bad.o,bad.d),false,'historical actual unsupported style1 corner remains excluded');
 });
+
+test('#890 avatar appearance sync in state, welcome and validation', async () => {
+  const env = setup();
+  const a = await connect(env, 'Spelare A');
+  const b = await connect(env, 'Spelare B');
+  const validAv = '1230410';
+  now += 1000;
+  a.send({ p: [1, 0, 2], r: 0.5, av: validAv });
+  await settle(env);
+
+  const bStates = b.got.filter(m => m.t === 's' && m.i === a.got[0].i);
+  assert.equal(bStates.length, 1);
+  assert.equal(bStates[0].av, validAv, 'valid avatar string is forwarded to peer');
+
+  // Invalid avatar code should be dropped
+  now += 1000;
+  a.send({ p: [1.1, 0, 2], r: 0.5, av: 'invalid-code' });
+  await settle(env);
+  const bState2 = b.got.filter(m => m.t === 's' && m.i === a.got[0].i).at(-1);
+  assert.equal(bState2.av, undefined, 'invalid avatar string is dropped');
+
+  // Late joining peer gets the latest valid appearance in welcome
+  now += 1000;
+  a.send({ p: [1.2, 0, 2], r: 0.5, av: validAv });
+  await settle(env);
+  const c = await connect(env, 'Spelare C');
+  const welcomePeer = c.got[0].ps.find(p => p.i === a.got[0].i);
+  assert.equal(welcomePeer?.av, validAv, 'late joining player gets avatar appearance on welcome');
+
+  for (const peer of [a, b, c]) peer.ws.close();
+  await settle(env);
+});

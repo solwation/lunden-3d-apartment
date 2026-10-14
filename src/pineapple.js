@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { PINEAPPLE_MIRROR } from './config.js';
 import { mirrorMaterial } from './mirror.js';
 import { addReflector } from './reflections.js';
+import { openAvatarCustomizer } from './customizer.js';
 
 // Livia's pineapple mirror (#412, PINEAPPLE_MIRROR, docs/spegel-ananas-livia.jpg): an oval frame in matte mustard yellow
 // with a relief of pointed scales, a crown of pointed leaves with a herringbone vein, and an oval glass with its own
@@ -108,6 +109,16 @@ export function pineappleMirror(item) {
   g.add(glass);
   g.userData.keep = [glass];
   addReflector(glass, glassGeo(), { level: item.level, name: 'ananas' });
+  const interact = {
+    name: 'ananasspegeln',
+    kind: 'mirror',
+    verb: 'spegla dig i',
+    pickable: glass,
+    options: () => [{ label: 'byt utseende vid spegeln', run: () => openAvatarCustomizer() }],
+    toggle: () => openAvatarCustomizer()
+  };
+  g.userData.interact = interact;
+  g.traverse((m) => { m.userData.door = interact; });
   g.position.y = item.y;
   return g;
 }

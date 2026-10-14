@@ -221,6 +221,7 @@ class FloorLamp {
       this.room.lamps.push({ pos: new THREE.Vector3(p.x + ox, p.y + a.height, p.z + oz), ...L.floorLamp, ...(a.light ?? {}), level: spec.level, owner: this });
     }
     spec.object.traverse((m) => { m.userData.door = this; });
+    spec.mirrorReflector?.traverse((m) => { m.userData.door = this; });
     this.pickable = spec.object;
     spec.lamp = this; // (a builder's other targets reach the lamp)
     if (spec.options) this.options = () => spec.options(this); // a choice of actions (#367, the Hue Go's colours, #428)

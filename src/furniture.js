@@ -17,6 +17,7 @@ import { addReflector } from './reflections.js';
 import { veronasofa, slattable, parasol, planter, dynbox } from './patio.js';
 import { Screen } from './screens.js';
 import { Openable } from './openables.js';
+import { openAvatarCustomizer } from './customizer.js';
 import { rifleModel } from './rifle.js';
 import { laptop } from './laptop.js';
 import { nesthub, nestmini } from './nest.js';
@@ -2603,8 +2604,12 @@ function vanity(item, lights) {
   (g.userData.keep ??= []).push(mirror);
   // the pool light a little way out from the glass (the group is turned by rot + π)
   const yaw = THREE.MathUtils.degToRad(item.rot ?? 0) + Math.PI, out = 0.35;
-  lights.push({ object: mirror, shade: bulbMat, height: 0, level: item.level, name: 'sminkspegelns lampor', room: 'Sovrum 4', light: V.light,
-    offset: [Math.sin(yaw) * out, Math.cos(yaw) * out] });
+  lights.push({ object: mirror, shade: bulbMat, height: 0, level: item.level, name: 'sminkspegeln', room: 'Sovrum 4', light: V.light,
+    offset: [Math.sin(yaw) * out, Math.cos(yaw) * out],
+    options: (lamp) => [
+      { label: 'byt utseende vid spegeln', run: () => openAvatarCustomizer() },
+      { label: lamp.isOpen ? 'släck sminkspegeln' : 'tänd sminkspegeln', run: () => lamp.toggle() }
+    ] });
   g.userData.vanity = { mirror, glass };
   g.userData.wallMirrors = [{ object: mirror, name: 'sminkspegeln' }];
   g.userData.surfaces = [{ x0: 0.0, x1: 0.13, z0: -hd + 0.2, z1: hd - 0.03, y: h }]; // in front of the stool, beside the laptop (#283)

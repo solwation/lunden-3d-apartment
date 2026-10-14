@@ -4540,11 +4540,38 @@ export const PLANT_WIND={calm:.025,wetBoost:2,stormBoost:.5,easeSeconds:1.2,slee
 export const STARTUP = { dataTimeout: 5000, planTimeout: 15000, recoveryTimeout: 120000 };
 
 // #892: canonical appearance shared by Avatar and future authoritative contact profiles.
-const SKIN = [0xf1c9a8, 0xe0ae8a, 0xc68863, 0x9a6643, 0x6b4430];
-const HAIR = [0x2b2118, 0x4a3320, 0x7a5532, 0xb79052, 0xd9c28a, 0x8a8c90, 0x6b2d1f, 0x15151a];
-const TOPS = [0x2f6db5, 0xb5372f, 0x3c8a4e, 0xe0a82e, 0x7a4fb0, 0xe07a9a, 0x2e9aa8, 0xe8e8e0, 0x3a3f4a, 0xd9722e];
-const PANTS = [0x2c3140, 0x3a3c41, 0x4b5a78, 0x6d5a45, 0x23272e, 0x5b6068];
-const SHOES = [0x2a2523, 0xe8e8e8, 0x40342b, 0x1f3a5c];
+export const SKIN = [0xf1c9a8, 0xe0ae8a, 0xc68863, 0x9a6643, 0x6b4430];
+export const HAIR = [0x2b2118, 0x4a3320, 0x7a5532, 0xb79052, 0xd9c28a, 0x8a8c90, 0x6b2d1f, 0x15151a];
+export const TOPS = [0x2f6db5, 0xb5372f, 0x3c8a4e, 0xe0a82e, 0x7a4fb0, 0xe07a9a, 0x2e9aa8, 0xe8e8e0, 0x3a3f4a, 0xd9722e];
+export const PANTS = [0x2c3140, 0x3a3c41, 0x4b5a78, 0x6d5a45, 0x23272e, 0x5b6068];
+export const SHOES = [0x2a2523, 0xe8e8e8, 0x40342b, 0x1f3a5c];
+
+export function encodeAvatarLook(look) {
+  if (!look) return '';
+  const s = Math.max(0, SKIN.indexOf(look.skin));
+  const t = Math.max(0, TOPS.indexOf(look.top));
+  const p = Math.max(0, PANTS.indexOf(look.pants));
+  const sh = Math.max(0, SHOES.indexOf(look.shoes));
+  const h = Math.max(0, HAIR.indexOf(look.hair));
+  const st = Math.min(3, Math.max(0, Number(look.style) || 0));
+  const sl = Math.min(1, Math.max(0, Number(look.sleeves) || 0));
+  return `${s}${t}${p}${sh}${h}${st}${sl}`;
+}
+
+export function decodeAvatarLook(str, seed = 'anon') {
+  const base = defaultAvatarLook(seed);
+  if (typeof str !== 'string' || !/^[0-4][0-9][0-5][0-3][0-7][0-3][0-1]$/.test(str)) return base;
+  return {
+    ...base,
+    skin: SKIN[Number(str[0])],
+    top: TOPS[Number(str[1])],
+    pants: PANTS[Number(str[2])],
+    shoes: SHOES[Number(str[3])],
+    hair: HAIR[Number(str[4])],
+    style: Number(str[5]),
+    sleeves: Number(str[6]),
+  };
+}
 
 /** The tiny deterministic hash of a seed string. */
 function hash(seed) {
@@ -4553,14 +4580,19 @@ function hash(seed) {
   return h;
 }
 
-/** What a seed looks like: { skin, hair, top, pants, shoes (colours), style (hairstyle), sleeves (0 short / 1 long), build }. */
-export function avatarLook(seed) {
+function defaultAvatarLook(seed) {
   let h = hash(seed || 'anon');
   const pick = (n) => { const v = h % n; h = Math.imul(h ^ (h >>> 15), 2246822519) >>> 0; return v; };
   const style = pick(4), sleeves = pick(2);
   const skin = SKIN[pick(SKIN.length)], hair = HAIR[pick(HAIR.length)], top = TOPS[pick(TOPS.length)], pants = PANTS[pick(PANTS.length)], shoes = SHOES[pick(SHOES.length)];
   const build = pick(3); // 0 slim, 1 average, 2 broad
   return { style, sleeves, skin, hair, top, pants, shoes, build, tall: 0.95 + pick(5) * 0.025 };
+}
+
+/** What a seed looks like: { skin, hair, top, pants, shoes (colours), style (hairstyle), sleeves (0 short / 1 long), build }. */
+export function avatarLook(seed) {
+  if (seed && typeof seed === 'object' && 'skin' in seed && 'top' in seed) return seed;
+  return defaultAvatarLook(seed);
 }
 
 // #897/#916: v1 supports only measured exposed central fronts of the standing skull.

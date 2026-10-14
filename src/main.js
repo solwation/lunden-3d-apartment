@@ -11,7 +11,8 @@ import { loadBeerShelf } from './beershelfdata.js';
 import { BeerShelf } from './beershelf.js';
 import { initHudIcons, setIcon, setPressed, setWeatherIcon, formatTemp } from './hudicons.js';
 import * as THREE from 'three';
-import { UNIT_TOP, SITE, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS, GARAGE, OLOF, CORE_A, CORE_B, CORE_C } from './config.js';
+import { UNIT_TOP, SITE, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS, GARAGE, OLOF, CORE_A, CORE_B, CORE_C, avatarLook } from './config.js';
+import { setupAvatarCustomizer, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen } from './customizer.js';
 import { MieleHeld, HeartFireworks } from './miele.js';
 const DRAWING_COLORS = DRAWING.colors;
 initHudIcons();
@@ -290,6 +291,7 @@ function showNote(show) {
   if (!show && blindPanel.open) { showBlind(null); return; }
   if (!show && book.reading) { showBook(false); return; }
   if (!show && viewing) { showPoster(null); return; }
+  if (!show && isAvatarCustomizerOpen()) { closeAvatarCustomizer(); return; }
   reading = show;
   if (show) notePaper.scrollTop = 0;
   noteEl.hidden = !show;
@@ -1485,12 +1487,13 @@ function use(thing) {
   if (thing.kind === 'fusebox') { thing.power.use(); return; } // the power cut (#604): trip it, or mend it while held
   if (thing.visit) { visitUse(thing); return; } // a visited flat's door, window or lid (#574)
   if (thing.kind !== 'note') shadowState.hold = 1.5; // reading the DOM note moves no shadow caster (#669)
-  if (!heldItem() && !['rest', 'place', 'note', 'taskNote', 'clock', 'calendar', 'board', 'poster', 'paper'].includes(thing.kind) && focusPoint && thing === focused) hand.reach(focusPoint); // the arm reaches out (#195)
+  if (!heldItem() && !['rest', 'place', 'note', 'taskNote', 'clock', 'calendar', 'board', 'poster', 'paper', 'mirror'].includes(thing.kind) && focusPoint && thing === focused) hand.reach(focusPoint); // the arm reaches out (#195)
   if (thing.options && thing.kind !== 'life' && choices.rows && choices.target === thing) { // a lamp with a choice (#428): the marked row
     runChoice(choices.sel);
     if (thing.kind === 'lamp' && thing.isOpen) bump('lights', 1, idOf(thing));
   } else if (thing.blocked && (thing.kind === 'appliance' || thing.kind === 'cabinet')) sfx.click(camera.position); // something stands on the secretary's flap / the cushion box's lid (#447)
   else if (thing.kind === 'note') showNote(true);
+  else if (thing.kind === 'mirror') openAvatarCustomizer();
   else if (thing.kind === 'taskNote') showTaskNote(true);
   else if (thing.kind === 'clock') { showClock(true); bump('clock'); }
   else if (thing.kind === 'calendar') { showCalendar(true); bump('calendar'); }
@@ -1959,7 +1962,7 @@ function updateFocus() {
     promptEl.style.backgroundImage = `linear-gradient(90deg, rgba(70,170,100,.85) ${pct}%, transparent ${pct}%)`;
   } else if (promptEl.style.backgroundImage) promptEl.style.backgroundImage = '';
   if (heldItem() === ball && !focused && !touch.enabled && !reading) { promptEl.textContent = 'Klicka för att skjuta · högerklick: studsa bollen'; promptEl.hidden = false; }
-  actionBtn.hidden = !(focused || reading || holding || seated) || !touch.enabled || (!!choices.rows && !reading) || clockPanel.open || calPanel.open || blindPanel.open || sonos.open || !!viewing; // the strips have their own ×
+  actionBtn.hidden = !(focused || reading || holding || seated) || !touch.enabled || (!!choices.rows && !reading) || clockPanel.open || calPanel.open || blindPanel.open || sonos.open || !!viewing || isAvatarCustomizerOpen(); // the strips have their own ×
   powerBtn.hidden = !touch.enabled || !heldItem()?.useAlt || reading;
   turnBtn.hidden = !touch.enabled || reading || focused?.kind !== 'place' || !!focused.blocked || !itemGhost.visible; // ⟳ (#368)
   if (!powerBtn.hidden) setIcon(powerBtn,heldItem().altIcon==='🏀'?'basketball':'power',heldItem().altLabel??'Stäng av / slå på TV:n');
@@ -2265,6 +2268,32 @@ chat = new Chat({ ghosts, log: document.getElementById('chat-log'), setting: doc
   camera, layer: document.getElementById('speech'), hidden: (p) => behindWall(p) }); // bubbles over the ghosts (#676)
 terminalInput.addEventListener('input', () => chat.keyed()); // "skriver…" (#676): only in chat mode, only the flag
 window.__chat = chat;
+setupAvatarCustomizer({
+  getLook: () => ghosts.myLook,
+  getDefaultLook: () => avatarLook(leaderboard.name || 'anon'),
+  setLook: (lk) => ghosts.setMyLook(lk),
+  onOpen: () => {
+    reading = true;
+    player.keys.clear();
+    if (locked) {
+      boardFreed = true;
+      document.exitPointerLock();
+    }
+  },
+  onClose: (byKey) => {
+    reading = false;
+    player.keys.clear();
+    if (boardFreed) {
+      boardFreed = false;
+      if (byKey === 'Escape') {
+        overlay.hidden = true;
+        armEl.hidden = false;
+      } else {
+        canvas.requestPointerLock()?.catch(() => { armEl.hidden = false; });
+      }
+    }
+  }
+});
 // the minimap is part of the same "extra HUD" (#85): shown with the stats; K shows the map on its own
 let mapPinned = false;
 const statsPanel = new StatsPanel({ el: statsEl, body: statsBody, render: () => renderStats(statsBody),
@@ -2801,4 +2830,4 @@ hideLoading();
 
 crashlog.attach({ renderer, camera, quality, player, world, sun, scene, mirrorTarget, frameDiag }); // what the crash heartbeat shows (#629)
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { frameRate, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };
+window.__app = { frameRate, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: (lk) => ghosts.setMyLook(lk) }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };

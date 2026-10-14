@@ -473,6 +473,36 @@
     #blind-close { background: transparent !important; color: #fff !important; font-size: 20px !important; min-width: 32px !important; align-self: flex-start; }
     #clock-close { background: transparent !important; color: #fff !important; font-size: 20px !important; min-width: 32px !important; }
     #update-close { background: transparent; color: #fff; padding: 8px 10px !important; font-size: 18px !important; }
+    #avatar-customizer { position: fixed; inset: 0; z-index: 25; background: rgba(10, 18, 26, 0.78); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); display: grid; place-items: center; padding: 12px; box-sizing: border-box; }
+    #avatar-customizer[hidden] { display: none; }
+    .customizer-card { width: min(640px, calc(100vw - 24px)); max-height: min(720px, calc(100dvh - 24px)); display: flex; flex-direction: column; background: #182533; color: #f0f4f8; border-radius: 16px; box-shadow: 0 16px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1); overflow: hidden; }
+    .customizer-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 16px 20px 12px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .customizer-header h2 { margin: 0; font: 700 20px/1.2 system-ui, sans-serif; color: #fff; }
+    .customizer-sub { font: 500 13px system-ui, sans-serif; color: #9ab0c4; margin-top: 2px; display: block; }
+    .customizer-close { background: transparent; border: 0; color: #fff; font-size: 20px; cursor: pointer; padding: 4px 8px; border-radius: 6px; }
+    .customizer-close:hover { background: rgba(255,255,255,0.1); }
+    .customizer-body { display: flex; gap: 20px; padding: 16px 20px; overflow-y: auto; flex: 1; min-height: 0; }
+    .customizer-preview { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; flex-shrink: 0; }
+    #avatar-preview-canvas { width: 180px; height: 280px; border-radius: 12px; display: block; box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
+    .customizer-controls { flex: 1; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+    .customizer-section h3 { margin: 0 0 6px; font: 600 13px system-ui, sans-serif; color: #b8cde0; text-transform: uppercase; letter-spacing: 0.5px; }
+    .customizer-section .swatches { display: flex; flex-wrap: wrap; gap: 7px; }
+    .customizer-section .swatches button { width: 34px; height: 34px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.25); cursor: pointer; padding: 0; touch-action: manipulation; transition: transform 0.1s, box-shadow 0.1s; }
+    .customizer-section .swatches button:hover { transform: scale(1.1); }
+    .customizer-section .swatches button.sel { border-color: #fff; box-shadow: 0 0 0 3px #3894e6; transform: scale(1.12); }
+    .customizer-section .btn-group { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+    .customizer-section .btn-group button { border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #fff; padding: 6px 12px; border-radius: 6px; font: 600 13px system-ui, sans-serif; cursor: pointer; touch-action: manipulation; }
+    .customizer-section .btn-group button.sel { background: #3894e6; border-color: #3894e6; color: #fff; }
+    .customizer-footer { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; border-top: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.15); }
+    .customizer-footer button { padding: 9px 18px; border-radius: 8px; font: 600 15px system-ui, sans-serif; cursor: pointer; touch-action: manipulation; border: 0; }
+    .customizer-footer .btn-secondary { background: rgba(255,255,255,0.12); color: #e0e8f0; }
+    .customizer-footer .btn-secondary:hover { background: rgba(255,255,255,0.2); }
+    .customizer-footer .btn-primary { background: #2f80ed; color: #fff; min-width: 90px; }
+    .customizer-footer .btn-primary:hover { background: #2570d4; }
+    @media (max-width: 580px) {
+      .customizer-body { flex-direction: column; align-items: center; }
+      #avatar-preview-canvas { width: 150px; height: 233px; }
+    }
     #terminal { position: fixed; inset: 0; z-index: 20; background: #0008; display: grid; place-items: center; }
     #terminal[hidden], #rearrange-help[hidden] { display: none; }
     #terminal form { width: min(440px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); overflow-y: auto; padding: 20px; box-sizing: border-box; background: #172322; color: #e5f4e6; border: 1px solid #648571; border-radius: 10px; font: 15px/1.5 monospace; }
@@ -908,6 +938,100 @@
       <div class="terminal-actions"><button id="terminal-close" type="button">Stäng</button>
       <button id="rearrange-toggle" type="button" hidden>Möblera om</button></div>
     </form>
+  </div>
+  <div id="avatar-customizer" hidden role="dialog" aria-modal="true" aria-labelledby="avatar-customizer-title">
+    <div class="customizer-card">
+      <div class="customizer-header">
+        <div>
+          <h2 id="avatar-customizer-title">Anpassa avataren</h2>
+          <small class="customizer-sub">Byt utseende vid spegeln</small>
+        </div>
+        <button id="avatar-close-btn" class="customizer-close" aria-label="Stäng">✕</button>
+      </div>
+      <div class="customizer-body">
+        <div class="customizer-preview">
+          <canvas id="avatar-preview-canvas" width="180" height="280"></canvas>
+        </div>
+        <div class="customizer-controls">
+          <section class="customizer-section">
+            <h3>Hudfärg</h3>
+            <div class="swatches" data-group="skin">
+              <button data-type="skin" data-index="0" style="background:#f1c9a8" aria-label="Hudfärg 1"></button>
+              <button data-type="skin" data-index="1" style="background:#e0ae8a" aria-label="Hudfärg 2"></button>
+              <button data-type="skin" data-index="2" style="background:#c68863" aria-label="Hudfärg 3"></button>
+              <button data-type="skin" data-index="3" style="background:#9a6643" aria-label="Hudfärg 4"></button>
+              <button data-type="skin" data-index="4" style="background:#6b4430" aria-label="Hudfärg 5"></button>
+            </div>
+          </section>
+
+          <section class="customizer-section">
+            <h3>Tröja</h3>
+            <div class="swatches" data-group="top">
+              <button data-type="top" data-index="0" style="background:#2f6db5" aria-label="Blå tröja"></button>
+              <button data-type="top" data-index="1" style="background:#b5372f" aria-label="Röd tröja"></button>
+              <button data-type="top" data-index="2" style="background:#3c8a4e" aria-label="Grön tröja"></button>
+              <button data-type="top" data-index="3" style="background:#e0a82e" aria-label="Gul tröja"></button>
+              <button data-type="top" data-index="4" style="background:#7a4fb0" aria-label="Lila tröja"></button>
+              <button data-type="top" data-index="5" style="background:#e07a9a" aria-label="Rosa tröja"></button>
+              <button data-type="top" data-index="6" style="background:#2e9aa8" aria-label="Turkos tröja"></button>
+              <button data-type="top" data-index="7" style="background:#e8e8e0" aria-label="Ljusgrå tröja"></button>
+              <button data-type="top" data-index="8" style="background:#3a3f4a" aria-label="Mörkgrå tröja"></button>
+              <button data-type="top" data-index="9" style="background:#d9722e" aria-label="Orange tröja"></button>
+            </div>
+            <div class="btn-group" data-group="sleeves">
+              <button data-type="sleeves" data-index="0">Kort ärm</button>
+              <button data-type="sleeves" data-index="1">Lång ärm</button>
+            </div>
+          </section>
+
+          <section class="customizer-section">
+            <h3>Byxor</h3>
+            <div class="swatches" data-group="pants">
+              <button data-type="pants" data-index="0" style="background:#2c3140" aria-label="Mörkblå byxor"></button>
+              <button data-type="pants" data-index="1" style="background:#3a3c41" aria-label="Mörkgrå byxor"></button>
+              <button data-type="pants" data-index="2" style="background:#4b5a78" aria-label="Blågrå byxor"></button>
+              <button data-type="pants" data-index="3" style="background:#6d5a45" aria-label="Bruna byxor"></button>
+              <button data-type="pants" data-index="4" style="background:#23272e" aria-label="Svarta byxor"></button>
+              <button data-type="pants" data-index="5" style="background:#5b6068" aria-label="Grå byxor"></button>
+            </div>
+          </section>
+
+          <section class="customizer-section">
+            <h3>Skor</h3>
+            <div class="swatches" data-group="shoes">
+              <button data-type="shoes" data-index="0" style="background:#2a2523" aria-label="Svarta skor"></button>
+              <button data-type="shoes" data-index="1" style="background:#e8e8e8" aria-label="Vita skor"></button>
+              <button data-type="shoes" data-index="2" style="background:#40342b" aria-label="Bruna skor"></button>
+              <button data-type="shoes" data-index="3" style="background:#1f3a5c" aria-label="Mörkblå skor"></button>
+            </div>
+          </section>
+
+          <section class="customizer-section">
+            <h3>Frisyr &amp; Huvudbonad</h3>
+            <div class="btn-group" data-group="style">
+              <button data-type="style" data-index="0">Kort</button>
+              <button data-type="style" data-index="1">Långt</button>
+              <button data-type="style" data-index="2">Knut</button>
+              <button data-type="style" data-index="3">Mössa</button>
+            </div>
+            <div class="swatches" data-group="hair">
+              <button data-type="hair" data-index="0" style="background:#2b2118" aria-label="Mörkbrunt hår"></button>
+              <button data-type="hair" data-index="1" style="background:#4a3320" aria-label="Brunt hår"></button>
+              <button data-type="hair" data-index="2" style="background:#7a5532" aria-label="Ljusbrunt hår"></button>
+              <button data-type="hair" data-index="3" style="background:#b79052" aria-label="Guldbrunt hår"></button>
+              <button data-type="hair" data-index="4" style="background:#d9c28a" aria-label="Blont hår"></button>
+              <button data-type="hair" data-index="5" style="background:#8a8c90" aria-label="Grått hår"></button>
+              <button data-type="hair" data-index="6" style="background:#6b2d1f" aria-label="Rött hår"></button>
+              <button data-type="hair" data-index="7" style="background:#15151a" aria-label="Svart hår"></button>
+            </div>
+          </section>
+        </div>
+      </div>
+      <div class="customizer-footer">
+        <button id="avatar-reset-btn" type="button" class="btn-secondary">Återställ</button>
+        <button id="avatar-save-btn" type="button" class="btn-primary">Klar</button>
+      </div>
+    </div>
   </div>
   <div id="hud" hidden>
     <button id="terminal-btn" aria-label="Öppna konsolen">&gt;_</button>

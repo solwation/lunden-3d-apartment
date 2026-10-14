@@ -11,10 +11,10 @@ import { fillKitchen } from './kitchenstuff.js';
 import { Openable, pivotAround } from './openables.js';
 import { buildRacks } from './dishwasher.js';
 import { Moccamaster } from './coffee.js';
-import { socketGeometry } from './sockets.js';
 import { mirrorMaterial, litMirrorMaterial, litEmissive, litReflect } from './mirror.js';
 import { addReflector } from './reflections.js';
 import { SPONGE, spongeMaterials } from './sponge.js';
+import { openAvatarCustomizer } from './customizer.js';
 
 // Fixed interior from our material choices: fitted kitchen, laundry, bathroom fittings,
 // tiled floors and walls. Everything is merged into one mesh per material (few draw calls),
@@ -1072,6 +1072,10 @@ function buildBathroom(B, group, floor, room, y0, handled, taps, appliances) {
         P.box(a0, a1, -FT, 0, b0, b1, M.vanity);
         P.box(a0 + 0.01, a1 - 0.01, 0, 0.004, b0 + 0.01, b1 - 0.01, M.mirror);
       } });
+      door.options = () => [
+        { label: 'byt utseende vid spegeln', run: () => openAvatarCustomizer() },
+        { label: door.isOpen ? 'stäng spegelskåpet' : 'öppna spegelskåpet', run: () => door.toggle() }
+      ];
       const holder = mirrorReflector(group, new THREE.PlaneGeometry(m.u1 - m.u0 - 0.02, 0.68), m.f + 0.0045, y0 + 1.55, cz, room.level); // on the cabinet's front (#139)
       group.updateMatrixWorld(true);
       door.object.attach(holder);
@@ -1085,12 +1089,19 @@ function buildBathroom(B, group, floor, room, y0, handled, taps, appliances) {
       // Slot 50 with its LED backlight on a switch of its own (E on the mirror, #50)
       const led = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: litEmissive(0xfff2dc), emissiveIntensity: 0.04 }); // dimmed (#339)
       const om = ovalMirror(B, room.x0, cz, y0 + 1.5, 0.5, 0.9, led);
-      mirrorReflector(group, new THREE.ShapeGeometry(om.shape, 24), om.x, om.y, om.z, room.level, litReflect);
+      const holder = mirrorReflector(group, new THREE.ShapeGeometry(om.shape, 24), om.x, om.y, om.z, room.level, litReflect);
       const pick = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.95, 0.56), new THREE.MeshBasicMaterial());
       pick.position.set(room.x0 + 0.03, y0 + 1.5, cz);
       pick.visible = false; // raycasts ignore visibility: the E target for the LED strip
       group.add(pick);
-      mirrorLamps.push({ object: pick, shade: led, height: 0, level: room.level, name: 'spegelbelysningen', offset: [0.35, 0], light: LIGHTING.mirror.light });
+      mirrorLamps.push({
+        object: pick, shade: led, height: 0, level: room.level, name: 'spegeln i toaletten', offset: [0.35, 0], light: LIGHTING.mirror.light,
+        mirrorReflector: holder,
+        options: (lamp) => [
+          { label: 'byt utseende vid spegeln', run: () => openAvatarCustomizer() },
+          { label: lamp.isOpen ? 'släck spegelbelysningen' : 'tänd spegelbelysningen', run: () => lamp.toggle() }
+        ]
+      });
     }
   }
   if (shower) {

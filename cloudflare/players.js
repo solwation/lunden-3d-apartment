@@ -120,14 +120,19 @@ export function cleanGreet(text) {
   return m?.t === 'g' && typeof m.to === 'string' && m.to.length <= 16 && Number.isInteger(m.k) && m.k >= 0 && m.k < PLAYERS.greetPhrases ? { to: m.to, k: m.k } : null;
 }
 
+export function cleanAvatar(v) {
+  return typeof v === 'string' && /^[0-4][0-9][0-5][0-3][0-7][0-3][0-1]$/.test(v) ? v : null;
+}
+
 /** A checked, rounded state from a client's message, or null. */
 export function cleanState(text) {
   let m;
   try { m = JSON.parse(text); } catch { return null; }
   if (!m || typeof m !== 'object' || !Array.isArray(m.p) || m.p.length !== 3 || !m.p.every((v) => fin(v, 5000)) || !fin(m.r, 100)) return null;
   const score = Number.isFinite(m.score) ? Math.min(1e7, Math.max(0, Math.floor(m.score))) : 0; // #672: existing leaderboard maximum; legacy clients show 0
+  const av = cleanAvatar(m.av);
   // #878: c reports actual Player.crouched; anything except literal true is standing, including legacy clients.
-  return { p: m.p.map(r2), r: r2(m.r), score, h: typeof m.h === 'string' && Object.hasOwn(COMBAT.weapons, m.h) ? m.h : '', ...(m.c === true ? { c: true } : {}), ...(m.sp === true ? { sp: true } : {}) };
+  return { p: m.p.map(r2), r: r2(m.r), score, h: typeof m.h === 'string' && Object.hasOwn(COMBAT.weapons, m.h) ? m.h : '', ...(m.c === true ? { c: true } : {}), ...(m.sp === true ? { sp: true } : {}), ...(av ? { av } : {}) };
 }
 
 /** A shot from a client, or null: { t: 'a', w, o: [x, y, z] start, d: [dx, dy, dz] unit direction, s?: speed m/s, to?: id hit }

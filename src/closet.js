@@ -6,6 +6,7 @@ import { litMirrorMaterial, litEmissive, litReflect } from './mirror.js';
 import { addReflector } from './reflections.js';
 import { Pack as StuffPack, garment, stack, rng } from './stuff.js';
 import { Pack } from './contents.js';
+import { openAvatarCustomizer } from './customizer.js';
 
 // Sovrum 1's walk-in closet, the Klk (#331, KLK in config). Two parts:
 // - `klkFittings` (world.js, Peab's fittings, stay with F): white wall standards, the high shelf on the side wall and
@@ -156,7 +157,13 @@ export function klk(item, lights) {
   mirror.position.set(mxM, M.bottom + M.h / 2, KLK.z1 - 0.002);
   inner.add(mirror);
   keep.push(mirror);
-  lights.push({ object: mirror, shade: led, height: 0, level: item.level, name: 'spegelns lampa', room: 'Klk', light: M.light, offset: [0, -0.35] });
+  lights.push({
+    object: mirror, shade: led, height: 0, level: item.level, name: 'garderobsspegeln', room: 'Klk', light: M.light, offset: [0, -0.35],
+    options: (lamp) => [
+      { label: 'byt utseende vid spegeln', run: () => openAvatarCustomizer() },
+      { label: lamp.isOpen ? 'släck spegelbelysningen' : 'tänd spegelbelysningen', run: () => lamp.toggle() }
+    ]
+  });
   g.userData.keep = keep;
   g.userData.wallMirrors = [{ object: mirror, name: 'spegeln i klädkammaren' }];
   return g;

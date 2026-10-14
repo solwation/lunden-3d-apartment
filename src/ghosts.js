@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { FALL } from './config.js';
-import { GHOSTS as G, COMBAT, AVATAR, CHAT } from './config.js';
+import { GHOSTS as G, COMBAT, AVATAR, CHAT, encodeAvatarLook, decodeAvatarLook } from './config.js';
 import { Avatar, armTarget } from './avatar.js';
 import { totalScore } from './stats.js';
 import { acquireBadge, releaseBadge, badgeScore, badgeLives } from './ghostbadge.js';
@@ -102,9 +102,10 @@ const pickMat = new THREE.MeshBasicMaterial();
 
 class Ghost {
   /** `self`: our own reflection in the mirrors (#691): no name tag, never shown to the main camera. */
-  constructor(parent, id, name, self = false) {
+  constructor(parent, id, name, self = false, look = null) {
     this.id = id; this.name = name || ANON; this.snaps = []; this.h = ''; this.solid = false; this.prop = null; this.self = self;
-    this.avatar = new Avatar(self ? `me:${name}` : id, tint(name));
+    this.avatarLook = look ?? (self ? `me:${name}` : id);
+    this.avatar = new Avatar(this.avatarLook, tint(name));
     this.avatar.setSolid(self); // (the mirror image is a solid figure)
     this.mesh = this.avatar.mesh;
     this.mesh.name = `ghost:${this.name}`;
@@ -132,8 +133,30 @@ class Ghost {
     parent.add(this.root);
   }
 
+  setAvatarLook(look) {
+    this.avatarLook = look;
+    const wasSolid = this.avatar.solid;
+    const hadSuit = !!this.avatar.suit;
+    this.avatar.object.removeFromParent();
+    this.avatar.dispose();
+    this.avatar = new Avatar(look, tint(this.name));
+    this.avatar.setSolid(wasSolid);
+    if (hadSuit) this.avatar.setSuit(true);
+    this.mesh = this.avatar.mesh;
+    this.mesh.name = `ghost:${this.name}`;
+    this.root.add(this.avatar.object);
+    if (this.tag) {
+      this.tagY = G.tagY + (this.avatar.look.tall - 1) * 1.8;
+      this.tag.position.y = this.tagY;
+    }
+  }
+
   /** A state from the room at time t (ms). After a pause the last one is repeated just before it, so it walks off smoothly. */
-  push({ p, r, h = '', score = 0, l, c = false, sp = false }, t) {
+  push({ p, r, h = '', score = 0, l, c = false, sp = false, av }, t) {
+    if (av && av !== this.avatarCode) {
+      this.avatarCode = av;
+      this.setAvatarLook(decodeAvatarLook(av, this.id));
+    }
     this.score = badgeScore(score);
     this.lives = badgeLives(l); // never infer remote health from a client's default maximum
     this.setHeld(h);
@@ -276,6 +299,10 @@ export class Ghosts {
   constructor({ scene, camera, url, name = () => '', state, active = () => true, weapon = () => '', score = totalScore, onHit = () => {}, onHurt = () => {}, mirrored = () => true }) {
     Object.assign(this, { camera, name, state, active, weapon, score, onHit, onHurt, mirrored, mine: null, myGhost: null, rules: null, ws: null, me: null, others: new Map(), sent: null, prev: null,
       lastSent: 0, lastBeat: 0, outbox: [], shots: 0, dropped: 0, greetAt: -1e9, greetsSeen: 0, lastMove: -Infinity, retryAt: 0, backoff: 0, openedAt: 0, connects: 0, messages: 0 });
+    const savedAv = (() => { try { return localStorage.getItem('lunden.avatar'); } catch { return null; } })();
+    this.myLook = decodeAvatarLook(savedAv, this.name());
+    this.avatarCode = encodeAvatarLook(this.myLook);
+    this.sentAv = null;
     this.on = !!url && G.enabled && params.get('mp') !== '0';
     this.url = url ? `${url.replace(/^http/, 'ws')}/players` : '';
     this.group = new THREE.Group();
@@ -335,9 +362,9 @@ export class Ghosts {
     const t = performance.now();
     if (m.t === 'w') {
       this.me = m.i; this.rules = m.c ?? null; this.onWelcome?.(m);
-      for (const p of m.ps ?? []) { const g = this.add(p.i, p.n); if (g && p.p) g.push(p, t); }
-    } else if (m.t === 'j') this.add(m.i, m.n);
-    else if (m.t === 's') (this.others.get(m.i) ?? this.add(m.i, ''))?.push(m, t);
+      for (const p of m.ps ?? []) { const g = this.add(p.i, p.n, p.av); if (g && p.p) g.push(p, t); }
+    } else if (m.t === 'j') this.add(m.i, m.n, m.av);
+    else if (m.t === 's') (this.others.get(m.i) ?? this.add(m.i, '', m.av))?.push(m, t);
     else if (m.t === 'x') { this.others.get(m.i)?.dispose(); this.others.delete(m.i); }
     else if (m.t === 'hit') this.onHit(m, this.others.get(m.to));
     else if (m.t === 'life') this.onLife?.(m);
@@ -348,11 +375,29 @@ export class Ghosts {
     else if (m.t === 'm' || m.t === 'mx' || m.t === 'k') this.onTalk?.(m, this.others.get(m.i)); // chat (#675) and "skriver…" (#676), src/chat.js
   }
 
-  add(id, name) {
+  add(id, name, av = null) {
     if (id === this.me) return null;
     let g = this.others.get(id);
-    if (!g && this.others.size < G.max) { g = new Ghost(this.group, id, name); this.others.set(id, g); }
+    if (!g && this.others.size < G.max) {
+      const look = av ? decodeAvatarLook(av, id) : null;
+      g = new Ghost(this.group, id, name, false, look);
+      if (av) g.avatarCode = av;
+      this.others.set(id, g);
+    } else if (g && av && av !== g.avatarCode) {
+      g.avatarCode = av;
+      g.setAvatarLook(decodeAvatarLook(av, id));
+    }
     return g ?? null;
+  }
+
+  setMyLook(look) {
+    this.myLook = look;
+    this.avatarCode = encodeAvatarLook(look);
+    this.sentAv = null;
+    if (this.myGhost) {
+      this.myGhost.key = `${this.name() || ''}:${this.avatarCode}`;
+      this.myGhost.setAvatarLook(look);
+    }
   }
 
   /** Each frame: connect / disconnect, send what changed (≤ hz), and place the ghosts. */
@@ -365,17 +410,17 @@ export class Ghosts {
     if (!this.on) return;
     s.score = badgeScore(this.score());
     const prev = this.prev;
-    if (!prev || Math.hypot(s.p[0] - prev.p[0], s.p[1] - prev.p[1], s.p[2] - prev.p[2]) > G.move || Math.abs(s.r - prev.r) > G.turn || s.h !== prev.h || s.c !== prev.c || s.sp !== prev.sp) { this.lastMove = t; this.prev = s; }
+    if (!prev || Math.hypot(s.p[0] - prev.p[0], s.p[1] - prev.p[1], s.p[2] - prev.p[2]) > G.move || Math.abs(s.r - prev.r) > G.turn || s.h !== prev.h || s.c !== prev.c || s.sp !== prev.sp || this.sentAv !== this.avatarCode) { this.lastMove = t; this.prev = s; }
     if (this.prev?.score !== s.score) this.prev = s; // score changes use the same 5 Hz slot; do not reset movement idle time
     const playing = this.active() && !document.hidden && t - this.lastMove < G.idleMs;
     if (!playing) { if (this.ws) this.disconnect(); }
     else if (!this.ws && !this.capped && t >= this.retryAt) this.connect();
     if (this.connected && !this.sendTalk() && !this.sendShot()) {
       const sent = this.sent;
-      if (t - this.lastSent >= 1000 / G.hz && (!sent || sent !== this.prev)) {
+      if (t - this.lastSent >= 1000 / G.hz && (!sent || sent !== this.prev || this.sentAv !== this.avatarCode)) {
         const p = this.prev ?? s;
-        this.ws.send(JSON.stringify({ p: p.p.map((v) => Math.round(v * 100) / 100), r: Math.round(p.r * 100) / 100, score: p.score, ...(p.h ? { h: p.h } : {}), ...(p.c ? { c: true } : {}), ...(p.sp ? { sp: true } : {}) }));
-        this.sent = p; this.lastSent = this.lastBeat = t; this.messages++;
+        this.ws.send(JSON.stringify({ p: p.p.map((v) => Math.round(v * 100) / 100), r: Math.round(p.r * 100) / 100, score: p.score, ...(p.h ? { h: p.h } : {}), ...(p.c ? { c: true } : {}), ...(p.sp ? { sp: true } : {}), ...(this.avatarCode ? { av: this.avatarCode } : {}) }));
+        this.sent = p; this.sentAv = this.avatarCode; this.lastSent = this.lastBeat = t; this.messages++;
       }
     }
     const eye = this.camera.position, armed = !!s.h;
@@ -398,7 +443,8 @@ export class Ghosts {
   /** Our avatar for the mirrors: one per name (the look comes from it); hidden but for the mirror's pass. */
   selfGhost() {
     const n = this.name() || '';
-    if (!this.myGhost || this.myGhost.key !== n) { this.myGhost?.dispose(); this.myGhost = new Ghost(this.group, 'me', n, true); this.myGhost.key = n; }
+    const key = `${n}:${this.avatarCode}`;
+    if (!this.myGhost || this.myGhost.key !== key) { this.myGhost?.dispose(); this.myGhost = new Ghost(this.group, 'me', n, true, this.myLook); this.myGhost.key = key; }
     return this.myGhost;
   }
 
