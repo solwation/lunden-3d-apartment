@@ -434,6 +434,79 @@ test('shared life: own welcome, unarmed half/fatal falls and weapon-state/forger
   assert.equal(Math.max(0,11-2*fallDamage(4,2,11)),0);
 });
 
+test('consumption: portion restores +1 up to max, dedup/idempotence, clock cleanup, full health clamp and hibernation', async () => {
+  const prevNow = now;
+  try {
+    const env = setup(), a = await connect(env, 'Consumer'), b = await connect(env, 'Observer');
+    assert.equal(a.got[0].c.portionLife, 1, 'welcome rules declare portionLife');
+    const state = h => ({ p: [0, 0, 0], r: 0, h });
+    a.send(state('')); await settle(env);
+
+    // Take damage from a fall: drop 4, gap 2 gives 5 damage (from 10 to 5)
+    a.send({ t: 'fall', id: 1, drop: 4, gap: 2 }); await settle(env);
+    assert.equal(a.got.filter(m => m.t === 'life').at(-1).l, 5);
+    assert.equal(b.states().at(-1).l, 5);
+
+    const attA = () => a.ws.peer.deserializeAttachment();
+    const initialHealAt = attA().healAt;
+    assert.ok(Number.isFinite(initialHealAt), 'damage starts recovery clock');
+
+    // Eat bread portion 1: restores +1 to 6
+    now += 1000;
+    a.send({ t: 'consume', id: 10, portion: 'breadSlice#1', l: 999 }); await settle(env);
+    assert.deepEqual(a.got.find(m => m.t === 'consume' && m.id === 10), { t: 'consume', id: 10, portion: 'breadSlice#1', l: 6, ok: true });
+    assert.equal(a.got.filter(m => m.t === 'life').at(-1).l, 6);
+    assert.equal(b.states().at(-1).l, 6);
+    assert.equal(attA().healAt, initialHealAt, 'non-full portion healing does not move minute deadline');
+    assert.deepEqual(attA().consumed, ['breadSlice#1']);
+
+    // Duplicate consumption of the same portion ID: idempotent receipt, no extra heal
+    now += 1000;
+    a.send({ t: 'consume', id: 11, portion: 'breadSlice#1' }); await settle(env);
+    assert.deepEqual(a.got.find(m => m.t === 'consume' && m.id === 11), { t: 'consume', id: 11, portion: 'breadSlice#1', l: 6, ok: true });
+    assert.equal(a.got.filter(m => m.t === 'life').at(-1).l, 6, 'duplicate portion cannot heal again');
+
+    // Hibernation preserves consumed portions and health
+    env.PLAYERS.hibernate('world');
+    now += 1000;
+    a.send({ t: 'consume', id: 12, portion: 'friedEgg#1' }); await settle(env);
+    assert.equal(a.got.filter(m => m.t === 'life').at(-1).l, 7);
+    assert.deepEqual(attA().consumed, ['breadSlice#1', 'friedEgg#1']);
+
+    // Heal up to 9
+    now += 1000; a.send({ t: 'consume', id: 13, portion: 'breadSlice#2' }); await settle(env);
+    assert.equal(a.got.filter(m => m.t === 'life').at(-1).l, 8);
+    now += 1000; a.send({ t: 'consume', id: 14, portion: 'breadSlice#3' }); await settle(env);
+    assert.equal(a.got.filter(m => m.t === 'life').at(-1).l, 9);
+    assert.ok(Number.isFinite(attA().healAt), 'recovery clock still active at 9 HP');
+
+    // Eat final portion to reach max 10: cleans recovery clock
+    now += 1000; a.send({ t: 'consume', id: 15, portion: 'breadSlice#4' }); await settle(env);
+    assert.equal(a.got.filter(m => m.t === 'life').at(-1).l, 10);
+    assert.equal(attA().healAt, undefined, 'healing to full cleans recovery clock');
+
+    // Consuming at full health: clamped to 10, no extra heal, but recorded
+    now += 1000; a.send({ t: 'consume', id: 16, portion: 'breadSlice#5' }); await settle(env);
+    assert.equal(a.got.filter(m => m.t === 'life').at(-1).l, 10);
+    assert.deepEqual(a.got.find(m => m.t === 'consume' && m.id === 16), { t: 'consume', id: 16, portion: 'breadSlice#5', l: 10, ok: true });
+    assert.ok(attA().consumed.includes('breadSlice#5'));
+
+    // Now player takes damage again: breadSlice#5 cannot be reused
+    now += 1000; a.send({ t: 'fall', id: 2, drop: 4, gap: 2 }); await settle(env);
+    assert.equal(a.got.filter(m => m.t === 'life').at(-1).l, 5);
+    now += 1000; a.send({ t: 'consume', id: 17, portion: 'breadSlice#5' }); await settle(env);
+    assert.equal(a.got.filter(m => m.t === 'life').at(-1).l, 5, 'portion consumed at full health cannot be reused after new damage');
+
+    // Bad portion inputs are ignored
+    const consumeCount = a.got.filter(m => m.t === 'consume').length;
+    for (const bad of [{ portion: '' }, { portion: null }, { portion: 123 }, { id: 0, portion: 'x' }, { id: -1, portion: 'x' }]) {
+      now += 1000; a.send({ t: 'consume', ...bad }); await settle(env);
+    }
+    assert.equal(a.got.filter(m => m.t === 'consume').length, consumeCount, 'bad consume requests produce no response');
+    for (const peer of [a, b]) peer.ws.close(); await settle(env);
+  } finally { now = prevNow; }
+});
+
 test('crouch pose uses literal actual true in states/late welcome and survives hibernation without changing health', async () => {
   const env = setup(), a = await connect(env, 'Crouch'), b = await connect(env, 'Observer');
   const state = { p:[0,0,0], r:0, h:'nerf', score:123 };

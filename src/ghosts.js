@@ -340,7 +340,7 @@ export class Ghosts {
     this.reset();
   }
 
-  reset() { this.finishFall(null); this.myGhost?.clearMirrorTyping(); this.me = null; this.sent = null; this.outbox = []; this.talkbox = []; for (const g of this.others.values()) g.dispose(); this.others.clear(); this.onTypingReset?.(); }
+  reset() { this.finishFall(null); this.finishConsume(null); this.myGhost?.clearMirrorTyping(); this.me = null; this.sent = null; this.outbox = []; this.talkbox = []; for (const g of this.others.values()) g.dispose(); this.others.clear(); this.onTypingReset?.(); }
 
   closed(ws, code) {
     if (ws !== this.ws) return;
@@ -369,6 +369,7 @@ export class Ghosts {
     else if (m.t === 'hit') this.onHit(m, this.others.get(m.to));
     else if (m.t === 'life') this.onLife?.(m);
     else if (m.t === 'fall') { if (m.id === this.pendingFall?.id) this.finishFall(m); }
+    else if (m.t === 'consume') { if (m.id === this.pendingConsume?.id) this.finishConsume(m); }
     else if (m.t === 'hurt') this.onHurt(m, this.others.get(m.by));
     else if (m.t === 'a') { const g = this.others.get(m.i); if (g) this.onShot?.(m, g); }
     else if (m.t === 'g') { const g = this.others.get(m.i); if (g) { g.wave(); this.greetsSeen++; this.onGreet?.(m, g, m.to === this.me ? null : this.others.get(m.to) ?? null); } }
@@ -484,6 +485,24 @@ export class Ghosts {
     pending.resolve(result);
   }
 
+  /** One bounded food/beer consumption claim; never send client HP or replay it after a disconnect (#1004). */
+  consume(portion) {
+    if (!this.connected || this.pendingConsume) return Promise.resolve(null);
+    const id = this.consumeId = (this.consumeId ?? 0) + 1;
+    return new Promise(resolve => {
+      this.pendingConsume = { id, resolve, timer: setTimeout(() => this.finishConsume(null), 5000) };
+      this.outbox.unshift({ t: 'consume', id, portion });
+      this.sendShot();
+    });
+  }
+  finishConsume(result) {
+    const pending = this.pendingConsume;
+    if (!pending) return;
+    clearTimeout(pending.timer); this.pendingConsume = null;
+    this.outbox = this.outbox.filter(m => m.t !== 'consume' || m.id !== pending.id);
+    pending.resolve(result);
+  }
+
   /** Our own saber cut, for the mirror image. */
   swingSelf() { this.myGhost?.swing(); }
 
@@ -498,7 +517,7 @@ export class Ghosts {
     this.greetAt = t;
     const k = Math.floor(Math.random() * G.hello.length);
     this.outbox.push({ t: 'g', to: g.id, k });
-    while (this.outbox.length > G.outbox) this.outbox.splice(this.outbox.findIndex(m => m.t !== 'fall'), 1);
+    while (this.outbox.length > G.outbox) this.outbox.splice(this.outbox.findIndex(m => m.t !== 'fall' && m.t !== 'consume'), 1);
     this.sendShot();
     return G.hello[k].replace('{n}', g.name);
   }
@@ -511,8 +530,8 @@ export class Ghosts {
     const r2 = (v) => Math.round(v * 100) / 100, r3 = (v) => Math.round(v * 1000) / 1000;
     this.outbox.push({ t: 'a', w: shot.w, o: shot.o.map(r2), d: shot.d.map(r3), ...(shot.s ? { s: r2(shot.s) } : {}), ...(shot.to ? { to: shot.to } : {}), ...(shot.hc ? { hc: [shot.hc[0], ...shot.hc.slice(1).map(r3)] } : {}) });
     while (this.outbox.length > G.outbox) {
-      const miss = this.outbox.findIndex((x) => x.t !== 'fall' && !x.to);
-      this.outbox.splice(miss >= 0 ? miss : this.outbox.findIndex(x => x.t !== 'fall'), 1);
+      const miss = this.outbox.findIndex((x) => x.t !== 'fall' && x.t !== 'consume' && !x.to);
+      this.outbox.splice(miss >= 0 ? miss : this.outbox.findIndex(x => x.t !== 'fall' && x.t !== 'consume'), 1);
       this.dropped++;
     }
     this.sendShot();
@@ -524,7 +543,7 @@ export class Ghosts {
     if (!this.outbox.length || !this.connected || t - this.lastSent < 1000 / G.hz) return false;
     const message = this.outbox.shift();
     this.ws.send(JSON.stringify(message));
-    this.lastSent = this.lastBeat = t; if (message.t !== 'fall') this.shots++; this.messages++;
+    this.lastSent = this.lastBeat = t; if (message.t !== 'fall' && message.t !== 'consume') this.shots++; this.messages++;
     return true;
   }
 

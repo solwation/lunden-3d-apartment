@@ -51,7 +51,7 @@ export const PLAYERS = {
 // Ranges and rates are our picks (*guess*), sent to the client in the welcome.
 export const COMBAT = {
   // #867: user-requested one life per real minute, timed by the authoritative room.
-  lives: 10, recoverMs: 60_000, slack: 2.5, perMinute: 60, points: SCORE.each.pvpHits, from: 4, // from: a shot starts at most this far (m) from the shooter's last known feet
+  lives: 10, portionLife: 1, recoverMs: 60_000, slack: 2.5, perMinute: 60, points: SCORE.each.pvpHits, from: 4, // from: a shot starts at most this far (m) from the shooter's last known feet
   weapons: {
     saber: { range: 2.5, every: 0.5 },   // the lightsaber: a swing at arm's length
     nerf: { range: TOYS.nerf.dart.range, every: 0.4 },     // a Nerf blaster's dart
@@ -306,9 +306,9 @@ export class PlayerRoom {
     const [client, server] = Object.values(new WebSocketPair());
     this.ctx.acceptWebSocket(server);
     const i = crypto.randomUUID().slice(0, 8), n = cleanName(url.searchParams.get('n'));
-    const attachment = { i, n, s: null, turned: false, rightFirstTurn: null, leftTinyTurn: null, leftStandingTurn: null, frontTurn: null, rearFirstTurn: null, l: COMBAT.lives, t: now, w: now, c: 0, k: 0, over: false };
+    const attachment = { i, n, s: null, turned: false, rightFirstTurn: null, leftTinyTurn: null, leftStandingTurn: null, frontTurn: null, rearFirstTurn: null, l: COMBAT.lives, t: now, w: now, c: 0, k: 0, over: false, consumed: [] };
     server.serializeAttachment(attachment);
-    send(server, JSON.stringify({ t: 'w', i, l: attachment.l, ps: others.map(att).map((a) => ({ i: a.i, n: a.n, ...(a.s ?? {}), l: a.l ?? COMBAT.lives })), c: { lives: COMBAT.lives, weapons: COMBAT.weapons } }));
+    send(server, JSON.stringify({ t: 'w', i, l: attachment.l, ps: others.map(att).map((a) => ({ i: a.i, n: a.n, ...(a.s ?? {}), l: a.l ?? COMBAT.lives })), c: { lives: COMBAT.lives, portionLife: COMBAT.portionLife, weapons: COMBAT.weapons } }));
     this.broadcast({ t: 'j', i, n, l: COMBAT.lives }, server);
     return new Response(null, { status: 101, webSocket: client });
   }
@@ -330,8 +330,12 @@ export class PlayerRoom {
       if (a.k >= PLAYERS.strikes) this.drop(ws, CLOSE.rate, 'rate');
       return;
     }
-    let falling;
-    try { const m = JSON.parse(message); if (m?.t === 'fall' && Number.isSafeInteger(m.id) && m.id > 0) falling = m; } catch {}
+    let falling, consuming;
+    try {
+      const m = JSON.parse(message);
+      if (m?.t === 'fall' && Number.isSafeInteger(m.id) && m.id > 0) falling = m;
+      else if (m?.t === 'consume' && Number.isSafeInteger(m.id) && m.id > 0 && typeof m.portion === 'string' && m.portion.length > 0 && m.portion.length <= 64) consuming = m;
+    } catch {}
     let lifeChanged = false;
     const talk = cleanTalk(message), hello = !talk && cleanGreet(message), shot = !talk && !hello && cleanShot(message);
     if (falling) {
@@ -345,6 +349,28 @@ export class PlayerRoom {
         send(ws, JSON.stringify({ t: 'life', l: a.l }));
         send(ws, JSON.stringify({ t: 'fall', id: falling.id, l: left, dead }));
       }
+    }
+    else if (consuming) {
+      a.consumed ??= [];
+      const already = a.consumed.includes(consuming.portion);
+      if (!already) {
+        a.consumed.push(consuming.portion);
+        if (a.consumed.length > 256) a.consumed.splice(0, a.consumed.length - 256);
+        this.recoverLife(ws, a, now);
+        const cur = a.l ?? COMBAT.lives;
+        if (cur < COMBAT.lives) {
+          a.l = Math.min(COMBAT.lives, cur + (COMBAT.portionLife ?? 1));
+          this.recoveryClock(a, now);
+          lifeChanged = true;
+          await this.scheduleRecovery();
+        }
+        ws.serializeAttachment(a);
+      }
+      if (lifeChanged) {
+        this.publishState(ws, a);
+        send(ws, JSON.stringify({ t: 'life', l: a.l }));
+      }
+      send(ws, JSON.stringify({ t: 'consume', id: consuming.id, portion: consuming.portion, l: a.l ?? COMBAT.lives, ok: true }));
     }
     else if (talk) this.talk(ws, a, talk, now);
     else if (hello) { // #673: to someone here, not too often; everybody else sees the greeter wave

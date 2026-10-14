@@ -3002,7 +3002,7 @@ export function pvpHitPoints(distance) {
   if (!Number.isFinite(distance) || distance < 0) return 0;
   return SCORE.each.pvpHits + Math.min(PVP_SCORE.maxBonus, Math.floor(Math.max(0, distance - PVP_SCORE.nearMetres) / PVP_SCORE.metresPerPoint));
 }
-export const COMBAT = { weapons: ['saber', 'nerf', 'wand', 'rifle', 'ball', 'bow', 'web', 'jetpack'], lives: 10, solid: 1,
+export const COMBAT = { weapons: ['saber', 'nerf', 'wand', 'rifle', 'ball', 'bow', 'web', 'jetpack'], lives: 10, portionLife: 1, solid: 1,
   // Confirmed-hit HUD duration/spacing: brief, clear of the crosshair (UX assumptions, #875).
   hitMarker: { lifeMs: 700, offsetPx: 20, livesGapPx: 6 }, // #904: UI clearance choice, not a physical measurement
   // Technical collision limits: fixed bitsets plus reserved bookkeeping, built during short idle slices (#715).

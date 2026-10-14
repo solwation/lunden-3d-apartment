@@ -51,9 +51,16 @@ export function nerfContact(origin, direction, length, feet) {
 
 export class Combat {
   /** ghosts (Ghosts), camera, scene, weapon(): key or '', feet(): our feet (Vector3), jetpack, onDie(): back to the start; score / hurt / sfx hooks. */
-  constructor({ ghosts, camera, scene, weapon, feet, jetpack = null, basket = null, darts = null, sparkles = null, arrows = null, onDie = () => {}, onHit = () => {}, onHurt = () => {}, sfx = null }) {
-    Object.assign(this, { ghosts, camera, scene, weapon, feet, jetpack, basket, darts, sparkles, arrows, onDie, onHitCb: onHit, onHurtCb: onHurt, sfx, lives: C.lives, jetT: 0, flashT: 0,
-      hits: 0, hurts: 0, deaths: 0, fired: 0, seen: 0, lastShot: null, lastSeen: null });
+  constructor({ ghosts, camera, scene, weapon, feet, jetpack = null, basket = null, darts = null, sparkles = null, arrows = null, life = null, onDie = () => {}, onHit = () => {}, onHurt = () => {}, sfx = null }) {
+    Object.assign(this, { ghosts, camera, scene, weapon, feet, jetpack, basket, darts, sparkles, arrows, lifeSystem: life, onDie, onHitCb: onHit, onHurtCb: onHurt, sfx, lives: C.lives, jetT: 0, flashT: 0,
+      hits: 0, hurts: 0, deaths: 0, fired: 0, seen: 0, lastShot: null, lastSeen: null, consumed: new Set() });
+    if (life?.onEvent) {
+      life.onEvent((kind, d) => {
+        if (kind === 'ate' && d.item?.id && (d.type === 'breadSlice' || (d.type === 'friedEgg' && d.item?.machine?.cooked !== false))) {
+          this.consume(d.item.id).catch(() => {});
+        }
+      });
+    }
     ghosts.onShot = (m, g) => this.remote(m, g);
     prepareCombatWorld(scene, ghosts.group, camera);
     // the others' shots (#667): one LineSegments for every streak (rifle, wand, web, jetpack flames; vertex colours, one
@@ -89,7 +96,7 @@ export class Combat {
     this.hitMarker = new HitMarker();
   }
 
-  get rules() { return this.ghosts.rules ?? { lives: C.lives, weapons: {} }; }
+  get rules() { return this.ghosts.rules ?? { lives: C.lives, portionLife: C.portionLife, weapons: {} }; }
   get maxLives() { return this.rules.lives ?? C.lives; }
 
   /** The armed players we can see (a fight is possible with them). */
@@ -516,6 +523,23 @@ export class Combat {
     this.recoveryClock();
     if (result.dead) this.deaths++;
     return result; // no PvP hurt penalty or immediate onDie; #869 handles actual fatal landing wake
+  }
+
+  /** Consume a whole food portion (bread, sandwich, fried egg) to restore +1 life (#1004). */
+  async consume(portion, now = Date.now()) {
+    const id = typeof portion === 'string' ? portion : portion?.id;
+    if (!id || typeof id !== 'string') return null;
+    this.consumed ??= new Set();
+    if (this.consumed.has(id)) return null;
+    this.consumed.add(id);
+    this.recoverOffline(now);
+    const portionLife = this.rules.portionLife ?? C.portionLife ?? 1;
+    const result = this.ghosts.connected ? await this.ghosts.consume(id)
+      : { l: Math.min(this.maxLives, this.lives + portionLife), ok: true };
+    if (!result || !Number.isSafeInteger(result.l)) return null;
+    this.life(result.l);
+    this.recoveryClock(now);
+    return result;
   }
 
   /** A new server attachment starts full; missing legacy own-state keeps the existing replica. */
