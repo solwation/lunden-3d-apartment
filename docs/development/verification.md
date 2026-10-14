@@ -6089,3 +6089,30 @@ driver. Eight frozen files are direct test/runtime inputs, not a claimed full
 transitive Worker dependency manifest. There is no visual, hardware-FPS, actual
 iPhone/PWA, physical context-loss or all-World acceptance claim. No historical
 run/hidden1 is declared a false crash; #669 stays open.
+## Existing rug placement (#1008)
+
+`PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/rugsupporttest.cjs http://localhost:8870 /tmp/rug-support`
+uses real `buildFurniture`, `Rearrange`, `Life` plates and the actual
+`CatSpawner.followRug` method in a controlled scene with zero WebGL. It checks
+ordinary begin/update/confirm on/off rectangular and round rugs, translated and
+rotated rugs, a stacked speaker, floor/table plates, rest/lamp metadata, preview
+cancel, twenty polls and fresh-page support-Y restoration. The world collision
+collaborators are minimal, so this does not certify full-apartment geometry,
+phone performance or GPU stability. Layout writes are local only.
+
+The original ordinary coffee-table preview reproduced root Y .001526 instead of
+actual rug top .014 (4/5, CLI1). The focused native support suite passes 25/25.
+The intermediate 24/25 CLI1 is retained: full-position reload failed because the
+old initial apply also shifts a previously saved plate by +.26x/+.04z. The same
+full delta is independently reproduced with original `36c421f` Rearrange. Final
+results explicitly retain `fullReloadXZAccepted:false`, `knownIssue:1013`; changing
+the support-Y assertion does not accept or hide that separate horizontal defect.
+
+`--render` adds one 640×420 component renderer and three real furniture images:
+floor after moving the rug away, actual confirmed rug return with stack, and a
+low contact view. Run only with the orchestration GPU slot. Its native checkpoint
+finishes before restoring the real offline `write` method for that explicit
+confirm. The first render attempt's CLI1 (native write guard accidentally retained)
+and first PNG remain archived; no runtime workaround was needed. Source freezes,
+raw failures, owners/socket records and cleanup are under the orchestration's
+`worker-1008-artifacts` archive. No World or physical phone is exercised.

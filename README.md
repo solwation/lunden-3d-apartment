@@ -12,6 +12,8 @@ I rutan uppe till vänster visas antalet besökare över bildfrekvensen (FPS). F
 
 Bilen stannar för spelare i sin körväg även i svängar och vid backning.
 
+När du möblerar om står möbler ovanpå mattan och åter på golvet när de flyttas av den. Flyttar du själva mattan justeras höjden för möbler och saker som står kvar.
+
 **▶ Öppna: https://solwation.github.io/lunden-3d-apartment/**
 
 På insidan av koppskåpets lucka i köket sitter en **uppdragslapp** med tre frivilliga vardagsuppdrag: gör en macka, återställ köket och städa efter mellanmålet. Delarna kan göras i valfri ordning och framstegen sparas. Tips går att stänga av; ett klart uppdrag ger 30 poäng första gången och 5 poäng när du väljer **Gör igen**. Tomma sopkärl behöver inte tömmas. Soppåsarna lämnas i de tre behållarna längs portikväggen mot lägenheten.

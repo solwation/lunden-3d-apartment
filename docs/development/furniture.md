@@ -113,3 +113,29 @@ HAVBÄCK reserve rolls (#557): interior.js exposes the original five bottom-shel
 Christmas tree (#571, #591): `XMAS_TREE` + FURNITURE `xmastree` (level 0, x 0.82, z 8.45, rot −135: presents towards the room). #571 put it in the SW corner by the window (palm and ZZ plant); #591 (the user: "hörnet till höger om vitrinskåpet") moved the default to the NW corner — seen from the living-room doorway the BESTÅ hangs on the right-hand (west) wall and this is the corner to its right, nearer the doorway, where the armchair, the stool, the NYMÅNE floor lamp and the RANDERS tray table stand (hidden while the tree is there). The crown keeps 5–8 cm off the west and passage walls, clear of the BESTÅ (z ≥ 9.95) and ~0.8 m west of the doorway (x 2.15–3.25); the spot is a *guess* (screenshots: [issue-571](../validation/issue-571/README.md), [issue-591](../validation/issue-591/README.md)). A layout entry under the #571 id carries over when it was confirmed elsewhere and is dropped when it still holds the old default (rearrange.js `apply`, `carryOld`, like the Verona sofa #489). Height from the room's RH 3.0 m: crown to 2.5 m, star tip ~2.8 m. All sizes, colours and counts are visual *guesses*. `src/christmas.js` shows it 1 December – 6 January inclusive by the day cycle's date; out of season it is hidden (`seasonHidden`), has no collision (rearrange.js `refresh` skips it), no E target and no light (lights.js `shown`). In season, every piece (not rugs) whose current footprint (or box, for pieces without one) is within the crown's radius at its own lowest height is hidden for the time being, with the pieces on its surfaces (`groupFor`) and the loose things on it (`looseOn`); their lamps go dark, their footprints, seats and moving segments go away; poses, revisions and the saved layout are untouched, and the layer is re-judged after every move, remote layout change (rearrange.js `apply` reveals first so a hidden piece moved elsewhere carries its things), F and date change. During a Möblera om move the layer waits for confirm/cancel; the season ending while the tree itself is being moved cancels that move.
 
 Verona patio lounge modules (#692): config places the three-module sofa row and each 1.3 m divan as its own `veronasofa` item. Each root owns its frame, cushions, seats and footprint, so rearrange rotation, collision checks, seats and saved poses apply independently. The previous single-root saved transform is converted once into poses for the three new ids on both local load and shared-layout GET; an unmoved legacy sofa is retired without changing the new default arrangement. `tools/veronatest.html` covers module seats, rotation, cushion following and old layout migration.
+
+## Runtime rug support (#1008)
+
+`registerRug` records the existing rug's actual local top (`item.h + .002`) on
+`userData.rugTop`. `rugSupport(level, worldXZPoints, margin=.02)` tests the actual
+shown matrix, including accepted translation/rotation. One rug must contain the
+whole sampled furniture base; the original 2cm wall/headboard slack and initial
+`rugUnder` build remain. No geometry/material or horizontal grouping changes.
+`floorRugLift` preserves that initial lift, and Rearrange derives a per-piece
+`floorRest` anchor without changing existing original poses.
+
+Ordinary floor preview uses that anchor plus live rug support. While a rug is
+hidden for a move preview, `rugPreviewSupport` keeps its original support active;
+cancel only removes the preview. Accepted apply takes `snapshotRugSupport()` before
+poses/materials and calls `reconcileRugSupport(snapshot, movedSet)` afterwards.
+This is an explicit before/after boundary for a later height-changing rug material,
+not a new layout revision. Derived Y adjustments update actual stacked pieces,
+loose placements, seat/aim spots and lamp metadata through the existing refresh
+and carry hooks. Moving a rug does not drag furniture in XZ. The existing
+`CatSpawner.followRug()` reads the same live top.
+
+Repeated apply is cheap when poses/material choices did not change. Reconciliation
+is idempotent and does not write the shared layout. Fresh-page native evidence
+covers support Y, not full-position reload: pre-existing #1013 double-carries a
+saved loose plate in XZ during initial layout restoration, reproduced with the
+unchanged pre-1008 apply. That separate defect is not fixed or accepted here.

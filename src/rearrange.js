@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { LEVELS, LIFE, REARRANGE } from './config.js';
 import { cloudUrl } from './cloud.js';
 import { migratePosterLayout, migrateVeronaLayout } from './layoutmigrations.js';
+import { rugLift, rugSupport } from './rugs.js';
 import { inPoly, crosses } from './player.js';
 
 // #465: preview locally; only confirmed, revision-checked moves enter the shared arrangement.
@@ -17,11 +18,12 @@ const V = THREE.Vector3, Q = THREE.Quaternion, M = THREE.Matrix4;
 const shown = (o) => { for (; o; o = o.parent) if (!o.visible) return false; return true; };
 const within = (o, root) => { for (; o; o = o.parent) if (o === root) return true; return false; };
 // Actual solid geometry, excluding invisible targets and light overlays (notably TV Ambilight).
-function physicalBounds(root) {
+function physicalBounds(root, hiddenRoot = false) {
+  const visible = o => { for (; o && o !== root; o = o.parent) if (!o.visible) return false; return true; };
   root.updateWorldMatrix(true, true);
   const bounds = new THREE.Box3();
   root.traverse(o => {
-    if (!o.isMesh || !shown(o) || o.userData.surface !== undefined) return;
+    if (!o.isMesh || !(hiddenRoot ? visible(o) : shown(o)) || o.userData.surface !== undefined) return;
     const materials = Array.isArray(o.material) ? o.material : [o.material];
     if (materials.every(m => m.blending === THREE.AdditiveBlending || m.blending === THREE.CustomBlending)) return;
     if (o.isInstancedMesh) { o.computeBoundingBox(); bounds.union(o.boundingBox.clone().applyMatrix4(o.matrixWorld)); }
@@ -47,7 +49,10 @@ export class Rearrange {
     this.byId = new Map(this.pieces.map((p) => [p.id, p]));
     if (this.byId.size !== this.pieces.length) throw Error('Duplicate furniture ids');
     scene.updateMatrixWorld(true);
-    for (const p of this.pieces) { p.name = NAMES[p.item.type] ?? (p.name === p.item.type ? 'möbeln' : p.name); p.home = p.object.matrixWorld.clone(); p.homeLevel = p.level; p.revision = 0; }
+    for (const p of this.pieces) { p.name = NAMES[p.item.type] ?? (p.name === p.item.type ? 'möbeln' : p.name); p.home = p.object.matrixWorld.clone(); p.homeLevel = p.level; p.revision = 0;
+      const bounds = physicalBounds(p.object, true), floor = LEVELS[p.level].floor, y = p.home.elements[13], lift = p.object.userData.floorRugLift ?? 0;
+      p.floorRest = bounds.isEmpty() ? 0 : Math.abs(bounds.min.y - floor - lift) < REARRANGE.supportGap ? y - floor - lift : y - bounds.min.y;
+    }
     this.unlocked = read(UNLOCK, false) === true; this.enabled = false; this.saving = false;
     this.ray = new THREE.Raycaster(); this.ray.layers.enableAll();
     this.ghost = new THREE.Group(); this.ghost.visible = false; this.ghost.userData.ghost = true; scene.add(this.ghost);
@@ -76,12 +81,20 @@ export class Rearrange {
     return this.world.furniture.surfaces.filter((s) => within(s, piece.object) && shown(s.parent)).map((s) => new THREE.Box3().setFromObject(s));
   }
   onTop(o, surfaces) {
+    if (!surfaces.length) return false;
     o.updateWorldMatrix(true, true);
     const b = physicalBounds(o), c = b.getCenter(new V()), origin = new V().setFromMatrixPosition(o.matrixWorld);
     const inside = (s, p) => p.x >= s.min.x && p.x <= s.max.x && p.z >= s.min.z && p.z <= s.max.z;
     // Tall/asymmetric plants can overhang: their base origin still rests on the support.
     return surfaces.some((s) => Math.abs(b.min.y - s.max.y) < REARRANGE.supportGap
       && (inside(s, c) || (Math.abs(origin.y - b.min.y) < REARRANGE.supportGap && inside(s, origin))));
+  }
+  closestSupport(object, surfaces) {
+    const b = physicalBounds(object), center = b.getCenter(new V()), at = object.getWorldPosition(new V());
+    const inside = (s, p) => p.x >= s.min.x && p.x <= s.max.x && p.z >= s.min.z && p.z <= s.max.z;
+    return surfaces.filter(s => Math.abs(b.min.y - s.max.y) < REARRANGE.supportGap &&
+      (inside(s, center) || (Math.abs(at.y - b.min.y) < REARRANGE.supportGap && inside(s, at))))
+      .sort((a, b2) => Math.abs(b.min.y - a.max.y) - Math.abs(b.min.y - b2.max.y))[0];
   }
   groupFor(piece) {
     const group = [piece];
@@ -115,7 +128,7 @@ export class Rearrange {
       });
     }
     this.selected.bounds = physicalBounds(piece.object);
-    for (const p of group) p.object.visible = false;
+    for (const p of group) { p.object.visible = false; if (p.item.type === 'rug') p.object.userData.rugPreviewSupport = true; }
     for (const h of loose) h.model.visible = false;
     this.ghost.visible = true;
     this.say('Sikta på en ny plats och placera föremålet.'); return true;
@@ -128,7 +141,7 @@ export class Rearrange {
       this.materialEdit = null;
     }
     if (this.selected) {
-      for (const p of this.selected.group) p.object.visible = true;
+      for (const p of this.selected.group) { p.object.visible = true; delete p.object.userData.rugPreviewSupport; }
       for (const h of this.selected.loose) h.model.visible = true;
     }
     this.selected = null; this.ghost.visible = false; this.ghost.clear(); this.valid = false;
@@ -176,6 +189,10 @@ export class Rearrange {
         const grid = LIFE.place.floorGrid;
         pos.set(Math.round(at.x / grid) * grid, height + old.pos[1] - bounds.min.y, Math.round(at.z / grid) * grid);
         q.premultiply(new Q().setFromAxisAngle(new V(0, 1, 0), this.turn));
+        if (height === floor) {
+          const matrix = new M().compose(pos, q, new V(1, 1, 1));
+          pos.y = floor + piece.floorRest + (piece.item.type === 'rug' ? 0 : this.rugFor(piece, matrix));
+        }
         valid = pos.x >= 0.2 && pos.x <= this.world.size.x - 0.2 && pos.z >= -2 && pos.z <= this.world.size.z + 5;
       }
     }
@@ -287,6 +304,88 @@ export class Rearrange {
       }
     }
   }
+  rugFor(piece, matrix = piece.object.matrixWorld) {
+    const points = [];
+    for (const r of piece.object.userData.footprint ?? []) for (const [x, z] of [[r.x0,r.z0],[r.x1,r.z0],[r.x1,r.z1],[r.x0,r.z1]]) {
+      const p = new V(x, 0, z).applyMatrix4(matrix); points.push([p.x, p.z]);
+    }
+    if (!points.length) points.push([matrix.elements[12], matrix.elements[14]]);
+    return rugSupport(piece.level, points); // the original 2cm headboard/wall slack is preserved
+  }
+  // Used for actual rug moves; a height-changing material can use the same before/after boundary.
+  snapshotRugSupport() {
+    this.scene.updateMatrixWorld(true);
+    const pieces = new Map(), supported = new Set();
+    for (const p of this.pieces) {
+      if (p.picture || p.item.type === 'rug' || !shown(p.object)) continue;
+      const lift = this.rugFor(p), floor = LEVELS[p.level].floor;
+      if (Math.abs(p.object.matrixWorld.elements[13] - floor - p.floorRest - lift) < REARRANGE.supportGap) pieces.set(p, lift);
+      for (const h of this.looseOn(p)) supported.add(h);
+    }
+    const loose = [];
+    for (const h of this.carryables()) {
+      if (!h.model || h.held || h.broken || !shown(h.model) || supported.has(h) || (h.item && h.item.place.at !== 'world')) continue;
+      const b = physicalBounds(h.model), at = h.model.getWorldPosition(new V());
+      const level = LEVELS.findIndex(l => b.min.y >= l.floor - REARRANGE.supportGap && b.min.y < l.floor + REARRANGE.supportGap);
+      if (level < 0) continue;
+      const lift = rugLift(level, at.x, at.z);
+      loose.push({ h, level, lift, rest: at.y - b.min.y, gap: h.placed || h.item ? 0.001 : Math.max(0, b.min.y - LEVELS[level].floor - lift) });
+    }
+    return { pieces, loose };
+  }
+  placePiece(p, matrix) {
+    const delta = matrix.clone().multiply(p.object.matrixWorld.clone().invert());
+    const rest = p.object.userData.interact;
+    for (const spot of rest?.spots ?? []) { spot.pos.applyMatrix4(delta); spot.aimPos?.applyMatrix4(delta); spot.yaw += new THREE.Euler().setFromRotationMatrix(delta, 'YXZ').y; }
+    this.marks.invalidate(p.object);
+    for (const spec of this.world.lamps) if (within(spec.object, p.object)) {
+      for (const lamp of spec.lamp?.room.lamps ?? []) { lamp.pos.applyMatrix4(delta); delete lamp.roomName; }
+    }
+    worldPose(p.object, matrix);
+    return { p, matrix, delta };
+  }
+  reconcileRugSupport(snapshot, moved = new Set()) {
+    if (!snapshot) return [];
+    const changes = [], handled = new Set(), carried = new Set();
+    for (const p of moved) if (!p.picture && p.item.type !== 'rug' && !snapshot.pieces.has(p)) snapshot.pieces.set(p, 0);
+    const candidates = [...snapshot.pieces].sort(([a], [b]) => a.object.matrixWorld.elements[13] - b.object.matrixWorld.elements[13]);
+    for (const [p, oldLift] of candidates) {
+      if (handled.has(p) || !shown(p.object)) continue;
+      const lift = this.rugFor(p), y = p.object.matrixWorld.elements[13], floor = LEVELS[p.level].floor;
+      if (Math.abs(y - floor - p.floorRest - lift) > REARRANGE.supportGap + Math.max(lift, oldLift)) continue; // now on a table, not the floor
+      if (!moved.has(p) && Math.abs(lift - oldLift) < 1e-7) continue;
+      const dy = floor + p.floorRest + lift - y;
+      if (Math.abs(dy) < 1e-7) continue;
+      const group = this.groupFor(p).filter(piece => piece.item.type !== 'rug' && !piece.picture), delta = new M().makeTranslation(0, dy, 0);
+      const loose = [...new Set(group.flatMap(piece => this.looseOn(piece)))];
+      const surfaces = [];
+      for (const piece of group) {
+        let matrix = delta.clone().multiply(piece.object.matrixWorld);
+        if (piece !== p) {
+          const support = this.closestSupport(piece.object, surfaces);
+          if (support) { matrix = piece.object.matrixWorld.clone(); matrix.elements[13] = support.max.y + piece.floorRest; }
+        }
+        changes.push(this.placePiece(piece, matrix)); handled.add(piece);
+        surfaces.push(...this.supports(piece));
+      }
+      for (const h of loose) if (!carried.has(h)) {
+        const support = this.closestSupport(h.model, surfaces);
+        if (support) {
+          const b = physicalBounds(h.model), gap = h.placed || h.item ? 0.001 : Math.max(0, b.min.y - support.max.y - dy);
+          this.carry(h, new M().makeTranslation(0, support.max.y + gap - b.min.y, 0));
+        } else this.carry(h, delta);
+        carried.add(h);
+      }
+    }
+    for (const { h, level, lift: oldLift, rest, gap } of snapshot.loose) {
+      if (carried.has(h) || h.held || !shown(h.model)) continue;
+      const at = h.model.getWorldPosition(new V()), lift = rugLift(level, at.x, at.z);
+      if (Math.abs(lift - oldLift) < 1e-7) continue;
+      const dy = LEVELS[level].floor + lift + rest + gap - at.y;
+      if (Math.abs(dy) > 1e-7) this.carry(h, new M().makeTranslation(0, dy, 0));
+    }
+    return changes;
+  }
   apply(state) {
     state = migrateVeronaLayout(migratePosterLayout(state));
     if (!state || !Number.isInteger(state.revision) || !state.pieces || typeof state.pieces !== 'object') return;
@@ -311,6 +410,8 @@ export class Rearrange {
     // things on it along); the layer re-judges the overlap afterwards
     const fresh = (p) => Number.isInteger(state.pieces[p.id]?.revision) && state.pieces[p.id].revision > p.revision;
     const revealed = !!this.overlay && this.pieces.some(fresh) && this.overlay.reveal();
+    const materialChanged = this.pieces.some(p => (p.object.userData.materialSurfaces ?? []).some(s => s.choice !== (state.materials?.[p.id]?.[s.id]?.choice ?? 'original')));
+    const support = this.pieces.some(fresh) || materialChanged ? this.snapshotRugSupport() : null;
     const changes = [];
     for (const p of this.pieces) {
       const next = state.pieces[p.id];
@@ -321,13 +422,7 @@ export class Rearrange {
     const carried = new Set();
     for (const { p, next, matrix, delta, loose } of changes) {
       for (const h of loose) if (!carried.has(h)) { this.carry(h, delta); carried.add(h); }
-      const rest = p.object.userData.interact;
-      for (const spot of rest?.spots ?? []) { spot.pos.applyMatrix4(delta); spot.aimPos?.applyMatrix4(delta); spot.yaw += new THREE.Euler().setFromRotationMatrix(delta, 'YXZ').y; }
-      this.marks.invalidate(p.object);
-      for (const spec of this.world.lamps) if (within(spec.object, p.object)) {
-        for (const lamp of spec.lamp?.room.lamps ?? []) { lamp.pos.applyMatrix4(delta); delete lamp.roomName; }
-      }
-      worldPose(p.object, matrix); p.revision = next.revision;
+      this.placePiece(p, matrix); p.revision = next.revision;
       if (crossesLevels(p)) {
         const level = levelAt(next.pos[1]);
         if (level >= 0) { p.level = level; p.object.userData.level = level; }
@@ -350,6 +445,7 @@ export class Rearrange {
     for (const p of this.materialPieces) for (const surface of p.object.userData.materialSurfaces ?? []) {
       surface.apply(state.materials?.[p.id]?.[surface.id]?.choice ?? 'original');
     }
+    changes.push(...this.reconcileRugSupport(support, new Set(changes.map(c => c.p))));
     this.state = state;
     try { localStorage.setItem(CACHE, JSON.stringify(state)); } catch {}
     if (this.overlay && (revealed || changes.length)) this.overlay.recompute(); // (+ refresh)

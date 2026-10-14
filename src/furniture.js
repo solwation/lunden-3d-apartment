@@ -3862,6 +3862,7 @@ export function buildFurniture() {
     const c = Math.cos(yaw), s = Math.sin(yaw);
     const toWorld = (lx, lz) => [item.x + c * lx + s * lz, item.z - s * lx + c * lz];
     const lift = rugLiftFor(item, obj, toWorld); // standing on a rug: on top of it, not in the pile (#317)
+    obj.userData.floorRugLift = lift; // #1008: retain the original floor anchor when a rug later moves
     const floor = LEVELS[item.level].floor + lift;
     obj.position.set(item.x, floor + obj.position.y, item.z);
     for (const r of obj.userData.surfaces ?? []) { // tables a cup can stand on (#90)
