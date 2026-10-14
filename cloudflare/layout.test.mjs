@@ -187,3 +187,21 @@ test('fixed curtain surfaces share material patches without fictitious poses or 
  const legacy=await r.fetch(request([move(M.RUG_MATERIAL_IDS[0])],codes[0],'997-legacy'));assert.equal(legacy.status,200);
  assert.equal((await get()).materials[M.CURTAIN_MATERIAL_IDS[1]].textile.choice,'curtain-stripe');
 });
+
+
+test('six real upholstered seats accept only their family and preserve legacy poses/materials', async () => {
+ const M=await import('../src/materialcatalog.js');const {instance:r}=room();let count=0;
+ const put=b=>r.fetch(new Request('https://test/furniture',{method:'PUT',headers:{'CF-Connecting-IP':`1010-${++count}`},body:JSON.stringify({credential:privateCodeCredential(codes[0]),...b})}));
+ const get=async()=>await(await r.fetch(new Request('https://test/furniture'))).json();
+ assert.equal(M.UPHOLSTERY_MATERIAL_IDS.length,6);assert.equal(new Set(M.UPHOLSTERY_MATERIAL_IDS).size,6);
+ for(const id of M.UPHOLSTERY_MATERIAL_IDS){assert.equal((await put({materials:[{id,surface:'textile',choice:'upholstery-stripe',base:0}]})).status,200);}
+ const before=await get();assert.equal(before.materialVersion,1);assert.deepEqual(before.pieces,{});
+ for(const [id,choice] of [[M.UPHOLSTERY_MATERIAL_IDS[0],'rug-bluegrey'],[M.RUG_MATERIAL_IDS[0],'upholstery-bluegrey'],[M.CURTAIN_MATERIAL_IDS[0],'upholstery-check'],['f-sofa-guessed','upholstery-sand']])assert.equal((await put({materials:[{id,surface:'textile',choice,base:0}]})).status,400);
+ assert.deepEqual(await get(),before);
+ const id=M.UPHOLSTERY_MATERIAL_IDS[0],base=before.materials[id].textile.revision;
+ assert.equal((await put({moves:[move(id)]})).status,200);assert.equal((await get()).materials[id].textile.choice,'upholstery-stripe');
+ assert.equal((await put({materials:[{id,surface:'textile',choice:'original',base:0}]})).status,409);
+ assert.equal((await put({materials:[{id,surface:'textile',choice:'original',base}]})).status,200);
+ const after=await get();assert.deepEqual(after.pieces[id].pos,move(id).pos);assert.equal(after.materials[id].textile.choice,'original');
+ assert.equal(after.materials[M.UPHOLSTERY_MATERIAL_IDS[1]].textile.choice,'upholstery-stripe');
+});
