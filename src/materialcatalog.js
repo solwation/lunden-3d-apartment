@@ -76,6 +76,12 @@ export const PATIO_TEXTILE_SURFACES = Object.fromEntries(FURNITURE.flatMap(it =>
     : it.type === 'dynbox' && !it.inside && !it.decorative ? 'throw-folded' : null;
   return surface ? [[`${base}-${n}-0`, [surface]]] : [];
 }));
+// #1027: the six actual speaker cloth fronts/bases, never glass, shells or controls.
+const speakerSerials = new Map();
+export const SPEAKER_MATERIAL_IDS = FURNITURE.flatMap(it => {
+  const base = `f-${it.type}-${it.level}-${it.x}-${it.z}`, n = speakerSerials.get(base) ?? 0; speakerSerials.set(base, n + 1);
+  return ['symfonisk', 'nestmini', 'nesthub'].includes(it.type) ? [`${base}-${n}-0`] : [];
+});
 export const materialChoices = (category = 'matta', id) => category === 'klädsel' ? UPHOLSTERY_MATERIAL_CHOICES : category === 'gardin' ? CURTAIN_MATERIAL_CHOICES : category === 'matta' ? MATERIAL_CHOICES.filter(c => c.id !== 'rug-longpile-bluegrey' || LONG_PILE_MATERIAL_IDS.includes(id)) : [];
 const serials = new Map();
 export const RUG_MATERIAL_IDS = FURNITURE.flatMap(it => {
@@ -84,6 +90,6 @@ export const RUG_MATERIAL_IDS = FURNITURE.flatMap(it => {
 });
 export const LONG_PILE_MATERIAL_IDS = RUG_MATERIAL_IDS.filter(id => FURNITURE.some(it => it.materialFamily === 'living-room' && id.startsWith(`f-${it.type}-${it.level}-${it.x}-${it.z}-`)));
 export const materialChoice = id => [...MATERIAL_CHOICES, ...CURTAIN_MATERIAL_CHOICES, ...UPHOLSTERY_MATERIAL_CHOICES].find(c => c.id === id);
-export const validMaterialChoice = (id, surface, choice) => ((Object.hasOwn(DAYBED_LINEN_SURFACES, id) && DAYBED_LINEN_SURFACES[id].includes(surface)) || (Object.hasOwn(BUNK_LINEN_SURFACES, id) && BUNK_LINEN_SURFACES[id].includes(surface)) || (Object.hasOwn(DOUBLE_BED_LINEN_SURFACES, id) && DOUBLE_BED_LINEN_SURFACES[id].includes(surface)) || (Object.hasOwn(CUSHION_MATERIAL_SURFACES, id) && CUSHION_MATERIAL_SURFACES[id].includes(surface)) || (Object.hasOwn(PATIO_TEXTILE_SURFACES, id) && PATIO_TEXTILE_SURFACES[id].includes(surface)))
+export const validMaterialChoice = (id, surface, choice) => ((surface === 'speaker-fabric' && SPEAKER_MATERIAL_IDS.includes(id)) || (Object.hasOwn(DAYBED_LINEN_SURFACES, id) && DAYBED_LINEN_SURFACES[id].includes(surface)) || (Object.hasOwn(BUNK_LINEN_SURFACES, id) && BUNK_LINEN_SURFACES[id].includes(surface)) || (Object.hasOwn(DOUBLE_BED_LINEN_SURFACES, id) && DOUBLE_BED_LINEN_SURFACES[id].includes(surface)) || (Object.hasOwn(CUSHION_MATERIAL_SURFACES, id) && CUSHION_MATERIAL_SURFACES[id].includes(surface)) || (Object.hasOwn(PATIO_TEXTILE_SURFACES, id) && PATIO_TEXTILE_SURFACES[id].includes(surface)))
   ? UPHOLSTERY_MATERIAL_CHOICES.some(c => c.id === choice) : surface === 'textile' && (choice !== 'rug-longpile-bluegrey' || LONG_PILE_MATERIAL_IDS.includes(id)) &&
   ((UPHOLSTERY_MATERIAL_IDS.includes(id) || BED_UPHOLSTERY_MATERIAL_IDS.includes(id) || VERONA_UPHOLSTERY_MATERIAL_IDS.includes(id)) ? UPHOLSTERY_MATERIAL_CHOICES : RUG_MATERIAL_IDS.includes(id) ? MATERIAL_CHOICES : CURTAIN_MATERIAL_IDS.includes(id) ? CURTAIN_MATERIAL_CHOICES : []).some(c => c.id === choice);
