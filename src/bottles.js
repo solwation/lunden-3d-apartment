@@ -14,6 +14,7 @@ export const WHISKIES = [
     sbUrl: 'https://www.systembolaget.se/produkt/sprit/tullamore-dew-50501/',
     shape: 'square',
     glassColor: 0x36210f,
+    liquidColor: 0xd08422,
     roughness: 0.12,
     capColor: 0x1a3824,
     corkColor: 0x8b5a2b,
@@ -26,6 +27,7 @@ export const WHISKIES = [
     sbUrl: 'https://www.systembolaget.se/produkt/sprit/lagavulin-40001/',
     shape: 'islay',
     glassColor: 0x142214,
+    liquidColor: 0xc4781c,
     roughness: 0.15,
     capColor: 0x1a1a1a,
     labelStyle: 'lagavulin'
@@ -37,6 +39,7 @@ export const WHISKIES = [
     sbUrl: 'https://www.systembolaget.se/produkt/sprit/the-macallan-49602/',
     shape: 'conical',
     glassColor: 0x472b12,
+    liquidColor: 0xb86214,
     roughness: 0.1,
     capColor: 0x1b3c68,
     labelStyle: 'macallan'
@@ -48,6 +51,7 @@ export const WHISKIES = [
     sbUrl: 'https://www.systembolaget.se/produkt/sprit/glenfiddich-8356901/',
     shape: 'triangular',
     glassColor: 0x3d220d,
+    liquidColor: 0xd68e28,
     roughness: 0.14,
     capColor: 0x7c542b,
     labelStyle: 'glenfiddich'
@@ -59,6 +63,7 @@ export const WHISKIES = [
     sbUrl: 'https://www.systembolaget.se/produkt/sprit/ardbeg-1040701/',
     shape: 'ardbeg',
     glassColor: 0x0f180f,
+    liquidColor: 0xcca038,
     roughness: 0.16,
     capColor: 0x141414,
     labelStyle: 'ardbeg'
@@ -70,6 +75,7 @@ export const WHISKIES = [
     sbUrl: 'https://www.systembolaget.se/produkt/sprit/the-balvenie-1047701/',
     shape: 'balvenie',
     glassColor: 0x3c2410,
+    liquidColor: 0xd28a24,
     roughness: 0.13,
     capColor: 0x4a321e,
     labelStyle: 'balvenie'
@@ -85,6 +91,7 @@ export const WINES = [
     sbUrl: 'https://www.systembolaget.se/produkt/vin/tignanello-3215201/',
     shape: 'bordeaux',
     glassColor: 0x101a11,
+    liquidColor: 0x3a050e,
     capColor: 0x5a181d,
     labelStyle: 'tignanello'
   },
@@ -96,6 +103,7 @@ export const WINES = [
     sbUrl: 'https://www.systembolaget.se/produkt/vin/dom-perignon-9471906/',
     shape: 'champagne_dom',
     glassColor: 0x0d140d,
+    liquidColor: 0xd8b456,
     capColor: 0x181818,
     foilGold: true,
     labelStyle: 'domperignon'
@@ -108,6 +116,7 @@ export const WINES = [
     sbUrl: 'https://www.systembolaget.se/produkt/vin/sassicaia-9532601/',
     shape: 'bordeaux',
     glassColor: 0x111c12,
+    liquidColor: 0x3a050e,
     capColor: 0x1c355e,
     labelStyle: 'sassicaia'
   },
@@ -119,6 +128,7 @@ export const WINES = [
     sbUrl: 'https://www.systembolaget.se/produkt/vin/barolo-ornato-9415401/',
     shape: 'piemonte',
     glassColor: 0x121d12,
+    liquidColor: 0x3a050e,
     capColor: 0x6e1b24,
     labelStyle: 'barolo'
   },
@@ -130,6 +140,7 @@ export const WINES = [
     sbUrl: 'https://www.systembolaget.se/produkt/vin/penfolds-9298801/',
     shape: 'bordeaux',
     glassColor: 0x0f1910,
+    liquidColor: 0x38040d,
     capColor: 0x8b1c26,
     labelStyle: 'penfolds'
   },
@@ -141,6 +152,7 @@ export const WINES = [
     sbUrl: 'https://www.systembolaget.se/produkt/vin/krug-grande-cuvee-749401/',
     shape: 'champagne_krug',
     glassColor: 0x0e150e,
+    liquidColor: 0xd8b456,
     capColor: 0xc89e36,
     foilGold: true,
     labelStyle: 'krug'
@@ -153,6 +165,7 @@ export const WINES = [
     sbUrl: 'https://www.systembolaget.se/produkt/vin/costasera-234501/',
     shape: 'bordeaux',
     glassColor: 0x101a11,
+    liquidColor: 0x3a050e,
     capColor: 0x1b1b1b,
     labelStyle: 'amarone'
   },
@@ -164,6 +177,7 @@ export const WINES = [
     sbUrl: 'https://www.systembolaget.se/produkt/vin/chateauneuf-du-pape-281101/',
     shape: 'rhone',
     glassColor: 0x121e13,
+    liquidColor: 0x3a050e,
     capColor: 0x5c1620,
     labelStyle: 'chateauneuf'
   }
@@ -728,6 +742,114 @@ export function getLabelTexture(style) {
   return texture;
 }
 
+/** Construct rounded rectangular lofted geometry for Tullamore D.E.W. */
+function buildTullamoreGeometry(isLiquid = false) {
+  const w = 0.076 * (isLiquid ? 0.93 : 1.0);
+  const d = 0.054 * (isLiquid ? 0.93 : 1.0);
+  const cr = 0.012 * (isLiquid ? 0.93 : 1.0);
+  const segments = 32;
+  const hw = w / 2 - cr, hd = d / 2 - cr;
+  const segPerCorner = segments / 4;
+  const corners = [
+    { cx: hw, cz: hd, a0: 0 },
+    { cx: -hw, cz: hd, a0: Math.PI / 2 },
+    { cx: -hw, cz: -hd, a0: Math.PI },
+    { cx: hw, cz: -hd, a0: 3 * Math.PI / 2 }
+  ];
+  const baseRing = [];
+  for (const c of corners) {
+    for (let i = 0; i < segPerCorner; i++) {
+      const a = c.a0 + (i / segPerCorner) * (Math.PI / 2);
+      baseRing.push([c.cx + cr * Math.cos(a), c.cz + cr * Math.sin(a)]);
+    }
+  }
+
+  const slices = isLiquid ? [
+    { y: 0.006, scale: 0.95, t: 0, r: 0 },
+    { y: 0.030, scale: 1.00, t: 0, r: 0 },
+    { y: 0.080, scale: 1.00, t: 0, r: 0 },
+    { y: 0.140, scale: 1.00, t: 0, r: 0 },
+    { y: 0.155, scale: 0.96, t: 0.15, r: 0.013 },
+    { y: 0.165, scale: 0.88, t: 0.40, r: 0.013 },
+    { y: 0.170, scale: 0.00, t: 0.00, r: 0 }
+  ] : [
+    { y: 0.000, scale: 0.94, t: 0, r: 0 },
+    { y: 0.004, scale: 1.00, t: 0, r: 0 },
+    { y: 0.030, scale: 1.00, t: 0, r: 0 },
+    { y: 0.080, scale: 1.00, t: 0, r: 0 },
+    { y: 0.120, scale: 1.00, t: 0, r: 0 },
+    { y: 0.150, scale: 1.00, t: 0, r: 0 },
+    { y: 0.158, scale: 0.95, t: 0.18, r: 0.0145 },
+    { y: 0.168, scale: 0.85, t: 0.45, r: 0.0145 },
+    { y: 0.178, scale: 0.65, t: 0.75, r: 0.0145 },
+    { y: 0.188, scale: 0.00, t: 1.00, r: 0.0145 },
+    { y: 0.205, scale: 0.00, t: 1.00, r: 0.0140 },
+    { y: 0.225, scale: 0.00, t: 1.00, r: 0.0140 },
+    { y: 0.238, scale: 0.00, t: 1.00, r: 0.0155 },
+    { y: 0.244, scale: 0.00, t: 1.00, r: 0.0142 },
+    { y: 0.249, scale: 0.00, t: 1.00, r: 0.0150 },
+    { y: 0.250, scale: 0.00, t: 1.00, r: 0.0115 }
+  ];
+
+  const positions = [];
+  const uvs = [];
+  const indices = [];
+
+  positions.push(0, isLiquid ? 0.006 : 0.008, 0);
+  uvs.push(0.5, 0.5);
+
+  const numSlices = isLiquid ? slices.length - 1 : slices.length;
+  for (let s = 0; s < numSlices; s++) {
+    const sl = slices[s];
+    const y = sl.y;
+    for (let i = 0; i < segments; i++) {
+      const bp = baseRing[i];
+      const ang = Math.atan2(bp[1], bp[0]);
+      const circX = sl.r * Math.cos(ang);
+      const circZ = sl.r * Math.sin(ang);
+      const rectX = bp[0] * sl.scale;
+      const rectZ = bp[1] * sl.scale;
+      const x = (1 - sl.t) * rectX + sl.t * circX;
+      const z = (1 - sl.t) * rectZ + sl.t * circZ;
+      positions.push(x, y, z);
+      uvs.push(i / segments, y / 0.25);
+    }
+  }
+
+  for (let i = 0; i < segments; i++) {
+    const next = (i + 1) % segments;
+    indices.push(0, 1 + next, 1 + i);
+  }
+
+  for (let s = 0; s < numSlices - 1; s++) {
+    const r0 = 1 + s * segments;
+    const r1 = 1 + (s + 1) * segments;
+    for (let i = 0; i < segments; i++) {
+      const next = (i + 1) % segments;
+      indices.push(r0 + i, r0 + next, r1 + next);
+      indices.push(r0 + i, r1 + next, r1 + i);
+    }
+  }
+
+  if (isLiquid) {
+    const topIdx = positions.length / 3;
+    positions.push(0, 0.170, 0);
+    uvs.push(0.5, 0.5);
+    const lastRow = 1 + (numSlices - 1) * segments;
+    for (let i = 0; i < segments; i++) {
+      const next = (i + 1) % segments;
+      indices.push(topIdx, lastRow + i, lastRow + next);
+    }
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  geo.setIndex(indices);
+  geo.computeVertexNormals();
+  return geo;
+}
+
 /** Construct a 3D bottle mesh group for a specific whisky product. */
 export function buildWhiskyBottle(itemIndex) {
   const spec = WHISKIES[itemIndex % WHISKIES.length];
@@ -736,14 +858,23 @@ export function buildWhiskyBottle(itemIndex) {
 
   const glassMat = new THREE.MeshStandardMaterial({
     color: spec.glassColor,
-    roughness: spec.roughness,
-    metalness: 0.15
+    roughness: spec.roughness ?? 0.08,
+    metalness: 0.12,
+    transparent: true,
+    opacity: 0.90,
+    depthWrite: true
+  });
+
+  const liquidMat = new THREE.MeshStandardMaterial({
+    color: spec.liquidColor ?? 0xd68524,
+    roughness: 0.15,
+    metalness: 0.05
   });
 
   const capMat = new THREE.MeshStandardMaterial({
     color: spec.capColor,
-    roughness: 0.4,
-    metalness: 0.3
+    roughness: 0.35,
+    metalness: 0.45
   });
 
   const corkMat = new THREE.MeshStandardMaterial({
@@ -754,139 +885,179 @@ export function buildWhiskyBottle(itemIndex) {
   const labelTex = getLabelTexture(spec.labelStyle);
   const labelMat = new THREE.MeshStandardMaterial({
     map: labelTex,
-    roughness: 0.7,
+    roughness: 0.65,
+    polygonOffset: true,
+    polygonOffsetFactor: -1,
+    polygonOffsetUnits: -1,
     side: THREE.DoubleSide
   });
 
   if (spec.shape === 'square') {
-    // Tullamore D.E.W.: rectangular rounded profile
-    const bodyW = 0.076, bodyD = 0.054, bodyH = 0.155;
-    const body = new THREE.Mesh(new THREE.BoxGeometry(bodyW, bodyH, bodyD), glassMat);
-    body.position.set(0, bodyH / 2, 0);
+    // Tullamore D.E.W.: smooth lofted rectangular-to-round profile with punt and collar
+    const bodyD = 0.054;
+    const body = new THREE.Mesh(buildTullamoreGeometry(false), glassMat);
     bg.add(body);
 
-    const shoulderH = 0.035;
-    const shoulder = new THREE.Mesh(new THREE.CylinderGeometry(0.015, bodyD / 2, shoulderH, 16), glassMat);
-    shoulder.position.set(0, bodyH + shoulderH / 2, 0);
-    bg.add(shoulder);
+    const liquid = new THREE.Mesh(buildTullamoreGeometry(true), liquidMat);
+    bg.add(liquid);
 
-    const neckH = 0.06;
-    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.0135, 0.0145, neckH, 16), glassMat);
-    neck.position.set(0, bodyH + shoulderH + neckH / 2, 0);
-    bg.add(neck);
-
-    // Green collar + wood cap
-    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.024, 16), capMat);
-    cap.position.set(0, bodyH + shoulderH + neckH - 0.005, 0);
+    // Green collar + wood cork cap
+    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.0152, 0.0152, 0.024, 20), capMat);
+    cap.position.set(0, 0.238, 0);
     bg.add(cap);
 
-    const cork = new THREE.Mesh(new THREE.CylinderGeometry(0.0165, 0.0165, 0.012, 16), corkMat);
-    cork.position.set(0, bodyH + shoulderH + neckH + 0.009, 0);
+    const cork = new THREE.Mesh(new THREE.CylinderGeometry(0.0165, 0.0165, 0.012, 20), corkMat);
+    cork.position.set(0, 0.255, 0);
     bg.add(cork);
 
     // Front label
     const label = new THREE.Mesh(new THREE.PlaneGeometry(0.058, 0.075), labelMat);
-    label.position.set(0, 0.082, bodyD / 2 + 0.0006);
+    label.position.set(0, 0.082, bodyD / 2 + 0.0004);
     bg.add(label);
 
   } else if (spec.shape === 'triangular') {
-    // Glenfiddich: rounded triangular profile
+    // Glenfiddich: rounded tricorn profile with punt, smooth shoulder, collar and lip
     const profile = [
-      [0, 0], [0.038, 0], [0.041, 0.16], [0.033, 0.19],
-      [0.014, 0.22], [0.013, 0.27], [0.015, 0.275]
+      [0, 0.010], [0.015, 0.005], [0.033, 0.000], [0.038, 0.004],
+      [0.041, 0.155], [0.0395, 0.172], [0.0350, 0.188], [0.0280, 0.204],
+      [0.0190, 0.220], [0.0145, 0.235], [0.0135, 0.258], [0.0160, 0.268],
+      [0.0150, 0.275], [0.0115, 0.275]
     ].map(([r, y]) => new THREE.Vector2(r, y));
-    const body = new THREE.Mesh(new THREE.LatheGeometry(profile, 18), glassMat);
-    // Subtle triangular scaling
+    const body = new THREE.Mesh(new THREE.LatheGeometry(profile, 24), glassMat);
     body.scale.set(1.08, 1, 0.92);
     bg.add(body);
 
-    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.0155, 0.0155, 0.025, 16), capMat);
+    const liquidProfile = [
+      [0, 0.008], [0.030, 0.004], [0.036, 0.006], [0.037, 0.155],
+      [0.032, 0.185], [0.022, 0.205], [0, 0.205]
+    ].map(([r, y]) => new THREE.Vector2(r, y));
+    const liquid = new THREE.Mesh(new THREE.LatheGeometry(liquidProfile, 20), liquidMat);
+    liquid.scale.set(1.07, 1, 0.93);
+    bg.add(liquid);
+
+    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.0155, 0.0160, 0.025, 20), capMat);
     cap.position.set(0, 0.275, 0);
     bg.add(cap);
 
     const label = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.0405, 0.0405, 0.075, 16, 1, true, -Math.PI / 3, (2 * Math.PI) / 3),
+      new THREE.CylinderGeometry(0.0412, 0.0412, 0.075, 32, 1, true, -Math.PI / 3, (2 * Math.PI) / 3),
       labelMat
     );
     label.position.set(0, 0.09, 0);
     bg.add(label);
 
   } else if (spec.shape === 'conical') {
-    // The Macallan: elegant wide-shouldered tapered profile
+    // The Macallan: elegant wide-shouldered tapered profile, punt, collar and lip
     const profile = [
-      [0, 0], [0.035, 0], [0.042, 0.17], [0.036, 0.20],
-      [0.014, 0.23], [0.0135, 0.285], [0.0155, 0.29]
+      [0, 0.010], [0.015, 0.005], [0.028, 0.000], [0.035, 0.004],
+      [0.042, 0.165], [0.0415, 0.180], [0.0385, 0.195], [0.0325, 0.210],
+      [0.0235, 0.225], [0.0160, 0.240], [0.0135, 0.255], [0.0135, 0.275],
+      [0.0160, 0.283], [0.0155, 0.290], [0.0115, 0.290]
     ].map(([r, y]) => new THREE.Vector2(r, y));
-    const body = new THREE.Mesh(new THREE.LatheGeometry(profile, 18), glassMat);
+    const body = new THREE.Mesh(new THREE.LatheGeometry(profile, 24), glassMat);
     bg.add(body);
 
+    const liquidProfile = [
+      [0, 0.008], [0.030, 0.004], [0.038, 0.165], [0.035, 0.190],
+      [0.025, 0.215], [0, 0.215]
+    ].map(([r, y]) => new THREE.Vector2(r, y));
+    const liquid = new THREE.Mesh(new THREE.LatheGeometry(liquidProfile, 20), liquidMat);
+    bg.add(liquid);
+
     // Blue foil neck sleeve
-    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.045, 16), capMat);
+    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.0145, 0.0165, 0.045, 20), capMat);
     cap.position.set(0, 0.275, 0);
     bg.add(cap);
 
     const label = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.041, 0.039, 0.082, 16, 1, true, -Math.PI / 3.2, (2 * Math.PI) / 3.2),
+      new THREE.CylinderGeometry(0.0402, 0.0378, 0.082, 32, 1, true, -Math.PI / 3.2, (2 * Math.PI) / 3.2),
       labelMat
     );
     label.position.set(0, 0.098, 0);
     bg.add(label);
 
   } else if (spec.shape === 'islay') {
-    // Lagavulin: sturdy wide cylinder with neck bulge
+    // Lagavulin: sturdy wide cylinder with punt, neck bulge and collar finish
     const profile = [
-      [0, 0], [0.042, 0], [0.0425, 0.145], [0.036, 0.18],
-      [0.016, 0.20], [0.014, 0.245], [0.0165, 0.26], [0.015, 0.27]
+      [0, 0.010], [0.015, 0.005], [0.035, 0.000], [0.042, 0.004],
+      [0.0425, 0.145], [0.0415, 0.160], [0.0385, 0.175], [0.0330, 0.188],
+      [0.0240, 0.200], [0.0175, 0.210], [0.0155, 0.225], [0.0165, 0.245],
+      [0.0150, 0.258], [0.0170, 0.264], [0.0160, 0.270], [0.0120, 0.270]
     ].map(([r, y]) => new THREE.Vector2(r, y));
-    const body = new THREE.Mesh(new THREE.LatheGeometry(profile, 18), glassMat);
+    const body = new THREE.Mesh(new THREE.LatheGeometry(profile, 24), glassMat);
     bg.add(body);
 
-    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.016, 0.024, 16), capMat);
+    const liquidProfile = [
+      [0, 0.008], [0.034, 0.004], [0.039, 0.145], [0.033, 0.175],
+      [0.020, 0.200], [0, 0.200]
+    ].map(([r, y]) => new THREE.Vector2(r, y));
+    const liquid = new THREE.Mesh(new THREE.LatheGeometry(liquidProfile, 20), liquidMat);
+    bg.add(liquid);
+
+    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.0162, 0.0162, 0.024, 20), capMat);
     cap.position.set(0, 0.268, 0);
     bg.add(cap);
 
     const label = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.043, 0.043, 0.076, 16, 1, true, -Math.PI / 3, (2 * Math.PI) / 3),
+      new THREE.CylinderGeometry(0.0428, 0.0428, 0.076, 32, 1, true, -Math.PI / 3, (2 * Math.PI) / 3),
       labelMat
     );
     label.position.set(0, 0.082, 0);
     bg.add(label);
 
   } else if (spec.shape === 'ardbeg') {
-    // Ardbeg: dark olive cylinder with pronounced collar
+    // Ardbeg: dark olive cylinder with punt, soft shoulder and pronounced collar
     const profile = [
-      [0, 0], [0.039, 0], [0.0395, 0.155], [0.033, 0.185],
-      [0.016, 0.205], [0.014, 0.25], [0.0175, 0.262], [0.015, 0.272]
+      [0, 0.010], [0.015, 0.005], [0.032, 0.000], [0.039, 0.004],
+      [0.0395, 0.150], [0.0385, 0.165], [0.0350, 0.180], [0.0280, 0.195],
+      [0.0195, 0.210], [0.0155, 0.225], [0.0145, 0.245], [0.0175, 0.258],
+      [0.0175, 0.264], [0.0160, 0.272], [0.0120, 0.272]
     ].map(([r, y]) => new THREE.Vector2(r, y));
-    const body = new THREE.Mesh(new THREE.LatheGeometry(profile, 18), glassMat);
+    const body = new THREE.Mesh(new THREE.LatheGeometry(profile, 24), glassMat);
     bg.add(body);
 
-    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.0155, 0.0155, 0.026, 16), capMat);
+    const liquidProfile = [
+      [0, 0.008], [0.032, 0.004], [0.036, 0.150], [0.031, 0.180],
+      [0.018, 0.205], [0, 0.205]
+    ].map(([r, y]) => new THREE.Vector2(r, y));
+    const liquid = new THREE.Mesh(new THREE.LatheGeometry(liquidProfile, 20), liquidMat);
+    bg.add(liquid);
+
+    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.0158, 0.0158, 0.026, 20), capMat);
     cap.position.set(0, 0.268, 0);
     bg.add(cap);
 
     const label = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.040, 0.040, 0.08, 16, 1, true, -Math.PI / 3, (2 * Math.PI) / 3),
+      new THREE.CylinderGeometry(0.0398, 0.0398, 0.08, 32, 1, true, -Math.PI / 3, (2 * Math.PI) / 3),
       labelMat
     );
     label.position.set(0, 0.088, 0);
     bg.add(label);
 
   } else {
-    // Balvenie: compact stout profile with soft curves
+    // Balvenie: compact stout profile with soft curves, punt and collar
     const profile = [
-      [0, 0], [0.041, 0], [0.0415, 0.14], [0.036, 0.175],
-      [0.016, 0.20], [0.014, 0.245], [0.016, 0.255]
+      [0, 0.010], [0.015, 0.005], [0.034, 0.000], [0.041, 0.004],
+      [0.0415, 0.135], [0.0405, 0.150], [0.0370, 0.168], [0.0300, 0.185],
+      [0.0210, 0.200], [0.0155, 0.215], [0.0142, 0.238], [0.0165, 0.248],
+      [0.0155, 0.255], [0.0118, 0.255]
     ].map(([r, y]) => new THREE.Vector2(r, y));
-    const body = new THREE.Mesh(new THREE.LatheGeometry(profile, 18), glassMat);
+    const body = new THREE.Mesh(new THREE.LatheGeometry(profile, 24), glassMat);
     bg.add(body);
 
-    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.016, 0.022, 16), capMat);
+    const liquidProfile = [
+      [0, 0.008], [0.033, 0.004], [0.038, 0.135], [0.032, 0.168],
+      [0.019, 0.195], [0, 0.195]
+    ].map(([r, y]) => new THREE.Vector2(r, y));
+    const liquid = new THREE.Mesh(new THREE.LatheGeometry(liquidProfile, 20), liquidMat);
+    bg.add(liquid);
+
+    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.0162, 0.0162, 0.022, 20), capMat);
     cap.position.set(0, 0.255, 0);
     bg.add(cap);
 
     const label = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.042, 0.042, 0.076, 16, 1, true, -Math.PI / 3, (2 * Math.PI) / 3),
+      new THREE.CylinderGeometry(0.0418, 0.0418, 0.076, 32, 1, true, -Math.PI / 3, (2 * Math.PI) / 3),
       labelMat
     );
     label.position.set(0, 0.082, 0);
@@ -911,14 +1082,23 @@ export function buildWineBottle(itemIndex) {
 
   const glassMat = new THREE.MeshStandardMaterial({
     color: spec.glassColor,
-    roughness: 0.14,
-    metalness: 0.2
+    roughness: spec.roughness ?? 0.08,
+    metalness: 0.12,
+    transparent: true,
+    opacity: 0.90,
+    depthWrite: true
+  });
+
+  const liquidMat = new THREE.MeshStandardMaterial({
+    color: spec.liquidColor ?? 0x3a050e,
+    roughness: 0.15,
+    metalness: 0.05
   });
 
   const capMat = new THREE.MeshStandardMaterial({
     color: spec.capColor,
-    roughness: spec.foilGold ? 0.3 : 0.45,
-    metalness: spec.foilGold ? 0.8 : 0.35
+    roughness: spec.foilGold ? 0.28 : 0.40,
+    metalness: spec.foilGold ? 0.85 : 0.40
   });
 
   const corkMat = new THREE.MeshStandardMaterial({
@@ -929,96 +1109,136 @@ export function buildWineBottle(itemIndex) {
   const labelTex = getLabelTexture(spec.labelStyle);
   const labelMat = new THREE.MeshStandardMaterial({
     map: labelTex,
-    roughness: 0.75,
+    roughness: 0.65,
+    polygonOffset: true,
+    polygonOffsetFactor: -1,
+    polygonOffsetUnits: -1,
     side: THREE.DoubleSide
   });
 
   if (spec.shape === 'champagne_dom') {
-    // Dom Pérignon: wide sloping champagne bottle
+    // Dom Pérignon: wide sloping champagne bottle with deep punt, smooth neck transition and foil
     const profile = [
-      [0, 0], [0.044, 0], [0.045, 0.12], [0.038, 0.19],
-      [0.018, 0.24], [0.015, 0.30], [0.0175, 0.31]
+      [0, 0.016], [0.018, 0.009], [0.036, 0.000], [0.044, 0.004],
+      [0.046, 0.100], [0.045, 0.130], [0.041, 0.165], [0.035, 0.195],
+      [0.027, 0.220], [0.020, 0.245], [0.016, 0.265], [0.015, 0.285],
+      [0.0175, 0.298], [0.0185, 0.306], [0.0145, 0.310], [0.0115, 0.310]
     ].map(([r, y]) => new THREE.Vector2(r, y));
-    const body = new THREE.Mesh(new THREE.LatheGeometry(profile, 18), glassMat);
+    const body = new THREE.Mesh(new THREE.LatheGeometry(profile, 24), glassMat);
     bg.add(body);
 
+    const liquidProfile = [
+      [0, 0.012], [0.034, 0.004], [0.042, 0.100], [0.038, 0.160],
+      [0.024, 0.215], [0, 0.215]
+    ].map(([r, y]) => new THREE.Vector2(r, y));
+    const liquid = new THREE.Mesh(new THREE.LatheGeometry(liquidProfile, 20), liquidMat);
+    bg.add(liquid);
+
     // Black/gold foil sleeve
-    const foil = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.021, 0.085, 16), capMat);
-    foil.position.set(0, 0.27, 0);
+    const foil = new THREE.Mesh(new THREE.CylinderGeometry(0.0158, 0.0215, 0.085, 20), capMat);
+    foil.position.set(0, 0.270, 0);
     bg.add(foil);
 
     // Dom Pérignon shield
     const label = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.0455, 0.044, 0.088, 16, 1, true, -Math.PI / 3.2, (2 * Math.PI) / 3.2),
+      new THREE.CylinderGeometry(0.0458, 0.0442, 0.088, 32, 1, true, -Math.PI / 3.2, (2 * Math.PI) / 3.2),
       labelMat
     );
     label.position.set(0, 0.11, 0);
     bg.add(label);
 
   } else if (spec.shape === 'champagne_krug') {
-    // Krug: high-shouldered champagne bottle
+    // Krug: high-shouldered champagne bottle with deep punt and gold foil
     const profile = [
-      [0, 0], [0.042, 0], [0.043, 0.14], [0.036, 0.20],
-      [0.017, 0.245], [0.015, 0.305], [0.017, 0.315]
+      [0, 0.018], [0.018, 0.010], [0.034, 0.000], [0.042, 0.004],
+      [0.043, 0.120], [0.042, 0.150], [0.038, 0.180], [0.031, 0.210],
+      [0.023, 0.235], [0.017, 0.258], [0.015, 0.280], [0.0175, 0.302],
+      [0.0180, 0.310], [0.0140, 0.315], [0.0115, 0.315]
     ].map(([r, y]) => new THREE.Vector2(r, y));
-    const body = new THREE.Mesh(new THREE.LatheGeometry(profile, 18), glassMat);
+    const body = new THREE.Mesh(new THREE.LatheGeometry(profile, 24), glassMat);
     bg.add(body);
 
-    const foil = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.020, 0.085, 16), capMat);
+    const liquidProfile = [
+      [0, 0.014], [0.033, 0.004], [0.039, 0.120], [0.034, 0.180],
+      [0.020, 0.230], [0, 0.230]
+    ].map(([r, y]) => new THREE.Vector2(r, y));
+    const liquid = new THREE.Mesh(new THREE.LatheGeometry(liquidProfile, 20), liquidMat);
+    bg.add(liquid);
+
+    const foil = new THREE.Mesh(new THREE.CylinderGeometry(0.0158, 0.0205, 0.085, 20), capMat);
     foil.position.set(0, 0.272, 0);
     bg.add(foil);
 
     const label = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.0435, 0.042, 0.084, 16, 1, true, -Math.PI / 3, (2 * Math.PI) / 3),
+      new THREE.CylinderGeometry(0.0434, 0.0422, 0.084, 32, 1, true, -Math.PI / 3, (2 * Math.PI) / 3),
       labelMat
     );
     label.position.set(0, 0.115, 0);
     bg.add(label);
 
   } else if (spec.shape === 'piemonte' || spec.shape === 'rhone') {
-    // Sloping shoulder profile (Burgundy/Rhône/Piedmont)
+    // Sloping shoulder profile (Burgundy/Rhône/Piedmont) with punt and collar
     const profile = [
-      [0, 0], [0.040, 0], [0.041, 0.14], [0.032, 0.21],
-      [0.015, 0.25], [0.0135, 0.31], [0.0155, 0.315]
+      [0, 0.012], [0.016, 0.007], [0.032, 0.000], [0.040, 0.004],
+      [0.041, 0.130], [0.039, 0.155], [0.035, 0.180], [0.029, 0.205],
+      [0.022, 0.230], [0.0165, 0.252], [0.0138, 0.270], [0.0135, 0.295],
+      [0.0152, 0.302], [0.0152, 0.310], [0.0145, 0.315], [0.0115, 0.315]
     ].map(([r, y]) => new THREE.Vector2(r, y));
-    const body = new THREE.Mesh(new THREE.LatheGeometry(profile, 18), glassMat);
+    const body = new THREE.Mesh(new THREE.LatheGeometry(profile, 24), glassMat);
     bg.add(body);
 
+    const liquidProfile = [
+      [0, 0.009], [0.032, 0.004], [0.037, 0.130], [0.032, 0.175],
+      [0.019, 0.225], [0, 0.225]
+    ].map(([r, y]) => new THREE.Vector2(r, y));
+    const liquid = new THREE.Mesh(new THREE.LatheGeometry(liquidProfile, 20), liquidMat);
+    bg.add(liquid);
+
     // Foil capsule
-    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.0145, 0.015, 0.045, 16), capMat);
+    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.0145, 0.0150, 0.045, 20), capMat);
     cap.position.set(0, 0.292, 0);
     bg.add(cap);
 
-    const cork = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.01, 10), corkMat);
+    const cork = new THREE.Mesh(new THREE.CylinderGeometry(0.0118, 0.0118, 0.01, 16), corkMat);
     cork.position.set(0, 0.318, 0);
     bg.add(cork);
 
     const label = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.0415, 0.0415, 0.085, 16, 1, true, -Math.PI / 3, (2 * Math.PI) / 3),
+      new THREE.CylinderGeometry(0.0414, 0.0414, 0.085, 32, 1, true, -Math.PI / 3, (2 * Math.PI) / 3),
       labelMat
     );
     label.position.set(0, 0.105, 0);
     bg.add(label);
 
   } else {
-    // Bordeaux profile: straight cylinder with high shoulder
+    // Bordeaux profile: straight cylinder with high graceful shoulder, punt and collar
     const profile = [
-      [0, 0], [0.0375, 0], [0.038, 0.19], [0.030, 0.23],
-      [0.014, 0.26], [0.0135, 0.315], [0.0155, 0.32]
+      [0, 0.012], [0.016, 0.007], [0.030, 0.000], [0.0375, 0.004],
+      [0.038, 0.180], [0.0375, 0.195], [0.0355, 0.210], [0.0315, 0.225],
+      [0.0250, 0.240], [0.0180, 0.252], [0.0145, 0.262], [0.0135, 0.272],
+      [0.0135, 0.295], [0.0155, 0.302], [0.0155, 0.312], [0.0140, 0.314],
+      [0.0150, 0.318], [0.0115, 0.320]
     ].map(([r, y]) => new THREE.Vector2(r, y));
-    const body = new THREE.Mesh(new THREE.LatheGeometry(profile, 18), glassMat);
+    const body = new THREE.Mesh(new THREE.LatheGeometry(profile, 24), glassMat);
     bg.add(body);
 
-    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.0145, 0.015, 0.045, 16), capMat);
+    const liquidProfile = [
+      [0, 0.009], [0.030, 0.004], [0.035, 0.180], [0.032, 0.205],
+      [0.020, 0.235], [0, 0.235]
+    ].map(([r, y]) => new THREE.Vector2(r, y));
+    const liquid = new THREE.Mesh(new THREE.LatheGeometry(liquidProfile, 20), liquidMat);
+    bg.add(liquid);
+
+    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.0145, 0.0150, 0.045, 20), capMat);
     cap.position.set(0, 0.295, 0);
     bg.add(cap);
 
-    const cork = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.01, 10), corkMat);
+    const cork = new THREE.Mesh(new THREE.CylinderGeometry(0.0118, 0.0118, 0.01, 16), corkMat);
     cork.position.set(0, 0.322, 0);
     bg.add(cork);
 
     const label = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.0386, 0.0386, 0.088, 16, 1, true, -Math.PI / 3, (2 * Math.PI) / 3),
+      new THREE.CylinderGeometry(0.0384, 0.0384, 0.088, 32, 1, true, -Math.PI / 3, (2 * Math.PI) / 3),
       labelMat
     );
     label.position.set(0, 0.105, 0);

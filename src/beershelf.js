@@ -2,8 +2,8 @@ import * as THREE from 'three';
 import { BEER_SHELF as P } from './config.js';
 
 // Four recognisable, correctly typed packages on a real shelf (#511). Room-visible only with the fridge open.
-const metal = new THREE.MeshStandardMaterial({ color: 0xcbd0d3, metalness: .65, roughness: .3 });
-const brown = new THREE.MeshStandardMaterial({ color: 0x493121, metalness: .1, roughness: .3 });
+const metal = new THREE.MeshStandardMaterial({ color: 0xd2d7da, metalness: .75, roughness: .25 });
+const brown = new THREE.MeshStandardMaterial({ color: 0x3d2412, metalness: .1, roughness: .14, transparent: true, opacity: .92, depthWrite: true });
 function labelTexture(beer, image) {
   const canvas = document.createElement('canvas');canvas.width = 512;canvas.height = 256;
   const ctx = canvas.getContext('2d');ctx.fillStyle = '#eeeeea';ctx.fillRect(0, 0, 512, 256);
@@ -33,9 +33,21 @@ export class BeerShelf {
         const b = P.bottle;diameter = b.diameter;height = beer.ml <= 330 ? b.height330 : b.height500;
         const bodyHeight = height * b.bodyFraction, shoulderHeight = height * b.shoulderFraction, neckHeight = height * b.neckFraction;
         const body = new THREE.Mesh(new THREE.CylinderGeometry(diameter / 2, diameter / 2, bodyHeight, 24), [material, brown, brown]);body.position.y = bodyHeight / 2;g.add(body);
-        const shoulder = new THREE.Mesh(new THREE.CylinderGeometry(b.neck / 2, diameter / 2, shoulderHeight, 16), brown);shoulder.position.y = bodyHeight + shoulderHeight / 2;g.add(shoulder);
-        const neck = new THREE.Mesh(new THREE.CylinderGeometry(b.neck / 2, b.neck / 2, neckHeight, 16), brown);neck.position.y = height - neckHeight / 2;g.add(neck);
-        const cap = new THREE.Mesh(new THREE.CylinderGeometry(b.neck * .57, b.neck * .57, b.capHeight, 16), metal);cap.position.y = height + b.capHeight / 2;g.add(cap);
+        const pts = [];
+        for (let j = 0; j <= 8; j++) {
+          const u = j / 8, y = -shoulderHeight / 2 + u * shoulderHeight;
+          const t = 0.5 - 0.5 * Math.cos(u * Math.PI);
+          pts.push(new THREE.Vector2((diameter / 2) * (1 - t) + (b.neck / 2) * t, y));
+        }
+        const shoulder = new THREE.Mesh(new THREE.LatheGeometry(pts, 24), brown);shoulder.position.y = bodyHeight + shoulderHeight / 2;g.add(shoulder);
+        const neckPts = [];
+        for (let j = 0; j <= 6; j++) {
+          const u = j / 6, y = -neckHeight / 2 + u * neckHeight;
+          const swell = u > 0.75 ? Math.sin((u - 0.75) / 0.25 * Math.PI) * 0.0016 : 0;
+          neckPts.push(new THREE.Vector2(b.neck / 2 + swell, y));
+        }
+        const neck = new THREE.Mesh(new THREE.LatheGeometry(neckPts, 24), brown);neck.position.y = height - neckHeight / 2;g.add(neck);
+        const cap = new THREE.Mesh(new THREE.CylinderGeometry(b.neck * .55, b.neck * .62, b.capHeight, 24), metal);cap.position.y = height + b.capHeight / 2;g.add(cap);
       }
       g.position.set(cx + P.across[i] * iw, y0 + P.y, front);
       g.traverse(mesh => {if(mesh.isMesh){mesh.castShadow = mesh.receiveShadow = true;mesh.raycast = () => {};}});
