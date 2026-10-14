@@ -745,10 +745,14 @@ within the old 0.3m gap, miss, forged point/version, crouch fallback, overkill f
 receipt marker/HUD and bounded measured protocol rows, not a rendered avatar.
 Parents #892/#879/#874 remain open for #898/#899 and their other weapon/pose parts.
 
-## First NW bicycle (#903)
+## NW bicycles (#903, #905)
 
-Only the existing `yard-0-2` bicycle can be ridden: its four original instanced
-components move together; the other eight NW bicycles and rack collision stay fixed.
+All nine existing NW-yard bicycles can be ridden (#905). The register follows
+the actual seeded source order and occupied stall IDs, not the 18 rack positions.
+Each uses its original matrix yaw (including the opposite-facing second rack).
+Only the selected index moves in the same four instanced component batches;
+the other eight matrices/colors, parking RNG and rack collision remain unchanged.
+Interaction helpers share one invisible geometry/material and add no rendered model.
 Aim at it and use E, the ordinary left-click action or the touch action button.
 WASD/arrows or the existing touch joystick steer and drive; E/Space/C or the
 existing stand button safely dismount. Repeated E is ignored for this bicycle
@@ -766,7 +770,14 @@ Pause/zero dt preserves the bicycle pose.
 actual StreetLife/Player, complete original input/save handlers and real touch
 pointer gestures without WebGL. Controlled world/focus/lock collaborators are
 explicit; it does not prove pointer lock, full World graphics or remote bike pose.
-The initial source/native stage passed29 checks (actual exit0). Final source/native
+#905 extends the native driver to every NW identity: ordinary E mount, swept
+turn and six-metre forward route, steering, pause, touch stand, safe reload and
+exact snapshots of all eight other bicycles. `BICYCLE_BASELINE=/path/to/original/streetlife.js`
+optionally compares the original visible geometry, all instance matrices/colors and
+collision. `--small` adds an explicitly isolated StreetLife/Player render, requiring
+the shared graphics slot; it does not build World.
+
+The original #903 source/native stage passed29 checks (actual exit0). Final source/native
 passed34 checks on `6f35db5`: original control/save paths plus mounted target
 exclusion, exit labels and original CSS geometry at900×600,568×320,390×844.
 Portrait keeps the existing rotate curtain; its check is underlying DOM geometry,

@@ -1,7 +1,7 @@
 // #903: actual existing StreetLife batches and Player, original complete input/save handlers.
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
-const base=process.argv[2]||'http://localhost:8876',out=process.argv[3]||'/tmp/lunden-bicycle',app=process.argv.includes('--app');
+const base=process.argv[2]||'http://localhost:8876',out=process.argv[3]||'/tmp/lunden-bicycle',app=process.argv.includes('--app'),small=process.argv.includes('--small');
 const root=path.resolve(__dirname,'..'),main=fs.readFileSync(path.join(root,'src/main.js'),'utf8'),worldSource=fs.readFileSync(path.join(root,'src/world.js'),'utf8');
 function span(source,start,end){const a=source.indexOf(start),b=source.indexOf(end,a+start.length);if(a<0||b<0||source.indexOf(start,a+1)>=0)throw Error('ambiguous source anchor '+start);return source.slice(a,b).trim();}
 const parts={bicycleControls:span(main,'const bicyclePickables =','function updateFocus() {'),active:span(main,'const active =','\n\nfunction look'),stand:span(main,'function standUp() {','/** A drink run over'),use:span(main,'function use(thing) {',"actionBtn.addEventListener('click'"),buttons:span(main,"actionBtn.addEventListener('click'",'const muteBtn ='),mouse:span(main,'function click(button) {',"document.addEventListener('contextmenu'"),keys:span(main,"document.addEventListener('keydown', (e) => {\n  if (!locked", "window.addEventListener('blur'"),save:span(main,'const placeNow =','setInterval(keepSession, 2000);'),registry:span(worldSource,'bicycles: life.bicycles,','edgeLines,')};
@@ -23,7 +23,7 @@ async function actualWorld(browser){
   await page.goto(base+'/?lowmem&phone&quality=0&at=-56.4,3.1,90&time=12&freeze&cloud=',{waitUntil:'commit'});
   await page.waitForFunction(()=>window.__app?.renderer&&__app.loadingEl.hidden,null,{timeout:240000,polling:200});
   for(const f of ['src/player.js','src/main.js','src/config.js','src/streetlife.js','src/world.js']){const r=await page.request.get(base+'/'+f);check(r.ok()&&crypto.createHash('sha256').update(await r.body()).digest('hex')===source[f],'served source matches authored runtime '+f);}
-  check(await page.evaluate(()=>__app.testMode===null&&__app.world.bicycles.length===1),'actual whole World ready without a test mode or partial scene');
+  check(await page.evaluate(()=>__app.testMode===null&&__app.world.bicycles.length===9),'actual whole World ready without a test mode or partial scene');
   await page.locator('#start-go').tap();
   await page.evaluate(()=>{__app.renderer.setAnimationLoop(null);__app.renderer.setPixelRatio(1);__app.renderer.setSize(480,320,false);});
   await page.clock.install();await page.clock.pauseAt(await page.evaluate(()=>Date.now()+100));
@@ -52,12 +52,12 @@ async function actualWorld(browser){
  }finally{clearTimeout(timer);await context.close();}
  if(failures)throw Error('Actual World assertions failed');
 }
-(async()=>{const browser=await chromium.launch({executablePath:process.env.CHROME_PATH,args:['--no-sandbox',...(app?['--use-angle=swiftshader','--enable-unsafe-swiftshader']:['--disable-gpu'])]});let page;const errors=[];
+(async()=>{const browser=await chromium.launch({executablePath:process.env.CHROME_PATH,args:['--no-sandbox',...((app||small)?['--use-angle=swiftshader','--enable-unsafe-swiftshader']:['--disable-gpu'])]});let page;const errors=[];
 try{if(app){await actualWorld(browser);console.log(failures?'SOME FAILED':'ALL PASS');process.exitCode=failures?1:0;return;}
-const context=await browser.newContext({viewport:{width:900,height:600},hasTouch:true});page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.route('**/src/bootstrap.js',r=>r.fulfill({contentType:'text/javascript',body:'// native component fixture, no bootstrap'}));
+const context=await browser.newContext({viewport:{width:900,height:600},hasTouch:true});page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));if(process.env.BICYCLE_BASELINE)await page.route('**/src/bicycle-baseline.js',r=>r.fulfill({contentType:'text/javascript',body:fs.readFileSync(process.env.BICYCLE_BASELINE,'utf8')}));await page.route('**/src/bootstrap.js',r=>r.fulfill({contentType:'text/javascript',body:'// native component fixture, no bootstrap'}));
 async function setup(){await page.goto(base);await page.evaluate(async parts=>{
  const T=await import('three'),{buildStreetLife}=await import('/src/streetlife.js'),{Player}=await import('/src/player.js'),C=await import('/src/config.js'),R=await import('/src/resume.js'),{setupTouch}=await import('/src/touch.js');(await import('/src/hudicons.js')).initHudIcons();
- window.webglCalls=0;const originalContext=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(kind,...args){if(/webgl/i.test(kind)){webglCalls++;throw Error('No WebGL in native bike fixture');}return originalContext.call(this,kind,...args);};
+ window.webglCalls=0;const originalContext=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(kind,...args){if(/webgl/i.test(kind)){webglCalls++;if(!window.allowSmallRender)throw Error('No WebGL in native bike fixture');}return originalContext.call(this,kind,...args);};
  window.T=T;window.C=C;window.PLAYER=C.PLAYER;window.life=buildStreetLife();window.bike=life.bicycles[0];window.camera=new T.PerspectiveCamera();
  window.world={size:{x:5.75,z:12.1},levels:[{segments:life.segments,footprints:[]},{segments:[],footprints:[]}],doors:[],roofs:{above:()=>Infinity,under:()=>null}};Object.assign(world,(0,eval)('({'+parts.registry+'})'));
  window.player=new Player(world,camera);player.spawn(-56.4,3.1,Math.PI/2);
@@ -69,9 +69,14 @@ async function setup(){await page.goto(base);await page.evaluate(async parts=>{
  window.tick=dt=>{if(fns.active()){player.analog.x=touch.analog.x;player.analog.y=touch.analog.y;player.update(dt);}};
  const resumed=R.takeResume();window.resumed=resumed;if(resumed){player.spawn(resumed.x,resumed.z,resumed.yaw);player.pos.y=resumed.feetY;player.eyeY=resumed.feetY+C.PLAYER.eye;camera.position.y=player.eyeY;}
  },parts);}
+await setup();
+if(process.env.BICYCLE_BASELINE){
+ const preserved=await page.evaluate(async()=>{const before=(await import('/src/bicycle-baseline.js')).buildStreetLife();const snapshot=life=>{const rows=[];life.object.traverse(m=>{if(m.isMesh&&m.material.visible!==false)rows.push({type:m.type,matrix:m.matrix.elements,instances:m.instanceMatrix?Array.from(m.instanceMatrix.array):null,colors:m.instanceColor?Array.from(m.instanceColor.array):null,positions:Array.from(m.geometry.attributes.position.array)});});return{rows,segments:life.segments};};return{same:JSON.stringify(snapshot(before))===JSON.stringify(snapshot(life)),renderedMeshes:snapshot(life).rows.length,ids:life.bicycles.map(b=>b.id)};});
+ fs.writeFileSync(out+'/baseline-parity.json',JSON.stringify(preserved,null,2));check(preserved.same,'original parking RNG, all visible models/instance matrices/colors and collision remain exact');
+}
 await setup();check(await page.evaluate(()=>bike.id==='yard-0-2'&&bike.index===0&&Math.abs(bike.position.x+58.28)<1e-9&&Math.abs(bike.position.z-3.1)<1e-9),'canonical first existing yard-0-2, original coordinates');check(await page.evaluate(()=>bike.components.length===4&&bike.components.every(m=>m.count===9)),'four original batches retain all nine instances');
 await page.keyboard.down('e');check(await page.evaluate(()=>!!player.riding&&!bike.atSource),'actual original E handler mounts and physically extracts only first bicycle');await page.keyboard.down('e');check(await page.evaluate(()=>!!player.riding),'held E repeat does not dismount/remount the same target');await page.keyboard.up('e');
-check(await page.evaluate(()=>{fns.updateBicycleControls();return fns.bicyclePickables().length===0&&actionBtn.textContent==='Kliv av cykeln'&&document.getElementById('stand-btn').textContent==='Kliv av'&&!promptEl.hidden;}),'original production bicycle focus/control block excludes ridden target and labels both exits');
+check(await page.evaluate(()=>{fns.updateBicycleControls();return fns.bicyclePickables().length===8&&actionBtn.textContent==='Kliv av cykeln'&&document.getElementById('stand-btn').textContent==='Kliv av'&&!promptEl.hidden;}),'original production bicycle focus/control block excludes ridden target and labels both exits');
 if(!await page.evaluate(()=>!!player.riding)){await page.keyboard.press('e');}
 check(await page.evaluate(()=>player.bikeHull(player.pos,player.riding.yaw)&&JSON.stringify(life.segments)===originalSegments),'mount is supported/clear and original rack/car collision unchanged');
 check(await page.evaluate(()=>{const m=matrices();return m.every((v,k)=>v.slice(1).every((a,i)=>JSON.stringify(a)===JSON.stringify(originalMatrices[k][i+1])));}), 'all other eight matrices unchanged across all four components');
@@ -82,7 +87,7 @@ const collision=await page.evaluate(()=>{const p=player.pos.clone(),yaw=player.r
 check(await page.evaluate(()=>{const p=player.pos.clone();world.roofs.above=()=>p.y+1;const blocked=!player.bikeHull(p,player.riding.yaw);world.roofs.above=()=>Infinity;return blocked;}),'actual roof/headroom query rejects too-low clearance');
 check(await page.evaluate(()=>{const p=player.pos.clone(),r=player.riding,yaw=r.yaw;world.doors=[{object:new T.Group(),segment:()=>[p.x-.8,p.z+.8,p.x+.8,p.z+.8]}];const closed=!player.bikeHull(p.clone().add(new T.Vector3(0,0,.6)),yaw);world.doors=[];return closed;}),'actual dynamic-door segment participates in capsule validation');
 const saved=await page.evaluate(()=>{const q=player.bicycleSavePlace();fns.keepSession();return{q:q?.toArray(),record:JSON.parse(sessionStorage.getItem('lunden.session')),keys:Object.keys(sessionStorage)};});check(saved.q&&saved.record.feetY===saved.q[1]&&saved.keys.every(k=>k==='lunden.session'),'production place/session handler saves supported standing position with existing key');
-await page.keyboard.press('e');check(await page.evaluate(()=>!player.riding&&player.isFree(player.pos.x,player.pos.z)&&player.roomToStand()),'actual E handler safely dismounts');check(await page.evaluate(()=>{fns.updateBicycleControls();return fns.bicyclePickables().length===1&&document.getElementById('stand-btn').textContent==='Res dig';}),'production bicycle control block restores standing picker and normal stand label');
+await page.keyboard.press('e');check(await page.evaluate(()=>!player.riding&&player.isFree(player.pos.x,player.pos.z)&&player.roomToStand()),'actual E handler safely dismounts');check(await page.evaluate(()=>{fns.updateBicycleControls();return fns.bicyclePickables().length===9&&document.getElementById('stand-btn').textContent==='Res dig';}),'production bicycle control block restores standing picker and normal stand label');
 await page.reload();await setup();check(await page.evaluate(()=>resumed&&!player.riding&&player.isFree(player.pos.x,player.pos.z)&&Math.abs(player.pos.y-player.groundAt(player.pos.x,player.pos.z,player.pos.y))<.02),'genuine browser reload resumes safely standing');check(await page.evaluate(()=>bike.atSource&&Math.abs(bike.position.x+58.28)<1e-9&&Math.abs(bike.position.z-3.1)<1e-9),'reload rebuilds the original source bicycle, no mounted resume');
 await page.evaluate(()=>{player.spawn(-56.4,3.1,Math.PI/2);focused=bike.target;locked=false;touch.enabled=true;document.body.classList.add('touch');actionBtn.textContent='Cykla på cykeln';actionBtn.hidden=false;document.getElementById('stand-btn').hidden=false;});fs.writeFileSync(out+'/touch-target.json',JSON.stringify(await page.locator('#action').evaluate(e=>{const r=e.getBoundingClientRect();return {rect:{x:r.x,y:r.y,width:r.width,height:r.height},style:{display:getComputedStyle(e).display,visibility:getComputedStyle(e).visibility,pointerEvents:getComputedStyle(e).pointerEvents},hit:document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)?.id||document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)?.tagName};}),null,2));await page.locator('#action').click({timeout:3000});check(await page.evaluate(()=>!!player.riding),'actual touch action button mounts');await page.evaluate(()=>{window.beforeTouchYaw=player.riding.yaw;});const cdp=await context.newCDPSession(page);await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:150,y:400}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:178,y:356}]});check(await page.evaluate(()=>touch.analog.x>0&&touch.analog.y>0),'real touch pointer gesture supplies existing joystick axes');await page.evaluate(()=>tick(.1));await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});check(await page.evaluate(()=>Math.abs(player.riding.yaw-beforeTouchYaw)>0),'existing touch joystick gesture steers the real Player bicycle');await page.locator('#stand-btn').click();check(await page.evaluate(()=>!player.riding),'actual existing touch stand button safely dismounts');
 await setup();await page.evaluate(()=>{player.spawn(-56.4,3.1,Math.PI/2);focused=bike.target;});
@@ -97,7 +102,45 @@ for(const viewport of [{width:900,height:600},{width:568,height:320},{width:390,
 await page.setViewportSize({width:900,height:600});await page.screenshot({path:out+'/native.png'});
 check(await page.evaluate(()=>{player.jet={worn:true};player.suit={worn:true};player.spawn(-56.4,3.1,Math.PI/2);return !player.riding&&bike.pick.visible&&!bike.ridden&&player.jet.worn&&player.suit.worn;}),'real spawn/death restart releases cycling without removing worn equipment');
 check(await page.evaluate(()=>{const m=matrices();return m.every((v,k)=>v.slice(1).every((a,i)=>JSON.stringify(a)===JSON.stringify(originalMatrices[k][i+1])));}), 'all other eight original bicycles remain fixed after every input/restart case');
+// #905: each actual source-order record uses ordinary input and changes only its own instance.
+const population=[];
+for(let index=0;index<9;index++){
+ await setup();
+ const identity=await page.evaluate(index=>{bike=life.bicycles[index];focused=bike.target;player.spawn(bike.position.x-Math.cos(bike.yaw)*1.88,bike.position.z+Math.sin(bike.yaw)*1.88,bike.yaw-Math.PI/2);window.ownBefore=matrices();return{id:bike.id,index:bike.index,rack:bike.rack,yaw:bike.yaw,source:bike.position.toArray()};},index);
+ check(identity.index===index&&await page.evaluate(()=>life.bicycles.length===9&&new Set(life.bicycles.map(b=>b.id)).size===9),'source-order real populated stall '+identity.id);
+ await page.keyboard.press('e');
+ check(await page.evaluate(()=>player.riding?.bike===bike&&!bike.atSource&&player.bikeHull(player.pos,player.riding.yaw)),'ordinary E mounts supported '+identity.id);
+ if(!await page.evaluate(()=>!!player.riding))continue;
+ const route=await page.evaluate(()=>{const from=player.pos.clone(),old=player.riding.yaw;for(const yaw of [Math.PI/2,-Math.PI/2,0,Math.PI]){const arc=Math.atan2(Math.sin(yaw-old),Math.cos(yaw-old));if(!Array.from({length:41},(_,i)=>player.bikeHull(from,old+arc*i/40)).every(Boolean))continue;const end=from.clone().add(new T.Vector3(Math.cos(yaw)*6,0,-Math.sin(yaw)*6));if(player.bikePath(from,end,yaw))return yaw;}return null;});
+ check(route!==null,'supported swept turn and six metre route '+identity.id);
+ if(route===null)continue;
+ await page.evaluate(yaw=>{camera.rotation.y=yaw-Math.PI/2;for(let i=0;i<80;i++)tick(.025);},route);
+ const start=await page.evaluate(()=>player.pos.toArray());
+ await page.keyboard.down('w');await page.evaluate(()=>{for(let i=0;i<10;i++)tick(.1);});await page.keyboard.up('w');
+ const distance=await page.evaluate(p=>player.pos.distanceTo(new T.Vector3(...p)),start);
+ check(distance>await page.evaluate(()=>C.PLAYER.walk)*1.5,'ordinary keyboard speed exceeds walking '+identity.id);
+ await page.evaluate(()=>{window.priorYaw=player.riding.yaw;camera.rotation.y+=.2;for(let i=0;i<10;i++)tick(.05);});
+ check(await page.evaluate(()=>Math.abs(player.riding.yaw-priorYaw)>.1&&player.bikeHull(player.pos,player.riding.yaw)),'ordinary camera steering preserves whole hull '+identity.id);
+ const paused=await page.evaluate(()=>({p:player.pos.toArray(),m:matrices()}));
+ await page.evaluate(()=>{locked=false;touch.enabled=false;player.keys.add('KeyS');tick(1);player.keys.clear();});
+ check(await page.evaluate(a=>JSON.stringify(player.pos.toArray())===JSON.stringify(a.p)&&JSON.stringify(matrices())===JSON.stringify(a.m),paused),'pause freezes all components '+identity.id);
+ await page.evaluate(()=>{touch.enabled=true;document.body.classList.add('touch');fns.updateBicycleControls();document.getElementById('stand-btn').hidden=false;fns.keepSession();});
+ await page.locator('#stand-btn').click();
+ check(await page.evaluate(()=>!player.riding&&player.isFree(player.pos.x,player.pos.z)&&player.roomToStand()&&Math.abs(player.pos.y-player.groundAt(player.pos.x,player.pos.z,player.pos.y))<.02),'ordinary touch stand safely dismounts '+identity.id);
+ check(await page.evaluate(index=>matrices().every((batch,k)=>batch.every((m,j)=>j===index||JSON.stringify(m)===JSON.stringify(ownBefore[k][j]))),index),'eight untouched identities retain four exact matrices '+identity.id);
+ population.push({...identity,distance});
+ await page.reload();await setup();
+ check(await page.evaluate(()=>resumed&&!player.riding&&life.bicycles.every(b=>b.atSource)&&player.roomToStand()),'reload safely stands and restores source population '+identity.id);
+}
+fs.writeFileSync(out+'/population.json',JSON.stringify(population,null,2));
 check(await page.evaluate(()=>webglCalls===0)&&errors.length===0,'native fixture used no WebGL or page errors');
+if(small){
+ const capture=async(name)=>{const info=await page.evaluate(()=>{render.render(scene,view);return{png:render.domElement.toDataURL('image/png'),calls:render.info.render.calls,triangles:render.info.render.triangles,bike:bike.id,riding:!!player.riding};});fs.writeFileSync(out+'/'+name+'.png',Buffer.from(info.png.split(',')[1],'base64'));delete info.png;return info;};
+ await page.evaluate(()=>{window.allowSmallRender=true;window.scene=new T.Scene();scene.background=new T.Color(0xbad7e5);scene.add(life.object,new T.HemisphereLight(0xffffff,0x54684b,2));const sun=new T.DirectionalLight(0xffffff,2);sun.position.set(-50,20,-5);scene.add(sun);window.render=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});render.setSize(800,500);window.view=new T.PerspectiveCamera(55,800/500,.05,120);bike=life.bicycles[8];focused=bike.target;view.position.copy(bike.position).add(new T.Vector3(3,2.2,3));view.lookAt(bike.position.clone().add(new T.Vector3(0,.65,0)));player.spawn(bike.position.x-Math.cos(bike.yaw)*1.88,bike.position.z+Math.sin(bike.yaw)*1.88,bike.yaw-Math.PI/2);});
+ const parked=await capture('ninth-parked');await page.keyboard.press('e');check(await page.evaluate(()=>player.riding?.bike===bike),'small-scene ordinary handler mounts ninth actual model');
+ await page.evaluate(()=>{view.position.copy(camera.position);view.quaternion.copy(camera.quaternion);});const saddle=await capture('ninth-saddle');
+ fs.writeFileSync(out+'/small-render.json',JSON.stringify({parked,saddle,scope:'Actual StreetLife model and Player camera, isolated scene; not full World or phone'},null,2));await page.evaluate(()=>render.dispose());
+}
 fs.writeFileSync(out+'/result.json',JSON.stringify({lines,failures,errors,collision,source:Object.fromEntries(['src/player.js','src/main.js','src/config.js','src/streetlife.js','src/world.js','tools/bicycletest.cjs'].map(f=>[f,crypto.createHash('sha256').update(fs.readFileSync(path.join(root,f))).digest('hex')])),parts:Object.fromEntries(Object.entries(parts).map(([k,v])=>[k,crypto.createHash('sha256').update(v).digest('hex')])),limits:'Native original DOM/input/save dispatch, actual StreetLife/Player and controlled collision world/focus/lock flag; no whole World, pointer-lock, WebGL, network pose, phone or hardware-FPS acceptance.'},null,2));
 }catch(e){fs.writeFileSync(out+'/failure.json',JSON.stringify({lines,failures,errors,error:String(e)},null,2));throw e;}finally{await browser.close();}console.log(failures?'SOME FAILED':'ALL PASS');process.exitCode=failures?1:0;
 })().catch(e=>{console.error(e.stack);process.exitCode=1;});

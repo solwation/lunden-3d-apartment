@@ -353,7 +353,7 @@ run38417835821 also succeeded. This verifies publication of the additive server
 contract, not a new physical-device gameplay test. #897 closes only this restricted
 central style0 slice; #892/#879/#874 and #898/#899's remaining head surfaces stay open.
 
-## Bicycle resume policy (#903)
+## Bicycle resume policy (#903, #905)
 
 Cycling is transient Player state and introduces no storage key or mounted resume.
 The existing place/session writers save an actually supported, collision-clear
@@ -365,7 +365,9 @@ The native bicycle driver checks the real resume module across browser reload,
 blocked-exit/session retention and real spawn releasing the cycling mode. These
 checks pass in the final34-check native run; the separate actual World run uses
 one World construction and does not claim another whole-app reload or remote
-bicycle pose. #877 remains open for the other existing bicycles.
+bicycle pose. #905 repeats safe standing reload for all nine NW-yard identities;
+all nine rebuild their source placements with no new storage key. #877 remains
+open for the other existing bicycle populations.
 
 ### Additive nose region (#920)
 

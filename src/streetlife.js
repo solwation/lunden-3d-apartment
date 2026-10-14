@@ -211,29 +211,34 @@ export function buildStreetLife({ entrances = [] } = {}) {
     instanced(tyres, new THREE.MeshStandardMaterial({ color: 0x141414, roughness: 0.8 }), bikes),
     instanced(spokes, new THREE.MeshStandardMaterial({ color: 0xb4b9bd, alphaMap: bikeSpokeTexture(), alphaTest: 0.35, side: THREE.DoubleSide, metalness: 0.35, roughness: 0.5 }), bikes)];
   group.add(...components);
-  // #903: the first EXISTING seeded model; shared batches/counts/materials remain intact.
-  const first = bikeRecords[0], original = bikes[first.index].clone(), pos = new THREE.Vector3(), q = new THREE.Quaternion(), scale = new THREE.Vector3();
-  original.decompose(pos, q, scale);
-  const pick = new THREE.Mesh(new THREE.BoxGeometry(1.7, 1.05, .6), new THREE.MeshBasicMaterial({ visible: false }));
-  pick.userData.moving = true; // interaction helper, never an invisible projectile obstacle
-  group.add(pick);
-  const bicycle = { ...first, position: pos, yaw: Math.PI, original, rackSegments: rackSegments[first.rack], atSource: true, ridden: false,
-    place(p, yaw) {
-      if (this.matrix && this.position.equals(p) && this.yaw === yaw) return;
-      this.position.copy(p); this.yaw = yaw;
-      const matrix = new THREE.Matrix4().compose(p, new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw), scale);
-      this.matrix = matrix;
-      for (const mesh of components) { mesh.setMatrixAt(this.index, matrix); mesh.instanceMatrix.needsUpdate = true; mesh.computeBoundingSphere(); }
-      pick.position.copy(p); pick.position.y += .525; pick.rotation.y = yaw;
-    },
-    footprint(feet, headroom, hurdle) {
-      if (this.selfQuery || this.atSource || this.position.y > feet + headroom || this.position.y + BICYCLE.height <= feet - hurdle) return [];
-      const dx = Math.cos(this.yaw), dz = -Math.sin(this.yaw), r = BICYCLE.radius;
-      return [[BICYCLE.rear-r,-r],[BICYCLE.front+r,-r],[BICYCLE.front+r,r],[BICYCLE.rear-r,r]].map(([x,z]) => [this.position.x + dx*x-dz*z, this.position.z + dz*x+dx*z]);
-    }, components, pick,
-  };
-  bicycle.target = { name: 'Cykeln', kind: 'bicycle', verb: 'cykla', bicycle, pickable: pick };
-  pick.userData.door = bicycle.target;
-  bicycle.place(pos.clone(), bicycle.yaw);
-  return { object: group, segments, bicycles: [bicycle] };
+  // #905: register only actual seeded models, in source order; keep all four shared batches.
+  const pickGeometry = new THREE.BoxGeometry(1.7, 1.05, .6), pickMaterial = new THREE.MeshBasicMaterial({ visible: false });
+  const bicycles = bikeRecords.map(record => {
+    const original = bikes[record.index].clone(), pos = new THREE.Vector3(), q = new THREE.Quaternion(), scale = new THREE.Vector3();
+    original.decompose(pos, q, scale);
+    const pick = new THREE.Mesh(pickGeometry, pickMaterial);
+    pick.userData.moving = true; // interaction helper, never an invisible projectile obstacle
+    group.add(pick);
+    const yaw = new THREE.Euler().setFromQuaternion(q, 'YXZ').y;
+    pick.position.copy(pos); pick.position.y += .525; pick.rotation.y = yaw;
+    const bicycle = { ...record, position: pos, yaw, matrix: original.clone(), original, rackSegments: rackSegments[record.rack], atSource: true, ridden: false,
+      place(p, yaw) {
+        if (this.matrix && this.position.equals(p) && this.yaw === yaw) return;
+        this.position.copy(p); this.yaw = yaw;
+        const matrix = new THREE.Matrix4().compose(p, new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw), scale);
+        this.matrix = matrix;
+        for (const mesh of components) { mesh.setMatrixAt(this.index, matrix); mesh.instanceMatrix.needsUpdate = true; mesh.computeBoundingSphere(); }
+        pick.position.copy(p); pick.position.y += .525; pick.rotation.y = yaw;
+      },
+      footprint(feet, headroom, hurdle) {
+        if (this.selfQuery || this.atSource || this.position.y > feet + headroom || this.position.y + BICYCLE.height <= feet - hurdle) return [];
+        const dx = Math.cos(this.yaw), dz = -Math.sin(this.yaw), r = BICYCLE.radius;
+        return [[BICYCLE.rear-r,-r],[BICYCLE.front+r,-r],[BICYCLE.front+r,r],[BICYCLE.rear-r,r]].map(([x,z]) => [this.position.x + dx*x-dz*z, this.position.z + dz*x+dx*z]);
+      }, components, pick,
+    };
+    bicycle.target = { name: 'Cykeln', kind: 'bicycle', verb: 'cykla', bicycle, pickable: pick };
+    pick.userData.door = bicycle.target;
+    return bicycle;
+  });
+  return { object: group, segments, bicycles };
 }
