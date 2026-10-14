@@ -236,7 +236,7 @@ export function buildStringLights(fences, patioMidX) {
 }
 
 // --- beers ------------------------------------------------------------------
-const glassMat = new THREE.MeshStandardMaterial({ color: 0xe8f2f4, roughness: 0.05, transparent: true, opacity: 0.25, side: THREE.DoubleSide, depthWrite: false });
+const glassMat = new THREE.MeshPhysicalMaterial({ color: 0xf5fafb, roughness: 0.04, metalness: 0, clearcoat: 1.0, clearcoatRoughness: 0.04, ior: 1.5, transparent: true, opacity: 0.24, side: THREE.DoubleSide, depthWrite: false });
 const beerMat = new THREE.MeshStandardMaterial({ color: 0xd88a1c, roughness: 0.2, transparent: true, opacity: 0.88, emissive: 0x6a3a05, emissiveIntensity: 0.25 });
 const foamMat = new THREE.MeshStandardMaterial({ color: 0xfbf6ea, roughness: 0.9 });
 const bubbleMat = new THREE.MeshStandardMaterial({ color: 0xfff4d6, roughness: 0.2, transparent: true, opacity: 0.8 });

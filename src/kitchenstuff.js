@@ -8,7 +8,7 @@ import * as THREE from 'three';
 
 const std = (color, roughness = 0.5, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness, ...extra });
 export const KM = {
-  porcelain: std(0xf7f7f4, 0.25), glass: std(0xdfeef2, 0.05, { transparent: true, opacity: 0.4, depthWrite: false }),
+  porcelain: std(0xf7f7f4, 0.25), glass: new THREE.MeshPhysicalMaterial({ color: 0xf5fafb, roughness: 0.04, metalness: 0, clearcoat: 1.0, clearcoatRoughness: 0.04, ior: 1.5, transparent: true, opacity: 0.25, depthWrite: false, side: THREE.DoubleSide }),
   steel: std(0xc4c8cb, 0.3, { metalness: 0.6 }), dark: std(0x2a2b2d, 0.5), black: std(0x151515, 0.6), wood: std(0xb98a55, 0.7),
   red: std(0xc8342a, 0.6), yellow: std(0xe8b923, 0.6), blue: std(0x2f5fa8, 0.6), green: std(0x3e8a4a, 0.6), cream: std(0xeadfc6, 0.8),
   brown: std(0x7a4a2a, 0.7), plastic: std(0xe8ecee, 0.4), gold: std(0xd4af37, 0.3, { metalness: 0.6 }), card: std(0xb79b72, 0.85),
@@ -53,9 +53,13 @@ function bowls(P, b, y, top) {
   }
 }
 function glasses(P, b, y, top, rows = [b.d1 - 0.05, b.d1 - 0.14, b.d0 + 0.06]) {
-  const h = Math.min(0.12, top - y - 0.02), r = 0.034;
+  const h = Math.min(0.12, top - y - 0.02), r = 0.034, rBot = r * 0.86;
   for (const d of rows.filter((d) => d > b.d0 + r && d < b.d1 - r))
-    for (const u of row(b.a0, b.a1, fit(b.a0, b.a1, 2 * r, 0.02), 2 * r)) cyl(P, u, d, r, y, h, 'glass', 12, true);
+    for (const u of row(b.a0, b.a1, fit(b.a0, b.a1, 2 * r, 0.02), 2 * r)) {
+      const [x, z] = P.at(u, d);
+      P.add(new THREE.CylinderGeometry(r, rBot, h, 20, 1, true).translate(x, y + h / 2, z), KM.glass);
+      P.add(new THREE.CylinderGeometry(rBot, rBot, 0.006, 20).translate(x, y + 0.003, z), KM.glass);
+    }
 }
 function backGlasses(P, b, y, top) { glasses(P, b, y, top, [b.d1 - 0.14, b.d0 + 0.06]); } // (#382: the front row left free for the life sim's glasses)
 function mugs(P, b, y, top) {

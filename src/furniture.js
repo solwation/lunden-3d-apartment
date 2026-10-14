@@ -3761,14 +3761,14 @@ function besta(item, lights) {
   // glass shelves in the display section, and what stands on them
   const y1 = ys[1] + t / 2, y2 = ys[2] - t / 2, yShelf = (y1 + y2) / 2;
   for (const x of [-col / 2, col / 2]) add(g, col - t * 1.5, 0.006, fd - 0.03, x, yShelf, fd / 2, shelfGlass);
-  const crystal = new THREE.MeshStandardMaterial({ color: 0xe6f0f2, roughness: 0.05, metalness: 0.2, transparent: true, opacity: 0.3, depthWrite: false, side: THREE.DoubleSide }); // see-through: what is poured in shows (#167)
-  const lathe = (pts) => new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r, y)), 14);
-  const wine = lathe([[0.03, 0], [0.03, 0.004], [0.004, 0.008], [0.003, 0.08], [0.02, 0.1], [0.032, 0.14], [0.03, 0.19], [0.028, 0.19]]);
-  const flute = lathe([[0.028, 0], [0.028, 0.004], [0.003, 0.008], [0.003, 0.1], [0.012, 0.12], [0.022, 0.21], [0.02, 0.21]]);
-  const tumbler = lathe([[0.034, 0], [0.036, 0.09], [0.033, 0.09]]);
+  const crystal = new THREE.MeshPhysicalMaterial({ color: 0xf5fafb, roughness: 0.04, metalness: 0, clearcoat: 1.0, clearcoatRoughness: 0.04, ior: 1.5, transparent: true, opacity: 0.24, depthWrite: false, side: THREE.DoubleSide }); // realistic crystal glass (#167, #982)
+  const lathe = (pts) => new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r, y)), 28);
+  const wine = lathe([[0.0001, 0.0008], [0.028, 0], [0.033, 0], [0.0335, 0.0018], [0.015, 0.0038], [0.004, 0.007], [0.0032, 0.02], [0.003, 0.05], [0.0032, 0.078], [0.006, 0.084], [0.012, 0.089], [0.022, 0.098], [0.033, 0.118], [0.0355, 0.138], [0.033, 0.165], [0.0285, 0.190], [0.0275, 0.1945], [0.027, 0.195], [0.0263, 0.1945], [0.0272, 0.190], [0.0316, 0.165], [0.0341, 0.138], [0.0315, 0.118], [0.020, 0.098], [0.009, 0.091], [0.0001, 0.088]]);
+  const flute = lathe([[0.0001, 0.0008], [0.025, 0], [0.029, 0], [0.0295, 0.0018], [0.012, 0.0038], [0.004, 0.007], [0.003, 0.02], [0.0028, 0.06], [0.003, 0.092], [0.005, 0.098], [0.009, 0.105], [0.015, 0.118], [0.021, 0.145], [0.023, 0.175], [0.0215, 0.200], [0.020, 0.2145], [0.0195, 0.215], [0.019, 0.2145], [0.0203, 0.200], [0.0218, 0.175], [0.0198, 0.145], [0.0138, 0.118], [0.0075, 0.106], [0.0001, 0.103]]);
+  const tumbler = lathe([[0.0001, 0], [0.033, 0], [0.035, 0.002], [0.0355, 0.012], [0.0365, 0.05], [0.0375, 0.0895], [0.037, 0.090], [0.0363, 0.0895], [0.0353, 0.05], [0.0343, 0.02], [0.0335, 0.013], [0.0001, 0.012]]);
   const things = []; // glasses and bottles you can take out (#152)
-  // the inside of each glass ([r, y] from the bottom of the bowl up): what is poured in follows it (#167)
-  const inner = new Map([[wine, [[0.004, 0.086], [0.018, 0.102], [0.029, 0.14], [0.027, 0.185]]], [flute, [[0.003, 0.106], [0.01, 0.122], [0.019, 0.205]]], [tumbler, [[0.032, 0.006], [0.034, 0.088]]]]);
+  // the inside of each glass ([r, y] from the bottom of the bowl up): what is poured in follows it (#167, #982)
+  const inner = new Map([[wine, [[0.0001, 0.089], [0.008, 0.092], [0.019, 0.099], [0.0305, 0.118], [0.033, 0.138], [0.0305, 0.165], [0.0262, 0.190]]], [flute, [[0.0001, 0.104], [0.0068, 0.107], [0.013, 0.119], [0.019, 0.145], [0.0208, 0.175], [0.0194, 0.200], [0.0182, 0.211]]], [tumbler, [[0.0001, 0.013], [0.0325, 0.014], [0.0335, 0.022], [0.0345, 0.05], [0.0355, 0.087]]]]);
   const glassAt = (geo, x, y, z) => { const o = new THREE.Mesh(geo, crystal); o.position.set(x, y, z); o.castShadow = true; g.add(o); things.push({ model: o, kind: 'glass', name: geo === wine ? 'vinglaset' : geo === flute ? 'champagneglaset' : 'whiskyglaset', inner: inner.get(geo) }); };
   const bottle = (x, y, z, k) => {
     const bottleObj = buildWhiskyBottle(k);

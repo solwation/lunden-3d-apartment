@@ -167,6 +167,6 @@ export class GlassLiquid {
     const p = this.inner, y0 = p[0][1], yl = y0 + (p[p.length - 1][1] - y0) * Math.min(1, f);
     const pts = [[0, y0], [this.r(y0), y0], ...p.filter(([, y]) => y > y0 && y < yl), [this.r(yl), yl], [this.r(yl) * 0.999, yl], [0, yl]];
     this.mesh.geometry.dispose();
-    this.mesh.geometry = new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r, y)), 16);
+    this.mesh.geometry = new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r, y)), 24);
   }
 }

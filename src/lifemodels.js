@@ -26,7 +26,7 @@ const M = {
   clip: std(0x2f6fc4, 0.5), crust: std(0x9a6332, 0.7), crumb: std(0xe8d3a8, 0.85),
   toastCrust: std(0x6e3c15, 0.7), toastCrumb: std(0xc8964e, 0.8),
   steel: std(0xc9cdd0, 0.25, { metalness: 0.7 }), handle: std(0x222222, 0.55), peasBag: std(0x2f7d32, 0.35),
-  glass: new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.05, transparent: true, opacity: 0.28, depthWrite: false }),
+  glass: new THREE.MeshPhysicalMaterial({ color: 0xf5fafb, roughness: 0.03, metalness: 0, clearcoat: 1.0, clearcoatRoughness: 0.03, ior: 1.5, transparent: true, opacity: 0.23, depthWrite: false, side: THREE.DoubleSide }),
   cheeseSlice: std(0xf6dc7e, 0.5), binBag: std(0x1d1d1f, 0.6), binHeap: std(0x2a2a2c, 0.75),
 };
 
@@ -393,19 +393,26 @@ function bin(def = {}) {
   };
 }
 
-/** A drinking glass (#382): a plain tumbler 25 cl, Ø 7 cm, 11 cm high (a lathe, see-through), the drink in it a level that
- * follows its amount (drinks.js GlassLiquid, the drink's colour from DRINKS). */
-const INNER = [[0.029, 0.007], [0.0325, 0.104]];
+/** A drinking glass (#382, #982): a plain tumbler 25 cl, Ø 7 cm, 11 cm high (a smooth lathe with realistic wall thickness,
+ * solid base and thin rounded rim), the drink in it a level following its amount (drinks.js GlassLiquid). */
+const INNER = [
+  [0.0001, 0.009], [0.027, 0.009], [0.028, 0.011], [0.0295, 0.025], [0.031, 0.060], [0.0325, 0.095], [0.0332, 0.106],
+];
 function glass() {
   const g = new THREE.Group();
-  const prof = [[0.0001, 0], [0.03, 0], [0.0345, 0.11], [0.0325, 0.11], [0.029, 0.007], [0.0001, 0.007]].map(([r, y]) => new THREE.Vector2(r, y));
-  const m = mesh(new THREE.LatheGeometry(prof, 24), M.glass);
+  const prof = [
+    [0.0001, 0.0015], [0.023, 0.001], [0.0275, 0], [0.0295, 0.0018], [0.0305, 0.008],
+    [0.0315, 0.025], [0.033, 0.060], [0.0345, 0.095], [0.035, 0.109],
+    [0.0346, 0.110], [0.0338, 0.109],
+    [0.0333, 0.095], [0.0318, 0.060], [0.0303, 0.025], [0.0288, 0.010], [0.0278, 0.008], [0.0001, 0.008],
+  ].map(([r, y]) => new THREE.Vector2(r, y));
+  const m = mesh(new THREE.LatheGeometry(prof, 28), M.glass);
   m.castShadow = false;
   m.renderOrder = 1;
   g.add(m);
   const liquid = new GlassLiquid(g, INNER), contents = new Contents();
   // a dirty glass (#383): a milky film on the inside (a thin lathe just inside the glass)
-  const film = new THREE.Mesh(new THREE.LatheGeometry(INNER.map(([r, y]) => new THREE.Vector2(r - 0.0006, y)), 20), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false }));
+  const film = new THREE.Mesh(new THREE.LatheGeometry(INNER.map(([r, y]) => new THREE.Vector2(Math.max(0.0001, r - 0.0005), y)), 24), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false }));
   film.visible = false; film.raycast = () => {}; film.renderOrder = 0;
   g.add(film);
   // what is drawn: the instance's amount, or `level(kind, ml)` while a pour / sip is going on (#382)
