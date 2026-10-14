@@ -32,10 +32,13 @@ multiplayer-pose or measured-FPS acceptance. Render source was frozen; later #90
 changed car background geometry and config, while the bicycle/Player/main/World
 sources remained exact. The final native run covers that integration separately.
 
-Six final runtime/fixture source hashes match published bytes. Raw outputs,
+Six final runtime/fixture source hashes match the published Git commit bytes. Raw outputs,
 original failures, source manifest and PNGs are retained in orchestrator
 `worker-905-artifacts` (original `/tmp/lunden-priority-905`).
 
 [Pages run 38537256065](https://github.com/solwation/lunden-3d-apartment/actions/runs/38537256065),
 job 115763047357, completed the actual deploy-pages step successfully. Downloaded
-public `src/streetlife.js` matches the tested runtime SHA-256 exactly.
+public `src/streetlife.js` contains the nine expected `?v=b048a0c` import stamps.
+Removing exactly those build-added suffixes restores the tested source byte for
+byte. Raw deployed bytes therefore have a different hash; the first download
+and the exact normalization proof are retained.
