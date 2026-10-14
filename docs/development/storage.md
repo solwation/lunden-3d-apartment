@@ -918,3 +918,20 @@ DrawingRoom tests and deployed through run38556392406/job115826506105 at
 2026-10-14T11:25:24Z (versionbfe99040-d786-404a-8391-352bcef0cca9), before the
 requiring client. Browser fixtures write only an explicit local Worker; no test
 writes to production homes.
+
+### Verona fixed-pad choices (#1012)
+
+`VERONA_UPHOLSTERY_MATERIAL_IDS` derives exactly the three existing movable
+Verona IDs from FURNITURE; the long `15.370000000000001` divan2 identity is retained.
+Only their explicit `textile` surface accepts existing upholstery presets. The
+six indoor-seat IDs, IDANÄS whitelist, other cushion surfaces, rugs and curtains
+stay separate. MaterialVersion1, independent pose/surface bases, old move-only
+writes, Original/default and stored unknown fields retain the existing contract.
+No decorative neighboring instance or legacy whole-group material ID is added.
+
+Worker-first4e214cebf3a63546e79aa301979a8372e4f938ea passed17/17 actual DrawingRoom
+tests and actually deployed through run38559680002/job115837374403 at
+2026-10-14T11:53:10Z, versiond0e609d1-0472-48c0-be23-748716be2413, before the
+requiring client. The normal library handles preview/cancel without PUT and
+revision-checked confirmations shared to ordinary visitors. All test writes
+use an explicit local Worker; production homes are not modified by verification.

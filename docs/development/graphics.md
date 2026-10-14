@@ -221,3 +221,34 @@ reported success2026-10-14T11:44:40.2112767Z. Worker-first remains the actual
 573551e deployment described in storage.md. Render evidence remains four
 inspected pictures and two passing image/shader/budget checks, with processCLI1
 (10/12), not a green render-suite claim or full-World/phone verification.
+
+### Verona fixed-pad material isolation (#1012)
+
+Only the three movable Verona parts create private fixed-pad material handles.
+All original values/UV0/positions/normals and material identity restore exactly;
+noncloth steel and decorative neighbors remain independent. Pattern maps use
+existing metre-scale UV1 and the shared bounded two-map cache from upholstery.js.
+The normal seasonal decorative atlas mesh stays in `userData.keep`; nothing is
+added to its weather/box binding or material. No extra draw is expected from the
+source isolation; component draw counts are measured separately before claiming
+cost, and no whole-apartment/phone performance is implied.
+
+`LUNDEN_SECRET_TEST_INPUTS=… PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/veronamaterialtest.cjs GAME LOCAL_WORKER OUT`
+uses actual three-part builders/merge, a real `decorative:true` neighbor, Patio
+and dynbox, source-bound main UI and two local Worker HTTP browser visitors.
+Native1/native2 passed33/33 actualCLI0, including all six choices, exact Original,
+noncloth/neighbor preservation, actual summer/rain/winter loose/box visibility,
+ordinary peer/new visitor/reload, stale edits, offline accepted-cache retention,
+old move/material concurrency and keyboard/touch. Component comparisons select
+local Original only for their initial two fixture instances, restoring actual
+accepted state and normal polling before native HTTP acceptance. The separately
+granted `--render` path shows three original/pattern pairs in one bounded
+900×560 renderer; no World, physical phone or FPS claim follows from this test.
+
+Granted render1 passed13/13 actualCLI0; the external supervisor measured
+7.967473475961s, no deadline and no live descendants. All three original/pattern
+pairs were inspected. The renderer is900×560; full-page PNGs are900×600 because
+the fixture retains a40px blank bottom strip. Each component stays3draws:
+sofa23772triangles and each divan6636, before=after; UV1 programs link. All11
+recorded driver/Chrome owners and their temporary profile are gone. These are
+component images, not apartment/mobile/FPS verification.

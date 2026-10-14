@@ -16,6 +16,8 @@ När du möblerar om står möbler ovanpå mattan och åter på golvet när de f
 
 I materialmenyn kan du välja en enskild kudde, pläd eller klädsel på soffan och fåtöljen. Förhandsvisa färg och mönster, bekräfta för alla besökare eller välj Original för att återställa just den ytan.
 
+De tre Verona-delarna på uteplatsen har egna tygval för sina fasta sitt- och ryggdynor. Stålstommen och de lösa prydnadsdynorna behåller sitt utseende och sin vanliga väderstyrning.
+
 **▶ Öppna: https://solwation.github.io/lunden-3d-apartment/**
 
 På insidan av koppskåpets lucka i köket sitter en **uppdragslapp** med tre frivilliga vardagsuppdrag: gör en macka, återställ köket och städa efter mellanmålet. Delarna kan göras i valfri ordning och framstegen sparas. Tips går att stänga av; ett klart uppdrag ger 30 poäng första gången och 5 poäng när du väljer **Gör igen**. Tomma sopkärl behöver inte tömmas. Soppåsarna lämnas i de tre behållarna längs portikväggen mot lägenheten.

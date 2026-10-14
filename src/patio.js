@@ -1,3 +1,4 @@
+import { upholsterySurface } from './upholstery.js';
 import { windPlant } from './plantwind.js';
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
@@ -43,7 +44,7 @@ function tube(x0, x1, y0, y1, z0, z1, material = steelMat, t = P.verona.tube) {
  * back) over x0…x1 × z0…z1 (the back at z0), with `back` (rear posts up to H, two rails and a middle post) and arms
  * (`arms`: 'x0' | 'x1', a front post, two rails), plus its cushions: a seat cushion, and a back cushion with a back.
  */
-function veronaModule(g, x0, x1, z0, z1, { back = false, arms = [], decorative = false } = {}) {
+function veronaModule(g, x0, x1, z0, z1, { back = false, arms = [], decorative = false, textile = null } = {}) {
   const V = P.verona, t = V.tube, y = V.base;
   const boxFn = decorative ? sbox : rbox;
   const tubeFn = decorative
@@ -66,12 +67,13 @@ function veronaModule(g, x0, x1, z0, z1, { back = false, arms = [], decorative =
     for (const yy of [V.arm - t / 2, (y + V.arm) / 2]) g.add(tubeFn(x, x, yy, yy, z0 + t, z1 - t / 2));
   }
   // cushions: thick and soft, each module its own (the joints show)
-  const zf = back ? z0 + t + V.backT : z0;
-  g.add(boxFn(x1 - x0 - 0.015, V.seatT, z1 - zf - 0.01, (x0 + x1) / 2, y + V.seatT / 2, (zf + z1) / 2, cushionMat, 0.045));
+  const zf = back ? z0 + t + V.backT : z0, material = textile ? textile.material(cushionMat) : cushionMat;
+  const seat = boxFn(x1 - x0 - 0.015, V.seatT, z1 - zf - 0.01, (x0 + x1) / 2, y + V.seatT / 2, (zf + z1) / 2, material, 0.045);
+  g.add(textile ? textile.part(seat) : seat);
   if (back) {
-    const c = boxFn(x1 - x0 - 0.02, V.backH, V.backT, (x0 + x1) / 2, y + V.seatT + V.backH / 2 - 0.02, z0 + t + V.backT / 2, cushionMat, 0.06);
+    const c = boxFn(x1 - x0 - 0.02, V.backH, V.backT, (x0 + x1) / 2, y + V.seatT + V.backH / 2 - 0.02, z0 + t + V.backT / 2, material, 0.06);
     c.rotation.x = -0.12; // leaning back
-    g.add(c);
+    g.add(textile ? textile.part(c) : c);
   }
 }
 
@@ -87,16 +89,17 @@ export function veronasofa(item = {}) {
   const V = P.verona, W = V.W, D = V.D, X = 1.5 * W, z0 = -D / 2, z1 = D / 2, z3 = z1 + 2 * V.divanL;
   const part = item.part ?? 'all', seatY = V.base + V.seatT;
   const dec = !!item.decorative;
+  const textile = !dec && ['sofa', 'divan1', 'divan2'].includes(part) ? upholsterySurface(g, 'Fasta dynor') : null;
   g.userData.part = item.part ?? 'all';
   if (part === 'all' || part === 'sofa') {
     for (let i = 0; i < 3; i++) {
       const a = -X + i * W;
-      veronaModule(g, a, a + W, z0, z1, { back: true, arms: i === 0 ? ['x0'] : i === 2 ? ['x1'] : [], decorative: dec });
+      veronaModule(g, a, a + W, z0, z1, { back: true, arms: i === 0 ? ['x0'] : i === 2 ? ['x1'] : [], decorative: dec, textile });
     }
-    if (part === 'all') for (let k = 0; k < 2; k++) veronaModule(g, X - W, X, z1 + k * V.divanL, z1 + (k + 1) * V.divanL, { decorative: dec });
+    if (part === 'all') for (let k = 0; k < 2; k++) veronaModule(g, X - W, X, z1 + k * V.divanL, z1 + (k + 1) * V.divanL, { decorative: dec, textile });
   } else {
     const k = part === 'divan1' ? 0 : 1, centerZ = z1 + (k + 0.5) * V.divanL;
-    veronaModule(g, -W / 2, W / 2, -V.divanL / 2, V.divanL / 2, { decorative: dec });
+    veronaModule(g, -W / 2, W / 2, -V.divanL / 2, V.divanL / 2, { decorative: dec, textile });
     g.userData.divanCenterZ = centerZ;
   }
   const spots = part === 'all'

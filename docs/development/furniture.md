@@ -185,3 +185,19 @@ mesh/triangle/draw is added to the ordinary closed/open bed.
 Two MYDAL frames and HEMNES daybed are wood and are not enrolled, nor is the
 generic upholstered bed variant that has no actual FURNITURE instance.
 Bedlinen/cushion families retain their own scope and material identities.
+
+## Verona fixed-pad cloth (#1012)
+
+Each actual movable Verona `sofa`, `divan1` and `divan2` registers its own
+`textile`/`klädsel` surface named Fasta dynor. `veronaModule` receives that explicit
+optional handle and marks only its seat/back pad meshes with metric UV1 before
+the normal per-piece merge. It reuses `upholsterySurface`, existing presets and
+physical repeat; no new pattern generator or tunable is introduced.
+
+The shared global `cushionMat` is retained for `decorative:true` neighbors and the
+legacy unpartitioned `all` builder. Steel/slats, part geometry/rotation, standable
+footprint, rest spots, loose decorative atlas groups and dynbox copies are
+unchanged. Native evidence compares all three actual parts and one real neighbor
+against source-bound originals, then exercises actual Patio summer/rain/winter
+visibility while fixed-pad choice remains. Native per-part merged meshes stay
+3→3. Decorative cushion/box material editing belongs to separate #1015.
