@@ -4036,6 +4036,16 @@ export const DOUBLE_BED_LINEN = [
   { id: 'linen-accent', name: 'Lilla kudden' },
 ];
 
+// #1020: existing sheet/case/duvet per actual MYDAL berth; names are UI labels, no new geometry.
+export const BUNK_LINEN = [
+  { id: 'lower-sheet', name: 'Underslafens lakan' },
+  { id: 'lower-pillow', name: 'Underslafens örngott' },
+  { id: 'lower-duvet', name: 'Underslafens täcke' },
+  { id: 'upper-sheet', name: 'Överslafens lakan' },
+  { id: 'upper-pillow', name: 'Överslafens örngott' },
+  { id: 'upper-duvet', name: 'Överslafens täcke' },
+];
+
 export const BEDDING = {
   ticking: 0xe4e2db, mattressR: 0.045, sheetH: 0.75,
   sheets: { chintz: 0xf3f1ea, vader: 0x2b2e35, unicorn: 0xf6e9f1, plain: 0xf1f0ea },
