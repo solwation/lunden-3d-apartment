@@ -7,7 +7,7 @@ export const gameView = { w: typeof innerWidth === 'number' ? innerWidth : 0, h:
 export function bindGameViewport(renderer, camera, { deferResize = () => false } = {}) {
   const canvas = renderer.domElement;
   const win = canvas.ownerDocument.defaultView, doc = canvas.ownerDocument;
-  let width = 0, height = 0, frame = 0, pending = false, disposed = false;
+  let width = 0, height = 0, frame = 0, pending = false, deferred = false, disposed = false;
   function sync() {
     if (disposed) return;
     const w = canvas.clientWidth, h = canvas.clientHeight;
@@ -16,8 +16,8 @@ export function bindGameViewport(renderer, camera, { deferResize = () => false }
     gameView.w = w; gameView.h = h;
     // The opaque phone cover needs current CSS dimensions for DOM/input, but no new drawing buffer.
     // Keep projection paired with the existing buffer until a visible draw can use the latest layout.
-    if (deferResize()) { pending = true; return; }
-    pending = false;
+    if (deferResize()) { pending = true; deferred = true; return; }
+    pending = deferred = false;
     if (w === width && h === height) return;
     width = w; height = h;
     camera.aspect = w / h;
@@ -51,7 +51,7 @@ export function bindGameViewport(renderer, camera, { deferResize = () => false }
   sync();
   const dispose = () => {
     disposed = true;
-    pending = false;
+    pending = deferred = false;
     observer?.disconnect();
     if (frame) win.cancelAnimationFrame(frame);
     for (const [target, event, fn] of listeners) target?.removeEventListener(event, fn);
@@ -59,5 +59,7 @@ export function bindGameViewport(renderer, camera, { deferResize = () => false }
   // Main flushes before its next visible frame; a resize rAF may otherwise run after the animation loop.
   // No layout read in ordinary unchanged frames, or while the cover still defers the pending resize.
   dispose.flush = () => { if (!disposed && pending && !deferResize()) sync(); };
+  // Diagnostic snapshot only: cached binding state, no extra layout/style reads per frame.
+  dispose.layoutState = () => ({ deferred: pending && deferred ? 1 : 0, retained: [width, height] });
   return dispose;
 }

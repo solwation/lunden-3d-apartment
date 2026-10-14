@@ -226,6 +226,15 @@ class CrashLog {
       portrait: matchMedia('(orientation: portrait)').matches ? 1 : 0, standalone: (navigator.standalone || matchMedia('(display-mode: standalone)').matches) ? 1 : 0,
     };
     const c = this.ctx;
+    // Only the measured, opaque full-screen rotation instruction can explain a deferred
+    // projection. No DOM names/text/styles enter the report, just this bounded boolean.
+    const cover = document.getElementById('rotate'), cr = cover?.getBoundingClientRect(), cs = cover && getComputedStyle(cover);
+    m.covered = !document.hidden && !!cr && cs.display !== 'none' && cs.visibility === 'visible' && cs.position === 'fixed' &&
+      cs.opacity === '1' && /^rgb\([^)]*\)$/.test(cs.backgroundColor) &&
+      cr.x <= 0 && cr.y <= 0 && cr.right >= innerWidth && cr.bottom >= innerHeight &&
+      cover.contains(document.elementFromPoint(innerWidth / 2, innerHeight / 2)) ? 1 : 0;
+    const binding = c?.viewportBinding?.layoutState?.();
+    if (binding) { m.deferred = binding.deferred; m.retained = binding.retained; }
     if (c?.camera) m.aspect = round(c.camera.aspect, 3);
     // Validate the allocated buffer with the renderer's exact ratio (#930).
     // Ordinary snapshots/reports retain their bounded public precision.
@@ -267,7 +276,19 @@ class CrashLog {
       Math.abs(m.rect[0]) <= T && Math.abs(m.rect[1]) <= T &&
       Math.abs(m.rect[2] - m.css[0]) <= T && Math.abs(m.rect[3] - m.css[1]) <= T;
     if (!inputInset && m.vv && (Math.abs(m.css[0] - m.vv.w) > T || Math.abs(m.css[1] - m.vv.h) > T)) return { msg: `canvas ${m.css[0]}x${m.css[1]} vs visualViewport ${m.vv.w}x${m.vv.h}`, faultClass: 'surface-vv' };
-    const faultClass = hidden ? 'background-projection' : 'foreground-projection';
+    // Keep the same report/message: this category explains an intentionally retained
+    // camera+buffer only when every measured surface and the retained pair agree.
+    // Missing/contradictory legacy metadata and genuine projection defects stay strict.
+    const same = (a, b) => Array.isArray(a) && a.length === b.length && a.every((v, i) => Number.isFinite(v) && Math.abs(v - b[i]) <= T);
+    const retained = m.retained;
+    const coveredProjection = !hidden && m.covered === 1 && m.deferred === 1 &&
+      same(m.doc, m.css) && same(m.rect, [0, 0, ...m.css]) && m.vv &&
+      Math.abs(m.vv.scale - 1) <= .01 && same([m.vv.w, m.vv.h, m.vv.top, m.vv.left], [...m.css, 0, 0]) &&
+      Array.isArray(retained) && retained.length === 2 && retained.every(v => Number.isSafeInteger(v) && v > 0) &&
+      Number.isFinite(m.aspect) && Math.abs(m.aspect - retained[0] / retained[1]) <= .01 &&
+      Number.isFinite(m.px) && m.px > 0 && Array.isArray(m.buf) && m.buf.length === 2 &&
+      m.buf.every((v, i) => Number.isFinite(v) && Math.abs(v - retained[i] * m.px) <= T * m.px + 1);
+    const faultClass = hidden ? 'background-projection' : coveredProjection ? 'covered-projection' : 'foreground-projection';
     if (m.aspect && Math.abs(m.aspect - m.css[0] / m.css[1]) > 0.01) return { msg: `aspect ${m.aspect} vs canvas ${round(m.css[0] / m.css[1], 3)}`, faultClass };
     if (m.buf && m.px && (Math.abs(m.buf[0] - m.css[0] * m.px) > T * m.px + 1 || Math.abs(m.buf[1] - m.css[1] * m.px) > T * m.px + 1)) return { msg: `buffer ${m.buf[0]}x${m.buf[1]} vs canvas ${m.css[0]}x${m.css[1]} at ${round(m.px, 2)}`, faultClass };
     return none;
