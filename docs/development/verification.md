@@ -6706,3 +6706,14 @@ post edge x13.4 is at least0.202m; the full stand is between ramp end24.5 and st
 start27.25. Raw overview/front costs are189/81calls and1620/894triangles respectively,
 for unmerged component geometry, not the production World's merged render budget.
 No World, physical-phone, audibility or frame-rate claim follows from these probes.
+
+#1017 publication `a213398144fc592fcd8cf26db915df9d9db2105b` retains exact
+Target/config/Player/Marks/Darts/surroundings/nerf/index and both test-producer inputs
+from native1/render1. Incoming #1034 food/keep/main/held-camera restoration paths
+were preserved on the pinned rebase and were not rerendered as a whole World.
+All1427 published-file hashes match;811 older stamped id→publication-time pairs and
+raw changelog rows remain exact, new812 is first. Actual Pages run38579632355 /
+job115905777477 created the right-SHA deployment14:20:48.4981528Z and reported
+success14:21:14.4317128Z (2026-10-14); root independently checked the full job log,
+manifest, critical inputs and both PNG. No further runtime change accompanied
+this completion record; #1018 remains separate.
