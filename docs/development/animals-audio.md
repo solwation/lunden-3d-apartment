@@ -216,3 +216,24 @@ Closet cat floor (#542): roomSpot uses stairUnderside with CAT_FLOOR_HEADROOM (0
 Miele fireworks verification (#547): mieletest observes spark colours over the first three seconds rather than sampling only at the end (the random 0.65–0.95 s pop times can leave no sparks then). Separate checks retain single counting and eventual expiry; deterministic random endpoints cover both extremes. ?only=fireworks scopes the browser test to coat/discovery/hearts without carrying/photo/rarity loops. Production effects/timing are unchanged.
 
 Music refresh (#500): all twelve #416 recordings are retired; previous-sources-416.json preserves original source history. Josh Woodward instrumental pop/folk/rock, Kevin MacLeod bossa/jazz/ukulele and Scott Buckley piano/cello/strings replace them. Stable channel ids/order retain saved index meanings despite Lugn pop/Lätt och glatt/Pop och rock names. Full-length stereo and higher encoding rates are explicit changes, not re-encoding of the retired files. CREDITS.md, sources.json and the public credits page include CC BY 4.0 attribution, source/artist links, original hashes and processing notices; preview controls preload nothing. Composer removes generated CHANNELS and makes a bounded attempt at both channel recordings before a load status. PC/laptop/Turbo remove their generated fallback scheduling; their visual/game flows continue with unavailable audio. Browser tests cover all 24 formats, lazy requests, mute, channel rotation, touch controls, failed streams with zero generated oscillators, media shutdown and real saved-state reload. Human listening review remains outstanding; these technical checks do not establish subjective musical quality.
+
+
+### Speaker fabric materials (#1027)
+
+The two existing SYMFONISK bookshelf fronts, the lamp's black knitted speaker
+base, both Nest mini fabric domes and the Nest hub fabric base each expose one
+explicit `speaker-fabric` surface in the existing upholstery library. Six
+canonical movable IDs are whitelisted in `SPEAKER_MATERIAL_IDS`; the shared
+layout protocol remains version1. Each builder creates private material handles
+and marks only its actual cloth part before the ordinary static merge. The
+existing helper adds UV1 for metre-scaled patterns while preserving original
+UV0, shape, color, map and finish for Original. There is no scene traversal or
+shared/global recoloring.
+
+Bookcase shells, control strips/buttons, IKEA tabs and status LEDs remain
+separate. The lamp's smoke glass, inner glowing opal diffuser and collar keep
+their materials; its independent FloorLamp still switches only the light. Nest
+mounts, cords, shells, screens and animated dots keep their materials and
+controller identities. The Sonos/Nests implementations and audio model are
+unchanged. Saved materials use the ordinary shared UI, revisions and reload
+path independently of furniture position.

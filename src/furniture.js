@@ -1991,6 +1991,7 @@ export const sonosLed = new THREE.MeshBasicMaterial({ color: 0x4a4a4a });
  * shade. Faces local +z. The lamp's glass is its own lamp (lights.js FloorLamp: E toggles it, a pool light). */
 function symfonisk(item, lights) {
   const g = new THREE.Group(), S = SYMFONISK, col = S.colors[item.color] ?? S.colors.white;
+  const textile = upholsterySurface(g, 'Högtalarens tyg', { id: 'speaker-fabric' });
   const fabric = new THREE.MeshStandardMaterial({ color: col, roughness: 0.95 });
   const shell = new THREE.MeshStandardMaterial({ color: col, roughness: 0.5 });
   const dark = item.color === 'black';
@@ -1999,7 +2000,7 @@ function symfonisk(item, lights) {
   if (item.kind === 'lamp') {
     const L = S.lamp;
     // Base: dark knitted fabric cylindrical speaker with slightly tapered top rim (#461, docs/symfonisk-lamphogtalare-ikea-2026-10-07.png)
-    const baseMat = new THREE.MeshStandardMaterial({ color: 0x1f2022, roughness: 0.95 });
+    const baseMat = textile.material(new THREE.MeshStandardMaterial({ color: 0x1f2022, roughness: 0.95 }));
     const basePts = [
       [0, 0],
       [L.baseR, 0],
@@ -2009,7 +2010,7 @@ function symfonisk(item, lights) {
       [0, L.baseH],
     ];
     const baseGeo = new THREE.LatheGeometry(basePts.map(([x, y]) => new THREE.Vector2(x, y)), 36);
-    add(new THREE.Mesh(baseGeo, baseMat), 0, 0, 0);
+    add(textile.part(new THREE.Mesh(baseGeo, baseMat)), 0, 0, 0);
 
     // Collar / shade mount ring
     const collar = add(new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, L.stem, 24), shell), 0, L.baseH + L.stem / 2, 0);
@@ -2070,8 +2071,8 @@ function symfonisk(item, lights) {
     const { w, d, h } = S.speaker;
     const [W, Hh, D] = item.lying ? [h, w, d] : [w, h, d]; // lying on its side: 31 wide, 15 high, still 10 deep
     add(rbox(W, Hh, D - 0.006, 0, 0, 0, shell, 0.008), 0, Hh / 2, -0.003);
-    const front = item.controls === 'front' ? new THREE.MeshStandardMaterial({ color: S.front[item.color] ?? col, roughness: 0.95 }) : fabric;
-    add(rbox(W - 0.004, Hh - 0.004, 0.008, 0, 0, 0, front, 0.004), 0, Hh / 2, D / 2 - 0.004); // the fabric front
+    const front = textile.material(item.controls === 'front' ? new THREE.MeshStandardMaterial({ color: S.front[item.color] ?? col, roughness: 0.95 }) : fabric);
+    add(textile.part(rbox(W - 0.004, Hh - 0.004, 0.008, 0, 0, 0, front, 0.004)), 0, Hh / 2, D / 2 - 0.004); // the fabric front
     if (item.controls === 'front') {
       // #418 (docs/symfonisk-bokhylla-staende.jpg): standing, the − ⏯ + strip low on the fabric front, the IKEA tab on top
       const C = S.controls, fz = D / 2 + 0.0005;

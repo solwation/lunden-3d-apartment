@@ -340,3 +340,8 @@ Crash diagnostics (#669): `tools/crashviewporttest.cjs` checks real console focu
 Parasollväven och långlampans respektive DANI-lampans tygskärm kan väljas i
 Möblera om. Original behåller vävdetaljerna; parasollets vikning och lampornas
 vanliga tändning och glöd fungerar som tidigare.
+De två SYMFONISK-högtalarnas tygfronter, SYMFONISK-lampans svarta
+stickade högtalarbas och de tre Nest-enheternas tyg kan väljas separat i
+**Möblera om → Meny → Välj tyg och mönster**. Förhandsvisa och bekräfta
+för alla besökare eller välj Original. Lampglas, skärmar och reglage
+behåller sina material; musik, smarta svar och lampans ljus fungerar som tidigare.

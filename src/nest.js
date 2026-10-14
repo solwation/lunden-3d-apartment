@@ -3,6 +3,7 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { NEST as N } from './config.js';
 import { sfx, isMuted } from './audio.js';
 import { gameView } from './viewport.js';
+import { upholsterySurface } from './upholstery.js';
 
 // Smart speakers (#325): a smart display with a screen on the kitchen window board and two round speakers in wall mounts
 // (the living room by the patio door, the upstairs hall). Our own plain look in chalk fabric: no logo, no wordmark.
@@ -69,13 +70,14 @@ const dotMat = () => new THREE.MeshBasicMaterial({ color: N.dots, transparent: t
 /** The round speaker in its wall mount (a builder). Local: the wall at z 0, facing +z, the centre at y 0 (item.y up). */
 export function nestmini(item) {
   const g = new THREE.Group(), { r, h, mount } = N.mini;
-  const fabric = new THREE.MeshStandardMaterial({ color: N.fabric, roughness: 0.95 });
+  const textile = upholsterySurface(g, 'Högtalarens tyg', { id: 'speaker-fabric' });
+  const fabric = textile.material(new THREE.MeshStandardMaterial({ color: N.fabric, roughness: 0.95 }));
   const shell = new THREE.MeshStandardMaterial({ color: N.shell, roughness: 0.45 });
   const lathe = (pts, m) => { const o = new THREE.Mesh(new THREE.LatheGeometry(pts.map(([x, y]) => new THREE.Vector2(x, y)), 40).rotateX(Math.PI / 2), m); o.position.z = mount; o.castShadow = true; return o; };
   // the puck: a shell at the back, the fabric dome in front (heights along +z)
   const body = new THREE.Group();
   body.add(lathe([[0, 0], [r * 0.93, 0], [r * 0.99, h * 0.12], [r, h * 0.5]], shell));
-  body.add(lathe([[r, h * 0.5], [r * 0.985, h * 0.72], [r * 0.9, h * 0.9], [r * 0.6, h * 0.985], [0, h]], fabric));
+  body.add(textile.part(lathe([[r, h * 0.5], [r * 0.985, h * 0.72], [r * 0.9, h * 0.9], [r * 0.6, h * 0.985], [0, h]], fabric)));
   // the mount: a back plate on the wall and a lip round the puck; a short cord down into a cable cover
   const plate = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.75, r * 0.75, mount, 32).rotateX(Math.PI / 2), shell);
   plate.position.z = mount / 2;
@@ -108,9 +110,10 @@ export function nestmini(item) {
  * bottom centre at the origin (item.y = the board). */
 export function nesthub(item) {
   const g = new THREE.Group(), H = N.hub, B = H.base;
-  const fabric = new THREE.MeshStandardMaterial({ color: N.fabric, roughness: 0.95 });
+  const textile = upholsterySurface(g, 'Högtalarens tyg', { id: 'speaker-fabric' });
+  const fabric = textile.material(new THREE.MeshStandardMaterial({ color: N.fabric, roughness: 0.95 }));
   const shell = new THREE.MeshStandardMaterial({ color: N.shell, roughness: 0.4 });
-  const base = new THREE.Mesh(new RoundedBoxGeometry(B.w, B.h, B.d, 3, 0.022), fabric);
+  const base = textile.part(new THREE.Mesh(new RoundedBoxGeometry(B.w, B.h, B.d, 3, 0.022), fabric));
   base.position.set(0, B.h / 2, -0.012); base.castShadow = base.receiveShadow = true;
   const foot = new THREE.Mesh(new RoundedBoxGeometry(B.w - 0.01, 0.006, B.d - 0.01, 2, 0.003), new THREE.MeshStandardMaterial({ color: 0x9a9893, roughness: 0.8 }));
   foot.position.set(0, 0.003, -0.012);

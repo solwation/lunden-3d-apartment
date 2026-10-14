@@ -6502,3 +6502,73 @@ One copied native1 label incorrectly named older bedding surfaces; the raw predi
 Final integration pins actual1cbb66ffec8d7e3b397c02fad743ff02f9af2ee7, retaining incoming #669 CrashLog/Worker changes and all speaker-fabric catalogue data. Final-native passed52/52, actualCLI0 in19.140444s with no live owners; explicit final schema subprocess receipt isCLI0/23tests. Seven rendered critical blocks/modules (linenTextures/tubelamp/DANI/parasol/upholstery/lights/Rearrange) remain exact; no extra GL was run for unrelated whole-source drift.
 
 Published clientd2d6d738c86c637d265fd2d7f6c39333030b3e8c (ch806): all241 src/data/index publication hashes and all11 final-native inputs match the commit independently. Actual Pages38569676439/job115871258147 created this exact SHA at2026-10-14T13:11:26.5391822Z and reported success13:11:31.7992100Z. Worker-first3d147087 actually executed npx wrangler deploy13:02:00.5944797Z and Deployed13:02:08.0341293Z, version27b64635-32fa-4774-8ccc-f81a278d1729 (run38568403820/job115866882862). Both own local services and all three test browser profiles/owner trees are stopped;607-path final producer, earlier native/render sources, raw JSON/PNG/exit/socket receipts and original label correction remain archived. No further GL, World, phone, FPS or production verification write is implied.
+### Six actual speaker fabrics (#1027)
+
+`tools/speakermaterialtest.cjs` exercises the actual two bookshelf SYMFONISKs,
+SYMFONISK lamp speaker base, two Nest minis and Nest hub builders with the normal
+static merge, shared Rearrange controller and source-bound main material UI. The
+immutable Original baseline is724a3ee. Additive export aliases expose the unchanged
+private SYMFONISK builder and FloorLamp class; their bodies are not rewritten.
+One proof context compares every premerge position, normal, UV0, index, pose,
+finish, rest and footprint to that baseline. Private material identity, UV1
+retention, all library choices, exact Original and untouched noncloth neighbors
+are checked after merge. Ordinary merged mesh counts remain4/4/5/8/8/6.
+
+Native3 passed49/49, actualCLI0 in7.794526s, without WebGL. Two real local HTTP
+visitors and additional conflict/new-visitor contexts cover preview/cancel with
+zeroPUT, active/new/genuine reload, independent speakers, pose/material concurrent
+writes, stale409, offline cache preservation, unsupported Worker capability and
+ordinary begin/ghost/confirm move. Real library buttons work by keyboard and touch.
+Actual Sonos transport/panel/keyboard/touch and original target verbs are checked;
+actual Nest targets, caption/idle canvas, animated dots, hush and power-off are
+checked using an explicitly substituted speech sink. Actual FloorLamp toggles the
+inner glow independently of the chosen knitted base and original smoke glass.
+These controller tests do not initialize the audio graph or claim audible playback.
+The native library DOM image was opened and inspected.
+
+Native1 is retained as actualCLI1/31.198522s,48/49: its artificial capability0
+setting and confirmation crossed two browser turns. Native2 is actualCLI1/21.327856s,
+48/49: the following normal Original test inherited the injected capability until
+a pending poll completed; it lacks a separate post-failure state snapshot. Native3
+records the actual fixture mechanism: beforeSync capability0/pullingtrue, then a
+completed real GET/capability1/idle and successful Original confirmation preserving
+pose[4,0,10]. Only the test now waits for real GET completion; runtime/polling was
+not changed. Original logs/producers/freezes remain under`/tmp/lunden-priority-1027`.
+
+The sole component renderer passed14/14, actualCLI0 in3.475082s: one900×560/DPR1
+renderer, six side-by-side Original/pattern PNGs and18 small render passes, noWorld.
+All six PNGs were opened. Bookcase fronts, both mini domes and the lamp's knitted
+base show the selected pattern with original shells/cords/controls and lamp
+glass/diffuser preserved. The hub fabric base is small and partly obscured by its
+screen; the image does not prove its full hidden area. Native handle/isolation
+checks cover that entire part. All six linked shaders expose UV1; bounds remain
+in frame. Actual before→after screen-pass calls/triangles are4→4/2576,4→4/1400,
+5→5/1192,8→8/1428,8→8/1428,7→7/2216 respectively. The lamp's transparent screen
+pass count7 differs from its ordinary merged mesh count6. No geometry or draw
+cost is added. Every browser run records actual child exits, owned PID/startTicks/
+PPid/cwd/socket-FD/tcp/tcp6, and finishes live[] with its temporary profile absent.
+These are component/controller checks, not full World, physical phone or FPS proof.
+
+Worker-first3db361fd729b267deca3768deace1d99b3b67a30 passed schema22/22/CLI0
+and actually deployed in run38567856252/job115865047238 at12:58:08.5846141Z
+on2026-10-14, version5f31d6db-6da7-4dda-8ba9-732a5f8f24ce. The full job log is
+preserved; protocol version1 and other material families remain unchanged.
+
+Final integration pins actual remote d2d6d738c86c637d265fd2d7f6c39333030b3e8c
+(the delivered canopy/shades client). Fresh local-Worker final native repeated
+49/49/actualCLI0 in13.060931s; final schema23/23/CLI0. All256 final-native input
+paths are frozen. The entire SYMFONISK function, complete Nest, upholstery helper,
+Sonos, Lights, Rearrange, main UI and index remain byte-identical to render1. Six
+whole paths differ from the render freeze: config/catalog/Worker-schema through
+the independent canopy family, furniture/patio through its explicit shade/canopy
+builders, and crashlog through the separately delivered focus-viewport diagnosis.
+Both builder families are preserved and the final native imports the actual
+combined furniture module. No new render or whole-World byte parity is claimed.
+
+The first client push was rejected as non-fast-forward (actualCLI1). A subsequent
+immutable remote rebase preserves1026 completion9f255001 and1028 Worker catalogue
+af5ed8d3. Only catalog/schema differ from the final native's256 paths:254 remain
+exact, including all speaker builders, helper, UI and controllers. The speaker ID
+block and authorization branch remain exact; only the separate hanging-family
+whitelist is added. Combined schema24/24/CLI0 passes, including the actual six
+speaker IDs/revisions/legacy poses. No additional browser or render is implied.
