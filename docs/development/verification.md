@@ -6116,3 +6116,13 @@ confirm. The first render attempt's CLI1 (native write guard accidentally retain
 and first PNG remain archived; no runtime workaround was needed. Source freezes,
 raw failures, owners/socket records and cleanup are under the orchestration's
 `worker-1008-artifacts` archive. No World or physical phone is exercised.
+
+#1008 runtime publication `87da7adafee05fb795c905ae1e3080eca71eeb46` (ch793):
+post-final-rebase native25/25, actualCLI0; render2 actualCLI0, all three images
+inspected. Renderer elapsed was not separately measured. All1408 publication
+hashes are recorded; native-final differs only in the new changelog entry, and
+all older changelog raw bytes remain exact. Pages38555397365/job115823150043 ran
+actual actions/deploy-pages for this exact SHA and reported success at
+11:17:35.9657595Z on2026-10-14. No Worker source/contract changed, so this client
+change did not require a Worker deployment. Across retained native/render runs,
+81 owned child records are gone and their temporary Chrome profiles removed.
