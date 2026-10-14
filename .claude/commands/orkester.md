@@ -73,6 +73,24 @@ issues inom området finns kvar. Nya issues dyker upp löpande — lista om varj
 
 ## Synkronisering med andra orkestrar (issue #420, etikett `orkester`)
 Andra `/orkester`-sessioner kör på egna VM:ar och kan inte nås med SendMessage — GitHub är den gemensamma kanalen.
+- **Etikett för aktiv orkester:** välj ett unikt, stabilt orkester-id och använd samma id i statusen, reservationerna
+  och etiketten `orkester: <id>` (t.ex. `orkester: codex-orkester-priority-20261013`). Återupptagning behåller id:t.
+  Skapa etiketten vid sessionsstart om den saknas (`gh api -X POST repos/solwation/lunden-3d-apartment/labels
+  -f 'name=orkester: <id>' -f color=5319e7 -f 'description=Aktivt arbete hos orkester <id>'`). Ange den exakta
+  etiketten och gärna filterlänken i din statuskommentar, så användaren kan filtrera i GitHubs Issues-vy.
+- **Märk varje issue när arbetet börjar:** lägg till både `in-progress` och den egna `orkester: <id>` i samma
+  etikettanrop (`gh api -X POST repos/solwation/lunden-3d-apartment/issues/N/labels -f 'labels[]=in-progress'
+  -f 'labels[]=orkester: <id>'`). Ge alla arbetsagenter orkester-id:t och etiketten i deras prompt. Orkestern
+  kontrollerar etikettparet efter start och vid varje statusuppdatering; komplettera också egna redan aktiva issues
+  när denna regel införs eller en session återupptas. Högst en aktiv orkesteretikett per issue.
+- **Etiketten följer aktivt arbete, inte en framtida kö:** reserverade men ännu inte startade kedjeissues och
+  föräldrar utan eget aktivt arbete får ingen orkesteretikett. Ta bort den egna orkesteretiketten tillsammans med
+  `in-progress` när arbetet avslutas, issuen stängs/återöppnas, reservationen släpps eller agenten avbryts/väntar
+  utan att arbeta. Vid överlåtelse eller tillåtet övertagande uppdateras ägaretiketten enligt samordningsreglerna;
+  ta inte bort en annan aktiv orkesters etikett. Historiken ligger kvar i reservations- och statuskommentarerna.
+- Prefixet `orkester:` ändrar inte prioriteten och är inte samma etikett som samordningsetiketten `orkester`.
+  Filtrera aldrig bort arbetsissues ur kön bara för att de har en orkester-id-etikett. Etiketterna ersätter inte
+  reservationskontrollen eller kapplöpningsreglerna nedan.
 - **Först:** läs #420 och dess kommentarer (`gh api repos/solwation/lunden-3d-apartment/issues/420/comments`). Varje session
   har en egen statuskommentar. Ta inte issues som en annan session har reserverat där eller som har `in-progress`.
 - **Skapa din statuskommentar** i #420 (spara dess id) och **redigera den** (`gh api -X PATCH
@@ -165,8 +183,9 @@ Samordningen får aldrig vara skälet till att en agentplats står tom eller ett
 1. Ta bara de issues orkestern gav dig (de är reserverade med en kommentar, och bara den första har `in-progress`).
    Efter varje färdig issue inväntar du orkesterns nya tilldelning; fortsätt aldrig automatiskt en reserverad kedja.
    Orkestern kontrollerar hög → medel → låg, äldst först, mot en nyhämtad komplett kö före varje start. Ta aldrig
-   någon annan issue med `in-progress`. Sätt etiketten när du börjar på varje issue i kedjan, om den saknas (`gh api -X POST repos/solwation/lunden-3d-apartment/issues/N/labels -f 'labels[]=in-progress'`)
-   och ta bort den när du är klar eller avbryter (`gh api -X DELETE …/issues/N/labels/in-progress`).
+   någon annan issue med `in-progress`. Sätt både `in-progress` och orkesterns `orkester: <id>` när du börjar på
+   varje issue, enligt etikettregeln ovan. Ta bort båda när du är klar, avbryter eller släpper arbetet; behåll
+   aldrig en orkesteretikett på ett väntande ärende. Ändra inte andra aktiva orkestrars etiketter.
 2. Före varje issue: `git fetch origin main && git rebase origin/main`.
 3. **Leverera i små bitar och pusha tidigt och ofta.** Dela upp varje issue i delsteg som var och en är grön (bygger,
    testad, ingen halvfärdig kod på main) och pusha varje delsteg så fort det är verifierat, i stället för att samla allt

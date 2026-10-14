@@ -24,6 +24,12 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   in-progress`) when you stop without finishing, when you close the issue after implementing it
   (`Fixes #N` closes it, but does not remove the label — do that too), and when you **reopen** an
   issue. A reopened issue starts without the label until someone picks it up again.
+- **Orchestrated work also gets `orkester: <id>`.** Use the orchestrator's stable session id, matching its #420
+  status/reservations. Add it together with `in-progress` on each actively worked issue; remove both when finished,
+  closed, reopened, paused without active work, or released. Do not label future queued issues or idle parents.
+  The orchestrator creates the label if missing, reconciles its own active issues on resume/status updates, and
+  records the exact label in #420. Never remove another active orchestrator's label. The `orkester:` prefix is
+  ownership metadata, distinct from the `orkester` coordination label, and does not change priority or replace claims.
 - **Priorities are labels.** Every issue carries exactly one of `priority: high`, `priority: medium`,
   `priority: low` (set it when creating the issue; the user decides when unsure, default `priority: medium`).
   When picking work, take the highest-priority open issue that is not `in-progress` (oldest first within a level;
