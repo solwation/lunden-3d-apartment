@@ -5280,3 +5280,24 @@ Measured native5: actual Node0/13checks, six real hit/hurt receipts, HP 10→4, 
 `PLAYWRIGHT_MODULE=/path/to/playwright CHROME_PATH=/usr/bin/google-chrome node tools/freezersummarytest.cjs http://localhost:8875 /tmp/lunden-freezer-summary-surface/final` checks the actual index DOM, production loader/list and actual `buildNote`/`refresh` paper canvas without World/WebGL. It verifies one explicit head-hit summary and one plain Nerf optimization summary (unrelated Nerf features stay separate), unchanged originals and every unrelated row, grouping before the 100-row limit, idempotence/unknown groups, publication order when a newer group member has a lower id, old seen-id migration, first/return visits, raw offline cache parity, monotonic seen ids with partial cached history, texture disposal and actual canvas text/New stamp. The existing full-world `notetest.html` expected display/New counts now use the grouped presentation; its world/action tests were not rerun for this isolated presentation change.
 
 The focused final Map-based run passed all 23 assertions with actual CLI 0 and no pageerrors or WebGL contexts. Its real 300×420 paper image was inspected: the summary appears once, technical head-hit and Nerf optimization text is absent and unrelated news remains. Artifacts and source hashes are retained under `/tmp/lunden-freezer-summary-surface/`; historical publication-time equality is checked separately using `tools/changelog_stamp.py`. Future head-hit entries use `group: "head-hits"` and Nerf optimizations use `group: "nerf-improvements"` as documented in CLAUDE.md. No gameplay, physical-phone, full-world or FPS certification is claimed.
+
+### Covered viewport allocation reduction (#669, 2026-10-14)
+
+`PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/coveredviewporttest.cjs GAME_BASE OUT`
+loads actual index CSS, Three r170, viewport, crash reporting and phone restore
+handlers with bootstrap suppressed. A tiny genuine WebGL box replaces the apartment;
+main's cover/defer policy is executed verbatim and its timed pre-simulation flush
+hook is source-checked. The original native probe returned11 checks/actual CLI0;
+current driver21/actual CLI0, no page errors, and inspected portrait/landscape PNGs.
+Original transition:3 resize calls/6 canvas dimension writes; candidate:0/0.
+It checks startup, warming, first view, shot, desktop, legacy default binding,
+latest uncovered dimensions before resize-rAF, unchanged quality ratio and disposal.
+An explicitly synthetic hidden-state control checks pending visibility/pageshow
+catchup; it is not actual Safari background evidence. Forced actual WebGL loss/
+restore retains both actual local-intercepted CrashLog POSTs and one original
+guarded reload callback. It does not reproduce or prevent the reported iPhone loss.
+Source manifests precede the run; assertions/results precede required PNG captures;
+raw exits and images: `/tmp/lunden-crash669-new-surface/{baseline,candidate}/` and
+`baseline-cli.txt`/`candidate-cli.txt`. The initial server-read race returned curl7
+before the listener was ready; the later verified listener and native run succeeded.
+No World, phone, rendered combat, FPS benchmark or quality rollback acceptance.

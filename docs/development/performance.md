@@ -638,3 +638,32 @@ The one ordinary World+native-peer acceptance after fresh-bound reuse still reco
 Spatial count/fill (#715) now lazily reuses six per-entry scratch arrays with direct three-element resets, preserving getter/numeric/finite order, triangle mapping, typed outputs, budgets and scheduler. Scratch starts only at the first spatial triangle and is released at spatialReady/cancel/invalid settlement; no new long-lived registry or eager804-job allocation. Existing typed spatialBytes does not account all JavaScript heap. On the saved49118-triangle component this changes785888 executed array-creation expressions to6, not a measured heap-allocation number (V8 may scalar-replace temporaries). A first `.fill` reset candidate was rejected for measured slowdown despite parity. The delivered constant-reset candidate passes82 focused/485 broad native checks; matched controlled count+fill observations are76.0→61.4ms,157.3→75.9ms (reverse order),115.6→70.7ms. These variable native blocks neither map actual17 waiters nor prove cold World/phone/FPS improvement; [full evidence and limitations](../validation/issue-715/README.md#spatial-builder-array-reuse-2026-10-13).
 
 Cold static native query (#715): `combatcold.js` borrows original geometry attributes/index/bounds in a query-local shallow view. Already scanned valid entries can answer in128-triangle native chunks while spatial construction continues; the original2ms cooperative slices/2s prediction deadline, ready accelerator and unsupported waits remain. Each original group's native start phase/order/overlap/partial triangle is retained; public drawRange/groups/bounds never change. Whole geometry/material/ancestor/matrix/layer/native-getter signatures and disposal are checked before resuming a chunk after yields, and before accepting hits. Only when every original occurrence is eligible can its shared wait/urgent user release early. [Native parity, held-builder policy observations and limitations](../validation/issue-715/README.md#cold-native-triangle-path-2026-10-13) distinguish this from a whole-app/phone gain.
+
+
+## Covered phone viewport resize (#669, 2026-10-14)
+
+The new public loss/restore pair in build7834406 occurs after warm-up (`done`,
+260 stable programs), 1.1 s after the recorded orientation event, with a 47 ms
+restore. Saved CPU samples are 2–6 ms; they are not the loss frame or GPU timings.
+The preceding ~9–10 fps while reading follows the intentional 100 ms covered-view
+cadence. Aggregate renderer calls/triangles can include a shadow redraw. Neither
+the estimated source texture bytes nor this timing establishes the loss cause.
+
+`bindGameViewport` accepts optional `deferResize`; existing callers retain immediate
+resizing. Main enables it only under the same fully prepared phone policy used to
+skip ordinary draws: low-memory, no screenshot mode, warm complete, first full view
+complete, and hidden document or opaque portrait cover. CSS remains in charge of
+the canvas and `gameView` follows each valid observed CSS size. While deferred,
+projection remains paired with the old buffer. Pending changes flush inside the
+CPU frame timer before simulation/render, independently of resize-rAF ordering.
+Unchanged frames do not read layout through the flush. Disposal cancels pending
+work and prevents later flushes; no new timers or changed quality settings.
+
+Actual native index/Three r170 component comparison at ratio0.75: landscape
+852×393 → covered393×793 → covered393×852 → original landscape formerly made
+three `setSize` calls (six canvas width/height writes); now none. An uncovered
+844×390 resize still makes one call/two writes and yields633×292. A latest-layout
+resume before the queued resize-rAF synchronizes760×340/570×255 and projection
+before the actual tiny-scene draw. Original loss/restore logging and guarded
+phone reload remain unchanged. This is a reversible reduction of unnecessary
+covered-buffer resizing, not a demonstrated iPhone GPU-crash fix. #669 stays open.

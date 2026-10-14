@@ -171,7 +171,9 @@ scene.fog = new THREE.Fog(COLORS.sky, SITE.south.view.fogNear, SITE.south.view.f
 
 const camera = new THREE.PerspectiveCamera(72, 1, 0.05, SITE.south.view.cameraFar);
 camera.rotation.order = 'YXZ';
-bindGameViewport(renderer, camera);
+// Safe during construction, before the warm-up and phone-cover policy exist.
+let deferViewportResize = () => false;
+const viewportBinding = bindGameViewport(renderer, camera, { deferResize: () => deferViewportResize() });
 const compass = new Compass(camera, document.getElementById('compass'));
 
 const hemi = new THREE.HemisphereLight(0xeaf3ff, 0xd6d2ca, 2.0);
@@ -2505,11 +2507,14 @@ let mirrorFrame = 0;
 const frameDiag = { ms: 0, progs: 0, shadow: 0, warm: '' };
 // The portrait instruction covers the entire game surface; use the same media query as #rotate in index.html.
 const portraitCover = window.matchMedia('(orientation: portrait) and (pointer: coarse) and (max-width: 1100px)');
+deferViewportResize = () => lowMemory && !shotMode && warm.done && startupSceneReady
+  && (document.hidden || portraitCover.matches);
 let lastViewDraw = -Infinity, shadowElapsed = 0;
 /** One frame of the game loop; `raw` = seconds since the last one (tools/turntest.html calls it with the loop stopped). */
 function frame(raw) {
   const dt = Math.min(raw, 0.05), f0 = performance.now(), p0 = renderer.info.programs?.length ?? 0;
   hitch.begin();
+  viewportBinding.flush(); // catch up before the first uncovered frame; include resize work in its CPU diagnostics
   // only while playing, after the warm-up, and not with a pinned level
   if (!overlay.hidden || document.hidden || pinned !== null || !warm.done
     || (lowMemory && (reading || portraitCover.matches))) quality.reset();

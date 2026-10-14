@@ -1,4 +1,5 @@
 [
+  {"id": 760, "date": "2026-10-14", "text": "Telefonen gör mindre onödigt grafikarbete bakom rotationsskärmen."},
   {"id": 759, "group": "head-hits", "date": "2026-10-14", "text": "Förbättringar för huvudträffar."},
   {"id": 758, "group": "head-hits", "date": "2026-10-13", "text": "Verifierade bakre huvudträffar kan ge dubbel skada även efter hälsning i helt oförändrad stående pose."},
   {"id": 757, "group": "head-hits", "date": "2026-10-13", "text": "Vänster tinning kan ge huvudträff efter en begränsad större vridning på samma plats efter hälsning."},
