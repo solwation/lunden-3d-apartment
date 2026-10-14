@@ -29,6 +29,17 @@ issues inom området finns kvar. Nya issues dyker upp löpande — lista om varj
   användarens område. Sortera uttryckligen på prioritet och `created_at`; GitHubs listordning, `updated_at` och
   standardgränsen för `gh issue list` är inte prioritetsordning. Kontrollera vald issues aktuella etiketter och
   reservationer igen precis före start.
+- **Kompakt read-only-hämtning (#926):** `python3 tools/orkester_queue.py --issue 715 --issue 669 --out-dir /tmp/lunden-queue`
+  kan ersätta den manuella köhämtningen/sorteringen ovan. Varje körning hämtar hela öppna kön och aktuell body samt
+  **alla kommentarer** för #420 och varje `--issue`, med explicit `per_page=100`, `--paginate` och HTTP/Link-kontroll.
+  Tabellen behåller `orkester:`-ägaretiketter; föräldra-/barnuppgifter är bara information, aldrig automatiska hinder.
+  Fulla råfält, sid-/kommentarsantal och start/sluttid sparas i en unik atomisk snapshot **utanför repot**. Läs valda
+  bodies/hela kommentarhistoriken och #420 i filens `requests[].data` före beslut; tabellen ersätter inte den läsningen.
+  Ett exempel för full valda-data-läsning är `jq '.requests[] | select(.endpoint | contains("state=open") | not) | {endpoint,data}' SNAPSHOT`.
+  **CLI1 betyder ingen komplett färsk kö**: använd aldrig en äldre fil som ersättning eller välj den senaste lyckade filen
+  efter ett fel. Gör en ny körning inför varje nytt urval och igen med valt `--issue N` direkt efter en separat reservation
+  för race-kontrollen; även då läses alla kommentarssidor. Verktyget reserverar/ändrar inget, tolkar inga beroenden och
+  har ingen polling, snapshot-inläsning eller långlivad cache. En hämtning är tidsstämplad men inte en atomisk GitHub-vy.
 - **Ta det första startbara ärendet i den sorterade kön.** Ett ärende får hoppas över bara om det redan arbetas på
   (`in-progress`/aktiv annan agent), har en giltig annan reservation enligt samordningsreglerna, eller är konkret
   blockerat av ett olöst beroende, ett användarsvar eller en fysisk enhet som saknas. Kontrollera aktuell body,
