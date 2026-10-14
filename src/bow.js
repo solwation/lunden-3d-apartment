@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { BOW as B } from './config.js';
+import { stepArrow } from './bowflight.js';
 import { Holdable } from './holdable.js';
 import { sfx } from './audio.js';
 
@@ -109,8 +110,9 @@ export class Arrows {
       a.life -= dt;
       if (a.life <= 0) { a.m.visible = false; a.flying = false; continue; }
       if (!a.flying) continue;
-      a.v.y -= B.gravity * dt;
-      const from = a.m.position.clone(), to = from.clone().addScaledVector(a.v, dt);
+      const from = a.m.position.clone();
+      stepArrow(a.m.position, a.v, dt);
+      const to = a.m.position.clone();
       const tip = to.clone().addScaledVector(a.v.clone().normalize(), B.len); // the point leads by the arrow's length
       const h = this.hit(from.clone().addScaledVector(a.v.clone().normalize(), B.len), tip);
       if (h) { // in it: the point a few cm deep, the arrow stays a while

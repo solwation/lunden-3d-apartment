@@ -4,6 +4,7 @@ import { recordPlayerKill, awardPvpRange } from './stats.js';
 import { HitMarker } from './hitmarker.js';
 import { COMBAT as C, TOYS, pvpHitPoints, PVP_HEAD_BOXES as HB, rifleBoxHeadContact, rifleHeadBaseY, straightBoxHeadContact } from './config.js';
 import { nerfSegments, nerfPlayerContact } from './nerf.js';
+import { bowSegments, bowPlayerContact } from './bowflight.js';
 import { combatWorldHits, combatWorldPath, combatWorldPathBlocked, prepareCombatWorld } from './combatworld.js';
 
 // Combat between players (#667) on top of the ghosts (#666, src/ghosts.js; the room's check: cloudflare/players.js).
@@ -107,24 +108,36 @@ export class Combat {
     return combatWorldHits(this.scene, this.ghosts.group, this.camera, ray).length === 0;
   }
 
-  /** Whom an arrow from `o` with velocity `v` hits on its arc (#690): the first armed player whose body the path passes
-   * within `hitRadius` of, before it meets the world; or null. */
-  aimArc(o, v, range) {
-    const p = o.clone(), vel = v.clone(), step = 0.02, g = 9.81, foes = this.foes();
-    let travelled = 0;
-    for (let i = 0; i < 400 && travelled < range; i++) {
-      const q = p.clone().addScaledVector(vel, step);
-      vel.y -= g * step;
-      for (const f of foes) {
-        const a = f.feet.clone().setY(f.feet.y + C.body[0]), b = f.feet.clone().setY(f.feet.y + C.body[1]);
-        const dq = q.clone().sub(p), len = dq.length();
-        if (len > 0 && rayToSegment(p, dq.normalize(), len, a, b)[0] <= C.hitRadius) return f;
+  /** Actual bow launch and arrow-tip segments; nearest player before the first world contact. */
+  bowContact(shot, range) {
+    const round = (value, factor) => Math.round(value*factor)/factor;
+    const launch = { o: shot.o.toArray().map(x=>round(x,100)), d: shot.d.toArray().map(x=>round(x,1000)), s: round(shot.s,100) };
+    const points = [], foes = this.foes();
+    let best = null;
+    for (const segment of bowSegments(launch, range)) {
+      let nearest = null;
+      for (const foe of foes) {
+        const state = { p: foe.feet.toArray(), r: foe.root.rotation.y, c: foe.crouch ?? 0 };
+        const hit = bowPlayerContact(foe.id, state, segment);
+        if (hit && (!nearest || hit.distance<nearest.hit.distance)) nearest = { foe, hit };
       }
-      if (!this.clear(p, q.clone().addScaledVector(v.clone().normalize(), 0.3))) return null; // (clear stops 0.3 m short)
-      travelled += p.distanceTo(q);
-      p.copy(q);
+      const end = nearest ? segment.origin.map((x,i)=>x+segment.direction[i]*nearest.hit.distance) : segment.end;
+      points.push({ origin: segment.origin, end });
+      if (nearest) { best=nearest; break; }
     }
-    return null;
+    if (best) {
+      // Keep the real arrow's finite tip rays, including each turn between steps.
+      const vertices=points.flatMap(p=>[new THREE.Vector3(...p.origin),new THREE.Vector3(...p.end)]);
+      const hits=combatWorldPath(this.scene,this.ghosts.group,this.camera,vertices,this.camera.layers);
+      ray.layers.mask=this.camera.layers.mask;ray.camera=this.camera;
+      for(const piece of points){
+        const o=new THREE.Vector3(...piece.origin),d=new THREE.Vector3(...piece.end).sub(o),length=d.length();
+        if(!length)continue;
+        ray.set(o,d.divideScalar(length));ray.far=length;
+        if(hits(ray).length){best=null;break;}
+      }
+    }
+    return { ...launch, target:best?.foe??null, hc:best?.hit.head?[HB.version,...best.hit.point]:null };
   }
 
   /** A Nerf hit along the actual muzzle arc, before the first wall/floor or its travel limit. */
@@ -215,7 +228,7 @@ export class Combat {
     if (!W) return null;
     if (key === 'rifle') return this.rifleContact().target;
     if (key === 'nerf' && shot) return this.aimNerf(shot, W.range);
-    if (key === 'bow' && shot?.s) return this.aimArc(shot.o, shot.d.clone().multiplyScalar(shot.s), W.range);
+    if (key === 'bow' && shot?.s) return this.bowContact(shot, W.range).target;
     this.camera.getWorldPosition(eye);
     this.camera.getWorldDirection(dir);
     const d = dir.clone();
@@ -271,6 +284,12 @@ export class Combat {
           job.finish(blocked === false ? candidate.target : null);
         }, () => job.finish(null));
       return null;
+    }
+    if (key === 'bow' && shot?.s) {
+      const contact=this.bowContact(shot,this.rules.weapons.bow.range);
+      const wire={w:key,o:contact.o,d:contact.d,s:contact.s,to:contact.target?.id,...(contact.hc?{hc:contact.hc}:{})};
+      this.lastShot={...wire,to:contact.target?.id??null};this.ghosts.fire(wire);this.fired++;
+      return contact.target;
     }
     if (['rifle', 'wand', 'web', 'saber'].includes(key)) {
       const contact = key === 'rifle' ? this.rifleContact() : this.straightContact(key), g = contact.target;

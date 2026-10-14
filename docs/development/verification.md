@@ -55,6 +55,24 @@ failed syntax before connecting; both its CLI1 and the corrected5/5CLI0 are reta
 
 
 
+## Bow arrow-tip head damage (#979)
+
+`node --test cloudflare/bowhead.test.mjs` checks the shared native step, falling tip
+path/range/lifetime, first-body head rejection and actual PlayerRoom 2/1 damage,
+cached packets, forged head/origin/rate limits, recovery and one lethal UUID/reset.
+Run `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/bowheadtest.cjs GAME WORKER OUT`
+with an isolated devserve/local Node Worker. It uses real Bow draw/release/onShot,
+Arrows, Ghosts/Combat, two actual WS clients and native DOM/Three meshes; bootstrap
+and WebGL are blocked. It checks real head/body/miss/wall/floor, the arrow class's
+physical sticking, a falling10m path whose straight launch ray misses the head,
+unchanged near/distance points, lethal/reset/replay and visible original HUD images.
+`--legacy` selects one actual new-client head claim against an independently served
+previous Worker, expected body1. The independent frozen7759da7 Bow/Arrows reference
+is loaded directly from git: actual render-step positions and velocities match at
+16.7/20ms, and draw/release/solid-world methods remain source-identical. This confirms
+representative preserved physics, not all-frame-time parity of the fixed20ms
+predictor or full World/GPU/physical-phone performance.
+
 ## Module and test map
 
 ```text

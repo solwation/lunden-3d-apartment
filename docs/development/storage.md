@@ -3,7 +3,7 @@
 Read [CLAUDE.md](../../CLAUDE.md) first for shared workflow rules. Paths in code spans and module maps are relative to the repository root.
 
 Related: [deployment](deployment.md), [life](life.md).
-## Current shared head contract (#974, #893, #894)
+## Current shared head contract (#974, #893, #894, #979)
 
 Version 2 uses three shared logical head boxes from `PVP_HEAD_BOXES` in `src/config.js`:
 lower, middle and a smaller crown. Dimensions are gameplay approximations, not exact
@@ -30,8 +30,7 @@ footprint and target order. It may add a head contact only along its actual down
 ray, from the existing feet+1m origin, before native body/world obstruction. Offset
 flame contacts remain body damage. The shared `straightBoxHeadContact` validates the
 weapon/ray/range and original jet footprint; PlayerRoom recomputes the intersection.
-Cached packets without a v2 contact remain body damage. Bow/ball stay on their
-existing paths until separately delivered. The jetpack's volume-based body fallback now checks solid world obstacles (#978)
+Cached packets without a v2 contact remain body damage. The jetpack's volume-based body fallback now checks solid world obstacles (#978)
 from the actual rounded flame origin to the nearest surface of its existing body
 capsule, including side-offset targets inside the unchanged flame volume. The full
 finite ray reaches that contact without `clear()`'s .3 m shortening. A blocked body
@@ -52,6 +51,21 @@ unchanged conservative deadline/miss behavior. A version-2 Nerf `hc` requests se
 recomputation from the accepted target pose and rounded launch, not trust in the
 reported contact coordinates. Cached unversioned Nerf packets retain one-heart
 damage. This adds no extra message, animation-history gate or anatomical classifier.
+
+
+Bow (#979) reuses these same volumes along actual arrow-tip segments. `bowflight.js`
+shares gravity-before-translation with `Arrows.update(dt)`, keeping its existing
+variable-frame physics, draw speeds and world-contact policy. Combat and Worker
+predict with the existing20ms resolution and BOW.len tip offset, bounded by the
+original range and visible flight lifetime. The nearest existing body capsule
+(clipped above the logical neck) or head wins; the client tests the full finite
+world ray before accepting each prospective contact, including floors. PlayerRoom
+recomputes the FIRST player contact from accepted pose and rounded launch when
+v2 hc is present, so an earlier body or forged body-ray contact cannot award head.
+It still has no World map: real obstacle rejection belongs to the client, as for
+other weapon paths. Cached bow packets without v2 retain body1. Ball is a separate
+functional slice (#980). The20ms predictor is not an exact claim for every variable
+frame time; representative16.7/20ms native Arrows updates retain pre-change physics.
 
 Version 1 and its historical helpers remain only for cached older clients. The
 per-polygon notes below describe that legacy contract; their refinement requirements
