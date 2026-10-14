@@ -212,6 +212,7 @@ export function buildStreetLife({ entrances = [] } = {}) {
   const components = [instanced(metal, new THREE.MeshStandardMaterial({ color: 0xb4b9bd, roughness: 0.4, metalness: 0.7 }), bikes), instanced(frame, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.4, metalness: 0.3 }), bikes, bikeColors),
     instanced(tyres, new THREE.MeshStandardMaterial({ color: 0x141414, roughness: 0.8 }), bikes),
     instanced(spokes, new THREE.MeshStandardMaterial({ color: 0xb4b9bd, alphaMap: bikeSpokeTexture(), alphaTest: 0.35, side: THREE.DoubleSide, metalness: 0.35, roughness: 0.5 }), bikes)];
+  for (const mesh of components) mesh.userData.moving = true; // culling follows changed batch bounds
   group.add(...components);
   // #905: register only actual seeded models, in source order; keep all four shared batches.
   const pickGeometry = new THREE.BoxGeometry(1.7, 1.05, .6), pickMaterial = new THREE.MeshBasicMaterial({ visible: false });
@@ -229,7 +230,12 @@ export function buildStreetLife({ entrances = [] } = {}) {
         this.position.copy(p); this.yaw = yaw; this.pitch = pitch;
         const matrix = new THREE.Matrix4().compose(p, new THREE.Quaternion().setFromEuler(new THREE.Euler(0, yaw, pitch, 'YXZ')), scale);
         this.matrix = matrix;
-        for (const mesh of components) { mesh.setMatrixAt(this.index, matrix); mesh.instanceMatrix.needsUpdate = true; mesh.computeBoundingSphere(); }
+        for (const mesh of components) {
+          mesh.setMatrixAt(this.index, matrix);
+          mesh.instanceMatrix.needsUpdate = true;
+          mesh.computeBoundingBox();
+          mesh.computeBoundingSphere();
+        }
         pick.position.copy(p); pick.position.y += .525; pick.rotation.y = yaw;
       },
       footprint(feet, headroom, hurdle) {
