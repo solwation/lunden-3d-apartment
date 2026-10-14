@@ -38,6 +38,11 @@ tools/planttest.html   headless test: lift pot plants (window board → table, s
 
 ## Recent implementation notes
 
+Krukväxternas blommor och blad (#985): `src/furniture.js` (`flower`, `pinkFlower`) och fönsterväxterna i `src/sillplants.js` (`pelargon`, `orchid`, `cactus`, `violet`) använder naturtrogna kronblad, blomcentra och bladkurvor i stället för förenklade ellipsoider och icosahedron-blobs:
+- `flower` / `pinkFlower` i `src/furniture.js`: två lager välvda blad med mittveck och naturlig hängprofil (via återanvänd `leafShape`), böjda stjälkar med calyx, kupade kronblad (`flowerPetal`) och ståndarcentrum i gult (`heartMat`), med bevarad `windPlant` och `mergeStatic`.
+- Fönsterblommor i `src/sillplants.js`: pelargoner med individuella florets och pedicels i umbeldome, orkidéer med 3 foderblad, 2 breda kronblad och kontrastfärgad läpp (labellum), Saintpaulia med 5 sammetslika kronblad och gula dubbelknappar (anthers), samt kaktusblommor med stjärnformiga kronbladslager och ståndarkärna.
+- Bevarar batchning, 0 extra draw calls, vattenpåverkan (`tintPot`) och växtsvaj.
+
 Living-room palm (#491): original id/position retained; geometry dimensions scale by 0.8, pot by 0.8 × 0.95 (Ø 30.4 × 34.2 cm, extra reduction is a visual choice). Shared rounded brushed-copper pot: src/plantpots.js. Scaling is baked into geometry, so saved furniture transforms cannot undo the size change.
 
 ZZ plant (#495, resized #517): src/zzplant.js builds 15 tapered curved stems with eight paired glossy oval leaves and a terminal leaf each, using docs/references/garderobsblomma-2026-10-08.jpg for the silhouette. Assumed overall height now 126 cm, exactly twice #495; shared copper pot radius 15.2 cm/height 34.2 cm, also doubled. Smooth 16×8 leaf surfaces retain individual green variations, varied lengths/angles and a fine central/lateral vein bump. Floor corner x .37/z 11.4 and stable movable id are retained. Wall bounds bunch foliage clear of the west wall/BESTÅ/palm; wallExcludedMaterials preserves the round pot/soil dimensions instead of deforming them. Four material draws, ordinary shared layouts/restore. Parameters live in FURNITURE. tools/zzplanttest.html checks dimensions, actual round pot bounds, leaf variation, shared copper, mesh budget, cabinet clearance, movement/cancel/shared save/reload/restore; walktest verifies the patio route.

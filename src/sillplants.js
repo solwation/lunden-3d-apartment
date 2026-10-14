@@ -24,11 +24,165 @@ const mats = {
 const MAT_OF = { trail: 'leaf' }; // the trailing strands are leaves too (kept apart only to lay them down off the board)
 
 const tint = (geo, hex) => {
-  const g = geo.index ? geo.toNonIndexed() : geo, c = new THREE.Color(hex), n = g.attributes.position.count;
-  g.setAttribute('color', new THREE.Float32BufferAttribute(new Float32Array(n * 3).map((_, i) => [c.r, c.g, c.b][i % 3]), 3));
+  const g = geo.index ? geo.toNonIndexed() : geo;
+  if (hex !== undefined && hex !== null) {
+    const c = new THREE.Color(hex), n = g.attributes.position.count;
+    g.setAttribute('color', new THREE.Float32BufferAttribute(new Float32Array(n * 3).map((_, i) => [c.r, c.g, c.b][i % 3]), 3));
+  }
   for (const k of Object.keys(g.attributes)) if (!['position', 'normal', 'color'].includes(k)) g.deleteAttribute(k);
   return g;
 };
+
+function makeFloret(rad, col, eyeCol) {
+  const pos = [], cols = [];
+  const cP = new THREE.Color(col), cE = new THREE.Color(eyeCol ?? col);
+  const n = 5;
+  for (let p = 0; p < n; p++) {
+    const a0 = (p / n) * Math.PI * 2 - 0.22;
+    const a1 = ((p + 1) / n) * Math.PI * 2 + 0.08;
+    const am = (a0 + a1) / 2;
+    const r = rad * (p < 2 ? 0.92 : 1.05);
+    const p0 = [0, 0, 0.001];
+    const p1 = [Math.cos(a0) * r * 0.72, Math.sin(a0) * r * 0.72, 0.0018];
+    const p2 = [Math.cos(am) * r, Math.sin(am) * r, 0.003];
+    const p3 = [Math.cos(a1) * r * 0.72, Math.sin(a1) * r * 0.72, 0.0018];
+    pos.push(...p0, ...p1, ...p2, ...p0, ...p2, ...p3);
+    for (let k = 0; k < 6; k++) {
+      const c = (k === 0 || k === 3) ? cE : cP;
+      cols.push(c.r, c.g, c.b);
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
+  g.computeVertexNormals();
+  return g;
+}
+
+function makeOrchidBloom(sz, c0, c1) {
+  const pos = [], cols = [];
+  const col0 = new THREE.Color(c0), col1 = new THREE.Color(c1);
+  const quad = (p0, p1, p2, p3, c) => {
+    pos.push(...p0, ...p1, ...p2, ...p0, ...p2, ...p3);
+    for (let k = 0; k < 6; k++) cols.push(c.r, c.g, c.b);
+  };
+  const addPetal = (ang, len, wid, cup, col, seg = 2) => {
+    const ca = Math.cos(ang), sa = Math.sin(ang);
+    const nx = -sa, ny = ca;
+    for (let i = 0; i < seg; i++) {
+      const u0 = i / seg, u1 = (i + 1) / seg;
+      const w0 = Math.sin(Math.PI * Math.pow(u0, 0.6)) * wid * 0.5;
+      const w1 = Math.sin(Math.PI * Math.pow(u1, 0.6)) * wid * 0.5;
+      const z0 = Math.sin(Math.PI * u0) * cup;
+      const z1 = Math.sin(Math.PI * u1) * cup;
+      const p0L = [ca * u0 * len - nx * w0, sa * u0 * len - ny * w0, z0];
+      const p0R = [ca * u0 * len + nx * w0, sa * u0 * len + ny * w0, z0];
+      const p1L = [ca * u1 * len - nx * w1, sa * u1 * len - ny * w1, z1];
+      const p1R = [ca * u1 * len + nx * w1, sa * u1 * len + ny * w1, z1];
+      quad(p0L, p1L, p1R, p0R, col);
+    }
+  };
+  addPetal(Math.PI / 2, sz * 1.15, sz * 0.65, 0.002, col0);
+  addPetal(Math.PI * 1.22, sz * 1.05, sz * 0.58, 0.002, col0);
+  addPetal(-Math.PI * 0.22, sz * 1.05, sz * 0.58, 0.002, col0);
+  addPetal(Math.PI * 0.95, sz * 1.08, sz * 0.92, 0.004, col0, 3);
+  addPetal(Math.PI * 0.05, sz * 1.08, sz * 0.92, 0.004, col0, 3);
+  addPetal(-Math.PI / 2, sz * 0.85, sz * 0.65, 0.006, col1, 2);
+  addPetal(-Math.PI * 0.35, sz * 0.45, sz * 0.35, 0.003, col1);
+  addPetal(-Math.PI * 0.65, sz * 0.45, sz * 0.35, 0.003, col1);
+  const cg = new THREE.IcosahedronGeometry(sz * 0.15, 0);
+  const cp = cg.attributes.position;
+  for (let i = 0; i < cp.count; i++) {
+    pos.push(cp.getX(i), cp.getY(i) - sz * 0.1, cp.getZ(i) + 0.004);
+    cols.push(col1.r, col1.g, col1.b);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
+  g.computeVertexNormals();
+  return g;
+}
+
+function makeCactusBloom(rad, col) {
+  const pos = [], cols = [];
+  const cP = new THREE.Color(col), cC = new THREE.Color(0xf3d36b);
+  const quad = (p0, p1, p2, p3, c) => {
+    pos.push(...p0, ...p1, ...p2, ...p0, ...p2, ...p3);
+    for (let k = 0; k < 6; k++) cols.push(c.r, c.g, c.b);
+  };
+  for (let layer = 0; layer < 2; layer++) {
+    const n = 6;
+    const rLen = layer === 0 ? rad * 1.15 : rad * 0.95;
+    const rWid = rad * 0.38;
+    const zLift = layer === 0 ? 0.003 : 0.006;
+    const offset = layer * (Math.PI / 6);
+    for (let i = 0; i < n; i++) {
+      const ang = (i / n) * Math.PI * 2 + offset;
+      const ca = Math.cos(ang), sa = Math.sin(ang);
+      const nx = -sa, ny = ca;
+      const p0L = [-nx * (rWid * 0.2), -ny * (rWid * 0.2), 0.001];
+      const p0R = [nx * (rWid * 0.2), ny * (rWid * 0.2), 0.001];
+      const p1L = [ca * rLen * 0.6 - nx * (rWid * 0.5), sa * rLen * 0.6 - ny * (rWid * 0.5), zLift * 0.6];
+      const p1R = [ca * rLen * 0.6 + nx * (rWid * 0.5), sa * rLen * 0.6 + ny * (rWid * 0.5), zLift * 0.6];
+      const tip = [ca * rLen, sa * rLen, zLift];
+      quad(p0L, p1L, p1R, p0R, cP);
+      pos.push(...p1L, tip[0], tip[1], tip[2], ...p1R);
+      for (let k = 0; k < 3; k++) cols.push(cP.r, cP.g, cP.b);
+    }
+  }
+  const mound = new THREE.IcosahedronGeometry(rad * 0.22, 0);
+  const mp = mound.attributes.position;
+  for (let i = 0; i < mp.count; i++) {
+    pos.push(mp.getX(i), mp.getY(i), mp.getZ(i) + 0.004);
+    cols.push(cC.r, cC.g, cC.b);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
+  g.computeVertexNormals();
+  return g;
+}
+
+function makeVioletBloom(rad, col) {
+  const pos = [], cols = [];
+  const cP = new THREE.Color(col), cA = new THREE.Color(0xf5d433);
+  const quad = (p0, p1, p2, p3, c) => {
+    pos.push(...p0, ...p1, ...p2, ...p0, ...p2, ...p3);
+    for (let k = 0; k < 6; k++) cols.push(c.r, c.g, c.b);
+  };
+  const petalAngs = [Math.PI * 0.35, Math.PI * 0.65, Math.PI * 1.05, Math.PI * 1.5, -Math.PI * 0.05];
+  for (let i = 0; i < 5; i++) {
+    const ang = petalAngs[i];
+    const ca = Math.cos(ang), sa = Math.sin(ang);
+    const nx = -sa, ny = ca;
+    const len = rad * (i < 2 ? 0.9 : 1.1);
+    const wid = rad * (i < 2 ? 0.8 : 0.95);
+    for (let s = 0; s < 2; s++) {
+      const u0 = s / 2, u1 = (s + 1) / 2;
+      const w0 = Math.sin(Math.PI * Math.pow(u0, 0.6)) * wid * 0.5;
+      const w1 = Math.sin(Math.PI * Math.pow(u1, 0.6)) * wid * 0.5;
+      const z0 = Math.sin(Math.PI * u0) * 0.003;
+      const z1 = Math.sin(Math.PI * u1) * 0.003;
+      const p0L = [ca * u0 * len - nx * w0, sa * u0 * len - ny * w0, z0];
+      const p0R = [ca * u0 * len + nx * w0, sa * u0 * len + ny * w0, z0];
+      const p1L = [ca * u1 * len - nx * w1, sa * u1 * len - ny * w1, z1];
+      const p1R = [ca * u1 * len + nx * w1, sa * u1 * len + ny * w1, z1];
+      quad(p0L, p1L, p1R, p0R, cP);
+    }
+  }
+  for (const dx of [-rad * 0.12, rad * 0.12]) {
+    const p0 = [dx - rad * 0.08, -rad * 0.08, 0.004];
+    const p1 = [dx + rad * 0.08, -rad * 0.08, 0.004];
+    const p2 = [dx + rad * 0.08, rad * 0.08, 0.0055];
+    const p3 = [dx - rad * 0.08, rad * 0.08, 0.0055];
+    quad(p0, p1, p2, p3, cA);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
+  g.computeVertexNormals();
+  return g;
+}
 const strip = (geo) => { const g = geo.index ? geo.toNonIndexed() : geo; for (const k of Object.keys(g.attributes)) if (!['position', 'normal'].includes(k)) g.deleteAttribute(k); return g; };
 
 /** A leaf along +x from its stalk end (in the xz plane, face up): length L, width W; `prof(t)` = the width along it
@@ -91,9 +245,16 @@ function plant(kind, y, R, out, ctx) {
     for (let i = 0; i < 7; i++) {
       const a = R() * 6.28, d = R() * 0.06, [cx, cz] = dirOf(a), fy = y + 0.17 + R() * 0.08, t = d * 0.5 + Math.sin(d) * (fy - y), fx = cx * t, fz = cz * t;
       leaf(new THREE.CylinderGeometry(0.0025, 0.003, fy - y, 4).translate(0, (fy - y) / 2, 0).rotateZ(-d).rotateY(a).translate(cx * d * 0.5, y, cz * d * 0.5), 0x4f7d34);
-      for (let k = 0; k < 16; k++) {
-        const u = R() * 6.28, v = Math.sqrt(R()) * 0.04;
-        flower(blob(0.017, 1, 0.7, 1, fx + Math.cos(u) * v, fy + 0.012 - v * 0.5 + R() * 0.012, fz + Math.sin(u) * v), k % 4 ? ctx.col : new THREE.Color(ctx.col).lerp(new THREE.Color(0xffffff), 0.3).getHex());
+      const eyeCol = new THREE.Color(ctx.col).lerp(new THREE.Color(0xffffff), 0.35).getHex();
+      for (let k = 0; k < 14; k++) {
+        const u = R() * 6.28, v = 0.015 + Math.sqrt(R()) * 0.035;
+        const px = fx + Math.cos(u) * v, py = fy + 0.014 - v * 0.4 + R() * 0.012, pz = fz + Math.sin(u) * v;
+        leaf(tube([[fx, fy, fz], [px, py - 0.002, pz]], 0.001, 2), 0x4f7d34);
+        const dir = new THREE.Vector3(px - fx, py - fy + 0.005, pz - fz).normalize();
+        const fg = makeFloret(0.011 + R() * 0.003, k % 4 ? ctx.col : eyeCol, eyeCol);
+        fg.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), dir));
+        fg.translate(px, py, pz);
+        flower(fg);
       }
     }
   } else if (kind === 'orchid') { // broad strap leaves arching over the rim, two spikes of flowers
@@ -110,8 +271,13 @@ function plant(kind, y, R, out, ctx) {
       const [c0, c1] = ctx.col;
       for (let k = 0; k < 8; k++) {
         const p = curve.getPoint(0.6 + k * 0.05), sz = 0.026 - k * 0.0015;
-        flower(new THREE.CircleGeometry(sz, 6).scale(1.15, 0.9, 1).rotateY(a + Math.PI / 2 + (R() - 0.5) * 0.5).translate(p.x, p.y - 0.015, p.z), k % 3 ? c0 : c1);
-        flower(blob(0.007, 1, 1, 1, p.x + cx * 0.004, p.y - 0.018, p.z + cz * 0.004), c1);
+        const bx = p.x + cx * 0.008, by = p.y - 0.015, bz = p.z + cz * 0.008;
+        leaf(tube([[p.x, p.y, p.z], [bx, by, bz]], 0.0012, 2), 0x5a6b3a);
+        const bloom = makeOrchidBloom(sz, c0, c1);
+        bloom.rotateX(-0.15 + (R() - 0.5) * 0.1);
+        bloom.rotateY(a + Math.PI / 2 + (R() - 0.5) * 0.3);
+        bloom.translate(bx, by, bz);
+        flower(bloom);
       }
     }
   } else if (kind === 'cactus') { // a chunky ribbed column with two arms and a smaller one beside it, pink flowers
@@ -128,8 +294,11 @@ function plant(kind, y, R, out, ctx) {
       leaf(new THREE.SphereGeometry(0.019, 10, 3, 0, Math.PI * 2, 0, Math.PI / 2).translate(s * 0.088, y + hy + hl, 0), 0x55853f);
     }
     for (const [px, py, pz] of [[0.01, 0.235, 0], [-0.088, 0.17 + 0.02, 0], [0.045, 0.118, 0.035]]) {
-      for (let k = 0; k < 6; k++) flower(new THREE.SphereGeometry(0.012, 5, 3).scale(1.6, 0.5, 0.7).translate(0.012, 0, 0).rotateZ(0.6).rotateY(k * 1.05).translate(px, y + py, pz), ctx.col);
-      flower(blob(0.006, 1, 1, 1, px, y + py + 0.004, pz), 0xf3d36b);
+      const bloom = makeCactusBloom(0.016, ctx.col);
+      bloom.rotateX(-Math.PI / 2 + 0.2);
+      bloom.rotateZ((R() - 0.5) * 1.5);
+      bloom.translate(px, y + py, pz);
+      flower(bloom);
     }
   } else if (kind === 'basil') { // a bushy clump: stems with pairs of cupped leaves, light tips
     const greens = [0x4f9a35, 0x5fa040, 0x6aab45];
@@ -212,10 +381,14 @@ function plant(kind, y, R, out, ctx) {
   } else { // African violet: two rings of fuzzy round leaves over the rim, a posy of flowers
     for (let i = 0; i < 9; i++) { const a = i * 0.7 + R() * 0.3; leaf(put(leafShape(0.075, 0.065, { prof: ROUND, fold: 0.15, bend: 0.025 }), a, -0.3, Math.cos(a) * 0.02, y + 0.02, -Math.sin(a) * 0.02), 0x2b5226); }
     for (let i = 0; i < 7; i++) { const a = i * 0.9 + 0.4; leaf(put(leafShape(0.06, 0.055, { prof: ROUND, fold: 0.2 }), a, 0.2, Math.cos(a) * 0.01, y + 0.035, -Math.sin(a) * 0.01), 0x335f2c); }
-    for (let k = 0; k < 22; k++) {
-      const u = R() * 6.28, v = Math.sqrt(R()) * 0.055, px = Math.cos(u) * v, pz = Math.sin(u) * v, py = y + 0.085 + R() * 0.035 - v * 0.3;
-      flower(new THREE.CircleGeometry(0.018, 5).rotateX(-Math.PI / 2 + (R() - 0.5) * 0.8).translate(px, py, pz), ctx.col);
-      flower(blob(0.004, 1, 1, 1, px, py + 0.003, pz), 0xf3d36b);
+    for (let k = 0; k < 16; k++) {
+      const u = R() * 6.28, v = Math.sqrt(R()) * 0.052, px = Math.cos(u) * v, pz = Math.sin(u) * v, py = y + 0.085 + R() * 0.03 - v * 0.25;
+      leaf(tube([[px * 0.35, y + 0.03, pz * 0.35], [px, py - 0.003, pz]], 0.0012, 2), 0x335f2c);
+      const bloom = makeVioletBloom(0.015 + R() * 0.003, ctx.col);
+      bloom.rotateX(-Math.PI / 2 + (R() - 0.5) * 0.6);
+      bloom.rotateZ(R() * 6.28);
+      bloom.translate(px, py, pz);
+      flower(bloom);
     }
   }
 }

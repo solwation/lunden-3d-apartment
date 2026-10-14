@@ -13,6 +13,7 @@ import { zzplant } from './zzplant.js';
 import { copperPot } from './plantpots.js';
 import { restTarget } from './rest.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { leafShape, ROUND } from './sillplants.js';
 import { addCushions, addFoldedThrow, addDrapedThrow } from './cushions.js';
 import { CUSHIONS, DOUBLE_BED_LINEN, FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, PILLOWS, BEDDING, PINGPING, MYDAL, BUNK_LINEN, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO, YUCCA, LANGLAMPA, VANITY, HEMNES_DAYBED, DAYBED_LINEN, KPOP_POSTERS, SMASTAD, PHOTO_FRAME, COFFEE_TABLE, DANI } from './config.js';
 import { litMirrorMaterial, litEmissive, litReflect } from './mirror.js';
@@ -46,9 +47,9 @@ const fabric = new THREE.MeshStandardMaterial({ color: L.fabric, roughness: 0.95
 const oak = new THREE.MeshStandardMaterial({ color: L.oak, roughness: 0.55 });
 const metal = new THREE.MeshStandardMaterial({ color: 0x2b2d2f, roughness: 0.4, metalness: 0.6 });
 const potMat = new THREE.MeshStandardMaterial({ color: 0xb8643f, roughness: 0.85 });
-const leafMat = new THREE.MeshStandardMaterial({ color: 0x4f8a3c, roughness: 0.8 });
-const petalMat = new THREE.MeshStandardMaterial({ color: 0xe87aa4, roughness: 0.7 });
-const heartMat = new THREE.MeshStandardMaterial({ color: 0xf2d24b, roughness: 0.6 });
+const leafMat = new THREE.MeshStandardMaterial({ color: 0x3d7830, roughness: 0.6, side: THREE.DoubleSide });
+const petalMat = new THREE.MeshStandardMaterial({ color: 0xdf6b98, roughness: 0.55, side: THREE.DoubleSide });
+const heartMat = new THREE.MeshStandardMaterial({ color: 0xf4ce42, roughness: 0.45, side: THREE.DoubleSide });
 
 function rbox(w, h, d, x, y, z, material, r = 0.04) {
   const m = new THREE.Mesh(new RoundedBoxGeometry(w, h, d, 3, Math.min(r, w / 2, h / 2, d / 2)), material);
@@ -496,6 +497,37 @@ function dani(item, lights) {
   return g;
 }
 
+function flowerPetal(len, wid, cup = 0.25) {
+  const pos = [];
+  const segL = 3, segW = 2;
+  const pts = [];
+  for (let i = 0; i <= segL; i++) {
+    const u = i / segL;
+    const w = Math.sin(Math.PI * Math.pow(u, 0.65)) * wid;
+    const arch = Math.sin(Math.PI * u) * 0.0025;
+    pts[i] = [];
+    for (let j = 0; j <= segW; j++) {
+      const v = (j / segW) - 0.5;
+      const x = v * w;
+      const z = u * len;
+      const y = arch + (v * v * 4) * (w * cup);
+      pts[i][j] = [x, y, z];
+    }
+  }
+  const quad = (p0, p1, p2, p3) => {
+    pos.push(...p0, ...p1, ...p2, ...p0, ...p2, ...p3);
+  };
+  for (let i = 0; i < segL; i++) {
+    for (let j = 0; j < segW; j++) {
+      quad(pts[i][j], pts[i + 1][j], pts[i + 1][j + 1], pts[i][j + 1]);
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.computeVertexNormals();
+  return g;
+}
+
 function flower() {
   const g = new THREE.Group();
   const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.042, 0.1, 20), potMat);
@@ -506,29 +538,64 @@ function flower() {
   soil.material.userData.plantSoil=true;
   soil.position.y = 0.097;
   g.add(soil);
-  for (let i = 0; i < 6; i++) {
-    const a = (i / 6) * Math.PI * 2;
-    const leaf = new THREE.Mesh(new THREE.SphereGeometry(1, 10, 6), leafMat);
-    leaf.scale.set(0.012, 0.05, 0.025);
-    leaf.position.set(Math.cos(a) * 0.03, 0.14, Math.sin(a) * 0.03);
-    leaf.rotation.set(Math.sin(a) * 0.6, 0, -Math.cos(a) * 0.6);
-    g.add(leaf);
+
+  // Natural curved leaves clustered around the pot rim and foliage center
+  const leafPut = (geo, yaw, pitch, x, y, z, roll = 0) =>
+    geo.clone().rotateX(roll).rotateZ(pitch).rotateY(yaw).translate(x, y, z);
+
+  // Outer ring of arched leaves over the rim
+  for (let i = 0; i < 7; i++) {
+    const a = (i / 7) * Math.PI * 2 + 0.15;
+    const d = 0.026 + (i % 2) * 0.005;
+    const len = 0.065 + ((i * 3) % 4) * 0.004;
+    const wid = 0.045 + ((i * 2) % 3) * 0.003;
+    const lg = leafShape(len, wid, { prof: ROUND, fold: 0.32, bend: 0.028 });
+    const m = new THREE.Mesh(leafPut(lg, a, -0.22 - ((i % 3) * 0.05), Math.cos(a) * d, 0.102, Math.sin(a) * d, ((i % 2) - 0.5) * 0.2), leafMat);
+    g.add(m);
   }
-  // three small flowers on stems
-  for (const [dx, dz, h] of [[0, 0, 0.24], [0.03, -0.02, 0.2], [-0.03, 0.02, 0.21]]) {
-    const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.003, 0.003, h - 0.1, 6), leafMat);
-    stem.position.set(dx, 0.1 + (h - 0.1) / 2, dz);
+  // Inner ring of more upright foliage
+  for (let i = 0; i < 5; i++) {
+    const a = (i / 5) * Math.PI * 2 + 0.45;
+    const d = 0.014 + (i % 2) * 0.004;
+    const len = 0.055 + (i % 3) * 0.004;
+    const wid = 0.038 + (i % 2) * 0.003;
+    const lg = leafShape(len, wid, { prof: ROUND, fold: 0.38, bend: 0.015 });
+    const m = new THREE.Mesh(leafPut(lg, a, 0.22 + ((i % 2) * 0.07), Math.cos(a) * d, 0.112, Math.sin(a) * d, ((i % 2) - 0.5) * 0.15), leafMat);
+    g.add(m);
+  }
+
+  // Curved flowering stalks of varied heights
+  const stalks = [
+    [0.006, 0.005, 0.235, -0.1],
+    [0.034, -0.022, 0.205, 0.25],
+    [-0.030, 0.022, 0.215, -0.22],
+    [-0.012, -0.030, 0.192, 0.35]
+  ];
+  for (const [dx, dz, h, rotOffset] of stalks) {
+    const pts = [
+      new THREE.Vector3(dx * 0.2, 0.10, dz * 0.2),
+      new THREE.Vector3(dx * 0.7, 0.10 + (h - 0.10) * 0.55, dz * 0.7),
+      new THREE.Vector3(dx, h - 0.006, dz)
+    ];
+    const stem = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 5, 0.0024, 5, false), leafMat);
     g.add(stem);
+    // Calyx under blossom
+    const calyx = new THREE.Mesh(new THREE.ConeGeometry(0.006, 0.005, 5), leafMat);
+    calyx.position.set(dx, h - 0.004, dz);
+    calyx.rotation.x = Math.PI;
+    g.add(calyx);
+    // 5 cupped petals radiating outward
     for (let p = 0; p < 5; p++) {
-      const a = (p / 5) * Math.PI * 2;
-      const petal = new THREE.Mesh(new THREE.SphereGeometry(1, 8, 6), petalMat);
-      petal.scale.set(0.014, 0.005, 0.009);
-      petal.position.set(dx + Math.cos(a) * 0.013, h, dz + Math.sin(a) * 0.013);
-      petal.rotation.y = -a;
-      g.add(petal);
+      const a = (p / 5) * Math.PI * 2 + rotOffset;
+      const pet = new THREE.Mesh(flowerPetal(0.016, 0.012, 0.26), petalMat);
+      pet.position.set(dx, h, dz);
+      pet.rotation.set(0.26, a, ((p % 2) - 0.5) * 0.1, 'YXZ');
+      g.add(pet);
     }
-    const heart = new THREE.Mesh(new THREE.SphereGeometry(0.006, 8, 6), heartMat);
-    heart.position.set(dx, h + 0.003, dz);
+    // Warm golden stamen center
+    const heart = new THREE.Mesh(new THREE.SphereGeometry(0.0052, 10, 5, 0, Math.PI * 2, 0, Math.PI * 0.6), heartMat);
+    heart.scale.set(1, 0.6, 1);
+    heart.position.set(dx, h + 0.0025, dz);
     g.add(heart);
   }
   g.traverse((m) => { m.castShadow = true; });
@@ -2488,7 +2555,7 @@ function cactus() {
 function pinkFlower() {
   const g = flower();
   const pot = new THREE.MeshStandardMaterial({ color: 0xc7a6e8, roughness: 0.6 });
-  const pink = new THREE.MeshStandardMaterial({ color: 0xff7ac0, roughness: 0.7 });
+  const pink = new THREE.MeshStandardMaterial({ color: 0xff7ac0, roughness: 0.6, side: THREE.DoubleSide });
   g.traverse((m) => { if (m.material === potMat) m.material = pot; else if (m.material === windMaterial(petalMat)) m.material = windMaterial(pink); });
   return g;
 }
@@ -3624,7 +3691,17 @@ function secretary(item) {
   const green = new THREE.MeshStandardMaterial({ color: 0x4f8a3a, roughness: 0.7 });
   const stem = new THREE.Mesh(cg, green); stem.position.y = 0.1; cactus.add(stem);
   const dome = new THREE.Mesh(new THREE.SphereGeometry(0.029, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2), green); dome.position.y = 0.14; cactus.add(dome);
-  const flower = new THREE.Mesh(new THREE.SphereGeometry(0.009, 8, 6), new THREE.MeshStandardMaterial({ color: 0xff5fa2, roughness: 0.5 })); flower.scale.y = 0.6; flower.position.set(0.006, 0.168, 0.004); cactus.add(flower);
+  const starPos = [];
+  for (let i = 0; i < 8; i++) {
+    const a0 = (i / 8) * Math.PI * 2, a1 = ((i + 0.5) / 8) * Math.PI * 2, a2 = ((i + 1) / 8) * Math.PI * 2;
+    starPos.push(0, 0.001, 0, Math.cos(a0) * 0.005, 0.002, Math.sin(a0) * 0.005, Math.cos(a1) * 0.010, 0.004, Math.sin(a1) * 0.010);
+    starPos.push(0, 0.001, 0, Math.cos(a1) * 0.010, 0.004, Math.sin(a1) * 0.010, Math.cos(a2) * 0.005, 0.002, Math.sin(a2) * 0.005);
+  }
+  const fGeo = new THREE.BufferGeometry();
+  fGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
+  fGeo.computeVertexNormals();
+  const flower = new THREE.Mesh(fGeo, new THREE.MeshStandardMaterial({ color: 0xff5fa2, roughness: 0.5, side: THREE.DoubleSide }));
+  flower.position.set(0.006, 0.168, 0.004); cactus.add(flower);
   windPlant(cactus,.06,[green,flower.material]);
   cactus.position.set(0.1, yT + 0.02, topD / 2 + 0.01); // (the yucca has the north end since #265)
   }, 'kaktusen');
