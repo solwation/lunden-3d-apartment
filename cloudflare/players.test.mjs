@@ -1124,3 +1124,67 @@ test('#959 immutable Jaw strip retains real room HP/hibernate/private history/de
     const observer=await connect(env,'Late viewer');peers.push(observer);for(const s of observer.got[0].ps)assert.equal(Object.hasOwn(s,'headPoseFixed'),false);
   }finally{for(const p of peers)p.ws.close();await settle(env);}
 });
+
+test('#962 first ordinary-turn Rear: normalized authority, history, lethal/replay and legacy independence',async()=>{
+  const {avatarLook,PVP_RIFLE_HEAD:H,rifleSkullEntry,rifleHeadRearRegion}=await import('../src/config.js');
+  const env=setup(),a=await connect(env,'First-turn shooter'),initial=await connect(env,'First-turn target');
+  let b=initial;while(avatarLook(b.got[0].i).style===1){b.ws.close();await settle(env);b=await connect(env,'First-turn target');}const id=b.got[0].i;
+  a.send({p:[0,0,-3],r:0,h:'rifle'});b.send({p:[0,0,0],r:0,h:'rifle'});await settle(env);now+=1000;
+  const socket=()=>[...env.PLAYERS.object('world').ctx.getWebSockets()].find(ws=>ws.deserializeAttachment().i===id),attachment=()=>socket().deserializeAttachment();
+  assert.deepEqual(attachment().rearFirstTurn,{p:[0,0,0],r:0,next:null});
+  const shotFor=(r,seed=id)=>{const look=avatarLook(seed),w=[.93,1,1.08][look.build],state={p:[0,0,0],r},patch=look.style===3?H.rear.beanie:H.rear.lower;for(const dy of [patch.low+.001,(patch.low+patch.high)/2,patch.high-.001])for(const distance of [3,3.5,4]){
+    const c=Math.cos(r),s=Math.sin(r),target=[.08*w*s,(H.headY+dy)*look.tall,.08*w*c],o=[+(target[0]+distance*s).toFixed(2),target[1],+(target[2]+distance*c).toFixed(2)].map(v=>+v.toFixed(2)),raw=target.map((v,i)=>v-o[i]),n=Math.hypot(...raw),d=raw.map(v=>+(v/n).toFixed(3)),unit=d.map(v=>v/Math.hypot(...d)),first=rifleSkullEntry(seed,state,o,d);if(first===null)continue;const hc=[1,...o.map((v,i)=>+(v+unit[i]*first).toFixed(3))];if(rifleHeadRearRegion(seed,state,hc.slice(1),o,d))return{t:'a',w:'rifle',to:seed,o,d,hc};
+  }throw Error('no rounded Rear first-only history contact');};
+  const shoot=async (r,seed=id)=>{const shot=shotFor(r,seed);a.send({p:[shot.o[0],0,shot.o[2]],r:0,h:'rifle'});await settle(env);now+=1000;a.send(shot);await settle(env);return a.got.filter(m=>m.t==='hit').at(-1);};
+  b.send({p:[0,0,0],r:.04,h:'rifle',rearFirstTurn:{p:[0,0,0],r:999},turned:false});await settle(env);now+=1000;
+  assert.equal(attachment().turned,true);assert.equal(attachment().headPoseFixed,false);assert.deepEqual(attachment().rearFirstTurn,{p:[0,0,0],r:0,next:.04},'cleaned state cannot replace private anchor');
+  b.send({t:'g',to:a.got[0].i,k:999});await settle(env);assert.equal(attachment().gt,undefined,'invalid greeting does not create authority');
+  b.send({t:'g',to:a.got[0].i,k:0});await settle(env);const acceptedGt=attachment().gt;assert.equal(typeof acceptedGt,'number');
+  b.send({t:'g',to:a.got[0].i,k:1});await settle(env);assert.equal(attachment().gt,acceptedGt,'rate-rejected repeat cannot alter accepted private greeting');
+  const current=shotFor(.04),C=await import('../src/config.js');
+  assert.equal(C.rifleHeadContact(id,{p:[0,0,0],r:.04},current,current.o,COMBAT.weapons.rifle.range,COMBAT.from,false,{allowFront:false,allowRear:false,allowGreetingFirstTurnRear:false}),false,'named permission defaults false');
+  assert.equal(C.rifleHeadContact(id,{p:[0,0,0],r:.04},current,current.o,COMBAT.weapons.rifle.range,COMBAT.from,false,{allowFront:false,allowRear:false,allowGreetingFirstTurnRear:true}),true,'separate permission uses unchanged region');
+  let hit=await shoot(.04);assert.equal(hit.head,true);assert.equal(hit.l,8);assert.equal(hit.award.points,5);
+  assert.equal(attachment().headPoseFixed,false);assert.equal(attachment().turned,true);assert.deepEqual(attachment().rearFirstTurn,{p:[0,0,0],r:0,next:.04});
+  env.PLAYERS.hibernate('world');b.send({p:[0,0,0],r:.04,h:'saber',score:99});await settle(env);assert.deepEqual(attachment().rearFirstTurn,{p:[0,0,0],r:0,next:.04});
+  b.send({p:[0,0,0],r:.04,h:'rifle'});await settle(env);hit=await shoot(.04);assert.equal(hit.head,true);assert.equal(hit.l,6,'same first endpoint remains supported after hibernation');
+  const low=attachment();low.l=1;socket().serializeAttachment(low);hit=await shoot(.04);assert.equal(hit.head,true);assert.equal(hit.dead,true);assert.equal(hit.l,-1);assert.match(hit.kill,/^[0-9a-f-]{36}$/);assert.equal(hit.award.seq,3);assert.equal(attachment().l,COMBAT.lives);assert.equal(attachment().gt,acceptedGt);
+  const hitCount=a.got.filter(m=>m.t==='hit').length;a.send(shotFor(.04));await settle(env);assert.equal(a.got.filter(m=>m.t==='hit').length,hitCount,'same-tick replay adds no lethal award');
+  const late=await connect(env,'Late observer'),published=late.got[0].ps.find(p=>p.i===id);assert.equal(published.rearFirstTurn,undefined);assert.equal(published.turned,undefined);
+  b.send({p:[0,0,0],r:3.14,h:'rifle'});await settle(env);assert.equal(attachment().rearFirstTurn,false);
+  b.send({p:[0,0,0],r:.04,h:'rifle'});await settle(env);hit=await shoot(.04);assert.equal(hit.head,undefined);assert.equal(hit.l,9,'returning from larger turn never restores first-only history');
+  b.ws.close();await settle(env);let fresh=await connect(env,'Fresh history');while(avatarLook(fresh.got[0].i).style===1){fresh.ws.close();await settle(env);fresh=await connect(env,'Fresh history');}const fid=fresh.got[0].i;fresh.send({p:[0,0,0],r:3.14,h:'rifle'});await settle(env);
+  const getFresh=()=>[...env.PLAYERS.object('world').ctx.getWebSockets()].find(ws=>ws.deserializeAttachment().i===fid);
+  fresh.send({t:'g',to:a.got[0].i,k:0});await settle(env);assert.equal(typeof getFresh().deserializeAttachment().gt,'number');
+  assert.deepEqual(getFresh().deserializeAttachment().rearFirstTurn,{p:[0,0,0],r:3.14,next:null});fresh.send({p:[0,0,0],r:3.18,h:'rifle'});await settle(env);assert.ok(getFresh().deserializeAttachment().rearFirstTurn);
+  // Legacy unknown history is not reconstructed from current position or a later good heading.
+  for(const history of [undefined,null,true,{p:[0,0],r:3.14}]){let old=getFresh().deserializeAttachment();if(history===undefined)delete old.rearFirstTurn;else old.rearFirstTurn=history;getFresh().serializeAttachment(old);fresh.send({p:[0,0,0],r:3.18,h:'rifle'});await settle(env);assert.ok(!getFresh().deserializeAttachment().rearFirstTurn,'unknown/malformed legacy is not reconstructed');assert.equal((await shoot(3.18,fid)).head,undefined,'supported ray on unknown/null/malformed history remains body-only');}
+  for(const delta of [{p:[.01,0,0]},{c:true},{r:.03}]){
+    const sender=await connect(env,'Independent changed shooter');let changed=await connect(env,'Changed combo');while(avatarLook(changed.got[0].i).style===1){changed.ws.close();await settle(env);changed=await connect(env,'Changed combo');}const cid=changed.got[0].i,base={p:[0,0,0],r:0,h:'rifle'};
+    changed.send(base);await settle(env);changed.send({t:'g',to:sender.got[0].i,k:0});await settle(env);changed.send({...base,r:.04,h:'saber'});await settle(env);changed.send({...base,r:.04,...delta});await settle(env);changed.send({...base,r:.04});await settle(env);
+    const sock=[...env.PLAYERS.object('world').ctx.getWebSockets()].find(w=>w.deserializeAttachment().i===cid);assert.equal(sock.deserializeAttachment().rearFirstTurn,false,'moving/crouching/escape cannot restore after return');
+    const shot=shotFor(.04,cid);shot.allowGreetingFirstTurnRear=true;sender.send({p:[shot.o[0],0,shot.o[2]],r:0,h:'rifle'});await settle(env);now+=1000;sender.send(shot);await settle(env);const body=sender.got.filter(m=>m.t==='hit').at(-1);assert.equal(body.head,undefined,'client named permission cannot override invalid private anchor');assert.equal(body.l,9);changed.ws.close();sender.ws.close();await settle(env);
+  }
+  const independentShot=async(r,tid)=>{const sender=await connect(env,'Independent boundary shooter'),shot=shotFor(r,tid);sender.send({p:[shot.o[0],0,shot.o[2]],r:0,h:'rifle'});await settle(env);now+=1000;sender.send(shot);await settle(env);const hits=sender.got.filter(m=>m.t==='hit');assert.equal(hits.length,1,'one actual receipt, not a stale prior capped award');assert.equal(hits[0].to,tid);sender.ws.close();await settle(env);return hits[0];};
+  for (const anchor of [0,.8,3.14,-3.14]) for (const sign of [-1,1]) {
+    let target=await connect(env,'Exact first endpoint');while(avatarLook(target.got[0].i).style===1){target.ws.close();await settle(env);target=await connect(env,'Exact first endpoint');}
+    const tid=target.got[0].i,r=Math.round((anchor+sign*.04)*100)/100,base={p:[0,0,0],r:anchor,h:'rifle'};
+    target.send(base);await settle(env);target.send({...base,r});await settle(env);target.send({t:'g',to:a.got[0].i,k:0});await settle(env);
+    assert.equal((await independentShot(r,tid)).head,true,'both exact serialized signs and unwrapped headings retain head2');target.ws.close();await settle(env);
+  }
+  for (const sign of [-1,1]) {
+    let target=await connect(env,'Wrapped representation');while(avatarLook(target.got[0].i).style===1){target.ws.close();await settle(env);target=await connect(env,'Wrapped representation');}
+    const tid=target.got[0].i,base={p:[0,0,0],r:sign*3.14,h:'rifle'},alias=-sign*3.10;
+    target.send(base);await settle(env);target.send({...base,r:alias});await settle(env);target.send({t:'g',to:a.got[0].i,k:0});await settle(env);
+    const aliasHit=await independentShot(alias,tid);assert.equal(aliasHit.head,undefined,'rounded pi alias exceeds exact studied .04; remains body1');
+    target.send({...base,r:sign*3.18});await settle(env);assert.equal((await independentShot(sign*3.18,tid)).head,undefined,'return to exact endpoint cannot repair a rejected alias');
+    target.ws.close();await settle(env);
+  }
+  { let target=await connect(env,'Near maximum first turn');while(avatarLook(target.got[0].i).style===1){target.ws.close();await settle(env);target=await connect(env,'Near maximum first turn');}
+    const tid=target.got[0].i,base={p:[4990,0,4990],r:0,h:'rifle'};target.send(base);await settle(env);target.send({...base,r:.04});await settle(env);target.send({t:'g',to:a.got[0].i,k:0});await settle(env);
+    const sender=await connect(env,'Near maximum shooter'),shot=shotFor(.04,tid);shot.o=shot.o.map((v,i)=>i===1?v:+(v+4990).toFixed(2));shot.hc=shot.hc.map((v,i)=>i===1||i===3?+(v+4990).toFixed(3):v);
+    assert.ok(Buffer.byteLength(JSON.stringify(shot))<=256);sender.send({p:[shot.o[0],0,shot.o[2]],r:0,h:'rifle'});await settle(env);now+=1000;sender.send(shot);await settle(env);const hits=sender.got.filter(m=>m.t==='hit');assert.equal(hits.length,1);assert.equal(hits[0].to,tid);assert.equal(hits[0].head,true,'actual normalized room accepts near-maximum translated exact endpoint');sender.ws.close();target.ws.close();await settle(env);
+  }
+  for (const value of [undefined,null,false,0,1,'true',{}]) assert.equal(C.rifleHeadContact(id,{p:[0,0,0],r:.04},current,current.o,40,4,false,{allowFront:false,allowRear:false,allowGreetingFirstTurnRear:value}),false,'only literal true selects the independent leaf');
+  for(const peer of [a,fresh,late])peer.ws.close();await settle(env);
+});

@@ -5464,3 +5464,59 @@ job115733377032 completed the actual deploy-pages step successfully. The shared
 config change also triggered Worker run38528166703/job115733376973: its log
 records actual `npx wrangler deploy`, Uploaded/Deployed at2026-10-14T07:25:31–32Z.
 This verifies publication, not an additional live-device gameplay test.
+
+### First ordinary-turn Rear (#962)
+
+`tools/riflefirstturnreartest.cjs GAME WORKER OUT` exercises actual Ghosts/Combat,
+original native HUD and two real local WebSockets. Start an owned Worker after
+source freeze and verify PID/start ticks and tcp/tcp6 listener ownership. Ordinary
+0 → .04 publishes without equip; head2, public/local HP, paused/repeated greeting,
+held saber, legacy body1, lethal UUID/award/replay, state escapes/returns, wall,
+miss and v1/r2/r3/256-byte bounds passed26 checks, actual CLI0 on final driver.
+Inspected native head/body PNGs show readable authoritative markers and receipts;
+this is no World/WebGL/phone/FPS or all-continuous-pose claim.
+
+`--wrap-only` passed9 checks/CLI0: actual rifle-only Ghosts publications across
+both rounded ±π representations and actual native body receipts9/8, including
+return to the exact unwrapped endpoint. Those native contacts had no hc; separate
+normalized PlayerRoom tests deny canonical head candidates for these aliases.
+Exact serialized ±.04, including unwrapped3.14→3.18, is the supported contract;
+3.14→−3.10 has wrapped difference≈.043185 and permanently invalidates this branch.
+`--legacy-only`, on independently archived pre-962 db8e9ae Worker, passed7/CLI0:
+new client gets pre-greet head2 then ordinary body1 after the new first-turn case.
+The original #936 arm regression passed10/CLI0 but has invalid new history.
+A separate actual arm test establishes valid0→.04 and greeting: actual paused
+Ghost body0/wave2.4, elbowR at2.607692m before FIRST pureSkull at2.936429m;
+unchanged region/entry guards reject that deeper claim even with the new named
+permission. Real fresh Worker gives body1/HP9, ten body hits yield one death and
+normal reset/replay/marker;10 checks/CLI0 and inspected native PNG. Producer and
+raw result are preserved as `arm-first-turn.cjs` / `arm-new/` in the artifacts.
+
+The corrected native geometry matrix uses all60 canonical appearances, both
+signs/four anchors, actual first-endpoint late observers, frozen/interpolated/
+capped/repeated wave, ordinary animation advance through avatar idle times4,
+7.8,7.854,10.5,13.1,18.3,21 and naturally finished wave before actual saber swing.
+It observed230400 rays,77462 nearest-Skull positives,619696 rounded-cell corners,
+57600 earlier head-attached surfaces with rejected FIRST pureSkull deeper claims,
+960 first-body alignments and0 errors/bad classifications/WebGL calls. Maximum
+entry residual11.440mm is inside the unchanged15mm guard. The first600s process
+endedCLI1/browser timeout after35 complete models; the disjoint remaining25
+completedCLI0. Both frozen-source manifests match; combined coverage is complete,
+not a claim that the first whole process passed. Original941 producer/results
+are retained: its “late” case was opposite-anchor→endpoint (.08 visual span),
+not actual late-first-endpoint, and its earlier idle sample omitted later extrema.
+
+Full PlayerRoom/recovery46/46 actualCLI0 before rebase; after preserving incoming
+Jaw/chat changes,48/48 actualCLI0. Focused951/952/950/9624/4CLI0
+also checks exact signs/anchors, private/legacy authority, independent receipts,
+strict option values and translated near-maximum coordinates. Node2/debugCLI1
+mistakenly read a stale receipt after the real60points/min cap; independent
+shooters and exact receipt/target assertions fix the test without changing caps.
+Native wrap1CLI1 accessed a new Ghost before its first snapshot; wrap2CLI1 found
+no hc in its bounded native grid; wrap3CLI1 waited for an exact raw shooter
+position after a sub-movement-threshold delta. Final wait honors existing
+Ghosts.move; wrap4CLI0 keeps genuine native body contacts without inventing hc.
+All original failures, exits, source/provenance manifests, scripts and PNGs are
+in `/tmp/lunden-priority-962` and the orchestrator's durable worker artifacts.
+No other history, anatomy, animation, timer, tolerance or permission changes.
+#941/#936 remain open for larger/repeated turns and stationary return lifecycles.

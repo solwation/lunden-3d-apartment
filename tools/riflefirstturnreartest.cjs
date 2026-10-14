@@ -1,0 +1,133 @@
+// #962 first ordinary-turn Rear after greeting: actual Ghosts/Avatar/Combat, fresh Worker and original DOM; no WebGL.
+const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright'),fs=require('node:fs'),crypto=require('node:crypto');
+const [game='http://localhost:8870',worker='http://localhost:8871',out='/tmp/lunden-priority-962/native']=process.argv.slice(2);
+fs.mkdirSync(out,{recursive:true});let checks=0,failures=0,completed=false;
+const check=(ok,text)=>{checks++;if(!ok)failures++;console.log(`${ok?'PASS':'FAIL'} ${text}`)};
+const paths=['src/config.js','src/avatar.js','src/ghosts.js','src/combat.js','cloudflare/players.js','tools/riflefirstturnreartest.cjs'];
+const hashes=()=>Object.fromEntries(paths.map(p=>[p,crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex')]));
+const nativeFirstProof = async ({start,count})=>{
+ const T=await import('three'),C=await import('/src/config.js'),{Ghosts}=await import('/src/ghosts.js');let gl=0;const old=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(k,...args){if(/webgl/i.test(k)){gl++;throw Error('No WebGL')}return old.call(this,k,...args)};
+ const gs=new Ghosts({scene:new T.Scene(),camera:new T.PerspectiveCamera(),url:'',active:()=>false,state:()=>({p:[0,0,0],r:0})}),up=new T.Vector3(0,1,0),eye=new T.Vector3(3,1.62,3),keys=new Set(),models=[];let ordinal=0;
+ for(let seed=0;seed<3000&&keys.size<60;seed++){
+  const id='rear-'+seed,look=C.avatarLook(id),key=[look.style,look.build,look.tall].join('/');if(keys.has(key))continue;keys.add(key);if(ordinal++<start)continue;if(models.length===count)break;
+  const m={id,key,style:look.style,rays:0,positive:0,corners:0,cornerBad:0,wrong:0,forged:0,forgedWrong:0,oldIndependent:0,earlier:0,unsupported:0,firstAligned:0,maxResidual:0,examples:[],cases:{},bones:{}};
+  const width=[.93,1,1.08][look.build],P=look.style===3?C.PVP_RIFLE_HEAD.rear.beanie:C.PVP_RIFLE_HEAD.rear.lower;
+  for(const anchor of[0,.8,3.14,-3.14])for(const sign of[-1,1])for(const late of[false,true]){
+   const endpoint=+(anchor+sign*.04).toFixed(2),first=late?endpoint:anchor;
+   gs.message(JSON.stringify({t:'j',i:id,n:'Rear'}));gs.message(JSON.stringify({t:'s',i:id,p:[0,0,0],r:first,h:'rifle',l:10}));const g=gs.others.get(id),t0=g.snaps[0].t;let t=t0+C.GHOSTS.delay+1;g.draw(t,eye);if(g.have&&g.body===first)m.firstAligned++;
+   // This public observation is controlled, but goes through the actual Ghost.push and interpolation path.
+   // Hypothetical first-and-only accepted heading change; late observer first sees its final endpoint.
+   g.push({p:[0,0,0],r:endpoint,h:'rifle',l:10},t0+1000);
+   function sample(label){g.root.updateMatrixWorld(true);const state={p:[0,0,0],r:endpoint};m.cases[label]=(m.cases[label]??0)+1;
+    for(const yy of[P.low-.003,P.low+.001,(P.low+P.high)/2,P.high-.001,P.high+.003])for(const xx of[-.005,0,.005]){
+     const at=new T.Vector3(xx,(C.PVP_RIFLE_HEAD.headY+yy)*look.tall,.08*width).applyAxisAngle(up,g.root.rotation.y),o=at.clone().add(new T.Vector3(0,0,3).applyAxisAngle(up,g.root.rotation.y));o.set(...o.toArray().map(v=>+v.toFixed(2)));const d=at.sub(o).normalize();d.set(...d.toArray().map(v=>+v.toFixed(3)));const hits=new T.Raycaster(o,d.clone().normalize(),0,40).intersectObject(g.avatar.mesh,false),native=hits[0];m.rays++;if(!native){m.unsupported++;continue;}
+     const flag=g.avatar.mesh.geometry.attributes.rifleSkull,skull=!!flag.getX(native.face.a),hc=native.point.toArray().map(v=>+v.toFixed(3)),shot={t:'a',w:'rifle',o:o.toArray(),d:d.toArray(),hc:[1,...hc]},entry=C.rifleSkullEntry(id,state,shot.o,shot.d),region=C.rifleHeadRearRegion(id,state,hc,shot.o,shot.d);
+     const classify=rear=>C.rifleHeadContact(id,state,shot,shot.o,40,4,false,{allowRear:rear,allowFront:false}),admitted=region&&classify(true),oldHead=classify(false);if(oldHead)m.oldIndependent++;
+     if(admitted){if(!skull){m.wrong++;if(m.examples.length<8)m.examples.push({label,anchor,endpoint,first,body:g.body,visibleYaw:g.root.rotation.y,yy,hc,firstSurface:'nonSkull'});}else{m.positive++;m.maxResidual=Math.max(m.maxResidual,Math.abs(entry-o.distanceTo(new T.Vector3(...hc))));for(const x of[-.0005,.0005])for(const y of[-.0005,.0005])for(const z of[-.0005,.0005]){const q=new T.Vector3(hc[0]+x,hc[1]+y,hc[2]+z).sub(o).normalize(),h=new T.Raycaster(o,q,0,40).intersectObject(g.avatar.mesh,false)[0];m.corners++;if(!h||!flag.getX(h.face.a)){m.cornerBad++;if(m.examples.length<8)m.examples.push({corner:true,label,anchor,endpoint,first,body:g.body,avatarTime:g.avatar.time,visibleYaw:g.root.rotation.y,hc});}}}}else m.unsupported++;
+     if(!skull){m.earlier++;const bone=g.avatar.mesh.skeleton.bones[g.avatar.mesh.geometry.attributes.skinIndex.getX(native.face.a)]?.name;m.bones[bone]=(m.bones[bone]??0)+1;const firstSkull=hits.find(h=>flag.getX(h.face.a)&&flag.getX(h.face.b)&&flag.getX(h.face.c));if(firstSkull&&firstSkull.distance>native.distance+.001){m.forged++;const q=firstSkull.point.toArray().map(v=>+v.toFixed(3)),forged={...shot,hc:[1,...q]},oldClaim=C.rifleHeadContact(id,state,forged,shot.o,40,4,false,{allowRear:false,allowFront:false}),newClaim=C.rifleHeadContact(id,state,forged,shot.o,40,4,false,{allowRear:true,allowFront:false});if(newClaim&&!oldClaim){m.forgedWrong++;if(m.examples.length<8)m.examples.push({forged:true,label,anchor,endpoint,first,body:g.body,bone,distance:native.distance,firstSkullDistance:firstSkull.distance,hc:forged.hc});}}}
+
+    }
+   }
+   const pose=label=>{sample((late?'late-':'early-')+label);};
+   const advance=target=>{while(g.avatar.time<target-1e-8){t+=Math.min(.05,target-g.avatar.time)*1000;g.draw(t,eye)}};
+   pose('first-frozen');t=t0+900+C.GHOSTS.delay;g.draw(t,eye);pose('interpolated');t=t0+1001+C.GHOSTS.delay;g.draw(t,eye);pose('endpoint');
+   gs.message(JSON.stringify({t:'g',i:id,k:0}));t+=6000;g.draw(t,eye);pose('capped-wave');advance(1);pose('wave');gs.message(JSON.stringify({t:'g',i:id,k:0}));t+=100;g.draw(t,eye);pose('repeat-wave');
+   advance(4);if(g.waveT!==0)throw Error('wave did not naturally finish');
+   for(const target of[4,7.8,3*Math.PI/1.2,10.5,13.1,18.3,21]){advance(target);pose('idle-'+target.toFixed(4));}
+   g.setHeld('saber');g.swing();t+=50;g.draw(t,eye);pose('post-wave-saber-start');t+=100;g.draw(t,eye);pose('post-wave-saber-mid');t+=100;g.draw(t,eye);pose('post-wave-saber-end');
+   g.dispose();gs.others.delete(id);
+  }
+  models.push(m);await new Promise(r=>setTimeout(r,0));
+ }
+ return{models,gl,scope:'Corrected actual late first endpoint, actual capped animation time through later idle extrema, naturally completed wave then saber; Controlled actual Ghost public observations of ONE standing .04 first heading change and late first-endpoint observers; canonical server classification uses latest endpoint even during interpolation. Finite sample, no server acceptance or all-pose claim.'};
+};
+
+(async()=>{const frozen=hashes();fs.writeFileSync(`${out}/sources.json`,JSON.stringify(frozen,null,2));const browser=await chromium.launch({executablePath:process.env.CHROME_PATH,args:['--no-sandbox','--disable-gpu']}),pages=[],errors=[];
+const deadline=setTimeout(()=>browser.close().catch(()=>{}),process.argv.includes('--matrix-only')?1500000:180000);
+try{
+if(process.argv.includes('--matrix-only')){const p=await browser.newPage();pages.push(p);p.on('pageerror',e=>errors.push(e.message));await p.route('**/src/bootstrap.js',r=>r.fulfill({body:''}));await p.goto(game);const models=[];for(let start=0;start<60;start+=5){const chunk=await p.evaluate(nativeFirstProof,{start,count:5});models.push(...chunk.models);fs.writeFileSync(`${out}/native-first.json`,JSON.stringify({models,gl:chunk.gl},null,2));check(chunk.models.length===5&&chunk.gl===0,`native first-surface models ${start}..${start+4}`);}check(models.length===60&&models.every(m=>!m.wrong&&!m.forgedWrong&&!m.cornerBad&&m.firstAligned===16&&(m.style===1||m.positive>0)),'all60 first surfaces and whole corners including actual late-first endpoint and later idle extrema');completed=true;return;}
+for(let i=0;i<2;i++){
+const p=await browser.newPage({viewport:{width:850,height:500}});pages.push(p);p.on('pageerror',e=>errors.push(e.message));
+
+await p.route('**/src/bootstrap.js',r=>r.fulfill({contentType:'text/javascript',body:'// native actual modules only'}));await p.goto(game);
+await p.evaluate(async({worker,i})=>{
+const context=HTMLCanvasElement.prototype.getContext;window.gl=0;HTMLCanvasElement.prototype.getContext=function(k,...args){if(/webgl/i.test(k)){gl++;throw Error('WebGL forbidden');}return context.call(this,k,...args);};
+window.T=await import('three');window.config=await import('/src/config.js');window.Avatar=(await import('/src/avatar.js')).Avatar;
+const {Ghosts}=await import('/src/ghosts.js'),{Combat}=await import('/src/combat.js');
+window.sentWires=[];window.stateWires=[];const send=WebSocket.prototype.send;WebSocket.prototype.send=function(value){if(typeof value==='string'){try{const m=JSON.parse(value);if(Array.isArray(m.p))stateWires.push(m);if(m.t==='a')sentWires.push({text:value,bytes:new TextEncoder().encode(value).length,shot:m});}catch{}}return send.call(this,value);};
+window.scene=new T.Scene();window.camera=new T.PerspectiveCamera(60,1,.1,100);window.position=[0,0,i?0:4];window.crouched=false;window.weapon='rifle';window.heading=0;window.score=0;
+camera.position.set(...position);camera.position.y=1.62;camera.lookAt(0,1.62,i?4:0);camera.updateMatrixWorld();
+window.ghosts=new Ghosts({scene,camera,url:worker,name:()=>i?'Head Target':'Rifle Shooter',active:()=>true,weapon:()=>weapon,score:()=>score,mirrored:()=>false,state:()=>({p:position,r:heading,c:crouched})});
+window.acks=[];window.hurts=[];window.markers=[];window.effects=0;window.deaths=0;window.remoteShots=0;
+window.combat=new Combat({scene,camera,ghosts,weapon:()=>weapon,feet:()=>new T.Vector3(...position),onHit:()=>effects++,onDie:()=>deaths++,sfx:{}});
+const originalShot=ghosts.onShot;ghosts.onShot=(m,g)=>{remoteShots++;originalShot?.(m,g);};
+const hit=ghosts.onHit,hurt=ghosts.onHurt;ghosts.onHit=(m,g)=>{acks.push(structuredClone(m));hit(m,g);};ghosts.onHurt=(m,g)=>{hurts.push(structuredClone(m));hurt(m,g);};
+const mark=combat.hitMarker.show.bind(combat.hitMarker);combat.hitMarker.show=m=>{markers.push(m.head===true);mark(m);};
+window.tick=null; // native geometry inventory runs before room connection/idle clock
+window.peer=()=>[...ghosts.others.values()][0];
+window.aimAt=(y,x=0)=>{camera.position.set(position[0],position[1]+1.62,position[2]);camera.lookAt(position[0]+x,y,peer()?.feet.z??0);camera.updateMatrixWorld();};
+window.aimRear=()=>{
+ const g=peer(),P=g.avatar.look.style===3?config.PVP_RIFLE_HEAD.rear.beanie:config.PVP_RIFLE_HEAD.rear.lower;
+ // A narrow whole-cell core can fall between r3 rays at one fixed distance; use real shooter positions, not wider guards.
+ for(const distance of [4,3.8,4.2,3.6,4.4,3.5,4.5,5,3.75,4.25,3.9,4.1])for(const y of [(P.low+P.high)/2,P.low+.0015,P.high-.0015]){
+  window.position=[g.feet.x,g.feet.y,g.feet.z+distance];aimAt(g.feet.y+(config.PVP_RIFLE_HEAD.headY+y)*g.avatar.look.tall);
+  if(combat.rifleContact().hc)return true;
+ }
+ if(g.avatar.look.style===1)return false;throw Error('no actual supported rear ray across bounded legal shooter positions');
+};
+
+},{worker,i});}
+const[a,b]=pages;await Promise.all(pages.map(p=>p.evaluate(()=>{tick=setInterval(()=>{ghosts.update();combat.update(0)},35)})));
+await Promise.all(pages.map(p=>p.waitForFunction(()=>ghosts.connected&&peer()?.root.visible&&peer().snaps.length)));
+for(let attempt=0;attempt<80;attempt++){if(await b.evaluate(()=>config.avatarLook(ghosts.me).style===0))break;await b.evaluate(()=>{ghosts.disconnect();ghosts.retryAt=0});await b.waitForFunction(()=>ghosts.connected);if(attempt===79)throw Error('No genuine style0 target in80 fresh sockets');}
+await a.waitForFunction(()=>peer()?.avatar.look.style===0&&peer().root.visible&&peer().snaps.length&&peer().speed<.01);await a.waitForTimeout(650);
+const shoot=async(n,head,hp)=>{await a.waitForTimeout(350);await a.evaluate(()=>aimRear());await a.waitForFunction(()=>ghosts.sent&&Math.hypot(...position.map((v,i)=>v-ghosts.sent.p[i]))<=config.GHOSTS.move);await a.evaluate(()=>combat.fire('rifle'));await a.waitForFunction(n=>{ghosts.sendShot();return acks.length===n},n,{polling:50});check(await a.evaluate(({n,head,hp})=>(acks[n-1].head===true)===head&&acks[n-1].l===hp,{n,head,hp}),`ordinary actual rear shot ${n}: head=${head}, HP=${hp}`);fs.writeFileSync(`${out}/progress-receipts.json`,JSON.stringify(await a.evaluate(()=>({acks,wires:sentWires,markers})),null,2));};
+if(process.argv.includes('--wrap-only')){
+ await a.evaluate(()=>{window.aimRear=()=>{const g=peer(),r=g.snaps.at(-1).r,P=g.avatar.look.style===3?config.PVP_RIFLE_HEAD.rear.beanie:config.PVP_RIFLE_HEAD.rear.lower;
+  for(const distance of [3,3.5,4,4.5,5])for(const y of [(P.low+P.high)/2,P.low+.0015,P.high-.0015])for(const x of [-.004,0,.004]){
+   const at=new T.Vector3(x,g.feet.y+(config.PVP_RIFLE_HEAD.headY+y)*g.avatar.look.tall,0).applyAxisAngle(new T.Vector3(0,1,0),r).add(new T.Vector3(g.feet.x,0,g.feet.z));
+   const o=at.clone().add(new T.Vector3(0,0,distance).applyAxisAngle(new T.Vector3(0,1,0),r));position=[o.x,g.feet.y,o.z];camera.position.copy(o);camera.lookAt(at);camera.updateMatrixWorld();if(combat.rifleContact().hc)return true;
+  }if(combat.rifleContact().target)return true;throw Error('No actual native target contact for alias');};});
+ let n=0;const rows=[];
+ for(const sign of [-1,1]){
+  await b.evaluate(sign=>{ghosts.disconnect();heading=sign*3.14;ghosts.retryAt=0;},sign);await b.waitForFunction(()=>ghosts.connected);
+  for(let k=0;k<80;k++){if(await b.evaluate(()=>config.avatarLook(ghosts.me).style===0))break;await b.evaluate(()=>{ghosts.disconnect();ghosts.retryAt=0});await b.waitForFunction(()=>ghosts.connected);if(k===79)throw Error('No style0 wrapped target');}
+  await a.waitForFunction(r=>peer()?.snaps.at(-1)?.r===r,sign*3.14);await a.waitForTimeout(650);
+  await b.evaluate(sign=>heading=-sign*3.10,sign);await a.waitForFunction(r=>peer()?.snaps.at(-1)?.r===r,-sign*3.10);
+  await b.evaluate(()=>ghosts.greet(peer()));await a.waitForFunction(()=>peer().waveT>0);await a.waitForTimeout(650);await shoot(++n,false,9);
+  check(await a.evaluate(()=>combat.lastShot.to===peer().id),'actual native target contact remains body1 after rounded pi alias');
+  rows.push({...await b.evaluate(()=>({last:stateWires.at(-1),weapon})),hc:await a.evaluate(()=>combat.lastShot.hc)});await b.evaluate(sign=>heading=sign*3.18,sign);await a.waitForFunction(r=>peer()?.snaps.at(-1)?.r===r,sign*3.18);await a.waitForTimeout(650);await shoot(++n,false,8);
+ }
+ check(rows.every((r,i)=>r.weapon==='rifle'&&r.last.h==='rifle'&&r.last.r===[3.10,-3.10][i]),'both real Ghosts pi-alias state publications use rifle without equip');
+ fs.writeFileSync(`${out}/wrap.json`,JSON.stringify({rows,receipts:await a.evaluate(()=>acks)},null,2));completed=true;return;
+}
+await shoot(1,true,8);await b.waitForFunction(()=>combat.lives===8);await a.waitForFunction(()=>peer().lives===8);check(await b.evaluate(()=>hurts[0].head===true),'public and receiver health agree on pre-greeting rear2');
+await b.evaluate(()=>{heading=.04});await a.waitForFunction(()=>peer().snaps.at(-1).r===.04);await a.waitForTimeout(650);
+check(await b.evaluate(()=>stateWires.some(s=>s.r===.04&&s.h==='rifle')&&stateWires.every(s=>s.h==='rifle')),'first .04 state is published by ordinary Ghosts.update without any equip change');
+
+if(process.argv.includes('--legacy-only')){await a.evaluate(()=>window.originalHead=structuredClone(combat.lastShot));await b.evaluate(()=>ghosts.greet(peer()));await a.waitForFunction(()=>peer().waveT>0);await shoot(2,false,7);check(await a.evaluate(()=>combat.lastShot.hc?.[0]===1&&markers.at(-1)===false),'actual new-client Rear hc receives ordinary body1 from the frozen older Worker');fs.writeFileSync(`${out}/receipts.json`,JSON.stringify(await a.evaluate(()=>({acks,wires:sentWires,markers})),null,2));await a.evaluate(()=>{document.getElementById('hud').hidden=false;document.getElementById('loading').hidden=true;document.getElementById('overlay').hidden=true;combat.el.hidden=false;const p=document.createElement('pre');p.textContent='Actual new client / original Worker\nPre-greet head2: HP8\nFirst ordinary turn after greeting: body1, HP7';p.style.cssText='position:fixed;left:20px;top:270px;background:#182535;color:white;padding:18px;font:16px/1.6 system-ui';document.body.append(p)});await a.screenshot({path:`${out}/legacy-native.png`});completed=true;return;}
+await a.evaluate(()=>window.originalHead=structuredClone(combat.lastShot));await b.evaluate(()=>ghosts.greet(peer()));await a.waitForFunction(()=>peer().waveT>0);await shoot(2,true,6);
+check(await a.evaluate(()=>peer().lives===6)&&await b.evaluate(()=>combat.lives===6&&hurts.at(-1).head),'first ordinary-turn actual accepted greeting remains rear2 locally and publicly');
+const late=await a.evaluate(async worker=>{const {Ghosts}=await import('/src/ghosts.js'),observer=new Ghosts({scene:new T.Scene(),camera:new T.PerspectiveCamera(),url:worker,active:()=>true,weapon:()=> 'rifle',state:()=>({p:[8,0,8],r:0})});let welcome=null;const message=observer.message.bind(observer);observer.message=text=>{const m=JSON.parse(text);if(m.t==='w')welcome=m;message(text)};const timer=setInterval(()=>observer.update(),35),target=peer().id;try{const until=performance.now()+10000;while(performance.now()<until){const g=observer.others.get(target);if(welcome&&g?.have){const state=welcome.ps.find(s=>s.i===target);return{visible:g.root.visible,body:g.body,gaze:g.gaze,state,privateFlag:Object.hasOwn(state,'rearFirstTurn')};}await new Promise(r=>setTimeout(r,35));}throw Error('actual late welcome timeout');}finally{clearInterval(timer);observer.disconnect();}},worker);fs.writeFileSync(`${out}/late-welcome.json`,JSON.stringify(late,null,2));check(late.visible&&late.body===.04&&late.state.r===.04&&!late.privateFlag,'genuine late observer starts from current public .04 heading without private history');
+
+await a.evaluate(()=>{clearInterval(tick);tick=null});const wave=await a.evaluate(()=>peer().waveT);await a.waitForTimeout(3100);check(await a.evaluate(t=>peer().waveT===t&&t>0,wave),'actual paused Ghost retains unfinished wave; no wall-clock completion assumption');
+await shoot(3,true,4);await a.evaluate(()=>{tick=setInterval(()=>{ghosts.update();combat.update(0)},35)});await b.evaluate(()=>ghosts.greet(peer()));await a.waitForFunction(()=>peer().waveT>0);
+await b.evaluate(()=>{weapon='saber';score=1});await a.waitForFunction(()=>peer().h==='saber'&&peer().score===1);await shoot(4,true,2);
+await a.waitForTimeout(350);await a.evaluate(()=>ghosts.fire({...originalHead,to:peer().id,hc:undefined}));await a.waitForFunction(()=>acks.length===5);check(await a.evaluate(()=>!acks[4].head&&acks[4].l===1),'legacy client without hc keeps body1 and leaves exactly1HP');
+await b.evaluate(()=>weapon='rifle');await a.waitForFunction(()=>peer().h==='rifle');await shoot(6,true,-1);await b.waitForFunction(()=>deaths===1&&combat.lives===combat.maxLives);
+check(await a.evaluate(()=>acks[5].dead===true&&typeof acks[5].kill==='string'&&acks[5].award.seq===6),'one lethal rear2 has one UUID, sequenced award and normal reset');
+await a.evaluate(()=>{document.getElementById('hud').hidden=false;document.getElementById('loading').hidden=true;document.getElementById('overlay').hidden=true;combat.el.hidden=false;const p=document.createElement('pre');p.id='lethal-proof';p.textContent=['Actual first ordinary-turn Rear / fresh Worker',`Pre / greeted / paused / saber HP: ${acks.slice(0,4).map(m=>m.l).join(' / ')}`,`One lethal UUID: ${!!acks[5].kill}, HP ${acks[5].l}`,`Receiver reset uses actual shared life reducer`].join('\n');p.style.cssText='position:fixed;left:20px;top:270px;background:#182535;color:white;padding:18px;font:16px/1.6 system-ui';document.body.append(p)});check(await a.evaluate(()=>!combat.hitMarker.el.hidden&&combat.hitMarker.el.textContent==='Huvudträff!'),'actual lethal authoritative head marker is visible');await a.screenshot({path:`${out}/rear-greeting-head-native.png`});await a.evaluate(()=>document.getElementById('lethal-proof').remove());
+await a.evaluate(()=>{combat.hit(acks[0],peer());combat.hit(acks[5],peer())});check(await a.evaluate(()=>effects===6&&markers.length===6),'normal and lethal receipts remain effect/marker replay-idempotent');
+// Genuine ordinary heading publication invalidates the immutable anchor permanently, even after return.
+await b.evaluate(()=>{heading=.1});await a.waitForFunction(()=>peer().snaps.at(-1).r===.1);await b.evaluate(()=>{heading=.04});await a.waitForFunction(()=>peer().snaps.at(-1).r===.04);await a.waitForTimeout(650);await shoot(7,false,9);
+check(await a.evaluate(()=>acks[6].head!==true&&markers.at(-1)===false),'real accepted heading change and return keeps rear body1 after death reset');
+await b.evaluate(()=>{position=[.1,0,0]});await a.waitForFunction(()=>peer().snaps.at(-1).p.x===.1);await b.evaluate(()=>{position=[0,0,0]});await a.waitForFunction(()=>peer().snaps.at(-1).p.x===0);await a.waitForTimeout(650);await shoot(8,false,8);
+await b.evaluate(()=>crouched=true);await a.waitForFunction(()=>peer().crouch===1);await b.evaluate(()=>crouched=false);await a.waitForFunction(()=>peer().crouch===0);await a.waitForTimeout(650);await shoot(9,false,7);
+await a.waitForTimeout(350);await a.evaluate(()=>{aimRear();window.wall=new T.Mesh(new T.BoxGeometry(2,2,.025),new T.MeshBasicMaterial());wall.position.set(0,1,.2);scene.add(wall);scene.updateMatrixWorld(true)});let remote=await b.evaluate(()=>remoteShots);await a.evaluate(()=>combat.fire('rifle'));await b.waitForFunction(n=>remoteShots>n,remote);check(await a.evaluate(()=>combat.lastShot.to===null&&!combat.lastShot.hc&&acks.length===9),'actual wall before target retains full hinder ray and no damage award');await a.evaluate(()=>{wall.removeFromParent();wall.geometry.dispose();wall.material.dispose();aimAt(3)});await a.waitForTimeout(350);remote=await b.evaluate(()=>remoteShots);await a.evaluate(()=>combat.fire('rifle'));await b.waitForFunction(n=>remoteShots>n,remote);check(await a.evaluate(()=>combat.lastShot.to===null&&!combat.lastShot.hc&&acks.length===9),'actual above-head miss has no hit or award');await a.waitForTimeout(350);await a.evaluate(()=>ghosts.fire({...originalHead,to:peer().id,hc:[9,...originalHead.hc.slice(1)]}));await a.waitForFunction(()=>acks.length===10);check(await a.evaluate(()=>!acks[9].head&&acks[9].l===6),'invalid hc version remains body1 on actual Worker');
+const state=await a.evaluate(()=>({acks,markers,wires:sentWires,effects,publicHP:peer().lives}));fs.writeFileSync(`${out}/receipts.json`,JSON.stringify(state,null,2));
+check(state.wires.every(w=>w.bytes<=256&&w.shot.o.every(v=>Math.abs(v*100-Math.round(v*100))<1e-6)&&w.shot.d.every(v=>Math.abs(v*1000-Math.round(v*1000))<1e-6)&&(!w.shot.hc||[1,9].includes(w.shot.hc[0]))),'real serialized v1/r2/r3 wire stays within256bytes');
+await a.evaluate(()=>{document.getElementById('hud').hidden=false;document.getElementById('loading').hidden=true;document.getElementById('overlay').hidden=true;combat.el.hidden=false;const note=document.createElement('pre');note.id='rear-greeting-proof';note.textContent=['Actual Ghosts/Avatar/Combat + fresh Worker (no WebGL)',`Pre / greeted / paused / saber HP: ${acks.slice(0,4).map(m=>m.l).join(' / ')}`,`Lethal: HP ${acks[5].l}, UUID ${!!acks[5].kill}`,`Changed heading / move / crouch: body1 HP ${acks.slice(6,9).map(m=>m.l).join(' / ')}`,`Replay effects: ${effects}, actual receipt markers: ${markers.length}`].join('\n');note.style.cssText='position:fixed;left:20px;top:270px;padding:18px;background:#182535;color:white;font:15px/1.6 system-ui';document.body.append(note)});
+check(await a.evaluate(()=>{const r=document.getElementById('rear-greeting-proof').getBoundingClientRect();return r.left>=0&&r.top>=0&&r.right<=innerWidth&&r.bottom<=innerHeight&&!combat.hitMarker.el.hidden&&combat.hitMarker.el.textContent==='Träff!'}),'actual final body marker and measured receipt rows are visible');await a.screenshot({path:`${out}/rear-greeting-native.png`});
+check(await a.evaluate(()=>gl===0)&&await b.evaluate(()=>gl===0),'zero WebGL calls');completed=true;
+}finally{clearTimeout(deadline);for(let i=0;i<pages.length;i++){const p=pages[i];const retained=await p.evaluate(()=>({acks:window.acks,hurts:window.hurts,wires:window.sentWires})).catch(()=>null);fs.writeFileSync(`${out}/final-page-${i}.json`,JSON.stringify(retained,null,2));await p.evaluate(()=>{clearInterval(window.tick);window.ghosts?.ws?.close()}).catch(()=>{});}await browser.close();check(errors.length===0,'zero page errors');check(JSON.stringify(frozen)===JSON.stringify(hashes()),'executed runtime and driver stayed frozen');fs.writeFileSync(`${out}/result.json`,JSON.stringify({checks,failures,completed,errors,sources:frozen},null,2));console.log(`ALL ${!completed?'INCOMPLETE':failures?'FAIL':'PASS'} ${checks} checks`);process.exitCode=failures||errors.length||!completed?1:0;}
+})().catch(e=>{console.error(e);process.exitCode=1});

@@ -728,3 +728,17 @@ state, greeting or late welcome. Missing legacy history remains ineligible; rese
 healing and death do not recreate it. No new message, client-controlled permission,
 timer or saved health rule was added. Original Jaw and unrelated region guards stay
 separate.
+
+### Separate first-turn Rear history (#962)
+
+Fresh connections initialize private `rearFirstTurn: null`. Only their first
+real standing state starts `{p,r,next:null}`. The first changed accepted heading
+must equal `r2(r ± PVP_RIFLE_HEAD.rearFirstTurn)` (.04); it stores that endpoint.
+Any other first change, later different heading, accepted position/crouch change
+or malformed/null legacy history invalidates it permanently. Missing legacy
+history never initializes. Only a valid endpoint matching current state plus an
+accepted greeting enables strict `allowGreetingFirstTurnRear`. Healing, death,
+hibernation, return, client fields and public late welcome cannot restore it.
+Neither #951 immutable nor #952 Front-corridor history changes. r2 is ordinary
+wire rounding, not an added modulo-2π tolerance: ±π aliases outside exact ±.04
+remain body1, while unwrapped headings are allowed. No new public fields.

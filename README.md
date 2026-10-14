@@ -249,4 +249,12 @@ yaw correction when the unchanged private first-standing corridor remains valid
 (#952). This separate permission does not reopen larger turns or position/stance
 changes; see the [finite verification](docs/development/verification.md#small-yaw-rear-after-greeting-952).
 
+The independent first-turn Rear permission (#962) also supports a first exact
+serialized ±.04 rad heading change after greeting, followed by that same heading.
+Ordinary Ghosts publication needs no weapon swap. Other accepted heading/p/c
+changes permanently invalidate only this new branch. Rounded ±π aliases such
+as 3.14 → −3.10 remain body1; unwrapped 3.14 → 3.18 is supported. Broader
+turn/recovery behavior remains #941. See the
+[finite verification](docs/development/verification.md#first-ordinary-turn-rear-962).
+
 #950 adds a narrow central Nose depth family for rifle hits on a player whose first standing position, heading and crouch state have never changed on that connection. It reuses private immutable history and the original Nose geometry/6mm entry guard; other Nose families and ordinary body fallback stay independent. See [verification](docs/development/verification.md#immutable-central-nose-depth-950).

@@ -1106,3 +1106,16 @@ a small turn can now qualify through this additional independent branch.
 ### Immutable central Nose depth (#950)
 
 `noseDepthPatch` / `rifleNoseDepthRegion` describe a *guess* conservative central contact family: canonical x±.005, y.087–.092 relative to headY, z.127–.132, with the entire existing wire error margin inside each bound. Avatar only tags the actual nearest original Nose triangle. The shared validator admits this additive family only with strict `allowImmutableNoseDepth: true`; PlayerRoom derives that option from existing private `headPoseFixed === true`. First standing p/r/c must remain unchanged; any accepted change and return, crouching, or missing legacy history keeps this new family body-only. No new client state, animation authority, phase timer, geometry, triangles, cone, damage or tolerance is introduced. Original NoseCore/Extra/Band, Skull and Jaw dispatch remain independent. The finite native matrix includes all60 canonical appearances, initial/late states, wave/repeat/capped pause, held/saber and idle; it does not establish all continuous poses. Broader Nose coverage remains #920.
+
+### First ordinary-turn Rear (#962)
+
+Strict `allowGreetingFirstTurnRear === true` selects the same Rear surface after
+a greeting and exactly one serialized r2 heading change of ±.04 rad. This
+**guess** is the first standalone publication above Ghosts' existing .03 trigger;
+no equip change, animation, geometry, ray/entry/cell tolerance or wire changes.
+The private server history then requires the same endpoint and standing position.
+Further accepted heading/p/c changes permanently disable this branch, including
+a return. Existing #951/#952 branches retain their independent contracts.
+Normalized r2 headings may be unwrapped (3.14 → 3.18); a rounded ±π alias
+(3.14 → −3.10, wrapped difference ≈.043185) exceeds the studied exact family
+and remains body1. Larger/repeated turns and stationary return remain #941.
