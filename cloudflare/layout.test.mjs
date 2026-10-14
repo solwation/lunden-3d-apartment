@@ -391,3 +391,18 @@ test('actual canopy and two shade surfaces preserve independent choices, legacy 
  state=await get();assert.equal(state.materials[id][surface].choice,'original');assert.equal(state.materials[other[0]][other[1][0]].choice,'upholstery-olive');assert.equal(state.pieces[id].pos[0],3);
  assert.deepEqual(await(await new DrawingRoom(ctx,{}).fetch(new Request('https://test/furniture'))).json(),state);
 });
+
+
+test('nine actual decorative hanging surfaces preserve HallCare exclusion and independent legacy moves', async () => {
+ const M=await import('../src/materialcatalog.js'),{instance:r,ctx}=room();let serial=0;
+ const put=b=>r.fetch(new Request('https://test/furniture',{method:'PUT',headers:{'CF-Connecting-IP':`1028-${++serial}`},body:JSON.stringify({credential:privateCodeCredential(codes[0]),...b})}));
+ const get=async()=>await(await r.fetch(new Request('https://test/furniture'))).json();const entries=Object.entries(M.HANGING_MATERIAL_SURFACES);assert.equal(entries.length,4);assert.equal(entries.reduce((n,[id,s])=>n+s.length,0),9);
+ const hall='f-coatrack-0-0.34-1.315-0-0';assert.deepEqual(M.HANGING_MATERIAL_SURFACES[hall],['garment-coat-2','garment-puffer-4','beanie']);
+ for(const[id,surfaces]of entries)for(const surface of surfaces)assert.equal((await put({materials:[{id,surface,choice:'upholstery-check',base:0}]})).status,200);
+ const before=await get();for(const[id,surface,choice]of[[hall,'garment-shell-0','upholstery-sand'],[hall,'textile','upholstery-sand'],[entries[1][0],entries[1][1][0],'rug-check'],['f-hookrail-guessed','garment-hoodie-3','upholstery-sand'],[hall,'garment-coat-2','curtain-sand']])assert.equal((await put({materials:[{id,surface,choice,base:0}]})).status,400);
+ assert.deepEqual(await get(),before);const[id,surfaces]=entries.find(([id])=>id.includes('hookrail'));
+ const changes=await Promise.all([put({materials:[{id,surface:surfaces[0],choice:'upholstery-sand',base:before.materials[id][surfaces[0]].revision}]}),put({materials:[{id,surface:surfaces[1],choice:'upholstery-olive',base:before.materials[id][surfaces[1]].revision}]}),put({moves:[{...move(id),unknownOldField:true}]})]);assert.deepEqual(changes.map(r=>r.status),[200,200,200]);
+ let state=await get();assert.equal(state.materials[id][surfaces[0]].choice,'upholstery-sand');assert.equal(state.materials[id][surfaces[1]].choice,'upholstery-olive');assert.equal(state.pieces[id].pos[0],3);
+ assert.equal((await put({materials:[{id,surface:surfaces[0],choice:'original',base:before.materials[id][surfaces[0]].revision}]})).status,409);
+ assert.equal((await put({materials:[{id,surface:surfaces[0],choice:'original',base:state.materials[id][surfaces[0]].revision}]})).status,200);state=await get();assert.equal(state.materials[id][surfaces[1]].choice,'upholstery-olive');assert.equal(state.pieces[id].pos[0],3);assert.deepEqual(await(await new DrawingRoom(ctx,{}).fetch(new Request('https://test/furniture'))).json(),state);
+});
