@@ -2068,7 +2068,7 @@ const christmas = new ChristmasSeason({ rearrange, lights,
 christmas.update(day, 0);
 const terminal = document.getElementById('terminal'), terminalInput = document.getElementById('terminal-code');
 const editHelp = document.getElementById('rearrange-help'), editToggle = document.getElementById('rearrange-toggle');
-let editMenuPiece = null, resetFurnitureRequest = null, editHUDKey = '';
+let editMenuPiece = null, editMenuSurfaceId = null, resetFurnitureRequest = null, editHUDKey = '';
 let chat = null; // the console as a chat (#675, src/chat.js), set up with the ghosts below
 function renderRearrangeHUD() {
   const p=rearrange.selected?.piece,m=rearrange.materialEdit,key=`${rearrange.enabled}|${rearrange.saving}|${p?.id??''}|${m?.piece.id??''}|${m?.surface.id??''}|${m?.choice??''}|${reading}`;
@@ -2076,6 +2076,7 @@ function renderRearrangeHUD() {
   editHelp.hidden=!rearrange.enabled||reading;
   document.getElementById('rearrange-step').textContent=rearrange.saving?'Sparar möbleringen…':m?`${m.surface.name}: ${materialChoice(m.choice)?.name??'Original'}`:p?`2. Placera ${p.name}`:'1. Välj ett föremål';
   for(const id of ['rearrange-rotate','rearrange-cancel']){const b=document.getElementById(id);b.hidden=!p&&!(m&&id==='rearrange-cancel');b.disabled=rearrange.saving;}
+  document.getElementById('rearrange-cancel').textContent=m?'Avbryt materialval':'Avbryt flytt';
   document.getElementById('rearrange-menu').disabled=rearrange.saving;
   const materialConfirm=document.getElementById('rearrange-material-confirm');materialConfirm.hidden=!m;materialConfirm.disabled=rearrange.saving;
 }
@@ -2083,7 +2084,7 @@ function editUI() {
   renderRearrangeHUD(); editToggle.hidden = !rearrange.unlocked || !!resetFurnitureRequest;
   editToggle.textContent = rearrange.enabled ? 'Avsluta ommöblering' : 'Möblera om';
   editToggle.disabled = rearrange.saving;
-  document.getElementById('terminal-unlock').hidden = !!resetFurnitureRequest;
+  document.getElementById('terminal-unlock').hidden = rearrange.enabled || !!resetFurnitureRequest;
   document.getElementById('terminal-edit').hidden = !rearrange.enabled || !!resetFurnitureRequest;
   document.getElementById('terminal-confirm').hidden = !resetFurnitureRequest;
   document.getElementById('terminal-close').hidden = !!resetFurnitureRequest;
@@ -2091,49 +2092,123 @@ function editUI() {
   document.getElementById('terminal-title').textContent = rearrange.enabled ? 'Möblera om' : chat?.available ? 'Chatt' : 'Konsol';
   document.getElementById('terminal-close').textContent = rearrange.enabled ? 'Fortsätt möblera' : 'Stäng';
   document.getElementById('terminal-restore').disabled = !editMenuPiece || editMenuPiece.materialOnly || rearrange.saving;
-  document.getElementById('terminal-cancel-move').hidden = !rearrange.selected;
-  document.getElementById('terminal-cancel-move').disabled = rearrange.saving;
+  const cancelMove = document.getElementById('terminal-cancel-move');
+  if (cancelMove) { cancelMove.hidden = !rearrange.selected; cancelMove.disabled = rearrange.saving; cancelMove.textContent = 'Avbryt flytt'; }
+  const matActions = document.getElementById('terminal-material-actions');
+  if (matActions) matActions.hidden = !rearrange.materialEdit;
+  const matConfirm = document.getElementById('terminal-confirm-material');
+  if (matConfirm) { matConfirm.hidden = !rearrange.materialEdit; matConfirm.disabled = rearrange.saving; }
+  const matCancel = document.getElementById('terminal-cancel-material');
+  if (matCancel) { matCancel.hidden = !rearrange.materialEdit; matCancel.disabled = rearrange.saving; }
   renderMaterialLibrary();
-  document.getElementById('terminal-edit-status').textContent = editMenuPiece?`Valt föremål: ${editMenuPiece.name}`:'Ingen möbel vald. Sikta på ett föremål för att flytta det.';
 }
-// #995: original terminal controls and focus lifecycle, one bounded shared-rug library.
+// #1022: direct material selection without intermediate button, surface selector when multiple surfaces, no command field.
 function renderMaterialLibrary() {
-  const edit = rearrange.materialEdit, piece = edit?.piece ?? editMenuPiece;
-  const open = document.getElementById('terminal-material-open');
-  open.hidden = !piece?.object.userData.materialSurfaces?.length; open.disabled = rearrange.saving;
-  document.getElementById('terminal-material-library').hidden = !edit;
-  const choices = document.getElementById('terminal-material-choices'); choices.replaceChildren();
-  const surfaces = piece?.object.userData.materialSurfaces ?? [], select = document.getElementById('terminal-material-surface');
-  document.getElementById('terminal-material-surface-label').hidden = !edit || surfaces.length < 2;
-  select.replaceChildren(); select.disabled = rearrange.saving;
-  if (!edit) return;
-  for (const surface of surfaces) {
-    const option = document.createElement('option'); option.value = surface.id; option.textContent = surface.name; option.selected = surface.id === edit.surface.id; select.append(option);
+  const edit = rearrange.materialEdit;
+  const piece = edit?.piece ?? rearrange.selected?.piece ?? rearrange.target?.piece ?? editMenuPiece;
+  editMenuPiece = piece;
+  const statusEl = document.getElementById('terminal-edit-status');
+  const libraryEl = document.getElementById('terminal-material-library');
+  const helpEl = document.getElementById('terminal-material-help');
+  const surfaceLabel = document.getElementById('terminal-material-surface-label');
+  const select = document.getElementById('terminal-material-surface');
+  const choices = document.getElementById('terminal-material-choices');
+
+  if (!piece) {
+    statusEl.textContent = 'Ingen möbel vald. Sikta på ett föremål för att flytta det eller ändra material.';
+    libraryEl.hidden = true;
+    choices.replaceChildren();
+    return;
   }
-  for (const choice of materialChoices(edit.surface.category ?? 'matta', piece.id)) {
-    const button = document.createElement('button'); button.type = 'button'; button.disabled = rearrange.saving;
-    button.dataset.material = choice.id; button.setAttribute('aria-pressed', String(choice.id === edit.choice));
-    const swatch = document.createElement('span'); swatch.setAttribute('aria-hidden','true');
-    swatch.style.cssText = 'display:inline-block;width:18px;height:18px;margin-right:6px;vertical-align:middle;border:1px solid #fff';
-    swatch.style.background = choice.pattern === 'stripe' ? `repeating-linear-gradient(90deg,${choice.color} 0 4px,${choice.ink} 4px 8px)` : choice.pattern === 'check' ? `repeating-conic-gradient(${choice.color} 0 25%,${choice.ink} 0 50%) 0/8px 8px` : choice.color ?? '#ddd';
+
+  const surfaces = piece.object.userData.materialSurfaces ?? [];
+  if (!surfaces.length) {
+    statusEl.textContent = `Valt föremål: ${piece.name}`;
+    libraryEl.hidden = false;
+    surfaceLabel.hidden = true;
+    if (helpEl) helpEl.textContent = 'Det här föremålet har inga ändringsbara material.';
+    choices.replaceChildren();
+    return;
+  }
+
+  libraryEl.hidden = false;
+  const activeSurface = (edit && edit.piece === piece)
+    ? edit.surface
+    : (surfaces.find(s => s.id === editMenuSurfaceId) ?? surfaces[0]);
+  editMenuSurfaceId = activeSurface.id;
+
+  const currentChoiceId = (edit && edit.piece === piece && edit.surface.id === activeSurface.id)
+    ? edit.choice
+    : (rearrange.state.materials?.[piece.id]?.[activeSurface.id]?.choice ?? activeSurface.choice ?? 'original');
+  const currentChoiceName = materialChoice(currentChoiceId)?.name ?? 'Original';
+
+  statusEl.textContent = surfaces.length > 1
+    ? `Valt föremål: ${piece.name} · Yta: ${activeSurface.name} · Valt material: ${currentChoiceName}`
+    : `Valt föremål: ${piece.name} · Valt material: ${currentChoiceName}`;
+
+  if (helpEl) helpEl.textContent = 'Välj för att se materialet på föremålet. Bekräfta sedan i bilden.';
+
+  surfaceLabel.hidden = surfaces.length < 2;
+  select.replaceChildren();
+  select.disabled = rearrange.saving;
+  for (const surface of surfaces) {
+    const option = document.createElement('option');
+    option.value = surface.id;
+    option.textContent = surface.name;
+    option.selected = surface.id === activeSurface.id;
+    select.append(option);
+  }
+
+  choices.replaceChildren();
+  for (const choice of materialChoices(activeSurface.category ?? 'matta', piece.id)) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.disabled = rearrange.saving;
+    button.dataset.material = choice.id;
+    button.setAttribute('aria-pressed', String(choice.id === currentChoiceId));
+    const swatch = document.createElement('span');
+    swatch.setAttribute('aria-hidden', 'true');
+    swatch.style.cssText = 'display:inline-block;width:18px;height:18px;margin-right:6px;vertical-align:middle;border:1px solid #fff;border-radius:2px;';
+    swatch.style.background = choice.pattern === 'stripe'
+      ? `repeating-linear-gradient(90deg,${choice.color} 0 4px,${choice.ink} 4px 8px)`
+      : choice.pattern === 'check'
+      ? `repeating-conic-gradient(${choice.color} 0 25%,${choice.ink} 0 50%) 0/8px 8px`
+      : choice.color ?? '#ddd';
     button.append(swatch, document.createTextNode(choice.name));
-    button.addEventListener('click', () => { if (rearrange.previewMaterial(choice.id)) { showTerminal(false); renderRearrangeHUD(); } });
+    button.addEventListener('click', () => {
+      if (!rearrange.materialEdit || rearrange.materialEdit.piece !== piece || rearrange.materialEdit.surface.id !== activeSurface.id) {
+        if (!rearrange.beginMaterial(piece, activeSurface.id)) return;
+      }
+      if (rearrange.previewMaterial(choice.id)) {
+        showTerminal(false);
+        renderRearrangeHUD();
+      }
+    });
     choices.append(button);
   }
 }
 document.getElementById('terminal-material-surface').addEventListener('change', e => {
-  const piece = rearrange.materialEdit?.piece;
-  if (piece && rearrange.beginMaterial(piece, e.target.value)) { renderMaterialLibrary(); renderRearrangeHUD(); }
+  editMenuSurfaceId = e.target.value;
+  const piece = rearrange.materialEdit?.piece ?? editMenuPiece;
+  if (piece && rearrange.materialEdit && rearrange.beginMaterial(piece, e.target.value)) {
+    renderMaterialLibrary();
+    renderRearrangeHUD();
+  } else {
+    renderMaterialLibrary();
+  }
 });
-document.getElementById('terminal-material-open').addEventListener('click', () => {
-  if (rearrange.beginMaterial(rearrange.materialEdit?.piece ?? editMenuPiece, rearrange.materialEdit?.surface.id)) { editUI(); document.querySelector('#terminal-material-choices button')?.focus(); }
+document.getElementById('terminal-confirm-material')?.addEventListener('click', async () => {
+  const saved = rearrange.confirmMaterial(); editUI(); await saved; editUI(); showTerminal(false);
+});
+document.getElementById('terminal-cancel-material')?.addEventListener('click', () => {
+  rearrange.cancel(); rearrange.say('Materialvalet avbröts.'); editUI(); renderRearrangeHUD();
 });
 document.getElementById('rearrange-material-confirm').addEventListener('click', async () => {
   const saved = rearrange.confirmMaterial(); editUI(); await saved; editUI();
 });
 function exitRearranging() {
   if (!rearrange.enabled) return;
-  rearrange.enable(false); editMenuPiece = null; editUI();
+  rearrange.enable(false); editMenuPiece = null; editMenuSurfaceId = null; editUI();
 }
 onEditPointerUnlock = exitRearranging; // Esc can be consumed by the browser; pointer unlock is the fallback.
 function showTerminal(show, byKey = 'button') {
@@ -2231,7 +2306,7 @@ document.getElementById('terminal-confirm-yes').addEventListener('click', async 
   editUI(); await saved; editUI();
 });
 document.getElementById('terminal-cancel-move').addEventListener('click', () => { rearrange.cancel(); rearrange.say('Flytten avbröts.'); editUI(); });
-document.getElementById('rearrange-cancel').addEventListener('click', () => { rearrange.cancel();rearrange.say('Ändringen avbröts. Välj ett nytt föremål.');editUI(); });
+document.getElementById('rearrange-cancel').addEventListener('click', () => { const wasMaterial = !!rearrange.materialEdit; rearrange.cancel(); rearrange.say(wasMaterial ? 'Materialvalet avbröts. Välj ett föremål.' : 'Flytten avbröts. Välj ett föremål.'); editUI(); });
 document.getElementById('rearrange-rotate').addEventListener('click', () => rearrange.rotate());
 document.getElementById('rearrange-menu').addEventListener('click', () => showTerminal(true));
 document.getElementById('rearrange-finish').addEventListener('click', exitRearranging);
