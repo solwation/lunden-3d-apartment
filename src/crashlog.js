@@ -86,10 +86,11 @@ class CrashLog {
 
   // ---------- what the heartbeat holds ----------
 
-  /** The state now. Cheap: reads counters only (the texture walk runs idle, see textures()). */
+  /** The state now. Cheap: reads counters only (the texture walk runs idle, see textures()).
+   * A hidden initial load has no visibilitychange to mark bg; use the same lifecycle policy from its first beat. */
   snapshot() {
     const now = Date.now(), s = {
-      t: now, tab: this.tab, s: 'run', n: this.stats.beats, up: round((performance.now() - T0) / 1000, 0), build: BUILD,
+      t: now, tab: this.tab, s: document.hidden ? 'bg' : 'run', n: this.stats.beats, up: round((performance.now() - T0) / 1000, 0), build: BUILD,
       ua: clip(navigator.userAgent, 200), scr: [screen.width, screen.height, round(devicePixelRatio, 2)],
       vp: [innerWidth, innerHeight], low: lowMemory ? 1 : 0, acts: this.acts.slice(), errs: this.errs.slice(-5),
       history: this.history.slice(), beatAgeMs: this.lastSampleAt === null ? null : Math.max(0, round(performance.now() - this.lastSampleAt, 0)), worst: this.pendingWorst(), hidden: document.hidden ? 1 : 0,

@@ -6053,3 +6053,39 @@ Baseline audit showed:
 - Saber (`Saber`): lacked explicit grip, fallback placed contact at `[0.015, 0.08, 0.01]`, ~3.5 cm from the ridged hilt segment with 0.75 curl.
 
 Candidate correction added centralized explicit grips to `src/config.js` (`RIFLE.grip`, `TOYS.nerf.grip`, `TOYS.wands.grip`, `SABER.grip`). In the candidate run, hand contact aligns with the modeled grips (`contactError < 1e-10`), and hand curl is 1.0 (closed grip). Every held item model matrix across all phases (`rest`, `use`, `moved`) matches the baseline byte-for-byte; projectile and raycast invariants (Rifle hitscan eye ray, Nerf origin `where() + dir * 0.3`, Wand star position and eye ray, Saber tip segment `localToWorld(0, hilt+blade, 0)`) and placement/restore methods are preserved exactly. Native audit passed 54/54 PASS / CLI 0. Rendered audit passed 66/66 PASS / CLI 0. Evidence retained under `/tmp/lunden-priority-913/` (`baseline-render/`, `candidate-render/`).
+
+
+### #669 initially hidden heartbeat (2026-10-14)
+
+Run `PLAYWRIGHT_MODULE=/path/to/playwright CHROME_PATH=/path/to/chrome node
+tools/crashheartbeattest.cjs /tmp/crash-heartbeat` from the checkout. It owns
+local-only HTTP8878 and a disposable Chromium default context/profile, starts
+no renderer/apartment/WebGL, and closes both in finally. Native tab focus causes
+actual `document.hidden` changes; `pagehide` cases are explicitly synthetic
+PageTransitionEvents. Stale storage times are controlled (21926 seconds), not
+a six-hour runtime test, actual freeze duration or phone observation. The local
+POST/public endpoint executes production Worker/CrashLog with in-memory KV.
+Each controlled restart uses a fresh KV binding identity so its public-view
+check is independent of the five-minute cache; production caching is unchanged.
+
+Original source with `--baseline`:17 checks/CLI0. Candidate:16 checks/CLI0
+(one fewer public-post assertion because the new hidden bg beat has no report).
+Native initial hidden startup changed run→bg; native resume remains run and
+hiding remains bg. Legacy run/hidden1 still posts killed/background1 with the
+original build and gap in seconds; stale visible run posts killed/background0.
+Clean/bg/fresh foreign tab do not post. Foreign-tab mark ownership, duplicate
+foreground signature rejection and the original12-report session cap survive.
+Worker crash tests17/17/CLI0; the existing real-DOM snapshot regression also
+passed/CLI0 with synthetic renderer counters/context events, no apartment.
+
+Artifacts `/tmp/lunden-priority-669-heartbeat/{baseline,baseline2,candidate}/`
+retain raw reports, public projections, direct-file hashes, actual node exit,
+Chrome PID/start ticks/cwd/PPid/exit and profile cleanup. The first baseline
+process is CLI1: its final no-server-errors assertion found fixture favicon404
+requests, after the lifecycle assertions passed. Its Chrome exited0 and profile
+was removed; those facts do not turn the Node result green. The favicon handler
+was corrected before the separate baseline2 freeze/run and unchanged candidate
+driver. Eight frozen files are direct test/runtime inputs, not a claimed full
+transitive Worker dependency manifest. There is no visual, hardware-FPS, actual
+iPhone/PWA, physical context-loss or all-World acceptance claim. No historical
+run/hidden1 is declared a false crash; #669 stays open.

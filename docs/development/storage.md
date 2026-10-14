@@ -105,7 +105,7 @@ src/leaderboard.js     the global leaderboard (#198), only with the cloud on: op
 src/crashlog.js        crash reports (#629), inert without the cloud (same switch as cloud.js): a heartbeat every CRASHLOG.beatMs (outside the
                        render loop) writes place, quality level, fps, renderer.info, a GPU-memory ESTIMATE (canvas, shadow map,
                        mirror target, source texture images — walked in short slices; incomplete, not measured GPU usage), last keys/taps and console.error lines to localStorage
-                       'lunden.crash.beat' (state run / bg on hidden / clean on pagehide). At the next start a beat still 'run' (and not
+                       'lunden.crash.beat' (state run / bg on hidden, including the first hidden load / clean on pagehide). At the next start a beat still 'run' (and not
                        a live other tab) = the last run died → sent as typ 'död' (a hypothesis: memory); window error, unhandledrejection,
                        webglcontextlost/restored → typ 'fel'. POST /crash as text/plain (fetch, sendBeacon when hidden; unsent ones wait
                        in 'lunden.crash.out'); v2 keeps 12 heartbeat samples (~24 s) with frame progress, load phase and timer lag.
@@ -183,6 +183,9 @@ tools/resettest.html   headless test of "Återställ" (#303) against `node cloud
                        `cloud.sync()` is a no-op while a poll is under way (`pulling`): tests wait with `syncNow()`, and the offline step
                        `await cloud.flush()` before the address is restored. `http://localhost:9` fails at once as ERR_UNSAFE_PORT in Chromium.
                        Återställ from the menu closes the menu afterwards (#522): resettest checks the key, then the plain start screen
+tools/crashheartbeattest.cjs Native Chromium tabs and production CrashLog/Worker with local-only HTTP/KV; no canvas context, apartment or GL.
+                       Checks initially hidden start, real visibility transitions, synthetic pagehide, stale foreground/legacy hidden run,
+                       fresh foreign tab, owned marks, existing dedup/session cap and POST/public projection. Timestamp ages are controlled fixtures.
 tools/crashtest.cjs    Playwright test of the crash reports (#629) against dev.mjs with a token: off without the cloud, heartbeat content and
                        cost, Page.crash → 'död' at the next start, clean / backgrounded → none, thrown error / rejection / context loss,
                        two real WebGL loss/recovery cycles preserved through the public API, duplicates and a flood capped (`node cloudflare/dev.mjs 8144 tok`, see its header)
@@ -883,3 +886,15 @@ response. Offline failures retain accepted cached choices/revisions and restore
 the accepted material. Cached unknown preset IDs round-trip untouched and render
 the original until understood. Ordinary viewers apply shared choices without
 unlock/edit mode; future curtain and textile families remain separate work.
+
+
+#669 hidden-start heartbeat diagnosis (2026-10-14): `snapshot().s` now follows
+actual `document.hidden` from the first beat, matching the existing visibility
+handler's bg policy. Initial background startup can occur without a later
+visibilitychange; previously that beat was run/hidden1. No old report is removed
+or reclassified: a stored legacy run/hidden1 is still reported after a stale
+restart, as is a stale visible run. Such reports are an uncertain unmarked-end
+signal, not proof of an OS crash or memory cause. Background/clean exclusion,
+foreign-tab freshness/ownership, signature deduplication, quotas and Worker
+public projection are unchanged. See the native before/after verification;
+#669's physical context-loss acceptance remains open.
