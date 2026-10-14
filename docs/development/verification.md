@@ -6184,3 +6184,15 @@ change); the full cloth helper and all six complete factory bodies plus
 seatModule match the executed image source byte-for-byte. Images remain
 component evidence for their earlier freeze, not new-import or whole-World
 render acceptance. Raw drift and balanced-body parity are retained separately.
+
+
+#1010 publication: Worker-first44f3be60a02f1bcc042e97d730b34aacd4042938
+actually deployed in38554579053/job115820431880 at2026-10-14T11:10:02Z
+(version8eb46048-a244-4c6b-af06-63c9645845e4). Client
+1b059f240ada77503251d7466846dc986cb5938f/changelog794 published through actual
+Pages38556112799/job115825545915, correct deployment SHA and Reported success
+11:22:57.278Z. All1410 repository publication hashes and257 final-native inputs
+match the runtime commit; all792 prior changelog row bytes and actual
+changelog_stamp.py id→publication times are preserved. Final archive is
+`/home/devcontainers/.local/state/lunden-orkester/20261013-priority/worker-1010-artifacts`.
+#1010 completes only six indoor seats; #1011/#1012 and #998/#991 remain separate.
