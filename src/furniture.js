@@ -14,7 +14,7 @@ import { copperPot } from './plantpots.js';
 import { restTarget } from './rest.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { addCushions, addFoldedThrow, addDrapedThrow } from './cushions.js';
-import { CUSHIONS, DOUBLE_BED_LINEN, FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, PILLOWS, BEDDING, PINGPING, MYDAL, BUNK_LINEN, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO, YUCCA, LANGLAMPA, VANITY, HEMNES_DAYBED, KPOP_POSTERS, SMASTAD, PHOTO_FRAME, COFFEE_TABLE, DANI } from './config.js';
+import { CUSHIONS, DOUBLE_BED_LINEN, FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, PILLOWS, BEDDING, PINGPING, MYDAL, BUNK_LINEN, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO, YUCCA, LANGLAMPA, VANITY, HEMNES_DAYBED, DAYBED_LINEN, KPOP_POSTERS, SMASTAD, PHOTO_FRAME, COFFEE_TABLE, DANI } from './config.js';
 import { litMirrorMaterial, litEmissive, litReflect } from './mirror.js';
 import { addReflector } from './reflections.js';
 import { veronasofa, linkPatioTextiles, slattable, parasol, planter, dynbox } from './patio.js';
@@ -1209,6 +1209,7 @@ function daybedMats() {
  * mattress, the pull-out's mattress behind it, three drawers with round knobs; Tilly's charcoal and lilac bedding. */
 function daybed() {
   const g = new THREE.Group(), M = daybedMats();
+  const [topCloth, lowerCloth, spreadCloth, blackCloth, holoCloth, graphicCloth, furCloth, pinkCloth] = DAYBED_LINEN.map(s => upholsterySurface(g, s.name, { id: s.id }));
   const { W, D, H } = HD, z0 = -D / 2, z1 = D / 2;
   const bead = (w, h, d, x, y, z) => {
     const m = new THREE.Mesh(metreUV(new THREE.BoxGeometry(w, h, d), HD.groove, 1), M.bead);
@@ -1244,7 +1245,7 @@ function daybed() {
       grip: (o) => { const k = new THREE.Mesh(new THREE.SphereGeometry(HD.knob / 2, 16, 10), M.knob); k.scale.z = 0.7; k.position.set(0, dh / 2, 0.01); o.add(k); } });
   });
   const [p0, p1] = HD.pullout;
-  g.add(rbox(bw - 0.02, p1 - p0, D - 0.12, 0, (p0 + p1) / 2, -0.02, M.mattress, 0.025)); // the pull-out's mattress
+  g.add(lowerCloth.part(rbox(bw - 0.02, p1 - p0, D - 0.12, 0, (p0 + p1) / 2, -0.02, lowerCloth.material(M.mattress), 0.025))); // the pull-out's mattress
   // the arched apron under the top mattress (a flat board, its lower edge curving up to the middle)
   const [a0, a1, a2] = HD.apron, shape = new THREE.Shape();
   shape.moveTo(-iw / 2, a0); shape.lineTo(-iw / 2, a2); shape.lineTo(iw / 2, a2); shape.lineTo(iw / 2, a0);
@@ -1255,31 +1256,32 @@ function daybed() {
   g.add(rbox(iw, 0.02, D - 0.08, 0, a2 - 0.01, -0.01, whiteWood, 0.003)); // the slatted base under the top mattress
   // the top mattress (ÅFJÄLL), quilted in channels across
   const n = HD.channels, cw = (iw - 0.01) / n, mz = 0.01, md = D - 0.1;
-  for (let i = 0; i < n; i++) g.add(rbox(cw + 0.02, m1 - m0, md, -(iw - 0.01) / 2 + cw * (i + 0.5), (m0 + m1) / 2, mz, M.mattress, 0.03));
+  for (let i = 0; i < n; i++) g.add(topCloth.part(rbox(cw + 0.02, m1 - m0, md, -(iw - 0.01) / 2 + cw * (i + 0.5), (m0 + m1) / 2, mz, topCloth.material(M.mattress), 0.03)));
   // the bedspread over the foot end (+x), quilted in channels, soft over the front edge and tucked in at the back
   // (#309, `duvet` in bedding.js: its length runs along x, so it is turned a quarter round; its −x side = the front)
   const sx0 = -0.48, sx1 = iw / 2 - 0.005, S = BEDDING.spread, st = S.th;
-  const sp = new THREE.Mesh(duvetShape(md, sx1 - sx0, S.th, { r: 0.03, dropL: S.drop, dropR: 0, quilt: S.quilt, uv: 0.6, bump: 0.003, crumple: 0, seed: 12 }), M.spread);
+  const sp = new THREE.Mesh(duvetShape(md, sx1 - sx0, S.th, { r: 0.03, dropL: S.drop, dropR: 0, quilt: S.quilt, uv: 0.6, bump: 0.003, crumple: 0, seed: 12 }), spreadCloth.material(M.spread));
   sp.position.set((sx0 + sx1) / 2, m1, mz);
   sp.rotation.y = Math.PI / 2;
-  g.add(sp);tagBedding(g,sp);
+  g.add(spreadCloth.part(sp));tagBedding(g,sp);
   // cushions against the back: black, holographic lilac, a graphic one, a faux-fur one, a small muted pink one; real
   // cushion shapes (#309: `pillow` stood up, its face to the front, leaning back by `tilt`)
-  const cushion = (w, h, d, x, y, z, mat, tilt, roll = 0) => {
-    const c = new THREE.Mesh(pillow(w, h, d * 1.25, { under: 0.5, p: 4.5, unitUV: true, seed: Math.round(x * 100) + 50 }), mat);
+  const cushion = (w, h, d, x, y, z, mat, tilt, roll = 0, surface) => {
+    const c = new THREE.Mesh(pillow(w, h, d * 1.25, { under: 0.5, p: 4.5, unitUV: true, seed: Math.round(x * 100) + 50 }), surface.material(mat));
+    surface.part(c);
     c.position.set(x, y, z);
     c.rotation.order = 'ZXY';
     c.rotation.set(Math.PI / 2 + tilt, 0, roll);
     g.add(c);
   };
-  cushion(0.46, 0.46, 0.15, -0.66, m1 + 0.22, z0 + 0.16, M.black, -0.18);
-  cushion(0.46, 0.46, 0.14, -0.2, m1 + 0.22, z0 + 0.17, M.holo, -0.2, 0.05);
-  cushion(0.42, 0.42, 0.13, 0.27, m1 + st + 0.2, z0 + 0.17, M.graphic, -0.2, -0.04);
-  const fur = furCushion(0.19, M.fur);
+  cushion(0.46, 0.46, 0.15, -0.66, m1 + 0.22, z0 + 0.16, M.black, -0.18, 0, blackCloth);
+  cushion(0.46, 0.46, 0.14, -0.2, m1 + 0.22, z0 + 0.17, M.holo, -0.2, 0.05, holoCloth);
+  cushion(0.42, 0.42, 0.13, 0.27, m1 + st + 0.2, z0 + 0.17, M.graphic, -0.2, -0.04, graphicCloth);
+  const fur = furCloth.part(furCushion(0.19, furCloth.material(M.fur)));
   fur.position.set(0.68, m1 + st + 0.15, z0 + 0.2);
   fur.rotation.x = -0.25;
   g.add(fur);
-  cushion(0.34, 0.2, 0.1, -0.42, m1 + 0.11, z0 + 0.34, M.pink, -0.35, 0.08);
+  cushion(0.34, 0.2, 0.1, -0.42, m1 + 0.11, z0 + 0.34, M.pink, -0.35, 0.08, pinkCloth);
   g.traverse((m) => { m.castShadow = m.receiveShadow = true; });
   // Tilly's daybed (#72): lie along it, head at the −x end (feet towards +x)
   g.userData.rest = { kind: 'lie', name: 'dagbädden', verb: 'lägga dig i', spots: [{ x: -W / 2 + 0.35, y: m1, z: 0, dir: [1, 0] }] };

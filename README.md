@@ -332,3 +332,6 @@ Dubbelsängens lakan, örngott, täcke, stickade fotpläd och lilla kudde har se
 tygval i Möblera om. Stommens tyg väljs som tidigare; Original återställer varje
 linnegrupp för sig, och bäddning och sparning behåller sitt vanliga beteende.
 MYDAL-sängarnas sängkläder (#1020): båda våningssängarna har separata val för lakan, örngott och täcke på under-/överslaf i det gemensamma tygbiblioteket. Originalmönstren, bäddning och liggplatser bevaras.
+HEMNES-dagbäddens två madrassöverdrag, överkast och fem olika kuddar har egna
+tygval i Möblera om. Original återställer varje textils ursprungliga utförande;
+trästomme och lådor behåller sina material.
