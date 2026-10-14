@@ -238,10 +238,12 @@ export class Rearrange {
     for (const p of moves) next.pieces[p.id] = { pos: p.pos, quat: p.quat, revision: next.revision };
     return next;
   }
-  beginMaterial(piece) {
+  beginMaterial(piece, surfaceId) {
     if (!this.enabled || this.saving || this.busy() || !piece?.object.userData.materialSurfaces?.length) return false;
+    const surfaces = piece.object.userData.materialSurfaces;
+    const surface = surfaceId === undefined ? surfaces[0] : surfaces.find(s => s.id === surfaceId);
+    if (!surface) return false;
     this.cancel();
-    const surface = piece.object.userData.materialSurfaces[0];
     const accepted = this.state.materials?.[piece.id]?.[surface.id];
     this.materialEdit = { piece, surface, base: accepted?.revision ?? 0, choice: accepted?.choice ?? 'original' };
     return true;

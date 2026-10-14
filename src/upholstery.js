@@ -24,12 +24,12 @@ function patternMap(choice) {
  * Mutating private handles keeps the material identity used by merge, light washes and moving fronts.
  * `part` marks explicit newly built cloth meshes; original UVs/maps remain intact for original restore.
  */
-export function upholsterySurface(group, name = 'Klädsel') {
+export function upholsterySurface(group, name = 'Klädsel', { id = 'textile', category = 'klädsel', replaceDetails = false } = {}) {
   const records = new Map();
   const surface = {
-    id: 'textile', name, category: 'klädsel', choice: 'original',
+    id, name, category, choice: 'original',
     material(original) {
-      if (!records.has(original)) records.set(original, { target: original.clone(), color: original.color.clone(), map: original.map });
+      if (!records.has(original)) records.set(original, { target: original.clone(), color: original.color.clone(), map: original.map, bumpMap: original.bumpMap, vertexColors: original.vertexColors });
       return records.get(original).target;
     },
     part(mesh) {
@@ -44,9 +44,13 @@ export function upholsterySurface(group, name = 'Klädsel') {
       return mesh;
     },
     apply(id) {
-      const choice = materialChoices('klädsel').find(c => c.id === id) ?? materialChoices('klädsel')[0];
+      const choice = materialChoices(category).find(c => c.id === id) ?? materialChoices(category)[0];
       const map = choice.id === 'original' ? null : patternMap(choice);
-      for (const { target, color, map: originalMap } of records.values()) {
+      for (const { target, color, map: originalMap, bumpMap, vertexColors } of records.values()) {
+        if (replaceDetails) {
+          const colors = choice.id === 'original' ? vertexColors : false, bump = choice.id === 'original' ? bumpMap : null;
+          if (target.vertexColors !== colors || target.bumpMap !== bump) { target.vertexColors = colors; target.bumpMap = bump; target.needsUpdate = true; }
+        }
         const nextMap = choice.id === 'original' ? originalMap : map;
         if (choice.id === 'original') target.color.copy(color);
         else target.color.set(map ? '#ffffff' : choice.color);

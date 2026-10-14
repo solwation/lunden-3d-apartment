@@ -156,3 +156,55 @@ Each real Curtain exposes one category `gardin` textile surface shared only by i
 Publication verification for #997: client Refs96da5b3 follows the actual deployed Worker-first a5c74aa. Earlier progress notes reported 14 render checks by mistake; the unmodified original render1 result contains 16 passing checks (six common, eight image budgets, page errors and source freeze). Final native is 21/21; no image rerun was needed for this reporting correction.
 
 Actual Pages run 38554226716 / job 115819253847 created the client96da5b3 deployment at 2026-10-14T11:06:43.759Z and reported success at 11:06:54.269Z. Root independently matched all 240 published source/data/index hashes. Worker-first remains a5c74aa (run38552880671/job115814826761); the client changes no Worker runtime/catalogue and needs no second Worker deployment.
+
+### Independent indoor cushions and throws (#1014)
+
+The sofa's four cushions/folded plum throw and the armchair's two cushions/draped
+grey throw register eight stable semantic surfaces before static merging.
+`CUSHIONS` supplies their IDs/names; existing forms, folds, transforms, rest spots
+and footprints are untouched. Their six-column original atlas (print/knit/geo/
+cord/weave/stripe), vertex tints, UV0 and fleece maps remain exact. No global atlas
+or `throwMats` is mutated. Patio cushions/copies remain separate future work.
+
+`upholsterySurface(group,name,{id,category,replaceDetails})` reuses #1010's bounded
+private handles and shared two generic pattern maps. Defaults remain
+`textile`/`klädsel`/false for existing seating and future bed builders. Only these
+decorative surfaces opt into replacing atlas details: alternatives disable
+vertexColours and original bumpMap, use metric UV1 for patterns and restore exact
+original flags/map/bump/color on Original. Materials keep their identity through
+merge, both lamp washes and interaction-outline transitions.
+
+`tools/cushionmaterialtest.cjs GAME LOCAL_WORKER OUT` uses actual sofa/armchair
+builders, before-1014 source-bound originals, merge, Rearrange and main terminal
+controls. Native has zero WebGL and two genuine local HTTP browser visitors. All
+eight parts cycle all six choices; exactly one merged material changes per
+non-original part choice and every original attribute/map/flag restores. Raw
+per-part UV0/color/map metadata and bounded model counts are archived. Original
+geometry/finishes/rest/footprint match the #1010 baseline. Native merged mesh
+counts are sofa4→7 and armchair4→5 (+4 total); component draw measurements and
+images are separate from full-World or phone performance. `--render` requires
+the shared GPU slot. Original component comparisons temporarily pause fixture
+polling after the actual GET and choose local Original; native HTTP acceptance
+restores the actual accepted R.state and normal polling before exercising UI,
+while the renderer keeps explicit component selections stable.
+
+Initial native1 passed33/35 but its two inherited base-cloth assertions wrongly
+counted every newly independent UV1 cushion as base cloth. Corrected per-surface
+native3/native4 passed36/36; every one of eight parts tests all six choices and
+records exact original UV0/color/map flags. Native2 stopped before tests on a
+fixture syntax error; both original producers and raw CLI1 logs are retained.
+The four-image render1 has actualCLI1 (10/12): its two common Original comparisons
+read a local Worker left with legitimate saved choices from native4, while their
+before-record was captured before GET. Image/shader/budget checks passed and all
+four images were inspected; source hashes match the render freeze. The component
+fixture now explicitly selects local Original before its Original comparisons,
+without altering accepted HTTP state. No runtime workaround or unapproved GPU
+retry was used. Component measured draw calls are sofa4→7 and armchair4→5,
+with triangles unchanged11256/6696. This is not a whole-apartment/phone FPS result.
+
+The first post-rebase native run retained34/36 andCLI1: the fixture's local
+component Original reset also reached later HTTP-only visitor/reload setups.
+It is now explicitly limited to the initial two component-proof instances;
+new/reloaded visitors retain the actual GET result untouched. A focused selector
+check covers different surface names with the same Original choice, and the HUD
+cache key includes both material piece ID and surface ID.

@@ -902,3 +902,19 @@ public projection are unchanged. See the native before/after verification;
 ### Fixed curtain textiles (#997)
 
 `CURTAINS.materialId` explicitly identifies the six fixed sets (`f-curtain-bedroom1` … `bedroom4`, `f-curtain-kitchen`, `f-curtain-living-room`), separately from `curtain0` … `curtain5` / kitchen `curtain4-valance` in `lunden.blinds`. Material version stays 1; the additive catalogue validates textile choices by surface family, preserving the six exact rug IDs/choices and old pose-only writes. No curtain pose is stored. Worker catalogue commit a5c74aa deployed before the requiring client (Deployed 2026-10-14 10:55:31Z, version 7ff40b59-dad3-442d-99f1-21602d98b5c9). Original/default needs no layout migration. Local real browser/HTTP checks cover ordinary active visitors, new visitors, reload, stale conflicts, offline accepted-cache retention, preview/cancel zero PUT and original restoration; no production home was written by tests.
+
+### Independent interior cushion/throw surfaces (#1014)
+
+`CUSHION_MATERIAL_SURFACES` derives the two exact indoor furniture IDs and their
+five/three semantic surface IDs from the existing config. The additive version1
+Worker whitelist accepts existing `upholstery-*` choices on those explicit parts,
+with independent per-surface revisions. `textile` remains the original base cloth.
+No migration is needed; missing values mean Original. Material-only, pose-only,
+legacy cached writes and stored unknown fields retain the existing atomic merge.
+Different part edits on one piece may confirm concurrently; a stale edit to the
+same part still returns409. No decorative geometry/texture is stored remotely.
+Worker-first `573551e4e3115f8902b7b4930744ea7e3a90a54f` passed14/14 actual
+DrawingRoom tests and deployed through run38556392406/job115826506105 at
+2026-10-14T11:25:24Z (versionbfe99040-d786-404a-8391-352bcef0cca9), before the
+requiring client. Browser fixtures write only an explicit local Worker; no test
+writes to production homes.

@@ -197,7 +197,7 @@ export function armchair() {
   addCushions(g, CUSHIONS.armchair, { backZ: -L.depth / 2 + 0.35, seatY: seatTop });
   addDrapedThrow(g, [[ax - 0.012, top - T.hang], [ax - 0.016, top - 0.1], [ax - 0.004, top + 0.008], [(ax + ai) / 2, top + 0.028],
     [ai + 0.004, top + 0.006], [ai + 0.014, top - 0.09], [ai + 0.03, seatTop + 0.03], [ai + 0.1, seatTop + 0.02],
-    [ai + T.spill, seatTop + 0.035]], T.z0, T.z1, 3, T.color);
+    [ai + T.spill, seatTop + 0.035]], T.z0, T.z1, 3, T.color, T);
   g.userData.rest = { kind: 'sit', name: 'fåtöljen', verb: 'sätta dig i', spots: [{ x: 0, y: L.seatHeight, z: -0.08 }] };
   g.userData.footprint = seatRects({ x0: -W / 2, x1: W / 2, depth: L.depth, arms: ['left', 'right'] });
   return g;

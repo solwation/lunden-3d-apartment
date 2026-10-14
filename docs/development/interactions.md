@@ -1425,3 +1425,23 @@ parent #991 retain long-pile and other textile acceptance.
 ### Curtain material library (#997)
 
 All six existing Curtain sets are fixed `materialOnly` targets: editing focus opens the same library as rugs, with category `gardin`; they never enter movable pieces, pose ghosts or position-reset writes. The library previews locally, confirms through the existing material revision endpoint, and cancels without PUT. Original restores the exact original cloth material/map, independently of legacy blind position. Existing BlindPanel keyboard/touch controls remain unchanged; the living-room three-panel set uses the same controls and saved blind ID.
+
+### Interior surface selector (#1014)
+
+In the same material library, a small “Yta” selector lists Klädsel plus the sofa's
+four cushions/folded throw, or Klädsel plus the armchair's two cushions/draped
+throw. Selection starts a preview for only that named surface; changing surface
+restores its previous unconfirmed preview first. Choosing a preset returns to the
+existing unobstructed edit view. Confirm/ordinary action, cancel/X, touch,
+keyboard, exiting mode and pending-remote behavior keep the existing lifecycle.
+Original restores only the chosen surface and preserves furniture placement.
+
+`beginMaterial(piece,surfaceId)` has an optional ID; old one-argument consumers
+still get the first textile surface. Invalid IDs return false without discarding
+an active edit. Reopening the menu retains the active surface. Generic color/
+pattern choices reuse the existing `klädsel` family rather than duplicating map
+logic. Local real-browser checks cover a cushion preview with zero PUT, a throw
+confirmation visible to an ordinary peer, independent concurrent cushion edits,
+new visitors/reload, legacy move/material concurrency, stale conflicts, offline
+accepted-cache retention and actual keyboard/touch controls. Controlled scene
+collaborators do not certify apartment geometry or physical phones.

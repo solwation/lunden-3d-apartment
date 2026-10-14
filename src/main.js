@@ -2055,7 +2055,7 @@ const editHelp = document.getElementById('rearrange-help'), editToggle = documen
 let editMenuPiece = null, resetFurnitureRequest = null, editHUDKey = '';
 let chat = null; // the console as a chat (#675, src/chat.js), set up with the ghosts below
 function renderRearrangeHUD() {
-  const p=rearrange.selected?.piece,m=rearrange.materialEdit,key=`${rearrange.enabled}|${rearrange.saving}|${p?.id??''}|${m?.choice??''}|${reading}`;
+  const p=rearrange.selected?.piece,m=rearrange.materialEdit,key=`${rearrange.enabled}|${rearrange.saving}|${p?.id??''}|${m?.piece.id??''}|${m?.surface.id??''}|${m?.choice??''}|${reading}`;
   if(key===editHUDKey)return;editHUDKey=key;
   editHelp.hidden=!rearrange.enabled||reading;
   document.getElementById('rearrange-step').textContent=rearrange.saving?'Sparar möbleringen…':m?`${m.surface.name}: ${materialChoice(m.choice)?.name??'Original'}`:p?`2. Placera ${p.name}`:'1. Välj ett föremål';
@@ -2087,8 +2087,14 @@ function renderMaterialLibrary() {
   open.hidden = !piece?.object.userData.materialSurfaces?.length; open.disabled = rearrange.saving;
   document.getElementById('terminal-material-library').hidden = !edit;
   const choices = document.getElementById('terminal-material-choices'); choices.replaceChildren();
+  const surfaces = piece?.object.userData.materialSurfaces ?? [], select = document.getElementById('terminal-material-surface');
+  document.getElementById('terminal-material-surface-label').hidden = !edit || surfaces.length < 2;
+  select.replaceChildren(); select.disabled = rearrange.saving;
   if (!edit) return;
-  for (const choice of materialChoices(edit.surface.category ?? 'matta')) {
+  for (const surface of surfaces) {
+    const option = document.createElement('option'); option.value = surface.id; option.textContent = surface.name; option.selected = surface.id === edit.surface.id; select.append(option);
+  }
+  for (const choice of materialChoices(edit.surface.category ?? 'matta', piece.id)) {
     const button = document.createElement('button'); button.type = 'button'; button.disabled = rearrange.saving;
     button.dataset.material = choice.id; button.setAttribute('aria-pressed', String(choice.id === edit.choice));
     const swatch = document.createElement('span'); swatch.setAttribute('aria-hidden','true');
@@ -2099,8 +2105,12 @@ function renderMaterialLibrary() {
     choices.append(button);
   }
 }
+document.getElementById('terminal-material-surface').addEventListener('change', e => {
+  const piece = rearrange.materialEdit?.piece;
+  if (piece && rearrange.beginMaterial(piece, e.target.value)) { renderMaterialLibrary(); renderRearrangeHUD(); }
+});
 document.getElementById('terminal-material-open').addEventListener('click', () => {
-  if (rearrange.beginMaterial(rearrange.materialEdit?.piece ?? editMenuPiece)) { editUI(); document.querySelector('#terminal-material-choices button')?.focus(); }
+  if (rearrange.beginMaterial(rearrange.materialEdit?.piece ?? editMenuPiece, rearrange.materialEdit?.surface.id)) { editUI(); document.querySelector('#terminal-material-choices button')?.focus(); }
 });
 document.getElementById('rearrange-material-confirm').addEventListener('click', async () => {
   const saved = rearrange.confirmMaterial(); editUI(); await saved; editUI();
