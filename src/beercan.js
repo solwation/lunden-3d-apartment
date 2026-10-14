@@ -1,14 +1,15 @@
 import * as THREE from 'three';
 import { Holdable, heldItem, setHeld } from './holdable.js';
 import { sfx } from './audio.js';
-import { BEER_CAN as C } from './config.js';
+import { BEER_CAN as C, DRINKS as D } from './config.js';
 
 // A beer from the fridge's beer shelf (#587, the packages of beershelf.js #511): with the fridge open E takes it
-// ("Ta <the label's name>"), E with it in the hand drinks a gulp straight from the can or the bottle (no glass); it
+// ("Ta <the label's name>"), E with it in the hand drinks a gulp straight from the can or the bottle; it
 // holds the package's ml and is empty after BEER_CAN.sips gulps. Empty it is a package for the bin (`discard`, like
 // the milk carton): gone until the fridge is opened again after being shut, then a full one is back on the shelf.
 // It is put down on tables / worktops and back on its shelf spot; F sends it home. Its home is in the shelf group's
-// frame (a child of the fridge), so the closed fridge hides it with the rest of the shelf.
+// frame (a child of the fridge), so the closed fridge hides it with the rest of the shelf. #1007: its normal pour
+// interface also fills existing Glass objects, retaining one original consumption ledger across all portions.
 
 const NOTHING = { name: '', kind: 'none', pickable: new THREE.Object3D(), blocked: true };
 
@@ -35,22 +36,24 @@ export class BeerPortion {
     return {
       id: this.id,
       total: this.total,
-      drunk: Math.round(this.drunk * 1000) / 1000,
+      drunk: this.drunk,
       fin: this.finished ? 1 : 0,
       kind: this.kind,
     };
   }
 
-  static fromJSON(s) {
-    if (!s || typeof s !== 'object' || typeof s.id !== 'string') return null;
-    return new BeerPortion({
-      id: s.id,
-      total: Number(s.total) || 0,
-      drunk: Number(s.drunk) || 0,
-      finished: !!s.fin || !!s.finished,
-      kind: typeof s.kind === 'string' ? s.kind : 'beer',
-    });
+  static fromJSON(s, shared = new Map()) {
+    if (!s || typeof s.id !== 'string' || !s.id.length || s.id.length > 64 || !Number.isFinite(s.total) || s.total <= 0
+      || !Number.isFinite(s.drunk) || s.drunk < 0 || s.drunk > s.total) return null;
+    const prior = shared.get(s.id);
+    if (prior && prior.total !== s.total) return null;
+    const portion = prior ?? new BeerPortion({ id: s.id, total: s.total, kind: typeof s.kind === 'string' ? s.kind : 'beer' });
+    portion.drunk = Math.max(portion.drunk, s.drunk);
+    portion.finished ||= !!s.fin || !!s.finished || portion.drunk >= portion.total - 1e-4;
+    shared.set(s.id, portion);
+    return portion; // silent restore; shared progress never invokes a consumption callback
   }
+
 }
 
 export class BeerCan extends Holdable {
@@ -65,7 +68,7 @@ export class BeerCan extends Holdable {
       pick: { pos: new THREE.Vector3(), size: [pkg.diameter + 0.03, pkg.height + 0.03, pkg.diameter + 0.03] }, cooldown: C.cooldown,
     });
     Object.assign(this, { shelf, beer: pkg.beer, bottle, full: pkg.beer.ml, ml: pkg.beer.ml, sip: 0, away: false, fridgeWas: false,
-      drinkKind: 'beer', keepName: `ölen på kylhyllan ${i}`, height: pkg.height, spot: i, generation: 1 }); // (keepName: the beers change daily, the spot stays)
+      drinkKind: 'beer', pourT: 0, pourSecs: 1, keepName: `ölen på kylhyllan ${i}`, height: pkg.height, spot: i, generation: 1 }); // (keepName: the beers change daily, the spot stays)
     this.newServing();
     // the "put it back" box rides in the shelf group and only counts while it is held (as a trinket's in its drawer)
     const pick = this.backTarget.pickable;
@@ -94,6 +97,14 @@ export class BeerCan extends Holdable {
   get name() { return this.ml > 0.5 ? this.beer.name : this.bottle ? 'den tomma flaskan' : 'den tomma burken'; }
   set name(v) {} // (Holdable's constructor assigns opts.name)
   /** "Drick" while there is beer left. */
+  get drink() { return this.ml > 0.5 && !this.away ? 'beer' : null; }
+  /** Reserve actual ml once; the receiving glass keeps the SAME ledger, never a new portion. */
+  pour(secs, ml = 0) {
+    const amount = Math.max(0, Math.min(this.ml, ml));
+    this.ml -= amount; this.pourT = this.pourSecs = secs;
+    return { portion: this.portion, ml: amount };
+  }
+
   get useLabel() { return this.ml > 0.5 ? 'Drick' : null; }
   /** What kind of waste it is (the bin, #386): an empty can / bottle is a package. */
   get wasteKind() { return this.ml > 0.5 ? null : 'package'; }
@@ -116,7 +127,7 @@ export class BeerCan extends Holdable {
   }
 
   onTake() { sfx.click(this.where()); }
-  onPut() { sfx.click(this.where()); this.sip = 0; }
+  onPut() { sfx.click(this.where()); this.sip = this.pourT = 0; }
 
   onUse() {
     if (this.ml <= 0.5) return;
@@ -129,12 +140,7 @@ export class BeerCan extends Holdable {
     sfx.gulp(this.where());
     if (this.portion) {
       const res = this.portion.drink(canDrink);
-      if ((res.terminal || (this.ml === 0 && !this.portion.finished)) && !this.portion.finished) {
-        this.portion.finished = true;
-        this.onConsume?.(this, this.portionId);
-      } else if (res.terminal) {
-        this.onConsume?.(this, this.portionId);
-      }
+      if (res.terminal) this.onConsume?.(this, this.portionId);
     }
   }
 
@@ -154,11 +160,12 @@ export class BeerCan extends Holdable {
 
   tick(dt) {
     this.sip = Math.max(0, this.sip - dt * 1.6);
+    this.pourT = Math.max(0, this.pourT - dt);
     const k = Math.sin(this.sip * Math.PI); // up to the mouth, tipped, and down again
     const light = C.lift * (1 - this.ml / this.full); // lighter with every gulp: it rides a little higher in the hand
     const r = this.heldPose.rot, p = this.heldPose.pos;
     this.model.position.set(p.x - 0.14 * k, p.y + light + 0.18 * k, p.z + 0.08 * k);
-    this.model.rotation.set(r.x + 1.1 * k, r.y, r.z + 0.3 * k);
+    this.model.rotation.set(r.x + 1.1 * k, r.y, r.z + 0.3 * k + (this.pourT > 0 ? D.tilt * Math.sin(Math.PI * (1 - this.pourT / this.pourSecs)) : 0));
   }
 
   /** The saved state (keep.js `x`): null for a full one. */
@@ -166,16 +173,17 @@ export class BeerCan extends Holdable {
     const modified = this.ml < this.full || this.away || this.portion?.drunk > 0 || this.portion?.finished || this.generation > 1;
     if (!modified) return null;
     return {
-      ml: Math.round(this.ml),
+      ml: this.ml,
       gen: this.generation,
       portionId: this.portionId,
       drunk: Math.round((this.portion?.drunk ?? (this.full - this.ml)) * 10) / 10,
       fin: this.portion?.finished ? 1 : 0,
+      portion: this.portion.toJSON(),
       ...(this.away ? { away: 1 } : {}),
     };
   }
 
-  loadKeep(s) {
+  loadKeep(s, shared = new Map()) {
     if (!s || typeof s !== 'object') return;
     if (Number.isFinite(s.ml)) this.ml = Math.max(0, Math.min(this.full, s.ml));
     if (Number.isInteger(s.gen) && s.gen >= 1) this.generation = s.gen;
@@ -186,13 +194,11 @@ export class BeerCan extends Holdable {
     }
     const drunk = Number.isFinite(s.drunk) ? Math.max(0, Math.min(this.full, s.drunk)) : Math.max(0, this.full - this.ml);
     const finished = !!s.fin || (this.ml <= 0 && drunk >= this.full - 0.5);
-    this.portion = new BeerPortion({
-      id: this.portionId,
-      total: this.full,
-      drunk,
-      finished,
-      kind: this.bottle ? 'bottle' : 'can',
-    });
+    const record = s.portion ? { ...s.portion, fin: s.portion.fin || s.portion.finished || s.fin } : { id: this.portionId, total: this.full, drunk, fin: finished ? 1 : 0, kind: this.bottle ? 'bottle' : 'can' };
+    const bad = shared.invalid?.has(this.portionId) || record.id !== this.portionId || record.total !== this.full || ((record.fin || record.finished) && record.drunk < record.total - 1e-4);
+    this.portion = bad ? null : BeerPortion.fromJSON(record, shared);
+    if (!this.portion) { this.ml = 0; this.portion = new BeerPortion({ id: this.portionId, total: this.full, drunk: 0, finished: true }); }
+
     if (s.away) {
       if (this.held) this.putBack();
       this.away = true;

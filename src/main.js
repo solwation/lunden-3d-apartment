@@ -2292,6 +2292,8 @@ const ghosts = new Ghosts({ scene, camera, url: cloud.url, name: () => leaderboa
 const combat = new Combat({ ghosts, camera, scene, weapon: weaponKey, feet: () => player.pos, jetpack, basket: ball, sfx, darts: toys.darts, sparkles: toys.sparkles, arrows, life, fruit, fish, chicken, fries, beer, beerCans,
   onHit: () => bump('pvpHits'), onHurt: () => penalize('pvpHurt'),
   onDie: () => { goToStart(() => respawnOutdoors(player)); badge('💀 Slut på liv – du lever igen', false); } }); // only the place changes (#665)
+// #1007: terminal IDs come from actual Glass/Contents consumption, never pouring or restore.
+for (const thing of things) if (thing.kind === 'glass') thing.onConsume = (_, id) => { combat.consume(id).catch(() => {}); };
 // Fall owns injury/death timing; Combat owns the same authoritative or offline health as shots.
 fall.onDamage = async (drop, gap) => {
   try { fall.resolve(await combat.fall(drop, gap)); }

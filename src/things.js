@@ -76,7 +76,7 @@ export class Glass extends Thing {
     Object.defineProperties(this.takeTarget, {
       verb: { get: () => self.pourVerb, configurable: true },
       blocked: { get: () => self.blocked, configurable: true },
-      blockedText: { get: () => (self.pourable ? `${self.name[0].toUpperCase()}${self.name.slice(1)} är fullt` : null), configurable: true },
+      blockedText: { get: () => (self.source?.portion && !self.contents.canAddBeer(self.source.portion) ? 'Glaset innehåller redan många ölportioner' : self.pourable ? `${self.name[0].toUpperCase()}${self.name.slice(1)} är fullt` : null), configurable: true },
     });
     this.takeTarget.toggle = () => this.press();
     this.takeTarget.overflow = () => this.overflow();
@@ -96,7 +96,7 @@ export class Glass extends Thing {
   /** The held thing that pours, if it can pour into this glass now (the glass standing out, #167). */
   get source() { const h = heldItem(); return h?.drink && D.pour.glass[h.drink] && this.placed && !this.held ? h : null; }
   get pourable() { return !!this.source; }
-  get blocked() { return this.pourable ? pourAmount('glass', this.source.drink, this.fill) <= 0 : handBusy(this); }
+  get blocked() { return this.pourable ? pourAmount('glass', this.source.drink, this.fill) <= 0 || (!!this.source.portion && !this.contents.canAddBeer(this.source.portion)) : handBusy(this); }
   get pourVerb() { return this.pourable ? `hälla ${drinkName(this.source.drink)} i` : 'ta'; }
 
   press() {
@@ -108,11 +108,12 @@ export class Glass extends Thing {
 
   /** Pour from the held bottle (or milk): up to the drink's level in a glass (DRINKS.pour.glass). */
   pourFrom(src) {
-    let amount = pourAmount('glass', src.drink, this.fill);
-    if (!amount) return;
+    const kind = src.drink; // a finite source's getter becomes null after its last ml leaves
+    let amount = pourAmount('glass', kind, this.fill);
+    if (!amount || (src.portion && !this.contents.canAddBeer(src.portion))) return;
     if (src.ml !== undefined) amount = Math.min(amount, src.ml / D.ml.glass); // the milk carton: what is left in it (#382)
-    this.contents.pour(src.drink, amount, D.secs);
-    src.pour?.(D.secs, amount * D.ml.glass); // (what went in comes out of the carton, #382)
+    const origin = src.pour?.(D.secs, amount * D.ml.glass);
+    this.contents.pour(kind, amount, D.secs, origin); // (what went in comes out of the carton, #382)
     sfx.pour(this.where(), D.secs);
   }
 
@@ -124,7 +125,7 @@ export class Glass extends Thing {
     this.sipT = 1; this.used = true;
     this.onSip?.(this.contents.main);
     sfx.gulp(this.where());
-    this.contents.sip(D.sip);
+    for (const id of this.contents.sip(D.sip)) this.onConsume?.(this, id);
     this.liquid.show(this.contents);
   }
 
@@ -136,8 +137,8 @@ export class Glass extends Thing {
     this.liquid.show(this.contents);
   }
 
-  keepState() { return this.used ? { used: true } : null; }
-  loadKeep(state) { this.used = state?.used === true; }
+  keepState() { return this.used || this.contents.beer.length ? { used: !!this.used, beer: this.contents.keepBeer() } : null; }
+  loadKeep(state, shared = new Map()) { this.used = state?.used === true; this.contents.loadBeer(state?.beer, shared); this.liquid.show(this.contents); }
 
   tick(dt) {
     this.sipT = Math.max(0, this.sipT - dt * 1.6);

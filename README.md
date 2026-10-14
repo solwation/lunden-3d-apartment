@@ -358,3 +358,5 @@ När du cyklar håller båda förstapersonshänderna i de befintliga handtagen. 
 När du cyklar håller båda förstapersonshänderna i de befintliga handtagen. Det du höll stuvas tillfälligt och samma föremål återkommer när du kliver av; nekad på-/avstigning lämnar det orört. Kopp, vanliga sparade föremål och Life-mat följer med via befintlig sparning till säker stående återkomst. Omladdning med äldre tillfälliga mat-/pappersmodeller eller katten återstår i #1034/#1035 inom #984; samma-besöks-stuvningen är gemensam.
 
 Måltavlan står mellan rampen och trappan på södra baksidan, med ryggen mot staketet och ringarna mot gården.
+
+Öl från kylhyllan kan hällas i vanliga glas. En hel ursprunglig ölportion återställer ett liv även när den dricks delvis direkt och delvis ur flera glas; hällning, spill och bortkastad dryck ger inga liv.

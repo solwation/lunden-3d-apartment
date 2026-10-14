@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { SONOS, MOCCAMASTER } from './config.js';
+import { BeerCan, BeerPortion } from './beercan.js';
+import { SONOS, MOCCAMASTER, DRINKS } from './config.js';
 import { stowedItem, heldItem } from './holdable.js';
 
 // The world's state across a reload made by the page (#277): the automatic update (#192) and "Ladda om" put a
@@ -224,6 +225,28 @@ const PARTS = {
     load(a, s) {
       const map = byKey(a.holdables.filter((h) => keepable(a, h)), holdKey);
       const items = s.items && typeof s.items === 'object' ? s.items : {};
+      const beerPortions = new Map(), budget = new Map(); // #1007 one silent restore across actual source/Glass owners
+      beerPortions.invalid = new Set();
+      const reserve = (p, ml) => {
+        if (!BeerPortion.fromJSON(p) || !Number.isFinite(ml) || ml < 0 || ((p.fin || p.finished) && p.drunk < p.total - 1e-4)) {
+          if (p?.id) beerPortions.invalid.add(p.id); return;
+        }
+        const b = budget.get(p.id) ?? { total: p.total, drunk: 0, ml: 0 };
+        if (b.total !== p.total) beerPortions.invalid.add(p.id);
+        b.drunk = Math.max(b.drunk, p.drunk); b.ml += ml; budget.set(p.id, b);
+      };
+      // Preflight the SAME bounded saved owners before applying any ledger: load order cannot create extra stock.
+      for (const [key, e] of Object.entries(items)) {
+        const h = map.get(key), x = e?.x;
+        if (h instanceof BeerCan && x) {
+          const ml = Number.isFinite(x.ml) ? Math.max(0, Math.min(h.full, x.ml)) : h.full;
+          reserve(x.portion ? { ...x.portion, fin: x.portion.fin || x.portion.finished || x.fin } : { id: x.portionId ?? `beercan:${h.spot}:${x.gen ?? 1}`, total: h.full,
+            drunk: Number.isFinite(x.drunk) ? x.drunk : h.full - ml, fin: x.fin }, x.away ? 0 : ml);
+        } else if (h?.kind === 'glass' && Array.isArray(x?.beer?.lots) && x.beer.lots.length <= DRINKS.beerLots) {
+          for (const lot of x.beer.lots) reserve(lot?.portion, lot?.ml);
+        }
+      }
+      for (const [id, b] of budget) if (b.ml + b.drunk > b.total + 1e-4) beerPortions.invalid.add(id);
       for (const [k, e] of Object.entries(items)) {
         const h = map.get(k);
         if (!h) continue;
@@ -237,7 +260,7 @@ const PARTS = {
         }
         if (h === a.beer && e.out) { h.show(true); if (Number.isFinite(e.lv)) h.setLevel(Math.max(0, Math.min(1, e.lv))); }
         if (h.contents && e.a && typeof e.a === 'object') { h.contents.a = { ...e.a }; h.liquid?.show(h.contents); }
-        if (e.x && typeof e.x === 'object') h.loadKeep?.(e.x);
+        if (e.x && typeof e.x === 'object') h.loadKeep?.(e.x, beerPortions);
       }
       // cups: first the ones on their shelf (their slots), then the rest
       const cups = Array.isArray(s.cups) ? s.cups : [];
@@ -263,7 +286,11 @@ const PARTS = {
       const held = s.held ? map.get(s.held) : null;
       if (heldCup) heldCup.take();
       else if (held && !held.held) held.take();
-      if (held?.contents && items[s.held]?.a) { held.contents.a = { ...items[s.held].a }; held.liquid?.show(held.contents); }
+      if (held?.contents && items[s.held]?.a) {
+        held.contents.a = { ...items[s.held].a };
+        if (held.kind === 'glass' && items[s.held].x?.beer) held.loadKeep(items[s.held].x, beerPortions); // do not resurrect rejected beer via the existing held-last restore
+        held.liquid?.show(held.contents);
+      }
     },
   },
 

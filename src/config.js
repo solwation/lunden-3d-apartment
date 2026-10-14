@@ -2716,6 +2716,8 @@ export const CUPS = { n: 3, r: 0.04, h: 0.09, color: 0xf3f1ec, coffee: COFFEE.co
 // (whisky ~2–4 cl), `empty` = the level when poured into an empty vessel; never above full. `sip` = one sip from
 // a glass, `secs` = how long a pour takes, `tilt` = how far a bottle tips while it pours (rad).
 export const DRINKS = {
+  beer: { color: 0xd99a1e, opacity: 0.92, tint: 1, name: 'öl' }, // existing patio beer finish; ordinary glass fill follows champagne (visual guesses)
+  beerLots: 64, // #1007 conservative guess: bounded source ledgers per glass; refuse a new source before taking ml
   wine: { color: 0x5c0a1c, opacity: 0.92, tint: 1, name: 'vin' },
   champagne: { color: 0xeed98a, opacity: 0.6, tint: 1, name: 'champagne' },
   whisky: { color: 0xb8651c, opacity: 0.82, tint: 1, name: 'whisky' },
@@ -2723,7 +2725,7 @@ export const DRINKS = {
   coffee: { color: COFFEE.color, opacity: 1, tint: 1, name: 'kaffe' }, // #316: dark roast
   water: { color: 0xd8ecf6, opacity: 0.35, tint: 0.2, name: 'vatten' }, // tap water in the life sim's drinking glass (#382): clear, a light tint
   pour: {
-    glass: { wine: { to: 0.45 }, champagne: { to: 0.85 }, whisky: { add: 0.2 }, milk: { to: 0.75 } },
+    glass: { beer: { to: 0.85 }, wine: { to: 0.45 }, champagne: { to: 0.85 }, whisky: { add: 0.2 }, milk: { to: 0.75 } },
     cup: { milk: { empty: 0.8, add: 0.15 }, whisky: { add: 0.12 } }, // milk: a cup of it or a splash in the coffee (#168); whisky: a splash (#169)
   },
   sip: 0.15, secs: 1, tilt: 1.5,

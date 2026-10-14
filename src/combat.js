@@ -534,13 +534,22 @@ export class Combat {
     this.consumed ??= new Set();
     if (this.consumed.has(id)) return null;
     this.consumed.add(id);
-    this.recoverOffline(now);
-    const portionLife = this.rules.portionLife ?? C.portionLife ?? 1;
-    const result = this.ghosts.connected ? await this.ghosts.consume(id)
-      : { l: Math.min(this.maxLives, this.lives + portionLife), ok: true };
-    if (!result || !Number.isSafeInteger(result.l)) return null;
-    this.life(result.l);
-    this.recoveryClock(now);
+    // #1007: several beer sources may finish in one sip while another food claim is pending.
+    // All portions share Ghosts' single receipt slot; disconnect/reconnect never replays queued online claims.
+    const online = !!this.ghosts.connected, connection = this.ghosts.ws;
+    const run = async () => {
+      if (online !== !!this.ghosts.connected || (online && connection !== this.ghosts.ws)) return null;
+      const at = Math.max(now, Date.now());
+      this.recoverOffline(at);
+      const portionLife = this.rules.portionLife ?? C.portionLife ?? 1;
+      const result = online ? await this.ghosts.consume(id) : { l: Math.min(this.maxLives, this.lives + portionLife), ok: true };
+      if (!result || !Number.isSafeInteger(result.l)) return null;
+      this.life(result.l);
+      this.recoveryClock(Math.max(at, Date.now()));
+      return result;
+    };
+    const result = (this.consumeQueue ?? Promise.resolve()).then(run);
+    this.consumeQueue = result.catch(() => null); // a rejected receipt cannot poison a later valid portion
     return result;
   }
 
