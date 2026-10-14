@@ -14,7 +14,7 @@ import { copperPot } from './plantpots.js';
 import { restTarget } from './rest.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { addCushions, addFoldedThrow, addDrapedThrow } from './cushions.js';
-import { CUSHIONS, DOUBLE_BED_LINEN, FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, PILLOWS, BEDDING, PINGPING, MYDAL, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO, YUCCA, LANGLAMPA, VANITY, HEMNES_DAYBED, KPOP_POSTERS, SMASTAD, PHOTO_FRAME, COFFEE_TABLE, DANI } from './config.js';
+import { CUSHIONS, DOUBLE_BED_LINEN, FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, PILLOWS, BEDDING, PINGPING, MYDAL, BUNK_LINEN, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO, YUCCA, LANGLAMPA, VANITY, HEMNES_DAYBED, KPOP_POSTERS, SMASTAD, PHOTO_FRAME, COFFEE_TABLE, DANI } from './config.js';
 import { litMirrorMaterial, litEmissive, litReflect } from './mirror.js';
 import { addReflector } from './reflections.js';
 import { veronasofa, linkPatioTextiles, slattable, parasol, planter, dynbox } from './patio.js';
@@ -1051,17 +1051,19 @@ function bunk(item) {
   for (const x of [-hx, hx]) for (const z of [-hz, hz]) g.add(rbox(p, M.H, p, x, M.H / 2, z, whiteWood, 0.006)); // posts
   const duvet = item.sheets ? sheetMat(item.sheets) : duvetMat();
   M.base.forEach((y, k) => {
+    const [sheetSurface, pillowSurface, duvetSurface] = BUNK_LINEN.slice(k * 3, k * 3 + 3).map(spec =>
+      upholsterySurface(g, spec.name, { id: spec.id }));
     for (const x of [-hx, hx]) g.add(rbox(0.03, 0.14, l, x, y - 0.03, 0, whiteWood, 0.004)); // side rails
     g.add(rbox(w, 0.02, l, 0, y - 0.01, 0, k === 1 ? bunkBase : whiteWood, 0.003)); // the bed base (the top one's underside takes drawings, #199)
     for (const z of [-hz, hz]) for (const dy of [0.06, 0.06 + b + 0.1]) g.add(rbox(w, b, 0.025, 0, y + dy, z, whiteWood, 0.004)); // end boards
     // mattress with a fitted sheet, a thick duvet turned back at the head end, a real pillow (#309)
     const mt = y + M.mattress, P = BEDDING.bunkPillow;
-    addMattress(g, w - 0.02, M.mattress, l - 0.02, 0, mt, 0, fittedSheet(item.sheets ?? 'plain'));
-    addDuvet(g, duvet, w - 0.02, mt, -l / 2 + 0.5, l - 0.52, BEDDING.bunk, { seed: 7 + k * 4, uv: 0.8, care:k });
-    const pil = new THREE.Mesh(pillow(P.w, P.d, P.h, { seed: 13 + k, uv: 0.8, dent: { x: 0, z: 0.03, r: 0.13, depth: PILLOWS.head.dent } }), item.sheets ? duvet : linen);
+    addMattress(g, w - 0.02, M.mattress, l - 0.02, 0, mt, 0, fittedSheet(item.sheets ?? 'plain'), sheetSurface);
+    addDuvet(g, duvet, w - 0.02, mt, -l / 2 + 0.5, l - 0.52, BEDDING.bunk, { seed: 7 + k * 4, uv: 0.8, care:k, surface:duvetSurface });
+    const pil = new THREE.Mesh(pillow(P.w, P.d, P.h, { seed: 13 + k, uv: 0.8, dent: { x: 0, z: 0.03, r: 0.13, depth: PILLOWS.head.dent } }), pillowSurface.material(item.sheets ? duvet : linen));
     pil.position.set(0, mt + 0.003, -l / 2 + 0.01 + P.d / 2); // its seam 3 mm over the sheet, not in its plane (#335)
     pil.castShadow = pil.receiveShadow = true;
-    g.add(pil);
+    g.add(pillowSurface.part(pil));
   });
   // guard rail round the top bunk: two boards, the room side open by the ladder
   const top = M.base[1], lz0 = l / 2 - 0.5, lz1 = l / 2 - 0.05; // the ladder's span (foot end)

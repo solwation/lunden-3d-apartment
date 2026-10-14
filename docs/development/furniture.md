@@ -218,3 +218,6 @@ No shape, seed, pillow-top stacking, Pingping home, drawer action/interior, rest
 spot, footprint or soft-placement data changes. Both duvet/fold and foot throw
 retain care-index0 in the same original bed unit. Independent material bindings
 change merged grouping, not original per-part geometry or UV0.
+### Independent MYDAL linen (#1020)
+
+Both actual unicorn/vader MYDAL objects expose six BUNK_LINEN surfaces (lower/upper sheet, pillowcase and duvet/fold), bound explicitly before merge through upholsterySurface. Optional addMattress sheet-only binding and addDuvet o.surface reuse #1019's contract, retaining default behavior and care:k marking. Each sheet/case/duvet owns one private finish; ticking, wood/ladder, drawable upper base, original UV0, geometry, footprints and Rest/watch spots are unchanged. Original restores existing maps/colors; generic patterns use metre UV1. Six independent finishes add four merged meshes per model; the actual component render separately measures five→nine draw calls, unchanged25,556triangles. No new geometry or global material mutation.

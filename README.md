@@ -331,3 +331,4 @@ Vardagsrumsmattan kan nu väljas som blågrå långlugg i Möblera om (#1009). L
 Dubbelsängens lakan, örngott, täcke, stickade fotpläd och lilla kudde har separata
 tygval i Möblera om. Stommens tyg väljs som tidigare; Original återställer varje
 linnegrupp för sig, och bäddning och sparning behåller sitt vanliga beteende.
+MYDAL-sängarnas sängkläder (#1020): båda våningssängarna har separata val för lakan, örngott och täcke på under-/överslaf i det gemensamma tygbiblioteket. Originalmönstren, bäddning och liggplatser bevaras.

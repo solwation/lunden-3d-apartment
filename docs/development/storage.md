@@ -958,3 +958,6 @@ legacy furniture poses, accepted cache/conflicts and the existing surface select
 are reused. BedCare still saves only the original stable rumpled-bed ID in Life's
 `x.beds`; linen choices remain in the shared material record rather than that
 local care record. No new saving or stow policy is introduced.
+### MYDAL linen surfaces (#1020)
+
+BUNK_LINEN_SURFACES enrolls only the two actual movable MYDAL IDs, each with lower/upper-sheet/pillow/duvet stable IDs. They use the existing materialVersion1, independent per-surface revisions, /furniture GET/PUT, local preview/cancel and authoritative confirmation. Frame textile/guessed objects/wrong-family presets remain rejected. Real local HTTP tests preserve all twelve choices across active ordinary peers/new visits/reload, independent berth writes plus legacy pose-only writes,409 and offline/cache handling. Material changes preserve four Life/BedCare unit IDs and full home-record save/load; no production writes. Worker-first895086e was actually deployed by job115848446815 at12:20:25.8047925Z on2026-10-14 (versionbb54004c-3db7-40ca-ac86-1bd9ccd73a47) before requiring this client.
