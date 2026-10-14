@@ -657,3 +657,32 @@ Artifacts `/tmp/lunden-priority-715-replay/`: original `native` through `native4
 **No product defect or standalone runtime remedy is diagnosed by these controls.** Incoming flight can legitimately leave the camera between chosen steps without TTL/culling modification, but the earlier actual World dt/age is unknown, so this does not establish why its incoming submissions were absent. Full criteria still require comparable same-device idle/one/two-shooter behavior, reciprocal sustained shooting while moving around actual obstacles, honest unobstructed natural hardware rendering and visible local/incoming effects, actual warm/cache steady-state/frame/jank evidence, and the user's exact phone activity/model/browser. The published software-GPU capture timeout and missing measured incoming first-step input limit that earlier attempt specifically; they do not imply every code diagnosis is physically blocked. Actual normal-loop input/step observation on representative hardware would distinguish this remaining criterion, but no new World run, capture retry or automatic extension is authorized here. Existing answer choices on #715/#420 remain unanswered; no phone FPS or morning-crash-cause claim follows. #715 stays open; this slice changes tools/documentation only.
 
 Final publication rebase to `d0d6f9347e66a29a85f9cfdf48e2fd95bc03815f` preserves incoming #951 sections. Executed driver/helper and every client module remain exact; `cloudflare/players.js` differs only by the #951 comment and rifle `allowRear` expression. Current unversioned Nerf packets have no rifle HC, so the existing `rifleHeadContact` rejects before that permission matters. No Nerf parser, cadence, damage or recovery change is inferred or hidden. `final-rebase-proof.json` explicitly lists this backend exception and all eight full-inventory differences (incoming docs/test/changelog plus these own docs), rather than claiming full source equality or a new run on merged backend.
+
+### Actual native natural first incoming step (2026-10-14)
+
+The earlier selected-step replay did not record the ordinary World's first actual dt/age. This finite continuation adds `tools/nerfnormalstep.cjs`, a tools-only observer of original actual `Darts.fire`, `Combat.remote` and the first original `Darts.update` for each received flight. It preserves original invocation/return/throw and own/inherited descriptors, caps records at64 with explicit overflow, and restores only its own wrappers. It never advances a clock, changes born/TTL/physics, updates public matrices or computes a missing sphere. Eligibility uses borrowed existing native geometry spheres and separately composed current local/ancestor transforms; missing spheres are explicitly unknown. This is mathematical camera/layer/ancestry eligibility, not submission, pixels or occlusion.
+
+The served ordinary-loop observer reads the original `clock.getDelta()` **once**, records raw/capped dt before calling the unchanged `frame(raw)`, and retains existing view observations. Removing its two additive hooks recovers the entire original main bytes. Ordinary mode now saves first-incoming states before image work and in its failure checkpoint. This source path is prepared for a separately approved World run; **no new World or capture retry was run in this slice**. Its earlier actual dt/age remains unknown.
+
+`--normal-step-preflight` instead runs two actual native held-Nerf/Ghosts/Combat clients, fresh owned local Worker and real browser rAF/Three.Clock. Original `.05` cap is source-checked; no selected step, ambient interval simulation, renderer, World, DetailCuller, warm-up or WebGL is used. The native collaborators are not the complete ordinary apartment frame. Current original driver poses are `[4.4,0,9]`/yawπ/2 and `[3,0,9.12]`/yaw−π/2, camera72°/1.6/.05/1000. The fixture prepares native dart spheres before observer installation; the observer never does so. Both context visibility and focus are reported.
+
+Corrected native2: **19 checks / actual Node exit0**, all logic/image/cleanup/CLI stages complete,0pageerrors, real one held use/one hit/one hurt each, HP10→9. Received incoming origin `[3.75,1.47,9.3]`, direction `[1,.03,0]`, speed30 matches the earlier recorded launch. Natural measured inputs:
+
+| Native receiving peer | raw Clock dt (s) | actual first dt (s) | birth→first-update age (ms) | sphere eligibility before→after | after NDC z |
+|---|---:|---:|---:|---|---:|
+| A | .2239 | .05 | 130.2 | both true→both false | 1.117846 |
+| B | .0945 | .05 | 25.0 | both true→both false | 1.117846 |
+
+Both remain flying/visible/unexpired after that original update. Observer measured wall work totals2.8/2.1ms per peer (including birth, input and first snapshots); these instrumented headless native rAF intervals include other tasks and cannot be converted to frame CPU, normal World dt, phone FPS or network latency. The result supports the short forward-window mechanism **in this native scenario**, not a diagnosed product error or attribution of older zero incoming submissions. No runtime remedy is justified by this observation alone. Original physical same-device idle/one/two-shooter and actual unobstructed rendering remain missing.
+
+Artifacts `/tmp/lunden-normal715-surface/native2/{result.json,normal-step.png,final-source-proof.json}`, `freeze-native2.json`, `processes.json`; the native PNG summary is legible, though actual HP HUD overlaps part of the second peer summary; full values/checks are in JSON. Source1353/1353 files match through completion, including the explicit new helper. Own HTTP883820/Worker883959 started after initial freeze; tools changed for native2 while backend bytes remained exact, separately frozen. Awaited browser cleanup completes before actual CLI0; exact own server/Worker PID+cwd+argv cleanup stops both. Native1 is separately retained as17checks/CLI0 with a different initial peer pose `[3.4,0,9]` and lower-contrast image; its launch/input is not presented as the corrected ordinary fixture.
+
+Reproduction (native only; installed Playwright/Chrome and owned local servers):
+
+```sh
+NODE_PATH=/tmp/lunden-testdeps/node_modules CHROME_PATH=/usr/bin/google-chrome \
+  SHOTS=/tmp/normal-native node tools/nerfreciprocaltest.cjs \
+  http://localhost:8873 http://localhost:8874 --normal-step-preflight
+```
+
+No product/culling/TTL/budget/backend/changelog/deployment change. #715 stays open. Further actual World evidence requires fresh queue assignment and an exclusive bounded grant; no automatic continuation.
