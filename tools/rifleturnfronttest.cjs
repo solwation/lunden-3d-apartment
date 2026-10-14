@@ -3,6 +3,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),{spawn,execFileSync}=require('node:child_process');
 const root=path.resolve(__dirname,'..');
 const {startOwnedWorker,stopOwnedWorker,sourceHashes:baseSourceHashes,ownsPort}=require('./workerfixture.cjs');
+const {createNativeManifest,saveNativeManifest,loadVerifiedNativeManifest}=require('./nativemanifest.cjs');
 const sourceHashes=(opts={})=>baseSourceHashes({extraSources:['tools/rifleturnfronttest.cjs'],...opts});
 
 const [game='http://localhost:8870',worker='http://localhost:8871',out='/tmp/lunden-priority-944/native',gridProofPath]=process.argv.slice(2);
@@ -22,7 +23,7 @@ window.aimBody=()=>{const g=peer();for(const y of [1.3,1.2,1.1,1,.9])for(const x
 
 window.grid=async()=>{
 const seen=new Set(),models=[],details=[],counts={positive:0,bad:0,negative:0,falseHeads:0,hidden:0,falseHidden:0,corners:0,cornerBad:0,rays:0};const deadline=performance.now()+180000;
-for(let n=0;n<3000&&seen.size<60;n++){const id='front-'+n,l=C.avatarLook(id),key=[l.style,l.build,l.tall].join('/');if(seen.has(key))continue;seen.add(key);models.push(key);const w=[.93,1,1.08][l.build];
+poses_loop: for(let n=0;n<3000&&seen.size<60;n++){const id='front-'+n,l=C.avatarLook(id),key=[l.style,l.build,l.tall].join('/');if(seen.has(key))continue;seen.add(key);models.push(key);const w=[.93,1,1.08][l.build];
 poses: for(const base of [0,.8,3.14,-1.6])for(const mode of ['rifle','saber'])for(const at of [-100,0,600]){
 const g=ghosts.add(id,'Actual survey'),eye=new T.Vector3(0,1.62,-3);let t=1000;g.push({p:[0,0,0],r:base,h:mode},t);g.draw(t+C.GHOSTS.delay,eye);if(mode==='saber')g.swing();g.push({p:[0,0,0],r:+(base+.02).toFixed(2),h:mode},t+=200);g.draw(t+C.GHOSTS.delay,eye);g.push({p:[0,0,0],r:+(base-.02).toFixed(2),h:mode},t+=200);g.draw(t+C.GHOSTS.delay+at,eye);scene.updateMatrixWorld(true);const state={p:[0,0,0],r:+(base-.02).toFixed(2)},flag=g.avatar.mesh.geometry.attributes.rifleSkull,options={allowFront:false,allowRear:false,allowAfterTurnFront:true};
 for(const x of [-.10,-.073,-.070,-.067,-.063,0,.063,.067,.070,.073,.10])for(const y of [.06,.085,.088,.09,.092,.096,.12,.18]){
@@ -36,9 +37,43 @@ await saveCheckpoint({models,counts,details});if(performance.now()>deadline)retu
 return{models,counts,details,timeout:false};};
 },{i,worker});}
 const [a,b]=pages;let grid;
-if(gridProofPath==="--protocol-only"){console.log("SCOPED protocol-only integration: no geometry-grid execution or replay acceptance");grid=null;}else if(gridProofPath){const proof=JSON.parse(fs.readFileSync(gridProofPath)),s=fs.readFileSync(__filename,'utf8'),a=s.indexOf('window.grid=async()=>{'),b=s.indexOf('\n},{i,worker});}',a),now=sourceHashes();delete now['tools/rifleturnfronttest.cjs'];
-if(proof.kind!=='measured-grid-phase-only'||proof.completed!==true||proof.gridFunctionSha256!==crypto.createHash('sha256').update(s.slice(a,b)).digest('hex')||JSON.stringify(Object.keys(now).sort())!==JSON.stringify(Object.keys(proof.productionHashes).sort())||Object.keys(now).some(f=>now[f]!==proof.productionHashes[f]))throw Error('Stale/incomplete/mismatched grid-phase proof');grid=proof.parity;fs.writeFileSync(`${out}/grid-reuse.json`,JSON.stringify({path:gridProofPath,kind:proof.kind,producerWholeCLI:proof.producerWholeCLI,producerWholeCompleted:proof.producerWholeCompleted,gridFunctionSha256:proof.gridFunctionSha256,productionPaths:Object.keys(now).length},null,2));
-}else grid=await a.evaluate(()=>grid());if(grid!==null){fs.writeFileSync(`${out}/parity.json`,JSON.stringify(grid,null,2));console.log(JSON.stringify(grid));const expected=[];for(let style=0;style<4;style++)for(let build=0;build<3;build++)for(const tall of [.95,.975,1,1.025,1.05])expected.push([style,build,tall].join('/'));check(grid.models.length===60&&!grid.timeout&&expected.every(k=>grid.models.includes(k)),'finite actual Ghost matrix includes all exact 60 canonical appearances');check(grid.counts.positive>1000&&grid.counts.bad===0,'accepted tiny-turn/intermediate/paused actual nearest Skull points retain pure server entry');check(grid.counts.negative>1000&&grid.counts.falseHeads===0&&grid.counts.hidden>1000&&grid.counts.falseHidden===0,'actual earlier-other surfaces and independently forged FIRST pureSkull remain unsupported');check(grid.counts.corners>1000&&grid.counts.cornerBad===0,'independent eight rounded-cell corner rays stay on actual nearest Skull');}
+if(gridProofPath==="--protocol-only"){console.log("SCOPED protocol-only integration: no geometry-grid execution or replay acceptance");grid=null;}
+else if(gridProofPath){
+  const rawData=JSON.parse(fs.readFileSync(gridProofPath,'utf8'));
+  if(rawData.kind==='lunden-native-manifest'){
+    const verified=loadVerifiedNativeManifest(gridProofPath,{
+      expectedPhase:'rifle-turn-front-grid',
+      expectedDriver:'tools/rifleturnfronttest.cjs',
+      artifactsDir:path.dirname(gridProofPath)
+    });
+    grid=verified.rawResult;
+    fs.writeFileSync(`${out}/grid-reuse.json`,JSON.stringify(verified.reuseRecord,null,2));
+  }else{
+    const proof=rawData,s=fs.readFileSync(__filename,'utf8'),pa=s.indexOf('window.grid=async()=>{'),pb=s.indexOf('\n},{i,worker});}',pa),now=sourceHashes();delete now['tools/rifleturnfronttest.cjs'];
+    if(proof.kind!=='measured-grid-phase-only'||proof.completed!==true||proof.gridFunctionSha256!==crypto.createHash('sha256').update(s.slice(pa,pb)).digest('hex')||JSON.stringify(Object.keys(now).sort())!==JSON.stringify(Object.keys(proof.productionHashes).sort())||Object.keys(now).some(f=>now[f]!==proof.productionHashes[f]))throw Error('Stale/incomplete/mismatched grid-phase proof');
+    grid=proof.parity;
+    fs.writeFileSync(`${out}/grid-reuse.json`,JSON.stringify({path:gridProofPath,kind:proof.kind,producerWholeCLI:proof.producerWholeCLI,producerWholeCompleted:proof.producerWholeCompleted,gridFunctionSha256:proof.gridFunctionSha256,productionPaths:Object.keys(now).length},null,2));
+  }
+}else{
+  grid=await a.evaluate(()=>grid());
+  fs.writeFileSync(`${out}/parity.json`,JSON.stringify(grid,null,2));
+  const manifest=createNativeManifest({
+    phase:'rifle-turn-front-grid',
+    driver:'tools/rifleturnfronttest.cjs',
+    canonicalMatrix:{
+      variants:60,styles:4,builds:3,heights:[.95,.975,1,1.025,1.05],
+      poses:[0,.8,3.14,-1.6],modes:['rifle','saber'],delays:[-100,0,600]
+    },
+    rawResult:grid,
+    exitCode:0,
+    completed:true,
+    timeout:grid.timeout===true,
+    artifacts:{'parity.json':`${out}/parity.json`},
+    skippedDescription:'native CPU raycast grid measurement (3000 iterations across 60 appearances)'
+  });
+  saveNativeManifest(`${out}/native-manifest.json`,manifest);
+}
+if(grid!==null){fs.writeFileSync(`${out}/parity.json`,JSON.stringify(grid,null,2));console.log(JSON.stringify(grid));const expected=[];for(let style=0;style<4;style++)for(let build=0;build<3;build++)for(const tall of [.95,.975,1,1.025,1.05])expected.push([style,build,tall].join('/'));check(grid.models.length===60&&!grid.timeout&&expected.every(k=>grid.models.includes(k)),'finite actual Ghost matrix includes all exact 60 canonical appearances');check(grid.counts.positive>1000&&grid.counts.bad===0,'accepted tiny-turn/intermediate/paused actual nearest Skull points retain pure server entry');check(grid.counts.negative>1000&&grid.counts.falseHeads===0&&grid.counts.hidden>1000&&grid.counts.falseHidden===0,'actual earlier-other surfaces and independently forged FIRST pureSkull remain unsupported');check(grid.counts.corners>1000&&grid.counts.cornerBad===0,'independent eight rounded-cell corner rays stay on actual nearest Skull');}
 await startOwnedWorker(worker,out);await Promise.all(pages.map(p=>p.evaluate(()=>{enabled=true;tick=setInterval(()=>{ghosts.update();combat.update(0)},35)})));await Promise.all(pages.map(p=>p.waitForFunction(()=>ghosts.connected&&peer()?.snaps.length&&peer().have)));
 // A yaw-only .01 change is below the original .03 send threshold. A REAL ordinary weapon change carries it.
 await b.evaluate(()=>{heading=.01;weapon="saber"});await a.waitForFunction(()=>peer().snaps.at(-1).r===.01);await b.evaluate(()=>weapon="rifle");await a.waitForFunction(()=>peer().h==="rifle");await a.waitForFunction(()=>peer().speed<.01);await a.waitForTimeout(650);check(await a.evaluate(()=>aimFront()),'actual Combat obtains supported original nearest-skinned contact after accepted turn');

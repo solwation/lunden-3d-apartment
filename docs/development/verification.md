@@ -6761,3 +6761,41 @@ Native browser drivers adopt the helper via:
 const { startOwnedWorker, stopOwnedWorker, sourceHashes, assertFresh } = require('./workerfixture.cjs');
 ```
 as demonstrated in `tools/rifleturnfronttest.cjs`.
+
+## Verified native manifest and safe phase reuse (#948)
+
+Independent documentation or Worker server modifications frequently require targeted protocol verification without re-running large, expensive native geometry raycast grids whose source files are completely unchanged.
+
+`tools/nativemanifest.cjs` provides a read-only manifest verification and generation tool:
+- **Phase isolation**: Records separate named phases (e.g. `rifle-turn-front-grid`), producer driver script path, exit code, completion status, and timeout flags.
+- **Source & driver freeze**: Cryptographically hashes all relevant runtime sources (`cloudflare/*`, `src/*`, `index.html`), fixture dependencies, and the producing driver script using SHA-256. Any modification to relevant code requires fresh measurement.
+- **Three.js version locking**: Captures the exact Three.js version from `index.html` import map (e.g. `0.170.0`) and rejects reuse across version changes.
+- **Canonical matrix**: Validates canonical input/appearance/pose/seed matrices (e.g. 60 appearances across styles, builds, heights, and yaw poses).
+- **Raw artifact integrity**: Tracks referenced raw artifact files (e.g. `parity.json`) with SHA-256 hashes and byte counts. Rejects missing or tampered artifact files.
+- **Strict rejection contract**: Fails closed with descriptive errors on missing files, tampered artifacts, modified sources, modified drivers, nonzero exit codes (CLI 1, 143), incomplete phases, timeouts, and Three.js version drift.
+- **Separation of geometry and protocol**: Reused geometry results NEVER bypass or replace live Worker, protocol, HP, lethal receipt, or HUD DOM verification. No blind background cache or automated deployment claims.
+- **Audit trail & provenance**: Reused phases log the original execution timestamp, producing driver, exit code, and explicitly report the skipped measurement steps to `grid-reuse.json` and standard output.
+
+Focused test suite:
+```sh
+node --test tools/nativemanifest.test.cjs
+```
+Covers:
+1. Valid manifest match against clean sources and artifacts with provenance generation.
+2. Missing manifest detection.
+3. Missing raw artifact rejection.
+4. Tampered artifact rejection via SHA-256 mismatch.
+5. Modified runtime source rejection.
+6. Modified driver source rejection.
+7. Nonzero exit code rejection (CLI 1, 143).
+8. Incomplete phase and timeout rejection.
+9. Three.js version mismatch rejection.
+10. Canonical matrix and phase mismatch rejection.
+11. CLI verification (`node tools/nativemanifest.cjs verify <path>`).
+12. Explicit logging of reused provenance and skipped phases.
+
+Adoption in native browser drivers:
+```javascript
+const { createNativeManifest, saveNativeManifest, loadVerifiedNativeManifest } = require('./nativemanifest.cjs');
+```
+as demonstrated in `tools/rifleturnfronttest.cjs`, where passing a verified manifest safely skips the 3000-raycast geometry grid while continuing to execute full owned-Worker lifecycle, real WebSocket protocol, and HUD screenshot assertions.
