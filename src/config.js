@@ -4027,6 +4027,15 @@ export const PILLOWS = {
 // rails), turned back `fold` m at the head end; `bump` = the low unevenness on top. The mattresses get rounded edges
 // (`mattressR`) in a pale ticking (`ticking`) with a fitted sheet (`sheet` colour per set) over the top `sheetH` of it.
 // Tilly's bedspread is quilted in channels `quilt` m apart. The bunks' pillows are 50 × 60 (`bunkPillow`).
+// #1019: semantic groups of the existing IDANÄS linen; originals remain builder-specific.
+export const DOUBLE_BED_LINEN = [
+  { id: 'linen-sheet', name: 'Lakanet' },
+  { id: 'linen-pillows', name: 'Örngotten' },
+  { id: 'linen-duvet', name: 'Täcket och vikningen' },
+  { id: 'linen-footthrow', name: 'Stickade fotpläden' },
+  { id: 'linen-accent', name: 'Lilla kudden' },
+];
+
 export const BEDDING = {
   ticking: 0xe4e2db, mattressR: 0.045, sheetH: 0.75,
   sheets: { chintz: 0xf3f1ea, vader: 0x2b2e35, unicorn: 0xf6e9f1, plain: 0xf1f0ea },
