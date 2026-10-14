@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { Holdable } from './holdable.js';
 import { sfx } from './audio.js';
 import { BEER as B, PATIO as P } from './config.js';
+import { BeerPortion } from './beercan.js';
 
 // The big beer on the patio (#117): sit down in the lounge sofa and a 50 cl tankard of lager with a head of
 // foam turns up on the lounge table, all year round. E takes it; a click / the "Drick" touch button drinks a
@@ -37,12 +38,24 @@ export class Beer extends Holdable {
       heldPose: { pos: new THREE.Vector3(B.held.x, B.held.y, B.held.z), rot: new THREE.Euler(0, -0.4, 0) },
       pick: { pos: home.clone().setY(B.y + B.h / 2), size: [0.16, B.h + 0.04, 0.16] }, cooldown: 0.6,
     });
-    Object.assign(this, { beer, foam, level: 1, sip: 0, gulps: 0, out: false, world });
+    Object.assign(this, { beer, foam, level: 1, sip: 0, gulps: 0, out: false, world, generation: 1 });
     this.rest = { q: new THREE.Quaternion(), lift: 0 }; // it stands when put down
+    this.newServing();
     this.setLevel(1);
     this.placeForSpot(null);
     this.goHome();
     this.show(false);
+  }
+
+  newServing() {
+    this.portionId = `beer:lounge:${this.generation}`;
+    this.portion = new BeerPortion({
+      id: this.portionId,
+      total: 1,
+      drunk: 0,
+      finished: false,
+      kind: 'loungebeer',
+    });
   }
 
   getTable() {
@@ -147,6 +160,10 @@ export class Beer extends Holdable {
     if (spot) this.placeForSpot(spot);
     if (this.held || this.placed) { if (!this.out) this.show(true); return; }
     this.goHome();
+    if (this.level < 0.99 || this.portion?.finished) {
+      this.generation++;
+      this.newServing();
+    }
     this.setLevel(1);
     if (!this.out) sfx.click(this.where());
     this.show(true);
@@ -159,7 +176,13 @@ export class Beer extends Holdable {
     this.updateHomeFromTable();
     super.goHome();
     this.model.updateMatrixWorld(true);
-    if (this.out) this.setLevel(1); // back on the table: a fresh one
+    if (this.out) {
+      if (this.level < 0.99 || this.portion?.finished) {
+        this.generation++;
+        this.newServing();
+      }
+      this.setLevel(1); // back on the table: a fresh one
+    }
   }
 
   onUse() {
@@ -168,7 +191,17 @@ export class Beer extends Holdable {
     this.gulps++;
     this.onGulp?.();
     sfx.gulp(this.where());
+    const step = Math.min(this.level, B.gulp);
     this.setLevel(this.level - B.gulp);
+    if (this.portion) {
+      const res = this.portion.drink(step);
+      if ((res.terminal || (this.level <= 0.01 && !this.portion.finished)) && !this.portion.finished) {
+        this.portion.finished = true;
+        this.onConsume?.(this, this.portionId);
+      } else if (res.terminal) {
+        this.onConsume?.(this, this.portionId);
+      }
+    }
   }
 
   tick(dt) {
@@ -176,5 +209,35 @@ export class Beer extends Holdable {
     const k = Math.sin(this.sip * Math.PI); // up to the mouth, tipped, and down again
     this.model.position.set(B.held.x - 0.16 * k, B.held.y + 0.17 * k, B.held.z + 0.18 * k);
     this.model.rotation.set(0.9 * k, -0.4 + 0.3 * k, 0);
+  }
+
+  /** The saved state (keep.js `x`): saved for the lounge beer when served. */
+  keepState() {
+    if (!this.out) return null;
+    return {
+      gen: this.generation,
+      portionId: this.portionId,
+      drunk: Math.round((this.portion?.drunk ?? (1 - this.level)) * 1000) / 1000,
+      fin: this.portion?.finished ? 1 : 0,
+    };
+  }
+
+  loadKeep(s) {
+    if (!s || typeof s !== 'object') return;
+    if (Number.isInteger(s.gen) && s.gen >= 1) this.generation = s.gen;
+    if (typeof s.portionId === 'string' && s.portionId.length > 0 && s.portionId.length <= 64) {
+      this.portionId = s.portionId;
+    } else {
+      this.portionId = `beer:lounge:${this.generation}`;
+    }
+    const drunk = Number.isFinite(s.drunk) ? Math.max(0, Math.min(1, s.drunk)) : Math.max(0, 1 - this.level);
+    const finished = !!s.fin || (this.level <= 0.01 && drunk >= 0.99);
+    this.portion = new BeerPortion({
+      id: this.portionId,
+      total: 1,
+      drunk,
+      finished,
+      kind: 'loungebeer',
+    });
   }
 }

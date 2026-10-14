@@ -51,7 +51,7 @@ export function nerfContact(origin, direction, length, feet) {
 
 export class Combat {
   /** ghosts (Ghosts), camera, scene, weapon(): key or '', feet(): our feet (Vector3), jetpack, onDie(): back to the start; score / hurt / sfx hooks. */
-  constructor({ ghosts, camera, scene, weapon, feet, jetpack = null, basket = null, darts = null, sparkles = null, arrows = null, life = null, fruit = null, fish = null, chicken = null, fries = null, onDie = () => {}, onHit = () => {}, onHurt = () => {}, sfx = null }) {
+  constructor({ ghosts, camera, scene, weapon, feet, jetpack = null, basket = null, darts = null, sparkles = null, arrows = null, life = null, fruit = null, fish = null, chicken = null, fries = null, beer = null, beerCans = null, onDie = () => {}, onHit = () => {}, onHurt = () => {}, sfx = null }) {
     Object.assign(this, { ghosts, camera, scene, weapon, feet, jetpack, basket, darts, sparkles, arrows, lifeSystem: life, onDie, onHitCb: onHit, onHurtCb: onHurt, sfx, lives: C.lives, jetT: 0, flashT: 0,
       hits: 0, hurts: 0, deaths: 0, fired: 0, seen: 0, lastShot: null, lastSeen: null, consumed: new Set() });
     if (life?.onEvent) {
@@ -62,6 +62,7 @@ export class Combat {
       });
     }
     this.hookFood({ fruit, fish, chicken, fries });
+    this.hookBeer({ beer, beerCans });
     ghosts.onShot = (m, g) => this.remote(m, g);
     prepareCombatWorld(scene, ghosts.group, camera);
     // the others' shots (#667): one LineSegments for every streak (rifle, wand, web, jetpack flames; vertex colours, one
@@ -526,7 +527,7 @@ export class Combat {
     return result; // no PvP hurt penalty or immediate onDie; #869 handles actual fatal landing wake
   }
 
-  /** Consume a whole food portion (bread, sandwich, fried egg, fruit, fish finger, chicken piece, fries) to restore +1 life (#1004, #1005). */
+  /** Consume a whole food portion (bread, sandwich, fried egg, fruit, fish finger, chicken piece, fries) or beer (can, bottle, lounge) to restore +1 life (#1004, #1005, #1006). */
   async consume(portion, now = Date.now()) {
     const id = typeof portion === 'string' ? portion : portion?.id ?? portion?.portionId;
     if (!id || typeof id !== 'string') return null;
@@ -544,6 +545,7 @@ export class Combat {
   }
 
   onAte(portion, now = Date.now()) { return this.consume(portion, now); }
+  onDrank(portion, now = Date.now()) { return this.consume(portion, now); }
 
   hookFood({ fruit = null, fish = null, chicken = null, fries = null } = {}) {
     if (fruit) {
@@ -577,6 +579,27 @@ export class Combat {
         const portionId = id ?? bunch?.portionId;
         if (portionId) this.consume(portionId).catch(() => {});
       };
+    }
+  }
+
+  hookBeer({ beer = null, beerCans = null } = {}) {
+    if (beer) {
+      const prev = beer.onConsume;
+      beer.onConsume = (b, id) => {
+        prev?.(b, id);
+        const portionId = id ?? b?.portionId ?? b?.portion?.id;
+        if (portionId) this.consume(portionId).catch(() => {});
+      };
+    }
+    if (beerCans) {
+      for (const can of beerCans) {
+        const prev = can.onConsume;
+        can.onConsume = (c, id) => {
+          prev?.(c, id);
+          const portionId = id ?? c?.portionId ?? c?.portion?.id;
+          if (portionId) this.consume(portionId).catch(() => {});
+        };
+      }
     }
   }
 

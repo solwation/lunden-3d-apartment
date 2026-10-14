@@ -89,6 +89,7 @@ src/beercan.js         #587: each shelf package as a Holdable (BEER_CAN, game pa
                        stats.beer); empty = "den tomma burken/flaskan", a package for the bin (`discard`, back full the next time the
                        fridge is opened, as the milk); put down / back on its spot / F home. keep.js keeps it under `keepName`
                        (the shelf spot, since the daily beers change name) with its ml (`keepState`).
+                       #1006: finishing a whole can/bottle restores +1 life via shared consume contract; per-gulp stats preserved.
 src/beershelfdata.js   daily startup refresh and complete durable metadata+image cache; see storage.md.
 src/beershelfschema.js shared strict wire format and Europe/Stockholm day.
 cloudflare/beershelf.js GET-only public-source adapter; globalByStyle normalized ranking, merge Double/Triple IPA styles,
@@ -99,8 +100,10 @@ tools/beershelfcachetest.html real image decoding, atomic daily caching, offline
                        #711 slow local decode + CPU startup stall/late promise handoff; #718 local fetch/body/schema/decode failures return an uncached empty runtime shelf, actual BeerShelf label textures, successful live recovery and reload.
 tools/beercantest.html closed fridge blocks, take/back, drink empty, the bin, back on reopening, F, a page-made reload.
 tools/beershelfmodeltest.html shelf clearance, real canvas labels, can/bottle sizes and stable package count.
+tools/beerrecoverytest.cjs headless test (#1006): real BeerCan/Beer portion consumption, terminal +1 life, dedup, HUD policy, offline replica and WebSocket sync.
 src/beer.js            the big beer (BEER, #117), a Holdable: served on the lounge table when you sit in the lounge sofa,
-                       click / "Drick" drinks a gulp (the level drops), back on the table = full; cups drink too
+                       click / "Drick" drinks a gulp (the level drops), back on the table = full; cups drink too.
+                       #1006: finishing a whole served lounge beer restores +1 life via shared consume contract; serving anew refills.
 src/drinks.js          what a glass / cup holds (DRINKS, #166): `Contents` (amounts per drink, pour over a second, sip in
                        proportion, mixed colour weighted by `tint`), `pourAmount(vessel, drink, fill)`, `GlassLiquid` (a
                        lathe up to the level inside the glass's inner profile, `inner` from furniture.js); colours mix in

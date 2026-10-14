@@ -12,6 +12,47 @@ import { BEER_CAN as C } from './config.js';
 
 const NOTHING = { name: '', kind: 'none', pickable: new THREE.Object3D(), blocked: true };
 
+/** A shared portion consumption contract for beer portions (#1006, #1007). */
+export class BeerPortion {
+  constructor({ id, total, drunk = 0, finished = false, kind = 'beer' }) {
+    this.id = id;
+    this.total = total;
+    this.drunk = drunk;
+    this.finished = finished;
+    this.kind = kind;
+  }
+
+  drink(amount) {
+    if (this.finished) return { amount: 0, terminal: false, finished: true };
+    const step = Math.min(amount, Math.max(0, this.total - this.drunk));
+    this.drunk += step;
+    const terminal = !this.finished && (this.drunk >= this.total - 1e-4);
+    if (terminal) this.finished = true;
+    return { amount: step, terminal, finished: this.finished };
+  }
+
+  toJSON() {
+    return {
+      id: this.id,
+      total: this.total,
+      drunk: Math.round(this.drunk * 1000) / 1000,
+      fin: this.finished ? 1 : 0,
+      kind: this.kind,
+    };
+  }
+
+  static fromJSON(s) {
+    if (!s || typeof s !== 'object' || typeof s.id !== 'string') return null;
+    return new BeerPortion({
+      id: s.id,
+      total: Number(s.total) || 0,
+      drunk: Number(s.drunk) || 0,
+      finished: !!s.fin || !!s.finished,
+      kind: typeof s.kind === 'string' ? s.kind : 'beer',
+    });
+  }
+}
+
 export class BeerCan extends Holdable {
   /** `shelf` = the BeerShelf, `pkg` = one of its packages ({ beer, object, height, diameter }), `i` = its spot. */
   constructor(scene, camera, shelf, pkg, i) {
@@ -24,7 +65,8 @@ export class BeerCan extends Holdable {
       pick: { pos: new THREE.Vector3(), size: [pkg.diameter + 0.03, pkg.height + 0.03, pkg.diameter + 0.03] }, cooldown: C.cooldown,
     });
     Object.assign(this, { shelf, beer: pkg.beer, bottle, full: pkg.beer.ml, ml: pkg.beer.ml, sip: 0, away: false, fridgeWas: false,
-      drinkKind: 'beer', keepName: `ölen på kylhyllan ${i}`, height: pkg.height }); // (keepName: the beers change daily, the spot stays)
+      drinkKind: 'beer', keepName: `ölen på kylhyllan ${i}`, height: pkg.height, spot: i, generation: 1 }); // (keepName: the beers change daily, the spot stays)
+    this.newServing();
     // the "put it back" box rides in the shelf group and only counts while it is held (as a trinket's in its drawer)
     const pick = this.backTarget.pickable;
     shelf.group.add(pick);
@@ -36,6 +78,17 @@ export class BeerCan extends Holdable {
     const self = this;
     Object.defineProperty(this.takeTarget, 'name', { get: () => self.name, configurable: true });
     this.goHome();
+  }
+
+  newServing() {
+    this.portionId = `beercan:${this.spot}:${this.generation}`;
+    this.portion = new BeerPortion({
+      id: this.portionId,
+      total: this.full,
+      drunk: 0,
+      finished: false,
+      kind: this.bottle ? 'bottle' : 'can',
+    });
   }
 
   get name() { return this.ml > 0.5 ? this.beer.name : this.bottle ? 'den tomma flaskan' : 'den tomma burken'; }
@@ -68,16 +121,34 @@ export class BeerCan extends Holdable {
   onUse() {
     if (this.ml <= 0.5) return;
     this.sip = 1;
-    this.ml = Math.max(0, this.ml - this.full / C.sips);
+    const gulp = this.full / C.sips;
+    const canDrink = Math.min(this.ml, gulp);
+    this.ml = Math.max(0, this.ml - gulp);
     if (this.ml < 0.5) this.ml = 0; // (n × full/n is not quite full in floats)
     this.onGulp?.();
     sfx.gulp(this.where());
+    if (this.portion) {
+      const res = this.portion.drink(canDrink);
+      if ((res.terminal || (this.ml === 0 && !this.portion.finished)) && !this.portion.finished) {
+        this.portion.finished = true;
+        this.onConsume?.(this, this.portionId);
+      } else if (res.terminal) {
+        this.onConsume?.(this, this.portionId);
+      }
+    }
   }
 
   idle() { // thrown away: back the next time the fridge is opened after being shut
     if (!this.away) return;
     const open = !!this.shelf.fridge.isOpen;
-    if (open && !this.fridgeWas) { this.away = false; this.model.visible = true; this.goHome(); }
+    if (open && !this.fridgeWas) {
+      this.away = false;
+      this.model.visible = true;
+      this.generation++;
+      this.ml = this.full;
+      this.newServing();
+      this.goHome();
+    }
     this.fridgeWas = open;
   }
 
@@ -91,10 +162,42 @@ export class BeerCan extends Holdable {
   }
 
   /** The saved state (keep.js `x`): null for a full one. */
-  keepState() { return this.ml < this.full || this.away ? { ml: Math.round(this.ml), ...(this.away ? { away: 1 } : {}) } : null; }
+  keepState() {
+    const modified = this.ml < this.full || this.away || this.portion?.drunk > 0 || this.portion?.finished || this.generation > 1;
+    if (!modified) return null;
+    return {
+      ml: Math.round(this.ml),
+      gen: this.generation,
+      portionId: this.portionId,
+      drunk: Math.round((this.portion?.drunk ?? (this.full - this.ml)) * 10) / 10,
+      fin: this.portion?.finished ? 1 : 0,
+      ...(this.away ? { away: 1 } : {}),
+    };
+  }
+
   loadKeep(s) {
     if (!s || typeof s !== 'object') return;
     if (Number.isFinite(s.ml)) this.ml = Math.max(0, Math.min(this.full, s.ml));
-    if (s.away) { if (this.held) this.putBack(); this.away = true; this.model.visible = false; this.fridgeWas = !!this.shelf.fridge.isOpen; }
+    if (Number.isInteger(s.gen) && s.gen >= 1) this.generation = s.gen;
+    if (typeof s.portionId === 'string' && s.portionId.length > 0 && s.portionId.length <= 64) {
+      this.portionId = s.portionId;
+    } else {
+      this.portionId = `beercan:${this.spot}:${this.generation}`;
+    }
+    const drunk = Number.isFinite(s.drunk) ? Math.max(0, Math.min(this.full, s.drunk)) : Math.max(0, this.full - this.ml);
+    const finished = !!s.fin || (this.ml <= 0 && drunk >= this.full - 0.5);
+    this.portion = new BeerPortion({
+      id: this.portionId,
+      total: this.full,
+      drunk,
+      finished,
+      kind: this.bottle ? 'bottle' : 'can',
+    });
+    if (s.away) {
+      if (this.held) this.putBack();
+      this.away = true;
+      this.model.visible = false;
+      this.fridgeWas = !!this.shelf.fridge.isOpen;
+    }
   }
 }
