@@ -1269,5 +1269,12 @@ errors in the selected free-flight inputs were 0.436 mm at16.7ms and 0 mm at20ms
 The unchanged Basket.js preserves bounce/roll/catch/hoop scoring. Focused existing
 v2/Nerf/bow Node tests passed 11/11. The broad earlier suite remains 52/53 / CLI1
 on the old v1 randomized lateral-greeting assertion (players.test.mjs:657/#945);
-that failure and the first unwired-driver attempt (37 checks/9 failures) are retained,
+that failure and the first incomplete ball-fire integration/fixture attempt (37 checks/9 failures) are retained,
 not counted as green. Native ack PNG verifies the ordinary Huvudträff HUD only.
+
+Runtime `9da8c9e` actually deployed via Wrangler run38544206471/job115786107866
+(uploaded/deployed, version `fa8f3f5c-dc3e-4057-8884-8853c71d6a68`) and Pages
+run38544206428/job115786108544 (correct source deployment, reported success).
+All51 frozen executable/producer files matched the publication; the ordinary main
+basket injection was inspected separately, not executed as a full World test.
+Raw provenance, exits and native images are retained in `/tmp/lunden-priority-980/`.
