@@ -25,20 +25,21 @@ f.onload = async () => {
   const fresh = d.querySelectorAll('#note-list .new').length;
   const data = await fetch('../data/changelog.json').then((r) => r.json());
   const stamped = data.every((e) => Number.isFinite(e.t));
+  const { markNew, loadChangelog, summarizeChangelog } = await w.eval(`import('${new URL('../src/changelog.js', location.href)}')`);
+  const visible = summarizeChangelog(markNew(data, { getItem: k => k === 'lunden.changelogSeen' ? '1' : null, setItem() {} })).slice(0,100);
   let pass = true;
   if (stamped) {
     // a stamped build (#341): newest published first; seen=1 migrates to the t of entry 1
     const t1 = data.find((e) => e.id === 1)?.t || Math.max(...data.filter((e) => e.id <= 1).map((e) => e.t));
-    const want = data.slice(0,100).filter((e) => e.t > t1).length;
+    const want = visible.filter((e) => e.t > t1).length;
     pass &= check(data.every((e, i) => i === 0 || data[i - 1].t >= e.t), 'stamped changelog.json is newest t first');
-    pass &= check(total === Math.min(100,data.length) && fresh === want, `"Nytt" on ${fresh} of ${total} entries since seen=1 (want ${want})`);
+    pass &= check(total === visible.length && fresh === want, `"Nytt" on ${fresh} of ${total} entries since seen=1 (want ${want})`);
     pass &= check(Number(localStorage.getItem('lunden.changelogSeenT')) === Math.max(...data.map((e) => e.t)), 'last seen t stored');
   } else {
-    pass &= check(total === Math.min(100,data.length) && fresh === data.slice(0,100).filter(e=>e.id>1).length, `"Nytt" on ${fresh} of ${total} entries since seen=1`);
+    pass &= check(total === visible.length && fresh === visible.filter(e=>e.isNew).length, `"Nytt" on ${fresh} of ${total} entries since seen=1`);
   }
   pass &= check(localStorage.getItem('lunden.changelogSeen') !== '1', 'last seen id updated');
   // markNew (#341) on made-up entries: id 4 was pushed last with a too low id
-  const { markNew, loadChangelog } = await w.eval(`import('${new URL('../src/changelog.js', location.href)}')`); // the iframe has the import map
   const mem = (o = {}) => ({ o, getItem: (k) => (k in o ? o[k] : null), setItem: (k, v) => { o[k] = v; } });
   const E = [{ id: 7, t: 300 }, { id: 6, t: 200 }, { id: 4, t: 400 }, { id: 3, t: 100 }];
   const fmt = (r) => r.map((e) => `${e.id}${e.isNew ? '*' : ''}`).join(' ');

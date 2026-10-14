@@ -110,8 +110,8 @@ Låtarna har full längd och stereo. Musiken laddas först när den spelas; om i
 
 Vädret hämtas från [Open-Meteo.com](https://open-meteo.com/) (väderdata under CC BY 4.0); källan anges på startskärmen.
 
-De 100 senaste ändringarna står på lappen på frysen i köket (gå fram och tryck <kbd>E</kbd>). Det som
-tillkommit sedan ditt senaste besök är markerat *Nytt*.
+De 100 senaste nyhetspunkterna står på lappen på frysen i köket (gå fram och tryck <kbd>E</kbd>). Det som
+tillkommit sedan ditt senaste besök är markerat *Nytt*. Huvudträffsuppdateringar samlas under **Förbättringar för huvudträffar.** Nerf-optimeringar samlas under **Förbättringar för Nerf-skott.**
 
 På touch använder tydliga dörrar, lådor och luckor korta texter som **Öppna**, **Stäng** och **Dra ut**. Små föremål behåller sina namn, till exempel **Ta smörkniven**, och förflyttningar till ett särskilt mål anger vart föremålet hamnar. Diskmaskinens korgar kan väljas även mellan metalltrådarna; tallrikar, glas och bestick i dem går fortfarande att plocka upp. Kylens grönsakslåda och frysens fyra lådor kan dras ut, fyllas och skjutas in; innehållet följer med och sparas mellan besök. Skjut in lådorna innan du stänger luckan.
 

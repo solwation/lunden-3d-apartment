@@ -14,7 +14,7 @@ export function markNew(entries, store) {
   const get = (k) => { try { return Number(store.getItem(k)) || 0; } catch { return 0; } };
   const set = (k, v) => { try { store.setItem(k, String(v)); } catch { /* private mode etc. */ } };
   const seen = get(KEY);
-  set(KEY, Math.max(0, ...entries.map((e) => e.id)));
+  set(KEY, Math.max(seen, ...entries.map((e) => e.id)));
   if (!entries.length || !entries.every((e) => Number.isFinite(e.t))) {
     // first visit: everything is new, so nothing gets the badge
     return entries.map((e) => ({ ...e, isNew: seen > 0 && e.id > seen }));
@@ -28,6 +28,29 @@ export function markNew(entries, store) {
   }
   set(KEY_T, Math.max(seenT, ...entries.map((e) => e.t)));
   return sorted.map((e) => ({ ...e, isNew: seenT > 0 && e.t > seenT }));
+}
+
+const GROUP_LABELS = new Map([
+  ['head-hits', 'Förbättringar för huvudträffar.'],
+  ['nerf-improvements', 'Förbättringar för Nerf-skott.']
+]);
+
+/** Presentation only: originals stay in the history/cache and are marked before grouping.
+ * Input is in display order, so the first member supplies the latest id/date/publication time. */
+export function summarizeChangelog(entries) {
+  const groups = new Map(), out = [];
+  for (const e of entries) {
+    const label = GROUP_LABELS.get(e.group);
+    if (!label) { out.push(e); continue; }
+    const previous = groups.get(e.group);
+    if (previous) previous.isNew ||= !!e.isNew;
+    else {
+      const summary = { ...e, text: label, isNew: !!e.isNew };
+      groups.set(e.group, summary);
+      out.push(summary);
+    }
+  }
+  return out;
 }
 
 const KEY_CACHE = 'lunden.changelogCache'; // the last good answer (#655): the newest entries only, a few tens of kB
@@ -59,7 +82,7 @@ export async function loadChangelog() {
   } else if (!raw && store) {
     try { const c = JSON.parse(store.getItem(KEY_CACHE)); if (isList(c)) entries = c; } catch { /* none */ }
   }
-  const out = markNew(entries || [], store || { getItem: () => null, setItem: () => {} }).slice(0, CHANGELOG_NOTE.limit);
+  const out = summarizeChangelog(markNew(entries || [], store || { getItem: () => null, setItem: () => {} })).slice(0, CHANGELOG_NOTE.limit);
   out.fresh = !!raw;
   return out;
 }
@@ -80,7 +103,7 @@ const fmtDate = (d) => new Date(`${d}T12:00:00`).toLocaleDateString('sv-SE', { d
 
 /** Fill a <ul> with the entries (all, or the first `limit`): a small date line, then the text. */
 export function renderChangelog(ul, entries, limit = Infinity) {
-  ul.replaceChildren(...entries.slice(0, limit).map((e) => {
+  ul.replaceChildren(...summarizeChangelog(entries).slice(0, limit).map((e) => {
     const li = document.createElement('li');
     if (e.isNew) li.className = 'is-new';
     const meta = document.createElement('span');
@@ -116,6 +139,7 @@ function wrap(g, text, maxW) {
 
 /** Hand-written-looking note texture: title, the latest entries, a red "NYTT!" if any are new. */
 function noteTexture(entries) {
+  entries = summarizeChangelog(entries);
   const c = document.createElement('canvas');
   c.width = 300; c.height = 420;
   const g = c.getContext('2d');

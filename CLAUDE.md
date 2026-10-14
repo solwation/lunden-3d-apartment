@@ -45,6 +45,10 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   next `id`), in the same commit — **one short sentence**, no digressions. It is shown only on the
   note on the freezer (the start screen says nothing about news; visitors find the note themselves);
   entries newer than the visitor's last visit are marked "Nytt".
+  Use plain player language; technical implementation details belong in issues and development docs.
+  Head-hit updates must carry `"group": "head-hits"`: the freezer presents them once as
+  “Förbättringar för huvudträffar.”. Nerf optimization updates use `"group": "nerf-improvements"`
+  and display “Förbättringar för Nerf-skott.”. Original history and publication times remain intact.
   **The id is picked last:** after your final `git pull --rebase`, right before pushing, renumber your entry to
   the file's max id + 1 and keep it on top — never an id chosen when the work started (parallel agents push in
   between). The ids must stay unique and strictly descending in file order; `tools/stamp.sh` warns (`::warning::`
