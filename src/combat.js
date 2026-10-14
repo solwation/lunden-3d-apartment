@@ -384,6 +384,8 @@ export class Combat {
       for (const g of this.foes()) {
         const dy = me.y - g.feet.y; // their feet this far under ours; their head at most jetBelow[1] under our feet
         if (dy >= C.jetBelow[0] && dy - C.body[1] <= C.jetBelow[1] && Math.hypot(g.feet.x - me.x, g.feet.z - me.z) <= C.jetAcross) {
+          // A blocked attempt keeps the same cadence instead of querying a wall every frame.
+          this.jetT = this.rules.weapons?.jetpack?.every ?? 1;
           const round = v => Math.round(v * 100) / 100;
           const shot = { t: 'a', w: 'jetpack', o: [me.x, me.y + 1, me.z].map(round), d: [0, -1, 0], to: g.id };
           const state = { p: g.feet.toArray(), r: g.root.rotation.y, c: g.crouch ?? 0 };
@@ -398,7 +400,6 @@ export class Combat {
           }
           if (!shot.hc && !this.jetBodyClear(new THREE.Vector3(...shot.o), g.feet)) continue;
           this.lastShot = shot; this.ghosts.fire(shot);
-          this.jetT = this.rules.weapons?.jetpack?.every ?? 1;
           break;
         }
       }

@@ -13,7 +13,7 @@ const check=(ok,label)=>{checks++;console.log(`${ok?'PASS':'FAIL'} ${label}`);if
  for(const weapon of ['jetpack']) {
   const context=await browser.newContext({viewport:{width:390,height:480}}), pages=[];
   try {
-   for(let i=0;i<2;i++) {
+   for(let i=0;i<(baseline?2:3);i++) {
     const page=await context.newPage();pages.push(page);page.setDefaultTimeout(12000);
     page.on('pageerror',e=>errors.push(e.message));
     await page.route('**/src/bootstrap.js*',r=>r.fulfill({contentType:'text/javascript',body:'// native straight attack fixture'}));
@@ -26,7 +26,7 @@ const check=(ok,label)=>{checks++;console.log(`${ok?'PASS':'FAIL'} ${label}`);if
      window.T=await import('three');window.config=await import('/src/config.js');window.S=await import('/src/stats.js');
      const {Ghosts}=await import('/src/ghosts.js'),{Combat}=await import('/src/combat.js');
      window.scene=new T.Scene();window.camera=new T.PerspectiveCamera(60,1,.1,100);
-     window.pose={p:i?[2,0,0]:[0,0,0],r:0,c:false};window.held=i?'rifle':weapon;
+     window.pose={p:i===2?[3,0,0]:i?[2,0,0]:[0,0,0],r:0,c:false};window.held=i===2?'':i?'rifle':weapon;
      window.jet={thrusting:false};window.acks=[];window.remoteShots=0;window.markers=0;window.deaths=0;
      S.setScoreElement(document.getElementById('score'));S.setBadgeElement(document.getElementById('badges'));
      window.ghosts=new Ghosts({scene,camera,url:worker,name:()=>i?'Mål':'Skytt',active:()=>true,state:()=>({...pose,p:pose.p.slice()}),weapon:()=>held,score:()=>S.totalScore(),mirrored:()=>false});
@@ -40,7 +40,7 @@ const check=(ok,label)=>{checks++;console.log(`${ok?'PASS':'FAIL'} ${label}`);if
     },{worker,i,weapon});
    }
    const [a,b]=pages;
-   await Promise.all(pages.map(p=>p.waitForFunction(()=>ghosts.connected&&combat.foes().length===1)));
+   await Promise.all(pages.slice(0,2).map(p=>p.waitForFunction(()=>ghosts.connected&&combat.foes().length===1)));
    const settle=async p=>{
     await a.evaluate(p=>{pose.p=p;},p);
     await b.waitForFunction(p=>{const g=combat.foes()[0];return g.feet.distanceTo(new T.Vector3(...p))<.005;},p);
@@ -73,6 +73,13 @@ const check=(ok,label)=>{checks++;console.log(`${ok?'PASS':'FAIL'} ${label}`);if
    const plate={size:[2,.1,2],p:[2,2.2,0]};
    await attempt('Original horizontal wall',{obstacles:[plate],hit:baseline});
    if(baseline)continue;
+   const blockedCooldown=await a.evaluate(()=>{
+    const t=combat.jetT,original=combat.jetBodyClear;let calls=0;
+    combat.jetBodyClear=function(...args){calls++;return original.apply(this,args);};
+    try{jet.thrusting=true;combat.update(0);}finally{jet.thrusting=false;combat.jetBodyClear=original;}
+    return {t,calls};
+   });
+   check(blockedCooldown.t>0&&blockedCooldown.calls===0,'blocked attempt keeps the existing cooldown without another per-frame obstacle query');
    await attempt('Open vertical flame',{hit:true,head:true});
    await attempt('Offset volume body survives',{p:[2.8,2,0],hit:true});
    await attempt('Thin obstacle immediately before body',{p:[2.8,2,0],obstacles:[{size:[2,.02,2],p:[2,2.15,0]}]});
@@ -99,6 +106,15 @@ const check=(ok,label)=>{checks++;console.log(`${ok?'PASS':'FAIL'} ${label}`);if
    const replayBefore=await a.evaluate(()=>snap());await a.evaluate(m=>ghosts.message(JSON.stringify(m)),kill);
    const replayAfter=await a.evaluate(()=>snap());
    check(replayAfter.kills===replayBefore.kills&&replayAfter.score===replayBefore.score&&replayAfter.hits===replayBefore.hits&&replayAfter.markers===replayBefore.markers,'replayed lethal receipt duplicates no kill/reward/marker');
+   const c=pages[2];await c.evaluate(()=>held='rifle');
+   await a.waitForFunction(()=>combat.foes().length===2);
+   await settle([2,2,0]);await blocks([{size:[.25,.1,.25],p:[2,2.3,0]}]);
+   const thirdBefore=await c.evaluate(()=>snap()),beforeSecond=await a.evaluate(()=>snap());
+   const ids=await a.evaluate(()=>combat.foes().map(g=>g.id));
+   await a.evaluate(()=>attack());await a.waitForFunction(n=>combat.hits===n,beforeSecond.hits+1);
+   const afterSecond=await a.evaluate(()=>snap());await c.waitForFunction(n=>combat.lives===n,thirdBefore.lives-1);
+   check(afterSecond.last.to===ids[1]&&!afterSecond.last.head,'a blocked first foe does not prevent an open offset second foe in the SAME flame attempt');
+   records.push({secondFoe:{ids,before:beforeSecond,after:afterSecond,target:await c.evaluate(()=>snap())}});
    await a.evaluate(()=>{document.getElementById('loading').style.display='none';let el=document.createElement('pre');el.textContent='Jetpack: vägg och hörn stoppar lågan\nÖppning och sidoträff fungerar\nTvå riktiga lokala WS / ingen World';el.style.cssText='position:fixed;left:12px;top:100px;background:white;color:black;padding:12px;z-index:30';document.body.append(el);});
    await a.screenshot({path:out+'/jet-obstacles-hud.png'});
    check((await Promise.all(pages.map(p=>p.evaluate(()=>webglCalls)))).every(n=>n===0),'native clients create zero WebGL contexts');

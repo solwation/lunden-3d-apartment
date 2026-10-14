@@ -35,7 +35,8 @@ existing paths until separately delivered. The jetpack's volume-based body fallb
 from the actual rounded flame origin to the nearest surface of its existing body
 capsule, including side-offset targets inside the unchanged flame volume. The full
 finite ray reaches that contact without `clear()`'s .3 m shortening. A blocked body
-fallback sends no target packet. New straight head contacts retain their separate
+fallback sends no target packet and retains the existing attempt cooldown, avoiding
+a repeated wall query every frame. New straight head contacts retain their separate
 body/world checks; range, cooldown, damage, points and recovery stay unchanged.
 Transparent and moving props keep the existing combat-world exclusion policy;
 there is no new Worker world map or persistence.

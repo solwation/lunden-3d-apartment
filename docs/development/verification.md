@@ -5931,3 +5931,15 @@ head and body damage; `--jet-wall-baseline` remains a separate archived-Combat b
 reproduction. Native meshes/DOM do not imply World, GPU, physical-phone or FPS proof.
 The Worker has no world map: this fixes client flame contact selection, preserving
 its authoritative existing rate/range/damage/recovery decisions.
+
+Final #978 native controls passed 27/27 / CLI 0, adding blocked-attempt cooldown
+without another per-frame world query and a third genuine local WS peer to prove
+that a blocked first foe does not prevent an open second foe in the same attempt.
+The two main combat peers verify head/body, obstacle, volume and lethal/replay rules.
+The first 25-check run preceded this cadence safeguard. One attempted simultaneous
+straight regression timed out waiting for exactly one foe in the shared local room
+(CLI 1 before attacks); its raw log is preserved separately from the sequential
+final regression. The inspected native result image establishes text/HP only;
+straight-fixture ack-time images have explicit native marker-visibility checks.
+No marker duration was reset for capture. Raw source hashes, exits and owned
+process/socket records are retained under `/tmp/lunden-priority-978/`.
