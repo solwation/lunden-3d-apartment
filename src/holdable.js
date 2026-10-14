@@ -10,16 +10,45 @@ import * as THREE from 'three';
 // onUse / tick. The cups (cups.js) share setHeld / placeAt.
 
 let current = null;
+let bicycleHand = null; // #984: transient reservation, never a second inventory or saved item.
+export const stowedItem = () => bicycleHand?.item ?? null;
+export const bicycleHandsBusy = () => !!bicycleHand;
+export const isStowed = item => !!item && bicycleHand?.item === item;
+/** Atomically free both hands without put/take hooks, placement changes or a second instance. */
+export function stowBicycleHand() {
+  if (bicycleHand) return;
+  const item = current, model = item?.model;
+  bicycleHand = { item, state: item?.state, parent: model?.parent, pos: model?.position.clone(), quat: model?.quaternion.clone(), scale: model?.scale.clone(), visible: model?.visible };
+  current = null;
+  if (!item) return;
+  item.held = false; // stop use/automatic fire before cancelling a trigger (never loose a drawn bow).
+  item.trigger?.(false);
+  item.relax?.(); // cancel the existing bow draw without a release or ammunition change
+  if (model) { bicycleHand.pos.copy(model.position); bicycleHand.quat.copy(model.quaternion); }
+  model?.removeFromParent(); // detached even if an idle/show callback changes visible.
+}
+/** Called only after a successful exit/spawn. Reattach the same model with its exact held pose/state. */
+export function restoreBicycleHand() {
+  const saved = bicycleHand; bicycleHand = null;
+  if (!saved?.item) return;
+  const { item, parent, pos, quat, scale, visible } = saved;
+  if (item.broken || item.model.parent || item.state !== saved.state || (item.lifeItem && (item.life.items.get(item.item.id) !== item.item || item.item.place.at !== 'hand'))) return; // reset/removal must never resurrect an old instance
+  current = item; item.held = true;
+  parent?.add(item.model); item.model.position.copy(pos); item.model.quaternion.copy(quat); item.model.scale.copy(scale); item.model.visible = visible;
+  item.lastYaw = item.camera.rotation.y; item.lastPitch = item.camera.rotation.x;
+}
+
 /** The item in the visitor's hand, or null. */
 export const heldItem = () => current;
 /** Take `item` into the hand (null = empty hand); anything still held goes home (cups, #90). */
 export function setHeld(item) {
+  if (bicycleHand) return false; // reserved hands cannot take or send the stowed object home
   const prev = current;
   current = item; // first, so the previous item's putBack does not come back here for itself
   if (prev && prev !== item) prev.putBack();
 }
 /** Is the hand busy with something other than `item`? (#102: put that down first) */
-export const handBusy = (item) => !!current && current !== item;
+export const handBusy = (item) => !!bicycleHand || (!!current && current !== item);
 
 const tmpBox = new THREE.Box3();
 /**
@@ -149,6 +178,7 @@ export class Holdable {
   where(out = new THREE.Vector3()) { return this.model.getWorldPosition(out); }
 
   update(dt) {
+    if (isStowed(this)) return;
     this.cool -= dt;
     if (!this.held) { this.idle?.(dt); return; }
     this.t += dt;

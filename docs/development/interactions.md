@@ -1454,3 +1454,11 @@ The living-room rug library adds Blågrå långlugg through the existing local p
 Seven existing towels reuse the shared library/surface selector and klädsel presets. `towelhooks` owns independent `towel-{seed}` surfaces; RÅGRUND owns `towel`. The existing `HandWash.kitchen` child uses the explicitly NEW `KITCHEN_TOWEL_MATERIAL` identity as a material-only target, without a second object or movable pose. Ordinary locked visitors receive shared choices without edit access. Preview/cancel stay local; confirm uses existing per-surface revisions.
 
 Builder-owned private body/band/loop handles retain distinct Original colors/maps, UV0 and folds. `towelTarget`, keep/targets, six actual drying interactions, hand wetness/timing/swing, the oven-door child and chair rest/footprint remain unchanged; RÅGRUND gains no drying interaction. No garments, stored towels or cleaning cloths are added.
+
+### Bicycle hands and temporary stow (#984, first useful vertical)
+
+`BICYCLE_GRIP` names the existing bikeGeometry rubber-cylinder centres/radius/length without changing geometry. `Hand.bikeArms` maps those contacts through the actual bicycle and camera matrices, including the existing mirrored left arm and supported pitch; it reuses the six hand/sleeve/cuff meshes. Riding has priority over held/suit/reach poses and preserves the separate ordinary/suit branches.
+
+Successful Player mount reserves both hands through `stowBicycleHand`: current use becomes empty, the same model is detached, and its held pose/contents/owner place stay intact without onPut/onTake. Trigger cancellation happens after held=false, so a drawn bow does not fire. Denied mount/exit changes nothing; successful exit/spawn restores once. Busy-hand checks, Life action/view-sync and stale main menu/click paths cannot take/use the stowed item. The weapon/appearance key is empty while riding. Owner-reset/removal/shatter guards prevent resurrecting invalidated objects. Existing safe furniture reset first exits the bike.
+
+The full parent remains open for explicit stow-only reload bridges #1034 (food) and #1035 (unique objects) for older transient owners; no general inventory model is introduced here.

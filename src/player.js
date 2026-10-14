@@ -3,6 +3,7 @@ import { LEVELS, PLAYER, STAIR, UNIT_TOP, ROOFS, GARAGE, JETPACK, SPIDER, SOFFIT
 import { stairHeight, stairUnderside } from './stairs.js';
 import { groundY } from './surroundings.js';
 import { bicycleCurbY } from './street.js';
+import { stowBicycleHand, restoreBicycleHand } from './holdable.js';
 
 const GRAVITY = 9.8;
 
@@ -83,6 +84,7 @@ export class Player {
     this.eyeY = this.pos.y + PLAYER.eye;
     this.camera.position.set(x, this.eyeY, z);
     this.camera.rotation.set(0, yaw, 0, 'YXZ');
+    restoreBicycleHand(); // spawn/death/teleport exit after restoring the new camera direction
   }
 
   /** Is (x, z) inside the flat's footprint (plan)? */
@@ -561,7 +563,7 @@ export class Player {
     this.pos.copy(chosen); this.vy = 0; this.crouch = this.crouched = this.kneel = false;
     this.camera.rotation.set(BICYCLE.pitch, bike.yaw - Math.PI / 2, 0, 'YXZ');
     this.keys.clear(); this.analog.x = this.analog.y = 0;
-    this.bikePose(); return true;
+    this.bikePose(); stowBicycleHand(); return true;
     } finally { bike.selfQuery = false; if (this.riding?.bike !== bike) bike.ridden = false; }
   }
 
@@ -592,7 +594,7 @@ export class Player {
     const q = this.bikeStanding(); if (!q) return false;
     const bike = this.riding.bike; bike.ridden = false; bike.pick.visible = true; this.riding = null;
     this.pos.copy(q); this.vy = 0; this.fall = null; this.keys.clear(); this.analog.x = this.analog.y = 0;
-    this.eyeY = q.y + PLAYER.eye; this.camera.position.set(q.x, this.eyeY, q.z); return true;
+    this.eyeY = q.y + PLAYER.eye; this.camera.position.set(q.x, this.eyeY, q.z); restoreBicycleHand(); return true;
   }
 
   bikePose() {

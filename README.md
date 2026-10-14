@@ -350,3 +350,6 @@ Handdukarnas tyg kan väljas i materialbiblioteket: badrummens två par, Tvätts
 Sparade saker på möbler behåller sin världsplats när du återvänder eller laddar
 om sidan. Att läsa in möbleringen flyttar dem inte en extra gång; en senare
 bekräftad möbelflytt tar fortfarande med sakerna som står på möbeln.
+
+
+När du cyklar håller båda förstapersonshänderna i de befintliga handtagen. Det du höll stuvas tillfälligt och samma föremål återkommer när du kliver av; nekad på-/avstigning lämnar det orört. Kopp, vanliga sparade föremål och Life-mat följer med via befintlig sparning till säker stående återkomst. Omladdning med äldre tillfälliga mat-/pappersmodeller eller katten återstår i #1034/#1035 inom #984; samma-besöks-stuvningen är gemensam.

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { HAND as H } from './config.js';
+import { HAND as H, BICYCLE_GRIP as BIKE_GRIP } from './config.js';
 
 // The visitor's right arm and hand (#195, #238), children of the camera, in the lower right of the view. Hidden
 // while the hand is empty. Holding something (holdable.js, a cup), the hand closes round the held thing's grip
@@ -243,11 +243,39 @@ export class Hand {
     armM.scale.set(1, 1, Math.max(0.05, len - 0.012));
   }
 
+  /** #984: grip the real model's rubber cylinders. Model matrix includes its yaw and supported pitch.
+   * The mirrored left frame uses the same right-hand geometry; no extra arm meshes or world anchors. */
+  bikeArms(bike) {
+    this.camera.updateWorldMatrix(true, false);
+    const modelToCamera = new THREE.Matrix4().copy(this.camera.matrixWorld).invert().multiply(bike.matrix);
+    for (const [side, sign] of [[this.right, 1], [this.left, -1]]) {
+      const at = new THREE.Vector3(BIKE_GRIP.x, BIKE_GRIP.y, sign * BIKE_GRIP.z).applyMatrix4(modelToCamera);
+      const forward = new THREE.Vector3(1, 0, 0).transformDirection(modelToCamera);
+      // Thumb points inward along the grip cylinder; fingers curl around its axis.
+      const y = new THREE.Vector3(0, 0, -sign).transformDirection(modelToCamera);
+      if (sign < 0) { at.x = -at.x; forward.x = -forward.x; y.x = -y.x; }
+      const z = forward.addScaledVector(y, -forward.dot(y)).normalize();
+      const x = y.clone().cross(z).normalize();
+      const { hand, arm, cuff } = side;
+      hand.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, z));
+      hand.position.copy(at).sub(CONTACT.grip.clone().multiplyScalar(H.size).applyQuaternion(hand.quaternion));
+      cuff.position.set(0, 0, -H.cuff * H.size).applyQuaternion(hand.quaternion).add(hand.position);
+      cuff.quaternion.copy(hand.quaternion);
+      const direction = cuff.position.clone().sub(this.shoulder);
+      arm.position.copy(this.shoulder);
+      arm.quaternion.setFromRotationMatrix(new THREE.Matrix4().lookAt(cuff.position.clone().add(direction), cuff.position, up));
+      arm.scale.set(1, 1, Math.max(.05, direction.length() - .012));
+    }
+  }
+
   /** `item`: the held thing (or null); `pet`: a world point on the cat being petted with the empty hand (#242), or null. */
-  update(dt, item, pet = null) {
+  update(dt, item, pet = null, bike = null) {
     const held = item?.held && item.model?.parent === this.camera;
     let show = false, grip = 0, spread = 0, web = 0, hug = false, suitLeft = null;
-    if (held && item.handPose === 'hug') { // both arms round it, a hand on each side (#269)
+    if (bike && !held) {
+      this.bikeArms(bike);
+      show = hug = true; grip = 1; this.reachT = 1;
+    } else if (held && item.handPose === 'hug') { // both arms round it, a hand on each side (#269)
       item.model.updateMatrix();
       const [r, l] = item.hugGrips;
       this.pose(new THREE.Vector3(...r).applyMatrix4(item.model.matrix), 'hug');

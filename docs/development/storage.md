@@ -995,3 +995,9 @@ can complete the baseline before an older in-flight GET returns; the existing
 revision guard rejects that older snapshot. Subsequent normal local/remote moves
 and rug support changes use the ordinary carry/rotation path. Life restoration
 after furniture hydration still writes its own absolute item positions normally.
+
+### Riding hand reservation and existing keep records (#984, first vertical)
+
+The bicycle reservation is transient: no second item or new Items place/version. A stowed LifeItem retains its actual saved hand place while view.sync leaves its model detached. `keep.things` recognizes the stowed Holdable identity; Cup retains its existing held state/content record. Riding `keepSession` includes ordinary keepWorld plus `bicycleSavePlace` safe standing feet; normal non-riding session behavior is unchanged. Reload reconstructs ordinary standing play and existing held adapters. Spawn/death restores the same still-valid item; owner-reset/shatter/removal never resurrects it.
+
+Full #984 reload acceptance remains pending in #1034/#1035 for transient fruit/fish/fries, chicken held/portion pointers, Miele, held drawings and loose paper. The existing chicken Life extra remains authoritative for cooking/generation/parts/rewards; this step adds no duplicate serialization or reset of it.

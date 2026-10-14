@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { SITE, SEASON, BICYCLE } from './config.js';
+import { SITE, SEASON, BICYCLE, BICYCLE_GRIP } from './config.js';
 import { pavingTexture } from './patio.js';
 import { registerSnow } from './seasons.js';
 import { grassMaterial, grassUV } from './grass.js';
@@ -58,6 +58,7 @@ export function bikeSpokeTexture() {
  * `lod` 1 (near, ~1 400 triangles) or 0 (far, ~480; #704): the same parts and proportions with fewer sides on the tubes and wheels
  * (a bike a few metres away looks the same; the basement's racks swap between the two by distance, `BIKE_LOD` in config). */
 export function bikeGeometry(lod = 1) {
+  const G = BICYCLE_GRIP;
   const near = lod > 0, T = near ? 6 : 4, TW = near ? 20 : 16; // sides of a tube / segments round a wheel
   const cyl = (r, l, seg = T) => new THREE.CylinderGeometry(r, r, l, seg, 1, !near);
   const tube = (ax, ay, bx, by, r = 0.015) => { const l = Math.hypot(bx - ax, by - ay); return cyl(r, l).rotateZ(Math.atan2(ax - bx, by - ay)).translate((ax + bx) / 2, (ay + by) / 2, 0); };
@@ -73,8 +74,8 @@ export function bikeGeometry(lod = 1) {
     box(0.3, 0.012, 0.11, -0.6, 0.66, 0), tube(-0.5, 0.36, -0.7 + 0.12, 0.66, 0.008),
     box(0.06, 0.04, 0.03, 0.41, 0.43, 0.0)]);
   const tyres = merge([...WX.map((x) => new THREE.TorusGeometry(WR, 0.02, near ? 6 : 4, TW).translate(x, WY, 0)),
-    cyl(0.018, 0.09).rotateX(Math.PI / 2).translate(0.31, 0.95, 0.25),
-    cyl(0.018, 0.09).rotateX(Math.PI / 2).translate(0.31, 0.95, -0.25)]);
+    cyl(G.radius, G.length).rotateX(Math.PI / 2).translate(G.x, G.y, G.z),
+    cyl(G.radius, G.length).rotateX(Math.PI / 2).translate(G.x, G.y, -G.z)]);
   const metal = merge([...WX.flatMap((x) => [new THREE.TorusGeometry(WR - 0.02, 0.008, near ? 4 : 3, TW).translate(x, WY, 0), cyl(0.02, 0.1, near ? 8 : 5).rotateX(Math.PI / 2).translate(x, WY, 0)]),
     cyl(0.07, 0.008, near ? 12 : 8).rotateX(Math.PI / 2).translate(-0.05, 0.36, 0.06),
     box(0.015, 0.17, 0.015, -0.05, 0.275, 0.09), box(0.015, 0.17, 0.015, -0.05, 0.445, 0.09),

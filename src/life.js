@@ -4,7 +4,7 @@ import { cookingActions } from './cooking.js';
 import { dishActions } from './dishes.js';
 import { wasteActions } from './waste.js';
 import { Items, SIZES } from './items.js';
-import { Holdable, heldItem, setHeld, handBusy } from './holdable.js';
+import { Holdable, heldItem, setHeld, handBusy, isStowed, bicycleHandsBusy } from './holdable.js';
 import { buildModel } from './lifemodels.js';
 import { sfx } from './audio.js';
 import { ActionSet, firstAllowed, Runner } from './actions.js';
@@ -60,6 +60,7 @@ export class LifeItem extends Holdable {
 
   /** Put the model where the instance is, looking as it is. */
   sync() {
+    if (isStowed(this)) { this.refresh(); return; } // ordinary saved hand place stays intact while detached
     const p = this.item.place, m = this.model;
     const wasHeld = this.held;
     this.held = p.at === 'hand';
@@ -201,7 +202,7 @@ export class Life {
     return { life: this, items: this.items, held: this.items.held(), heldView: heldItem(), target: view?.item ?? target.instance ?? null, targetView: view, raw: target, ...extra };
   }
   /** The actions for an E target, in order (actions.js): the menu's rows. Blocked ones carry their reason. */
-  options(target, extra) { return this.actions.list(this.context(target, extra)); }
+  options(target, extra) { return bicycleHandsBusy() ? [] : this.actions.list(this.context(target, extra)); }
   /** Do action `i` of the target's list (default: the first allowed one); false when it is blocked (the prompt says why). */
   run(target, i = null) {
     const list = this.options(target), a = i === null ? firstAllowed(list) ?? list[0] : list[i];

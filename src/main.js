@@ -1458,6 +1458,7 @@ function renderChoices() {
 }
 /** Do row `i` of the menu (a blocked one only clicks: its reason is on screen). */
 function runChoice(i) {
+  if (player.riding) return false; // stale menu rows cannot consume or take the reserved item
   const r = choices.rows?.[i];
   if (!r) return false;
   if (r.reason) { sfx.click(camera.position); return false; }
@@ -1477,6 +1478,7 @@ document.addEventListener('wheel', (e) => { if (locked && !statsOpen && !reading
 
 /** E / the action button on what you look at: doors toggle, the note opens. */
 function use(thing) {
+  if (player.riding && thing.kind !== 'bicycle') return; // both hands are reserved for the actual handlebars
   if (thing.kind === 'bicycle') { if (player.riding) { standUp(); return; } if (rest.active) return; if (!player.mountBicycle(thing.bicycle)) greet.sayMine('Här går det inte att ta ut cykeln säkert.'); return; }
   if (thing.kind === 'ghost' && weaponKey()) { // focus may predate a weapon change (#872)
     const held = heldItem();
@@ -1608,7 +1610,7 @@ document.addEventListener('mousemove', (e) => {
  * Returns what it did (tools/clicktest.html).
  */
 function click(button) {
-  if (statsOpen) return 'none';
+  if (statsOpen || player.riding) return 'none';
   const held = heldItem(), focused = clickTarget();
   if (button === 2) {
     if (reading) return 'none';
@@ -1975,6 +1977,7 @@ function updateFocus() {
 
 // --- furniture on/off (F / 🛋) ---------------------------------------------
 function toggleFurniture(on = !world.furnitureOn) {
+  if (player.riding && !player.dismountBicycle()) return; // reset only after safe exit restores the same item
   life.interrupt('F'); // a timed life action stops (#372): nothing used before its commit
   laundry.cancel();
   dishProg?.cancel(); // the dishwasher stops, nothing washed (#385)
@@ -2283,7 +2286,7 @@ function showFrameRate(now, drawn, active) {
 // fights between two armed players (#667, src/combat.js): which weapon we hold (COMBAT.weapons, in that order)
 const weaponIs = { saber: (h) => h === saber, nerf: (h) => toys.blasters.includes(h), wand: (h) => toys.wands.includes(h),
   rifle: (h) => !!h?.isRifle, ball: (h) => h === ball, bow: (h) => !!bow && h === bow, web: (h) => !h && suit.worn, jetpack: () => jetpack.worn };
-const weaponKey = () => { const h = heldItem(); return COMBAT.weapons.find((k) => weaponIs[k]?.(h)) ?? ''; };
+const weaponKey = () => { if (player.riding) return ''; const h = heldItem(); return COMBAT.weapons.find((k) => weaponIs[k]?.(h)) ?? ''; };
 const ghosts = new Ghosts({ scene, camera, url: cloud.url, name: () => leaderboard.name, active: () => overlay.hidden, weapon: weaponKey, mirrored: () => !rest.active,
   state: () => ({ p: [player.pos.x, player.pos.y, player.pos.z], r: camera.rotation.y, c: player.crouched, sp: suit.worn }) });
 const combat = new Combat({ ghosts, camera, scene, weapon: weaponKey, feet: () => player.pos, jetpack, basket: ball, sfx, darts: toys.darts, sparkles: toys.sparkles, arrows, life, fruit, fish, chicken, fries, beer, beerCans,
@@ -2442,7 +2445,7 @@ function step(dt) {
   const petting = cat.ownHand ? null : cat.petHand(petAt);
   player.kneel = !!petting && petting.y < player.pos.y + 0.7; // down on your knees to stroke a cat on the floor (#242)
   handWash.update(dt); // washing / drying the hands, wet hands drying by themselves (#437)
-  hand.update(dt, heldItem(), petting); // the arm: holding something, petting the cat, or reaching for what E was used on (#195)
+  hand.update(dt, heldItem(), petting, player.riding?.bike); // the arm: holding something, petting the cat, or reaching for what E was used on (#195)
   cups.update(dt);
   fish?.update(dt);
   toiletPaper.update(dt);
@@ -2678,7 +2681,7 @@ const placeNow = () => {
 };
 function saveCurrentResume(extra) { const p = placeNow(); if (p) saveResume({ ...p, ...extra }); }
 // F5 carries on (#203): the place goes to this tab's sessionStorage every 2 s and when the page goes away
-const keepSession = () => { const p = played && !resetHome.going && placeNow(); if (p) saveSession(p); };
+const keepSession = () => { const p = played && !resetHome.going && placeNow(); if (p) saveSession(player.riding ? { ...p, world: keepWorld() } : p); };
 setInterval(keepSession, 2000);
 window.addEventListener('pagehide', keepSession);
 window.addEventListener('pagehide', () => { if (life.dirty) life.flush(); }); // the life sim's stock (#371)

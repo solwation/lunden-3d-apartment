@@ -6651,3 +6651,13 @@ and test producer remain exact to native1/render2; the actual coffee-table, rug,
 surfaceBox and rugLiftFor functions are also byte-exact. Four whole source paths
 differ from the component render through unrelated1029 config/furniture/hooks/main
 additions, which are preserved. There is no new render or whole-World parity claim.
+
+### Bicycle grip and same-visit stow (#984, first vertical)
+
+`tools/bicyclehandtest.cjs` exercises actual Player/Hand/Holdable, Cup, Life food, Blaster/Bow, keep and source-bound main input/session handlers on controlled collision collaborators. Original dirty984 is preserved; its four-file grip candidate was recovered into priority-984-resume, then extended with one transient stow contract. Native1 passed17/17, actual CLI0/12.448879s: all14 actual source bike matrices×still/yaw/pitch, identity/contents/no take-put hooks, denied transitions, trigger/drawn-bow suppression, keyboard/touch/pause, genuine filled-cup F5 standing reload and Life save/removal guards. It used the inherited FOV50 fixture for world contact distances; final landscape coverage uses actual main FOV72 separately.
+
+One coordinated800×500/DPR1 render passed5/5, actual CLI0/3.745262s. All three actual PNGs were inspected: still/turn show both hands on grips; controlled positive pitch gives larger/lower hands and partial arm clipping at the bottom. This is a selected-bicycle-range component, simple floor and the native fixture’s distant home items, not a bicycle-only scene or real terrain/World/phone/FPS certification. Actual budget in each view17→23calls /9622→19838triangles: +6calls/+10216triangles for the existing reused arm parts. All owned renderer descendants were gone and its profile absent.
+
+The parent’s legacy stowed-object reload acceptance remains open in #1034/#1035; successful Cup/Life/weapon cases must not be generalized to transient food/drawing/cat owners. Final native/rebase/publication evidence is recorded separately.
+
+Final native after the actual1029 rebase passed22/22, actual CLI0/3.106923s. Added actual FOV72 landscape568×320/844×390/1280×720 contact projections, real SpiderSuit feed/climb→bike priority→normal empty-hand regression and Cup.goHome reset-negative all passed. Life removal and owner-reset guards retain no stale hand model. The22 checks do not certify the still-pending legacy reload bridges.

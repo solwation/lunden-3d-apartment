@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { SONOS, MOCCAMASTER } from './config.js';
+import { stowedItem } from './holdable.js';
 
 // The world's state across a reload made by the page (#277): the automatic update (#192) and "Ladda om" put a
 // `world` part into the resume record (resume.js) next to the place; the new page reads it back once everything is
@@ -173,7 +174,7 @@ const PARTS = {
       let held = null;
       list.forEach((h, i) => {
         const e = {};
-        if (h.held) held = k[i];
+        if (h.held || h === stowedItem()) held = k[i];
         else if (h.placed) {
           e.p = vec(h.model.getWorldPosition(new THREE.Vector3()));
           const q = h.model.getWorldQuaternion(new THREE.Quaternion());
