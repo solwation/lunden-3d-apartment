@@ -6730,3 +6730,34 @@ Final combined-source acceptance: immutable1034 base `3dfa158974b7f56f8277c55a7e
 
 
 #1007 publication `5560788cf554b8cdad5fd72f2d46016a4b58e7ed` preserves all241 published src/data/index hashes in the publication manifest. Twelve of thirteen whole executed inputs remain byte-exact; the sole whole-file drift is the unrelated #1017 TARGET block in config, with DRINKS exact. All811 older stamped publication times and raw changelog rows remain exact; new813 is first. Actual Pages run38580607149/job115909186320 created the right-SHA deployment2026-10-14T14:27:25.1207710Z and reported success14:27:35.8101282Z. The automatic unchanged-protocol Worker run38580607055/job115909185319 deployed the same SHA14:27:28.9821572Z/version043a4ab6-fd67-4b9f-8fa1-53f2d7254185. Full job logs and all original failed runs are retained. This completion note changes no runtime and adds no World/physical-phone evidence.
+
+## Owned local Worker fixture (#927)
+
+A persistent local `cloudflare/dev.mjs` process retains loaded ES modules in memory across source modifications on disk (e.g. #897 vs #920), leading browser tests to execute against stale Worker code and producing false-negative diagnostics. Cached runs against prior Workers remain useful diagnostics, but cannot serve as current-source acceptance.
+
+`tools/workerfixture.cjs` provides a shared owned-local-Worker fixture helper:
+- **Source freeze**: Hashes all relevant backend/frontend sources (`cloudflare/*`, `src/config.js`, `src/privatecodes.js`, `src/version.js`, `index.html`) using SHA-256 before spawning.
+- **Port collision guard**: Verifies port availability via `/proc/net/tcp{,6}` before spawning. Rejects occupied ports immediately with occupant PID information; never kills or interferes with unowned processes.
+- **Birth-time & socket provenance**: Spawns an owned Worker process (or transient `systemd-run --user` service) born strictly after freeze uptime. Verifies listening socket ownership in `/proc/<pid>/fd`.
+- **Provenance metadata**: Records PID, start timestamp, port, uptime ticks, and frozen source hashes to `worker-provenance.json` bound to test execution metadata.
+- **Mutation rejection**: Re-hashes sources after socket bind and exposes `checkFreshness()` / `assertFresh()` to detect any mid-run code modifications.
+- **Isolated teardown**: Stops strictly fixture-owned processes via process-group SIGTERM/SIGKILL and process exit handlers (`exit`, `SIGINT`, `SIGTERM`), preventing orphan zombies without global `pkill`.
+- **External compatibility**: Explicitly allows external Worker endpoints when `allowExternal: true` is configured, marking provenance as `verifiedFresh: false` and `status: 'unverified'` / `compatibility: 'old-versioncompatibility'`.
+
+Focused lifecycle and provenance test suite:
+```sh
+node --test tools/workerfixture.test.cjs
+```
+Covers:
+1. Genuine start -> HTTP request -> disk provenance -> clean socket release.
+2. Occupied port rejection without killing unowned processes.
+3. Mid-run source modification detection and rejection.
+4. Explicit external Worker compatibility with unverified provenance marking.
+5. Zombie-free process termination.
+6. Optional `systemd-run --user` unit isolation and lifecycle status capture.
+
+Native browser drivers adopt the helper via:
+```javascript
+const { startOwnedWorker, stopOwnedWorker, sourceHashes, assertFresh } = require('./workerfixture.cjs');
+```
+as demonstrated in `tools/rifleturnfronttest.cjs`.
