@@ -4385,7 +4385,7 @@ export const FURNITURE = [
   // Sarah's rug (#171, docs/matta-vardagsrum-sarah.jpg): dark olive with off-white stripes (~2 cm white, 4 cm green)
   // bending round in U arches, square fields of 1 m (3 × 2); colours/stripes read off the photo, size kept at
   // 300 × 200 (Sarah's own may differ)
-  { type: 'rug', level: 0, x: 3.9, z: 10.6, w: 3.0, d: 2.0, h: 0.012, color: '#5a6150', stripe: '#e6e1d6', pitch: 0.062, white: 0.022,
+  { type: 'rug', materialFamily: 'living-room', level: 0, x: 3.9, z: 10.6, w: 3.0, d: 2.0, h: 0.012, color: '#5a6150', stripe: '#e6e1d6', pitch: 0.062, white: 0.022,
     fields: ['ewn', 'nes'] },
   // Uteplats (paved z 12.75–16.8 in front of the hedge, see PATIO). The family's Rusta Verona lounge (#408, replacing the
   // Plantagen Oslo set of #397 / #407), the user's layout (#429, shortened #489): an L. Three modules in a row (x 3.605–5.66)
@@ -4602,6 +4602,8 @@ export const POWER = {
 
 // Furniture cheat (#465): interaction distance and support tolerance are gameplay choices, not surveyed dimensions.
 // #995: visual assumptions for the generic rug swatches, not fabric measurements.
+// #1009: visual guesses, metres; total support = existing backing h + .002 gap + fiberHeight.
+export const LONG_PILE = { fiberHeight: .045, density: 26, maxTufts: 4200, width: .028, lean: .014, edge: .005, tipScale: .08 };
 export const MATERIAL_LIBRARY = { tile: .25, pixels: 128, curtainTile: .4, upholsteryTile: .25 }; // generic curtain/upholstery repeats in metres, visual guesses
 export const REARRANGE = { reach: 6, supportGap: 0.06, poll: 3000 };
 

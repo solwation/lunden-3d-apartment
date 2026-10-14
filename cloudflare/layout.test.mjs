@@ -172,7 +172,7 @@ test('fixed curtain surfaces share material patches without fictitious poses or 
  const put=materials=>r.fetch(new Request('https://test/furniture',{method:'PUT',headers:{'CF-Connecting-IP':`997-${++count}`},body:JSON.stringify({credential:privateCodeCredential(codes[0]),materials})}));
  const get=async()=>await(await r.fetch(new Request('https://test/furniture'))).json();
  assert.equal(M.CURTAIN_MATERIAL_IDS.length,6);assert.equal(new Set(M.CURTAIN_MATERIAL_IDS).size,6);
- assert.deepEqual(M.MATERIAL_CHOICES.map(c=>c.id),['original','rug-sand','rug-bluegrey','rug-olive','rug-stripe','rug-check']);
+ assert.deepEqual(M.MATERIAL_CHOICES.filter(c=>c.id!=='rug-longpile-bluegrey').map(c=>c.id),['original','rug-sand','rug-bluegrey','rug-olive','rug-stripe','rug-check']);
  for(const id of M.CURTAIN_MATERIAL_IDS){
   const response=await put([{id,surface:'textile',choice:'curtain-stripe',base:0}]);assert.equal(response.status,200);
   const state=await response.json();assert.equal(state.materials[id].textile.choice,'curtain-stripe');assert.equal(state.pieces[id],undefined);
@@ -224,4 +224,21 @@ test('eight interior cushion/throw surfaces use independent revisions and retain
  assert.equal((await put({moves:[move(id,after.pieces[id].revision,5)]})).status,200);
  after=await get();assert.equal(after.materials[id][first].choice,'upholstery-sand');assert.equal(after.materials[entries[1][0]][entries[1][1][0]].choice,'upholstery-stripe');
  const reload=await(await new DrawingRoom(ctx,{}).fetch(new Request('https://test/furniture'))).json();assert.deepEqual(reload,after);
+});
+
+test('long-pile material is limited to the original living-room rug and survives independent pose writes', async () => {
+  const { LONG_PILE_MATERIAL_IDS, RUG_MATERIAL_IDS, materialChoices } = await import('../src/materialcatalog.js');
+  assert.equal(LONG_PILE_MATERIAL_IDS.length, 1);
+  assert.equal(materialChoices('matta').some(c => c.id === 'rug-longpile-bluegrey'), false); // pre-feature UI calls omit object ID
+  const id = LONG_PILE_MATERIAL_IDS[0], {instance:r} = room();
+  let count=0;const put=b=>r.fetch(new Request('https://test/furniture',{method:'PUT',headers:{'CF-Connecting-IP':`1009-${++count}`},body:JSON.stringify({credential:privateCodeCredential(codes[0]),...b})}));
+  const choice = 'rug-longpile-bluegrey';
+  assert.equal(materialChoices('matta', RUG_MATERIAL_IDS.find(x => x !== id)).some(c => c.id === choice), false);
+  assert.equal((await put({ materials: [{ id, surface: 'textile', choice, base: 0 }] })).status, 200);
+  for (const other of RUG_MATERIAL_IDS.filter(x => x !== id)) assert.equal((await put({ materials: [{ id: other, surface: 'textile', choice, base: 0 }] })).status, 400);
+  const moved = await put({ moves: [{ id, pos: [4, 0, 10], quat: [0, 0, 0, 1], base: 0 }] });
+  assert.equal(moved.status, 200);
+  const state = await moved.json();
+  assert.equal(state.materials[id].textile.choice, choice);
+  assert.deepEqual(state.pieces[id].pos, [4, 0, 10]);
 });

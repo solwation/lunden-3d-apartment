@@ -8,6 +8,7 @@ export const MATERIAL_CHOICES = [
   { id: 'rug-olive', name: 'Olivgrön', category: 'matta', color: '#66705a' },
   { id: 'rug-stripe', name: 'Blågrå ränder', category: 'matta', color: '#788c9a', ink: '#e6e1d7', pattern: 'stripe' },
   { id: 'rug-check', name: 'Sandrutor', category: 'matta', color: '#c9bca8', ink: '#7c8574', pattern: 'check' },
+  { id: 'rug-longpile-bluegrey', name: 'Blågrå långlugg', category: 'matta', color: '#788c9a' },
 ];
 // #997: independent fabric family; the six existing rug choices/IDs remain unchanged.
 export const CURTAIN_MATERIAL_CHOICES = [
@@ -41,13 +42,14 @@ export const CUSHION_MATERIAL_SURFACES = Object.fromEntries(FURNITURE.flatMap(it
   const specs = it.type === 'sofa' ? [...CUSHIONS.sofa, CUSHIONS.sofaThrow] : it.type === 'armchair' ? [...CUSHIONS.armchair, CUSHIONS.chairThrow] : [];
   return specs.length ? [[`${base}-${n}-0`, specs.map(s => s.materialId)]] : [];
 }));
-export const materialChoices = (category = 'matta') => category === 'klädsel' ? UPHOLSTERY_MATERIAL_CHOICES : category === 'gardin' ? CURTAIN_MATERIAL_CHOICES : category === 'matta' ? MATERIAL_CHOICES : [];
+export const materialChoices = (category = 'matta', id) => category === 'klädsel' ? UPHOLSTERY_MATERIAL_CHOICES : category === 'gardin' ? CURTAIN_MATERIAL_CHOICES : category === 'matta' ? MATERIAL_CHOICES.filter(c => c.id !== 'rug-longpile-bluegrey' || LONG_PILE_MATERIAL_IDS.includes(id)) : [];
 const serials = new Map();
 export const RUG_MATERIAL_IDS = FURNITURE.flatMap(it => {
   const base = `f-${it.type}-${it.level}-${it.x}-${it.z}`, n = serials.get(base) ?? 0; serials.set(base, n + 1);
   return it.type === 'rug' ? [`${base}-${n}-0`] : [];
 });
+export const LONG_PILE_MATERIAL_IDS = RUG_MATERIAL_IDS.filter(id => FURNITURE.some(it => it.materialFamily === 'living-room' && id.startsWith(`f-${it.type}-${it.level}-${it.x}-${it.z}-`)));
 export const materialChoice = id => [...MATERIAL_CHOICES, ...CURTAIN_MATERIAL_CHOICES, ...UPHOLSTERY_MATERIAL_CHOICES].find(c => c.id === id);
 export const validMaterialChoice = (id, surface, choice) => (Object.hasOwn(CUSHION_MATERIAL_SURFACES, id) && CUSHION_MATERIAL_SURFACES[id].includes(surface))
-  ? UPHOLSTERY_MATERIAL_CHOICES.some(c => c.id === choice) : surface === 'textile' &&
+  ? UPHOLSTERY_MATERIAL_CHOICES.some(c => c.id === choice) : surface === 'textile' && (choice !== 'rug-longpile-bluegrey' || LONG_PILE_MATERIAL_IDS.includes(id)) &&
   (UPHOLSTERY_MATERIAL_IDS.includes(id) ? UPHOLSTERY_MATERIAL_CHOICES : RUG_MATERIAL_IDS.includes(id) ? MATERIAL_CHOICES : CURTAIN_MATERIAL_IDS.includes(id) ? CURTAIN_MATERIAL_CHOICES : []).some(c => c.id === choice);
