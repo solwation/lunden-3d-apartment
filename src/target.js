@@ -4,7 +4,7 @@ import { sfx } from './audio.js';
 import { badge } from './stats.js';
 import { groundY } from './surroundings.js';
 
-// The Nerf target on the lawn (#99): a ring board on a wooden stand facing the patio. A dart that hits the
+// The Nerf target on the east landing (#1017): a ring board facing the courtyard, its back to the fence. A dart that hits the
 // face scores by its ring (10 in the middle … 1 at the edge) times a bonus for the distance it was shot from
 // (TARGET.range); a "+N" badge pops up, a ding (higher for a bullseye), and the small board beside it shows
 // the total and the best shot (kept in localStorage). E on the target clears the score. It is only there
@@ -34,7 +34,8 @@ export class Target {
     const wood = new THREE.MeshStandardMaterial({ color: 0x9a7448, roughness: 0.8 });
     const g = new THREE.Group();
     g.position.set(T.x, 0, T.z);
-    // the board: straw-coloured backing with the ring face on its north side
+    g.rotation.y = THREE.MathUtils.degToRad(T.rot ?? 0);
+    // the board: straw-coloured backing with the ring face on its local −z side
     const back = new THREE.Mesh(new THREE.CylinderGeometry(T.r + 0.03, T.r + 0.03, 0.06, 32).rotateX(Math.PI / 2),
       new THREE.MeshStandardMaterial({ color: 0xcdb37a, roughness: 1 }));
     back.position.set(0, T.y, 0.03);
@@ -50,7 +51,7 @@ export class Target {
     const strut = new THREE.Mesh(new THREE.BoxGeometry(0.05, T.y + 0.2, 0.05), wood);
     strut.position.set(0, (T.y + 0.2) / 2 - 0.08, 0.45); strut.rotation.x = -0.35;
     g.add(strut, back, this.face);
-    // the score board on a post beside it (west), facing the patio too
+    // the score board on a post beside it (local −x), facing the same shooting area
     this.canvas = document.createElement('canvas'); this.canvas.width = 256; this.canvas.height = 128;
     this.tex = new THREE.CanvasTexture(this.canvas); this.tex.colorSpace = THREE.SRGBColorSpace;
     const sign = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.25).rotateY(Math.PI), new THREE.MeshStandardMaterial({ map: this.tex, roughness: 0.9 }));

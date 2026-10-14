@@ -355,3 +355,6 @@ bekräftad möbelflytt tar fortfarande med sakerna som står på möbeln.
 När du cyklar håller båda förstapersonshänderna i de befintliga handtagen. Det du höll stuvas tillfälligt och samma föremål återkommer när du kliver av; nekad på-/avstigning lämnar det orört. Kopp, vanliga sparade föremål och Life-mat följer med via befintlig sparning till säker stående återkomst. Omladdning med katten, teckningen eller lösa pappret återstår i #1035 inom #984; samma-besöks-stuvningen är gemensam.
 
 Även påbörjad frukt, fiskpinne, pommesportion och kyckling som stuvats under cykling återkommer efter omladdning, med kvarvarande mat och samma portion. Återkomsten är stående; källmängder dras inte av en gång till. Vanliga ostuvade saker behåller sin tidigare sparning.
+När du cyklar håller båda förstapersonshänderna i de befintliga handtagen. Det du höll stuvas tillfälligt och samma föremål återkommer när du kliver av; nekad på-/avstigning lämnar det orört. Kopp, vanliga sparade föremål och Life-mat följer med via befintlig sparning till säker stående återkomst. Omladdning med äldre tillfälliga mat-/pappersmodeller eller katten återstår i #1034/#1035 inom #984; samma-besöks-stuvningen är gemensam.
+
+Måltavlan står mellan rampen och trappan på södra baksidan, med ryggen mot staketet och ringarna mot gården.

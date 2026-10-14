@@ -238,8 +238,9 @@ src/rifle.js           the AK-47 (#196, RIFLE): a folding-stock AKMS lying in NO
                        rides with the drawer), explicit RIFLE.grip at wooden pistol grip (#913); click = a shot, held (`trigger`: mouse button / the touch button) = automatic;
                        hitscan from the eye → a 'hole' mark (marks.js), the lawn target scores, the cat meows; after RIFLE.mag
                        the empty magazine drops to the floor and a full one clicks in; F clears the dropped magazines
-src/target.js          the Nerf target on the lawn behind the hedge (TARGET, #99): rings × distance bonus, "+N" badge,
-                       a score board beside it (localStorage 'lunden.target'), E clears it; it rises out of the grass
+src/target.js          the existing Nerf target on the east landing between ramp and stairs (TARGET, #1017): rings × distance bonus, "+N" badge,
+                       back toward the east fence, face toward the courtyard; TARGET.rot rotates model and hit face together.
+                       A score board beside it (localStorage 'lunden.target'), E clears it; it rises out of the ground
                        only while a holdable with `hitsTarget` (blasters, lightsaber, wands) is in the hand and sinks
                        under it otherwise (#144, #179); saber cuts and wand magic on it score too
 src/bow.js             the bow (#690, BOW): our own recurve bow (one vertex-coloured mesh, a Line string, a nocked arrow while

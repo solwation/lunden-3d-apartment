@@ -6682,3 +6682,27 @@ freezes remain in the worker archive. Only #1013 is completed.
 Original native1 CLI1/1.055189s has0 assertions: an about:blank sessionStorage fixture access was corrected by first navigating to the actual local origin. Native2 actual99/104 CLI1/28.176052s is retained in full: two apple seed-premise failures used manual biteOff before ordinary pose update; three chicken failures compared saved quaternion bytes after actual Object3D Euler/quaternion reconstruction. All logical portions/content/source fields were unchanged. Measured maximum saved-place quaternion delta was2.220446049250313e-16. The next producer seeds apple/banana via real use/update before its canonical snapshot, keeps core chicken data exact and allows ONLY saved position/quaternion error up to1e-12 with actual per-case raw maxima. No runtime change was made to satisfy those float/fixture premises.
 
 All runs are bounded no-WebGL component integration. Appliance/collision collaborators are explicit minimal data; the native3 PNG shows only the portrait rotate-cover, so it provides NO diagnostic-log or food visual acceptance. There is no rendered-food, fullWorld, physical-phone, live multiplayer or FPS evidence. Original failed producers/checkpoints/results and owners/sockets/profiles are preserved. Native3 actually completed104/104 checks across14 food/reload cases, CLI0/32.176897s, timeoutfalse, errors[] and no surviving owned browser processes/profiles. The raw per-case saved chicken pose deltas remain recorded; only saved pose arrays use the explicit1e-12 tolerance, with all portion/generation/content/source data exact. Final publication evidence follows separately.
+## Target relocation (#1017)
+
+`PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/targetplacementtest.cjs game unused output native`
+uses the actual Target, Marks and Darts, with bootstrap/WebGL suppressed. Its 17
+checks cover the rotated front's real dart/splash/score, rings/distance bonuses,
+local score/reset, unchanged rise/sink, and the full stand/sign bounds on the
+source-defined east landing. Actual `groundY`, Player `groundAt`/radius and unchanged
+`boxWalls` segments check a clear ramp–landing–stair route at x12. These are bounded
+outdoor collision collaborators, not full World movement or phone/FPS evidence.
+The existing full-game `tools/targettest.html` now derives shot directions from
+the actual target matrix instead of assuming the old north-facing location.
+The location is a source-based gameplay placement, not a surveyed measurement.
+The separately granted `render` mode uses one 900×560/DPR1 renderer and two actual
+builder views: ramp/landing/stair overview and the ring face with the fence behind.
+It uses unchanged `boxWalls` (including `terraceStairs`) and `groundStrip` via
+additive test-only exports, with neutral component materials and solid fence panels.
+Native1 passed17/17 (actualCLI0,1.138519s); render1 passed18/18 (actualCLI0,1.601746s),
+both PNG inspected. Whole stand/sign bounds are x12.449–13.197803,
+z25.26999999–26.63, all footprint support samples have real groundY0; the original
+slightly embedded leg bottoms remain unchanged. Clearance to the fence's inner
+post edge x13.4 is at least0.202m; the full stand is between ramp end24.5 and stair
+start27.25. Raw overview/front costs are189/81calls and1620/894triangles respectively,
+for unmerged component geometry, not the production World's merged render budget.
+No World, physical-phone, audibility or frame-rate claim follows from these probes.

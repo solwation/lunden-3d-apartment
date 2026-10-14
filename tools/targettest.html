@@ -34,13 +34,15 @@ f.onload = async () => {
   target.object.updateMatrixWorld(true);
   target.reset();
   const c = target.face.getWorldPosition(new V());
-  const at = (dz) => c.clone().add(new V(0, 0, -dz)); // a shooter dz m north of the board
+  const front = new V(0, 0, -1).transformDirection(target.object.matrixWorld);
+  const right = new V(1, 0, 0).transformDirection(target.object.matrixWorld);
+  const at = (dz) => c.clone().addScaledVector(front, dz);
   for (const [dz, want] of [[1, 10], [3, 20], [5, 30], [8, 40]]) pass &= check(target.points(c, at(dz)) === want, `bullseye from ${dz} m: ${target.points(c, at(dz))} (want ${want})`);
-  pass &= check(target.points(c.clone().add(new V(0.35, 0, 0)), at(1)) === 1, `the outer ring: ${target.points(c.clone().add(new V(0.35, 0, 0)), at(1))}`);
-  pass &= check(target.points(c.clone().add(new V(0.5, 0, 0)), at(1)) === 0, 'outside the face: 0');
+  pass &= check(target.points(c.clone().addScaledVector(right, 0.35), at(1)) === 1, `the outer ring: ${target.points(c.clone().addScaledVector(right, 0.35), at(1))}`);
+  pass &= check(target.points(c.clone().addScaledVector(right, 0.5), at(1)) === 0, 'outside the face: 0');
   // a real dart from 1 m, straight at the middle (it drops ~4 cm on the way: still the bullseye)
-  player.spawn(c.x, c.z - 1.3, 0); step(1 / 60);
-  toys.darts.fire(at(1), new V(0, 0.02, 1).normalize(), 0xff7a1a);
+  const standing = at(1.3); player.spawn(standing.x, standing.z, 0); step(1 / 60);
+  toys.darts.fire(at(1), front.clone().negate().add(new V(0, 0.02, 0)).normalize(), 0xff7a1a);
   for (let i = 0; i < 30; i++) step(1 / 60);
   pass &= check(target.score.total === 10 && target.score.best === 10 && target.score.hits === 1, `a dart in the bullseye: total ${target.score.total}, best ${target.score.best}`);
   pass &= check(w.__app.marks.live.some((l) => l.kind === 'splash'), 'a paint mark on the board');

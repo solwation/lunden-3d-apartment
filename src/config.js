@@ -2261,7 +2261,7 @@ export const BASKET = {
 };
 
 export const TARGET = {
-  x: 2.8, z: 19.5, y: 1.4, r: 0.4,
+  x: 12.45, z: 25.7, rot: 90, y: 1.4, r: 0.4, // #1017: east landing, back toward the fence (source-based placement, not surveyed)
   rings: [10, 8, 6, 4, 2, 1],
   range: [[2, 1], [4, 2], [6, 3], [Infinity, 4]],
 };
