@@ -6663,3 +6663,14 @@ The parent’s legacy stowed-object reload acceptance remains open in #1034/#103
 Final native after the actual1029 rebase passed22/22, actual CLI0/3.106923s. Added actual FOV72 landscape568×320/844×390/1280×720 contact projections, real SpiderSuit feed/climb→bike priority→normal empty-hand regression and Cup.goHome reset-negative all passed. Life removal and owner-reset guards retain no stale hand model. The22 checks do not certify the still-pending legacy reload bridges.
 
 Publication of the first useful #984 vertical: `7ee61438c0f95a2a3ec5abb7b2d01167e9e58880`, changelog810,1425 frozen publication paths. All14 final-native source/producer hashes stayed exact after the incoming #1013 rebase; all808 older changelog publication times and raw older rows remain exact. Actual Pages run38575367035/job115890925000 created that exact SHA and reported success2026-10-14T13:51:56.7254289Z. Actual Worker run38575367037/job115890924781 deployed it2026-10-14T13:52:09.9633714Z, version463bfdc7-4ca7-434c-9d0a-078ed1030051. Parent984 remains open for formal medium children1034(food reload) and1035(unique-object reload; blocked by1034). No child was automatically started. Raw producers/freezes/CLI results/images/owner-socket records and full actual deployment logs are retained in worker-984-resume-artifacts; all owned child/service processes are gone and all three browser profiles absent. The original dirty priority-984 worktree is preserved unchanged.
+Published #1013 client4060ca79effa21b5bd8bb4b5d03bb3bd8bfed0fc/ch809 has a
+1424-file immutable publication manifest, with all256 final-native input bytes
+exact. All807 older changelog row bytes and actual history-derived publication
+times remain unchanged. Actual pushCLI0 was followed by a separate exact remote
+check before the issue comment. Pages run38575152438/job115890180475 created the
+deployment13:50:24.8997283Z and reported success13:50:30.0882166Z on2026-10-14
+for this exact client SHA. The full raw log is retained. Root independently checked
+all publication/native hashes, runtime/docs, raw proofs and the actual PNG. All80
+unique owned PID/startTick processes are gone, four temporary profiles absent and
+own8878/8879 listeners stopped. Original render1CLI1/0PNG and all source/producer
+freezes remain in the worker archive. Only #1013 is completed.
