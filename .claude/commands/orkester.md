@@ -13,6 +13,12 @@ Implementera öppna GitHub-issues med subagenter (Agent-verktyget, `isolation: "
 issues inom området finns kvar. Nya issues dyker upp löpande — lista om varje gång en agent blir klar.
 
 ## Prioritetsordning — styr varje nytt issueval
+- **Användarens omprioritering 2026-10-14:** huvudträffsutbyggnad och dess delar/teststöd har `priority: low`.
+  Starta inte fler separata ögon-/pupill-/hår-/polygonregioner. Användaren föredrar fungerande stöd plus tre
+  gemensamma huvud-hitboxar (nederdel, mitt, mindre topp). Gamla bodytexter om medium/exakt polygonacceptans
+  är ersatta av detta nya spelkontrakt; nya barn ärver low. Pågående detaljarbete lämnas vid säker checkpoint
+  med filer/resultat bevarade. Stäng ersatta oimplementerade detaljissues när den nya lösningen är verifierad.
+  Denna förfining får inte blockera separata buggar/features eller bli ett påhittat prerequisite till dem.
 - **Hög → medel → låg, äldst först inom varje nivå** enligt `created_at` (därefter issuenummer).
   Etiketterna är `priority: high`, `priority: medium`, `priority: low`; utan prioritet räknas som medel.
   Ändra inte befintliga prioriteter utan användarens uppdrag. Storlek, synlighet i spelet, filområde, korta kedjor,

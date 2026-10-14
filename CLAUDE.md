@@ -6,6 +6,11 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
 
 ## Workflow rules
 
+- **Headshot scope (user, 2026-10-14):** unfinished headshot refinements and their child/test stories are low priority.
+  Replace further eye/pupil/hair/polygon-specific work with a reasonable shared three-box head collider
+  (lower, middle, smaller top), preserving implemented gameplay. Old per-polygon acceptance demands are superseded;
+  use ordinary functional head/body/wall/damage tests. Preserve unfinished work at a safe checkpoint and close
+  superseded detail stories once the replacement works. Do not turn this refinement into a dependency for unrelated work.
 - **No branches, no PRs.** Commit and push directly to `main`.
 - **Basic function first.** Work that isn't needed right now goes into a GitHub issue
   (`gh issue create`) instead of being done on the side. Keep issues small and concrete;
