@@ -4075,6 +4075,18 @@ export const MYDAL = { W: 0.97, L: 2.07, H: 1.57, post: 0.055, base: [0.2, 1.1],
 // `mattress` [bottom, top]. Bedding (the user: less pink, a cool 15-year-old): a charcoal bedspread with lilac
 // lightning bolts and white stars over the foot end, black / holographic lilac / graphic cushions, a faux-fur one and
 // a small muted pink one (our picks).
+// #1021: only the eight actual HEMNES textile groups; geometry and original finishes stay builder-owned.
+export const DAYBED_LINEN = [
+  { id: 'linen-mattress-top', name: 'Övre madrassens överdrag' },
+  { id: 'linen-mattress-lower', name: 'Undre madrassens överdrag' },
+  { id: 'linen-spread', name: 'Kviltade överkastet' },
+  { id: 'linen-black', name: 'Svarta kudden' },
+  { id: 'linen-holo', name: 'Holografiska kudden' },
+  { id: 'linen-graphic', name: 'Bildkudden' },
+  { id: 'linen-fur', name: 'Pälskudden' },
+  { id: 'linen-pink', name: 'Rosa kudden' },
+];
+
 export const HEMNES_DAYBED = {
   W: 2.07, D: 0.89, H: 0.83, groove: 0.04, knob: 0.03,
   drawer: [0.05, 0.22], pullout: [0.29, 0.345], apron: [0.335, 0.375, 0.42], mattress: [0.42, 0.56], channels: 10,
