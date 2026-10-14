@@ -51,7 +51,7 @@ export function nerfContact(origin, direction, length, feet) {
 
 export class Combat {
   /** ghosts (Ghosts), camera, scene, weapon(): key or '', feet(): our feet (Vector3), jetpack, onDie(): back to the start; score / hurt / sfx hooks. */
-  constructor({ ghosts, camera, scene, weapon, feet, jetpack = null, basket = null, darts = null, sparkles = null, arrows = null, life = null, onDie = () => {}, onHit = () => {}, onHurt = () => {}, sfx = null }) {
+  constructor({ ghosts, camera, scene, weapon, feet, jetpack = null, basket = null, darts = null, sparkles = null, arrows = null, life = null, fruit = null, fish = null, chicken = null, fries = null, onDie = () => {}, onHit = () => {}, onHurt = () => {}, sfx = null }) {
     Object.assign(this, { ghosts, camera, scene, weapon, feet, jetpack, basket, darts, sparkles, arrows, lifeSystem: life, onDie, onHitCb: onHit, onHurtCb: onHurt, sfx, lives: C.lives, jetT: 0, flashT: 0,
       hits: 0, hurts: 0, deaths: 0, fired: 0, seen: 0, lastShot: null, lastSeen: null, consumed: new Set() });
     if (life?.onEvent) {
@@ -61,6 +61,7 @@ export class Combat {
         }
       });
     }
+    this.hookFood({ fruit, fish, chicken, fries });
     ghosts.onShot = (m, g) => this.remote(m, g);
     prepareCombatWorld(scene, ghosts.group, camera);
     // the others' shots (#667): one LineSegments for every streak (rifle, wand, web, jetpack flames; vertex colours, one
@@ -512,22 +513,22 @@ export class Combat {
   }
 
   /** API for #869; the landing caller owns suit protection, visuals and fatal respawn timing. */
-  async fall(drop, gap) {
+  async fall(drop, gap, now = Date.now()) {
     const damage = fallDamage(drop, gap, this.maxLives);
     if (damage === null) return null;
-    this.recoverOffline();
+    this.recoverOffline(now);
     const result = this.ghosts.connected ? await this.ghosts.fall(drop, gap)
       : { l: Math.max(0, this.lives - damage), dead: damage > 0 && this.lives <= damage };
     if (!result || !Number.isSafeInteger(result.l) || typeof result.dead !== 'boolean') return null;
     this.life(result.dead ? this.maxLives : result.l);
-    this.recoveryClock();
+    this.recoveryClock(now);
     if (result.dead) this.deaths++;
     return result; // no PvP hurt penalty or immediate onDie; #869 handles actual fatal landing wake
   }
 
-  /** Consume a whole food portion (bread, sandwich, fried egg) to restore +1 life (#1004). */
+  /** Consume a whole food portion (bread, sandwich, fried egg, fruit, fish finger, chicken piece, fries) to restore +1 life (#1004, #1005). */
   async consume(portion, now = Date.now()) {
-    const id = typeof portion === 'string' ? portion : portion?.id;
+    const id = typeof portion === 'string' ? portion : portion?.id ?? portion?.portionId;
     if (!id || typeof id !== 'string') return null;
     this.consumed ??= new Set();
     if (this.consumed.has(id)) return null;
@@ -540,6 +541,43 @@ export class Combat {
     this.life(result.l);
     this.recoveryClock(now);
     return result;
+  }
+
+  onAte(portion, now = Date.now()) { return this.consume(portion, now); }
+
+  hookFood({ fruit = null, fish = null, chicken = null, fries = null } = {}) {
+    if (fruit) {
+      const prev = fruit.onConsume;
+      fruit.onConsume = (f, id) => {
+        prev?.(f, id);
+        const portionId = id ?? f?.portionId;
+        if (portionId) this.consume(portionId).catch(() => {});
+      };
+    }
+    if (fish) {
+      const prev = fish.onConsume;
+      fish.onConsume = (f, id) => {
+        prev?.(f, id);
+        const portionId = id ?? f?.portionId;
+        if (portionId) this.consume(portionId).catch(() => {});
+      };
+    }
+    if (chicken) {
+      const prev = chicken.onConsume;
+      chicken.onConsume = (piece, id) => {
+        prev?.(piece, id);
+        const portionId = id ?? piece?.portionId;
+        if (portionId) this.consume(portionId).catch(() => {});
+      };
+    }
+    if (fries) {
+      const prev = fries.onBunchEaten;
+      fries.onBunchEaten = (bunch, id) => {
+        prev?.(bunch, id);
+        const portionId = id ?? bunch?.portionId;
+        if (portionId) this.consume(portionId).catch(() => {});
+      };
+    }
   }
 
   /** A new server attachment starts full; missing legacy own-state keeps the existing replica. */

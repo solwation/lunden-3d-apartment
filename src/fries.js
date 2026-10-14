@@ -153,7 +153,7 @@ export class FriesBunch {
   constructor(mgr) {
     const { scene, camera } = mgr;
     Object.assign(this, { mgr, scene, camera, name: 'pommesen', placeVerb: 'lägga ner', isFries: true, state: 'pool', held: false,
-      n: 0, cook: 0, hot: 0, bite: 0, steamT: 0, grip: [0.012, FR.t / 2, 0], handCurl: 0.62, lastAt: new THREE.Vector3() });
+      n: 0, cook: 0, hot: 0, bite: 0, steamT: 0, grip: [0.012, FR.t / 2, 0], handCurl: 0.62, lastAt: new THREE.Vector3(), portionId: null });
     const g = new THREE.Group();
     this.mat = new THREE.MeshStandardMaterial({ map: skin, roughness: 0.75 });
     const geo = new THREE.BoxGeometry(FR.len, FR.t, FR.t).translate(FR.len / 2, FR.t / 2, 0);
@@ -181,7 +181,7 @@ export class FriesBunch {
 
   /** `n` fries cooked `cook` s, `hot` s of steam left: into the hand. */
   fill(n, cook, hot) {
-    Object.assign(this, { n, cook, hot });
+    Object.assign(this, { n, cook, hot, portionId: `fries:${++this.mgr.portionSeq}` });
     this.sticks.forEach((s, j) => { s.visible = j < n; });
     cookColour(this.mat.color, cook);
   }
@@ -258,7 +258,12 @@ export class FriesBunch {
       this.n--;
       this.sticks.forEach((s, j) => { s.visible = j < this.n; });
       this.mgr.onEaten?.();
-      if (this.n <= 0) { this.hide(); return; }
+      if (this.n <= 0) {
+        const portionId = this.portionId;
+        this.hide();
+        this.mgr.onBunchEaten?.(this, portionId);
+        return;
+      }
     }
     this.pose(Math.sin(this.bite * Math.PI));
   }
@@ -268,7 +273,7 @@ export class FriesBunch {
 export class Fries {
   constructor(scene, camera, freezer, fryer) {
     skin ??= stickTexture();
-    Object.assign(this, { scene, camera, fryer, count: 0, cook: 0, hot: 0, clock: 0, bunches: [], falling: 0 });
+    Object.assign(this, { scene, camera, fryer, count: 0, cook: 0, hot: 0, clock: 0, bunches: [], falling: 0, portionSeq: 0 });
     this.bag = new FriesBag(scene, camera, freezer);
     // the heap: up to max portions of sticks, laid out once (basket-local), shown 0 … count-1, the top ones last
     const N = FR.portion * FR.max, geo = new THREE.BoxGeometry(FR.len, FR.t, FR.t);

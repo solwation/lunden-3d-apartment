@@ -133,7 +133,9 @@ function fruitGeometry(spec, seed) {
 export class Fruit {
   constructor(bowl, spec, i) {
     Object.assign(this, { bowl, spec, kind: spec.kind, slot: i, scene: bowl.scene, camera: bowl.camera, isFruit: true,
-      name: NAMES[spec.kind], placeVerb: 'lägga ner', held: false, state: 'bowl', bites: 0, bite: 0, peeled: false, scoops: [] });
+      name: NAMES[spec.kind], placeVerb: 'lägga ner', held: false, state: 'bowl', bites: 0, bite: 0, peeled: false, scoops: [],
+      generation: 0 });
+    this.portionId = `fruit:${this.slot}:${this.generation}`;
     const f = fruitGeometry(spec, i);
     Object.assign(this, { mid: f.mid, radius: f.r, curve: f.curve });
     f.geo.userData.keepCpu = true; // reshape() rewrites its arrays (#628: never freed on phones)
@@ -165,6 +167,8 @@ export class Fruit {
   /** Whole again (F). */
   restore() {
     this.bites = 0; this.bite = 0; this.peeled = false; this.scoops = [];
+    this.generation++;
+    this.portionId = `fruit:${this.slot}:${this.generation}`;
     this.reshape();
   }
 
@@ -362,6 +366,7 @@ export class FruitBowl {
   }
 
   eaten(f) {
+    const portionId = f.portionId;
     f.held = false;
     if (heldItem() === f) setHeld(null);
     f.state = 'eaten';
@@ -369,6 +374,7 @@ export class FruitBowl {
     f.model.visible = false;
     this.eatenCount++;
     this.onEaten?.(f);
+    this.onConsume?.(f, portionId);
   }
 
   /** F / a fresh start: every piece back in the bowl, whole. */

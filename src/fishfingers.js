@@ -97,7 +97,7 @@ export class FishFinger {
     g.visible = false;
     Object.assign(this, { grip: [0.012, C.h / 2, 0], handCurl: 0.62, // pinched at the far end from the bites (#242)
       name: 'fiskpinnen', placeVerb: 'lägga ner', isFish: true, pack, scene, camera, model: g, state: 'box', held: false, bites: 0, bite: 0,
-      cook: 0, hot: 0, sizzleT: 0, clock: Math.random() * 3 });
+      cook: 0, hot: 0, sizzleT: 0, clock: Math.random() * 3, portionId: `fish:${++pack.portionSeq}` });
     // steam while it is hot, smoke while it burns: a few sprites that rise from it
     this.puffs = [...Array(4)].map((_, i) => {
       const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: puff, transparent: true, depthWrite: false, opacity: 0 }));
@@ -271,7 +271,7 @@ export class FishFinger {
 /** The carton in the freezer and its fish fingers. */
 export class FishPack {
   constructor(scene, camera, freezer) {
-    Object.assign(this, { scene, camera, freezer, left: C.n, fingers: [], eatenCount: 0, pan: null, hob: null });
+    Object.assign(this, { scene, camera, freezer, left: C.n, fingers: [], eatenCount: 0, pan: null, hob: null, portionSeq: 0 });
     const { w, d, h } = C.box;
     const side = new THREE.MeshStandardMaterial({ color: 0x1f5fa8, roughness: 0.7 });
     const top = new THREE.MeshStandardMaterial({ map: labelTexture(true), roughness: 0.7 });
@@ -304,6 +304,7 @@ export class FishPack {
     if (this.left <= 0) { sfx.click(this.object.position); return; } // empty
     let f = this.fingers.find((x) => x.state === 'box');
     if (!f) { f = new FishFinger(this); this.fingers.push(f); }
+    else { f.portionId = `fish:${++this.portionSeq}`; }
     this.left--;
     f.take();
   }
@@ -315,9 +316,11 @@ export class FishPack {
   }
 
   eaten(f) {
+    const portionId = f.portionId;
     f.hide();
     this.eatenCount++;
-    this.onEaten?.();
+    this.onEaten?.(f);
+    this.onConsume?.(f, portionId);
   }
 
   /** The cat ate it off the floor (#163). */

@@ -34,7 +34,7 @@ export class Chicken extends Holdable {
       heldPose: { pos: new THREE.Vector3(C.held.x, C.held.y, C.held.z), rot: new THREE.Euler(0.3, 0.4, 0) },
       pick: { pos: home.clone().setY(home.y + 0.07), size: [0.3, 0.16, 0.3] },
     });
-    Object.assign(this, { fridge, pan, hob, plate, inPan: false, inGrill: false, burnt: false, rewarded: false, burntCounted: false, cooked: 0, smokeT: 0, sizzleT: 0, smokeClock: 0 });
+    Object.assign(this, { fridge, pan, hob, plate, inPan: false, inGrill: false, burnt: false, rewarded: false, burntCounted: false, cooked: 0, smokeT: 0, sizzleT: 0, smokeClock: 0, generation: 0 });
     this.rest = { q: new THREE.Quaternion(), lift: 0 }; // its origin is the plate's bottom: put down standing
     this.skins = [];
     model.traverse((m) => { if (m.isMesh && m !== plate && m.material.color.r > 2 * m.material.color.b) this.skins.push({ m: m.material, c0: m.material.color.clone() }); });
@@ -180,12 +180,14 @@ export class Chicken extends Holdable {
   breakOff(p) {
     if (heldItem() || !this.done) return;
     const src = p ? p.meshes : this.body;
-    const piece = new ChickenPiece(this, p, src);
+    const partIdx = p ? this.parts.indexOf(p) : null;
+    const bodyIdx = p ? null : this.bodyLeft;
     if (p) { p.gone = true; for (const m of p.meshes) m.visible = false; }
     else {
       this.bodyLeft--;
       for (const m of this.body) { m.userData.s0 ??= m.scale.clone(); m.scale.copy(m.userData.s0).multiplyScalar(0.45 + 0.55 * this.bodyLeft / C.bodyBites); m.visible = this.bodyLeft > 0; }
     }
+    const piece = new ChickenPiece(this, p, src, { partIdx, bodyIdx, generation: this.generation });
     this.retarget();
     this.life && (this.life.dirty = true);
     this.piece = piece;
@@ -257,8 +259,12 @@ export class Chicken extends Holdable {
 
 /** A leg, wing or bit of the body broken off the cooked chicken (#194): in the hand, a click / "Ät" takes a bite. */
 export class ChickenPiece {
-  constructor(bird, part, meshes) {
-    Object.assign(this, { bird, part, isChickenPiece: true, name: part ? part.name : 'kycklingbiten', held: false, bites: 0, bite: 0 });
+  constructor(bird, part, meshes, meta = {}) {
+    Object.assign(this, { bird, part, isChickenPiece: true, name: part ? part.name : 'kycklingbiten', held: false, bites: 0, bite: 0, meta });
+    const partIdx = meta.partIdx ?? (part ? bird.parts.indexOf(part) : null);
+    const bodyIdx = meta.bodyIdx ?? (part ? null : bird.bodyLeft + 1);
+    const gen = meta.generation ?? bird.generation ?? 0;
+    this.portionId = part ? `chicken:${gen}:part:${partIdx}` : `chicken:${gen}:body:${bodyIdx}`;
     this.model = new THREE.Group();
     const box = new THREE.Box3();
     for (const m of meshes) {
@@ -310,10 +316,12 @@ export class ChickenPiece {
       this.bites++;
       this.model.scale.setScalar(1 - this.bites / (C.bites + 0.4));
       if (this.bites >= C.bites) { // eaten
+        const portionId = this.portionId;
         this.held = false;
         setHeld(null);
         this.model.removeFromParent();
-        this.bird.onEaten?.();
+        this.bird.onEaten?.(this);
+        this.bird.onConsume?.(this, portionId);
         this.bird.life && (this.bird.life.dirty = true);
         return;
       }

@@ -23,6 +23,10 @@ const output = process.argv[4] || '/tmp/lunden-food1004-surface';
       'src/cooking.js',
       'src/life.js',
       'src/items.js',
+      'src/fruit.js',
+      'src/fishfingers.js',
+      'src/chicken.js',
+      'src/fries.js',
       'cloudflare/players.js',
     ]
   });
@@ -46,23 +50,49 @@ const output = process.argv[4] || '/tmp/lunden-food1004-surface';
         const { Combat } = await import('/src/combat.js');
         const { Life } = await import('/src/life.js');
         const { EGG } = await import('/src/config.js');
+        const { FruitBowl } = await import('/src/fruit.js');
+        const { FishPack } = await import('/src/fishfingers.js');
+        const { Chicken } = await import('/src/chicken.js');
+        const { Fries } = await import('/src/fries.js');
+        const { heldItem } = await import('/src/holdable.js');
+        window.heldItem = heldItem;
 
         const scene = new T.Scene(), camera = new T.PerspectiveCamera();
         window.weapon = ''; window.active = true;
         window.life = new Life({ scene, camera, feet: () => new T.Vector3(i * 2, 0, 0), world: { cupSurfaces: [] } });
+        window.fruit = new FruitBowl(scene, camera);
+        window.fish = new FishPack(scene, camera, { inside: { cx: 0, cz: 0 }, shelves: [0] });
+        window.chicken = new Chicken(scene, camera, { object: new T.Object3D(), shelfSpot: new T.Vector3() }, { onHob: true, model: new T.Group() }, { zones: [] });
+        window.chicken.initLife(life, { object: new T.Object3D(), on: false });
+        window.fries = new Fries(scene, camera, { inside: { cx: 0, cz: 0 }, shelves: [0] }, { frontZ: 0, plateY: 0, basket: new T.Group(), open: true });
+
         window.ghosts = new Ghosts({
           scene, camera, url: worker, name: () => name, active: () => active,
           state: () => ({ p: [i * 2, 0, 0], r: camera.rotation.y }),
           weapon: () => weapon, score: () => 0, mirrored: () => false
         });
         window.combat = new Combat({
-          scene, camera, ghosts, life, weapon: () => weapon, feet: () => new T.Vector3(i * 2, 0, 0)
+          scene, camera, ghosts, life, fruit, fish, chicken, fries, weapon: () => weapon, feet: () => new T.Vector3(i * 2, 0, 0)
         });
-        window.timer = setInterval(() => { camera.rotation.y += .001; ghosts.update(); combat.update(0); life.update(0.1); }, 50);
+        window.timer = setInterval(() => {
+          camera.rotation.y += .001; ghosts.update(); combat.update(0); life.update(0.1);
+          fruit.update(0.05); fish.update(0.05); chicken.update(0.05); fries.update(0.05);
+        }, 50);
         window.peer = () => [...ghosts.others.values()][0];
 
         window.bumps = [];
         life.bump = (k, n, name) => { window.bumps.push({ k, n, name }); };
+        fruit.onEaten = (f) => window.bumps.push({ k: 'fruit', n: 1, name: f.kind });
+        fish.onEaten = (f) => window.bumps.push({ k: 'fish', n: 1 });
+        fish.onCatEaten = (f) => window.bumps.push({ k: 'catFish', n: 1 });
+        chicken.onEaten = (piece) => window.bumps.push({ k: 'chicken', n: 1 });
+        fries.onEaten = () => window.bumps.push({ k: 'fries', n: 1 });
+
+        window.takeBite = (item) => {
+          item.use();
+          item.update(0.3);
+          item.update(0.3);
+        };
 
         window.runAction = (target, actionId, duration = 1) => {
           const act = life.options(target).find(a => a.id === actionId);
@@ -216,6 +246,248 @@ const output = process.argv[4] || '/tmp/lunden-food1004-surface';
     const livesAfterReuse = await a.evaluate(() => combat.lives);
     if (livesAfterReuse !== 5) throw Error(`Reused portion changed lives to ${livesAfterReuse}`);
 
+    // 10. Fruit consumption: all 5 kinds (apple, pear, orange, clementine, banana)
+    // Apple (slot 0, 4 bites):
+    await a.evaluate(() => {
+      const apple = fruit.fruit[0];
+      apple.take();
+      window.testAppleId = apple.portionId;
+      for (let bite = 0; bite < 3; bite++) takeBite(apple);
+    });
+    const livesDuringApple = await a.evaluate(() => combat.lives);
+    if (livesDuringApple !== 5) throw Error(`Intermediary apple bites changed lives to ${livesDuringApple}`);
+
+    // 4th bite of apple: finishes apple, heals +1 to 6!
+    await a.evaluate(() => {
+      const apple = fruit.fruit[0];
+      takeBite(apple);
+    });
+    await a.waitForFunction(() => combat.lives === 6 && combat.el.textContent === `❤ 6/${combat.maxLives}`);
+    await b.waitForFunction(() => peer().lives === 6);
+
+    // Dedup apple portion
+    const dupAppleRes = await a.evaluate(id => combat.consume(id), await a.evaluate(() => testAppleId));
+    if (dupAppleRes !== null) throw Error(`Duplicate apple consumption did not return null: ${JSON.stringify(dupAppleRes)}`);
+    if (await a.evaluate(() => combat.lives) !== 6) throw Error('Duplicate apple consumption changed lives');
+
+    // Pear (slot 3, 4 bites): heals to 7
+    await a.evaluate(() => {
+      const pear = fruit.fruit[3];
+      pear.take();
+      for (let bite = 0; bite < 3; bite++) takeBite(pear);
+    });
+    if (await a.evaluate(() => combat.lives) !== 6) throw Error('Intermediary pear bite healed');
+    await a.evaluate(() => takeBite(fruit.fruit[3]));
+    await a.waitForFunction(() => combat.lives === 7);
+    await b.waitForFunction(() => peer().lives === 7);
+
+    // Orange (slot 1, 4 bites): heals to 8
+    await a.evaluate(() => {
+      const orange = fruit.fruit[1];
+      orange.take();
+      for (let bite = 0; bite < 3; bite++) takeBite(orange);
+    });
+    if (await a.evaluate(() => combat.lives) !== 7) throw Error('Intermediary orange bite healed');
+    await a.evaluate(() => takeBite(fruit.fruit[1]));
+    await a.waitForFunction(() => combat.lives === 8);
+    await b.waitForFunction(() => peer().lives === 8);
+
+    // Clementine (slot 4, 3 bites!): heals to 9
+    await a.evaluate(() => {
+      const clementine = fruit.fruit[4];
+      clementine.take();
+      for (let bite = 0; bite < 2; bite++) takeBite(clementine);
+    });
+    if (await a.evaluate(() => combat.lives) !== 8) throw Error('Intermediary clementine bite healed');
+    await a.evaluate(() => takeBite(fruit.fruit[4]));
+    await a.waitForFunction(() => combat.lives === 9);
+    await b.waitForFunction(() => peer().lives === 9);
+
+    // Banana (slot 6, 4 bites): heals to 10 (full max)
+    await a.evaluate(() => {
+      const banana = fruit.fruit[6];
+      banana.take();
+      for (let bite = 0; bite < 3; bite++) takeBite(banana);
+    });
+    if (await a.evaluate(() => combat.lives) !== 9) throw Error('Intermediary banana bite healed');
+    await a.evaluate(() => takeBite(fruit.fruit[6]));
+    await a.waitForFunction(() => combat.lives === 10);
+    await b.waitForFunction(() => peer().lives === 10);
+
+    // Verify all 5 fruit kinds recorded bumps
+    const fruitBumps = await a.evaluate(() => window.bumps.filter(b => b.k === 'fruit').map(b => b.name));
+    for (const kind of ['apple', 'pear', 'orange', 'clementine', 'banana']) {
+      if (!fruitBumps.includes(kind)) throw Error(`Missing fruit bump for ${kind}`);
+    }
+
+    // Half-eaten fruit put down and taken again:
+    await a.evaluate(() => combat.fall(4, 2)); // take 5 damage -> 5
+    await a.waitForFunction(() => combat.lives === 5);
+    await a.evaluate(async () => {
+      const apple2 = fruit.fruit[2]; // another apple
+      apple2.take();
+      takeBite(apple2); takeBite(apple2); // 2 bites
+      const idBefore = apple2.portionId;
+      apple2.placeAt({ x: 1, y: 0, z: 1 }); // placed down
+      apple2.take(); // taken again
+      if (apple2.portionId !== idBefore) throw Error('Portion identity changed on place/take');
+      takeBite(apple2); takeBite(apple2); // remaining 2 bites
+    });
+    await a.waitForFunction(() => combat.lives === 6);
+    await b.waitForFunction(() => peer().lives === 6);
+
+    // Bowl reset (F): verifies new generation fruit heals again
+    await a.evaluate(() => {
+      fruit.reset();
+      const apple0 = fruit.fruit[0];
+      apple0.take();
+      for (let bite = 0; bite < 4; bite++) takeBite(apple0);
+    });
+    await a.waitForFunction(() => combat.lives === 7);
+    await b.waitForFunction(() => peer().lives === 7);
+
+    // 11. Fish finger consumption & cat safety:
+    await a.evaluate(() => combat.fall(4, 2)); // 7 - 5 = 2
+    await a.waitForFunction(() => combat.lives === 2);
+
+    // Player eating fish finger (FISH.bites is 3):
+    await a.evaluate(() => {
+      fish.press(); // dispense fish finger
+      const f = heldItem();
+      window.testFishId = f.portionId;
+      for (let bite = 0; bite < 2; bite++) takeBite(f);
+    });
+    if (await a.evaluate(() => combat.lives) !== 2) throw Error('Intermediary fish finger bite healed');
+    await a.evaluate(() => takeBite(heldItem()));
+    await a.waitForFunction(() => combat.lives === 3);
+    await b.waitForFunction(() => peer().lives === 3);
+
+    // Dedup fish finger portion
+    const dupFishRes = await a.evaluate(id => combat.consume(id), await a.evaluate(() => testFishId));
+    if (dupFishRes !== null) throw Error(`Duplicate fish finger consumption did not return null: ${JSON.stringify(dupFishRes)}`);
+
+    // Cat safety: cat eating MUST NEVER heal player!
+    await a.evaluate(() => {
+      fish.press(); // dispense another finger
+      const f = heldItem();
+      fish.eatenByCat(f);
+    });
+    const livesAfterCat = await a.evaluate(() => combat.lives);
+    if (livesAfterCat !== 3) throw Error(`Cat eating fish finger healed player to ${livesAfterCat}`);
+    const catBumps = await a.evaluate(() => window.bumps.filter(b => b.k === 'catFish'));
+    if (!catBumps.length) throw Error('Cat eating did not record catFish bump');
+
+    // Pooled fish finger from carton can be taken and eaten to heal
+    await a.evaluate(() => {
+      fish.press();
+      const f = heldItem();
+      for (let bite = 0; bite < 3; bite++) takeBite(f);
+    });
+    await a.waitForFunction(() => combat.lives === 4);
+    await b.waitForFunction(() => peer().lives === 4);
+
+    // 12. Chicken piece consumption (lives start at 4, CHICKEN.bites is 2):
+
+    // Raw chicken cannot be broken off
+    await a.evaluate(() => {
+      chicken.done = false;
+      chicken.breakOff(chicken.parts[2]);
+    });
+    if (await a.evaluate(() => !!heldItem())) throw Error('Raw chicken part was broken off');
+
+    // Cooked chicken: break off wing
+    await a.evaluate(() => {
+      chicken.done = true;
+      chicken.breakOff(chicken.parts[2]); // wing
+      const piece = chicken.piece;
+      window.testWingId = piece.portionId;
+      takeBite(piece); // bite 1 (intermediary)
+    });
+    if (await a.evaluate(() => combat.lives) !== 4) throw Error('Intermediary chicken bite healed');
+    await a.evaluate(() => takeBite(chicken.piece)); // bite 2 (finishes piece)
+    await a.waitForFunction(() => combat.lives === 5);
+    await b.waitForFunction(() => peer().lives === 5);
+
+    // Dedup chicken piece portion
+    const dupChickenRes = await a.evaluate(id => combat.consume(id), await a.evaluate(() => testWingId));
+    if (dupChickenRes !== null) throw Error(`Duplicate chicken piece consumption did not return null: ${JSON.stringify(dupChickenRes)}`);
+
+    // Break off body piece, putBack, breakOff again: portionId preserved
+    await a.evaluate(() => {
+      chicken.breakOff(null);
+      const id1 = chicken.piece.portionId;
+      chicken.piece.putBack();
+      chicken.breakOff(null);
+      const id2 = chicken.piece.portionId;
+      if (id1 !== id2) throw Error(`Chicken body portionId changed after putBack: ${id1} vs ${id2}`);
+      for (let bite = 0; bite < 2; bite++) takeBite(chicken.piece);
+    });
+    await a.waitForFunction(() => combat.lives === 6);
+    await b.waitForFunction(() => peer().lives === 6);
+
+    // Renew chicken for task: new generation piece heals
+    await a.evaluate(() => {
+      chicken.renewForTask();
+      chicken.done = true;
+      chicken.breakOff(chicken.parts[2]);
+      for (let bite = 0; bite < 2; bite++) takeBite(chicken.piece);
+    });
+    await a.waitForFunction(() => combat.lives === 7);
+    await b.waitForFunction(() => peer().lives === 7);
+
+    // 13. Fries bunch consumption:
+    await a.evaluate(() => {
+      fries.cooked();
+      fries.takeBunch(); // takes bunch of 4 fries
+      const bunch = heldItem();
+      window.testFriesId = bunch.portionId;
+      window.friesBumpsBefore = bumps.filter(b => b.k === 'fries').length;
+      // Bite 1:
+      takeBite(bunch);
+    });
+    const bumpsAfter1 = await a.evaluate(() => bumps.filter(b => b.k === 'fries').length);
+    if (bumpsAfter1 !== await a.evaluate(() => friesBumpsBefore + 1)) throw Error('Fries bite 1 did not bump fries score');
+    if (await a.evaluate(() => combat.lives) !== 7) throw Error('Fries bite 1 prematurely healed');
+
+    // Bite 2:
+    await a.evaluate(() => takeBite(heldItem()));
+    if (await a.evaluate(() => combat.lives) !== 7) throw Error('Fries bite 2 prematurely healed');
+
+    // Put bunch down and pick up again:
+    await a.evaluate(() => {
+      const bunch = heldItem();
+      bunch.placeAt({ x: 1, y: 0, z: 1 });
+      bunch.take();
+      // Bite 3:
+      takeBite(bunch);
+    });
+    if (await a.evaluate(() => combat.lives) !== 7) throw Error('Fries bite 3 prematurely healed');
+
+    // Bite 4 (n === 0): whole bunch eaten -> heals to 8!
+    await a.evaluate(() => takeBite(heldItem()));
+    await a.waitForFunction(() => combat.lives === 8);
+    await b.waitForFunction(() => peer().lives === 8);
+
+    // Dedup fries bunch portion
+    const dupFriesRes = await a.evaluate(id => combat.consume(id), await a.evaluate(() => testFriesId));
+    if (dupFriesRes !== null) throw Error(`Duplicate fries bunch consumption did not return null: ${JSON.stringify(dupFriesRes)}`);
+
+    // Eat two more bunches to reach 10:
+    await a.evaluate(() => {
+      fries.takeBunch();
+      const b1 = heldItem();
+      for (let i = 0; i < 4; i++) takeBite(b1);
+    });
+    await a.waitForFunction(() => combat.lives === 9);
+
+    await a.evaluate(() => {
+      fries.takeBunch();
+      const b2 = heldItem();
+      for (let i = 0; i < 4; i++) takeBite(b2);
+    });
+    await a.waitForFunction(() => combat.lives === 10);
+    await a.waitForFunction(() => combat.el.hidden === true);
+
     // 10. Offline replica verification in browser
     const offlineResults = await a.evaluate(async () => {
       clearInterval(timer); active = false; ghosts.disconnect();
@@ -249,16 +521,33 @@ const output = process.argv[4] || '/tmp/lunden-food1004-surface';
       const fullClamp = combat.lives === 10;
 
       // Fall damage to 5
-      await combat.fall(4, 2);
+      await combat.fall(4, 2, start + 78000);
       const fallDown = combat.lives === 5;
 
       // Cannot reuse offline_bread#3
       const reuseOffline = await combat.consume('offline_bread#3', start + 80000);
       const reuseBlocked = reuseOffline === null && combat.lives === 5;
 
+      // Offline real food portion tests:
+      const fruitRes = await combat.consume('offline_fruit#1', start + 85000);
+      const healedFruit = fruitRes?.ok && combat.lives === 6;
+
+      const fishRes = await combat.consume('offline_fish#1', start + 90000);
+      const healedFish = fishRes?.ok && combat.lives === 7;
+
+      const chickenRes = await combat.consume('offline_chicken#1', start + 95000);
+      const healedChicken = chickenRes?.ok && combat.lives === 8;
+
+      const friesRes = await combat.consume('offline_fries#1', start + 100000);
+      const healedFries = friesRes?.ok && combat.lives === 9;
+
+      const dupFruit = await combat.consume('offline_fruit#1', start + 105000);
+      const dupFruitBlocked = dupFruit === null && combat.lives === 9;
+
       return {
         boundaryBefore, minuteRecovered, healedTo9, deadlinePreserved,
-        dupRejected, healedTo10, clockCleaned, fullClamp, fallDown, reuseBlocked
+        dupRejected, healedTo10, clockCleaned, fullClamp, fallDown, reuseBlocked,
+        healedFruit, healedFish, healedChicken, healedFries, dupFruitBlocked
       };
     });
 
