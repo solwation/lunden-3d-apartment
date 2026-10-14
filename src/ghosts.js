@@ -106,7 +106,7 @@ class Ghost {
     this.id = id; this.name = name || ANON; this.snaps = []; this.h = ''; this.solid = false; this.prop = null; this.self = self;
     this.avatarLook = look ?? (self ? `me:${name}` : id);
     this.avatar = new Avatar(this.avatarLook, tint(name));
-    this.avatar.setSolid(self); // (the mirror image is a solid figure)
+    this.avatar.setSolid(true); // always solid (#1025)
     this.mesh = this.avatar.mesh;
     this.mesh.name = `ghost:${this.name}`;
     this.root = new THREE.Group();
@@ -135,12 +135,11 @@ class Ghost {
 
   setAvatarLook(look) {
     this.avatarLook = look;
-    const wasSolid = this.avatar.solid;
     const hadSuit = !!this.avatar.suit;
     this.avatar.object.removeFromParent();
     this.avatar.dispose();
     this.avatar = new Avatar(look, tint(this.name));
-    this.avatar.setSolid(wasSolid);
+    this.avatar.setSolid(true); // always solid (#1025)
     if (hadSuit) this.avatar.setSuit(true);
     this.mesh = this.avatar.mesh;
     this.mesh.name = `ghost:${this.name}`;
@@ -168,7 +167,7 @@ class Ghost {
     if (this.snaps.length > 8) this.snaps.splice(0, this.snaps.length - 8);
   }
 
-  /** One cached sprite: lives only during the existing armed-vs-armed encounter. */
+  /** One cached sprite: lives only during the existing armed-vs-armed encounter (#1025). */
   refreshBadge() {
     if (!this.badge) return; // local reflection has no label
     const lives = this.solid && this.h ? this.lives : null;
@@ -200,11 +199,11 @@ class Ghost {
   /** A swing of what it holds (#667: the saber's cut, seen by the others). */
   swing() { this.swingT = SWING; }
 
-  /** Solid when both of us hold a weapon (#667), else an outline (#705). */
+  /** Solid when both of us hold a weapon (#667); avatar appearance is always visually solid (#1025). */
   setSolid(on) {
     if (on === this.solid) return;
     this.solid = on;
-    this.avatar.setSolid(on, COMBAT.solid);
+    this.avatar.setSolid(true, COMBAT.solid);
     this.refreshBadge();
   }
 
@@ -574,6 +573,6 @@ export class Ghosts {
   /** For tests: what is shown. */
   list() {
     return [...this.others.values()].map((g) => ({ id: g.id, name: g.name, score: g.score, lives: g.lives, lifeShown: g.badge.lives !== null, visible: g.root.visible, tag: g.tag.visible,
-      pos: g.root.position.toArray().map((v) => Math.round(v * 100) / 100), opacity: g.solid ? COMBAT.solid : AVATAR.fill, outline: !g.solid, speed: Math.round(g.speed * 100) / 100, h: g.h, solid: g.solid }));
+      pos: g.root.position.toArray().map((v) => Math.round(v * 100) / 100), opacity: COMBAT.solid, outline: false, speed: Math.round(g.speed * 100) / 100, h: g.h, solid: g.solid }));
   }
 }

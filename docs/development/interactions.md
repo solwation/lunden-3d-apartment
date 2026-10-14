@@ -262,8 +262,8 @@ src/ghosts.js #673     greeting another player: each ghost has an invisible pick
                        bump('greets', 1, 'player:<name>') once per player and session (SCORE.first / again.greets). tools/ghosttest.cjs
 src/combat.js          fights between players (#667, on the ghosts of #666): only two players who BOTH hold a weapon (COMBAT.weapons:
                        saber, nerf, wand, rifle, ball, web = the suit with empty hands, jetpack = worn; main.js `weaponKey`, in that
-                       order; remove a key to leave it out) are drawn solid for each other (ghosts.js `setSolid`, + a small prop in the
-                       avatar's hand), the unarmed stay outlines (#705) and cannot be hit. main.js wraps each weapon's use (onUse / rifle.onShot /
+                       order; remove a key to leave it out) can damage each other (+ a small prop in the
+                       avatar's hand; #1025: avatars always display their normal chosen appearance without ghost outline), the unarmed cannot be hit. main.js wraps each weapon's use (onUse / rifle.onShot /
                        suit.onShot) → `combat.fire(key)`: the nearest armed player along the view within the room's range (the
                        saber: in front within reach, `saberCone`; a vertical capsule COMBAT.body, `hitRadius`), not behind a wall
                        (a raycast; ghosts, see-through and `userData.moving` things ignored); the jetpack hits whoever is under it
@@ -307,8 +307,7 @@ src/avatar.js          the players' avatars (#705): a neutral human figure on Ol
                        `me:<name>`) picks skin, hair, top, trousers, shoes, sleeves, hair style, build and height, so players differ. ONE SkinnedMesh
                        (one draw call) per avatar, no texture, ≈ 3.6–3.8 k triangles (`avatarTriangles(variant)`; 8 shared base geometries, built lazily;
                        an avatar owns only a colour attribute, a 13-bone skeleton and a material). The material is a MeshLambertMaterial patched with a
-                       fresnel term, one program for all: `setSolid(false)` = an outline (alpha AVATAR.fill inside, up to AVATAR.rim at the silhouette,
-                       a light edge colour per player, depth-tested, nothing written to depth, no extra pass), `setSolid(true)` = lit and opaque.
+                       lit and opaque (#1025: players always see normal visible avatar appearance; ghost outline removed).
                        `update(dt, { speed, turn, hands, crouch })`: legs walk above AVATAR.walkSpeed (the phase follows the distance), arms swing,
                        a little breathing, the head turns `turn` rad against the body. **The arm surface for animations (#673 wave):**
                        `hands: { L, R }` = `{ at, pole }` targets in the figure's frame (`armTarget.rest / .forward / .up(side, phase)`), set per side,

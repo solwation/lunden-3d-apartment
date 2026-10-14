@@ -54,11 +54,11 @@ async function until(fn, ms = 60000) { const t = Date.now(); for (;;) { const v 
     const t1 = Date.now(), aB = await sees(A.page, (l) => l.some((g) => g.n === 'Anonym'), 1800000), t2 = Date.now(), bA = await sees(B.page, (l) => l.some((g) => g.n === 'Olof'));
     check(!!aB && !!bA, 'A and B connected and see each other', `${Math.round((t2 - t1) / 1000)} s + ${Math.round((Date.now() - t2) / 1000)} s; A: ${JSON.stringify(await view(A.page))} B: ${JSON.stringify(await view(B.page))} A state: ${await A.page.evaluate(() => { const g = window.__ghosts, t = performance.now(); return JSON.stringify({ conn: g.connected, ws: g.ws?.readyState ?? null, me: g.me, connects: g.connects, retryIn: Math.round(g.retryAt - t), still: Math.round(t - g.lastMove), backoff: g.backoff, overlay: document.getElementById('overlay').hidden }); })}`);
     step('A takes a blaster');
-    // A takes a blaster; B has nothing: B stays a ghost and cannot be hit
+    // A takes a blaster; B has nothing: both fully visible (op 1), but unarmed B cannot be hit (!solid)
     await A.page.evaluate(() => window.__app.toys.blasters[0].take());
-    const aSeesB = await sees(A.page, (l) => l.some((g) => g.n === 'Anonym' && !g.solid));
-    const bSeesA = await sees(B.page, (l) => l.some((g) => g.n === 'Olof' && g.h === 'nerf' && !g.solid));
-    check(!!aSeesB && !!bSeesA, 'armed A and unarmed B see each other as ghosts (B sees A carry the blaster)', JSON.stringify(bSeesA));
+    const aSeesB = await sees(A.page, (l) => l.some((g) => g.n === 'Anonym' && g.op === 1 && !g.solid));
+    const bSeesA = await sees(B.page, (l) => l.some((g) => g.n === 'Olof' && g.h === 'nerf' && g.op === 1 && !g.solid));
+    check(!!aSeesB && !!bSeesA, 'armed A and unarmed B see each other fully visible without combat eligibility (B sees A carry the blaster)', JSON.stringify(bSeesA));
     const fire = () => A.page.evaluate(() => { const b = window.__app.heldItem(); b.tick(1); window.__app.camera.rotation.set(0, -40 * Math.PI / 180, 0, 'YXZ'); window.__app.scene.updateMatrixWorld(true); b.cool = 0; window.__app.click(0); return window.__ghosts.pendingShot || window.__ghosts.shots; });
     const aimed = await A.page.evaluate(() => { window.__app.heldItem().cool = 0; window.__app.click(0); return window.__ghosts.shots; });
     await sleep(3000);

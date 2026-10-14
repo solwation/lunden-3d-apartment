@@ -13,9 +13,8 @@ import { NAMES, HIP, UPPER, FORE, HAND, SH, bindAt, lathe, torsoR, attachSkeleto
 // Cost: ONE SkinnedMesh (one draw call) per avatar with its own small skeleton and material; only current suit wearers share one existing-artwork atlas (#891). The geometry is
 // built once per variant (hairstyle × sleeves = 8, lazily) and shared; an avatar only owns a small colour attribute
 // (the `region` of every vertex picks skin / top / trousers / hair / fixed from the player's palette). The material is a
-// MeshLambertMaterial patched with a rim term: `setSolid(false)` draws only an outline (a light fresnel edge and a very
-// faint fill, so you see someone is there without it blocking the view), `setSolid(true)` the normally lit solid figure.
-// Both share one shader program. No shadow (the shadow map is redrawn rarely, so a walking figure would leave its shadow).
+// MeshLambertMaterial: normally lit solid figure with full opacity (#1025: ghost outline removed; avatars are always
+// normally visible with their chosen appearance). No shadow (the shadow map is redrawn rarely, so a walking figure would leave its shadow).
 //
 // The figure stands in its own frame facing +z (Olof's); `object` is turned half a turn so that it faces −z, the way a ghost
 // root's heading looks (camera yaw). The arms are the surface for animations: `update(dt, { hands: { L, R } })` takes a
@@ -195,8 +194,9 @@ function releaseSuitTexture() { if (--suitUsers === 0) { suitTexture.dispose(); 
 
 function makeMaterial(rim, headProjection) {
   const headMin = headProjection.min, headSize = headProjection.getSize(new THREE.Vector3()), headFront = headProjection.getCenter(new THREE.Vector3()).z;
-  const u = { uOutline: { value: 1 }, uFill: { value: A.fill }, uRim: { value: A.rim }, uRimColor: { value: rim }, uSuit: { value: 0 }, uSuitTexture: { value: null }, uSuitMaskBand: { value: 0 } };
-  const m = new THREE.MeshLambertMaterial({ vertexColors: true, transparent: true, depthWrite: false });
+  const u = { uOutline: { value: 0 }, uFill: { value: A.fill }, uRim: { value: A.rim }, uRimColor: { value: rim }, uSuit: { value: 0 }, uSuitTexture: { value: null }, uSuitMaskBand: { value: 0 } };
+  const m = new THREE.MeshLambertMaterial({ vertexColors: true, transparent: false, depthWrite: true });
+  m.emissive.setScalar(A.emissiveSolid);
   m.userData.u = u;
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, u);
@@ -262,7 +262,7 @@ export class Avatar {
     const w = [0.93, 1, 1.08][lk.build ?? 1] ?? 1;
     this.object.scale.set(w, lk.tall ?? 1, w);
     this.head = new THREE.Vector3();
-    this.phase = 0; this.solid = false; this.time = 0;
+    this.phase = 0; this.solid = true; this.time = 0;
     this.pos = new THREE.Vector3(); this.known = false;
   }
 
@@ -275,15 +275,15 @@ export class Avatar {
     return rifleHeadRegion(seed, state, point, origin, direction);
   }
 
-  /** Solid (lit, opaque; `opacity` 1) or an outline (see-through, nothing written to the depth buffer). */
+  /** Solid (lit, opaque; `opacity` 1). #1025: players always see normal visible avatar appearance; ghost outline removed. */
   setSolid(on, opacity = 1) {
     const m = this.material;
-    const drawnSolid = on || !!this.suit, drawnOpacity = on ? opacity : 1;
-    if (on === this.solid && m.opacity === drawnOpacity && m.userData.u.uOutline.value === (drawnSolid ? 0 : 1)) return;
-    this.solid = on;
-    m.userData.u.uOutline.value = drawnSolid ? 0 : 1;
-    Object.assign(m, { transparent: !drawnSolid || drawnOpacity < 1, opacity: drawnOpacity, depthWrite: drawnSolid, needsUpdate: true });
-    m.emissive.setScalar(drawnSolid ? A.emissiveSolid : A.emissiveOutline);
+    const drawnSolid = true, drawnOpacity = 1;
+    if (this.solid && m.opacity === drawnOpacity && m.userData.u.uOutline.value === 0) return;
+    this.solid = true;
+    m.userData.u.uOutline.value = 0;
+    Object.assign(m, { transparent: false, opacity: drawnOpacity, depthWrite: true, needsUpdate: true });
+    m.emissive.setScalar(A.emissiveSolid);
   }
 
   /** A temporary visual outfit; the selected base look/geometry and combat solid flag stay intact. */
