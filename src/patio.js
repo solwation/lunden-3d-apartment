@@ -122,15 +122,18 @@ export function veronasofa(item = {}) {
   // cosy cushions (#399): leaning against the backs, and against the screen wall along the bench (in a frame turned to
   // face −x: its x runs along the bench from its north end, its z out from the bench's outer edge); merged into one mesh
   // (the shared cushion atlas), kept out of the sofa's merge, shown by the season and the weather (Patio.update)
+  const decorativeSurface = ['sofa', 'divan1', 'divan2'].includes(part)
+    ? upholsterySurface(g, 'Dekorativa kuddar', { id: 'cushions', replaceDetails: true }) : null;
+  const surfaceFor = decorativeSurface ? () => decorativeSurface : undefined;
   const tmp = new THREE.Group(), wall = new THREE.Group();
   wall.position.set(X, 0, z1);
   wall.rotation.y = -Math.PI / 2;
   wall.updateMatrix();
-  const rowC = part === 'all' || part === 'sofa' ? addCushions(tmp, P.cushions.filter((c) => !c.wall), { backZ: 0, seatY }) : [];
+  const rowC = part === 'all' || part === 'sofa' ? addCushions(tmp, P.cushions.filter((c) => !c.wall), { backZ: 0, seatY, surfaceFor }) : [];
   const benchData = P.cushions.filter((c) => c.wall);
-  const benchC = part === 'all' ? addCushions(tmp, benchData, { backZ: 0, seatY })
-    : part === 'divan1' ? addCushions(tmp, benchData.filter((c) => c.x < 1.3), { backZ: 0, seatY })
-    : part === 'divan2' ? addCushions(tmp, benchData.filter((c) => c.x >= 1.3), { backZ: 0, seatY }) : [];
+  const benchC = part === 'all' ? addCushions(tmp, benchData, { backZ: 0, seatY, surfaceFor })
+    : part === 'divan1' ? addCushions(tmp, benchData.filter((c) => c.x < 1.3), { backZ: 0, seatY, surfaceFor })
+    : part === 'divan2' ? addCushions(tmp, benchData.filter((c) => c.x >= 1.3), { backZ: 0, seatY, surfaceFor }) : [];
   const meshes = rowC.concat(benchC);
   const geos = meshes.map((c) => {
     c.updateMatrix();
@@ -150,6 +153,24 @@ export function veronasofa(item = {}) {
     seasonal.cushions.push(cushions);
   }
   return g;
+}
+
+/** Link only explicit matching builder handles, once; no frame traversal or duplicate persisted choice. */
+export function linkPatioTextiles(pieces) {
+  const modules = pieces.filter(p => p.item.type === 'veronasofa');
+  for (const box of pieces.filter(p => p.item.type === 'dynbox' && !p.item.inside)) {
+    for (const copy of box.object.userData.patioCushionCopies ?? []) {
+      const source = modules.find(p => p.item.part === copy.part)?.object.userData.materialSurfaces?.find(s => s.id === 'cushions');
+      if (!source) continue;
+      if (!source.patioCopies) {
+        const apply = source.apply;
+        source.patioCopies = new Set();
+        source.apply = choice => { apply(choice); for (const mirror of source.patioCopies) mirror.apply(source.choice); };
+      }
+      source.patioCopies.add(copy.surface);
+      copy.surface.apply(source.choice);
+    }
+  }
 }
 
 // --- paving -------------------------------------------------------------------
@@ -374,17 +395,22 @@ export function dynbox(item = {}) {
   const lid = new Openable({ name: 'dynboxens lock', object: pivot, mode: 'flap', axis: [1, 0, 0], sign: -1, max: P.dynbox.max, speed: 1.6 });
   // inside: a folded blanket at one end, the patio cushions in two piles while they are put away
   const contents = new THREE.Group();
-  if (item.inside !== 'bow') addFoldedThrow(contents, { w: 0.4, d: 0.42, layer: 0.025, layers: 4, x: L / 2 - t - 0.24, z: 0, y: 0.05, yaw: 0.05, color: 'grey' });
+  if (item.inside !== 'bow') addFoldedThrow(contents, { surface: upholsterySurface(g, 'Vikta fleecepläden', { id: 'throw-folded', replaceDetails: true }), w: 0.4, d: 0.42, layer: 0.025, layers: 4, x: L / 2 - t - 0.24, z: 0, y: 0.05, yaw: 0.05, color: 'grey' });
   const tmp = new THREE.Group();
-  const piles = item.inside === 'bow' ? [] : addCushions(tmp, P.cushions.map((c) => ({ ...c, yaw: 0.1 * Math.sin(c.x * 7), lean: Math.PI / 2 })), { backZ: 0, seatY: 0 });
+  // Private copy handles are linked once to the matching movable module after Furniture builds.
+  const copies = item.inside === 'bow' ? [] : ['sofa', 'divan1', 'divan2'].map(part => ({ part, surface: upholsterySurface(tmp, 'Förvarade kuddar', { id: part, replaceDetails: true }) }));
+  g.userData.patioCushionCopies = copies;
+  const piles = item.inside === 'bow' ? [] : addCushions(tmp, P.cushions.map((c) => ({ ...c, yaw: 0.1 * Math.sin(c.x * 7), lean: Math.PI / 2 })), { backZ: 0, seatY: 0, surfaceFor: c => copies.find(copy => copy.part === c.materialGroup).surface });
   piles.forEach((m, i) => {
     const s = m.geometry.boundingBox ?? (m.geometry.computeBoundingBox(), m.geometry.boundingBox);
     const th = (s.max.z - s.min.z) * 0.8, pile = i % 2, k = Math.floor(i / 2);
     m.position.set(-L / 2 + t + 0.26 + pile * 0.47, 0.05 + th * (k + 0.5), 0.02 * (k % 2 ? 1 : -1));
     m.updateMatrix();
   });
-  if (piles.length) {
-    const stack = new THREE.Mesh(mergeGeometries(piles.map((m) => m.geometry.applyMatrix4(m.matrix))), piles[0].material);
+  for (const copy of copies) {
+    // Keep the original all-eight creation/seed/stack order before partitioning by semantic owner.
+    const members = piles.filter((m, i) => P.cushions[i].materialGroup === copy.part);
+    const stack = new THREE.Mesh(mergeGeometries(members.map(m => m.geometry.applyMatrix4(m.matrix))), members[0].material);
     stack.visible = false;
     contents.add(stack);
     seasonal.boxes.push(stack);

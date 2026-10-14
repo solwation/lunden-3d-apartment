@@ -17,7 +17,7 @@ import { addCushions, addFoldedThrow, addDrapedThrow } from './cushions.js';
 import { CUSHIONS, FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, PILLOWS, BEDDING, PINGPING, MYDAL, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO, YUCCA, LANGLAMPA, VANITY, HEMNES_DAYBED, KPOP_POSTERS, SMASTAD, PHOTO_FRAME, COFFEE_TABLE, DANI } from './config.js';
 import { litMirrorMaterial, litEmissive, litReflect } from './mirror.js';
 import { addReflector } from './reflections.js';
-import { veronasofa, slattable, parasol, planter, dynbox } from './patio.js';
+import { veronasofa, linkPatioTextiles, slattable, parasol, planter, dynbox } from './patio.js';
 import { Screen } from './screens.js';
 import { Openable } from './openables.js';
 import { openAvatarCustomizer } from './customizer.js';
@@ -3907,5 +3907,6 @@ export function buildFurniture() {
       footprints[item.level].push(pts);
     }
   }
+  linkPatioTextiles(movable); // #1015: canonical outdoor cushion choices also drive stored copies.
   return { object: group, segments, footprints, lights, interactives, surfaces, things, movable };
 }

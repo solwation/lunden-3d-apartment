@@ -6284,3 +6284,79 @@ older changelog row bytes and actual changelog_stamp.py publication times are
 unchanged. The orchestrator independently checked those hashes, both complete
 deployment logs, final3-native34/schema16 results and all four component PNGs.
 No further renderer or physical-phone acceptance is inferred from deployment.
+
+
+## Patio decorative textiles (#1015)
+
+`tools/patiotextiletest.cjs GAME LOCAL_WORKER OUT` uses actual Verona/dynbox
+builders, original git3ce54a6 patio source, merge/Openable/Patio/Rearrange and
+source-bound main UI. It requires the existing external secret-test input file
+and explicitly rejects non-local Worker endpoints. Native forbids WebGL. Its
+scene/World collaborators are controlled components, not the full apartment.
+
+First native run passed36/36 actualCLI0 in26.234s; local services were stopped
+with expectedSIGTERM and no live owners remained. Three module originals match
+exact positions/normals/UV0/index/poses/finishes/rest/footprints/counts. The
+original one-batch box stack and new three partitions have the exact same
+triangle-corner/normal/UV0/vertex-colour multiset, retaining all eight seeds and
+stack transforms before partitioning. Actual summer/rain/winter masks, lid
+open/close, private material original restore, 600-preview bounded allocation,
+two HTTP peers, shared reload, simultaneous independent surfaces/legacy move,
+409/offline cache, keyboard/touch and ordinary movement passed. Schema18/18
+passed actualCLI0. Renderer and final-rebase evidence are recorded after their
+actual runs; no phone/FPS/World acceptance is inferred from native.
+
+
+The sole granted #1015 component run produced six inspected900×560/DPR1
+PNGs with18 small before/after/pair passes, actual17/17 checks/CLI0 in54.196s.
+Three module images show the4/2/2 decorative pattern changes while the steel
+frame/fixed pads stay original. Before/after module calls are3/3 with23772
+triangles for the sofa and6636 for each divan. The real open box costs16→18
+calls with24836 triangles unchanged: the extra two stored-copy batches are
+measured here, not an assumed phone cost. Box images show an altered top cushion
+and restored original but lower copies/fleece are mostly occluded by the front
+and upper stack. They do not visually certify all eight copies or the whole
+fleece pattern. Exact native copy geometry/material checks complement this
+limited representative image evidence; no further GPU run is inferred.
+
+Render-only component initialization records the actual initial HTTP GET/accepted
+choices, then stops its own polling and restores local component originals.
+Normal native peer polling is unchanged. Source/driver/external supervisor
+freezes, raw JSON before PNG, actual child CLI/timeout and exact owner identities
+remain under `/tmp/lunden-priority-1015/`. The supervisor's own success is not
+the child's exit code. No World/phone/FPS test or production writes occurred.
+
+The first native attempt after merging1012 retained two identical import lines
+from the parallel patio edits and failed at module parse (actualCLI1/1.549s).
+That failed source/driver/exit remains preserved; removing the redundant import
+keeps both fixed-pad and decorative implementations. Later acceptance is recorded
+only after the corrected final source is tested.
+
+
+Corrected post1012 native2 reached21 green checks but hit its60s supervisor
+deadline while constructing an additional HTTP peer (actualCLI1/timeout,
+60.631s); this is not a successful suite. The driver had repeated the complete
+original-model geometry/finish comparison and all-eight triangle sorting in
+every visitor. The subsequent fixture keeps those exact baseline checks in one
+proof context while all other peers still instantiate the four actual builders,
+copy linkage, ordinary Rearrange/main UI and real local HTTP. No runtime rule,
+assertion, credential, protocol or ordinary polling is replaced. Other agents'
+local browser tests are sequenced to reduce own concurrent fixture work; no
+phone/FPS or causal diagnosis follows from that timing.
+
+
+Final3-native passed41/41 actualCLI0 in9.739s on the pinned main including
+1012's public88b7b46 fixed-pad implementation. All original checks remain, with
+explicit first/default textile vs canonical cushions, real selector switching
+with0PUT/unconfirmed preview rollback, cushion cancel restoring matching stored
+copies, and a real peer confirming/restoring pads independently of cushions.
+The final local Worker schema suite passed18/18CLI0. Source bytes are retained
+in final3-native-freeze.json plus content-addressed files.
+
+The image-to-final native whole-path differences are patio.js (incoming1012
+fixed-pad builder), streetlife.js (incoming independent bicycle culling) and the
+driver (final semantic/selector assertions and bounded one-context baseline).
+The rendered decorative cushion/link section and complete dynbox builder remain
+byte-identical to the actual image source, with config/cushions/helper/geometry
+unchanged. This is component block parity, not whole-patio/world acceptance of
+new imports or a rerender of1012's separate fixed-pad choices.

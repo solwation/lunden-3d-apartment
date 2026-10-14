@@ -320,3 +320,8 @@ och lösa kuddar/plädar behåller sina material.
 
 IDANÄS-sängens stomme, gavel och lådfronter kan också få eget tyg i samma
 materialbibliotek. Sänglinne, träben och lådornas insidor behåller sina material.
+
+
+Uteplatsens dekorativa kuddgrupper och dynboxens fleecepläd kan väljas separat
+i möbleringens befintliga tygyteväljare. Kuddvalet följer med till dynboxens
+förvarade kopior genom väder och årstider; Original återställer originaltyget.

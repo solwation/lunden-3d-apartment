@@ -211,11 +211,11 @@ function cushionGeometry(s, t, kind, crumple, seed, w = s, color) {
  * seat level, `seatY` = the seat's top. Added to `g` as plain meshes (merged per material with the rest of the piece);
  * returns them. A cushion may have its own `color` (the vertex tint) and a width `w` ≠ its height `size` (a lumbar, #399).
  */
-export function addCushions(g, list, { backZ, seatY }) {
+export function addCushions(g, list, { backZ, seatY, surfaceFor }) {
   const mat = cushionMaterial();
   return list.map((c, i) => {
     const s = c.size ?? C.size, t = C.thick * (c.size ? c.size / C.size : 1);
-    const surface = c.materialId ? upholsterySurface(g, c.materialName, { id: c.materialId, replaceDetails: true }) : null;
+    const surface = surfaceFor ? surfaceFor(c, i) : c.materialId ? upholsterySurface(g, c.materialName, { id: c.materialId, replaceDetails: true }) : null;
     const m = new THREE.Mesh(cushionGeometry(s, t, c.kind, c.crumple ?? 0.3, 11 + i * 17, c.w ?? s, c.color), surface ? surface.material(mat) : mat);
     surface?.part(m);
     // stand it up, lean it back, turn it; its bottom edge on the seat, its back against the back cushion
@@ -229,8 +229,8 @@ export function addCushions(g, list, { backZ, seatY }) {
 }
 
 /** A throw folded into a neat soft slab: `layers` rounded sheets stacked, the top one a little short (the fold). */
-export function addFoldedThrow(g, { w, d, layer, layers, x, z, y, yaw, color, materialId, materialName }) {
-  const surface = materialId ? upholsterySurface(g, materialName, { id: materialId, replaceDetails: true }) : null;
+export function addFoldedThrow(g, { w, d, layer, layers, x, z, y, yaw, color, materialId, materialName, surface: boundSurface }) {
+  const surface = boundSurface ?? (materialId ? upholsterySurface(g, materialName, { id: materialId, replaceDetails: true }) : null);
   const original = throwMaterial(color), mat = surface ? surface.material(original) : original, per = RIB_TILE();
   for (let k = 0; k < layers; k++) {
     const sh = new THREE.BoxGeometry(w - k * 0.01, layer, d - (k === layers - 1 ? 0.04 : 0), 8, 1, 6);

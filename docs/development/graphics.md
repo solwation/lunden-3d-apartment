@@ -265,3 +265,21 @@ success2026-10-14T12:04:30.6937873Z. Worker-first deployment is recorded in
 storage.md. Render remains13/13CLI0 with three inspected component pairs and
 no World/physical-phone/FPS claim. Full producers, source freezes, owner/socket
 samples, supervisor receipt and cleanup remain in worker-1012-artifacts.
+### Outdoor cushion and stored fleece surfaces (#1015)
+
+Each actual Verona module exposes one named decorative `cushions` surface,
+independent of its fixed `textile` pads. The eight existing cushion specifications
+carry explicit `materialGroup` ownership (sofa4/divan1 2/divan2 2). All eight
+box copies are still generated in their original order with their original seed,
+stack position, atlas/UV0 and vertex colours; only then are they partitioned into
+three private-material batches. `surfaceFor` is an optional explicit builder
+handle; ordinary cushion callers retain their existing behavior.
+
+`linkPatioTextiles(movable)` runs once after Furniture construction and connects
+only those named module surfaces to their matching box-copy handles. There is
+no scene traversal/global material registry or frame update. The canonical module
+choice drives preview, cancellation, original restore and accepted remote state
+in both representations. The dynbox has its own `throw-folded` fleece surface.
+Original restores the original atlas/bump/vertex-colour flags; generic patterns
+use the existing private UV1 material implementation. No season/stow policy,
+geometry, seating, lid contents or neighboring decorative furniture is changed.

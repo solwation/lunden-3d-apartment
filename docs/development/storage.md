@@ -935,3 +935,12 @@ tests and actually deployed through run38559680002/job115837374403 at
 requiring client. The normal library handles preview/cancel without PUT and
 revision-checked confirmations shared to ordinary visitors. All test writes
 use an explicit local Worker; production homes are not modified by verification.
+
+### Outdoor textile identity (#1015)
+
+`PATIO_TEXTILE_SURFACES` whitelists the three actual Verona objects' `cushions`
+and the actual non-bow cushion box's `throw-folded` surface. Copies in the box
+are representations of the module choice, never a second persisted cushion
+choice. Existing version1 material revisions, authorization, legacy poses and
+all other family whitelists remain in use. Independent pad/cushion/fleece writes
+keep their existing per-surface concurrency and conflict semantics.
