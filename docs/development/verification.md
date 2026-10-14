@@ -5357,3 +5357,12 @@ All raw sources, actual exits, results, receipts and PNGs are retained under
 `/tmp/lunden-priority-952`. These are finite samples, not all continuous poses,
 full server skin physics, rendered apartment, physical-phone or FPS evidence.
 Parents #941/#936 remain open for larger/other changed histories.
+
+#952 runtime published as `83ac60fb7e06327ec1539ed89849804b8b925122`. Worker
+run `38520979243` / job `115710346474` completed successfully; its actual log
+contains `Run cloudflare/wrangler-action@v3`, `wrangler deploy`,
+`Uploaded lunden-l1007` and `Deployed lunden-l1007 triggers`, version
+`ce6d955c-ff90-436e-981e-a15d5ff1a100`. All ten executed source paths match
+the published commit. Removing only grouped changelog761 reproduces the exact
+previous file bytes; all759 older entry publication times remain unchanged
+under the actual `changelog_stamp.id_times` implementation.
