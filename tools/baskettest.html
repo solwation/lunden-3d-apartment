@@ -74,7 +74,7 @@ f.onload = async () => {
   pass &= check(heldItem() === ball || (!ball.flying && ball.placed), `caught again or lying still (${heldItem() === ball ? 'caught' : 'lying at ' + ball.model.position.toArray().map((v) => v.toFixed(2)).join(', ')})`);
   if (heldItem() !== ball) { ball.take(); }
 
-  // outside: shots at the rim (facing north in over the car park, #1018)
+  // outside: shots at the rim (facing west in over the car park, #1018, #1037)
   w.Math.random = () => 0.5; // no jitter
   const shoot = (x, z) => {
     stand(x, z, 0); look(hoop.rimC); step(1 / 60);
@@ -93,22 +93,22 @@ f.onload = async () => {
     return { scored: stats.baskets > before, lowest };
   };
   const b0 = stats.baskets, t0s = stats.threes, tw0 = stats.twoPointers, pts0 = stats.basketPoints;
-  const near = shoot(hoop.rimC.x, hoop.rimC.z - 4);
+  const near = shoot(hoop.rimC.x - 4, hoop.rimC.z);
   pass &= check(near.scored && stats.threes === t0s && stats.twoPointers === tw0 + 1 && stats.basketPoints === pts0 + 2, `a shot from 4 m: in (baskets ${b0} → ${stats.baskets}, 2p: ${stats.basketPoints} p)`);
   pass &= check(near.lowest > hoop.ground + ball.model.children[0].geometry.parameters.radius - 0.02, `it never sank into the asphalt (lowest ${near.lowest.toFixed(3)})`);
-  const far = shoot(hoop.rimC.x + 2, hoop.rimC.z - 7.2);
+  const far = shoot(hoop.rimC.x - 7.2, hoop.rimC.z + 2);
   pass &= check(far.scored && stats.threes === t0s + 1 && stats.basketPoints === pts0 + 5, `a shot from 7.5 m: in, a three (threes ${stats.threes}, ${stats.basketPoints} p)`);
 
   // identified free throw (1 point)
   const ft0 = stats.freeThrows, pts1 = stats.basketPoints;
-  stand(hoop.rimC.x, hoop.rimC.z - 5.12, 0); look(hoop.rimC); step(1 / 60);
+  stand(hoop.rimC.x - 5.12, hoop.rimC.z, 0); look(hoop.rimC); step(1 / 60);
   if (heldItem() !== ball) ball.take();
   ball.cool = 0; ball.shootFreeThrow();
   run(4, () => stats.freeThrows > ft0);
   pass &= check(stats.freeThrows === ft0 + 1 && stats.basketPoints === pts1 + 1, `free throw: in, 1 point (free throws ${stats.freeThrows}, ${stats.basketPoints} p)`);
 
   // a shot well to the side of the hoop misses
-  stand(hoop.rimC.x + 5, hoop.rimC.z - 4, 0); look(new V(hoop.rimC.x + 5, 3, hoop.rimC.z + 3)); step(1 / 60);
+  stand(hoop.rimC.x - 4, hoop.rimC.z + 5, 0); look(new V(hoop.rimC.x + 3, 3, hoop.rimC.z + 5)); step(1 / 60);
   if (heldItem() !== ball) ball.take();
   const b1 = stats.baskets; ball.cool = 0; ball.use(); run(4);
   pass &= check(stats.baskets === b1, 'a shot past the hoop does not count');

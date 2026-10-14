@@ -152,7 +152,7 @@ function buildCourtLines(C, H) {
   return m;
 }
 
-/** The portable hoop on the asphalt: a weighted base, a pole leaning forward, a backboard facing north into the car park (#1018),
+/** The portable hoop on the asphalt: a weighted base, a pole leaning forward, a backboard facing west into the car park (#1018, #1037),
  * the orange rim, a white net and regulation court lines. Always visible on the car park. Collision with the ball is analytic (`collide`). */
 export class Hoop {
   constructor() {
