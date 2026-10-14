@@ -6572,3 +6572,15 @@ exact, including all speaker builders, helper, UI and controllers. The speaker I
 block and authorization branch remain exact; only the separate hanging-family
 whitelist is added. Combined schema24/24/CLI0 passes, including the actual six
 speaker IDs/revisions/legacy poses. No additional browser or render is implied.
+
+Published speaker client2c91cab543b96ff972314754e0afc0826c3b3a62/ch807 has an
+immutable1422-file publication manifest. After the successful retry push, a
+separate ls-remote confirmed that exact SHA before the publication comment. All
+805 older changelog row bytes and history-derived publication times are unchanged.
+Actual Pages run38570289179/job115873517305 deployed this build and reported
+success2026-10-14T13:17:06.8583387Z (full raw log retained). Root independently
+checked the complete manifest, actual deployment and all six PNGs. All101 unique
+owned PID/startTick processes are gone, all five temporary profiles are absent,
+and own8878/8879 listeners are stopped. Failed native1/2, the rejected first push,
+all freezes/producers and raw evidence are retained in the worker archive. Only
+#1027 is complete; other1001/991 families remain independently tracked.
