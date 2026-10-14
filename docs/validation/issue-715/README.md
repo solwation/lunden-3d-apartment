@@ -686,3 +686,30 @@ NODE_PATH=/tmp/lunden-testdeps/node_modules CHROME_PATH=/usr/bin/google-chrome \
 ```
 
 No product/culling/TTL/budget/backend/changelog/deployment change. #715 stays open. Further actual World evidence requires fresh queue assignment and an exclusive bounded grant; no automatic continuation.
+
+### First incoming step in the original ordinary World (2026-10-14)
+
+`nerfreciprocaltest.cjs --apartment --ordinary-gameplay --first-incoming-only` is an exclusive finite diagnostic: original startup/name-skip/touch-start, normal animation/frame/clock/physics/render, actual safe support/clearance/original poses, one original held use A and its immediate first-send checkpoint, one original held use B, then first actual incoming Darts.update checkpoint. It returns before two rounds/final-effect/image branches. No screenshot/capture attempt, warm-up wait extension, manual simulation/draw, effect freeze, fake receipts/projectiles, TTL/culling/budget/runtime change. Native peer retains the existing25ms transport/physics timer; the World receives its dt only from original main. Native source/mode controls16/actualCLI0 verify exclusivity/rejected combinations, full two-hook source reversal/single original clock read, no manual update/render/pause/capture in the early branch and checkpoint order. These are code/mode controls, not World acceptance.
+
+Exactly **one** externally supervised160s actual World run on frozen `be435ee726b8577d842798eaaaf3aed7a481129d`, incorporating published #669 `14d04084` and #952 `83ac60f`. Fresh own Worker starts after freeze. Chrome uses the existing software SwiftShader flags: these callback intervals cannot establish physical GPU or phone behavior. The incoming update is captured with actual ordinary camera72°/1.6/.05/1000 at `[4.4,1.62,9]`, document visible/focused, no pageerrors,13 ordinary frames/viewdraws, headless warm state `skipped`.
+
+**Whole supervisor FAIL**: external160s wait expires and sends SIGTERM; actual child Node subsequently exits0, supervisor/wrapper exits1, elapsed161.431s. Child result retains9 diagnostic checks and complete logic/zero-capture image/cleanup/CLI0 stages exactly as written. Diagnostic completeness and child exit0 do **not** make the bounded whole run green. No retry or image attempted. Final evidence/source work and browser cleanup costs were not separately timed; do not attribute the external timeout to one of them.
+
+Actual gameplay first outcome is **FAIL**: candidate targettrue, packet targetfalse, obstacle `null/deadline/traversal`,1997.5ms, active199.7/yield1797.8/cacheWait0/maxslice6.1ms,17promoted,804pending/0bitmap/1spatialready. This is a traversal deadline, not the earlier cache-wait condition. Actual receipts/HP at checkpoint: World A0hits/1hurt/HP9, native B1hit/0hurts/HP10. Completeness guards deliberately do not require successful hit/target or render visibility.
+
+The newly measured original main input resolves the former unknown for **this run only**:
+
+| Actual incoming state | Recorded value |
+|---|---|
+| Worker packet | origin `[3.75,1.47,9.3]`, direction `[1,.03,0]`, speed30 |
+| Birth | age1.6ms, position unchanged, travelled0, visible/flying, life4s |
+| First original main raw / capped dt | **6.66s / .05s**, normal frame13 |
+| Age before / after original Darts.update | **4748ms / 4779.4ms** |
+| State after first update | invisible/nonflying, position unchanged, travelled0 |
+| Actual chained screen submissions at saved checkpoint | **zero local and incoming**, no overflow |
+
+Thus the original remote4s wall TTL expires **before motion** in this measured World, unlike the native natural-rAF test that crosses the camera before expiry. The initial/pre-update native spheres remain inside the geometric frustum; birth/pre camera mask1 versus child mask128 is a **temporary** state snapshot. Main's original near/far render passes adjust camera layers later, so this mask alone proves no render exclusion. Actual chained original renderer/Scene/maincamera/null-target submission counts are the separate observation; they prove no submitted owned body/tip callback in the saved interval, not phone-visible pixels or causal scene occlusion. Original main callback wall sum54119.4ms across13 callbacks includes renderer/browser work and is neither thread CPU, GPU duration nor steady FPS. No old run's dt/age is retroactively inferred.
+
+Artifacts `/tmp/lunden-firststep715-surface/{world/result.json,driver.log,supervisor.json,freeze.json,node-start.json,processes.json,owned-browser-tree.json,final-source-proof.json,cleanup-observation.json}`, source/mode controls `controls-final/result.json`. All1356 tracked files remain exact through completion. Own HTTP890015/Worker890092 stop by exact PID/cwd/argv; independently recorded owned browser descendants are already absent before explicit server cleanup. No new World/PNG was run after that result.
+
+This is bounded useful attribution, not a product fix, reciprocal-rendering acceptance, phone FPS/latency or cause of the user's original lag. #715 remains open. Further work must start from a fresh queue assignment; there is no automatic heavy retry or budget/TTL increase.
