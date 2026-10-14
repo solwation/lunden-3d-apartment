@@ -59,7 +59,8 @@ export class Rearrange {
     this.ghostMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.35, depthWrite: false, side: THREE.DoubleSide });
     this.materialVersion = 0;
     this.state = { revision: 0, pieces: {} };
-    this.apply(read(CACHE, this.state));
+    this.apply(read(CACHE, this.state), { restore: true });
+    this.initialRemote = true; // cache and the first accepted remote layout hydrate absolute saved Life poses
     this.ready = this.sync();
     this.timer = setInterval(() => this.sync(), REARRANGE.poll);
     document.addEventListener('visibilitychange', () => { if (!document.hidden) this.sync(); });
@@ -145,7 +146,7 @@ export class Rearrange {
       for (const h of this.selected.loose) h.model.visible = true;
     }
     this.selected = null; this.ghost.visible = false; this.ghost.clear(); this.valid = false;
-    if (this.pending) { const s = this.pending; this.pending = null; this.apply(s); }
+    if (this.pending) { const s = this.pending, restore = !!this.pendingRestore; this.pending = null; this.pendingRestore = false; this.apply(s, { restore }); }
   }
   rotate() { if (this.selected && !this.saving) this.turn += THREE.MathUtils.degToRad(LIFE.place.turn); }
   update() {
@@ -297,6 +298,7 @@ export class Rearrange {
     }
   }
   carry(h, delta) {
+    if (this.restoringWorldItems && h.lifeItem) return; // already-restored world coordinates are not a new furniture move
     this.marks.invalidate(h.model);
     const before = h.model.matrixWorld.clone(), after = delta.clone().multiply(before), pose = poseOf(after);
     if (h.item) {
@@ -394,11 +396,14 @@ export class Rearrange {
     }
     return changes;
   }
-  apply(state) {
+  apply(state, { restore = false } = {}) {
     state = migrateVeronaLayout(migratePosterLayout(state));
     if (!state || !Number.isInteger(state.revision) || !state.pieces || typeof state.pieces !== 'object') return;
     if (state.revision < this.state.revision) return;
-    if (this.selected || this.materialEdit || this.saving) { this.pending = state; return; }
+    if (this.selected || this.materialEdit || this.saving) { this.pending = state; this.pendingRestore = restore || this.pendingRestore; return; }
+    const previousRestore = this.restoringWorldItems;
+    this.restoringWorldItems = restore;
+    try {
     this.scene.updateMatrixWorld(true);
     // a piece whose default spot moved gets a new id (furniture.js: from its x/z): an entry under its old id carries over
     // when it was confirmed somewhere else, and is dropped when it still holds the old default (a full reset writes every
@@ -459,6 +464,8 @@ export class Rearrange {
     if (this.overlay && (revealed || changes.length)) this.overlay.recompute(); // (+ refresh)
     else if (changes.length) this.refresh();
     if (changes.length) this.changed?.(changes);
+    this.initialRemote = false; // only an actually applied valid revision completes initial remote hydration
+    } finally { this.restoringWorldItems = previousRestore; }
   }
   refresh() {
     const f = this.world.furniture;
@@ -480,7 +487,7 @@ export class Rearrange {
   async sync() {
     if (!this.url || this.pulling || this.saving) return;
     this.pulling = true;
-    try { const r = await fetch(this.url + '/furniture', { cache: 'no-store' }); if (r.ok) { const state = await r.json(); this.materialVersion = state.materialVersion ?? 0; this.apply(state); } }
+    try { const r = await fetch(this.url + '/furniture', { cache: 'no-store' }); if (r.ok) { const state = await r.json(); this.materialVersion = state.materialVersion ?? 0; this.apply(state, { restore: !!this.initialRemote }); } }
     catch { /* keep cached arrangement; a confirmed move still needs server acceptance */ }
     finally { this.pulling = false; }
   }

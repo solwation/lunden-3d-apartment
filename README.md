@@ -347,3 +347,6 @@ för alla besökare eller välj Original. Lampglas, skärmar och reglage
 behåller sina material; musik, smarta svar och lampans ljus fungerar som tidigare.
 
 Handdukarnas tyg kan väljas i materialbiblioteket: badrummens två par, Tvätts vita handduk, handduken över RÅGRUND och den befintliga kökshandduken på ugnens handtag. Varje handduk har egen yta; Original återställer dess ursprungliga tyg och band. Torkning, lucka och stol fungerar som tidigare.
+Sparade saker på möbler behåller sin världsplats när du återvänder eller laddar
+om sidan. Att läsa in möbleringen flyttar dem inte en extra gång; en senare
+bekräftad möbelflytt tar fortfarande med sakerna som står på möbeln.

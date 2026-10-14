@@ -979,3 +979,19 @@ SHADE_CANOPY_TEXTILES and SHADE_CANOPY_SURFACES whitelist only the actual tubela
 ### Hanging-towel material identities (#1029)
 
 `TOWEL_MATERIAL_SURFACES` whitelists seven surfaces on the four actual ragrund/towelhooks IDs plus explicitly NEW fixed `f-kitchen-oven-towel`. Kitchen registers the existing oven-child object only; it never enters movable furniture poses. Existing materialVersion1/klädsel choices, revision-controlled side-map, legacy pose preservation and capability guard are reused. No towel/HandWash/oven placement or new save policy is introduced; hand wetness remains transient. Local HTTP/schema verification makes no production writes.
+
+### Initial furniture hydration and saved Life positions (#1013)
+
+Life already stores loose world items in absolute world coordinates. Rearrange's
+cached layout and first actually applied authoritative GET are therefore explicit
+restore operations: their carry boundary leaves actual LifeItem coordinates alone,
+including rug-derived Y reconciliation. Other loose objects keep their existing
+initial furniture attachment behavior. No Life/main hooks, saved fields, inventory
+policy or additional layout writes are introduced.
+
+A deferred initial layout retains its restore flag until it is actually applied.
+A failed or stale GET does not complete hydration. A successful normal local move
+can complete the baseline before an older in-flight GET returns; the existing
+revision guard rejects that older snapshot. Subsequent normal local/remote moves
+and rug support changes use the ordinary carry/rotation path. Life restoration
+after furniture hydration still writes its own absolute item positions normally.

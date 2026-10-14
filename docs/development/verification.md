@@ -6596,3 +6596,58 @@ Render1 passed10/10, actualCLI0/3.589438s, all10 Original/pattern PNGs opened an
 Final integration pins published `9603475e2848ceb6d6eb721d8a542c1f5219a798`, preserving the newer scope restriction. All11 render-critical client/builder/HandWash/oven/helper/UI input files are byte-identical to render1; only materialcatalog gains already-published unrelated family metadata. Combined schema26/26CLI0 passes. Native2's60/60 and render1's10/10 therefore remain the relevant actual runtime proof; no redundant browser or GL retry is inferred or run.
 
 Publication: Worker-first `da686d13e5b6704130ca23a8ddbec02a81b4e3ef` deployed via run38571043521/job115875993184 at13:21:30.0543752Z, versione8baef38-0dc9-40bb-babd-5b65c0751dc5. Its separate Pages job115875993642 failed at the ID-token endpoint; the original failure is retained. Client `9e4b89586ef3ef829914c79cf4c29b9a1618737f`/changelog808 has241 exact publication hashes and all806 older stamped entries/raw rows unchanged. Its own actual Pages38572690282/job115881715075 created that exact SHA at13:33:36.4519286Z and reported success13:34:40.1539052Z. Root independently checked full logs, source manifests and all10 images. Native2 has10 whole-input hashes exact against publication; render1 has11, with only the explained unrelated catalogue append and render-only producer/output additions differing from native. No further browser or GL rerun was needed.
+
+### Saved loose Life positions on first furniture restore (#1013)
+
+`tools/restorecarrytest.cjs` uses actual Life save/restore/items, Rearrange, the
+actual coffee-table/rug builders and production placement/surface helpers. Private
+builder helpers are exposed through additive test exports; no function bodies are
+rewritten. Its World/collision collaborators are controlled, not a full apartment.
+Native1 passed24/24, actualCLI0 in6.406569s, with zeroWebGL and local HTTP only.
+
+Both immutable original Rearrange baselines36c421f and9603475e reproduce the archived
+1008 error: the saved plate[3.7,.471,10.6] becomes[3.96,.471,10.64]. The candidate
+keeps[3.7,.471,10.6] with the entire serialized Life record (plate identity, contents
+and data) unchanged. Checks cover cache→GET, no cache/new visitor, genuine same-
+context reload, actual late Life.restore, failed initial GET followed by recovery,
+and an initial GET queued during selection then applied by cancel. These hydration
+paths add zeroPUT; a non-Life loose object still follows its initial furniture pose.
+
+A delayed old initial GET is held after a real local Worker response; a normal
+local confirm meanwhile moves the plate exactly once to[3.9,.471,10.6]. Releasing
+the older response preserves that pose, UUID/content, layout revision and single
+legitimatePUT. Later translation/rotation and an ordinary HTTP peer still carry
+correctly. Real stale409 applies only an authoritative accepted delta, never the
+rejected candidate; an actual offline confirm keeps the accepted Life record. A
+later real rug move lowers the supported plate by.014m without XZ drag, preserving
+the1008 support behavior. Raw baseline/candidate/delayed/conflict/Y records and
+frozen source/producer/runner evidence remain under`/tmp/lunden-priority-1013`.
+All own native owners are gone and its temporary profile absent. This is not a
+physical-phone, wholeWorld or FPS test.
+
+One inspected900×560/DPR1 before/after component pair passed6/6, actualCLI0
+in21.490853s. Actual baseline/candidate apply runs produce[3.96,.471,10.64] and
+[3.7,.471,10.6]. Their real table/Life world roots are staged for the comparison
+only after raw identity/pose/Life capture; no clone or userData edits occur. The
+plate rim visibly shifts relative to the same table; its archived .471m support
+position partly intersects the tabletop, so the image does not certify the entire
+plate or hidden cucumber contents. Data preservation is covered by the native
+Life record assertions. No rug or World is rendered. Each side uses16calls and
+6596triangles: unchanged geometry/budget, with both bounds in frame and no browser/
+shader errors. Raw data was saved before the PNG, which was opened and inspected.
+
+The initial render1 is retained as actualCLI1/7.033589s/0PNG: THREE.Object3D.clone
+attempted to JSON-copy legitimate circular LifeItem userData. Only the external
+producer was corrected to attach actual world roots after lifecycle snapshots;
+runtime remained exact native1. The original producer hash, failure, process
+records and cleanup are retained. Successful render2 ends live[] with its temporary
+profile absent. No further render or physical-phone/World/FPS acceptance is implied.
+
+Final integration pins immutable main3653fa981f4dbefe4c1db3512c4710d939197354,
+including delivered1029 towel builders. The relevant final native repeated24/24,
+actualCLI0 in5.810890s, with a fresh local Worker and live[]/profile absent.
+All256 final-native inputs are frozen. The whole Rearrange/Life/Items/rugs/merge
+and test producer remain exact to native1/render2; the actual coffee-table, rug,
+surfaceBox and rugLiftFor functions are also byte-exact. Four whole source paths
+differ from the component render through unrelated1029 config/furniture/hooks/main
+additions, which are preserved. There is no new render or whole-World parity claim.
