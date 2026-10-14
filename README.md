@@ -335,3 +335,5 @@ MYDAL-sängarnas sängkläder (#1020): båda våningssängarna har separata val 
 HEMNES-dagbäddens två madrassöverdrag, överkast och fem olika kuddar har egna
 tygval i Möblera om. Original återställer varje textils ursprungliga utförande;
 trästomme och lådor behåller sina material.
+
+Crash diagnostics (#669): `tools/crashviewporttest.cjs` checks real console focus and startup navigation with explicitly simulated visual-viewport insets; this does not certify an Android keyboard or fix the still-open physical iPhone context-loss issue.

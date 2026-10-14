@@ -211,7 +211,13 @@ class CrashLog {
   /** The measures that tell why the canvas and the real surface disagree (all cheap reads; the safe-area probe only for a report). */
   layoutMeasure(withInsets, exactRatio = false) {
     const cv = document.getElementById('game-canvas'), r = cv?.getBoundingClientRect(), vv = window.visualViewport, de = document.documentElement;
+    // Technical boolean only: never collect the field's text, id, selector or value.
+    const active = document.activeElement;
+    const editing = !document.hidden && document.hasFocus() && !!active && active.inputMode !== 'none' && (active.isContentEditable ||
+      (!active.disabled && !active.readOnly && (active.tagName === 'TEXTAREA' ||
+        (active.tagName === 'INPUT' && ['text', 'search', 'email', 'url', 'tel', 'password', 'number'].includes(active.type)))));
     const m = {
+      editing: editing ? 1 : 0,
       up: round((performance.now() - T0) / 1000, 1), loaded: this.ctx ? 1 : 0,
       css: cv ? [cv.clientWidth, cv.clientHeight] : null, rect: r ? [round(r.x), round(r.y), round(r.width), round(r.height)] : null,
       buf: cv ? [cv.width, cv.height] : null, inner: [innerWidth, innerHeight], doc: [de.clientWidth, de.clientHeight],
@@ -251,7 +257,16 @@ class CrashLog {
     if (m.vv && Math.abs(m.vv.scale - 1) > 0.01) return none;
     const T = C.layoutTolerance;
     if (Math.abs(m.css[0] - m.inner[0]) > T || Math.abs(m.css[1] - m.inner[1]) > T) return { msg: `canvas ${m.css[0]}x${m.css[1]} vs window ${m.inner[0]}x${m.inner[1]}`, faultClass: 'surface-css' };
-    if (m.vv && (Math.abs(m.css[0] - m.vv.w) > T || Math.abs(m.css[1] - m.vv.h) > T)) return { msg: `canvas ${m.css[0]}x${m.css[1]} vs visualViewport ${m.vv.w}x${m.vv.h}`, faultClass: 'surface-vv' };
+    // Android/iOS can keep the layout viewport while an editable field's keyboard reduces only
+    // the visible height. This narrow, measured inset is not a canvas sizing fault. A focused
+    // field alone exempts nothing: require coherent document/rect, width, scale and offsets,
+    // then still validate projection and allocated buffer below. Missing legacy editing stays strict.
+    const inputInset = m.editing === 1 && m.vv && Math.abs(m.vv.scale - 1) <= 0.01 && m.vv.h > 0 && m.vv.h < m.css[1] - T &&
+      Math.abs(m.vv.w - m.css[0]) <= T && Math.abs(m.vv.top) <= T && Math.abs(m.vv.left) <= T &&
+      Array.isArray(m.doc) && m.doc.length === 2 && m.doc.every((v, i) => Math.abs(v - m.css[i]) <= T) && Array.isArray(m.rect) && m.rect.length === 4 &&
+      Math.abs(m.rect[0]) <= T && Math.abs(m.rect[1]) <= T &&
+      Math.abs(m.rect[2] - m.css[0]) <= T && Math.abs(m.rect[3] - m.css[1]) <= T;
+    if (!inputInset && m.vv && (Math.abs(m.css[0] - m.vv.w) > T || Math.abs(m.css[1] - m.vv.h) > T)) return { msg: `canvas ${m.css[0]}x${m.css[1]} vs visualViewport ${m.vv.w}x${m.vv.h}`, faultClass: 'surface-vv' };
     const faultClass = hidden ? 'background-projection' : 'foreground-projection';
     if (m.aspect && Math.abs(m.aspect - m.css[0] / m.css[1]) > 0.01) return { msg: `aspect ${m.aspect} vs canvas ${round(m.css[0] / m.css[1], 3)}`, faultClass };
     if (m.buf && m.px && (Math.abs(m.buf[0] - m.css[0] * m.px) > T * m.px + 1 || Math.abs(m.buf[1] - m.css[1] * m.px) > T * m.px + 1)) return { msg: `buffer ${m.buf[0]}x${m.buf[1]} vs canvas ${m.css[0]}x${m.css[1]} at ${round(m.px, 2)}`, faultClass };
