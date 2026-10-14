@@ -5943,3 +5943,10 @@ final regression. The inspected native result image establishes text/HP only;
 straight-fixture ack-time images have explicit native marker-visibility checks.
 No marker duration was reset for capture. Raw source hashes, exits and owned
 process/socket records are retained under `/tmp/lunden-priority-978/`.
+
+The sequential final straight regression passed 79/79 / CLI 0 after the cooldown
+safeguard; the unchanged actual Worker Node controls passed 53/53. Pages run
+38541468314 (job115776998766) actually created deployment for runtime `cc3dde0`
+and reported success. The Worker remained byte-identical to the already deployed
+#893 behavior; #978 changes client contact selection only. The final head-marker
+PNG is byte-identical to the earlier inspected ack-time image (SHA-256 `5cd4fa67…`).
