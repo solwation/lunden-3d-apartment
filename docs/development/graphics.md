@@ -252,3 +252,16 @@ the fixture retains a40px blank bottom strip. Each component stays3draws:
 sofa23772triangles and each divan6636, before=after; UV1 programs link. All11
 recorded driver/Chrome owners and their temporary profile are gone. These are
 component images, not apartment/mobile/FPS verification.
+
+#1012 publication88b7b46ea03e875d386f8267cad3fe61cfcbb388 (ch800): final native33/33
+actualCLI0 and schema18/18CLI0 after incoming1015 catalogue/culling. All ten
+executable/native paths match final test bytes. Publication1414 paths are hashed;
+the complete final freeze differs only in changelog, with every older raw row/time
+preserved. All ten render sources were recovered exactly. Only catalogue/main
+whole files differ from render; full patio.js and whole upholstery.js remain
+byte-identical, and final native exercised the combined incoming version.
+Actual Pages38561048171/job115841906736 deployed this exact client and reported
+success2026-10-14T12:04:30.6937873Z. Worker-first deployment is recorded in
+storage.md. Render remains13/13CLI0 with three inspected component pairs and
+no World/physical-phone/FPS claim. Full producers, source freezes, owner/socket
+samples, supervisor receipt and cleanup remain in worker-1012-artifacts.
