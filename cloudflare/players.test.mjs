@@ -1247,3 +1247,33 @@ test('#967 source-derived style0 whole-cell admission preserves old regions and 
   // The actual r3 ray must remain in the prism independently of the cell-corner rays.
   assert.equal(C.rifleHeadGreetingRightCellRegion('front-78',state,shot.hc.slice(1),shot.o,[-1,.01,0]),false);
 });
+
+
+test('#971 immutable Nose prism uses existing private history; changed/legacy return, healing and death never reopen it',async()=>{
+  const C=await import('../src/config.js'),env=setup(),a=await connect(env,'Nose prism shooter'),peers=[a],state={p:[0,0,0],r:0,h:'rifle'};
+  const send=async(c,m)=>{now+=1000;c.send(m);await settle(env);};
+  const join=async()=>{for(let n=0;n<80;n++){const b=await connect(env,'Nose prism target');if(C.avatarLook(b.got[0].i).build===1&&C.avatarLook(b.got[0].i).tall===.975){peers.push(b);return b;}b.ws.close();await settle(env);}throw Error('no bounded canonical style2');};
+  const attachment=b=>b.ws.peer.deserializeAttachment();
+  // Actual native saved FIRST Nose contact, all four styles share identical original Nose geometry at build1/tall.975.
+  const shotFor=id=>({t:'a',w:'rifle',to:id,o:[-.01,1.58,-3.13],d:[.001,0,1],hc:[1,-.007,1.58,-.129]});
+
+  const fire=async b=>{const s=shotFor(b.got[0].i);await send(a,{p:[s.o[0],0,s.o[2]],r:0,h:'rifle'});await send(a,s);return a.got.filter(m=>m.t==='hit').at(-1);};
+  try{
+    const b=await join();await send(b,state);await send(b,{t:'g',to:a.got[0].i,k:0});assert.equal(attachment(b).headPoseFixed,true);assert.ok(attachment(b).gt);
+    const shot=shotFor(b.got[0].i);assert.equal(C.rifleHeadContact(b.got[0].i,state,shot,shot.o,40,4),false,'legacy default cannot enable new Nose family');assert.equal(C.rifleNoseRegion(b.got[0].i,state,shot.hc.slice(1))||C.rifleNoseExtraRegion(b.got[0].i,state,shot.hc.slice(1))||C.rifleNoseBandRegion(b.got[0].i,state,shot.hc.slice(1))||C.rifleNoseDepthRegion(b.got[0].i,state,shot.hc.slice(1)),false,'outside every published Nose family');
+    for(const options of [undefined,null,true,false,{}, {allowImmutableNoseSide:false}, {allowImmutableNoseSide:1}, {allowImmutableNoseSide:'true'}])assert.equal(C.rifleHeadContact(b.got[0].i,state,shot,shot.o,40,4,true,options),false,'only strict named true enables new depth family');
+    let hit=await fire(b);assert.equal(hit.head,true);assert.equal(hit.l,8);
+    env.PLAYERS.hibernate('world');await send(b,{...state,h:'saber',score:17,sp:true});hit=await fire(b);assert.equal(hit.head,true);assert.equal(hit.l,6);
+    const low=attachment(b);low.l=1;b.ws.peer.serializeAttachment(low);hit=await fire(b);assert.equal(hit.head,true);assert.equal(hit.l,-1);assert.equal(hit.dead,true);assert.match(hit.kill,/^[0-9a-f-]{36}$/);assert.equal(attachment(b).headPoseFixed,true,'death does not manufacture or clear immutable pose');
+    const count=a.got.filter(m=>m.t==='hit').length;a.send(shotFor(b.got[0].i));await settle(env);assert.equal(a.got.filter(m=>m.t==='hit').length,count,'same-tick replay has no duplicate death/award');
+    for(const delta of[{p:[.01,0,0]},{r:.01},{c:true}]){
+      const changed=await join();await send(changed,state);await send(changed,{t:'g',to:a.got[0].i,k:0});await send(changed,{...state,...delta});await send(changed,state);assert.equal(attachment(changed).headPoseFixed,false);
+      env.PLAYERS.hibernate('world');hit=await fire(changed);assert.equal(hit.head,undefined);assert.equal(hit.l,9,'accepted p/r/c change and return keeps verified Nose prism body1');
+      now=attachment(changed).healAt;a.send('p');changed.send('p');await settle(env);await env.PLAYERS.object('world').alarm();await settle(env);assert.equal(attachment(changed).headPoseFixed,false,'healing does not reconstruct history');assert.equal(attachment(changed).l,10);
+      let low=attachment(changed);low.l=1;changed.ws.peer.serializeAttachment(low);hit=await fire(changed);assert.equal(hit.head,undefined);assert.equal(hit.dead,true);assert.equal(hit.l,0);assert.equal(attachment(changed).headPoseFixed,false,'death cannot reopen changed history');
+    }
+    for(const history of[undefined,null,false,1,'true']){const legacy=await join();await send(legacy,state);await send(legacy,{t:'g',to:a.got[0].i,k:0});const raw=attachment(legacy);if(history===undefined)delete raw.headPoseFixed;else raw.headPoseFixed=history;legacy.ws.peer.serializeAttachment(raw);env.PLAYERS.hibernate('world');await send(legacy,state);assert.notEqual(attachment(legacy).headPoseFixed,true);assert.equal((await fire(legacy)).head,undefined,'unknown/malformed legacy flag remains body1');}
+    const fresh=await join();await send(fresh,state);await send(fresh,{t:'g',to:a.got[0].i,k:0});assert.equal((await fire(fresh)).head,true,'genuine new socket establishes its own immutable history');
+    const observer=await connect(env,'Late');peers.push(observer);for(const s of observer.got[0].ps)assert.equal(Object.hasOwn(s,'headPoseFixed'),false);
+  }finally{for(const p of peers)p.ws.close();await settle(env);}
+});

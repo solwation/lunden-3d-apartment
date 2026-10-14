@@ -1,4 +1,5 @@
 [
+  {"id": 767, "date": "2026-10-14", "text": "Fler träffar på näsans sidor räknas när spelaren står still.", "group": "head-hits"},
   {"id": 766, "date": "2026-10-14", "text": "Vissa högra huvudträffar fungerar efter en liten vridning vid hälsning.", "group": "head-hits"},
   {"id": 765, "date": "2026-10-14", "text": "Bakre huvudträffar fungerar efter den första lilla vridningen.", "group": "head-hits"},
   {"id": 764, "date": "2026-10-14", "text": "Chatten fortsätter visa nya meddelanden i trånga vyer och pratbubblor försvinner efter tio sekunder."},

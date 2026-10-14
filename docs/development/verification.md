@@ -5620,3 +5620,81 @@ Worker run38530931585 / job115742387241 successfully executed the genuine
 Deployed07:50:31.585Z on2026-10-14, version567a65d4-fe81-4fe4-b9da-2062b39a8f3c.
 This establishes publication, not a live-device gameplay test. Only967 is complete;
 styles1/2 and3 remain in968/969 and their broader parents stay open.
+
+### Immutable Nose prism (#971)
+
+Reproduce without WebGL: serve the isolated tree using `tools/devserve.py`, run
+`tools/riflenosesidetest.cjs GAME_URL WORKER_URL OUTPUT --export`, then
+`python3 tools/riflenosesideproof.py OUTPUT`. The same native driver accepts
+`--guards` for concrete hidden-Skull/cell/ray negatives, no flag for real two-client
+Ghosts/Avatar/Combat→WS→Worker receipts, and `--legacy-only` for the exact preceding
+Worker. Use the normal PLAYWRIGHT_MODULE/CHROME_PATH environment. The protocol
+fixture derives from published #950 at2a0d12e; the new certificate independently
+derives Nose geometry, never copies RIGHT planes or unpublished runtime.
+
+The native export checks120 style/sleeve/build/height appearances, eight identical
+base variants, actual object scales and pure-profile/native parity. The Nose is
+convex. Its robust cross-section uses128 pitch intervals over±.03, independent
+standing head height[1.516,1.524], plus bind1.54. The initial search box has radius
+sqrt(.02²+.134²+.119²)<.2m about the pivot, so rotation derivative norm≤.2 bounds
+midinterval displacement by .2×.06/256=.000046875m. Add the separate .0001m CPU
+numerical enclosure: total .000146875m. The CPU allowance conservatively exceeds
+2048 Float64 operations×2^-52×1e8/.93 (<49μm), with100μm reserved. This is a
+source-bound engineering enclosure, not formal JS/libm or GPU certification, and
+never widens the game's6mm entry tolerance. Geometry/pose source hashes are pinned.
+
+Maximum rotated native Skull z=.118044984437 plus the CPU allowance rounds outward
+to the .119 barrier. Head occluder triangle totals1058/1234/1182/1214 have
+1053/1229/1177/1209 coarse continuous-box exclusions; each remaining five becomes
+320 subtriangles, all excluded by the same full-pose boxes. No triangle is silently
+filtered out. All24,576 source IK interval boxes pass, with minimum limb separation
+.08333040017m. Full forward bounds for legs/arms/head are below1m. The generated
+15-vertex runtime polygon is checked exactly against the certificate output.
+
+The initial finite native inventory contains824 new samples over60 appearances;
+re-evaluating those exact saved rays after tightening prism front.8→1.0 retains816,
+with positives in all60. All824 raw rays and the eight exclusions are retained;
+this finite evidence complements the continuous certificate. The observed positive
+|x|≤.00752688 does not fulfill original outer|x|>.011 coverage: #971 stays open.
+A concrete unsafe ray at build1/tall.975 has pure FIRST Nose3.0286210126m behind
+actual FIRST Skull3.0281664857m; native guard checks reject it in all four styles,
+along with outer/cross-barrier cells, origins inside the front and rounded-ray escape.
+
+Artifacts: `/tmp/lunden-priority-971`, copied into the durable orchestration run
+folder. First real protocol passed24 checks/CLI0, using a separately started
+post-freeze workerd PID2237703 and verified TCP socket ownership (both tcp/tcp6
+inspected). Actual DOM screenshots show head/body markers and receipt HP; no World
+was constructed. Full Players suite44/45 retains the unrelated older lateral
+assertion#945; exact upstream eafa226 reproduces it on a random appearance, CLI1.
+No test is silently relabelled PASS. An initial certificate assertion compared
+Python tuple vertices with JSON lists despite identical numbers; it was corrected.
+An initial ray-escape negative used.003, which remained inside the prism; corrected
+.01 leaves it. Both failures and original source/logs remain in the evidence.
+
+The expanded protocol3 retained an actual CLI1: one fixture-selected raw contact
+rounded into old Extra on serialization, so its head2 receipt was correct and the
+fixture's body1/remaining-HP expectations were wrong. Selection now checks the
+exact `Math.round` r3 contact sent by Ghosts and explicitly asserts every selected
+new-family serialized contact is outside all four published Nose regions. No
+runtime/history permission was changed to accommodate that fixture failure.
+
+Final post-rebase protocol4:36/36 actualCLI0, including all selected serialized
+contacts outside Core/Extra/Band/Depth, pre/greeted/paused/saber HP8/6/4/2,
+legacy no-hc body1, one lethal HP-1/UUID/award/reset, replay idempotence and changed
+heading/movement/crouch body1 HP9/8/7. A new immutable target independently rejects
+the forged earlier-Skull cell for body1 HP9, then accepts the safe prism for2HP
+HP7. Separate fresh workerd2244529 started after freeze4; all253 executable-source
+hashes remain identical on closure. The exact preceding eafa226 Worker, frozen251
+files before separate workerd2246042, passes6/6CLI0 with the current client:
+new-family serialized hc remains body1/HP9 and replay-idempotent. Legacy source
+closure is also exact. Head/body/legacy DOM screenshots were opened and inspected.
+Focused #971/#950/#967/#962 room tests5/5CLI0; native guard6/6CLI0; export3/3CLI0
+and continuous generatorCLI0. No additional full-suite retry hides #945.
+
+Remaining functional work in #971 is the original exposed outer Nose shoulders
+|x|>.011 with useful whole-cell coverage across the required immutable poses.
+This global-barrier prism reaches only |x|≤.01042073 before cell/cone margins;
+it cannot establish that outer acceptance. A subsequent source-derived outer
+surface certificate must address its actual local Skull/other-surface ordering,
+not expand this polygon, weaken6mm, reuse finite inventory as a guarantee or close
+the issue mechanically. No missing phone or user answer is asserted as its blocker.

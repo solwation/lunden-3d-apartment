@@ -264,3 +264,5 @@ turn following a greeting. A conservative whole-cell prism guard keeps uncertain
 contacts at body1; later movement, crouch or another turn disables this family.
 Existing head-hit families keep their own rules. See the
 [source-bound certificate](docs/development/verification.md#continuous-style0-right-cell-967).
+
+#971 adds a source-derived immutable Nose ray prism alongside the four existing Nose families. It covers additional central-side cells without changing the original 6mm entry guard; the originally requested outer shoulders remain open in #971. See [verification](docs/development/verification.md#immutable-nose-prism-971).
