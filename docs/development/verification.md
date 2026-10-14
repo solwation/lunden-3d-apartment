@@ -5706,3 +5706,68 @@ ran genuine `npx wrangler deploy` at2026-10-14T08:09:30Z, Uploaded/Deployed at08
 version5e1f4085-0c2b-4bf8-b8b3-955614807cc3. Pages38533094519/job115749383963 executed
 actual deploy-pages and reported success08:09:44Z. This publication is a tested
 partial delivery (Refs971); the original outer-shoulder acceptance remains open.
+
+
+
+
+### Style2 reuse of the continuous RIGHT cell (#968, partial)
+
+`tools/riflerightcellproof.cjs GAME OUT 2` selects style2; omitted/0 keeps the original
+style0 mode. Native data cover both sleeve variants, all three builds and five
+heights. The exact original #967 prism passes the composed continuous head/arm/body
+certificate and actual useful rounded nearest-Skull wires for all30 style2 variants.
+Both sleeve body geometries match #967 byte-for-byte. The shared hair cap, bun and
+hair ring are included as actual native triangles in the head interval gate;
+no style0 geometry is extrapolated onto them. Numerical CPU-envelope limitations,
+whole-cone/actual-r3 argument and observer-pose coverage are exactly those of #967.
+
+The first source-bound style1 gate exits1 at an overlapping sidolock triangle box.
+A separate directed audit establishes a concrete intersection: the original #957
+wire passes the entire same prism when only the style filter is removed, while its
+actual unsupported corner hit on triangle5565/5566/5567 maps to canonical
+[-.0964920924,1.6287807283,.0400268346], inside the prism. The center remains actual
+Skull; this proves a whole-cell obstruction, not an unsupported native center bonus
+or a #946 bug. Current Avatar reconstructs the original producer's exact hash after
+removing only later Nose/Jaw dispatch additions; Olof/Ghosts and all geometry/look
+constants match. The failed gate and old actual proof are preserved. No arbitrary
+yaw/prism shrinking is substituted: functional child #973 owns long-hair support.
+
+`tools/riflerightcelltest.cjs GAME WORKER OUT --style2` uses the existing real
+Combat/Ghosts/WS protocol with explicit style2 target selection and valid-history
+style1/style2 rejected-cell controls. `--legacy-only --style2` tests the new client
+against an independently archived pre-968 Worker. The producer's only style change
+is a parameter; original967 producer hashes and raw outputs remain intact. The
+new parameterized producer matches the independent style2 feasibility export's
+vertices, variants, models and useful native wires exactly. Runtime diff only
+admits style2 through the unchanged prism; removing that choice reconstructs the
+entire upstream config byte-for-byte, and PlayerRoom remains byte-identical.
+
+
+The unchanged all60 native safety driver completed four actual CLI0 runs: canonical
+17640 rays/1174 admitted centers/9392 corners; idle8640/234/1872;
+held14400/320/2560. Zero wrong corners/forged admissions or timeouts. Edge8400 rays
+has zero admitted positives and remains negative-only coverage. Source-bound
+continuous geometry supplies the guarantee; these are finite supplementary cases.
+After preserving incoming971 Nose on5dc915a, certificate/native generation remained
+exactly identical (all30 models/vertices/variants/useful wires), and combined Node
+tests passed46/46 CLI0. Fresh separately frozen Worker native3 completed29/29 CLI0
+with actual style2 HP8/6/4/2, lethal/reset/replay, later heading/move/crouch body1,
+wall/miss/invalid guards, and fresh valid-history style1/style2 rejected cells atHP9.
+Both actual HUD PNGs were inspected; no World/WebGL ran.
+
+Original native1 CLI1/incomplete18 had no valid aim in its finite camera grid just
+after crouch-return. Active shots now wait at most12s for a real available candidate
+while ordinary animation continues; neither pose nor guard is modified, and paused
+shots keep their already published camera. This is not positive coverage of every
+animation instant. Native2 CLI1/incomplete22 exhausted negative fresh-socket
+selection; that selection lacked an explicit first-draw prerequisite. Final positive
+and negative selections both require actual Ghost.have/visible and ordinary frame
+progress, and save selection diagnostics. These original failures remain intact.
+
+
+Independent exact pre-968 Worker5dc915a/new style2 client completed6/6, actualCLI0:
+pre-greet head2 atHP8 and first-turn body1 atHP7; the actual legacy HUD PNG was
+inspected. Final aggregate `final-proof.json` includes all composed certificate,
+source-reconstruction, native/legacy, FIRST/corner and original failure evidence.
+All47 frozen runtime/driver paths match the final tested tree. Artifacts are retained
+in `/tmp/lunden-priority-968` and orchestration `worker-968-artifacts`.

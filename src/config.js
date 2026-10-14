@@ -4833,13 +4833,14 @@ export function rifleHeadGreetingRightRegion(seed,state,point,origin,direction) 
   return lx<0&&ly-ey>=R.vertical[0]&&ly+ey<=R.vertical[1]&&lz-e>=R.front[0]&&lz+e<=R.front[1]&&Math.abs(s*dx+c*dz)<=R.directionZ&&Math.abs(dy)<=R.directionY;
 }
 
-/** #967: first-turn style0 only. The full cell ray cone AND actual r3 ray stay in a certified safe prism.
+/** #967/#968: first-turn style0/2 only. The full cell ray cone AND actual r3 ray stay in a certified safe prism.
  * A common-origin ray/plane intersection is linear-fractional with same-sign denominator: all cell
  * rays are convex combinations of its eight corner intersections. Both slab ends bound the whole cone.
  * The interval generator bounds all head pitch/breath/bind/yaw and ordinary waving/held/rest limbs;
  * it is not a sampled pose lookup or a server claim about the client's current animation phase. */
 export function rifleHeadGreetingRightCellRegion(seed,state,point,origin,direction) {
-  if(avatarLook(seed).style!==0||!rifleHeadGreetingRightRegion(seed,state,point,origin,direction))return false;
+  const style=avatarLook(seed).style; // #968: style2 shares the certified prism; long hair/style1 stays excluded.
+  if((style!==0&&style!==2)||!rifleHeadGreetingRightRegion(seed,state,point,origin,direction))return false;
   const P=PVP_RIFLE_HEAD.greetingRightCell,look=avatarLook(seed),w=[.93,1,1.08][look.build];
   const a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),turn=([x,y,z])=>[(c*x-s*z)/w,y/look.tall,(s*x+c*z)/w];
   const o=turn(origin.map((v,i)=>v-state.p[i]));if(!(o[0]<P.x[0]))return false;

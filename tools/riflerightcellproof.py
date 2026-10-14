@@ -10,11 +10,12 @@ P=Path(sys.argv[1]); data=json.loads((P/'native-parity.json').read_text());vs=da
 # intermediates<=1e8 gives 2048*2^-52*1e8/.93 <5e-5; use 1e-4 positional enclosure.
 # This is a source-derived conservative CPU numerical bound, not a formal proof of every
 # engine operation, a GPU certificate, or a tolerance added to shot/entry validation.
-EXPECTED={'src/avatar.js': 'ed9b69e3c0004aa047a56c3a744312220670482ab2a7959705a9a1a397ef5ace', 'src/olof.js': 'c8cc02d57f34b633ae9c6c046e59e2dd3c9cfcecaacb2f6196949a784bf79117', 'src/ghosts.js': '5c259e27986706d0230b0bf205f728b5cb58a1ee9f5153eeac36b1d1e8021025'}
+EXPECTED={'src/avatar.js': 'd6d8a6612dc5654701d25741e689c9bdc90db57d54f0201456213ee37148c61b', 'src/olof.js': 'c8cc02d57f34b633ae9c6c046e59e2dd3c9cfcecaacb2f6196949a784bf79117', 'src/ghosts.js': '5c259e27986706d0230b0bf205f728b5cb58a1ee9f5153eeac36b1d1e8021025'}
 for path,digest in EXPECTED.items():
  if hashlib.sha256(Path(path).read_bytes()).hexdigest()!=digest:raise SystemExit('source geometry/animation changed: review certificate '+path)
 for path,digest in data['sourceHashes'].items():
  if hashlib.sha256(Path(path).read_bytes()).hexdigest()!=digest:raise SystemExit('generator source drift: '+path)
+assert data['style'] in [0,2]
 assert len(data['models'])==30 and data['positive']['positiveModels']==30
 assert [v for v in data['variants']['0'] if v['bone']=='head']==[v for v in data['variants']['1'] if v['bone']=='head']
 
@@ -155,6 +156,6 @@ assert all(q.get('bindHorizontal',0)<.8 for q in body)
 # Original head traversal starts outside every head primitive, certified by native horizontal
 # radius and maximal pitch/yaw displacement (all rotations preserve full radius).
 assert max(math.hypot(*[v['p'][0],v['p'][1]-1.54,v['p'][2]]) for v in data['vertices'] if v['bone']=='head')<.8
-aggregate={'complete':True,'sourceHashes':data['sourceHashes'],'generatorSHA':data['generatorSHA'],'intervalSHA':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),'nativeModels':len(data['models']),'positiveModels':data['positive']['positiveModels'],'head':headResult,'arm':armResult,'body':body,'legAxisYUpper':legUpperY,'lowerLegRawAxisYUpper':lowerLegRawY,'nativeCPUPositionEnclosure':NATIVE_ERROR,'claim':'Source-bound continuous prism certificate for new style0 first-turn permission; actual functional Worker acceptance is separate. Not GPU or formal all-engine certification.'}
+aggregate={'style':data['style'],'complete':True,'sourceHashes':data['sourceHashes'],'generatorSHA':data['generatorSHA'],'intervalSHA':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),'nativeModels':len(data['models']),'positiveModels':data['positive']['positiveModels'],'head':headResult,'arm':armResult,'body':body,'legAxisYUpper':legUpperY,'lowerLegRawAxisYUpper':lowerLegRawY,'nativeCPUPositionEnclosure':NATIVE_ERROR,'claim':'Source-bound continuous prism certificate for the selected style0/2 first-turn permission; actual functional Worker acceptance is separate. Not GPU or formal all-engine certification.'}
 (P/'certificate.json').write_text(json.dumps(aggregate,indent=2)+'\n')
 print('PASS continuous prism aggregate: 30 native models/positives, head + both arms + body')

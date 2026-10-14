@@ -766,3 +766,10 @@ unchanged. The [certificate and native checks](verification.md#continuous-style0
 bind this narrow family to current source geometry. Other styles remain separate
 children #968/#969; neither the broader first-turn parent nor movement/crouch support
 is implied.
+
+
+#968 adds only style2 to the same strict first-turn permission and the exact #967
+prism. Private history, server wiring, style0, #946 and every other region are
+unchanged. Style1 remains denied: its actual historical #957 unsupported corner
+intersects this prism, so functional child #973 must derive a different safe
+geometric subset. Style3 remains #969; #968 stays open until #973 is delivered.

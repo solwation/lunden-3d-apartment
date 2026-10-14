@@ -1277,3 +1277,17 @@ test('#971 immutable Nose prism uses existing private history; changed/legacy re
     const observer=await connect(env,'Late');peers.push(observer);for(const s of observer.got[0].ps)assert.equal(Object.hasOwn(s,'headPoseFixed'),false);
   }finally{for(const p of peers)p.ws.close();await settle(env);}
 });
+
+// #968: native style2 wire, same prism and private option as967; no sibling permission change.
+test('#968 style2 reuses the certified RIGHT cell while long hair stays denied',async()=>{
+  const C=await import('../src/config.js'),s={p:[0,0,0],r:0},o={allowFront:false,allowRear:false};
+  const shot={t:'a',w:'rifle',o:[1.6,1.59,-.04],d:[-1,0,0],hc:[1,.096,1.59,-.04]};
+  assert.equal(C.avatarLook('front-1').style,2);
+  assert.equal(C.rifleHeadGreetingRightCellRegion('front-1',s,shot.hc.slice(1),shot.o,shot.d),true);
+  assert.equal(C.rifleHeadContact('front-1',s,shot,shot.o,40,4,false,o),false);
+  assert.equal(C.rifleHeadContact('front-1',s,shot,shot.o,40,4,false,{...o,allowGreetingRightFirstTurn:true}),true);
+  assert.equal(C.rifleHeadContact('front-1',s,shot,shot.o,40,4,false,{...o,allowGreetingRight:true}),true);
+  for(const value of[null,false,1,'true',{}])assert.equal(C.rifleHeadContact('front-1',s,shot,shot.o,40,4,false,{...o,allowGreetingRightFirstTurn:value}),false);
+  const bad={o:[3.12,1.67,-2.68],d:[-.765,0,.644],hc:[1,.046,1.67,-.092]};
+  assert.equal(C.rifleHeadGreetingRightCellRegion('front-0',{p:[0,0,0],r:.7},bad.hc.slice(1),bad.o,bad.d),false,'historical actual unsupported style1 corner remains excluded');
+});

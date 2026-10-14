@@ -262,6 +262,7 @@ turn/recovery behavior remains #941. See the
 #967 adds a separate style0 RIGHT head-hit family after one small negative standing
 turn following a greeting. A conservative whole-cell prism guard keeps uncertain
 contacts at body1; later movement, crouch or another turn disables this family.
+Style2 now uses the same rule (#968); long hair remains separate in #973.
 Existing head-hit families keep their own rules. See the
 [source-bound certificate](docs/development/verification.md#continuous-style0-right-cell-967).
 
