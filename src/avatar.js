@@ -84,10 +84,10 @@ function parts(style, sleeves, gender = 0, facial = 0) {
   if (style === 0) { // short, a little tousled on top
     add(skull(), 'hair', 'head', [0, H + 0.012, -0.004]);
     add(sphere(0.07, 8, 5).scale(1, 0.45, 1.2), 'hair', 'head', [0, H + 0.1, 0.01], 1.08);
-  } else if (style === 1) { // long, down over the shoulders at the back
+  } else if (style === 1) { // long, down over the shoulders at the back and sides
     add(skull(), 'hair', 'head', [0, H + 0.012, -0.004]);
     add(sphere(0.115, 10, 8).scale(1.0, 2.1, 0.62), 'hair', 'head', [0, H - 0.12, -0.065], 0.92);
-    for (const s of [-1, 1]) add(cap(0.022, 0.12), 'hair', 'head', [s * 0.1, H - 0.05, 0.005], 1.05); // locks by the ears
+    for (const s of [-1, 1]) add(cap(0.022, 0.18), 'hair', 'head', [s * 0.105, H - 0.08, 0.008], 1.05); // locks falling by ears and shoulders, keeping face clear
   } else if (style === 2) { // a bun
     add(skull(), 'hair', 'head', [0, H + 0.012, -0.004]);
     add(sphere(0.05, 9, 7), 'hair', 'head', [0, H + 0.115, -0.07], 1.08);

@@ -228,14 +228,17 @@ export function drawAvatarPreview(canvas, look) {
     ctx.beginPath();
     ctx.ellipse(cx, 40, 12, 6, 0, 0, Math.PI * 2);
     ctx.fill();
-  } else if (style === 1) { // Long (front fringe)
+  } else if (style === 1) { // Long hair (crown and front locks falling over shoulders)
     ctx.fillStyle = hair;
+    // Hair on top of the head / forehead (keeping brows, eyes, nose, mouth and chin clear)
     ctx.beginPath();
-    ctx.arc(cx, 54, 19, Math.PI * 0.85, Math.PI * 2.15);
+    ctx.arc(cx, 48, 19.5, Math.PI, Math.PI * 2);
+    ctx.quadraticCurveTo(cx, 45, cx - 19.5, 48);
     ctx.fill();
+    // Locks falling past the ears and outside the jawline down onto the shoulders
     ctx.beginPath();
-    ctx.roundRect(cx - 20, 50, 7, 30, 3);
-    ctx.roundRect(cx + 13, 50, 7, 30, 3);
+    ctx.roundRect(cx - 24, 48, 7.5, 66, 3);
+    ctx.roundRect(cx + 16.5, 48, 7.5, 66, 3);
     ctx.fill();
   } else if (style === 2) { // Bun
     ctx.fillStyle = hair;
