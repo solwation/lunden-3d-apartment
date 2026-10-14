@@ -3911,21 +3911,21 @@ export const CUSHIONS = {
   cord: { ribs: 9, color: 0xe8c3b8 },                // ribs across the cushion's width, vertex tint
   // along the back from the chaise (left seen from the room, as in the photo) to the arm: knit, geometric, cord, print
   sofa: [
-    { x: -1.16, z: 0.1, yaw: 0.75, lean: 0.35, kind: 'knit', crumple: 0.6 },   // the chaise's corner
-    { x: -0.57, z: 0.07, yaw: 0.12, lean: 0.4, kind: 'geo', crumple: 0.25 },   // where the chaise meets
-    { x: 0.05, z: 0.08, yaw: -0.08, lean: 0.42, kind: 'cord', crumple: 0.45 }, // between the first two seats
-    { x: 1.14, z: 0.1, yaw: -0.75, lean: 0.35, kind: 'print', crumple: 0.3 },  // in the corner by the arm
+    { materialId: 'cushion-chaise', materialName: 'Kudde vid schäslongen', x: -1.16, z: 0.1, yaw: 0.75, lean: 0.35, kind: 'knit', crumple: 0.6 },   // the chaise's corner
+    { materialId: 'cushion-joint', materialName: 'Geometriska kudden', x: -0.57, z: 0.07, yaw: 0.12, lean: 0.4, kind: 'geo', crumple: 0.25 },   // where the chaise meets
+    { materialId: 'cushion-middle', materialName: 'Kudde i mitten', x: 0.05, z: 0.08, yaw: -0.08, lean: 0.42, kind: 'cord', crumple: 0.45 }, // between the first two seats
+    { materialId: 'cushion-corner', materialName: 'Kudde vid armstödet', x: 1.14, z: 0.1, yaw: -0.75, lean: 0.35, kind: 'print', crumple: 0.3 },  // in the corner by the arm
   ],
   // ribbed fleece throws (#313): soft ribs `rib` m apart with a slight sheen; `color` picks one of these
   fleece: { rib: 0.045, plum: 0x3a1a2a, grey: 0x4a4c4f },
   // the folded throw on the chaise's foot end: w × d (folded), `layers` thick, x/z of its centre (z from the front)
-  sofaThrow: { w: 0.55, d: 0.4, layer: 0.025, layers: 3, x: -0.98, zFront: 0.42, yaw: 0.08, color: 'plum' },
+  sofaThrow: { materialId: 'throw-folded', materialName: 'Vikta pläden', w: 0.55, d: 0.4, layer: 0.025, layers: 3, x: -0.98, zFront: 0.42, yaw: 0.08, color: 'plum' },
   armchair: [
-    { x: -0.19, z: 0.1, yaw: -0.65, lean: 0.35, kind: 'print', crumple: 0.35 },
-    { x: 0.17, z: 0.08, yaw: 0.2, lean: 0.45, kind: 'knit', crumple: 0.8 },
+    { materialId: 'cushion-print', materialName: 'Blommiga kudden', x: -0.19, z: 0.1, yaw: -0.65, lean: 0.35, kind: 'print', crumple: 0.35 },
+    { materialId: 'cushion-knit', materialName: 'Stickade kudden', x: 0.17, z: 0.08, yaw: 0.2, lean: 0.45, kind: 'knit', crumple: 0.8 },
   ],
   // the throw draped over the armchair's right arm (the sitter's; left seen from the front) and onto the seat
-  chairThrow: { z0: -0.12, z1: 0.34, hang: 0.25, spill: 0.2, color: 'grey' },
+  chairThrow: { materialId: 'throw-draped', materialName: 'Pläden över armstödet', z0: -0.12, z1: 0.34, hang: 0.25, spill: 0.2, color: 'grey' },
   // the patio's outdoor fabrics (#399, our own): a coarse basket weave `cells` yarn pairs across, tinted per cushion;
   // the striped one has a charcoal `band` stripe on the weave
   weave: { cells: 16 }, stripe: { band: '#4b4d50' },

@@ -205,3 +205,23 @@ test('six real upholstered seats accept only their family and preserve legacy po
  const after=await get();assert.deepEqual(after.pieces[id].pos,move(id).pos);assert.equal(after.materials[id].textile.choice,'original');
  assert.equal(after.materials[M.UPHOLSTERY_MATERIAL_IDS[1]].textile.choice,'upholstery-stripe');
 });
+
+
+test('eight interior cushion/throw surfaces use independent revisions and retain all existing fields', async () => {
+ const M=await import('../src/materialcatalog.js'), {instance:r,ctx}=room();let serial=0;
+ const put=b=>r.fetch(new Request('https://test/furniture',{method:'PUT',headers:{'CF-Connecting-IP':`1014-${++serial}`},body:JSON.stringify({credential:privateCodeCredential(codes[0]),...b})}));
+ const get=async()=>await(await r.fetch(new Request('https://test/furniture'))).json();
+ const entries=Object.entries(M.CUSHION_MATERIAL_SURFACES);assert.deepEqual(entries.map(([,s])=>s.length),[5,3]);
+ const [id,surfaces]=entries[0],first=surfaces[0],second=surfaces[1];
+ for(const [piece,parts] of entries)for(const surface of parts)assert.equal((await put({materials:[{id:piece,surface,choice:'upholstery-stripe',base:0}]})).status,200);
+ const before=await get();assert.deepEqual(before.pieces,{});
+ // Different surfaces may confirm concurrently from their own revision, despite global changes.
+ const writes=await Promise.all([put({materials:[{id,surface:first,choice:'upholstery-sand',base:before.materials[id][first].revision}]}),put({materials:[{id,surface:second,choice:'upholstery-olive',base:before.materials[id][second].revision}]})]);assert.deepEqual(writes.map(r=>r.status),[200,200]);
+ assert.equal((await put({materials:[{id,surface:first,choice:'original',base:before.materials[id][first].revision}]})).status,409);
+ for(const [piece,surface,choice] of [[id,'cushion-guessed','upholstery-sand'],[entries[1][0],first,'upholstery-sand'],[M.RUG_MATERIAL_IDS[0],first,'upholstery-sand'],[id,first,'rug-check'],['f-sofa-guessed',first,'upholstery-check']])assert.equal((await put({materials:[{id:piece,surface,choice,base:0}]})).status,400);
+ assert.equal((await put({moves:[move(id)],materials:[{id,surface:'textile',choice:'upholstery-bluegrey',base:0}]})).status,200);
+ let after=await get();assert.equal(after.materials[id][first].choice,'upholstery-sand');assert.equal(after.materials[id][second].choice,'upholstery-olive');assert.equal(after.materials[id].textile.choice,'upholstery-bluegrey');assert.equal(after.pieces[id].pos[0],3);
+ assert.equal((await put({moves:[move(id,after.pieces[id].revision,5)]})).status,200);
+ after=await get();assert.equal(after.materials[id][first].choice,'upholstery-sand');assert.equal(after.materials[entries[1][0]][entries[1][1][0]].choice,'upholstery-stripe');
+ const reload=await(await new DrawingRoom(ctx,{}).fetch(new Request('https://test/furniture'))).json();assert.deepEqual(reload,after);
+});

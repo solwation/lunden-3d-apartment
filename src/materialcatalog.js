@@ -1,5 +1,5 @@
 // #995: compact shared catalogue, safe to import in the Worker (no Three or DOM).
-import { FURNITURE, CURTAINS } from './config.js';
+import { FURNITURE, CURTAINS, CUSHIONS } from './config.js';
 export const MATERIAL_VERSION = 1;
 export const MATERIAL_CHOICES = [
   { id: 'original', name: 'Original', category: 'matta' },
@@ -34,6 +34,13 @@ export const UPHOLSTERY_MATERIAL_IDS = FURNITURE.flatMap(it => {
   const base = `f-${it.type}-${it.level}-${it.x}-${it.z}`, n = upholsterySerials.get(base) ?? 0; upholsterySerials.set(base, n + 1);
   return UPHOLSTERY_TYPES.includes(it.type) ? [`${base}-${n}-0`] : [];
 });
+// #1014: stable independent decorative surfaces on the two actual indoor seats.
+const cushionSerials = new Map();
+export const CUSHION_MATERIAL_SURFACES = Object.fromEntries(FURNITURE.flatMap(it => {
+  const base = `f-${it.type}-${it.level}-${it.x}-${it.z}`, n = cushionSerials.get(base) ?? 0; cushionSerials.set(base, n + 1);
+  const specs = it.type === 'sofa' ? [...CUSHIONS.sofa, CUSHIONS.sofaThrow] : it.type === 'armchair' ? [...CUSHIONS.armchair, CUSHIONS.chairThrow] : [];
+  return specs.length ? [[`${base}-${n}-0`, specs.map(s => s.materialId)]] : [];
+}));
 export const materialChoices = (category = 'matta') => category === 'klädsel' ? UPHOLSTERY_MATERIAL_CHOICES : category === 'gardin' ? CURTAIN_MATERIAL_CHOICES : category === 'matta' ? MATERIAL_CHOICES : [];
 const serials = new Map();
 export const RUG_MATERIAL_IDS = FURNITURE.flatMap(it => {
@@ -41,5 +48,6 @@ export const RUG_MATERIAL_IDS = FURNITURE.flatMap(it => {
   return it.type === 'rug' ? [`${base}-${n}-0`] : [];
 });
 export const materialChoice = id => [...MATERIAL_CHOICES, ...CURTAIN_MATERIAL_CHOICES, ...UPHOLSTERY_MATERIAL_CHOICES].find(c => c.id === id);
-export const validMaterialChoice = (id, surface, choice) => surface === 'textile' &&
+export const validMaterialChoice = (id, surface, choice) => (Object.hasOwn(CUSHION_MATERIAL_SURFACES, id) && CUSHION_MATERIAL_SURFACES[id].includes(surface))
+  ? UPHOLSTERY_MATERIAL_CHOICES.some(c => c.id === choice) : surface === 'textile' &&
   (UPHOLSTERY_MATERIAL_IDS.includes(id) ? UPHOLSTERY_MATERIAL_CHOICES : RUG_MATERIAL_IDS.includes(id) ? MATERIAL_CHOICES : CURTAIN_MATERIAL_IDS.includes(id) ? CURTAIN_MATERIAL_CHOICES : []).some(c => c.id === choice);
