@@ -2681,11 +2681,13 @@ export const HAND = { skin: 0xe2b292, skinGlow: 0x2a0e06, sleeve: 0x4a5a6e, shou
   // The Spider-Man suit's arms (#636, hand.js `suit`; all *guess*, camera space like `rest`): shooting a web = the classic
   // pose (palm up, index and little finger out, middle and ring finger folded in, the thumb over them — the `web` pose)
   // with the palm at `webAt` for `webHold` s after the shot, `webEase` s in and out; the strand leaves the palm (spidersuit.js).
-  // Swinging: the same hand points at the anchor, `swingReach` m from the eye, the other hand open beside it (`swingSpread`
-  // m). Climbing: both hands flat on the wall at `climbAt` (right hand; the left mirrored), reaching `climbReach` m along the
+  // Swinging (#911): camera-space resting targets follow the anchor slightly, without pushing either hand out of view.
+  // The free left target is in its mirrored frame; a relaxed curl avoids a rigid spread. All pose values are visual guesses.
+  // Climbing: both hands flat on the wall at `climbAt` (right hand; the left mirrored), reaching `climbReach` m along the
   // way you move, one cycle per `climbStride` m climbed (hands alternate), the fingers tipped `wallTilt` rad off the vertical towards the wall.
   suit: { webAt: [0.17, -0.1, -0.44], webHold: 0.9, webEase: 0.16, webKick: 0.04,
-    swingReach: 0.5, swingSpread: 0.22,
+    swingAt: [0.18, -0.12, -0.43], swingFollow: 0.1, // guess: visible wrist with a small anchor response
+    swingLeftAt: [0.2, -0.12, -0.45], swingLeftFollow: 0.04, swingLeftCurl: 0.15, swingLeftSpread: 0.25, // guess: free relaxed hand
     climbAt: [0.23, 0.03, -0.34], wallTilt: 0.35, climbReach: 0.16, climbStride: 1.1, climbFade: 0.25 } };
 
 // What is in the wardrobes and drawers (#228, src/stuff.js): shared colours, and per person (by room) the clothes:

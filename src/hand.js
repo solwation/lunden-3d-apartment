@@ -344,18 +344,22 @@ export class Hand {
     };
     let R, Lh = null;
     if (webOn || swing) { // the web hand: at the palm spot after a shot, towards the anchor on a strand
-      let at;
-      if (swing) { // up at the anchor (kept in front of the view)
+      let at, swingDirection;
+      if (swing) { // follow the anchor within a comfortable camera-space pose, not all the way up/offscreen
         this.camera.updateMatrixWorld();
-        const d = this.camera.worldToLocal(st.swing.clone()).normalize();
-        at = d.multiplyScalar(S.swingReach);
-        at.x = Math.min(0.34, Math.max(-0.05, at.x)); at.y = Math.min(0.3, at.y); at.z = Math.min(-0.3, at.z);
+        swingDirection = this.camera.worldToLocal(st.swing.clone()).normalize();
+        at = new THREE.Vector3(...S.swingAt).addScaledVector(swingDirection, S.swingFollow);
       } else {
         const kick = Math.max(0, 1 - (S.webHold - this.webT) / 0.12); // a small recoil when it leaves the hand
         at = new THREE.Vector3(...S.webAt); at.z += S.webKick * kick; at.y += S.webKick * 0.5 * kick;
       }
-      R = { at, grip: 0, spread: 0, web: 1, mode: 'palm' };
-      if (swing) Lh = { at: at.clone().add(new THREE.Vector3(-S.swingSpread, -0.04, 0.03)), grip: 0, spread: 1, web: 0, mode: 'reach' }, Lh.at.x = -Lh.at.x; // (into the mirrored frame)
+      R = { at, grip: 0, spread: 0, web: 1, mode: swing ? 'reach' : 'palm' };
+      if (swing) {
+        // The free left hand stays on its own side, lower and softly curled (left's mirrored frame).
+        const direction = swingDirection.clone(); direction.x = -direction.x;
+        Lh = { at: new THREE.Vector3(...S.swingLeftAt).addScaledVector(direction, S.swingLeftFollow),
+          grip: S.swingLeftCurl, spread: S.swingLeftSpread, web: 0, mode: 'reach' };
+      }
       else if (climb) Lh = hold(this.cPhase + Math.PI, true);
     } else { R = hold(this.cPhase, false); Lh = hold(this.cPhase + Math.PI, true); }
     this.pose(this.low.clone().lerp(R.at, k), R.mode);

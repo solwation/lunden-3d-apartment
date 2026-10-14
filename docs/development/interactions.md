@@ -215,7 +215,10 @@ src/hand.js            the visitor's arm + hand (HAND, #195, #238): three meshes
                        (`climbStride` m per cycle, `cPhase`), reaching loose and gripping on the pull, resting gripped when still; a shot web
                        (`webShot()`, `webHold` s) = the right hand in the classic web pose (4th morph target `web`: palm up, index and little
                        finger out, middle and ring finger folded in; the strand leaves its palm, `webAt`), the left stays down; swinging
-                       that hand points at the anchor (`swingReach`) and the left one opens beside it. The left arm is the hug's mirrored
+                       both wrists stay near camera-local rest targets (`swingAt`, `swingLeftAt`), with small anchor-direction follow
+                       (`swingFollow`, `swingLeftFollow`); the right keeps its web fingers and the left curls loosely. These visual
+                       offsets are guesses, not body measurements. Only swing arm poses change: actual palm/strand origins,
+                       shooting, attachment, movement, climbing and held-item priority remain unchanged. The left arm is the hug's mirrored
                        frame; no new meshes or lights, one more morph target. The detail culler (#189) looks again whenever the held thing changes (`refresh()`)
 src/book.js            the book on the side table by the armchair (BOOK, #140), a Holdable: click / "Läs" opens
                        #book-panel (a spread; A D / ← → / click turn pages, E / Esc close; reading mode)
