@@ -710,8 +710,8 @@ test('rear arm safety: accepted greeting is private, permanent across pause/hibe
   assert.equal((await shoot()).head,true,'pre-greet actual rear profile still gives two HP');
   b.send({t:'g',to:a.got[0].i,k:0});await settle(env);const gt=attach().gt;assert.equal(gt,now);
   assert.equal((await shoot()).head,true,'immutable first-standing pose keeps verified rear2 after accepted greeting');
-  b.send({...state,r:3.15,h:'rifle'});await settle(env);b.send({...state,h:'rifle'});await settle(env);assert.equal(attach().headPoseFixed,false,'accepted heading change and return permanently break immutable history');
-  assert.equal((await shoot()).head,undefined,'returned changed pose keeps rear body1');
+  b.send({...state,r:3.17,h:'rifle'});await settle(env);b.send({...state,h:'rifle'});await settle(env);assert.equal(attach().headPoseFixed,false,'accepted heading change and return permanently break immutable history');
+  assert.equal((await shoot()).head,undefined,'returned corridor escape keeps rear body1');
   b.send({t:'g',to:a.got[0].i,k:0});await settle(env);assert.equal(attach().gt,gt,'rate-rejected repeat cannot alter private history');
   now+=10000;env.PLAYERS.hibernate('world');assert.equal((await shoot()).head,undefined,'elapsed wall time and hibernation cannot prove rendered wave completion');
   const observer=await connect(env,'Late observer'),publicTarget=observer.got[0].ps.find(p=>p.i===id);assert.equal(publicTarget.gt,undefined);assert.equal(publicTarget.l,4);
@@ -998,9 +998,9 @@ test('#951 immutable Rear greeting uses existing private history; changed/legacy
     env.PLAYERS.hibernate('world');await send(b,{...state,h:'saber',score:17,sp:true});hit=await fire(b);assert.equal(hit.head,true);assert.equal(hit.l,6);
     const low=attachment(b);low.l=1;b.ws.peer.serializeAttachment(low);hit=await fire(b);assert.equal(hit.head,true);assert.equal(hit.l,-1);assert.equal(hit.dead,true);assert.match(hit.kill,/^[0-9a-f-]{36}$/);assert.equal(attachment(b).headPoseFixed,true,'death does not manufacture or clear immutable pose');
     const count=a.got.filter(m=>m.t==='hit').length;a.send(shotFor(b.got[0].i));await settle(env);assert.equal(a.got.filter(m=>m.t==='hit').length,count,'same-tick replay has no duplicate death/award');
-    for(const delta of[{p:[.01,0,0]},{r:3.15},{c:true}]){
+    for(const delta of[{p:[.01,0,0]},{r:3.17},{c:true}]){
       const changed=await join();await send(changed,state);await send(changed,{t:'g',to:a.got[0].i,k:0});await send(changed,{...state,...delta});await send(changed,state);assert.equal(attachment(changed).headPoseFixed,false);
-      env.PLAYERS.hibernate('world');hit=await fire(changed);assert.equal(hit.head,undefined);assert.equal(hit.l,9,'accepted p/r/c change and return keeps verified Rear body1');
+      env.PLAYERS.hibernate('world');hit=await fire(changed);assert.equal(hit.head,undefined);assert.equal(hit.l,9,'accepted p/c change or yaw corridor escape and return keeps Rear body1');
       now=attachment(changed).healAt;a.send('p');changed.send('p');await settle(env);await env.PLAYERS.object('world').alarm();await settle(env);assert.equal(attachment(changed).headPoseFixed,false,'healing does not reconstruct history');assert.equal(attachment(changed).l,10);
       let low=attachment(changed);low.l=1;changed.ws.peer.serializeAttachment(low);hit=await fire(changed);assert.equal(hit.head,undefined);assert.equal(hit.dead,true);assert.equal(hit.l,0);assert.equal(attachment(changed).headPoseFixed,false,'death cannot reopen changed history');
     }
@@ -1008,4 +1008,47 @@ test('#951 immutable Rear greeting uses existing private history; changed/legacy
     const fresh=await join();await send(fresh,state);await send(fresh,{t:'g',to:a.got[0].i,k:0});assert.equal((await fire(fresh)).head,true,'genuine new socket establishes its own immutable history');
     const observer=await connect(env,'Late');peers.push(observer);for(const s of observer.got[0].ps)assert.equal(Object.hasOwn(s,'headPoseFixed'),false);
   }finally{for(const p of peers)p.ws.close();await settle(env);}
+});
+
+test('#952 greeted post-turn Rear: normalized authority, history, lethal/replay and legacy independence',async()=>{
+  const {avatarLook,PVP_RIFLE_HEAD:H,rifleSkullEntry,rifleHeadRearRegion}=await import('../src/config.js');
+  const env=setup(),a=await connect(env,'Small-turn shooter'),initial=await connect(env,'Small-turn target');
+  let b=initial;while(avatarLook(b.got[0].i).style===1){b.ws.close();await settle(env);b=await connect(env,'Small-turn target');}const id=b.got[0].i;
+  a.send({p:[0,0,-3],r:0,h:'rifle'});b.send({p:[0,0,0],r:0,h:'rifle'});await settle(env);now+=1000;
+  const socket=()=>[...env.PLAYERS.object('world').ctx.getWebSockets()].find(ws=>ws.deserializeAttachment().i===id),attachment=()=>socket().deserializeAttachment();
+  assert.deepEqual(attachment().frontTurn,{p:[0,0,0],r:0});
+  const shotFor=(r,seed=id)=>{const look=avatarLook(seed),w=[.93,1,1.08][look.build],state={p:[0,0,0],r},patch=look.style===3?H.rear.beanie:H.rear.lower;for(const dy of [patch.low+.001,(patch.low+patch.high)/2,patch.high-.001])for(const distance of [3,3.5,4]){
+    const c=Math.cos(r),s=Math.sin(r),target=[.08*w*s,(H.headY+dy)*look.tall,.08*w*c],o=[+(target[0]+distance*s).toFixed(2),target[1],+(target[2]+distance*c).toFixed(2)].map(v=>+v.toFixed(2)),raw=target.map((v,i)=>v-o[i]),n=Math.hypot(...raw),d=raw.map(v=>+(v/n).toFixed(3)),unit=d.map(v=>v/Math.hypot(...d)),first=rifleSkullEntry(seed,state,o,d);if(first===null)continue;const hc=[1,...o.map((v,i)=>+(v+unit[i]*first).toFixed(3))];if(rifleHeadRearRegion(seed,state,hc.slice(1),o,d))return{t:'a',w:'rifle',to:seed,o,d,hc};
+  }throw Error('no rounded Rear corridor contact');};
+  const shoot=async (r,seed=id)=>{const shot=shotFor(r,seed);a.send({p:[shot.o[0],0,shot.o[2]],r:0,h:'rifle'});await settle(env);now+=1000;a.send(shot);await settle(env);return a.got.filter(m=>m.t==='hit').at(-1);};
+  b.send({p:[0,0,0],r:.01,h:'rifle',frontTurn:{p:[0,0,0],r:999},turned:false});await settle(env);now+=1000;
+  assert.equal(attachment().turned,true);assert.equal(attachment().headPoseFixed,false);assert.deepEqual(attachment().frontTurn,{p:[0,0,0],r:0},'cleaned state cannot replace private anchor');
+  b.send({t:'g',to:a.got[0].i,k:999});await settle(env);assert.equal(attachment().gt,undefined,'invalid greeting does not create authority');
+  b.send({t:'g',to:a.got[0].i,k:0});await settle(env);const acceptedGt=attachment().gt;assert.equal(typeof acceptedGt,'number');
+  b.send({t:'g',to:a.got[0].i,k:1});await settle(env);assert.equal(attachment().gt,acceptedGt,'rate-rejected repeat cannot alter accepted private greeting');
+  const current=shotFor(.01),C=await import('../src/config.js');
+  assert.equal(C.rifleHeadContact(id,{p:[0,0,0],r:.01},current,current.o,COMBAT.weapons.rifle.range,COMBAT.from,false,{allowFront:false,allowRear:false,allowGreetingAfterTurnRear:false}),false,'named permission defaults false');
+  assert.equal(C.rifleHeadContact(id,{p:[0,0,0],r:.01},current,current.o,COMBAT.weapons.rifle.range,COMBAT.from,false,{allowFront:false,allowRear:false,allowGreetingAfterTurnRear:true}),true,'separate permission uses unchanged region');
+  let hit=await shoot(.01);assert.equal(hit.head,true);assert.equal(hit.l,8);assert.equal(hit.award.points,5);
+  assert.equal(attachment().headPoseFixed,false);assert.equal(attachment().turned,true);assert.deepEqual(attachment().frontTurn,{p:[0,0,0],r:0});
+  env.PLAYERS.hibernate('world');b.send({p:[0,0,0],r:-.02,h:'saber',score:99});await settle(env);assert.deepEqual(attachment().frontTurn,{p:[0,0,0],r:0});
+  b.send({p:[0,0,0],r:-.02,h:'rifle'});await settle(env);hit=await shoot(-.02);assert.equal(hit.head,true);assert.equal(hit.l,6,'opposite corridor boundary remains supported after hibernation');
+  const low=attachment();low.l=1;socket().serializeAttachment(low);hit=await shoot(-.02);assert.equal(hit.head,true);assert.equal(hit.dead,true);assert.equal(hit.l,-1);assert.match(hit.kill,/^[0-9a-f-]{36}$/);assert.equal(hit.award.seq,3);assert.equal(attachment().l,COMBAT.lives);assert.equal(attachment().gt,acceptedGt);
+  const hitCount=a.got.filter(m=>m.t==='hit').length;a.send(shotFor(-.02));await settle(env);assert.equal(a.got.filter(m=>m.t==='hit').length,hitCount,'same-tick replay adds no lethal award');
+  const late=await connect(env,'Late observer'),published=late.got[0].ps.find(p=>p.i===id);assert.equal(published.frontTurn,undefined);assert.equal(published.turned,undefined);
+  b.send({p:[0,0,0],r:3.14,h:'rifle'});await settle(env);assert.equal(attachment().frontTurn,false);
+  b.send({p:[0,0,0],r:.01,h:'rifle'});await settle(env);hit=await shoot(.01);assert.equal(hit.head,undefined);assert.equal(hit.l,9,'returning from larger turn never restores corridor');
+  b.ws.close();await settle(env);let fresh=await connect(env,'Fresh history');while(avatarLook(fresh.got[0].i).style===1){fresh.ws.close();await settle(env);fresh=await connect(env,'Fresh history');}const fid=fresh.got[0].i;fresh.send({p:[0,0,0],r:3.14,h:'rifle'});await settle(env);
+  const getFresh=()=>[...env.PLAYERS.object('world').ctx.getWebSockets()].find(ws=>ws.deserializeAttachment().i===fid);
+  fresh.send({t:'g',to:a.got[0].i,k:0});await settle(env);assert.equal(typeof getFresh().deserializeAttachment().gt,'number');
+  assert.deepEqual(getFresh().deserializeAttachment().frontTurn,{p:[0,0,0],r:3.14});fresh.send({p:[0,0,0],r:3.16,h:'rifle'});await settle(env);assert.ok(getFresh().deserializeAttachment().frontTurn);
+  // Legacy unknown history is not reconstructed from current position or a later good heading.
+  for(const history of [undefined,null,true,{p:[0,0],r:3.14}]){let old=getFresh().deserializeAttachment();if(history===undefined)delete old.frontTurn;else old.frontTurn=history;getFresh().serializeAttachment(old);fresh.send({p:[0,0,0],r:3.15,h:'rifle'});await settle(env);assert.ok(!getFresh().deserializeAttachment().frontTurn,'unknown/malformed legacy is not reconstructed');assert.equal((await shoot(3.15,fid)).head,undefined,'supported ray on unknown/null/malformed history remains body-only');}
+  for(const delta of [{p:[.01,0,0]},{c:true},{r:.03}]){
+    const sender=await connect(env,'Independent changed shooter');let changed=await connect(env,'Changed combo');while(avatarLook(changed.got[0].i).style===1){changed.ws.close();await settle(env);changed=await connect(env,'Changed combo');}const cid=changed.got[0].i,base={p:[0,0,0],r:0,h:'rifle'};
+    changed.send(base);await settle(env);changed.send({t:'g',to:sender.got[0].i,k:0});await settle(env);changed.send({...base,r:.01,h:'saber'});await settle(env);changed.send({...base,r:.01,...delta});await settle(env);changed.send({...base,r:.01});await settle(env);
+    const sock=[...env.PLAYERS.object('world').ctx.getWebSockets()].find(w=>w.deserializeAttachment().i===cid);assert.equal(sock.deserializeAttachment().frontTurn,false,'moving/crouching/escape cannot restore after return');
+    const shot=shotFor(.01,cid);shot.allowGreetingAfterTurnRear=true;sender.send({p:[shot.o[0],0,shot.o[2]],r:0,h:'rifle'});await settle(env);now+=1000;sender.send(shot);await settle(env);const body=sender.got.filter(m=>m.t==='hit').at(-1);assert.equal(body.head,undefined,'client named permission cannot override invalid private anchor');assert.equal(body.l,9);changed.ws.close();sender.ws.close();await settle(env);
+  }
+  for(const peer of [a,fresh,late])peer.ws.close();await settle(env);
 });

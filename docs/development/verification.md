@@ -5273,6 +5273,7 @@ Use `WORLD_REPLAY_REFERENCE=/absolute/saved/world/result.json SHOTS=/tmp/output 
 
 Measured native5: actual Node0/13checks, six real hit/hurt receipts, HP 10→4, zero WebGL. Slow steps remain eligible;1/60 leaves the native frustum before camera crossing, .033/.050 cross behind while unexpired, real wall expiry independently hides the final effect. This does not measure screen-render/pixel/occlusion/FPS or establish the earlier missing incoming submission's cause. `/tmp/lunden-priority-715-replay/` preserves native1–4 whole CLI 1 (cadence/report failures), native5 JSON/upper-readable but lower-clipped text PNG, and exact runtime/tool/backend proofs. See the issue715 validation README for counts, transport spacing, source-freeze composition and unresolved hardware/user criteria. No runtime/culling/TTL/budget/quality change or new World attempt is included.
 
+
 #715 `tools/nerfnormalstep.cjs` / `nerfreciprocaltest.cjs --normal-step-preflight` records real incoming birth/input and **actual first natural-rAF** original Darts.update dt, age and pre/post current-transform native sphere eligibility. Two real local Worker/held-Nerf peers, original source-checked single Three.Clock read/.05 cap,19controls/actualCLI0, HP10→9, zero WebGL. Exact method this/arguments/return/throw/own+inherited descriptors/restoration and full-source guards precede the native DOM PNG. No selected dt or World/frame/render claim; earlier World input remains unknown. The existing ordinary served observer now records its single original raw clock value before unchanged frame and snapshots first incoming steps before image/failure. Its two additive hooks reverse to exact main bytes; missing native spheres/overflow are explicit. This integration is source/native verified but requires a separately approved actual World run. No new heavy run/capture retry/TTL/physics/runtime change in this slice. See [native natural-step observations and source limits](../validation/issue-715/README.md#actual-native-natural-first-incoming-step-2026-10-14).
 
 ## Freezer head-hit summary (#958)
@@ -5301,3 +5302,58 @@ raw exits and images: `/tmp/lunden-crash669-new-surface/{baseline,candidate}/` a
 `baseline-cli.txt`/`candidate-cli.txt`. The initial server-read race returned curl7
 before the listener was ready; the later verified listener and native run succeeded.
 No World, phone, rendered combat, FPS benchmark or quality rollback acceptance.
+
+### Small-yaw Rear after greeting (#952)
+
+`tools/rifleturnreartest.cjs GAME WORKER OUTPUT` uses actual Ghosts, Avatar,
+Combat, native HUD and two local WebSockets without apartment/WebGL. Start a
+separately source-frozen owned Worker (`node cloudflare/dev.mjs PORT`), then run
+with the verification environment's `PLAYWRIGHT_MODULE` and `CHROME_PATH`.
+`--legacy-only` targets an independently archived pre-952 Worker; `--matrix-only`
+runs the finite native first-surface grid described below.
+
+Saved original feasibility: 60 appearances, 17,280 rays, 9,792 Skull positives
+and 78,336 corner casts, no mismatch/errors/GL and unchanged five source hashes.
+The historical process exit was not saved and is **unknown**. Its 4,320 deeper
+negative candidates used the analytic skull entry; its saber phase explicitly
+cleared `waveT`, so it does not prove natural wave completion. The additional
+native first-surface grid uses actual earliest all-Skull triangles behind closer
+unsupported surfaces: 51,840 rays, 10,992 positives, 87,936 corners and 12,960
+rejected deeper claims, zero safety mismatches/errors/GL, all 60 completed.
+Its whole **CLI1** remains: six short models have no positive at middle-Y, while
+outside-Y samples stay unsupported. A disjoint six-model broader-Y supplement
+passes **CLI0** with 5,184 rays, 1,668 positives and 13,344 corners. These grids
+include interpolation, old/changed headings, opposite-endpoint late observers
+(.04 rad span), wrap-boundary anchors, capped pauses, repeat and held/saber
+transitions; the added grid advances the actual wave before saber. A translated
+near-limit check at feet [4996,0,4996] passes **CLI0** across all60: 5,400 rays,
+1,770 positives, 14,160 corners and 1,350 rejected native deeper claims, zero
+mismatches/errors/GL. The first translated attempt remains **CLI1**: its camera
+was not translated, so Ghost distance culling prevented first-pose alignment;
+its static intersections are not accepted as animated-pose evidence.
+
+Current native room: **25 PASS/CLI0** on a Worker independently born after freeze,
+with owned IPv6 listener and ten unchanged source hashes. A normal equip change
+lets Ghosts publish the small .01 yaw (below its standalone delta threshold).
+Pre/greeted/paused/saber shots give HP8/6/4/2; a missing-hc shot gives HP1; the
+next lethal shot gives one UUID/award and normal reset. Larger yaw escape/return,
+position and stance changes give body1, with unchanged wall/miss/version/wire
+and replay behavior. Both final native head/body marker PNGs were inspected.
+The unchanged actual paused-arm fixture passes **10/CLI0**, with elbowR
+2.628565 m before the 3.004972 m skull entry and real Worker body1/HP9.
+A fresh archived `78344067` Worker/new-client probe passes **6/CLI0**: its
+greeted .01 yaw still gives body1/HP7. This is compatibility evidence, not a
+live-deployment claim. Its native receipt PNG was inspected.
+
+Focused Node authority/API/history/recovery cases pass **5/CLI0**. The whole
+Node run retains **37 PASS/1 FAIL/CLI1** at the existing #945 lateral expectation;
+that test is untouched. The directly affected older Rear escape controls now
+use .03 rather than newly supported .01 and retain their original other actions.
+Earlier attempts remain separate: first Node CLI1 at that old Rear expectation;
+first protocol CLI1 waiting for an unpublished sub-threshold yaw; protocol2
+25/CLI0 but invalid born-after-freeze provenance because the shell reused its
+PID; an initial archived-Worker launch CLI1 omitted a required schema module.
+All raw sources, actual exits, results, receipts and PNGs are retained under
+`/tmp/lunden-priority-952`. These are finite samples, not all continuous poses,
+full server skin physics, rendered apartment, physical-phone or FPS evidence.
+Parents #941/#936 remain open for larger/other changed histories.

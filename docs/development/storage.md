@@ -698,3 +698,16 @@ The native matrix uses actual Ghost first snapshots, not a visible default pose;
 a fresh actual late observer also receives the immutable heading without private
 metadata. Protocol and failed-run provenance are recorded in the
 [verification section](verification.md#immutable-rear-after-greeting-951).
+
+### Existing bounded history for Rear (#952)
+
+PlayerRoom supplies only the additional named `allowGreetingAfterTurnRear` when
+`gt` exists, `turned === true` and `knownFrontTurn(frontTurn)` holds. The existing
+first-standing `frontTurn` initializer and permanent normalized position, stance
+and ±.02 rad heading checks are unchanged. Missing/malformed legacy history
+cannot be reconstructed. Hibernation, healing, death, return to the first heading
+and client-supplied flags cannot restore an invalidated corridor. No extra
+attachment, message, timer, storage write or billed operation is introduced.
+Legacy bool/default/null Front/Rear arguments and all other named permissions
+retain their behavior; the new option defaults false and selects the same Rear
+leaf. The immutable #951 branch remains separate.

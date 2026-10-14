@@ -230,12 +230,19 @@ tracked in #935.
 
 The existing bounded Rear leaf also works after an accepted greeting when the
 server's original private first-standing `headPoseFixed` is explicitly true
-(#951). A changed pose, return or unknown legacy history still gives body damage;
-there is no wave-completion timer or new geometry. See the
+(#951). Changed or unknown history cannot use this immutable permission; the
+independent bounded-turn exception is described below. Neither uses a
+wave-completion timer or new geometry. See the
 [scoped native and real-room evidence](docs/development/verification.md#immutable-rear-after-greeting-951).
+
 
 
 On prepared phones, resizing the drawing buffer waits while the opaque rotation
 screen or hidden document covers the view, then catches up before rendering again.
 CSS/input sizing and the original context-restore/reload behavior remain intact;
 [finite native evidence and remaining iPhone check](docs/development/performance.md#covered-phone-viewport-resize-669-2026-10-14).
+
+The existing Rear patches also accept a greeted standing player's small accepted
+yaw correction when the unchanged private first-standing corridor remains valid
+(#952). This separate permission does not reopen larger turns or position/stance
+changes; see the [finite verification](docs/development/verification.md#small-yaw-rear-after-greeting-952).

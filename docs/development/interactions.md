@@ -1070,3 +1070,16 @@ forgery remains body-only. Long hair and unsupported cells are unchanged.
 ordinary Ghosts/Combat/Worker receipts without WebGL. It introduces no Avatar,
 Ghosts, wire or Contact API changes. Other Front/LEFT/RIGHT/Nose/Jaw permissions
 remain independent; #941/#936 retain the remaining changed-history scope.
+
+### Small-yaw Rear after greeting (#952)
+
+A separate named `allowGreetingAfterTurnRear === true` can select the existing
+Rear leaf after a greeting and an accepted small heading change. It uses the
+unchanged skull first-entry, 15 mm surface guard and rounded-cell bounds. No
+anatomy, animation, wire or client hit authority changes. The existing ±.02 rad
+first-standing corridor remains a **guess**, now sampled independently for Rear;
+Front's physical proof is not reused as a Rear proof. Late observers initialized
+at the opposite endpoint are sampled across the resulting .04 rad visible span.
+Larger turns and position/stance changes remain outside this family (#941).
+The historical #951 results describe its immutable permission at that revision;
+a small turn can now qualify through this additional independent branch.
