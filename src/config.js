@@ -4602,8 +4602,9 @@ export const POWER = {
 
 // Furniture cheat (#465): interaction distance and support tolerance are gameplay choices, not surveyed dimensions.
 // #995: visual assumptions for the generic rug swatches, not fabric measurements.
-// #1009: visual guesses, metres; total support = existing backing h + .002 gap + fiberHeight.
-export const LONG_PILE = { fiberHeight: .045, density: 26, maxTufts: 4200, width: .028, lean: .014, edge: .005, tipScale: .08 };
+// #1009: visual guesses, metres; effective flat support uses the maximum (backing h + .002 gap + fiberHeight); the plush surface varies below it.
+export const LONG_PILE = { fiberHeight: .045, gridX: 156, gridZ: 96, minLoft: .55,
+  wavelength: .18, fringe: .008, edge: .005, lowShade: .8, shadeNoise: .08, maxTriangles: 33000, maxBytes: 1000000 };
 export const MATERIAL_LIBRARY = { tile: .25, pixels: 128, curtainTile: .4, upholsteryTile: .25 }; // generic curtain/upholstery repeats in metres, visual guesses
 export const REARRANGE = { reach: 6, supportGap: 0.06, poll: 3000 };
 

@@ -944,3 +944,6 @@ are representations of the module choice, never a second persisted cushion
 choice. Existing version1 material revisions, authorization, legacy poses and
 all other family whitelists remain in use. Independent pad/cushion/fleece writes
 keep their existing per-surface concurrency and conflict semantics.
+### Compatible long-pile selection (#1009)
+
+The new stable `rug-longpile-bluegrey` enum is whitelisted only for the explicit original living-room rug ID; all six old rug choices/IDs, version1 and other families remain intact. Object-aware materialChoices(category,objectId) exposes the choice only to that rug; older calls without an object ID do not offer it. Existing clients preserve unknown stored material fields in legacy pose-only writes; understood Original/default leaves position untouched. Worker-first d13e45ae692ce512429544b51f72d7f39c656753 actually deployed2026-10-14T11:26:00.488Z, version9cd0f3a4-0036-4af3-8666-cab383de6d66, run38556470520/job115826762245 before the requiring client. Native acceptance uses two genuine LOCAL browser/Worker HTTP visitors for active/new/reload/original and concurrent pose/material fields; no production test write is made. Derived support height is not saved as extra moves. The pre-existing #1013 loose reload-XZ defect remains explicitly open.

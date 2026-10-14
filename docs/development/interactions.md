@@ -1445,3 +1445,6 @@ confirmation visible to an ordinary peer, independent concurrent cushion edits,
 new visitors/reload, legacy move/material concurrency, stale conflicts, offline
 accepted-cache retention and actual keyboard/touch controls. Controlled scene
 collaborators do not certify apartment geometry or physical phones.
+### Long-pile preview and supported objects (#1009)
+
+The living-room rug library adds Blågrå långlugg through the existing local preview/confirm/cancel controls. `applyMaterialSurface` brackets height-affecting local previews and cancellation with actual snapshotRugSupport/reconcileRugSupport and refresh/changed hooks; accepted remote applies use #1008’s existing boundary. Derived furniture/stack/loose/rest/lamp heights need no extra PUT or revision. The floor-loose detector compares against current rugLift, so repeated pile previews/cancellation find items already standing on the taller rug. Original keeps the accepted rug pose. Main step synchronizes visible non-held/non-released floor cats immediately before existing cat.update; followRug’s null rugY leaves furniture-supported cats alone. The normal step runs while the library is reading; no new cat physics or held/release policy is added.

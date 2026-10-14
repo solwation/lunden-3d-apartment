@@ -137,7 +137,7 @@ export class Rearrange {
     if (this.saving) return;
     if (this.materialEdit) {
       const { piece, surface } = this.materialEdit;
-      surface.apply(this.state.materials?.[piece.id]?.[surface.id]?.choice ?? 'original');
+      this.applyMaterialSurface(surface, this.state.materials?.[piece.id]?.[surface.id]?.choice ?? 'original');
       this.materialEdit = null;
     }
     if (this.selected) {
@@ -251,7 +251,13 @@ export class Rearrange {
   previewMaterial(choice) {
     const edit = this.materialEdit;
     if (!edit || this.saving || !validMaterialChoice(edit.piece.id, edit.surface.id, choice)) return false;
-    edit.surface.apply(choice); edit.choice = choice; return true;
+    this.applyMaterialSurface(edit.surface, choice); edit.choice = choice; return true;
+  }
+  applyMaterialSurface(surface, choice) {
+    const support = surface.affectsSupport ? this.snapshotRugSupport() : null;
+    surface.apply(choice);
+    const changes = this.reconcileRugSupport(support);
+    if (changes.length) { if (this.overlay) this.overlay.recompute(); else this.refresh(); this.changed?.(changes); }
   }
   async confirmMaterial() {
     const edit = this.materialEdit;
@@ -328,7 +334,7 @@ export class Rearrange {
     for (const h of this.carryables()) {
       if (!h.model || h.held || h.broken || !shown(h.model) || supported.has(h) || (h.item && h.item.place.at !== 'world')) continue;
       const b = physicalBounds(h.model), at = h.model.getWorldPosition(new V());
-      const level = LEVELS.findIndex(l => b.min.y >= l.floor - REARRANGE.supportGap && b.min.y < l.floor + REARRANGE.supportGap);
+      const level = LEVELS.findIndex((l,i) => Math.abs(b.min.y-l.floor-rugLift(i,at.x,at.z)) < REARRANGE.supportGap);
       if (level < 0) continue;
       const lift = rugLift(level, at.x, at.z);
       loose.push({ h, level, lift, rest: at.y - b.min.y, gap: h.placed || h.item ? 0.001 : Math.max(0, b.min.y - LEVELS[level].floor - lift) });

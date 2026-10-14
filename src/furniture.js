@@ -1,6 +1,6 @@
 import { upholsterySurface } from './upholstery.js';
 import { materialChoice } from './materialcatalog.js';
-import { MATERIAL_LIBRARY } from './config.js';
+import { MATERIAL_LIBRARY, LONG_PILE } from './config.js';
 import { windPlant, windMaterial } from './plantwind.js';
 import { MusicLoop } from './music.js';
 import { MUSIC, STAND_ON } from './config.js';
@@ -2885,11 +2885,58 @@ function rugLibraryMap(item, choice) {
   map.wrapS = map.wrapT = THREE.RepeatWrapping; map.repeat.set(repeat[0] / MATERIAL_LIBRARY.tile, repeat[1] / MATERIAL_LIBRARY.tile);
   rugMaps.set(key, map); return map;
 }
+// #1009: dense connected plush, with smooth height/normal variation and a rounded frayed perimeter.
+function longPileMesh(item, color) {
+  const P=LONG_PILE, base=item.h+.002, pos=[],colors=[],indices=[],tint=new THREE.Color(color), gx=P.gridX,gz=P.gridZ;
+  const hash=(x,z)=>{const n=Math.sin(x*127.1+z*311.7)*43758.5453;return n-Math.floor(n);}; // same deterministic noise family as furCushion
+  const noise=(x,z,scale)=>{x/=scale;z/=scale;const ix=Math.floor(x),iz=Math.floor(z),u=x-ix,v=z-iz,s=u*u*(3-2*u),t=v*v*(3-2*v);
+    return THREE.MathUtils.lerp(THREE.MathUtils.lerp(hash(ix,iz),hash(ix+1,iz),s),THREE.MathUtils.lerp(hash(ix,iz+1),hash(ix+1,iz+1),s),t);};
+  const vertex=(x,y,z,shade)=>{pos.push(x,y,z);colors.push(tint.r*shade,tint.g*shade,tint.b*shade);return pos.length/3-1;};
+  const field=[];let low=Infinity,high=-Infinity;
+  for(let j=0;j<=gz;j++)for(let i=0;i<=gx;i++){
+    const x=(i/gx-.5)*item.w,z=(j/gz-.5)*item.d;
+    const h=.6*noise(x,z,P.wavelength)+.3*noise(x,z,P.wavelength/2)+.1*noise(x,z,P.wavelength/4);
+    field.push(h);low=Math.min(low,h);high=Math.max(high,h);
+  }
+  for(let j=0;j<=gz;j++)for(let i=0;i<=gx;i++){
+    const f=(field[j*(gx+1)+i]-low)/(high-low),edge=i===0||i===gx||j===0||j===gz;
+    const x=(i/gx-.5)*item.w+(edge?(hash(i,j)-.5)*P.fringe:0),z=(j/gz-.5)*item.d+(edge?(hash(j,i)-.5)*P.fringe:0);
+    vertex(x,base+P.fiberHeight*(P.minLoft+(1-P.minLoft)*f),z,P.lowShade+(1-P.lowShade)*f+P.shadeNoise*(hash(i+3,j+7)-.5));
+  }
+  for(let j=0;j<gz;j++)for(let i=0;i<gx;i++){const v=j*(gx+1)+i;indices.push(v,v+gx+1,v+1,v+1,v+gx+1,v+gx+2);}
+  const perimeter=[];
+  for(let i=0;i<=gx;i++)perimeter.push(i);
+  for(let j=1;j<=gz;j++)perimeter.push(j*(gx+1)+gx);
+  for(let i=gx-1;i>=0;i--)perimeter.push(gz*(gx+1)+i);
+  for(let j=gz-1;j>0;j--)perimeter.push(j*(gx+1));
+  let previous=perimeter;
+  for(let ring=1;ring<=2;ring++){
+    const current=perimeter.map(id=>{const x=pos[id*3],y=pos[id*3+1],z=pos[id*3+2],middle=ring===1;
+      return vertex(x*(1+(middle?P.edge:-P.edge)/(item.w/2)),middle?base+(y-base)*.55:.003,z*(1+(middle?P.edge:-P.edge)/(item.d/2)),middle?.8:.7);});
+    for(let k=0;k<current.length;k++){const n=(k+1)%current.length;indices.push(previous[k],previous[n],current[k],previous[n],current[n],current[k]);}
+    previous=current;
+  }
+  // The old backing remains under the loft; all connected detail is still a single draw.
+  const backing=new RoundedBoxGeometry(item.w,item.h,item.d,2,Math.min(P.edge,item.h/2)),offset=pos.length/3,bp=backing.attributes.position;
+  for(let i=0;i<bp.count;i++)vertex(bp.getX(i),bp.getY(i)+item.h/2+.002,bp.getZ(i),.7);
+  if(backing.index)for(const id of backing.index.array)indices.push(offset+id);else for(let i=0;i<bp.count;i++)indices.push(offset+i);
+  backing.dispose();
+  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geometry.setIndex(indices);geometry.computeVertexNormals();
+  const bytes=Object.values(geometry.attributes).reduce((n,a)=>n+a.array.byteLength,geometry.index.array.byteLength);
+  if(geometry.index.count/3>P.maxTriangles||bytes>P.maxBytes)throw Error('Long-pile geometry exceeds its bounded budget');
+  const material=new THREE.MeshStandardMaterial({vertexColors:true,roughness:1,side:THREE.DoubleSide,forceSinglePass:true});
+  const mesh=new THREE.Mesh(geometry,material);mesh.castShadow=mesh.receiveShadow=true;mesh.userData.longPile=true;mesh.userData.surfaceSamples=(gx+1)*(gz+1);return mesh;
+}
 function bindRugMaterials(g, item) {
   const mesh = g.children[0], original = mesh.material, variants = new Map([['original', original]]);
-  const surface = { id: 'textile', name: 'Mattans tyg', choice: 'original', original,
+  let pile; const originalTop = g.userData.rugTop;
+  const surface = { id: 'textile', name: 'Mattans tyg', choice: 'original', original, affectsSupport: true,
     apply(id) {
-      const choice = materialChoice(id) ?? materialChoice('original');
+      const choice = materialChoice(id === 'rug-longpile-bluegrey' && item.materialFamily !== 'living-room' ? 'original' : id) ?? materialChoice('original');
+      const tall = choice.id === 'rug-longpile-bluegrey';
+      if (tall && !pile) { pile = longPileMesh(item, choice.color); g.add(pile); surface.prepare?.(pile); variants.set(choice.id,pile.material); }
+      if(pile)pile.visible=tall; mesh.visible=!tall;
+      g.userData.rugTop = originalTop + (tall ? LONG_PILE.fiberHeight : 0);
       if (!variants.has(choice.id)) { const mat = original.clone(); mat.color.set(0xffffff); mat.map = rugLibraryMap(item, choice); variants.set(choice.id, mat); }
       mesh.material = variants.get(choice.id); surface.prepare?.(mesh); surface.choice = choice.id;
     } };

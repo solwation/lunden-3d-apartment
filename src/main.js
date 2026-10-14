@@ -2468,6 +2468,7 @@ function step(dt) {
   weather.update(dt, !player.outdoors || player.below || player.inCore, moved < 1 ? moved : 0, car.occupied ? car.openness : null); // (the garage: dry and muffled, #357) // after the day: it sets the overcast / flash the next day.update applies (#248)
   plantWind.update(dt);
   greet.update(dt); // speech bubbles (#247)
+  if (cat.visible && !cat.held && !cat.released) cat.followRug(); // #1009: idle floor support also follows material previews.
   cat.update(dt);
   olofDriver.update(dt);
   checkCatButt();
