@@ -57,14 +57,110 @@ function holderParts(c) {
   return parts;
 }
 
-/** The portable hoop on the asphalt: a weighted base, a pole leaning forward, a backboard facing +z (the house),
- * the orange rim and a white net. Built at its group's origin = the foot of the backboard's plane; it rises out of the
- * ground while the ball is out of its holder. Collision with the ball is analytic (`collide`). */
+/** Build FIBA-proportioned court markings in local hoop coordinates (extending in +z into the court). */
+function buildCourtLines(C, H) {
+  const points = [];
+  const y = 0.02; // 2 cm elevation over ground to avoid z-fighting
+  const w = C.lineWidth ?? 0.05;
+
+  function addQuad(x1, z1, x2, z2, x3, z3, x4, z4) {
+    points.push(
+      x1, y, z1,  x2, y, z2,  x3, y, z3,
+      x1, y, z1,  x3, y, z3,  x4, y, z4
+    );
+  }
+
+  function addSegment(ax, az, bx, bz, width = w) {
+    const dx = bx - ax, dz = bz - az;
+    const len = Math.hypot(dx, dz);
+    if (len < 1e-6) return;
+    const nx = (-dz / len) * (width / 2);
+    const nz = (dx / len) * (width / 2);
+    addQuad(
+      ax - nx, az - nz,
+      ax + nx, az + nz,
+      bx + nx, bz + nz,
+      bx - nx, bz - nz
+    );
+  }
+
+  function addArc(cx, cz, r, a1, a2, steps = 48, width = w) {
+    const rIn = r - width, rOut = r;
+    for (let i = 0; i < steps; i++) {
+      const t1 = a1 + (a2 - a1) * (i / steps);
+      const t2 = a1 + (a2 - a1) * ((i + 1) / steps);
+      const s1 = Math.sin(t1), c1 = Math.cos(t1);
+      const s2 = Math.sin(t2), c2 = Math.cos(t2);
+      addQuad(
+        cx + rIn * s1, cz + rIn * c1,
+        cx + rOut * s1, cz + rOut * c1,
+        cx + rOut * s2, cz + rOut * c2,
+        cx + rIn * s2, cz + rIn * c2
+      );
+    }
+  }
+
+  const baseZ = C.baselineLocalZ ?? -0.30;
+  const rimZ = H.rimZ ?? 0.38;
+  const ftZ = baseZ + (C.freeThrowDist ?? 5.80);
+  const halfW = C.halfWidth ?? 6.75;
+  const depth = baseZ + (C.depth ?? 9.0);
+
+  // 1. Baseline
+  addSegment(-halfW, baseZ, halfW, baseZ);
+  // 2. Sidelines
+  addSegment(-halfW, baseZ, -halfW, depth);
+  addSegment(halfW, baseZ, halfW, depth);
+  // 3. Key lanes (FIBA width 4.90 m)
+  const kw2 = (C.keyWidth ?? 4.90) / 2;
+  addSegment(-kw2, baseZ, -kw2, ftZ);
+  addSegment(kw2, baseZ, kw2, ftZ);
+  // 4. Free throw line (3.60 m long)
+  const ftw2 = (C.freeThrowLen ?? 3.60) / 2;
+  addSegment(-ftw2, ftZ, ftw2, ftZ);
+  // 5. Free throw circle (radius 1.80 m, outer solid into court, inner dashed toward hoop)
+  addArc(0, ftZ, C.freeThrowRadius ?? 1.80, Math.PI / 2, -Math.PI / 2, 32);
+  const dashes = 8;
+  for (let i = 0; i < dashes; i += 2) {
+    const a1 = Math.PI / 2 + (Math.PI * i) / dashes;
+    const a2 = Math.PI / 2 + (Math.PI * (i + 1)) / dashes;
+    addArc(0, ftZ, C.freeThrowRadius ?? 1.80, a1, a2, 6);
+  }
+  // 6. Three point line (radius 6.75 m with straight corner parts at distance 6.60 m)
+  const cornerX = C.threeCornerX ?? 6.60;
+  const threeR = C.threeRadius ?? B.three ?? 6.75;
+  const cornerZ = rimZ + Math.sqrt(Math.max(0, threeR ** 2 - cornerX ** 2));
+  addSegment(-cornerX, baseZ, -cornerX, cornerZ);
+  addSegment(cornerX, baseZ, cornerX, cornerZ);
+  const alpha = Math.asin(cornerX / threeR);
+  addArc(0, rimZ, threeR, -alpha, alpha, 48);
+  // 7. No-charge semi-circle under basket (radius 1.25 m)
+  addArc(0, rimZ, C.noChargeRadius ?? 1.25, -Math.PI / 2, Math.PI / 2, 24);
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(points, 3));
+  geo.computeVertexNormals();
+  const mat = new THREE.MeshStandardMaterial({
+    color: 0xf5f5f0,
+    roughness: 0.65,
+    polygonOffset: true,
+    polygonOffsetFactor: -1,
+    polygonOffsetUnits: -1,
+  });
+  const m = new THREE.Mesh(geo, mat);
+  m.receiveShadow = true;
+  return m;
+}
+
+/** The portable hoop on the asphalt: a weighted base, a pole leaning forward, a backboard facing north into the car park (#1018),
+ * the orange rim, a white net and regulation court lines. Always visible on the car park. Collision with the ball is analytic (`collide`). */
 export class Hoop {
   constructor() {
     const H = B.hoop, g = new THREE.Group();
     this.ground = groundY(H.x, H.z);
     g.position.set(H.x, this.ground, H.z);
+    const rotDeg = H.rot ?? (H.yaw ? THREE.MathUtils.radToDeg(H.yaw) : 0);
+    g.rotation.y = THREE.MathUtils.degToRad(rotDeg);
     const black = new THREE.MeshStandardMaterial({ color: 0x1e1f22, roughness: 0.6 });
     const steel = new THREE.MeshStandardMaterial({ color: 0x4a4e55, roughness: 0.4, metalness: 0.6 });
     const board = new THREE.MeshStandardMaterial({ color: 0xf4f6f7, roughness: 0.3 });
@@ -74,7 +170,7 @@ export class Hoop {
     const [bw, bh] = H.board, rimY = H.rim, by0 = rimY - H.below;
     // the base: a black tank with two wheels at the back
     const [tw, th, td] = H.base;
-    add(new THREE.Mesh(new THREE.BoxGeometry(tw, th, td), black), 0, th / 2, H.baseZ);
+    this.baseMesh = add(new THREE.Mesh(new THREE.BoxGeometry(tw, th, td), black), 0, th / 2, H.baseZ);
     for (const s of [-1, 1]) { const w = add(new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.04, 16), black), s * (tw / 2 + 0.02), 0.06, H.baseZ - td / 2 + 0.08); w.rotation.z = Math.PI / 2; }
     // the pole from the base up to just behind the board, leaning forward a little
     const foot = new THREE.Vector3(0, th, H.baseZ - 0.05), top = new THREE.Vector3(0, by0 + bh * 0.4, -H.arm);
@@ -84,7 +180,7 @@ export class Hoop {
     this.pole = { a: foot.clone(), b: top.clone(), r: 0.05 };
     for (const dy of [-0.12, 0.12]) add(new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.04, H.arm), steel), 0, top.y + dy, -H.arm / 2); // the arms to the board
     // the backboard: white with a black frame and the red shooter's square over the rim
-    add(new THREE.Mesh(new THREE.BoxGeometry(bw, bh, 0.03), board), 0, by0 + bh / 2, -0.015);
+    this.boardMesh = add(new THREE.Mesh(new THREE.BoxGeometry(bw, bh, 0.03), board), 0, by0 + bh / 2, -0.015);
     for (const [w, h, x, y] of [[bw, 0.03, 0, by0 + 0.015], [bw, 0.03, 0, by0 + bh - 0.015], [0.03, bh, -bw / 2 + 0.015, by0 + bh / 2], [0.03, bh, bw / 2 - 0.015, by0 + bh / 2]]) add(new THREE.Mesh(new THREE.BoxGeometry(w, h, 0.034), black), x, y, -0.015);
     const sq = [0.45, 0.32];
     for (const [w, h, x, y] of [[sq[0], 0.02, 0, rimY + 0.01], [sq[0], 0.02, 0, rimY + sq[1]], [0.02, sq[1], -sq[0] / 2, rimY + sq[1] / 2], [0.02, sq[1], sq[0] / 2, rimY + sq[1] / 2]]) add(new THREE.Mesh(new THREE.BoxGeometry(w, h, 0.004), red), x, y + 0.01, 0.002);
@@ -95,18 +191,49 @@ export class Hoop {
     this.net = add(new THREE.Mesh(new THREE.CylinderGeometry(H.rimR, H.rimR * 0.62, H.net, 12, 4, true),
       new THREE.MeshBasicMaterial({ color: 0xf2f2f2, wireframe: true })), 0, rimY - H.net / 2, H.rimZ);
     this.net.castShadow = false;
+
+    // court lines on the ground (#1018)
+    this.courtMesh = buildCourtLines(B.court ?? {}, H);
+    if (this.courtMesh) g.add(this.courtMesh);
+
+    // Free throw interaction trigger
+    const baseZ = B.court?.baselineLocalZ ?? -0.30;
+    const ftLocalZ = baseZ + (B.court?.freeThrowDist ?? 5.80);
+    const ftTrigger = new THREE.Mesh(
+      new THREE.BoxGeometry(B.court?.freeThrowLen ?? 3.6, 0.5, 0.8),
+      new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false })
+    );
+    ftTrigger.position.set(0, 0.25, ftLocalZ);
+    g.add(ftTrigger);
+    this.freeThrowTarget = {
+      kind: 'freethrow',
+      name: 'straffkastlinjen',
+      verb: 'skjuta straffkast från',
+      pickable: ftTrigger,
+      toggle: () => this.ball?.shootFreeThrow()
+    };
+    ftTrigger.userData.door = this.freeThrowTarget;
+
     this.object = g;
     this.height = new THREE.Box3().setFromObject(g).max.y - this.ground;
     this.depth = this.height + 0.05;
-    this.k = 0; this.swish = 0;
-    g.position.y = this.ground - this.depth;
-    g.visible = false;
-    // world-space pieces for the ball (the group is never turned)
-    this.rimC = new THREE.Vector3(H.x, this.ground + rimY, H.z + H.rimZ);
-    this.boardBox = new THREE.Box3(new THREE.Vector3(H.x - bw / 2, this.ground + by0, H.z - 0.03), new THREE.Vector3(H.x + bw / 2, this.ground + by0 + bh, H.z));
-    this.baseBox = new THREE.Box3(new THREE.Vector3(H.x - tw / 2, this.ground, H.z + H.baseZ - td / 2), new THREE.Vector3(H.x + tw / 2, this.ground + th, H.z + H.baseZ + td / 2));
-    const o = new THREE.Vector3(H.x, this.ground, H.z);
-    this.poleW = { a: this.pole.a.clone().add(o), b: this.pole.b.clone().add(o) };
+    this.k = 1; this.swish = 0; // always visible on the car park (#1018)
+    g.position.y = this.ground;
+    g.visible = true;
+
+    // local-space pieces for analytic collision
+    this.localRimC = new THREE.Vector3(0, rimY, H.rimZ);
+    this.localBoardBox = new THREE.Box3(new THREE.Vector3(-bw / 2, by0, -0.03), new THREE.Vector3(bw / 2, by0 + bh, 0));
+    this.localBaseBox = new THREE.Box3(new THREE.Vector3(-tw / 2, 0, H.baseZ - td / 2), new THREE.Vector3(tw / 2, th, H.baseZ + td / 2));
+    this.rimC = new THREE.Vector3();
+    this.updateWorldPieces();
+  }
+
+  updateWorldPieces() {
+    this.object.updateMatrixWorld(true);
+    this.rimC.copy(this.object.localToWorld(this.localRimC.clone()));
+    this.boardBox = new THREE.Box3().setFromObject(this.boardMesh);
+    this.baseBox = new THREE.Box3().setFromObject(this.baseMesh);
   }
 
   get up() { return this.k > 0.98; }
@@ -117,6 +244,7 @@ export class Hoop {
     const e = this.k * this.k * (3 - 2 * this.k);
     this.object.visible = this.k > 0.001;
     this.object.position.y = this.ground - (1 - e) * this.depth;
+    if (this.object.visible) this.updateWorldPieces();
     if (this.swish > 0) { // the net jumps after a basket
       this.swish = Math.max(0, this.swish - dt);
       const s = Math.sin(this.swish * 30) * this.swish * 0.25;
@@ -127,34 +255,55 @@ export class Hoop {
   /** Collision segments for the visitor (the base) while it stands there. */
   segments() {
     if (this.k < 0.5) return [];
-    const b = this.baseBox, x0 = b.min.x, x1 = b.max.x, z0 = b.min.z, z1 = b.max.z;
-    return [[x0, z0, x1, z0], [x1, z0, x1, z1], [x1, z1, x0, z1], [x0, z1, x0, z0]];
+    this.object.updateMatrixWorld(true);
+    const H = B.hoop, [tw, , td] = H.base, bz = H.baseZ;
+    const corners = [
+      new THREE.Vector3(-tw / 2, 0, bz - td / 2),
+      new THREE.Vector3(tw / 2, 0, bz - td / 2),
+      new THREE.Vector3(tw / 2, 0, bz + td / 2),
+      new THREE.Vector3(-tw / 2, 0, bz + td / 2)
+    ].map(p => p.applyMatrix4(this.object.matrixWorld));
+    return [
+      [corners[0].x, corners[0].z, corners[1].x, corners[1].z],
+      [corners[1].x, corners[1].z, corners[2].x, corners[2].z],
+      [corners[2].x, corners[2].z, corners[3].x, corners[3].z],
+      [corners[3].x, corners[3].z, corners[0].x, corners[0].z]
+    ];
   }
 
   /** Push the ball (centre c, radius r, velocity v) out of the hoop's parts; returns the strongest normal speed hit. */
   collide(c, v, r) {
     if (!this.up) return 0;
+    this.object.updateMatrixWorld(true);
+    const invMat = this._invMat ??= new THREE.Matrix4();
+    invMat.copy(this.object.matrixWorld).invert();
+    const lc = c.clone().applyMatrix4(invMat);
+    const lv = v.clone().transformDirection(invMat);
     let hit = 0;
     const push = (q, rr, e) => { // q = the nearest point of a part, rr = its thickness
-      const d = tmp.subVectors(c, q), l = d.length();
+      const d = tmp.subVectors(lc, q), l = d.length();
       if (l >= r + rr || l < 1e-6) return;
       d.multiplyScalar(1 / l);
-      c.copy(q).addScaledVector(d, r + rr);
-      const vn = v.dot(d);
-      if (vn < 0) { v.addScaledVector(d, -(1 + e) * vn); hit = Math.max(hit, -vn); }
+      lc.copy(q).addScaledVector(d, r + rr);
+      const vn = lv.dot(d);
+      if (vn < 0) { lv.addScaledVector(d, -(1 + e) * vn); hit = Math.max(hit, -vn); }
     };
-    // the rim: the nearest point on its circle
-    const R = B.hoop.rimR, rc = this.rimC;
-    tmp2.set(c.x - rc.x, 0, c.z - rc.z);
+    // the rim: the nearest point on its circle in local coordinates
+    const R = B.hoop.rimR, rc = this.localRimC;
+    tmp2.set(lc.x - rc.x, 0, lc.z - rc.z);
     if (tmp2.lengthSq() < 1e-8) tmp2.set(1, 0, 0);
     tmp2.setLength(R).add(rc);
     push(tmp2.clone(), B.hoop.rimTube, 0.55);
-    push(this.boardBox.clampPoint(c, new THREE.Vector3()), 0, 0.7);
-    push(this.baseBox.clampPoint(c, new THREE.Vector3()), 0, 0.5);
-    const { a, b } = this.poleW; // the pole: the nearest point on its axis
+    push(this.localBoardBox.clampPoint(lc, new THREE.Vector3()), 0, 0.7);
+    push(this.localBaseBox.clampPoint(lc, new THREE.Vector3()), 0, 0.5);
+    const { a, b } = this.pole; // the pole in local space
     seg.subVectors(b, a);
-    const t = Math.max(0, Math.min(1, tmp.subVectors(c, a).dot(seg) / seg.lengthSq()));
+    const t = Math.max(0, Math.min(1, tmp.subVectors(lc, a).dot(seg) / seg.lengthSq()));
     push(a.clone().addScaledVector(seg, t), this.pole.r, 0.6);
+    if (hit > 0) {
+      c.copy(lc).applyMatrix4(this.object.matrixWorld);
+      v.copy(lv).transformDirection(this.object.matrixWorld);
+    }
     return hit;
   }
 }
@@ -171,6 +320,8 @@ export class Basketball extends Holdable {
       cooldown: 0.4, useLabel: 'Skjut', grip: [b.r * 0.45, -b.r * 0.85, 0.02], handPose: 'palm', // carried on the open palm (#238)
     });
     Object.assign(this, { marks, hoop, world, clickIsUse: true, hitsTarget: false, flying: false, v: new THREE.Vector3(), air: 0, dribbling: false, armed: true });
+    hoop.ball = this;
+    this.isFreeThrow = false;
     this.altIcon = '🏀'; this.altLabel = 'Studsa bollen';
     this.lastCam = new THREE.Vector3(); this.camV = new THREE.Vector3();
     this.rest = { q: new THREE.Quaternion(), lift: b.r }; // put down: it lies on its round side
@@ -187,6 +338,30 @@ export class Basketball extends Holdable {
   }
 
   goHome() { this.flying = false; super.goHome(); }
+
+  /** An identified free throw from the free throw line (#1018). Scores 1 point. */
+  shootFreeThrow() {
+    if (!this.held) this.take();
+    this.isFreeThrow = true;
+    this.onUse();
+  }
+
+  /** Check if a shot origin (world px, pz) is outside the FIBA 3-point line (#1018). Line belongs to 2p. */
+  isThreePoint(px, pz) {
+    const H = B.hoop, C = B.court ?? {};
+    this.hoop.object.updateMatrixWorld(true);
+    const invMat = this._invMat ??= new THREE.Matrix4();
+    invMat.copy(this.hoop.object.matrixWorld).invert();
+    const local = tmp.set(px, 0, pz).applyMatrix4(invMat);
+    const cornerX = C.threeCornerX ?? 6.60;
+    const threeR = C.threeRadius ?? B.three ?? 6.75;
+    const rimZ = H.rimZ ?? 0.38;
+    const cornerZ = rimZ + Math.sqrt(Math.max(0, threeR ** 2 - cornerX ** 2));
+    if (local.z <= cornerZ) {
+      return Math.abs(local.x) > cornerX;
+    }
+    return Math.hypot(local.x, local.z - rimZ) > threeR;
+  }
 
   /** The hand's spot in the world (where a dribble / a throw starts and where it is caught). */
   hand(out = new THREE.Vector3()) { return this.camera.localToWorld(out.set(B.ball.held.x * 0.5, B.ball.held.y, B.ball.held.z)); }
@@ -206,13 +381,16 @@ export class Basketball extends Holdable {
    * B.ball.entry rad (B.ball.flat at anything else: a throw at a wall is flatter). */
   onUse() {
     const cam = this.camera, eye = cam.getWorldPosition(new THREE.Vector3()), dir = new THREE.Vector3(0, 0, -1).applyQuaternion(cam.getWorldQuaternion(new THREE.Quaternion()));
+    const isFt = this.isFreeThrow;
     const { point: aim, rim } = this.aimPoint(eye, dir), from = this.hand();
     this.lastAim = aim; // (tests)
+    this.shotOrigin = { x: eye.x, z: eye.z, isFreeThrow: isFt };
+    this.isFreeThrow = false;
     const d = Math.max(0.3, Math.hypot(aim.x - from.x, aim.z - from.z)), h = aim.y - from.y, g = B.ball.gravity;
     // a parabola through the aim point that comes down there at angle φ starts at tan θ = 2h/d + tan φ
     const th = Math.min(1.4, Math.atan(2 * h / d + Math.tan(rim ? B.ball.entry : B.ball.flat)));
     let speed = Math.sqrt((g * d * d) / (2 * Math.cos(th) ** 2 * Math.max(0.01, d * Math.tan(th) - h)));
-    speed = Math.min(B.ball.maxSpeed, speed) * (1 + (Math.random() - 0.5) * 2 * B.ball.jitter);
+    if (!isFt) speed = Math.min(B.ball.maxSpeed, speed) * (1 + (Math.random() - 0.5) * 2 * B.ball.jitter);
     const flat = new THREE.Vector3(aim.x - from.x, 0, aim.z - from.z);
     if (flat.lengthSq() < 1e-6) flat.set(dir.x, 0, dir.z);
     flat.normalize();
@@ -231,6 +409,9 @@ export class Basketball extends Holdable {
 
   aimPoint(eye, dir) {
     const H = this.hoop;
+    if (this.isFreeThrow && H.up) {
+      return { point: H.rimC.clone(), rim: true };
+    }
     if (H.up) { // looking near the rim: aim at the point of the look ray nearest the rim's centre
       const t = tmp.subVectors(H.rimC, eye).dot(dir), p = eye.clone().addScaledVector(dir, Math.max(0, t));
       if (t > 0 && p.distanceTo(H.rimC) < B.hoop.assist) return { point: p, rim: true };
@@ -316,7 +497,7 @@ export class Basketball extends Holdable {
     sfx.bounce(this.model.position, Math.min(1, -vn / 6));
   }
 
-  /** A ball going down through the rim scores once. */
+  /** A ball going down through the rim scores once (#1018: 1p free throw, 2p inside/on line, 3p outside line). */
   score(prevY, c) {
     const H = this.hoop;
     if (!H.up) return;
@@ -325,10 +506,15 @@ export class Basketball extends Holdable {
     if (!this.armed || !(prevY >= y && c.y < y) || this.v.y >= 0) return;
     if (Math.hypot(c.x - H.rimC.x, c.z - H.rimC.z) > B.hoop.rimR - 0.02) return;
     this.armed = false;
-    const three = Math.hypot(this.shotFrom.x - H.rimC.x, this.shotFrom.z - H.rimC.z) > B.three;
+    const isFt = !!this.shotOrigin?.isFreeThrow;
+    const isThree = !isFt && this.isThreePoint(this.shotOrigin?.x ?? c.x, this.shotOrigin?.z ?? c.z);
+    const points = isFt ? 1 : (isThree ? 3 : 2);
+    const kind = isFt ? 'freeThrow' : (isThree ? 'three' : 'two');
+    const text = isFt ? '🏀 Straffkast · 1 poäng' : (isThree ? '🏀 Trepoängare · 3 poäng' : '🏀 Tvåpoängare · 2 poäng');
+    this.shotOrigin = null;
     H.swish = 0.8;
     sfx.swish(c);
-    badge(three ? '🏀 Trepoängare!' : '🏀 Korg!', false);
-    this.onBasket?.(three);
+    badge(text, false);
+    this.onBasket?.(points, kind);
   }
 }

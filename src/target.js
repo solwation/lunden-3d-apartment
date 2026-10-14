@@ -64,9 +64,9 @@ export class Target {
     this.ground = groundY(T.x, T.z);
     this.height = new THREE.Box3().setFromObject(g).max.y; // board, stand and score board, from y 0
     this.depth = this.height + 0.05; // how far down it goes: all of it under the grass
-    this.k = 0;
-    g.position.y = this.ground - this.depth;
-    g.visible = false;
+    this.k = 1;
+    g.position.y = this.ground;
+    g.visible = true;
     this.target = { kind: 'target', name: 'måltavlan', verb: 'nollställa poängen på', pickable: g, toggle: () => this.reset() };
     g.traverse((m) => { m.userData.door = this.target; });
     this.draw();

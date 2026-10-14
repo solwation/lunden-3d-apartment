@@ -688,7 +688,16 @@ const hoop = new Hoop();
 scene.add(hoop.object);
 if (params0.has('hoop')) hoop.update(10, true); // &hoop: up from the start (screenshots)
 const ball = new Basketball(scene, camera, { marks, hoop, world });
-ball.onBasket = (three) => { bump('baskets'); if (three) bump('threes'); };
+ball.onBasket = (ptsOrThree, kind) => {
+  const isThree = ptsOrThree === 3 || ptsOrThree === true;
+  const isFree = ptsOrThree === 1 || kind === 'freethrow';
+  const pts = typeof ptsOrThree === 'number' ? ptsOrThree : (isThree ? 3 : 2);
+  bump('baskets');
+  if (isThree) bump('threes');
+  if (isFree) bump('freeThrows');
+  else if (!isThree) bump('twoPointers');
+  bump('basketPoints', pts);
+};
 ball.onDribble = () => bump('dribbles');
 holdables.push(ball);
 // the bow in the cushion box at the foot of the NW stair (#690, src/bow.js): its arrows (also the other players', #667)
@@ -1795,7 +1804,7 @@ function updateFocus() {
     ...world.courtyardTargets.map((t) => t.pickable),
     ...bicyclePickables(), // the courtyard's benches (#438): F keeps them
     ...(power.reachable ? [power.target.pickable] : []), // the fuse box while its cabinet is open (#604)
-    ...(world.furnitureOn ? [...(target.object.visible ? [target.target] : []), ...patio.targets, ...world.furnitureTargets, ...holdables.map((h) => h.target), drawing.target, ...posters.targets].map((t) => t.pickable) : [])]; // parasol, TV, seats, beds, toys — unless F hid the furniture
+    ...(world.furnitureOn ? [...(target.object.visible ? [target.target] : []), ...(hoop.object.visible && hoop.freeThrowTarget ? [hoop.freeThrowTarget] : []), ...patio.targets, ...world.furnitureTargets, ...holdables.map((h) => h.target), drawing.target, ...posters.targets].map((t) => t.pickable) : [])]; // parasol, TV, seats, beds, toys — unless F hid the furniture
   // the nearest hit on something actually shown (F hides the loose items, the raycaster doesn't care)
   const cupTargets = cups.cups.filter((c) => !c.held && c.state !== 'spare').map((c) => c.target.pickable);
   if (fish && world.furnitureOn) cupTargets.push(fish.target.pickable, ...fish.placed.map((f) => f.target.pickable), ...fish.inPan.map((f) => f.target.pickable)); // the carton + fish fingers lying out (#162) or in the pan (#214)
@@ -2464,8 +2473,8 @@ function step(dt) {
   marks.update(dt);
   breaker.update(dt);
   balls.update(dt);
-  target.update(dt, world.furnitureOn && !!heldItem()?.hitsTarget); // the target rises with a blaster, the saber or a wand in the hand (#144, #179)
-  hoop.update(dt, world.furnitureOn && (ball.out || params0.has('hoop'))); // the hoop stands out front while the basketball is out of its holder
+  target.update(dt, world.furnitureOn); // the target is always visible on its stand (#1017, #1018)
+  hoop.update(dt, world.furnitureOn); // the hoop is always visible on the car park (#1018)
   compass.update();
   if (clockPanel.open) clockPanel.render();
   sonos.update(player.aloft ? -1 : player.level, (p) => behindWall(p)); // (up on the roof: muffled as from outside, #360) // music: schedule ahead, walls muffle (#187)

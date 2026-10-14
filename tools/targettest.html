@@ -22,15 +22,15 @@ f.onload = async () => {
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
   d.getElementById('start-touch').click();
   await wait(50);
-  // empty-handed the target is down in the ground, out of sight (#179)
+  // empty-handed the target is visible on its place (#1018)
   for (let i = 0; i < 10; i++) step(1 / 60);
-  let pass = check(!target.object.visible && target.top() < target.ground, `empty hand: the target is under the grass (top ${target.top().toFixed(2)}, ground ${target.ground.toFixed(2)})`);
-  // something tested the marks against everything while it was down (a wand, the saber, a dart in flight): the
-  // target must not keep that flat, buried shape for its hit tests (#179)
+  let pass = check(target.object.visible && Math.abs(target.object.position.y - target.ground) < 1e-3, `empty hand: the target is visible on the landing (y ${target.object.position.y.toFixed(2)}, ground ${target.ground.toFixed(2)})`);
+  // something tested the marks against everything (a wand, the saber, a dart in flight): the
+  // target must keep its correct shape for hit tests (#179)
   w.__app.marks.hit(new V(2.8, 1, 18), new V(2.8, 1, 21));
   toys.blasters[0].take();
   for (let i = 0; i < 60; i++) step(1 / 60);
-  pass &= check(target.object.visible && Math.abs(target.object.position.y - target.ground) < 1e-3 && target.object.scale.y === 1, 'a blaster in the hand: the target has come up out of the grass (not scaled)');
+  pass &= check(target.object.visible && Math.abs(target.object.position.y - target.ground) < 1e-3 && target.object.scale.y === 1, 'a blaster in the hand: the target is visible (not scaled)');
   target.object.updateMatrixWorld(true);
   target.reset();
   const c = target.face.getWorldPosition(new V());
@@ -50,14 +50,15 @@ f.onload = async () => {
   pass &= check(target.score.total === 0 && target.score.best === 0, 'E on the target clears the score');
   toys.blasters[0].putBack();
   for (let i = 0; i < 60; i++) step(1 / 60);
-  pass &= check(!target.object.visible && target.top() < target.ground, 'blaster back: the target sinks into the ground');
-  // the lightsaber and the wands bring it up too; the flashlight doesn't (#179)
-  for (const [name, item, up] of [['the lightsaber', w.__app.saber, true], ['a wand', toys.wands[0], true], ['the flashlight', toys.flashlight, false]]) {
+  pass &= check(target.object.visible && Math.abs(target.object.position.y - target.ground) < 1e-3, 'blaster back: the target remains visible (#1018)');
+  // the target remains visible with any held item (lightsaber, wand, flashlight, or empty) (#1018)
+  for (const [name, item] of [['the lightsaber', w.__app.saber], ['a wand', toys.wands[0]], ['the flashlight', toys.flashlight]]) {
     item.take();
     for (let i = 0; i < 60; i++) step(1 / 60);
-    pass &= check(up ? target.object.visible && Math.abs(target.object.position.y - target.ground) < 1e-3 : !target.object.visible && target.top() < target.ground, `${name} in the hand: the target is ${up ? 'up' : 'down'}`);
+    pass &= check(target.object.visible && Math.abs(target.object.position.y - target.ground) < 1e-3, `${name} in the hand: the target remains visible`);
     item.putBack();
     for (let i = 0; i < 60; i++) step(1 / 60);
+    pass &= check(target.object.visible && Math.abs(target.object.position.y - target.ground) < 1e-3, `${name} put back: the target remains visible`);
   }
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };

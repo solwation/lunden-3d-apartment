@@ -45,15 +45,15 @@ f.onload = async () => {
   for (const dr of drawers) { dr.toggle(); for (let i = 0; i < 30; i++) dr.update(0.1); }
   pass &= check(drawers.every((dr) => !dr.isOpen && !dr.contents.visible), 'shut again, the contents hidden');
 
-  // the hoop is down until the ball is taken
+  // the hoop is visible on the car park while the ball is in its holder (#1018)
   run(0.2);
-  pass &= check(!hoop.object.visible && hoop.k === 0, 'the hoop is under the asphalt while the ball is in its holder');
+  pass &= check(hoop.object.visible && hoop.k === 1, 'the hoop is visible on the car park while the ball is in its holder');
   const bz = ball.model.getWorldPosition(new V()).z; // the holder is centred on the daybed (#312: by the window)
   pass &= check(aim(ball.model, 1, [[1.6, bz], [1.8, bz - 0.4], [1.5, bz + 0.4]], /ta basketbollen/i), `the ball over the daybed: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
   pass &= check(heldItem() === ball, 'the ball in the hand');
   run(1.5);
-  pass &= check(hoop.up && hoop.object.visible, 'the hoop has come up out front');
+  pass &= check(hoop.up && hoop.object.visible, 'the hoop remains up out front');
 
   // dribble: down to the floor, back into the hand
   stand(1.8, 9.8, 1); camera.rotation.set(-0.3, 1.5, 0, 'YXZ');
@@ -74,7 +74,7 @@ f.onload = async () => {
   pass &= check(heldItem() === ball || (!ball.flying && ball.placed), `caught again or lying still (${heldItem() === ball ? 'caught' : 'lying at ' + ball.model.position.toArray().map((v) => v.toFixed(2)).join(', ')})`);
   if (heldItem() !== ball) { ball.take(); }
 
-  // outside: shots at the rim
+  // outside: shots at the rim (facing north in over the car park, #1018)
   w.Math.random = () => 0.5; // no jitter
   const shoot = (x, z) => {
     stand(x, z, 0); look(hoop.rimC); step(1 / 60);
@@ -92,14 +92,23 @@ f.onload = async () => {
     lines.push(`INFO shot from (${x.toFixed(1)}, ${z.toFixed(1)}): down through the rim height ${cross ?? 'never'}`);
     return { scored: stats.baskets > before, lowest };
   };
-  const b0 = stats.baskets, t0s = stats.threes;
-  const near = shoot(hoop.rimC.x, hoop.rimC.z + 4);
-  pass &= check(near.scored && stats.threes === t0s, `a shot from 4 m: in (baskets ${b0} → ${stats.baskets}), not a three`);
+  const b0 = stats.baskets, t0s = stats.threes, tw0 = stats.twoPointers, pts0 = stats.basketPoints;
+  const near = shoot(hoop.rimC.x, hoop.rimC.z - 4);
+  pass &= check(near.scored && stats.threes === t0s && stats.twoPointers === tw0 + 1 && stats.basketPoints === pts0 + 2, `a shot from 4 m: in (baskets ${b0} → ${stats.baskets}, 2p: ${stats.basketPoints} p)`);
   pass &= check(near.lowest > hoop.ground + ball.model.children[0].geometry.parameters.radius - 0.02, `it never sank into the asphalt (lowest ${near.lowest.toFixed(3)})`);
-  const far = shoot(hoop.rimC.x + 2, hoop.rimC.z + 7.2);
-  pass &= check(far.scored && stats.threes === t0s + 1, `a shot from 7.5 m: in, a three (threes ${stats.threes})`);
+  const far = shoot(hoop.rimC.x + 2, hoop.rimC.z - 7.2);
+  pass &= check(far.scored && stats.threes === t0s + 1 && stats.basketPoints === pts0 + 5, `a shot from 7.5 m: in, a three (threes ${stats.threes}, ${stats.basketPoints} p)`);
+
+  // identified free throw (1 point)
+  const ft0 = stats.freeThrows, pts1 = stats.basketPoints;
+  stand(hoop.rimC.x, hoop.rimC.z - 5.12, 0); look(hoop.rimC); step(1 / 60);
+  if (heldItem() !== ball) ball.take();
+  ball.cool = 0; ball.shootFreeThrow();
+  run(4, () => stats.freeThrows > ft0);
+  pass &= check(stats.freeThrows === ft0 + 1 && stats.basketPoints === pts1 + 1, `free throw: in, 1 point (free throws ${stats.freeThrows}, ${stats.basketPoints} p)`);
+
   // a shot well to the side of the hoop misses
-  stand(hoop.rimC.x + 5, hoop.rimC.z + 4, 0); look(new V(hoop.rimC.x + 5, 3, hoop.rimC.z - 3)); step(1 / 60);
+  stand(hoop.rimC.x + 5, hoop.rimC.z - 4, 0); look(new V(hoop.rimC.x + 5, 3, hoop.rimC.z + 3)); step(1 / 60);
   if (heldItem() !== ball) ball.take();
   const b1 = stats.baskets; ball.cool = 0; ball.use(); run(4);
   pass &= check(stats.baskets === b1, 'a shot past the hoop does not count');
@@ -109,8 +118,8 @@ f.onload = async () => {
   pass &= check(!ball.flying && ball.placed, 'it has come to rest on the ground');
   toggleFurniture(false); run(1.5);
   pass &= check(!ball.placed && !ball.held && !hoop.object.visible, 'F: the ball home, the hoop gone');
-  toggleFurniture(true); run(0.2);
-  pass &= check(!hoop.object.visible, 'F back: the hoop stays down (the ball is home)');
+  toggleFurniture(true); run(1.5);
+  pass &= check(hoop.object.visible && hoop.k === 1, 'F back: the hoop returns (#1018)');
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>
