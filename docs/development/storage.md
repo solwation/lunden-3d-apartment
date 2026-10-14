@@ -715,3 +715,16 @@ leaf. The immutable #951 branch remains separate.
 ### Immutable central Nose depth compatibility (#950)
 
 The new strict named option `allowImmutableNoseDepth` reads only the already private permanent `headPoseFixed === true`. It adds no attachment field, message, persistence key, alarm or periodic work. Missing/malformed legacy history is never initialized retroactively; accepted p/r/c changes and returns remain ineligible across hibernation, recovery and death. Shared state snapshots omit private eligibility. Existing null/bool/positional option behavior, other named permissions, old Nose families, life/recovery/award/kill handling, v1 contact precision and256byte cap remain unchanged. A cached older validator gives ordinary body1 for this newly recognized contact; the new client follows its authoritative ordinary marker and health receipt.
+
+
+### Exposed front-side Jaw strips (#959)
+
+The new Jaw strip shares #938's private `headPoseFixed` connection history. Only
+`headPoseFixed === true` permits the additional strict named `allowJawFrontSide`
+branch, before or after greeting. It is established by the first valid standing state;
+any normalized position/heading/crouch change permanently clears eligibility. The
+flag is retained in the Durable Object attachment across hibernation but never sent in
+state, greeting or late welcome. Missing legacy history remains ineligible; reset,
+healing and death do not recreate it. No new message, client-controlled permission,
+timer or saved health rule was added. Original Jaw and unrelated region guards stay
+separate.

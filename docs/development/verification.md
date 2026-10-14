@@ -5386,3 +5386,24 @@ The earlier protocol2/legacy gameplay runs retained their actual CLI0, but their
 #950 publication: runtime `de76686daf4737997f3cd76045f203a0c8b91e75`, grouped head-hits changelog762. Worker run38522572126 / job115715427924 executed the genuine cloudflare/wrangler-action successfully on that exact SHA at2026-10-14T06:30:21–41Z; its log contains actual `npx wrangler deploy`, Uploaded/Deployed lunden-l1007 and version7fd414ea-12b9-4073-ad8c-f1cfe2af81fe. All six measured runtime/driver paths from protocol3 and final-entry match the published commit byte-for-byte. This closes the bounded950 family; broader920 and movement/crouch families remain open. The completion commit changes only this acceptance record.
 
 #923 read-only eyebrow/mouth audit ([measured source/cells and limits](../validation/issue-923/README.md)) verified exact original36-vertex box ranges on sampled actual Avatar native rays without World/Worker/WebGL.12 style×build looks and5832 rays expose927/921 brow and24 mouth contacts;200 attempted whole-cell corner rays retain116 wrong-family corners. One whole-cell candidate per s=-1/+1 brow and mouth does not confer server support or all-pose/quantization acceptance. Separate12 nearest negatives include actual hair/hat/eye/nose/torso and a miss. Initial fixture/reporting CLI1s retained; corrected survey and negative Node0, source1357/1357, native DOM summary PNG inspected with QR/right-edge clipping explicit. Full functional children [#963](https://github.com/solwation/lunden-3d-apartment/issues/963) and [#964](https://github.com/solwation/lunden-3d-apartment/issues/964) must each provide exact pure/native geometry, conservative actual nearest support, real Combat/Ghosts/Worker2HP/HUD/death/history/precision/recovery and genuine deployment before closure. No runtime change or automatic child start.
+
+
+### Exposed front-side Jaw strips (#959)
+
+`tools/riflejawstriptest.cjs GAME WORKER OUTPUT GEOMETRY` uses the actual Avatar,
+Ghosts, Combat and a separately started local PlayerRoom. The all60 native grid uses
+source-derived breath/head-pitch extrema plus actual held, wave, paused/repeat,
+saber, turn and changed-history controls: 43,740 nearest-surface rays, 9,488
+admitted Jaw contacts, 7,200 rounded whole-cell corners, zero false admissions or
+corner failures, and maximum entry residual 6.787 mm under the unchanged 8 mm
+limit. The unsupported/deeper/ahead/miss controls remain separate; this is finite
+sampled coverage, not every continuous pose.
+
+The final fresh-Worker room passed30/CLI0 with a recorded PID born after the source
+freeze and no WebGL: one body1 shot, four new 2-HP Jaw receipts, old-classifier body1,
+one lethal UUID/award/reset, replay idempotence, marker, real wall and miss, and the
+existing r2/r3/v1 wire bound. The final actual HUD/receipt PNG was inspected. Focused
+`node --test cloudflare/players.test.mjs` passed40/40 including authority, normalized
+history, hibernation, old-client and late-welcome cases. Earlier whole candidate and
+room attempts remain recorded separately as failures; only the narrowed .037–.040
+leaf is accepted. No apartment, full animated-scene physics, live phone or FPS claim.

@@ -1081,3 +1081,46 @@ test('#950 immutable Nose depth uses existing private history; changed/legacy re
     const observer=await connect(env,'Late');peers.push(observer);for(const s of observer.got[0].ps)assert.equal(Object.hasOwn(s,'headPoseFixed'),false);
   }finally{for(const p of peers)p.ws.close();await settle(env);}
 });
+
+// #959 math/authority regression; actual nearest surfaces and quantized cells are proved by the native driver.
+const jawStripShot = (C,id,state={p:[0,0,0],r:0}) => {
+  const l=C.avatarLook(id),w=[.93,1,1.08][l.build],H=C.PVP_RIFLE_HEAD;
+  for(const distance of[2,2.2,2.4,2.6,2.8,3,3.2,3.4,3.6,3.8,4])for(const yy of[.038,.0385,.039]){
+    const o=[0,1.62,-+(distance+.115*w).toFixed(2)],at=[-.026*w,(H.headY+yy)*l.tall,-.115*w],v=at.map((x,i)=>x-o[i]),d=v.map(x=>+(x/Math.hypot(...v)).toFixed(3));
+    const entry=C.rifleJawEntry(id,state,o,d);if(entry===null)continue;
+    const hc=[1,...o.map((x,i)=>+(x+d[i]/Math.hypot(...d)*entry).toFixed(3))],shot={t:'a',w:'rifle',to:id,o,d,hc};
+    if(C.rifleJawFrontSideRegion(id,state,hc.slice(1),o,d)&&C.rifleHeadContact(id,state,shot,[0,0,o[2]],40,4,false,{allowFront:false,allowRear:false,allowJawFrontSide:true}))return shot;
+  }
+  throw Error('No bounded shared-profile Jaw strip cell for '+id);
+};
+
+test('#959 Jaw strip strict named permission defaults closed and never changes original Jaw/legacy guards',async()=>{
+  const C=await import('../src/config.js'),id='jaw-0',state={p:[0,0,0],r:0},shot=jawStripShot(C,id,state),feet=[0,0,shot.o[2]];
+  assert.equal(C.rifleJawRegion(id,state,shot.hc.slice(1),shot.o,shot.d),false,'separate cell beyond original core');
+  assert.equal(C.rifleHeadContact(id,state,shot,feet,40,4),false);
+  for(const flag of[undefined,false,null,0,1,'true'])assert.equal(C.rifleHeadContact(id,state,shot,feet,40,4,false,{allowJawFrontSide:flag}),false);
+  assert.equal(C.rifleHeadContact(id,state,shot,feet,40,4,false,{allowFront:false,allowRear:false,allowJawFrontSide:true}),true);
+  assert.equal(C.rifleHeadContact(id,{...state,c:true},shot,feet,40,4,false,{allowJawFrontSide:true}),false);
+  const l=C.avatarLook(id),o=[0,+(1.57*l.tall).toFixed(2),-3],d=[0,0,1],entry=C.rifleJawEntry(id,state,o,d),core={t:'a',w:'rifle',o,d,hc:[1,0,o[1],+(o[2]+entry).toFixed(3)]};
+  assert.equal(C.rifleJawRegion(id,state,core.hc.slice(1),o,d),true);
+  assert.equal(C.rifleHeadContact(id,state,core,o,40,4,false,{allowJawFrontSide:false,allowFront:false,allowRear:false}),true,'old Jaw remains independent of new permission');
+  assert.equal(C.rifleHeadContact(id,state,core,o,40,4,false,null,false),true,'old null-front/rearfalse form still preserves Jaw');
+});
+
+test('#959 immutable Jaw strip retains real room HP/hibernate/private history/death/replay and legacy fallback',async()=>{
+  const C=await import('../src/config.js'),env=setup(),a=await connect(env,'Jaw shooter'),peers=[a],state={p:[0,0,0],r:0,h:'rifle'};
+  const send=async(c,m)=>{now+=1000;c.send(m);await settle(env);},join=async()=>{const b=await connect(env,'Jaw target');peers.push(b);await send(b,state);return b;},att=b=>b.ws.peer.deserializeAttachment();
+  const fire=async b=>{const s=jawStripShot(C,b.got[0].i);await send(a,{p:[s.o[0],0,s.o[2]],r:0,h:'rifle'});await send(a,s);return a.got.filter(m=>m.t==='hit').at(-1);};
+  try{
+    const b=await join();assert.equal(att(b).headPoseFixed,true);
+    let hit=await fire(b);assert.equal(hit.head,true);assert.equal(hit.l,8);assert.equal(b.got.filter(m=>m.t==='hurt').at(-1).l,8);
+    await send(b,{t:'g',to:a.got[0].i,k:0});await send(b,{...state,h:'saber',sp:true,score:17});env.PLAYERS.hibernate('world');
+    hit=await fire(b);assert.equal(hit.head,true);assert.equal(hit.l,6);assert.equal(att(b).headPoseFixed,true);
+    await send(a,{...jawStripShot(C,b.got[0].i),hc:undefined});assert.equal(a.got.filter(m=>m.t==='hit').at(-1).l,5,'legacy no-hc client gets body1');
+    const low=att(b);low.l=1;b.ws.peer.serializeAttachment(low);hit=await fire(b);assert.equal(hit.dead,true);assert.equal(hit.head,true);assert.equal(hit.l,-1);assert.match(hit.kill,/^[0-9a-f-]{36}$/);assert.equal(att(b).l,10);assert.equal(att(b).headPoseFixed,true);
+    const receipts=a.got.filter(m=>m.t==='hit').length;a.send(jawStripShot(C,b.got[0].i));await settle(env);assert.equal(a.got.filter(m=>m.t==='hit').length,receipts,'same-tick replay cannot award/kill twice');
+    for(const delta of[{p:[.01,0,0]},{r:.01},{c:true}]){const changed=await join();await send(changed,{...state,...delta});await send(changed,state);env.PLAYERS.hibernate('world');assert.equal(att(changed).headPoseFixed,false);assert.equal((await fire(changed)).head,undefined);assert.equal(att(changed).l,9);}
+    const legacy=await join(),old=att(legacy);delete old.headPoseFixed;legacy.ws.peer.serializeAttachment(old);env.PLAYERS.hibernate('world');await send(legacy,state);assert.equal((await fire(legacy)).head,undefined);assert.equal(att(legacy).headPoseFixed,undefined);
+    const observer=await connect(env,'Late viewer');peers.push(observer);for(const s of observer.got[0].ps)assert.equal(Object.hasOwn(s,'headPoseFixed'),false);
+  }finally{for(const p of peers)p.ws.close();await settle(env);}
+});

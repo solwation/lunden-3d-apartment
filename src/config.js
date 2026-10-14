@@ -4567,6 +4567,7 @@ export const PVP_RIFLE_HEAD = {
   coreStyles: [0, 1, 2, 3],
   corePatches: { 3: { across: .008, low: .132, high: .140, maxVertical: .08 } }, // *guess* lower exposed beanie core and ray-angle policy; actual nearest-surface/hidden-skull grids bound coverage
   skull: { radius: .11, width: 14, height: 10, scale: [.94, 1.1, .98], centre: [0, .1, .01] },
+  jawFrontSidePatch: { across: [.023, .030], low: .037, high: .040, front: .100 }, // #959 *guess* immutable-standing frontal strips; unchanged original cone/8mm guard, sampled actual pose/whole-cell proof
   jawPatch: { across: .008, low: .032, high: .048, front: .107, direction: .08, surface: .008 }, // *guess* sampled lower-front jaw core/ray guards, not physical dimensions
   jaw: { radius: .088, width: 8, height: 6, scale: [1, .8, 1], centre: [0, .052, .03] }, // unchanged rigid head-bone jaw mesh
   nose: { radius: .02, width: 8, height: 6, scale: [.8, 1.1, 1.15], centre: [0, .092, .113] }, // unchanged Avatar nose
@@ -4652,7 +4653,7 @@ export function rifleHeadContact(seed,state,shot,shooterFeet,range,maxOrigin,all
   if(Math.hypot(...o.map((v,i)=>v-shooterFeet[i]))>maxOrigin)return false;
   const length=Math.hypot(...d),unit=d.map(v=>v/length),delta=hc.slice(1).map((v,i)=>v-o[i]),along=delta.reduce((s,v,i)=>s+v*unit[i],0);
   if(along<0||along>range||Math.hypot(...delta.map((v,i)=>v-along*unit[i]))>H.wireMetres)return false;
-  const jaw=rifleJawRegion(seed,state,hc.slice(1),o,d),nose=rifleNoseRegion(seed,state,hc.slice(1))||rifleNoseExtraRegion(seed,state,hc.slice(1))||rifleNoseBandRegion(seed,state,hc.slice(1))||(options.allowImmutableNoseDepth===true&&rifleNoseDepthRegion(seed,state,hc.slice(1)));
+  const jaw=rifleJawRegion(seed,state,hc.slice(1),o,d)||(options.allowJawFrontSide===true&&rifleJawFrontSideRegion(seed,state,hc.slice(1),o,d)),nose=rifleNoseRegion(seed,state,hc.slice(1))||rifleNoseExtraRegion(seed,state,hc.slice(1))||rifleNoseBandRegion(seed,state,hc.slice(1))||(options.allowImmutableNoseDepth===true&&rifleNoseDepthRegion(seed,state,hc.slice(1)));
   if(!jaw && !nose && !rifleHeadRegion(seed,state,hc.slice(1),o,d,allowLateral,options))return false;
   const front=jaw ? rifleJawEntry(seed,state,o,d) : nose ? rifleNoseEntry(seed,state,o,d) : rifleSkullEntry(seed,state,o,d);
   return front!==null&&Math.abs(front-along)<=(jaw ? H.jawPatch.surface : nose ? H.nosePatch.surface : H.surfaceMetres);
@@ -4743,6 +4744,13 @@ export function rifleJawRegion(seed,state,point,origin,direction) {
   const H=PVP_RIFLE_HEAD,J=H.jawPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
   const [x,y,z]=point.map((v,i)=>v-state.p[i]),lx=(c*x-s*z)/width,ly=y/look.tall-H.headY,lz=(s*x+c*z)/width;
   return Math.abs(lx)+H.wireMetres/width<=J.across && ly-H.wireMetres/look.tall>=J.low && ly+H.wireMetres/look.tall<=J.high && lz-H.wireMetres/width>=J.front;
+}
+/** #959: actual frontal Jaw strips only; the server separately requires permanent private pose history. */
+export function rifleJawFrontSideRegion(seed,state,point,origin,direction) {
+  if(state.c||!rifleJawDirection(state,direction))return false;
+  const H=PVP_RIFLE_HEAD,J=H.jawFrontSidePatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
+  const [x,y,z]=point.map((v,i)=>v-state.p[i]),lx=Math.abs((c*x-s*z)/width),ly=y/look.tall-H.headY,lz=(s*x+c*z)/width;
+  return lx-H.wireMetres/width>=J.across[0]&&lx+H.wireMetres/width<=J.across[1]&&ly-H.wireMetres/look.tall>=J.low&&ly+H.wireMetres/look.tall<=J.high&&lz-H.wireMetres/width>=J.front;
 }
 export function rifleJawEntry(seed,state,origin,direction) {
   return rifleJawDirection(state,direction) ? rifleProfileEntry(rifleJawProfile(),seed,state,origin,direction) : null;

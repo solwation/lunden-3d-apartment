@@ -590,6 +590,25 @@ Armed greeting/action priority (#872): main.js only offers ghost greeting pick b
 
 Defeated-player statistics (#871): the existing Ghosts server-hit delivery reaches `Combat.hit`; `recordPlayerKill` consumes only the server-generated lethal-hit UUID for another player. The original hit/score callback, victim death/wake, fall and recovery behavior are unchanged. The existing statistics panel gains “Dödade spelare”, with persistent count and receipt metadata; resetting visible statistics gives zero while old receipts remain consumed. [Persistence/protocol](storage.md) remains local statistics, not authentication or a new server fight log.
 #872 native verification (2026-10-13): final complete driver 22 PASS/zero FAIL/pageerrors, ALL PASS, actual exit 0; original c25c564 main against the same driver 13 FAIL/exit1. Reviewed844×390 `/tmp/lunden-priority-872/armed-touch.png` shows “Skjut”, with no greeting label. Earlier22PASS before explicit latched-trigger checks is superseded by native5/final, which test pointerdown→pointerup→click and E→keyup firing state. Original/fixed source snapshots, raw logs and verbatim source-span hashes are retained under `/tmp/lunden-priority-872`, with final proof in `~/.local/state/lunden-orkester/20261013-priority/872-final-proof.json`. Final rebase preserved Surface's fall/recovery block and matched the tested complete main source; no actual-world/projectile or physical-phone result is claimed.
+### Exposed front-side Jaw strips (#959)
+
+A narrow pair of front-side strips extends the existing rigid lower-Jaw hit region. It
+uses the unchanged Jaw mesh, first-profile entry, 8 mm Jaw residual, .08 front cone
+and 1 mm whole-wire-cell margin. The added canonical patch is *guess* policy
+(x .023–.030 m, y 1.53+.037–.040 m, front z≥.100 m). Only a strict named
+`allowJawFrontSide` option opens it; PlayerRoom supplies that permission only while
+its private `headPoseFixed` flag is literally true. The flag is created from the first
+valid standing state and becomes permanently false after normalized position,
+heading or crouch changes. It survives hibernation but is absent from public state and
+late welcome. Existing Jaw core, other head regions and legacy options remain
+independent; changed, crouched, unknown-history and old-client cases keep body damage.
+
+`tools/riflejawstriptest.cjs` proves nearest actual Jaw triangles and whole-cell
+corners for all60 canonical looks under bounded standing breath/pitch phases. Its
+fresh-source-frozen Worker room covers a real body1 shot, four 2-HP Jaw receipts,
+legacy fallback, lethal reset/UUID/replay, wall and miss, and wire budget. It uses no
+apartment World or WebGL and does not establish full scene physics or phone behavior.
+
 ## Confirmed-hit marker (#875)
 
 `src/hitmarker.js` owns the brief Swedish text above the crosshair, attached only to `Combat.hit` (the
