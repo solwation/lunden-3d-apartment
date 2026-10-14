@@ -258,3 +258,9 @@ turn/recovery behavior remains #941. See the
 [finite verification](docs/development/verification.md#first-ordinary-turn-rear-962).
 
 #950 adds a narrow central Nose depth family for rifle hits on a player whose first standing position, heading and crouch state have never changed on that connection. It reuses private immutable history and the original Nose geometry/6mm entry guard; other Nose families and ordinary body fallback stay independent. See [verification](docs/development/verification.md#immutable-central-nose-depth-950).
+
+#967 adds a separate style0 RIGHT head-hit family after one small negative standing
+turn following a greeting. A conservative whole-cell prism guard keeps uncertain
+contacts at body1; later movement, crouch or another turn disables this family.
+Existing head-hit families keep their own rules. See the
+[source-bound certificate](docs/development/verification.md#continuous-style0-right-cell-967).

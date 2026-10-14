@@ -5531,3 +5531,82 @@ recorded separately from the incoming independent Jaw classifier. Genuine Worker
 job115735348375, executed `npx wrangler deploy`, Uploaded07:31:17.414Z and
 Deployed07:31:18.033Z on2026-10-14; version184ca716-6fb0-4553-a9a6-c4248769e310.
 This establishes publication, not an additional live-device gameplay test.
+
+
+### Continuous style0 RIGHT cell (#967)
+
+Run `tools/riflerightcellproof.cjs GAME_BASE OUT` with the explicit installed
+`PLAYWRIGHT_MODULE`/`CHROME_PATH`. It exports all30 style0 sleeve/build/height
+variants from actual Three0.170 native CPU geometry, verifies exact canonical
+vertex and scale parity, finds useful actual rounded native Skull wires for all30,
+and invokes `tools/riflerightcellproof.py`. Source hashes bind the generator and
+Avatar/Olof/Ghosts formulas. `certificate.json` composes head, both arms and remaining
+body coverage; an individual exploratory head JSON is not a full certificate.
+
+The source-derived prism is canonical x[-.8,-.087], y[1.628,1.632], z[.038,.042].
+Head coverage encloses continuous yaw offset[0,.105], pitch±.03, breath±.004 and
+both settled and fresh-bind anchors. Triangle filtering uses the entire inverse
+transformed prism envelope, not a guessed bind box. The far section lies at least
+4.174mm inside every native convex Skull halfspace; the full preceding prism is
+separated from every other head triangle. Interval IK covers ordinary rest,
+continuous wave and held/saber right-arm poses, both sleeve geometries, the mirrored
+resting left arm, torso/hips and downward standing legs. The smallest remaining
+arm separating margin is0.271mm after the0.1mm numerical envelope.
+
+The envelope is a source-derived conservative CPU floating-point bound: native
+Float32 geometry is exported verbatim and Three's CPU skinning uses Float64 matrix
+operations. It is neither GPU certification nor a formal proof of every JavaScript
+engine operation. Runtime does no geometry iteration. Affine inverse heading/build/
+height transforms preserve convexity. On each x-section, intersections from one
+origin through any point inside the rounded contact cell are positive weighted
+combinations of its eight corner intersections (the common-sign denominator adjusts
+the weights). Both rectangular end sections inside a convex prism therefore enclose
+the whole ray family. The actual rounded r3 ray is checked separately: the existing
+wire tube alone does not guarantee that ray passes through the cell.
+
+The finite supplementary `tools/riflerightcellsafety.cjs GAME_BASE OUT MODE` runs
+all60 appearance combinations. Canonical:17640 rays/587 admitted centers/4696 corners;
+held:14400/160/1280; idle/post-wave:8640/117/936. All admitted corners retain actual
+FIRST pure Skull, zero forged/earlier-surface admissions, CLI0. Endpoint/oblique/
+near-max edge mode has8400 rays and **zero admitted positives**: negative-only
+coverage, not positive range coverage. These samples supplement the continuous
+source-derived certificate; they do not replace its displacement bounds.
+
+`tools/riflerightcelltest.cjs GAME_BASE WORKER_BASE OUT` uses actual Ghosts, Combat,
+Avatar CPU rays, two WS clients and original HUD DOM without World/WebGL. Native5
+completed29/29, actual CLI0 on a separate fresh Worker started after the completed
+47-file import-closure freeze, with PID/startTicks/tcp6-fd ownership recorded.
+Pre/greeted/paused/repeated+held-saber hits gave HP8/6/4/2, legacy no-hc body1 left1,
+and lethal head2 gave-1 with one UUID/reset; receipt replay stayed idempotent.
+Subsequent heading-return/move/crouch gave body1 at9/8/7; wall/miss/version guards
+remained closed. Fresh valid-history style1 and style0 native Skull centers passed
+the old RIGHT leaf but failed the new cell guard and received body1 at9. These are
+rejected/uncertified cells, not claims of an unsupported center. The independent
+historical #957 style1 counterexample remains a supported center with a genuinely
+unsupported rounded corner; its exact wire is a Node regression.
+
+The new client against an independently archived db8e9ae Worker completed6/6,
+actual CLI0: ordinary pre-greet head2 at8 and first-turn body1 at7. Head/body/legacy
+HUD PNGs were inspected. Focused PlayerRoom suite completed41/41, CLI0, including
+private hibernation, absent-vs-established-null, invalid/rate-rejected packets,
+wrapped headings, permanent invalidation and both rejected cell examples.
+
+Artifacts under `/tmp/lunden-priority-967` and the orchestration ledger preserve
+all failures: initial conservative interval gate failures; native1's hypothetical
+heading selection (outer shell0, inner result incomplete, no separately captured
+exit); native2 CLI1 in the negative selection fixture; native3 CLI1 in camera-ray
+search; native4 CLI1 waiting for state publication during a stopped update loop.
+Native5 fixes only ordinary camera placement and coherent publication/pause/greeting
+sequencing; it changes no runtime guards or animation. No partial run is called green.
+Browser was Chromium145.0.7632.6 via Playwright1.61.1, native CPU only, no phone/GPU claim.
+
+
+Final rebase onto6803188 preserved incoming959 Jaw,962 Rear and966 chat. Removing
+only967 additions reproduces upstream config/players exactly. Removing only the two
+959 Jaw-dispatch additions reproduces the earlier Avatar byte-for-byte; Olof/Ghosts
+remain identical. A fresh native export/certificate2 passed CLI0 with identical
+vertices, sleeve variants, all30 models and useful wire results. Combined Node tests
+passed44/44 CLI0. A separately frozen fresh merged Worker completed native6 at29/29,
+CLI0 with both new negative receipts and inspected head/body PNGs. The earlier all60
+matrices remain source-bound to the unchanged geometry/pose formulas. Final aggregate:
+`final-proof.json`; complete component outputs and original failures remain preserved.

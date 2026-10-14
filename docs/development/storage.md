@@ -742,3 +742,27 @@ hibernation, return, client fields and public late welcome cannot restore it.
 Neither #951 immutable nor #952 Front-corridor history changes. r2 is ordinary
 wire rounding, not an added modulo-2π tolerance: ±π aliases outside exact ±.04
 remain body1, while unwrapped headings are allowed. No new public fields.
+
+
+### First standing RIGHT turn with a whole contact cell (#967)
+
+A separate default-false `allowGreetingRightFirstTurn` permission admits only style0
+and the original #946 RIGHT leaf. Fresh connections acquire private `rightFirstTurn`
+history from their first accepted standing state. Exactly one accepted normalized
+negative turn in [-.105,-.095] (*guess*, the requested policy family) may replace
+that heading; any later accepted heading change, position change or crouch permanently
+invalidates this permission, including a return to the original state. Invalid and
+rate-rejected packets consume nothing. A missing or legacy/null attachment with an
+existing authoritative state stays denied. History is serialized privately for
+hibernation, never published to observers, and has no timeout or animation-phase input.
+
+The new leaf intersects the actual rounded direction and all eight corners of the
+rounded contact cell with both ends of a source-certified canonical prism. A cell
+outside that prism falls back to ordinary body1. Build/height and current heading
+are inverted before testing; the rounded origin must start outside the certified
+avatar envelope. This adds a constant 18 plane intersections, no mesh or pose loops
+per shot. Existing #946, other regions, their histories and original tolerances are
+unchanged. The [certificate and native checks](verification.md#continuous-style0-right-cell-967)
+bind this narrow family to current source geometry. Other styles remain separate
+children #968/#969; neither the broader first-turn parent nor movement/crouch support
+is implied.

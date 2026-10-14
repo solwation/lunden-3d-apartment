@@ -1188,3 +1188,62 @@ test('#962 first ordinary-turn Rear: normalized authority, history, lethal/repla
   for (const value of [undefined,null,false,0,1,'true',{}]) assert.equal(C.rifleHeadContact(id,{p:[0,0,0],r:.04},current,current.o,40,4,false,{allowFront:false,allowRear:false,allowGreetingFirstTurnRear:value}),false,'only literal true selects the independent leaf');
   for(const peer of [a,fresh,late])peer.ws.close();await settle(env);
 });
+
+test('#967 first RIGHT turn is private, accepted-only, single-use and permanent through hibernation', async () => {
+  const env=setup(), peers=[], join=async()=>{const c=await connect(env);peers.push(c);return c;};
+  const att=c=>c.ws.peer.deserializeAttachment(), send=async(c,m)=>{now+=1000;c.send(m);await settle(env);};
+  const state={p:[1.234,0,3.456],r:.804,h:'rifle'};
+  try {
+    for(const [anchor,next] of [[.8,.7],[0,-.1],[-3.14,3.04],[.8,6.98]]) {
+      const c=await join();assert.equal(att(c).rightFirstTurn,null);await send(c,{...state,r:anchor});
+      assert.deepEqual(att(c).rightFirstTurn,{p:[1.23,0,3.46],r:anchor,next:null});
+      await send(c,{...state,r:'bad'});assert.equal(att(c).rightFirstTurn.next,null);
+      await send(c,{...state,r:next,h:'saber',sp:true,score:7});
+      assert.deepEqual(att(c).rightFirstTurn,{p:[1.23,0,3.46],r:anchor,next});
+      env.PLAYERS.hibernate('world');await send(c,{...state,r:next});assert.equal(att(c).rightFirstTurn.next,next);
+      await send(c,{...state,r:anchor});await send(c,{...state,r:next});assert.equal(att(c).rightFirstTurn,false,'return cannot restore consumed first turn');
+    }
+    for(const first of [.79,.71,.69,.9]) {
+      const c=await join();await send(c,state);await send(c,{...state,r:first});await send(c,{...state,r:.7});
+      assert.equal(att(c).rightFirstTurn,false,'an earlier different turn permanently invalidates');
+    }
+    for(const change of [{p:[1.24,0,3.46]},{c:true}]) {
+      const c=await join();await send(c,state);await send(c,{...state,r:.7});await send(c,{...state,r:.7,...change});await send(c,{...state,r:.7});assert.equal(att(c).rightFirstTurn,false);
+    }
+    const crouched=await join();await send(crouched,{...state,c:true});await send(crouched,state);assert.equal(att(crouched).rightFirstTurn,false);
+    for(const bad of [undefined,null,true,{}, {p:[1.23,0,3.46],r:.8,next:.8},{p:[1.234,0,3.46],r:.8,next:.7},{p:[1.23,0,3.46],r:.8,next:.705}]) {
+      const c=await join();await send(c,state);const raw=att(c);if(bad===undefined)delete raw.rightFirstTurn;else raw.rightFirstTurn=bad;c.ws.peer.serializeAttachment(raw);
+      env.PLAYERS.hibernate('world');await send(c,{...state,r:.7});assert.equal(att(c).rightFirstTurn,false,'missing/null/malformed established history never initializes');
+    }
+    const limited=await join();await send(limited,state);
+    for(let i=1;i<PLAYERS.perSecond;i++)limited.send({...state,r:.8});
+    limited.send({...state,r:.9});await settle(env);assert.equal(att(limited).rightFirstTurn.next,null,'rate-rejected heading cannot consume first turn');
+    await send(limited,{...state,r:.7});assert.equal(att(limited).rightFirstTurn.next,.7);
+    const late=await join();assert.ok(late.got[0].ps.every(s=>!Object.hasOwn(s,'rightFirstTurn')),'private history stays out of welcome');
+  } finally { for(const c of peers)c.ws.close();await settle(env); }
+});
+
+
+test('#967 source-derived style0 whole-cell admission preserves old regions and defaults closed', async () => {
+  const C=await import('../src/config.js'), state={p:[0,0,0],r:0};
+  // Actual native nearest-Skull wire from the source-bound all30 geometry/wire feasibility run.
+  const shot={"t": "a", "w": "rifle", "o": [1.6, 1.63, -0.04], "d": [-1, 0, 0], "hc": [1, 0.096, 1.63, -0.04]};
+  const options={allowFront:false,allowRear:false};
+  assert.equal(C.rifleHeadGreetingRightRegion('front-78',state,shot.hc.slice(1),shot.o,shot.d),true);
+  assert.equal(C.rifleHeadGreetingRightCellRegion('front-78',state,shot.hc.slice(1),shot.o,shot.d),true);
+  assert.equal(C.rifleHeadContact('front-78',state,shot,shot.o,40,4,false,options),false);
+  assert.equal(C.rifleHeadContact('front-78',state,shot,shot.o,40,4,false,{...options,allowGreetingRightFirstTurn:true}),true);
+  assert.equal(C.rifleHeadContact('front-78',state,shot,shot.o,40,4,false,{...options,allowGreetingRight:true}),true);
+  // Exact #957 falsifier: supported center, but unsafe rounded corner in long-hair style1.
+  const unsafe={t:'a',w:'rifle',o:[3.12,1.67,-2.68],d:[-.765,0,.644],hc:[1,.046,1.67,-.092]}, changed={p:[0,0,0],r:.7};
+  assert.equal(C.rifleHeadGreetingRightRegion('front-0',changed,unsafe.hc.slice(1),unsafe.o,unsafe.d),true);
+  assert.equal(C.rifleHeadContact('front-0',changed,unsafe,unsafe.o,40,4,false,{...options,allowGreetingRight:true}),true);
+  assert.equal(C.rifleHeadContact('front-0',changed,unsafe,unsafe.o,40,4,false,{...options,allowGreetingRightFirstTurn:true}),false);
+  // Actual native5 fresh style0 target: valid first turn, nearest Skull, old leaf true, body1 receipt.
+  const outside={t:'a',w:'rifle',o:[3.11,1.72,-2.67],d:[-.765,-.002,.643],hc:[1,.051,1.712,-.099]};
+  assert.equal(C.avatarLook('e6a4612d').style,0);
+  assert.equal(C.rifleHeadGreetingRightRegion('e6a4612d',changed,outside.hc.slice(1),outside.o,outside.d),true);
+  assert.equal(C.rifleHeadContact('e6a4612d',changed,outside,outside.o,40,4,false,{...options,allowGreetingRightFirstTurn:true}),false);
+  // The actual r3 ray must remain in the prism independently of the cell-corner rays.
+  assert.equal(C.rifleHeadGreetingRightCellRegion('front-78',state,shot.hc.slice(1),shot.o,[-1,.01,0]),false);
+});

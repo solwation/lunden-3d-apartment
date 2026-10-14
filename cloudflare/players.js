@@ -175,6 +175,25 @@ const leftStandingTurnFits = (anchor, s) => {
   return Math.abs(Math.round(delta * 100)) <= Math.round(RH.greetingLeftTurn * 100)
     || Math.abs(Math.atan2(Math.sin(delta), Math.cos(delta))) <= RH.greetingLeftTurn;
 };
+// #967: one accepted first negative standing turn, then an exactly fixed accepted pose.
+// Only a fresh null sentinel with no authoritative state can initialize this private history.
+const firstRightDeltaFits = (r, next) => {
+  const delta = Math.atan2(Math.sin(next - r), Math.cos(next - r));
+  return delta >= RH.greetingRightFirstTurn[0] && delta <= RH.greetingRightFirstTurn[1];
+};
+const knownRightFirstTurn = h => h && typeof h === 'object' && !Array.isArray(h)
+  && Array.isArray(h.p) && h.p.length === 3 && h.p.every(v => fin(v, 5000) && v === r2(v))
+  && fin(h.r, 100) && h.r === r2(h.r)
+  && (h.next === null || (fin(h.next, 100) && h.next === r2(h.next) && firstRightDeltaFits(h.r, h.next)));
+const updateRightFirstTurn = (h, s, previous) => {
+  if (h === null && previous === null) return s.c === true ? false : { p: s.p.slice(), r: s.r, next: null };
+  if (!knownRightFirstTurn(h) || s.c === true || s.p.some((v, i) => v !== h.p[i])) return false;
+  if (h.next !== null) return s.r === h.next ? h : false;
+  if (s.r === h.r) return h;
+  return firstRightDeltaFits(h.r, s.r) ? { ...h, next: s.r } : false;
+};
+const rightFirstTurnFits = (h, s) => knownRightFirstTurn(h) && h.next !== null && s
+  && s.c !== true && s.r === h.next && s.p.every((v, i) => v === h.p[i]);
 const att = (ws) => { try { return ws.deserializeAttachment() ?? null; } catch { return null; } };
 
 export class PlayerRoom {
@@ -279,7 +298,7 @@ export class PlayerRoom {
     const [client, server] = Object.values(new WebSocketPair());
     this.ctx.acceptWebSocket(server);
     const i = crypto.randomUUID().slice(0, 8), n = cleanName(url.searchParams.get('n'));
-    const attachment = { i, n, s: null, turned: false, leftTinyTurn: null, leftStandingTurn: null, frontTurn: null, rearFirstTurn: null, l: COMBAT.lives, t: now, w: now, c: 0, k: 0, over: false };
+    const attachment = { i, n, s: null, turned: false, rightFirstTurn: null, leftTinyTurn: null, leftStandingTurn: null, frontTurn: null, rearFirstTurn: null, l: COMBAT.lives, t: now, w: now, c: 0, k: 0, over: false };
     server.serializeAttachment(attachment);
     send(server, JSON.stringify({ t: 'w', i, l: attachment.l, ps: others.map(att).map((a) => ({ i: a.i, n: a.n, ...(a.s ?? {}), l: a.l ?? COMBAT.lives })), c: { lives: COMBAT.lives, weapons: COMBAT.weapons } }));
     this.broadcast({ t: 'j', i, n, l: COMBAT.lives }, server);
@@ -337,6 +356,7 @@ export class PlayerRoom {
     else {
       const s = cleanState(message);
       if (s) {
+        a.rightFirstTurn = updateRightFirstTurn(a.rightFirstTurn, s, a.s);
         // #931: rendering may stay paused after a valid turn; never infer pose completion from wall time.
         // Known history is initialized ONLY in a fresh connection's attachment; legacy missing history stays unknown.
         if (a.s && s.r !== a.s.r) a.turned = true;
@@ -413,7 +433,7 @@ export class PlayerRoom {
     // #938 reopens only a narrow left temple when first-standing p/r/c never changed; no wave-end inference.
     // Right/changed/legacy lateral contacts retain the permanent gt fallback; #931 front/#936 rear gates stay independent.
     // #951: only the existing immutable first-standing history also reopens the bounded Rear leaf after greeting.
-    const head = now - (b.movedAt ?? now) >= RH.stationaryMs && rifleHeadContact(b.i, b.s, shot, a.s.p, W.range, COMBAT.from, b.gt === undefined, { allowGreetingFirstTurnRear: b.gt !== undefined && rearFirstTurnFits(b.rearFirstTurn, b.s), allowImmutableNoseDepth: b.headPoseFixed === true, allowJawFrontSide: b.headPoseFixed === true, allowGreetingLeftTurn: b.gt !== undefined && leftStandingTurnFits(b.leftStandingTurn, b.s), allowGreetingLeftTinyTurn: b.gt !== undefined && leftTinyPoseFits(b.leftTinyTurn, b.s), allowGreetingLeft: b.gt !== undefined && b.headPoseFixed === true, allowGreetingFront: b.gt !== undefined && b.headPoseFixed === true && b.turned === false, allowGreetingRight: b.gt !== undefined && b.headPoseFixed === true && b.turned === false, allowFront: b.gt === undefined && b.turned === false, allowRear: b.gt === undefined || b.headPoseFixed === true, allowGreetingAfterTurnRear: b.gt !== undefined && b.turned === true && knownFrontTurn(b.frontTurn), allowAfterTurnFront: b.gt === undefined && b.turned === true && knownFrontTurn(b.frontTurn), allowGreetingAfterTurnFront: b.gt !== undefined && b.turned === true && knownFrontTurn(b.frontTurn) });
+    const head = now - (b.movedAt ?? now) >= RH.stationaryMs && rifleHeadContact(b.i, b.s, shot, a.s.p, W.range, COMBAT.from, b.gt === undefined, { allowGreetingRightFirstTurn: b.gt !== undefined && rightFirstTurnFits(b.rightFirstTurn, b.s), allowGreetingFirstTurnRear: b.gt !== undefined && rearFirstTurnFits(b.rearFirstTurn, b.s), allowImmutableNoseDepth: b.headPoseFixed === true, allowJawFrontSide: b.headPoseFixed === true, allowGreetingLeftTurn: b.gt !== undefined && leftStandingTurnFits(b.leftStandingTurn, b.s), allowGreetingLeftTinyTurn: b.gt !== undefined && leftTinyPoseFits(b.leftTinyTurn, b.s), allowGreetingLeft: b.gt !== undefined && b.headPoseFixed === true, allowGreetingFront: b.gt !== undefined && b.headPoseFixed === true && b.turned === false, allowGreetingRight: b.gt !== undefined && b.headPoseFixed === true && b.turned === false, allowFront: b.gt === undefined && b.turned === false, allowRear: b.gt === undefined || b.headPoseFixed === true, allowGreetingAfterTurnRear: b.gt !== undefined && b.turned === true && knownFrontTurn(b.frontTurn), allowAfterTurnFront: b.gt === undefined && b.turned === true && knownFrontTurn(b.frontTurn), allowGreetingAfterTurnFront: b.gt !== undefined && b.turned === true && knownFrontTurn(b.frontTurn) });
     const left = (b.l ?? COMBAT.lives) - (head ? RH.headDamage : RH.bodyDamage), dead = left <= 0;
     b.l = dead ? COMBAT.lives : left;
     this.recoveryClock(b, now);

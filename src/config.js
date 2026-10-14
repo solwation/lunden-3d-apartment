@@ -4590,6 +4590,10 @@ export const PVP_RIFLE_HEAD = {
   greetingLeftPatch: { vertical: [.096, .104], front: [.065, .075] },
   // #946: separate conservative *guess* at the exposed RIGHT/BACK temple; actual immutable wave/cell/hidden proof.
   greetingRightPatch: { vertical: [.098, .102], front: [.038, .042], directionZ: .05, directionY: .025 },
+  greetingRightFirstTurn: [-.105, -.095], // #967 *guess* first accepted negative yaw family; private history only.
+  // #967 geometric witness: source-bound interval proof of the whole style0 RIGHT ray-cell prism.
+  // Values are canonical model coordinates, not inflated hit/entry tolerances. See tools/riflerightcellproof.py.
+  greetingRightCell: { x: [-.8, -.087], vertical: [1.628, 1.632], front: [.038, .042] },
   greetingLeftTinyTurn: .01, // #947 *guess* one accepted r2 yaw quantum from the first standing anchor; no projection/entry tolerance change
   greetingLeftTurn: .30, // #953 *guess* independent larger standing yaw corridor; existing LEFT surface/precision unchanged
   // #943: narrow conservative *guess* inside Front; actual immutable-heading wave/pause/cell proof, not elapsed pose settling.
@@ -4717,7 +4721,7 @@ export function rifleHeadAfterTurnFrontRegion(seed,state,point,origin,direction)
 }
 
 // Shared dispatch: #916 owns the central core; #917 can add its independent extra-region branch here.
-export function rifleHeadRegion(seed,state,point,origin,direction,allowLateral = true,options = true,legacyRear = true) { if(options===null||typeof options!=='object')options={allowFront:options,allowRear:legacyRear}; return rifleHeadCoreRegion(seed,state,point,origin,direction) || ((options.allowRear === undefined || options.allowRear || options.allowGreetingAfterTurnRear === true || options.allowGreetingFirstTurnRear === true) && rifleHeadRearRegion(seed,state,point,origin,direction)) || ((options.allowFront === undefined || options.allowFront) && rifleHeadFrontRegion(seed,state,point,origin,direction)) || (allowLateral && rifleHeadLateralRegion(seed,state,point,origin,direction)) || ((options?.allowGreetingLeft === true || options?.allowGreetingLeftTinyTurn === true || options?.allowGreetingLeftTurn === true) && rifleHeadGreetingLeftRegion(seed,state,point,origin,direction)) || (options?.allowGreetingFront === true && rifleHeadGreetingFrontRegion(seed,state,point,origin,direction)) || (options?.allowGreetingRight === true && rifleHeadGreetingRightRegion(seed,state,point,origin,direction)) || (options?.allowAfterTurnFront === true && rifleHeadAfterTurnFrontRegion(seed,state,point,origin,direction)) || (options?.allowGreetingAfterTurnFront === true && rifleHeadAfterTurnFrontRegion(seed,state,point,origin,direction)); }
+export function rifleHeadRegion(seed,state,point,origin,direction,allowLateral = true,options = true,legacyRear = true) { if(options===null||typeof options!=='object')options={allowFront:options,allowRear:legacyRear}; return rifleHeadCoreRegion(seed,state,point,origin,direction) || ((options.allowRear === undefined || options.allowRear || options.allowGreetingAfterTurnRear === true || options.allowGreetingFirstTurnRear === true) && rifleHeadRearRegion(seed,state,point,origin,direction)) || ((options.allowFront === undefined || options.allowFront) && rifleHeadFrontRegion(seed,state,point,origin,direction)) || (allowLateral && rifleHeadLateralRegion(seed,state,point,origin,direction)) || ((options?.allowGreetingLeft === true || options?.allowGreetingLeftTinyTurn === true || options?.allowGreetingLeftTurn === true) && rifleHeadGreetingLeftRegion(seed,state,point,origin,direction)) || (options?.allowGreetingFront === true && rifleHeadGreetingFrontRegion(seed,state,point,origin,direction)) || (options?.allowGreetingRight === true && rifleHeadGreetingRightRegion(seed,state,point,origin,direction)) || (options?.allowGreetingRightFirstTurn === true && rifleHeadGreetingRightCellRegion(seed,state,point,origin,direction)) || (options?.allowAfterTurnFront === true && rifleHeadAfterTurnFrontRegion(seed,state,point,origin,direction)) || (options?.allowGreetingAfterTurnFront === true && rifleHeadAfterTurnFrontRegion(seed,state,point,origin,direction)); }
 
 /** Exposed lower rear skull only, with the same snapped ray as the actual native contact. */
 export function rifleHeadRearRegion(seed,state,point,origin,direction) {
@@ -4824,4 +4828,24 @@ export function rifleHeadGreetingRightRegion(seed,state,point,origin,direction) 
   const [x,y,z]=point.map((v,i)=>v-state.p[i]),lx=(c*x-s*z)/width,ly=y/look.tall-H.headY,lz=(s*x+c*z)/width,e=H.wireMetres/width,ey=H.wireMetres/look.tall;
   const n=Math.hypot(...direction),[dx,dy,dz]=direction.map(v=>v/n);
   return lx<0&&ly-ey>=R.vertical[0]&&ly+ey<=R.vertical[1]&&lz-e>=R.front[0]&&lz+e<=R.front[1]&&Math.abs(s*dx+c*dz)<=R.directionZ&&Math.abs(dy)<=R.directionY;
+}
+
+/** #967: first-turn style0 only. The full cell ray cone AND actual r3 ray stay in a certified safe prism.
+ * A common-origin ray/plane intersection is linear-fractional with same-sign denominator: all cell
+ * rays are convex combinations of its eight corner intersections. Both slab ends bound the whole cone.
+ * The interval generator bounds all head pitch/breath/bind/yaw and ordinary waving/held/rest limbs;
+ * it is not a sampled pose lookup or a server claim about the client's current animation phase. */
+export function rifleHeadGreetingRightCellRegion(seed,state,point,origin,direction) {
+  if(avatarLook(seed).style!==0||!rifleHeadGreetingRightRegion(seed,state,point,origin,direction))return false;
+  const P=PVP_RIFLE_HEAD.greetingRightCell,look=avatarLook(seed),w=[.93,1,1.08][look.build];
+  const a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),turn=([x,y,z])=>[(c*x-s*z)/w,y/look.tall,(s*x+c*z)/w];
+  const o=turn(origin.map((v,i)=>v-state.p[i]));if(!(o[0]<P.x[0]))return false;
+  const insideRay=d=>d[0]>0&&P.x.every(x=>{const t=(x-o[0])/d[0],y=o[1]+t*d[1],z=o[2]+t*d[2];return t>=0&&y>=P.vertical[0]&&y<=P.vertical[1]&&z>=P.front[0]&&z<=P.front[1];});
+  // The original wire-distance check alone allows rays outside the rounded cell: certify this ray too.
+  if(!insideRay(turn(direction)))return false;
+  for(const x of[-.0005,.0005])for(const y of[-.0005,.0005])for(const z of[-.0005,.0005]) {
+    const q=turn([point[0]+x-state.p[0],point[1]+y-state.p[1],point[2]+z-state.p[2]]);
+    if(!insideRay(q.map((v,i)=>v-o[i])))return false;
+  }
+  return true;
 }
