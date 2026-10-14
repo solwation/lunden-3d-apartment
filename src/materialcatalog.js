@@ -41,6 +41,12 @@ export const BED_UPHOLSTERY_MATERIAL_IDS = FURNITURE.flatMap(it => {
   const base = `f-${it.type}-${it.level}-${it.x}-${it.z}`, n = bedUpholsterySerials.get(base) ?? 0; bedUpholsterySerials.set(base, n + 1);
   return it.type === 'bed' && it.model === 'idanas' ? [`${base}-${n}-0`] : [];
 });
+// #1012: the three real movable Verona parts, excluding decorative neighboring copies.
+const veronaSerials = new Map();
+export const VERONA_UPHOLSTERY_MATERIAL_IDS = FURNITURE.flatMap(it => {
+  const base = `f-${it.type}-${it.level}-${it.x}-${it.z}`, n = veronaSerials.get(base) ?? 0; veronaSerials.set(base, n + 1);
+  return it.type === 'veronasofa' && ['sofa', 'divan1', 'divan2'].includes(it.part) ? [`${base}-${n}-0`] : [];
+});
 // #1014: stable independent decorative surfaces on the two actual indoor seats.
 const cushionSerials = new Map();
 export const CUSHION_MATERIAL_SURFACES = Object.fromEntries(FURNITURE.flatMap(it => {
@@ -58,4 +64,4 @@ export const LONG_PILE_MATERIAL_IDS = RUG_MATERIAL_IDS.filter(id => FURNITURE.so
 export const materialChoice = id => [...MATERIAL_CHOICES, ...CURTAIN_MATERIAL_CHOICES, ...UPHOLSTERY_MATERIAL_CHOICES].find(c => c.id === id);
 export const validMaterialChoice = (id, surface, choice) => (Object.hasOwn(CUSHION_MATERIAL_SURFACES, id) && CUSHION_MATERIAL_SURFACES[id].includes(surface))
   ? UPHOLSTERY_MATERIAL_CHOICES.some(c => c.id === choice) : surface === 'textile' && (choice !== 'rug-longpile-bluegrey' || LONG_PILE_MATERIAL_IDS.includes(id)) &&
-  ((UPHOLSTERY_MATERIAL_IDS.includes(id) || BED_UPHOLSTERY_MATERIAL_IDS.includes(id)) ? UPHOLSTERY_MATERIAL_CHOICES : RUG_MATERIAL_IDS.includes(id) ? MATERIAL_CHOICES : CURTAIN_MATERIAL_IDS.includes(id) ? CURTAIN_MATERIAL_CHOICES : []).some(c => c.id === choice);
+  ((UPHOLSTERY_MATERIAL_IDS.includes(id) || BED_UPHOLSTERY_MATERIAL_IDS.includes(id) || VERONA_UPHOLSTERY_MATERIAL_IDS.includes(id)) ? UPHOLSTERY_MATERIAL_CHOICES : RUG_MATERIAL_IDS.includes(id) ? MATERIAL_CHOICES : CURTAIN_MATERIAL_IDS.includes(id) ? CURTAIN_MATERIAL_CHOICES : []).some(c => c.id === choice);

@@ -260,3 +260,21 @@ test('actual IDANAS frame material shares upholstery choices without enrolling w
  assert.equal((await put({materials:[{id,surface:'textile',choice:'original',base}]})).status,200);
  const after=await get();assert.equal(after.materials[id].textile.choice,'original');assert.deepEqual(after.pieces[id],before.pieces[id]);
 });
+
+
+test('three actual Verona fixed-pad surfaces preserve independent peers, base family and legacy poses', async () => {
+ const M=await import('../src/materialcatalog.js'), {instance:r,ctx}=room();let serial=0;
+ const put=b=>r.fetch(new Request('https://test/furniture',{method:'PUT',headers:{'CF-Connecting-IP':`1012-${++serial}`},body:JSON.stringify({credential:privateCodeCredential(codes[0]),...b})}));
+ const get=async()=>await(await r.fetch(new Request('https://test/furniture'))).json();
+ const ids=M.VERONA_UPHOLSTERY_MATERIAL_IDS;assert.equal(ids.length,3);assert.equal(new Set(ids).size,3);assert.equal(M.UPHOLSTERY_MATERIAL_IDS.length,6);
+ for(const id of ids)assert.equal((await put({materials:[{id,surface:'textile',choice:'upholstery-stripe',base:0}]})).status,200);
+ const before=await get();assert.deepEqual(before.pieces,{});
+ for(const [id,surface,choice] of [['f-veronasofa-guessed','textile','upholstery-sand'],[ids[0],'cushion-chaise','upholstery-sand'],[ids[0],'textile','rug-check'],[ids[0],'textile','curtain-sand']])assert.equal((await put({materials:[{id,surface,choice,base:0}]})).status,400);
+ const id=ids[0],base=before.materials[id].textile.revision;
+ const results=await Promise.all([put({materials:[{id,surface:'textile',choice:'upholstery-check',base}]}),put({moves:[move(id)]})]);assert.deepEqual(results.map(r=>r.status),[200,200]);
+ assert.equal((await put({materials:[{id,surface:'textile',choice:'original',base}]})).status,409);
+ let state=await get();assert.equal(state.materials[id].textile.choice,'upholstery-check');assert.equal(state.pieces[id].pos[0],3);assert.equal(state.materials[ids[1]].textile.choice,'upholstery-stripe');
+ assert.equal((await put({materials:[{id,surface:'textile',choice:'original',base:state.materials[id].textile.revision}]})).status,200);
+ state=await get();assert.equal(state.pieces[id].pos[0],3);assert.equal(state.materials[id].textile.choice,'original');
+ assert.deepEqual(await(await new DrawingRoom(ctx,{}).fetch(new Request('https://test/furniture'))).json(),state);
+});
