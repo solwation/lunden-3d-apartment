@@ -6,6 +6,7 @@ import { registerSnow } from './seasons.js';
 import { grassMaterial, grassUV } from './grass.js';
 import { buildCar, MEGANE } from './carmodel.js';
 import { groundY } from './surroundings.js';
+import { registerBicycleYardEdges } from './street.js';
 import { boxwood } from './boxwood.js';
 import { onRoad, onWalk } from './roads.js';
 import { freeCanvasAfterUpload } from './lowmemory.js';
@@ -181,6 +182,7 @@ export function buildStreetLife({ entrances = [] } = {}) {
     edgeRun(x0, z0, x1, z0, 0, -1, true); edgeRun(x1, z0, x1, z1, 1, 0, true); edgeRun(x1, z1, x0, z1, 0, 1, true); edgeRun(x0, z1, x0, z0, -1, 0, true);
   }
   for (const [x0, x1, z0, z1] of L.lawns) { edgeRun(x0, z0, x1, z0); edgeRun(x1, z0, x1, z1); edgeRun(x1, z1, x0, z1); edgeRun(x0, z1, x0, z0); }
+  registerBicycleYardEdges(curbs);
   if (curbs.length) {
     const curbMat = new THREE.MeshStandardMaterial({ color: E.color, roughness: 0.85 });
     registerSnow(curbMat, SEASON.snow.paving);
@@ -222,18 +224,19 @@ export function buildStreetLife({ entrances = [] } = {}) {
     const yaw = new THREE.Euler().setFromQuaternion(q, 'YXZ').y;
     pick.position.copy(pos); pick.position.y += .525; pick.rotation.y = yaw;
     const bicycle = { ...record, position: pos, yaw, matrix: original.clone(), original, rackSegments: rackSegments[record.rack], atSource: true, ridden: false,
-      place(p, yaw) {
-        if (this.matrix && this.position.equals(p) && this.yaw === yaw) return;
-        this.position.copy(p); this.yaw = yaw;
-        const matrix = new THREE.Matrix4().compose(p, new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw), scale);
+      place(p, yaw, pitch = 0) {
+        if (this.matrix && this.position.equals(p) && this.yaw === yaw && (this.pitch ?? 0) === pitch) return;
+        this.position.copy(p); this.yaw = yaw; this.pitch = pitch;
+        const matrix = new THREE.Matrix4().compose(p, new THREE.Quaternion().setFromEuler(new THREE.Euler(0, yaw, pitch, 'YXZ')), scale);
         this.matrix = matrix;
         for (const mesh of components) { mesh.setMatrixAt(this.index, matrix); mesh.instanceMatrix.needsUpdate = true; mesh.computeBoundingSphere(); }
         pick.position.copy(p); pick.position.y += .525; pick.rotation.y = yaw;
       },
       footprint(feet, headroom, hurdle) {
-        if (this.selfQuery || this.atSource || this.position.y > feet + headroom || this.position.y + BICYCLE.height <= feet - hurdle) return [];
+        if (this.selfQuery || this.atSource || this.position.y - Math.abs(Math.sin(this.pitch ?? 0)) * (Math.max(-BICYCLE.rear,BICYCLE.front)+BICYCLE.radius) > feet + headroom || this.position.y + BICYCLE.height + Math.abs(Math.sin(this.pitch ?? 0)) * (Math.max(-BICYCLE.rear,BICYCLE.front)+BICYCLE.radius) <= feet - hurdle) return [];
         const dx = Math.cos(this.yaw), dz = -Math.sin(this.yaw), r = BICYCLE.radius;
-        return [[BICYCLE.rear-r,-r],[BICYCLE.front+r,-r],[BICYCLE.front+r,r],[BICYCLE.rear-r,r]].map(([x,z]) => [this.position.x + dx*x-dz*z, this.position.z + dz*x+dx*z]);
+        const low=BICYCLE.rear-r-Math.max(0,Math.sin(this.pitch??0))*BICYCLE.height, high=BICYCLE.front+r+Math.max(0,-Math.sin(this.pitch??0))*BICYCLE.height;
+        return [[low,-r],[high,-r],[high,r],[low,r]].map(([x,z]) => [this.position.x + dx*x-dz*z, this.position.z + dz*x+dx*z]);
       }, components, pick,
     };
     bicycle.target = { name: 'Cykeln', kind: 'bicycle', verb: 'cykla', bicycle, pickable: pick };

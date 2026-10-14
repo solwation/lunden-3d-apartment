@@ -808,7 +808,7 @@ without borrowing the crouch pose.
 
 `BICYCLE` handling values are game-value guesses, not survey measurements. The
 full wheelbase capsule and swept turn/travel substeps use actual Player collision,
-reachable ground and headroom. Uneven wheel support is conservatively refused.
+reachable ground and headroom. #983 replaces the former flat-only support rule with wheel/terrain contact and a canonical local-Z pitch; both actual adapters expose the complete local-to-world `bike.matrix`.
 Only initial physical extraction can ignore the selected rack's four edges;
 subsequent riding ignores no rack/wall/door. Unsafe mount or dismount is refused.
 Pause/zero dt preserves the bicycle pose.
@@ -1318,3 +1318,11 @@ after browser.close. Artifacts are retained under `/tmp/lunden-priority-912/` an
 the orchestrator run archive. This is component/native evidence, not World,
 physical-phone, saved-session reload or a general natural-grip guarantee. No gameplay
 or changelog change was needed for this audit.
+
+## Bicycle terrain (#983)
+
+All currently registered NW/courtyard bicycles use the same Player rule; future garage adapters inherit it without creating new rideable models here. Named `BICYCLE.maxRise=.075` and `maxDrop=.35` are gameplay guesses: the existing 5 cm yard concrete edging can be crossed upward; the existing 10 cm street granite curb and ordinary stair risers stop upward travel. Downward steps and ordinary ramps follow actual wheel support. A larger unsupported descent uses gravity and the existing single `onLand(drop,gap)` fall-damage request; safely supported pivoting before release is not counted as free fall. Airborne dismount is refused and the existing supported standing/save fallback is retained. `standDrop=.15` preserves the previous dismount height limit.
+
+`bikeGround` adds bicycle-only tops from the exact rendered street curb boxes and the existing StreetLife concrete edging, spatially indexed in 2 m cells. Walking `groundY` is unchanged. Two round tyre profiles, a bounded pitch solve and the raised frame envelope follow nosings without moving through the tread. Both existing model adapters apply yaw then local-Z pitch to the original geometry; only the selected instance/ranges move, with original batches, other models, transformed normals and refreshed bounds preserved. Hull/headroom, closed doors, walls and rack exclusion rules remain active.
+
+Relevant house routes use their existing data: Hus L/A east-gable ramp and east stair, Hus C NW stair, and the B/C south stair. They share Player terrain handling but do not share copied dimensions. Native route tests cover all three stairs in both directions, both ramp directions, reverse riding, the actual two curb types, and wall/door/headroom/fall/dismount boundaries. This is not a claim about basement entry routes or the unimplemented 44 garage bicycles (#907/#986–#989).

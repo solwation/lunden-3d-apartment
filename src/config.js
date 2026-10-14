@@ -4714,11 +4714,12 @@ export function rifleHeadCoreRegion(seed,state,point,origin,direction) {
   return Math.abs(lx)+H.wireMetres/width<=patch.across && ly-H.wireMetres/look.tall>=patch.low && ly+H.wireMetres/look.tall<=patch.high && lz>0;
 }
 
-// #903: first existing NW bicycle. Handling/clearances are game-value guesses; model wheels at -.50/.42,
+// #903/#983: shared bicycle handling. maxRise .075 (small curb), maxDrop .35 (grounded step),
+// maxTilt/frame clearance are game-value guesses; larger drops use ordinary gravity/landing damage. model wheels at -.50/.42,
 // radii .35, handlebar half-width .28 and saddle .80 come from bikeGeometry, not surveyed dimensions.
 export const BICYCLE = { maxDt: .1, extractStep: .1, height: 1.1, speed: 6, reverse: 2, turn: 1.6, step: .05, radius: .31, samples: 12,
-  rear: -.54, front: .46, eye: 1.25, cameraBack: .14, pitch: -.25, maxRise: .15,
-  maxDrop: .15, wheelSlope: .02, extract: 3, mountReach: 2.6, stand: [.9, 1.2, 1.5] };
+  rear: -.54, front: .46, eye: 1.25, cameraBack: .14, pitch: -.25, maxRise: .075,
+  maxDrop: .35, standDrop: .15, wheelRear: -.50, wheelFront: .42, wheelRadius: .35, contactSamples: 8, maxTilt: .65, frameClearance: .25, extract: 3, mountReach: 2.6, stand: [.9, 1.2, 1.5] };
 
 let rifleNoseTriangles;
 export function rifleNoseProfile() {

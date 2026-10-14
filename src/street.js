@@ -54,9 +54,8 @@ function curbRun(pts, out, groundY, list) {
   }
 }
 
-export function buildStreet(groundY) {
-  const group = new THREE.Group();
-  const grey = new THREE.MeshStandardMaterial({ color: 0xa9a7a2, roughness: 0.85 });
+// The support uses the very same transformed boxes as the rendered curbs, not a parallel road-width guess.
+function curbGeometries(groundY) {
   // curbs along both edges of the roads with a centre line, and round the junctions' fillets (#257)
   const curbs = [];
   for (const r of SITE.roads) {
@@ -73,6 +72,39 @@ export function buildStreet(groundY) {
       curbRun(arc, (p) => [p.x + p.nx * 0.3, p.z + p.nz * 0.3], groundY, curbs);
     }
   }
+  return curbs;
+}
+let curbCells, yardCurbCells;
+function indexCurbBoxes(geometries) {
+  const cells=new Map();
+  for(const g of geometries) {
+    // BoxGeometry retains its transformed +Y face at vertices 8..11. Its top is the real sloping quad.
+    const a=g.attributes.position,quad=[8,9,11,10].map(i=>new THREE.Vector3().fromBufferAttribute(a,i));
+    const normal=new THREE.Vector3().fromBufferAttribute(g.attributes.normal,8),b=new THREE.Box3().setFromPoints(quad),item={quad,normal,d:normal.dot(quad[0])};
+    for(let ix=Math.floor(b.min.x/2);ix<=Math.floor(b.max.x/2);ix++)for(let iz=Math.floor(b.min.z/2);iz<=Math.floor(b.max.z/2);iz++) {
+      const key=ix+','+iz;if(!cells.has(key))cells.set(key,[]);cells.get(key).push(item);
+    }
+  }
+  return cells;
+}
+/** StreetLife registers its actual existing 5 cm concrete edges before merging their render geometry. */
+export function registerBicycleYardEdges(geometries) { yardCurbCells=indexCurbBoxes(geometries); }
+/** Bicycle-only curb top. A 2 m spatial index keeps wheel queries independent of scene size. */
+export function bicycleCurbY(x,z,groundY) {
+  if(!curbCells) {const geos=curbGeometries(groundY);curbCells=indexCurbBoxes(geos);for(const g of geos)g.dispose();}
+  let y=-Infinity;
+  for(const cells of [curbCells,yardCurbCells])for(const {quad,normal,d} of cells?.get(Math.floor(x/2)+','+Math.floor(z/2))??[]) {
+    let pos=false,neg=false;
+    for(let i=0;i<4;i++){const a=quad[i],b=quad[(i+1)%4],c=(b.x-a.x)*(z-a.z)-(b.z-a.z)*(x-a.x);if(c>1e-9)pos=true;if(c<-1e-9)neg=true;}
+    if(!(pos&&neg))y=Math.max(y,(d-normal.x*x-normal.z*z)/normal.y);
+  }
+  return y;
+}
+
+export function buildStreet(groundY) {
+  const group = new THREE.Group();
+  const grey = new THREE.MeshStandardMaterial({ color: 0xa9a7a2, roughness: 0.85 });
+  const curbs = curbGeometries(groundY);
   group.add(merged(curbs, grey, false));
   // patched asphalt: darker, smoother rectangles a hair above the road
   group.add(merged(S.patches.map(([x, z, w, d]) => flatRect(x - w / 2, x + w / 2, z - d / 2, z + d / 2, 0.016)),

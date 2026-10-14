@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { LEVELS, PLAYER, STAIR, UNIT_TOP, ROOFS, GARAGE, JETPACK, SPIDER, SOFFITS, BICYCLE } from './config.js';
 import { stairHeight, stairUnderside } from './stairs.js';
 import { groundY } from './surroundings.js';
+import { bicycleCurbY } from './street.js';
 
 const GRAVITY = 9.8;
 
@@ -455,20 +456,85 @@ export class Player {
     } finally { this.pos.copy(old); if (own) own.selfQuery = oldQuery; }
   }
 
-  /** Conservative full wheelbase capsule, not just camera/player-center collision. */
-  bikeHull(p, yaw, ignored = []) {
+  /** Bicycle support only: ordinary walking ground and its step-up rules remain unchanged. */
+  bikeGround(x, z, feet) {
+    const g = this.groundAt(x, z, feet), curb = bicycleCurbY(x, z, groundY);
+    return curb <= feet + PLAYER.stepUp && curb >= g ? curb : g;
+  }
+
+  /** Two wheel contacts determine the actual model pitch. A clipped pitch leaves one wheel unsupported
+   * at a cliff rather than pulling the other wheel through its landing. */
+  bikeSupport(p, yaw) {
     const C = BICYCLE, dx = Math.cos(yaw), dz = -Math.sin(yaw);
+    let low=-C.maxTilt,high=C.maxTilt,best=null;
+    // Bisection also handles a tread edge: the wheel can pivot around its nosing without
+    // an unstable fixed-point iteration alternating between the upper and lower tread.
+    for(let i=0;i<14;i++) {
+      const pitch=(low+high)/2;
+      const wheels=[],heights=[];
+      for(const t of [C.wheelRear,C.wheelFront]) {
+        let height=-Infinity,ground=-Infinity;
+        // Contact the round tyre, including its approach to a nosing; point-only bottom contacts
+        // would let a wheel cut through the riser or pitch its frame into the upper tread.
+        const centre=t*Math.cos(pitch)-C.wheelRadius*Math.sin(pitch);
+        for(let j=0;j<=C.contactSamples;j++) {
+          const offset=C.wheelRadius*(2*j/C.contactSamples-1),x=p.x+dx*(centre+offset),z=p.z+dz*(centre+offset);
+          const g=this.bikeGround(x,z,p.y+C.wheelRadius+Math.abs(t*Math.sin(pitch)));
+          if(!Number.isFinite(g))continue;
+          ground=Math.max(ground,g);
+          height=Math.max(height,g+Math.sqrt(Math.max(0,C.wheelRadius*C.wheelRadius-offset*offset))-t*Math.sin(pitch)-C.wheelRadius*Math.cos(pitch));
+        }
+        wheels.push(ground);heights.push(height);
+      }
+      if(!heights.every(Number.isFinite))return null;
+      let y=Math.max(...heights);
+      // A nosing can support the raised frame between the wheels. Keep it above that surface
+      // during the pivot as well, rather than interpolating the body through the upper tread.
+      for(let j=0;j<=C.samples;j++) {
+        const t=C.rear+(C.front-C.rear)*j/C.samples;
+        const g=this.bikeGround(p.x+dx*t*Math.cos(pitch),p.z+dz*t*Math.cos(pitch),p.y+Math.abs(t*Math.sin(pitch))+C.frameClearance);
+        if(Number.isFinite(g))y=Math.max(y,g-t*Math.sin(pitch)-C.frameClearance);
+      }
+      if(!best||y<best.y)best={y,pitch,wheels};
+      const residual=heights[1]-heights[0];
+      if(Math.abs(residual)<1e-8)break;
+      if(residual>0)low=pitch;else high=pitch;
+    }
+    return best;
+  }
+
+  /** Full capsule follows the tilted frame; a stair nosing may fit below its actual raised frame,
+   * but no wall, leaf, headroom or high riser can be waived. */
+  bikeHull(p, yaw, ignored = [], support = this.bikeSupport(p,yaw)) {
+    if (!support) return false;
+    const C = BICYCLE, dx = Math.cos(yaw), dz = -Math.sin(yaw), pitch = support.pitch;
     for (let i = 0; i <= C.samples; i++) {
-      const t = C.rear + (C.front - C.rear) * i / C.samples;
-      const q = new THREE.Vector3(p.x + dx * t, p.y, p.z + dz * t), g = this.groundAt(q.x, q.z, p.y);
-      if (!Number.isFinite(g) || Math.abs(g - p.y) > C.wheelSlope || !this.bikeClear(q, C.radius, ignored)) return false;
+      const t = C.rear + (C.front-C.rear)*i/C.samples;
+      const q = new THREE.Vector3(p.x+dx*t*Math.cos(pitch),p.y+t*Math.sin(pitch),p.z+dz*t*Math.cos(pitch));
+      const g = this.bikeGround(q.x,q.z,q.y);
+      if (!Number.isFinite(g) || g > q.y+C.frameClearance || !this.bikeClear(q,C.radius,ignored)) return false;
+      // Pitch projects the full-height frame/handlebar ahead of the old ground capsule. Check
+      // that overhang at conservative body height too; wheelbase-only yaw tests miss it.
+      const overhang=-Math.sin(pitch)*C.height;
+      if(Math.abs(overhang)>1e-9) {
+        q.x+=dx*overhang;q.z+=dz*overhang;
+        if(!this.bikeClear(q,C.radius,ignored))return false;
+      }
     }
     return true;
   }
 
-  bikePath(a, b, yaw, ignored = []) {
-    const n = Math.max(1, Math.ceil(a.distanceTo(b) / BICYCLE.step));
-    for (let i = 0; i <= n; i++) if (!this.bikeHull(a.clone().lerp(b, i / n), yaw, ignored)) return false;
+  bikeRiseAllowed(previous, next) {
+    return !!previous && !!next && next.wheels.every((g,i) => g-previous.wheels[i] <= BICYCLE.maxRise+1e-6);
+  }
+
+  bikePath(a,b,yaw,ignored=[]) {
+    const n=Math.max(1,Math.ceil(a.distanceTo(b)/BICYCLE.step));let previous=this.bikeSupport(a,yaw);
+    for(let i=0;i<=n;i++) {
+      const p=a.clone().lerp(b,i/n),support=this.bikeSupport(p,yaw);
+      if(!this.bikeRiseAllowed(previous,support) || previous.y-support.y>BICYCLE.maxDrop)return false;
+      p.y=support.y;if(!this.bikeHull(p,yaw,ignored,support))return false;previous=support;
+    }
     return true;
   }
 
@@ -483,13 +549,14 @@ export class Player {
     const ignored = bike.atSource ? bike.rackSegments : []; // ONLY the initial extraction, never later riding
     for (let d = 0; d <= BICYCLE.extract; d += BICYCLE.extractStep) {
       const p = bike.position.clone().addScaledVector(dir, d); p.y = this.groundAt(p.x, p.z, standing.y);
+      const support=this.bikeSupport(p,bike.yaw);if(!support)continue;p.y=support.y;
       if (!this.bikeClear(p, Math.max(-BICYCLE.rear, BICYCLE.front) + BICYCLE.radius) || !this.bikeHull(p, bike.yaw) || !this.bikePath(bike.position, p, bike.yaw, ignored)) continue;
       const n = Math.max(1, Math.ceil(standing.distanceTo(p) / BICYCLE.step)); let safe = true;
       for (let i = 0; i <= n; i++) { const q = standing.clone().lerp(p, i / n); q.y = this.groundAt(q.x, q.z, standing.y); if (!this.bikeClear(q)) { safe = false; break; } }
       if (safe) { chosen = p; break; }
     }
     if (!chosen) { bike.ridden = false; return false; }
-    this.riding = { bike, lastStanding: standing, yaw: bike.yaw };
+    this.riding = { bike, lastStanding: standing, yaw: bike.yaw, pitch: this.bikeSupport(chosen,bike.yaw).pitch };
     bike.atSource = false; bike.pick.visible = false;
     this.pos.copy(chosen); this.vy = 0; this.crouch = this.crouched = this.kneel = false;
     this.camera.rotation.set(BICYCLE.pitch, bike.yaw - Math.PI / 2, 0, 'YXZ');
@@ -500,11 +567,12 @@ export class Player {
 
   bikeStanding() {
     const r = this.riding; if (!r) return this.pos.clone();
+    if (this.fall || r.airborne) return null;
     const C = BICYCLE, dx = Math.cos(r.yaw), dz = -Math.sin(r.yaw);
     for (const d of C.stand) for (const sign of [1, -1]) {
       const q = this.pos.clone().add(new THREE.Vector3(-dz * d * sign, 0, dx * d * sign));
       q.y = this.groundAt(q.x, q.z, this.pos.y);
-      if (!Number.isFinite(q.y) || Math.abs(q.y - this.pos.y) > C.maxDrop || !this.bikeClear(q)) continue;
+      if (!Number.isFinite(q.y) || Math.abs(q.y - this.pos.y) > C.standDrop || !this.bikeClear(q)) continue;
       const n = Math.ceil(d / C.step); let safe = true;
       for (let i = 0; i <= n; i++) { const p = this.pos.clone().lerp(q, i / n); p.y = this.groundAt(p.x, p.z, this.pos.y); if (!this.bikeClear(p)) { safe = false; break; } }
       if (safe) return q;
@@ -529,7 +597,7 @@ export class Player {
 
   bikePose() {
     const r = this.riding, C = BICYCLE;
-    r.bike.place(this.pos, r.yaw);
+    r.bike.place(this.pos, r.yaw, r.pitch ?? 0);
     this.eyeY = this.pos.y + C.eye;
     this.camera.position.set(this.pos.x - Math.cos(r.yaw) * C.cameraBack, this.eyeY, this.pos.z + Math.sin(r.yaw) * C.cameraBack);
   }
@@ -543,12 +611,29 @@ export class Player {
     const desired = this.camera.rotation.y + Math.PI / 2 + side * C.turn * dt;
     const rawAngle = Math.atan2(Math.sin(desired - r.yaw), Math.cos(desired - r.yaw)), angle = Math.abs(rawAngle) < 1e-9 ? 0 : rawAngle;
     const travel = (fwd >= 0 ? C.speed : C.reverse) * fwd * dt;
-    const n = Math.max(1, Math.ceil((Math.abs(travel) + Math.abs(angle) * (Math.max(-C.rear, C.front) + C.radius)) / C.step));
+    const n = Math.max(1, Math.ceil((Math.abs(travel) + Math.abs(angle) * (Math.max(-C.rear, C.front) + C.radius+C.height*Math.abs(Math.sin(r.pitch??0)))) / C.step));
+    let previous=this.bikeSupport(this.pos,r.yaw);
     for (let i = 0; i < n; i++) {
-      const yaw = r.yaw + angle / n, p = this.pos.clone().add(new THREE.Vector3(Math.cos(yaw) * travel / n, 0, -Math.sin(yaw) * travel / n));
-      p.y = this.groundAt(p.x, p.z, this.pos.y);
-      if (p.y - this.pos.y > C.maxRise || this.pos.y - p.y > C.maxDrop || !this.bikeHull(p, yaw)) break;
-      this.pos.copy(p); r.yaw = yaw;
+      const h=dt/n;
+      let yaw=r.yaw+angle/n, p=this.pos.clone().add(new THREE.Vector3(Math.cos(yaw)*travel/n,0,-Math.sin(yaw)*travel/n));
+      let support=p.equals(this.pos)&&yaw===r.yaw?previous:this.bikeSupport(p,yaw);
+      // Check each wheel's rise: averaging the two contacts would incorrectly halve a stair riser.
+      if(!this.bikeRiseAllowed(previous,support) || !this.bikeHull(new THREE.Vector3(p.x,Math.max(p.y,support?.y??p.y),p.z),yaw,[],support)) {
+        p=this.pos.clone();yaw=r.yaw;support=previous;
+      }
+      if(!support)continue;
+      const falling = !!this.fall || this.pos.y-support.y>C.maxDrop;
+      let vy=this.vy, y=support.y;
+      if(falling) { vy-=GRAVITY*h;y=Math.max(support.y,this.pos.y+vy*h); }
+      // Sweep vertical motion too: a large fall never skips a thin leaf or a low ceiling.
+      const steps=Math.max(1,Math.ceil((Math.abs(y-this.pos.y)+Math.abs(support.pitch-(r.pitch??previous.pitch))*C.height)/C.step));let clear=true;
+      for(let j=1;j<=steps;j++) { const q=this.pos.clone().lerp(new THREE.Vector3(p.x,y,p.z),j/steps);if(!this.bikeHull(q,r.yaw+(yaw-r.yaw)*j/steps,[],{...support,pitch:THREE.MathUtils.lerp(r.pitch??previous.pitch,support.pitch,j/steps)})){clear=false;break;} }
+      if(!clear) { this.vy=0;continue; }
+      if(falling) {
+        const f=(this.fall??={top:this.pos.y,gap:0});f.top=Math.max(f.top,this.pos.y);f.gap=Math.max(f.gap,this.pos.y-support.y);
+      }
+      this.pos.set(p.x,y,p.z);previous=support;r.yaw=yaw;r.pitch=support.pitch;this.vy=falling?vy:0;r.airborne=y>support.y+1e-6;
+      if(this.fall&&!r.airborne) {const f=this.fall;this.fall=null;this.vy=0;this.onLand?.(f.top-this.pos.y,f.gap);if(this.riding!==r)return;}
     }
     this.camera.rotation.y = r.yaw - Math.PI / 2; this.sprinting = false; this.jumpPress = false; this.crouch = this.crouched = false;
     this.bikePose();

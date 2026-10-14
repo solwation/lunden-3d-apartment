@@ -435,9 +435,9 @@ export function buildCourtyard() {
     });
     Object.assign(bicycle, { original, matrix: original.clone(), rackSegments: bicycleRack, atSource: true, ridden: false,
       components, ranges, pick,
-      place(p, yaw) {
-        if (this.position.equals(p) && this.yaw === yaw) return;
-        const delta = new THREE.Matrix4().makeRotationY(yaw).setPosition(p).multiply(original.clone().invert());
+      place(p, yaw, pitch = 0) {
+        if (this.position.equals(p) && this.yaw === yaw && (this.pitch ?? 0) === pitch) return;
+        const delta = new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(0,yaw,pitch,'YXZ')).setPosition(p).multiply(original.clone().invert());
         const normal = new THREE.Matrix3().getNormalMatrix(delta), v = new THREE.Vector3();
         components.forEach((mesh, k) => {
           const range = ranges[k], a = mesh.geometry.attributes;
@@ -448,13 +448,14 @@ export function buildCourtyard() {
           a.position.needsUpdate = a.normal.needsUpdate = true;
           mesh.geometry.computeBoundingBox(); mesh.geometry.computeBoundingSphere();
         });
-        this.position.copy(p); this.yaw = yaw; this.matrix.makeRotationY(yaw).setPosition(p);
+        this.position.copy(p); this.yaw = yaw; this.pitch = pitch; this.matrix.makeRotationFromEuler(new THREE.Euler(0,yaw,pitch,'YXZ')).setPosition(p);
         pick.position.copy(p); pick.position.y += .525; pick.rotation.y = yaw;
       },
       footprint(feet, headroom, hurdle) {
-        if (this.selfQuery || this.atSource || this.position.y > feet + headroom || this.position.y + BICYCLE.height <= feet - hurdle) return [];
+        if (this.selfQuery || this.atSource || this.position.y - Math.abs(Math.sin(this.pitch ?? 0)) * (Math.max(-BICYCLE.rear,BICYCLE.front)+BICYCLE.radius) > feet + headroom || this.position.y + BICYCLE.height + Math.abs(Math.sin(this.pitch ?? 0)) * (Math.max(-BICYCLE.rear,BICYCLE.front)+BICYCLE.radius) <= feet - hurdle) return [];
         const dx = Math.cos(this.yaw), dz = -Math.sin(this.yaw), r = BICYCLE.radius;
-        return [[BICYCLE.rear-r,-r],[BICYCLE.front+r,-r],[BICYCLE.front+r,r],[BICYCLE.rear-r,r]].map(([x,z]) => [this.position.x + dx*x-dz*z, this.position.z + dz*x+dx*z]);
+        const low=BICYCLE.rear-r-Math.max(0,Math.sin(this.pitch??0))*BICYCLE.height, high=BICYCLE.front+r+Math.max(0,-Math.sin(this.pitch??0))*BICYCLE.height;
+        return [[low,-r],[high,-r],[high,r],[low,r]].map(([x,z]) => [this.position.x + dx*x-dz*z, this.position.z + dz*x+dx*z]);
       },
     });
     bicycle.target = { name: 'Cykeln', kind: 'bicycle', verb: 'cykla', bicycle, pickable: pick };
