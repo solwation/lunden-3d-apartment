@@ -4636,6 +4636,12 @@ export const POWER = {
 // #1009: visual guesses, metres; effective flat support uses the maximum (backing h + .002 gap + fiberHeight); the plush surface varies below it.
 export const LONG_PILE = { fiberHeight: .045, gridX: 156, gridZ: 96, minLoft: .55,
   wavelength: .18, fringe: .008, edge: .005, lowShade: .8, shadeNoise: .08, maxTriangles: 33000, maxBytes: 1000000 };
+// #1026: existing movable cloth fixtures, excluding their rigid parts and lamp glow effects.
+export const SHADE_CANOPY_TEXTILES = {
+  parasol: { id: 'canopy', name: 'Parasollväven' },
+  tubelamp: { id: 'shade', name: 'Långlampans linneskärm' },
+  dani: { id: 'shade', name: 'DANI:s tygskärm' },
+};
 export const MATERIAL_LIBRARY = { tile: .25, pixels: 128, curtainTile: .4, upholsteryTile: .25 }; // generic curtain/upholstery repeats in metres, visual guesses
 export const REARRANGE = { reach: 6, supportGap: 0.06, poll: 3000 };
 
