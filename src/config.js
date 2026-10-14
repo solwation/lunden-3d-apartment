@@ -1222,6 +1222,89 @@ export const TERRACE_DECOR = {
   },
 };
 
+// #888: furnished ground-floor patios on Hus L's back (src/patiodecor.js; decoration only, nothing to pick or sit on).
+// EVERY item, position, and style below is our own *guess* — no neighbour's patio is documented.
+// Per patio (id L1001–L1008 from exterior.js husLLayout; L1007 is skipped as our own flat has its furniture):
+// `items`, each { k: kind, u: m east of unit origin ox, v: m south of south facade D (12.748), r: yaw in degrees }.
+// The patio door (u 0.95–1.87) and passage to the hedge opening (u 0.0–1.26) keep clear.
+// Reuses existing models aborgtable, aborgchair, slattable, veronasofa, randers, planter, dynbox.
+export const PATIO_DECOR = {
+  skip: ['L1007'], far: 140,
+  door: { x0: 0.95, x1: 1.87, depth: 1.1 },
+  passage: { x0: 0.0, x1: 1.9 },
+  patios: {
+    L1001: {
+      style: 'café',
+      items: [
+        { k: 'aborgtable', u: 3.7, v: 1.9, r: 0 },
+        { k: 'aborgchair', u: 3.0, v: 1.9, r: -90 },
+        { k: 'aborgchair', u: 4.4, v: 1.9, r: 90 },
+        { k: 'planter', u: 4.9, v: 3.2, plant: 'agave', r: 0 },
+        { k: 'planter', u: 2.5, v: 3.2, plant: 'palm', r: 0 },
+      ],
+    },
+    L1002: {
+      style: 'lounge',
+      items: [
+        { k: 'veronasofa', part: 'divan1', u: 4.2, v: 1.1, r: 180 },
+        { k: 'randers', u: 3.1, v: 1.3, r: 0 },
+        { k: 'aborgchair', u: 4.2, v: 2.1, r: 0 },
+        { k: 'planter', u: 4.9, v: 3.1, plant: 'banana', r: 45 },
+      ],
+    },
+    L1003: {
+      style: 'trä & dynor',
+      items: [
+        { k: 'slattable', u: 3.8, v: 2.0, r: 0 },
+        { k: 'aborgchair', u: 3.8, v: 1.3, r: 180 },
+        { k: 'aborgchair', u: 3.8, v: 2.7, r: 0 },
+        { k: 'dynbox', u: 5.2, v: 1.5, r: -90 },
+        { k: 'planter', u: 4.8, v: 3.2, plant: 'agave', r: 0 },
+      ],
+    },
+    L1004: {
+      style: 'sofgrupp',
+      items: [
+        { k: 'veronasofa', part: 'sofa', u: 3.8, v: 0.9, r: 180 },
+        { k: 'slattable', u: 3.8, v: 1.9, r: 180 },
+        { k: 'randers', u: 4.9, v: 1.0, r: 0 },
+        { k: 'planter', u: 4.9, v: 3.0, plant: 'palm', r: 30 },
+      ],
+    },
+    L1005: {
+      style: 'bistro & dynbox',
+      items: [
+        { k: 'aborgtable', u: 3.6, v: 2.1, r: 45 },
+        { k: 'aborgchair', u: 3.0, v: 2.1, r: -90 },
+        { k: 'aborgchair', u: 4.2, v: 2.1, r: 90 },
+        { k: 'dynbox', u: 5.2, v: 1.4, r: -90 },
+        { k: 'planter', u: 2.5, v: 3.2, plant: 'banana', r: 0 },
+      ],
+    },
+    L1006: {
+      style: 'sommarbänk',
+      items: [
+        { k: 'veronasofa', part: 'divan1', u: 4.0, v: 1.2, r: 180 },
+        { k: 'slattable', u: 4.0, v: 2.1, r: 180 },
+        { k: 'aborgchair', u: 4.8, v: 2.1, r: 90 },
+        { k: 'planter', u: 2.6, v: 3.2, plant: 'agave', r: 0 },
+        { k: 'planter', u: 5.0, v: 1.2, plant: 'palm', r: 30 },
+      ],
+    },
+    L1008: {
+      style: 'veronagrupp',
+      items: [
+        { k: 'veronasofa', part: 'sofa', u: 4.0, v: 0.9, r: 180 },
+        { k: 'slattable', u: 4.0, v: 1.9, r: 180 },
+        { k: 'aborgchair', u: 3.0, v: 1.9, r: -90 },
+        { k: 'aborgchair', u: 5.0, v: 1.9, r: 90 },
+        { k: 'planter', u: 5.2, v: 3.0, plant: 'palm', r: 60 },
+      ],
+    },
+  },
+};
+
+
 // Våning 1–2: L1001–L1004 | stair core + portik (+ L1101 on våning 2) | L1005–L1008; we are
 // L1007, L1008 is the east end unit (gable windows, spiral escape stair north of it).
 // Våning 3–4: L1201–L1209, two-storey units entered from the loftgång on våning 3 (L1208 is the one

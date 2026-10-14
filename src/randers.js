@@ -5,12 +5,18 @@
 import * as THREE from 'three';
 import { RANDERS } from './config.js';
 
+let cachedSteel, cachedCaps;
+function randersMaterials(R) {
+  cachedSteel ??= new THREE.MeshStandardMaterial({ color: R.color, roughness: R.rough, metalness: R.metal, side: THREE.DoubleSide });
+  cachedCaps ??= new THREE.MeshStandardMaterial({ color: R.caps, roughness: 0.7 });
+  return { steel: cachedSteel, caps: cachedCaps };
+}
+
 /** A builder (furniture.js BUILDERS): local origin = the floor under the tray's centre. `item.flower` = the little pot
  * plant at local `item.flowerAt` (a Thing, #185), built by furniture.js's `flower` (passed in). */
-export function randers(item, _lights, flower) {
+export function randers(item = {}, _lights, flower) {
   const R = RANDERS, g = new THREE.Group();
-  const steel = new THREE.MeshStandardMaterial({ color: R.color, roughness: R.rough, metalness: R.metal, side: THREE.DoubleSide });
-  const caps = new THREE.MeshStandardMaterial({ color: R.caps, roughness: 0.7 });
+  const { steel, caps } = randersMaterials(R);
   const r = R.d / 2, top = R.h, bottom = top - R.rim, t = R.sheet, hs = R.legs / 2, lr = R.leg / 2;
   // the tray: floor, the rim rising with a slight flare, a rolled lip (one lathe, open both sides)
   const prof = [[0, bottom + t], [r - 0.02, bottom + t], [r - 0.012, bottom + t + 0.004], [r - 0.006, top - 0.004], [r - 0.004, top],

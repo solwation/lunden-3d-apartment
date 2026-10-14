@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Patio decor test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// #888: furnished ground-floor patios on Hus L's back (src/patiodecor.js, PATIO_DECOR in config).
+// L1007 is skipped (its furniture is in FURNITURE); every other patio (L1001–L1006, L1008) has its own style;
+// every item stands on its patio deck clear of doors and common walking passage;
+// draw calls are kept low via per-material geometry merging;
+// the gate hides meshes from the street behind Hus L and far away, and shows them from the courtyard.
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 480; f.height = 300; f.src = '../index.html?time=12&month=6&shot&freeze&test';
+document.body.append(f);
+f.onload = () => run().catch((e) => { out.textContent = `FAIL ${e}\n${e.stack}\nSOME FAILED`; });
+
+const MAX_TRIS = 35000; // budget for all neighbour patios together
+const EXPECTED_UNITS = ['L1001', 'L1002', 'L1003', 'L1004', 'L1005', 'L1006', 'L1008'];
+
+async function run() {
+  const w = f.contentWindow;
+  while (!w.__app?.world) await wait(100);
+  const { scene, camera, renderer } = w.__app;
+  const { PATIO_DECOR: P, HUS_L } = await w.eval(`import('${new URL('../src/config.js', location)}')`);
+  const lines = [];
+  let pass = true;
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+
+  const gate = scene.getObjectByName('patio-decor');
+  check(gate && gate.meshes.length > 0 && gate.meshes.length <= 15, `merged meshes: ${gate?.meshes.length} draw calls (${gate?.meshes.map((m) => m.name || m.material?.type).join(', ')})`);
+
+  const D = w.__app.world.size.z;
+  const recs = gate.userData.records || [];
+  const byId = Object.fromEntries(recs.map((r) => [r.id, r]));
+
+  // L1007 stays untouched: no record in patio decor
+  check(!byId.L1007, 'L1007 has no patio decor record (L1007 furniture preserved in FURNITURE)');
+
+  // All 7 neighbour units are furnished
+  for (const id of EXPECTED_UNITS) {
+    check(byId[id], `${id} is furnished in patio decor records`);
+  }
+
+  // All mesh positions are finite, count triangles
+  let tris = 0, bad = 0;
+  for (const m of gate.meshes) {
+    const p = m.geometry.attributes.position;
+    tris += p.count / 3;
+    for (let i = 0; i < p.count; i++) {
+      const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
+      if (![x, y, z].every(Number.isFinite)) bad++;
+    }
+  }
+  check(bad === 0, `all positions finite (${bad} bad)`);
+  check(tris > 2000 && tris < MAX_TRIS, `${Math.round(tris)} triangles in all neighbour patios (budget ${MAX_TRIS})`);
+
+  // Distinct styles
+  const styles = new Set(recs.map((r) => r.style));
+  check(styles.size === EXPECTED_UNITS.length, `${styles.size} distinct styles for ${EXPECTED_UNITS.length} patios: ${[...styles].join(', ')}`);
+
+  // Door and passage clearance on every patio
+  for (const id of EXPECTED_UNITS) {
+    const r = byId[id];
+    if (!r) continue;
+    const items = r.items;
+    check(items.length >= 3, `${id} (${r.style}): ${items.length} items`);
+
+    // Door swing clearance: door opening at ox + 0.95..1.87, swings out to D + 1.0
+    const doorBlocked = items.filter((it) => it.x1 > r.ox + P.door.x0 - 0.05 && it.x0 < r.ox + P.door.x1 + 0.05 && it.z0 < D + P.door.depth);
+    check(!doorBlocked.length, `${id}: door swing clear ${doorBlocked.map((i) => i.k).join(', ')}`);
+
+    // All items within patio depth (z between D and D + 4.8)
+    const zOff = items.filter((it) => it.z0 < D - 0.05 || it.z1 > D + 4.8);
+    check(!zOff.length, `${id}: items within patio depth ${zOff.map((i) => `${i.k} z=${i.z0.toFixed(2)}..${i.z1.toFixed(2)}`).join(', ')}`);
+  }
+
+  // Gate culling tests
+  const cam = camera.clone();
+  const seen = (x, y, z) => {
+    cam.position.set(x, y, z);
+    cam.lookAt(-10, 1.0, D + 2.0);
+    cam.updateMatrixWorld(true);
+    gate.update(cam);
+    return gate.meshes.every((m) => m.layers.test(camera.layers));
+  };
+
+  check(!seen(-5, 1.7, -15), 'not drawn from the street (behind Hus L)');
+  check(seen(-5, 1.7, 30), 'drawn from the courtyard');
+  check(seen(-5, 30, 20), 'drawn from above (jetpack view)');
+  check(!seen(-5, 1.7, 300), `not drawn beyond ${P.far} m`);
+
+  gate.update(camera);
+  renderer.render(scene, camera);
+  lines.push(`\n${pass ? 'ALL PASS' : 'SOME FAILED'}`);
+  out.textContent = lines.join('\n');
+}
+</script>
+</body>
+</html>

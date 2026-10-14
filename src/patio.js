@@ -18,6 +18,13 @@ const cushionMat = new THREE.MeshStandardMaterial({ color: P.verona.cushion, rou
 const tableSteel = new THREE.MeshStandardMaterial({ color: P.slatTable.frame, roughness: 0.5, metalness: 0.45 });
 const woodMat = new THREE.MeshStandardMaterial({ color: P.slatTable.wood, roughness: 0.75 });
 
+function sbox(w, h, d, x, y, z, material) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), material);
+  m.position.set(x, y, z);
+  m.castShadow = m.receiveShadow = true;
+  return m;
+}
+
 function rbox(w, h, d, x, y, z, material, r = 0.02) {
   const m = new THREE.Mesh(new RoundedBoxGeometry(w, h, d, 2, Math.min(r, w / 2, h / 2, d / 2)), material);
   m.position.set(x, y, z);
@@ -36,29 +43,33 @@ function tube(x0, x1, y0, y1, z0, z1, material = steelMat, t = P.verona.tube) {
  * back) over x0…x1 × z0…z1 (the back at z0), with `back` (rear posts up to H, two rails and a middle post) and arms
  * (`arms`: 'x0' | 'x1', a front post, two rails), plus its cushions: a seat cushion, and a back cushion with a back.
  */
-function veronaModule(g, x0, x1, z0, z1, { back = false, arms = [] } = {}) {
+function veronaModule(g, x0, x1, z0, z1, { back = false, arms = [], decorative = false } = {}) {
   const V = P.verona, t = V.tube, y = V.base;
-  for (const x of [x0 + t / 2, x1 - t / 2]) for (const z of [z0 + t / 2, z1 - t / 2]) g.add(tube(x, x, 0, back && z < z0 + t ? V.H : y, z, z));
+  const boxFn = decorative ? sbox : rbox;
+  const tubeFn = decorative
+    ? (x0, x1, y0, y1, z0, z1, mat = steelMat, tt = t) => sbox(Math.max(x1 - x0, tt), Math.max(y1 - y0, tt), Math.max(z1 - z0, tt), (x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2, mat)
+    : tube;
+  for (const x of [x0 + t / 2, x1 - t / 2]) for (const z of [z0 + t / 2, z1 - t / 2]) g.add(tubeFn(x, x, 0, back && z < z0 + t ? V.H : y, z, z));
   for (const yy of [t / 2 + 0.02, y - t / 2]) {
-    for (const z of [z0 + t / 2, z1 - t / 2]) g.add(tube(x0 + t, x1 - t, yy, yy, z, z));
-    for (const x of [x0 + t / 2, x1 - t / 2]) g.add(tube(x, x, yy, yy, z0 + t, z1 - t));
+    for (const z of [z0 + t / 2, z1 - t / 2]) g.add(tubeFn(x0 + t, x1 - t, yy, yy, z, z));
+    for (const x of [x0 + t / 2, x1 - t / 2]) g.add(tubeFn(x, x, yy, yy, z0 + t, z1 - t));
   }
   const n = 4, sw = (x1 - x0 - 2 * t) / n;
-  for (let i = 0; i < n; i++) g.add(tube(x0 + t + sw * (i + 0.15), x0 + t + sw * (i + 0.85), y - 0.012, y, z0 + t, z1 - t, steelMat, 0.012));
+  for (let i = 0; i < n; i++) g.add(tubeFn(x0 + t + sw * (i + 0.15), x0 + t + sw * (i + 0.85), y - 0.012, y, z0 + t, z1 - t, steelMat, 0.012));
   if (back) {
-    for (const yy of [V.H - t / 2, (y + V.H) / 2]) g.add(tube(x0 + t, x1 - t, yy, yy, z0 + t / 2, z0 + t / 2));
-    g.add(tube((x0 + x1) / 2, (x0 + x1) / 2, y, V.H - t, z0 + t / 2, z0 + t / 2));
+    for (const yy of [V.H - t / 2, (y + V.H) / 2]) g.add(tubeFn(x0 + t, x1 - t, yy, yy, z0 + t / 2, z0 + t / 2));
+    g.add(tubeFn((x0 + x1) / 2, (x0 + x1) / 2, y, V.H - t, z0 + t / 2, z0 + t / 2));
   }
   for (const side of arms) {
     const x = side === 'x0' ? x0 + t / 2 : x1 - t / 2;
-    g.add(tube(x, x, y, V.arm, z1 - t / 2, z1 - t / 2));
-    for (const yy of [V.arm - t / 2, (y + V.arm) / 2]) g.add(tube(x, x, yy, yy, z0 + t, z1 - t / 2));
+    g.add(tubeFn(x, x, y, V.arm, z1 - t / 2, z1 - t / 2));
+    for (const yy of [V.arm - t / 2, (y + V.arm) / 2]) g.add(tubeFn(x, x, yy, yy, z0 + t, z1 - t / 2));
   }
   // cushions: thick and soft, each module its own (the joints show)
   const zf = back ? z0 + t + V.backT : z0;
-  g.add(rbox(x1 - x0 - 0.015, V.seatT, z1 - zf - 0.01, (x0 + x1) / 2, y + V.seatT / 2, (zf + z1) / 2, cushionMat, 0.045));
+  g.add(boxFn(x1 - x0 - 0.015, V.seatT, z1 - zf - 0.01, (x0 + x1) / 2, y + V.seatT / 2, (zf + z1) / 2, cushionMat, 0.045));
   if (back) {
-    const c = rbox(x1 - x0 - 0.02, V.backH, V.backT, (x0 + x1) / 2, y + V.seatT + V.backH / 2 - 0.02, z0 + t + V.backT / 2, cushionMat, 0.06);
+    const c = boxFn(x1 - x0 - 0.02, V.backH, V.backT, (x0 + x1) / 2, y + V.seatT + V.backH / 2 - 0.02, z0 + t + V.backT / 2, cushionMat, 0.06);
     c.rotation.x = -0.12; // leaning back
     g.add(c);
   }
@@ -75,16 +86,17 @@ export function veronasofa(item = {}) {
   const g = new THREE.Group();
   const V = P.verona, W = V.W, D = V.D, X = 1.5 * W, z0 = -D / 2, z1 = D / 2, z3 = z1 + 2 * V.divanL;
   const part = item.part ?? 'all', seatY = V.base + V.seatT;
+  const dec = !!item.decorative;
   g.userData.part = item.part ?? 'all';
   if (part === 'all' || part === 'sofa') {
     for (let i = 0; i < 3; i++) {
       const a = -X + i * W;
-      veronaModule(g, a, a + W, z0, z1, { back: true, arms: i === 0 ? ['x0'] : i === 2 ? ['x1'] : [] });
+      veronaModule(g, a, a + W, z0, z1, { back: true, arms: i === 0 ? ['x0'] : i === 2 ? ['x1'] : [], decorative: dec });
     }
-    if (part === 'all') for (let k = 0; k < 2; k++) veronaModule(g, X - W, X, z1 + k * V.divanL, z1 + (k + 1) * V.divanL);
+    if (part === 'all') for (let k = 0; k < 2; k++) veronaModule(g, X - W, X, z1 + k * V.divanL, z1 + (k + 1) * V.divanL, { decorative: dec });
   } else {
     const k = part === 'divan1' ? 0 : 1, centerZ = z1 + (k + 0.5) * V.divanL;
-    veronaModule(g, -W / 2, W / 2, -V.divanL / 2, V.divanL / 2);
+    veronaModule(g, -W / 2, W / 2, -V.divanL / 2, V.divanL / 2, { decorative: dec });
     g.userData.divanCenterZ = centerZ;
   }
   const spots = part === 'all'
@@ -92,7 +104,9 @@ export function veronasofa(item = {}) {
       .concat(V.bench.map((u) => ({ x: X - W / 2 - 0.06, y: seatY, z: z1 + u * (z3 - z1), dir: [-1, 0] })))
     : part === 'sofa' ? [0, 1, 2].map((i) => ({ x: -X + W * (i + 0.5), y: seatY, z: 0.04 }))
     : [-0.28, 0.28].map((z) => ({ x: -0.06, y: seatY, z, dir: [-1, 0] }));
-  g.userData.rest = { kind: 'sit', name: 'loungesoffan', verb: 'sätta dig i', spots };
+  if (!item.decorative) {
+    g.userData.rest = { kind: 'sit', name: 'loungesoffan', verb: 'sätta dig i', spots };
+  }
   // #701: the seat cushions can be stood on (STAND_ON.veronasofa); the row's backs and arms are `solid` (walls, as the sofa's)
   const row = (xa, xb) => [{ x0: xa, x1: xb, z0, z1: z0 + V.tube + V.backT, solid: true },                    // the backs
     { x0: xa, x1: xa + V.tube + 0.02, z0: z0 + V.tube + V.backT, z1, solid: true },                       // the west arm
@@ -101,6 +115,7 @@ export function veronasofa(item = {}) {
   g.userData.footprint = part === 'all' ? [...row(-X, X), { x0: X - W, x1: X, z0: z1, z1: z3 }]
     : part === 'sofa' ? row(-X, X)
     : [{ x0: -W / 2, x1: W / 2, z0: -V.divanL / 2, z1: V.divanL / 2 }];
+  if (item.decorative) return g;
   // cosy cushions (#399): leaning against the backs, and against the screen wall along the bench (in a frame turned to
   // face −x: its x runs along the bench from its north end, its z out from the bench's outer edge); merged into one mesh
   // (the shared cushion atlas), kept out of the sofa's merge, shown by the season and the weather (Patio.update)
@@ -225,16 +240,20 @@ function beerGlass() {
 
 /** The small low table from the family's photo (#408, P.slatTable): a black steel frame (legs, rails at the top and the
  * floor) with dark wooden slats on top; `item.beers` puts two pints on it in summer. */
-export function slattable(item) {
+export function slattable(item = {}) {
   const g = new THREE.Group();
   const { w, d, h, slats } = P.slatTable, t = 0.03, top = 0.02;
-  for (const x of [-w / 2 + t / 2, w / 2 - t / 2]) for (const z of [-d / 2 + t / 2, d / 2 - t / 2]) g.add(tube(x, x, 0, h - top, z, z, tableSteel, t));
+  const boxFn = item.decorative ? sbox : rbox;
+  const tubeFn = item.decorative
+    ? (x0, x1, y0, y1, z0, z1, mat = tableSteel, tt = t) => sbox(Math.max(x1 - x0, tt), Math.max(y1 - y0, tt), Math.max(z1 - z0, tt), (x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2, mat)
+    : tube;
+  for (const x of [-w / 2 + t / 2, w / 2 - t / 2]) for (const z of [-d / 2 + t / 2, d / 2 - t / 2]) g.add(tubeFn(x, x, 0, h - top, z, z, tableSteel, t));
   for (const y of [t / 2 + 0.015, h - top - t / 2]) {
-    for (const z of [-d / 2 + t / 2, d / 2 - t / 2]) g.add(tube(-w / 2 + t, w / 2 - t, y, y, z, z, tableSteel, t));
-    for (const x of [-w / 2 + t / 2, w / 2 - t / 2]) g.add(tube(x, x, y, y, -d / 2 + t, d / 2 - t, tableSteel, t));
+    for (const z of [-d / 2 + t / 2, d / 2 - t / 2]) g.add(tubeFn(-w / 2 + t, w / 2 - t, y, y, z, z, tableSteel, t));
+    for (const x of [-w / 2 + t / 2, w / 2 - t / 2]) g.add(tubeFn(x, x, y, y, -d / 2 + t, d / 2 - t, tableSteel, t));
   }
   const sd = d / slats; // slats along the long side, small gaps between
-  for (let i = 0; i < slats; i++) g.add(rbox(w - 0.004, top, sd - 0.008, 0, h - top / 2, -d / 2 + sd * (i + 0.5), woodMat, 0.003));
+  for (let i = 0; i < slats; i++) g.add(boxFn(w - 0.004, top, sd - 0.008, 0, h - top / 2, -d / 2 + sd * (i + 0.5), woodMat, 0.003));
   if (item.beers) {
     const beers = new THREE.Group();
     beers.visible = false;
@@ -312,35 +331,43 @@ function setParasol(p, f) {
  * `item.inside: 'bow'` (#690, the box at the foot of the NW stair): empty inside — bow.js lays the bow and the quiver in
  * it (`userData.box`: the lid and the inner size); `item.y`: its floor's height (outdoors on the terrain).
  */
+let dynboxMat, dynboxDark;
+function dynboxMaterials(color) {
+  dynboxMat ??= new THREE.MeshStandardMaterial({ color, roughness: 0.8 });
+  dynboxDark ??= new THREE.MeshStandardMaterial({ color: new THREE.Color(color).multiplyScalar(0.55), roughness: 0.85 });
+  return { mat: dynboxMat, dark: dynboxDark };
+}
+
 export function dynbox(item = {}) {
   const g = new THREE.Group();
   const { L, D, H, lid: lt, wall: t, color, slat } = P.dynbox;
-  const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.8 });
-  const dark = new THREE.MeshStandardMaterial({ color: new THREE.Color(color).multiplyScalar(0.55), roughness: 0.85 });
+  const { mat, dark } = dynboxMaterials(color);
   const hb = H - lt; // the body's height under the lid
+  const boxFn = item.decorative ? sbox : rbox;
   // the body: a bottom and four walls (hollow, so the contents show), little feet
-  g.add(rbox(L - 2 * t, 0.02, D - 2 * t, 0, 0.04, 0, dark, 0.004));
-  g.add(rbox(L, hb - 0.03, t, 0, 0.03 + (hb - 0.03) / 2, D / 2 - t / 2, mat, 0.006));
-  g.add(rbox(L, hb - 0.03, t, 0, 0.03 + (hb - 0.03) / 2, -D / 2 + t / 2, mat, 0.006));
-  for (const s of [-1, 1]) g.add(rbox(t, hb - 0.03, D - 2 * t, s * (L / 2 - t / 2), 0.03 + (hb - 0.03) / 2, 0, mat, 0.006));
-  for (const [x, z] of [[-1, -1], [-1, 1], [1, -1], [1, 1]]) g.add(rbox(0.05, 0.03, 0.05, x * (L / 2 - 0.04), 0.015, z * (D / 2 - 0.04), dark, 0.004));
+  g.add(boxFn(L - 2 * t, 0.02, D - 2 * t, 0, 0.04, 0, dark, 0.004));
+  g.add(boxFn(L, hb - 0.03, t, 0, 0.03 + (hb - 0.03) / 2, D / 2 - t / 2, mat, 0.006));
+  g.add(boxFn(L, hb - 0.03, t, 0, 0.03 + (hb - 0.03) / 2, -D / 2 + t / 2, mat, 0.006));
+  for (const s of [-1, 1]) g.add(boxFn(t, hb - 0.03, D - 2 * t, s * (L / 2 - t / 2), 0.03 + (hb - 0.03) / 2, 0, mat, 0.006));
+  for (const [x, z] of [[-1, -1], [-1, 1], [1, -1], [1, 1]]) g.add(boxFn(0.05, 0.03, 0.05, x * (L / 2 - 0.04), 0.015, z * (D / 2 - 0.04), dark, 0.004));
   // vertical slats on the front and the ends (the wood look), a frame rail at top and bottom
-  for (let x = -L / 2 + slat; x < L / 2 - slat / 2; x += slat) g.add(rbox(0.012, hb - 0.11, 0.006, x, 0.03 + (hb - 0.03) / 2, D / 2 + 0.002, dark, 0.002));
-  for (const s of [-1, 1]) for (let z = -D / 2 + slat; z < D / 2 - slat / 2; z += slat) g.add(rbox(0.006, hb - 0.11, 0.012, s * (L / 2 + 0.002), 0.03 + (hb - 0.03) / 2, z, dark, 0.002));
+  for (let x = -L / 2 + slat; x < L / 2 - slat / 2; x += slat) g.add(boxFn(0.012, hb - 0.11, 0.006, x, 0.03 + (hb - 0.03) / 2, D / 2 + 0.002, dark, 0.002));
+  for (const s of [-1, 1]) for (let z = -D / 2 + slat; z < D / 2 - slat / 2; z += slat) g.add(boxFn(0.006, hb - 0.11, 0.012, s * (L / 2 + 0.002), 0.03 + (hb - 0.03) / 2, z, dark, 0.002));
   for (const y of [0.06, hb - 0.03]) { // a frame rail round the outside (a ring: the box stays open inside)
     for (const s of [-1, 1]) {
-      g.add(rbox(L + 0.008, 0.05, 0.012, 0, y, s * (D / 2 + 0.004), mat, 0.004));
-      g.add(rbox(0.012, 0.05, D + 0.008, s * (L / 2 + 0.004), y, 0, mat, 0.004));
+      g.add(boxFn(L + 0.008, 0.05, 0.012, 0, y, s * (D / 2 + 0.004), mat, 0.004));
+      g.add(boxFn(0.012, 0.05, D + 0.008, s * (L / 2 + 0.004), y, 0, mat, 0.004));
     }
   }
   // handles on the ends
-  for (const s of [-1, 1]) g.add(rbox(0.025, 0.03, 0.16, s * (L / 2 + 0.02), hb - 0.12, 0, dark, 0.008));
+  for (const s of [-1, 1]) g.add(boxFn(0.025, 0.03, 0.16, s * (L / 2 + 0.02), hb - 0.12, 0, dark, 0.008));
   // the lid on a pivot at the back top edge, its planks running along the box
   const pivot = new THREE.Group();
   pivot.position.set(0, hb, -D / 2);
-  pivot.add(rbox(L + 0.02, lt, D + 0.02, 0, lt / 2, D / 2, mat, 0.01));
-  for (let z = slat; z < D; z += slat) pivot.add(rbox(L, 0.004, 0.008, 0, lt + 0.001, z, dark, 0.001));
+  pivot.add(boxFn(L + 0.02, lt, D + 0.02, 0, lt / 2, D / 2, mat, 0.01));
+  for (let z = slat; z < D; z += slat) pivot.add(boxFn(L, 0.004, 0.008, 0, lt + 0.001, z, dark, 0.001));
   g.add(pivot);
+  if (item.decorative) return g;
   const lid = new Openable({ name: 'dynboxens lock', object: pivot, mode: 'flap', axis: [1, 0, 0], sign: -1, max: P.dynbox.max, speed: 1.6 });
   // inside: a folded blanket at one end, the patio cushions in two piles while they are put away
   const contents = new THREE.Group();
