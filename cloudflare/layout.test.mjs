@@ -166,3 +166,24 @@ test('shared rug material edits preserve old moves, concurrent fields and reject
  const raw=await ctx.storage.get('furniture-layout');raw.materials['f-future']={cloth:{choice:'future-v2',revision:raw.revision}};await ctx.storage.put('furniture-layout',raw);
  assert.equal((await put({moves:[move(other)]})).status,200);assert.deepEqual((await get()).materials['f-future'],raw.materials['f-future']);
 });
+
+test('fixed curtain surfaces share material patches without fictitious poses or changing rug compatibility', async () => {
+ const M=await import('../src/materialcatalog.js');const {instance:r}=room();let count=0;
+ const put=materials=>r.fetch(new Request('https://test/furniture',{method:'PUT',headers:{'CF-Connecting-IP':`997-${++count}`},body:JSON.stringify({credential:privateCodeCredential(codes[0]),materials})}));
+ const get=async()=>await(await r.fetch(new Request('https://test/furniture'))).json();
+ assert.equal(M.CURTAIN_MATERIAL_IDS.length,6);assert.equal(new Set(M.CURTAIN_MATERIAL_IDS).size,6);
+ assert.deepEqual(M.MATERIAL_CHOICES.map(c=>c.id),['original','rug-sand','rug-bluegrey','rug-olive','rug-stripe','rug-check']);
+ for(const id of M.CURTAIN_MATERIAL_IDS){
+  const response=await put([{id,surface:'textile',choice:'curtain-stripe',base:0}]);assert.equal(response.status,200);
+  const state=await response.json();assert.equal(state.materials[id].textile.choice,'curtain-stripe');assert.equal(state.pieces[id],undefined);
+ }
+ const before=await get();assert.deepEqual(before.pieces,{});
+ for(const [id,choice] of [[M.CURTAIN_MATERIAL_IDS[0],'rug-bluegrey'],[M.RUG_MATERIAL_IDS[0],'curtain-bluegrey'],['f-curtain-guessed','curtain-sand']])assert.equal((await put([{id,surface:'textile',choice,base:0}])).status,400);
+ assert.deepEqual(await get(),before);
+ const id=M.CURTAIN_MATERIAL_IDS[0],base=before.materials[id].textile.revision;
+ const conflict=await put([{id,surface:'textile',choice:'original',base:0}]);assert.equal(conflict.status,409);assert.equal((await conflict.json()).state.materialVersion,1);
+ assert.equal((await put([{id,surface:'textile',choice:'original',base}])).status,200);
+ // A cached pre-family client can still move a rug without losing any fixed curtain selection.
+ const legacy=await r.fetch(request([move(M.RUG_MATERIAL_IDS[0])],codes[0],'997-legacy'));assert.equal(legacy.status,200);
+ assert.equal((await get()).materials[M.CURTAIN_MATERIAL_IDS[1]].textile.choice,'curtain-stripe');
+});

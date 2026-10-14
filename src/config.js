@@ -194,23 +194,23 @@ export const CURTAIN_LIGHT = { opacity: .94, diffuseTransmission: .46, roughness
 
 export const CURTAINS = [
   // Sovrum 1 (Sarah & Olof, L1 North): Jungle-print teal cotton panels
-  { level: 1, room: 'Sovrum 1', facade: 'north', theme: 'jungle', rail: [2.7017, 5.5514], west: 2.71, stop: 2.72, meet: 3.855, east: 5.32, z: 0.6, glass: [3.15, 4.56], stack: 0.22,
+  { level: 1, room: 'Sovrum 1', materialId: 'f-curtain-bedroom1', facade: 'north', theme: 'jungle', rail: [2.7017, 5.5514], west: 2.71, stop: 2.72, meet: 3.855, east: 5.32, z: 0.6, glass: [3.15, 4.56], stack: 0.22,
     top: 2.36, drop: 0.015, fullness: 1.4, amp: 0.028, tile: 0.7, speed: 0.38,
     colors: { ground: '#2f7c86', track: 0xf3f2ee, glow: 0x3fa3ad, warm: 0xffc27a }, glow: { day: 0.18, lamp: 0.08 } },
   // Sovrum 2 (Walter & Kian, L1 South): Star Wars / gaming sci-fi motif on dark navy
-  { level: 1, room: 'Sovrum 2', facade: 'south', theme: 'starwars', rail: [2.7517, 5.5514], west: 2.77, stop: 2.78, meet: 3.85, east: 5.53, z: 12.12, glass: [3.22, 4.47], stack: 0.22,
+  { level: 1, room: 'Sovrum 2', materialId: 'f-curtain-bedroom2', facade: 'south', theme: 'starwars', rail: [2.7517, 5.5514], west: 2.77, stop: 2.78, meet: 3.85, east: 5.53, z: 12.12, glass: [3.22, 4.47], stack: 0.22,
     top: 2.76, drop: 0.02, fullness: 1.4, amp: 0.028, tile: 0.65, speed: 0.38,
     colors: { ground: '#141a29', track: 0xf3f2ee, glow: 0x223254, warm: 0xffc27a }, glow: { day: 0.15, lamp: 0.07 } },
   // Sovrum 3 (Livia & Tuva, L1 North): Unicorn / pastel rainbow theme on soft cream
-  { level: 1, room: 'Sovrum 3', facade: 'north', theme: 'unicorn', rail: [0.202, 2.6067], west: 0.90, stop: 0.92, meet: 1.80, east: 2.59, z: 0.58, glass: [1.25, 2.34], stack: 0.22,
+  { level: 1, room: 'Sovrum 3', materialId: 'f-curtain-bedroom3', facade: 'north', theme: 'unicorn', rail: [0.202, 2.6067], west: 0.90, stop: 0.92, meet: 1.80, east: 2.59, z: 0.58, glass: [1.25, 2.34], stack: 0.22,
     top: 2.36, drop: 0.015, fullness: 1.4, amp: 0.028, tile: 0.6, speed: 0.38,
     colors: { ground: '#fdf6fa', track: 0xf3f2ee, glow: 0xffeef7, warm: 0xffc27a }, glow: { day: 0.22, lamp: 0.09 } },
   // Sovrum 4 (Tilly, L1 South): K-pop & dark violet/lilac theme
-  { level: 1, room: 'Sovrum 4', facade: 'south', theme: 'kpop', rail: [0.202, 2.6317], west: 0.22, stop: 0.23, meet: 1.45, east: 2.61, z: 12.12, glass: [0.72, 2.19], stack: 0.22,
+  { level: 1, room: 'Sovrum 4', materialId: 'f-curtain-bedroom4', facade: 'south', theme: 'kpop', rail: [0.202, 2.6317], west: 0.22, stop: 0.23, meet: 1.45, east: 2.61, z: 12.12, glass: [0.72, 2.19], stack: 0.22,
     top: 2.76, drop: 0.02, fullness: 1.4, amp: 0.028, tile: 0.6, speed: 0.38,
     colors: { ground: '#201826', track: 0xf3f2ee, glow: 0x3d2b4c, warm: 0xffc27a }, glow: { day: 0.15, lamp: 0.07 } },
   // Kök / matplats (#464): one 51 cm valance on the existing ceiling rail; length is a visual choice (*guess*).
-  { level: 0, room: 'Kök / matplats', facade: 'north', theme: 'linen_kitchen', rail: [2.1516, 5.5512], style: 'valance', name: 'gardinkappan', initial: 1, west: 2.1516, stop: 2.17, meet: 3.85, east: 5.5312, z: 0.58, glass: [3.15, 4.56], stack: 0.22,
+  { level: 0, room: 'Kök / matplats', materialId: 'f-curtain-kitchen', facade: 'north', theme: 'linen_kitchen', rail: [2.1516, 5.5512], style: 'valance', name: 'gardinkappan', initial: 1, west: 2.1516, stop: 2.17, meet: 3.85, east: 5.5312, z: 0.58, glass: [3.15, 4.56], stack: 0.22,
     top: 2.96, drop: 2.45, fullness: 1.4, amp: 0.028, tile: 0.6, speed: 0.38, dim: 0.03,
     panels: [{ id: 'valance', from: 2.17, to: 5.5312, park: 'left' }],
     colors: { ground: '#ede7dc', track: 0xf3f2ee, glow: 0xf8f4ec, warm: 0xffc27a }, glow: { day: 0.22, lamp: 0.08 } },
@@ -219,7 +219,7 @@ export const CURTAINS = [
   // #584 (the user: the print looked too big and clumsy): `tile` .90 → .45 m, twice as many repeats each way. Read off
   // the photo: ~8–9 lobes across one panel, taking it as IKEA's usual 145 cm width (*guess*), gives lobes of ~12–16 cm,
   // i.e. a ~.45 m repeat (the canvas holds 2 × 2 lobe clusters). White ground and rail/panel dimensions retained.
-  { level: 0, room: 'Vardagsrum', facade: 'south', theme: 'ikea_leaves', rail: [0.2018, 5.5512], west: 0.202, stop: 0.22, meet: 3.855, east: 5.531, z: 12.10, glass: [2.88, 4.81], stack: 0.22,
+  { level: 0, room: 'Vardagsrum', materialId: 'f-curtain-living-room', facade: 'south', theme: 'ikea_leaves', rail: [0.2018, 5.5512], west: 0.202, stop: 0.22, meet: 3.855, east: 5.531, z: 12.10, glass: [2.88, 4.81], stack: 0.22,
     top: 2.96, drop: 0.02, fullness: 1.4, amp: 0.028, tile: 0.45, speed: 0.38,
     panels: [{ id: 'west', from: 0.22, to: 2.15, park: 'left' }, { id: 'middle', from: 2.15, to: 3.855, park: 'left' }, { id: 'east', from: 3.855, to: 5.531, park: 'right' }],
     colors: { ground: '#fafaf6', ink: '#5a6150', track: 0xf3f2ee, glow: 0xf8f8f3, warm: 0xffc27a }, glow: { day: 0.20, lamp: 0.08 } },
@@ -4602,7 +4602,7 @@ export const POWER = {
 
 // Furniture cheat (#465): interaction distance and support tolerance are gameplay choices, not surveyed dimensions.
 // #995: visual assumptions for the generic rug swatches, not fabric measurements.
-export const MATERIAL_LIBRARY = { tile: .25, pixels: 128 };
+export const MATERIAL_LIBRARY = { tile: .25, pixels: 128, curtainTile: .4 }; // generic curtain repeat in metres, visual guess
 export const REARRANGE = { reach: 6, supportGap: 0.06, poll: 3000 };
 
 // #514: marker graffiti on bikeNE's back west wall; dimensions/height are visual assumptions.
