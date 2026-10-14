@@ -73,6 +73,26 @@ is loaded directly from git: actual render-step positions and velocities match a
 representative preserved physics, not all-frame-time parity of the fixed20ms
 predictor or full World/GPU/physical-phone performance.
 
+#979 runtime published as `e97db01a5efc65815d050c22091608948ea2ded9`, head-hits780.
+Native2 passed46/46 actualCLI0; a separately frozen a40a26c Worker with253 source
+files verified against exact git blobs passed11/11CLI0 with the new real Bow
+client (v2 hc remains body1/HP9). Both gameplay and legacy original HUD images were
+opened and inspected. All257 measured source/driver hashes stayed exact through
+last rebase; all263 publication hashes match that commit and older changelog bytes
+are unchanged. Node: initial broad57/57CLI0; final broad56/57CLI1 retains the known
+appearance-dependent old v1 lateral-greeting assertion #945 at players.test.mjs657.
+Targeted Bow/shared-box/Nerf tests passed11/11CLI0. No broad retry or anatomical fix
+hides that unrelated failure. Native1's46-check run retained one fixture CLI1:
+an actual tilted28m/s vector has Float64 length27.999999999999996; replacing strict
+28 equality with a small numeric comparison changed no product behavior.
+Worker38543751769/job115784601223 executed real `npx wrangler deploy`09:38:16Z,
+Uploaded09:38:19Z/Deployed09:38:20Z2026-10-14, version
+0b7bac71-ed58-49b0-a04f-4eb9b1d80941. Pages38543751944/job115784603640 used the same
+exact SHA and actual deploy-pages, reporting success09:38:19Z. This proves publication,
+not live-device gameplay. Full source freezes/owners/producers/PNGs/original failures
+and deploy logs are retained in `/tmp/lunden-priority-979` and orchestration artifacts.
+Only #979 is complete; ball #980 and parents #895/#874 are separate.
+
 ## Module and test map
 
 ```text
