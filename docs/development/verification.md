@@ -6360,3 +6360,17 @@ The rendered decorative cushion/link section and complete dynbox builder remain
 byte-identical to the actual image source, with config/cushions/helper/geometry
 unchanged. This is component block parity, not whole-patio/world acceptance of
 new imports or a rerender of1012's separate fixed-pad choices.
+
+
+Actual #1015 publication: catalog Worker3ce54a6 deployed in
+run38560264991/job115839309962 at11:58:03.7271897Z, version
+2c02ca43-7d5c-4eb2-bf61-7d5281779b6e, before the requiring client.
+Client3364240 (changelog801) published via Pages38562044696/job115845258392,
+Created deployment12:12:27.4584439Z/Reported success12:12:37.9240887Z. Its
+automatic Worker38562044695/job115845257585 deployed12:12:36.9377466Z,
+version6271b6ee-017a-49dd-8ce8-f3521f88cbaa. Full logs contain those exact
+SHAs; publication-manifest.json records1415 published file hashes and239
+byte-exact final3-native inputs. All799 old changelog row bytes and actual
+changelog_stamp.py publication times remain unchanged. Last rebase added1012
+completion documentation only; every frozen final3 input remained exact.
+Own processes/profiles and TCP/TCP6 listeners8878/8879 are clear.
