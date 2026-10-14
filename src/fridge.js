@@ -18,12 +18,14 @@ function brushedSteel() {
   const canvas = document.createElement('canvas'); canvas.width = 64; canvas.height = 128;
   const ctx = canvas.getContext('2d');
   for (let y = 0; y < canvas.height; y++) {
-    const v = 183 + Math.round(8 * Math.sin(y * Math.PI * 8 / 128) + 4 * Math.sin(y * Math.PI * 2 / 128));
+    const fine = Math.sin(y * Math.PI * 64 / 128) * 1.5 + Math.sin(y * Math.PI * 32 / 128) * 1.2;
+    const micro = Math.sin(y * Math.PI * 128 / 128) * 0.8;
+    const v = Math.round(184 + fine + micro);
     ctx.fillStyle = `rgb(${v},${v},${v})`; ctx.fillRect(0, y, canvas.width, 1);
   }
   const tex = new THREE.CanvasTexture(canvas);
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.colorSpace = THREE.SRGBColorSpace;
-  tex.repeat.set(1, 3); tex.anisotropy = 4;
+  tex.repeat.set(1, 16); tex.anisotropy = 4;
   return new THREE.MeshStandardMaterial({ color: 0xc3c7ca, map: tex, roughness: 0.3, metalness: 0.45 });
 }
 const steel = brushedSteel();

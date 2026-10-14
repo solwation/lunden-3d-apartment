@@ -877,6 +877,9 @@ function skansnasTable() {
   shape.lineTo(-hw, -hl + r); shape.quadraticCurveTo(-hw, -hl, -hw + r, -hl);
   const geo = new THREE.ExtrudeGeometry(shape, { depth: T.top, bevelEnabled: true, bevelThickness: 0.004, bevelSize: 0.004, bevelSegments: 2, curveSegments: 6 });
   geo.rotateX(Math.PI / 2).translate(0, T.h, 0);
+  const uv = geo.attributes.uv;
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getY(i), uv.getX(i));
+  uv.needsUpdate = true;
   const top = new THREE.Mesh(geo, beech);
   top.castShadow = top.receiveShadow = true;
   g.add(top);
