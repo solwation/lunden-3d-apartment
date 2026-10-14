@@ -278,3 +278,24 @@ test('three actual Verona fixed-pad surfaces preserve independent peers, base fa
  state=await get();assert.equal(state.pieces[id].pos[0],3);assert.equal(state.materials[id].textile.choice,'original');
  assert.deepEqual(await(await new DrawingRoom(ctx,{}).fetch(new Request('https://test/furniture'))).json(),state);
 });
+
+
+test('canonical outdoor cushion groups and box fleece preserve textile independence and legacy moves', async () => {
+ const M=await import('../src/materialcatalog.js'),{instance:r,ctx}=room();let serial=0;
+ const put=b=>r.fetch(new Request('https://test/furniture',{method:'PUT',headers:{'CF-Connecting-IP':`1015-${++serial}`},body:JSON.stringify({credential:privateCodeCredential(codes[0]),...b})}));
+ const get=async()=>await(await r.fetch(new Request('https://test/furniture'))).json();
+ const entries=Object.entries(M.PATIO_TEXTILE_SURFACES);assert.equal(entries.length,4);
+ const modules=entries.filter(([,s])=>s[0]==='cushions'),box=entries.find(([,s])=>s[0]==='throw-folded');assert.equal(modules.length,3);assert.ok(box);
+ assert.deepEqual(modules.map(([id])=>id),M.VERONA_UPHOLSTERY_MATERIAL_IDS);
+ for(const [id,[surface]] of entries)assert.equal((await put({materials:[{id,surface,choice:'upholstery-check',base:0}]})).status,200);
+ const before=await get();assert.equal(before.materialVersion,1);assert.deepEqual(before.pieces,{});
+ for(const [id,surface,choice] of [[box[0],'cushions','upholstery-sand'],[modules[0][0],'throw-folded','upholstery-sand'],['f-dynbox-guessed','throw-folded','upholstery-sand'],[box[0],'throw-folded','rug-check'],[modules[0][0],'cushions','curtain-sand']])assert.equal((await put({materials:[{id,surface,choice,base:0}]})).status,400);
+ assert.deepEqual(await get(),before);
+ const id=modules[0][0],base=before.materials[id].cushions.revision;
+ const result=await Promise.all([put({materials:[{id,surface:'cushions',choice:'upholstery-sand',base}]}),put({materials:[{id,surface:'textile',choice:'upholstery-olive',base:0}]}),put({moves:[move(id)]})]);assert.deepEqual(result.map(x=>x.status),[200,200,200]);
+ assert.equal((await put({materials:[{id,surface:'cushions',choice:'original',base}]})).status,409);
+ let state=await get();assert.equal(state.materials[id].cushions.choice,'upholstery-sand');assert.equal(state.materials[id].textile.choice,'upholstery-olive');assert.equal(state.pieces[id].pos[0],3);assert.equal(state.materials[box[0]]['throw-folded'].choice,'upholstery-check');
+ assert.equal((await put({materials:[{id,surface:'cushions',choice:'original',base:state.materials[id].cushions.revision}]})).status,200);
+ state=await get();assert.equal(state.materials[id].textile.choice,'upholstery-olive');assert.equal(state.pieces[id].pos[0],3);
+ assert.deepEqual(await(await new DrawingRoom(ctx,{}).fetch(new Request('https://test/furniture'))).json(),state);
+});
