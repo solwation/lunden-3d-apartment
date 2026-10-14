@@ -3,7 +3,7 @@ import { fallDamage } from './falldamage.js';
 import { recordPlayerKill, awardPvpRange } from './stats.js';
 import { HitMarker } from './hitmarker.js';
 import { COMBAT as C, TOYS, pvpHitPoints, PVP_HEAD_BOXES as HB, rifleBoxHeadContact, rifleHeadBaseY } from './config.js';
-import { stepNerf, nerfFloor } from './nerf.js';
+import { nerfSegments, nerfPlayerContact } from './nerf.js';
 import { combatWorldHits, combatWorldPath, combatWorldPathBlocked, prepareCombatWorld } from './combatworld.js';
 
 // Combat between players (#667) on top of the ghosts (#666, src/ghosts.js; the room's check: cloudflare/players.js).
@@ -129,28 +129,22 @@ export class Combat {
 
   /** A Nerf hit along the actual muzzle arc, before the first wall/floor or its travel limit. */
   nerfCandidate(shot, range) {
-    const p = shot.o.clone(), velocity = shot.d.clone().multiplyScalar(shot.s || TOYS.nerf.dart.speed);
-    const floor = nerfFloor(p) + 0.008, foes = this.foes(), limit = Math.min(range, TOYS.nerf.dart.range);
-    const points = [p.clone()];
-    let travelled = 0, target = null;
-    while (travelled < limit - 1e-7) {
-      const next = p.clone();
-      travelled += stepNerf(next, velocity, 0.02, limit - travelled, floor);
-      const direction = next.clone().sub(p), length = direction.length();
-      if (!length) break;
-      direction.divideScalar(length);
+    const foes = this.foes(), points = [shot.o.clone()];
+    let target = null, hc = null;
+    for (const segment of nerfSegments({ o: shot.o.toArray(), d: shot.d.toArray(), s: shot.s }, range)) {
+      const p = new THREE.Vector3(...segment.origin), direction = new THREE.Vector3(...segment.direction), length = segment.length;
       let best = null;
       for (const foe of foes) {
-        const along = nerfContact(p, direction, length, foe.feet);
-        if (along !== null && (!best || along < best.along)) best = { foe, along };
+        const state = { p: foe.feet.toArray(), r: foe.root.rotation.y, c: foe.crouch ?? 0 };
+        const hit = nerfPlayerContact(foe.id, state, segment);
+        if (hit && (!best || hit.distance < best.along)) best = { foe, along: hit.distance,
+          hc: hit.head ? [HB.version, ...hit.point] : null };
       }
-      if (best) { target = best.foe; points.push(p.clone().addScaledVector(direction, best.along)); break; }
-      points.push(next.clone());
-      if (next.y <= floor) break;
-      p.copy(next);
+      if (best) { target = best.foe; hc = best.hc; points.push(p.clone().addScaledVector(direction, best.along)); break; }
+      points.push(new THREE.Vector3(...segment.end));
     }
     if (!target) return null; // A miss needs no whole-scene obstacle queries.
-    return { target, points };
+    return { target, points, hc };
   }
 
   aimNerf(shot, range) {
@@ -235,7 +229,11 @@ export class Combat {
   fire(key, shot = null, held = false) { // held: the caller checked we held `key` when it was used
     if (!this.ghosts.connected || (!held && this.weapon() !== key) || !C.weapons.includes(key) || !this.foes().length) return null;
     if (key === 'nerf' && shot) {
-      const launch = { o: shot.o.clone(), d: shot.d.clone(), s: shot.s }, candidate = this.nerfCandidate(launch, this.rules.weapons.nerf.range);
+      // Predict from the existing wire precision so client and Worker integrate the same muzzle path.
+      const launch = { o: shot.o.clone().set(...shot.o.toArray().map(v => Math.round(v * 100) / 100)),
+        d: shot.d.clone().set(...shot.d.toArray().map(v => Math.round(v * 1000) / 1000)),
+        s: shot.s ? Math.round(shot.s * 100) / 100 : undefined };
+      const candidate = this.nerfCandidate(launch, this.rules.weapons.nerf.range);
       const layers = new THREE.Layers(); layers.mask = this.camera.layers.mask;
       const job = { done: false, cancel: false, finish: null };
       const valid = () => this.ghosts.connected && this.weapon() === key;
@@ -244,8 +242,9 @@ export class Combat {
         job.done = true;
         const at = this.nerfPending.indexOf(job); if (at >= 0) this.nerfPending.splice(at, 1);
         if (job.cancel || !valid()) return;
-        this.lastShot = { w: key, o: launch.o.toArray(), d: launch.d.toArray(), s: launch.s ?? 0, to: target?.id ?? null };
-        this.ghosts.fire({ w: key, o: launch.o.toArray(), d: launch.d.toArray(), s: launch.s, to: target?.id });
+        this.lastShot = { w: key, o: launch.o.toArray(), d: launch.d.toArray(), s: launch.s ?? 0, to: target?.id ?? null, ...(target && candidate?.hc ? { hc: candidate.hc } : {}) };
+        this.ghosts.fire({ w: key, o: launch.o.toArray(), d: launch.d.toArray(), s: launch.s, to: target?.id,
+          ...(target && candidate?.hc ? { hc: candidate.hc } : {}) });
         this.fired++;
       };
       if (!candidate) { job.finish(null); return null; }

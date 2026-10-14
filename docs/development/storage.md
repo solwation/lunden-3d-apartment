@@ -20,8 +20,19 @@ accepted target state and rounded shot; the coordinates in `hc` do not award dam
 Confirmed head/body damage stays 2/1; range, rate, points, marker, life recovery and
 kill receipts are unchanged. Interpolated client poses can differ from the server's
 latest snapshot, so a predicted head hit may still receive body damage. This does
-not promise exact mesh contact or lag compensation. Other weapon trajectories keep
-their existing body damage for now.
+not promise exact mesh contact or lag compensation. Straight weapons are handled separately by #893.
+
+Nerf (#894) reuses the same boxes along its existing falling muzzle path. `src/nerf.js`
+shares the 20 ms `stepNerf` segments, floor clip and travel limit with the Worker;
+the client rounds the captured launch to the existing wire precision before prediction.
+For each segment it compares the head boxes with the existing body capsule clipped
+above the logical neck. Body contacts outside the cosmetic mesh stay valid; an earlier
+body contact prevents a later head bonus on both client and Worker. The nearest armed player
+wins; the existing asynchronous obstacle check still rejects walls, including its
+unchanged conservative deadline/miss behavior. A version-2 Nerf `hc` requests server
+recomputation from the accepted target pose and rounded launch, not trust in the
+reported contact coordinates. Cached unversioned Nerf packets retain one-heart
+damage. This adds no extra message, animation-history gate or anatomical classifier.
 
 Version 1 and its historical helpers remain only for cached older clients. The
 per-polygon notes below describe that legacy contract; their refinement requirements

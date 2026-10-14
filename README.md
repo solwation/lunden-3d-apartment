@@ -276,3 +276,8 @@ Existing head-hit families keep their own rules. See the
 Legacy cached clients only: #971 adds a source-derived immutable Nose ray prism alongside the four existing Nose families. It covers additional central-side cells without changing the original 6mm entry guard; the remaining anatomical details are superseded by #974. See [verification](docs/development/verification.md#immutable-nose-prism-971).
 
 The five existing courtyard bicycles can also be ridden with E or the touch action, using the same controls and safe standing reload as the NW bicycles (#906).
+Nerf uses the same three approximate head boxes as the rifle along its falling muzzle
+path (#894): the server confirms two hearts for the head, one for the body, while
+walls, range, shot timing and kill receipts keep their existing rules. See the
+[interaction contract](docs/development/interactions.md) and
+[focused verification](docs/development/verification.md#nerf-shared-head-boxes-894).

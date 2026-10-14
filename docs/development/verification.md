@@ -5858,3 +5858,14 @@ On resume, native5 remains CLI1: the mixed CDP-touch/Playwright-tap sequence did
 Final native8 also checks rigid rotation of selected normals and actual DetailCuller visibility with a stationary camera; all80 checks pass, actual CLI0. The updated NW-native driver retains all nine bicycle acceptance paths and passes without WebGL; only its source anchor, controlled empty Courtyard collaborator and full-World total (14) were adapted for the combined register. Its full-World branch was not rerun. The GPU-granted isolated render2 completes CLI0 in17.45s, with both parked and saddle/styret views inspected. The first external render monitor failed while parsing a whitespace-containing `/proc/stat` name; its child exit remains unknown, empty log and no image retained. Render2 uses corrected owner parsing and records one owned Chrome master that exited and229 exact frozen paths. No whole-apartment, hardware-FPS or physical-phone claim follows.
 
 Publication: courtyard runtime `55e768041c3b8dc48f1cf82e0e744b9dc5abc609`, changelog774. Immediate follow-up `b591a3a30d0e377c12a20daf72c793cf3c5fab40` restores the original compact changelog bytes after unintended formatting; actual before/after history runs of `changelog_stamp.py` preserve all772 older publication times. All230 final source paths match the publication, including native8’s producer. Pages run38539049178/job115769342208 ran actual deploy-pages for b591a3a, created deployment09:00:35.890Z and reported success09:01:54.790Z on2026-10-14. The preceding55e7680 Pages run was cancelled by this follow-up; no success is attributed to it. No backend Worker change or deployment was required. Raw acceptance/failure/ownership/hash/log evidence remains in `/tmp/lunden-priority-906`.
+
+## Nerf shared head boxes (#894)
+
+`node --test cloudflare/nerfhead.test.mjs` checks actual falling rather than sight-line
+contact, floor/range clips, invalid direction, cached one-heart behavior, server-owned
+2/1 damage, forged head claims, recovery, moving/turned/crouched targets and lethal
+receipt. `tools/nerfheadbrowsertest.cjs game worker output` uses two actual native
+Ghosts/Combat peers and local Worker sockets: three box levels, body, miss, solid
+wall, movement/turn/crouch, points/marker and lethal/replay controls. It creates no
+WebGL or apartment; the inspected PNG is native HUD evidence, not a rendered player,
+physical-phone or FPS claim. Existing deferred obstacle deadlines remain unchanged.
