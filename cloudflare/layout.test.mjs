@@ -242,3 +242,21 @@ test('long-pile material is limited to the original living-room rug and survives
   assert.equal(state.materials[id].textile.choice, choice);
   assert.deepEqual(state.pieces[id].pos, [4, 0, 10]);
 });
+
+
+test('actual IDANAS frame material shares upholstery choices without enrolling wood beds or bedlinen', async () => {
+ const M=await import('../src/materialcatalog.js'),C=await import('../src/config.js');const {instance:r}=room();let count=0;
+ const put=b=>r.fetch(new Request('https://test/furniture',{method:'PUT',headers:{'CF-Connecting-IP':`1011-${++count}`},body:JSON.stringify({credential:privateCodeCredential(codes[0]),...b})}));
+ const get=async()=>await(await r.fetch(new Request('https://test/furniture'))).json();
+ assert.equal(M.BED_UPHOLSTERY_MATERIAL_IDS.length,1);const id=M.BED_UPHOLSTERY_MATERIAL_IDS[0];
+ assert.equal(id,'f-bed-1-4.35-2.55-0-0');assert.equal(M.UPHOLSTERY_MATERIAL_IDS.length,6);
+ assert.equal((await put({materials:[{id,surface:'textile',choice:'upholstery-check',base:0}]})).status,200);
+ let state=await get();assert.equal(state.materialVersion,1);assert.equal(state.pieces[id],undefined);
+ assert.equal((await put({moves:[move(id)]})).status,200);state=await get();assert.equal(state.materials[id].textile.choice,'upholstery-check');
+ const before=structuredClone(state);
+ for(const [testId,surface,choice] of [[id,'bedlinen','upholstery-sand'],[id,'textile','rug-check'],[id,'textile','curtain-sand'],['f-bed-guessed','textile','upholstery-sand'],...C.FURNITURE.filter(it=>['bunk','daybed'].includes(it.type)).map(it=>[`f-${it.type}-${it.level}-${it.x}-${it.z}-0-0`,'textile','upholstery-sand'])])assert.equal((await put({materials:[{id:testId,surface,choice,base:0}]})).status,400);
+ assert.deepEqual(await get(),before);
+ const base=state.materials[id].textile.revision;assert.equal((await put({materials:[{id,surface:'textile',choice:'original',base:0}]})).status,409);
+ assert.equal((await put({materials:[{id,surface:'textile',choice:'original',base}]})).status,200);
+ const after=await get();assert.equal(after.materials[id].textile.choice,'original');assert.deepEqual(after.pieces[id],before.pieces[id]);
+});

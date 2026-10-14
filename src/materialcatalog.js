@@ -35,6 +35,12 @@ export const UPHOLSTERY_MATERIAL_IDS = FURNITURE.flatMap(it => {
   const base = `f-${it.type}-${it.level}-${it.x}-${it.z}`, n = upholsterySerials.get(base) ?? 0; upholsterySerials.set(base, n + 1);
   return UPHOLSTERY_TYPES.includes(it.type) ? [`${base}-${n}-0`] : [];
 });
+// #1011: one actual upholstered IDANÄS, not wood beds or bedlinen.
+const bedUpholsterySerials = new Map();
+export const BED_UPHOLSTERY_MATERIAL_IDS = FURNITURE.flatMap(it => {
+  const base = `f-${it.type}-${it.level}-${it.x}-${it.z}`, n = bedUpholsterySerials.get(base) ?? 0; bedUpholsterySerials.set(base, n + 1);
+  return it.type === 'bed' && it.model === 'idanas' ? [`${base}-${n}-0`] : [];
+});
 // #1014: stable independent decorative surfaces on the two actual indoor seats.
 const cushionSerials = new Map();
 export const CUSHION_MATERIAL_SURFACES = Object.fromEntries(FURNITURE.flatMap(it => {
@@ -52,4 +58,4 @@ export const LONG_PILE_MATERIAL_IDS = RUG_MATERIAL_IDS.filter(id => FURNITURE.so
 export const materialChoice = id => [...MATERIAL_CHOICES, ...CURTAIN_MATERIAL_CHOICES, ...UPHOLSTERY_MATERIAL_CHOICES].find(c => c.id === id);
 export const validMaterialChoice = (id, surface, choice) => (Object.hasOwn(CUSHION_MATERIAL_SURFACES, id) && CUSHION_MATERIAL_SURFACES[id].includes(surface))
   ? UPHOLSTERY_MATERIAL_CHOICES.some(c => c.id === choice) : surface === 'textile' && (choice !== 'rug-longpile-bluegrey' || LONG_PILE_MATERIAL_IDS.includes(id)) &&
-  (UPHOLSTERY_MATERIAL_IDS.includes(id) ? UPHOLSTERY_MATERIAL_CHOICES : RUG_MATERIAL_IDS.includes(id) ? MATERIAL_CHOICES : CURTAIN_MATERIAL_IDS.includes(id) ? CURTAIN_MATERIAL_CHOICES : []).some(c => c.id === choice);
+  ((UPHOLSTERY_MATERIAL_IDS.includes(id) || BED_UPHOLSTERY_MATERIAL_IDS.includes(id)) ? UPHOLSTERY_MATERIAL_CHOICES : RUG_MATERIAL_IDS.includes(id) ? MATERIAL_CHOICES : CURTAIN_MATERIAL_IDS.includes(id) ? CURTAIN_MATERIAL_CHOICES : []).some(c => c.id === choice);
