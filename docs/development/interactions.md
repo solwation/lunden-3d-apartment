@@ -1350,8 +1350,29 @@ Explicit centralized grips were added:
 All held-item model matrices remain byte-exact between baseline and candidate across all
 phases; projectile/hit origins (Rifle hitscan eye ray, Nerf origin `where() + dir * 0.3`,
 Wand star world position and eye ray, Saber tip segment `localToWorld(0, hilt+blade, 0)`)
-and placement/take/putBack paths remain completely unchanged. Hand curl is 1.0 around the grips.
 Native audit: 54/54 PASS / CLI 0. WebGL `--render`: 66/66 PASS / CLI 0 at 480×300/FOV72/DPR1.
+
+## Representative palm and two-hand grip audit (#914)
+
+`tools/palmhuggriptest.cjs GAME OUT` exercises actual Hand with three production representatives:
+Tilly's basketball (`Basketball`, `handPose: 'palm'`), Pingping penguin cushion (`Pingping`, `handPose: 'hug'`),
+and Miele the family cat (`MieleHeld`, `handPose: 'hug'`). It verifies rest, throw/hug actions,
+and camera translation/rotation without the full apartment.
+
+The audit established that:
+- Basketball on palm used `grip: [b.r * 0.45, -b.r * 0.85, 0.02]` with an unpitched forearm-aligned hand pose, resulting in the palm resting inside the ball and fingers penetrating up to 3.4 cm into the sphere (6,707 vertices inside).
+- In `Hand.pose`, `mode === 'palm'` only rotated roll around local Z without leveling the hand at the wrist, leaving fingers tilted upward by ~18° into the sphere.
+- Pingping's hug grips were set at `P.h * 0.60`, placing the hands on Pingping's cheeks/face mask instead of around the flippers and mid-body.
+- Miele's hug grips were placed at `[0.095, 0.16, 0.02]`, pinching the front paws and white bib rather than resting on the flanks of the ribcage.
+
+Corrections:
+- `HAND.palmPitch`: `-0.32` rad (*guess*, #914) leveling the open palm and fingers under the carried basketball.
+- `HAND.palmCurl`: `0.14` (*guess*, #914) cupping the underside of the sphere naturally.
+- `Basketball.grip`: `[b.r * 0.25, -b.r - 0.002, 0.015]` in `src/basket.js`, eliminating penetration (0 vertices inside, 0 cm max penetration) while keeping ball support within ~5 mm.
+- `PINGPING.grips`: `[[0.188, 0.182, 0.03], [-0.188, 0.182, 0.03]]` (*guess*, #914, `P.h * 0.48`), placing hands on sides around the flippers.
+- `MIELE.grips`: `[[0.108, 0.16, -0.005], [-0.108, 0.16, -0.005]]` (*guess*, #914), situating hands naturally on the flanks of her ribcage while keeping bib and paws clear.
+- All held model matrices, softness, place, home, save, basketball throw origin (`hand()`), aim parabolas, FIBA scoring, and hug counters remain 100% preserved. Wrist/arm angles stay natural (<5° deviation).
+Native audit: 18/18 PASS / CLI 0. WebGL `--render`: 17/17 PASS / CLI 0 at 640×400/FOV72/DPR1.
 
 
 ## Shared rug material library (#995)

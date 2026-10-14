@@ -2176,7 +2176,8 @@ export const BOOK = { w: 0.15, l: 0.22, h: 0.03, x: 1.57, y: 0.483, z: 8.17, tur
 // off the photo. `held` = where he sits in your arms (camera space, his bottom centre), `tilt` = leaning back (rad).
 // A hug (click / "Krama"): pulled in `pull` m and squashed by `squash` over `hugTime` s, `hearts` rise.
 export const PINGPING = { w: 0.4, h: 0.38, d: 0.22, navy: 0x34437a, white: '#ece6da', cheek: '#f0a3ad', beak: '#e8cf6a', feet: 0xe2cf7a,
-  home: { z: 0.14, tilt: -0.16 }, held: { x: 0.0, y: -0.57, z: -0.45, tilt: -0.45 }, pull: 0.1, squash: 0.22, hugTime: 0.7, hearts: 14 };
+  home: { z: 0.14, tilt: -0.16 }, held: { x: 0.0, y: -0.57, z: -0.45, tilt: -0.45 }, pull: 0.1, squash: 0.22, hugTime: 0.7, hearts: 14,
+  grips: [[0.188, 0.182, 0.03], [-0.188, 0.182, 0.03]] }; // *guess* #914: sides around flippers (P.h * 0.48)
 
 // The big beer on the patio (#117, src/beer.js): a 50 cl tankard (Ø 9 × 16 cm, our pick) that turns up on the
 // lounge table (top at 0.40) when you sit down in the lounge sofa; each gulp drinks `gulp` of it.
@@ -2787,7 +2788,7 @@ export const SECRET = {
 // isn't grey (cheap stand-in for light through skin); `cuff` = m from the wrist back to the sleeve's cuff; how far
 // the fingers close: 1 round a `grip`, `boxCurl` beside a thing without one, `palmCurl` under one carried on the palm.
 export const HAND = { skin: 0xe2b292, skinGlow: 0x2a0e06, sleeve: 0x4a5a6e, shoulder: [0.3, -0.5, 0.15], rest: [0.2, -0.26, -0.32],
-  reach: 0.4, reachTime: 0.4, size: 0.95, cuff: 0.085, boxCurl: 0.75, palmCurl: 0.2, petCurl: 0.15, hugCurl: 0.45, // petCurl: stroking the cat (#242); hugCurl: round Pingping (#269)
+  reach: 0.4, reachTime: 0.4, size: 0.95, cuff: 0.085, boxCurl: 0.75, palmCurl: 0.14, palmPitch: -0.32, petCurl: 0.15, hugCurl: 0.45, // palmPitch: level palm under ball (*guess*, #914); petCurl: stroking the cat (#242); hugCurl: round Pingping (#269)
   // The Spider-Man suit's arms (#636, hand.js `suit`; all *guess*, camera space like `rest`): shooting a web = the classic
   // pose (palm up, index and little finger out, middle and ring finger folded in, the thumb over them — the `web` pose)
   // with the palm at `webAt` for `webHold` s after the shot, `webEase` s in and out; the strand leaves the palm (spidersuit.js).
@@ -2982,7 +2983,7 @@ export const KITTEN = { chance: 1 / 30, furniture: 0.65, every: [3, 7], play: 1.
 // hands round her sides at `grips` (her frame); a hug (click / "Krama") pulls her in `pull` m, squeezed by `squash`,
 // over `hugTime` s. Put down she looks at you for `linger` s, then walks off. Coat colours read off docs/miele-foto-ram.jpg.
 export const MIELE = { weight: 0.56, see: 7, fireworks: 7, sparks: 12, life: 3,
-  held: { x: 0.0, y: -0.43, z: -0.5, tilt: -0.3 }, grips: [[0.095, 0.16, 0.02], [-0.095, 0.16, 0.02]],
+  held: { x: 0.0, y: -0.43, z: -0.5, tilt: -0.3 }, grips: [[0.108, 0.16, -0.005], [-0.108, 0.16, -0.005]], // *guess* #914: sides of ribcage
   pull: 0.08, squash: 0.12, hugTime: 0.8, linger: 2,
   colors: { base: '#857461', light: '#a8977f', stripe: '#2a231e', white: 0xf3f1ec, ear: 0x6b5a48, tip: 0x241e1a, eye: 0xe0a62a } };
 // The leaderboard: how many rows are shown, how often a changed score is sent (s).

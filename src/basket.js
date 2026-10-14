@@ -317,7 +317,7 @@ export class Basketball extends Holdable {
       home: { pos: home, rot: new THREE.Euler(0, 0, 0) },
       heldPose: { pos: new THREE.Vector3(b.held.x, b.held.y, b.held.z), rot: new THREE.Euler(0, 0, 0) },
       pick: { pos: home.clone(), size: [0.3, 0.3, 0.3] },
-      cooldown: 0.4, useLabel: 'Skjut', grip: [b.r * 0.45, -b.r * 0.85, 0.02], handPose: 'palm', // carried on the open palm (#238)
+      cooldown: 0.4, useLabel: 'Skjut', grip: [b.r * 0.25, -b.r - 0.002, 0.015], handPose: 'palm', // carried on the open palm (#238, #914)
     });
     Object.assign(this, { marks, hoop, world, clickIsUse: true, hitsTarget: false, flying: false, v: new THREE.Vector3(), air: 0, dribbling: false, armed: true, returning: false, outOfBoundsTimer: 0 });
     hoop.ball = this;

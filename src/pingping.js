@@ -155,7 +155,7 @@ export class Pingping extends Thing {
     Object.assign(this, {
       soft: true, // can go down on a bed or a sofa too
       handPose: 'hug', // in both arms (hand.js)
-      hugGrips: [[P.w / 2 - 0.012, P.h * 0.6, 0.04], [-P.w / 2 + 0.012, P.h * 0.6, 0.04]], // right hand, left hand (his frame)
+      hugGrips: P.grips ?? [[P.w / 2 - 0.012, P.h * 0.48, 0.03], [-P.w / 2 + 0.012, P.h * 0.48, 0.03]], // right hand, left hand (his frame, #914)
       placeVerb: 'sätta ner', cooldown: P.hugTime * 0.7, hugT: 1, hugs: 0,
     });
     this.hearts = new Hearts(scene, P.hearts);

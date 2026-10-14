@@ -225,8 +225,10 @@ export class Hand {
     const dir = at.clone().sub(this.shoulder).normalize();
     tmpM.lookAt(at.clone().add(dir), at, up); // its z axis = eye − target = along the arm
     hand.quaternion.setFromRotationMatrix(tmpM);
-    if (mode === 'palm') hand.quaternion.multiply(rollQ.setFromAxisAngle(Z, Math.PI / 2)); // the palm up, the thumb out
-    else if (mode === 'pet') hand.quaternion.multiply(rollQ.setFromAxisAngle(Z, -Math.PI / 2)); // the palm down on the cat
+    if (mode === 'palm') {
+      hand.quaternion.multiply(rollQ.setFromAxisAngle(Z, Math.PI / 2)); // the palm up, the thumb out
+      if (H.palmPitch) hand.quaternion.multiply(rollQ.setFromAxisAngle(Y, H.palmPitch)); // level palm under carried ball (*guess*, #914)
+    } else if (mode === 'pet') hand.quaternion.multiply(rollQ.setFromAxisAngle(Z, -Math.PI / 2)); // the palm down on the cat
     else if (mode === 'wall') { // the palm flat on a wall (#636): the fingers up (tipped `wallTilt` rad back), the palm forward, the thumb in
       const c = Math.cos(H.suit.wallTilt), s = Math.sin(H.suit.wallTilt);
       hand.quaternion.setFromRotationMatrix(tmpM.makeBasis(new THREE.Vector3(0, -s, -c), new THREE.Vector3(-1, 0, 0), new THREE.Vector3(0, c, -s)));
