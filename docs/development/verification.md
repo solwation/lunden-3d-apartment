@@ -5771,3 +5771,12 @@ inspected. Final aggregate `final-proof.json` includes all composed certificate,
 source-reconstruction, native/legacy, FIRST/corner and original failure evidence.
 All47 frozen runtime/driver paths match the final tested tree. Artifacts are retained
 in `/tmp/lunden-priority-968` and orchestration `worker-968-artifacts`.
+
+
+Style2 runtime published as `01d890998bd97585297668f5ab526b4146265413` (Refs968),
+head-hits changelog768, all47 measured paths exact and all older changelog rows/times
+preserved. Worker run38534033808 / job115752460152 executed actual
+`npx wrangler deploy` at08:17:39.651Z, Uploaded08:17:43.009Z and
+Deployed08:17:43.398Z on2026-10-14; version3c1c5b3a-efc5-49f9-ab0d-671c74dc0093.
+Pages also succeeded. Issue968 stays open for functional long-hair child973;
+publication is not a live-device gameplay test.
