@@ -5610,3 +5610,13 @@ passed44/44 CLI0. A separately frozen fresh merged Worker completed native6 at29
 CLI0 with both new negative receipts and inspected head/body PNGs. The earlier all60
 matrices remain source-bound to the unchanged geometry/pose formulas. Final aggregate:
 `final-proof.json`; complete component outputs and original failures remain preserved.
+
+
+#967 runtime published as `4ad007ec1872c5fad3f8be3b36d03e46a257b070`, grouped
+head-hits changelog766. Every one of the47 measured runtime/driver paths matches
+that commit exactly; all older changelog rows and publication times are preserved.
+Worker run38530931585 / job115742387241 successfully executed the genuine
+`npx wrangler deploy` on that exact SHA: Uploaded07:50:31.219Z and
+Deployed07:50:31.585Z on2026-10-14, version567a65d4-fe81-4fe4-b9da-2062b39a8f3c.
+This establishes publication, not a live-device gameplay test. Only967 is complete;
+styles1/2 and3 remain in968/969 and their broader parents stay open.
