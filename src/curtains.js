@@ -1,7 +1,25 @@
 import * as THREE from 'three';
 import { freeCanvasAfterUpload } from './lowmemory.js';
-import { LEVELS, SOFFITS, CURTAIN_LIGHT as LIGHT } from './config.js';
+import { LEVELS, SOFFITS, CURTAIN_LIGHT as LIGHT, MATERIAL_LIBRARY } from './config.js';
 import { sfx } from './audio.js';
+import { materialChoices } from './materialcatalog.js';
+
+const fabricMaps = new Map();
+function fabricMap(choice, tile) {
+  const key = `${choice.id}:${tile}`;
+  if (fabricMaps.has(key)) return fabricMaps.get(key);
+  const size = MATERIAL_LIBRARY.pixels, canvas = document.createElement('canvas');
+  canvas.width = canvas.height = size;
+  const ctx = canvas.getContext('2d'); ctx.fillStyle = choice.color; ctx.fillRect(0, 0, size, size);
+  ctx.fillStyle = choice.ink ?? choice.color;
+  if (choice.pattern === 'stripe') ctx.fillRect(0, 0, size / 2, size);
+  if (choice.pattern === 'check') { ctx.fillRect(0, 0, size / 2, size / 2); ctx.fillRect(size / 2, size / 2, size / 2, size / 2); }
+  const texture = new THREE.CanvasTexture(canvas); texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+  texture.colorSpace = THREE.SRGBColorSpace; texture.anisotropy = 4;
+  texture.repeat.setScalar(tile / MATERIAL_LIBRARY.curtainTile);
+  fabricMaps.set(key, texture); return texture;
+}
+
 
 // Curtains on a ceiling track (#342, CURTAINS in config): Sovrum 1's two teal jungle-print panels. One track under the
 // soffit from the west wall to the east; a split (#362): the panels meet at the window's middle and part to either side
@@ -588,6 +606,22 @@ export class Curtain {
     this.built = -1;
     this.sound = 0;
     this.set(spec.initial ?? 0);
+    // #997: only cloth panels join the library; rail, geometry and legacy blind ID stay intact.
+    const original = this.mat, variants = new Map([['original', original]]);
+    const surface = { id: 'textile', name: 'Gardinernas tyg', category: 'gardin', choice: 'original', original,
+      apply: id => {
+        const choice = materialChoices('gardin').find(c => c.id === id);
+        if (!choice) return false;
+        if (!variants.has(id)) {
+          const mat = original.clone(); mat.map = mat.emissiveMap = fabricMap(choice, spec.tile); variants.set(id, mat);
+        }
+        const mat = variants.get(id); mat.emissive.copy(this.mat.emissive);
+        this.mat = mat; this.tex = mat.map; surface.choice = id;
+        for (const panel of this.panels) { panel.mesh.material = mat; surface.prepare?.(panel.mesh); }
+        return true;
+      }
+    };
+    this.object.userData.materialSurfaces = [surface];
   }
 
   /** The glass left free between the two leading edges. */

@@ -1,4 +1,4 @@
-import { MATERIAL_CHOICES } from './materialcatalog.js';
+import { MATERIAL_CHOICES, materialChoices, materialChoice } from './materialcatalog.js';
 import { crashlog } from './crashlog.js'; // first: its heartbeat and error hooks start before the rest loads (#629; inert without the cloud)
 import { bindGameViewport, gameView } from './viewport.js';
 import { PlantWind, windShadow } from './plantwind.js';
@@ -1484,7 +1484,11 @@ function use(thing) {
     else held?.use(); // E/touch click is one use; pointer listeners own automatic trigger/release
     return;
   }
-  if (thing.kind === 'rearrange') { rearrange.act(thing); return; }
+  if (thing.kind === 'rearrange') {
+    if (thing.piece?.materialOnly && !rearrange.materialEdit) { if (rearrange.beginMaterial(thing.piece)) showTerminal(true); }
+    else rearrange.act(thing);
+    return;
+  }
   if (thing.kind === 'fusebox') { thing.power.use(); return; } // the power cut (#604): trip it, or mend it while held
   if (thing.visit) { visitUse(thing); return; } // a visited flat's door, window or lid (#574)
   if (thing.kind !== 'note') shadowState.hold = 1.5; // reading the DOM note moves no shadow caster (#669)
@@ -1767,7 +1771,7 @@ function updateFocus() {
     rearrange.update(); focused = rearrange.target; focusPoint = null;
     renderRearrangeHUD();
     showChoices(null, null); placeGhost.visible = itemGhost.visible = false;
-    const text = focused ? (focused.blockedText ?? `${focused.verb === 'material' ? 'Bekräfta material för' : focused.verb === 'flytta' ? 'Flytta' : 'Placera'} ${focused.name}`) : 'Sikta på en möbel, tavla eller spegel';
+    const text = focused ? (focused.blockedText ?? `${focused.verb === 'material' ? 'Bekräfta material för' : focused.verb === 'chooseMaterial' ? 'Välj tyg för' : focused.verb === 'flytta' ? 'Flytta' : 'Placera'} ${focused.name}`) : 'Sikta på en möbel, tavla eller spegel';
     actionBtn.textContent = text; actionBtn.hidden = !touch.enabled || !focused;
     promptEl.textContent = `${text} · E / klick · R: vrid · X: avbryt`;
     promptEl.hidden = touch.enabled; powerBtn.hidden = true;
@@ -2018,11 +2022,14 @@ world.looseItems.push(life.group, fruit.group, ...cups.cups.map((c) => c.model),
 try { if (localStorage.getItem('lunden.furniture') === '0') toggleFurniture(false); } catch { /* ignore */ }
 document.getElementById('furniture-btn').addEventListener('click', () => toggleFurniture());
 
+// #997: fixed cloth targets have stable material IDs, never furniture poses.
+const curtainMaterialTargets = blinds.curtains.map(c => ({ id: c.spec.materialId, object: c.object,
+  item: { type: 'curtain', level: c.level }, level: c.level, name: `${c.name} (${c.spec.room})`, materialOnly: true }));
 // #995: new rug variants join both existing light washes before their first render.
-for (const piece of world.furniture.movable) for (const surface of piece.object.userData.materialSurfaces ?? []) {
+for (const piece of [...world.furniture.movable, ...curtainMaterialTargets]) for (const surface of piece.object.userData.materialSurfaces ?? []) {
   surface.prepare = mesh => { lights.wash?.patch(mesh); visitLights.wash?.patch(mesh); };
 }
-const rearrange = new Rearrange({ scene, camera, world, player, life, marks,
+const rearrange = new Rearrange({ scene, camera, world, player, life, marks, materialOnly: curtainMaterialTargets,
   carryables: () => [...holdables, ...cups.cups, ...life.views.values(), fruit.carryable, ...fruit.placed],
   busy: () => !!heldItem() || rest.active || drawing.active || !world.furnitureOn,
   changed: (changes) => {
@@ -2051,7 +2058,7 @@ function renderRearrangeHUD() {
   const p=rearrange.selected?.piece,m=rearrange.materialEdit,key=`${rearrange.enabled}|${rearrange.saving}|${p?.id??''}|${m?.choice??''}|${reading}`;
   if(key===editHUDKey)return;editHUDKey=key;
   editHelp.hidden=!rearrange.enabled||reading;
-  document.getElementById('rearrange-step').textContent=rearrange.saving?'Sparar möbleringen…':m?`Mattans tyg: ${MATERIAL_CHOICES.find(c=>c.id===m.choice)?.name??'Original'}`:p?`2. Placera ${p.name}`:'1. Välj ett föremål';
+  document.getElementById('rearrange-step').textContent=rearrange.saving?'Sparar möbleringen…':m?`${m.surface.name}: ${materialChoice(m.choice)?.name??'Original'}`:p?`2. Placera ${p.name}`:'1. Välj ett föremål';
   for(const id of ['rearrange-rotate','rearrange-cancel']){const b=document.getElementById(id);b.hidden=!p&&!(m&&id==='rearrange-cancel');b.disabled=rearrange.saving;}
   document.getElementById('rearrange-menu').disabled=rearrange.saving;
   const materialConfirm=document.getElementById('rearrange-material-confirm');materialConfirm.hidden=!m;materialConfirm.disabled=rearrange.saving;
@@ -2067,7 +2074,7 @@ function editUI() {
   document.getElementById('terminal-restore-all').disabled = rearrange.saving;
   document.getElementById('terminal-title').textContent = rearrange.enabled ? 'Möblera om' : chat?.available ? 'Chatt' : 'Konsol';
   document.getElementById('terminal-close').textContent = rearrange.enabled ? 'Fortsätt möblera' : 'Stäng';
-  document.getElementById('terminal-restore').disabled = !editMenuPiece || rearrange.saving;
+  document.getElementById('terminal-restore').disabled = !editMenuPiece || editMenuPiece.materialOnly || rearrange.saving;
   document.getElementById('terminal-cancel-move').hidden = !rearrange.selected;
   document.getElementById('terminal-cancel-move').disabled = rearrange.saving;
   renderMaterialLibrary();
@@ -2081,7 +2088,7 @@ function renderMaterialLibrary() {
   document.getElementById('terminal-material-library').hidden = !edit;
   const choices = document.getElementById('terminal-material-choices'); choices.replaceChildren();
   if (!edit) return;
-  for (const choice of MATERIAL_CHOICES) {
+  for (const choice of materialChoices(edit.surface.category ?? 'matta')) {
     const button = document.createElement('button'); button.type = 'button'; button.disabled = rearrange.saving;
     button.dataset.material = choice.id; button.setAttribute('aria-pressed', String(choice.id === edit.choice));
     const swatch = document.createElement('span'); swatch.setAttribute('aria-hidden','true');
@@ -2179,7 +2186,7 @@ document.addEventListener('keydown', e => {
 },true);
 editToggle.addEventListener('click', () => { rearrange.enable(!rearrange.enabled); editUI(); showTerminal(false); });
 function requestFurnitureReset(all = false, piece = editMenuPiece) {
-  if (rearrange.saving || (!all && !piece)) return;
+  if (rearrange.saving || (!all && (!piece || piece.materialOnly))) return;
   if (terminal.hidden) showTerminal(true);
   resetFurnitureRequest = { all, piece, revision: rearrange.state.revision, base: piece?.revision };
   document.getElementById('terminal-confirm-text').textContent = all

@@ -39,9 +39,11 @@ const matrixOf = (pose) => new M().compose(new V(...pose.pos), new Q(...pose.qua
 const poseOf = (matrix) => { const p = new V(), q = new Q(); matrix.decompose(p, q, new V()); return { pos: p.toArray(), quat: q.toArray() }; };
 
 export class Rearrange {
-  constructor({ scene, camera, world, player, life, carryables, marks, busy, changed, status }, url = cloudUrl()) {
+  constructor({ scene, camera, world, player, life, carryables, marks, busy, changed, status, materialOnly = [] }, url = cloudUrl()) {
     Object.assign(this, { scene, camera, world, player, life, carryables, marks, busy, changed, status, url });
     this.pieces = world.furniture.movable;
+    this.materialPieces = [...this.pieces, ...materialOnly];
+    if (new Set(this.materialPieces.map(p => p.id)).size !== this.materialPieces.length) throw Error('Duplicate material ids');
     this.byId = new Map(this.pieces.map((p) => [p.id, p]));
     if (this.byId.size !== this.pieces.length) throw Error('Duplicate furniture ids');
     scene.updateMatrixWorld(true);
@@ -96,7 +98,7 @@ export class Rearrange {
       && (this.onTop(h.model, surfaces) || (!h.placed && h.furnitureHome && within(h.furnitureHome, piece.object))));
   }
   begin(piece) {
-    if (!this.enabled || this.saving || this.busy() || !piece || !shown(piece.object)) return false;
+    if (!this.enabled || this.saving || this.busy() || !piece || piece.materialOnly || !shown(piece.object)) return false;
     this.cancel(); this.scene.updateMatrixWorld(true);
     const group = this.groupFor(piece), original = piece.object.matrixWorld.clone();
     const loose = [...new Set(group.flatMap((p) => this.looseOn(p)))];
@@ -137,12 +139,12 @@ export class Rearrange {
     this.camera.updateMatrixWorld(); this.ray.setFromCamera({ x: 0, y: 0 }, this.camera); this.ray.far = REARRANGE.reach;
     if (this.materialEdit) { this.target = { kind: 'rearrange', name: this.materialEdit.piece.name, piece: this.materialEdit.piece, verb: 'material' }; return; }
     if (!this.selected) {
-      const roots = this.pieces.filter((p) => p.level === this.player.level && shown(p.object));
+      const roots = this.materialPieces.filter((p) => p.level === this.player.level && shown(p.object));
       const hit = this.ray.intersectObjects(roots.map((p) => p.object), true).find((h) => shown(h.object));
       const piece = hit && roots.find((p) => within(hit.object, p.object));
       const wall = hit && this.marks.hit(this.ray.ray.origin, hit.point);
       const clear = !wall || wall.point.distanceTo(this.ray.ray.origin) >= hit.distance - 0.08;
-      this.target = piece && clear ? { kind: 'rearrange', name: piece.name, verb: 'flytta', piece } : null;
+      this.target = piece && clear ? { kind: 'rearrange', name: piece.name, verb: piece.materialOnly ? 'chooseMaterial' : 'flytta', piece } : null;
       return;
     }
     if (this.saving) { this.target = { kind: 'rearrange', blocked: true, blockedText: 'Sparar möbleringen…' }; return; }
@@ -198,11 +200,11 @@ export class Rearrange {
   async act(target = this.target) {
     if (!target || target.blocked || this.saving) return false;
     if (this.materialEdit) return this.confirmMaterial();
-    if (!this.selected) return this.begin(target.piece);
+    if (!this.selected) return target.piece?.materialOnly ? this.beginMaterial(target.piece) : this.begin(target.piece);
     return this.confirm();
   }
   async restoreOriginal(piece = this.selected?.piece ?? this.target?.piece) {
-    if (!piece || this.saving) return false;
+    if (!piece || piece.materialOnly || this.saving) return false;
     if (this.selected?.piece !== piece && !this.begin(piece)) return false;
     this.candidate = piece.home.clone(); this.valid = true;
     return this.confirm(); // same attachments, atomic write and conflict handling as a normal move
@@ -345,7 +347,7 @@ export class Rearrange {
         }
       }
     }
-    for (const p of this.pieces) for (const surface of p.object.userData.materialSurfaces ?? []) {
+    for (const p of this.materialPieces) for (const surface of p.object.userData.materialSurfaces ?? []) {
       surface.apply(state.materials?.[p.id]?.[surface.id]?.choice ?? 'original');
     }
     this.state = state;

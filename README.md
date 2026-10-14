@@ -303,3 +303,5 @@ färg eller mönster på en av de sex mattorna, bekräfta för alla besökare el
 avbryt. Originaltyget kan återställas utan att mattan flyttas. Mattornas höjd är
 oförändrad; långlugg och övriga tygfamiljer följer separat. Kontrakt/prov:
 [materialbiblioteket](docs/development/interactions.md#shared-rug-material-library-995).
+
+Gardinerna i alla sex rum har ett eget tygbibliotek i möbleringsläget (#997): sikta på gardinen och välj original, linnebeige, blågrått, salviagrönt, ränder eller rutor. Förhandsvisningen är lokal; bekräftat tyg delas med besökarna. Gardinerna flyttas inte och deras vanliga öppna/stäng-läge behålls.

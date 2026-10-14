@@ -898,3 +898,7 @@ signal, not proof of an OS crash or memory cause. Background/clean exclusion,
 foreign-tab freshness/ownership, signature deduplication, quotas and Worker
 public projection are unchanged. See the native before/after verification;
 #669's physical context-loss acceptance remains open.
+
+### Fixed curtain textiles (#997)
+
+`CURTAINS.materialId` explicitly identifies the six fixed sets (`f-curtain-bedroom1` … `bedroom4`, `f-curtain-kitchen`, `f-curtain-living-room`), separately from `curtain0` … `curtain5` / kitchen `curtain4-valance` in `lunden.blinds`. Material version stays 1; the additive catalogue validates textile choices by surface family, preserving the six exact rug IDs/choices and old pose-only writes. No curtain pose is stored. Worker catalogue commit a5c74aa deployed before the requiring client (Deployed 2026-10-14 10:55:31Z, version 7ff40b59-dad3-442d-99f1-21602d98b5c9). Original/default needs no layout migration. Local real browser/HTTP checks cover ordinary active visitors, new visitors, reload, stale conflicts, offline accepted-cache retention, preview/cancel zero PUT and original restoration; no production home was written by tests.

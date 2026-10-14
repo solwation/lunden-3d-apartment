@@ -1421,3 +1421,7 @@ Publication's260 hashes match the commit; all255 final executable/native paths
 match the last native test. Earlier changelog bytes and publication times are
 unchanged. This closes only the six-rug color/pattern family; #996–#1001 and
 parent #991 retain long-pile and other textile acceptance.
+
+### Curtain material library (#997)
+
+All six existing Curtain sets are fixed `materialOnly` targets: editing focus opens the same library as rugs, with category `gardin`; they never enter movable pieces, pose ghosts or position-reset writes. The library previews locally, confirms through the existing material revision endpoint, and cancels without PUT. Original restores the exact original cloth material/map, independently of legacy blind position. Existing BlindPanel keyboard/touch controls remain unchanged; the living-room three-panel set uses the same controls and saved blind ID.
