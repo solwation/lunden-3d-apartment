@@ -20,7 +20,7 @@ De tre Verona-delarna på uteplatsen har egna tygval för sina fasta sitt- och r
 
 **▶ Öppna: https://solwation.github.io/lunden-3d-apartment/**
 
-På insidan av koppskåpets lucka i köket sitter en **uppdragslapp** med tre frivilliga vardagsuppdrag: gör en macka, återställ köket och städa efter mellanmålet. Delarna kan göras i valfri ordning och framstegen sparas. Tips går att stänga av; ett klart uppdrag ger 30 poäng första gången och 5 poäng när du väljer **Gör igen**. Tomma sopkärl behöver inte tömmas. Soppåsarna lämnas i de tre behållarna längs portikväggen mot lägenheten.
+På insidan av koppskåpets lucka i köket sitter en **uppdragslapp** med tre olika tillgängliga vardagsuppdrag som slumpas fram för den lokala kalenderdagen. Samma uppdrag och sparade delmål finns kvar hela dagen, även när du kommer tillbaka; klara uppdrag byts inte ut under dagen. Tips går att stänga av. Varje uppdrag har sin egen poängbelöning och belönas högst en gång per dag. När alla tre är klara får du dessutom **15 bonuspoäng, exakt en gång för dagen**. Tomma sopkärl behöver inte tömmas. Soppåsarna lämnas i de tre behållarna längs portikväggen mot lägenheten.
 
 Hus A:s glasade port och väggarna bakom den syns även från L1007:s uteplats.
 
@@ -58,7 +58,7 @@ Från 1 december till och med 6 januari står en hög julgran i vardagsrummets h
 
 Tryck **Enter** eller **§** (eller **>_** i poängbrickan på touch) för att öppna konsolen. I läget **Möblera om**: sikta på en möbel, tavla eller en lös spegel, välj med E/klick, sikta på golvet eller väggen och placera med E igen. Panelen visar stegen Välj och Placera. **R/Vrid** roterar och **X/Avbryt flytt** avbryter den valda flytten. **Klart** avslutar ommöbleringen. De lösa speglarna kan flyttas separat; badrummens fasta speglar behåller sina platser. TV:n placeras ovanpå bänkytan och följer med TV-bänken vid flytt och rotation. Vinstället och vitrinskåpet flyttas på väggar med innehållet kvar; SYMFONISK-lampan och högtalarna kan placeras på fönsterbrädor och bord. Föremål på möbler följer med; mattor flyttas för sig. Bekräftade placeringar delas via Cloudflare och sparas till nästa besök. Knappen **Återställ originalposition** (eller **Home** på tangentbordet) ber om bekräftelse och återställer sedan den valda möbeln eller tavlan med medföljande saker. **Återställ all möblering** varnar innan alla möbler, tavlor och lösa speglar i alla rum återställs. Båda återställningarna delas med alla besökare; **Avbryt** eller **Esc** ändrar ingenting. **§/Meny** öppnar möbleringsmenyn med fri muspekare; återställningarna finns under **Återställ möblering**. **Esc** avslutar möbleringsläget och avbryter en osparad flytt.
 
-På insidan av koppskåpet finns dagens uppdrag: tre olika uppdrag som ligger kvar hela den verkliga lokala kalenderdagen. Klara uppdrag är markerade och varje uppdrag ger poäng en gång per dag. Samma lista och delmål finns kvar när du kommer tillbaka; nästa dag får du ett nytt urval. När alla tre är klara får du en dagsbonus och lappen visar ”Alla uppdrag avklarade”.
+Dagens tre uppdrag ligger kvar hela den verkliga lokala kalenderdagen, med sparade delmål och markering av klara uppdrag. Nästa lokala kalenderdag väljs dagens uppdrag på nytt bland de tillgängliga uppdragen. När alla tre är klara visas ”Alla uppdrag avklarade” och dagens engångsbonus på **15 poäng**, utöver uppdragens individuella belöningar.
 
 Spindelmannendräkten ligger i en byrålåda i Walter och Kians rum; med den klättrar man på ytterväggar och skjuter nät. Andra spelare ser dräkten på din avatar; när du tar av den återkommer ditt vanliga utseende. Vid nätets drag och luftsving hålls händerna närmare kroppen, med en avslappnad vänsterhand och fri sikt.
 
@@ -186,7 +186,7 @@ Skadade liv återhämtas med ett liv per verklig minut upp till max, även utan 
 
 Ölhyllans lokala etiketter får avkodas klart även när tung uppstart passerar nätverkets tidsgräns.
 
-Uppdragslappen visar tre aktiva vardagsuppdrag med sina poäng och delmål; klara uppdrag ersätts direkt och får en väntetid innan de kan återkomma.
+Uppdragslappen visar dagens tre uppdrag med deras egna poäng och sparade delmål. Ett klart uppdrag står kvar som klart tills den lokala kalenderdagen byts.
 
 Nollställning av statistiken rensar även dynamiska räknare, så inga gamla poäng ligger kvar.
 
