@@ -23,7 +23,9 @@ try {
   const { tasks, life, stats, totalScore, showTaskNote, step, player, camera, cloth, vacuum } = A, I = life.items;
   const secs = (s) => { let left = s; while (left > 1e-8) { const dt = Math.min(.1, left); step(dt); left -= dt; } };
   const row = (id, it) => life.options(it ? { item: life.view(it) } : { instance: I.held() }).find((o) => o.id === id);
-  const cleanTasks = () => tasks.reset();
+  let taskDay=1;
+  const cleanTasks = (selected=['makeSandwich','resetKitchen','snackClean']) => { taskDay++; tasks.now=()=>new w.Date(2030,0,taskDay); tasks.random=()=>.999; tasks.reset(); tasks.load({v:3,day:tasks.localDay(),selected,shown:[],tasks:{}}); };
+  cleanTasks();
   const task = (id) => tasks.tasks.find((t) => t.id === id);
   const counter = { x: 5.25, y: 0.93, z: 3 };
   const expectedTasks = ['makeSandwich', 'resetKitchen', 'snackClean', 'tidyHall', 'grillChicken', 'washDish', 'makeBed'];
@@ -51,10 +53,10 @@ try {
   check(!task('makeSandwich').isDone, 'one bite is not a finished sandwich');
   for (let i = 0; i < 3; i++) { row('eat')?.run(); secs(0.8); }
   check(!I.get(bread.id) && task('makeSandwich').isDone && stats.tasks === initialTasks + 1, 'last bite completes the real sandwich once');
-  check(tasks.activeTasks().length === 3 && !task('makeSandwich').active && task('washDish').active, 'completion immediately fills the slot with another eligible task');
+  check(tasks.activeTasks().length === 3 && task('makeSandwich').active && !task('washDish').active, 'completion keeps the fixed daily set and its checked task');
   const savedDone = tasks.save(), scoreDone = totalScore(); tasks.load(savedDone);
   check(task('makeSandwich').isDone && totalScore() === scoreDone, 'restoring a completed task never replays its bonus');
-  check(savedDone.tasks.makeSandwich.readyAt > savedDone.elapsed && savedDone.tasks.makeSandwich.completions === 1, 'cooldown and completion count are saved');
+  check(savedDone.v === 3 && savedDone.day === tasks.localDay() && savedDone.tasks.makeSandwich.completions === 1, 'daily identity and completion count are saved');
   check(!tasks.completeGoal('makeSandwich', 'eat') && totalScore() === scoreDone, 'completed or inactive task cannot award a second time');
   check(d.querySelector('#badges')?.textContent.includes(`+${sandwichReward}`) || [...d.querySelectorAll('[data-text]')].some(e => e.textContent.includes(`Gör en macka · +${sandwichReward}`)), 'completion badge states the actual task reward');
   stage('kitchen goal permutations');
@@ -98,12 +100,12 @@ try {
   check(task('snackClean').isDone, 'real vacuum removes crumbs and completes clean-up'); vacuum.putBack();
   stage('pool events');
   // The extra pool candidates consume real domain events, so rotation cannot leave an impossible placeholder.
-  cleanTasks();
+  cleanTasks(['snackClean','washDish','makeBed']);
   life.emit('vacuumed', { amount: 0.2 });
-  check(task('washDish').active, 'dish chore enters the vacated slot');
+  check(task('washDish').active, 'selected dish chore keeps its daily slot');
   const dishScore = totalScore(), dishReward = taskReward('washDish');
   life.emit('washed', { what: 'tallriken' });
-  check(task('washDish').isDone && totalScore() === dishScore + dishReward && task('makeBed').active, 'washing completes dish chore and bed chore refills immediately');
+  check(task('washDish').isDone && totalScore() === dishScore + dishReward && task('makeBed').active, 'washing completes selected dish chore while selected bed chore remains');
   const bedScore = totalScore(), bedReward = taskReward('makeBed');
   life.emit('bedMade', { id: 'fixture-bed' }); life.emit('bedMade', { id: 'fixture-bed' });
   check(!task('makeBed').isDone, 'bed chore requires resting too, and duplicate making is one goal');
@@ -112,9 +114,9 @@ try {
   stage('UI cooldown persistence reset');
   // UI, cooldown repeats, persistence and input release.
   cleanTasks(); tasks.read();
-  check(tasks.activeTasks().length === 3 && task('tidyHall').active && tasks.isShown('tidyHall'), 'reading discovers hall and gives it a slot without exceeding three');
+  check(tasks.activeTasks().length === 3 && !task('tidyHall').active && tasks.isShown('tidyHall'), 'reading discovers hall for a later day without replacing today set');
   const hiddenRecord = tasks.save(); tasks.load(hiddenRecord);
-  check(task('tidyHall').active && tasks.read().length === 0, 'hidden discovery and selected slots survive save/load, without another discovery');
+  check(!task('tidyHall').active && tasks.read().length === 0, 'hidden discovery and fixed selection survive save/load without replacement');
   check(tasks.tasks.every(t => !t.active || taskReward(t.id) > 0), 'every listed task has its own positive reward');
   showTaskNote(true); tasks.setHints(true); d.getElementById('task-hints-btn').click();
   check(!tasks.hints && !d.querySelector('.task-hint') && w.localStorage.getItem('lunden.taskHints') === 'false', 'hints switch off everywhere and persist');
@@ -123,14 +125,12 @@ try {
   cleanTasks();
   const firstVacuum = taskReward('snackClean'); const firstScore = totalScore();
   life.emit('vacuumed', { amount: 0.1 });
-  check(totalScore() === firstScore + firstVacuum && !task('snackClean').active, 'cleanup reward awarded once and task enters cooldown');
+  check(totalScore() === firstScore + firstVacuum && task('snackClean').active && task('snackClean').isDone, 'cleanup reward awarded once and checked task remains today');
   const record = tasks.save(), beforeReload = totalScore(); tasks.load(record);
-  tasks.update(TASK_POOL.cooldown - 1);
-  check(task('snackClean').isDone && !task('snackClean').active && totalScore() === beforeReload, 'reload and elapsed time before deadline do not reset cooldown or award points');
-  // Free a slot without changing the completed task's deadline.
-  tasks.activeTasks().at(-1).active = false;
-  tasks.update(1);
-  check(task('snackClean').active && !task('snackClean').completedGoals.size, 'eligible repeat enters a free slot only after cooldown');
+  tasks.update(3600 * 48);
+  check(task('snackClean').isDone && task('snackClean').active && totalScore() === beforeReload, 'reload and simulated days never reset today set or award points');
+  cleanTasks();
+  check(task('snackClean').active && !task('snackClean').completedGoals.size, 'next real local day permits new progress');
   const repeatScore = totalScore(), repeatReward = SCORE.tasks.snackClean.again;
   life.emit('vacuumed', { amount: 0.1 }); life.emit('vacuumed', { amount: 0.1 });
   check(totalScore() === repeatScore + repeatReward, 'repeat awards the displayed smaller reward exactly once');

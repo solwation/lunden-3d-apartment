@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { awardTask, taskReward } from './stats.js';
+import { awardTask, taskReward, taskPaid, keepTaskDay, stats } from './stats.js';
 import { TASK_NOTE, TASK_POOL, HALL_CARE } from './config.js';
 import { sfx } from './audio.js';
 
@@ -73,7 +73,8 @@ export const TASK_DEFINITIONS = [
 ];
 
 export class TasksManager {
-  constructor({ life, scene = null }) {
+  constructor({ life, scene = null, now = () => new Date(), random = Math.random }) {
+    this.now = now; this.random = random; this.initializing = true;
     this.life = life;
     this.scene = scene;
     this.hints = this.loadHints();
@@ -84,15 +85,23 @@ export class TasksManager {
       shown: !def.hidden,
       active: false,
       completions: 0,
-      readyAt: 0,
+      readyAt: 0, points: null,
       placedBird: null, grilledBird: null, replenished: false, failed: false,
     }));
 
-    this.elapsed = 0;
-    this.refill();
+    this.elapsed = 0; this.day = null; this.selected = []; this.renewChicken = false;
+    const cachedAtStart = stats.taskDay?.v === 3 ? stats.taskDay : null;
+    if (!cachedAtStart) this.ensureDay();
     this.onTaskCompleted = null;
     this.initEvents();
-    life.keepPart('tasks', { save: () => this.save(), load: (v) => this.load(v) });
+    this.restored = false;
+    life.keepPart('tasks', { save: () => this.save(), load: (v) => {
+      // The first home restore may contain a legacy record that predates this manager's fresh selection.
+      const saved = !this.restored && !cachedAtStart ? v : stats.taskDay?.v === 3 ? stats.taskDay : v;
+      this.restored = true; this.load(saved);
+    } });
+    if (cachedAtStart) this.load(cachedAtStart);
+    this.initializing = false; this.persist();
   }
 
   loadHints() {
@@ -123,6 +132,7 @@ export class TasksManager {
   }
 
   handleEvent(kind, data = {}) {
+    this.ensureDay();
     const item = data.item;
     if (kind === 'chickenPlaced' && item?.type === 'chicken' && data.surface === 'grill') {
       this.discover('grillChicken');
@@ -165,15 +175,15 @@ export class TasksManager {
     if (kind === 'bedRumpled') this.completeGoal('makeBed', 'rest');
     if (kind === 'bedMade') this.completeGoal('makeBed', 'bed');
     if (kind === 'hallTidied' && this.isShown('tidyHall')) this.completeGoal('tidyHall', data.item?.type);
+    this.persist();
   }
 
   failChickenCycle() {
     const task = this.tasks.find(t => t.id === 'grillChicken');
-    if (!task?.active || task.isDone) return;
-    task.failed = task.isDone = true; task.active = false; task.replenished = false;
-    task.readyAt = this.elapsed + TASK_POOL.cooldown;
-    this.life.say('Kycklingen blev inte gyllene den här gången. En ny chans väntar efter ett speldygn.');
-    this.refill(); this.life.dirty = true; this.renderUI(); // no task reward on failure
+    if (!task?.active || task.isDone || task.failed) return;
+    task.failed = true; this.renewChicken = true;
+    this.life.say('Kycklingen blev inte gyllene. Du får en ny rå kyckling att försöka med.');
+    this.life.dirty = true; this.persist(); this.renderUI(); // no reward for a failed attempt
   }
 
   isShown(taskId) { return !!this.tasks.find((t) => t.id === taskId)?.shown; }
@@ -183,6 +193,7 @@ export class TasksManager {
   /** The list is read (the panel opens): hidden tasks join it, once. Things already tidied before the task existed
    * (a save from before #594) count as done without a bonus. Returns the newly shown ids. */
   read() {
+    this.ensureDay();
     const added = this.tasks.filter((t) => !t.shown && !t.discovery);
     return this.showTasks(added);
   }
@@ -201,19 +212,10 @@ export class TasksManager {
         t.isDone = t.goals.every((g) => t.completedGoals.has(g.id));
       }
     }
-    // Newly discovered tasks get a slot now, keeping at most three; displaced progress remains queued.
-    for (const t of added) {
-      if (t.isDone) { t.readyAt = this.elapsed + TASK_POOL.cooldown; continue; }
-      const active = this.activeTasks();
-      if (active.length >= TASK_POOL.active) {
-        // Once the bird is in play, reading the hall task cannot queue its cooking events (#710).
-        ([...active].reverse().find(other => other.id !== 'grillChicken') ?? active.at(-1)).active = false;
-      }
-      t.active = true;
-    }
-    this.refill();
+    // Discovery is remembered immediately but never replaces today's fixed set.
+    // Existing hall items stay where the visitor left them; tomorrow excludes an already tidy hall.
     this.life.emit('tasksShown', { ids: this.shownIds(), added: added.map((t) => t.id) });
-    this.life.dirty = true;
+    this.life.dirty = true; this.persist();
     this.renderUI();
     return added.map((t) => t.id);
   }
@@ -223,93 +225,135 @@ export class TasksManager {
     return I.all().some((it) => (I.has(it, 'bin') || it.type === 'rubbishBag') && it.amount > 0);
   }
 
-  /** Stable definition order, discovered tasks only; never recycle the just-completed task. */
-  refill({ restored = false } = {}) {
-    // Renew only when the cooled-down chicken task receives an active slot. A full pool cannot
-    // expose a fresh rewardable bird while its task is still queued. Restoration stays silent.
-    let slots = TASK_POOL.active - this.activeTasks().length;
+  localDay() {
+    const d = this.now();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  available(task) {
+    if (!task.shown) return false;
+    // Hall work must still be possible without undoing the visitor's tidying or moving their things.
+    return task.id !== 'tidyHall' || !task.goals.every(g => this.life.items.all().some(it =>
+      it.type === g.id && HALL_CARE.tidy[it.place?.store] === it.type));
+  }
+
+  ensureDay() {
+    const day = this.localDay();
+    if (this.day === day) return false;
+    this.day = day;
     for (const t of this.tasks) {
-      if (!slots) break;
-      if (!t.shown || t.active || t.readyAt > this.elapsed) continue;
-      if (t.id === 'grillChicken' && t.isDone && !t.replenished) {
-        if (restored) continue;
-        t.replenished = true; this.life.emit('chickenTaskReady', { task: t.id }); this.life.dirty = true;
-      }
-      if (t.isDone) { t.completedGoals.clear(); t.isDone = t.failed = false; t.placedBird = t.grilledBird = null; }
-      t.active = true;
-      slots--;
+      t.completedGoals.clear(); t.isDone = t.active = t.failed = t.replenished = false;
+      t.completions = t.readyAt = 0; t.points = null; t.placedBird = t.grilledBird = null;
     }
+    const pool = this.tasks.filter(t => this.available(t));
+    for (let n = pool.length - 1; n > 0; n--) {
+      const k = Math.min(n, Math.max(0, Math.floor(this.random() * (n + 1))));
+      [pool[n], pool[k]] = [pool[k], pool[n]];
+    }
+    this.selected = pool.slice(0, TASK_POOL.active).map(t => t.id);
+    for (const t of this.tasks) t.active = this.selected.includes(t.id);
+    this.renewChicken = this.selected.includes('grillChicken');
+    this.applyReceipts(); this.life.dirty = true; this.persist();
+    return true;
+  }
+
+  applyReceipts() {
+    for (const t of this.activeTasks()) if (taskPaid(t.id, this.day)) {
+      t.isDone = true; t.failed = false; t.completedGoals = new Set(t.goals.map(g => g.id));
+    }
+    if (this.tasks.find(t => t.id === 'grillChicken')?.isDone) this.renewChicken = false;
+  }
+
+  persist() {
+    if (this.initializing) return;
+    const record = this.save();
+    if (JSON.stringify(record) !== JSON.stringify(stats.taskDay)) keepTaskDay(record);
   }
 
   update(dt) {
     this.elapsed += Math.max(0, dt);
-    const before = this.activeTasks().map((t) => t.id).join();
-    this.refill();
-    if (before !== this.activeTasks().map((t) => t.id).join()) {
-      this.life.dirty = true;
-      this.renderUI();
-    }
+    const changed = this.ensureDay();
+    // Registration/restoration of the real chicken finishes before the first ordinary frame.
+    // A saved pending renewal is cleared before emit, so repeated updates/reloads do not duplicate it.
+    if (this.renewChicken) {
+      this.renewChicken = false;
+      const t = this.tasks.find(t => t.id === 'grillChicken');
+      if (t?.active && !t.isDone) {
+        t.completedGoals.clear(); t.placedBird = t.grilledBird = null; t.failed = false;
+        const bird = this.life.extras?.get('chicken')?.save();
+        // Preserve an already usable raw bird, including one restored after a pending renewal.
+        if (!bird || bird.done || bird.burnt) {
+          this.life.emit('chickenTaskReady', { task: t.id });
+          this.life.flush?.(); // save the renewed generation before clearing its daily pending flag
+        }
+      }
+      this.life.dirty = true; this.persist(); this.renderUI();
+    } else if (changed) this.renderUI();
   }
 
   save() {
-    // load() reconstructs untouched task fields; retain every changed field and
-    // explicit zero counters/deadlines on completed tasks (their load defaults differ).
     const tasks = {};
     for (const t of this.tasks) {
       const state = {};
-      const completed = t.isDone || t.failed || t.goals.every(g => t.completedGoals.has(g.id));
       if (t.completedGoals.size) state.goals = [...t.completedGoals];
-      if (t.completions || completed) state.completions = t.completions;
-      if (t.readyAt || completed) state.readyAt = t.readyAt;
+      if (t.completions || t.isDone) state.completions = t.completions;
       if (t.isDone) state.done = true;
+      if (t.points !== null) state.points = t.points;
       if (t.placedBird !== null) state.placedBird = t.placedBird;
       if (t.grilledBird !== null) state.grilledBird = t.grilledBird;
-      if (t.replenished) state.replenished = true;
       if (t.failed) state.failed = true;
       if (Object.keys(state).length) tasks[t.id] = state;
     }
-    return { v: 2, elapsed: this.elapsed, active: this.activeTasks().map((t) => t.id), shown: this.shownIds(),
-      tasks };
+    return { v: 3, day: this.day, selected: [...this.selected], shown: this.shownIds(),
+      renewChicken: this.renewChicken, tasks };
   }
 
   load(record) {
-    if (![1, 2].includes(record?.v)) return;
-    this.elapsed = Number.isFinite(record.elapsed) ? Math.max(0, record.elapsed) : 0;
+    if (![1, 2, 3].includes(record?.v)) return;
     for (const t of this.tasks) {
       const saved = record.v === 1 ? record.goals?.[t.id] : record.tasks?.[t.id]?.goals;
-      t.completedGoals = new Set((Array.isArray(saved) ? saved : []).filter((id) => t.goals.some((g) => g.id === id)));
-      t.isDone = t.goals.every((g) => t.completedGoals.has(g.id));
-      const state = record.v === 2 ? record.tasks?.[t.id] : null;
-      t.failed = !!state?.failed; t.isDone ||= t.failed;
-      t.completions = Number.isSafeInteger(state?.completions) ? Math.max(0, state.completions) : Number(t.isDone);
-      t.readyAt = Number.isFinite(state?.readyAt) ? Math.max(0, state.readyAt) : t.isDone ? this.elapsed + TASK_POOL.cooldown : 0;
+      t.completedGoals = new Set((Array.isArray(saved) ? saved : []).filter(id => t.goals.some(g => g.id === id)));
+      t.isDone = t.goals.every(g => t.completedGoals.has(g.id));
+      const state = record.v !== 1 ? record.tasks?.[t.id] : null;
+      t.isDone ||= !!state?.done; t.failed = !!state?.failed;
+      if (record.v !== 3 && t.failed) t.isDone = false;
+      t.completions = Number.isSafeInteger(state?.completions) ? Math.max(0, state.completions) : record.v === 3 ? 0 : Number(t.isDone);
+      t.points = Number.isFinite(state?.points) && state.points >= 0 ? state.points : null;
+      t.readyAt = 0; t.replenished = false;
       t.placedBird = typeof state?.placedBird === 'string' ? state.placedBird : null;
-      t.grilledBird = state?.grilledBird === t.placedBird ? t.placedBird : null;
-      t.replenished = !!state?.replenished;
+      t.grilledBird = t.placedBird !== null && state?.grilledBird === t.placedBird ? t.placedBird : null;
       t.shown = !t.hidden || (Array.isArray(record.shown) && record.shown.includes(t.id));
-      t.active = record.v === 2 && (Array.isArray(record.active) && record.active.includes(t.id)) && t.shown && !t.isDone;
     }
-    // Tolerate stale/newer definitions and corrupt records without ever exceeding the cap.
-    this.activeTasks().slice(TASK_POOL.active).forEach((t) => { t.active = false; });
-    this.refill({ restored: true });
+    if (record.v === 3 && /^\d{4}-\d{2}-\d{2}$/.test(record.day) && record.day !== this.localDay()) {
+      this.day = null; this.ensureDay();
+    } else {
+      this.day = this.localDay();
+      const known = id => this.tasks.some(t => t.id === id && t.shown);
+      const ids = record.v === 3 ? record.selected : record.active;
+      this.selected = [...new Set((Array.isArray(ids) ? ids : []).filter(known))].slice(0, TASK_POOL.active);
+      // Migration retains the old active tasks/progress, then fills once from available definitions.
+      // A valid v3 smaller pool stays fixed even if new definitions/discoveries arrive later today.
+      if (record.v !== 3 || !Array.isArray(ids) || ids.some(id => !known(id))) {
+        const candidates = this.tasks.filter(t => this.available(t) && !this.selected.includes(t.id));
+        this.selected.push(...candidates.slice(0, TASK_POOL.active - this.selected.length).map(t => t.id));
+      }
+      for (const t of this.tasks) t.active = this.selected.includes(t.id);
+      this.renewChicken = record.v === 3 ? !!record.renewChicken : !!this.tasks.find(t => t.active && t.id === 'grillChicken' && (t.isDone || t.failed));
+      this.applyReceipts();
+    }
     this.life.emit('tasksShown', { ids: this.shownIds(), added: [], restored: true });
-    this.renderUI(); // restoring progress never awards points again
+    this.persist(); this.renderUI(); // restoring progress never awards points
   }
 
   reset({ newChicken = false } = {}) {
-    this.elapsed = 0;
-    for (const t of this.tasks) {
-      t.completedGoals.clear(); t.isDone = t.active = false;
-      t.completions = t.readyAt = 0; t.shown = !t.hidden;
-      t.placedBird = t.grilledBird = null; t.replenished = t.failed = false;
-    }
+    this.elapsed = 0; this.day = null;
+    for (const t of this.tasks) t.shown = !t.hidden;
     if (newChicken) this.life.emit('chickenTaskReset', { task: 'grillChicken' });
-    this.refill();
-    this.life.dirty = true;
-    this.renderUI();
+    this.ensureDay(); this.persist(); this.renderUI();
   }
 
   completeGoal(taskId, goalId) {
+    this.ensureDay();
     const task = this.tasks.find((t) => t.id === taskId);
     if (!task?.active || task.isDone || !task.goals.some((g) => g.id === goalId)) return false;
 
@@ -321,29 +365,27 @@ export class TasksManager {
     // Check if all goals are complete
     const allDone = task.goals.every((g) => task.completedGoals.has(g.id));
     if (allDone && !task.isDone) {
+      task.points = taskReward(task.id);
       task.isDone = true;
-      task.active = false;
       task.completions++; task.replenished = false;
-      task.readyAt = this.elapsed + TASK_POOL.cooldown;
       this.triggerTaskComplete(task);
-      this.refill();
     }
 
-    this.life.dirty = true;
+    this.life.dirty = true; this.persist();
     this.renderUI();
     return true;
   }
 
   triggerTaskComplete(task) {
     sfx.pling?.(null, 1.2);
-    awardTask(task.id, task.title);
+    awardTask(task.id, task.title, this.day, this.save());
     if (this.onTaskCompleted) this.onTaskCompleted(task);
   }
 
   // Active / next hint for prompts or HUD
   currentHint() {
     if (!this.hints) return null;
-    const pending = this.tasks.find((t) => t.active);
+    const pending = this.tasks.find((t) => t.active && !t.isDone);
     if (!pending) return null;
     return pending.hint;
   }
@@ -387,6 +429,10 @@ export class TasksManager {
     if (!this.listEl) return;
 
     this.listEl.innerHTML = '';
+    const heading = document.createElement('p');
+    heading.textContent = `Dagens uppdrag · ${this.day}`;
+    if (this.selected.length < TASK_POOL.active) heading.textContent += ` · ${this.selected.length} tillgängliga`;
+    this.listEl.append(heading);
     for (const task of this.tasks) {
       if (!task.active) continue;
       const card = document.createElement('div');
@@ -394,7 +440,7 @@ export class TasksManager {
 
       const titleRow = document.createElement('div');
       titleRow.className = 'task-title';
-      titleRow.innerHTML = `<span>${task.title} · +${taskReward(task.id)}</span>${task.isDone ? '<span class="task-badge">✓ Utfört</span>' : ''}`;
+      titleRow.innerHTML = `<span>${task.title} · +${task.points ?? taskReward(task.id)}</span>${task.isDone ? '<span class="task-badge">✓ Utfört</span>' : ''}`;
       card.append(titleRow);
 
       const goalsList = document.createElement('ul');
@@ -433,13 +479,14 @@ export class TasksManager {
 
       g.fillStyle = '#23324a';
       g.font = 'bold 36px system-ui, sans-serif';
-      g.fillText('📋 UPPDRAG', 24, 55);
+      g.fillText('📋 DAGENS UPPDRAG', 24, 55);
+      g.font = '20px system-ui, sans-serif'; g.fillText(this.day, 24, 82);
 
       let y = 105;
       for (const t of this.activeTasks()) {
         g.fillStyle = '#23324a';
         g.font = 'bold 27px system-ui, sans-serif';
-        g.fillText(`${t.title} · +${taskReward(t.id)}`, 24, y, canvas.width - 48);
+        g.fillText(`${t.isDone ? '✓ ' : ''}${t.title} · +${t.points ?? taskReward(t.id)}`, 24, y, canvas.width - 48);
         g.font = '22px system-ui, sans-serif';
         y += 34;
         for (const goal of t.goals) {

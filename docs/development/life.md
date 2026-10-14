@@ -47,11 +47,11 @@ src/life.js            the life simulator (epic #364) glue; the `&life` develope
 src/tasks.js           optional everyday tasks (#392): TASK_NOTE card on the inside of the kitchen cup-cabinet door follows its hinge and opens a Swedish panel (E/click/touch).
                        Domain events prepared/bite/ate, washed/dishwasher, wipe, rubbishOut and vacuumed complete goals in any
                        order; real kitchen worktops only, empty bins need no disposal. Sets deduplicate goals; life.keepPart('tasks')
-                       saves progress, active slots and cooldown without replaying bonuses on load. SCORE.tasks holds per-id first/repeat
+                       saves v3 daily selection/progress alongside immediate score-record receipts, without replaying bonuses on load. SCORE.tasks holds per-id first/repeat
                        rewards; stats.taskCounts counts each id, stats.tasks counts all completions. Hints persist as lunden.taskHints.
                        The panel releases pointer lock, closes with its button/E/Escape, and permits touch scrolling.
                        Browser regression: tools/taskstest.html (actual cooking, cloth and vacuum, permutations, save, UI/score).
-                       A `hidden` task (tidyHall, #594) joins the list the first time it is read (`read()` from showUI; saved
+                       A `hidden` task (tidyHall, #594) becomes eligible for later daily selections the first time the note is read (`read()` from showUI; saved
                        as `shown` in the tasks record) and emits 'tasksShown'; HallCare's 'hallTidied' event ticks its goals.
 src/cooking.js         the life sim's kitchen work (M1): actions judged by the tags of the held tool and the food (LIFE_TOOLS.uses:
                        tool tag → food tag, `label`, `not`): the wrong tool is a blocked row "Osthyveln skär inte gurka", nothing used;
@@ -274,14 +274,27 @@ Toilet-roll replacement (#557, completes #396): ToiletPaper.initLife registers t
 
 Clean shortcut (#514): `src/cheatclean.js` cancels a pending life action/dishwasher job, clears saved Mess spots and temporary spill/shard decals (including the patio), empties all three sorting bins and the vacuum bin, rinses the cloth and removes leaf waste/empty packages/tied bags through Items. Loose toilet paper is cleared while installed roll quantities remain. Reusable dirty dishes lose stains/load markers; empty/part-used dirty glasses are emptied, washed and sent to a free original home when possible. Clean arranged objects and full beverages keep placement/content; a full dirty glass/cup is washed in place. Food still on a plate stays on it; intact food, clothes, hall care, furniture and personal settings are preserved. Original cups use available cabinet slots without refill/duplication; full cupboards retain valid cleaned placements. Legacy lounge glasses record actual sipping as used (kept through their normal keepState/loadKeep) and return only when used and not full. A dirty pan without food goes back to its drawer. Life.flush writes the completed cleanup immediately. No full-home reset/restock is invoked. tools/cheattest.html checks idempotence, inventory audit and actual normal reload alongside life2test's existing dish/programme/waste flows.
 
-Task rotation (#709): at most three active chores are shown on the paper and panel, with their actual next reward and
-subgoals. Completion awards once, enters a saved played-time cooldown (`TASK_POOL.cooldown`: 3600 seconds, one default
-game day, *guess*) and immediately fills the slot from discovered eligible tasks in definition order. The pool includes
-washing a used dish and resting/making a bed via existing domain events; when every candidate is cooling down, fewer
-than three appear until a slot can refill. Reading discovers the hall task and gives it a slot, queuing a displaced task
-without losing its goals; discovery remains remembered separately from active selection. Hints describe only active tasks.
-There is no manual repeat button that bypasses cooldown. Statistics reset clears tasks too; ordinary reload never awards.
-The existing one-mesh paper uses a 512×640 canvas with wrapped goals and no extra draw call.
+Daily tasks (#993, replacing #709 rotation): `TasksManager` randomly shuffles available definitions once per real
+local calendar day (`getFullYear/getMonth/getDate`, YYYY-MM-DD). Three unique selected stable ids, including checked
+completed tasks, stay fixed through the day. Real calendar rollover is checked by update/read/domain events, including
+an open paused game; the simulated clock/played seconds never selects again. Reload after absence creates just the
+current day's set, not rewards for absent days. Fewer available definitions remain fewer with an explicit count; saved
+same-day selections do not expand when another task is discovered. Definitions can extend the pool without new day logic.
+
+Reading still discovers hall work and lays its original pair out once; chicken still requires pan refusal or actual grill
+placement to discover. Discovery persists but never displaces today's task. Already-tidied hall work is excluded on a
+later selection, without undoing the visitor's home. A selected chicken challenge keeps an existing raw bird; a cooked/burnt
+one renews through the existing `chickenTaskReady` event on the next ordinary update, after all parts restore. A failed
+burnt attempt retries with a raw bird in the same daily slot and no task points. Renewed physical state flushes before the
+pending daily flag clears; restored already-raw generations are preserved. Chicken identity/surface/cook-state guards remain.
+
+Each task gives its unchanged `SCORE.tasks[id]` first/repeat reward once per local day; the lifetime scale is still a game
+design guess. `stats.taskRewardDays` records paid day/id receipts; completed progress and count are saved atomically in the
+same `lunden.stats` write. Initial selection and partial progress persist immediately there, so a fast reload cannot reroll
+before the home save timer. v3 state also remains in `life.keepPart('tasks')`; old v1/v2 goals/discovery migrate silently,
+keeping already-completed goals without retrospective reward. Ordinary home restore prefers the current daily score record.
+Only explicit statistics/new-player reset clears that score/day state. The one-mesh 512×640 paper and existing touch/modal,
+hints and ordered domain subgoals remain. The separate #994 owns the whole-set bonus; #993 includes no such bonus.
 
 
 Chicken discovery task (#710): `grillChicken`, titled “Gör något gott av kycklingen”, stays hidden when the note is read.
@@ -291,16 +304,14 @@ The three goals light the grill, place the raw bird and take the golden bird **f
 Actual `chickenPlaced`, `grilled` and `chickenTaken` events must match the same saved bird generation, grill surface and
 cooked/not-burnt state. Raw placement on an already-lit grill also establishes the lighting goal. Pan/other-bird/burnt events
 cannot complete it. `SCORE.tasks.grillChicken` gives 45 first / 8 repeat points (*guesses*, issue suggests 40–50 first).
-Completion refills the task pool immediately; a fresh raw bird is created only after the played-time cooldown AND when
-this task receives an active slot. A full pool therefore cannot expose a fresh bird while its task is still queued.
-Burning the bird, or discovering an already-cooked bird from an older save, ends a failed cycle with no task reward and
-the same retry cooldown. Failed progress/cooldown and placed/grilled identity markers persist; loading never emits rewards,
-progress or renewal, including expired pending cooldowns. F preserves the current bird; true statistics reset clears points
-and task state together and explicitly renews the chicken, preventing a permanently cooked challenge.
+Daily selection and renewal now follow #993 above; completion stays checked instead of refilling. Failed attempts
+stay in the same selected task and retry without reward. Loading never awards; a completed task cannot repeat that day.
+F preserves the current bird; explicit statistics reset still renews it alongside cleared points.
 `tools/grilltaskchecks.js` is shared by `taskstest.html` and the small `grilltasktest.html` fixture. On base `6ff4236`,
 34 targeted assertions passed using actual TasksManager, Chicken, Grill, Life and stats; console/page errors were empty.
-They cover discovery, hints, pre-lit placement, goal identity/surface/state, exact rewards, immediate refill, partial/completed/
-failed/expired saved records, full-pool cooldown, generation persistence, failed-cycle recovery, true stats reset and pan-first/hall-reading preservation. Reading the hall task displaces a routine task rather than queuing an active grill cycle.
+Those historical #710 checks covered the former refill/cooldown contract. The #993 version retains actual discovery, hints,
+pre-lit placement, identity/surface/state, first/repeat reward, partial/completed restoration and reset checks under fixed
+daily selection, next-day renewal and same-slot failed-attempt retry. Hall reading no longer displaces any selected task.
 The captured shared note CanvasTexture shows three tasks, +45 and checked partial goals. No full apartment startup or
 repeat of the existing broad taskstest wrapper was run; its new block invokes these same tested checks.
 Final rebase base `3ee6fd7` adds the unrelated bow; the tested task/chicken/grill/stats classes remain unchanged upstream. Main statistics-reset hooks passed syntax review after merging.

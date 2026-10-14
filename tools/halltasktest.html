@@ -5,7 +5,7 @@
 const lines=[];let pass=true;const check=(ok,text)=>{lines.push((ok?'PASS':'FAIL')+' '+text);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
 try{
  const f=document.createElement('iframe');f.width=480;f.height=300;document.body.append(f);
- async function load(q){await new Promise(r=>{f.onload=r;f.src='../index.html?test&'+q});while(!f.contentWindow.__app)await wait(100);f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();const a=f.contentWindow.__app;a.renderer.setPixelRatio(.15);return a;}
+ async function load(q){const daily=window.hallDate?JSON.parse(localStorage.getItem('lunden.stats')||'{}').taskDay:null;await new Promise(r=>{f.onload=r;f.src='../index.html?test&'+q});while(!f.contentWindow.__app)await wait(100);f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();const a=f.contentWindow.__app;a.renderer.setPixelRatio(.15);if(window.hallDate){a.tasks.now=()=>new f.contentWindow.Date(window.hallDate);a.tasks.load(daily);}return a;}
  const Q='shot&cloud=&time=12',blank=()=>new Promise(r=>{f.onload=r;f.src='about:blank'}); // (off the page first: its unload would save over a seeded record)
  let A=await load(Q);const {LIFE}=await f.contentWindow.eval("import('/src/config.js')"),T=await f.contentWindow.eval("import('three')");
  const ls=()=>f.contentWindow.localStorage;await blank();ls().clear();A=await load(Q); // a fresh home: nothing saved
@@ -22,7 +22,11 @@ try{
   A.camera.rotation.y=Math.atan2(-dx,-dz);A.camera.rotation.x=Math.atan2(p.y-c.y,Math.hypot(dx,dz));A.step(1/60);
   if(A.focus().focused?.kind==='taskNote'){d.getElementById('action').click();read=true;break}}
  check(read&&!d.getElementById('task-note').hidden,'the task card in the open cup cabinet is read through the actual touch action');
- check(A.tasks.isShown('tidyHall')&&listText().includes('Städa i hallen')&&listText().includes('Häng upp jackan'),'reading adds the hall task to the open list');
+ check(A.tasks.isShown('tidyHall')&&!task().active,'reading remembers hall discovery without replacing today set');
+ // Controlled next real day selects the discovered hall; ordinary discovery must not reroll today.
+ const next=new f.contentWindow.Date();next.setDate(next.getDate()+1);window.hallDate=next.toISOString();A.tasks.now=()=>next;A.tasks.update(0);
+ A.tasks.load({v:3,day:A.tasks.localDay(),selected:['tidyHall','washDish','makeBed'],shown:A.tasks.shownIds(),tasks:{}});
+ check(listText().includes('Städa i hallen')&&listText().includes('Häng upp jackan'),'a selected later-day hall task shows existing goals');
  check(count()==='1/1'&&hall()==='hallFloorjacket,hallFloorshoes','reading lays one jacket and one shoe pair on the hall floor');
  const jacket=I.ofType('hallJacket')[0],shoes=I.ofType('hallShoes')[0];
  check([jacket,shoes].every(i=>{const q=L.view(i).model.getWorldPosition(new T.Vector3());return q.y<.05&&q.x>.5&&q.x<2&&q.z>1&&q.z<3.2}),'both lie on the floor inside the front door');
@@ -43,7 +47,7 @@ try{
  // A save from before #594: the jacket and shoes exist (on the floor), the tasks record knows nothing of the hall task.
  const old=JSON.parse(ls().getItem(LIFE.save.key));
  for(const it of old.items??[])if(it.type==='hallJacket'||it.type==='hallShoes')it.place={...it.home};
- old.x.tasks={v:1,goals:{}};await blank();ls().setItem(LIFE.save.key,JSON.stringify(old));
+ old.x.tasks={v:1,goals:{}};await blank();{const s=JSON.parse(ls().getItem('lunden.stats'));delete s.taskDay;ls().setItem('lunden.stats',JSON.stringify(s));}window.hallDate=null;ls().setItem(LIFE.save.key,JSON.stringify(old));
  A=await load(Q);L=A.life;I=L.items;
  check(count()==='1/1'&&hall()==='hallFloorjacket,hallFloorshoes'&&!A.tasks.isShown('tidyHall'),'pre-#594 save with the pair on the floor loads it once, task not yet listed');
  A.showTaskNote(true);A.showTaskNote(false);L.restock();
@@ -51,7 +55,7 @@ try{
  // A save from before #594 where they were already tidied.
  const tidy=JSON.parse(JSON.stringify(old)),score1=A.totalScore();
  for(const it of tidy.items??[]){if(it.type==='hallJacket')it.place={at:'slot',store:'hallCoatRack',slot:0};if(it.type==='hallShoes')it.place={at:'slot',store:'hallShoeRack',slot:0};}
- await blank();ls().setItem(LIFE.save.key,JSON.stringify(tidy));A=await load(Q);L=A.life;I=L.items;const s1=A.totalScore();
+ await blank();{const s=JSON.parse(ls().getItem('lunden.stats'));delete s.taskDay;ls().setItem('lunden.stats',JSON.stringify(s));}window.hallDate=null;ls().setItem(LIFE.save.key,JSON.stringify(tidy));A=await load(Q);L=A.life;I=L.items;const s1=A.totalScore();
  A.showTaskNote(true);A.showTaskNote(false);L.restock();
  check(count()==='1/1'&&hall()==='hallCoatRack,hallShoeRack'&&A.tasks.tasks.find(t=>t.id==='tidyHall').isDone&&A.totalScore()===s1,'pre-#594 save already tidied: reading lists the task as done, no bonus, nothing on the floor');
  check(I.audit().length===0,'inventory invariants hold');

@@ -2764,9 +2764,9 @@ export const BEER_CAN = { held: { x: 0.2, y: -0.27, z: -0.44 }, sips: 5, lift: 0
 //          korthår 7, maine coon 6, norsk skogkatt 5, perser 3, sphynx 1 of 100); `first.coats` once per new coat.
 //  secrets: the secret drawer — `kinds` once per surprise kind found, `rare` once more per rare kind (+ each.secrets).
 export const SCORE = {
-  // #709: points per task, first completion / later completions after cooldown (*guess*).
+  // #709: points per task, first completion / later daily completions (*guess*).
   tasks: {
-    grillChicken: { first: 45, again: 8 }, // #710: hard discovery task (*guess*, suggested 40–50); one cycle per cooldown
+    grillChicken: { first: 45, again: 8 }, // #710: hard discovery task (*guess*, suggested 40–50); one reward per local calendar day
     makeSandwich: { first: 15, again: 3 }, resetKitchen: { first: 30, again: 5 },
     snackClean: { first: 10, again: 2 }, tidyHall: { first: 20, again: 4 },
     washDish: { first: 10, again: 2 }, makeBed: { first: 15, again: 3 },
@@ -4492,8 +4492,8 @@ export const FURNITURE = [
 
 // Optional everyday task card on the cup-cabinet door's inside (#392, #509).
 // #509: visual assumptions; size retained, mounting fractions of the actual door's height/width.
-// #709: game-design guesses; one default (60-minute) game day between repeats.
-export const TASK_POOL = { active: 3, cooldown: 3600 };
+// #993: three chores per real local calendar day (user request); no simulated-time cooldown.
+export const TASK_POOL = { active: 3 };
 
 export const TASK_NOTE = { w: 0.18, h: 0.22, tilt: 0.04, inset: 0.001, height: 0.55, across: 0.5 };
 

@@ -214,11 +214,15 @@ every visit, using them bumps no stat, and nothing can be put down there. Only t
 
 Ghost score badges (#672): `src/ghostbadge.js` draws name and score in the existing sprite, with 20% smaller world scale and text sizes set by `GHOSTS.tagWidth/tagHeight/tagNamePx/tagScorePx` (*guess*). The background fits both rows, including a short name with 10 000 000 points. Immutable materials are shared per live name/score; reference counts immediately dispose unused maps/materials when scores change or ghosts leave, so history cannot grow texture memory. Missing legacy scores display 0. Ghosts defaults to stats.totalScore and sends score-only changes within the existing shared 5 Hz state/shot budget; they do not extend movement idle time. PlayerRoom carries the score in state/welcome attachments, clamps it to the existing leaderboard's 0…1e7 range, and adds no requests, timers or message types. Scores are client-reported display data, not authoritative combat or leaderboard results. `ghostbadgetest.cjs` uses real Ghosts and the local PlayerRoom in a small controlled scene (no apartment bootstrap) to check anonymous/max scores, updates/rate/idle, shared materials, 50 updates without GPU texture growth, draws and departure; screenshots at desktop and iPhone landscape size. Physical phone rendering is not certified.
 
-Task state (#709): `life.keepPart('tasks')` now writes v2 with played seconds, selected active ids, discovered ids and
-per-task goal ids, completion count and cooldown deadline. Reload restores selection/progress without reward callbacks;
-v1 goals/shown migrate, with completed tasks initially cooling down. `lunden.stats` stores per-id task counts plus
-`legacyTaskPoints`, preserving previously earned generic task points on upgrade. Repeats use `SCORE.tasks[id].again`;
-statistics reset clears both counters and task state, while home reset clears the existing Life/statistics records.
+Task state (#993): `life.keepPart('tasks')` writes v3 with the real local YYYY-MM-DD day, selected stable ids, discovered
+ids, per-task goals/completed/points/bird identity and pending renewal. The same compact record is persisted immediately
+as `lunden.stats.taskDay`; first home restoration can migrate v1/v2, while ordinary restoration prefers the current daily
+score record to an older home snapshot. Task score counts, paid day/id receipt and completed daily state share one atomic
+localStorage write; partial goals/initial selection also save immediately without resetting the home. `taskRewardDays`
+retains paid ids per real day to reject stale progress/dates; it is reset with normal explicit score reset. Rollover clears
+only daily state, preserving total counters, seen ids and legacyTaskPoints. v1/v2 goals/discovery and completed tasks migrate
+without reward; the former played-time deadlines no longer control selection. `SCORE.tasks[id].first/again` retain existing
+lifetime reward amounts. The separate #994 will add whole-set bonus state; it is not implemented here.
 
 #708: `Life.x.chicken` keeps raw/golden/burnt progress, off-grill pose or courtyard grate placement, missing/eaten parts and completion/penalty flags. The generic holdable snapshot still excludes chicken to avoid a second restore. `keep.js` restores grill heat before Life; saved grill relighting and chicken loading emit no task progress. F returns the existing bird rather than creating a fresh rewardable one.
 
