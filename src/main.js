@@ -1,3 +1,4 @@
+import { MATERIAL_CHOICES } from './materialcatalog.js';
 import { crashlog } from './crashlog.js'; // first: its heartbeat and error hooks start before the rest loads (#629; inert without the cloud)
 import { bindGameViewport, gameView } from './viewport.js';
 import { PlantWind, windShadow } from './plantwind.js';
@@ -1766,7 +1767,7 @@ function updateFocus() {
     rearrange.update(); focused = rearrange.target; focusPoint = null;
     renderRearrangeHUD();
     showChoices(null, null); placeGhost.visible = itemGhost.visible = false;
-    const text = focused ? (focused.blockedText ?? `${focused.verb === 'flytta' ? 'Flytta' : 'Placera'} ${focused.name}`) : 'Sikta på en möbel, tavla eller spegel';
+    const text = focused ? (focused.blockedText ?? `${focused.verb === 'material' ? 'Bekräfta material för' : focused.verb === 'flytta' ? 'Flytta' : 'Placera'} ${focused.name}`) : 'Sikta på en möbel, tavla eller spegel';
     actionBtn.textContent = text; actionBtn.hidden = !touch.enabled || !focused;
     promptEl.textContent = `${text} · E / klick · R: vrid · X: avbryt`;
     promptEl.hidden = touch.enabled; powerBtn.hidden = true;
@@ -2017,6 +2018,10 @@ world.looseItems.push(life.group, fruit.group, ...cups.cups.map((c) => c.model),
 try { if (localStorage.getItem('lunden.furniture') === '0') toggleFurniture(false); } catch { /* ignore */ }
 document.getElementById('furniture-btn').addEventListener('click', () => toggleFurniture());
 
+// #995: new rug variants join both existing light washes before their first render.
+for (const piece of world.furniture.movable) for (const surface of piece.object.userData.materialSurfaces ?? []) {
+  surface.prepare = mesh => { lights.wash?.patch(mesh); visitLights.wash?.patch(mesh); };
+}
 const rearrange = new Rearrange({ scene, camera, world, player, life, marks,
   carryables: () => [...holdables, ...cups.cups, ...life.views.values(), fruit.carryable, ...fruit.placed],
   busy: () => !!heldItem() || rest.active || drawing.active || !world.furnitureOn,
@@ -2043,12 +2048,13 @@ const editHelp = document.getElementById('rearrange-help'), editToggle = documen
 let editMenuPiece = null, resetFurnitureRequest = null, editHUDKey = '';
 let chat = null; // the console as a chat (#675, src/chat.js), set up with the ghosts below
 function renderRearrangeHUD() {
-  const p=rearrange.selected?.piece,key=`${rearrange.enabled}|${rearrange.saving}|${p?.id??''}|${reading}`;
+  const p=rearrange.selected?.piece,m=rearrange.materialEdit,key=`${rearrange.enabled}|${rearrange.saving}|${p?.id??''}|${m?.choice??''}|${reading}`;
   if(key===editHUDKey)return;editHUDKey=key;
   editHelp.hidden=!rearrange.enabled||reading;
-  document.getElementById('rearrange-step').textContent=rearrange.saving?'Sparar möbleringen…':p?`2. Placera ${p.name}`:'1. Välj ett föremål';
-  for(const id of ['rearrange-rotate','rearrange-cancel']){const b=document.getElementById(id);b.hidden=!p;b.disabled=rearrange.saving;}
+  document.getElementById('rearrange-step').textContent=rearrange.saving?'Sparar möbleringen…':m?`Mattans tyg: ${MATERIAL_CHOICES.find(c=>c.id===m.choice)?.name??'Original'}`:p?`2. Placera ${p.name}`:'1. Välj ett föremål';
+  for(const id of ['rearrange-rotate','rearrange-cancel']){const b=document.getElementById(id);b.hidden=!p&&!(m&&id==='rearrange-cancel');b.disabled=rearrange.saving;}
   document.getElementById('rearrange-menu').disabled=rearrange.saving;
+  const materialConfirm=document.getElementById('rearrange-material-confirm');materialConfirm.hidden=!m;materialConfirm.disabled=rearrange.saving;
 }
 function editUI() {
   renderRearrangeHUD(); editToggle.hidden = !rearrange.unlocked || !!resetFurnitureRequest;
@@ -2064,8 +2070,34 @@ function editUI() {
   document.getElementById('terminal-restore').disabled = !editMenuPiece || rearrange.saving;
   document.getElementById('terminal-cancel-move').hidden = !rearrange.selected;
   document.getElementById('terminal-cancel-move').disabled = rearrange.saving;
+  renderMaterialLibrary();
   document.getElementById('terminal-edit-status').textContent = editMenuPiece?`Valt föremål: ${editMenuPiece.name}`:'Ingen möbel vald. Sikta på ett föremål för att flytta det.';
 }
+// #995: original terminal controls and focus lifecycle, one bounded shared-rug library.
+function renderMaterialLibrary() {
+  const edit = rearrange.materialEdit, piece = edit?.piece ?? editMenuPiece;
+  const open = document.getElementById('terminal-material-open');
+  open.hidden = !piece?.object.userData.materialSurfaces?.length; open.disabled = rearrange.saving;
+  document.getElementById('terminal-material-library').hidden = !edit;
+  const choices = document.getElementById('terminal-material-choices'); choices.replaceChildren();
+  if (!edit) return;
+  for (const choice of MATERIAL_CHOICES) {
+    const button = document.createElement('button'); button.type = 'button'; button.disabled = rearrange.saving;
+    button.dataset.material = choice.id; button.setAttribute('aria-pressed', String(choice.id === edit.choice));
+    const swatch = document.createElement('span'); swatch.setAttribute('aria-hidden','true');
+    swatch.style.cssText = 'display:inline-block;width:18px;height:18px;margin-right:6px;vertical-align:middle;border:1px solid #fff';
+    swatch.style.background = choice.pattern === 'stripe' ? `repeating-linear-gradient(90deg,${choice.color} 0 4px,${choice.ink} 4px 8px)` : choice.pattern === 'check' ? `repeating-conic-gradient(${choice.color} 0 25%,${choice.ink} 0 50%) 0/8px 8px` : choice.color ?? '#ddd';
+    button.append(swatch, document.createTextNode(choice.name));
+    button.addEventListener('click', () => { if (rearrange.previewMaterial(choice.id)) { showTerminal(false); renderRearrangeHUD(); } });
+    choices.append(button);
+  }
+}
+document.getElementById('terminal-material-open').addEventListener('click', () => {
+  if (rearrange.beginMaterial(rearrange.materialEdit?.piece ?? editMenuPiece)) { editUI(); document.querySelector('#terminal-material-choices button')?.focus(); }
+});
+document.getElementById('rearrange-material-confirm').addEventListener('click', async () => {
+  const saved = rearrange.confirmMaterial(); editUI(); await saved; editUI();
+});
 function exitRearranging() {
   if (!rearrange.enabled) return;
   rearrange.enable(false); editMenuPiece = null; editUI();
@@ -2076,7 +2108,7 @@ function showTerminal(show, byKey = 'button') {
   resetFurnitureRequest = null;
   terminal.hidden = !show; reading = show; player.keys.clear(); touch.analog.x = touch.analog.y = 0;
   chatMode(show);
-  if (show) { editMenuPiece = rearrange.selected?.piece ?? rearrange.target?.piece ?? null; if (locked) { boardFreed = true; document.exitPointerLock(); } editUI(); (rearrange.enabled ? document.getElementById('terminal-close') : terminalInput).focus(); }
+  if (show) { editMenuPiece = rearrange.materialEdit?.piece ?? rearrange.selected?.piece ?? rearrange.target?.piece ?? null; if (locked) { boardFreed = true; document.exitPointerLock(); } editUI(); (rearrange.enabled ? document.getElementById('terminal-close') : terminalInput).focus(); }
   else if (boardFreed) { boardFreed = false; if (byKey === 'Escape') { overlay.hidden = true; armEl.hidden = false; } else canvas.requestPointerLock()?.catch(() => { armEl.hidden = false; }); }
   renderRearrangeHUD();
 }
@@ -2166,7 +2198,7 @@ document.getElementById('terminal-confirm-yes').addEventListener('click', async 
   editUI(); await saved; editUI();
 });
 document.getElementById('terminal-cancel-move').addEventListener('click', () => { rearrange.cancel(); rearrange.say('Flytten avbröts.'); editUI(); });
-document.getElementById('rearrange-cancel').addEventListener('click', () => { rearrange.cancel();rearrange.say('Flytten avbröts. Välj ett nytt föremål.');editUI(); });
+document.getElementById('rearrange-cancel').addEventListener('click', () => { rearrange.cancel();rearrange.say('Ändringen avbröts. Välj ett nytt föremål.');editUI(); });
 document.getElementById('rearrange-rotate').addEventListener('click', () => rearrange.rotate());
 document.getElementById('rearrange-menu').addEventListener('click', () => showTerminal(true));
 document.getElementById('rearrange-finish').addEventListener('click', exitRearranging);
@@ -2182,7 +2214,7 @@ document.addEventListener('keydown', (e) => {
     e.preventDefault(); e.stopImmediatePropagation();
     if (!e.repeat && e.code === 'KeyR') rearrange.rotate();
     if (!e.repeat && e.code === 'Home') requestFurnitureReset(false, rearrange.selected?.piece ?? rearrange.target?.piece);
-    if (!e.repeat && e.code === 'KeyX') { if (rearrange.selected) rearrange.cancel(); else rearrange.enable(false); editUI(); }
+    if (!e.repeat && e.code === 'KeyX') { if (rearrange.selected || rearrange.materialEdit) rearrange.cancel(); else rearrange.enable(false); editUI(); }
   }
 }, true);
 

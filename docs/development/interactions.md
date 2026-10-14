@@ -1352,3 +1352,61 @@ phases; projectile/hit origins (Rifle hitscan eye ray, Nerf origin `where() + di
 Wand star world position and eye ray, Saber tip segment `localToWorld(0, hilt+blade, 0)`)
 and placement/take/putBack paths remain completely unchanged. Hand curl is 1.0 around the grips.
 Native audit: 54/54 PASS / CLI 0. WebGL `--render`: 66/66 PASS / CLI 0 at 480×300/FOV72/DPR1.
+
+
+## Shared rug material library (#995)
+
+While Möblera om is enabled, aim at a rug (or select it for moving), open Meny
+and choose “Välj mattans tyg och mönster”. The existing terminal lists Original,
+Sand, Blågrå, Olivgrön, Blågrå ränder and Sandrutor. A choice returns to the
+uncovered scene for local preview; “Bekräfta material” or the normal E/action
+commits it. Avbryt/X, leaving the mode, or cancelling restores accepted material
+without a PUT. A pending remote choice wins on cancel. Original restores only
+the surface, preserving placement; the separate furniture reset keeps its
+existing positional meaning. Both keyboard buttons and touch use this flow.
+The existing coarse-pointer portrait rotation gate is unchanged.
+
+All six real rug roots register one stable `textile` surface before their normal
+per-piece merge. `src/materialcatalog.js` shares compact preset IDs and exact
+existing furniture identities with the Worker. Each surface retains its original
+material pointer and a bounded map of variants; deterministic preset maps share
+by choice and UV dimensions. Only that rug's material binding changes, retaining
+its original roughness/bump, geometry, UV, height and support. Both existing lamp
+washes patch newly chosen materials before rendering, and focus decoration keeps
+the chosen material when cleared. No long-pile geometry is introduced: #996 owns
+the separately requested fuller silhouette and changed rug/support height.
+
+`tools/materiallibrarytest.cjs GAME LOCAL_WORKER OUT` requires the same mandatory
+external `LUNDEN_SECRET_TEST_INPUTS` as layout tests. It imports real rug builders,
+merge, Rearrange and source-bound main terminal controls, using two real local
+HTTP peers. Native forbids WebGL; `--render` requires the shared graphics slot
+and draws one actual rug component at a time. Controlled World/light collaborators
+do not certify a full apartment, physical phone, long pile or hardware FPS.
+
+The Worker-first slice `fc5800c` passed all11 real-room schema tests and actually
+deployed through Worker run38548786983/job115801355607 at10:20:10Z2026-10-14,
+version fe336f1c-250f-4bc9-bf26-a5fad9d5714d. Native7 passed28/28 actualCLI0
+in10.03s, including600 preview switches reusing the same preset materials/maps,
+real focus identity and the source-bound X cancel. A single granted640×400/FOV72
+component renderer produced eight inspected real-rug pictures (all six rugs),
+14/14 actualCLI0 in15.33s, one draw per view. Its254 frozen paths matched through
+capture. The later native-only target-piece/X adjustment does not change rug
+builders/maps/geometry or that picture branch; final publication parity records
+the exact remaining source differences. No apartment, long-pile or phone result
+is implied. Original CLI1 attempts remain archived: missing fixture collaborator,
+a stopped local service, the existing coarse-pointer portrait rotation gate,
+and a shader assertion missing the existing `highp` qualifier.
+
+After integrating the other agents' bicycle/daily-task commits, native8 passed
+29/29 actualCLI0 in10.56s, adding a genuine ordinary begin/ghost/confirm move
+that retains accepted cloth; the Worker schema suite again passed11/11CLI0.
+All254 final native source bytes are archived. All254 original render bytes
+were also recovered exactly against their pre-run SHA256; ten whole-file
+differences are enumerated, with actual rug builder/geometry/map/image code
+unchanged and FURNITURE/MATERIAL_LIBRARY/LEVELS/LIGHTING data compared equal.
+
+Final integration also retains the incoming #913 weapon grips and #994 daily
+bonus: native9 passed29/29 actualCLI0 in10.02s and schema11/11CLI0. The final
+publication manifest enumerates 16 render-to-publication whole-path differences;
+the same eight inspected image views remain evidence for unchanged rug
+builder/map/geometry/image code, not for the unrelated whole-World changes.

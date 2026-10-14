@@ -923,6 +923,11 @@
       <button id="terminal-run" type="submit">Kör</button></div>
       <div id="terminal-edit" hidden>
         <p id="terminal-edit-status" aria-live="polite"></p>
+        <button id="terminal-material-open" type="button" hidden>Välj mattans tyg och mönster</button>
+        <div id="terminal-material-library" hidden aria-label="Materialbibliotek">
+          <p>Mattans tyg · välj för att se materialet på mattan. Bekräfta sedan i bilden.</p>
+          <div id="terminal-material-choices"></div>
+        </div>
         <button id="terminal-cancel-move" type="button">Avbryt flytten</button>
         <details id="terminal-reset-options"><summary>Återställ möblering</summary>
           <button id="terminal-restore" type="button">Återställ vald möbel</button>
@@ -1036,7 +1041,8 @@
   <div id="hud" hidden>
     <button id="terminal-btn" aria-label="Öppna konsolen">&gt;_</button>
     <div id="rearrange-help" hidden role="region" aria-label="Möblera om"><strong id="rearrange-step">1. Välj ett föremål</strong><span id="rearrange-status" aria-live="polite"></span>
-      <div class="rearrange-actions"><button id="rearrange-rotate" hidden>Vrid</button><button id="rearrange-cancel" hidden>Avbryt flytt</button><button id="rearrange-menu">Meny</button><button id="rearrange-finish" class="primary">Klart</button></div>
+      <div class="rearrange-actions"><button id="rearrange-rotate" hidden>Vrid</button><button id="rearrange-material-confirm" type="button" hidden>Bekräfta material</button>
+        <button id="rearrange-cancel" hidden>Avbryt flytt</button><button id="rearrange-menu">Meny</button><button id="rearrange-finish" class="primary">Klart</button></div>
       <small class="keyboard-hint">E: välj / placera · R: vrid · X: avbryt · §: meny · Esc: klart</small>
     </div>
     <div id="crosshair"></div>

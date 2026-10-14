@@ -1,3 +1,5 @@
+import { materialChoice } from './materialcatalog.js';
+import { MATERIAL_LIBRARY } from './config.js';
 import { windPlant, windMaterial } from './plantwind.js';
 import { MusicLoop } from './music.js';
 import { MUSIC, STAND_ON } from './config.js';
@@ -2862,10 +2864,38 @@ function bobbleRug(item) {
   return g;
 }
 
+// #995: the single actual textile mesh of each rug; never recolor shared originals.
+const rugMaps = new Map();
+function rugLibraryMap(item, choice) {
+  const width = item.w ?? item.d, metreUV = item.pattern === 'bobble';
+  const repeat = metreUV ? [1, 1] : [width, item.d], key = `${choice.id}/${repeat}`;
+  if (rugMaps.has(key)) return rugMaps.get(key);
+  const n = MATERIAL_LIBRARY.pixels, c = document.createElement('canvas'); c.width = c.height = n;
+  const ctx = c.getContext('2d'); ctx.fillStyle = choice.color; ctx.fillRect(0, 0, n, n);
+  ctx.fillStyle = choice.ink ?? choice.color;
+  if (choice.pattern === 'stripe') ctx.fillRect(0, 0, n / 2, n);
+  if (choice.pattern === 'check') { ctx.fillRect(0, 0, n / 2, n / 2); ctx.fillRect(n / 2, n / 2, n / 2, n / 2); }
+  // Fine deterministic weave, shared by every rug with this preset/UV scale.
+  ctx.fillStyle = 'rgba(255,255,255,.06)'; for (let i = 0; i < n; i += 2) ctx.fillRect(i, 0, 1, n);
+  const map = freeCanvasAfterUpload(new THREE.CanvasTexture(c)); map.colorSpace = THREE.SRGBColorSpace;
+  map.wrapS = map.wrapT = THREE.RepeatWrapping; map.repeat.set(repeat[0] / MATERIAL_LIBRARY.tile, repeat[1] / MATERIAL_LIBRARY.tile);
+  rugMaps.set(key, map); return map;
+}
+function bindRugMaterials(g, item) {
+  const mesh = g.children[0], original = mesh.material, variants = new Map([['original', original]]);
+  const surface = { id: 'textile', name: 'Mattans tyg', choice: 'original', original,
+    apply(id) {
+      const choice = materialChoice(id) ?? materialChoice('original');
+      if (!variants.has(choice.id)) { const mat = original.clone(); mat.color.set(0xffffff); mat.map = rugLibraryMap(item, choice); variants.set(choice.id, mat); }
+      mesh.material = variants.get(choice.id); surface.prepare?.(mesh); surface.choice = choice.id;
+    } };
+  g.userData.materialSurfaces = [surface]; return g;
+}
+
 /** Big rug: a thin slab (w along local x, d along z), walked over (no footprint). */
-function rug(item) {
-  if (item.shape === 'round') return roundRug(item);
-  if (item.pattern === 'bobble') return bobbleRug(item);
+export function rug(item) {
+  if (item.shape === 'round') return bindRugMaterials(roundRug(item), item);
+  if (item.pattern === 'bobble') return bindRugMaterials(bobbleRug(item), item);
   const g = new THREE.Group();
   const geo = item.edge ? new RoundedBoxGeometry(item.w, item.h, item.d, 2, item.edge) : new THREE.BoxGeometry(item.w, item.h, item.d);
   const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial(item.pattern === 'zigzag' ? { ...zigzagRugTextures(item), roughness: 1 }
@@ -2874,7 +2904,7 @@ function rug(item) {
   m.receiveShadow = true;
   g.add(m);
   registerRug(item, g);
-  return g;
+  return bindRugMaterials(g, item);
 }
 
 /** Areca / golden cane palm (#106) in a big pot: thin yellow-green canes fanning out of the soil, each with a

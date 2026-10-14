@@ -875,3 +875,11 @@ are retained by legacy writes. Reset-all continues to reset positions only.
 `cloudflare/layout.test.mjs` retains the original external-input credential and
 pose/migration tests and adds real DrawingRoom material/legacy/concurrency checks.
 This Worker-first contract precedes the requiring client within the same issue.
+
+The #995 client reads/writes these choices through the existing layout cache,
+3-second/focus/online polling and deferred pending state. Preview is local; a
+confirmed write requires a live recognized Worker capability and an accepted
+response. Offline failures retain accepted cached choices/revisions and restore
+the accepted material. Cached unknown preset IDs round-trip untouched and render
+the original until understood. Ordinary viewers apply shared choices without
+unlock/edit mode; future curtain and textile families remain separate work.

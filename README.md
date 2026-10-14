@@ -297,3 +297,9 @@ The representative one-hand grip audit (#912) retained the existing cup, fish-fi
 wine-bottle/glass and coffee-scoop poses after native state checks and15 inspected
 component views. See the [audit scope and native/render driver](docs/development/interactions.md#representative-one-hand-grip-audit-912);
 it makes no general guarantee for every object or scaled fallback.
+
+Mattornas gemensamma materialbibliotek finns under Möblera om → Meny: förhandsvisa
+färg eller mönster på en av de sex mattorna, bekräfta för alla besökare eller
+avbryt. Originaltyget kan återställas utan att mattan flyttas. Mattornas höjd är
+oförändrad; långlugg och övriga tygfamiljer följer separat. Kontrakt/prov:
+[materialbiblioteket](docs/development/interactions.md#shared-rug-material-library-995).

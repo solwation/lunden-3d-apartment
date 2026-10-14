@@ -1,3 +1,4 @@
+import { MATERIAL_VERSION, validMaterialChoice } from './materialcatalog.js';
 import { isPrivateCode, layoutWriteCredential } from './privatecodes.js';
 import * as THREE from 'three';
 import { LEVELS, LIFE, REARRANGE } from './config.js';
@@ -49,6 +50,7 @@ export class Rearrange {
     this.ray = new THREE.Raycaster(); this.ray.layers.enableAll();
     this.ghost = new THREE.Group(); this.ghost.visible = false; this.ghost.userData.ghost = true; scene.add(this.ghost);
     this.ghostMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.35, depthWrite: false, side: THREE.DoubleSide });
+    this.materialVersion = 0;
     this.state = { revision: 0, pieces: {} };
     this.apply(read(CACHE, this.state));
     this.ready = this.sync();
@@ -118,6 +120,11 @@ export class Rearrange {
   }
   cancel() {
     if (this.saving) return;
+    if (this.materialEdit) {
+      const { piece, surface } = this.materialEdit;
+      surface.apply(this.state.materials?.[piece.id]?.[surface.id]?.choice ?? 'original');
+      this.materialEdit = null;
+    }
     if (this.selected) {
       for (const p of this.selected.group) p.object.visible = true;
       for (const h of this.selected.loose) h.model.visible = true;
@@ -128,6 +135,7 @@ export class Rearrange {
   rotate() { if (this.selected && !this.saving) this.turn += THREE.MathUtils.degToRad(LIFE.place.turn); }
   update() {
     this.camera.updateMatrixWorld(); this.ray.setFromCamera({ x: 0, y: 0 }, this.camera); this.ray.far = REARRANGE.reach;
+    if (this.materialEdit) { this.target = { kind: 'rearrange', name: this.materialEdit.piece.name, piece: this.materialEdit.piece, verb: 'material' }; return; }
     if (!this.selected) {
       const roots = this.pieces.filter((p) => p.level === this.player.level && shown(p.object));
       const hit = this.ray.intersectObjects(roots.map((p) => p.object), true).find((h) => shown(h.object));
@@ -189,6 +197,7 @@ export class Rearrange {
   }
   async act(target = this.target) {
     if (!target || target.blocked || this.saving) return false;
+    if (this.materialEdit) return this.confirmMaterial();
     if (!this.selected) return this.begin(target.piece);
     return this.confirm();
   }
@@ -209,6 +218,30 @@ export class Rearrange {
     const next = structuredClone(this.state); next.revision++;
     for (const p of moves) next.pieces[p.id] = { pos: p.pos, quat: p.quat, revision: next.revision };
     return next;
+  }
+  beginMaterial(piece) {
+    if (!this.enabled || this.saving || this.busy() || !piece?.object.userData.materialSurfaces?.length) return false;
+    this.cancel();
+    const surface = piece.object.userData.materialSurfaces[0];
+    const accepted = this.state.materials?.[piece.id]?.[surface.id];
+    this.materialEdit = { piece, surface, base: accepted?.revision ?? 0, choice: accepted?.choice ?? 'original' };
+    return true;
+  }
+  previewMaterial(choice) {
+    const edit = this.materialEdit;
+    if (!edit || this.saving || !validMaterialChoice(edit.piece.id, edit.surface.id, choice)) return false;
+    edit.surface.apply(choice); edit.choice = choice; return true;
+  }
+  async confirmMaterial() {
+    const edit = this.materialEdit;
+    if (!edit || this.saving) return false;
+    if (!this.url || this.materialVersion !== MATERIAL_VERSION) { this.say('Materialbiblioteket kan inte sparas nu. Kontrollera anslutningen och försök igen.'); return false; }
+    this.saving = true;
+    try {
+      const next = await this.write([], { materials: [{ id: edit.piece.id, surface: edit.surface.id, choice: edit.choice, base: edit.base }] });
+      if (next.materialVersion !== MATERIAL_VERSION) throw Error('Servern stöder inte materialval ännu. Försök igen senare.');
+      this.saving = false; this.cancel(); this.pending = null; this.apply(next); this.say('Materialet är sparat och delas med alla.'); return true;
+    } catch (e) { this.saving = false; this.cancel(); this.say(e.message); await this.sync(); return false; }
   }
   async restoreAll(expectedRevision = this.state.revision) {
     if (!this.enabled || this.saving || this.busy()) return false;
@@ -256,7 +289,7 @@ export class Rearrange {
     state = migrateVeronaLayout(migratePosterLayout(state));
     if (!state || !Number.isInteger(state.revision) || !state.pieces || typeof state.pieces !== 'object') return;
     if (state.revision < this.state.revision) return;
-    if (this.selected || this.saving) { this.pending = state; return; }
+    if (this.selected || this.materialEdit || this.saving) { this.pending = state; return; }
     this.scene.updateMatrixWorld(true);
     // a piece whose default spot moved gets a new id (furniture.js: from its x/z): an entry under its old id carries over
     // when it was confirmed somewhere else, and is dropped when it still holds the old default (a full reset writes every
@@ -312,6 +345,9 @@ export class Rearrange {
         }
       }
     }
+    for (const p of this.pieces) for (const surface of p.object.userData.materialSurfaces ?? []) {
+      surface.apply(state.materials?.[p.id]?.[surface.id]?.choice ?? 'original');
+    }
     this.state = state;
     try { localStorage.setItem(CACHE, JSON.stringify(state)); } catch {}
     if (this.overlay && (revealed || changes.length)) this.overlay.recompute(); // (+ refresh)
@@ -338,7 +374,7 @@ export class Rearrange {
   async sync() {
     if (!this.url || this.pulling || this.saving) return;
     this.pulling = true;
-    try { const r = await fetch(this.url + '/furniture', { cache: 'no-store' }); if (r.ok) this.apply(await r.json()); }
+    try { const r = await fetch(this.url + '/furniture', { cache: 'no-store' }); if (r.ok) { const state = await r.json(); this.materialVersion = state.materialVersion ?? 0; this.apply(state); } }
     catch { /* keep cached arrangement; a confirmed move still needs server acceptance */ }
     finally { this.pulling = false; }
   }

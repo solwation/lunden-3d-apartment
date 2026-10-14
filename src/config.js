@@ -4601,6 +4601,8 @@ export const POWER = {
 };
 
 // Furniture cheat (#465): interaction distance and support tolerance are gameplay choices, not surveyed dimensions.
+// #995: visual assumptions for the generic rug swatches, not fabric measurements.
+export const MATERIAL_LIBRARY = { tile: .25, pixels: 128 };
 export const REARRANGE = { reach: 6, supportGap: 0.06, poll: 3000 };
 
 // #514: marker graffiti on bikeNE's back west wall; dimensions/height are visual assumptions.
