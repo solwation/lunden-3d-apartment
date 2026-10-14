@@ -31,8 +31,14 @@ ray, from the existing feet+1m origin, before native body/world obstruction. Off
 flame contacts remain body damage. The shared `straightBoxHeadContact` validates the
 weapon/ray/range and original jet footprint; PlayerRoom recomputes the intersection.
 Cached packets without a v2 contact remain body damage. Bow/ball stay on their
-existing paths until separately delivered. The jetpack's older volume-based body
-fallback does not gain a new world-obstacle rule in this head-damage change (tracked separately as #978).
+existing paths until separately delivered. The jetpack's volume-based body fallback now checks solid world obstacles (#978)
+from the actual rounded flame origin to the nearest surface of its existing body
+capsule, including side-offset targets inside the unchanged flame volume. The full
+finite ray reaches that contact without `clear()`'s .3 m shortening. A blocked body
+fallback sends no target packet. New straight head contacts retain their separate
+body/world checks; range, cooldown, damage, points and recovery stay unchanged.
+Transparent and moving props keep the existing combat-world exclusion policy;
+there is no new Worker world map or persistence.
 
 Nerf (#894) reuses the same boxes along its existing falling muzzle path. `src/nerf.js`
 shares the 20 ms `stepNerf` segments, floor clip and travel limit with the Worker;

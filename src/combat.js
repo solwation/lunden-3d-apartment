@@ -361,6 +361,19 @@ export class Combat {
     this.recoveryClock(now);
   }
 
+  /** Flame-volume body contact uses the same solid-world policy as other combat rays (#978).
+   * Aim at the nearest surface of the existing generous body capsule, including offset targets;
+   * unlike clear(), do not leave a .3 m blind gap immediately before that surface. */
+  jetBodyClear(origin, feet) {
+    const axis = feet.clone().setY(THREE.MathUtils.clamp(origin.y, feet.y + C.body[0], feet.y + C.body[1]));
+    dir.subVectors(axis, origin);
+    const distance = Math.max(0, dir.length() - C.hitRadius);
+    if (distance === 0) return true; // the flame origin already lies in the body volume
+    ray.set(origin, dir.normalize()); ray.far = distance;
+    ray.layers.mask = this.camera.layers.mask; ray.camera = this.camera;
+    return combatWorldHits(this.scene, this.ghosts.group, this.camera, ray).length === 0;
+  }
+
   update(dt) {
     this.hitMarker.update();
     this.recoverOffline();
@@ -383,6 +396,7 @@ export class Combat {
             const body = ray.intersectObject(g.avatar.mesh, false).find(hit => hit.point.y < rifleHeadBaseY(g.id, state));
             if (!body && this.clear(origin, point.clone().add(new THREE.Vector3(0, -.3, 0)))) shot.hc = [HB.version, ...head.point];
           }
+          if (!shot.hc && !this.jetBodyClear(new THREE.Vector3(...shot.o), g.feet)) continue;
           this.lastShot = shot; this.ghosts.fire(shot);
           this.jetT = this.rules.weapons?.jetpack?.every ?? 1;
           break;

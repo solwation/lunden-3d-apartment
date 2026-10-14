@@ -281,3 +281,6 @@ path (#894): the server confirms two hearts for the head, one for the body, whil
 walls, range, shot timing and kill receipts keep their existing rules. See the
 [interaction contract](docs/development/interactions.md) and
 [focused verification](docs/development/verification.md#nerf-shared-head-boxes-894).
+
+Jetpack flames now stop at solid walls and corners before damaging another player,
+while open passages and side contacts within the flame volume remain valid (#978).

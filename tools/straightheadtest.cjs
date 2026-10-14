@@ -113,8 +113,12 @@ const check=(ok,label)=>{checks++;console.log(`${ok?'PASS':'FAIL'} ${label}`);if
 
    await hit('body repeated','body',false);
    if(weapon==='jetpack') {
-    await a.evaluate(()=>wall(true));await hit('wall preserves prior body fallback without head bonus','head',false);
-    check(await a.evaluate(()=>!combat.lastShot.hc),'jetpack wall never grants head bonus');await a.evaluate(()=>wall(false));
+    await a.waitForTimeout(1100);await a.evaluate(()=>{pose.p=[2,2,0];wall(true);});
+    const before=await a.evaluate(()=>snap()),seen=await b.evaluate(()=>remoteShots);
+    await a.evaluate(()=>attack());await a.waitForTimeout(350);
+    const after=await a.evaluate(()=>snap());
+    check(after.hits===before.hits&&after.score===before.score&&after.markers===before.markers&&(await b.evaluate(()=>remoteShots))===seen,'jetpack wall blocks both head bonus and old body fallback (#978)');
+    await a.evaluate(()=>wall(false));
    }
    if(weapon==='wand') {
     let last=await hit('head to low life','head',true);

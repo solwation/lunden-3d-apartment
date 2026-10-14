@@ -5917,3 +5917,17 @@ CLI 1 is preserved, then corrected to a genuine body-first input. Runtime commit
 `a15cd7cd-2cd3-400a-ac85-ad0ea799ab64`) and actual Pages deployment
 38539777623. Source/producer hashes, raw exits and the inspected native HUD image are
 retained under `/tmp/lunden-priority-894/`; no live shot, World or phone test is claimed.
+
+
+## Jetpack body obstacles (#978)
+
+`tools/jetobstacletest.cjs game worker output` drives actual `Combat.update()` flame
+attacks through two native Ghosts/PlayerRoom WebSocket clients. It checks the original
+horizontal-wall bug, a thin obstacle just before body contact, diagonal side walls,
+a corner, open passage, ordinary head/body damage, old side-volume reach, transparent
+and moving exclusions, out-of-volume misses, natural cooldown, lethal reset and
+receipt replay. The existing `straightheadtest.cjs` now expects a wall to block both
+head and body damage; `--jet-wall-baseline` remains a separate archived-Combat bug
+reproduction. Native meshes/DOM do not imply World, GPU, physical-phone or FPS proof.
+The Worker has no world map: this fixes client flame contact selection, preserving
+its authoritative existing rate/range/damage/recovery decisions.
