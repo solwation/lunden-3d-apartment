@@ -667,3 +667,5 @@ resume before the queued resize-rAF synchronizes760×340/570×255 and projection
 before the actual tiny-scene draw. Original loss/restore logging and guarded
 phone reload remain unchanged. This is a reversible reduction of unnecessary
 covered-buffer resizing, not a demonstrated iPhone GPU-crash fix. #669 stays open.
+
+Warm custom intersections (#949): private combat proxies require the original captured Three Mesh `_computeIntersections` method as well as existing raycast/getVertexPosition eligibility. A custom method uses the original mesh fallback, including after cache preparation or path snapshot creation; removing it permits acceleration again. Shared geometry does not transfer one mesh's eligibility to another. This fixes native0/cache256 false hits without changing geometry, metadata or the cold query policy. Native CPU regression uses explicitly synthetic256-triangle geometry, not the unavailable Surface component or a World benchmark.

@@ -1,4 +1,5 @@
 [
+  {"id": 769, "date": "2026-10-14", "text": "Skott följer föremålens egna träffregler även när hinderkontrollen är uppvärmd.", "group": "nerf-improvements"},
   {"id": 768, "date": "2026-10-14", "text": "Huvudträffar fungerar efter en liten vridning vid hälsning även med hårknut.", "group": "head-hits"},
   {"id": 767, "date": "2026-10-14", "text": "Fler träffar på näsans sidor räknas när spelaren står still.", "group": "head-hits"},
   {"id": 766, "date": "2026-10-14", "text": "Vissa högra huvudträffar fungerar efter en liten vridning vid hälsning.", "group": "head-hits"},

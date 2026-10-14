@@ -6,6 +6,8 @@ import { coldNativeView, coldNativeUnchanged, coldNativeChunks } from './combatc
 // Private bounds never change geometry.boundingBox (curtains and DetailCuller share authored boxes).
 const C = COMBAT.collision;
 const cache = new WeakMap(), jobs = [];
+// Private proxy meshes may only replace the original native intersection method.
+const nativeIntersections = THREE.Mesh.prototype._computeIntersections;
 const nativeMeshes = new Set([THREE.Mesh.prototype.raycast, THREE.InstancedMesh.prototype.raycast, THREE.SkinnedMesh.prototype.raycast]);
 const nativeNonMeshes = new Set([THREE.Object3D.prototype.raycast, THREE.Sprite.prototype.raycast, THREE.Line.prototype.raycast, THREE.Points.prototype.raycast]);
 const metrics = { pending: 0, ready: 0, accountedBytes: 0, bitBytes: 0, clusterBytes: 0, spatialBytes: 0, spatialEntries: 0, spatialReady: 0, buildCpuMs: 0, maxChunkMs: 0, prunedQueries: 0, fallbackQueries: 0, pathInstances: 0, pathSelectedInstances: 0, asyncSlices: 0, maxAsyncSliceMs: 0 };
@@ -24,7 +26,7 @@ function same(entry, geometry) {
     i === s[5] && i?.array === s[6] && i?.version === s[7] && i?.count === s[8];
 }
 function safe(mesh) {
-  return mesh.raycast === THREE.Mesh.prototype.raycast && mesh.getVertexPosition === THREE.Mesh.prototype.getVertexPosition && !mesh.isInstancedMesh && !mesh.isSkinnedMesh &&
+  return mesh._computeIntersections === nativeIntersections && mesh.raycast === THREE.Mesh.prototype.raycast && mesh.getVertexPosition === THREE.Mesh.prototype.getVertexPosition && !mesh.isInstancedMesh && !mesh.isSkinnedMesh &&
     !mesh.morphTargetInfluences?.length && !mesh.geometry?.morphAttributes.position?.length;
 }
 // Detail already computes missing native bounds. Reuse that exact pass only for a queued, unstarted spatial job.
