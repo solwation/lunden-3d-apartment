@@ -1278,3 +1278,40 @@ run38544206428/job115786108544 (correct source deployment, reported success).
 All51 frozen executable/producer files matched the publication; the ordinary main
 basket injection was inspected separately, not executed as a full World test.
 Raw provenance, exits and native images are retained in `/tmp/lunden-priority-980/`.
+
+
+## Representative one-hand grip audit (#912)
+
+`tools/onehandgriptest.cjs GAME OUT` runs the actual Hand with five production
+representatives: Cup with its explicit handle grip, FishPack/FishFinger with its
+existing0.62 pinch, the first wine bottle with Bottle's generic fallback, the
+source-bound BESTÅ wine-glass geometry with Glass's fallback, and CoffeeJar's actual
+Scoop handle. It checks rest, drink/bite/pour/fill, and moved/turned camera states.
+Glass geometry/material are extracted verbatim from the existing BESTÅ builder;
+fixture supports/counters/freezer collaborators are minimal, not the apartment.
+
+All15 native states preserve the whole item world matrix, parent, contents and
+action state through Hand.update, with the modeled hand-contact point following
+the existing grip. Bottle and wine-glass model root scales are1 throughout; the
+suspected double-scale fallback problem is not established for these actual models.
+Their cached local grips remain stable through the tested poses. This does not
+certify arbitrary scaled models or every other holdable.
+
+The original runtime remains unchanged: the five representative grips show no
+confirmed small correction that warrants replacing an existing pose with a guess.
+The bottle's coarse enclosing hand overlaps its body/label in the images; this is
+not treated as proof of an incorrect coordinate basis or an exact surface-contact
+measurement. Cup handle, fish pinch and scoop handle remain recognizable during
+use; the glass follows its original close drinking pose. No anthropometric claim
+follows from the pictures or the modeled contact coordinates.
+
+Native audit passed36/36 / CLI0 with zero WebGL. `--render` requires the orchestrator's
+exclusive graphics grant: one640×400/FOV72/DPR1 component renderer, simple lighting,
+15 actual product/hand views, raw result/source and per-view JSON before PNG.
+The accepted original run passed50/50 / CLI0 in4.277s, no page errors, with all46
+frozen source/producer hashes unchanged. All15 images were inspected. The recorded
+owned Node/Chrome processes exited, and their exact temporary profile was absent
+after browser.close. Artifacts are retained under `/tmp/lunden-priority-912/` and
+the orchestrator run archive. This is component/native evidence, not World,
+physical-phone, saved-session reload or a general natural-grip guarantee. No gameplay
+or changelog change was needed for this audit.

@@ -290,3 +290,8 @@ Basketball PvP follows the real release and falling throw, including the existin
 ball radius and glass/solid/floor obstruction before the first contact (#980).
 The server confirms head2/body1; the original basket physics and scoring remain.
 See the [basketball launch contract and native checks](docs/development/interactions.md#basketball-pvp-launch-980).
+
+The representative one-hand grip audit (#912) retained the existing cup, fish-finger,
+wine-bottle/glass and coffee-scoop poses after native state checks and15 inspected
+component views. See the [audit scope and native/render driver](docs/development/interactions.md#representative-one-hand-grip-audit-912);
+it makes no general guarantee for every object or scaled fallback.
