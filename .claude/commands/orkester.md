@@ -201,10 +201,13 @@ Samordningen får aldrig vara skälet till att en agentplats står tom eller ett
   olika agenter eller i tur och ordning. Delarna ska var och en kunna landa, testas och ge något användbart på egen hand
   (vertikala skivor: data/modell → synligt i spelet → test/docs, inte "först all kod, sedan alla tester"). Föräldern
   stängs när den sista delen landar (`Fixes` på sista delen, `Refs` på de andra). Beskriv i issuen vad som ingår och inte.
-- **Bevaka långa körningar.** Ser du att en agent hållit på länge utan att något landat (inga nya commits på main eller
-  kommentar på issuen), fråga den (SendMessage) vad som är klart och be den pusha det som är grönt nu; dör en agent finns
-  arbetet kvar i dess worktree (`.claude/worktrees/agent-<id>`): återuppta den (SendMessage) eller starta en ny som utgår
-  från worktreens commits (`git log origin/main..HEAD`) i stället för att göra om det.
+- **Bevaka långa körningar och aktiv tidsövervakning (SLA/deadlines):**
+  - Dirigenten ska aktivt hålla koll på hur länge varje arbetsagent har kört sedan start eller senaste delcommit.
+  - Normal körtid för en issue eller delmängd bör ligga under **30–45 minuter**. Ingen agent ska arbeta tyst i 1,5–2 timmar utan att leverera synliga framsteg till `main`.
+  - Har en agent kört i **30 minuter** utan commit på `main` eller statuskommentar: dirigenten ska aktivt kontakta agenten (SendMessage), begära lägesrapport och instruera den att pusha den första gröna delmängden (`Refs #N`).
+  - Vid **45–60 minuter** utan push eller konkret framsteg: dirigenten undersöker aktivt agentens loggar och processer (t.ex. Playwright/headless Chrome CPU-hängningar eller oändliga slingor), ingriper, och bryter vid behov ut kvarvarande arbete till nya delissues.
+  - Dirigenten håller användaren och samordningstråden (#420) informerad om en agent passerar normal tidsram, så att statusen alltid är transparent.
+  - Dör en agent finns arbetet kvar i dess worktree (`.claude/worktrees/agent-<id>` eller `~/lunden-wt/<namn>`): återuppta den (SendMessage) eller starta en ny som utgår från worktreens commits (`git log origin/main..HEAD`) i stället för att göra om det.
 - Leverera små fungerande steg inom det högst prioriterade startbara ärendet, så att nytt syns ofta; välj inte
   mindre eller mer synliga issues framför högre prioritet eller äldre skapandetid.
 - Skriv varje agents prompt med: issuenumren och ordningen, vilka andra agenter som kör och vilka filer/områden de
