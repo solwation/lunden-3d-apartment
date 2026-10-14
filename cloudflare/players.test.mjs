@@ -591,7 +591,7 @@ test('lower-front jaw: actual room validates damage/legacy/forgery/replay/one le
   const shoot=async m=>{now+=1000;a.send(m);await settle(env);return a.got.filter(x=>x.t==='hit').at(-1);};
   let hit=await shoot({...shot,damage:999,head:true,model:'invented'});assert.equal(hit.l,8);assert.equal(hit.head,true);assert.equal(hit.award.points,5);assert.equal(b.got.filter(x=>x.t==='hurt').at(-1).head,true);
   hit=await shoot({...shot,hc:undefined,head:true});assert.equal(hit.l,7);assert.equal(hit.head,undefined,'old contact-less client body path retained');
-  hit=await shoot({...shot,hc:[2,...point],damage:999});assert.equal(hit.l,6);assert.equal(hit.head,undefined,'unknown contact version does not widen jaw');
+  hit=await shoot({...shot,hc:[9,...point],damage:999});assert.equal(hit.l,6);assert.equal(hit.head,undefined,'unknown contact version does not widen jaw');
   const count=a.got.filter(x=>x.t==='hit').length;a.send(shot);await settle(env);assert.equal(a.got.filter(x=>x.t==='hit').length,count,'same-slot replay has no damage or award');
   for(let i=0;i<5;i++)hit=await shoot({...shot,hc:undefined});assert.equal(hit.l,1);
   hit=await shoot(shot);assert.equal(hit.l,-1);assert.equal(hit.dead,true);assert.match(hit.kill,/^[0-9a-f-]{36}$/);assert.equal(b.got.filter(x=>x.t==='hurt'&&x.dead).length,1);assert.equal(a.states().filter(x=>x.i===id).at(-1).l,10,'actual published reset follows the single lethal receipt');
@@ -683,7 +683,7 @@ test('extra frontal nose cell: authoritative damage, legacy fallback, one fatal 
   let hit=await shoot(shot);assert.equal(hit.head,true);assert.equal(hit.l,8);assert.equal(hit.award.points,5);assert.equal(hit.dead,false);
   assert.equal(b.got.filter(m=>m.t==='hurt').at(-1).l,8);
   hit=await shoot({...shot,hc:undefined,head:true,damage:999});assert.equal(hit.head,undefined);assert.equal(hit.l,7,'contact-less old client still takes body damage only');
-  hit=await shoot({...shot,hc:[2,...hc.slice(1)]});assert.equal(hit.head,undefined);assert.equal(hit.l,6,'unknown version stays body-only');
+  hit=await shoot({...shot,hc:[9,...hc.slice(1)]});assert.equal(hit.head,undefined);assert.equal(hit.l,6,'unknown version stays body-only');
   b.send({p:[0,0,0],r:0,h:'rifle',c:true});await settle(env);hit=await shoot(shot);assert.equal(hit.head,undefined);assert.equal(hit.l,5);
   b.send({p:[0,0,0],r:0,h:'rifle'});await settle(env);now+=1000;
   env.PLAYERS.hibernate('world');
@@ -824,7 +824,7 @@ test('lower central nose band: authoritative damage, legacy fallback, one fatal 
   let hit=await shoot(shot);assert.equal(hit.head,true);assert.equal(hit.l,8);assert.equal(hit.award.points,5);assert.equal(hit.dead,false);
   assert.equal(b.got.filter(m=>m.t==='hurt').at(-1).l,8);
   hit=await shoot({...shot,hc:undefined,head:true,damage:999});assert.equal(hit.head,undefined);assert.equal(hit.l,7,'contact-less old client still takes body damage only');
-  hit=await shoot({...shot,hc:[2,...hc.slice(1)]});assert.equal(hit.head,undefined);assert.equal(hit.l,6,'unknown version stays body-only');
+  hit=await shoot({...shot,hc:[9,...hc.slice(1)]});assert.equal(hit.head,undefined);assert.equal(hit.l,6,'unknown version stays body-only');
   b.send({p:[0,0,0],r:0,h:'rifle',c:true});await settle(env);hit=await shoot(shot);assert.equal(hit.head,undefined);assert.equal(hit.l,5);
   b.send({p:[0,0,0],r:0,h:'rifle'});await settle(env);now+=1000;
   env.PLAYERS.hibernate('world');

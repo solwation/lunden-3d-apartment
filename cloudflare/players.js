@@ -1,5 +1,5 @@
 import { fallDamage } from '../src/falldamage.js';
-import { TOYS, SCORE, pvpHitPoints, PVP_RIFLE_HEAD as RH, rifleHeadContact } from '../src/config.js';
+import { TOYS, SCORE, pvpHitPoints, PVP_RIFLE_HEAD as RH, rifleHeadContact, PVP_HEAD_BOXES as HB, rifleBoxHeadContact } from '../src/config.js';
 
 // Other players as ghosts (#666): one Durable Object room for everybody (`idFromName('world')`), WebSockets with the
 // Hibernation API. A client sends its position / heading at most 5 times a second and only when it changed (a heartbeat
@@ -139,7 +139,7 @@ export function cleanShot(text) {
   if (!Array.isArray(m.o) || m.o.length !== 3 || !m.o.every((v) => fin(v, 5000)) || !Array.isArray(m.d) || m.d.length !== 3 || !m.d.every((v) => fin(v, 1.01))) return null;
   const len = Math.hypot(...m.d);
   if (len < 0.9 || len > 1.1 || (m.s !== undefined && !(fin(m.s, 60) && m.s >= 0))) return null;
-  return { t: 'a', w: m.w, o: m.o.map(r2), d: m.d.map((v) => Math.round(v * 1000) / 1000), ...(m.s ? { s: r2(m.s) } : {}), ...(m.to ? { to: m.to } : {}), ...(Array.isArray(m.hc) && m.hc.length === 4 && m.hc[0] === RH.version && m.hc.slice(1).every(v => fin(v, RH.maxCoordinate)) ? { hc: [m.hc[0], ...m.hc.slice(1).map(v => Math.round(v * 1000) / 1000)] } : {}) };
+  return { t: 'a', w: m.w, o: m.o.map(r2), d: m.d.map((v) => Math.round(v * 1000) / 1000), ...(m.s ? { s: r2(m.s) } : {}), ...(m.to ? { to: m.to } : {}), ...(Array.isArray(m.hc) && m.hc.length === 4 && (m.hc[0] === RH.version || m.hc[0] === HB.version) && m.hc.slice(1).every(v => fin(v, RH.maxCoordinate)) ? { hc: [m.hc[0], ...m.hc.slice(1).map(v => Math.round(v * 1000) / 1000)] } : {}) };
 }
 
 /** A WebSocket that is accepted and at once closed with `code`: how a refusal reaches the browser with its reason. */
@@ -433,7 +433,12 @@ export class PlayerRoom {
     // #938 reopens only a narrow left temple when first-standing p/r/c never changed; no wave-end inference.
     // Right/changed/legacy lateral contacts retain the permanent gt fallback; #931 front/#936 rear gates stay independent.
     // #951: only the existing immutable first-standing history also reopens the bounded Rear leaf after greeting.
-    const head = now - (b.movedAt ?? now) >= RH.stationaryMs && rifleHeadContact(b.i, b.s, shot, a.s.p, W.range, COMBAT.from, b.gt === undefined, { allowGreetingRightFirstTurn: b.gt !== undefined && rightFirstTurnFits(b.rightFirstTurn, b.s), allowGreetingFirstTurnRear: b.gt !== undefined && rearFirstTurnFits(b.rearFirstTurn, b.s), allowImmutableNoseDepth: b.headPoseFixed === true, allowImmutableNoseSide: b.headPoseFixed === true, allowJawFrontSide: b.headPoseFixed === true, allowGreetingLeftTurn: b.gt !== undefined && leftStandingTurnFits(b.leftStandingTurn, b.s), allowGreetingLeftTinyTurn: b.gt !== undefined && leftTinyPoseFits(b.leftTinyTurn, b.s), allowGreetingLeft: b.gt !== undefined && b.headPoseFixed === true, allowGreetingFront: b.gt !== undefined && b.headPoseFixed === true && b.turned === false, allowGreetingRight: b.gt !== undefined && b.headPoseFixed === true && b.turned === false, allowFront: b.gt === undefined && b.turned === false, allowRear: b.gt === undefined || b.headPoseFixed === true, allowGreetingAfterTurnRear: b.gt !== undefined && b.turned === true && knownFrontTurn(b.frontTurn), allowAfterTurnFront: b.gt === undefined && b.turned === true && knownFrontTurn(b.frontTurn), allowGreetingAfterTurnFront: b.gt !== undefined && b.turned === true && knownFrontTurn(b.frontTurn) });
+    // Version 2 classifies the same rounded ray against three logical head boxes.
+    // V1 remains compatible for cached clients; its historical pose permissions stay private.
+    const boxHead = w === 'rifle' && shot.t === 'a' && shot.hc?.[0] === HB.version
+      && Math.hypot(...shot.o.map((v, i) => v - a.s.p[i])) <= COMBAT.from
+      && !!rifleBoxHeadContact(b.i, b.s, shot.o, shot.d, W.range);
+    const head = boxHead || (now - (b.movedAt ?? now) >= RH.stationaryMs && rifleHeadContact(b.i, b.s, shot, a.s.p, W.range, COMBAT.from, b.gt === undefined, { allowGreetingRightFirstTurn: b.gt !== undefined && rightFirstTurnFits(b.rightFirstTurn, b.s), allowGreetingFirstTurnRear: b.gt !== undefined && rearFirstTurnFits(b.rearFirstTurn, b.s), allowImmutableNoseDepth: b.headPoseFixed === true, allowImmutableNoseSide: b.headPoseFixed === true, allowJawFrontSide: b.headPoseFixed === true, allowGreetingLeftTurn: b.gt !== undefined && leftStandingTurnFits(b.leftStandingTurn, b.s), allowGreetingLeftTinyTurn: b.gt !== undefined && leftTinyPoseFits(b.leftTinyTurn, b.s), allowGreetingLeft: b.gt !== undefined && b.headPoseFixed === true, allowGreetingFront: b.gt !== undefined && b.headPoseFixed === true && b.turned === false, allowGreetingRight: b.gt !== undefined && b.headPoseFixed === true && b.turned === false, allowFront: b.gt === undefined && b.turned === false, allowRear: b.gt === undefined || b.headPoseFixed === true, allowGreetingAfterTurnRear: b.gt !== undefined && b.turned === true && knownFrontTurn(b.frontTurn), allowAfterTurnFront: b.gt === undefined && b.turned === true && knownFrontTurn(b.frontTurn), allowGreetingAfterTurnFront: b.gt !== undefined && b.turned === true && knownFrontTurn(b.frontTurn) }));
     const left = (b.l ?? COMBAT.lives) - (head ? RH.headDamage : RH.bodyDamage), dead = left <= 0;
     b.l = dead ? COMBAT.lives : left;
     this.recoveryClock(b, now);
