@@ -38,7 +38,7 @@ body.hud-no-blur .hud-button, body.hud-no-blur #choices button { backdrop-filter
 .compass-letter { position: absolute; left: 50%; top: 50%; font: 600 10px/1 system-ui,sans-serif; text-shadow: 0 1px 2px #000; transform: translate(-50%,-50%) rotate(calc(var(--compass-angle) + var(--cardinal))) translateY(calc(var(--compass-layout-size) * -.37)) rotate(calc(0deg - var(--compass-angle) - var(--cardinal))); }
 
 /* #707: shared badge shell and half-cell width module. Weather + temperature form an undivided pair;
-   clock and visitors use one cell, points two, and every shortcut one. No DOM replacement/listener changes. */
+   the clock spans that pair above it (#970). Visitors use one full-height cell, points two, and every shortcut one. */
 :root {
   --badge-bg: rgba(20,35,45,.55); --badge-radius: 8px; --badge-edge: 1px solid rgba(255,255,255,.18);
   --badge-shadow: 0 2px 6px rgba(0,0,0,.18); --badge-divider: 1px solid rgba(255,255,255,.22);
@@ -53,24 +53,26 @@ body.hud-no-blur .hud-button, body.hud-no-blur #choices button { backdrop-filter
 }
 #hud #score {
   left: calc(var(--badge-inset) + var(--sl)); display: grid;
-  grid-template-columns: var(--badge-unit) var(--badge-cell) var(--badge-cell) calc(var(--badge-cell) * 2) var(--badge-cell);
-  grid-template-rows: var(--badge-cell); gap: 0; pointer-events: none; font: 13px/1.1 system-ui,sans-serif;
+  grid-template-columns: var(--badge-unit) calc(var(--badge-cell) + 8px) calc(var(--badge-cell) * 2) var(--badge-cell);
+  grid-template-rows: repeat(2, var(--badge-unit)); gap: 0; pointer-events: none; font: 13px/1.1 system-ui,sans-serif;
 }
-body.touch #hud #score { grid-template-columns: var(--badge-unit) var(--badge-cell) var(--badge-cell) calc(var(--badge-cell) * 2) var(--badge-cell) var(--badge-cell); }
+body.touch #hud #score { grid-template-columns: var(--badge-unit) calc(var(--badge-cell) + 8px) calc(var(--badge-cell) * 2) var(--badge-cell) var(--badge-cell); }
 #hud #score > :is(#weather,#temp,#level,.score-main,#presence) {
   height: var(--badge-cell); min-width: 0; margin: 0; padding: 0; box-sizing: border-box;
   display: flex; align-items: center; justify-content: center; white-space: nowrap; font-variant-numeric: tabular-nums;
 }
-#hud #score #weather { grid-column: 1; grid-row: 1; }
-#hud #score #temp { grid-column: 2; grid-row: 1; font-size: 16px; font-weight: 600; }
-#hud #score #level { grid-column: 3; grid-row: 1; font-size: 13px; font-weight: 600; border-left: var(--badge-divider); }
-#hud #score .score-main { grid-column: 4; grid-row: 1; position: relative; flex-direction: column; gap: 2px; border-left: var(--badge-divider); }
+#hud #score > :is(#weather,#temp,#level) { height: var(--badge-unit); }
+#hud #score > :is(#weather,#temp) { border-top: var(--badge-divider); }
+#hud #score #weather { grid-column: 1; grid-row: 2; }
+#hud #score #temp { grid-column: 2; grid-row: 2; font-size: 16px; font-weight: 600; }
+#hud #score #level { grid-column: 1 / 3; grid-row: 1; font-size: 13px; font-weight: 600; }
+#hud #score .score-main { grid-column: 3; grid-row: 1 / 3; position: relative; flex-direction: column; gap: 2px; border-left: var(--badge-divider); }
 #hud #score .label { font-size: 10px; font-weight: 500; opacity: .75; }
 #hud #score .score-val { font-size: calc(var(--badge-cell) * .38); font-weight: 750; }
 #hud #score .plus { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 4px; box-sizing: border-box; white-space: normal; text-align: center; font-size: calc(var(--badge-cell) * .38); font-weight: 700; color: #ffd76a; }
 #hud #score .plus.minus { font-size: 10px; line-height: 1.15; color: #ff6b5e; }
 #hud #score .score-main:has(.plus:not(:empty)) > :is(.label,.score-val) { visibility: hidden; }
-#hud #score #presence { grid-column: 5; grid-row: 1; gap: 4px; border-left: var(--badge-divider); font-size: 11px; opacity: .85; }
+#hud #score #presence { grid-column: 4; grid-row: 1 / 3; gap: 4px; border-left: var(--badge-divider); font-size: 11px; opacity: .85; }
 #hud #presence .presence-count { font-size: 12px; font-weight: 600; }
 #hud #score #terminal-btn { display: none; }
 #hud-right { position: fixed; top: var(--badge-top); right: calc(var(--badge-inset) + var(--sr)); display: grid; grid-template-columns: var(--badge-height) max-content; gap: var(--badge-inset); align-items: start; }
@@ -81,7 +83,7 @@ body #hud #hud-top > .hud-button, body.touch #hud #score #terminal-btn {
   padding: 0; margin: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; opacity: 1;
   backdrop-filter: none; -webkit-backdrop-filter: none; touch-action: manipulation;
 }
-body.touch #hud #score #terminal-btn { grid-column: 6; grid-row: 1; border-left: var(--badge-divider); pointer-events: auto; }
+body.touch #hud #score #terminal-btn { grid-column: 5; grid-row: 1 / 3; border-left: var(--badge-divider); pointer-events: auto; }
 body #hud #hud-top > .hud-button + .hud-button { border-left: var(--badge-divider); }
 #hud :is(#score,#hud-top) .hud-icon { width: 22px; height: 22px; }
 body #hud #hud-top > .hud-button:is(.on,[aria-pressed=true]) { background: rgba(255,255,255,.26); box-shadow: inset 0 0 0 1px rgba(255,255,255,.35); }
@@ -103,7 +105,7 @@ body.hud-no-blur #hud #hud-top > .hud-button:active { background: rgba(255,255,2
      remains visible, while interactive cells keep their full 44px target. */
   /* #902: leave room for the rendered temperature/clock/score plus their dividers;
      redistribute only noninteractive columns, preserving 44px shortcuts and safe-area edges. */
-  body.touch #hud #score { grid-template-columns: 18px 39px 40px 72px 26px var(--badge-cell); }
+  body.touch #hud #score { grid-template-columns: 18px 48px 72px 26px var(--badge-cell); }
   #hud #score #temp { font-size: 14px; }
   #hud #score #weather .hud-icon { width: 18px; height: 18px; }
   #hud #score #level { font-size: 12px; }

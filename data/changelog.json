@@ -1,4 +1,5 @@
 [
+  {"id": 770, "date": "2026-10-14", "text": "Tid och väder delar nu en smalare ruta i statusraden."},
   {"id": 769, "date": "2026-10-14", "text": "Skott följer föremålens egna träffregler även när hinderkontrollen är uppvärmd.", "group": "nerf-improvements"},
   {"id": 768, "date": "2026-10-14", "text": "Huvudträffar fungerar efter en liten vridning vid hälsning även med hårknut.", "group": "head-hits"},
   {"id": 767, "date": "2026-10-14", "text": "Fler träffar på näsans sidor räknas när spelaren står still.", "group": "head-hits"},

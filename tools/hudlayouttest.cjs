@@ -26,7 +26,7 @@ const sizes = [[844,390],[667,375],[932,430],[568,320],[1280,720]];
           if (/webgl/i.test(kind)) { window.testWebglCalls++; throw new Error('No WebGL permitted in HUD layout fixture'); }
           return originalContext.call(this, kind, ...args);
         };
-        const {initHudIcons,setWeatherIcon} = await import('/src/hudicons.js');
+        const {initHudIcons,setWeatherIcon,formatTemp} = await import('/src/hudicons.js');
         const {setScoreElement} = await import('/src/stats.js');
         const THREE = await import('three');
         const {Compass} = await import('/src/compass.js');
@@ -40,10 +40,21 @@ const sizes = [[844,390],[667,375],[932,430],[568,320],[1280,720]];
         const score=document.getElementById('score'); setScoreElement(score);
         const weather=document.createElement('span'); weather.id='weather'; setWeatherIcon(weather,'cloud','Molnigt');
         const temp=document.createElement('span'); temp.id='temp'; temp.textContent='−23°';
-        const clock=document.createElement('div'); clock.id='level'; clock.innerHTML='<span class="clock">23:59</span>';
+        const clock=document.createElement('div'); clock.id='level'; clock.textContent='23:59';
         score.prepend(weather,temp,clock); score.append(document.getElementById('terminal-btn'));
         score.querySelector('.score-val').textContent='123 456';
-        document.getElementById('presence').innerHTML='<span class="presence-icon"><svg viewBox="0 0 24 24"><circle cx="8" cy="7" r="4"/><path d="M0 21v-3c0-8 16-8 16 0v3Z"/></svg></span><span class="presence-count">99</span>';
+        const {Presence}=await import('/src/presence.js');
+        new Presence('',document.getElementById('presence'));
+        document.querySelector('.presence-count').textContent='99';
+        document.querySelector('.fps-value').textContent='60';
+        // Run the unchanged actual main.js updater, without bootstrapping World.
+        const main=await (await fetch('/src/main.js')).text();
+        const updateSource=main.slice(main.indexOf('if (day.clock !== levelEl.textContent)'),main.indexOf('const held = heldItem()',main.indexOf('if (day.clock !== levelEl.textContent)')));
+        if(!updateSource.includes('formatTemp(weather.temp)'))throw new Error('main HUD updater boundary changed');
+        const update=new Function('day','levelEl','nests','weatherEl','weather','tempEl','setWeatherIcon','formatTemp',updateSource);
+        window.testTimeWeather=(time,kind,temperature)=>update({clock:time},clock,{weatherNow:()=>[kind,kind]},weather,{temp:temperature},temp,setWeatherIcon,formatTemp);
+        window.testTimeWeather('23:59','cloud',-23);
+
         const compass=document.getElementById('compass');
         const camera=new THREE.PerspectiveCamera();
         window.testCompass=new Compass(camera,compass);
@@ -77,8 +88,23 @@ const sizes = [[844,390],[667,375],[932,430],[568,320],[1280,720]];
         check(!overlaps(left,right),'badges overlap');check(!overlaps(compass,left)&&!overlaps(compass,right),'compass overlaps badge');
         const cell=parseFloat(css('#furniture-btn').width),unit=cell/2;
         const cells=['#weather','#temp','#level','.score-main','#presence',...(width<1000?['#terminal-btn']:[])];
-        for(const selector of cells){const box=bounds(selector);check(near(box.height,cell),'cell height '+selector);if(width>600)check(near(box.width/unit,Math.round(box.width/unit)),'nonmodular width '+selector);check(document.querySelector(selector).scrollWidth<=document.querySelector(selector).clientWidth,'cell text clipped '+selector);check(box.left>=left.left&&box.right<=left.right+.1,'cell outside shell '+selector);}
+        for(const selector of cells){const box=bounds(selector);check(near(box.height,['#weather','#temp','#level'].includes(selector)?unit:cell),'cell height '+selector);if(width>600&&!['#temp','#level'].includes(selector))check(near(box.width/unit,Math.round(box.width/unit)),'nonmodular width '+selector);check(document.querySelector(selector).scrollWidth<=document.querySelector(selector).clientWidth,'cell text clipped '+selector);check(box.left>=left.left&&box.right<=left.right+.1,'cell outside shell '+selector);}
         check(near(bounds('#weather').right,bounds('#temp').left)&&css('#temp').borderLeftWidth==='0px','weather/temperature pair divided');
+        const clockBox=bounds('#level'),weatherBox=bounds('#weather'),tempBox=bounds('#temp');
+        check(near(clockBox.left,weatherBox.left)&&near(clockBox.right,tempBox.right)&&near(clockBox.bottom,weatherBox.top)&&near(weatherBox.top,tempBox.top),'time/weather are not one stacked column');
+        check(css('#weather').borderTopWidth==='1px'&&css('#temp').borderTopWidth==='1px','weather row lacks continuous divider');
+        const updates=[];
+        for(const kind of ['sun','moon','cloud','rain','snow','hail','storm']){
+          window.testTimeWeather('00:01',kind,-123.4);
+          const svg=document.querySelector('#weather').innerHTML;
+          window.testTimeWeather('12:34',kind,-123.4);
+          check(document.querySelector('#weather').innerHTML===svg&&document.querySelector('#temp').textContent==='−123°','clock update changed weather');
+          window.testTimeWeather('12:34',kind,100);
+          check(document.querySelector('#level').textContent==='12:34'&&document.querySelector('#temp').textContent==='100°'&&document.querySelector('#weather').dataset.kind===kind,'weather update changed clock or missed state');
+          window.testTimeWeather('12:34',kind,-123.4);
+          for(const selector of ['#weather','#temp','#level']){const el=document.querySelector(selector);check(el.scrollWidth<=el.clientWidth&&el.scrollHeight<=el.clientHeight,'updated cell clipped '+kind+' '+selector);}
+          updates.push({kind,time:document.querySelector('#level').textContent,temperature:document.querySelector('#temp').textContent});
+        }
         for(const selector of ['#temp','#level','#presence'])check(parseFloat(css('.score-val').fontSize)>parseFloat(css(selector).fontSize),'score not prominent '+selector);
         for(const selector of ['#furniture-btn','#stats-btn','#mute','#pause',...(width<1000?['#terminal-btn']:[])]){
           const b=bounds(selector);check(near(b.width,cell)&&near(b.height,cell)&&cell>=44,'button cell '+selector);
@@ -130,7 +156,7 @@ const sizes = [[844,390],[667,375],[932,430],[568,320],[1280,720]];
         window.testWeapon='';window.testCombat.life(7);window.testCombat.update(0);
         check(window.testWebglCalls===0,'HUD fixture attempted WebGL');
         const fontMetrics=Object.fromEntries(['#temp','#level','.score-main'].map(selector=>{const el=document.querySelector(selector),style=getComputedStyle(el);return[selector,{clientWidth:el.clientWidth,scrollWidth:el.scrollWidth,bounds:bounds(selector),fontFamily:style.fontFamily,fontSize:style.fontSize,fontWeight:style.fontWeight}];}));
-        return {width,height,safe,cell,left,right,compass,lives,lifeStates,fontMetrics,errors};
+        return {width,height,safe,cell,left,right,compass,lives,lifeStates,fontMetrics,updates,errors};
       },{width,height,safe});
       results.push(result);
       if(out){fs.mkdirSync(out,{recursive:true});await page.screenshot({path:path.join(out,`hud-only-after-${width}-safe-${safe.join('-')}.png`)});}
