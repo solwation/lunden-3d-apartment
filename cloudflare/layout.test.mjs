@@ -426,3 +426,21 @@ test('seven actual towel surfaces preserve independent choices, Original and leg
  state=await get();assert.equal(state.materials[id][surfaces[0]].choice,'original');assert.equal(state.materials[id][surfaces[1]].choice,'upholstery-olive');assert.equal(state.pieces[id].pos[0],3);
  assert.deepEqual(await(await new DrawingRoom(ctx,{}).fetch(new Request('https://test/furniture'))).json(),state);
 });
+
+
+test('actual KLK and SMASTAD accept only twelve semantic cloth groups with independent poses and revisions', async () => {
+ const M=await import('../src/materialcatalog.js'),{instance:r,ctx}=room();let serial=0;
+ const put=b=>r.fetch(new Request('https://test/furniture',{method:'PUT',headers:{'CF-Connecting-IP':`1030-${++serial}`},body:JSON.stringify({credential:privateCodeCredential(codes[0]),...b})}));
+ const get=async()=>await(await r.fetch(new Request('https://test/furniture'))).json();
+ const entries=Object.entries(M.CLOSET_TEXTILE_SURFACES);assert.deepEqual(entries.map(x=>x[0]),['f-klk-1-4.725-4.88-0-0','f-smastad-1-0.6060000000000001-8.093-0-0']);assert.deepEqual(entries.map(x=>x[1].length),[4,8]);
+ for(const[id,surfaces]of entries)for(const surface of surfaces)assert.equal((await put({materials:[{id,surface,choice:'upholstery-check',base:0}]})).status,200);
+ const before=await get(),[id,surfaces]=entries[1];assert.equal(before.materialVersion,1);assert.deepEqual(before.pieces,{});
+ for(const[badId,surface,choice]of[[id,'textile','upholstery-sand'],[id,'hanging','upholstery-sand'],[entries[0][0],'cap','upholstery-sand'],[id,'cap','rug-check'],[id,'cap','curtain-sand'],['f-smastad-guessed','cap','upholstery-sand']])assert.equal((await put({materials:[{id:badId,surface,choice,base:0}]})).status,400);
+ assert.deepEqual(await get(),before);
+ const base=before.materials[id][surfaces[0]].revision;
+ const results=await Promise.all([put({materials:[{id,surface:surfaces[0],choice:'upholstery-sand',base}]}),put({materials:[{id,surface:surfaces[1],choice:'upholstery-olive',base:before.materials[id][surfaces[1]].revision}]}),put({moves:[{...move(id),unknownLegacyField:true}]})]);assert.deepEqual(results.map(x=>x.status),[200,200,200]);
+ assert.equal((await put({materials:[{id,surface:surfaces[0],choice:'original',base}]})).status,409);
+ let state=await get();assert.equal(state.materials[id][surfaces[0]].choice,'upholstery-sand');assert.equal(state.materials[id][surfaces[1]].choice,'upholstery-olive');assert.equal(state.pieces[id].pos[0],3);for(const surface of entries[0][1])assert.equal(state.materials[entries[0][0]][surface].choice,'upholstery-check');
+ assert.equal((await put({materials:[{id,surface:surfaces[0],choice:'original',base:state.materials[id][surfaces[0]].revision}]})).status,200);state=await get();assert.equal(state.materials[id][surfaces[1]].choice,'upholstery-olive');assert.equal(state.pieces[id].pos[0],3);
+ assert.deepEqual(await(await new DrawingRoom(ctx,{}).fetch(new Request('https://test/furniture'))).json(),state);
+});
