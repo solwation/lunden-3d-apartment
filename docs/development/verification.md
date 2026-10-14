@@ -5520,3 +5520,14 @@ All original failures, exits, source/provenance manifests, scripts and PNGs are
 in `/tmp/lunden-priority-962` and the orchestrator's durable worker artifacts.
 No other history, anatomy, animation, timer, tolerance or permission changes.
 #941/#936 remain open for larger/repeated turns and stationary return lifecycles.
+
+#962 runtime published as `2a0d12ea391a2197eafa9d3e977a3d288500c691` with grouped
+changelog765. All eight measured tracked sources match the published commit;
+all763 older changelog rows retain exact bytes and actual publication timestamps.
+After the final Jaw/chat rebase, ordinary26/wrap9/valid-history-arm10 and
+PlayerRoom/recovery48 checks passed actualCLI0; geometry/animation parity is
+recorded separately from the incoming independent Jaw classifier. Genuine Worker
+[run38528779053](https://github.com/solwation/lunden-3d-apartment/actions/runs/38528779053),
+job115735348375, executed `npx wrangler deploy`, Uploaded07:31:17.414Z and
+Deployed07:31:18.033Z on2026-10-14; version184ca716-6fb0-4553-a9a6-c4248769e310.
+This establishes publication, not an additional live-device gameplay test.
