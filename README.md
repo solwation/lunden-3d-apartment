@@ -284,3 +284,5 @@ walls, range, shot timing and kill receipts keep their existing rules. See the
 
 Jetpack flames now stop at solid walls and corners before damaging another player,
 while open passages and side contacts within the flame volume remain valid (#978).
+
+The actual entrance/lobby shells in Houses A, B and C remain visible beyond the lift/stair detail distance, using each house’s existing dimensions. House L’s open portik remains a through-passage (#976).

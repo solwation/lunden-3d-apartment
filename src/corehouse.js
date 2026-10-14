@@ -10,7 +10,7 @@ import { architectureEdges } from './architectureedges.js';
 // `covers` (plan), `contains` (plan + height: then walls collide), `heights` (every floor / flight /
 // the car at a point), `segments` (the walls in the way), `dynamic` (the door leaf, the lift's doors), `snap` (riding), `roomAt`,
 // `update`. The walls are DATA (#652: Hus A's too, CORE_A; the former corea.js is gone): wall runs with openings (config `walls`), drawn as boxes (or, `thin`, planes) with the lights baked
-// into vertex colours (MeshBasic, like core.js); full detail is drawn only near the camera (#887 keeps Hus A's entrance/lobby outside that gate). The stair is the same everywhere: two flights side by
+// into vertex colours (MeshBasic, like core.js); full detail is drawn only near the camera (#887/#976 keep each entrance/lobby outside that gate). The stair is the same everywhere: two flights side by
 // side along z from the hall's south end, the winders round the stringer's end (#644), the stringer between the flights.
 // The lift is north of the hall with its door south (`lift.side` 's', Hus A and Hus B) or west of it with its door east ('e', Hus C: the
 // shaft is built in its own frame turned 90°, see Lift's `rot`).
@@ -25,10 +25,10 @@ export class CoreHouse {
   constructor(C) {
     this.C = C; this.house = C.house;
     const group = new THREE.Group(); this.object = group;
-    // #887: the courtyard skin has a real opening here. Keep Hus A's actual glazed
-    // port and single-storey lobby outside the lift/detail gate, without duplicating them.
-    this.exterior = C.house === 'Hus A' ? new THREE.Group() : null;
-    if (this.exterior) this.exterior.name = 'Hus A entrance and lobby';
+    // #887/#976: each courtyard skin has a permanent entrance opening. Keep the
+    // house's own glazed port and static wall shell outside the lift/detail gate.
+    this.exterior = new THREE.Group();
+    this.exterior.name = `${C.house} entrance and lobby`;
     const Y = this.Y = C.stops, LAB = C.labels, NS = Y.length, H = Y[1] - Y[0];
     const B = this.B = C.band, ST = this.ST = C.stair, SLAB = C.slab, CEILTOP = this.CEILTOP = Y[NS - 1] + C.ceilingTop;
     const [WL0, WL1] = ST.well, WM = (WL0 + WL1) / 2, XM = (B.x0 + B.x1) / 2;
@@ -111,9 +111,12 @@ export class CoreHouse {
     // (a floor's top is 6 mm over its level: on Hus C's våning 1, y 0, the courtyard's grass inside the footprint lies at the same height and fought with it)
     const UP = 0.006, slab = (x0, x1, z0, z1, y) => { if (z1 > z0 + 1e-3 && x1 > x0 + 1e-3) draw(x0, x1, y - SLAB, y + UP, z0, z1, STAIR); };
 
+    // The facade opening exposes more than the immediate lobby: e.g. C's door
+    // sees the hall and shaft wall through the corridor. Keep the original static
+    // wall shell at every distance; the lift, stairs and other details remain gated.
     // ---- the wall runs (config `walls`): continuous from the first stop's floor to the last stop's ceiling, with the openings cut
     for (const w of C.walls) {
-      outside = !!this.exterior && w.s[0] === 1 && w.s[1] === 1;
+      outside = true;
       const [s0, s1] = w.s, y0 = Y[s0], y1 = s1 >= NS - 1 ? CEILTOP : yTop(s1);
       const rect = (pa, pb) => (w.ax === 'x' ? [w.t[0], w.t[1], pa, pb] : [pa, pb, w.t[0], w.t[1]]);
       const hs = [];
@@ -164,13 +167,13 @@ export class CoreHouse {
       const y = Y[f.j];
       if (f.az) { // (the north end's door: the cell lies north of the wall's hall face)
         const za = f.sd > 0 ? f.x - FD.cell.depth : f.x, zb = f.sd > 0 ? f.x : f.x + FD.cell.depth, zf = f.sd > 0 ? za : zb, ch = FD.cell.height, e = 0.012;
-        geo.solid.push(bake(box(f.z0, f.z1, y - 0.05, y, za, zb), STAIR), bake(box(f.z0, f.z1, y + ch, y + ch + 0.02, za, zb), CELL));
-        geo.solid.push(bake(panelX(f.z0 + e, za, zb, y, y + ch), CELL), bake(panelX(f.z1 - e, za, zb, y, y + ch), CELL), bake(panelZ(zf, f.z0, f.z1, y, y + ch), CELL));
+        outsideSolid.push(bake(box(f.z0, f.z1, y - 0.05, y, za, zb), STAIR), bake(box(f.z0, f.z1, y + ch, y + ch + 0.02, za, zb), CELL));
+        outsideSolid.push(bake(panelX(f.z0 + e, za, zb, y, y + ch), CELL), bake(panelX(f.z1 - e, za, zb, y, y + ch), CELL), bake(panelZ(zf, f.z0, f.z1, y, y + ch), CELL));
         continue;
       }
       const xa = f.sd > 0 ? f.x - FD.cell.depth : f.x, xb = f.sd > 0 ? f.x : f.x + FD.cell.depth, xf = f.sd > 0 ? xa : xb, ch = FD.cell.height, e = 0.012;
-      geo.solid.push(bake(box(xa, xb, y - 0.05, y, f.z0, f.z1), STAIR), bake(box(xa, xb, y + ch, y + ch + 0.02, f.z0, f.z1), CELL));
-      geo.solid.push(bake(panelZ(f.z0 + e, xa, xb, y, y + ch), CELL), bake(panelZ(f.z1 - e, xa, xb, y, y + ch), CELL), bake(panelX(xf, f.z0, f.z1, y, y + ch), CELL));
+      outsideSolid.push(bake(box(xa, xb, y - 0.05, y, f.z0, f.z1), STAIR), bake(box(xa, xb, y + ch, y + ch + 0.02, f.z0, f.z1), CELL));
+      outsideSolid.push(bake(panelZ(f.z0 + e, xa, xb, y, y + ch), CELL), bake(panelZ(f.z1 - e, xa, xb, y, y + ch), CELL), bake(panelX(xf, f.z0, f.z1, y, y + ch), CELL));
     }
 
     // ---- the floors: the hall (north end … the stair's top edge, a hole above every flight), the lobby's floor and its ceiling
