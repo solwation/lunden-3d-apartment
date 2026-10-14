@@ -31,7 +31,7 @@ const H = 0.1; // Existing head geometry remains unchanged.
 const bases = new Map();
 
 /** Parts of one variant: [geometry, region, shade, bone, fixed colour]. */
-function parts(style, sleeves) {
+function parts(style, sleeves, gender = 0, facial = 0) {
   const P = [];
   const add = (g, region, bone, [x = 0, y = 0, z = 0] = [], shade = 1, fixed = 0) => {
     const b = bindAt(bone); g.translate(b.x + x, b.y + y, b.z + z); P.push([g, REGION[region], shade, fixed]); P[P.length - 1].bone = bone;
@@ -39,10 +39,14 @@ function parts(style, sleeves) {
   const sphere = (r, w = 10, h = 7, ...a) => new THREE.SphereGeometry(r, w, h, ...a);
   const cap = (r, h) => new THREE.CapsuleGeometry(r, h, 1, 5);
   // hips (trousers' seat) and the torso (the top, with its collar, hem and a belt)
-  add(lathe([[0, -0.11], [0.11, -0.1], [0.14, -0.04], [0.142, 0.03], [0, 0.05]], 14).scale(1.15, 1, 0.75), 'pants', 'hips');
-  add(lathe(TORSO_PROFILE, 14).scale(1.15, 1, 0.7), 'top', 'torso');
-  add(lathe([[0.152, -0.01], [0.16, 0.05]], 14).scale(1.15, 1, 0.7), 'top', 'torso', [0, 0, 0], 0.82); // the hem
-  add(lathe([[0.142, -0.02], [0.147, 0.03]], 14).scale(1.15, 1, 0.75), 'fixed', 'torso', [0, -0.02, 0], 1, 0x2a2523); // the belt
+  const isFemale = (Number(gender) || 0) === 1;
+  const hipScale = isFemale ? [1.2, 1, 0.78] : [1.15, 1, 0.75];
+  const torsoScale = isFemale ? [1.08, 1, 0.7] : [1.15, 1, 0.7];
+  const torsoProf = isFemale ? TORSO_PROFILE_FEMALE : TORSO_PROFILE;
+  add(lathe([[0, -0.11], [0.11, -0.1], [0.14, -0.04], [0.142, 0.03], [0, 0.05]], 14).scale(...hipScale), 'pants', 'hips');
+  add(lathe(torsoProf, 14).scale(...torsoScale), 'top', 'torso');
+  add(lathe([[0.152, -0.01], [0.16, 0.05]], 14).scale(...torsoScale), 'top', 'torso', [0, 0, 0], 0.82); // the hem
+  add(lathe([[0.142, -0.02], [0.147, 0.03]], 14).scale(isFemale ? 1.1 : 1.15, 1, 0.75), 'fixed', 'torso', [0, -0.02, 0], 1, 0x2a2523); // the belt
   add(new THREE.TorusGeometry(0.052, 0.017, 5, 12).rotateX(Math.PI / 2), 'top', 'torso', [0, 0.605, 0], 0.8); // the collar
   // the head: neck, head, ears, face, hair
   add(new THREE.CylinderGeometry(0.05, 0.055, 0.12, 8), 'skin', 'head', [0, 0.02, 0]);
@@ -62,6 +66,20 @@ function parts(style, sleeves) {
   add(sphere(noseShape.radius, noseShape.width, noseShape.height).scale(...noseShape.scale), 'skin', 'head', noseShape.centre, 0.96);
   P[P.length - 1].rifleNose = true; // exact internal surface, no trusted wire flag
   add(new THREE.BoxGeometry(0.04, 0.007, 0.008), 'fixed', 'head', [0, H - 0.058, 0.106], 1, 0x9a5a52); // the mouth
+  // facial hair: 0 none, 1 beard, 2 mustache, 3 beard + mustache
+  const f = Number(facial) || 0;
+  if (f === 2 || f === 3) { // mustache
+    for (const s of [-1, 1]) {
+      add(new THREE.BoxGeometry(0.024, 0.010, 0.014).rotateZ(s * -0.15), 'hair', 'head', [s * 0.014, H - 0.046, 0.114], 0.95);
+    }
+  }
+  if (f === 1 || f === 3) { // beard
+    add(new THREE.BoxGeometry(0.042, 0.026, 0.024), 'hair', 'head', [0, H - 0.066, 0.102], 0.92); // chin goatee
+    for (const s of [-1, 1]) {
+      add(new THREE.BoxGeometry(0.020, 0.036, 0.048).rotateZ(s * 0.22), 'hair', 'head', [s * 0.055, H - 0.052, 0.065], 0.9); // jaw sides
+    }
+    add(new THREE.BoxGeometry(0.046, 0.016, 0.035), 'hair', 'head', [0, H - 0.082, 0.088], 0.88); // chin underside
+  }
   // hair: a cap over the skull in every style; then a style's own parts (all hair-coloured, the beanie in the top's colour)
   const skull = () => sphere(0.12, 14, 8, 0, Math.PI * 2, 0, Math.PI * 0.5).rotateX(-0.62).scale(0.96, 1.02, 1.04);
   if (style === 0) { // short, a little tousled on top
@@ -109,13 +127,15 @@ function parts(style, sleeves) {
 }
 const TORSO_PROFILE = [[0, 0], [0.13, 0.0], [0.155, 0.04], [0.16, 0.12], [0.142, 0.26], [0.155, 0.4], [0.17, 0.5], [0.16, 0.57],
   [0.11, 0.62], [0.05, 0.64], [0.045, 0.7], [0, 0.71]];
+const TORSO_PROFILE_FEMALE = [[0, 0], [0.13, 0.0], [0.152, 0.04], [0.154, 0.12], [0.132, 0.26], [0.152, 0.42], [0.162, 0.5], [0.15, 0.57],
+  [0.105, 0.62], [0.048, 0.64], [0.043, 0.7], [0, 0.71]];
 
 /** The shared base geometry of a variant: positions, normals, skin attributes and `region` + `base` colour per vertex. */
-function base(style, sleeves) {
-  const key = style * 2 + sleeves;
+function base(style = 0, sleeves = 0, gender = 0, facial = 0) {
+  const key = `${style}_${sleeves}_${gender}_${facial}`;
   let b = bases.get(key);
   if (b) return b;
-  const list = parts(style, sleeves), geos = []; let headProjection = null, headRadius = 0;
+  const list = parts(style, sleeves, gender, facial), geos = []; let headProjection = null, headRadius = 0;
   for (const part of list) {
     const [g0, region, shade, fixed] = part;
     if (part.bone === 'head' && region === REGION.skin && g0.type === 'SphereGeometry' && g0.parameters.radius > headRadius) {
@@ -146,7 +166,7 @@ function base(style, sleeves) {
 
 /** A geometry for one player: the variant's shared position / normal / skin attributes and an own colour attribute. */
 function geometryFor(lk) {
-  const b = base(lk.style, lk.sleeves), n = b.attributes.position.count;
+  const b = base(lk.style, lk.sleeves, lk.gender ?? lk.figure ?? 0, lk.facial ?? lk.facialHair ?? 0), n = b.attributes.position.count;
   const pal = [lk.skin, lk.top, lk.pants, lk.hair, 0, lk.shoes].map((c) => new THREE.Color(c));
   const base3 = b.attributes.color.array, reg = b.attributes.region.array, col = new Float32Array(n * 3);
   for (let i = 0; i < n; i++) {
@@ -164,7 +184,7 @@ function geometryFor(lk) {
 }
 
 /** Triangles of one avatar (documented; perfcount): 'tris' of any variant. */
-export const avatarTriangles = (variant = 0) => base(variant >> 1, variant & 1).attributes.position.count / 3;
+export const avatarTriangles = (variant = 0) => base(variant >> 1, variant & 1, 0, 0).attributes.position.count / 3;
 
 // --- the material: lit solid, or an outline -----------------------------------------------------------------------------
 /** MeshLambertMaterial with a rim: `uOutline` 1 → alpha = `uFill` inside and up to `uRim` at the edges (fresnel) with the
@@ -239,8 +259,8 @@ export class Avatar {
     this.object.name = 'avatar';
     this.object.add(this.mesh);
     this.object.rotation.y = Math.PI; // the figure faces +z, a ghost's heading −z
-    const w = [0.93, 1, 1.08][lk.build];
-    this.object.scale.set(w, lk.tall, w);
+    const w = [0.93, 1, 1.08][lk.build ?? 1] ?? 1;
+    this.object.scale.set(w, lk.tall ?? 1, w);
     this.head = new THREE.Vector3();
     this.phase = 0; this.solid = false; this.time = 0;
     this.pos = new THREE.Vector3(); this.known = false;

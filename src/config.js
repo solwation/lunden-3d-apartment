@@ -4702,13 +4702,17 @@ export function encodeAvatarLook(look) {
   const h = Math.max(0, HAIR.indexOf(look.hair));
   const st = Math.min(3, Math.max(0, Number(look.style) || 0));
   const sl = Math.min(1, Math.max(0, Number(look.sleeves) || 0));
-  return `${s}${t}${p}${sh}${h}${st}${sl}`;
+  const g = Math.min(1, Math.max(0, Number(look.gender ?? look.figure) || 0));
+  const f = Math.min(3, Math.max(0, Number(look.facial ?? look.facialHair) || 0));
+  return `${s}${t}${p}${sh}${h}${st}${sl}${g}${f}`;
 }
 
 export function decodeAvatarLook(str, seed = 'anon') {
   const base = defaultAvatarLook(seed);
-  if (typeof str !== 'string' || !/^[0-4][0-9][0-5][0-3][0-7][0-3][0-1]$/.test(str)) return base;
-  return {
+  if (typeof str !== 'string' || !/^[0-4][0-9][0-5][0-3][0-7][0-3][0-1]([0-1][0-3])?$/.test(str)) return base;
+  const gender = str.length >= 9 ? Number(str[7]) : 0;
+  const facial = str.length >= 9 ? Number(str[8]) : 0;
+  const lk = {
     ...base,
     skin: SKIN[Number(str[0])],
     top: TOPS[Number(str[1])],
@@ -4717,7 +4721,12 @@ export function decodeAvatarLook(str, seed = 'anon') {
     hair: HAIR[Number(str[4])],
     style: Number(str[5]),
     sleeves: Number(str[6]),
+    gender,
+    facial,
   };
+  Object.defineProperty(lk, 'figure', { get() { return this.gender; }, set(v) { this.gender = v; }, enumerable: true, configurable: true });
+  Object.defineProperty(lk, 'facialHair', { get() { return this.facial; }, set(v) { this.facial = v; }, enumerable: true, configurable: true });
+  return lk;
 }
 
 /** The tiny deterministic hash of a seed string. */
@@ -4733,12 +4742,22 @@ function defaultAvatarLook(seed) {
   const style = pick(4), sleeves = pick(2);
   const skin = SKIN[pick(SKIN.length)], hair = HAIR[pick(HAIR.length)], top = TOPS[pick(TOPS.length)], pants = PANTS[pick(PANTS.length)], shoes = SHOES[pick(SHOES.length)];
   const build = pick(3); // 0 slim, 1 average, 2 broad
-  return { style, sleeves, skin, hair, top, pants, shoes, build, tall: 0.95 + pick(5) * 0.025 };
+  const tall = 0.95 + pick(5) * 0.025;
+  const gender = pick(2);
+  const facial = 0; // default no facial hair
+  const lk = { style, sleeves, skin, hair, top, pants, shoes, build, tall, gender, facial };
+  Object.defineProperty(lk, 'figure', { get() { return this.gender; }, set(v) { this.gender = v; }, enumerable: true, configurable: true });
+  Object.defineProperty(lk, 'facialHair', { get() { return this.facial; }, set(v) { this.facial = v; }, enumerable: true, configurable: true });
+  return lk;
 }
 
-/** What a seed looks like: { skin, hair, top, pants, shoes (colours), style (hairstyle), sleeves (0 short / 1 long), build }. */
+/** What a seed looks like: { skin, hair, top, pants, shoes (colours), style (hairstyle), sleeves (0 short / 1 long), build, gender, facial }. */
 export function avatarLook(seed) {
-  if (seed && typeof seed === 'object' && 'skin' in seed && 'top' in seed) return seed;
+  if (seed && typeof seed === 'object' && 'skin' in seed && 'top' in seed) {
+    if (!('gender' in seed) && !('figure' in seed)) seed.gender = 0;
+    if (!('facial' in seed) && !('facialHair' in seed)) seed.facial = 0;
+    return seed;
+  }
   return defaultAvatarLook(seed);
 }
 

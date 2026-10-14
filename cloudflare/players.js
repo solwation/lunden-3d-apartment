@@ -121,7 +121,7 @@ export function cleanGreet(text) {
 }
 
 export function cleanAvatar(v) {
-  return typeof v === 'string' && /^[0-4][0-9][0-5][0-3][0-7][0-3][0-1]$/.test(v) ? v : null;
+  return typeof v === 'string' && /^[0-4][0-9][0-5][0-3][0-7][0-3][0-1]([0-1][0-3])?$/.test(v) ? v : null;
 }
 
 /** A checked, rounded state from a client's message, or null. */

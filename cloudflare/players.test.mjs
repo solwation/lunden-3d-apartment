@@ -1385,13 +1385,18 @@ test('#890 avatar appearance sync in state, welcome and validation', async () =>
   const bState2 = b.got.filter(m => m.t === 's' && m.i === a.got[0].i).at(-1);
   assert.equal(bState2.av, undefined, 'invalid avatar string is dropped');
 
-  // Late joining peer gets the latest valid appearance in welcome
+  // 9-digit extended avatar string is valid and forwarded
+  const validAv9 = '123041013';
   now += 1000;
-  a.send({ p: [1.2, 0, 2], r: 0.5, av: validAv });
+  a.send({ p: [1.2, 0, 2], r: 0.5, av: validAv9 });
   await settle(env);
+  const bState3 = b.got.filter(m => m.t === 's' && m.i === a.got[0].i).at(-1);
+  assert.equal(bState3.av, validAv9, 'valid 9-digit avatar string is forwarded to peer');
+
+  // Late joining peer gets the latest valid appearance in welcome
   const c = await connect(env, 'Spelare C');
   const welcomePeer = c.got[0].ps.find(p => p.i === a.got[0].i);
-  assert.equal(welcomePeer?.av, validAv, 'late joining player gets avatar appearance on welcome');
+  assert.equal(welcomePeer?.av, validAv9, 'late joining player gets avatar appearance on welcome');
 
   for (const peer of [a, b, c]) peer.ws.close();
   await settle(env);

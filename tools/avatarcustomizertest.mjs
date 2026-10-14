@@ -21,12 +21,14 @@ test('avatar customization: palettes and encoding roundtrip', () => {
     hair: HAIR[0],
     style: 2,
     sleeves: 1,
+    gender: 1,
+    facial: 2,
     build: 1,
     tall: 0.975
   };
 
   const code = encodeAvatarLook(originalLook);
-  assert.match(code, /^[0-4][0-9][0-5][0-3][0-7][0-3][0-1]$/, 'encoded look is 7 digits within palette ranges');
+  assert.match(code, /^[0-4][0-9][0-5][0-3][0-7][0-3][0-1][0-1][0-3]$/, 'encoded look is 9 digits within palette and variant ranges');
 
   const decoded = decodeAvatarLook(code, 'player123');
   assert.equal(decoded.skin, originalLook.skin);
@@ -36,8 +38,24 @@ test('avatar customization: palettes and encoding roundtrip', () => {
   assert.equal(decoded.hair, originalLook.hair);
   assert.equal(decoded.style, originalLook.style);
   assert.equal(decoded.sleeves, originalLook.sleeves);
+  assert.equal(decoded.gender, 1);
+  assert.equal(decoded.facial, 2);
   assert.equal(decoded.build, decodeAvatarLook(null, 'player123').build, 'build preserved from seed');
   assert.equal(decoded.tall, decodeAvatarLook(null, 'player123').tall, 'tall preserved from seed');
+
+  // Backward compatibility with legacy 7-digit code:
+  // legacy choices retain their look; missing facial hair gives no beard (facial: 0)
+  const legacyCode = '2413021';
+  const legacyDecoded = decodeAvatarLook(legacyCode, 'player123');
+  assert.equal(legacyDecoded.skin, SKIN[2]);
+  assert.equal(legacyDecoded.top, TOPS[4]);
+  assert.equal(legacyDecoded.pants, PANTS[1]);
+  assert.equal(legacyDecoded.shoes, SHOES[3]);
+  assert.equal(legacyDecoded.hair, HAIR[0]);
+  assert.equal(legacyDecoded.style, 2);
+  assert.equal(legacyDecoded.sleeves, 1);
+  assert.equal(legacyDecoded.gender, 0, 'legacy defaults to male/original figure');
+  assert.equal(legacyDecoded.facial, 0, 'missing facial hair defaults to 0 (no beard)');
 
   // Fallback on invalid code
   const fallback = decodeAvatarLook('invalid', 'player123');
@@ -114,7 +132,7 @@ test('avatar customization: customizer UI and callbacks', async () => {
             save() {}, restore() {}, scale() {}, clearRect() {}, fillRect() {},
             createLinearGradient() { return { addColorStop() {} }; },
             beginPath() {}, roundRect() {}, arc() {}, ellipse() {}, fill() {}, stroke() {},
-            moveTo() {}, lineTo() {}, closePath() {},
+            moveTo() {}, lineTo() {}, closePath() {}, quadraticCurveTo() {},
             set fillStyle(v) {}, set strokeStyle(v) {}, set lineWidth(v) {}
           };
         }
@@ -189,6 +207,20 @@ test('avatar customization: customizer UI and callbacks', async () => {
   topBtn.closest = () => topBtn;
   customizerEl.dispatch('click', { target: topBtn });
 
+  // Click gender button (kvinna)
+  const genderBtn = makeElement('', 'button');
+  genderBtn.dataset.type = 'gender';
+  genderBtn.dataset.index = '1';
+  genderBtn.closest = () => genderBtn;
+  customizerEl.dispatch('click', { target: genderBtn });
+
+  // Click facial hair button (mustasch)
+  const facialBtn = makeElement('', 'button');
+  facialBtn.dataset.type = 'facial';
+  facialBtn.dataset.index = '2';
+  facialBtn.closest = () => facialBtn;
+  customizerEl.dispatch('click', { target: facialBtn });
+
   // Close via button
   const saveBtn = makeElement('avatar-save-btn', 'button');
   saveBtn.closest = () => saveBtn;
@@ -204,6 +236,8 @@ test('avatar customization: customizer UI and callbacks', async () => {
   assert.ok(savedStr, 'lunden.avatar was saved to storage');
   assert.equal(currentSavedLook.skin, SKIN[3]);
   assert.equal(currentSavedLook.top, TOPS[7]);
+  assert.equal(currentSavedLook.gender, 1);
+  assert.equal(currentSavedLook.facial, 2);
 
   // Test close via KeyE
   openAvatarCustomizer();

@@ -52,6 +52,8 @@ export function drawAvatarPreview(canvas, look) {
   const hair = toHex(look.hair);
   const style = look.style ?? 0;
   const sleeves = look.sleeves ?? 0;
+  const gender = Number(look.gender ?? look.figure) || 0;
+  const facial = Number(look.facial ?? look.facialHair) || 0;
 
   const cx = width / 2;
 
@@ -76,24 +78,37 @@ export function drawAvatarPreview(canvas, look) {
   // Pants (legs: y 165 - 240)
   ctx.fillStyle = pants;
   for (const s of [-1, 1]) {
-    const lx = cx + s * 13;
+    const lx = cx + s * (gender === 1 ? 12 : 13);
     ctx.beginPath();
-    ctx.roundRect(lx - 9, 165, 18, 76, [0, 0, 3, 3]);
+    ctx.roundRect(lx - (gender === 1 ? 8 : 9), 165, (gender === 1 ? 16 : 18), 76, [0, 0, 3, 3]);
     ctx.fill();
   }
   // Hips
   ctx.beginPath();
-  ctx.roundRect(cx - 24, 150, 48, 22, [4, 4, 0, 0]);
+  const hipW = gender === 1 ? 46 : 48;
+  ctx.roundRect(cx - hipW / 2, 150, hipW, 22, [4, 4, 0, 0]);
   ctx.fill();
   // Belt
   ctx.fillStyle = '#2a2523';
-  ctx.fillRect(cx - 23, 149, 46, 5);
+  ctx.fillRect(cx - (hipW / 2 - 1), 149, hipW - 2, 5);
 
   // Torso / top (y: 92 - 150)
   ctx.fillStyle = top;
-  ctx.beginPath();
-  ctx.roundRect(cx - 24, 92, 48, 58, 6);
-  ctx.fill();
+  if (gender === 1) {
+    ctx.beginPath();
+    ctx.moveTo(cx - 21, 92);
+    ctx.lineTo(cx + 21, 92);
+    ctx.quadraticCurveTo(cx + 23, 114, cx + 18, 130);
+    ctx.lineTo(cx + 22, 150);
+    ctx.lineTo(cx - 22, 150);
+    ctx.quadraticCurveTo(cx - 18, 130, cx - 23, 114);
+    ctx.closePath();
+    ctx.fill();
+  } else {
+    ctx.beginPath();
+    ctx.roundRect(cx - 24, 92, 48, 58, 6);
+    ctx.fill();
+  }
 
   // Collar
   ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
@@ -107,7 +122,7 @@ export function drawAvatarPreview(canvas, look) {
 
   // Arms (y: 95 - 190)
   for (const s of [-1, 1]) {
-    const ax = cx + s * 30;
+    const ax = cx + s * (gender === 1 ? 27 : 30);
     // Upper arm
     ctx.fillStyle = top;
     ctx.beginPath();
@@ -177,6 +192,33 @@ export function drawAvatarPreview(canvas, look) {
   ctx.roundRect(cx - 4, 69, 8, 2, 1);
   ctx.fill();
 
+  // Facial hair: 0 none, 1 beard, 2 mustache, 3 beard + mustache
+  if (facial === 1 || facial === 3) {
+    ctx.fillStyle = hair;
+    ctx.beginPath();
+    ctx.moveTo(cx - 16, 62);
+    ctx.quadraticCurveTo(cx - 16, 75, cx - 8, 80);
+    ctx.quadraticCurveTo(cx, 82, cx + 8, 80);
+    ctx.quadraticCurveTo(cx + 16, 75, cx + 16, 62);
+    ctx.lineTo(cx + 13, 64);
+    ctx.quadraticCurveTo(cx + 13, 73, cx + 6, 76);
+    ctx.lineTo(cx - 6, 76);
+    ctx.quadraticCurveTo(cx - 13, 73, cx - 13, 64);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.roundRect(cx - 5, 73, 10, 6, 3);
+    ctx.fill();
+  }
+
+  if (facial === 2 || facial === 3) {
+    ctx.fillStyle = hair;
+    ctx.beginPath();
+    ctx.ellipse(cx - 4, 66.5, 4.5, 2, -0.2, 0, Math.PI * 2);
+    ctx.ellipse(cx + 4, 66.5, 4.5, 2, 0.2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
   // Hairstyle on top
   if (style === 0) { // Short, tousled
     ctx.fillStyle = hair;
@@ -231,6 +273,8 @@ export function drawAvatarPreview(canvas, look) {
 function updateActiveSwatches() {
   if (!customizerEl || !currentLook) return;
   const groups = [
+    { type: 'gender', value: Number(currentLook.gender ?? currentLook.figure) || 0 },
+    { type: 'facial', value: Number(currentLook.facial ?? currentLook.facialHair) || 0 },
     { type: 'skin', value: currentLook.skin, list: SKIN },
     { type: 'top', value: currentLook.top, list: TOPS },
     { type: 'sleeves', value: currentLook.sleeves },
@@ -310,7 +354,13 @@ function initCustomizerDOM() {
     const type = btn.dataset.type;
     const idx = Number(btn.dataset.index);
 
-    if (type === 'skin' && SKIN[idx] !== undefined) {
+    if (type === 'gender') {
+      currentLook.gender = idx;
+      applyAndRefresh();
+    } else if (type === 'facial') {
+      currentLook.facial = idx;
+      applyAndRefresh();
+    } else if (type === 'skin' && SKIN[idx] !== undefined) {
       currentLook.skin = SKIN[idx];
       applyAndRefresh();
     } else if (type === 'top' && TOPS[idx] !== undefined) {

@@ -475,23 +475,23 @@
     #update-close { background: transparent; color: #fff; padding: 8px 10px !important; font-size: 18px !important; }
     #avatar-customizer { position: fixed; inset: 0; z-index: 25; background: rgba(10, 18, 26, 0.78); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); display: grid; place-items: center; padding: 12px; box-sizing: border-box; }
     #avatar-customizer[hidden] { display: none; }
-    .customizer-card { width: min(640px, calc(100vw - 24px)); max-height: min(720px, calc(100dvh - 24px)); display: flex; flex-direction: column; background: #182533; color: #f0f4f8; border-radius: 16px; box-shadow: 0 16px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1); overflow: hidden; }
-    .customizer-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 16px 20px 12px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .customizer-card { width: min(640px, calc(100vw - 24px)); max-height: min(780px, calc(100dvh - 24px)); display: flex; flex-direction: column; background: #182533; color: #f0f4f8; border-radius: 16px; box-shadow: 0 16px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1); overflow: hidden; }
+    .customizer-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 14px 20px 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
     .customizer-header h2 { margin: 0; font: 700 20px/1.2 system-ui, sans-serif; color: #fff; }
     .customizer-sub { font: 500 13px system-ui, sans-serif; color: #9ab0c4; margin-top: 2px; display: block; }
     .customizer-close { background: transparent; border: 0; color: #fff; font-size: 20px; cursor: pointer; padding: 4px 8px; border-radius: 6px; }
     .customizer-close:hover { background: rgba(255,255,255,0.1); }
-    .customizer-body { display: flex; gap: 20px; padding: 16px 20px; overflow-y: auto; flex: 1; min-height: 0; }
+    .customizer-body { display: flex; gap: 20px; padding: 14px 20px; overflow-y: auto; flex: 1; min-height: 0; }
     .customizer-preview { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; flex-shrink: 0; }
     #avatar-preview-canvas { width: 180px; height: 280px; border-radius: 12px; display: block; box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
-    .customizer-controls { flex: 1; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
-    .customizer-section h3 { margin: 0 0 6px; font: 600 13px system-ui, sans-serif; color: #b8cde0; text-transform: uppercase; letter-spacing: 0.5px; }
-    .customizer-section .swatches { display: flex; flex-wrap: wrap; gap: 7px; }
-    .customizer-section .swatches button { width: 34px; height: 34px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.25); cursor: pointer; padding: 0; touch-action: manipulation; transition: transform 0.1s, box-shadow 0.1s; }
+    .customizer-controls { flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+    .customizer-section h3 { margin: 0 0 4px; font: 600 12px system-ui, sans-serif; color: #b8cde0; text-transform: uppercase; letter-spacing: 0.5px; }
+    .customizer-section .swatches { display: flex; flex-wrap: wrap; gap: 6px; }
+    .customizer-section .swatches button { width: 30px; height: 30px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.25); cursor: pointer; padding: 0; touch-action: manipulation; transition: transform 0.1s, box-shadow 0.1s; }
     .customizer-section .swatches button:hover { transform: scale(1.1); }
     .customizer-section .swatches button.sel { border-color: #fff; box-shadow: 0 0 0 3px #3894e6; transform: scale(1.12); }
-    .customizer-section .btn-group { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
-    .customizer-section .btn-group button { border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #fff; padding: 6px 12px; border-radius: 6px; font: 600 13px system-ui, sans-serif; cursor: pointer; touch-action: manipulation; }
+    .customizer-section .btn-group { display: flex; flex-wrap: wrap; gap: 5px; margin: 4px 0; }
+    .customizer-section .btn-group button { border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #fff; padding: 5px 10px; border-radius: 6px; font: 600 12px system-ui, sans-serif; cursor: pointer; touch-action: manipulation; }
     .customizer-section .btn-group button.sel { background: #3894e6; border-color: #3894e6; color: #fff; }
     .customizer-footer { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; border-top: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.15); }
     .customizer-footer button { padding: 9px 18px; border-radius: 8px; font: 600 15px system-ui, sans-serif; cursor: pointer; touch-action: manipulation; border: 0; }
@@ -969,6 +969,14 @@
         </div>
         <div class="customizer-controls">
           <section class="customizer-section">
+            <h3>Figur</h3>
+            <div class="btn-group" data-group="gender">
+              <button data-type="gender" data-index="0">Man</button>
+              <button data-type="gender" data-index="1">Kvinna</button>
+            </div>
+          </section>
+
+          <section class="customizer-section">
             <h3>Hudfärg</h3>
             <div class="swatches" data-group="skin">
               <button data-type="skin" data-index="0" style="background:#f1c9a8" aria-label="Hudfärg 1"></button>
@@ -1038,6 +1046,16 @@
               <button data-type="hair" data-index="5" style="background:#8a8c90" aria-label="Grått hår"></button>
               <button data-type="hair" data-index="6" style="background:#6b2d1f" aria-label="Rött hår"></button>
               <button data-type="hair" data-index="7" style="background:#15151a" aria-label="Svart hår"></button>
+            </div>
+          </section>
+
+          <section class="customizer-section">
+            <h3>Ansiktshår</h3>
+            <div class="btn-group" data-group="facial">
+              <button data-type="facial" data-index="0">Inget</button>
+              <button data-type="facial" data-index="1">Skägg</button>
+              <button data-type="facial" data-index="2">Mustasch</button>
+              <button data-type="facial" data-index="3">Skägg &amp; mustasch</button>
             </div>
           </section>
         </div>
