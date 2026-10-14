@@ -6272,3 +6272,15 @@ branch is inactive; ordinary map/color/UV behavior is verified by the fresh
 native run. The images retain their earlier component freeze, not whole-helper
 byte parity, newly rendered imports or a World/phone claim. Full drift/source
 bytes and corrected provenance are archived.
+
+
+Published #1011 acceptance: Worker16398b6 actually deployed in run38556975745/
+job115828437155 at11:30:29.4095128Z, version
+ccbfba41-e6a1-4897-9da6-f0238b259f7b. Client7ade168 actually published through
+Pages38559383071/job115836400795, Reported success11:50:45.6441036Z. Full
+job logs and publication-manifest.json retain the exact deployed SHAs. All1412
+publication file hashes and257 final3-native inputs match that client;795
+older changelog row bytes and actual changelog_stamp.py publication times are
+unchanged. The orchestrator independently checked those hashes, both complete
+deployment logs, final3-native34/schema16 results and all four component PNGs.
+No further renderer or physical-phone acceptance is inferred from deployment.
