@@ -11,6 +11,7 @@ import { fillKitchen } from './kitchenstuff.js';
 import { Openable, pivotAround } from './openables.js';
 import { buildRacks } from './dishwasher.js';
 import { Moccamaster } from './coffee.js';
+import { socketGeometry } from './sockets.js';
 import { mirrorMaterial, litMirrorMaterial, litEmissive, litReflect } from './mirror.js';
 import { addReflector } from './reflections.js';
 import { SPONGE, spongeMaterials } from './sponge.js';
