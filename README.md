@@ -184,6 +184,9 @@ Nollställning av statistiken rensar även dynamiska räknare, så inga gamla po
 
 Stridens skottkontroller kan hoppa över tomma delar av stora modeller efter en begränsad bakgrundsförberedelse; lokala träffytor kopierar världskoordinater utan en tillfällig array per hörn; fysisk telefonverifiering återstår. [Mätning och begränsningar](docs/validation/issue-715/README.md).
 Gevärets huvudträffar använder tre enkla boxar för huvudets nederdel, mitt och smalare topp. De följer spelarens storlek, riktning och hukning; hår, ögon och små animationer påverkar inte skadan. En huvudträff tar två hjärtan, en kroppsträff ett. Väggar stoppar skott och serverbekräftade träffar visar ”Träff!” eller ”Huvudträff!”.
+
+Olofs bil kommer fram lite snabbare och har en grön ÖVNINGSKÖR-skylt baktill när han är i bilen.
+
 Skott behåller föremålens egna träffregler även när hinderkontrollen är uppvärmd.
 
 Nerfpilar når upp till 25 meter och en bekräftad spelarträff hörs med en egen tydlig ton. De första skotten kan räknas som bom medan hinderdata förbereds. [Verifiering och begränsningar](docs/validation/issue-714/README.md).

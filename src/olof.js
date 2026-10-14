@@ -280,10 +280,11 @@ export class OlofDriver {
     this.state = 'drive'; this.t = 0; this.scored = false; this.waveK = 0;
     this.fig.material.opacity = 1;
     this.fig.object.visible = true;
+    this.car.learnerSign.visible = this.carOut;
     this.pose();
   }
 
-  hide() { this.state = 'away'; this.fig.object.visible = false; }
+  hide() { this.state = 'away'; this.fig.object.visible = false; this.car.learnerSign.visible = false; }
 
   /** Can he be greeted now (the car parked, he at the wheel, the visitor not in the car)? */
   greetable(seatedInCar = false) { return this.state === 'drive' && this.car.parked && this.car.object.visible && !seatedInCar; }

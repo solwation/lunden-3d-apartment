@@ -69,6 +69,22 @@ function plateTexture(text) {
   return t;
 }
 
+// Olof's rear learner plate is separate from registration and never added to parked street cars.
+function learnerSign() {
+  const c = document.createElement('canvas'); c.width = 800; c.height = 160;
+  const g = c.getContext('2d');
+  g.fillStyle = '#138344'; g.fillRect(0, 0, c.width, c.height);
+  g.strokeStyle = '#fff'; g.lineWidth = 8; g.strokeRect(8, 8, 784, 144);
+  g.fillStyle = '#fff'; g.font = 'bold 96px "DejaVu Sans", Arial, sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('ÖVNINGSKÖR', 400, 85, 750);
+  const texture = new THREE.CanvasTexture(c); texture.colorSpace = THREE.SRGBColorSpace;
+  const sign = new THREE.Mesh(new THREE.PlaneGeometry(C.learner.width, C.learner.height),
+    new THREE.MeshBasicMaterial({ map: texture, toneMapped: false }));
+  sign.position.set(-MEGANE.L / 2 - C.learner.offset, C.learner.y, 0);
+  sign.rotation.y = -Math.PI / 2; sign.visible = false;
+  return sign;
+}
+
 const DOOR_NAMES = { '1,-1': 'förardörren', '1,1': 'passagerardörren', '0,-1': 'bakdörren', '0,1': 'bakdörren' };
 
 export class Car {
@@ -84,6 +100,7 @@ export class Car {
     for (const [x, y, ry] of [[L / 2 + 0.065, 0.46, Math.PI / 2], [-L / 2 - 0.065, 0.6, -Math.PI / 2]]) {
       const p = new THREE.Mesh(new THREE.PlaneGeometry(0.52, 0.11), plate); p.position.set(x, y, 0); p.rotation.y = ry; g.add(p); this.plates.push(p);
     }
+    this.learnerSign = learnerSign(); g.add(this.learnerSign);
     this.wheels = m.wheels;
     // the doors: E on one opens / closes it while the car is parked
     this.doors = m.doors.map((d) => {

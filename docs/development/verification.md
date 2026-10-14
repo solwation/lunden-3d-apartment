@@ -5839,3 +5839,12 @@ cannot measure HTTP page count. Final parsing uses explicit `--include` response
 frames instead. Both failures produced failed snapshots without a fresh table.
 Raw live data, command outputs and test evidence are also kept in the orchestration
 ledger's `worker-926-artifacts` directory; no raw snapshots are committed to the repo.
+
+
+## Learner sign and modest arrival speed (#901)
+
+`tools/carsafetytest.cjs BASE OUTPUT --before-901` serves unchanged20ae38e Car/config/Olof; without the flag it tests current code. Same dt1/60, route JSON and parked coordinates: street15.750→13.933s, garage62.133→54.183s. These are simulated travel times, not hardware/FPS measurements. Current cruise9.5/garage3.5 are gameplay guesses; brake2 and route/controller/safety code are unchanged. Actual Player route20 remains stopped safely (minimum center5.037m), holds and resumes. Closed GarageDoor, reverse cusp, exclusions, passenger/door interaction, greeting and reload are included. The sign follows actual OlofDriver show/hide for arriving/parked/leaving, empty/hidden/garage/gone and normal completed departures; default garage save is null.
+
+`tools/carlearnerrender.cjs BASE OUTPUT` requires an exclusive renderer slot and draws only the actual Car/OlofDriver at960×680, no World. The one bounded run's inspected rear-visible/hidden PNGs show legible green ÖVNINGSKÖR, clear registration and tail lamps, and no sign after driver.hide. Native source hashes and actual CLI exits precede publication; no physical-phone/whole-app claim. The unavailable earlier Surface candidate was not restored: this implementation starts from published900/915. An added departure test initially dereferenced a null garage in its harness; that actual CLI1 is retained and the helper now supports the game's no-garage street route.
+
+#901 final native acceptance:43 controls/CLI0 after rebase (before26/CLI0); actual complete departures into garage and off-street gone hide driver/sign. The isolated render completed in1.576s/CLI0. Incoming #974 changed unrelated config; CAR block and every other recorded visual source remained exact, and a fresh native run verified the rebased code. Reversing only the added sign reproduces original20ae38e Car byte-for-byte; reversing only learner/speed config changes reproduces original CAR, proving unchanged route/brake/915 controller.

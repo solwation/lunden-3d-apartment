@@ -2109,6 +2109,7 @@ export const BEER = { x: 4.38, y: 0.4, z: 14.3, r: 0.045, h: 0.16, gulp: 0.2, he
 // corners (car.js).
 export const CAR = {
   l: 4.2, w: 1.78, h: 1.5, color: 0xf2f2ee, plate: 'FGZ 56D',
+  learner: { width: 0.8, height: 0.16, y: 0.78, offset: 0.07 }, // #901 visual placement (guess), between plate and rear lights
   // #356: the routes are data — legs of either a waypoint [x, z] or a stretch of a road
   // { road: <SITE.roads name>, from: [x, z], to: [x, z] } driven in the right-hand lane in the direction from → to
   // (car.js `route` samples it with roads.js `along`, so the car follows the road if the road moves), then rounded off.
@@ -2131,10 +2132,10 @@ export const CAR = {
     in: [{ road: 'Sankt Lars väg', from: [-16, -27], to: [-66, -27] }, [-70.5, -27.4], { road: 'Karpvägen', from: [-75.8, -19], to: [-78.6, 40.5] },
       [-76.5, 44.6], [-72, 44.6], [-62, 44.4], [-53, 44.0], [-48.5, 42.4], [-45.8, 38.0], [-45.8, 26], [-43.5, 22.2], [-36, 21.6], [-4, 21.6], [-1.2, 21.3],
       [1.0, 19.6], [1.895, 17.4], [1.895, 14.82]],
-    slow: 3,
+    slow: 3.5, // #901 gameplay speed (guess); same garage route and safety stops
   },
   lane: 0.25,                      // of the road's width right of its centre line: the middle of the right-hand lane
-  speed: 8, brake: 2,              // m/s cruising, m/s² slowing down to the stop
+  speed: 9.5, brake: 2,            // #901 cruise m/s is a gameplay guess; original braking unchanged
   doorOpen: 1.1,                   // rad: how far a door opens (#250)
   // Music in the car (#268, CarRadio in sonos.js): the SYMFONISK channels from the dashboard (`dash`, local metres).
   // How you hear it (our choice): sitting inside clear; outside through a door that is open a little softer, through the
