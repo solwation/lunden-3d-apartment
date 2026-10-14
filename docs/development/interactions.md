@@ -1410,3 +1410,14 @@ bonus: native9 passed29/29 actualCLI0 in10.02s and schema11/11CLI0. The final
 publication manifest enumerates 16 render-to-publication whole-path differences;
 the same eight inspected image views remain evidence for unchanged rug
 builder/map/geometry/image code, not for the unrelated whole-World changes.
+
+The complete rug-library runtime is published as
+`e21f65f697f82f5d85cde9c3080cffb6943f9f01`, changelog789. Actual
+Worker38551245721/job115809448091 executed wrangler deploy at10:41:09Z and
+Uploaded/Deployed at10:41:12/13Z2026-10-14, version
+41c5eb9a-a3f5-4041-a35f-1707568680d8. Pages38551245708/job115809448639
+created the deployment for that exact SHA and reported success at10:41:11Z.
+Publication's260 hashes match the commit; all255 final executable/native paths
+match the last native test. Earlier changelog bytes and publication times are
+unchanged. This closes only the six-rug color/pattern family; #996–#1001 and
+parent #991 retain long-pile and other textile acceptance.
