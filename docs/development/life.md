@@ -321,3 +321,14 @@ daily selection, next-day renewal and same-slot failed-attempt retry. Hall readi
 The captured shared note CanvasTexture shows three tasks, +45 and checked partial goals. No full apartment startup or
 repeat of the existing broad taskstest wrapper was run; its new block invokes these same tested checks.
 Final rebase base `3ee6fd7` adds the unrelated bow; the tested task/chicken/grill/stats classes remain unchanged upstream. Main statistics-reset hooks passed syntax review after merging.
+
+#994 validation: the focused zero-WebGL browser passed61/61 / CLI0 after the final rebase, including the single actual
+third-task score write, actual bonus reload, stale home, small pool, legacy v1/v2, paid993-v3 upgrade/reload and next-day
+award. Temporary config15→99→15 preserved already-earned amounts; nested compact-save39/39, real Chicken/Grill28/28
+and statsreset17/17 remained green. The inspected actual panel/paper shows “Alla uppdrag avklarade · +15”. Runtime
+`bdb35f745136fbfef4ab14abb1df267c5e9794b6` has changelog787; publication1401-path manifest differs from final native
+only by a clarified comment and the new changelog row. Actual Pages38550819077/job115808050376 executed deploy-pages
+and reported success2026-10-14T10:37:29.750Z; Worker38550819044/job115808050468 ran Wrangler deploy10:37:28.055Z,
+uploaded10:37:31.832Z and deployed10:37:32.241Z, versiona77cc2a3-28c3-475b-bbaa-f3b0a554bb6f. Full raw logs, snapshots,
+producers and ownership evidence remain in the orchestration ledger’s `worker-994-artifacts`. No World/GPU/phone run
+is claimed. The pre-reconcile native1 passed54/54; native2/final added the legitimate993-upgrade case and passed61/61.
