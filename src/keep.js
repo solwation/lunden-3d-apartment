@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { SONOS, MOCCAMASTER } from './config.js';
-import { stowedItem } from './holdable.js';
+import { stowedItem, heldItem } from './holdable.js';
 
 // The world's state across a reload made by the page (#277): the automatic update (#192) and "Ladda om" put a
 // `world` part into the resume record (resume.js) next to the place; the new page reads it back once everything is
@@ -14,6 +14,14 @@ import { stowedItem } from './holdable.js';
 // `a` is the app: main.js hands over what the parts need.
 
 export const KEEP_VERSION = 1;
+// #1034: only the one legacy hand that was actually bicycle-stowed, not a loose inventory save.
+let restoredBicycleHand = null;
+export function forgetBicycleHand(item) { if (restoredBicycleHand === item) restoredBicycleHand = null; }
+export function hasRestoredBicycleHand() {
+  if (restoredBicycleHand && heldItem() !== restoredBicycleHand && stowedItem() !== restoredBicycleHand) restoredBicycleHand = null;
+  return !!restoredBicycleHand;
+}
+
 
 const r3 = (v) => Math.round(v * 1000) / 1000;
 const vec = (v) => [r3(v.x), r3(v.y), r3(v.z)];
@@ -47,6 +55,22 @@ function holdKey(h) {
 const keepable = (a, h) => h !== a.chicken && !h.broken && !h.flying && !h.isMiele; // chicken has its own Life extra (and a ball in the air); Miele in your arms is the cat's (#328)
 
 const PARTS = {
+  bicycleHand: {
+    save(a) {
+      const item = stowedItem() ?? (hasRestoredBicycleHand() ? restoredBicycleHand : null);
+      if (!item || item.broken || (item === stowedItem() && item.model.parent)) return null;
+      for (const [kind, owner] of Object.entries(a.bicycleStow ?? {})) {
+        const state = owner?.saveStowed?.(item);
+        if (state) return { v: 1, kind, state };
+      }
+      return null;
+    },
+    load(a, s) {
+      if (s?.v !== 1 || typeof s.kind !== 'string' || !s.state || typeof s.state !== 'object' || heldItem() || !Object.hasOwn(a.bicycleStow ?? {}, s.kind)) return;
+      const item = a.bicycleStow[s.kind]?.loadStowed?.(s.state);
+      if (item && heldItem() === item) restoredBicycleHand = item;
+    },
+  },
   clock: {
     save: ({ day }) => ({ h: r3(day.hour), y: day.year, m: day.month, d: day.date, p: day.paused ? 1 : 0 }),
     load({ day }, s) {
@@ -278,7 +302,11 @@ const PARTS = {
   },
 
   life: { // the life simulator's things (#371): every instance, the one in the hand too (life.js / items.js, versioned)
-    save: ({ life }) => (life && life.items.all().length ? life.serialize() : null),
+    save(a) {
+      const item=stowedItem() ?? (hasRestoredBicycleHand() ? restoredBicycleHand : null);
+      const chickenHand=a.chicken && (item===a.chicken || item?.bird===a.chicken);
+      return a.life && (a.life.items.all().length || chickenHand) ? a.life.serialize() : null;
+    },
     load: ({ life }, s) => { life?.load(s, { hand: true }); },
   },
 
@@ -315,7 +343,7 @@ const restKey = (t) => `${t.name}|${t.spots[0] ? vec(t.spots[0].pos).join(',') :
 
 // the order things come back in: the clock before the lamps (dusk), the car before its seat, fronts before what
 // lies in them, the TV before sitting in front of it
-const ORDER = ['clock', 'car', 'lift', 'open', 'lamps', 'on', 'grill', 'coffee', 'sonos', 'parasol', 'things', 'jetpack', 'spidersuit', 'life', 'rest', 'cat'];
+const ORDER = ['clock', 'car', 'lift', 'open', 'lamps', 'on', 'grill', 'coffee', 'sonos', 'parasol', 'things', 'jetpack', 'spidersuit', 'life', 'rest', 'cat', 'bicycleHand'];
 
 /** The world part of a reload record. */
 export function saveWorld(a) {

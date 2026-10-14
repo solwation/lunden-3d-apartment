@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { forgetBicycleHand } from './keep.js';
 import { FISH as C, AIRFRYER } from './config.js';
 import { sfx } from './audio.js';
 import { heldItem, setHeld, handBusy } from './holdable.js';
@@ -127,6 +128,7 @@ export class FishFinger {
 
   /** Into the pan at slot i (a child of the pan: it rides along when the pan is carried). */
   intoPan(pan, i) {
+    forgetBicycleHand(this);
     this.held = false;
     if (heldItem() === this) setHeld(null);
     this.state = 'pan';
@@ -141,6 +143,7 @@ export class FishFinger {
 
   /** Into the air fryer's basket at slot i (#287): a child of the basket, lying along it. */
   intoFryer(fryer, i) {
+    forgetBicycleHand(this);
     this.held = false;
     if (heldItem() === this) setHeld(null);
     this.state = 'fryer';
@@ -181,6 +184,7 @@ export class FishFinger {
 
   /** Put it down at a world point on a table top / the floor, lying flat with a random turn. */
   placeAt(p, yaw = Math.random() * Math.PI * 2) {
+    forgetBicycleHand(this);
     this.held = false;
     if (heldItem() === this) setHeld(null);
     this.state = 'placed';
@@ -202,6 +206,7 @@ export class FishFinger {
 
   /** Gone (eaten, back in the carton, cleared away). */
   hide() {
+    forgetBicycleHand(this);
     this.held = false;
     if (heldItem() === this) setHeld(null);
     this.state = 'box';
@@ -291,6 +296,20 @@ export class FishPack {
       get blockedText() { return pack.holding?.fried ? 'Den är stekt nu – ät upp den!' : undefined; }, // a fried one does not go back (#214)
       toggle: () => this.press() };
     box.userData.door = this.target;
+  }
+
+  /** #1034: restore the already withdrawn portion, never press()/withdraw a second time. */
+  saveStowed(item) {
+    if (!this.fingers.includes(item) || item.state !== 'held') return null;
+    return { id: item.portionId, seq: this.portionSeq, left: this.left, bites: item.bites, cook: item.cook, hot: item.hot };
+  }
+  loadStowed(s) {
+    const id = typeof s.id === 'string' && /^fish:([0-9]+)$/.exec(s.id), integer = n => Number.isSafeInteger(n) && n >= 0;
+    if (!id || !integer(s.seq) || +id[1] < 1 || +id[1] > s.seq || !integer(s.left) || s.left >= C.n || !integer(s.bites) || s.bites >= C.bites || ![s.cook,s.hot].every(n => Number.isFinite(n) && n >= 0)) return null;
+    let item = this.fingers.find(f => f.portionId === s.id);
+    if (!item) { item = new FishFinger(this); this.fingers.push(item); }
+    this.portionSeq = Math.max(this.portionSeq,s.seq); this.left = s.left;
+    Object.assign(item,{portionId:s.id,cook:s.cook,hot:s.hot}); item.setBites(s.bites); item.paint(); item.take(); return item;
   }
 
   /** The fish finger in the hand, if that is what you hold. */

@@ -35,7 +35,8 @@ export function restoreBicycleHand() {
   if (item.broken || item.model.parent || item.state !== saved.state || (item.lifeItem && (item.life.items.get(item.item.id) !== item.item || item.item.place.at !== 'hand'))) return; // reset/removal must never resurrect an old instance
   current = item; item.held = true;
   parent?.add(item.model); item.model.position.copy(pos); item.model.quaternion.copy(quat); item.model.scale.copy(scale); item.model.visible = visible;
-  item.lastYaw = item.camera.rotation.y; item.lastPitch = item.camera.rotation.x;
+  const camera = item.camera ?? (parent?.isCamera ? parent : null);
+  if (camera?.isCamera) { item.lastYaw = camera.rotation.y; item.lastPitch = camera.rotation.x; }
 }
 
 /** The item in the visitor's hand, or null. */

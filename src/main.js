@@ -55,7 +55,7 @@ import { HitchLog } from './hitchlog.js';
 import { applySeason } from './seasons.js';
 import { ChristmasSeason } from './christmas.js';
 import { saveResume, saveSession, takeResume } from './resume.js';
-import { saveWorld, loadWorld } from './keep.js';
+import { saveWorld, loadWorld, hasRestoredBicycleHand } from './keep.js';
 import { lifeDev, devScenario, Life } from './life.js';
 import { DishProgramme } from './dishwasher.js';
 import { buildDropoff } from './waste.js';
@@ -2681,7 +2681,7 @@ const placeNow = () => {
 };
 function saveCurrentResume(extra) { const p = placeNow(); if (p) saveResume({ ...p, ...extra }); }
 // F5 carries on (#203): the place goes to this tab's sessionStorage every 2 s and when the page goes away
-const keepSession = () => { const p = played && !resetHome.going && placeNow(); if (p) saveSession(player.riding ? { ...p, world: keepWorld() } : p); };
+const keepSession = () => { const p = played && !resetHome.going && placeNow(); if (p) saveSession(player.riding || hasRestoredBicycleHand() ? { ...p, world: keepWorld() } : p); };
 setInterval(keepSession, 2000);
 window.addEventListener('pagehide', keepSession);
 window.addEventListener('pagehide', () => { if (life.dirty) life.flush(); }); // the life sim's stock (#371)
@@ -2868,7 +2868,7 @@ function continueAfterReload(r) {
   setTimeout(() => { reloadedEl.hidden = true; }, RELOAD_NOTE_S * 1000 + 700);
 }
 // the world's state for a reload made by the page (#277, keep.js): what each part needs
-const keepApp = { life, jetpack, suit, car, world, lights, day, grill, sonos, patio, holdables, cups, beer, chicken, scene, rest, cat, BREEDS, VARIANTS,
+const keepApp = { bicycleStow: { fruit, fish, fries, chicken }, life, jetpack, suit, car, world, lights, day, grill, sonos, patio, holdables, cups, beer, chicken, scene, rest, cat, BREEDS, VARIANTS,
   sitAt: (target, spot, stand) => sitAt(target, spot, stand, true) };
 function keepWorld() { try { return saveWorld(keepApp); } catch (e) { console.warn('keep', e); return null; } }
 // Phone: a restored WebGL context reloads the page, because textures freed after upload (#628) would re-upload blank. Same

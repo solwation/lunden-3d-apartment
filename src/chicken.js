@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { Holdable, setHeld, heldItem } from './holdable.js';
+import { forgetBicycleHand } from './keep.js';
+import { Holdable, setHeld, heldItem, isStowed } from './holdable.js';
 import { sfx } from './audio.js';
 import { chicken } from './fridge.js';
 import { CHICKEN as C } from './config.js';
@@ -95,6 +96,7 @@ export class Chicken extends Holdable {
 
   intoGrill() {
     if (!this.held || !this.grill?.on) { this.life?.say('Tänd grillen först.'); return false; }
+    forgetBicycleHand(this);
     this.held = false; setHeld(null);
     this.grill.object.add(this.model);
     this.model.position.copy(this.grill.grateTop);
@@ -109,16 +111,17 @@ export class Chicken extends Holdable {
     return this.inGrill ? { grill: true } : this.placed ? { pos: this.where().toArray(), quat: this.model.getWorldQuaternion(new THREE.Quaternion()).toArray() } : null;
   }
 
-  take() {
+  take({silent=false} = {}) {
     const fromGrill = this.inGrill;
     if (heldItem() && heldItem() !== this) return;
     this.lastRest = this.placementState();
     super.take(); this.inPan = this.inGrill = false; this.plate.visible = true; this.model.scale.setScalar(1);
     this.retarget(); this.life && (this.life.dirty = true);
-    this.event('chickenTaken', { surface: fromGrill ? 'grill' : 'other' });
+    if(!silent)this.event('chickenTaken', { surface: fromGrill ? 'grill' : 'other' });
   }
 
   goHome({ silent = false } = {}) {
+    forgetBicycleHand(this);
     this.inPan = this.inGrill = false;
     if (this.plate) this.plate.visible = true;
     this.model.scale.setScalar(1); super.goHome();
@@ -140,7 +143,7 @@ export class Chicken extends Holdable {
   saveState() {
     return { v: 1, generation: this.generation, cooked: this.cooked, brown: this.brownK ?? 0, done: this.done, burnt: this.burnt,
       rewarded: this.rewarded, burntCounted: this.burntCounted, gone: this.parts.map(p => !!p.gone), bodyLeft: this.bodyLeft,
-      place: this.held ? this.lastRest ?? null : this.placementState() };
+      place: this.held || isStowed(this) ? this.lastRest ?? null : this.placementState() };
   }
 
   loadState(s) {
@@ -165,6 +168,28 @@ export class Chicken extends Holdable {
     this.smokeT = 0; this.paint(this.done ? 1 : Math.min(1, this.cooked / C.cookSeconds), this.brownK);
     this.retarget(); // no completion/reward events on restoration
   }
+
+  /** #1034: x.chicken owns the bird; this record only identifies its already held portion. */
+  saveStowed(item) {
+    if (item === this) return { whole:true, generation:this.generation };
+    if (item !== this.piece || !item.isChickenPiece) return null;
+    return { whole:false, generation:this.generation, part:item.part ? this.parts.indexOf(item.part) : null,
+      body:item.part ? null : item.meta.bodyIdx, bites:item.bites, id:item.portionId };
+  }
+  loadStowed(s) {
+    const source=this.life?.loadedX?.chicken;
+    if (!source || source.v!==1 || !Number.isSafeInteger(s.generation) || s.generation<0 || s.generation!==this.generation || s.generation!==source.generation || typeof s.whole!=='boolean') return null;
+    if (s.whole) { this.take({silent:true}); return this; }
+    if (!this.done || !Number.isSafeInteger(s.bites) || s.bites<0 || s.bites>=C.bites) return null;
+    const part=Number.isInteger(s.part)&&s.part>=0&&s.part<this.parts.length ? this.parts[s.part] : null;
+    if (part ? !part.gone || s.body!==null : s.part!==null || !Number.isInteger(s.body) || s.body<1 || s.body>C.bodyBites || this.bodyLeft!==s.body-1) return null;
+    const id=part ? `chicken:${this.generation}:part:${s.part}` : `chicken:${this.generation}:body:${s.body}`;
+    if(s.id!==id)return null;
+    this.piece?.model.removeFromParent();
+    const item=new ChickenPiece(this,part,part?.meshes??this.body,{partIdx:s.part,bodyIdx:s.body,generation:this.generation});
+    item.bites=s.bites; item.model.scale.setScalar(1-s.bites/(C.bites+.4)); this.piece=item; item.take(); return item;
+  }
+  placeAt(p,yaw) { forgetBicycleHand(this); super.placeAt(p,yaw); }
 
   /** Colour by how far it is cooked: 0 raw … 1 golden; `dark` 0…1 = darker still from frying on. */
   paint(k, dark = 0) { for (const s of this.skins) s.m.color.copy(s.raw).lerp(s.c0, k).multiplyScalar(1 - C.darken * dark); }
@@ -294,6 +319,7 @@ export class ChickenPiece {
 
   /** Something else was taken (or F): the piece goes back on the bird. */
   putBack() {
+    forgetBicycleHand(this);
     if (!this.held) return;
     this.held = false;
     if (heldItem() === this) setHeld(null);
@@ -316,6 +342,7 @@ export class ChickenPiece {
       this.bites++;
       this.model.scale.setScalar(1 - this.bites / (C.bites + 0.4));
       if (this.bites >= C.bites) { // eaten
+        forgetBicycleHand(this);
         const portionId = this.portionId;
         this.held = false;
         setHeld(null);

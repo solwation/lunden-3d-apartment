@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { forgetBicycleHand } from './keep.js';
 import { FRIES as FR, DRINKS as D } from './config.js';
 import { sfx } from './audio.js';
 import { Holdable, heldItem, setHeld, handBusy } from './holdable.js';
@@ -206,6 +207,7 @@ export class FriesBunch {
   }
 
   placeAt(p, yaw = Math.random() * Math.PI * 2) {
+    forgetBicycleHand(this);
     this.held = false;
     if (heldItem() === this) setHeld(null);
     this.state = 'placed';
@@ -222,6 +224,7 @@ export class FriesBunch {
 
   /** Gone (eaten, cleared away). */
   hide() {
+    forgetBicycleHand(this);
     this.held = false;
     if (heldItem() === this) setHeld(null);
     this.state = 'pool';
@@ -326,6 +329,23 @@ export class Fries {
       return sp;
     });
     this.paint();
+  }
+
+  /** #1034: one already served bunch and its source amounts, not all loose portions. */
+  saveStowed(item) {
+    if (!this.bunches.includes(item) || item.state !== 'held') return null;
+    return { id:item.portionId, seq:this.portionSeq, n:item.n, cook:item.cook, hot:item.hot,
+      bag:this.bag.left, count:this.count, sourceCook:this.cook, sourceHot:this.hot };
+  }
+  loadStowed(s) {
+    const id = typeof s.id === 'string' && /^fries:([0-9]+)$/.exec(s.id), integer = n => Number.isSafeInteger(n) && n >= 0;
+    if (!id || !integer(s.seq) || +id[1] < 1 || +id[1] > s.seq || !integer(s.n) || s.n < 1 || s.n > FR.bunch || !integer(s.bag) || s.bag > FR.portions || !integer(s.count) || s.count+s.n > FR.portion*FR.max || ![s.cook,s.hot,s.sourceCook,s.sourceHot].every(n => Number.isFinite(n) && n >= 0)) return null;
+    let item = this.bunches.find(b => b.portionId === s.id);
+    if (!item) { item = new FriesBunch(this); this.bunches.push(item); }
+    this.portionSeq = Math.max(this.portionSeq,s.seq); this.bag.left=s.bag; this.bag.shape();
+    Object.assign(this,{count:s.count,cook:s.sourceCook,hot:s.sourceHot,falling:0}); this.heap.count=s.count;
+    this.spots.forEach((p,i)=>{p.start=-1;this.heap.setMatrixAt(i,p.m);}); this.heap.instanceMatrix.needsUpdate=true; this.paint();
+    Object.assign(item,{portionId:s.id,n:s.n,cook:s.cook,hot:s.hot}); item.sticks.forEach((m,i)=>{m.visible=i<s.n;}); cookColour(item.mat.color,s.cook); item.take(); return item;
   }
 
   get done() { return this.count > 0 && this.cook >= FR.golden; }

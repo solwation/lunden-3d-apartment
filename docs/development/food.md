@@ -176,3 +176,9 @@ including the air-fryer/fries checks. An asynchronous fixture exception produces
 previous PASS/FAIL rows. The original cooking assertions and full-render 900×600 iframe remain unchanged. Actual run
 through `runtests cooktest --jobs 1`: **82 PASS, 0 FAIL**, 132.925 s, no pageerrors; loaded `/index.html` without `test`,
 controller false, measured viewport 900×600. Log and mode evidence: `/tmp/runtests-229228/cooktest.log`, `summary.json`.
+
+### Bicycle-stowed portions (#1034)
+
+FruitBowl, FishPack, Fries and Chicken expose explicit `saveStowed(item)` / `loadStowed(state)` owner adapters used only by keep’s actual bicycle-hand bridge. They restore one existing logical portion without a second bowl/carton/heap withdrawal, consumption or reward. Fruit uses the existing slot and private shape; Fish and Fries reuse or create the one matching pool model and preserve its portion sequence/source counts. Putting it away or consuming/resetting it ends the restored-hand receipt immediately.
+
+Chicken’s existing Life extra remains authoritative and loads first. Whole/part/body restoration preserves generation/cook/reward/gone/bodyLeft; an existing gone part or already withdrawn body index must substantiate the pointer. No breakOff or cooking/consumption callback is replayed. Silent whole-bird take only restores its held state. This does not add general persistence of all other loose food; the remaining unique-object bridge is #1035. `tools/bicyclestowfoodtest.cjs` exercises real owners/Player/Life/keep and actual browser reloads with controlled appliance/collision collaborators, without World/WebGL.

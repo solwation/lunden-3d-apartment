@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { forgetBicycleHand } from './keep.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { FRUIT as C } from './config.js';
 import { sfx } from './audio.js';
@@ -154,6 +155,7 @@ export class Fruit {
 
   /** Back in its spot in the bowl. */
   home() {
+    forgetBicycleHand(this);
     const s = this.spec;
     this.held = false;
     if (heldItem() === this) setHeld(null);
@@ -166,6 +168,7 @@ export class Fruit {
 
   /** Whole again (F). */
   restore() {
+    forgetBicycleHand(this);
     this.bites = 0; this.bite = 0; this.peeled = false; this.scoops = [];
     this.generation++;
     this.portionId = `fruit:${this.slot}:${this.generation}`;
@@ -244,6 +247,7 @@ export class Fruit {
 
   /** Put it down on a table top / the floor at world point p, a random turn. */
   placeAt(p, yaw = Math.random() * Math.PI * 2) {
+    forgetBicycleHand(this);
     this.held = false;
     if (heldItem() === this) setHeld(null);
     this.state = 'placed';
@@ -358,6 +362,22 @@ export class FruitBowl {
     pick.userData.door = this.target;
   }
 
+  /** #1034: one actually stowed fruit; other loose bowl contents retain their existing policy. */
+  saveStowed(item) {
+    if (!this.fruit.includes(item) || item.state !== 'held') return null;
+    return { slot: item.slot, kind: item.kind, generation: item.generation, bites: item.bites, peeled: item.peeled,
+      scoops: item.scoops.map(s => ({ c: s.c.toArray(), ...(s.n ? { n: s.n.toArray() } : { R: s.R }) })) };
+  }
+  loadStowed(s) {
+    const item = this.fruit[s.slot], integer = n => Number.isSafeInteger(n) && n >= 0;
+    const vector = v => Array.isArray(v) && v.length === 3 && v.every(n => Number.isFinite(n) && Math.abs(n) <= 1);
+    if (!integer(s.slot) || !item || typeof s.kind !== 'string' || item.kind !== s.kind || !integer(s.generation) || !integer(s.bites) || s.bites >= C.bites[item.kind] || typeof s.peeled !== 'boolean' || (s.peeled && !PEELED[item.kind]) || !Array.isArray(s.scoops) || s.scoops.length !== s.bites-(s.peeled?1:0) || (PEELED[item.kind] && s.peeled !== (s.bites>0))) return null;
+    if (!s.scoops.every(b => b && vector(b.c) && (item.kind === 'banana' ? vector(b.n) && b.n.reduce((n,v) => n + v*v,0) > .5 : Number.isFinite(b.R) && b.R > 0 && b.R <= 1))) return null;
+    item.generation = s.generation; item.portionId = `fruit:${item.slot}:${s.generation}`;
+    item.bites = s.bites; item.peeled = s.peeled; item.scoops = s.scoops.map(b => ({ c: new THREE.Vector3(...b.c), ...(item.kind === 'banana' ? { n: new THREE.Vector3(...b.n) } : { R: b.R }) }));
+    item.reshape(); item.take(); return item; // no bite/eaten/domain callback
+  }
+
   /** E targets now: the fruit in the bowl or lying out, and the bowl itself while something is in the hand. */
   targets() {
     const t = this.fruit.filter((f) => f.state === 'bowl' || f.state === 'placed').map((f) => f.model);
@@ -366,6 +386,7 @@ export class FruitBowl {
   }
 
   eaten(f) {
+    forgetBicycleHand(f);
     const portionId = f.portionId;
     f.held = false;
     if (heldItem() === f) setHeld(null);
