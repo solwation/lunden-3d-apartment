@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { fallDamage } from './falldamage.js';
 import { recordPlayerKill, awardPvpRange } from './stats.js';
 import { HitMarker } from './hitmarker.js';
-import { COMBAT as C, TOYS, pvpHitPoints, PVP_HEAD_BOXES as HB, rifleBoxHeadContact, rifleHeadBaseY } from './config.js';
+import { COMBAT as C, TOYS, pvpHitPoints, PVP_HEAD_BOXES as HB, rifleBoxHeadContact, rifleHeadBaseY, straightBoxHeadContact } from './config.js';
 import { nerfSegments, nerfPlayerContact } from './nerf.js';
 import { combatWorldHits, combatWorldPath, combatWorldPathBlocked, prepareCombatWorld } from './combatworld.js';
 
@@ -164,12 +164,12 @@ export class Combat {
   }
 
   /** Shared logical head boxes; native body contact below the neck keeps torso/limb obstruction. */
-  rifleContact() {
+  rifleContact(key = 'rifle') {
     this.camera.getWorldPosition(eye); this.camera.getWorldDirection(dir);
     const round = (v, n) => Math.round(v * n) / n;
     const o = eye.clone().set(...eye.toArray().map(v => round(v, 100)));
     const raw = dir.clone().set(...dir.toArray().map(v => round(v, 1000))), direction = raw.clone().normalize();
-    const range = this.rules.weapons.rifle.range;
+    const range = this.rules.weapons[key].range;
     ray.set(o, direction); ray.far = range; ray.layers.mask = this.camera.layers.mask; ray.camera = this.camera;
     let best = null;
     for (const g of this.foes()) {
@@ -191,6 +191,21 @@ export class Combat {
       if (combatWorldHits(this.scene, this.ghosts.group, this.camera, ray).length) best = null;
     }
     return { o, d: raw, target: best?.g ?? null, hc: best?.hc ?? null };
+  }
+
+  /** Preserve the existing body/cone target; only an actual unobstructed ray can add head damage. */
+  straightContact(key) {
+    const target = this.aim(key), contact = this.rifleContact(key);
+    // A saber is still a swing/cone: it cannot acquire a new target outside its old attack.
+    if (key === 'saber' && contact.target !== target) return { ...contact, target, hc: null };
+    if (contact.hc && target && target !== contact.target) {
+      const a = target.feet.clone().setY(target.feet.y + C.body[0]);
+      const b = target.feet.clone().setY(target.feet.y + C.body[1]);
+      const [, along] = rayToSegment(contact.o, contact.d.clone().normalize(), this.rules.weapons[key].range, a, b);
+      const headAlong = contact.o.distanceTo(new THREE.Vector3(...contact.hc.slice(1)));
+      if (along < headAlong) return { ...contact, target, hc: null };
+    }
+    return contact.hc ? contact : { ...contact, target, hc: null };
   }
 
   /** Whom `key` hits now: the nearest armed player along the view (the saber: in front within reach; the bow: on the
@@ -257,8 +272,8 @@ export class Combat {
         }, () => job.finish(null));
       return null;
     }
-    if (key === 'rifle') {
-      const contact = this.rifleContact(), g = contact.target;
+    if (['rifle', 'wand', 'web', 'saber'].includes(key)) {
+      const contact = key === 'rifle' ? this.rifleContact() : this.straightContact(key), g = contact.target;
       const wire = { w: key, o: contact.o.toArray(), d: contact.d.toArray(), to: g?.id, ...(contact.hc ? { hc: contact.hc } : {}) };
       this.lastShot = { ...wire, to: g?.id ?? null }; this.ghosts.fire(wire); this.fired++;
       return g;
@@ -356,7 +371,19 @@ export class Combat {
       for (const g of this.foes()) {
         const dy = me.y - g.feet.y; // their feet this far under ours; their head at most jetBelow[1] under our feet
         if (dy >= C.jetBelow[0] && dy - C.body[1] <= C.jetBelow[1] && Math.hypot(g.feet.x - me.x, g.feet.z - me.z) <= C.jetAcross) {
-          this.ghosts.fire({ w: 'jetpack', o: [me.x, me.y + 1, me.z], d: [0, -1, 0], to: g.id });
+          const round = v => Math.round(v * 100) / 100;
+          const shot = { t: 'a', w: 'jetpack', o: [me.x, me.y + 1, me.z].map(round), d: [0, -1, 0], to: g.id };
+          const state = { p: g.feet.toArray(), r: g.root.rotation.y, c: g.crouch ?? 0 };
+          const head = straightBoxHeadContact(g.id, state, shot, this.rules.weapons.jetpack.range);
+          if (head) {
+            const origin = new THREE.Vector3(...shot.o), point = new THREE.Vector3(...head.point);
+            ray.set(origin, new THREE.Vector3(0, -1, 0)); ray.far = head.distance;
+            ray.layers.mask = this.camera.layers.mask; ray.camera = this.camera;
+            g.root.updateMatrixWorld(true);
+            const body = ray.intersectObject(g.avatar.mesh, false).find(hit => hit.point.y < rifleHeadBaseY(g.id, state));
+            if (!body && this.clear(origin, point.clone().add(new THREE.Vector3(0, -.3, 0)))) shot.hc = [HB.version, ...head.point];
+          }
+          this.lastShot = shot; this.ghosts.fire(shot);
           this.jetT = this.rules.weapons?.jetpack?.every ?? 1;
           break;
         }

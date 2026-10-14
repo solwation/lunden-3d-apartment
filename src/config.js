@@ -4945,3 +4945,17 @@ export function rifleBoxHeadContact(seed, state, origin, direction, range) {
   }
   return Number.isFinite(first) ? { distance: first, point: origin.map((x, i) => x + unit[i] * first) } : null;
 }
+
+
+/** #893: straight attacks share the logical boxes, while keeping their original attack shape. */
+export function straightBoxHeadContact(seed, state, shot, range) {
+  if (!['wand', 'web', 'saber', 'jetpack'].includes(shot?.w) || shot.t !== 'a') return null;
+  if (shot.w === 'jetpack') {
+    // The original flame is vertical, from one metre above the shooter's feet.
+    if (shot.d?.[0] !== 0 || shot.d?.[1] !== -1 || shot.d?.[2] !== 0 || !state?.p || !shot.o) return null;
+    const below = shot.o[1] - 1 - state.p[1];
+    if (below < COMBAT.jetBelow[0] || below - COMBAT.body[1] > COMBAT.jetBelow[1] ||
+      Math.hypot(shot.o[0] - state.p[0], shot.o[2] - state.p[2]) > COMBAT.jetAcross) return null;
+  }
+  return rifleBoxHeadContact(seed, state, shot.o, shot.d, range);
+}

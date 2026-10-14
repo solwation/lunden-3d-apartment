@@ -3,7 +3,7 @@
 Read [CLAUDE.md](../../CLAUDE.md) first for shared workflow rules. Paths in code spans and module maps are relative to the repository root.
 
 Related: [deployment](deployment.md), [life](life.md).
-## Current rifle head contract (#974)
+## Current shared head contract (#974, #893, #894)
 
 Version 2 uses three shared logical head boxes from `PVP_HEAD_BOXES` in `src/config.js`:
 lower, middle and a smaller crown. Dimensions are gameplay approximations, not exact
@@ -20,7 +20,19 @@ accepted target state and rounded shot; the coordinates in `hc` do not award dam
 Confirmed head/body damage stays 2/1; range, rate, points, marker, life recovery and
 kill receipts are unchanged. Interpolated client poses can differ from the server's
 latest snapshot, so a predicted head hit may still receive body damage. This does
-not promise exact mesh contact or lag compensation. Straight weapons are handled separately by #893.
+not promise exact mesh contact or lag compensation.
+
+#893 reuses the same boxes for wand/web rays. `Combat.straightContact` preserves
+existing capsule body targets and saber swing/cone eligibility; a saber receives
+head damage only if its actual aim ray also reaches the selected head before a
+native body surface or world obstacle. The jetpack retains its old vertical flame
+footprint and target order. It may add a head contact only along its actual downward
+ray, from the existing feet+1m origin, before native body/world obstruction. Offset
+flame contacts remain body damage. The shared `straightBoxHeadContact` validates the
+weapon/ray/range and original jet footprint; PlayerRoom recomputes the intersection.
+Cached packets without a v2 contact remain body damage. Bow/ball stay on their
+existing paths until separately delivered. The jetpack's older volume-based body
+fallback does not gain a new world-obstacle rule in this head-damage change (tracked separately as #978).
 
 Nerf (#894) reuses the same boxes along its existing falling muzzle path. `src/nerf.js`
 shares the 20 ms `stepNerf` segments, floor clip and travel limit with the Worker;

@@ -183,7 +183,7 @@ Uppdragslappen visar tre aktiva vardagsuppdrag med sina poäng och delmål; klar
 Nollställning av statistiken rensar även dynamiska räknare, så inga gamla poäng ligger kvar.
 
 Stridens skottkontroller kan hoppa över tomma delar av stora modeller efter en begränsad bakgrundsförberedelse; lokala träffytor kopierar världskoordinater utan en tillfällig array per hörn; fysisk telefonverifiering återstår. [Mätning och begränsningar](docs/validation/issue-715/README.md).
-Gevärets huvudträffar använder tre enkla boxar för huvudets nederdel, mitt och smalare topp. De följer spelarens storlek, riktning och hukning; hår, ögon och små animationer påverkar inte skadan. En huvudträff tar två hjärtan, en kroppsträff ett. Väggar stoppar skott och serverbekräftade träffar visar ”Träff!” eller ”Huvudträff!”.
+Gevärets, trollstavens och spindelnätets huvudträffar använder tre enkla boxar för huvudets nederdel, mitt och smalare topp. De följer spelarens storlek, riktning och hukning; hår, ögon och små animationer påverkar inte skadan. En huvudträff tar två hjärtan, en kroppsträff ett. Väggar stoppar skott och serverbekräftade träffar visar ”Träff!” eller ”Huvudträff!”. Ljussabelns sving kan ge huvudträff längs siktriktningen, och jetpackens nedåtriktade låga när den träffar huvudet. Övriga kontakter behåller kroppsskadan.
 
 Olofs bil kommer fram lite snabbare och har en grön ÖVNINGSKÖR-skylt baktill när han är i bilen.
 

@@ -19,6 +19,19 @@ apartment bootstrap. Its Avatar/box picture renders real geometry in a small deb
 scene. It does not certify the apartment, mobile stability or rendering performance.
 Existing polygon certificates are historical v1 evidence, not requirements for v2.
 
+`PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/straightheadtest.cjs game worker output`
+checks #893 using actual native Ghosts/Combat/Avatar meshes and two local PlayerRoom
+WebSockets, with bootstrap/WebGL blocked. Wand/web/saber cover head/body, genuine
+body-before-head, miss and wall; saber also keeps its cone. Jetpack covers its actual
+update-triggered downward flame, offset body contact, footprint miss and no head
+bonus through a native wall. Its pre-existing volume/body fallback through a wall
+is separately recorded, not accepted as obstacle-safe gameplay. One lethal head
+receipt checks unchanged points, kill UUID/reset and receipt replay. Original HUD
+screenshots are DOM evidence, not World/game-render/phone/FPS evidence. Start the
+isolated services with `python3 tools/devserve.py 8870 .` and `node cloudflare/dev.mjs
+8871`. The Node fake-runtime suite is `node --test cloudflare/headboxes.test.mjs`.
+
+
 ## Module and test map
 
 ```text

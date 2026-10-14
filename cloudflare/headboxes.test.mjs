@@ -78,3 +78,33 @@ test('cleanShot accepts legacy and box contact versions, drops unknown versions'
   assert.equal(cleanShot(JSON.stringify({ ...input, hc: [1, 2, 1.6, 0] })).hc[0], 1);
   assert.equal(cleanShot(JSON.stringify({ ...input, hc: [9, 2, 1.6, 0] })).hc, undefined);
 });
+
+
+test('straight weapon box heads retain body fallback, legacy packets, origin/range and flame direction', async () => {
+  const oldNow = Date.now; let now = Date.UTC(2026, 9, 14, 13); Date.now = () => now;
+  const env = {}; env.PLAYERS = fakeNamespace(PlayerRoom, env);
+  const connect = async () => {
+    const response = await worker.fetch(new Request('https://w/players', { headers: { Upgrade: 'websocket', Origin: 'https://solwation.github.io' } }), env);
+    const ws = response.webSocket, got = []; ws.addEventListener('message', e => { if (e.data !== 'q') got.push(JSON.parse(e.data)); });
+    await settle(env); return { ws, got, id: got[0].i, send: m => ws.send(JSON.stringify(m)) };
+  };
+  try {
+    for (const w of ['wand', 'web', 'saber', 'jetpack']) {
+      const a = await connect(), b = await connect(), tall = avatarLook(b.id).tall;
+      const feet = w === 'jetpack' ? [2, 2, 0] : [0, 0, 0];
+      a.send({ p: feet, r: 0, h: w }); b.send({ p: [2, 0, 0], r: 0, h: 'rifle' }); await settle(env);
+      const base = { t: 'a', w, to: b.id, o: w === 'jetpack' ? [2, 3, 0] : [0, Math.round(1.64*tall*100)/100, 0], d: w === 'jetpack' ? [0, -1, 0] : [1, 0, 0], hc: [2, 2, 1.6, 0] };
+      const fire = async shot => { now += 1100; a.send(shot); await settle(env); return a.got.filter(m => m.t === 'hit').at(-1); };
+      assert.equal((await fire(base)).l, 8, w+' actual box costs two');
+      assert.equal((await fire({ ...base, hc: undefined })).l, 7, w+' cached no-hc stays one');
+      const bad = w === 'jetpack' ? { ...base, d: [1, 0, 0] } : { ...base, o: [0, .9, 0] };
+      assert.equal((await fire(bad)).head, undefined, w+' a contact claim cannot turn a body ray into a head');
+      const origin = { ...base, o: [0, 20, 0] };
+      assert.equal((await fire(origin)).head, undefined, w+' far origin cannot award head');
+      const count = a.got.filter(m => m.t === 'hit').length;
+      a.send(base); await settle(env);
+      assert.equal(a.got.filter(m => m.t === 'hit').length, count, w+' existing attack rate remains enforced');
+      a.ws.close(); b.ws.close(); await settle(env);
+    }
+  } finally { Date.now = oldNow; }
+});
