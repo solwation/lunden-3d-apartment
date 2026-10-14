@@ -885,7 +885,7 @@ confirmed write requires a live recognized Worker capability and an accepted
 response. Offline failures retain accepted cached choices/revisions and restore
 the accepted material. Cached unknown preset IDs round-trip untouched and render
 the original until understood. Ordinary viewers apply shared choices without
-unlock/edit mode; future curtain and textile families remain separate work.
+unlock/edit mode; the fixed curtain family below reuses this protocol, while further textile families remain separate work.
 
 
 #669 hidden-start heartbeat diagnosis (2026-10-14): `snapshot().s` now follows
