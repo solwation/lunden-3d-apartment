@@ -6196,3 +6196,79 @@ match the runtime commit; all792 prior changelog row bytes and actual
 changelog_stamp.py id→publication times are preserved. Final archive is
 `/home/devcontainers/.local/state/lunden-orkester/20261013-priority/worker-1010-artifacts`.
 #1010 completes only six indoor seats; #1011/#1012 and #998/#991 remain separate.
+
+
+### IDANÄS upholstery (#1011)
+
+With own devserve8878 and local Worker8879, run
+`LUNDEN_SECRET_TEST_INPUTS=/external/private/inputs.json PLAYWRIGHT_MODULE=...
+CHROME_PATH=... node tools/bedupholsterytest.cjs http://localhost:8878
+http://localhost:8879 /tmp/bed-upholstery-native`. Immutable baseline furniture
+source comes from Git16398b66f9de50cd8ce2f56c10b9436aa6411cb2; additive export
+aliases expose the original bed/bunk/daybed functions without changing bodies.
+The actual normal merge preparation supplies bedCare attributes to other
+meshes and preserves the original keep-list/moving drawer groups. Original
+canvas texture content, repeat and channel compare to the baseline rather
+than requiring separately constructed texture UUIDs to match.
+
+Native34/34/CLI0: actual IDANÄS positions/normals/UV/index/local poses/finishes/
+rest/footprint equal before; exact original handle/map/roughness/UV restore,
+complete merged UV1/channel1 and both wash hooks, two actual Openable.toggle/
+update0→1→0 cycles with unchanged interiors/pyjamas and .45m drawer vector,
+melange channel0/6×6/.95 restored, original bedCare/soft placement surfaces/
+Pingping home retained. Actual MYDAL×2/HEMNES wood controls keep original
+geometry/finishes and no frame-textile surface.600 previews keep one private
+frame material, original melange and only two generic maps.
+
+Actual source-bound main/index UI, local Worker HTTP and two ordinary browser
+contexts check preview0PUT/cancel0PUT/confirm/active poll/new visit/real reload,
+concurrent pose/material/409/offline-cache/original and keyboard/touch controls.
+Ordinary begin/ghost/confirm movement uses a supplied valid fixture position,
+not a full-apartment collision claim. No WebGL during native. Schema16/16/CLI0
+checks exactly one IDANÄS ID, unrelated-family/woodbed/bedlinen rejection,
+legacy move/material preservation and original/409 semantics. Runtime/helper
+unchanged for other drawers; no production test writes or physical-phone/FPS
+claims. Component-image evidence and final-publication parity are recorded
+after their actual runs below.
+
+
+One actual #1011 component renderer passed16checks/CLI0/10.428s, four inspected
+900×560/DPR1 side-by-side PNGs,12 small before/after/pair passes: patterned
+closed/open from one side, restored original closed/open from the opposite
+side. Compiled UV1/link status and all bound corners pass; per-bed closed
+before=after23calls/23648triangles, open25/27536. Raw actual drawer states
+are t0/1, position[0,0,.45] when open and contents visible only while open.
+Bedding/Pingping/wood legs/interiors remain visible unchanged; pictures are
+components, not an apartment/physical-phone/FPS certification.
+
+After each real initial GET, only render contexts stop their poll timer and
+restore local component surfaces to original; native peer polls remain ordinary.
+Actual accepted revision/choices before/after are retained in
+render-initial-state.json. This prevents local known shared choices or a poll
+from replacing an intentionally staged component pattern during capture,
+without altering controller/server behavior. This fixture issue was corrected
+before the sole render start; no failed/second GPU run is invented. Native1's
+driver, the pre-render freeze revisions and executed renderer bytes are retained
+separately. Artifacts `/tmp/lunden-priority-1011/` include all source freezes/
+content-addressed source bytes, actual CLI/owners/startticks/PPid/cwd, raw drawer/
+model proof and four PNG/JSON.
+
+
+Final #1011 rebase pins9203c90 (including1014 runtime4b1b026 and its
+completion, plus Surface1005 food changes). Fresh final3-native34/34/CLI0
+(11.644s) and schema16/16/CLI0 passed against its actual new index/UI/
+Rearrange/helper. Earlier fa67 native results preceded1014; a shared origin
+reference had advanced after that rebase and was initially misattributed as
+docs in an orchestration message. Explicit ancestry/pinned-target evidence
+corrects this; those earlier runs are not1014 acceptance. A module-log checker
+had zero coverage because devserve does not supply those GET logs; module
+absence was not inferred, and the actual suite was rerun on rebased source.
+
+All four rendered bed/idanasFrame/addDrawer/rbox bodies and helper part/
+patternMap bodies match the executed image source byte-for-byte. The whole
+helper differs through1014's backward-compatible options/vertex-detail support:
+IDANÄS uses default textile/klädsel/replaceDetails=false, so its new replacement
+branch is inactive; ordinary map/color/UV behavior is verified by the fresh
+native run. The images retain their earlier component freeze, not whole-helper
+byte parity, newly rendered imports or a World/phone claim. Full drift/source
+bytes and corrected provenance are archived.

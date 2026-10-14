@@ -63,14 +63,15 @@ function rbox(w, h, d, x, y, z, material, r = 0.04) {
  * piece's +z). `grip(o)` adds a handle in the drawer's frame (front face at z 0). The drawer is an Openable
  * in g.userData.targets and kept out of the merge.
  */
-function addDrawer(g, name, { x, y, zf, w, h, depth, front, inner = front, rot = 0, out = depth * 0.75, grip, fill, who, seed = 1 }) {
+function addDrawer(g, name, { x, y, zf, w, h, depth, front, inner = front, rot = 0, out = depth * 0.75, grip, fill, who, seed = 1, frontPart }) {
   const anchor = new THREE.Group();
   anchor.position.set(x, y, zf);
   anchor.rotation.y = rot;
   const o = new THREE.Group();
   anchor.add(o);
   const bh = h * 0.7, t = 0.008, bw = w - 0.03;
-  o.add(rbox(w, h, 0.018, 0, h / 2, -0.009, front, 0.003));
+  const face = rbox(w, h, 0.018, 0, h / 2, -0.009, front, 0.003);
+  o.add(frontPart ? frontPart(face) : face);
   o.add(rbox(bw, t, depth, 0, 0.02, -0.018 - depth / 2, inner, 0.002));                         // bottom
   for (const s of [-1, 1]) o.add(rbox(t, bh, depth, s * (bw - t) / 2, 0.02 + bh / 2, -0.018 - depth / 2, inner, 0.002)); // sides
   o.add(rbox(bw, bh, t, 0, 0.02 + bh / 2, -0.018 - depth + t / 2, inner, 0.002));              // back
@@ -688,9 +689,10 @@ function melangeTexture(hex) {
  * a tall sloping plain upholstered headboard (the real one's buttons are the fabric's colour and barely show, #299). Local −z = the head end; the mattress is item.w × item.l. */
 function idanasFrame(g, item) {
   const I = IDANAS, w = item.w, l = item.l, z0 = -l / 2;
-  const fabric = new THREE.MeshStandardMaterial({ color: 0xffffff, map: melangeTexture(I.color), roughness: 0.95 });
+  const textile = upholsterySurface(g, 'Sängstommens tyg');
+  const fabric = textile.material(new THREE.MeshStandardMaterial({ color: 0xffffff, map: melangeTexture(I.color), roughness: 0.95 }));
   const sideW = (I.W - w) / 2, frameL = l + 0.03, fy = (I.legH + I.frameH) / 2, fh = I.frameH - I.legH;
-  g.add(rbox(I.W, fh, frameL, 0, fy, 0.015, fabric, 0.03));
+  g.add(textile.part(rbox(I.W, fh, frameL, 0, fy, 0.015, fabric, 0.03)));
   // drawer fronts (two each side), a slim shadow line round each. #402: every face stands ≥ 5 mm off the one behind it
   // (the frame's side) — 1–2 mm apart they flickered through each other on a real GPU at a distance
   const line = new THREE.MeshStandardMaterial({ color: 0x2a2c2f, roughness: 0.9 });
@@ -698,7 +700,7 @@ function idanasFrame(g, item) {
     g.add(rbox(0.008, fh - 0.12, l * 0.42, s * (I.W / 2 + 0.001), fy, -l * 0.23, line, 0.002)); // outer face 5 mm out
     // the foot-end drawers open (#103); the head-end ones stay shut behind the bedside tables
     addDrawer(g, 'sänglådan', { x: s * (I.W / 2 + 0.005), y: fy - (fh - 0.12) / 2, zf: l * 0.23, w: l * 0.42, h: fh - 0.12, depth: sideW + w / 2 - 0.1,
-      front: fabric, inner: new THREE.MeshStandardMaterial({ color: 0xf2f0ea, roughness: 0.8 }), rot: s * Math.PI / 2, out: 0.45,
+      front: fabric, frontPart: mesh => textile.part(mesh), inner: new THREE.MeshStandardMaterial({ color: 0xf2f0ea, roughness: 0.8 }), rot: s * Math.PI / 2, out: 0.45,
       fill: 'pyjamas', who: 'Sovrum 1', seed: 30 + s }); // pyjamas and spare bedding (#230)
   }
   const wood = new THREE.MeshStandardMaterial({ color: 0xd8b98c, roughness: 0.6 });
@@ -712,7 +714,7 @@ function idanasFrame(g, item) {
   const hb = new THREE.Group();
   hb.position.set(0, I.legH, z0 - I.head / 2);
   hb.rotation.x = -0.08;
-  hb.add(rbox(I.W, I.headH - I.legH, I.head * 0.75, 0, (I.headH - I.legH) / 2, 0, fabric, 0.06));
+  hb.add(textile.part(rbox(I.W, I.headH - I.legH, I.head * 0.75, 0, (I.headH - I.legH) / 2, 0, fabric, 0.06)));
   g.add(hb);
   return I.frameH - 0.1 + I.mattressH; // the mattress top: it sits 10 cm into the frame
 }
@@ -751,7 +753,7 @@ function addDuvet(g, mat, w, y, zh, len, D, o = {}) {
 
 /** Bed: upholstered base on legs, mattress, duvet, pillows, headboard. Local −z = head end.
  * `item.bedding` gives the cosy check bedding (Sovrum 1); otherwise plain linen. */
-function bed(item) {
+export function bed(item) {
   const g = new THREE.Group();
   const w = item.w, l = item.l, z0 = -l / 2;
   let top = 0.52; // mattress top (the plain bed)

@@ -165,3 +165,23 @@ separation remain intact. Katalog/Worker44f3be6 was actually deployed before
 this client. Bed frames and patio seat pads remain in #1011/#1012; wood beds,
 paper-cord SKANSNÄS, ABORG steel, bamboo, bedlinen/bedCare and loose cushions
 are not silently enrolled. Browser/model evidence and limits are in verification.md.
+
+
+## IDANÄS frame upholstery (#1011)
+
+Only the actual Sovrum1 IDANÄS receives a `textile` surface, named
+“Sängstommens tyg”, through the same private upholsterySurface handles.
+The main padded frame, tilted headboard and two moving drawer fronts share
+that selection. `addDrawer` accepts an optional explicit `frontPart` callback
+while building its front; other callers follow the unchanged default. Drawer
+interiors, contents, dark shadow seams, wood legs, mattress/bedding, bedCare
+attributes and Pingping remain separate. Original melange map/channel0, its
+6×6 repeat, color and .95 roughness restore on the same private handle;
+patterns use UV1 after static merge and on the kept moving fronts. No new
+mesh/triangle/draw is added to the ordinary closed/open bed.
+
+`BED_UPHOLSTERY_MATERIAL_IDS` separately whitelists the actual existing
+`f-bed-1-4.35-2.55-0-0`; it does not change the six indoor-seat IDs/types.
+Two MYDAL frames and HEMNES daybed are wood and are not enrolled, nor is the
+generic upholstered bed variant that has no actual FURNITURE instance.
+Bedlinen/cushion families retain their own scope and material identities.

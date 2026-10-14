@@ -315,3 +315,6 @@ Soffan, fåtöljen, pallen, gamingstolen, barnstolen och sminkpallen har egna
 klädselval under **Möblera om → Meny → Välj tyg och mönster**. Förhandsvisa
 lokalt och bekräfta för besökarna, eller återställ originaltyget; ben, stommar
 och lösa kuddar/plädar behåller sina material.
+
+IDANÄS-sängens stomme, gavel och lådfronter kan också få eget tyg i samma
+materialbibliotek. Sänglinne, träben och lådornas insidor behåller sina material.
