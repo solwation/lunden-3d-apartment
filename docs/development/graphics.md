@@ -208,3 +208,16 @@ It is now explicitly limited to the initial two component-proof instances;
 new/reloaded visitors retain the actual GET result untouched. A focused selector
 check covers different surface names with the same Original choice, and the HUD
 cache key includes both material piece ID and surface ID.
+
+Final #1014 native2 after the bounded component/HTTP separation and HUD fix passed
+37/37 (actualCLI0); shared Worker layout tests passed16/16CLI0. Publication
+`4b1b0264d63c679132e8260fddeed67069dd6b70` (ch796) records1411 source hashes.
+Nine executable whole paths match the final native exactly; incoming food wiring
+changed main.js outside all six byte-exact exercised production fragments.
+CUSHIONS/LANDSKRONA/LEVELS/MATERIAL_LIBRARY remain equal. All prior changelog raw
+rows/publication times are preserved. The rejected4c01b87 push was never published.
+Actual Pages38558606214/job115833827515 created this exact client deployment and
+reported success2026-10-14T11:44:40.2112767Z. Worker-first remains the actual
+573551e deployment described in storage.md. Render evidence remains four
+inspected pictures and two passing image/shader/budget checks, with processCLI1
+(10/12), not a green render-suite claim or full-World/phone verification.
