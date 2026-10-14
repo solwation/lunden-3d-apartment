@@ -19,6 +19,12 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   your issue's scope (pre-existing, or caused by someone else's change) gets its own issue titled `Bugg: …` with a
   `Lapp:` line, what fails, how to reproduce and the suspected cause/commit — then carry on and finish your own issue.
   Only fix it in your change if your change caused it.
+- **Check equivalent houses (user, 2026-10-14).** When fixing a house layout/geometry bug, inspect the equivalent
+  elements in the other relevant houses (A, B, C and L), including their data variants and shared implementation.
+  Do this without asking the user. Record which houses were checked, affected or not applicable in the issue/verification.
+  Fix a shared cause for every affected variant within that issue; independent findings get their own bug issues.
+  Preserve each house's actual dimensions, openings, intentional glass/passages and render budget. A fix or test in
+  one house is not evidence that its siblings work; use representative checks rather than new chains of micro-stories.
 - **Several agents work in parallel (other computers push to `main` too).** Never take an issue that
   is labelled `in-progress` (`gh issue list --state open --json number,title,labels`). Before starting
   **each** new issue: `git pull --rebase origin main`, then inspect `git status`. Preserve any uncommitted changes; use an isolated checkout when another agent

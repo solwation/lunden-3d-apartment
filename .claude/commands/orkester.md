@@ -127,6 +127,16 @@ Andra `/orkester`-sessioner kör på egna VM:ar och kan inte nås med SendMessag
   ansvaret i olika block/moduler enligt nedan. Välj inte ett lägre prioriterat eller yngre ärende bara för att undvika
   samma fil; endast en konkret beroendeblockering får motivera att det hoppas över, och den redovisas i #420.
 
+### Samma layoutbugg i andra hus (användaren, 2026-10-14)
+
+När en agent rättar layout/geometri i ett hus ska den automatiskt kontrollera motsvarande delar i övriga
+relevanta hus A/B/C/L, deras datavarianter och gemensamma kod. Redovisa i ärendet vilka hus som kontrollerats,
+är drabbade eller saknar motsvarande del. En gemensam grundorsak rättas för alla berörda varianter inom
+samma ärende; fristående fynd får egna buggärenden med vanlig prioritet. Kopiera inte ett hus mått eller
+öppningar till ett annat. Bevara avsiktligt glas/passager, kollision och renderbudget. Representativa prover
+räcker; skapa inte nya detaljkedjor eller omfattande bevismatriser. Kontroll av bara ett hus räcker inte
+som belägg för att alla hus fungerar. Regeln kräver ingen användarbekräftelse.
+
 ### Så att inget låser sig (förtydligande 2026-10-12, ur användarens önskan: allt ska bli klart så fort som möjligt)
 Samordningen får aldrig vara skälet till att en agentplats står tom eller ett issue ligger still. Därför:
 - Alla regler om att fylla platser, reservera och ta över nedan tillämpas **efter prioritetsordningen ovan**.

@@ -3,6 +3,16 @@
 Read [CLAUDE.md](../../CLAUDE.md) first for shared workflow rules. Paths in code spans and module maps are relative to the repository root.
 
 Related: [plan-material](plan-material.md), [environment](environment.md), [verification](verification.md).
+## Check corresponding houses
+
+The user requires house-layout fixes to check equivalent elements in A/B/C/L automatically.
+Shared CoreHouse code does not imply identical data or culling partitions. Inspect each relevant
+variant and record affected/unaffected/not-applicable results; use representative browser checks.
+Preserve per-house dimensions, intended openings/glass, collision and rendering budgets.
+User reports pending investigation: #976 distant see-through at B/C entrances after the A-only
+#887 fix; #975 green see-through obstruction on A basement→garage route; #977 missing basement
+door details/handles across the relevant houses. These reports are not verified diagnoses.
+
 ## Module and test map
 
 ```text
