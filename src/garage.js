@@ -21,7 +21,7 @@ import { escapeField, exitTexture, EXIT_CELLS, planTexture } from './escape.js';
 // or west of the garage door looking in (`near`). The parked cars are lit by pool lights (lights.extra, one spot per
 // area, no PointLight of our own) while the daylight is cut (DayCycle.under).
 
-const T = SITE.terrain, GD = T.garageDoor, F = G.floor, C = G.ceiling, S = G.stalls, ST = G.storage, LI = G.lights;
+const T = SITE.terrain, GD = T.garageDoor, F = G.floor, C = G.ceiling, S = G.stalls, ST = G.storage, LI = G.lights, DD = G.doorDetails;
 const westYAt = (x, z) => groundY(x, z);
 const RECTS = G.rects, R = Object.fromEntries(RECTS.map((r) => [r.id, r])), ENTR = R.entrance;
 const AREAS = [...new Set(RECTS.map((r) => r.area))];
@@ -233,6 +233,27 @@ export class Garage {
       // through the wall's depth, where the terrain's surface (the green "grass", y ≈ −0.8 over Hus A's basement) shows as a green strip
       this.areas[r.area].geos.shell.push(bake(flat(r.x0, r.x1, r.z0, r.z1, head, 1.5), WALL));
     }
+    // #977: Steel door frames (karmar) around doorways: jambs, header and threshold
+    const parkFrameBoxes = [];
+    for (const r of RECTS.filter((q) => q.door)) {
+      const along = r.x1 - r.x0 > r.z1 - r.z0;
+      const w = along ? r.x1 - r.x0 : r.z1 - r.z0;
+      const t = along ? r.z1 - r.z0 : r.x1 - r.x0;
+      const line = (along ? (r.z0 + r.z1) : (r.x0 + r.x1)) / 2;
+      const fw = DD.frameWidth, casing = t + DD.frameCasingProud * 2;
+      const headY = F + G.doorHead, jambH = G.doorHead, jambY = F + jambH / 2;
+      const fGeos = [
+        along ? box(fw, jambH, casing, r.x0 + fw / 2, jambY, line) : box(casing, jambH, fw, line, jambY, r.z0 + fw / 2),
+        along ? box(fw, jambH, casing, r.x1 - fw / 2, jambY, line) : box(casing, jambH, fw, line, jambY, r.z1 - fw / 2),
+        along ? box(w - 2 * fw, fw, casing, (r.x0 + r.x1) / 2, headY - fw / 2, line) : box(casing, fw, w - 2 * fw, line, headY - fw / 2, (r.z0 + r.z1) / 2),
+        along ? box(w - 2 * fw, DD.thresholdHeight, 0.08, (r.x0 + r.x1) / 2, F + DD.thresholdHeight / 2, line) : box(0.08, DD.thresholdHeight, w - 2 * fw, line, F + DD.thresholdHeight / 2, (r.z0 + r.z1) / 2),
+      ];
+      if (r.door.park) {
+        for (const g of fGeos) parkFrameBoxes.push(g.toNonIndexed());
+      } else {
+        for (const g of fGeos) this.areas[r.area].geos.shell.push(bake(g, DD.colors.frame));
+      }
+    }
     // the partial walls and the columns: concrete boxes (a yellow foot band on the columns)
     for (const [x0, x1, z0, z1] of G.partials) { put('shell', bake(box(x1 - x0, C - F, z1 - z0, (x0 + x1) / 2, (F + C) / 2, (z0 + z1) / 2), WALL), (x0 + x1) / 2, (z0 + z1) / 2); rectSegs(segs, x0, x1, z0, z1); }
     const K = G.columns.size;
@@ -410,28 +431,94 @@ export class Garage {
         const g = new THREE.PlaneGeometry(w, h).translate(w / 2, F + 0.05 + h / 2, 0), uv = g.attributes.uv;
         for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * w / 0.16, uv.getY(i) * h / 0.16);
         parts.push(g.toNonIndexed());
-        for (const [sx, sy, x, y] of [[0.03, h, 0.015, F + 0.05 + h / 2], [0.03, h, w - 0.015, F + 0.05 + h / 2], [w, 0.03, w / 2, F + 0.065], [w, 0.03, w / 2, F + 0.035 + h], [0.03, 0.12, w - 0.08, F + 1.05]]) {
-          const b = new THREE.BoxGeometry(sx, sy, 0.03).translate(x, y, 0).toNonIndexed(), u = b.attributes.uv;
+        const addMeshBox = (sx, sy, sz, px, py, pz) => {
+          const b = new THREE.BoxGeometry(sx, sy, sz).translate(px, py, pz).toNonIndexed(), u = b.attributes.uv;
           for (let i = 0; i < u.count; i++) u.setXY(i, 0.5, SOLID_V);
           parts.push(b);
+        };
+        // Stile and rail frame
+        addMeshBox(0.03, h, 0.03, 0.015, F + 0.05 + h / 2, 0);
+        addMeshBox(0.03, h, 0.03, w - 0.015, F + 0.05 + h / 2, 0);
+        addMeshBox(w, 0.03, 0.03, w / 2, F + 0.065, 0);
+        addMeshBox(w, 0.03, 0.03, w / 2, F + 0.035 + h, 0);
+        addMeshBox(w, 0.03, 0.03, w / 2, F + 1.05, 0); // mid rail
+        // 2 barrel hinges
+        for (const yPos of DD.cage.hinges.positions) {
+          addMeshBox(0.022, DD.cage.hinges.height, 0.025, 0.005, F + yPos, 0);
         }
-      } else parts.push(new THREE.BoxGeometry(w, h, 0.05).translate(w / 2, F + h / 2, 0).toNonIndexed(), new THREE.BoxGeometry(0.03, 0.03, 0.14).translate(w - 0.12, F + 1.05, 0).toNonIndexed());
+        // Hasp plate & padlock eye
+        addMeshBox(DD.cage.haspPlate[0], DD.cage.haspPlate[1], DD.cage.haspPlate[2], w - 0.055, F + 1.05, 0.018);
+        addMeshBox(DD.cage.haspLoop[0], DD.cage.haspLoop[1], DD.cage.haspLoop[2], w - 0.035, F + 1.05, 0.03);
+        // Pull handle on both faces
+        for (const s of [-1, 1]) {
+          addMeshBox(0.016, 0.016, 0.035, w - 0.075, F + 1.05 + 0.05, s * (0.015 + 0.0175));
+          addMeshBox(0.016, 0.016, 0.035, w - 0.075, F + 1.05 - 0.05, s * (0.015 + 0.0175));
+          addMeshBox(DD.cage.pullHandle[0], DD.cage.pullHandle[1], 0.016, w - 0.075, F + 1.05, s * (0.015 + 0.035));
+        }
+      } else {
+        const addSteelBox = (sx, sy, sz, px, py, pz, colorHex) => {
+          const b = new THREE.BoxGeometry(sx, sy, sz).translate(px, py, pz).toNonIndexed();
+          const c = new THREE.Color(colorHex), p = b.attributes.position, count = p.count;
+          const col = new Float32Array(count * 3);
+          for (let i = 0; i < count; i++) col.set([c.r, c.g, c.b], i * 3);
+          b.setAttribute('color', new THREE.BufferAttribute(col, 3));
+          parts.push(b);
+        };
+        const t = DD.leafThickness, lw = w - 0.01, lh = h - 0.015;
+        // Main steel leaf body
+        addSteelBox(lw, lh, t, 0.005 + lw / 2, F + 0.005 + lh / 2, 0, DD.colors.leaf);
+        // Rebated leaf perimeter trim (överfals)
+        addSteelBox(lw, 0.014, t + 0.006, 0.005 + lw / 2, F + 0.005 + lh - 0.007, 0, DD.colors.frame);
+        addSteelBox(0.014, lh, t + 0.006, 0.005 + lw - 0.007, F + 0.005 + lh / 2, 0, DD.colors.frame);
+        addSteelBox(0.014, lh, t + 0.004, 0.005 + 0.007, F + 0.005 + lh / 2, 0, DD.colors.frame);
+        // 3 heavy-duty welded barrel hinges on hinge edge
+        for (const yPos of DD.hinges.positions) {
+          addSteelBox(0.022, DD.hinges.height, 0.032, 0.005, F + yPos, 0, DD.colors.hinge);
+          addSteelBox(0.014, 0.05, 0.022, 0.012, F + yPos, 0, DD.colors.frame);
+        }
+        // Handle, escutcheon plate and lock cylinder on both faces
+        const hx = w - DD.handleBackset, hy = F + DD.handleHeight;
+        for (const s of [-1, 1]) {
+          // Escutcheon plate
+          addSteelBox(DD.escutcheon[0], DD.escutcheon[1], DD.escutcheon[2], hx, hy, s * (t / 2 + DD.escutcheon[2] / 2), DD.colors.plate);
+          // Lock cylinder / thumbturn housing and plug
+          addSteelBox(DD.cylinder[0], DD.cylinder[0], DD.cylinder[1], hx, hy + 0.08, s * (t / 2 + DD.escutcheon[2] + DD.cylinder[1] / 2), DD.colors.plate);
+          addSteelBox(0.014, 0.022, DD.cylinder[1] + 0.002, hx, hy + 0.08, s * (t / 2 + DD.escutcheon[2] + DD.cylinder[1] / 2), DD.colors.cylinder);
+          // Lever handle neck
+          addSteelBox(0.018, 0.018, DD.leverNeck, hx, hy, s * (t / 2 + DD.escutcheon[2] + DD.leverNeck / 2), DD.colors.plate);
+          // L-shaped lever pointing towards hinge
+          addSteelBox(DD.lever[0], DD.lever[1], DD.lever[2], hx - DD.lever[0] / 2, hy, s * (t / 2 + DD.escutcheon[2] + DD.leverNeck - DD.lever[2] / 2), DD.colors.lever);
+        }
+        // Latch bolt on strike edge
+        addSteelBox(0.012, 0.035, 0.018, w - 0.001, hy, 0, DD.colors.plate);
+      }
       parts.forEach((g) => g.deleteAttribute('normal'));
       return mergeGeometries(parts);
     };
     const cages = this.cageDoors.filter((d) => !d.steel), park = this.cageDoors.filter(d=>d.rect?.door?.park), steel = this.cageDoors.filter(d=>d.steel && !d.rect?.door?.park);
     this.parkObject=new THREE.Group();this.parkObject.name='park-basement-doors';
+    if (parkFrameBoxes.length) {
+      const parkFrameMesh = new THREE.Mesh(mergeGeometries(parkFrameBoxes), new THREE.MeshStandardMaterial({
+        color: DD.colors.frame,
+        roughness: 0.65,
+      }));
+      parkFrameMesh.castShadow = parkFrameMesh.receiveShadow = true;
+      this.parkObject.add(parkFrameMesh);
+    }
     this.leaves = new THREE.InstancedMesh(leafGeo(ST.door, 2.0, true), new THREE.MeshBasicMaterial({ map: meshTex, alphaTest: 0.5, side: THREE.DoubleSide }), cages.length);
-    this.steelLeaves = new THREE.InstancedMesh(leafGeo(ST.door, G.doorHead, false), new THREE.MeshBasicMaterial({ color: 0xffffff }), steel.length);
+    this.steelLeaves = new THREE.InstancedMesh(leafGeo(ST.door, G.doorHead, false), new THREE.MeshBasicMaterial({ color: 0xffffff, vertexColors: true }), steel.length);
     const parkGeo=this.steelLeaves.geometry.clone();parkGeo.computeVertexNormals(); // Basic steel geometry has no normals; outdoor lighting needs its own clone
-    this.parkLeaves=new THREE.InstancedMesh(parkGeo, new THREE.MeshStandardMaterial(G.parkDoorMaterial),park.length);
+    this.parkLeaves=new THREE.InstancedMesh(parkGeo, new THREE.MeshStandardMaterial({ ...G.parkDoorMaterial, color: 0xffffff, vertexColors: true }), park.length);
     this.parkLeaves.raycast=()=>{};this.parkLeaves.frustumCulled=false;this.parkLeaves.castShadow=this.parkLeaves.receiveShadow=true;this.parkObject.add(this.parkLeaves);
     for (const m of [this.leaves, this.steelLeaves]) { m.raycast = () => {}; m.frustumCulled = false; group.add(m); }
     const pickMat = new THREE.MeshBasicMaterial();
     this.targets = this.cageDoors.map((d) => {
       const exterior=!!d.rect?.door?.park, inst=exterior?this.parkLeaves:d.steel?this.steelLeaves:this.leaves, list=exterior?park:d.steel?steel:cages;
       d.inst = inst; d.index = list.indexOf(d);
-      if(!exterior)inst.setColorAt(d.index,new THREE.Color(d.steel?0x7d858b:0x9aa0a4).multiplyScalar(light(d.hx+d.out[0]*.6,F+1,d.hz+d.out[1]*.6)));
+      if(!exterior) {
+        const L = light(d.hx + d.out[0] * 0.6, F + 1, d.hz + d.out[1] * 0.6);
+        inst.setColorAt(d.index, new THREE.Color(d.steel ? 0xffffff : 0x9aa0a4).multiplyScalar(L));
+      }
       const pivot = new THREE.Object3D(); pivot.position.set(d.hx, 0, d.hz);
       const pick = new THREE.Mesh(new THREE.BoxGeometry(d.w, 2.0, 0.12), pickMat); pick.position.set(d.w / 2, F + 1.05, 0); pick.visible = false;
       pivot.add(pick);(exterior?this.parkObject:group).add(pivot);

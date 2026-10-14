@@ -1654,6 +1654,36 @@ export const GARAGE = {
   floorLift: .003, // existing visible floor offset, *guess*: shared by the park thresholds (#729)
   doorClearance: .25, // #523: assumed extra side clearance at actual basement doorways
   doorHead: 2.1, // ASSUMPTION: existing basement lintel height; shared with the A/B brick openings.
+  // #977: Basement & garage door details and hardware (steel doors and storage cages).
+  // Dimensions and offsets are visual assumptions (*guess*) based on Swedish standard commercial/basement
+  // steel doors (Daloc / Robust) and wire mesh storage partitions (Troax).
+  doorDetails: {
+    frameWidth: 0.045,       // *guess*: steel frame casing width lining doorway opening
+    frameCasingProud: 0.012, // *guess*: frame architrave casing proud of wall face
+    thresholdHeight: 0.018,  // *guess*: low steel threshold height at floor
+    leafThickness: 0.05,     // steel door leaf thickness (Daloc S30/S33)
+    handleHeight: 1.05,      // standard Swedish door handle height
+    handleBackset: 0.08,     // distance from strike edge to handle center
+    escutcheon: [0.055, 0.22, 0.006], // [width, height, projection] satin steel backplate
+    cylinder: [0.03, 0.012],         // [diameter, projection] lock cylinder / thumb turn housing
+    lever: [0.125, 0.018, 0.018],    // [length, height, depth] L-shaped lever handle
+    leverNeck: 0.035,                 // projection of handle neck from plate
+    hinges: { count: 3, height: 0.09, positions: [0.25, 1.05, 1.85] },
+    colors: {
+      leaf: 0x7d858b,
+      frame: 0x54585c,
+      plate: 0xc8ccd0,
+      lever: 0xdde0e4,
+      cylinder: 0x36393c,
+      hinge: 0x5a5f64,
+    },
+    cage: {
+      haspPlate: [0.05, 0.14, 0.008],
+      haspLoop: [0.02, 0.035, 0.035],
+      pullHandle: [0.016, 0.13, 0.045],
+      hinges: { count: 2, height: 0.08, positions: [0.35, 1.75] },
+    },
+  },
   ceiling: -0.35,     // ASSUMPTION: the deck + the courtyard's soil over it; 2.65 m clear (the door is 2.6)
   // DRAWING: each walkable rectangle → [room name, sensor area]. The entrance hall south of Hus C's rooms (INFART GARAGE),
   // open north-east into the big hall (BILPARKERING / CYKELPARKERING) under the courtyard, which runs east between Hus
