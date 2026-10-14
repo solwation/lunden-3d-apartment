@@ -1,3 +1,4 @@
+import { ballHeadContact } from '../src/ballflight.js';
 import { nerfHeadContact } from '../src/nerf.js';
 import { bowHeadContact } from '../src/bowflight.js';
 import { fallDamage } from '../src/falldamage.js';
@@ -446,10 +447,13 @@ export class PlayerRoom {
     const straightHead = shot.hc?.[0] === HB.version
       && Math.hypot(...shot.o.map((v, i) => v - a.s.p[i])) <= COMBAT.from
       && !!straightBoxHeadContact(b.i, b.s, shot, W.range);
+    const ballHead = w === 'ball' && shot.hc?.[0] === HB.version
+      && Math.hypot(...shot.o.map((v,i)=>v-a.s.p[i])) <= COMBAT.from
+      && !!ballHeadContact(b.i,b.s,shot,W.range);
     const bowHead = w === 'bow' && shot.hc?.[0] === HB.version
       && Math.hypot(...shot.o.map((v, i) => v - a.s.p[i])) <= COMBAT.from
       && !!bowHeadContact(b.i, b.s, shot, W.range);
-    const head = boxHead || nerfHead || straightHead || bowHead || (now - (b.movedAt ?? now) >= RH.stationaryMs && rifleHeadContact(b.i, b.s, shot, a.s.p, W.range, COMBAT.from, b.gt === undefined, { allowGreetingRightFirstTurn: b.gt !== undefined && rightFirstTurnFits(b.rightFirstTurn, b.s), allowGreetingFirstTurnRear: b.gt !== undefined && rearFirstTurnFits(b.rearFirstTurn, b.s), allowImmutableNoseDepth: b.headPoseFixed === true, allowImmutableNoseSide: b.headPoseFixed === true, allowJawFrontSide: b.headPoseFixed === true, allowGreetingLeftTurn: b.gt !== undefined && leftStandingTurnFits(b.leftStandingTurn, b.s), allowGreetingLeftTinyTurn: b.gt !== undefined && leftTinyPoseFits(b.leftTinyTurn, b.s), allowGreetingLeft: b.gt !== undefined && b.headPoseFixed === true, allowGreetingFront: b.gt !== undefined && b.headPoseFixed === true && b.turned === false, allowGreetingRight: b.gt !== undefined && b.headPoseFixed === true && b.turned === false, allowFront: b.gt === undefined && b.turned === false, allowRear: b.gt === undefined || b.headPoseFixed === true, allowGreetingAfterTurnRear: b.gt !== undefined && b.turned === true && knownFrontTurn(b.frontTurn), allowAfterTurnFront: b.gt === undefined && b.turned === true && knownFrontTurn(b.frontTurn), allowGreetingAfterTurnFront: b.gt !== undefined && b.turned === true && knownFrontTurn(b.frontTurn) }));
+    const head = ballHead || boxHead || nerfHead || straightHead || bowHead || (now - (b.movedAt ?? now) >= RH.stationaryMs && rifleHeadContact(b.i, b.s, shot, a.s.p, W.range, COMBAT.from, b.gt === undefined, { allowGreetingRightFirstTurn: b.gt !== undefined && rightFirstTurnFits(b.rightFirstTurn, b.s), allowGreetingFirstTurnRear: b.gt !== undefined && rearFirstTurnFits(b.rearFirstTurn, b.s), allowImmutableNoseDepth: b.headPoseFixed === true, allowImmutableNoseSide: b.headPoseFixed === true, allowJawFrontSide: b.headPoseFixed === true, allowGreetingLeftTurn: b.gt !== undefined && leftStandingTurnFits(b.leftStandingTurn, b.s), allowGreetingLeftTinyTurn: b.gt !== undefined && leftTinyPoseFits(b.leftTinyTurn, b.s), allowGreetingLeft: b.gt !== undefined && b.headPoseFixed === true, allowGreetingFront: b.gt !== undefined && b.headPoseFixed === true && b.turned === false, allowGreetingRight: b.gt !== undefined && b.headPoseFixed === true && b.turned === false, allowFront: b.gt === undefined && b.turned === false, allowRear: b.gt === undefined || b.headPoseFixed === true, allowGreetingAfterTurnRear: b.gt !== undefined && b.turned === true && knownFrontTurn(b.frontTurn), allowAfterTurnFront: b.gt === undefined && b.turned === true && knownFrontTurn(b.frontTurn), allowGreetingAfterTurnFront: b.gt !== undefined && b.turned === true && knownFrontTurn(b.frontTurn) }));
     const left = (b.l ?? COMBAT.lives) - (head ? RH.headDamage : RH.bodyDamage), dead = left <= 0;
     b.l = dead ? COMBAT.lives : left;
     this.recoveryClock(b, now);

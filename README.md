@@ -286,3 +286,7 @@ Jetpack flames now stop at solid walls and corners before damaging another playe
 while open passages and side contacts within the flame volume remain valid (#978).
 
 The actual entrance/lobby shells in Houses A, B and C remain visible beyond the lift/stair detail distance, using each house’s existing dimensions. House L’s open portik remains a through-passage (#976).
+Basketball PvP follows the real release and falling throw, including the existing
+ball radius and glass/solid/floor obstruction before the first contact (#980).
+The server confirms head2/body1; the original basket physics and scoring remain.
+See the [basketball launch contract and native checks](docs/development/interactions.md#basketball-pvp-launch-980).

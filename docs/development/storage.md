@@ -30,7 +30,9 @@ footprint and target order. It may add a head contact only along its actual down
 ray, from the existing feet+1m origin, before native body/world obstruction. Offset
 flame contacts remain body damage. The shared `straightBoxHeadContact` validates the
 weapon/ray/range and original jet footprint; PlayerRoom recomputes the intersection.
-Cached packets without a v2 contact remain body damage. The jetpack's volume-based body fallback now checks solid world obstacles (#978)
+Cached packets without a v2 contact remain body damage. Ball v2 contacts now use accepted-pose/radius-aware free-flight recomputation (#980);
+cached ball packets remain body1. See the [basketball launch contract](interactions.md#basketball-pvp-launch-980).
+The jetpack's volume-based body fallback now checks solid world obstacles (#978)
 from the actual rounded flame origin to the nearest surface of its existing body
 capsule, including side-offset targets inside the unchanged flame volume. The full
 finite ray reaches that contact without `clear()`'s .3 m shortening. A blocked body

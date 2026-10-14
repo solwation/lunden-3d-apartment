@@ -45,14 +45,14 @@ export function* nerfSegments(shot, range) {
 
 /** Existing full body capsule, clipped only above the shared logical neck (#894).
  * Analytic intervals preserve ordinary body hits outside the cosmetic mesh. */
-export function nerfBodyContact(origin, direction, length, feet, ceiling = Infinity) {
+export function nerfBodyContact(origin, direction, length, feet, ceiling = Infinity, padding = 0) {
   let first = Infinity;
   const clip = (near, far, low, high, o, d) => {
     if (d === 0) return o >= low && o <= high ? [near, far] : [1, -1];
     const a = (low - o) / d, b = (high - o) / d;
     return [Math.max(near, Math.min(a,b)), Math.min(far, Math.max(a,b))];
   };
-  const radius = COMBAT.hitRadius, bottom = feet[1]+COMBAT.body[0], top = feet[1]+COMBAT.body[1];
+  const radius = COMBAT.hitRadius + padding, bottom = feet[1]+COMBAT.body[0], top = feet[1]+COMBAT.body[1];
   const ox = origin[0]-feet[0], oz = origin[2]-feet[2], [dx,dy,dz] = direction;
   const accept = (a,b,c, low=-Infinity, high=Infinity) => {
     let near=0, far=length;
@@ -74,9 +74,9 @@ export function nerfBodyContact(origin, direction, length, feet, ceiling = Infin
 }
 
 /** Nearest head or existing body contact within one finite muzzle segment. */
-export function nerfPlayerContact(seed, state, segment) {
-  const head=rifleBoxHeadContact(seed,state,segment.origin,segment.direction,segment.length);
-  const body=nerfBodyContact(segment.origin,segment.direction,segment.length,state.p,rifleHeadBaseY(seed,state));
+export function nerfPlayerContact(seed, state, segment, radius = 0) {
+  const head=rifleBoxHeadContact(seed,state,segment.origin,segment.direction,segment.length,radius);
+  const body=nerfBodyContact(segment.origin,segment.direction,segment.length,state.p,rifleHeadBaseY(seed,state) + radius,radius);
   if (head && (body===null || head.distance<body)) return {distance:head.distance,point:head.point,head:true};
   return body===null?null:{distance:body,head:false};
 }

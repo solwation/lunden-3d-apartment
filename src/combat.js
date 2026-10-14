@@ -1,8 +1,9 @@
+import { ballSegments, ballPlayerContact } from './ballflight.js';
 import * as THREE from 'three';
 import { fallDamage } from './falldamage.js';
 import { recordPlayerKill, awardPvpRange } from './stats.js';
 import { HitMarker } from './hitmarker.js';
-import { COMBAT as C, TOYS, pvpHitPoints, PVP_HEAD_BOXES as HB, rifleBoxHeadContact, rifleHeadBaseY, straightBoxHeadContact } from './config.js';
+import { COMBAT as C, TOYS, BASKET, pvpHitPoints, PVP_HEAD_BOXES as HB, rifleBoxHeadContact, rifleHeadBaseY, straightBoxHeadContact } from './config.js';
 import { nerfSegments, nerfPlayerContact } from './nerf.js';
 import { bowSegments, bowPlayerContact } from './bowflight.js';
 import { combatWorldHits, combatWorldPath, combatWorldPathBlocked, prepareCombatWorld } from './combatworld.js';
@@ -50,8 +51,8 @@ export function nerfContact(origin, direction, length, feet) {
 
 export class Combat {
   /** ghosts (Ghosts), camera, scene, weapon(): key or '', feet(): our feet (Vector3), jetpack, onDie(): back to the start; score / hurt / sfx hooks. */
-  constructor({ ghosts, camera, scene, weapon, feet, jetpack = null, darts = null, sparkles = null, arrows = null, onDie = () => {}, onHit = () => {}, onHurt = () => {}, sfx = null }) {
-    Object.assign(this, { ghosts, camera, scene, weapon, feet, jetpack, darts, sparkles, arrows, onDie, onHitCb: onHit, onHurtCb: onHurt, sfx, lives: C.lives, jetT: 0, flashT: 0,
+  constructor({ ghosts, camera, scene, weapon, feet, jetpack = null, basket = null, darts = null, sparkles = null, arrows = null, onDie = () => {}, onHit = () => {}, onHurt = () => {}, sfx = null }) {
+    Object.assign(this, { ghosts, camera, scene, weapon, feet, jetpack, basket, darts, sparkles, arrows, onDie, onHitCb: onHit, onHurtCb: onHurt, sfx, lives: C.lives, jetT: 0, flashT: 0,
       hits: 0, hurts: 0, deaths: 0, fired: 0, seen: 0, lastShot: null, lastSeen: null });
     ghosts.onShot = (m, g) => this.remote(m, g);
     prepareCombatWorld(scene, ghosts.group, camera);
@@ -176,6 +177,29 @@ export class Combat {
     return target;
   }
 
+  /** Actual free basketball launch, with the product's original solid/radius/hoop policy. */
+  ballCandidate(shot, range) {
+    if (!this.basket || !shot?.s) return null;
+    for (const segment of ballSegments({o:shot.o.toArray(),d:shot.d.toArray(),s:shot.s},range)) {
+      const origin=new THREE.Vector3(...segment.origin), direction=new THREE.Vector3(...segment.direction);
+      let best=null;
+      for(const foe of this.foes()) {
+        const hit=ballPlayerContact(foe.id,{p:foe.feet.toArray(),r:foe.root.rotation.y,c:foe.crouch??0},segment);
+        if(hit&&(!best||hit.distance<best.distance))best={...hit,target:foe};
+      }
+      const length=best?.distance??segment.length;
+      // Exactly Basket.cast's existing forward-radius and resting-floor checks.
+      const endpoint=origin.clone().addScaledVector(direction,length);
+      if(this.basket.cast(origin,endpoint.clone().addScaledVector(direction,BASKET.ball.r)))return null;
+      const ground=this.basket.cast(endpoint,endpoint.clone().add(new THREE.Vector3(0,-BASKET.ball.r-.004,0)));
+      if(ground?.normal.y>.5)return null;
+      const velocity=new THREE.Vector3(...segment.velocity);
+      if(this.basket.hoop.collide(endpoint.clone(),velocity,BASKET.ball.r)>0)return null;
+      if(best)return {target:best.target,hc:best.head?[HB.version,...best.point]:null};
+    }
+    return null;
+  }
+
   /** Shared logical head boxes; native body contact below the neck keeps torso/limb obstruction. */
   rifleContact(key = 'rifle') {
     this.camera.getWorldPosition(eye); this.camera.getWorldDirection(dir);
@@ -229,6 +253,7 @@ export class Combat {
     if (key === 'rifle') return this.rifleContact().target;
     if (key === 'nerf' && shot) return this.aimNerf(shot, W.range);
     if (key === 'bow' && shot?.s) return this.bowContact(shot, W.range).target;
+    if (key === 'ball' && shot) return this.ballCandidate(shot,W.range)?.target??null;
     this.camera.getWorldPosition(eye);
     this.camera.getWorldDirection(dir);
     const d = dir.clone();
@@ -290,6 +315,15 @@ export class Combat {
       const wire={w:key,o:contact.o,d:contact.d,s:contact.s,to:contact.target?.id,...(contact.hc?{hc:contact.hc}:{})};
       this.lastShot={...wire,to:contact.target?.id??null};this.ghosts.fire(wire);this.fired++;
       return contact.target;
+    }
+    if(key==='ball' && shot?.s) {
+      const round=(v,n)=>Math.round(v*n)/n;
+      const launch={o:shot.o.clone().set(...shot.o.toArray().map(v=>round(v,100))),
+        d:shot.d.clone().set(...shot.d.toArray().map(v=>round(v,1000))),s:round(shot.s,100)};
+      const contact=this.ballCandidate(launch,this.rules.weapons.ball.range),target=contact?.target;
+      const wire={w:key,o:launch.o.toArray(),d:launch.d.toArray(),s:launch.s,to:target?.id,
+        ...(contact?.hc?{hc:contact.hc}:{})};
+      this.lastShot={...wire,to:target?.id??null};this.ghosts.fire(wire);this.fired++;return target??null;
     }
     if (['rifle', 'wand', 'web', 'saber'].includes(key)) {
       const contact = key === 'rifle' ? this.rifleContact() : this.straightContact(key), g = contact.target;

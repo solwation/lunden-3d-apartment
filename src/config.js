@@ -4917,10 +4917,10 @@ export function rifleHeadBaseY(seed, state) {
 }
 
 /** First entry into any logical head box. The ray is normalized before scaling, so distance remains WORLD metres. */
-export function rifleBoxHeadContact(seed, state, origin, direction, range) {
+export function rifleBoxHeadContact(seed, state, origin, direction, range, radius = 0) {
   const pose = rifleBoxPose(seed, state), H = PVP_HEAD_BOXES;
   const vector = v => Array.isArray(v) && v.length === 3 && v.every(Number.isFinite);
-  if (!pose || !vector(origin) || origin.some(x => Math.abs(x) > H.maxCoordinate) || !vector(direction) || !Number.isFinite(range) || range < 0) return null;
+  if (!Number.isFinite(radius) || radius < 0 || radius > 1 || !pose || !vector(origin) || origin.some(x => Math.abs(x) > H.maxCoordinate) || !vector(direction) || !Number.isFinite(range) || range < 0) return null;
   const length = Math.hypot(...direction);
   if (!Number.isFinite(length) || length === 0) return null;
   const unit = direction.map(x => x / length);
@@ -4934,7 +4934,12 @@ export function rifleBoxHeadContact(seed, state, origin, direction, range) {
   const o = inverse(origin.map((x, i) => x - state.p[i]), true), d = inverse(unit, false);
   let first = Infinity;
   for (const box of H.boxes) {
-    const low = [-box.halfWidth, box.low, box.back], high = [box.halfWidth, box.high, box.front];
+    // #980: a finite ball uses a simple padded logical box. The projected world
+    // radius follows the existing nonuniform scale/crouch transform; default 0 is unchanged.
+    const pad = [radius / pose.width, radius * Math.hypot(pose.leanCos / pose.tall, pose.leanSin / pose.width),
+      radius * Math.hypot(pose.leanSin / pose.tall, pose.leanCos / pose.width)];
+    const low = [-box.halfWidth - pad[0], box.low - pad[1], box.back - pad[2]],
+      high = [box.halfWidth + pad[0], box.high + pad[1], box.front + pad[2]];
     let near = 0, far = range;
     for (let axis = 0; axis < 3 && near <= far; axis++) {
       if (d[axis] === 0) { if (o[axis] < low[axis] || o[axis] > high[axis]) far = -1; continue; }

@@ -1232,3 +1232,42 @@ scope. Active movement #893 does not circularly block a later standing return.
 ## Courtyard bicycles (#906)
 
 All five existing courtyard bicycles use the same E/action, joystick/WASD, explicit cycling prompt, saddle camera and safe dismount as the NW bicycles. Their `courtyard-0` through `courtyard-4` identities keep the original rack coordinates. The shared world register now contains both groups; its collision polygons include every extracted bicycle. No new save key or mounted resume is introduced: reload returns bicycles to their original rack and restores the rider safely standing.
+
+
+## Basketball PvP launch (#980)
+
+`Combat` receives the actual `Basketball` object. `main.js` keeps its existing
+`onUse` wrapper and captures `shotFrom` plus the original release velocity; the
+ball-only branch rounds that launch to the ordinary WS precision. `ballflight.js`
+predicts free flight using 20 ms outer slices and Basket.idle's existing gravity-before-
+move / at-most-4-cm substep law. Actual visual dt can differ; this is a finite gameplay
+prediction, not exact equality for every frame cadence. Basket.js and its bounce,
+roll, catch, hoop and scoring behavior are unchanged.
+
+The same three simple logical head boxes are padded by the ball's configured radius
+(projected through appearance/crouch scale); the existing logical body capsule uses
+that radius too. These padded boxes are a gameplay approximation, not exact sphere-
+versus-anatomy geometry. The first head/body contact wins. Before awarding it, actual
+`Basketball.cast` checks the forward radius and resting floor, and actual hoop
+collision ends prediction. Glass and doors retain Basket.cast's original policy.
+There are no additional PvP contacts after a bounce or obstacle. The Worker has no
+world map; it recomputes the first head/body intersection from accepted target pose
+and rounded launch. A v2 claim may become ordinary body damage if poses differ;
+cached packets without the new contact remain body1. Rates, points, health/recovery,
+marker and kill/replay rules use their existing paths.
+
+`tools/ballheadtest.cjs GAME WORKER OUT` combines CPU trajectory/radius/body-first
+checks, actual Basketball.onUse/release and representative idle16.7/20ms comparisons,
+with native Combat and two real local Worker WS peers. No World/WebGL/phone/FPS
+verification is implied by its DOM image or selected finite trajectories.
+
+Final #980 native after the #979 merge passed 39/39 with actual CLI 0, including
+cached body1, a forged head claim on a real product body path, authoritative rate,
+first-body/later-head, and lethal/replay controls. Actual Basket.idle endpoint
+errors in the selected free-flight inputs were 0.436 mm at16.7ms and 0 mm at20ms;
+6 cm is the fixture acceptance threshold, not a measured error or an all-dt bound.
+The unchanged Basket.js preserves bounce/roll/catch/hoop scoring. Focused existing
+v2/Nerf/bow Node tests passed 11/11. The broad earlier suite remains 52/53 / CLI1
+on the old v1 randomized lateral-greeting assertion (players.test.mjs:657/#945);
+that failure and the first unwired-driver attempt (37 checks/9 failures) are retained,
+not counted as green. Native ack PNG verifies the ordinary Huvudträff HUD only.
