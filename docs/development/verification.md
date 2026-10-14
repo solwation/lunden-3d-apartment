@@ -5456,3 +5456,11 @@ CLI0 after that rebase; relevant Worker chat/typing tests2/CLI0 and chat filter/
 real-room tests3/CLI0 also passed. Full apartment `chattest.cjs` was not rerun;
 its explicitly controlled expiry steps were updated to the new monotonic
 expiry fields, preserving its separate World scope.
+
+Published runtime `38abfdba3ee0a42e293f07eead64e1fdbe208b40` includes changelog764;
+all247 measured executable bytes match that commit, and all762 older changelog
+rows and publication timestamps are preserved. Pages run38528166742/
+job115733377032 completed the actual deploy-pages step successfully. The shared
+config change also triggered Worker run38528166703/job115733376973: its log
+records actual `npx wrangler deploy`, Uploaded/Deployed at2026-10-14T07:25:31–32Z.
+This verifies publication, not an additional live-device gameplay test.
