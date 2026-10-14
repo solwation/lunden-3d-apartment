@@ -31,6 +31,29 @@ screenshots are DOM evidence, not World/game-render/phone/FPS evidence. Start th
 isolated services with `python3 tools/devserve.py 8870 .` and `node cloudflare/dev.mjs
 8871`. The Node fake-runtime suite is `node --test cloudflare/headboxes.test.mjs`.
 
+#893 publication `44aaf5940111b1332aa123515dad0784b9a7a0e1`, grouped head-hits776:
+post-Nerf-rebase native5 passed81/81 actualCLI0, final shared Node53/53CLI0.
+Every one of260 publication hashes matches the commit; all older changelog bytes
+remain exact. All runtime/driver bytes measured in native5 are unchanged; the only
+later incoming frozen-path difference was a Nerf Node fixture, rerun in final53.
+A separately archived exact pre-893 ae64de9 Worker (253 git-blob-verified source
+files) passed5/5 actualCLI0 with the new native client's v2 straight contact
+remaining body1/HP9. Ordinary no-hc packets for all four weapons, false head claims,
+origin/rate limits and shared recovery/lethal/replay behavior pass Node. Actual
+head/body/legacy DOM PNGs were opened; no apartment, GPU or phone was exercised.
+Worker38540493118/job115773736687 executed genuine wrangler deploy at09:11:37Z,
+Uploaded/Deployed09:11:41Z; Pages38540492744/job115773735256 executed deploy-pages
+for that exact SHA and reported success09:11:37Z,2026-10-14. This is publication,
+not live-device acceptance. Existing jetpack body-wall bug is #978: independently
+archived7c2dd25 Combat reproduces it with5 checks/CLI0; no head bonus crosses the
+wall. Artifacts/frozen producers and original failures remain in
+`/tmp/lunden-priority-893` and the orchestration run directory. Native1's64-check
+run had4 fixture failures; native2's73/73 receipt run had loading-covered PNGs;
+native3's81-check run had one expired marker capture. Early capture after the
+actual receipt fixes only the fixture timing. The initial legacy temporary producer
+failed syntax before connecting; both its CLI1 and the corrected5/5CLI0 are retained.
+
+
 
 ## Module and test map
 
