@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { BASKET as B, LEVELS } from './config.js';
+import { BASKET as B, LEVELS, OUTDOOR, GARAGE, SITE } from './config.js';
 import { sfx } from './audio.js';
 import { Holdable, setHeld } from './holdable.js';
 import { badge } from './stats.js';
@@ -319,7 +319,7 @@ export class Basketball extends Holdable {
       pick: { pos: home.clone(), size: [0.3, 0.3, 0.3] },
       cooldown: 0.4, useLabel: 'Skjut', grip: [b.r * 0.45, -b.r * 0.85, 0.02], handPose: 'palm', // carried on the open palm (#238)
     });
-    Object.assign(this, { marks, hoop, world, clickIsUse: true, hitsTarget: false, flying: false, v: new THREE.Vector3(), air: 0, dribbling: false, armed: true });
+    Object.assign(this, { marks, hoop, world, clickIsUse: true, hitsTarget: false, flying: false, v: new THREE.Vector3(), air: 0, dribbling: false, armed: true, returning: false, outOfBoundsTimer: 0 });
     hoop.ball = this;
     this.isFreeThrow = false;
     this.altIcon = '🏀'; this.altLabel = 'Studsa bollen';
@@ -334,10 +334,70 @@ export class Basketball extends Holdable {
 
   take() {
     this.flying = false;
+    this.returning = false;
+    this.outOfBoundsTimer = 0;
     super.take();
   }
 
-  goHome() { this.flying = false; super.goHome(); }
+  goHome() {
+    this.flying = false;
+    this.returning = false;
+    this.outOfBoundsTimer = 0;
+    super.goHome();
+  }
+
+  /** Target position on the court at the free throw line / court centre (#1036). */
+  courtReturnSpot() {
+    const H = B.hoop, C = B.court ?? {};
+    if (C.returnSpot) {
+      const rx = C.returnSpot.x, rz = C.returnSpot.z;
+      const ry = groundY(rx, rz) + (B.ball?.r ?? 0.115);
+      return new THREE.Vector3(rx, ry, rz);
+    }
+    const baseZ = C.baselineLocalZ ?? -0.30;
+    const ftZ = baseZ + (C.freeThrowDist ?? 5.80);
+    const local = new THREE.Vector3(0, 0, ftZ);
+    this.hoop.object.updateMatrixWorld(true);
+    const worldPos = this.hoop.object.localToWorld(local);
+    worldPos.y = groundY(worldPos.x, worldPos.z) + (B.ball?.r ?? 0.115);
+    return worldPos;
+  }
+
+  /** Check whether a point `c` is within the accessible / walkable world space (#1036). */
+  isWalkable(c, isResting = false) {
+    const bounds = B.return?.outBounds ?? OUTDOOR;
+    if (c.x < bounds.x0 || c.x > bounds.x1 || c.z < bounds.z0 || c.z > bounds.z1) return false;
+    if (c.y < -15) return false;
+
+    const W = this.world?.size?.x ?? 5.75, D = this.world?.size?.z ?? 12.75;
+    const insideFlat = c.x >= 0 && c.x <= W && c.z >= 0 && c.z <= D;
+
+    if (insideFlat) {
+      if ((c.y >= -0.2 && c.y <= 1.8) || (c.y >= 3.0 && c.y <= 4.5)) return true;
+      if (c.y >= 0 && c.y <= 3.5) return true;
+    }
+
+    if (this.world?.core?.contains?.(c.x, c.z, c.y)) return true;
+    if (this.world?.garage?.inside?.(c.x, c.z) && c.y < (GARAGE?.floor ?? -3) + 1.5) return true;
+    if (this.world?.unitAt?.(c.x, c.z, c.y)) return true;
+    if (this.world?.roofs?.under?.(c.x, c.z, c.y, 0.4)) return true;
+
+    const gy = groundY(c.x, c.z);
+    if (c.y < gy - 0.4) return false;
+
+    for (const b of SITE.blocks ?? []) {
+      if (c.x >= b.x0 && c.x <= b.x1 && c.z >= b.z0 && c.z <= b.z1 && c.y < 15) return false;
+    }
+    if (c.z >= 0 && c.z <= D && (c.x < 0 || c.x > W)) {
+      if (!this.world?.unitAt?.(c.x, c.z, c.y)) return false;
+    }
+
+    if (c.z >= 12.75 && c.z <= 18.0 && (c.x < 0.04 || c.x > 5.71)) return false;
+    if (c.y < -1.5 && c.z >= 0 && c.z <= 55 && c.x >= -70 && c.x <= 10) return false;
+    if (isResting && c.y > gy + 2.2 && !this.world?.roofs?.under?.(c.x, c.z, c.y, 0.4)) return false;
+
+    return true;
+  }
 
   /** An identified free throw from the free throw line (#1018). Scores 1 point. */
   shootFreeThrow() {
@@ -370,6 +430,8 @@ export class Basketball extends Holdable {
   release(v, dribble) {
     const from = this.hand();
     this.held = false;
+    this.returning = false;
+    this.outOfBoundsTimer = 0;
     setHeld(null); // the hand is empty (putBack does nothing: it is no longer held)
     this.scene.add(this.model);
     this.model.position.copy(from);
@@ -444,8 +506,72 @@ export class Basketball extends Holdable {
   /** Out of the hand: fly, bounce, roll, come to rest; caught when it passes the hand. */
   idle(dt) {
     this.camera.getWorldPosition(this.lastCam);
-    if (!this.flying || dt <= 0) return;
+    if (dt <= 0) return;
     const b = B.ball, r = b.r, c = this.model.position, v = this.v;
+
+    // Ball return (#1036): ball smoothly rolling back to the basketball court
+    if (this.returning) {
+      const target = this.courtReturnSpot();
+      const dx = target.x - c.x, dz = target.z - c.z;
+      const dist = Math.hypot(dx, dz);
+      const speed = B.return?.speed ?? 4.5;
+      if (dist < 0.08) {
+        c.copy(target);
+        v.set(0, 0, 0);
+        this.flying = false;
+        this.placed = true;
+        this.returning = false;
+        this.outOfBoundsTimer = 0;
+        sfx.bounce(c, 0.2);
+        return;
+      }
+      const step = Math.min(dist, speed * dt);
+      c.x += (dx / dist) * step;
+      c.z += (dz / dist) * step;
+      c.y = groundY(c.x, c.z) + r;
+      const rollAxis = tmp.set(dz / dist, 0, -dx / dist);
+      this.model.rotateOnWorldAxis(rollAxis, step / r);
+      // Hand pickup or catch on the way
+      const hand = this.hand(tmp2);
+      if (c.distanceTo(hand) < b.catch && !this.handBusy()) {
+        this.take();
+      }
+      return;
+    }
+
+    if (!this.flying && !this.placed) return;
+
+    // Detect if out of walkable space / allowed area (#1036)
+    if (this.out && !this.held) {
+      const walkable = this.isWalkable(c, !this.flying || v.length() < 0.1);
+      if (!walkable) {
+        if (c.y < -15) {
+          const spot = this.courtReturnSpot();
+          c.set(spot.x, spot.y + 1.2, spot.z);
+          v.set(0, -1, 0);
+          this.flying = true;
+          this.placed = true;
+          this.outOfBoundsTimer = 0;
+          return;
+        }
+        const bounds = B.return?.outBounds ?? OUTDOOR;
+        const farOut = c.x < bounds.x0 - 0.5 || c.x > bounds.x1 + 0.5 || c.z < bounds.z0 - 0.5 || c.z > bounds.z1 + 0.5;
+        const delay = farOut ? 0.2 : (B.return?.delay ?? 0.8);
+        this.outOfBoundsTimer += dt;
+        if (this.outOfBoundsTimer >= delay) {
+          this.returning = true;
+          this.flying = true;
+          this.placed = true;
+          v.set(0, 0, 0);
+          return;
+        }
+      } else {
+        this.outOfBoundsTimer = 0;
+      }
+    }
+
+    if (!this.flying) return;
+
     this.air += dt;
     const n = Math.max(1, Math.ceil((v.length() * dt) / 0.04));
     const h = dt / n;
@@ -469,7 +595,15 @@ export class Basketball extends Holdable {
       const hv = this.hoop.collide(c, v, r);
       if (hv > 1) sfx.bounce(c, Math.min(1, hv / 6) * 0.8);
       this.score(prevY, c);
-      if (c.y < -20) { this.goHome(); this.placed = false; return; } // lost (out of the world)
+      if (c.y < -20) {
+        const spot = this.courtReturnSpot();
+        c.copy(spot);
+        v.set(0, 0, 0);
+        this.flying = false;
+        this.placed = true;
+        this.returning = false;
+        return;
+      }
     }
     if (contact) { // rolling: friction slows it, it spins
       const k = Math.exp(-b.roll * dt);

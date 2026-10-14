@@ -2251,6 +2251,8 @@ export const DAYBED_Z = 12.2337 - 0.12 - 2.07 / 2;
 // facing west in over the parking lot. Clear of the car's loop, parked cars and the pedestrian walkway along Hus L.
 // Rim 3.05 m, Ø 45 cm, 15 cm in front of the board (regulation); board 112 × 72 cm, its bottom `below` the rim.
 // `assist`: looking within this many metres of the rim aims at the rim. Court lines follow FIBA regulations.
+// Ball return (#1036): a ball that bounces or is thrown outside walkable space (over fences/railings, down inaccessible
+// slopes or beyond OUTDOOR) smoothly returns to the basketball court (at the free throw line / court centre).
 export const BASKET = {
   ball: { r: 0.115, level: 1, x: 0.202, z: DAYBED_Z, y: 1.5, held: { x: 0.17, y: -0.17, z: -0.5 },
     gravity: 9.81, entry: 0.85, flat: 0.25, maxSpeed: 13, jitter: 0.015, dribble: 4.6,
@@ -2269,8 +2271,14 @@ export const BASKET = {
     lineWidth: 0.05,
     halfWidth: 6.0,
     depth: 9.0,
+    returnSpot: { x: 6.7, z: -9.9 },
   },
   three: 6.75,
+  return: {
+    delay: 0.8, // seconds out of bounds before return starts
+    speed: 4.5, // m/s rolling back to the court
+    outBounds: { x0: -78.5, x1: 27.5, z0: -14, z1: 64 },
+  },
 };
 
 export const TARGET = {
