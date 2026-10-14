@@ -57,7 +57,7 @@ export class Saber extends Holdable {
       home: { pos: new THREE.Vector3(S.x + 0.04, y0 + 0.012, S.z - S.hilt / 2), rot: new THREE.Euler(Math.PI / 2, 0, 0) }, // hilt on the hooks
       heldPose: { pos: new THREE.Vector3(S.held.x, S.held.y, S.held.z), rot: new THREE.Euler(-1.0, 0, -0.25) }, // tipped forward, inwards
       pick: { pos: new THREE.Vector3(S.x + 0.06, y0, S.z), size: [0.12, 0.2, 0.4] },
-      swing: S.swingSpeed, cooldown: 0.3, useLabel: 'Svinga',
+      swing: S.swingSpeed, cooldown: 0.3, useLabel: 'Svinga', grip: S.grip, // hilt grip along ridged segment (#913)
     });
     Object.assign(this, { saber: g, blade, glowMat, hum: null, swingT: 0, marks: null, cat: null, touchT: 0, meowT: 0, hitsTarget: true, clickIsUse: true }); // the lawn target comes up (#179)
   }

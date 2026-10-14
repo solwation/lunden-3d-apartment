@@ -233,9 +233,9 @@ src/things.js          bottles and glasses (#152): furniture builders list `user
 src/secret.js           the secret drawer (SECRET, #183): all surprises (SECRETS in furniture.js) are Trinkets in it, one shown;
                        each open draws a new one by weight (never the same twice, rare ones pling, stats.secrets/secretKinds),
                        at most `keep` left lying around (older ones go home hidden); `&secret=i` picks the first one
-src/saber.js           the lightsaber in Sovrum 2 (SABER), a Holdable; the blade burns marks where it cuts in (#96)
+src/saber.js           the lightsaber in Sovrum 2 (SABER), a Holdable; the blade burns marks where it cuts in (#96), explicit SABER.grip along ridged hilt (#913)
 src/rifle.js           the AK-47 (#196, RIFLE): a folding-stock AKMS lying in NORDLI's wide bottom drawer (a Trinket, KINDS.rifle,
-                       rides with the drawer); click = a shot, held (`trigger`: mouse button / the touch button) = automatic;
+                       rides with the drawer), explicit RIFLE.grip at wooden pistol grip (#913); click = a shot, held (`trigger`: mouse button / the touch button) = automatic;
                        hitscan from the eye → a 'hole' mark (marks.js), the lawn target scores, the cat meows; after RIFLE.mag
                        the empty magazine drops to the floor and a full one clicks in; F clears the dropped magazines
 src/target.js          the Nerf target on the lawn behind the hedge (TARGET, #99): rings × distance bonus, "+N" badge,
@@ -1326,3 +1326,29 @@ All currently registered NW/courtyard bicycles use the same Player rule; future 
 `bikeGround` adds bicycle-only tops from the exact rendered street curb boxes and the existing StreetLife concrete edging, spatially indexed in 2 m cells. Walking `groundY` is unchanged. Two round tyre profiles, a bounded pitch solve and the raised frame envelope follow nosings without moving through the tread. Both existing model adapters apply yaw then local-Z pitch to the original geometry; only the selected instance/ranges move, with original batches, other models, transformed normals and refreshed bounds preserved. Hull/headroom, closed doors, walls and rack exclusion rules remain active.
 
 Relevant house routes use their existing data: Hus L/A east-gable ramp and east stair, Hus C NW stair, and the B/C south stair. They share Player terrain handling but do not share copied dimensions. Native route tests cover all three stairs in both directions, both ramp directions, reverse riding, the actual two curb types, and wall/door/headroom/fall/dismount boundaries. This is not a claim about basement entry routes or the unimplemented 44 garage bicycles (#907/#986–#989).
+
+## Representative weapon first-person grip audit (#913)
+
+`tools/weapongriptest.cjs GAME OUT` exercises actual Hand with four production
+weapon representatives: AKMS (`Rifle`), Nerf blasters (`Blaster`: pistol, drum, long),
+magic wand (`Wand`), and lightsaber (`Saber`). It verifies rest, firing/recoil/wave/swing,
+and moved/turned camera poses without the full apartment.
+
+The audit established that without explicit model-local grips, Rifle, Wand and Saber
+used bounding-box fallback in `Hand.gripOf`:
+- Rifle fallback placed hand contact ~37.6 cm forward on the barrel/handguard instead of the modeled wooden pistol grip, with 0.75 curl.
+- Nerf blasters had hardcoded `[0.025, -0.075, 0.07]` in `Blaster`, placing hand contact 2.5 cm offset and forward of the modeled grip panels.
+- Wand fallback offset the hand ~2.9 cm to the side of the vertical shaft with 0.75 curl.
+- Saber fallback offset the hand ~3.5 cm from the ridged hilt segment with 0.75 curl.
+
+Explicit centralized grips were added:
+- `RIFLE.grip`: `[0, -0.062, 0.088]` at the wooden pistol grip center (*guess*, #913).
+- `TOYS.nerf.grip`: `[0, -0.088, 0.092]` centered across blaster models (*guess*, #913).
+- `TOYS.wands.grip`: `[0, 0.08, 0]` along the lower shaft (*guess*, #913).
+- `SABER.grip`: `[0, 0.11, 0]` along the ridged hilt segment (*guess*, #913).
+
+All held-item model matrices remain byte-exact between baseline and candidate across all
+phases; projectile/hit origins (Rifle hitscan eye ray, Nerf origin `where() + dir * 0.3`,
+Wand star world position and eye ray, Saber tip segment `localToWorld(0, hilt+blade, 0)`)
+and placement/take/putBack paths remain completely unchanged. Hand curl is 1.0 around the grips.
+Native audit: 54/54 PASS / CLI 0. WebGL `--render`: 66/66 PASS / CLI 0 at 480×300/FOV72/DPR1.

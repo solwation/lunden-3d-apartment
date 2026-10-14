@@ -2047,6 +2047,7 @@ export const SABER = {
   held: { x: 0.26, y: -0.3, z: -0.5 },
   swingSpeed: 4, // rad/s of looking that counts as a swing
   touchEvery: 0.25, // s between contact checks while not swinging (burn marks, #96)
+  grip: [0, 0.11, 0], // model-local hilt grip center along ridged segment; hand fit is a visual guess (#913)
 };
 
 // Toys you can take and use (src/toys.js, Holdables like the saber; sizes and spots are our picks).
@@ -2065,9 +2066,11 @@ export const TOYS = {
   nerf: { level: 1, x: 2.752, face: 1, y: 1.35, z: 9.38, board: [1.3, 0.95], spread: 0.32, colors: [0xff7a1a, 0x1f8bff, 0xffd21a],
     models: ['pistol', 'drum', 'long'], accents: [0xf2f2f2, 0xf2f2f2, 0x2f3338], shift: [0, 0, -0.08],
     // #714 play tuning guess: useful 25 m arc, 30 m/s launch and gentler foam-dart drop; server shares range.
-    dart: { range: 25, speed: 30, gravity: 4, max: 8 }, held: { x: 0.18, y: -0.15, z: -0.45 } },
+    dart: { range: 25, speed: 30, gravity: 4, max: 8 }, held: { x: 0.18, y: -0.15, z: -0.45 },
+    grip: [0, -0.088, 0.092] }, // model-local pistol grip center across blaster models; visual guess (#913)
   wands: { level: 1, x: 2.61, y: 1.45, z: [2.85, 3.2, 3.55], colors: [0xff7ad0, 0x9b7bff, 0x5fd7ff],
-    held: { x: 0.2, y: -0.22, z: -0.42 }, headband: { z: 3.9 }, reach: 8 }, // reach: m to the surface the magic lands on (#97)
+    held: { x: 0.2, y: -0.22, z: -0.42 }, headband: { z: 3.9 }, reach: 8, // reach: m to the surface the magic lands on (#97)
+    grip: [0, 0.08, 0] }, // model-local handle along lower shaft; visual guess (#913)
   // #604: in the hall's EL/C cabinet, lying on top of the fuse box (x 0.21…0.32, z 0.51…0.82, top y 1.75), at hand in a
   // power cut; `turn` = its yaw (0: along the cabinet, lens to the north). Spot on the box is our pick.
   flashlight: { level: 0, x: 0.3, y: 1.776, z: 0.665, turn: 0.05, back: ['elskåpet', 'lägga tillbaka ficklampan i'], held: { x: 0.2, y: -0.2, z: -0.38 },
@@ -2481,7 +2484,8 @@ export const BOW = { held: { x: 0.09, y: -0.06, z: -0.7 }, heldScale: 0.6, drawT
   len: 0.72, stick: 20, flight: 6, arrows: 12, pull: 0.32,
   grip: [0, -0.02, -0.005] }; // model-local leather-cylinder centre; hand fit is a visual guess (#910)
 export const RIFLE = { mag: 30, rpm: 600, spread: 0.012, range: 60, reloadDelay: 0.25, reloadSeconds: 1.6, magLife: 120, maxDrops: 6,
-  held: { x: 0.17, y: -0.24, z: -0.56 } };
+  held: { x: 0.17, y: -0.24, z: -0.56 },
+  grip: [0, -0.062, 0.088] }; // model-local pistol grip center; hand fit is a visual guess (#913)
 export const MARKS = {
   max: 60, fade: 3, gap: 0.06, every: 0.15,
   kinds: {

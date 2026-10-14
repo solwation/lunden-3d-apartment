@@ -73,7 +73,7 @@ export class Rifle extends Trinket {
     super(scene, camera, opts);
     const { mag, flash } = opts.parts;
     Object.assign(this, { isRifle: true, shoots: true, clickIsUse: true, hitsTarget: true, useLabel: 'Skjut', mag, flash, ammo: R.mag, firing: false,
-      fireT: 0, trigAt: -1e9, flashT: 0, kick: 0, reload: -1, drops: [], shots: 0, cooldown: 0 });
+      fireT: 0, trigAt: -1e9, flashT: 0, kick: 0, reload: -1, drops: [], shots: 0, cooldown: 0, grip: opts.grip ?? R.grip });
     this.heldPose = { pos: new THREE.Vector3(R.held.x, R.held.y, R.held.z), rot: new THREE.Euler(0.02, 0.03, 0) };
     this.rest = { q: new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), Math.PI / 2), lift: 0.022 }; // down on its side
     this.magHome = mag.position.clone();

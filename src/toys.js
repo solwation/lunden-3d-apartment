@@ -236,7 +236,7 @@ export class Blaster extends Holdable {
       home: { pos: new THREE.Vector3(x + f * 0.06, y0 + 0.02 - i * 0.22 + 0.15, zc), rot: new THREE.Euler(0, Math.PI / 2 * 0 + Math.PI, 0) },
       heldPose: { pos: new THREE.Vector3(N.held.x, N.held.y, N.held.z), rot: new THREE.Euler(0.05, 0.04, 0) },
       pick: { pos: new THREE.Vector3(x + f * 0.07, y0 + 0.02 - i * 0.22 + 0.15, zc), size: [0.14, 0.2, N.models[i] === 'long' ? 0.52 : 0.36] },
-      cooldown: 0.35, useLabel: 'Skjut', grip: [0.025, -0.075, 0.07], // grip: the hand on its pistol grip (#195)
+      cooldown: 0.35, useLabel: 'Skjut', grip: N.grip, // grip: the hand on its pistol grip (#195, #913)
     });
     this.darts = darts;
     this.shoots = true; // fires projectiles
@@ -358,7 +358,7 @@ export class Wand extends Holdable {
       home: { pos: new THREE.Vector3(W.x - 0.035, y0 - 0.17, z), rot: new THREE.Euler(0, -Math.PI / 2, 0) }, // star facing the room (west)
       heldPose: { pos: new THREE.Vector3(W.held.x, W.held.y, W.held.z), rot: new THREE.Euler(-0.9, 0, -0.2) },
       pick: { pos: new THREE.Vector3(W.x - 0.05, y0, z), size: [0.1, 0.45, 0.12] },
-      swing: 5, cooldown: 0.25, useLabel: 'Trolla',
+      swing: 5, cooldown: 0.25, useLabel: 'Trolla', grip: W.grip, // handle along lower shaft (#913)
     });
     Object.assign(this, { sparkles, color: W.colors[i], wave: 0, hitsTarget: true, clickIsUse: true }); // the lawn target comes up (#179)
   }
