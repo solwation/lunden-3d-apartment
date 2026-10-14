@@ -5683,7 +5683,7 @@ contacts outside Core/Extra/Band/Depth, pre/greeted/paused/saber HP8/6/4/2,
 legacy no-hc body1, one lethal HP-1/UUID/award/reset, replay idempotence and changed
 heading/movement/crouch body1 HP9/8/7. A new immutable target independently rejects
 the forged earlier-Skull cell for body1 HP9, then accepts the safe prism for2HP
-HP7. Separate fresh workerd2244529 started after freeze4; all253 executable-source
+HP7. Separate fresh workerd2244529 started after freeze4; all253 frozen-source
 hashes remain identical on closure. The exact preceding eafa226 Worker, frozen251
 files before separate workerd2246042, passes6/6CLI0 with the current client:
 new-family serialized hc remains body1/HP9 and replay-idempotent. Legacy source
@@ -5698,3 +5698,11 @@ it cannot establish that outer acceptance. A subsequent source-derived outer
 surface certificate must address its actual local Skull/other-surface ordering,
 not expand this polygon, weaken6mm, reuse finite inventory as a guarantee or close
 the issue mechanically. No missing phone or user answer is asserted as its blocker.
+
+Publication: runtime `5dc915ae5ff9e6b002334fd0e76a20cfdb97a0cc`, grouped head-hits767.
+All253 frozen paths (247 code files plus six supporting files) equal the published commit; every older changelog
+byte and id publication timestamp is preserved. Worker run38533094537/job115749383790
+ran genuine `npx wrangler deploy` at2026-10-14T08:09:30Z, Uploaded/Deployed at08:09:33Z,
+version5e1f4085-0c2b-4bf8-b8b3-955614807cc3. Pages38533094519/job115749383963 executed
+actual deploy-pages and reported success08:09:44Z. This publication is a tested
+partial delivery (Refs971); the original outer-shoulder acceptance remains open.
