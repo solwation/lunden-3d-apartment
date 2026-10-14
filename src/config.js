@@ -2930,7 +2930,7 @@ export const COMBAT = { weapons: ['saber', 'nerf', 'wand', 'rifle', 'ball', 'bow
 // after `typingStale` ms without word. The bubble sits `bubbleGap` m over the name tag, full size within `bubbleNear` m,
 // then smaller with distance down to `bubbleMin`. All our picks (*guess*).
 // #765: 60 seconds doubles the old reading time; row capacity is measured from the viewport.
-export const CHAT = { ttl: 60, fade: 3, max: 140, burst: 3, everyMs: 1000, hiddenKey: 'lunden.chat.hidden',
+export const CHAT = { ttl: 60, bubbleTtl: 10, fade: 3, max: 140, burst: 3, everyMs: 1000, hiddenKey: 'lunden.chat.hidden',
   typingMs: 4500, typingAgain: 6000, typingStale: 15_000, bubbleGap: 0.12, bubbleNear: 4, bubbleMin: 0.55,
   // #743: bounded mirror-only atlas; glyph/dot styling and 1.2 s/.2 s cycle match index.html's chat bubble CSS.
   mirrorTyping: { frameWidth: 128, frameHeight: 32, frames: 12, columns: 4, fontPx: 14, dotPx: 4, gapPx: 2,

@@ -5407,3 +5407,52 @@ existing r2/r3/v1 wire bound. The final actual HUD/receipt PNG was inspected. Fo
 history, hibernation, old-client and late-welcome cases. Earlier whole candidate and
 room attempts remain recorded separately as failures; only the narrowed .037–.040
 leaf is accepted. No apartment, full animated-scene physics, live phone or FPS claim.
+
+### Chat continuity in short layouts (#966)
+
+`PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/chatcontinuitytest.cjs GAME WORKER EXTERNAL_OUTPUT`
+uses actual Chat/Ghosts, production index DOM/CSS and two independent browser pages
+with real local Worker WebSockets. It suppresses bootstrap and forbids WebGL; it
+is not apartment rendering or physical-phone acceptance. Desktop1280×1000 and
+short-phone390×300 plus landscape667×375 exercise chronological rolling rows,
+plain text, individual elapsed60s log expiry and separate10s bubbles. Both players
+make an ordinary .04 heading change every30s so the unchanged120s inactivity
+policy does not disconnect a deliberately silent receiver. Frame delta is
+explicitly capped to .05 in this fixture; expiry checks wait real elapsed time.
+The test covers zero height, menu AV/PÅ, sub-padding2px height, restored sizing,
+rotation, reconnect, typing, ordinary command routing, actual12/min server refusal
+and refill, a real silent minute followed by a new line, and client burst refill.
+The existing DOM settings fixture additionally checks persisted menu state,
+wrapped rows/safe areas and controlled expiry boundaries by advancing stored
+expiry timestamps; those controlled checks are separate from real-time waits.
+
+The unmodified db8e9ae baseline received3/3 network messages at390×300 with both
+clients connected, but its46px log discarded each56.7px wrapped newest row.
+An eight-message667×375 control continued normally. Both inventory commands
+completed with CLI0; the former records the observed product failure, not a
+passing continuity assertion. Saved before/after native PNGs show the empty
+baseline log and the fixed latest row's visible beginning. At46px the rest of a
+long row remains clipped; no full-text visibility is claimed where it cannot fit.
+The desktop fixture's existing QR occludes some older upper rows; chronological
+latest rows remain readable. The blank background is a DOM fixture, not World.
+
+The first long acceptance attempt retained CLI1: after passing continuous traffic,
+server-minute refill and real expiry, its stationary receiver exceeded the existing
+120s idle-disconnect interval, so the final new-line receipt timed out. That
+fixture failure did not justify a runtime connection change. The final fixture's
+ordinary heading updates correct only this activity precondition; all failure
+logs, original source hashes and screenshots remain under
+`/tmp/lunden-priority-966/` and the orchestration ledger. `publication-freeze.json`
+captures247 executable sources before a separately started owned Worker; PID,
+start ticks and socket-FD/tcp+tcp6 evidence are retained separately. No backend
+behavior is changed by #966.
+
+After the final aaa2606 rebase, the corrected run completed94 checks/actualCLI0,
+zero pageerrors/WebGL, including the real silent-minute empty logs and successful
+new messages after both minute and burst refill. All247 frozen executable files
+matched after completion. Owned Worker2205377 was born after the freeze and owned
+port8883 according to saved FD/tcp6 evidence. The DOM settings test passed21 checks/
+CLI0 after that rebase; relevant Worker chat/typing tests2/CLI0 and chat filter/
+real-room tests3/CLI0 also passed. Full apartment `chattest.cjs` was not rerun;
+its explicitly controlled expiry steps were updated to the new monotonic
+expiry fields, preserving its separate World scope.

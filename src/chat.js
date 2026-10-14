@@ -18,7 +18,7 @@ export const COMMANDS = [
 // Without the room (no cloud, ?mp=0, the month's cap reached) none of this shows and the console is the old one.
 //
 // Bubbles (#676): while someone writes, "skriver…" (three dots) floats over their ghost; their sent line replaces it, for
-// CHAT.ttl s or until their next line. Only the flag goes to the room ({ t: 'k', on }), never the letters: on at the first
+// CHAT.bubbleTtl s or until their next line. Only the flag goes to the room ({ t: 'k', on }), never the letters: on at the first
 // key, again every CHAT.typingAgain ms while still typing, off when sent, closed, or after CHAT.typingMs without a key;
 // someone else's goes off by itself after CHAT.typingStale ms without word (a lost connection), and with their ghost.
 // Each bubble is one DOM element in the speech layer (greet.js's `.say` style, no draw calls), placed over the ghost's
@@ -120,7 +120,7 @@ export class Chat {
 
   /** From the room: a line from someone ({ t: 'm', i, n, m }), our own refused ({ t: 'mx' }), someone's "skriver…" ({ t: 'k', i, on }). */
   heard(m, g) {
-    if (m.t === 'mx') { this.add('', 'För många meddelanden – vänta lite.', true, true); return; }
+    if (m.t === 'mx') { this.add('', 'För många meddelanden – vänta upp till en minut och försök igen.', true, true); return; }
     if (this.isMuted(g?.name ?? cleanName(m.n))) return; // (#719: muted here, lines and bubbles alike)
     if (m.t === 'k') { if (g) { if (m.on) this.bubble(g, null); else if (this.bubbles.get(g.id)?.typing) this.unbubble(g.id); } return; }
     const text = censor(cleanText(m.m));
@@ -140,7 +140,8 @@ export class Chat {
       b = { el, ghost: g };
       this.bubbles.set(g.id, b);
     }
-    b.ghost = g; b.typing = text === null; b.t = (b.typing ? CHAT.typingStale / 1000 : CHAT.ttl);
+    b.ghost = g; b.typing = text === null; b.t = (b.typing ? CHAT.typingStale / 1000 : CHAT.bubbleTtl);
+    b.expiresAt = performance.now() + b.t * 1000;
     b.el.className = `say theirs chat-bubble${b.typing ? ' typing' : text.length > 32 ? ' long' : ''}`;
     if (b.typing) {
       const dots = document.createElement('span');
@@ -161,7 +162,7 @@ export class Chat {
     if (name) { const b = document.createElement('b'); b.textContent = name; el.append(b, ' '); }
     el.append(document.createTextNode(text));
     this.log.append(el); // (the log holds only lines; who writes is shown by the bubbles, never in the column, #735)
-    this.lines.push({ el, t: CHAT.ttl });
+    this.lines.push({ el, t: CHAT.ttl, expiresAt: performance.now() + CHAT.ttl * 1000 });
     this.render();
   }
 
@@ -194,8 +195,14 @@ export class Chat {
     const style = getComputedStyle(this.log);
     const height = Math.max(0, Math.min(parseFloat(style.maxHeight) || 0,
       (window.visualViewport?.height ?? innerHeight) - this.log.getBoundingClientRect().top));
+    // A keyboard/orientation/layout transition may temporarily offer no space. Keep
+    // the unexpired queue until ResizeObserver measures usable space again.
+    if (height <= 0) { this.log.hidden = hidden; this.log.style.visibility = visibility; return; }
+    // A single wrapped message can exceed a short phone viewport. Constrain that
+    // row before measuring so trimming never deletes the newest message too.
+    for (const line of this.lines) line.el.style.maxHeight = `${height}px`;
     const gap = parseFloat(style.rowGap) || 0;
-    let used = 0, keep = this.lines.length;
+    let used = 0, keep = this.lines.length - 1; // retain newest even below its padding height
     for (let i = this.lines.length - 1; i >= 0; i--) {
       const next = this.lines[i].el.getBoundingClientRect().height + (used ? gap : 0);
       if (used + next > height) break;
@@ -215,10 +222,10 @@ export class Chat {
 
   /** Bubbles over the ghosts' tags, on screen; gone with the ghost (left, disconnected) or after their time. */
   place(dt) {
-    const w = gameView.w, h = gameView.h, eye = this.camera.position;
+    const w = gameView.w, h = gameView.h, eye = this.camera.position, now = performance.now();
     for (const [id, b] of this.bubbles) {
       const g = this.ghosts.others.get(id);
-      b.t -= dt;
+      b.t = (b.expiresAt - now) / 1000;
       if (!g || g !== b.ghost || b.t <= 0) { this.unbubble(id); continue; }
       tmp.copy(g.root.position);
       const tagY = g.tag?.position.y ?? GHOSTS.tagY; // (#705: the tag sits over a taller / shorter avatar's head)
@@ -237,8 +244,9 @@ export class Chat {
   fade(dt) {
     if (!this.lines.length) return;
     let gone = false;
+    const now = performance.now(); // elapsed time, independent of capped/paused render dt
     for (const l of this.lines) {
-      l.t -= dt;
+      l.t = (l.expiresAt - now) / 1000;
       if (l.t < CHAT.fade) l.el.style.opacity = String(Math.max(0, l.t / CHAT.fade));
       if (l.t <= 0) { l.el.remove(); gone = true; }
     }

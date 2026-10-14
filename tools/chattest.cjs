@@ -143,7 +143,7 @@ const W = 480, H = 300;
     check(await typingRow(A.page) === '' && await typingRow(B.page) === '', 'the column never says who writes (#735)');
     // (the picture takes longer than CHAT.typingMs under SwiftShader: hold A's typing and B's bubble meanwhile)
     await A.page.evaluate(() => { window.__chat.lastKey = performance.now() + 600_000; });
-    await B.page.evaluate(() => { for (const b of window.__chat.bubbles.values()) b.t = 600; });
+    await B.page.evaluate(() => { for (const b of window.__chat.bubbles.values()) b.expiresAt = performance.now() + 600_000; });
     await shot(B.page, 'chat-B-typing-bubble');
     await A.page.evaluate(() => { const c = window.__chat; c.lastKey = performance.now() - 60_000; c.update(0); }); // CHAT.typingMs without a key
     check(!!(await until(async () => (await bubbles(B.page)).length === 0, 90000)) && await typingRow(A.page) === '', 'a pause in typing puts it off on both');
@@ -161,8 +161,8 @@ const W = 480, H = 300;
     await until(async () => (await bubbles(B.page)).some((b) => b.typing), 90000);
     await A.page.evaluate(() => window.__app.showTerminal(false));
     check(!!(await until(async () => !(await bubbles(B.page)).some((b) => b.typing), 90000)), 'closing the bar puts "skriver…" off');
-    const ttl = await B.page.evaluate(() => { const c = window.__chat; c.heard({ t: 'm', i: 'x', n: 'Olof', m: 'kvar?' }, window.__ghosts.others.values().next().value); c.update(61); return c.bubbleList().length; });
-    check(ttl === 0, 'a bubble goes after CHAT.ttl', String(ttl));
+    const ttl = await B.page.evaluate(() => { const c = window.__chat; c.heard({ t: 'm', i: 'x', n: 'Olof', m: 'kvar?' }, window.__ghosts.others.values().next().value); for (const b of c.bubbles.values()) b.expiresAt -= 11_000; c.update(0); return c.bubbleList().length; });
+    check(ttl === 0, 'a bubble goes after separate CHAT.bubbleTtl', String(ttl));
     // First establish a genuinely visible baseline, then atomically test the existing occlusion hook and restore it.
     await B.page.evaluate(() => { const c = window.__chat, g = window.__ghosts.others.values().next().value; c.heard({ t: 'm', n: 'Olof', m: 'bakom väggen' }, g); });
     const visibleBeforeWall = await until(async () => (await bubbles(B.page)).find(b => b.text === 'bakom väggen' && b.shown), 90000);
@@ -225,7 +225,7 @@ const W = 480, H = 300;
       const r=c.log.getBoundingClientRect(); return { count:c.lines.length, last:c.list().at(-1)?.text, fits:c.lines.every(l=>{ const b=l.el.getBoundingClientRect(); return b.top>=r.top-.1 && b.bottom<=r.bottom+.1; }) }; });
     check(most.count > 0 && most.fits && most.last.startsWith('Test rad 8'), 'newest complete lines fit the viewport height', JSON.stringify(most));
     await shot(B.page, 'chat-B-fitted-lines');
-    const fade = await B.page.evaluate(() => { const c = window.__chat; c.update(60 - 1.5); const mid = c.list().map((l) => Number(l.opacity)); c.update(2); return { mid, left: c.list().length }; });
+    const fade = await B.page.evaluate(() => { const c = window.__chat; for (const l of c.lines) l.expiresAt -= 58_500; c.update(0); const mid = c.list().map((l) => Number(l.opacity)); for (const l of c.lines) l.expiresAt -= 2000; c.update(0); return { mid, left: c.list().length }; });
     check(fade.mid.every((o) => o > 0 && o < 1) && fade.left === 0, 'fading in the last seconds, gone after the TTL', JSON.stringify(fade));
 
     // phone: B as touch, the column clear of the buttons on the right

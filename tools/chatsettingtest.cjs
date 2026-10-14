@@ -71,12 +71,12 @@ const out = process.argv[3] || '/tmp/lunden-chat765';
       check(bounds.count > 0 && bounds.fit && bounds.height <= bounds.max + .1 && bounds.bottom <= height && bounds.left >= safe && bounds.left <= safe+4.1 && bounds.right<=width-safe && bounds.last.includes('rad 99'), `complete newest messages fit ${width}x${height} touch=${touch}`,bounds);
       await page.screenshot({path:`${out}/chat-${width}x${height}.png`});
     }
-    await page.evaluate(() => { chat.heard({t:'m',n:'Olof',m:'kvar efter gamla tiden'},fixture.ghost); chat.update(31); });
-    check(await page.evaluate(() => chat.list().some(l=>l.text.includes('kvar efter gamla tiden')) && chat.bubbleList()[0].t===29), 'messages and bubbles remain after old 30-second TTL');
-    await page.evaluate(() => chat.update(27.5));
+    await page.evaluate(() => { chat.heard({t:'m',n:'Olof',m:'kvar efter gamla tiden'},fixture.ghost); for (const l of chat.lines) l.expiresAt -= 31_000; for (const b of chat.bubbles.values()) b.expiresAt -= 31_000; chat.update(0); });
+    check(await page.evaluate(() => chat.list().some(l=>l.text.includes('kvar efter gamla tiden')) && chat.bubbleList().length===0), 'log remains after 31 seconds while separate 10-second bubble has expired');
+    await page.evaluate(() => { for (const l of chat.lines) l.expiresAt -= 27_500; chat.update(0); });
     check(await page.evaluate(() => Number(chat.list().at(-1).opacity) > 0 && Number(chat.list().at(-1).opacity) < 1), 'last three seconds fade');
-    await page.evaluate(() => chat.update(2));
-    check(await page.evaluate(() => !chat.lines.length && !chat.bubbleList().length), '60-second TTL expires both messages and bubbles');
+    await page.evaluate(() => { for (const l of chat.lines) l.expiresAt -= 2000; chat.update(0); });
+    check(await page.evaluate(() => !chat.lines.length && !chat.bubbleList().length), '60-second log TTL expires remaining messages');
     await page.setViewportSize({width:390,height:844});
     await page.evaluate(() => document.getElementById('menu-chat-setting').click());
     await feed();
