@@ -305,3 +305,15 @@ test('#940: public layout fault classes are strict additive data; legacy/malform
     assert.deepEqual(layout.css,[393,852]);
   }
 });
+
+
+test('#669: bounded editing boolean survives POST/KV/public without input text or identifiers', async () => {
+ for (const editing of [0,1]) {
+  const env={LUNDEN:kv(),ADMIN_TOKEN:'tok'},layout={css:[843,411],inner:[843,411],vv:{w:843,h:168.4,scale:1,top:0,left:0},editing,inputValue:'not-public',inputId:'not-public',selector:'not-public'};
+  const response=await post(env,{v:2,typ:'layout',kind:'canvas',pid:'editing-case',sig:'editing-'+editing,layout,msg:'canvas vs viewport'},'66.9.0.'+editing);assert.equal(response.status,200);
+  const{id}=await response.json(),stored=await(await get(env,'/crash/'+id,'tok')).json();assert.equal(stored.layout.editing,editing);
+  const rows=await(await get(env,'/crash/public')).json();assert.equal(rows[0].layout.editing,editing);assert.equal(JSON.stringify(rows).includes('not-public'),false);assert.deepEqual(rows[0].layout.css,[843,411]);
+ }
+ for(const editing of [undefined,null,false,true,'1',2,-1,.5,[],{}])assert.equal(Object.hasOwn(publicView({layout:{css:[843,411],editing}}).layout,'editing'),false);
+ assert.equal(Object.hasOwn(publicView({layout:{css:[843,411],faultClass:'surface-vv'}}).layout,'editing'),false,'older reports remain missing, never retroactively classified');
+});

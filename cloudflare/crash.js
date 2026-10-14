@@ -136,6 +136,7 @@ function layoutView(l) {
   const vv = l.vv && typeof l.vv === 'object' ? Object.fromEntries(['w', 'h', 'scale', 'top', 'left'].map((k) => [k, nm(l.vv[k])])) : null;
   return { up: nm(l.up), loaded: l.loaded ? 1 : 0, css: nums(l.css, 2), rect: nums(l.rect), buf: nums(l.buf, 2), inner: nums(l.inner, 2), doc: nums(l.doc, 2), vv, scr: nums(l.scr, 2),
     ...(LAYOUT_FAULT_CLASSES.includes(l.faultClass) ? { faultClass: l.faultClass } : {}),
+    ...([0, 1].includes(l.editing) ? { editing: l.editing } : {}),
     ori: txt(l.ori, 30), dpr: nm(l.dpr), px: nm(l.px), aspect: nm(l.aspect), portrait: l.portrait ? 1 : 0, standalone: l.standalone ? 1 : 0, safe: nums(l.safe) };
 }
 /** One stored report → the public one. Time to the hour; no pid / sid / sig / ts / received / user agent string / IP. */
