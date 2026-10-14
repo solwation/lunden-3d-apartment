@@ -16,7 +16,7 @@ const CRASH_TTL = 14 * 24 * 60 * 60;   // seconds
 const DUP_TTL = 24 * 60 * 60;
 const PER_IP_HOUR = 20;
 const MAX_REPORTS = 400;
-const LAYOUT_FAULT_CLASSES = ['surface-css', 'surface-vv', 'foreground-projection', 'background-projection'];
+const LAYOUT_FAULT_CLASSES = ['surface-css', 'surface-vv', 'foreground-projection', 'background-projection', 'covered-projection'];
 const TYPES = ['död', 'fel', 'layout']; // layout (#567): the game canvas not filling the screen
 
 const PUBLIC_MAX = 200, PUBLIC_CACHE = 5 * 60_000;
@@ -137,6 +137,9 @@ function layoutView(l) {
   return { up: nm(l.up), loaded: l.loaded ? 1 : 0, css: nums(l.css, 2), rect: nums(l.rect), buf: nums(l.buf, 2), inner: nums(l.inner, 2), doc: nums(l.doc, 2), vv, scr: nums(l.scr, 2),
     ...(LAYOUT_FAULT_CLASSES.includes(l.faultClass) ? { faultClass: l.faultClass } : {}),
     ...([0, 1].includes(l.editing) ? { editing: l.editing } : {}),
+    ...([0, 1].includes(l.covered) ? { covered: l.covered } : {}),
+    ...([0, 1].includes(l.deferred) ? { deferred: l.deferred } : {}),
+    ...(Array.isArray(l.retained) && l.retained.length === 2 && l.retained.every(v => Number.isSafeInteger(v) && v > 0) ? { retained: nums(l.retained, 2) } : {}),
     ori: txt(l.ori, 30), dpr: nm(l.dpr), px: nm(l.px), aspect: nm(l.aspect), portrait: l.portrait ? 1 : 0, standalone: l.standalone ? 1 : 0, safe: nums(l.safe) };
 }
 /** One stored report → the public one. Time to the hour; no pid / sid / sig / ts / received / user agent string / IP. */

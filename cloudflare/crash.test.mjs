@@ -317,3 +317,16 @@ test('#669: bounded editing boolean survives POST/KV/public without input text o
  for(const editing of [undefined,null,false,true,'1',2,-1,.5,[],{}])assert.equal(Object.hasOwn(publicView({layout:{css:[843,411],editing}}).layout,'editing'),false);
  assert.equal(Object.hasOwn(publicView({layout:{css:[843,411],faultClass:'surface-vv'}}).layout,'editing'),false,'older reports remain missing, never retroactively classified');
 });
+
+
+test('#669: covered projection metadata is additive bounded data, not retroactive interpretation', async () => {
+ const env={LUNDEN:kv(),ADMIN_TOKEN:'tok'};
+ const layout={css:[393,793],inner:[393,793],buf:[639,294],aspect:2.168,px:.75,faultClass:'covered-projection',covered:1,deferred:1,retained:[852,393],selector:'private',style:'private'};
+ const response=await post(env,{v:2,typ:'layout',kind:'canvas',pid:'cover',sig:'cover',msg:'aspect 2.168 vs canvas 0.496',layout},'66.9.1.1');assert.equal(response.status,200);
+ const{id}=await response.json(),stored=await(await get(env,'/crash/'+id,'tok')).json(),publicRows=await(await get(env,'/crash/public')).json();
+ for(const row of [publicView(stored),publicRows[0]]){assert.equal(row.layout.faultClass,'covered-projection');assert.equal(row.layout.covered,1);assert.equal(row.layout.deferred,1);assert.deepEqual(row.layout.retained,[852,393]);assert.equal(row.msg,'aspect 2.168 vs canvas 0.496');assert.equal(row.kind,'canvas');assert.equal(JSON.stringify(row).includes('private'),false);}
+ for(const v of [0,1]){const row=publicView({layout:{covered:v,deferred:v}}).layout;assert.equal(row.covered,v);assert.equal(row.deferred,v);}
+ for(const v of [undefined,null,false,true,'1',2,-1,.5,[],{}]){const row=publicView({layout:{covered:v,deferred:v}}).layout;assert.equal(Object.hasOwn(row,'covered'),false);assert.equal(Object.hasOwn(row,'deferred'),false);}
+ for(const retained of [undefined,null,[],[852],[852,393,1],[0,393],[-1,393],[852,NaN],[852,Infinity],[852,'393'],[852,.5],[852,Number.MAX_SAFE_INTEGER+1]])assert.equal(Object.hasOwn(publicView({layout:{retained}}).layout,'retained'),false);
+ const old=publicView({layout:{css:[393,793],faultClass:'foreground-projection'}}).layout;assert.equal(old.faultClass,'foreground-projection');for(const key of ['covered','deferred','retained'])assert.equal(Object.hasOwn(old,key),false);
+});
