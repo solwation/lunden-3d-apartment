@@ -6393,7 +6393,7 @@ Openables and Pingping/soft surfaces remain original; per-bed ordinary mesh coun
 is25→26 through explicit material isolation. HTTP tests cover preview0PUT/
 cancel, ordinary/new/reloaded visitors, independent sheet/duvet/pillowcase/
 footthrow/frame selection, simultaneous pose/material, stale409/offline/old
-capability, keyboard/touch and ordinary move. The first native run reached21
+capability, keyboard/touch and ordinary move. The first native run reached20
 green checks but timed out at60.675s during a peer wait; it remainsCLI1, with
 its source/producer/owner record retained, never counted as successful.
 
@@ -6438,3 +6438,21 @@ double-bed bodies, helper, shapes, rest/care/life and UI remain byte-exact.
 Images retain their executed component source rather than a rerender or a
 whole-World certification of the other new families. The final native DOM
 library image was also opened and inspected.
+
+
+Published #1019: Worker1ff0c4a actually deployed in run38562745050/
+job115847642300 at12:18:27.3496463Z, version
+230e752c-12a0-4700-8fc5-57951fc2c2ae, before the requiring client. Client
+88def956 (changelog803) actually published via Pages38564859418/
+job115854834485, Created deployment12:35:12.8669029Z/Reported success
+12:35:23.3982509Z. Full logs retain those exact SHAs. Publication manifest
+records1417 published file hashes and239 byte-exact final-native inputs;
+all801 older changelog row bytes and actual changelog_stamp.py times remain
+unchanged. This client's furniture-only runtime does not trigger another Worker
+payload deployment; no automatic client-Worker run is invented. Exact owned
+processes/four browser profiles and TCP/TCP6 ports8878/8879 are clear.
+
+The preserved first native failure.json contains20 partial PASS checks (an
+initial orchestration/comment count said21 and is corrected here); actualCLI1/
+timeout is unchanged. Final52/schema21/render17 counts are from their raw
+results.
