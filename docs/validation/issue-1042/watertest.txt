@@ -1,0 +1,58 @@
+ALL PASS
+PASS 6 taps/showers
+PASS köksblandaren (Kök / matplats) "Sätt på" on=true, menu wash=true off=true, rubbing=true, wet=true, then "Stäng av" off=true
+PASS   dried on kökshandduken (4.92,1.10,0.93) from (4.52, 0.93) "Torka händerna på kökshandduken" swung=true dry=true, then "Händerna är redan torra"
+PASS blandaren (Tvätt) "Sätt på" on=true, menu wash=true off=true, rubbing=true, wet=true, then "Stäng av" off=true
+PASS   dried on handduken (0.66,1.15,5.16) from (0.99, 5.66) "Torka händerna på handduken" swung=true dry=true, then "Händerna är redan torra"
+PASS blandaren (Badrum) "Sätt på" on=true, menu wash=true off=true, rubbing=true, wet=true, then "Stäng av" off=true
+PASS   dried on handduken (0.66,1.15,5.16) from (0.99, 5.66) "Torka händerna på handduken" swung=true dry=true, then "Händerna är redan torra"
+PASS takduschen @ (0.27, 1.00, 7.15) button "Sätt på" on=true off=true
+PASS blandaren (WC/dusch) "Sätt på" on=true, menu wash=true off=true, rubbing=true, wet=true, then "Stäng av" off=true
+PASS   dried on handduken (0.31,4.39,7.03) from (0.91, 6.63) "Torka händerna på handduken" swung=true dry=true, then "Händerna är redan torra"
+PASS duschen @ (0.27, 4.25, 5.58) button "Sätt på" on=true off=true
+PASS kitchen, laundry and both bathrooms have real movable levers
+PASS köksblandaren Kök / matplats: down/off with original mixer finish
+PASS köksblandaren Kök / matplats: focus highlights only the physical animated control
+PASS köksblandaren Kök / matplats: water starts immediately while the lever rises smoothly
+PASS köksblandaren Kök / matplats: fast reversal keeps the current pose and stops the water
+PASS köksblandaren Kök / matplats: reversed motion lowers smoothly
+PASS köksblandaren Kök / matplats: direct water state changes also raise the lever and synchronize flow
+PASS köksblandaren Kök / matplats: widened control target remains easy to hit in both poses
+PASS köksblandaren Kök / matplats: aiming at the nozzle does not toggle water
+PASS köksblandaren Kök / matplats: closing from another action lowers the lever and stops flow/sound
+PASS köksblandaren Kök / matplats: desktop action uses the same animated control
+PASS blandaren Tvätt: down/off with original mixer finish
+PASS blandaren Tvätt: focus highlights only the physical animated control
+PASS blandaren Tvätt: water starts immediately while the lever rises smoothly
+PASS blandaren Tvätt: fast reversal keeps the current pose and stops the water
+PASS blandaren Tvätt: reversed motion lowers smoothly
+PASS blandaren Tvätt: direct water state changes also raise the lever and synchronize flow
+PASS blandaren Tvätt: widened control target remains easy to hit in both poses
+PASS blandaren Tvätt: aiming at the nozzle does not toggle water
+PASS blandaren Tvätt: closing from another action lowers the lever and stops flow/sound
+PASS blandaren Tvätt: desktop action uses the same animated control
+PASS blandaren Badrum: down/off with original mixer finish
+PASS blandaren Badrum: focus highlights only the physical animated control
+PASS blandaren Badrum: water starts immediately while the lever rises smoothly
+PASS blandaren Badrum: fast reversal keeps the current pose and stops the water
+PASS blandaren Badrum: reversed motion lowers smoothly
+PASS blandaren Badrum: direct water state changes also raise the lever and synchronize flow
+PASS blandaren Badrum: widened control target remains easy to hit in both poses
+PASS blandaren Badrum: aiming at the nozzle does not toggle water
+PASS blandaren Badrum: closing from another action lowers the lever and stops flow/sound
+PASS blandaren Badrum: desktop action uses the same animated control
+PASS blandaren WC/dusch: down/off with original mixer finish
+PASS blandaren WC/dusch: focus highlights only the physical animated control
+PASS blandaren WC/dusch: water starts immediately while the lever rises smoothly
+PASS blandaren WC/dusch: fast reversal keeps the current pose and stops the water
+PASS blandaren WC/dusch: reversed motion lowers smoothly
+PASS blandaren WC/dusch: direct water state changes also raise the lever and synchronize flow
+PASS blandaren WC/dusch: widened control target remains easy to hit in both poses
+PASS blandaren WC/dusch: aiming at the nozzle does not toggle water
+PASS blandaren WC/dusch: closing from another action lowers the lever and stops flow/sound
+PASS blandaren WC/dusch: desktop action uses the same animated control
+PASS showers retain their thermostat controls
+PASS counted: 4 washes, 4 dried, first-time ids 1
+PASS rows wash,off; wet hands dry by themselves after a minute (true → false)
+PASS standing in the shower is detected (in=true beside=false)
+PASS real reload builds every control down with its water off

@@ -1,0 +1,239 @@
+{
+  "before": {
+    "showers": [
+      {
+        "pos": [
+          0.62,
+          2.02,
+          7.15405
+        ],
+        "dir": [
+          0,
+          -1,
+          0
+        ],
+        "r": 0.1,
+        "basin": 0,
+        "name": "takduschen",
+        "pick": [
+          0.27,
+          1,
+          7.15405
+        ],
+        "shower": true
+      },
+      {
+        "pos": [
+          0.42000000000000004,
+          5.0200000000000005,
+          5.58445
+        ],
+        "dir": [
+          0.3,
+          -0.954,
+          0
+        ],
+        "r": 0.045,
+        "basin": 3.25,
+        "name": "duschen",
+        "pick": [
+          0.27,
+          4.25,
+          5.58445
+        ],
+        "shower": true
+      }
+    ],
+    "geometry": [
+      {
+        "ceiling": true,
+        "outlets": [
+          {
+            "pos": [
+              0.42,
+              2.02,
+              0
+            ],
+            "dir": [
+              0,
+              -1,
+              0
+            ],
+            "r": 0.1,
+            "basin": 0,
+            "name": "takduschen",
+            "pick": [
+              0.07,
+              1,
+              0
+            ],
+            "shower": true
+          }
+        ],
+        "materials": 2,
+        "triangles": 1144
+      },
+      {
+        "ceiling": false,
+        "outlets": [
+          {
+            "pos": [
+              0.22,
+              1.77,
+              0
+            ],
+            "dir": [
+              0.3,
+              -0.954,
+              0
+            ],
+            "r": 0.045,
+            "basin": 0,
+            "name": "duschen",
+            "pick": [
+              0.07,
+              1,
+              0
+            ],
+            "shower": true
+          }
+        ],
+        "materials": 2,
+        "triangles": 852
+      }
+    ],
+    "errors": []
+  },
+  "after": {
+    "showers": [
+      {
+        "pos": [
+          0.62,
+          2.02,
+          7.15405
+        ],
+        "dir": [
+          0,
+          -1,
+          0
+        ],
+        "r": 0.1,
+        "basin": 0,
+        "name": "takduschen",
+        "pick": [
+          0.27,
+          1,
+          7.15405
+        ],
+        "shower": true
+      },
+      {
+        "pos": [
+          0.42000000000000004,
+          5.02,
+          5.58445
+        ],
+        "dir": [
+          0.3,
+          -0.954,
+          0
+        ],
+        "r": 0.045,
+        "basin": 3.25,
+        "name": "duschen",
+        "pick": [
+          0.27,
+          4.25,
+          5.58445
+        ],
+        "shower": true
+      }
+    ],
+    "geometry": [
+      {
+        "ceiling": true,
+        "outlets": [
+          {
+            "pos": [
+              0.42,
+              2.02,
+              0
+            ],
+            "dir": [
+              0,
+              -1,
+              0
+            ],
+            "r": 0.1,
+            "basin": 0,
+            "name": "takduschen",
+            "pick": [
+              0.07,
+              1,
+              0
+            ],
+            "shower": true
+          }
+        ],
+        "materials": 3,
+        "triangles": 6900
+      },
+      {
+        "ceiling": false,
+        "outlets": [
+          {
+            "pos": [
+              0.22,
+              1.77,
+              0
+            ],
+            "dir": [
+              0.3,
+              -0.954,
+              0
+            ],
+            "r": 0.045,
+            "basin": 0,
+            "name": "duschen",
+            "pick": [
+              0.07,
+              1,
+              0
+            ],
+            "shower": true
+          }
+        ],
+        "materials": 3,
+        "triangles": 4204
+      }
+    ],
+    "errors": []
+  },
+  "coordinateTolerance": 1e-12,
+  "maxCoordinateDelta": 8.881784197001252e-16,
+  "instances": {
+    "overhead": 1,
+    "hand": 3,
+    "source": "Actual World marker geometry plus source: our two showers + L1004 two shared showerSet fittings; L1201 generic wetRoom uses a separate builder and stays unchanged"
+  },
+  "totalShowerTriangles": {
+    "before": 3700,
+    "after": 19512
+  },
+  "actualWorld": {
+    "units": [
+      "L1004",
+      "L1201"
+    ],
+    "markerMeshes": 4,
+    "markerTriangles": 48
+  },
+  "verification": {
+    "watertest": "ALL PASS",
+    "passRows": 57,
+    "apartmentImages": 14,
+    "originalCombinedDriver": "failed only on strict Float64 equality; preserved verify.log",
+    "secondCombinedDriver": "passed actual watertest then failed extra erroneous six-instance assertion; preserved finish.log",
+    "offlineReceiptAudit": "PASS; this does not rerun World or claim the combined drivers exited zero"
+  }
+}

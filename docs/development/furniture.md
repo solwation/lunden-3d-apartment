@@ -221,3 +221,16 @@ change merged grouping, not original per-part geometry or UV0.
 ### Independent MYDAL linen (#1020)
 
 Both actual unicorn/vader MYDAL objects expose six BUNK_LINEN surfaces (lower/upper sheet, pillowcase and duvet/fold), bound explicitly before merge through upholsterySurface. Optional addMattress sheet-only binding and addDuvet o.surface reuse #1019's contract, retaining default behavior and care:k marking. Each sheet/case/duvet owns one private finish; ticking, wood/ladder, drawable upper base, original UV0, geometry, footprints and Rest/watch spots are unchanged. Original restores existing maps/colors; generic patterns use metre UV1. Six independent finishes add four merged meshes per model; the actual component render separately measures five→nine draw calls, unchanged25,556triangles. No new geometry or global material mutation.
+
+## Shower fittings (#1042)
+
+`interior.js` shares two cached local shower templates between our bathroom/WC and
+`standardinterior.js` in L1004 (L1201 keeps its separate generic wet-room builder). The rain head has a shallow profiled
+cap and concentric silicone nozzles; the hand shower has a tapered handle, angled
+spray face and rail clamp. Mixers have bevelled wall rosettes, end grips and a
+marked safety button. Hoses use 48 longitudinal / 8 radial segments. Static parts
+remain merged by material, with one small additional safety-marker material and
+no new light, animation or render pass. Detail proportions are visual assumptions,
+not verified Tapwell product dimensions (`SHOWER_FITTINGS` in config). Existing
+water outlets, spray directions, thermostat picks and sound/interaction code stay
+unchanged. A/B/C have no corresponding furnished shower interior in this model.

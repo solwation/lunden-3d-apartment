@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { FINISH, TILED_ROOMS, KITCHEN as K, SKIRTING, LAUNDRY_SINK, LAUNDRY_CABINET, VANITY_BASIN, HAVBACK, LIGHTING, KITCHEN_SOCKETS, TAP_LEVER, LAUNDRY } from './config.js';
+import { FINISH, TILED_ROOMS, KITCHEN as K, SKIRTING, LAUNDRY_SINK, LAUNDRY_CABINET, VANITY_BASIN, HAVBACK, LIGHTING, KITCHEN_SOCKETS, TAP_LEVER, LAUNDRY, SHOWER_FITTINGS } from './config.js';
 import { wallCabinet } from './cabinets.js';
 import { Fridge } from './fridge.js';
 import { buildOvens } from './ovens.js';
@@ -100,6 +100,7 @@ const M = {
   porcelain: std(0xffffff, { roughness: 0.15 }),
   chrome: std(T.chrome, { roughness: 0.12, metalness: 0.82 }),
   mixerBlack: std(T.handle, { roughness: 0.58, metalness: 0.22 }),
+  safetyRed: std(SHOWER_FITTINGS.safetyColor, { roughness: 0.4 }),
   mirror: mirrorMaterial, // shared with the hall mirror (mirror.js)
   frosted: new THREE.MeshStandardMaterial({
     color: 0xf1f5f6, transparent: true, opacity: 0.55, roughness: 0.3, depthWrite: false, side: THREE.DoubleSide,
@@ -1013,66 +1014,400 @@ export function glassPanel(B, [ax, az], [bx, bz], y0) {
   return len;
 }
 
-/** Hose as a tube along plan/height points [[x, y, z], …]. */
-function hose(B, pts, material, r = 0.008) {
-  const curve = new THREE.CatmullRomCurve3(pts.map(([x, y, z]) => new THREE.Vector3(x, y, z)));
-  B.add(new THREE.TubeGeometry(curve, 24, r, 6), material);
+// Both our bathrooms and standard/visitable flats use the same two modest-detail templates.
+// Batch owns mutable geometry: clone the cached merged parts before translating / assigning world UVs.
+const showerTemplates = new Map();
+export function showerSet(B, wallX, z, y0, ceiling) {
+  const key = !!ceiling;
+  if (!showerTemplates.has(key)) {
+    const batch = new Batch();
+    const outlets = buildShowerSet(batch, 0, 0, 0, key);
+    const parts = [...batch.parts].map(([material, geometries]) => {
+      const geometry = mergeGeometries(geometries);
+      for (const g of geometries) g.dispose();
+      return { material, geometry };
+    });
+    showerTemplates.set(key, { parts, outlets });
+  }
+  const template = showerTemplates.get(key);
+  for (const { material, geometry } of template.parts) B.add(geometry.clone().translate(wallX, y0, z), material);
+  const moved = (p) => [p[0] + wallX, p[1] + y0, p[2] + z];
+  return template.outlets.map((outlet) => ({ ...outlet, pos: moved(outlet.pos), pick: moved(outlet.pick), dir: [...outlet.dir], basin: outlet.basin + y0 }));
 }
 
-/** Round shower head: disc of radius r centred at (x, y, z) facing `normal` (unit vector). */
-function showerHead(B, [x, y, z], [nx, ny, nz], r, thick = 0.015) {
-  const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(-nx, -ny, -nz));
-  const body = new THREE.CylinderGeometry(r, r * 0.92, thick, 28).applyQuaternion(q).translate(x, y, z);
+/** Beveled escutcheon / wall rosette flush against wall tile. */
+function escutcheonX(B, wallX, y, z, rWall = 0.035, rOuter = 0.029, depth = 0.016, segs = 20) {
+  const geo = new THREE.CylinderGeometry(rOuter, rWall, depth, segs)
+    .rotateZ(-Math.PI / 2)
+    .translate(wallX + depth / 2, y, z);
+  B.add(geo, M.chrome);
+}
+
+/** Visual approximation of the specified Tapwell sets; detail dimensions are guesses, not a product survey. */
+function thermostatMixer(B, wallX, y0, z, ceiling) {
+  const mx = wallX + 0.07, my = y0 + 1.0;
+  // Wall connections (160 mm c/c: +-0.08 m) with beveled rosettes
+  for (const s of [-1, 1]) {
+    const pz = z + s * 0.08;
+    escutcheonX(B, wallX, my, pz, 0.035, 0.029, 0.016, 20);
+    const pipe = new THREE.CylinderGeometry(0.014, 0.014, 0.044, 14)
+      .rotateZ(-Math.PI / 2)
+      .translate(wallX + 0.038, my, pz);
+    B.add(pipe, M.chrome);
+    const nut = new THREE.CylinderGeometry(0.018, 0.018, 0.012, 8)
+      .rotateZ(-Math.PI / 2)
+      .translate(wallX + 0.058, my, pz);
+    B.add(nut, M.chrome);
+  }
+
+  // Central mixer body: horizontal cylinder between knobs
+  const body = new THREE.CylinderGeometry(0.0215, 0.0215, 0.176, 22)
+    .rotateX(Math.PI / 2)
+    .translate(mx, my, z);
   B.add(body, M.chrome);
-  const face = new THREE.CylinderGeometry(r * 0.85, r * 0.85, 0.002, 28).applyQuaternion(q)
-    .translate(x + nx * thick / 2, y + ny * thick / 2, z + nz * thick / 2);
+
+  // Hose connection underneath at center
+  const nipple = new THREE.CylinderGeometry(0.0095, 0.0095, 0.016, 14)
+    .translate(mx, my - 0.027, z);
+  const nippleNut = new THREE.CylinderGeometry(0.012, 0.012, 0.008, 14)
+    .translate(mx, my - 0.023, z);
+  B.add(nipple, M.chrome);
+  B.add(nippleNut, M.chrome);
+
+  // Riser connection / diverter on top if ceiling set
+  if (ceiling) {
+    const topCollar = new THREE.CylinderGeometry(0.014, 0.014, 0.024, 16)
+      .translate(mx, my + 0.025, z);
+    B.add(topCollar, M.chrome);
+    const divKnob = new THREE.CylinderGeometry(0.006, 0.006, 0.016, 12)
+      .translate(mx - 0.014, my + 0.022, z);
+    B.add(divKnob, M.chrome);
+  }
+
+  // Left knob: Flödesvred (volume / diverter)
+  const lz = z - 0.118;
+  const lKnob = new THREE.CylinderGeometry(0.022, 0.022, 0.046, 20)
+    .rotateX(Math.PI / 2)
+    .translate(mx, my, lz);
+  B.add(lKnob, M.chrome);
+  const lCap = new THREE.CylinderGeometry(0.018, 0.022, 0.006, 20)
+    .rotateX(Math.PI / 2)
+    .translate(mx, my, z - 0.144);
+  B.add(lCap, M.chrome);
+  const lCollar = new THREE.CylinderGeometry(0.020, 0.020, 0.004, 20)
+    .rotateX(Math.PI / 2)
+    .translate(mx, my, z - 0.092);
+  B.add(lCollar, M.steelDark);
+  const lGrip = new THREE.BoxGeometry(0.005, 0.004, 0.032)
+    .translate(mx + 0.022, my, lz);
+  B.add(lGrip, M.chrome);
+  for (let a = 0; a < 6; a++) {
+    const ang = (a / 6) * Math.PI * 2;
+    const rib = new THREE.BoxGeometry(0.002, 0.002, 0.028)
+      .translate(mx + 0.0215 * Math.cos(ang), my + 0.0215 * Math.sin(ang), lz);
+    B.add(rib, M.chrome);
+  }
+
+  // Right knob: Temperaturvred med 38°C skållningsspärr
+  const rz = z + 0.118;
+  const rKnob = new THREE.CylinderGeometry(0.022, 0.022, 0.046, 20)
+    .rotateX(Math.PI / 2)
+    .translate(mx, my, rz);
+  B.add(rKnob, M.chrome);
+  const rCap = new THREE.CylinderGeometry(0.022, 0.018, 0.006, 20)
+    .rotateX(Math.PI / 2)
+    .translate(mx, my, z + 0.144);
+  B.add(rCap, M.chrome);
+  const rCollar = new THREE.CylinderGeometry(0.020, 0.020, 0.004, 20)
+    .rotateX(Math.PI / 2)
+    .translate(mx, my, z + 0.092);
+  B.add(rCollar, M.steelDark);
+  const rGrip = new THREE.BoxGeometry(0.005, 0.004, 0.032)
+    .translate(mx + 0.022, my, rz);
+  B.add(rGrip, M.chrome);
+  for (let a = 0; a < 6; a++) {
+    const ang = (a / 6) * Math.PI * 2;
+    const rib = new THREE.BoxGeometry(0.002, 0.002, 0.028)
+      .translate(mx + 0.0215 * Math.cos(ang), my + 0.0215 * Math.sin(ang), rz);
+    B.add(rib, M.chrome);
+  }
+  // 38°C scald safety button
+  const cos45 = Math.SQRT1_2, sin45 = Math.SQRT1_2;
+  const bx = mx + 0.0225 * cos45, by = my + 0.0225 * sin45;
+  const btnHousing = new THREE.BoxGeometry(0.006, 0.004, 0.012)
+    .rotateZ(-Math.PI / 4)
+    .translate(bx, by, z + 0.110);
+  B.add(btnHousing, M.steelDark);
+  const btn = new THREE.BoxGeometry(0.005, 0.003, 0.008)
+    .rotateZ(-Math.PI / 4)
+    .translate(bx + 0.0015 * cos45, by + 0.0015 * sin45, z + 0.110);
+  B.add(btn, M.chrome);
+  const redDot = new THREE.BoxGeometry(0.003, 0.002, 0.003)
+    .rotateZ(-Math.PI / 4)
+    .translate(bx + 0.0025 * cos45, by + 0.0025 * sin45, z + 0.110);
+  B.add(redDot, M.safetyRed);
+}
+
+/** Overhead shower head (Takduschhuvud TVM 7200, 25 cm) with profiled dome & silicone nozzles. */
+function showerHeadOverhead(B, [x, y, z], r = 0.125) {
+  // Swivel ball joint and top nut
+  const sphere = new THREE.SphereGeometry(0.010, 14, 10).translate(x, y + 0.012, z);
+  B.add(sphere, M.chrome);
+  const nut = new THREE.CylinderGeometry(0.014, 0.014, 0.009, 16).translate(x, y + 0.007, z);
+  B.add(nut, M.chrome);
+
+  // Profiled dome with gently curved top
+  const dome1 = new THREE.CylinderGeometry(0.014, 0.065, 0.007, 32).translate(x, y + 0.002, z);
+  const dome2 = new THREE.CylinderGeometry(0.065, r - 0.004, 0.007, 32).translate(x, y - 0.004, z);
+  const rim = new THREE.CylinderGeometry(r - 0.004, r, 0.004, 32).translate(x, y - 0.008, z);
+  B.add(dome1, M.chrome);
+  B.add(dome2, M.chrome);
+  B.add(rim, M.chrome);
+
+  // Bottom outer chrome bezel
+  const bezel = new THREE.CylinderGeometry(r, r, 0.003, 32).translate(x, y - 0.010, z);
+  B.add(bezel, M.chrome);
+
+  // Recessed spray face plate on underside
+  const faceR = r - 0.009;
+  const face = new THREE.CylinderGeometry(faceR, faceR, 0.002, 32).translate(x, y - 0.011, z);
   B.add(face, M.steelDark);
+
+  // Nozzle pattern (silikonnoppor / strålhål) in concentric rings
+  const rings = [
+    { r: 0.026, count: 8 },
+    { r: 0.050, count: 14 },
+    { r: 0.074, count: 20 },
+    { r: 0.098, count: 26 },
+  ];
+  const nozzleGeos = [];
+  nozzleGeos.push(new THREE.CylinderGeometry(0.0018, 0.0018, 0.0025, 5).translate(x, y - 0.0125, z));
+  for (const ring of rings) {
+    for (let i = 0; i < ring.count; i++) {
+      const ang = (i / ring.count) * Math.PI * 2;
+      const nx = x + ring.r * Math.cos(ang);
+      const nz = z + ring.r * Math.sin(ang);
+      nozzleGeos.push(new THREE.CylinderGeometry(0.0016, 0.0018, 0.0025, 5).translate(nx, y - 0.0125, nz));
+    }
+  }
+  const mergedNozzles = mergeGeometries(nozzleGeos);
+  for (const g of nozzleGeos) g.dispose();
+  B.add(mergedNozzles, M.steelDark);
+}
+
+/** Angled hand shower head (duschsil) with outer bezel, spray face and silicone nozzles. */
+function handShowerHead(B, [x, y, z], [nx, ny, nz], r = 0.039) {
+  const dir = new THREE.Vector3(nx, ny, nz).normalize();
+  const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, -1, 0), dir);
+
+  // Tapered chrome back casing
+  const back = new THREE.CylinderGeometry(0.016, r, 0.016, 24)
+    .applyQuaternion(q)
+    .translate(x - dir.x * 0.008, y - dir.y * 0.008, z - dir.z * 0.008);
+  B.add(back, M.chrome);
+
+  // Outer bezel
+  const bezel = new THREE.CylinderGeometry(r, r, 0.004, 24)
+    .applyQuaternion(q)
+    .translate(x, y, z);
+  B.add(bezel, M.chrome);
+
+  // Recessed spray face plate
+  const faceR = r - 0.004;
+  const face = new THREE.CylinderGeometry(faceR, faceR, 0.002, 24)
+    .applyQuaternion(q)
+    .translate(x + dir.x * 0.002, y + dir.y * 0.002, z + dir.z * 0.002);
+  B.add(face, M.steelDark);
+
+  // Silicone spray nozzles
+  const rings = [
+    { r: 0.013, count: 6 },
+    { r: 0.024, count: 12 },
+  ];
+  const nozzleGeos = [];
+  const cCenter = new THREE.Vector3(0, -0.003, 0).applyQuaternion(q).add(new THREE.Vector3(x, y, z));
+  nozzleGeos.push(new THREE.CylinderGeometry(0.0014, 0.0016, 0.002, 5).applyQuaternion(q).translate(cCenter.x, cCenter.y, cCenter.z));
+  for (const ring of rings) {
+    for (let i = 0; i < ring.count; i++) {
+      const ang = (i / ring.count) * Math.PI * 2;
+      const local = new THREE.Vector3(ring.r * Math.cos(ang), -0.003, ring.r * Math.sin(ang));
+      const pos = local.applyQuaternion(q).add(new THREE.Vector3(x, y, z));
+      nozzleGeos.push(new THREE.CylinderGeometry(0.0014, 0.0016, 0.002, 5).applyQuaternion(q).translate(pos.x, pos.y, pos.z));
+    }
+  }
+  const merged = mergeGeometries(nozzleGeos);
+  for (const g of nozzleGeos) g.dispose();
+  B.add(merged, M.steelDark);
+}
+
+/**
+ * Hand shower unit (ergonomic handle, angled head) mounted in a detailed slider/holder on rail.
+ * Returns { headPos, sprayDir, hoseBase }
+ */
+function handShowerUnit(B, pipeX, hy, z, tiltRad, headPos, sprayDir) {
+  // Slider / clamp on rail
+  cylinderY(B, pipeX, z, 0.015, hy - 0.022, hy + 0.022, M.chrome, 16);
+  // Tightening lever on side
+  const lever = new THREE.CylinderGeometry(0.005, 0.005, 0.022, 12)
+    .rotateX(Math.PI / 2)
+    .translate(pipeX, hy, z - 0.022);
+  B.add(lever, M.chrome);
+  const knob = new THREE.SphereGeometry(0.007, 10, 8).translate(pipeX, hy, z - 0.033);
+  B.add(knob, M.chrome);
+
+  // Standoff arm to holder cup
+  const arm = new THREE.CylinderGeometry(0.0075, 0.0075, 0.018, 12)
+    .rotateZ(-Math.PI / 2)
+    .translate(pipeX + 0.016, hy, z);
+  B.add(arm, M.chrome);
+
+  // Conical holder cup
+  const cupX = pipeX + 0.030, cupY = hy;
+  const cup = new THREE.CylinderGeometry(0.0135, 0.0105, 0.032, 16)
+    .rotateZ(tiltRad)
+    .translate(cupX, cupY, z);
+  B.add(cup, M.chrome);
+
+  // Hand shower handle seated in holder
+  const ux = -Math.sin(tiltRad), uy = Math.cos(tiltRad);
+
+  // Conical hose coupling nut at base of handle
+  const nut = new THREE.CylinderGeometry(0.011, 0.0085, 0.025, 14)
+    .rotateZ(tiltRad)
+    .translate(cupX - 0.022 * ux, cupY - 0.022 * uy, z);
+  B.add(nut, M.chrome);
+
+  // Lower ergonomic handle segment (tapering to waist)
+  const lowerH = new THREE.CylinderGeometry(0.0092, 0.0112, 0.060, 16)
+    .rotateZ(tiltRad)
+    .translate(cupX + 0.020 * ux, cupY + 0.020 * uy, z);
+  B.add(lowerH, M.chrome);
+
+  // Upper ergonomic handle segment (flaring to neck)
+  const upperH = new THREE.CylinderGeometry(0.0125, 0.0092, 0.080, 16)
+    .rotateZ(tiltRad)
+    .translate(cupX + 0.090 * ux, cupY + 0.090 * uy, z);
+  B.add(upperH, M.chrome);
+
+  // Angled transition neck
+  const neckX = cupX + 0.130 * ux, neckY = cupY + 0.130 * uy;
+  const neck = new THREE.CylinderGeometry(0.013, 0.0125, 0.020, 16)
+    .rotateZ(tiltRad - 0.35)
+    .translate(neckX + 0.008, neckY + 0.006, z);
+  B.add(neck, M.chrome);
+
+  // Angled shower head
+  handShowerHead(B, headPos, sprayDir, 0.039);
+
+  const hoseBase = [cupX - 0.035 * ux, cupY - 0.035 * uy, z];
+  return { headPos, sprayDir, hoseBase };
+}
+
+/** Shower hose with fine segmentation, natural gravity drape and end couplings. */
+function showerHose(B, pts, mixerX, mixerY, mixerZ) {
+  const curve = new THREE.CatmullRomCurve3(pts.map(([x, y, z]) => new THREE.Vector3(x, y, z)));
+  const tube = new THREE.TubeGeometry(curve, SHOWER_FITTINGS.hoseSegments, SHOWER_FITTINGS.hoseRadius, 8);
+  B.add(tube, M.chrome);
+
+  // Coupling collar at mixer outlet
+  const hexNut = new THREE.CylinderGeometry(0.010, 0.010, 0.014, 12).translate(mixerX, mixerY - 0.004, mixerZ);
+  const ferrule = new THREE.CylinderGeometry(0.008, 0.0095, 0.008, 12).translate(mixerX, mixerY - 0.014, mixerZ);
+  B.add(hexNut, M.chrome);
+  B.add(ferrule, M.chrome);
 }
 
 /**
  * Shower fittings on the wall at x = wallX (spraying into +x), centred at z. Returns the
  * outlets (for running water): position + spray direction + radius.
- *  - ceiling: Takduschpaket Tvm 7200-160 Lång (Badrum): thermostat, riser, long arm with a
+ *  - ceiling: Takduschpaket Tvm 7200-160 Lång (Badrum): thermostat, riser, curved arm with a
  *    25 cm head, and a hand shower in a holder on the riser
  *  - else: Duschset Rt 105 + blandare Evm 168 (WC/dusch): thermostat, slide bar, hand shower
  */
-export function showerSet(B, wallX, z, y0, ceiling) {
+function buildShowerSet(B, wallX, z, y0, ceiling) {
   const outlets = [];
-  // thermostat mixer: round body along the wall with two knobs
-  const mix = new THREE.CylinderGeometry(0.03, 0.03, 0.3, 16).rotateX(Math.PI / 2).translate(wallX + 0.07, y0 + 1.0, z);
-  B.add(mix, M.chrome);
-  for (const s of [-1, 1]) cylinderY(B, wallX + 0.07, z + s * 0.17, 0.032, y0 + 0.97, y0 + 1.03, M.chrome, 16);
-  for (const s of [-1, 1]) B.box(wallX, wallX + 0.05, z + s * 0.1 - 0.012, z + s * 0.1 + 0.012, y0 + 0.988, y0 + 1.012, M.chrome);
+  // Thermostat mixer: detailed body with beveled rosettes, ribbed knobs & scald safety button
+  thermostatMixer(B, wallX, y0, z, ceiling);
+
   if (ceiling) {
     const top = y0 + 2.1, armX = wallX + 0.42;
-    cylinderY(B, wallX + 0.07, z, 0.013, y0 + 1.03, top, M.chrome, 12);
-    B.box(wallX, wallX + 0.07, z - 0.02, z + 0.02, y0 + 1.75, y0 + 1.79, M.chrome); // wall bracket
-    const arm = new THREE.CylinderGeometry(0.011, 0.011, armX - wallX - 0.07, 10).rotateZ(Math.PI / 2)
-      .translate((wallX + 0.07 + armX) / 2, top, z);
-    B.add(arm, M.chrome);
-    cylinderY(B, armX, z, 0.012, top - 0.06, top, M.chrome, 10);
-    showerHead(B, [armX, top - 0.07, z], [0, -1, 0], 0.125, 0.012);
-    outlets.push({ pos: [armX, top - 0.08, z], dir: [0, -1, 0], r: 0.1, basin: y0, name: 'takduschen', pick: [wallX + 0.07, y0 + 1.0, z], shower: true });
-    // hand shower parked in a holder on the riser, hose down to the mixer
+    // Vertical riser pipe up from mixer
+    cylinderY(B, wallX + 0.07, z, 0.0125, y0 + 1.025, top - 0.18, M.chrome, 14);
+
+    // Wall bracket with beveled escutcheon at y0 + 1.77
+    escutcheonX(B, wallX, y0 + 1.77, z, 0.028, 0.023, 0.015, 18);
+    const standoff = new THREE.CylinderGeometry(0.009, 0.009, 0.042, 14)
+      .rotateZ(-Math.PI / 2)
+      .translate(wallX + 0.036, y0 + 1.77, z);
+    B.add(standoff, M.chrome);
+    cylinderY(B, wallX + 0.07, z, 0.015, y0 + 1.756, y0 + 1.784, M.chrome, 16);
+
+    // Smooth curved top shower arm (swept 90° curve)
+    const armPts = [
+      [wallX + 0.07, top - 0.18, z],
+      [wallX + 0.07, top - 0.07, z],
+      [wallX + 0.11, top - 0.015, z],
+      [wallX + 0.20, top, z],
+      [armX, top, z]
+    ];
+    const armCurve = new THREE.CatmullRomCurve3(armPts.map(([x, y, pz]) => new THREE.Vector3(x, y, pz)));
+    B.add(new THREE.TubeGeometry(armCurve, 28, 0.011, 14), M.chrome);
+
+    // Vertical drop tube to overhead shower head
+    cylinderY(B, armX, z, 0.011, top - 0.05, top, M.chrome, 14);
+    showerHeadOverhead(B, [armX, top - 0.065, z], 0.125);
+    outlets.push({ pos: [armX, top - 0.08, z], dir: [0, -1, 0], r: 0.10, basin: y0, name: 'takduschen', pick: [wallX + 0.07, y0 + 1.0, z], shower: true });
+
+    // Hand shower in holder on the riser at y0 + 1.35
     const hy = y0 + 1.35;
-    B.box(wallX + 0.07, wallX + 0.11, z - 0.02, z + 0.02, hy - 0.02, hy + 0.02, M.chrome);
-    const handle = new THREE.CylinderGeometry(0.014, 0.012, 0.2, 10).rotateZ(0.35).translate(wallX + 0.12, hy, z);
-    B.add(handle, M.chrome);
-    showerHead(B, [wallX + 0.16, hy + 0.12, z], [0.5, -0.86, 0], 0.045);
-    hose(B, [[wallX + 0.08, hy - 0.1, z], [wallX + 0.12, y0 + 0.75, z + 0.06], [wallX + 0.09, y0 + 0.97, z + 0.05]], M.chrome);
+    const hand = handShowerUnit(B, wallX + 0.07, hy, z, -0.22, [wallX + 0.16, hy + 0.12, z], [0.5, -0.86, 0]);
+
+    // Smooth draped hose to mixer outlet
+    const hosePts = [
+      hand.hoseBase,
+      [wallX + 0.12, hy - 0.20, z + 0.02],
+      [wallX + 0.15, y0 + 0.78, z + 0.05],
+      [wallX + 0.12, y0 + 0.63, z + 0.05],
+      [wallX + 0.08, y0 + 0.72, z + 0.03],
+      [wallX + 0.07, y0 + 0.965, z]
+    ];
+    showerHose(B, hosePts, wallX + 0.07, y0 + 0.965, z);
   } else {
-    // slide bar with two wall brackets, hand shower in the slider at ~1.75 m
-    const x = wallX + 0.05;
-    cylinderY(B, x, z, 0.011, y0 + 1.15, y0 + 1.95, M.chrome, 12);
-    for (const y of [1.15, 1.95]) B.box(wallX, x, z - 0.015, z + 0.015, y0 + y - 0.015, y0 + y + 0.015, M.chrome);
+    // Slide bar (Duschset Rt 105) with beveled wall brackets
+    const barX = wallX + 0.05;
+    cylinderY(B, barX, z, 0.011, y0 + 1.15, y0 + 1.95, M.chrome, 16);
+    // Rounded end caps
+    const capTop = new THREE.SphereGeometry(0.011, 14, 8).translate(barX, y0 + 1.95, z);
+    const capBot = new THREE.SphereGeometry(0.011, 14, 8).translate(barX, y0 + 1.15, z);
+    B.add(capTop, M.chrome);
+    B.add(capBot, M.chrome);
+
+    // Wall brackets with beveled escutcheons at y0 + 1.20 and y0 + 1.90
+    for (const by of [1.20, 1.90]) {
+      escutcheonX(B, wallX, y0 + by, z, 0.026, 0.021, 0.014, 18);
+      const post = new THREE.CylinderGeometry(0.009, 0.009, 0.041, 14)
+        .rotateZ(-Math.PI / 2)
+        .translate(wallX + 0.0345, y0 + by, z);
+      B.add(post, M.chrome);
+      cylinderY(B, barX, z, 0.014, y0 + by - 0.013, y0 + by + 0.013, M.chrome, 16);
+    }
+
+    // Hand shower in slider at y0 + 1.75
     const hy = y0 + 1.75;
-    B.box(x - 0.02, x + 0.04, z - 0.02, z + 0.02, hy - 0.03, hy + 0.03, M.chrome);
-    const handle = new THREE.CylinderGeometry(0.015, 0.012, 0.21, 10).rotateZ(-0.6).translate(x + 0.08, hy - 0.06, z);
-    B.add(handle, M.chrome);
-    const head = [x + 0.15, hy + 0.04, z], dir = [0.3, -0.954, 0]; // lands ~0.95 m out, inside the shower
-    showerHead(B, head, dir, 0.055, 0.02);
+    const hand = handShowerUnit(B, barX, hy - 0.08, z, -0.42, [barX + 0.15, hy + 0.04, z], [0.3, -0.954, 0]);
+
+    const head = hand.headPos, dir = hand.sprayDir;
     outlets.push({ pos: [head[0] + 0.02, head[1] - 0.02, z], dir, r: 0.045, basin: y0, name: 'duschen', pick: [wallX + 0.07, y0 + 1.0, z], shower: true });
-    hose(B, [[x + 0.02, hy - 0.15, z], [x + 0.1, y0 + 0.7, z + 0.08], [wallX + 0.09, y0 + 0.97, z + 0.05]], M.chrome);
+
+    // Smooth draped hose to mixer outlet
+    const hosePts = [
+      hand.hoseBase,
+      [wallX + 0.11, hy - 0.30, z + 0.02],
+      [wallX + 0.15, y0 + 1.05, z + 0.05],
+      [wallX + 0.13, y0 + 0.67, z + 0.05],
+      [wallX + 0.08, y0 + 0.74, z + 0.03],
+      [wallX + 0.07, y0 + 0.965, z]
+    ];
+    showerHose(B, hosePts, wallX + 0.07, y0 + 0.965, z);
   }
   return outlets;
 }
