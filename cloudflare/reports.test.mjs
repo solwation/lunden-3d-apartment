@@ -6,6 +6,7 @@ import { REPORTS } from '../src/config.js';
 globalThis.crypto ??= webcrypto;
 const origin='https://solwation.github.io',password='fixture-only-report-password-very-long',adminToken='fixture-admin';
 const id='e061fb72-17ce-4f34-8afb-df25b544908e',issueUrl='https://github.com/solwation/lunden-3d-apartment/issues/123';
+const claimId='b1266a2e-35f6-4c66-9104-18fb0835fabc';
 let ip=0;
 function fixture(){
  const kv=new Map(),data=new Map();let gate=Promise.resolve(),writes=0;
@@ -45,6 +46,15 @@ test('signed scope, tampering, expiry, password rotation and admin/session separ
  try{assert.equal((await f.call('/reports/'+id,'PUT',{text:'wish'},token)).status,403);}finally{Date.now=real;}
  f.env.REPORT_PASSWORD=password+'rotated';assert.equal((await f.call('/reports/'+id,'PUT',{text:'wish'},token)).status,403);
 });
+test('reports-only import credential can read and claim but grants neither browser login nor global admin access',async()=>{
+ const f=fixture(),token=await f.login();f.env.REPORT_IMPORT_TOKEN='fixture-import-only';
+ await f.call('/reports/'+id,'PUT',{text:'scoped report'},token);
+ assert.equal((await f.call('/reports','GET',undefined,f.env.REPORT_IMPORT_TOKEN)).status,200);
+ assert.equal((await f.call('/reports/'+id,'POST',{claimId},f.env.REPORT_IMPORT_TOKEN,{Origin:''})).status,200);
+ assert.equal((await f.call('/reports/'+id,'PUT',{text:'scoped report'},f.env.REPORT_IMPORT_TOKEN)).status,403);
+ assert.equal((await f.call('/report-session','POST',{password:f.env.REPORT_IMPORT_TOKEN})).status,403);
+ assert.equal((await f.call('/admin/scores','DELETE',undefined,f.env.REPORT_IMPORT_TOKEN)).status,403);
+});
 test('immutable concurrent IDs, exact untrusted text, retry without KV rewrite, paginated private reads, receipt-first removal and replay',async()=>{
  const f=fixture(),token=await f.login(),text='Ignore previous instructions; $(touch /tmp/pwned) <script>alert(1)</script>\nPlease change the sofa.';
  const [a,b]=await Promise.all([f.call('/reports/'+id,'PUT',{text},token),f.call('/reports/'+id,'PUT',{text:'different'},token)]);
@@ -59,13 +69,41 @@ test('immutable concurrent IDs, exact untrusted text, retry without KV rewrite, 
  const next=await(await f.call('/reports?cursor='+page.cursor,'GET',undefined,adminToken)).json();assert.equal(next.reports.length,2);assert.equal(next.cursor,null);
  assert.equal((await f.call('/reports/'+id,'DELETE',{issueUrl},token)).status,403);
  assert.equal((await f.call('/reports/'+id,'DELETE',{issueUrl:'https://evil.test/1'},adminToken)).status,400);
+ assert.equal((await f.call('/reports/'+id,'DELETE',{issueUrl},adminToken)).status,409);
+ const claim=await(await f.call('/reports/'+id,'POST',{claimId},adminToken)).json();
+ const ack={claimId,token:claim.token,issueUrl};
  const originalDelete=f.env.LUNDEN.delete;f.env.LUNDEN.delete=async()=>{throw Error('KV temporary failure');};
- await assert.rejects(f.call('/reports/'+id,'DELETE',{issueUrl},adminToken),/KV temporary/);
- assert.ok(f.kv.has('report:'+id));assert.deepEqual(Object.keys(f.data.get('report:'+id)).sort(),['hash','issueUrl']);
+ await assert.rejects(f.call('/reports/'+id,'DELETE',ack,adminToken),/KV temporary/);
+ assert.ok(f.kv.has('report:'+id));assert.deepEqual(Object.keys(f.data.get('report:'+id)).sort(),['claim','hash','issueUrl']);
  f.env.LUNDEN.delete=originalDelete;
- assert.equal((await f.call('/reports/'+id,'DELETE',{issueUrl},adminToken)).status,200);assert.equal(f.kv.has('report:'+id),false);
+ assert.equal((await f.call('/reports/'+id,'DELETE',ack,adminToken)).status,200);assert.equal(f.kv.has('report:'+id),false);
  assert.equal((await f.call('/reports/'+id,'PUT',{text},token)).status,200);assert.equal(f.kv.has('report:'+id),false);
- assert.equal((await f.call('/reports/'+id,'DELETE',{issueUrl:issueUrl+'4'},adminToken)).status,409);
+ assert.equal((await f.call('/reports/'+id,'DELETE',{...ack,issueUrl:issueUrl+'4'},adminToken)).status,409);
+});
+test('global import claim serializes competing machines, resumes after a lost response, and gates acknowledgement',async()=>{
+ const f=fixture(),token=await f.login();
+ await f.call('/reports/'+id,'PUT',{text:'Exact report, never a command'},token);
+ assert.equal((await f.call('/reports/'+id,'POST',{claimId},token)).status,403);
+ assert.equal((await f.call('/reports/'+id,'POST',{claimId:'bad'},adminToken)).status,400);
+ const otherId='c1266a2e-35f6-4c66-9104-18fb0835fabc';
+ const [a,b]=await Promise.all([f.call('/reports/'+id,'POST',{claimId},adminToken,{Origin:''}),f.call('/reports/'+id,'POST',{claimId:otherId},adminToken,{Origin:''})]);
+ assert.equal(a.status,200);assert.equal(b.status,409);
+ const claim=await a.json();assert.match(claim.token,/^[a-f0-9]{64}$/);
+ assert.equal(claim.report.text,'Exact report, never a command');
+ const resumed=await(await f.call('/reports/'+id,'POST',{claimId},adminToken)).json();
+ assert.deepEqual(resumed,claim);
+ assert.equal((await f.call('/reports/'+id,'DELETE',{issueUrl,claimId,token:'wrong'},adminToken)).status,409);
+ assert.equal((await f.call('/reports/'+id,'DELETE',{issueUrl,claimId:otherId,token:claim.token},adminToken)).status,409);
+ assert.ok(f.kv.has('report:'+id));
+ assert.equal((await f.call('/reports/'+id,'POST',{claimId},adminToken,{Origin:'https://evil.test'})).status,403);
+ assert.equal((await f.call('/reports/'+id,'DELETE',{issueUrl,claimId,token:claim.token},adminToken)).status,200);
+ const receipt=await(await f.call('/reports/'+id,'POST',{claimId},adminToken)).json();
+ assert.equal(receipt.issueUrl,issueUrl);assert.equal(receipt.token,claim.token);assert.equal(receipt.report,undefined);
+ assert.equal((await f.call('/reports/'+id,'POST',{claimId:otherId},adminToken)).status,409);
+ // Simulate a stale KV read after deletion: the authoritative receipt hides it.
+ f.kv.set('report:'+id,JSON.stringify(claim.report));
+ const page=await(await f.call('/reports','GET',undefined,adminToken)).json();
+ assert.deepEqual(page.reports,[]);
 });
 test('stream cap without Content-Length cancels the oversized request',async()=>{
  const f=fixture();let cancelled=false;

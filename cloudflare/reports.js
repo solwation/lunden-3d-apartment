@@ -5,7 +5,8 @@ const UUID = /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{1
 const ISSUE = /^https:\/\/github\.com\/solwation\/lunden-3d-apartment\/issues\/[1-9][0-9]*$/;
 const reply = (data, status, h) => new Response(JSON.stringify(data), { status, headers: { ...h, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
 const bad = (status, error, h) => reply({ error }, status, h);
-const admin = (r,e) => !!e.ADMIN_TOKEN && r.headers.get('Authorization') === `Bearer ${e.ADMIN_TOKEN}`;
+// The importer can use a reports-only secret without access to the emergency brake.
+const admin = (r,e) => [e.REPORT_IMPORT_TOKEN,e.ADMIN_TOKEN].some(token => !!token && r.headers.get('Authorization') === `Bearer ${token}`);
 const hex = bytes => [...new Uint8Array(bytes)].map(b => b.toString(16).padStart(2,'0')).join('');
 async function sign(secret, data) {
   const key = await crypto.subtle.importKey('raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign','verify']);
@@ -44,7 +45,8 @@ export async function reportsFetch(request, env, h, limited) {
   const writing = method === 'POST' || method === 'PUT' || method === 'DELETE';
   // Browser writes require an accepted Origin; CLI admin reads/acks may omit it.
   const origin = request.headers.get('Origin');
-  if ((origin && !h['Access-Control-Allow-Origin']) || (writing && method !== 'DELETE' && !origin)) return bad(403,'origin',h);
+  const adminClaim = !session && !!id && method === 'POST' && admin(request,env);
+  if ((origin && !h['Access-Control-Allow-Origin']) || (writing && method !== 'DELETE' && !adminClaim && !origin)) return bad(403,'origin',h);
   if (session) {
     if (method !== 'POST') return bad(405,'method',h);
     if (await limited(request,env)) return bad(429,'rate',h);
@@ -61,7 +63,7 @@ export async function reportsFetch(request, env, h, limited) {
   if (method === 'PUT' && id) {
     if (!await authorized(request,env)) return bad(403,'session',h);
     if (!env.reportForwarded && await limited(request,env)) return bad(429,'rate',h);
-  } else if ((method === 'GET' && !id) || (method === 'DELETE' && id)) {
+  } else if ((method === 'GET' && !id) || ((method === 'POST' || method === 'DELETE') && id)) {
     if (!admin(request,env)) return bad(403,'admin',h);
   } else return bad(405,'method',h);
   // The existing Durable Object serializes immutable IDs and receipts across isolates.
@@ -78,12 +80,23 @@ export async function reportsFetch(request, env, h, limited) {
   }
   let b; try { b=await body(request); } catch (status) { return bad(status===413?413:400,'body',h); }
   const key=`report:${id}`, previous=await storage.get(key);
+  if (method === 'POST') {
+    if (!UUID.test(b?.claimId??'')) return bad(400,'claimId',h);
+    if (!previous?.report && !previous?.claim) return bad(404,'report',h);
+    // Claims never expire: a GitHub POST may have succeeded despite a lost reply.
+    // Only the original, durably journaled claim ID may resume this reservation.
+    if (previous.claim && previous.claim.claimId!==b.claimId) return bad(409,'claimed',h);
+    const claim=previous.claim??{claimId:b.claimId,token:hex(crypto.getRandomValues(new Uint8Array(32)))};
+    if (!previous.claim) await storage.put(key,{...previous,claim});
+    return reply({id,...claim,...(previous.report?{report:previous.report}:{}),...(previous.issueUrl?{acknowledged:true,issueUrl:previous.issueUrl}:{})},200,h);
+  }
   if (method === 'DELETE') {
     if (!ISSUE.test(b?.issueUrl??'')) return bad(400,'issueUrl',h);
     if (!previous) return bad(404,'report',h);
+    if (!previous.claim || previous.claim.claimId!==b?.claimId || previous.claim.token!==b?.token) return bad(409,'claim',h);
     if (previous.issueUrl && previous.issueUrl!==b.issueUrl) return bad(409,'receipt',h);
     // Persist receipt first. Retry completes a failed KV deletion without losing identity.
-    await storage.put(key,{hash:previous.hash,issueUrl:b.issueUrl});
+    await storage.put(key,{hash:previous.hash,claim:previous.claim,issueUrl:b.issueUrl});
     await env.LUNDEN.delete(key);
     return reply({id,issueUrl:b.issueUrl},200,h);
   }
