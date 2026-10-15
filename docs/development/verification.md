@@ -6892,3 +6892,16 @@ second run needed the fixture's hidden HUD parent shown to click actual Klart.
 Neither setup adjustment relaxes the direct chat-code Enter path or production
 callbacks. Previous 40/40 checks in `/tmp/lunden-start-1051` describe the superseded
 inline-panel implementation and omitted the production document keyboard handler.
+
+## Masked admin login Enter (#1054)
+
+`tools/adminreportstest.cjs GAME WORKER OUT` additionally checks wrong-code Enter,
+valid Enter and numpad Enter with the actual document capture handler, native
+index form and AdminReports field listener. Each key sends exactly one real local
+Worker login request, clears the secret and bypasses console/chat submission;
+success closes the login without starting furniture editing. Escape, the login
+button and both direct chat-code variants retain their checks. The unchanged
+handler fails the wrong-code Enter assertion before any fix. Final native run:
+59/59, no browser exceptions; successful Enter screenshots opened and inspected.
+Artifacts: `/tmp/lunden-linux-1054/browser`; source hashes in `result.json`.
+The existing bounded-world/no apartment/no physical-phone limitations apply.

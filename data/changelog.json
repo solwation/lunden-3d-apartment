@@ -1,4 +1,5 @@
 [
+  {"id": 848, "date": "2026-10-15", "text": "Enter fungerar nu även i det maskerade fältet för adminkoden."},
   {"id": 847, "date": "2026-10-15", "text": "Adminkoden visar Rapportera med egen popup och Möblera som startar först när du väljer det."},
   {"id": 846, "date": "2026-10-15", "text": "Besticklådan har fått fler knivar, gafflar och skedar i tydligare högar."},
   {"id": 845, "date": "2026-10-15", "text": "Adminmenyn under konsolfältet samlar knappar för ommöblering och rapporter med ett eget textfält."},

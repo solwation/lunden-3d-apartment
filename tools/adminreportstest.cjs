@@ -79,7 +79,25 @@ const sourceHashes=Object.fromEntries(['index.html','src/adminreports.js','src/m
  check(await page.locator('#terminal-form').evaluate(e=>e.getBoundingClientRect().right<=innerWidth&&e.getBoundingClientRect().bottom<=innerHeight),'login controls fit portrait phone viewport');
  await page.screenshot({path:path.join(out,'admin-login-portrait.png')});
  await page.setViewportSize({width:844,height:390});
- await page.locator('#admin-password').fill('incorrect');await page.locator('#admin-signin').click();await ready();check((await message()).includes('misslyckades'),'wrong admin code refused by actual API');
+ let loginRequests=0;
+ page.on('request',request=>{if(request.url()===worker+'/report-session')loginRequests++;});
+ await page.evaluate(()=>{window.passwordConsoleSubmits=0;document.getElementById('terminal-form').addEventListener('submit',()=>window.passwordConsoleSubmits++);});
+ await page.locator('#admin-password').fill('incorrect');await page.locator('#admin-password').press('Enter');await ready();
+ check(loginRequests===1&&(await message()).includes('misslyckades')&&!await page.evaluate(()=>fixture.reports.active),'masked wrong-code Enter reaches actual API exactly once and stays unauthenticated');
+ check(await page.locator('#admin-password').inputValue()===''&&await page.locator('#admin-password').isVisible(),'failed Enter clears secret but keeps masked login available');
+ for(const key of ['Enter','NumpadEnter']){
+  const before=loginRequests;
+  await page.locator('#admin-password').fill(codes[0]);await page.locator('#admin-password').press(key);await ready();
+  check(loginRequests===before+1&&await page.evaluate(()=>fixture.reports.active&&fixture.rearrange.unlocked&&!fixture.rearrange.enabled),'masked '+key+' authenticates exactly once without starting furniture mode');
+  check(await page.locator('#admin-password').inputValue()===''&&!await page.locator('#admin-password').isVisible(),'masked '+key+' clears and closes login');
+  check(await page.evaluate(()=>window.passwordConsoleSubmits===0&&fixture.chat.sent.length===1),'masked '+key+' never submits ordinary console or multiplayer chat');
+  await page.screenshot({path:path.join(out,'masked-'+key+'-success.png')});
+  await send('/loggaut');await send('/admin');
+  await page.evaluate(()=>window.passwordConsoleSubmits=0);
+ }
+ await page.locator('#admin-password').fill('cancelled draft');await page.locator('#admin-password').press('Escape');
+ check(await page.locator('#terminal').isHidden()&&await page.locator('#admin-password').inputValue()===''&&!await page.evaluate(()=>fixture.reports.active),'masked Escape still closes terminal and clears draft without login');
+ await send('/admin');
  await page.locator('#admin-password').fill(codes[0]);await page.locator('#admin-signin').click();await ready();
  check(await page.evaluate(()=>fixture.reports.active&&fixture.rearrange.unlocked&&!fixture.rearrange.enabled),'actual changed callback grants access without activating rearrange');
  check(await page.locator('#admin-password').inputValue()==='','admin code field cleared');

@@ -1038,7 +1038,7 @@ The two authenticated choices, Rapportera and Möblera, appear below that field.
 The console normalizes code input exactly as the existing cheat parser, clears it
 immediately, then sends `{code}` to the server. No public menu, help or graffiti
 lists admin commands or the two codes. Legacy slash aliases remain compatible,
-including the optional masked field; its unrelated Enter-key problem is #1054.
+including the optional masked field, where Enter and numpad Enter submit the code (#1054).
 Public layout digests cannot create report sessions.
 
 The server checks the real code with the existing private-code verifier and signs

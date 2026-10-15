@@ -2327,6 +2327,8 @@ document.getElementById('rearrange-menu').addEventListener('click', () => showTe
 document.getElementById('rearrange-finish').addEventListener('click', exitRearranging);
 document.addEventListener('keydown', (e) => {
   if (adminReports.reportPanel?.open) return; // Native modal owns typing, focus and Escape.
+  // Let the masked login's own Enter handler submit, before blocking gameplay keys.
+  if (!terminal.hidden && e.target === adminReports.password && e.key === 'Enter') return;
   if (!terminal.hidden) { if (e.code === 'Escape') { e.preventDefault(); exitRearranging(); showTerminal(false, 'Escape'); } e.stopImmediatePropagation(); return; }
   if (e.code === 'Escape' && rearrange.enabled && !reading) { e.preventDefault(); e.stopImmediatePropagation(); exitRearranging(); if (locked) document.exitPointerLock(); return; }
   // § opens the console everywhere in play (in rearrange mode: its menu); Enter too (#596), but only in plain play, never

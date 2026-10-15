@@ -1503,3 +1503,6 @@ the popup, hides the choices and preserves its draft for the next login.
 Screenshot capture, pending UUID/image retries and in-flight draft preservation
 use the existing report pipeline. Legacy slash aliases remain compatible but
 are not advertised in public help or action rows.
+The optional masked login field owns Enter (including numpad Enter): the document
+capture handler lets that key reach the field, which prevents ordinary console
+submission and starts one login request. Escape retains terminal close behavior (#1054).
