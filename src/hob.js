@@ -11,13 +11,25 @@ import { KITCHEN } from './config.js';
 
 // zones: [a, b, r] — a = 0 at the front edge … 1 at the back, b = 0 north … 1 south, r in fractions of the width
 function glassTexture(zones) {
-  const c = document.createElement('canvas'); c.width = 256; c.height = 256;
+  const c = document.createElement('canvas'); c.width = 512; c.height = 512;
   const g = c.getContext('2d');
-  g.fillStyle = '#0b0b0c'; g.fillRect(0, 0, 256, 256);
-  g.strokeStyle = 'rgba(210,210,210,0.5)'; g.lineWidth = 2;
-  for (const [a, b, r] of zones) { g.beginPath(); g.arc(a * 256, b * 256, r * 256, 0, Math.PI * 2); g.stroke(); }
-  g.fillStyle = 'rgba(200,200,200,0.55)'; // the touch controls along the front edge
-  for (let i = 0; i < 9; i++) g.fillRect(12, 60 + i * 15, 3, 8);
+  g.fillStyle = '#090b0d'; g.fillRect(0, 0, 512, 512);
+  // Correct the printed circles for the rectangular glass; cooking anchors stay exact.
+  const aspect = KITCHEN.hob.w / KITCHEN.hob.d;
+  g.strokeStyle = 'rgba(210,216,220,0.6)'; g.lineWidth = 1.5;
+  for (const [a, b, r] of zones) {
+    g.beginPath(); g.ellipse(a * 512, b * 512, r * 512 * aspect, r * 512, 0, 0, Math.PI * 2); g.stroke();
+    g.beginPath(); g.moveTo(a * 512 - 5, b * 512); g.lineTo(a * 512 + 5, b * 512);
+    g.moveTo(a * 512, b * 512 - 5); g.lineTo(a * 512, b * 512 + 5); g.stroke();
+  }
+  // Printed touch strip: fine slider marks, minus/plus, and a power symbol. The live 9 stays a separate overlay.
+  g.strokeStyle = 'rgba(192,204,212,0.5)'; g.lineWidth = 2;
+  for (let i = 0; i < 9; i++) { const b = 110 + i * 30; g.beginPath(); g.moveTo(30, b); g.lineTo(36, b); g.stroke(); }
+  g.beginPath(); g.moveTo(33, 82); g.lineTo(33, 94); g.moveTo(27, 378); g.lineTo(39, 378);
+  g.moveTo(33, 372); g.lineTo(33, 384); g.stroke();
+  g.save(); g.translate(33, 436); g.rotate(Math.PI / 2); // upright when seen from the front (−x)
+  g.beginPath(); g.arc(0, 0, 11, -.35 * Math.PI, 1.35 * Math.PI); g.stroke();
+  g.beginPath(); g.moveTo(0, -16); g.lineTo(0, -1); g.stroke(); g.restore();
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
   return t;
 }
@@ -51,10 +63,17 @@ export class Hob {
     Object.assign(this, { name: 'hällen', kind: 'hob', on: false, hum: null });
     this.object = new THREE.Group();
     this.object.position.set(x0, y, z);
-    const body = new THREE.Mesh(new THREE.BoxGeometry(d, H.t, w), new THREE.MeshStandardMaterial({ color: 0x111112, roughness: 0.3 }));
-    body.position.set(d / 2, H.t / 2, 0);
+    const b = H.bevel, edge = new THREE.Shape();
+    edge.moveTo(b, -w / 2 + b); edge.lineTo(d - b, -w / 2 + b);
+    edge.lineTo(d - b, w / 2 - b); edge.lineTo(b, w / 2 - b); edge.closePath();
+    const bodyGeometry = new THREE.ExtrudeGeometry(edge, { depth: H.t - 2 * b, steps: 1, bevelEnabled: true, bevelSegments: 1, bevelSize: b, bevelThickness: b });
+    bodyGeometry.rotateX(-Math.PI / 2); bodyGeometry.translate(0, b, 0);
+    const body = new THREE.Mesh(bodyGeometry, new THREE.MeshStandardMaterial({ color: 0x262c31, roughness: 0.18, metalness: 0.15 }));
     body.receiveShadow = true; // like the glass top: no sun through the house (#607)
-    const top = new THREE.Mesh(new THREE.PlaneGeometry(d, w), new THREE.MeshStandardMaterial({ map: glassTexture(H.zones), roughness: 0.25, metalness: 0.1 }));
+    const topGeometry = new THREE.PlaneGeometry(d - 2 * b, w - 2 * b);
+    const uv = topGeometry.attributes.uv;
+    for (let i = 0; i < uv.count; i++) uv.setXY(i, b / d + uv.getX(i) * (1 - 2 * b / d), b / w + uv.getY(i) * (1 - 2 * b / w));
+    const top = new THREE.Mesh(topGeometry, new THREE.MeshStandardMaterial({ map: glassTexture(H.zones), roughness: 0.14, metalness: 0.1 }));
     top.rotation.x = -Math.PI / 2; // u along +x (front → back), v along −z: canvas x = a, canvas y = b
     top.position.set(d / 2, H.t + 0.0004, 0);
     top.receiveShadow = true;
@@ -69,7 +88,7 @@ export class Hob {
     this.object.add(ring);
     this.digitMat = new THREE.MeshBasicMaterial({ map: digitTexture('9'), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false });
     const digit = new THREE.Mesh(new THREE.PlaneGeometry(0.03, 0.03), this.digitMat);
-    digit.rotation.set(-Math.PI / 2, 0, Math.PI / 2); // read from the front (−x)
+    digit.rotation.set(-Math.PI / 2, 0, -Math.PI / 2); // upright from the front (−x)
     digit.position.set(0.035, H.t + 0.0008, zz);
     digit.raycast = () => {};
     this.object.add(digit);

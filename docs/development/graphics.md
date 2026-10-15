@@ -3,6 +3,14 @@
 Read [CLAUDE.md](../../CLAUDE.md) first for shared workflow rules. Paths in code spans and module maps are relative to the repository root.
 
 Related: [performance](performance.md), [plan-material](plan-material.md).
+
+Kitchen appliance details (#1043): `hob.js` keeps zone markings and touch controls
+in one canvas texture; its thin bevel adds16 triangles. `hood.js` caches steel,
+glass and woven-filter materials, with merged shell/filter/diffuser geometry.
+Interior supplies the original hood-lamp material to both LED spots, preserving
+the existing lamp wash/pool and independent fan switch. The measured kitchen
+component adds3 calls/220 triangles, no shader programs or lights.
+[Normal-light before/after pictures and limitations](../validation/issue-1043/README.md).
 ## Module and test map
 
 ```text

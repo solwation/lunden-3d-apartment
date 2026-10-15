@@ -742,9 +742,7 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
     // behind it (baked into the static merge) so no gap shows between the gypsum boxing above and the hood below
     EW.box(hob[0] + 0.002, hob[1] - 0.002, -wd, -FT, yH, yTop, M.front);
     front(EW, hob[0], hob[1], yH, yTop, M.front, null);
-    EW.box(hob[0] + 0.01, hob[1] - 0.01, -wd + 0.02, 0, yHood, yH, M.steel);
-    EW.box(hob[0] + 0.03, hob[1] - 0.03, -wd + 0.05, -0.03, yHood - 0.002, yHood, hoodLamp);
-    const hood = new Hood({ x0: wallX, x1: eastWall, z0: hob[0] + 0.01, z1: hob[1] - 0.01, y0: yHood, y1: yH }); // E: the fan (#194); its light has its own button (#221)
+    const hood = new Hood({ x0: wallX, x1: eastWall, z0: hob[0] + 0.01, z1: hob[1] - 0.01, y0: yHood, y1: yH, lampMaterial: hoodLamp }); // E: the fan (#194); its light has its own button (#221)
     group.add(hood.object);
     appliances.push(hood);
     // the hood's light on the hob: the wash on the worktop under it and up the splashback under the hood (bright at the

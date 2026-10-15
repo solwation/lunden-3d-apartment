@@ -3362,6 +3362,8 @@ export const KITCHEN = {
   cornerDoorMax: 42,
   hoodBottom: 1.6,       // underside of the hood (Spiskåpa Tango) under the hob cabinet
   hoodHeight: 0.08,
+  // #1043 cosmetic dimensions (m, visual guesses, not manufacturer measurements).
+  hoodDetail: { rim: 0.014, filterGap: 0.008, spotRadius: 0.014, spotInset: 0.065 },
   // the under-cabinet LED ("bänkbelysningen") and the hood's light (#221, #271): `pool` = the pool point light each
   // borrows, `out` m out from the wall (still under the wall cabinets / hood, so their fronts are not lit) and `y` m over
   // the worktop; weak, as it is close to the tiles (inverse square: 0.3 m away a strong one made blown-out spots); `wash` = the additive washes' opacity, `soft` = the metres at each end of a wash over which it fades out
@@ -3377,7 +3379,7 @@ export const KITCHEN = {
   fridgeHeight: 1.86,    // Electrolux LRT7ME39X / LUS7ME28X: 186 cm
   grille: 0.06,          // ventilationsgaller rostfri (over fridge/freezer and microwave)
   sink: { w: 0.5, d: 0.4, depth: 0.19 }, // Diskho Intra Linea 5040, underlimmad; depth *guess* (typ. 18–20 cm, #122)
-  hob: { w: 0.58, d: 0.52, t: 0.006, // Induktionshäll EH60KB6BF
+  hob: { w: 0.58, d: 0.52, t: 0.006, bevel: 0.0012, // Induktionshäll EH60KB6BF; bevel is a visual guess (#1043)
     // its four zones (#158) as [a, b, r] on the glass (a 0 = front edge … 1 = back, b 0 = north … 1 = south, r in
     // fractions of the width); the first is the big front one that glows. A typical 4-zone layout (guess).
     zones: [[0.33, 0.3, 0.2], [0.33, 0.75, 0.15], [0.74, 0.3, 0.15], [0.74, 0.74, 0.17]] },

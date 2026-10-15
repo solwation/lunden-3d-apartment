@@ -1,5 +1,13 @@
 # Browser verification and test selection
 
+Kitchen hob/hood (#1043): `tools/kitchenrealismtest.cjs GAME OUT` uses the real
+plan's kitchen builders, production Lights/DayCycle/Pan and Web Audio in a bounded
+component. `--no-render` covers native interaction without WebGL; `--baseline`
+uses explicitly frozen pre-change source files. Final18/18 checks, actual CLI0,
+no browser exceptions. Before/after normal-light kitchen/glass/underside pictures,
+actual3-call/220-triangle delta, source hashes and limitations are in the
+[validation record](../validation/issue-1043/README.md). No World or phone/FPS claim.
+
 Recovered #669 covered-projection checkpoint (2026-10-15):
 `tools/portraitlayouttest.cjs http://localhost:8893 /tmp/lunden-reports-669/portrait-native`
 passed25/25 with actual index CSS, coarse portrait media, viewport binding,

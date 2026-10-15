@@ -1,0 +1,358 @@
+{
+  "baseline": true,
+  "render": true,
+  "checks": [
+    {
+      "ok": true,
+      "label": "unchanged cooking anchor on six millimetre glass",
+      "data": {
+        "zone": [
+          5.1628,
+          0.936,
+          3.5944999999999996
+        ],
+        "intake": [
+          5.3762,
+          1.6,
+          3.7104999999999997
+        ],
+        "hob": {
+          "meshes": 4,
+          "triangles": 64
+        },
+        "hood": {
+          "meshes": 5,
+          "triangles": 60
+        },
+        "kitchen": {
+          "meshes": 278,
+          "triangles": 62640
+        },
+        "audioRunning": "running"
+      }
+    },
+    {
+      "ok": true,
+      "label": "production interaction hot",
+      "data": {
+        "hot": true,
+        "cold": true,
+        "placed": true,
+        "lifted": true,
+        "home": true,
+        "fanOn": true,
+        "draws": true,
+        "lampOn": true,
+        "fanOff": true,
+        "lightHit": true,
+        "hobHit": true,
+        "zoneSame": true,
+        "intakeSame": true
+      }
+    },
+    {
+      "ok": true,
+      "label": "production interaction cold",
+      "data": {
+        "hot": true,
+        "cold": true,
+        "placed": true,
+        "lifted": true,
+        "home": true,
+        "fanOn": true,
+        "draws": true,
+        "lampOn": true,
+        "fanOff": true,
+        "lightHit": true,
+        "hobHit": true,
+        "zoneSame": true,
+        "intakeSame": true
+      }
+    },
+    {
+      "ok": true,
+      "label": "production interaction placed",
+      "data": {
+        "hot": true,
+        "cold": true,
+        "placed": true,
+        "lifted": true,
+        "home": true,
+        "fanOn": true,
+        "draws": true,
+        "lampOn": true,
+        "fanOff": true,
+        "lightHit": true,
+        "hobHit": true,
+        "zoneSame": true,
+        "intakeSame": true
+      }
+    },
+    {
+      "ok": true,
+      "label": "production interaction lifted",
+      "data": {
+        "hot": true,
+        "cold": true,
+        "placed": true,
+        "lifted": true,
+        "home": true,
+        "fanOn": true,
+        "draws": true,
+        "lampOn": true,
+        "fanOff": true,
+        "lightHit": true,
+        "hobHit": true,
+        "zoneSame": true,
+        "intakeSame": true
+      }
+    },
+    {
+      "ok": true,
+      "label": "production interaction home",
+      "data": {
+        "hot": true,
+        "cold": true,
+        "placed": true,
+        "lifted": true,
+        "home": true,
+        "fanOn": true,
+        "draws": true,
+        "lampOn": true,
+        "fanOff": true,
+        "lightHit": true,
+        "hobHit": true,
+        "zoneSame": true,
+        "intakeSame": true
+      }
+    },
+    {
+      "ok": true,
+      "label": "production interaction fanOn",
+      "data": {
+        "hot": true,
+        "cold": true,
+        "placed": true,
+        "lifted": true,
+        "home": true,
+        "fanOn": true,
+        "draws": true,
+        "lampOn": true,
+        "fanOff": true,
+        "lightHit": true,
+        "hobHit": true,
+        "zoneSame": true,
+        "intakeSame": true
+      }
+    },
+    {
+      "ok": true,
+      "label": "production interaction draws",
+      "data": {
+        "hot": true,
+        "cold": true,
+        "placed": true,
+        "lifted": true,
+        "home": true,
+        "fanOn": true,
+        "draws": true,
+        "lampOn": true,
+        "fanOff": true,
+        "lightHit": true,
+        "hobHit": true,
+        "zoneSame": true,
+        "intakeSame": true
+      }
+    },
+    {
+      "ok": true,
+      "label": "production interaction lampOn",
+      "data": {
+        "hot": true,
+        "cold": true,
+        "placed": true,
+        "lifted": true,
+        "home": true,
+        "fanOn": true,
+        "draws": true,
+        "lampOn": true,
+        "fanOff": true,
+        "lightHit": true,
+        "hobHit": true,
+        "zoneSame": true,
+        "intakeSame": true
+      }
+    },
+    {
+      "ok": true,
+      "label": "production interaction fanOff",
+      "data": {
+        "hot": true,
+        "cold": true,
+        "placed": true,
+        "lifted": true,
+        "home": true,
+        "fanOn": true,
+        "draws": true,
+        "lampOn": true,
+        "fanOff": true,
+        "lightHit": true,
+        "hobHit": true,
+        "zoneSame": true,
+        "intakeSame": true
+      }
+    },
+    {
+      "ok": true,
+      "label": "production interaction lightHit",
+      "data": {
+        "hot": true,
+        "cold": true,
+        "placed": true,
+        "lifted": true,
+        "home": true,
+        "fanOn": true,
+        "draws": true,
+        "lampOn": true,
+        "fanOff": true,
+        "lightHit": true,
+        "hobHit": true,
+        "zoneSame": true,
+        "intakeSame": true
+      }
+    },
+    {
+      "ok": true,
+      "label": "production interaction hobHit",
+      "data": {
+        "hot": true,
+        "cold": true,
+        "placed": true,
+        "lifted": true,
+        "home": true,
+        "fanOn": true,
+        "draws": true,
+        "lampOn": true,
+        "fanOff": true,
+        "lightHit": true,
+        "hobHit": true,
+        "zoneSame": true,
+        "intakeSame": true
+      }
+    },
+    {
+      "ok": true,
+      "label": "production interaction zoneSame",
+      "data": {
+        "hot": true,
+        "cold": true,
+        "placed": true,
+        "lifted": true,
+        "home": true,
+        "fanOn": true,
+        "draws": true,
+        "lampOn": true,
+        "fanOff": true,
+        "lightHit": true,
+        "hobHit": true,
+        "zoneSame": true,
+        "intakeSame": true
+      }
+    },
+    {
+      "ok": true,
+      "label": "production interaction intakeSame",
+      "data": {
+        "hot": true,
+        "cold": true,
+        "placed": true,
+        "lifted": true,
+        "home": true,
+        "fanOn": true,
+        "draws": true,
+        "lampOn": true,
+        "fanOff": true,
+        "lightHit": true,
+        "hobHit": true,
+        "zoneSame": true,
+        "intakeSame": true
+      }
+    },
+    {
+      "ok": true,
+      "label": "actual Web Audio context runs; hum/fan handles start and stop"
+    },
+    {
+      "ok": true,
+      "label": "no browser exceptions",
+      "data": []
+    }
+  ],
+  "info": {
+    "zone": [
+      5.1628,
+      0.936,
+      3.5944999999999996
+    ],
+    "intake": [
+      5.3762,
+      1.6,
+      3.7104999999999997
+    ],
+    "hob": {
+      "meshes": 4,
+      "triangles": 64
+    },
+    "hood": {
+      "meshes": 5,
+      "triangles": 60
+    },
+    "kitchen": {
+      "meshes": 278,
+      "triangles": 62640
+    },
+    "audioRunning": "running"
+  },
+  "errors": [],
+  "pictures": [
+    {
+      "name": "kitchen",
+      "metrics": {
+        "calls": 81,
+        "triangles": 8832,
+        "programs": 8
+      }
+    },
+    {
+      "name": "hob",
+      "metrics": {
+        "calls": 61,
+        "triangles": 7508,
+        "programs": 8
+      }
+    },
+    {
+      "name": "hood",
+      "metrics": {
+        "calls": 32,
+        "triangles": 5222,
+        "programs": 8
+      }
+    }
+  ],
+  "sources": {
+    "src/hob.js": "47ffecc978d6e2dcaaacddf1a203f56b2dc1e08cc98d0e54f161e7ab383599ed",
+    "src/hood.js": "36dd88c41770b10ed7e407470aec54ec26ab56a3f0f66d63fa620393d8adb07b",
+    "src/interior.js": "7d8bceb72ff1fc6c437a16d70d6b05bc1853f4f705519d410d2b2ab9e93ac58c",
+    "src/config.js": "5f93e3f166eaf9f6ceabbe4c26ee7c30b97261f141a788ea82a994778297213a",
+    "src/pan.js": "e6431770ec511281f68e9032bc97765fa26a0f72b4655385c2240fc5a01a451c",
+    "src/lights.js": "7b9555b873704f08de836b58ed8600fb0977c943d03e8c38bc9f14cc3ba0a0f3",
+    "src/daycycle.js": "4c81566eafa77dedbadc706d79b0930637b749a4823d587e283b378f9bb004c6",
+    "tools/kitchenrealismtest.cjs": "fe646ab976b1357622ac7ecb9d75558fafdb9d37cb1185db6e40160f74d5af05",
+    "baseline/hob.js": "ce23d6a7dbd39548596bd530c76579f3d4b048bcd8b2c7a2a3d4695369f59264",
+    "baseline/hood.js": "e00a5d8944f9288e98cc4d0e0badc6e9cfc8aca575dc9769140e2ab1cb0558d6",
+    "baseline/interior.js": "6dd5ba17f8de3540800f8bace84e335708cce3976a3aa3f696d442f6fd4b4d60",
+    "baseline/config.js": "1ca87b585fc5c6369b3ca2fa562759ec3258ac72aa0df684de5287fd66a747b1"
+  },
+  "limits": "Actual plan kitchen builders and production Lights/DayCycle/Pan/audio; bounded component maps and framing walls, no World, physical phone, audio recording or FPS claim."
+}

@@ -149,6 +149,8 @@ och gården med pergola, grill, lekplats och boulebana är uppmätta på Peabs s
 Inredningen följer våra materialval i Peabs tillvalsportal: köket med grågröna Form Tall-luckor,
 överskåp och kyl/frys enligt vår köksritning, Ek Chalk-parkett, klinker i hall och våtrum, kakel i
 badrum och WC/dusch, samt tillvalsdörren till Allrum (fyra sovrum på övre plan).
+Hällen har en fasad glaskant och tydliga touchreglage; köksfläkten har borstat stål,
+filtergaller och separata LED-spottar. [Bilder före och efter](docs/validation/issue-1043/README.md).
 
 Mått på ritningen är ungefärliga (≈, avrundade till 5 cm). Kontrollera kritiska mått mot Peabs
 byggritning.

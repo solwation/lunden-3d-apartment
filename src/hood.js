@@ -1,6 +1,34 @@
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { sfx } from './audio.js';
-import { SMOKE_ALARM as A } from './config.js';
+import { SMOKE_ALARM as A, KITCHEN } from './config.js';
+
+let finishes;
+function hoodFinishes() {
+  if (finishes) return finishes;
+  const canvas = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; };
+  const brushed = canvas(256, 128), b = brushed.getContext('2d');
+  b.fillStyle = '#c2c7cb'; b.fillRect(0, 0, 256, 128);
+  for (let y = 0; y < 128; y++) {
+    b.fillStyle = `rgba(${y % 3 ? '255,255,255' : '45,55,64'},${0.025 + (Math.sin(y * 17) + 1) * 0.025})`;
+    b.fillRect(0, y, 256, 1);
+  }
+  const filter = canvas(256, 256), f = filter.getContext('2d');
+  f.fillStyle = '#777e83'; f.fillRect(0, 0, 256, 256);
+  f.strokeStyle = '#b5bec3'; f.lineWidth = 1;
+  // Fine woven metal is one repeating texture, not hundreds of tiny wire meshes.
+  for (let x = -256; x < 512; x += 4) {
+    f.beginPath(); f.moveTo(x, 0); f.lineTo(x + 256, 256); f.stroke();
+    f.beginPath(); f.moveTo(x, 0); f.lineTo(x - 256, 256); f.stroke();
+  }
+  const texture = c => { const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; };
+  finishes = {
+    steel: new THREE.MeshStandardMaterial({ map: texture(brushed), roughness: 0.38, metalness: 0.55 }),
+    filter: new THREE.MeshStandardMaterial({ map: texture(filter), roughness: 0.6, metalness: 0.35 }),
+    glass: new THREE.MeshStandardMaterial({ color: 0x151b20, roughness: 0.14, metalness: 0.25 }),
+  };
+  return finishes;
+}
 
 // The cooker hood (Spiskåpa Tango, #194) and the smoke alarm in the kitchen ceiling. E on the hood switches the fan
 // on and off: a low whoosh and a green LED. Its light is separate, like on a real hood (#221): a second button on the
@@ -10,9 +38,30 @@ import { SMOKE_ALARM as A } from './config.js';
 
 export class Hood {
   /** x0..x1 (wall cabinet depth), z0..z1 (over the hob), y0 = its underside, y1 = its top. */
-  constructor({ x0, x1, z0, z1, y0, y1 }) {
+  constructor({ x0, x1, z0, z1, y0, y1, lampMaterial }) {
     Object.assign(this, { name: 'köksfläkten', kind: 'hood', on: false, sound: null });
     this.object = new THREE.Group();
+    const D = KITCHEN.hoodDetail, M = hoodFinishes(), midZ = (z0 + z1) / 2;
+    const steel = [new THREE.BoxGeometry(x1 - x0 - 0.02, y1 - y0, z1 - z0).translate((x0 + x1) / 2, (y0 + y1) / 2, midZ)];
+    const filters = [], spots = [];
+    for (const [a, b] of [[z0 + D.rim, midZ - D.filterGap / 2], [midZ + D.filterGap / 2, z1 - D.rim]]) {
+      const p = new THREE.PlaneGeometry(x1 - x0 - 2 * D.rim, b - a).rotateX(Math.PI / 2).translate((x0 + x1) / 2, y0 - 0.0005, (a + b) / 2);
+      filters.push(p);
+    }
+    for (const z of [z0 + D.spotInset, z1 - D.spotInset]) {
+      const x = x0 + D.spotInset;
+      // Recessed warm diffusers share the original switchable hood-lamp material.
+      steel.push(new THREE.CylinderGeometry(D.spotRadius + 0.004, D.spotRadius + 0.004, 0.003, 20).translate(x, y0 - 0.0015, z));
+      spots.push(new THREE.CircleGeometry(D.spotRadius, 20).rotateX(Math.PI / 2).translate(x, y0 - 0.0031, z));
+    }
+    const merged = geos => { const parts = geos.map(g => g.index ? g.toNonIndexed() : g); const result = mergeGeometries(parts); for (const g of new Set([...parts, ...geos])) g.dispose(); return result; };
+    const shell = new THREE.Mesh(merged(steel), M.steel);
+    const meshFilter = new THREE.Mesh(merged(filters), M.filter);
+    const diffusers = new THREE.Mesh(merged(spots), lampMaterial ?? new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff2dc, emissiveIntensity: 0.04 }));
+    const strip = new THREE.Mesh(new THREE.BoxGeometry(0.002, (y1 - y0) * 0.48, z1 - z0 - 2 * D.rim), M.glass);
+    strip.position.set(x0 - 0.001, (y0 + y1) / 2, midZ);
+    shell.receiveShadow = meshFilter.receiveShadow = strip.receiveShadow = true;
+    this.object.add(shell, meshFilter, diffusers, strip);
     // a small control strip on the front edge with a green LED
     this.ledMat = new THREE.MeshBasicMaterial({ color: 0x1a2a1a });
     const led = new THREE.Mesh(new THREE.BoxGeometry(0.004, 0.012, 0.012), this.ledMat);

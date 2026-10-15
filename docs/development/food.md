@@ -9,6 +9,8 @@ Related: [life](life.md), [furniture](furniture.md).
 src/ovens.js           oven (drop-down door) + microwave (side door) in the tall unit, E opens (world.lids)
 src/hob.js             the induction hob (#158): E switches it on/off (the front zone glows, "9" on the display, a hum);
                        in world.lids, `world.hob` (`zone`, `on`) for the pan/chicken; stays with F but F switches it off
+                       #1043: bevelled glass, printed circular zones/crosses and touch controls; the live digit reads upright
+                       from the front. Zone centres, glass height and cooking/placement/audio methods are unchanged.
 src/pan.js             the frying pan (#159), a Holdable in the middle drawer under the hob (`world.panDrawer`, a child
                        of the drawer while at home); E on the hob with it in the hand stands it on the front zone (`onHob`).
                        #484: dirty after cracking an egg, washed by the shared dish action at the kitchen tap;
@@ -46,6 +48,8 @@ src/hood.js            the cooker hood (#194, `world.hood`, in world.lids): E ru
                        separate button = its own lamp, #221 — the fan does not light it, like a real hood) and
                        draws the chicken's smoke up into it; the smoke alarm in the kitchen ceiling (SMOKE_ALARM) beeps
                        and blinks red after `delay` s of smoke the hood does not take (`chicken.freeSmoke`); F: fan off
+                       #1043 shell is brushed steel with a glass control strip, two merged texture-mesh filter panels
+                       and two LED diffusers sharing the existing lamp material; no new light or smoke/audio controller.
 src/coffee.js          Moccamaster on the worktop (MOCCAMASTER): E brews (red light, sound, the jug fills); tank + switch on the left, jug
                        on the right (#315); the coffee colour (jug, cups, mixes) is COFFEE in config, a dark Scanian roast (#316).
                        #334: it only brews with water in the see-through tank and coffee in the open filter basket, else the switch
