@@ -77,6 +77,17 @@ cloudflare/players.test.mjs` and `tools/headboxesbrowsertest.cjs` (two actual na
 Ghosts/Combat peers and local Worker, plus a rendered Avatar/box debug view; no full
 apartment or physical-phone performance claim).
 
+## Fruit remains (#1056)
+
+`FruitBowl.initLife` registers `x.fruitRemains` with the existing Life extras. It
+retains completed apple/banana slots, portion generations, placed position/yaw and
+discarded tombstones; uneaten fruit retains its prior policy. Saves replace this
+optional record atomically, and an explicit empty list clears older remains after
+F. Loading emits no eating/recovery callbacks. Ordinary held remains return to the
+bowl; an actual bicycle-hand receipt restores the same terminal portion to the
+hand afterward, using canonical empty scoops. See [food](food.md#fruit-remains-1056)
+and `tools/fruitremainstest.cjs` for the native reload checks and visual limits.
+
 ## Module and test map
 
 ```text

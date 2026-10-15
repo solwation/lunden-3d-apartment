@@ -11,7 +11,7 @@ import { roomEnv } from './lights.js';
 // The wires are thin tubes merged into one mesh (one draw call). Each piece of fruit is its own mesh (vertex colours, one
 // shared material) and a holdable like the fish finger (#162): E takes it straight into the hand, a click / "Ät" takes a
 // bite (a scoop out of it in the flesh colour, sfx.chew; an orange or a banana is peeled with the first), and after
-// FRUIT.bites[kind] it is eaten. E on a table top / the floor puts it down, E on the bowl puts it back in its own spot.
+// FRUIT.bites[kind] it is eaten; apples/bananas leave a core/peel for Matavfall. E on a table top / the floor puts it down, E on the bowl puts it back in its own spot.
 // F (the bare flat) puts every piece back in the bowl, whole. The cat ignores fruit.
 
 const fruitMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.42 });
@@ -130,6 +130,31 @@ function fruitGeometry(spec, seed) {
   return { geo, mid: curve.getPoint(0.5).add(new THREE.Vector3(0, 0.0205, 0)), r: 0.02, H: 0.04, curve };
 }
 
+/** The inedible remains reuse the fruit material and keep one pickable mesh. Sizes are relative to the fruit. */
+function remainsGeometry(kind, f, skin) {
+  if (kind === 'apple') {
+    const r = f.r, h = f.H;
+    const body = lathe([[0, 0], [r * .65, h * .08], [r * .48, h * .22], [r * .26, h * .45],
+      [r * .28, h * .65], [r * .65, h * .84], [0, h * .86]], (v, c) => {
+      c.setHex(v.y < h * .12 || v.y > h * .78 ? skin : FLESH.apple);
+    });
+    return mergeGeometries([body, stalk(h * .25, r * .05, 0, h * .84, 0, .25)]);
+  }
+  const parts = [], base = f.curve.getPoint(1), length = f.curve.getLength();
+  // Three thick ribbons fan away from the remaining base, yellow outside and cream inside.
+  for (let j = 0; j < 3; j++) {
+    const a = j * Math.PI * 2 / 3;
+    const curve = new THREE.QuadraticBezierCurve3(base,
+      base.clone().add(new THREE.Vector3(-length * .55, Math.cos(a) * f.r, Math.sin(a) * f.r)),
+      base.clone().add(new THREE.Vector3(-length * .8, Math.cos(a) * f.r * 2, Math.sin(a) * f.r * 2)));
+    const g = flat(new THREE.TubeGeometry(curve, 12, f.r * .55, 6, false));
+    g.scale(1, .22, 1); g.translate(0, f.r, 0);
+    paint(g, (v, c) => c.setHex(v.y > f.r ? FLESH.banana : 0xe2bc35));
+    parts.push(g);
+  }
+  return mergeGeometries(parts);
+}
+
 /** One piece of fruit in the bowl. */
 export class Fruit {
   constructor(bowl, spec, i) {
@@ -141,9 +166,14 @@ export class Fruit {
     Object.assign(this, { mid: f.mid, radius: f.r, curve: f.curve });
     f.geo.userData.keepCpu = true; // reshape() rewrites its arrays (#628: never freed on phones)
     f.geo.computeVertexNormals();
+    this.wholeGeometry = f.geo;
     this.base = { pos: f.geo.attributes.position.array.slice(), col: f.geo.attributes.color.array.slice() };
     this.model = new THREE.Mesh(f.geo, fruitMat);
     this.model.castShadow = true;
+    if (this.kind === 'apple' || this.kind === 'banana') {
+      this.remains = remainsGeometry(this.kind, f, spec.color);
+      this.remains.computeVertexNormals();
+    }
     this.model.userData.noCat = true;
     this.handCurl = this.kind === 'banana' ? 0.9 : 0.7;
     const self = this;
@@ -166,10 +196,13 @@ export class Fruit {
     this.model.rotation.set(s.kind === 'banana' ? s.tilt : 0, s.turn, s.kind === 'banana' ? 0 : s.tilt, 'YXZ');
   }
 
+  get isRemnant() { return !!this.remains && this.bites >= C.bites[this.kind]; }
+  get wasteKind() { return this.isRemnant && this.state !== 'eaten' ? 'food' : null; }
+
   /** Whole again (F). */
   restore() {
     forgetBicycleHand(this);
-    this.bites = 0; this.bite = 0; this.peeled = false; this.scoops = [];
+    this.completed = false; this.bites = 0; this.bite = 0; this.peeled = false; this.scoops = [];
     this.generation++;
     this.portionId = `fruit:${this.slot}:${this.generation}`;
     this.reshape();
@@ -177,8 +210,10 @@ export class Fruit {
 
   /** Rebuild the shape from the whole one: peeled (a little smaller, flesh-coloured), then every bite scooped out. */
   reshape() {
-    const geo = this.model.geometry, P = geo.attributes.position, Co = geo.attributes.color;
+    const geo = this.wholeGeometry, P = geo.attributes.position, Co = geo.attributes.color;
     P.array.set(this.base.pos); Co.array.set(this.base.col);
+    this.model.geometry = this.isRemnant ? this.remains : this.wholeGeometry;
+    this.name = this.isRemnant ? (this.kind === 'banana' ? 'bananskalet' : 'äppelskrutten') : NAMES[this.kind];
     const v = new THREE.Vector3(), d = new THREE.Vector3();
     const peel = this.peeled ? tmp2.setHex(PEELED[this.kind]) : null, flesh = new THREE.Color(FLESH[this.kind]);
     for (let i = 0; i < P.count; i++) {
@@ -210,11 +245,12 @@ export class Fruit {
 
   /** A bite: the first peels an orange / a banana, the others scoop out of it on the side facing the mouth. */
   biteOff() {
+    if (this.bites >= C.bites[this.kind]) return;
     this.bites++;
     if ((this.kind === 'orange' || this.kind === 'banana') && !this.peeled) { this.peeled = true; this.reshape(); return; }
-    if (this.kind === 'banana') { // from the tip in, a fifth of it at a time
-      const t = 1 - 0.2 * (this.scoops.length + 1);
-      this.scoops.push({ c: this.curve.getPoint(t).add(new THREE.Vector3(0, 0.0205, 0)), n: this.curve.getTangent(t) });
+    if (this.kind === 'banana') { // Negative local x is the top in the held pose: eat towards positive x.
+      const t = (this.scoops.length + 1) / (C.bites.banana - 1);
+      this.scoops.push({ c: this.curve.getPoint(t).add(new THREE.Vector3(0, 0.0205, 0)), n: this.curve.getTangent(t).negate() });
     } else {
       this.model.updateMatrixWorld(true);
       const eye = this.model.worldToLocal(this.camera.getWorldPosition(new THREE.Vector3()));
@@ -262,15 +298,23 @@ export class Fruit {
   /** Something else was taken / F: back in the bowl. */
   putBack() { if (this.held) this.home(); }
 
-  get useLabel() { return this.held ? 'Ät' : null; }
+  /** The shared Matavfall action removes the remains without eating or rewarding again. */
+  discard() {
+    if (!this.wasteKind || !this.held) return;
+    forgetBicycleHand(this); this.held = false;
+    if (heldItem() === this) setHeld(null);
+    this.state = 'eaten'; this.model.visible = false; this.scene.add(this.model);
+  }
+
+  get useLabel() { return this.held && !this.isRemnant ? 'Ät' : null; }
   use() {
-    if (!this.held || this.bite > 0) return;
+    if (!this.held || this.bite > 0 || this.isRemnant) return;
     this.bite = 1;
     sfx.chew(this.model.getWorldPosition(new THREE.Vector3()), this.kind === 'apple' || this.kind === 'pear' ? 1.3 : 0.6); // an apple crunches
   }
 
   update(dt) {
-    if (!this.held || this.bite <= 0) return;
+    if (!this.held || this.bite <= 0 || this.isRemnant) return;
     const before = this.bite;
     this.bite = Math.max(0, this.bite - dt * 2.5);
     if (before > 0.5 && this.bite <= 0.5) { // at the mouth: the bite comes off
@@ -362,19 +406,54 @@ export class FruitBowl {
     pick.userData.door = this.target;
   }
 
+  /** Keep completed remains and their disposal across visits/reloads; uneaten fruit keeps its existing policy. */
+  initLife(life) {
+    life.keepPart('fruitRemains', { save: () => this.saveRemains(), load: s => this.loadRemains(s) });
+  }
+  saveRemains() {
+    const pieces = this.fruit.filter(f => f.isRemnant).map(f => {
+      const placed = f.state === 'placed';
+      return { slot: f.slot, generation: f.generation, state: f.state === 'eaten' ? 'eaten' : placed ? 'placed' : 'bowl',
+        ...(placed ? { pos: f.model.position.toArray(), yaw: f.model.rotation.y } : {}) };
+    });
+    return { v: 1, pieces };
+  }
+  loadRemains(s) {
+    if (s?.v !== 1 || !Array.isArray(s.pieces)) return;
+    const seen = new Set();
+    const valid = s.pieces.every(r => {
+      const f = this.fruit[r?.slot];
+      if (!Number.isSafeInteger(r?.slot) || !f?.remains || seen.has(r.slot) || !Number.isSafeInteger(r.generation) || r.generation < 0 || !['bowl', 'placed', 'eaten'].includes(r.state)) return false;
+      seen.add(r.slot);
+      return r.state !== 'placed' || (Array.isArray(r.pos) && r.pos.length === 3 && r.pos.every(Number.isFinite) && Number.isFinite(r.yaw));
+    });
+    if (!valid) return;
+    // Replacing a save must also remove older remains absent from that record (e.g. after F).
+    for (const f of this.fruit) if (f.isRemnant && !seen.has(f.slot)) { f.restore(); f.home(); }
+    for (const r of s.pieces) {
+      const f = this.fruit[r.slot];
+      forgetBicycleHand(f);
+      f.generation = r.generation; f.portionId = `fruit:${f.slot}:${f.generation}`;
+      f.completed = true; f.bites = C.bites[f.kind]; f.bite = 0; f.peeled = f.kind === 'banana'; f.scoops = [];
+      f.reshape(); f.home();
+      if (r.state === 'placed') { f.state = 'placed'; this.scene.add(f.model); f.model.position.fromArray(r.pos); f.model.rotation.set(0, r.yaw, 0); }
+      if (r.state === 'eaten') { f.state = 'eaten'; f.model.visible = false; }
+    }
+  }
+
   /** #1034: one actually stowed fruit; other loose bowl contents retain their existing policy. */
   saveStowed(item) {
     if (!this.fruit.includes(item) || item.state !== 'held') return null;
     return { slot: item.slot, kind: item.kind, generation: item.generation, bites: item.bites, peeled: item.peeled,
-      scoops: item.scoops.map(s => ({ c: s.c.toArray(), ...(s.n ? { n: s.n.toArray() } : { R: s.R }) })) };
+      scoops: (item.isRemnant ? [] : item.scoops).map(s => ({ c: s.c.toArray(), ...(s.n ? { n: s.n.toArray() } : { R: s.R }) })) };
   }
   loadStowed(s) {
     const item = this.fruit[s.slot], integer = n => Number.isSafeInteger(n) && n >= 0;
     const vector = v => Array.isArray(v) && v.length === 3 && v.every(n => Number.isFinite(n) && Math.abs(n) <= 1);
-    if (!integer(s.slot) || !item || typeof s.kind !== 'string' || item.kind !== s.kind || !integer(s.generation) || !integer(s.bites) || s.bites >= C.bites[item.kind] || typeof s.peeled !== 'boolean' || (s.peeled && !PEELED[item.kind]) || !Array.isArray(s.scoops) || s.scoops.length !== s.bites-(s.peeled?1:0) || (PEELED[item.kind] && s.peeled !== (s.bites>0))) return null;
+    if (!integer(s.slot) || !item || typeof s.kind !== 'string' || item.kind !== s.kind || !integer(s.generation) || !integer(s.bites) || s.bites > C.bites[item.kind] || (s.bites === C.bites[item.kind] && !item.remains) || typeof s.peeled !== 'boolean' || (s.peeled && !PEELED[item.kind]) || !Array.isArray(s.scoops) || s.scoops.length !== (s.bites === C.bites[item.kind] ? 0 : s.bites-(s.peeled?1:0)) || (PEELED[item.kind] && s.peeled !== (s.bites>0))) return null;
     if (!s.scoops.every(b => b && vector(b.c) && (item.kind === 'banana' ? vector(b.n) && b.n.reduce((n,v) => n + v*v,0) > .5 : Number.isFinite(b.R) && b.R > 0 && b.R <= 1))) return null;
     item.generation = s.generation; item.portionId = `fruit:${item.slot}:${s.generation}`;
-    item.bites = s.bites; item.peeled = s.peeled; item.scoops = s.scoops.map(b => ({ c: new THREE.Vector3(...b.c), ...(item.kind === 'banana' ? { n: new THREE.Vector3(...b.n) } : { R: b.R }) }));
+    item.completed = s.bites === C.bites[item.kind]; item.bites = s.bites; item.peeled = s.peeled; item.scoops = s.scoops.map(b => ({ c: new THREE.Vector3(...b.c), ...(item.kind === 'banana' ? { n: new THREE.Vector3(...b.n) } : { R: b.R }) }));
     item.reshape(); item.take(); return item; // no bite/eaten/domain callback
   }
 
@@ -386,8 +465,16 @@ export class FruitBowl {
   }
 
   eaten(f) {
+    if (f.bites < C.bites[f.kind] || f.state === 'eaten' || f.completed) return;
+    f.completed = true;
     forgetBicycleHand(f);
     const portionId = f.portionId;
+    f.bite = 0;
+    if (f.isRemnant) {
+      f.reshape(); f.pose(0);
+      this.eatenCount++; this.onEaten?.(f); this.onConsume?.(f, portionId);
+      return;
+    }
     f.held = false;
     if (heldItem() === f) setHeld(null);
     f.state = 'eaten';

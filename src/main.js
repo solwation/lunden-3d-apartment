@@ -474,6 +474,7 @@ const fruit = new FruitBowl(scene, camera); // the copper fruit bowl on the coff
 const life = new Life({ scene, camera, say: (t) => badge(t, false), feet: () => ({ at: 'world', pos: [player.pos.x, player.pos.y, player.pos.z], yaw: camera.rotation.y }),
   floorY: () => (player.level >= 0 ? LEVELS[player.level].floor : -Infinity), // (nothing goes down under the floor, #368)
   persist: lifeDev() ? null : { key: LIFE.save.key, canSave: () => { try { return !resetHome.going; } catch { return false; } } }, debug: params0.has('debug') }); // the home's stock kept between visits (#371; never with &life)
+fruit.initLife(life); // completed peels/cores survive visits and normal reloads (#1056)
 const lifeStores = buildStores(life, world); // the fridge, the freezer, the pantry, the utensil drawer as slots (#369)
 const laundry = new Laundry(life,world);
 const watering = new Watering(life,world,{sillPots,things,lights});

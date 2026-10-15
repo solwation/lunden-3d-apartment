@@ -72,7 +72,8 @@ src/fruit.js           the copper fruit bowl on the coffee table (#326, FRUIT, d
                        zig-zag wires, base wheel; one merged mesh, roomEnv copper) with apples, a pear, an orange, a clementine and
                        bananas; each piece a holdable like the fish finger: E takes it, click / "Ät" bites (a scoop out of it in the
                        flesh colour; an orange / a banana is peeled first, a banana bitten off from the tip), eaten after
-                       FRUIT.bites; put down anywhere, E on the bowl puts it back in its spot (anything else: "Inte i fruktskålen");
+                       FRUIT.bites; #1056 apples/bananas retain a named, non-edible core/peel in the hand for placement or Matavfall;
+                       banana bites advance from held top (negative local x) toward the bottom, over the remaining bites; put down anywhere, E on the bowl puts it back in its spot (anything else: "Inte i fruktskålen");
                        stats fruit (SCORE.first per kind); a loose item, F puts every piece back whole; the cat never sits in it
 src/fries.js           Aviko frozen fries (#301, FRIES): a stand-up bag (canvas print, our own plain wordmark) leaning on the freezer's
                        top shelf, a Holdable like the milk (not hidden with F, sent home); in the hand, E on the open air-fryer basket
@@ -191,3 +192,41 @@ Chicken’s existing Life extra remains authoritative and loads first. Whole/par
 BeerCan exposes the ordinary drink/pour interface; Glass.press/pourFrom, Drick and Contents retain the existing glass/mixture quantities and timings. DRINKS adds beer with the existing patio beer finish and a champagne-like0.85 fill (visual guesses), never cup/patio-decoration healing. Capture the drink kind before withdrawing the last source ml. Pouring reserves actual ml once, with the same BeerPortion object attached to glass lots. Actual sips reduce every beer lot in proportion to the entire mixed drink; only that volume advances the source ledger. The ledger terminal flag emits one original ID, whichever combination of can/bottle/glasses finishes it. Emptying through pouring, home/clear, spill or a lost part does not advance drunk volume; the old source-empty fallback was removed. New servings replace only the source ledger, while old glasses retain their old generation. Original gulp/sip statistics remain with their existing owners.
 
 Glass passes terminal IDs through the existing main→Combat.consume hook. All food/direct-beer/glass claims share one small Combat receipt queue because Ghosts supports one pending consume. Dedup remains before enqueue, full-health clamp/offline/minute recovery use existing rules, rejection cannot poison the next valid claim, and a queued online claim stays bound to its original socket without offline/reconnect replay. No server protocol or HP authority changes. DRINKS.beerLots64 is a conservative bookkeeping-budget guess: an additional distinct source is honestly blocked before withdrawing ml, without silently discarding provenance.
+
+## Fruit remains (#1056)
+
+`Fruit.isRemnant` derives the terminal apple/banana state from the normal bite count.
+The original mesh remains the single holdable; its geometry switches
+to the core/peel using the existing vertex-colour material and E target. This also
+keeps the shared placement ghost consistent and adds no visible draw calls. Completion still emits
+`onEaten`/`onConsume` exactly once; remains have no Ät action and expose the existing
+`wasteKind = food`/`discard()` contract for Matavfall. Wrong/full bins keep the hand.
+F restores whole fruit and a new portion generation, as before. Pear/citrus completion
+keeps its original disappearance policy. No new lights or textures.
+
+`fruit.initLife(life)` registers `x.fruitRemains`: completed apple/banana slots,
+generations, placed poses and discarded tombstones only. Held remains return to the
+bowl on an ordinary visit/reload; the existing bicycle-hand adapter restores them
+to the hand when its receipt is present. Terminal stow records use empty scoops;
+remnant geometry never depends on historical bite scoops. Loading is silent,
+validated atomically and never repeats consumption. Uneaten loose fruit retains its
+previous persistence policy.
+
+`tools/fruitremainstest.cjs GAME OUT` runs actual FruitBowl/Life/waste/keep in native
+Chromium, genuine document reloads, bin sorting/capacity, duplicate completion,
+terminal Life→bike→reload and malformed saves. Four actual WebGL component images
+show the peeled banana, upper cut, peel and core. These are isolated components,
+not full World/physical-phone/FPS evidence.
+
+Verification: focused native3 passed 15/15 with no browser exceptions, and the
+unchanged `bicyclestowfoodtest.cjs` passed 104/104 on the geometry-swap source.
+The four focused images were opened. Artifacts/source hashes are under
+`/tmp/lunden-fruit-1056/native3` and `bicycle-final`. Native1 retains two fixture
+failures from stale bin references after Life replaced its instances; reacquiring
+the actual bins corrected the fixture without relaxing product assertions.
+
+Final combined-source verification after preserving #1059/#1057: focused
+`combined-final` passed 15/15, no browser exceptions; final images were opened.
+Every focused runtime/producer hash matches the committed source. The earlier
+104-check bicycle run retains every executed main-function fragment byte-for-byte;
+its sole whole-file drift is the unrelated removed material-library close handler.

@@ -54,6 +54,8 @@ I tvättrummet finns en korg med smutsiga plagg. Ta ett plagg, öppna maskinluck
 
 En kylhylla visar två dubbel-IPA och två trippel-IPA från UntappdBolagets globala topplistor. Urval och riktiga etiketter uppdateras vid dagens första laddning; vid nätfel finns senaste kompletta urvalet kvar.
 
+Bananerna äts uppifrån och ned. Bananskal och äppelskrutt stannar i handen när du ätit klart: lägg dem ifrån dig eller släng dem i matavfallet under diskhon. Kvarlagda och slängda rester sparas mellan besöken.
+
 I kylen finns en äggkartong: öppna den, ta ett ägg och knäck det i stekpannan på hällen. Påslagen häll steker ägget, som kan serveras på tallrik eller macka och ätas. Pannan och tallriken behöver sedan diskas vid kökskranen.
 
 Från 1 december till och med 6 januari står en hög julgran i vardagsrummets hörn till höger om vitrinskåpet (fåtöljhörnet vid dörren), med blinkande ljusslinga, julgranskulor, guldgirlang, stjärna i toppen och paket under. Den följer spelets datum (även kattkalenderns datumval) och är borta resten av året. Fåtöljen, pallen, golvlampan och sidobordet som står på granens plats göms så länge granen står där och kommer tillbaka när den flyttas eller säsongen är slut; E på granen tänder och släcker ljusen. I **Möblera om** kan granen flyttas som andra möbler, och platsen sparas till nästa jul.
