@@ -506,6 +506,13 @@
     #terminal { position: fixed; inset: 0; z-index: 20; background: #0008; display: grid; place-items: center; }
     #terminal[hidden], #rearrange-help[hidden] { display: none; }
     #terminal form { width: min(440px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); overflow-y: auto; padding: 20px; box-sizing: border-box; background: #172322; color: #e5f4e6; border: 1px solid #648571; border-radius: 10px; font: 15px/1.5 monospace; }
+    #terminal textarea { width: 100%; box-sizing: border-box; min-height: 100px; padding: 10px; font: inherit; background: #07110d; color: #c7f5cd; border: 1px solid #648571; resize: vertical; }
+    #terminal-admin-menu { border-top: 1px solid #648571; margin-top: 14px; padding-top: 6px; }
+    #terminal.chat :is(#terminal-admin-menu, #admin-login, #admin-report) { flex-basis: 100%; order: 1; }
+    #admin-report p { margin: 8px 0; }
+    @media (max-height: 450px) { #terminal textarea { min-height: 64px; height: 64px; } }
+    #terminal.chat #terminal-admin-menu { margin-top: 0; }
+    #terminal.chat #admin-report label, #terminal.chat #admin-login label { position: static; width: auto; height: auto; clip-path: none; white-space: normal; display: block; }
     #terminal h2 { margin-top: 0; } #terminal input { width: 100%; box-sizing: border-box; padding: 10px; font: inherit; background: #07110d; color: #c7f5cd; border: 1px solid #648571; }
     #terminal button, #terminal-btn, #rearrange-help button { padding: 10px 14px; border: 1px solid #809488; border-radius: 6px; background: #172322; color: #fff; cursor: pointer; }
     #terminal button { margin: 10px 4px 0 0; } #terminal-btn { position: fixed; left: 16px; top: 92px; font: 16px monospace; }
@@ -927,6 +934,19 @@
       <div id="terminal-unlock"><label for="terminal-code">Kommando</label><input id="terminal-code" autocomplete="off" autocapitalize="off" spellcheck="false">
       <p id="terminal-message" aria-live="polite"></p>
       <button id="terminal-run" type="submit">Kör</button></div>
+      <div id="terminal-admin-menu" aria-label="Adminmeny">
+        <button id="admin-open" type="button">Adminläge</button>
+        <button id="rearrange-toggle" type="button" hidden>Möblera om</button>
+        <button id="admin-report-open" type="button" aria-expanded="false" aria-controls="admin-report">Rapportera</button>
+        <button id="admin-logout" type="button" hidden>Logga ut</button>
+      </div>
+      <div id="admin-report" hidden>
+        <label for="admin-report-text">Beskriv felet eller ditt önskemål</label>
+        <textarea id="admin-report-text" rows="4" placeholder="Vad vill du rapportera?"></textarea>
+        <p>En bild av spelvyn följer med automatiskt.</p>
+        <button id="admin-report-send" type="button">Skicka rapport</button>
+        <button id="admin-report-cancel" type="button">Stäng rapport</button>
+      </div>
       <div id="admin-login" hidden>
         <label for="admin-password">Adminkod</label>
         <input id="admin-password" type="password" placeholder="Adminkod" autocomplete="off" maxlength="256">
@@ -957,7 +977,7 @@
         <button id="terminal-confirm-yes" type="button">Ja, återställ</button>
       </div>
       <div class="terminal-actions"><button id="terminal-close" type="button">Stäng</button>
-      <button id="rearrange-toggle" type="button" hidden>Möblera om</button></div>
+      </div>
     </form>
   </div>
   <div id="avatar-customizer" hidden role="dialog" aria-modal="true" aria-labelledby="avatar-customizer-title">

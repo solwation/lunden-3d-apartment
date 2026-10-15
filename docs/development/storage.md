@@ -1035,14 +1035,14 @@ submission. **Admin mode is the existing rearrangement mode** (user clarificatio
 2026-10-15): either original code opens furniture editing and report submission in
 the same visit, with no extra password. The console normalizes code input exactly
 as the existing cheat parser, clears it immediately, then sends `{code}` to the
-server. The optional `/admin` masked field accepts the same code; no public help or
+server. The Adminläge button (or legacy `/admin`) opens a masked field accepting the same code; no public help or
 graffiti lists the two codes. Public layout digests cannot create report sessions.
 
 The server checks the real code with the existing private-code verifier and signs
 a bounded bearer using a separate server-only `REPORT_SESSION_SECRET` (at least
 24 random characters). This signing key is never typed by players or sent to the
 browser. The browser holds its one-hour bearer only in page memory. Reload,
-pagehide, `/loggaut` or expiry ends both report permission and furniture editing;
+pagehide, Logga ut (or `/loggaut`) or expiry ends both report permission and furniture editing;
 logout also wins over delayed login replies. `Rearrange` retires the old persistent
 `lunden.furniture.unlocked` key. Shared furniture poses/materials still load.
 The codes remain game access codes rather than high-assurance identity credentials;

@@ -2075,6 +2075,7 @@ const terminal = document.getElementById('terminal'), terminalInput = document.g
 const reportCapture = new ReportCapture(renderer);
 const adminReports = new AdminReports({ help: () => chat?.help ?? '', form: document.getElementById('terminal-form'), input: terminalInput,
   capture: () => reportCapture.capture(),
+  menu: document.getElementById('terminal-admin-menu'), reportPanel: document.getElementById('admin-report'), reportInput: document.getElementById('admin-report-text'),
   message: document.getElementById('terminal-message'), panel: document.getElementById('admin-login'),
   password: document.getElementById('admin-password'), login: document.getElementById('admin-signin'), cancel: document.getElementById('admin-cancel'),
   changed: on => { rearrange.unlocked = on; rearrange.enable(on); editUI(); },
@@ -2097,6 +2098,7 @@ function editUI() {
   editToggle.textContent = rearrange.enabled ? 'Avsluta ommöblering' : 'Möblera om';
   editToggle.disabled = rearrange.saving;
   document.getElementById('terminal-unlock').hidden = !!resetFurnitureRequest;
+  document.getElementById('terminal-admin-menu').hidden = !!resetFurnitureRequest;
   document.getElementById('terminal-edit').hidden = !rearrange.enabled || !!resetFurnitureRequest;
   document.getElementById('terminal-confirm').hidden = !resetFurnitureRequest;
   document.getElementById('terminal-close').hidden = !!resetFurnitureRequest;

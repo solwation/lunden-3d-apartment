@@ -7,8 +7,8 @@ const normalizeCode = text => text.trim().replace(/^\//, '').trim().toLowerCase(
 
 // Admin and furniture editing share one in-memory session on this page.
 export class AdminReports {
-  constructor({ form, input, message, panel, password, login, cancel, help = () => '', changed = () => {}, capture = () => Promise.reject(Error('capture unavailable')) }, url = cloudUrl()) {
-    Object.assign(this,{form,input,message,panel,password,login,cancel,help,changed,capture,url});
+  constructor({ form, input, message, panel, password, login, cancel, menu, reportPanel, reportInput, help = () => '', changed = () => {}, capture = () => Promise.reject(Error('capture unavailable')) }, url = cloudUrl()) {
+    Object.assign(this,{form,input,message,panel,password,login,cancel,menu,reportPanel,reportInput,help,changed,capture,url});
     // The public cloud debug override must never redirect an admin code to an arbitrary host.
     const loopback = value => ['localhost','127.0.0.1'].includes(value);
     try {
@@ -24,7 +24,7 @@ export class AdminReports {
       }
       if(/^\s*\/?help\s*$/i.test(input.value)){
         e.preventDefault();e.stopImmediatePropagation();
-        this.say([this.help(),'/admin — öppna adminläget','/rapport text — lämna ett önskemål för granskning','/loggaut — avsluta adminläget'].filter(Boolean).join('\n'));input.value='';return;
+        this.say([this.help(),'Adminmenyn under fältet: Adminläge för inloggning, Möblera om, Rapportera och Logga ut.','Äldre kommandon fungerar också: /admin, /rapport text, /loggaut.'].filter(Boolean).join('\n'));input.value='';return;
       }
       const match=/^\s*\/(admin|rapport|loggaut)(?:\s+([\s\S]*))?$/i.exec(input.value);
       if(!match)return;
@@ -36,6 +36,14 @@ export class AdminReports {
       const next=input.value.slice(0,input.selectionStart)+(e.clipboardData?.getData('text')??'')+input.value.slice(input.selectionEnd);
       if(/^\s*\/rapport\b/i.test(next))input.maxLength=REPORTS.maxChars+10;
     });
+    if(menu){
+      this.reportInput.maxLength=REPORTS.maxChars;
+      menu.querySelector('#admin-open').addEventListener('click',()=>this.command('admin',''));
+      menu.querySelector('#admin-report-open').addEventListener('click',()=>this.openReport());
+      menu.querySelector('#admin-logout').addEventListener('click',()=>this.command('loggaut',''));
+      reportPanel.querySelector('#admin-report-send').addEventListener('click',()=>this.command('rapport',reportInput.value,reportInput));
+      reportPanel.querySelector('#admin-report-cancel').addEventListener('click',()=>this.closeReport());
+    }
     login.addEventListener('click',()=>this.signIn());
     cancel.addEventListener('click',()=>{this.logout();this.closeLogin();});
     password.addEventListener('keydown',e=>{
@@ -47,7 +55,14 @@ export class AdminReports {
   get active(){return !!this.token&&Date.now()<this.expires;}
   say(text){this.message.textContent=text;}
   closeLogin(){this.password.value='';this.panel.hidden=true;this.input.focus();}
-  logout(){this.epoch++;this.loginRequest?.abort();this.busy=false;this.login.disabled=false;clearTimeout(this.expiryTimer);this.token='';this.expires=0;this.changed(false);}
+  closeReport(){if(!this.reportPanel)return;this.reportPanel.hidden=true;this.menu.querySelector('#admin-report-open').setAttribute('aria-expanded','false');}
+  openReport(){
+    if(!this.active){this.wantsReport=true;this.command('admin','');return;}
+    this.wantsReport=false;if(!this.reportPanel)return;
+    this.reportPanel.hidden=false;this.menu.querySelector('#admin-report-open').setAttribute('aria-expanded','true');this.reportInput.focus();
+  }
+  menuState(){if(!this.menu)return;this.menu.querySelector('#admin-open').hidden=this.active;this.menu.querySelector('#admin-logout').hidden=!this.active;}
+  logout(){this.wantsReport=false;this.closeReport();this.epoch++;this.loginRequest?.abort();this.busy=false;this.login.disabled=false;clearTimeout(this.expiryTimer);this.token='';this.expires=0;this.menuState();this.changed(false);}
   async signIn(suppliedCode){
     const code=normalizeCode(typeof suppliedCode==='string'?suppliedCode:this.password.value);this.password.value='';
     if(this.busy)return;
@@ -62,23 +77,23 @@ export class AdminReports {
       if(typeof data.token!=='string'||!Number.isFinite(data.expires)||data.expires<=Date.now())throw Error('session');
       if(epoch!==this.epoch)return;
       this.token=data.token;this.expires=data.expires;
-      clearTimeout(this.expiryTimer);this.expiryTimer=setTimeout(()=>{this.logout();this.say('Adminsessionen har gått ut. Logga in igen med /admin.');},data.expires-Date.now());
-      this.closeLogin();this.changed(true);
-      this.say('Adminläge. Skriv /rapport följt av ditt önskemål. /loggaut avslutar.');
+      clearTimeout(this.expiryTimer);this.expiryTimer=setTimeout(()=>{this.logout();this.say('Adminsessionen har gått ut. Logga in igen via Adminläge (/admin).');},data.expires-Date.now());
+      this.closeLogin();this.menuState();this.changed(true);if(this.wantsReport)this.openReport();
+      this.say('Adminläge. Välj Möblera om eller Rapportera i adminmenyn.');
     }catch{if(epoch===this.epoch)this.say('Kunde inte ansluta. Försök igen.');}
     finally{if(epoch===this.epoch){this.busy=false;this.login.disabled=false;}}
   }
-  async command(command,text){
+  async command(command,text,source=this.input){
     if(command==='admin'){
-      if(this.active){this.say('Du är inloggad. Skriv /rapport följt av ditt önskemål.');return;}
+      if(this.active){this.say('Du är inloggad. Välj Rapportera i adminmenyn.');return;}
       this.panel.hidden=false;this.password.focus();this.input.value='';this.say('Ange din adminkod för att öppna adminläget.');return;
     }
     if(command==='loggaut'){this.logout();this.closeLogin();this.input.value='';this.say('Adminläget är utloggat.');return;}
-    if(!this.active){this.logout();this.say('Logga in med /admin innan du rapporterar.');return;}
+    if(!this.active){this.logout();this.say('Logga in via Adminläge (/admin) innan du rapporterar.');return;}
     if(this.busy){this.say('Vänta tills den pågående begäran är klar.');return;}
-    if(!text.trim()||text.length>REPORTS.maxChars){this.say(`Skriv /rapport och 1–${REPORTS.maxChars} tecken.`);return;}
+    if(!text.trim()||text.length>REPORTS.maxChars){this.say(`Skriv 1–${REPORTS.maxChars} tecken i rapporten.`);return;}
     if(!this.pending||this.pending.text!==text)this.pending={id:crypto.randomUUID(),text};
-    const pending=this.pending, draft=this.input.value, epoch=this.epoch;this.busy=true;
+    const pending=this.pending, draft=source.value, epoch=this.epoch;this.busy=true;
     try{
       if(!pending.image){
         this.say('Tar en bild av spelvyn…');
@@ -88,11 +103,11 @@ export class AdminReports {
       if(epoch!==this.epoch||!this.active)return;
       const r=await fetch(this.url+'/reports/'+pending.id,{redirect:'error',method:'PUT',headers:{'Content-Type':'application/json',Authorization:'Bearer '+this.token},body:JSON.stringify({text,image:pending.image})});
       if(epoch!==this.epoch)return;
-      if(r.status===403){this.logout();this.say('Adminsessionen har gått ut. Logga in igen med /admin.');return;}
+      if(r.status===403){this.logout();this.say('Adminsessionen har gått ut. Logga in igen via Adminläge (/admin).');return;}
       if(!r.ok){this.say(r.status===429?'Vänta en minut och skicka rapporten igen.':'Rapporten kunde inte sparas. Texten finns kvar.');return;}
       if(this.pending===pending)this.pending=null;
       // Preserve any new draft typed while the request was in flight.
-      if(this.input.value===draft)this.input.value='';
+      if(source.value===draft)source.value='';
       this.say('Rapporten med bild är sparad och väntar på granskning.');
     }catch{if(epoch===this.epoch)this.say('Rapporten kunde inte skickas. Försök igen; texten finns kvar.');}
     finally{if(epoch===this.epoch)this.busy=false;}

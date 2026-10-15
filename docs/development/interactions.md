@@ -1483,3 +1483,13 @@ Builder-owned private body/band/loop handles retain distinct Original colors/map
 Successful Player mount reserves both hands through `stowBicycleHand`: current use becomes empty, the same model is detached, and its held pose/contents/owner place stay intact without onPut/onTake. Trigger cancellation happens after held=false, so a drawn bow does not fire. Denied mount/exit changes nothing; successful exit/spawn restores once. Busy-hand checks, Life action/view-sync and stale main menu/click paths cannot take/use the stowed item. The weapon/appearance key is empty while riding. Owner-reset/removal/shatter guards prevent resurrecting invalidated objects. Existing safe furniture reset first exits the bike.
 
 The full parent remains open for explicit stow-only reload bridges #1034 (food) and #1035 (unique objects) for older transient owners; no general inventory model is introduced here.
+
+### Admin menu below the console input (#1051)
+
+The terminal keeps ordinary chat/commands in `terminal-code`. Below it,
+`terminal-admin-menu` groups Adminläge, Möblera om, Rapportera and Logga ut.
+The report button opens the same masked login when needed, then a separate
+labelled textarea and Skicka rapport button, so report prose never enters chat.
+The existing private-code session grants both capabilities; report submission
+keeps the same screenshot capture, pending UUID/image retry and draft preservation.
+The legacy `/admin`, `/rapport text` and `/loggaut` aliases remain supported.

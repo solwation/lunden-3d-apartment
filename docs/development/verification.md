@@ -6860,3 +6860,20 @@ Adoption in native browser drivers:
 const { createNativeManifest, saveNativeManifest, loadVerifiedNativeManifest } = require('./nativemanifest.cjs');
 ```
 as demonstrated in `tools/rifleturnfronttest.cjs`, where passing a verified manifest safely skips the 3000-raycast geometry grid while continuing to execute full owned-Worker lifecycle, real WebSocket protocol, and HUD screenshot assertions.
+
+## Console admin menu (#1051)
+
+`tools/adminreportstest.cjs GAME WORKER OUT` now also checks the native menu below
+the ordinary input, separate report prose, button-driven masked login, failed
+capture/network draft preservation, unchanged UUID/image on retry and new drafts
+typed during a request. Actual index DOM, production AdminReports binding/terminal
+submit and local Worker passed 40/40, with no browser exceptions. The rearrange
+controller is real; the fixture supplies edit-menu presentation and image capture.
+Desktop 1280×800 and landscape 844×390 screenshots were opened and inspected.
+The unchanged `tools/reportcapturetest.cjs` passed 14/14 with an actual tiny Three
+render and owned Worker, retaining original JPEG/UUID on retry. These are component
+checks, not apartment gameplay, physical-phone or production-report acceptance.
+Artifacts: `/tmp/lunden-start-1051/browser-final` and `capture-final`. Initial
+attempts used an occupied Worker port and omitted the capture Worker signing
+fixture respectively; final runs used an owned free endpoint and explicit local
+signing fixtures. No application fix was needed for those setup failures.
