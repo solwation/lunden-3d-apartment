@@ -194,6 +194,7 @@ const world = buildWorld(plan);
 scene.add(world.object);
 const garage = world.garage = new Garage(); // the garage and the förråd under the courtyard (#357)
 if (garage.bicycles) world.bicycles.push(...garage.bicycles);
+if (garage.storageBicycles) world.bicycles.push(...garage.storageBicycles);
 const cheatNote = await buildCheatNote(garage, () => showCheatNote(true));
 scene.add(garage.object, garage.blackout, garage.door.object, garage.parkObject); // (+ its door, #358)
 const core = world.core = new Core(); // Hus L's stairwell and lift by the portik (#415)

@@ -542,20 +542,27 @@ export class Player {
 
   mountBicycle(bike) {
     if (this.riding || this.flying || this.climb || this.swing || this.fall || !bike || this.pos.distanceTo(bike.position) > BICYCLE.mountReach) return false;
+    if (bike.cageDoor && (bike.cageDoor.target === 0 || (bike.cageDoor.angle ?? 0) < 0.2)) return false;
     const standing = this.pos.clone();
     if (!this.bikeClear(standing) || Math.abs(this.groundAt(standing.x, standing.z, standing.y) - standing.y) > .02) return false;
     bike.ridden = true; bike.selfQuery = true; // omit only this bicycle's own body during its mounting query
     try {
-    let chosen = null;
-    const dir = new THREE.Vector3(-Math.cos(bike.yaw), 0, Math.sin(bike.yaw));
-    const ignored = bike.atSource ? bike.rackSegments : []; // ONLY the initial extraction, never later riding
-    for (let d = 0; d <= BICYCLE.extract; d += BICYCLE.extractStep) {
-      const p = bike.position.clone().addScaledVector(dir, d); p.y = this.groundAt(p.x, p.z, standing.y);
+    let chosen = null, bestDist = Infinity;
+    const dir = bike.extractDir ?? new THREE.Vector3(-Math.cos(bike.yaw), 0, Math.sin(bike.yaw));
+    const ignored = bike.atSource ? [...bike.rackSegments, ...(bike.cageDoor?.segment ? [bike.cageDoor.segment] : [])] : []; // ONLY the initial extraction, never later riding
+    for (let d = (bike.extractDir ? 0.6 : 0); d <= BICYCLE.extract; d += BICYCLE.extractStep) {
+      const p = bike.position.clone().addScaledVector(dir, d);
+      p.y = this.groundAt(p.x, p.z, standing.y);
       const support=this.bikeSupport(p,bike.yaw);if(!support)continue;p.y=support.y;
-      if (!this.bikeClear(p) || !this.bikeHull(p, bike.yaw) || !this.bikePath(bike.position, p, bike.yaw, ignored)) continue;
+      if (!this.bikeClear(p) || !this.bikeHull(p, bike.yaw, [], support) || !this.bikePath(bike.position, p, bike.yaw, ignored)) continue;
       const n = Math.max(1, Math.ceil(standing.distanceTo(p) / BICYCLE.step)); let safe = true;
-      for (let i = 0; i <= n; i++) { const q = standing.clone().lerp(p, i / n); q.y = this.groundAt(q.x, q.z, standing.y); if (!this.bikeClear(q)) { safe = false; break; } }
-      if (safe) { chosen = p; break; }
+      for (let i = 0; i <= n; i++) { const q = standing.clone().lerp(p, i / n); q.y = this.groundAt(q.x, q.z, standing.y); if (!this.bikeClear(q, PLAYER.radius, ignored)) { safe = false; break; } }
+      if (safe) {
+        if (bike.extractDir) {
+          const dist = standing.distanceTo(p);
+          if (dist < bestDist) { bestDist = dist; chosen = p; }
+        } else { chosen = p; break; }
+      }
     }
     if (!chosen) { bike.ridden = false; return false; }
     this.riding = { bike, lastStanding: standing, yaw: bike.yaw, pitch: this.bikeSupport(chosen,bike.yaw).pitch };
@@ -591,11 +598,12 @@ export class Player {
 
   dismountBicycle() {
     if (!this.riding) return false;
-    const q = this.bikeStanding(); if (!q) return false;
+    const q = this.bikeStanding() ?? this.bicycleSavePlace(); if (!q) return false;
     const bike = this.riding.bike; bike.ridden = false; bike.pick.visible = true; this.riding = null;
     this.pos.copy(q); this.vy = 0; this.fall = null; this.keys.clear(); this.analog.x = this.analog.y = 0;
     this.eyeY = q.y + PLAYER.eye; this.camera.position.set(q.x, this.eyeY, q.z);
     this.camera.rotation.x = 0;
+    if (bike.restoreOnDismount) bike.restore();
     restoreBicycleHand(); return true;
   }
 

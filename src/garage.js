@@ -384,10 +384,16 @@ export class Garage {
     for (const c of CAGES) {
       const room=R[c.room];
       const line = c.front === 'n' ? c.z0 : c.z1, back = c.front === 'n' ? c.z1 : c.z0, out = c.front === 'n' ? -1 : 1;
-      if (!c.rental) meshWall(c.x0, back, c.x1, back); // illustrative ordinary cages stand clear of the concrete walls
-      for (const x of [c.x0, c.x1]) if (!G.partials.some(([p0, p1, q0, q1]) => x > p0 - 0.35 && x < p1 + 0.35 && (q0 + q1) / 2 > Math.min(line, back) && (q0 + q1) / 2 < Math.max(line, back)) && x > room.x0 + 0.1 && x < room.x1 - 0.1) meshWall(x, line, x, back);
+      const cageSegs = [];
+      const cageMeshWall = (ax, az, bx, bz) => {
+        meshWall(ax, az, bx, bz);
+        cageSegs.push(segs[segs.length - 1]);
+      };
+      if (!c.rental) cageMeshWall(c.x0, back, c.x1, back); // illustrative ordinary cages stand clear of the concrete walls
+      for (const x of [c.x0, c.x1]) if (!G.partials.some(([p0, p1, q0, q1]) => x > p0 - 0.35 && x < p1 + 0.35 && (q0 + q1) / 2 > Math.min(line, back) && (q0 + q1) / 2 < Math.max(line, back)) && x > room.x0 + 0.1 && x < room.x1 - 0.1) cageMeshWall(x, line, x, back);
       const h0 = c.x0 + 0.15, h1 = h0 + ST.door;
-      meshWall(c.x0, line, h0, line); meshWall(h1, line, c.x1, line);
+      cageMeshWall(c.x0, line, h0, line); cageMeshWall(h1, line, c.x1, line);
+      c.segments = cageSegs;
       const lg = panel(h0, line, h1, line, F + G.doorHead, C - 0.02), uv = lg.attributes.uv;
       for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * ST.door / 0.16, uv.getY(i) * (C - F - 2.1) / 0.16);
       put('mesh', bake(lg, 0xffffff, true), (h0 + h1) / 2, line);
@@ -395,7 +401,18 @@ export class Garage {
       this.cageDoors.push({ cage: c, hx: h0, hz: line, dir: [1, 0], out: [0, out], w: ST.door, angle: 0, target: 0, steel: false, max: ST.max });
       put('signs', plate(c.label, (h0 + h1) / 2, F + 2.3, line + out * 0.03, facing(0, out), 0.5), (h0 + h1) / 2, line);
     }
-    this.contents((kind, g, x, z) => put(kind, g, x, z));
+    for (const c of CAGES) {
+      const line = c.front === 'n' ? c.z0 : c.z1, back = c.front === 'n' ? c.z1 : c.z0;
+      const minZ = Math.min(line, back) - 0.05, maxZ = Math.max(line, back) + 0.05;
+      c.segments = segs.filter(s =>
+        (Math.min(s[0], s[2]) >= c.x0 - 0.05 && Math.max(s[0], s[2]) <= c.x1 + 0.05 &&
+        Math.min(s[1], s[3]) >= minZ && Math.max(s[1], s[3]) <= maxZ) ||
+        (Math.abs(s[1] - line) < 0.05 && Math.abs(s[3] - line) < 0.05 &&
+         Math.min(s[0], s[2]) <= c.x1 + 0.8 && Math.max(s[0], s[2]) >= c.x0 - 0.8)
+      );
+    }
+    const storageBikeRecords = [];
+    this.contents((kind, g, x, z) => put(kind, g, x, z), storageBikeRecords);
     // the steel doors (the miljörum, the elrum, the basement ↔ garage): a leaf in each such doorway, E opens it
     for (const r of RECTS.filter((q) => q.door)) {
       const along = r.x1 - r.x0 > r.z1 - r.z0, D = r.door; // (a door across a wall along x)
@@ -678,6 +695,305 @@ export class Garage {
       pick.userData.door = bicycle.target;
       return bicycle;
     });
+
+    // #909: Register rideable storage bicycles with detached/restore contract.
+    const storageBikeAreas = new Map();
+    const storageAreaOf = (area) => {
+      if (!storageBikeAreas.has(area.name)) storageBikeAreas.set(area.name, { area, hi: [], lo: [] });
+      return storageBikeAreas.get(area.name);
+    };
+    const storageSpokeGeos = [];
+
+    for (const record of storageBikeRecords) {
+      const area = areaAt(record.pos.x, record.pos.z);
+      const row = storageAreaOf(area);
+      record.areaRow = row;
+      const at = (g) => {
+        const c = g.clone();
+        if (record.yaw) c.rotateY(record.yaw);
+        return c.translate(record.pos.x, F, record.pos.z);
+      };
+
+      record.startHi = row.hi.reduce((sum, g) => sum + g.attributes.position.count, 0);
+      record.startLo = row.lo.reduce((sum, g) => sum + g.attributes.position.count, 0);
+      record.startSpoke = storageSpokeGeos.reduce((sum, g) => sum + g.attributes.position.count, 0);
+
+      const frameHi = bake(at(frame), record.col);
+      const tyresHi = bake(at(tyres), 0x141414);
+      const frameL = bake(at(frameLo), record.col);
+      const tyresL = bake(at(tyresLo), 0x141414);
+
+      if (record.partial) {
+        record.countHi = frameHi.attributes.position.count + tyresHi.attributes.position.count;
+        record.countLo = frameL.attributes.position.count + tyresL.attributes.position.count;
+        record.countSpoke = 0;
+        row.hi.push(frameHi, tyresHi);
+        row.lo.push(frameL, tyresL);
+      } else {
+        const metalHi = bake(at(metal), 0xb4b9bd);
+        const metalL = bake(at(metalLo), 0xb4b9bd);
+        const spokeG = bake((record.yaw ? spokes.clone().rotateY(record.yaw) : spokes.clone()).translate(record.pos.x, F, record.pos.z), 0xb4b9bd, true);
+        record.countHi = frameHi.attributes.position.count + tyresHi.attributes.position.count + metalHi.attributes.position.count;
+        record.countLo = frameL.attributes.position.count + tyresL.attributes.position.count + metalL.attributes.position.count;
+        record.countSpoke = spokeG.attributes.position.count;
+        row.hi.push(frameHi, tyresHi, metalHi);
+        row.lo.push(frameL, tyresL, metalL);
+        storageSpokeGeos.push(spokeG);
+      }
+    }
+
+    this.storageBikeRows = [...storageBikeAreas.values()].map((r) => {
+      const [hi, lo] = [r.hi, r.lo].map((list) => {
+        const m = new THREE.Mesh(mergeGeometries(list), r.area.mats.shell);
+        m.raycast = () => {}; r.area.group.add(m);
+        m.geometry.computeBoundingSphere(); return m;
+      });
+      r.hiMesh = hi; r.loMesh = lo;
+      return { hi, lo, c: hi.geometry.boundingSphere.center, r: hi.geometry.boundingSphere.radius };
+    });
+
+    let storageBikeSpokesMesh = null;
+    if (storageSpokeGeos.length) {
+      storageBikeSpokesMesh = new THREE.Mesh(mergeGeometries(storageSpokeGeos), new THREE.MeshBasicMaterial({ vertexColors: true, alphaMap: bikeSpokeTexture(), alphaTest: 0.35, side: THREE.DoubleSide }));
+      storageBikeSpokesMesh.raycast = () => {}; group.add(storageBikeSpokesMesh);
+    }
+    this.storageBikeSpokesMesh = storageBikeSpokesMesh;
+
+    this.storageBicycles = storageBikeRecords.map((record, index) => {
+      const original = new THREE.Matrix4().makeRotationY(record.yaw).setPosition(record.pos);
+      const inv = original.clone().invert();
+      const invNormal = new THREE.Matrix3().getNormalMatrix(inv);
+
+      const nearMesh = record.areaRow.hiMesh;
+      const farMesh = record.areaRow.loMesh;
+      const spokeMesh = storageBikeSpokesMesh;
+
+      const nearRange = {
+        mesh: nearMesh,
+        start: record.startHi,
+        count: record.countHi,
+        position: nearMesh.geometry.attributes.position.array.slice(record.startHi * 3, (record.startHi + record.countHi) * 3),
+        normal: nearMesh.geometry.attributes.normal?.array.slice(record.startHi * 3, (record.startHi + record.countHi) * 3) ?? null,
+        color: nearMesh.geometry.attributes.color.array.slice(record.startHi * 3, (record.startHi + record.countHi) * 3),
+      };
+
+      const farRange = {
+        mesh: farMesh,
+        start: record.startLo,
+        count: record.countLo,
+        position: farMesh.geometry.attributes.position.array.slice(record.startLo * 3, (record.startLo + record.countLo) * 3),
+        normal: farMesh.geometry.attributes.normal?.array.slice(record.startLo * 3, (record.startLo + record.countLo) * 3) ?? null,
+        color: farMesh.geometry.attributes.color.array.slice(record.startLo * 3, (record.startLo + record.countLo) * 3),
+      };
+
+      const spokeRange = {
+        mesh: spokeMesh,
+        start: record.startSpoke,
+        count: record.countSpoke,
+        position: spokeMesh && record.countSpoke > 0 ? spokeMesh.geometry.attributes.position.array.slice(record.startSpoke * 3, (record.startSpoke + record.countSpoke) * 3) : new Float32Array(0),
+        normal: spokeMesh && record.countSpoke > 0 ? spokeMesh.geometry.attributes.normal?.array.slice(record.startSpoke * 3, (record.startSpoke + record.countSpoke) * 3) ?? null : null,
+        color: spokeMesh && record.countSpoke > 0 ? spokeMesh.geometry.attributes.color?.array.slice(record.startSpoke * 3, (record.startSpoke + record.countSpoke) * 3) ?? null : null,
+      };
+
+      const ranges = [nearRange, farRange, spokeRange];
+      ranges.near = nearRange; ranges.far = farRange; ranges.spoke = spokeRange;
+
+      const components = [nearMesh, farMesh, spokeMesh].filter(Boolean);
+      components.near = nearMesh; components.far = farMesh; components.spoke = spokeMesh;
+      for (const m of components) if (m) m.userData.moving = true;
+
+      const solidGeo = new THREE.BufferGeometry();
+      const posLocal = new Float32Array(nearRange.position.length);
+      const v = new THREE.Vector3();
+      for (let i = 0; i < nearRange.count; i++) {
+        v.fromArray(nearRange.position, i * 3).applyMatrix4(inv);
+        posLocal.set([v.x, v.y, v.z], i * 3);
+      }
+      solidGeo.setAttribute('position', new THREE.BufferAttribute(posLocal, 3));
+      if (nearRange.normal) {
+        const normLocal = new Float32Array(nearRange.normal.length);
+        for (let i = 0; i < nearRange.count; i++) {
+          v.fromArray(nearRange.normal, i * 3).applyMatrix3(invNormal);
+          normLocal.set([v.x, v.y, v.z], i * 3);
+        }
+        solidGeo.setAttribute('normal', new THREE.BufferAttribute(normLocal, 3));
+      }
+      solidGeo.setAttribute('color', new THREE.BufferAttribute(nearRange.color.slice(), 3));
+      if (nearMesh.geometry.attributes.uv) {
+        solidGeo.setAttribute('uv', new THREE.BufferAttribute(nearMesh.geometry.attributes.uv.array.slice(record.startHi * 2, (record.startHi + record.countHi) * 2), 2));
+      }
+
+      const material = new THREE.MeshBasicMaterial({ vertexColors: true });
+      const spokeMaterial = new THREE.MeshBasicMaterial({ vertexColors: true, alphaMap: bikeSpokeTexture(), alphaTest: 0.35, side: THREE.DoubleSide });
+
+      const detachedSolid = new THREE.Mesh(solidGeo, material);
+      detachedSolid.raycast = () => {};
+
+      const detachedGroup = new THREE.Group();
+      detachedGroup.add(detachedSolid);
+
+      if (spokeRange.count > 0 && spokeMesh) {
+        const spokeGeo = new THREE.BufferGeometry();
+        const spokePosLocal = new Float32Array(spokeRange.position.length);
+        for (let i = 0; i < spokeRange.count; i++) {
+          v.fromArray(spokeRange.position, i * 3).applyMatrix4(inv);
+          spokePosLocal.set([v.x, v.y, v.z], i * 3);
+        }
+        spokeGeo.setAttribute('position', new THREE.BufferAttribute(spokePosLocal, 3));
+        if (spokeRange.normal) {
+          const spokeNormLocal = new Float32Array(spokeRange.normal.length);
+          for (let i = 0; i < spokeRange.count; i++) {
+            v.fromArray(spokeRange.normal, i * 3).applyMatrix3(invNormal);
+            spokeNormLocal.set([v.x, v.y, v.z], i * 3);
+          }
+          spokeGeo.setAttribute('normal', new THREE.BufferAttribute(spokeNormLocal, 3));
+        }
+        if (spokeRange.color) {
+          spokeGeo.setAttribute('color', new THREE.BufferAttribute(spokeRange.color.slice(), 3));
+        }
+        if (spokeMesh.geometry.attributes.uv) {
+          spokeGeo.setAttribute('uv', new THREE.BufferAttribute(spokeMesh.geometry.attributes.uv.array.slice(record.startSpoke * 2, (record.startSpoke + record.countSpoke) * 2), 2));
+        }
+        const detachedSpoke = new THREE.Mesh(spokeGeo, spokeMaterial);
+        detachedSpoke.raycast = () => {};
+        detachedGroup.add(detachedSpoke);
+      }
+
+      detachedGroup.position.copy(record.pos);
+      detachedGroup.rotation.set(0, record.yaw, 0, 'YXZ');
+      detachedGroup.visible = false;
+      group.add(detachedGroup);
+
+      const isCage7 = !!record.cage.ours;
+      const pickGeo = isCage7 ? new THREE.BoxGeometry(0.8, 1.05, 0.5) : pickGeometry;
+      const pick = new THREE.Mesh(pickGeo, pickMaterial);
+      pick.userData.moving = true;
+      group.add(pick);
+      pick.position.copy(record.pos);
+      if (isCage7) pick.position.x += record.partial ? 0.3 : -0.3;
+      pick.position.y += .525;
+      pick.rotation.y = record.yaw;
+
+      const cageTag = record.cage.label.replace('HYRFÖRRÅD ', '').replace('FÖRRÅD ', '').split(' ')[0];
+      const bicycleId = `storage-cage-${cageTag}${record.partial ? '-partial' : ''}`;
+
+      const door = this.cageDoors.find(d => d.cage === record.cage);
+      const bicycle = {
+        id: bicycleId,
+        cage: record.cage,
+        cageLabel: record.cage.label,
+        cageDoor: door,
+        extractDir: door ? new THREE.Vector3(door.out[0], 0, door.out[1]) : null,
+        cageIndex: CAGES.indexOf(record.cage),
+        partial: record.partial,
+        index,
+        position: record.pos.clone(),
+        yaw: record.yaw,
+        pitch: 0,
+        matrix: original.clone(),
+        original: original.clone(),
+        rackSegments: record.cage.segments ?? [],
+        atSource: true,
+        ridden: false,
+        detached: false,
+        restoreOnDismount: true,
+        components,
+        ranges,
+        pick,
+        material,
+        spokeMaterial,
+        detachedGroup,
+        garage: selfGarage,
+        detach() {
+          if (this.detached) return;
+          this.detached = true;
+          this.atSource = false;
+          detachedGroup.visible = true;
+
+          nearRange.mesh.geometry.attributes.position.array.fill(0, nearRange.start * 3, (nearRange.start + nearRange.count) * 3);
+          nearRange.mesh.geometry.attributes.position.needsUpdate = true;
+          nearRange.mesh.geometry.computeBoundingBox();
+          nearRange.mesh.geometry.computeBoundingSphere();
+
+          farRange.mesh.geometry.attributes.position.array.fill(0, farRange.start * 3, (farRange.start + farRange.count) * 3);
+          farRange.mesh.geometry.attributes.position.needsUpdate = true;
+          farRange.mesh.geometry.computeBoundingBox();
+          farRange.mesh.geometry.computeBoundingSphere();
+
+          if (spokeRange.count > 0 && spokeRange.mesh) {
+            spokeRange.mesh.geometry.attributes.position.array.fill(0, spokeRange.start * 3, (spokeRange.start + spokeRange.count) * 3);
+            spokeRange.mesh.geometry.attributes.position.needsUpdate = true;
+            spokeRange.mesh.geometry.computeBoundingBox();
+            spokeRange.mesh.geometry.computeBoundingSphere();
+          }
+        },
+        restore() {
+          if (!this.detached && this.atSource) return;
+          this.detached = false;
+          this.atSource = true;
+          this.ridden = false;
+          detachedGroup.visible = false;
+
+          nearRange.mesh.geometry.attributes.position.array.set(nearRange.position, nearRange.start * 3);
+          nearRange.mesh.geometry.attributes.position.needsUpdate = true;
+          nearRange.mesh.geometry.computeBoundingBox();
+          nearRange.mesh.geometry.computeBoundingSphere();
+
+          farRange.mesh.geometry.attributes.position.array.set(farRange.position, farRange.start * 3);
+          farRange.mesh.geometry.attributes.position.needsUpdate = true;
+          farRange.mesh.geometry.computeBoundingBox();
+          farRange.mesh.geometry.computeBoundingSphere();
+
+          if (spokeRange.count > 0 && spokeRange.mesh) {
+            spokeRange.mesh.geometry.attributes.position.array.set(spokeRange.position, spokeRange.start * 3);
+            spokeRange.mesh.geometry.attributes.position.needsUpdate = true;
+            spokeRange.mesh.geometry.computeBoundingBox();
+            spokeRange.mesh.geometry.computeBoundingSphere();
+          }
+
+          this.position.copy(record.pos);
+          this.yaw = record.yaw;
+          this.pitch = 0;
+          this.matrix.copy(this.original);
+          pick.position.copy(record.pos);
+          pick.position.y += .525;
+          pick.rotation.y = record.yaw;
+          detachedGroup.position.copy(record.pos);
+          detachedGroup.rotation.set(0, record.yaw, 0, 'YXZ');
+          pick.visible = true;
+        },
+        updateLighting() {
+          const p = this.position;
+          const below = p.y < C && selfGarage.inside(p.x, p.z);
+          const v = below ? (LI.dim + (selfGarage.areas[selfGarage.areaAt(p.x, p.z)]?.level ?? 1) * (1 - LI.dim)) : 1;
+          this.material.color.setScalar(v);
+          this.spokeMaterial.color.setScalar(v);
+        },
+        place(p, yaw, pitch = 0) {
+          if (!this.detached) this.detach();
+          if (this.matrix && this.position.equals(p) && this.yaw === yaw && (this.pitch ?? 0) === pitch) return;
+          this.position.copy(p);
+          this.yaw = yaw;
+          this.pitch = pitch;
+          this.matrix.makeRotationFromEuler(new THREE.Euler(0, yaw, pitch, 'YXZ')).setPosition(p);
+          detachedGroup.position.copy(p);
+          detachedGroup.rotation.set(0, yaw, pitch, 'YXZ');
+          pick.position.copy(p);
+          pick.position.y += .525;
+          pick.rotation.y = yaw;
+          this.updateLighting();
+        },
+        footprint(feet, headroom, hurdle) {
+          if (this.selfQuery || this.atSource || this.position.y - Math.abs(Math.sin(this.pitch ?? 0)) * (Math.max(-BICYCLE.rear, BICYCLE.front) + BICYCLE.radius) > feet + headroom || this.position.y + BICYCLE.height + Math.abs(Math.sin(this.pitch ?? 0)) * (Math.max(-BICYCLE.rear, BICYCLE.front) + BICYCLE.radius) <= feet - hurdle) return [];
+          const dx = Math.cos(this.yaw), dz = -Math.sin(this.yaw), r = BICYCLE.radius;
+          const low = BICYCLE.rear - r - Math.max(0, Math.sin(this.pitch ?? 0)) * BICYCLE.height, high = BICYCLE.front + r + Math.max(0, -Math.sin(this.pitch ?? 0)) * BICYCLE.height;
+          return [[low, -r], [high, -r], [high, r], [low, r]].map(([x, z]) => [this.position.x + dx * x - dz * z, this.position.z + dz * x + dx * z]);
+        }
+      };
+      bicycle.target = { name: 'Cykeln', kind: 'bicycle', verb: 'cykla', bicycle, pickable: pick };
+      pick.userData.door = bicycle.target;
+      return bicycle;
+    });
     // the doors: one instanced leaf for the cages (mesh in a steel frame), one for the steel doors; an invisible pick box each
     const leafGeo = (w, h, mesh) => {
       const parts = [];
@@ -877,7 +1193,7 @@ export class Garage {
   }
 
   /** Things in the förråd: boxes, bikes, skis, a sled, tyres (baked into the shell). */
-  contents(put) {
+  contents(put, storageBikeRecords = null) {
     const Rn = rng(ST.seed), [frame, tyres, metal, spokes] = bikeGeometry();
     const cardboard = [0xb08a5a, 0xa47e4f, 0xbf9a68], plastic = [0x3d6fb0, 0xd9d6cf, 0x4f8a4a, 0x2b2b2b, 0xc0392b];
     for (const c of CAGES) {
@@ -900,8 +1216,26 @@ export class Garage {
       const r = c.ours ? 0 : Rn(), [ax, az] = P(0.45, d - 0.6);
       if (r < 0.35) { // a bike along the front
         const bz = c.front === 'n' ? c.z0 + 0.45 : c.z1 - 0.45;
-        for (const [geo, col] of [[frame, [0x1d3c6e, 0xb02a2a, 0x2a2a2a, 0x3c7a4a][Math.floor(Rn() * 4)]], [tyres, 0x141414], [metal, 0xb4b9bd]]) add(geo.clone().translate(c.x0 + w / 2, F, bz), col);
-        put('bikeSpokes', bake(spokes.clone().translate(c.x0 + w / 2, F, bz), 0xb4b9bd, true), c.x0 + w / 2, bz);
+        const col = [0x1d3c6e, 0xb02a2a, 0x2a2a2a, 0x3c7a4a][Math.floor(Rn() * 4)];
+        const yaw = c.room === 'storeASEWing' ? Math.PI : 0;
+        if (storageBikeRecords) {
+          storageBikeRecords.push({
+            cage: c,
+            col,
+            pos: new THREE.Vector3(c.x0 + w / 2, F, bz),
+            yaw,
+            partial: false,
+          });
+        } else {
+          for (const [geo, col2] of [[frame, col], [tyres, 0x141414], [metal, 0xb4b9bd]]) {
+            const g = geo.clone();
+            if (yaw) g.rotateY(yaw);
+            add(g.translate(c.x0 + w / 2, F, bz), col2);
+          }
+          const sg2 = spokes.clone();
+          if (yaw) sg2.rotateY(yaw);
+          put('bikeSpokes', bake(sg2.translate(c.x0 + w / 2, F, bz), 0xb4b9bd, true), c.x0 + w / 2, bz);
+        }
       } else if (r < 0.6) { // skis leaning in the corner
         for (const k of [0, 1]) add(box(0.08, 1.7, 0.02, 0, 0.85, 0).rotateZ(0.12).translate(ax + k * 0.1, F, az), [0xd23c3c, 0x2a63c4][k]);
       } else if (r < 0.8) { // a stack of winter tyres
@@ -911,7 +1245,17 @@ export class Garage {
         add(box(0.45, 0.12, 0.95, 0, 0, 0).rotateX(-1.2).translate(ax, F + 0.5, az), 0xd8312a);
         for (const k of [0, 1]) add(box(0.5, 0.9, 0.08, ax + 0.6 + k * 0.1, F + 0.45, az - sg * 0.2), 0x2f5d3a);
         const bz = c.front === 'n' ? c.z0 + 0.45 : c.z1 - 0.45;
-        add(frame.clone().translate(c.x0 + w / 2 + 0.2, F, bz), 0x6fb7c7); add(tyres.clone().translate(c.x0 + w / 2 + 0.2, F, bz), 0x141414);
+        if (storageBikeRecords) {
+          storageBikeRecords.push({
+            cage: c,
+            col: 0x6fb7c7,
+            pos: new THREE.Vector3(c.x0 + w / 2 + 0.2, F, bz),
+            yaw: 0,
+            partial: true,
+          });
+        } else {
+          add(frame.clone().translate(c.x0 + w / 2 + 0.2, F, bz), 0x6fb7c7); add(tyres.clone().translate(c.x0 + w / 2 + 0.2, F, bz), 0x141414);
+        }
       }
     }
   }
@@ -927,10 +1271,7 @@ export class Garage {
 
   /** The doors' collision now (their leaves), the garage door while shut, our car in its stall (#358). */
   dynamic() {
-    return [...(this.door?.segments() ?? []), ...(this.extra?.() ?? []), ...this.cageDoors.map((d) => {
-      const a = d.angle, dx = d.dir[0] * Math.cos(a) + d.out[0] * Math.sin(a), dz = d.dir[1] * Math.cos(a) + d.out[1] * Math.sin(a);
-      return [d.hx, d.hz, d.hx + dx * d.w, d.hz + dz * d.w];
-    })];
+    return [...(this.door?.segments() ?? []), ...(this.extra?.() ?? []), ...this.cageDoors.map((d) => d.segment)];
   }
 
   /** Park-door leaves for outdoor collisions, only at their basement height (#729). */
@@ -953,9 +1294,10 @@ export class Garage {
 
   place(d) {
     const a = d.angle, dx = d.dir[0] * Math.cos(a) + d.out[0] * Math.sin(a), dz = d.dir[1] * Math.cos(a) + d.out[1] * Math.sin(a), yaw = Math.atan2(-dz, dx);
-    d.pivot.rotation.y = yaw; d.pivot.updateMatrix();
+    d.pivot.rotation.y = yaw; d.pivot.updateMatrix(); d.pivot.updateMatrixWorld(true);
     d.inst.setMatrixAt(d.index, new THREE.Matrix4().makeRotationY(yaw).scale(new THREE.Vector3(d.w / ST.door, 1, 1)).setPosition(d.hx, 0, d.hz));
     d.inst.instanceMatrix.needsUpdate = true;
+    (d.segment ??= [])[0] = d.hx; d.segment[1] = d.hz; d.segment[2] = d.hx + dx * d.w; d.segment[3] = d.hz + dz * d.w;
   }
 
   sound(d) { const p = { x: d.hx, y: F + 1.1, z: d.hz }; if (d.target > 0) sfx.doorOpen(p); else sfx.doorClose(p, 0.35); }
@@ -1009,7 +1351,7 @@ export class Garage {
     for (const l of this.lamps) l.k = below ? this.areas[l.area].level : 0;
     // drawn: everything while the camera is down here; only the entrance hall (+ the cars) from outside the door
     const vis = this.near(camera);
-    const anyRidden = this.bicycles?.some((b) => !b.atSource) ?? false;
+    const anyRidden = (this.bicycles?.some((b) => !b.atSource) || this.storageBicycles?.some((b) => !b.atSource)) ?? false;
     this.object.visible = !!vis || anyRidden;
     this.carArea.visible = vis !== 'park'; // no whole-garage car batch through a small park entrance
     for (const a of Object.values(this.areas)) a.group.visible = vis === true || (vis === 'park' ? a.name === this.parkEntrance(camera.position, true)?.area : a.name === 'entrance');
@@ -1018,7 +1360,14 @@ export class Garage {
       const near = Math.hypot(camera.position.x - b.c.x, camera.position.z - b.c.z) < G.bikeLodNear + b.r;
       b.hi.visible = near; b.lo.visible = !near;
     }
+    if (vis && this.storageBikeRows) for (const b of this.storageBikeRows) {
+      const near = Math.hypot(camera.position.x - b.c.x, camera.position.z - b.c.z) < G.bikeLodNear + b.r;
+      b.hi.visible = near; b.lo.visible = !near;
+    }
     if (this.bicycles) for (const b of this.bicycles) {
+      if (!b.atSource) b.updateLighting();
+    }
+    if (this.storageBicycles) for (const b of this.storageBicycles) {
       if (!b.atSource) b.updateLighting();
     }
     // the daylight down here: none deep inside, some by the open door
