@@ -118,6 +118,11 @@ src/crashlog.js        crash reports (#629), inert without the cloud (same switc
                        #930 validates buffer allocation using the exact renderer pixel ratio internally; public layout/snapshot/history
                        ratios and fault messages retain two decimals. Rounding 1.125 to 1.13 is never used for that comparison.
                        Buffer/aspect/viewport tolerances, pinch-zoom policy and report caps are unchanged.
+                       #669 distinguishes `covered-projection` only when the actual opaque full-screen rotation cover,
+                       a pending deferred viewport resize, and the retained camera/buffer pair all agree with the measured
+                       CSS/document/visual viewport. Optional `covered`/`deferred` flags are 0/1 and `retained` is the cached
+                       positive integer CSS size of that pair. Reports and messages remain; absent or contradictory metadata
+                       stays strict. Main passes its actual viewport binding into CrashLog; no per-frame style reads are added.
                        WebGL loss/recovery pairs carry an episode number and recovery duration; each episode and abrupt ending has its
                        own dedup signature. Caps: 12 per page, 20 per day; ordinary errors still once per signature/day (CRASHLOG in config). Keys: lunden.crash.pid
                        (random id), .sent, .out kept by Återställ (RESET_KEEP), .beat dropped. main.js: the import (first) and one

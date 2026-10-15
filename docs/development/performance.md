@@ -668,6 +668,15 @@ before the actual tiny-scene draw. Original loss/restore logging and guarded
 phone reload remain unchanged. This is a reversible reduction of unnecessary
 covered-buffer resizing, not a demonstrated iPhone GPU-crash fix. #669 stays open.
 
+Recovered covered-projection diagnostics (#669, 2026-10-15): CrashLog now labels the
+intentional mismatch `covered-projection` only after measuring the opaque rotation
+cover and validating the binding's pending resize and retained camera/buffer pair.
+It preserves the original report/message; genuine surface/projection faults remain
+reportable. This adds no rendering or allocation policy. Native DOM/camera tests do
+not establish a GPU cause: the actual build0eed5ed iPhone context loss at up61,
+after orientationchange at60.6, remains a real unexplained loss. Physical iPhone
+rotation and context-loss acceptance are outstanding.
+
 Warm custom intersections (#949): private combat proxies require the original captured Three Mesh `_computeIntersections` method as well as existing raycast/getVertexPosition eligibility. A custom method uses the original mesh fallback, including after cache preparation or path snapshot creation; removing it permits acceleration again. Shared geometry does not transfer one mesh's eligibility to another. This fixes native0/cache256 false hits without changing geometry, metadata or the cold query policy. Native CPU regression uses explicitly synthetic256-triangle geometry, not the unavailable Surface component or a World benchmark.
 
 ## Complete static entrance backing (#976)

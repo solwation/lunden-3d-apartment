@@ -1,5 +1,18 @@
 # Browser verification and test selection
 
+Recovered #669 covered-projection checkpoint (2026-10-15):
+`tools/portraitlayouttest.cjs http://localhost:8893 /tmp/lunden-reports-669/portrait-native`
+passed25/25 with actual index CSS, coarse portrait media, viewport binding,
+PerspectiveCamera and CrashLog. The renderer's allocation is an explicit stand-in;
+no WebGL/2D context or World is acquired. The test retains the report/message,
+checks strict missing/contradictory metadata and hidden/transparent/partial/faded
+covers, and verifies both original-size and changed-size landscape return.
+The rotate-cover PNG was opened and inspected. Existing crashlayout regression
+passed35 native allocations and five genuine faults; crashsnapshot preserved
+immutable loss data and paired synthetic restore; Worker crash tests passed19/19.
+All producer logs/results are under `/tmp/lunden-reports-669`. These checks do not
+reproduce or resolve the real iPhone loss after rotation; #669 remains open.
+
 Read [CLAUDE.md](../../CLAUDE.md) first for shared workflow rules. Paths in code spans and module maps are relative to the repository root.
 
 Related: [local-development](local-development.md), [performance](performance.md).
