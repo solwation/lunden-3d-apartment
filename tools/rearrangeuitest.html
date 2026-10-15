@@ -33,9 +33,9 @@ try{
  click('rearrange-finish');check(!R.enabled&&!R.selected&&!R.ghost.visible&&piece.object.matrixWorld.equals(before)&&d.getElementById('rearrange-help').hidden,'Done exits and discards only the unsaved preview');
  const form=d.querySelector('#terminal form');click('terminal-btn');check(form.getBoundingClientRect().height<=f.height-32&&w.getComputedStyle(form).overflowY==='auto','console fits landscape phone height with scrollable content');click('terminal-close');
  // Exercise the other real input after all original layout/menu actions, with a fresh locked state.
- check(R.unlocked&&w.localStorage.getItem('lunden.furniture.unlocked')==='true','first private form input persists real unlock state');
+ check(R.unlocked&&w.localStorage.getItem('lunden.furniture.unlocked')===null,'first private form input keeps unlock only in page memory');
  R.unlocked=false;w.localStorage.removeItem('lunden.furniture.unlocked');click('terminal-btn');code.value=codes[1];code.form.requestSubmit();A.step(0);
- check(R.enabled&&R.unlocked&&term.hidden&&w.localStorage.getItem('lunden.furniture.unlocked')==='true','second private form input enables real rearrangement and persists unlock');
+ check(R.enabled&&R.unlocked&&term.hidden&&w.localStorage.getItem('lunden.furniture.unlocked')===null,'second private form input enables real rearrangement and keeps page unlock');
  check(codes.every(input=>!A.cheatNote.commands.some(c=>c.code===input)&&!d.getElementById('cheat-note-text').textContent.includes(input)),'neither private input is listed on the public graffiti');
  R.enable(false);
  document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');

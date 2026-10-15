@@ -1,3 +1,4 @@
+import { reportsFetch } from './reports.js';
 import { beerShelfFetch } from './beershelf.js';
 import { layoutFetch } from './layout.js';
 import { crashFetch } from './crash.js';
@@ -106,6 +107,7 @@ const worker = {
     const url = new URL(request.url), parts = url.pathname.split('/').filter(Boolean), [what, id] = parts;
     const m = request.method;
     if (parts.length > 2 || (id !== undefined && !ID.test(id) && what !== 'admin')) return fail(404, 'not found', h);
+    if (what === 'report-session' || what === 'reports') return reportsFetch(request, env, h, limited);
     if (what === 'beer-shelf' && !id) return beerShelfFetch(request, env, h);
     if (what === 'crash') return crashFetch(request, env, h, id); // #629
     if (what === 'players' && !id) { // #666: only a WebSocket from the site (a request without Origin is not a browser page)
@@ -310,6 +312,9 @@ export class DrawingRoom {
   fetch(request) {
     return this.ctx.blockConcurrencyWhile(async () => {
       const storage = this.ctx.storage, kv = this.env.LUNDEN;
+      if (new URL(request.url).pathname.startsWith('/reports')) {
+        return worker.fetch(request, { ...this.env, DRAWINGS: undefined, PLAYERS: undefined, reportStorage: storage, reportForwarded: true });
+      }
       if (new URL(request.url).pathname === '/furniture') {
         return worker.fetch(request, { ...this.env, DRAWINGS: undefined, PLAYERS: undefined, layoutStorage: storage });
       }

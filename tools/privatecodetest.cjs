@@ -67,7 +67,7 @@ const output = process.env.PRIVATE_CODE_OUTPUT || '/tmp/lunden-private-codes';
     const id=`f-client-probe-${Date.now()}-${i}`, {rearrange:R,piece,setBusy}=await makeRearrange(id);
     check(R.unlocked===false&&R.unlock(codes[i].toUpperCase())===false&&R.unlock('/'+codes[i])===false&&R.unlock(codes[i].replace(' ','  '))===false,`direct input ${i+1} rejects console-only normalization`);
     setBusy(true);const accepted=R.unlock(' '+codes[i]+' ');
-    check(accepted===true&&R.unlocked===true&&R.enabled===false&&localStorage.getItem('lunden.furniture.unlocked')==='true',`direct input ${i+1} synchronously persists trim-only unlock despite real busy refusal`);
+    check(accepted===true&&R.unlocked===true&&R.enabled===false&&localStorage.getItem('lunden.furniture.unlocked')===null,`direct input ${i+1} synchronously keeps trim-only page unlock despite real busy refusal`);
     setBusy(false);check(R.unlock(codes[i])===true&&R.enabled===true,`direct input ${i+1} calls actual enable after busy clears`);
     const move=(base,x)=>({id,base,pos:[x,0,3],quat:[0,0,0,1]});
     const saved=await R.write([move(0,i+5)]);R.apply(saved);
@@ -78,7 +78,7 @@ const output = process.env.PRIVATE_CODE_OUTPUT || '/tmp/lunden-private-codes';
     check(invalid&&(await read()).revision===saved.revision,`input ${i+1} client PUT preserves server pose validation`);
     check(await R.restoreAll(saved.revision)===true&&(await read()).pieces[id].pos[0]===0,`input ${i+1} real reset confirmation revision writes home pose atomically`);
     const restored=await makeRearrange(id);
-    check(restored.rearrange.unlocked===true&&restored.piece.object.position.x===0&&restored.piece.revision===R.state.revision,`input ${i+1} fresh real client restores saved boolean and shared layout without input`);
+    check(restored.rearrange.unlocked===false&&restored.piece.object.position.x===0&&restored.piece.revision===R.state.revision,`input ${i+1} fresh real client starts locked while restoring the shared layout`);
     clientPieces[id]=(await read()).pieces[id];
    }
    state=await read();
@@ -90,7 +90,7 @@ const output = process.env.PRIVATE_CODE_OUTPUT || '/tmp/lunden-private-codes';
   await page.reload();
   const reloaded=await page.evaluate(async({worker,pieces,revision})=>{
    const response=await fetch(worker+'/furniture'),state=await response.json();
-   return localStorage.getItem('lunden.furniture.unlocked')==='true'&&response.ok&&state.revision===revision&&Object.entries(pieces).every(([id,piece])=>JSON.stringify(state.pieces[id])===JSON.stringify(piece));
+   return localStorage.getItem('lunden.furniture.unlocked')===null&&response.ok&&state.revision===revision&&Object.entries(pieces).every(([id,piece])=>JSON.stringify(state.pieces[id])===JSON.stringify(piece));
   },results);
   results.lines.push(`${reloaded?'PASS':'FAIL'} actual browser reload reads both legacy and credential writes`);
   results.lines.push(`${clientWrites.length===8&&clientWrites.every(write=>!write.hasCode&&write.credential?.version===1)?'PASS':'FAIL'} every actual client PUT sends only versioned credential, never plaintext input`);

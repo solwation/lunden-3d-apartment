@@ -19,7 +19,8 @@ const LUNDEN = {
   async list(opts = {}) {
     const prefix = opts.prefix ?? '';
     const keys = [...store.keys()].filter((k) => k.startsWith(prefix)).map((name) => ({ name, metadata: store.get(name).meta }));
-    return { keys: opts.limit ? keys.slice(0, opts.limit) : keys, list_complete: true };
+    const start = Number(opts.cursor ?? 0), end = opts.limit ? start + opts.limit : keys.length;
+    return { keys: keys.slice(start, end), list_complete: end >= keys.length, ...(end < keys.length ? { cursor: String(end) } : {}) };
   },
 };
 const layouts = new Map();
@@ -27,7 +28,9 @@ const layouts = new Map();
 if (process.env.LUNDEN_LAYOUT_FIXTURE) layouts.set('furniture-layout', JSON.parse(readFileSync(process.env.LUNDEN_LAYOUT_FIXTURE, 'utf8')));
 let layoutGate = Promise.resolve();
 const layoutStorage = { get: async (k) => structuredClone(layouts.get(k)), put: async (k,v) => layouts.set(k, structuredClone(v)) };
-const env = { LUNDEN, layoutStorage, ADMIN_TOKEN: process.argv[3] ?? 'testtoken' };
+const reports = new Map();
+const reportStorage = { get: async k => structuredClone(reports.get(k)), put: async (k,v) => reports.set(k,structuredClone(v)) };
+const env = { LUNDEN, layoutStorage, reportStorage, REPORT_PASSWORD: process.env.LUNDEN_REPORT_PASSWORD, ADMIN_TOKEN: process.argv[3] ?? 'testtoken' };
 env.PLAYERS = fakeNamespace(PlayerRoom, env); // the players' room (#666): ws://localhost:<port>/players
 
 http.createServer(async (req, res) => {
@@ -36,7 +39,7 @@ http.createServer(async (req, res) => {
   const body = chunks.length ? Buffer.concat(chunks) : undefined;
   const request = new Request(`http://localhost:${port}${req.url}`, { method: req.method, headers: req.headers, body: req.method === 'GET' || req.method === 'HEAD' ? undefined : body });
   let r;
-  if (req.url === '/furniture') {
+  if (req.url === '/furniture' || req.url.startsWith('/reports')) {
     const pending = layoutGate.then(() => worker.fetch(request, env));
     layoutGate = pending.catch(() => {}); r = await pending;
   } else r = await worker.fetch(request, env);

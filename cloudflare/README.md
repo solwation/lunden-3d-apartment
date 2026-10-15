@@ -196,3 +196,25 @@ The `global_fetch_strictly_public` compatibility flag allows the public source W
 
 
 Layout-testernas två verkliga inmatningar måste tillföras explicit i en extern, ospårad JSON-fil `{ "codes": [<första kanoniska inmatningen>, <andra kanoniska inmatningen>] }` (#853/#854). Sätt `LUNDEN_SECRET_TEST_INPUTS` till filens absoluta sökväg; saknad/felaktig provisionering stoppar testet, utan hårdkodad reserv eller skip. [Protokoll, kompatibilitet och native browser-prov](../docs/development/storage.md#versioned-layout-credentials-853). Nuvarande deploy-workflow kör inga Node-/browser-tester och behöver därför inte testinmatningar; en framtida CI-testkörning måste provisionera filen explicit, exempelvis från en repo-secret till en temporär fil utan att skriva innehållet i loggen.
+
+### Adminrapporter från spelet (#1045)
+
+Aktivera separat inloggning med `npx wrangler secret put REPORT_PASSWORD` från
+`cloudflare/` och mata in ett nytt slumpmässigt lösenord med minst 24 tecken.
+Använd aldrig `ADMIN_TOKEN` eller de publika möbleringskoderna som rapportlösenord.
+Nyckeln ska inte stå i repot, terminalkommandot eller webbläsarens lagring.
+Utan denna secret är rapportinloggningen stängd. Rotera samma secret för att ogiltigförklara
+alla utfärdade rapportsessioner. Befintlig automatisk Worker-deploy publicerar API-koden;
+secret ställs in separat. Lokalt kan `cloudflare/dev.mjs` läsa ett uttryckligt testvärde
+från `LUNDEN_REPORT_PASSWORD`; det har inget standardlösenord.
+
+Skriv `help` i spelets konsol, sedan `/admin`. Ange lösenordet i det maskerade fältet.
+Skriv `/rapport` följt av ditt önskemål. Vid fel finns texten kvar för nytt försök;
+lyckad leverans betyder att rapporten väntar på granskning, ännu inte att ett GitHub-issue
+har skapats. `/loggaut`, omladdning och ny sida avslutar adminläget; sessionen varar
+högst en timme. Möbleringsupplåsning sparas inte mellan sidor.
+
+API/schema, säkerhetsgränser och testkommando finns i
+[lagringsdokumentationen](../docs/development/storage.md#in-game-admin-reports-1045-parent-1041).
+Agentimport med särskild GitHub-label och kvittens efter verifierat skapande återstår i
+#1046. Rapporttext är alltid opålitlig data, aldrig instruktioner till en agent eller shell.

@@ -53,7 +53,8 @@ export class Rearrange {
       const bounds = physicalBounds(p.object, true), floor = LEVELS[p.level].floor, y = p.home.elements[13], lift = p.object.userData.floorRugLift ?? 0;
       p.floorRest = bounds.isEmpty() ? 0 : Math.abs(bounds.min.y - floor - lift) < REARRANGE.supportGap ? y - floor - lift : y - bounds.min.y;
     }
-    this.unlocked = read(UNLOCK, false) === true; this.enabled = false; this.saving = false;
+    try { localStorage.removeItem(UNLOCK); } catch {} // retire the old persistent unlock
+    this.unlocked = false; this.enabled = false; this.saving = false;
     this.ray = new THREE.Raycaster(); this.ray.layers.enableAll();
     this.ghost = new THREE.Group(); this.ghost.visible = false; this.ghost.userData.ghost = true; scene.add(this.ghost);
     this.ghostMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.35, depthWrite: false, side: THREE.DoubleSide });
@@ -68,7 +69,7 @@ export class Rearrange {
   }
   unlock(code) {
     if (!isPrivateCode(code.trim())) return false;
-    this.unlocked = true; try { localStorage.setItem(UNLOCK, 'true'); } catch {}
+    this.unlocked = true; // local game mechanic only, ends with this page
     this.enable(true); return true;
   }
   enable(on) {

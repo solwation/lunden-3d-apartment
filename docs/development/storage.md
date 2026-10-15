@@ -1022,3 +1022,70 @@ The bicycle-hand stow bridge is extended from food (#1034) to the three unique o
 KEEP_VERSION1 remains additive. BeerCan keeps legacy ml/gen/portionId/drunk/fin fields plus full-precision portion JSON; ml now retains fractional transferred volume. Glass.x.beer stores bounded remaining lot ml and source ledger snapshots. A pending beer pour stores its original from/to/t/secs animation: the source has already lost the entire reserved amount, the glass owns that same amount, and load resumes the same interpolation rather than adding/consuming it again. Other drinks keep their existing save behavior.
 
 The normal things.load preflight sums current source stock (excluding away packages), every reserved glass lot, and maxdrunk per validated ID/total, including old generations held only in glasses. The shared local restoreMap then gives sources/glasses the same silent monotone ledger. Contradictory total stock or partial-finished metadata invalidates that ID before any owner loads; affected source stock is suppressed and affected glass beer/pending transfer is conservatively removed, retaining other drink/pose. Pending union-key/amount validation rejects missing from→to keys. The existing held-last raw-content restore revalidates Glass metadata so it cannot resurrect rejected beer; actual Liquid.show follows validation for held and nonheld glasses. No callbacks/statistics/health operations occur while loading; no new inventory system, global historical registry or per-frame protocol is introduced.
+
+## In-game admin reports (#1045, parent #1041)
+
+`src/adminreports.js` intercepts `/admin`, `/rapport text`, `/loggaut` and help on the
+actual terminal form before multiplayer/cheat submission. Login uses a masked field
+and a separate Worker `REPORT_PASSWORD` secret (at least 24 characters); public
+private-code digests/layout credentials grant no report access. The password is
+cleared immediately and never persisted. A signed, report-only bearer lasts one
+hour and exists only in page memory: reload, pagehide, explicit logout or expiry
+ends the local admin session. Logout/cancel also wins over in-flight login replies.
+`Rearrange` retires `lunden.furniture.unlocked` and starts locked on each new page;
+shared furniture poses/materials still load. Existing private game codes can unlock
+local furniture tools for that page; they remain replayable game mechanics, not
+server authentication. A successful report login also exposes those tools.
+
+The public `cloud` debug override cannot send admin credentials to arbitrary hosts:
+only the exact configured `CLOUD_URL`, or a loopback API from a loopback page, is
+accepted, and credential-bearing fetches reject redirects. Production uses HTTPS.
+`cloudflare/reports.js` implements:
+
+- `POST /report-session` with `{password}`: accepted browser Origin, write rate
+  limit before password validation, bounded stream/JSON, fail closed when unconfigured.
+- `PUT /reports/<v4 UUID>` with `{text}` and the report-session bearer: exact plain
+  text up to `REPORTS.maxChars` (4,000 UTF-16 units), bounded 16 KiB body, forbidden
+  control/bidi characters rejected. No text is executed, rendered as HTML or promoted
+  to instructions. The client keeps the same UUID and draft after network errors.
+- `GET /reports?cursor=…`: separate `ADMIN_TOKEN`, returns
+  `{untrusted:true,reports:[{id,text,created,untrusted:true}],cursor:null|string}`,
+  pages of at most 50. Read every page; KV visibility can lag behind accepted writes.
+- `DELETE /reports/<id>`: separate `ADMIN_TOKEN`, JSON `{issueUrl}` for an issue in
+  this exact repository. The importing tool must verify successful GitHub creation
+  **before** calling this endpoint; the API validates URL shape, not GitHub existence.
+  Persist the receipt first, then remove the KV report. A retry completes failed KV
+  deletion; a different receipt conflicts. No automatic or unreviewed import exists
+  in this slice; #1046 owns the reviewed/idempotent importer and GitHub label.
+
+Reports live in `LUNDEN` KV as `report:<UUID>` without automatic expiry. The existing
+`DrawingRoom` class, under the distinct object name `reports`, serializes immutable
+IDs, KV writes and acknowledgements; its storage keeps the pending record/hash and
+then only a hash + issue URL receipt after acknowledgement. This needs no new binding
+or migration. Reusing an ID with different text conflicts; successful retries do not
+rewrite KV, and acknowledged reports cannot be recreated. Admin reads hide already
+acknowledged records even if KV temporarily returns stale data. Rate limiting uses
+the existing `LIMITER` binding when configured, otherwise the existing per-isolate
+30 writes/minute/IP fallback; forwarded PUTs count once. This is not a global rate
+limit without that binding. Reader/ack routes are unavailable without the serialized
+storage authority, and unknown/missing secrets grant no access.
+
+Verification: `node --test cloudflare/reports.test.mjs` and
+`PLAYWRIGHT_MODULE=… CHROME_PATH=… LUNDEN_REPORT_PASSWORD=<local fixture> node
+ tools/adminreportstest.cjs http://localhost:8874 http://localhost:8875 /tmp/report-probe`.
+Start the isolated local Worker with the same explicitly supplied fixture password.
+The browser test uses the real index DOM, production AdminReports binding and original
+terminal submit listener, native clipboard paste and actual local Worker, with a small
+real Rearrange controller. Apartment bootstrap/WebGL are suppressed: screenshots
+certify the terminal, not game rendering, physical-phone behavior or production KV.
+
+Local acceptance: report server tests 5/5 and the combined report/drawing/layout/
+score/private-verifier group 42/42; native terminal/API probe 21/21 with no page
+errors; updated existing private-code/native-layout probe 39/39. Portrait 390×844
+and landscape 844×390 login, saved-report and network-retry screenshots were opened
+and inspected. Artifacts: `/tmp/lunden-reports1041/{browser-acceptance,private-native}`.
+The first broad run lacked mandatory external verifier inputs; a second used the
+explicit inputs in the wrong order for the existing writer-credential assertion.
+Both original failures remain in the artifact logs; the final external copy changes
+only their order. No production reports, GitHub testissues or server secrets were
+created, and no physical-phone or apartment-render acceptance is claimed.

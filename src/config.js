@@ -5207,3 +5207,6 @@ export function straightBoxHeadContact(seed, state, shot, range) {
   }
   return rifleBoxHeadContact(seed, state, shot.o, shot.d, range);
 }
+
+// #1045: report size and one-page admin lifetime; server and client share these bounds.
+export const REPORTS = { maxChars: 4000, maxBytes: 16384, sessionSeconds: 3600 };

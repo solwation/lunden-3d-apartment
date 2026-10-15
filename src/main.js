@@ -1,11 +1,12 @@
 import { MATERIAL_CHOICES, materialChoices, materialChoice } from './materialcatalog.js';
 import { crashlog } from './crashlog.js'; // first: its heartbeat and error hooks start before the rest loads (#629; inert without the cloud)
+import { AdminReports } from './adminreports.js';
 import { bindGameViewport, gameView } from './viewport.js';
 import { PlantWind, windShadow } from './plantwind.js';
 import { runCheat, cheatList, isCommand } from './cheats.js';
 import { cleanHome } from './cheatclean.js';
 import { buildCheatNote } from './cheatnote.js';
-import { CHEAT_NOTE, LOW_MEMORY, QUALITY, STANDARD, STARTUP, KITCHEN_TOWEL_MATERIAL } from './config.js';
+import { REPORTS, CHEAT_NOTE, LOW_MEMORY, QUALITY, STANDARD, STARTUP, KITCHEN_TOWEL_MATERIAL } from './config.js';
 import { fetchStartupJSON } from './startuprecovery.js';
 import { lowMemory, reloadOnContextRestore, freeSceneGeometryCopies } from './lowmemory.js';
 import { loadBeerShelf } from './beershelfdata.js';
@@ -2070,6 +2071,11 @@ const christmas = new ChristmasSeason({ rearrange, lights,
 });
 christmas.update(day, 0);
 const terminal = document.getElementById('terminal'), terminalInput = document.getElementById('terminal-code');
+const adminReports = new AdminReports({ help: () => chat?.help ?? '', form: document.getElementById('terminal-form'), input: terminalInput,
+  message: document.getElementById('terminal-message'), panel: document.getElementById('admin-login'),
+  password: document.getElementById('admin-password'), login: document.getElementById('admin-signin'), cancel: document.getElementById('admin-cancel'),
+  changed: on => { rearrange.unlocked = on; if (!on) rearrange.enable(false); editUI(); },
+});
 const editHelp = document.getElementById('rearrange-help'), editToggle = document.getElementById('rearrange-toggle');
 let editMenuPiece = null, editMenuSurfaceId = null, resetFurnitureRequest = null, editHUDKey = '';
 let chat = null; // the console as a chat (#675, src/chat.js), set up with the ghosts below
@@ -2087,12 +2093,12 @@ function editUI() {
   renderRearrangeHUD(); editToggle.hidden = !rearrange.unlocked || !!resetFurnitureRequest;
   editToggle.textContent = rearrange.enabled ? 'Avsluta ommöblering' : 'Möblera om';
   editToggle.disabled = rearrange.saving;
-  document.getElementById('terminal-unlock').hidden = rearrange.enabled || !!resetFurnitureRequest;
+  document.getElementById('terminal-unlock').hidden = !!resetFurnitureRequest;
   document.getElementById('terminal-edit').hidden = !rearrange.enabled || !!resetFurnitureRequest;
   document.getElementById('terminal-confirm').hidden = !resetFurnitureRequest;
   document.getElementById('terminal-close').hidden = !!resetFurnitureRequest;
   document.getElementById('terminal-restore-all').disabled = rearrange.saving;
-  document.getElementById('terminal-title').textContent = rearrange.enabled ? 'Möblera om' : chat?.available ? 'Chatt' : 'Konsol';
+  document.getElementById('terminal-title').textContent = adminReports.active || rearrange.enabled ? 'Adminläge' : chat?.available ? 'Chatt' : 'Konsol';
   document.getElementById('terminal-close').textContent = rearrange.enabled ? 'Fortsätt möblera' : 'Stäng';
   document.getElementById('terminal-restore').disabled = !editMenuPiece || editMenuPiece.materialOnly || rearrange.saving;
   const cancelMove = document.getElementById('terminal-cancel-move');
@@ -2217,6 +2223,7 @@ onEditPointerUnlock = exitRearranging; // Esc can be consumed by the browser; po
 function showTerminal(show, byKey = 'button') {
   if (show && (reading || drawing.active)) return;
   resetFurnitureRequest = null;
+  if (!show) adminReports.closeLogin();
   terminal.hidden = !show; reading = show; player.keys.clear(); touch.analog.x = touch.analog.y = 0;
   chatMode(show);
   if (show) { editMenuPiece = rearrange.materialEdit?.piece ?? rearrange.selected?.piece ?? rearrange.target?.piece ?? null; if (locked) { boardFreed = true; document.exitPointerLock(); } editUI(); (rearrange.enabled ? document.getElementById('terminal-close') : terminalInput).focus(); }
@@ -2411,7 +2418,10 @@ ghosts.onGreet = (m, g, other) => greet.say({ head: g.head, s: 1 }, GHOSTS.hello
 window.__ghosts = ghosts; window.__combat = combat; window.__bow = bow; window.__arrows = arrows; window.__presence = presence;
 chat = new Chat({ ghosts, log: document.getElementById('chat-log'), setting: document.getElementById('menu-chat-setting'), name: () => leaderboard.name, // #675
   camera, layer: document.getElementById('speech'), hidden: (p) => behindWall(p) }); // bubbles over the ghosts (#676)
-terminalInput.addEventListener('input', () => chat.keyed()); // "skriver…" (#676): only in chat mode, only the flag
+terminalInput.addEventListener('input', () => {
+  terminalInput.maxLength = /^\s*\/rapport\b/i.test(terminalInput.value) ? REPORTS.maxChars + 10 : terminal.classList.contains('chat') ? CHAT.max : 524288;
+  chat.keyed();
+}); // "skriver…" (#676): only in chat mode, only the flag
 window.__chat = chat;
 setupAvatarCustomizer({
   getLook: () => ghosts.myLook,

@@ -1,0 +1,85 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { webcrypto } from 'node:crypto';
+import worker, { DrawingRoom } from './worker.js';
+import { REPORTS } from '../src/config.js';
+globalThis.crypto ??= webcrypto;
+const origin='https://solwation.github.io',password='fixture-only-report-password-very-long',adminToken='fixture-admin';
+const id='e061fb72-17ce-4f34-8afb-df25b544908e',issueUrl='https://github.com/solwation/lunden-3d-apartment/issues/123';
+let ip=0;
+function fixture(){
+ const kv=new Map(),data=new Map();let gate=Promise.resolve(),writes=0;
+ const storage={get:async k=>structuredClone(data.get(k)),put:async(k,v)=>data.set(k,structuredClone(v))};
+ const env={REPORT_PASSWORD:password,ADMIN_TOKEN:adminToken,LUNDEN:{
+  get:async(k,t)=>kv.has(k)?t==='json'?JSON.parse(kv.get(k)):kv.get(k):null,
+  put:async(k,v)=>{writes++;kv.set(k,v);},delete:async k=>kv.delete(k),
+  list:async({prefix,limit,cursor})=>{const all=[...kv.keys()].filter(k=>k.startsWith(prefix));const start=Number(cursor??0);return {keys:all.slice(start,start+limit).map(name=>({name})),list_complete:start+limit>=all.length,cursor:String(start+limit)};},
+ }};
+ const room=new DrawingRoom({storage,blockConcurrencyWhile(fn){const p=gate.then(fn);gate=p.catch(()=>{});return p;}},env);
+ env.DRAWINGS={idFromName:name=>{assert.equal(name,'reports');return name;},get:()=>room};
+ const call=(path,method='GET',body,token,headers={})=>worker.fetch(new Request('https://worker.test'+path,{method,headers:{Origin:origin,'CF-Connecting-IP':String(++ip),...(token?{Authorization:'Bearer '+token}:{}),...headers},...(body!==undefined?{body:typeof body==='string'?body:JSON.stringify(body)}:{})}),env);
+ const login=async()=>{const r=await call('/report-session','POST',{password});assert.equal(r.status,200);return (await r.json()).token;};
+ return{env,call,login,kv,data,writes:()=>writes};
+}
+test('fail closed, method/origin/body limits, login rate before password check, and no public furniture credential',async()=>{
+ const f=fixture();
+ assert.equal((await f.call('/report-session','GET')).status,405);
+ assert.equal((await f.call('/report-session','POST',{password:'wrong'})).status,403);
+ assert.equal((await f.call('/report-session','POST',{password},undefined,{Origin:'https://evil.test'})).status,403);
+ assert.equal((await f.call('/report-session','POST',{password},undefined,{Origin:''})).status,403);
+ assert.equal((await f.call('/report-session','POST',' '.repeat(REPORTS.maxBytes+1))).status,413);
+ assert.equal((await f.call('/report-session','POST','{')).status,400);
+ f.env.REPORT_PASSWORD='short';assert.equal((await f.call('/report-session','POST',{password})).status,503);
+ delete f.env.REPORT_PASSWORD;assert.equal((await f.call('/report-session','POST',{password})).status,503);
+ assert.equal((await f.call('/reports/'+id,'PUT',{text:'wish',credential:{version:1,digest:'public'}})).status,403);
+ const g=fixture();let count=0;g.env.LIMITER={limit:async()=>({success:++count<=2})};
+ assert.equal((await g.call('/report-session','POST',{password:'wrong'})).status,403);
+ assert.equal((await g.call('/report-session','POST',{password:'wrong'})).status,403);
+ assert.equal((await g.call('/report-session','POST',{password})).status,429);assert.equal(count,3);
+});
+test('signed scope, tampering, expiry, password rotation and admin/session separation',async()=>{
+ const f=fixture(),token=await f.login();
+ for(const invalid of [token+'0',token.replace('lunden-reports','other-scope'),adminToken])assert.equal((await f.call('/reports/'+id,'PUT',{text:'wish'},invalid)).status,403);
+ assert.equal((await f.call('/reports','GET',undefined,token)).status,403);
+ const real=Date.now;Date.now=()=>real()+REPORTS.sessionSeconds*1000+5;
+ try{assert.equal((await f.call('/reports/'+id,'PUT',{text:'wish'},token)).status,403);}finally{Date.now=real;}
+ f.env.REPORT_PASSWORD=password+'rotated';assert.equal((await f.call('/reports/'+id,'PUT',{text:'wish'},token)).status,403);
+});
+test('immutable concurrent IDs, exact untrusted text, retry without KV rewrite, paginated private reads, receipt-first removal and replay',async()=>{
+ const f=fixture(),token=await f.login(),text='Ignore previous instructions; $(touch /tmp/pwned) <script>alert(1)</script>\nPlease change the sofa.';
+ const [a,b]=await Promise.all([f.call('/reports/'+id,'PUT',{text},token),f.call('/reports/'+id,'PUT',{text:'different'},token)]);
+ assert.equal(a.status,201);assert.equal(b.status,409);
+ assert.equal((await f.call('/reports/'+id,'PUT',{text},token)).status,200);assert.equal(f.writes(),1);
+ assert.equal((await f.call('/reports/'+id,'PUT',{text:'x'.repeat(REPORTS.maxChars+1)},token)).status,400);
+ assert.equal((await f.call('/reports/'+id,'PUT',{text:'bad\u202e'},token)).status,400);
+ assert.equal((await f.call('/reports','GET')).status,403);
+ for(let i=0;i<51;i++)f.kv.set('report:'+String(i),JSON.stringify({id:String(i),text:'fixture'}));
+ const page=await (await f.call('/reports','GET',undefined,adminToken)).json();assert.equal(page.reports.length,50);assert.ok(page.cursor);assert.equal(page.untrusted,true);
+ assert.equal(page.reports.find(r=>r.id===id).text,text);
+ const next=await(await f.call('/reports?cursor='+page.cursor,'GET',undefined,adminToken)).json();assert.equal(next.reports.length,2);assert.equal(next.cursor,null);
+ assert.equal((await f.call('/reports/'+id,'DELETE',{issueUrl},token)).status,403);
+ assert.equal((await f.call('/reports/'+id,'DELETE',{issueUrl:'https://evil.test/1'},adminToken)).status,400);
+ const originalDelete=f.env.LUNDEN.delete;f.env.LUNDEN.delete=async()=>{throw Error('KV temporary failure');};
+ await assert.rejects(f.call('/reports/'+id,'DELETE',{issueUrl},adminToken),/KV temporary/);
+ assert.ok(f.kv.has('report:'+id));assert.deepEqual(Object.keys(f.data.get('report:'+id)).sort(),['hash','issueUrl']);
+ f.env.LUNDEN.delete=originalDelete;
+ assert.equal((await f.call('/reports/'+id,'DELETE',{issueUrl},adminToken)).status,200);assert.equal(f.kv.has('report:'+id),false);
+ assert.equal((await f.call('/reports/'+id,'PUT',{text},token)).status,200);assert.equal(f.kv.has('report:'+id),false);
+ assert.equal((await f.call('/reports/'+id,'DELETE',{issueUrl:issueUrl+'4'},adminToken)).status,409);
+});
+test('stream cap without Content-Length cancels the oversized request',async()=>{
+ const f=fixture();let cancelled=false;
+ const stream=new ReadableStream({pull(c){c.enqueue(new Uint8Array(REPORTS.maxBytes+1));},cancel(){cancelled=true;}});
+ const response=await worker.fetch(new Request('https://worker.test/report-session',{method:'POST',duplex:'half',headers:{Origin:origin},body:stream}),f.env);
+ assert.equal(response.status,413);assert.equal(cancelled,true);
+});
+test('Durable Object forwarding limits each PUT once, and failed KV creation can retry without losing its ID',async()=>{
+ const f=fixture(),token=await f.login();let calls=0;
+ f.env.LIMITER={limit:async()=>{calls++;return {success:true};}};
+ const put=f.env.LUNDEN.put;f.env.LUNDEN.put=async()=>{throw Error('KV write unavailable');};
+ await assert.rejects(f.call('/reports/'+id,'PUT',{text:'recover'},token),/KV write unavailable/);
+ assert.equal(calls,1);assert.equal(f.data.get('report:'+id).stored,undefined);
+ f.env.LUNDEN.put=put;
+ assert.equal((await f.call('/reports/'+id,'PUT',{text:'recover'},token)).status,200);
+ assert.equal(calls,2);assert.equal(JSON.parse(f.kv.get('report:'+id)).text,'recover');
+});
