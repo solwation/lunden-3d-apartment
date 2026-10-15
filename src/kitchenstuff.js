@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 
 // What is in the kitchen's cabinets and drawers (#229): neat rows and stacks — white porcelain, glass, stainless,
 // a few coloured packets and spice jars. `fillKitchen(P, kind, box)` builds one cabinet's contents into P (a frame on a
@@ -37,13 +38,44 @@ function row(a0, a1, n, w) {
 }
 const fit = (a0, a1, w, gap = 0.015) => Math.max(1, Math.floor((a1 - a0 - gap) / (w + gap)));
 
+// --- porcelain plates (#1039: curved rim + dished well) ------------------------------------------------------
+function createPlateGeometry(radius = 0.12, seg = 20) {
+  const s = radius / 0.12;
+  const prof = [
+    [0.0001, 0],
+    [0.075 * s, 0],
+    [0.080 * s, 0.003],
+    [0.100 * s, 0.008],
+    [0.122 * s, 0.018],
+    [0.120 * s, 0.020],
+    [0.110 * s, 0.016],
+    [0.085 * s, 0.007],
+    [0.0001, 0.005],
+  ].map(([r, y]) => new THREE.Vector2(r, y));
+  return new THREE.LatheGeometry(prof, seg);
+}
+
+function plateStack(P, u, d, r, y, maxH, m = 'porcelain', rimMat = null) {
+  const [x, z] = P.at(u, d);
+  const pitch = 0.013;
+  const count = Math.max(3, Math.min(8, Math.floor((maxH - 0.015) / pitch)));
+  for (let k = 0; k < count; k++) {
+    const py = y + k * pitch;
+    const geo = createPlateGeometry(r, 20);
+    P.add(geo.translate(x, py, z), KM[m] ?? m);
+    if (rimMat) {
+      const rimGeo = new THREE.CylinderGeometry(r * 1.01, r * 1.01, 0.002, 20, 1, true);
+      P.add(rimGeo.translate(x, py + 0.019, z), KM[rimMat] ?? rimMat);
+    }
+  }
+}
+
 // --- the things ---------------------------------------------------------------------------------------------
 function plates(P, b, y, top) {
   const n = fit(b.a0, b.a1, 0.25, 0.02), dm = (b.d0 + b.d1) / 2;
   for (const u of row(b.a0, b.a1, Math.min(n, 2), 0.25)) {
     const h = Math.min(0.16, top - y - 0.02);
-    cyl(P, u, dm, 0.12, y, h, 'porcelain', 24);
-    cyl(P, u, dm, 0.08, y + h, 0.004, 'porcelain', 24); // the top plate's well
+    plateStack(P, u, dm, 0.12, y, h, 'porcelain');
   }
 }
 function bowls(P, b, y, top) {
@@ -123,8 +155,7 @@ function serving(P, b, y, top) { // a thermos, a jug, serving platters on their 
 function festive(P, b, y, top) { // the good china: stacks with a gold rim, a gravy boat, cups
   const dm = (b.d0 + b.d1) / 2, h = Math.min(0.12, top - y - 0.03);
   for (const u of row(b.a0, b.a1, Math.min(2, fit(b.a0, b.a1, 0.24, 0.02)), 0.24)) {
-    cyl(P, u, dm, 0.115, y, h, 'porcelain', 24);
-    for (let k = 1; k <= 5; k++) cyl(P, u, dm, 0.117, y + (h * k) / 6, 0.003, 'gold', 24);
+    plateStack(P, u, dm, 0.115, y, h, 'porcelain', 'gold');
   }
 }
 function corner(P, b, y, top) { // big things: a stand mixer, a waffle iron, a food processor in its carton
@@ -142,15 +173,264 @@ function sinkExtras(P, b, y, top) { // a detergent bottle, a brush and a roll of
   cyl(P, b.a0 + 0.05, b.d1 - 0.05, 0.012, y + Math.min(0.22, top - y - 0.03), 0.03, 'plastic', 8);
   rollU(P, b.a1 - 0.2, b.a1 - 0.04, b.d1 - 0.05, 0.03, y, 'black');
 }
-// drawers (y = the drawer's bottom, top = its rim)
-function cutlery(P, b, y, top) { // a white insert with compartments; knives, forks and spoons in rows
-  bx(P, b.a0 + 0.01, b.a1 - 0.01, b.d0 + 0.01, b.d1 - 0.01, y, y + 0.006, 'plastic');
-  const n = Math.max(3, Math.floor((b.a1 - b.a0) / 0.09));
-  const us = row(b.a0, b.a1, n, 0.07);
-  for (const [i, u] of us.entries()) {
-    bx(P, u - 0.045, u - 0.043, b.d0 + 0.02, b.d1 - 0.02, y, y + 0.045, 'plastic'); // dividers
-    for (let k = 0; k < 4; k++) bx(P, u - 0.02 + k * 0.012, u - 0.012 + k * 0.012, b.d0 + 0.05, b.d0 + 0.05 + (i % 3 === 0 ? 0.21 : 0.19), y + 0.006 + k * 0.003, y + 0.011 + k * 0.003, 'steel');
+// --- cutlery (#1039: knife blade/bolster, 4-tine fork, dished spoon bowl, teaspoons) ------
+function createKnifeGeometry() {
+  const hs = new THREE.Shape();
+  hs.moveTo(-0.005, 0);
+  hs.quadraticCurveTo(-0.0075, 0.04, -0.0065, 0.07);
+  hs.quadraticCurveTo(-0.0045, 0.095, -0.0035, 0.11);
+  hs.lineTo(0.0035, 0.11);
+  hs.quadraticCurveTo(0.0045, 0.095, 0.0065, 0.07);
+  hs.quadraticCurveTo(0.0075, 0.04, 0.005, 0);
+  hs.quadraticCurveTo(0, -0.004, -0.005, 0);
+
+  const handleGeo = new THREE.ExtrudeGeometry(hs, {
+    depth: 0.0036,
+    bevelEnabled: true,
+    bevelThickness: 0.0008,
+    bevelSize: 0.0008,
+    bevelSegments: 2,
+    curveSegments: 6,
+  });
+  handleGeo.rotateX(Math.PI / 2);
+
+  const bs = new THREE.Shape();
+  bs.moveTo(-0.0035, 0.108);
+  bs.quadraticCurveTo(-0.009, 0.125, -0.009, 0.17);
+  bs.quadraticCurveTo(-0.007, 0.205, 0, 0.218);
+  bs.quadraticCurveTo(0.003, 0.21, 0.003, 0.19);
+  bs.lineTo(0.003, 0.108);
+  bs.closePath();
+
+  const bladeGeo = new THREE.ExtrudeGeometry(bs, {
+    depth: 0.0012,
+    bevelEnabled: true,
+    bevelThickness: 0.0003,
+    bevelSize: 0.0003,
+    bevelSegments: 1,
+    curveSegments: 6,
+  });
+  bladeGeo.rotateX(Math.PI / 2);
+  bladeGeo.translate(0, 0.0015, 0);
+
+  return mergeGeometries([mergeVertices(handleGeo), mergeVertices(bladeGeo)]);
+}
+
+function createForkGeometry() {
+  const s = new THREE.Shape();
+  s.moveTo(-0.005, 0);
+  s.quadraticCurveTo(-0.0065, 0.04, -0.0055, 0.07);
+  s.quadraticCurveTo(-0.004, 0.095, -0.003, 0.11);
+  s.quadraticCurveTo(-0.004, 0.13, -0.010, 0.142);
+
+  // 4 distinct tines
+  s.lineTo(-0.0095, 0.198);
+  s.lineTo(-0.0075, 0.198);
+  s.lineTo(-0.0065, 0.148);
+  s.lineTo(-0.0045, 0.148);
+
+  s.lineTo(-0.004, 0.198);
+  s.lineTo(-0.002, 0.198);
+  s.lineTo(-0.0015, 0.148);
+  s.lineTo(0.0015, 0.148);
+
+  s.lineTo(0.002, 0.198);
+  s.lineTo(0.004, 0.198);
+  s.lineTo(0.0045, 0.148);
+  s.lineTo(0.0065, 0.148);
+
+  s.lineTo(0.0075, 0.198);
+  s.lineTo(0.0095, 0.198);
+  s.lineTo(0.010, 0.142);
+
+  s.quadraticCurveTo(0.004, 0.13, 0.003, 0.11);
+  s.quadraticCurveTo(0.004, 0.095, 0.0055, 0.07);
+  s.quadraticCurveTo(0.0065, 0.04, 0.005, 0);
+  s.quadraticCurveTo(0, -0.004, -0.005, 0);
+
+  const geo = new THREE.ExtrudeGeometry(s, {
+    depth: 0.0022,
+    bevelEnabled: true,
+    bevelThickness: 0.0004,
+    bevelSize: 0.0004,
+    bevelSegments: 1,
+    curveSegments: 6,
+  });
+  geo.rotateX(Math.PI / 2);
+
+  const pos = geo.attributes.position;
+  for (let i = 0; i < pos.count; i++) {
+    const z = pos.getZ(i);
+    let dy = 0;
+    if (z < 0.12) dy = Math.sin((z / 0.12) * Math.PI) * 0.0035;
+    else {
+      const t = (z - 0.12) / 0.08;
+      dy = -Math.sin(t * Math.PI * 0.5) * 0.001 + Math.pow(t, 2) * 0.004;
+    }
+    pos.setY(i, pos.getY(i) + dy);
   }
+  geo.computeVertexNormals();
+  return mergeVertices(geo);
+}
+
+function createSpoonGeometry(isTeaspoon = false) {
+  const scale = isTeaspoon ? 0.7 : 1.0;
+  const L = 0.195 * scale;
+  const bowlL = 0.07 * scale, bowlW = 0.036 * scale, bowlD = 0.006 * scale, thick = 0.0015 * scale;
+  const handleL = L - bowlL * 0.85;
+
+  const hs = new THREE.Shape();
+  const hw = 0.005 * scale;
+  hs.moveTo(-hw, 0);
+  hs.quadraticCurveTo(-hw * 1.3, handleL * 0.35, -hw * 1.1, handleL * 0.65);
+  hs.quadraticCurveTo(-hw * 0.8, handleL * 0.85, -hw * 0.6, handleL);
+  hs.lineTo(hw * 0.6, handleL);
+  hs.quadraticCurveTo(hw * 0.8, handleL * 0.85, hw * 1.1, handleL * 0.65);
+  hs.quadraticCurveTo(hw * 1.3, handleL * 0.35, hw, 0);
+  hs.quadraticCurveTo(0, -hw * 0.8, -hw, 0);
+
+  const handleGeo = new THREE.ExtrudeGeometry(hs, {
+    depth: 0.0022 * scale,
+    bevelEnabled: true,
+    bevelThickness: 0.0004 * scale,
+    bevelSize: 0.0004 * scale,
+    bevelSegments: 1,
+    curveSegments: 6,
+  });
+  handleGeo.rotateX(Math.PI / 2);
+
+  const hpos = handleGeo.attributes.position;
+  for (let i = 0; i < hpos.count; i++) {
+    const z = hpos.getZ(i);
+    hpos.setY(i, hpos.getY(i) + Math.sin((z / handleL) * Math.PI) * 0.004 * scale);
+  }
+
+  const rings = 4, segs = 16;
+  const vertices = [], indices = [];
+  const zc = handleL + bowlL * 0.45;
+  const rx = bowlW * 0.5, rz = bowlL * 0.5;
+
+  vertices.push(0, -bowlD, zc);
+  for (let ring = 1; ring <= rings; ring++) {
+    const f = ring / rings;
+    const y = -bowlD * (1 - f * f);
+    for (let s = 0; s < segs; s++) {
+      const a = (s / segs) * Math.PI * 2;
+      vertices.push(Math.sin(a) * rx * f, y, zc + Math.cos(a) * rz * f);
+    }
+  }
+  for (let s = 0; s < segs; s++) {
+    const next = (s + 1) % segs;
+    indices.push(0, 1 + next, 1 + s);
+  }
+  for (let ring = 1; ring < rings; ring++) {
+    const r0 = 1 + (ring - 1) * segs, r1 = 1 + ring * segs;
+    for (let s = 0; s < segs; s++) {
+      const next = (s + 1) % segs;
+      indices.push(r0 + s, r0 + next, r1 + next);
+      indices.push(r0 + s, r1 + next, r1 + s);
+    }
+  }
+
+  const botOffset = vertices.length / 3;
+  vertices.push(0, -bowlD - thick, zc);
+  for (let ring = 1; ring <= rings; ring++) {
+    const f = ring / rings;
+    const y = -bowlD * (1 - f * f) - thick * (1 - 0.5 * f);
+    for (let s = 0; s < segs; s++) {
+      const a = (s / segs) * Math.PI * 2;
+      vertices.push(Math.sin(a) * rx * f, y, zc + Math.cos(a) * rz * f);
+    }
+  }
+  for (let s = 0; s < segs; s++) {
+    const next = (s + 1) % segs;
+    indices.push(botOffset, botOffset + 1 + s, botOffset + 1 + next);
+  }
+  for (let ring = 1; ring < rings; ring++) {
+    const r0 = botOffset + 1 + (ring - 1) * segs, r1 = botOffset + 1 + ring * segs;
+    for (let s = 0; s < segs; s++) {
+      const next = (s + 1) % segs;
+      indices.push(r0 + s, r1 + next, r0 + next);
+      indices.push(r0 + s, r1 + s, r1 + next);
+    }
+  }
+
+  const topRim = 1 + (rings - 1) * segs;
+  const botRim = botOffset + 1 + (rings - 1) * segs;
+  for (let s = 0; s < segs; s++) {
+    const next = (s + 1) % segs;
+    indices.push(topRim + s, botRim + s, botRim + next);
+    indices.push(topRim + s, botRim + next, topRim + next);
+  }
+
+  const bowlGeo = new THREE.BufferGeometry();
+  bowlGeo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+  bowlGeo.setIndex(indices);
+  bowlGeo.computeVertexNormals();
+
+  const uvs = new Float32Array((vertices.length / 3) * 2);
+  bowlGeo.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+
+  return mergeGeometries([mergeVertices(handleGeo), bowlGeo]);
+}
+
+// drawers (y = the drawer's bottom, top = its rim)
+function cutlery(P, b, y, top) { // a white insert with compartments; detailed knives, forks and spoons
+  bx(P, b.a0 + 0.01, b.a1 - 0.01, b.d0 + 0.01, b.d1 - 0.01, y, y + 0.005, 'plastic');
+  bx(P, b.a0 + 0.01, b.a0 + 0.014, b.d0 + 0.01, b.d1 - 0.01, y, y + 0.042, 'plastic');
+  bx(P, b.a1 - 0.014, b.a1 - 0.01, b.d0 + 0.01, b.d1 - 0.01, y, y + 0.042, 'plastic');
+  bx(P, b.a0 + 0.01, b.a1 - 0.01, b.d0 + 0.01, b.d0 + 0.014, y, y + 0.042, 'plastic');
+  bx(P, b.a0 + 0.01, b.a1 - 0.01, b.d1 - 0.014, b.d1 - 0.01, y, y + 0.042, 'plastic');
+
+  const innerW = b.a1 - b.a0 - 0.028;
+  const n = Math.min(6, Math.max(3, Math.floor(innerW / 0.10)));
+  const cw = innerW / n;
+
+  for (let i = 1; i < n; i++) {
+    const udiv = b.a0 + 0.014 + i * cw;
+    bx(P, udiv - 0.002, udiv + 0.002, b.d0 + 0.014, b.d1 - 0.014, y, y + 0.038, 'plastic');
+  }
+
+  const templates = {
+    knife: createKnifeGeometry(),
+    fork: createForkGeometry(),
+    spoon: createSpoonGeometry(false),
+    teaspoon: createSpoonGeometry(true),
+  };
+
+  const types = ['knife', 'fork', 'spoon', 'teaspoon', 'fork', 'knife'];
+
+  const placeItem = (geo, u, dStart, yBase) => {
+    const [x0, z0] = P.at(u, dStart);
+    const [xu, zu] = P.at(u + 1, dStart);
+    const [xd, zd] = P.at(u, dStart + 1);
+    const ux = xu - x0, uz = zu - z0;
+    const dx = xd - x0, dz = zd - z0;
+    const mat = new THREE.Matrix4().set(
+      -ux, 0, -dx, x0,
+      0,   1, 0,   yBase,
+      -uz, 0, -dz, z0,
+      0,   0, 0,   1
+    );
+    const piece = geo.clone().applyMatrix4(mat);
+    P.add(piece, KM.steel);
+  };
+
+  const dHandle = b.d1 - 0.055;
+
+  for (let i = 0; i < n; i++) {
+    const u = b.a0 + 0.014 + (i + 0.5) * cw;
+    const kind = types[i % types.length];
+    const tmpl = templates[kind];
+    for (let k = 0; k < 4; k++) {
+      const yk = y + 0.006 + k * 0.0035;
+      const dShift = (k % 2 === 1 ? 0.002 : -0.001);
+      const uShift = (k % 2 === 1 ? 0.001 : -0.001);
+      placeItem(tmpl, u + uShift, dHandle + dShift, yk);
+    }
+  }
+
+  Object.values(templates).forEach((g) => g.dispose());
 }
 function utensils(P, b, y, top) { // ladle, spatula, whisk, a wooden spoon, kitchen towels folded at the front
   const us = row(b.a0, b.a1, 5, 0.06), L = Math.min(0.32, b.d1 - b.d0 - 0.04);
