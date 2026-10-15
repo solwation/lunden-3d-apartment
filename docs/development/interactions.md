@@ -3,6 +3,36 @@
 Read [CLAUDE.md](../../CLAUDE.md) first for shared workflow rules. Paths in code spans and module maps are relative to the repository root.
 
 Related: [life](life.md), [storage](storage.md), [verification](verification.md).
+## Touch action layout (#1057)
+
+`#touch-controls` in the native index groups gameplay controls at the lower right.
+The primary contextual action has a reserved 64px-high row (56px on short landscape);
+jump/crouch stay in the row above it. Equipment uses named grid cells, so enabling
+lives or a jetpack no longer relocates buttons below the top badges. Measure stays
+above crouch; seated Stand gets its own primary-row cell. Action choices replace
+the primary action with two columns and bounded vertical scrolling, retaining full
+labels and every choice. Grid gaps pass through to the existing right-side look
+input; buttons retain their original IDs/listeners. Desktop choice placement is unchanged.
+
+[Apple Game controls](https://developer.apple.com/design/human-interface-guidelines/game-controls)
+recommends thumb-reachable frequent actions, safe areas, meaningful symbols and
+contextual visibility; it also describes left movement, direct right-side camera
+panning and a floating thumbstick. Those existing input conventions remain.
+[Android accessibility guidance](https://developer.android.com/guide/topics/ui/accessibility/views/apps-views)
+recommends at least 48dp touch targets. Our web layout uses 56 CSS px icons, or
+48 CSS px below 376px viewport height, with 8px separation and safe-area offsets.
+These are practical CSS layout choices, not measured physical dp/pt equivalence
+or a claim of platform compliance. Existing pressed/toggled feedback remains.
+No handedness setting existed; remapping is outside this bounded layout change.
+
+`tools/touchlayouttest.cjs` checks native DOM masks, safe areas and CDP multi-touch
+using actual `setupTouch`; complete main action/jump listeners retain press,
+release/cancel/leave semantics with recorded collaborators. `hudlayouttest.cjs`
+also checks real Combat lives against the controls. Neither is a physical-device
+comfort test or a performance benchmark. The report's original image shows the
+street without controls; placement decisions are based on the implementation and
+guidance, not inferred from that image.
+
 ## Current shared head contract (#974, #893, #894, #979)
 
 Version 2 uses three shared logical head boxes from `PVP_HEAD_BOXES` in `src/config.js`:

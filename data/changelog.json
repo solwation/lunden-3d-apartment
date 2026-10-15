@@ -1,4 +1,5 @@
 [
+  {"id": 850, "date": "2026-10-15", "text": "Touchknapparna är större och samlade vid höger tumme med tydligare mellanrum."},
   {"id": 849, "date": "2026-10-15", "text": "Dialogrutorna har fått tydliga stängkryss i övre högra hörnet."},
   {"id": 848, "date": "2026-10-15", "text": "Enter fungerar nu även i det maskerade fältet för adminkoden."},
   {"id": 847, "date": "2026-10-15", "text": "Adminkoden visar Rapportera med egen popup och Möblera som startar först när du väljer det."},

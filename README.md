@@ -125,6 +125,8 @@ Vädret hämtas från [Open-Meteo.com](https://open-meteo.com/) (väderdata unde
 De 100 senaste nyhetspunkterna står på lappen på frysen i köket (gå fram och tryck <kbd>E</kbd>). Det som
 tillkommit sedan ditt senaste besök är markerat *Nytt*. Huvudträffsuppdateringar samlas under **Förbättringar för huvudträffar.** Nerf-optimeringar samlas under **Förbättringar för Nerf-skott.**
 
+På touch ligger spelknapparna samlade nere till höger med större träffytor och mellanrum. Hoppa och huka har fasta platser ovanför handlingsknappen; utrustning och livsmätare flyttar inte runt dem. Flera handlingar visas i två kolumner som kan rullas när utrymmet är trångt. Vänster tumme går och höger tumme drar för att titta.
+
 På touch använder tydliga dörrar, lådor och luckor korta texter som **Öppna**, **Stäng** och **Dra ut**. Små föremål behåller sina namn, till exempel **Ta smörkniven**, och förflyttningar till ett särskilt mål anger vart föremålet hamnar. Diskmaskinens korgar kan väljas även mellan metalltrådarna; tallrikar, glas och bestick i dem går fortfarande att plocka upp. Kylens grönsakslåda och frysens fyra lådor kan dras ut, fyllas och skjutas in; innehållet följer med och sparas mellan besök. Skjut in lådorna innan du stänger luckan.
 
 ## Köra lokalt

@@ -94,11 +94,6 @@ body.hud-no-blur #hud :is(#score,#hud-top) { backdrop-filter: none; -webkit-back
 body.hud-no-blur #hud #hud-top > .hud-button, body.hud-no-blur.touch #hud #score #terminal-btn { background: transparent !important; }
 body.hud-no-blur #hud #hud-top > .hud-button:is(.on,[aria-pressed=true]) { background: rgba(255,255,255,.26) !important; }
 body.hud-no-blur #hud #hud-top > .hud-button:active { background: rgba(255,255,255,.4) !important; }
-@media (max-width: 740px) {
-  body.touch #jet-up { top: calc(var(--hud-badge-bottom) + 64px); bottom: auto; }
-  body.touch #jet-down { top: calc(var(--hud-badge-bottom) + 124px); bottom: auto; }
-  body.touch #web-btn, body.touch #jet-up:not([hidden]) ~ #web-btn { right: calc(170px + var(--sr)); top: calc(var(--hud-badge-bottom) + 8px); bottom: auto; }
-}
 @media (max-width: 600px) {
   :root { --badge-cell: 44px; }
   /* Visual fit for a 568px landscape viewport with two 44px safe areas: all data
@@ -115,10 +110,59 @@ body.hud-no-blur #hud #hud-top > .hud-button:active { background: rgba(255,255,2
   #hud #score #presence .presence-fps { flex-direction: column; gap: 1px; }
   #hud #score .plus.minus { font-size: 9.5px; line-height: 1.05; padding: 2px; }
 }
-/* #716/#767: armed-player controls use two rows below the lives on every touch
-   viewport, including wide landscape where the old web position crossed lives. */
-  body.touch:has(#lives:not([hidden])) { --combat-controls-top: calc(var(--compass-layout-top) + var(--compass-layout-size) + var(--lives-gap) + 26px + 12px); }
-  body.touch:has(#lives:not([hidden])) :is(#jet-up,#measure-btn) { top: var(--combat-controls-top); bottom: auto; }
-  body.touch:has(#lives:not([hidden])) :is(#jet-down,#crouch-btn) { top: calc(var(--combat-controls-top) + 60px); bottom: auto; }
-  body.touch:has(#lives:not([hidden])) #jump-btn { top: calc(var(--combat-controls-top) + 60px); }
-  body.touch:has(#lives:not([hidden])) #web-btn { right: calc(170px + var(--sr)); top: var(--combat-controls-top); bottom: auto; }
+/* #1057: a stable right-thumb cluster; sizing/spacing are web layout choices,
+   informed by Apple game-control guidance and Android's 48dp recommendation.
+   CSS pixels are not a measurement of physical dp. See interactions.md. */
+#touch-controls { display: contents; }
+body.touch #touch-controls {
+  --touch-size: 56px;
+  position: fixed; right: calc(16px + var(--sr)); bottom: calc(16px + var(--sb));
+  display: grid; grid-template-columns: repeat(4, var(--touch-size));
+  grid-template-rows: var(--touch-size) var(--touch-size) minmax(64px, auto);
+  gap: 8px; pointer-events: none;
+}
+/* Reserve the primary action's space even with nothing in reach. */
+body.touch #touch-controls::after { content: ''; grid-column: 1 / -1; grid-row: 3; min-height: 64px; pointer-events: none; }
+body.touch #touch-controls > button {
+  position: static; inset: auto; width: var(--touch-size); height: var(--touch-size);
+  min-width: 48px; min-height: 48px; padding: 10px; margin: 0; pointer-events: auto;
+  border-radius: 50%; touch-action: none;
+}
+body.touch #touch-controls #jet-up { grid-area: 1 / 1; }
+body.touch #touch-controls #web-btn { grid-area: 1 / 2; }
+body.touch #touch-controls #measure-btn { grid-area: 1 / 3; }
+body.touch #touch-controls #turn-btn { grid-area: 1 / 4; }
+body.touch #touch-controls #jet-down { grid-area: 2 / 1; }
+body.touch #touch-controls #jump-btn { grid-area: 2 / 2; }
+body.touch #touch-controls #crouch-btn { grid-area: 2 / 3; }
+body.touch #touch-controls #power-btn { grid-area: 2 / 4; }
+body.touch #touch-controls #stand-btn {
+  grid-area: 3 / 4; width: 56px; height: 64px; padding: 4px; border-radius: 16px; font-size: 13px;
+}
+body.touch #touch-controls #action {
+  grid-area: 3 / 1 / 4 / -1; width: 100%; height: 64px; border-radius: 24px;
+  font-size: 17px; white-space: normal; overflow-wrap: anywhere; line-height: 1.2;
+}
+body.touch #touch-controls #choices {
+  position: static; inset: auto; transform: none; grid-area: 3 / 1 / 4 / -1;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch;
+  max-height: clamp(64px, calc(100dvh - 260px - var(--st) - var(--sb)), 112px);
+  overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y;
+  width: 100%; padding: 0; gap: 8px; pointer-events: auto;
+}
+body.touch #touch-controls #choices[hidden] { display: none; }
+body.touch #touch-controls #choices button {
+  min-height: 56px; min-width: 48px; box-sizing: border-box; padding: 8px; margin: 0; border-radius: 16px;
+  font-size: 14px; white-space: normal; overflow-wrap: anywhere; line-height: 1.2;
+  touch-action: pan-y;
+}
+body.touch #touch-controls:has(#stand-btn:not([hidden])) :is(#action, #choices) { grid-column-end: 4; }
+/* Short landscape keeps equipment below the lives and leaves the left half free. */
+@media (max-height: 375px) {
+  body.touch #touch-controls { --touch-size: 48px; bottom: calc(12px + var(--sb)); grid-template-rows: 48px 48px minmax(56px, auto); }
+  body.touch #touch-controls::after { min-height: 56px; }
+  body.touch #touch-controls :is(#action, #stand-btn) { height: 56px; }
+  body.touch #touch-controls #stand-btn { width: 48px; }
+  body.touch #touch-controls #choices { max-height: 56px; }
+  body.touch #touch-controls #choices button { font-size: 13px; padding: 4px; }
+}

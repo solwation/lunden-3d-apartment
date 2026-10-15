@@ -31,6 +31,14 @@ reproduce or resolve the real iPhone loss after rotation; #669 remains open.
 Read [CLAUDE.md](../../CLAUDE.md) first for shared workflow rules. Paths in code spans and module maps are relative to the repository root.
 
 Related: [local-development](local-development.md), [performance](performance.md).
+Touch actions (#1057): `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/touchlayouttest.cjs GAME OUT`
+checks 1,920 equipment/primary/seated layout states across five viewports and three
+safe-area variants, target bounds and overlap. It uses actual index/CSS/setupTouch,
+native CDP simultaneous joystick/look/button and cancel, plus complete original
+main action/jump listeners with recorded weapon/power collaborators. No bootstrap,
+World or WebGL. Run the existing HUD layout test alongside it for actual Combat
+lives/header geometry; physical phone comfort remains unmeasured.
+
 HUD layout only (#707, #716): `PLAYWRIGHT_MODULE=/path/to/playwright node tools/hudlayouttest.cjs http://localhost:8000 /tmp/hud-shots` checks the real index DOM, styles and icon initializer at 844×390, 667×375, 932×430, 568×320 and 1280×720 with zero, symmetric and asymmetric safe insets. It checks the exact 4 px safe-area edge placement (#766), shared shells, score/shortcut cells, score hierarchy, icon accessibility, compass height/top equal to the badges with a 4 px gap beside the right badge (#767), unclipped compact data/cardinal text, adjunct/control overlap, lives 12 px below the actual compass with real Combat hurt/life updates and weapon-dependent visibility (full unarmed hidden, injured unarmed visible even offline, full armed combat visible), disabled state and blur fallback. #970 also checks clock-over-weather geometry, the continuous divider, seven actual weather icons and −123°/100° updates using the unchanged main.js update fragment; clock/weather remain independent. Presence uses its real constructor with networking disabled. It suppresses game bootstrap; its screenshots are HUD-only, not game-render or gameplay evidence. `CHROME_PATH` optionally selects Chrome.
 
 Armed greeting priority (#872): `PLAYWRIGHT_MODULE=/path/to/playwright node tools/armedgreettest.cjs http://localhost:8867 /tmp/armed-greet` runs complete verbatim main.js production functions/listener bodies with current weapon checks, actual index DOM/THREE/Ghosts and source identity checks. It covers unarmed greeting, close armed touch, old ghost focus after weapon changes, E/keyup and pointer release (no latched rifle), primary mouse, suit/web/jetpack and preserved ordinary object E. Bootstrap/WebGL are suppressed; world collaborators and weapon effects are stand-ins, so the screenshot certifies action-label DOM rather than an actual-world shot/physical phone. No baseline or assertions are relaxed.
