@@ -6,6 +6,8 @@ const { loadSecretTestInputs } = createRequire(import.meta.url)('../tools/secret
 const { codes } = loadSecretTestInputs();
 import worker, { DrawingRoom } from './worker.js';
 import { REPORTS } from '../src/config.js';
+import { readFileSync } from 'node:fs';
+import { validReportImage } from './reportimage.js';
 globalThis.crypto ??= webcrypto;
 const origin='https://solwation.github.io',password='fixture-only-report-password-very-long',adminToken='fixture-admin';
 const id='e061fb72-17ce-4f34-8afb-df25b544908e',issueUrl='https://github.com/solwation/lunden-3d-apartment/issues/123';
@@ -125,4 +127,48 @@ test('Durable Object forwarding limits each PUT once, and failed KV creation can
  f.env.LUNDEN.put=put;
  assert.equal((await f.call('/reports/'+id,'PUT',{text:'recover'},token)).status,200);
  assert.equal(calls,2);assert.equal(JSON.parse(f.kv.get('report:'+id)).text,'recover');
+});
+const jpeg = readFileSync(new URL('../textures/linjeteckning-sovrum1.jpg',import.meta.url));
+const image = 'data:image/jpeg;base64,'+jpeg.toString('base64');
+test('private original JPEG survives immutable retries, reads, claims and lost KV writes',async()=>{
+ const f=fixture(),token=await f.login(),text='Current game view, untrusted pixels.';
+ assert.equal(validReportImage(image),true);
+ const original=f.env.LUNDEN.put;f.env.LUNDEN.put=async()=>{throw Error('temporary KV');};
+ await assert.rejects(f.call('/reports/'+id,'PUT',{text,image},token),/temporary KV/);
+ f.env.LUNDEN.put=original;
+ assert.equal((await f.call('/reports/'+id,'PUT',{text,image},token)).status,200);
+ assert.equal((await f.call('/reports/'+id,'PUT',{text,image},token)).status,200);
+ assert.equal(f.writes(),1);
+ assert.equal((await f.call('/reports/'+id,'PUT',{text},token)).status,409);
+ const changed=Buffer.from(jpeg);changed[changed.length-3]^=1;
+ const altered='data:image/jpeg;base64,'+changed.toString('base64');
+ assert.equal(validReportImage(altered),true);
+ assert.equal((await f.call('/reports/'+id,'PUT',{text,image:altered},token)).status,409);
+ assert.equal((await f.call('/reports','GET',undefined,token)).status,403);
+ const listed=await(await f.call('/reports','GET',undefined,adminToken)).json();
+ assert.equal(listed.reports[0].image,image);
+ const claim=await(await f.call('/reports/'+id,'POST',{claimId},adminToken)).json();
+ assert.equal(claim.report.image,image);assert.equal(claim.report.untrusted,true);
+});
+test('JPEG bytes, canonical encoding, frame dimensions and both body limits are enforced',async()=>{
+ const f=fixture(),token=await f.login();
+ const wide=Buffer.from(jpeg);let frame=-1;
+ for(let i=0;i<wide.length-1;i++)if(wide[i]===255&&[0xc0,0xc1,0xc2].includes(wide[i+1])){frame=i;break;}
+ assert.ok(frame>=0);wide.writeUInt16BE(REPORTS.imageEdge+1,frame+7);
+ const unsupported=Buffer.from(jpeg);unsupported[frame+1]=0xc1;
+ const dnl=Buffer.concat([jpeg.subarray(0,2),Buffer.from([255,0xdc,0,4,0,1]),jpeg.subarray(2)]);
+ const badImages=[null,{},'https://example.test/a.jpg','data:image/svg+xml;base64,PHN2Zy8+',
+  'data:image/jpeg;base64,'+Buffer.from('not a JPEG').toString('base64'),image+'\n',image.replace('base64,','base64, '),
+  'data:image/jpeg;base64,'+wide.toString('base64'),
+  'data:image/jpeg;base64,'+unsupported.toString('base64'),'data:image/jpeg;base64,'+dnl.toString('base64'),
+  'data:image/jpeg;base64,'+Buffer.concat([jpeg,Buffer.alloc(REPORTS.imageBytes+1-jpeg.length)]).toString('base64'),
+  'data:image/jpeg;base64,'+jpeg.subarray(0,jpeg.length-2).toString('base64')];
+ for(const value of badImages)assert.equal((await f.call('/reports/'+id,'PUT',{text:'request',image:value},token)).status,400);
+ assert.equal((await f.call('/report-session','POST',JSON.stringify({code:codes[0],extra:'x'.repeat(REPORTS.maxBytes)}))).status,413);
+ assert.equal((await f.call('/reports/'+id,'PUT',' '.repeat(REPORTS.putBytes+1),token)).status,413);
+ let cancelled=false;
+ const stream=new ReadableStream({pull(c){c.enqueue(new Uint8Array(REPORTS.putBytes+1));},cancel(){cancelled=true;}});
+ const response=await worker.fetch(new Request('https://worker.test/reports/'+id,{method:'PUT',duplex:'half',headers:{Origin:origin,Authorization:'Bearer '+token},body:stream}),f.env);
+ assert.equal(response.status,413);assert.equal(cancelled,true);
+ assert.equal(f.kv.size,0);
 });

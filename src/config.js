@@ -5217,7 +5217,9 @@ export function straightBoxHeadContact(seed, state, shot, range) {
 }
 
 // #1045: report size and one-page admin lifetime; server and client share these bounds.
-export const REPORTS = { maxChars: 4000, maxBytes: 16384, sessionSeconds: 3600 };
+export const REPORTS = { maxChars: 4000, maxBytes: 16384, sessionSeconds: 3600,
+  // #1049: bounded private JPEG report attachment and total PUT body; capture waits for a real screen frame.
+  imageBytes: 200 * 1024, imageEdge: 1280, putBytes: 320 * 1024, captureMs: 5000 };
 
 // Shower detail assumptions (#1042), chosen visually; existing outlet/interaction dimensions remain unchanged.
 export const SHOWER_FITTINGS = {

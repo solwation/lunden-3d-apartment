@@ -1,6 +1,7 @@
 // Reports are untrusted data, never agent instructions. No report text is executed.
 import { REPORTS } from '../src/config.js';
 import { isPrivateCode } from '../src/privatecodes.js';
+import { validReportImage } from './reportimage.js';
 const enc = new TextEncoder();
 const UUID = /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/;
 const ISSUE = /^https:\/\/github\.com\/solwation\/lunden-3d-apartment\/issues\/[1-9][0-9]*$/;
@@ -26,15 +27,15 @@ async function authorized(request, env) {
   return crypto.subtle.verify('HMAC', key, signature, enc.encode(match[1]));
 }
 // Bound the actual stream, including requests with no Content-Length.
-async function body(request) {
-  if (Number(request.headers.get('Content-Length')) > REPORTS.maxBytes) throw 413;
+async function body(request, maximum = REPORTS.maxBytes) {
+  if (Number(request.headers.get('Content-Length')) > maximum) throw 413;
   const reader = request.body?.getReader();
   if (!reader) throw 400;
   let size = 0; const chunks = [];
   for (;;) {
     const { value, done } = await reader.read(); if (done) break;
     size += value.byteLength;
-    if (size > REPORTS.maxBytes) { await reader.cancel(); throw 413; }
+    if (size > maximum) { await reader.cancel(); throw 413; }
     chunks.push(value);
   }
   const bytes = new Uint8Array(size); let offset=0;
@@ -81,7 +82,7 @@ export async function reportsFetch(request, env, h, limited) {
     for (const key of page.keys) { const report=await env.LUNDEN.get(key.name,'json');if(report && !(await storage.get(key.name))?.issueUrl)reports.push(report); }
     return reply({untrusted:true,reports,cursor:page.list_complete?null:page.cursor},200,h);
   }
-  let b; try { b=await body(request); } catch (status) { return bad(status===413?413:400,'body',h); }
+  let b; try { b=await body(request,method==='PUT'?REPORTS.putBytes:REPORTS.maxBytes); } catch (status) { return bad(status===413?413:400,'body',h); }
   const key=`report:${id}`, previous=await storage.get(key);
   if (method === 'POST') {
     if (!UUID.test(b?.claimId??'')) return bad(400,'claimId',h);
@@ -105,10 +106,13 @@ export async function reportsFetch(request, env, h, limited) {
   }
   const text=b?.text;
   if (typeof text!=='string' || !text.trim() || text.length>REPORTS.maxChars || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e\u2060-\u206f\ufeff]/.test(text)) return bad(400,'text',h);
-  const hash=hex(await crypto.subtle.digest('SHA-256',enc.encode(text)));
+  const image = b?.image;
+  if (image !== undefined && !validReportImage(image)) return bad(400,'image',h);
+  // Keep existing text-only retry identities; image reports include exact original image bytes.
+  const hash=hex(await crypto.subtle.digest('SHA-256',enc.encode(image===undefined?text:'\0report-image-v1\0'+JSON.stringify({text,image}))));
   if (previous && previous.hash!==hash) return bad(409,'immutable id',h);
   if (previous?.issueUrl) return reply({id,imported:true},200,h);
-  const record=previous??{hash,report:{id,text,created:new Date().toISOString(),untrusted:true}};
+  const record=previous??{hash,report:{id,text,...(image===undefined?{}:{image}),created:new Date().toISOString(),untrusted:true}};
   await storage.put(key,record);
   if (!record.stored) {
     await env.LUNDEN.put(key,JSON.stringify(record.report));
