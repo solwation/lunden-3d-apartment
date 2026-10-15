@@ -18,6 +18,17 @@ a private local file. Never put secrets on the command line, in a manifest, in t
 repository, or in an issue. The existing in-game admin codes and their visit-only session token
 cannot import reports. Admin and rearrangement are the same game mode. Private files and journals belong outside the checkout.
 
+For `/orkester`, this fetch/review/import is the **first work step before choosing
+GitHub issues**. Repeat it at least every 30 minutes while the session runs, and
+sooner when the fresh GitHub queue has at most three startable unclaimed issues or
+before declaring the queue exhausted. A successful full fetch from the last five
+minutes may cover repeated low-queue assignments. Record its UTC time and outcome
+outside the repository and in #420. Failed fetches do not advance the successful
+poll time or prove an empty queue; report the problem and retry within five minutes
+while continuing available GitHub work. These checks run in the conductor; active
+agents do not abandon their current issues. They do not create a separate scheduled
+service when the session is stopped.
+
 Export every available page without making any writes:
 
 ```sh
