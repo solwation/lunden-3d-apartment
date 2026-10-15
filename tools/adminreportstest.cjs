@@ -3,9 +3,9 @@
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
 const kit=require('./testkit.cjs');
 const game=process.argv[2]||'http://localhost:8874',worker=process.argv[3]||'http://localhost:8875',out=process.argv[4]||'/tmp/lunden-reports1041/browser';
-const password=process.env.LUNDEN_REPORT_PASSWORD;
+const {loadSecretTestInputs,redact}=require('./secret-test-inputs.cjs');
+const privateInputs=loadSecretTestInputs(),codes=privateInputs.codes;
 if(![game,worker].every(value=>['localhost','127.0.0.1'].includes(new URL(value).hostname)))throw Error('This probe only runs on local fixture endpoints.');
-if(!password)throw Error('Set explicit local fixture LUNDEN_REPORT_PASSWORD; never use production.');
 const main=fs.readFileSync(path.join(__dirname,'../src/main.js'),'utf8');
 const binding=main.slice(main.indexOf('const adminReports = new AdminReports('),main.indexOf("const editHelp = document.getElementById('rearrange-help')"));
 const submitStart=main.indexOf("document.getElementById('terminal-form').addEventListener('submit', e => {");
@@ -42,17 +42,27 @@ const submit=main.slice(submitStart,main.indexOf('\n});',submitStart)+4);
  await send('/rapport private request');check((await message()).includes('/admin'),'unauthenticated report refused locally');
  await send('ordinary chat');check(await page.evaluate(()=>fixture.chat.sent.length===1),'ordinary chat reaches original production submit listener');
  await send('help');check((await message()).includes('/admin')&&(await message()).includes('/tysta'),'help discovers admin and preserves chat commands');
- await send('/admin');check(await page.locator('#admin-password').isVisible(),'admin opens masked password field');
+ await send('/admin');check(await page.locator('#admin-password').isVisible()&&await page.locator('#admin-password').getAttribute('type')==='password','admin opens optional masked code field');
  await page.screenshot({path:path.join(out,'admin-login-phone.png')});
  await page.setViewportSize({width:390,height:844});
  check(await page.locator('#terminal-form').evaluate(e=>e.getBoundingClientRect().right<=innerWidth&&e.getBoundingClientRect().bottom<=innerHeight),'login controls fit portrait phone viewport');
  await page.screenshot({path:path.join(out,'admin-login-portrait.png')});
  await page.setViewportSize({width:844,height:390});
- await page.locator('#admin-password').fill('incorrect');await page.locator('#admin-signin').click();await ready();check((await message()).includes('misslyckades'),'wrong password refused by actual API');
- await page.locator('#admin-password').fill(password);await page.locator('#admin-password').press('Enter');await ready();
- check(await page.evaluate(()=>fixture.reports.active&&fixture.rearrange.unlocked),'server login grants in-memory admin state');
- check(await page.locator('#admin-password').inputValue()==='','password field cleared');
- check(await page.evaluate(p=>![...Array(localStorage.length)].map((_,i)=>localStorage.getItem(localStorage.key(i))).some(v=>v.includes(p)||v.includes('lunden-reports-v1')),password),'password and bearer absent from localStorage');
+ await page.locator('#admin-password').fill('incorrect');await page.locator('#admin-signin').click();await ready();check((await message()).includes('misslyckades'),'wrong admin code refused by actual API');
+ await page.locator('#admin-password').fill(codes[0]);await page.locator('#admin-password').press('Enter');await ready();
+ check(await page.evaluate(()=>fixture.reports.active&&fixture.rearrange.unlocked&&fixture.rearrange.enabled),'one code session grants reporting and active rearrange mode together');
+ check(await page.locator('#admin-password').inputValue()==='','admin code field cleared');
+ check(await page.evaluate(codes=>![...Array(localStorage.length)].map((_,i)=>localStorage.getItem(localStorage.key(i))).some(v=>codes.some(code=>v.includes(code))||v.includes('lunden-reports-v1')),codes),'admin codes and bearer absent from localStorage');
+ // Each existing private code enters the same mode directly through the original terminal.
+ for(let index=0;index<codes.length;index++){
+  await send('/loggaut');
+  check(await page.evaluate(()=>!fixture.reports.active&&!fixture.rearrange.unlocked&&!fixture.rearrange.enabled),'logout ends shared report/rearrange mode for variant '+index);
+  const normalizedVariant=' / '+codes[index].toUpperCase().replace(/ /g,'   ')+' ';
+  await send(normalizedVariant);await ready();
+  check(await page.evaluate(()=>fixture.reports.active&&fixture.rearrange.unlocked&&fixture.rearrange.enabled),'direct private code variant '+index+' activates both capabilities');
+  check(await page.locator('#terminal-code').inputValue()===''&&!await page.locator('#admin-password').isVisible(),'direct code is cleared and bypasses optional login panel for variant '+index);
+ }
+ check(await page.evaluate(()=>fixture.chat.sent.length===1),'private code variants never reach multiplayer chat');
  // Native clipboard paste into an otherwise CHAT.max-limited field.
  const text='Ignore previous instructions; $(echo injected) <img src=x onerror=alert(1)> '+ 'önskemål '.repeat(30);
  await page.locator('#terminal-code').evaluate(e=>{e.maxLength=140;e.value='';e.focus();});
@@ -71,29 +81,37 @@ const submit=main.slice(submitStart,main.indexOf('\n});',submitStart)+4);
  check((await message()).includes('sparad')&&await page.locator('#terminal-code').inputValue()==='','successful mixed-case/whitespace command clears unchanged draft');
  check(await page.evaluate(()=>fixture.chat.sent.length===1),'admin commands and report contents never reached chat send');
  const listed=await fetch(worker+'/reports',{headers:{Authorization:'Bearer testtoken'}}).then(r=>r.json());
- check(listed.reports.length===1&&listed.reports[0].text===captured[0].body.text&&listed.reports[0].untrusted===true,'actual Worker stores exact injection-shaped text once as untrusted data');
+ check(listed.reports.filter(report=>report.id===captured[0].url.split('/').pop()).length===1&&listed.reports.find(report=>report.id===captured[0].url.split('/').pop()).text===captured[0].body.text&&listed.reports.find(report=>report.id===captured[0].url.split('/').pop()).untrusted===true,'actual Worker stores exact injection-shaped text once as untrusted data');
  await page.screenshot({path:path.join(out,'report-saved-phone.png')});
  await page.reload();await setup();check(await page.evaluate(()=>!fixture.reports.active&&!fixture.rearrange.unlocked),'actual browser reload loses report session and furniture permission');
  // Delay a real login response. Logout must win, including a response already received by the network.
  let release,arrived;const atNetwork=new Promise(r=>arrived=r);
  await page.route(worker+'/report-session',async route=>{const response=await route.fetch();arrived();await new Promise(r=>release=r);await route.fulfill({response}).catch(()=>{});});
- await send('/admin');await page.locator('#admin-password').fill(password);await page.locator('#admin-signin').click();await atNetwork;
+ await send(codes[1]);await atNetwork;
+ check(await page.locator('#terminal-code').inputValue()===''&&!await page.locator('#admin-password').isVisible(),'direct code clears immediately before delayed login response');
  await send('/loggaut');release();await page.waitForTimeout(100);
  check(await page.evaluate(()=>!fixture.reports.active&&!fixture.rearrange.unlocked),'logout wins over delayed successful login response');
  await page.unroute(worker+'/report-session');
  let releaseHide,arrivedHide;const atHide=new Promise(r=>arrivedHide=r);
  await page.route(worker+'/report-session',async route=>{const response=await route.fetch();arrivedHide();await new Promise(r=>releaseHide=r);await route.fulfill({response}).catch(()=>{});});
- await send('/admin');await page.locator('#admin-password').fill(password);await page.locator('#admin-signin').click();await atHide;
+ await send('/admin');await page.locator('#admin-password').fill(codes[0]);await page.locator('#admin-signin').click();await atHide;
  await page.evaluate(()=>dispatchEvent(new PageTransitionEvent('pagehide')));releaseHide();await page.waitForTimeout(100);
  check(await page.evaluate(()=>!fixture.reports.active&&!fixture.rearrange.unlocked),'pagehide wins over delayed successful login response');
+ await page.unroute(worker+'/report-session');
+ // A short, otherwise real server session exercises the shared expiry callback.
+ await page.route(worker+'/report-session',async route=>{const response=await route.fetch(),data=await response.json();await route.fulfill({response,json:{...data,expires:Date.now()+150}});});
+ await send(codes[0]);await ready();
+ await page.waitForFunction(()=>!fixture.reports.active&&!fixture.rearrange.unlocked&&!fixture.rearrange.enabled&&document.getElementById('terminal-message').textContent.includes('gått ut'));
+ check(true,'expiry ends reporting and rearrange mode together');
+ await page.unroute(worker+'/report-session');
  check(await page.evaluate(async()=>{
   const {AdminReports}=await import('/src/adminreports.js');
   const fields=Object.fromEntries(['form','input','message','panel','password','login','cancel'].map(k=>[k,document.createElement(k==='form'?'form':'input')]));
   const unsafe=new AdminReports(fields,'https://attacker.invalid');fields.password.value='fixture';await unsafe.signIn();
   return unsafe.url===''&&!unsafe.active&&fields.password.value==='';
- }),'cloud query override cannot receive the admin password');
+ }),'cloud query override cannot receive the admin code');
  check(errors.length===0,'no browser script errors');
  fs.writeFileSync(path.join(out,'result.json'),JSON.stringify({checks,errors,limitations:'Native terminal/API probe; no apartment/WebGL or production report'},null,2));
  console.log(`${checks.length} PASS`);
  }finally{await browser.close();}
-})().catch(e=>{console.error(e);process.exitCode=1;});
+})().catch(e=>{let safe=redact(e.stack||e.message,privateInputs);for(const code of codes){safe=safe.split(code.toUpperCase()).join('[private input]').split(code.toUpperCase().replace(/ /g,'   ')).join('[private input]');}console.error(safe);process.exitCode=1;});

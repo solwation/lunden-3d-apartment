@@ -4,7 +4,7 @@ Gå runt i lägenheten L1007 (Kv. Lunden, Peab) i webbläsaren som i ett FPS-spe
 övre plan med trappan emellan, byggt direkt från den måttsatta planritningen
 (`L1007_mattsatt_planritning.pdf`).
 
-I konsolen visar `help` hur du loggar in med `/admin` och lämnar ett önskemål med `/rapport`. Rapportering kräver separat serveraktivering och inloggning; adminläget avslutas när sidan laddas om.
+De befintliga privata koderna öppnar adminläget: samma läge för ommöblering och rapportering. Skriv `/rapport` följt av ett önskemål; inget extra lösenord krävs. `help` visar rapportkommandona. Adminläget avslutas vid utloggning eller omladdning. Agenter granskar rapporterna och skapar GitHub-ärenden märkta `in-game`; rapporten tas sedan bort från kön. [Importguide för agenter](docs/development/report-import.md).
 
 Chatten visar de senaste meddelandena även när utrymmet är trångt. Varje rad ligger kvar i upp till en minut; pratbubblan över spelaren försvinner efter tio sekunder.
 

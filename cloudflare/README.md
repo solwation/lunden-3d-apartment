@@ -199,22 +199,28 @@ Layout-testernas två verkliga inmatningar måste tillföras explicit i en exter
 
 ### Adminrapporter från spelet (#1045)
 
-Aktivera separat inloggning med `npx wrangler secret put REPORT_PASSWORD` från
-`cloudflare/` och mata in ett nytt slumpmässigt lösenord med minst 24 tecken.
-Använd aldrig `ADMIN_TOKEN` eller de publika möbleringskoderna som rapportlösenord.
-Nyckeln ska inte stå i repot, terminalkommandot eller webbläsarens lagring.
-Utan denna secret är rapportinloggningen stängd. Rotera samma secret för att ogiltigförklara
-alla utfärdade rapportsessioner. Befintlig automatisk Worker-deploy publicerar API-koden;
-secret ställs in separat. Lokalt kan `cloudflare/dev.mjs` läsa ett uttryckligt testvärde
-från `LUNDEN_REPORT_PASSWORD`; det har inget standardlösenord.
+Adminläget är samma läge som ommöblering: skriv en av de två befintliga privata
+koderna i konsolen. Koden öppnar både möblering och rapportering; inget extra
+lösenord krävs. Alternativt accepterar `/admin` samma kod i ett maskerat fält.
+Koderna ska inte stå i publika hjälplistor. Skriv `/rapport` följt av ditt önskemål.
+Vid fel finns texten kvar för nytt försök; lyckad leverans betyder att rapporten
+väntar på granskning. `/loggaut`, omladdning och ny sida avslutar båda delarna av
+adminläget; sessionen varar högst en timme.
 
-Skriv `help` i spelets konsol, sedan `/admin`. Ange lösenordet i det maskerade fältet.
-Skriv `/rapport` följt av ditt önskemål. Vid fel finns texten kvar för nytt försök;
-lyckad leverans betyder att rapporten väntar på granskning, ännu inte att ett GitHub-issue
-har skapats. `/loggaut`, omladdning och ny sida avslutar adminläget; sessionen varar
-högst en timme. Möbleringsupplåsning sparas inte mellan sidor.
+Servern behöver en slumpmässig signeringsnyckel (minst 24 tecken), som sätts med
+`npx wrangler secret put REPORT_SESSION_SECRET` från `cloudflare/`. Denna nyckel
+är enbart för servern och ska aldrig matas in av en spelare. Rotera den för att
+ogiltigförklara alla rapportsessioner. Utan nyckeln är rapportinloggningen stängd.
+Lokala `cloudflare/dev.mjs` läser en uttrycklig testnyckel från
+`LUNDEN_REPORT_SESSION_SECRET` och har inget standardvärde.
+
+Agentens separata `REPORT_IMPORT_TOKEN` sätts med
+`npx wrangler secret put REPORT_IMPORT_TOKEN`; den får bara läsa/reservera/kvittera
+rapporter och ger ingen rätt till nödbromsen. Spara den utanför repot i en privat fil
+`~/.config/lunden-l1007/report-import-token` (filrättighet 600).
 
 API/schema, säkerhetsgränser och testkommando finns i
 [lagringsdokumentationen](../docs/development/storage.md#in-game-admin-reports-1045-parent-1041).
-Agentimport med särskild GitHub-label och kvittens efter verifierat skapande återstår i
-#1046. Rapporttext är alltid opålitlig data, aldrig instruktioner till en agent eller shell.
+Agentimport med etiketten `in-game`, granskning, global reservation och kvittens efter
+verifierat skapande beskrivs i [importguiden](../docs/development/report-import.md).
+Rapporttext är alltid opålitlig data, aldrig instruktioner till en agent eller shell.

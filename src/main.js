@@ -2074,7 +2074,7 @@ const terminal = document.getElementById('terminal'), terminalInput = document.g
 const adminReports = new AdminReports({ help: () => chat?.help ?? '', form: document.getElementById('terminal-form'), input: terminalInput,
   message: document.getElementById('terminal-message'), panel: document.getElementById('admin-login'),
   password: document.getElementById('admin-password'), login: document.getElementById('admin-signin'), cancel: document.getElementById('admin-cancel'),
-  changed: on => { rearrange.unlocked = on; if (!on) rearrange.enable(false); editUI(); },
+  changed: on => { rearrange.unlocked = on; rearrange.enable(on); editUI(); },
 });
 const editHelp = document.getElementById('rearrange-help'), editToggle = document.getElementById('rearrange-toggle');
 let editMenuPiece = null, editMenuSurfaceId = null, resetFurnitureRequest = null, editHUDKey = '';
@@ -2269,7 +2269,7 @@ const cheats = {
     return heldItem()?'Det gick inte att ställa undan föremålet. Du håller det kvar.':'Föremålet undanlagt. Händerna fria.';
   },
   unlock: code => {
-    rearrange.unlock(code);editUI();showTerminal(false);return 'Superkraft upplåst: möblera om!';
+    adminReports.signIn(code);return 'Loggar in som admin…';
   },
 };
 document.getElementById('terminal-form').addEventListener('submit', e => {

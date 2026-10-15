@@ -1025,43 +1025,56 @@ The normal things.load preflight sums current source stock (excluding away packa
 
 ## In-game admin reports (#1045, parent #1041)
 
-`src/adminreports.js` intercepts `/admin`, `/rapport text`, `/loggaut` and help on the
-actual terminal form before multiplayer/cheat submission. Login uses a masked field
-and a separate Worker `REPORT_PASSWORD` secret (at least 24 characters); public
-private-code digests/layout credentials grant no report access. The password is
-cleared immediately and never persisted. A signed, report-only bearer lasts one
-hour and exists only in page memory: reload, pagehide, explicit logout or expiry
-ends the local admin session. Logout/cancel also wins over in-flight login replies.
-`Rearrange` retires `lunden.furniture.unlocked` and starts locked on each new page;
-shared furniture poses/materials still load. Existing private game codes can unlock
-local furniture tools for that page; they remain replayable game mechanics, not
-server authentication. A successful report login also exposes those tools.
+`src/adminreports.js` intercepts the existing private codes before multiplayer/cheat
+submission. **Admin mode is the existing rearrangement mode** (user clarification,
+2026-10-15): either original code opens furniture editing and report submission in
+the same visit, with no extra password. The console normalizes code input exactly
+as the existing cheat parser, clears it immediately, then sends `{code}` to the
+server. The optional `/admin` masked field accepts the same code; no public help or
+graffiti lists the two codes. Public layout digests cannot create report sessions.
+
+The server checks the real code with the existing private-code verifier and signs
+a bounded bearer using a separate server-only `REPORT_SESSION_SECRET` (at least
+24 random characters). This signing key is never typed by players or sent to the
+browser. The browser holds its one-hour bearer only in page memory. Reload,
+pagehide, `/loggaut` or expiry ends both report permission and furniture editing;
+logout also wins over delayed login replies. `Rearrange` retires the old persistent
+`lunden.furniture.unlocked` key. Shared furniture poses/materials still load.
+The codes remain game access codes rather than high-assurance identity credentials;
+report text remains untrusted, and neither codes nor report sessions can import
+issues or access global administration. The reports-only import token is separate.
 
 The public `cloud` debug override cannot send admin credentials to arbitrary hosts:
 only the exact configured `CLOUD_URL`, or a loopback API from a loopback page, is
 accepted, and credential-bearing fetches reject redirects. Production uses HTTPS.
 `cloudflare/reports.js` implements:
 
-- `POST /report-session` with `{password}`: accepted browser Origin, write rate
-  limit before password validation, bounded stream/JSON, fail closed when unconfigured.
+- `POST /report-session` with `{code}`: accepted browser Origin, write rate
+  limit before private-code validation, bounded stream/JSON, fail closed when unconfigured.
 - `PUT /reports/<v4 UUID>` with `{text}` and the report-session bearer: exact plain
   text up to `REPORTS.maxChars` (4,000 UTF-16 units), bounded 16 KiB body, forbidden
   control/bidi characters rejected. No text is executed, rendered as HTML or promoted
   to instructions. The client keeps the same UUID and draft after network errors.
-- `GET /reports?cursor=…`: separate `ADMIN_TOKEN`, returns
+- `GET /reports?cursor=…`: reports-only `REPORT_IMPORT_TOKEN` (or existing `ADMIN_TOKEN`), returns
   `{untrusted:true,reports:[{id,text,created,untrusted:true}],cursor:null|string}`,
   pages of at most 50. Read every page; KV visibility can lag behind accepted writes.
-- `DELETE /reports/<id>`: separate `ADMIN_TOKEN`, JSON `{issueUrl}` for an issue in
-  this exact repository. The importing tool must verify successful GitHub creation
+- `POST /reports/<id>`: reports-only `REPORT_IMPORT_TOKEN` (or existing `ADMIN_TOKEN`), JSON `{claimId:<v4 UUID>}`. The
+  serialized authority persists one random ownership token before returning
+  `{id,claimId,token,report}`. A different claim conflicts; the same claim recovers
+  its token. Claims never expire: a GitHub create may have an unknown result.
+  After acknowledgement the same claim returns `{id,claimId,token,acknowledged:true,issueUrl}`.
+- `DELETE /reports/<id>`: reports-only `REPORT_IMPORT_TOKEN` (or existing `ADMIN_TOKEN`), JSON `{claimId,token,issueUrl}`
+  must prove ownership and identify an issue in this exact repository. The importing tool must verify successful GitHub creation
   **before** calling this endpoint; the API validates URL shape, not GitHub existence.
   Persist the receipt first, then remove the KV report. A retry completes failed KV
-  deletion; a different receipt conflicts. No automatic or unreviewed import exists
-  in this slice; #1046 owns the reviewed/idempotent importer and GitHub label.
+  deletion; a different receipt or owner conflicts. The [reviewed importer](report-import.md)
+  verifies GitHub existence, exact report marker and repository before acknowledgement.
+  It assigns the fixed `in-game` label; arbitrary report text never becomes instructions.
 
 Reports live in `LUNDEN` KV as `report:<UUID>` without automatic expiry. The existing
 `DrawingRoom` class, under the distinct object name `reports`, serializes immutable
 IDs, KV writes and acknowledgements; its storage keeps the pending record/hash and
-then only a hash + issue URL receipt after acknowledgement. This needs no new binding
+then only a hash + claim + issue URL receipt after acknowledgement. This needs no new binding
 or migration. Reusing an ID with different text conflicts; successful retries do not
 rewrite KV, and acknowledged reports cannot be recreated. Admin reads hide already
 acknowledged records even if KV temporarily returns stale data. Rate limiting uses
@@ -1071,9 +1084,9 @@ limit without that binding. Reader/ack routes are unavailable without the serial
 storage authority, and unknown/missing secrets grant no access.
 
 Verification: `node --test cloudflare/reports.test.mjs` and
-`PLAYWRIGHT_MODULE=… CHROME_PATH=… LUNDEN_REPORT_PASSWORD=<local fixture> node
+`PLAYWRIGHT_MODULE=… CHROME_PATH=… LUNDEN_SECRET_TEST_INPUTS=<external private fixture> node
  tools/adminreportstest.cjs http://localhost:8874 http://localhost:8875 /tmp/report-probe`.
-Start the isolated local Worker with the same explicitly supplied fixture password.
+Start the isolated local Worker with `LUNDEN_REPORT_SESSION_SECRET=<explicit local signing fixture>`.
 The browser test uses the real index DOM, production AdminReports binding and original
 terminal submit listener, native clipboard paste and actual local Worker, with a small
 real Rearrange controller. Apartment bootstrap/WebGL are suppressed: screenshots

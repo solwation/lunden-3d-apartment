@@ -1,7 +1,8 @@
 import { isPrivateCode } from './privatecodes.js';
 
 // #514: one catalogue for console execution and the bike-room graffiti (#724: the graffiti is the only place that lists the
-// public codes; the console gives no hint that they exist, and ordinary chat commands live apart, in src/chat.js COMMANDS).
+// public codes; AdminReports captures private codes first to open the shared visit-only admin/edit session.
+// The console gives no hint that they exist, and ordinary chat commands live apart, in src/chat.js COMMANDS).
 // #675: the console is a chat while the players' room is on. A line that is a code (exactly, any case / spacing) or starts
 // with '/' (`/day`) is a command: run here, never sent and never kept; anything else is a chat message.
 export const CHEATS = [

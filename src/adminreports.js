@@ -1,11 +1,15 @@
 import { REPORTS, CLOUD_URL } from './config.js';
 import { cloudUrl } from './cloud.js';
+import { isPrivateCode } from './privatecodes.js';
 
-// One page, one in-memory session. Public furniture codes never authorize this API.
+// Match the existing console parser for both direct codes and the optional masked field.
+const normalizeCode = text => text.trim().replace(/^\//, '').trim().toLowerCase().replace(/\s+/g, ' ');
+
+// Admin and furniture editing share one in-memory session on this page.
 export class AdminReports {
   constructor({ form, input, message, panel, password, login, cancel, help = () => '', changed = () => {} }, url = cloudUrl()) {
     Object.assign(this,{form,input,message,panel,password,login,cancel,help,changed,url});
-    // The public cloud debug override must never redirect an admin password to an arbitrary host.
+    // The public cloud debug override must never redirect an admin code to an arbitrary host.
     const loopback = value => ['localhost','127.0.0.1'].includes(value);
     try {
       const endpoint=new URL(url);
@@ -13,9 +17,14 @@ export class AdminReports {
     } catch { this.url=''; }
     this.token='';this.expires=0;this.pending=null;this.busy=false;this.epoch=0;
     form.addEventListener('submit',e=>{
+      const code=normalizeCode(input.value);
+      if(isPrivateCode(code)){
+        e.preventDefault();e.stopImmediatePropagation();input.value='';
+        this.signIn(code);return;
+      }
       if(/^\s*\/?help\s*$/i.test(input.value)){
         e.preventDefault();e.stopImmediatePropagation();
-        this.say([this.help(),'/admin — logga in som admin','/rapport text — lämna ett önskemål för granskning','/loggaut — avsluta adminläget'].filter(Boolean).join('\n'));input.value='';return;
+        this.say([this.help(),'/admin — öppna adminläget','/rapport text — lämna ett önskemål för granskning','/loggaut — avsluta adminläget'].filter(Boolean).join('\n'));input.value='';return;
       }
       const match=/^\s*\/(admin|rapport|loggaut)(?:\s+([\s\S]*))?$/i.exec(input.value);
       if(!match)return;
@@ -39,14 +48,14 @@ export class AdminReports {
   say(text){this.message.textContent=text;}
   closeLogin(){this.password.value='';this.panel.hidden=true;this.input.focus();}
   logout(){this.epoch++;this.loginRequest?.abort();this.busy=false;this.login.disabled=false;clearTimeout(this.expiryTimer);this.token='';this.expires=0;this.changed(false);}
-  async signIn(){
+  async signIn(suppliedCode){
+    const code=normalizeCode(typeof suppliedCode==='string'?suppliedCode:this.password.value);this.password.value='';
     if(this.busy)return;
-    const password=this.password.value;this.password.value='';
     if(!this.url){this.say('Rapportering är inte ansluten.');return;}
     this.busy=true;this.login.disabled=true;const epoch=++this.epoch;
     this.loginRequest=new AbortController();
     try{
-      const r=await fetch(this.url+'/report-session',{redirect:'error',signal:this.loginRequest.signal,method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password})});
+      const r=await fetch(this.url+'/report-session',{redirect:'error',signal:this.loginRequest.signal,method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code})});
       if(epoch!==this.epoch)return;
       if(!r.ok){this.say(r.status===503?'Adminrapportering är inte aktiverad på servern.':r.status===429?'Vänta en minut innan nästa inloggningsförsök.':'Inloggningen misslyckades.');return;}
       const data=await r.json();
@@ -62,7 +71,7 @@ export class AdminReports {
   async command(command,text){
     if(command==='admin'){
       if(this.active){this.say('Du är inloggad. Skriv /rapport följt av ditt önskemål.');return;}
-      this.panel.hidden=false;this.password.focus();this.input.value='';this.say('Logga in som admin för att rapportera.');return;
+      this.panel.hidden=false;this.password.focus();this.input.value='';this.say('Ange din adminkod för att öppna adminläget.');return;
     }
     if(command==='loggaut'){this.logout();this.closeLogin();this.input.value='';this.say('Adminläget är utloggat.');return;}
     if(!this.active){this.logout();this.say('Logga in med /admin innan du rapporterar.');return;}
