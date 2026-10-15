@@ -421,7 +421,13 @@ export function buildCourtyard() {
   const spokes = new THREE.Mesh(mergeGeometries(bikeSpokes.map(g => g.index ? g.toNonIndexed() : g)), new THREE.MeshStandardMaterial({ vertexColors: true, alphaMap: bikeSpokeTexture(), alphaTest: 0.35, side: THREE.DoubleSide, metalness: 0.35, roughness: 0.5 }));
   spokes.castShadow = false; spokes.receiveShadow = false; group.add(spokes);
   const components = [solidBikes, spokes];
-  for (const mesh of components) mesh.userData.moving = true; // culling follows changed batch bounds
+  for (const mesh of components) {
+    mesh.userData.moving = true; // culling follows changed batch bounds
+    // place() rewrites both arrays after rendering (#1047). Mark them before the
+    // low-memory pass so normals stay float data instead of being packed/freed.
+    mesh.geometry.attributes.position.setUsage(THREE.DynamicDrawUsage);
+    mesh.geometry.attributes.normal.setUsage(THREE.DynamicDrawUsage);
+  }
   const counts = [bikes.slice(0, 3).reduce((n, g) => n + (g.index?.count ?? g.attributes.position.count), 0),
     bikeSpokes[0].index?.count ?? bikeSpokes[0].attributes.position.count];
   for (const bicycle of bicycles) {

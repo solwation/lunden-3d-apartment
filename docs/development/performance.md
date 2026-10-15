@@ -331,6 +331,48 @@ console canary warns (`freed vertex attribute …`) if a freed attribute is clon
 runs below. A new maker that rewrites or clones a mesh's vertex arrays after the first draw must set `geometry.userData.keepCpu`.
 `&keepgeo` (with `&lowmem`/phone) turns all of it off for an A/B run. Not touched: desktop.
 
+
+**Courtyard bicycle re-upload (#1047).** The two merged bike batches in
+`src/courtyard.js` now declare their rewritten position/normal attributes as
+`DynamicDrawUsage` before the low-memory pass. `Player.mountBicycle → bikePose →
+Courtyard bicycle.place` changes both arrays; the previously static declaration
+allowed normals to be packed into Int8×4 and their CPU arrays freed after upload.
+The next normal update then threw the actual Three.js buffer-size exception. Only
+these two existing batches opt out through the established dynamic-geometry rule;
+`src/lowmemory.js` remains byte-identical to reported build `f581417`.
+
+`tools/courtyardlowmemorytest.cjs` renders actual Courtyard/Player components at
+480×320, with a native touch button invoking the real mount controller from
+x−14.38/z16.2, next to the last existing bicycle. The independently loaded
+`f581417:src/courtyard.js` reproduces the exact WebGLAttributes resize error after
+its first upload. Its `&keepgeo` control, fixed `&lowmem`, and fixed desktop cases
+complete without the error. All five bicycles retain finite unit normals across
+repeated yaw/pitch updates; authored position/normal/UV/color SHA256 values match
+before and after. The tiny scene stays at 3 calls/8,700 triangles, including its
+static control cube; that cube still frees its normals on the fixed low-memory path.
+The two moving batches retain 1,146,816 rather than 312,768 CPU bytes (+834,048,
+about 0.80 MiB), and measured first-upload GL buffers add 208,512 bytes (about
+0.20 MiB), with no added geometry or material batches. This is a bounded component
+cost, not apartment FPS or physical Android acceptance. Artifacts:
+`/tmp/lunden-reports-1047/result.json` and `fixed-lowmem.png`.
+
+The public Android reports have no object identifier, so their exact initiating
+object cannot be established from the truncated reports alone. The reproduced
+native path matches the reported location, input and exception. The equivalent
+streetlife yard bicycles move instance matrices; the garage bicycle paths move
+position ranges and separate objects, rather than re-uploading the freed shared
+normal attribute. No layout/dimension change or additional house variant is involved.
+
+
+The existing non-WebGL `courtyardbicycletest.cjs` run passed its first 11 checks
+(selection, mount, motion, unchanged unowned buffers, bounds, normals, culling and
+pause), then stopped on the pre-existing missing `keepWorld` fixture helper while
+saving a mounted session. That incomplete run is tracked separately as #1048; it
+is not counted as a successful regression suite for #1047.
+For physical-phone follow-up: reload, walk to the courtyard bicycles, press
+“Cykla”, ride and turn, then dismount. Check that rendering and controls continue
+through the first mount and subsequent movement. That phone check remains unperformed.
+
 Measured with `phonememtest --cpu 1 --dwell 600` (the full route, SwiftShader estimates, MB), `&keepgeo` vs default:
 
 | | before | after |
