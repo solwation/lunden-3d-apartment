@@ -157,10 +157,12 @@ test('JPEG bytes, canonical encoding, frame dimensions and both body limits are 
  assert.ok(frame>=0);wide.writeUInt16BE(REPORTS.imageEdge+1,frame+7);
  const unsupported=Buffer.from(jpeg);unsupported[frame+1]=0xc1;
  const dnl=Buffer.concat([jpeg.subarray(0,2),Buffer.from([255,0xdc,0,4,0,1]),jpeg.subarray(2)]);
+ const emptyScan=Buffer.from('ffd8ffc00011080002000203012200021101031101ffda000c03010002110311003f00ffd9','hex');
  const badImages=[null,{},'https://example.test/a.jpg','data:image/svg+xml;base64,PHN2Zy8+',
   'data:image/jpeg;base64,'+Buffer.from('not a JPEG').toString('base64'),image+'\n',image.replace('base64,','base64, '),
   'data:image/jpeg;base64,'+wide.toString('base64'),
   'data:image/jpeg;base64,'+unsupported.toString('base64'),'data:image/jpeg;base64,'+dnl.toString('base64'),
+  'data:image/jpeg;base64,'+emptyScan.toString('base64'),
   'data:image/jpeg;base64,'+Buffer.concat([jpeg,Buffer.alloc(REPORTS.imageBytes+1-jpeg.length)]).toString('base64'),
   'data:image/jpeg;base64,'+jpeg.subarray(0,jpeg.length-2).toString('base64')];
  for(const value of badImages)assert.equal((await f.call('/reports/'+id,'PUT',{text:'request',image:value},token)).status,400);

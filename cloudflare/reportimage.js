@@ -33,7 +33,7 @@ export function validReportImage(image) {
     if (marker === 0xda && (!frame || at(offset + 2) < 1 || at(offset + 2) > components || length !== 6 + 2 * at(offset + 2))) return false;
     offset += length;
     if (marker === 0xda) {
-      if (!frame || length < 6) return false;
+      if (!frame || length < 6 || offset >= binary.length - 2) return false;
       scan = true;
       while (offset < binary.length) {
         if (at(offset) !== 255) { offset++; continue; }
