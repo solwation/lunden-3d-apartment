@@ -1837,7 +1837,7 @@ export const GARAGE = {
   // #704: a rack's bikes and stalls are drawn in full (bikeGeometry(1), ~1 400 triangles a bike) within `bikeLodNear` m of the camera,
   // beyond it as the coarse set (bikeGeometry(0), ~480): the racks' ~110 k triangles in the big hall's view were over budget. *guess*
   bikeLodNear: 10,
-  rideableBikeRows: [0],
+  rideableBikeRows: [0, 1, 6, 7, 8, 9],
   bikes: [[-41.15,-36.2,.95,1], [-29.75,-25.1,11.6,-1], [-10.6, -5.8, 11.6, -1],
     [-5.0, -0.2, 11.6, -1], [0.55, 5.3, 11.6, -1], [6.1, 10.8, 11.6, -1],  [-29.8, -25.1, 0.95, 1],[-29.8,-27.9,7,-1],[-26.6,-25.1,7,-1], [-24.2, -19.6, 7.0, -1],
     [-16.0, -11.4, 0.95, 1]],
