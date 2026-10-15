@@ -63,6 +63,8 @@ export function setPressed(button,on) {
  if(button?.getAttribute('aria-pressed')!==String(!!on)){button.setAttribute('aria-pressed',!!on);button.classList.toggle('on',!!on)}
 }
 export function initHudIcons() {
+ // Close corners delegate to the panel's existing cancel/finish action.
+ document.querySelectorAll('[data-close-target]').forEach(button=>button.addEventListener('click',()=>document.getElementById(button.dataset.closeTarget)?.click()));
  const ids={'furniture-btn':'sofa','measure-btn':'ruler','crouch-btn':'crouch','stats-btn':'stats','power-btn':'power','turn-btn':'rotate','jet-up':'up','jet-down':'down','jump-btn':'jump','web-btn':'web',pause:'pause',mute:'volume','terminal-btn':'terminal'};
  for(const [id,icon] of Object.entries(ids))setIcon(document.getElementById(id),icon);
  const panels='#book-panel, #poster-panel, #cal-panel, #clock-panel, #blind-panel, #sonos-panel, #draw-panel, #terminal, #rearrange-help, #update, #board-view, #task-note';

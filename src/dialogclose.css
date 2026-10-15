@@ -1,0 +1,27 @@
+/* #1059: one corner treatment; existing IDs own all dismissal behavior. */
+.dialog-card { position: relative; }
+body :is(#leaderboard-dialog,#privacy-dialog,#install,#reset-confirm,#player-dialog,#terminal,#cheat-note,#book-panel,#poster-panel,#note,#task-note,#board-view,#avatar-customizer) .dialog-card,
+body #admin-report.dialog-native {
+  padding-top: 64px;
+  max-height: calc(100dvh - 32px);
+  box-sizing: border-box;
+  overflow: auto;
+}
+body :is([role="dialog"], dialog, #stats) .dialog-close {
+  position: absolute; top: 8px; right: 8px; z-index: 2;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 48px; height: 48px; min-width: 48px; min-height: 48px;
+  padding: 0; margin: 0; border: 1px solid rgba(255,255,255,.5); border-radius: 8px;
+  background: #26333a; color: #fff; cursor: pointer;
+  font: 28px/1 system-ui, sans-serif; touch-action: manipulation;
+  box-sizing: border-box;
+}
+body :is([role="dialog"], dialog, #stats) .dialog-close:hover { background: #42525b; }
+body :is([role="dialog"], dialog, #stats) .dialog-close:focus-visible { outline: 3px solid #ffcd66; outline-offset: 2px; }
+body :is(#cal-panel,#clock-panel,#blind-panel,#sonos-panel,#draw-panel) { padding-top: 64px; }
+body #terminal.chat form { padding-right: 64px; padding-top: 8px; }
+body #terminal.chat .dialog-close { top: 8px; }
+body #terminal.chat #terminal-unlock { flex: 1 1 100%; }
+body #book-panel .spread { height: min(540px, calc(100dvh - 180px)); }
+body #stats .stats-header { padding-right: 48px; min-height: 48px; }
+body #stats .dialog-close { top: calc(8px + var(--st)); right: calc(8px + var(--sr)); }

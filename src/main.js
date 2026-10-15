@@ -2104,7 +2104,6 @@ function editUI() {
   document.getElementById('terminal-close').hidden = !!resetFurnitureRequest;
   document.getElementById('terminal-restore-all').disabled = rearrange.saving;
   document.getElementById('terminal-title').textContent = adminReports.active || rearrange.enabled ? 'Adminläge' : chat?.available ? 'Chatt' : 'Konsol';
-  document.getElementById('terminal-close').textContent = rearrange.enabled ? 'Fortsätt möblera' : 'Stäng';
   document.getElementById('terminal-restore').disabled = !editMenuPiece || editMenuPiece.materialOnly || rearrange.saving;
   const cancelMove = document.getElementById('terminal-cancel-move');
   if (cancelMove) { cancelMove.hidden = !rearrange.selected; cancelMove.disabled = rearrange.saving; cancelMove.textContent = 'Avbryt flytt'; }

@@ -1506,3 +1506,24 @@ are not advertised in public help or action rows.
 The optional masked login field owns Enter (including numpad Enter): the document
 capture handler lets that key reach the field, which prevents ordinary console
 submission and starts one login request. Escape retains terminal close behavior (#1054).
+
+### Shared dialog close corners (#1059)
+
+`src/dialogclose.css` positions `.dialog-close` controls at the actual surface's
+top-right corner, with a 48px target, Swedish `aria-label="Stäng"`, shared close
+SVG and visible keyboard focus. `.dialog-card` marks cards/papers rather than
+backdrops; compact tool panels and the native report dialog reserve their own
+corner space. Book/poster close controls move above their content; the console
+keeps its X while editing instead of replacing it with a text action.
+
+Existing IDs, listeners, Escape routing and report focus/draft behavior remain
+the dismissal authority. Four additional corners use `data-close-target` through
+`initHudIcons`: install → browser-play skip, player name → anonymous skip, reset
+→ cancel, drawing → finish drawing. Explicit cancel, destructive and drawing
+actions retain their labels and behaviors. Statistics and existing note/tool/
+avatar close controls use the same treatment. The update notice remains a status
+notification with its existing dismiss button.
+
+`tools/dialogclosetest.cjs` covers all 20 dialog/statistics surfaces in native
+index DOM and the production safe dismiss routes; `tools/adminreportstest.cjs`
+covers the actual console/document routing and native report modal.

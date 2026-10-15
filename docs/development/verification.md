@@ -6905,3 +6905,23 @@ handler fails the wrong-code Enter assertion before any fix. Final native run:
 59/59, no browser exceptions; successful Enter screenshots opened and inspected.
 Artifacts: `/tmp/lunden-linux-1054/browser`; source hashes in `result.json`.
 The existing bounded-world/no apartment/no physical-phone limitations apply.
+
+## Dialog close corners (#1059)
+
+Run `tools/dialogclosetest.cjs GAME OUT` through Node with the standard Playwright
+module/Chrome overrides against an isolated devserve. It imports real icon,
+installation and leaderboard modules and executes verbatim production reset,
+drawing finish, privacy/leaderboard and document Escape bindings. Native index
+checks cover all 20 dialog/statistics surfaces at 1280×800, 844×390 and 390×844:
+corner placement, accessible label/SVG, pointer hitability, target size and no
+heading/input/button overlap. Safe cancel/skip/finish routes, keyboard activation
+and reaching the last privacy paragraph through both scroll containers pass.
+71/71; no browser exceptions.
+
+The existing `tools/adminreportstest.cjs GAME WORKER OUT` additionally passes
+59/59 with a local Worker, real console/document keyboard routing, actual
+AdminReports bindings, native report modal focus/Escape and preserved drafts.
+Representative desktop/landscape close corners and narrow privacy scroll
+screenshots were opened and inspected. Source hashes/results are under
+`/tmp/lunden-modal-1059`; these are native UI/component checks with bounded world
+collaborators, not apartment rendering, production storage or physical phones.
