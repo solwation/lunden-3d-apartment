@@ -1031,18 +1031,21 @@ The normal things.load preflight sums current source stock (excluding away packa
 ## In-game admin reports (#1045, parent #1041)
 
 `src/adminreports.js` intercepts the existing private codes before multiplayer/cheat
-submission. **Admin mode is the existing rearrangement mode** (user clarification,
-2026-10-15): either original code opens furniture editing and report submission in
-the same visit, with no extra password. The console normalizes code input exactly
-as the existing cheat parser, clears it immediately, then sends `{code}` to the
-server. The Adminläge button (or legacy `/admin`) opens a masked field accepting the same code; no public help or
-graffiti lists the two codes. Public layout digests cannot create report sessions.
+submission. The existing private code is typed in the ordinary chat/console field.
+A successful session unlocks access to both report submission and rearrangement,
+without enabling furniture mode automatically (#1051 user correction, 2026-10-15).
+The two authenticated choices, Rapportera and Möblera, appear below that field.
+The console normalizes code input exactly as the existing cheat parser, clears it
+immediately, then sends `{code}` to the server. No public menu, help or graffiti
+lists admin commands or the two codes. Legacy slash aliases remain compatible,
+including the optional masked field; its unrelated Enter-key problem is #1054.
+Public layout digests cannot create report sessions.
 
 The server checks the real code with the existing private-code verifier and signs
 a bounded bearer using a separate server-only `REPORT_SESSION_SECRET` (at least
 24 random characters). This signing key is never typed by players or sent to the
 browser. The browser holds its one-hour bearer only in page memory. Reload,
-pagehide, Logga ut (or `/loggaut`) or expiry ends both report permission and furniture editing;
+pagehide, legacy `/loggaut` or expiry ends both report permission and furniture editing;
 logout also wins over delayed login replies. `Rearrange` retires the old persistent
 `lunden.furniture.unlocked` key. Shared furniture poses/materials still load.
 The codes remain game access codes rather than high-assurance identity credentials;

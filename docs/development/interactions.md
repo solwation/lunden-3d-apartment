@@ -1484,12 +1484,22 @@ Successful Player mount reserves both hands through `stowBicycleHand`: current u
 
 The full parent remains open for explicit stow-only reload bridges #1034 (food) and #1035 (unique objects) for older transient owners; no general inventory model is introduced here.
 
-### Admin menu below the console input (#1051)
+### Admin choices below the console input (#1051)
 
-The terminal keeps ordinary chat/commands in `terminal-code`. Below it,
-`terminal-admin-menu` groups Adminläge, Möblera om, Rapportera and Logga ut.
-The report button opens the same masked login when needed, then a separate
-labelled textarea and Skicka rapport button, so report prose never enters chat.
-The existing private-code session grants both capabilities; report submission
-keeps the same screenshot capture, pending UUID/image retry and draft preservation.
-The legacy `/admin`, `/rapport text` and `/loggaut` aliases remain supported.
+The ordinary chat/command field remains `terminal-code`. Only after a valid
+private code creates a session does `terminal-admin-menu` show the two choices
+Rapportera and Möblera below it. The production `changed` callback grants
+`rearrange.unlocked` without enabling editing. Möblera explicitly enables it and
+closes chat; the existing Klart, Escape and X controls still exit editing.
+Logout/expiry hides both choices and disables editing.
+
+Rapportera opens a separate native `dialog` outside the terminal form. Its own
+textarea, form submission and live status keep report prose separate from chat.
+The native modal makes the rest of the page inert and contains keyboard focus;
+production terminal keyboard routing defers to it, and the modal stops bubbling
+keydown/keyup to gameplay. Escape or Stäng closes only the popup and returns focus
+to Rapportera while leaving the unsent ordinary chat text unchanged. Expiry closes
+the popup, hides the choices and preserves its draft for the next login.
+Screenshot capture, pending UUID/image retries and in-flight draft preservation
+use the existing report pipeline. Legacy slash aliases remain compatible but
+are not advertised in public help or action rows.

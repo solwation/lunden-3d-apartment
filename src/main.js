@@ -2075,10 +2075,10 @@ const terminal = document.getElementById('terminal'), terminalInput = document.g
 const reportCapture = new ReportCapture(renderer);
 const adminReports = new AdminReports({ help: () => chat?.help ?? '', form: document.getElementById('terminal-form'), input: terminalInput,
   capture: () => reportCapture.capture(),
-  menu: document.getElementById('terminal-admin-menu'), reportPanel: document.getElementById('admin-report'), reportInput: document.getElementById('admin-report-text'),
+  menu: document.getElementById('terminal-admin-menu'), reportPanel: document.getElementById('admin-report'), reportInput: document.getElementById('admin-report-text'), reportStatus: document.getElementById('admin-report-status'),
   message: document.getElementById('terminal-message'), panel: document.getElementById('admin-login'),
   password: document.getElementById('admin-password'), login: document.getElementById('admin-signin'), cancel: document.getElementById('admin-cancel'),
-  changed: on => { rearrange.unlocked = on; rearrange.enable(on); editUI(); },
+  changed: on => { rearrange.unlocked = on; if (!on) rearrange.enable(false); editUI(); },
 });
 const editHelp = document.getElementById('rearrange-help'), editToggle = document.getElementById('rearrange-toggle');
 let editMenuPiece = null, editMenuSurfaceId = null, resetFurnitureRequest = null, editHUDKey = '';
@@ -2095,10 +2095,10 @@ function renderRearrangeHUD() {
 }
 function editUI() {
   renderRearrangeHUD(); editToggle.hidden = !rearrange.unlocked || !!resetFurnitureRequest;
-  editToggle.textContent = rearrange.enabled ? 'Avsluta ommöblering' : 'Möblera om';
+  editToggle.textContent = 'Möblera';
   editToggle.disabled = rearrange.saving;
   document.getElementById('terminal-unlock').hidden = !!resetFurnitureRequest;
-  document.getElementById('terminal-admin-menu').hidden = !!resetFurnitureRequest;
+  document.getElementById('terminal-admin-menu').hidden = !adminReports.active || !!resetFurnitureRequest;
   document.getElementById('terminal-edit').hidden = !rearrange.enabled || !!resetFurnitureRequest;
   document.getElementById('terminal-confirm').hidden = !resetFurnitureRequest;
   document.getElementById('terminal-close').hidden = !!resetFurnitureRequest;
@@ -2300,7 +2300,7 @@ document.addEventListener('keydown', e => {
   if(document.getElementById('cheat-note').hidden)return;
   if(['Escape','KeyE'].includes(e.code)){e.preventDefault();showCheatNote(false,e.code);}e.stopImmediatePropagation();
 },true);
-editToggle.addEventListener('click', () => { rearrange.enable(!rearrange.enabled); editUI(); showTerminal(false); });
+editToggle.addEventListener('click', () => { rearrange.enable(true); editUI(); showTerminal(false); });
 function requestFurnitureReset(all = false, piece = editMenuPiece) {
   if (rearrange.saving || (!all && (!piece || piece.materialOnly))) return;
   if (terminal.hidden) showTerminal(true);
@@ -2326,6 +2326,7 @@ document.getElementById('rearrange-rotate').addEventListener('click', () => rear
 document.getElementById('rearrange-menu').addEventListener('click', () => showTerminal(true));
 document.getElementById('rearrange-finish').addEventListener('click', exitRearranging);
 document.addEventListener('keydown', (e) => {
+  if (adminReports.reportPanel?.open) return; // Native modal owns typing, focus and Escape.
   if (!terminal.hidden) { if (e.code === 'Escape') { e.preventDefault(); exitRearranging(); showTerminal(false, 'Escape'); } e.stopImmediatePropagation(); return; }
   if (e.code === 'Escape' && rearrange.enabled && !reading) { e.preventDefault(); e.stopImmediatePropagation(); exitRearranging(); if (locked) document.exitPointerLock(); return; }
   // § opens the console everywhere in play (in rearrange mode: its menu); Enter too (#596), but only in plain play, never

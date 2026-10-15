@@ -6861,19 +6861,34 @@ const { createNativeManifest, saveNativeManifest, loadVerifiedNativeManifest } =
 ```
 as demonstrated in `tools/rifleturnfronttest.cjs`, where passing a verified manifest safely skips the 3000-raycast geometry grid while continuing to execute full owned-Worker lifecycle, real WebSocket protocol, and HUD screenshot assertions.
 
-## Console admin menu (#1051)
+## Console admin choices and report popup (#1051)
 
-`tools/adminreportstest.cjs GAME WORKER OUT` now also checks the native menu below
-the ordinary input, separate report prose, button-driven masked login, failed
-capture/network draft preservation, unchanged UUID/image on retry and new drafts
-typed during a request. Actual index DOM, production AdminReports binding/terminal
-submit and local Worker passed 40/40, with no browser exceptions. The rearrange
-controller is real; the fixture supplies edit-menu presentation and image capture.
-Desktop 1280×800 and landscape 844×390 screenshots were opened and inspected.
-The unchanged `tools/reportcapturetest.cjs` passed 14/14 with an actual tiny Three
-render and owned Worker, retaining original JPEG/UUID on retry. These are component
-checks, not apartment gameplay, physical-phone or production-report acceptance.
-Artifacts: `/tmp/lunden-start-1051/browser-final` and `capture-final`. Initial
-attempts used an occupied Worker port and omitted the capture Worker signing
-fixture respectively; final runs used an owned free endpoint and explicit local
-signing fixtures. No application fix was needed for those setup failures.
+`tools/adminreportstest.cjs GAME WORKER OUT` executes the real index DOM, production
+AdminReports binding, full editUI/renderRearrangeHUD/showTerminal/chatMode,
+furniture-click and document Escape handler, original console submit listener,
+real Rearrange controller and local Worker. It checks the actual changed callback:
+login unlocks but does not enable editing; Möblera starts editing and closes chat;
+Klart exits normally. Before login no actions appear; afterwards exactly Rapportera
+and Möblera sit below the ordinary input.
+
+The native modal is outside the console form and owns textarea, submit and status.
+Checks cover native modal/focus, Tab containment, actual document Escape routing
+closing only the popup, focus return, ordinary unsent chat preservation, separate
+report text, capture/network failure drafts, unchanged UUID/image on retry,
+in-flight edits, session expiry closing the popup/hiding both choices/preserving
+the draft, reload and delayed login races. The fixture supplies the image and
+bounded world/chat collaborators; it does not construct the apartment or Player.
+Material-library presentation is an explicit no-op because no piece is selected.
+
+Final source-bound native run: 51/51, no browser exceptions. Desktop 1280×800 and
+landscape 844×390 action-menu and popup screenshots were opened and inspected.
+The unchanged `tools/reportcapturetest.cjs` passed 14/14 using an actual tiny Three
+render and an owned Worker; its JPEG was also opened. These checks do not certify
+full apartment gameplay, physical phones or production report storage.
+Artifacts and source hashes: `/tmp/lunden-start-1051-correction/browser3` and
+`capture`. The first source-bound run exposed the legacy password-field Enter bug
+tracked separately in #1054; the test now uses its existing login button. The
+second run needed the fixture's hidden HUD parent shown to click actual Klart.
+Neither setup adjustment relaxes the direct chat-code Enter path or production
+callbacks. Previous 40/40 checks in `/tmp/lunden-start-1051` describe the superseded
+inline-panel implementation and omitted the production document keyboard handler.
