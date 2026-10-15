@@ -46,8 +46,22 @@ Wrangler-läsning räknas som rapportkontroll; en icke-tom nyckellista utan alla
 
 Direkt KV-läsning ersätter inte importverktygets globala claim, originalbilaga eller verifierade
 kvittens. Radera aldrig rapportnycklar med Wrangler och skapa inga blinda dubbletter. Saknas
-importtoken efter lyckad export: fortsätt granskningen, bevara rapporterna och redovisa det
-specifika importhindret. Skriv inte att rapportkön inte kunde läsas när Wrangler kunde läsa den.
+lokal importtoken efter lyckad export: återställ importåtkomsten med den redan autentiserade
+Wrangler-inloggningen enligt guiden; stanna inte vid export eller granskat manifest. En saknad
+lokal kopia får lösas genom att skapa en privat slumpad `REPORT_IMPORT_TOKEN`, sätta samma
+värde med `wrangler secret put REPORT_IMPORT_TOKEN` och använda den med ordinarie importverktyg.
+Detta är tillåtet inom `/orkester`-uppdraget utan en ny bekräftelse. Ändra aldrig `ADMIN_TOKEN`
+eller `REPORT_SESSION_SECRET` för detta och samordna befintliga aktiva importörer före tokenbyte.
+Behåll alltid befintliga claim-id:n/journaler vid återförsök; tokenbyte släpper inga claims.
+
+**Färdigt innebär hela kedjan:** granska text och bild → skapa GitHub-issue med originalbild →
+verifiera rätt ärende/bild/text → kvittera så rapporten tas bort ur KV → hämta färsk prioritetskö
+och starta arbetsagenter. Export, manifest eller en dokumentationsändring räcker inte som slutresultat.
+Godkända rapporter ska bli issues och därefter vanligt orkesterarbete, inte lämnas som lokala filer.
+Kontrollera efter import med ny API-/Wrangler-läsning att kvitterade rapporter är borta; KV kan
+behöva en kort stund för spridning. Spara antal skapade, kvitterade och återstående i #420/checkpoint.
+Skriv inte att rapportkön inte kunde läsas när Wrangler kunde läsa den. Endast ett faktiskt kvarvarande
+fel efter försöken att återställa importåtkomsten får redovisas som importhinder.
 
 Först om både rapport-API och Wrangler-vägen misslyckas: redovisa de faktiska försöken och fortsätt med tillgängliga
 GitHub-issues; påstå inte att rapportkön är tom. Spara råexport, granskning och importjournal

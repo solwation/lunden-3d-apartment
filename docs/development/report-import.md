@@ -155,11 +155,24 @@ KV remains eventually consistent.
 This fallback is read-only. KV alone does not expose the Durable Object's global
 claim or receipt. Resume the normal reviewed importer with a legitimately available
 report token for issue creation and acknowledgement. Wrangler secret listing shows
-names, not existing values; do not claim it retrieves a token or overwrite an
-existing production secret merely to read the queue. Preserve exported reports and
-state an import-specific credential blocker if necessary. Never use Wrangler KV
-deletion, bypass claims or blindly create issues from the raw export. A missing
-import token must not prevent independent reading and review through Wrangler.
+names, not existing values; do not claim it retrieves a token. If the local copy is
+missing, `/orkester` authorizes restoring import access through authenticated
+Wrangler: generate a cryptographically random token into the private mode-600
+credential file, then supply its bytes on stdin to
+`npx wrangler secret put REPORT_IMPORT_TOKEN` from `cloudflare/`. Capture command
+output privately; never put the value in argv, logs, chat or the checkout. Coordinate
+with any active importer before replacing its reports-only credential; retain all
+existing manifests and journals. Never replace `ADMIN_TOKEN` or
+`REPORT_SESSION_SECRET` for this. Verify access with a fresh ordinary API fetch.
+
+Continue with the reviewed importer; reading or preparing a manifest is not task
+completion. For every approved report, create and verify the GitHub issue and its
+original image, then acknowledge through the report API so the report is deleted
+from KV. Never delete through Wrangler or before verification. Check the queue
+again after acknowledgement, accounting for eventual consistency, and record
+created/acknowledged/remaining counts. Fetch the fresh priority queue and start
+orchestration on its issues. Only an actual remaining failure after attempting
+access recovery is an import blocker; it is not a reason to silently stop at export.
 
 ## Commit the original image before creating the issue
 
