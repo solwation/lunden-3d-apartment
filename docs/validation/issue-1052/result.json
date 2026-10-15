@@ -1,0 +1,56 @@
+{
+  "baseline": false,
+  "result": {
+    "pieces": 36,
+    "piecesWithinCompartments": true,
+    "meshes": [
+      {
+        "color": "e8ecee",
+        "triangles": 120
+      },
+      {
+        "color": "c4c8cb",
+        "triangles": 17712
+      }
+    ],
+    "contained": true,
+    "initiallyHidden": true,
+    "animated": true,
+    "travel": true,
+    "closed": true,
+    "openCost": {
+      "calls": 52,
+      "triangles": 25648
+    },
+    "closedCost": {
+      "calls": 50,
+      "triangles": 7816
+    },
+    "trayBounds": {
+      "min": [
+        4.991199969303608,
+        0.7689999935775995,
+        2.631599894571304
+      ],
+      "max": [
+        5.461200228881836,
+        0.8109999874234199,
+        3.342999926614761
+      ]
+    },
+    "steelBounds": {
+      "min": [
+        5.0333929052472115,
+        0.767499983087182,
+        2.656675091791153
+      ],
+      "max": [
+        5.278623572540283,
+        0.787353457659483,
+        3.3196470652103423
+      ]
+    }
+  },
+  "errors": [],
+  "limits": "Production plan kitchen builders/Openable and real WebGL. Component lighting; no World, E/touch dispatch, FPS or physical phone claim."
+}

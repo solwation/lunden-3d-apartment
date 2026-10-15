@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { CUTLERY_STOCK } from './config.js';
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 
 // What is in the kitchen's cabinets and drawers (#229): neat rows and stacks — white porcelain, glass, stainless,
@@ -422,11 +423,14 @@ function cutlery(P, b, y, top) { // a white insert with compartments; detailed k
     const u = b.a0 + 0.014 + (i + 0.5) * cw;
     const kind = types[i % types.length];
     const tmpl = templates[kind];
-    for (let k = 0; k < 4; k++) {
-      const yk = y + 0.006 + k * 0.0035;
-      const dShift = (k % 2 === 1 ? 0.002 : -0.001);
-      const uShift = (k % 2 === 1 ? 0.001 : -0.001);
-      placeItem(tmpl, u + uShift, dHandle + dShift, yk);
+    // Two shallow, slightly staggered piles expose the handles and bowls below the top piece.
+    const C = CUTLERY_STOCK;
+    for (const lane of [-1, 1]) {
+      for (let k = 0; k < C.perPile; k++) {
+        const yk = y + 0.006 + k * C.layerRise;
+        const uShift = lane * cw * C.laneOffset + (k - (C.perPile - 1) / 2) * C.sideStep;
+        placeItem(tmpl, u + uShift, dHandle - k * C.depthStep, yk);
+      }
     }
   }
 

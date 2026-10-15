@@ -2383,6 +2383,10 @@ export const LIFE_MESS = {
 // Fixed geometry is rebuilt from config on reload/reset; saves never restore a bin transform.
 export const LIFE_WASTE = { dropoff: { x: PORTIK.east - 0.5, z: (PORTIK.north + PORTIK.room.wallNorth) / 2, yaw: -90, gap: 1.0, width: 0.68, depth: 0.85, h: 1.07 } };
 
+// #1052: assumed household stock, two shallow piles per tray compartment; laneOffset is a width fraction, other offsets in metres
+// reveal the detailed #1039 pieces without raising the piles over the existing insert.
+export const CUTLERY_STOCK = { perPile: 3, laneOffset: 0.23, layerRise: 0.004, sideStep: 0.003, depthStep: 0.012 };
+
 // The dishwasher (#384, src/dishwasher.js; the integrated KEZA9310W of the plan, no product drawing — our picks): its racks roll
 // `out` m when the door is down; the lower rack (`y` over the tub's bottom, `h` high) holds `plates` plates on edge, the upper
 // one `glasses` glasses upside down, the cutlery tray on top of it `tray` tools.

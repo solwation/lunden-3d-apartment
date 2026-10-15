@@ -260,3 +260,10 @@ capture matched daylight/evening room views. Arm-front welts follow the rounded
 front surface rather than a flat floating outline. Images enable full quality for a
 single draw, returning to lazy mode after capture. This is desktop browser
 function/visual evidence, not a physical Surface Pro frame-rate measurement.
+
+Kitchen cutlery stock (#1052): `CUTLERY_STOCK` lays out two shallow staggered piles of three
+original #1039 pieces per compartment (36 instead of 24 overall). `kitchenstuff.js` retains
+the insert, detailed geometries and its two material batches; drawer motion and hidden-when-closed
+contents remain unchanged. `tools/cutlerystocktest.cjs GAME OUT` checks the actual plan kitchen
+and Openable, individual compartment bounds, stock count and real WebGL costs.
+[Paired pictures, costs and limits](../validation/issue-1052/README.md).
