@@ -325,7 +325,7 @@ export class Garage {
     const bikeRows = new Map(); // (row, area) → the bikes and stalls of one rack row, as a near and a far mesh (#704)
     const rackOf = (row, x, z) => { const a = areaAt(x, z), k = row + '|' + a.name; if (!bikeRows.has(k)) bikeRows.set(k, { area: a, hi: [], lo: [] }); return bikeRows.get(k); };
     const bikeRecords = [];
-    const rideableRows = new Set(options.rideableRows ?? G.rideableBikeRows ?? [0, 1, 6, 7, 8, 9]);
+    const rideableRows = new Set(options.rideableRows ?? G.rideableBikeRows ?? [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     this.rideableRows = rideableRows;
     G.bikes.forEach(([x0, x1, z, f], row) => {
       put('shell', bake(new THREE.CylinderGeometry(0.014, 0.014, x1 - x0, 8).rotateZ(Math.PI / 2).translate((x0 + x1) / 2, F + 0.03, z), 0xb4b9bd), (x0 + x1) / 2, z + f * 0.5);
