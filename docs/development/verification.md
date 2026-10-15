@@ -5955,6 +5955,20 @@ ledger's `worker-926-artifacts` directory; no raw snapshots are committed to the
 
 `tools/courtyardbicycletest.cjs BASE EXTERNAL_OUTPUT` checks all five real Courtyard models with actual Player support/collision and verbatim main ray-selection, input and save handlers. It exercises E and touch-action mounts, real joystick input, speed above walking, safe exit/reload, paused input, complete wheelbase wall/door/headroom rejection and exact preservation of unowned vertices/normals, all UV/colors, toys and rack/bench targets. `BICYCLE_BASELINE=/path/to/upstream/courtyard.js` additionally compares all original visible mesh attributes, indices, material batches, shadows and collision before riding. Native runs prohibit WebGL. `--render` needs the shared graphics slot and renders two bounded isolated Courtyard/Player camera views; it does not construct World or establish physical-phone performance. World collaborators, lock flags and wall visibility are controlled explicitly.
 
+Fixture repair (#1048, 2026-10-15): production riding sessions now also call
+`keepWorld`; the fixture extracts that actual main helper and imports real
+`keep.saveWorld`/`hasRestoredBicycleHand`, with explicit complete empty collaborators
+for unrelated saved systems. All existing bike/input/collision/reload assertions
+remain. Each of the five bikes additionally checks versioned clock/open/things
+world data while riding and the ordinary place-only session after standing; keep
+warnings fail the run so missing collaborators cannot silently drop saved parts.
+The original producer reproduced `ReferenceError: keepWorld is not defined` after
+11 PASS, actual exit1. Repaired native passed90/90, actual exit0, errors[] and
+keepWarnings[], requesting zero WebGL. Its existing setup consumer
+`tools/bicyclehandtest.cjs` also passed22/22 with zero WebGL and exact source hashes.
+Raw baseline/candidate/hand-regression outputs are in `/tmp/lunden-reports-1048`.
+No runtime or rendered appearance changed; no new World/phone/FPS evidence.
+
 On resume, native5 remains CLI1: the mixed CDP-touch/Playwright-tap sequence did not dispatch the compatibility click for the stand button. The replacement test uses the existing stand button’s ordinary click handler, retaining actual touch-action mount and joystick pointer coverage. Native6 passed all five bikes; native7 additionally passed the independent unchanged-upstream geometry/batch comparison.
 
 Final native8 also checks rigid rotation of selected normals and actual DetailCuller visibility with a stationary camera; all80 checks pass, actual CLI0. The updated NW-native driver retains all nine bicycle acceptance paths and passes without WebGL; only its source anchor, controlled empty Courtyard collaborator and full-World total (14) were adapted for the combined register. Its full-World branch was not rerun. The GPU-granted isolated render2 completes CLI0 in17.45s, with both parked and saddle/styret views inspected. The first external render monitor failed while parsing a whitespace-containing `/proc/stat` name; its child exit remains unknown, empty log and no image retained. Render2 uses corrected owner parsing and records one owned Chrome master that exited and229 exact frozen paths. No whole-apartment, hardware-FPS or physical-phone claim follows.
