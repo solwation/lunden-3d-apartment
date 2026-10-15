@@ -55,6 +55,7 @@ export class Drawing {
   take() {
     const url = this.canvas.toDataURL('image/jpeg', 0.9);
     this.clear(false);
+    try { localStorage.setItem(KEY, this.canvas.toDataURL('image/png')); } catch {}
     return url;
   }
 

@@ -1000,7 +1000,7 @@ after furniture hydration still writes its own absolute item positions normally.
 
 The bicycle reservation is transient: no second item or new Items place/version. A stowed LifeItem retains its actual saved hand place while view.sync leaves its model detached. `keep.things` recognizes the stowed Holdable identity; Cup retains its existing held state/content record. Riding `keepSession` includes ordinary keepWorld plus `bicycleSavePlace` safe standing feet; normal non-riding session behavior is unchanged. Reload reconstructs ordinary standing play and existing held adapters. Spawn/death restores the same still-valid item; owner-reset/shatter/removal never resurrects it.
 
-Full #984 reload acceptance remains pending in #1035 for Miele, held drawings and loose paper; #1034 supplies the food bridge below. The existing chicken Life extra remains authoritative for cooking/generation/parts/rewards; this step adds no duplicate serialization or reset of it.
+Full #984 reload acceptance is completed in #1035 for Miele, held drawings and loose paper; #1034 supplies the food bridge below. The existing chicken Life extra remains authoritative for cooking/generation/parts/rewards; this step adds no duplicate serialization or reset of it.
 
 ### One bicycle-stowed food across reload (#1034)
 
@@ -1008,7 +1008,15 @@ Existing KEEP_VERSION1 gains optional `bicycleHand:{v:1,kind,state}` only for th
 
 Chicken retains the existing sole `life.x.chicken` authority for cooking/generation/gone/bodyLeft/reward flags. Its stow entry is only the whole/portion pointer and remaining bites, loaded AFTER Life; it never calls breakOff or cooking/eating callbacks. Empty Life stock still serializes this existing extra when a chicken hand actually needs it. Whole-bird take has a silent restore path. The Camera-parent fallback in ordinary Holdable restoration supports actual ChickenPiece, which has no item.camera.
 
-The one transient `restoredBicycleHand` pointer keeps a standing hand that already came from stow through repeated actual F5/update reloads. Main keeps ordinary keepWorld in the session only while riding or while this exact restored hand remains. Existing owners explicitly forget it on put/place/consume/reset; replacement also invalidates the pointer. A reset/reparented stowed model saves no hand entry. Never-stowed legacy food keeps its previous reload policy, and Cup/Life/Holdable records remain compatible. #1035 may extend the same narrow bridge for unique objects after separate assignment.
+The one transient `restoredBicycleHand` pointer keeps a standing hand that already came from stow through repeated actual F5/update reloads. Main keeps ordinary keepWorld in the session only while riding or while this exact restored hand remains. Existing owners explicitly forget it on put/place/consume/reset; replacement also invalidates the pointer. A reset/reparented stowed model saves no hand entry. Never-stowed legacy food keeps its previous reload policy, and Cup/Life/Holdable records remain compatible.
+
+### Unique bicycle-stowed objects across reload (#1035, completes #984)
+
+The bicycle-hand stow bridge is extended from food (#1034) to the three unique objects: Miele (`miele`), HeldDrawing (`drawing` / `heldDrawing`), and ToiletPaper (`paper` / `toiletPaper`).
+1. **Miele (cat):** `saveStowed` serializes variant/coat, custom name, seen state, and hug count. `loadStowed` restores identity and enters `hug` pose silently (`silent: true`), suppressing purr audio and preventing duplicate photo or badge awards. On release/drop, `forgetBicycleHand` clears the active stow reservation.
+2. **HeldDrawing:** `saveStowed` persists image data and origin metadata (`origin: 'wall' | 'desk'`, and poster ID if taken from wall). `take()` on desk immediately blanks the desk state in `localStorage` so exactly one sheet exists in the world. Restore uses `silent: true` to suppress paper audio and avoid duplicate posters on the wall. On release/putBack, `forgetBicycleHand` clears the stow pointer.
+3. **ToiletPaper (wad):** `saveStowed` preserves loose sheet count (`sheets`). On reload, `Wad.restore()` rebuilds the wad geometry and hand attachment without deducting sheets from Life toilet rolls again. On drop/hide, `forgetBicycleHand` clears the stow pointer.
+4. **Resurrection guards:** `restoreBicycleHand` rejects stowed hands for items that were hidden, dropped, or reset while riding (`cat.visible && cat.held`, `drawing.image`, `paper.sheets && paper.sink < 0`).
 ## Shared beer source ledgers across Glass reload (#1007)
 
 KEEP_VERSION1 remains additive. BeerCan keeps legacy ml/gen/portionId/drunk/fin fields plus full-precision portion JSON; ml now retains fractional transferred volume. Glass.x.beer stores bounded remaining lot ml and source ledger snapshots. A pending beer pour stores its original from/to/t/secs animation: the source has already lost the entire reserved amount, the glass owns that same amount, and load resumes the same interpolation rather than adding/consuming it again. Other drinks keep their existing save behavior.

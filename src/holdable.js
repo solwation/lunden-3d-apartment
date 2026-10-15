@@ -32,7 +32,11 @@ export function restoreBicycleHand() {
   const saved = bicycleHand; bicycleHand = null;
   if (!saved?.item) return;
   const { item, parent, pos, quat, scale, visible } = saved;
-  if (item.broken || item.model.parent || item.state !== saved.state || (item.lifeItem && (item.life.items.get(item.item.id) !== item.item || item.item.place.at !== 'hand'))) return; // reset/removal must never resurrect an old instance
+  if (item.broken || item.model.parent || item.state !== saved.state ||
+      (item.isMiele && (!item.cat?.visible || !item.cat?.held)) ||
+      (item.drawing && !item.image) ||
+      (item.isPaper && (!item.sheets || item.sink >= 0)) ||
+      (item.lifeItem && (item.life.items.get(item.item.id) !== item.item || item.item.place.at !== 'hand'))) return; // reset/removal must never resurrect an old instance
   current = item; item.held = true;
   parent?.add(item.model); item.model.position.copy(pos); item.model.quaternion.copy(quat); item.model.scale.copy(scale); item.model.visible = visible;
   const camera = item.camera ?? (parent?.isCamera ? parent : null);

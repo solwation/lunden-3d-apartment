@@ -715,6 +715,7 @@ const posters = new Posters(scene, world, marks, note);
 if (todo) posters.reserved.push(todo); // no drawing taped over the post-its (#340)
 const postersLoaded = posters.load();
 const heldDrawing = new HeldDrawing(scene, camera, drawing);
+heldDrawing.posters = posters;
 drawing.holding = () => heldItem() === heldDrawing;
 heldDrawing.rehang = (rec) => posters.rehang(rec);
 const balls = new PaperBalls(scene, camera, world, (x, z, y) => player.groundAt(x, z, y)); // thrown-away drawings (#177)
@@ -2956,6 +2957,7 @@ function continueAfterReload(r) {
 // the world's state for a reload made by the page (#277, keep.js): what each part needs
 const keepApp = { bicycleStow: { fruit, fish, fries, chicken }, life, jetpack, suit, car, world, lights, day, grill, sonos, patio, holdables, cups, beer, chicken, scene, rest, cat, BREEDS, VARIANTS,
   sitAt: (target, spot, stand) => sitAt(target, spot, stand, true) };
+Object.assign(keepApp.bicycleStow, { miele, heldDrawing, drawing: heldDrawing, toiletPaper, paper: toiletPaper });
 function keepWorld() { try { return saveWorld(keepApp); } catch (e) { console.warn('keep', e); return null; } }
 // Phone: a restored WebGL context reloads the page, because textures freed after upload (#628) would re-upload blank. Same
 // build, so no "Ny version" note; the place and the world come back as after "Ladda om".

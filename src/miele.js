@@ -3,6 +3,8 @@ import { MIELE as M } from './config.js';
 import { sfx } from './audio.js';
 import { Holdable, heldItem, setHeld } from './holdable.js';
 import { Hearts, heartTexture } from './pingping.js';
+import { BREEDS } from './cat.js';
+import { forgetBicycleHand } from './keep.js';
 
 // Miele (#328): the family's cat as a super-rare find (cat.js draws her, MIELE_COAT / BREEDS 'Miele'). Found, heart
 // fireworks go up (HeartFireworks); E takes her into your arms like Pingping (MieleHeld: hand.js 'hug', both hands on
@@ -95,10 +97,43 @@ export class MieleHeld extends Holdable {
     Object.assign(this, { cat, isMiele: true, soft: true, softOnly: true, handPose: 'hug', hugGrips: M.grips, placeVerb: 'sätta ner',
       hugT: 1, hugs: 0 });
     this.hearts = new Hearts(scene, 14);
-    cat.onDropped = () => { if (this.held) { this.held = false; if (heldItem() === this) setHeld(null); } }; // the cat went (F)
+    cat.onDropped = () => { forgetBicycleHand(this); if (this.held) { this.held = false; if (heldItem() === this) setHeld(null); } }; // the cat went (F)
   }
 
   get useLabel() { return 'Krama'; }
+
+  /** #1035: stow-only reload for bicycle; preserves Miele's exact cat instance and hug count. */
+  saveStowed(item) {
+    if (item !== this || !this.cat?.visible || !this.cat?.isMiele || !this.cat?.held || this.cat.leaving || this.cat.released) return null;
+    return { name: this.cat.catName ?? 'Miele', seen: !!this.cat.seen, hugs: Number.isSafeInteger(this.hugs) ? this.hugs : 0 };
+  }
+
+  loadStowed(s) {
+    if (!s || typeof s !== 'object' || typeof s.name !== 'string' || s.name !== 'Miele' || typeof s.seen !== 'boolean') return null;
+    if (s.hugs !== undefined && (!Number.isSafeInteger(s.hugs) || s.hugs < 0)) return null;
+    if (!this.cat) return null;
+    const mieleBreed = BREEDS.find((b) => b.superRare);
+    if (!mieleBreed) return null;
+    const coat = mieleBreed.coats[0];
+    this.cat.setCat(mieleBreed, coat, false);
+    this.cat.catName = s.name;
+    this.cat.seen = s.seen;
+    this.cat.photoDone = s.seen;
+    this.cat.leaving = null;
+    this.cat.released = null;
+    this.cat.setOpacity(1);
+    this.cat.object.visible = true;
+    this.hugs = s.hugs ?? 0;
+    this.hugT = 1;
+    this.take({ silent: true });
+    return this;
+  }
+
+  take({ silent = false } = {}) {
+    this.silentTake = silent;
+    super.take();
+    this.silentTake = false;
+  }
 
   /** No home: the group is only in the scene (in the camera) while she is held. */
   goHome() { this.placed = false; this.model.removeFromParent(); }
@@ -106,9 +141,11 @@ export class MieleHeld extends Holdable {
   onTake() {
     this.hugT = 1;
     this.cat.pickUp(this.model);
-    const p = this.where();
-    sfx.purr(p, 2, this.cat.variant.pitch * (this.cat.breed.pitch ?? 1), this.cat.voice);
-    this.onPickUp?.();
+    if (!this.silentTake) {
+      const p = this.where();
+      sfx.purr(p, 2, this.cat.variant.pitch * (this.cat.breed.pitch ?? 1), this.cat.voice);
+      this.onPickUp?.();
+    }
   }
 
   get poseAt() { return null; } // (no ghost of the cat: the ring shows where she goes, #368)
@@ -130,6 +167,7 @@ export class MieleHeld extends Holdable {
   }
 
   letGo(p) {
+    forgetBicycleHand(this);
     this.model.scale.set(1, 1, 1);
     this.hugT = 1;
     this.cat.putDown(p, this.camera.getWorldPosition(new THREE.Vector3()));

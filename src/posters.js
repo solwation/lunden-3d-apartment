@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { DRAWING as D, HOLD, FIXED_DRAWINGS } from './config.js';
 import { withStore } from './idb.js';
 import { setHeld, heldItem } from './holdable.js';
+import { forgetBicycleHand } from './keep.js';
 import { sfx } from './audio.js';
 
 // Children's drawings taped up anywhere (#176): "Ta teckningen" in drawing mode puts the sheet in the hand
@@ -329,7 +330,7 @@ export class HeldDrawing {
   }
 
   /** Take `image` (data URL) into the hand. */
-  take(image, meta = null) {
+  take(image, meta = null, { silent = false } = {}) {
     if (this.held) this.putBack(); // one sheet at a time
     setHeld(this);
     this.held = true;
@@ -338,12 +339,36 @@ export class HeldDrawing {
     loadImage(image).then((img) => { if (img && this.image === image) { this.tex.image = paintPoster(img, 1); this.tex.needsUpdate = true; } });
     if (!this.camera.parent) this.scene.add(this.camera);
     this.camera.add(this.model);
-    sfx.paper(this.camera.position);
+    if (!silent) sfx.paper(this.camera.position);
+  }
+
+  /** #1035: stow-only reload for bicycle; preserves image and origin wall/desk metadata. */
+  saveStowed(item) {
+    if (item !== this || !this.image || typeof this.image !== 'string') return null;
+    return {
+      image: this.image,
+      meta: this.meta ? {
+        id: this.meta.id,
+        time: this.meta.time,
+        ...(this.meta.rec ? { rec: this.meta.rec } : {}),
+      } : null,
+    };
+  }
+
+  loadStowed(s) {
+    if (!s || typeof s !== 'object' || typeof s.image !== 'string' || !s.image.startsWith('data:image/')) return null;
+    if (s.meta !== null && (typeof s.meta !== 'object' || typeof s.meta.id !== 'string')) return null;
+    if (s.meta?.id && this.posters?.byId?.(s.meta.id)) return null;
+    this.take(s.image, s.meta ?? null, { silent: true });
+    return this;
   }
 
   /** It leaves the hand (taped up): nothing goes back to the desk. */
   release() {
+    forgetBicycleHand(this);
     this.held = false;
+    this.image = null;
+    this.meta = null;
     this.model.removeFromParent();
     if (heldItem() === this) setHeld(null);
   }
@@ -351,11 +376,12 @@ export class HeldDrawing {
   /** Back on the desk (E on the desk, another thing taken, F). */
   putBack() {
     if (!this.held) return;
+    const img = this.image, meta = this.meta;
     this.release();
     // a poster taken down goes back up where it was if there is a drawing on the desk already (#177)
-    if (this.meta?.rec && !this.drawing.blank) { this.rehang?.(this.meta.rec); return; }
-    if (this.meta?.id) this.onDesk?.(this.meta.id);
-    this.drawing.restore(this.image);
+    if (meta?.rec && !this.drawing.blank) { this.rehang?.(meta.rec); return; }
+    if (meta?.id) this.onDesk?.(meta.id);
+    this.drawing.restore(img);
     sfx.paper(this.drawing.paper.position);
   }
 

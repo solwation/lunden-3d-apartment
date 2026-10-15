@@ -4,6 +4,7 @@ import { TOILET_PAPER as C, TOWEL_HOOKS } from './config.js';
 import { mergeStatic } from './merge.js';
 import { sfx } from './audio.js';
 import { heldItem, setHeld } from './holdable.js';
+import { forgetBicycleHand } from './keep.js';
 
 const H = TOWEL_HOOKS.hook; // the same brushed steel as the towel hooks
 const steel = new THREE.MeshStandardMaterial({ color: H.color, metalness: H.metalness, roughness: H.roughness });
@@ -90,6 +91,7 @@ class Wad {
 
   /** Gone: thrown away, flushed, or something else was taken (setHeld), or F. */
   hide() {
+    forgetBicycleHand(this);
     this.held = false;
     if (heldItem() === this) setHeld(null);
     this.scene.add(this.model);
@@ -100,6 +102,7 @@ class Wad {
 
   /** Dropped into `t`'s bowl: floating on the water until it flushes. */
   drop(t) {
+    forgetBicycleHand(this);
     this.held = false;
     if (heldItem() === this) setHeld(null);
     this.toilet = t; this.sink = 0;
@@ -309,6 +312,18 @@ export class ToiletPaper {
     if (!t.isOpen) { t.toggle(); sfx.lid(t.object.position, true); }
     this.wad.drop(t);
     if (t.flush.toggle()) this.onFlush?.(t.flush);
+  }
+
+  /** #1035: stow-only reload for bicycle; preserves crumpled wad sheet count without double roll deduction. */
+  saveStowed(item) {
+    if (item !== this.wad || !this.wad.sheets || this.wad.sink >= 0 || this.wad.toilet) return null;
+    return { sheets: this.wad.sheets };
+  }
+
+  loadStowed(s) {
+    if (!s || typeof s !== 'object' || !Number.isInteger(s.sheets) || s.sheets < 1 || s.sheets > C.hang) return null;
+    this.wad.take(s.sheets);
+    return this.wad;
   }
 
   /** F clears loose paper; installed Items quantities and hanging sheets stay as saved. */

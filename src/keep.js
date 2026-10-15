@@ -11,11 +11,11 @@ import { stowedItem, heldItem } from './holdable.js';
 // restoring: the clock and the date (a mid-visit update keeps the game's time, spooled or paused — a new visit still
 // starts at the real time, #143), the car, doors / lids / fronts, lamps, the TV / PC / hob / hood / grill, the coffee
 // in the jug, the music, the parasol, things put down and the one in the hand (cups with what is in them), sitting /
-// lying, the cat, the jetpack (#359), the Spider-Man suit (#597) (a thing's own state: `keepState()` / `loadKeep(s)`, e.g. the toaster plugged in, #401). Chicken cooking/parts/rewards live in Life extras (#708). Not kept (fresh as before): cooking (fish fingers, the fries, #301), taps, the drawing in the hand.
+// lying, the cat, the jetpack (#359), the Spider-Man suit (#597) (a thing's own state: `keepState()` / `loadKeep(s)`, e.g. the toaster plugged in, #401). Chicken cooking/parts/rewards live in Life extras (#708). Not kept (fresh as before): cooking (fish fingers, the fries, #301), taps, a loose non-stowed drawing in the hand.
 // `a` is the app: main.js hands over what the parts need.
 
 export const KEEP_VERSION = 1;
-// #1034: only the one legacy hand that was actually bicycle-stowed, not a loose inventory save.
+// #1034, #1035: only the one legacy hand that was actually bicycle-stowed, not a loose inventory save.
 let restoredBicycleHand = null;
 export function forgetBicycleHand(item) { if (restoredBicycleHand === item) restoredBicycleHand = null; }
 export function hasRestoredBicycleHand() {
