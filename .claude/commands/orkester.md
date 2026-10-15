@@ -32,7 +32,24 @@ varje KV-rapport först efter verifierat lyckad GitHubskapelse.
   En misslyckad hämtning räknas inte som lyckad kontroll eller som tom rapportkö; redovisa
   hindret och försök igen vid nästa kökontroll, senast inom fem minuter medan sessionen kör.
 
-Om driftcredentials saknas eller rapport-API inte nås: redovisa det och fortsätt med tillgängliga
+**Saknad lokal rapporttoken är inte ett färdigutrett hinder. Prova alltid Wrangler först.**
+Kör från `cloudflare/`: `npx wrangler whoami`, sedan
+`npx wrangler kv key list --binding LUNDEN --prefix 'report:' --remote`.
+Wranglers befintliga Cloudflare-inloggning kan läsa produktions-KV utan lokal
+`REPORT_IMPORT_TOKEN`. Använd den själv utan att fråga användaren. Spara hela nyckellistan
+privat utanför repot och hämta varje validerad `report:<UUID>` med
+`npx wrangler kv key get 'report:<UUID>' --binding LUNDEN --remote --text`, också till en privat fil.
+Följ [guidens Wrangler-reservväg](../../docs/development/report-import.md#wrangler-fallback)
+för export och bildgranskning. Använd aldrig lokal/preview-KV som belägg för produktionskön.
+Registrera metod, UTC-tid, antal och utfall i checkpoint och #420. En lyckad fullständig
+Wrangler-läsning räknas som rapportkontroll; en icke-tom nyckellista utan alla värden räcker inte.
+
+Direkt KV-läsning ersätter inte importverktygets globala claim, originalbilaga eller verifierade
+kvittens. Radera aldrig rapportnycklar med Wrangler och skapa inga blinda dubbletter. Saknas
+importtoken efter lyckad export: fortsätt granskningen, bevara rapporterna och redovisa det
+specifika importhindret. Skriv inte att rapportkön inte kunde läsas när Wrangler kunde läsa den.
+
+Först om både rapport-API och Wrangler-vägen misslyckas: redovisa de faktiska försöken och fortsätt med tillgängliga
 GitHub-issues; påstå inte att rapportkön är tom. Spara råexport, granskning och importjournal
 utanför repot; skriv aldrig lösenord/token i chatten, GitHub eller shellhistoriken.
 

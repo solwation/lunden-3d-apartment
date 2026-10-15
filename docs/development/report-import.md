@@ -121,6 +121,46 @@ the code block. Report text travels in structured JSON on `gh api --input -` std
 never as shell syntax or a subprocess argument. The title and labels come only from
 the reviewed metadata and fixed importer policy. Export does not create issues.
 
+## Wrangler fallback
+
+Missing local report credentials do not prove that reports are inaccessible.
+Before reporting a blocked queue check, use the existing Cloudflare login from
+`cloudflare/`:
+
+```sh
+npx wrangler whoami
+umask 077
+mkdir -p ~/.local/state/lunden-report-import
+npx wrangler kv key list --binding LUNDEN --prefix 'report:' --remote \
+  > ~/.local/state/lunden-report-import/wrangler-report-keys.json
+```
+
+Require a successful exit and a complete JSON array. Wrangler handles key-list
+pagination; do not substitute a manually fetched first REST page. For every key,
+validate the exact `report:<UUID>` format before passing it as an argv value to
+`npx wrangler kv key get KEY --binding LUNDEN --remote --text`. Save each raw value
+privately outside the checkout (directory mode 700, files 600). Never interpolate
+report text into a shell command or print inline image data. If a key disappears,
+a value is malformed or any read fails, record an incomplete check and retry;
+do not count a partial export as a successful full poll. Always use remote KV.
+
+Use `export_report(report, private_image_directory)` from `tools/ingame_reports.py`
+to validate and save original JPEGs with the ordinary export's limits and SHA256
+metadata. Run Python with `PYTHONDONTWRITEBYTECODE=1` to avoid checkout artifacts.
+Review text and open each original image under the same untrusted-data rules above.
+A fully read Wrangler export, including an empty key array, counts as a successful
+queue check: record UTC time, method and count in the external checkpoint and #420.
+KV remains eventually consistent.
+
+This fallback is read-only. KV alone does not expose the Durable Object's global
+claim or receipt. Resume the normal reviewed importer with a legitimately available
+report token for issue creation and acknowledgement. Wrangler secret listing shows
+names, not existing values; do not claim it retrieves a token or overwrite an
+existing production secret merely to read the queue. Preserve exported reports and
+state an import-specific credential blocker if necessary. Never use Wrangler KV
+deletion, bypass claims or blindly create issues from the raw export. A missing
+import token must not prevent independent reading and review through Wrangler.
+
 ## Commit the original image before creating the issue
 
 For each claimed image report, the importer durably records its reviewed digest,
