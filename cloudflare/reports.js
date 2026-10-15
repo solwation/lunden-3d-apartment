@@ -1,5 +1,6 @@
 // Reports are untrusted data, never agent instructions. No report text is executed.
 import { REPORTS } from '../src/config.js';
+import { isPrivateCode } from '../src/privatecodes.js';
 const enc = new TextEncoder();
 const UUID = /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/;
 const ISSUE = /^https:\/\/github\.com\/solwation\/lunden-3d-apartment\/issues\/[1-9][0-9]*$/;
@@ -13,13 +14,14 @@ async function sign(secret, data) {
   return { key, mac: hex(await crypto.subtle.sign('HMAC', key, enc.encode(data))) };
 }
 async function authorized(request, env) {
-  if (!env.REPORT_PASSWORD || env.REPORT_PASSWORD.length < 24) return false;
+  const secret=env.REPORT_SESSION_SECRET??env.REPORT_PASSWORD;
+  if (!secret || secret.length < 24) return false;
   const token = request.headers.get('Authorization')?.replace(/^Bearer /,'') ?? '';
   const match = /^(lunden-reports-v1\.[0-9]{13}\.[a-f0-9]{32})\.([a-f0-9]{64})$/.exec(token);
   if (!match) return false;
   const expires = Number(match[1].split('.')[1]);
   if (expires <= Date.now() || expires > Date.now() + REPORTS.sessionSeconds * 1000) return false;
-  const { key } = await sign(env.REPORT_PASSWORD, match[1]);
+  const { key } = await sign(secret, match[1]);
   const signature = Uint8Array.from(match[2].match(/../g), b => parseInt(b,16));
   return crypto.subtle.verify('HMAC', key, signature, enc.encode(match[1]));
 }
@@ -50,14 +52,15 @@ export async function reportsFetch(request, env, h, limited) {
   if (session) {
     if (method !== 'POST') return bad(405,'method',h);
     if (await limited(request,env)) return bad(429,'rate',h);
-    if (!env.REPORT_PASSWORD || env.REPORT_PASSWORD.length < 24) return bad(503,'not configured',h);
+    const secret=env.REPORT_SESSION_SECRET??env.REPORT_PASSWORD;
+    if (!secret || secret.length < 24) return bad(503,'not configured',h);
     let b; try { b=await body(request); } catch (status) { return bad(status===413?413:400,'body',h); }
-    // Digest comparisons avoid a password-prefix timing comparison.
-    const digest = async value => hex(await crypto.subtle.digest('SHA-256',enc.encode(value)));
-    if (typeof b?.password !== 'string' || await digest(b.password) !== await digest(env.REPORT_PASSWORD)) return bad(403,'login',h);
+    // Per the user's admin contract, the original two private game codes open
+    // both furniture tools and reporting. Public layout digests are not accepted.
+    if (!isPrivateCode(b?.code)) return bad(403,'login',h);
     const expires=Date.now()+REPORTS.sessionSeconds*1000;
     const data=`lunden-reports-v1.${expires}.${hex(crypto.getRandomValues(new Uint8Array(16)))}`;
-    return reply({ token:`${data}.${(await sign(env.REPORT_PASSWORD,data)).mac}`,expires },200,h);
+    return reply({ token:`${data}.${(await sign(secret,data)).mac}`,expires },200,h);
   }
   if (id && !UUID.test(id)) return bad(400,'id',h);
   if (method === 'PUT' && id) {

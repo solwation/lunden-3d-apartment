@@ -30,7 +30,7 @@ let layoutGate = Promise.resolve();
 const layoutStorage = { get: async (k) => structuredClone(layouts.get(k)), put: async (k,v) => layouts.set(k, structuredClone(v)) };
 const reports = new Map();
 const reportStorage = { get: async k => structuredClone(reports.get(k)), put: async (k,v) => reports.set(k,structuredClone(v)) };
-const env = { LUNDEN, layoutStorage, reportStorage, REPORT_PASSWORD: process.env.LUNDEN_REPORT_PASSWORD, ADMIN_TOKEN: process.argv[3] ?? 'testtoken' };
+const env = { LUNDEN, layoutStorage, reportStorage, REPORT_SESSION_SECRET: process.env.LUNDEN_REPORT_SESSION_SECRET, ADMIN_TOKEN: process.argv[3] ?? 'testtoken' };
 env.PLAYERS = fakeNamespace(PlayerRoom, env); // the players' room (#666): ws://localhost:<port>/players
 
 http.createServer(async (req, res) => {

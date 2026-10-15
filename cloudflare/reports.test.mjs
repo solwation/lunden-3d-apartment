@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { webcrypto } from 'node:crypto';
+import { createRequire } from 'node:module';
+const { loadSecretTestInputs } = createRequire(import.meta.url)('../tools/secret-test-inputs.cjs');
+const { codes } = loadSecretTestInputs();
 import worker, { DrawingRoom } from './worker.js';
 import { REPORTS } from '../src/config.js';
 globalThis.crypto ??= webcrypto;
@@ -11,7 +14,7 @@ let ip=0;
 function fixture(){
  const kv=new Map(),data=new Map();let gate=Promise.resolve(),writes=0;
  const storage={get:async k=>structuredClone(data.get(k)),put:async(k,v)=>data.set(k,structuredClone(v))};
- const env={REPORT_PASSWORD:password,ADMIN_TOKEN:adminToken,LUNDEN:{
+ const env={REPORT_SESSION_SECRET:password,ADMIN_TOKEN:adminToken,LUNDEN:{
   get:async(k,t)=>kv.has(k)?t==='json'?JSON.parse(kv.get(k)):kv.get(k):null,
   put:async(k,v)=>{writes++;kv.set(k,v);},delete:async k=>kv.delete(k),
   list:async({prefix,limit,cursor})=>{const all=[...kv.keys()].filter(k=>k.startsWith(prefix));const start=Number(cursor??0);return {keys:all.slice(start,start+limit).map(name=>({name})),list_complete:start+limit>=all.length,cursor:String(start+limit)};},
@@ -19,32 +22,34 @@ function fixture(){
  const room=new DrawingRoom({storage,blockConcurrencyWhile(fn){const p=gate.then(fn);gate=p.catch(()=>{});return p;}},env);
  env.DRAWINGS={idFromName:name=>{assert.equal(name,'reports');return name;},get:()=>room};
  const call=(path,method='GET',body,token,headers={})=>worker.fetch(new Request('https://worker.test'+path,{method,headers:{Origin:origin,'CF-Connecting-IP':String(++ip),...(token?{Authorization:'Bearer '+token}:{}),...headers},...(body!==undefined?{body:typeof body==='string'?body:JSON.stringify(body)}:{})}),env);
- const login=async()=>{const r=await call('/report-session','POST',{password});assert.equal(r.status,200);return (await r.json()).token;};
+ const login=async(code=codes[0])=>{const r=await call('/report-session','POST',{code});assert.equal(r.status,200);return (await r.json()).token;};
  return{env,call,login,kv,data,writes:()=>writes};
 }
-test('fail closed, method/origin/body limits, login rate before password check, and no public furniture credential',async()=>{
+test('fail closed, method/origin/body limits, login rate before password check, and no replayed furniture digest',async()=>{
  const f=fixture();
  assert.equal((await f.call('/report-session','GET')).status,405);
- assert.equal((await f.call('/report-session','POST',{password:'wrong'})).status,403);
- assert.equal((await f.call('/report-session','POST',{password},undefined,{Origin:'https://evil.test'})).status,403);
- assert.equal((await f.call('/report-session','POST',{password},undefined,{Origin:''})).status,403);
+ assert.equal((await f.call('/report-session','POST',{code:'wrong'})).status,403);
+ assert.equal((await f.call('/report-session','POST',{code:codes[0]},undefined,{Origin:'https://evil.test'})).status,403);
+ assert.equal((await f.call('/report-session','POST',{code:codes[0]},undefined,{Origin:''})).status,403);
  assert.equal((await f.call('/report-session','POST',' '.repeat(REPORTS.maxBytes+1))).status,413);
  assert.equal((await f.call('/report-session','POST','{')).status,400);
- f.env.REPORT_PASSWORD='short';assert.equal((await f.call('/report-session','POST',{password})).status,503);
- delete f.env.REPORT_PASSWORD;assert.equal((await f.call('/report-session','POST',{password})).status,503);
+ f.env.REPORT_SESSION_SECRET='short';assert.equal((await f.call('/report-session','POST',{code:codes[0]})).status,503);
+ delete f.env.REPORT_SESSION_SECRET;assert.equal((await f.call('/report-session','POST',{code:codes[0]})).status,503);
  assert.equal((await f.call('/reports/'+id,'PUT',{text:'wish',credential:{version:1,digest:'public'}})).status,403);
  const g=fixture();let count=0;g.env.LIMITER={limit:async()=>({success:++count<=2})};
- assert.equal((await g.call('/report-session','POST',{password:'wrong'})).status,403);
- assert.equal((await g.call('/report-session','POST',{password:'wrong'})).status,403);
- assert.equal((await g.call('/report-session','POST',{password})).status,429);assert.equal(count,3);
+ assert.equal((await g.call('/report-session','POST',{code:'wrong'})).status,403);
+ assert.equal((await g.call('/report-session','POST',{code:'wrong'})).status,403);
+ assert.equal((await g.call('/report-session','POST',{code:codes[0]})).status,429);assert.equal(count,3);
 });
 test('signed scope, tampering, expiry, password rotation and admin/session separation',async()=>{
  const f=fixture(),token=await f.login();
+ await f.login(codes[1]);
+ assert.equal((await f.call('/report-session','POST',{credential:{version:1,digest:'public'}})).status,403);
  for(const invalid of [token+'0',token.replace('lunden-reports','other-scope'),adminToken])assert.equal((await f.call('/reports/'+id,'PUT',{text:'wish'},invalid)).status,403);
  assert.equal((await f.call('/reports','GET',undefined,token)).status,403);
  const real=Date.now;Date.now=()=>real()+REPORTS.sessionSeconds*1000+5;
  try{assert.equal((await f.call('/reports/'+id,'PUT',{text:'wish'},token)).status,403);}finally{Date.now=real;}
- f.env.REPORT_PASSWORD=password+'rotated';assert.equal((await f.call('/reports/'+id,'PUT',{text:'wish'},token)).status,403);
+ f.env.REPORT_SESSION_SECRET=password+'rotated';assert.equal((await f.call('/reports/'+id,'PUT',{text:'wish'},token)).status,403);
 });
 test('reports-only import credential can read and claim but grants neither browser login nor global admin access',async()=>{
  const f=fixture(),token=await f.login();f.env.REPORT_IMPORT_TOKEN='fixture-import-only';
@@ -52,7 +57,7 @@ test('reports-only import credential can read and claim but grants neither brows
  assert.equal((await f.call('/reports','GET',undefined,f.env.REPORT_IMPORT_TOKEN)).status,200);
  assert.equal((await f.call('/reports/'+id,'POST',{claimId},f.env.REPORT_IMPORT_TOKEN,{Origin:''})).status,200);
  assert.equal((await f.call('/reports/'+id,'PUT',{text:'scoped report'},f.env.REPORT_IMPORT_TOKEN)).status,403);
- assert.equal((await f.call('/report-session','POST',{password:f.env.REPORT_IMPORT_TOKEN})).status,403);
+ assert.equal((await f.call('/report-session','POST',{code:f.env.REPORT_IMPORT_TOKEN})).status,403);
  assert.equal((await f.call('/admin/scores','DELETE',undefined,f.env.REPORT_IMPORT_TOKEN)).status,403);
 });
 test('immutable concurrent IDs, exact untrusted text, retry without KV rewrite, paginated private reads, receipt-first removal and replay',async()=>{
