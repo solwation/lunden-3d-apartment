@@ -552,7 +552,7 @@ export class Player {
     for (let d = 0; d <= BICYCLE.extract; d += BICYCLE.extractStep) {
       const p = bike.position.clone().addScaledVector(dir, d); p.y = this.groundAt(p.x, p.z, standing.y);
       const support=this.bikeSupport(p,bike.yaw);if(!support)continue;p.y=support.y;
-      if (!this.bikeClear(p, Math.max(-BICYCLE.rear, BICYCLE.front) + BICYCLE.radius) || !this.bikeHull(p, bike.yaw) || !this.bikePath(bike.position, p, bike.yaw, ignored)) continue;
+      if (!this.bikeClear(p) || !this.bikeHull(p, bike.yaw) || !this.bikePath(bike.position, p, bike.yaw, ignored)) continue;
       const n = Math.max(1, Math.ceil(standing.distanceTo(p) / BICYCLE.step)); let safe = true;
       for (let i = 0; i <= n; i++) { const q = standing.clone().lerp(p, i / n); q.y = this.groundAt(q.x, q.z, standing.y); if (!this.bikeClear(q)) { safe = false; break; } }
       if (safe) { chosen = p; break; }

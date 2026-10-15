@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { freeCanvasAfterUpload } from './lowmemory.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { GARAGE as G, SITE, CORE, PLAYER } from './config.js';
+import { GARAGE as G, SITE, CORE, PLAYER, BICYCLE } from './config.js';
 import { carGeometry, bikeGeometry, bikeSpokeTexture, standGeometry } from './streetlife.js';
 import { groundY } from './surroundings.js';
 import { sfx } from './audio.js';
@@ -205,7 +205,7 @@ const facing = (ox, oz) => Math.atan2(ox, oz);
 const FACES = { n: [0, -1], s: [0, 1], e: [1, 0], w: [-1, 0] };
 
 export class Garage {
-  constructor() {
+  constructor(options = {}) {
     const group = new THREE.Group();
     this.object = group;
     this.rects = RECTS;
@@ -324,20 +324,52 @@ export class Garage {
     const Rb = rng(7), bikeCols = [0x1d3c6e, 0xb02a2a, 0x2a2a2a, 0xe2e2dc, 0x3c7a4a, 0x8a8f96, 0xd8a020];
     const bikeRows = new Map(); // (row, area) → the bikes and stalls of one rack row, as a near and a far mesh (#704)
     const rackOf = (row, x, z) => { const a = areaAt(x, z), k = row + '|' + a.name; if (!bikeRows.has(k)) bikeRows.set(k, { area: a, hi: [], lo: [] }); return bikeRows.get(k); };
+    const bikeRecords = [];
+    const rideableRows = new Set(options.rideableRows ?? G.rideableBikeRows ?? [0]);
+    this.rideableRows = rideableRows;
     G.bikes.forEach(([x0, x1, z, f], row) => {
       put('shell', bake(new THREE.CylinderGeometry(0.014, 0.014, x1 - x0, 8).rotateZ(Math.PI / 2).translate((x0 + x1) / 2, F + 0.03, z), 0xb4b9bd), (x0 + x1) / 2, z + f * 0.5);
+      const za = Math.min(z, z + f * 1.3), zb = Math.max(z, z + f * 1.3);
+      const rowRack = [[x0, za, x1, za], [x1, za, x1, zb], [x1, zb, x0, zb], [x0, zb, x0, za]];
+      segs.push(...rowRack);
+      let slot = 0;
       for (let x = x0 + 0.3; x < x1 - 0.2; x += 0.62) {
         const rack = rackOf(row, x, z + f * 0.5), at = (g) => g.clone().rotateY(f * Math.PI / 2).translate(x, F, z + f * 0.42);
         rack.hi.push(bake(at(stand), 0xb4b9bd)); rack.lo.push(bake(at(standLo), 0xb4b9bd));
         if (Rb() < 0.65) {
           const col = bikeCols[Math.floor(Rb() * bikeCols.length)];
-          rack.hi.push(bake(at(frame), col), bake(at(tyres), 0x141414), bake(at(metal), 0xb4b9bd));
-          rack.lo.push(bake(at(frameLo), col), bake(at(tyresLo), 0x141414), bake(at(metalLo), 0xb4b9bd));
-          bikeSpokes.push(bake(spokes.clone().rotateY(f * Math.PI / 2).translate(x, F, z + f * 0.42), 0xb4b9bd, true));
+          const startHi = rack.hi.reduce((sum, g) => sum + g.attributes.position.count, 0);
+          const startLo = rack.lo.reduce((sum, g) => sum + g.attributes.position.count, 0);
+          const startSpoke = bikeSpokes.reduce((sum, g) => sum + g.attributes.position.count, 0);
+
+          const frameHi = bake(at(frame), col), tyresHi = bake(at(tyres), 0x141414), metalHi = bake(at(metal), 0xb4b9bd);
+          const frameL = bake(at(frameLo), col), tyresL = bake(at(tyresLo), 0x141414), metalL = bake(at(metalLo), 0xb4b9bd);
+          const spokeG = bake(spokes.clone().rotateY(f * Math.PI / 2).translate(x, F, z + f * 0.42), 0xb4b9bd, true);
+
+          const countHi = frameHi.attributes.position.count + tyresHi.attributes.position.count + metalHi.attributes.position.count;
+          const countLo = frameL.attributes.position.count + tyresL.attributes.position.count + metalL.attributes.position.count;
+          const countSpoke = spokeG.attributes.position.count;
+
+          rack.hi.push(frameHi, tyresHi, metalHi);
+          rack.lo.push(frameL, tyresL, metalL);
+          bikeSpokes.push(spokeG);
+
+          if (rideableRows.has(row)) {
+            bikeRecords.push({
+              row, slot,
+              rack,
+              startHi, countHi,
+              startLo, countLo,
+              startSpoke, countSpoke,
+              pos: new THREE.Vector3(x, F, z + f * 0.42),
+              yaw: f * Math.PI / 2,
+              col,
+              rackSegments: rowRack,
+            });
+          }
         }
+        slot++;
       }
-      const za = Math.min(z, z + f * 1.3), zb = Math.max(z, z + f * 1.3);
-      rectSegs(segs, x0, x1, za, zb);
     });
     // the förråd: wire-mesh walls and fronts with a door each; things inside
     this.cageDoors = [];
@@ -417,13 +449,235 @@ export class Garage {
     // the rack rows' bikes (#704): per row and area a near and a far mesh in the area's shell material, swapped by distance in update()
     this.bikeRows = [...bikeRows.values()].map((r) => {
       const [hi, lo] = [r.hi, r.lo].map((list) => { const m = new THREE.Mesh(mergeGeometries(list), r.area.mats.shell); m.raycast = () => {}; r.area.group.add(m); m.geometry.computeBoundingSphere(); return m; });
+      r.hiMesh = hi; r.loMesh = lo;
       return { hi, lo, c: hi.geometry.boundingSphere.center, r: hi.geometry.boundingSphere.radius };
     });
     // All basement bike spokes share one small alpha-textured draw, independent of the room light batches.
+    let bikeSpokesMesh = null;
     if (bikeSpokes.length) {
-      const mesh = new THREE.Mesh(mergeGeometries(bikeSpokes), new THREE.MeshBasicMaterial({ vertexColors: true, alphaMap: bikeSpokeTexture(), alphaTest: 0.35, side: THREE.DoubleSide }));
-      mesh.raycast = () => {}; group.add(mesh);
+      bikeSpokesMesh = new THREE.Mesh(mergeGeometries(bikeSpokes), new THREE.MeshBasicMaterial({ vertexColors: true, alphaMap: bikeSpokeTexture(), alphaTest: 0.35, side: THREE.DoubleSide }));
+      bikeSpokesMesh.raycast = () => {}; group.add(bikeSpokesMesh);
     }
+    this.bikeSpokesMesh = bikeSpokesMesh;
+
+    // #986: Register rideable bicycles with detached/restore contract.
+    const pickGeometry = new THREE.BoxGeometry(1.7, 1.05, .6), pickMaterial = new THREE.MeshBasicMaterial({ visible: false });
+    const selfGarage = this;
+    this.bicycles = bikeRecords.map((record, index) => {
+      const original = new THREE.Matrix4().makeRotationY(record.yaw).setPosition(record.pos);
+      const inv = original.clone().invert();
+      const invNormal = new THREE.Matrix3().getNormalMatrix(inv);
+
+      const nearMesh = record.rack.hiMesh;
+      const farMesh = record.rack.loMesh;
+      const spokeMesh = bikeSpokesMesh;
+
+      const nearRange = {
+        mesh: nearMesh,
+        start: record.startHi,
+        count: record.countHi,
+        position: nearMesh.geometry.attributes.position.array.slice(record.startHi * 3, (record.startHi + record.countHi) * 3),
+        normal: nearMesh.geometry.attributes.normal?.array.slice(record.startHi * 3, (record.startHi + record.countHi) * 3) ?? null,
+        color: nearMesh.geometry.attributes.color.array.slice(record.startHi * 3, (record.startHi + record.countHi) * 3),
+      };
+
+      const farRange = {
+        mesh: farMesh,
+        start: record.startLo,
+        count: record.countLo,
+        position: farMesh.geometry.attributes.position.array.slice(record.startLo * 3, (record.startLo + record.countLo) * 3),
+        normal: farMesh.geometry.attributes.normal?.array.slice(record.startLo * 3, (record.startLo + record.countLo) * 3) ?? null,
+        color: farMesh.geometry.attributes.color.array.slice(record.startLo * 3, (record.startLo + record.countLo) * 3),
+      };
+
+      const spokeRange = {
+        mesh: spokeMesh,
+        start: record.startSpoke,
+        count: record.countSpoke,
+        position: spokeMesh.geometry.attributes.position.array.slice(record.startSpoke * 3, (record.startSpoke + record.countSpoke) * 3),
+        normal: spokeMesh.geometry.attributes.normal?.array.slice(record.startSpoke * 3, (record.startSpoke + record.countSpoke) * 3),
+        color: spokeMesh.geometry.attributes.color?.array.slice(record.startSpoke * 3, (record.startSpoke + record.countSpoke) * 3),
+      };
+
+      const ranges = [nearRange, farRange, spokeRange];
+      ranges.near = nearRange; ranges.far = farRange; ranges.spoke = spokeRange;
+
+      const components = [nearMesh, farMesh, spokeMesh];
+      components.near = nearMesh; components.far = farMesh; components.spoke = spokeMesh;
+      for (const m of components) if (m) m.userData.moving = true;
+
+      const solidGeo = new THREE.BufferGeometry();
+      const posLocal = new Float32Array(nearRange.position.length);
+      const v = new THREE.Vector3();
+      for (let i = 0; i < nearRange.count; i++) {
+        v.fromArray(nearRange.position, i * 3).applyMatrix4(inv);
+        posLocal.set([v.x, v.y, v.z], i * 3);
+      }
+      solidGeo.setAttribute('position', new THREE.BufferAttribute(posLocal, 3));
+      if (nearRange.normal) {
+        const normLocal = new Float32Array(nearRange.normal.length);
+        for (let i = 0; i < nearRange.count; i++) {
+          v.fromArray(nearRange.normal, i * 3).applyMatrix3(invNormal);
+          normLocal.set([v.x, v.y, v.z], i * 3);
+        }
+        solidGeo.setAttribute('normal', new THREE.BufferAttribute(normLocal, 3));
+      }
+      solidGeo.setAttribute('color', new THREE.BufferAttribute(nearRange.color.slice(), 3));
+      if (nearMesh.geometry.attributes.uv) {
+        solidGeo.setAttribute('uv', new THREE.BufferAttribute(nearMesh.geometry.attributes.uv.array.slice(record.startHi * 2, (record.startHi + record.countHi) * 2), 2));
+      }
+
+      const spokeGeo = new THREE.BufferGeometry();
+      const spokePosLocal = new Float32Array(spokeRange.position.length);
+      for (let i = 0; i < spokeRange.count; i++) {
+        v.fromArray(spokeRange.position, i * 3).applyMatrix4(inv);
+        spokePosLocal.set([v.x, v.y, v.z], i * 3);
+      }
+      spokeGeo.setAttribute('position', new THREE.BufferAttribute(spokePosLocal, 3));
+      if (spokeRange.normal) {
+        const spokeNormLocal = new Float32Array(spokeRange.normal.length);
+        for (let i = 0; i < spokeRange.count; i++) {
+          v.fromArray(spokeRange.normal, i * 3).applyMatrix3(invNormal);
+          spokeNormLocal.set([v.x, v.y, v.z], i * 3);
+        }
+        spokeGeo.setAttribute('normal', new THREE.BufferAttribute(spokeNormLocal, 3));
+      }
+      if (spokeRange.color) {
+        spokeGeo.setAttribute('color', new THREE.BufferAttribute(spokeRange.color.slice(), 3));
+      }
+      if (spokeMesh.geometry.attributes.uv) {
+        spokeGeo.setAttribute('uv', new THREE.BufferAttribute(spokeMesh.geometry.attributes.uv.array.slice(record.startSpoke * 2, (record.startSpoke + record.countSpoke) * 2), 2));
+      }
+
+      const material = new THREE.MeshBasicMaterial({ vertexColors: true });
+      const spokeMaterial = new THREE.MeshBasicMaterial({ vertexColors: true, alphaMap: bikeSpokeTexture(), alphaTest: 0.35, side: THREE.DoubleSide });
+
+      const detachedSolid = new THREE.Mesh(solidGeo, material);
+      const detachedSpoke = new THREE.Mesh(spokeGeo, spokeMaterial);
+      detachedSolid.raycast = () => {};
+      detachedSpoke.raycast = () => {};
+
+      const detachedGroup = new THREE.Group();
+      detachedGroup.add(detachedSolid, detachedSpoke);
+      detachedGroup.position.copy(record.pos);
+      detachedGroup.rotation.set(0, record.yaw, 0, 'YXZ');
+      detachedGroup.visible = false;
+      group.add(detachedGroup);
+
+      const pick = new THREE.Mesh(pickGeometry, pickMaterial);
+      pick.userData.moving = true;
+      group.add(pick);
+      pick.position.copy(record.pos);
+      pick.position.y += .525;
+      pick.rotation.y = record.yaw;
+
+      const bicycle = {
+        id: `garage-${record.row}-${record.slot}`,
+        row: record.row,
+        slot: record.slot,
+        index,
+        position: record.pos.clone(),
+        yaw: record.yaw,
+        pitch: 0,
+        matrix: original.clone(),
+        original: original.clone(),
+        rackSegments: record.rackSegments,
+        atSource: true,
+        ridden: false,
+        detached: false,
+        components,
+        ranges,
+        pick,
+        material,
+        spokeMaterial,
+        detachedGroup,
+        garage: selfGarage,
+        detach() {
+          if (this.detached) return;
+          this.detached = true;
+          this.atSource = false;
+          detachedGroup.visible = true;
+
+          nearRange.mesh.geometry.attributes.position.array.fill(0, nearRange.start * 3, (nearRange.start + nearRange.count) * 3);
+          nearRange.mesh.geometry.attributes.position.needsUpdate = true;
+          nearRange.mesh.geometry.computeBoundingBox();
+          nearRange.mesh.geometry.computeBoundingSphere();
+
+          farRange.mesh.geometry.attributes.position.array.fill(0, farRange.start * 3, (farRange.start + farRange.count) * 3);
+          farRange.mesh.geometry.attributes.position.needsUpdate = true;
+          farRange.mesh.geometry.computeBoundingBox();
+          farRange.mesh.geometry.computeBoundingSphere();
+
+          spokeRange.mesh.geometry.attributes.position.array.fill(0, spokeRange.start * 3, (spokeRange.start + spokeRange.count) * 3);
+          spokeRange.mesh.geometry.attributes.position.needsUpdate = true;
+          spokeRange.mesh.geometry.computeBoundingBox();
+          spokeRange.mesh.geometry.computeBoundingSphere();
+        },
+        restore() {
+          if (!this.detached && this.atSource) return;
+          this.detached = false;
+          this.atSource = true;
+          this.ridden = false;
+          detachedGroup.visible = false;
+
+          nearRange.mesh.geometry.attributes.position.array.set(nearRange.position, nearRange.start * 3);
+          nearRange.mesh.geometry.attributes.position.needsUpdate = true;
+          nearRange.mesh.geometry.computeBoundingBox();
+          nearRange.mesh.geometry.computeBoundingSphere();
+
+          farRange.mesh.geometry.attributes.position.array.set(farRange.position, farRange.start * 3);
+          farRange.mesh.geometry.attributes.position.needsUpdate = true;
+          farRange.mesh.geometry.computeBoundingBox();
+          farRange.mesh.geometry.computeBoundingSphere();
+
+          spokeRange.mesh.geometry.attributes.position.array.set(spokeRange.position, spokeRange.start * 3);
+          spokeRange.mesh.geometry.attributes.position.needsUpdate = true;
+          spokeRange.mesh.geometry.computeBoundingBox();
+          spokeRange.mesh.geometry.computeBoundingSphere();
+
+          this.position.copy(record.pos);
+          this.yaw = record.yaw;
+          this.pitch = 0;
+          this.matrix.copy(this.original);
+          pick.position.copy(record.pos);
+          pick.position.y += .525;
+          pick.rotation.y = record.yaw;
+          detachedGroup.position.copy(record.pos);
+          detachedGroup.rotation.set(0, record.yaw, 0, 'YXZ');
+          pick.visible = true;
+        },
+        updateLighting() {
+          const p = this.position;
+          const below = p.y < C && selfGarage.inside(p.x, p.z);
+          const v = below ? (LI.dim + (selfGarage.areas[selfGarage.areaAt(p.x, p.z)]?.level ?? 1) * (1 - LI.dim)) : 1;
+          this.material.color.setScalar(v);
+          this.spokeMaterial.color.setScalar(v);
+        },
+        place(p, yaw, pitch = 0) {
+          if (!this.detached) this.detach();
+          if (this.matrix && this.position.equals(p) && this.yaw === yaw && (this.pitch ?? 0) === pitch) return;
+          this.position.copy(p);
+          this.yaw = yaw;
+          this.pitch = pitch;
+          this.matrix.makeRotationFromEuler(new THREE.Euler(0, yaw, pitch, 'YXZ')).setPosition(p);
+          detachedGroup.position.copy(p);
+          detachedGroup.rotation.set(0, yaw, pitch, 'YXZ');
+          pick.position.copy(p);
+          pick.position.y += .525;
+          pick.rotation.y = yaw;
+          this.updateLighting();
+        },
+        footprint(feet, headroom, hurdle) {
+          if (this.selfQuery || this.atSource || this.position.y - Math.abs(Math.sin(this.pitch ?? 0)) * (Math.max(-BICYCLE.rear, BICYCLE.front) + BICYCLE.radius) > feet + headroom || this.position.y + BICYCLE.height + Math.abs(Math.sin(this.pitch ?? 0)) * (Math.max(-BICYCLE.rear, BICYCLE.front) + BICYCLE.radius) <= feet - hurdle) return [];
+          const dx = Math.cos(this.yaw), dz = -Math.sin(this.yaw), r = BICYCLE.radius;
+          const low = BICYCLE.rear - r - Math.max(0, Math.sin(this.pitch ?? 0)) * BICYCLE.height, high = BICYCLE.front + r + Math.max(0, -Math.sin(this.pitch ?? 0)) * BICYCLE.height;
+          return [[low, -r], [high, -r], [high, r], [low, r]].map(([x, z]) => [this.position.x + dx * x - dz * z, this.position.z + dz * x + dx * z]);
+        }
+      };
+      bicycle.target = { name: 'Cykeln', kind: 'bicycle', verb: 'cykla', bicycle, pickable: pick };
+      pick.userData.door = bicycle.target;
+      return bicycle;
+    });
     // the doors: one instanced leaf for the cages (mesh in a steel frame), one for the steel doors; an invisible pick box each
     const leafGeo = (w, h, mesh) => {
       const parts = [];
@@ -755,13 +1009,17 @@ export class Garage {
     for (const l of this.lamps) l.k = below ? this.areas[l.area].level : 0;
     // drawn: everything while the camera is down here; only the entrance hall (+ the cars) from outside the door
     const vis = this.near(camera);
-    this.object.visible = !!vis;
+    const anyRidden = this.bicycles?.some((b) => !b.atSource) ?? false;
+    this.object.visible = !!vis || anyRidden;
     this.carArea.visible = vis !== 'park'; // no whole-garage car batch through a small park entrance
     for (const a of Object.values(this.areas)) a.group.visible = vis === true || (vis === 'park' ? a.name === this.parkEntrance(camera.position, true)?.area : a.name === 'entrance');
     this.blackout.visible = !vis;
     if (vis) for (const b of this.bikeRows) { // a rack row's bikes: in full near the camera, the coarse set beyond (#704)
       const near = Math.hypot(camera.position.x - b.c.x, camera.position.z - b.c.z) < G.bikeLodNear + b.r;
       b.hi.visible = near; b.lo.visible = !near;
+    }
+    if (this.bicycles) for (const b of this.bicycles) {
+      if (!b.atSource) b.updateLighting();
     }
     // the daylight down here: none deep inside, some by the open door
     const want = below ? LI.dim * THREE.MathUtils.clamp((p.x - GD.x) / 7, 0, 1) : 0;
@@ -771,6 +1029,9 @@ export class Garage {
     const here = below ? this.areas[this.areaAt(p.x, p.z) ?? 'entrance'] : null;
     this.lit = here ? here.level * (this.under / LI.dim) : 0;
   }
+
+  detachBicycle(bike) { bike.detach(); }
+  restoreBicycle(bike) { bike.restore(); }
 }
 
 /** The ribbed panels of the garage door. */
