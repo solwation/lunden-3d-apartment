@@ -13,6 +13,7 @@ function section(start,end) {
 const parts = {
   use: section('function use(thing) {', "actionBtn.addEventListener('click'"),
   click: section('function click(button) {', "document.addEventListener('mousedown'"),
+  bicycle: section('const bicyclePickables =', 'function updateFocus() {'),
   focus: section('function updateFocus() {','// --- furniture on/off'),
   greet: section('function greetPlayer(g) {','ghosts.onGreet ='),
   weapon: section('const weaponIs =','const ghosts = new Ghosts'),
@@ -23,7 +24,7 @@ const parts = {
   mouse: section("document.addEventListener('mousedown', (e) => { if (locked", "document.addEventListener('contextmenu'"),
   keyboard: section("document.addEventListener('keydown', (e) => {\n  if (!locked", "document.addEventListener('keyup', (e) => {\n  player.keys.delete")
 };
-fs.writeFileSync(path.join(out,'source-proof.json'),JSON.stringify({mainSha256:crypto.createHash('sha256').update(source).digest('hex'),parts:Object.fromEntries(Object.entries(parts).map(([k,v])=>[k,crypto.createHash('sha256').update(v).digest('hex')])),note:'Complete source spans injected verbatim; no branch rewrites. Native DOM only, no apartment or actual projectile/hit acceptance.'},null,2));
+fs.writeFileSync(path.join(out,'source-proof.json'),JSON.stringify({mainSha256:crypto.createHash('sha256').update(source).digest('hex'),sourceHashes:Object.fromEntries(['index.html','src/hudicons.css','src/dialogclose.css','src/main.js','src/ghosts.js','src/customizer.js','src/config.js','tools/armedgreettest.cjs'].map(file=>[file,crypto.createHash('sha256').update(fs.readFileSync(path.join(__dirname,'..',file))).digest('hex')])),parts:Object.fromEntries(Object.entries(parts).map(([k,v])=>[k,crypto.createHash('sha256').update(v).digest('hex')])),note:'Complete source spans injected verbatim; no branch rewrites. Native DOM only, no apartment or actual projectile/hit acceptance.'},null,2));
 let failures=0;
 const check=(ok,text)=>{console.log(`${ok?'PASS':'FAIL'} ${text}`);if(!ok)failures++;};
 (async()=>{
@@ -38,6 +39,7 @@ const check=(ok,text)=>{console.log(`${ok?'PASS':'FAIL'} ${text}`);if(!ok)failur
    const original=HTMLCanvasElement.prototype.getContext;window.webglCalls=0;
    HTMLCanvasElement.prototype.getContext=function(kind,...args){if(/webgl/i.test(kind)){window.webglCalls++;throw Error('no WebGL in native action fixture');}return original.call(this,kind,...args);};
    window.THREE=await import('three');const {Ghosts}=await import('/src/ghosts.js');
+   const {isAvatarCustomizerOpen}=await import('/src/customizer.js');window.isAvatarCustomizerOpen=isAvatarCustomizerOpen;
    const {COMBAT,HOLD,REST,LIFE,LEVELS,GHOSTS}=await import('/src/config.js');
    Object.assign(window,{COMBAT,HOLD,REST,LIFE,LEVELS,GHOSTS});
    window.scene=new THREE.Scene();window.camera=new THREE.PerspectiveCamera(60,844/390,.1,100);camera.position.set(0,1,0);
@@ -59,7 +61,7 @@ const check=(ok,text)=>{console.log(`${ok?'PASS':'FAIL'} ${text}`);if(!ok)failur
    window.shadowState={};window.hand={reach:()=>{}};window.greetedPlayers=new Set();window.greet={sayMine:line=>effects.lines.push(line)};window.bump=()=>effects.points++;
    window.rearrange={enabled:false};window.measure={active:false};window.setPressed=()=>{};window.setIcon=()=>{};
    window.cat={visible:false};window.olof={waveable:false};window.olofDriver={greetable:()=>false};window.keyCabinet=null;
-   window.car={targets:()=>[]};window.world={furnitureOn:false,courtyardTargets:[],cupSurfaces:[]};window.cups={cups:[]};
+   window.car={targets:()=>[]};window.world={furnitureOn:false,courtyardTargets:[],cupSurfaces:[],bicycles:[]};window.cups={cups:[]};
    window.power={reachable:false,on:true,state:'on',release:()=>{}};window.target={object:{visible:false}};
    window.fish=null;window.fries=null;window.airFryer={open:false};window.fruit={targets:()=>[]};
    window.life={targets:()=>[],runner:{job:null}};window.toiletPaper={targets:()=>[],aim:()=>null};
@@ -73,9 +75,10 @@ const check=(ok,text)=>{console.log(`${ok?'PASS':'FAIL'} ${text}`);if(!ok)failur
    window.raycaster=new THREE.Raycaster();window.center=new THREE.Vector2();window.pickables=[];
    for(const [global,id] of [['actionBtn','action'],['promptEl','prompt'],['powerBtn','power-btn'],['turnBtn','turn-btn'],['standBtn','stand-btn']])window[global]=document.getElementById(id);
    document.getElementById('loading').hidden=true;document.getElementById('overlay').hidden=true;document.getElementById('hud').hidden=false;document.body.classList.add('touch');
-   const code=Object.values(parts).join('\n');(0,eval)(code+'\nwindow.fns={use,click,updateFocus,greetPlayer,clickTarget,clickIsE,weaponKey};');
+   const code=Object.values(parts).join('\n');(0,eval)(code+'\nwindow.fns={use,click,updateFocus,greetPlayer,clickTarget,clickIsE,weaponKey,bicyclePickables,updateBicycleControls};');
    window.sourceIdentity={use:fns.use.toString()===parts.use,focus:fns.updateFocus.toString()===parts.focus,greet:fns.greetPlayer.toString()===parts.greet,
-    click:parts.click.startsWith(fns.click.toString()),weapon:parts.weapon.includes('const weaponKey = '+fns.weaponKey.toString()+';')};
+    click:parts.click.startsWith(fns.click.toString()),weapon:parts.weapon.includes('const weaponKey = '+fns.weaponKey.toString()+';'),
+    bicycle:parts.bicycle.includes('const bicyclePickables = '+fns.bicyclePickables.toString()+';')&&parts.bicycle.includes(fns.updateBicycleControls.toString())};
   },parts);
   check(await page.evaluate(()=>Object.values(sourceIdentity).every(Boolean)),'complete use/focus/greet/click/current-weapon production functions match verbatim source');
   const focus=()=>page.evaluate(()=>{scene.updateMatrixWorld(true);fns.updateFocus();return {kind:focused?.kind,label:actionBtn.textContent,hidden:actionBtn.hidden,clickIsE:fns.clickIsE()};});

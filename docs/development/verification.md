@@ -6933,3 +6933,17 @@ Representative desktop/landscape close corners and narrow privacy scroll
 screenshots were opened and inspected. Source hashes/results are under
 `/tmp/lunden-modal-1059`; these are native UI/component checks with bounded world
 collaborators, not apartment rendering, production storage or physical phones.
+
+## Greeting fixture dependencies (#1060)
+
+`tools/armedgreettest.cjs` also injects the complete production
+`bicyclePickables`/`updateBicycleControls` span and exposes the bounded World's
+empty `bicycles` collection. It imports the real closed-customizer state accessor
+required by `updateFocus`. Production focus/action functions and every original
+greeting assertion stay intact; the source identity assertion includes both bike
+helpers. `source-proof.json` records runtime/stylesheet/driver hashes alongside
+verbatim span hashes. Native Chromium passes 22/22 (`ALL PASS`, CLI 0), no WebGL
+calls or page errors; inspected `armed-touch.png` shows the actual Skjut button.
+The original missing-bike exception and then missing-customizer exception are
+retained under `/tmp/lunden-greet-1060`. This repairs fixture dependency drift,
+without a production gameplay change or apartment/physical-phone claim.
