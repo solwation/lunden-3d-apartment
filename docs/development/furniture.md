@@ -234,3 +234,29 @@ no new light, animation or render pass. Detail proportions are visual assumption
 not verified Tapwell product dimensions (`SHOWER_FITTINGS` in config). Existing
 water outlets, spray directions, thermostat picks and sound/interaction code stay
 unchanged. A/B/C have no corresponding furnished shower interior in this model.
+
+## LANDSKRONA cushion shaping (#1040)
+
+`seatModule` uses a cached closed crowned shell for both horizontal seats and
+rotated back cushions, with small same-cloth welt tubes. Sofa and armchair share
+this shape and the softened arm fronts. `LANDSKRONA.upholstery` holds visual
+guesses, not measured dimensions. All new cloth explicitly receives UV1 through
+`upholsterySurface.part`; piping uses the existing private cloth material and
+merges into the same draw batch. Decorative cushions/throws and the builders'
+rest, placement and collision metadata retain their existing anchors. The seat
+crown peaks at the old seat top so the fixed throw/pillow placements stay clear.
+
+`BASELINE_FURNITURE=/absolute/path/to/old/src/furniture.js node
+tools/verifyfurniture1040.cjs http://localhost:8871 before /tmp/furniture1040`
+serves the explicit old builder through a browser route; use `after` for current
+code. Set `PLAYWRIGHT_MODULE`/`CHROME_PATH` when needed. `VIEWS` selects comma-separated
+PNG filenames; `CHECKS_ONLY=1` runs without rendering. After a baseline checks run,
+set `EXPECTED_LANDINGS=/path/to/before_checks.json` to ensure every previously
+available indoor cat seat remains available. The default armchair ray already hits
+a decorative cushion above the cat's permitted landing height; that unchanged
+rejection is recorded separately from successful sofa landings. Both runs compare the old/new metadata, merged mesh/triangle counts and
+pattern/original restoration, exercise real Rest and cat landing selection, and
+capture matched daylight/evening room views. Arm-front welts follow the rounded
+front surface rather than a flat floating outline. Images enable full quality for a
+single draw, returning to lazy mode after capture. This is desktop browser
+function/visual evidence, not a physical Surface Pro frame-rate measurement.

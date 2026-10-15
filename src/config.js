@@ -3948,6 +3948,12 @@ export const LANDSKRONA = {
   // long cushion runs on past it (#279, the user)
   chaiseArmDepth: 0.89,
   chairWidth: 0.89,
+  // #1040 visual guesses in metres/radians; retain the original collision and seat anchors.
+  upholstery: {
+    seat: { crown: 0.014, radius: 0.045, edgeR: 0.02, frontBulge: 0.008 },
+    back: { crown: 0.016, radius: 0.05, edgeR: 0.02 },
+    backLean: 0.16, weltRadius: 0.0032, weltLift: 0.001, armRadius: 0.055,
+  },
 };
 
 // Decorative cushions and throws in the sofa and the armchair (#278, docs/fatolj-kuddar-filt.jpg; #313, the user's

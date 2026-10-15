@@ -111,7 +111,140 @@ function leg(x, z, h = L.legHeight, material = oak) {
 }
 
 /**
- * LANDSKRONA-style seat module: frame, seat cushion(s), back cushion(s), armrests.
+ * Rounded rectangle contour sampler in 2D (either X-Z for horizontal or X-Y for vertical).
+ */
+function roundedRectContour(dimX, dimY, radius, n = 32) {
+  const r = Math.min(radius, dimX / 2 - 0.001, dimY / 2 - 0.001);
+  const hw = dimX / 2 - r, hh = dimY / 2 - r;
+  // Reserve samples for every corner even on the long chaise: uniform perimeter
+  // spacing can skip a small corner entirely and turn its rim into a chamfer.
+  const steps = Math.max(2, Math.round(n / 8)), pts = [];
+  const corners = [[hw, hh], [hw, -hh], [-hw, -hh], [-hw, hh]];
+  for (let k = 0; k < 4; k++) {
+    const [cx, cy] = corners[k], angle = Math.PI / 2 - k * Math.PI / 2;
+    for (let j = 0; j < steps; j++) {
+      const a = angle - j / steps * Math.PI / 2;
+      pts.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]);
+    }
+    const endAngle = angle - Math.PI / 2;
+    const end = [cx + r * Math.cos(endAngle), cy + r * Math.sin(endAngle)];
+    const [nx, ny] = corners[(k + 1) % 4];
+    const next = [nx + r * Math.cos(endAngle), ny + r * Math.sin(endAngle)];
+    for (let j = 0; j < steps; j++) {
+      const t = j / steps;
+      pts.push([end[0] + (next[0] - end[0]) * t, end[1] + (next[1] - end[1]) * t]);
+    }
+  }
+  return { pts, r };
+}
+
+/**
+ * Crowned seat cushion with subtle convex top crown, soft bevels, and welt seams (piping).
+ */
+function seatCushionGeometry(w, h, d, { crown = 0.014, radius = 0.045, edgeR = 0.02, frontBulge = 0.008, nRim = 32, nRings = 4, nSide = 3 } = {}) {
+  const { pts: rim } = roundedRectContour(w, d, radius, nRim);
+  const positions = [], uvs = [], indices = [];
+  const addV = (x, y, z, u, v) => { positions.push(x, y, z); uvs.push(u, v); return positions.length / 3 - 1; };
+
+  const topCenterIdx = addV(0, h / 2 + crown, 0, 0.5, 0.5);
+  const topRings = [];
+  const yTopRim = h / 2 - edgeR;
+
+  for (let r = 1; r <= nRings; r++) {
+    const frac = r / nRings;
+    const ring = [];
+    const yArch = Math.cos((frac * Math.PI) / 2);
+    const curY = yTopRim + (crown + edgeR) * yArch;
+    for (let i = 0; i < nRim; i++) {
+      const [rx, rz] = rim[i];
+      let px = rx * frac, pz = rz * frac;
+      if (frontBulge && pz > 0) pz += frontBulge * Math.sin(frac * Math.PI) * (pz / (d / 2));
+      ring.push(addV(px, curY, pz, px / w + 0.5, pz / d + 0.5));
+    }
+    topRings.push(ring);
+  }
+
+  for (let i = 0; i < nRim; i++) {
+    const next = (i + 1) % nRim;
+    indices.push(topCenterIdx, topRings[0][i], topRings[0][next]);
+  }
+  for (let r = 0; r < nRings - 1; r++) {
+    for (let i = 0; i < nRim; i++) {
+      const next = (i + 1) % nRim;
+      const a = topRings[r][i], b = topRings[r][next];
+      const c = topRings[r + 1][i], e = topRings[r + 1][next];
+      indices.push(a, c, b, b, c, e);
+    }
+  }
+
+  const yBotRim = -h / 2 + 0.005;
+  const sideRings = [topRings[nRings - 1]];
+  for (let s = 1; s < nSide; s++) {
+    const frac = s / nSide;
+    const curY = yTopRim - (yTopRim - yBotRim) * frac;
+    const vArch = Math.sin(frac * Math.PI);
+    const ring = [];
+    for (let i = 0; i < nRim; i++) {
+      const [rx, rz] = rim[i];
+      const bulge = 1 + 0.015 * vArch;
+      let px = rx * bulge, pz = rz * bulge;
+      if (frontBulge && pz > 0) pz += frontBulge * vArch * 0.5;
+      ring.push(addV(px, curY, pz, px / w + 0.5, pz / d + 0.5));
+    }
+    sideRings.push(ring);
+  }
+
+  const botRimRing = [];
+  for (let i = 0; i < nRim; i++) {
+    const [rx, rz] = rim[i];
+    botRimRing.push(addV(rx, yBotRim, rz, rx / w + 0.5, rz / d + 0.5));
+  }
+  sideRings.push(botRimRing);
+
+  for (let s = 0; s < sideRings.length - 1; s++) {
+    for (let i = 0; i < nRim; i++) {
+      const next = (i + 1) % nRim;
+      const a = sideRings[s][i], b = sideRings[s][next];
+      const c = sideRings[s + 1][i], e = sideRings[s + 1][next];
+      indices.push(a, c, b, b, c, e);
+    }
+  }
+
+  const botCenterIdx = addV(0, -h / 2, 0, 0.5, 0.5);
+  const lastRing = sideRings[sideRings.length - 1];
+  for (let i = 0; i < nRim; i++) {
+    const next = (i + 1) % nRim;
+    indices.push(botCenterIdx, lastRing[next], lastRing[i]);
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  geo.setIndex(indices);
+  geo.computeVertexNormals();
+  geo.userData.upholsteryShell = true;
+
+  const topPts = rim.map(([x, z]) => new THREE.Vector3(x, yTopRim, z));
+  const botPts = rim.map(([x, z]) => new THREE.Vector3(x, yBotRim, z));
+  const topPipeGeo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(topPts, true), 48, L.upholstery.weltRadius, 4, true);
+  const botPipeGeo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(botPts, true), 48, L.upholstery.weltRadius, 4, true);
+
+  return { geo, topPipeGeo, botPipeGeo };
+}
+
+/** Reuse the closed seat shell in the back cushion's X-Y plane. */
+function backCushionGeometry(w, h, d, options) {
+  const { geo, topPipeGeo, botPipeGeo } = seatCushionGeometry(w, d, h, { ...options, frontBulge: 0 });
+  for (const shape of [geo, topPipeGeo, botPipeGeo]) shape.rotateX(Math.PI / 2);
+  return { geo, frontPipeGeo: topPipeGeo, backPipeGeo: botPipeGeo };
+}
+
+const seatGeoCache = new Map();
+const backGeoCache = new Map();
+const armFrontPipeCache = new Map();
+
+/**
+ * LANDSKRONA-style seat module: frame, crowned seat cushion(s), contoured back cushion(s), armrests with piping.
  * `arms` = which ends get an armrest ('left' is the sitter's left = +x).
  */
 function seatModule(g, textile, { x0, x1, depth, cushions, arms, armDepth = depth }) {
@@ -129,17 +262,94 @@ function seatModule(g, textile, { x0, x1, depth, cushions, arms, armDepth = dept
   const inset = armDepth < depth ? 0 : aw;
   const ix0 = x0 + (arms.includes('right') ? inset : 0), ix1 = x1 - (arms.includes('left') ? inset : 0);
   const cw = (ix1 - ix0) / cushions;
+
+  const sw = cw - 0.01, sh = 0.15, sd = depth - backT + 0.02;
+  const seatKey = [sw, sh, sd].join(',');
+  let seatData = seatGeoCache.get(seatKey);
+  if (!seatData) {
+    seatData = seatCushionGeometry(sw, sh, sd, L.upholstery.seat);
+    seatGeoCache.set(seatKey, seatData);
+  }
+
+  const bw = cw - 0.02, bh = 0.42, bd = 0.19;
+  const backKey = [bw, bh, bd].join(',');
+  let backData = backGeoCache.get(backKey);
+  if (!backData) {
+    backData = backCushionGeometry(bw, bh, bd, L.upholstery.back);
+    backGeoCache.set(backKey, backData);
+  }
+
   for (let i = 0; i < cushions; i++) {
     const cx = ix0 + cw * (i + 0.5);
-    g.add(box(cw - 0.01, 0.15, depth - backT + 0.02, cx, base + 0.075, zF - (depth - backT) / 2, cloth, 0.05));
-    const back = box(cw - 0.02, 0.42, 0.2, cx, L.seatHeight + 0.19, z0 + 0.14 + 0.1, cloth, 0.07);
-    back.rotation.x = -0.14;
-    g.add(back);
+    // Keep the highest point at the old seat top so the fixed throw/pillow anchors remain clear.
+    const cy = base + 0.075 - L.upholstery.seat.crown;
+    const cz = zF - (depth - backT) / 2;
+
+    // Crowned seat cushion body
+    const seatMesh = new THREE.Mesh(seatData.geo, cloth);
+    seatMesh.position.set(cx, cy, cz);
+    seatMesh.castShadow = seatMesh.receiveShadow = true;
+    g.add(textile.part(seatMesh));
+
+    // Top and bottom welt seams (piping)
+    const topPipe = new THREE.Mesh(seatData.topPipeGeo, cloth);
+    topPipe.position.set(cx, cy, cz);
+    topPipe.castShadow = topPipe.receiveShadow = true;
+    g.add(textile.part(topPipe));
+
+    const botPipe = new THREE.Mesh(seatData.botPipeGeo, cloth);
+    botPipe.position.set(cx, cy, cz);
+    botPipe.castShadow = botPipe.receiveShadow = true;
+    g.add(textile.part(botPipe));
+
+    // Contoured back cushion with natural relaxed tilt
+    const backMesh = new THREE.Mesh(backData.geo, cloth);
+    backMesh.position.set(cx, L.seatHeight + 0.19, z0 + 0.14 + 0.095);
+    backMesh.rotation.x = -L.upholstery.backLean;
+    backMesh.castShadow = backMesh.receiveShadow = true;
+    g.add(textile.part(backMesh));
+
+    const bFrontPipe = new THREE.Mesh(backData.frontPipeGeo, cloth);
+    bFrontPipe.position.copy(backMesh.position);
+    bFrontPipe.rotation.copy(backMesh.rotation);
+    bFrontPipe.castShadow = bFrontPipe.receiveShadow = true;
+    g.add(textile.part(bFrontPipe));
+
+    const bBackPipe = new THREE.Mesh(backData.backPipeGeo, cloth);
+    bBackPipe.position.copy(backMesh.position);
+    bBackPipe.rotation.copy(backMesh.rotation);
+    bBackPipe.castShadow = bBackPipe.receiveShadow = true;
+    g.add(textile.part(bBackPipe));
   }
-  // armrests: sitter's right = −x, left = +x; `armDepth` from the back (the chaise's ends with the sofa's seats, #279)
+
+  // armrests: softer top curvature and front-facing welt piping harmonizing with sofa cushions
+  const armH = L.armHeight - legH;
+  const armPipeKey = [aw, armH].join(',');
+  let armPipeGeo = armFrontPipeCache.get(armPipeKey);
+  if (!armPipeGeo) {
+    const { pts: armRim } = roundedRectContour(aw - 0.012, armH - 0.016, 0.035, 24);
+    // Follow the rounded front rather than suspending a flat loop in front of its bevel.
+    const r = L.upholstery.armRadius;
+    const pts3d = armRim.map(([x, y]) => {
+      const dx = Math.max(0, Math.abs(x) - (aw / 2 - r));
+      const dy = Math.max(0, Math.abs(y) - (armH / 2 - r));
+      return new THREE.Vector3(x, y, -r + Math.sqrt(Math.max(0, r * r - dx * dx - dy * dy)) + L.upholstery.weltLift);
+    });
+    armPipeGeo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts3d, true), 48, L.upholstery.weltRadius, 4, true);
+    armFrontPipeCache.set(armPipeKey, armPipeGeo);
+  }
+
   for (const side of arms) {
     const ax = side === 'right' ? x0 + aw / 2 : x1 - aw / 2;
-    g.add(box(aw, L.armHeight - legH, armDepth, ax, (L.armHeight + legH) / 2, z0 + armDepth / 2, cloth, 0.05));
+    const ay = (L.armHeight + legH) / 2;
+    const az = z0 + armDepth / 2;
+    g.add(box(aw, armH, armDepth, ax, ay, az, cloth, L.upholstery.armRadius));
+
+    // Tailored front-panel piping welt
+    const armPipeMesh = new THREE.Mesh(armPipeGeo, cloth);
+    armPipeMesh.position.set(ax, ay, z0 + armDepth);
+    armPipeMesh.castShadow = armPipeMesh.receiveShadow = true;
+    g.add(textile.part(armPipeMesh));
   }
   // legs
   for (const lx of [x0 + 0.06, x1 - 0.06]) for (const lz of [z0 + 0.06, zF - 0.06]) g.add(leg(lx, lz));

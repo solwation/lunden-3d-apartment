@@ -93,6 +93,13 @@ not live-device gameplay. Full source freezes/owners/producers/PNGs/original fai
 and deploy logs are retained in `/tmp/lunden-priority-979` and orchestration artifacts.
 Only #979 is complete; ball #980 and parents #895/#874 are separate.
 
+## LANDSKRONA shapes (#1040)
+
+For crowned seats, back cushions and piping, use the paired browser driver
+`tools/verifyfurniture1040.cjs` documented in [furniture](furniture.md#landskrona-cushion-shaping-1040).
+It covers preserved seating, cat landing, collision metadata and upholstery
+restoration, plus actual day/evening images and merged geometry cost.
+
 ## Module and test map
 
 ```text

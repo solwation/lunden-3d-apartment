@@ -16,7 +16,7 @@ Bilen stannar för spelare i sin körväg även i svängar och vid backning.
 
 När du möblerar om står möbler ovanpå mattan och åter på golvet när de flyttas av den. Flyttar du själva mattan justeras höjden för möbler och saker som står kvar.
 
-I materialmenyn kan du välja en enskild kudde, pläd eller klädsel på soffan och fåtöljen. Förhandsvisa färg och mönster, bekräfta för alla besökare eller välj Original för att återställa just den ytan.
+Soffan och fåtöljen har mjukt välvda dynor och diskreta kederkanter. I materialmenyn kan du välja en enskild kudde, pläd eller klädsel på soffan och fåtöljen. Förhandsvisa färg och mönster, bekräfta för alla besökare eller välj Original för att återställa just den ytan.
 
 De tre Verona-delarna på uteplatsen har egna tygval för sina fasta sitt- och ryggdynor. Stålstommen och de lösa prydnadsdynorna behåller sitt utseende och sin vanliga väderstyrning.
 
