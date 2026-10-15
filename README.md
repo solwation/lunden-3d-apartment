@@ -28,7 +28,7 @@ Hus A:s glasade port och väggarna bakom den syns även från L1007:s uteplats.
 
 Häckarna vid våra och grannarnas uteplatser har lövstruktur, rundade hörn och en lätt ojämn ovankant.
 
-Grannlägenheternas fönster och dörrar på L-husets fyra våningar har karmar, bågar, tätningar och glasreflektioner. Grannarnas glas döljer insidorna; L1007:s öppningsbara fönster och dörrar behåller sin genomsikt. Ytterdörrens handtag syns även när dörren är stängd.
+Grannlägenheternas fönster och dörrar på L-husets fyra våningar har karmar, bågar, tätningar och glasreflektioner. Grannarnas glas döljer insidorna; L1007:s öppningsbara fönster och dörrar behåller sin genomsikt. Ytterdörrens handtag syns även när dörren är stängd. Lägenhetens dörrar har rundade ståltrycken och rosetter; badrum och WC har toalettvred och entrén har oval låscylinder och slutbleck.
 
 Föremålet du siktar på blir diskret ljusare när det går att använda. Markeringen följer den aktuella handlingen, behåller föremålets vanliga material och försvinner när du tittar bort.
 

@@ -3,9 +3,9 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { WARDROBE, DOOR_HEIGHT, DOOR_TRIM } from './config.js';
 
 import { entryParts, entryMaterials } from './entrancedoor.js';
+import { doorFittings, doorStrike } from './doorfittings.js';
 
 const SPEED = 3.0; // open/close animation, fraction per second
-const handleMat = new THREE.MeshStandardMaterial({ color: 0xc9cdd0, metalness: 0.5, roughness: 0.28 });
 
 const ease = (t) => t * t * (3 - 2 * t);
 
@@ -56,15 +56,15 @@ export class SwingDoor {
     } else {
       part(0.04, H, L, 0, H / 2, L / 2, material);
     }
-    // lever handle on both faces (Innerdörrshandtag Hoppe Stockholm, satin chrome): round rose,
-    // neck, lever pointing towards the hinge
-    const z = L - 0.065, y = 1.0;
-    for (const s of [-1, 1]) {
-      const rose = part(0.012, 0.052, 0.052, s * 0.026, y, z, handleMat);
-      rose.geometry.dispose();
-      rose.geometry = new THREE.CylinderGeometry(0.026, 0.026, 0.012, 20).rotateZ(Math.PI / 2);
-      part(0.04, 0.016, 0.016, s * 0.05, y, z, handleMat);
-      part(0.018, 0.018, 0.125, s * 0.07, y, z - 0.055, handleMat);
+    this.hardware = doorFittings(L, glazed ? .05 : .04, { entrance });
+    this.hardware.userData.door = this;
+    this.object.add(this.hardware);
+    if (entrance) {
+      this.strike = doorStrike();
+      this.strike.position.set(hinge[0], y0, hinge[1]);
+      this.strike.rotation.y = closed;
+      this.strike.children[0].position.z = L + DOOR_TRIM.gap;
+      this.strike.children[0].userData.door = this;
     }
     this.pickable = this.object;
 

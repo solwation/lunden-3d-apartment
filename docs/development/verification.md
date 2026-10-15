@@ -1,3 +1,10 @@
+Apartment door fittings (#1044): `tools/doorfittingstest.cjs GAME OUT [--baseline]`
+uses actual plan leaves, SwingDoor/RoomMap/privacy fitting builders and production leaf
+merge, checking animation, hinge/opening/collision contracts and both raycast faces.
+Final8/8 PASS and before/after inspected component screenshots; see
+[architecture notes](architecture.md#apartment-door-fittings-1044) for measured costs,
+source-hashed artifacts and limits. No full World, E/touch-dispatch or physical-phone claim.
+
 # Browser verification and test selection
 
 Kitchen hob/hood (#1043): `tools/kitchenrealismtest.cjs GAME OUT` uses the real

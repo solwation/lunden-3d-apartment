@@ -13,6 +13,41 @@ The B/C distant-entry regression #976 is covered by the shared shell section bel
 Reports #975 (A basement→garage obstruction) and #977 (basement door details/handles)
 remain separate investigations; this entrance fix does not claim to resolve them.
 
+## Apartment door fittings (#1044)
+
+`doorfittings.js` supplies cached, merged brushed-steel rounded L levers and round roses
+for `SwingDoor`, with thumbturns for bathroom/WC doors and oval cylinders for entrance
+leaves. Fitting dimensions in `DOOR_FITTINGS` are visual assumptions (*guess*), not verified
+Peab measurements. Existing roses were already round; the former grips/necks were boxes.
+`fitPrivacyDoors` samples both sides of the closed opening using the completed production
+RoomMap, before the moving leaves are merged, for both L1007 and visited-flat builders.
+The security strike is a separate stationary group at the closed leaf's latch jamb; its
+mesh retains `userData.door`, keeping interaction and the exterior DetailCuller bypass.
+Opening dimensions, animation, collision segments and existing E/touch dispatch are unchanged.
+Static neighbour façade hardware (`entryHandleParts`, ground/loft/patio) and A/B/C core doors
+use separate builders and retain their previous appearance; this is apartment fitting work,
+not a layout correction or new lock mechanic.
+
+`tools/doorfittingstest.cjs GAME OUT [--baseline]` uses actual `SwingDoor`, plan leaves,
+`RoomMap`, privacy binding and production `mergeStatic`, with illustrative jambs and lighting.
+It checks open/close, fixed hinges, unchanged closed openings, moving/restored collision
+segments, both raycast faces, bathroom/WC thumbturn selection and shared fitting geometry.
+The bounded room-map fixture reconstructs plan-wall and doorway barriers; it does not build
+production `buildLevel`/World or exercise E/touch dispatch, visited flats or a physical phone.
+Final browser result: 8/8 PASS, CLI0, no browser exceptions. Baseline: 5/5 PASS.
+
+Measured **after production leaf merge** (meshes / triangles): bedroom 2/220 → 2/468;
+bathroom and WC each 2/220 → 2/588; entrance 4/316 → 4/684 plus stationary strike 1/48.
+Thus leaf draw counts stay unchanged; each entrance strike adds one draw call. Shared fitting
+geometry has 456 triangles for ordinary doors, 576 with locks. No FPS claim.
+Before/after bedroom, bathroom, WC and entrance PNGs, open entrance strike view, source
+SHA256 hashes and raw results are retained outside git under
+`/tmp/lunden-doors1044-20261015/{before-merged,published-green}`. Pictures were opened and inspected;
+they establish component appearance rather than full-apartment lighting or gameplay.
+Two post-rebase attempts in `published-inputs` stopped before assertions with connection
+refused after the original dev server exited143; their failure file is retained. The final
+`published-green` run owns its bounded server and completed successfully.
+
 ## Module and test map
 
 ```text

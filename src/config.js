@@ -120,6 +120,12 @@ export const DOOR_HEIGHT = 2.1;
 // in the door colour. On a sliding door's track side they are `slideThickness` thin, so the panel
 // (running 1 cm off the wall) clears them.
 export const DOOR_TRIM = { gap: 0.003, width: 0.07, thickness: 0.012, slideThickness: 0.008 };
+// #1044 visual fitting dimensions, metres: illustrative assumptions (guess), not Peab measurements.
+export const DOOR_FITTINGS = { height: 1, backset: .065, roseRadius: .026, roseDepth: .008,
+  neck: .038, lever: .115, radius: .009, bend: .018, segments: 12,
+  lockDrop: .075, lockRadius: .021, lockDepth: .014, turnHeight: .012, turnWidth: .031,
+  turnDepth: .008, slotHeight: .026, slotWidth: .003, cylinderHeight: .052, cylinderWidth: .034,
+  strikeHeight: .24, strikeWidth: .038, strikeDepth: .003 };
 export const EXT_DOOR_HEAD = 2.6;
 
 // Windows, matched to the plan by level, façade and centre x (nearest wins).

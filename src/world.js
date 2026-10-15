@@ -11,6 +11,7 @@ import { cleaningFittings } from './cleaning.js';
 import { Openable } from './openables.js';
 import { sfx } from './audio.js';
 import { SwingDoor, SlidingDoor, wardrobeDoors } from './doors.js';
+import { fitPrivacyDoors } from './doorfittings.js';
 import { buildExterior, husLLayout } from './exterior.js';
 import { buildFurniture, surfaceBox } from './furniture.js';
 import { buildWallShelves } from './shelves.js';
@@ -528,6 +529,7 @@ function buildLevel(floor, li, group, how = OURS) {
     door.name = exterior ? 'ytterdörren' : 'dörren';door.exterior=exterior;
     if (exterior && tz < 0) lids.push(letterFlap(door, how.plate)); // the front door's letter box (#103)
     group.add(door.object);
+    if (door.strike) group.add(door.strike);
     doors.push(door);
     if (exterior && gap) {
       // transom above the leaf, in the plane of the closed leaf
@@ -865,6 +867,7 @@ function buildVisitFlat(plan, U, ox) {
   const rooms = plan.floors.map((f, li) => [...f.rooms, ...(own ? [] : EXTRA_ROOMS.filter((r) => r.level === li))]);
   const dividers = own ? P.dividers : ROOM_DIVIDERS;
   const roomMaps = [l0, l1].map((l, li) => new RoomMap({ x: W, z: D }, [...l.barriers, ...dividers.filter((d) => d.level === li)], rooms[li]));
+  [l0, l1].forEach((l, li) => fitPrivacyDoors(l.doors, (x, z) => roomMaps[li].at(x, z)));
   const box3 = new THREE.Box3(), mid = new THREE.Vector3();
   mergeStatic(group, moving.concat(edges ? [edges] : []), (o) => { box3.setFromObject(o).getCenter(mid); return mid.y < L[1].floor - 0.05 ? 'l0' : 'l1'; });
   for (const d of doors) mergeStatic(d.object, d.keep ?? [], () => '', { tagged: true });
@@ -1000,6 +1003,8 @@ export function buildWorld(plan) {
   }));
   const roomMaps = [l0, l1].map((l, li) => new RoomMap({ x: W, z: D },
     [...l.barriers, ...ROOM_DIVIDERS.filter((d) => d.level === li)], rooms[li]));
+
+  [l0, l1].forEach((l, li) => fitPrivacyDoors(l.doors, (x, z) => roomMaps[li].at(x, z)));
 
   blinds.init((lv, x, z) => roomMaps[lv]?.at(x, z) ?? null); // their rooms, and the state from the last visit
   const signs = addDoorSigns([...l0.doors, ...l1.doors], (lv, x, z) => roomMaps[lv]?.at(x, z) ?? null,
