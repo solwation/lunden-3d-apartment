@@ -7,8 +7,8 @@ const normalizeCode = text => text.trim().replace(/^\//, '').trim().toLowerCase(
 
 // Admin and furniture editing share one in-memory session on this page.
 export class AdminReports {
-  constructor({ form, input, message, panel, password, login, cancel, help = () => '', changed = () => {} }, url = cloudUrl()) {
-    Object.assign(this,{form,input,message,panel,password,login,cancel,help,changed,url});
+  constructor({ form, input, message, panel, password, login, cancel, help = () => '', changed = () => {}, capture = () => Promise.reject(Error('capture unavailable')) }, url = cloudUrl()) {
+    Object.assign(this,{form,input,message,panel,password,login,cancel,help,changed,capture,url});
     // The public cloud debug override must never redirect an admin code to an arbitrary host.
     const loopback = value => ['localhost','127.0.0.1'].includes(value);
     try {
@@ -80,14 +80,20 @@ export class AdminReports {
     if(!this.pending||this.pending.text!==text)this.pending={id:crypto.randomUUID(),text};
     const pending=this.pending, draft=this.input.value, epoch=this.epoch;this.busy=true;
     try{
-      const r=await fetch(this.url+'/reports/'+pending.id,{redirect:'error',method:'PUT',headers:{'Content-Type':'application/json',Authorization:'Bearer '+this.token},body:JSON.stringify({text})});
+      if(!pending.image){
+        this.say('Tar en bild av spelvyn…');
+        try{pending.image=await this.capture();}
+        catch{if(epoch===this.epoch)this.say('Kunde inte ta bilden. Försök igen; texten finns kvar.');return;}
+      }
+      if(epoch!==this.epoch||!this.active)return;
+      const r=await fetch(this.url+'/reports/'+pending.id,{redirect:'error',method:'PUT',headers:{'Content-Type':'application/json',Authorization:'Bearer '+this.token},body:JSON.stringify({text,image:pending.image})});
       if(epoch!==this.epoch)return;
       if(r.status===403){this.logout();this.say('Adminsessionen har gått ut. Logga in igen med /admin.');return;}
       if(!r.ok){this.say(r.status===429?'Vänta en minut och skicka rapporten igen.':'Rapporten kunde inte sparas. Texten finns kvar.');return;}
       if(this.pending===pending)this.pending=null;
       // Preserve any new draft typed while the request was in flight.
       if(this.input.value===draft)this.input.value='';
-      this.say('Rapporten är sparad och väntar på granskning.');
+      this.say('Rapporten med bild är sparad och väntar på granskning.');
     }catch{if(epoch===this.epoch)this.say('Rapporten kunde inte skickas. Försök igen; texten finns kvar.');}
     finally{if(epoch===this.epoch)this.busy=false;}
   }

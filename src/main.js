@@ -1,6 +1,7 @@
 import { MATERIAL_CHOICES, materialChoices, materialChoice } from './materialcatalog.js';
 import { crashlog } from './crashlog.js'; // first: its heartbeat and error hooks start before the rest loads (#629; inert without the cloud)
 import { AdminReports } from './adminreports.js';
+import { ReportCapture } from './reportcapture.js';
 import { bindGameViewport, gameView } from './viewport.js';
 import { PlantWind, windShadow } from './plantwind.js';
 import { runCheat, cheatList, isCommand } from './cheats.js';
@@ -2071,7 +2072,9 @@ const christmas = new ChristmasSeason({ rearrange, lights,
 });
 christmas.update(day, 0);
 const terminal = document.getElementById('terminal'), terminalInput = document.getElementById('terminal-code');
+const reportCapture = new ReportCapture(renderer);
 const adminReports = new AdminReports({ help: () => chat?.help ?? '', form: document.getElementById('terminal-form'), input: terminalInput,
+  capture: () => reportCapture.capture(),
   message: document.getElementById('terminal-message'), panel: document.getElementById('admin-login'),
   password: document.getElementById('admin-password'), login: document.getElementById('admin-signin'), cancel: document.getElementById('admin-cancel'),
   changed: on => { rearrange.unlocked = on; rearrange.enable(on); editUI(); },
@@ -2731,6 +2734,7 @@ function frame(raw) {
   if (!warm.blocksView) {
     if (viewDue && (testMode?.wantsFrame() ?? true)) {
       renderer.render(scene, camera);
+      reportCapture.afterRender();
       drewView = true;
       lastViewDraw = f0;
     } else scene.updateMatrixWorld(); // (#703: `&test=lazy` draws only on request)

@@ -1056,13 +1056,20 @@ accepted, and credential-bearing fetches reject redirects. Production uses HTTPS
 
 - `POST /report-session` with `{code}`: accepted browser Origin, write rate
   limit before private-code validation, bounded stream/JSON, fail closed when unconfigured.
-- `PUT /reports/<v4 UUID>` with `{text}` and the report-session bearer: exact plain
-  text up to `REPORTS.maxChars` (4,000 UTF-16 units), bounded 16 KiB body, forbidden
-  control/bidi characters rejected. No text is executed, rendered as HTML or promoted
-  to instructions. The client keeps the same UUID and draft after network errors.
+- `PUT /reports/<v4 UUID>` with `{text,image?}` and the report-session bearer: exact plain
+  text up to `REPORTS.maxChars` (4,000 UTF-16 units), bounded 320 KiB actual stream;
+  login/claim/receipt bodies remain limited to 16 KiB. Forbidden control/bidi characters
+  are rejected. `image` is an optional canonical `data:image/jpeg;base64,…` string,
+  at most 200 KiB decoded, with actual JPEG SOF0/SOF2 dimensions no larger than 1280
+  pixels per edge. The bounded marker parser rejects unsupported frames, DNL,
+  truncation and trailing bytes. No remote URLs or SVG are accepted. Text-only older
+  clients remain compatible and retain their original SHA256(text) retry identity;
+  image reports hash a separate domain plus the exact text/image payload. Text and
+  pixels are untrusted data, never HTML or agent instructions.
 - `GET /reports?cursor=…`: reports-only `REPORT_IMPORT_TOKEN` (or existing `ADMIN_TOKEN`), returns
-  `{untrusted:true,reports:[{id,text,created,untrusted:true}],cursor:null|string}`,
+  `{untrusted:true,reports:[{id,text,image?,created,untrusted:true}],cursor:null|string}`,
   pages of at most 50. Read every page; KV visibility can lag behind accepted writes.
+
 - `POST /reports/<id>`: reports-only `REPORT_IMPORT_TOKEN` (or existing `ADMIN_TOKEN`), JSON `{claimId:<v4 UUID>}`. The
   serialized authority persists one random ownership token before returning
   `{id,claimId,token,report}`. A different claim conflicts; the same claim recovers
@@ -1075,6 +1082,19 @@ accepted, and credential-bearing fetches reject redirects. Production uses HTTPS
   deletion; a different receipt or owner conflicts. The [reviewed importer](report-import.md)
   verifies GitHub existence, exact report marker and repository before acknowledgement.
   It assigns the fixed `in-game` label; arbitrary report text never becomes instructions.
+
+The current client always captures the game view before uploading a new report.
+`ReportCapture` copies only `renderer.domElement` into a disposable 2D canvas in the
+same task immediately after the original screen render. DOM, terminal/chat text and
+password fields cannot enter this image. It keeps normal drawing-buffer discard,
+warm-up and covered-phone drawing policy; no permanent render target or
+`preserveDrawingBuffer` is added. The copy is resized to the edge bound and encoded
+as JPEG with at most six bounded quality/resize attempts and a five-second request
+deadline. A missing completed frame, lost/empty context, encoding failure or oversized
+image leaves the draft with an error; the client never silently sends text alone.
+The exact image and UUID stay in page memory across same-text upload retries.
+Changed report text requests a new image and UUID. Logout/expiry during capture
+wins before upload, and neither images nor sessions enter browser storage.
 
 Reports live in `LUNDEN` KV as `report:<UUID>` without automatic expiry. The existing
 `DrawingRoom` class, under the distinct object name `reports`, serializes immutable
@@ -1107,3 +1127,13 @@ explicit inputs in the wrong order for the existing writer-credential assertion.
 Both original failures remain in the artifact logs; the final external copy changes
 only their order. No production reports, GitHub testissues or server secrets were
 created, and no physical-phone or apartment-render acceptance is claimed.
+
+`tools/reportcapturetest.cjs` additionally renders a tiny actual Three component through
+the production screen-render/capture hook, decodes known JPEG pixels and checks a new
+view, edge/byte limits, no preserved WebGL drawing buffer, exact retry image/UUID,
+failed capture and logout during capture. It binds the real production terminal to a
+fresh owned local Worker. Run with `PLAYWRIGHT_MODULE`, `CHROME_PATH`,
+`LUNDEN_SECRET_TEST_INPUTS` and a local `LUNDEN_REPORT_SESSION_SECRET`, against a local
+static server: `node tools/reportcapturetest.cjs http://localhost:8896 /tmp/report-capture`.
+Worker port 8897 must be free; the fixture owns it and normally cleans it up.
+The image is actual component evidence, not apartment or physical phone performance.

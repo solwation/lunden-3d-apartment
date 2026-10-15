@@ -7,6 +7,7 @@ const {loadSecretTestInputs,redact}=require('./secret-test-inputs.cjs');
 const privateInputs=loadSecretTestInputs(),codes=privateInputs.codes;
 if(![game,worker].every(value=>['localhost','127.0.0.1'].includes(new URL(value).hostname)))throw Error('This probe only runs on local fixture endpoints.');
 const main=fs.readFileSync(path.join(__dirname,'../src/main.js'),'utf8');
+const captureFixture='data:image/jpeg;base64,'+fs.readFileSync(path.join(__dirname,'../textures/linjeteckning-sovrum1.jpg')).toString('base64');
 const binding=main.slice(main.indexOf('const adminReports = new AdminReports('),main.indexOf("const editHelp = document.getElementById('rearrange-help')"));
 const submitStart=main.indexOf("document.getElementById('terminal-form').addEventListener('submit', e => {");
 const submit=main.slice(submitStart,main.indexOf('\n});',submitStart)+4);
@@ -18,7 +19,7 @@ const submit=main.slice(submitStart,main.indexOf('\n});',submitStart)+4);
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  async function setup(){
   await page.goto(game+'/?cloud='+encodeURIComponent(worker));
-  await page.evaluate(async({binding,submit})=>{
+  await page.evaluate(async({binding,submit,captureFixture})=>{
    document.getElementById('loading').hidden=true;document.getElementById('overlay').hidden=true;
    const terminal=document.getElementById('terminal'),terminalInput=document.getElementById('terminal-code');terminal.hidden=false;terminal.classList.add('chat');
    const {AdminReports}=await import('/src/adminreports.js');const {Rearrange}=await import('/src/rearrange.js');const T=await import('three');
@@ -27,11 +28,13 @@ const submit=main.slice(submitStart,main.indexOf('\n});',submitStart)+4);
    const rearrange=new Rearrange({scene,camera:new T.PerspectiveCamera(),world:{furniture:{movable:[],object:root,surfaces:[],segments:[[],[]],footprints:[[],[]]},lamps:[],refreshFurniture(){}},player:{},life:{},carryables:()=>[],marks:{invalidate(){}},busy:()=>false},'');clearInterval(rearrange.timer);await rearrange.ready;
    const chat={sent:[],help:'/tysta namn — dölj chatt',command:()=>null,send(text){this.sent.push(text);return '';}};
    const editUI=()=>{document.getElementById('terminal-title').textContent=rearrange.unlocked?'Adminläge':'Chatt';};
-   const reports=new Function('AdminReports','terminal','terminalInput','rearrange','editUI','chat',binding+'\nreturn adminReports;')(AdminReports,terminal,terminalInput,rearrange,editUI,chat);
+   // This DOM/protocol fixture injects an explicit valid image collaborator; reportcapturetest proves real pixels separately.
+   const reportCapture={capture:async()=>captureFixture};
+   const reports=new Function('AdminReports','terminal','terminalInput','rearrange','editUI','chat','reportCapture',binding+'\nreturn adminReports;')(AdminReports,terminal,terminalInput,rearrange,editUI,chat,reportCapture);
    const {isCommand,runCheat}=await import('/src/cheats.js');
    new Function('terminal','terminalInput','chat','isCommand','runCheat','cheats','life','showTerminal',submit)(terminal,terminalInput,chat,isCommand,runCheat,{}, {flush(){}},()=>{});
    window.fixture={reports,rearrange,chat};
-  },{binding,submit});
+  },{binding,submit,captureFixture});
  }
  const check=(ok,name)=>{assert.ok(ok,name);checks.push(name);};
  const send=async text=>{await page.locator('#terminal-code').fill(text);await page.locator('#terminal-code').press('Enter');};
