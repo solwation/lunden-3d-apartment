@@ -30,19 +30,30 @@ const splashMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: tr
 
 // One merged movable mesh per basin mixer; kept outside the static interior batch.
 function leverMesh(spec) {
-  const J=P.joint, parts=[new THREE.CylinderGeometry(J.radius,J.radius,J.length,J.segments).rotateZ(Math.PI/2)];
-  if(spec.style==='side') {
-    const S=P.side;
-    parts.push(new THREE.CapsuleGeometry(S.radius,S.length-2*S.radius,4,J.segments)
-      .rotateX(Math.PI/2).translate(0,0,S.length/2));
+  const J = P.joint, parts = [new THREE.CylinderGeometry(J.radius, J.radius, J.length, J.segments).rotateZ(Math.PI / 2)];
+  if (spec.style === 'side') {
+    const S = P.side;
+    parts.push(
+      new THREE.SphereGeometry(J.radius, J.segments, 8).scale(0.3, 1, 1).translate(-J.length / 2, 0, 0),
+      new THREE.CylinderGeometry(0.007, 0.008, 0.014, 16).rotateX(Math.PI / 2).translate(0, 0, 0.007),
+      new THREE.CylinderGeometry(0.0032, 0.0040, S.length - 0.014, 16).rotateX(Math.PI / 2).translate(0, 0, (S.length - 0.014) / 2 + 0.012),
+      new THREE.SphereGeometry(0.0045, 16, 12).translate(0, 0, S.length)
+    );
   } else {
-    const S=P.top;
-    parts.push(new THREE.BoxGeometry(S.width,S.thickness,S.length).translate(0,S.height,S.length/2),
-      new THREE.CylinderGeometry(J.radius*.8,J.radius*.8,S.height,J.segments).translate(0,S.height/2,0));
+    const S = P.top;
+    parts.push(
+      new THREE.CylinderGeometry(0.0165, 0.0175, S.height + 0.003, J.segments).translate(0, (S.height + 0.003) / 2, 0),
+      new THREE.CylinderGeometry(0.015, 0.0165, 0.002, J.segments).translate(0, S.height + 0.0035, 0),
+      new THREE.CylinderGeometry(0.0055, 0.0065, 0.016, 16).rotateX(Math.PI / 2).translate(0, S.height, 0.01),
+      new THREE.BoxGeometry(S.width, 0.004, S.length - 0.016).translate(0, S.height, (S.length + 0.016) / 2),
+      new THREE.CylinderGeometry(0.002, 0.002, S.length - 0.016, 12).rotateX(Math.PI / 2).translate(-S.width / 2, S.height, (S.length + 0.016) / 2),
+      new THREE.CylinderGeometry(0.002, 0.002, S.length - 0.016, 12).rotateX(Math.PI / 2).translate(S.width / 2, S.height, (S.length + 0.016) / 2),
+      new THREE.CylinderGeometry(0.002, 0.002, S.width, 12).rotateZ(Math.PI / 2).translate(0, S.height, S.length)
+    );
   }
-  const geometries=parts.map(g=>g.index?g.toNonIndexed():g), geometry=mergeGeometries(geometries);
-  for(const g of new Set([...parts,...geometries]))g.dispose();
-  const mesh=new THREE.Mesh(geometry,spec.material);mesh.castShadow=mesh.receiveShadow=true;
+  const geometries = parts.map(g => g.index ? g.toNonIndexed() : g), geometry = mergeGeometries(geometries);
+  for (const g of new Set([...parts, ...geometries])) g.dispose();
+  const mesh = new THREE.Mesh(geometry, spec.material); mesh.castShadow = mesh.receiveShadow = true;
   return mesh;
 }
 

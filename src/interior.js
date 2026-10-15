@@ -98,7 +98,8 @@ const M = {
   appliance: std(0xf7f7f7, { roughness: 0.3 }),
   vanity: std(T.vanity, { roughness: 0.5 }),
   porcelain: std(0xffffff, { roughness: 0.15 }),
-  chrome: std(T.chrome, { roughness: 0.15, metalness: 0.6 }),
+  chrome: std(T.chrome, { roughness: 0.12, metalness: 0.82 }),
+  mixerBlack: std(T.handle, { roughness: 0.58, metalness: 0.22 }),
   mirror: mirrorMaterial, // shared with the hall mirror (mirror.js)
   frosted: new THREE.MeshStandardMaterial({
     color: 0xf1f5f6, transparent: true, opacity: 0.55, roughness: 0.3, depthWrite: false, side: THREE.DoubleSide,
@@ -411,18 +412,93 @@ export function sinkBowl(B, h, top, depth, material, overflow = 'x1', under = to
   return yb;
 }
 
-/** Gooseneck mixer: column, half-circle spout towards the front (direction dx, dz). */
-export function mixer(B, x, z, y, [dx, dz], material, { h = 0.3, r = 0.09, tube = 0.011 } = {}) {
-  cylinderY(B, x, z, 0.024, y, y + 0.06, material);
-  cylinderY(B, x, z, tube, y, y + h, material, 10);
-  const arc = new THREE.TorusGeometry(r, tube, 8, 20, Math.PI);
+/** Gooseneck mixer (Tapwell ARM184): chamfered foot ring, column with lever boss, smooth svanhals and defined aerator nozzle. */
+export function mixer(B, x, z, y, [dx, dz], material = M.mixerBlack, { h = 0.3, r = 0.09, tube = 0.011 } = {}) {
+  // Chamfered foot ring / sockel
+  B.add(new THREE.CylinderGeometry(0.024, 0.027, 0.007, 24).translate(x, y + 0.0035, z), material);
+
+  // Column height adapts if compact mixer
+  const colH = Math.min(0.12, Math.max(0.04, h - 0.12));
+  cylinderY(B, x, z, 0.023, y + 0.007, y + colH, material, 24);
+
+  // Side lever connection boss on the mixer body
+  const leverH = Math.min(y + colH * 0.65, y + TAP_LEVER.side.height);
+  const boss = new THREE.CylinderGeometry(0.0135, 0.0135, 0.016, 18).rotateZ(Math.PI / 2);
+  boss.rotateY(Math.atan2(dx, -dz));
+  boss.translate(x - dz * 0.023, leverH, z + dx * 0.023);
+  B.add(boss, material);
+
+  // Swivel collar and smooth transition to riser tube
+  cylinderY(B, x, z, 0.0235, y + colH, y + colH + 0.006, material, 24);
+  B.add(new THREE.CylinderGeometry(tube * 1.35, 0.023, 0.008, 24).translate(x, y + colH + 0.01, z), material);
+  cylinderY(B, x, z, tube * 1.35, y + colH + 0.014, y + colH + 0.018, material, 24);
+
+  // Riser tube
+  const riserY0 = y + colH + 0.018;
+  if (h > riserY0 - y) cylinderY(B, x, z, tube, riserY0, y + h, material, 20);
+
+  // Smooth gooseneck arc: 16 radial segments, 36 tubular segments
+  const arc = new THREE.TorusGeometry(r, tube, 16, 36, Math.PI);
   arc.rotateY(Math.atan2(-dz, dx) + Math.PI); // arc runs from +x' to −x' (towards the front)
   arc.translate(x + dx * r, y + h, z + dz * r);
   B.add(arc, material);
-  cylinderY(B, x + dx * 2 * r, z + dz * 2 * r, tube * 1.3, y + h - 0.07, y + h, material, 10);
-  return { pos: [x + dx * 2 * r, y + h - 0.075, z + dz * 2 * r], dir: [0, -1, 0], r: tube, basin: y,
-    lever: { pos: [x - dz * TAP_LEVER.side.offset, y + TAP_LEVER.side.height, z + dx * TAP_LEVER.side.offset],
-      dir: [dx, dz], style: 'side', material } };
+
+  // Spout drop tube and aerator nozzle (pipmunstycke med strålsamlare)
+  const nx = x + dx * 2 * r, nz = z + dz * 2 * r;
+  cylinderY(B, nx, nz, tube, y + h - 0.048, y + h, material, 20);
+  cylinderY(B, nx, nz, tube * 1.22, y + h - 0.071, y + h - 0.048, material, 24);
+  B.add(new THREE.CylinderGeometry(tube * 1.22, tube * 1.05, 0.003, 24).translate(nx, y + h - 0.0725, nz), material);
+  B.add(new THREE.CylinderGeometry(tube * 0.95, tube * 0.95, 0.002, 20).translate(nx, y + h - 0.0715, nz), M.steelDark || M.black);
+
+  return {
+    pos: [nx, y + h - 0.075, nz],
+    dir: [0, -1, 0],
+    r: tube,
+    basin: y,
+    lever: {
+      pos: [x - dz * TAP_LEVER.side.offset, leverH, z + dx * TAP_LEVER.side.offset],
+      dir: [dx, dz],
+      style: 'side',
+      material
+    }
+  };
+}
+
+/** Basin mixer (Tapwell RT2 071): chamfered foot ring, cylindrical body, forward spout with aerator nozzle. */
+export function basinMixer(B, x, z, y, [dx, dz], material = M.chrome, basinBottom = y - 0.15) {
+  // Chamfered foot ring / sockel
+  B.add(new THREE.CylinderGeometry(0.022, 0.025, 0.006, 24).translate(x, y + 0.003, z), material);
+  // Cylindrical body
+  cylinderY(B, x, z, 0.0215, y + 0.006, y + 0.125, material, 24);
+  cylinderY(B, x, z, 0.022, y + 0.108, y + 0.113, material, 24); // cartridge seam ring
+
+  // Forward spout
+  const spoutLen = 0.11;
+  const sx = x + dx * (spoutLen * 0.5 + 0.01), sz = z + dz * (spoutLen * 0.5 + 0.01);
+  const spout = new THREE.CylinderGeometry(0.010, 0.0105, spoutLen - 0.015, 20).rotateZ(Math.PI / 2);
+  spout.rotateY(Math.atan2(dz, dx));
+  spout.translate(sx, y + 0.105, sz);
+  B.add(spout, material);
+
+  // Aerator nozzle (pipmunstycke med strålsamlare) at the spout tip
+  const tx = x + dx * spoutLen, tz = z + dz * spoutLen;
+  cylinderY(B, tx, tz, 0.011, y + 0.096, y + 0.108, material, 24);
+  B.add(new THREE.CylinderGeometry(0.011, 0.0095, 0.002, 24).translate(tx, y + 0.095, tz), material);
+  B.add(new THREE.CylinderGeometry(0.0085, 0.0085, 0.002, 20).translate(tx, y + 0.096, tz), M.steelDark || M.black);
+
+  return {
+    pos: [tx, y + 0.096, tz],
+    dir: [0, -1, 0],
+    r: 0.008,
+    basin: basinBottom,
+    name: 'blandaren',
+    lever: {
+      pos: [x, y + 0.13, z],
+      dir: [dx, dz],
+      style: 'top',
+      material
+    }
+  };
 }
 
 // ---------- kitchen ----------
@@ -576,7 +652,7 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
   if (sinkF) {
     const sz = sinkC[1];
     const bottom = sinkBowl(B, sinkHole, top, K.sink.depth, M.steel, 'x1', yt);
-    taps.push({ ...mixer(B, eastWall - 0.06, sz, top, [-1, 0], M.handle), basin: bottom, name: 'köksblandaren' });
+    taps.push({ ...mixer(B, eastWall - 0.06, sz, top, [-1, 0], M.mixerBlack), basin: bottom, name: 'köksblandaren' });
     // A small two-layer sponge beside the basin. Both pieces join the existing material batches.
     const sx = sinkHole.x0 - SPONGE.width / 2 - 0.025;
     const szp = sz + K.sink.w / 2 - SPONGE.depth / 2;
@@ -887,10 +963,7 @@ function vanity(B, sinkF, wallX, y0, width, depth, open) {
   const bowl = { x0: wallX + 0.13, x1: wallX + depth - 0.05, z0: cz - width / 2 + 0.07, z1: cz + width / 2 - 0.07 };
   slabWithHole(B, wallX, wallX + depth + 0.01, cz - width / 2, cz + width / 2, y0 + 0.84, y0 + 0.87, bowl, M.porcelain);
   const bottom = sinkBowl(B, bowl, y0 + 0.87, VANITY_BASIN.depth, M.porcelain, 'x0', y0 + 0.84);
-  cylinderY(B, wallX + 0.08, cz, 0.018, y0 + 0.87, y0 + 1.0, M.chrome);
-  B.box(wallX + 0.08, wallX + 0.2, cz - 0.012, cz + 0.012, y0 + 0.97, y0 + 0.99, M.chrome);
-  r.tap = { pos: [wallX + 0.19, y0 + 0.966, cz], dir: [0, -1, 0], r: 0.008, basin: bottom, name: 'blandaren',
-    lever: { pos: [wallX + 0.08, y0 + 1.0, cz], dir: [1, 0], style: 'top', material: M.chrome } };
+  r.tap = basinMixer(B, wallX + 0.08, cz, y0 + 0.87, [1, 0], M.chrome, bottom);
   return r;
 }
 
