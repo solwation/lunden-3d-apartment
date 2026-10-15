@@ -594,14 +594,17 @@ export class Player {
     const q = this.bikeStanding(); if (!q) return false;
     const bike = this.riding.bike; bike.ridden = false; bike.pick.visible = true; this.riding = null;
     this.pos.copy(q); this.vy = 0; this.fall = null; this.keys.clear(); this.analog.x = this.analog.y = 0;
-    this.eyeY = q.y + PLAYER.eye; this.camera.position.set(q.x, this.eyeY, q.z); restoreBicycleHand(); return true;
+    this.eyeY = q.y + PLAYER.eye; this.camera.position.set(q.x, this.eyeY, q.z);
+    this.camera.rotation.x = 0;
+    restoreBicycleHand(); return true;
   }
 
   bikePose() {
-    const r = this.riding, C = BICYCLE;
-    r.bike.place(this.pos, r.yaw, r.pitch ?? 0);
+    const r = this.riding, C = BICYCLE, pitch = r.pitch ?? 0;
+    r.bike.place(this.pos, r.yaw, pitch);
     this.eyeY = this.pos.y + C.eye;
     this.camera.position.set(this.pos.x - Math.cos(r.yaw) * C.cameraBack, this.eyeY, this.pos.z + Math.sin(r.yaw) * C.cameraBack);
+    this.camera.rotation.set(BICYCLE.pitch + pitch, r.yaw - Math.PI / 2, 0, 'YXZ');
   }
 
   bikeStep(dt) {
