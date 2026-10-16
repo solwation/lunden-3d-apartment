@@ -425,9 +425,9 @@ export class CatSpawner {
     this.onFishEaten = null;   // (fishFinger) => {} when it has eaten one
     this.watchPoint = null;    // () => where the visitor's eyes are (it looks after a fish finger taken away)
     this.fishScan = 0;
-    // look at the cat + E pets it (main.js treats this like a door target); Miele is taken up instead (#328)
+    // With free hands E carries any cat; occupied hands retain petting (#1061).
     const self = this;
-    this.interact = { get name() { return self.isMiele ? 'Miele' : 'katten'; }, kind: 'cat', get verb() { return self.isMiele && self.canHold() ? 'ta upp' : 'klappa'; }, pickable: cat };
+    this.interact = { get name() { return self.isMiele ? 'Miele' : self.kitten ? 'kattungen' : 'katten'; }, kind: 'cat', get verb() { return self.canHold() ? 'ta upp' : 'klappa'; }, pickable: cat };
     this.canHold = () => false; // main.js: the hand is free
     // Miele (#328): `mieleLock` = she is out (or was, and did not walk off): no second Miele; `forceMiele` (&miele) = the
     // next new cat is her; `seen` = found this time (main.js checkMiele); `held` = in the visitor's arms (miele.js);
@@ -545,6 +545,7 @@ export class CatSpawner {
     if (this.held) { this.held = false; this.hugging = false; this.root?.add(this.object); this.onDropped?.(); } // (miele.js lets go)
     this.stopPetting();
     this.dropFish();
+    this.play = null; this.toy = null; // no kitten pounce/batting survives reparenting (#1061)
     this.leaving = null;
     this.setOpacity(1);
     this.tailUp = false; this.tailU = 0; this.tailWait = this.nextTailWait(); // the next cat starts with its tail down
@@ -609,6 +610,7 @@ export class CatSpawner {
     }
     this.stopPetting();
     this.dropFish();
+    this.play = null; this.toy = null; // no kitten pounce/batting survives reparenting (#1061)
     this.leaving = null;
     this.setOpacity(1);
     this.nextMeow = 0.4 + this.rand() * 0.8;
@@ -1113,6 +1115,7 @@ export class CatSpawner {
   pickUp(holder) {
     this.stopPetting();
     this.dropFish();
+    this.play = null; this.toy = null; // no kitten pounce/batting survives reparenting (#1061)
     this.leaving = null;
     this.released = null;
     this.setOpacity(1);

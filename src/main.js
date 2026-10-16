@@ -100,7 +100,7 @@ import { buildCoffeeJar } from './coffeejar.js';
 import { FruitBowl } from './fruit.js';
 import { Drawing } from './drawing.js';
 import { CatCalendar, CalendarPanel } from './calendar.js';
-import { heldItem } from './holdable.js';
+import { heldItem, handBusy } from './holdable.js';
 import { Tap, animateWater } from './water.js';
 import { CatBoard, BoardPanel, snapshot } from './catboard.js';
 import { Lights } from './lights.js';
@@ -861,7 +861,7 @@ function checkCatButt() {
 // time she turns up: heart fireworks, a trill and a pling, a big score; E takes her into your arms (miele.js)
 const miele = new MieleHeld(scene, camera, cat);
 const fireworks = new HeartFireworks(scene);
-cat.canHold = () => !heldItem();
+cat.canHold = () => !handBusy(miele);
 cat.watchPoint ??= () => camera.position;
 miele.dropSpot = () => { // at your feet, a little in front
   const f = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion).setY(0).normalize().multiplyScalar(0.45);
@@ -874,8 +874,8 @@ const miePhoto = () => { // her photo on the cat board: the first time she is he
   bump('catPhotos');
   board.add('Miele', snapshot(renderer, scene, camera, cat.head.getWorldPosition(new THREE.Vector3())));
 };
-miele.onPickUp = miePhoto;
-miele.onHug = () => { bump('mieleHugs'); miePhoto(); };
+miele.onPickUp = () => { if (cat.isMiele) miePhoto(); };
+miele.onHug = () => { if (cat.isMiele) { bump('mieleHugs'); miePhoto(); } else { cat.onPet?.(); if (!cat.photoDone) { cat.photoDone = true; cat.onPhoto?.(); } } };
 if (params0.has('kitten')) cat.forceKitten = true; // &kitten: the next cat to turn up is a kitten (#363)
 if (params0.has('miele')) cat.forceMiele = true; // &miele: the next cat to turn up is her (tests, screenshots)
 const mieleFrustum = new THREE.Frustum(), mieleAt = new THREE.Vector3();
@@ -1579,7 +1579,7 @@ function use(thing) {
     thing.toggle();
     if (thing.isOpen) bump('lids', 1, idOf(thing));
     sfx.lid(thing.object.position, thing.isOpen);
-  } else if (thing.kind === 'cat') { if (cat.isMiele && !heldItem()) miele.take(); else cat.pet(player.pos); } // Miele: into your arms (#328)
+  } else if (thing.kind === 'cat') { if (!heldItem()) miele.take(); else cat.pet(player.pos); } // All cats: into your arms with free hands (#1061)
   else if (thing.kind === 'olofcar') { if (olofDriver.greet()) { greet.sayMine(OLOF.car.hello[Math.floor(Math.random() * OLOF.car.hello.length)]); if (olofDriver.claimScore()) bump('olof', 1, 'car'); } } // a dad joke, he sits on; points once per arrival (#599, #658)
   else if (thing.kind === 'ghost') greetPlayer(thing.ghost); // another player (#673): a greeting, their avatar sees ours wave
   else if (thing.kind === 'towel') handWash.dry(thing, focusPoint); // dry the hands (#437)
@@ -1850,8 +1850,8 @@ function updateFocus() {
   if (item?.placeAt) {
     const top = !item.floorOnly && raycaster.intersectObjects(world.cupSurfaces, false).find((h) => shown(h.object) && h.point.y >= h.object.userData.surface - 0.02 && (item.soft || !h.object.userData.soft)); // a bed / a sofa only for a plush toy (#269)
     let spot = top && top.distance < reach && !behindWall(top.point) ? { point: top.point.clone().setY(top.object.userData.surface), distance: top.distance } : null;
-    if (spot && item.softOnly && !top.object.userData.soft) { // Miele: not on a table or a worktop (#328)
-      if (!hit || spot.distance <= hit.distance + 0.05) focused = { name: '', kind: 'place', blocked: true, blockedText: 'Miele får inte vara på bordet' };
+    if (spot && item.softOnly && !top.object.userData.soft) { // Cats: not on a table or a worktop (#1061)
+      if (!hit || spot.distance <= hit.distance + 0.05) focused = { name: '', kind: 'place', blocked: true, blockedText: `${item.name === 'Miele' ? 'Miele' : item.name === 'kattungen' ? 'Kattungen' : 'Katten'} får inte vara på bordet` };
       spot = null;
     } else if (!spot) { const f = floorSpot(); if (f && f.distance < reach && !behindWall(f.point)) spot = f; } // a table top is always above (before) the floor
     if (spot && item.isVacuum && stairUnderside(spot.point.x, spot.point.z) !== null && stairUnderside(spot.point.x, spot.point.z) < spot.point.y + 0.3) {
@@ -2018,7 +2018,7 @@ function toggleFurniture(on = !world.furnitureOn) {
     cups.reset(); // the cups standing out go, the cabinet is full again (#215)
     coffeeJar?.reset(); // the scoop in its loop, the Moccamaster's tank and filter empty (#334)
   }
-  if (!on && cat.visible && !(cat.isMiele && (cat.released || cat.leaving))) cat.hide(); // (Miele, just put down, walks off, #328) // the cat goes too (and stops purring); none turn up until F is back
+  if (!on && cat.visible && !(cat.released || cat.leaving)) cat.hide(); // (Any cat just put down walks off, #1061) // the cat goes too (and stops purring); none turn up until F is back
   if (!on) for (const t of world.furnitureTargets) if ((t.kind === 'tv' || t.kind === 'pc') && t.isOpen) t.toggle(); // screens off
   if (!on) for (const l of laptops) l.set(false); // Tilly's laptop too (#283)
   if (!on) nests.hush(); // the smart speakers stop talking (#325)

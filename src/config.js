@@ -3026,6 +3026,7 @@ export const KITTEN = { chance: 1 / 30, furniture: 0.65, every: [3, 7], play: 1.
 export const MIELE = { weight: 0.56, see: 7, fireworks: 7, sparks: 12, life: 3,
   held: { x: 0.0, y: -0.43, z: -0.5, tilt: -0.3 }, grips: [[0.108, 0.16, -0.005], [-0.108, 0.16, -0.005]], // *guess* #914: sides of ribcage
   pull: 0.08, squash: 0.12, hugTime: 0.8, linger: 2,
+  carryPurr: 3.2, // #1061 *guess*: two breathing cycles per renewable, cancellable carry sound (s).
   colors: { base: '#857461', light: '#a8977f', stripe: '#2a231e', white: 0xf3f1ec, ear: 0x6b5a48, tip: 0x241e1a, eye: 0xe0a62a } };
 // The leaderboard: how many rows are shown, how often a changed score is sent (s).
 export const LEADERBOARD = { show: 10, every: 30, nameMax: 20 };

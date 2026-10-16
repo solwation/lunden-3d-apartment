@@ -101,7 +101,8 @@ tools/kittentest.html  headless test of kittens (#363): the seeded draw (~KITTEN
   and sphynx are `rare` and count as "ovanliga katter". `&catb=i` picks a breed for screenshots.
   Rare breeds have a `voice` ('trill' perser, 'rasp' sphynx) passed to `sfx.meow`/`sfx.purr`, and
   stars (one additive `Points`, raycast disabled) rise around them while they are petted.
-- Look at a visible cat + E pets it: purring (`sfx.purr`), eyes shut, head rubs the visitor's hand
+- With free hands, E takes any visible adult cat or kitten into the existing `MieleHeld` arms (#1061); occupied hands retain petting. Click / Krama cuddles (ordinary `petted`/`kittenPets` plus one photo per appearance; Miele keeps her special counters). Its native cat scale and size-adjusted arm grips are preserved. Short cancellable, listener-relative purrs renew while held and stop on release, hide or bicycle stow; the same cat returns on dismount. E on the floor/bed/sofa puts it down, then it meows and walks off (on furniture it fades there). F also lets a carried cat finish leaving. Tables stay blocked. Ordinary cats remain transient, including reload during bicycle stow; the existing Miele-only bicycle save schema is unchanged. `tools/catcarrytest.cjs GAME OUT` verifies the actual cat/holder/hands/audio and exact main cat dispatch in a bounded rendered scene, without full World or physical-phone acceptance.
+- With occupied hands, E pets it: purring (`sfx.purr`), eyes shut, head rubs the visitor's hand
   (`PET_TIME` in cat.js). Raycasts ignore visibility, so main.js only adds the cat as a target
   while it is visible. Tests must call `updateMatrixWorld` on objects they move (no render runs).
 - Room detection: labels come from the PDF plus `EXTRA_ROOMS` (WC/dusch upstairs, the passage by

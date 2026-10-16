@@ -234,6 +234,15 @@ export const sfx = {
     src.connect(lp).connect(am).connect(env).connect(d);
     src.start(t); lfo.start(t);
     src.stop(t + dur + 0.1); lfo.stop(t + dur + 0.1);
+    // Carrying (#1061) renews short purrs and cancels them on drop/stow/hide.
+    let stopped = false;
+    return { stop() {
+      if (stopped) return;
+      stopped = true;
+      d.gain.cancelScheduledValues(ctx.currentTime);
+      d.gain.setValueAtTime(0, ctx.currentTime);
+      src.stop(); lfo.stop();
+    } };
   },
   /** Coffee brewing for `dur` s: a hissing, gurgling heater (filtered noise with bubble pops) and
    * drips into the jug; stop() fades it out early. */

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { MIELE as M } from './config.js';
 import { sfx } from './audio.js';
-import { Holdable, heldItem, setHeld } from './holdable.js';
+import { Holdable, heldItem, setHeld, handBusy } from './holdable.js';
 import { Hearts, heartTexture } from './pingping.js';
 import { BREEDS } from './cat.js';
 import { forgetBicycleHand } from './keep.js';
@@ -85,7 +85,7 @@ export class HeartFireworks {
   }
 }
 
-/** Miele in your arms: a Holdable with no home (an empty group in the camera that the cat object rides in). */
+/** Any cat in your arms (#1061), retaining the Miele holder/save identity: a Holdable with no home (an empty group in the camera that the cat object rides in). */
 export class MieleHeld extends Holdable {
   constructor(scene, camera, cat) {
     const H = M.held;
@@ -97,7 +97,7 @@ export class MieleHeld extends Holdable {
     Object.assign(this, { cat, isMiele: true, soft: true, softOnly: true, handPose: 'hug', hugGrips: M.grips, placeVerb: 'sätta ner',
       hugT: 1, hugs: 0 });
     this.hearts = new Hearts(scene, 14);
-    cat.onDropped = () => { forgetBicycleHand(this); if (this.held) { this.held = false; if (heldItem() === this) setHeld(null); } }; // the cat went (F)
+    cat.onDropped = () => { this.stopPurr(); forgetBicycleHand(this); if (this.held) { this.held = false; if (heldItem() === this) setHeld(null); } }; // the cat went (F)
   }
 
   get useLabel() { return 'Krama'; }
@@ -130,6 +130,7 @@ export class MieleHeld extends Holdable {
   }
 
   take({ silent = false } = {}) {
+    if (!this.cat.visible || this.cat.held || this.cat.leaving?.hurt || handBusy(this)) return;
     this.silentTake = silent;
     super.take();
     this.silentTake = false;
@@ -140,10 +141,12 @@ export class MieleHeld extends Holdable {
 
   onTake() {
     this.hugT = 1;
+    this.name = this.cat.isMiele ? 'Miele' : this.cat.kitten ? 'kattungen' : 'katten';
+    this.hugGrips = M.grips.map(p => p.map(v => v * this.cat.shape.size));
     this.cat.pickUp(this.model);
+    this.purrT = 0;
     if (!this.silentTake) {
-      const p = this.where();
-      sfx.purr(p, 2, this.cat.variant.pitch * (this.cat.breed.pitch ?? 1), this.cat.voice);
+      this.purr();
       this.onPickUp?.();
     }
   }
@@ -167,6 +170,7 @@ export class MieleHeld extends Holdable {
   }
 
   letGo(p) {
+    this.stopPurr();
     forgetBicycleHand(this);
     this.model.scale.set(1, 1, 1);
     this.hugT = 1;
@@ -178,19 +182,33 @@ export class MieleHeld extends Holdable {
   /** A hug: pulled in and squeezed, a purr, eyes shut, hearts. */
   onUse() {
     this.hugT = 0;
-    this.hugs++;
-    sfx.purr(this.where(), M.hugTime * 3, this.cat.variant.pitch * (this.cat.breed.pitch ?? 1), this.cat.voice);
+    if (this.cat.isMiele) this.hugs++; // ordinary-cat cuddles never enter Miele bicycle saves
+    this.purr();
     this.hearts.burst(this.cat.head.getWorldPosition(new THREE.Vector3()));
     this.onHug?.();
   }
 
   tick() {
     const k = this.hugT < 0.4 ? Math.sin(Math.PI * this.hugT / 0.4) : 0, h = M.held; // the squeeze: the first part of the hug
-    this.model.position.set(h.x, h.y + 0.015 * k, h.z + M.pull * k);
+    // Lift small kittens into view without enlarging them (#1061).
+    this.model.position.set(h.x, h.y * Math.min(1, this.cat.shape.size) + 0.015 * k, h.z + M.pull * k);
     this.model.scale.set(1 + M.squash * 0.3 * k, 1 - M.squash * 0.15 * k, 1 - M.squash * k);
   }
 
+  stopPurr() { this.carrySound?.stop(); this.carrySound = null; this.purrT = 0; }
+
+  purr() {
+    this.stopPurr();
+    // In the arms: listener-relative, so walking never leaves the sound behind.
+    this.carrySound = sfx.purr(null, M.carryPurr, this.cat.variant.pitch * (this.cat.breed.pitch ?? 1), this.cat.voice);
+    this.purrT = M.carryPurr;
+  }
+
   update(dt) {
+    if (this.held && this.cat.held) {
+      this.purrT -= dt;
+      if (this.purrT <= 0) this.purr();
+    } else this.stopPurr();
     if (this.hugT < 1) this.hugT = Math.min(1, this.hugT + dt / (M.hugTime * 2.5)); // the eyes stay shut a while
     this.cat.hugging = this.held && this.hugT < 1;
     super.update(dt);
