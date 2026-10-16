@@ -1,3 +1,17 @@
+Shower spray (#1062): `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/showerspraytest.cjs GAME OUT`
+renders both real showerSet/Tap variants with actual Chromium WebGL. Candidate
+16/16 and pre-change water module10/10 checks passed (CLI0), with before/after
+head-to-floor and later-frame images opened. A post-rebase published-input run
+also passed16/16 CLI0, with all four captured source hashes still exact. Lifecycle sound is a spy; no full
+World, audible audio, FPS or phone claim. See [graphics](graphics.md#shower-spray-1062)
+for measured draw/triangle costs, house applicability and source-hashed artifacts.
+The existing full-world `watertest.html --test-only` attempt was stopped after
+about7 minutes without assertion output (actual CLI143, not PASS or a completed
+timeout). A separate60s app-readiness probe then stalled reading page state;
+terminating its owned browser produced CLI1. The startup phase/cause was not
+established. Raw interrupted-attempt notes remain in `/tmp/lunden-showers1062`;
+these attempts do not replace the passing bounded component verification.
+
 Apartment door fittings (#1044): `tools/doorfittingstest.cjs GAME OUT [--baseline]`
 uses actual plan leaves, SwingDoor/RoomMap/privacy fitting builders and production leaf
 merge, checking animation, hinge/opening/collision contracts and both raycast faces.
