@@ -238,3 +238,7 @@ mounts, cords, shells, screens and animated dots keep their materials and
 controller identities. The Sonos/Nests implementations and audio model are
 unchanged. Saved materials use the ordinary shared UI, revisions and reload
 path independently of furniture position.
+
+### Cat carrying verification (#1061)
+
+`PLAYWRIGHT_MODULE=/tmp/lunden-testdeps/node_modules/playwright node tools/catcarrytest.cjs http://localhost:8941 /tmp/lunden-cats1061/native3` passed 29/29 in actual Chrome 155.0.8059.39 (CLI 0, no browser exceptions). Actual cat, holder, both Hand models and Web Audio cover adults, kittens, maine coon and Miele: native scale/arm grips, continuing purr and nonzero sampled RMS, floor release with one meow and walking/fade, occupied hands, hurt flight, bicycle stow/restore, immediate hide cancellation, replacement item, ordinary-versus-Miele hug counts and Miele-only save. Original main cat-dispatch and F-hide condition are executed verbatim. Source SHA256, individual checks and raw result live in that output directory; raw CLI output is `/tmp/lunden-cats1061-run3.log`. Adult/kitten/large arms and released PNGs were opened and inspected (kitten is lifted into view without enlargement). The scene uses empty obstacle maps, so it does not certify whole-apartment navigation, complete E/touch/F event dispatch, furniture placement, physical phone comfort, production save writes or FPS. Existing obstacle-aware walking and floor/soft-only placement paths remain shared.
