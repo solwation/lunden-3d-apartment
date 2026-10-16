@@ -8,7 +8,8 @@
 // dusk with the lamp heads, lie on the ground under each head and fade out again in the morning. #433: a wall light by
 // each of Hus L's eight street-side front doors (on the latch side), its wash on the façade and pool on the ground, the
 // same way; the pools stay outside the house. #1078: a wall light with a socket by each courtyard patio door (8) and
-// roof-terrace door (9): their washes / pools join the same two meshes after the portik's, and go out in a power cut.
+// roof-terrace door (9): their washes / pools join the same two meshes after the portik's, and go out in a power cut;
+// the same fixture by every Å-hus loggia door (A/B/C), its wash / pool kept inside the loggia.
 //   chromium --headless=new --virtual-time-budget=30000 --dump-dom http://localhost:8137/tools/streetlighttest.html
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -95,8 +96,12 @@ async function run() {
     }
   }
   check(portikOK, 'portik wall, ground and ceiling glows are separate legitimate geometry');
+  const lw = scene.getObjectByName('loggiaLampWash'), lp = scene.getObjectByName('loggiaLampPools');
+  check(lw && lp && lw.geometry.attributes.position.count === lp.geometry.attributes.position.count / frontVertices * 6 && lw.geometry.attributes.position.count >= 6 * 20,
+    `the Å-husen's loggia doors have their lamps (${lw ? lw.geometry.attributes.position.count / 6 : 0})`);
   await run(0, 1);
   check(!pools.visible, 'by day the pools are hidden');
+  check(!lw.visible && !lp.visible, 'by day the loggia lamps are off');
   check(!wash.visible && !doorPools.visible, 'by day the door lights are off');
   await run(1, 2.5);
   check(wash.visible && doorPools.visible && Math.abs(wash.material.opacity - DL.wash.peak) < 1e-6 && Math.abs(doorPools.material.opacity - DL.pool.peak) < 1e-6,
@@ -116,9 +121,10 @@ async function run() {
   check(!pools.visible, 'in the morning they fade out');
   check(!wash.visible && !doorPools.visible, 'and the door lights too');
   await run(1, 2.5);
+  check(lw.visible && lp.visible && Math.abs(lp.material.opacity - DL.pool.peak) < 1e-6, 'after dusk the loggia lamps are lit');
   powered = false;
   await run(1, 2.5);
-  check(!wash.visible && !doorPools.visible, 'a power cut puts the door, patio and terrace lights out at night (#604, #1078)');
+  check(!wash.visible && !doorPools.visible && !lw.visible && !lp.visible, 'a power cut puts the door, patio, terrace and loggia lights out at night (#604, #1078)');
   powered = true;
   out.textContent = lines.join('\n') + `\n${pass ? 'ALL PASS' : 'SOME FAILED'}`;
 }

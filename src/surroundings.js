@@ -4,7 +4,8 @@ import { buildRiverPark, parkDeckAt, parkTreeSpots, parkShrubSpots } from './riv
 import * as THREE from 'three';
 import { grassUV } from './grass.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE, CORE_A, CORE_B, CORE_C, NEIGHBOR_OPENINGS as O } from './config.js';
+import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE, CORE_A, CORE_B, CORE_C, NEIGHBOR_OPENINGS as O, HUS_L } from './config.js';
+import { glowMaterial, poolGeometry, washGeometry, fadeGlow } from './groundglow.js';
 import { neighborGlass } from './neighborglass.js';
 import { registerTrees, registerSnow } from './seasons.js';
 import { lobeGeometry, leafMaterial, trunkGeometry, barkMaterial } from './foliage.js';
@@ -876,8 +877,8 @@ function loggiaOpenings(b) {
     for (let st = 0; st < b.storeys; st++) {
       const y = b.base + st * S.storey;
       if (loggiaKind(b, st, y, g) === 'buried') continue;
-      const line = (kind, a0, a1, y0, y1) => { const [xa, za] = at(a0), [xb, zb] = at(a1); out.push({ kind, x0: xa, z0: za, x1: xb, z1: zb, n, y0: y + y0, y1: y + y1 }); };
-      line('door', d0, d1, 0, D.h);
+      const line = (kind, a0, a1, y0, y1, more) => { const [xa, za] = at(a0), [xb, zb] = at(a1); out.push({ kind, x0: xa, z0: za, x1: xb, z1: zb, n, y0: y + y0, y1: y + y1, ...more }); };
+      line('door', d0, d1, 0, D.h, { a0: d0, len, depth: alongX ? l.lz : l.lx, floor: st === 0 ? 0.06 : 0 }); // (+ for its lamp, #1078)
       if (w1 - w0 > 0.5) line('window', w0, w1, W.sill, W.head);
     }
   }
@@ -960,6 +961,7 @@ function entranceOpenings(b, r) {
 function loggias(blocks) {
   const L = S.loggia, p = L.pier, P = L.parapet, E = L.entrance;
   const slabs = [], walls = [], bricks = [], rails = [], plants = [], frames = [], glass = [], metal = [], signs = [], canopies = [];
+  const lamp = { glow: [], wash: [], pool: [] }; // #1078: the loggia doors' wall lights
   const letters = blocks.map((b) => b.name.slice(-1));
   const rand = rng(43);
   const pier = (b, x0, x1, z0, z1) => bricks.push(brickBox(x0, z0, x1, z0, 0, Math.sign(z1 - z0), Math.abs(z1 - z0), b.base, b.base + b.storeys * S.storey, b.base));
@@ -993,7 +995,7 @@ function loggias(blocks) {
         if (kind === 'ground' || kind === 'rail') plant(cx + sx * (p + 0.45), y, iz - sz * 0.45);
       }
     }
-    for (const o of loggiaOpenings(b)) glazing(o, frames, glass);
+    for (const o of loggiaOpenings(b)) { glazing(o, frames, glass); if (o.kind === 'door') loggiaLamp(o, frames, walls, lamp); }
     for (const r of b.recesses ?? []) {
       // `out` = +1 when the face looks towards +x / +z; `at(along, across)` → plan [x, z]
       const nz = r.face === 'n' || r.face === 's', out = r.face === 's' || r.face === 'e' ? 1 : -1;
@@ -1033,7 +1035,28 @@ function loggias(blocks) {
       }
     }
   }
-  return { slabs, walls, bricks, rails, plants, frames, glass, metal, signs, letters, canopies };
+  return { slabs, walls, bricks, rails, plants, frames, glass, metal, signs, letters, canopies, lamp };
+}
+
+/** #1078: the wall light with an integrated socket (HUS_L.patioLamp, guesses: the same fixture as Hus L's) beside a
+ * loggia door `o` (loggiaOpenings), on the façade side of the door between it and the window: its housing, stem and
+ * socket into `frames` (anthracite), the socket's cover into `walls` (white), its glass, the wash on the rendered inner
+ * wall and the pool on the loggia floor into `lamp` — both kept inside the loggia (no glow hanging in the air). */
+function loggiaLamp(o, frames, walls, lamp) {
+  const PL = HUS_L.patioLamp, { w: lw, h: lh, d: ld, socket: K } = PL, [nx, nz] = o.n, ang = Math.atan2(nx, nz);
+  const dl = Math.hypot(o.x1 - o.x0, o.z1 - o.z0), ux = (o.x1 - o.x0) / dl, uz = (o.z1 - o.z0) / dl; // (towards the inner corner)
+  const a = o.a0 - PL.dx; // along the wall from the façade line
+  if (a - lw / 2 < 0.15) return;
+  const bx = o.x0 - ux * PL.dx, bz = o.z0 - uz * PL.dx, floor = o.y0 + o.floor, ly = o.y0 + PL.y, sy1 = ly - lh / 2 - K.gap, sy0 = sy1 - K.h;
+  const box = (w, h, d, y, off) => new THREE.BoxGeometry(w, h, d).rotateY(ang).translate(bx + nx * off, y, bz + nz * off);
+  frames.push(box(lw, lh, ld, ly, ld / 2), box(lw + 0.03, 0.02, ld + 0.015, ly + lh / 2 + 0.01, (ld + 0.015) / 2),
+    box(0.04, K.gap, 0.03, sy1 + K.gap / 2, 0.015), box(K.w, K.h, K.d, (sy0 + sy1) / 2, K.d / 2));
+  walls.push(box(K.w - 0.02, K.h - 0.02, 0.008, (sy0 + sy1) / 2, K.d + 0.004));
+  lamp.glow.push(box(lw - 0.03, lh - 0.04, 0.014, ly, ld + 0.003));
+  const half = Math.min(a, o.len - a), wash = Math.min(PL.wash.w, 2 * half);
+  lamp.wash.push(washGeometry(bx, o.y0 + PL.wash.y, bz, nx, nz, wash, PL.wash.h));
+  const rx = Math.min(PL.pool.rx, half), rz = Math.min(PL.pool.rz, o.depth / 2 - 0.05);
+  lamp.pool.push(poolGeometry(bx + nx * (rz + 0.02), bz + nz * (rz + 0.02), ux, uz, rx, rz, () => floor, { rings: 5, segs: 20 }));
 }
 
 /** The lowest ground under a block's footprint (sampled every 2 m). */
@@ -1459,6 +1482,24 @@ export function buildSurroundings({ grass }) {
   if (lg.plants.length) mesh(lg.plants.map((g) => { g = g.index ? g.toNonIndexed() : g; g.deleteAttribute('uv'); return g; }), new THREE.MeshStandardMaterial({ color: 0x4f7d3a, roughness: 0.9, flatShading: true }));
   const bare = (gs) => gs.map((g) => { g = g.index?g.toNonIndexed():g; g.deleteAttribute('uv'); return g; });
   mesh(bare(lg.frames), new THREE.MeshStandardMaterial({ color: 0x4a5056, roughness: 0.5, metalness: 0.3 })); // anthracite frames (#266)
+  // #1078: the loggia doors' wall lights — the glass and the additive wash / pool, switched with Hus L's door lights
+  const DL = HUS_L.doorLamp, lampGlass = new THREE.MeshBasicMaterial({ color: 0x8d8b84, toneMapped: false }), glassLit = new THREE.Color(0xffd9a0), glassOff = new THREE.Color(0x8d8b84);
+  const lampMesh = mesh(bare(lg.lamp.glow), lampGlass);
+  if (lampMesh) lampMesh.name = 'loggiaLampGlass';
+  const lampGlows = [[lg.lamp.wash, DL.wash.peak, THREE.FrontSide, 'loggiaLampWash'], [lg.lamp.pool, DL.pool.peak, THREE.DoubleSide, 'loggiaLampPools']].filter(([g]) => g.length).map(([geos, peak, side, name]) => {
+    const m = new THREE.Mesh(mergeGeometries(geos), glowMaterial(DL.color));
+    Object.assign(m, { name, visible: false, renderOrder: 2 }); m.material.side = side; m.userData.peak = peak;
+    group.add(m);
+    return m;
+  });
+  let lampLit = false, lampLevel = 0, lampT = performance.now();
+  const updateLoggiaLamps = (night, power) => { // after dusk with a short fade (hysteresis), out in a power cut (#604)
+    const now = performance.now(), dt = Math.min(1, (now - lampT) / 1000);
+    lampT = now;
+    if (!lampLit && night > DL.on && power) lampLit = true; else if (lampLit && (night < DL.off || !power)) lampLit = false;
+    for (const m of lampGlows) lampLevel = fadeGlow(m, lampLevel, lampLit, m === lampGlows[0] ? dt : 0, DL.fade, m.userData.peak);
+    lampGlass.color.copy(lampLit ? glassLit : glassOff);
+  };
   mesh(bare(details.seals),new THREE.MeshStandardMaterial({color:O.gasketColor,roughness:O.gasketRoughness})).name='siteNeighborSeals';
   mesh(bare([...lg.glass,...details.glass]),glassMaterial).name='siteNeighborGlass'; // glazing: loggia doors, windows, entrances
   mesh(lg.signs, new THREE.MeshStandardMaterial({ map: letterTexture(lg.letters), roughness: 0.6 })); // the house letters
@@ -1539,6 +1580,6 @@ export function buildSurroundings({ grass }) {
   group.add(...trees(rng(3)));
   const windows = buildWindowLights(details.list), street = buildStreet(groundY); // street lamps, crossing, curbs … (#128)
   group.add(windows.object, street.object, buildStreetSigns(groundY)); // + street name signs at the junctions (#583)
-  group.userData.windows = { object: windows.object, update(hour, night, power = true) { for (const b of backdrops) b.userData.updateClocks(hour); windows.update(hour, night, power); street.update(night);glassMaterial.envMapIntensity=THREE.MathUtils.lerp(O.reflectionDay,O.reflectionNight,night); } };
+  group.userData.windows = { object: windows.object, update(hour, night, power = true) { for (const b of backdrops) b.userData.updateClocks(hour); windows.update(hour, night, power); updateLoggiaLamps(night, power); street.update(night);glassMaterial.envMapIntensity=THREE.MathUtils.lerp(O.reflectionDay,O.reflectionNight,night); } };
   return group;
 }

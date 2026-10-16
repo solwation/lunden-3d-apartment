@@ -76,7 +76,9 @@ src/exterior.js        Hus L (HUS_L): brick row with the core/portik, neighbours
                        `HUS_L.patioLamp` (#1078, all *guesses*): the same kind of light with an integrated socket under it by
                        every courtyard patio door (L1001–L1008, ours too) and roof-terrace door (L1201–L1209), east of the
                        door; `patioLamps` adds only geometry to the door lights' meshes (no mesh/material/light), so it
-                       switches with them and goes out in a power cut. Å-husen A/B/C loggias: not covered yet (see #1078)
+                       switches with them and goes out in a power cut. The brochure's building description covers all of
+                       Kv. Lunden, so the same fixture sits by every Å-hus (A/B/C) loggia door (surroundings.js
+                       `loggiaLamp`, 52 lamps: three meshes `loggiaLampGlass/Wash/Pools`, wash/pool kept inside the loggia)
                        `HUS_L.gableWindows`: every gable opening tagged gable / building storey / flat from the end flats'
                        bofakta (L1001 west, L1008 + L1209 east; none for L1201 or on våning 4; no flat is mirrored, #351)
 src/roofs.js           the walkable roofs (#360, `world.roofs`): surfaces (rect or disk, flat `y` or a slope function, an `id` per roof)
