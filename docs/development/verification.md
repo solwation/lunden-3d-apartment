@@ -57,6 +57,27 @@ HUD layout only (#707, #716): `PLAYWRIGHT_MODULE=/path/to/playwright node tools/
 
 Armed greeting priority (#872): `PLAYWRIGHT_MODULE=/path/to/playwright node tools/armedgreettest.cjs http://localhost:8867 /tmp/armed-greet` runs complete verbatim main.js production functions/listener bodies with current weapon checks, actual index DOM/THREE/Ghosts and source identity checks. It covers unarmed greeting, close armed touch, old ghost focus after weapon changes, E/keyup and pointer release (no latched rifle), primary mouse, suit/web/jetpack and preserved ordinary object E. Bootstrap/WebGL are suppressed; world collaborators and weapon effects are stand-ins, so the screenshot certifies action-label DOM rather than an actual-world shot/physical phone. No baseline or assertions are relaxed.
 
+
+## Desktop startup data retry (#1065)
+
+`tools/startupnetworktest.cjs BASE` runs actual index/bootstrap/recovery with only the scene body substituted.
+Seven cases cover success, one 503, one failed request, one stalled response, permanent 503, 404 and invalid JSON.
+The three transient cases fail on the old helper and recover with exactly two requests on the new one; permanent
+failures remain bounded/covered, and malformed/404 failures do not retry. It also checks the genuine caught
+TypeError survives before main import and the actual CrashLog reports the original build/cause once on the next load
+through a local sink. No real visitor failure is fabricated by these controlled tests.
+
+Existing startuprecovery HTML12, version/startup HTML20, early index/bootstrap16 and crash snapshot checks pass.
+The early screenshot needs `PW_TEST_SCREENSHOT_NO_FONTS_READY=1` with its paused fake clock; otherwise Playwright waits
+for fonts while time is frozen. An attempted native-tab heartbeat test stopped before importing CrashLog because
+this headless environment did not make the background tab hidden; that is not a passing heartbeat regression test.
+Normal published desktop startup succeeded twice before the patch. After the patch, the full actual apartment
+(no test mode, headless warm-up skipped) also completed after an injected first-plan503: exactly two requests,
+loading cover hidden and persistent home sentinel intact. Its resource log contains the injected503 and the
+expected missing local data/todo.json404 (the sample fallback loads); no claim of a physically reproduced desktop crash is made. The exact cause of Sarah's reported computer
+incident remains unconfirmed; the retry is a verified mitigation for the single-request failure path.
+
+
 ## Three-box head verification (#974)
 
 `node tools/headboxestest.cjs` checks ordinary shared geometry and invalid inputs.

@@ -4743,7 +4743,7 @@ export const PLANT_WIND={calm:.025,wetBoost:2,stormBoost:.5,easeSeconds:1.2,slee
 
 // Startup recovery (#864): generous wall-clock allowance for sliced phone warm-up;
 // optional JSON requests get a shorter budget. Safeguards, not measured device limits.
-export const STARTUP = { dataTimeout: 5000, planTimeout: 15000, recoveryTimeout: 120000 };
+export const STARTUP = { dataTimeout: 5000, planTimeout: 15000, dataAttempts: 2, retryDelay: 250, recoveryTimeout: 120000 };
 
 // #892: canonical appearance shared by Avatar and future authoritative contact profiles.
 export const SKIN = [0xf1c9a8, 0xe0ae8a, 0xc68863, 0x9a6643, 0x6b4430];

@@ -10,7 +10,7 @@ src/viewport.js        renderer/camera sizing is attached before scene loading, 
 src/warmup.js          phone shader/geometry warm-up runs in slices before the first complete scene (#697);
                        main.js keeps the loading/resume cover until that scene has rendered
 index.html            dependency-free inline recovery guard before bootstrap, including failed static dependencies (#864)
-src/startuprecovery.js bounded startup JSON requests and covered retry after import failure/stalled loading (#864)
+src/startuprecovery.js bounded startup JSON requests with one transient retry; covered recovery and retained startup cause (#864, #1065)
 src/bootstrap.js       lightweight startup gate: bounded version check before importing main.js (#512)
 src/startup.js         fresh HTML/build check + cache-busted early update; loop guards; no scene on outgoing page
 src/version.js         BUILD/CONTENT stamps + polling for publications later during a visit
@@ -54,6 +54,17 @@ Crash reports (#629): the Worker (cloudflare/crash.js) must be deployed (cloud.y
 arrive; until then POST /crash gets 404 and the client just queues at most three and gives up silently. Read them with
 `curl -H "Authorization: Bearer $ADMIN_TOKEN" <CLOUD_URL>/crash` (list, newest first) and `…/crash/<id>`; `DELETE /admin/crash` clears.
 An agent can only read them when the user supplies `ADMIN_TOKEN` (an environment secret) or pastes the output.
+Required plan loading (#1065) allows two attempts, each covering request and JSON body with the existing 15 s deadline,
+separated by 250 ms. Network failures/timeouts and HTTP 408/429/5xx retry once without cached failure responses;
+404 and malformed JSON fail immediately. Permanent failures remain covered and show the existing retry button.
+The guard retains one bounded technical error (name/message/stack/build/time) in sessionStorage, stripping URL query/fragment
+values. Bootstrap forwards its caught cause instead of dropping it. On the next load, the existing enabled CrashLog consumes
+records at most one hour old and reports `fel/startup` with `why: next-load` and the failed build. The snapshot belongs to that
+next load, not to the failed scene. Disabled crash reporting stays disabled; no saved home/resume data is deleted.
+The pure fetch-retry part is also applicable to the backend-free downstream; crash reporting is not imported there.
+`tools/startupnetworktest.cjs BASE` covers real index/bootstrap and data failures with only the scene body substituted,
+plus actual one-shot CrashLog delivery to a local sink. It does not reproduce the user's computer-specific incident.
+
 At startup, `bootstrap.js` waits at most 2.5 seconds for `startup.js` to check `version.json` and (when needed) fresh HTML before importing the expensive scene. A coherent new build navigates to `?v=<SHA>` before `main.js` runs; network/HTML errors continue the working version. Session and URL guards prevent repeated startup navigation. Saved home/settings/resume data remain intact. No service worker is installed by this project; a legacy registration with exactly this app's scope is retired only for an early update, without touching parent-site registrations.
 
 During a visit the page polls `version.json` every minute; when its content hash differs from `CONTENT` (`isNewer`; a file without a

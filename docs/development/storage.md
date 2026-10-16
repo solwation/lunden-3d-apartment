@@ -113,6 +113,10 @@ src/leaderboard.js     the global leaderboard (#198), only with the cloud on: op
                        one by one and counts `anon`) and ghosts. Everybody is visible (#723 removed the opt-out box "Visa mig inte för andra"; an old
                        localStorage 'lunden.share' is deleted at start, no other effect); the start screen says so (`#share-note`: online + avatar, #730) and the privacy page opens with "Vad andra spelare ser".
                        `node --test cloudflare/scores.test.mjs`, `tools/anontest.cjs`
+src/startuprecovery.js One bounded `lunden.startupFailure` sessionStorage record (#1065), also written by the dependency-free
+                       index guard before imports. Name/message/stack/build/time only, URL query/fragment values removed.
+                       Enabled CrashLog consumes valid records no older than one hour once at next startup; no world or
+                       resume record is read/cleared by this mechanism. Recovery still works when storage is blocked.
 src/crashlog.js        crash reports (#629), inert without the cloud (same switch as cloud.js): a heartbeat every CRASHLOG.beatMs (outside the
                        render loop) writes place, quality level, fps, renderer.info, a GPU-memory ESTIMATE (canvas, shadow map,
                        mirror target, source texture images — walked in short slices; incomplete, not measured GPU usage), last keys/taps and console.error lines to localStorage

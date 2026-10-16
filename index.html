@@ -1167,9 +1167,21 @@
       const finished = () => loading.hidden || loading.classList.contains('done');
       const stop = () => { clearTimeout(timer); observer.disconnect(); };
       const observer = new MutationObserver(() => { if (finished()) stop(); });
-      const fail = () => {
+      const fail = (error) => {
         stop();
         if (finished()) return;
+        // Preserve the caught cause even when main/crashlog could not be imported (#1065).
+        // Keep this record aligned with recordStartupFailure in src/startuprecovery.js.
+        try {
+          const clean = value => String(value || '').replace(/https?:\/\/[^\s'")]+/g, url => url.split(/[?#]/)[0]);
+          const script = document.querySelector('script[src*="src/bootstrap.js"]');
+          const build = script ? new URL(script.src).searchParams.get('v') || 'dev' : 'dev';
+          sessionStorage.setItem('lunden.startupFailure', JSON.stringify({
+            at: Date.now(), build, name: clean(error?.name || 'Error').slice(0, 40),
+            message: clean(error?.message || 'Startup deadline exceeded').slice(0, 300),
+            stack: clean(error?.stack).slice(0, 1500),
+          }));
+        } catch { /* Blocked storage must not prevent retry. */ }
         document.documentElement.classList.remove('resuming');
         loading.querySelector('h1').textContent = 'Starten kunde inte slutföras';
         loading.querySelector('p').textContent = 'Försök ladda igen. Din sparade plats och ditt hem finns kvar.';
@@ -1189,6 +1201,6 @@
       if (finished()) stop();
     })();
   </script>
-  <script type="module" src="src/bootstrap.js" onerror="window.__lundenStartupRecovery.fail()"></script>
+  <script type="module" src="src/bootstrap.js" onerror="window.__lundenStartupRecovery.fail(new Error('Bootstrap module failed'))"></script>
 </body>
 </html>

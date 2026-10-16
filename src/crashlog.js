@@ -1,6 +1,7 @@
 import { CRASHLOG as C } from './config.js';
 import { cloudUrl } from './cloud.js';
 import { BUILD } from './version.js';
+import { takeStartupFailure } from './startuprecovery.js';
 import { lowMemory } from './lowmemory.js';
 
 // Crash reports (#629), to diagnose what kills the tab on phones (#628). Inert without the cloud (no CLOUD_URL / &cloud=):
@@ -62,6 +63,10 @@ class CrashLog {
     const old = readJSON(BEAT, null);
     this.hookErrors();
     this.hookActions();
+    const startup = takeStartupFailure();
+    if (startup) this.report('fel', 'startup', {
+      build: startup.build, msg: `${startup.name}: ${startup.message}`, stack: startup.stack, why: 'next-load',
+    });
     // read the old beat BEFORE the first new one is written
     if (old && old.s === 'run' && old.tab !== this.tab && Date.now() - (old.t || 0) > C.deadIfWithinMs) {
       this.report('död', 'killed', { beat: old, gap: round((Date.now() - old.t) / 1000, 0) });

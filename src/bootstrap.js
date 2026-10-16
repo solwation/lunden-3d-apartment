@@ -12,5 +12,5 @@ if(start){
   if(BUILD!=='dev') moduleURL.searchParams.set('v',BUILD);
   const recovery = watchStartup();
   try { await import(moduleURL.href); }
-  catch(error) { console.error('Startup failed', error); recovery.fail(); }
+  catch(error) { console.error('Startup failed', error); recovery.fail(error); }
 }

@@ -1,21 +1,64 @@
 import { STARTUP } from './config.js';
 
-/** Bound both fetching and reading the body, even if a request ignores abort. */
-export async function fetchStartupJSON(url, { fetcher = globalThis.fetch, timeout = STARTUP.dataTimeout } = {}) {
-  const controller = new AbortController();
-  let timer;
+/** Bound each request and body. Retry one transient failure before abandoning the scene. */
+export async function fetchStartupJSON(url, {
+  fetcher = globalThis.fetch, timeout = STARTUP.dataTimeout,
+  attempts = STARTUP.dataAttempts, retryDelay = STARTUP.retryDelay,
+} = {}) {
+  const count = Number.isInteger(attempts) ? Math.max(1, Math.min(attempts, 3)) : 1;
+  for (let attempt = 0; attempt < count; attempt++) {
+    const controller = new AbortController();
+    let timer;
+    try {
+      return await Promise.race([
+        (async () => {
+          const response = await fetcher(url, {
+            signal: controller.signal, ...(attempt ? { cache: 'no-store' } : {}),
+          });
+          if (!response.ok) {
+            const error = Error(`Startup data: ${response.status}`);
+            error.retryable = response.status === 408 || response.status === 429 || response.status >= 500;
+            throw error;
+          }
+          return response.json();
+        })(),
+        new Promise((_, reject) => {
+          timer = setTimeout(() => { controller.abort(); reject(Error('Startup data timeout')); }, timeout);
+        }),
+      ]);
+    } catch (error) {
+      if (attempt + 1 === count || error?.retryable === false || error?.name === 'SyntaxError') throw error;
+    } finally { clearTimeout(timer); controller.abort(); }
+    await new Promise(resolve => setTimeout(resolve, retryDelay));
+  }
+}
+
+// The dependency-free index guard writes the same bounded technical record before modules exist.
+const FAILURE_KEY = 'lunden.startupFailure';
+export function recordStartupFailure(error) {
   try {
-    return await Promise.race([
-      (async () => {
-        const response = await fetcher(url, { signal: controller.signal });
-        if (!response.ok) throw Error(`Startup data: ${response.status}`);
-        return response.json();
-      })(),
-      new Promise((_, reject) => {
-        timer = setTimeout(() => { controller.abort(); reject(Error('Startup data timeout')); }, timeout);
-      }),
-    ]);
-  } finally { clearTimeout(timer); controller.abort(); }
+    const clean = value => String(value || '').replace(/https?:\/\/[^\s'")]+/g, url => url.split(/[?#]/)[0]);
+    const script = document.querySelector('script[src*="src/bootstrap.js"]');
+    const build = script ? new URL(script.src).searchParams.get('v') || 'dev' : 'dev';
+    sessionStorage.setItem(FAILURE_KEY, JSON.stringify({
+      at: Date.now(), build, name: clean(error?.name || 'Error').slice(0, 40),
+      message: clean(error?.message || 'Startup deadline exceeded').slice(0, 300),
+      stack: clean(error?.stack).slice(0, 1500),
+    }));
+  } catch { /* Storage can be unavailable; recovery must still work. */ }
+}
+
+/** Report at most one recent failed start on the next load, through the existing crash logger. */
+export function takeStartupFailure() {
+  try {
+    const raw = sessionStorage.getItem(FAILURE_KEY);
+    sessionStorage.removeItem(FAILURE_KEY);
+    const record = JSON.parse(raw);
+    if (!record || !Number.isFinite(record.at) || Date.now() - record.at < 0 || Date.now() - record.at > 3600_000
+      || typeof record.name !== 'string' || typeof record.message !== 'string' || typeof record.build !== 'string') return null;
+    return { name: record.name.slice(0, 40), message: record.message.slice(0, 300),
+      build: record.build.slice(0, 40), stack: typeof record.stack === 'string' ? record.stack.slice(0, 1500) : '' };
+  } catch { return null; }
 }
 
 /** Keep the scene covered, but offer recovery for failed imports or stalled startup/warm-up. */
@@ -30,9 +73,10 @@ export function watchStartup(options = {}) {
   const finished = () => loading.hidden || loading.classList.contains('done');
   const observer = new MutationObserver(() => { if (finished()) stop(); });
   const stop = () => { clearTimeout(timer); observer.disconnect(); };
-  const fail = () => {
+  const fail = (error) => {
     stop();
     if (finished()) return;
+    recordStartupFailure(error);
     // Resuming normally hides #loading behind a pseudo-element. Show this card on failure
     // without deleting the saved position/home or allowing access to an incomplete scene.
     document.documentElement.classList.remove('resuming');
