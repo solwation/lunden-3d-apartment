@@ -5399,3 +5399,26 @@ export const GROUND_AO = {
   wall: 0.5, width: 1.0, step: 3,
   lift: 0.03, maxStep: 0.45, fade: [0.72, 0.95],
 };
+
+// FTX ceiling valves (#1080, src/world.js `ceilingVents`): Peab names a "lägenhetsaggregat typ FTX" with mechanical supply
+// and extract air (the information brochure and the Q&A, see #1080) but no sheet shows the valves, so every value here is
+// a *guess*: a white round disc valve (a usual Ø125 duct: a ~Ø160 collar on the ceiling, a disc hanging below it on a
+// neck), supply air in the bedrooms and living rooms (`supply`, room-name prefixes), extract air in the wet rooms, laundry
+// and kitchen (`exhaust`). One per room, placed automatically from the room's centre (where its ceiling lamp hangs):
+// `offsets` m away, first towards the flat's middle (away from the façade), then along it, then diagonally, then towards the façade —
+// the first spot that keeps `wall` m from every wall (clear of the ceiling's contact shadow, AO.ceiling), `cabinet` m from
+// fitted cabinets (the kitchen hood, wall cabinets, wardrobes), `lamp[0]` m from every ceiling lamp / pendant / smoke alarm (`lamp[1]` where no spot keeps that: a small wet room's spots),
+// `hole` m from the stair opening and does not straddle a soffit's edge (`soffit`). Sizes in metres.
+export const VENTS = {
+  supply: ['Sovrum', 'Vardagsrum', 'Allrum'],
+  exhaust: ['Badrum', 'WC/dusch', 'Tvätt', 'Kök / matplats'],
+  collar: { r: 0.08, h: 0.01 },                            // the ring against the ceiling (its top 2 mm under the ceiling plate)
+  neck: 0.045,                                             // the neck's radius between the collar and the disc
+  disc: { supply: { r: 0.068, h: 0.008, gap: 0.012 }, exhaust: { r: 0.055, h: 0.01, gap: 0.02 } }, // the disc: radius, thickness, gap under the collar
+  cap: { r: 0.55, h: 0.004 },                              // the raised centre of the disc (fraction of its radius, thickness)
+  color: 0xf8f8f6, roughness: 0.45,                       // white plastic, a touch whiter and glossier than the painted ceiling
+  slot: 0x8d908f,                                          // the shadowed slot round the neck (vertex colour, no extra material)
+  segments: 24,
+  offsets: [0.8, 0.6, 1.0, 0.45, 1.2, 0.35],
+  wall: 0.25, cabinet: 0.12, lamp: [0.4, 0.25], hole: 0.3, soffit: 0.05,
+};

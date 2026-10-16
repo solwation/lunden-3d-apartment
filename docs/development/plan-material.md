@@ -40,6 +40,15 @@ material/              screenshots of our choices in Peab's option portal (local
   window over the void). It is in the window frames' material (no extra draw calls; verified 2026-10-16 with identical
   per-view call counts) and sticks out 6.5 cm, inside the player's wall clearance, so it has no collision; desks, beds and
   the living-room sofa stand clear of it and the closed curtains' folds touch at most ~1 mm (Sovrum 2/4).
+- Ventilation (#1080): Peab names a "lägenhetsaggregat typ FTX" with mechanical supply and extract air (SOURCED: info
+  brochure, Frågor och svar), but no sheet shows the valves. Every room gets one white round disc valve (world.js
+  `ceilingVents`, `VENTS` in config: model, size and positions *guess*): supply in the bedrooms, Allrum and living room,
+  extract in Badrum, WC/dusch, Tvätt and the kitchen; ours, L1004 and L1201 alike, placed automatically from the room's
+  centre (where its ceiling lamp hangs) away from walls (the ceiling AO band), fitted cabinets/hood, lamps, pendants, the
+  smoke alarm, the stair opening and soffit edges, under the local ceiling or soffit. Vertex-coloured in one material
+  shared by all flats: one mesh a level (+1 draw call a level where it is in view; verified 2026-10-17), no shadow, no
+  collision and nothing to aim at. Its collar's top sits 2 mm under the ceiling plate; no face is coplanar with the ceiling
+  AO overlay (7 mm under it), so nothing z-fights.
 - Façade: red brick (and some white render) per the brochure. The building is "staplade
   radhus": a two-storey unit sits on top of ours, entered from the loftgång (floor 3).
   Neighbours/upper units in `exterior.js` are simplified copies of our façade.

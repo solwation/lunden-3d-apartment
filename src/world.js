@@ -3,7 +3,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import {
   LAUNDRY, WARDROBE, LEVELS, UNIT_TOP, SOFFITS, DOOR_HEIGHT, DOOR_TRIM, EXT_DOOR_HEAD, WINDOWS, WINDOW_TOP_HUNG_MAX, BLINDS, RADIATOR, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT, TOILET,
   STAIR, COLORS, FENCE_HEIGHT, SITE, OUTDOOR, CABINET_FIXES, KLK, SEASON, FINISH, OPTIONS, EXTRA_WALLS, SLIDE_FLIP, ROOM_RENAMES, EXTRA_ROOMS, ROOM_DIVIDERS, CORE, PORTIK,
-  STANDARD, VISIT_UNITS, L1201, HUS_L, storeyFloor, HUS_L_REVEAL,
+  STANDARD, VISIT_UNITS, L1201, HUS_L, storeyFloor, HUS_L_REVEAL, VENTS, TILED_ROOMS, LIGHTING, SMOKE_ALARM,
 } from './config.js';
 import { buildStairs, buildHandrails, stairHeight, stairUnderside } from './stairs.js';
 import { klkFittings } from './closet.js';
@@ -458,6 +458,72 @@ function addRadiator(group, M, x0, x1, inner, s, sill, y0, avoid) {
     add(cyl(P.rosette, 0.006, M.frame)).position.set(px, y0 + 0.003, vz);
   }
   return foot;
+}
+
+const ventMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: VENTS.roughness });
+/** `geo` (non-indexed position + normal only, as mergeGeometries wants them alike) in one vertex colour. */
+function tint(geo, c) {
+  const g = geo.toNonIndexed(); g.deleteAttribute('uv');
+  const a = new Float32Array(g.attributes.position.count * 3);
+  for (let i = 0; i < a.length; i += 3) { a[i] = c.r; a[i + 1] = c.g; a[i + 2] = c.b; }
+  g.setAttribute('color', new THREE.BufferAttribute(a, 3));
+  return g;
+}
+
+/** The FTX ceiling valves of one level (#1080, VENTS, every value a *guess*): a white disc valve per supply / extract room of
+ * `map` (a RoomMap), placed from the room's centre (its ceiling lamp) as VENTS describes, under the ceiling at `yC` or a
+ * soffit's underside. One merged mesh with vertex colours (white plastic, the dark slot round the neck) in one material shared
+ * by every flat: mergeStatic bakes each level's into one batch (+1 draw call a level); no shadow cast, nothing to aim at. `avoid`: other ceiling things [[x, z]]; `cabinets`, `hole`, `soffits`
+ * as buildLevel's. Returns null when the level has none. */
+function ceilingVents(map, li, y0, yC, { cabinets = [], hole = null, soffits = [], avoid = [] } = {}) {
+  const V = VENTS, R = V.collar.r, white = new THREE.Color(V.color), slot = new THREE.Color(V.slot), starts = (name, list) => list.some((p) => name.startsWith(p));
+  const regions = map.regions().filter((r) => r.area >= 0.6);
+  const lamps = [...regions.map((r) => [r.x, r.z]), ...avoid];
+  const mid = map.size.z / 2, geos = [];
+  const inRect = (x, z, q, m) => x > q.x0 - m && x < q.x1 + m && z > q.z0 - m && z < q.z1 + m;
+  const fits = (name, x, z, near) => {
+    if (map.exact(x, z) !== name) return false;
+    const w = V.wall + R;
+    for (const [dx, dz] of [[w, 0], [-w, 0], [0, w], [0, -w], [w * 0.7, w * 0.7], [-w * 0.7, w * 0.7], [w * 0.7, -w * 0.7], [-w * 0.7, -w * 0.7]]) {
+      if (map.exact(x + dx, z + dz) !== name) return false;
+    }
+    if (cabinets.some((c) => inRect(x, z, c, V.cabinet + R))) return false;
+    if (li === 0 && hole && inRect(x, z, hole, V.hole + R)) return false;
+    if (lamps.some(([lx, lz]) => Math.hypot(lx - x, lz - z) < near)) return false;
+    return !soffits.some((s) => inRect(x, z, s, R + V.soffit) && !inRect(x, z, s, -(R + V.soffit))); // not across its edge
+  };
+  for (const r of regions) {
+    const kind = starts(r.name, V.supply) ? 'supply' : starts(r.name, V.exhaust) ? 'exhaust' : null;
+    if (!kind) continue;
+    const t = Math.sign(mid - r.z) || 1, k = Math.SQRT1_2, dirs = [[0, t], [1, 0], [-1, 0], [k, t * k], [-k, t * k], [k, -t * k], [-k, -t * k], [0, -t]];
+    let at = null;
+    for (const near of V.lamp) for (const [dx, dz] of dirs) { // (a small room: closer to its lamps rather than none)
+      for (const d of V.offsets) if (!at && fits(r.name, r.x + dx * d, r.z + dz * d, near)) at = [r.x + dx * d, r.z + dz * d];
+    }
+    if (!at) continue;
+    const [x, z] = at, s = soffits.find((q) => inRect(x, z, q, 0));
+    const top = (s ? y0 + s.height : yC) - 0.002, D = V.disc[kind], n = V.segments;
+    const cyl = (rad, y1, y2) => new THREE.CylinderGeometry(rad, rad, y1 - y2, n).translate(x, (y1 + y2) / 2, z);
+    const yc = top - V.collar.h, yd = yc - D.gap;
+    geos.push(tint(cyl(R, top, yc), white), tint(cyl(V.neck, yc, yd), slot), tint(cyl(D.r, yd, yd - D.h), white), tint(cyl(D.r * V.cap.r, yd - D.h, yd - D.h - V.cap.h), white));
+  }
+  if (!geos.length) return null;
+  const mesh = new THREE.Mesh(mergeGeometries(geos), ventMaterial);
+  mesh.name = 'ventilationsdon'; mesh.receiveShadow = true;
+  return mesh;
+}
+
+/** What else hangs from our ceiling, for ceilingVents (#1080): the pendants, the smoke alarm and the wet rooms' spots / the
+ * laundry's globe (interior.js: at the tiled room's centre line). */
+function ourCeilingThings(li) {
+  const pts = LIGHTING.pendants.filter((p) => p.level === li).map((p) => [p.x, p.z]);
+  if (li === 0) pts.push([SMOKE_ALARM.x, SMOKE_ALARM.z]);
+  for (const r of TILED_ROOMS.filter((q) => q.level === li && q.floor === 'wetTile')) {
+    const cx = (r.x0 + r.x1) / 2, h = r.z1 - r.z0;
+    if (r.wallTile) pts.push([cx, r.z0 + h / 4], [cx, r.z1 - h / 4]); // its two spots (interior.js `spots`)
+    else pts.push([cx, r.z0 + h / 2]); // the globe
+  }
+  return pts;
 }
 
 function buildLevel(floor, li, group, how = OURS) {
@@ -916,6 +982,11 @@ function buildVisitFlat(plan, U, ox) {
   const dividers = own ? P.dividers : ROOM_DIVIDERS;
   const roomMaps = [l0, l1].map((l, li) => new RoomMap({ x: W, z: D }, [...l.barriers, ...dividers.filter((d) => d.level === li)], rooms[li]));
   [l0, l1].forEach((l, li) => fitPrivacyDoors(l.doors, (x, z) => roomMaps[li].at(x, z)));
+  [lower, upper].forEach((f, li) => { // its FTX ceiling valves (#1080): one batch a level below
+    const v = ceilingVents(roomMaps[li], li, L[li].floor, L[li].floor + L[li].ceiling,
+      { cabinets: f.cabinets, hole: how.hole ?? STAIR.hole, soffits: (own ? P.soffits : SOFFITS).filter((s) => s.level === li) });
+    if (v) group.add(v);
+  });
   const box3 = new THREE.Box3(), mid = new THREE.Vector3();
   mergeStatic(group, moving.concat(edges ? [edges] : []), (o) => { box3.setFromObject(o).getCenter(mid); return mid.y < L[1].floor - 0.05 ? 'l0' : 'l1'; });
   for (const d of doors) mergeStatic(d.object, d.keep ?? [], () => '', { tagged: true });
@@ -1071,6 +1142,11 @@ export function buildWorld(plan) {
   });
   wardrobeSpecs.length = 0;
 
+  [lower, upper].forEach((f, li) => { // the FTX ceiling valves (#1080): one batch a level below
+    const v = ceilingVents(roomMaps[li], li, LEVELS[li].floor, LEVELS[li].floor + LEVELS[li].ceiling,
+      { cabinets: f.cabinets, hole: STAIR.hole, soffits: SOFFITS.filter((s) => s.level === li), avoid: ourCeilingThings(li) });
+    if (v) scene.add(v);
+  });
   // bake the static fittings into one mesh per material and level (draw calls, #48)
   const box3 = new THREE.Box3(), mid = new THREE.Vector3();
   const merged = mergeStatic(scene, [
