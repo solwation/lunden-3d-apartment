@@ -51,6 +51,21 @@ comfort test or a performance benchmark. The report's original image shows the
 street without controls; placement decisions are based on the implementation and
 guidance, not inferred from that image.
 
+### Touch look and scale (#1087, part 1 of #1082)
+
+The stick and the cluster share one calm glass family in `src/hudicons.css` (`.stick-face`, `#stick`, `#stick-hint`,
+`#touch-controls`): a translucent dark disc with a light rim and four quiet chevrons, a frosted light knob, and round
+glass buttons (scaled symbols, soft press scale, toggled = light face with a dark symbol). The primary action stays
+neutral glass (#525) as a full pill with a brighter edge. The rim lights up toward the push (`--stick-a`/`--stick-m`
+from `touch.js`, a masked conic gradient) and is full and bright while sprinting (`.sprint` from main.js).
+Sizes follow the layout's short side: `TOUCH` in `src/config.js` (*guess* fractions/clamps tuned by eye; 48 px floor
+from #1057) → `touchSizes()` in `touch.js` → `--stick-travel`, `--touch-button`, `--touch-gap` on `<html>`, re-measured
+on resize/rotation and each stick touch (root `clientWidth/Height`, since iOS can leave `innerWidth` stale, #567).
+At 844×390 the knob travels 58 px and buttons are 57 px; 667×375 → 56/54; tablets cap at 84/64. CSS fallbacks keep the
+old 56/48 px when `setupTouch` never runs. `#stick-hint` is a faint resting stick at the lower left whenever touch play
+is on and no walking thumb is down; the real stick still floats to where the thumb lands (dead zone, curve and follow
+mode are part 2, #1088). The touch chat reserves room above the hint. Physical-phone comfort remains unmeasured.
+
 ## Current shared head contract (#974, #893, #894, #979)
 
 Version 2 uses three shared logical head boxes from `PVP_HEAD_BOXES` in `src/config.js`:

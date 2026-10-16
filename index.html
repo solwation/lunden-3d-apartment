@@ -153,11 +153,6 @@
     .card .qr { display: flex; align-items: center; gap: 10px; margin: 12px 0 0; font-size: 12px; opacity: .85; }
     .card .qr img { width: 111px; height: 111px; border-radius: 4px; image-rendering: pixelated; }
     body.phone .card .qr { display: none; } /* already on a phone (#193) */
-    #stick { position: fixed; width: 120px; height: 120px; margin: -60px 0 0 -60px; border-radius: 50%; background: rgba(255,255,255,.18); border: 2px solid rgba(255,255,255,.6); pointer-events: none; }
-    #stick[hidden] { display: none; }
-    #stick .knob { position: absolute; left: 34px; top: 34px; width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,.85); box-shadow: 0 2px 8px rgba(0,0,0,.3); }
-    #stick.sprint { border-color: #7fd18b; }
-    #stick.sprint .knob { background: #5cc06b; } /* sprinting (stick all the way out) */
     .touch-only { display: none; }
     body.touch .touch-only { display: block; opacity: 0.55; backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
     body.touch .touch-only:active, body.touch #choices button:active, body.touch #mute:active { opacity: 0.9; }
@@ -552,7 +547,7 @@
     #terminal.chat #terminal-message:empty { display: none; }
     #chat-box { position: fixed; z-index: 21; left: calc(4px + var(--sl)); top: calc(var(--hud-badge-bottom) + 34px); width: min(340px, 44vw, calc(100vw - 8px - var(--sl) - var(--sr)));
       max-height: max(0px, calc(100dvh - var(--hud-badge-bottom) - 34px - 24px - var(--sb))); display: flex; align-items: flex-start; gap: 6px; pointer-events: none; }
-    body.touch #chat-box { max-height: max(0px, calc(100dvh - var(--hud-badge-bottom) - 34px - 150px - var(--sb))); }
+    body.touch #chat-box { max-height: max(0px, calc(100dvh - var(--hud-badge-bottom) - 34px - max(150px, var(--stick-base) + 20px) - var(--sb))); } /* #1087: clear of the stick hint, which grows on tablets */
     #chat-log { display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; gap: 3px; flex: 1 1 auto; min-width: 0; max-height: inherit; overflow: hidden; } /* src/chat.js trims complete oldest messages to fit */
     #chat-log[hidden], #chat-log [hidden] { display: none; }
     #chat-log .chat-line { max-width: 100%; box-sizing: border-box; padding: 3px 8px; border-radius: 8px; background: rgba(20,35,45,.38); color: #fff; font: 500 13px/1.3 system-ui, sans-serif;
@@ -1123,7 +1118,8 @@
     <div id="prompt" hidden></div>
     <div id="speech" aria-live="polite"></div>
     <div id="chat-box"><div id="chat-log" role="log" aria-live="polite" aria-label="Chatt" hidden></div></div>
-    <div id="stick" hidden><div class="knob"></div></div>
+    <div id="stick-hint" class="stick-face" hidden aria-hidden="true"><div class="knob"></div></div>
+    <div id="stick" class="stick-face" hidden><div class="knob"></div></div>
     <div id="jetpack" hidden title="Jetpacken: värme">🚀<span class="bar"><i></i></span></div>
     <div id="vacuum-hud" hidden title="Dammsugaren: dammbehållare">🧹<span class="bar"><i></i></span></div>
     <div id="jet-glow" aria-hidden="true"></div>

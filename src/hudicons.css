@@ -18,8 +18,6 @@ body :is(#hud,.hud-controls) .hud-button, body.touch #hud .hud-button, .hud-butt
 .hud-button[hidden] { display: none !important; }
 #choices button, body.touch #choices button { color: #fff; background: var(--hud-glass); border: 1px solid var(--hud-edge); opacity: 1; min-height: 44px; }
 #choices button:disabled, #choices button.no { opacity: .38; }
-#stick.sprint { border-color: #fff; }
-#stick.sprint .knob { background: #fff; box-shadow: 0 0 0 4px rgba(255,255,255,.25); }
 @media (hover:hover) { #hud .hud-button:hover, body :is(#hud,.hud-controls) .hud-button:hover { border-color: rgba(255,255,255,.7); background: rgba(42,49,55,.85); } }
 @supports not ((backdrop-filter:blur(2px)) or (-webkit-backdrop-filter:blur(2px))) { :root { --hud-glass: rgba(24,30,36,.78); } }
 body.hud-no-blur .hud-button, body.hud-no-blur #choices button { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background: rgba(24,30,36,.78) !important; }
@@ -112,22 +110,33 @@ body.hud-no-blur #hud #hud-top > .hud-button:active { background: rgba(255,255,2
 }
 /* #1057: a stable right-thumb cluster; sizing/spacing are web layout choices,
    informed by Apple game-control guidance and Android's 48dp recommendation.
-   CSS pixels are not a measurement of physical dp. See interactions.md. */
+   CSS pixels are not a measurement of physical dp. See interactions.md.
+   #1087: sizes follow the screen's short side (TOUCH in config.js, written by touch.js as
+   --touch-button / --touch-gap); the fallbacks are the old fixed 56/48 px. */
 #touch-controls { display: contents; }
 body.touch #touch-controls {
-  --touch-size: 56px;
+  --touch-size: var(--touch-button, 56px); --touch-row: calc(var(--touch-size) + 8px);
   position: fixed; right: calc(16px + var(--sr)); bottom: calc(16px + var(--sb));
   display: grid; grid-template-columns: repeat(4, var(--touch-size));
-  grid-template-rows: var(--touch-size) var(--touch-size) minmax(64px, auto);
-  gap: 8px; pointer-events: none;
+  grid-template-rows: var(--touch-size) var(--touch-size) minmax(var(--touch-row), auto);
+  gap: var(--touch-gap, 8px); pointer-events: none;
 }
 /* Reserve the primary action's space even with nothing in reach. */
-body.touch #touch-controls::after { content: ''; grid-column: 1 / -1; grid-row: 3; min-height: 64px; pointer-events: none; }
+body.touch #touch-controls::after { content: ''; grid-column: 1 / -1; grid-row: 3; min-height: var(--touch-row); pointer-events: none; }
 body.touch #touch-controls > button {
   position: static; inset: auto; width: var(--touch-size); height: var(--touch-size);
-  min-width: 48px; min-height: 48px; padding: 10px; margin: 0; pointer-events: auto;
-  border-radius: 50%; touch-action: none;
+  min-width: 48px; min-height: 48px; padding: 0; margin: 0; pointer-events: auto;
+  border-radius: 50%; touch-action: none; display: grid; place-items: center;
+  background: rgba(24,30,36,.52); border-color: rgba(255,255,255,.38);
+  box-shadow: 0 2px 10px rgba(0,0,0,.18), inset 0 1px rgba(255,255,255,.08);
+  transition: transform .09s ease-out, background-color .15s, border-color .15s, color .15s;
 }
+body.touch #touch-controls > button[hidden] { display: none; }
+body.touch #touch-controls > button .hud-icon { width: calc(var(--touch-size) * .42); height: calc(var(--touch-size) * .42); }
+/* Soft press: the button gives a little under the thumb. */
+body.touch #touch-controls > button.hud-button:active { transform: scale(.93); background: rgba(70,80,88,.82); border-color: #fff; }
+/* Toggled (crouching, measuring): a light face with a dark symbol reads at a glance, day and night. */
+body.touch #touch-controls > button.hud-button:is(.on, [aria-pressed=true]) { background: rgba(255,255,255,.88); color: #18232b; border-color: #fff; box-shadow: 0 2px 10px rgba(0,0,0,.22); }
 body.touch #touch-controls #jet-up { grid-area: 1 / 1; }
 body.touch #touch-controls #web-btn { grid-area: 1 / 2; }
 body.touch #touch-controls #measure-btn { grid-area: 1 / 3; }
@@ -137,32 +146,77 @@ body.touch #touch-controls #jump-btn { grid-area: 2 / 2; }
 body.touch #touch-controls #crouch-btn { grid-area: 2 / 3; }
 body.touch #touch-controls #power-btn { grid-area: 2 / 4; }
 body.touch #touch-controls #stand-btn {
-  grid-area: 3 / 4; width: 56px; height: 64px; padding: 4px; border-radius: 16px; font-size: 13px;
+  grid-area: 3 / 4; width: var(--touch-size); height: var(--touch-row); padding: 4px; border-radius: 16px; font-size: 13px;
 }
+/* The primary action: the same neutral glass (#525) as a full pill with a brighter edge, so it reads as the main thing to press. */
 body.touch #touch-controls #action {
-  grid-area: 3 / 1 / 4 / -1; width: 100%; height: 64px; border-radius: 24px;
-  font-size: 17px; white-space: normal; overflow-wrap: anywhere; line-height: 1.2;
+  grid-area: 3 / 1 / 4 / -1; width: 100%; height: var(--touch-row); border-radius: calc(var(--touch-row) / 2);
+  padding: 0 18px; font-size: 17px; white-space: normal; overflow-wrap: anywhere; line-height: 1.2;
+  background: var(--hud-glass); border-color: rgba(255,255,255,.62);
+  box-shadow: 0 3px 12px rgba(0,0,0,.22), inset 0 1px rgba(255,255,255,.14); text-shadow: 0 1px 2px rgba(0,0,0,.3);
 }
+body.touch #touch-controls #action.hud-button:active { transform: scale(.97); }
 body.touch #touch-controls #choices {
   position: static; inset: auto; transform: none; grid-area: 3 / 1 / 4 / -1;
   display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch;
-  max-height: clamp(64px, calc(100dvh - 260px - var(--st) - var(--sb)), 112px);
+  max-height: clamp(var(--touch-row), calc(100dvh - 4 * var(--touch-size) - 36px - var(--st) - var(--sb)), calc(2 * var(--touch-size)));
   overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y;
   width: 100%; padding: 0; gap: 8px; pointer-events: auto;
 }
 body.touch #touch-controls #choices[hidden] { display: none; }
 body.touch #touch-controls #choices button {
-  min-height: 56px; min-width: 48px; box-sizing: border-box; padding: 8px; margin: 0; border-radius: 16px;
+  min-height: var(--touch-size); min-width: 48px; box-sizing: border-box; padding: 8px; margin: 0; border-radius: 16px;
   font-size: 14px; white-space: normal; overflow-wrap: anywhere; line-height: 1.2;
   touch-action: pan-y;
 }
 body.touch #touch-controls:has(#stand-btn:not([hidden])) :is(#action, #choices) { grid-column-end: 4; }
 /* Short landscape keeps equipment below the lives and leaves the left half free. */
 @media (max-height: 375px) {
-  body.touch #touch-controls { --touch-size: 48px; bottom: calc(12px + var(--sb)); grid-template-rows: 48px 48px minmax(56px, auto); }
-  body.touch #touch-controls::after { min-height: 56px; }
-  body.touch #touch-controls :is(#action, #stand-btn) { height: 56px; }
-  body.touch #touch-controls #stand-btn { width: 48px; }
-  body.touch #touch-controls #choices { max-height: 56px; }
+  body.touch #touch-controls { --touch-size: var(--touch-button, 48px); bottom: calc(12px + var(--sb)); }
+  body.touch #touch-controls #choices { max-height: var(--touch-row); }
   body.touch #touch-controls #choices button { font-size: 13px; padding: 4px; }
 }
+/* #1087: one calm glass family for the walking stick and the right-thumb cluster. touch.js writes the
+   short-side sizes from TOUCH (config.js) to --stick-travel / --touch-button / --touch-gap; the fallbacks
+   below are the old fixed sizes for pages that never call setupTouch. */
+:root { --stick-travel: 56px; --stick-base: calc(var(--stick-travel) * 2 + 12px); --stick-knob: calc(var(--stick-travel) * .9); }
+.stick-face {
+  position: fixed; width: var(--stick-base); height: var(--stick-base); margin: calc(var(--stick-base) / -2) 0 0 calc(var(--stick-base) / -2);
+  box-sizing: border-box; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, rgba(24,30,36,.18) 0 38%, rgba(24,30,36,.44) 100%);
+  border: 1.5px solid rgba(255,255,255,.5);
+  box-shadow: 0 2px 12px rgba(0,0,0,.18), inset 0 0 0 1px rgba(0,0,0,.08);
+  backdrop-filter: blur(var(--hud-blur, 2px)); -webkit-backdrop-filter: blur(var(--hud-blur, 2px));
+}
+.stick-face[hidden] { display: none; }
+/* Four quiet chevrons: "drag this way to walk". */
+.stick-face::after {
+  content: ''; position: absolute; inset: 7%; border-radius: 50%; opacity: .6;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none' stroke='%23fff' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M43 9l7-6 7 6M43 91l7 6 7-6M9 43l-6 7 6 7M91 43l6 7-6 7'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+}
+/* The rim lights up toward where you push; full and bright while sprinting. */
+#stick::before {
+  content: ''; position: absolute; inset: -1.5px; border-radius: 50%;
+  background: conic-gradient(from calc(var(--stick-a, 0deg) - 50deg), transparent 0deg, rgba(255,255,255,var(--stick-m, 0)) 35deg 65deg, transparent 100deg);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px));
+}
+.stick-face .knob {
+  position: absolute; left: 50%; top: 50%; width: var(--stick-knob); height: var(--stick-knob);
+  margin: calc(var(--stick-knob) / -2) 0 0 calc(var(--stick-knob) / -2); box-sizing: border-box; border-radius: 50%;
+  background: radial-gradient(circle at 50% 30%, rgba(255,255,255,.96), rgba(222,228,232,.86) 72%);
+  border: 1px solid rgba(255,255,255,.95);
+  box-shadow: 0 3px 10px rgba(0,0,0,.3), inset 0 -2px 5px rgba(24,30,36,.14);
+}
+.stick-face .knob::after { content: ''; position: absolute; inset: 31%; border-radius: 50%; border: 1.5px solid rgba(24,30,36,.2); }
+#stick.sprint { border-color: #fff; box-shadow: 0 0 0 4px rgba(255,255,255,.16), 0 2px 12px rgba(0,0,0,.2); }
+#stick.sprint::before { --stick-m: .95; }
+#stick.sprint .knob { background: #fff; box-shadow: 0 0 0 5px rgba(255,255,255,.28), 0 3px 10px rgba(0,0,0,.3); }
+/* Idle hint: where the walking thumb goes; the real stick still floats to wherever the thumb lands. */
+#stick-hint {
+  left: calc(var(--sl) + 20px + var(--stick-base) / 2); top: calc(100dvh - var(--sb) - 20px - var(--stick-base) / 2);
+  opacity: var(--stick-hint-opacity, .5); background: rgba(24,30,36,.16); box-shadow: none; transition: opacity .25s;
+}
+#stick-hint .knob { background: rgba(255,255,255,.22); border-color: rgba(255,255,255,.7); box-shadow: none; }
+#stick-hint .knob::after { border-color: rgba(255,255,255,.55); }
+body:not(.touch) #stick-hint { display: none; }

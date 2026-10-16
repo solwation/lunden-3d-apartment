@@ -22,7 +22,7 @@ f.onload = async () => {
   await wait(100);
   const start = { x: player.pos.x, z: player.pos.z, yaw: camera.rotation.y };
   ev('pointerdown', 2, 120, 450);          // joystick
-  ev('pointermove', 2, 120, 400);          // push forward (50 of 56 px)
+  ev('pointermove', 2, 120, 400);          // push forward (50 of the 84 px travel a 900×600 view gets, #1087)
   ev('pointerdown', 3, 700, 300);          // look finger
   ev('pointermove', 3, 640, 300);          // drag left → turn left
   // headless software rendering gives few, irregular frames: step the app loop directly

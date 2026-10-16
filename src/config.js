@@ -3157,6 +3157,18 @@ export const REST = {
   reach: { sit: 1.7, lie: 0.8 }, // how far from the eye you can reach things while sitting (leaning forward) / lying (#184, #472)
 };
 
+// Touch controls' scale (#1087): the walking stick and the right-thumb buttons follow the screen's short side
+// (CSS px, landscape height on a phone) so a small phone, a large phone and a tablet all get thumb-sized controls.
+// The fractions and clamps are layout choices tuned by eye at 844×390, 667×375 and 1180×820 (*guess*, no physical
+// thumb measurement); the 48 px floor keeps the target size from #1057 (interactions.md). touch.js writes them as CSS
+// variables; src/hudicons.css owns the look.
+export const TOUCH = {
+  stickTravel: { frac: 0.15, min: 48, max: 84 }, // px the knob can travel from the centre (was a fixed 56)
+  button: { frac: 0.145, min: 48, max: 64 },     // round cluster buttons (was 56, 48 on short landscape)
+  gap: { frac: 0.02, min: 8, max: 12 },          // space between cluster buttons (was 8)
+  hintOpacity: 0.5,                              // the idle stick hint at the lower left: visible, never loud
+};
+
 export const PLAYER = {
   unstick: 2.0, // m/s: the glide out of a piece of furniture / the car you ended up inside (#314)
   eye: 1.62,
