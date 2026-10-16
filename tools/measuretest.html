@@ -28,9 +28,10 @@ f.onload = async () => {
   camera.rotation.x = 0;
   step(1 / 60);
   d.getElementById('measure-btn').click();
+  measure.press();
   camera.rotation.y = -Math.PI / 2;
   step(1 / 60);
-  d.getElementById('measure-btn').click();
+  measure.press();
   step(1 / 60);
   const [a, b] = measure.points;
   const dist = a && b ? a.distanceTo(b) : NaN;
@@ -38,7 +39,7 @@ f.onload = async () => {
   let pass = check(Math.abs(dist - 5.35) < 0.03, `wall to wall ${dist.toFixed(3)} m (want 5.35)`);
   pass &= check(!label.hidden && /5,3\d m/.test(label.textContent), `label "${label.textContent}"`);
   d.getElementById('measure-btn').click();
-  pass &= check(measure.points.length === 0 && label.hidden, 'third press clears');
+  pass &= check(measure.points.length === 0 && label.hidden, 'switching measurement off clears both points');
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>

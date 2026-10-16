@@ -1,0 +1,28 @@
+// Bounded WebGL scene: actual Measure and index DOM/CSS; explicit synthetic surfaces.
+const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');const fs=require('node:fs'),assert=require('node:assert/strict'),crypto=require('node:crypto');
+const base=process.argv[2]||'http://localhost:8168',out=process.argv[3]||'/tmp/lunden-measure-1069/component';fs.mkdirSync(out,{recursive:true});
+(async()=>{const b=await chromium.launch({executablePath:process.env.CHROME_PATH,args:['--no-sandbox','--enable-unsafe-swiftshader']});try{const p=await b.newPage({viewport:{width:1000,height:600}}),errors=[];p.on('pageerror',e=>errors.push(e.message));
+ await p.route('**/src/bootstrap.js*',r=>r.fulfill({contentType:'text/javascript',body:`import * as T from 'three';import{Measure}from'./measure.js';
+ const scene=new T.Scene();scene.background=new T.Color(0x233746);const camera=new T.PerspectiveCamera(60,innerWidth/innerHeight,.1,200);camera.position.z=5;
+ const renderer=new T.WebGLRenderer({antialias:true});renderer.setSize(innerWidth,innerHeight);document.body.prepend(renderer.domElement);
+ const root=new T.Group();scene.add(root);const wall=new T.Mesh(new T.PlaneGeometry(8,6),new T.MeshBasicMaterial({color:0xbacacc}));root.add(wall);
+ const hidden=new T.Group();hidden.visible=false;const box=new T.Mesh(new T.BoxGeometry(2,2,.4),new T.MeshBasicMaterial({color:0xffffff}));box.position.z=2;hidden.add(box);root.add(hidden);
+ const glass=new T.Mesh(new T.BoxGeometry(2,2,.4),new T.MeshBasicMaterial({transparent:true,opacity:.4,color:0x4488ff}));glass.position.z=1;root.add(glass);
+ const m=new Measure(scene,camera,[root],document.getElementById('measure'));document.getElementById('hud').hidden=false;document.getElementById('overlay').hidden=true;document.getElementById('loading').hidden=true;document.getElementById('arm').hidden=true;
+ window.f={T,scene,camera,renderer,root,wall,hidden,box,glass,m};window.ready=true;` }));
+ await p.goto(base,{waitUntil:'domcontentloaded'});await p.waitForFunction(()=>window.ready,null,{timeout:30000});
+ const results=await p.evaluate(()=>{const{T,scene,camera,renderer,root,wall,hidden,box,glass,m}=f,results=[];const check=(ok,name)=>results.push({pass:!!ok,name});
+ check(!m.press()&&m.points.length===0,'inactive measurement ignores picks');m.setActive(true);
+ check(Math.abs(m.hit().z-1.2)<1e-6,'visible transparent surface is measurable; hidden ancestor ignored');
+ glass.material.opacity=0;check(Math.abs(m.hit().z)<1e-6,'zero-opacity surface ignored');glass.material.opacity=.4;glass.visible=false;
+ hidden.visible=true;check(Math.abs(m.hit().z-2.2)<1e-6,'closest visible mesh wins after group becomes visible');hidden.visible=false;
+ wall.material.visible=false;check(m.hit()===null,'hidden material ignored');wall.material.visible=true;
+ const materials=Array.from({length:6},()=>new T.MeshBasicMaterial({opacity:0,transparent:true}));box.material=materials;hidden.visible=true;check(Math.abs(m.hit().z)<1e-6,'multi-material face opacity checked');hidden.visible=false;
+ const pick=(x,y)=>{const v=new T.Vector3(x,y,0).project(camera);return m.press(new T.Vector2(v.x,v.y))};
+ pick(-1,-.5);pick(1,.5);check(Math.abs(m.points[0].distanceTo(m.points[1])-Math.sqrt(5))<1e-6,'exact known diagonal in metres');check(/2,24 m/.test(m.label.textContent)&&/vågrätt 2,00 m · lodrätt 1,00 m/.test(m.label.textContent),'Swedish distance and horizontal/vertical breakdown preserved');
+ root.visible=false;check(!m.press()&&m.points.length===2,'miss preserves finished pair');root.visible=true;m.update(0,innerWidth,innerHeight);renderer.render(scene,camera);
+ check(m.markers.every(x=>x.visible)&&m.line.visible,'both markers and line rendered');return results;});
+ console.log(JSON.stringify(results,null,2));fs.writeFileSync(`${out}/checks.json`,JSON.stringify({results,errors},null,2));assert.ok(results.every(r=>r.pass));assert.deepEqual(errors,[]);
+ await p.screenshot({path:`${out}/component.png`});
+ fs.writeFileSync(`${out}/sources.json`,JSON.stringify(Object.fromEntries(['src/measure.js','index.html','tools/measurecomponenttest.cjs'].map(p=>[p,crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex')])),null,2));
+}finally{await b.close()}})().catch(e=>{console.error(e);process.exitCode=1});

@@ -5,6 +5,22 @@ Read [CLAUDE.md](../../CLAUDE.md) first for shared workflow rules. Paths in code
 Related: [life](life.md), [storage](storage.md), [verification](verification.md).
 
 Cats (#1061): free-hand E / touch action takes adults and kittens into both arms; click / Krama cuddles, E on floor/bed/sofa puts them down. Occupied-hand E still pets. The shared `MieleHeld` preserves cat scale and adjusts hug grips; carry purrs cancel on release/hide/bicycle stow. See [animal behavior and verification](animals-audio.md#cat-and-sound).
+## Two-point measurement (#1069)
+
+`Measure.active` is an explicit mode, including before the first point. Q and
+Mät avstånd toggle it; two locked crosshair clicks or canvas taps choose actual
+visible mesh surfaces. Another pick starts a new pair; disabling clears both.
+Visible glass is included; hidden ancestors and invisible face materials are
+excluded. Core/garage targets accompany the apartment. The approximate-model HUD
+retains Swedish metres and the original horizontal/vertical breakdown. Movement
+and look stay available; primary mouse/touch actions, right-click and E/choices
+cannot also use a door or held item. Touch drag/cancel does not pick a point.
+
+`tools/measureinputtest.cjs` exercises actual main/World with native pointer lock
+and mobile touch. `tools/measurecomponenttest.cjs` checks ray visibility and exact
+known geometry in WebGL. [Evidence and limits](../validation/issue-1069/README.md).
+The public viewer already supplies this interaction; no downstream import applies.
+
 ## Touch action layout (#1057)
 
 `#touch-controls` in the native index groups gameplay controls at the lower right.
@@ -215,7 +231,7 @@ src/rearrange.js       furniture cheat (#465): § / Enter (#596; not from a focu
                        Worker tests: cloudflare/layout.test.mjs. Development: cloudflare/dev.mjs and ?cloud=http://localhost:8145.
 src/minimap.js         plan view with the visitor's arrow, current room highlighted (top right, under the HUD buttons); hidden, shown with the
                        stats (Tab / T / 📊, #85), K shows it alone
-src/measure.js         tape measure (Q / 📏): two points on any surface, distance label
+src/measure.js         tape measure mode (Q / 📏), two surface clicks/taps, distance label
 src/rest.js            sitting / lying down (REST): seat & bed spots from furniture userData.rest, look clamp
 src/holdable.js        things you take and hold (one at a time): home + pick box, held pose in camera space,
                        use = click / touch button / fast look; E on the home puts it back, E on a table top /

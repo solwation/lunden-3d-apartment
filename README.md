@@ -88,7 +88,7 @@ Diskreta kantlinjer på väggar, dörrar och fast inredning gör hörn och rumsg
 | <kbd>←</kbd> <kbd>→</kbd> | vrid |
 | <kbd>E</kbd> | öppna/stäng dörren du tittar på, klappa katten eller välja Ta upp, läsa lappen |
 | <kbd>F</kbd> | möbler av/på |
-| <kbd>Q</kbd> | mät: punkt 1, punkt 2 (tredje trycket rensar) |
+| <kbd>Q</kbd> | mätläge av/på: välj två ytor med klick (📏 och två tryck på touch); nästa klick börjar ett nytt par, måtten är ungefärliga modellmått |
 | <kbd>M</kbd> | ljud av/på |
 | <kbd>Tab</kbd> | håll inne för att se statistiken (<kbd>T</kbd> låter den ligga kvar) |
 | <kbd>K</kbd> | visa/dölj bara minikartan (den syns annars ihop med statistiken) |

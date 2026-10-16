@@ -334,6 +334,9 @@
     #minimap { position: fixed; right: calc(var(--badge-inset) + var(--sr)); top: var(--hud-badge-bottom); width: 92px; height: auto; image-rendering: pixelated; border-radius: 6px; background: rgba(20, 35, 45, 0.25); pointer-events: none; }
     #minimap[hidden] { display: none; }
     #measure { position: fixed; transform: translate(-50%, -140%); background: rgba(210, 58, 42, 0.92); color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 15px; text-align: center; pointer-events: none; white-space: nowrap; }
+    #measure-help { position: fixed; left: 50%; bottom: calc(16px + var(--sb)); transform: translateX(-50%); width: max-content; max-width: min(430px, 48vw); padding: 8px 12px; box-sizing: border-box; border-radius: 8px; background: rgba(20,35,45,.9); color: white; font-size: 13px; text-align: center; pointer-events: none; }
+    #measure-help[hidden] { display: none; }
+    #measure-btn[aria-pressed="true"] { outline: 3px solid #d23a2a; }
     #measure[hidden] { display: none; }
     #measure small { display: block; font-size: 11px; opacity: .85; }
     /* 📏 and 🧎: a column left of the minimap (right 16 + 92 wide), above the action button */
@@ -661,7 +664,7 @@
             <span><kbd>Högerklick</kbd></span><span>använd det du håller (ät, drick, krama, läs …)</span>
             <span><kbd>M</kbd></span><span>ljud av/på</span>
             <span><kbd>F</kbd></span><span>möbler och prylar av/på (visa den tomma lägenheten)</span>
-            <span><kbd>Q</kbd></span><span>mät: sätt en punkt, sedan nästa (Q en tredje gång rensar)</span>
+            <span><kbd>Q</kbd></span><span>mätläge av/på · klicka på två ytor för att mäta</span>
             <span><kbd>Tab</kbd></span><span>håll för statistik och karta; <kbd>T</kbd> behåller dem. Musen blir fri. Bläddra med hjul eller piltangenter; stäng med <kbd>Esc</kbd>. Klicka eller tryck <kbd>Enter</kbd> för att styra igen</span>
             <span><kbd>K</kbd></span><span>visa/dölj bara kartan</span>
             <span><kbd>Enter</kbd> eller <kbd>§</kbd></span><span>öppna konsolen</span>
@@ -1116,6 +1119,7 @@
     <div id="score" aria-live="off" title="Poäng"><span id="presence" aria-label="Besökare online"></span></div>
     <canvas id="minimap" aria-hidden="true"></canvas>
     <div id="measure" hidden></div>
+    <div id="measure-help" role="status" hidden>Välj två punkter på ytor i bilden. Nästa klick börjar ett nytt par.<br><small>Ungefärliga modellmått · Q eller mätknappen avslutar</small></div>
     <div id="prompt" hidden></div>
     <div id="speech" aria-live="polite"></div>
     <div id="chat-box"><div id="chat-log" role="log" aria-live="polite" aria-label="Chatt" hidden></div></div>
@@ -1124,7 +1128,7 @@
     <div id="vacuum-hud" hidden title="Dammsugaren: dammbehållare">🧹<span class="bar"><i></i></span></div>
     <div id="jet-glow" aria-hidden="true"></div>
     <div id="touch-controls" class="hud-controls">
-      <button id="measure-btn" class="touch-only" aria-label="Mät">📏</button>
+      <button id="measure-btn" aria-label="Mät avstånd" title="Mät avstånd (Q)" aria-pressed="false">📏</button>
       <button id="crouch-btn" class="touch-only" aria-label="Huka dig">🧎</button>
       <div id="choices" hidden aria-live="polite"></div>
       <button id="action" class="touch-only" hidden></button>

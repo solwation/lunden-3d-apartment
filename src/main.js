@@ -643,8 +643,18 @@ function showItemGhost(item) {
   placeGhost.visible = false; // (the ring only for things without a ghost)
 }
 const drawing = new Drawing(scene, camera); // crayons on the paper on the desk in Sovrum 3 (#93)
-const measure = new Measure(scene, camera, [world.object], document.getElementById('measure'));
-document.getElementById('measure-btn').addEventListener('click', () => measure.press());
+const measure = new Measure(scene, camera, [world.object, core.object, garage.object, garage.door.object, garage.parkObject], document.getElementById('measure'));
+const measureBtn = document.getElementById('measure-btn');
+const measureHelp = document.getElementById('measure-help');
+function setMeasure(value = !measure.active) {
+  if (value && reading) return;
+  measureDown = null;
+  measure.setActive(value);
+  measureBtn.setAttribute('aria-pressed', String(value));
+  measureHelp.hidden = !value;
+  if (value) { heldItem()?.trigger?.(false); power.release(); }
+}
+measureBtn.addEventListener('click', () => setMeasure());
 const cat = new CatSpawner(world);
 scene.add(cat.object);
 vacuum.cat = cat;
@@ -1126,6 +1136,24 @@ const touch = setupTouch({ onLook: (dx, dy) => look(dx * 0.005, dy * 0.005) });
 if (params0.has('spidersuit')) suit.putOn(); // &spidersuit (#597): the suit on from the start; after `touch`, which its badge reads (#601)
 const active = () => !statsOpen && (locked || touch.enabled);
 
+// Native mouse lock picks the crosshair on mousedown. Free touch/pen picks the
+// tapped canvas coordinate on release; drags, cancelled and secondary touches do not pick.
+let measureDown = null;
+canvas.addEventListener('pointerdown', (e) => {
+  if (!measure.active || !active() || !overlay.hidden || locked || !e.isPrimary || e.button !== 0) return;
+  measureDown = { id: e.pointerId, x: e.clientX, y: e.clientY, moved: false };
+});
+canvas.addEventListener('pointermove', (e) => {
+  if (measureDown?.id === e.pointerId && Math.hypot(e.clientX - measureDown.x, e.clientY - measureDown.y) >= 10) measureDown.moved = true;
+});
+canvas.addEventListener('pointercancel', () => { measureDown = null; });
+canvas.addEventListener('pointerup', (e) => {
+  const down = measureDown; measureDown = null;
+  if (!measure.active || !active() || !overlay.hidden || locked || down?.id !== e.pointerId || down.moved || Math.hypot(e.clientX - down.x, e.clientY - down.y) >= 10) return;
+  const rect = canvas.getBoundingClientRect();
+  measure.press(new THREE.Vector2((e.clientX - rect.left) / rect.width * 2 - 1, 1 - (e.clientY - rect.top) / rect.height * 2));
+});
+
 function look(dyaw, dpitch) {
   camera.rotation.y -= dyaw;
   camera.rotation.x = THREE.MathUtils.clamp(camera.rotation.x - dpitch, -1.45, 1.45);
@@ -1595,7 +1623,7 @@ function use(thing) {
   }
   else useDoor(thing);
 }
-actionBtn.addEventListener('click', () => { if (reading) showNote(false); else if (focused?.kind === 'fusebox' && !power.on) return; /* held, not clicked (#604) */ else if (focused) use(focused); else if (heldItem()?.useLabel) heldItem().use(); else if (rest.active || player.riding) standUp(); });
+actionBtn.addEventListener('click', () => { if (measure.active) return; if (reading) showNote(false); else if (focused?.kind === 'fusebox' && !power.on) return; /* held, not clicked (#604) */ else if (focused) use(focused); else if (heldItem()?.useLabel) heldItem().use(); else if (rest.active || player.riding) standUp(); });
 const standBtn = document.getElementById('stand-btn'); // touch, sitting with something in reach or in the hand: get up (#184)
 standBtn.addEventListener('click', () => { if (rest.active || player.riding) standUp(); });
 const muteBtn = document.getElementById('mute');
@@ -1631,7 +1659,9 @@ document.addEventListener('mousemove', (e) => {
  * Returns what it did (tools/clicktest.html).
  */
 function click(button) {
-  if (statsOpen || player.riding) return 'none';
+  if (statsOpen) return 'none';
+  if (measure.active) { if (button === 0) measure.press(); return 'measure'; }
+  if (player.riding) return 'none';
   const held = heldItem(), focused = clickTarget();
   if (button === 2) {
     if (reading) return 'none';
@@ -1658,7 +1688,7 @@ document.addEventListener('mousedown', (e) => { if (locked && !statsOpen && (e.b
 document.addEventListener('contextmenu', (e) => { if (locked) e.preventDefault(); });
 document.addEventListener('mouseup', (e) => { if (e.button === 0) { heldItem()?.trigger?.(false); power.release(); } });
 // touch: holding the action button keeps the rifle firing (#196)
-actionBtn.addEventListener('pointerdown', () => { if ((!focused || (focused.kind === 'ghost' && weaponKey())) && heldItem()?.trigger) heldItem().trigger(true); if (focused?.kind === 'fusebox' && !power.on) power.use(); }); // … and mending the fuse box (#604)
+actionBtn.addEventListener('pointerdown', () => { if (measure.active) return; if ((!focused || (focused.kind === 'ghost' && weaponKey())) && heldItem()?.trigger) heldItem().trigger(true); if (focused?.kind === 'fusebox' && !power.on) power.use(); }); // … and mending the fuse box (#604)
 for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) actionBtn.addEventListener(ev, () => { heldItem()?.trigger?.(false); power.release(); });
 // touch: the remote's power button beside the action button while it is held
 const powerBtn = document.getElementById('power-btn');
@@ -1692,6 +1722,7 @@ document.addEventListener('keydown', (e) => {
   // and while it is held the browser's other Ctrl shortcuts (save, print, bookmark …) are kept from opening
   if (isCtrl(e.code)) player.crouch = true;
   else if (e.ctrlKey) e.preventDefault();
+  if (measure.active && (e.code === 'KeyE' || /^Digit[1-9]$/.test(e.code))) return;
   if (choices.rows && /^Digit[1-9]$/.test(e.code) && runChoice(Number(e.code.slice(5)) - 1)) e.preventDefault(); // a menu row (#367)
   if (e.code === 'KeyE' && (player.riding || focused?.kind === 'bicycle')) { if (!e.repeat) { if (player.riding) standUp(); else use(focused); } }
   else if (e.code === 'KeyE' && focused) { if (!(e.repeat && focused.kind === 'fusebox')) use(focused); } // also while sitting: what is within reach (#184); the fuse box: a fresh press (#604)
@@ -1703,7 +1734,7 @@ document.addEventListener('keydown', (e) => {
   if (e.code === 'KeyT') toggleStats();
   if (e.code === 'Tab') { e.preventDefault(); if (!e.repeat) holdStats(true); }
   if (e.code === 'KeyK') toggleMap();
-  if (e.code === 'KeyQ') measure.press();
+  if (e.code === 'KeyQ' && !e.repeat) setMeasure();
   if (e.code === 'KeyR' && !e.ctrlKey && !e.metaKey && focused?.kind === 'place') turnPlacement(); // turn what you put down (#368)
   if (e.code === 'KeyF') toggleFurniture();
   if (e.code.startsWith('Arrow')) e.preventDefault();
@@ -1790,6 +1821,12 @@ function updateFocus() {
   setPressed(document.getElementById('furniture-btn'),world.furnitureOn);
   setPressed(document.getElementById('measure-btn'),measure.active);
   setPressed(document.getElementById('crouch-btn'),player.crouch);
+  if (measure.active) {
+    focused = null; focusPoint = null;
+    showChoices(null, null); placeGhost.visible = itemGhost.visible = false;
+    actionBtn.hidden = powerBtn.hidden = turnBtn.hidden = true; promptEl.hidden = true;
+    interactionOutline.update(null); return;
+  }
   if (rearrange.enabled && !reading) {
     rearrange.update(); focused = rearrange.target; focusPoint = null;
     renderRearrangeHUD();

@@ -21,6 +21,15 @@ source-hashed artifacts and limits. No full World, E/touch-dispatch or physical-
 
 # Browser verification and test selection
 
+
+Two-point measurement (#1069): `tools/measureinputtest.cjs BASE OUT` passes24/24
+in the full original World with native pointer lock, mobile taps/drag/cancel and
+actual main.js input; `tools/measurecomponenttest.cjs BASE OUT` passes10/10 with
+actual Measure/DOM/WebGL on known surfaces. Legacy measuretest passes3/3 after
+adapting its button-per-point API to explicit mode + picks. Screenshots and source
+hashes are retained; low graphics/test-mode and physical-device limits are explicit
+in the [validation record](../validation/issue-1069/README.md). No Pages claim.
+
 Kitchen hob/hood (#1043): `tools/kitchenrealismtest.cjs GAME OUT` uses the real
 plan's kitchen builders, production Lights/DayCycle/Pan and Web Audio in a bounded
 component. `--no-render` covers native interaction without WebGL; `--baseline`

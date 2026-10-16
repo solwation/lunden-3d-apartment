@@ -1,8 +1,7 @@
 import * as THREE from 'three';
 
-// Tape measure: Q (or 📏 on touch) puts a point where the crosshair hits a surface; the second
-// point shows the distance; a third press clears. Between the two presses a live line follows
-// the crosshair.
+// Two surface picks per measurement. The input adapter owns mode switching and maps
+// locked mouse aim or a canvas tap to normalized device coordinates.
 
 const fmt = (m) => `${m.toFixed(2).replace('.', ',')} m`;
 
@@ -13,10 +12,12 @@ export class Measure {
     this.label = label;     // HTML element for the read-out
     this.points = [];
     this.ray = new THREE.Raycaster();
-    this.ray.far = 30;
+    this.ray.far = 100;
+    this.enabled = false;
     const mat = new THREE.MeshBasicMaterial({ color: 0xd23a2a, depthTest: false, toneMapped: false });
+    // Same 3.5 cm marker radius as the public viewer; an illustrative UI marker.
     this.markers = [0, 1].map(() => {
-      const m = new THREE.Mesh(new THREE.SphereGeometry(0.015, 12, 8), mat);
+      const m = new THREE.Mesh(new THREE.SphereGeometry(0.035, 12, 8), mat);
       m.visible = false;
       m.renderOrder = 10;
       scene.add(m);
@@ -29,30 +30,42 @@ export class Measure {
     this.line.frustumCulled = false;
     scene.add(this.line);
     this.live = new THREE.Vector3();
-    this.timer = 0;
   }
 
-  get active() { return this.points.length > 0; }
+  get active() { return this.enabled; }
 
-  /** Surface point under the crosshair, or null. */
-  hit() {
+  setActive(value) {
+    this.enabled = value;
+    this.clear();
+  }
+
+  /** First rendered mesh surface, including glass but excluding hidden ancestors. */
+  hit(ndc = new THREE.Vector2()) {
     this.camera.updateMatrixWorld();
-    this.ray.setFromCamera(new THREE.Vector2(0, 0), this.camera);
-    const h = this.ray.intersectObjects(this.targets, true).find((i) => i.object.visible && !i.object.material?.transparent);
+    for (const target of this.targets) target.updateWorldMatrix(true, true);
+    this.ray.setFromCamera(ndc, this.camera);
+    const h = this.ray.intersectObjects(this.targets, true).find((i) => {
+      if (!i.object.isMesh) return false;
+      for (let o = i.object; o; o = o.parent) if (!o.visible) return false;
+      const material = Array.isArray(i.object.material)
+        ? i.object.material[i.face?.materialIndex ?? 0] : i.object.material;
+      return material?.visible !== false && material?.opacity !== 0;
+    });
     return h ? h.point.clone() : null;
   }
 
-  /** Q pressed. */
-  press() {
-    if (this.points.length === 2) { this.clear(); return; }
-    const p = this.hit();
-    if (!p) return;
+  press(ndc) {
+    if (!this.active) return false;
+    const p = this.hit(ndc);
+    if (!p) return false;
+    if (this.points.length === 2) this.clear();
     this.points.push(p);
     const m = this.markers[this.points.length - 1];
     m.position.copy(p);
     m.visible = true;
     this.live.copy(p);
     this.redraw();
+    return true;
   }
 
   clear() {
@@ -69,24 +82,16 @@ export class Measure {
     pos.setXYZ(0, a.x, a.y, a.z);
     pos.setXYZ(1, b.x, b.y, b.z);
     pos.needsUpdate = true;
-    this.line.visible = true;
+    this.line.visible = this.points.length === 2;
     const d = a.distanceTo(b), h = Math.hypot(b.x - a.x, b.z - a.z), v = Math.abs(b.y - a.y);
-    this.label.innerHTML = `<b>${fmt(d)}</b>${this.points.length === 2 && v > 0.02 && h > 0.02
-      ? `<small>vågrätt ${fmt(h)} · lodrätt ${fmt(v)}</small>` : this.points.length < 2 ? '<small>Q igen för att mäta hit</small>' : ''}`;
+    this.label.innerHTML = this.points.length === 1 ? 'Välj den andra punkten på en yta' : `<b>${fmt(d)}</b>${v > 0.02 && h > 0.02
+      ? `<small>vågrätt ${fmt(h)} · lodrätt ${fmt(v)}</small>` : ''}`;
     this.label.hidden = false;
   }
 
-  /** Per frame: follow the crosshair while one point is set; keep the label at the midpoint. */
+  /** Keep the read-out at the chosen pair’s midpoint as the camera moves. */
   update(dt, width, height) {
-    if (!this.active) return;
-    if (this.points.length === 1) {
-      this.timer -= dt;
-      if (this.timer <= 0) {
-        this.timer = 0.08;
-        const p = this.hit();
-        if (p) { this.live.copy(p); this.redraw(); }
-      }
-    }
+    if (!this.active || !this.points.length) return;
     const [a, b = this.live] = this.points;
     const mid = a.clone().add(b).multiplyScalar(0.5).project(this.camera);
     const behind = mid.z > 1;
