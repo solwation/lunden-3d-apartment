@@ -3170,6 +3170,14 @@ export const TOUCH = {
   button: { frac: 0.145, min: 48, max: 64 },     // round cluster buttons (was 56, 48 on short landscape)
   gap: { frac: 0.02, min: 8, max: 12 },          // space between cluster buttons (was 8)
   hintOpacity: 0.5,                              // the idle stick hint at the lower left: visible, never loud
+  // Stick feel (#1088, part 2 of #1082; *guess* values tuned by eye after common virtual-stick guidance, not measured):
+  // deflection r = distance / stickTravel. Below `deadZone` nothing moves (a resting thumb never drifts); from there to
+  // `full` the output rises along t^`curve` (fine walking near the centre), and from `full` out it is 1, so the rim
+  // reliably passes PLAYER.sprintStick. `follow`: a thumb dragged past the rim pulls the base along behind it.
+  stick: { deadZone: 0.1, full: 0.9, curve: 1.5, follow: true },
+  // Drag-to-look (#1088): `sens` rad per CSS px (the old fixed 0.005 in main.js); `smooth` s is the time constant over
+  // which each finger movement is eased into the view, evening out uneven touch-event timing (0 = raw, *guess*).
+  look: { sens: 0.005, smooth: 0.03 },
 };
 
 export const PLAYER = {

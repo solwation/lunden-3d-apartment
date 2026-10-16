@@ -11,6 +11,13 @@ export function touchSizes(w, h) {
   return { travel: fit(TOUCH.stickTravel, side), button: fit(TOUCH.button, side), gap: fit(TOUCH.gap, side) };
 }
 
+/** Stick output 0..1 for a deflection r (distance / travel): dead zone, response curve, full from TOUCH.stick.full (#1088). */
+export function stickResponse(r) {
+  const { deadZone, full, curve } = TOUCH.stick;
+  if (r <= deadZone) return 0;
+  return Math.min(1, (r - deadZone) / (full - deadZone)) ** curve;
+}
+
 export function setupTouch({ onLook }) {
   const stick = document.getElementById('stick');
   const knob = stick.querySelector('.knob');
@@ -20,6 +27,7 @@ export function setupTouch({ onLook }) {
   const analog = { x: 0, y: 0 };
   let stickId = null, lookId = null;
   let origin = null, last = null;
+  const pendingLook = { x: 0, y: 0 }; // finger movement not yet eased into the view (#1088)
   let enabled = false;
 
   const isTouch = (e) => e.pointerType === 'touch' || e.pointerType === 'pen';
@@ -73,16 +81,26 @@ export function setupTouch({ onLook }) {
     if (e.pointerId === stickId) {
       let dx = e.clientX - origin.x, dy = e.clientY - origin.y;
       const d = Math.hypot(dx, dy);
-      if (d > radius) { dx *= radius / d; dy *= radius / d; }
+      if (d > radius) {
+        if (TOUCH.stick.follow) { // follow mode: the base glides after the thumb, so pulling back acts at once (#1088)
+          origin.x += dx * (1 - radius / d); origin.y += dy * (1 - radius / d);
+          stick.style.left = `${origin.x}px`;
+          stick.style.top = `${origin.y}px`;
+        }
+        dx *= radius / d; dy *= radius / d;
+      }
       knob.style.transform = `translate(${dx}px, ${dy}px)`;
-      analog.x = dx / radius;
-      analog.y = -dy / radius;
+      // dead zone + response curve on the length, the direction kept (#1088)
+      const r = Math.min(d, radius) / radius, out = stickResponse(r), k = d > 0 ? out / (Math.min(d, radius) || 1) : 0;
+      analog.x = dx * k;
+      analog.y = -dy * k;
       // the rim lights up toward the push (CSS conic gradient; 0deg = up, clockwise)
       stick.style.setProperty('--stick-a', `${Math.atan2(dx, -dy) * 180 / Math.PI}deg`);
-      stick.style.setProperty('--stick-m', (Math.min(d, radius) / radius * 0.75).toFixed(2));
+      stick.style.setProperty('--stick-m', (out * 0.75).toFixed(2));
     } else if (e.pointerId === lookId) {
-      onLook(e.clientX - last.x, e.clientY - last.y);
+      pendingLook.x += e.clientX - last.x; pendingLook.y += e.clientY - last.y;
       last = { x: e.clientX, y: e.clientY };
+      if (!(TOUCH.look.smooth > 0)) update(0);
     }
   });
 
@@ -93,12 +111,26 @@ export function setupTouch({ onLook }) {
   document.addEventListener('pointerup', end);
   document.addEventListener('pointercancel', end);
 
+  /** Per frame (main.js step): ease the pending look movement (CSS px) into the view over TOUCH.look.smooth s (#1088).
+   *  Nothing is lost: the deltas handed to onLook add up to the finger's travel. */
+  function update(dt) {
+    if (!pendingLook.x && !pendingLook.y) return;
+    const tau = TOUCH.look.smooth;
+    const f = tau > 0 ? 1 - Math.exp(-dt / tau) : 1;
+    let x = pendingLook.x * f, y = pendingLook.y * f;
+    if (Math.abs(pendingLook.x - x) < 0.01 && Math.abs(pendingLook.y - y) < 0.01) { x = pendingLook.x; y = pendingLook.y; } // the last sliver at once
+    pendingLook.x -= x; pendingLook.y -= y;
+    if (x === 0 && y === 0) return;
+    onLook(x, y);
+  }
+
   return {
     analog,
+    update,
     get enabled() { return enabled; },
     set enabled(v) {
       enabled = v;
-      if (!v) { resetStick(); lookId = null; }
+      if (!v) { resetStick(); lookId = null; pendingLook.x = pendingLook.y = 0; }
       showHint();
     },
   };

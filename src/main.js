@@ -130,7 +130,7 @@ import { Ghosts } from './ghosts.js';
 import { Combat } from './combat.js';
 import { Bow, Arrows } from './bow.js';
 import { Chat } from './chat.js';
-import { COMBAT, CHAT, GHOSTS } from './config.js';
+import { COMBAT, CHAT, GHOSTS, TOUCH } from './config.js';
 import { Basketball, Hoop } from './basket.js';
 import { Mess } from './mess.js';
 import { readTestMode, makeTestController } from './testmode.js';
@@ -1135,7 +1135,7 @@ window.addEventListener('pointerdown', (e) => {
     if (armEl) armEl.hidden = true;
   }
 }, { capture: true, passive: true });
-const touch = setupTouch({ onLook: (dx, dy) => look(dx * 0.005, dy * 0.005) });
+const touch = setupTouch({ onLook: (dx, dy) => look(dx * TOUCH.look.sens, dy * TOUCH.look.sens) }); // eased per frame by touch.update (#1088)
 if (params0.has('spidersuit')) suit.putOn(); // &spidersuit (#597): the suit on from the start; after `touch`, which its badge reads (#601)
 const active = () => !statsOpen && (locked || touch.enabled);
 
@@ -2635,6 +2635,7 @@ function step(dt) {
   checkMiele();
   fireworks.update(dt);
   measure.update(dt, gameView.w, gameView.h);
+  if (touch.enabled) touch.update(dt); // the eased drag-to-look (#1088)
   if (active() && reading) updateFocus();
   else if (drawing.active) drawing.update(dt); // drawing: the camera over the paper, nothing else moves you
   else if (active() && rest.active) { rest.update(dt); updateFocus(); } // sitting / lying: look, no walking

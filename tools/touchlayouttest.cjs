@@ -24,6 +24,8 @@ fs.mkdirSync(out,{recursive:true});
   combat.lives=7;combat.update(0);
   await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
   window.looks=[];const {setupTouch}=await import('/src/touch.js');window.input=setupTouch({onLook:(x,y)=>looks.push([x,y])});input.enabled=true;
+  let t0=performance.now();const tick=t=>{input.update((t-t0)/1000);t0=t;requestAnimationFrame(tick);};requestAnimationFrame(tick); // the eased look (#1088): main.js steps it per frame
+  window.lookSum=()=>Math.round(looks.reduce((sum,p)=>sum+p[0],0)*1e6)/1e6; // eased over frames, never lost
  },safe);
  const cases=await page.evaluate(({width,height,safe})=>{
   const results=[],$=id=>document.getElementById(id);
@@ -68,15 +70,28 @@ fs.mkdirSync(out,{recursive:true});
  const send=(type,points)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:points.map(([id,x,y])=>({id,x,y}))});
  await send('touchStart',[[1,100,260]]);await send('touchMove',[[1,100,210]]);
  await send('touchStart',[[1,100,210],[2,450,160]]);await send('touchMove',[[1,100,210],[2,480,160]]);
- await page.waitForFunction(()=>looks.reduce((sum,p)=>sum+p[0],0)===30,null,{polling:100,timeout:3000});
- const before=await page.evaluate(()=>({analog:input.analog.y,look:looks.reduce((sum,p)=>sum+p[0],0)}));
+ await page.waitForFunction(()=>Math.abs(looks.reduce((sum,p)=>sum+p[0],0)-30)<1e-9,null,{polling:100,timeout:3000});
+ const before=await page.evaluate(()=>({analog:input.analog.y,look:lookSum()}));
  const jump=await page.locator('#jump-btn').boundingBox();
  await send('touchStart',[[1,100,210],[2,480,160],[3,jump.x+jump.width/2,jump.y+jump.height/2]]);
  await send('touchMove',[[1,100,210],[2,480,160],[3,jump.x+10,jump.y+10]]);
- const after=await page.evaluate(()=>({analog:input.analog.y,look:looks.reduce((sum,p)=>sum+p[0],0)}));
+ const after=await page.evaluate(()=>({analog:input.analog.y,look:lookSum()}));
  await send('touchCancel',[]);
  const reset=await page.evaluate(()=>input.analog.x===0&&input.analog.y===0&&document.getElementById('stick').hidden);
- const touchPass=before.analog>.8&&before.look===30&&JSON.stringify(before)===JSON.stringify(after)&&reset;
+ // Stick feel (#1088): a resting thumb's few px are the dead zone; past the rim the base follows, so pulling back slows at once.
+ const travel=await page.evaluate(()=>parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--stick-travel')));
+ const frame=()=>page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))); // moves arrive frame-aligned
+ const move=async(x,y)=>{await send('touchMove',[[4,x,y]]);await frame();};
+ await send('touchStart',[[4,120,250]]);await move(123,248);
+ const drift=await page.evaluate(()=>Math.hypot(input.analog.x,input.analog.y));
+ await move(120,250-travel*.5);const half=await page.evaluate(()=>input.analog.y);
+ await move(120,250-travel-40);
+ const follow=await page.evaluate(()=>({y:input.analog.y,top:parseFloat(document.getElementById('stick').style.top)}));
+ await move(120,250-travel-40+travel*.5);const back=await page.evaluate(()=>input.analog.y);
+ await send('touchEnd',[]);
+ const feel={travel,drift,half,follow,back};
+ const feelPass=drift===0&&half>0.2&&half<0.45&&follow.y>.999&&Math.abs(follow.top-(250-40))<1&&back>0&&back<0.5;
+ const touchPass=before.analog>.8&&before.look===30&&JSON.stringify(before)===JSON.stringify(after)&&reset&&feelPass;
  // Complete original production listeners; collaborators record calls without firing weapons.
  const actions=await page.evaluate(async()=>{
   const source=await(await fetch('/src/main.js')).text();
@@ -94,7 +109,7 @@ fs.mkdirSync(out,{recursive:true});
   return {calls,jumpPress:player.jumpPress,pass:player.jumpPress&&JSON.stringify(calls)===JSON.stringify([true,false,'release',true,false,'release',true,false,'release'])};
  });
  const failures=results.filter(r=>r.failures.length).length;
- fs.writeFileSync(path.join(out,'result.json'),JSON.stringify({results,errors,before,after,reset,touchPass,actions},null,2));
+ fs.writeFileSync(path.join(out,'result.json'),JSON.stringify({results,errors,before,after,reset,feel,touchPass,actions},null,2));
  console.log(`${failures||errors.length||!touchPass||!actions.pass?'FAIL':'PASS'} ${results.length*128} layout states; native simultaneous joystick/look/button and cancel=${touchPass}; production hold/release/jump=${actions.pass}; page errors=${errors.length}`);
  if(failures||errors.length||!touchPass||!actions.pass)process.exitCode=1;
  }finally{await browser.close();}

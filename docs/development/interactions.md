@@ -63,8 +63,21 @@ from #1057) → `touchSizes()` in `touch.js` → `--stick-travel`, `--touch-butt
 on resize/rotation and each stick touch (root `clientWidth/Height`, since iOS can leave `innerWidth` stale, #567).
 At 844×390 the knob travels 58 px and buttons are 57 px; 667×375 → 56/54; tablets cap at 84/64. CSS fallbacks keep the
 old 56/48 px when `setupTouch` never runs. `#stick-hint` is a faint resting stick at the lower left whenever touch play
-is on and no walking thumb is down; the real stick still floats to where the thumb lands (dead zone, curve and follow
-mode are part 2, #1088). The touch chat reserves room above the hint. Physical-phone comfort remains unmeasured.
+is on and no walking thumb is down; the real stick still floats to where the thumb lands. The touch chat reserves room
+above the hint. Physical-phone comfort remains unmeasured.
+
+### Stick feel and eased look (#1088, part 2 of #1082)
+
+`TOUCH.stick` (*guess*, tuned by eye): deflection r = distance / travel; `stickResponse(r)` in `touch.js` gives 0 inside
+`deadZone` (0.1: a resting thumb's 3–5 px wobble no longer walks), then `t^curve` (1.5) up to `full` (0.9), and 1 beyond,
+so the outer tenth reliably passes `PLAYER.sprintStick` (0.95, unchanged; player.js still compares the analog length).
+The direction is kept; the knob and rim glow show the clamped thumb, the glow strength the output. `follow`: a thumb
+dragged past the rim moves the base after it (`#stick` left/top), so pulling back slows down at once instead of first
+travelling through a dead overshoot. Drag-to-look accumulates CSS px in `touch.js`; main.js `step` calls
+`touch.update(dt)`, which hands on `1 − e^(−dt/TOUCH.look.smooth)` of it per frame (30 ms: ≈ 43 % per 60 Hz frame,
+≈ 94 % after 5 frames, the last 0.01 px at once), and `onLook` scales by `TOUCH.look.sens` (0.005 rad/px, the old value).
+The total turn equals the finger's travel; `smooth: 0` restores raw deltas. No settings UI yet (customisation is #1090).
+`tools/touchlayouttest.cjs` checks dead zone, half-push output, follow and pull-back with native CDP touches.
 
 ## Current shared head contract (#974, #893, #894, #979)
 
