@@ -4,7 +4,7 @@ import { buildRiverPark, parkDeckAt, parkTreeSpots, parkShrubSpots } from './riv
 import * as THREE from 'three';
 import { grassUV } from './grass.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE, CORE_A, CORE_B, CORE_C, NEIGHBOR_OPENINGS as O, HUS_L } from './config.js';
+import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE, CORE_A, CORE_B, CORE_C, NEIGHBOR_OPENINGS as O, HUS_L, FOLIAGE } from './config.js';
 import { glowMaterial, poolGeometry, washGeometry, fadeGlow } from './groundglow.js';
 import { neighborGlass } from './neighborglass.js';
 import { registerTrees, registerSnow } from './seasons.js';
@@ -1152,6 +1152,27 @@ export const treeFeet = [];
 /** Every tree's crown as built: [{ x, z, r (m), y (its centre) }] (groundao.js, #1079). */
 const aoTrees = [];
 
+/** #1083: narrow a crown lobe (centre `pos`, instance `scale`) so its cards stay FOLIAGE.wallClearance outside every
+ * SITE.blocks footprint its height overlaps; the trunk's position and the crown's height stay as placed. */
+let lobeReach;
+function fitCrown(pos, scale) {
+  if (!lobeReach) { // the 'tree' lobe's horizontal and vertical extent at scale 1 (cards reach past the radius-1 shell)
+    const p = lobeGeometry('tree').attributes.position;
+    lobeReach = { r: 0, y: 0 };
+    for (let i = 0; i < p.count; i++) { lobeReach.r = Math.max(lobeReach.r, Math.hypot(p.getX(i), p.getZ(i))); lobeReach.y = Math.max(lobeReach.y, Math.abs(p.getY(i))); }
+  }
+  const low = pos.y - scale.y * lobeReach.y, high = pos.y + scale.y * lobeReach.y;
+  let room = Infinity;
+  for (const b of S.blocks) {
+    if (high < b.base || low > b.base + b.storeys * S.storey + S.storey) continue; // above the roof or below the house
+    const dx = Math.max(b.x0 - pos.x, 0, pos.x - b.x1), dz = Math.max(b.z0 - pos.z, 0, pos.z - b.z1);
+    room = Math.min(room, Math.hypot(dx, dz));
+  }
+  const max = (room - FOLIAGE.wallClearance) / lobeReach.r;
+  if (max < scale.x) scale.x = scale.z = Math.max(max, 0.2);
+  return scale;
+}
+
 function trees(rand) {
   // the trees the situation plan draws in the courtyard and the green (COURTYARD.trees), then the areas;
   // young street maples are slim, the big old trees by the school have broad crowns of several lobes (#130)
@@ -1190,20 +1211,22 @@ function trees(rand) {
       const n = 4 + Math.floor(rand() * 2);
       for (let k = 0; k < n; k++) {
         const a = (k / n) * 6.28 + rand() * 0.6, d = (k === 0 ? 0 : 1.9) * t.s;
-        lobes.push({ pos: new THREE.Vector3(t.x + Math.cos(a) * d, t.y + h + (k === 0 ? 3.0 : 1.8 + rand() * 1.4) * t.s, t.z + Math.sin(a) * d),
-          rot: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, rand() * 6, 0)), scale: new THREE.Vector3(3.0, 2.6, 3.0).multiplyScalar(t.s * (0.8 + rand() * 0.3)), ...r });
+        const at = new THREE.Vector3(t.x + Math.cos(a) * d, t.y + h + (k === 0 ? 3.0 : 1.8 + rand() * 1.4) * t.s, t.z + Math.sin(a) * d);
+        lobes.push({ pos: at, rot: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, rand() * 6, 0)), scale: fitCrown(at, new THREE.Vector3(3.0, 2.6, 3.0).multiplyScalar(t.s * (0.8 + rand() * 0.3))), ...r });
       }
       aoTrees.push({ x: t.x, z: t.z, r: 4.6 * t.s, y: t.y + h + 2.2 * t.s }); // lobes 1.9·s out, ~2.7·s each
     } else if (t.kind === 'birch') { // a tall white trunk, a narrow crown high up
       const h = 4.4 * t.s;
       birchM.push(m.clone().compose(new THREE.Vector3(t.x, t.y, t.z), q.identity(), new THREE.Vector3(0.55 * t.s, h, 0.55 * t.s)));
-      lobes.push({ pos: new THREE.Vector3(t.x, t.y + h + 1.2 * t.s, t.z), rot: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, rand() * 6, 0)), scale: new THREE.Vector3(1.4, 2.6, 1.4).multiplyScalar(t.s), ...r, r1: 0.75 + r.r1 * 0.25 }); // r1 high: they go yellow in autumn
-      aoTrees.push({ x: t.x, z: t.z, r: 1.4 * t.s, y: t.y + h + 1.2 * t.s });
+      const at = new THREE.Vector3(t.x, t.y + h + 1.2 * t.s, t.z), sc = fitCrown(at, new THREE.Vector3(1.4, 2.6, 1.4).multiplyScalar(t.s));
+      lobes.push({ pos: at, rot: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, rand() * 6, 0)), scale: sc, ...r, r1: 0.75 + r.r1 * 0.25 }); // r1 high: they go yellow in autumn
+      aoTrees.push({ x: t.x, z: t.z, r: sc.x, y: t.y + h + 1.2 * t.s });
     } else {
       const young = t.kind === 'young', h = (young ? 2.6 : 3.2) * t.s;
       trunkM.push(m.clone().compose(new THREE.Vector3(t.x, t.y, t.z), q.identity(), new THREE.Vector3(young ? 0.6 * t.s : t.s, h, young ? 0.6 * t.s : t.s)));
       const sc = young ? new THREE.Vector3(1.3, 2.1, 1.3).multiplyScalar(t.s) : new THREE.Vector3(2.4, 2.6, 2.4).multiplyScalar(t.s);
-      lobes.push({ pos: new THREE.Vector3(t.x, t.y + h + (young ? 1.7 : 1.6) * t.s, t.z), rot: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, rand() * 6, 0)), scale: sc, ...r });
+      const at = new THREE.Vector3(t.x, t.y + h + (young ? 1.7 : 1.6) * t.s, t.z);
+      lobes.push({ pos: at, rot: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, rand() * 6, 0)), scale: fitCrown(at, sc), ...r });
       aoTrees.push({ x: t.x, z: t.z, r: sc.x, y: t.y + h + (young ? 1.7 : 1.6) * t.s });
     }
   }

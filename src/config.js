@@ -1519,6 +1519,9 @@ export const FOLIAGE = {
   ao: 0.45, bright: 1.22, leafLight: [0.62, 1.0], coreGround: 0.45, alphaTest: 0.4,
   trunk: { base: 0.2, top: 0.1, sides: 5, branches: 3, forks: 2, from: 0.5, reach: 0.95, rise: 0.3, color: 0x8a735f, birchColor: 0xf2efe8 },
   bark: 64,
+  // #1083: a crown standing near an Å-hus (SITE.blocks) is narrowed so its leaf cards stay `wallClearance` m outside the
+  // façade instead of poking through the brick and windows (a pruned crown; *guess*, by eye — no measurement)
+  wallClearance: 0.2,
 };
 
 export const FENCE_HEIGHT = 1.8; // bofakta: Skärmvägg H = 1,8 m
