@@ -4204,6 +4204,19 @@ export const DAYBED_LINEN = [
   { id: 'linen-pink', name: 'Rosa kudden' },
 ];
 
+// Contact shadows under loose furniture (#1075, src/contactshadow.js): one soft multiply-blended rounded rectangle per
+// floor-standing piece, sized from its collision footprint, so tables, chairs, sofas and beds sit on the floor instead of
+// floating where the sun's shadow does not reach. All values are *guesses* tuned by eye (no reference measurement).
+export const CONTACT_SHADOW = {
+  strength: 0.32,  // darkening under the middle of the footprint (0 = none, 1 = black)
+  soft: 0.07,      // m half-width of the soft edge, centred on the footprint edge (symmetric, so touching
+                   // rectangles of one piece meet without a light seam)
+  radius: 0.06,    // m corner rounding of the shape
+  lift: 0.004,     // m above the floor (on top of the floor AO overlay, under anything else)
+  maxBase: 0.06,   // m: only pieces whose lowest point is this close to the floor (not wall pieces, table-top things)
+  skip: ['rug', 'parasol'], // rugs lie flat; the parasol stands outdoors in the sun's own shadow
+};
+
 export const HEMNES_DAYBED = {
   W: 2.07, D: 0.89, H: 0.83, groove: 0.04, knob: 0.03,
   drawer: [0.05, 0.22], pullout: [0.29, 0.345], apron: [0.335, 0.375, 0.42], mattress: [0.42, 0.56], channels: 10,

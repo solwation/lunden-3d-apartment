@@ -3,7 +3,8 @@ import { materialChoice } from './materialcatalog.js';
 import { MATERIAL_LIBRARY, LONG_PILE, SHADE_CANOPY_TEXTILES } from './config.js';
 import { windPlant, windMaterial } from './plantwind.js';
 import { MusicLoop } from './music.js';
-import { MUSIC, STAND_ON } from './config.js';
+import { MUSIC, STAND_ON, CONTACT_SHADOW } from './config.js';
+import { buildContactShadows } from './contactshadow.js';
 import * as THREE from 'three';
 import { woodMaterial } from './woodgrain.js';
 import { freeCanvasAfterUpload } from './lowmemory.js';
@@ -4224,7 +4225,7 @@ export function buildFurniture() {
   const group = new THREE.Group();
   const segments = [[], []], footprints = [[], []];
   const lights = [], interactives = [], surfaces = [], things = [], movable = [];
-  const ids = new Map();
+  const ids = new Map(), shadowed = [];
   for (const item of FURNITURE) {
     const obj = BUILDERS[item.type](item, lights);
     if(obj.userData.bedCareCount)obj.traverse(m=>{if(m.isMesh&&!m.geometry.attributes.bedCare)m.geometry.setAttribute('bedCare',new THREE.BufferAttribute(new Uint8Array(m.geometry.attributes.position.count),1));});
@@ -4234,6 +4235,11 @@ export function buildFurniture() {
       mergeStatic(obj, keep);
     }
     const yaw = THREE.MathUtils.degToRad(item.rot ?? 0) + Math.PI; // local +z = facing
+    if (obj.userData.footprint?.length && !CONTACT_SHADOW.skip.includes(item.type)) { // a contact shadow if it stands on the floor (#1075)
+      obj.updateMatrixWorld(true);
+      const base = obj.position.y, low = new THREE.Box3().setFromObject(obj).min.y; // (the floor is at 0 here, the piece's origin at `base`)
+      if (low < CONTACT_SHADOW.maxBase) shadowed.push({ object: obj, rects: obj.userData.footprint, base: -base });
+    }
     if (item.walls) keepInside(obj, item, yaw); // plants by a wall: no leaves through it (#137)
     obj.rotation.y = yaw;
     const c = Math.cos(yaw), s = Math.sin(yaw);
@@ -4280,6 +4286,7 @@ export function buildFurniture() {
       footprints[item.level].push(pts);
     }
   }
+  group.add(buildContactShadows(shadowed)); // last child: the pieces' matrices are current when it follows them (#1075)
   linkPatioTextiles(movable); // #1015: canonical outdoor cushion choices also drive stored copies.
   return { object: group, segments, footprints, lights, interactives, surfaces, things, movable };
 }

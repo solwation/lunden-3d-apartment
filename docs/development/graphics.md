@@ -367,3 +367,16 @@ physical dial size or adding lights. All new ratios/offsets are declared in TOWE
 The hands' fixed conservative bounds cover every rotation; neither instanced mesh participates in the small-detail culler.
 The clock adds two draws and144 dynamic triangles, while replacing80 static desktop /64 static phone triangles.
 Isolated flat-ground campus captures:10 draws,71425 desktop /29766 phone triangles. See environment and towerclocktest.
+
+## Furniture contact shadows (#1075)
+
+`src/contactshadow.js` gives every floor-standing loose piece a soft multiply-blended rounded rectangle over its
+collision footprint (the baked AO in `src/ao.js` only knows walls and fitted cabinets). `buildFurniture` collects the
+pieces whose lowest point is within `CONTACT_SHADOW.maxBase` of the floor and that have a footprint (not rugs or the
+parasol); a piece's rectangles that tile a larger rectangle (a sofa's back, arms and seat) are merged, and the edge fade
+is symmetric round the footprint edge so touching rectangles (the sofa and its chaise) meet without a light seam.
+All shadows are one `InstancedMesh` (one draw call, `frustumCulled = false`, no raycast, no shadow casting), the last
+child of the furniture group: F hides it, and its `updateMatrixWorld` copies each piece's world matrix every frame, so a
+piece moved in Möblera om, hidden for the season or culled by detail takes its shadow along (a hidden piece's instance
+is scaled to zero; during a move the piece is hidden behind the ghost, so its shadow appears again on confirm).
+Strength, soft width, corner radius and lift are *guesses* tuned by eye in `CONTACT_SHADOW` (config.js).
