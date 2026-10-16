@@ -15,3 +15,16 @@ test('neutral textile shades validate per family while existing choices still re
  assert.ok(M.validMaterialChoice(curtain,'textile','curtain-white'));assert.ok(!M.validMaterialChoice(rug,'textile','curtain-white'));
  const [towel,[surface]]=Object.entries(M.TOWEL_MATERIAL_SURFACES)[0];assert.ok(M.validMaterialChoice(towel,surface,'upholstery-black'));
 });
+
+test('every rug accepts a short/long pile surface; other families and choices do not (#1086)', async () => {
+ const M=await import('../src/materialcatalog.js');
+ assert.deepEqual(M.materialChoices('lugg').map(c=>c.id),['original','pile-long']);
+ assert.equal(M.RUG_MATERIAL_IDS.length,6);
+ for(const rug of M.RUG_MATERIAL_IDS){
+  for(const c of ['original','pile-long'])assert.ok(M.validMaterialChoice(rug,'pile',c),`${rug} ${c}`);
+  for(const c of ['rug-sand','pile-short','upholstery-black',undefined])assert.ok(!M.validMaterialChoice(rug,'pile',c));
+  assert.ok(M.validMaterialChoice(rug,'textile','rug-sand')); // colour choices stay on the textile surface
+ }
+ for(const id of [M.CURTAIN_MATERIAL_IDS[0],M.UPHOLSTERY_MATERIAL_IDS[0],'f-rug-0-9-9-0-0'])assert.ok(!M.validMaterialChoice(id,'pile','pile-long'));
+ assert.equal(M.materialChoice('pile-long').name,'Lång lugg');
+});
