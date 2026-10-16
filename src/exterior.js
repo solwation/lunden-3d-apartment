@@ -606,15 +606,11 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   segments.push(...planting.userData.groundSegments);
   walls.push(...planting.userData.walls);
 
-<<<<<<< HEAD
   const patioGlow = patioLamps({ units, uppers, south, coreW, y3, deckY, zs, D, eps, open, shift, lampBox, lampGlow, frames }); // #1078 (before the frames are merged)
-=======
-  const patioGlow = patioLamps({ units, uppers, south, coreW, y3, deckY, zs, D, eps, open, lampBox, lampGlow, frames }); // #1078 (before the frames are merged)
   { // #1077: the downpipes join the wall lights' housings (one mesh); a thin collision box round each foot
     const dp = downpipes({ units, core: [coreX0, coreX1], loftX1, loftTop, roofTop, par, D, north, south, northOf, open });
     lampBox.push(...dp.geos); segments.push(...dp.segments);
   }
->>>>>>> c3422e3 (Add downpipes to Hus L's street and courtyard façades)
   const add = (geos, material, shadow = true) => {
     if (!geos.length) return;
     const mesh = new THREE.Mesh(mergeGeometries(geos.map((g) => (g.index ? g.toNonIndexed() : g))), material);
