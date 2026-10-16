@@ -32,6 +32,11 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   (lower, middle, smaller top), preserving implemented gameplay. Old per-polygon acceptance demands are superseded;
   use ordinary functional head/body/wall/damage tests. Preserve unfinished work at a safe checkpoint and close
   superseded detail stories once the replacement works. Do not turn this refinement into a dependency for unrelated work.
+- **Orchestra idle watch (user, 2026-10-16).** An active `/orkester` polls the complete in-scope queue every minute for
+  60 minutes after the last resolved implementation issue, instead of exiting as soon as the queue empties. New work
+  is handled without restart; resolving it resets the full hour. Persist UTC last-resolution/check/deadline in the
+  session checkpoint and #420; preserve report-import checks, priorities and explicit user scope. Do not keep active
+  labels during idle waiting. Stop on the user’s pause/stop. See `.claude/commands/orkester.md` for the full lifecycle.
 - **No branches, no PRs.** Commit and push directly to `main`.
 - **Basic function first.** Work that isn't needed right now goes into a GitHub issue
   (`gh issue create`) instead of being done on the side. Keep issues small and concrete;
