@@ -1,3 +1,4 @@
+Wall AO facing (#1084): `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/wallaotest.cjs GAME` — every `wall-ao` triangle in L1007, L1004 and L1201 faces the room (a wall right behind it); run after changing src/ao.js `buildWallAO` or the wall pieces world.js feeds it.
 Shower spray (#1062): `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/showerspraytest.cjs GAME OUT`
 renders both real showerSet/Tap variants with actual Chromium WebGL. Candidate
 16/16 and pre-change water module10/10 checks passed (CLI0), with before/after

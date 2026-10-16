@@ -537,6 +537,7 @@ function buildLevel(floor, li, group, how = OURS) {
   const barriers = [...wallBoxes, ...floor.windows]; // closed off for room detection (rooms.js)
   const lids = []; // toilet lids (E opens/closes them, see toilet.js)
   const trims = []; // architrave geometry around the interior doors (merged below)
+  const lintels = []; // the wall over each door opening: the ceiling's contact shadow runs along it (#1084)
   const doorways = []; // door openings + the closed leaf's plane: tiled floors run through them to the threshold (#306)
   for (const d of floor.doors) {
     const [hx, hz] = d.hinge, [tx, tz] = d.tip, [wx, wz] = d.wall;
@@ -549,7 +550,7 @@ function buildLevel(floor, li, group, how = OURS) {
     const exterior = tz < 0 || tz > D;
     const head = y0 + (exterior ? how.extDoorHead ?? EXT_DOOR_HEAD : DOOR_HEIGHT);
     const tillval = d.optional && (std || !OPTIONS.allrumDoor); // Peab tillval (dashed door), see OPTIONS
-    if (gap && !(tillval && std)) { group.add(gapBox(gap, head, yC, M.wall)); aoPieces.push({ pts: rectPts(gapRect(gap)), y0: head, y1: yC }); } // (the standard: no tillval wall, no lintel, #574)
+    if (gap && !(tillval && std)) { group.add(gapBox(gap, head, yC, M.wall)); aoPieces.push({ pts: rectPts(gapRect(gap)), y0: head, y1: yC }); lintels.push(gapRect(gap)); } // (the standard: no tillval wall, no lintel, #574)
     if (gap) barriers.push(gapRect(gap)); // (a room boundary even when open: Allrum | Hall)
     if (tillval) continue;
 
@@ -592,6 +593,7 @@ function buildLevel(floor, li, group, how = OURS) {
     if (!gap) continue;
     group.add(gapBox(gap, y0 + DOOR_HEIGHT, yC, M.wall));
     aoPieces.push({ pts: rectPts(gapRect(gap)), y0: y0 + DOOR_HEIGHT, y1: yC });
+    lintels.push(gapRect(gap));
     barriers.push(gapRect(gap));
     // Slide towards the side with enough wall to park the panel (the plan arrow alone sent
     // the Tvätt door through the 19 cm wall stub into the hall). Arrow decides only if both fit.
@@ -730,7 +732,7 @@ function buildLevel(floor, li, group, how = OURS) {
   group.add(...plateAround(0, W, 0, D, li === 0 ? hole : null, yC - 0.002, M.ceiling, true));
 
   // contact shadows along walls and cabinets (floor) and in the ceiling corners
-  group.add(buildAO({ x: W, z: D }, y0, yC, [...wallBoxes, ...floor.windows, ...floor.cabinets], wallBoxes,
+  group.add(buildAO({ x: W, z: D }, y0, yC, [...wallBoxes, ...floor.windows, ...floor.cabinets], [...wallBoxes, ...floor.windows, ...lintels],
     { floorHole: li === 1 ? hole : null, ceilHole: li === 0 ? hole : null }));
   group.add(buildWallAO({ x: W, z: D }, y0, yC, aoPieces, aoBlockers,
     { floorHole: li === 1 ? hole : null, ceilHole: li === 0 ? hole : null })); // and on the walls: floor/ceiling bands, inner corners (#1074)

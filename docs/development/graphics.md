@@ -55,7 +55,10 @@ textures/              image textures the page loads (published by stamp.sh): st
                        eat-sleep-game-repeat-sovrum2.jpg = Sovrum 2's neon print (#430), cropped inside the frame and straightened
                        from docs/tavla-sovrum2-eat-sleep-game-repeat.webp
 src/ao.js              baked ambient occlusion: distance field → multiply overlay on floor/ceiling (AO); buildWallAO: one
-                       shader overlay per level on the walls — floor/ceiling bands + inner-corner columns (AO.wall, #1074)
+                       shader overlay per level on the walls — floor/ceiling bands + inner-corner columns (AO.wall, #1074);
+                       each quad is wound to face the room whatever the piece polygon's orientation (#1084: rectangle
+                       lintels/window infills and L1201's plan were back-face culled); the ceiling overlay's blockers
+                       include door lintels and windows so its band runs over openings too (tools/wallaotest.cjs)
 src/lights.js          room switches (E), ceiling lamps/pendant/spots/LED (by hand only), small lamps (FloorLamp:
                        E, and they switch themselves with the dusk, #234); a pool of 4 point lights goes to the lit
                        lamps that matter (own room, in sight, nearest), fading when it moves

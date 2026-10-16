@@ -162,11 +162,13 @@ export function buildWallAO(size, y0, yC, pieces, blockers, { floorHole, ceilHol
   const blocked = (x, z) => x < 0 || z < 0 || x > size.x || z > size.z
     || boxes.some((b) => x >= b.x0 && x <= b.x1 && z >= b.z0 && z <= b.z1 && insidePoly(b.pts, x, z));
   const pos = [], dist = [];
+  let flipped = false; // the face's room side is the left normal (-uz, ux) of its edge, or the right one
   const quad = (ax, az, ux, uz, s0, s1, ya, yb, k0, k1) => {
     // corners of [s0,s1] × [ya,yb] on the face; k0/k1 = distance-to-corner offsets (FAR = no corner)
     const vs = [[s0, ya], [s1, ya], [s1, yb], [s0, yb]];
     const v = vs.map(([s, y]) => [ax + ux * s, y, az + uz * s, y - y0, yC - y, k0 === null ? FAR : s - k0, k1 === null ? FAR : k1 - s]);
-    for (const i of [0, 1, 2, 0, 2, 3]) { const p = v[i]; pos.push(p[0], p[1], p[2]); dist.push(p[3], p[4], p[5], p[6]); }
+    // wound to face the room (front faces only): the order 0-1-2 faces (-uz, ux); either polygon orientation (#1084)
+    for (const i of flipped ? [0, 2, 1, 0, 3, 2] : [0, 1, 2, 0, 2, 3]) { const p = v[i]; pos.push(p[0], p[1], p[2]); dist.push(p[3], p[4], p[5], p[6]); }
   };
   for (const piece of pieces) {
     const pts = piece.pts;
@@ -180,7 +182,8 @@ export function buildWallAO(size, y0, yC, pieces, blockers, { floorHole, ceilHol
       // the room side: the normal whose near point is outside this piece
       let nx = -uz, nz = ux;
       const mx = (ax + bx) / 2, mz = (az + bz) / 2;
-      if (insidePoly(pts, mx + nx * NEAR, mz + nz * NEAR)) { nx = -nx; nz = -nz; }
+      flipped = insidePoly(pts, mx + nx * NEAR, mz + nz * NEAR);
+      if (flipped) { nx = -nx; nz = -nz; }
       const open = (s) => !blocked(ax + ux * s + nx * NEAR, az + uz * s + nz * NEAR);
       // exposed runs along the face, ends refined to the exact edge of what blocks them
       const n = Math.max(1, Math.round(len / STEP));
