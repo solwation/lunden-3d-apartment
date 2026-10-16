@@ -7,7 +7,7 @@ import { PlantWind, windShadow } from './plantwind.js';
 import { runCheat, cheatList, isCommand } from './cheats.js';
 import { cleanHome } from './cheatclean.js';
 import { buildCheatNote } from './cheatnote.js';
-import { REPORTS, CHEAT_NOTE, LOW_MEMORY, QUALITY, STANDARD, STARTUP, KITCHEN_TOWEL_MATERIAL } from './config.js';
+import { REPORTS, CHEAT_NOTE, LOW_MEMORY, QUALITY, STANDARD, STARTUP, KITCHEN_TOWEL_MATERIAL, LIGHTING } from './config.js';
 import { fetchStartupJSON } from './startuprecovery.js';
 import { lowMemory, reloadOnContextRestore, freeSceneGeometryCopies } from './lowmemory.js';
 import { loadBeerShelf } from './beershelfdata.js';
@@ -180,12 +180,13 @@ let deferViewportResize = () => false;
 const viewportBinding = bindGameViewport(renderer, camera, { deferResize: () => deferViewportResize() });
 const compass = new Compass(camera, document.getElementById('compass'));
 
-const hemi = new THREE.HemisphereLight(0xeaf3ff, 0xd6d2ca, 2.0);
-const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+// Daylight: sky, ambient and a shadowless north-east fill; DayCycle sets their intensities (LIGHTING.sky, #1073)
+const SKY = LIGHTING.sky;
+const hemi = new THREE.HemisphereLight(SKY.hemi.sky, SKY.hemi.ground, SKY.overcast.hemi);
+const ambient = new THREE.AmbientLight(0xffffff, SKY.overcast.ambient);
 scene.add(hemi, ambient);
-// Shadowless fill from the north-east so wall orientations read differently indoors
-const fill = new THREE.DirectionalLight(0xf4f6ff, 0.9);
-fill.position.set(8, 6, -5);
+const fill = new THREE.DirectionalLight(SKY.fill.color, SKY.overcast.fill);
+fill.position.set(...SKY.fill.pos);
 scene.add(fill);
 
 const params0 = new URLSearchParams(location.search);
@@ -205,7 +206,7 @@ const coreB = core.attach(new CoreHouse(CORE_B)), coreC = core.attach(new CoreHo
 scene.add(core.object);
 
 // Sun from the south-west (north = the entrance side, −z). Shadows cover the house + patio.
-const sun = new THREE.DirectionalLight(0xfff1dc, 2.2);
+const sun = new THREE.DirectionalLight(0xfff1dc, SKY.overcast.sun);
 const cx = world.size.x / 2, cz = world.size.z / 2;
 sun.position.set(cx - 10, 16, cz + 18);
 sun.target.position.set(cx, 0, cz);
@@ -317,7 +318,7 @@ const now = new Date();
 const startHour = params0.has('time') ? Number(params0.get('time')) : now.getHours() + now.getMinutes() / 60;
 const month = params0.has('month') ? Number(params0.get('month')) : now.getMonth() + 1;
 const date = params0.has('day') ? Number(params0.get('day')) : params0.has('month') ? 15 : now.getDate();
-const day = new DayCycle({ scene, camera, lights: { sun, hemi, ambient, fill }, clouds: cloudTexture(), startHour, month, date, year: params0.has('year') ? Number(params0.get('year')) : now.getFullYear() }); // (&year= with &month= &day=: a date in another year, #674)
+const day = new DayCycle({ scene, camera, renderer, lights: { sun, hemi, ambient, fill }, clouds: cloudTexture(), startHour, month, date, year: params0.has('year') ? Number(params0.get('year')) : now.getFullYear() }); // (&year= with &month= &day=: a date in another year, #674)
 const weather = new Weather(scene, camera, day, params0.get('weather')); // rain in spring and autumn, thunder in late summer (#248)
 weather.real = createRealWeather(params0); // real weather for the date, fetched after the first frames; the draw stays the fallback (#674)
 if (params0.has('temp')) weather.forceTemp = Number(params0.get('temp')); // &temp=°C forces the temperature (#674)

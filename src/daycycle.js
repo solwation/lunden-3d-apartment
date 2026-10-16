@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { DAY, WEATHER, GARAGE } from './config.js';
+import { DAY, WEATHER, GARAGE, LIGHTING } from './config.js';
 
 // Day and night: a whole day passes in DAY.minutes real minutes. The sun follows its real path
 // for the date at Kv. Lunden (rises north-east in summer, south-east in winter; the house is
@@ -111,11 +111,11 @@ const OVERCAST = new THREE.Color(0x8d969f), FLASH = new THREE.Color(0xdfe4ff), t
 const SUN_LOW = new THREE.Color(0xffb070), SUN_HIGH = new THREE.Color(0xfff1dc), MOON = new THREE.Color(0x9fb4ff);
 
 export class DayCycle {
-  /** lights: { sun, hemi, ambient, fill } from main.js; clouds: canvas texture with alpha. */
-  constructor({ scene, camera, lights, clouds, startHour, month, date = 15, year = new Date().getFullYear() }) {
-    Object.assign(this, { scene, camera, lights, hour: startHour, month, date, year, paused: false, spool: 0, overcast: 0, flash: 0, dim: 0, under: 0, lit: 0 }); // overcast, flash: weather.js (#248); dim: the blinds (#273)
+  /** lights: { sun, hemi, ambient, fill } from main.js; clouds: canvas texture with alpha; renderer (optional): its exposure follows the sky (#1073). */
+  constructor({ scene, camera, lights, clouds, startHour, month, date = 15, year = new Date().getFullYear(), renderer = null }) {
+    Object.assign(this, { scene, camera, lights, renderer, hour: startHour, month, date, year, paused: false, spool: 0, overcast: 0, flash: 0, dim: 0, under: 0, lit: 0 }); // overcast, flash: weather.js (#248); dim: the blinds (#273)
     this.fogFar = scene.fog.far;
-    this.base = { hemi: lights.hemi.intensity, ambient: lights.ambient.intensity, fill: lights.fill.intensity, sun: lights.sun.intensity };
+    this.base = { hemi: 0, ambient: 0, fill: 0, sun: 0, exposure: 1 }; // LIGHTING.sky blended overcast → clear each update (#1073)
     this.uniforms = {
       uSun: { value: new THREE.Vector3() }, uMoon: { value: new THREE.Vector3() },
       uZenith: { value: new THREE.Color() }, uHorizon: { value: new THREE.Color() }, uGlow: { value: GLOW.clone() },
@@ -174,6 +174,10 @@ export class DayCycle {
 
     // the sun by day, the moon by night: one shadow-casting light either way
     const { sun, hemi, ambient, fill } = this.lights;
+    // a clear sky by day: a stronger sun against a darker shade side (#1073); rain clouds, night and the garage keep the even light
+    const clear = day * (1 - oc) * (1 - this.under), { overcast: o, clear: c } = LIGHTING.sky, b = this.base;
+    for (const k in b) b[k] = o[k] + (c[k] - o[k]) * clear;
+    if (this.renderer) this.renderer.toneMappingExposure = b.exposure;
     const useMoon = this.sunDir.y < -0.02;
     const dir = useMoon ? this.moonDir : this.sunDir;
     sun.position.copy(sun.target.position).addScaledVector(dir, 30);

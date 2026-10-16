@@ -3799,6 +3799,18 @@ export const CAT_BOARD = (() => {
 // Room lights (src/lights.js). Intensities are candela-ish (three.js physical lights), tuned by
 // eye at night. `pool` = point lights shared by the nearest lit lamps (keep small: Iris 640).
 export const LIGHTING = {
+  // Daylight (#1073, src/daycycle.js): the hemisphere sky light, the flat ambient, the shadowless fill (from the north-east,
+  // `pos` relative to the origin, so wall orientations read differently indoors) and the shadow-casting sun. `overcast` =
+  // the old even light (it stays for rain clouds, night, dawn/dusk and the garage); `clear` = a clear sky by day: less
+  // sky/fill on the shade side, a stronger sun and a little more exposure to keep rooms about as bright. DayCycle blends
+  // overcast → clear by daylight × (1 − overcast) × (not in the garage). Tuned by eye and mean luminance against
+  // before/after shots (#1073: rooms within ~2 %, sunlit vs shaded brick 1.03 → ~1.2 at 13:00 in June); *guess*.
+  sky: {
+    hemi: { sky: 0xeaf3ff, ground: 0xd6d2ca },
+    fill: { color: 0xf4f6ff, pos: [8, 6, -5] },
+    overcast: { hemi: 2.0, ambient: 0.6, fill: 0.9, sun: 2.2, exposure: 1.0 },
+    clear: { hemi: 1.5, ambient: 0.25, fill: 0.35, sun: 3.0, exposure: 1.5 },
+  },
   pool: 4,
   switchHeight: 1.05,                     // centre of the switch above the floor
   ceiling: { intensity: 2.4, range: 6, color: 0xffe2b8 },

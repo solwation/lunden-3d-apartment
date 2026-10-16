@@ -85,7 +85,9 @@ src/weather.js         weather (WEATHER, #248): a seeded draw per date (`showers
 src/groundglow.js      light without lights (#434, #433): additive fall-off decals — `poolGeometry` (an ellipse draped over `groundY`),
                        `washGeometry` (an upright one on a wall), `glowMaterial` (one per set, opacity = the level), `fadeGlow`
 src/daycycle.js        60-minute day: real solar path for the month (55.7° N), sun → moon light, shader sky
-                       (glow, stars, clouds), fog colour; paused / spooled by the wall clock
+                       (glow, stars, clouds), fog colour; paused / spooled by the wall clock. Daylight (#1073): `LIGHTING.sky`
+                       blends `overcast` (even sky/ambient/fill, sun 2.2, exposure 1) → `clear` (darker shade side, sun 3.0,
+                       exposure 1.5 so rooms stay ~as bright) by daylight × (1 − overcast); night, rain and the garage keep the old light
 src/blinds.js          pleated blinds, bottom-up (BLINDS, #273): one per window in the reveal on the room side of the frame
                        (the living room's split window: two), `blind: 'dark' | 'light'` per WINDOWS entry; the fabric (a
                        zig-zag rebuilt only while it moves, castShadow) + the top rail are two meshes per blind, the bottom
