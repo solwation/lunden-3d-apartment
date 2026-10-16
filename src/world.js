@@ -3,7 +3,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import {
   LAUNDRY, WARDROBE, LEVELS, UNIT_TOP, SOFFITS, DOOR_HEIGHT, DOOR_TRIM, EXT_DOOR_HEAD, WINDOWS, WINDOW_TOP_HUNG_MAX, BLINDS, RADIATOR, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT, TOILET,
   STAIR, COLORS, FENCE_HEIGHT, SITE, OUTDOOR, CABINET_FIXES, KLK, SEASON, FINISH, OPTIONS, EXTRA_WALLS, SLIDE_FLIP, ROOM_RENAMES, EXTRA_ROOMS, ROOM_DIVIDERS, CORE, PORTIK,
-  STANDARD, VISIT_UNITS, L1201, HUS_L, storeyFloor,
+  STANDARD, VISIT_UNITS, L1201, HUS_L, storeyFloor, HUS_L_REVEAL,
 } from './config.js';
 import { buildStairs, buildHandrails, stairHeight, stairUnderside } from './stairs.js';
 import { klkFittings } from './closet.js';
@@ -509,7 +509,7 @@ function buildLevel(floor, li, group, how = OURS) {
     aoPieces.push({ pts: rectPts(r), y0, y1: sill }, { pts: rectPts(r), y0: head, y1: yC }); // (not the glass between)
     aoBlockers.push(rectPts(pr));
     // frame sits towards the outside of the wall
-    const fz = facade === 'north' ? r.z0 + 0.1 : r.z1 - 0.1;
+    const fz = facade === 'north' ? r.z0 + HUS_L_REVEAL.frame : r.z1 - HUS_L_REVEAL.frame; // (the façade's reveal, #1076)
     const inner = facade === 'north' ? r.z1 : r.z0;
     windows.push(...addWindowFrame(group, r.x0, r.x1, fz, sill, head, spec.transom, facade === 'north' ? -1 : 1, true, spec));
     // a pleated blind in the reveal on the room side of the frame (#273): one per window, two where a mullion splits it

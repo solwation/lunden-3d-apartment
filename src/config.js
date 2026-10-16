@@ -4800,6 +4800,20 @@ export const NEIGHBOR_OPENINGS = {frame: .06, depth: .1, sash: .045, sashDepth: 
   reflectionDay: 1.4, reflectionNight: .12, hinge: .012, hingeHeight: .085, hingeYs: [.25,1.05], hingeTop: .2, hingeZ: [-.04,-.025],
 };
 
+// #1076: Hus L's façade windows sit in brick (or render) reveals with a sheet-metal sill flashing, as on Peab's
+// courtyard illustration (docs/peab/hus-l-gardsfasad-illustration.png, not dimensioned). `frame` = the window frame's
+// centre behind the façade face: L1007's own frame position (world.js), kept so the blinds and window boards inside stay
+// where they are; the neighbours' windows are set back to the same plane. `frameHalf` = half the frame's depth (world.js
+// addWindowFrame, NEIGHBOR_OPENINGS.depth): the visible reveal is frame − frameHalf deep. `pocket` = how far the
+// neighbours' simplified masses leave the reveal open (to the frame's back face), `margin` its clearance round the hole.
+// `sill`: the flashing (plåt; the illustration shows light sills, not a rollskift) `out` beyond the façade, `drop` below and
+// `rise` above the opening's bottom, `ear` past each jamb. `inset`: L1007's own reveals sit this far inside its wall faces
+// (no coplanar flicker); `visitGap`: a visited upper flat's own sheet stops short of the courtyard façades (L1201: 11.099
+// vs 11.129 m deep, src/l1201plan.js), its reveals reach that much further. Every size is a *guess*: Peab's material
+// gives no reveal or flashing details.
+export const HUS_L_REVEAL = { frame: 0.1, frameHalf: 0.05, pocket: 0.15, margin: 0.01, inset: 0.002, visitGap: 0.03,
+  sill: { out: 0.045, drop: 0.035, rise: 0.012, ear: 0.02 } };
+
 // #518: visual animation assumptions, not measured weather. Metres of foliage height scale the sway;
 // opening progress gates wind, rain/snow/hail strengthen it; easing prevents abrupt changes.
 export const PLANT_WIND={calm:.025,wetBoost:2,stormBoost:.5,easeSeconds:1.2,sleepThreshold:.00001,

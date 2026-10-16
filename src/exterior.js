@@ -1,7 +1,7 @@
 import { neighborGlass } from './neighborglass.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { HUS_L as H, NEIGHBOR_OPENINGS as O, COLORS, FENCE_HEIGHT, SEASON, VERTICAL, storeyFloor, CORE, DOOR_HEIGHT, DOOR_TRIM } from './config.js';
+import { HUS_L as H, HUS_L_REVEAL as RV, NEIGHBOR_OPENINGS as O, COLORS, FENCE_HEIGHT, SEASON, VERTICAL, storeyFloor, CORE, DOOR_HEIGHT, DOOR_TRIM } from './config.js';
 import { registerSnow } from './seasons.js';
 import { entryParts, entryMaterials, entryHandleParts } from './entrancedoor.js';
 import { wallLine, wallRect } from './roofs.js';
@@ -175,7 +175,7 @@ function spiralStair(t, top, steel, slabs) {
 export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, mats, visits = [] }) {
   const group = new THREE.Group();
   const bricks = [], renders = [], glassGeo = [], frames = [], solids = [], rails = [], roofs = [], pilasters = [], panels = [];
-  const seals = [], openingHardware = [], neighborOpenings = [];
+  const seals = [], openingHardware = [], neighborOpenings = [], flashings = []; // flashings: the windows' sill flashings (#1076)
   const patios = [], hedges = site.hedge ? [patioHedgeGeometry(site.hedge)] : [], fences = [], copings = [];
   const segments = []; // collision for the neighbours' screen walls and hedges (lawn side)
   const loftD = H.loftgangDepth;
@@ -199,24 +199,50 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     entryLeaves.push({x0,x1,y0,height,z,pane:{x0:x0+pane.x0,x1:x0+pane.x1,y0:y0+pane.y0,y1:y0+pane.y1}});
   };
   // The simplified neighbouring building masses leave the recessed entrance and its glazing clear.
-  const entrySolid = (x0,x1,y0,y1,z0,z1) => {
-    const holes=entryLeaves.filter(d=>d.z>=z0-.1&&d.z<z1&&d.pane.x1>x0&&d.pane.x0<x1&&d.pane.y1>y0&&d.pane.y0<y1).map(d=>({x0:d.x0,x1:d.x1,y0:d.y0,y1:d.y0+d.height}));
-    return complement(x0,x1,y0,y1,holes).map(([a,b,c,d])=>boxGeo(a,b,c,d,z0,z1));
+  // (`extra`: more holes, #1076's reveal pockets; the doors' z reach covers a mass that starts behind its reveal pocket)
+  const entrySolid = (x0,x1,y0,y1,z0,z1,extra=[]) => {
+    const holes=entryLeaves.filter(d=>d.z>=z0-.1-RV.pocket&&d.z<z1+.1+RV.pocket&&d.pane.x1>x0&&d.pane.x0<x1&&d.pane.y1>y0&&d.pane.y0<y1).map(d=>({x0:d.x0,x1:d.x1,y0:d.y0,y1:d.y0+d.height}));
+    return complement(x0,x1,y0,y1,[...holes,...extra]).map(([a,b,c,d])=>boxGeo(a,b,c,d,z0,z1));
   };
   const eps = 0.006;
+  // #1076: the façade windows sit back in a reveal (HUS_L_REVEAL). Doors (the green entries with the light over them,
+  // patio and terrace doors) stay where they were: only windows are set back.
+  const isDoor = (o, northSide) => !!o.door || (northSide && o.y0 < .05 && o.y1 > 2)
+    || (!northSide && o.y1 - o.y0 > DOOR_HEIGHT && [1, 2, 3, 4].some((st) => Math.abs(o.y0 - storeyFloor(st)) < O.floorTolerance));
+  const recessed = (o, northSide) => !o.flush && !isDoor(o, northSide);
+  /** The reveal of opening `o` from the façade face `zFace` to the frame's outer face `zFrame`: jambs and head in the
+   * façade's own skin (brick or render), a sheet-metal sill flashing over the bottom up to `zFlash` (`inset`: inside L1007's
+   * wall faces). */
+  const reveal = (o, zFace, zFrame, northSide, skin, inset = 0, zFlash = zFrame) => {
+    const za = Math.min(zFace, zFrame), zb = Math.max(zFace, zFrame), L = RV.sill, out = zFace + (northSide ? -1 : 1) * L.out;
+    skin.push(quadX(za, zb, o.y0, o.y1, o.x0 + inset, false), quadX(za, zb, o.y0, o.y1, o.x1 - inset, true), quadY(o.x0, o.x1, za, zb, o.y1 - inset, true));
+    flashings.push(boxGeo(o.x0 - L.ear, o.x1 + L.ear, o.y0 - L.drop, o.y0 + L.rise, Math.min(zFlash, out), Math.max(zFlash, out)));
+  };
+  /** A neighbour's simplified mass x0…x1 × y0…y1 × z0…z1 (z0 the street side) with its set-back windows' reveal pockets
+   * (`north` / `south`: the façade openings on either side) left open to the frames' back faces (#1076). */
+  const mass = (x0, x1, y0, y1, z0, z1, north = [], south = []) => {
+    const m = RV.margin, P = RV.pocket;
+    const pick = (list, northSide) => list.filter((o) => recessed(o, northSide) && o.x1 > x0 && o.x0 < x1 && o.y1 > y0 && o.y0 < y1)
+      .map((o) => ({ x0: o.x0 - m, x1: o.x1 + m, y0: o.y0 - m, y1: o.y1 + m }));
+    const n = pick(north, true), s = pick(south, false), za = n.length ? z0 + P : z0, zb = s.length ? z1 - P : z1;
+    return [...entrySolid(x0, x1, y0, y1, za, zb), ...(n.length ? entrySolid(x0, x1, y0, y1, z0, za, n) : []), ...(s.length ? entrySolid(x0, x1, y0, y1, zb, z1, s) : [])];
+  };
 
   // the units along x: west row | core | east row (ours: ox = 0); each neighbour spans its own façade strip
   const { units, core: [coreX0, coreX1], xw, xe } = husLLayout(W);
 
-  const fakeWindow = (o, z, northSide, glassOut = glassGeo) => {
+  const fakeWindow = (o, zFace, northSide, glassOut = glassGeo, skin = bricks) => {
     if(northSide && o.y0 < .05 && o.y1 > 2) {
       const height=DOOR_HEIGHT-DOOR_TRIM.gap;
-      staticEntry(o.x0+.01,o.x1-.01,o.y0,height,z);
-      fakeWindow({...o,y0:o.y0+height},z,northSide,glassOut);return;
+      staticEntry(o.x0+.01,o.x1-.01,o.y0,height,zFace);
+      fakeWindow({...o,y0:o.y0+height,flush:true},zFace,northSide,glassOut,skin);return;
     }
     const sign=northSide?-1:1,f=O.frame,d=O.depth/2;
     const floor=[1,2,3,4].map(storeyFloor).find(y=>Math.abs(o.y0-y)<O.floorTolerance);
     const door=!northSide&&floor!==undefined&&o.y1-o.y0>DOOR_HEIGHT;
+    // a window: back in its reveal, its frame in L1007's frame plane (#1076); a door stays in the façade's face
+    const back=recessed(o,northSide),z=back?zFace-sign*(RV.frame+eps):zFace;
+    if(back) reveal(o,zFace,z+sign*RV.frameHalf,northSide,skin);
     const record={...o,z,north:northSide,kind:door?'patio':'window',panes:[]};neighborOpenings.push(record);
     frames.push(boxGeo(o.x0,o.x1,o.y0,o.y0+f,z-d,z+d),boxGeo(o.x0,o.x1,o.y1-f,o.y1,z-d,z+d),boxGeo(o.x0,o.x0+f,o.y0,o.y1,z-d,z+d),boxGeo(o.x1-f,o.x1,o.y0,o.y1,z-d,z+d));
     const pane=(a,b,lo,hi,zp)=>{
@@ -265,8 +291,14 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     const ours = Math.abs(ox) < 1e-6, real = ours || visited(lower);
     facade(bricks, ux0, ux1, 0, roofTop, -eps, true, shift(northOf(ox), ox, 0), !real);
     facade(bricks, ux0, ux1, 0, roofTop, D + eps, false, shift(south, ox, 0), !real);
+    if (real) { // L1007's / a visited flat's own windows (#1076): brick reveals into world.js's frames, with their flashings
+      // (to the frame's back face: what reaches into the frame is hidden in it; the flashing stops at its middle, clear of the room side)
+      const zf = RV.frame + RV.frameHalf, I = RV.inset;
+      shift(northOf(ox), ox, 0).filter((o) => o.win).forEach((o) => reveal(o, -eps, zf, true, bricks, I, RV.frame));
+      shift(south, ox, 0).filter((o) => o.win).forEach((o) => reveal(o, D + eps, D - zf, false, bricks, I, D - RV.frame));
+    }
     if (ours) continue;
-    if (!real) solids.push(...entrySolid(ux0 + 0.001, ux1 - 0.001, 0, roofTop, 0, D));
+    if (!real) solids.push(...mass(ux0 + 0.001, ux1 - 0.001, 0, roofTop, 0, D, shift(northOf(ox), ox, 0), shift(south, ox, 0)));
     // the neighbours' patios: same slab, hedge and screen walls as ours (within their own strip: no overlap with ours)
     if (site.patio) { // slab paving like ours: UVs in metres (x, z)
       const pg = boxGeo(Math.max(ux0, ox + site.patio.x0), Math.min(ux1, ox + site.patio.x1), -0.01, 0.0, D, site.patio.z1);
@@ -329,7 +361,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
       for(const [a,b,c,d] of complement(CORE.x1+g,coreX1,0,D,holes))solids.push(boxGeo(a,b,ya,yb,c,d));
     }
     // Whole core over the actual 3 m portik ceiling; upper-storey structure is unchanged.
-    solids.push(boxGeo(CORE.x1+g,coreX1,ph,roofTop,0,D));
+    solids.push(...mass(CORE.x1+g,coreX1,ph,roofTop,0,D,l1101Wins,courtWins)); // (#1076: the windows' reveal pockets)
     for(const [ax,az,bx,bz] of PP.segments) {
       if(ax===bx){const sign=PP.contains(ax+.001,(az+bz)/2)?1:-1;bricks.push(quadX(az,bz,0,ph,ax+sign*eps,false))}
       else {const sign=PP.contains((ax+bx)/2,az+.001)?1:-1;bricks.push(quadZ(ax,bx,0,ph,az+sign*eps,false))}
@@ -343,7 +375,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     group.userData.portik=PP;
     // (a visited flat west of the core, #574: the mass starts at its outer face, not inside its party wall)
     const westFace = Math.max(coreX0, ...units.filter((u) => visited(u.lower) && u.ox + W > coreX0 - 0.5 && u.ox < coreX0).map((u) => u.ox + W));
-    solids.push(boxGeo(westFace, CORE.x0 - g, 0, roofTop, 0, D),
+    solids.push(...mass(westFace, CORE.x0 - g, 0, roofTop, 0, D, l1101Wins, courtWins),
       // solids in the stairwell north wall around the two windows (#457, #470)
       boxGeo(CORE.x0, CORE.x1, 0, win1.y0 - g, 0, nz),
       boxGeo(CORE.x0, win1.x0 - g, win1.y0, win1.y1, 0, nz), boxGeo(win1.x1 + g, CORE.x1, win1.y0, win1.y1, 0, nz),
@@ -363,7 +395,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   const isLit = () => ((seed = (seed * 16807) % 2147483647) / 2147483647) < C.lit;
   const open = (list, ox, base) => list.map((o) => ({ x0: ox + o.x0, x1: ox + o.x1, y0: base + o.sill, y1: base + o.head }));
   /** Courtyard window/door: glass + frame, a share of them lit at night (litGlass). */
-  const courtWindow = (o, z) => fakeWindow(o, z, false, isLit() ? litGlass : glassGeo);
+  const courtWindow = (o, z, skin = bricks) => fakeWindow(o, z, false, isLit() ? litGlass : glassGeo, skin);
   const S = H.street;
   /** An upper flat's street openings (HUS_L.street, #347): its own type's list, its flat-internal floor index mapped
    * to the building storey (storeyFloor, VERTICAL #344), x from the flat's west outer face `west` (L1205's entrance floor: from `east` − 5.75). */
@@ -381,7 +413,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     const real = visited(id); // a flat you can walk into (#573): its openings stay open, its rooms are world.js's
     facade(renders, x0, x1, roofTop, upperTop, loftD - eps, true, holes, false);
     for (const o of holes) {
-      if (!o.door) { if (!real) fakeWindow(o, loftD - eps, true); continue; }
+      if (!o.door) { if (!real) fakeWindow(o, loftD - eps, true, glassGeo, renders); else reveal(o, loftD - eps, loftD + RV.frame + RV.frameHalf, true, renders, RV.inset, loftD + RV.frame); continue; }
       if (o.hole) continue;
       // the entrance (#111): set back, a green door with a small thin high pane, render reveals, a lantern beside it
       const zr = loftD + Lf.recess;
@@ -395,14 +427,16 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     const low = core ? open(C.core.lower, x1 + H.wall - C.core.lowerW, roofTop) : open(C.lower, ox, roofTop);
     facade(bricks, x0, x1, roofTop, par, D + eps, false, low, false);
     if (!real) low.forEach((o) => courtWindow(o, D + eps));
-    if (real) { /* (#573) its rooms are world.js's */ } else if (core) solids.push(...entrySolid(x0 + 0.001, CORE.x0 - 0.03, roofTop, y3, loftD, D), ...entrySolid(CORE.x1 + 0.03, x1 - 0.001, roofTop, y3, loftD, D), boxGeo(CORE.x0, CORE.x1, roofTop + 2.68, y3, loftD, D)); // (the stairwell's top storey, #415)
-    else solids.push(...entrySolid(x0 + 0.001, x1 - 0.001, roofTop, y3, loftD, D));
+    else low.filter((o) => recessed(o, false)).forEach((o) => reveal(o, D + eps, D - RV.frame - RV.frameHalf - RV.visitGap, false, bricks, RV.inset, D - RV.frame)); // (#1076; a visited flat's own frames)
+    if (real) { /* (#573) its rooms are world.js's */ } else if (core) solids.push(...mass(x0 + 0.001, CORE.x0 - 0.03, roofTop, y3, loftD, D, holes, low), ...mass(CORE.x1 + 0.03, x1 - 0.001, roofTop, y3, loftD, D, holes, low), boxGeo(CORE.x0, CORE.x1, roofTop + 2.68, y3, loftD, D)); // (the stairwell's top storey, #415)
+    else solids.push(...mass(x0 + 0.001, x1 - 0.001, roofTop, y3, loftD, D, holes, low));
     // våning 4, set back behind the terrace: white render with the window and the terrace door
     // the terrace door's threshold sits on the finished deck (#350)
     const ta = core ? loftX1 : x0, up = (core ? open(C.core.upper, coreW, y3) : open(C.upper, ox, y3)).map((o) => ({ ...o, y0: Math.max(o.y0, deckY) }));
     facade(renders, ta, x1, y3, upperTop, zs + eps, false, up, false);
-    if (!real) up.forEach((o) => courtWindow(o, zs + eps));
-    if (!real) solids.push(boxGeo(x0 + 0.001, x1 - 0.001, y3, upperTop, loftD, zs));
+    if (!real) up.forEach((o) => courtWindow(o, zs + eps, renders));
+    else up.filter((o) => recessed(o, false)).forEach((o) => reveal(o, zs + eps, zs - RV.frame - RV.frameHalf - RV.visitGap, false, renders, RV.inset, zs - RV.frame));
+    if (!real) solids.push(...mass(x0 + 0.001, x1 - 0.001, y3, upperTop, loftD, zs, holes, up));
     if (!core) continue;
     // L1205's loft over the lift (#337, #349): its courtyard face `face` behind våning 3's (0: flush), in brick, rising
     // `rise` over the roof and reaching `back` north of the set-back line — breaks the terrace row
@@ -413,7 +447,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
       bricks.push(quadX(zs, zf, y3, loftTop, x + (west ? -eps : eps), west), quadX(zt, zs, upperTop, loftTop, x + (west ? -eps : eps), west));
     }
     bricks.push(quadZ(loftX0, loftX1, upperTop, loftTop, zt - eps, true));
-    solids.push(boxGeo(loftX0, loftX1, y3, loftTop, zs, zf), boxGeo(loftX0, loftX1, upperTop, loftTop, zt, zs));
+    solids.push(...mass(loftX0, loftX1, y3, loftTop, zs, zf, [], lw), boxGeo(loftX0, loftX1, upperTop, loftTop, zt, zs));
     roofs.push(boxGeo(loftX0 - 0.03, loftX1 + 0.03, loftTop, loftTop + 0.05, zt - 0.03, zf + 0.03));
   }
   // the roof terraces (#337): a slab deck, the parapet's inner face + coping, a white railing on it (top rail, bottom
@@ -592,7 +626,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   add(glassGeo,glassMaterial,false).name='neighborGlass';
   group.userData.neighborOpenings=neighborOpenings;
   add(rails, new THREE.MeshStandardMaterial({ color: COLORS.balcony, roughness: 0.5, metalness: 0.3 }));
-  add([...fascia, ...capping], new THREE.MeshStandardMaterial({ color: Lf.fascia, roughness: 0.4, metalness: 0.4 }));
+  add([...fascia, ...capping, ...flashings], new THREE.MeshStandardMaterial({ color: Lf.fascia, roughness: 0.4, metalness: 0.4 }));
   const railMesh = add(balc, new THREE.MeshStandardMaterial({ color: Lf.door, roughness: 0.45, metalness: 0.2 }));
   if (railMesh) railMesh.name = 'terraceRails'; // the terraces' railings (tools/terracetest.html)
   group.userData.terraces = { list: terraces, y3, deck: deckY, parapet: par }; // #350
