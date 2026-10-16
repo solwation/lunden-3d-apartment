@@ -7,7 +7,8 @@
 // The front's outdoor light at night (#434): the street lamps' pools on the ground are hidden by day, fade in after
 // dusk with the lamp heads, lie on the ground under each head and fade out again in the morning. #433: a wall light by
 // each of Hus L's eight street-side front doors (on the latch side), its wash on the façade and pool on the ground, the
-// same way; the pools stay outside the house.
+// same way; the pools stay outside the house. #1078: a wall light with a socket by each courtyard patio door (8) and
+// roof-terrace door (9): their washes / pools join the same two meshes after the portik's, and go out in a power cut.
 //   chromium --headless=new --virtual-time-budget=30000 --dump-dom http://localhost:8137/tools/streetlighttest.html
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -28,13 +29,13 @@ async function run() {
   // drive the lights' update the way the loop does (night = 1 − daylight), with real (virtual) time between calls
   // (the loop's own calls get the forced night too)
   const orig = world.windowLights.update.bind(world.windowLights);
-  let forced = 0;
-  world.windowLights.update = (h) => orig(h, forced);
+  let forced = 0, powered = true;
+  world.windowLights.update = (h) => orig(h, forced, powered);
   const run = async (night, secs) => { forced = night; for (let t = 0; t < secs; t += 0.1) { world.windowLights.update(12); await wait(100); } };
   const pools = scene.getObjectByName('streetLampPools');
   const wash = scene.getObjectByName('doorLampWash'), doorPools = scene.getObjectByName('doorLampPools');
   check(!!pools, 'the street lamps\' pools exist');
-  const DL = HUS_L.doorLamp, PL = HUS_L.portikLamp, layout = husLLayout(world.size.x);
+  const DL = HUS_L.doorLamp, PL = HUS_L.portikLamp, PT = HUS_L.patioLamp, PATIO = 8 + 9, layout = husLLayout(world.size.x);
   const frontDoor = world.openings.north.find(o => o.y0 < 0.05 && o.y1 > 2);
   // exterior appends one complete primitive per front door, then the portik parts.
   // Verify each interval's own center/bounds: count alone cannot detect a missing or duplicated door.
@@ -50,8 +51,20 @@ async function run() {
     return { min, max, center: min.map((value, axis) => (value + max[axis]) / 2) };
   };
   check(!!frontDoor && layout.units.length === 8 && new Set(layout.units.map(u => u.lower)).size === 8 &&
-    wp.count === 8 * 6 + PL.z.length * 2 * 6 && dp.count === 8 * frontVertices + PL.z.length * (frontVertices + ceilingVertices),
-    'eight distinct front doors plus separately sized portik geometry intervals');
+    wp.count === 8 * 6 + PL.z.length * 2 * 6 + PATIO * 6 && dp.count === 8 * frontVertices + PL.z.length * (frontVertices + ceilingVertices) + PATIO * frontVertices,
+    'eight distinct front doors plus separately sized portik geometry intervals plus 17 patio/terrace lamps');
+  { // #1078: after the portik, 8 patio lamps (wash on the brick at the courtyard face, pool on the patio) then 9 terraces
+    const D = world.size.z, wash0 = (8 + PL.z.length * 2) * 6, pool0 = 8 * frontVertices + PL.z.length * (frontVertices + ceilingVertices);
+    let ok = true, xs = [];
+    for (let i = 0; i < PATIO; i++) {
+      const wb = bounds(wp, wash0 + i * 6, 6), pb = bounds(dp, pool0 + i * frontVertices, frontVertices), ground = i < 8;
+      xs.push(wb.center[0]);
+      ok &&= near(wb.min[2], wb.max[2]) && near(wb.max[0] - wb.min[0], PT.wash.w) && near(pb.center[0], wb.center[0]) && pb.min[2] > wb.max[2]
+        && (ground ? Math.abs(wb.center[2] - D) < 0.05 && near(wb.center[1], PT.wash.y) : wb.center[2] < D - 1 && wb.center[1] > 8)
+        && (ground ? pb.max[1] < 1 : near(pb.min[1], pb.max[1]) && pb.min[1] > 8);
+    }
+    check(ok && new Set(xs.map((x) => x.toFixed(2))).size === PATIO, 'patio and terrace lamps: one wash and pool each, in front of their own doors');
+  }
   let frontInside = 0, frontGroundError = 0;
   for (const [i, unit] of layout.units.entries()) {
     const x = unit.ox + frontDoor.x1 + DL.dx, wb = bounds(wp, i * 6, 6), pb = bounds(dp, i * frontVertices, frontVertices);
@@ -102,6 +115,11 @@ async function run() {
   await run(0, 2);
   check(!pools.visible, 'in the morning they fade out');
   check(!wash.visible && !doorPools.visible, 'and the door lights too');
+  await run(1, 2.5);
+  powered = false;
+  await run(1, 2.5);
+  check(!wash.visible && !doorPools.visible, 'a power cut puts the door, patio and terrace lights out at night (#604, #1078)');
+  powered = true;
   out.textContent = lines.join('\n') + `\n${pass ? 'ALL PASS' : 'SOME FAILED'}`;
 }
 </script>

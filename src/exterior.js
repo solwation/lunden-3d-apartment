@@ -572,6 +572,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   segments.push(...planting.userData.groundSegments);
   walls.push(...planting.userData.walls);
 
+  const patioGlow = patioLamps({ units, uppers, south, coreW, y3, deckY, zs, D, eps, open, lampBox, lampGlow, frames }); // #1078 (before the frames are merged)
   const add = (geos, material, shadow = true) => {
     if (!geos.length) return;
     const mesh = new THREE.Mesh(mergeGeometries(geos.map((g) => (g.index ? g.toNonIndexed() : g))), material);
@@ -629,6 +630,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
       poolGeometry(pkx, z, 0, 1, PL.pool.ra * 0.7, PL.pool.rb * 0.85, () => pkh, { lift: -0.012, rings: 4, segs: 20 })); // (+ a glow on the ceiling round the disc)
     doorWash.push(washGeometry(pk0 + eps, PL.wash.y, z, 1, 0, PL.wash.w, PL.wash.h), washGeometry(pk1 - eps, PL.wash.y, z, -1, 0, PL.wash.w, PL.wash.h));
   }
+  doorWash.push(...patioGlow.wash); doorPool.push(...patioGlow.pool); // #1078: the patio/terrace lamps light with these (after the front doors and the portik)
   const portikMat = new THREE.MeshBasicMaterial({ color: PL.off, toneMapped: false }), portikLit = new THREE.Color(PL.lit), portikOff = new THREE.Color(PL.off);
   add(portikDiscs, portikMat, false).name = 'portikLamps';
   const glows = doorWash.length ? [[doorWash, DL.wash.peak, THREE.FrontSide], [doorPool, DL.pool.peak, THREE.DoubleSide]].map(([geos, peak, side]) => {
@@ -668,6 +670,41 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   group.add(group.userData.terraceDecor = buildTerraceDecor(group, D)); // #605: the furnished roof terraces (src/terracedecor.js)
   group.add(group.userData.patioDecor = buildPatioDecor({ units, site, xw, xe, D, roofTop })); // #888: furnished ground-floor patios on Hus L's back (src/patiodecor.js)
   return group;
+}
+
+/**
+ * #1078: a wall light with an integrated socket (HUS_L.patioLamp, all guesses) by every courtyard-side patio door of
+ * våning 1 (L1001–L1008, ours too) and every roof-terrace door (L1201–L1209). Pure geometry into the door lights'
+ * existing meshes: housings into `lampBox`, the frosted glass into `lampGlow`, the socket's light cover into `frames`
+ * (the white window frames; so called before those are merged); returns the brick/render washes and the patio/deck
+ * pools for the door lights' `doorWash` / `doorPool` — so no new mesh, material or light; they switch with doorLamp (after dusk, out in a power cut).
+ */
+function patioLamps({ units, uppers, south, coreW, y3, deckY, zs, D, eps, open, lampBox, lampGlow, frames }) {
+  const PL = H.patioLamp, { w: lw, h: lh, d: ld, socket: S } = PL, doorWash = [], doorPool = [];
+  const lamp = (door, x0, x1, z, floorY, ground, depth) => {
+    // east of the door, unless that runs past the strip (then west)
+    let lx = door.x1 + PL.dx;
+    if (lx + lw / 2 + 0.05 > x1) lx = door.x0 - PL.dx;
+    if (lx - lw / 2 - 0.05 < x0) return;
+    const ly = floorY + PL.y, sy1 = ly - lh / 2 - S.gap, sy0 = sy1 - S.h;
+    lampBox.push(boxGeo(lx - lw / 2, lx + lw / 2, ly - lh / 2, ly + lh / 2, z + eps, z + ld), // the body
+      boxGeo(lx - lw / 2 - 0.015, lx + lw / 2 + 0.015, ly + lh / 2, ly + lh / 2 + 0.02, z + eps, z + ld + 0.015), // its cap
+      boxGeo(lx - 0.02, lx + 0.02, sy1, ly - lh / 2, z + eps, z + 0.03), // the stem down to the socket
+      boxGeo(lx - S.w / 2, lx + S.w / 2, sy0, sy1, z + eps, z + S.d)); // the socket's housing
+    lampGlow.push(boxGeo(lx - lw / 2 + 0.015, lx + lw / 2 - 0.015, ly - lh / 2 + 0.02, ly + lh / 2 - 0.02, z + ld - 0.01, z + ld + 0.004));
+    frames.push(boxGeo(lx - S.w / 2 + 0.01, lx + S.w / 2 - 0.01, sy0 + 0.01, sy1 - 0.01, z + S.d, z + S.d + 0.008)); // its hinged cover
+    doorWash.push(washGeometry(lx, floorY + PL.wash.y, z + eps, 0, 1, PL.wash.w, PL.wash.h));
+    const rz = Math.min(PL.pool.rz, depth / 2), cz = z + Math.min(PL.pool.z, depth / 2 + 0.05);
+    doorPool.push(poolGeometry(lx, cz, 1, 0, PL.pool.rx, rz, ground, { rings: 5, segs: 20 }));
+  };
+  const patioDoor = south.find((o) => o.y0 < 0.05 && o.y1 > 2);
+  if (patioDoor) for (const { ox, x0, x1 } of units) lamp({ x0: ox + patioDoor.x0, x1: ox + patioDoor.x1 }, x0, x1, D, 0, groundY, 2 * PL.pool.z);
+  const deck = () => deckY;
+  for (const [x0, x1, ox] of uppers) {
+    const core = ox == null, list = core ? open(H.court.core.upper, coreW, y3) : open(H.court.upper, ox, y3);
+    for (const o of list) if (o.y0 - y3 < 0.05) lamp(o, x0, x1, zs, deckY, deck, D - zs);
+  }
+  return { wash: doorWash, pool: doorPool };
 }
 
 /** HUS_L.gableWindows (#351) with absolute heights: y0 / y1 over their building storey's floor (`floorOf` = config's

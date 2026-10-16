@@ -1369,6 +1369,16 @@ export const HUS_L = {
   // centre `z` in front of the façade, kept short of it) on the ground; no lights (src/groundglow.js)
   doorLamp: { dx: 0.28, y: 1.9, w: 0.12, h: 0.22, d: 0.1, color: 0xffd29a, on: 0.35, off: 0.3, fade: 1.5,
     wash: { w: 2.4, h: 2.6, y: 1.75, peak: 0.26 }, pool: { rx: 2.6, rz: 1.25, z: -1.3, peak: 0.45 } },
+  // #1078: Peab's "utvändig belysningsarmatur med integrerat eluttag vid uteplats, balkong eller terrass" (information
+  // brochure:698–700) by every courtyard-side patio door (L1001–L1008, ours too) and roof-terrace door (L1201–L1209).
+  // Model, side, height and sizes are all *guesses* (no drawing or product named): doorLamp's dark box with a frosted
+  // front, centre `y` m over the door's floor, `dx` m east of the door opening (into the gap before the next window; the
+  // west side if that would leave the unit's strip), `w` × `h` × `d`; under it a `socket` housing (w × h × d, its top
+  // `gap` m under the lamp) with a light hinged cover. Lit with doorLamp (its on / off / fade, colour and peaks): the
+  // glass joins the lanterns' glow, its `wash` and `pool` (radii rx along the façade, rz out, centre `z` out from the
+  // wall; both halved to fit a terrace's depth) join the door lights' two additive meshes (src/exterior.js patioLamps).
+  patioLamp: { dx: 0.28, y: 1.95, w: 0.12, h: 0.2, d: 0.1, socket: { w: 0.09, h: 0.1, d: 0.06, gap: 0.03 },
+    wash: { w: 2.0, h: 2.3, y: 1.8 }, pool: { rx: 2.2, rz: 1.4, z: 1.45 } },
   // #451: the portik's floor is paved like the courtyard walks (patio.js pavingTexture, no snow under the roof) and it
   // has round, flat opal ceiling lamps (guess: `r` m, at `z` along the passage, clear of the stairwell door's z 8.5…9.4),
   // lit with the front-door lights (doorLamp's on / off / fade): the discs glow, a pool on the paving and a wash on both
