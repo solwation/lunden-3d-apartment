@@ -23,6 +23,9 @@ f.onload = async () => {
   const check = (ok, name) => { const s = `${ok ? 'PASS' : 'FAIL'} ${name}`; lines.push(s); out.textContent = lines.join('\n'); return ok; };
   const at = (month, hour, secs = 4) => { day.month = month; day.hour = hour; day.paused = true; for (let i = 0; i < secs * 20; i++) step(0.05); return patio.state; };
   let pass = true, s;
+  // #1081: random overcast (> 0.6) folds the parasol and takes in the cushions (#248), so every season check runs in
+  // forced clear weather; the overcast fold is checked explicitly below
+  w.__app.weather.force = 'clear';
   s = at(7, 15);
   pass &= check(s.parasols[0] === 1 && s.beers[0] && !s.snowman, `July 15:00: parasol up, beers, no snowman ${JSON.stringify(s)}`);
   s = at(7, 23.5);
@@ -33,6 +36,10 @@ f.onload = async () => {
   pass &= check(s.parasols[0] === 0 && !s.beers[0] && s.snowman, `January 13:00: folded, snowman ${JSON.stringify(s)}`);
   s = at(4, 9);
   pass &= check(s.parasols[0] === 1 && !s.beers[0] && !s.snowman, `April 09:00: parasol up, no beers ${JSON.stringify(s)}`);
+  w.__app.weather.force = 'rain';
+  s = at(4, 9);
+  pass &= check(s.parasols[0] === 0 && !s.cushions.some(Boolean), `April 09:00 under rain clouds: parasol folded, cushions in ${JSON.stringify(s)}`);
+  w.__app.weather.force = 'clear';
   // the cushions (#399): on the sofa in July, put away in January and while it rains; F hides them with the sofa
   {
     const { weather } = w.__app;
@@ -50,7 +57,7 @@ f.onload = async () => {
     world.setFurniture(false);
     const hidden = cushs.every((m) => !shown(m));
     world.setFurniture(true);
-    weather.force = null;
+    weather.force = 'clear';
     pass &= check(cushs.length === 3 && july.length === 3 && july.every(Boolean) && !jan.some(Boolean) && !rain.some(Boolean) && before && hidden,
       `cushions: July ${july}, January ${jan}, rain ${rain}, shown ${before}, hidden with F ${hidden}`);
   }
@@ -75,7 +82,7 @@ f.onload = async () => {
     const inJul = stack.visible;
     lid.toggle();
     for (let i = 0; i < 40; i++) step(0.05);
-    w.__app.weather.force = null;
+    w.__app.weather.force = 'clear';
     pass &= check(opened && inJan && !inJul && !lid.isOpen && !lid.contents.visible && clearWall,
       `the lid opens (${opened}), the cushions in the box in January (${inJan}), not in July (${!inJul}), shut again (${!lid.isOpen}), the open lid clear of the screen wall (x ${top.x.toFixed(3)}, pivot ${pivot.x.toFixed(3)})`);
   }
