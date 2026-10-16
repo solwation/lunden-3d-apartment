@@ -1430,9 +1430,10 @@ export function buildSurroundings({ grass }) {
   flat([...[...S.paving, ...S.basementPaving].map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.008)), ...walks], COLORS.paving, SEASON.snow.paving);
   group.add(buildRiverBridges());
   group.add(buildRiverPark(renderedTerrainY,renderedTerrainY));
-  group.add(buildWestBackdrop(renderedTerrainY,{glass:glassMaterial}));
-  group.add(buildEastBackdrop(renderedTerrainY,historicBrick,glassMaterial));
-  group.add(buildNorthBackdrop(renderedTerrainY,historicBrick));
+  const backdrops = [buildWestBackdrop(renderedTerrainY,{glass:glassMaterial}),
+    buildEastBackdrop(renderedTerrainY,historicBrick,glassMaterial), buildNorthBackdrop(renderedTerrainY,historicBrick)];
+  group.add(...backdrops);
+  group.userData.clocks = backdrops.flatMap(b => b.userData.clocks);
   group.add(buildSouthBackdrop(renderedTerrainY));
   // Kv. Lunden's own blocks and the old S:t Lars buildings: own façade texture and roof colour each,
   // plus a white cornice under the old roofs (#47)
@@ -1538,6 +1539,6 @@ export function buildSurroundings({ grass }) {
   group.add(...trees(rng(3)));
   const windows = buildWindowLights(details.list), street = buildStreet(groundY); // street lamps, crossing, curbs … (#128)
   group.add(windows.object, street.object, buildStreetSigns(groundY)); // + street name signs at the junctions (#583)
-  group.userData.windows = { object: windows.object, update(hour, night, power = true) { windows.update(hour, night, power); street.update(night);glassMaterial.envMapIntensity=THREE.MathUtils.lerp(O.reflectionDay,O.reflectionNight,night); } };
+  group.userData.windows = { object: windows.object, update(hour, night, power = true) { for (const b of backdrops) b.userData.updateClocks(hour); windows.update(hour, night, power); street.update(night);glassMaterial.envMapIntensity=THREE.MathUtils.lerp(O.reflectionDay,O.reflectionNight,night); } };
   return group;
 }

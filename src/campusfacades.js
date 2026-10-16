@@ -176,7 +176,7 @@ export function buildCampusFacade(b, p, holes, base, bottom, parts, lite = lowMe
     piece.eave = eave; piece.ridge = eave + R.rise;
   }
   if (S.centre) Object.assign(S, buildCentre(p, base, pieces, eaveOf, S, parts, windows));
-  return { windows, eave: Math.max(...pieces.map(eaveOf)), ridge: Math.max(...pieces.map(q => q.ridge)), pieces: pieces.map(q => ({ name: q.name, levels: q.levels, eave: q.eave, ridge: q.ridge, area: Math.abs(signedArea(q.poly)) })), tower: S.towerTop };
+  return { windows, eave: Math.max(...pieces.map(eaveOf)), ridge: Math.max(...pieces.map(q => q.ridge)), pieces: pieces.map(q => ({ name: q.name, levels: q.levels, eave: q.eave, ridge: q.ridge, area: Math.abs(signedArea(q.poly)) })), tower: S.towerTop, clock: S.clock };
 }
 
 /** A window with frame, opaque reflective glass, sill, crown and glazing bars; t along the edge from a. */
@@ -278,12 +278,8 @@ function buildCentre(p, base, pieces, eaveOf, S, parts, windows) {
   block(T.width + .2, .25, y0 + T.stage + .3, S.trim);
   for (const [dx, dz] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
     const ang = Math.atan2(dx, dz), face = (r, out, color, list) => list.push(tint(plain(new THREE.CircleGeometry(r, S.lite ? 12 : 16).rotateY(ang).translate(tx + dx * (T.width / 2 + out), y0 + T.stage * .55, tz + dz * (T.width / 2 + out))), color));
-    face(T.clock + .12, .02, T.clockRim, parts.modern); face(T.clock, .03, T.clockFace, parts.modern);
-    // Hands at ten past ten, as on the photo's still dials.
-    for (const [len, turn] of [[T.clock * .55, -2.1], [T.clock * .8, .35]]) {
-      const hand = new THREE.PlaneGeometry(.07, len).translate(0, len / 2, 0).rotateZ(turn).rotateY(ang);
-      parts.modern.push(tint(plain(hand.translate(tx + dx * (T.width / 2 + .04), y0 + T.stage * .55, tz + dz * (T.width / 2 + .04))), T.clockRim));
-    }
+    face(T.clock + .12, .02, T.clockRim, parts.modern);
+    // The dial and hands are dynamic TowerClock instances, outside the baked facade batches (#1067).
   }
   // A dark low pyramid roof over the clock stage, under the lantern.
   parts.schoolRoof.push(new THREE.ConeGeometry((T.width + .4) * Math.SQRT1_2, .7, 4, 1, true).rotateY(Math.PI / 4).toNonIndexed().translate(tx, y0 + T.stage + .55 + .35, tz));
@@ -300,5 +296,6 @@ function buildCentre(p, base, pieces, eaveOf, S, parts, windows) {
   const spire = new THREE.CylinderGeometry(.03, .07, T.spire, 6).translate(tx, domeY + .2 + T.dome + T.spire / 2, tz);
   parts.modern.push(tint(plain(spire), T.gilt));
   parts.modern.push(tint(plain(new THREE.SphereGeometry(.14, 8, 6).translate(tx, domeY + .2 + T.dome + T.spire * .3, tz)), T.gilt));
-  return { towerTop: domeY + .2 + T.dome + T.spire };
+  return { towerTop: domeY + .2 + T.dome + T.spire,
+    clock: { x: tx, y: y0 + T.stage * .55, z: tz, width: T.width, radius: T.clock, faceColor: T.clockFace, handColor: T.clockRim } };
 }

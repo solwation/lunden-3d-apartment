@@ -23,6 +23,8 @@ f.onload = async () => {
   let pass = check(Math.abs(day.hour - 7) < 0.05, `starts at 07:00 (${day.clock})`);
   pass &= check(day.month === new Date().getMonth() + 1 && day.date === new Date().getDate(), `today's date (${day.date}/${day.month})`);
   day.paused = true; step(0); day.paused = false; // the hands are set by the loop: make sure one step has run
+  const towerClocks = w.__app.scene.getObjectByName('east-backdrop').userData.clocks;
+  pass &= check(towerClocks.length === 1 && towerClocks.every(c => c.hour === day.hour), 'tower uses the same live time as the kitchen clock');
   // the clock keeps running while the page loads, so compare the hands with the current time
   // (which must still be close to 07:00) instead of demanding exactly 7:00
   const hourAngle = -wallClock.hourHand.rotation.z / (Math.PI * 2) * 12;
@@ -100,6 +102,8 @@ f.onload = async () => {
   const darkDec = day.sunDir.y < 0;
   day.month = 6; step(0);
   pass &= check(darkDec && day.sunDir.y > 0.2, '07:00: dark in December, sun up in June');
+  step(0);
+  pass &= check(towerClocks.every(c => c.hour === day.hour), 'tower stays synchronized after kitchen controls, pause and spooling');
   d.getElementById('clock-close').click();
   pass &= check(panel.hidden && !day.spool, 'strip closes');
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;

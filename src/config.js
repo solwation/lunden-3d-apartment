@@ -4741,6 +4741,14 @@ export const NEIGHBOR_OPENINGS = {frame: .06, depth: .1, sash: .045, sashDepth: 
 export const PLANT_WIND={calm:.025,wetBoost:2,stormBoost:.5,easeSeconds:1.2,sleepThreshold:.00001,
   heightCap:1.5,maxDisplacement:.06,variationMin:.75,variationRange:.4,speedMin:1.1,speedRange:.65};
 
+// Clock tower (#1067): readability proportions/offsets are visual guesses, not surveyed fittings.
+// Clock radius, tower size/position and original face/rim colours remain the existing campus model's.
+export const TOWER_CLOCK = {
+  textureSize: 256, segments: 32, dialOffset: .06, handOffset: .11, handSeparation: .005,
+  hourLength: .56, minuteLength: .84, hourWidth: .18, minuteWidth: .12,
+  tickRadius: .91, tickLength: .17, tickWidth: .045, numeralRadius: .54, numeralSize: .36,
+};
+
 // Startup recovery (#864): generous wall-clock allowance for sliced phone warm-up;
 // optional JSON requests get a shorter budget. Safeguards, not measured device limits.
 export const STARTUP = { dataTimeout: 5000, planTimeout: 15000, dataAttempts: 2, retryDelay: 250, recoveryTimeout: 120000 };

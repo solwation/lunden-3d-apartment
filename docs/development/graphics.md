@@ -354,3 +354,13 @@ static hand-shower fixture, which deliberately does not register water outlets.
 A/B/C core/flat-door models do not build these interactive shower interiors.
 Those static/nonexistent running-water variants are unaffected; no house
 dimensions, fixtures or controls were changed.
+
+
+## Tower clock (#1067)
+
+The Klockhuset clock uses `TowerClock` instances instead of frozen baked hands. Shared256px dial, four cardinal numerals,
+12 strong ticks, wider hour/minute hands and unlit materials preserve contrast at distance/night without increasing
+physical dial size or adding lights. All new ratios/offsets are declared in TOWER_CLOCK as visual assumptions.
+The hands' fixed conservative bounds cover every rotation; neither instanced mesh participates in the small-detail culler.
+The clock adds two draws and144 dynamic triangles, while replacing80 static desktop /64 static phone triangles.
+Isolated flat-ground campus captures:10 draws,71425 desktop /29766 phone triangles. See environment and towerclocktest.

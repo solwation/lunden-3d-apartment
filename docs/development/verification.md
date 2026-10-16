@@ -7002,3 +7002,14 @@ attempt produced no assertion output before being stopped after about two
 minutes (actual CLI 143); kitten/Miele cold starts were not launched. This is
 not a passing full-world regression run. Its runner log and interruption record
 are retained alongside the bounded results.
+
+
+## Tower clock (#1067)
+
+`tools/towerclocktest.cjs BASE OUT` builds the actual east campus and real WallClock/DayCycle/ClockPanel in Chromium/WebGL,
+then checks all four outward hour/minute transforms against the kitchen hands at ten time values, midnight, pause,
+forward/reverse spool and conservative bounds for every hand pose. Identical paused time does not upload a new matrix.
+Desktop and low-memory campus modes both passed. Screenshots from100m south/west at03:00/09:00 and a close dial are
+captured under OUT; desktop close and100m south images were opened for visual inspection. Two instanced clock draws,
+144 triangles; total campus71425/29766 triangles. This is camera-distance verification, not physical-phone FPS evidence.
+The original clock/campus tests also check the actual app's `day.hour` connection, retained building geometry and budgets.

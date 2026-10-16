@@ -20,6 +20,8 @@ Soffan och fåtöljen har mjukt välvda dynor och diskreta kederkanter. I materi
 
 De tre Verona-delarna på uteplatsen har egna tygval för sina fasta sitt- och ryggdynor. Stålstommen och de lösa prydnadsdynorna behåller sitt utseende och sin vanliga väderstyrning.
 
+Klockhusets fyra urtavlor visar samma tid som köksklockan i L1007, även när tiden pausas eller spolas. Tydliga markeringar och visare gör tiden lättare att läsa på håll.
+
 **▶ Öppna: https://solwation.github.io/lunden-3d-apartment/**
 
 På insidan av koppskåpets lucka i köket sitter en **uppdragslapp** med tre olika tillgängliga vardagsuppdrag som slumpas fram för den lokala kalenderdagen. Samma uppdrag och sparade delmål finns kvar hela dagen, även när du kommer tillbaka; klara uppdrag byts inte ut under dagen. Tips går att stänga av. Varje uppdrag har sin egen poängbelöning och belönas högst en gång per dag. När alla tre är klara får du dessutom **15 bonuspoäng, exakt en gång för dagen**. Tomma sopkärl behöver inte tömmas. Soppåsarna lämnas i de tre behållarna längs portikväggen mot lägenheten.

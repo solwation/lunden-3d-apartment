@@ -5,6 +5,7 @@ import { pathStrip, onRoad, onWalk } from './roads.js';
 import { registerSnow } from './seasons.js';
 import { buildSchoolFacade, schoolTextures } from './schoolfacade.js';
 import { buildCampusFacade } from './campusfacades.js';
+import { TowerClock } from './towerclock.js';
 import { buildKarpFacade, karpBrickTexture } from './karpfacade.js';
 const W=SITE.west;
 const shape=poly=>new THREE.Shape(poly.map(([x,z])=>new THREE.Vector2(x,-z)));
@@ -72,5 +73,8 @@ function buildBackdrop(W,key,ground,brick=null,reflectiveGlass=null,karp=null){
  if(parts.schoolBrick){const maps=schoolTextures();mats.schoolBrick=new THREE.MeshStandardMaterial({map:maps.brick,vertexColors:true,roughness:.95,side:THREE.DoubleSide});mats.schoolRoof=new THREE.MeshStandardMaterial({map:maps.roof,roughness:.65,side:THREE.DoubleSide});registerSnow(mats.schoolRoof,SEASON.snow.roof);}
  registerSnow(mats.roof,SEASON.snow.roof);registerSnow(mats.access,SEASON.snow.paving);
  for(const [k,list]of Object.entries(parts)){if(['facade','modern','schoolBrick'].includes(k)||k==='glass'&&brick)for(const g of list)if(!g.attributes.color){const c=new THREE.Color(g.userData.tint??(k==='glass'?W.glass:k==='schoolBrick'?0xffffff:W.facade)),cols=Array.from({length:g.attributes.position.count},()=>[c.r,c.g,c.b]).flat();g.setAttribute('color',new THREE.Float32BufferAttribute(cols,3));}if(!list.length)continue;for(const g of list)if(k==='schoolBrick'||k==='facade'&&brick){const uv=[],a=g.attributes.position,n=g.attributes.normal;for(let i=0;i<a.count;i++)uv.push((Math.abs(n.getX(i))>Math.abs(n.getZ(i))?a.getZ(i):a.getX(i))/2,a.getY(i)/2);g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));}const mesh=new THREE.Mesh(mergeGeometries(list),mats[k]);mesh.name=key+'-'+k;mesh.receiveShadow=true;mesh.castShadow=k!=='access'&&k!=='schoolGlass'&&k!=='karpGlass';group.add(mesh);list.forEach(g=>g.dispose());}
+ const clocks=records.filter(b=>b.clock).map(b=>new TowerClock(b.clock));
+ for(const clock of clocks)group.add(clock.object);
+ group.userData.clocks=clocks;group.userData.updateClocks=hour=>{for(const clock of clocks)clock.update(hour);};
  group.userData.buildings=records;return group;
 }
