@@ -120,7 +120,8 @@ tools/cartest.html     headless test: our parked car — open the driver's / pas
 tools/streetlighttest.html headless test (#434): the street lamps' ground pools hidden by day, lit at night (on the ground),
                        no flicker just under the switching level, out in the morning; #433: eight front-door lights, off by
                        day, lit after dusk, their pools outside the house; #1078: 17 patio/terrace lamps' washes/pools in
-                       the same meshes after the portik's, the Å-husen's loggia lamps, and all of them out in a power cut
+                       the same meshes after the portik's, the Å-husen's loggia lamps, and all of them out in a power cut;
+                       #1092: the front-door and patio washes cut round every façade opening (`userData.parts` per lamp)
 tools/terraintest.html headless test (#346): the courtyard = the reference level, S2's level differences kept, the ramp's
                        ends / the stairs' feet / the garage drive meet their ground, no ground rises past a retaining wall,
                        every plinth reaches the ground, no unguarded step > 5 cm in OUTDOOR (5 cm grid; a stair's riser

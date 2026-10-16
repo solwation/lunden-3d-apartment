@@ -10,6 +10,7 @@
 // same way; the pools stay outside the house. #1078: a wall light with a socket by each courtyard patio door (8) and
 // roof-terrace door (9): their washes / pools join the same two meshes after the portik's, and go out in a power cut;
 // the same fixture by every Å-hus loggia door (A/B/C), its wash / pool kept inside the loggia.
+// #1092: the front-door and patio washes are cut round the façade's openings (light on the brick, not on the glass).
 //   chromium --headless=new --virtual-time-budget=30000 --dump-dom http://localhost:8137/tools/streetlighttest.html
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -44,6 +45,9 @@ async function run() {
   const frontVertices = poolCount(5), ceilingVertices = poolCount(4);
   const wp = wash.geometry.attributes.position, dp = doorPools.geometry.attributes.position;
   const near = (a, b) => Math.abs(a - b) < 1e-4;
+  // #1092: each wash is cut round the façade's openings, so its vertex count varies: the mesh lists them per lamp
+  const parts = wash.userData.parts ?? [], off = parts.map((_, i) => parts.slice(0, i).reduce((a, b) => a + b, 0));
+  const washOf = (i) => bounds(wp, off[i], parts[i]);
   const bounds = (pos, start, count) => {
     const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
     for (let i = start; i < start + count; i++) for (let axis = 0; axis < 3; axis++) {
@@ -52,13 +56,13 @@ async function run() {
     return { min, max, center: min.map((value, axis) => (value + max[axis]) / 2) };
   };
   check(!!frontDoor && layout.units.length === 8 && new Set(layout.units.map(u => u.lower)).size === 8 &&
-    wp.count === 8 * 6 + PL.z.length * 2 * 6 + PATIO * 6 && dp.count === 8 * frontVertices + PL.z.length * (frontVertices + ceilingVertices) + PATIO * frontVertices,
+    parts.length === 8 + PL.z.length * 2 + PATIO && parts.every((n) => n >= 6 && n % 6 === 0) && off.at(-1) + parts.at(-1) === wp.count && dp.count === 8 * frontVertices + PL.z.length * (frontVertices + ceilingVertices) + PATIO * frontVertices,
     'eight distinct front doors plus separately sized portik geometry intervals plus 17 patio/terrace lamps');
   { // #1078: after the portik, 8 patio lamps (wash on the brick at the courtyard face, pool on the patio) then 9 terraces
-    const D = world.size.z, wash0 = (8 + PL.z.length * 2) * 6, pool0 = 8 * frontVertices + PL.z.length * (frontVertices + ceilingVertices);
+    const D = world.size.z, wash0 = 8 + PL.z.length * 2, pool0 = 8 * frontVertices + PL.z.length * (frontVertices + ceilingVertices);
     let ok = true, xs = [];
     for (let i = 0; i < PATIO; i++) {
-      const wb = bounds(wp, wash0 + i * 6, 6), pb = bounds(dp, pool0 + i * frontVertices, frontVertices), ground = i < 8;
+      const wb = washOf(wash0 + i), pb = bounds(dp, pool0 + i * frontVertices, frontVertices), ground = i < 8;
       xs.push(wb.center[0]);
       ok &&= near(wb.min[2], wb.max[2]) && near(wb.max[0] - wb.min[0], PT.wash.w) && near(pb.center[0], wb.center[0]) && pb.min[2] > wb.max[2]
         && (ground ? Math.abs(wb.center[2] - D) < 0.05 && near(wb.center[1], PT.wash.y) : wb.center[2] < D - 1 && wb.center[1] > 8)
@@ -66,9 +70,24 @@ async function run() {
     }
     check(ok && new Set(xs.map((x) => x.toFixed(2))).size === PATIO, 'patio and terrace lamps: one wash and pool each, in front of their own doors');
   }
+  { // #1092: the front-door and patio washes light the brick round the doors and windows, never their glass
+    const last = layout.units.at(-1).ox, holes = (list, north) => layout.units.flatMap((u) => list
+      .filter((o) => !(north && u.ox === last && HUS_L.endUnitNorthHidden.some(([a, b]) => (o.x0 + o.x1) / 2 > a && (o.x0 + o.x1) / 2 < b)))
+      .map((o) => ({ x0: u.ox + o.x0, x1: u.ox + o.x1, y0: o.y0, y1: o.y1 })));
+    const street = holes(world.openings.north, true), court = holes(world.openings.south, false);
+    let clear = true, cut = 0;
+    for (const [i, list] of [...Array(16)].map((_, k) => (k < 8 ? [k, street] : [8 + PL.z.length * 2 + k - 8, court]))) {
+      if (parts[i] > 6) cut++;
+      for (let v = off[i]; v < off[i] + parts[i]; v += 3) {
+        const t = bounds(wp, v, 3);
+        clear &&= !list.some((o) => t.max[0] > o.x0 + 1e-3 && t.min[0] < o.x1 - 1e-3 && t.max[1] > o.y0 + 1e-3 && t.min[1] < o.y1 - 1e-3);
+      }
+    }
+    check(clear && cut === 16, `front-door and patio washes are cut round every façade opening they reach (${cut}/16 cut)`);
+  }
   let frontInside = 0, frontGroundError = 0;
   for (const [i, unit] of layout.units.entries()) {
-    const x = unit.ox + frontDoor.x1 + DL.dx, wb = bounds(wp, i * 6, 6), pb = bounds(dp, i * frontVertices, frontVertices);
+    const x = unit.ox + frontDoor.x1 + DL.dx, wb = washOf(i), pb = bounds(dp, i * frontVertices, frontVertices);
     check(near(wb.center[0], x) && near(wb.center[1], DL.wash.y) && wb.max[2] < -0.01 && near(wb.min[2], wb.max[2]) &&
       near(wb.max[0] - wb.min[0], DL.wash.w) && near(wb.max[1] - wb.min[1], DL.wash.h),
       `${unit.lower}: complete façade wash at its own front door's latch side`);
@@ -84,7 +103,7 @@ async function run() {
   let portikOK = true;
   for (const [i, z] of PL.z.entries()) {
     for (const side of [0, 1]) {
-      const b = bounds(wp, (8 + i * 2 + side) * 6, 6), edge = side ? pk1 : pk0;
+      const b = washOf(8 + i * 2 + side), edge = side ? pk1 : pk0;
       portikOK &&= Math.abs(b.center[0] - edge) < 0.05 && b.center[0] > pk0 && b.center[0] < pk1 && near(b.min[0], b.max[0]) &&
         near(b.center[1], PL.wash.y) && near(b.center[2], z) && near(b.max[2] - b.min[2], PL.wash.w) && near(b.max[1] - b.min[1], PL.wash.h);
     }

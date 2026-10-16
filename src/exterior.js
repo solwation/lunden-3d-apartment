@@ -606,7 +606,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   segments.push(...planting.userData.groundSegments);
   walls.push(...planting.userData.walls);
 
-  const patioGlow = patioLamps({ units, uppers, south, coreW, y3, deckY, zs, D, eps, open, lampBox, lampGlow, frames }); // #1078 (before the frames are merged)
+  const patioGlow = patioLamps({ units, uppers, south, coreW, y3, deckY, zs, D, eps, open, shift, lampBox, lampGlow, frames }); // #1078 (before the frames are merged)
   const add = (geos, material, shadow = true) => {
     if (!geos.length) return;
     const mesh = new THREE.Mesh(mergeGeometries(geos.map((g) => (g.index ? g.toNonIndexed() : g))), material);
@@ -638,11 +638,12 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   // the glass their glow; the façade wash and the ground pool are two additive meshes for the whole row
   const DL = H.doorLamp, frontDoor = north.find((o) => o.y0 < 0.05 && o.y1 > 2);
   const doorWash = [], doorPool = [];
+  const streetHoles = units.flatMap((u) => shift(northOf(u.ox), u.ox, 0)); // #1092: the wash stays off the doors' and windows' glass
   if (frontDoor) for (const { ox } of units) {
     const lx = ox + frontDoor.x1 + DL.dx, { w: lw, h: lh, d: ld, y: ly } = DL;
     lampBox.push(boxGeo(lx - lw / 2, lx + lw / 2, ly - lh / 2, ly + lh / 2, -ld, -eps), boxGeo(lx - lw / 2 - 0.015, lx + lw / 2 + 0.015, ly + lh / 2, ly + lh / 2 + 0.02, -ld - 0.015, -eps));
     lampGlow.push(boxGeo(lx - lw / 2 + 0.015, lx + lw / 2 - 0.015, ly - lh / 2 + 0.02, ly + lh / 2 - 0.02, -ld - 0.004, -ld + 0.01));
-    doorWash.push(washGeometry(lx, DL.wash.y, -eps, 0, -1, DL.wash.w, DL.wash.h));
+    doorWash.push(washGeometry(lx, DL.wash.y, -eps, 0, -1, DL.wash.w, DL.wash.h, undefined, streetHoles));
     doorPool.push(poolGeometry(lx - 0.3, DL.pool.z, 1, 0, DL.pool.rx, DL.pool.rz, groundY, { rings: 5, segs: 20 }));
   }
   // #451: the portik — paved through (UVs in metres like the courtyard walks; its own material, so no snow) and its ceiling
@@ -670,6 +671,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   const glows = doorWash.length ? [[doorWash, DL.wash.peak, THREE.FrontSide], [doorPool, DL.pool.peak, THREE.DoubleSide]].map(([geos, peak, side]) => {
     const m = new THREE.Mesh(mergeGeometries(geos), glowMaterial(DL.color));
     m.material.side = side; m.visible = false; m.renderOrder = 2; m.userData.peak = peak;
+    m.userData.parts = geos.map((g) => g.attributes.position.count); // each lamp's vertex count, in order (#1092: a wash cut round openings has more than 6; tools/streetlighttest.html)
     group.add(m);
     return m;
   }) : [];
@@ -713,9 +715,9 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
  * (the white window frames; so called before those are merged); returns the brick/render washes and the patio/deck
  * pools for the door lights' `doorWash` / `doorPool` — so no new mesh, material or light; they switch with doorLamp (after dusk, out in a power cut).
  */
-function patioLamps({ units, uppers, south, coreW, y3, deckY, zs, D, eps, open, lampBox, lampGlow, frames }) {
+function patioLamps({ units, uppers, south, coreW, y3, deckY, zs, D, eps, open, shift, lampBox, lampGlow, frames }) {
   const PL = H.patioLamp, { w: lw, h: lh, d: ld, socket: S } = PL, doorWash = [], doorPool = [];
-  const lamp = (door, x0, x1, z, floorY, ground, depth) => {
+  const lamp = (door, x0, x1, z, floorY, ground, depth, holes) => {
     // east of the door, unless that runs past the strip (then west)
     let lx = door.x1 + PL.dx;
     if (lx + lw / 2 + 0.05 > x1) lx = door.x0 - PL.dx;
@@ -727,17 +729,18 @@ function patioLamps({ units, uppers, south, coreW, y3, deckY, zs, D, eps, open, 
       boxGeo(lx - S.w / 2, lx + S.w / 2, sy0, sy1, z + eps, z + S.d)); // the socket's housing
     lampGlow.push(boxGeo(lx - lw / 2 + 0.015, lx + lw / 2 - 0.015, ly - lh / 2 + 0.02, ly + lh / 2 - 0.02, z + ld - 0.01, z + ld + 0.004));
     frames.push(boxGeo(lx - S.w / 2 + 0.01, lx + S.w / 2 - 0.01, sy0 + 0.01, sy1 - 0.01, z + S.d, z + S.d + 0.008)); // its hinged cover
-    doorWash.push(washGeometry(lx, floorY + PL.wash.y, z + eps, 0, 1, PL.wash.w, PL.wash.h));
+    doorWash.push(washGeometry(lx, floorY + PL.wash.y, z + eps, 0, 1, PL.wash.w, PL.wash.h, undefined, holes));
     const rz = Math.min(PL.pool.rz, depth / 2), cz = z + Math.min(PL.pool.z, depth / 2 + 0.05);
     doorPool.push(poolGeometry(lx, cz, 1, 0, PL.pool.rx, rz, ground, { rings: 5, segs: 20 }));
   };
   const patioDoor = south.find((o) => o.y0 < 0.05 && o.y1 > 2);
-  if (patioDoor) for (const { ox, x0, x1 } of units) lamp({ x0: ox + patioDoor.x0, x1: ox + patioDoor.x1 }, x0, x1, D, 0, groundY, 2 * PL.pool.z);
-  const deck = () => deckY;
-  for (const [x0, x1, ox] of uppers) {
-    const core = ox == null, list = core ? open(H.court.core.upper, coreW, y3) : open(H.court.upper, ox, y3);
-    for (const o of list) if (o.y0 - y3 < 0.05) lamp(o, x0, x1, zs, deckY, deck, D - zs);
-  }
+  // #1092: each wash leaves out the façade's openings (its own door, the next window, a neighbour's), so it lights the
+  // brick round them and never paints the glass
+  const lowHoles = units.flatMap((u) => shift(south, u.ox, 0));
+  if (patioDoor) for (const { ox, x0, x1 } of units) lamp({ x0: ox + patioDoor.x0, x1: ox + patioDoor.x1 }, x0, x1, D, 0, groundY, 2 * PL.pool.z, lowHoles);
+  const deck = () => deckY, upper = uppers.map(([x0, x1, ox]) => [x0, x1, ox == null ? open(H.court.core.upper, coreW, y3) : open(H.court.upper, ox, y3)]);
+  const upHoles = upper.flatMap(([, , list]) => list);
+  for (const [x0, x1, list] of upper) for (const o of list) if (o.y0 - y3 < 0.05) lamp(o, x0, x1, zs, deckY, deck, D - zs, upHoles);
   return { wash: doorWash, pool: doorPool };
 }
 
