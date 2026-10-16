@@ -6,6 +6,17 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
 
 ## Workflow rules
 
+- **Update the public downstream (user, 2026-10-16).** After changes to buildings, surroundings, fixed fittings,
+  geometry, rendering, performance, navigation, doors, measurement or mobile support, assess and carry over relevant
+  improvements to [solwation/kvarteret-lunden](https://github.com/solwation/kvarteret-lunden) as part of finishing the work.
+  Read its `AGENTS.md` and `docs/upstream.md`; use a separate checkout, review dependencies and transfer only applicable
+  changes. Never blindly merge or copy the full upstream tree/history. Never introduce personal furnishings, drawings,
+  photos, family references, characters, gameplay or Cloudflare integrations/services into the downstream.
+  Record source commit SHAs and verify the affected downstream behaviour before publishing. Report the downstream
+  commit and verification, or explain why the change does not apply. If the initial clean import is not ready, access
+  is unavailable or a transfer is concretely blocked, record the source SHA, affected files and remaining work in
+  a downstream issue (initial import: [#1](https://github.com/solwation/kvarteret-lunden/issues/1)); do not silently drop it
+  or claim synchronization is complete. This is an agent responsibility, not an automatic synchronization service.
 - **Material-library scope (user, 2026-10-14):** #991 covers furniture upholstery/visible furnishing textiles,
   rugs and curtains; hanging towels are also approved. Do not add material editing for garments, wardrobe/cupboard/drawer
   contents, stored textiles/towels or cleaning cloths. #1028/#1030/#1031/#1032/#1033 are cancelled, not prerequisites.
