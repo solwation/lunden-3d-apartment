@@ -31,6 +31,15 @@ material/              screenshots of our choices in Peab's option portal (local
   deep from the façade, because the access balcony (*loftgång*) for the units above runs there.
 - Window sill heights (BH) per window are from bofakta; head heights are estimated from Peab's
   renders (see `WINDOWS`). Windows/exterior doors have a glazed transom; the patio door is glazed.
+- Heating (#1071): water-borne radiators on district heating (SOURCED: info brochure 2024-09-11, Frågor och svar) and the
+  plan legend "R RADIATOR PLACERAS UNDER FÖNSTER OM INTE ANNAT ANGES". Every window gets a white compact panel radiator
+  centred under its window board (world.js `addRadiator`, `RADIATOR` in config: all sizes *guess*): height rounded down in
+  0.1 m steps from the board's underside minus a clearance to 0.15 m over the floor, 80 % of the opening wide, a thermostat
+  valve on the east end and two white pipes into the floor. Ours and the visitable L1004/L1201 share the window loop. Not
+  under a board too low for the 0.3 m minimum (glass to the floor), over a cabinet or over a floor opening (L1201's BH 1.2
+  window over the void). It is in the window frames' material (no extra draw calls; verified 2026-10-16 with identical
+  per-view call counts) and sticks out 6.5 cm, inside the player's wall clearance, so it has no collision; desks, beds and
+  the living-room sofa stand clear of it and the closed curtains' folds touch at most ~1 mm (Sovrum 2/4).
 - Façade: red brick (and some white render) per the brochure. The building is "staplade
   radhus": a two-storey unit sits on top of ours, entered from the loftgång (floor 3).
   Neighbours/upper units in `exterior.js` are simplified copies of our façade.

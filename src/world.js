@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import {
-  LAUNDRY, WARDROBE, LEVELS, UNIT_TOP, SOFFITS, DOOR_HEIGHT, DOOR_TRIM, EXT_DOOR_HEAD, WINDOWS, WINDOW_TOP_HUNG_MAX, BLINDS, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT, TOILET,
+  LAUNDRY, WARDROBE, LEVELS, UNIT_TOP, SOFFITS, DOOR_HEIGHT, DOOR_TRIM, EXT_DOOR_HEAD, WINDOWS, WINDOW_TOP_HUNG_MAX, BLINDS, RADIATOR, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT, TOILET,
   STAIR, COLORS, FENCE_HEIGHT, SITE, OUTDOOR, CABINET_FIXES, KLK, SEASON, FINISH, OPTIONS, EXTRA_WALLS, SLIDE_FLIP, ROOM_RENAMES, EXTRA_ROOMS, ROOM_DIVIDERS, CORE, PORTIK,
   STANDARD, VISIT_UNITS, L1201, HUS_L, storeyFloor,
 } from './config.js';
@@ -423,6 +423,43 @@ function letterFlap(door, plate) {
   return new Openable({ name: 'brevinkastet', object: pivot, mode: 'flap', axis: [0, 0, 1], sign: outX, max: 70, speed: 3 });
 }
 
+/** A white panel radiator under a window board (#1071, RADIATOR): centred on the opening x0..x1, against the inner wall
+ * face `inner` (`s` = +1 / −1: the room is towards +z / −z), its top `under` below the board at `sill`, on the floor `y0`.
+ * Plain meshes in the window frames' white (M.frame) only, so the level's merge bakes them into a batch it already draws
+ * (no extra draw calls, no light: a chrome valve / dark grille cost +4 calls per view). Returns its footprint, or null
+ * where it doesn't fit: the board too low (glass to the floor), or over one of the `avoid` rectangles (cabinets, a floor
+ * opening). */
+function addRadiator(group, M, x0, x1, inner, s, sill, y0, avoid) {
+  const R = RADIATOR, V = R.valve, P = R.pipe, eps = 1e-6;
+  const room = sill - y0 - 0.03 - R.under - R.bottom; // board underside − clearance − floor gap
+  if (room < R.min - eps) return null;
+  const h = Math.min(R.max, Math.floor(room / R.step + eps) * R.step);
+  const w = Math.max(R.step * 4, Math.round(((x1 - x0) * R.width) / R.step) * R.step);
+  const cx = (x0 + x1) / 2, a = cx - w / 2, b = cx + w / 2;
+  const yb = y0 + R.bottom, yt = yb + h;
+  const zb = inner + s * R.gap, zf = inner + s * (R.gap + R.depth); // back / front faces
+  const z = (d) => inner + s * (R.gap + d); // a depth from the back face
+  const foot = { x0: a, x1: b + V.len + V.headLen, z0: Math.min(inner, zf), z1: Math.max(inner, zf) };
+  if (avoid.some((r) => r && foot.x0 < r.x1 && foot.x1 > r.x0 && foot.z0 < r.z1 && foot.z1 > r.z0)) return null;
+  const add = (mesh) => { mesh.castShadow = true; mesh.receiveShadow = true; group.add(mesh); return mesh; };
+  add(box(a, b, zb, z(R.panel), yb, yt, M.frame));                                      // back panel
+  add(box(a, b, z(R.depth - R.panel), zf, yb, yt, M.frame));                            // front panel
+    for (const [u0, u1] of [[a - 0.004, a], [b, b + 0.004]]) add(box(u0, u1, zb, zf, yb, yt, M.frame)); // side covers
+  for (let u = a + 0.02; u < b - 0.01; u += 0.04) add(box(u, u + 0.012, z(R.panel), z(R.depth - R.panel), yt - 0.006, yt, M.frame)); // top grille bars
+  const cyl = (r, len, m) => new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, 16), m);
+  // thermostat valve on the east end: a (white) body out of the end, the head beyond it
+  const vy = yt - V.drop, vz = z(R.depth / 2);
+  const body = add(cyl(V.r, V.len, M.frame)); body.rotation.z = Math.PI / 2; body.position.set(b + V.len / 2, vy, vz);
+  const head = add(cyl(V.head, V.headLen, M.frame)); head.rotation.z = Math.PI / 2; head.position.set(b + V.len + V.headLen / 2, vy, vz);
+  // two white pipes from its underside down into the floor, each with a rosette
+  for (let i = 0; i < 2; i++) {
+    const px = b - P.inset - i * P.spacing;
+    add(cyl(P.r, R.bottom, M.frame)).position.set(px, y0 + R.bottom / 2, vz);
+    add(cyl(P.rosette, 0.006, M.frame)).position.set(px, y0 + 0.003, vz);
+  }
+  return foot;
+}
+
 function buildLevel(floor, li, group, how = OURS) {
   const M = how.mats, std = how.standard; // (a visited flat: the standard finish, none of our choices, #574)
   const L = (how.levels ?? LEVELS)[li], hole = how.hole ?? STAIR.hole; // (a visited flat's own storeys and opening, #573)
@@ -484,6 +521,7 @@ function buildLevel(floor, li, group, how = OURS) {
     group.add(box(r.x0 - 0.02, r.x1 + 0.02, iz0, iz1, sill - 0.03, sill, M.sill ?? M.porcelain)); // (the standard: limestone)
     sills.push({ x0: r.x0, x1: r.x1, z0: Math.min(iz0, iz1), z1: Math.max(iz0, iz1), y: sill, blind: fz - (facade === 'north' ? -1 : 1) * BLINDS.gap, out: facade === 'north' ? -1 : 1 }); // `blind`: the folded pack's plane (#290)
     openings[facade].push({ x0: r.x0, x1: r.x1, y0: sill, y1: head, win: spec }); // `win`: the neighbours copy its parts
+    addRadiator(group, M, r.x0, r.x1, inner, facade === 'north' ? 1 : -1, sill, y0, [...floor.cabinets, li === 1 ? hole : null]); // under the board (#1071)
     segments.push(...rectSegments(pr));
   }
 
