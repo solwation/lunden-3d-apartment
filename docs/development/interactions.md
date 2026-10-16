@@ -23,13 +23,12 @@ The public viewer already supplies this interaction; no downstream import applie
 
 ## Touch action layout (#1057)
 
-`#touch-controls` in the native index groups gameplay controls at the lower right.
-The primary contextual action has a reserved 64px-high row (56px on short landscape);
-jump/crouch stay in the row above it. Equipment uses named grid cells, so enabling
-lives or a jetpack no longer relocates buttons below the top badges. Measure stays
-above crouch; seated Stand gets its own primary-row cell. Action choices replace
-the primary action with two columns and bounded vertical scrolling, retaining full
-labels and every choice. Grid gaps pass through to the existing right-side look
+`#touch-controls` in the native index groups gameplay controls at the lower right
+(current slot layout: [thumb-arc placement (#1089)](#thumb-arc-placement-1089-part-3-of-1082)).
+The primary contextual action has a reserved corner band; jump/crouch stay just above it.
+Equipment uses named slots, so enabling lives or a jetpack never relocates buttons below
+the top badges. Action choices replace the primary action with two columns and bounded
+vertical scrolling, retaining full labels and every choice. Grid gaps pass through to the existing right-side look
 input; buttons retain their original IDs/listeners. Desktop choice placement is unchanged.
 
 [Apple Game controls](https://developer.apple.com/design/human-interface-guidelines/game-controls)
@@ -78,6 +77,25 @@ travelling through a dead overshoot. Drag-to-look accumulates CSS px in `touch.j
 ≈ 94 % after 5 frames, the last 0.01 px at once), and `onLook` scales by `TOUCH.look.sens` (0.005 rad/px, the old value).
 The total turn equals the finger's travel; `smooth: 0` restores raw deltas. No settings UI yet (customisation is #1090).
 `tools/touchlayouttest.cjs` checks dead zone, half-push output, follow and pull-back with native CDP touches.
+
+### Thumb-arc placement (#1089, part 3 of #1082)
+
+The cluster is laid out around a landscape right thumb resting near the lower-right corner (`src/hudicons.css`,
+absolute named slots in a zero-size anchor at `16px + safe area` from the corner, 12 px on short landscape). The primary
+action is a right-anchored pill (`2.5 × button + gap` wide, one row high, 15 px text that wraps) directly under the
+resting thumb. Ring 1 is a short flick up: jump straight above the pill's rounded right end, crouch beside it, and
+seated Stand just left of the pill, raised half a row. Ring 2 continues the arc outwards and down to the left: measure
+above jump, the held item's alternate action (power/ball) above crouch, place-turn above Stand, and a fourth column for
+equipment with jetpack down/up stacked from the bottom and the web shooter above them. Every button keeps its own slot
+whatever else is visible (all 32 equipment masks × seated × choices). Neighbours keep at least the `TOUCH.gap` spacing;
+the space between slots still passes through to look. Action choices take the corner band from the right edge to the
+Stand column (two columns; two rows when there are three or more choices, height-clamped with bounded scrolling, one row
+on short landscape); while they show, the slots above the band and Stand/turn move up by its height, and the equipment
+column stays. At 844×390 the cluster reaches 289 px in from the right edge (66 % across) and 211 px up; on 568×320 with
+44 px insets it stays right of 45 % of the width. `tools/touchlayouttest.cjs` also checks the corner band, the 8 px
+neighbour spacing and the distance order from the resting thumb (jump, then crouch, then the rest). The slot geometry is
+a layout choice from common mobile-FPS practice and the guidance above, not a measured reach study; physical-phone comfort
+remains the acceptance test.
 
 ## Current shared head contract (#974, #893, #894, #979)
 
@@ -603,7 +621,7 @@ Top-right segmented badge (#582, unified by #707): index.html groups furniture, 
   both indoors and outdoors, with continuous speed through doorways. The
   stick's knob turns green while sprinting; footsteps use a longer stride. Moves are sub-stepped (5 cm).
 - Jump (#600, #636): Space / the touch ⤒ button (#jump-btn; hud icon 'jump'), always visible on touch.
-  It sits directly left of crouch in the lower-right cluster; see [Touch action layout (#1057)](#touch-action-layout-1057)
+  It sits straight above the primary pill, right of crouch, nearest the resting thumb; see [thumb-arc placement (#1089)](#thumb-arc-placement-1089-part-3-of-1082)
   for current target sizes, safe-area placement and equipment cells. A press, not a hold. Outdoors and indoors, off the floor, a stair tread, a roof; never with
   the jetpack (its own ⬆), in the stairwell / lift, not while kneeling to pet the cat, not without room to stand. The head stops under the ceiling
   (`ceilingAt`), so an indoor jump with the suit is at most ~1.1 m on Entréplan (RH 3.0), 0.95 m on Övreplan (2.8), 0.65 m under the 2.5 m soffits; the plain jump (#696, `PLAYER.jump` 3.7 m/s ≈ 0.70 m, *guess*) is under every ceiling, so it is never stopped by one (tools/spidersuittest.html measures both apexes).

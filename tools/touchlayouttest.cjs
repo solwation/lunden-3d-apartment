@@ -45,6 +45,18 @@ fs.mkdirSync(out,{recursive:true});
     for(const header of ['score','hud-top','compass','lives'])if(overlaps(r,$(header).getBoundingClientRect()))failures.push('header overlap '+id+'/'+header);
    }
    for(let i=0;i<rects.length;i++)for(let j=i+1;j<rects.length;j++)if(overlaps(rects[i][1],rects[j][1]))failures.push('overlap '+rects[i][0]+'/'+rects[j][0]);
+   // #1089 thumb arc: neighbours keep at least the 8 px gap, the primary band sits in the lower-right corner, and from
+   // the resting thumb (the pill's right end) jump is the nearest button, then crouch, then everything else.
+   const sep=(a,b)=>Math.max(b.left-a.right,a.left-b.right,b.top-a.bottom,a.top-b.bottom);
+   for(let i=0;i<rects.length;i++)for(let j=i+1;j<rects.length;j++)if(sep(rects[i][1],rects[j][1])<7.5)failures.push('too close '+rects[i][0]+'/'+rects[j][0]);
+   const band=(choices?$('choices'):$('action')).getBoundingClientRect();
+   if(width-safe[1]-band.right>16.1||height-safe[3]-band.bottom>16.1)failures.push('primary band not in the corner');
+   if(!choices){
+    const rest=[band.right-band.height/2,band.bottom-band.height/2];
+    const dist=id=>{const r=$(id).getBoundingClientRect();return Math.hypot((r.left+r.right)/2-rest[0],(r.top+r.bottom)/2-rest[1]);};
+    const others=icons.filter(id=>!['jump-btn','crouch-btn'].includes(id)&&!$(id).hidden).map(dist);
+    if(!(dist('jump-btn')<dist('crouch-btn')&&others.every(d=>d>dist('crouch-btn'))))failures.push('thumb order');
+   }
    if(choices){
     for(const b of $('choices').children){const r=b.getBoundingClientRect();if(r.width<48||r.height<48)failures.push('small choice');if(r.height>$('choices').clientHeight+.1)failures.push('choice cannot fit scroll window');}
     $('choices').scrollTop=$('choices').scrollHeight;

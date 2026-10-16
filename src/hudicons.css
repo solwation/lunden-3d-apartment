@@ -112,19 +112,31 @@ body.hud-no-blur #hud #hud-top > .hud-button:active { background: rgba(255,255,2
    informed by Apple game-control guidance and Android's 48dp recommendation.
    CSS pixels are not a measurement of physical dp. See interactions.md.
    #1087: sizes follow the screen's short side (TOUCH in config.js, written by touch.js as
-   --touch-button / --touch-gap); the fallbacks are the old fixed 56/48 px. */
+   --touch-button / --touch-gap); the fallbacks are the old fixed 56/48 px.
+   #1089: a thumb arc. The primary action is a pill in the lower-right corner, where a landscape right
+   thumb rests; jump sits straight above its right end and crouch beside jump (ring 1, a short flick).
+   Less frequent buttons fan out on a second ring that curves down to the left of the pill, so nothing
+   needs a stretch towards the screen centre. Every button has a fixed named slot (enabling equipment
+   never moves another button); the gaps between slots pass through to the right-side look input. */
 #touch-controls { display: contents; }
 body.touch #touch-controls {
   --touch-size: var(--touch-button, 56px); --touch-row: calc(var(--touch-size) + 8px);
+  --tg: var(--touch-gap, 8px); --tu: calc(var(--touch-size) + var(--tg));
+  /* The primary pill, right-anchored: wide enough for two-line labels and two choice columns, narrowed (never below
+     2.5 buttons) so the whole cluster stays inside the right 55 % of a small phone. */
+  --pill-w: clamp(calc(var(--touch-size) * 2.5 + var(--tg)), calc(55vw - var(--sr) - 16px - 2 * var(--touch-size) - 3 * var(--tg) - 8px), calc(var(--touch-size) * 3.25 + var(--tg)));
+  --band: var(--touch-row);                                               /* the corner band: pill or choices */
+  --c0: calc((var(--touch-row) - var(--touch-size)) / 2);                 /* above the pill's rounded right end */
+  --c1: calc(var(--c0) + var(--tu));
+  --c2: calc(var(--pill-w) + var(--tg));                                  /* just left of the pill */
+  --c3: calc(var(--c2) + var(--tu));
+  --r1: calc(var(--band) + var(--tg)); --r2: calc(var(--r1) + var(--tu)); /* rows above the band */
+  --side: calc(var(--touch-row) / 2);                                     /* beside the pill, raised half a pill */
   position: fixed; right: calc(16px + var(--sr)); bottom: calc(16px + var(--sb));
-  display: grid; grid-template-columns: repeat(4, var(--touch-size));
-  grid-template-rows: var(--touch-size) var(--touch-size) minmax(var(--touch-row), auto);
-  gap: var(--touch-gap, 8px); pointer-events: none;
+  display: block; width: 0; height: 0; pointer-events: none;
 }
-/* Reserve the primary action's space even with nothing in reach. */
-body.touch #touch-controls::after { content: ''; grid-column: 1 / -1; grid-row: 3; min-height: var(--touch-row); pointer-events: none; }
 body.touch #touch-controls > button {
-  position: static; inset: auto; width: var(--touch-size); height: var(--touch-size);
+  position: absolute; inset: auto; width: var(--touch-size); height: var(--touch-size);
   min-width: 48px; min-height: 48px; padding: 0; margin: 0; pointer-events: auto;
   border-radius: 50%; touch-action: none; display: grid; place-items: center;
   background: rgba(24,30,36,.52); border-color: rgba(255,255,255,.38);
@@ -137,43 +149,50 @@ body.touch #touch-controls > button .hud-icon { width: calc(var(--touch-size) * 
 body.touch #touch-controls > button.hud-button:active { transform: scale(.93); background: rgba(70,80,88,.82); border-color: #fff; }
 /* Toggled (crouching, measuring): a light face with a dark symbol reads at a glance, day and night. */
 body.touch #touch-controls > button.hud-button:is(.on, [aria-pressed=true]) { background: rgba(255,255,255,.88); color: #18232b; border-color: #fff; box-shadow: 0 2px 10px rgba(0,0,0,.22); }
-body.touch #touch-controls #jet-up { grid-area: 1 / 1; }
-body.touch #touch-controls #web-btn { grid-area: 1 / 2; }
-body.touch #touch-controls #measure-btn { grid-area: 1 / 3; }
-body.touch #touch-controls #turn-btn { grid-area: 1 / 4; }
-body.touch #touch-controls #jet-down { grid-area: 2 / 1; }
-body.touch #touch-controls #jump-btn { grid-area: 2 / 2; }
-body.touch #touch-controls #crouch-btn { grid-area: 2 / 3; }
-body.touch #touch-controls #power-btn { grid-area: 2 / 4; }
+/* Ring 1: the thumb's short flick up from the pill. */
+body.touch #touch-controls #jump-btn { right: var(--c0); bottom: var(--r1); }
+body.touch #touch-controls #crouch-btn { right: var(--c1); bottom: var(--r1); }
 body.touch #touch-controls #stand-btn {
-  grid-area: 3 / 4; width: var(--touch-size); height: var(--touch-row); padding: 4px; border-radius: 16px; font-size: 13px;
+  right: var(--c2); bottom: var(--side); padding: 4px; border-radius: 16px; font-size: 13px;
 }
-/* The primary action: the same neutral glass (#525) as a full pill with a brighter edge, so it reads as the main thing to press. */
+/* Ring 2: further out along the same arc, curving down past the pill's left end. */
+body.touch #touch-controls #measure-btn { right: var(--c0); bottom: var(--r2); }
+body.touch #touch-controls #power-btn { right: var(--c1); bottom: var(--r2); }
+body.touch #touch-controls #turn-btn { right: var(--c2); bottom: calc(var(--side) + var(--tu)); }
+body.touch #touch-controls #jet-down { right: var(--c3); bottom: 0; }
+body.touch #touch-controls #jet-up { right: var(--c3); bottom: var(--tu); }
+body.touch #touch-controls #web-btn { right: var(--c3); bottom: calc(2 * var(--tu)); }
+/* The primary action: the same neutral glass (#525) as a pill with a brighter edge, under the resting thumb. */
 body.touch #touch-controls #action {
-  grid-area: 3 / 1 / 4 / -1; width: 100%; height: var(--touch-row); border-radius: calc(var(--touch-row) / 2);
-  padding: 0 18px; font-size: 17px; white-space: normal; overflow-wrap: anywhere; line-height: 1.2;
+  right: 0; bottom: 0; width: var(--pill-w); height: var(--touch-row); border-radius: calc(var(--touch-row) / 2);
+  padding: 0 14px; font-size: 15px; white-space: normal; overflow-wrap: break-word; line-height: 1.15;
   background: var(--hud-glass); border-color: rgba(255,255,255,.62);
   box-shadow: 0 3px 12px rgba(0,0,0,.22), inset 0 1px rgba(255,255,255,.14); text-shadow: 0 1px 2px rgba(0,0,0,.3);
 }
 body.touch #touch-controls #action.hud-button:active { transform: scale(.97); }
+/* Action choices take the corner band from the right edge to the stand column, two columns with bounded
+   scrolling; the slots above the band (and stand/turn beside it) move up by the band's extra height. */
+body.touch #touch-controls:has(#choices:not([hidden])) { --side: var(--r1); }
+body.touch #touch-controls:has(#choices:not([hidden]) > button:nth-of-type(3)) {
+  --band: clamp(var(--touch-row), calc(100dvh - 4 * var(--touch-size) - 2 * var(--tg) - 20px - var(--st) - var(--sb)), calc(2 * var(--touch-size) + var(--tg)));
+}
 body.touch #touch-controls #choices {
-  position: static; inset: auto; transform: none; grid-area: 3 / 1 / 4 / -1;
-  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch;
-  max-height: clamp(var(--touch-row), calc(100dvh - 4 * var(--touch-size) - 36px - var(--st) - var(--sb)), calc(2 * var(--touch-size)));
+  position: absolute; inset: auto; right: 0; bottom: 0; transform: none;
+  width: calc(var(--c2) + var(--touch-size)); height: var(--band); box-sizing: border-box;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: minmax(var(--touch-size), auto); align-items: stretch;
   overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y;
-  width: 100%; padding: 0; gap: 8px; pointer-events: auto;
+  padding: 0; gap: 8px; pointer-events: auto;
 }
 body.touch #touch-controls #choices[hidden] { display: none; }
 body.touch #touch-controls #choices button {
   min-height: var(--touch-size); min-width: 48px; box-sizing: border-box; padding: 8px; margin: 0; border-radius: 16px;
-  font-size: 14px; white-space: normal; overflow-wrap: anywhere; line-height: 1.2;
+  font-size: 14px; white-space: normal; overflow-wrap: break-word; line-height: 1.2;
   touch-action: pan-y;
 }
-body.touch #touch-controls:has(#stand-btn:not([hidden])) :is(#action, #choices) { grid-column-end: 4; }
-/* Short landscape keeps equipment below the lives and leaves the left half free. */
+/* Short landscape: a slightly tighter corner. */
 @media (max-height: 375px) {
-  body.touch #touch-controls { --touch-size: var(--touch-button, 48px); bottom: calc(12px + var(--sb)); }
-  body.touch #touch-controls #choices { max-height: var(--touch-row); }
+  body.touch #touch-controls { --touch-size: var(--touch-button, 48px); bottom: calc(12px + var(--sb)); right: calc(12px + var(--sr)); }
+  body.touch #touch-controls:has(#choices:not([hidden]) > button:nth-of-type(3)) { --band: var(--touch-row); }
   body.touch #touch-controls #choices button { font-size: 13px; padding: 4px; }
 }
 /* #1087: one calm glass family for the walking stick and the right-thumb cluster. touch.js writes the
