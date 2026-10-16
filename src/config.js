@@ -4842,6 +4842,24 @@ export const NEIGHBOR_OPENINGS = {frame: .06, depth: .1, sash: .045, sashDepth: 
 export const HUS_L_REVEAL = { frame: 0.1, frameHalf: 0.05, pocket: 0.15, margin: 0.01, inset: 0.002, visitGap: 0.03,
   sill: { out: 0.045, drop: 0.035, rise: 0.012, ear: 0.02 } };
 
+// #1077: Hus L's downpipes (exterior.js downpipes). Peab's courtyard illustration (docs/peab/hus-l-gardsfasad-illustration.png,
+// not dimensioned) shows dark pipes in the seams between the brick volumes and beside the core's raised part; nothing on the
+// street side is drawn. Every number here is a *guess*: pipe radius `r`, axis `standoff` m out from the brick, `sides`;
+// each pipe stands `offset` m from its seam (the strip boundary between two flats: `between`, 'core' for the stair core)
+// on `side` (−1 west, +1 east; clear of the patio screen walls on the party lines); `loft`: `loftOffset` m beside the east
+// wall of L1205's loft over the lift (#349), from its roof down. Street pipes drain the loftgång deck (from under its fascia), the
+// courtyard ones the roof terraces (a rainwater head `head` under the parapet's coping); clips every `clip` m; at the
+// ground a `shoe` (utkastare) bends `out` m away from the wall over its last `h` m. A pipe closer than `clear` m to a
+// window, door, portik, wall light or entrance pot is left out (a console warning). They join the wall lights' dark housing mesh
+// (no extra draw call); collision: a thin box round the foot only.
+export const HUS_L_DOWNPIPES = {
+  r: 0.05, standoff: 0.1, sides: 8, offset: 0.3, loftOffset: 0.12, clear: 0.12, clip: 1.8,
+  head: { w: 0.24, h: 0.22, d: 0.2 }, shoe: { h: 0.3, out: 0.22 },
+  street: [{ between: ['L1002', 'L1003'], side: -1 }, { between: ['L1004', 'core'], side: -1 }, { between: ['core', 'L1005'], side: -1 },
+    { between: ['L1006', 'L1007'], side: -1 }],
+  court: [{ between: ['L1002', 'L1003'], side: -1 }, { loft: true, side: 1 }, { between: ['L1006', 'L1007'], side: -1 }],
+};
+
 // #518: visual animation assumptions, not measured weather. Metres of foliage height scale the sway;
 // opening progress gates wind, rain/snow/hail strengthen it; easing prevents abrupt changes.
 export const PLANT_WIND={calm:.025,wetBoost:2,stormBoost:.5,easeSeconds:1.2,sleepThreshold:.00001,

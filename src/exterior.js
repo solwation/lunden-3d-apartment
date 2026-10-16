@@ -1,7 +1,7 @@
 import { neighborGlass } from './neighborglass.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { HUS_L as H, HUS_L_REVEAL as RV, NEIGHBOR_OPENINGS as O, COLORS, FENCE_HEIGHT, SEASON, VERTICAL, storeyFloor, CORE, DOOR_HEIGHT, DOOR_TRIM } from './config.js';
+import { HUS_L as H, HUS_L_REVEAL as RV, HUS_L_DOWNPIPES as DP, ENTRANCE_PLANTS as EP, NEIGHBOR_OPENINGS as O, COLORS, FENCE_HEIGHT, SEASON, VERTICAL, storeyFloor, CORE, DOOR_HEIGHT, DOOR_TRIM } from './config.js';
 import { registerSnow } from './seasons.js';
 import { entryParts, entryMaterials, entryHandleParts } from './entrancedoor.js';
 import { wallLine, wallRect } from './roofs.js';
@@ -606,7 +606,15 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   segments.push(...planting.userData.groundSegments);
   walls.push(...planting.userData.walls);
 
+<<<<<<< HEAD
   const patioGlow = patioLamps({ units, uppers, south, coreW, y3, deckY, zs, D, eps, open, shift, lampBox, lampGlow, frames }); // #1078 (before the frames are merged)
+=======
+  const patioGlow = patioLamps({ units, uppers, south, coreW, y3, deckY, zs, D, eps, open, lampBox, lampGlow, frames }); // #1078 (before the frames are merged)
+  { // #1077: the downpipes join the wall lights' housings (one mesh); a thin collision box round each foot
+    const dp = downpipes({ units, core: [coreX0, coreX1], loftX1, loftTop, roofTop, par, D, north, south, northOf, open });
+    lampBox.push(...dp.geos); segments.push(...dp.segments);
+  }
+>>>>>>> c3422e3 (Add downpipes to Hus L's street and courtyard façades)
   const add = (geos, material, shadow = true) => {
     if (!geos.length) return;
     const mesh = new THREE.Mesh(mergeGeometries(geos.map((g) => (g.index ? g.toNonIndexed() : g))), material);
@@ -742,6 +750,58 @@ function patioLamps({ units, uppers, south, coreW, y3, deckY, zs, D, eps, open, 
   const upHoles = upper.flatMap(([, , list]) => list);
   for (const [x0, x1, list] of upper) for (const o of list) if (o.y0 - y3 < 0.05) lamp(o, x0, x1, zs, deckY, deck, D - zs, upHoles);
   return { wash: doorWash, pool: doorPool };
+}
+
+/**
+ * #1077: Hus L's downpipes (HUS_L_DOWNPIPES, all *guesses* after Peab's courtyard illustration): round pipes standing off the
+ * brick in the seams between the flats (and beside the loft over the core), each with clips, a rainwater head at the top
+ * and a shoe bending out at the foot. Street pipes hang under the loftgång's fascia, courtyard ones under the terraces'
+ * coping (the loft's from its roof). Pure geometry (non-indexed, for the wall lights' housing mesh) + collision segments.
+ * A pipe that would come within `clear` of a window, door, portik, wall light or entrance pot on its façade is left out (warned).
+ */
+function downpipes({ units, core: [cx0, cx1], loftX1, loftTop, roofTop, par, D, north, south, northOf, open }) {
+  const geos = [], segments = [], { r, standoff: so, sides, offset, clear } = DP;
+  const unit = (id) => units.find((u) => u.lower === id);
+  const seam = ([a, b]) => (b === 'core' ? cx0 : a === 'core' ? cx1 : unit(a).x1);
+  // what must stay clear on each façade (x ranges, any height): openings, wall lights, the stair core's holes
+  const cw = CORE.window.x, y2 = storeyFloor(2), DL = H.doorLamp, PL = H.patioLamp, C = H.court;
+  const frontDoor = north.find((o) => o.y0 < 0.05 && o.y1 > 2), patioDoor = south.find((o) => o.y0 < 0.05 && o.y1 > 2);
+  const portik = H.core.portik.map((p) => cx0 + p);
+  const streetBusy = [...units.flatMap((u) => [...northOf(u.ox).map((o) => [u.ox + o.x0, u.ox + o.x1]),
+    ...(frontDoor ? [[u.ox + frontDoor.x1 + DL.dx - DL.w / 2, u.ox + frontDoor.x1 + DL.dx + DL.w / 2],
+      ...[u.ox + frontDoor.x0 - EP.doorGap, u.ox + frontDoor.x1 + EP.doorGap].map((x) => [x - EP.foliageRadius, x + EP.foliageRadius])] : [])]), // (+ the entrance pots, #498)
+    portik, cw, ...(H.core.l1101 ?? []).map((o) => [cx0 + o.x0, cx0 + o.x1])];
+  const courtBusy = [...units.flatMap((u) => [...south.map((o) => [u.ox + o.x0, u.ox + o.x1]),
+    ...open(C.lower, u.ox, roofTop).map((o) => [o.x0, o.x1]),
+    ...(patioDoor ? [[u.ox + patioDoor.x1 + PL.dx - PL.w / 2, u.ox + patioDoor.x1 + PL.dx + PL.w / 2], [u.ox + patioDoor.x0 - PL.dx - PL.w / 2, u.ox + patioDoor.x0 - PL.dx + PL.w / 2]] : []),
+    [u.x0 - 0.03, u.x0 + 0.03], [u.x1 - 0.03, u.x1 + 0.03]]), // (+ the screen walls on the party lines)
+    portik, [cx0 + 1.0, cx0 + 2.2], [cx0 + 6.4, cx0 + 7.6], // the core's courtyard windows (buildExterior courtWin)
+    ...open(C.core.lower, cx1 + H.wall - C.core.lowerW, roofTop).map((o) => [o.x0, o.x1])];
+  const between = (a, b) => { // a cylinder from point a to point b
+    const A = new THREE.Vector3(...a), B = new THREE.Vector3(...b), d = B.clone().sub(A), L = d.length();
+    const g = new THREE.CylinderGeometry(r, r, L, sides, 1, true);
+    g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize()));
+    return g.translate((A.x + B.x) / 2, (A.y + B.y) / 2, (A.z + B.z) / 2);
+  };
+  const pipe = (x, wallZ, out, top) => { // out: −1 the street (−z), +1 the courtyard
+    const z = wallZ + out * so, gy = groundY(x, z + out * DP.shoe.out), yb = gy + DP.shoe.h, { w, h, d } = DP.head;
+    geos.push(between([x, yb, z], [x, top - h, z]), // the pipe, from the shoe up to the head
+      between([x, yb + 0.02, z], [x, gy + 0.06, z + out * DP.shoe.out]), // the shoe, bending out
+      boxGeo(x - w / 2, x + w / 2, top - h, top, Math.min(wallZ, z + out * d / 2), Math.max(wallZ, z + out * d / 2))); // the rainwater head
+    for (let y = yb + 0.6; y < top - h - 0.3; y += DP.clip) geos.push(boxGeo(x - 0.012, x + 0.012, y, y + 0.03, Math.min(wallZ, z), Math.max(wallZ, z)), // a clip: its strap …
+      boxGeo(x - r - 0.008, x + r + 0.008, y, y + 0.03, z - r - 0.008, z + r + 0.008)); // … round the pipe
+    const za = Math.min(wallZ, z + out * (r + 0.02)), zb = Math.max(wallZ, z + out * (r + 0.02)), xa = x - r - 0.02, xb = x + r + 0.02;
+    segments.push([xa, za, xb, za], [xb, za, xb, zb], [xb, zb, xa, zb], [xa, zb, xa, za]);
+  };
+  const place = (spec, busy, label) => {
+    const x = (spec.loft ? loftX1 : seam(spec.between)) + spec.side * (spec.loft ? DP.loftOffset : offset);
+    const hit = busy.find(([a, b]) => x + r + clear > a && x - r - clear < b);
+    if (hit) { console.warn(`#1077: downpipe ${label} ${spec.loft ? 'loft' : spec.between.join('|')} at x ${x.toFixed(2)} clashes with ${hit.map((v) => v.toFixed(2))}; left out`); return null; }
+    return x;
+  };
+  for (const s of DP.street) { const x = place(s, streetBusy, 'street'); if (x != null) pipe(x, 0, -1, roofTop - 0.28); } // (under the fascia)
+  for (const s of DP.court) { const x = place(s, courtBusy, 'court'); if (x != null) pipe(x, D, 1, s.loft ? loftTop - 0.02 : par - 0.005, 'court'); }
+  return { geos: geos.map((g) => (g.index ? g.toNonIndexed() : g)), segments };
 }
 
 /** HUS_L.gableWindows (#351) with absolute heights: y0 / y1 over their building storey's floor (`floorOf` = config's
