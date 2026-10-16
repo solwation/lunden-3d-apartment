@@ -29,7 +29,7 @@ import { patioHedgeMaterial } from './patiohedge.js';
 import { mirrorLamps, looseItems as interiorLoose, buildInterior, buildElCabinet, cupSurfaces, cupCabinet } from './interior.js';
 import { Toilet } from './toilet.js';
 import { RoomMap } from './rooms.js';
-import { buildAO } from './ao.js';
+import { buildAO, buildWallAO, rectPts } from './ao.js';
 import { buildSurroundings, terrainNorth } from './surroundings.js';
 import { addDoorSigns, namePlate } from './signs.js';
 import { wardrobeFill, personFor } from './stuff.js';
@@ -475,7 +475,9 @@ function buildLevel(floor, li, group, how = OURS) {
   const wallBoxes = walls.map((w) => bboxOf(w.outer));
   const wallSegments = []; // walls only: line of sight for E (main.js)
   const wallRects = []; // the full-height rectangular walls: what hides the inside from the street (DetailCuller, #695)
+  const aoPieces = [], aoBlockers = []; // wall solids and plan blockers for the wall AO (#1074)
   for (const w of walls) {
+    if (!w.half) { aoPieces.push({ pts: w.outer, y0, y1: yC }); aoBlockers.push(w.outer); }
     if (!w.half) { group.add(prism(w.outer, y0, yC, M.wall)); wallSegments.push(...polySegments(w.outer)); } // (`half`: a sloping half wall, #624: built over the stair, you see and aim over it)
     const r = w.half ? null : wallStrip(w.outer);
     if (r) wallRects.push({ ...r, y0, y1: yC });
@@ -500,9 +502,12 @@ function buildLevel(floor, li, group, how = OURS) {
     if (spec.width && spec.width < pr.x1 - pr.x0) {
       r = { ...pr, x0: cx - spec.width / 2, x1: cx + spec.width / 2 };
       group.add(box(pr.x0, r.x0, pr.z0, pr.z1, y0, yC, M.wall), box(r.x1, pr.x1, pr.z0, pr.z1, y0, yC, M.wall));
+      aoPieces.push({ pts: rectPts({ ...pr, x1: r.x0 }), y0, y1: yC }, { pts: rectPts({ ...pr, x0: r.x1 }), y0, y1: yC });
     }
     group.add(box(r.x0, r.x1, r.z0, r.z1, y0, sill, M.wall));
     group.add(box(r.x0, r.x1, r.z0, r.z1, head, yC, M.wall));
+    aoPieces.push({ pts: rectPts(r), y0, y1: sill }, { pts: rectPts(r), y0: head, y1: yC }); // (not the glass between)
+    aoBlockers.push(rectPts(pr));
     // frame sits towards the outside of the wall
     const fz = facade === 'north' ? r.z0 + 0.1 : r.z1 - 0.1;
     const inner = facade === 'north' ? r.z1 : r.z0;
@@ -544,7 +549,7 @@ function buildLevel(floor, li, group, how = OURS) {
     const exterior = tz < 0 || tz > D;
     const head = y0 + (exterior ? how.extDoorHead ?? EXT_DOOR_HEAD : DOOR_HEIGHT);
     const tillval = d.optional && (std || !OPTIONS.allrumDoor); // Peab tillval (dashed door), see OPTIONS
-    if (gap && !(tillval && std)) group.add(gapBox(gap, head, yC, M.wall)); // (the standard: no tillval wall, no lintel, #574)
+    if (gap && !(tillval && std)) { group.add(gapBox(gap, head, yC, M.wall)); aoPieces.push({ pts: rectPts(gapRect(gap)), y0: head, y1: yC }); } // (the standard: no tillval wall, no lintel, #574)
     if (gap) barriers.push(gapRect(gap)); // (a room boundary even when open: Allrum | Hall)
     if (tillval) continue;
 
@@ -586,6 +591,7 @@ function buildLevel(floor, li, group, how = OURS) {
     const gap = findGap(wallBoxes, axis, c, a + 0.02, b - 0.02);
     if (!gap) continue;
     group.add(gapBox(gap, y0 + DOOR_HEIGHT, yC, M.wall));
+    aoPieces.push({ pts: rectPts(gapRect(gap)), y0: y0 + DOOR_HEIGHT, y1: yC });
     barriers.push(gapRect(gap));
     // Slide towards the side with enough wall to park the panel (the plan arrow alone sent
     // the Tvätt door through the 19 cm wall stub into the hall). Arrow decides only if both fit.
@@ -726,6 +732,8 @@ function buildLevel(floor, li, group, how = OURS) {
   // contact shadows along walls and cabinets (floor) and in the ceiling corners
   group.add(buildAO({ x: W, z: D }, y0, yC, [...wallBoxes, ...floor.windows, ...floor.cabinets], wallBoxes,
     { floorHole: li === 1 ? hole : null, ceilHole: li === 0 ? hole : null }));
+  group.add(buildWallAO({ x: W, z: D }, y0, yC, aoPieces, aoBlockers,
+    { floorHole: li === 1 ? hole : null, ceilHole: li === 0 ? hole : null })); // and on the walls: floor/ceiling bands, inner corners (#1074)
 
   for (const s of (how.soffits ?? SOFFITS).filter((s) => s.level === li)) {
     group.add(box(s.x0, s.x1, s.z0, s.z1, y0 + s.height, yC - 0.004, M.ceiling, { shadow: false }));

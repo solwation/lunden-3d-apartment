@@ -3598,6 +3598,15 @@ export const TODO_NOTES = { size: 0.076, cols: 3, rows: 4, gap: 0.012, margin: 0
 export const AO = {
   floor: { strength: 0.4, radius: 0.2 },
   ceiling: { strength: 0.3, radius: 0.3 },
+  // #1074: on the walls themselves — a band above the floor, one below the ceiling and a column down
+  // each inner corner (multiplied together). Visual values, tuned by eye; `cutoff` = how many radii
+  // out the overlay geometry reaches (past it the darkening is under 1 %).
+  wall: {
+    floor: { strength: 0.3, radius: 0.12 },
+    ceiling: { strength: 0.25, radius: 0.2 },
+    corner: { strength: 0.3, radius: 0.16 },
+    cutoff: 5,
+  },
 };
 
 
