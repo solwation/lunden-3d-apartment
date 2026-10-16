@@ -5249,3 +5249,11 @@ export const SHOWER_FITTINGS = {
 // One merged mesh per outlet, no per-frame vertex updates or extra lights.
 export const SHOWER_SPRAY = { jets: 36, headInset: .85, spread: .16, radius: .0013,
   segments: 5, sides: 3, repeats: 6, speed: 3.2, opacity: .62, bend: .18 };
+
+// Floor drains in the wet rooms (#1072): a square stainless grate in a frame, flush-looking on the tiles. Peab's material
+// gives no drain model or position, so every value is a *guess* (a usual Swedish 200 mm drain frame with a ~150 mm grate).
+// `size` = frame outer edge, `grate` = grate/recess edge, `bars` = slots' bars across the grate, `h` = how far the frame
+// stands above the floor tiles (visual only: the collision floor stays flat). Showers get theirs at `shower` (fractions of
+// the plan's shower rectangle, 0.5 = centre); rooms with machines but no shower get one `laundryGap` m in front of the
+// washer/dryer run, centred along it.
+export const FLOOR_DRAIN = { size: 0.2, grate: 0.15, bars: 8, h: 0.005, shower: { u: 0.5, v: 0.5 }, laundryGap: 0.35 };

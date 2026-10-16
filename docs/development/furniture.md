@@ -37,7 +37,10 @@ src/cushions.js        decorative cushions (one atlas material: leaf print | bob
                        arm; one material per colour) for the LANDSKRONA pieces (CUSHIONS, #278)
 src/interior.js        fitted kitchen, laundry, bathroom fittings, tiled floors/walls (FINISH, KITCHEN,
                        TILED_ROOMS in config); merged into one mesh per material; a tiled room's floor runs on through
-                       its door openings (`doorwayTiles`, world.js `doorways`, #306): to the closed leaf, the front door's whole depth
+                       its door openings (`doorwayTiles`, world.js `doorways`, #306): to the closed leaf, the front door's whole depth.
+                       Floor drains (#1072, `floorDrain` / FLOOR_DRAIN, all *guess*): a square stainless grate in each shower
+                       (Badrum, WC/dusch, the visitable flats' wet rooms via standardinterior.js) and in front of the laundry
+                       machines; a few mm proud of the tiles in the floor batch, visual only (collision floor flat)
 src/kitchenstuff.js    the kitchen's cabinet/drawer contents (#229): `fillKitchen(P, kind, box)` — plates, bowls, glasses, mugs,
                        dry goods, spices, tea, pots, baking tins, serving/festive china, the corner unit's machines, cutlery,
                        utensils, rolls; interior.js `stock()` fills each front (`o.stock` = the kind, or 'own' / 'empty')

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { FINISH, TILED_ROOMS, KITCHEN as K, SKIRTING, LAUNDRY_SINK, LAUNDRY_CABINET, VANITY_BASIN, HAVBACK, LIGHTING, KITCHEN_SOCKETS, TAP_LEVER, LAUNDRY, SHOWER_FITTINGS } from './config.js';
+import { FINISH, TILED_ROOMS, KITCHEN as K, SKIRTING, LAUNDRY_SINK, LAUNDRY_CABINET, VANITY_BASIN, HAVBACK, LIGHTING, KITCHEN_SOCKETS, TAP_LEVER, LAUNDRY, SHOWER_FITTINGS, FLOOR_DRAIN } from './config.js';
 import { wallCabinet } from './cabinets.js';
 import { Fridge } from './fridge.js';
 import { buildOvens } from './ovens.js';
@@ -931,6 +931,7 @@ function buildLaundry(B, group, floor, room, y0, handled, taps, appliances) {
   const globe = new THREE.SphereGeometry(0.075, 16, 12);
   globe.translate(cx, yc - 0.12, cz);
   B.add(globe, lampMat(0, room.name));
+  floorDrain(B, ...laundryDrainAt(run, room, 'e'), y0 + 0.004, M.steel, M.black); // in front of the machines (#1072)
   return [run];
 }
 
@@ -1010,6 +1011,41 @@ export function glassPanel(B, [ax, az], [bx, bz], y0) {
   else B.box(ax - t / 2, ax + t / 2, Math.min(az, bz), Math.max(az, bz), y0 + 0.02, y0 + 1.95, M.frosted);
   for (const [x, z] of [[ax, az], [bx, bz]]) B.box(x - 0.012, x + 0.012, z - 0.012, z + 0.012, y0, y0 + 1.97, M.chrome);
   return len;
+}
+
+/**
+ * A square floor drain (#1072, FLOOR_DRAIN) centred at (cx, cz) on a floor whose top is at `yf`: a raised stainless
+ * frame, a dark recess and grate bars over it, all a few millimetres proud of the tiles (no coplanar faces with them,
+ * no flicker). Visual only: the collision floor stays flat. Goes into the floor's batch, so it adds no draw call where
+ * `metal` / `dark` are already in it.
+ */
+export function floorDrain(B, cx, cz, yf, metal, dark) {
+  const { size, grate, bars, h } = FLOOR_DRAIN, o = size / 2, g = grate / 2, yr = yf + h * 0.3;
+  B.box(cx - o, cx + o, cz - o, cz - g, yf, yf + h, metal);   // frame
+  B.box(cx - o, cx + o, cz + g, cz + o, yf, yf + h, metal);
+  B.box(cx - o, cx - g, cz - g, cz + g, yf, yf + h, metal);
+  B.box(cx + g, cx + o, cz - g, cz + g, yf, yf + h, metal);
+  B.box(cx - g, cx + g, cz - g, cz + g, yf, yr, dark);         // the recess seen through the slots
+  const pitch = grate / bars, w = pitch * 0.55;
+  for (let i = 0; i < bars; i++) {                              // grate bars, slightly below the frame's top
+    const x = cx - g + (i + 0.5) * pitch;
+    B.box(x - w / 2, x + w / 2, cz - g, cz + g, yr, yf + h * 0.8, metal);
+  }
+  B.box(cx - g, cx + g, cz - 0.004, cz + 0.004, yr, yf + h * 0.8, metal); // a cross rib holding the bars
+}
+
+/** Where the drain of a room with machines but no shower goes: FLOOR_DRAIN.laundryGap in front of the machine run
+ * `run` (fronts facing `dir`, 'e' / 'w'), centred along it, kept inside `room`. */
+export function laundryDrainAt(run, room, dir) {
+  const o = FLOOR_DRAIN.size / 2 + 0.02, x = dir === 'w' ? run.x0 - FLOOR_DRAIN.laundryGap : run.x1 + FLOOR_DRAIN.laundryGap;
+  const clamp = (v, a, b) => Math.min(Math.max(v, a + o), b - o);
+  return [clamp(x, room.x0, room.x1), clamp((run.z0 + run.z1) / 2, room.z0, room.z1)];
+}
+
+/** Where a shower's drain goes (FLOOR_DRAIN.shower: fractions of its plan rectangle). */
+export function showerDrainAt(s) {
+  const { u, v } = FLOOR_DRAIN.shower;
+  return [s.x0 + (s.x1 - s.x0) * u, s.z0 + (s.z1 - s.z0) * v];
 }
 
 // Both our bathrooms and standard/visitable flats use the same two modest-detail templates.
@@ -1524,6 +1560,7 @@ function buildBathroom(B, group, floor, room, y0, handled, taps, appliances) {
       glassPanel(B, [s.x1, s.z0], [s.x1, s.z1], y0);
     }
     taps.push(...showerSet(B, room.x0, (s.z0 + s.z1) / 2, y0, !upstairs));
+    floorDrain(B, ...showerDrainAt(s), y0 + 0.004, M.steel, M.black); // on the room's tiles (buildInterior)
     if (!upstairs) segs.push(havback(B, group, appliances, room, y0)); // not in WC/dusch: no room beside its shower (HAVBACK)
   }
   spots(B, room, yc - 0.004, 2, lampMat(room.level, room.name));

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { STANDARD as S, KITCHEN as K, LAUNDRY_SINK, INTERACTION_OUTLINE } from './config.js';
-import { Batch, tileTexture, std, frame, slabWithHole, sinkBowl, mixer, glassPanel, showerSet, tileWalls, skirting, doorwayTiles, shell, openFront } from './interior.js';
+import { Batch, tileTexture, std, frame, slabWithHole, sinkBowl, mixer, glassPanel, showerSet, tileWalls, skirting, doorwayTiles, shell, openFront, floorDrain, showerDrainAt, laundryDrainAt } from './interior.js';
 
 // Peab's standard finish for a visitable flat (#574, STANDARD in config): the fixed kitchen, laundry and wet rooms of the
 // floor plan — built where the plan's cabinet and fixture rectangles are, merged into one mesh per material. The kitchen's
@@ -353,6 +353,7 @@ function laundry(B, floor, room, y0, handled) {
     sinkBowl(B, s, yt + 0.03, LAUNDRY_SINK.depth, M.steel, 'x0');
     mixer(B, run.x0 + 0.06, centre(sinkF)[1], yt + 0.03, [1, 0], M.chrome, { h: 0.28, r: 0.08 });
   }
+  floorDrain(B, ...laundryDrainAt(run, room, 'e'), y0 + 0.004, M.steel, M.glass); // #1072
   return [run];
 }
 
@@ -391,6 +392,10 @@ function wetRoom(B, floor, room, y0, handled) {
     { const [x, z] = at(0.07); B.add(new THREE.CylinderGeometry(0.03, 0.03, 0.26, 16).rotateX(along ? Math.PI / 2 : 0).rotateZ(along ? 0 : Math.PI / 2).translate(x, y0 + 1.0, z), M.chrome); }
     { const [x, z] = at(0.16); B.add(new THREE.CylinderGeometry(0.055, 0.05, 0.02, 24).translate(x, y0 + 1.85, z), M.chrome); }
     B.box(q.x0, q.x1, q.z0, q.z1, y0 + 0.001, y0 + 0.005, M.wet);
+    floorDrain(B, ...showerDrainAt(q), y0 + 0.005, M.steel, M.glass); // #1072
+  } else if (cabs.length) { // no shower: the drain in front of the machines (#1072)
+    const run = { x0: Math.min(...cabs.map((c) => c.x0)), x1: Math.max(...cabs.map((c) => c.x1)), z0: Math.min(...cabs.map((c) => c.z0)), z1: Math.max(...cabs.map((c) => c.z1)) };
+    floorDrain(B, ...laundryDrainAt(run, room, near(cabs[0].x0, room.x0) ? 'e' : 'w'), y0 + 0.004, M.steel, M.glass);
   }
   return rects;
 }
@@ -420,6 +425,7 @@ function bathroom(B, floor, room, y0, handled) {
     else { const zOpen = Math.abs(s.z0 - room.z0) < 0.05 ? s.z1 : s.z0; glassPanel(B, [s.x0, zOpen], [s.x1, zOpen], y0); glassPanel(B, [s.x1, s.z0], [s.x1, s.z1], y0); }
     showerSet(B, room.x0, (s.z0 + s.z1) / 2, y0, false);
     B.box(s.x0, s.x1, s.z0, s.z1, y0 + 0.001, y0 + 0.005, M.wet);
+    floorDrain(B, ...showerDrainAt(s), y0 + 0.005, M.steel, M.glass); // #1072
   }
   return rects;
 }
