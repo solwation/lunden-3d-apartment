@@ -1,8 +1,9 @@
-// Touch controls: a floating joystick on the left part of the screen (walk), drag anywhere
-// else to look. Multi-touch via pointer events, so both thumbs work at once.
+// Touch controls: a floating joystick on the left part of the screen (walk; the right part when the own layout is
+// mirrored, #1090), drag anywhere else to look. Multi-touch via pointer events, so both thumbs work at once.
 
 import { gameView } from './viewport.js';
 import { TOUCH } from './config.js';
+import { stickLayout } from './touchlayout.js';
 
 const fit = ({ frac, min, max }, side) => Math.round(Math.min(max, Math.max(min, side * frac)));
 /** Stick travel, button size and gap (CSS px) for a w×h game view: they follow its short side (#1087). */
@@ -35,9 +36,9 @@ export function setupTouch({ onLook }) {
   function resize() {
     // the CSS layout size, which the sizes are applied to (iOS can leave innerWidth/innerHeight stale, #567)
     const w = root.clientWidth || gameView.w || window.innerWidth, h = root.clientHeight || gameView.h || window.innerHeight;
-    const z = touchSizes(w, h);
-    radius = z.travel;
-    root.style.setProperty('--stick-travel', `${z.travel}px`);
+    const z = touchSizes(w, h), own = stickLayout(); // the player's own stick size (#1090)
+    radius = Math.round(z.travel * own.scale);
+    root.style.setProperty('--stick-travel', `${radius}px`);
     root.style.setProperty('--touch-button', `${z.button}px`);
     root.style.setProperty('--touch-gap', `${z.gap}px`);
     root.style.setProperty('--stick-hint-opacity', String(TOUCH.hintOpacity));
@@ -46,6 +47,7 @@ export function setupTouch({ onLook }) {
   const settle = () => { resize(); requestAnimationFrame(resize); setTimeout(resize, 400); };
   window.addEventListener('resize', settle);
   window.addEventListener('orientationchange', settle);
+  window.addEventListener('touchlayoutchange', resize); // the own layout changed the stick size (#1090)
   resize();
 
   const showHint = () => { if (hint) hint.hidden = !enabled || stickId !== null; };
@@ -61,7 +63,8 @@ export function setupTouch({ onLook }) {
 
   document.addEventListener('pointerdown', (e) => {
     if (!enabled || !isTouch(e) || e.target.closest?.('button, #hud-top, #stats, #task-note, #terminal, #rearrange-help')) return; // buttons; the stats panel scrolls (#245)
-    if (stickId === null && e.clientX < (gameView.w || window.innerWidth) * 0.45) {
+    const vw = gameView.w || window.innerWidth; // the stick side: left, or right when mirrored for left-handers (#1090)
+    if (stickId === null && (stickLayout().mirror ? e.clientX > vw * 0.55 : e.clientX < vw * 0.45)) {
       stickId = e.pointerId;
       resize();
       origin = { x: e.clientX, y: e.clientY };

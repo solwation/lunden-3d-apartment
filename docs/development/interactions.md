@@ -40,7 +40,7 @@ recommends at least 48dp touch targets. Our web layout uses 56 CSS px icons, or
 48 CSS px below 376px viewport height, with 8px separation and safe-area offsets.
 These are practical CSS layout choices, not measured physical dp/pt equivalence
 or a claim of platform compliance. Existing pressed/toggled feedback remains.
-No handedness setting existed; remapping is outside this bounded layout change.
+No handedness setting existed in #1057; the own layout (#1090, below) adds mirroring for left-handers.
 
 `tools/touchlayouttest.cjs` checks native DOM masks, safe areas and CDP multi-touch
 using actual `setupTouch`; complete main action/jump listeners retain press,
@@ -75,7 +75,7 @@ dragged past the rim moves the base after it (`#stick` left/top), so pulling bac
 travelling through a dead overshoot. Drag-to-look accumulates CSS px in `touch.js`; main.js `step` calls
 `touch.update(dt)`, which hands on `1 − e^(−dt/TOUCH.look.smooth)` of it per frame (30 ms: ≈ 43 % per 60 Hz frame,
 ≈ 94 % after 5 frames, the last 0.01 px at once), and `onLook` scales by `TOUCH.look.sens` (0.005 rad/px, the old value).
-The total turn equals the finger's travel; `smooth: 0` restores raw deltas. No settings UI yet (customisation is #1090).
+The total turn equals the finger's travel; `smooth: 0` restores raw deltas. The own layout (#1090) covers placement, size and opacity, not look sensitivity.
 `tools/touchlayouttest.cjs` checks dead zone, half-push output, follow and pull-back with native CDP touches.
 
 ### Thumb-arc placement (#1089, part 3 of #1082)
@@ -96,6 +96,33 @@ column stays. At 844×390 the cluster reaches 289 px in from the right edge (66 
 neighbour spacing and the distance order from the resting thumb (jump, then crouch, then the rest). The slot geometry is
 a layout choice from common mobile-FPS practice and the guidance above, not a measured reach study; physical-phone comfort
 remains the acceptance test.
+
+### Own layout (#1090, part 4 of #1082)
+
+The CoD Mobile model: *Anpassa touchknappar* in the pause menu's settings (shown only in touch mode: `activeMode`
+touch or a phone) opens an editor over the paused HUD (`src/touchlayout.js`; CSS `body.touch-editing` in
+`src/hudicons.css`). The menu stays logically open (`overlay.hidden` false, so the game remains paused) while CSS hides
+it and shows the HUD; every cluster button and `#stick-hint` shows with a dashed outline, the rest of the HUD keeps its
+boxes but is invisible, and a full-screen `#touch-edit` layer takes all touches, so no game listener fires. Drag a
+control to move it; pinch with two fingers or use the bar's *Storlek* slider to resize the selected one; *Opacitet*,
+*Spegla för vänsterhänta*, *Återställ standard*, *✕ Avbryt* (also Escape) and *Spara*. Only *Spara* stores; reset
+and every change before it stay a draft.
+
+Storage: `localStorage` `lunden.touchLayout` = `{ mirror, c: { id: { x, y, s, o } } }` per device, only non-default
+controls; the default removes the key. Reads/writes are wrapped (blocked storage keeps the layout for the visit).
+`normalizeLayout` drops unknown ids and clamps to `TOUCH.custom` (*guess*: buttons ×0.8–1.6, so a 57 px phone button
+never goes below about 46 px; stick ×0.7–1.5; opacity 0.3–1; offsets ≤ 3 short sides; 4 px margin). Each control keeps
+its #1089 CSS slot, IDs and listeners: `applyTouchLayout` measures the slot centre, adds the offset (× the short side,
+so it scales with the screen), mirrors about the safe area's centre line, clamps the scaled box inside the safe area
+and below `#score`/`#hud-top`, and writes inline `translate`/`scale`/`opacity` (reads first, then writes). It runs on
+resize/rotation (also a frame and 450 ms later), when a control's `hidden` really changes (main.js writes the same value
+every frame; old/new values are compared), when the choices are rebuilt, and when the HUD shows. The default layout
+writes no inline styles at all. Choices follow the primary action's offset and mirror (not its size/opacity). The
+stick: `touch.js` scales `--stick-travel` by the stick's size factor, applies its opacity to `#stick`/`#stick-hint`
+(the hint × `TOUCH.hintOpacity`) and, when mirrored, takes the right 45 % of the screen for the floating stick instead
+of the left. `tools/touchcustomtest.cjs` checks drag, clamp, slider/pinch size, opacity, mirror (stick side and choices),
+save/reload, Esc, reset, a resize to 568×320 with notch insets, late-appearing equipment and blocked storage at 844×390
+and 1180×820. Physical-phone comfort remains the acceptance test.
 
 ## Current shared head contract (#974, #893, #894, #979)
 
@@ -243,6 +270,7 @@ src/spidersuit.js      the Spider-Man suit (#597, SPIDER, all values *guess*): o
                        `max` s or `stall` s getting no closer let go, the speed carries on in the air (`player.fling`, `fling`
                        drag) until the landing, and flung into a façade holds you on it. The strand stays taut while you swing.
 src/touch.js           on-screen joystick (left) + drag-to-look (right), multi-touch pointer events
+src/touchlayout.js     own touch layout (#1090): pause-menu editor, per-device localStorage, offsets/scale/opacity/mirror, clamping
 src/viewport.js        early CSS-surface observer: keeps canvas buffer/camera in sync through startup rotation (#567)
 src/main.js            renderer, lights, input modes, door raycast prompt/button, loop (step)
                        shortButtonLabel uses exact target-owned verbs for structural fronts, seats, taps, wiping, speakers and generic placement (#502).

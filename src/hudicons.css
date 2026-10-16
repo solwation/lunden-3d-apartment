@@ -239,3 +239,48 @@ body.touch #touch-controls #choices button {
 #stick-hint .knob { background: rgba(255,255,255,.22); border-color: rgba(255,255,255,.7); box-shadow: none; }
 #stick-hint .knob::after { border-color: rgba(255,255,255,.55); }
 body:not(.touch) #stick-hint { display: none; }
+/* #1090 (part 4 of #1082): own layout editor over the paused HUD (src/touchlayout.js). Every control shows with a
+   dashed outline (the selected one solid), the rest of the HUD hides but keeps its boxes for the top-badge clamp, and a
+   compact bar at the top holds the selected control's size/opacity, the mirror toggle, reset, cancel and save. */
+body.touch-editing #hud { display: block !important; }
+body.touch-editing #overlay { display: none !important; }
+body.touch-editing #hud > :not(#touch-controls):not(#stick-hint):not(#hud-right),
+body.touch-editing #hud-right, body.touch-editing #choices, body.touch-editing #stick { visibility: hidden !important; }
+body.touch-editing #touch-controls > button.hud-button[hidden], body.touch-editing #touch-controls > button[hidden] { display: grid !important; }
+body.touch-editing #stick-hint[hidden] { display: block; }
+body.touch-editing #touch-controls > button, body.touch-editing #stick-hint { outline: 2px dashed rgba(255,255,255,.75); outline-offset: 3px; }
+body.touch-editing #touch-controls > button.te-sel, body.touch-editing #stick-hint.te-sel { outline: 3px solid #ffd76a; }
+body.touch-editing #touch-controls #action { color: transparent; text-shadow: none; }
+body.touch-editing #touch-controls #action::after { content: 'Handling'; position: absolute; inset: 0; display: grid; place-items: center; color: #fff; font: 600 15px/1.1 system-ui,sans-serif; }
+#touch-edit { position: fixed; inset: 0; z-index: 60; touch-action: none; background: rgba(10,16,22,.18); }
+#touch-edit[hidden] { display: none; }
+#touch-edit .te-bar {
+  position: absolute; top: calc(6px + var(--st)); left: 50%; transform: translateX(-50%);
+  width: max-content; max-width: calc(100vw - 16px - var(--sl) - var(--sr)); box-sizing: border-box;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 10px; padding: 6px 8px;
+  color: #fff; background: rgba(20,30,38,.86); border: 1px solid rgba(255,255,255,.3); border-radius: 12px;
+  font: 13px/1.2 system-ui,sans-serif; box-shadow: 0 4px 16px rgba(0,0,0,.3); transition: opacity .15s;
+}
+#touch-edit.te-dragging .te-bar { opacity: .3; pointer-events: none; }
+#touch-edit .te-bar button {
+  min-height: 40px; padding: 0 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,.4);
+  background: rgba(255,255,255,.12); color: #fff; font: 600 13px/1 system-ui,sans-serif; touch-action: manipulation;
+}
+#touch-edit .te-bar .te-save { background: #fff; color: #18232b; border-color: #fff; }
+#touch-edit .te-name { min-width: 7em; text-align: center; color: #ffd76a; }
+#touch-edit .te-slider, #touch-edit .te-mirror { display: flex; align-items: center; gap: 6px; min-height: 40px; }
+#touch-edit .te-slider input { width: 96px; accent-color: #ffd76a; }
+#touch-edit .te-mirror input { width: 20px; height: 20px; accent-color: #ffd76a; }
+#touch-edit .te-help {
+  position: absolute; left: 50%; top: 36%; transform: translate(-50%,-50%); margin: 0; max-width: min(420px, 70vw);
+  padding: 8px 12px; border-radius: 10px; background: rgba(20,30,38,.7); color: #fff; font: 14px/1.35 system-ui,sans-serif;
+  text-align: center; pointer-events: none;
+}
+#touch-edit .te-help[hidden] { display: none; }
+@media (max-height: 420px) and (orientation: landscape) {
+  #touch-edit .te-bar { gap: 4px 6px; padding: 4px 6px; }
+  #touch-edit .te-bar button { min-height: 36px; padding: 0 9px; }
+  #touch-edit .te-slider, #touch-edit .te-mirror { min-height: 36px; }
+  #touch-edit .te-slider input { width: 78px; }
+  #touch-edit .te-name { min-width: 0; }
+}

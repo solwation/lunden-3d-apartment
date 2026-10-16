@@ -33,6 +33,7 @@ import { Fall } from './fall.js';
 import { StatsPanel } from './statspanel.js';
 import { respawnOutdoors } from './respawn.js';
 import { setupTouch } from './touch.js';
+import { setupTouchLayout } from './touchlayout.js';
 import { watchForUpdates, BUILD } from './version.js';
 import { CatSpawner, VARIANTS, BREEDS, kittenName } from './cat.js';
 import { initAudio, sfx, toggleMuted, isMuted, updateListener } from './audio.js';
@@ -1137,6 +1138,7 @@ window.addEventListener('pointerdown', (e) => {
 }, { capture: true, passive: true });
 const touch = setupTouch({ onLook: (dx, dy) => look(dx * TOUCH.look.sens, dy * TOUCH.look.sens) }); // eased per frame by touch.update (#1088)
 if (params0.has('spidersuit')) suit.putOn(); // &spidersuit (#597): the suit on from the start; after `touch`, which its badge reads (#601)
+const touchLayout = setupTouchLayout(); // own button layout (#1090): opened from the pause menu, applied in play
 const active = () => !statsOpen && (locked || touch.enabled);
 
 // Native mouse lock picks the crosshair on mousedown. Free touch/pen picks the
@@ -1176,6 +1178,8 @@ function showOverlay(show) {
     renderMenuPresence(presence);
   }
   document.body.classList.toggle('touch', touch.enabled);
+  const layoutBtn = document.getElementById('menu-touch-layout'); // touch play only (#1090)
+  if (layoutBtn) layoutBtn.hidden = !(activeMode === 'touch' || isPhoneDevice());
   const kicker = document.getElementById('menu-kicker');
   const title = document.getElementById('menu-title');
   const desc = document.getElementById('menu-desc');
@@ -1286,6 +1290,10 @@ document.getElementById('start-touch').addEventListener('click', () => {
   showOverlay(false);
 });
 document.getElementById('start-go').addEventListener('click', () => document.getElementById('start-touch').click());
+document.getElementById('menu-touch-layout')?.addEventListener('click', () => {
+  // the editor shows the HUD over the paused game (CSS body.touch-editing); the menu returns when it closes (#1090)
+  touchLayout.open(() => document.getElementById('menu-touch-layout')?.focus({ preventScroll: true }));
+});
 pauseBtn.addEventListener('click', () => {
   touch.enabled = false;
   player.analog.x = player.analog.y = 0;

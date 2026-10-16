@@ -3180,6 +3180,10 @@ export const TOUCH = {
   // Drag-to-look (#1088): `sens` rad per CSS px (the old fixed 0.005 in main.js); `smooth` s is the time constant over
   // which each finger movement is eased into the view, evening out uneven touch-event timing (0 = raw, *guess*).
   look: { sens: 0.005, smooth: 0.03 },
+  // Own layout (#1090, part 4 of #1082; src/touchlayout.js; *guess* ranges chosen by eye): size factors for the cluster
+  // buttons (0.8 keeps a 57 px phone button at about 46 px, near the 48 px floor of #1057) and the stick, opacity so a
+  // control never vanishes, the largest offset from its slot (× the short side), and px kept clear of the safe edges.
+  custom: { buttonScale: [0.8, 1.6], stickScale: [0.7, 1.5], opacity: [0.3, 1], maxOffset: 3, margin: 4 },
 };
 
 export const PLAYER = {

@@ -55,6 +55,7 @@ reproduce or resolve the real iPhone loss after rotation; #669 remains open.
 Read [CLAUDE.md](../../CLAUDE.md) first for shared workflow rules. Paths in code spans and module maps are relative to the repository root.
 
 Related: [local-development](local-development.md), [performance](performance.md).
+Own touch layout (#1090): `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/touchcustomtest.cjs GAME OUT` — production DOM/CSS without World: drag, clamp under the badges, slider/pinch size, opacity, mirror (stick side, choices), save → reload, Esc, reset, resize clamp with insets, blocked storage, at 844×390 and 1180×820. Run with touchlayouttest after changing `src/touchlayout.js`, the cluster CSS or `touch.js`.
 Touch actions (#1057): `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/touchlayouttest.cjs GAME OUT`
 checks 1,920 equipment/primary/seated layout states across five viewports and three
 safe-area variants, target bounds and overlap. It uses actual index/CSS/setupTouch,
