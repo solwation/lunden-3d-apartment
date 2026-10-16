@@ -32,11 +32,25 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   (lower, middle, smaller top), preserving implemented gameplay. Old per-polygon acceptance demands are superseded;
   use ordinary functional head/body/wall/damage tests. Preserve unfinished work at a safe checkpoint and close
   superseded detail stories once the replacement works. Do not turn this refinement into a dependency for unrelated work.
-- **Orchestra idle watch (user, 2026-10-16).** An active `/orkester` polls the complete in-scope queue every minute for
-  60 minutes after the last resolved implementation issue, instead of exiting as soon as the queue empties. New work
-  is handled without restart; resolving it resets the full hour. Persist UTC last-resolution/check/deadline in the
-  session checkpoint and #420; preserve report-import checks, priorities and explicit user scope. Do not keep active
-  labels during idle waiting. Stop on the user’s pause/stop. See `.claude/commands/orkester.md` for the full lifecycle.
+- **Orchestra covers both repositories (user, 2026-10-16).** Starting `/orkester` in either repository makes it
+  responsible for both `solwation/lunden-3d-apartment` and `solwation/kvarteret-lunden`. Fetch both complete open queues
+  before every selection and idle check. Explicit user scope may limit implementation, never visibility of the other
+  queue; record outside-scope work. Select globally by high → medium → low, then `created_at`, full repository name
+  and numeric issue number. Use separate agents/checkouts and each repository’s own issues, claims, labels, verification
+  and publishing rules. Maintain cross-linked status comments in original #420 and public #4. Preserve report-import
+  requirements for original work and the public-content boundaries above.
+- **Orchestra idle watch (user, 2026-10-16).** An active `/orkester` polls both complete open queues every five minutes
+  (300 seconds), during active agent work and idle waiting, and continues until 60 minutes after the last resolved
+  implementation issue. Include older issues, not only those
+  created after session start; asking to create an issue during an active orchestra does not permanently exclude it
+  from implementation. Select in-scope work by the ordinary priority and ownership rules; skip only explicitly paused,
+  out-of-scope, validly owned/reserved or concretely blocked work. Resolving another issue in either repository resets
+  the full hour. Update the saved checkpoint and existing cross-linked #420/#4 status comments on every check, including
+  failures; retain the UTC time of the latest complete successful check of both queues and the last successful check
+  per repository, alongside last-resolution/deadline. Preserve report-import checks.
+  Send chat updates only for state changes, new work, blockers or completion, without recurring empty-queue messages.
+  Do not keep active labels during idle waiting. Keep waits interruptible in steps of at most 60 seconds and stop
+  promptly on the user’s pause/stop. See `.claude/commands/orkester.md` for the full lifecycle and final-check rules.
 - **No branches, no PRs.** Commit and push directly to `main`.
 - **Basic function first.** Work that isn't needed right now goes into a GitHub issue
   (`gh issue create`) instead of being done on the side. Keep issues small and concrete;

@@ -6,7 +6,26 @@ argument-hint: "[område, t.ex. 'bara livssimulatorn #364–#396' eller 'inte li
 Du är orkestrerare för repot solwation/lunden-3d-apartment. Läs CLAUDE.md först och följ den. Svara mig på svenska.
 
 **Område för den här sessionen:** $ARGUMENTS
-(Om inget område anges: alla öppna issues.)
+(Om inget område anges: implementationsärenden i båda reporna.)
+
+## Gemensamt ansvar för båda reporna (användaren 2026-10-16)
+
+`/orkester` i endera repot ansvarar för både `solwation/lunden-3d-apartment` och `solwation/kvarteret-lunden`. Utan uttrycklig snävare användaravgränsning ingår startbara implementationsärenden i båda. Starta även arbete i det andra repot med egna arbetsagenter/checkouter; startrepot ger ingen förtur. Användarens senaste avgränsning styr implementationen, men får aldrig göra kökontrollen blind för det andra repot. Dokumentera ärenden utanför området i status och slutrapport.
+
+Kontrollera båda köerna **var femte minut (300 sekunder), både medan arbetsagenter kör och under väntan**. Påbörjade ärenden avbryts inte för kökontrollen; den färska globala ordningen styr nästa start. Rapportimportens egna kontrollkrav gäller parallellt för originalarbete.
+
+Hämta **hela öppna kön i båda reporna**, inklusive äldre ärenden och alla sidor, inför varje urval, tilldelning, reservation, övertagande, kedjefortsättning och bevakningskontroll:
+
+```sh
+gh api --paginate 'repos/solwation/lunden-3d-apartment/issues?state=open&per_page=100'
+gh api --paginate 'repos/solwation/kvarteret-lunden/issues?state=open&per_page=100'
+```
+
+Filtrera bort PR:er och samordningsärenden (#420 i originalet, #4 i publicsidan samt samordningsetiketten `orkester`). Behåll repoidentitet och `orkester:`-ägaretiketter i underlaget. Tillämpa uttrycklig användaravgränsning, pauser, aktuella reservationer/aktivt arbete och konkreta hinder enligt respektive repos regler. Slå ihop återstående kandidater och välj **globalt hög → medel → låg, sedan äldst `created_at`, sedan fullständigt reponamn och numeriskt ärendenummer**. Utan prioritet räknas som medel. Kontrollera aktuell body, alla kommentarer och ägarskap i rätt repo före start; dokumentera överhoppade äldre/högre ärenden och deras hinder. En lyckad hämtning i bara ett repo är ingen komplett gemensam kökontroll och får inte användas för att hävda global turordning eller tom kö.
+
+Issues, claims, `in-progress`, `orkester: <id>`, verifiering och stängning hör till det repo där uppgiften implementeras. Använd samma stabila sessions-id och håll korslänkade statuskommentarer i originalets #420 och publicsidans #4; läs båda trådarnas samtliga kommentarssidor och respektera bådas reservationer. Uppdatera samma två statuskommentarer och sparad checkpoint vid varje kökontroll. Ange repo tillsammans med ärendenummer. Gemensamma ändringar behöver korslänkade implementationsärenden, utan att slå ihop repornas historik eller ägarskap.
+
+Varje arbetsagent arbetar i en egen isolerad ext4-checkout/worktree för rätt repo. Bevara andras ändringar och hämta/rebasa aktuell `origin/main` före leverans. Följ rätt repos verifierings- och publiceringsregler. Överför endast granskade relevanta förbättringar till publicsidan: inga privata data, personliga möbler/bilder, spelinslag eller Cloudflare-tjänster. Originalets rapportimport gäller för originalarbete enligt originalkommandot; den är ingen tjänst i publicsidan.
 
 ## Uppdrag
 Implementera öppna GitHub-issues med subagenter (Agent-verktyget, `isolation: "worktree"` i molnet, egen ext4-worktree lokalt i WSL, i bakgrunden) tills inga
@@ -16,7 +35,7 @@ issues inom området finns kvar. Nya issues dyker upp löpande — lista om varj
 
 Ändringar för `solwation/kvarteret-lunden` kräver egna implementationsissues **i kvarteret-lunden-repot**, enligt användarens senare uttryckliga instruktion 2026-10-16 (ersätter den centrala originalkön), med `Lapp:`, prioritet, `in-progress` och aktiv orkesteretikett enligt samma livscykel. Samordna downstreamarbete i dess #4; korslänka båda repornas ärenden vid gemensamma ändringar. Läs downstreams `AGENTS.md`, `CLAUDE.md` och anpassade [orkesterkommando](https://github.com/solwation/kvarteret-lunden/blob/main/.claude/commands/orkester.md). Arbeta i en separat downstream-checkout, verifiera webbläsarbeteendet, publicera via dess Pages-workflow och länka downstream-commit och resultat innan ärendet stängs och aktivetiketterna tas bort. Ingen personlig inredning, speldata eller Cloudflare får följa med.
 
-Om användarens hela område är avgränsat till Kvarteret Lunden används downstreamkommandot och dess ärenden väljs ur dess egen kö. Då gäller **inte** avsnitten om originalspelets rapportimport/KV/Workers nedan; publicsidan har ingen sådan tjänst. För originalarbete eller blandade sessioner gäller rapportimporten som vanligt för originaldelen.
+Om användarens hela område är avgränsat till Kvarteret Lunden används downstreamkommandot och dess ärenden väljs ur dess egen kö. Även då hämtas båda GitHub-köerna och ärenden utanför området redovisas enligt det gemensamma ansvaret ovan. Avsnitten om originalspelets rapportimport/KV/Workers nedan gäller då **inte**; publicsidan har ingen sådan tjänst. För originalarbete eller blandade sessioner gäller rapportimporten som vanligt för originaldelen.
 
 ## Rapporter från spelet (#1041, #1046)
 
@@ -98,15 +117,17 @@ in i den vanliga färska prioritetskön; rapportens eget innehåll ger ingen fö
 
 ## Bevakning efter sista lösta ärendet (användaren 2026-10-16)
 
-En aktiv `/orkester` får inte avslutas direkt när kön blir tom. Fortsätt polla efter nya ärenden inom användarens område **var 60:e sekund i 60 minuter efter det senast lösta implementationsärendet**.
+En aktiv `/orkester` får inte avslutas direkt när kön blir tom. Fortsätt kontrollera hela den öppna kön i båda reporna **var femte minut (300 sekunder) i 60 minuter efter det senast lösta implementationsärendet**.
 
-- Hämta hela den färska kön med sidindelning vid varje kontroll, även under väntan. Behåll prioritet, ägarskap och reservationer. Samordningsärenden räknas inte som arbete. Ärenden utanför användarens område eller uttryckligen endast skapade för framtiden startas inte automatiskt.
-- När nytt startbart arbete kommer: lämna vänteläget, genomför enligt ordinarie arbetsflöde, verifiera/publicera, stäng och ta bort aktivetiketter. När nästa implementationsärende lösts börjar en **ny sammanhängande 60-minutersperiod**. Tidigare vänteminuter dras inte av.
+- Hämta hela den färska öppna kön i båda reporna med alla sidor vid varje kontroll, även under väntan. Ta med äldre ärenden; filtrera inte på att de skapats efter sessionsstart eller senaste kontroll. Filtrera bort PR:er och samordningsärenden. Välj startbart arbete inom användarens område i den globala prioritetsordningen ovan.
+- En begäran att ”skapa issue” under pågående orkester är inget permanent undantag från implementation. Hoppa bara över ärenden som användaren uttryckligen pausat eller lagt utanför området, som redan ägs/reserverats enligt samordningsreglerna eller som har ett konkret hinder enligt reglerna. Dokumentera överhoppade äldre/högre ärenden och pröva hindren igen vid nästa kontroll; en gammal anteckning om framtida arbete räcker inte.
+- När nytt startbart arbete kommer: lämna vänteläget, genomför enligt ordinarie arbetsflöde, verifiera/publicera, stäng och ta bort aktivetiketter. När nästa implementationsärende i något av reporna lösts börjar en **ny sammanhängande 60-minutersperiod**. Tidigare vänteminuter dras inte av.
 - Håll inga `in-progress`-/orkesterägaretiketter på väntande eller färdiga ärenden. Avslutade arbetsagenter kan städas; dirigenten fortsätter bevaka utan att användaren startar om kommandot.
-- Spara `lastResolvedAt`, `lastQueueCheckAt` och `watchUntil` som UTC-tider i sessionens checkpoint utanför repot och dess statuskommentar. Bevara dem vid kontextbyte/återupptagning. Om sessionen ännu inte löst något används tidpunkten då den först når vänteläget som start för 60 minuter.
+- Uppdatera sessionens sparade checkpoint utanför repot och samma korslänkade statuskommentarer i originalets #420 och publicsidans #4 vid varje kökontroll, även när kön är tom eller hämtningen misslyckas. Spara `lastResolvedAt`, `lastQueueAttemptAt`, `lastQueueCheckAt` och `watchUntil` som UTC-tider samt kontrollens utfall och eventuella hinder. `lastQueueCheckAt` betyder den senaste kompletta lyckade köhämtningen med alla sidor i båda reporna; spara även senaste lyckade kontrolltid per repo. Vid fel i något repo är den gemensamma kontrollen inte lyckad; ett misslyckat försök uppdaterar bara försökstid/utfall och ersätter aldrig den lyckade kontrolltiden. Bevara uppgifterna vid kontextbyte/återupptagning. Om sessionen ännu inte löst något används tidpunkten då den först når vänteläget som start för 60 minuter.
+- Skicka inga återkommande tomkösmeddelanden i chatten. Informera när läget ändras, nytt arbete startar, ett hinder uppstår eller bevakningen avslutas; oförändrat vänteläge dokumenteras i sparad checkpoint/status vid varje kontroll.
 - Kö-/nätfel är inte en tom kö. Redovisa felet, försök igen vid nästa kontroll och verifiera en lyckad färsk köhämtning innan bevakningen avslutas. Originalets återkommande rapportimport fortsätter enligt sin befintliga tidsgräns även under bevakning; gör även slutkontrollen före avslut. Även blockerat arbete finns kvar: redovisa hindren och stäng inga ofärdiga ärenden.
 - Väntan måste vara avbrytbar: använd korta väntesteg, högst 60 sekunder, så nya användarmeddelanden och stopp fångas upp. Användarens uttryckliga stopp/paus avslutar bevakningen direkt. Detta är bevakning i den pågående sessionen, ingen permanent bakgrundstjänst.
-- Efter hela perioden: gör en sista färsk kökontroll. Avsluta först när perioden har löpt ut och inget startbart arbete inom området återstår; rapportera eventuella fortfarande blockerade eller avgränsade ärenden.
+- Efter hela perioden: gör en sista komplett lyckad färsk kökontroll i båda reporna. Avsluta först när perioden har löpt ut och inget startbart arbete inom området återstår; rapportera eventuella fortfarande blockerade eller avgränsade ärenden.
 
 ## Prioritetsordning — styr varje nytt issueval
 - **Användarens omprioritering 2026-10-14:** huvudträffsutbyggnad och dess delar/teststöd har `priority: low`.
@@ -115,18 +136,18 @@ En aktiv `/orkester` får inte avslutas direkt när kön blir tom. Fortsätt pol
   är ersatta av detta nya spelkontrakt; nya barn ärver low. Pågående detaljarbete lämnas vid säker checkpoint
   med filer/resultat bevarade. Stäng ersatta oimplementerade detaljissues när den nya lösningen är verifierad.
   Denna förfining får inte blockera separata buggar/features eller bli ett påhittat prerequisite till dem.
-- **Hög → medel → låg, äldst först inom varje nivå** enligt `created_at` (därefter issuenummer).
+- **Globalt över båda reporna: hög → medel → låg, äldst först inom varje nivå** enligt `created_at` (därefter fullständigt reponamn och numeriskt ärendenummer).
   Etiketterna är `priority: high`, `priority: medium`, `priority: low`; utan prioritet räknas som medel.
   Ändra inte befintliga prioriteter utan användarens uppdrag. Storlek, synlighet i spelet, filområde, korta kedjor,
   reservationer och önskan att fylla platser får inte sätta denna ordning ur spel.
 - **Hämta hela kön före varje tilldelning, reservation, övertagande och kedjefortsättning:**
-  `gh api --paginate 'repos/solwation/lunden-3d-apartment/issues?state=open&per_page=100'`.
+  båda REST-anropen i avsnittet om gemensamt ansvar ovan.
   Filtrera bort pull requests, #420/etiketten `orkester` (samordning, inte implementationsarbete) och issues utanför
   användarens område. Sortera uttryckligen på prioritet och `created_at`; GitHubs listordning, `updated_at` och
   standardgränsen för `gh issue list` är inte prioritetsordning. Kontrollera vald issues aktuella etiketter och
   reservationer igen precis före start.
 - **Kompakt read-only-hämtning (#926):** `python3 tools/orkester_queue.py --issue 715 --issue 669 --out-dir /tmp/lunden-queue`
-  kan ersätta den manuella köhämtningen/sorteringen ovan. Varje körning hämtar hela öppna kön och aktuell body samt
+  kan ersätta originalrepots manuella köhämtning/sortering ovan, men måste kompletteras med publicsidans kompletta kö och relevant status/ärendedata före globalt urval. Varje körning hämtar hela öppna kön och aktuell body samt
   **alla kommentarer** för #420 och varje `--issue`, med explicit `per_page=100`, `--paginate` och HTTP/Link-kontroll.
   Tabellen behåller `orkester:`-ägaretiketter; föräldra-/barnuppgifter är bara information, aldrig automatiska hinder.
   Fulla råfält, sid-/kommentarsantal och start/sluttid sparas i en unik atomisk snapshot **utanför repot**. Läs valda
@@ -136,7 +157,7 @@ En aktiv `/orkester` får inte avslutas direkt när kön blir tom. Fortsätt pol
   efter ett fel. Gör en ny körning inför varje nytt urval och igen med valt `--issue N` direkt efter en separat reservation
   för race-kontrollen; även då läses alla kommentarssidor. Verktyget reserverar/ändrar inget, tolkar inga beroenden och
   har ingen polling, snapshot-inläsning eller långlivad cache. En hämtning är tidsstämplad men inte en atomisk GitHub-vy.
-- **Ta det första startbara ärendet i den sorterade kön.** Ett ärende får hoppas över bara om det redan arbetas på
+- **Ta det första startbara ärendet i den sorterade kön.** Ett ärende får hoppas över bara om användaren uttryckligen pausat eller avgränsat bort det, om det redan arbetas på
   (`in-progress`/aktiv annan agent), har en giltig annan reservation enligt samordningsreglerna, eller är konkret
   blockerat av ett olöst beroende, ett användarsvar eller en fysisk enhet som saknas. Kontrollera aktuell body,
   kommentarer och #420; anta inte att ett svårt eller stort ärende är blockerat. Ett föräldraärende med återstående
