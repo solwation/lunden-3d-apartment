@@ -12,6 +12,12 @@ Du är orkestrerare för repot solwation/lunden-3d-apartment. Läs CLAUDE.md fö
 Implementera öppna GitHub-issues med subagenter (Agent-verktyget, `isolation: "worktree"` i molnet, egen ext4-worktree lokalt i WSL, i bakgrunden) tills inga
 issues inom området finns kvar. Nya issues dyker upp löpande — lista om varje gång en agent blir klar.
 
+## Kvarteret Lunden (publik visning)
+
+Ändringar för `solwation/kvarteret-lunden` kräver också egna implementationsissues **här i originalrepot**, med `Lapp:`, prioritet, `in-progress` och aktiv orkesteretikett enligt samma livscykel. Ange berört repo i ärendet och #420. Läs downstreams `AGENTS.md`, `CLAUDE.md` och anpassade [orkesterkommando](https://github.com/solwation/kvarteret-lunden/blob/main/.claude/commands/orkester.md). Arbeta i en separat downstream-checkout, verifiera webbläsarbeteendet, publicera via dess Pages-workflow och länka downstream-commit och resultat innan ärendet stängs och aktivetiketterna tas bort. Ingen personlig inredning, speldata eller Cloudflare får följa med.
+
+Om användarens hela område är avgränsat till Kvarteret Lunden används downstreamkommandot och endast dess relevanta ärenden väljs ur originalkön. Då gäller **inte** avsnitten om originalspelets rapportimport/KV/Workers nedan; publicsidan har ingen sådan tjänst. För originalarbete eller blandade sessioner gäller rapportimporten som vanligt för originaldelen.
+
 ## Rapporter från spelet (#1041, #1046)
 
 **Första arbetssteget i varje `/orkester`-session är KV-importen**, före val eller tilldelning

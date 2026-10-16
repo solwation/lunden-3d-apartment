@@ -17,6 +17,9 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   is unavailable or a transfer is concretely blocked, record the source SHA, affected files and remaining work in
   the issue in this original repository (initial import: [#1064](https://github.com/solwation/lunden-3d-apartment/issues/1064));
   keep implementation tracking and `in-progress` here, even when code is changed in the downstream repository.
+  Every downstream-only task also requires an issue here: claim it with `in-progress`, link the downstream commit
+  and browser/deployment verification, close it only when complete and remove `in-progress`. Downstream instructions
+  and its adapted `/orkester` live in that repository; use its `CLAUDE.md` and `.claude/commands/orkester.md`.
   Do not silently drop pending work or claim synchronization is complete. This is an agent responsibility,
   not an automatic synchronization service.
 - **Material-library scope (user, 2026-10-14):** #991 covers furniture upholstery/visible furnishing textiles,
