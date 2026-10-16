@@ -13,15 +13,15 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   changes. Never blindly merge or copy the full upstream tree/history. Never introduce personal furnishings, drawings,
   photos, family references, characters, gameplay or Cloudflare integrations/services into the downstream.
   Record source commit SHAs and verify the affected downstream behaviour before publishing. Report the downstream
-  commit and verification, or explain why the change does not apply. If the initial clean import is not ready, access
-  is unavailable or a transfer is concretely blocked, record the source SHA, affected files and remaining work in
-  the issue in this original repository (initial import: [#1064](https://github.com/solwation/lunden-3d-apartment/issues/1064));
-  keep implementation tracking and `in-progress` here, even when code is changed in the downstream repository.
-  Every downstream-only task also requires an issue here: claim it with `in-progress`, link the downstream commit
-  and browser/deployment verification, close it only when complete and remove `in-progress`. Downstream instructions
-  and its adapted `/orkester` live in that repository; use its `CLAUDE.md` and `.claude/commands/orkester.md`.
-  Do not silently drop pending work or claim synchronization is complete. This is an agent responsibility,
-  not an automatic synchronization service.
+  commit and verification, or explain why the change does not apply. Track new downstream implementation and blocked
+  transfers in [solwation/kvarteret-lunden issues](https://github.com/solwation/kvarteret-lunden/issues), as explicitly
+  requested by the user on 2026-10-16; this replaces the previous central queue. Original-only issues remain here.
+  Every downstream task requires its own issue there: set `in-progress` while actively working, link the commit and
+  browser/Pages verification, close only when complete and remove active labels. For work affecting both apps,
+  cross-link the original and downstream issues rather than silently dropping pending transfer work.
+  Downstream instructions and its adapted `/orkester` live in its `CLAUDE.md` and `.claude/commands/orkester.md`;
+  downstream orchestration is coordinated in its #4. Initial import history remains in this repo's #1064.
+  This is an agent responsibility, not an automatic synchronization service.
 - **Material-library scope (user, 2026-10-14):** #991 covers furniture upholstery/visible furnishing textiles,
   rugs and curtains; hanging towels are also approved. Do not add material editing for garments, wardrobe/cupboard/drawer
   contents, stored textiles/towels or cleaning cloths. #1028/#1030/#1031/#1032/#1033 are cancelled, not prerequisites.

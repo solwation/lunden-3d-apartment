@@ -14,9 +14,9 @@ issues inom området finns kvar. Nya issues dyker upp löpande — lista om varj
 
 ## Kvarteret Lunden (publik visning)
 
-Ändringar för `solwation/kvarteret-lunden` kräver också egna implementationsissues **här i originalrepot**, med `Lapp:`, prioritet, `in-progress` och aktiv orkesteretikett enligt samma livscykel. Ange berört repo i ärendet och #420. Läs downstreams `AGENTS.md`, `CLAUDE.md` och anpassade [orkesterkommando](https://github.com/solwation/kvarteret-lunden/blob/main/.claude/commands/orkester.md). Arbeta i en separat downstream-checkout, verifiera webbläsarbeteendet, publicera via dess Pages-workflow och länka downstream-commit och resultat innan ärendet stängs och aktivetiketterna tas bort. Ingen personlig inredning, speldata eller Cloudflare får följa med.
+Ändringar för `solwation/kvarteret-lunden` kräver egna implementationsissues **i kvarteret-lunden-repot**, enligt användarens senare uttryckliga instruktion 2026-10-16 (ersätter den centrala originalkön), med `Lapp:`, prioritet, `in-progress` och aktiv orkesteretikett enligt samma livscykel. Samordna downstreamarbete i dess #4; korslänka båda repornas ärenden vid gemensamma ändringar. Läs downstreams `AGENTS.md`, `CLAUDE.md` och anpassade [orkesterkommando](https://github.com/solwation/kvarteret-lunden/blob/main/.claude/commands/orkester.md). Arbeta i en separat downstream-checkout, verifiera webbläsarbeteendet, publicera via dess Pages-workflow och länka downstream-commit och resultat innan ärendet stängs och aktivetiketterna tas bort. Ingen personlig inredning, speldata eller Cloudflare får följa med.
 
-Om användarens hela område är avgränsat till Kvarteret Lunden används downstreamkommandot och endast dess relevanta ärenden väljs ur originalkön. Då gäller **inte** avsnitten om originalspelets rapportimport/KV/Workers nedan; publicsidan har ingen sådan tjänst. För originalarbete eller blandade sessioner gäller rapportimporten som vanligt för originaldelen.
+Om användarens hela område är avgränsat till Kvarteret Lunden används downstreamkommandot och dess ärenden väljs ur dess egen kö. Då gäller **inte** avsnitten om originalspelets rapportimport/KV/Workers nedan; publicsidan har ingen sådan tjänst. För originalarbete eller blandade sessioner gäller rapportimporten som vanligt för originaldelen.
 
 ## Rapporter från spelet (#1041, #1046)
 
