@@ -425,9 +425,9 @@ export class CatSpawner {
     this.onFishEaten = null;   // (fishFinger) => {} when it has eaten one
     this.watchPoint = null;    // () => where the visitor's eyes are (it looks after a fish finger taken away)
     this.fishScan = 0;
-    // With free hands E carries any cat; occupied hands retain petting (#1061).
+    // Ordinary cats default to petting; main.js adds explicit pet/carry choices (#1066).
     const self = this;
-    this.interact = { get name() { return self.isMiele ? 'Miele' : self.kitten ? 'kattungen' : 'katten'; }, kind: 'cat', get verb() { return self.canHold() ? 'ta upp' : 'klappa'; }, pickable: cat };
+    this.interact = { get name() { return self.isMiele ? 'Miele' : self.kitten ? 'kattungen' : 'katten'; }, kind: 'cat', get verb() { return self.isMiele && self.canHold() ? 'ta upp' : 'klappa'; }, pickable: cat };
     this.canHold = () => false; // main.js: the hand is free
     // Miele (#328): `mieleLock` = she is out (or was, and did not walk off): no second Miele; `forceMiele` (&miele) = the
     // next new cat is her; `seen` = found this time (main.js checkMiele); `held` = in the visitor's arms (miele.js);

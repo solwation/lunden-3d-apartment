@@ -101,8 +101,8 @@ tools/kittentest.html  headless test of kittens (#363): the seeded draw (~KITTEN
   and sphynx are `rare` and count as "ovanliga katter". `&catb=i` picks a breed for screenshots.
   Rare breeds have a `voice` ('trill' perser, 'rasp' sphynx) passed to `sfx.meow`/`sfx.purr`, and
   stars (one additive `Points`, raycast disabled) rise around them while they are petted.
-- With free hands, E takes any visible adult cat or kitten into the existing `MieleHeld` arms (#1061); occupied hands retain petting. Click / Krama cuddles (ordinary `petted`/`kittenPets` plus one photo per appearance; Miele keeps her special counters). Its native cat scale and size-adjusted arm grips are preserved. Short cancellable, listener-relative purrs renew while held and stop on release, hide or bicycle stow; the same cat returns on dismount. E on the floor/bed/sofa puts it down, then it meows and walks off (on furniture it fades there). F also lets a carried cat finish leaving. Tables stay blocked. Ordinary cats remain transient, including reload during bicycle stow; the existing Miele-only bicycle save schema is unchanged. `tools/catcarrytest.cjs GAME OUT` verifies the actual cat/holder/hands/audio and exact main cat dispatch in a bounded rendered scene, without full World or physical-phone acceptance.
-- With occupied hands, E pets it: purring (`sfx.purr`), eyes shut, head rubs the visitor's hand
+- With free hands, ordinary adult cats and kittens offer the existing action menu: Klappa first (E / click / 1), Ta upp second (2 / wheel then E / touch row), restoring direct petting (#1066). Miele keeps Ta upp first and Klappa second. Pickup uses the existing `MieleHeld` arms (#1061); occupied hands retain a single pet action. Click / Krama cuddles (ordinary `petted`/`kittenPets` plus one photo per appearance; Miele keeps her special counters). Its native cat scale and size-adjusted arm grips are preserved. Short cancellable, listener-relative purrs renew while held and stop on release, hide or bicycle stow; the same cat returns on dismount. E on the floor/bed/sofa puts it down, then it meows and walks off (on furniture it fades there). F also lets a carried cat finish leaving. Tables stay blocked. Ordinary cats remain transient, including reload during bicycle stow; the existing Miele-only bicycle save schema is unchanged. `tools/catcarrytest.cjs GAME OUT` verifies the actual cat/holder/hands/audio and exact main cat options factory in a bounded rendered scene, without full World or physical-phone acceptance.
+- E / Klappa pets it (also with occupied hands): purring (`sfx.purr`), eyes shut, head rubs the visitor's hand
   (`PET_TIME` in cat.js). Raycasts ignore visibility, so main.js only adds the cat as a target
   while it is visible. Tests must call `updateMatrixWorld` on objects they move (no render runs).
 - Room detection: labels come from the PDF plus `EXTRA_ROOMS` (WC/dusch upstairs, the passage by
@@ -242,3 +242,16 @@ path independently of furniture position.
 ### Cat carrying verification (#1061)
 
 `PLAYWRIGHT_MODULE=/tmp/lunden-testdeps/node_modules/playwright node tools/catcarrytest.cjs http://localhost:8941 /tmp/lunden-cats1061/native3` passed 29/29 in actual Chrome 155.0.8059.39 (CLI 0, no browser exceptions). Actual cat, holder, both Hand models and Web Audio cover adults, kittens, maine coon and Miele: native scale/arm grips, continuing purr and nonzero sampled RMS, floor release with one meow and walking/fade, occupied hands, hurt flight, bicycle stow/restore, immediate hide cancellation, replacement item, ordinary-versus-Miele hug counts and Miele-only save. Original main cat-dispatch and F-hide condition are executed verbatim. Source SHA256, individual checks and raw result live in that output directory; raw CLI output is `/tmp/lunden-cats1061-run3.log`. Adult/kitten/large arms and released PNGs were opened and inspected (kitten is lifted into view without enlargement). The scene uses empty obstacle maps, so it does not certify whole-apartment navigation, complete E/touch/F event dispatch, furniture placement, physical phone comfort, production save writes or FPS. Existing obstacle-aware walking and floor/soft-only placement paths remain shared.
+
+### Pet and pickup input regression (#1066)
+
+`tools/catpetinputtest.cjs GAME OUT` runs complete verbatim main focus, use,
+Choices, keyboard, mouse and touch listeners in Chromium with real CatSpawner,
+MieleHeld and Hand. Native raycasts target each adult/kitten head; both pet and
+pickup paths, occupied hands, Miele defaults and the riding guard are checked.
+Screenshots show the actual desktop/touch menu. Obstacles and World collaborators
+are controlled; photos are callbacks, not persisted board renders. No full World
+or physical-phone claim follows from this fixture. Run catcarrytest alongside it
+for rendered arms, size, purr audio, release and bicycle stow regression.
+
+This is personal animal gameplay, excluded from the public downstream scope.

@@ -84,7 +84,7 @@ Diskreta kantlinjer på väggar, dörrar och fast inredning gör hörn och rumsg
 | <kbd>Mellanslag</kbd> | hoppa (lågt, klarar den klippta häcken framför L-huset; med Spindelmannendräkten mycket högre; på touch knappen ⤒) |
 | <kbd>C</kbd> | håll inne för att huka dig (sittande: res dig; <kbd>Ctrl</kbd> fungerar också) |
 | <kbd>←</kbd> <kbd>→</kbd> | vrid |
-| <kbd>E</kbd> | öppna/stäng dörren du tittar på, ta upp katten, läsa lappen |
+| <kbd>E</kbd> | öppna/stäng dörren du tittar på, klappa katten eller välja Ta upp, läsa lappen |
 | <kbd>F</kbd> | möbler av/på |
 | <kbd>Q</kbd> | mät: punkt 1, punkt 2 (tredje trycket rensar) |
 | <kbd>M</kbd> | ljud av/på |
@@ -103,7 +103,7 @@ dyker upp för att öppna och stänga dörrar. 📊 visar statistiken.
 Entréhallen har en svart IKEA NISSEDAL-spegel, 65 × 150 cm.
 Garderobernas stängda skjutdörrar har täckta fogar även från sneda vinklar.
 Öppna dörrar och garderober — ibland sitter det en katt där och tvättar sig, även i städklädkammaren under trappan. Gå fram och tryck
-<kbd>E</kbd> med fria händer så bär du katten eller kattungen i famnen medan den spinner. Klicka eller tryck Krama för en kram, och använd E mot golvet för att sätta ner den: den jamar och går därifrån. Håller du redan något kan du klappa katten med E. 🐈 Statistiken (katter, dörrar, steg …) sparas i webbläsaren; varje
+<kbd>E</kbd> eller välj **Klappa** för att klappa katten eller kattungen. Välj **Ta upp** (2 på tangentbordet) för att bära den i famnen medan den spinner. Miele har fortfarande Ta upp som första val. Klicka eller tryck Krama för en kram, och använd E mot golvet för att sätta ner den: den jamar och går därifrån. Håller du redan något kan du klappa katten med E. 🐈 Statistiken (katter, dörrar, steg …) sparas i webbläsaren; varje
 sak du gör visas som en liten bricka ("✋ Klappat katt +1").
 
 *Avsluta* på Escape-menyn försöker stänga fönstret. Om webbläsaren blockerar det visas hjälp för att stänga manuellt.

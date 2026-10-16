@@ -29,7 +29,7 @@ f.onload = async () => {
   cat.object.updateMatrixWorld(true); // normally done by the next render
   camera.rotation.x = Math.atan2(0.3 - player.eyeY, 0.8);
   for (let i = 0; i < 5; i++) step(1 / 60);
-  const btn = d.getElementById('action');
+  const btn = d.querySelector('#choices button');
   let pass = check(!btn.hidden && /klappa katten/i.test(btn.textContent), `action button "${btn.textContent}"`);
   await w.__app.board.load();
   const before = w.__app.board.photos.length;
@@ -87,7 +87,7 @@ async function rareCat(lines, check) {
   for (let i = 0; i < 5; i++) step(1 / 60);
   let pass = check(cat.breed.rare && cat.voice === 'rasp', `rare cat: ${cat.breed.name}, voice "${cat.voice}"`);
   pass &= check(!cat.stars.visible, 'no stars before the pat');
-  d.getElementById('action').click();
+  d.querySelector('#choices button').click();
   for (let i = 0; i < 60; i++) step(1 / 60);
   const c = cat.stars.geometry.attributes.color.array;
   const lit = [...Array(c.length / 3).keys()].filter((i) => c[i * 3] > 0.05).length;

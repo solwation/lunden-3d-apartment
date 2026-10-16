@@ -123,8 +123,8 @@ f.onload = async () => {
   camera.rotation.x = Math.atan2(0.15 - player.eyeY, 0.8);
   for (let i = 0; i < 5; i++) step(1 / 60);
   await board.load();
-  const btn = d.getElementById('action');
-  pass &= check(!btn.hidden && /klappa katten/i.test(btn.textContent), `action button "${btn.textContent}"`);
+  const btn = d.querySelector('#choices button');
+  pass &= check(!btn.hidden && /klappa kattungen/i.test(btn.textContent), `action button "${btn.textContent}"`);
   t = rawScore();
   btn.click();
   for (let i = 0; i < 40; i++) step(1 / 60);

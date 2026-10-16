@@ -6982,3 +6982,23 @@ calls or page errors; inspected `armed-touch.png` shows the actual Skjut button.
 The original missing-bike exception and then missing-customizer exception are
 retained under `/tmp/lunden-greet-1060`. This repairs fixture dependency drift,
 without a production gameplay change or apartment/physical-phone claim.
+
+## Cat pet/pickup controls (#1066)
+
+`PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/catpetinputtest.cjs GAME OUT`
+checks native adult/kitten raycasts through complete production focus, Choices,
+use and keyboard/mouse/touch listeners with real CatSpawner/MieleHeld/Hand.
+The 22 checks include empty/occupied hands, default petting, explicit carrying,
+pet/photo callbacks and Miele/riding guards. Screenshots are actual menu DOM,
+without WebGL. `catcarrytest.cjs GAME OUT` adds 29 checks with actual rendered
+arms, native purr samples, size, release, hugs and bicycle stow. These bounded
+fixtures do not certify full World, persistent board writes or physical phones.
+The full-world pet/kitten/Miele HTML fixtures use the same visible action rows.
+
+Final bounded runs passed 22/22 and 29/29, CLI 0, with no browser exceptions;
+menu and rendered-cat PNGs were opened. Artifacts and source hashes are under
+`/tmp/lunden-cats1066b/{input-final2,carry-final}`. One full-apartment pettest
+attempt produced no assertion output before being stopped after about two
+minutes (actual CLI 143); kitten/Miele cold starts were not launched. This is
+not a passing full-world regression run. Its runner log and interruption record
+are retained alongside the bounded results.

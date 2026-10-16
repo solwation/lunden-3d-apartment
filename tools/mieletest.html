@@ -88,9 +88,9 @@ f.onload = async () => {
   // E takes her up
   lookAt(cat.head.getWorldPosition(new V()));
   step(1 / 60);
-  pass &= check(/ta upp miele/i.test(btn.textContent), `the button: "${btn.textContent}"`);
+  pass &= check(/ta upp miele/i.test(d.querySelector('#choices button')?.textContent), 'first choice: ta upp Miele');
   const photos0 = board.photos.length;
-  btn.click(); step(1 / 60); step(1 / 60);
+  d.querySelector('#choices button').click(); step(1 / 60); step(1 / 60);
   scene.updateMatrixWorld(true);
   pass &= check(heldItem() === miele && cat.held && cat.object.parent === miele.model && miele.model.parent === camera, 'Miele in your arms');
   const rG = miele.model.localToWorld(new V(...miele.hugGrips[0])), lG = miele.model.localToWorld(new V(...miele.hugGrips[1]));
@@ -150,7 +150,7 @@ f.onload = async () => {
   pass &= check(stats.miele === 2 && gain2 >= 100 && gain2 < 300 && fireworks.active, `found again: +${gain2} points, fireworks`);
   // F while holding her: put down, she walks off
   lookAt(cat.head.getWorldPosition(new V())); step(1 / 60);
-  btn.click(); step(1 / 60);
+  d.querySelector('#choices button').click(); step(1 / 60);
   const held2 = heldItem() === miele;
   w.__app.toggleFurniture(false);
   step(1 / 60);

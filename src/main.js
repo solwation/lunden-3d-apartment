@@ -862,6 +862,12 @@ function checkCatButt() {
 const miele = new MieleHeld(scene, camera, cat);
 const fireworks = new HeartFireworks(scene);
 cat.canHold = () => !handBusy(miele);
+// Keep petting directly available; carrying is an explicit second action (#1066).
+cat.interact.options = () => {
+  const pet = { id: 'pet', label: `klappa ${cat.interact.name}`, run: () => cat.pet(player.pos) };
+  const take = { id: 'take', label: `ta upp ${cat.interact.name}`, run: () => { if (cat.canHold()) miele.take(); } };
+  return cat.canHold() ? (cat.isMiele ? [take, pet] : [pet, take]) : [pet];
+};
 cat.watchPoint ??= () => camera.position;
 miele.dropSpot = () => { // at your feet, a little in front
   const f = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion).setY(0).normalize().multiplyScalar(0.45);
@@ -1579,7 +1585,7 @@ function use(thing) {
     thing.toggle();
     if (thing.isOpen) bump('lids', 1, idOf(thing));
     sfx.lid(thing.object.position, thing.isOpen);
-  } else if (thing.kind === 'cat') { if (!heldItem()) miele.take(); else cat.pet(player.pos); } // All cats: into your arms with free hands (#1061)
+  } else if (thing.kind === 'cat') { if (cat.isMiele && cat.canHold()) miele.take(); else cat.pet(player.pos); } // Single-action fallback; choices also offer carrying (#1066)
   else if (thing.kind === 'olofcar') { if (olofDriver.greet()) { greet.sayMine(OLOF.car.hello[Math.floor(Math.random() * OLOF.car.hello.length)]); if (olofDriver.claimScore()) bump('olof', 1, 'car'); } } // a dad joke, he sits on; points once per arrival (#599, #658)
   else if (thing.kind === 'ghost') greetPlayer(thing.ghost); // another player (#673): a greeting, their avatar sees ours wave
   else if (thing.kind === 'towel') handWash.dry(thing, focusPoint); // dry the hands (#437)
