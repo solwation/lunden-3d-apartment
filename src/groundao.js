@@ -11,7 +11,8 @@ import { registerSeasonal } from './seasons.js';
 // shadow box follows a visited flat (main.js) and turns with the sun: `sun.shadow.matrix` is updated with each shadow
 // render, so the fade always matches what the shadow map holds. Bare trees in winter keep `bare` of their share.
 
-const shadowMatrix = { value: new THREE.Matrix4() };
+// until bound (or without a shadow map) a zero matrix puts every point on the map's rim: full baked shade everywhere
+const shadowMatrix = { value: new THREE.Matrix4().makeScale(0, 0, 0) };
 /** main.js: the sun's `shadow.matrix` (shared by reference, so it stays current). */
 export function bindGroundAOShadow(matrix) { shadowMatrix.value = matrix; }
 
