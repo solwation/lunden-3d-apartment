@@ -44,8 +44,12 @@ test('extra-front four fresh identities: actual Worker head2, body1 forgery, one
   assert.equal(rifleHeadFrontRegion(id,state,hc.slice(1),o,d),true);assert.equal(rifleHeadFrontRegion(id,state,hc.slice(1)),false);
   assert.equal(rifleHeadContact(id,state,shot,[0,0,-4],40,4),true);assert.ok(Buffer.byteLength(JSON.stringify(shot))<=PLAYERS.maxBytes);
   a.send(shot);await settle(env);let hit=a.got.filter(x=>x.t==='hit').at(-1);assert.equal(hit.head,true);assert.equal(hit.l,8);assert.equal(hit.award.points,5);
-  now+=1000;a.send({...shot,hc:[2,...hc.slice(1)],head:true,damage:999});await settle(env);hit=a.got.filter(x=>x.t==='hit').at(-1);assert.equal(hit.head,undefined);assert.equal(hit.l,7);
-  for(let j=0;j<6;j++){now+=1000;a.send({...shot,hc:undefined});await settle(env);}assert.equal(a.got.filter(x=>x.t==='hit').at(-1).l,1);
+  // #1093: version 2 is now the shared three-box contact (#974), so the unknown-version forgery uses 9. A version-2 head
+  // claim is still re-derived from the server's own boxes: on a torso ray it stays body damage.
+  now+=1000;a.send({...shot,hc:[9,...hc.slice(1)],head:true,damage:999});await settle(env);hit=a.got.filter(x=>x.t==='hit').at(-1);assert.equal(hit.head,undefined);assert.equal(hit.l,7);
+  const torso=[0,1.0*look.tall,0].map((x,i)=>x-o[i]),td=torso.map(x=>+(x/Math.hypot(...torso)).toFixed(3));
+  now+=1000;a.send({...shot,d:td,hc:[2,...hc.slice(1)],head:true,damage:999});await settle(env);hit=a.got.filter(x=>x.t==='hit').at(-1);assert.equal(hit.head,undefined,'forged v2 head claim on a torso ray');assert.equal(hit.l,6);
+  for(let j=0;j<5;j++){now+=1000;a.send({...shot,hc:undefined});await settle(env);}assert.equal(a.got.filter(x=>x.t==='hit').at(-1).l,1);
   now+=1000;a.send(shot);await settle(env);hit=a.got.filter(x=>x.t==='hit').at(-1);assert.equal(hit.dead,true);assert.equal(hit.head,true);assert.equal(hit.award.points,5);assert.equal(typeof hit.kill,'string');assert.equal(b.got.filter(x=>x.t==='hurt').at(-1).dead,true);
   now+=1000;a.send({...shot,hc:undefined});await settle(env);assert.equal(a.got.filter(x=>x.t==='hit').at(-1).l,9);
   now+=60000;for(const ws of env.PLAYERS.ctx('world').getWebSockets())ws.autoAt=new Date(now);await env.PLAYERS.ctx('world').fireAlarm();await settle(env);assert.ok(b.got.some(x=>x.t==='life'&&x.l===10));a.ws.close();b.ws.close();await settle(env);
@@ -114,7 +118,8 @@ test('greeting-Front uses existing immutable private history, keeps first arbitr
  assert.equal((await f.shoot()).head,true,'hibernate preserves supported greeting family');observer.ws.close();await f.close();
 });
 test('greeting-Front stays body-only after normalized p/r/c changes, returns, or unknown legacy history',async()=>{
- for(const changed of [{p:[.1,0,0],r:0},{p:[0,0,0],r:.02},{p:[0,0,0],r:0,c:true}]){
+ // #1093: r .02 now lies inside #955's supported greeted tiny-turn Front corridor; .03 is the first escape beyond it.
+ for(const changed of [{p:[.1,0,0],r:0},{p:[0,0,0],r:.03},{p:[0,0,0],r:0,c:true}]){
   const f=await historyFixture(0,true);f.b.send({t:'g',to:f.a.got[0].i,k:0});await settle(f.env);now+=1000;assert.equal((await f.shoot()).head,true);
   f.b.send({...changed,h:'rifle',headPoseFixed:true,turned:false});await settle(f.env);assert.equal(f.server.deserializeAttachment().headPoseFixed,false);now+=1000;
   f.b.send({p:[0,0,0],r:0,h:'rifle',headPoseFixed:true});await settle(f.env);now+=1000;f.env.PLAYERS.hibernate('world');assert.equal((await f.shoot()).head,undefined);await f.close();
