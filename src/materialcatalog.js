@@ -1,6 +1,13 @@
 // #995: compact shared catalogue, safe to import in the Worker (no Three or DOM).
 import { FURNITURE, CURTAINS, CUSHIONS, DOUBLE_BED_LINEN, BUNK_LINEN, DAYBED_LINEN, SHADE_CANOPY_TEXTILES, HOOKS, KID_HOOKS, TOWEL_HOOKS, KITCHEN_TOWEL_MATERIAL } from './config.js';
 export const MATERIAL_VERSION = 1;
+// #1070: plain neutral shades appended per family; existing IDs/order stay so saved choices resolve.
+const NEUTRAL_SHADES = [
+  ['white', 'Vit', '#f1efea'], ['cream', 'Gräddvit', '#ebe2cf'], ['lightbeige', 'Ljusbeige', '#ddd3c2'],
+  ['greige', 'Gråbeige', '#b3aa9c'], ['taupe', 'Taupe', '#8a7d71'], ['lightgrey', 'Ljusgrå', '#c6c6c2'],
+  ['midgrey', 'Mellangrå', '#8d8d8a'], ['charcoal', 'Antracit', '#4a4b4e'], ['black', 'Svart', '#262626'],
+];
+const neutrals = (prefix, category, swap = {}) => NEUTRAL_SHADES.map(([key, name, color]) => ({ id: `${prefix}-${swap[key]?.[0] ?? key}`, name: swap[key]?.[1] ?? name, category, color: swap[key]?.[2] ?? color }));
 export const MATERIAL_CHOICES = [
   { id: 'original', name: 'Original', category: 'matta' },
   { id: 'rug-sand', name: 'Sand', category: 'matta', color: '#c9bca8' },
@@ -9,6 +16,7 @@ export const MATERIAL_CHOICES = [
   { id: 'rug-stripe', name: 'Blågrå ränder', category: 'matta', color: '#788c9a', ink: '#e6e1d7', pattern: 'stripe' },
   { id: 'rug-check', name: 'Sandrutor', category: 'matta', color: '#c9bca8', ink: '#7c8574', pattern: 'check' },
   { id: 'rug-longpile-bluegrey', name: 'Blågrå långlugg', category: 'matta', color: '#788c9a' },
+  ...neutrals('rug', 'matta'),
 ];
 // #997: independent fabric family; the six existing rug choices/IDs remain unchanged.
 export const CURTAIN_MATERIAL_CHOICES = [
@@ -18,6 +26,8 @@ export const CURTAIN_MATERIAL_CHOICES = [
   { id: 'curtain-sage', name: 'Salviagrön', category: 'gardin', color: '#697e6a' },
   { id: 'curtain-stripe', name: 'Blågrå ränder', category: 'gardin', color: '#708692', ink: '#ede8dc', pattern: 'stripe' },
   { id: 'curtain-check', name: 'Sandrutor', category: 'gardin', color: '#e8e0d0', ink: '#8f9e88', pattern: 'check' },
+  // Linnebeige already covers light beige for curtains; offer the sand tone instead.
+  ...neutrals('curtain', 'gardin', { lightbeige: ['sandbeige', 'Sandbeige', '#c9bca8'] }),
 ];
 export const CURTAIN_MATERIAL_IDS = CURTAINS.map(spec => spec.materialId);
 // #1010: actual upholstered indoor seats; separate from wood, loose cushions and bedlinen.
@@ -29,6 +39,7 @@ export const UPHOLSTERY_MATERIAL_CHOICES = [
   { id: 'upholstery-olive', name: 'Olivgrön', category: 'klädsel', color: '#66705a' },
   { id: 'upholstery-stripe', name: 'Blågrå ränder', category: 'klädsel', color: '#788c9a', ink: '#e6e1d7', pattern: 'stripe' },
   { id: 'upholstery-check', name: 'Sandrutor', category: 'klädsel', color: '#c9bca8', ink: '#7c8574', pattern: 'check' },
+  ...neutrals('upholstery', 'klädsel'),
 ];
 const upholsterySerials = new Map();
 export const UPHOLSTERY_MATERIAL_IDS = FURNITURE.flatMap(it => {

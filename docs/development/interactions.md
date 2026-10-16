@@ -1476,6 +1476,15 @@ match the last native test. Earlier changelog bytes and publication times are
 unchanged. This closes only the six-rug color/pattern family; #996–#1001 and
 parent #991 retain long-pile and other textile acceptance.
 
+### Neutral textile shades (#1070)
+
+`src/materialcatalog.js` `NEUTRAL_SHADES` appends nine plain neutral colours to each of the three textile families
+(rug `rug-*`, curtain `curtain-*`, upholstery/linen/cushion/towel/shade `upholstery-*`): Vit, Gräddvit, Ljusbeige
+(curtains: Sandbeige, as Linnebeige already exists), Gråbeige, Taupe, Ljusgrå, Mellangrå, Antracit and Svart. The hex
+values are chosen design tones, not measured products. Existing IDs and order are unchanged, so saved choices still
+resolve; the Worker validates the new IDs through the same shared catalogue (`cloudflare/materialcatalog.test.mjs`).
+The terminal palette wraps (flex-wrap) and scrolls with the terminal on phone widths.
+
 ### Curtain material library (#997)
 
 All six existing Curtain sets are fixed `materialOnly` targets: editing focus opens the same library as rugs, with category `gardin`; they never enter movable pieces, pose ghosts or position-reset writes. The library previews locally, confirms through the existing material revision endpoint, and cancels without PUT. Original restores the exact original cloth material/map, independently of legacy blind position. Existing BlindPanel keyboard/touch controls remain unchanged; the living-room three-panel set uses the same controls and saved blind ID.
