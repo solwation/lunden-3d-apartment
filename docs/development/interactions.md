@@ -1520,6 +1520,15 @@ match the last native test. Earlier changelog bytes and publication times are
 unchanged. This closes only the six-rug color/pattern family; #996–#1001 and
 parent #991 retain long-pile and other textile acceptance.
 
+### Rug pile choice (#1086)
+
+Rugs show two surfaces in the material library: Mattans tyg (colour/pattern) and Lugg (`category: 'lugg'`, choices
+Kort lugg = Original and Lång lugg = `pile-long`, `PILE_CHOICES` in `src/materialcatalog.js`). Each is saved as its own
+`materials[id].pile` entry through the usual revision-checked material write; `validMaterialChoice` accepts `pile`
+only for the six `RUG_MATERIAL_IDS`, so the Worker validates it from the shared catalogue
+(`cloudflare/materialcatalog.test.mjs`). Saved layouts without `pile` keep the short look. The library's status line
+names the surface-specific choice (e.g. Kort lugg). Rendering: [graphics](graphics.md#shortlong-pile-on-every-rug-1086).
+
 ### Neutral textile shades (#1070)
 
 `src/materialcatalog.js` `NEUTRAL_SHADES` appends nine plain neutral colours to each of the three textile families

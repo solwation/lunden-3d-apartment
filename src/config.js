@@ -4798,7 +4798,10 @@ export const POWER = {
 // #995: visual assumptions for the generic rug swatches, not fabric measurements.
 // #1009: visual guesses, metres; effective flat support uses the maximum (backing h + .002 gap + fiberHeight); the plush surface varies below it.
 export const LONG_PILE = { fiberHeight: .045, gridX: 156, gridZ: 96, minLoft: .55,
-  wavelength: .18, fringe: .008, edge: .005, lowShade: .8, shadeNoise: .08, maxTriangles: 33000, maxBytes: 1000000 };
+  wavelength: .18, fringe: .008, edge: .005, lowShade: .8, shadeNoise: .08, maxTriangles: 33000, maxBytes: 1000000,
+  // #1086: the generic every-rug variant (visual guesses): grid spacing m (capped at gridX*gridZ cells) and a finer,
+  // more contrasted tuft field so the shag reads through printed patterns.
+  cell: .02, shag: { wavelength: .07, lowShade: .62, shadeNoise: .16 } };
 // #1026: existing movable cloth fixtures, excluding their rigid parts and lamp glow effects.
 export const SHADE_CANOPY_TEXTILES = {
   parasol: { id: 'canopy', name: 'Parasollväven' },

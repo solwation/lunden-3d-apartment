@@ -3203,21 +3203,34 @@ function rugLibraryMap(item, choice) {
   rugMaps.set(key, map); return map;
 }
 // #1009: dense connected plush, with smooth height/normal variation and a rounded frayed perimeter.
-function longPileMesh(item, color) {
-  const P=LONG_PILE, base=item.h+.002, pos=[],colors=[],indices=[],tint=new THREE.Color(color), gx=P.gridX,gz=P.gridZ;
+// #1086: `flat` (any rug's flat textile mesh) makes a generic variant for every rug: grid scaled to the rug,
+// round rugs mapped onto a disc, rounded bath-mat corners, UVs matching the flat mesh so the chosen colour/pattern
+// map carries over, shade-only vertex colours, and the flat mesh's own geometry as backing (still one draw).
+function longPileMesh(item, color, flat) {
+  const P=flat?{...LONG_PILE,...LONG_PILE.shag}:LONG_PILE, base=item.h+.002, pos=[],colors=[],uvs=[],indices=[],tint=new THREE.Color(color);
+  const round=item.shape==='round', W=item.w??item.d, D=item.d, metre=item.pattern==='bobble';
+  let gx=P.gridX,gz=P.gridZ;
+  if(flat){gx=Math.max(8,Math.round(W/P.cell));gz=Math.max(8,Math.round(D/P.cell));const k=Math.min(1,Math.sqrt(P.gridX*P.gridZ/(gx*gz)));gx=Math.max(8,Math.floor(gx*k));gz=Math.max(8,Math.floor(gz*k));}
   const hash=(x,z)=>{const n=Math.sin(x*127.1+z*311.7)*43758.5453;return n-Math.floor(n);}; // same deterministic noise family as furCushion
   const noise=(x,z,scale)=>{x/=scale;z/=scale;const ix=Math.floor(x),iz=Math.floor(z),u=x-ix,v=z-iz,s=u*u*(3-2*u),t=v*v*(3-2*v);
     return THREE.MathUtils.lerp(THREE.MathUtils.lerp(hash(ix,iz),hash(ix+1,iz),s),THREE.MathUtils.lerp(hash(ix,iz+1),hash(ix+1,iz+1),s),t);};
-  const vertex=(x,y,z,shade)=>{pos.push(x,y,z);colors.push(tint.r*shade,tint.g*shade,tint.b*shade);return pos.length/3-1;};
+  const uvOf=(x,z)=>metre?[x,-z]:round?[x/D+.5,z/D+.5]:[x/W+.5,.5-z/D];
+  const vertex=(x,y,z,shade)=>{pos.push(x,y,z);colors.push(tint.r*shade,tint.g*shade,tint.b*shade);if(flat)uvs.push(...uvOf(x,z));return pos.length/3-1;};
+  const place=(i,j)=>{ // grid point → rug plane: rectangle, disc (round) or rounded rectangle (corner)
+    let x=(i/gx-.5)*W,z=(j/gz-.5)*D;
+    if(flat&&round){const a=2*i/gx-1,b=2*j/gz-1;x=a*Math.sqrt(1-b*b/2)*W/2;z=b*Math.sqrt(1-a*a/2)*D/2;}
+    else if(flat&&item.corner){const r=item.corner,cx=W/2-r,cz=D/2-r;if(Math.abs(x)>cx&&Math.abs(z)>cz){const dx=Math.abs(x)-cx,dz=Math.abs(z)-cz,l=Math.hypot(dx,dz);if(l>r){x=Math.sign(x)*(cx+dx*r/l);z=Math.sign(z)*(cz+dz*r/l);}}}
+    return [x,z];
+  };
   const field=[];let low=Infinity,high=-Infinity;
   for(let j=0;j<=gz;j++)for(let i=0;i<=gx;i++){
-    const x=(i/gx-.5)*item.w,z=(j/gz-.5)*item.d;
+    const [x,z]=place(i,j);
     const h=.6*noise(x,z,P.wavelength)+.3*noise(x,z,P.wavelength/2)+.1*noise(x,z,P.wavelength/4);
     field.push(h);low=Math.min(low,h);high=Math.max(high,h);
   }
   for(let j=0;j<=gz;j++)for(let i=0;i<=gx;i++){
-    const f=(field[j*(gx+1)+i]-low)/(high-low),edge=i===0||i===gx||j===0||j===gz;
-    const x=(i/gx-.5)*item.w+(edge?(hash(i,j)-.5)*P.fringe:0),z=(j/gz-.5)*item.d+(edge?(hash(j,i)-.5)*P.fringe:0);
+    const f=(field[j*(gx+1)+i]-low)/(high-low),edge=i===0||i===gx||j===0||j===gz,[px,pz]=place(i,j);
+    const x=px+(edge?(hash(i,j)-.5)*P.fringe:0),z=pz+(edge?(hash(j,i)-.5)*P.fringe:0);
     vertex(x,base+P.fiberHeight*(P.minLoft+(1-P.minLoft)*f),z,P.lowShade+(1-P.lowShade)*f+P.shadeNoise*(hash(i+3,j+7)-.5));
   }
   for(let j=0;j<gz;j++)for(let i=0;i<gx;i++){const v=j*(gx+1)+i;indices.push(v,v+gx+1,v+1,v+1,v+gx+1,v+gx+2);}
@@ -3229,16 +3242,16 @@ function longPileMesh(item, color) {
   let previous=perimeter;
   for(let ring=1;ring<=2;ring++){
     const current=perimeter.map(id=>{const x=pos[id*3],y=pos[id*3+1],z=pos[id*3+2],middle=ring===1;
-      return vertex(x*(1+(middle?P.edge:-P.edge)/(item.w/2)),middle?base+(y-base)*.55:.003,z*(1+(middle?P.edge:-P.edge)/(item.d/2)),middle?.8:.7);});
+      return vertex(x*(1+(middle?P.edge:-P.edge)/(W/2)),middle?base+(y-base)*.55:.003,z*(1+(middle?P.edge:-P.edge)/(D/2)),middle?.8:.7);});
     for(let k=0;k<current.length;k++){const n=(k+1)%current.length;indices.push(previous[k],previous[n],current[k],previous[n],current[n],current[k]);}
     previous=current;
   }
   // The old backing remains under the loft; all connected detail is still a single draw.
-  const backing=new RoundedBoxGeometry(item.w,item.h,item.d,2,Math.min(P.edge,item.h/2)),offset=pos.length/3,bp=backing.attributes.position;
-  for(let i=0;i<bp.count;i++)vertex(bp.getX(i),bp.getY(i)+item.h/2+.002,bp.getZ(i),.7);
+  const own=!flat, backing=own?new RoundedBoxGeometry(item.w,item.h,item.d,2,Math.min(P.edge,item.h/2)):flat.geometry,offset=pos.length/3,bp=backing.attributes.position,lift=own?item.h/2+.002:flat.position.y;
+  for(let i=0;i<bp.count;i++)vertex(bp.getX(i),bp.getY(i)+lift,bp.getZ(i),.7);
   if(backing.index)for(const id of backing.index.array)indices.push(offset+id);else for(let i=0;i<bp.count;i++)indices.push(offset+i);
-  backing.dispose();
-  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geometry.setIndex(indices);geometry.computeVertexNormals();
+  if(own)backing.dispose();
+  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));if(flat)geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));geometry.setIndex(indices);geometry.computeVertexNormals();
   const bytes=Object.values(geometry.attributes).reduce((n,a)=>n+a.array.byteLength,geometry.index.array.byteLength);
   if(geometry.index.count/3>P.maxTriangles||bytes>P.maxBytes)throw Error('Long-pile geometry exceeds its bounded budget');
   const material=new THREE.MeshStandardMaterial({vertexColors:true,roughness:1,side:THREE.DoubleSide,forceSinglePass:true});
@@ -3246,18 +3259,29 @@ function longPileMesh(item, color) {
 }
 function bindRugMaterials(g, item) {
   const mesh = g.children[0], original = mesh.material, variants = new Map([['original', original]]);
-  let pile; const originalTop = g.userData.rugTop;
-  const surface = { id: 'textile', name: 'Mattans tyg', choice: 'original', original, affectsSupport: true,
-    apply(id) {
-      const choice = materialChoice(id === 'rug-longpile-bluegrey' && item.materialFamily !== 'living-room' ? 'original' : id) ?? materialChoice('original');
-      const tall = choice.id === 'rug-longpile-bluegrey';
-      if (tall && !pile) { pile = longPileMesh(item, choice.color); g.add(pile); surface.prepare?.(pile); variants.set(choice.id,pile.material); }
-      if(pile)pile.visible=tall; mesh.visible=!tall;
-      g.userData.rugTop = originalTop + (tall ? LONG_PILE.fiberHeight : 0);
-      if (!variants.has(choice.id)) { const mat = original.clone(); mat.color.set(0xffffff); mat.map = rugLibraryMap(item, choice); variants.set(choice.id, mat); }
-      mesh.material = variants.get(choice.id); surface.prepare?.(mesh); surface.choice = choice.id;
-    } };
-  g.userData.materialSurfaces = [surface]; return g;
+  let pile, shag; const originalTop = g.userData.rugTop, chosen = { textile: 'original', pile: 'original' }, shagVariants = new Map();
+  // #1086: the pile surface reuses whatever textile is chosen: a clone of its flat material on the shag mesh.
+  const shagMaterial = (id, flatMaterial) => {
+    if (!shagVariants.has(id)) { const m = flatMaterial.clone(); m.vertexColors = true; m.bumpMap = null; m.side = THREE.DoubleSide; m.forceSinglePass = true; shagVariants.set(id, m); }
+    return shagVariants.get(id);
+  };
+  const render = () => {
+    const id = chosen.textile;
+    const choice = materialChoice(id === 'rug-longpile-bluegrey' && item.materialFamily !== 'living-room' ? 'original' : id) ?? materialChoice('original');
+    const tall = choice.id === 'rug-longpile-bluegrey', long = !tall && chosen.pile === 'pile-long';
+    if (tall && !pile) { pile = longPileMesh(item, choice.color); g.add(pile); textile.prepare?.(pile); variants.set(choice.id,pile.material); }
+    if (long && !shag) { shag = longPileMesh(item, '#ffffff', mesh); g.add(shag); }
+    if (!tall && !variants.has(choice.id)) { const mat = original.clone(); mat.color.set(0xffffff); mat.map = rugLibraryMap(item, choice); variants.set(choice.id, mat); }
+    if (pile) pile.visible = tall; if (shag) shag.visible = long; mesh.visible = !tall && !long;
+    g.userData.rugTop = originalTop + (tall || long ? LONG_PILE.fiberHeight : 0);
+    mesh.material = variants.get(choice.id); textile.prepare?.(mesh); textile.choice = choice.id;
+    if (long) { shag.material = shagMaterial(choice.id, variants.get(choice.id)); textile.prepare?.(shag); }
+  };
+  const textile = { id: 'textile', name: 'Mattans tyg', choice: 'original', original, affectsSupport: true,
+    apply(id) { chosen.textile = id; render(); } };
+  const pileSurface = { id: 'pile', name: 'Lugg', category: 'lugg', choice: 'original', affectsSupport: true,
+    apply(id) { chosen.pile = id === 'pile-long' ? id : 'original'; pileSurface.choice = chosen.pile; render(); } };
+  g.userData.materialSurfaces = [textile, pileSurface]; return g;
 }
 
 /** Big rug: a thin slab (w along local x, d along z), walked over (no footprint). */

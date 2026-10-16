@@ -2200,7 +2200,7 @@ function renderMaterialLibrary() {
   const currentChoiceId = (edit && edit.piece === piece && edit.surface.id === activeSurface.id)
     ? edit.choice
     : (rearrange.state.materials?.[piece.id]?.[activeSurface.id]?.choice ?? activeSurface.choice ?? 'original');
-  const currentChoiceName = materialChoice(currentChoiceId)?.name ?? 'Original';
+  const currentChoiceName = materialChoices(activeSurface.category ?? 'matta', piece.id).find(c => c.id === currentChoiceId)?.name ?? materialChoice(currentChoiceId)?.name ?? 'Original'; // #1086: e.g. Kort lugg
 
   statusEl.textContent = surfaces.length > 1
     ? `Valt föremål: ${piece.name} · Yta: ${activeSurface.name} · Valt material: ${currentChoiceName}`

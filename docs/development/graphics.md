@@ -297,6 +297,20 @@ in both representations. The dynbox has its own `throw-folded` fleece surface.
 Original restores the original atlas/bump/vertex-colour flags; generic patterns
 use the existing private UV1 material implementation. No season/stow policy,
 geometry, seating, lid contents or neighboring decorative furniture is changed.
+### Short/long pile on every rug (#1086)
+
+Every rug has a second material surface `pile` (Lugg): Original = Kort lugg (the unchanged flat mesh) or `pile-long`
+(Lång lugg). `longPileMesh(item, '#ffffff', flatMesh)` builds the generic variant lazily once per rug: grid spacing
+`LONG_PILE.cell` capped at the #1009 cell budget, round rugs mapped onto a disc, bath-mat corners rounded, the flat
+mesh's own geometry as backing (still one draw), UVs matching the flat mesh, and finer/more contrasted shade-only
+vertex colours (`LONG_PILE.shag`). Its material is a clone of the chosen textile material (map kept, bump removed,
+vertex colours on), cached per textile choice, so every colour/pattern also works with long pile. Long pile raises
+`rugTop` by `fiberHeight` like #1009, so furniture/cat support follows. The legacy `rug-longpile-bluegrey` textile
+choice keeps its own #1009 mesh and wins over the pile surface. All values are visual guesses.
+Measured in the full World (headless Chrome, real GPU, quality 3): draw calls unchanged (342 short and long,
+living room); long-pile triangles/bytes per rug: living room 31,498/0.89 MB, zigzag 31,856/0.94 MB, round 1.6 m
+16,640/0.48 MB, round 0.72 m 5,728/0.17 MB, bath mats 2,852/0.12 MB each — built and drawn only while long.
+
 ### Living-room long-pile geometry (#1009)
 
 Only the explicit `living-room` materialFamily accepts `rug-longpile-bluegrey`. The lazy cached opaque mesh uses a dense connected plush surface, smooth deterministic multiscale height/normal variation, a rounded frayed perimeter and the existing backing. It is stylised plush/loft, not individually resolved realistic yarn fibres; the lower rim remains somewhat faceted. All LONG_PILE shape values are named visual guesses. The actual surface spans38.75–59mm including the original12mm backing and2mm floor gap. The flat59mm effective support plane is deliberately a gameplay approximation to the maximum; not every visible point is59mm high.
