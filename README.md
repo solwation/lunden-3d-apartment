@@ -48,6 +48,8 @@ Duka SKANSNÄS-bordet genom att bära ut tallrikar och dricksglas från skåpen 
 
 Krukväxternas blad och stjälkar svajar mjukt när ett fönster eller en ytter-/uteplatsdörr är öppen. Regn och snö förstärker vinden; krukorna står stilla och rörelsen avtar när öppningarna stängs.
 
+Duscharna sprutar smala, separata vattenstrålar från duschhuvudet ned till golvet.
+
 På tvättbänken står en vattenkanna. Fyll den vid en rinnande kran och sikta på en krukväxt för att vattna: jorden mörknar och fönsterväxternas blad reser sig. Varje växt får en dos; tom kanna, redan vattnad växt och konstväxt ger en förklaring. Kannans vatten och bevattningen sparas även när krukor flyttas.
 
 I tvättrummet finns en korg med smutsiga plagg. Ta ett plagg, öppna maskinluckan och sikta in i trumman för att lägga in det; stängda luckor och fulla maskiner stoppar lastningen. Starta tvättprogrammet på panelen med luckan stängd: efter 35 sekunder är plaggen rena och våta. Lägg den våta tvätten i torktumlaren och kör dess 25-sekundersprogram. Vik torra plagg med användhandlingen och lägg dem på tvätthyllan i en öppen sovrumsgarderob; när hyllan är full stannar plagget i handen. Öppnade maskinluckor pausar programmen; återstående tid, plaggens plats och tillstånd sparas mellan besöken.

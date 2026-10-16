@@ -5236,3 +5236,8 @@ export const REPORTS = { maxChars: 4000, maxBytes: 16384, sessionSeconds: 3600,
 export const SHOWER_FITTINGS = {
   hoseSegments: 48, hoseRadius: 0.007, safetyColor: 0xbf2d24,
 };
+
+// Visual shower-water assumptions (guess), not measured nozzle/flow specifications (#1062).
+// One merged mesh per outlet, no per-frame vertex updates or extra lights.
+export const SHOWER_SPRAY = { jets: 36, headInset: .85, spread: .16, radius: .0013,
+  segments: 5, sides: 3, repeats: 6, speed: 3.2, opacity: .62, bend: .18 };

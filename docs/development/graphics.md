@@ -326,3 +326,31 @@ Three existing builders expose private canopy/shade handles. Parasol UV1 uses it
 TUBELAMP’s wire and weave are part of linenTextures, not a separate spiral mesh. Its optional background choice draws colour/metric pattern BEFORE exactly the existing weave/wire/bulb detail passes; the unchanged default still creates the original map/emissiveMap. Alternatives allocate only colour Texture objects and reuse the original emissiveMap; the same private shade material is retained by FloorLamp/focus/washes. Actual600 previews reuse6colour Texture objects (Original+5alternatives256×512),1original emissive Texture and1material handle:7total Texture objects at this surface, not merely5cache entries. All original material/map/emission/UV0/shape data restores without changing live lamp on/off.
 
 The separately granted render1 completed30/30checks, actualCLI0 in4.162446s with no live descendants or temporary profile. All six640×400/FOV72/DPR1 component PNGs were inspected. Original/pattern actual renderer costs match: canopy6draws/1,096triangles, TUBE5/1,260, DANI5/10,666. Canopy checks are clear, TUBE stripes retain spiral/weave/warm glow, and DANI has only discreet visible checks behind its unchanged rattan and warm glow. No new mesh, shadow pass, World or physical-phone/FPS claim follows from these component images. Native52 and schema23 remain separately recorded.
+
+## Shower spray (#1062)
+
+`water.js` gives showers 36 separated narrow nozzle jets in one merged mesh, with
+transparent moving breaks in a shared 8×128 texture. A mild quadratic fall keeps
+the angled hand shower's jets on the basin plane. `SHOWER_SPRAY` centralises visual
+assumptions (*guess*); these are not measured nozzle counts or hydraulic physics.
+The two L1007 showerSet templates retain their positions, thermostat picks, splash,
+wetness footprint, audio and transient open state. Basin streams are unchanged.
+The existing splash ring remains an inexpensive stylised floor effect.
+
+Both real overhead and hand-shower components were rendered in Chromium before
+and after, including a later spray frame, and inspected. Geometry per stream is
+40 → 1,080 triangles; component render totals grow by 1,000 triangles because the
+old transparent DoubleSide cone rendered twice. Measured component calls are
+8 → 7, with one stream mesh retained; no added light or render pass.
+`tools/showerspraytest.cjs GAME OUT [--baseline]` checks actual Tap state, sound
+lifecycle (spy), wetness, floor endpoints, static geometry and texture animation.
+Artifacts and source hashes: `/tmp/lunden-showers1062/{before,after}`.
+These are bounded components with illustrative walls/floor/lights, not World,
+audible-audio, FPS or physical-phone evidence.
+
+Equivalent-house inspection: L1007 has both affected running shower variants.
+Other modelled L flats (`VISIT_UNITS`, including L1201) use standardinterior's
+static hand-shower fixture, which deliberately does not register water outlets.
+A/B/C core/flat-door models do not build these interactive shower interiors.
+Those static/nonexistent running-water variants are unaffected; no house
+dimensions, fixtures or controls were changed.

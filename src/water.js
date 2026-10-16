@@ -1,10 +1,10 @@
 import * as THREE from 'three';
 import { sfx } from './audio.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { TAP_LEVER as P } from './config.js';
+import { TAP_LEVER as P, SHOWER_SPRAY as S } from './config.js';
 
 // Running water: every tap and shower outlet (world.taps, from interior.js) can be turned on
-// with E. A tap pours a thin stream into its basin, a shower sprays a cone onto the floor,
+// with E. A tap pours a thin stream into its basin, a shower sprays separate nozzle jets onto the floor,
 // with a splash ring and a positional hiss until it is turned off.
 
 function streakTexture() {
@@ -27,6 +27,44 @@ const waterMat = new THREE.MeshStandardMaterial({
   color: 0xd6ecf7, map: tex, transparent: true, opacity: 0.7, roughness: 0.05, depthWrite: false, side: THREE.DoubleSide,
 });
 const splashMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.45, depthWrite: false });
+
+// Transparent breaks travel along each jet, without a solid cone between nozzles.
+const sprayTex = (() => {
+  const c = document.createElement('canvas'); c.width = 8; c.height = 128;
+  const g = c.getContext('2d'), fade = g.createLinearGradient(0, 0, 0, 128);
+  for (const [at, alpha] of [[0, 0], [.12, .9], [.5, .55], [.72, 0], [1, 0]]) fade.addColorStop(at, `rgba(255,255,255,${alpha})`);
+  g.fillStyle = fade; g.fillRect(0, 0, 8, 128);
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  return t;
+})();
+const sprayMat = new THREE.MeshStandardMaterial({ color: 0xe2f3fa, map: sprayTex,
+  transparent: true, opacity: S.opacity, roughness: .2, depthWrite: false });
+
+function showerJets(spec, drop) {
+  const down = new THREE.Vector3(...spec.dir).normalize();
+  const across = new THREE.Vector3(0, 0, 1).cross(down).normalize();
+  const side = new THREE.Vector3().crossVectors(down, across).normalize();
+  const parts = [];
+  for (let i = 0; i < S.jets; i++) {
+    // Golden-angle disk fills the head, rather than outlining a hollow waterfall.
+    const a = i * Math.PI * (3 - Math.sqrt(5)), r = Math.sqrt((i + .5) / S.jets);
+    const radial = across.clone().multiplyScalar(Math.cos(a)).addScaledVector(side, Math.sin(a));
+    const start = radial.clone().multiplyScalar(spec.r * S.headInset * r);
+    const end = down.clone().multiplyScalar(drop / -down.y).addScaledVector(radial, S.spread * r);
+    end.y = -drop; // Every tilted jet reaches the basin plane, including its radial offset.
+    const middle = start.clone().lerp(end, .5);
+    middle.y += S.bend * Math.hypot(end.x - start.x, end.z - start.z);
+    const curve = new THREE.QuadraticBezierCurve3(start, middle, end);
+    const geo = new THREE.TubeGeometry(curve, S.segments, S.radius, S.sides, false);
+    const uv = geo.attributes.uv;
+    // TubeGeometry's u follows the length; make v carry downward texture motion.
+    for (let j = 0; j < uv.count; j++) uv.setXY(j, uv.getY(j), uv.getX(j) * S.repeats + i * .618);
+    parts.push(geo);
+  }
+  const geometry = mergeGeometries(parts);
+  for (const part of parts) part.dispose();
+  return geometry;
+}
 
 // One merged movable mesh per basin mixer; kept outside the static interior batch.
 function leverMesh(spec) {
@@ -63,15 +101,15 @@ export class Tap {
     const [x, y, z] = spec.pos, len = Math.max(0.05, y - spec.basin);
     this.object = new THREE.Group();
     this.object.position.set(x, y, z);
-    // stream: thin column for taps, spray cone along `dir` for showers
+    // Basin streams keep their existing geometry/material; showers have separated jets.
     const geo = spec.shower
-      ? new THREE.CylinderGeometry(spec.r * 0.9, spec.r * 0.9 + len * 0.35, len, 20, 1, true)
+      ? showerJets(spec, len)
       : new THREE.CylinderGeometry(Math.max(spec.r, 0.009), Math.max(spec.r, 0.009) * 0.75, len, 10, 1, true);
-    geo.translate(0, -len / 2, 0);
+    if (!spec.shower) geo.translate(0, -len / 2, 0);
     const [dx, dy, dz] = spec.dir;
     const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, -1, 0), new THREE.Vector3(dx, dy, dz).normalize());
-    geo.applyQuaternion(q);
-    this.stream = new THREE.Mesh(geo, waterMat);
+    if (!spec.shower) geo.applyQuaternion(q);
+    this.stream = new THREE.Mesh(geo, spec.shower ? sprayMat : waterMat);
     this.stream.renderOrder = 2;
     this.splash = new THREE.Mesh(new THREE.RingGeometry(0.01, spec.shower ? 0.2 : 0.03, 24).rotateX(-Math.PI / 2), splashMat);
     // where the stream lands
@@ -147,4 +185,5 @@ export class Tap {
 /** Scroll the shared water texture (call once per frame). */
 export function animateWater(dt) {
   tex.offset.y -= dt * 2.2;
+  sprayTex.offset.y -= dt * S.speed;
 }
