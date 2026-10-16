@@ -15,8 +15,10 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   Record source commit SHAs and verify the affected downstream behaviour before publishing. Report the downstream
   commit and verification, or explain why the change does not apply. If the initial clean import is not ready, access
   is unavailable or a transfer is concretely blocked, record the source SHA, affected files and remaining work in
-  a downstream issue (initial import: [#1](https://github.com/solwation/kvarteret-lunden/issues/1)); do not silently drop it
-  or claim synchronization is complete. This is an agent responsibility, not an automatic synchronization service.
+  the issue in this original repository (initial import: [#1064](https://github.com/solwation/lunden-3d-apartment/issues/1064));
+  keep implementation tracking and `in-progress` here, even when code is changed in the downstream repository.
+  Do not silently drop pending work or claim synchronization is complete. This is an agent responsibility,
+  not an automatic synchronization service.
 - **Material-library scope (user, 2026-10-14):** #991 covers furniture upholstery/visible furnishing textiles,
   rugs and curtains; hanging towels are also approved. Do not add material editing for garments, wardrobe/cupboard/drawer
   contents, stored textiles/towels or cleaning cloths. #1028/#1030/#1031/#1032/#1033 are cancelled, not prerequisites.
