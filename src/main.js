@@ -45,6 +45,7 @@ import { Minimap } from './minimap.js';
 import { Compass } from './compass.js';
 import { Measure } from './measure.js';
 import { cloudTexture, groundY } from './surroundings.js';
+import { bindGroundAOShadow } from './groundao.js';
 import { Jetpack } from './jetpack.js';
 import { SpiderSuit } from './spidersuit.js';
 import { DayCycle } from './daycycle.js';
@@ -216,6 +217,7 @@ Object.assign(sun.shadow.camera, { left: -14, right: 14, top: 14, bottom: -14, n
 sun.shadow.bias = -0.0005;
 sun.shadow.normalBias = 0.02;
 scene.add(sun, sun.target);
+bindGroundAOShadow(sun.shadow.matrix); // the distant ground shadows fade out where the shadow map covers (#1079)
 // The shadow map is only redrawn when it can have changed (#48): the sun moved > 0.2°, something
 // was just opened/closed (doors, lids … swing for ~1 s), or at least twice a second.
 renderer.shadowMap.autoUpdate = false;

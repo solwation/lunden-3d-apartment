@@ -1003,7 +1003,8 @@ export function buildWorld(plan) {
   const south = [...l0.openings.south, ...l1.openings.south];
   const exterior = buildExterior({ W, D, roofTop: UNIT_TOP, north, south, frame: M.frame, wall: M.wall, site, mats: M, visits: units.map((u) => u.id) });
   scene.add(exterior);
-  const surroundings = buildSurroundings({ grass: M.grass });
+  const { xw: husLW, xe: husLE } = husLLayout(W);
+  const surroundings = buildSurroundings({ grass: M.grass, husL: { x0: husLW, x1: husLE, z0: 0, z1: D } }); // (Hus L's wall feet: ground shadows, #1079)
   const courtyard = buildCourtyard(); // walks, pergola, grill, sandboxes, boule, benches, beds (#80)
   scene.add(courtyard.object);
   outdoor.push(...courtyard.segments);

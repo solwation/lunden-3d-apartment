@@ -11,6 +11,7 @@ import { registerTrees, registerSnow } from './seasons.js';
 import { lobeGeometry, leafMaterial, trunkGeometry, barkMaterial } from './foliage.js';
 import { buildStreet } from './street.js';
 import { buildStreetSigns } from './streetsigns.js';
+import { buildGroundAO } from './groundao.js';
 import { onRoad, onWalk, pathStrip, filletGeometry } from './roads.js';
 import { wallRect } from './roofs.js';
 import {buildRiverBridges,deckAt,riverGround,riverDistance,roadBridgeSpan} from './riverbridge.js';
@@ -1148,6 +1149,8 @@ function roof(b) {
 
 /** Every tree's foot as built: [{ x, z, kind }] (tools/terraintest.html: none on asphalt or paving, #435). */
 export const treeFeet = [];
+/** Every tree's crown as built: [{ x, z, r (m), y (its centre) }] (groundao.js, #1079). */
+const aoTrees = [];
 
 function trees(rand) {
   // the trees the situation plan draws in the courtyard and the green (COURTYARD.trees), then the areas;
@@ -1174,6 +1177,7 @@ function trees(rand) {
   // crowns: one per tree, three to five lobes per big tree, an ellipsoid per young maple
   const lobes = [];
   const trunkM = [], birchM = [], m = new THREE.Matrix4(), q = new THREE.Quaternion();
+  aoTrees.length = 0; // each crown's radius and centre, for the distant ground shadows (#1079)
   for (const t of spots) {
     const r = { r1: rand(), r2: rand(), r3: rand(), r4: rand() }; // one tree, one colour (seasons.js)
     if (t.kind === 'big') {
@@ -1189,15 +1193,18 @@ function trees(rand) {
         lobes.push({ pos: new THREE.Vector3(t.x + Math.cos(a) * d, t.y + h + (k === 0 ? 3.0 : 1.8 + rand() * 1.4) * t.s, t.z + Math.sin(a) * d),
           rot: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, rand() * 6, 0)), scale: new THREE.Vector3(3.0, 2.6, 3.0).multiplyScalar(t.s * (0.8 + rand() * 0.3)), ...r });
       }
+      aoTrees.push({ x: t.x, z: t.z, r: 4.6 * t.s, y: t.y + h + 2.2 * t.s }); // lobes 1.9·s out, ~2.7·s each
     } else if (t.kind === 'birch') { // a tall white trunk, a narrow crown high up
       const h = 4.4 * t.s;
       birchM.push(m.clone().compose(new THREE.Vector3(t.x, t.y, t.z), q.identity(), new THREE.Vector3(0.55 * t.s, h, 0.55 * t.s)));
       lobes.push({ pos: new THREE.Vector3(t.x, t.y + h + 1.2 * t.s, t.z), rot: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, rand() * 6, 0)), scale: new THREE.Vector3(1.4, 2.6, 1.4).multiplyScalar(t.s), ...r, r1: 0.75 + r.r1 * 0.25 }); // r1 high: they go yellow in autumn
+      aoTrees.push({ x: t.x, z: t.z, r: 1.4 * t.s, y: t.y + h + 1.2 * t.s });
     } else {
       const young = t.kind === 'young', h = (young ? 2.6 : 3.2) * t.s;
       trunkM.push(m.clone().compose(new THREE.Vector3(t.x, t.y, t.z), q.identity(), new THREE.Vector3(young ? 0.6 * t.s : t.s, h, young ? 0.6 * t.s : t.s)));
       const sc = young ? new THREE.Vector3(1.3, 2.1, 1.3).multiplyScalar(t.s) : new THREE.Vector3(2.4, 2.6, 2.4).multiplyScalar(t.s);
       lobes.push({ pos: new THREE.Vector3(t.x, t.y + h + (young ? 1.7 : 1.6) * t.s, t.z), rot: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, rand() * 6, 0)), scale: sc, ...r });
+      aoTrees.push({ x: t.x, z: t.z, r: sc.x, y: t.y + h + (young ? 1.7 : 1.6) * t.s });
     }
   }
   // Park understory uses the same seasonal crown batch, plus persistent woody twigs in the trunk batch.
@@ -1397,7 +1404,27 @@ function groundStrip(x0, x1, z0, z1, lift) {
   return geo;
 }
 
-export function buildSurroundings({ grass }) {
+const insideRing = (x, z, p) => { let yes = false; for (let i = 0, j = p.length - 1; i < p.length; j = i++) if ((p[i][1] > z) !== (p[j][1] > z) && x < (p[j][0] - p[i][0]) * (z - p[i][1]) / (p[j][1] - p[i][1]) + p[i][0]) yes = !yes; return yes; };
+/** The distant ground shadows (#1079, src/groundao.js): every tree's crown, and the wall feet of Kv. Lunden's blocks, the
+ * old S:t Lars buildings, the mapped backdrop buildings (outlines and courtyard holes) and Hus L (`husL`: its rectangle). */
+function siteGroundAO(backdrops, husL) {
+  const rect = (b) => [[b.x0, b.z0], [b.x1, b.z0], [b.x1, b.z1], [b.x0, b.z1]];
+  const walls = [];
+  const add = (ring, isIn) => walls.push({ ring, outside: (x, z) => !isIn(x, z) });
+  for (const b of S.blocks) { const ring = !b.style ? groundOutline(b) : rect(b); add(ring, (x, z) => insideRing(x, z, ring)); }
+  if (husL) { const ring = rect(husL); add(ring, (x, z) => insideRing(x, z, ring)); }
+  for (const b of [...backdrops, backdrops.south].flatMap((g) => g?.userData.buildings ?? [])) {
+    if (!b.polygon) continue;
+    const outer = b.polygon.slice(0, -1), holes = (b.holes ?? []).map((h) => h.slice(0, -1));
+    const isIn = (x, z) => insideRing(x, z, outer) && !holes.some((h) => insideRing(x, z, h));
+    for (const ring of [outer, ...holes]) add(ring, isIn);
+  }
+  const south = (backdrops.south?.userData.trees ?? []).map((t) => ({ x: t.x, z: t.z, r: t.r, y: t.y + t.h * 0.7 }));
+  const ground = (x, z) => (z > 260 ? -3.01 : Math.max(groundY(x, z), renderedTerrainY(x, z))); // (southbackdrop.js's far level)
+  return buildGroundAO({ trees: [...aoTrees, ...south], walls, ground });
+}
+
+export function buildSurroundings({ grass, husL = null }) {
   const group = new THREE.Group();
   const historicBrick=brickTexture(),glassMaterial=neighborGlass();
   const flat = (geos, color, snow) => {
@@ -1457,7 +1484,9 @@ export function buildSurroundings({ grass }) {
     buildEastBackdrop(renderedTerrainY,historicBrick,glassMaterial), buildNorthBackdrop(renderedTerrainY,historicBrick)];
   group.add(...backdrops);
   group.userData.clocks = backdrops.flatMap(b => b.userData.clocks);
-  group.add(buildSouthBackdrop(renderedTerrainY));
+  const south = buildSouthBackdrop(renderedTerrainY);
+  group.add(south);
+  backdrops.south = south;
   // Kv. Lunden's own blocks and the old S:t Lars buildings: own façade texture and roof colour each,
   // plus a white cornice under the old roofs (#47)
   const modern = S.blocks.filter((b) => !b.style), oldB = S.blocks.filter((b) => b.style === 'old'), school = S.blocks.filter((b) => b.style === 'school');
@@ -1578,6 +1607,7 @@ export function buildSurroundings({ grass }) {
   const plinths = S.blocks.map(plinth).filter(Boolean);
   if (plinths.length) mesh(plinths, new THREE.MeshStandardMaterial({ color: 0x6e3326, roughness: 0.95 }));
   group.add(...trees(rng(3)));
+  group.add(siteGroundAO(backdrops, husL)); // distant ground shadows under the trees and along the wall feet (#1079)
   const windows = buildWindowLights(details.list), street = buildStreet(groundY); // street lamps, crossing, curbs … (#128)
   group.add(windows.object, street.object, buildStreetSigns(groundY)); // + street name signs at the junctions (#583)
   group.userData.windows = { object: windows.object, update(hour, night, power = true) { for (const b of backdrops) b.userData.updateClocks(hour); windows.update(hour, night, power); updateLoggiaLamps(night, power); street.update(night);glassMaterial.envMapIntensity=THREE.MathUtils.lerp(O.reflectionDay,O.reflectionNight,night); } };

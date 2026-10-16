@@ -5335,3 +5335,17 @@ export const SHOWER_SPRAY = { jets: 36, headInset: .85, spread: .16, radius: .00
 // the plan's shower rectangle, 0.5 = centre); rooms with machines but no shower get one `laundryGap` m in front of the
 // washer/dryer run, centred along it.
 export const FLOOR_DRAIN = { size: 0.2, grate: 0.15, bars: 8, h: 0.005, shower: { u: 0.5, v: 0.5 }, laundryGap: 0.35 };
+
+// Distant ground shadows (#1079, src/groundao.js): the sun's shadow box only covers ±14 m round its target, so trees and
+// façades further away get a baked soft darkening on the ground instead — a disc under each tree and a thin band along
+// each wall foot, one multiply-blended mesh. All values are visual choices (*guess*, tuned by eye on screenshots).
+// `tree`: darkening at a crown's centre (0 = none, 1 = black), `bare` its share left in winter (bare branches: × leaves),
+// `spread` × the crown's radius for the disc's radius, `rings` / `segs` its polar grid; `wall`: darkening at the wall foot,
+// `width` m of the band, `step` m between its vertices along a wall; `lift` m over the ground; `maxStep` m: triangles that
+// would bridge a height jump (a retaining wall, the box edge) are dropped; `fade`: the shadow map's texture-space edge
+// distance (0 = its centre, 1 = its rim) over which the baked shadows fade in, so nothing is darkened twice.
+export const GROUND_AO = {
+  tree: 0.65, bare: 0.3, spread: 1.15, rings: 3, segs: 12,
+  wall: 0.5, width: 1.0, step: 3,
+  lift: 0.03, maxStep: 0.45, fade: [0.72, 0.95],
+};

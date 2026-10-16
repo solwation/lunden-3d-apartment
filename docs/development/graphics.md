@@ -368,6 +368,21 @@ The hands' fixed conservative bounds cover every rotation; neither instanced mes
 The clock adds two draws and144 dynamic triangles, while replacing80 static desktop /64 static phone triangles.
 Isolated flat-ground campus captures:10 draws,71425 desktop /29766 phone triangles. See environment and towerclocktest.
 
+## Distant ground shadows (#1079)
+
+The sun's shadow map covers only ±14 m round its target, so `src/groundao.js` bakes soft ground darkening for everything
+further out: a disc under every tree crown (surroundings.js `aoTrees`, plus southbackdrop.js's woodland) and a thin band
+along the wall feet of Kv. Lunden's blocks, the old S:t Lars/school/HepCat buildings, the mapped backdrop buildings
+(outlines and courtyard holes) and Hus L's rectangle (world.js passes `husL`). Everything is one indexed mesh with a
+multiply-blended `ShaderMaterial` (one draw call, ~25k triangles, `renderOrder = -1`: after the opaque ground, before glass,
+water and the additive light pools), draped over `max(groundY, renderedTerrainY)`; triangles across a height jump
+(`maxStep`, e.g. the garage box edge) are dropped. Each vertex carries the point whose real shadow it stands for (`aRef`:
+the crown centre, a point 1.5 m up the wall); the vertex shader projects it with `sun.shadow.matrix` (bound by reference in
+main.js, so it follows the visited-flat box shift and the sun's angle) and fades the darkening in only outside the map's
+texture-space edge (`fade`), so nothing is darkened twice. Without a shadow map (test mode) the matrix stays identity and the
+baked shadows show everywhere. Fog fades them; in winter trees keep `bare` of their share. The multiply happens in linear
+space, so the strengths look weaker on screen than their numbers. All values are *guesses* in `GROUND_AO` (config.js).
+
 ## Furniture contact shadows (#1075)
 
 `src/contactshadow.js` gives every floor-standing loose piece a soft multiply-blended rounded rectangle over its
