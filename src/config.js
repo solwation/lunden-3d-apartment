@@ -1137,7 +1137,7 @@ export const ENTRANCE_PLANTS = {
 // position, size, colour and style below is our own *guess* — no neighbour's terrace is documented. Per terrace (id from
 // exterior.js husLTerraces): `items`, each { k: kind, u: m east of the terrace's west edge (negative: from its east edge),
 // v: m south of the set-back wall (the deck is HUS_L.court.setback − 0.25 = 1.65 m deep to the parapet), r: yaw in
-// degrees }. L1201 is left EMPTY on purpose (#573 makes it a visitable empty flat). The terrace door (court.upper's sill-0
+// degrees }; chairs and sofas face south (+z) at r 0 and r 90 turns them to face WEST (−x) (#1091: seats face their table). L1201 is left EMPTY on purpose (#573 makes it a visitable empty flat). The terrace door (court.upper's sill-0
 // opening) keeps `door.margin` m either side and `door.depth` m out from the wall clear (tools/terracedecortest.html).
 // Railing boxes hang on the railing's inner side (`railBox`); string lights are drawn by additive-free bulbs that glow
 // after dusk (no lights). `far` m: beyond it, or seen from north of the set-back wall below Hus L's roof (the building
@@ -1151,8 +1151,8 @@ export const TERRACE_DECOR = {
     L1202: { style: 'medelhav', items: [ // terracotta, white and Greek blue
       { k: 'rug', u: 1.35, v: 0.86, w: 2.3, d: 1.25, c: 0xf2efe6, s: 0x2f5d9e },
       { k: 'table', type: 'bistro', u: 1.0, v: 0.85, c: 0xf4f2ec, f: 0x2a2c2e },
-      { k: 'chair', u: 0.42, v: 0.85, r: 90, c: 0x2f5d9e },
-      { k: 'chair', u: 1.58, v: 0.85, r: -90, c: 0x2f5d9e },
+      { k: 'chair', u: 0.42, v: 0.85, r: -90, c: 0x2f5d9e },
+      { k: 'chair', u: 1.58, v: 0.85, r: 90, c: 0x2f5d9e },
       { k: 'parasol', u: 1.0, v: 0.85, R: 0.8, c: [0xf6f4ee, 0x2f5d9e] },
       { k: 'olive', u: 2.45, v: 0.36, pot: [0.24, 0.42], pc: 0xb5643c },
       { k: 'potflowers', u: 0.22, v: 0.2, pot: [0.14, 0.22], pc: 0xb5643c, c: [0xd8262f, 0xe8484f] },
@@ -1206,8 +1206,8 @@ export const TERRACE_DECOR = {
       { k: 'potflowers', u: 2.3, v: 0.18, pot: [0.15, 0.24], pc: 0xb5643c, c: [0x8a6cc0, 0xf5f2ee] },
       { k: 'potflowers', u: 2.62, v: 0.25, pot: [0.11, 0.18], pc: 0xb5643c, c: [0xf08a2c] },
       { k: 'table', type: 'bistro', u: 1.45, v: 1.02, c: 0x3f6b4a, f: 0x3f6b4a },
-      { k: 'chair', u: 0.88, v: 1.02, r: 90, c: 0x3f6b4a, cc: 0xf08fb8 },
-      { k: 'chair', u: 2.02, v: 1.02, r: -90, c: 0x3f6b4a },
+      { k: 'chair', u: 0.88, v: 1.02, r: -90, c: 0x3f6b4a, cc: 0xf08fb8 },
+      { k: 'chair', u: 2.02, v: 1.02, r: 90, c: 0x3f6b4a },
       { k: 'bush', u: 4.62, v: 0.42, pot: [0.24, 0.4], pc: 0xf3f0e8, c: 0x3f6f3a, bloom: [0xe9a1c8, 0xc98fd6] },
       { k: 'banana', u: -0.35, v: 1.25, pot: [0.2, 0.36], pc: 0xb5643c, s: 0.75 },
       { k: 'railbox', u: 0.2, u1: 2.7, c: [0xe34b8c, 0xf5f2ee, 0x8a6cc0, 0xf08fb8], trail: true },
@@ -1226,8 +1226,8 @@ export const TERRACE_DECOR = {
       { k: 'raised', u: 0.62, v: 0.3, len: 1.05, crop: 'tomato' },
       { k: 'raised', u: 1.85, v: 0.3, len: 1.05, crop: 'herbs' },
       { k: 'table', type: 'bistro', u: 1.25, v: 1.17, c: 0xc8b48a, f: 0x2b2d2f },
-      { k: 'chair', u: 0.68, v: 1.17, r: 90, c: 0x9a7650 },
-      { k: 'chair', u: 1.82, v: 1.17, r: -90, c: 0x9a7650 },
+      { k: 'chair', u: 0.68, v: 1.17, r: -90, c: 0x9a7650 },
+      { k: 'chair', u: 1.82, v: 1.17, r: 90, c: 0x9a7650 },
       { k: 'grill', u: 4.55, v: 0.45, c: 0xa62a24 },
       { k: 'olive', u: -0.36, v: 1.22, pot: [0.2, 0.36], pc: 0xb5643c, s: 0.8 },
       { k: 'can', u: 2.35, v: 0.8, r: 30, c: 0x2f7a5a },
@@ -1236,7 +1236,7 @@ export const TERRACE_DECOR = {
     L1209: { style: 'lounge', items: [ // a corner sofa, a low table, big palms and lights (the widest terrace, at the gable)
       { k: 'rug', u: 1.4, v: 0.9, w: 2.3, d: 1.3, c: 0x7a5c48, s: 0xd9c7a8 },
       { k: 'sofa', u: 1.3, v: 0.4, len: 2.2, c: 0x6e5a44, cc: 0xe6e1d6, pillows: [0x2f5d9e, 0xe2b33c, 0xc9472f] },
-      { k: 'sofa', u: 0.42, v: 1.12, len: 0.75, r: 90, end: true, c: 0x6e5a44, cc: 0xe6e1d6, pillows: [0x3e8fb0] },
+      { k: 'sofa', u: 0.42, v: 1.12, len: 0.75, r: -90, end: true, c: 0x6e5a44, cc: 0xe6e1d6, pillows: [0x3e8fb0] },
       { k: 'table', type: 'low', u: 1.55, v: 1.18, w: 0.85, d: 0.5, c: 0x6e5a44, f: 0x6e5a44, lantern: true },
       { k: 'palm', u: 4.6, v: 0.45, pot: [0.28, 0.56], pc: 0x2e3133, s: 1.1 },
       { k: 'palm', u: -0.45, v: 1.15, pot: [0.24, 0.48], pc: 0x2e3133, s: 0.85 },
@@ -1252,6 +1252,8 @@ export const TERRACE_DECOR = {
 // EVERY item, position, and style below is our own *guess* — no neighbour's patio is documented.
 // Per patio (id L1001–L1008 from exterior.js husLLayout; L1007 is skipped as our own flat has its furniture):
 // `items`, each { k: kind, u: m east of unit origin ox, v: m south of south facade D (12.748), r: yaw in degrees }.
+// The models face south (+z, away from the façade) at r 0; r 90 turns them to face EAST (+x) — the opposite sense of
+// TERRACE_DECOR. #1091: chairs face their table, sofas have their backs to the façade.
 // The patio door (u 0.95–1.87) and passage to the hedge opening (u 0.0–1.26) keep clear.
 // Reuses existing models aborgtable, aborgchair, slattable, veronasofa, randers, planter, dynbox.
 export const PATIO_DECOR = {
@@ -1263,8 +1265,8 @@ export const PATIO_DECOR = {
       style: 'café',
       items: [
         { k: 'aborgtable', u: 3.7, v: 1.9, r: 0 },
-        { k: 'aborgchair', u: 3.0, v: 1.9, r: -90 },
-        { k: 'aborgchair', u: 4.4, v: 1.9, r: 90 },
+        { k: 'aborgchair', u: 3.0, v: 1.9, r: 90 },
+        { k: 'aborgchair', u: 4.4, v: 1.9, r: -90 },
         { k: 'planter', u: 4.9, v: 3.2, plant: 'agave', r: 0 },
         { k: 'planter', u: 2.5, v: 3.2, plant: 'palm', r: 0 },
       ],
@@ -1274,7 +1276,7 @@ export const PATIO_DECOR = {
       items: [
         { k: 'veronasofa', part: 'divan1', u: 4.2, v: 1.1, r: 180 },
         { k: 'randers', u: 3.1, v: 1.3, r: 0 },
-        { k: 'aborgchair', u: 4.2, v: 2.1, r: 0 },
+        { k: 'aborgchair', u: 2.45, v: 1.0, r: 0 },
         { k: 'planter', u: 4.9, v: 3.1, plant: 'banana', r: 45 },
       ],
     },
@@ -1282,8 +1284,8 @@ export const PATIO_DECOR = {
       style: 'trä & dynor',
       items: [
         { k: 'slattable', u: 3.8, v: 2.0, r: 0 },
-        { k: 'aborgchair', u: 3.8, v: 1.3, r: 180 },
-        { k: 'aborgchair', u: 3.8, v: 2.7, r: 0 },
+        { k: 'aborgchair', u: 3.8, v: 1.3, r: 0 },
+        { k: 'aborgchair', u: 3.8, v: 2.7, r: 180 },
         { k: 'dynbox', u: 5.2, v: 1.5, r: -90 },
         { k: 'planter', u: 4.8, v: 3.2, plant: 'agave', r: 0 },
       ],
@@ -1291,7 +1293,7 @@ export const PATIO_DECOR = {
     L1004: {
       style: 'sofgrupp',
       items: [
-        { k: 'veronasofa', part: 'sofa', u: 3.8, v: 0.9, r: 180 },
+        { k: 'veronasofa', part: 'sofa', u: 3.8, v: 0.9, r: 0 },
         { k: 'slattable', u: 3.8, v: 1.9, r: 180 },
         { k: 'randers', u: 4.9, v: 1.0, r: 0 },
         { k: 'planter', u: 4.9, v: 3.0, plant: 'palm', r: 30 },
@@ -1301,8 +1303,8 @@ export const PATIO_DECOR = {
       style: 'bistro & dynbox',
       items: [
         { k: 'aborgtable', u: 3.6, v: 2.1, r: 45 },
-        { k: 'aborgchair', u: 3.0, v: 2.1, r: -90 },
-        { k: 'aborgchair', u: 4.2, v: 2.1, r: 90 },
+        { k: 'aborgchair', u: 3.0, v: 2.1, r: 90 },
+        { k: 'aborgchair', u: 4.2, v: 2.1, r: -90 },
         { k: 'dynbox', u: 5.2, v: 1.4, r: -90 },
         { k: 'planter', u: 2.5, v: 3.2, plant: 'banana', r: 0 },
       ],
@@ -1312,7 +1314,7 @@ export const PATIO_DECOR = {
       items: [
         { k: 'veronasofa', part: 'divan1', u: 4.0, v: 1.2, r: 180 },
         { k: 'slattable', u: 4.0, v: 2.1, r: 180 },
-        { k: 'aborgchair', u: 4.8, v: 2.1, r: 90 },
+        { k: 'aborgchair', u: 4.8, v: 2.1, r: -90 },
         { k: 'planter', u: 2.6, v: 3.2, plant: 'agave', r: 0 },
         { k: 'planter', u: 5.0, v: 1.2, plant: 'palm', r: 30 },
       ],
@@ -1320,10 +1322,10 @@ export const PATIO_DECOR = {
     L1008: {
       style: 'veronagrupp',
       items: [
-        { k: 'veronasofa', part: 'sofa', u: 4.0, v: 0.9, r: 180 },
+        { k: 'veronasofa', part: 'sofa', u: 4.0, v: 0.9, r: 0 },
         { k: 'slattable', u: 4.0, v: 1.9, r: 180 },
-        { k: 'aborgchair', u: 3.0, v: 1.9, r: -90 },
-        { k: 'aborgchair', u: 5.0, v: 1.9, r: 90 },
+        { k: 'aborgchair', u: 3.0, v: 1.9, r: 90 },
+        { k: 'aborgchair', u: 5.0, v: 1.9, r: -90 },
         { k: 'planter', u: 5.2, v: 3.0, plant: 'palm', r: 60 },
       ],
     },

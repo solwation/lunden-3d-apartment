@@ -15,6 +15,7 @@ import { windShadow } from './plantwind.js';
 
 const KEEP = ['position', 'normal', 'uv', 'color', 'plantWind'];
 const HIDDEN = 7;
+const SEATS = ['aborgchair', 'veronasofa']; // seats with a back (a Verona divan has none)
 
 const BUILD = {
   aborgtable: (it) => aborgtable({ decorative: true }),
@@ -66,6 +67,8 @@ export function buildPatioDecor({ units, site, xw, xe, D, roofTop = 5.5 }) {
         y1: bb.max.y,
         u: it.u,
         v: it.v,
+        // #1091: the way a seat faces (plan x, z) — the models face +z at yaw 0 (their backs at −z)
+        face: SEATS.includes(it.k) && (it.k !== 'veronasofa' || (it.part ?? 'sofa') === 'sofa') ? [Math.sin(yaw), Math.cos(yaw)] : null,
       });
 
       obj.traverse((m) => {

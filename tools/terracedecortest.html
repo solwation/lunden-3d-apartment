@@ -71,6 +71,16 @@ async function run() {
       && i.x1 > r.door.x0 - dm && i.x0 < r.door.x1 + dm && i.z0 < zs + T.door.depth);
     check(!blocked.length, `${t.id}: the terrace door (${r.door.x0.toFixed(2)}…${r.door.x1.toFixed(2)}) is clear ${blocked.map((i) => i.k).join(', ')}`);
   }
+  // #1091: every chair / sofa faces its terrace's table (the nearest one) — none turns its back on it
+  for (const r of recs) {
+    const mid = (it) => [(it.x0 + it.x1) / 2, (it.z0 + it.z1) / 2];
+    const tables = r.items.filter((i) => i.k === 'table').map(mid);
+    const wrong = r.items.filter((i) => i.face && tables.length).filter((i) => {
+      const [x, z] = mid(i), [tx, tz] = tables.map(([a, b]) => [a - x, b - z]).sort((p, q) => Math.hypot(...p) - Math.hypot(...q))[0];
+      return (i.face[0] * tx + i.face[1] * tz) / Math.hypot(tx, tz) < 0.5;
+    });
+    if (r.items.some((i) => i.face)) check(!wrong.length, `${r.id}: chairs and sofas face the table ${wrong.map((i) => i.k).join(', ')}`);
+  }
   check(recs.some((r) => r.items.some((i) => i.k === 'railbox')) && recs.filter((r) => r.items.some((i) => i.k === 'railbox')).length >= 6, 'railing boxes on most terraces');
   for (const k of ['palm', 'lounger', 'table', 'parasol', 'grill', 'lights', 'rug']) check(recs.some((r) => r.items.some((i) => i.k === k)), `somewhere: ${k}`);
 

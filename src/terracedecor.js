@@ -313,7 +313,9 @@ export function buildTerraceDecor(exterior, D) {
       for (const g of all) { g.computeBoundingBox(); bb.union(g.boundingBox); if (p.solid.includes(g)) foot.union(g.boundingBox); }
       if (foot.isEmpty()) foot.copy(bb);
       rec.items.push({ k: it.k, x0: foot.min.x, x1: foot.max.x, z0: foot.min.z, z1: foot.max.z, y1: bb.max.y - info.deck,
-        crown: { x0: bb.min.x, x1: bb.max.x, z0: bb.min.z, z1: bb.max.z } });
+        crown: { x0: bb.min.x, x1: bb.max.x, z0: bb.min.z, z1: bb.max.z },
+        // #1091: the way a chair / sofa faces (plan x, z): built facing +z, turned by −r (so r 90 faces −x, west)
+        face: it.k === 'chair' || it.k === 'sofa' ? [-Math.sin((it.r ?? 0) * Math.PI / 180), Math.cos((it.r ?? 0) * Math.PI / 180)] : null });
     });
     records.push(rec);
   }

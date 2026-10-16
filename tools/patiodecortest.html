@@ -76,6 +76,23 @@ async function run() {
     check(!zOff.length, `${id}: items within patio depth ${zOff.map((i) => `${i.k} z=${i.z0.toFixed(2)}..${i.z1.toFixed(2)}`).join(', ')}`);
   }
 
+  // #1091: seats face their table or the courtyard, never the façade (backs against the house, as a person sets them)
+  const mid = (it) => [(it.x0 + it.x1) / 2, (it.z0 + it.z1) / 2];
+  for (const id of EXPECTED_UNITS) {
+    const r = byId[id];
+    if (!r) continue;
+    const wrong = [];
+    for (const it of r.items.filter((i) => i.face)) {
+      const [x, z] = mid(it);
+      const tables = r.items.filter((t) => t.k === 'aborgtable' || t.k === 'slattable')
+        .map((t) => { const [tx, tz] = mid(t); return { dx: tx - x, dz: tz - z, d: Math.hypot(tx - x, tz - z) }; })
+        .filter((t) => t.d < 1.3).sort((a, b) => a.d - b.d);
+      const ok = tables.length ? (it.face[0] * tables[0].dx + it.face[1] * tables[0].dz) / tables[0].d > 0.7 : it.face[1] > 0.7;
+      if (!ok) wrong.push(`${it.k} at u ${it.u} v ${it.v}`);
+    }
+    check(!wrong.length, `${id}: seats face their table or the courtyard ${wrong.join(', ')}`);
+  }
+
   // Gate culling tests
   const cam = camera.clone();
   const seen = (x, y, z) => {
