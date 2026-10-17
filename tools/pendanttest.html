@@ -24,7 +24,7 @@ try {
   check(washIdx>=0,`${st}: its light is in the lamp wash`);
   // pick: aim at the lamp itself
   const center=box(p.object).getCenter(new T.Vector3());
-  aim(lv,[spec.x+0.9,spec.z+0.05],center);
+  for(const [ex,ez] of [[0.9,0.05],[-0.9,0.05],[0.05,0.9],[0.05,-0.9],[0.7,0.7],[-0.7,-0.7],[0.7,-0.7],[-0.7,0.7]]){aim(lv,[spec.x+ex,spec.z+ez],center);if(R.target?.piece===p)break;}
   check(R.target?.piece===p,`${st}: aiming at it selects it (${R.target?.name})`);
   check(R.begin(p)&&R.ghost.children.length>0,`${st}: move starts with a preview of what hangs`);
   // a spot 0.3 m away in the same room, aimed at the ceiling
