@@ -1,5 +1,17 @@
 import { SKIN, HAIR, TOPS, PANTS, SHOES, encodeAvatarLook, decodeAvatarLook, avatarLook } from './config.js';
 
+/** The E choice every mirror offers (#1110): the avatar editor. */
+export const mirrorChoice = () => ({ label: 'byt utseende vid spegeln', run: () => openAvatarCustomizer() });
+
+/** An E target for a whole mirror (#1110): its glass and frame open the avatar editor. Meshes that already have a target
+ * of their own keep it (a night light's pick box takes over later, lights.js). */
+export function mirrorTarget(object, name, level = 0) {
+  const t = { name, kind: 'mirror', verb: 'spegla dig i', pickable: object, object, level,
+    options: () => [mirrorChoice()], toggle: () => openAvatarCustomizer() };
+  object.traverse((m) => { m.userData.door ??= t; });
+  return t;
+}
+
 let customizerEl = null;
 let previewCanvas = null;
 let currentLook = null;

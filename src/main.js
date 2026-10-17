@@ -1559,7 +1559,7 @@ function use(thing) {
     return;
   }
   if (thing.kind === 'fusebox') { thing.power.use(); return; } // the power cut (#604): trip it, or mend it while held
-  if (thing.visit) { visitUse(thing); return; } // a visited flat's door, window or lid (#574)
+  if (thing.visit && thing.kind !== 'mirror') { visitUse(thing); return; } // a visited flat's door, window or lid (#574; its mirrors: the avatar editor below, #1110)
   if (thing.kind !== 'note') shadowState.hold = 1.5; // reading the DOM note moves no shadow caster (#669)
   if (!heldItem() && !['rest', 'place', 'note', 'taskNote', 'clock', 'calendar', 'board', 'poster', 'paper', 'mirror'].includes(thing.kind) && focusPoint && thing === focused) hand.reach(focusPoint); // the arm reaches out (#195)
   if (thing.options && thing.kind !== 'life' && choices.rows && choices.target === thing) { // a lamp with a choice (#428): the marked row

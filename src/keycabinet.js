@@ -6,6 +6,7 @@ import { sfx } from './audio.js';
 import { glowMaterial } from './groundglow.js';
 import { mirrorMaterial } from './mirror.js';
 import { addReflector } from './reflections.js';
+import { mirrorChoice, mirrorTarget } from './customizer.js';
 
 // The hall wall on the left as you come in: a round mirror, and a Solstickan key cabinet (white
 // metal box with the matchbox boy, hinged on the left) that opens with E. Inside on a hook hangs
@@ -229,7 +230,8 @@ export function buildHallWall() {
     { object: secretaryMirror, key: 'skogsgransen', level: 0, name: 'spegeln' },
   ];
   group.add(...mirrors.map(m => m.object), cabinet.object); // (+ SKOGSGRÄNSEN over the secretary, #265)
-  return { object: group, cabinet, key: cabinet.key, secretaryMirror, mirrors, lamps };
+  const targets = mirrors.map((m) => mirrorTarget(m.object, m.name, m.level)); // E on any of them: the avatar editor (#1110)
+  return { object: group, cabinet, key: cabinet.key, secretaryMirror, mirrors, lamps, targets };
 }
 
 /** The halo's fall-off (#572): white over the frame, fading to black `halo` m out from its edge (a rounded rectangle,
@@ -276,5 +278,6 @@ function nightLight(tall, T) {
   // the pool anchor: `out` m in front of the glass, at the mirror's middle (world offset at the default pose, before any
   // saved move: rearrange.js carries it with the mirror from there)
   return { object: pick, shade: led, glows: [haloMat], height: 0, level: T.level ?? 0, name: 'spegelns nattlampa',
-    offset: [Math.sin(T.rotY) * N.out, Math.cos(T.rotY) * N.out], light: N.light };
+    offset: [Math.sin(T.rotY) * N.out, Math.cos(T.rotY) * N.out], light: N.light,
+    options: (lamp) => [{ label: lamp.isOpen ? 'släcka nattlampan' : 'tända nattlampan', run: () => lamp.toggle() }, mirrorChoice()] }; // its pick box covers the glass: E still switches the lamp, the mirror's choice second (#1110)
 }

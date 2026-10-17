@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { STANDARD as S, KITCHEN as K, LAUNDRY_SINK, INTERACTION_OUTLINE } from './config.js';
 import { Batch, tileTexture, std, frame, slabWithHole, sinkBowl, mixer, glassPanel, showerSet, tileWalls, skirting, doorwayTiles, shell, openFront, floorDrain, showerDrainAt, laundryDrainAt } from './interior.js';
+import { mirrorTarget } from './customizer.js';
 
 // Peab's standard finish for a visitable flat (#574, STANDARD in config): the fixed kitchen, laundry and wet rooms of the
 // floor plan — built where the plan's cabinet and fixture rectangles are, merged into one mesh per material. The kitchen's
@@ -357,9 +358,20 @@ function laundry(B, floor, room, y0, handled) {
   return [run];
 }
 
+const pickMat = new THREE.MeshBasicMaterial({ visible: false });
+/** An invisible E target over a bathroom mirror (#1110: the avatar editor), among the level's targets (`open`). */
+function mirrorPick(open, x0, x1, z0, z1, y0, y1, level) {
+  if (!open) return;
+  const pick = new THREE.Mesh(new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0), pickMat);
+  pick.position.set((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
+  pick.userData.noArchitectureEdges = true;
+  open.group.add(pick);
+  open.list.push(mirrorTarget(pick, 'spegeln', level));
+}
+
 /** A wet room laid out from its plan (#573): the vanity on whichever wall its sink touches, the shower's glass on its
  * open sides and a slide-bar shower set on the wall across from the opening, washer / dryer where drawn. */
-function wetRoom(B, floor, room, y0, handled) {
+function wetRoom(B, floor, room, y0, handled, open) {
   const rects = [], near = (a, b) => Math.abs(a - b) < 0.1;
   const sinkF = floor.fixtures.find((f) => f.kind === 'sink' && inside(f, room));
   const shower = floor.fixtures.find((f) => f.kind === 'shower' && inside(f, room));
@@ -375,6 +387,7 @@ function wetRoom(B, floor, room, y0, handled) {
     B.box(r.x0 - 0.005, r.x1 + 0.005, r.z0, r.z1, y0 + 0.76, y0 + 0.86, M.porcelain);
     mixer(B, wx + s * 0.06, cz, y0 + 0.86, [s, 0], M.chrome, { h: 0.14, r: 0.05, tube: 0.009 });
     B.box(Math.min(wx, wx + s * 0.007), Math.max(wx, wx + s * 0.007), cz - w / 2 + 0.05, cz + w / 2 - 0.05, y0 + 1.15, y0 + 1.95, M.mirror);
+    mirrorPick(open, Math.min(wx, wx + s * 0.02), Math.max(wx, wx + s * 0.02), cz - w / 2 + 0.05, cz + w / 2 - 0.05, y0 + 1.15, y0 + 1.95, room.level);
     rects.push(r);
   }
   if (shower) {
@@ -400,8 +413,8 @@ function wetRoom(B, floor, room, y0, handled) {
   return rects;
 }
 
-function bathroom(B, floor, room, y0, handled) {
-  if (room.generic) return wetRoom(B, floor, room, y0, handled);
+function bathroom(B, floor, room, y0, handled, open) {
+  if (room.generic) return wetRoom(B, floor, room, y0, handled, open);
   const rects = [];
   const sinkF = floor.fixtures.find((f) => f.kind === 'sink' && inside(f, room));
   const shower = floor.fixtures.find((f) => f.kind === 'shower' && inside(f, room));
@@ -416,6 +429,7 @@ function bathroom(B, floor, room, y0, handled) {
     B.box(r.x0 + 0.12, r.x1 - 0.05, cz - w / 2 + 0.06, cz + w / 2 - 0.06, y0 + 0.86, y0 + 0.862, M.chrome); // the bowl's rim
     mixer(B, r.x0 + 0.06, cz, y0 + 0.86, [1, 0], M.chrome, { h: 0.14, r: 0.05, tube: 0.009 });
     B.box(room.x0 + 0.005, room.x0 + 0.012, cz - w / 2 + 0.05, cz + w / 2 - 0.05, y0 + 1.15, y0 + 1.95, M.mirror);
+    mirrorPick(open, room.x0 + 0.005, room.x0 + 0.025, cz - w / 2 + 0.05, cz + w / 2 - 0.05, y0 + 1.15, y0 + 1.95, room.level);
     rects.push(r);
   }
   if (shower) {
@@ -440,7 +454,7 @@ export function buildStandardInterior(group, floor, li, y0, yC, wallBoxes, handl
   const tiled = f.tiled.filter((r) => r.level === li).map((r) => ({ ...r, floor: 'wet', generic: !!fit }));
   for (const room of tiled) {
     B.box(room.x0, room.x1, room.z0, room.z1, y0 + 0.001, y0 + 0.004, M.wet);
-    if (room.wallTile) { tileWalls(B, room, wallBoxes, y0, room.wallTile, M.wetWall); rects.push(...bathroom(B, floor, room, y0, handled)); }
+    if (room.wallTile) { tileWalls(B, room, wallBoxes, y0, room.wallTile, M.wetWall); rects.push(...bathroom(B, floor, room, y0, handled, open)); }
     else rects.push(...laundry(B, floor, room, y0, handled));
   }
   doorwayTiles(B, tiled, doorways, y0, { wet: M.wet });

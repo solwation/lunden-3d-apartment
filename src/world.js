@@ -1051,6 +1051,7 @@ export function buildWorld(plan) {
   scene.add(hallWall.object);
   for (const m of hallWall.mirrors) furniture.movable.push({ id: `f-mirror-${m.key}-${m.level}`,
     item: { type: 'mirror', level: m.level }, object: m.object, level: m.level, picture: true, name: m.name });
+  furniture.interactives.push(...hallWall.targets); // the hall wall's mirrors: E opens the avatar editor (#1110), hidden with F
 
   // Site: ground, patio, hedge, fences
   const site = lower.site;

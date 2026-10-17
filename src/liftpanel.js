@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { mirrorChoice, openAvatarCustomizer } from './customizer.js';
 import { LIFT_PANEL as P } from './config.js';
 import { sfx } from './audio.js';
 
@@ -141,6 +142,12 @@ export function buildLiftPanel(o) {
     frame.position.set(cx, my, mz + dz * 0.002); add(car, frame);
     const glass = new THREE.Mesh(new THREE.PlaneGeometry(mw, mh), new THREE.MeshBasicMaterial({ map: mirrorTexture() }));
     glass.rotation.y = Math.PI - yaw; glass.position.set(cx, my, mz - dz * 0.003); add(car, glass);
+    // E on it: the avatar editor (#1110), an invisible pick area over the glass (the visible meshes take no rays)
+    const pick = new THREE.Mesh(new THREE.BoxGeometry(mw, mh, 0.02), pickMat);
+    pick.position.set(cx, my, mz - dz * 0.01); pick.userData.noArchitectureEdges = true; car.add(pick);
+    const t = { kind: 'mirror', name: 'spegeln i hissen', verb: 'spegla dig i', pickable: pick,
+      options: () => [mirrorChoice()], toggle: () => openAvatarCustomizer() };
+    pick.userData.door = t; self.targets.push(t);
   }
 
   // ---- behaviour: lit buttons, the pressed look, the indicator, the sounds ----

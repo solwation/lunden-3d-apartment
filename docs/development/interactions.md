@@ -287,6 +287,12 @@ src/rearrange.js       furniture cheat (#465): § / Enter (#596; not from a focu
                        wall pieces with their reflectors; furniture builders expose wallMirrors, detached before layout restoration.
                        Bathroom mirrors/cabinets remain fixed. tools/rearrangemirrortest.html and tools/loosemirrorstest.html verify
                        independent movement, reflection, restoration, reload and fixed-mirror exclusion.
+                       #1110: every mirror offers "byt utseende vid spegeln" (customizer.js `mirrorChoice`/`mirrorTarget`, kind
+                       'mirror'): the hall wall's LINDBYN, both NISSEDAL (the entrance one via its night-light pick box: E still
+                       switches the lamp, the mirror choice is row 2), SKOGSGRÄNSEN and pineapple (world.furnitureTargets, hidden with F); the
+                       vanity, closet and bathroom LED/cabinet mirrors through their lamp/door options; each house's lift car
+                       (liftpanel.js pick box, Hus A/B/C/L); and the visited flats' bathroom mirrors (standardinterior.js
+                       `mirrorPick`, L1004/L1201; main.js `use` skips visitUse for them). The key cabinet has no glass.
                        § / Meny opens clickable rearrangement controls with a free cursor; Esc exits the mode and cancels the preview,
                        including native pointer-unlock events. Touch keeps its input mode when leaving the menu.
                        The compact edit panel shows selection/placement steps, selected-only Rotate/Cancel, Menu and Done.
