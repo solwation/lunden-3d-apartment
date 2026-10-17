@@ -13,24 +13,39 @@ const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const lines = [];
 let pass = true;
-const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+const show = (tail) => { out.textContent = lines.join('\n') + '\n' + tail; };
+const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; show('running…'); return ok; };
+// Step log (#1113): one STEP line per stage in #out, and every await is bounded, so a stalled stage ends as
+// "FAIL <step> timeout" with the final verdict instead of a runner TIMEOUT without lines.
+const STEP_MS = 90000;
+let current = 'start';
+class StepTimeout extends Error {}
+const T0 = performance.now();
+const step = (name) => { current = name; lines.push(`STEP ${name} (+${((performance.now() - T0) / 1000).toFixed(0)} s)`); show('running…'); };
+const bound = (p, ms = STEP_MS) => { let t; return Promise.race([p, new Promise((_, rej) => { t = setTimeout(() => rej(new StepTimeout(current)), ms); })]).finally(() => clearTimeout(t)); };
 const ID = 'fixed-till-mamma';
 const f = document.createElement('iframe');
 f.width = 900; f.height = 600;
 document.body.append(f);
-const load = () => new Promise((res) => { f.onload = async () => { while (!f.contentWindow.__app) await wait(100); res(f.contentWindow); }; f.src = '../index.html?v=' + Math.random(); });
-const idb = (mode, fn) => new Promise((res) => { const q = indexedDB.open('lunden'); q.onsuccess = () => { try { const t = q.result.transaction('drawings', mode), r = fn(t.objectStore('drawings')); t.oncomplete = () => { q.result.close(); res(r?.result); }; } catch (e) { q.result.close(); res(String(e)); } }; q.onerror = () => res('err'); });
+// what the game frame was doing when a step stalled
+const frameState = () => { try { const fw = f.contentWindow, fd = f.contentDocument; return `frame ${fd?.readyState}, __app ${!!fw?.__app}, loading "${(fw?.document.getElementById('loading')?.textContent ?? '').trim().slice(0, 80)}"`; } catch (e) { return String(e); } };
+const load = () => bound(new Promise((res) => { f.onload = async () => { while (!f.contentWindow.__app) await wait(100); res(f.contentWindow); }; f.src = '../index.html?v=' + Math.random(); }), 300000);
+const idb = (mode, fn) => bound(new Promise((res) => { const q = indexedDB.open('lunden'); q.onsuccess = () => { try { const t = q.result.transaction('drawings', mode), r = fn(t.objectStore('drawings')); t.oncomplete = () => { q.result.close(); res(r?.result); }; } catch (e) { q.result.close(); res(String(e)); } }; q.onerror = () => res('err'); q.onblocked = () => res('blocked'); }));
 const homes = (app) => app.posters.list.filter((p) => p.rec.id === ID);
-const settle = async (app) => { for (let i = 0; i < 50 && !homes(app).length; i++) await wait(100); await wait(300); };
+const settle = async (app) => { /* bounded: 50 polls */ for (let i = 0; i < 50 && !homes(app).length; i++) await wait(100); await wait(300); };
 
 (async () => {
   try {
     // an old saved state: a visitor's drawing stored, the home drawing never stored (it was fixed before #1099)
-    await new Promise((res) => { const r = indexedDB.deleteDatabase('lunden'); r.onsuccess = r.onerror = r.onblocked = res; });
+    step('reset storage');
+    await bound(new Promise((res) => { const r = indexedDB.deleteDatabase('lunden'); r.onsuccess = r.onerror = r.onblocked = res; }));
+    step('first load');
     let w = await load(), app = w.__app;
     await settle(app);
     const visitor = { id: 'old-visitor-1', image: 'textures/teckning-till-mamma.jpg', surface: 'wall', level: 0, pos: [30, 1.5, 30], normal: [1, 0, 0], rot: 0, time: 1, updated: 1, synced: true };
+    step('store a visitor drawing');
     await idb('readwrite', (s) => s.put(visitor));
+    step('reload with the old state');
     w = await load(); app = w.__app; await settle(app);
     let hs = homes(app);
     check(hs.length === 1 && hs[0].home && Math.abs(hs[0].rec.pos[2] - 3.40) < 1e-6 && hs[0].rec.surface === 'wall', `old state: exactly one at the default spot (${hs.length})`);
@@ -51,6 +66,7 @@ const settle = async (app) => { for (let i = 0; i < 50 && !homes(app).length; i+
     let puts = 0, deletes = 0;
     app.posters.onPut = () => puts++; app.posters.onDelete = () => deletes++;
     // the panel: Släng and Ta ner, its date
+    step('panel');
     view(hs[0]); shot('default');
     check(/titta på teckningen/i.test(btn.textContent), `prompt: "${btn.textContent}"`);
     btn.click(); app.step(1 / 60);
@@ -58,6 +74,7 @@ const settle = async (app) => { for (let i = 0; i < 50 && !homes(app).length; i+
     check(!panel.hidden && !panel.querySelector('[data-act=throw]').hidden && !panel.querySelector('[data-act=down]').hidden && /S slänger/.test(panel.querySelector('.keys').textContent), 'the panel offers Släng and Ta ner');
     check(when === 'Ritad 2 okt 18:50', `its date: "${when}"`);
     // Ta ner, put back from the hand with a blank desk: back where it was, the desk sheet untouched
+    step('take down and put back');
     const blank = app.drawing.blank;
     panel.querySelector('[data-act=down]').click(); await wait(200);
     check(app.heldItem() === app.heldDrawing && !homes(app).length, 'taken down into the hand');
@@ -65,6 +82,7 @@ const settle = async (app) => { for (let i = 0; i < 50 && !homes(app).length; i+
     hs = homes(app);
     check(hs.length === 1 && Math.abs(hs[0].rec.pos[2] - 3.40) < 1e-6 && app.drawing.blank === blank && !app.heldDrawing.held, 'put back: up where it was, not the desk sheet');
     // Ta ner, tape it up in the hall
+    step('tape up in the hall');
     view(hs[0]); btn.click(); app.step(1 / 60);
     panel.querySelector('[data-act=down]').click(); await wait(200);
     let ok = false;
@@ -78,29 +96,34 @@ const settle = async (app) => { for (let i = 0; i < 50 && !homes(app).length; i+
     hs = homes(app);
     const moved = hs[0]?.rec.pos;
     check(ok && hs.length === 1 && Math.abs(moved[2] - 3.40) > 0.05, `taped up in the hall (prompt ${ok}, ${moved?.map((v) => v.toFixed(2))})`);
+    step('saved locally');
     const stored = await idb('readonly', (s) => s.get(ID));
     check(stored && stored.pos[2] === moved[2] && !stored.synced, 'the new spot is saved locally');
     check(puts === 0 && deletes === 0, `never sent to the cloud (put ${puts}, delete ${deletes})`);
-    const remote = await app.posters.addRemote({ ...stored, pos: [0, 0, 0], updated: Date.now() + 1e6 });
+    step('server copy');
+    const remote = await bound(app.posters.addRemote({ ...stored, pos: [0, 0, 0], updated: Date.now() + 1e6 }));
     check(remote === null && homes(app).length === 1 && homes(app)[0].rec.pos[2] === moved[2], 'a server copy is ignored');
     view(hs[0]); shot('moved');
     // the cloud's sync: never pushes it, never takes it down (even if it looked synced)
-    const { Cloud } = await w.eval(`import('${w.location.origin}/src/cloud.js')`);
+    step('cloud sync');
+    const { Cloud } = await bound(w.eval(`import('${w.location.origin}/src/cloud.js')`));
     const cloud = new Cloud({ posters: app.posters, drawing: app.drawing }, 'http://cloud.invalid');
     clearInterval(cloud.timer);
     const sent = [];
     cloud.req = async (method, path) => { sent.push(`${method} ${path}`); return { ok: true, status: 200, json: async () => (path === '/drawings' && method === 'GET' ? [{ id: 'old-visitor-1', updated: 1 }] : {}), blob: async () => new Blob() }; };
     homes(app)[0].rec.synced = true;
-    await cloud.sync(); await wait(100);
+    await bound(cloud.sync()); await wait(100);
     check(homes(app).length === 1 && !sent.some((s) => s.includes(ID)), `the cloud's sync leaves it alone (${sent.join(', ')})`);
     homes(app)[0].rec.synced = undefined;
     try { localStorage.removeItem('lunden.cloud.queue'); } catch { /* */ }
     // reload: still in the hall, once, the same picture and date
+    step('reload after moving');
     w = await load(); app = w.__app; await settle(app);
     hs = homes(app);
     check(hs.length === 1 && hs[0].rec.pos[2] === moved[2] && hs[0].home, `after reload: once, in the hall (${hs.length})`);
     check(hs[0].rec.image === 'textures/teckning-till-mamma.jpg' && hs[0].rec.time === new Date(2026, 9, 2, 18, 50).getTime(), 'the same picture and date');
     // thrown away: gone now, back at its default spot on the next load
+    step('throw away');
     d = f.contentDocument; d.getElementById('start-touch').click(); await wait(50);
     const b2 = d.getElementById('action'), p2 = d.getElementById('poster-panel');
     app.posters.onDelete = () => deletes++;
@@ -110,12 +133,13 @@ const settle = async (app) => { for (let i = 0; i < 50 && !homes(app).length; i+
     b2.click(); app.step(1 / 60);
     p2.querySelector('[data-act=throw]').click(); await wait(300);
     check(!homes(app).length && !(await idb('readonly', (s) => s.get(ID))) && deletes === 0, 'thrown: off the wall, out of storage, nothing to the cloud');
+    step('reload after throwing');
     w = await load(); app = w.__app; await settle(app);
     hs = homes(app);
     check(hs.length === 1 && Math.abs(hs[0].rec.pos[2] - 3.40) < 1e-6, 'next load: back at its default spot, once');
     check(app.posters.byId('old-visitor-1'), "the visitor's drawing untouched");
-  } catch (e) { check(false, 'error: ' + (e?.stack ?? e)); }
-  out.textContent = lines.join('\n') + '\n' + (pass ? 'ALL PASS' : 'SOME FAILED');
+  } catch (e) { check(false, e instanceof StepTimeout ? `${e.message} timeout (${frameState()})` : `${current}: error: ` + (e?.stack ?? e)); }
+  show(pass ? 'ALL PASS' : 'SOME FAILED');
 })();
 </script>
 </body>
