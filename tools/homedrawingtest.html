@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Home drawing test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// The home's own drawing "Till mamma" (#618, #1099): an ordinary drawing that starts under the kitchen clock. An
+// old saved state (visitor drawings, no stored home drawing) gets exactly one; Ta ner + tape elsewhere is saved and
+// back after a reload with its picture and date; put back from the hand it goes up where it was (never the desk
+// sheet); thrown away it is back at its default spot on the next load; never sent to or removed by the cloud.
+//   google-chrome --headless=new --dump-dom http://localhost:8712/tools/homedrawingtest.html   (?shots)
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const lines = [];
+let pass = true;
+const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+const ID = 'fixed-till-mamma';
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600;
+document.body.append(f);
+const load = () => new Promise((res) => { f.onload = async () => { while (!f.contentWindow.__app) await wait(100); res(f.contentWindow); }; f.src = '../index.html?v=' + Math.random(); });
+const idb = (mode, fn) => new Promise((res) => { const q = indexedDB.open('lunden'); q.onsuccess = () => { try { const t = q.result.transaction('drawings', mode), r = fn(t.objectStore('drawings')); t.oncomplete = () => { q.result.close(); res(r?.result); }; } catch (e) { q.result.close(); res(String(e)); } }; q.onerror = () => res('err'); });
+const homes = (app) => app.posters.list.filter((p) => p.rec.id === ID);
+const settle = async (app) => { for (let i = 0; i < 50 && !homes(app).length; i++) await wait(100); await wait(300); };
+
+(async () => {
+  try {
+    // an old saved state: a visitor's drawing stored, the home drawing never stored (it was fixed before #1099)
+    await new Promise((res) => { const r = indexedDB.deleteDatabase('lunden'); r.onsuccess = r.onerror = r.onblocked = res; });
+    let w = await load(), app = w.__app;
+    await settle(app);
+    const visitor = { id: 'old-visitor-1', image: 'textures/teckning-till-mamma.jpg', surface: 'wall', level: 0, pos: [30, 1.5, 30], normal: [1, 0, 0], rot: 0, time: 1, updated: 1, synced: true };
+    await idb('readwrite', (s) => s.put(visitor));
+    w = await load(); app = w.__app; await settle(app);
+    let hs = homes(app);
+    check(hs.length === 1 && hs[0].home && Math.abs(hs[0].rec.pos[2] - 3.40) < 1e-6 && hs[0].rec.surface === 'wall', `old state: exactly one at the default spot (${hs.length})`);
+    check(app.posters.byId('old-visitor-1') && app.posters.list.length === 2, `the visitor's drawing too (${app.posters.list.length} up, it counts towards full)`);
+    let d = f.contentDocument;
+    d.getElementById('start-touch').click(); await wait(50);
+    const btn = d.getElementById('action'), panel = d.getElementById('poster-panel');
+    const view = (q) => {
+      const m = q.mesh; m.updateMatrixWorld(true);
+      const c = m.getWorldPosition(m.position.clone()), n = m.getWorldDirection(m.position.clone()).setY(0).normalize();
+      const e = c.clone().addScaledVector(n, 1.0);
+      app.player.spawn(e.x, e.z, Math.atan2(n.x, n.z)); app.player.pos.y = 0; app.player.eyeY = 1.62;
+      for (let i = 0; i < 3; i++) app.step(1 / 60);
+      app.camera.rotation.y = Math.atan2(n.x, n.z); app.camera.rotation.x = Math.atan2(c.y - app.camera.position.y, 1.0);
+      app.step(1 / 60);
+    };
+    const shot = (name) => { if (!location.search.includes('shots')) return; app.renderer.render(app.scene, app.camera); const img = document.createElement('img'); img.className = 'shot'; img.title = name; img.src = app.renderer.domElement.toDataURL('image/png'); document.body.append(img); };
+    let puts = 0, deletes = 0;
+    app.posters.onPut = () => puts++; app.posters.onDelete = () => deletes++;
+    // the panel: Släng and Ta ner, its date
+    view(hs[0]); shot('default');
+    check(/titta på teckningen/i.test(btn.textContent), `prompt: "${btn.textContent}"`);
+    btn.click(); app.step(1 / 60);
+    const when = panel.querySelector('.when').textContent;
+    check(!panel.hidden && !panel.querySelector('[data-act=throw]').hidden && !panel.querySelector('[data-act=down]').hidden && /S slänger/.test(panel.querySelector('.keys').textContent), 'the panel offers Släng and Ta ner');
+    check(when === 'Ritad 2 okt 18:50', `its date: "${when}"`);
+    // Ta ner, put back from the hand with a blank desk: back where it was, the desk sheet untouched
+    const blank = app.drawing.blank;
+    panel.querySelector('[data-act=down]').click(); await wait(200);
+    check(app.heldItem() === app.heldDrawing && !homes(app).length, 'taken down into the hand');
+    app.heldDrawing.putBack(); await wait(300);
+    hs = homes(app);
+    check(hs.length === 1 && Math.abs(hs[0].rec.pos[2] - 3.40) < 1e-6 && app.drawing.blank === blank && !app.heldDrawing.held, 'put back: up where it was, not the desk sheet');
+    // Ta ner, tape it up in the hall
+    view(hs[0]); btn.click(); app.step(1 / 60);
+    panel.querySelector('[data-act=down]').click(); await wait(200);
+    let ok = false;
+    for (let yaw = 0; yaw < 360 && !ok; yaw += 15) {
+      app.player.spawn(1.17, 1.6, yaw * Math.PI / 180); app.player.pos.y = 0; app.player.eyeY = 1.62;
+      for (let i = 0; i < 3; i++) app.step(1 / 60);
+      app.camera.rotation.y = yaw * Math.PI / 180; app.camera.rotation.x = 0; app.step(1 / 60);
+      ok = /tejpa upp/i.test(btn.textContent) && !btn.hidden;
+    }
+    if (ok) { btn.click(); await wait(400); }
+    hs = homes(app);
+    const moved = hs[0]?.rec.pos;
+    check(ok && hs.length === 1 && Math.abs(moved[2] - 3.40) > 0.05, `taped up in the hall (prompt ${ok}, ${moved?.map((v) => v.toFixed(2))})`);
+    const stored = await idb('readonly', (s) => s.get(ID));
+    check(stored && stored.pos[2] === moved[2] && !stored.synced, 'the new spot is saved locally');
+    check(puts === 0 && deletes === 0, `never sent to the cloud (put ${puts}, delete ${deletes})`);
+    const remote = await app.posters.addRemote({ ...stored, pos: [0, 0, 0], updated: Date.now() + 1e6 });
+    check(remote === null && homes(app).length === 1 && homes(app)[0].rec.pos[2] === moved[2], 'a server copy is ignored');
+    view(hs[0]); shot('moved');
+    // the cloud's sync: never pushes it, never takes it down (even if it looked synced)
+    const { Cloud } = await w.eval(`import('${w.location.origin}/src/cloud.js')`);
+    const cloud = new Cloud({ posters: app.posters, drawing: app.drawing }, 'http://cloud.invalid');
+    clearInterval(cloud.timer);
+    const sent = [];
+    cloud.req = async (method, path) => { sent.push(`${method} ${path}`); return { ok: true, status: 200, json: async () => (path === '/drawings' && method === 'GET' ? [] : {}), blob: async () => new Blob() }; };
+    homes(app)[0].rec.synced = true;
+    await cloud.sync(); await wait(100);
+    check(homes(app).length === 1 && !sent.some((s) => s.includes(ID)), `the cloud's sync leaves it alone (${sent.join(', ')})`);
+    homes(app)[0].rec.synced = undefined;
+    try { localStorage.removeItem('lunden.cloud.queue'); } catch { /* */ }
+    // reload: still in the hall, once, the same picture and date
+    w = await load(); app = w.__app; await settle(app);
+    hs = homes(app);
+    check(hs.length === 1 && hs[0].rec.pos[2] === moved[2] && hs[0].home, `after reload: once, in the hall (${hs.length})`);
+    check(hs[0].rec.image === 'textures/teckning-till-mamma.jpg' && hs[0].rec.time === new Date(2026, 9, 2, 18, 50).getTime(), 'the same picture and date');
+    // thrown away: gone now, back at its default spot on the next load
+    d = f.contentDocument; d.getElementById('start-touch').click(); await wait(50);
+    const b2 = d.getElementById('action'), p2 = d.getElementById('poster-panel');
+    app.posters.onDelete = () => deletes++;
+    { const m = hs[0].mesh; m.updateMatrixWorld(true); const c = m.getWorldPosition(m.position.clone()), n = m.getWorldDirection(m.position.clone()).setY(0).normalize(), e = c.clone().addScaledVector(n, 1.0);
+      app.player.spawn(e.x, e.z, Math.atan2(n.x, n.z)); app.player.pos.y = 0; app.player.eyeY = 1.62; for (let i = 0; i < 3; i++) app.step(1 / 60);
+      app.camera.rotation.y = Math.atan2(n.x, n.z); app.camera.rotation.x = Math.atan2(c.y - app.camera.position.y, 1.0); app.step(1 / 60); }
+    b2.click(); app.step(1 / 60);
+    p2.querySelector('[data-act=throw]').click(); await wait(300);
+    check(!homes(app).length && !(await idb('readonly', (s) => s.get(ID))) && deletes === 0, 'thrown: off the wall, out of storage, nothing to the cloud');
+    w = await load(); app = w.__app; await settle(app);
+    hs = homes(app);
+    check(hs.length === 1 && Math.abs(hs[0].rec.pos[2] - 3.40) < 1e-6, 'next load: back at its default spot, once');
+    check(app.posters.byId('old-visitor-1'), "the visitor's drawing untouched");
+  } catch (e) { check(false, 'error: ' + (e?.stack ?? e)); }
+  out.textContent = lines.join('\n') + '\n' + (pass ? 'ALL PASS' : 'SOME FAILED');
+})();
+</script>
+</body>
+</html>

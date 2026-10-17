@@ -3194,11 +3194,13 @@ export const DRAWING = { level: 1, x: 2.61 - 0.66 - 0.02, z: 0.465 + 0.31 + 0.08
   // after `ballSeconds` s. Our picks.
   throwSpeed: 4.5, ballSeconds: 180 };
 
-// Drawings that are part of the home (#618): taped up like the visitors' ones and looked at with E, but never thrown
-// away, taken down, saved or sent to the cloud (which deletes taped-up drawings after 24 h). "Till mamma" (drawn
-// 2 Oct 2026 18:50, lost from the cloud) is restored from a screenshot onto the kitchen wall (x 2.152, facing east), north of
-// the calendar below the wall clock (WALL_CLOCK, CALENDAR); the spot passed Posters.spot. `rot` in radians.
-export const FIXED_DRAWINGS = [
+// Drawings that are part of the home (#618, #1099): ordinary taped-up drawings (looked at, taken down, moved, thrown)
+// that start at `pos` and are kept only in this browser — never sent to the cloud (which deletes taped-up drawings
+// after 24 h) nor removed by its sync. Moved, the new spot is saved locally; thrown away, it is back here on the
+// next load. "Till mamma" (drawn 2 Oct 2026 18:50, lost from the cloud) is restored from a screenshot onto the
+// kitchen wall (x 2.152, facing east), north of the calendar below the wall clock (WALL_CLOCK, CALENDAR); the spot
+// passed Posters.spot. `rot` in radians.
+export const HOME_DRAWINGS = [
   { id: 'fixed-till-mamma', image: 'textures/teckning-till-mamma.jpg', level: 0, pos: [2.152 + 0.003, 1.6, 3.40], normal: [1, 0, 0], rot: -0.035,
     time: new Date(2026, 9, 2, 18, 50).getTime() },
 ];

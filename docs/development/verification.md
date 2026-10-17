@@ -227,6 +227,8 @@ tools/postertest.html  headless test: take the drawing (blank sheet stays), back
                        the fridge door (swings with it), none on the kitchen window, reload → both back; look at one (panel, no walking,
                        ×/E close), Släng → ball lands and vanishes, out of storage; Ta ner → taped up elsewhere; lying in each lower bunk:
                        taped under the top bunk, facing down, can be looked at from there (`?shots`, `?panel`)
+tools/homedrawingtest.html headless test (#1099): "Till mamma" — an old saved state gets exactly one, Ta ner + tape in the
+                       hall survives a reload with its date, put back = rehung, thrown = back at the default spot, never synced
 tools/boardtest.html   headless test: keep / throw away cat photos, a full board, the panel (needs a big virtual-time budget)
 tools/detailtest.html  headless test: from the doorstep through the open front door the hall's doors are drawn (#210); inside
                        every apartment Entréplan door is on a drawn layer, open or shut; exterior portik doors are excluded (#544); outside the culler still works

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { DRAWING as D, HOLD, FIXED_DRAWINGS } from './config.js';
+import { DRAWING as D, HOLD, HOME_DRAWINGS } from './config.js';
 import { withStore } from './idb.js';
 import { setHeld, heldItem } from './holdable.js';
 import { forgetBicycleHand } from './keep.js';
@@ -23,6 +23,9 @@ const PPM = 600 / D.w; // poster canvas pixels per metre
 const MARGIN = 26; // px of transparent margin round the paper, for the tape that overhangs it
 const PW = Math.round(D.w * PPM), PH = Math.round(D.h * PPM), TW = PW + 2 * MARGIN, TH = PH + 2 * MARGIN;
 const UP = new THREE.Vector3(0, 1, 0), Z = new THREE.Vector3(0, 0, 1);
+
+/** The home's own drawings (#618, #1099) by id: local only, never synced; their default spot comes back on load. */
+const HOME = new Map(HOME_DRAWINGS.map((f) => [f.id, f]));
 
 const uid = () => (crypto.randomUUID?.() ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`);
 
@@ -113,20 +116,21 @@ export class Posters {
 
   get full() { return this.list.length >= D.maxPosted; }
 
-  /** The visitors' drawings: every poster but the home's own fixed ones (#618). */
-  get own() { return this.list.filter((p) => !p.fixed); }
+  /** The visitors' drawings: every poster but the home's own ones (#618; they still count towards `full`). */
+  get own() { return this.list.filter((p) => !p.home); }
 
   /** Put every saved poster back up. */
   async load() {
     let recs = [];
     try { recs = (await withStore(STORE, 'readonly', (s) => s.getAll())) ?? []; } catch { recs = []; }
-    for (const r of recs.sort((a, b) => a.time - b.time)) await this.build(r);
-    // the home's own drawings (#618): not in storage, never thrown, taken down or synced (`fixed`)
-    for (const f of FIXED_DRAWINGS) {
-      if (this.byId(f.id)) continue;
-      const p = await this.build({ ...f, surface: 'wall', updated: f.time });
-      if (p) p.fixed = true;
+    for (const r of recs.sort((a, b) => a.time - b.time)) {
+      const f = HOME.get(r.id);
+      if (f && this.byId(r.id)) continue; // never twice
+      await this.build(f ? { ...r, image: f.image, time: f.time } : r); // a moved home drawing keeps its picture and date
     }
+    // the home's own drawings (#618, #1099) not saved elsewhere (never moved, thrown away, or an older visit where
+    // they were fixed): up at their default spot, not stored until they are moved
+    for (const f of HOME_DRAWINGS) if (!this.byId(f.id)) await this.build({ ...f, surface: 'wall', updated: f.time });
   }
 
   /** Make the mesh for a record and hang it up (no saving). */
@@ -141,7 +145,7 @@ export class Posters {
     mesh.position.fromArray(rec.pos);
     posterQuat(new THREE.Vector3().fromArray(rec.normal), rec.rot, mesh.quaternion, rec.up ? new THREE.Vector3().fromArray(rec.up) : null);
     mesh.receiveShadow = true;
-    const p = { rec, mesh, name: 'teckningen', kind: 'poster', verb: 'titta på', pickable: mesh };
+    const p = { rec, mesh, name: 'teckningen', kind: 'poster', verb: 'titta på', pickable: mesh, home: HOME.has(rec.id) };
     mesh.userData.door = p;
     mesh.userData.poster = p;
     parent.add(mesh);
@@ -259,11 +263,13 @@ export class Posters {
     }
     const rec = { id, image, surface: s.surface, level: s.level ?? 0, pos: pos.toArray(), normal: normal.toArray(), rot, time, updated: Date.now() };
     if (s.top) rec.up = s.top.toArray(); // on a ceiling: which way the picture's top points (#199)
+    const old = HOME.has(id) && this.byId(id); // a home drawing back up at its default spot meanwhile: the held one wins
+    if (old) await this.remove(old, false, true);
     const p = await this.build(rec);
     await this.save(rec);
     this.cache = null;
     sfx.tape?.(s.point);
-    this.onPut?.(rec); // the shared world (cloud.js, #178)
+    if (!HOME.has(id)) this.onPut?.(rec); // the shared world (cloud.js, #178); the home's own stay local (#1099)
     return p;
   }
 
@@ -274,7 +280,7 @@ export class Posters {
     await this.build(rec);
     await this.save(rec);
     this.cache = null;
-    this.onPut?.(rec);
+    if (!HOME.has(rec.id)) this.onPut?.(rec);
   }
 
   byId(id) { return this.list.find((p) => p.rec.id === id) ?? null; }
@@ -289,7 +295,7 @@ export class Posters {
 
   /** A drawing from the server (someone else's, or moved elsewhere): up it goes, saved, not sent back. */
   async addRemote(rec) {
-    if (this.byId(rec.id)) return null;
+    if (this.byId(rec.id) || HOME.has(rec.id)) return null; // the home's own never come from the server (#1099)
     const p = await this.build(rec);
     if (p) await this.save(rec);
     this.cache = null;
@@ -303,14 +309,14 @@ export class Posters {
 
   /** Take a poster down (#177): gone from the wall and from storage. `keepTexture`: its map lives on (the ball). */
   async remove(p, keepTexture = false, quiet = false) {
-    if (!this.list.includes(p) || p.fixed) return; // a fixed drawing stays up (#618)
+    if (!this.list.includes(p)) return;
     p.mesh.removeFromParent();
     if (!keepTexture) p.mesh.material.map.dispose();
     p.mesh.material.dispose();
     this.list.splice(this.list.indexOf(p), 1);
     this.cache = null;
     try { await withStore(STORE, 'readwrite', (st) => st.delete(p.rec.id)); } catch { /* ignore */ }
-    if (!quiet) this.onDelete?.(p.rec.id);
+    if (!quiet && !p.home) this.onDelete?.(p.rec.id); // a home drawing was never on the server (#1099)
   }
 }
 
@@ -379,7 +385,8 @@ export class HeldDrawing {
     const img = this.image, meta = this.meta;
     this.release();
     // a poster taken down goes back up where it was if there is a drawing on the desk already (#177)
-    if (meta?.rec && !this.drawing.blank) { this.rehang?.(meta.rec); return; }
+    // a home drawing (#1099) always goes back up where it was: it never becomes the desk sheet
+    if (meta?.rec && (!this.drawing.blank || HOME.has(meta.id))) { this.rehang?.(meta.rec); return; }
     if (meta?.id) this.onDesk?.(meta.id);
     this.drawing.restore(img);
     sfx.paper(this.drawing.paper.position);
