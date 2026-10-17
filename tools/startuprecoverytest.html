@@ -42,6 +42,24 @@ try {
   check(!loading.querySelector('button')&&loading.querySelector('h1').textContent==='Ready','normal loading dismissal cancels recovery deadline');
   loading.classList.remove('done');watchStartup({timeout:30});loading.hidden=true;await wait(80);
   check(!loading.querySelector('button'),'hidden loading cover also cancels recovery');
+  // #1131: the real index card and its inline step/heartbeat/stall script, with a short stall time and a real blocking loop.
+  const index=new DOMParser().parseFromString(await (await fetch('../index.html')).text(),'text/html');
+  const source=[...index.scripts].find(s=>s.textContent.includes('__lundenLoading ='));
+  loading.replaceWith(document.importNode(index.getElementById('loading'),true));
+  new Function(source.textContent)();
+  const api=window.__lundenLoading,real=document.getElementById('loading'),slow=real.querySelector('[data-startup-slow]');
+  const config=await import('../src/config.js');
+  check(api.stallMs===config.STARTUP.stallSeconds*1000&&config.STARTUP.stallSeconds<config.STARTUP.recoveryTimeout/1000,'inline stall time matches STARTUP.stallSeconds and stays below the hard limit');
+  api.stallMs=600;api.step('Bygger huset',0.25);await wait(300);
+  const beat=api.beat,shown=real.querySelector('[data-loading-elapsed]').textContent;
+  const end=performance.now()+900;while(performance.now()<end){/* simulated hang inside a step */}
+  check(api.beat===beat&&slow.hidden,'a blocking loop freezes the heartbeat and the notice cannot appear during it');
+  await wait(700);
+  check(!slow.hidden&&api.stalled?.name==='Bygger huset'&&api.beat>beat,'after the block releases the notice appears and the heartbeat resumes');
+  check(slow.textContent.includes('Det här tar ovanligt lång tid')&&slow.querySelector('button').textContent==='Försök igen'&&!real.querySelector('[data-startup-retry]'),'stall notice offers Försök igen without the hard failure card');
+  check(real.querySelector('[data-loading-step]').textContent==='Bygger huset'&&!real.hidden,'loading continues underneath the notice');
+  check(sessionStorage.getItem(key)==='saved-place'&&localStorage.getItem(key)==='saved-home','stall notice preserves saved position and home');
+  real.hidden=true;
   sessionStorage.removeItem(key);localStorage.removeItem(key);
 }catch(error){check(false,error.stack);}
 document.getElementById('out').textContent=lines.join('\n')+'\n'+(lines.some(line=>line.startsWith('FAIL'))?'SOME FAILED':'ALL PASS');

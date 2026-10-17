@@ -150,6 +150,11 @@
     .loading-step { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 14px 0 0; font-size: 14px; min-height: 1.4em; }
     .loading-step [data-loading-elapsed] { opacity: .65; font-variant-numeric: tabular-nums; }
     .loading-pulse { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); flex: none; }
+    /* "Unusually long" notice (#1131): loading continues underneath; the button only reloads. */
+    .loading-slow { margin-top: 16px; font-size: 14px; }
+    .loading-slow[hidden] { display: none; }
+    .loading-slow p { margin: 0 0 10px; }
+    .loading-slow button { min-height: 44px; padding: 12px 20px; touch-action: manipulation; }
     .card .qr { display: flex; align-items: center; gap: 10px; margin: 12px 0 0; font-size: 12px; opacity: .85; }
     .card .qr img { width: 111px; height: 111px; border-radius: 4px; image-rendering: pixelated; }
     body.phone .card .qr { display: none; } /* already on a phone (#193) */
@@ -590,6 +595,7 @@
       <p>Förbereder 3D-modellen och planritningen.</p>
       <p class="loading-step"><span class="loading-pulse" aria-hidden="true"></span><span data-loading-step>Startar</span><span data-loading-elapsed>0 s</span></p>
       <div class="loading-bar"><i></i></div>
+      <div class="loading-slow" data-startup-slow hidden><p>Det här tar ovanligt lång tid.</p><button type="button">Försök igen</button></div>
     </div>
   </div>
   <script>
@@ -619,6 +625,23 @@
         requestAnimationFrame(tick);
       };
       requestAnimationFrame(tick);
+      // Stall notice (#1131): when the current step has lasted stallMs (keep in sync with STARTUP.stallSeconds), show
+      // "Det här tar ovanligt lång tid" with a reload. A hung main thread also freezes this timer, so the notice appears
+      // as soon as a blocking step releases. Loading continues; the 120 s guard below stays the hard limit. Time spent
+      // in a hidden tab does not count (rAF and timers are throttled there).
+      const slow = loading.querySelector('[data-startup-slow]');
+      api.stallMs = 40000;
+      let visibleAt = performance.now();
+      slow.querySelector('button').addEventListener('click', () => location.reload());
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) visibleAt = performance.now(); });
+      const watch = setInterval(() => {
+        if (loading.hidden || loading.classList.contains('done')) return clearInterval(watch);
+        if (document.hidden || !slow.hidden || loading.querySelector('[data-startup-retry]')) return;
+        if (performance.now() - Math.max(api.last, visibleAt) < api.stallMs) return;
+        api.stalled = { name: api.name, at: Math.round(performance.now()) };
+        document.documentElement.classList.remove('resuming');
+        slow.hidden = false;
+      }, 500);
     })();
   </script>
   <div id="overlay">
@@ -1229,6 +1252,7 @@
           }));
         } catch { /* Blocked storage must not prevent retry. */ }
         document.documentElement.classList.remove('resuming');
+        loading.querySelector('[data-startup-slow]')?.setAttribute('hidden', '');
         loading.querySelector('h1').textContent = 'Starten kunde inte slutföras';
         loading.querySelector('p').textContent = 'Försök ladda igen. Din sparade plats och ditt hem finns kvar.';
         loading.querySelector('.loading-bar').hidden = true;

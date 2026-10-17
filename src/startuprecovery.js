@@ -80,6 +80,7 @@ export function watchStartup(options = {}) {
     // Resuming normally hides #loading behind a pseudo-element. Show this card on failure
     // without deleting the saved position/home or allowing access to an incomplete scene.
     document.documentElement.classList.remove('resuming');
+    loading.querySelector('[data-startup-slow]')?.setAttribute('hidden', ''); // the hard failure replaces the stall notice (#1131)
     loading.querySelector('h1').textContent = 'Starten kunde inte slutföras';
     loading.querySelector('p').textContent = 'Försök ladda igen. Din sparade plats och ditt hem finns kvar.';
     const bar = loading.querySelector('.loading-bar');
