@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { LEVELS, CAT_FLOOR_HEADROOM, CAT_FISH, CAT_LEAVE, CAT_FURNITURE, CAT_WALK, CAT_TAIL_UP, CAT_HURT, REST, MIELE, KITTEN } from './config.js';
+import { LEVELS, CAT_FLOOR_HEADROOM, CAT_FISH, CAT_LEAVE, CAT_IGNORED, CAT_FURNITURE, CAT_WALK, CAT_TAIL_UP, CAT_HURT, REST, MIELE, KITTEN } from './config.js';
 import { stairHeight, stairUnderside } from './stairs.js';
 import { rugLift } from './rugs.js';
 import { sfx } from './audio.js';
@@ -504,6 +504,7 @@ export class CatSpawner {
     this.setCat(BREEDS[0], VARIANTS[0]);
     this.catName = CAT_NAMES[0];
     this.nextMeow = 0;
+    this.ignored = 0;          // s since the visitor last engaged with it (#1154, CAT_IGNORED)
     this.door = null;          // door the cat was found behind
     this.closedSince = false;  // that door has been closed since the cat appeared
     this.t = 0;
@@ -683,6 +684,7 @@ export class CatSpawner {
     this.object.visible = true;
     this.door = door;
     this.closedSince = false;
+    this.ignored = 0; // just found (or moved): a fresh minute (#1154)
     this.t = this.rand() * 4;
   }
 
@@ -791,11 +793,27 @@ export class CatSpawner {
     this.wantStand = 0;
     this.walked = false;
     this.hopY = 0;
+    this.countIgnored(dt);
     if (this.held) this.heldBehave(dt); // in the visitor's arms (#328)
     else if (this.released) this.releasedBehave(dt);
     else this.behave(dt);
     this.updateTail(dt);
     this.pose(dt);
+  }
+
+  /**
+   * #1154: left alone for CAT_IGNORED.after s it walks off (away from the visitor, like after a pat) and is gone. Held, just
+   * put down, petted, after a fish finger or a kitten's toy (or already on its way) = engaged: the count starts over.
+   */
+  countIgnored(dt) {
+    if (this.held || this.released || this.petting || this.leaving || this.fish || this.toy || this.treadmill) { this.ignored = 0; return; }
+    this.ignored += dt;
+    if (this.ignored < CAT_IGNORED.after) return;
+    this.ignored = 0;
+    const eye = this.watchPoint?.();
+    if (eye) this.petFrom = { x: eye.x, z: eye.z }; // away from where the visitor is now
+    this.play = null; this.shoulder.rotation.set(0, 0, 0); this.leftShoulder.rotation.set(0, 0, 0); // (a kitten stops its game)
+    this.leave();
   }
 
   // --- the tail held straight up now and then, the X showing (#262) ----------------------------------------------

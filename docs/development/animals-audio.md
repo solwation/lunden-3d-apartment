@@ -57,6 +57,7 @@ src/music.js           shared lazy MusicFile transport: format fallback, 8 s sta
                        tools/musicintegrationtest.html covers appliance playback, radio rotation, shutdown and fallback
                        (click its Starta musiktest button with a real browser/Playwright click to activate iframe media); musicreloadtest checks actual saved-channel/volume reload
 tools/cattest.html     headless test of cat placement behind every door/wardrobe; up on seats, beds and tables (#200)
+tools/catignoretest.cjs headless test (#1154): ignored cat walks off at CAT_IGNORED.after, engagement resets, reload record
 tools/pettest.html     headless test of petting the cat (eyes, hand, stats counter, the photo; then it walks off and is gone)
 tools/mieletest.html   headless test of Miele (#328, &miele): her coat, first sight (fireworks, +1000, once), taken up (both hands, not
                        hit by a shot), the board photo "Miele", a hug, not on a table, down on the floor → walks off, found again
@@ -190,6 +191,12 @@ This personal-cat/gameplay feature does not apply to the public downstream.
   the clearest straight line (walls, doors, furniture) and fades out (its materials are transparent at opacity 1 all
   the time: no recompile); petted again on the way, it stays. The board photo is taken 0.7 s of game time into the pat
   (`cat.onPhoto`).
+- Ignored (#1154, `CAT_IGNORED.after` 60 s *guess*, `countIgnored` in cat.js): a cat left alone that long walks off the
+  same way (`leave`, away from the visitor's current position; on furniture it fades there) and is gone. Held, just put
+  down, petted, after a fish finger or a kitten's cup, or already leaving resets the count; a found/moved cat starts at 0.
+  The count is kept in the reload record (`keep.js` `cat.i`; older records start at 0). An unseen Miele who walks off
+  frees `mieleLock` without spending the daily guarantee (#1134). There is no adoption in the game.
+  `tools/catignoretest.cjs GAME OUT` (bounded scene, actual cat.js/keep.js) covers all of this.
 - Fish fingers (#163, `CAT_FISH`, `updateFish` in cat.js): a visible cat scans `cat.fishSource()` (the fish fingers
   lying out) for one on its own floor within `reach` with a straight, wall- and door-free path (= the same room),
   turns its head and meows, gets up and walks there, eats it (head down, it shrinks,

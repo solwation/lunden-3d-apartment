@@ -2749,6 +2749,10 @@ export const CAT_FISH = { reach: 4, notice: 1.2, speed: 0.55, stop: 0.17, eat: 3
 // After a pat the cat walks off (#206, cat.js `leave`): up to `dist` m away from the visitor along the clearest straight line,
 // at `speed` m/s, fading out over the last `fade` s, then it is gone.
 export const CAT_LEAVE = { dist: 3, speed: 0.6, fade: 1.2 };
+// An ignored cat goes on its way (#1154, cat.js `update`): after `after` s in view with no engagement (a pat, being held or
+// just put down, a fish finger, a kitten's toy) it walks off away from the visitor like after a pat (CAT_LEAVE) and is gone.
+// Any engagement starts the count over; kept across a reload (keep.js `cat.i`). 60 s is the in-game report's wish (*guess*).
+export const CAT_IGNORED = { after: 60 };
 // The cat walks on all four (#224, cat.js `pose`): it rises from sitting to standing in `rise` s before it walks and sits
 // down again in the same time when it stops; a diagonal-pair gait, one leg cycle per `stride` m (× breed size), legs
 // swinging ±`swing` rad, the hind knee flexing up to `knee` rad as the paw comes forward, the body bobbing `bob` m. Our picks.
