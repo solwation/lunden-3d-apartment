@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { fallDamage } from './falldamage.js';
 import { recordPlayerKill, awardPvpRange } from './stats.js';
 import { HitMarker } from './hitmarker.js';
-import { COMBAT as C, TOYS, BASKET, pvpHitPoints, PVP_HEAD_BOXES as HB, rifleBoxHeadContact, straightBoxHeadContact, playerBodyContact, playerBodySegment } from './config.js';
+import { COMBAT as C, TOYS, BASKET, pvpHitPoints, PVP_HEAD_BOXES as HB, rifleBoxHeadContact, straightBoxHeadContact, playerBodyContact, playerBodySegment, splitAvatarCode } from './config.js';
 import { nerfSegments, nerfPlayerContact } from './nerf.js';
 import { bowSegments, bowPlayerContact } from './bowflight.js';
 import { combatWorldHits, combatWorldPath, combatWorldPathBlocked, prepareCombatWorld } from './combatworld.js';
@@ -127,7 +127,7 @@ export class Combat {
     for (const segment of bowSegments(launch, range)) {
       let nearest = null;
       for (const foe of foes) {
-        const state = { p: foe.feet.toArray(), r: foe.root.rotation.y, c: foe.crouch ?? 0, pose: foe.pose };
+        const state = { p: foe.feet.toArray(), r: foe.root.rotation.y, c: foe.crouch ?? 0, pose: foe.pose, ...splitAvatarCode(foe.avatarCode) };
         const hit = bowPlayerContact(foe.id, state, segment);
         if (hit && (!nearest || hit.distance<nearest.hit.distance)) nearest = { foe, hit };
       }
@@ -158,7 +158,7 @@ export class Combat {
       const p = new THREE.Vector3(...segment.origin), direction = new THREE.Vector3(...segment.direction), length = segment.length;
       let best = null;
       for (const foe of foes) {
-        const state = { p: foe.feet.toArray(), r: foe.root.rotation.y, c: foe.crouch ?? 0, pose: foe.pose };
+        const state = { p: foe.feet.toArray(), r: foe.root.rotation.y, c: foe.crouch ?? 0, pose: foe.pose, ...splitAvatarCode(foe.avatarCode) };
         const hit = nerfPlayerContact(foe.id, state, segment);
         if (hit && (!best || hit.distance < best.along)) best = { foe, along: hit.distance,
           hc: hit.head ? [HB.version, ...hit.point] : null };
@@ -193,7 +193,7 @@ export class Combat {
       const origin=new THREE.Vector3(...segment.origin), direction=new THREE.Vector3(...segment.direction);
       let best=null;
       for(const foe of this.foes()) {
-        const hit=ballPlayerContact(foe.id,{p:foe.feet.toArray(),r:foe.root.rotation.y,c:foe.crouch??0,pose:foe.pose},segment);
+        const hit=ballPlayerContact(foe.id,{p:foe.feet.toArray(),r:foe.root.rotation.y,c:foe.crouch??0,pose:foe.pose,...splitAvatarCode(foe.avatarCode)},segment);
         if(hit&&(!best||hit.distance<best.distance))best={...hit,target:foe};
       }
       const length=best?.distance??segment.length;
@@ -219,7 +219,7 @@ export class Combat {
     ray.set(o, direction); ray.far = range; ray.layers.mask = this.camera.layers.mask; ray.camera = this.camera;
     let best = null;
     for (const g of this.foes()) {
-      const state = { p: g.feet.toArray(), r: g.root.rotation.y, c: g.crouch ?? 0, pose: g.pose };
+      const state = { p: g.feet.toArray(), r: g.root.rotation.y, c: g.crouch ?? 0, pose: g.pose, ...splitAvatarCode(g.avatarCode) };
       const head = rifleBoxHeadContact(g.id, state, o.toArray(), raw.toArray(), range);
       g.root.updateMatrixWorld(true);
       // The old full-height capsule encloses the head. Instead keep real body surfaces
@@ -244,7 +244,7 @@ export class Combat {
     // A saber is still a swing/cone: it cannot acquire a new target outside its old attack.
     if (key === 'saber' && contact.target !== target) return { ...contact, target, hc: null };
     if (contact.hc && target && target !== contact.target) {
-      const [a, b] = playerBodySegment(target.id, {p:target.feet.toArray(),r:target.root.rotation.y,pose:target.pose}).map(v=>new THREE.Vector3(...v));
+      const [a, b] = playerBodySegment(target.id, {p:target.feet.toArray(),r:target.root.rotation.y,pose:target.pose,...splitAvatarCode(target.avatarCode)}).map(v=>new THREE.Vector3(...v));
       const [, along] = rayToSegment(contact.o, contact.d.clone().normalize(), this.rules.weapons[key].range, a, b);
       const headAlong = contact.o.distanceTo(new THREE.Vector3(...contact.hc.slice(1)));
       if (along < headAlong) return { ...contact, target, hc: null };
@@ -266,7 +266,7 @@ export class Combat {
     const d = dir.clone();
     let best = null;
     for (const g of this.foes()) {
-      const [a, b] = playerBodySegment(g.id, {p:g.feet.toArray(),r:g.root.rotation.y,pose:g.pose}).map(v=>new THREE.Vector3(...v));
+      const [a, b] = playerBodySegment(g.id, {p:g.feet.toArray(),r:g.root.rotation.y,pose:g.pose,...splitAvatarCode(g.avatarCode)}).map(v=>new THREE.Vector3(...v));
       let along;
       if (key === 'saber') {
         v.subVectors(b, a);
@@ -449,7 +449,7 @@ export class Combat {
           this.jetT = this.rules.weapons?.jetpack?.every ?? 1;
           const round = v => Math.round(v * 100) / 100;
           const shot = { t: 'a', w: 'jetpack', o: [me.x, me.y + 1, me.z].map(round), d: [0, -1, 0], to: g.id };
-          const state = { p: g.feet.toArray(), r: g.root.rotation.y, c: g.crouch ?? 0, pose: g.pose };
+          const state = { p: g.feet.toArray(), r: g.root.rotation.y, c: g.crouch ?? 0, pose: g.pose, ...splitAvatarCode(g.avatarCode) };
           const head = straightBoxHeadContact(g.id, state, shot, this.rules.weapons.jetpack.range);
           if (head) {
             const origin = new THREE.Vector3(...shot.o), point = new THREE.Vector3(...head.point);

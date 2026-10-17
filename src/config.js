@@ -5031,6 +5031,8 @@ function decodeLookExt(ext, lk) {
   for (const [, tag, digits] of ext.matchAll(/([a-z])([0-9]{1,3})/g)) {
     const v = Number(digits);
     if (tag === 'c') { if (v < EYES.length) lk.eyes = EYES[v]; continue; }
+    // #1173: wire-only seeded scale; explicit chosen cm always take precedence.
+    if (tag === 's') { if (!Number.isInteger(lk.height) && v < AVATAR_SEEDED_TALL.length) lk.tall = AVATAR_SEEDED_TALL[v]; continue; }
     const name = Object.keys(AVATAR_SHAPE.fields).find((k) => AVATAR_SHAPE.fields[k].tag === tag);
     if (name && v < AVATAR_SHAPE.steps) lk[name] = v;
   }
@@ -5048,6 +5050,8 @@ export function defaultFaceLook() {
 // head bone pivots `pivot` m up, the head reaches `top` m above that and the eyes `eye` m (pivot + eye = PLAYER.eye).
 // Below `adult` cm the head grows relative to the body by (adult / height) ** `headPow` (*guess*, by eye: a child's
 // head is proportionally larger); the body scale is then picked so the whole figure is the chosen height.
+// The original five seeded vertical scales, kept exact for old local appearances (#1173).
+export const AVATAR_SEEDED_TALL = Array.from({ length: 5 }, (_, i) => 0.95 + i * 0.025);
 export const AVATAR_HEIGHT = { min: 100, max: 200, base: 175, pivot: 1.52, top: 0.23, eye: 0.1, adult: 160, headPow: 0.6 };
 const STANDARD_EYE = PLAYER.eye;
 
@@ -5093,6 +5097,14 @@ export function encodeAvatarLook(look) {
   const ht = look.height;
   const cm = Number.isInteger(ht) && ht >= AVATAR_HEIGHT.min && ht <= AVATAR_HEIGHT.max ? String(ht).padStart(3, '0') : '';
   return `${s}${t}${p}${sh}${h}${st}${sl}${g}${f}${cm}${encodeLookExt(look)}`;
+}
+/** Network appearance (#1173): transmit the actual seeded scale without migrating saved codes or
+ * converting it to whole-cm proportions. Older clients ignore the optional extension tag. */
+export function encodeAvatarWireLook(look) {
+  const code = encodeAvatarLook(look);
+  if (!code || Number.isInteger(look.height)) return code;
+  const scale = AVATAR_SEEDED_TALL.indexOf(look.tall);
+  return scale < 0 ? code : `${code}s${scale}`;
 }
 /** A look code split for the players' room (#1138): `av` its digits (nine, or twelve with #1136's height; every client
  * since #1136 reads them), `ax` the tagged face extension (or ''). */
@@ -5141,7 +5153,7 @@ function defaultAvatarLook(seed) {
   const style = pick(4), sleeves = pick(2);
   const skin = SKIN[pick(SKIN.length)], hair = HAIR[pick(HAIR.length)], top = TOPS[pick(TOPS.length)], pants = PANTS[pick(PANTS.length)], shoes = SHOES[pick(SHOES.length)];
   const build = pick(3); // 0 slim, 1 average, 2 broad
-  const tall = 0.95 + pick(5) * 0.025;
+  const tall = AVATAR_SEEDED_TALL[pick(AVATAR_SEEDED_TALL.length)];
   const gender = pick(2);
   const facial = 0; // default no facial hair
   const lk = { style, sleeves, skin, hair, top, pants, shoes, build, tall, gender, facial, ...defaultFaceLook() };
@@ -5518,7 +5530,10 @@ function rifleBoxPose(seed, state) {
   if (!state || !vector(state.p) || !Number.isFinite(state.r) || Math.abs(state.r) > 100) return null;
   const crouch = state.c === undefined || state.c === false ? 0 : state.c === true ? 1 : state.c;
   if (!Number.isFinite(crouch) || crouch < 0 || crouch > 1) return null;
-  const look = avatarLook(seed), yaw = state.r + Math.PI, lean = state.pose === 2 ? Math.PI / 2 : state.pose === 1 ? .1 : PVP_HEAD_BOXES.crouchLean * crouch;
+  const look = avatarLook(seed), wire = decodeAvatarLook(typeof state.av === 'string' ? state.av + (state.ax ?? '') : null, seed);
+  // #1173: follow the transmitted legacy vertical scale. Chosen-cm proportions remain #1137.
+  if (!Number.isInteger(wire.height)) look.tall = wire.tall;
+  const yaw = state.r + Math.PI, lean = state.pose === 2 ? Math.PI / 2 : state.pose === 1 ? .1 : PVP_HEAD_BOXES.crouchLean * crouch;
   return { width: [.93, 1, 1.08][look.build], tall: look.tall, yawCos: Math.cos(yaw), yawSin: Math.sin(yaw),
     leanCos: Math.cos(lean), leanSin: Math.sin(lean), crouch,
     hipY: state.pose === 2 ? REST.avatarLieHip : state.pose === 1 ? REST.avatarSeat + .075 : PVP_HEAD_BOXES.hipY - PVP_HEAD_BOXES.hipDrop * crouch,

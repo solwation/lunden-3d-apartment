@@ -373,6 +373,29 @@ chosen, so old saved `lunden.avatar` values and codes stay byte-identical and de
 out-of-range or malformed height rejects the whole code (client and Worker alike). Older cached clients that receive a
 12-digit code fall back to that player's seed look; deploy the Worker before the client.
 
+#1173 keeps that local/save encoding unchanged. `encodeAvatarWireLook` adds only
+an optional `s0`–`s4` tagged extension on the network for the exact existing seeded
+vertical scale. Ghosts uses it both on startup and `setMyLook`. It never converts
+old proportions into a rounded whole-cm height or rewrites `lunden.avatar`; the
+local scale, head and eye height stay unchanged. Explicit chosen-cm codes retain
+their existing encoding and take precedence over an `s` tag. Invalid scale indices
+are ignored. Existing ax validation forwards the bounded tag, and older clients
+ignore it safely. New clients receive it in states and welcome/reconnect snapshots.
+
+Combat's rifle/straight, bow, Nerf, basketball, jetpack and body/cone proxy states
+carry av/ax to the shared head/neck/rest-frame helpers; the same helpers use the
+accepted state on the Worker. This follows the affected seeded vertical scale.
+The pre-existing chosen-cm collision/movement/head-proportion scope remains in
+[#1137](https://github.com/solwation/lunden-3d-apartment/issues/1137).
+`tools/avatardefaultheighttest.cjs GAME WORKER OUT` uses native Ghosts/Avatar/Combat
+and two actual local PlayerRoom clients, with an exact pre-change ghosts source
+as a before control via `BASELINE_GHOSTS`. It checks constructor/setMyLook,
+newcomer/reconnect/name changes, exact vertical body/head alignment, explicit
+120/165/195cm, old save codes, rest/crouch and ordinary authoritative head/body
+2/1 damage. Its one rendered component scene is not a full World, physical-phone
+or FPS claim. The old reset assertion failing in avatarcustomizertest is tracked
+separately in #1174; the focused appearance/height cases remain required.
+
 `config.js.avatarLook(seed)` is the single deterministic palette/style/sleeves/build/height
 implementation. `avatar.js` reexports it as the existing `look` API and uses it directly.
 The extraction preserves the original pick sequence, colours, physical scale and all

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   SKIN, HAIR, TOPS, PANTS, SHOES,
-  avatarLook, encodeAvatarLook, decodeAvatarLook, RESET_KEEP,
+  avatarLook, encodeAvatarLook, encodeAvatarWireLook, decodeAvatarLook, RESET_KEEP, AVATAR_SEEDED_TALL, splitAvatarCode, rifleHeadBaseY, rifleBoxHeadContact, PVP_HEAD_BOXES,
   AVATAR_HEIGHT, PLAYER, avatarHeightCm, avatarProportions, avatarEyeHeight, avatarCodeValid
 } from '../src/config.js';
 import { clearLocalHome } from '../src/reset.js';
@@ -353,4 +353,37 @@ test('#1138 face fields: extension encoding, old codes unchanged, unknown tags s
   assert.equal(bothBack.height, 120); assert.equal(bothBack.eyes, EYES[5]); assert.equal(bothBack.browThick, 8);
   assert.deepEqual(splitAvatarCode(both), { av: code.slice(0, 9) + '120', ax: code.slice(9) });
   assert.equal(decodeAvatarLook(code.slice(0, 9) + '099' + code.slice(9), 'p').skin, avatarLook('p').skin, 'an invalid height still falls back');
+});
+
+
+test('#1173 wire-only seeded height preserves exact local proportions and saved codes', () => {
+  for (const tall of AVATAR_SEEDED_TALL) {
+    const look = { ...avatarLook('own-name'), tall };
+    const saved = encodeAvatarLook(look), wire = encodeAvatarWireLook(look);
+    assert.equal(encodeAvatarLook(look), saved);
+    assert.equal(look.height, undefined);
+    assert.match(wire, /s[0-4]$/);
+    const state = { p: [0,0,0], r: 0, ...splitAvatarCode(wire) };
+    assert.equal(rifleHeadBaseY('peer-id', state), tall * PVP_HEAD_BOXES.boxes[0].low);
+    assert.ok(rifleBoxHeadContact('peer-id', state, [0,tall*1.64,2], [0,0,-1], 5), 'head ray follows transmitted seeded scale');
+
+    for (const seed of ['peer-id', 'new-peer', 'reconnected-id']) {
+      const got = decodeAvatarLook(wire, seed);
+      assert.equal(got.tall, tall);
+      assert.equal(got.height, undefined, 'no cm proportion conversion');
+      assert.equal(avatarEyeHeight(got), avatarEyeHeight(look));
+    }
+  }
+  for (const cm of [120, 165, 195]) {
+    const look = { ...avatarLook('explicit'), height: cm };
+    const code = encodeAvatarLook(look);
+    assert.equal(encodeAvatarWireLook(look), code, 'chosen height code unchanged');
+    assert.equal(decodeAvatarLook(code + 's0', 'peer-id').height, cm);
+    assert.equal(decodeAvatarLook(code + 's0', 'peer-id').tall, cm / AVATAR_HEIGHT.base);
+  }
+  for (const old of ['2413021', '241302113']) {
+    assert.equal(encodeAvatarLook(decodeAvatarLook(old,'original-seed')),old.length===7?old+'00':old);
+    const seedTall = avatarLook('original-seed').tall;
+    assert.equal(decodeAvatarLook(old+'s9','original-seed').tall,seedTall,'invalid scale ignored');
+  }
 });

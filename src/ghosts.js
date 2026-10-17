@@ -1,7 +1,7 @@
 import { applyRestPose } from './remote-pose.js';
 import * as THREE from 'three';
 import { FALL } from './config.js';
-import { GHOSTS as G, COMBAT, AVATAR, AVATAR_CROUCH, CHAT, encodeAvatarLook, decodeAvatarLook, splitAvatarCode, playerBodySegment } from './config.js';
+import { GHOSTS as G, COMBAT, AVATAR, AVATAR_CROUCH, CHAT, encodeAvatarWireLook, decodeAvatarLook, splitAvatarCode, playerBodySegment } from './config.js';
 import { Avatar, armTarget } from './avatar.js';
 import { totalScore } from './stats.js';
 import { acquireBadge, releaseBadge, badgeScore, badgeLives } from './ghostbadge.js';
@@ -256,7 +256,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     }
     if (this.pick) {
       if (this.pose) {
-        const ends = playerBodySegment(this.id, { p: this.feet.toArray(), r: gaze, pose: this.pose }).map(p => this.root.worldToLocal(new THREE.Vector3(...p)));
+        const ends = playerBodySegment(this.id, { p: this.feet.toArray(), r: gaze, pose: this.pose, ...splitAvatarCode(this.avatarCode) }).map(p => this.root.worldToLocal(new THREE.Vector3(...p)));
         this.pick.position.copy(ends[0]).add(ends[1]).multiplyScalar(0.5);
         const axis = ends[1].sub(ends[0]);
         this.pick.scale.y = (axis.length() + 0.6) / 1.8;
@@ -310,7 +310,7 @@ export class Ghosts {
       lastSent: 0, lastBeat: 0, outbox: [], shots: 0, dropped: 0, greetAt: -1e9, greetsSeen: 0, lastMove: -Infinity, retryAt: 0, backoff: 0, openedAt: 0, connects: 0, messages: 0 });
     const savedAv = (() => { try { return localStorage.getItem('lunden.avatar'); } catch { return null; } })();
     this.myLook = decodeAvatarLook(savedAv, this.name());
-    this.avatarCode = encodeAvatarLook(this.myLook);
+    this.avatarCode = encodeAvatarWireLook(this.myLook);
     this.sentAv = null;
     this.on = !!url && G.enabled && params.get('mp') !== '0';
     this.url = url ? `${url.replace(/^http/, 'ws')}/players` : '';
@@ -402,7 +402,7 @@ export class Ghosts {
 
   setMyLook(look) {
     this.myLook = look;
-    this.avatarCode = encodeAvatarLook(look);
+    this.avatarCode = encodeAvatarWireLook(look);
     this.sentAv = null;
     if (this.myGhost) {
       this.myGhost.key = `${this.name() || ''}:${this.avatarCode}`;
