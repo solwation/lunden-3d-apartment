@@ -299,6 +299,13 @@ src/rearrange.js       furniture cheat (#465): § / Enter (#596; not from a focu
                        `max-height: 500px` or `max-width: 600px`: one-line header with a 44 px ✕, 44 px footer buttons, only
                        .customizer-controls scrolls; landscape puts the whole preview beside a grid of choice sections, portrait a
                        smaller preview above them. New controls (#1140) are added as further .customizer-section blocks. Desktop is unchanged.
+                       #1136: the first section is a height slider (`#avatar-height`, whole cm within config.js `AVATAR_HEIGHT`, *guess*
+                       100–200): it sets `look.height` (shown: the seed's own base × tall until chosen) and applies live. Avatar scales the
+                       whole figure by `avatarProportions(cm).body` and a child's head bone by `.head` (larger below `adult` cm; one
+                       SkinnedMesh still). main.js `setMyLook` sets `PLAYER.eye = avatarEyeHeight(look)` (settleEye eases the camera;
+                       old looks keep 1.62). Not yet: crouch/headroom/stairs/collision and the head boxes (#1137; they still follow the
+                       seed's `tall`). `tools/avatarheighttest.cjs GAME WORKER` (local `node cloudflare/dev.mjs PORT`): 120/165/195 cm
+                       mirror image, a peer through the Worker and the eye height, plus old codes unchanged.
                        § / Meny opens clickable rearrangement controls with a free cursor; Esc exits the mode and cancels the preview,
                        including native pointer-unlock events. Touch keeps its input mode when leaving the menu.
                        The compact edit panel shows selection/placement steps, selected-only Rotate/Cancel, Menu and Done.

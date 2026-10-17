@@ -1,4 +1,4 @@
-import { SKIN, HAIR, TOPS, PANTS, SHOES, encodeAvatarLook, decodeAvatarLook, avatarLook } from './config.js';
+import { SKIN, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm } from './config.js';
 
 /** The E choice every mirror offers (#1110): the avatar editor. */
 export const mirrorChoice = () => ({ label: 'byt utseende vid spegeln', run: () => openAvatarCustomizer() });
@@ -309,11 +309,21 @@ function updateActiveSwatches() {
   }
 }
 
+/** The height slider (#1136) shows the look's height in cm (the seed's own until one is chosen). */
+function updateHeightSlider() {
+  const input = customizerEl?.querySelector('#avatar-height'), out = customizerEl?.querySelector('#avatar-height-value');
+  if (!input) return;
+  const cm = avatarHeightCm(currentLook);
+  input.min = AVATAR_HEIGHT.min; input.max = AVATAR_HEIGHT.max; input.value = cm;
+  if (out) out.textContent = `${cm} cm`;
+}
+
 /** Refresh the preview canvas and apply current look live. */
 function applyAndRefresh() {
   if (!currentLook) return;
   if (previewCanvas) drawAvatarPreview(previewCanvas, currentLook);
   updateActiveSwatches();
+  updateHeightSlider();
   callbacks.setLook?.(currentLook);
 }
 
@@ -403,6 +413,15 @@ function initCustomizerDOM() {
     } else if (btn.id === 'avatar-save-btn' || btn.id === 'avatar-close-btn') {
       closeAvatarCustomizer('button');
     }
+  });
+
+  // The height slider (#1136): a chosen height in whole cm; the live avatar and eye height follow while dragging
+  customizerEl.querySelector('#avatar-height')?.addEventListener('input', (e) => {
+    const cm = Math.round(Number(e.target.value));
+    if (!currentLook || !(cm >= AVATAR_HEIGHT.min && cm <= AVATAR_HEIGHT.max)) return;
+    currentLook.height = cm;
+    currentLook.tall = cm / AVATAR_HEIGHT.base;
+    applyAndRefresh();
   });
 
   // Keyboard navigation inside customizer

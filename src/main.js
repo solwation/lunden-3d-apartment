@@ -14,7 +14,7 @@ import { loadBeerShelf } from './beershelfdata.js';
 import { BeerShelf } from './beershelf.js';
 import { initHudIcons, fitChoiceLabels, setIcon, setPressed, setWeatherIcon, formatTemp } from './hudicons.js';
 import * as THREE from 'three';
-import { UNIT_TOP, SITE, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS, GARAGE, OLOF, CORE_A, CORE_B, CORE_C, avatarLook } from './config.js';
+import { UNIT_TOP, SITE, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS, GARAGE, OLOF, CORE_A, CORE_B, CORE_C, avatarLook, avatarEyeHeight } from './config.js';
 import { setupAvatarCustomizer, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen } from './customizer.js';
 import { MieleHeld, HeartFireworks } from './miele.js';
 const DRAWING_COLORS = DRAWING.colors;
@@ -2520,10 +2520,13 @@ terminalInput.addEventListener('input', () => {
   chat.keyed();
 }); // "skriver…" (#676): only in chat mode, only the flag
 window.__chat = chat;
+// #1136: the standing eye height follows the chosen avatar height (settleEye eases the camera there)
+const setMyLook = (lk) => { ghosts.setMyLook(lk); PLAYER.eye = avatarEyeHeight(lk); };
+PLAYER.eye = avatarEyeHeight(ghosts.myLook);
 setupAvatarCustomizer({
   getLook: () => ghosts.myLook,
   getDefaultLook: () => avatarLook(leaderboard.name || 'anon'),
-  setLook: (lk) => ghosts.setMyLook(lk),
+  setLook: setMyLook,
   onOpen: () => {
     reading = true;
     player.keys.clear();
@@ -3094,4 +3097,4 @@ hideLoading();
 
 crashlog.attach({ renderer, camera, quality, player, world, sun, scene, mirrorTarget, frameDiag, viewportBinding }); // what the crash heartbeat shows (#629)
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { sausages, frameRate, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: (lk) => ghosts.setMyLook(lk) }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };
+window.__app = { sausages, frameRate, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };

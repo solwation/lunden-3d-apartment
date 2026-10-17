@@ -491,6 +491,8 @@
     .customizer-section .swatches button { width: 30px; height: 30px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.25); cursor: pointer; padding: 0; touch-action: manipulation; transition: transform 0.1s, box-shadow 0.1s; }
     .customizer-section .swatches button:hover { transform: scale(1.1); }
     .customizer-section .swatches button.sel { border-color: #fff; box-shadow: 0 0 0 3px #3894e6; transform: scale(1.12); }
+    .customizer-section input[type="range"] { width: 100%; min-height: 32px; margin: 0; accent-color: #3894e6; touch-action: pan-y; }
+    .customizer-section h3 output { text-transform: none; color: #fff; margin-left: 4px; }
     .customizer-section .btn-group { display: flex; flex-wrap: wrap; gap: 5px; margin: 4px 0; }
     .customizer-section .btn-group button { border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #fff; padding: 5px 10px; border-radius: 6px; font: 600 12px system-ui, sans-serif; cursor: pointer; touch-action: manipulation; }
     .customizer-section .btn-group button.sel { background: #3894e6; border-color: #3894e6; color: #fff; }
@@ -1100,6 +1102,11 @@
           <canvas id="avatar-preview-canvas" width="180" height="280"></canvas>
         </div>
         <div class="customizer-controls">
+          <section class="customizer-section">
+            <h3>Längd <output id="avatar-height-value" for="avatar-height">175 cm</output></h3>
+            <input id="avatar-height" type="range" min="100" max="200" step="1" value="175" aria-label="Längd i centimeter">
+          </section>
+
           <section class="customizer-section">
             <h3>Figur</h3>
             <div class="btn-group" data-group="gender">
