@@ -2211,7 +2211,9 @@ const christmas = new ChristmasSeason({ rearrange, lights,
 });
 christmas.update(day, 0);
 // New Year's Eve (#1199): the TVs count down the last seconds to midnight, champagne flutes on the coffee table
-const newYear = new NewYear({ scene, day, tvs: world.furnitureTargets.filter((t) => t.kind === 'tv'), allowed: () => power.on && world.furnitureOn !== false, onMidnight: () => showFireworks.start() });
+const newYear = new NewYear({ scene, camera, day, tvs: world.furnitureTargets.filter((t) => t.kind === 'tv'), allowed: () => power.on && world.furnitureOn !== false,
+  shown: () => world.furnitureOn !== false, onMidnight: () => showFireworks.start() });
+for (const f of newYear.flutes) { f.onSip = (drink) => { if (drink) bump(drink); }; breaker.add(f, 'glass'); holdables.push(f); } // real glasses (#1222): F and their visibility are newYear's
 const terminal = document.getElementById('terminal'), terminalInput = document.getElementById('terminal-code');
 const reportCapture = new ReportCapture(renderer);
 const adminReports = new AdminReports({ help: () => chat?.help ?? '', form: document.getElementById('terminal-form'), input: terminalInput,

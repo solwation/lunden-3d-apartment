@@ -75,6 +75,11 @@ src/xmastree.js        the Christmas tree (#571, XMAS_TREE): a FURNITURE builder
 src/newyear.js         New Year's Eve (#1199, part of #1170, NEW_YEAR): `newYearPhase(day)` ('count' the last 10 s before 00:00
                        on 31/12, 'cheer' 60 s after), every TV switched on with a countdown via Screen.overlay (screens.js) and the
                        ones it switched on off again; four merged champagne flutes (2 draw calls) on the coffee table until 04:00.
+                       #1222: each flute is a real `Flute` (things.js Glass, champagne at DRINKS.pour.glass.champagne.to): its
+                       hidden model is the look-ray target while it stands untouched in the merged decor (rebuilt without it once
+                       taken); taken/put down it is an ordinary glass (drink, refill from the champagne bottle, F/cleaning send it
+                       home); at home outside the glasses' hours it is away (no target). Not in world.looseItems: newYear owns its
+                       visibility. Test: tools/newyearglasstest.cjs BASE OUT.
                        Fireworks: #1200. Test: tools/newyeartest.cjs BASE OUT (frozen + running clock, screenshots, draw calls)
 src/christmas.js       the season layer (#571): `inChristmas(y, m, d)` (1 Dec – 6 Jan inclusive, over the new year) and
                        `ChristmasSeason` (main.js, every frame by the day cycle's date): shows/hides the tree, hides the pieces whose

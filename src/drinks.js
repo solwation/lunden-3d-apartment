@@ -145,15 +145,7 @@ export class GlassLiquid {
   }
 
   /** Inner radius at height y. */
-  r(y) {
-    const p = this.inner;
-    if (y <= p[0][1]) return p[0][0];
-    for (let i = 1; i < p.length; i++) if (y <= p[i][1]) {
-      const [r0, y0] = p[i - 1], [r1, y1] = p[i];
-      return r0 + (r1 - r0) * (y - y0) / (y1 - y0);
-    }
-    return p[p.length - 1][0];
-  }
+  r(y) { return innerRadius(this.inner, y); }
 
   /** Show `contents` (its total = the fill). */
   show(contents) {
@@ -164,9 +156,24 @@ export class GlassLiquid {
     this.material.opacity = contents.opacity();
     if (Math.abs(f - this.level) < 0.003) return;
     this.level = f;
-    const p = this.inner, y0 = p[0][1], yl = y0 + (p[p.length - 1][1] - y0) * Math.min(1, f);
-    const pts = [[0, y0], [this.r(y0), y0], ...p.filter(([, y]) => y > y0 && y < yl), [this.r(yl), yl], [this.r(yl) * 0.999, yl], [0, yl]];
     this.mesh.geometry.dispose();
-    this.mesh.geometry = new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r, y)), 24);
+    this.mesh.geometry = liquidGeometry(this.inner, f);
   }
+}
+
+/** Inner radius of the profile `p` ([[r, y], …]) at height y. */
+function innerRadius(p, y) {
+  if (y <= p[0][1]) return p[0][0];
+  for (let i = 1; i < p.length; i++) if (y <= p[i][1]) {
+    const [r0, y0] = p[i - 1], [r1, y1] = p[i];
+    return r0 + (r1 - r0) * (y - y0) / (y1 - y0);
+  }
+  return p[p.length - 1][0];
+}
+
+/** The drink's solid in a glass with inner profile `inner`, filled to `f` (also the New Year flutes' merged decor, #1222). */
+export function liquidGeometry(inner, f) {
+  const p = inner, y0 = p[0][1], yl = y0 + (p[p.length - 1][1] - y0) * Math.min(1, f), r = (y) => innerRadius(p, y);
+  const pts = [[0, y0], [r(y0), y0], ...p.filter(([, y]) => y > y0 && y < yl), [r(yl), yl], [r(yl) * 0.999, yl], [0, yl]];
+  return new THREE.LatheGeometry(pts.map(([x, y]) => new THREE.Vector2(x, y)), 24);
 }

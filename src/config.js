@@ -5873,11 +5873,18 @@ export const VENTS = {
 // switched on go off again afterwards. Champagne flutes stand on the ILVA coffee table (top 0.47 m, x 3.04…4.24,
 // z 10.26…10.86) from the countdown until `glassesUntil` o'clock on 1 January, on its east half clear of the fruit bowl
 // (x 3.33), the cups in the middle and the remote (3.98, 10.72). A flute (*guess*, a common 17–18 cl shape): foot Ø 7 cm,
-// stem, bowl to `h` 22 cm, rim Ø 5.6 cm, `fill` of the bowl. `?newyear` starts at `debugHour` on 31 December.
+// stem, bowl to `h` 22 cm, rim Ø 5.6 cm; filled as a poured glass (DRINKS.pour.glass.champagne). They are real glasses (#1222).
+// `?newyear` starts at `debugHour` on 31 December.
 export const NEW_YEAR = { count: 10, cheer: 60, glassesUntil: 4, debugHour: 23 + 59 / 60 + 45 / 3600,
-  h: 0.22, fill: 0.7,
+  h: 0.22,
   glasses: [[3.86, 10.36], [3.99, 10.44], [4.12, 10.35], [4.15, 10.52]],
-  colors: { glass: 0xe8f0f2, champagne: 0xf1d27a, bg: '#08102a', digit: '#ffffff', gold: '#f3cf6a' } };
+  colors: { glass: 0xe8f0f2, bg: '#08102a', digit: '#ffffff', gold: '#f3cf6a' } };
+
+// Toasting (#1222, things.js Glass.useAlt "Skåla", main.js): with a glass in the hand, a clink, the glass raised for `raise` s
+// and a line (`newYear` from the countdown until NEW_YEAR.glassesUntil, else `lines`); at most one every `every` s (the
+// player room's PLAYERS.toastEvery, kept equal by hand). Players within that room's toastRange see it; one holding a glass
+// toasts back once. Olof toasts back from within `olof` m. Our picks (*guess*).
+export const TOAST = { every: 2, raise: 0.9, olof: 6, lines: ['Skål!'], newYear: ['Skål! Gott nytt år!', 'Gott nytt år!'], back: 'Skål, {n}!' };
 
 // Midnight fireworks over the block (#1200, src/fireworks.js; #1199's New Year trigger calls `start()`): `seconds` of
 // rockets (a pool of `shells` shells, each bursting into `sparks` sparks; the phone profile uses the `phone*` counts),
