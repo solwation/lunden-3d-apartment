@@ -3551,14 +3551,14 @@ export const VISIT_UNITS = [
 // (HUS_L.street / court), sills from the sheet. The kitchen is a galley: the tall column faces east, the run west.
 export const L1201 = {
   levels: [{ name: 'Entréplan', rh: 2.5 }, { name: 'Övre plan', rh: 2.5 }],
-  hole: { x0: 0.206, x1: 1.75, z0: 6.205, z1: 8.835 },
+  hole: { x0: 0.2, x1: 1.75, z0: 6.205, z1: 8.835 }, // x0: the gable's face down the well (#1164)
   stair: { x1: 1.75, x0: 0.266, z0: 6.205, z1: 8.091 },
   railing: { x: 1.75, z0: 7.15, z1: 8.835, h: 1.1 },
   // its handrails (#619): ours (STAIR.handrail, every size a *guess*) mapped onto its stair, at its own wall faces read off
   // l1201plan.js — `outer`: the wall between flight A and the void (south), the west gable round the winders (its upper
   // face, 6 mm in from the lower one), the wall north of flight B; `from` / `to` where the bottom / top wall ends (the
   // void wall's east end, the upper wall's east end); `innerA` on the Klk's south wall (its east / west end)
-  handrail: { outer: { south: 8.091, east: 0.206, north: 6.205, from: 2.28, to: 2.095 }, innerA: { face: 7.21, from: 2.28, to: 1.107 } },
+  handrail: { outer: { south: 8.091, east: 0.2, north: 6.205, from: 2.28, to: 2.095 }, innerA: { face: 7.21, from: 2.28, to: 1.107 } },
   // the sloping half wall along flight A and the winders (#624; plan wall `half: true` at z 8.091–8.195, x 0.2–2.28): Peab's
   // brochure (docs/parklangan-halvvagg-trappa-broschyr.png) shows it white, its top parallel to the stair and ending in a
   // vertical edge by the living room. `top` = its top over the treads' nosings (a railing height, *guess*: no section of it

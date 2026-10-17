@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { freeCanvasAfterUpload } from './lowmemory.js';
 import { AO } from './config.js';
 
@@ -77,14 +78,22 @@ export function buildAO(size, y0, yC, floorRects, ceilRects, { floorHole, ceilHo
   for (const [rects, y, down, s, hole] of [
     [floorRects, y0 + 0.007, false, AO.floor, floorHole], [ceilRects, yC - 0.007, true, AO.ceiling, ceilHole],
   ]) {
-    const geo = new THREE.PlaneGeometry(size.x, size.z);
-    geo.rotateX(down ? Math.PI / 2 : -Math.PI / 2);
+    // No overlay over the stair opening (#1164): a sheet across the hole multiplied the stairwell's walls seen through
+    // it, and the (mipmapped) darkening at the hole's rim drew a thin line where it met the walls running down the well.
+    const parts = (hole ? [[0, size.x, 0, hole.z0], [0, size.x, hole.z1, size.z], [0, hole.x0, hole.z0, hole.z1], [hole.x1, size.x, hole.z0, hole.z1]]
+      : [[0, size.x, 0, size.z]]).map(([x0, x1, z0, z1]) => [Math.max(0, x0), Math.min(size.x, x1), Math.max(0, z0), Math.min(size.z, z1)])
+      .filter(([x0, x1, z0, z1]) => x1 - x0 > 1e-6 && z1 - z0 > 1e-6).map(([x0, x1, z0, z1]) => {
+        const g = new THREE.PlaneGeometry(x1 - x0, z1 - z0);
+        g.rotateX(down ? Math.PI / 2 : -Math.PI / 2);
+        g.translate((x0 + x1) / 2, y, (z0 + z1) / 2);
+        return g;
+      });
+    const geo = parts.length === 1 ? parts[0] : mergeGeometries(parts);
     // canvas row 0 = z 0 (north); keep the texture unflipped and map u = x / W, v = z / D
     const tex = aoTexture(size, rects, s.strength, s.radius, hole);
     tex.flipY = false;
     const p = geo.attributes.position, uv = geo.attributes.uv;
-    for (let i = 0; i < p.count; i++) uv.setXY(i, p.getX(i) / size.x + 0.5, p.getZ(i) / size.z + 0.5);
-    geo.translate(size.x / 2, y, size.z / 2);
+    for (let i = 0; i < p.count; i++) uv.setXY(i, p.getX(i) / size.x, p.getZ(i) / size.z);
     const mesh = new THREE.Mesh(geo, multiply(tex));
     mesh.renderOrder = 1;
     group.add(mesh);

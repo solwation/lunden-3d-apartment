@@ -67,7 +67,9 @@ const upper = {
   name: 'Övre plan (våning 4)',
   size: { x: 5.755, z: 9.199 },
   walls: [
-    R(-0.259, 0.206, 0, 9.199),
+    // the west gable; its face reads 6 mm further in than the entrance floor's (0.200). Along the stair opening (between
+    // the walls north of the stair and the set-back wall) it takes the lower face, so it runs down the well unbroken (#1164)
+    R(-0.259, 0.206, 0, 6.205), R(-0.259, 0.2, 6.205, 8.835), R(-0.259, 0.206, 8.835, 9.199),
     R(0.206, 0.806, 0, 0.365), R(2.415, 3.345, 0, 0.365), R(4.555, 5.755, 0, 0.365), // street wall (two bedroom windows)
     R(5.555, 5.755, 0.365, 8.835),
     R(0.206, 0.656, 8.835, 9.199), R(1.665, 3.046, 8.835, 9.199), R(4.055, 5.755, 8.835, 9.199), // set-back wall: window, terrace door

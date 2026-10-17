@@ -192,6 +192,22 @@ function slabOpening(hole, floors, reach = 0.1, eps = 0.005) {
   return o;
 }
 
+/** The opening for the thin sheets round the stair opening (#1164): the floor / ceiling plates and the AO overlays. A sheet
+ * whose edge lies exactly in a stairwell wall's face z-fights with it along that edge, drawing a thin line across the wall at
+ * slab level; on each side where one of the level's `walls` (plan boxes) bounds the whole edge within `eps`, the edge is
+ * pushed `into` m into that wall, where it is hidden. Free edges (the stair's top step, the railing side) stay put. */
+function tuckOpening(o, walls, into = 0.005, eps = 0.01) {
+  const r = { ...o };
+  const spansZ = (b) => b.z0 <= o.z0 + eps && b.z1 >= o.z1 - eps, spansX = (b) => b.x0 <= o.x0 + eps && b.x1 >= o.x1 - eps;
+  for (const b of walls) {
+    if (spansZ(b) && Math.abs(b.x0 - o.x1) <= eps) r.x1 = Math.max(r.x1, b.x0 + into);
+    if (spansZ(b) && Math.abs(b.x1 - o.x0) <= eps) r.x0 = Math.min(r.x0, b.x1 - into);
+    if (spansX(b) && Math.abs(b.z0 - o.z1) <= eps) r.z1 = Math.max(r.z1, b.z0 + into);
+    if (spansX(b) && Math.abs(b.z1 - o.z0) <= eps) r.z0 = Math.min(r.z0, b.z1 - into);
+  }
+  return r;
+}
+
 /** A rectangle inside a wall's plan polygon, as long as the wall (#695, the DetailCuller's occluders): the bounding box
  * when the polygon is one (the plan's walls often carry an extra point on an edge), else the widest strip across its
  * thickness that the polygon covers along its whole length (sampled every cm; notches and recesses make it thinner). */
@@ -818,14 +834,15 @@ function buildLevel(floor, li, group, how = OURS) {
     }
   }
 
-  // Floor of this level (upper level has the stair opening)
-  group.add(...plateAround(0, W, 0, D, li === 1 ? opening : null, y0 + 0.002, M.floor));
+  // Floor of this level (upper level has the stair opening); the sheets' edges tucked into the stairwell's walls (#1164)
+  const sheetHole = tuckOpening(opening, wallBoxes);
+  group.add(...plateAround(0, W, 0, D, li === 1 ? sheetHole : null, y0 + 0.002, M.floor));
   // Ceiling: underside of the slab / roof
-  group.add(...plateAround(0, W, 0, D, li === 0 ? opening : null, yC - 0.002, M.ceiling, true));
+  group.add(...plateAround(0, W, 0, D, li === 0 ? sheetHole : null, yC - 0.002, M.ceiling, true));
 
   // contact shadows along walls and cabinets (floor) and in the ceiling corners
   group.add(buildAO({ x: W, z: D }, y0, yC, [...wallBoxes, ...floor.windows, ...floor.cabinets], [...wallBoxes, ...floor.windows, ...lintels],
-    { floorHole: li === 1 ? opening : null, ceilHole: li === 0 ? opening : null }));
+    { floorHole: li === 1 ? sheetHole : null, ceilHole: li === 0 ? sheetHole : null }));
   group.add(buildWallAO({ x: W, z: D }, y0, yC, aoPieces, aoBlockers,
     { floorHole: li === 1 ? opening : null, ceilHole: li === 0 ? opening : null })); // and on the walls: floor/ceiling bands, inner corners (#1074)
 
