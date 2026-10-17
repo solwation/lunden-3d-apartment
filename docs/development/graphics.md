@@ -299,6 +299,14 @@ stack position, atlas/UV0 and vertex colours; only then are they partitioned int
 three private-material batches. `surfaceFor` is an optional explicit builder
 handle; ordinary cushion callers retain their existing behavior.
 
+#1146 (the user) superseded the divan part: only the sofa row with its backs
+carries decorative cushions, so the divans no longer build cushions or a
+`cushions` surface, and the box keeps the four sofa cushions in one `sofa` copy.
+`PATIO_TEXTILE_SURFACES` still accepts the legacy divan `cushions` id so older
+saved layouts validate; the client simply ignores those entries. The #1015
+fixture `tools/patiotextiletest.cjs` still asserts the old divan surfaces and
+eight-cushion stack.
+
 `linkPatioTextiles(movable)` runs once after Furniture construction and connects
 only those named module surfaces to their matching box-copy handles. There is
 no scene traversal/global material registry or frame update. The canonical module

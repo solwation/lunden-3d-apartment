@@ -4187,13 +4187,8 @@ export const PATIO = {
     { materialGroup: 'sofa', x: -0.34, z: -0.07, yaw: 0.05, lean: 0.4, kind: 'stripe', color: 0xf2ede2, crumple: 0.3 },                    // off-white striped, between two seats
     { materialGroup: 'sofa', x: 0.34, z: -0.08, yaw: -0.05, lean: 0.3, kind: 'weave', color: 0x8ea488, size: 0.3, w: 0.5, crumple: 0.3 }, // a sage lumbar, between the next two
     { materialGroup: 'sofa', x: -0.82, z: -0.06, yaw: 0.45, lean: 0.4, kind: 'weave', color: 0xb35a3c, crumple: 0.35 },                  // terracotta, at the backs' west end
-    // #429: standing on the long bench against the east screen wall (`wall`): `x` along the bench from its north end
-    // (0…2.6, +z), `z` out from the bench's outer edge (the screen-wall side), `yaw` 0 = facing west (into the seat).
-    // #593: every cushion's leaning top stays west of the east screen wall's inner face (x 5.68, tools/veronatest.html)
-    { materialGroup: 'divan1', wall: true, x: 0.3, z: 0.13, yaw: 0.35, lean: 0.35, kind: 'stripe', color: 0xe7d8b8, crumple: 0.4 },          // sand striped, in the corner
-    { materialGroup: 'divan1', wall: true, x: 0.95, z: 0.11, yaw: -0.05, lean: 0.3, kind: 'weave', color: 0x6f8a96, crumple: 0.35 },         // dusty blue
-    { materialGroup: 'divan2', wall: true, x: 1.65, z: 0.1, yaw: 0.05, lean: 0.3, kind: 'weave', color: 0x8ea488, size: 0.3, w: 0.5, crumple: 0.3 }, // a sage lumbar
-    { materialGroup: 'divan2', wall: true, x: 2.3, z: 0.13, yaw: -0.3, lean: 0.35, kind: 'weave', color: 0xc9952f, crumple: 0.45 },          // ochre, at the south end
+    // #1146 (the user): only the sofa row, with its backs, carries cushions. The backless divans have none (#429's four
+    // cushions leaned against the east screen wall, and lay oddly once a divan was rearranged away from it).
   ],
   // the snowman stands just beyond the gap in the hedge, in view from the patio door and the sofa (#73)
   snowman: { x: 1.4, z: 18.4, months: [12, 1, 2] },

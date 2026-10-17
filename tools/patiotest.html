@@ -49,7 +49,7 @@ f.onload = async () => {
     const rain = at(7, 15, 2).cushions;
     weather.force = 'clear';
     at(7, 15, 2);
-    // since #692 the lounge is three movable parts (row + two divans), each with its own merged cushion mesh
+    // since #692 the lounge is three movable parts (row + two divans); since #1146 only the row carries a merged cushion mesh
     const cushs = [];
     for (const t of world.furnitureTargets.filter((t) => t.name === 'loungesoffan')) t.pickable.traverse((m) => { if (m.isMesh && m.userData.cushion) cushs.push(m); });
     const shown = (m) => { for (let o = m; o; o = o.parent) if (!o.visible) return false; return true; };
@@ -58,7 +58,7 @@ f.onload = async () => {
     const hidden = cushs.every((m) => !shown(m));
     world.setFurniture(true);
     weather.force = 'clear';
-    pass &= check(cushs.length === 3 && july.length === 3 && july.every(Boolean) && !jan.some(Boolean) && !rain.some(Boolean) && before && hidden,
+    pass &= check(cushs.length === 1 && july.length === 1 && july.every(Boolean) && !jan.some(Boolean) && !rain.some(Boolean) && before && hidden,
       `cushions: July ${july}, January ${jan}, rain ${rain}, shown ${before}, hidden with F ${hidden}`);
   }
   // the cushion box (#400): west of the patio door by the west screen wall; E opens / shuts its lid; in January the

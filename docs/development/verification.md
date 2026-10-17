@@ -428,7 +428,8 @@ tools/clocktest.html   headless test of the wall clock (?time=7, real-time pace,
 tools/hangtest.html    hanging clothes inside what they hang in (#610): the hall coat rack's jackets within its width, clear of the EL/C
                        cabinet and wardrobe G; all fitted wardrobes' contents (+ the hall life jacket) inside the carcass; SMÅSTAD's clothes
 tools/veronatest.html  the patio's Verona lounge as three movable parts: seven seats, frame corner x 5.66, seasonal cushions west of
-                       the east screen wall (x 5.68), sitting, independent rotation/cushion following, rearranging and layout migration
+                       the east screen wall (x 5.68), cushions only on the sofa row (#1146), sitting, independent rotation/cushion
+                       following, rearranging and layout migration
 ```
 
 [Global filename inventory and measured summary (#764)](test-mode-inventory.md) records all current HTML/CJS dispositions, published pairs and pending evidence; group-owner rows below remain authoritative.

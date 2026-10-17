@@ -50,7 +50,10 @@ f.onload = async () => {
     }); });
     pass &= check(Math.abs(maxX - 5.66) < 0.02, `corner stays at east corner (maxX = ${maxX.toFixed(3)}, expected ~5.66)`);
     pass &= check(minX > 3.55, `door end shortened by one module (minX = ${minX.toFixed(3)}, expected ~3.60)`);
-    pass &= check(cushionMaxX > 5.3 && cushionMaxX <= 5.68, `decorative cushions stay off the east screen wall (inner face x 5.68; maxX = ${cushionMaxX.toFixed(3)})`);
+    pass &= check(cushionMaxX > 4.5 && cushionMaxX <= 5.68, `decorative cushions stay off the east screen wall (inner face x 5.68; maxX = ${cushionMaxX.toFixed(3)})`);
+    // #1146: decorative cushions only on the sofa row with its backs, none on the backless divans
+    const decoOf = (t) => { const out = []; t.pickable.traverse((m) => { if (m.userData.cushion) out.push(m); }); return out; };
+    pass &= check(decoOf(sofa).length === 1 && sofaTargets.filter(t => t !== sofa).every(t => decoOf(t).length === 0), 'decorative cushions only on the sofa row, none on the divans (#1146)');
 
     // 3. Sitting in every seat and standing up
     for (const target of sofaTargets) for (const sp of target.spots) {
@@ -72,6 +75,8 @@ f.onload = async () => {
 
     // Move sofa 1m south
     const curPose = piece.object.getWorldPosition(new V());
+    const sofaDeco = []; piece.object.traverse(m => { if (m.userData.cushion) sofaDeco.push(m); });
+    const sofaDecoBox = new THREE.Box3().setFromObject(sofaDeco[0]);
     R.candidate = new THREE.Matrix4().makeTranslation(0, 0, 1).multiply(piece.object.matrixWorld);
     R.valid = true;
     await R.confirm();
@@ -79,6 +84,8 @@ f.onload = async () => {
     const movedPos = piece.object.getWorldPosition(new V());
     pass &= check(Math.abs(movedPos.z - (curPose.z + 1)) < 0.02, 'sofa moved south');
     pass &= check(Math.abs(sofa.spots[0].pos.z - (13.13 + 1)) < 0.05, 'sofa seat spots followed move');
+    const sofaDecoMoved = new THREE.Box3().setFromObject(sofaDeco[0]);
+    pass &= check(Math.abs(sofaDecoMoved.min.z - sofaDecoBox.min.z - 1) < 0.02 && Math.abs(sofaDecoMoved.min.x - sofaDecoBox.min.x) < 0.02, 'sofa decorative cushions follow the moved sofa (#1146)');
 
     // Restore original
     await R.restoreOriginal(piece);
@@ -88,13 +95,11 @@ f.onload = async () => {
 
     const divan = R.pieces.find(p => p.item.part === 'divan1'), otherDivan = R.pieces.find(p => p.item.part === 'divan2');
     const divanHome = divan.object.getWorldPosition(new V()), otherHome = otherDivan.object.getWorldPosition(new V());
-    const deco = []; divan.object.traverse(m => { if (m.userData.cushion) deco.push(m); });
-    const cushionBefore = deco[0].getWorldPosition(new V());
     R.begin(divan); R.candidate = new THREE.Matrix4().makeRotationY(Math.PI / 2).multiply(divan.object.matrixWorld);
     R.valid = true; await R.confirm();
     pass &= check(Math.abs(divan.object.rotation.y - (Math.PI / 2)) < 0.02, 'first divan rotates independently');
     pass &= check(otherDivan.object.getWorldPosition(new V()).distanceTo(otherHome) < 0.001, 'second divan stays in place');
-    pass &= check(!deco[0].getWorldPosition(new V()).equals(cushionBefore), 'divan decorative cushions rotate with their module');
+    pass &= check(decoOf({ pickable: divan.object }).length === 0, 'a rotated divan carries no decorative cushions (#1146)');
     await R.restoreOriginal(divan);
     pass &= check(divan.object.getWorldPosition(new V()).distanceTo(divanHome) < 0.001 && Math.abs(divan.object.rotation.y) < 0.02, 'divan restores to its original home');
     pass &= check(!!R.state.pieces[divan.id] && !R.state.pieces[otherDivan.id], 'confirmed rotation is saved under only that divan id');

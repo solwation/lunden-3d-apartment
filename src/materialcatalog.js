@@ -84,7 +84,8 @@ export const CUSHION_MATERIAL_SURFACES = Object.fromEntries(FURNITURE.flatMap(it
   const specs = it.type === 'sofa' ? [...CUSHIONS.sofa, CUSHIONS.sofaThrow] : it.type === 'armchair' ? [...CUSHIONS.armchair, CUSHIONS.chairThrow] : [];
   return specs.length ? [[`${base}-${n}-0`, specs.map(s => s.materialId)]] : [];
 }));
-// #1015: the three canonical outdoor cushion groups and the one stored fleece.
+// #1015: the three canonical outdoor cushion groups and the one stored fleece. Since #1146 only the sofa builds
+// cushions; the divan ids stay valid so older saved layouts still validate (the client ignores them).
 const patioTextileSerials = new Map();
 export const PATIO_TEXTILE_SURFACES = Object.fromEntries(FURNITURE.flatMap(it => {
   const base = `f-${it.type}-${it.level}-${it.x}-${it.z}`, n = patioTextileSerials.get(base) ?? 0; patioTextileSerials.set(base, n + 1);

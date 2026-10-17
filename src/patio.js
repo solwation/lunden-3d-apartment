@@ -81,8 +81,8 @@ function veronaModule(g, x0, x1, z0, z1, { back = false, arms = [], decorative =
  * The family's Rusta Verona lounge (#408, #429, shortened #489): a row of three modules along x, centred on the origin, backs at −z, seats
  * facing +z, an arm at each end; in front of the +x end module the two divans (backless, no arms, P.verona.divanL long)
  * end to end along +z — one long bench along the east screen wall, an L. Six places: one per row module facing +z,
- * the bench's (P.verona.bench) facing −x, towards the table. The decorative cushions (#399) — along the backs, and
- * standing against the screen wall on the bench (`wall: true`) — are one merged mesh, shown by the season.
+ * the bench's (P.verona.bench) facing −x, towards the table. The decorative cushions (#399) — along the row's backs
+ * only, none on the backless divans (#1146) — are one merged mesh, shown by the season.
  */
 export function veronasofa(item = {}) {
   const g = new THREE.Group();
@@ -119,31 +119,14 @@ export function veronasofa(item = {}) {
     : part === 'sofa' ? row(-X, X)
     : [{ x0: -W / 2, x1: W / 2, z0: -V.divanL / 2, z1: V.divanL / 2 }];
   if (item.decorative) return g;
-  // cosy cushions (#399): leaning against the backs, and against the screen wall along the bench (in a frame turned to
-  // face −x: its x runs along the bench from its north end, its z out from the bench's outer edge); merged into one mesh
-  // (the shared cushion atlas), kept out of the sofa's merge, shown by the season and the weather (Patio.update)
-  const decorativeSurface = ['sofa', 'divan1', 'divan2'].includes(part)
-    ? upholsterySurface(g, 'Dekorativa kuddar', { id: 'cushions', replaceDetails: true }) : null;
+  // cosy cushions (#399): leaning against the sofa row's backs only (#1146: never on the backless divans, so a moved
+  // divan carries none); merged into one mesh (the shared cushion atlas), kept out of the sofa's merge, shown by the
+  // season and the weather (Patio.update)
+  if (part !== 'all' && part !== 'sofa') return g;
+  const decorativeSurface = part === 'sofa' ? upholsterySurface(g, 'Dekorativa kuddar', { id: 'cushions', replaceDetails: true }) : null;
   const surfaceFor = decorativeSurface ? () => decorativeSurface : undefined;
-  const tmp = new THREE.Group(), wall = new THREE.Group();
-  wall.position.set(X, 0, z1);
-  wall.rotation.y = -Math.PI / 2;
-  wall.updateMatrix();
-  const rowC = part === 'all' || part === 'sofa' ? addCushions(tmp, P.cushions.filter((c) => !c.wall), { backZ: 0, seatY, surfaceFor }) : [];
-  const benchData = P.cushions.filter((c) => c.wall);
-  const benchC = part === 'all' ? addCushions(tmp, benchData, { backZ: 0, seatY, surfaceFor })
-    : part === 'divan1' ? addCushions(tmp, benchData.filter((c) => c.x < 1.3), { backZ: 0, seatY, surfaceFor })
-    : part === 'divan2' ? addCushions(tmp, benchData.filter((c) => c.x >= 1.3), { backZ: 0, seatY, surfaceFor }) : [];
-  const meshes = rowC.concat(benchC);
-  const geos = meshes.map((c) => {
-    c.updateMatrix();
-    const geo = c.geometry.applyMatrix4(c.matrix);
-    if (benchC.includes(c)) {
-      geo.applyMatrix4(wall.matrix);
-      if (part === 'divan1' || part === 'divan2') geo.translate(-(X - W / 2), 0, -g.userData.divanCenterZ);
-    }
-    return geo;
-  });
+  const meshes = addCushions(new THREE.Group(), P.cushions, { backZ: 0, seatY, surfaceFor });
+  const geos = meshes.map((c) => { c.updateMatrix(); return c.geometry.applyMatrix4(c.matrix); });
   if (geos.length) {
     const cushions = new THREE.Mesh(mergeGeometries(geos), meshes[0].material);
     cushions.castShadow = cushions.receiveShadow = true;
@@ -402,7 +385,7 @@ export function dynbox(item = {}) {
   if (item.inside !== 'bow') addFoldedThrow(contents, { surface: upholsterySurface(g, 'Vikta fleecepläden', { id: 'throw-folded', replaceDetails: true }), w: 0.4, d: 0.42, layer: 0.025, layers: 4, x: L / 2 - t - 0.24, z: 0, y: 0.05, yaw: 0.05, color: 'grey' });
   const tmp = new THREE.Group();
   // Private copy handles are linked once to the matching movable module after Furniture builds.
-  const copies = item.inside === 'bow' ? [] : ['sofa', 'divan1', 'divan2'].map(part => ({ part, surface: upholsterySurface(tmp, 'Förvarade kuddar', { id: part, replaceDetails: true }) }));
+  const copies = item.inside === 'bow' ? [] : ['sofa'].map(part => ({ part, surface: upholsterySurface(tmp, 'Förvarade kuddar', { id: part, replaceDetails: true }) }));
   g.userData.patioCushionCopies = copies;
   const piles = item.inside === 'bow' ? [] : addCushions(tmp, P.cushions.map((c) => ({ ...c, yaw: 0.1 * Math.sin(c.x * 7), lean: Math.PI / 2 })), { backZ: 0, seatY: 0, surfaceFor: c => copies.find(copy => copy.part === c.materialGroup).surface });
   piles.forEach((m, i) => {
