@@ -102,7 +102,9 @@ material/              screenshots of our choices in Peab's option portal (local
   unguarded step); around the box the ground is one storey lower (`park` −3, Å-husen A/B suterräng); retaining
   walls with a railing where the box meets it (none along a house's façade), the garage door in its west face
   south of Hus C (z 41…47) with an asphalt drive from Karpvägen (#357: walkable inside, src/garage.js — p46 room layout; parking/cages/heights assumed), stairs down to the park level (`terrain.stairs`:
-  between Hus C and B, #254).
+  between Hus C and B, #254; #1204: its full ≈ 3.0 m flight width x −47.4…−44.4 as drawn on våning −1 and våning 1,
+  ±0.15 m graphical reading; risers/landing/railings remain *guess*. Checked: Hus A's east stair 11.6…13.5 and Hus C's
+  NW stair match våning 1; Hus L has no park stair).
   East edge (#255): the box ends at x 11.6; the `terrain.ramp` x 11.6…13.5 falls 0.9 m from a landing (the box's last
   part, z 24.5…27.25) by the walk along Hus A north to the street by Hus L's gable (#256, walkable: outdoors
   `player.groundAt` uses `groundY`), with a wall + railing along the street; from the landing a stair goes 1.4 m down

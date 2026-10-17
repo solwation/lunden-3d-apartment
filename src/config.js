@@ -342,10 +342,11 @@ export const SITE = {
     // stairs from the courtyard (y 0) going south, `z` = the box edge they leave; `drop` m in `steps` (default: down to
     // the park level, ~0.17 m each, a `landing` halfway); `walk` = paving from the foot. #255: "TRAPPA NIVÅSKILLNAD CA
     // 1,4M" (våning 1: 9 risers x 11.6…13.5, z 27.25…30) from the landing at the walk along Hus A down to the walk east
-    // to Sankt Lars väg (z 30…31.8). #254: "TRAPPA" between Hus C and Hus B (x −47.4…−45.9, from the level line at
-    // z 52.5 down to z ≈ 59).
+    // to Sankt Lars väg (z 30…31.8). #254: "TRAPPA" between Hus C and Hus B (from the level line at z 52.5 down to
+    // z ≈ 59). #1204: x −47.4…−44.4, the full flight width drawn on våning −1 and våning 1 (both ≈ 3.0 m, ±0.15 m
+    // graphical reading; was 1.5 m); risers, landing and handrail height stay as before (not dimensioned, *guess*).
     stairs: [{ x0: 11.6, x1: 13.5, z: 27.25, step: 0.3, drop: 1.4, steps: 9, walk: { x0: 11.6, x1: 19.7, z0: 29.95, z1: 31.8 } }, // the walk meets the pavement along Sankt Lars väg (SITE.roads)
-      { x0: -47.4, x1: -45.9, z: 52.5, step: 0.3, landing: 1.0 }],
+      { x0: -47.4, x1: -44.4, z: 52.5, step: 0.3, landing: 1.0 }],
   },
   // façade texture of the other blocks: one window per 3 × 3 m. `storey` = one generic floor-to-floor height for Hus A, B
   // and C (assumption, #344): plan brochure S2 gives only their storey counts (A suterräng + 1–4, B suterräng + 1–3,
@@ -580,7 +581,7 @@ export const SITE = {
   // #729: simple connected park paving, traced approximately from the light strips in the situation plan.
   // Straight strips typically 1.5 m wide; terminal rectangles/route/widths are *guess*, all on existing park ground (-3); no surveyed levels.
   basementPaving: [
-    { x0: -47.4, x1: -45.9, z0: 58.6, z1: 59.0 }, // the existing C/B stair's foot
+    { x0: -47.4, x1: -44.4, z0: 58.6, z1: 59.0 }, // the existing C/B stair's foot (#1204: its full width)
     { x0: -47.4, x1: -16.7, z0: 59.0, z1: 60.5 }, // around B south, clear of its façade/patios
     { x0: -16.7, x1: -15.2, z0: 42.0, z1: 60.5 }, // the green between A/B
     { x0: -22.6, x1: -16.7, z0: 46.45, z1: 47.95 }, // branch to B east
