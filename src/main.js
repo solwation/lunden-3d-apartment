@@ -160,6 +160,7 @@ const pauseBtn = document.getElementById('pause');
 setupInstall({ force: new URLSearchParams(location.search).has('install') });
 
 const TEST = readTestMode(); // `&test` (#703, src/testmode.js): cheap drawing for headless tests, the game itself unchanged
+loadingStep('Startar 3D-grafiken', 0.1); // names a failed WebGL context in the startup error view (#1132)
 const renderer = new THREE.WebGLRenderer({ antialias: !TEST });
 // Phones and tablets get a smaller memory footprint (LOW_MEMORY, src/lowmemory.js): iOS otherwise kills the tab.
 if (lowMemory) renderer.capabilities.maxTextureSize = Math.min(renderer.capabilities.maxTextureSize, LOW_MEMORY.maxTextureSize);

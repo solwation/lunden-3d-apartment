@@ -1,4 +1,5 @@
 [
+  {"id": 903, "date": "2026-10-17", "text": "Om starten misslyckas visar laddningsrutan vilket steg som gick fel och en Försök igen-knapp, och ditt sparade hem finns kvar."},
   {"id": 902, "date": "2026-10-17", "text": "Andra spelare håller nu samma vapen som de valt, gevär, Nerf-blaster, lasersvärd, trollstav eller pilbåge, i stället för en enkel låda."},
   {"id": 901, "date": "2026-10-17", "text": "Om ett laddningssteg dröjer ovanligt länge säger laddningsrutan till och erbjuder Försök igen, medan laddningen fortsätter."},
   {"id": 900, "date": "2026-10-17", "text": "Laddningsrutan visar nu vad som görs just nu och hur länge det har pågått, och en pulserande prick stannar om sidan har hängt sig."},

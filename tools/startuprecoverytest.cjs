@@ -53,7 +53,16 @@ fs.mkdirSync(output, { recursive: true });
           // #1131: long before the hard limit, the unchanged step shows the stall notice above the still-running cover.
           if (!before) assert.equal(await page.locator('[data-startup-slow]').isVisible(), true);
         }
-        if (mode === 'abort' && !before) await page.locator('[data-startup-retry]').waitFor();
+        if (mode === 'abort' && !before) {
+          await page.locator('[data-startup-retry]').waitFor();
+          // Error view (#1132): an import failure names the running step; bootstrap's own deps fail before any step.
+          const view = await page.evaluate(() => { const e = document.querySelector('[data-startup-error]'); return e && [e.textContent, e.dataset.cause]; });
+          assert.equal(view?.[1], 'import');
+          assert.match(view[0], target === 'main' ? /^Fel i steget ”Hämtar programfilerna”: en programfil kunde inte hämtas\.$/ : /^Fel i steget ”Startar”: en programfil kunde inte hämtas\.$/);
+          assert.equal(JSON.parse(await page.evaluate(() => sessionStorage.getItem('lunden.startupFailure'))).cause, 'import');
+        }
+        // The deadline is not an error: it keeps the general recovery text without a failed-step line.
+        if (mode === 'stall' && !before) assert.equal(await page.locator('[data-startup-error]').count(), 0);
         await page.clock.fastForward(mode === 'stall' ? 2 : 120001);
         const shouldRecover = !before || target === 'main';
         if (!shouldRecover) {
@@ -70,7 +79,12 @@ fs.mkdirSync(output, { recursive: true });
           const saved = await page.evaluate(() => [sessionStorage.getItem('lunden.session'), localStorage.getItem('lunden.recoveryTest')]);
           assert.ok(JSON.parse(saved[0]).mode === 'touch');
           assert.equal(saved[1], 'saved-home');
-          if (target === 'bootstrap' && mode === 'stall') await page.screenshot({ path: path.join(output, 'early-resume-retry.png') });
+          // CDP capture: page.screenshot waits for fonts/frames, which never come while page.clock is paused.
+          if (target === 'bootstrap' && mode === 'stall') {
+            const cdp = await context.newCDPSession(page);
+            const { data } = await cdp.send('Page.captureScreenshot', { format: 'png' });
+            fs.writeFileSync(path.join(output, 'early-resume-retry.png'), Buffer.from(data, 'base64'));
+          }
           blocked = false;
           await page.locator('[data-startup-retry]').click();
           await page.waitForFunction(() => window.stubImported && document.getElementById('loading').hidden);
@@ -143,6 +157,77 @@ fs.mkdirSync(output, { recursive: true });
       assert.deepEqual(await page.evaluate(() => [localStorage.getItem('lunden.recoveryTest'), sessionStorage.getItem('lunden.recoveryPlace')]), ['saved-home', 'saved-place']);
       pass('blocking step freezes the heartbeat, then shows the stall notice; its retry reloads and keeps saved data');
       await context.close();
+    }
+    // Startup error view (#1132): the real main.js fails at a named step (plan network, WebGL context, scene build).
+    // The message names the step, the single retry keeps saved resume/home, and the next load reports step + cause
+    // through the crash log (a stub main imports src/crashlog.js with a fake cloud that only records POSTs).
+    if (!before) {
+      const gl = await chromium.launch({ executablePath: process.env.CHROME_PATH, args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+      try {
+        const noWebGL = () => {
+          const get = HTMLCanvasElement.prototype.getContext;
+          HTMLCanvasElement.prototype.getContext = function (type, ...rest) { return /webgl/i.test(type) ? null : get.call(this, type, ...rest); };
+        };
+        for (const [name, step, cause, reason, setup] of [
+          ['plan-network', 'Hämtar planritningen', 'network', 'nätverket svarade inte', page => page.route('**/data/plan.json*', route => route.abort('failed'))],
+          ['webgl', 'Startar 3D-grafiken', 'webgl', 'webbläsaren kunde inte starta 3D-grafiken (WebGL)', page => page.addInitScript(noWebGL)],
+          ['scene-build', 'Bygger huset', 'scene', 'ett oväntat fel uppstod', page => page.route('**/data/plan.json*', route => route.fulfill({ contentType: 'application/json', body: '{"broken":true}' }))],
+        ]) {
+          for (const viewport of [{ width: 390, height: 844 }, { width: 1280, height: 800 }]) {
+            const phone = viewport.width < 600;
+            const context = await gl.newContext({ viewport });
+            const page = await context.newPage();
+            const errors = [];
+            page.on('pageerror', error => errors.push(error.message));
+            const posts = [];
+            await page.route('http://crash.test/**', route => {
+              if (route.request().method() === 'POST') posts.push(JSON.parse(route.request().postData()));
+              return route.fulfill({ status: 200, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' }, body: '{}' });
+            });
+            let blocked = true;
+            await page.route('**/src/main.js*', route => blocked ? route.continue()
+              : route.fulfill({ contentType: 'text/javascript', body: "await import('./crashlog.js');window.stubImported=true;document.getElementById('loading').hidden=true;" }));
+            await setup(page);
+            const seed = new URL('/startup-recovery-seed', base).href;
+            await page.route(seed, route => route.fulfill({ contentType: 'text/html', body: '<!doctype html>' }));
+            await page.goto(seed);
+            await page.evaluate(() => {
+              sessionStorage.setItem('lunden.session', JSON.stringify({ ts: Date.now(), mode: 'touch', p: [1, 2, 3] }));
+              localStorage.setItem('lunden.recoveryTest', 'saved-home');
+            });
+            await page.goto(new URL('/?cloud=http://crash.test', base).href);
+            await page.locator('[data-startup-retry]').waitFor({ timeout: 60000 });
+            const view = await page.evaluate(() => {
+              const line = document.querySelector('[data-startup-error]');
+              return { text: line?.textContent, cause: line?.dataset.cause, row: document.querySelector('.loading-step').hidden,
+                visible: !document.getElementById('loading').hidden, resuming: document.documentElement.classList.contains('resuming'),
+                buttons: document.querySelectorAll('[data-startup-retry]').length, record: JSON.parse(sessionStorage.getItem('lunden.startupFailure')),
+                saved: [sessionStorage.getItem('lunden.session'), localStorage.getItem('lunden.recoveryTest')] };
+            });
+            assert.equal(view.text, `Fel i steget ”${step}”: ${reason}.`, name);
+            assert.equal(view.cause, cause);
+            assert.ok(view.row && view.visible && !view.resuming && view.buttons === 1, `${name}: covered error view with one retry`);
+            assert.equal(view.record.step, step);
+            assert.equal(view.record.cause, cause);
+            assert.equal(JSON.parse(view.saved[0]).mode, 'touch');
+            assert.equal(view.saved[1], 'saved-home');
+            await page.screenshot({ path: path.join(output, `error-${name}-${phone ? 'phone' : 'desktop'}.png`) });
+            blocked = false;
+            await page.locator('[data-startup-retry]').click();
+            await page.waitForFunction(() => window.stubImported && document.getElementById('loading').hidden);
+            await page.waitForFunction(() => window.__crashlog?.stats.sent.includes('startup'));
+            await page.waitForTimeout(300);
+            const report = posts.find(r => r.kind === 'startup');
+            assert.ok(report, `${name}: next load reports the failed start`);
+            assert.equal(report.step, step);
+            assert.equal(report.cause, cause);
+            assert.ok(report.msg.startsWith(`[${step}] `), report.msg);
+            assert.deepEqual(await page.evaluate(() => [sessionStorage.getItem('lunden.session'), localStorage.getItem('lunden.recoveryTest')]), view.saved);
+            pass(`${name} (${phone ? 'phone' : 'desktop'}): error names "${step}", retry reloads with preserved resume/home, crash log gets step + cause`);
+            await context.close();
+          }
+        }
+      } finally { await gl.close(); }
     }
     fs.writeFileSync(path.join(output, 'result.json'), JSON.stringify({ before: !!before, checks: results.length, results }, null, 2));
     console.log('ALL PASS');

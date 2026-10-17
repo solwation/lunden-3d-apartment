@@ -155,6 +155,10 @@
     .loading-slow[hidden] { display: none; }
     .loading-slow p { margin: 0 0 10px; }
     .loading-slow button { min-height: 44px; padding: 12px 20px; touch-action: manipulation; }
+    /* Startup error view (#1132): which step failed and why, above the shared retry button. */
+    .loading-error { margin: 14px 0 0; padding: 10px 12px; border-radius: 8px; background: rgba(214, 76, 60, .14); border: 1px solid rgba(214, 76, 60, .45); font-size: 14px; line-height: 1.4; }
+    .loading-card [data-startup-retry] { margin-top: 14px; }
+    .loading-step[hidden] { display: none; }
     .card .qr { display: flex; align-items: center; gap: 10px; margin: 12px 0 0; font-size: 12px; opacity: .85; }
     .card .qr img { width: 111px; height: 111px; border-radius: 4px; image-rendering: pixelated; }
     body.phone .card .qr { display: none; } /* already on a phone (#193) */
@@ -1236,9 +1240,37 @@
       const finished = () => loading.hidden || loading.classList.contains('done');
       const stop = () => { clearTimeout(timer); observer.disconnect(); };
       const observer = new MutationObserver(() => { if (finished()) stop(); });
+      // Startup error view (#1132). Keep causeOf and the texts aligned with startupError in src/startuprecovery.js.
+      const causeOf = (error) => {
+        const text = `${error?.name || ''} ${error?.message || ''}`;
+        if (/dynamically imported module|Importing a module script failed|Bootstrap module failed/i.test(text)) return 'import';
+        if (/WebGL/i.test(text)) return 'webgl';
+        if (/Startup data|Failed to fetch|NetworkError|Load failed/i.test(text)) return 'network';
+        return 'scene';
+      };
+      const REASONS = { import: 'en programfil kunde inte hämtas', network: 'nätverket svarade inte',
+        webgl: 'webbläsaren kunde inte starta 3D-grafiken (WebGL)', scene: 'ett oväntat fel uppstod' };
+      const showError = (step, cause) => {
+        let line = loading.querySelector('[data-startup-error]');
+        if (!line) {
+          line = document.createElement('p');
+          line.className = 'loading-error';
+          line.dataset.startupError = '';
+          line.setAttribute('role', 'alert');
+          loading.querySelector('.loading-card').insertBefore(line, loading.querySelector('[data-startup-retry]'));
+        }
+        line.dataset.cause = cause;
+        line.textContent = `${step ? `Fel i steget ”${step}”` : 'Fel vid starten'}: ${REASONS[cause] || REASONS.scene}.`;
+        const row = loading.querySelector('.loading-step');
+        if (row) row.hidden = true;
+      };
       const fail = (error) => {
         stop();
         if (finished()) return;
+        // The step that was running when startup failed (#1130/#1132); the watchdog deadline passes no error.
+        let step = '';
+        try { step = String(window.__lundenLoading?.name || '').slice(0, 60); } catch { /* cosmetic */ }
+        const cause = error ? causeOf(error) : 'timeout';
         // Preserve the caught cause even when main/crashlog could not be imported (#1065).
         // Keep this record aligned with recordStartupFailure in src/startuprecovery.js.
         try {
@@ -1248,9 +1280,10 @@
           sessionStorage.setItem('lunden.startupFailure', JSON.stringify({
             at: Date.now(), build, name: clean(error?.name || 'Error').slice(0, 40),
             message: clean(error?.message || 'Startup deadline exceeded').slice(0, 300),
-            stack: clean(error?.stack).slice(0, 1500),
+            stack: clean(error?.stack).slice(0, 1500), step, cause,
           }));
         } catch { /* Blocked storage must not prevent retry. */ }
+        if (error) showError(step, cause);
         document.documentElement.classList.remove('resuming');
         loading.querySelector('[data-startup-slow]')?.setAttribute('hidden', '');
         loading.querySelector('h1').textContent = 'Starten kunde inte slutföras';

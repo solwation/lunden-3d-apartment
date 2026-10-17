@@ -33,9 +33,26 @@ export async function fetchStartupJSON(url, {
   }
 }
 
+// Startup error view (#1132): the cause class and Swedish reason for a failed step.
+// Keep aligned with causeOf/REASONS in index.html's dependency-free guard.
+const REASONS = { import: 'en programfil kunde inte hämtas', network: 'nätverket svarade inte',
+  webgl: 'webbläsaren kunde inte starta 3D-grafiken (WebGL)', scene: 'ett oväntat fel uppstod' };
+export function startupCause(error) {
+  const text = `${error?.name || ''} ${error?.message || ''}`;
+  if (/dynamically imported module|Importing a module script failed|Bootstrap module failed/i.test(text)) return 'import';
+  if (/WebGL/i.test(text)) return 'webgl';
+  if (/Startup data|Failed to fetch|NetworkError|Load failed/i.test(text)) return 'network';
+  return 'scene';
+}
+/** The short message naming the failed step, e.g. Fel i steget ”Hämtar planritningen”: nätverket svarade inte. */
+export function startupErrorText(step, cause) {
+  return `${step ? `Fel i steget ”${step}”` : 'Fel vid starten'}: ${REASONS[cause] || REASONS.scene}.`;
+}
+const currentStep = () => { try { return String(globalThis.__lundenLoading?.name || '').slice(0, 60); } catch { return ''; } };
+
 // The dependency-free index guard writes the same bounded technical record before modules exist.
 const FAILURE_KEY = 'lunden.startupFailure';
-export function recordStartupFailure(error) {
+export function recordStartupFailure(error, step = currentStep()) {
   try {
     const clean = value => String(value || '').replace(/https?:\/\/[^\s'")]+/g, url => url.split(/[?#]/)[0]);
     const script = document.querySelector('script[src*="src/bootstrap.js"]');
@@ -43,7 +60,7 @@ export function recordStartupFailure(error) {
     sessionStorage.setItem(FAILURE_KEY, JSON.stringify({
       at: Date.now(), build, name: clean(error?.name || 'Error').slice(0, 40),
       message: clean(error?.message || 'Startup deadline exceeded').slice(0, 300),
-      stack: clean(error?.stack).slice(0, 1500),
+      stack: clean(error?.stack).slice(0, 1500), step, cause: error ? startupCause(error) : 'timeout',
     }));
   } catch { /* Storage can be unavailable; recovery must still work. */ }
 }
@@ -57,7 +74,8 @@ export function takeStartupFailure() {
     if (!record || !Number.isFinite(record.at) || Date.now() - record.at < 0 || Date.now() - record.at > 3600_000
       || typeof record.name !== 'string' || typeof record.message !== 'string' || typeof record.build !== 'string') return null;
     return { name: record.name.slice(0, 40), message: record.message.slice(0, 300),
-      build: record.build.slice(0, 40), stack: typeof record.stack === 'string' ? record.stack.slice(0, 1500) : '' };
+      build: record.build.slice(0, 40), stack: typeof record.stack === 'string' ? record.stack.slice(0, 1500) : '',
+      step: typeof record.step === 'string' ? record.step.slice(0, 60) : '', cause: typeof record.cause === 'string' ? record.cause.slice(0, 20) : '' };
   } catch { return null; }
 }
 
@@ -76,7 +94,8 @@ export function watchStartup(options = {}) {
   const fail = (error) => {
     stop();
     if (finished()) return;
-    recordStartupFailure(error);
+    const step = currentStep();
+    recordStartupFailure(error, step);
     // Resuming normally hides #loading behind a pseudo-element. Show this card on failure
     // without deleting the saved position/home or allowing access to an incomplete scene.
     document.documentElement.classList.remove('resuming');
@@ -85,6 +104,19 @@ export function watchStartup(options = {}) {
     loading.querySelector('p').textContent = 'Försök ladda igen. Din sparade plats och ditt hem finns kvar.';
     const bar = loading.querySelector('.loading-bar');
     if (bar) bar.hidden = true;
+    if (error) { // the error view (#1132), as in index.html's guard
+      let line = loading.querySelector('[data-startup-error]');
+      if (!line) {
+        line = Object.assign(document.createElement('p'), { className: 'loading-error' });
+        line.dataset.startupError = '';
+        line.setAttribute('role', 'alert');
+        loading.querySelector('.loading-card').insertBefore(line, loading.querySelector('[data-startup-retry]'));
+      }
+      line.dataset.cause = startupCause(error);
+      line.textContent = startupErrorText(step, line.dataset.cause);
+      const row = loading.querySelector('.loading-step');
+      if (row) row.hidden = true;
+    }
     if (!loading.querySelector('[data-startup-retry]')) {
       const button = document.createElement('button');
       button.textContent = 'Försök igen';

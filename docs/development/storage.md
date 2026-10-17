@@ -114,7 +114,7 @@ src/leaderboard.js     the global leaderboard (#198), only with the cloud on: op
                        localStorage 'lunden.share' is deleted at start, no other effect); the start screen says so (`#share-note`: online + avatar, #730) and the privacy page opens with "Vad andra spelare ser".
                        `node --test cloudflare/scores.test.mjs`, `tools/anontest.cjs`
 src/startuprecovery.js One bounded `lunden.startupFailure` sessionStorage record (#1065), also written by the dependency-free
-                       index guard before imports. Name/message/stack/build/time only, URL query/fragment values removed.
+                       index guard before imports. Name/message/stack/build/time plus the failed loading step and cause class (#1132) only, URL query/fragment values removed.
                        Enabled CrashLog consumes valid records no older than one hour once at next startup; no world or
                        resume record is read/cleared by this mechanism. Recovery still works when storage is blocked.
 src/crashlog.js        crash reports (#629), inert without the cloud (same switch as cloud.js): a heartbeat every CRASHLOG.beatMs (outside the

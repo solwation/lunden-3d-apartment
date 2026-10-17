@@ -3,7 +3,7 @@
 <pre id="out">running…</pre>
 <div id="loading"><div class="loading-card"><h1>Loading</h1><p>Waiting</p><div class="loading-bar"></div></div></div>
 <script type="module">
-import { fetchStartupJSON, watchStartup } from '../src/startuprecovery.js';
+import { fetchStartupJSON, watchStartup, startupCause, startupErrorText, recordStartupFailure, takeStartupFailure } from '../src/startuprecovery.js';
 import { loadTodo } from '../src/todo.js';
 import { loadBeerShelf } from '../src/beershelfdata.js';
 const lines=[], check=(ok,text)=>lines.push(`${ok?'PASS':'FAIL'} ${text}`);
@@ -61,6 +61,21 @@ try {
   check(sessionStorage.getItem(key)==='saved-place'&&localStorage.getItem(key)==='saved-home','stall notice preserves saved position and home');
   real.hidden=true;
   sessionStorage.removeItem(key);localStorage.removeItem(key);
+  // Startup error view (#1132): cause classes, step text, failure record and the fixture's error line.
+  const causes=[[new TypeError('Failed to fetch dynamically imported module: http://x/src/main.js'),'import'],[Error('Bootstrap module failed'),'import'],
+    [TypeError('Importing a module script failed.'),'import'],[Error('Startup data: 503'),'network'],[Error('Startup data timeout'),'network'],
+    [TypeError('Failed to fetch'),'network'],[Error('Error creating WebGL context.'),'webgl'],[TypeError("Cannot read properties of undefined (reading 'map')"),'scene']];
+  check(causes.every(([e,c])=>startupCause(e)===c),'startup errors classify as import / network / webgl / scene');
+  check(startupErrorText('Hämtar planritningen','network')==='Fel i steget ”Hämtar planritningen”: nätverket svarade inte.'&&startupErrorText('','scene')==='Fel vid starten: ett oväntat fel uppstod.','error text names the failed step');
+  recordStartupFailure(Error('Error creating WebGL context.'),'Startar 3D-grafiken');
+  const record=takeStartupFailure();
+  check(record?.step==='Startar 3D-grafiken'&&record.cause==='webgl'&&takeStartupFailure()===null,'failure record keeps step and cause once');
+  const card=document.getElementById('loading');card.classList.remove('done');card.hidden=false;
+  globalThis.__lundenLoading={name:'Bygger huset'};
+  const view=watchStartup({timeout:1e6,retry:()=>{}});view.fail(TypeError('boom'));
+  const line=card.querySelector('[data-startup-error]');
+  check(line?.textContent==='Fel i steget ”Bygger huset”: ett oväntat fel uppstod.'&&line.nextElementSibling===card.querySelector('[data-startup-retry]'),'fixture failure shows the step line above one retry');
+  delete globalThis.__lundenLoading;sessionStorage.removeItem('lunden.startupFailure');
 }catch(error){check(false,error.stack);}
 document.getElementById('out').textContent=lines.join('\n')+'\n'+(lines.some(line=>line.startsWith('FAIL'))?'SOME FAILED':'ALL PASS');
 </script></html>
