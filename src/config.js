@@ -5018,8 +5018,14 @@ export const AVATAR_SHAPE = {
     ears:      { tag: 'r', min: 0.75, max: 1.3, label: 'Öron' },
     browThick: { tag: 't', min: 0.5, max: 1.8, label: 'Ögonbrynens tjocklek' },
     browY:     { tag: 'y', min: -0.004, max: 0.004, zero: 0, label: 'Ögonbrynens höjd' }, // m up / down
+    // #1165: the hair's length, a vertical scale of everything below the crown (src/avatar.js faceShape): the curtain of long hair, the nape and
+    // sideburns of the others; the long end is capped so the curtain stays off the chest (*guess*, by eye)
+    hairLength: { tag: 'h', min: 0.45, max: 1.25, label: 'Hårlängd' },
   },
 };
+// #1165: glasses, 0 none, 1 round, 2 square frames: a look field `glasses`, the extension's `g` tag (absent when 0). The frames are part
+// of the shared head geometry and collapse to a point in the vertex shader when not chosen (src/avatar.js), so no extra draw call.
+export const AVATAR_GLASSES = { tag: 'g', names: ['Inga', 'Runda', 'Fyrkantiga'], colour: 0x1c1c20 };
 /** The value (scale or offset) of a face / head slider `name` at integer step `v` (#1138). */
 export function avatarShape(name, v) {
   const f = AVATAR_SHAPE.fields[name], n = AVATAR_SHAPE.steps - 1;
@@ -5044,6 +5050,7 @@ function encodeLookExt(look) {
     const v = look[name];
     if (Number.isInteger(v) && v >= 0 && v < AVATAR_SHAPE.steps && v !== AVATAR_SHAPE.mid) out += `${f.tag}${v}`;
   }
+  if (Number.isInteger(look.glasses) && look.glasses > 0 && look.glasses < AVATAR_GLASSES.names.length) out += `${AVATAR_GLASSES.tag}${look.glasses}`;
   return out;
 }
 function decodeLookExt(ext, lk) {
@@ -5055,6 +5062,7 @@ function decodeLookExt(ext, lk) {
     if (tag === 'd') { if (v <= 2) lk.build = v; continue; }
     if (tag === 'u') { if (v < TOPS.length) lk.top = TOPS[v]; continue; } // #1156
     if (tag === AVATAR_BUILD.tag) { if (v < AVATAR_BUILD.steps) lk.bodyBuild = v; continue; } // #1139
+    if (tag === AVATAR_GLASSES.tag) { if (v < AVATAR_GLASSES.names.length) lk.glasses = v; continue; } // #1165
     // #1173: wire-only seeded scale; explicit chosen cm always take precedence.
     if (tag === 's') { if (!Number.isInteger(lk.height) && v < AVATAR_SEEDED_TALL.length) lk.tall = AVATAR_SEEDED_TALL[v]; continue; }
     const name = Object.keys(AVATAR_SHAPE.fields).find((k) => AVATAR_SHAPE.fields[k].tag === tag);
@@ -5088,7 +5096,7 @@ function nearestSeededBuild(look) {
 
 /** The face fields' defaults (#1138): the original brown eyes and every slider in the middle. */
 export function defaultFaceLook() {
-  const lk = { eyes: EYES[0] };
+  const lk = { eyes: EYES[0], glasses: 0 };
   for (const name of Object.keys(AVATAR_SHAPE.fields)) lk[name] = AVATAR_SHAPE.mid;
   return lk;
 }

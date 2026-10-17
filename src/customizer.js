@@ -1,4 +1,4 @@
-import { SKIN, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth } from './config.js';
+import { SKIN, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES } from './config.js';
 
 /** The E choice every mirror offers (#1110): the avatar editor. */
 export const mirrorChoice = () => ({ label: 'byt utseende vid spegeln', run: () => openAvatarCustomizer() });
@@ -347,6 +347,7 @@ function updateActiveSwatches() {
     { type: 'style', value: currentLook.style },
     { type: 'hair', value: currentLook.hair, list: HAIR },
   ];
+  groups.push({ type: 'glasses', value: Number(currentLook.glasses) || 0 }); // #1165
   groups.push({ type: 'eyes', value: EYES.includes(currentLook.eyes) ? currentLook.eyes : EYES[0], list: EYES });
   for (const name of Object.keys(AVATAR_SHAPE.fields)) { // #1138: the face sliders
     const input = customizerEl.querySelector(`input[data-shape="${name}"]`);
@@ -469,6 +470,9 @@ function initCustomizerDOM() {
     } else if (type === 'style') {
       currentLook.style = idx;
       applyAndRefresh();
+    } else if (type === 'glasses' && AVATAR_GLASSES.names[idx] !== undefined) { // #1165
+      currentLook.glasses = idx;
+      applyAndRefresh();
     } else if (type === 'eyes' && EYES[idx] !== undefined) {
       currentLook.eyes = EYES[idx];
       applyAndRefresh();
@@ -532,11 +536,12 @@ const FACE_SECTIONS = [
   ['Huvudform', ['headWidth', 'headLength', 'jaw']],
   ['Näsa & öron', ['noseSize', 'noseWidth', 'ears']],
   ['Ögonbryn', ['browThick', 'browY']],
+  ['Hår och glasögon', ['hairLength'], false, true], // #1165
 ];
 const EYE_NAMES = ['Bruna', 'Mörkbruna', 'Hasselbruna', 'Gröna', 'Gröngrå', 'Blå', 'Ljusblå', 'Grå'];
 function addFaceSections(controls) {
   if (!controls || controls.querySelector?.('[data-face-section]')) return;
-  for (const [title, fields, eyes] of FACE_SECTIONS) {
+  for (const [title, fields, eyes, glasses] of FACE_SECTIONS) {
     const sec = document.createElement('section');
     sec.className = 'customizer-section';
     sec.dataset.faceSection = '';
@@ -555,6 +560,17 @@ function addFaceSections(controls) {
         sw.append(b);
       });
       sec.append(sw);
+    }
+    if (glasses) { // #1165: none / round / square frames
+      const row = document.createElement('div');
+      row.className = 'btn-group';
+      AVATAR_GLASSES.names.forEach((n, i) => {
+        const b = document.createElement('button');
+        Object.assign(b.dataset, { type: 'glasses', index: String(i) });
+        b.textContent = i ? `${n} glasögon` : 'Inga glasögon';
+        row.append(b);
+      });
+      sec.append(row);
     }
     for (const name of fields) {
       const label = document.createElement('label');

@@ -1427,6 +1427,11 @@ test('#890 avatar appearance sync in state, welcome and validation', async () =>
   const bState4 = b.got.filter(m => m.t === 's' && m.i === a.got[0].i).at(-1);
   assert.equal(bState4.av, validAv9, 'nine digits stay unchanged for older clients');
   assert.equal(bState4.ax, 'c3e6w2h120', 'a well-formed extension (unknown tags included) is forwarded');
+  // #1165: hair length (h) and glasses (g) are ordinary tagged fields: forwarded with their digits, never needing a Worker change
+  now += 1000;
+  a.send({ p: [1.4, 0, 2], r: 0.5, av: validAv9, ax: 'e7h1g2' });
+  await settle(env);
+  assert.equal(b.got.filter(m => m.t === 's' && m.i === a.got[0].i).at(-1).ax, 'e7h1g2', 'hair length and glasses tags are forwarded');
   for (const bad of ['C3', 'c', 'c1234', 'x'.repeat(10), 'c1'.repeat(25), 7, { c: 1 }]) {
     now += 1000;
     a.send({ p: [1.3 + Math.random(), 0, 2], r: 0.5, av: validAv9, ax: bad });

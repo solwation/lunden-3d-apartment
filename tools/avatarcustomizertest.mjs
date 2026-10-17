@@ -377,6 +377,36 @@ test('#1138 face fields: extension encoding, old codes unchanged, unknown tags s
 });
 
 
+test('#1165 hair length and glasses: tags h / g, old codes unchanged, bad values skipped, combined with face and height', async () => {
+  const { AVATAR_SHAPE, AVATAR_GLASSES, avatarShape, splitAvatarCode } = await import('../src/config.js');
+  const plain = avatarLook('hg-plain'), base = encodeAvatarLook(plain);
+  assert.match(base, /^[0-9]{9}$/, 'an untouched look has no extension');
+  assert.equal(avatarShape('hairLength', AVATAR_SHAPE.mid), 1);
+  assert.equal(decodeAvatarLook(base, 'p').glasses, 0);
+  const lk = { ...plain, hairLength: 1, glasses: 2 };
+  const code = encodeAvatarLook(lk);
+  assert.equal(code, base + 'h1g2');
+  const back = decodeAvatarLook(code, 'p');
+  assert.equal(back.hairLength, 1); assert.equal(back.glasses, 2); assert.equal(encodeAvatarLook(back), code);
+  assert.equal(encodeAvatarLook({ ...plain, glasses: 0, hairLength: AVATAR_SHAPE.mid }), base, 'defaults are not written');
+  assert.equal(encodeAvatarLook({ ...plain, glasses: 3 }), base, 'an unknown glasses kind is not written');
+  assert.equal(decodeAvatarLook(base + 'g9', 'p').glasses, 0, 'out-of-range glasses ignored');
+  assert.equal(decodeAvatarLook(base + 'h9', 'p').hairLength, AVATAR_SHAPE.mid, 'out-of-range length ignored');
+  assert.equal(AVATAR_GLASSES.names.length, 3);
+  // together with the height and the face, and through the wire split
+  const all = encodeAvatarLook({ ...lk, height: 140, eyeSize: 7 });
+  assert.equal(all, base + '140' + 'e7h1g2');
+  const ab = decodeAvatarLook(all, 'p');
+  assert.equal(ab.height, 140); assert.equal(ab.eyeSize, 7); assert.equal(ab.glasses, 2); assert.equal(ab.hairLength, 1);
+  assert.deepEqual(splitAvatarCode(all), { av: base + '140', ax: 'e7h1g2' });
+  // the longest possible extension stays within the extension limit
+  const everything = { ...plain, glasses: 2 };
+  for (const [n, f] of Object.entries(AVATAR_SHAPE.fields)) everything[n] = n === 'jaw' ? 0 : 8;
+  const ext = splitAvatarCode(encodeAvatarLook({ ...everything, eyes: 0x7c8288 })).ax;
+  assert.ok(ext.length <= 48, ext);
+});
+
+
 test('#1173 wire-only seeded height preserves exact local proportions and saved codes', () => {
   for (const tall of AVATAR_SEEDED_TALL) {
     const look = { ...avatarLook('own-name'), tall };

@@ -495,7 +495,7 @@ src/avatar.js          the players' avatars (#705): a neutral human figure on Ol
                        (one draw call) per avatar, no texture, ≈ 5.1–5.9 k triangles (#1101 face +≈ 1.0 k; `avatarTriangles(variant)`; 8 shared base geometries, built lazily;
                        an avatar owns only a colour attribute, a 13-bone skeleton and a material; #1138: the face sliders are uniforms on that material,
                        applied in the vertex shader via the shared `facePart` / `faceAnchor` attributes (avatar.js `faceShape`), the irises a
-                       palette region; component screenshots `tools/avatarfacetest.cjs BASE OUT [prefix] [codes]` on `tools/avatarface.html`). The material is a MeshLambertMaterial patched with a
+                       palette region; #1165: hair length (`hairLength` slider field, tag `h`: hair parts `facePart` 7 stretch below the crown) and glasses (look field `glasses` 0/1/2, tag `g`: frames in the shared head geometry as `facePart` 8/9/10, collapsed to a point in the shader unless chosen, ~360 extra triangles, still one draw call); component screenshots `tools/avatarfacetest.cjs BASE OUT [prefix] [codes]` on `tools/avatarface.html`). The material is a MeshLambertMaterial patched with a
                        lit and opaque (#1025: players always see normal visible avatar appearance; ghost outline removed).
                        `update(dt, { speed, turn, hands, crouch })`: legs walk above AVATAR.walkSpeed (the phase follows the distance), arms swing,
                        a little breathing, the head turns `turn` rad against the body. **The arm surface for animations (#673 wave):**
