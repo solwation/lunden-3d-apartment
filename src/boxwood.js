@@ -3,6 +3,7 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SEASON } from './config.js';
 import { registerSeasonal } from './seasons.js';
+import { hedgeBody, hedgeMaterial } from './hedgeform.js';
 
 // A clipped evergreen hedge: continuous runs with the configured entrance/drive gaps preserved.
 export function hedgeRuns(spec) {
@@ -28,18 +29,11 @@ export function leafTexture(spec) {
 }
 export function boxwood(spec) {
   const group=new THREE.Group();group.name='front-boxwood';group.userData.runs=hedgeRuns(spec);group.userData.segments=[];
-  const map=leafTexture(spec),material=new THREE.MeshStandardMaterial({color:spec.color,map,bumpMap:map,bumpScale:spec.bump,roughness:spec.roughness});
+  const map=leafTexture(spec),material=hedgeMaterial(new THREE.MeshStandardMaterial({color:spec.color,map,bumpMap:map,bumpScale:spec.bump,roughness:spec.roughness}));material.name='boxwood';
   const snowMaterial=new THREE.MeshStandardMaterial({color:SEASON.snow.hedge,roughness:1}),caps=[];
   for(const [x0,x1] of group.userData.runs) {
-    const width=x1-x0,geometry=new RoundedBoxGeometry(width,spec.height,spec.depth,2,spec.rounding);
-    const pos=geometry.attributes.position,norm=geometry.attributes.normal,uv=geometry.attributes.uv;
-    // Physical texture scale on all sides, independent of a run's length.
-    for(let i=0;i<pos.count;i++) {
-      const ax=Math.abs(norm.getX(i)),ay=Math.abs(norm.getY(i)),az=Math.abs(norm.getZ(i));
-      const u=ax>ay&&ax>az?pos.getZ(i):pos.getX(i),v=ay>ax&&ay>az?pos.getZ(i):pos.getY(i);
-      uv.setXY(i,u/spec.texturePeriod,v/spec.texturePeriod);
-    }
-    const mesh=new THREE.Mesh(geometry,material);mesh.position.set((x0+x1)/2,spec.height/2,spec.z);mesh.castShadow=mesh.receiveShadow=true;group.add(mesh);
+    // #1143: the shared dented hedge form (hedgeform.js) in world x/z; the group lifts it onto the bed.
+    const width=x1-x0,mesh=new THREE.Mesh(hedgeBody(spec,(x0+x1)/2,spec.z,width,spec.depth),material);mesh.castShadow=mesh.receiveShadow=true;group.add(mesh);
     const cap=new THREE.Mesh(new RoundedBoxGeometry(width,spec.snowDepth,spec.depth,2,spec.snowDepth/3),snowMaterial);
     cap.position.set((x0+x1)/2,spec.height,spec.z);cap.visible=false;cap.receiveShadow=true;caps.push(cap);group.add(cap);
     const z0=spec.z-spec.depth/2,z1=spec.z+spec.depth/2;

@@ -531,7 +531,8 @@ export const SITE = {
       // #496 correction: clipped entrance hedge IN this existing bed; parking shrubs stay original.
       // Assumed 58 cm total height above ground, 44 cm depth and 35 cm clear margin either side of each doorway.
       hedge: { height: .5, depth: .44, rounding: .045, color: 0x48733c, roughness: .92, bump: .009,
-        texturePeriod: .32, textureLeaves: 1700, snowDepth: .035, entranceMargin: .35 } },
+        texturePeriod: .32, textureLeaves: 1700, snowDepth: .035, entranceMargin: .35,
+        cell: .11, dent: .03, footScale: .9 } }, // #1143: shared hedge form (hedgeform.js), *guess*
     yard: { x0: -66, x1: -46.33, z0: -3.5, z1: 9.6 },                              // the bike yard's paving
     lawns: [[-65, -59.1, 1.2, 8.5], [-53, -50.1, 1.2, 8.5]],                         // x0, x1, z0, z1
     bikePlace: { x0: -59.1, x1: -53, z0: 1.2, z1: 8.5 },                              // lighter paving
@@ -4137,10 +4138,22 @@ export const CUSHIONS = {
 // ecru) are guesses. Seasons (months 1–12): the parasol is up in `parasolMonths` while the sun
 // is up and folded otherwise; beers on the table in summer between `beerHours`; a snowman on
 // the lawn beyond the hedge in winter.
+// #1143: the shared clipped-hedge form (src/hedgeform.js) for patio hedges and entrance boxwood; all *guess*, tuned by eye
+// against close and distant screenshots. Noise scales in m; tone/shade factors multiply the material colour (vertex colours).
+export const HEDGE = {
+  bumpScale: .32, fineScale: .11,   // dent noise wavelengths (broad lumps, small tufts)
+  outward: .72,                     // noise level at the clipped face: dents go mostly inward (the outline stays in the footprint)
+  footRise: .14, footPinch: .14,    // the bottom 14 % of the height pulls in by up to 14 % (bare stems under the foliage)
+  footShade: .45, footDark: .5,     // the lower 45 % darkens towards half brightness at the ground
+  dentShade: .8, topLight: 1.08, topWarm: 1.04, // dents darker, the sunny top a little fresher and warmer
+  tone: .22, toneScale: 5, patch: .14, // slow per-hedge tone (≈ 5 m), smaller patches (0.5 m)
+  stemRise: .4, stemDensity: 9, stemColor: 0x6b5236, // brown stems in leaf gaps in the lower 40 %, ~9 per m
+};
 export const PATIO = {
   // #680: clipped privet/hornbeam appearance, visual guesses; original height/plan footprint retained.
+  // #1143: shared hedge form: `cell` grid (m), `dent` relief depth (m), *guess*.
   hedge: { height: 1.1, rounding: .065, footScale: .86, topNoise: .03, waveLength: .8,
-    color: 0x78a64b, texturePeriod: .48, bump: .012, roughness: .95, segments: 2 },
+    color: 0x78a64b, texturePeriod: .48, bump: .012, roughness: .95, segments: 2, cell: .14, dent: .07 },
   frame: 0x3b3e41, // the parasol's pole and base
   // Rusta "Loungemodul Verona" (#408, docs/utesoffa-rusta-verona.jpg, the family's own: docs/utesoffa-verona-utan-dynor.jpg):
   // one module 68.5 × 66 × 67 cm (W × D × H, rusta.se); the rest *guess* from the photos: a square steel tube `tube`, the

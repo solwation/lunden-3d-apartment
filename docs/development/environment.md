@@ -77,6 +77,7 @@ src/streetlife.js      life on the street (SITE.life, #113): the car park as on 
                        courtyard and basement, with an alpha spoke atlas; #436: low concrete edges (`life.edges`, one
                        merged mesh, 5 cm, no collision) where the car park's asphalt meets grass and round the yard's lawns
 src/patiohedge.js      all patio hedges (#680): rounded corners, tapered foot and a gently uneven top, one shared leaf atlas
+                       (#1143: dented form, dark foot, stems and tone variation from the shared src/hedgeform.js, plants.md)
                        from boxwood.js; exterior.js merges ours and the neighbours into one mesh; original collision/snow kept
 src/patio.js           patio: Rusta Verona lounge + slatted table (#408), cushion box, parasol, planters with exotic plants;
                        #690: `dynbox(item)` with `inside: 'bow'` builds the same box empty (no blanket / cushions) and exposes
