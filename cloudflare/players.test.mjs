@@ -1511,3 +1511,18 @@ test('#1175 actual wire build is forwarded and controls ordinary authoritative h
   }
   a.ws.close();b.ws.close();await settle(env);
 });
+
+test('#1156 Olof\'s top colour (TOPS 10) passes the room as the digit fallback plus the u extension', async () => {
+  const { cleanState, cleanAvatar } = await import('./players.js');
+  const { TOPS, encodeAvatarLook, splitAvatarCode, decodeAvatarLook } = await import('../src/config.js');
+  const look = decodeAvatarLook('123041013', 'olof-test');
+  look.top = TOPS[10];
+  const { av, ax } = splitAvatarCode(encodeAvatarLook(look));
+  assert.equal(av, '113041013', 'the digit keeps the nearest old colour (red) for older clients');
+  assert.equal(ax, 'u10');
+  assert.equal(cleanAvatar(av), av);
+  const s = cleanState(JSON.stringify({ p: [1, 0, 2], r: 0, av, ax }));
+  assert.deepEqual([s.av, s.ax], [av, ax], 'the room forwards both');
+  assert.equal(decodeAvatarLook(s.av + s.ax, 'peer').top, TOPS[10], 'a new client decodes Olof\'s colour');
+  assert.equal(decodeAvatarLook(s.av, 'peer').top, TOPS[1], 'an old client (digits only) shows red');
+});

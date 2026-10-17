@@ -7,6 +7,19 @@ import {
 } from '../src/config.js';
 import { clearLocalHome } from '../src/reset.js';
 
+test('#1156: Olof\'s hoodie colour is top 10; old top digits and seeded looks keep their colours', async () => {
+  const { OLOF } = await import('../src/config.js');
+  assert.equal(TOPS[10], OLOF.colors.hoodie);
+  assert.deepEqual(TOPS.slice(0, 10), [0x2f6db5, 0xb5372f, 0x3c8a4e, 0xe0a82e, 0x7a4fb0, 0xe07a9a, 0x2e9aa8, 0xe8e8e0, 0x3a3f4a, 0xd9722e], 'appended, not reordered');
+  for (let i = 0; i < 10; i++) assert.equal(decodeAvatarLook(`2${i}13021`, 'x').top, TOPS[i], `old digit ${i}`);
+  for (let i = 0; i < 200; i++) assert.ok(TOPS.indexOf(avatarLook(`seed${i}`).top) < 10, 'seeds pick among the old ten');
+  const look = { ...decodeAvatarLook('240302101', 'x'), top: TOPS[10] };
+  const code = encodeAvatarLook(look);
+  assert.equal(code, '210302101u10');
+  assert.equal(decodeAvatarLook(code, 'x').top, TOPS[10]);
+  assert.equal(decodeAvatarLook('210302101u99', 'x').top, TOPS[1], 'an unknown index keeps the digit');
+});
+
 test('avatar customization: palettes and encoding roundtrip', () => {
   assert.ok(SKIN.length >= 5, 'at least 5 skin colors');
   assert.ok(HAIR.length >= 8, 'at least 8 hair colors');

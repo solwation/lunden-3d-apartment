@@ -4985,7 +4985,12 @@ export const STARTUP = { dataTimeout: 5000, planTimeout: 15000, dataAttempts: 2,
 // #892: canonical appearance shared by Avatar and future authoritative contact profiles.
 export const SKIN = [0xf1c9a8, 0xe0ae8a, 0xc68863, 0x9a6643, 0x6b4430];
 export const HAIR = [0x2b2118, 0x4a3320, 0x7a5532, 0xb79052, 0xd9c28a, 0x8a8c90, 0x6b2d1f, 0x15151a];
-export const TOPS = [0x2f6db5, 0xb5372f, 0x3c8a4e, 0xe0a82e, 0x7a4fb0, 0xe07a9a, 0x2e9aa8, 0xe8e8e0, 0x3a3f4a, 0xd9722e];
+// #1156: Olof's burgundy hoodie (OLOF.colors.hoodie) is appended as top 10. Only indexes 0–9 fit the look code's single
+// top digit (avatarCodeValid; old codes keep their colours): a higher index writes TOPS_DIGIT[index] there (the nearest
+// old colour, what older clients show) and the real index in the extension's `u` tag. Seeded default looks pick among the
+// first TOPS_SEEDED only, so every seed keeps its old colour.
+export const TOPS = [0x2f6db5, 0xb5372f, 0x3c8a4e, 0xe0a82e, 0x7a4fb0, 0xe07a9a, 0x2e9aa8, 0xe8e8e0, 0x3a3f4a, 0xd9722e, OLOF.colors.hoodie];
+const TOPS_SEEDED = 10, TOPS_DIGIT = { 10: 1 }; // (10 → red)
 export const PANTS = [0x2c3140, 0x3a3c41, 0x4b5a78, 0x6d5a45, 0x23272e, 0x5b6068];
 export const SHOES = [0x2a2523, 0xe8e8e8, 0x40342b, 0x1f3a5c];
 // #1138: iris colours (index 0 = the face's original brown, AVATAR_FACE.eye.irisColour): brown, dark brown, hazel, green,
@@ -5019,13 +5024,15 @@ export function avatarShape(name, v) {
 // The look code's extension (#1138): after the digits (nine, or twelve with the height, #1136), tagged fields `[a-z]` + 1–3 digits, only those that differ from
 // the default, so an untouched look keeps only its digits. Unknown tags are skipped (newer clients may add fields), and the
 // Worker only checks the form (cloudflare/players.js cleanAvatarExt, sent as `ax` beside the digits `av` so older
-// clients keep reading `av`). `c` the eye colour (EYES), then AVATAR_SHAPE's tags.
+// clients keep reading `av`). `c` the eye colour (EYES), `u` a top beyond the digit (#1156), then AVATAR_SHAPE's tags.
 const LOOK_EXT = /^(?:[a-z][0-9]{1,3}){0,16}$/;
 export const AVATAR_LOOK_EXT_MAX = 48;
 function encodeLookExt(look) {
   let out = '';
   const eyes = EYES.indexOf(look.eyes);
   if (eyes > 0) out += `c${eyes}`;
+  const top = TOPS.indexOf(look.top);
+  if (top >= TOPS_SEEDED) out += `u${top}`; // #1156: a top beyond the digit's ten
   for (const [name, f] of Object.entries(AVATAR_SHAPE.fields)) {
     const v = look[name];
     if (Number.isInteger(v) && v >= 0 && v < AVATAR_SHAPE.steps && v !== AVATAR_SHAPE.mid) out += `${f.tag}${v}`;
@@ -5039,6 +5046,7 @@ function decodeLookExt(ext, lk) {
     if (tag === 'c') { if (v < EYES.length) lk.eyes = EYES[v]; continue; }
     // #1175: the actual existing body build on the wire, independently of each receiver's player-id seed.
     if (tag === 'd') { if (v <= 2) lk.build = v; continue; }
+    if (tag === 'u') { if (v < TOPS.length) lk.top = TOPS[v]; continue; } // #1156
     // #1173: wire-only seeded scale; explicit chosen cm always take precedence.
     if (tag === 's') { if (!Number.isInteger(lk.height) && v < AVATAR_SEEDED_TALL.length) lk.tall = AVATAR_SEEDED_TALL[v]; continue; }
     const name = Object.keys(AVATAR_SHAPE.fields).find((k) => AVATAR_SHAPE.fields[k].tag === tag);
@@ -5094,7 +5102,7 @@ export function avatarCodeValid(str) {
 export function encodeAvatarLook(look) {
   if (!look) return '';
   const s = Math.max(0, SKIN.indexOf(look.skin));
-  const t = Math.max(0, TOPS.indexOf(look.top));
+  const ti = Math.max(0, TOPS.indexOf(look.top)), t = TOPS_DIGIT[ti] ?? ti; // (#1156: the `u` tag carries the rest)
   const p = Math.max(0, PANTS.indexOf(look.pants));
   const sh = Math.max(0, SHOES.indexOf(look.shoes));
   const h = Math.max(0, HAIR.indexOf(look.hair));
@@ -5161,7 +5169,7 @@ function defaultAvatarLook(seed) {
   let h = hash(seed || 'anon');
   const pick = (n) => { const v = h % n; h = Math.imul(h ^ (h >>> 15), 2246822519) >>> 0; return v; };
   const style = pick(4), sleeves = pick(2);
-  const skin = SKIN[pick(SKIN.length)], hair = HAIR[pick(HAIR.length)], top = TOPS[pick(TOPS.length)], pants = PANTS[pick(PANTS.length)], shoes = SHOES[pick(SHOES.length)];
+  const skin = SKIN[pick(SKIN.length)], hair = HAIR[pick(HAIR.length)], top = TOPS[pick(TOPS_SEEDED)], pants = PANTS[pick(PANTS.length)], shoes = SHOES[pick(SHOES.length)];
   const build = pick(3); // 0 slim, 1 average, 2 broad
   const tall = AVATAR_SEEDED_TALL[pick(AVATAR_SEEDED_TALL.length)];
   const gender = pick(2);
