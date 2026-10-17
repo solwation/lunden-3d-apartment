@@ -56,7 +56,7 @@ const room = async () => (await fetch(`${worker}/admin/players`, { headers: { Au
     if (!ga || !gb) console.log('  A:', await diag(A.page), '\n  B:', await diag(B.page));
     check(!!ga, 'A sees B as a ghost tagged "Anonym"', JSON.stringify(ga));
     check(!!gb, 'B sees A as a ghost tagged "Olof"', JSON.stringify(gb));
-    check(ga?.outline === true && ga?.opacity < 0.2 && ga?.tag, 'the ghost is an outline with a very faint fill (AVATAR.fill) and its tag shows near');
+    check(ga?.outline === false && ga?.opacity === 1 && ga?.tag, 'the ghost is solid (#1025) and its tag shows near');
     const info = await A.page.evaluate(() => { const g = [...window.__ghosts.others.values()][0]; return { shadow: g.mesh.castShadow, calls: g.root.children.length, skinned: g.mesh.isSkinnedMesh, score:g.score,scale:g.tag.scale.toArray(),tagTex: g.tag.material.map.image.width + 'x' + g.tag.material.map.image.height }; });
     check(info.scale[0]<.8&&info.scale[1]<.2&&Number.isInteger(info.score),'smaller name/score badge (#672)',JSON.stringify(info));
     check(info.shadow === false && info.skinned && info.tagTex === '256x64', 'no shadow, one skinned avatar mesh + one 256×64 tag sprite', JSON.stringify(info));
