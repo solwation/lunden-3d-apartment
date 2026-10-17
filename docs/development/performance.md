@@ -749,5 +749,7 @@ is 0 there; the code path is the old one). Measured with a probe (iPhone profile
 --use-angle=gl`, real Iris 640 GPU) at 11 targets: shadow passes in the 1.5 s after the tap, before → after: every frame
 (8–16 of 8–16 frames) → 4–7 of 13–33 frames; the following 1.5 s 6–11 (all frames) → 1–5. Draw calls per window drop
 accordingly although the after-run drew more frames. Screenshots: `~/lunden-shots/krasch1100/` (outside the repo).
-To go back: set `shadowHoldEvery: 0`. The cause is a *guess* (a sustained GPU spike tripping iOS); the context loss itself
+To go back: set `shadowHoldEvery: 0`. Diagnostics: every crash heartbeat sample now carries `sh` / `shHold` (shadow redraws
+since the last beat, all / held after a tap); in a headless check after a tap they read 6 / 5 on the phone profile and
+12 / 12 → 15 / 15 on desktop (every frame, unchanged). The next iPhone report shows directly whether a loss follows a burst. The cause is a *guess* (a sustained GPU spike tripping iOS); the context loss itself
 cannot be reproduced without a device.

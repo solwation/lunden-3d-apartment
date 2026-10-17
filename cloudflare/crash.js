@@ -118,7 +118,7 @@ function stateView(b) {
   if (warm !== undefined) o.warm = warm;
   if (Array.isArray(b.history)) o.history = b.history.slice(-12).map((v) => {
     const row = v && typeof v === 'object' ? v : {};
-    return { ...Object.fromEntries(['up', 'frame', 'q', 'px', 'fps', 'geo', 'tex', 'prog', 'calls', 'tris', 'sourceTexMB', 'jsMB', 'lagMs'].map(k => [k, nm(row[k])])),
+    return { ...Object.fromEntries(['up', 'frame', 'q', 'px', 'fps', 'geo', 'tex', 'prog', 'calls', 'tris', 'sourceTexMB', 'jsMB', 'lagMs', 'sh', 'shHold'].map(k => [k, nm(row[k])])),
       phase: ['load', 'scene', 'pending', 'compiling', 'draw', 'mirror', 'mirror-draw', 'textures', 'uploading', 'done', 'drawn', 'skipped'].includes(row.phase) ? row.phase : null,
       gl: row.gl === 'lost' ? 'lost' : row.gl === 'ok' ? 'ok' : null, ...historyDiagnostics(row) };
   });

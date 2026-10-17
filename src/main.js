@@ -238,6 +238,7 @@ function updateShadows(dt) {
   if (holdDue || shadowState.age > maxAge || dir.angleTo(shadowState.dir) > 0.0035) {
     if (hitch.enabled) hitch.frameInfo.shadowWhy = holdDue ? 'hold' : shadowState.age > maxAge ? 'age' : 'sun';
     renderer.shadowMap.needsUpdate = true;
+    frameDiag.passes++; frameDiag.held += holdDue ? 1 : 0; // shadow redraws since the last crash heartbeat (#1100)
     shadowState.dir.copy(dir);
     shadowState.age = 0;
     shadowState.pending = shadowHoldEvery > 0 && held; // still moving: one more redraw after it stops
@@ -2760,7 +2761,7 @@ const warm = new WarmUp({ renderer, scene, camera, shadowCamera: sun.shadow.came
 freeSceneGeometryCopies(scene, renderer); // phone: normals / uv / colours leave the CPU after the first upload (#628)
 let mirrorFrame = 0;
 // The slowest frame since the crash heartbeat last looked (#669): its CPU time, the new programs it compiled, whether it redrew the shadow map and the warm-up state
-const frameDiag = { ms: 0, progs: 0, shadow: 0, warm: '' };
+const frameDiag = { ms: 0, progs: 0, shadow: 0, warm: '', passes: 0, held: 0 };
 // The portrait instruction covers the entire game surface; use the same media query as #rotate in index.html.
 const portraitCover = window.matchMedia('(orientation: portrait) and (pointer: coarse) and (max-width: 1100px)');
 deferViewportResize = () => lowMemory && !shotMode && warm.done && startupSceneReady

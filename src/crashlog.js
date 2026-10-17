@@ -198,10 +198,11 @@ class CrashLog {
       this.lastBeatAt = t0;
       this.lastSampleAt = t0;
       const fd = this.ctx?.frameDiag, worst = s.worst; // snapshot reads the pending diagnostic without consuming it (#669)
-      if (fd) fd.ms = 0;
+      const sh = fd?.passes, shHold = fd?.held; // shadow-map redraws since the last beat: all / during a hold after Använd (#1100)
+      if (fd) { fd.ms = 0; fd.passes = 0; fd.held = 0; }
       this.history.push({ up: s.up, phase: s.phase, warm: s.warm, worst, frame: s.frame, q: s.q?.lvl, px: s.px,
         fps: s.fps, geo: s.gl3?.geo, tex: s.gl3?.tex, prog: s.gl3?.prog, calls: s.gl3?.calls,
-        tris: s.gl3?.tris, sourceTexMB: s.gpuMB?.tex, jsMB: s.jsMB?.[0], lagMs,
+        tris: s.gl3?.tris, sourceTexMB: s.gpuMB?.tex, jsMB: s.jsMB?.[0], lagMs, sh, shHold,
         gl: this.glLost ? 'lost' : 'ok' });
       if (this.history.length > C.historySamples) this.history.shift();
       s.history = this.history.slice();

@@ -147,7 +147,7 @@ test('GET /crash/public shows a layout report\'s measures', async () => {
 test('v2 context episodes survive retries and public grouping; bounded history is whitelisted', async () => {
   const env = { LUNDEN: kv(), ADMIN_TOKEN: 'tok' };
   const sample = { up: 4, frame: 10, q: 0, px: 0.6, fps: 20, geo: 2, tex: 3, prog: 4,
-    calls: 5, tris: 6, sourceTexMB: 7, jsMB: 8, lagMs: 250, phase: 'done', gl: 'ok',
+    calls: 5, tris: 6, sourceTexMB: 7, jsMB: 8, lagMs: 250, sh: 9, shHold: 4, phase: 'done', gl: 'ok',
     secret: 'must-not-leak', pid: 'private', ua: 'private', nested: { private: true } };
   const report = (episode, kind) => ({ v: 2, typ: 'fel', kind, pid: 'private-phone', sid: 'private-tab',
     sig: `fel:${kind}:private-tab:${episode}`, ts: 1777777777123,
@@ -167,6 +167,7 @@ test('v2 context episodes survive retries and public grouping; bounded history i
   assert.equal(restored.context.status, 'lost');
   assert.equal(restored.state.history[0].lagMs, 250, 'history survives ingest depth cleaning');
   assert.equal(restored.state.history[0].frame, 10);
+  assert.deepEqual([restored.state.history[0].sh, restored.state.history[0].shHold], [9, 4], 'shadow redraw counts are public numbers (#1100)');
   assert.equal(restored.state.gpuMB.basis, 'source-images');
   assert.equal(restored.state.gpuMB.complete, false, 'never accept a claim of complete GPU accounting');
   assert.equal(restored.state.standalone, 1);

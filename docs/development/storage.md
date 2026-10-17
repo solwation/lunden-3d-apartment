@@ -126,6 +126,8 @@ src/crashlog.js        crash reports (#629), inert without the cloud (same switc
                        in 'lunden.crash.out'); v2 keeps 12 heartbeat samples (~24 s) with frame progress, load phase and timer lag.
                        Since #669 each sample also has `warm` (the sliced warm-up's position, e.g. `compiling 12/113`) and `worst` = the slowest
                        frame since the last beat when it took 50 ms or more: [CPU ms, new shader programs, shadow-map redraw 0/1, warm-up state].
+                       Since #1100 each sample has `sh` = shadow-map redraws since the last beat and `shHold` = how many of them were
+                       held redraws after "Använd"/a choice (public numbers; older reports have null).
                        #669 also reads pending `worst` non-destructively in event snapshots, with `beatAgeMs` since the last
                        actual heartbeat (not a CPU/GPU loss-frame measurement). Loss/restore reports include current `layout`
                        measures and `context.surface` = last actual resize/orientation event `{kind, up}`; absent event is null.
