@@ -646,6 +646,16 @@ export const sfx = {
     hum.start(t); src.start(t, Math.random()); lfo.start(t);
     return { stop() { const t1 = ctx.currentTime; g.gain.cancelScheduledValues(t1); g.gain.setValueAtTime(g.gain.value, t1); g.gain.linearRampToValueAtTime(0, t1 + 0.5); for (const n of [hum, src, lfo]) n.stop(t1 + 0.55); } };
   },
+  /** Fireworks (#1200): `kind` 'launch' (a rising whoosh), 'bang' (a thump and a crack) or 'crackle' (a bang then many small cracks); `delay` s. */
+  firework(pos, kind, gain = 0.5, delay = 0) {
+    if (!ready()) return;
+    const t = ctx.currentTime + delay, d = out(pos, gain);
+    if (kind === 'launch') { noise(t, 0.9, d, { type: 'bandpass', freq: 1800, q: 0.8, gain: 0.25, attack: 0.3 }); return; }
+    noise(t, 0.5, d, { type: 'lowpass', freq: 600, gain: 0.9, attack: 0.003 });
+    noise(t, 0.12, d, { type: 'highpass', freq: 1800, gain: 0.7, attack: 0.001 });
+    tone(t, 0.4, d, { from: 110, to: 38, gain: 0.5 });
+    if (kind === 'crackle') for (let i = 0; i < 14; i++) noise(t + 0.2 + Math.random() * 1.6, 0.02, d, { type: 'highpass', freq: 2500 + Math.random() * 2500, gain: 0.25 + Math.random() * 0.25, attack: 0.001 });
+  },
   /** Game sounds from the PC speakers: a laser 'pew' or an explosion 'boom'. */
   game(pos, kind) {
     if (!ready()) return;

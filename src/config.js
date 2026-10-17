@@ -5822,3 +5822,14 @@ export const NEW_YEAR = { count: 10, cheer: 60, glassesUntil: 4, debugHour: 23 +
   h: 0.22, fill: 0.7,
   glasses: [[3.86, 10.36], [3.99, 10.44], [4.12, 10.35], [4.15, 10.52]],
   colors: { glass: 0xe8f0f2, champagne: 0xf1d27a, bg: '#08102a', digit: '#ffffff', gold: '#f3cf6a' } };
+
+// Midnight fireworks over the block (#1200, src/fireworks.js; #1199's New Year trigger calls `start()`): `seconds` of
+// rockets (a pool of `shells` shells, each bursting into `sparks` sparks; the phone profile uses the `phone*` counts),
+// a new one every `interval` s (the last `finale` s: `finaleInterval`) launched inside `area` (x/z, plan m, over the
+// courtyard and the houses round it) and bursting `height` m up with radius `radius` m. `flash` = how much a burst
+// lifts the existing hemisphere/ambient lights (no new light, no shadow). All values are *guess*es, not measured.
+export const FIREWORKS = {
+  seconds: 180, shells: 22, sparks: 26, phoneShells: 12, phoneSparks: 16, interval: [0.25, 0.55], finale: 15, finaleInterval: 0.1,
+  phoneInterval: [0.45, 0.9], area: { x: [-48, 16], z: [4, 56] }, height: [28, 55], radius: [8, 16], rise: [1.1, 1.8], life: 2.6,
+  flash: { hemi: 0.55, ambient: 0.25, decay: 4.5, indoors: 0.4 }, soundDistance: 10, volume: 0.5,
+};

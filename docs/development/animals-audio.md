@@ -9,6 +9,11 @@ Related: [interactions](interactions.md), [graphics](graphics.md).
 src/cat.js             the cat: random coat, washing animation, appears/moves/vanishes behind doors
 src/miele.js           Miele (#328): `HeartFireworks` (heart shells that pop into small hearts) and `MieleHeld` (a Holdable with no
                        home: the cat object rides in it, hand.js 'hug'; click / "Krama" hugs; put down she walks off)
+src/fireworks.js       midnight fireworks over the block (#1200, FIREWORKS in config): `init`/`start()`/`update(dt)`; a pool of rockets that burst
+                       into sparks (two additive Points = 2 draw calls; phone `?lowmem` uses fewer), each burst lifts the existing hemi/ambient
+                       light for a moment (no new or shadow light; called after `day.update`), `sfx.firework` (launch / bang / crackle) plays at
+                       a stand-in position ≤ `soundDistance` m away, delayed by distance/340. `?fireworks` starts it 4 s after load (add `&time=0`
+                       for night); #1199's midnight trigger calls `showFireworks.start()`. Game feature: not carried to the public downstream.
 src/olof.js            OlofDriver only (#900): existing car driver/greeting; the skeleton and pose/IK exports also serve Avatar.
                        #1156: `buildOlof` draws him with the players' Avatar in a fixed look (`olofLook`: OLOF.look + OLOF.colors;
                        top = TOPS[10], a grey beard via the look's `beard`), one SkinnedMesh/draw call like one player, no shadow;
