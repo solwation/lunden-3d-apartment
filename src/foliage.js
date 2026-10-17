@@ -20,10 +20,19 @@ let atlasTex = null;
 /** The shared leaf atlas (2 × 2 cells: 0–2 leaf clusters, 3 the opaque core), `F.atlas` px (`F.atlasPhone` on phones). */
 export function leafAtlas() {
   if (atlasTex) return atlasTex;
+  for (const parts = leafAtlasParts();;) { const r = parts.next(); if (r.done) return r.value; }
+}
+
+/** leafAtlas drawn in parts (#1133): yields between batches of leaves, so startup can paint in between (a long block
+ *  of its own on the first call). The same seeded drawing, so the same atlas. */
+export function* leafAtlasParts() {
+  if (atlasTex) return atlasTex;
   const S = lowMemory ? F.atlasPhone : F.atlas, H = S / 2;
   const c = document.createElement('canvas');
   c.width = c.height = S;
-  const g = c.getContext('2d'), r = rng(679);
+  // willReadFrequently (#1133): drawn on the CPU as it goes, so the readback below is no long flush of thousands of
+  // queued GPU draws (24 s in one block in headless Chromium)
+  const g = c.getContext('2d', { willReadFrequently: true }), r = rng(679);
   /** One leaf: a pointed oval of length l, width w at (x, y), angle a, brightness v. */
   const leaf = (x, y, l, w, a, v, rib = true) => {
     g.save(); g.translate(x, y); g.rotate(a);
@@ -37,7 +46,8 @@ export function leafAtlas() {
   const twig = (x0, y0, x1, y1) => { g.strokeStyle = 'rgb(120,108,96)'; g.lineWidth = Math.max(1, S / 260); g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); };
   // cells 0–2: clusters on a transparent ground, leaves thinning towards the edge (a ragged outline), lighter on top
   const kinds = [{ n: 230, l: 0.1, w: 0.04 }, { n: 340, l: 0.07, w: 0.028 }, { n: 190, l: 0.12, w: 0.036 }];
-  kinds.forEach(({ n, l, w }, cell) => {
+  for (const [cell, { n, l, w }] of kinds.entries()) {
+    yield;
     const ox = (cell % 2) * H, oy = Math.floor(cell / 2) * H, cx = ox + H / 2, cy = oy + H / 2;
     g.save(); g.beginPath(); g.rect(ox + 1, oy + 1, H - 2, H - 2); g.clip();
     for (let i = 0; i < 7; i++) { const a = r() * 6.28; twig(cx, cy + H * 0.2, cx + Math.cos(a) * H * 0.38, cy + Math.sin(a) * H * 0.38); }
@@ -47,7 +57,7 @@ export function leafAtlas() {
       leaf(x, y, l * H * (0.75 + r() * 0.5), w * H * (0.75 + r() * 0.5), r() * 6.28, F.leafLight[0] + (F.leafLight[1] - F.leafLight[0]) * (0.35 * top + 0.65 * r()));
     }
     g.restore();
-  });
+  }
   // cell 3: the core — a darker, dense leaf mass (tiles: leaves are wrapped round the edges) with small leaf-shaped holes
   // (`F.coreHoles`), so even the core has a lacy edge and no smooth surface; mipmaps stay above the cut-off
   { const ox = H, oy = H;
@@ -55,19 +65,23 @@ export function leafAtlas() {
     g.fillRect(ox, oy, H, H);
     g.save(); g.beginPath(); g.rect(ox, oy, H, H); g.clip();
     for (let i = 0; i < 700; i++) {
+      if (i % 100 === 99) yield;
       const x = ox + r() * H, y = oy + r() * H, l = 0.055 * H * (0.7 + r() * 0.6), a = r() * 6.28, v = F.coreGround + r() * (F.leafLight[1] - F.coreGround) * 0.8;
       for (const dx of [-H, 0, H]) for (const dy of [-H, 0, H]) leaf(x + dx, y + dy, l, l * 0.38, a, v, false);
     }
     g.globalCompositeOperation = 'destination-out';
     for (let i = 0; i < F.coreHoles; i++) {
+      if (i % 100 === 99) yield;
       const x = ox + r() * H, y = oy + r() * H, l = 0.05 * H * (0.6 + r() * 0.8), a = r() * 6.28;
       for (const dx of [-H, 0, H]) for (const dy of [-H, 0, H]) leaf(x + dx, y + dy, l, l * 0.4, a, 1, false);
     }
     g.globalCompositeOperation = 'source-over';
     g.restore(); }
+  yield;
   // a texture from the pixels themselves (not the canvas): transparent pixels get the average leaf colour instead of the
   // canvas' premultiplied black, so the mipmaps do not grow dark rims round every leaf
   const d = g.getImageData(0, 0, S, S).data, px = new Uint8Array(S * S * 4);
+  yield;
   for (let y = 0; y < S; y++) { // bottom row first (what flipY does for a canvas), so uv v = 1 is the canvas' top
     const src = y * S * 4, dst = (S - 1 - y) * S * 4;
     for (let i = 0; i < S * 4; i += 4) {
@@ -84,8 +98,8 @@ export function leafAtlas() {
   tex.magFilter = THREE.LinearFilter;
   tex.anisotropy = 2;
   tex.needsUpdate = true;
-  atlasTex = tex;
-  return tex;
+  atlasTex ??= tex; // (a synchronous leafAtlas() may have finished first)
+  return atlasTex;
 }
 
 let leafMat = null;

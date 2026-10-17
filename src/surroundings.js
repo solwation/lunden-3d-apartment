@@ -1,4 +1,4 @@
-import {buildSouthBackdrop} from './southbackdrop.js';
+import {southBackdropParts} from './southbackdrop.js';
 import {buildWestBackdrop,buildEastBackdrop,buildNorthBackdrop,westTreeSpots,eastTreeSpots,northTreeSpots} from './sitebackdrop.js';
 import { buildRiverPark, parkDeckAt, parkTreeSpots, parkShrubSpots } from './riverpark.js';
 import * as THREE from 'three';
@@ -1447,7 +1447,14 @@ function siteGroundAO(backdrops, husL) {
   return buildGroundAO({ trees: [...aoTrees, ...south], walls, ground });
 }
 
-export function buildSurroundings({ grass, husL = null }) {
+/** The surroundings in one synchronous call (tests, tools). */
+export function buildSurroundings(opts) {
+  const parts = surroundingsParts(opts);
+  for (;;) { const r = parts.next(); if (r.done) return r.value; }
+}
+
+/** buildSurroundings in parts (#1133): yields a rough share (0–1) between its long synchronous parts (world.js). */
+export function* surroundingsParts({ grass, husL = null }) {
   const group = new THREE.Group();
   const historicBrick=brickTexture(),glassMaterial=neighborGlass();
   const flat = (geos, color, snow) => {
@@ -1461,6 +1468,7 @@ export function buildSurroundings({ grass, husL = null }) {
   // the ground south of Hus L: the raised courtyard on the garage box and the park level around it (the
   // street side north of Hus L is world.js's ground); retaining walls, railings and the garage door
   flat([grassUV(terrainGeometry())], grass, SEASON.snow.ground).name='site-terrain';
+  yield 0.05;
   const bw = boxWalls();
   const concrete = new THREE.MeshStandardMaterial({ color: 0xb9b4ab, roughness: 0.95, side: THREE.DoubleSide });
   flat(bw.walls, new THREE.MeshStandardMaterial({ map: historicBrick, roughness: 0.95, side: THREE.DoubleSide })); // brick retaining walls (#148)
@@ -1490,6 +1498,7 @@ export function buildSurroundings({ grass, husL = null }) {
       return [mk(along[0], c, d0, c), mk(d1, c, along[1], c), mk(d0, c, d0, c2), mk(d1, c, d1, c2), mk(d0, c2, d1, c2)].filter((t) => Math.abs(t[2] - t[0]) + Math.abs(t[3] - t[1]) > 1e-3);
     });
   })];
+  yield 0.1;
   group.userData.upper = bw.upper; // the box's edge over the garage door: only for those up on the courtyard (#357)
   // roads (#257, src/roads.js): rectangles, centre lines with rounded corners, fillets at the junctions
   const gd = T.garageDoor; // + the drive from Karpvägen to the garage door (#254)
@@ -1501,14 +1510,23 @@ export function buildSurroundings({ grass, husL = null }) {
   const walks = S.roads.flatMap((r) => (r.walks || []).map((k) => k.side > 0
     ? pathStrip(r, (w) => w / 2, (w) => w / 2 + k.w, 0.008, groundY, pavementClip(r)) : pathStrip(r, (w) => -w / 2 - k.w, (w) => -w / 2, 0.008, groundY, pavementClip(r))));
   flat([...[...S.paving, ...S.basementPaving].map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.008)), ...walks], COLORS.paving, SEASON.snow.paving);
+  yield 0.15;
   group.add(buildRiverBridges());
+  yield 0.2;
   group.add(buildRiverPark(renderedTerrainY,renderedTerrainY));
-  const backdrops = [buildWestBackdrop(renderedTerrainY,{glass:glassMaterial}),
-    buildEastBackdrop(renderedTerrainY,historicBrick,glassMaterial), buildNorthBackdrop(renderedTerrainY,historicBrick)];
+  yield 0.25;
+  const backdrops = [buildWestBackdrop(renderedTerrainY,{glass:glassMaterial})];
+  yield 0.32;
+  backdrops.push(buildEastBackdrop(renderedTerrainY,historicBrick,glassMaterial));
+  yield 0.39;
+  backdrops.push(buildNorthBackdrop(renderedTerrainY,historicBrick));
+  yield 0.46;
   group.add(...backdrops);
   group.userData.clocks = backdrops.flatMap(b => b.userData.clocks);
-  const south = buildSouthBackdrop(renderedTerrainY);
+  let south; // the longest part of the startup build in #1133's measurement: in parts too
+  for (const parts = southBackdropParts(renderedTerrainY);;) { const r = parts.next(); if (r.done) { south = r.value; break; } yield 0.46 + 0.09 * r.value; }
   group.add(south);
+  yield 0.55;
   backdrops.south = south;
   // Kv. Lunden's own blocks and the old S:t Lars buildings: own façade texture and roof colour each,
   // plus a white cornice under the old roofs (#47)
@@ -1555,6 +1573,7 @@ export function buildSurroundings({ grass, husL = null }) {
   mesh(bare(details.seals),new THREE.MeshStandardMaterial({color:O.gasketColor,roughness:O.gasketRoughness})).name='siteNeighborSeals';
   mesh(bare([...lg.glass,...details.glass]),glassMaterial).name='siteNeighborGlass'; // glazing: loggia doors, windows, entrances
   mesh(lg.signs, new THREE.MeshStandardMaterial({ map: letterTexture(lg.letters), roughness: 0.6 })); // the house letters
+  yield 0.7;
   // low hip roofs of roofing felt (#258; Peab's aerial render, Q&A) over the light metal edge, a few vent hoods along the ridge;
   // #348: each house its own (roofSpec), with the roof box the roof plans draw (in the sheet metal below)
   const roofBoxes = [], walk = { surfaces: [...lg.canopies], walls: [] }; // walking up there (#360, src/roofs.js)
@@ -1629,8 +1648,11 @@ export function buildSurroundings({ grass, husL = null }) {
   // blocks on the slope south of Hus L stand on a plinth down to the ground (#142)
   const plinths = S.blocks.map(plinth).filter(Boolean);
   if (plinths.length) mesh(plinths, new THREE.MeshStandardMaterial({ color: 0x6e3326, roughness: 0.95 }));
+  yield 0.8;
   group.add(...trees(rng(3)));
+  yield 0.85;
   group.add(siteGroundAO(backdrops, husL)); // distant ground shadows under the trees and along the wall feet (#1079)
+  yield 0.9;
   const windows = buildWindowLights(details.list), street = buildStreet(groundY); // street lamps, crossing, curbs … (#128)
   group.add(windows.object, street.object, buildStreetSigns(groundY)); // + street name signs at the junctions (#583)
   group.userData.windows = { object: windows.object, update(hour, night, power = true) { for (const b of backdrops) b.userData.updateClocks(hour); windows.update(hour, night, power); updateLoggiaLamps(night, power); street.update(night);glassMaterial.envMapIntensity=THREE.MathUtils.lerp(O.reflectionDay,O.reflectionNight,night); } };

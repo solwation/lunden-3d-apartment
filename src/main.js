@@ -19,7 +19,7 @@ import { setupAvatarCustomizer, openAvatarCustomizer, closeAvatarCustomizer, isA
 import { MieleHeld, HeartFireworks } from './miele.js';
 const DRAWING_COLORS = DRAWING.colors;
 initHudIcons();
-import { buildWorld } from './world.js';
+import { buildWorldSliced } from './world.js';
 import { photoGlow } from './furniture.js';
 import { InteractionOutline } from './interactionoutline.js';
 import { Laundry } from './laundry.js';
@@ -54,7 +54,7 @@ import { WallClock, ClockPanel } from './wallclock.js';
 import { Patio, buildStringLights } from './patio.js';
 import { updateReflections, reflectors, mirrorTarget } from './reflections.js';
 import { WarmUp } from './warmup.js';
-import { loadingStep } from './loadingstep.js';
+import { loadingStep, loadingYield } from './loadingstep.js';
 import { Quality } from './quality.js';
 import { HitchLog } from './hitchlog.js';
 import { applySeason } from './seasons.js';
@@ -199,13 +199,16 @@ const plan = await fetchStartupJSON('data/plan.json', { timeout: STARTUP.planTim
 // Finish network/cache callbacks before CPU-heavy construction can starve them past their existing deadlines.
 await beerShelfData;
 await loadingStep('Bygger huset', 0.25); // each awaited step paints once before the long synchronous block (#1130)
-const world = buildWorld(plan);
+const world = await buildWorldSliced(plan, (share) => loadingYield(0.25 + 0.17 * share)); // in parts, the heartbeat painted between them (#1133)
 scene.add(world.object);
+await loadingYield(0.43);
 const garage = world.garage = new Garage(); // the garage and the förråd under the courtyard (#357)
+await loadingYield(0.46);
 if (garage.bicycles) world.bicycles.push(...garage.bicycles);
 if (garage.storageBicycles) world.bicycles.push(...garage.storageBicycles);
 const cheatNote = await buildCheatNote(garage, () => showCheatNote(true));
 scene.add(garage.object, garage.blackout, garage.door.object, garage.parkObject); // (+ its door, #358)
+await loadingYield(0.47);
 const core = world.core = new Core(); // Hus L's stairwell and lift by the portik (#415)
 const coreA = core.attach(new CoreHouse(CORE_A)); // … and Hus A's, from its courtyard entrance down to the basement (#637)
 const coreB = core.attach(new CoreHouse(CORE_B)), coreC = core.attach(new CoreHouse(CORE_C)); // … and Hus B's, Hus C's (#638, #639; the order is the saved lifts' order, keep.js)

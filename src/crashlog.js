@@ -3,6 +3,7 @@ import { cloudUrl } from './cloud.js';
 import { BUILD } from './version.js';
 import { takeStartupFailure } from './startuprecovery.js';
 import { lowMemory } from './lowmemory.js';
+import './longtasks.js'; // startup long tasks (#1133), reported in the heartbeat as `long`
 
 // Crash reports (#629), to diagnose what kills the tab on phones (#628). Inert without the cloud (no CLOUD_URL / &cloud=):
 // nothing is written, listened to or sent. With it, only technical data goes to POST /crash on the Worker
@@ -103,6 +104,8 @@ class CrashLog {
       standalone: (navigator.standalone || matchMedia('(display-mode: standalone)').matches) ? 1 : 0,
     };
     if (this.glLost) s.gl = 'lost';
+    const long = window.__lundenLoading?.long; // the longest startup main-thread tasks and their loading steps (#1133)
+    if (long?.n) s.long = { top: long.top.slice(), n: long.n, sum: long.sum };
     const pm = performance.memory; // Chromium only (not Safari)
     if (pm) s.jsMB = [round(pm.usedJSHeapSize / 1048576), round(pm.jsHeapSizeLimit / 1048576)];
     const c = this.ctx;

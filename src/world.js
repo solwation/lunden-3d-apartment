@@ -30,7 +30,7 @@ import { mirrorLamps, looseItems as interiorLoose, buildInterior, buildElCabinet
 import { Toilet } from './toilet.js';
 import { RoomMap } from './rooms.js';
 import { buildAO, buildWallAO, rectPts } from './ao.js';
-import { buildSurroundings, terrainNorth } from './surroundings.js';
+import { surroundingsParts, terrainNorth } from './surroundings.js';
 import { addDoorSigns, namePlate } from './signs.js';
 import { wardrobeFill, personFor } from './stuff.js';
 import { Blinds } from './blinds.js';
@@ -1025,7 +1025,9 @@ function buildVisitFlat(plan, U, ox) {
     soffits: own ? P.soffits : SOFFITS, shell: [SM.wall, SM.ceiling, SM.floor, SM.frame], glass: SM.glass }); // (what shows from afar: its rooms behind glass, #574)
 }
 
-export function buildWorld(plan) {
+/** The world in parts (#1133): yields a rough share (0–1) of the build between its long synchronous parts, so a
+ *  caller can let the page paint (the loading card's heartbeat) in between. `buildWorld` runs it straight through. */
+function* worldParts(plan) {
   mirrorLamps.length = 0; // filled by buildInterior
   interiorLoose.length = 0;
   cupSurfaces.length = 0;
@@ -1042,12 +1044,18 @@ export function buildWorld(plan) {
 
   OURS.opening = slabOpening(STAIR.hole, plan.floors); // the slab's opening out to the stairwell's walls (#1119)
   const l0 = buildLevel(lower, 0, scene);
+  yield 0.08;
   const l1 = buildLevel(upper, 1, scene);
+  yield 0.15;
 
   buildStructure(scene, lower, l1, W, D, M, OURS.opening); // the slab, the roof zone, the stair and its railing
   // the other flats you can walk into (#574), each at its own slot in the row
   const slots = husLLayout(W).units;
-  const units = VISIT_UNITS.map((U) => buildVisitFlat(plan, U, slots.find((u) => u.lower === U.slot || u.upper === U.slot).ox));
+  const units = [];
+  for (const U of VISIT_UNITS) {
+    units.push(buildVisitFlat(plan, U, slots.find((u) => u.lower === U.slot || u.upper === U.slot).ox));
+    yield 0.15 + 0.15 * units.length / VISIT_UNITS.length;
+  }
 
   const PD=PORTIK.door;
   const portikDoor=new SwingDoor({hinge:[PD.x,PD.z1],tip:[PD.x-(PD.z1-PD.z0),PD.z1],wall:[PD.x,PD.z0]},0,mat(PD.color),false);
@@ -1059,8 +1067,10 @@ export function buildWorld(plan) {
     exclude: interiorLoose, floor: LEVELS[1].floor,
   });
 
+  yield 0.33;
   // Loose furniture (IKEA LANDSKRONA etc., see FURNITURE in config)
   const furniture = buildFurniture();
+  yield 0.42;
   scene.add(furniture.object);
   // the kitchen worktop as cup surfaces (fitted, so they stay with F; the first one is where a fresh cup stands)
   const kitchenSurfaces = cupSurfaces.map((r, i) => { const m = surfaceBox(r); if (i === 0) m.userData.counter = true; m.userData.worktop = true; scene.add(m); return m; }); // (worktop: the life sim's cutting board works there, #375)
@@ -1081,6 +1091,7 @@ export function buildWorld(plan) {
     item: { type: 'mirror', level: m.level }, object: m.object, level: m.level, picture: true, name: m.name });
   furniture.interactives.push(...hallWall.targets); // the hall wall's mirrors: E opens the avatar editor (#1110), hidden with F
 
+  yield 0.48;
   // Site: ground, patio, hedge, fences
   const site = lower.site;
   // the street side; south of it and where the streets slope (#256): surroundings.js's terrain (#79)
@@ -1105,12 +1116,20 @@ export function buildWorld(plan) {
   const south = [...l0.openings.south, ...l1.openings.south];
   const exterior = buildExterior({ W, D, roofTop: UNIT_TOP, north, south, frame: M.frame, wall: M.wall, site, mats: M, visits: units.map((u) => u.id) });
   scene.add(exterior);
+  yield 0.6;
   const { xw: husLW, xe: husLE } = husLLayout(W);
-  const surroundings = buildSurroundings({ grass: M.grass, husL: { x0: husLW, x1: husLE, z0: 0, z1: D } }); // (Hus L's wall feet: ground shadows, #1079)
+  let surroundings; // (Hus L's wall feet: ground shadows, #1079); in parts, the longest single block at startup (#1133)
+  for (const parts = surroundingsParts({ grass: M.grass, husL: { x0: husLW, x1: husLE, z0: 0, z1: D } });;) {
+    const r = parts.next();
+    if (r.done) { surroundings = r.value; break; }
+    yield 0.6 + 0.08 * r.value;
+  }
+  yield 0.68;
   const courtyard = buildCourtyard(); // walks, pergola, grill, sandboxes, boule, benches, beds (#80)
   scene.add(courtyard.object);
   outdoor.push(...courtyard.segments);
   const entrances = [...l0.openings.north.filter(o=>o.entryPane), ...exterior.userData.entryLeaves.filter(o=>o.y0<.05)];
+  yield 0.72;
   const life = buildStreetLife({entrances}); // parked cars, bikes, the square in front of Hus C (#113)
   scene.add(life.object);
   outdoor.push(...life.segments);
@@ -1146,6 +1165,7 @@ export function buildWorld(plan) {
   wallRect(roofWalls, o.x0, o.x1, o.z0, o.z1, -100, 1000);
   const roofs = new Roofs(walkable.flatMap((w) => w.surfaces), roofWalls);
 
+  yield 0.76;
   const rooms = plan.floors.map((f, li) => [...f.rooms, ...EXTRA_ROOMS.filter((r) => r.level === li)].map((r) => {
     const re = ROOM_RENAMES.find((x) => x.level === li && x.from === r.name && OPTIONS[x.option]);
     return re ? { ...r, name: re.to } : r;
@@ -1176,6 +1196,7 @@ export function buildWorld(plan) {
       { cabinets: f.cabinets, hole: STAIR.hole, soffits: SOFFITS.filter((s) => s.level === li), avoid: ourCeilingThings(li) });
     if (v) scene.add(v);
   });
+  yield 0.82;
   // bake the static fittings into one mesh per material and level (draw calls, #48)
   const box3 = new THREE.Box3(), mid = new THREE.Vector3();
   const merged = mergeStatic(scene, [
@@ -1186,6 +1207,7 @@ export function buildWorld(plan) {
     return mid.y < LEVELS[1].floor - 0.05 ? 'l0' : 'l1';
   });
   scene.userData.merged = merged;
+  yield 0.95;
   for (const d of [...l0.doors, ...l1.doors,portikDoor]) mergeStatic(d.object, d.keep ?? [], () => '', { tagged: true }); // leaf + handles (not the letter flap)
   for (const u of units) scene.add(u.object); // (merged on their own, #574)
 
@@ -1267,4 +1289,16 @@ export function buildWorld(plan) {
     /** Room name at a plan point on a level (null outside the house). */
     roomAt: (level, x, z) => roomMaps[level]?.at(x, z) ?? null,
   };
+}
+
+/** Builds the whole world in one synchronous call (tests, tools). */
+export function buildWorld(plan) {
+  const parts = worldParts(plan);
+  for (;;) { const r = parts.next(); if (r.done) return r.value; }
+}
+
+/** Builds the world with `await pause(share)` between its parts (startup, #1133): same result as buildWorld. */
+export async function buildWorldSliced(plan, pause) {
+  const parts = worldParts(plan);
+  for (;;) { const r = parts.next(); if (r.done) return r.value; await pause(r.value); }
 }
