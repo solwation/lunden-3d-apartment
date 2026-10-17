@@ -5,7 +5,7 @@ const game=process.argv[2]||'http://localhost:8876',out=process.argv[3]||'/tmp/l
 const root=path.resolve(__dirname,'..'),read=p=>before?execFileSync('git',['show','b2efbc5:'+p],{cwd:root,encoding:'utf8'}):fs.readFileSync(path.join(root,p),'utf8');
 const source=read('src/main.js'),html=read('index.html');
 function span(start,end){const a=source.indexOf(start),b=source.indexOf(end,a+start.length);if(a<0||b<0||source.indexOf(start,a+1)>=0)throw Error('ambiguous source anchor '+start);return source.slice(a,b).trim();}
-const parts={active:span('const active =','\n\nfunction look'),start:span('function startMouse() {','// Esc on the start screen'),
+const parts={active:span('const active =',';\n')+';',start:span('function startMouse() {','// Esc on the start screen'),
  arm:span(before?"armEl.addEventListener('click'":"armEl.addEventListener('keydown'",'// refused (Chrome'),touchStart:span("document.getElementById('start-touch').addEventListener","document.getElementById('start-go').addEventListener"),error:span("document.addEventListener('pointerlockerror'","document.getElementById('start-touch').addEventListener"),
  lock:span("document.addEventListener('pointerlockchange', () => {\n  const wasLocked",'/**\n * A mouse click'),
  click:span('function click(button) {',"document.addEventListener('contextmenu'"),
