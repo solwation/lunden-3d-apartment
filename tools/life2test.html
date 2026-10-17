@@ -477,7 +477,7 @@ if (want(386)) try {
   life.load(old); life.restock();
   const r2 = I.ofType('bin')[0], f2 = I.ofType('binFood')[0], p2 = I.ofType('binPack')[0];
   check(r2?.amount === 0 && f2?.amount === 1 && p2?.amount === 4 && I.ofType('binFood').length === 1 && I.ofType('binPack').length === 1, `migrated: Restavfall ${r2?.amount}, Matavfall ${f2?.amount}, Förpackningar ${p2?.amount}`);
-  check(life.serialize().v === 2, 'saved as v2');
+  check(life.serialize().v === 3, 'saved as v3');
   f.remove();
 } catch (e) { pass = false; lines.push(`FAIL #386 error ${e.stack}`); }
 

@@ -2418,7 +2418,7 @@ export const LIFE_FOOD = {
     ['peas', 'freezer', 3], // on the lower open shelf beside the fish-finger carton
     ['breadBag', 'pantry', 0], // the bottom of the pantry cabinet
     ['sausagePack', 'fridge', 11], ['bunBag', 'pantry', 1], // #1124: grill sausages on the milk's shelf (#1188), hot-dog buns on the pantry shelf
-    ['billysBox', 'freezer', 0], ['gorbysBox', 'freezer', 2]], // #1209: frozen pan pizzas and pirogs on the freezer's upper glass shelf (appended: old saves get them by restock)
+    ['billysBox', 'freezerDrawer4', 0], ['gorbysBox', 'freezerDrawer4', 1]], // #1209: frozen pan pizzas and pirogs (appended: old saves get them by restock); #1219: in the top freezer drawer, not beside the fries (items.js MIGRATIONS[2] moves old saves)
 };
 
 // The kitchen's tools (#374, LIFE-010), kept like the food (life.js `restock`): the kitchen knife, the butter knife and the

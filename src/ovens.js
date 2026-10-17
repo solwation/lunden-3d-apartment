@@ -46,7 +46,7 @@ class ApplianceDoor {
     const e = this.t * this.t * (3 - 2 * this.t);
     if (this.hinge === 'bottom') this.door.rotation.z = e * this.maxAngle; // top falls towards −x
     else this.door.rotation.y = -e * this.maxAngle;                          // free edge swings to −x
-    this.lamp.emissiveIntensity = this.t > 0.05 && this.powered ? 1.1 : 0;
+    this.lamp.emissiveIntensity = (this.t > 0.05 || this.heating) && this.powered ? 1.1 : 0; // (heating: a chicken roasting behind the shut door, #1219)
   }
 }
 
@@ -112,6 +112,10 @@ export function buildOvens({ f, z0, z1, yOven, yMicro, yGrille, microW }) {
     for (let k = 0; k < 9; k++) parts.add(box(ox1 - ox0 - 0.04, 0.005, 0.005, (ox0 + ox1) / 2, y, z0 + 0.06 + k * ((z1 - z0 - 0.12) / 8), steel));
   }
   parts.add(box(ox1 - ox0 - 0.04, 0.012, z1 - z0 - 0.1, (ox0 + ox1) / 2, yOven + 0.12, zc, enamel));
+  // #1219: the whole chicken roasts on the upper rack (chicken.js intoOven; the lower one would put the bird through it): its spot and the cavity, in `parts`' frame
+  oven.parts = parts;
+  oven.rack = new THREE.Vector3((ox0 + ox1) / 2, yOven + 0.34 + 0.003, zc);
+  oven.cavity = new THREE.Box3(new THREE.Vector3(f - 0.05, yOven + 0.03, z0 + 0.03), new THREE.Vector3(ox1, yMicro - 0.03, z1 - 0.03));
   const mx1 = f + 0.38, mz1 = z0 + 0.01 + doorW - 0.01;
   cavity(ox0, mx1, yMicro + 0.03, yGrille - 0.03, z0 + 0.03, mz1, liner, microLamp);
   const plate = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.006, 32),

@@ -2,6 +2,7 @@
 // #1209 (part of #1206): the real game (?life&shot&test) — Billys and Gorby's boxes at home in the freezer, closed freezer
 // and closed box refused, one wrapped piece into the hand, unwrapped (no rewrapping), frozen = not edible yet, onto a plate,
 // save/load with its state, an old save without the boxes gets them by restock, no second box while one exists.
+// #1219: the boxes live in the top freezer drawer (not on the upper shelf beside the fries); a v2 save is migrated there.
 const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS':'FAIL')+' '+s);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
 try{
  const frame=document.createElement('iframe');frame.width=480;frame.height=300;frame.src='../index.html?life&shot&test';document.body.append(frame);await new Promise(r=>frame.onload=r);while(!frame.contentWindow.__app)await wait(100);
@@ -10,11 +11,15 @@ try{
  const action=(target,id)=>L.options(target).find(a=>a.id===id),run=(target,id)=>action(target,id)?.run(),finish=s=>L.runner.update(s??1);
  const tgt=it=>L.view(it).target,freezer=A.world.lids.find(l=>l.kind==='fridge'&&l.freezer);
  let pizzaBox=I.all().find(i=>i.type==='billysBox'),pirogBox=I.all().find(i=>i.type==='gorbysBox');
- check(pizzaBox?.amount===F.billys.count&&pizzaBox.place.store==='freezer'&&pizzaBox.place.slot===0,'Billys box at home on the freezer\'s upper shelf');
- check(pirogBox?.amount===F.gorbys.count&&pirogBox.place.store==='freezer'&&pirogBox.place.slot===2,'Gorby\'s box at home on the freezer\'s upper shelf');
+ check(pizzaBox?.amount===F.billys.count&&pizzaBox.place.store==='freezerDrawer4'&&pizzaBox.place.slot===0,'Billys box at home in the top freezer drawer');
+ check(pirogBox?.amount===F.gorbys.count&&pirogBox.place.store==='freezerDrawer4'&&pirogBox.place.slot===1,'Gorby\'s box at home in the top freezer drawer');
+ const drawer=freezer.drawers.find(d=>d.storeId==='freezerDrawer4');check(!!drawer&&L.view(pizzaBox).model.parent?.parent===drawer.object,'the box rides with the drawer');
  check(L.view(pizzaBox).model.parent?.parent===freezer.object||!!L.view(pizzaBox).model.parent,'box model sits in the freezer');
  check(action(tgt(pizzaBox),'dispense')?.reason==='Öppna frysen först','closed freezer blocks the box');
  freezer.toggle();for(let i=0;i<20;i++)freezer.update(.1);L.update(0);
+ check(/^Dra ut fryslåda 4 helt först$/.test(action(tgt(pizzaBox),'dispense')?.reason??''),'the drawer must be pulled out first: '+action(tgt(pizzaBox),'dispense')?.reason);
+ drawer.toggle();for(let i=0;i<20;i++)drawer.update(.1);L.update(0);
+ window.frozenMealShot={A,freezer,drawer};
  check(/^Öppna Billys-kartongen först$/.test(action(tgt(pizzaBox),'dispense')?.reason??''),'a closed box must be opened first');
  run(tgt(pizzaBox),'open');check(pizzaBox.pkg==='open','the box opens');
  const dl=action(tgt(pizzaBox),'dispense');check(dl&&!dl.reason&&dl.label==='ta en Billys pan pizza','offers taking a pan pizza');dl.run();finish();
@@ -46,6 +51,13 @@ try{
  // an old save without the boxes: restock brings them in
  const old=JSON.parse(JSON.stringify(rec));old.items=old.items.filter(e=>!['billysBox','gorbysBox','billys','pirog'].includes(e.type));L.load(old);
  const made=L.restock().map(i=>i.type);check(made.includes('billysBox')&&made.includes('gorbysBox'),'an old save gets both boxes by restock');
+ check(I.all().filter(i=>i.type==='billysBox'||i.type==='gorbysBox').every(i=>i.place.store==='freezerDrawer4'),'restocked boxes land in the drawer');
+ // a v2 save (#1209) with the boxes on the upper shelf: migrated into the drawer, no duplicate by restock
+ const v2={v:2,counters:{},items:[{id:'billysBox#1',type:'billysBox',place:{at:'slot',store:'freezer',slot:0},amount:2,pkg:'open'},{id:'gorbysBox#1',type:'gorbysBox',place:{at:'world',pos:[5.0,.931,3.1],yaw:0},home:{at:'slot',store:'freezer',slot:2}}]};
+ L.load(v2);const mb=I.get('billysBox#1'),mg=I.get('gorbysBox#1');
+ check(mb?.place.store==='freezerDrawer4'&&mb.place.slot===0&&mb.home.store==='freezerDrawer4'&&mb.amount===2&&mb.pkg==='open','v2 save: the Billys box moves into the drawer with its count');
+ check(mg?.place.at==='world'&&mg.home.store==='freezerDrawer4'&&mg.home.slot===1,'v2 save: a box lying out keeps its spot, its home is the drawer');
+ check(!L.restock().some(i=>i.type==='billysBox'||i.type==='gorbysBox')&&!I.all().some(i=>i.place.store==='freezer'&&/Box$/.test(i.type)),'v2 save: no duplicate boxes, none left on the shelf');
  window.frozenMealTest={A,lines};
  check(true,'done');
 }catch(e){lines.push('FAIL '+e.stack);pass=false;}

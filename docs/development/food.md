@@ -50,6 +50,12 @@ src/chicken.js         #708: whole fridge chicken cooks only on the existing cou
                        the list (courtyard first); `chicken.grill` is the one it lies on, saved as place {grill:true, kind:'kettle'}
                        for the patio kettle (the old {grill:true} still means the courtyard). Main offers 'grillChicken' on whichever
                        kettle is aimed at (or a spot within 0.4 m of its `grateWorld()`); both emit grillLit/surface 'grill' for the task.
+                       #1219: the kitchen oven roasts it too. ovens.js gives the oven door `parts`, `rack` (upper rack) and `cavity`;
+                       main offers 'ovenChicken' ("lägga kycklingen i ugnen") while the open oven's door or cavity is aimed at, and
+                       `intoOven` lays it on the rack (a shut oven is refused). It roasts only while the door is shut and powered
+                       (`roasting`; the oven lamp glows via `heating`), with the grill's cook/burn times; events chickenPlaced/
+                       roasted/chickenBurnt carry surface 'oven' (the grillChicken task still wants the grill), no smoke escapes the
+                       shut oven, and x.chicken saves place {oven:true}. tools/ovenchickentest.html (real game) covers it.
                        tools/patiochickentest.cjs: real game, kettle refusal unlit, placement, golden +35 once, burn, save/load, courtyard.
 src/sausages.js        #1124: grill sausages. Each kettle grill's grate is a life store (courtyard 'grillGrate', L1007's patio kettle
                        'kettleGrate', #1121; SAUSAGE.slots spots across the bars, clear of the chicken in the middle): a raw sausage
@@ -58,14 +64,15 @@ src/sausages.js        #1124: grill sausages. Each kettle grill's grate is a lif
                        items. The chicken and sausages do not share a grate. A grilled sausage goes into a 'hotdogBun' (bunBag, pantry
                        slot 1) through cooking.js addTopping (one per bun, raw refused); eating it ("varmkorven") bumps `hotdogs`
                        (SCORE guesses) and consumes +1 life like a sandwich. Counts, sizes, colours and times are assumptions.
-src/frozenmealmodels.js #1209 (part of #1206): Billys Pan Pizza and Gorby's pirogs. ITEMS billysBox/gorbysBox (freezer slots 0
-                       and 2, the upper glass shelf; appended stock, so old saves get them by restock) dispense one wrapped piece
+src/frozenmealmodels.js #1209 (part of #1206): Billys Pan Pizza and Gorby's pirogs. ITEMS billysBox/gorbysBox (#1219: the top
+                       freezer drawer, freezerDrawer4 slots 0/1 — first on the upper shelf beside the fries; items.js MIGRATIONS[2]
+                       moves a v2 save's boxes/homes there; appended stock, so old saves get them by restock) dispense one wrapped piece
                        (billys/pirog, pkg 'closed'); the shared `open` action is labelled by the def's `unwrap` ("packa upp
                        pizzan") and cannot be undone (no `close`). Frozen pieces refuse eating (`needsCooking`, cookText) until
                        heated (machine.cooked, microwave in #1210); names from wrappedName/frozenName/hotName (cooking.js).
                        Box prints are our own canvas versions of the brands' colours; FROZEN_MEALS sizes/counts are *guess*.
-tools/frozenmealtest.html real game: stock homes, shut freezer/closed box refusals, wrapped piece in the hand, unwrap, frozen
-                       refusal, onto a plate, save/load, restock for an old save.
+tools/frozenmealtest.html real game: drawer homes, shut freezer/drawer/closed box refusals, wrapped piece in the hand, unwrap, frozen
+                       refusal, onto a plate, save/load, restock for an old save, the v2 → v3 drawer migration.
 src/sausagemodels.js   #1124 builders for lifemodels.js: pack, sausage (browns with cook), bun bag, split bun with its sausage part.
 tools/sausagetest.html real game (?life&shot&test): stock homes, closed fridge, raw refusal, both grates, lit-only grilling, burn,
                        chicken/sausage sharing, save/load, bun assembly, one per bun, eating and score.

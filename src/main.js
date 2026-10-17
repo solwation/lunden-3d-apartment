@@ -591,6 +591,7 @@ for (const l of world.lids) if (l.kind === 'fridge') l.onAlarm = (longer) => pen
 if (chicken) {
   chicken.initLife(life, chickenGrills); // (+ sausages, #1124)
   for (const g of chickenGrills) { const food = g.occupied; g.occupied = () => (chicken.inGrill && chicken.grill === g) || !!food?.(); }
+  chicken.oven = ovenDoor?.rack ? ovenDoor : null; // #1219: the kitchen oven roasts it too
   chicken.hood = world.hood; chicken.onEaten = () => { bump('chicken'); chicken.event('chickenEaten'); };
   chicken.onCooked = () => bump('grilledChicken'); chicken.onBurnt = () => penalize('burnt');
 }
@@ -1652,6 +1653,7 @@ function use(thing) {
   else if (thing.kind === 'place') thing.item.placeAt(thing.point, thing.yaw); // (as the ghost showed it, #368)
   else if (thing.kind === 'fry') thing.item.intoPan(); // #708: clear refusal, keep the bird in hand
   else if (thing.kind === 'grillChicken') thing.item.intoGrill(thing.grill);
+  else if (thing.kind === 'ovenChicken') thing.item.intoOven(); // #1219: onto the open oven's rack
   else if (thing.kind === 'fryfish') thing.item.fryHeld(); // a fish finger into the pan (#214)
   else if (thing.kind === 'paper') { if (heldItem() === heldDrawing) heldDrawing.putBack(); else beginDraw(); } // holding the drawing: back on the desk (#176)
   else if (thing.kind === 'tape') { posters.tape(heldDrawing.image, thing.spot, heldDrawing.meta ?? {}); heldDrawing.release(); drawing.save(); bump('posted'); } // tape the drawing up (#176)
@@ -2006,6 +2008,17 @@ function updateFocus() {
     ?? (focused?.kind === 'place' ? chickenGrills.find((g) => g.object.parent?.parent?.visible !== false && focused.point.distanceTo(g.grateWorld()) < 0.4) : null));
   if (chickenGrill) {
     focused = { name: 'kycklingen på grillen', kind: 'grillChicken', verb: 'lägga', item: chicken, grill: chickenGrill };
+    placeGhost.visible = false;
+  }
+  // #1219: the open oven takes the bird onto its upper rack: aimed at its open door or into its cavity (the ray meets the
+  // cavity's box within reach; its insides are no pick targets)
+  const oven = item === chicken && chicken.oven?.isOpen && chicken.oven.t > 0.9 ? chicken.oven : null;
+  const intoOven = oven && (focused === oven || (() => {
+    const ray = raycaster.ray.clone().applyMatrix4(oven.parts.matrixWorld.clone().invert()), at = ray.intersectBox(oven.cavity, new THREE.Vector3());
+    return !!at && oven.parts.localToWorld(at).distanceTo(camera.position) < HOLD.reach + 0.3;
+  })());
+  if (intoOven) {
+    focused = { name: 'kycklingen i ugnen', kind: 'ovenChicken', verb: 'lägga', item: chicken };
     placeGhost.visible = false;
   }
   // The pan still offers an explicit attempt so its refusal explains where the chicken belongs.

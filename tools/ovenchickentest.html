@@ -1,0 +1,41 @@
+<!doctype html><html><meta charset="utf-8"><title>Chicken in the oven (#1219)</title><pre id="out">running…</pre><script type="module">
+// #1219 (an in-game wish): the fridge's whole chicken roasts in the kitchen oven — the real game (?life&shot&test): a shut oven
+// is refused, the open oven offers "lägga kycklingen i ugnen" when aimed at, the bird lies on the upper rack, it roasts only while
+// the door is shut (the lamp glows), golden after CHICKEN.cookSeconds, then taken out and broken apart; save/load keeps it in the oven.
+const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS':'FAIL')+' '+s);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
+try{
+ const frame=document.createElement('iframe');frame.width=480;frame.height=300;frame.src='../index.html?life&shot&test';document.body.append(frame);await new Promise(r=>frame.onload=r);while(!frame.contentWindow.__app)await wait(100);
+ const w=frame.contentWindow,A=w.__app,{CHICKEN:C}=await w.eval("import('../src/config.js')"),{chicken:bird,world,player,camera,scene,step,life}=A,V=camera.position.constructor;
+ frame.contentDocument.documentElement.requestFullscreen=undefined;frame.contentDocument.getElementById('start-touch').click();A.renderer.setAnimationLoop(null);
+ const oven=world.lids.find(l=>l.name==='ugnen'),fridge=world.lids.find(l=>l.kind==='fridge'&&!l.freezer),events=[];life.onEvent((kind,data)=>events.push({kind,...data}));
+ const settle=(o)=>{for(let i=0;i<40;i++)o.update(.1);scene.updateMatrixWorld(true);};
+ check(!!oven?.rack&&bird.oven===oven,'the chicken knows the kitchen oven and its rack');
+ fridge.toggle();settle(fridge);bird.take();check(A.heldItem()===bird,'the raw chicken in the hand');
+ check(bird.intoOven()===false&&A.heldItem()===bird&&!bird.inOven,'a shut oven is refused, the bird stays in the hand');
+ oven.toggle();settle(oven);
+ const rackW=oven.parts.localToWorld(oven.rack.clone());let aimed=null;
+ for(let i=0;i<24&&!aimed;i++){const r=.7+Math.floor(i/8)*.2;player.spawn(rackW.x-r,rackW.z+(i%8-3.5)*.06,0);step(0);camera.lookAt(rackW);camera.updateMatrixWorld(true);step(0);const f=A.focus().focused;if(f?.kind==='ovenChicken')aimed=f;}
+ check(!!aimed&&aimed.name==='kycklingen i ugnen','aimed into the open oven: "lägga kycklingen i ugnen"');
+ if(aimed)A.use(aimed);else bird.intoOven();
+ check(bird.inOven&&!A.heldItem()&&bird.model.parent===oven.parts&&bird.model.position.distanceTo(oven.rack)<1e-6,'the bird lies on the oven rack');
+ check(events.some(e=>e.kind==='chickenPlaced'&&e.surface==='oven'),'placing emits chickenPlaced on the oven');
+ for(let i=0;i<60;i++)bird.update(.1);check(bird.cooked===0&&!bird.roasting,'the open oven does not roast');
+ oven.toggle();settle(oven);bird.update(.1);oven.update(0);check(bird.roasting&&oven.heating&&oven.lamp.emissiveIntensity>0,'shut: it roasts and the oven lamp glows');
+ for(let i=0;i<C.cookSeconds*10;i++){bird.update(.1);}oven.update(0);
+ check(bird.done&&!bird.burnt&&bird.cookState==='golden'&&events.some(e=>e.kind==='roasted'&&e.surface==='oven'),`golden after ${C.cookSeconds} s: roasted`);
+ check(!bird.smoking,'no smoke escapes the shut oven');
+ // save/load while in the oven
+ const s=JSON.parse(JSON.stringify(bird.saveState()));check(s.place?.oven===true,'saved as in the oven');
+ bird.loadState(s);check(bird.inOven&&bird.done&&bird.model.parent===oven.parts,'loaded back on the rack, still golden');
+ oven.toggle();settle(oven);bird.update(.1);oven.update(0);check(!bird.roasting&&!oven.heating&&oven.lamp.emissiveIntensity>0,'opened: it stops roasting');
+ bird.take();check(A.heldItem()===bird&&!bird.inOven&&events.some(e=>e.kind==='chickenTaken'&&e.surface==='oven'),'taken out of the oven');
+ bird.placeAt(new V(5.25,.931,2.9),0);bird.parts[0].target.toggle();check(A.heldItem()?.isChickenPiece,'the roasted chicken breaks apart into a leg');A.heldItem().putBack();
+ // burning: left in the shut oven far too long
+ bird.take();oven.isOpen&&bird.intoOven();oven.toggle();settle(oven);for(let i=0;i<C.burnSeconds*10;i++)bird.update(.1);
+ check(bird.burnt&&events.some(e=>e.kind==='chickenBurnt'&&e.surface==='oven'),'left too long in the oven it burns');
+ bird.reset();bird.update(0);check(!bird.inOven&&!oven.heating&&bird.burnt,'F takes it home (still burnt), the oven goes cold');
+ window.ovenChickenTest={A,lines};
+ check(true,'done');
+}catch(e){lines.push('FAIL '+e.stack);pass=false;}
+document.getElementById('out').textContent=(pass?'ALL PASS':'SOME FAILED')+'\n'+lines.join('\n');
+</script></html>

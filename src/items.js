@@ -20,7 +20,7 @@
 // over to an instance each (docs/livssimulator-inventering.md).
 
 /** The record's version (#371); MIGRATIONS[v](record) turns a v record into v + 1. */
-export const ITEMS_VERSION = 2;
+export const ITEMS_VERSION = 3;
 export const MIGRATIONS = {
   // v1 → v2 (#386): the one waste bin under the sink (LIFE-017, store sinkBins) became three sorted ones — the old bin is now
   // Restavfall, emptied, and what its parts counted moves on: the food into a Matavfall bin, the packages into a Förpackningar
@@ -36,6 +36,21 @@ export const MIGRATIONS = {
       e.amount = 0; e.parts = [];
     }
     return { ...r, v: 2, items };
+  },
+  // v2 → v3 (#1219): the Billys and Gorby's boxes (#1209) moved from the freezer's upper shelf (slots 0 and 2, beside the
+  // fries) to the top freezer drawer (freezerDrawer4, slots 0 and 1): their home moves, and so does a box still lying there
+  2: (r) => {
+    const moved = { billysBox: [0, 0], gorbysBox: [2, 1] };
+    const items = r.items.map((e) => {
+      const m = e && typeof e === 'object' ? moved[e.type] : null;
+      if (!m) return e;
+      const old = (p) => p?.at === 'slot' && p.store === 'freezer' && p.slot === m[0], to = { at: 'slot', store: 'freezerDrawer4', slot: m[1] };
+      const out = { ...e };
+      if (old(e.home) || (!e.home && old(e.place))) out.home = { ...to };
+      if (old(e.place)) out.place = { ...to };
+      return out;
+    });
+    return { ...r, v: 3, items };
   },
 };
 
