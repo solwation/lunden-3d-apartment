@@ -42,7 +42,7 @@ let st = null;
 export function init({ scene, camera, lights, outdoors = () => true }) {
   const tex = glowTexture();
   st = { camera, lights, outdoors, shells: [], timer: 0, left: 0, flash: 0, tint: new THREE.Color(1, 1, 1), tmp: new THREE.Color(), v: new THREE.Vector3(),
-    rockets: points(SHELLS, 1.6, tex, scene), sparks: points(SHELLS * SPARKS, 1.3, tex, scene), total: 0, bursts: 0 };
+    rockets: points(SHELLS, 2.0, tex, scene), sparks: points(SHELLS * SPARKS, 2.4, tex, scene), total: 0, bursts: 0 };
   for (let i = 0; i < SHELLS; i++) st.shells.push({ t: 99, pop: 1, o: new THREE.Vector3(), top: new THREE.Vector3(), at: new THREE.Vector3(), col: PALETTE[0], radius: 10,
     dirs: Array.from({ length: SPARKS }, () => new THREE.Vector3()), crackle: false, popped: true });
 }
