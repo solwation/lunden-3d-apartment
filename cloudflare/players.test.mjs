@@ -732,10 +732,16 @@ test('lateral skull room: canonical actual socket, alternating sides, shared let
 });
 
 test('lateral skull greeting exclusion is attachment-authoritative, persists after time/hibernate, and leaves other profiles independent',async()=>{
-  const {avatarLook,rifleSkullEntry,rifleHeadContact,PVP_RIFLE_HEAD:H}=await import('../src/config.js');
-  const env=setup(),a=await connect(env,'Shooter'),b=await connect(env,'Greeter'),id=b.got.find(m=>m.t==='w').i,look=avatarLook(id),width=[.93,1,1.08][look.build];
+  const {avatarLook,rifleSkullEntry,rifleHeadContact,rifleHeadLateralRegion,rifleHeadGreetingLeftRegion,PVP_RIFLE_HEAD:H}=await import('../src/config.js');
+  // #1109: the greeter's fixed first-standing pose legitimately reopens the narrow #938 left temple after a greeting.
+  // The old ray (front .065*width, rounded) landed inside that patch for build 1 / tall >= 1 ids (~1 in 5 random looks).
+  // Aim at a lateral cell in front of the #938 patch, assert that precondition, and always pick that formerly failing look.
+  const env=setup(),a=await connect(env,'Shooter'),b=await connectLook(env,'Greeter',l=>l.build===1&&l.tall>=1),id=b.got.find(m=>m.t==='w').i,look=avatarLook(id),width=[.93,1,1.08][look.build];
+  assert.ok(look.build===1&&look.tall>=1,'deterministic formerly flaky look');
   const state={p:[0,0,0],r:0};b.send({...state,h:'rifle'});a.send({p:[-3,0,0],r:0,h:'rifle'});await settle(env);now+=1000;
-  const shoot=async side=>{const feet=[-side*3,0,0];a.send({p:feet,r:0,h:'rifle'});await settle(env);now+=1000;const o=[feet[0],+((H.headY+.095)*look.tall).toFixed(2),+(-.065*width).toFixed(2)],d=[side,0,0],entry=rifleSkullEntry(id,state,o,d),shot={t:'a',w:'rifle',to:id,o,d,hc:[1,...o.map((v,k)=>+(v+d[k]*entry).toFixed(3))],gt:undefined,head:true};a.send(shot);await settle(env);return a.got.filter(m=>m.t==='hit').at(-1);};
+  const shoot=async side=>{const feet=[-side*3,0,0];a.send({p:feet,r:0,h:'rifle'});await settle(env);now+=1000;const o=[feet[0],+((H.headY+.095)*look.tall).toFixed(2),+(-.05*width).toFixed(2)],d=[side,0,0],entry=rifleSkullEntry(id,state,o,d),shot={t:'a',w:'rifle',to:id,o,d,hc:[1,...o.map((v,k)=>+(v+d[k]*entry).toFixed(3))],gt:undefined,head:true};
+    assert.ok(rifleHeadLateralRegion(id,state,shot.hc.slice(1),o,d)&&!rifleHeadGreetingLeftRegion(id,state,shot.hc.slice(1),o,d),'ray stays in the lateral patch, outside the #938 greeting-left temple');
+    a.send(shot);await settle(env);return a.got.filter(m=>m.t==='hit').at(-1);};
   assert.equal((await shoot(1)).head,true);
   b.send({t:'g',to:a.got.find(m=>m.t==='w').i,k:0});await settle(env);assert.equal(a.got.filter(m=>m.t==='g').length,1);
   for(const side of [-1,1]){const hit=await shoot(side);assert.equal(hit.head,undefined);}
