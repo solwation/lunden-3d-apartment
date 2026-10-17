@@ -475,6 +475,7 @@ test('#1139: body build slim … heavy round-trips; old codes keep the seed\'s b
   const state = { p: [0, 0, 0], r: 0 };
   const hit = (k, x) => rifleBoxHeadContact('x', { ...state, av: '240302101175', ax: `k${k}` }, [x, 1.64, -3], [0, 0, 1], 10);
   assert.ok(hit(4, 0.1) && hit(8, 0.115) && !hit(4, 0.115) && !hit(0, 0.1), 'heavy wider than slim at the head boxes\' edge');
+});
 
 test('#1140: Slumpa gives a valid look (palettes, ranges, wire code valid); Återställ is the default look', async () => {
   const { randomAvatarLook } = await import('../src/customizer.js');
