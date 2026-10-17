@@ -68,8 +68,8 @@ src/aborg.js           the JYSK ABORG café set outside the kitchen window (#406
 src/randers.js         the JYSK RANDERS tray table by the armchair (#405, RANDERS): tray, rails, straight legs, a low cross
 src/pineapple.js       Livia's pineapple mirror in Sovrum 3 (#412, PINEAPPLE_MIRROR): an extruded oval frame with a scale bump map,
                        a crown of leaves with a herringbone bump, an oval glass with its own Reflector ('ananas')
-src/xmastree.js        the Christmas tree (#571, XMAS_TREE): a FURNITURE builder — serrated whorls + branch tips (one vertex-coloured
-                       flat-shaded mesh), stand/skirt/trunk/presents (one matte mesh), baubles + bead garland (one shiny mesh), a gold
+src/xmastree.js        the Christmas tree (#571, XMAS_TREE): a FURNITURE builder — a dark inner body, overlapping serrated whorls +
+                       two layers of branch tips (one vertex-coloured mesh, soft outward normals, #1217 `fluff`), stand/skirt/trunk/presents (one matte mesh), baubles + bead garland (one shiny mesh), a gold
                        star + additive halo sprite, LED string = instanced bulb cores + additive point halos; a small-lamp spec
                        ('julgranen', not auto) with one pool anchor in front; `crownRadius(y)` for the overlap test
 src/newyear.js         New Year's Eve (#1199, part of #1170, NEW_YEAR): `newYearPhase(day)` ('count' the last 10 s before 00:00

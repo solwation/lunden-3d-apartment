@@ -4570,8 +4570,11 @@ export const XMAS_TREE = {
   skirt: { r: 0.5, h: 0.012, color: 0xf2efe8, border: 0xa3222a }, // felt mat round the foot (*guess*)
   trunk: { r: 0.04, h: 0.45, color: 0x5a3f2b },
   // the crown: from `bottom` to `top` over the floor, `r` = its radius at the bottom whorl; `tiers` whorls of serrated
-  // skirts + `sprigs` branch tips on its surface (one merged mesh, vertex colours `greens`)
-  crown: { bottom: 0.3, top: 2.5, r: 0.55, tiers: 11, sprigs: 420, greens: [0x1d4529, 0x24532f, 0x2c6237, 0x1a3d26, 0x335f3a] },
+  // skirts + `sprigs` branch tips on its surface (one merged mesh, vertex colours `greens`). `taper` = the profile's
+  // exponent (< 1 = a fuller upper half); `fluff` (#1217 "fluffigare"): each whorl `overlap` × the tier spacing tall,
+  // a dark inner body `core` × r wide, sprig fans `fan` wide, ± `noise`/2 brightness jitter per vertex
+  crown: { bottom: 0.3, top: 2.5, r: 0.55, tiers: 15, sprigs: 720, taper: 0.82, greens: [0x1d4529, 0x24532f, 0x2c6237, 0x1a3d26, 0x335f3a],
+    fluff: { overlap: 2.9, core: 0.72, fan: 0.7, noise: 0.22 } },
   star: { size: 0.115, inner: 0.47, depth: 0.025, color: 0xe8b83e, glow: 0xffd27a, halo: 0.42, haloOn: 0.55 },
   // LED string: `n` bulbs on a spiral of `turns` turns; `twinkle` = how far each one dims (0–1) at `speed` rad/s (±50 %
   // per bulb), `wave` = a slow brightening that runs up the tree; halos = additive point sprites `halo` m across

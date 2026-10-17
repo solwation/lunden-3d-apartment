@@ -4,9 +4,9 @@ import { XMAS_TREE as X } from './config.js';
 import { glowMaterial } from './groundglow.js';
 
 // The Christmas tree (#571): a FURNITURE builder (furniture.js). A tall Nordmann-ish fir in a red stand on a felt skirt:
-// serrated whorls + branch tips (one merged, vertex-coloured, flat-shaded mesh), baubles + a bead garland (one shiny
-// mesh), a gold star with a soft halo, warm LED string lights (instanced cores + additive point halos, recoloured every
-// frame for the shimmer by christmas.js) and a few presents. ~7 draw calls, no light of its own: it is a small-lamp spec
+// a dark inner body, overlapping serrated whorls + branch tips (one merged, vertex-coloured, softly shaded mesh, #1217),
+// baubles + a bead garland (one shiny mesh), a gold star with a soft halo, warm LED string lights (instanced cores +
+// additive point halos, recoloured every frame for the shimmer by christmas.js) and a few presents. ~7 draw calls, no light of its own: it is a small-lamp spec
 // (lights.js, E toggles it) with one pool-light anchor in front of it. Whether it is there at all is christmas.js's job.
 // Local frame: y up from the floor, +z = facing (the room side). Every value: XMAS_TREE in config (visual guesses).
 
@@ -32,40 +32,55 @@ export function crownRadius(y) {
   const C = X.crown, t = (y - C.bottom) / (C.top - C.bottom);
   if (t <= 0) return C.r;
   if (t >= 1) return 0;
-  return C.r * (1 - t) ** 0.9 * (1 + 0.08 * Math.sin(Math.PI * t));
+  return C.r * (1 - t) ** C.taper * (1 + 0.1 * Math.sin(Math.PI * t));
 }
 
 export function xmastree(item, lights) {
   const g = new THREE.Group(), C = X.crown, rand = rng(571), H = C.top - C.bottom;
   const greens = C.greens.map((h) => new THREE.Color(h));
-  // ── the crown: whorls of serrated skirts (branch tiers that droop at the tips) + branch tips on the surface
-  const crown = [];
+  // ── the crown: a dark inner body (no see-through gaps), whorls of serrated skirts (branch tiers that droop at the tips
+  // and overlap generously, #1217) + two layers of branch tips on the surface. Soft outward normals (not flat facets) and
+  // a little per-vertex colour noise read as dense needles instead of cut paper.
+  const crown = [], F = C.fluff, noise = (c) => c.multiplyScalar(1 - F.noise / 2 + rand() * F.noise);
+  const soft = (geo, lift) => { // normals: outward from the trunk, tipped up (lit like a fuzzy cone, not facet by facet)
+    const p = geo.attributes.position, n = new Float32Array(p.count * 3), v = new THREE.Vector3();
+    for (let k = 0; k < p.count; k++) {
+      v.set(p.getX(k), 0, p.getZ(k)); if (v.lengthSq() < 1e-8) v.set(0, 1, 0); v.normalize(); v.y += lift; v.normalize();
+      n.set([v.x, v.y, v.z], k * 3);
+    }
+    geo.setAttribute('normal', new THREE.BufferAttribute(n, 3));
+    return geo;
+  };
+  const coreH = H - 0.1, core = new THREE.ConeGeometry(C.r * F.core, coreH, 18, 4, true).translate(0, C.bottom + coreH / 2, 0);
+  crown.push(soft(paint(core, greens[3], (c) => c.multiplyScalar(0.55)), 0.4));
   for (let i = 0; i < C.tiers; i++) {
-    const yb = C.bottom + H * (i / C.tiers) ** 1.05, r = crownRadius(yb) * 1.03 + 0.02, h = Math.min(H * 2.3 / C.tiers, C.top - yb + 0.05);
-    const teeth = Math.max(7, Math.round(r * 30)), spin = rand() * Math.PI * 2;
+    const yb = C.bottom + H * (i / C.tiers) ** 1.05, r = crownRadius(yb) * 1.04 + 0.025, h = Math.min(H * F.overlap / C.tiers, C.top - yb + 0.05);
+    const teeth = Math.max(8, Math.round(r * 36)), spin = rand() * Math.PI * 2;
     const cone = new THREE.ConeGeometry(r, h, teeth * 2, 3, true);
     const p = cone.attributes.position;
     for (let k = 0; k < p.count; k++) {
       const x = p.getX(k), y = p.getY(k), z = p.getZ(k), rr = Math.hypot(x, z);
       if (rr < 1e-6) continue;
       const a = Math.atan2(z, x), tooth = (0.5 + 0.5 * Math.cos(a * teeth)) ** 2, edge = (h / 2 - y) / h; // edge 0 apex … 1 rim
-      const f = 1 - edge * 0.28 * (1 - tooth) + 0.04 * Math.sin(a * 3 + i);
-      p.setXYZ(k, x * f, y - edge ** 2 * (0.05 + 0.05 * tooth), z * f); // notches between the branches, drooping tips
+      const f = 1 - edge * 0.18 * (1 - tooth) + 0.04 * Math.sin(a * 3 + i);
+      p.setXYZ(k, x * f, y - edge ** 2 * (0.04 + 0.05 * tooth), z * f); // shallow notches between the branches, drooping tips
     }
     cone.rotateY(spin); cone.translate(0, yb + h / 2, 0);
     const base = greens[i % greens.length];
-    crown.push(paint(cone, base, (c, x, y, z) => { const rr = Math.hypot(x, z) / Math.max(r, 0.01); c.multiplyScalar(0.5 + 0.5 * rr); }));
+    crown.push(soft(paint(cone, base, (c, x, y, z) => { const rr = Math.hypot(x, z) / Math.max(r, 0.01); noise(c.multiplyScalar(0.5 + 0.55 * rr)); }), 0.55));
   }
-  // branch tips: flat fans on the surface pointing out and a little down, lighter at the tip (new growth)
+  // branch tips: fans on the surface pointing out and a little down, lighter at the tip (new growth); an inner layer
+  // fills between the whorls, the outer one softens the silhouette
   for (let i = 0; i < C.sprigs; i++) {
-    const t = Math.min(0.95, 1 - Math.sqrt(rand())), y = C.bottom + 0.04 + t * (H - 0.12), R = crownRadius(y);
-    const a = rand() * Math.PI * 2, len = R * 0.42 + 0.07 + rand() * 0.05, droop = 0.25 + rand() * 0.3;
-    const s = new THREE.ConeGeometry(0.03 + R * 0.04, len, 4, 1).translate(0, len / 2, 0).scale(0.45, 1, 2.1);
-    s.rotateZ(-Math.PI / 2 - droop); s.rotateY(-a); s.translate(Math.cos(a) * R * 0.62, y, Math.sin(a) * R * 0.62);
+    const outer = i % 3 !== 0, t = Math.min(0.96, 1 - Math.sqrt(rand())), y = C.bottom + 0.04 + t * (H - 0.1), R = crownRadius(y);
+    const a = rand() * Math.PI * 2, len = R * (outer ? 0.44 : 0.36) + 0.07 + rand() * 0.05, droop = 0.2 + rand() * 0.35;
+    const s = new THREE.ConeGeometry(0.035 + R * 0.05, len, 5, 1).translate(0, len / 2, 0).scale(F.fan, 1, 2.1);
+    const out = outer ? 0.62 : 0.48; // the outer tips end ~R + 8 cm out, as before #1217 (the corner walls)
+    s.rotateZ(-Math.PI / 2 - droop); s.rotateY(-a); s.translate(Math.cos(a) * R * out, y, Math.sin(a) * R * out);
     const base = greens[Math.floor(rand() * greens.length)].clone().multiplyScalar(0.85 + rand() * 0.3), cx = Math.cos(a), cz = Math.sin(a);
-    crown.push(paint(s, base, (c, x, yy, z) => { const out = (x * cx + z * cz) / Math.max(R, 0.05); if (out > 1.02) c.lerp(new THREE.Color(0x4f8048), 0.35); }));
+    crown.push(soft(paint(s, base, (c, x, yy, z) => { const o = (x * cx + z * cz) / Math.max(R, 0.05); noise(c); if (o > 1.02) c.lerp(new THREE.Color(0x4f8048), 0.35); }), 0.35));
   }
-  const crownMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.88, flatShading: true });
+  const crownMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, side: THREE.DoubleSide });
   const crownMesh = new THREE.Mesh(mergeGeometries(crown), crownMat);
   crownMesh.name = 'julgranens barr';
   // ── stand, trunk, felt skirt, presents: one matte vertex-coloured mesh
@@ -92,7 +107,7 @@ export function xmastree(item, lights) {
   for (let i = 0, tries = 0; i < B.n && tries < B.n * 40; tries++) {
     const tier = Math.floor((1 - Math.sqrt(rand())) * (C.tiers - 1)), yb = C.bottom + H * (tier / C.tiers) ** 1.05;
     const r = B.r[0] + rand() * (B.r[1] - B.r[0]) * (1 - tier / C.tiers * 0.5), a = rand() * Math.PI * 2;
-    const R = crownRadius(yb) * (0.82 + rand() * 0.14), p = new THREE.Vector3(Math.cos(a) * R, yb - r - 0.012 + (rand() - 0.5) * 0.06, Math.sin(a) * R);
+    const R = crownRadius(yb) * (0.94 + rand() * 0.12) + 0.01, p = new THREE.Vector3(Math.cos(a) * R, yb - r - 0.012 + (rand() - 0.5) * 0.06, Math.sin(a) * R);
     if (at.some((q) => q.distanceTo(p) < 0.13)) continue;
     at.push(p);
     shiny.push(paint(new THREE.SphereGeometry(r, 10, 7).translate(p.x, p.y, p.z), B.colors[i % B.colors.length]));
@@ -101,7 +116,7 @@ export function xmastree(item, lights) {
   }
   const G = X.garland, pts = [], top = C.top - 0.28, bottom = C.bottom + 0.18;
   for (let k = 0; k <= 160; k++) {
-    const s = k / 160, y = top - s * (top - bottom), a = s * G.turns * Math.PI * 2 + 0.7, R = crownRadius(y) * 0.9 + 0.015;
+    const s = k / 160, y = top - s * (top - bottom), a = s * G.turns * Math.PI * 2 + 0.7, R = crownRadius(y) * 1.0 + 0.03;
     const drape = Math.sin(((s * G.turns * 3) % 1) * Math.PI); // three swags a turn
     pts.push(new THREE.Vector3(Math.cos(a) * R, y - G.sag * drape, Math.sin(a) * R));
   }
@@ -132,7 +147,7 @@ export function xmastree(item, lights) {
   const haloPos = new Float32Array(n * 3), haloCol = new Float32Array(n * 3), bulbs = [], m4 = new THREE.Matrix4();
   for (let i = 0; i < n; i++) {
     const s = i / (n - 1), y = C.bottom + 0.08 + s * (H - 0.22), a = s * L.turns * Math.PI * 2 + (rand() - 0.5) * 0.5;
-    const R = crownRadius(y) * (0.86 + rand() * 0.1) + 0.01, x = Math.cos(a) * R, z = Math.sin(a) * R;
+    const R = crownRadius(y) * (0.98 + rand() * 0.08) + 0.025, x = Math.cos(a) * R, z = Math.sin(a) * R;
     m4.makeTranslation(x, y, z); cores.setMatrixAt(i, m4);
     haloPos.set([x, y, z], i * 3);
     bulbs.push({ color: new THREE.Color(L.colors[i % L.colors.length]), speed: L.speed * (0.5 + rand()), phase: rand() * Math.PI * 2, y });
