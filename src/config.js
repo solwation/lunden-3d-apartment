@@ -1563,8 +1563,8 @@ export const START = { x: 2.875, z: -12, yawDeg: 180, pitchDeg: 8 };
 // Weather (#248, src/weather.js): per date a seeded draw. `rain` = the chance per day of showers by month (Jan…Dec):
 // spring and autumn, a little in summer, none in the snow months (Lund's wettest months are Jul–Nov, the user wants
 // spring and autumn); `second` = the chance of a second shower that day. `thunder`: late summer (from / to as [month,
-// day]) a chance per day of a thunderstorm starting between `hours`. Lengths in hours (the 60-minute day: 1 h = 2.5
-// real min), `ramp` = h to come and go. Drops: `drops` streaks within `radius` m of the eye, `height` m above it,
+// day]) a chance per day of a thunderstorm starting between `hours`. Lengths in game hours (DAY.minutes: real hours
+// at the real-time day, #1145), `ramp` = h to come and go. Drops: `drops` streaks within `radius` m of the eye, `height` m above it,
 // falling `speed` m/s, `len` m long, slanted by `wind`. Overcast: the sun × (1 − `sunCut`), fog `fogFar` m. Lightning
 // every `flash.every` real s (random in between), thunder after distance / 343 m/s. Our numbers.
 export const WEATHER = {
@@ -2687,7 +2687,7 @@ export const FISH = { n: 15, len: 0.09, w: 0.025, h: 0.016, bites: 3, box: { w: 
 // from the cloud session: W × D × H 30 × 38 × 32 cm is the issue's *guess* for a ~5 l model. `x`, `z` = its centre;
 // `basket` = the pull-out drawer (front part of the lower body: depth, height, how far it slides out, `in` s to slide);
 // `slots` fish fingers fit in it (2 rows of 3, *guess*). E on the panel with the basket in runs it for `seconds` real
-// seconds (the display counts down game time: × `clock` = 24, the 60-minute day, so 20 s shows 8:00) at `temp` °C; it
+// seconds (the display counts down game time: × `clock` = 24 h / DAY.minutes, 1 at the real-time day #1145, so 20 s shows 0:20) at `temp` °C; it
 // cooks fish fingers `rate` × as fast as the pan would, so one run makes them golden (FISH.fry.seconds, a little before
 // the end) and they burn early in a third run (FISH.fry.burnAt, "left far too long"). Basket out mid-run: paused. Done: `beeps` beeps. The cord runs up
 // the splashback to the corner wall socket's south mouth (KITCHEN_SOCKETS, 'corner-s', #442).
@@ -2695,7 +2695,8 @@ export const FISH = { n: 15, len: 0.09, w: 0.025, h: 0.016, bites: 3, box: { w: 
 // away from both splashbacks (+45 = front towards north-west). `x`, `z` put its rounded footprint (±0.22 m along x and z
 // turned) 3.5 cm from the east and south splashbacks (5.50 / 5.484), its flat back towards the corner.
 export const AIRFRYER = { x: 5.245, z: 5.229, rot: 45, w: 0.3, d: 0.38, h: 0.32,
-  basket: { d: 0.25, h: 0.15, out: 0.2, in: 0.35 }, slots: 6, seconds: 20, clock: 24, temp: 200, beeps: 3,
+  basket: { d: 0.25, h: 0.15, out: 0.2, in: 0.35 }, slots: 6, seconds: 20, temp: 200, beeps: 3,
+  get clock() { return 24 * 60 / DAY.minutes; }, // (DAY is defined further down; read at run time)
   get rate() { return 1.2 * FISH.fry.seconds / this.seconds; } };
 // A bag of Aviko frozen fries (#301, src/fries.js): a stand-up bag `bag` W × H × D m (*guess* from the issue, ~1 kg), leaning
 // back on the freezer's top shelf; `portions` pours in a full bag, `portion` fries per pour, at most `max` portions in the
@@ -3833,16 +3834,17 @@ export const TAP_LEVER = { seconds: 0.24, angle: 38, pickRadius: 0.075, pickHeig
 export const KITCHEN_TOWEL_MATERIAL = { id: 'f-kitchen-oven-towel', surface: 'towel', name: 'Kökshandduken', level: 0 };
 export const HANDWASH = { wash: 2.2, dry: 1.6, wetFor: 60, fade: 20, swing: 0.12, kitchenTowelAt: 0.14,
   kitchenTowel: { color: 0xe6dfd2, band: 0x4b6683, w: 0.2, len: 0.42, seed: 3.3, slant: 0.2, materialSurface: { id: KITCHEN_TOWEL_MATERIAL.surface, name: KITCHEN_TOWEL_MATERIAL.name } } };
-// Day cycle (src/daycycle.js): one day in `minutes` real minutes (60, the user #125). The sun follows the real solar
+// Day cycle (src/daycycle.js): one day in `minutes` real minutes: 24 × 60 = real time (#1145, the user's in-game wish;
+// it was 60, #125). At real pace the clock follows the visitor's own clock and date. The sun follows the real solar
 // path for the date (declination, hour angle) at Kv. Lunden, Karpvägen / S:t Lars väg in Lund
 // (55.70° N, 13.17° E, docs/tomten-google-maps.jpg). planNorth = compass bearing of the plan's
 // "north" (−z, the entrance façade): FOJAB's north arrow on the situation/overview plans
 // (docs/peab/) puts true north 58° to the left of the plan's up, so the entrance faces ENE and
 // the patio WSW. Clock time is Swedish local time (CEST in summer).
-// Every visit starts at `startHour` on the 15th of the visitor's month, unless ?time=HH[.h] /
-// ?month=1–12 is given. The wall clock in the kitchen fast-forwards at `spool` hours per second.
+// Every visit starts at the visitor's own time and date (main.js), unless ?time=HH[.h] / ?month=1–12 / ?day= is given.
+// The wall clock in the kitchen fast-forwards at `spool` hours per second; its "Nu" goes back to the real time.
 export const DAY = {
-  minutes: 60, startHour: 7, lat: 55.70, lon: 13.17, planNorth: 58, spool: 1.5,
+  minutes: 24 * 60, startHour: 7, lat: 55.70, lon: 13.17, planNorth: 58, spool: 1.5,
   moonlight: 0.35, nightAmbient: 0.05,
 };
 

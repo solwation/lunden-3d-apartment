@@ -98,6 +98,7 @@ export class ClockPanel {
       b.addEventListener('lostpointercapture', stop);
     }
     this.playBtn.addEventListener('click', () => this.togglePause());
+    el.querySelector('[data-act=now]')?.addEventListener('click', () => this.toNow()); // back to the real time (#1145)
     this.render();
   }
 
@@ -118,12 +119,16 @@ export class ClockPanel {
 
   togglePause() { this.day.paused = !this.day.paused; this.render(); }
 
+  /** The visitor's own time and date again, running (#1145). */
+  toNow() { this.held.clear(); this.day.toNow(); this.render(); }
+
   /** Keyboard while the strip is open; returns true when the key was used. */
   key(code, down, repeat) {
     code = { KeyA: 'ArrowLeft', KeyD: 'ArrowRight' }[code] ?? code; // A D spool too, like the calendar (#120)
     if (code === 'ArrowLeft' || code === 'ArrowRight') { this.hold(code, down ? (code === 'ArrowLeft' ? -1 : 1) : 0); return true; }
     if (!down || repeat) return code === 'Space';
     if (code === 'Space') this.togglePause();
+    else if (code === 'KeyN') this.toNow();
     else return false;
     return true;
   }

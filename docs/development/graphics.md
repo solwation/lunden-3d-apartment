@@ -98,7 +98,7 @@ src/weather.js         weather (WEATHER, #248): a seeded draw per date (`showers
                        first time, a little each later shower; a badge every time)
 src/groundglow.js      light without lights (#434, #433): additive fall-off decals — `poolGeometry` (an ellipse draped over `groundY`),
                        `washGeometry` (an upright one on a wall; #1092: `holes` = the wall's openings, cut out so the glow lights the brick round a window/door, never its glass — the front-door and patio/terrace washes pass them; the Å-husen's loggia washes need none: their glazing stands in front of the wash and hides it), `glowMaterial` (one per set, opacity = the level), `fadeGlow`
-src/daycycle.js        60-minute day: real solar path for the month (55.7° N), sun → moon light, shader sky
+src/daycycle.js        real-time day (#1145; DAY.minutes = 24 × 60, was 60): it follows the visitor's clock (frames lost to the dt cap or a hidden tab catch up from Date.now(); `toNow()` = the wall clock's "Nu"), real solar path for the month (55.7° N), sun → moon light, shader sky
                        (glow, stars, clouds), fog colour; paused / spooled by the wall clock. Daylight (#1073): `LIGHTING.sky`
                        blends `overcast` (even sky/ambient/fill, sun 2.2, exposure 1) → `clear` (darker shade side, sun 3.0,
                        exposure 1.5 so rooms stay ~as bright) by daylight × (1 − overcast); night, rain and the garage keep the old light

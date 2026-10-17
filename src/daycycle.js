@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { DAY, WEATHER, GARAGE, LIGHTING } from './config.js';
 
-// Day and night: a whole day passes in DAY.minutes real minutes. The sun follows its real path
+// Day and night: a whole day passes in DAY.minutes real minutes (24 × 60 = real time, #1145: the clock follows the
+// visitor's own clock; the wall clock's spool / pause become an offset from it). The sun follows its real path
 // for the date at Kv. Lunden (rises north-east in summer, south-east in winter; the house is
 // turned, see DAY.planNorth); at night a full moon takes its place. Drives the sun light, the
 // ambient light, fog and a shader sky with sunset glow, stars and the moon. The wall clock can
@@ -128,6 +129,7 @@ export class DayCycle {
     this.sky.renderOrder = -1;
     scene.add(this.sky);
     scene.background = null;
+    this.realAt = Date.now(); // (catch-up: dt is capped and stops in a hidden tab, the real clock does not, #1145)
     this.sunDir = new THREE.Vector3();
     this.moonDir = new THREE.Vector3();
     this.update(0);
@@ -145,11 +147,29 @@ export class DayCycle {
     this.year = d.getFullYear(); this.month = d.getMonth() + 1; this.date = d.getDate();
   }
 
-  /** Advance the clock: normal pace, stopped while paused, or spooled (−1 / +1) by the wall clock. */
+  /** Is the normal pace the real one (DAY.minutes = a whole day, #1145)? */
+  get real() { return DAY.minutes >= 24 * 60; }
+
+  /** The game's local date and time as a timestamp (ms, like Date.now()). */
+  get stamp() { return new Date(this.year, this.month - 1, Math.min(this.date, daysIn(this.year, this.month))).getTime() + this.hour * 36e5; }
+
+  /** Set the game's date and time from a timestamp (ms). */
+  setStamp(ms) {
+    const d = new Date(ms);
+    Object.assign(this, { year: d.getFullYear(), month: d.getMonth() + 1, date: d.getDate(), hour: d.getHours() + d.getMinutes() / 60 + (d.getSeconds() + d.getMilliseconds() / 1000) / 3600 });
+  }
+
+  /** Back to the visitor's own time and date, running (the wall clock's "Nu", #1145). */
+  toNow() { this.setStamp(Date.now()); Object.assign(this, { paused: false, spool: 0, realAt: Date.now() }); this.update(0); }
+
+  /** Advance the clock: normal pace, stopped while paused, or spooled (−1 / +1) by the wall clock. At the normal pace
+   * the real time since the last update counts when it is longer than `dt` (capped frames, a hidden tab, #1145). */
   update(dt) {
+    const now = Date.now(), real = Math.max(0, (now - this.realAt) / 1000);
+    this.realAt = now;
     const rate = this.spool ? this.spool * DAY.spool : this.paused ? 0 : 24 / (DAY.minutes * 60);
-    const h = this.hour + dt * rate;
-    if (h >= 24) this.addDays(1); else if (h < 0) this.addDays(-1); // midnight: the next / previous day
+    const h = this.hour + (this.spool || this.paused ? dt : Math.max(dt, real)) * rate;
+    if (h >= 24 || h < 0) this.addDays(Math.floor(h / 24)); // midnight: the next / previous day (or more after a long sleep)
     this.hour = ((h % 24) + 24) % 24;
     sunDirection(this.hour, this.doy, this.sunDir);
     // full moon: opposite the sun (12 h later, opposite declination)

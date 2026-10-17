@@ -51,7 +51,7 @@ f.onload = async () => {
   for (let i = 0; i < 30; i++) step(1 / 60);
   w.__app.touch.analog.y = 0;
   pass &= check(Math.hypot(player.pos.x - before.x, player.pos.z - before.z) < 0.01, 'no walking while the strip is open');
-  // normal pace: one real minute = 24 / DAY.minutes hours (#125: a 60-minute day)
+  // normal pace: one real minute = 24 / DAY.minutes hours (#1145: real time, 1 min = 1 min; was a 60-minute day, #125)
   {
     const { DAY } = await import('../src/config.js');
     const h = day.hour; for (let i = 0; i < 60; i++) step(1);
@@ -104,6 +104,16 @@ f.onload = async () => {
   pass &= check(darkDec && day.sunDir.y > 0.2, '07:00: dark in December, sun up in June');
   step(0);
   pass &= check(towerClocks.every(c => c.hour === day.hour), 'tower stays synchronized after kitchen controls, pause and spooling');
+  // "Nu" (#1145): back to the visitor's own time and date, running; and a hidden tab's lost frames catch up
+  {
+    const { DAY } = await import('../src/config.js');
+    d.querySelector('[data-act=now]').click();
+    const n = new Date(), nh = n.getHours() + n.getMinutes() / 60 + n.getSeconds() / 3600;
+    pass &= check(DAY.minutes === 1440 && Math.abs(day.hour - nh) < 0.02 && day.month === n.getMonth() + 1 && day.date === n.getDate() && !day.paused, `Nu: the real time ${day.clock}, ${day.date}/${day.month}, running`);
+    day.realAt -= 3600e3; step(0); // as if the tab was hidden for an hour
+    pass &= check(Math.abs(((day.hour - nh - 1) % 24 + 24) % 24) < 0.02 || Math.abs(day.hour - nh - 1 + 24) < 0.02, `an hour away: the clock caught up (${day.clock})`);
+    day.toNow();
+  }
   d.getElementById('clock-close').click();
   pass &= check(panel.hidden && !day.spool, 'strip closes');
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;

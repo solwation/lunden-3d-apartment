@@ -73,10 +73,18 @@ const PARTS = {
     },
   },
   clock: {
-    save: ({ day }) => ({ h: r3(day.hour), y: day.year, m: day.month, d: day.date, p: day.paused ? 1 : 0 }),
+    // a running clock at the real-time day keeps its offset from the real clock (`o` ms, #1145), so the time spent
+    // reloading still passes; a paused one keeps its time. An old running record without `o` (the 60-minute day) is
+    // left: the real time it started at stays.
+    save: ({ day }) => ({ h: r3(day.hour), y: day.year, m: day.month, d: day.date, p: day.paused ? 1 : 0,
+      ...(day.real && !day.paused ? { o: Math.round(day.stamp - Date.now()) } : {}) }),
     load({ day }, s) {
       if (!(Number.isFinite(s.h) && s.m >= 1 && s.m <= 12 && s.d >= 1 && s.d <= 31)) return;
-      Object.assign(day, { hour: ((s.h % 24) + 24) % 24, month: s.m, date: s.d, year: Number.isFinite(s.y) ? s.y : day.year, paused: !!s.p, spool: 0 });
+      if (day.real && !s.p) {
+        if (Number.isFinite(s.o)) day.setStamp(Date.now() + s.o);
+        Object.assign(day, { paused: false, spool: 0 });
+      } else Object.assign(day, { hour: ((s.h % 24) + 24) % 24, month: s.m, date: s.d, year: Number.isFinite(s.y) ? s.y : day.year, paused: !!s.p, spool: 0 });
+      day.realAt = Date.now();
       day.update(0);
     },
   },
