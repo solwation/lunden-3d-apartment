@@ -3882,9 +3882,11 @@ export const DAY = {
 
 // Analog wall clock (src/wallclock.js) on the kitchen side of the Tvätt/Badrum wall, centred on the
 // wall between the hall and the Badrum door (the user, #121): wall face x 2.152, z 3.145 to the door
-// architrave at 5.244 − DOOR_TRIM.width = 5.174 → z 4.16. rotY π/2 = facing east. Diameter 30 cm
-// (typical kitchen clock).
-export const WALL_CLOCK = { x: 2.152, y: 2.0, z: 4.16, rotY: Math.PI / 2, d: 0.3 };
+// architrave at 5.244 − DOOR_TRIM.width = 5.174 → z 4.16. rotY π/2 = facing east. Diameter 40 cm: the user's own
+// clock (user report 2026-10-17, #1205; bottom 1.80 m, still above the calendar's top at 1.725 m). `depth` = the
+// frame's depth from the wall and `lip` = the frame's front ring width as a share of the radius — *visual guesses*
+// from the reporter's photo (docs/ingame-reports/3ad70257-7a01-4ec9-a4a0-855d8db12de8-2.jpg), not measured.
+export const WALL_CLOCK = { x: 2.152, y: 2.0, z: 4.16, rotY: Math.PI / 2, d: 0.4, depth: 0.045, lip: 0.055 };
 
 // The cat calendar (#95, src/calendar.js) on the kitchen face of the Tvätt/Badrum wall, under the wall clock and
 // beside the cat board (north of it: on its right seen from the kitchen): a 30 × 45 cm paper calendar with a cat picture for each

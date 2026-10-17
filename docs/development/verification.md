@@ -206,7 +206,7 @@ src/grill.js           the courtyard's kettle grill (GRILL, #204): E lights it �
                        `weberkettle` (`weberkettle()`): L1007's patio kettle (kind 'kettle', not the chicken's grill) with a
                        bolted side table (a put-down surface), movable in rearrange mode; its pool light (main.js lights.extra)
                        follows the piece, F puts it out; no save of its burn, no shadow-casting light
-src/wallclock.js       analog kitchen clock (WALL_CLOCK) + the control strip: spool A D / ← →, pause
+src/wallclock.js       analog kitchen clock (WALL_CLOCK; the user's own 40 cm clock since #1205: lathe frame, canvas face, shape hands, 6 draws) + the control strip: spool A D / ← →, pause
 tools/entrancedoortest.html entrance panes/hardware, the name plate (#595), animation and actual rendered handle pixels with normal culling (#497/#519)
 src/quality.js         adaptive graphics level + knob registry (#592); src/warmup.js the start's warm-up; src/hitchlog.js `&perf` hitch log
 src/detail.js          DetailCuller (#189): far-away small meshes and things inside the flat hidden by its walls (seen from
