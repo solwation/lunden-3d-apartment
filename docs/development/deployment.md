@@ -13,6 +13,9 @@ index.html            dependency-free inline recovery guard before bootstrap, in
 src/startuprecovery.js bounded startup JSON requests with one transient retry; covered recovery and retained startup cause (#864, #1065)
 src/loadingstep.js     loadingStep(name, fraction): names the current startup step on the loading card; awaiting it
                        paints once (rAF, at most STARTUP.stepYield ms) before a long synchronous block (#1130)
+                       loadingYield(fraction): progress inside a step + one paint, between build parts (#1133)
+src/longtasks.js       startup long tasks (PerformanceObserver 'longtask', buffered) with their loading step, until the
+                       card is done: __lundenLoading.long = {top: [[ms, step]…], n, sum}; crashlog.js beats it as `long` (#1133)
 src/bootstrap.js       lightweight startup gate: bounded version check before importing main.js (#512)
 src/startup.js         fresh HTML/build check + cache-busted early update; loop guards; no scene on outgoing page
 src/version.js         BUILD/CONTENT stamps + polling for publications later during a visit

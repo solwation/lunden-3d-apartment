@@ -757,3 +757,28 @@ To go back: set `shadowHoldEvery: 0`. Diagnostics: every crash heartbeat sample 
 since the last beat, all / held after a tap); in a headless check after a tap they read 6 / 5 on the phone profile and
 12 / 12 → 15 / 15 on desktop (every frame, unchanged). The next iPhone report shows directly whether a loss follows a burst. The cause is a *guess* (a sustained GPU spike tripping iOS); the context loss itself
 cannot be reproduced without a device.
+
+## Startup long tasks and the world built in parts (#1133)
+
+`src/longtasks.js` records startup long tasks (`PerformanceObserver` `longtask`, buffered, until `#loading` is done), each
+with the loading step it began in: `__lundenLoading.long = { top: [[ms, step]…], n, sum }` (top `STARTUP.longTasksKept`),
+also in the crash heartbeat as `long`. `buildWorld` is now the synchronous wrapper around the generator `worldParts`;
+startup calls `buildWorldSliced(plan, pause)`, which awaits `loadingYield` (one paint, at most `STARTUP.stepYield` ms)
+between parts. `surroundingsParts`, `southBackdropParts` and `leafAtlasParts` are delegated the same way; their
+`buildSurroundings` / `buildSouthBackdrop` / `leafAtlas` stay synchronous for tools. Per-part timing showed that the
+longest single block was not the flat but the shared leaf atlas (first drawn by the southern backdrop): ~25 s in one
+`getImageData` flush of ~9 000 queued GPU canvas draws in headless Chromium. Its canvas is now CPU-backed
+(`willReadFrequently`), drawn in parts; the readback costs ~50 ms. Warm-up (#697) is unchanged.
+
+Measured (headless Chrome/SwiftShader, very loaded 4-core machine, before = b504d57, after = 673b78d, runs
+alternated; numbers are noisy):
+
+| Profile | Longest task before | Longest after | Start to card done, before / after |
+|---|---:|---:|---:|
+| desktop `?warm`, 1280×800 | 56 s, 48 s (whole Bygger huset) | 25 s, 99 s | 137 s, 125 s / 63 s, 161 s |
+| phone `?lowmem`, 390×844, iPhone UA | 37 s (Bygger huset) | 14 s | 137 s / 140 s |
+
+The remaining desktop block (25–105 s) runs during a pause after the façade-texture part of the surroundings: queued
+2D-canvas textures are flushed when the page draws a frame. Before the split, the same cost fell in warm-up
+(Värmer upp vyn, 31–41 s), so it moved rather than appeared (#1159). Next: Möblerar on phones, ~12 s (#1160), and
+smaller build parts, 3–9 s (#1161).
