@@ -145,7 +145,7 @@ function bodyParts(add, sleeves, isFemale) {
   add(lathe([[0.142, -0.02], [0.147, 0.03]], 14).scale(isFemale ? 1.1 : 1.15, 1, 0.75), 'fixed', 'torso', [0, -0.02, 0], 1, 0x2a2523); // the belt
   // (no buckle: a light box below the hem read as a spot in the crotch, #1189)
   add(new THREE.BoxGeometry(0.005, 0.075, 0.004), 'pants', 'hips', [0.012, -0.045, 0.106], 0.72); // the fly's seam
-  add(new THREE.TorusGeometry(0.052, 0.015, 5, 12).rotateX(Math.PI / 2), 'top', 'torso', [0, 0.605, 0], 0.8); // the collar
+  add(new THREE.TorusGeometry(0.06, 0.011, 5, 14).rotateX(Math.PI / 2).scale(1, 1, 1), 'top', 'torso', [0, 0.628, 0], 0.8); // the collar: a low round rim at the neck's base (#1221)
   // arms: a deltoid cap over the shoulder joint, the sleeve (a T-shirt's ends above the biceps with a hem; a long one has
   // soft folds at the elbow and a cuff at the wrist), the bare skin below, the wrist reaching the hand
   for (const s of ['L', 'R']) {
@@ -445,10 +445,12 @@ function addFace(add, sphere, P) {
 }
 // the tops' torso (hip at 0; scaled 1.15 / 1.08 × 1 × 0.7): a narrower waist, the chest, sloping shoulders (the trapezius)
 // up to the neck (#1103). The suit's atlas (#891) maps over the widest radius and the top height, both kept.
+// #1221: the shirt ends at the neck's base (the neck cylinder starts at 0.60 and the collar ring sits on it), not up at the chin.
+const TORSO_ATLAS_TOP = 0.71; // the atlas' height (#891), kept although the cloth now ends lower
 const TORSO_PROFILE = [[0, 0], [0.13, 0.0], [0.152, 0.04], [0.155, 0.12], [0.14, 0.25], [0.162, 0.44], [0.17, 0.5],
-  [0.165, 0.545], [0.145, 0.585], [0.1, 0.615], [0.06, 0.635], [0.045, 0.7], [0, 0.71]];
+  [0.165, 0.545], [0.145, 0.585], [0.105, 0.612], [0.082, 0.624], [0.07, 0.63], [0, 0.63]];
 const TORSO_PROFILE_FEMALE = [[0, 0], [0.13, 0.0], [0.15, 0.04], [0.152, 0.12], [0.128, 0.26], [0.158, 0.43], [0.16, 0.5],
-  [0.152, 0.55], [0.13, 0.59], [0.095, 0.615], [0.055, 0.635], [0.043, 0.7], [0, 0.71]];
+  [0.152, 0.55], [0.13, 0.59], [0.098, 0.612], [0.078, 0.624], [0.068, 0.63], [0, 0.63]];
 
 // --- skin and material shading (#1104) ----------------------------------------------------------------------------------
 // Instead of flat colours: clothes and hair get a soft ambient-occlusion-like darkening in their folds, baked once into the
@@ -617,7 +619,7 @@ function makeMaterial(rim, headProjection) {
         // classification so rasterization precision cannot speckle one part blue/red.
         float suitBone = floor(vSuitBone + 0.5);
         if (suitBone == ${NAMES.indexOf('torso')}.0) {
-          vec2 uv = vec2(vSuitAt.x / ${2 * Math.max(...TORSO_PROFILE.map(p => p[0])) * 1.15} + 0.5, (vSuitAt.y - ${bindAt('torso').y}) / ${TORSO_PROFILE.at(-1)[1]} * (1.0 - uSuitMaskBand));
+          vec2 uv = vec2(vSuitAt.x / ${2 * Math.max(...TORSO_PROFILE.map(p => p[0])) * 1.15} + 0.5, (vSuitAt.y - ${bindAt('torso').y}) / ${TORSO_ATLAS_TOP} * (1.0 - uSuitMaskBand));
           diffuseColor.rgb = texture2D(uSuitTexture, clamp(uv, 0.0, 1.0)).rgb;
         } else if (suitBone == ${NAMES.indexOf('head')}.0) {
           diffuseColor.rgb = red;
