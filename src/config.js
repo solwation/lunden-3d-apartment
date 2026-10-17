@@ -312,6 +312,16 @@ export const SITE = {
     // northwards to the street level by the gable (z0), where the east leg lies 0.9 m below the courtyard.
     box: [{ x0: -70.5, x1: -41.7, z0: 12.1, z1: 52.5 }, { x0: -41.7, x1: -9.76, z0: 12.1, z1: 33.3 }, { x0: -9.76, x1: 11.6, z0: 12.1, z1: 28.8 },
       { x0: 11.6, x1: 13.5, z0: 24.5, z1: 27.25 }],
+    // #1151: windows in the box's park-facing retaining walls, where våning −1 (docs/peab/kalibrerad/vaning-m1-300dpi.png,
+    // p46) draws window symbols in the garage's outer wall: `edges` = [box edge z (south faces, looking +z), [[x0, x1] …]],
+    // read at 23.61 px/m with the entrance hall's inner faces (x −69.95 / −41.61, z 51.8) as anchors (±0.1 m). The south
+    // wall of INFART GARAGE between Hus C and the C/B stair has four 1.82 m windows plus a 0.97 m one between the stair and
+    // Hus B; the big hall's wall between Hus B and Hus A (the level line z 33.3) three. Only the horizontal placement and
+    // count are sourced: `sill` / `head` (metres over the park level outside) are *guess* (the plans give no heights,
+    // under the garage's ceiling −0.35); frames / panes reuse the Å-husen's listed windows (NEIGHBOR_OPENINGS.site).
+    boxWindows: { sill: 1.1, head: 2.2, edges: [
+      [52.5, [[-66.35, -64.53], [-61.35, -59.53], [-56.31, -54.49], [-52.84, -50.97], [-43.05, -42.08]]],
+      [33.3, [[-20.61, -18.79], [-17.39, -15.57], [-14.17, -12.35]]]] },
     ramp: { x0: 11.6, x1: 13.5, z0: 11.5, z1: 24.5, drop: 0.9 },
     garageDoor: { x: -70.5, z0: 41, z1: 47, h: 2.6, drive: -77.22 }, // `drive`: the asphalt reaches west to Karpvägen
     // East of the courtyard (#255) Sankt Lars väg lies only ~1 m below it, not a storey: from x0 (Hus A's east façade) to

@@ -674,8 +674,26 @@ function openingDecals(b) {
 
 /** ABC's actual listed openings: shared white frames/sashes, dark seals, opaque reflective panes. */
 function detailedSiteWindows(buildings) {
-  const frames=[],seals=[],glass=[],list=[],P=O.site;
-  for(const b of buildings) for(const o of facadeOpenings(b)) {
+  const frames=[],seals=[],glass=[],list=[];
+  for(const b of buildings) for(const o of facadeOpenings(b)) list.push({...o,house:b.name,panes:siteWindowTrim(o,frames,seals,glass)});
+  for(const o of boxWindowOpenings()) siteWindowTrim(o,frames,seals,glass); // #1151: the garage's park-facing windows (not in `list`: no house rows)
+  return {frames,seals,glass,list};
+}
+
+/** #1151: SITE.terrain.boxWindows as façade openings on the box's retaining walls, sill / head over the ground outside. */
+function boxWindowOpenings() {
+  const W = T.boxWindows, out = [];
+  for (const [z, spans] of W?.edges ?? []) for (const [a0, a1] of spans) {
+    const g = groundY((a0 + a1) / 2, z + 0.6), c = z + 0.04; // the brick stands 4 cm outside the box edge (boxWalls)
+    out.push({ kind: 'window', a0, a1, x0: a0, z0: c, x1: a1, z1: c, n: [0, 1], y0: g + W.sill, y1: g + W.head });
+  }
+  return out;
+}
+
+/** One listed opening's white frame/sash, dark seals and opaque panes (#569) into the shared batches; returns its panes. */
+function siteWindowTrim(o,frames,seals,glass) {
+  const P=O.site;
+  {
     const len=o.a1-o.a0,cx=(o.x0+o.x1)/2,cz=(o.z0+o.z1)/2;
     const [nx,nz]=o.n,angle=Math.atan2(nx,nz),ux=(o.x1-o.x0)/len,uz=(o.z1-o.z0)/len;
     const rect=(target,a0,a1,y0,y1,out,depth=0) => {
@@ -699,9 +717,8 @@ function detailedSiteWindows(buildings) {
       rect(glass,a0,a1,bottom,top,P.paneOut);
       panes.push({x:cx+ux*(a0+a1)/2+nx*P.paneOut,y:(bottom+top)/2,z:cz+uz*(a0+a1)/2+nz*P.paneOut,width:a1-a0,height:top-bottom});
     }
-    list.push({...o,house:b.name,panes});
+    return panes;
   }
-  return {frames,seals,glass,list};
 }
 
 /** Split a non-indexed geometry's triangles by `pick(nx, nz, x, z)` → [picked, rest] (either may be null). */
