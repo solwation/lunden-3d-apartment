@@ -317,6 +317,21 @@ export function drawAvatarPreview(canvas, look) {
   ctx.restore();
 }
 
+/** A random look (#1140): colours, hairstyle, sleeves, figure, facial hair, eye colour, the face sliders and a height in cm
+ * (mostly adult, sometimes a child; *guess*). Keeps what is not a plain choice (build, any extra fields) from `base`. */
+export function randomAvatarLook(base, rnd = Math.random) {
+  const pick = (n) => Math.min(n - 1, Math.floor(rnd() * n));
+  const lk = { ...base };
+  lk.skin = SKIN[pick(SKIN.length)]; lk.hair = HAIR[pick(HAIR.length)]; lk.top = TOPS[pick(TOPS.length)];
+  lk.pants = PANTS[pick(PANTS.length)]; lk.shoes = SHOES[pick(SHOES.length)]; lk.eyes = EYES[pick(EYES.length)];
+  lk.style = pick(4); lk.sleeves = pick(2); lk.gender = pick(2); lk.facial = pick(4);
+  for (const name of Object.keys(AVATAR_SHAPE.fields)) lk[name] = pick(AVATAR_SHAPE.steps);
+  const H = AVATAR_HEIGHT, lo = rnd() < 0.15 ? H.min + 20 : H.adult, hi = rnd() < 0.15 ? H.adult : H.max - 5;
+  lk.height = Math.max(H.min, Math.min(H.max, Math.round(lo + rnd() * (hi - lo))));
+  lk.tall = lk.height / H.base;
+  return lk;
+}
+
 /** Update active button indicators in the panel. */
 function updateActiveSwatches() {
   if (!customizerEl || !currentLook) return;
@@ -462,6 +477,9 @@ function initCustomizerDOM() {
     } else if (btn.id === 'avatar-reset-btn') {
       const def = callbacks.getDefaultLook?.() ?? avatarLook('anon');
       currentLook = { ...def };
+      applyAndRefresh();
+    } else if (btn.id === 'avatar-random-btn') {
+      currentLook = randomAvatarLook(currentLook);
       applyAndRefresh();
     } else if (btn.id === 'avatar-save-btn' || btn.id === 'avatar-close-btn') {
       closeAvatarCustomizer('button');

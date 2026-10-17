@@ -437,6 +437,7 @@ test('#1175 all current face fields plus body/scale fit existing Worker extensio
   assert.equal(decodeAvatarLook(state.av+state.ax,'peer-id').build,2);
 });
 
+<<<<<<< Updated upstream
 test('#1139: body build slim … heavy round-trips; old codes keep the seed\'s build', async () => {
   const C = await import('../src/config.js');
   const { AVATAR_BUILD: B, avatarBuildStep, avatarBuildWidth } = C;
@@ -475,4 +476,26 @@ test('#1139: body build slim … heavy round-trips; old codes keep the seed\'s b
   const state = { p: [0, 0, 0], r: 0 };
   const hit = (k, x) => rifleBoxHeadContact('x', { ...state, av: '240302101175', ax: `k${k}` }, [x, 1.64, -3], [0, 0, 1], 10);
   assert.ok(hit(4, 0.1) && hit(8, 0.115) && !hit(4, 0.115) && !hit(0, 0.1), 'heavy wider than slim at the head boxes\' edge');
+=======
+test('#1140: Slumpa gives a valid look (palettes, ranges, wire code valid); Återställ is the default look', async () => {
+  const { randomAvatarLook } = await import('../src/customizer.js');
+  const C = await import('../src/config.js');
+  let s = 7; const rnd = () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
+  const base = avatarLook('editor-base'), seen = new Set();
+  for (let i = 0; i < 300; i++) {
+    const lk = randomAvatarLook(base, rnd);
+    assert.ok(SKIN.includes(lk.skin) && HAIR.includes(lk.hair) && TOPS.includes(lk.top) && PANTS.includes(lk.pants) && SHOES.includes(lk.shoes) && C.EYES.includes(lk.eyes));
+    assert.ok(lk.style >= 0 && lk.style < 4 && [0, 1].includes(lk.sleeves) && [0, 1].includes(lk.gender) && lk.facial >= 0 && lk.facial < 4);
+    for (const n of Object.keys(C.AVATAR_SHAPE.fields)) assert.ok(Number.isInteger(lk[n]) && lk[n] >= 0 && lk[n] < C.AVATAR_SHAPE.steps, n);
+    assert.ok(lk.height >= AVATAR_HEIGHT.min && lk.height <= AVATAR_HEIGHT.max);
+    assert.equal(lk.build, base.build, 'build is kept');
+    const code = encodeAvatarLook(lk), back = decodeAvatarLook(code, 'x');
+    assert.ok(avatarCodeValid(code.slice(0, 12)));
+    assert.equal(back.height, lk.height); assert.equal(back.eyes, lk.eyes); assert.equal(back.eyeSize, lk.eyeSize);
+    seen.add(lk.height);
+  }
+  assert.ok(seen.size > 30, 'heights vary');
+  assert.ok([...seen].some((h) => h < 150) && [...seen].some((h) => h > 170), 'children and tall adults');
+  const b2 = { ...base }; randomAvatarLook(b2, rnd); assert.deepEqual(b2, base, 'does not mutate its input');
+>>>>>>> Stashed changes
 });
