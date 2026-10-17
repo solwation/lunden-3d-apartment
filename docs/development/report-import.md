@@ -65,8 +65,8 @@ and `600` files outside the checkout. `fetch --image-dir /private/external/image
 chooses another private directory. Names come only from validated UUIDs. Existing
 files must match exactly; the importer never overwrites a conflicting image.
 A report's optional second image `photo` (#1182, the reporter's own picture) gets the same validation and
-is exported as `<UUID>-2.jpg`. Until multi-image import (#1183) lands, `import` stops before GitHub on a
-report with `photo` and keeps it in the Worker, so the photo is never dropped by an acknowledgement.
+is exported as `<UUID>-2.jpg` (`photo.path`, `photo.sha256`, …). A report may hold a screenshot, a photo,
+both or neither. Since #1183 `import` attaches **every** image of the report; each needs its own review below.
 
 Exported JSON replaces inline base64 with `image.path`, `image.sha256`, dimensions,
 byte count and `untrusted:true`. Base64 is not printed. Open each selected original
@@ -106,9 +106,15 @@ exported SHA256 after viewing that file; the digest binds the review to those by
 }
 ```
 
-The importer requires both fields for image reports, rejects unknown assessments
-or a digest mismatch, and stops before GitHub writes if they are missing. Existing
-text-only reports, manifests and version-1 journals remain compatible.
+For a report with a `photo`, view `<UUID>-2.jpg` separately and add the matching pair
+`photoRelevance` (`related`/`unrelated`/`unclear`) and `photoSha256` (from `photo.sha256`).
+A report with both images carries all four fields; a photo-only report only the `photo*` pair.
+
+The importer requires each pair for each image the claimed report actually has, rejects
+unknown assessments, unknown keys or a digest mismatch, and stops before GitHub writes if a
+pair is missing, so an acknowledgement never drops an unreviewed image. Existing text-only and
+one-image reports, their manifests and version-1 journals remain compatible: the screenshot
+section of the issue body is unchanged, so a resumed journal's stored body hash still matches.
 
 The example ID is illustrative; do not import it as a test. Unknown manifest keys,
 unreviewed manifests, duplicate IDs and multiline titles/Lapp are rejected. Import
@@ -183,8 +189,9 @@ access recovery is an import blocker; it is not a reason to silently stop at exp
 
 For each claimed image report, the importer durably records its reviewed digest,
 dimensions and byte count in the existing private journal before contacting GitHub.
-It checks the fixed path `docs/ingame-reports/<UUID>.jpg` on `main` through GitHub
-Contents REST. Only an explicit HTTP 404 for that exact Contents GET means the path
+It checks the fixed path `docs/ingame-reports/<UUID>.jpg` (screenshot) and/or
+`docs/ingame-reports/<UUID>-2.jpg` (photo, #1183) on `main` through GitHub Contents REST,
+one image at a time with identical rules. Only an explicit HTTP 404 for that exact Contents GET means the path
 is absent. Authentication failures, timeouts and malformed status replies stop the
 import; they never imply absence. If absent, a structured JSON PUT commits the
 original base64 bytes on `main`. No report text controls a path, repository, commit
@@ -199,11 +206,13 @@ the same absent path again. It never blindly retries an uncertain issue POST.
 
 The issue body always embeds the fixed GitHub `blob/main/docs/ingame-reports/…`
 image link and a Swedish note stating the agent assessment, original SHA256 and
-untrusted-data boundary. The file is already committed before issue creation.
+untrusted-data boundary — first the screenshot (`Bildbedömning`), then the photo
+(`Fotobedömning`, an embedded image that also links to `<UUID>-2.jpg`). All files are
+already committed before issue creation.
 The journal also stores the SHA256 of the full generated issue body before GitHub
 creation. Before acknowledgement, a fresh issue GET must exactly match that durable
-body hash and contain the trusted final image/assessment section; another Contents
-GET re-verifies the original bytes. This rejects an edited issue that hides the
+body hash and contain the trusted final image/assessment sections; another Contents
+GET per image re-verifies the original bytes. This rejects an edited issue that hides the
 image markup inside a code fence or HTML comment. An edited body conservatively
 requires operator investigation rather than acknowledgement.
 A missing attachment, changed image, bad receipt or ownership conflict retains the
@@ -268,6 +277,10 @@ large images in one page, malformed/DNL JPEGs, typed 404 handling, failed/lost
 Contents PUT, equal/different existing paths, concurrent collisions, missing image
 embeds, image markup hidden in edited code fences/HTML comments, changed bytes
 before acknowledgement, and closed-issue/receipt recovery.
+Multi-image cases (#1183) import a report with both screenshot and photo, a photo-only
+report, unreviewed/mismatched photo review, a failed photo PUT, a conflicting existing
+photo, a missing or comment-hidden photo section, changed photo bytes after creation,
+receipt recovery re-verifying both files, and the unchanged screenshot-only body hash.
 An optional actual local Worker integration creates and acknowledges local text-only
 and original-JPEG fixture reports while keeping GitHub issues and Contents entirely fake:
 
