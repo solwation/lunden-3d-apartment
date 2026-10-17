@@ -56,7 +56,7 @@ export class Combat {
       hits: 0, hurts: 0, deaths: 0, fired: 0, seen: 0, lastShot: null, lastSeen: null, consumed: new Set() });
     if (life?.onEvent) {
       life.onEvent((kind, d) => {
-        if (kind === 'ate' && d.item?.id && (d.type === 'breadSlice' || (d.type === 'friedEgg' && d.item?.machine?.cooked !== false))) {
+        if (kind === 'ate' && d.item?.id && (d.type === 'breadSlice' || d.type === 'hotdogBun' || (['friedEgg', 'sausage'].includes(d.type) && d.item?.machine?.cooked !== false))) {
           this.consume(d.item.id).catch(() => {});
         }
       });

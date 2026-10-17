@@ -127,6 +127,7 @@ export class Grill {
     Object.assign(this, { name: 'grillen', kind: opts.kind ?? 'grill', local: !!opts.local, on: false, t: 0, burn: 0, k: 0, lidK: 0, crackleT: 0, roar: null });
     this.object = new THREE.Group();
     const K = opts.kettle ?? G.kettle, q = K.r / G.kettle.r;
+    this.kettleR = K.r; // (#1124: the sausage spots scale with the kettle)
     this.top = new THREE.Vector3(x, K.rim + 0.02, z);
     this.grateTop = new THREE.Vector3(x, K.rim - K.grate, z); // actual cooking grate (#708)
     // #678: one matt porcelain-enamel material with vertex colours for the bowl, legs, wheels and grates (body) and the lid

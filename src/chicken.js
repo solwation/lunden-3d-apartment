@@ -106,6 +106,7 @@ export class Chicken extends Holdable {
 
   intoGrill() {
     if (!this.held || !this.grill?.on) { this.life?.say('Tänd grillen först.'); return false; }
+    if (this.grill.hasSausage?.()) { this.life?.say('Ta av korvarna först – kycklingen behöver hela grillen.'); return false; } // #1124
     forgetBicycleHand(this);
     this.held = false; setHeld(null);
     this.grill.object.add(this.model);

@@ -2397,7 +2397,8 @@ export const LIFE_FOOD = {
   amounts: { cucumber: 300, cheese: 500, butter: 500, peas: 500, breadBag: 12 }, // g, g, g, g, slices
   stock: [['cheese', 'fridge', 0], ['cucumber', 'fridge', 1], ['butter', 'fridge', 6], ['eggCarton', 'fridge', 2], // the bottom shelf; the butter in the door's top bin
     ['peas', 'freezer', 3], // on the lower open shelf beside the fish-finger carton
-    ['breadBag', 'pantry', 0]], // the bottom of the pantry cabinet
+    ['breadBag', 'pantry', 0], // the bottom of the pantry cabinet
+    ['sausagePack', 'fridge', 11], ['bunBag', 'pantry', 1]], // #1124: grill sausages beside the chicken's plate, hot-dog buns on the pantry shelf
 };
 
 // The kitchen's tools (#374, LIFE-010), kept like the food (life.js `restock`): the kitchen knife, the butter knife and the
@@ -2426,6 +2427,11 @@ export const LIFE_TOOLS = {
 // ("Osthyveln skär inte gurka", #374). Amounts are game parameters from
 // the plan (docs/livssimulator-plan-2026-10-04.md: a cucumber 300 g, a slice 10 g), not product measures.
 // Egg size, stock and game-paced frying times are assumptions (#484).
+// #1124 (an in-game wish): grill sausages and hot-dog buns. Pack/bag counts, sizes (a ~13 cm × Ø 2.4 cm grill sausage, a
+// ~16 cm bun), colours and game-paced grilling times are assumptions; `slots` = sausage spots across a kettle's grate (m from
+// its middle along x, scaled with the kettle), kept clear of the whole chicken in the middle.
+export const SAUSAGE = { pack: 6, buns: 4, len: 0.13, r: 0.012, seconds: 12, burnAt: 36, slots: [-0.2, -0.165, 0.165, 0.2],
+  bun: { len: 0.16, h: 0.04, w: 0.055 }, colors: { raw: 0xd9a294, grilled: 0x9a4d22, burnt: 0x2e1a10 } };
 export const EGG = { count: 6, crack: .65, seconds: 8, burnAt: 24, shellRadius: .022, whiteRadius: .051, yolkRadius: .017, carton: { w: .155, d: .105, h: .067 } };
 // Laundry gameplay and interior proportions are assumptions (#395/#550), not product specifications.
 export const LAUNDRY = {
@@ -2474,6 +2480,11 @@ export const ITEMS = {
   eggCarton: { name: 'äggkartongen', tags: ['food', 'package'], unit: 'count', amount: EGG.count, size: 'm', pkg: 'closed', model: 'eggCarton', dispense: 'rawEgg', dispenseLabel: 'ta ett ägg' },
   rawEgg: { name: 'ägget', tags: ['food'], unit: 'count', amount: 1, size: 'xs', model: 'rawEgg' },
   friedEgg: { name: 'det stekta ägget', tags: ['food', 'topping'], unit: 'count', amount: 1, size: 's', model: 'friedEgg', bites: 4, needsCooking: true },
+  // #1124: grill sausages (raw → grilled on a lit kettle grill → burnt) and hot-dog buns; the grilled sausage goes in a bun
+  sausagePack: { name: 'korvpaketet', noun: 'korv', tags: ['food', 'package'], unit: 'count', amount: SAUSAGE.pack, size: 'm', pkg: 'closed', model: 'sausagePack', dispense: 'sausage', dispenseLabel: 'ta en grillkorv' },
+  sausage: { name: 'korven', noun: 'korv', tags: ['food', 'topping', 'sausage'], unit: 'count', amount: 1, size: 's', model: 'sausage', bites: 3, needsCooking: true, cookText: 'Grilla korven först' },
+  bunBag: { name: 'korvbrödspåsen', noun: 'korvbröd', tags: ['food', 'package'], unit: 'count', amount: SAUSAGE.buns, size: 's', pkg: 'closed', model: 'bunBag', dispense: 'hotdogBun', dispenseLabel: 'ta ett korvbröd' },
+  hotdogBun: { name: 'korvbrödet', noun: 'korvbröd', tags: ['food', 'base', 'bun'], unit: 'count', amount: 1, size: 's', model: 'hotdogBun', bites: 4 },
   plate: { name: 'tallriken', tags: ['dish', 'carrier', 'dishwasherSafe'], unit: 'count', amount: 1, size: 'm', clean: 'clean', model: 'plate',
     carrier: { slots: 6, size: 's', accepts: ['food'], fullText: 'Tallriken är full', order: [0, 1, 2, 3, 4, 5] } }, // the middle first, then round it
   board: { name: 'skärbrädan', tags: ['carrier', 'station'], unit: 'count', amount: 1, size: 'l', clean: 'clean', model: 'board',
@@ -2955,11 +2966,13 @@ export const SCORE = {
     roofs: 20, // per roof stood on (#360): the loftgång, each terrace, Hus L's roof, the loft, a drum, Hus A / B / C, a canopy; no `again`
     toiletPaper: 3, // paper torn off a roll and flushed away (#426): the first time, then `again`
     handwash: 4, handdry: 2, // hands washed at a basin / dried on a towel afterwards (#437): the first time, then `again`
+    hotdogs: 20, // #1124: a hot dog (a grilled sausage in a bun) eaten: the first time, then `again` (guess)
     sandwiches: 40, // a sandwich made and eaten (#380): the first of each combination ("ost- och gurkmackan" …), then `again`
     tasks: 30, // legacy generic rewards (#392), retained only for #709 score migration
     handBrew: 10, // the first pot brewed by hand: water and coffee filled first (#334); no `again` (each brew has `each.brews`)
   },
   again: {
+    hotdogs: 2,
     sandwiches: 4, // every sandwich after the first of its kind (#380)
     tasks: 5, // legacy generic repeat reward, retained for #709 score migration
     doors: 0.1, lids: 0.1, flushes: 0.2, taps: 0.1, fridge: 0.1, appliances: 0.1, cabinets: 0.05, lights: 0.05,

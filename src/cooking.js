@@ -148,7 +148,7 @@ export function cookingActions(life) {
     id: 'eat', order: 0, duration: LIFE.eat.seconds, commitAt: 0.5,
     label: 'äta',
     applies: (c) => !!c.target && c.target === c.held && !!I.def(c.target)?.bites,
-    check: (c) => I.def(c.target).needsCooking && !c.target.machine.cooked ? 'Stek ägget först' : (c.target.amount > 1e-6 ? null : 'Det finns inget kvar'),
+    check: (c) => I.def(c.target).needsCooking && !c.target.machine.cooked ? I.def(c.target).cookText ?? 'Stek ägget först' : (c.target.amount > 1e-6 ? null : 'Det finns inget kvar'),
     reserve: (c) => ({ inputs: [c.target] }),
     animate: (c, k, job) => { // to the mouth and back
       const v = c.heldView;
@@ -168,7 +168,8 @@ export function cookingActions(life) {
       if (I.isEmpty(it)) {
         const parts = it.parts.map((p) => ({ ...p })), name = I.name({ ...it, amount: d.amount });
         life.emit('ate', { item: it, type: it.type, name, parts, amount: d.amount });
-        if (parts.some((p) => p.type !== 'butter')) life.bump('sandwiches', 1, name); // a sandwich with something on it: once per sandwich, SCORE.first per combination
+        if (it.type === 'hotdogBun' && parts.some((p) => p.type === 'sausage')) life.bump('hotdogs', 1, 'hotdog'); // #1124
+        else if (parts.some((p) => p.type !== 'butter')) life.bump('sandwiches', 1, name); // a sandwich with something on it: once per sandwich, SCORE.first per combination
         I.remove(it, { cascade: true });
       }
       return got;
@@ -278,7 +279,11 @@ export function cookingActions(life) {
     label: (c) => `lägga ${nm(c.held)} på ${nm(c.target)}`,
     applies: (c) => !!c.held && I.has(c.held, 'topping') && !!c.target && I.has(c.target, 'base') && c.target !== c.held,
     check: (c) => {
-      if (I.def(c.held).needsCooking && !c.held.machine.cooked) return 'Stek ägget först';
+      if (I.def(c.held).needsCooking && !c.held.machine.cooked) return I.def(c.held).cookText ?? 'Stek ägget först';
+      const bun = I.has(c.target, 'bun'), sausage = I.has(c.held, 'sausage'); // #1124: a sausage only in a bun, one per bun
+      if (bun && !sausage) return 'Korvbrödet är till korven';
+      if (sausage && !bun) return 'Korven ska i ett korvbröd';
+      if (bun && c.target.parts.length) return 'Det ligger redan en korv i brödet';
       if (c.target.place.at === 'hand') return 'Lägg ner brödet först';
       if (c.target.parts.length >= LIFE.sandwich.max) return 'Mackan rymmer inte mer';
       if (c.target.lock || c.held.lock) return 'Vänta lite';
@@ -287,7 +292,7 @@ export function cookingActions(life) {
     run: (c) => {
       const top = c.held, bread = c.target;
       const part = { type: top.type, amount: top.amount };
-      if (top.type === 'friedEgg') part.machine = { cook: top.machine.cook, cooked: true };
+      if (top.type === 'friedEgg' || top.type === 'sausage') part.machine = { cook: top.machine.cook, cooked: true };
       if (!I.remove(top)) return; // (it leaves its place first; nothing is added if it could not)
       I.set(bread, { parts: [...bread.parts, part], prep: 'assembled' });
       life.emit('prepared', { item: bread }); // only after the topping really moved (#392)

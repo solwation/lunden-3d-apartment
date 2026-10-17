@@ -7,6 +7,7 @@ import { hallJacket, hallShoes } from './hallmodels.js';
 import { laundryClothes } from './laundrymodels.js';
 import { eggCarton, rawEgg, friedEgg } from './eggmodels.js';
 import { Contents, GlassLiquid } from './drinks.js';
+import { SAUSAGE_BUILDERS } from './sausagemodels.js';
 import { woodMaterial } from './woodgrain.js';
 
 // Models for the life simulator's things (#366): plain shapes of our own, no brands. Each builder returns
@@ -438,7 +439,7 @@ function rubbishBag() {
   return { object: g, grip: [0, 0.31, 0], show(item) { const m = mats[item.machine?.sort] ?? BAGS.black; for (const o of [body, neck, ...ears]) o.material = m; body.scale.setScalar(0.75 + 0.25 * Math.min(1, (item.amount ?? 0) / 8)); } };
 }
 
-const BUILDERS = { toiletRoll, hallJacket, hallShoes, wateringCan, laundryClothes, eggCarton, rawEgg, friedEgg, rubbishBag, glass, plate, board, cucumber, cucumberSlice, cheese, butter, breadBag, breadSlice, knife, peas, butterKnife, cheeseSlicer, cheeseSlice, bin };
+const BUILDERS = { toiletRoll, hallJacket, hallShoes, wateringCan, laundryClothes, eggCarton, rawEgg, friedEgg, rubbishBag, glass, plate, board, cucumber, cucumberSlice, cheese, butter, breadBag, breadSlice, knife, peas, butterKnife, cheeseSlicer, cheeseSlice, bin, ...SAUSAGE_BUILDERS };
 
 /** The model of a type (its `model` builder; a grey box when there is none). */
 export function buildModel(def) {

@@ -1,0 +1,56 @@
+<!doctype html><html><meta charset="utf-8"><title>Sausages and hot-dog buns (#1124)</title><pre id="out">running…</pre><script type="module">
+// #1124: the real game (?life&shot&test) — pack and buns at home, raw sausage on the courtyard grill and the patio kettle,
+// grilling only while lit, chicken/sausage grill sharing, a grilled sausage into a bun, eaten (+hot dog), save/load, restock.
+const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS':'FAIL')+' '+s);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
+try{
+ const frame=document.createElement('iframe');frame.width=480;frame.height=300;frame.src='../index.html?life&shot&test';document.body.append(frame);await new Promise(r=>frame.onload=r);while(!frame.contentWindow.__app)await wait(100);
+ const w=frame.contentWindow,A=w.__app,T=await w.eval("import('three')"),{SAUSAGE:S}=await w.eval("import('../src/config.js')"),L=A.life,I=L.items,G=A.sausages;
+ frame.contentDocument.documentElement.requestFullscreen=undefined;frame.contentDocument.getElementById('start-touch').click();A.renderer.setAnimationLoop(null);
+ const action=(target,id)=>L.options(target).find(a=>a.id===id),run=(target,id)=>action(target,id)?.run(),finish=s=>L.runner.update(s??1);
+ const tgt=it=>L.view(it).target,court=G.grills.find(g=>g.id==='grillGrate'),kettle=G.grills.find(g=>g.id==='kettleGrate');
+ let pack=I.all().find(i=>i.type==='sausagePack'),bag=I.all().find(i=>i.type==='bunBag');
+ check(pack?.amount===S.pack&&pack.place.store==='fridge'&&pack.place.slot===11,'sausage pack at home beside the chicken in the fridge');
+ check(bag?.amount===S.buns&&bag.place.store==='pantry'&&bag.place.slot===1,'hot-dog buns at home on the pantry shelf');
+ check(!!court&&!!kettle&&kettle.grill.kind==='kettle','both kettle grills have a sausage grate');
+ check(action(tgt(pack),'dispense')?.reason==='Öppna kylen först','closed fridge blocks the pack');
+ A.fridge.toggle();A.fridge.update(1);run(tgt(pack),'open');run(tgt(pack),'dispense');finish();
+ const s1=I.held();check(s1?.type==='sausage'&&pack.amount===S.pack-1&&I.name(s1)==='den råa korven','one raw sausage out of the pack');
+ check(action({instance:s1},'eat')?.reason==='Grilla korven först','raw sausage cannot be eaten');
+ const put=action(court.target,'putIn');check(put&&!put.reason&&/på grillen/.test(put.label),'raw sausage offers going on the courtyard grill');
+ put.run();check(s1.place.store==='grillGrate'&&!I.held()&&L.view(s1).model.parent?.parent===A.grill.object,'sausage lies on the grill grate');
+ check(A.grill.occupied()&&A.grill.hasSausage(),'grill knows there is food on it (lid stays open)');
+ G.update(5);check(!s1.machine.cook,'unlit grill does not cook');
+ A.grill.set(true,{silent:true});G.update(4);const mid=s1.machine.cook;A.grill.set(false,{silent:true});G.update(3);check(mid===4&&s1.machine.cook===4,'grilling only while lit');
+ // the whole chicken waits for a free grate
+ A.chicken.take();check(A.grill.set(true,{silent:true})===undefined&&A.chicken.intoGrill()===false&&w.__app.heldItem()===A.chicken,'chicken refused while sausages grill');A.chicken.putBack();
+ const rec=JSON.parse(JSON.stringify(L.serialize()));L.load(rec);pack=I.get(pack.id);bag=I.get(bag.id);const s1b=I.get(s1.id);check(s1b&&s1b.place.store==='grillGrate'&&s1b.machine.cook===4,'sausage on the grill survives save/load with its progress');
+ G.update(S.seconds);check(s1b.machine.cooked&&I.name(s1b)==='den grillade korven','lit grill grills it');
+ const col=L.view(s1b).model.children[0].children[0]?.material?.color??L.view(s1b).model.getObjectByProperty('isMesh',true).material.color;check(col.r<0.75&&col.g<0.45,'grilled sausage is browned');
+ // the patio kettle: its own lit state
+ L.view(s1b).take();run(tgt(pack),'dispense');
+ check(!!action(tgt(pack),'dispense')?.reason,'a full hand blocks taking another');
+ const pos=new T.Vector3(5.25,.931,3);L.view(s1b).placeAt(pos);run(tgt(pack),'dispense');finish();const s2=I.held();
+ action(kettle.target,'putIn').run();check(s2.place.store==='kettleGrate'&&kettle.grill.occupied(),'second sausage on the patio kettle');
+ G.update(3);check(!s2.machine.cook,'unlit kettle does not cook');kettle.grill.set(true,{silent:true});G.update(S.burnAt+S.seconds);
+ check(I.name(s2)==='den brända korven','left on, it burns');kettle.grill.set(false,{silent:true});
+ // a bun from the pantry, the grilled sausage into it, eaten
+ const pantry=A.world.lids.find(l=>l.stock==='pantry');pantry.toggle();for(let i=0;i<30;i++)pantry.update?.(.1);
+ run(tgt(bag),'open');run(tgt(bag),'dispense');finish();const bun=I.held();check(bun?.type==='hotdogBun'&&bag.amount===S.buns-1,'one bun out of the bag');
+ L.view(bun).placeAt(new T.Vector3(5.1,.931,2.7));
+ L.view(s1b).take();
+ const add=action(tgt(bun),'addTopping');check(add&&!add.reason,'grilled sausage offers going in the bun');add.run();
+ check(!I.get(s1b.id)&&bun.parts.length===1&&bun.parts[0].type==='sausage'&&I.name(bun)==='varmkorven','the sausage moved into the bun: a hot dog');
+ L.view(I.get(s2.id)).take();check(action(tgt(bun),'addTopping')?.reason==='Det ligger redan en korv i brödet','one sausage per bun');
+ L.view(I.get(s2.id)).placeAt(new T.Vector3(5.0,.931,3.1));
+ run(tgt(bag),'dispense');finish();const raw=I.held();L.view(raw).placeAt(new T.Vector3(5.2,.931,3.2));
+ run(tgt(pack),'dispense');finish();const s3=I.held();check(action(tgt(raw),'addTopping')?.reason==='Grilla korven först','raw sausage refused in a bun');
+ const before=A.totalScore(),hd=A.stats.hotdogs??0;L.view(s3).placeAt(new T.Vector3(5.3,.931,3.3));
+ L.view(bun).take();for(let i=0;i<4;i++){run({instance:bun},'eat');finish(2);}
+ check(!I.get(bun.id)&&(A.stats.hotdogs??0)===hd+1&&A.totalScore()>before,'hot dog eaten up: counted and scored');
+ // restock: an empty pack is replaced on the next fridge opening once thrown away
+ check(L.restock('fridge').length===0,'no second pack while the old one exists');
+ window.sausageTest={A,lines};
+ check(true,'done');
+}catch(e){lines.push('FAIL '+e.stack);pass=false;}
+document.getElementById('out').textContent=(pass?'ALL PASS':'SOME FAILED')+'\n'+lines.join('\n');
+</script></html>

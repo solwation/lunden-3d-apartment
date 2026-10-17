@@ -46,6 +46,16 @@ src/chicken.js         #708: whole fridge chicken cooks only on the existing cou
                        tools/grillchickentest.html: bounded actual Chicken/Grill/Pan/Life fixture + raw/golden/burnt images.
                        #717: the grill E helper stops at the cooking grate so real food meshes own pickup ray hits.
                        tools/grillinteractiontest.html checks actual main raycast/HUD, desktop E, touch and +1 per eaten piece.
+src/sausages.js        #1124: grill sausages. Each kettle grill's grate is a life store (courtyard 'grillGrate', L1007's patio kettle
+                       'kettleGrate', #1121; SAUSAGE.slots spots across the bars, clear of the chicken in the middle): a raw sausage
+                       from 'sausagePack' (fridge slot 11, beside the chicken's plate) goes on with putIn, grills only while that grill
+                       is lit (`machine.cook`/`cooked`, burnt from SAUSAGE.burnAt), is taken off like any life item and saved with the
+                       items. The chicken and sausages do not share a grate. A grilled sausage goes into a 'hotdogBun' (bunBag, pantry
+                       slot 1) through cooking.js addTopping (one per bun, raw refused); eating it ("varmkorven") bumps `hotdogs`
+                       (SCORE guesses) and consumes +1 life like a sandwich. Counts, sizes, colours and times are assumptions.
+src/sausagemodels.js   #1124 builders for lifemodels.js: pack, sausage (browns with cook), bun bag, split bun with its sausage part.
+tools/sausagetest.html real game (?life&shot&test): stock homes, closed fridge, raw refusal, both grates, lit-only grilling, burn,
+                       chicken/sausage sharing, save/load, bun assembly, one per bun, eating and score.
 src/hood.js            the cooker hood (#194, `world.hood`, in world.lids): E runs the fan (whoosh, green LED; its light is a
                        separate button = its own lamp, #221 — the fan does not light it, like a real hood) and
                        draws the chicken's smoke up into it; the smoke alarm in the kitchen ceiling (SMOKE_ALARM) beeps

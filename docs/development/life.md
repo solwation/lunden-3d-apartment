@@ -38,7 +38,7 @@ src/life.js            the life simulator (epic #364) glue; the `&life` develope
                        else where it last lay, else at your feet)
                        The kitchen's food (#373, LIFE_FOOD: `stock` [type, store, slot] + `amounts`): a cheese, a cucumber and a
                        butter in the fridge, frozen peas on the freezer's lower shelf beside the fish fingers, a bread bag in the
-                       pantry, labels of our own (lifemodels.js `label`). `life.restock(store)` gives every stock entry with no thing
+                       pantry, labels of our own (lifemodels.js `label`); #1124 adds a sausage pack (fridge slot 11) and hot-dog buns (pantry slot 1), see food.md. `life.restock(store)` gives every stock entry with no thing
                        of that type and home left anywhere a fresh one in its home: at the start of a visit (after `restore()`) and
                        whenever a store is opened after being shut (life.update) — never while the old one is in the hand / out / half used
                        The tools (#374, LIFE_TOOLS.stock, same restock): the kitchen knife, butter knife and cheese slicer on the

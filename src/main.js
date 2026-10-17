@@ -79,6 +79,7 @@ import { buildSillPots } from './plants.js';
 import { Chicken } from './chicken.js';
 import { SmokeAlarm } from './hood.js';
 import { Grill } from './grill.js';
+import { Sausages } from './sausages.js';
 import { Power } from './power.js';
 import { Sonos } from './sonos.js';
 import { DetailCuller } from './detail.js';
@@ -506,6 +507,13 @@ toiletPaper.initLife(life,world,door=>{door.toggle();if(door.isOpen)bump('cabine
 const bedCare = new BedCare(life,world,rest,target=>use(target));
 if (toaster) toaster.initLife(life);
 const eggs = pan ? new Eggs(life, pan) : null;
+const grill = new Grill(); // the courtyard's kettle grill: E lights it (#204)
+scene.add(grill.object);
+// #1124: sausages grill on the courtyard grill and L1007's patio kettle (#1121); their grates are life stores, so before restore()
+const patioKettle = world.furnitureTargets.find((t) => t.kind === 'kettle') ?? null;
+const sausages = new Sausages(life, [{ grill, id: 'grillGrate' }, ...(patioKettle ? [{ grill: patioKettle, id: 'kettleGrate' }] : [])],
+  { chickenOn: (g) => g === grill && !!chicken?.inGrill });
+grill.hasSausage = () => sausages.on(grill);
 const dwDoor = world.lids.find((l) => l.name === 'diskmaskinen' && l.panelAt);
 const dropoff = buildDropoff(life); // the rubbish bags' drop-off by the car park (#387, a game spot)
 scene.add(dropoff.object);
@@ -551,8 +559,6 @@ if (pan) pan.occupied = () => !!chicken?.inPan || !!fish?.inPan.length;
 if (chicken) holdables.push(chicken);
 // the cooker hood draws the chicken's smoke; without it the smoke alarm in the kitchen ceiling goes off (#194)
 const smokeAlarm = new SmokeAlarm();
-const grill = new Grill(); // the courtyard's kettle grill: E lights it (#204)
-scene.add(grill.object);
 grill.onLit = () => life.emit('grillLit', { surface: 'grill' });
 lights.extra.push(grill.lamp);
 for (const t of world.furnitureTargets) if (t.kind === 'kettle') lights.extra.push(t.lamp); // L1007's patio kettle (#1121)
@@ -562,7 +568,7 @@ smokeAlarm.onRing = () => penalize('smokeAlarm'); // a deduction (#288)
 // the fridge and freezer beep when left open too long: a deduction when it starts, a little more while it goes on (#288)
 for (const l of world.lids) if (l.kind === 'fridge') l.onAlarm = (longer) => penalize(`${l.freezer ? 'freezer' : 'fridge'}${longer ? 'Longer' : 'Open'}`);
 if (chicken) {
-  chicken.initLife(life, grill); grill.occupied = () => chicken.inGrill;
+  chicken.initLife(life, grill); { const food = grill.occupied; grill.occupied = () => chicken.inGrill || !!food?.(); } // (+ sausages, #1124)
   chicken.hood = world.hood; chicken.onEaten = () => { bump('chicken'); chicken.event('chickenEaten'); };
   chicken.onCooked = () => bump('grilledChicken'); chicken.onBurnt = () => penalize('burnt');
 }
@@ -2628,6 +2634,7 @@ function step(dt) {
   nests.update(dt); // the smart speakers: talk, wake lights, the display (#325)
   for (const h of holdables) h.update(dt);
   grill.update(dt);
+  sausages.update(dt); // #1124
   airFryer.update(dt);
   if (fish) fish.freezer.paused = !noteEl.hidden; // reading the note on the freezer door counts as using it (#288)
   smokeAlarm.update(dt, !!chicken?.freeSmoke || !!fish?.fryerSmoke || !!fries?.smoke); // smoke the hood does not draw away (#194); a burning air fryer (#287)
@@ -3087,4 +3094,4 @@ hideLoading();
 
 crashlog.attach({ renderer, camera, quality, player, world, sun, scene, mirrorTarget, frameDiag, viewportBinding }); // what the crash heartbeat shows (#629)
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { frameRate, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: (lk) => ghosts.setMyLook(lk) }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };
+window.__app = { sausages, frameRate, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: (lk) => ghosts.setMyLook(lk) }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };
