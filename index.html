@@ -484,6 +484,7 @@
     .customizer-close:hover { background: rgba(255,255,255,0.1); }
     .customizer-body { display: flex; gap: 20px; padding: 14px 20px; overflow-y: auto; flex: 1; min-height: 0; }
     .customizer-preview { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; flex-shrink: 0; }
+    @media (min-width: 601px) and (min-height: 501px) { .customizer-preview { position: sticky; top: 0; align-self: flex-start; } } /* #1138: desktop keeps the preview in view while the face sliders scroll */
     #avatar-preview-canvas { width: 180px; height: 280px; border-radius: 12px; display: block; box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
     .customizer-controls { flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
     .customizer-section h3 { margin: 0 0 4px; font: 600 12px system-ui, sans-serif; color: #b8cde0; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -496,6 +497,10 @@
     .customizer-section .btn-group { display: flex; flex-wrap: wrap; gap: 5px; margin: 4px 0; }
     .customizer-section .btn-group button { border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #fff; padding: 5px 10px; border-radius: 6px; font: 600 12px system-ui, sans-serif; cursor: pointer; touch-action: manipulation; }
     .customizer-section .btn-group button.sel { background: #3894e6; border-color: #3894e6; color: #fff; }
+    /* #1138: the face sliders (customizer.js addFaceSections) */
+    .customizer-slider { display: grid; grid-template-columns: minmax(96px, 40%) 1fr; align-items: center; gap: 8px; margin: 2px 0; font: 500 13px system-ui, sans-serif; color: #dbe6f0; }
+    .customizer-slider input[type=range] { width: 100%; min-height: 32px; margin: 0; accent-color: #3894e6; touch-action: pan-y; }
+    .customizer-section .swatches + .customizer-slider { margin-top: 6px; }
     .customizer-footer { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; border-top: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.15); }
     .customizer-footer button { padding: 9px 18px; border-radius: 8px; font: 600 15px system-ui, sans-serif; cursor: pointer; touch-action: manipulation; border: 0; }
     .customizer-footer .btn-secondary { background: rgba(255,255,255,0.12); color: #e0e8f0; }

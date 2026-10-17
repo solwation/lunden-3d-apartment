@@ -311,3 +311,46 @@ test('avatar customization: clearLocalHome removes lunden.avatar without polluti
   assert.ok(removed.includes('lunden.avatar'), 'lunden.avatar was removed during reset');
   assert.equal(storage.has('lunden.avatar'), false, 'lunden.avatar removed from storage');
 });
+
+test('#1138 face fields: extension encoding, old codes unchanged, unknown tags skipped', async () => {
+  const { EYES, AVATAR_SHAPE, avatarShape, splitAvatarCode } = await import('../src/config.js');
+  // an untouched look still encodes as nine digits; old codes decode with the plain face
+  const plain = avatarLook('face-plain');
+  assert.match(encodeAvatarLook(plain), /^[0-9]{9}$/);
+  for (const old of ['2413021', '241302113']) {
+    const lk = decodeAvatarLook(old, 'p');
+    assert.equal(lk.eyes, EYES[0]);
+    for (const name of Object.keys(AVATAR_SHAPE.fields)) assert.equal(lk[name], AVATAR_SHAPE.mid, name);
+    assert.equal(encodeAvatarLook(lk), old.length === 7 ? old + '00' : old, 'old codes re-encode unchanged');
+  }
+  // every middle step is the unchanged face (scale 1 / offset 0), the ends stay within [min, max]
+  for (const [name, f] of Object.entries(AVATAR_SHAPE.fields)) {
+    assert.equal(avatarShape(name, AVATAR_SHAPE.mid), f.zero ?? 1, name);
+    assert.equal(avatarShape(name, 0), f.min); assert.equal(avatarShape(name, AVATAR_SHAPE.steps - 1), f.max);
+    assert.equal(avatarShape(name, 99), f.zero ?? 1, 'out of range → the middle');
+  }
+  // round trip
+  const face = { ...plain, eyes: EYES[5], eyeSize: 7, eyeShape: 1, headWidth: 0, headLength: 8, jaw: 2, noseSize: 6, noseWidth: 3, ears: 5, browThick: 8, browY: 0 };
+  const code = encodeAvatarLook(face);
+  assert.match(code, /^[0-9]{9}(?:[a-z][0-9]{1,3})+$/);
+  const back = decodeAvatarLook(code, 'p');
+  for (const k of ['eyes', ...Object.keys(AVATAR_SHAPE.fields)]) assert.equal(back[k], face[k], k);
+  assert.equal(encodeAvatarLook(back), code);
+  // the wire: nine digits for older clients, the rest beside them
+  const { av, ax } = splitAvatarCode(code);
+  assert.equal(av, code.slice(0, 9)); assert.equal(av + ax, code);
+  assert.deepEqual(splitAvatarCode(code.slice(0, 9)), { av: code.slice(0, 9), ax: '' });
+  // newer fields (e.g. the height, h) are skipped; out-of-range values keep the default; garbage falls back to the seed
+  const withHeight = decodeAvatarLook(code.slice(0, 9) + 'h120c5', 'p');
+  assert.equal(withHeight.eyes, EYES[5]); assert.equal(withHeight.skin, back.skin);
+  assert.equal(decodeAvatarLook(code.slice(0, 9) + 'c99e9', 'p').eyes, EYES[0]);
+  assert.equal(decodeAvatarLook(code.slice(0, 9) + 'c99e9', 'p').eyeSize, AVATAR_SHAPE.mid);
+  assert.equal(decodeAvatarLook(code.slice(0, 9) + 'C3', 'p').skin, avatarLook('p').skin, 'malformed extension → seeded look');
+  // #1136's height (three more digits) and the face extension together; the wire keeps all digits in av
+  const both = encodeAvatarLook({ ...face, height: 120 });
+  assert.equal(both, code.slice(0, 9) + '120' + code.slice(9));
+  const bothBack = decodeAvatarLook(both, 'p');
+  assert.equal(bothBack.height, 120); assert.equal(bothBack.eyes, EYES[5]); assert.equal(bothBack.browThick, 8);
+  assert.deepEqual(splitAvatarCode(both), { av: code.slice(0, 9) + '120', ax: code.slice(9) });
+  assert.equal(decodeAvatarLook(code.slice(0, 9) + '099' + code.slice(9), 'p').skin, avatarLook('p').skin, 'an invalid height still falls back');
+});

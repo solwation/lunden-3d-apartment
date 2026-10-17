@@ -1,4 +1,4 @@
-import { SKIN, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm } from './config.js';
+import { SKIN, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape } from './config.js';
 
 /** The E choice every mirror offers (#1110): the avatar editor. */
 export const mirrorChoice = () => ({ label: 'byt utseende vid spegeln', run: () => openAvatarCustomizer() });
@@ -66,6 +66,11 @@ export function drawAvatarPreview(canvas, look) {
   const sleeves = look.sleeves ?? 0;
   const gender = Number(look.gender ?? look.figure) || 0;
   const facial = Number(look.facial ?? look.facialHair) || 0;
+  // #1138: the face and head sliders (the middle draws the plain face)
+  const sh = (name) => avatarShape(name, look[name]);
+  const headW = sh('headWidth'), headL = sh('headLength'), jaw = sh('jaw'), eyeS = sh('eyeSize'), eyeO = sh('eyeShape');
+  const noseS = sh('noseSize'), noseW = sh('noseWidth'), earS = sh('ears'), browT = sh('browThick'), browY = sh('browY') * 1000;
+  const iris = toHex(EYES.includes(look.eyes) ? look.eyes : EYES[0]);
 
   const cx = width / 2;
 
@@ -165,39 +170,46 @@ export function drawAvatarPreview(canvas, look) {
   // Ears
   ctx.fillStyle = skin;
   ctx.beginPath();
-  ctx.arc(cx - 18, 62, 5, 0, Math.PI * 2);
-  ctx.arc(cx + 18, 62, 5, 0, Math.PI * 2);
+  ctx.arc(cx - 18 * headW, 62, 5 * earS, 0, Math.PI * 2);
+  ctx.arc(cx + 18 * headW, 62, 5 * earS, 0, Math.PI * 2);
   ctx.fill();
 
-  // Head (centre: cx, 59, r: 18)
+  // Head (centre: cx, 59, r: 18 wide × 20 high; #1138: width, length from the chin, the jaw wider or narrower)
+  const rx = 18 * headW, ry = 20 * headL, hy = 79 - ry;
   ctx.fillStyle = skin;
   ctx.beginPath();
-  ctx.ellipse(cx, 59, 18, 20, 0, 0, Math.PI * 2);
+  ctx.ellipse(cx, hy, rx, ry, 0, Math.PI, 0);
+  ctx.quadraticCurveTo(cx + rx * (0.95 + jaw * 1.5), hy + ry * 0.95, cx, hy + ry);
+  ctx.quadraticCurveTo(cx - rx * (0.95 + jaw * 1.5), hy + ry * 0.95, cx - rx, hy);
   ctx.fill();
 
   // Face: Eyes
   for (const s of [-1, 1]) {
-    const ex = cx + s * 7;
+    const ex = cx + s * 7 * headW, ey = 57;
     ctx.fillStyle = '#f2f2ee';
     ctx.beginPath();
-    ctx.ellipse(ex, 57, 3.5, 2.5, 0, 0, Math.PI * 2);
+    ctx.ellipse(ex, ey, 3.5 * eyeS, 2.5 * eyeS * eyeO, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = '#2a2420';
+    ctx.fillStyle = iris;
     ctx.beginPath();
-    ctx.arc(ex, 57, 1.6, 0, Math.PI * 2);
+    ctx.arc(ex, ey, 1.9 * eyeS, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#141010';
+    ctx.beginPath();
+    ctx.arc(ex, ey, 0.9 * eyeS, 0, Math.PI * 2);
     ctx.fill();
     ctx.strokeStyle = hair;
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 1.5 * browT;
     ctx.beginPath();
-    ctx.moveTo(ex - 3.5, 52);
-    ctx.lineTo(ex + 3.5, 52);
+    ctx.moveTo(ex - 3.5, 52 - browY);
+    ctx.lineTo(ex + 3.5, 52 - browY);
     ctx.stroke();
   }
 
   // Nose & mouth
   ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
   ctx.beginPath();
-  ctx.ellipse(cx, 63, 2, 2.5, 0, 0, Math.PI * 2);
+  ctx.ellipse(cx, 60 + 3 * noseS, 2 * noseS * noseW, 2.5 * noseS, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = '#9a5a52';
   ctx.beginPath();
@@ -298,6 +310,11 @@ function updateActiveSwatches() {
     { type: 'style', value: currentLook.style },
     { type: 'hair', value: currentLook.hair, list: HAIR },
   ];
+  groups.push({ type: 'eyes', value: EYES.includes(currentLook.eyes) ? currentLook.eyes : EYES[0], list: EYES });
+  for (const name of Object.keys(AVATAR_SHAPE.fields)) { // #1138: the face sliders
+    const input = customizerEl.querySelector(`input[data-shape="${name}"]`);
+    if (input) input.value = String(Number.isInteger(currentLook[name]) ? currentLook[name] : AVATAR_SHAPE.mid);
+  }
   for (const g of groups) {
     const btns = customizerEl.querySelectorAll(`button[data-type="${g.type}"]`);
     for (const b of btns) {
@@ -371,6 +388,7 @@ function initCustomizerDOM() {
   if (!customizerEl) return;
 
   previewCanvas = customizerEl.querySelector('#avatar-preview-canvas');
+  addFaceSections(customizerEl.querySelector('.customizer-controls'));
 
   // Handle swatches and style clicks
   customizerEl.addEventListener('click', (e) => {
@@ -403,6 +421,9 @@ function initCustomizerDOM() {
     } else if (type === 'style') {
       currentLook.style = idx;
       applyAndRefresh();
+    } else if (type === 'eyes' && EYES[idx] !== undefined) {
+      currentLook.eyes = EYES[idx];
+      applyAndRefresh();
     } else if (type === 'hair' && HAIR[idx] !== undefined) {
       currentLook.hair = HAIR[idx];
       applyAndRefresh();
@@ -424,6 +445,16 @@ function initCustomizerDOM() {
     applyAndRefresh();
   });
 
+  // #1138: the face sliders change the look as they move
+  customizerEl.addEventListener('input', (e) => {
+    const name = e.target?.dataset?.shape;
+    if (!name || !AVATAR_SHAPE.fields[name] || !currentLook) return;
+    const v = Number(e.target.value);
+    if (!Number.isInteger(v) || v < 0 || v >= AVATAR_SHAPE.steps) return;
+    currentLook[name] = v;
+    applyAndRefresh();
+  });
+
   // Keyboard navigation inside customizer
   window.addEventListener('keydown', (e) => {
     if (!isOpen) return;
@@ -433,6 +464,52 @@ function initCustomizerDOM() {
       closeAvatarCustomizer(e.code);
     }
   }, true);
+}
+
+/** #1138: the face sections (eye colour, eyes, head, nose and ears, brows), built from config.js EYES / AVATAR_SHAPE after the
+ * figure's sections: swatches for the eye colour, a 0 … steps − 1 slider per field (the middle is the plain face). */
+const FACE_SECTIONS = [
+  ['Ögon', ['eyeSize', 'eyeShape'], true],
+  ['Huvudform', ['headWidth', 'headLength', 'jaw']],
+  ['Näsa & öron', ['noseSize', 'noseWidth', 'ears']],
+  ['Ögonbryn', ['browThick', 'browY']],
+];
+const EYE_NAMES = ['Bruna', 'Mörkbruna', 'Hasselbruna', 'Gröna', 'Gröngrå', 'Blå', 'Ljusblå', 'Grå'];
+function addFaceSections(controls) {
+  if (!controls || controls.querySelector?.('[data-face-section]')) return;
+  for (const [title, fields, eyes] of FACE_SECTIONS) {
+    const sec = document.createElement('section');
+    sec.className = 'customizer-section';
+    sec.dataset.faceSection = '';
+    const h = document.createElement('h3');
+    h.textContent = title;
+    sec.append(h);
+    if (eyes) {
+      const sw = document.createElement('div');
+      sw.className = 'swatches';
+      sw.dataset.group = 'eyes';
+      EYES.forEach((c, i) => {
+        const b = document.createElement('button');
+        Object.assign(b.dataset, { type: 'eyes', index: String(i) });
+        b.style.background = toHex(c);
+        b.setAttribute('aria-label', `${EYE_NAMES[i] ?? 'Färg ' + (i + 1)} ögon`);
+        sw.append(b);
+      });
+      sec.append(sw);
+    }
+    for (const name of fields) {
+      const label = document.createElement('label');
+      label.className = 'customizer-slider';
+      const span = document.createElement('span');
+      span.textContent = AVATAR_SHAPE.fields[name].label;
+      const input = document.createElement('input');
+      Object.assign(input, { type: 'range', min: '0', max: String(AVATAR_SHAPE.steps - 1), step: '1', value: String(AVATAR_SHAPE.mid) });
+      input.dataset.shape = name;
+      label.append(span, input);
+      sec.append(label);
+    }
+    controls.append(sec);
+  }
 }
 
 /** Configure customizer integration. */

@@ -4956,6 +4956,65 @@ export const HAIR = [0x2b2118, 0x4a3320, 0x7a5532, 0xb79052, 0xd9c28a, 0x8a8c90,
 export const TOPS = [0x2f6db5, 0xb5372f, 0x3c8a4e, 0xe0a82e, 0x7a4fb0, 0xe07a9a, 0x2e9aa8, 0xe8e8e0, 0x3a3f4a, 0xd9722e];
 export const PANTS = [0x2c3140, 0x3a3c41, 0x4b5a78, 0x6d5a45, 0x23272e, 0x5b6068];
 export const SHOES = [0x2a2523, 0xe8e8e8, 0x40342b, 0x1f3a5c];
+// #1138: iris colours (index 0 = the face's original brown, AVATAR_FACE.eye.irisColour): brown, dark brown, hazel, green,
+// grey-green, blue, light blue, grey. Picked by eye (*guess*).
+export const EYES = [0x6e5236, 0x3b2618, 0x8a6a2e, 0x4f7a3a, 0x6d7d6a, 0x3f6fa8, 0x7fa6cc, 0x7c8288];
+// #1138: the face and head sliders. Each is an integer step 0 … `steps` − 1 (default the middle, `mid`), mapped linearly onto
+// [min, max] through the unchanged face in the middle (a scale factor 1, or `browY` / `jaw` an offset 0). They deform the existing head in the avatars' vertex shader
+// (src/avatar.js faceShape), no new geometry or draw call. `tag` is the field's letter in the look code's extension.
+// Ranges by eye so every end still looks like a person (*guess*, not measured).
+export const AVATAR_SHAPE = {
+  steps: 9, mid: 4,
+  fields: {
+    eyeSize:   { tag: 'e', min: 0.8, max: 1.2, label: 'Ögonstorlek' },
+    eyeShape:  { tag: 'o', min: 0.72, max: 1.28, label: 'Ögonform' }, // vertical opening: narrow → round
+    headWidth: { tag: 'w', min: 0.9, max: 1.1, label: 'Huvudets bredd' },
+    headLength: { tag: 'l', min: 0.92, max: 1.08, label: 'Huvudets längd' },
+    jaw:       { tag: 'j', min: -0.14, max: 0.14, zero: 0, label: 'Käke' }, // added to the lower face's width: pointed → square
+    noseSize:  { tag: 'n', min: 0.75, max: 1.3, label: 'Näsans storlek' },
+    noseWidth: { tag: 'b', min: 0.75, max: 1.35, label: 'Näsans bredd' },
+    ears:      { tag: 'r', min: 0.75, max: 1.3, label: 'Öron' },
+    browThick: { tag: 't', min: 0.5, max: 1.8, label: 'Ögonbrynens tjocklek' },
+    browY:     { tag: 'y', min: -0.004, max: 0.004, zero: 0, label: 'Ögonbrynens höjd' }, // m up / down
+  },
+};
+/** The value (scale or offset) of a face / head slider `name` at integer step `v` (#1138). */
+export function avatarShape(name, v) {
+  const f = AVATAR_SHAPE.fields[name], n = AVATAR_SHAPE.steps - 1;
+  const k = Number.isInteger(v) && v >= 0 && v <= n ? v : AVATAR_SHAPE.mid, mid = AVATAR_SHAPE.mid, zero = f.zero ?? 1;
+  return k <= mid ? f.min + ((zero - f.min) * k) / mid : zero + ((f.max - zero) * (k - mid)) / (n - mid); // the middle: unchanged
+}
+// The look code's extension (#1138): after the digits (nine, or twelve with the height, #1136), tagged fields `[a-z]` + 1–3 digits, only those that differ from
+// the default, so an untouched look keeps only its digits. Unknown tags are skipped (newer clients may add fields), and the
+// Worker only checks the form (cloudflare/players.js cleanAvatarExt, sent as `ax` beside the digits `av` so older
+// clients keep reading `av`). `c` the eye colour (EYES), then AVATAR_SHAPE's tags.
+const LOOK_EXT = /^(?:[a-z][0-9]{1,3}){0,16}$/;
+export const AVATAR_LOOK_EXT_MAX = 48;
+function encodeLookExt(look) {
+  let out = '';
+  const eyes = EYES.indexOf(look.eyes);
+  if (eyes > 0) out += `c${eyes}`;
+  for (const [name, f] of Object.entries(AVATAR_SHAPE.fields)) {
+    const v = look[name];
+    if (Number.isInteger(v) && v >= 0 && v < AVATAR_SHAPE.steps && v !== AVATAR_SHAPE.mid) out += `${f.tag}${v}`;
+  }
+  return out;
+}
+function decodeLookExt(ext, lk) {
+  if (!ext || ext.length > AVATAR_LOOK_EXT_MAX || !LOOK_EXT.test(ext)) return;
+  for (const [, tag, digits] of ext.matchAll(/([a-z])([0-9]{1,3})/g)) {
+    const v = Number(digits);
+    if (tag === 'c') { if (v < EYES.length) lk.eyes = EYES[v]; continue; }
+    const name = Object.keys(AVATAR_SHAPE.fields).find((k) => AVATAR_SHAPE.fields[k].tag === tag);
+    if (name && v < AVATAR_SHAPE.steps) lk[name] = v;
+  }
+}
+/** The face fields' defaults (#1138): the original brown eyes and every slider in the middle. */
+export function defaultFaceLook() {
+  const lk = { eyes: EYES[0] };
+  for (const name of Object.keys(AVATAR_SHAPE.fields)) lk[name] = AVATAR_SHAPE.mid;
+  return lk;
+}
 
 // #1136: the avatar's chosen height (look.height, whole cm), three more digits after the nine of the look code (only when
 // chosen: a code without them keeps the seed's own `tall`, as before). Limits *guess*: a small child … a very tall adult.
@@ -5007,12 +5066,21 @@ export function encodeAvatarLook(look) {
   const f = Math.min(3, Math.max(0, Number(look.facial ?? look.facialHair) || 0));
   const ht = look.height;
   const cm = Number.isInteger(ht) && ht >= AVATAR_HEIGHT.min && ht <= AVATAR_HEIGHT.max ? String(ht).padStart(3, '0') : '';
-  return `${s}${t}${p}${sh}${h}${st}${sl}${g}${f}${cm}`;
+  return `${s}${t}${p}${sh}${h}${st}${sl}${g}${f}${cm}${encodeLookExt(look)}`;
+}
+/** A look code split for the players' room (#1138): `av` its digits (nine, or twelve with #1136's height; every client
+ * since #1136 reads them), `ax` the tagged face extension (or ''). */
+export function splitAvatarCode(code) {
+  const m = typeof code === 'string' ? /^([0-9]*)(.*)$/.exec(code) : null;
+  return m ? { av: m[1], ax: m[2] } : { av: '', ax: '' };
 }
 
 export function decodeAvatarLook(str, seed = 'anon') {
   const base = defaultAvatarLook(seed);
-  if (!avatarCodeValid(str)) return base;
+  const m = typeof str === 'string' && /^([0-9]+)([a-z].*)?$/.exec(str); // (#1138: the digits, then the face extension)
+  if (!m || !avatarCodeValid(m[1])) return base;
+  const ext = m[2] ?? '';
+  str = m[1];
   const gender = str.length >= 9 ? Number(str[7]) : 0;
   const facial = str.length >= 9 ? Number(str[8]) : 0;
   const lk = {
@@ -5028,6 +5096,7 @@ export function decodeAvatarLook(str, seed = 'anon') {
     facial,
   };
   if (str.length === 12) { lk.height = Number(str.slice(9)); lk.tall = lk.height / AVATAR_HEIGHT.base; } // (tall: name tags etc.)
+  decodeLookExt(ext, lk);
   Object.defineProperty(lk, 'figure', { get() { return this.gender; }, set(v) { this.gender = v; }, enumerable: true, configurable: true });
   Object.defineProperty(lk, 'facialHair', { get() { return this.facial; }, set(v) { this.facial = v; }, enumerable: true, configurable: true });
   return lk;
@@ -5049,7 +5118,7 @@ function defaultAvatarLook(seed) {
   const tall = 0.95 + pick(5) * 0.025;
   const gender = pick(2);
   const facial = 0; // default no facial hair
-  const lk = { style, sleeves, skin, hair, top, pants, shoes, build, tall, gender, facial };
+  const lk = { style, sleeves, skin, hair, top, pants, shoes, build, tall, gender, facial, ...defaultFaceLook() };
   Object.defineProperty(lk, 'figure', { get() { return this.gender; }, set(v) { this.gender = v; }, enumerable: true, configurable: true });
   Object.defineProperty(lk, 'facialHair', { get() { return this.facial; }, set(v) { this.facial = v; }, enumerable: true, configurable: true });
   return lk;

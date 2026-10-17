@@ -1419,14 +1419,36 @@ test('#890 avatar appearance sync in state, welcome and validation', async () =>
     assert.equal(last.av, ok ? av : undefined, `height code ${av}`);
   }
   const validAv12 = '123041013165';
+  await settle(env);
+  // #1138: the face extension travels as ax beside the digits (nine, or twelve with #1136's height); it is dropped when malformed or without a valid av
   now += 1000;
-  a.send({ p: [1.2, 0, 2], r: 0.5, av: validAv12 });
+  a.send({ p: [1.3, 0, 2], r: 0.5, av: validAv9, ax: 'c3e6w2h120' });
+  await settle(env);
+  const bState4 = b.got.filter(m => m.t === 's' && m.i === a.got[0].i).at(-1);
+  assert.equal(bState4.av, validAv9, 'nine digits stay unchanged for older clients');
+  assert.equal(bState4.ax, 'c3e6w2h120', 'a well-formed extension (unknown tags included) is forwarded');
+  for (const bad of ['C3', 'c', 'c1234', 'x'.repeat(10), 'c1'.repeat(25), 7, { c: 1 }]) {
+    now += 1000;
+    a.send({ p: [1.3 + Math.random(), 0, 2], r: 0.5, av: validAv9, ax: bad });
+    await settle(env);
+    assert.equal(b.got.filter(m => m.t === 's' && m.i === a.got[0].i).at(-1).ax, undefined, `bad extension ${JSON.stringify(bad)} is dropped`);
+  }
+  now += 1000;
+  a.send({ p: [1.4, 0, 2], r: 0.5, av: 'bad', ax: 'c3' });
+  await settle(env);
+  assert.equal(b.got.filter(m => m.t === 's' && m.i === a.got[0].i).at(-1).ax, undefined, 'no extension without a valid av');
+  now += 1000;
+  a.send({ p: [1.5, 0, 2], r: 0.5, av: validAv9, ax: 'c3e6' });
+  await settle(env);
+  now += 1000;
+  a.send({ p: [1.2, 0, 2], r: 0.5, av: validAv12, ax: 'c3e6' });
   await settle(env);
 
   // Late joining peer gets the latest valid appearance in welcome
   const c = await connect(env, 'Spelare C');
   const welcomePeer = c.got[0].ps.find(p => p.i === a.got[0].i);
   assert.equal(welcomePeer?.av, validAv12, 'late joining player gets avatar appearance (with height) on welcome');
+  assert.equal(welcomePeer?.ax, 'c3e6', 'and its face extension');
 
   for (const peer of [a, b, c]) peer.ws.close();
   await settle(env);

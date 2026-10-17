@@ -306,6 +306,12 @@ src/rearrange.js       furniture cheat (#465): § / Enter (#596; not from a focu
                        old looks keep 1.62). Not yet: crouch/headroom/stairs/collision and the head boxes (#1137; they still follow the
                        seed's `tall`). `tools/avatarheighttest.cjs GAME WORKER` (local `node cloudflare/dev.mjs PORT`): 120/165/195 cm
                        mirror image, a peer through the Worker and the eye height, plus old codes unchanged.
+                       #1138: face sections (customizer.js `addFaceSections`, built from config.js `EYES` / `AVATAR_SHAPE`): eye-colour swatches
+                       and 0–8 sliders (middle = the plain face) for eye size/opening, head width/length/jaw, nose size/width, ears and brow
+                       thickness/height; the 2D preview follows them and stays sticky on desktop. The look code keeps its digits (nine, or
+                       twelve with #1136's height) and appends tagged fields `[a-z]` + 1–3 digits, only non-default ones (`c` eye colour,
+                       `e o w l j n b r t y`); unknown tags are skipped. On the wire the digits stay `av` (older clients) and the rest goes as
+                       `ax` (ghosts.js `avatarWire`; Worker `cleanAvatarExt` checks only the form, ≤ 48 chars, and only beside a valid `av`).
                        § / Meny opens clickable rearrangement controls with a free cursor; Esc exits the mode and cancels the preview,
                        including native pointer-unlock events. Touch keeps its input mode when leaving the menu.
                        The compact edit panel shows selection/placement steps, selected-only Rotate/Cancel, Menu and Done.
@@ -473,7 +479,9 @@ src/avatar.js          the players' avatars (#705): a neutral human figure on Ol
                        `look(seed)` (the player's id, ours
                        `me:<name>`) picks skin, hair, top, trousers, shoes, sleeves, hair style, build and height, so players differ. ONE SkinnedMesh
                        (one draw call) per avatar, no texture, ≈ 5.1–5.9 k triangles (#1101 face +≈ 1.0 k; `avatarTriangles(variant)`; 8 shared base geometries, built lazily;
-                       an avatar owns only a colour attribute, a 13-bone skeleton and a material). The material is a MeshLambertMaterial patched with a
+                       an avatar owns only a colour attribute, a 13-bone skeleton and a material; #1138: the face sliders are uniforms on that material,
+                       applied in the vertex shader via the shared `facePart` / `faceAnchor` attributes (avatar.js `faceShape`), the irises a
+                       palette region; component screenshots `tools/avatarfacetest.cjs BASE OUT [prefix] [codes]` on `tools/avatarface.html`). The material is a MeshLambertMaterial patched with a
                        lit and opaque (#1025: players always see normal visible avatar appearance; ghost outline removed).
                        `update(dt, { speed, turn, hands, crouch })`: legs walk above AVATAR.walkSpeed (the phase follows the distance), arms swing,
                        a little breathing, the head turns `turn` rad against the body. **The arm surface for animations (#673 wave):**

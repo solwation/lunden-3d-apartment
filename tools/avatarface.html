@@ -1,0 +1,37 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Avatar faces</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#bfc6cc}canvas{display:block}</style></head>
+<body><script type="module">
+// #1138 component page: avatar faces from look codes side by side, head close-ups (front / three-quarter / side).
+// ?codes=a,b,c (look codes, default: plain and a few face variants). Driven by tools/avatarfacetest.cjs.
+import * as THREE from 'three';
+import { Avatar } from '../src/avatar.js';
+import { decodeAvatarLook, avatarEyeHeight } from '../src/config.js';
+const q = new URLSearchParams(location.search);
+const codes = (q.get('codes') ?? '210000100,210000100c5e8o2w0l8j0n0b0r8t8y8,210000100c3e0o8w8l0j8n8b8r0t0y0,312050110c6w6j6n6,420131100c1e6o5w3l6j2n2r3t6').split(',');
+const W = 340 * codes.length, Hh = 520, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, Hh); document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbfc6cc);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f72, 1.6));
+const sun = new THREE.DirectionalLight(0xfff2e0, 2.2); sun.position.set(2, 4, 3); scene.add(sun);
+const avatars = codes.map((c, i) => {
+  const lk = { ...decodeAvatarLook(c, 'face' + i), tall: 1, build: 1 };
+  const a = new Avatar(lk); a.object.position.set((i - (codes.length - 1) / 2) * 0.42, 1.62 - avatarEyeHeight(lk), 0); scene.add(a.object); return a; // (heads level whatever the height, #1136)
+});
+const cam = new THREE.PerspectiveCamera(9.5, W / Hh, 0.05, 50);
+window.__shot = (view) => {
+  const yaw = { front: 0, q: -Math.PI / 4, side: -Math.PI / 2 }[view];
+  for (const a of avatars) { a.object.rotation.y = yaw; a.update(0, {}); }
+  cam.fov = 7.6; cam.updateProjectionMatrix(); // 0.42 m per 340 px column
+  cam.position.set(0, 1.64, 4.8); cam.lookAt(0, 1.6, 0);
+  renderer.render(scene, cam);
+  return renderer.info.render.calls;
+};
+window.__ready = true;
+</script></body></html>

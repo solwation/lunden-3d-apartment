@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { FALL } from './config.js';
-import { GHOSTS as G, COMBAT, AVATAR, CHAT, encodeAvatarLook, decodeAvatarLook } from './config.js';
+import { GHOSTS as G, COMBAT, AVATAR, CHAT, encodeAvatarLook, decodeAvatarLook, splitAvatarCode } from './config.js';
 import { Avatar, armTarget } from './avatar.js';
 import { totalScore } from './stats.js';
 import { acquireBadge, releaseBadge, badgeScore, badgeLives } from './ghostbadge.js';
@@ -132,7 +132,8 @@ export class Ghost { // (exported for tools/ghostprops.html)
   }
 
   /** A state from the room at time t (ms). After a pause the last one is repeated just before it, so it walks off smoothly. */
-  push({ p, r, h = '', score = 0, l, c = false, sp = false, av }, t) {
+  push({ p, r, h = '', score = 0, l, c = false, sp = false, av, ax }, t) {
+    if (av && typeof ax === 'string') av += ax; // #1138: the face extension beside the digits
     if (av && av !== this.avatarCode) {
       this.avatarCode = av;
       this.setAvatarLook(decodeAvatarLook(av, this.id));
@@ -273,6 +274,12 @@ export class Ghost { // (exported for tools/ghostprops.html)
   dispose() { this.clearMirrorTyping(); this.root.removeFromParent(); this.avatar.dispose(); if (this.badge) releaseBadge(this.badge); }
 }
 
+/** Our look code on the wire (#1138): the digits as `av` (what older clients read), the extension as `ax`. */
+function avatarWire(code) {
+  const { av, ax } = splitAvatarCode(code);
+  return ax ? { av, ax } : { av };
+}
+
 export class Ghosts {
   /** scene; url: the Worker ('' = off); name(): our name; state(): { p: [x, y, z] feet, r: yaw, c?: actual crouched boolean }; active(): playing (not the
    * start screen); weapon(): the key (COMBAT.weapons) of what we hold or ''; score(): displayed points (defaults to stats.totalScore); onHit / onHurt: the room's word on a hit (#667). */
@@ -342,9 +349,9 @@ export class Ghosts {
     const t = performance.now();
     if (m.t === 'w') {
       this.me = m.i; this.rules = m.c ?? null; this.onWelcome?.(m);
-      for (const p of m.ps ?? []) { const g = this.add(p.i, p.n, p.av); if (g && p.p) g.push(p, t); }
+      for (const p of m.ps ?? []) { const g = this.add(p.i, p.n, p.av && typeof p.ax === 'string' ? p.av + p.ax : p.av); if (g && p.p) g.push(p, t); }
     } else if (m.t === 'j') this.add(m.i, m.n, m.av);
-    else if (m.t === 's') (this.others.get(m.i) ?? this.add(m.i, '', m.av))?.push(m, t);
+    else if (m.t === 's') (this.others.get(m.i) ?? this.add(m.i, '', m.av && typeof m.ax === 'string' ? m.av + m.ax : m.av))?.push(m, t);
     else if (m.t === 'x') { this.others.get(m.i)?.dispose(); this.others.delete(m.i); }
     else if (m.t === 'hit') this.onHit(m, this.others.get(m.to));
     else if (m.t === 'life') this.onLife?.(m);
@@ -400,7 +407,7 @@ export class Ghosts {
       const sent = this.sent;
       if (t - this.lastSent >= 1000 / G.hz && (!sent || sent !== this.prev || this.sentAv !== this.avatarCode)) {
         const p = this.prev ?? s;
-        this.ws.send(JSON.stringify({ p: p.p.map((v) => Math.round(v * 100) / 100), r: Math.round(p.r * 100) / 100, score: p.score, ...(p.h ? { h: p.h } : {}), ...(p.c ? { c: true } : {}), ...(p.sp ? { sp: true } : {}), ...(this.avatarCode ? { av: this.avatarCode } : {}) }));
+        this.ws.send(JSON.stringify({ p: p.p.map((v) => Math.round(v * 100) / 100), r: Math.round(p.r * 100) / 100, score: p.score, ...(p.h ? { h: p.h } : {}), ...(p.c ? { c: true } : {}), ...(p.sp ? { sp: true } : {}), ...(this.avatarCode ? avatarWire(this.avatarCode) : {}) }));
         this.sent = p; this.sentAv = this.avatarCode; this.lastSent = this.lastBeat = t; this.messages++;
       }
     }
