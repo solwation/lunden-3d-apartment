@@ -72,10 +72,14 @@ f.onload = async () => {
   car.toggleDoor(dr);
   for (let i = 0; i < 60; i++) step(1 / 60);
   // the key: the car drives off with him in it; in the garage nobody is in it; called again he is back
+  const aside = local(0.1, 0, 3.5); // the far (entrance) side of the parked car, well off the route
   player.spawn(stand.x, stand.z - 3, 0);
   use(world.carKey);
   for (let i = 0; i < 60; i++) step(1 / 30);
   pass &= check(car.state === 'leaving' && olofDriver.visible && olofDriver.fig.object.visible, 'the key: the car drives off with Olof in it');
+  // stand.z - 3 is ~1.2 m from the leaving route's U-turn leg (z -11.2): since #915 the car waits there for the visitor (#1193)
+  pass &= check(!until(() => car.state === 'garage', 600) && car.state === 'leaving' && car.speed === 0 && car.blocked(player), 'it waits for the visitor beside its route (#915)');
+  player.spawn(aside.x, aside.z, 0);
   pass &= check(until(() => car.state === 'garage'), 'sent back to the garage');
   pass &= check(!olofDriver.visible && !olofDriver.fig.object.visible, 'in the garage nobody is in it');
   use(world.carKey);
