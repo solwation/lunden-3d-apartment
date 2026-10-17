@@ -92,6 +92,36 @@ tools/kittentest.html  headless test of kittens (#363): the seeded draw (~KITTEN
   leaving gets him back (`update`: state `away` + `carOut` → `show()`). Only in its stall / gone is he away. Power cuts, night and light do not touch
   him. `&car&olofcar` still selects the driver for screenshots; old `&olof` has no effect.
 
+## Carried cats on other players (#1147)
+
+`src/ghostcat.js` reads the actual MieleHeld/cat state for the main Ghosts factory.
+The optional `cat: [breedIndex, coatIndex, kittenBoolean]` state uses the existing
+5 Hz movement channel, including changes while standing still. PlayerRoom bounds
+both indices against the current eight-breed catalogue and forbids kitten Miele;
+missing/invalid data clears the visual. Welcome snapshots include it. Older clients
+ignore the field and old senders retain empty hands. No cat names, gameplay, saves
+or ownership transfer are sent.
+
+`createHeldCatVisual` in cat.js reuses the existing geometry, breed/coat and held
+pose without spawning, audio or simulation. Its materials are cloned before the
+shared local-cat materials are restored in `finally`. GhostCat batches visible
+parts per material, shares snapshots with reference counts and releases geometry
+and cloned materials on the last user's release/disconnect; shared tabby textures
+remain owned by cat.js. Both arms cradle the natural-size cat. The visual follows
+the final skinned hand midpoint and body heading, including crouching and the local
+mirror pass. Bicycle stow removes it until the same holder is restored. It has no
+interaction or combat raycasts.
+
+Run `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/ghostcattest.cjs GAME WORKER OUT`
+with `node cloudflare/dev.mjs PORT`, plus `node --test cloudflare/players.test.mjs`.
+The bounded browser fixture uses actual CatSpawner/MieleHeld, the exact main state
+factory, two Ghosts clients and local PlayerRoom. It renders ordinary cat, kitten
+and Miele front/side, checks coat isolation, late welcome, real bicycle stow/restore,
+mirror, crouched hand attachment and release/disconnect. It suppresses apartment
+bootstrap; this is no full World, physical-phone or performance acceptance.
+The existing catcarrytest covers the real main pickup options and local carry flow.
+This personal-cat/gameplay feature does not apply to the public downstream.
+
 ## Cat and sound
 
 - Opening an interior door/wardrobe: 30 % chance a cat appears on the far side (random free

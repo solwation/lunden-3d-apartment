@@ -192,7 +192,7 @@ Northern surroundings (#530): `SITE.north`/`sitebackdrop.js` add three missing e
 
 HUD-badgarna har samma skal, tydligare poäng och plats för kompassen även på smala liggande skärmar. Tid visas ovanför väderikon och temperatur i en gemensam, smalare ruta.
 
-Andra spelare har mindre namnskyltar med sina poäng, uppdaterade i samma spökskylt. Deras figurer hukar när de faktiskt är nere, även under rörelse; samma pose syns i din spegel.
+Andra spelare har mindre namnskyltar med sina poäng, uppdaterade i samma spökskylt. Deras figurer hukar när de faktiskt är nere, även under rörelse; samma pose syns i din spegel. När någon bär en katt syns rätt katt i figurens famn, även i spegeln; katten försvinner när den sätts ner eller stuvas undan på cykeln.
 
 Skadade liv återhämtas med ett liv per verklig minut upp till max, även utan vapen. I flerspelarläget håller servern din livmätare och motspelarnas indikatorer i synk; utan anslutning använder spelet samma lokala liv.
 

@@ -3054,6 +3054,8 @@ export const LEADERBOARD = { show: 10, every: 30, nameMax: 20 };
 // `retry` (ms, growing), a full room `fullRetry`, a room switched off by the admin brake `offRetry`; the month's cap (close
 // 4001) keeps it off for the rest of the calendar month. Look: `opacity`, drawn `delay` ms behind (interpolation), hidden
 // beyond `far` m, the name tag beyond `tagFar` m, at most `max` ghosts. All our picks (*guess*).
+// #1147: guessed cradle in the avatar's unscaled figure frame; natural cat size is preserved.
+export const GHOST_CAT = { gripWidth: .16, gripY: 1.02, gripZ: .38, elbow: [.6, -.6, -.5] };
 export const GHOSTS = { enabled: true, hz: 5, move: 0.02, turn: 0.03, beatMs: 10_000, idleMs: 120_000,
   retry: [2000, 5000, 15_000, 30_000, 60_000, 300_000], fullRetry: 60_000, offRetry: 600_000,
   opacity: 0.25, delay: 200, far: 60, tagFar: 15, max: 30,

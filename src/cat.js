@@ -426,6 +426,35 @@ function distToSeg(x, z, [ax, az, bx, bz]) {
   return Math.hypot(x - (ax + dx * t), z - (az + dz * t));
 }
 
+/** A silent held-cat snapshot for remote avatars (#1147). Never runs spawning/audio/gameplay. */
+export function createHeldCatVisual(breed, coat, kitten = false) {
+  const saved = catMats().map(m => [m, m.clone()]);
+  try {
+    const parts = buildCat();
+    const cat = Object.assign(Object.create(CatSpawner.prototype), {
+      parts, object: parts.cat, head: parts.head, shoulder: parts.shoulder, leftShoulder: parts.leftShoulder,
+      tailGroup: parts.tailGroup, eyes: parts.eyes, headOff: new THREE.Vector3(), stand: 0, wantStand: 0,
+      gaitAmp: 0, gaitPhase: 0, tailU: 0, tailUK: -1, tailK: -1, t: 0,
+    });
+    cat.setCat(breed, coat, kitten);
+    cat.heldBehave(0);
+    const materials = new Map();
+    parts.cat.traverse(o => {
+      if (!o.material) return;
+      if (!materials.has(o.material)) {
+        const m = o.material.clone(); m.opacity = 1; m.transparent = false;
+        materials.set(o.material, m);
+      }
+      o.material = materials.get(o.material);
+      o.castShadow = false;
+      o.raycast = () => {};
+    });
+    return parts.cat;
+  } finally {
+    for (const [material, copy] of saved) { material.copy(copy); material.needsUpdate = true; copy.dispose(); }
+  }
+}
+
 export class CatSpawner {
   constructor(world, rand = Math.random) {
     this.world = world;

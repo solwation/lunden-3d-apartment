@@ -1453,3 +1453,22 @@ test('#890 avatar appearance sync in state, welcome and validation', async () =>
   for (const peer of [a, b, c]) peer.ws.close();
   await settle(env);
 });
+
+
+test('#1147 carried cat appearance is bounded, forwarded, welcomed and cleared', async () => {
+  const { cleanState } = await import('./players.js');
+  const state = cat => ({ p: [1, 0, 2], r: 0, cat });
+  for (const cat of [null, true, {}, [0, 0], [0, 0, false, 1], [-1, 0, false], [8, 0, false], [0, 6, false], [1, 1, false], [.5, 0, false], [0, -1, false], [0, 0, 1], [7, 0, true]]) {
+    assert.equal(cleanState(JSON.stringify(state(cat))).cat, undefined, JSON.stringify(cat));
+  }
+  for (const cat of [[0, 5, false], [3, 2, true], [7, 0, false]]) assert.deepEqual(cleanState(JSON.stringify(state(cat))).cat, cat);
+  const env = setup(), a = await connect(env), b = await connect(env);
+  a.send(state([3, 2, true])); await settle(env);
+  assert.deepEqual(b.states().at(-1).cat, [3, 2, true]);
+  const c = await connect(env);
+  assert.deepEqual(c.got[0].ps.find(p => p.i === a.got[0].i).cat, [3, 2, true]);
+  now += 250; a.send({ p: [1, 0, 2], r: 0 }); await settle(env);
+  assert.equal(b.states().at(-1).cat, undefined);
+  const d = await connect(env);
+  assert.equal(d.got[0].ps.find(p => p.i === a.got[0].i).cat, undefined);
+});
