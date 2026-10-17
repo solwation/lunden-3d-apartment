@@ -54,6 +54,7 @@ import { WallClock, ClockPanel } from './wallclock.js';
 import { Patio, buildStringLights } from './patio.js';
 import { updateReflections, reflectors, mirrorTarget } from './reflections.js';
 import { WarmUp } from './warmup.js';
+import { loadingStep } from './loadingstep.js';
 import { Quality } from './quality.js';
 import { HitchLog } from './hitchlog.js';
 import { applySeason } from './seasons.js';
@@ -192,9 +193,11 @@ fill.position.set(...SKY.fill.pos);
 scene.add(fill);
 
 const params0 = new URLSearchParams(location.search);
+loadingStep('Hämtar planritningen', 0.15); // loading steps on the card (#1130)
 const plan = await fetchStartupJSON('data/plan.json', { timeout: STARTUP.planTimeout });
 // Finish network/cache callbacks before CPU-heavy construction can starve them past their existing deadlines.
 await beerShelfData;
+await loadingStep('Bygger huset', 0.25); // each awaited step paints once before the long synchronous block (#1130)
 const world = buildWorld(plan);
 scene.add(world.object);
 const garage = world.garage = new Garage(); // the garage and the förråd under the courtyard (#357)
@@ -403,6 +406,7 @@ const taps = world.taps.map((spec) => new Tap(spec));
 let inShower = false, shriekAt = 0;
 for (const t of taps) scene.add(t.object);
 
+await loadingStep('Möblerar', 0.5);
 const player = new Player(world, camera);
 // Harmful free falls request shared lives; only confirmed death blacks out and wakes outdoors.
 const fall = new Fall({ el: document.getElementById('fall'), player, camera, onHurt: () => { bump('falls'); penalize('fall'); } });
@@ -2760,11 +2764,13 @@ function showPerf() {
   perfEl.textContent = `${(perfFrames * 1000 / (now - perfT)).toFixed(0)} fps · quality ${quality.level}\n${quality.describe()}\ncalls ${i.render.calls}\ntris  ${i.render.triangles}\ngeoms ${i.memory.geometries}\ntex   ${i.memory.textures}`;
   perfFrames = 0; perfT = now;
 }
+await loadingStep('Förbereder grafiken', 0.75);
 const frontDoor = world.doors.find((d) => d.name === 'ytterdörren' && Math.abs(d.object.getWorldPosition(new THREE.Vector3()).z) < 0.5);
 detail = new DetailCuller(scene, { W: world.size.x, D: world.size.z, roof: world.openings.roof, floor1: LEVELS[1].floor, doorHeight: DOOR_HEIGHT }, world.openings, () => frontDoor.t > 0.02); // everything is built by now (the holdables too); the open front door shows the hall (#210)
 document.addEventListener('furniture-moved', () => detail?.last.set(1e9, 0, 0));
 quality.register('detail', { // DetailCuller's distances (#189, #460): small things vanish sooner at lower levels
   apply: (l) => detail.setQuality(QUALITY.detail[l]), state: (l) => `distance ×${QUALITY.detail[l]}`, cost: 'draw calls of small far things' });
+loadingStep('Värmer upp vyn', 0.9); // the first frames compile and upload; phones stay covered until warm-up is done (#697)
 // Warm-up (#432, #592, src/warmup.js): compile and upload everything behind the start screen, the mirrors' variants too.
 const warm = new WarmUp({ renderer, scene, camera, shadowCamera: sun.shadow.camera, mirrorTarget,
   prepare: () => { lights.wash?.patch(scene); visitLights.wash?.patch(scene); }, // (#668: both lamp washes' periodic patch, now)

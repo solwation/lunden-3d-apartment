@@ -11,7 +11,7 @@ export async function prepareStartup({
 } = {}) {
   if(local.version === 'dev') return true;
   if(storage===undefined) { try{storage=globalThis.sessionStorage}catch{/* blocked storage: URL guard */} }
-  status('Kontrollerar version…');
+  status('Söker efter uppdatering');
   const controller = new AbortController();
   let timer;
   const work = async () => {
@@ -28,7 +28,7 @@ export async function prepareStartup({
         const last=JSON.parse(storage?.getItem(KEY)||'null');
         if(last?.version===remote.version && Date.now()-last.at<300_000) return true;
       }catch{/* storage may be disabled */}
-      status('Hämtar uppdateringen…');
+      status('Hämtar uppdateringen');
       // Check the cheap HTML first: a half-published deploy must not reload a completed old scene.
       const page = await fetcher(next.href,{cache:'no-store',signal:controller.signal});
       if(!page.ok) return true;
@@ -43,7 +43,7 @@ export async function prepareStartup({
       }
       if(controller.signal.aborted) return true;
       try{storage?.setItem(KEY,JSON.stringify({version:remote.version,at:Date.now()}))}catch{/* URL guard remains */}
-      status('Startar den nya versionen…');
+      status('Startar den nya versionen');
       navigate(next.href);
       return false; // Do not fetch/import the expensive scene on the outgoing page.
     }catch{return true}

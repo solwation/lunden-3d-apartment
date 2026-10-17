@@ -145,11 +145,11 @@
     .loading-card { text-align: center; max-width: 340px; }
     .loading-icon { width: 64px; height: 64px; border-radius: 14px; margin: 0 auto 12px; display: block; box-shadow: 0 4px 14px rgba(0,0,0,.25); }
     .loading-bar { width: 100%; height: 5px; background: #dce7ed; border-radius: 3px; overflow: hidden; margin-top: 16px; position: relative; }
-    .loading-bar i { display: block; position: absolute; top: 0; bottom: 0; left: 0; width: 35%; background: var(--accent); border-radius: 3px; animation: load-slide 1.3s cubic-bezier(.45, 0, .55, 1) infinite; }
-    @keyframes load-slide {
-      0% { left: -35%; }
-      100% { left: 100%; }
-    }
+    /* Determinate bar and a JS-driven pulse (#1130): both are moved from requestAnimationFrame, so they stop when the page hangs. */
+    .loading-bar i { display: block; position: absolute; top: 0; bottom: 0; left: 0; width: 2%; background: var(--accent); border-radius: 3px; }
+    .loading-step { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 14px 0 0; font-size: 14px; min-height: 1.4em; }
+    .loading-step [data-loading-elapsed] { opacity: .65; font-variant-numeric: tabular-nums; }
+    .loading-pulse { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); flex: none; }
     .card .qr { display: flex; align-items: center; gap: 10px; margin: 12px 0 0; font-size: 12px; opacity: .85; }
     .card .qr img { width: 111px; height: 111px; border-radius: 4px; image-rendering: pixelated; }
     body.phone .card .qr { display: none; } /* already on a phone (#193) */
@@ -588,9 +588,39 @@
       <div class="kicker">KV. LUNDEN / L1007</div>
       <h1>Laddar lägenheten…</h1>
       <p>Förbereder 3D-modellen och planritningen.</p>
+      <p class="loading-step"><span class="loading-pulse" aria-hidden="true"></span><span data-loading-step>Startar</span><span data-loading-elapsed>0 s</span></p>
       <div class="loading-bar"><i></i></div>
     </div>
   </div>
+  <script>
+    // Loading steps and heartbeat (#1130). Dependency-free, like the recovery guard below; modules use src/loadingstep.js.
+    // step(name, fraction) shows the current step; `last` is when it began and `beat` the last heartbeat (both
+    // performance.now()), so a stall detector can tell "working" from "stuck". The pulse and the seconds counter run
+    // on requestAnimationFrame and therefore freeze when the main thread hangs.
+    (() => {
+      const loading = document.getElementById('loading');
+      const nameEl = loading.querySelector('[data-loading-step]'), timeEl = loading.querySelector('[data-loading-elapsed]');
+      const pulse = loading.querySelector('.loading-pulse'), bar = loading.querySelector('.loading-bar i');
+      const api = window.__lundenLoading = { name: 'Startar', fraction: 0.02, last: performance.now(), beat: performance.now(), steps: [],
+        step(name, fraction) {
+          const at = performance.now();
+          api.steps.push({ name, at: Math.round(at) });
+          api.name = name; api.last = at;
+          if (Number.isFinite(fraction)) api.fraction = Math.max(api.fraction, Math.min(1, fraction));
+          nameEl.textContent = name;
+          bar.style.width = `${Math.round(api.fraction * 100)}%`;
+        } };
+      api.step('Startar', 0.02);
+      const tick = (t) => {
+        if (loading.hidden || loading.classList.contains('done')) return;
+        api.beat = t;
+        pulse.style.opacity = (0.35 + 0.65 * (0.5 + 0.5 * Math.sin(t / 160))).toFixed(2);
+        timeEl.textContent = `${Math.floor(t / 1000)} s`;
+        requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    })();
+  </script>
   <div id="overlay">
     <div class="card">
       <div class="kicker" id="menu-kicker">KV. LUNDEN / L1007</div>

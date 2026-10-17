@@ -11,6 +11,8 @@ src/warmup.js          phone shader/geometry warm-up runs in slices before the f
                        main.js keeps the loading/resume cover until that scene has rendered
 index.html            dependency-free inline recovery guard before bootstrap, including failed static dependencies (#864)
 src/startuprecovery.js bounded startup JSON requests with one transient retry; covered recovery and retained startup cause (#864, #1065)
+src/loadingstep.js     loadingStep(name, fraction): names the current startup step on the loading card; awaiting it
+                       paints once (rAF, at most STARTUP.stepYield ms) before a long synchronous block (#1130)
 src/bootstrap.js       lightweight startup gate: bounded version check before importing main.js (#512)
 src/startup.js         fresh HTML/build check + cache-busted early update; loop guards; no scene on outgoing page
 src/version.js         BUILD/CONTENT stamps + polling for publications later during a visit
@@ -117,6 +119,8 @@ Phone first view (#697): low-memory devices start sliced warm-up immediately. Or
 
 
 Shared layout verifier (#853): `.github/workflows/cloud.yml` also watches `src/privatecodes.js` (alongside the shared beer-shelf schema). Its compatible Worker accepts both exact legacy input and version-1 hash credentials; deploy it before the later credential-sending client (#856), because independent Pages/Worker jobs can complete in either order. Keep legacy support for cached older clients. The public hash credential is replayable game behavior, not authentication; see [protocol and explicit test inputs](storage.md#versioned-layout-credentials-853).
+
+Loading steps (#1130): a dependency-free inline script right after `#loading` defines `window.__lundenLoading` with `step(name, fraction)`, a step log (`steps`, `name`, `last`) and a heartbeat time (`beat`). Bootstrap reports the version check and the program download; `main.js` reports Hämtar planritningen, Bygger huset, Möblerar, Förbereder grafiken and Värmer upp vyn via `src/loadingstep.js`. The pulse dot, seconds counter and determinate bar are driven by `requestAnimationFrame`, not CSS animation, so they freeze while the main thread hangs. The three awaited steps cost at most one frame each; phone warm-up renders still stay behind the cover. Stall detection (#1131), error texts (#1132) and long-task splitting (#1133) should read `last`/`beat`/`steps` rather than add a second API.
 
 Startup recovery (#864): optional fridge issue-list requests and their JSON bodies each get 5 s, then try the local sample and finally an empty list. Beer-shelf cached JSON and final prepared-snapshot cache writes use the existing 8 s deadline; label decoding still finishes normally without a short image timeout. Bootstrap catches failed scene imports and offers “Försök igen” on the loading cover. A 120 s watchdog also offers that retry if an import or phone warm-up never finishes; it never starts an incomplete scene, and cancels on normal loading-cover dismissal. Resumed visits show the same recovery card without clearing saved position/home. Required plan data uses a separate 15 s budget. These are safeguards, not a confirmed diagnosis of the physical phone report. `tools/startuprecoverytest.html` verifies request/body/cache stalls, fallbacks, preserved storage, resume recovery and normal cancellation without WebGL; `.cjs` exercises real bootstrap with failed/stalled module requests and actual retry navigation using stub scene imports.
 
