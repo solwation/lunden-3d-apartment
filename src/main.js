@@ -253,7 +253,10 @@ function updateShadows(dt) {
   const held = shadowState.hold > 0;
   if (shadowHoldEvery && held) shadowState.pending = true;
   const holdDue = shadowHoldEvery ? shadowState.pending && shadowState.age >= shadowHoldEvery : held;
-  if (holdDue || shadowState.age > maxAge || dir.angleTo(shadowState.dir) > 0.0035) {
+  // #1192: spooling the wall clock (1.5 h/s) moves the sun > 0.2° every frame; on phones that redrew the shadow map every
+  // frame too (iPhone report: 18–20 passes / 2 s, then a lost context). There the sun's redraws share the hold's pace.
+  const sunDue = dir.angleTo(shadowState.dir) > 0.0035 && shadowState.age >= shadowHoldEvery; // desktop: 0 = every frame
+  if (holdDue || shadowState.age > maxAge || sunDue) {
     if (hitch.enabled) hitch.frameInfo.shadowWhy = holdDue ? 'hold' : shadowState.age > maxAge ? 'age' : 'sun';
     renderer.shadowMap.needsUpdate = true;
     frameDiag.passes++; frameDiag.held += holdDue ? 1 : 0; // shadow redraws since the last crash heartbeat (#1100)
@@ -2650,8 +2653,9 @@ function step(dt) {
       && Math.max(-B.home - p.x, p.x - W - B.home, -B.home - p.z, p.z - D - B.home) > 0) {
       camera.getWorldDirection(lookDir);
       const h = Math.hypot(lookDir.x, lookDir.z) || 1;
-      fx = Math.round((p.x + lookDir.x / h * B.lead) / B.snap) * B.snap;
-      fz = Math.round((p.z + lookDir.z / h * B.lead) / B.snap) * B.snap;
+      const lead = lowMemory ? B.lowMemoryLead : B.lead; // #1192: turning moved a leading box → ~5 shadow passes/s on phones
+      fx = Math.round((p.x + lookDir.x / h * lead) / B.snap) * B.snap;
+      fz = Math.round((p.z + lookDir.z / h * lead) / B.snap) * B.snap;
     }
     if (sun.target.position.x !== fx || sun.target.position.z !== fz) { sun.target.position.x = fx; sun.target.position.z = fz; sun.target.updateMatrixWorld(); shadowState.hold = Math.max(shadowState.hold, 0.1); }
   }

@@ -2611,7 +2611,7 @@ export const PERF = { detail: { maxR: 0.5, k: 0.009, minDist: 3.2, maxOcclude: 4
 // shadow map is `shadowMapSize`² and the dynamic resolution never goes above `maxPixelRatio`. `&lowmem` forces it on a desktop.
 export const LOW_MEMORY = { maxTextureSize: 512, shadowMapSize: 1536, maxPixelRatio: 1.25,
   coveredFrameMs: 100, // #669: at most 10 GPU frames/s under reading/pause panels, *guess*; simulation is unchanged
-  shadowHoldEvery: 0.15 }; // #1100: after "Använd" the shadow map is redrawn at most every 0.15 s, not every frame, *guess*
+  shadowHoldEvery: 0.15 }; // #1100: after "Använd" (and #1192 while the sun moves, e.g. spooling the clock) the shadow map is redrawn at most every 0.15 s, not every frame, *guess*
 // #628: maxTextureSize 1024 → 512. tools/phonememtest.cjs (iPhone 14 Pro landscape 844×390, DPR 3, ratio ≤ 1.0 → at most 844 px
 // across) showed 262 textures at 207 MB after the start warm-up, 145 MB of it in ~27 textures of 513–1024 px (+ mips);
 // a screen under 850 px wide gains nothing from a larger base level (*guess*: judged by screenshots, not by a device).
@@ -5693,7 +5693,8 @@ export const FLOOR_DRAIN = { size: 0.2, grate: 0.15, bars: 8, h: 0.005, shower: 
 // shadow fades out towards the map's rim between `rim` (shadow-texture edge measure: 0 centre, 1 rim) — where
 // GROUND_AO's baked shadows fade in — so a rim that is still in view is soft instead of a ruled line. All values are
 // *guesses* tuned by eye.
-export const SHADOW_BOX = { home: 4, lead: 5, snap: 2, rim: [0.84, 1.0] };
+export const SHADOW_BOX = { home: 4, lead: 5, snap: 2, rim: [0.84, 1.0],
+  lowMemoryLead: 0 }; // #1192: on phones the box does not lead along the view, so turning on the spot outdoors redraws no shadows, *guess*
 
 export const GROUND_AO = {
   tree: 0.65, bare: 0.3, spread: 1.15, rings: 3, segs: 12,

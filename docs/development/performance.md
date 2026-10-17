@@ -758,6 +758,24 @@ since the last beat, all / held after a tap); in a headless check after a tap th
 12 / 12 → 15 / 15 on desktop (every frame, unchanged). The next iPhone report shows directly whether a loss follows a burst. The cause is a *guess* (a sustained GPU spike tripping iOS); the context loss itself
 cannot be reproduced without a device.
 
+## Sun and follow-box shadow redraws on phones (#1192 — not verified on a device)
+
+The first iPhone report after #1100 with the `sh` counter (build 4aa06b6, kitchen) shows **18–20 shadow passes per 2 s
+sample with only 0–2 of them held**, at fps 10, right after the wall clock strip was used (`tap BUTTON`, `clock-close`), and
+the context lost at the next sample. Spooling the clock moves the sun 1.5 h/s, i.e. > 0.2° every frame, and the sun
+trigger in `updateShadows()` was not throttled: every frame redrew the shadow map. Outdoors, #1144's follow box led 5 m
+along the view, so merely turning on the spot moved the target and redrew the map ~5 times a second.
+
+**Change (phones only, `lowMemory`):** sun-triggered redraws wait at least `LOW_MEMORY.shadowHoldEvery` (0.15 s) like the
+held ones, and the follow box does not lead along the view (`SHADOW_BOX.lowMemoryLead` 0; it is still centred on the
+visitor and snapped to 2 m). Desktop: `shadowHoldEvery` 0 and `SHADOW_BOX.lead`, the old path. Probe (iPhone profile
+852×393 @3, `&lowmem`, google-chrome headless `--use-angle=gl`, 3 s windows), shadow passes / frames before → after:
+kitchen spooling 22/33 → 10/46; outdoors turning at the start spot 15/63 → 2/74; kitchen idle 2/41 → 2/47; outdoors idle
+2/43 → 3/49; outdoors walking 4/52 → 4/46. Triangles, draw calls, geometries and textures unchanged. To go back: set
+`lowMemoryLead` to `SHADOW_BOX.lead` and drop the `shadowState.age >= shadowHoldEvery` condition (or `shadowHoldEvery: 0`).
+The cause is a *guess*; the other losses that day (start-up warm-up, an orientation/viewport change, 3–4 s stalls after
+`start-go`) showed no shadow burst and are tracked separately.
+
 ## Startup long tasks and the world built in parts (#1133)
 
 `src/longtasks.js` records startup long tasks (`PerformanceObserver` `longtask`, buffered, until `#loading` is done), each
