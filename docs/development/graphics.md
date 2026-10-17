@@ -53,7 +53,8 @@ textures/              image textures the page loads (published by stamp.sh): st
                        frame (#322), cropped and straightened from docs/miele-foto-ram.jpg; linjeteckning-sovrum1.jpg = the line drawing over the RÅGRUND
                        chair (#404), docs/tavla-sovrum1-linjeteckning.png on pale paper inside a white mount;
                        eat-sleep-game-repeat-sovrum2.jpg = Sovrum 2's neon print (#430), cropped inside the frame and straightened
-                       from docs/tavla-sovrum2-eat-sleep-game-repeat.webp
+                       from docs/tavla-sovrum2-eat-sleep-game-repeat.webp; tavla-akvarell-schaslong.jpg = the watercolour over the
+                       chaise (#1095, `painting`), from docs/tavla-akvarell-ansikte-foto.jpg cropped, straightened, glass reflections flattened
 src/ao.js              baked ambient occlusion: distance field → multiply overlay on floor/ceiling (AO); buildWallAO: one
                        shader overlay per level on the walls — floor/ceiling bands + inner-corner columns (AO.wall, #1074);
                        each quad is wound to face the room whatever the piece polygon's orientation (#1084: rectangle

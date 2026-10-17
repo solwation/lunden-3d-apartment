@@ -4478,9 +4478,12 @@ export const FURNITURE = [
   // south = the viewer's left), two champagne with gold foil. On the west wall between the armchair/floor lamp
   // (z < 9.1) and the BESTÅ (z > 9.95), bottom 1.1 m up; 38 × 105 cm and the 10 cm depth are *guesses*.
   { type: 'winerack', level: 0, x: 0.202, z: 9.52, y: 1.1, rot: -90, w: 0.38, h: 1.05, n: 8, depth: 0.1, tilt: 0, champagne: [1, 5] },
-  // The abstract painting (#133, docs/tavla-abstrakt-svart-ram.png): portrait, thin flat black frame, ~70 × 100 cm
+  // The watercolour painting (#133, docs/tavla-abstrakt-svart-ram.png): portrait, thin flat black frame, ~70 × 100 cm
   // (*guess*), centred over the chaise on the east wall (x 5.5; the chaise spans z ~10.55–12.15), centre 1.55 m up.
-  { type: 'painting', level: 0, x: 5.5, z: 11.35, y: 1.55, rot: 90, w: 0.7, h: 1.0, frame: 0.018, depth: 0.025 },
+  // textures/tavla-akvarell-schaslong.jpg (#1095) is the user's photo docs/tavla-akvarell-ansikte-foto.jpg cropped inside
+  // the frame, straightened, the glass's reflections (lamp spot, room) flattened out against the white paper.
+  { type: 'painting', level: 0, x: 5.5, z: 11.35, y: 1.55, rot: 90, w: 0.7, h: 1.0, frame: 0.018, depth: 0.025,
+    texture: 'textures/tavla-akvarell-schaslong.jpg' },
   // The black and white canvas at the foot of the stair (#286, docs/tavla-svartvit-trappan.jpg): coming down flight A
   // (going west) it is straight ahead, on the passage face of Badrum's east wall (x 2.152). Square, unframed, the canvas
   // wrapped round a ~3.5 cm stretcher with black edges; ~80 × 80 cm (*guess*, 70–90 from the user's photo against a 27"
