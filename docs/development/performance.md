@@ -808,7 +808,9 @@ look unchanged). The squares follow the batch's `instanceMatrix`/`instanceColor`
 
 Parity: read-back pixels at five outdoor spots (start, the parked cars, park, courtyard, east trees) differ between tiles on/off
 by 1.1–8.9 % of pixels, less than two runs with tiles on differ from each other (0.7–13.9 %: moving clouds, traffic, people).
-perfcount `?lowmem&w=390&h=844` view numbers are identical with and without (its pre-existing FAIL is #1211). The iPhone check
+perfcount `?lowmem&w=390&h=844` view numbers are identical with and without (its pre-existing FAIL is #1211);
+`turntest.html?lowmem&spots=start,courtyard` passes (0 new programs and textures while turning after the warm-up: the squares
+share the batches' programs and are drawn by the warm-up's shadow pass). View-pass detail for the cars and trees is #1213. The iPhone check
 remains: whether outdoor rotations and the first seconds after Börja keep the context.
 
 ## Startup long tasks and the world built in parts (#1133)
