@@ -243,21 +243,36 @@ export function drawAvatarPreview(canvas, look) {
     ctx.fill();
   }
 
-  // Hairstyle on top
+  // Hairstyle on top. #1166: short hair, the bun and the beanie share a cap-shaped path that follows the head
+  // outline over the crown, comes down at the temples and has its front hairline above the brows (and their
+  // #1138 height/thickness sliders), so the eyes and brows stay visible. Long hair keeps its own crown.
+  const browTop = 52 - browY - 0.75 * browT;
+  const hairline = Math.min(45, browTop - 1.5);
+  const crown = hy - ry;
+  const cap = (pad, front) => {
+    const side = 56, r = ry + pad, t = Math.asin(Math.max(-1, Math.min(1, (side - hy) / r)));
+    ctx.beginPath();
+    ctx.ellipse(cx, hy, rx + pad, r, 0, Math.PI - t, Math.PI * 2 + t);
+    ctx.lineTo(cx + rx - 2, side);
+    ctx.quadraticCurveTo(cx + rx - 2, front, cx + 8, front);
+    ctx.quadraticCurveTo(cx, front + 1.2, cx - 8, front);
+    ctx.quadraticCurveTo(cx - rx + 2, front, cx - rx + 2, side);
+    ctx.closePath();
+    ctx.fill();
+  };
   if (style === 0) { // Short, tousled
     ctx.fillStyle = hair;
+    cap(1.8, hairline);
     ctx.beginPath();
-    ctx.arc(cx, 54, 19, Math.PI * 0.9, Math.PI * 2.1);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(cx, 40, 12, 6, 0, 0, Math.PI * 2);
+    ctx.ellipse(cx, crown + 1, 13 * headW, 6, 0, 0, Math.PI * 2);
     ctx.fill();
   } else if (style === 1) { // Long hair (crown and front locks falling over shoulders)
     ctx.fillStyle = hair;
     // Hair on top of the head / forehead (keeping brows, eyes, nose, mouth and chin clear)
     ctx.beginPath();
-    ctx.arc(cx, 48, 19.5, Math.PI, Math.PI * 2);
-    ctx.quadraticCurveTo(cx, 45, cx - 19.5, 48);
+    const lf = Math.min(48, browTop - 1); // the fringe's ends stay above raised brows
+    ctx.arc(cx, lf, 19.5, Math.PI, Math.PI * 2);
+    ctx.quadraticCurveTo(cx, lf - 3, cx - 19.5, lf);
     ctx.fill();
     // Locks falling past the ears and outside the jawline down onto the shoulders
     ctx.beginPath();
@@ -266,30 +281,29 @@ export function drawAvatarPreview(canvas, look) {
     ctx.fill();
   } else if (style === 2) { // Bun
     ctx.fillStyle = hair;
+    cap(1.2, hairline);
     ctx.beginPath();
-    ctx.arc(cx, 54, 19, Math.PI * 0.9, Math.PI * 2.1);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(cx, 32, 9, 0, Math.PI * 2);
+    ctx.arc(cx, crown - 6, 9, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = top;
     ctx.beginPath();
-    ctx.roundRect(cx - 6, 38, 12, 4, 2);
+    ctx.roundRect(cx - 6, crown - 0.5, 12, 4, 2);
     ctx.fill();
-  } else if (style === 3) { // Beanie
+  } else if (style === 3) { // Beanie: a knitted cap with a folded brim, both ending above the brows
     ctx.fillStyle = top;
-    ctx.beginPath();
-    ctx.arc(cx, 52, 20.5, Math.PI * 0.8, Math.PI * 2.2);
+    cap(2.5, hairline - 1);
+    ctx.beginPath(); // the knitted dome sits higher than the crown
+    ctx.ellipse(cx, hairline - 3, rx + 2, hairline - crown + 3, 0, Math.PI, 0);
     ctx.fill();
-    ctx.fillStyle = top;
+    const bw = rx + 3;
     ctx.beginPath();
-    ctx.roundRect(cx - 21, 46, 42, 9, 4);
+    ctx.roundRect(cx - bw, hairline - 7, bw * 2, 7, 3);
     ctx.fill();
     ctx.lineWidth = 1;
     ctx.strokeStyle = 'rgba(0,0,0,0.2)';
     ctx.stroke();
     ctx.beginPath();
-    ctx.arc(cx, 30, 5, 0, Math.PI * 2);
+    ctx.arc(cx, crown - 7, 5, 0, Math.PI * 2);
     ctx.fill();
   }
 
