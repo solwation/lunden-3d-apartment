@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { FALL } from './config.js';
-import { GHOSTS as G, COMBAT, AVATAR, CHAT, encodeAvatarLook, decodeAvatarLook, splitAvatarCode } from './config.js';
+import { GHOSTS as G, COMBAT, AVATAR, AVATAR_CROUCH, CHAT, encodeAvatarLook, decodeAvatarLook, splitAvatarCode } from './config.js';
 import { Avatar, armTarget } from './avatar.js';
 import { totalScore } from './stats.js';
 import { acquireBadge, releaseBadge, badgeScore, badgeLives } from './ghostbadge.js';
@@ -448,9 +448,10 @@ export class Ghosts {
     g.avatar.setSuit(m.sp);
     g.root.position.copy(m.p);
     g.root.rotation.y = m.r;
-    g.crouch = m.c ? 1 : 0;
+    const now = performance.now(), goal = m.c ? 1 : 0, last = g.mirrorAt ?? -Infinity; // (#1149: goes down / up over AVATAR_CROUCH.time, as the eye)
+    g.mirrorAt = now;
+    g.crouch = now - last < 250 ? THREE.MathUtils.clamp(goal, (g.crouch ?? goal) - (now - last) / 1000 / AVATAR_CROUCH.time, (g.crouch ?? goal) + (now - last) / 1000 / AVATAR_CROUCH.time) : goal;
     g.root.visible = true;
-    const now = performance.now();
     g.mirrorTyping(!!this.mirrorTyping?.(now), now);
     g.animate(now, 0, m.vx, m.vz);
   }

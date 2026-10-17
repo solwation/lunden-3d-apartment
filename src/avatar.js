@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, EYES, avatarShape, PVP_RIFLE_HEAD as RH, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
+import { AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
 import { topTexture } from './spidersuit.js';
-import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
+import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, SHIN, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
 
 // The players' avatars (#705): a neutral human figure for the other players (src/ghosts.js) and for our own reflection in the
 // mirrors (#691). The skeleton, the proportions and the two-bone IK are Olof's (src/olof.js, #671); the figure itself is a
@@ -162,9 +162,9 @@ function bodyParts(add, sleeves, isFemale) {
     add(lathe([[0.046, -0.392], [0.048, -0.368]], 9), 'pants', 'knee' + s, [0, 0, 0], 0.8); // the hem
     add(shape(sphere(0.5, 10, 4, 0, Math.PI * 2, 0, Math.PI / 2).scale(0.105, 0.18, 0.27), (v) => {
       v.y *= 1 - 0.58 * smoothstep(-0.02, 0.12, v.z); v.y += -0.442; v.z += 0.055;
-    }), 'fixed', 'knee' + s, [0, 0, 0], 1, 0);
+    }), 'fixed', 'foot' + s, [0, SHIN, 0], 1, 0); // (#1149: the shoe and its sole on the ankle, flat on the floor in a squat)
     shoePart();
-    add(new THREE.CylinderGeometry(0.5, 0.5, 1, 10).scale(0.11, 0.018, 0.278).translate(0, -0.451, 0.055), 'fixed', 'knee' + s, [0, 0, 0], 1, 0xe9e6df); // the sole
+    add(new THREE.CylinderGeometry(0.5, 0.5, 1, 10).scale(0.11, 0.018, 0.278).translate(0, -0.451, 0.055), 'fixed', 'foot' + s, [0, SHIN, 0], 1, 0xe9e6df); // the sole
   }
   function shoePart() { add.last().shoe = true; }
 }
@@ -606,7 +606,7 @@ function makeMaterial(rim, headProjection) {
             vec2 uv = vec2((vSuitAt.x - ${headMin.x}) / ${headSize.x}, 1.0 - uSuitMaskBand + (vSuitAt.y - ${headMin.y}) / ${headSize.y} * uSuitMaskBand);
             diffuseColor.rgb = texture2D(uSuitTexture, clamp(uv, 0.0, 1.0)).rgb;
           }
-        } else if (suitBone == ${NAMES.indexOf('handL')}.0 || suitBone == ${NAMES.indexOf('handR')}.0 || suitBone == ${NAMES.indexOf('kneeL')}.0 || suitBone == ${NAMES.indexOf('kneeR')}.0) diffuseColor.rgb = red;
+        } else if (suitBone == ${NAMES.indexOf('handL')}.0 || suitBone == ${NAMES.indexOf('handR')}.0 || suitBone == ${NAMES.indexOf('kneeL')}.0 || suitBone == ${NAMES.indexOf('kneeR')}.0 || suitBone == ${NAMES.indexOf('footL')}.0 || suitBone == ${NAMES.indexOf('footR')}.0) diffuseColor.rgb = red;
       }
       ${skinShading()}`)
       .replace('#include <opaque_fragment>', `float edge = pow(1.0 - clamp(abs(dot(normalize(normal), normalize(vViewPosition))), 0.0, 1.0), ${A.rimPower.toFixed(2)});
@@ -679,6 +679,13 @@ function mouthSlots(text) {
 }
 
 const STRIDE = 0.78; // m per step cycle (one leg's whole swing; *guess*: a calm walk)
+const KNEE_REST = [0, 0.25, 1]; // poseOlof's default knee pole
+/** #1149: how far a shoulder moves (figure frame [x, y, z]) when the hips drop by `dy`, move by `dz` and the torso leans
+ * CR.lean × c: a hand held out (a weapon, a wave) moves with it instead of being reached up for. */
+function shoulderShift(c, dy, dz) {
+  const a = -CR.lean * c, [, sy] = SH; // (poseOlof turns the torso by −lean about x: +z forward goes down)
+  return [0, dy + sy * Math.cos(a) - sy, dz + sy * Math.sin(a)];
+}
 
 export class Avatar {
   /** `seed`: what the look comes from (name or id); `rim`: the outline's colour. */
@@ -787,16 +794,26 @@ export class Avatar {
     this.gait = THREE.MathUtils.lerp(this.gait ?? 0, walking ? 1 : 0, Math.min(1, dt * 8));
     const g = this.gait, ph = this.phase, s = Math.sin(ph), sw = s * 0.3 * k * g; // the leg swing (m forward / back of the hip)
     const breathe = Math.sin(this.time * 1.7) * 0.004;
-    const hipY = HIP - 0.02 - 0.2 * crouch + breathe - 0.012 * g * Math.abs(Math.cos(ph)) * k;
-    const lift = (v) => Math.max(0, v) * 0.12 * g * k;
-    const feet = [[0.11, 0.05 + lift(Math.cos(ph)), sw * (1 + 0.1 * crouch)], [-0.11, 0.05 + lift(-Math.cos(ph)), -sw]];
-    feet[0][2] += 0.02 + 0.2 * crouch; feet[1][2] += 0.02 + 0.2 * crouch;
-    const armSwing = -sw * 0.55;
-    const handL = hands.L ?? armTarget.rest(1, armSwing), handR = hands.R ?? armTarget.rest(-1, -armSwing);
+    // #1149: crouching is a deep squat (AVATAR_CROUCH), every term linear in `crouch` (the head boxes follow the same hips and lean)
+    const c = THREE.MathUtils.clamp(crouch, 0, 1), F = CR.feet, step = sw * (1 - CR.step * c);
+    const hipY = HIP - 0.02 - CR.hipDrop * c + breathe - 0.012 * g * Math.abs(Math.cos(ph)) * k, hipZ = CR.hipForward * c;
+    const lift = (v) => Math.max(0, v) * 0.12 * g * k * (1 - 0.5 * c);
+    const fx = 0.11 + (F.x - 0.11) * c, fz = 0.02 + (F.z - 0.02) * c;
+    const feet = [[fx, F.y + lift(Math.cos(ph)), fz + step], [-fx, F.y + lift(-Math.cos(ph)), fz - step]];
+    const armSwing = -step * 0.55;
+    const rest = (side, swing) => {
+      const r = armTarget.rest(side, swing), R = CR.rest;
+      return c ? { at: r.at.map((v, i) => v + ((i ? R.at[i] : side * R.at[0]) - v) * c), pole: r.pole.map((v, i) => v + ((i ? R.pole[i] : side * R.pole[0]) - v) * c) } : r;
+    };
+    // a hand held out (a weapon, a wave) moves with the shoulder as the body goes down
+    const held = (h) => { if (!c || !h) return h; const d = shoulderShift(c, hipY - (HIP - 0.02 + breathe), hipZ); return { ...h, at: h.at.map((v, i) => v + d[i]) }; };
+    const handL = held(hands.L) ?? rest(1, armSwing), handR = held(hands.R) ?? rest(-1, -armSwing);
     this.mouth += (this.mouthTarget(performance.now() / 1000) - this.mouth) * Math.min(1, dt * MOUTH.follow);
     if (this.mouth < 0.002) this.mouth = 0;
     this.material.userData.u.uMouth.value = this.mouth;
-    poseOlof(this, { hip: [hipY, 0.04 * crouch], lean: 0.03 * g + 0.45 * crouch, head: 0.03 * Math.sin(this.time * 0.6), turn, feet, hands: [handL, handR], can: null });
+    const knee = c ? CR.knees.map((v, i) => KNEE_REST[i] + (v - KNEE_REST[i]) * c) : KNEE_REST;
+    poseOlof(this, { hip: [hipY, hipZ], lean: 0.03 * g + CR.lean * c, head: 0.03 * Math.sin(this.time * 0.6), turn, feet, hands: [handL, handR], can: null,
+      knee, flat: c, toes: F.turn * c });
   }
 
   /** The world position of a hand's centre (side 'L' / 'R' as in the figure's own frame: R = the figure's right, the ghost's +x). */

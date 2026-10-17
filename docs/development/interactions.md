@@ -915,6 +915,16 @@ their existing behavior. `tools/crouchposetest.cjs` uses actual Player/Ghosts/Av
 modules to exercise stationary input, headroom release, moving crouch and native
 welcome; the controlled-world native fixture does not boot the apartment.
 
+#1149 realistic crouch: the pose is a deep squat set by `AVATAR_CROUCH` (`src/config.js`), every term
+linear in crouch 0 … 1: hips down to about knee height and back behind the heels, the torso leaning
+forward (the old pose leaned it back), knees forward and a little apart, the forearms over the knees,
+and feet flat on the floor with the toes turned out. The shoes sit on new ankle bones (`footL`/`footR`
+in `src/olof.js`; Olof's own shoes stay on the shins) that `poseOlof({ flat, toes, knee })` turns level;
+no extra draw call. Hands held out (weapon, wave) move with the shoulder. `PVP_HEAD_BOXES` reads
+`hipDrop`/`hipForward`/`crouchLean` from `AVATAR_CROUCH`, so the three shared head boxes, the Worker and
+the drawn head stay together. Our mirror image eases down/up over `AVATAR_CROUCH.time`; other players
+follow their interpolated states. The name tag stays at its standing height.
+
 
 Distance rewards for confirmed player hits (#873): `PVP_SCORE` and pure `pvpHitPoints(distance)` in the already Worker-watched `src/config.js` are shared by PlayerRoom and Combat. The balance values are *guess*: the existing 5-point base is retained, with one extra point for each complete 2 m beyond 5 m, capped at 15 extra (7 m → 6, 15 m → 10, ≥35 m → 20). Geometry is the room's already accepted last-known shooter-feet→target-feet distance in 3D, the same distance used for the existing range/slack check; projectile origin/trajectory and obstacle predicates are not changed. Requests cannot supply reward points or award sequence. Actual awarded points consume the existing 60/minute cap; a hit above the remaining budget is refused rather than clipped. Existing per-weapon rates, participation, misses and damage rules remain.
 

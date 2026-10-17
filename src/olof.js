@@ -12,13 +12,14 @@ import { OLOF as O } from './config.js';
 // seat, #599). Colours are vertex colours on one material.
 
 const C = O.colors;
-const X = new THREE.Vector3(1, 0, 0), DOWN = new THREE.Vector3(0, -1, 0);
+const X = new THREE.Vector3(1, 0, 0), Y = new THREE.Vector3(0, 1, 0), DOWN = new THREE.Vector3(0, -1, 0), KNEE = [0, 0.25, 1], qI = new THREE.Quaternion();
 // the bind pose (m): standing, facing +z, the origin on the floor between the feet; lengths as the neighbours' (people.js)
 const HIP = 0.9, THIGH = 0.44, SHIN = 0.41, UPPER = 0.28, FORE = 0.25, HAND = 0.04, SH = [0.2, 0.55], NECK = 0.64;
 const BONES = { hips: [null, 0, HIP, 0], torso: ['hips', 0, 0, 0], head: ['torso', 0, NECK, 0],
   shoulderL: ['torso', SH[0], SH[1], 0], elbowL: ['shoulderL', 0, -UPPER, 0], handL: ['elbowL', 0, -FORE - HAND, 0],
   shoulderR: ['torso', -SH[0], SH[1], 0], elbowR: ['shoulderR', 0, -UPPER, 0], handR: ['elbowR', 0, -FORE - HAND, 0],
-  thighL: ['hips', 0.085, 0, 0], kneeL: ['thighL', 0, -THIGH, 0], thighR: ['hips', -0.085, 0, 0], kneeR: ['thighR', 0, -THIGH, 0] };
+  thighL: ['hips', 0.085, 0, 0], kneeL: ['thighL', 0, -THIGH, 0], thighR: ['hips', -0.085, 0, 0], kneeR: ['thighR', 0, -THIGH, 0],
+  footL: ['kneeL', 0, -SHIN, 0], footR: ['kneeR', 0, -SHIN, 0] }; // (#1149: the ankles; the avatars' shoes, kept flat when crouching)
 const NAMES = Object.keys(BONES);
 export { NAMES, HIP, THIGH, SHIN, UPPER, FORE, HAND, SH, NECK }; // (the player avatars, src/avatar.js, share the skeleton and its IK)
 
@@ -169,9 +170,11 @@ const lerp3 = (a, b, t) => a.map((x, i) => x + (b[i] - x) * t);
  * Pose the figure. Everything in the figure's own frame (the Group's: floor at y 0, facing +z):
  * hip [y, z] (the hip joints' height and how far forward), lean (torso back, rad), head (pitch back, rad), turn (the head
  * sideways, rad), feet: [[x, y, z] ×2] the ankles (L = +x), hands: [{ at: [x, y, z], pole: [x, y, z] } ×2] the wrists,
- * can: [x, y, z] the can's axis (the right hand), or null to keep the hand straight on.
+ * can: [x, y, z] the can's axis (the right hand), or null to keep the hand straight on. Optional (#1149): knee [x, y, z]
+ * the knees' pole (x outward per side), flat 0 … 1 how far the feet are turned level on the floor (0: rigid with the shin)
+ * and toes (rad) how far they then turn outward.
  */
-export function poseOlof(fig, { hip, lean = 0, head = 0, turn = 0, feet, hands, can }) {
+export function poseOlof(fig, { hip, lean = 0, head = 0, turn = 0, feet, hands, can, knee = KNEE, flat = 0, toes = 0 }) {
   const B = fig.bones, hy = hip[0], hz = hip[1];
   B.hips.position.set(0, hy, hz);
   B.hips.quaternion.identity();
@@ -182,7 +185,12 @@ export function poseOlof(fig, { hip, lean = 0, head = 0, turn = 0, feet, hands, 
   const S = new THREE.Vector3(), T = new THREE.Vector3(), P = new THREE.Vector3(), out = new THREE.Quaternion();
   ['L', 'R'].forEach((s, i) => {
     const sx = i ? -1 : 1, [fx, fy, fz] = feet[i];
-    ik(B['thigh' + s], B['knee' + s], I, S.set(sx * 0.085, 0, 0), T.set(fx, fy - hy, fz - hz), THIGH, SHIN, P.set(0, 0.25, 1), out);
+    ik(B['thigh' + s], B['knee' + s], I, S.set(sx * 0.085, 0, 0), T.set(fx, fy - hy, fz - hz), THIGH, SHIN, P.set(sx * knee[0], knee[1], knee[2]), out);
+    const foot = B['foot' + s];
+    if (foot) { // the shin's rotation undone (level, the toes turned out) as far as `flat`
+      if (flat > 0) foot.quaternion.copy(q1.copy(out).invert().multiply(q2.setFromAxisAngle(Y, sx * toes))).slerp(qI, 1 - flat);
+      else foot.quaternion.identity();
+    }
     const h = hands[i];
     ik(B['shoulder' + s], B['elbow' + s], tq, S.set(sx * SH[0], SH[1], 0).applyQuaternion(tq), T.set(h.at[0], h.at[1] - hy, h.at[2] - hz),
       UPPER, FORE + HAND, P.set(...h.pole), out);

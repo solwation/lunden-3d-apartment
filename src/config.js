@@ -5472,6 +5472,20 @@ export function rifleNoseSideRegion(seed,state,point,origin,direction) {
   return true;
 }
 
+// #1149: the avatars' crouch, a deep squat ("sitta på huk") in the figure's frame (floor 0, facing +z), all linear in
+// the crouch 0 … 1 so a half crouch is in between. The hips drop to about knee height and move back behind the heels, the
+// torso leans forward (negative lean = forward in poseOlof), knees bent forward and a little apart over flat feet, the
+// forearms resting over the knees. Eye height ends near PLAYER.crouchEye. The head boxes below follow the same hips/lean.
+// *guess*: by eye against an ordinary adult's deep squat, not measured.
+export const AVATAR_CROUCH = {
+  hipDrop: .54, hipForward: -.1, lean: -.42,
+  feet: { x: .14, y: .05, z: .07, turn: .3 }, // ankle (m, ± sideways) and the toes turned out (rad)
+  knees: [.45, .2, 1], // the knee pole (x outward per side)
+  rest: { at: [.16, .36, .34], pole: [.7, -.3, -.3] }, // a wrist over the knee (x per side), the elbow out and back
+  step: .5, // the walking stride shrinks by this share when fully down
+  time: .2, // s, our own mirror image going down or up (others follow their sent states)
+};
+
 // #974: ordinary gameplay approximation, independent of hair, facial polygons and animation history.
 // Three stacked head boxes (metres in the unscaled standing avatar), narrower at the crown; *guess* by the existing head.
 export const PVP_HEAD_BOXES = {
@@ -5481,8 +5495,8 @@ export const PVP_HEAD_BOXES = {
     { low: 1.59, high: 1.69, halfWidth: .105, back: -.11, front: .14 },
     { low: 1.69, high: 1.76, halfWidth: .075, back: -.085, front: .085 },
   ],
-  // Existing Avatar.update/poseOlof crouch: hips at .9-.02-.2*c, local z .04*c, torso rotation X=-.45*c.
-  hipY: .88, hipDrop: .2, hipForward: .04, crouchLean: .45,
+  // Avatar.update/poseOlof crouch (#1149, AVATAR_CROUCH): hips at .88-hipDrop*c, local z hipForward*c, torso rotation X=-crouchLean*c.
+  hipY: .88, hipDrop: AVATAR_CROUCH.hipDrop, hipForward: AVATAR_CROUCH.hipForward, crouchLean: AVATAR_CROUCH.lean,
 };
 
 function rifleBoxPose(seed, state) {
