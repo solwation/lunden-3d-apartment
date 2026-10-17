@@ -141,6 +141,7 @@ const lose = () => {
       check(after.width === 1 && after.height === 1 && !after.uploadHook, `${tag}: source remains freed after the probe`);
       if (control) {
         check(navs.length === n0, 'control: no reload (suppressed)');
+        check(await evaluate(() => !document.getElementById('gl-lost').hidden), 'control: suppressed reload shows the tap-to-reload notice (#1128)');
         check(d > 6, 'control: without reload the SAME freed production map loses its pixels', `mean RGB difference ${d.toFixed(2)}`);
       } else {
         check(d < 3, 'fix: matched production texture pixels survive the app reload', `mean RGB difference ${d.toFixed(2)}`);
@@ -154,6 +155,8 @@ const lose = () => {
         await sleep(500);
         check(navs.length === n1, 'fix: a second loss within 60 s does not reload again', `${navs.length - n1} navigation(s)`);
         check(logs.some((l) => /no second reload/.test(l)), 'fix: skipped reload is logged');
+        // #1128: the scene stays broken without a reload (freed normals/uv), so the page must offer one tap to reload.
+        check(await evaluate(() => !document.getElementById('gl-lost').hidden), 'fix: skipped reload shows the tap-to-reload notice (#1128)');
       }
     } finally {
       fs.writeFileSync(`${shots}/${tag}-console.txt`, logs.join('\n'));

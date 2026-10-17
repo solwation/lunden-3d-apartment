@@ -170,8 +170,8 @@
     #action { position: fixed; right: calc(24px + var(--sr)); bottom: calc(32px + var(--sb)); touch-action: manipulation; padding: 16px 22px; border: 0; border-radius: 40px; background: var(--accent); color: #fff; font: 600 16px system-ui, sans-serif; box-shadow: 0 4px 14px rgba(0,0,0,.3); }
     #action[hidden] { display: none; }
     #mute { position: fixed; right: calc(16px + var(--sr)); bottom: calc(16px + var(--sb)); width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--panel); font-size: 18px; }
-    #update { position: fixed; top: calc(16px + var(--st)); left: 50%; transform: translateX(-50%); z-index: 10; width: max-content; display: flex; align-items: center; gap: 12px; max-width: calc(100vw - 32px); box-sizing: border-box; background: var(--ink); color: #fff; padding: 10px 10px 10px 16px; border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,.3); font-size: 15px; }
-    #update[hidden] { display: none; }
+    #update, #gl-lost { position: fixed; top: calc(16px + var(--st)); left: 50%; transform: translateX(-50%); z-index: 10; width: max-content; display: flex; align-items: center; gap: 12px; max-width: calc(100vw - 32px); box-sizing: border-box; background: var(--ink); color: #fff; padding: 10px 10px 10px 16px; border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,.3); font-size: 15px; }
+    #update[hidden], #gl-lost[hidden] { display: none; }
     #reloaded, #countdown { position: fixed; top: calc(16px + var(--st)); left: 50%; transform: translateX(-50%); z-index: 10; pointer-events: none; background: var(--ink); color: #fff; padding: 10px 16px; border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,.3); font-size: 15px; opacity: 1; transition: opacity .6s; }
     #reloaded[hidden], #countdown[hidden] { display: none; }
     #fall { position: fixed; inset: 0; z-index: 9; pointer-events: none; display: flex; align-items: flex-end; justify-content: center; }
@@ -194,9 +194,9 @@
     @keyframes turbo-hue { from { filter: hue-rotate(0deg); } to { filter: hue-rotate(360deg); } }
     #reloaded.gone { opacity: 0; }
     #reloaded small { opacity: .75; font-size: 12px; margin-left: 6px; }
-    #update small { display: block; opacity: .75; font-size: 12px; margin-top: 2px; }
-    #update button { white-space: nowrap; flex: none; border: 0; border-radius: 6px; font: 600 14px system-ui, sans-serif; cursor: pointer; padding: 8px 14px; min-height: 44px; touch-action: manipulation; }
-    #update-reload { background: #fff; color: var(--ink); }
+    #update small, #gl-lost small { display: block; opacity: .75; font-size: 12px; margin-top: 2px; }
+    #update button, #gl-lost button { white-space: nowrap; flex: none; border: 0; border-radius: 6px; font: 600 14px system-ui, sans-serif; cursor: pointer; padding: 8px 14px; min-height: 44px; touch-action: manipulation; }
+    #update-reload, #gl-lost-reload { background: #fff; color: var(--ink); }
     .new { background: #d23a2a; color: #fff; font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 8px; vertical-align: 1px; }
     #note { position: fixed; inset: 0; z-index: 5; display: grid; place-items: center; background: rgba(20, 35, 45, 0.35); }
     #note[hidden] { display: none; }
@@ -906,6 +906,10 @@
   <div id="fall" hidden><p role="status">Du slog dig …<small>och vaknar på en säker plats utomhus</small></p></div>
   <div id="turbo" hidden role="status">Kaffeturbo!<span class="bar"><i></i></span></div>
   <div id="turbo-edge" hidden></div>
+  <div id="gl-lost" hidden role="alert">
+    <div>Grafiken tappades efter en krasch.<small>Ladda om sidan så kommer väggarna tillbaka.</small></div>
+    <button id="gl-lost-reload">Ladda om</button>
+  </div>
   <div id="update" hidden role="status">
     <div>Det finns en ny version av lägenheten.<small id="update-hint">Ladda om sidan för att se den.</small></div>
     <button id="update-reload">Ladda om</button>

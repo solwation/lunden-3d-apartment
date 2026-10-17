@@ -3065,11 +3065,16 @@ Object.assign(keepApp.bicycleStow, { miele, heldDrawing, drawing: heldDrawing, t
 function keepWorld() { try { return saveWorld(keepApp); } catch (e) { console.warn('keep', e); return null; } }
 // Phone: a restored WebGL context reloads the page, because textures freed after upload (#628) would re-upload blank. Same
 // build, so no "Ny version" note; the place and the world come back as after "Ladda om".
-reloadOnContextRestore(renderer.domElement, () => {
+const glReload = () => {
   reloading = true;
   saveCurrentResume({ world: keepWorld() });
   location.reload();
-});
+};
+// A second loss within 60 s is not reloaded automatically (loop guard); the scene is then broken (walls as see-through
+// edges, #1128), so ask the visitor to reload with one tap instead of leaving it like that.
+const glLostEl = document.getElementById('gl-lost');
+onTap(document.getElementById('gl-lost-reload'), glReload);
+reloadOnContextRestore(renderer.domElement, glReload, () => { glLostEl.hidden = false; });
 if (resumeOk && resumed.mode && resumed.world) loadWorld(keepApp, resumed.world); // mid-visit only: the game's clock too (a new visit: real time, #143)
 if (resumeOk && resumed.mode) continueAfterReload(resumed);
 // &life (#365): the life simulator's developer scenario — a cleared worktop, a few test things, never saved (life.js)

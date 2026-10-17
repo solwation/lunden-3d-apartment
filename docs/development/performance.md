@@ -304,6 +304,9 @@ context) would show these blank, so on a phone `reloadOnContextRestore(canvas, r
 page on `webglcontextrestored` after a loss, through the ordinary resume (place + world, as "Ladda om"), at most once per 60 s
 (sessionStorage `lunden.glReloadAt`; then it only logs). Crashlog still reports loss/restore. Tested by `tools/glrestoretest.cjs`. (2) `WarmUp` option `lazyHidden` (phone): stage 4 (upload of every texture of hidden objects)
 is skipped; they upload when first shown. Measured with `phonememtest --cpu 1 --dwell 600` (estimates, MB):
+A restore inside that 60 s guard is not reloaded automatically; the scene is then broken (freed normals/uv re-upload empty,
+so meshes stop drawing while the position-only architecture edges remain: walls look like see-through wireframes, #1128), so
+`reloadOnContextRestore`'s `onSkip` shows `#gl-lost` ("Grafiken tappades efter en krasch." + **Ladda om**, a user tap, so no loop).
 
 | | before (a3541b8-ish) | after |
 |---|---|---|
