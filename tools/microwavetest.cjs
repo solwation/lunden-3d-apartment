@@ -12,12 +12,12 @@ const check = (ok, msg, extra = '') => { console.log(`${ok ? 'PASS' : 'FAIL'} ${
 setTimeout(() => { console.log('FAIL total timeout\nSOME FAILED'); process.exit(2); }, 20 * 60000).unref();
 
 (async () => {
-  const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined, args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+  const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined, args: ['--no-sandbox', ...(process.env.ANGLE === 'gl' ? ['--use-angle=gl'] : ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'])] });
   const errors = [];
   try {
     const page = await (await browser.newContext({ viewport: { width: 960, height: 600 } })).newPage();
     page.on('pageerror', (e) => errors.push(e.message));
-    await page.goto(`${game}/?life&shot&test&quality=0&time=14&month=7&day=15&freeze`, { waitUntil: 'commit' });
+    await page.goto(`${game}/?life&shot&test=lazy&quality=0&time=14&month=7&day=15&freeze`, { waitUntil: 'commit' });
     await page.waitForFunction(() => window.__app?.renderer && window.__app.microwave && window.__app.life, null, { timeout: 900000 });
     await page.evaluate(() => window.__app.renderer.setAnimationLoop(null));
     const shot = async (name) => {
@@ -148,8 +148,8 @@ setTimeout(() => { console.log('FAIL total timeout\nSOME FAILED'); process.exit(
       const A = window.__app, T = window.__t, I = A.life.items, mw = A.microwave;
       T.run(5);
       const a = { heat: I.get(ids.egg).machine.heat, running: mw.running };
-      while (mw.seconds !== 90) A.use(T.look(T.timeBtn(), 0.6));
-      A.use(T.look(T.panel(), 0.9)); T.run(15.2);
+      while (mw.seconds !== 30) A.use(T.look(T.timeBtn(), 0.6)); // 60.5 + 30 = 90 heat: between hot (75) and burn (110)
+      A.use(T.look(T.panel(), 0.9)); T.run(5.2);
       const egg = I.get(ids.egg), sau = I.get(ids.sau);
       const hot = { heat: egg.machine.heat, name: I.name(egg), sau: I.name(sau) };
       while (mw.seconds !== 120) A.use(T.look(T.timeBtn(), 0.6));
