@@ -778,7 +778,25 @@ alternated; numbers are noisy):
 | desktop `?warm`, 1280×800 | 56 s, 48 s (whole Bygger huset) | 25 s, 99 s | 137 s, 125 s / 63 s, 161 s |
 | phone `?lowmem`, 390×844, iPhone UA | 37 s (Bygger huset) | 14 s | 137 s / 140 s |
 
-The remaining desktop block (25–105 s) runs during a pause after the façade-texture part of the surroundings: queued
-2D-canvas textures are flushed when the page draws a frame. Before the split, the same cost fell in warm-up
-(Värmer upp vyn, 31–41 s), so it moved rather than appeared (#1159). Next: Möblerar on phones, ~12 s (#1160), and
-smaller build parts, 3–9 s (#1161).
+That run also showed a desktop block of 25–105 s in a pause after the façade-texture part of the surroundings, then
+thought to be queued 2D-canvas textures flushed at a paint. #1159 (2026-10-17, unloaded 4-core VM, headless
+Chromium 141/SwiftShader, `?warm`, 1280×800, Chrome traces) did not confirm that:
+
+- Default headless flags: 2D canvases are not GPU-backed at all (20 000 `fillRect` + `getImageData`: ~15 ms with or
+  without `willReadFrequently`). With `--use-angle=swiftshader --enable-unsafe-swiftshader --ignore-gpu-blocklist` they
+  are (the same readback ~1.2–1.3 s, ~15 ms with `willReadFrequently`), but all 2D-canvas raster on the GPU thread up
+  to the card being done summed to ~4.5 s in ≤ 0.8 s tasks; no long task in Bygger huset after the surroundings.
+- The façade/roof textures in `surroundings.js` are tiny: ~450–740 draw calls each (≈ 3 000 together) of ~680 000 2D
+  calls at startup. The volume is in the furniture textures (`zigzagRugTextures` ~238 000, `pileTextures` ~180 000,
+  `archRugTexture` ~60 000), then the palm (`patio.js`), boxwood and grass textures.
+- Forcing `willReadFrequently` on *every* 2D context (init-script patch) changed nothing measurable, alternated runs:
+  longest startup task 19.0 / 28.3 s before vs 20.1 / 28.5 s after (default flags), sum of long tasks 39.5 / 55.2 vs
+  39.4 / 56.9 s. So no canvas was switched.
+- The long block that remains is the WebGL warm-up (#697), Värmer upp vyn: 19–30 s single tasks, the renderer's
+  compositor `ReadPixels` waiting on the GPU thread executing the queued WebGL frame (SwiftShader draws, ANGLE
+  shader compiles on worker threads). On desktop it can fall after the card is hidden, so `__lundenLoading.long`
+  sees it only sometimes. It is a SwiftShader cost (headless runs skip warm-up without `?warm`), not a 2D canvas one.
+
+Re-measure with a Chrome trace (`GPUTask` children `WebGL` vs `RendererMainThread`/`RasterDecoderImpl`) before
+switching canvases. Next: Möblerar on phones, ~12 s (#1160), and smaller build parts, 3–9 s (#1161; the furniture part,
+share 0.33–0.42 of the build, was the longest Bygger huset task here, 4–6 s).
