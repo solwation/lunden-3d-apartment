@@ -6,7 +6,7 @@ import { NEW_YEAR as N } from './config.js';
 // itself on and counts down 10 … 1 (Screen.overlay, screens.js), then shows "Gott nytt år!" for N.cheer s; the TVs it
 // switched on go off again afterwards. Champagne flutes stand on the coffee table from the countdown until
 // N.glassesUntil o'clock on 1 January. Stateless in the game date/time (DayCycle), so spooling, ?newyear and the real
-// clock all work; the fireworks are #1200.
+// clock all work; the fireworks (#1200) start from onMidnight when the countdown ends.
 
 /** The New Year phase at the DayCycle's date/time: 'count' (with `left` whole seconds shown), 'cheer' or ''. */
 export function newYearPhase(day) {
@@ -72,8 +72,8 @@ function buildGlasses() {
 
 export class NewYear {
   /** tvs: the TV targets (furniture.js tv(), with .screen and toggle()); allowed(): may the TVs switch on (mains, furniture shown). */
-  constructor({ scene, day, tvs, allowed = () => true }) {
-    Object.assign(this, { scene, day, tvs, allowed, phase: '', forced: new Set(), glasses: null, st: null, year: 0 });
+  constructor({ scene, day, tvs, allowed = () => true, onMidnight = null }) {
+    Object.assign(this, { scene, day, tvs, allowed, onMidnight, phase: '', forced: new Set(), glasses: null, st: null, year: 0 });
     this.overlay = (ctx, w, h) => drawNewYear(ctx, w, h, this.st, this.year); // one shared overlay for every TV
   }
 
@@ -89,6 +89,7 @@ export class NewYear {
       this.forced.clear();
     }
     if (st.phase) for (const t of this.tvs) t.screen.overlay = t.isOpen ? this.overlay : null;
+    if (this.phase === 'count' && st.phase === 'cheer') this.onMidnight?.(); // the countdown reached 0: the fireworks (#1200)
     this.phase = st.phase;
     const out = glassesOut(this.day);
     if (out && !this.glasses) { this.glasses = buildGlasses(); this.scene.add(this.glasses); }

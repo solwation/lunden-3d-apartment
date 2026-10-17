@@ -2192,7 +2192,7 @@ const christmas = new ChristmasSeason({ rearrange, lights,
 });
 christmas.update(day, 0);
 // New Year's Eve (#1199): the TVs count down the last seconds to midnight, champagne flutes on the coffee table
-const newYear = new NewYear({ scene, day, tvs: world.furnitureTargets.filter((t) => t.kind === 'tv'), allowed: () => power.on && world.furnitureOn !== false });
+const newYear = new NewYear({ scene, day, tvs: world.furnitureTargets.filter((t) => t.kind === 'tv'), allowed: () => power.on && world.furnitureOn !== false, onMidnight: () => showFireworks.start() });
 const terminal = document.getElementById('terminal'), terminalInput = document.getElementById('terminal-code');
 const reportCapture = new ReportCapture(renderer);
 const adminReports = new AdminReports({ help: () => chat?.help ?? '', form: document.getElementById('terminal-form'), input: terminalInput,

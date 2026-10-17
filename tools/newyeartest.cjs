@@ -51,6 +51,7 @@ const check = (ok, name) => { console.log(`${ok ? 'PASS' : 'FAIL'} ${name}`); if
     await at('day.addDays(1); day.hour = 20 / 3600;');
     s = await state();
     check(s.month === 1 && s.date === 1 && s.phase === 'cheer' && s.on.every(Boolean), 'after midnight: "Gott nytt år!" on the TVs');
+    check(await page.evaluate(() => window.__app.showFireworks.active()), 'midnight (count → cheer) starts the fireworks (#1200)');
     await page.evaluate(() => { const { camera, player } = window.__app; player.spawn(3.95, 12.3, 0); camera.rotation.set(-0.24, 0, 0); });
     await kit.shot(page, `${out}/cheer.png`);
     await at('day.hour = 2 / 60;');
@@ -79,6 +80,7 @@ const check = (ok, name) => { console.log(`${ok ? 'PASS' : 'FAIL'} ${name}`); if
       if (p === 'cheer') break;
       await new Promise((res) => setTimeout(res, 200));
     }
+    check(await r.page.evaluate(() => window.__app.showFireworks.active()), 'running clock: the fireworks started at 00:00');
     check(seen.has('cheer') && [...seen].some((p) => p.startsWith('count')), `running clock: ${[...seen].join(' → ')}`);
     await r.page.context().close();
   } finally { await browser.close(); }
