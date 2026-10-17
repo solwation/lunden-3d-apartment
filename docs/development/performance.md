@@ -420,8 +420,8 @@ room looks slightly crisper, nothing else changes).
 Ghosts (#666, `src/ghosts.js`), avatars (#705, `src/avatar.js`): each other player costs two draw calls (one SkinnedMesh with vertex colours, one
 name tag sprite), no shadow pass, no extra pass for the outline (a fresnel term in the same Lambert material's shader, one program for
 all), at most `GHOSTS.max` (30); hidden beyond `GHOSTS.far`, the tag beyond `GHOSTS.tagFar`, posed only within `AVATAR.poseFar` m (a
-13-bone IK pose + matrix update, ~0.05 ms). **Triangles per avatar: 3 874 – 4 082** (the 8 hairstyle × sleeve variants; `avatarTriangles(v)`; #1103's body/hands/clothes added ≈ 0.3 k
-to the earlier 3 554 – 3 766;
+13-bone IK pose + matrix update, ~0.05 ms). **Triangles per avatar: 4 056 – 4 856** (the 8 hairstyle × sleeve variants; `avatarTriangles(v)`; #1102's hair shells added short +0.2 k, bun/beanie +0.4 k, long +0.8 k
+to #1103's 3 874 – 4 082 (body/hands/clothes ≈ +0.3 k on the earlier 3 554 – 3 766);
 the earlier merged dummy was 1 652), before and after: one draw call each, no texture (so nothing on the low-memory mode's texture
 budget; a variant's base geometry ≈ 0.4 MB, built lazily, an avatar owns a 45 KB colour attribute, a 13-bone skeleton with an 8 × 8 float bone
 texture and a material). One name tag texture (256 × 64) per distinct name, shared, disposed with its last ghost. Nothing exists without

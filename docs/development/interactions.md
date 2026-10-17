@@ -427,13 +427,17 @@ src/avatar.js          the players' avatars (#705): a neutral human figure on Ol
                        `lathe`; his look is untouched): a face (eyes, brows, nose, mouth, ears), the body (#1103, `bodyParts`: a torso with chest/bust,
                        shoulder blades and sloping shoulders, deltoid caps, wrists reaching flat hands with the palm to the thigh, fingers and a thumb,
                        a T-shirt with sleeve hems / long-sleeved top with elbow folds and cuffs, collar, hem, belt with buckle, trousers with seat,
-                       fly seam and hems, low trainers with a sole), one of four hair styles (short, long, bun, beanie). Facial hair (`facial`): 1 / 3 =
+                       fly seam and hems, low trainers with a sole), one of four hair styles (short, long, bun, beanie; #1102 `hairParts`, tunables
+                       `AVATAR_HAIR`: shells projected onto the skull ∪ jaw above a real hairline — forehead, temples, sideburns, over the
+                       ears, nape — feathered at the edge, with per-column strand shading via a `shade` vertex attribute; long hair adds a
+                       two-sided curtain kept off ears/neck/torso in the bind pose with a middle parting; the beanie is ribbed with a rolled cuff
+                       above the brows; component screenshots: `tools/avatarhairtest.cjs BASE OUT [prefix]` on `tools/avatarhair.html`). Facial hair (`facial`): 1 / 3 =
                        one continuous full-beard shell (#1097, `beardShell`, tunables `AVATAR_BEARD`) projected onto the skull ∪ jaw ellipsoids,
                        fullest at the chin and tapering to the skin at its edges, a lips patch showing through the mouth notch / opening (3 adds
                        the upper-lip moustache band); 2 = two moustache boxes; +≈ 0.35 k triangles. It is cosmetic only (head hits use the
                        shared three-box collider). `look(seed)` (the player's id, ours
                        `me:<name>`) picks skin, hair, top, trousers, shoes, sleeves, hair style, build and height, so players differ. ONE SkinnedMesh
-                       (one draw call) per avatar, no texture, ≈ 3.9–4.1 k triangles (`avatarTriangles(variant)`; 8 shared base geometries, built lazily;
+                       (one draw call) per avatar, no texture, ≈ 4.1–4.9 k triangles (`avatarTriangles(variant)`; 8 shared base geometries, built lazily;
                        an avatar owns only a colour attribute, a 13-bone skeleton and a material). The material is a MeshLambertMaterial patched with a
                        lit and opaque (#1025: players always see normal visible avatar appearance; ghost outline removed).
                        `update(dt, { speed, turn, hands, crouch })`: legs walk above AVATAR.walkSpeed (the phase follows the distance), arms swing,

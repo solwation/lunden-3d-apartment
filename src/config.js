@@ -3093,6 +3093,18 @@ export const AVATAR = { fill: 0.07, rim: 0.85, rimPower: 2.2, emissiveOutline: 0
 // the grid's rows/columns line up with the moustache variant's mouth opening [half width, bottom, top] (one quad high, two wide); lips: the patch behind it, reaching under the beard so an oblique view sees no gap [half width, bottom, top]; lipsNotch: the same in the beard-only notch
 export const AVATAR_BEARD = { centre: [0, 0.075, 0.02], azimuth: 92, bottom: -76, cols: 16, rows: 10, cheek: [-6, 10], cheekAz: [22, 90],
   chinTop: -27, notch: [8, 22], mouth: [12, -27, -20], lips: [22, -30, -17], lipsNotch: [12.5, -27.5, -19.5], thickness: 0.011, lift: 0.0015 };
+// The avatars' hairstyles (#1102, src/avatar.js hairParts) *guess* by eye against the avatar head (PVP_RIFLE_HEAD skull / jaw / ears):
+// shells projected from `centre` (head-bone frame, m) onto the skull, lifted by a thickness. `hairline`: the hair's lower edge,
+// [|azimuth|, elevation] in degrees (0 = straight ahead): forehead → temples → sideburn in front of the ear → over the ear → nape;
+// `beanie` the knitted hat's lower edge the same way. `thick` m by style: [crown, sides, back]; `streak` the strand shading
+// (± fraction per column); long hair (style 1): the curtain round the back from |azimuth| `long.from`, hanging from the
+// hairline at its front edge, rising to elevation `long.top` between |azimuth| `front` and `back`, down to `long.hem` [sides, back] m
+// below the head bone, `long.gap` m off the shoulders, `long.depth` m thick.
+export const AVATAR_HAIR = { centre: [0, 0.09, 0], rows: 6, step: 12, streak: 0.07,
+  hairline: [[0, 37], [22, 36], [42, 29], [58, 16], [64, -4], [72, -6], [78, 13], [102, 15], [120, -6], [146, -26], [180, -30]],
+  beanie: [[0, 35], [35, 32], [60, 19], [80, 9], [100, 9], [140, -8], [180, -14]],
+  thick: [[0.016, 0.006, 0.009], [0.014, 0.011, 0.013], [0.006, 0.004, 0.005], [0.004, 0.003, 0.004]],
+  long: { top: 50, from: 64, front: 72, back: 100, hem: [-0.035, -0.25], gap: 0.016, depth: 0.012, rows: 8 } };
 // Combat between players (#667, src/combat.js; the room's check: cloudflare/players.js COMBAT). Only when both hold a weapon:
 // `weapons` = what counts, in the order they are looked for (the room's list must have each one: there its range and rate);
 // remove one here to leave it out. Both armed: drawn solid (`solid` opacity), else a ghost. A hit is judged by the shooter

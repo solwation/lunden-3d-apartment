@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { AVATAR as A, AVATAR_BEARD as BEARD, SPIDER, avatarLook, PVP_RIFLE_HEAD as RH, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
+import { AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, SPIDER, avatarLook, PVP_RIFLE_HEAD as RH, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
 import { topTexture } from './spidersuit.js';
-import { NAMES, HIP, UPPER, FORE, HAND, SH, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
+import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
 
 // The players' avatars (#705): a neutral human figure for the other players (src/ghosts.js) and for our own reflection in the
 // mirrors (#691). The skeleton, the proportions and the two-bone IK are Olof's (src/olof.js, #671); the figure itself is a
@@ -71,25 +71,8 @@ function parts(style, sleeves, gender = 0, facial = 0) {
     add(beard, 'hair', 'head', [0, 0, 0], 0.9);
     add(lips, 'fixed', 'head', [0, 0, 0], 1, 0x8a4c45);
   }
-  // hair: a cap over the skull in every style; then a style's own parts (all hair-coloured, the beanie in the top's colour)
-  const skull = () => sphere(0.12, 14, 8, 0, Math.PI * 2, 0, Math.PI * 0.5).rotateX(-0.62).scale(0.96, 1.02, 1.04);
-  if (style === 0) { // short, a little tousled on top
-    add(skull(), 'hair', 'head', [0, H + 0.012, -0.004]);
-    add(sphere(0.07, 8, 5).scale(1, 0.45, 1.2), 'hair', 'head', [0, H + 0.1, 0.01], 1.08);
-  } else if (style === 1) { // long, down over the shoulders at the back and sides
-    add(skull(), 'hair', 'head', [0, H + 0.012, -0.004]);
-    add(sphere(0.115, 10, 8).scale(1.0, 2.1, 0.62), 'hair', 'head', [0, H - 0.12, -0.065], 0.92);
-    for (const s of [-1, 1]) add(cap(0.022, 0.18), 'hair', 'head', [s * 0.105, H - 0.08, 0.008], 1.05); // locks falling by ears and shoulders, keeping face clear
-  } else if (style === 2) { // a bun
-    add(skull(), 'hair', 'head', [0, H + 0.012, -0.004]);
-    add(sphere(0.05, 9, 7), 'hair', 'head', [0, H + 0.115, -0.07], 1.08);
-    add(new THREE.TorusGeometry(0.05, 0.007, 4, 10).rotateX(Math.PI / 2), 'top', 'head', [0, H + 0.085, -0.07]);
-  } else { // a beanie with a turned-up rim
-    add(sphere(0.125, 14, 8, 0, Math.PI * 2, 0, Math.PI * 0.5).rotateX(-0.3).scale(0.98, 1.0, 1.04), 'top', 'head', [0, H + 0.03, -0.002]);
-    add(new THREE.TorusGeometry(0.114, 0.02, 5, 16).rotateX(Math.PI / 2 - 0.3), 'top', 'head', [0, H + 0.04, 0.0], 0.8);
-    add(sphere(0.026, 6, 5), 'top', 'head', [0, H + 0.155, -0.035], 0.9);
-    add(new THREE.BoxGeometry(0.2, 0.05, 0.09), 'hair', 'head', [0, H + 0.005, -0.06], 0.9); // hair showing at the nape
-  }
+  // hair (#1102): 0 short, 1 long, 2 a bun, 3 a beanie (in the top's colour) – see hairParts
+  for (const [g, region, shade] of hairParts(style)) add(g, region, 'head', [0, 0, 0], shade);
   return P;
 }
 // --- the body (#1103) ----------------------------------------------------------------------------------------------------
@@ -219,6 +202,126 @@ function beardShell(lip) {
   const L = lip ? B.lips : B.lipsNotch, lips = grid([-L[0], L[0]], 6, 3, () => [L[1], L[2]], () => B.lift);
   return { beard, lips };
 }
+/** The hairstyles (#1102) in the head bone's frame, as [geometry, region, shade]. Every style is a shell projected from
+ * AVATAR_HAIR.centre onto the skull ∪ jaw ellipsoids (RH.skull / RH.jaw) above a real hairline (forehead, temples,
+ * sideburns in front of the ears, over the ears, the nape), lifted by a thickness that feathers out at the edge, with
+ * per-column strand shading (a `shade` vertex attribute, multiplied into the colour by `base`). Short (0): fuller and a
+ * little tousled on top; long (1): a middle parting and a two-sided curtain from above the ears down over the shoulders
+ * and the back, kept off the ears, neck and torso; a bun (2): hair combed back thinly into a coiled bun with a band;
+ * a beanie (3): a ribbed knitted hat with a turned-up cuff over the brow, hair showing below it. The face stays clear. */
+function hairParts(style) {
+  const HC = HAIR, c = HC.centre, deg = Math.PI / 180, out = [];
+  const smooth = (e0, e1, x) => { const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0))); return t * t * (3 - 2 * t); };
+  const table = (t, x) => { // linear in |x| through [x, y] corners
+    x = Math.abs(x);
+    for (let i = 1; i < t.length; i++) if (x <= t[i][0]) return t[i - 1][1] + ((t[i][1] - t[i - 1][1]) * (x - t[i - 1][0])) / (t[i][0] - t[i - 1][0]);
+    return t.at(-1)[1];
+  };
+  const turn = (t, step) => { // a full turn of azimuths, −180 … <180: the table's corners (mirrored) and even steps between
+    const half = [];
+    for (let i = 1; i < t.length; i++) { const n = Math.max(1, Math.ceil((t[i][0] - t[i - 1][0]) / step)); for (let k = 0; k < n; k++) half.push(t[i - 1][0] + ((t[i][0] - t[i - 1][0]) * k) / n); }
+    half.push(180);
+    return [...half.slice(1).reverse().map((a) => -a), ...half.slice(0, -1)];
+  };
+  const dir = (a, e) => [Math.sin(a * deg) * Math.cos(e * deg), Math.sin(e * deg), Math.cos(a * deg) * Math.cos(e * deg)];
+  const hit = (e, o0, d) => { // the far intersection of o0 + t·d with an ellipsoid (0 if none)
+    const o = [0, 1, 2].map((i) => (o0[i] - e.centre[i]) / e.scale[i]), v = [0, 1, 2].map((i) => d[i] / e.scale[i]);
+    const qa = v[0] ** 2 + v[1] ** 2 + v[2] ** 2, qb = o[0] * v[0] + o[1] * v[1] + o[2] * v[2], qc = o[0] ** 2 + o[1] ** 2 + o[2] ** 2 - e.radius ** 2;
+    const q = qb * qb - qa * qc;
+    return q < 0 ? 0 : Math.max(0, (-qb + Math.sqrt(q)) / qa);
+  };
+  const skin = (d) => Math.max(hit(RH.skull, c, d), hit(RH.jaw, c, d));
+  const onSkull = (a, e, lift) => { const d = dir(a, e), t = skin(d) + lift; return [c[0] + d[0] * t, c[1] + d[1] * t, c[2] + d[2] * t]; };
+  // a grid: `cols` × `rows` quads, i across (left → right seen from outside), j upwards; `wrap` closes a full turn
+  const sheet = (cols, rows, wrap, pos, shade, inward = false) => {
+    const p = [], s = [], idx = [], n = wrap ? cols : cols + 1, at = (i, j) => (i % n) * (rows + 1) + j;
+    for (let i = 0; i < n; i++) for (let j = 0; j <= rows; j++) { p.push(...pos(i, j)); s.push(shade(i, j)); }
+    for (let i = 0; i < cols; i++) for (let j = 0; j < rows; j++) {
+      const q = [at(i, j), at(i + 1, j), at(i, j + 1), at(i + 1, j), at(i + 1, j + 1), at(i, j + 1)];
+      idx.push(...(inward ? [q[0], q[2], q[1], q[3], q[5], q[4]] : q));
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(p, 3));
+    g.setAttribute('shade', new THREE.Float32BufferAttribute(s, 1));
+    g.setIndex(idx);
+    g.computeVertexNormals();
+    return g;
+  };
+  const strand = (i) => 1 + HC.streak * Math.sin(i * 2.39 + 0.7); // a strand's shade by column (golden-angle scatter)
+  const [crown, side, back] = HC.thick[style] ?? HC.thick[0];
+  const thick = (a, e) => { const ring = side + (back - side) * Math.max(0, -Math.cos(a * deg)); return ring + (crown - ring) * smooth(5, 75, e); };
+  // the scalp shell from the hairline (or `low`) up to `high` (90: the crown), with an extra `bump(a, s, i)` lift
+  const shell = (az, low, high, rows, lift, shade) => sheet(az.length, rows, true, (i, j) => {
+    const a = az[i], e0 = low(a), s = j / rows;
+    return onSkull(a, e0 + (high(a) - e0) * s, lift(a, e0 + (high(a) - e0) * s, s, i));
+  }, (i, j) => shade(az[i], j / rows, i));
+  const hairline = (a) => table(HC.hairline, a), feather = (s) => 0.25 + 0.75 * smooth(0, 0.4, s);
+  const az = turn(HC.hairline, HC.step), crownTop = () => 90;
+  if (style === 3) { // the beanie: body (fuller at the back), the cuff rolled over its lower edge, hair below it
+    const brim = (a) => table(HC.beanie, a), bz = turn(HC.beanie, 10);
+    const rib = (i) => (i % 2 ? 1.05 : 0.94);
+    out.push([shell(bz, brim, crownTop, HC.rows, (a, e) => 0.012 + 0.014 * smooth(25, 85, e) + 0.014 * smooth(35, 75, e) * Math.max(0, -Math.cos(a * deg)) * (1 - smooth(75, 90, e)), (a, s, i) => rib(i)), 'top', 1]);
+    out.push([shell(bz, (a) => brim(a) - 2, (a) => brim(a) + 13, 3, (a, e, s) => 0.004 + 0.017 * Math.sin(Math.min(1, s / 0.34) * Math.PI / 2) - 0.008 * smooth(0.67, 1, s), (a, s, i) => rib(i) * (s > 0.2 && s < 0.8 ? 1 : 0.88)), 'top', 0.82]);
+    out.push([shell(turn(HC.hairline, 15), hairline, (a) => brim(a) + 3, 2, (a, e, s) => 0.0015 + 0.0035 * smooth(0, 0.6, s), (a, s, i) => strand(i) * 0.95), 'hair', 1]);
+    return out;
+  }
+  // long hair: the shell stops where the curtain takes over (along the sideburn at the front edge, higher round the
+  // back), with its full thickness there, so the curtain's top row is the shell's lowest one
+  const L = HAIR.long, parting = style === 1, curtain = (a) => parting && Math.abs(a) >= L.from - 1e-9;
+  const longTop = (a) => hairline(a) + (L.top - hairline(a)) * smooth(L.front, L.back, Math.abs(a));
+  const low = (a) => (curtain(a) ? Math.max(hairline(a), longTop(a)) : hairline(a));
+  const bump = style === 0 ? (a, s, i) => 0.0045 * Math.sin(i * 1.9 + 0.4) * smooth(0.45, 0.9, s) + 0.004 * smooth(0.25, 0.7, s) * (1 - smooth(25, 55, Math.abs(a))) : () => 0;
+  out.push([shell(az, low, crownTop, HC.rows,
+    (a, e, s, i) => Math.max(0.0015, thick(a, e) * (curtain(a) ? 1 : feather(s)) * (parting && a === 0 ? 0.55 : 1) + bump(a, s, i)),
+    (a, s, i) => strand(i) * (parting && a === 0 && s > 0.15 ? 0.8 : 1) * (0.92 + 0.08 * smooth(0, 0.3, s))), 'hair', 1]);
+  if (style === 1) out.push(...longHair([...az.filter((a) => a >= L.from), ...az.filter((a) => a <= -L.from)], low, onSkull, sheet, strand, thick, hit, smooth));
+  if (style === 2) { // the bun at the back of the crown: a coil around a knot, tilted with the head's curve, and its band
+    const at = [0, 0.212, -0.078], tilt = -0.66;
+    out.push([new THREE.SphereGeometry(0.036, 10, 7).scale(1.05, 0.9, 1).rotateX(tilt).translate(...at), 'hair', 1.06]);
+    out.push([new THREE.TorusGeometry(0.03, 0.016, 6, 12).rotateX(Math.PI / 2).rotateX(tilt).translate(at[0], at[1] - 0.012, at[2] + 0.009), 'hair', 0.96]);
+    out.push([new THREE.TorusGeometry(0.03, 0.0045, 4, 12).rotateX(Math.PI / 2).rotateX(tilt).translate(at[0], at[1] - 0.026, at[2] + 0.02), 'top', 0.85]);
+  }
+  return out;
+}
+/** Long hair's curtain (#1102): from the scalp shell's lowest row (`top`) at the sides and back, falling straight
+ * down and never back in (each column's radius only grows downwards), kept `gap` off the skull, jaw, ears, neck and torso
+ * (bind pose), with a slightly uneven hem; an inner surface `depth` behind it, darker (the underside). */
+function longHair(az, top, onSkull, sheet, strand, thick, hit, smooth) { // az: the figure's left (+x) round the back to its right
+  const L = HAIR.long, cols = az.length - 1;
+  const ears = [-1, 1].map((s) => ({ radius: 0.028, scale: [0.55, 1, 0.72], centre: [s * 0.1, H - 0.005, 0] })); // as the ears in parts()
+  const torsoAt = (y) => { // the torso's radius in the bind pose at head-frame height y (the wider of both figures)
+    const t = y + NECK;
+    let r = 0;
+    for (const prof of [TORSO_PROFILE, TORSO_PROFILE_FEMALE]) for (let k = 1; k < prof.length; k++) {
+      const [r0, y0] = prof[k - 1], [r1, y1] = prof[k];
+      if (t >= y0 && t <= y1) r = Math.max(r, r0 + ((r1 - r0) * (t - y0)) / (y1 - y0 || 1));
+    }
+    return r;
+  };
+  const body = (a, y) => { // how far out the head, ears, neck and torso reach at height y in direction a (from the axis)
+    const d = [Math.sin(a), 0, Math.cos(a)], o = [0, y, 0];
+    let r = Math.max(hit(RH.skull, o, d), hit(RH.jaw, o, d), ...ears.map((e) => hit(e, o, d)));
+    if (y > -0.04 && y < 0.08) r = Math.max(r, 0.055);
+    const t = torsoAt(y);
+    if (t > 0) r = Math.max(r, 1 / Math.hypot(d[0] / (t * 1.15), d[2] / (t * 0.7)));
+    return r;
+  };
+  const cols3 = az.map((a, i) => { // each column's points from the hem (j = 0) up to the top
+    const rad = a * Math.PI / 180, p0 = onSkull(a, top(a), thick(a, top(a))), r0 = Math.hypot(p0[0], p0[2]);
+    const hem = L.hem[0] + (L.hem[1] - L.hem[0]) * smooth(L.from, 135, Math.abs(a)) + 0.01 * Math.sin(i * 1.7);
+    const pts = [];
+    let r = 0;
+    for (let j = L.rows; j >= 0; j--) { // top down: the radius only grows
+      const t = (1 - j / L.rows) ** 1.3, y = p0[1] + (hem - p0[1]) * t;
+      r = Math.max(r, r0, body(rad, y) + L.gap * smooth(0, 0.15, t)); // from the shell's edge along the skull to its widest, then hangs
+      pts[j] = [Math.sin(rad) * r, y, Math.cos(rad) * r, r];
+    }
+    return pts;
+  });
+  const outer = sheet(cols, L.rows, false, (i, j) => cols3[i][j].slice(0, 3), (i, j) => strand(i + 3) * (0.9 + 0.1 * smooth(0, 0.4, j / L.rows)));
+  const inner = sheet(cols, L.rows, false, (i, j) => { const [x, y, z, r] = cols3[i][j], k = (r - L.depth) / r; return [x * k, y, z * k]; }, () => 0.7, true);
+  return [[outer, 'hair', 0.97], [inner, 'hair', 1]];
+}
 // the tops' torso (hip at 0; scaled 1.15 / 1.08 × 1 × 0.7): a narrower waist, the chest, sloping shoulders (the trapezius)
 // up to the neck (#1103). The suit's atlas (#891) maps over the widest radius and the top height, both kept.
 const TORSO_PROFILE = [[0, 0], [0.13, 0.0], [0.152, 0.04], [0.155, 0.12], [0.14, 0.25], [0.162, 0.44], [0.17, 0.5],
@@ -238,10 +341,10 @@ function base(style = 0, sleeves = 0, gender = 0, facial = 0) {
       g0.computeBoundingBox(); headProjection = g0.boundingBox.clone(); headRadius = g0.parameters.radius;
     }
     const g = g0.index ? g0.toNonIndexed() : g0;
-    const n = g.attributes.position.count, k = NAMES.indexOf(part.bone), c = new THREE.Color(fixed);
+    const n = g.attributes.position.count, k = NAMES.indexOf(part.bone), c = new THREE.Color(fixed), vs = g.attributes.shade?.array; // per-vertex shade (hair strands, #1102)
     const col = new Float32Array(n * 3), reg = new Float32Array(n), si = new Uint16Array(n * 4), sw = new Float32Array(n * 4), contact = new Uint8Array(n), nose = new Uint8Array(n), jaw = new Uint8Array(n);
     for (let i = 0; i < n; i++) {
-      if (region === REGION.fixed && !part.shoe) { col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b; } else col.fill(shade, i * 3, i * 3 + 3);
+      if (region === REGION.fixed && !part.shoe) { col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b; } else col.fill(vs ? shade * vs[i] : shade, i * 3, i * 3 + 3);
       jaw[i] = part.rifleJaw ? 1 : 0; nose[i] = part.rifleNose ? 1 : 0; contact[i] = part.rifleSkull ? 1 : 0; reg[i] = part.shoe ? 5 : region; si[i * 4] = k; sw[i * 4] = 1;
     }
     g.setAttribute('color', new THREE.BufferAttribute(col, 3));
