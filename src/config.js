@@ -3063,6 +3063,15 @@ export const AVATAR_FACE = {
   warp: { width: 0.93, narrow: 0.26, y: [0.075, 0], z: [0, 0.1] },
   lipTint: 0xb0605a,
 };
+// The avatars' talking mouth (#1122, src/avatar.js mouthWeight / Avatar.talk) *guess* by eye, not measured: the lower lip,
+// chin and lower beard drop by up to `drop` m (head-bone frame) in the vertex shader while the dark lip seam stretches into the
+// opening; the drop fades over `below` m under the seam and back to nothing at `chinY`, within `halfWidth` m of the middle
+// (the corners stay shut) and in front of `frontZ`. The rhythm walks the line's letters at `rate` letters/s (Swedish speech is
+// roughly 5 syllables ≈ 13 letters a second), opening by `vowel` / `consonant` / `space` and closing for `pause` letters at
+// punctuation; `follow` 1/s eases the mouth towards it. A chat line talks for at most `maxSecs` (and never past its bubble);
+// a spoken line follows the voice's start / word boundaries / end, closed after `liveMax` s if the end never comes.
+export const AVATAR_MOUTH = { drop: 0.009, below: 0.004, chinY: -0.03, halfWidth: 0.024, frontZ: [0.05, 0.085],
+  rate: 13, vowel: 1, consonant: 0.4, space: 0.08, pause: 3, follow: 22, maxSecs: 6, liveMax: 20 };
 // The avatars' full beard (#1097, src/avatar.js beardShell) *guess* tuned by eye against the avatar head (PVP_RIFLE_HEAD skull / jaw): degrees from `centre` (head-bone frame, metres);
 // the grid's rows/columns line up with the moustache variant's mouth opening [half width, bottom, top] (one quad high, two wide); lips: the patch behind it, reaching under the beard so an oblique view sees no gap [half width, bottom, top]; lipsNotch: the same in the beard-only notch
 export const AVATAR_BEARD = { centre: [0, 0.075, 0.02], azimuth: 92, bottom: -76, cols: 16, rows: 10, cheek: [-6, 10], cheekAz: [22, 90],

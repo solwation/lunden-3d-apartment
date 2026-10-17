@@ -468,6 +468,20 @@ src/avatar.js          the players' avatars (#705): a neutral human figure on Ol
                        a weapon is held out in the right hand and its prop follows that hand (the jetpack sits on the back). Not sent / not done: head
                        pitch (the room's state has only position and yaw), a shadow (the shadow map is redrawn rarely). Numbers: AVATAR in config.js
                        (*guess*, by eye). Posed only within AVATAR.poseFar m.
+                       **Talking mouth (#1122, tunables `AVATAR_MOUTH`, *guess*):** `talk(text, secs)` walks the line's letters at
+                       MOUTH.rate (vowels open wide, consonants a little, spaces nearly shut, punctuation shut for MOUTH.pause slots), for the
+                       text's length capped at `secs` and MOUTH.maxSecs, eased by MOUTH.follow, shut at the end; `speechStart / speechBoundary /
+                       speechEnd` follow a Web Speech voice (greet.js `speak(text, voice, avatar)`: onstart restarts the rhythm, each word
+                       boundary jumps to that word and waits shut at its end, onend / onerror shuts; MOUTH.liveMax as a safety). No new mesh,
+                       draw call or traffic: a shared per-vertex `mouth` weight (`mouthWeight`: lower lip whole, the dark lip seam's lower
+                       half, chin / jaw front / lower beard fading to the corners and under the chin; with beard + moustache only below the
+                       opening's lower edge) and one `uMouth` uniform move vertices down by up to MOUTH.drop in the vertex shader before
+                       skinning. Hit regions and the three-box collider keep the closed bind pose. Driven by chat.js `bubble` (a received
+                       line; never for "skriver…", stopped with the bubble), ghosts.js `selfTalk` (our sent line, the mirror image),
+                       greet.js `sayMine` (our spoken lines → the mirror image, `greet.mineAvatar`) and `onGreet` (a greeting player's avatar).
+                       Component screenshots: `tools/avatarmouthtest.cjs BASE OUT` on `tools/avatarmouth.html` (four facial-hair variants
+                       shut / open, a talked line's rhythm and caps); in the app: `tools/avatarmouthgametest.cjs GAME WORKER` (a module
+                       peer's line, "skriver…", the hall mirror).
 src/basket.js          Tilly's basketball (BASKET): a Holdable in a wall holder over her daybed; click shoots it on an arc
                        through the point you look at (near the rim: at the rim, coming down at `entry`), right click / the
                        🏀 button (#power-btn, its icon = the held thing's `altIcon`) dribbles; out of the hand it bounces off

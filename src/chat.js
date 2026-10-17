@@ -74,6 +74,7 @@ export class Chat {
     this.tokens--; this.sent++;
     this.typing = false; // (the room puts our "skriver…" off with the line)
     this.add(cleanName(this.name()), m, true);
+    this.ghosts.selfTalk?.(m); // (#1122: our mirror image says it too)
     return '';
   }
 
@@ -149,9 +150,12 @@ export class Chat {
       dots.append(document.createElement('i'), document.createElement('i'), document.createElement('i'));
       b.el.replaceChildren(document.createTextNode('Skriver'), dots);
     } else b.el.textContent = text;
+    // #1122: their avatar's mouth moves with the line (locally, from the line already here), never for "skriver…"
+    if (b.typing) g.avatar?.stopTalking?.(); else g.avatar?.talk?.(text, CHAT.bubbleTtl);
   }
 
   unbubble(id) {
+    this.bubbles.get(id)?.ghost?.avatar?.stopTalking?.();
     this.bubbles.get(id)?.el.remove();
     this.bubbles.delete(id);
   }

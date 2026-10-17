@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_SKIN as SK, SPIDER, avatarLook, PVP_RIFLE_HEAD as RH, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
+import { AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, PVP_RIFLE_HEAD as RH, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
 import { topTexture } from './spidersuit.js';
 import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
 
@@ -64,7 +64,9 @@ function parts(style, sleeves, gender = 0, facial = 0) {
   if (f === 1 || f === 3) { // #1097: one continuous full beard, the lips showing through its mouth opening
     const { beard, lips } = beardShell(f === 3);
     add(beard, 'hair', 'head', [0, 0, 0], 0.9);
+    if (f === 3) P[P.length - 1].mouth = 'moustache'; // (#1122: the moustache over the opening stays, the beard below it drops)
     add(lips, 'fixed', 'head', [0, 0, 0], 1, 0x8a4c45);
+    P[P.length - 1].mouth = f === 3 ? 'moustache' : 'upper'; // (#1122: the backdrop's top stays; the lips and the dark seam open in front of it)
   }
   // hair (#1102): 0 short, 1 long, 2 a bun, 3 a beanie (in the top's colour) – see hairParts
   for (const [g, region, shade] of hairParts(style)) add(g, region, 'head', [0, 0, 0], shade);
@@ -391,8 +393,11 @@ function addFace(add, sphere, P) {
   P[P.length - 1].rifleNose = true;
   const [uy, uz, ur, us] = F.lips.upper, [ly, lz, lr, ls] = F.lips.lower;
   add(bend(sphere(ur, 10, 4).scale(...us), F.lips.bend), 'lips', 'head', [0, uy, uz]);
+  P[P.length - 1].mouth = 'upper'; // (#1122: stays put while talking)
   add(bend(sphere(lr, 10, 4).scale(...ls), F.lips.bend), 'lips', 'head', [0, ly, lz], 1.05);
+  P[P.length - 1].mouth = 'lower'; // (#1122: drops as a whole)
   add(bend(sphere(Math.min(ur, lr), 10, 3).scale(1, 0.06, 0.22), F.lips.bend), 'fixed', 'head', [0, (uy + ly) / 2, (uz + lz) / 2 + 0.0015], 1, F.lips.seam);
+  P[P.length - 1].mouth = 'seam'; // (#1122: its lower half drops with the lower lip, the dark opening)
   add(sphere(F.chin.r, 7, 4).scale(...F.chin.scale), 'skin', 'head', F.chin.at, 0.98);
 }
 // the tops' torso (hip at 0; scaled 1.15 / 1.08 × 1 × 0.7): a narrower waist, the chest, sloping shoulders (the trapezius)
@@ -448,6 +453,28 @@ function skinShading() {
       }`;
 }
 
+// --- the talking mouth (#1122) ------------------------------------------------------------------------------------------
+// The mouth opens without a new mesh or draw call: a shared per-vertex weight `mouth` (0 … 1, baked once per variant) says how
+// far a vertex follows the lower jaw, and the avatars' vertex shader moves it down by uMouth × weight × MOUTH.drop in the
+// bind pose (before skinning). The lower lip drops whole, the dark lip seam's lower half with it (the opening), the upper lip,
+// the moustache and everything above stay; the chin, the jaw's front and a beard's lower part follow, fading towards the
+// corners and under the chin; with a moustache over the beard's opening, the beard drops only from the opening's lower
+// edge (the moustache stays, the gap opens under it). Collision and hit regions keep the closed bind pose (CPU raycasts never see the shader).
+const SEAM_Y = (FACE.lips.upper[0] + FACE.lips.lower[0]) / 2;
+/** A head-bone vertex's jaw weight from its position `x, y, z` in the head bone's frame and its part's `mouth` role. */
+function mouthWeight(role, x, y, z) {
+  const M = MOUTH, side = 1 - smoothstep(0.004, M.halfWidth, Math.abs(x));
+  if (role === 'upper') return 0;
+  const w = side * smoothstep(SEAM_Y, SEAM_Y - M.below, y) * smoothstep(M.chinY, M.chinY + 0.03, y) * smoothstep(M.frontZ[0], M.frontZ[1], z);
+  if (role === 'moustache') { // the beard with a moustache: from the opening's top edge (elevation from BEARD.centre) down
+    const c = BEARD.centre, e = Math.atan2(y - c[1], Math.hypot(x, z - c[2])) * 180 / Math.PI;
+    return Math.min(w, smoothstep(BEARD.mouth[2] - 0.5, BEARD.mouth[1], e) * side);
+  }
+  if (role === 'lower') return side;
+  if (role === 'seam') return y < SEAM_Y ? side : 0;
+  return w;
+}
+
 /** The shared base geometry of a variant: positions, normals, skin attributes and `region` + `base` colour per vertex. */
 function base(style = 0, sleeves = 0, gender = 0, facial = 0) {
   const key = `${style}_${sleeves}_${gender}_${facial}`;
@@ -461,10 +488,12 @@ function base(style = 0, sleeves = 0, gender = 0, facial = 0) {
     }
     const g = g0.index ? g0.toNonIndexed() : g0;
     const n = g.attributes.position.count, k = NAMES.indexOf(part.bone), c = new THREE.Color(fixed), vs = g.attributes.shade?.array; // per-vertex shade (hair strands, #1102)
-    const col = new Float32Array(n * 3), bare = new Float32Array(n), reg = new Float32Array(n), si = new Uint16Array(n * 4), sw = new Float32Array(n * 4), contact = new Uint8Array(n), nose = new Uint8Array(n), jaw = new Uint8Array(n);
+    const col = new Float32Array(n * 3), bare = new Float32Array(n), reg = new Float32Array(n), si = new Uint16Array(n * 4), sw = new Float32Array(n * 4), contact = new Uint8Array(n), nose = new Uint8Array(n), jaw = new Uint8Array(n), mouth = new Float32Array(n);
+    const hb = part.bone === 'head' ? bindAt('head') : null, gp = g.attributes.position;
     for (let i = 0; i < n; i++) {
       if (region === REGION.fixed && !part.shoe) { col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b; } else col.fill((vs ? shade * vs[i] : shade) * clothShade(part.bone, region, g.attributes.position, i), i * 3, i * 3 + 3);
       bare[i] = region === REGION.skin ? 1 : 0;
+      if (hb) mouth[i] = mouthWeight(part.mouth, gp.getX(i) - hb.x, gp.getY(i) - hb.y, gp.getZ(i) - hb.z);
       jaw[i] = part.rifleJaw ? 1 : 0; nose[i] = part.rifleNose ? 1 : 0; contact[i] = part.rifleSkull ? 1 : 0; reg[i] = part.shoe ? 5 : region; si[i * 4] = k; sw[i * 4] = 1;
     }
     g.setAttribute('color', new THREE.BufferAttribute(col, 3));
@@ -473,9 +502,10 @@ function base(style = 0, sleeves = 0, gender = 0, facial = 0) {
     g.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(si, 4));
     g.setAttribute('skinWeight', new THREE.BufferAttribute(sw, 4));
     g.setAttribute('rifleJaw', new THREE.Uint8BufferAttribute(jaw, 1));
+    g.setAttribute('mouth', new THREE.BufferAttribute(mouth, 1));
     g.setAttribute('rifleNose', new THREE.Uint8BufferAttribute(nose, 1));
     g.setAttribute('rifleSkull', new THREE.Uint8BufferAttribute(contact, 1));
-    for (const a of Object.keys(g.attributes)) if (!['position', 'normal', 'color', 'region', 'bare', 'skinIndex', 'skinWeight', 'rifleSkull', 'rifleNose', 'rifleJaw'].includes(a)) g.deleteAttribute(a);
+    for (const a of Object.keys(g.attributes)) if (!['position', 'normal', 'color', 'region', 'bare', 'skinIndex', 'skinWeight', 'rifleSkull', 'rifleNose', 'rifleJaw', 'mouth'].includes(a)) g.deleteAttribute(a);
     geos.push(g);
   }
   b = mergeGeometries(geos);
@@ -497,7 +527,7 @@ function geometryFor(lk) {
     col[i * 3] = c.r * s; col[i * 3 + 1] = c.g * s; col[i * 3 + 2] = c.b * s;
   }
   const g = new THREE.BufferGeometry();
-  for (const name of ['position', 'normal', 'bare', 'skinIndex', 'skinWeight', 'rifleSkull', 'rifleNose', 'rifleJaw']) g.setAttribute(name, b.attributes[name]);
+  for (const name of ['position', 'normal', 'bare', 'skinIndex', 'skinWeight', 'rifleSkull', 'rifleNose', 'rifleJaw', 'mouth']) g.setAttribute(name, b.attributes[name]);
   g.setAttribute('color', new THREE.BufferAttribute(col, 3));
   g.userData.headProjection = b.userData.headProjection;
   g.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0.95, 0), 1.3); // limbs and a raised arm stay inside (culling by the root)
@@ -516,7 +546,7 @@ function releaseSuitTexture() { if (--suitUsers === 0) { suitTexture.dispose(); 
 
 function makeMaterial(rim, headProjection) {
   const headMin = headProjection.min, headSize = headProjection.getSize(new THREE.Vector3()), headFront = headProjection.getCenter(new THREE.Vector3()).z;
-  const u = { uOutline: { value: 0 }, uFill: { value: A.fill }, uRim: { value: A.rim }, uRimColor: { value: rim }, uSuit: { value: 0 }, uSuitTexture: { value: null }, uSuitMaskBand: { value: 0 } };
+  const u = { uOutline: { value: 0 }, uFill: { value: A.fill }, uRim: { value: A.rim }, uRimColor: { value: rim }, uSuit: { value: 0 }, uSuitTexture: { value: null }, uSuitMaskBand: { value: 0 }, uMouth: { value: 0 } };
   const m = new THREE.MeshLambertMaterial({ vertexColors: true, transparent: false, depthWrite: true });
   m.emissive.setScalar(A.emissiveSolid);
   m.userData.u = u;
@@ -524,8 +554,8 @@ function makeMaterial(rim, headProjection) {
     Object.assign(sh.uniforms, u);
     // Bind-pose coordinates follow the original skin: colours/own canvas only, no new
     // geometry, skeleton, head envelope or per-avatar colour-buffer replacement (#891).
-    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vSuitAt; varying float vSuitBone; attribute float bare; varying float vBare;')
-      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvSuitAt = position; vSuitBone = skinIndex.x; vBare = bare;');
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vSuitAt; varying float vSuitBone; attribute float bare; varying float vBare; attribute float mouth; uniform float uMouth;')
+      .replace('#include <begin_vertex>', `#include <begin_vertex>\nvSuitAt = position; vSuitBone = skinIndex.x; vBare = bare;\ntransformed.y -= uMouth * mouth * ${MOUTH.drop.toFixed(5)}; // #1122: the jaw while talking`);
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', '#include <common>\nuniform float uOutline, uFill, uRim;\nuniform vec3 uRimColor;\nuniform float uSuit, uSuitMaskBand; uniform sampler2D uSuitTexture; varying vec3 vSuitAt; varying float vSuitBone; varying float vBare;')
       .replace('#include <color_fragment>', `#include <color_fragment>
@@ -553,7 +583,7 @@ function makeMaterial(rim, headProjection) {
       diffuseColor.a = mix(diffuseColor.a, mix(uFill, uRim, edge), uOutline);
       #include <opaque_fragment>`);
   };
-  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-v2';
+  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-v3';
   return m;
 }
 
@@ -565,6 +595,22 @@ export const armTarget = {
   forward: (side, lift = 0) => ({ at: [side * 0.2, 1.08 + lift, 0.34], pole: [side * 0.6, -0.6, -0.5] }),
   up: (side, phase = 0) => ({ at: [side * (0.34 + 0.07 * Math.sin(phase)), 1.72, 0.12], pole: [side * 1, -0.7, -0.1] }),
 };
+
+/** A line's mouth rhythm (#1122): one opening per letter slot (vowels wide, consonants a little, spaces nearly shut,
+ * punctuation shut for MOUTH.pause slots), with each slot's first UTF-16 index for the voice's word boundaries. */
+function mouthSlots(text) {
+  const M = MOUTH, open = [], at = [];
+  let i = 0;
+  for (const ch of String(text ?? '')) {
+    const c = ch.toLowerCase();
+    if (/[aeiouyåäöéü]/.test(c)) { open.push(M.vowel * (0.8 + 0.2 * ((i * 7) % 3) / 2)); at.push(i); }
+    else if (/[\p{L}\p{N}]/u.test(c)) { open.push(M.consonant); at.push(i); }
+    else if (/[.,!?;:…–—]/.test(c)) for (let k = 0; k < M.pause; k++) { open.push(0); at.push(i); }
+    else if (/\s/.test(c)) { open.push(M.space); at.push(i); }
+    i += ch.length;
+  }
+  return { open, at };
+}
 
 const STRIDE = 0.78; // m per step cycle (one leg's whole swing; *guess*: a calm walk)
 
@@ -588,6 +634,45 @@ export class Avatar {
     this.head = new THREE.Vector3();
     this.phase = 0; this.solid = true; this.time = 0;
     this.pos = new THREE.Vector3(); this.known = false;
+    this.mouth = 0; this.speech = null; // (#1122: the talking mouth, see talk)
+  }
+
+  /** Talk (#1122): the mouth follows `text`'s letters for its length at MOUTH.rate, at most `secs` and MOUTH.maxSecs (then
+   * faster), closed at the end. Local only (from a chat line that has already arrived, or a spoken line). */
+  talk(text, secs = MOUTH.maxSecs) {
+    const sl = mouthSlots(text), n = sl.open.length;
+    if (!n) { this.stopTalking(); return; }
+    const dur = Math.min(n / MOUTH.rate, secs, MOUTH.maxSecs);
+    this.speech = { ...sl, rate: n / Math.max(dur, 0.05), start: performance.now() / 1000, from: 0, to: n, live: false };
+  }
+
+  /** A voice speaking for this avatar (Web Speech events, greet.js): `start` on onstart (the rhythm restarts with the voice),
+   * `boundary(charIndex)` at each word (the rhythm jumps there and waits at the word's end), `end` on onend / onerror. */
+  speechStart(text, rate = 1) {
+    this.talk(text, MOUTH.liveMax);
+    if (!this.speech) return;
+    Object.assign(this.speech, { live: true, rate: MOUTH.rate * rate, start: performance.now() / 1000, until: performance.now() / 1000 + MOUTH.liveMax });
+  }
+  speechBoundary(charIndex) {
+    const s = this.speech;
+    if (!s?.live) return;
+    let k = s.at.findIndex((c) => c >= charIndex);
+    if (k < 0) k = s.open.length;
+    let e = k; while (e < s.open.length && s.open[e] > MOUTH.space) e++; // the word's end
+    Object.assign(s, { from: k, to: e, start: performance.now() / 1000 });
+  }
+  speechEnd() { if (this.speech?.live) this.speech = null; }
+  stopTalking() { this.speech = null; }
+  get talking() { return !!this.speech; }
+
+  /** The mouth's target opening now (0 shut … 1), ending a finished line. */
+  mouthTarget(now) {
+    const s = this.speech;
+    if (!s) return 0;
+    if (s.live && now > s.until) { this.speech = null; return 0; }
+    const k = s.from + Math.floor((now - s.start) * s.rate);
+    if (k >= s.to) { if (!s.live) this.speech = null; return 0; } // (a voice: shut at the word's end / the line's, until the next word or onend)
+    return s.open[k];
   }
 
   /** #897: internal surface identity, never a head boolean accepted by the server. */
@@ -637,6 +722,9 @@ export class Avatar {
     feet[0][2] += 0.02 + 0.2 * crouch; feet[1][2] += 0.02 + 0.2 * crouch;
     const armSwing = -sw * 0.55;
     const handL = hands.L ?? armTarget.rest(1, armSwing), handR = hands.R ?? armTarget.rest(-1, -armSwing);
+    this.mouth += (this.mouthTarget(performance.now() / 1000) - this.mouth) * Math.min(1, dt * MOUTH.follow);
+    if (this.mouth < 0.002) this.mouth = 0;
+    this.material.userData.u.uMouth.value = this.mouth;
     poseOlof(this, { hip: [hipY, 0.04 * crouch], lean: 0.03 * g + 0.45 * crouch, head: 0.03 * Math.sin(this.time * 0.6), turn, feet, hands: [handL, handR], can: null });
   }
 

@@ -1,0 +1,51 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Avatar mouth</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#bfc6cc}canvas{display:block}</style></head>
+<body><script type="module">
+// #1122 component page: the talking mouth on the four facial-hair variants (none, beard, moustache, beard + moustache),
+// head close-ups shut / open, and a talked line sampled over time. Driven by tools/avatarmouthtest.cjs.
+import * as THREE from 'three';
+import { Avatar } from '../src/avatar.js';
+import { avatarLook } from '../src/config.js';
+const W = 1600, Hh = 520, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, Hh); document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbfc6cc);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f72, 1.6));
+const sun = new THREE.DirectionalLight(0xfff2e0, 2.2); sun.position.set(2, 4, 3); scene.add(sun);
+const avatars = [];
+for (let f = 0; f < 4; f++) {
+  const lk = { ...avatarLook('mouth' + f), style: 0, hair: [0x3b2a1e, 0x1c1714, 0x7a3b1f, 0x5a4030][f], skin: [0xe8bf9f, 0xd6a07c, 0xf0cdb2, 0xb07a55][f], tall: 1, build: 1, gender: 0, facial: f };
+  const a = new Avatar(lk); a.object.position.set((f - 1.5) * 0.6, 0, 0); scene.add(a.object); avatars.push(a);
+}
+const cam = new THREE.PerspectiveCamera(9.5, W / Hh, 0.05, 50);
+// open: 0 … 1 held (the uniform after a pose), view: front / q; zoom: null (all four heads) or 0 … 3 (one face, chin to brows)
+window.__shot = (open, view = 'front', zoom = null) => {
+  for (const a of avatars) { a.object.rotation.y = view === 'q' ? -0.6 : 0; a.stopTalking(); a.update(0, {}); a.material.userData.u.uMouth.value = open; }
+  const x = zoom === null ? 0 : (zoom - 1.5) * 0.6;
+  cam.fov = zoom === null ? 9.5 : 1.6; cam.updateProjectionMatrix();
+  cam.position.set(x, 1.6, 4.8); cam.lookAt(x, zoom === null ? 1.58 : 1.555, 0);
+  renderer.render(scene, cam);
+  return calls();
+};
+const calls = () => renderer.info.render.calls;
+// talk a line on avatar 0 and sample its mouth every 1/60 s of real time
+window.__talk = (text, secs) => new Promise((done) => {
+  const a = avatars[0], out = [], t0 = performance.now();
+  a.talk(text, secs);
+  let last = t0;
+  const step = () => {
+    const now = performance.now(); a.update((now - last) / 1000, {}); last = now;
+    out.push([Math.round(now - t0), Math.round(a.mouth * 100) / 100, a.talking]);
+    if (!a.talking && a.mouth === 0 && now - t0 > 100) done(out); else requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+});
+window.__avatars = avatars;
+window.__ready = true;
+</script></body></html>

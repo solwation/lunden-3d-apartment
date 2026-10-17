@@ -448,6 +448,9 @@ export class Ghosts {
     return this.myGhost;
   }
 
+  /** Our mirror image says `text` (#1122: a sent chat line moves its mouth for as long as a bubble would show). */
+  selfTalk(text) { this.selfGhost().avatar.talk(text, CHAT.bubbleTtl); }
+
   /** The mirror's pass is about to draw (reflections.js): put our solid avatar where we stand. */
   beforeMirror() {
     const m = this.mine;

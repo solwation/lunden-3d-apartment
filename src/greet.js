@@ -45,26 +45,34 @@ export class Greetings {
   sayMine(line) {
     this.show(this.mine, line);
     this.mineT = G.bubble;
-    this.speak(line, { pitch: 1, rate: 1.05, voice: 0 });
+    this.speak(line, { pitch: 1, rate: 1.05, voice: 0 }, this.mineAvatar?.());
   }
 
   /** Someone else's line in a bubble over `f.head` (a world point; `f.s` its size) in `voice` — Olof (#586, #599). */
-  say(f, line, voice, secs = G.bubble) {
+  say(f, line, voice, secs = G.bubble, avatar = null) {
     const el = document.createElement('div');
     el.className = line.length > 32 ? 'say theirs long' : 'say theirs'; // (a dad joke wraps)
     this.layer.append(el);
     this.show(el, line);
     this.bubbles.push({ el, f, t: secs });
-    this.speak(line, voice);
+    this.speak(line, voice, avatar);
   }
 
-  speak(text, { pitch, rate, voice, volume = 1 }) {
+  /** Speak `text`; `avatar` (src/avatar.js, #1122): the figure whose mouth goes with it: an estimate from the text at once,
+   * then the voice's own start, word boundaries and end when there is a voice. */
+  speak(text, { pitch, rate, voice, volume = 1 }, avatar = null) {
+    avatar?.talk(text, G.bubble);
     const S = window.speechSynthesis;
     if (!S || isMuted() || typeof SpeechSynthesisUtterance === 'undefined') return;
     const u = new SpeechSynthesisUtterance(text);
     u.lang = 'sv-SE';
     if (this.voices.length) u.voice = this.voices[voice % this.voices.length];
     u.pitch = pitch; u.rate = rate; u.volume = volume;
+    if (avatar) {
+      u.onstart = () => avatar.speechStart(text, rate);
+      u.onboundary = (e) => { if (e.name !== 'sentence') avatar.speechBoundary(e.charIndex); };
+      u.onend = u.onerror = () => avatar.speechEnd();
+    }
     try { S.speak(u); } catch { /* no speech here: the bubbles say it */ }
   }
 
