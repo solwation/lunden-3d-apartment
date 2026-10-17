@@ -465,7 +465,7 @@ src/avatar.js          the players' avatars (#705): a neutral human figure on Ol
                        the chin, applied to every head-bone part so the beard shell stays on the skin; skull and jaw rounder, their normals
                        blended at the seam), ears, the body (#1103, `bodyParts`: a torso with chest/bust,
                        shoulder blades and sloping shoulders, deltoid caps, wrists reaching flat hands with the palm to the thigh, fingers and a thumb,
-                       a T-shirt with sleeve hems / long-sleeved top with elbow folds and cuffs, collar, hem, belt with buckle, trousers with seat,
+                       a T-shirt with sleeve hems / long-sleeved top with elbow folds and cuffs, collar, hem, belt (no buckle, #1189), trousers with seat,
                        fly seam and hems, low trainers with a sole), one of four hair styles (short, long, bun, beanie; #1102 `hairParts`, tunables
                        `AVATAR_HAIR`: shells projected onto the skull ∪ jaw above a real hairline — forehead, temples, sideburns, over the
                        ears, nape — feathered at the edge, with per-column strand shading via a `shade` vertex attribute; long hair adds a

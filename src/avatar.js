@@ -96,7 +96,7 @@ function facePart(P, id, anchor) {
 // Everything below the head, on Olof's rigid skeleton (every vertex follows one bone): a torso whose chest, shoulder
 // blades and bust are pushed out of the plain lathe, sloping shoulders with deltoid caps, arms with a little muscle, wrists
 // that reach the hands, flat hands with the palm towards the thigh (fingers spread front to back, the thumb forward),
-// trousers with a seat and a fly seam, a belt with a buckle and low trainers with a sole. Folds and seams are only
+// trousers with a seat and a fly seam, a belt (no buckle, #1189) and low trainers with a sole. Folds and seams are only
 // where they cost a ring or a thin box (*guess*: shapes by eye against an ordinary adult, not measured).
 const smoothstep = (e0, e1, x) => { const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0))); return t * t * (3 - 2 * t); };
 const bump = (y, at, w) => Math.max(0, 1 - ((y - at) / w) ** 2);
@@ -125,7 +125,7 @@ function bodyParts(add, sleeves, isFemale) {
   }), 'top', 'torso');
   add(lathe([[0.152, -0.01], [0.16, 0.05]], 14).scale(...torsoScale), 'top', 'torso', [0, 0, 0], 0.82); // the hem
   add(lathe([[0.142, -0.02], [0.147, 0.03]], 14).scale(isFemale ? 1.1 : 1.15, 1, 0.75), 'fixed', 'torso', [0, -0.02, 0], 1, 0x2a2523); // the belt
-  add(new THREE.BoxGeometry(0.034, 0.024, 0.008), 'fixed', 'torso', [0, -0.028, 0.147 * 0.75 + 0.003], 1, 0xa8a090); // its buckle, under the top's hem
+  // (no buckle: a light box below the hem read as a spot in the crotch, #1189)
   add(new THREE.BoxGeometry(0.005, 0.075, 0.004), 'pants', 'hips', [0.012, -0.045, 0.106], 0.72); // the fly's seam
   add(new THREE.TorusGeometry(0.052, 0.015, 5, 12).rotateX(Math.PI / 2), 'top', 'torso', [0, 0.605, 0], 0.8); // the collar
   // arms: a deltoid cap over the shoulder joint, the sleeve (a T-shirt's ends above the biceps with a hem; a long one has
