@@ -1,10 +1,11 @@
 // Explicit private fixture inputs only; never derive credentials from published production code.
 const fs = require('fs'), path = require('path');
 function validateSecretTestInputs(value) {
-  if (!value || !Array.isArray(value.codes) || value.codes.length !== 2
+  if (!value || !Array.isArray(value.codes) || value.codes.length < 1 || value.codes.length > 2
       || value.codes.some(code => typeof code !== 'string' || !code.trim())
-      || value.codes[0] === value.codes[1]) throw new Error('Private test input must contain exactly two distinct nonempty strings in codes.');
-  return { codes: [...value.codes] }; // Preserve input exactly; normalization belongs to the real parser.
+      || value.codes[0] === value.codes[1]) throw new Error('Private test input must contain one or two distinct nonempty strings in codes.');
+  // #1118: the game has one private code now; a one-code file is repeated so tests that use codes[0] and codes[1] still run.
+  return { codes: value.codes.length === 1 ? [value.codes[0], value.codes[0]] : [...value.codes] }; // Preserve input exactly; normalization belongs to the real parser.
 }
 function loadSecretTestInputs(env = process.env) {
   const file = env.LUNDEN_SECRET_TEST_INPUTS;

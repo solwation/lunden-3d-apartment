@@ -56,7 +56,7 @@ export async function reportsFetch(request, env, h, limited) {
     const secret=env.REPORT_SESSION_SECRET??env.REPORT_PASSWORD;
     if (!secret || secret.length < 24) return bad(503,'not configured',h);
     let b; try { b=await body(request); } catch (status) { return bad(status===413?413:400,'body',h); }
-    // Per the user's admin contract, the original two private game codes open
+    // Per the user's admin contract, the private game code (#1118: one code) opens
     // both furniture tools and reporting. Public layout digests are not accepted.
     if (!isPrivateCode(b?.code)) return bad(403,'login',h);
     const expires=Date.now()+REPORTS.sessionSeconds*1000;

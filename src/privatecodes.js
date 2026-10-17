@@ -39,9 +39,9 @@ export function sha256(text) {
 
 // Version 1 frames the exact input as UTF-8(public salt + NUL + input), without trimming/case folding.
 const FRAME = 'lunden/private-layout/v1\0';
+// #1118: a single private code (it replaced the two earlier ones).
 const DIGESTS = [
-  '5149fee0687d86ddd83faad6643b65a0911a4fc9cde54944c0b63470d49f3153',
-  '7fec85385e8288c5d7607ee7418ca86d03d50c354a4c9f6d8b51a5a3e2ad4165',
+  'fafc1c9031ca1709b37efc55d70c1ed185a33160adf2ff350b5aff93164d829c',
 ];
 export const PRIVATE_CREDENTIAL_VERSION = 1;
 /** Exact input only: callers own console normalization or the direct-unlock trim-only contract. */
