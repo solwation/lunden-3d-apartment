@@ -21,6 +21,9 @@ import { HAND as H, BICYCLE_GRIP as BIKE_GRIP } from './config.js';
 
 const skin = new THREE.MeshStandardMaterial({ color: H.skin, roughness: 0.62, emissive: H.skinGlow, emissiveIntensity: 1 });
 const SKIN = { color: new THREE.Color(H.skin), wet: new THREE.Color(H.skin).multiplyScalar(0.88), rough: 0.62, wetRough: 0.24 };
+// #1215: the arm follows the player's avatar (look.skin, look.top, look.sleeves); HAND.skin / HAND.sleeve are the defaults
+const OWN = { skin: H.skin, sleeve: H.sleeve, long: true, suit: false, glow: new THREE.Color(H.skinGlow) };
+const lum = (c) => { const k = new THREE.Color(c); return 0.3 * k.r + 0.59 * k.g + 0.11 * k.b; };
 // water drops on wet hands (#437): little flattened beads on the back of the hand and the fingers
 const dropMat = new THREE.MeshStandardMaterial({ color: 0xf2f8fc, roughness: 0.03, metalness: 0.1, transparent: true, opacity: 0.85, depthWrite: false });
 function dropsGeometry() {
@@ -39,9 +42,21 @@ function dropsGeometry() {
 const sleeve = new THREE.MeshStandardMaterial({ color: H.sleeve, roughness: 0.85 });
 /** The Spider-Man suit on (#597): red gloves and a blue sleeve; off: skin and the usual sleeve again. */
 export function suitHands(on, red = 0xc8202a, blue = 0x1d3f9a) {
-  SKIN.color.set(on ? red : H.skin); SKIN.wet.copy(SKIN.color).multiplyScalar(0.88);
-  skin.color.copy(SKIN.color); skin.emissive.set(on ? 0x000000 : H.skinGlow);
-  sleeve.color.set(on ? blue : H.sleeve);
+  OWN.suit = on;
+  SKIN.color.set(on ? red : OWN.skin); SKIN.wet.copy(SKIN.color).multiplyScalar(0.88);
+  skin.color.copy(SKIN.color); skin.emissive.copy(on ? new THREE.Color(0) : OWN.glow);
+  sleeve.color.set(on ? blue : OWN.sleeve);
+  armsChanged?.();
+}
+let armsChanged = null;
+/** The player's own look (#1215): skin tone, top colour and sleeve length (0 = short: the bare arm, no cuff). Works at once. */
+export function handLook(look) {
+  OWN.skin = Number.isFinite(look?.skin) ? look.skin : H.skin;
+  OWN.sleeve = Number.isFinite(look?.top) ? look.top : H.sleeve;
+  OWN.long = !!(Number(look?.sleeves) > 0);
+  OWN.glow.set(H.skinGlow).multiplyScalar(Math.min(1.4, lum(OWN.skin) / lum(H.skin)));
+  if (!OWN.suit) { SKIN.color.set(OWN.skin); SKIN.wet.copy(SKIN.color).multiplyScalar(0.88); skin.color.copy(SKIN.color); skin.emissive.copy(OWN.glow); sleeve.color.set(OWN.sleeve); }
+  armsChanged?.();
 }
 
 // The hand's frame: the wrist at the origin, the fingers towards +z, the palm facing +x, the thumb on top (+y) —
@@ -139,6 +154,7 @@ export class Hand {
     this.arm = new THREE.Mesh(sleeveGeometry(), sleeve); // length 1 along +z
     for (const m of [this.hand, this.arm, this.cuff]) { m.visible = false; m.castShadow = false; m.renderOrder = 1; m.raycast = () => {}; m.frustumCulled = false; camera.add(m); }
     this.right = { hand: this.hand, arm: this.arm, cuff: this.cuff };
+    armsChanged = () => this.applySleeves();
     // the left arm (#269, only for a hug): the same meshes in a mirrored frame (x → −x), posed like the right one
     this.mirror = new THREE.Group();
     this.mirror.scale.x = -1;
@@ -146,6 +162,7 @@ export class Hand {
     this.left = { hand: new THREE.Mesh(this.hand.geometry, skin), arm: new THREE.Mesh(this.arm.geometry, sleeve), cuff: new THREE.Mesh(this.cuff.geometry, sleeve) };
     this.left.hand.morphTargetInfluences = [0, 0, 0];
     for (const m of Object.values(this.left)) { m.visible = false; m.castShadow = false; m.renderOrder = 1; m.raycast = () => {}; m.frustumCulled = false; this.mirror.add(m); }
+    this.sleeved = true;
     this.shoulder = new THREE.Vector3(...H.shoulder);
     this.rest = new THREE.Vector3(...H.rest);
     this.low = this.rest.clone().add(new THREE.Vector3(0.05, -0.25, 0.12)); // below the view
@@ -166,6 +183,14 @@ export class Hand {
     // the suit's arms (#636): `suit` is fed every frame by spidersuit.js (`feedHand`), `webT` = s left of the web pose
     this.suit = { on: false, climb: false, up: 0, side: 0, swing: null };
     this.webT = 0; this.sMix = 0; this.cPhase = 0; this.cAmp = 0; this.cDir = new THREE.Vector2(0, 1);
+  }
+
+  /** Short sleeves (#1215): the arm is bare skin and the cuff goes; the same meshes, only the material and visibility change. */
+  applySleeves() {
+    this.sleeved = OWN.long || OWN.suit;
+    for (const side of [this.right, this.left]) side.arm.material = this.sleeved ? sleeve : skin;
+    this.cuff.visible = this.cuff.visible && this.sleeved;
+    this.left.cuff.visible = this.left.cuff.visible && this.sleeved;
   }
 
   /** A web was shot (#636): the right hand takes the pose for HAND.suit.webHold s. */
@@ -338,11 +363,12 @@ export class Hand {
     inf[0] += ((show ? grip : 0) - inf[0]) * a;
     inf[1] = spread;
     inf[2] += ((show ? web : 0) - inf[2]) * a;
-    this.hand.visible = this.arm.visible = this.cuff.visible = show;
+    this.hand.visible = this.arm.visible = show; this.cuff.visible = show && this.sleeved;
     const lInf = this.left.hand.morphTargetInfluences, L = suitLeft?.l;
     if (L) { lInf[0] += (L.grip - lInf[0]) * a; lInf[1] = L.spread; lInf[2] += (L.web - lInf[2]) * a; }
     else { lInf[0] = inf[0]; lInf[1] = inf[1]; lInf[2] = inf[2]; }
     for (const m of Object.values(this.left)) m.visible = hug || !!L;
+    this.left.cuff.visible = this.left.cuff.visible && this.sleeved;
     // on a wall / a strand the hands are drawn over it: the eyes are closer to the façade than the hands' reach (#636)
     skin.depthTest = sleeve.depthTest = !suitLeft || suitLeft.depth;
   }

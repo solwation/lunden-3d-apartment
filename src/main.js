@@ -92,7 +92,7 @@ import { Turbo } from './turbo.js';
 import { Beer } from './beer.js';
 import { buildThings } from './things.js';
 import { buildSecret } from './secret.js';
-import { Hand } from './hand.js';
+import { Hand, handLook } from './hand.js';
 import { HandWash } from './handwash.js';
 import { Milk } from './milk.js';
 import { BeerCan } from './beercan.js';
@@ -2561,8 +2561,8 @@ window.__chat = chat;
 // #1136/#1137: the standing eye height and the body (crouch eye, headroom, radius) follow the chosen avatar height
 // (settleEye eases the camera there; Rest lowers a seated eye by the same share)
 const applyBody = (lk) => { const { scale, ...body } = avatarBody(lk); Object.assign(PLAYER, body); rest.scale = scale; };
-const setMyLook = (lk) => { ghosts.setMyLook(lk); applyBody(lk); };
-applyBody(ghosts.myLook);
+const setMyLook = (lk) => { ghosts.setMyLook(lk); applyBody(lk); handLook(lk); };
+applyBody(ghosts.myLook); handLook(ghosts.myLook);
 setupAvatarCustomizer({
   getLook: () => ghosts.myLook,
   getDefaultLook: () => avatarLook(leaderboard.name || 'anon'),
