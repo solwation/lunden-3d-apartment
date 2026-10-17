@@ -197,6 +197,14 @@ fill.position.set(...SKY.fill.pos);
 scene.add(fill);
 
 const params0 = new URLSearchParams(location.search);
+// The quality level and its pixel ratio are settled before the house is built (#1160): a later setPixelRatio
+// reallocates the drawing buffer after the house is built: one ~12 s block on phones.
+const shotMode = new URLSearchParams(location.search).has('shot'); // screenshots: always full resolution
+const pinned = params0.has('quality') ? +params0.get('quality') : (TEST ? 0 : shotMode ? QUALITY.levels - 1 : null);
+const quality = new Quality({ start: pinned ?? (lowMemory ? QUALITY.startLowMemory : QUALITY.levels - 1), remember: pinned === null });
+quality.register('resolution', { // the canvas's pixel ratio (a step reallocates the drawing buffer once)
+  apply: (l) => { const r = Math.max(QUALITY.minPixelRatio, MAX_PIXEL_RATIO * QUALITY.pixelRatio[l]); if (Math.abs(renderer.getPixelRatio() - r) > 1e-3) renderer.setPixelRatio(r); },
+  state: () => `px ${renderer.getPixelRatio().toFixed(2)}`, cost: 'fill rate: every pixel of every pass' });
 loadingStep('Hämtar planritningen', 0.15); // loading steps on the card (#1130)
 const plan = await fetchStartupJSON('data/plan.json', { timeout: STARTUP.planTimeout });
 // Finish network/cache callbacks before CPU-heavy construction can starve them past their existing deadlines.
@@ -495,6 +503,7 @@ holdables.push(vacuum);
 world.looseItems.push(vacuum.led);
 const fruit = new FruitBowl(scene, camera); // the copper fruit bowl on the coffee table (#326)
 // the life simulator's things (#364, #366): item instances (items.js) shown as Holdables (life.js); a refusal pops up as a badge
+await loadingYield(0.6); // Möblerar in two parts (#1160); nothing above registers listeners or timers yet
 const life = new Life({ scene, camera, say: (t) => badge(t, false), feet: () => ({ at: 'world', pos: [player.pos.x, player.pos.y, player.pos.z], yaw: camera.rotation.y }),
   floorY: () => (player.level >= 0 ? LEVELS[player.level].floor : -Infinity), // (nothing goes down under the floor, #368)
   persist: lifeDev() ? null : { key: LIFE.save.key, canSave: () => { try { return !resetHome.going; } catch { return false; } } }, debug: params0.has('debug') }); // the home's stock kept between visits (#371; never with &life)
@@ -2770,12 +2779,7 @@ for (const m of reflectors()) hitch.timeMethod(m.r, 'onBeforeRender', 'mirror');
 // Adaptive graphics level (#592, src/quality.js, QUALITY in config; replaces #48 / #460's tiers): one level 0–3 from the
 // frame time, with hysteresis; every heavy feature registers a knob that sets its cost for a level. `&quality=n` pins a
 // level (no adapting, not remembered); `&shot` keeps the highest.
-const shotMode = new URLSearchParams(location.search).has('shot'); // screenshots: always full resolution
-const pinned = params0.has('quality') ? +params0.get('quality') : (TEST ? 0 : shotMode ? QUALITY.levels - 1 : null);
-const quality = new Quality({ start: pinned ?? (lowMemory ? QUALITY.startLowMemory : QUALITY.levels - 1), remember: pinned === null });
-quality.register('resolution', { // the canvas's pixel ratio (a step reallocates the drawing buffer once)
-  apply: (l) => { const r = Math.max(QUALITY.minPixelRatio, MAX_PIXEL_RATIO * QUALITY.pixelRatio[l]); if (Math.abs(renderer.getPixelRatio() - r) > 1e-3) renderer.setPixelRatio(r); },
-  state: () => `px ${renderer.getPixelRatio().toFixed(2)}`, cost: 'fill rate: every pixel of every pass' });
+// (`quality` and its resolution knob are set up before the house is built, below `params0`: #1160)
 quality.register('shadows', { // the sun's shadow map: size (reallocated on a change) and how often it is redrawn
   apply: (l) => {
     const size = Math.min(QUALITY.shadowSize[l], lowMemory ? LOW_MEMORY.shadowMapSize : Infinity);

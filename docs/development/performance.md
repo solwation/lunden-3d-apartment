@@ -800,3 +800,15 @@ Chromium 141/SwiftShader, `?warm`, 1280×800, Chrome traces) did not confirm tha
 Re-measure with a Chrome trace (`GPUTask` children `WebGL` vs `RendererMainThread`/`RasterDecoderImpl`) before
 switching canvases. Next: Möblerar on phones, ~12 s (#1160), and smaller build parts, 3–9 s (#1161; the furniture part,
 share 0.33–0.42 of the build, was the longest Bygger huset task here, 4–6 s).
+
+**Möblerar on phones (#1160).** Per-statement `performance.mark`s showed that the ~12 s block was not the furnishing
+itself (~1.5 s in all, no part over ~0.4 s) but one `renderer.setPixelRatio` from the quality level's resolution knob
+(1.25 → 1.125 at `QUALITY.startLowMemory`): reallocating the drawing buffer after the house is built waited ~11.5 s
+on the GPU thread. `quality` and its resolution knob are now created right after `params0`, before the house is
+built, so the start ratio is set while the buffer is still empty (desktop starts at the top level: no change in ratio).
+The other knobs still register where `sun`, the mirror and the weather exist. Möblerar also yields once before
+`new Life` (nothing above it registers listeners or timers). Phone profile, headless SwiftShader, before = 4aa06b6,
+runs alternated: longest task 19.4 s / 13.0 s (Möblerar) → 3.8 s (Bygger huset) / 4.9 s (Värmer upp vyn); Möblerar
+1.4–1.7 s as a step; card done 98 / 74 s → 86 / 92 s (noisy). Part of that queued GPU work now lands in warm-up's
+first renders instead (its longest tasks 3–4 s → 4.7–5.5 s), still behind the cover; #1159 owns that cost.
+Warm-up (#697) and `STARTUP` are unchanged.
