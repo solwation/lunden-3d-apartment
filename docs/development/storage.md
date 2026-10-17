@@ -205,7 +205,11 @@ tools/resettest.html   headless test of "Återställ" (#303) against `node cloud
                        run fail checks later; the Worker also limits writes to 30 per minute per instance, one IP). Cloud session: Playwright Chromium as in verification.md; the page opens
                        it from a fresh `--user-data-dir`; allow ~10 min per test under SwiftShader (every iframe load is a ~3 min warm-up).
                        `cloud.sync()` is a no-op while a poll is under way (`pulling`): tests wait with `syncNow()`, and the offline step
-                       `await cloud.flush()` before the address is restored. `http://localhost:9` fails at once as ERR_UNSAFE_PORT in Chromium.
+                       `await cloud.flush()` before the address is restored. The offline reset step waits for the new drawing's
+                       id in the queue (#1169), not just a nonempty queue: the first drawing can already be marked synced
+                       while its IndexedDB save and queue removal are pending, and the next tape also saves before `onPut`.
+                       Its persisted-queue assertion and three-second wait budget remain unchanged.
+                       `http://localhost:9` fails at once as ERR_UNSAFE_PORT in Chromium.
                        Återställ from the menu closes the menu afterwards (#522): resettest checks the key, then the plain start screen
 tools/crashheartbeattest.cjs Native Chromium tabs and production CrashLog/Worker with local-only HTTP/KV; no canvas context, apartment or GL.
                        Checks initially hidden start, real visibility transitions, synthetic pagehide, stale foreground/legacy hidden run,

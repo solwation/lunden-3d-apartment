@@ -62,8 +62,13 @@ const realHour = () => { const n = new Date(); return n.getHours() + n.getMinute
   // one taped up offline: it waits in the queue
   app.cloud.url = OFF;
   app.heldDrawing.take(sheet('#43a047'));
-  tapeInHall();
-  await until(() => app.cloud.queue.length > 0, 3000);
+  check(tapeInHall(), 'an offline drawing taped up in the hall');
+  // markSynced sets rec.synced before its IndexedDB save finishes, so the first drawing may still
+  // occupy the queue. Wait for this drawing: tape() also saves to IndexedDB before calling onPut.
+  await until(() => {
+    const p = app.posters.own.find((p) => p.rec.id !== id1);
+    return p && app.cloud.queue.some((op) => op.type === 'drawing' && op.id === p.rec.id);
+  }, 3000);
   await app.cloud.flush(); // the attempt to the dead address has to fail before the address changes back (#635)
   const id2 = app.posters.own.find((p) => p.rec.id !== id1)?.rec.id;
   check(JSON.parse(localStorage.getItem('lunden.cloud.queue') ?? '[]').some((x) => x.id === id2), 'an offline drawing waits in the queue');
