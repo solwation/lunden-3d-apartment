@@ -603,15 +603,18 @@ const inCut = (b, face, a0, a1, st = -1) => cuts(b, face, st).some(([c0, c1]) =>
 
 /** An Å-hus's plan outline on storey `st`: the rectangle with its corner loggias and the recesses of that storey. */
 function outline(b, st) {
-  const { nw, ne, se, sw } = b.corners;
+  // #1153: a corner whose loggia is buried on this storey is solid (våning −1 of Hus A/B: the plans draw full corners
+  // with rooms behind them; Hus A's NE and Hus B's NE corners stand above the lower ground east of them)
+  const [nw, ne, se, sw] = cornerLoggias(b).map((l) => (buriedLoggia(b, l, st) ? [0, 0] : [l.lx, l.lz]));
   const rs = (f, desc) => (b.recesses ?? []).filter((r) => r.face === f && onStorey(r, st)).sort((p, q) => (desc ? q.a0 - p.a0 : p.a0 - q.a0));
-  const pts = [[b.x0, b.z0 + nw[1]], [b.x0 + nw[0], b.z0 + nw[1]], [b.x0 + nw[0], b.z0]];
+  const pts = [];
+  if (nw[0]) pts.push([b.x0, b.z0 + nw[1]], [b.x0 + nw[0], b.z0 + nw[1]], [b.x0 + nw[0], b.z0]); else pts.push([b.x0, b.z0]);
   for (const r of rs('n')) pts.push([r.a0, b.z0], [r.a0, b.z0 + r.depth], [r.a1, b.z0 + r.depth], [r.a1, b.z0]);
-  pts.push([b.x1 - ne[0], b.z0], [b.x1 - ne[0], b.z0 + ne[1]], [b.x1, b.z0 + ne[1]]);
+  if (ne[0]) pts.push([b.x1 - ne[0], b.z0], [b.x1 - ne[0], b.z0 + ne[1]], [b.x1, b.z0 + ne[1]]); else pts.push([b.x1, b.z0]);
   for (const r of rs('e')) pts.push([b.x1, r.a0], [b.x1 - r.depth, r.a0], [b.x1 - r.depth, r.a1], [b.x1, r.a1]);
-  pts.push([b.x1, b.z1 - se[1]], [b.x1 - se[0], b.z1 - se[1]], [b.x1 - se[0], b.z1]);
+  if (se[0]) pts.push([b.x1, b.z1 - se[1]], [b.x1 - se[0], b.z1 - se[1]], [b.x1 - se[0], b.z1]); else pts.push([b.x1, b.z1]);
   for (const r of rs('s', true)) pts.push([r.a1, b.z1], [r.a1, b.z1 - r.depth], [r.a0, b.z1 - r.depth], [r.a0, b.z1]);
-  pts.push([b.x0 + sw[0], b.z1], [b.x0 + sw[0], b.z1 - sw[1]], [b.x0, b.z1 - sw[1]]);
+  if (sw[0]) pts.push([b.x0 + sw[0], b.z1], [b.x0 + sw[0], b.z1 - sw[1]], [b.x0, b.z1 - sw[1]]); else pts.push([b.x0, b.z1]);
   for (const r of rs('w', true)) pts.push([b.x0, r.a1], [b.x0 + r.depth, r.a1], [b.x0 + r.depth, r.a0], [b.x0, r.a0]);
   return pts;
 }
@@ -823,7 +826,7 @@ function cutRects(geo, plane, doors, face = 'n') {
 
 /** The bands of an Å-hus's outline, extruded (see aHouseParts). */
 function aHouse(b) {
-  const geos = [], key = (st) => (b.recesses ?? []).map((r) => +onStorey(r, st)).join();
+  const geos = [], key = (st) => [...(b.recesses ?? []).map((r) => +onStorey(r, st)), ...cornerLoggias(b).map((l) => +buriedLoggia(b, l, st))].join();
   for (let st = 0; st < b.storeys;) {
     let end = st + 1;
     while (end < b.storeys && key(end) === key(st)) end++;
@@ -881,6 +884,8 @@ function loggiaKind(b, st, y, g) {
   if (y < g - 1.2) return 'buried';
   return y < g + 1.2 ? 'ground' : 'rail';
 }
+/** Is loggia l (cornerLoggias) buried on storey st, i.e. a solid corner there (#1153)? */
+const buriedLoggia = (b, l, st) => st < b.storeys && loggiaKind(b, st, b.base + st * S.storey, frontGround(l)) === 'buried';
 
 /** The door and window on a loggia's longer inner wall on each storey above the ground (#266): { kind, x0, z0, x1,
  * z1 (a line along the wall), n (facing [x, z]), y0, y1 }. */
@@ -982,7 +987,7 @@ function loggias(blocks) {
   const lamp = { glow: [], wash: [], pool: [] }; // #1078: the loggia doors' wall lights
   const letters = blocks.map((b) => b.name.slice(-1));
   const rand = rng(43);
-  const pier = (b, x0, x1, z0, z1) => bricks.push(brickBox(x0, z0, x1, z0, 0, Math.sign(z1 - z0), Math.abs(z1 - z0), b.base, b.base + b.storeys * S.storey, b.base));
+  const pier = (b, x0, x1, z0, z1, y0 = b.base) => bricks.push(brickBox(x0, z0, x1, z0, 0, Math.sign(z1 - z0), Math.abs(z1 - z0), y0, b.base + b.storeys * S.storey, b.base));
   const plant = (x, y, z) => {
     if (rand() < L.plants) plants.push(new THREE.CylinderGeometry(0.17, 0.13, 0.38, 8).translate(x, y + 0.19, z), new THREE.IcosahedronGeometry(0.34, 0).translate(x, y + 0.62, z));
   };
@@ -995,12 +1000,14 @@ function loggias(blocks) {
   };
   for (const b of blocks) {
     const top = b.base + b.storeys * S.storey;
-    for (const { cx, cz, sx, sz, lx, lz, ix, iz } of cornerLoggias(b)) {
-      const mx = (cx + ix) / 2, mz = (cz + iz) / 2, g = frontGround({ cx, cz, sx, sz, lx, lz, ix, iz });
-      pier(b, cx, cx + sx * p, cz, cz + sz * p);
-      if (lx > L.mid) pier(b, cx + sx * (L.midAt - p / 2), cx + sx * (L.midAt + p / 2), cz, cz + sz * p); // part-way along a long front
-      if (lz > L.mid) pier(b, cx, cx + sx * p, cz + sz * (L.midAt - p / 2), cz + sz * (L.midAt + p / 2));
-      walls.push(quad(cx, iz, ix, iz, 0, -sz, b.base, top), quad(ix, cz, ix, iz, -sx, 0, b.base, top)); // the rendered inner walls
+    for (const l of cornerLoggias(b)) {
+      const { cx, cz, sx, sz, lx, lz, ix, iz } = l, mx = (cx + ix) / 2, mz = (cz + iz) / 2, g = frontGround(l);
+      let st0 = 0; while (buriedLoggia(b, l, st0)) st0++; // #1153: the solid corner below (outline) needs no piers or inner walls
+      const y0 = b.base + st0 * S.storey;
+      pier(b, cx, cx + sx * p, cz, cz + sz * p, y0);
+      if (lx > L.mid) pier(b, cx + sx * (L.midAt - p / 2), cx + sx * (L.midAt + p / 2), cz, cz + sz * p, y0); // part-way along a long front
+      if (lz > L.mid) pier(b, cx, cx + sx * p, cz + sz * (L.midAt - p / 2), cz + sz * (L.midAt + p / 2), y0);
+      walls.push(quad(cx, iz, ix, iz, 0, -sz, y0, top), quad(ix, cz, ix, iz, -sx, 0, y0, top)); // the rendered inner walls
       for (let st = 0; st <= b.storeys; st++) {
         const y = b.base + st * S.storey, kind = loggiaKind(b, st, y, g);
         if (st > 0) slabs.push(new THREE.BoxGeometry(lx, 0.22, lz).translate(mx, y - 0.11, mz)); // floor above / ceiling below

@@ -52,7 +52,8 @@ src/patiodecor.js      #888, #1120: the neighbours' ground-floor patios on Hus L
 src/surroundings.js    the site (SITE): Hus A/B/C + buildings around, roads, paving, the 3 m drop to the park,
                        Höje å, instanced trees (leaf-card crowns, branching trunks: foliage.js, #679), lit windows, cloudy sky; #604: windows of Hus A–C are `lunden` and go dark in a power
                        cut (`update(hour, night, power)`), the rest of the site and the street lamps do not; world.windowLights passes
-                       `power` on to the courtyard's bulbs / bollards and exterior.js's lanterns, lit glass and front-door lights
+                       `power` on to the courtyard's bulbs / bollards and exterior.js's lanterns, lit glass and front-door lights;
+                       #1153: corner loggias buried on a storey (`buriedLoggia`, `y < g - 1.2`) are solid in `outline(b, st)` (våning −1 storage in Hus A/B) without piers or inner walls below ground
 src/greet.js           speech bubbles (GREET, #247): `sayMine` (your line at the bottom), `say` (a line over a head — our car driver Olof, #599/#900),
                        speech = Web Speech API sv-SE (silent when muted); `occluders` (the houses as boxes) for weather.js.
                        Greeting neighbours was removed with them in #670; an old save's stats `greets` still scores
