@@ -47,6 +47,8 @@ export class AdminReports {
       reportPanel.addEventListener('keyup',e=>e.stopPropagation());
       reportPanel.querySelector('#admin-report-cancel').addEventListener('click',()=>this.closeReport());
       this.photoSetup(reportPanel);
+      // #1226: a tap on a field that already has focus but no keyboard (iOS after the camera sheet) re-focuses it inside the tap.
+      reportInput.addEventListener('pointerup',e=>{if(e.pointerType==='mouse'||document.activeElement!==reportInput)return;reportInput.blur();reportInput.focus();});
     }
     login.addEventListener('click',()=>this.signIn());
     cancel.addEventListener('click',()=>{this.logout();this.closeLogin();});
@@ -64,7 +66,7 @@ export class AdminReports {
     panel.querySelector('#admin-report-camera').addEventListener('click',pick);
     panel.querySelector('#admin-report-photo-change').addEventListener('click',pick);
     panel.querySelector('#admin-report-photo-remove').addEventListener('click',()=>{this.setPhoto(null);this.reportStatus.textContent='Fotot är borttaget. Bara bilden av spelvyn följer med.';panel.querySelector('#admin-report-camera').focus();});
-    file.addEventListener('change',()=>{const f=file.files?.[0];file.value='';if(f)this.choosePhoto(f);else this.reportInput?.focus();});
+    file.addEventListener('change',()=>{const f=file.files?.[0];file.value='';if(f)this.choosePhoto(f);else this.restoreFocus();});
     const files=e=>[...(e.dataTransfer?.types??[])].includes('Files');
     panel.addEventListener('dragover',e=>{if(!files(e))return;e.preventDefault();e.dataTransfer.dropEffect='copy';panel.classList.add('dragging');});
     panel.addEventListener('dragleave',e=>{if(!panel.contains(e.relatedTarget))panel.classList.remove('dragging');});
@@ -76,12 +78,19 @@ export class AdminReports {
       const image=await prepareReportPhoto(file);
       if(job!==this.photoJob)return;
       this.setPhoto(image);this.reportStatus.textContent='Fotot skickas med rapporten tillsammans med bilden av spelvyn.';
-      this.reportInput?.focus();
+      this.restoreFocus();
     }catch(error){
       if(job!==this.photoJob)return;
       this.reportStatus.textContent=error?.code==='type'?'Filen är ingen bild. Välj en bild eller ta ett foto.':error?.code==='format'?'Bildformatet stöds inte av webbläsaren. Välj en JPEG- eller PNG-bild.':'Fotot kunde inte förberedas. Försök med en annan bild.';
-      this.reportInput?.focus();
+      this.restoreFocus();
     }finally{if(job===this.photoJob)this.photoBusy=false;}
+  }
+  // #1226: back from the camera. A script focus() outside a tap never raises the iOS keyboard and leaves the field
+  // "already focused", so the next real tap does nothing. On touch screens the field is therefore left unfocused (a tap
+  // opens the keyboard normally); with a keyboard/mouse it is focused as before (#1214).
+  restoreFocus(){
+    const t=this.reportInput;if(!t||!this.reportPanel?.open)return;
+    if(matchMedia('(pointer: coarse)').matches){if(document.activeElement===t)t.blur();}else t.focus();
   }
   setPhoto(image){
     this.photo=image;const els=this.photoEls;if(!els)return;
