@@ -68,12 +68,18 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     await app.waitForFunction(() => { window.__fix.tick(); return !!window.__fix.peer(); }, null, { timeout: 30000, polling: 100 });
     for (const cm of [120, 165, 195]) {
       const code = await peer.evaluate(async (cm) => { const C = await import('/src/config.js'); const lk = { ...C.decodeAvatarLook('130410013', 'peer'), height: cm };
-        window.peer.ghosts.setMyLook(lk); return C.encodeAvatarLook(lk); }, cm);
+        window.peer.ghosts.setMyLook(lk); return C.encodeAvatarWireLook(lk); }, cm); // (#1202: the wire code, with #1175's d<build>)
       const mine = await app.evaluate(async (cm) => { const a = window.__app, C = await import('/src/config.js');
-        a.avatarCustomizer.setLook({ ...C.decodeAvatarLook('241302112', 'me'), height: cm });
+        const lk = { ...C.decodeAvatarLook('241302112', 'me'), height: cm };
+        a.avatarCustomizer.setLook(lk);
         for (let i = 0; i < 60; i++) a.player.settleEye(0.1); // the real eased camera path
-        return { eye: C.PLAYER.eye, eyeY: a.player.eyeY, want: C.avatarProportions(cm).eye, code: window.__ghosts.avatarCode }; }, cm);
-      check(Math.abs(mine.eye - mine.want) < 1e-9 && Math.abs(mine.eyeY - mine.want) < 1e-3 && mine.code.endsWith(String(cm)), `${cm} cm: own eye height ${mine.want.toFixed(3)} m and code`, JSON.stringify(mine));
+        // (#1202) the wire code carries tags after the 12 digits (#1175's d<build>, #1139's k<step>): compare the digits
+        // exactly, and the whole code with the wire encoding of the look the ghosts hold
+        const g = window.__ghosts, code = g.avatarCode;
+        return { eye: C.PLAYER.eye, eyeY: a.player.eyeY, want: C.avatarProportions(cm).eye, code, digits: C.splitAvatarCode(code).av,
+          wantDigits: C.encodeAvatarLook(lk), wire: C.encodeAvatarWireLook(g.myLook), height: g.myLook.height }; }, cm);
+      check(Math.abs(mine.eye - mine.want) < 1e-9 && Math.abs(mine.eyeY - mine.want) < 1e-3 && mine.digits === mine.wantDigits && mine.digits.endsWith(String(cm))
+        && mine.code === mine.wire && mine.height === cm, `${cm} cm: own eye height ${mine.want.toFixed(3)} m and code`, JSON.stringify(mine));
       await app.evaluate((code) => window.__fix.run(8000, () => window.__fix.peer()?.avatarCode === code), code);
       await app.evaluate(() => window.__fix.run(600));
       const got = await app.evaluate((code) => { const f = window.__fix, g = f.peer(); g.avatar.update(0, {}); const t = f.top(g.avatar);
