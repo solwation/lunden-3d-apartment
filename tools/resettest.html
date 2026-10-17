@@ -105,6 +105,12 @@ const realHour = () => { const n = new Date(); return n.getHours() + n.getMinute
   const crashKeep = { 'lunden.crash.pid': 'resettest-pid', 'lunden.crash.sent': '{"d":"2026-01-01","n":3}', 'lunden.crash.out': '[{"typ":"fel"}]' }; // crash reports (#629)
   for (const [k, v] of Object.entries(crashKeep)) localStorage.setItem(k, v);
   localStorage.setItem('lunden.crash.beat', '{"s":"run"}');
+  app.avatarCustomizer.open(); // a chosen look incl. a #1136 height, saved on close (#1148)
+  const hEl = d.getElementById('avatar-height');
+  hEl.value = '132'; hEl.dispatchEvent(new w.Event('input', { bubbles: true }));
+  app.avatarCustomizer.close();
+  const avatar = localStorage.getItem('lunden.avatar');
+  check(avatar && app.avatarCustomizer.getLook().height === 132, `the chosen look with its height is saved (${avatar})`);
   d.getElementById('reset-home').click();
   let goUrl = null;
   app.resetHome.go = (u) => { goUrl = u; };
@@ -117,6 +123,7 @@ const realHour = () => { const n = new Date(); return n.getHours() + n.getMinute
   check(localStorage.getItem('lunden.name') === 'Återställ-Testaren' && localStorage.getItem('lunden.playerId') && localStorage.getItem('lunden.stats'), 'the name, the player id and the statistics stay');
   check(Object.entries(crashKeep).every(([k, v]) => localStorage.getItem(k) === v) && localStorage.getItem('lunden.crash.beat') === null, 'the crash id, the daily send counter and unsent reports stay; the heartbeat goes (#629)');
   check(localStorage.getItem('other.page') === 'x', "another page's key on the same origin stays");
+  check(localStorage.getItem('lunden.avatar') === avatar, "the character's look and height stay (#1148)");
   w.dispatchEvent(new w.Event('pagehide')); // leaving: no new F5 record
   check(!sessionStorage.getItem('lunden.session'), 'no F5 record written on the way out');
   // Återställ from the menu closes the menu afterwards (#522): the mode to resume in is left for the next page

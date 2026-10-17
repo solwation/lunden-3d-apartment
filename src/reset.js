@@ -1,6 +1,6 @@
 // "Återställ" on the start screen (#303): the whole home back to how it was at the very first visit, locally only.
 // Every 'lunden.*' key in this browser's localStorage and sessionStorage goes except the whitelist RESET_KEEP (the
-// shared world's queue and drawings, the score, the leaderboard name, conveniences); the resume / F5 records go with
+// shared world's queue and drawings, the score, the leaderboard name, the character's look (#1148), conveniences); the resume / F5 records go with
 // the rest, so the clean reload that follows (main.js) starts at START at the real time with every door shut, the
 // lamps on the dusk rule, everything at home, no car, no cat. IndexedDB (taped-up drawings, cat photos) is never
 // touched, nor is the cloud: no DELETE is sent and its offline queue stays. Only our own prefix: the origin

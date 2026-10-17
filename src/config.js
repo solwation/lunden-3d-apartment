@@ -2536,6 +2536,7 @@ export const AUTO_RELOAD = { still: 2.5, countdown: 5, cancelled: 1.5, fade: 0.4
 export const RESET_KEEP = [
   'lunden.cloud.queue', 'lunden.cloud.seenCats', 'lunden.drawing', 'lunden.drawing.updated', // the shared world
   'lunden.stats', 'lunden.name', 'lunden.playerId', // the score and the leaderboard
+  'lunden.avatar', // the character's chosen look incl. its height (#1148); "Ny spelare" still drops it (main.js onNewPlayer)
   'lunden.scoreQueue', // completed players awaiting upload, including offline player changes
   'lunden.crash.pid', 'lunden.crash.sent', 'lunden.crash.out', // crash reports (#629): the random id, the daily send counter (a reset is no way round the cap) and unsent reports; lunden.crash.beat is dropped: a reset's reload is no crash
   'lunden.changelogSeen', 'lunden.changelogSeenT', 'lunden.installSkipped', 'lunden.mapShown', // conveniences

@@ -861,6 +861,7 @@ const leaderboard = new Leaderboard(cloud.url, totalScore, {
     resetStats();
     tasks.reset({ newChicken: true });
     clearLocalHome();
+    try { localStorage.removeItem('lunden.avatar'); } catch { /* unavailable */ } // a new player gets their own look; Återställ keeps it (#1148)
     try { sessionStorage.removeItem('lunden.resetDone'); } catch { /* unavailable */ }
     resetHome.go(location.href);
   }
@@ -2922,7 +2923,7 @@ document.addEventListener('fullscreenchange', () => {
   else navigator.keyboard?.unlock?.();
 });
 // "Återställ" (#303): asks first, then every local 'lunden.*' key but the whitelist goes (reset.js, RESET_KEEP: never
-// the cloud's queue, drawings, the score or the name) and the page reloads clean — no resume or F5 record, so it is a
+// the cloud's queue, drawings, the score, the name or the character's look, #1148) and the page reloads clean — no resume or F5 record, so it is a
 // fresh first visit: START, the real time, everything shut, off and at home. The new page says "Hemmet är återställt".
 const resetEl = document.getElementById('reset-confirm');
 const resetHome = {

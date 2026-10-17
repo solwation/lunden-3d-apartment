@@ -198,8 +198,8 @@ tools/reloadtest.html  headless test: resume after "Ladda om", F5 starts at STAR
                        the life sim (#371): an opened butter with 185 g, a cut cucumber + slices on the board, a used plate with half a
                        slice, then that plate in the hand across a reload; a broken life part harms nothing; lunden.life is written
 tools/resettest.html   headless test of "Återställ" (#303) against `node cloudflare/dev.mjs 8144`: Avbryt / Esc change nothing; the
-                       home's keys and resume / F5 records go, the queue, drawings (wall, desk, server), score, name and cat
-                       photo stay, START at the real time with the notice; the queued drawing still goes out; a later reload fresh
+                       home's keys and resume / F5 records go, the queue, drawings (wall, desk, server), score, name, avatar look
+                       (`lunden.avatar` incl. the #1136 height, #1148) and cat photo stay, START at the real time with the notice; the queued drawing still goes out; a later reload fresh
                        Running the two Worker tests (cloudtest, resettest; #635): one test at a time against one Worker, each wipes it with the
                        admin token `testtoken` (the dev.mjs default; a 403 there now fails the test at once, since leftovers from an earlier
                        run fail checks later; the Worker also limits writes to 30 per minute per instance, one IP). Cloud session: Playwright Chromium as in verification.md; the page opens
