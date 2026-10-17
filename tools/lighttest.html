@@ -26,6 +26,9 @@ f.onload = async () => {
   const lines = [];
   let pass = taps.length >= 14;
   lines.push(`${pass ? 'PASS' : 'FAIL'} ${taps.length} switches/lamps`);
+  // a lamp's on/off row: the action button's "Tända …" or a menu row's "Tänd …"/"Släck …" (#1111: a lit mirror's menu
+  // also offers "Byt utseende vid spegeln"; the action button keeps a stale label while a menu is shown)
+  const ON = /(^|\s)tända?(\s|$)/i, TOGGLE = /(^|\s)(tända?|släcka?)(\s|$)/i;
   for (const t of taps) {
     if (t.name === 'läslampan') continue; // the bunks' reading lamps (#219): their own test below
     if (t.name === 'julgranen' && !w.__app.christmas.active) continue; // the Christmas tree's lights (#571): only 1 Dec – 6 Jan (christmastest)
@@ -62,13 +65,13 @@ f.onload = async () => {
       camera.rotation.x = Math.atan2(target.y - camera.position.y, Math.hypot(target.x - camera.position.x, target.z - camera.position.z));
       step(1 / 60);
       // a lamp with a choice of actions (#428, the Hue Go): its "Tända …" row in the menu instead of the action button
-      const row = [...d.querySelectorAll('#choices:not([hidden]) button')].find((b) => /tända|släcka/i.test(b.textContent));
+      const row = [...d.querySelectorAll('#choices:not([hidden]) button')].find((b) => TOGGLE.test(b.textContent));
       label = row ? row.textContent : btn.textContent;
-      if (/tända/i.test(label)) break;
+      if (ON.test(label)) break;
     }
     if (!best) { lines.push(`FAIL ${t.name}: no place to stand`); pass = false; continue; }
-    if (!/tända/i.test(label)) { lines.push(`FAIL ${t.name}: not offered from any spot ("${label}")`); pass = false; continue; }
-    const press = () => ([...d.querySelectorAll('#choices:not([hidden]) button')].find((b) => /tända|släcka/i.test(b.textContent)) ?? btn).click();
+    if (!ON.test(label)) { lines.push(`FAIL ${t.name}: not offered from any spot ("${label}")`); pass = false; continue; }
+    const press = () => ([...d.querySelectorAll('#choices:not([hidden]) button')].find((b) => TOGGLE.test(b.textContent)) ?? btn).click();
     press();
     for (let i = 0; i < 30; i++) step(1 / 60); // (the pool light fades in over LIGHTING.poolFade)
     // (a room behind a closed door from here — the Klk under the stair — gets no pool light through it, #234: then its fixture glows)
@@ -86,7 +89,7 @@ f.onload = async () => {
     press();
     step(1 / 60);
     const off = !t.isOpen && (t.kind !== 'switch' || (t.room.mats.every((m) => !glowing(m)) && mine.every(([, i]) => uK[i] === 0) && t.room.lamps.every((l) => !lights.slots.some((s) => s.lamp === l))));
-    const ok = /tända/i.test(label) && on && off;
+    const ok = ON.test(label) && on && off;
     pass &&= ok;
     lines.push(`${ok ? 'PASS' : 'FAIL'} ${t.name} @ (${target.x.toFixed(2)}, ${target.y.toFixed(2)}, ${target.z.toFixed(2)}) from (${camera.position.x.toFixed(2)}, ${camera.position.z.toFixed(2)}) button "${label}" (${t.room.name ?? ''}) on=${on}${t.kind === 'switch' ? ` (glow, ${hidden ? 'behind a door: no pool light' : 'pool light'}, ${mine.length} washes ${washOn})` : ''} off=${off}`);
   }
