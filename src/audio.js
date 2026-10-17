@@ -864,6 +864,22 @@ export const sfx = {
     const t = ctx.currentTime, d = out(pos, 0.7);
     for (let i = 0; i < n; i++) tone(t + i * 0.32, 0.18, d, { type: 'square', from: 2350, gain: 0.07 });
   },
+  /** The microwave running (#1210): a low transformer hum, until stop(). */
+  microHum(pos) {
+    if (!ready()) return null;
+    const t = ctx.currentTime, d = out(pos, 0.5);
+    const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = 100;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 420;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.05, t + 0.4);
+    o.connect(lp).connect(g).connect(d); o.start(t);
+    return { stop() { const t1 = ctx.currentTime; g.gain.cancelScheduledValues(t1); g.gain.setValueAtTime(g.gain.value, t1); g.gain.linearRampToValueAtTime(0, t1 + 0.3); o.stop(t1 + 0.35); } };
+  },
+  /** The microwave is done (#1210): `n` clear dings. */
+  microDing(pos, n = 1) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.8);
+    for (let i = 0; i < n; i++) tone(t + i * 0.5, 0.7, d, { type: 'sine', from: 1760, gain: 0.09 });
+  },
   /** The toaster (#401): the lever pushed down and caught by its latch — a springy clack. */
   toasterDown(pos) {
     if (!ready()) return;

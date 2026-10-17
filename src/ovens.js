@@ -90,7 +90,19 @@ export function buildOvens({ f, z0, z1, yOven, yMicro, yGrille, microW }) {
   const panelW = z1 - 0.01 - (z0 + 0.01 + doorW);
   const pz = z0 + 0.01 + doorW + panelW / 2;
   parts.add(box(t, microH, panelW - 0.002, f - 0.004 + t / 2, yMicro + 0.005 + microH / 2, pz, black));
-  for (let i = 0; i < 4; i++) parts.add(box(0.004, 0.012, 0.03, f - 0.006, yGrille - 0.06 - i * 0.04, pz, steel));
+  // #1210: the display (a canvas, drawn by microwave.js) at the top of the panel, the time button (wide, a pick box of its own)
+  // and a few more plain buttons; the panel itself is the start / stop target (microwave.js)
+  const panelBox = parts.children[parts.children.length - 1];
+  const pw = Math.min(0.1, panelW - 0.03);
+  for (let i = 1; i < 4; i++) parts.add(box(0.004, 0.012, 0.03, f - 0.006, yGrille - 0.11 - i * 0.04, pz, steel));
+  const timeBtn = box(0.004, 0.02, pw, f - 0.006, yGrille - 0.11, pz, steel);
+  parts.add(timeBtn);
+  const screen = document.createElement('canvas'); screen.width = 128; screen.height = 48;
+  const screenTex = new THREE.CanvasTexture(screen); screenTex.colorSpace = THREE.SRGBColorSpace;
+  const display = new THREE.Mesh(new THREE.PlaneGeometry(pw, pw * 48 / 128),
+    new THREE.MeshStandardMaterial({ map: screenTex, emissive: 0xffffff, emissiveMap: screenTex, emissiveIntensity: 0.8, roughness: 0.2 }));
+  display.position.set(f - 0.0046, yGrille - 0.05, pz); display.rotation.y = -Math.PI / 2; display.raycast = () => {};
+  parts.add(display);
 
   // hollow insides: enamel oven with a rack and a tray, light grey microwave with a turntable
   const enamel = new THREE.MeshStandardMaterial({ color: 0x2b2d30, roughness: 0.4 });
@@ -126,5 +138,9 @@ export function buildOvens({ f, z0, z1, yOven, yMicro, yGrille, microW }) {
   parts.add(box(f + 0.58 - ox1, yMicro - yOven, z1 - z0, (ox1 + f + 0.58) / 2, (yOven + yMicro) / 2, zc, black));
   parts.add(box(f + 0.58 - mx1, yGrille - yMicro, z1 - z0, (mx1 + f + 0.58) / 2, (yMicro + yGrille) / 2, zc, black));
   parts.add(box(mx1 - ox0, yGrille - yMicro, z1 - mz1, (ox0 + mx1) / 2, (yMicro + yGrille) / 2, (mz1 + z1) / 2, black));
+  // #1210: what microwave.js needs: the turntable's top (the plate's spot), the cavity's pick volume, the panel and its display
+  const cx = (ox0 + mx1) / 2, cz = (z0 + 0.03 + mz1) / 2;
+  micro.cav = { x: cx, y: yMicro + 0.05 + 0.003, z: cz, w: mx1 - ox0, h: yGrille - yMicro - 0.06, d: mz1 - z0 - 0.03, parts,
+    panel: panelBox, timeBtn, screen, screenTex, lampMat: microLamp };
   return { doors: [oven, micro], parts };
 }

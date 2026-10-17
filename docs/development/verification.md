@@ -7079,3 +7079,5 @@ furniture focus/E dispatch, certify physical phones or measure frame rate.
 Run with `node --test cloudflare/players.test.mjs cloudflare/headboxes.test.mjs
 cloudflare/nerfhead.test.mjs cloudflare/bowhead.test.mjs`; protocol coverage includes
 resting observers, late joins and malformed/omitted pose returning to standing.
+
+Microwave (#1210): `PLAYWRIGHT_MODULE=… CHROME_PATH=… SHOTS=… node tools/microwavetest.cjs GAME` — the real game, aimed focus + `use()`: door, plate with food in, refusals (door open, empty, power cut), time button, warm / hot / burnt, pause on opening, save/load, plate out. Run after changing `src/microwave.js` or the microwave part of `src/ovens.js`.

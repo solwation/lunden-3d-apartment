@@ -7,6 +7,15 @@ Related: [life](life.md), [furniture](furniture.md).
 
 ```text
 src/ovens.js           oven (drop-down door) + microwave (side door) in the tall unit, E opens (world.lids)
+src/microwave.js       #1210: warming food in the microwave. ovens.js gives the door `mikron` a `cav` (turntable, panel, time button, display).
+                       Life store 'microwave' (one slot, a plate with its food, door open); the panel is the E target (kind 'microwave', in
+                       world.lids; "Stäng luckan först" / "Ställ in en tallrik först" / "Strömmen är borta"), the time button cycles
+                       MICROWAVE.presets (display seconds, `clock` per real second). A run hums, turns the plate, dings at 0:00; an open
+                       door pauses it. Food with ITEMS `heat` ({warm, hot, burn, cookBurn?}, skipped while raw: needsCooking without
+                       machine.cooked) gets machine.heat / warm / hot / burnt, named "(varm)" / "(het)" / "(bränd)" (`nameHeated(life)`, after
+                       the other namers); saved with the items. Events microwaveStarted, microwaved {item, state}, microwaveDone. Heating
+                       exists on fried egg and grilled sausage; pizza/piroger (#1209) wait for it. Numbers are *guess*.
+                       tools/microwavetest.cjs: real focus + use() path, refusals, warm/hot/burnt, pause, save/load.
 src/hob.js             the induction hob (#158): E switches it on/off (the front zone glows, "9" on the display, a hum);
                        in world.lids, `world.hob` (`zone`, `on`) for the pan/chicken; stays with F but F switches it off
                        #1043: bevelled glass, printed circular zones/crosses and touch controls; the live digit reads upright

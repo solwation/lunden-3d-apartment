@@ -41,7 +41,7 @@ function keys(list, base) {
 const byKey = (list, base) => new Map(keys(list, base).map((k, i) => [k, list[i]]));
 
 // --- what opens and shuts -------------------------------------------------
-const NOT_OPENABLE = new Set(['coffee', 'hob', 'hood', 'flush', 'grill']); // on/off things in world.lids: their own parts
+const NOT_OPENABLE = new Set(['coffee', 'hob', 'hood', 'flush', 'grill', 'microwave']); // on/off things in world.lids: their own parts
 function openables(a) {
   return [...a.world.doors, ...a.world.lids.filter((l) => !NOT_OPENABLE.has(l.kind)),
     ...a.world.furnitureTargets.filter((t) => t.kind === 'cabinet' || t.kind === 'appliance')];

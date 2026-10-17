@@ -2461,6 +2461,11 @@ export const FROZEN_MEALS = {
   gorbys: { count: 4, box: [0.15, 0.08, 0.17], piece: [0.13, 0.034, 0.072], crust: 0xc58a4a, film: 0.006 },
   frost: 0.35, // how pale/frosty a frozen piece looks (0 = as baked, 1 = white)
 };
+// #1210: warming a plate of food in L1007's microwave (src/microwave.js). The panel's time button cycles `presets` (display
+// seconds); one real second runs `clock` display seconds. A heatable food (ITEMS `heat`: warm / hot / burn in display seconds
+// of microwaving) turns "varm" at `warm`, "het" (too hot to eat) at `hot` and "bränd" at `burn`. All numbers are game parameters, *guess*.
+export const MICROWAVE = { presets: [30, 60, 90, 120], clock: 6, beeps: 1, cav: { r: 0.12, plateY: 0.053 },
+  heat: { warm: 25, hot: 75, burn: 110 } };
 export const EGG = { count: 6, crack: .65, seconds: 8, burnAt: 24, shellRadius: .022, whiteRadius: .051, yolkRadius: .017, carton: { w: .155, d: .105, h: .067 } };
 // Laundry gameplay and interior proportions are assumptions (#395/#550), not product specifications.
 export const LAUNDRY = {
@@ -2508,17 +2513,17 @@ export const ITEMS = {
   laundryClothes: { name: 'plagget', noun: 'plagg', tags: ['laundry'], unit: 'count', amount: 1, size: 's', clean: 'dirty', moisture: 'dry', model: 'laundryClothes' },
   eggCarton: { name: 'äggkartongen', tags: ['food', 'package'], unit: 'count', amount: EGG.count, size: 'm', pkg: 'closed', model: 'eggCarton', dispense: 'rawEgg', dispenseLabel: 'ta ett ägg' },
   rawEgg: { name: 'ägget', tags: ['food'], unit: 'count', amount: 1, size: 'xs', model: 'rawEgg' },
-  friedEgg: { name: 'det stekta ägget', tags: ['food', 'topping'], unit: 'count', amount: 1, size: 's', model: 'friedEgg', bites: 4, needsCooking: true },
+  friedEgg: { name: 'det stekta ägget', tags: ['food', 'topping'], unit: 'count', amount: 1, size: 's', model: 'friedEgg', bites: 4, needsCooking: true, heat: { ...MICROWAVE.heat, cookBurn: EGG.burnAt } },
   // #1124: grill sausages (raw → grilled on a lit kettle grill → burnt) and hot-dog buns; the grilled sausage goes in a bun
   sausagePack: { name: 'korvpaketet', noun: 'korv', tags: ['food', 'package'], unit: 'count', amount: SAUSAGE.pack, size: 'm', pkg: 'closed', model: 'sausagePack', dispense: 'sausage', dispenseLabel: 'ta en grillkorv' },
-  sausage: { name: 'korven', noun: 'korv', tags: ['food', 'topping', 'sausage'], unit: 'count', amount: 1, size: 's', model: 'sausage', bites: 3, needsCooking: true, cookText: 'Grilla korven först' },
+  sausage: { name: 'korven', noun: 'korv', tags: ['food', 'topping', 'sausage'], unit: 'count', amount: 1, size: 's', model: 'sausage', bites: 3, needsCooking: true, cookText: 'Grilla korven först', heat: { ...MICROWAVE.heat, cookBurn: SAUSAGE.burnAt } },
   bunBag: { name: 'korvbrödspåsen', noun: 'korvbröd', tags: ['food', 'package'], unit: 'count', amount: SAUSAGE.buns, size: 's', pkg: 'closed', model: 'bunBag', dispense: 'hotdogBun', dispenseLabel: 'ta ett korvbröd' },
   // #1209: frozen meals from the freezer; the piece is wrapped (pkg closed) until unwrapped (`unwrap` = that action's label)
   billysBox: { name: 'Billys-kartongen', noun: 'pizza', tags: ['food', 'frozen', 'package'], unit: 'count', amount: FROZEN_MEALS.billys.count, size: 'm', pkg: 'closed', model: 'billysBox', dispense: 'billys', dispenseLabel: 'ta en Billys pan pizza' },
-  billys: { name: 'pizzan', noun: 'pizza', tags: ['food', 'frozen'], unit: 'count', amount: 1, size: 's', pkg: 'closed', model: 'billys', bites: 4, needsCooking: true,
+  billys: { name: 'pizzan', noun: 'pizza', tags: ['food', 'frozen'], unit: 'count', amount: 1, size: 's', pkg: 'closed', model: 'billys', bites: 4, needsCooking: true, heat: { ...MICROWAVE.heat },
     cookText: 'Pizzan är djupfryst – värm den först', unwrap: 'packa upp pizzan', wrappedName: 'den inplastade pizzan', frozenName: 'den frysta pizzan', hotName: 'den varma pizzan' },
   gorbysBox: { name: 'Gorbys-kartongen', noun: 'piroger', tags: ['food', 'frozen', 'package'], unit: 'count', amount: FROZEN_MEALS.gorbys.count, size: 'm', pkg: 'closed', model: 'gorbysBox', dispense: 'pirog', dispenseLabel: 'ta en Gorbys pirog' },
-  pirog: { name: 'pirogen', noun: 'pirog', tags: ['food', 'frozen'], unit: 'count', amount: 1, size: 's', pkg: 'closed', model: 'pirog', bites: 3, needsCooking: true,
+  pirog: { name: 'pirogen', noun: 'pirog', tags: ['food', 'frozen'], unit: 'count', amount: 1, size: 's', pkg: 'closed', model: 'pirog', bites: 3, needsCooking: true, heat: { ...MICROWAVE.heat },
     cookText: 'Pirogen är djupfryst – värm den först', unwrap: 'packa upp pirogen', wrappedName: 'den inplastade pirogen', frozenName: 'den frysta pirogen', hotName: 'den varma pirogen' },
   hotdogBun: { name: 'korvbrödet', noun: 'korvbröd', tags: ['food', 'base', 'bun'], unit: 'count', amount: 1, size: 's', model: 'hotdogBun', bites: 4 },
   plate: { name: 'tallriken', tags: ['dish', 'carrier', 'dishwasherSafe'], unit: 'count', amount: 1, size: 'm', clean: 'clean', model: 'plate',
