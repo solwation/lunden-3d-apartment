@@ -24,7 +24,7 @@ REPO = 'solwation/lunden-3d-apartment'
 WORKER = 'https://lunden-l1007.olw.workers.dev'
 ISSUES = f'https://github.com/{REPO}/issues/'
 API = f'repos/{REPO}/issues'
-MAX_JSON = 16 * 1024 * 1024
+MAX_JSON = 32 * 1024 * 1024  # #1182: a full page of 50 screenshot+photo reports (~28 MiB); *guess* bound
 MAX_EXPORT = 64 * 1024 * 1024
 MAX_IMAGE = 200 * 1024
 IMAGE_PREFIX = 'data:image/jpeg;base64,'
@@ -186,8 +186,9 @@ def validate_report(report, ident=None):
         fail('Invalid report text size.')
     if not isinstance(report.get('created'), (str, int, float)):
         fail('Invalid report creation time.')
-    if 'image' in report:
-        decode_image(report['image'])
+    for field in ('image', 'photo'):  # #1182: optional reporter photo beside the screenshot.
+        if field in report:
+            decode_image(report[field])
 
 
 def decode_image(value):
@@ -272,16 +273,22 @@ def image_section(ident, image, relevance):
 
 def export_report(report, directory):
     exported = dict(report)
-    if 'image' not in report:
-        return exported
-    data, metadata = decode_image(report['image'])
+    # #1182: the photo is exported beside the screenshot as <UUID>-2.jpg; full import support is #1183.
+    for field, suffix in (('image', ''), ('photo', '-2')):
+        if field in report:
+            exported[field] = export_image(report, field, suffix, directory)
+    return exported
+
+
+def export_image(report, field, suffix, directory):
+    data, metadata = decode_image(report[field])
     directory = Path(directory).expanduser().absolute()
     if directory.is_symlink() or directory.resolve().is_relative_to(Path(__file__).resolve().parents[1]):
         fail('Export images require a private directory outside the checkout.')
     directory.mkdir(mode=0o700, parents=True, exist_ok=True)
     if not directory.is_dir() or stat.S_IMODE(directory.stat().st_mode) & 0o077:
         fail('Image export directory must be private (mode 700).')
-    path = directory / (report_id(report['id']) + '.jpg')
+    path = directory / (report_id(report['id']) + suffix + '.jpg')
     fd, temporary = tempfile.mkstemp(prefix='.image-', dir=directory)
     try:
         with os.fdopen(fd, 'wb') as stream:
@@ -295,8 +302,7 @@ def export_report(report, directory):
                 fail('Existing private image export differs or is unsafe; inspect locally.')
     finally:
         os.unlink(temporary)
-    exported['image'] = {**metadata, 'path': str(path), 'untrusted': True}
-    return exported
+    return {**metadata, 'path': str(path), 'untrusted': True}
 
 
 class GitHubNotFound(ImportErrorSafe):
@@ -499,6 +505,9 @@ def import_reports(manifest, path, worker, github, emit=print):
                     fail('Claim is missing its report or valid acknowledgement receipt.')
             else:
                 validate_report(report, ident)
+                if 'photo' in report:
+                    # Never acknowledge (delete) a report whose photo would be dropped from the issue.
+                    fail('Report has a second image (photo); multi-image import is #1183. Report retained.')
             image_data = None
             if report is not None:
                 if 'image' in report:

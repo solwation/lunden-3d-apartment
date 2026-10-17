@@ -64,6 +64,9 @@ in `~/.local/state/lunden-report-import/images/<UUID>.jpg`, with a `700` directo
 and `600` files outside the checkout. `fetch --image-dir /private/external/images`
 chooses another private directory. Names come only from validated UUIDs. Existing
 files must match exactly; the importer never overwrites a conflicting image.
+A report's optional second image `photo` (#1182, the reporter's own picture) gets the same validation and
+is exported as `<UUID>-2.jpg`. Until multi-image import (#1183) lands, `import` stops before GitHub on a
+report with `photo` and keeps it in the Worker, so the photo is never dropped by an acknowledgement.
 
 Exported JSON replaces inline base64 with `image.path`, `image.sha256`, dimensions,
 byte count and `untrusted:true`. Base64 is not printed. Open each selected original

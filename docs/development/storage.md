@@ -1120,18 +1120,21 @@ accepted, and credential-bearing fetches reject redirects. Production uses HTTPS
 
 - `POST /report-session` with `{code}`: accepted browser Origin, write rate
   limit before private-code validation, bounded stream/JSON, fail closed when unconfigured.
-- `PUT /reports/<v4 UUID>` with `{text,image?}` and the report-session bearer: exact plain
-  text up to `REPORTS.maxChars` (4,000 UTF-16 units), bounded 320 KiB actual stream;
+- `PUT /reports/<v4 UUID>` with `{text,image?,photo?}` and the report-session bearer: exact plain
+  text up to `REPORTS.maxChars` (4,000 UTF-16 units), bounded 640 KiB actual stream (*guess*, room for two images, #1182);
   login/claim/receipt bodies remain limited to 16 KiB. Forbidden control/bidi characters
   are rejected. `image` is an optional canonical `data:image/jpeg;base64,…` string,
   at most 200 KiB decoded, with actual JPEG SOF0/SOF2 dimensions no larger than 1280
   pixels per edge. The bounded marker parser rejects unsupported frames, DNL,
   truncation and trailing bytes. No remote URLs or SVG are accepted. Text-only older
   clients remain compatible and retain their original SHA256(text) retry identity;
-  image reports hash a separate domain plus the exact text/image payload. Text and
+  image reports hash a separate domain plus the exact text/image payload. `photo` (#1182) is the
+  reporter's own picture beside the game screenshot `image`, with the identical JPEG checks; it may come
+  without `image`. Reports with `photo` hash a third domain over `{text,image,photo}`, so one-image
+  and text-only identities stay unchanged. Text and
   pixels are untrusted data, never HTML or agent instructions.
 - `GET /reports?cursor=…`: reports-only `REPORT_IMPORT_TOKEN` (or existing `ADMIN_TOKEN`), returns
-  `{untrusted:true,reports:[{id,text,image?,created,untrusted:true}],cursor:null|string}`,
+  `{untrusted:true,reports:[{id,text,image?,photo?,created,untrusted:true}],cursor:null|string}`,
   pages of at most 50. Read every page; KV visibility can lag behind accepted writes.
 
 - `POST /reports/<id>`: reports-only `REPORT_IMPORT_TOKEN` (or existing `ADMIN_TOKEN`), JSON `{claimId:<v4 UUID>}`. The
@@ -1172,7 +1175,8 @@ the existing `LIMITER` binding when configured, otherwise the existing per-isola
 limit without that binding. Reader/ack routes are unavailable without the serialized
 storage authority, and unknown/missing secrets grant no access.
 
-Verification: `node --test cloudflare/reports.test.mjs` and
+Verification: `node --test cloudflare/reports.test.mjs cloudflare/reportphotos.test.mjs` (the second mints
+sessions from a fixture secret and needs no private inputs) and
 `PLAYWRIGHT_MODULE=… CHROME_PATH=… LUNDEN_SECRET_TEST_INPUTS=<external private fixture> node
  tools/adminreportstest.cjs http://localhost:8874 http://localhost:8875 /tmp/report-probe`.
 Start the isolated local Worker with `LUNDEN_REPORT_SESSION_SECRET=<explicit local signing fixture>`.

@@ -357,6 +357,14 @@ class ImageImportTests(unittest.TestCase):
             # Keep manifest stable per journal while testing each separate invalid review.
             self.path = Path(self.temp.name) / 'second.json'
 
+    def test_report_with_photo_is_retained_until_multi_image_import(self):
+        # #1182: the Worker accepts a second image; until #1183 the importer must not drop it and ack.
+        self.worker.report['photo'] = IMAGE
+        with self.assertRaises(m.ImportErrorSafe):
+            self.run_import()
+        self.assertEqual(self.github.calls + self.github.image_calls, [])
+        self.assertFalse(self.worker.acked)
+
     def test_upload_failure_retains_report_and_retries_only_image_upload(self):
         self.github.fail_upload = True
         with self.assertRaises(m.ImportErrorSafe):
@@ -578,6 +586,21 @@ class HttpTests(unittest.TestCase):
             result = json.loads(output.getvalue())
             self.assertNotIn(IMAGE, output.getvalue())
             self.assertEqual(Path(result['reports'][0]['image']['path']).read_bytes(), JPEG)
+
+    def test_screenshot_and_photo_export_as_separate_private_files(self):
+        photo = m.IMAGE_PREFIX + m.base64.b64encode(JPEG[:2] + b'\xff\xfe\x00\x04hi' + JPEG[2:]).decode()
+        self.page([{**REPORT, 'image': IMAGE, 'photo': photo}, {**REPORT, 'id': OTHER, 'photo': 'data:image/png;base64,AAAA'}])
+        with self.assertRaises(m.ImportErrorSafe):
+            list(self.worker.reports())
+        self.page([{**REPORT, 'image': IMAGE, 'photo': photo}])
+        reports = list(self.worker.reports())
+        with tempfile.TemporaryDirectory() as directory:
+            exported = m.export_report(reports[0], Path(directory) / 'images')
+            self.assertNotIn('base64', json.dumps(exported))
+            self.assertEqual(Path(exported['image']['path']).name, ID + '.jpg')
+            self.assertEqual(Path(exported['photo']['path']).name, ID + '-2.jpg')
+            self.assertEqual(Path(exported['image']['path']).read_bytes(), JPEG)
+            self.assertNotEqual(exported['photo']['sha256'], exported['image']['sha256'])
 
     def test_full_fifty_image_page_can_exceed_old_eight_mib_limit(self):
         comment = b'\xff\xfe' + (60002).to_bytes(2, 'big') + b'x' * 60000
