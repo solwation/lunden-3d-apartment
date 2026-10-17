@@ -26,7 +26,7 @@ const paint = (g, hex) => {
 const vmat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.6 });
 
 /** The bow in its own frame: the grip at the origin, the limbs up / down (y), bending forward (−z), the string's rest line at z 0.13. */
-function bowGeometry() {
+export function bowGeometry() {
   const parts = [], H = 0.56; // half its length: a 1.2 m (48") youth / takedown recurve, so it lies in the box
   for (const s of [1, -1]) {
     const pts = [[0, 0.17, -0.02], [0, 0.28, -0.05], [0, 0.42, -0.06], [0, 0.51, -0.03], [0, H, 0.05], [0, H + 0.03, 0.1]].map(([x, y, z]) => new THREE.Vector3(x, s * y, z));

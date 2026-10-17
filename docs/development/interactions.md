@@ -409,6 +409,10 @@ src/combat.js          fights between players (#667, on the ghosts of #666): onl
                        only, no paint / score / count, stops at a wall, gone after `shotLife`), a ball on its arc (COMBAT.balls),
                        streaks in one LineSegments (COMBAT.lines: rifle tracer, wand + toys.sparkles burst, the web from the
                        avatar's hand, the jetpack's flames down), the saber as a swing of the avatar's prop (ghosts.js `swing`).
+                       The prop is the held weapon's own model (#1126, src/ghostprops.js `ghostProp`: rifleModel, the first
+                       blaster in `blasterModel(…, lite)`, buildSaber's hilt + an unshaded blade, the first wand, bowGeometry; baked
+                       lazily, grip at the hand, −z forward); the state's `h` carries no variant, so one blaster / wand stands for all.
+                       Check: `node tools/ghostpropstest.cjs BASE OUT` (tools/ghostprops.html, one Ghost per weapon).
                        The room checks a hit (cloudflare/players.js COMBAT: armed both, distance ≤ range +
                        slack, `every`, ≤ perMinute points a minute) and tells both: hit → bump('pvpHits') (unchanged SCORE.each.pvpHits base),
                        plus the confirmed shared distance bonus (#873), a splat, the badge; hurt → penalize('pvpHurt'), a red edge flash, sfx.ouch, checked life damage;

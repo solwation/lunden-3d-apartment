@@ -14,7 +14,7 @@ const hiltMat = new THREE.MeshStandardMaterial({ color: 0xc9cdd2, roughness: 0.2
 const gripMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1c, roughness: 0.6 });
 const red = new THREE.MeshStandardMaterial({ color: 0xc0262b, roughness: 0.4 });
 
-function buildSaber() {
+export function buildSaber() {
   const g = new THREE.Group(); // along local +y: hilt 0 … S.hilt, blade above
   const cyl = (r, h, y, m, seg = 16) => { const c = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, seg), m); c.position.y = y; return c; };
   g.add(cyl(0.017, S.hilt, S.hilt / 2, hiltMat));

@@ -84,27 +84,29 @@ class Darts {
 /** Parts of one blaster, collected per material and merged into one mesh each (#236). Frame: the barrel along
  * local −z; `u` = forward (−z), `v` = up, `x` = to the right. */
 class Kit {
-  constructor() { this.parts = new Map(); }
+  /** lite (#1126, the copy other players see): no bevels or rounding, fewer segments — the same shapes at a fraction of the triangles. */
+  constructor(lite = false) { this.parts = new Map(); this.lite = lite; }
   put(m, geo) { if (!this.parts.has(m)) this.parts.set(m, []); this.parts.get(m).push(geo.index ? geo.toNonIndexed() : geo); }
   /** A side profile [[u, v], …] (holes likewise) extruded `w` wide around `x`, with rounded edges. */
   side(m, pts, w, { holes = [], x = 0, bevel = 0.005 } = {}) {
     const shape = (p) => new THREE.Shape(p.map(([u, v]) => new THREE.Vector2(u, v)));
     const sh = shape(pts);
     sh.holes = holes.map((h) => new THREE.Path(h.map(([u, v]) => new THREE.Vector2(u, v))));
+    if (this.lite) bevel = 0;
     const d = Math.max(0.001, w - 2 * bevel);
-    const g = new THREE.ExtrudeGeometry(sh, { depth: d, curveSegments: 6, bevelEnabled: bevel > 0, bevelSize: bevel, bevelThickness: bevel, bevelSegments: 2 });
+    const g = new THREE.ExtrudeGeometry(sh, { depth: d, curveSegments: this.lite ? 2 : 6, bevelEnabled: bevel > 0, bevelSize: bevel, bevelThickness: bevel, bevelSegments: 2 });
     g.deleteAttribute('uv'); g.clearGroups();
     this.put(m, g.translate(0, 0, -d / 2).rotateY(Math.PI / 2).translate(x, 0, 0));
   }
   /** A rounded box `sx` × `sy` × `sl` (length along the barrel) centred at (x, v, u), tilted `tilt` rad (nose down > 0). */
   rbox(m, sx, sy, sl, u, v, { x = 0, r = 0.004, tilt = 0 } = {}) {
-    const g = new RoundedBoxGeometry(sx, sy, sl, 2, Math.min(r, sx / 2.01, sy / 2.01, sl / 2.01));
+    const g = this.lite ? new THREE.BoxGeometry(sx, sy, sl) : new RoundedBoxGeometry(sx, sy, sl, 2, Math.min(r, sx / 2.01, sy / 2.01, sl / 2.01));
     g.deleteAttribute('uv');
     this.put(m, g.rotateX(tilt).translate(x, v, -u));
   }
   /** A tube along the barrel from u0 to u1, radius r0 at the back, r1 at the front. */
   tube(m, r0, r1, u0, u1, v, { x = 0, seg = 16 } = {}) {
-    const g = new THREE.CylinderGeometry(r1, r0, u1 - u0, seg); // +y = front
+    const g = new THREE.CylinderGeometry(r1, r0, u1 - u0, this.lite ? Math.min(seg, 8) : seg); // +y = front
     g.deleteAttribute('uv');
     this.put(m, g.rotateX(-Math.PI / 2).translate(x, v, -(u0 + u1) / 2));
   }
@@ -159,8 +161,8 @@ function rail(k, m, u0, u1, v) {
 /** A Nerf blaster (#236), pointing along local −z, the pistol grip at about (0, −0.08, 0.08). Three models: 'pistol'
  * (an Elite 2.0-style sidearm), 'drum' (a revolving drum in front of the trigger) and 'long' (a clip, a pump grip
  * under the barrel and a skeleton stock). A few meshes each (one per material). */
-function blasterModel(kind, color, accent) {
-  const k = new Kit();
+export function blasterModel(kind, color, accent, lite = false) {
+  const k = new Kit(lite);
   const body = mat(color, { roughness: 0.42 }), side = mat(accent, { roughness: 0.45 }), grey = mat(0x2f3338, { roughness: 0.6 });
   const orange = mat(0xff7a1a, { roughness: 0.5 }), logo = logoMaterial();
   const guard = (u0, u1, v0, v1) => [[u0, v0], [u1, v0], [u1, v1], [u0, v1]].reverse();
@@ -290,7 +292,7 @@ function starShape(r0, r1) {
   for (let i = 0; i < 10; i++) { const r = i % 2 ? r1 : r0, a = (i / 10) * Math.PI * 2 + Math.PI / 2; i ? sh.lineTo(Math.cos(a) * r, Math.sin(a) * r) : sh.moveTo(Math.cos(a) * r, Math.sin(a) * r); }
   return sh;
 }
-function wandModel(color) {
+export function wandModel(color) {
   const g = new THREE.Group(); // along local +y, star at the top
   const stick = mat(0xffffff, { roughness: 0.3, metalness: 0.2 });
   const s = cyl(0.006, 0.008, 0.3, stick, 8); s.position.y = 0.15; g.add(s);

@@ -5,6 +5,7 @@ import { Avatar, armTarget } from './avatar.js';
 import { totalScore } from './stats.js';
 import { acquireBadge, releaseBadge, badgeScore, badgeLives } from './ghostbadge.js';
 import { setMirrorExtra } from './reflections.js';
+import { ghostProp } from './ghostprops.js'; // what an armed player holds: their weapon's own model (#667, #1126)
 
 // Other players as ghosts (#666): a WebSocket to the Worker's players' room (cloudflare/players.js, one Durable Object for
 // everybody). Inert without the cloud (cloud.js `cloudUrl`), with GHOSTS.enabled false or ?mp=0. We send our feet and
@@ -74,33 +75,13 @@ function tint(name) {
   return new THREE.Color().setHSL((h % 360) / 360, 0.55, 0.72);
 }
 
-// What an armed player carries (#667), seen by the others: one small shape per weapon (shared geometry + material), at the
-// right hand pointing forward (−z), the jetpack on the back. The suit's web has none (empty hands).
-const PROPS = {
-  saber: () => [new THREE.CylinderGeometry(0.016, 0.016, 0.9, 8).rotateX(Math.PI / 2).translate(0, 0, -0.45), new THREE.MeshBasicMaterial({ color: 0x7fe3ff })],
-  nerf: () => [new THREE.BoxGeometry(0.06, 0.13, 0.36).translate(0, 0, -0.12), new THREE.MeshLambertMaterial({ color: 0xf08a24 })],
-  wand: () => [new THREE.CylinderGeometry(0.006, 0.01, 0.36, 6).rotateX(Math.PI / 2).translate(0, 0, -0.16), new THREE.MeshLambertMaterial({ color: 0x6b4423 })],
-  rifle: () => [new THREE.BoxGeometry(0.05, 0.1, 0.72).translate(0, 0, -0.26), new THREE.MeshLambertMaterial({ color: 0x3a3226 })],
-  ball: () => [new THREE.SphereGeometry(0.12, 14, 10).translate(0, 0, -0.08), new THREE.MeshLambertMaterial({ color: 0xd8641e })],
-  jetpack: () => [new THREE.BoxGeometry(0.32, 0.46, 0.18), new THREE.MeshLambertMaterial({ color: 0xc8ccd0 })],
-};
-const props = new Map();
-function prop(key) {
-  if (!PROPS[key]) return null;
-  if (!props.has(key)) props.set(key, PROPS[key]());
-  const [geo, mat] = props.get(key), m = new THREE.Mesh(geo, mat);
-  if (key === 'jetpack') m.position.set(0, 1.2, 0.2); // (the others follow the hand, Ghost.animate)
-  m.name = `ghost-prop:${key}`;
-  return m;
-}
-
 const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
 const lerpAngle = (a, b, t) => a + wrap(b - a) * t;
 const SWING = 0.35; // s the saber's cut lasts
 const tmpV = new THREE.Vector3();
 const pickMat = new THREE.MeshBasicMaterial();
 
-class Ghost {
+export class Ghost { // (exported for tools/ghostprops.html)
   /** `self`: our own reflection in the mirrors (#691): no name tag, never shown to the main camera. */
   constructor(parent, id, name, self = false, look = null) {
     this.id = id; this.name = name || ANON; this.snaps = []; this.h = ''; this.solid = false; this.prop = null; this.self = self;
@@ -186,7 +167,7 @@ class Ghost {
     if (h === this.h) return;
     this.h = h;
     this.prop?.removeFromParent();
-    this.prop = prop(h);
+    this.prop = ghostProp(h);
     if (this.prop) this.root.add(this.prop);
   }
 
