@@ -23,7 +23,7 @@ import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, SHIN, bindAt, lathe, torsoR, a
 
 export { avatarLook as look } from './config.js';
 const look = avatarLook;
-const REGION = { skin: 0, top: 1, pants: 2, hair: 3, fixed: 4, lips: 6, iris: 7 }; // 5: the shoes
+const REGION = { skin: 0, top: 1, pants: 2, hair: 3, fixed: 4, lips: 6, iris: 7, beard: 8 }; // 5: the shoes; 8 (#1156): facial hair, the look's `beard` or its hair colour
 // #1138: which face part a head-bone vertex belongs to (the `facePart` attribute; 0 = not on the head), see faceShape
 const FACE_PART = { head: 1, neck: 2, eye: 3, nose: 4, ear: 5, brow: 6 };
 const H = 0.1; // The head bone's eye-height reference (ears, hair, moustache).
@@ -64,12 +64,12 @@ function parts(style, sleeves, gender = 0, facial = 0) {
   const f = Number(facial) || 0;
   if (f === 2) { // mustache only
     for (const s of [-1, 1]) {
-      add(new THREE.BoxGeometry(0.024, 0.010, 0.014).rotateZ(s * -0.15), 'hair', 'head', [s * 0.014, H - 0.046, 0.114], 0.95);
+      add(new THREE.BoxGeometry(0.024, 0.010, 0.014).rotateZ(s * -0.15), 'beard', 'head', [s * 0.014, H - 0.046, 0.114], 0.95);
     }
   }
   if (f === 1 || f === 3) { // #1097: one continuous full beard, the lips showing through its mouth opening
     const { beard, lips } = beardShell(f === 3);
-    add(beard, 'hair', 'head', [0, 0, 0], 0.9);
+    add(beard, 'beard', 'head', [0, 0, 0], 0.9);
     if (f === 3) P[P.length - 1].mouth = 'moustache'; // (#1122: the moustache over the opening stays, the beard below it drops)
     add(lips, 'fixed', 'head', [0, 0, 0], 1, 0x8a4c45);
     P[P.length - 1].mouth = f === 3 ? 'moustache' : 'upper'; // (#1122: the backdrop's top stays; the lips and the dark seam open in front of it)
@@ -440,7 +440,7 @@ const TORSO_PROFILE_FEMALE = [[0, 0], [0.13, 0.0], [0.15, 0.04], [0.152, 0.12], 
 // the same material per avatar; areas in config.js AVATAR_SKIN.
 /** A clothes / hair vertex's shade factor (1 = unchanged) from its bone-local bind position. */
 function clothShade(bone, region, pos, i) {
-  if (region !== REGION.top && region !== REGION.pants && region !== REGION.hair) return 1;
+  if (region !== REGION.top && region !== REGION.pants && region !== REGION.hair && region !== REGION.beard) return 1;
   const b = bindAt(bone), x = pos.getX(i) - b.x, y = pos.getY(i) - b.y, z = pos.getZ(i) - b.z, C = SK.cloth;
   let k = 0;
   if (bone === 'torso') k = C.armpit * smoothstep(0.12, 0.18, Math.abs(x)) * bump(y, 0.45, 0.09); // under the arms
@@ -550,6 +550,7 @@ function geometryFor(lk) {
   const pal = [lk.skin, lk.top, lk.pants, lk.hair, 0, lk.shoes].map((c) => new THREE.Color(c));
   pal[6] = pal[0].clone().lerp(new THREE.Color(FACE.lipTint), 0.35).multiplyScalar(0.92); // #1101: the lips, from the skin
   pal[7] = new THREE.Color(EYES.includes(lk.eyes) ? lk.eyes : EYES[0]); // #1138: the irises
+  pal[8] = new THREE.Color(lk.beard ?? lk.hair); // #1156: a beard of its own colour (Olof's grey one; players' follow their hair)
   const base3 = b.attributes.color.array, reg = b.attributes.region.array, col = new Float32Array(n * 3);
   for (let i = 0; i < n; i++) {
     const r = reg[i];
@@ -808,12 +809,17 @@ export class Avatar {
     // a hand held out (a weapon, a wave) moves with the shoulder as the body goes down
     const held = (h) => { if (!c || !h) return h; const d = shoulderShift(c, hipY - (HIP - 0.02 + breathe), hipZ); return { ...h, at: h.at.map((v, i) => v + d[i]) }; };
     const handL = held(hands.L) ?? rest(1, armSwing), handR = held(hands.R) ?? rest(-1, -armSwing);
-    this.mouth += (this.mouthTarget(performance.now() / 1000) - this.mouth) * Math.min(1, dt * MOUTH.follow);
-    if (this.mouth < 0.002) this.mouth = 0;
-    this.material.userData.u.uMouth.value = this.mouth;
+    this.updateMouth(dt);
     const knee = c ? CR.knees.map((v, i) => KNEE_REST[i] + (v - KNEE_REST[i]) * c) : KNEE_REST;
     poseOlof(this, { hip: [hipY, hipZ], lean: 0.03 * g + CR.lean * c, head: 0.03 * Math.sin(this.time * 0.6), turn, feet, hands: [handL, handR], can: null,
       knee, flat: c, toes: F.turn * c });
+  }
+
+  /** The talking mouth follows its line (#1122); `update` calls it, a figure posed otherwise (Olof, #1156) calls it itself. */
+  updateMouth(dt) {
+    this.mouth += (this.mouthTarget(performance.now() / 1000) - this.mouth) * Math.min(1, dt * MOUTH.follow);
+    if (this.mouth < 0.002) this.mouth = 0;
+    this.material.userData.u.uMouth.value = this.mouth;
   }
 
   /** The world position of a hand's centre (side 'L' / 'R' as in the figure's own frame: R = the figure's right, the ghost's +x). */

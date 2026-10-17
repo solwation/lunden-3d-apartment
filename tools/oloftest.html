@@ -39,8 +39,12 @@ f.onload = async () => {
     pass &= check(car.state === 'parked' && driver.visible, 'car arrives and parks with Olof');
     const n = stats.olof ?? 0;
     use(driver.interact);
-    for (let i = 0; i < 60; i++) step(1 / 60);
+    let mouth = 0;
+    for (let i = 0; i < 60; i++) { step(1 / 60); mouth = Math.max(mouth, driver.avatar.mouth); }
     pass &= check((stats.olof ?? 0) === n + 1 && d.querySelector('.say.theirs')?.textContent.length > 20, 'driver greeting keeps score and dad joke');
+    const { TOPS } = await w.eval("import('/src/config.js')");
+    pass &= check(fig.avatar?.mesh === fig.mesh && fig.avatar.look.top === TOPS[10] && fig.avatar.look.facial === 3, '#1156: drawn with the players\' Avatar in his look (top = the editor\'s TOPS[10], beard)');
+    pass &= check(mouth > 0.05, `#1156: his mouth moves with the joke (max ${mouth.toFixed(2)})`);
     for (let i = 0; i < 420; i++) step(1 / 60);
     pass &= check(driver.state === 'drive' && driver.visible, 'driver stays after greeting');
     const saved = JSON.parse(JSON.stringify(car.saveState()));

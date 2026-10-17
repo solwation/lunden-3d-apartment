@@ -9,10 +9,14 @@ Related: [interactions](interactions.md), [graphics](graphics.md).
 src/cat.js             the cat: random coat, washing animation, appears/moves/vanishes behind doors
 src/miele.js           Miele (#328): `HeartFireworks` (heart shells that pop into small hearts) and `MieleHeld` (a Holdable with no
                        home: the cat object rides in it, hand.js 'hug'; click / "Krama" hugs; put down she walks off)
-src/olof.js            OlofDriver only (#900): existing car driver/greeting; shared single SkinnedMesh, 13-bone skeleton,
-                       figure geometry and pose/IK exports also serve Avatar unchanged. No indoor Olof constructor or seat reservations.
+src/olof.js            OlofDriver only (#900): existing car driver/greeting; the skeleton and pose/IK exports also serve Avatar.
+                       #1156: `buildOlof` draws him with the players' Avatar in a fixed look (`olofLook`: OLOF.look + OLOF.colors;
+                       top = TOPS[10], a grey beard via the look's `beard`), one SkinnedMesh/draw call like one player, no shadow;
+                       his mouth follows the joke (main.js passes `olofDriver.avatar` to greet.say, `Avatar.updateMouth`).
+                       No indoor Olof constructor or seat reservations.
 tools/oloftest.html    car-only regression (#900): legacy ?olof=0 cannot spawn/reserve indoor seats; normal updates, driver geometry,
-                       arrival, greeting/score and saved parked-car restoration. Original car sequence stays in olofcartest.
+                       arrival, greeting/score and saved parked-car restoration; #1156 his Avatar look and the talking mouth.
+                       Original car sequence stays in olofcartest.
 tools/olofcartest.html headless test (#599): the key brings the car with Olof at the wheel (seat, hands on the wheel), "Hälsa på
                        Olof" → a dad joke, he sits on (again: new joke, no points); the car drives off with him; the driver's door and seat work after; back with the next call; he stays when a door opens and when you sit beside him (#663), a restored parked car has him, the driving seat is free only in the garage
 tools/carsoundtest.html headless test (#664): rain level (AnalyserNode RMS) outdoors / in the car with a door open / all doors shut, gradual change, mute, no streaks in the cabin (needs `--autoplay-policy=no-user-gesture-required`)

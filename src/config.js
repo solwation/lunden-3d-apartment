@@ -1622,6 +1622,10 @@ export const OLOF = {
   colors: { hoodie: 0x5a2029, cuff: 0x4a1a22, tee: 0x606063, zip: 0xb9bcc0, jeans: 0x3a3c41, shoe: 0x2a2523, skin: 0xe2b59b,
     hair: 0x9c8b63, beard: 0x7f776d, beardLight: 0x999087, ear: 0xc78f77,
     eye: 0x2a2420, can: 0xc9cdd2, canBand: 0x1f5e3a, canTop: 0x9aa0a6 },
+  // #1156: he is drawn with the players' avatar (src/avatar.js) in a fixed look made from his colours above: short hair
+  // (style 0), long sleeves, a full beard with moustache (facial 3) in his grey `beard`, dark brown eyes (EYES[1]), the
+  // standard 175 cm and an average build; the face sliders in the middle (defaultFaceLook).
+  look: { style: 0, sleeves: 1, gender: 0, facial: 3, build: 1, tall: 1, eyes: 0x3b2618 },
   // at the wheel of our car (#599, src/olof.js OlofDriver): `at` [x, z] his hips in the car's frame (facing +x) (the driving seat's cushion, carmodel.js seats: x −0.04, z −0.37; seat top 0.54),
   // `floor` the foot well (carmodel.js: 0.29 + half its 0.05), `seat` the cushion's top above it, `wheel` [x, y, z] where his
   // hands hold it (carmodel.js: the wheel's centre 0.42, 0.93, −0.37, tilted 0.42 rad), `pedals` how far forward his feet are,

@@ -921,7 +921,7 @@ welcome; the controlled-world native fixture does not boot the apartment.
 linear in crouch 0 … 1: hips down to about knee height and back behind the heels, the torso leaning
 forward (the old pose leaned it back), knees forward and a little apart, the forearms over the knees,
 and feet flat on the floor with the toes turned out. The shoes sit on new ankle bones (`footL`/`footR`
-in `src/olof.js`; Olof's own shoes stay on the shins) that `poseOlof({ flat, toes, knee })` turns level;
+in `src/olof.js`; Olof is an Avatar too since #1156) that `poseOlof({ flat, toes, knee })` turns level;
 no extra draw call. Hands held out (weapon, wave) move with the shoulder. `PVP_HEAD_BOXES` reads
 `hipDrop`/`hipForward`/`crouchLean` from `AVATAR_CROUCH`, so the three shared head boxes, the Worker and
 the drawn head stay together. Our mirror image eases down/up over `AVATAR_CROUCH.time`; other players

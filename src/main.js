@@ -698,7 +698,7 @@ try { localStorage.removeItem('lunden.bygge'); } catch { /* the removed building
 const greet = new Greetings(camera, document.getElementById('speech'));
 // Olof exists only at the wheel of our car (#900); apartment seats stay free.
 const olofDriver = new OlofDriver(car);
-olofDriver.onSay = (line, secs) => greet.say({ head: olofDriver.fig.head, s: 1 }, line, { pitch: 0.85, rate: 1, voice: 3 }, secs);
+olofDriver.onSay = (line, secs) => greet.say({ head: olofDriver.fig.head, s: 1 }, line, { pitch: 0.85, rate: 1, voice: 3 }, secs, olofDriver.avatar); // (his mouth moves with it, #1156)
 car.driverTaken = () => olofDriver.visible; // he drives (#663): you sit beside him
 car.garage = garage; // it lives in the garage, its door opens for it (#358)
 car.ground = (x, z) => (garage.inside(x, z) ? GARAGE.floor : groundY(x, z)); // the drive and Karpvägen slope, the garage's floor

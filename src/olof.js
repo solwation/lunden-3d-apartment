@@ -1,17 +1,15 @@
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { OLOF as O } from './config.js';
+import { OLOF as O, defaultFaceLook } from './config.js';
+import { Avatar } from './avatar.js';
 
-// Olof is only the driver of our car (#900). Shared figure, skeleton and IK also serve Avatar.
+// Olof is only the driver of our car (#900). The skeleton and IK here are shared with the players' avatars (src/avatar.js).
 //
-// The figure is low-poly like the neighbours (src/people.js) but one SkinnedMesh — one draw call (+ one in the shadow
-// map) — with a rigid skeleton (every vertex follows one bone): hips, torso, head, two arms (shoulder, elbow, hand) and
-// two legs (hip, knee). Poses are solved each frame by two-bone IK from a few target points (the feet on the floor, the
-// hands on the thighs / the can at the mouth / waving), so the same figure can sit in any seat (and in the car's driving
-// seat, #599). Colours are vertex colours on one material.
+// Since #1156 he is drawn with the players' Avatar (as detailed as theirs: face, hair, beard, body, the talking mouth) in a
+// fixed look (OLOF.look + his colours, olofLook): one SkinnedMesh — one draw call, like one player avatar — on a rigid
+// skeleton (every vertex follows one bone): hips, torso, head, two arms (shoulder, elbow, hand) and two legs (hip, knee,
+// ankle). Poses are solved each frame by two-bone IK from a few target points (the feet at the pedals, the hands on the
+// wheel / waving), so the same figure can sit in any seat (and in the car's driving seat, #599).
 
-const C = O.colors;
 const X = new THREE.Vector3(1, 0, 0), Y = new THREE.Vector3(0, 1, 0), DOWN = new THREE.Vector3(0, -1, 0), KNEE = [0, 0.25, 1], qI = new THREE.Quaternion();
 // the bind pose (m): standing, facing +z, the origin on the floor between the feet; lengths as the neighbours' (people.js)
 const HIP = 0.9, THIGH = 0.44, SHIN = 0.41, UPPER = 0.28, FORE = 0.25, HAND = 0.04, SH = [0.2, 0.55], NECK = 0.64;
@@ -28,69 +26,8 @@ export const bindAt = (name) => { let x = 0, y = 0, z = 0; for (let b = name; b;
 
 export const lathe = (pts, seg = 12) => new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r, y)), seg); // bottom to top
 const TORSO = [[0, 0], [0.13, 0.0], [0.155, 0.04], [0.16, 0.12], [0.142, 0.26], [0.155, 0.4], [0.17, 0.5], [0.16, 0.57],
-  [0.11, 0.62], [0.05, 0.64], [0.045, 0.7], [0, 0.71]]; // people.js's torso (hip at 0), scaled 1.15 × 1 × 0.7 below
+  [0.11, 0.62], [0.05, 0.64], [0.045, 0.7], [0, 0.71]]; // people.js's torso (hip at 0); its users scale it 1.15 × 1 × 0.7
 export const torsoR = (y) => { for (let i = 1; i < TORSO.length; i++) { const [r0, y0] = TORSO[i - 1], [r1, y1] = TORSO[i]; if (y <= y1) return r0 + (r1 - r0) * (y - y0) / Math.max(1e-6, y1 - y0); } return 0; };
-
-/** The parts in the bind pose: [geometry (bone-local, moved to the bone's bind position here), colour, bone]. */
-function parts() {
-  const P = [];
-  const add = (g, color, bone, [x = 0, y = 0, z = 0] = [], tag = null) => { const b = bindAt(bone); g.translate(b.x + x, b.y + y, b.z + z); P.push([g, color, bone, tag]); };
-  const sphere = (r, w = 12, h = 8, ...a) => new THREE.SphereGeometry(r, w, h, ...a);
-  // hips: the jeans' seat; torso: the hoodie, its ribbed hem, the open zip with the grey T-shirt in the neck, the hood
-  add(lathe([[0, -0.11], [0.11, -0.1], [0.14, -0.04], [0.142, 0.03], [0, 0.05]]).scale(1.15, 1, 0.75), C.jeans, 'hips');
-  add(lathe(TORSO).scale(1.15, 1, 0.7), C.hoodie, 'torso');
-  add(lathe([[0.15, -0.005], [0.158, 0.06]], 14).scale(1.15, 1, 0.7), C.cuff, 'torso'); // (an open band)
-  for (let y = 0.02; y < 0.47; y += 0.05) add(new THREE.BoxGeometry(0.011, 0.052, 0.006), C.zip, 'torso', [0, y + 0.025, torsoR(y + 0.025) * 0.7 + 0.002]);
-  add(new THREE.ConeGeometry(0.055, 0.13, 3).rotateZ(Math.PI).rotateY(Math.PI / 6).scale(1, 1, 0.25), C.tee, 'torso', [0, 0.55, torsoR(0.55) * 0.7 - 0.006]); // the T-shirt in the open zip: a V
-  add(new THREE.TorusGeometry(0.1, 0.035, 6, 14, Math.PI).rotateX(-Math.PI / 2).scale(1.3, 1, 1.1), C.hoodie, 'torso', [0, 0.6, -0.005]);
-  add(sphere(0.09, 10, 6).scale(1.35, 0.85, 0.45), C.hoodie, 'torso', [0, 0.5, -0.115]); // the hood lying on the back
-  add(new RoundedBoxGeometry(0.19, 0.105, 0.014, 2, 0.018), C.cuff, 'torso', [0, 0.22, torsoR(0.22) * 0.7 + 0.004]); // kangaroo pocket
-  for (const s of [-1, 1]) {
-    add(new THREE.CapsuleGeometry(0.0035, 0.13, 1, 4).rotateZ(s * 0.12), C.zip, 'torso', [s * 0.055, 0.52, torsoR(0.52) * 0.7 + 0.009]); // hood cords
-    add(sphere(0.006, 6, 5), C.zip, 'torso', [s * 0.071, 0.45, torsoR(0.45) * 0.7 + 0.009]);
-  }
-  // head (the bone at the neck): neck, head, ears, eyes, nose; ash-blond hair swept back with a side part, short at the
-  // sides (a cap tipped back: a high forehead), a grey full beard and moustache
-  const H = 0.1; // the head's centre above the neck bone (the neighbours': hip + 0.74)
-  add(new THREE.CylinderGeometry(0.05, 0.055, 0.12, 10), C.skin, 'head', [0, 0.02, 0]);
-  add(sphere(0.11, 16, 12).scale(0.96, 1.1, 0.98), C.skin, 'head', [0, H, 0.01]);
-  for (const s of [-1, 1]) {
-    add(sphere(0.029, 12, 8).scale(0.55, 1, 0.72), C.skin, 'head', [s * 0.1, H - 0.005, 0]); // ears
-    add(sphere(0.014, 8, 6).scale(0.55, 1, 0.55), C.ear, 'head', [s * 0.105, H - 0.005, 0.015]);
-    add(sphere(0.014, 8, 6), C.eye, 'head', [s * 0.036, H + 0.018, 0.104]);
-    add(new THREE.BoxGeometry(0.03, 0.007, 0.01).rotateZ(s * -0.12), C.hair, 'head', [s * 0.037, H + 0.042, 0.103]); // brows
-  }
-  add(sphere(0.021, 10, 7).scale(0.8, 1, 1.1), C.skin, 'head', [0, H - 0.008, 0.113]);
-  add(sphere(0.12, 16, 8, 0, Math.PI * 2, 0, Math.PI * 0.5).rotateX(-0.62).scale(0.96, 1.02, 1.04), C.hair, 'head', [0, H + 0.012, -0.004]);
-  add(sphere(0.075, 12, 6).scale(1.0, 0.42, 1.35).rotateY(0.18), C.hair, 'head', [0.018, H + 0.112, -0.005]); // the swept-back top
-  add(sphere(0.114, 14, 8, Math.PI / 2 - 1.5, 3.0, Math.PI * 0.53, Math.PI * 0.37).scale(0.95, 1.1, 1.03), C.beard, 'head', [0, H, 0.012]);
-  for (const s of [-1, 1]) add(new THREE.CapsuleGeometry(0.0045, 0.023, 1, 5).rotateZ(Math.PI / 2 + s * 0.2), C.beardLight, 'head', [s * 0.012, H - 0.018, 0.128]); // shaped moustache over the beard
-  // arms: hoodie sleeves with darker cuffs, the hands; the right hand holds the can (on the hand bone, so it can tilt)
-  for (const s of ['L', 'R']) {
-    add(lathe([[0, -UPPER - 0.01], [0.044, -UPPER], [0.048, -0.15], [0.052, -0.02], [0.035, 0.03], [0, 0.04]], 10), C.hoodie, 'shoulder' + s);
-    add(sphere(0.045, 10, 6), C.hoodie, 'elbow' + s);
-    add(lathe([[0, -0.215], [0.036, -0.21], [0.04, -0.15], [0.043, 0], [0, 0.01]], 10), C.hoodie, 'elbow' + s);
-    add(lathe([[0.039, -0.235], [0.042, -0.17]], 10), C.cuff, 'elbow' + s);
-    add(sphere(0.04, 10, 8).scale(0.72, 1.05, 0.95), C.skin, 'hand' + s);
-    // Fingers and thumbs share the hand bone, so they follow every IK pose without extra draw calls.
-    for (let f = 0; f < 4; f++) {
-      const x = (f - 1.5) * 0.014, len = 0.031 - Math.abs(f - 1.5) * 0.003;
-      add(new THREE.CapsuleGeometry(0.006, len, 1, 4).rotateX(Math.PI / 2), C.skin, 'hand' + s, [x, -0.016, 0.031]);
-    }
-    add(new THREE.CapsuleGeometry(0.007, 0.026, 1, 4).rotateZ(Math.PI / 2).rotateY(0.4), C.skin, 'hand' + s, [0.032, -0.005, 0.015]);
-  }
-  const can = [0, 0.015, 0.04]; // in the right hand's frame (y: the can's axis, z: out of the fist)
-  add(new THREE.CylinderGeometry(0.033, 0.033, 0.122, 14), C.can, 'handR', can, 'can');
-  add(new THREE.CylinderGeometry(0.0335, 0.0335, 0.06, 14), C.canBand, 'handR', [can[0], can[1] + 0.005, can[2]], 'can');
-  add(new THREE.CylinderGeometry(0.028, 0.031, 0.008, 14), C.canTop, 'handR', [can[0], can[1] + 0.064, can[2]], 'can');
-  // legs: jeans, the shoes on the shins (as people.js)
-  for (const s of ['L', 'R']) {
-    add(lathe([[0, -0.48], [0.04, -0.47], [0.056, -0.44], [0.07, -0.3], [0.079, -0.04], [0.06, 0.03], [0, 0.04]], 10), C.jeans, 'thigh' + s);
-    add(lathe([[0, -0.42], [0.034, -0.41], [0.04, -0.36], [0.052, -0.1], [0.054, -0.01], [0.042, 0.04], [0, 0.05]], 10), C.jeans, 'knee' + s);
-    add(new RoundedBoxGeometry(0.1, 0.075, 0.26, 2, 0.032).translate(0, -SHIN, 0.05), C.shoe, 'knee' + s);
-  }
-  return P;
-}
 
 /** Give a SkinnedMesh the figure's skeleton (bones as children of the mesh, bound in the bind pose); returns { name: Bone }. */
 export function attachSkeleton(mesh) {
@@ -105,41 +42,23 @@ export function attachSkeleton(mesh) {
   return bones;
 }
 
-/** The skinned figure: { object (a Group: put it where he is), mesh, bones, pick, material }. */
-export function buildOlof() {
-  const canRanges = [];
-  let count = 0;
-  const geos = parts().map(([g0, color, bone, tag]) => {
-    const g = g0.index ? g0.toNonIndexed() : g0; // (mergeGeometries needs them all alike; RoundedBox comes unindexed)
-    const n = g.attributes.position.count, c = new THREE.Color(color), k = NAMES.indexOf(bone);
-    const col = new Float32Array(n * 3), si = new Uint16Array(n * 4), sw = new Float32Array(n * 4);
-    for (let i = 0; i < n; i++) { col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b; si[i * 4] = k; sw[i * 4] = 1; }
-    g.setAttribute('color', new THREE.BufferAttribute(col, 3));
-    g.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(si, 4));
-    g.setAttribute('skinWeight', new THREE.BufferAttribute(sw, 4));
-    for (const a of Object.keys(g.attributes)) if (!['position', 'normal', 'uv', 'color', 'skinIndex', 'skinWeight'].includes(a)) g.deleteAttribute(a);
-    if (tag === 'can') canRanges.push([count, count + n]);
-    count += n;
-    return g;
-  });
-  const geometry = mergeGeometries(geos);
+/** Olof's look (#1156): the Avatar look made from OLOF.look and his colours (the top is TOPS[10], his hoodie's colour). */
+export function olofLook() {
+  const C = O.colors;
+  return { ...defaultFaceLook(), ...O.look, skin: C.skin, hair: C.hair, beard: C.beard, top: C.hoodie, pants: C.jeans, shoes: C.shoe };
+}
 
-  const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.82, transparent: true }); // (fades out)
-  const mesh = new THREE.SkinnedMesh(geometry, material);
-  const bones = attachSkeleton(mesh);
-  mesh.castShadow = true;
-  mesh.frustumCulled = false; // (the bind pose's bounds would not follow the pose)
-  const object = new THREE.Group();
+/** The figure: the Avatar in Olof's look, { object (put it where he is), mesh, bones, pick, material, head, avatar }. */
+export function buildOlof() {
+  const avatar = new Avatar(olofLook()), object = avatar.object;
   object.name = 'olof';
-  object.add(mesh);
+  object.rotation.set(0, 0, 0); // (his own frame faces +z, as poseOlof's; the Avatar's faces −z for the ghosts)
   // what the look ray hits: an invisible box round the seated figure (the raycaster ignores `visible`)
   const pick = new THREE.Mesh(new THREE.BoxGeometry(0.62, 1.15, 0.75), new THREE.MeshBasicMaterial());
   pick.position.set(0, 0.78, 0.2);
   pick.visible = false;
   object.add(pick);
-  object.userData.moving = true;   // detail.js: judged every update (he moves while the visitor stands still)
-  object.userData.detailUnit = true; // … as one thing
-  return { object, mesh, bones, pick, material, head: new THREE.Vector3(), canRanges };
+  return { object, mesh: avatar.mesh, bones: avatar.bones, pick, material: avatar.material, head: avatar.head, avatar };
 }
 
 // --- posing ------------------------------------------------------------------------------------------------------
@@ -260,7 +179,6 @@ export class OlofDriver {
     o.position.set(D.at[0], D.floor, D.at[1]);
     o.rotation.y = Math.PI / 2; // his +z along the car's +x
     o.visible = false;
-    // the empty hand: no can while he drives
     const B = D.box; // the pick box (his frame): his upper body and out through the driver's window, above the door's handle
     this.fig.pick.geometry.dispose();
     this.fig.pick.geometry = new THREE.BoxGeometry(B[3] - B[0], B[4] - B[1], B[5] - B[2]);
@@ -271,15 +189,10 @@ export class OlofDriver {
     this.state = 'away'; // away / drive / joke
     this.t = 0; this.scored = false; this.waveK = 0; this.look = 0; this.lookT = 4;
     this.onSay = null; // (line, secs) => {} his joke in a bubble (main.js → greet.js)
-    this.hideCan();
   }
 
-  /** The can is part of the figure's mesh: squash its vertices to nothing for the driver (he has both hands on the wheel). */
-  hideCan() {
-    const pos = this.fig.mesh.geometry.attributes.position, h = bindAt('handR');
-    for (const [a, b] of this.fig.canRanges) for (let i = a; i < b; i++) pos.setXYZ(i, h.x, h.y, h.z);
-    pos.needsUpdate = true;
-  }
+  /** The Avatar he is drawn with (#1156): greet.js moves its mouth with his line. */
+  get avatar() { return this.fig.avatar; }
 
   get visible() { return this.state !== 'away'; }
 
@@ -329,6 +242,7 @@ export class OlofDriver {
       if (!this.said && this.t > 0.6) { this.said = true; this.onSay?.(O.car.jokes[Math.floor(Math.random() * O.car.jokes.length)], O.car.jokeTime); }
       if (this.t >= 0.6 + O.car.jokeTime) { this.state = 'drive'; this.t = 0; } // he sits on (#658)
     }
+    this.fig.avatar.updateMouth(dt); // (#1156: his mouth goes with the joke)
     this.pose();
   }
 }
