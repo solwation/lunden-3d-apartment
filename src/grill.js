@@ -188,6 +188,13 @@ export class Grill {
     return this.object.localToWorld(new THREE.Vector3().copy(this.top));
   }
 
+  /** The cooking grate in the world (#1157: a nested kettle's moves with its piece). */
+  grateWorld() {
+    if (!this.local) return this.grateTop;
+    this.object.updateWorldMatrix(true, false);
+    return this.object.localToWorld(this.grateTop.clone());
+  }
+
   get isOpen() { return this.on; }
   get verb() { return this.on ? 'släcka' : 'tända'; }
 

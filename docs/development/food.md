@@ -46,6 +46,11 @@ src/chicken.js         #708: whole fridge chicken cooks only on the existing cou
                        tools/grillchickentest.html: bounded actual Chicken/Grill/Pan/Life fixture + raw/golden/burnt images.
                        #717: the grill E helper stops at the cooking grate so real food meshes own pickup ray hits.
                        tools/grillinteractiontest.html checks actual main raycast/HUD, desktop E, touch and +1 per eaten piece.
+                       #1157: the bird cooks on either kettle — the courtyard grill or L1007's patio kettle (#1121). initLife takes
+                       the list (courtyard first); `chicken.grill` is the one it lies on, saved as place {grill:true, kind:'kettle'}
+                       for the patio kettle (the old {grill:true} still means the courtyard). Main offers 'grillChicken' on whichever
+                       kettle is aimed at (or a spot within 0.4 m of its `grateWorld()`); both emit grillLit/surface 'grill' for the task.
+                       tools/patiochickentest.cjs: real game, kettle refusal unlit, placement, golden +35 once, burn, save/load, courtyard.
 src/sausages.js        #1124: grill sausages. Each kettle grill's grate is a life store (courtyard 'grillGrate', L1007's patio kettle
                        'kettleGrate', #1121; SAUSAGE.slots spots across the bars, clear of the chicken in the middle): a raw sausage
                        from 'sausagePack' (fridge slot 11, beside the chicken's plate) goes on with putIn, grills only while that grill

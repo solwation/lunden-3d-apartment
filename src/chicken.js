@@ -5,7 +5,7 @@ import { sfx } from './audio.js';
 import { chicken } from './fridge.js';
 import { CHICKEN as C } from './config.js';
 
-// The fridge's whole chicken (#160, #708): courtyard grill only; raw → golden → burnt.
+// The fridge's whole chicken (#160, #708): a kettle grill only (courtyard or L1007's patio kettle, #1157); raw → golden → burnt.
 // Existing model, pieces and smoke are reused. Life's saved extra keeps cooking/placement/parts/reward flags;
 // F returns it home without refilling or undoing cooking. Grill placement keeps E as whole-bird pickup.
 
@@ -67,8 +67,10 @@ export class Chicken extends Holdable {
 
   get smoking() { return this.smokeT > 0; }
 
+  /** grill: the courtyard Grill, or a list of Grills (#1157: also L1007's patio kettle); the first is the default. */
   initLife(life, grill) {
-    Object.assign(this, { life, grill, id: 'chicken', type: 'chicken', generation: 0 });
+    const grills = [grill].flat().filter(Boolean);
+    Object.assign(this, { life, grills, grill: grills[0], id: 'chicken', type: 'chicken', generation: 0 });
     life.onEvent((kind, data) => { if (['chickenTaskReady', 'chickenTaskReset'].includes(kind) && data.task === 'grillChicken') this.renewForTask(); });
     life.keepPart('chicken', { save: () => this.saveState(), load: (s) => this.loadState(s) });
   }
@@ -104,11 +106,13 @@ export class Chicken extends Holdable {
     return false;
   }
 
-  intoGrill() {
-    if (!this.held || !this.grill?.on) { this.life?.say('Tänd grillen först.'); return false; }
-    if (this.grill.hasSausage?.()) { this.life?.say('Ta av korvarna först – kycklingen behöver hela grillen.'); return false; } // #1124
+  /** g: which grill (#1157: the courtyard's or L1007's patio kettle); the bird stays with it until taken. */
+  intoGrill(g = this.grill) {
+    if (!this.held || !g?.on) { this.life?.say('Tänd grillen först.'); return false; }
+    if (g.hasSausage?.()) { this.life?.say('Ta av korvarna först – kycklingen behöver hela grillen.'); return false; } // #1124
     forgetBicycleHand(this);
     this.held = false; setHeld(null);
+    this.grill = g;
     this.grill.object.add(this.model);
     this.model.position.copy(this.grill.grateTop);
     this.model.rotation.set(0, Math.PI / 2, 0); this.model.scale.setScalar(1);
@@ -119,7 +123,7 @@ export class Chicken extends Holdable {
   }
 
   placementState() {
-    return this.inGrill ? { grill: true } : this.placed ? { pos: this.where().toArray(), quat: this.model.getWorldQuaternion(new THREE.Quaternion()).toArray() } : null;
+    return this.inGrill ? { grill: true, ...(this.grill !== this.grills?.[0] ? { kind: this.grill.kind } : {}) } : this.placed ? { pos: this.where().toArray(), quat: this.model.getWorldQuaternion(new THREE.Quaternion()).toArray() } : null;
   }
 
   take({silent=false} = {}) {
@@ -170,6 +174,7 @@ export class Chicken extends Holdable {
     this.parts.forEach((p, i) => { p.gone = !!s.gone?.[i]; for (const m of p.meshes) m.visible = !p.gone; });
     this.bodyLeft = Number.isInteger(s.bodyLeft) ? Math.max(0, Math.min(C.bodyBites, s.bodyLeft)) : C.bodyBites;
     for (const m of this.body) { m.userData.s0 ??= m.scale.clone(); m.scale.copy(m.userData.s0).multiplyScalar(0.45 + 0.55 * this.bodyLeft / C.bodyBites); m.visible = this.bodyLeft > 0; }
+    if (s.place?.grill) this.grill = this.grills?.find((g) => g.kind === (s.place.kind ?? this.grills[0].kind)) ?? null;
     if (s.place?.grill && this.grill) {
       this.grill.object.add(this.model); this.model.position.copy(this.grill.grateTop); this.model.rotation.set(0, Math.PI / 2, 0);
       this.inGrill = this.placed = true; this.plate.visible = false; this.grill.lidK = 1; this.grill.update(0);

@@ -514,8 +514,9 @@ scene.add(grill.object);
 // #1124: sausages grill on the courtyard grill and L1007's patio kettle (#1121); their grates are life stores, so before restore()
 const patioKettle = world.furnitureTargets.find((t) => t.kind === 'kettle') ?? null;
 const sausages = new Sausages(life, [{ grill, id: 'grillGrate' }, ...(patioKettle ? [{ grill: patioKettle, id: 'kettleGrate' }] : [])],
-  { chickenOn: (g) => g === grill && !!chicken?.inGrill });
-grill.hasSausage = () => sausages.on(grill);
+  { chickenOn: (g) => g === chicken?.grill && !!chicken?.inGrill });
+const chickenGrills = [grill, ...(patioKettle ? [patioKettle] : [])]; // #1157: the bird cooks on either kettle
+for (const g of chickenGrills) g.hasSausage = () => sausages.on(g);
 const dwDoor = world.lids.find((l) => l.name === 'diskmaskinen' && l.panelAt);
 const dropoff = buildDropoff(life); // the rubbish bags' drop-off by the car park (#387, a game spot)
 scene.add(dropoff.object);
@@ -561,7 +562,7 @@ if (pan) pan.occupied = () => !!chicken?.inPan || !!fish?.inPan.length;
 if (chicken) holdables.push(chicken);
 // the cooker hood draws the chicken's smoke; without it the smoke alarm in the kitchen ceiling goes off (#194)
 const smokeAlarm = new SmokeAlarm();
-grill.onLit = () => life.emit('grillLit', { surface: 'grill' });
+for (const g of chickenGrills) g.onLit = () => life.emit('grillLit', { surface: 'grill' });
 lights.extra.push(grill.lamp);
 for (const t of world.furnitureTargets) if (t.kind === 'kettle') lights.extra.push(t.lamp); // L1007's patio kettle (#1121)
 lights.extra.push(...garage.lamps); // the garage's tubes light the cars down there (#357)
@@ -570,7 +571,8 @@ smokeAlarm.onRing = () => penalize('smokeAlarm'); // a deduction (#288)
 // the fridge and freezer beep when left open too long: a deduction when it starts, a little more while it goes on (#288)
 for (const l of world.lids) if (l.kind === 'fridge') l.onAlarm = (longer) => penalize(`${l.freezer ? 'freezer' : 'fridge'}${longer ? 'Longer' : 'Open'}`);
 if (chicken) {
-  chicken.initLife(life, grill); { const food = grill.occupied; grill.occupied = () => chicken.inGrill || !!food?.(); } // (+ sausages, #1124)
+  chicken.initLife(life, chickenGrills); // (+ sausages, #1124)
+  for (const g of chickenGrills) { const food = g.occupied; g.occupied = () => (chicken.inGrill && chicken.grill === g) || !!food?.(); }
   chicken.hood = world.hood; chicken.onEaten = () => { bump('chicken'); chicken.event('chickenEaten'); };
   chicken.onCooked = () => bump('grilledChicken'); chicken.onBurnt = () => penalize('burnt');
 }
@@ -1623,7 +1625,7 @@ function use(thing) {
   else if (thing.kind === 'saber' || thing.kind === 'holdable' || thing.kind === 'cup') thing.toggle();
   else if (thing.kind === 'place') thing.item.placeAt(thing.point, thing.yaw); // (as the ghost showed it, #368)
   else if (thing.kind === 'fry') thing.item.intoPan(); // #708: clear refusal, keep the bird in hand
-  else if (thing.kind === 'grillChicken') thing.item.intoGrill();
+  else if (thing.kind === 'grillChicken') thing.item.intoGrill(thing.grill);
   else if (thing.kind === 'fryfish') thing.item.fryHeld(); // a fish finger into the pan (#214)
   else if (thing.kind === 'paper') { if (heldItem() === heldDrawing) heldDrawing.putBack(); else beginDraw(); } // holding the drawing: back on the desk (#176)
   else if (thing.kind === 'tape') { posters.tape(heldDrawing.image, thing.spot, heldDrawing.meta ?? {}); heldDrawing.release(); drawing.save(); bump('posted'); } // tape the drawing up (#176)
@@ -1971,9 +1973,12 @@ function updateFocus() {
     placeGhost.position.copy(world.hob.zone).y += 0.003;
     placeGhost.visible = true;
   }
-  // #708: the existing grill is the only cooking surface; an unlit grill gives a clear hint.
-  if (item === chicken && (focused?.kind === 'grill' || (focused?.kind === 'place' && focused.point.distanceTo(grill.grateTop) < 0.4))) {
-    focused = { name: 'kycklingen på grillen', kind: 'grillChicken', verb: 'lägga', item: chicken };
+  // #708: a kettle grill is the only cooking surface for the bird; an unlit grill gives a clear hint.
+  // #1157: either kettle (the courtyard's or L1007's patio kettle), aimed at it or a spot near its grate.
+  const chickenGrill = item === chicken && (chickenGrills.find((g) => focused === g)
+    ?? (focused?.kind === 'place' ? chickenGrills.find((g) => g.object.parent?.parent?.visible !== false && focused.point.distanceTo(g.grateWorld()) < 0.4) : null));
+  if (chickenGrill) {
+    focused = { name: 'kycklingen på grillen', kind: 'grillChicken', verb: 'lägga', item: chicken, grill: chickenGrill };
     placeGhost.visible = false;
   }
   // The pan still offers an explicit attempt so its refusal explains where the chicken belongs.
