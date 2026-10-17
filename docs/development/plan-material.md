@@ -331,7 +331,8 @@ material/              screenshots of our choices in Peab's option portal (local
   black cords (the middle one higher), frosted discs that glow with the kitchen switch, one pool anchor; merged into 4
   meshes; the copper reflects a small painted room (`roomEnv`, strength by daylight / switch). The kitchen's ceiling dome
   stays. The user finds the kitchen cramped easily — keep it airy.
-- Living-room pendant (#1105, the user 2026-10-17): an Umage Silvia in copper, Ø 32 × 24.5 cm (Nordic Nest 22136-01,
+- Living-room pendant (#1105, the user 2026-10-17): an Umage Silvia in copper, size Medium Ø 50 × 41 cm (#1125, the user
+  2026-10-17; Nedgis/Lighting Styles product facts — replaced the Mini Ø 32 × 24.5 cm, Nordic Nest 22136-01),
   docs/taklampa-silvia-umage-koppar.jpg; `LIGHTING.pendants` style 'silvia', `silviaPendant` in lights.js) over the
   coffee table's centre; pointed petals in 7 rings merged into one geometry drawn copper outside / white inside (glows
   with the switch), a bulb, a white cord + cup + hub = 4 draw calls. Hang height (bottom 1.6 m) and the white cord are
