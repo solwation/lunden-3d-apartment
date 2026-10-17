@@ -3,7 +3,7 @@ const fs=require('node:fs'),path=require('node:path'),cp=require('node:child_pro
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 const [base='http://localhost:8870',out='/tmp/lunden-priority-911/native']=process.argv.slice(2),render=process.argv.includes('--render');
 const root=path.resolve(__dirname,'..'),source=fs.readFileSync(path.join(root,'src/main.js'),'utf8');
-const handAt=source.indexOf('  hand.update(dt, heldItem(), petting);'),suitAt=source.indexOf('  suit.update(dt);');
+const handAt=source.indexOf('  hand.update(dt, heldItem(), petting, player.riding?.bike);'),suitAt=source.indexOf('  suit.update(dt);');
 if(handAt<0||suitAt<0||handAt>=suitAt)throw Error('fixture expects current production hand-before-suit frame order');
 fs.mkdirSync(out,{recursive:true});
 function processRecord(){
