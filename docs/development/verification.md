@@ -191,6 +191,11 @@ src/grill.js           the courtyard's kettle grill (GRILL, #204): E lights it �
                        bowl with rolled rim, side handles, lid hook, One-Touch lever, aluminium legs, wheels on an axle, ash catcher,
                        cooking + charcoal grates) and `kettleLid` (dome over the rim without a gap, damper, handle on a heat shield),
                        one vertex-coloured matt enamel material, two draw calls; hinged at the back (−z), handle to the front
+                       #1121: `kettleBody(K)` / `kettleLid(hinge, K)` take a size (GRILL.big: Weber Original Kettle 67 cm look,
+                       *guess*); `new Grill({ x, z, kettle, kind, local })` builds another one in its own frame. FURNITURE
+                       `weberkettle` (`weberkettle()`): L1007's patio kettle (kind 'kettle', not the chicken's grill) with a
+                       bolted side table (a put-down surface), movable in rearrange mode; its pool light (main.js lights.extra)
+                       follows the piece, F puts it out; no save of its burn, no shadow-casting light
 src/wallclock.js       analog kitchen clock (WALL_CLOCK) + the control strip: spool A D / ← →, pause
 tools/entrancedoortest.html entrance panes/hardware, the name plate (#595), animation and actual rendered handle pixels with normal culling (#497/#519)
 src/quality.js         adaptive graphics level + knob registry (#592); src/warmup.js the start's warm-up; src/hitchlog.js `&perf` hitch log
@@ -223,6 +228,7 @@ tools/cuptest.html     headless test: an empty cup out without brewing, onto the
                        coffee (#169): a splash, a warmer colour, never over full, drunk up as kaffekask
 tools/cupshadetest.html the closed cup cabinet door vs its neighbour, pixel by pixel at noon + two evenings; hand-built doors receive shadows (#602); notes, signs, hob, letter box, suit too (#607); coffee maker, toaster, drawers, smart devices, lamp speaker (#609)
 tools/grilltest.html   headless test: light the grill (flames, light, lid), F keeps it, put it out, it burns out by itself
+tools/patiogrilltest.cjs the patio's big kettle (#1121): placement clear of hedge/walk/parasol (lid open too), E label, lit, light follows a move, F, draw-call cost, day/evening shots
 tools/postertest.html  headless test: take the drawing (blank sheet stays), back on the desk, tape it up in the hall and on
                        the fridge door (swings with it), none on the kitchen window, reload → both back; look at one (panel, no walking,
                        ×/E close), Släng → ball lands and vanishes, out of storage; Ta ner → taped up elsewhere; lying in each lower bunk:

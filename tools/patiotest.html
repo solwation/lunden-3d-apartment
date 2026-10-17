@@ -171,8 +171,9 @@ f.onload = async () => {
   s = at(7, 14);
   const pp = par.pickable.getWorldPosition(new par.pickable.position.constructor());
   w.__app.touch.enabled = true;
-  player.spawn(pp.x - 1.2, pp.z, -Math.PI / 2); // 1.2 m west of the pole, facing east (#398: the table is north of it)
-  camera.rotation.x = Math.atan2(1.6 - player.eyeY, 1.2);
+  // 1.2 m north-west of the pole, facing it (#398: the table is north of it; #1121: the kettle's side table west of it)
+  player.spawn(pp.x - 1.0, pp.z - 0.6, Math.atan2(-1.0, -0.6));
+  camera.rotation.x = Math.atan2(1.6 - player.eyeY, Math.hypot(1.0, 0.6));
   for (let i = 0; i < 3; i++) step(1 / 60);
   const btn = w.document.getElementById('action');
   pass &= check(!btn.hidden && /fälla ihop parasollet/i.test(btn.textContent), `action button "${btn.textContent}"`);

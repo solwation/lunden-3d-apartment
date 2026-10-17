@@ -20,6 +20,7 @@ import { CUSHIONS, DOUBLE_BED_LINEN, FURNITURE, LANDSKRONA as L, LEVELS, SKANSNA
 import { litMirrorMaterial, litEmissive, litReflect } from './mirror.js';
 import { addReflector } from './reflections.js';
 import { veronasofa, linkPatioTextiles, slattable, parasol, planter, dynbox } from './patio.js';
+import { weberkettle } from './grill.js';
 import { Screen } from './screens.js';
 import { Openable } from './openables.js';
 import { openAvatarCustomizer } from './customizer.js';
@@ -4153,7 +4154,7 @@ function aborgtable(item, lights) {
   return aborgTableModel(item, lights, () => { const f = flower(); mergeStatic(f); return f; });
 }
 
-const BUILDERS = { pineapple: pineappleMirror, aborgtable, aborgchair, randerstable, tubelamp, dani, secretary, winerack, besta, painting, pictures, palm, zzplant, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, veronasofa, slattable, parasol, planter, dynbox, bed, skansnasTable, skansnasChair, bunk, daybed, kposters, smastad, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, walllamp, symfonisk, gamingdesk, gamingchair, nordli, malm, alex, kidchair, vanity, vanitystool, laptop, photoframe, huego, nesthub, nestmini, hookrail, towelhooks, klk, cleaning, xmastree };
+const BUILDERS = { pineapple: pineappleMirror, aborgtable, aborgchair, randerstable, tubelamp, dani, secretary, winerack, besta, painting, pictures, palm, zzplant, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, veronasofa, slattable, parasol, planter, dynbox, weberkettle, bed, skansnasTable, skansnasChair, bunk, daybed, kposters, smastad, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, walllamp, symfonisk, gamingdesk, gamingchair, nordli, malm, alex, kidchair, vanity, vanitystool, laptop, photoframe, huego, nesthub, nestmini, hookrail, towelhooks, klk, cleaning, xmastree };
 
 /** An invisible thin box over a table top (raycast target for putting a cup down, #90). Local rect. */
 export function surfaceBox(r, list) {

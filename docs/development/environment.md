@@ -81,6 +81,10 @@ src/patio.js           patio: Rusta Verona lounge + slatted table (#408), cushio
                        calls the church is not modelled by name (see #690); the box is placed by the stair itself
                        (furniture builders, FURNITURE + PATIO in config); seasons via Patio.update:
                        parasol folds at night/in winter, beers in summer, snowman in winter
+                       #1121: in front of the hedge (x 2.15–3.42, z 15.6–16.3) L1007's own 67 cm kettle grill with a side table
+                       (src/grill.js `weberkettle`, GRILL.big, FURNITURE; spot and sizes *guess*): east of the walk from the patio
+                       door to the gap in the hedge, west of the parasol; E lights it like the courtyard grill, movable like the
+                       other patio pieces (tools/patiogrilltest.cjs)
 src/carmodel.js        car bodies from a side profile (#250, MEGANE: `top` / `belt` / `bot` lines, wheel arches, plan rounding, a
                        shoulder, the glasshouse leaning in): `buildCar(spec, { doors })` — with doors: four hinged doors (lower
                        panel, black frame + glass, handle, mirror), the cabin (dashboard, OpenR screens, steering wheel on the

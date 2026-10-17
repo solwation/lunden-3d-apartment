@@ -547,6 +547,7 @@ const grill = new Grill(); // the courtyard's kettle grill: E lights it (#204)
 scene.add(grill.object);
 grill.onLit = () => life.emit('grillLit', { surface: 'grill' });
 lights.extra.push(grill.lamp);
+for (const t of world.furnitureTargets) if (t.kind === 'kettle') lights.extra.push(t.lamp); // L1007's patio kettle (#1121)
 lights.extra.push(...garage.lamps); // the garage's tubes light the cars down there (#357)
 scene.add(smokeAlarm.object);
 smokeAlarm.onRing = () => penalize('smokeAlarm'); // a deduction (#288)

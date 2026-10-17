@@ -1041,7 +1041,13 @@ export const SITE = {
 // cooking grate `grate` and the charcoal grate `coal` m under the rim; leg radius `leg`, wheel diameter `wheel`, the ash
 // catcher's diameter `ash` at `ashY` m
 export const GRILL = { flames: 16, height: 1.0, sparks: 40, light: 3.2, burnSeconds: 300,
-  kettle: { r: 0.285, rim: 0.72, depth: 0.26, lidH: 0.22, grate: 0.07, coal: 0.16, leg: 0.0125, wheel: 0.16, ash: 0.35, ashY: 0.24 } };
+  kettle: { r: 0.285, rim: 0.72, depth: 0.26, lidH: 0.22, grate: 0.07, coal: 0.16, leg: 0.0125, wheel: 0.16, ash: 0.35, ashY: 0.24 },
+  // #1121: L1007's own bigger kettle on the patio, after a Weber Original Kettle 67 cm (≈ 1.07 m high to the handle) with
+  // a work surface bolted to its side — the same model scaled up, every size *guess* from product photos; same keys as
+  // `kettle`. `table`: the side table on the kettle's left as you face its front, `w` × `d` m, its top `h` up, `gap` m out
+  // from the rim, a slatted dark-grey composite top `t` thick on a black steel frame with a wire shelf `shelf` m up
+  big: { r: 0.335, rim: 0.76, depth: 0.3, lidH: 0.26, grate: 0.08, coal: 0.18, leg: 0.014, wheel: 0.18, ash: 0.4, ashY: 0.25,
+    table: { w: 0.5, d: 0.42, h: 0.76, t: 0.022, gap: 0.03, slats: 6, shelf: 0.3, top: 0x3a3c3e, frame: 0x161718 } } };
 
 // #688: grass appearance, all *guess* by eye from the realism screenshots; no botanical survey.
 export const GRASS = {
@@ -4697,7 +4703,12 @@ export const FURNITURE = [
   // west; `y` = the terrain there (west.profile at z ≈ 11.6, groundY checked in tools/bowtest.html)
   { type: 'dynbox', inside: 'bow', level: 0, x: -70.5 - 0.29 - 0.03, z: 11.55, y: -1.024, rot: 90 },
   { type: 'planter', level: 0, x: 0.45, z: 13.25, plant: 'palm', detailedPalm: true, walls: { x0: 0.065, z0: 12.7 } }, // fronds clear of the façade + screen wall (#137)
-  { type: 'planter', level: 0, x: 5.3, z: 16.45, plant: 'agave' }, // SE corner by the hedge (#397: the sofa's corner took its old spot; #429: south of the bench's end)
+  { type: 'planter', level: 0, x: 5.3, z: 16.45, plant: 'agave' },
+  // #1121 (an in-game wish): the family's big kettle grill with its side table in front of the hedge (z 16.8 from x 1.26),
+  // its front (lever, lid handle) facing the patio and the lid's hinge to the hedge: east of the walk from the patio door
+  // to the gap in the hedge (x ≤ 1.87), west of the parasol's base (x 4.5) and its canopy, the table on its east side
+  // (to x ≈ 3.4); the opened lid stays short of the hedge (the spot: our pick). E lights it like the courtyard's grill
+  { type: 'weberkettle', level: 0, x: 2.55, z: 15.95, rot: 0 }, // SE corner by the hedge (#397: the sofa's corner took its old spot; #429: south of the bench's end)
   // Upstairs bedrooms (the user's plan). Beds: rot = direction from the head to the foot end.
   // IKEA NORDKISA bedside tables, bamboo, 40 × 40 cm (ikea.com, #64; the 55 cm height is a guess, about the
   // mattress top): one each side of the double bed's head end (east wall), clear of the Klk door
