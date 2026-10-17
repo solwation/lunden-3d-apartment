@@ -3977,17 +3977,45 @@ function winerack(item) {
   for (const x of [-w / 2, w / 2]) { bar(0.012, 0.012, fz, x, h - 0.03, fz / 2); bar(0.012, 0.012, fz, x, 0.03, fz / 2); }
   for (const x of [-w / 2 + 0.04, w / 2 - 0.04]) { const eye = new THREE.Mesh(new THREE.TorusGeometry(0.01, 0.002, 6, 12), black); eye.position.set(x, h + 0.02, fz); g.add(eye); }
   const tilt = THREE.MathUtils.degToRad(item.tilt), things = [];
+  const wire = 0.0025, baseX = 0.16, zb = fz + depth - 0.01, ringX = [0.1, -0.11]; // body ring, neck ring
+  // the bottle's outer radius `s` m up its axis: its glass lathe profile and any foil, cap or label cylinder there
+  const radiusAt = (bottle, s) => {
+    let r = 0;
+    for (const m of bottle.children) {
+      const p = m.geometry.parameters, y0 = m.position.y;
+      if (p.points) {
+        for (let k = 1; k < p.points.length; k++) {
+          const a = p.points[k - 1], c = p.points[k];
+          if ((s - y0 - a.y) * (s - y0 - c.y) > 0 || a.y === c.y) continue;
+          r = Math.max(r, a.x + ((s - y0 - a.y) / (c.y - a.y)) * (c.x - a.x));
+        }
+      } else if (p.radiusTop !== undefined && Math.abs(s - y0) <= p.height / 2) {
+        r = Math.max(r, p.radiusBottom + ((s - y0 + p.height / 2) / p.height) * (p.radiusTop - p.radiusBottom));
+      }
+    }
+    return r;
+  };
   for (let i = 0; i < n; i++) {
     const y = 0.07 + (i * (h - 0.2)) / (n - 1);
-    // the cradle: a bar out from the frame and a ring under each end of the bottle
-    bar(0.006, 0.006, depth, 0, y - 0.045, fz + depth / 2);
-    for (const x of [-0.11, 0.1]) { const ring = new THREE.Mesh(new THREE.TorusGeometry(0.04, 0.0025, 6, 18, Math.PI), black); ring.rotation.set(0, Math.PI / 2, Math.PI); ring.position.set(x, y - 0.005 + x * Math.tan(-tilt) * -1, fz + depth - 0.01); g.add(ring); }
-    // the bottle, lying level in the cradle (#151), neck to −x
     const bottleObj = buildWineBottle(i);
     const b = bottleObj.model;
+    // the bottle lies level in the cradle (#151), neck to −x; its body rests in the body ring, whose bottom sits on
+    // the arm out from the frame (#1158: the rings are sized to the bottle and share its axis, so it no longer floats)
+    const sAt = (x) => (baseX - x) / Math.cos(tilt);
+    const rBody = radiusAt(b, sAt(ringX[0])) + wire, armY = y - 0.045;
+    const axisY = armY + 0.003 + wire + rBody - Math.tan(tilt) * (baseX - ringX[0]); // the axis height at the base
     b.rotation.z = Math.PI / 2 - tilt;
-    b.position.set(0.16, y + 0.03, fz + depth - 0.01);
+    b.position.set(baseX, axisY, zb);
     g.add(b);
+    // the cradle: an arm out from the frame under the body ring, and a half ring under the body and the neck
+    bar(0.006, 0.006, depth, ringX[0], armY, fz + depth / 2);
+    for (const x of ringX) {
+      const r = radiusAt(b, sAt(x)) + wire;
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(r, wire, 6, 18, Math.PI), black);
+      ring.rotation.set(0, Math.PI / 2, Math.PI);
+      ring.position.set(x, axisY + Math.tan(tilt) * (baseX - x), zb);
+      g.add(ring);
+    }
     things.push({ model: b, kind: bottleObj.kind, name: bottleObj.name, fullName: bottleObj.fullName, back: 'vinhyllan' }); // can be taken out (#152)
   }
   g.userData.keep = things.map((t) => t.model);
