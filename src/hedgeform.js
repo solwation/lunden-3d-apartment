@@ -24,7 +24,9 @@ const key = (x, y, z) => `${Math.round(x * 1e4)},${Math.round(y * 1e4)},${Math.r
  */
 export function hedgeBody(spec, cx, cz, width, depth, topWave = null) {
   const h = spec.height, r = Math.min(spec.rounding, width / 2, depth / 2, h / 2);
-  const nx = Math.max(2, Math.ceil(width / spec.cell)), ny = Math.max(2, Math.ceil(h / spec.cell)), nz = Math.max(2, Math.ceil(depth / spec.cell));
+  const nx = Math.max(2, Math.ceil(width / spec.cell)), ny = Math.max(2, Math.ceil(h / spec.cell)), nz = 2 * Math.max(1, Math.ceil(depth / spec.cell / 2 - .01));
+  // nz even (#1223): the top's v folds at the middle (edgeIn below); an odd count left a middle strip with one v across
+  // it, the leaf texture smeared into streaks along the top (patio .8 m at cell .2 → 5, boxwood .44 m at .17 → 3).
   const box = new THREE.BoxGeometry(width, h, depth, nx, ny, nz);
   // Drop the never-seen bottom face (BoxGeometry group 3, −y).
   const bottom = box.groups[3], src = box.index.array, kept = [];

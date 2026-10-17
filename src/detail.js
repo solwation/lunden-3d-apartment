@@ -28,7 +28,9 @@ import { lowMemory } from './lowmemory.js';
 // through the floor between the storeys away from the stair's hole (`openings.slab`). Things beyond the flat (the patio,
 // our car in the garage) are judged the same way. All the tests are conservative: any one of them suffices.
 // On phones (`lowMemory`) the small things inside the flat seen from outside, through its windows, go at
-// `PERF.detail.lowMemoryOutside` × their usual distance (#695: the kitchen's cups and bottles from the street).
+// `PERF.detail.lowMemoryOutside` × their usual distance (#695: the kitchen's cups and bottles from the street), and their
+// outline line sets (architecture edges) beyond `PERF.detail.lowMemoryEdgesOutside` m (#1223: ~28 draw calls at the start
+// view for one-pixel lines through the windows).
 
 export const DETAIL_HIDDEN_LAYER = 7; // render-only culling; physical traces include this layer
 const D = PERF.detail;
@@ -68,7 +70,7 @@ export class DetailCuller {
       // Exterior door hardware may have a merged centre on/inside the footprint,
       // but it belongs to the visible facade, not to contents behind a closed leaf (#519).
       const exteriorDoor = !!o.userData.door?.exterior;
-      const it = { o, r, center: s.center.clone(), box: o.geometry.boundingBox, cut: baseCut, baseCut, far: false, lamp, exteriorDoor };
+      const it = { o, r, center: s.center.clone(), box: o.geometry.boundingBox, cut: baseCut, baseCut, far: false, lamp, exteriorDoor, edges: !!o.isLineSegments };
       if (unit) unit.parts.push(it); // judged one by one only while its unit's flag is off
       else { this.items.push(it); if (moving) this.moving.push(it); }
     };
@@ -123,7 +125,9 @@ export class DetailCuller {
   /** Is item `it` too far / hidden from `p`? Moves its mesh(es) to the right layer; true when that changed. */
   judge(it, p, outside) {
     const w = this.w.copy(it.center).applyMatrix4(it.o.matrixWorld), { W, D: Dz, roof } = this.box;
-    const cut = outside && w.x > 0 && w.x < W && w.z > 0 && w.z < Dz && w.y < roof ? it.cut * this.outsideScale : it.cut; // (phones, #695)
+    const inside = outside && w.x > 0 && w.x < W && w.z > 0 && w.z < Dz && w.y < roof;
+    // (phones, #695; #1223: the outlines of the doors, lids and appliances inside within `lowMemoryEdgesOutside` m only)
+    const cut = inside ? (it.edges && this.outsideScale < 1 ? Math.min(it.cut, D.lowMemoryEdgesOutside ?? Infinity) : it.cut * this.outsideScale) : it.cut;
     const far = w.distanceToSquared(p) > cut * cut || (outside && !it.exteriorDoor && (this.hidden(p, w, it.r) || (it.box && this.boxHidden(p, it.box, it.o.matrixWorld))));
     if (far === it.far) return false;
     it.far = far;
