@@ -312,6 +312,10 @@ src/rearrange.js       furniture cheat (#465): § / Enter (#596; not from a focu
                        twelve with #1136's height) and appends tagged fields `[a-z]` + 1–3 digits, only non-default ones (`c` eye colour,
                        `e o w l j n b r t y`); unknown tags are skipped. On the wire the digits stay `av` (older clients) and the rest goes as
                        `ax` (ghosts.js `avatarWire`; Worker `cleanAvatarExt` checks only the form, ≤ 48 chars, and only beside a valid `av`).
+                       #1139: "Kroppsbyggnad" slider (index.html `#avatar-build`, config.js `AVATAR_BUILD`, `avatarBuildStep`/`avatarBuildWidth`):
+                       steps 0–8 scale the figure's x/z (Avatar object scale, no new draw call) 0.86 … 1 … 1.16; the seed's old build 0/1/2
+                       is steps 2/4/6 (0.93/1/1.08 exact), so codes without the field draw as before. A chosen step (`look.bodyBuild`) is
+                       the `k<step>` tag; the wire also sends the nearest old `d` for older clients; rifleBoxPose's head boxes use the same width.
                        #1156: TOPS[10] is Olof's burgundy hoodie (OLOF.colors.hoodie). Tops past 9 write a fallback digit (TOPS_DIGIT: 10 → red,
                        what older clients show) plus a `u<index>` tag; seeded looks still pick among the first ten (TOPS_SEEDED).
                        § / Meny opens clickable rearrangement controls with a free cursor; Esc exits the mode and cancels the preview,

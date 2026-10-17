@@ -1,4 +1,4 @@
-import { SKIN, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape } from './config.js';
+import { SKIN, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth } from './config.js';
 
 /** The E choice every mirror offers (#1110): the avatar editor. */
 export const mirrorChoice = () => ({ label: 'byt utseende vid spegeln', run: () => openAvatarCustomizer() });
@@ -73,6 +73,11 @@ export function drawAvatarPreview(canvas, look) {
   const iris = toHex(EYES.includes(look.eyes) ? look.eyes : EYES[0]);
 
   const cx = width / 2;
+
+  // #1139: the body build widens everything below the head about the middle (the 3D figure's x/z scale)
+  const bw = avatarBuildWidth(look);
+  ctx.save();
+  ctx.translate(cx, 0); ctx.scale(bw, 1); ctx.translate(-cx, 0);
 
   // Shadow under feet
   ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
@@ -158,6 +163,8 @@ export function drawAvatarPreview(canvas, look) {
     ctx.arc(ax, 178, 7, 0, Math.PI * 2);
     ctx.fill();
   }
+
+  ctx.restore(); // (#1139: the head keeps its own width in the preview)
 
   // Long hair behind shoulders (style === 1)
   if (style === 1) {
@@ -349,12 +356,23 @@ function updateHeightSlider() {
   if (out) out.textContent = `${cm} cm`;
 }
 
+/** The body-build slider (#1139) shows the look's step (the seed's own until one is chosen) and a word for it. */
+const BUILD_WORDS = ['Mycket smal', 'Smal', 'Smal', 'Ganska smal', 'Medel', 'Ganska kraftig', 'Kraftig', 'Kraftig', 'Mycket kraftig'];
+function updateBuildSlider() {
+  const input = customizerEl?.querySelector('#avatar-build'), out = customizerEl?.querySelector('#avatar-build-value');
+  if (!input) return;
+  const k = avatarBuildStep(currentLook);
+  input.max = String(AVATAR_BUILD.steps - 1); input.value = String(k);
+  if (out) out.textContent = BUILD_WORDS[k] ?? '';
+}
+
 /** Refresh the preview canvas and apply current look live. */
 function applyAndRefresh() {
   if (!currentLook) return;
   if (previewCanvas) drawAvatarPreview(previewCanvas, currentLook);
   updateActiveSwatches();
   updateHeightSlider();
+  updateBuildSlider();
   callbacks.setLook?.(currentLook);
 }
 
@@ -456,6 +474,14 @@ function initCustomizerDOM() {
     if (!currentLook || !(cm >= AVATAR_HEIGHT.min && cm <= AVATAR_HEIGHT.max)) return;
     currentLook.height = cm;
     currentLook.tall = cm / AVATAR_HEIGHT.base;
+    applyAndRefresh();
+  });
+
+  // #1139: the body-build slider, slim … heavy
+  customizerEl.querySelector('#avatar-build')?.addEventListener('input', (e) => {
+    const v = Number(e.target.value);
+    if (!currentLook || !Number.isInteger(v) || v < 0 || v >= AVATAR_BUILD.steps) return;
+    currentLook.bodyBuild = v;
     applyAndRefresh();
   });
 

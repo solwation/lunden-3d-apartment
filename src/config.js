@@ -5038,6 +5038,8 @@ function encodeLookExt(look) {
   if (eyes > 0) out += `c${eyes}`;
   const top = TOPS.indexOf(look.top);
   if (top >= TOPS_SEEDED) out += `u${top}`; // #1156: a top beyond the digit's ten
+  const bb = look.bodyBuild; // #1139: a chosen body build, also the middle (the seed's own may differ)
+  if (Number.isInteger(bb) && bb >= 0 && bb < AVATAR_BUILD.steps) out += `${AVATAR_BUILD.tag}${bb}`;
   for (const [name, f] of Object.entries(AVATAR_SHAPE.fields)) {
     const v = look[name];
     if (Number.isInteger(v) && v >= 0 && v < AVATAR_SHAPE.steps && v !== AVATAR_SHAPE.mid) out += `${f.tag}${v}`;
@@ -5052,12 +5054,38 @@ function decodeLookExt(ext, lk) {
     // #1175: the actual existing body build on the wire, independently of each receiver's player-id seed.
     if (tag === 'd') { if (v <= 2) lk.build = v; continue; }
     if (tag === 'u') { if (v < TOPS.length) lk.top = TOPS[v]; continue; } // #1156
+    if (tag === AVATAR_BUILD.tag) { if (v < AVATAR_BUILD.steps) lk.bodyBuild = v; continue; } // #1139
     // #1173: wire-only seeded scale; explicit chosen cm always take precedence.
     if (tag === 's') { if (!Number.isInteger(lk.height) && v < AVATAR_SEEDED_TALL.length) lk.tall = AVATAR_SEEDED_TALL[v]; continue; }
     const name = Object.keys(AVATAR_SHAPE.fields).find((k) => AVATAR_SHAPE.fields[k].tag === tag);
     if (name && v < AVATAR_SHAPE.steps) lk[name] = v;
   }
 }
+// #1139: the body build slider, slim … heavy, on top of the figure (gender). An integer step 0 … `steps` − 1 widens the whole
+// figure sideways and in depth (Avatar's object scale x/z, no new geometry or draw call) by [min … 1 … max], piecewise linear
+// through 1 in the middle like AVATAR_SHAPE. Without a chosen step the seed's old build (0 slim, 1 average, 2 broad) draws
+// as before: `seeded` are its steps, so 0.93 / 1 / 1.08 stay exact. Range by eye (*guess*): every end still looks like a
+// person. The look code carries a chosen step as the extension's `tag` (only when chosen; older clients skip the tag and
+// keep reading the wire's `d`, sent as the nearest old build). The head boxes follow the same width (rifleBoxPose).
+export const AVATAR_BUILD = { steps: 9, mid: 4, min: 0.86, max: 1.16, seeded: [2, 4, 6], tag: 'k', label: 'Kroppsbyggnad' };
+/** The look's body-build step (#1139): the chosen `bodyBuild`, else the seed's old build's step. */
+export function avatarBuildStep(look) {
+  const v = look?.bodyBuild, B = AVATAR_BUILD;
+  if (Number.isInteger(v) && v >= 0 && v < B.steps) return v;
+  return B.seeded[look?.build ?? 1] ?? B.mid;
+}
+/** The sideways (x/z) scale of the look's body build (#1139). */
+export function avatarBuildWidth(look) {
+  const B = AVATAR_BUILD, k = avatarBuildStep(look), n = B.steps - 1;
+  const w = k <= B.mid ? B.min + ((1 - B.min) * k) / B.mid : 1 + ((B.max - 1) * (k - B.mid)) / (n - B.mid);
+  return Math.round(w * 1e6) / 1e6; // (the seeded steps exactly 0.93 / 1 / 1.08)
+}
+/** The old three-way build (0 slim, 1 average, 2 broad) nearest a look's step, for older clients' `d` (#1139). */
+function nearestSeededBuild(look) {
+  const k = avatarBuildStep(look), S = AVATAR_BUILD.seeded;
+  return S.reduce((best, s, i) => (Math.abs(s - k) < Math.abs(S[best] - k) ? i : best), 0);
+}
+
 /** The face fields' defaults (#1138): the original brown eyes and every slider in the middle. */
 export function defaultFaceLook() {
   const lk = { eyes: EYES[0] };
@@ -5124,7 +5152,8 @@ export function encodeAvatarLook(look) {
 export function encodeAvatarWireLook(look) {
   let code = encodeAvatarLook(look);
   if (!code) return code;
-  if (Number.isInteger(look.build) && look.build >= 0 && look.build <= 2) code += `d${look.build}`;
+  if (Number.isInteger(look.bodyBuild)) code += `d${nearestSeededBuild(look)}`; // (#1139: older clients' nearest)
+  else if (Number.isInteger(look.build) && look.build >= 0 && look.build <= 2) code += `d${look.build}`;
   if (Number.isInteger(look.height)) return code;
   const scale = AVATAR_SEEDED_TALL.indexOf(look.tall);
   return scale < 0 ? code : `${code}s${scale}`;
@@ -5555,11 +5584,11 @@ function rifleBoxPose(seed, state) {
   if (!Number.isFinite(crouch) || crouch < 0 || crouch > 1) return null;
   const look = avatarLook(seed), wire = decodeAvatarLook(typeof state.av === 'string' ? state.av + (state.ax ?? '') : null, seed);
   // #1175: use the same existing build as the rendered avatar, including chosen-height looks.
-  look.build = wire.build;
+  look.build = wire.build; look.bodyBuild = wire.bodyBuild; // (#1139: a chosen body build too)
   // #1173: follow the transmitted legacy vertical scale. Chosen-cm proportions remain #1137.
   if (!Number.isInteger(wire.height)) look.tall = wire.tall;
   const yaw = state.r + Math.PI, lean = state.pose === 2 ? Math.PI / 2 : state.pose === 1 ? .1 : PVP_HEAD_BOXES.crouchLean * crouch;
-  return { width: [.93, 1, 1.08][look.build], tall: look.tall, yawCos: Math.cos(yaw), yawSin: Math.sin(yaw),
+  return { width: avatarBuildWidth(look), tall: look.tall, yawCos: Math.cos(yaw), yawSin: Math.sin(yaw),
     leanCos: Math.cos(lean), leanSin: Math.sin(lean), crouch,
     hipY: state.pose === 2 ? REST.avatarLieHip : state.pose === 1 ? REST.avatarSeat + .075 : PVP_HEAD_BOXES.hipY - PVP_HEAD_BOXES.hipDrop * crouch,
     hipZ: state.pose === 1 ? .07 : PVP_HEAD_BOXES.hipForward * crouch };

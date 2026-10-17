@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
+import { AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
 import { topTexture } from './spidersuit.js';
 import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, SHIN, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
 
@@ -704,7 +704,7 @@ export class Avatar {
     this.object.name = 'avatar';
     this.object.add(this.mesh);
     this.object.rotation.y = Math.PI; // the figure faces +z, a ghost's heading −z
-    const w = [0.93, 1, 1.08][lk.build ?? 1] ?? 1;
+    const w = avatarBuildWidth(lk); // (#1139: the chosen body build, else the seed's)
     if (Number.isInteger(lk.height)) { // #1136: a chosen height scales the whole figure, a child's head a little more
       const { body, head } = avatarProportions(lk.height);
       this.object.scale.set(w * body, body, w * body);

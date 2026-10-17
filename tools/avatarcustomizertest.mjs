@@ -180,7 +180,7 @@ test('avatar customization: customizer UI and callbacks', async () => {
       getContext(type) {
         if (type === '2d') {
           return {
-            save() {}, restore() {}, scale() {}, clearRect() {}, fillRect() {},
+            save() {}, restore() {}, scale() {}, translate() {}, clearRect() {}, fillRect() {},
             createLinearGradient() { return { addColorStop() {} }; },
             beginPath() {}, roundRect() {}, arc() {}, ellipse() {}, fill() {}, stroke() {},
             moveTo() {}, lineTo() {}, closePath() {}, quadraticCurveTo() {},
@@ -435,4 +435,44 @@ test('#1175 all current face fields plus body/scale fit existing Worker extensio
   const state=cleanState(JSON.stringify({p:[0,0,0],r:0,...wire}));
   assert.equal(state.ax,wire.ax,'maximal current extension is forwarded without being dropped');
   assert.equal(decodeAvatarLook(state.av+state.ax,'peer-id').build,2);
+});
+
+test('#1139: body build slim … heavy round-trips; old codes keep the seed\'s build', async () => {
+  const C = await import('../src/config.js');
+  const { AVATAR_BUILD: B, avatarBuildStep, avatarBuildWidth } = C;
+  // Old codes (7, 9, 12 digits, with or without a face extension) decode with no chosen build: the seed's old width.
+  for (const old of ['2413021', '240302101', '240302101172', '240302101c3e6']) {
+    for (const seed of ['a', 'b', 'c', 'd']) {
+      const lk = decodeAvatarLook(old, seed);
+      assert.equal(lk.bodyBuild, undefined, old);
+      assert.equal(avatarBuildWidth(lk), [0.93, 1, 1.08][avatarLook(seed).build], `${old} ${seed}`);
+      assert.equal(encodeAvatarLook(lk), old.length === 7 ? encodeAvatarLook(lk) : old, 'unchanged when re-encoded');
+    }
+  }
+  // The seeded steps hit the old widths exactly; the ends are slimmer / heavier, the middle is 1.
+  assert.deepEqual(B.seeded.map((k) => avatarBuildWidth({ bodyBuild: k })), [0.93, 1, 1.08]);
+  assert.equal(avatarBuildWidth({ bodyBuild: 0 }), B.min);
+  assert.equal(avatarBuildWidth({ bodyBuild: B.steps - 1 }), B.max);
+  for (let k = 1; k < B.steps; k++) assert.ok(avatarBuildWidth({ bodyBuild: k }) > avatarBuildWidth({ bodyBuild: k - 1 }));
+  // A chosen step (also the middle) is stored and read back, beside the other tags.
+  for (let k = 0; k < B.steps; k++) {
+    const lk = { ...decodeAvatarLook('240302101170c2', 'x'), bodyBuild: k };
+    const code = encodeAvatarLook(lk);
+    assert.match(code, new RegExp(`^240302101170c2k${k}$`));
+    const back = decodeAvatarLook(code, 'x');
+    assert.equal(back.bodyBuild, k); assert.equal(back.height, 170); assert.equal(back.eyes, C.EYES[2]);
+    assert.equal(avatarBuildStep(back), k);
+    // The players' room: digits stay `av`, the tags `ax` (the Worker checks only their form); older clients get the nearest `d`.
+    const wire = encodeAvatarWireLook(lk), { av, ax } = splitAvatarCode(wire);
+    assert.equal(av, '240302101170');
+    const { cleanAvatar, cleanAvatarExt } = await import('../cloudflare/players.js');
+    assert.equal(cleanAvatar(av), av); assert.equal(cleanAvatarExt(ax), ax);
+    assert.equal(decodeAvatarLook(av + ax, 'peer').bodyBuild, k);
+    assert.equal(decodeAvatarLook(av + ax, 'peer').build, [0, 0, 0, 0, 1, 1, 2, 2, 2][k], 'the nearest old build');
+  }
+  assert.equal(decodeAvatarLook('240302101k9', 'x').bodyBuild, undefined, 'an out-of-range step is skipped');
+  // The head boxes follow the same width (a heavier build hits wider).
+  const state = { p: [0, 0, 0], r: 0 };
+  const hit = (k, x) => rifleBoxHeadContact('x', { ...state, av: '240302101175', ax: `k${k}` }, [x, 1.64, -3], [0, 0, 1], 10);
+  assert.ok(hit(4, 0.1) && hit(8, 0.115) && !hit(4, 0.115) && !hit(0, 0.1), 'heavy wider than slim at the head boxes\' edge');
 });
