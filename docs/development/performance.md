@@ -776,6 +776,41 @@ kitchen spooling 22/33 → 10/46; outdoors turning at the start spot 15/63 → 2
 The cause is a *guess*; the other losses that day (start-up warm-up, an orientation/viewport change, 3–4 s stalls after
 `start-go`) showed no shadow burst and are tracked separately.
 
+## Site-wide instanced batches in the phone shadow pass (#1195 — not verified on a device)
+
+iPhone reports (#1192) also lost the context outdoors without shadow spikes: after `viewport-resize`/`orientation-change`
+and 6 s after `tap start-go`, with `lagMs` 3.4–3.7 s and fps 43 → 4 / 15 → 2 at ~480 calls / ~1 M tris. Measured in headless
+Chromium/SwiftShader, iPhone 14 Pro profile 852 × 393 @3, `lowMemory`, quality 0 (px 0.75, shadow 1024²), noon in July:
+
+- **Resize/rotation does no heavy work of its own.** After a full sliced warm-up, frames driven by hand around a visualViewport
+  shrink (852 × 300 and back) and portrait → landscape: 0 new programs, 0 texture or buffer uploads, 0 renderbuffer allocations;
+  the drawing buffer stays 639 × 294 (portrait defers it, #669). A few frames after the rotation single render frames of
+  1.8–4.1 s appear with no uploads and no shadow pass: GL calls wait for the GPU process, which is re-compositing the page at its
+  new size. *Guess:* on the iPhone the same wait is the 3–4 s `lagMs`, and its cost grows with what our frames already ask of the GPU.
+- **What the start area draws** (render-buffer hook per draw, view and shadow pass apart): worst at the start, yaw 135°, view
+  513 calls / 897 k, shadow pass 239 / 495 k. ~218 k of the shadow triangles were InstancedMeshes covering the whole site — the
+  trees (≈1 200 crowns, ≈1 000 trunks over ~570 × 450 m) and the 19 parked cars on the north street (≈5.1 k each) — drawn whole on
+  every shadow redraw because three culls an InstancedMesh by one sphere round all instances, while the shadow box is ±14 m.
+
+**Change (`lowMemory` only, `src/shadowtiles.js`, `SHADOW_TILES` in config):** before the warm-up, every shadow-casting
+InstancedMesh spreading over more than `minSpread` m stops casting and gets children holding its instances in `size` m squares
+(same geometry, material, matrices, colours; 230 squares in 8 batches). A wrapper round `renderer.shadowMap.render` shows the
+squares only during a shadow pass, so the shadow camera culls the far ones; the view still draws the batch itself (calls and
+look unchanged). The squares follow the batch's `instanceMatrix`/`instanceColor` versions (seasons.js rewrites the crowns).
+`&noshadowtiles` turns it off for A/B runs. Desktop never calls it. How often the map is redrawn is #1192's (unchanged here).
+
+| shadow pass, triangles | before | after |
+|---|---:|---:|
+| start, yaw 135° | 495 k | 313 k |
+| start, yaw 0° | 333 k | 158 k |
+| outside the front door (1.2, −0.3) | 431 k | 249 k |
+| x 13.7 z 1.4, yaw 90° | 518 k | 316 k |
+
+Parity: read-back pixels at five outdoor spots (start, the parked cars, park, courtyard, east trees) differ between tiles on/off
+by 1.1–8.9 % of pixels, less than two runs with tiles on differ from each other (0.7–13.9 %: moving clouds, traffic, people).
+perfcount `?lowmem&w=390&h=844` view numbers are identical with and without (its pre-existing FAIL is #1211). The iPhone check
+remains: whether outdoor rotations and the first seconds after Börja keep the context.
+
 ## Startup long tasks and the world built in parts (#1133)
 
 `src/longtasks.js` records startup long tasks (`PerformanceObserver` `longtask`, buffered, until `#loading` is done), each

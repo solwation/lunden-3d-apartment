@@ -2621,6 +2621,11 @@ export const LOW_MEMORY = { maxTextureSize: 512, shadowMapSize: 1536, maxPixelRa
 // 1.0 → 1.25 (+3 MB: level 2 now draws at 1.125×, the top level at 1.25×) and shadowMapSize 1024 → 1536 (+5 MB; the
 // quality levels 0–1 stay at 1024 through QUALITY.shadowSize). maxTextureSize 768 was measured and NOT taken (+42 MB).
 // To go back: maxPixelRatio 1.0, shadowMapSize 1024. The 600 MB iOS budget is a *guess*; the adaptive levels still step down.
+// #1195 (phones, src/shadowtiles.js): a shadow-casting InstancedMesh whose instances spread over more than `minSpread` m
+// (the site's trees, the parked cars) casts through `size` m squares, so the ±14 m shadow box no longer draws the whole
+// site's batch on every shadow redraw. `size` *guess*: about the shadow box's width; smaller squares mean more objects to
+// test per shadow pass, larger ones more far instances drawn. Batches under `minInstances` are left alone.
+export const SHADOW_TILES = { size: 32, minInstances: 8, minSpread: 40 };
 
 // Campus facades on phones (#589, src/lowmemory.js): #576–#581 took the east backdrop from ~21k to ~75k triangles. On
 // LOW_MEMORY devices campusfacades.js and schoolfacade.js keep every body, roof, colour, window and the clock tower but

@@ -10,6 +10,7 @@ import { buildCheatNote } from './cheatnote.js';
 import { REPORTS, CHEAT_NOTE, LOW_MEMORY, QUALITY, STANDARD, SHADOW_BOX, STARTUP, KITCHEN_TOWEL_MATERIAL, LIGHTING } from './config.js';
 import { fetchStartupJSON } from './startuprecovery.js';
 import { lowMemory, reloadOnContextRestore, freeSceneGeometryCopies } from './lowmemory.js';
+import { addSceneShadowTiles, installShadowTiles } from './shadowtiles.js';
 import { loadBeerShelf } from './beershelfdata.js';
 import { BeerShelf } from './beershelf.js';
 import { initHudIcons, fitChoiceLabels, setIcon, setPressed, setWeatherIcon, formatTemp } from './hudicons.js';
@@ -2832,6 +2833,8 @@ document.addEventListener('furniture-moved', () => detail?.last.set(1e9, 0, 0));
 quality.register('detail', { // DetailCuller's distances (#189, #460): small things vanish sooner at lower levels
   apply: (l) => detail.setQuality(QUALITY.detail[l]), state: (l) => `distance ×${QUALITY.detail[l]}`, cost: 'draw calls of small far things' });
 loadingStep('Värmer upp vyn', 0.9); // the first frames compile and upload; phones stay covered until warm-up is done (#697)
+// #1195 (phones): site-wide instanced batches (trees, parked cars) cast their shadows through squares the shadow box can cull
+if (lowMemory && !params0.has('noshadowtiles')) { const st = addSceneShadowTiles(scene); installShadowTiles(renderer); if (perfEl) console.log(`shadow tiles: ${st.batches} batches, ${st.tiles} squares`); }
 // Warm-up (#432, #592, src/warmup.js): compile and upload everything behind the start screen, the mirrors' variants too.
 const warm = new WarmUp({ renderer, scene, camera, shadowCamera: sun.shadow.camera, mirrorTarget,
   prepare: () => { lights.wash?.patch(scene); visitLights.wash?.patch(scene); }, // (#668: both lamp washes' periodic patch, now)
