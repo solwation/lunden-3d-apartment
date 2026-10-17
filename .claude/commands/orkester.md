@@ -190,7 +190,9 @@ En aktiv `/orkester` får inte avslutas direkt när kön blir tom. Fortsätt kon
 - **Disk:** varje worktree är en hel kopia av repot och sessionens disk är begränsad. Ta bort en agents worktree när den
   är klar (`git worktree remove --force .claude/worktrees/agent-<id>` + `git branch -D worktree-agent-<id>`, aldrig en
   som fortfarande kör), och ge Chrome en tillfällig `--user-data-dir` som tas bort efter körningen (`rm -rf`).
-- VM:en har ~4 CPU:er: **högst 3 agenter samtidigt** — fler gör bara varje headless-test långsammare.
+- **Högst 2 agenter samtidigt per maskin** (användaren 2026-10-17; tidigare 3): ~4 CPU:er räcker inte för fler parallella
+  headless-tester utan att varje issue drar ut till timmar. Målet är att varje issue landar inom ca 30 minuter; skala
+  antalet agenter efter det, och bryt hellre ner issues i delissues än att köra fler parallellt.
 
 ## Miljö (lokal WSL)
 - Repot under `/mnt/c/...` går via 9p-bryggan och är ~100× långsammare. Kör orkestern i ext4-spegeln
@@ -267,7 +269,7 @@ som belägg för att alla hus fungerar. Regeln kräver ingen användarbekräftel
 ### Så att inget låser sig (förtydligande 2026-10-12, ur användarens önskan: allt ska bli klart så fort som möjligt)
 Samordningen får aldrig vara skälet till att en agentplats står tom eller ett issue ligger still. Därför:
 - Alla regler om att fylla platser, reservera och ta över nedan tillämpas **efter prioritetsordningen ovan**.
-- **Fråga inte användaren** om du ska fylla en ledig plats. Har du färre agenter än taket (3 per VM) och finns något
+- **Fråga inte användaren** om du ska fylla en ledig plats. Har du färre agenter än taket (2 per maskin) och finns något
   ledigt eller övertagbart: starta en agent direkt. Att välja nästa issue är ditt val, inte användarens.
 - **Reservationer går ut snabbt:**
   - En reservationskommentar utan `in-progress` där ingen agent startat inom **30 minuter** är **ledig** – vem som helst
@@ -288,15 +290,15 @@ Samordningen får aldrig vara skälet till att en agentplats står tom eller ett
 - **Skriv alltid hur många platser som är lediga** i raden `Senast uppdaterad` i din statuskommentar (`lediga platser: N`),
   så att andra orkestrar ser var det finns kapacitet.
 - **Dela kapaciteten — ta hellre över och släpp hellre än att stå still.** Målet är att alla orkestrar håller sina
-  agentplatser fyllda (3 per VM) och att inget arbete ligger reserverat utan att någon kör det. Kolla på varje
-  agent-klar och varje gång du har färre än 3 agenter igång:
+  agentplatser fyllda (2 per maskin) och att inget arbete ligger reserverat utan att någon kör det. Kolla på varje
+  agent-klar och varje gång du har färre än 2 agenter igång:
   - **Du har ledig plats** och inget eget att starta → ta över arbete som en annan session reserverat men **inte
     påbörjat** (issue med bara reservationskommentar eller bara i dess "Kö", utan `in-progress`). Välj
     den högst prioriterade startbara issuen, äldst först, även om den ligger tidigt i kedjan. Skriv en kommentar i #420
     (vad du tar, vad de behåller, vilka filer ni båda rör) och `Övertagen av orkester <session> (tidigare reserverad av
     <andra>) …` på varje issue. Rör aldrig en issue som har `in-progress` eller som en agent är mitt i.
   - **Du har mer reserverat än du hinner köra** (issues långt bak i en kedja som inte startar inom ca 30 minuter) och
-    en annan orkester har ledig kapacitet (läs dess statuskommentar: färre än 3 agenter eller "inga agenter igång")
+    en annan orkester har ledig kapacitet (läs dess statuskommentar: färre än 2 agenter eller "inga agenter igång")
     → **släpp** dem: ta bort reservationen med `Reservationen släppt av orkester <session> – ledig för andra` på
     issuen och i #420, så att de kan tas. Reservera i övrigt bara kedjor som en agent startar på nu, plus högst det
     som rimligen hinns med härnäst.
@@ -324,7 +326,7 @@ Samordningen får aldrig vara skälet till att en agentplats står tom eller ett
   **Men håll kedjorna korta: högst 2 issues per agent** (3 bara om varje är liten), och ge hellre två parallella agenter än en
   lång kedja när issuesna rör olika data/filer (t.ex. Hus B och Hus C i var sin `CORE_*`-post, olika moduler, olika tester).
   En agent som kör i flera timmar kan dö (spendgräns, krasch) och då hänger allt på vad som hunnit pushas.
-- **Bryt ner stora issues innan du ger dem till en agent.** En issue som ser ut att ta mer än ca en timme eller röra fler än
+- **Bryt ner stora issues innan du ger dem till en agent.** En issue som ser ut att ta mer än ca 30 minuter eller röra fler än
   ca 8–10 filer, eller som innehåller flera oberoende delar (flera hus, flera skärmar, server + klient + docs), delas upp
   i **delissues**: skapa små issues med `Lapp:`-rad, prioritet och hänvisning till föräldern (`Del av #N`), och ge dem till
   olika agenter eller i tur och ordning. Delarna ska var och en kunna landa, testas och ge något användbart på egen hand
@@ -332,7 +334,7 @@ Samordningen får aldrig vara skälet till att en agentplats står tom eller ett
   stängs när den sista delen landar (`Fixes` på sista delen, `Refs` på de andra). Beskriv i issuen vad som ingår och inte.
 - **Bevaka långa körningar och aktiv tidsövervakning (SLA/deadlines):**
   - Dirigenten ska aktivt hålla koll på hur länge varje arbetsagent har kört sedan start eller senaste delcommit.
-  - Normal körtid för en issue eller delmängd bör ligga under **30–45 minuter**. Ingen agent ska arbeta tyst i 1,5–2 timmar utan att leverera synliga framsteg till `main`.
+  - Normal körtid för en issue eller delmängd bör ligga under **30 minuter** (användaren 2026-10-17). Ingen agent ska arbeta tyst i 1,5–2 timmar utan att leverera synliga framsteg till `main`.
   - Har en agent kört i **30 minuter** utan commit på `main` eller statuskommentar: dirigenten ska aktivt kontakta agenten (SendMessage), begära lägesrapport och instruera den att pusha den första gröna delmängden (`Refs #N`).
   - Vid **45–60 minuter** utan push eller konkret framsteg: dirigenten undersöker aktivt agentens loggar och processer (t.ex. Playwright/headless Chrome CPU-hängningar eller oändliga slingor), ingriper, och bryter vid behov ut kvarvarande arbete till nya delissues.
   - Dirigenten håller användaren och samordningstråden (#420) informerad om en agent passerar normal tidsram, så att statusen alltid är transparent.
