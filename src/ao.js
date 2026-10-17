@@ -150,17 +150,31 @@ const wallMaterial = () => new THREE.ShaderMaterial({
  * open room inside `size`, so faces against other walls, façades and window reveals stay
  * bare; door openings, glass and mirrors are never covered (objects in front hide it).
  * No floor band over `floorHole`, no ceiling band under `ceilHole` (the stair opening).
+ * Pieces that stop short of the floor or ceiling (door lintels, window infills) also block the plan,
+ * but only over their own height: the jambs of a door opening get no overlay where the lintel fills
+ * the opening above them, which the overlay's polygon offset otherwise pulled through the lintel's
+ * face as dark stripes above the doors (#1129). Where a partial piece's face runs over a wall's end,
+ * only the wall's face gets the overlay, so the strip is not darkened twice.
  */
 export function buildWallAO(size, y0, yC, pieces, blockers, { floorHole, ceilHole } = {}) {
   const S = AO.wall, FAR = 100;
   const cutF = S.floor.radius * S.cutoff, cutC = S.ceiling.radius * S.cutoff, cutK = S.corner.radius * S.cutoff;
-  const boxes = blockers.map((pts) => {
+  const bbox = (pts) => {
     let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
     for (const [x, z] of pts) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z); }
     return { pts, x0, x1, z0, z1 };
-  });
+  };
+  const boxes = blockers.map(bbox);
+  // partial-height pieces (lintels, window infills) block only between their own y0 and y1 (#1129)
+  const isPartial = (p) => p.y0 > y0 + 0.005 || p.y1 < yC - 0.005;
+  const partial = pieces.filter(isPartial).map((p) => ({ ...bbox(p.pts), y0: p.y0, y1: p.y1, src: p }));
+  // full-height pieces (walls): where a partial piece's face runs over one of them (a lintel across the end of a
+  // wall block, L1007's Sovrum 2 door), the wall's own face carries the overlay; twice would darken that strip twice
+  const full = pieces.filter((p) => !isPartial(p)).map((p) => bbox(p.pts));
+  const hit = (b, x, z) => x >= b.x0 && x <= b.x1 && z >= b.z0 && z <= b.z1 && insidePoly(b.pts, x, z);
+  let slab = []; // the partial pieces that fill the height band being built
   const blocked = (x, z) => x < 0 || z < 0 || x > size.x || z > size.z
-    || boxes.some((b) => x >= b.x0 && x <= b.x1 && z >= b.z0 && z <= b.z1 && insidePoly(b.pts, x, z));
+    || boxes.some((b) => hit(b, x, z)) || slab.some((b) => hit(b, x, z));
   const pos = [], dist = [];
   let flipped = false; // the face's room side is the left normal (-uz, ux) of its edge, or the right one
   const quad = (ax, az, ux, uz, s0, s1, ya, yb, k0, k1) => {
@@ -172,8 +186,8 @@ export function buildWallAO(size, y0, yC, pieces, blockers, { floorHole, ceilHol
   };
   for (const piece of pieces) {
     const pts = piece.pts;
-    const ya = Math.max(piece.y0, y0), yb = Math.min(piece.y1, yC);
-    if (yb - ya < 0.01) continue;
+    const pa = Math.max(piece.y0, y0), pb = Math.min(piece.y1, yC);
+    if (pb - pa < 0.01) continue;
     for (let i = 0; i < pts.length; i++) {
       const [ax, az] = pts[i], [bx, bz] = pts[(i + 1) % pts.length];
       const len = Math.hypot(bx - ax, bz - az);
@@ -184,58 +198,73 @@ export function buildWallAO(size, y0, yC, pieces, blockers, { floorHole, ceilHol
       const mx = (ax + bx) / 2, mz = (az + bz) / 2;
       flipped = insidePoly(pts, mx + nx * NEAR, mz + nz * NEAR);
       if (flipped) { nx = -nx; nz = -nz; }
-      const open = (s) => !blocked(ax + ux * s + nx * NEAR, az + uz * s + nz * NEAR);
-      // exposed runs along the face, ends refined to the exact edge of what blocks them
-      const n = Math.max(1, Math.round(len / STEP));
-      const refine = (lo, hi) => { // open at lo, blocked at hi (either order along the face)
-        for (let k = 0; k < 12; k++) { const m = (lo + hi) / 2; if (open(m)) lo = m; else hi = m; }
-        return (lo + hi) / 2;
-      };
-      let run = null;
-      const flush = (end) => {
-        if (!run) return;
-        const s0 = run.s0, s1 = end;
-        run = null;
-        if (s1 - s0 < 0.02) return;
-        // an end is an inner corner when a wall stands just in front of the face past it
-        const corner = (s, dir) => blocked(ax + ux * (s + dir * 0.02) + nx * 0.02, az + uz * (s + dir * 0.02) + nz * 0.02);
-        const k0 = corner(s0, -1) ? s0 : null, k1 = corner(s1, 1) ? s1 : null;
-        const ax2 = ax + nx * 0.001, az2 = az + nz * 0.001;
-        // only where some term is visible: floor band, ceiling band, corner columns between them
-        const fTop = Math.min(yb, y0 + cutF), cBot = Math.max(ya, yC - cutC);
-        // [s0,s1] minus where the line just in front of the face crosses a hole
-        const minus = (hole) => {
-          if (!hole) return [[s0, s1]];
-          let t0 = s0, t1 = s1;
-          for (const [p, d, lo, hi] of [[ax + nx * NEAR, ux, hole.x0, hole.x1], [az + nz * NEAR, uz, hole.z0, hole.z1]]) {
-            if (Math.abs(d) < 1e-9) { if (p < lo || p > hi) return [[s0, s1]]; continue; }
-            const a = (lo - p) / d, b = (hi - p) / d;
-            t0 = Math.max(t0, Math.min(a, b)); t1 = Math.min(t1, Math.max(a, b));
-          }
-          if (t1 <= t0) return [[s0, s1]];
-          return [[s0, t0], [t1, s1]].filter(([a, b]) => b - a > 0.005);
+      // the face in height bands split where a partial piece in front of it starts or stops
+      const fx0 = Math.min(ax, bx) - 2 * NEAR, fx1 = Math.max(ax, bx) + 2 * NEAR;
+      const fz0 = Math.min(az, bz) - 2 * NEAR, fz1 = Math.max(az, bz) + 2 * NEAR;
+      const near = partial.filter((b) => b.src !== piece && b.x1 >= fx0 && b.x0 <= fx1 && b.z1 >= fz0 && b.z0 <= fz1);
+      const cuts = [pa, pb];
+      for (const b of near) for (const y of [b.y0, b.y1]) if (y > pa + 0.01 && y < pb - 0.01) cuts.push(y);
+      cuts.sort((a, b) => a - b);
+      for (let c = 0; c + 1 < cuts.length; c++) {
+        const ya = cuts[c], yb = cuts[c + 1];
+        if (yb - ya < 0.01) continue;
+        const ym = (ya + yb) / 2;
+        slab = near.filter((b) => b.y0 <= ym && b.y1 >= ym);
+        const open = (s) => !blocked(ax + ux * s + nx * NEAR, az + uz * s + nz * NEAR)
+          && (!isPartial(piece) || !full.some((b) => hit(b, ax + ux * s - nx * NEAR / 2, az + uz * s - nz * NEAR / 2)));
+        // exposed runs along the face, ends refined to the exact edge of what blocks them
+        const n = Math.max(1, Math.round(len / STEP));
+        const refine = (lo, hi) => { // open at lo, blocked at hi (either order along the face)
+          for (let k = 0; k < 12; k++) { const m = (lo + hi) / 2; if (open(m)) lo = m; else hi = m; }
+          return (lo + hi) / 2;
         };
-        if (fTop > ya) for (const [a, b] of minus(floorHole)) quad(ax2, az2, ux, uz, a, b, ya, Math.min(fTop, yb), k0, k1);
-        if (cBot < yb) for (const [a, b] of minus(ceilHole)) quad(ax2, az2, ux, uz, a, b, Math.max(cBot, ya, fTop), yb, k0, k1);
-        const m0 = Math.max(ya, fTop), m1 = Math.min(yb, cBot);
-        if (m1 > m0) {
-          const c0 = k0 === null ? null : Math.min(s1, s0 + cutK), c1 = k1 === null ? null : Math.max(s0, s1 - cutK);
-          if (c0 !== null && c1 !== null && c0 >= c1) quad(ax2, az2, ux, uz, s0, s1, m0, m1, k0, k1);
-          else {
-            if (c0 !== null) quad(ax2, az2, ux, uz, s0, c0, m0, m1, k0, k1);
-            if (c1 !== null) quad(ax2, az2, ux, uz, c1, s1, m0, m1, k0, k1);
+        let run = null;
+        const flush = (end) => {
+          if (!run) return;
+          const s0 = run.s0, s1 = end;
+          run = null;
+          if (s1 - s0 < 0.02) return;
+          // an end is an inner corner when a wall stands just in front of the face past it
+          const corner = (s, dir) => blocked(ax + ux * (s + dir * 0.02) + nx * 0.02, az + uz * (s + dir * 0.02) + nz * 0.02);
+          const k0 = corner(s0, -1) ? s0 : null, k1 = corner(s1, 1) ? s1 : null;
+          const ax2 = ax + nx * 0.001, az2 = az + nz * 0.001;
+          // only where some term is visible: floor band, ceiling band, corner columns between them
+          const fTop = Math.min(yb, y0 + cutF), cBot = Math.max(ya, yC - cutC);
+          // [s0,s1] minus where the line just in front of the face crosses a hole
+          const minus = (hole) => {
+            if (!hole) return [[s0, s1]];
+            let t0 = s0, t1 = s1;
+            for (const [p, d, lo, hi] of [[ax + nx * NEAR, ux, hole.x0, hole.x1], [az + nz * NEAR, uz, hole.z0, hole.z1]]) {
+              if (Math.abs(d) < 1e-9) { if (p < lo || p > hi) return [[s0, s1]]; continue; }
+              const a = (lo - p) / d, b = (hi - p) / d;
+              t0 = Math.max(t0, Math.min(a, b)); t1 = Math.min(t1, Math.max(a, b));
+            }
+            if (t1 <= t0) return [[s0, s1]];
+            return [[s0, t0], [t1, s1]].filter(([a, b]) => b - a > 0.005);
+          };
+          if (fTop > ya) for (const [a, b] of minus(floorHole)) quad(ax2, az2, ux, uz, a, b, ya, Math.min(fTop, yb), k0, k1);
+          if (cBot < yb) for (const [a, b] of minus(ceilHole)) quad(ax2, az2, ux, uz, a, b, Math.max(cBot, ya, fTop), yb, k0, k1);
+          const m0 = Math.max(ya, fTop), m1 = Math.min(yb, cBot);
+          if (m1 > m0) {
+            const c0 = k0 === null ? null : Math.min(s1, s0 + cutK), c1 = k1 === null ? null : Math.max(s0, s1 - cutK);
+            if (c0 !== null && c1 !== null && c0 >= c1) quad(ax2, az2, ux, uz, s0, s1, m0, m1, k0, k1);
+            else {
+              if (c0 !== null) quad(ax2, az2, ux, uz, s0, c0, m0, m1, k0, k1);
+              if (c1 !== null) quad(ax2, az2, ux, uz, c1, s1, m0, m1, k0, k1);
+            }
           }
+        };
+        let prev = 0, prevOpen = false;
+        for (let j = 0; j < n; j++) {
+          const s = (j + 0.5) * (len / n);
+          const o = open(s);
+          if (o && !prevOpen) run = { s0: j === 0 ? 0 : refine(s, prev) };
+          else if (!o && prevOpen) flush(refine(prev, s));
+          prev = s; prevOpen = o;
         }
-      };
-      let prev = 0, prevOpen = false;
-      for (let j = 0; j < n; j++) {
-        const s = (j + 0.5) * (len / n);
-        const o = open(s);
-        if (o && !prevOpen) run = { s0: j === 0 ? 0 : refine(s, prev) };
-        else if (!o && prevOpen) flush(refine(prev, s));
-        prev = s; prevOpen = o;
+        if (run) flush(len, false);
       }
-      if (run) flush(len, false);
+      slab = [];
     }
   }
   const geo = new THREE.BufferGeometry();

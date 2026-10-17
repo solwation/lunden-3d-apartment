@@ -7,7 +7,7 @@ variants shut / half / open (front, 3/4, close-ups), one draw call each, a talke
 `node tools/avatarmouthgametest.cjs GAME LOCAL_WORKER` (with `node cloudflare/dev.mjs PORT`) — in the real app a module peer's
 line moves its avatar's mouth (not "skriver…", shut before the bubble goes) and our own sent line moves the hall mirror image's.
 Run both after changing `src/avatar.js` mouth/face/beard parts or the talk wiring in chat.js / ghosts.js / greet.js.
-Wall AO facing (#1084): `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/wallaotest.cjs GAME` — every `wall-ao` triangle in L1007, L1004 and L1201 faces the room (a wall right behind it); run after changing src/ao.js `buildWallAO` or the wall pieces world.js feeds it.
+Wall AO facing (#1084): `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/wallaotest.cjs GAME` — every `wall-ao` triangle in L1007, L1004 and L1201 faces the room (a wall right behind it), none sits inside a solid and none overlaps another in one plane (#1129); run after changing src/ao.js `buildWallAO` or the wall pieces world.js feeds it.
 Shower spray (#1062): `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/showerspraytest.cjs GAME OUT`
 renders both real showerSet/Tap variants with actual Chromium WebGL. Candidate
 16/16 and pre-change water module10/10 checks passed (CLI0), with before/after

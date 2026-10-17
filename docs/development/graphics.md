@@ -59,7 +59,10 @@ src/ao.js              baked ambient occlusion: distance field → multiply over
                        shader overlay per level on the walls — floor/ceiling bands + inner-corner columns (AO.wall, #1074);
                        each quad is wound to face the room whatever the piece polygon's orientation (#1084: rectangle
                        lintels/window infills and L1201's plan were back-face culled); the ceiling overlay's blockers
-                       include door lintels and windows so its band runs over openings too (tools/wallaotest.cjs)
+                       include door lintels and windows so its band runs over openings too; partial-height pieces
+                       (lintels, infills) block only over their own height and skip where they run over a wall's end
+                       (#1129: door jambs' bands inside the lintel and a doubled strip showed as stripes over doors)
+                       (tools/wallaotest.cjs)
 src/lights.js          room switches (E), ceiling lamps/pendants (`LIGHTING.pendants` styles copper3 #307, silvia #1105,
                        paper #134, string #174)/spots/LED (by hand only), small lamps (FloorLamp:
                        E, and they switch themselves with the dusk, #234); a pool of 4 point lights goes to the lit
