@@ -1,4 +1,5 @@
 import { REPORTS } from './config.js';
+import { encodeReportJpeg } from './reportphoto.js';
 
 // Copy only the game canvas, in the same task as its completed screen render.
 // The disposable 2D copy survives WebGL's normal drawing-buffer discard.
@@ -35,25 +36,6 @@ export class ReportCapture {
     } catch (error) { this.finish(job, error); return; }
     this.encode(copy, job).then(image => this.finish(job, null, image), error => this.finish(job, error));
   }
-  async encode(copy, job) {
-    for (let attempt = 0; attempt < 6; attempt++) {
-      if (this.pending !== job) throw Error('capture expired');
-      if (attempt === 3) {
-        const smaller = document.createElement('canvas');
-        smaller.width = Math.max(1, Math.floor(copy.width / 2));
-        smaller.height = Math.max(1, Math.floor(copy.height / 2));
-        const context = smaller.getContext('2d', { alpha: false });
-        if (!context) throw Error('unavailable resize');
-        context.drawImage(copy, 0, 0, smaller.width, smaller.height); copy = smaller;
-      }
-      const blob = await new Promise(resolve => copy.toBlob(resolve, 'image/jpeg', [.8, .55, .3][attempt % 3]));
-      if (!blob || blob.type !== 'image/jpeg') throw Error('JPEG unavailable');
-      if (blob.size > REPORTS.imageBytes) continue;
-      const data = new Uint8Array(await blob.arrayBuffer());
-      let binary = '';
-      for (let i = 0; i < data.length; i += 8192) binary += String.fromCharCode(...data.subarray(i, i + 8192));
-      return 'data:image/jpeg;base64,' + btoa(binary);
-    }
-    throw Error('capture too large');
-  }
+  // #1181: the same bounded encoder serves chosen report photos.
+  encode(copy, job) { return encodeReportJpeg(copy, () => this.pending === job); }
 }

@@ -1,6 +1,7 @@
 import { REPORTS, CLOUD_URL } from './config.js';
 import { cloudUrl } from './cloud.js';
 import { isPrivateCode } from './privatecodes.js';
+import { prepareReportPhoto } from './reportphoto.js';
 
 // Match the existing console parser for both direct codes and the optional masked field.
 const normalizeCode = text => text.trim().replace(/^\//, '').trim().toLowerCase().replace(/\s+/g, ' ');
@@ -15,7 +16,7 @@ export class AdminReports {
       const endpoint=new URL(url);
       if (url !== CLOUD_URL.replace(/\/+$/,'') && !(loopback(location.hostname) && loopback(endpoint.hostname) && endpoint.protocol==='http:' && endpoint.pathname==='/')) this.url='';
     } catch { this.url=''; }
-    this.token='';this.expires=0;this.pending=null;this.busy=false;this.epoch=0;
+    this.token='';this.expires=0;this.pending=null;this.busy=false;this.epoch=0;this.photo=null;this.photoJob=0;
     form.addEventListener('submit',e=>{
       const code=normalizeCode(input.value);
       if(isPrivateCode(code)){
@@ -45,6 +46,7 @@ export class AdminReports {
       reportPanel.addEventListener('keydown',e=>e.stopPropagation());
       reportPanel.addEventListener('keyup',e=>e.stopPropagation());
       reportPanel.querySelector('#admin-report-cancel').addEventListener('click',()=>this.closeReport());
+      this.photoSetup(reportPanel);
     }
     login.addEventListener('click',()=>this.signIn());
     cancel.addEventListener('click',()=>{this.logout();this.closeLogin();});
@@ -53,6 +55,35 @@ export class AdminReports {
       if(e.key==='Escape'){e.preventDefault();e.stopPropagation();this.logout();this.closeLogin();}
     });
     addEventListener('pagehide',()=>{this.logout();this.closeLogin();});
+  }
+  // #1181: camera/file input and desktop drag and drop; the chosen photo replaces the screenshot.
+  photoSetup(panel){
+    const file=panel.querySelector('#admin-report-file');if(!file)return;
+    this.photoEls={file,preview:panel.querySelector('#admin-report-preview'),img:panel.querySelector('#admin-report-preview-img')};
+    const pick=()=>{file.value='';file.click();};
+    panel.querySelector('#admin-report-camera').addEventListener('click',pick);
+    panel.querySelector('#admin-report-photo-change').addEventListener('click',pick);
+    panel.querySelector('#admin-report-photo-remove').addEventListener('click',()=>{this.setPhoto(null);this.reportStatus.textContent='Fotot är borttaget. En bild av spelvyn följer med i stället.';panel.querySelector('#admin-report-camera').focus();});
+    file.addEventListener('change',()=>{const f=file.files?.[0];file.value='';if(f)this.choosePhoto(f);});
+    const files=e=>[...(e.dataTransfer?.types??[])].includes('Files');
+    panel.addEventListener('dragover',e=>{if(!files(e))return;e.preventDefault();e.dataTransfer.dropEffect='copy';panel.classList.add('dragging');});
+    panel.addEventListener('dragleave',e=>{if(!panel.contains(e.relatedTarget))panel.classList.remove('dragging');});
+    panel.addEventListener('drop',e=>{if(!files(e))return;e.preventDefault();panel.classList.remove('dragging');const f=e.dataTransfer.files?.[0];if(f)this.choosePhoto(f);});
+  }
+  async choosePhoto(file){
+    const job=++this.photoJob;this.photoBusy=true;this.reportStatus.textContent='Förbereder fotot…';
+    try{
+      const image=await prepareReportPhoto(file);
+      if(job!==this.photoJob)return;
+      this.setPhoto(image);this.reportStatus.textContent='Fotot skickas med rapporten i stället för spelvyn.';
+    }catch(error){
+      if(job!==this.photoJob)return;
+      this.reportStatus.textContent=error?.code==='type'?'Filen är ingen bild. Välj en bild eller ta ett foto.':error?.code==='format'?'Bildformatet stöds inte av webbläsaren. Välj en JPEG- eller PNG-bild.':'Fotot kunde inte förberedas. Försök med en annan bild.';
+    }finally{if(job===this.photoJob)this.photoBusy=false;}
+  }
+  setPhoto(image){
+    this.photo=image;const els=this.photoEls;if(!els)return;
+    els.preview.hidden=!image;if(image)els.img.src=image;else els.img.removeAttribute('src');
   }
   get active(){return !!this.token&&Date.now()<this.expires;}
   say(text){this.message.textContent=text;if(this.reportPanel?.open&&this.reportStatus)this.reportStatus.textContent=text;}
@@ -99,7 +130,10 @@ export class AdminReports {
     if(!this.active){this.logout();this.say('Skriv din adminkod i chatten innan du rapporterar.');return;}
     if(this.busy){this.say('Vänta tills den pågående begäran är klar.');return;}
     if(!text.trim()||text.length>REPORTS.maxChars){this.say(`Skriv 1–${REPORTS.maxChars} tecken i rapporten.`);return;}
-    if(!this.pending||this.pending.text!==text)this.pending={id:crypto.randomUUID(),text};
+    if(this.photoBusy&&source===this.reportInput){this.say('Vänta tills fotot är klart.');return;}
+    // A chosen photo belongs to the report popup; legacy chat /rapport keeps the screenshot.
+    const photo=source===this.reportInput?this.photo:null;
+    if(!this.pending||this.pending.text!==text||this.pending.photo!==photo)this.pending={id:crypto.randomUUID(),text,photo,image:photo||undefined};
     const pending=this.pending, draft=source.value, epoch=this.epoch;this.busy=true;
     try{
       if(!pending.image){
@@ -115,6 +149,7 @@ export class AdminReports {
       if(this.pending===pending)this.pending=null;
       // Preserve any new draft typed while the request was in flight.
       if(source.value===draft)source.value='';
+      if(photo&&this.photo===photo)this.setPhoto(null);
       this.say('Rapporten med bild är sparad och väntar på granskning.');
     }catch{if(epoch===this.epoch)this.say('Rapporten kunde inte skickas. Försök igen; texten finns kvar.');}
     finally{if(epoch===this.epoch)this.busy=false;}

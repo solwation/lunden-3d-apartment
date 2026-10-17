@@ -552,6 +552,44 @@
     #admin-report-status { white-space: pre-wrap; }
     #admin-report button { min-height: 44px; padding: 10px 14px; margin: 8px 4px 0 0; border: 1px solid #809488; border-radius: 6px; background: #172322; color: #fff; cursor: pointer; }
     @media (max-height: 450px) { #admin-report { padding: 12px; } #admin-report textarea { min-height: 64px; height: 64px; } }
+    /* #1181: chosen photo (camera, file picker or drag and drop) replaces the automatic screenshot. */
+    #admin-report-photo { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin-top: 8px; }
+    #admin-report-photo:has(#admin-report-preview:not([hidden])) > #admin-report-camera, #admin-report-photo:has(#admin-report-preview:not([hidden])) > .report-drop-hint { display: none; }
+    #admin-report .report-drop-hint { color: #9fbfa8; font-size: 13px; }
+    @media (pointer: coarse) { #admin-report .report-drop-hint { display: none; } }
+    #admin-report.dragging { outline: 3px dashed #ffcd66; outline-offset: -8px; }
+    #admin-report-preview { flex: 1 1 100%; margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+    #admin-report-preview[hidden] { display: none; }
+    #admin-report-preview img { display: block; max-width: 100%; max-height: 32dvh; object-fit: contain; align-self: flex-start; border: 1px solid #648571; border-radius: 6px; background: #07110d; }
+    #admin-report-preview figcaption { display: flex; gap: 4px; }
+    /* Desktop with room: a large centred modal. */
+    @media (min-width: 1100px) and (min-height: 720px) {
+      html body #admin-report.dialog-native { width: min(1040px, calc(100vw - 96px)); max-height: calc(100dvh - 96px); padding: 24px 32px 28px; font-size: 16px; }
+      #admin-report h2 { margin-right: 64px; }
+      #admin-report textarea { min-height: 220px; }
+      #admin-report-photo { min-height: 220px; align-content: flex-start; }
+      #admin-report-preview img { max-height: min(60dvh, 640px); }
+    }
+    /* Phone: full screen inside the safe area with a compact one-line header (as #1141). */
+    @media (max-width: 600px), (max-height: 500px) {
+      html body #admin-report.dialog-native { width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; border: 0; border-radius: 0;
+        padding: calc(env(safe-area-inset-top) + 4px) calc(env(safe-area-inset-right) + 14px) calc(env(safe-area-inset-bottom) + 12px) calc(env(safe-area-inset-left) + 14px); }
+      #admin-report h2 { margin: 0 52px 6px 0; min-height: 44px; display: flex; align-items: center; font-size: 18px; white-space: nowrap; }
+      body #admin-report .dialog-close { top: calc(env(safe-area-inset-top) + 4px); right: calc(env(safe-area-inset-right) + 6px); width: 44px; height: 44px; min-width: 44px; min-height: 44px; font-size: 24px; }
+      #admin-report-preview img { max-height: 38dvh; }
+    }
+    /* Wide layouts: text on the left, photo on the right. */
+    @media (min-width: 1100px) and (min-height: 720px), (max-height: 500px) and (orientation: landscape) {
+      #admin-report-form { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto auto auto auto auto 1fr; column-gap: 24px; align-items: start; }
+      #admin-report-form > :is(h2, #admin-report-cancel) { grid-column: 1 / -1; }
+      #admin-report-form > :is(label, textarea, #admin-report-help, #admin-report-status, #admin-report-send) { grid-column: 1; }
+      #admin-report-send { justify-self: start; }
+      #admin-report-photo { grid-column: 2; grid-row: 2 / span 5; margin-top: 0; }
+    }
+    @media (max-height: 500px) and (orientation: landscape) {
+      #admin-report-preview img { max-height: calc(100dvh - 130px); }
+      #admin-report textarea { height: 96px; }
+    }
     #terminal h2 { margin-top: 0; } #terminal input { width: 100%; box-sizing: border-box; padding: 10px; font: inherit; background: #07110d; color: #c7f5cd; border: 1px solid #648571; }
     #terminal button, #terminal-btn, #rearrange-help button { padding: 10px 14px; border: 1px solid #809488; border-radius: 6px; background: #172322; color: #fff; cursor: pointer; }
     #terminal button { margin: 10px 4px 0 0; } #terminal-btn { position: fixed; left: 16px; top: 92px; font: 16px monospace; }
@@ -1088,7 +1126,19 @@
       <h2 id="admin-report-title">Rapportera</h2>
       <label for="admin-report-text">Beskriv felet eller ditt önskemål</label>
       <textarea id="admin-report-text" rows="4" placeholder="Vad vill du rapportera?" autofocus></textarea>
-      <p id="admin-report-help">En bild av spelvyn följer med automatiskt.</p>
+      <div id="admin-report-photo">
+        <input id="admin-report-file" type="file" accept="image/*" capture="environment" hidden>
+        <button id="admin-report-camera" type="button"><span aria-hidden="true">📷</span> Ta foto eller välj bild</button>
+        <span class="report-drop-hint">eller dra en bild hit</span>
+        <figure id="admin-report-preview" hidden>
+          <img id="admin-report-preview-img" alt="Valt foto">
+          <figcaption>
+            <button id="admin-report-photo-change" type="button">Byt</button>
+            <button id="admin-report-photo-remove" type="button">Ta bort</button>
+          </figcaption>
+        </figure>
+      </div>
+      <p id="admin-report-help">En bild av spelvyn följer med automatiskt. Väljer du ett foto skickas det i stället.</p>
       <p id="admin-report-status" role="status" aria-live="polite"></p>
       <button id="admin-report-send" type="submit">Skicka rapport</button>
 

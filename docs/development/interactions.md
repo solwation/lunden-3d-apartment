@@ -1731,6 +1731,25 @@ The optional masked login field owns Enter (including numpad Enter): the documen
 capture handler lets that key reach the field, which prevents ordinary console
 submission and starts one login request. Escape retains terminal close behavior (#1054).
 
+### Photo in the report popup (#1181)
+
+The report popup has a camera button backed by `#admin-report-file`
+(`<input type="file" accept="image/*" capture="environment">`); on a computer an image can
+also be dropped anywhere on the popup. `src/reportphoto.js` decodes with the browser's own
+codecs (`createImageBitmap(..., {imageOrientation:'from-image'})`, so EXIF orientation is
+applied; HEIC only where the browser decodes it, otherwise a clear Swedish error), scales to
+`REPORTS.imageEdge` and re-encodes through the shared `encodeReportJpeg` (also used by
+`ReportCapture`) under `REPORTS.imageBytes`. Canvas re-encoding writes no EXIF, so GPS/device
+metadata never leaves the browser. A preview offers Byt/Ta bort. Until the Worker accepts a
+second image (#1182), a chosen photo replaces the automatic screenshot in the existing `image`
+field; legacy chat `/rapport` still sends the screenshot. A changed photo gets a new report UUID,
+and a successful send clears it. Layout: full screen inside the safe area with a compact
+one-line header on phones (`max-width: 600px` or `max-height: 500px`, as #1141), text and
+photo side by side in landscape, and a large two-column modal on desktops of at least 1100×720.
+Probe used: real index DOM + AdminReports with stubbed Worker routes, 4032×3024 EXIF-rotated
+GPS-tagged JPEG via `setInputFiles` at 390×844, 844×390 and 1920×1080, sent image checked
+with `validReportImage`.
+
 ### Shared dialog close corners (#1059)
 
 `src/dialogclose.css` positions `.dialog-close` controls at the actual surface's
