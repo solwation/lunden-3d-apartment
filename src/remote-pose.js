@@ -1,11 +1,12 @@
-import { REST, decodeAvatarLook } from './config.js';
+import { REST, decodeAvatarLook, avatarProportions } from './config.js';
 import { poseOlof, seatedPose } from './olof.js';
 
 /** Actual rest spot, never the camera's eased position or the old standing location. */
 export function restState(rest, code, seed) {
   if (!rest.active) return {};
   // Legacy default wire codes omit height; peers derive that scale from the accepted player id.
-  const tall = decodeAvatarLook(code, seed).tall;
+  // #1137: a chosen height scales the figure by its body scale (Avatar, rifleBoxPose), not the seed's tall.
+  const lk = decodeAvatarLook(code, seed), tall = Number.isInteger(lk.height) ? avatarProportions(lk.height).body : lk.tall;
   const lie = rest.kind === 'lie', spot = rest.spot;
   const y = spot.pos.y - (lie ? REST.lieEye : REST.sitEye);
   return { p: [spot.pos.x, y - (lie ? REST.avatarLieHip - REST.avatarLieClearance : REST.avatarSeat) * tall, spot.pos.z],

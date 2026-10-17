@@ -2,6 +2,7 @@ Ghost weapon props (#1126): `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/gh
 tools/ghostprops.html: front/side/close-up shots, 13 draw calls for six armed avatars, no prop over 4 000 triangles. Run after changing
 src/ghostprops.js or the weapon models it borrows (rifle.js, toys.js blaster/wand, saber.js, bow.js).
 Avatar height (#1136): `PLAYWRIGHT_MODULE=… CHROME_PATH=… SHOTS=… node tools/avatarheighttest.cjs GAME WORKER` (local `node cloudflare/dev.mjs PORT`) — 120/165/195 cm: own eye height, mirror image, a module peer through the Worker (hall and outdoors), old codes unchanged, the customizer slider and saved 12-digit code; run with `node --test tools/avatarcustomizertest.mjs cloudflare/players.test.mjs` after changing the look code, Avatar scale or `AVATAR_HEIGHT`.
+Avatar body (#1137): `node --test tools/avatarbodytest.mjs` and `PLAYWRIGHT_MODULE=… CHROME_PATH=… SHOTS=… node tools/avatarbodytest.cjs GAME` (no Worker) — 120/165/195 cm crouch, wall radius, stair, sofa, door handle and worktop reach, head boxes; run after changing `avatarBody`, `AVATAR_BODY`, `PLAYER` body values or `rifleBoxPose`.
 Talking avatar mouth (#1122): `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/avatarmouthtest.cjs BASE OUT` — the four facial-hair
 variants shut / half / open (front, 3/4, close-ups), one draw call each, a talked line opens and shuts and ends within its caps;
 `node tools/avatarmouthgametest.cjs GAME LOCAL_WORKER` (with `node cloudflare/dev.mjs PORT`) — in the real app a module peer's

@@ -419,9 +419,10 @@ test('#1175 wire-only build preserves own width and saved codes across receiver 
     for (const seed of ['peer-id','new-peer','reconnected-id']) assert.equal(decodeAvatarLook(wire,seed).build,build);
     const state={p:[0,0,0],r:0,...splitAvatarCode(wire)}, width=[.93,1,1.08][build];
     // A side ray's entry must follow the logical middle box's exact canonical width.
-    const logicalTall=height?avatarLook('peer-id').tall:own.tall; // Existing chosen-cm collision scope remains #1137.
-    const hit=rifleBoxHeadContact('peer-id',state,[2,logicalTall*1.64,0],[-1,0,0],4);
-    assert.ok(hit);assert.ok(Math.abs(hit.point[0]-.105*width)<1e-10);
+    // #1137: a chosen height scales the boxes by its body scale and a child's head around the head pivot.
+    const P=height?avatarProportions(height):{body:own.tall,head:1}, sx=height?P.body:1, pivot=AVATAR_HEIGHT.pivot;
+    const hit=rifleBoxHeadContact('peer-id',state,[2,P.body*(pivot+(1.64-pivot)*P.head),0],[-1,0,0],4);
+    assert.ok(hit);assert.ok(Math.abs(hit.point[0]-.105*width*sx*P.head)<1e-10);
   }
   for (const tag of ['d3','d999']) assert.equal(decodeAvatarLook(legacy+tag,'peer-id').build,avatarLook('peer-id').build,'out-of-range build ignored');
 });

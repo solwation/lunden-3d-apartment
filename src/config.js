@@ -5124,6 +5124,21 @@ export function avatarEyeHeight(look) {
   return Number.isInteger(look?.height) ? avatarProportions(avatarHeightCm(look)).eye : STANDARD_EYE;
 }
 
+// #1137: the local body follows the chosen height through the standing eye height's share `s` of PLAYER's own 1.62 m
+// (no chosen height: s = 1, every value exactly PLAYER's own). Crouch eye and headroom keep today's adult proportions
+// (0.95 / 1.62 and 1.85 / 1.62 of the eye height); the body radius scales with s within `radius` (*guess*: a narrow child
+// still keeps a wall clearance for the 0.05 m near plane, a tall adult only a little wider so doorways and the existing
+// furniture gaps stay passable). stepUp and the jump stay the adult's (stairs and kerbs need them; game choices).
+export const AVATAR_BODY = { radius: [0.7, 1.05] };
+const STANDARD_BODY = { eye: PLAYER.eye, crouchEye: PLAYER.crouchEye, headroom: PLAYER.headroom, radius: PLAYER.radius };
+/** The local player's body for a look: { eye, crouchEye, headroom, radius, scale } in metres (scale = eye / 1.62). */
+export function avatarBody(look) {
+  const eye = avatarEyeHeight(look), s = eye / STANDARD_BODY.eye, [lo, hi] = AVATAR_BODY.radius;
+  if (s === 1) return { ...STANDARD_BODY, scale: 1 };
+  return { eye, scale: s, crouchEye: STANDARD_BODY.crouchEye * s, headroom: STANDARD_BODY.headroom * s,
+    radius: STANDARD_BODY.radius * Math.min(hi, Math.max(lo, s)) };
+}
+
 /** A well-formed look code (#1136): 7 or 9 digits, or 9 + a height in cm within AVATAR_HEIGHT (the Worker uses it too). */
 export function avatarCodeValid(str) {
   if (typeof str !== 'string' || !/^[0-4][0-9][0-5][0-3][0-7][0-3][0-1]([0-1][0-3](\d{3})?)?$/.test(str)) return false;
@@ -5585,10 +5600,19 @@ function rifleBoxPose(seed, state) {
   const look = avatarLook(seed), wire = decodeAvatarLook(typeof state.av === 'string' ? state.av + (state.ax ?? '') : null, seed);
   // #1175: use the same existing build as the rendered avatar, including chosen-height looks.
   look.build = wire.build; look.bodyBuild = wire.bodyBuild; // (#1139: a chosen body build too)
-  // #1173: follow the transmitted legacy vertical scale. Chosen-cm proportions remain #1137.
+  // #1173: follow the transmitted legacy vertical scale.
   if (!Number.isInteger(wire.height)) look.tall = wire.tall;
+  // #1137: a chosen height scales the figure uniformly (Avatar: body × build sideways) and a child's head bone around
+  // its pivot (AVATAR_HEIGHT.pivot), so the three shared boxes grow with the head the same way.
+  let width = avatarBuildWidth(look), tall = look.tall, boxes = PVP_HEAD_BOXES.boxes;
+  if (Number.isInteger(wire.height)) {
+    const { body, head } = avatarProportions(wire.height), P = AVATAR_HEIGHT.pivot;
+    width *= body; tall = body;
+    if (head !== 1) boxes = boxes.map(b => ({ low: P + (b.low - P) * head, high: P + (b.high - P) * head,
+      halfWidth: b.halfWidth * head, back: b.back * head, front: b.front * head }));
+  }
   const yaw = state.r + Math.PI, lean = state.pose === 2 ? Math.PI / 2 : state.pose === 1 ? .1 : PVP_HEAD_BOXES.crouchLean * crouch;
-  return { width: avatarBuildWidth(look), tall: look.tall, yawCos: Math.cos(yaw), yawSin: Math.sin(yaw),
+  return { width, tall, boxes, yawCos: Math.cos(yaw), yawSin: Math.sin(yaw),
     leanCos: Math.cos(lean), leanSin: Math.sin(lean), crouch,
     hipY: state.pose === 2 ? REST.avatarLieHip : state.pose === 1 ? REST.avatarSeat + .075 : PVP_HEAD_BOXES.hipY - PVP_HEAD_BOXES.hipDrop * crouch,
     hipZ: state.pose === 1 ? .07 : PVP_HEAD_BOXES.hipForward * crouch };
@@ -5604,7 +5628,7 @@ export function restCombatFrame(seed, state, origin, direction) {
     const z = pose.yawSin * v[0] + pose.yawCos * v[2] - (point ? pose.hipZ * pose.width : 0);
     return [x, pose.leanCos * y - pose.leanSin * z + (point ? PVP_HEAD_BOXES.hipY * pose.tall : 0), pose.leanSin * y + pose.leanCos * z];
   };
-  return { origin: inverse(origin.map((v,i)=>v-state.p[i]), true), direction: inverse(direction, false), feet: [0,0,0], ceiling: PVP_HEAD_BOXES.boxes[0].low * pose.tall };
+  return { origin: inverse(origin.map((v,i)=>v-state.p[i]), true), direction: inverse(direction, false), feet: [0,0,0], ceiling: pose.boxes[0].low * pose.tall };
 }
 
 /** Existing body capsule endpoints in world space, rotated only for actual rest. */
@@ -5631,7 +5655,7 @@ export function rifleHeadBaseY(seed, state) {
   const pose = rifleBoxPose(seed, state);
   if (!pose) return null;
   const H = PVP_HEAD_BOXES;
-  return state.p[1] + pose.tall * Math.min(...H.boxes.map(box => pose.hipY +
+  return state.p[1] + pose.tall * Math.min(...pose.boxes.map(box => pose.hipY +
     pose.leanCos * (box.low - H.hipY) + Math.min(pose.leanSin * box.back, pose.leanSin * box.front)));
 }
 
@@ -5652,7 +5676,7 @@ export function rifleBoxHeadContact(seed, state, origin, direction, range, radiu
   };
   const o = inverse(origin.map((x, i) => x - state.p[i]), true), d = inverse(unit, false);
   let first = Infinity;
-  for (const box of H.boxes) {
+  for (const box of pose.boxes) {
     // #980: a finite ball uses a simple padded logical box. The projected world
     // radius follows the existing nonuniform scale/crouch transform; default 0 is unchanged.
     const pad = [radius / pose.width, radius * Math.hypot(pose.leanCos / pose.tall, pose.leanSin / pose.width),

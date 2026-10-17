@@ -303,9 +303,17 @@ src/rearrange.js       furniture cheat (#465): § / Enter (#596; not from a focu
                        100–200): it sets `look.height` (shown: the seed's own base × tall until chosen) and applies live. Avatar scales the
                        whole figure by `avatarProportions(cm).body` and a child's head bone by `.head` (larger below `adult` cm; one
                        SkinnedMesh still). main.js `setMyLook` sets `PLAYER.eye = avatarEyeHeight(look)` (settleEye eases the camera;
-                       old looks keep 1.62). Not yet: crouch/headroom/stairs/collision and the head boxes (#1137; they still follow the
-                       seed's `tall`). `tools/avatarheighttest.cjs GAME WORKER` (local `node cloudflare/dev.mjs PORT`): 120/165/195 cm
+                       old looks keep 1.62). `tools/avatarheighttest.cjs GAME WORKER` (local `node cloudflare/dev.mjs PORT`): 120/165/195 cm
                        mirror image, a peer through the Worker and the eye height, plus old codes unchanged.
+                       #1137: the body follows too. main.js `applyBody` copies config.js `avatarBody(look)` into PLAYER (`eye`,
+                       `crouchEye`, `headroom` in today's adult proportions of the eye height; `radius` scaled within `AVATAR_BODY.radius`,
+                       *guess*); `stepUp`/jump stay the adult's so stairs and kerbs work. `Rest.scale` lowers a seated eye
+                       (`Rest.eyeAt`: sitEye shrinks with the body; lying keeps the head on the mattress) and remote-pose `restState`
+                       seats a chosen-height figure by its body scale. `rifleBoxPose` scales the three shared head boxes by the body scale
+                       and a child's head around `AVATAR_HEIGHT.pivot`, so hits, the body/head boundary, crouch and rest follow; no
+                       chosen height = unchanged. Tests: `node --test tools/avatarbodytest.mjs` (body values, head boxes at 120/165/195 cm,
+                       crouched/seated/lying) and `tools/avatarbodytest.cjs GAME` (real Player: eye/crouch, wall radius, the stair
+                       standing and crouched, the sofa, a door at handle height and the coffee jar on the worktop).
                        #1138: face sections (customizer.js `addFaceSections`, built from config.js `EYES` / `AVATAR_SHAPE`): eye-colour swatches
                        and 0–8 sliders (middle = the plain face) for eye size/opening, head width/length/jaw, nose size/width, ears and brow
                        thickness/height; the 2D preview follows them and stays sticky on desktop. The look code keeps its digits (nine, or

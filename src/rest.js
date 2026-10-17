@@ -43,7 +43,16 @@ export function chooseSpot(target, ray, catPos) {
 /** Resting state machine (one at a time). */
 export class Rest {
   constructor(camera) {
-    Object.assign(this, { camera, spot: null, target: null, t: 0, from: null, standing: null });
+    // scale (#1137): the standing eye height's share of the adult 1.62 m (main.js, the chosen avatar height)
+    Object.assign(this, { camera, spot: null, target: null, t: 0, from: null, standing: null, scale: 1 });
+  }
+
+  /** The camera's place on `spot` (#1137): a seated eye REST.sitEye over the seat shrinks with a smaller body; lying
+   * keeps the head on the mattress. */
+  eyeAt(spot) {
+    const p = spot.pos.clone();
+    if (spot.kind !== 'lie') p.y -= REST.sitEye * (1 - this.scale);
+    return p;
   }
 
   get active() { return this.spot !== null; }
@@ -72,7 +81,7 @@ export class Rest {
     if (!this.active || this.t >= 1) return;
     this.t = Math.min(1, this.t + dt / REST.move);
     const e = this.t * this.t * (3 - 2 * this.t), cam = this.camera;
-    cam.position.lerpVectors(this.from.pos, this.spot.pos, e);
+    cam.position.lerpVectors(this.from.pos, this.eyeAt(this.spot), e);
     let dy = this.to.yaw - this.from.yaw;
     dy = Math.atan2(Math.sin(dy), Math.cos(dy)); // the short way round
     cam.rotation.y = this.from.yaw + dy * e;

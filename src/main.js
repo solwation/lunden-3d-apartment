@@ -14,7 +14,7 @@ import { loadBeerShelf } from './beershelfdata.js';
 import { BeerShelf } from './beershelf.js';
 import { initHudIcons, fitChoiceLabels, setIcon, setPressed, setWeatherIcon, formatTemp } from './hudicons.js';
 import * as THREE from 'three';
-import { UNIT_TOP, SITE, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS, GARAGE, OLOF, CORE_A, CORE_B, CORE_C, avatarLook, avatarEyeHeight } from './config.js';
+import { UNIT_TOP, SITE, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS, GARAGE, OLOF, CORE_A, CORE_B, CORE_C, avatarLook, avatarBody } from './config.js';
 import { setupAvatarCustomizer, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen } from './customizer.js';
 import { MieleHeld, HeartFireworks } from './miele.js';
 const DRAWING_COLORS = DRAWING.colors;
@@ -1362,7 +1362,7 @@ function sitOrLie(target) {
 function sitAt(target, spot, stand, now = false) {
   player.crouch = false;
   rest.begin(target, spot, stand);
-  if (now) { rest.t = 1; camera.position.copy(spot.pos); rest.clampLook(camera); }
+  if (now) { rest.t = 1; camera.position.copy(rest.eyeAt(spot)); rest.clampLook(camera); }
   if (target.name === 'loungesoffan' && now && beer.out) beer.serve(spot);
   if (spot.pc) usePc(spot);
   if (spot.tv) { // sitting up in bed puts the room's TV on (#213), and getting up puts it off again
@@ -2541,9 +2541,11 @@ terminalInput.addEventListener('input', () => {
   chat.keyed();
 }); // "skriver…" (#676): only in chat mode, only the flag
 window.__chat = chat;
-// #1136: the standing eye height follows the chosen avatar height (settleEye eases the camera there)
-const setMyLook = (lk) => { ghosts.setMyLook(lk); PLAYER.eye = avatarEyeHeight(lk); };
-PLAYER.eye = avatarEyeHeight(ghosts.myLook);
+// #1136/#1137: the standing eye height and the body (crouch eye, headroom, radius) follow the chosen avatar height
+// (settleEye eases the camera there; Rest lowers a seated eye by the same share)
+const applyBody = (lk) => { const { scale, ...body } = avatarBody(lk); Object.assign(PLAYER, body); rest.scale = scale; };
+const setMyLook = (lk) => { ghosts.setMyLook(lk); applyBody(lk); };
+applyBody(ghosts.myLook);
 setupAvatarCustomizer({
   getLook: () => ghosts.myLook,
   getDefaultLook: () => avatarLook(leaderboard.name || 'anon'),
