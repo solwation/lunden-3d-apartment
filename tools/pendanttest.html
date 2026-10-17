@@ -14,7 +14,8 @@ try {
  const pend=R.pieces.filter(p=>p.pendant);
  check(pend.length===C.LIGHTING.pendants.length&&pend.length>=3,`every pendant is a movable piece (${pend.map(p=>p.item.style).join(', ')})`);
  check(new Set(R.pieces.map(p=>p.id)).size===R.pieces.length,'ids stay unique');
- const aim=(level,eye,pt)=>{A.player.spawn(eye[0],eye[1],0);A.player.pos.y=LV[level].floor;A.step(1/60);const e=A.camera.position;A.camera.rotation.set(Math.atan2(pt.y-e.y,Math.hypot(pt.x-e.x,pt.z-e.z)),Math.atan2(-(pt.x-e.x),-(pt.z-e.z)),0,'YXZ');A.camera.updateMatrixWorld();R.update();};
+ // spawn() sets the eye from the ground it finds (level 0); lift it with the feet so step()'s smoothed eye starts on that floor (#1114)
+ const aim=(level,eye,pt)=>{A.player.spawn(eye[0],eye[1],0);A.player.pos.y=LV[level].floor;A.player.eyeY=LV[level].floor+C.PLAYER.eye;A.player.vy=0;A.step(1/60);const e=A.camera.position;A.camera.rotation.set(Math.atan2(pt.y-e.y,Math.hypot(pt.x-e.x,pt.z-e.z)),Math.atan2(-(pt.x-e.x),-(pt.z-e.z)),0,'YXZ');A.camera.updateMatrixWorld();R.update();};
  const ceilAt=(l,x,z)=>{const s=C.SOFFITS.find(s=>s.level===l&&x>s.x0&&x<s.x1&&z>s.z0&&z<s.z1);return LV[l].floor+(s?s.height:LV[l].ceiling);};
  const lampsOf=p=>p.pendant.lamps,box=o=>{o.updateMatrixWorld(true);return new T.Box3().setFromObject(o);};
  const results={};
