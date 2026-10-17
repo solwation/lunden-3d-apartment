@@ -167,6 +167,31 @@ const bboxOf = (pts) => {
   return { x0: Math.min(...xs), x1: Math.max(...xs), z0: Math.min(...zs), z1: Math.max(...zs) };
 };
 
+/** The slab's opening round the stair (#1119): `hole` (the Övre plan stair outline) widened, on each side where one wall
+ * bounds the whole edge on every level, out to that wall's face (at most `reach` m away; the nearest face over the levels).
+ * The outline is drawn ~6 cm inside the stairwell's walls, so a slab cut to it left a lip round the well at the slab
+ * level: a ledge between the downstairs and upstairs wall faces that caught the sun and broke the light on the wall.
+ * Only the slab, the floor / ceiling plates round the hole and their AO use it; the stair, railing and collisions keep `hole`. */
+function slabOpening(hole, floors, reach = 0.1, eps = 0.005) {
+  const levels = floors.map((f) => f.walls.map((w) => bboxOf(w.outer)));
+  const o = { ...hole };
+  const side = (pick, near) => { // pick(b) → the face of b towards the hole, or null; near: the face nearest the hole
+    const faces = levels.map((bs) => bs.map(pick).filter((v) => v !== null));
+    if (faces.some((f) => !f.length)) return null;
+    return near(faces.map((f) => near(f)));
+  };
+  const spansZ = (b) => b.z0 <= hole.z0 + eps && b.z1 >= hole.z1 - eps, spansX = (b) => b.x0 <= hole.x0 + eps && b.x1 >= hole.x1 - eps;
+  const x1 = side((b) => (spansZ(b) && b.x0 >= hole.x1 - eps && b.x0 <= hole.x1 + reach ? b.x0 : null), (v) => Math.min(...v));
+  const x0 = side((b) => (spansZ(b) && b.x1 <= hole.x0 + eps && b.x1 >= hole.x0 - reach ? b.x1 : null), (v) => Math.max(...v));
+  const z1 = side((b) => (spansX(b) && b.z0 >= hole.z1 - eps && b.z0 <= hole.z1 + reach ? b.z0 : null), (v) => Math.min(...v));
+  const z0 = side((b) => (spansX(b) && b.z1 <= hole.z0 + eps && b.z1 >= hole.z0 - reach ? b.z1 : null), (v) => Math.max(...v));
+  if (x0 !== null) o.x0 = Math.min(o.x0, x0);
+  if (x1 !== null) o.x1 = Math.max(o.x1, x1);
+  if (z0 !== null) o.z0 = Math.min(o.z0, z0);
+  if (z1 !== null) o.z1 = Math.max(o.z1, z1);
+  return o;
+}
+
 /** A rectangle inside a wall's plan polygon, as long as the wall (#695, the DetailCuller's occluders): the bounding box
  * when the polygon is one (the plan's walls often carry an extra point on an edge), else the widest strip across its
  * thickness that the polygon covers along its whole length (sampled every cm; notches and recesses make it thinner). */
@@ -529,6 +554,7 @@ function ourCeilingThings(li) {
 function buildLevel(floor, li, group, how = OURS) {
   const M = how.mats, std = how.standard; // (a visited flat: the standard finish, none of our choices, #574)
   const L = (how.levels ?? LEVELS)[li], hole = how.hole ?? STAIR.hole; // (a visited flat's own storeys and opening, #573)
+  const opening = how.opening ?? hole; // the slab's opening out to the stairwell's wall faces (#1119)
   const y0 = L.floor;
   const yC = y0 + L.ceiling;
   const W = floor.size.x, D = floor.size.z;
@@ -793,15 +819,15 @@ function buildLevel(floor, li, group, how = OURS) {
   }
 
   // Floor of this level (upper level has the stair opening)
-  group.add(...plateAround(0, W, 0, D, li === 1 ? hole : null, y0 + 0.002, M.floor));
+  group.add(...plateAround(0, W, 0, D, li === 1 ? opening : null, y0 + 0.002, M.floor));
   // Ceiling: underside of the slab / roof
-  group.add(...plateAround(0, W, 0, D, li === 0 ? hole : null, yC - 0.002, M.ceiling, true));
+  group.add(...plateAround(0, W, 0, D, li === 0 ? opening : null, yC - 0.002, M.ceiling, true));
 
   // contact shadows along walls and cabinets (floor) and in the ceiling corners
   group.add(buildAO({ x: W, z: D }, y0, yC, [...wallBoxes, ...floor.windows, ...floor.cabinets], [...wallBoxes, ...floor.windows, ...lintels],
-    { floorHole: li === 1 ? hole : null, ceilHole: li === 0 ? hole : null }));
+    { floorHole: li === 1 ? opening : null, ceilHole: li === 0 ? opening : null }));
   group.add(buildWallAO({ x: W, z: D }, y0, yC, aoPieces, aoBlockers,
-    { floorHole: li === 1 ? hole : null, ceilHole: li === 0 ? hole : null })); // and on the walls: floor/ceiling bands, inner corners (#1074)
+    { floorHole: li === 1 ? opening : null, ceilHole: li === 0 ? opening : null })); // and on the walls: floor/ceiling bands, inner corners (#1074)
 
   for (const s of (how.soffits ?? SOFFITS).filter((s) => s.level === li)) {
     group.add(box(s.x0, s.x1, s.z0, s.z1, y0 + s.height, yC - 0.004, M.ceiling, { shadow: false }));
@@ -813,10 +839,10 @@ function buildLevel(floor, li, group, how = OURS) {
 /** The slab between the levels (façade band + stair opening), the roof zone, the stair, its railing and handrails into
  * `scene` (plan coordinates); the railing's collision goes into Övre plan's segments. Shared by our flat and the visited
  * ones (#574: the same sheet, so the same stair). */
-function buildStructure(scene, lower, l1, W, D, M) {
+function buildStructure(scene, lower, l1, W, D, M, opening) {
   // Slab between the levels (façade band + stair opening), and roof
   const slabY0 = LEVELS[0].floor + LEVELS[0].ceiling, slabY1 = LEVELS[1].floor;
-  const h = STAIR.hole;
+  const h = opening; // STAIR.hole out to the stairwell's wall faces (#1119, slabOpening)
   for (const [x0, x1, z0, z1] of [[0, W, 0, h.z0], [0, W, h.z1, D], [0, h.x0, h.z0, h.z1], [h.x1, W, h.z0, h.z1]]) {
     scene.add(box(x0, x1, z0, z1, slabY0, slabY1, M.wall));
   }
@@ -968,12 +994,13 @@ function buildVisitFlat(plan, U, ox) {
   const L = own ? P.levels.map((v, i) => ({ name: v.name, floor: storeyFloor(3 + i), ceiling: v.rh, top: storeyFloor(4 + i) }))
     : LEVELS.map((v) => ({ name: v.name, floor: v.floor, ceiling: v.ceiling, top: v.top }));
   const how = { standard: true, mats: SM, plate: U.plate, ox, oz,
-    ...(own ? { levels: L, hole: P.hole, windows: P.windows, soffits: P.soffits, extDoorHead: P.extDoorHead, kitchen: P.kitchen } : {}) };
+    ...(own ? { levels: L, hole: P.hole, windows: P.windows, soffits: P.soffits, extDoorHead: P.extDoorHead, kitchen: P.kitchen }
+      : { opening: slabOpening(STAIR.hole, plan.floors) }) }; // (L1201's own hole already meets its walls, #1119)
   const keep = wardrobeSpecs.length;
   const l0 = buildLevel(lower, 0, group, how), l1 = buildLevel(upper, 1, group, how);
   wardrobeSpecs.length = keep; // empty wardrobes: nobody lives here
   const map = own ? stairMap(P, L) : null;
-  if (own) buildOwnStructure(group, lower, upper, l1, P, L, map); else buildStructure(group, lower, l1, W, D, SM);
+  if (own) buildOwnStructure(group, lower, upper, l1, P, L, map); else buildStructure(group, lower, l1, W, D, SM, how.opening);
   const doors = [...l0.doors, ...l1.doors], lids = [...l0.lids, ...l1.lids, ...l0.appliances, ...l1.appliances];
   const moving = [...doors, ...lids].map((d) => d.object);
   const edges = architectureEdges(group, { moving, floor: L[1].floor });
@@ -1013,10 +1040,11 @@ export function buildWorld(plan) {
   });
   const W = lower.size.x, D = lower.size.z;
 
+  OURS.opening = slabOpening(STAIR.hole, plan.floors); // the slab's opening out to the stairwell's walls (#1119)
   const l0 = buildLevel(lower, 0, scene);
   const l1 = buildLevel(upper, 1, scene);
 
-  buildStructure(scene, lower, l1, W, D, M); // the slab, the roof zone, the stair and its railing
+  buildStructure(scene, lower, l1, W, D, M, OURS.opening); // the slab, the roof zone, the stair and its railing
   // the other flats you can walk into (#574), each at its own slot in the row
   const slots = husLLayout(W).units;
   const units = VISIT_UNITS.map((U) => buildVisitFlat(plan, U, slots.find((u) => u.lower === U.slot || u.upper === U.slot).ox));
