@@ -2084,7 +2084,8 @@ function updateFocus() {
   }
   if (seated && !focused && !holding) actionBtn.textContent = player.riding ? 'Kliv av cykeln' : 'Res dig';
   if (seated && !touch.enabled) promptEl.textContent = focused && !focused.blocked ? `${promptEl.textContent} · Mellanslag – res dig` : focused?.blocked ? promptEl.textContent : 'Tryck E för att resa dig';
-  standBtn.hidden = !touch.enabled || !seated || (!focused && !holding && !player.riding);
+  const bicycleFocused = focused?.kind === 'bicycle';
+  standBtn.hidden = !touch.enabled || !seated || ((!focused || bicycleFocused) && !holding);
   if (reading && touch.enabled) actionBtn.textContent = 'Stäng';
   promptEl.hidden = (!focused && !seated && !holding) || touch.enabled || reading || (!!choices.rows && !seated);
   updateBicycleControls();
