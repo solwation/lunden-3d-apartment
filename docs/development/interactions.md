@@ -295,6 +295,10 @@ src/rearrange.js       furniture cheat (#465): § / Enter (#596; not from a focu
                        vanity, closet and bathroom LED/cabinet mirrors through their lamp/door options; each house's lift car
                        (liftpanel.js pick box, Hus A/B/C/L); and the visited flats' bathroom mirrors (standardinterior.js
                        `mirrorPick`, L1004/L1201; main.js `use` skips visitUse for them). The key cabinet has no glass.
+                       #1141: the editor dialog (#avatar-customizer, CSS in index.html) is full-screen inside the safe area when
+                       `max-height: 500px` or `max-width: 600px`: one-line header with a 44 px ✕, 44 px footer buttons, only
+                       .customizer-controls scrolls; landscape puts the whole preview beside a grid of choice sections, portrait a
+                       smaller preview above them. New controls (#1140) are added as further .customizer-section blocks. Desktop is unchanged.
                        § / Meny opens clickable rearrangement controls with a free cursor; Esc exits the mode and cancels the preview,
                        including native pointer-unlock events. Touch keeps its input mode when leaving the menu.
                        The compact edit panel shows selection/placement steps, selected-only Rotate/Cancel, Menu and Done.
