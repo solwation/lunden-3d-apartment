@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { GROUND_AO, SEASON } from './config.js';
+import { GROUND_AO, SEASON, SHADOW_BOX } from './config.js';
 import { registerSeasonal } from './seasons.js';
 
 // Distant ground shadows (#1079). The sun's shadow map only covers ±14 m round its target (main.js), so trees, houses and
@@ -10,6 +10,18 @@ import { registerSeasonal } from './seasons.js';
 // matrix and fades the baked darkening out where the shadow map already covers it, so nothing is darkened twice. The
 // shadow box follows a visited flat (main.js) and turns with the sun: `sun.shadow.matrix` is updated with each shadow
 // render, so the fade always matches what the shadow map holds. Bare trees in winter keep `bare` of their share.
+
+// #1144: the real sun shadows fade out towards the shadow map's rim (SHADOW_BOX.rim, in the same texture-space edge
+// measure as `fade` below), so where the box's edge is in view the baked shadows take over softly instead of along a
+// ruled line. Patched into three's getShadow() (the directional light's; point shadows keep theirs) before any shader
+// compiles: this module is imported by main.js before the first render.
+{
+  const RET = 'return mix( 1.0, shadow, shadowIntensity );';
+  const chunk = THREE.ShaderChunk.shadowmap_pars_fragment, at = chunk.indexOf(RET), [r0, r1] = SHADOW_BOX.rim;
+  if (at >= 0) THREE.ShaderChunk.shadowmap_pars_fragment = chunk.slice(0, at) +
+    `vec2 rimD = abs( shadowCoord.xy - 0.5 ) * 2.0;\n\t\tshadow = mix( shadow, 1.0, smoothstep( ${r0.toFixed(3)}, ${r1.toFixed(3)}, max( rimD.x, rimD.y ) ) );\n\t\t` +
+    chunk.slice(at);
+}
 
 // until bound (or without a shadow map) a zero matrix puts every point on the map's rim: full baked shade everywhere
 const shadowMatrix = { value: new THREE.Matrix4().makeScale(0, 0, 0) };

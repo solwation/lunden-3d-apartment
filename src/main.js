@@ -7,7 +7,7 @@ import { PlantWind, windShadow } from './plantwind.js';
 import { runCheat, cheatList, isCommand } from './cheats.js';
 import { cleanHome } from './cheatclean.js';
 import { buildCheatNote } from './cheatnote.js';
-import { REPORTS, CHEAT_NOTE, LOW_MEMORY, QUALITY, STANDARD, STARTUP, KITCHEN_TOWEL_MATERIAL, LIGHTING } from './config.js';
+import { REPORTS, CHEAT_NOTE, LOW_MEMORY, QUALITY, STANDARD, SHADOW_BOX, STARTUP, KITCHEN_TOWEL_MATERIAL, LIGHTING } from './config.js';
 import { fetchStartupJSON } from './startuprecovery.js';
 import { lowMemory, reloadOnContextRestore, freeSceneGeometryCopies } from './lowmemory.js';
 import { loadBeerShelf } from './beershelfdata.js';
@@ -2624,8 +2624,19 @@ function step(dt) {
   { // the sun's shadow box (±14 m round its target) follows the visitor to a visited flat (#574): centred on it within
     // STANDARD.near m of its footprint, else on ours — without it the sun would shine through its roof and walls
     const p = player.pos, n = STANDARD.near, near = world.units.find((u) => p.x > u.box.x0 - n && p.x < u.box.x1 + n && p.z > u.box.z0 - n && p.z < u.box.z1 + n && p.y > u.bottom - n);
-    const fx = near ? near.centre.x : cx;
-    if (sun.target.position.x !== fx) { sun.target.position.x = fx; sun.target.updateMatrixWorld(); shadowState.hold = Math.max(shadowState.hold, 0.1); }
+    let fx = near ? near.centre.x : cx, fz = cz;
+    // #1144: outdoors away from our flat (not in a stairwell or under the courtyard; by a visited flat too, the box then
+    // still holds its rooms seen through the windows) it follows the visitor instead, a little ahead along the view and
+    // on a grid, so the box's rim does not cross the lawn in front of us
+    const B = SHADOW_BOX, W = world.size.x, D = world.size.z;
+    if (player.outdoors && !player.inCore && !player.below
+      && Math.max(-B.home - p.x, p.x - W - B.home, -B.home - p.z, p.z - D - B.home) > 0) {
+      camera.getWorldDirection(lookDir);
+      const h = Math.hypot(lookDir.x, lookDir.z) || 1;
+      fx = Math.round((p.x + lookDir.x / h * B.lead) / B.snap) * B.snap;
+      fz = Math.round((p.z + lookDir.z / h * B.lead) / B.snap) * B.snap;
+    }
+    if (sun.target.position.x !== fx || sun.target.position.z !== fz) { sun.target.position.x = fx; sun.target.position.z = fz; sun.target.updateMatrixWorld(); shadowState.hold = Math.max(shadowState.hold, 0.1); }
   }
   day.update(dt);
   wallClock.update(day.hour);

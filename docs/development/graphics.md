@@ -418,6 +418,15 @@ texture-space edge (`fade`), so nothing is darkened twice. Without a shadow map 
 baked shadows show everywhere. Fog fades them; in winter trees keep `bare` of their share. The multiply happens in linear
 space, so the strengths look weaker on screen than their numbers. All values are *guesses* in `GROUND_AO` (config.js).
 
+Shadow box outdoors (#1144): the box stayed on our flat (or a visited one) also out in the courtyard, so its rim ran as a
+straight line across the lawn between the patios and Hus A (midday: the box's southern edge at z ≈ 23; tree shadows on
+one side, none on the other). Outdoors further than `SHADOW_BOX.home` m from our footprint — not in a stairwell or under
+the courtyard — main.js now centres the box `lead` m ahead of the visitor along the view, snapped to a `snap` m grid
+(the shadow map is redrawn only on a grid step; by a visited flat too, the follow box still holds its rooms). Inside or
+right by our flat and inside a visited flat the old centring holds. groundao.js also patches three's `getShadow()` so
+every real sun shadow fades out between `SHADOW_BOX.rim` of the map's texture-space edge (where the baked ground shadows
+fade in), so a rim still in view is soft. Same single shadow light, map size and shadow pass; values are *guesses*.
+
 ## Furniture contact shadows (#1075)
 
 `src/contactshadow.js` gives every floor-standing loose piece a soft multiply-blended rounded rectangle over its

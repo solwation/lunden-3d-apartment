@@ -222,9 +222,12 @@ const load = (q = '') => new Promise((resolve) => {
     });
     check(!strays1.length, `L1201 empty of anything else: ${strays1.length} ${strays1.slice(0, 5).join(', ')}`);
     // back home: shadows centred on ours again, our labels as before
-    player.spawn(C.START.x, C.START.z, Math.PI); settle(5);
-    check(Math.abs(A.scene.children.find((o) => o.isDirectionalLight && o.castShadow).target.position.x - world.size.x / 2) < 1e-6, 'back at ours: the shadows on L1007 again');
+    // (out at the start spot the box follows the visitor, #1144: it is checked back on our flat once we are inside)
+    player.spawn(C.START.x, C.START.z, Math.PI); settle(12);
+    const sunT = A.scene.children.find((o) => o.isDirectionalLight && o.castShadow).target.position;
+    check(Math.hypot(sunT.x - C.START.x, sunT.z - C.START.z) < C.SHADOW_BOX.lead + C.SHADOW_BOX.snap, `out at the start: the shadows follow the visitor (${sunT.x.toFixed(1)}, ${sunT.z.toFixed(1)}; outdoors ${player.outdoors})`);
     player.spawn(1.3, 2.4, Math.PI); settle(10);
+    check(Math.abs(sunT.x - world.size.x / 2) < 1e-6 && Math.abs(sunT.z - world.size.z / 2) < 1e-6, 'back at ours: the shadows on L1007 again');
     check(/^Entréplan · Hall/.test(label()) && player.unit === null, `our own hall still "${label()}"`);
     f.remove();
     // a resumed place upstairs in it (Ladda om / an update) comes back there, everything shut again

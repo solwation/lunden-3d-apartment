@@ -5583,6 +5583,15 @@ export const FLOOR_DRAIN = { size: 0.2, grate: 0.15, bars: 8, h: 0.005, shower: 
 // `width` m of the band, `step` m between its vertices along a wall; `lift` m over the ground; `maxStep` m: triangles that
 // would bridge a height jump (a retaining wall, the box edge) are dropped; `fade`: the shadow map's texture-space edge
 // distance (0 = its centre, 1 = its rim) over which the baked shadows fade in, so nothing is darkened twice.
+// The sun's shadow box outdoors (#1144, main.js): the shadow map covers ±14 m round the sun's target, which stayed on our
+// flat, so in the courtyard a low evening sun drew the box's straight rim across the lawn (trees' shadows on one side,
+// none on the other). Further than `home` m from our footprint outdoors the target follows the visitor, `lead` m ahead
+// along the view and snapped to a `snap` m grid (a move redraws the shadow map, so only on a grid step). Every real sun
+// shadow fades out towards the map's rim between `rim` (shadow-texture edge measure: 0 centre, 1 rim) — where
+// GROUND_AO's baked shadows fade in — so a rim that is still in view is soft instead of a ruled line. All values are
+// *guesses* tuned by eye.
+export const SHADOW_BOX = { home: 4, lead: 5, snap: 2, rim: [0.84, 1.0] };
+
 export const GROUND_AO = {
   tree: 0.65, bare: 0.3, spread: 1.15, rings: 3, segs: 12,
   wall: 0.5, width: 1.0, step: 3,
