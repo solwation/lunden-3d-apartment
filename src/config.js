@@ -2582,7 +2582,7 @@ export const QUALITY = {
   pixelRatio: [0.6, 0.75, 0.9, 1],
   shadowSize: [1024, 1024, 2048, 2048],
   shadowInterval: [1.0, 0.75, 0.5, 0.4],
-  mirror: [0, 0, 256, 512], mirrorEvery: [1, 1, 2, 1], // mirror image size (0 = none) and drawn every n-th frame
+  mirror: [0, 256, 256, 512], mirrorEvery: [1, 3, 2, 1], // mirror image size (0 = none) and drawn every n-th frame; #1207: level 1 keeps a cheap image (256², every 3rd frame, no extra memory: the shared target is 256² already) so a device that stepped down once does not see empty mirrors; only the lowest level has none
   detail: [0.6, 0.75, 0.9, 1],
   particles: [0.35, 0.6, 0.85, 1],
 };

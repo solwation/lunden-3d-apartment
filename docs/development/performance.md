@@ -203,7 +203,7 @@ reading its per-level value from a `QUALITY` table; `state` is the line in the `
 |---|---|---|---|---|---|
 | `resolution` | 0.6× | 0.75× | 0.9× | 1× | of the capped device ratio (1.5, phones 1.0), never below 0.5; a step reallocates the drawing buffer once |
 | `shadows` | 1024², every 1 s | 1024², 0.75 s | 2048², 0.5 s | 2048², 0.4 s | phones capped at 1024² (#585); a size change reallocates the map once |
-| `mirrors` | off | off | 256², every 2nd frame | 512², every frame | the shared target is resized once on a change; never drawn in a frame that redraws the shadow map |
+| `mirrors` | off | 256², every 3rd frame (#1207) | 256², every 2nd frame | 512², every frame | the shared target is resized once on a change; never drawn in a frame that redraws the shadow map |
 | `detail` | ×0.6 | ×0.75 | ×0.9 | ×1 | DetailCuller's cut distances (#460's `setQuality`) |
 | `weather` | ×0.35 | ×0.6 | ×0.85 | ×1 | share of rain streaks / snowflakes / hail drawn |
 
