@@ -437,7 +437,6 @@ test('#1175 all current face fields plus body/scale fit existing Worker extensio
   assert.equal(decodeAvatarLook(state.av+state.ax,'peer-id').build,2);
 });
 
-<<<<<<< Updated upstream
 test('#1139: body build slim … heavy round-trips; old codes keep the seed\'s build', async () => {
   const C = await import('../src/config.js');
   const { AVATAR_BUILD: B, avatarBuildStep, avatarBuildWidth } = C;
@@ -476,7 +475,7 @@ test('#1139: body build slim … heavy round-trips; old codes keep the seed\'s b
   const state = { p: [0, 0, 0], r: 0 };
   const hit = (k, x) => rifleBoxHeadContact('x', { ...state, av: '240302101175', ax: `k${k}` }, [x, 1.64, -3], [0, 0, 1], 10);
   assert.ok(hit(4, 0.1) && hit(8, 0.115) && !hit(4, 0.115) && !hit(0, 0.1), 'heavy wider than slim at the head boxes\' edge');
-=======
+
 test('#1140: Slumpa gives a valid look (palettes, ranges, wire code valid); Återställ is the default look', async () => {
   const { randomAvatarLook } = await import('../src/customizer.js');
   const C = await import('../src/config.js');
@@ -497,5 +496,4 @@ test('#1140: Slumpa gives a valid look (palettes, ranges, wire code valid); Åte
   assert.ok(seen.size > 30, 'heights vary');
   assert.ok([...seen].some((h) => h < 150) && [...seen].some((h) => h > 170), 'children and tall adults');
   const b2 = { ...base }; randomAvatarLook(b2, rnd); assert.deepEqual(b2, base, 'does not mutate its input');
->>>>>>> Stashed changes
 });
