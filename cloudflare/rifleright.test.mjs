@@ -34,7 +34,7 @@ async function connect(env, name = '', origin = 'https://solwation.github.io') {
 const admin = (env, method, what = 'players', token = 'tok') => worker.fetch(new Request(`https://w/admin/${what}`, { method, headers: { Authorization: `Bearer ${token}` } }), env);
 function rightWire(id,state={p:[0,0,0],r:0}){
  const look=avatarLook(id),w=[.93,1,1.08][look.build],c=Math.cos(state.r),s=Math.sin(state.r),turn=([x,y,z])=>[c*x+s*z,y,-s*x+c*z];
- for(const distance of [3,2,4])for(let yy=.098;yy<=.1021;yy+=.0005)for(let zz=.038;zz<=.0421;zz+=.0005){
+ for(const distance of [3,2,2.5,3.5,4,1.5])for(let yy=.0975;yy<=.10251;yy+=.00025)for(let zz=.0375;zz<=.04251;zz+=.00025){
  const y=(H.headY+yy)*look.tall,o=turn([distance,y,-zz*w]).map((v,i)=>+(v+state.p[i]).toFixed(2)),p=turn([.09*w,y,-zz*w]).map((v,i)=>v+state.p[i]),raw=p.map((v,i)=>v-o[i]),d=raw.map(v=>+(v/Math.hypot(...raw)).toFixed(3)),u=d.map(v=>v/Math.hypot(...d)),entry=rifleSkullEntry(id,state,o,d);if(entry===null)continue;const hc=[1,...o.map((v,i)=>+(v+u[i]*entry).toFixed(3))],shot={t:'a',w:'rifle',o,d,hc,to:id};
  if(rifleHeadGreetingRightRegion(id,state,hc.slice(1),o,d)&&rifleHeadContact(id,state,shot,o,40,4,false,{allowFront:false,allowRear:false,allowGreetingRight:true}))return shot;
  }throw Error('no supported actual snapped profile ray for assigned right appearance');
