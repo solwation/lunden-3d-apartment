@@ -4957,6 +4957,43 @@ export const TOPS = [0x2f6db5, 0xb5372f, 0x3c8a4e, 0xe0a82e, 0x7a4fb0, 0xe07a9a,
 export const PANTS = [0x2c3140, 0x3a3c41, 0x4b5a78, 0x6d5a45, 0x23272e, 0x5b6068];
 export const SHOES = [0x2a2523, 0xe8e8e8, 0x40342b, 0x1f3a5c];
 
+// #1136: the avatar's chosen height (look.height, whole cm), three more digits after the nine of the look code (only when
+// chosen: a code without them keeps the seed's own `tall`, as before). Limits *guess*: a small child … a very tall adult.
+// The figure (src/avatar.js) is `base` cm at scale 1 (measured in the browser: skull/hair top 1.75–1.77 m standing), its
+// head bone pivots `pivot` m up, the head reaches `top` m above that and the eyes `eye` m (pivot + eye = PLAYER.eye).
+// Below `adult` cm the head grows relative to the body by (adult / height) ** `headPow` (*guess*, by eye: a child's
+// head is proportionally larger); the body scale is then picked so the whole figure is the chosen height.
+export const AVATAR_HEIGHT = { min: 100, max: 200, base: 175, pivot: 1.52, top: 0.23, eye: 0.1, adult: 160, headPow: 0.6 };
+const STANDARD_EYE = PLAYER.eye;
+
+/** The look's height in cm: the chosen one, else the seed's (base × tall). */
+export function avatarHeightCm(look) {
+  const h = look?.height;
+  if (Number.isInteger(h) && h >= AVATAR_HEIGHT.min && h <= AVATAR_HEIGHT.max) return h;
+  return Math.round(AVATAR_HEIGHT.base * (look?.tall ?? 1));
+}
+
+/** For a height in cm: `body` = the whole figure's scale, `head` = the head bone's extra scale, `eye` = the eye height (m). */
+export function avatarProportions(cm) {
+  const H = AVATAR_HEIGHT, m = cm / 100;
+  const head = cm < H.adult ? (H.adult / cm) ** H.headPow : 1;
+  const body = m / (H.pivot + H.top * head);
+  return { body, head, eye: body * (H.pivot + H.eye * head) };
+}
+
+/** The local camera's standing eye height for a look: PLAYER's own without a chosen height (old codes unchanged). */
+export function avatarEyeHeight(look) {
+  return Number.isInteger(look?.height) ? avatarProportions(avatarHeightCm(look)).eye : STANDARD_EYE;
+}
+
+/** A well-formed look code (#1136): 7 or 9 digits, or 9 + a height in cm within AVATAR_HEIGHT (the Worker uses it too). */
+export function avatarCodeValid(str) {
+  if (typeof str !== 'string' || !/^[0-4][0-9][0-5][0-3][0-7][0-3][0-1]([0-1][0-3](\d{3})?)?$/.test(str)) return false;
+  if (str.length < 12) return true;
+  const h = Number(str.slice(9));
+  return h >= AVATAR_HEIGHT.min && h <= AVATAR_HEIGHT.max;
+}
+
 export function encodeAvatarLook(look) {
   if (!look) return '';
   const s = Math.max(0, SKIN.indexOf(look.skin));
@@ -4968,12 +5005,14 @@ export function encodeAvatarLook(look) {
   const sl = Math.min(1, Math.max(0, Number(look.sleeves) || 0));
   const g = Math.min(1, Math.max(0, Number(look.gender ?? look.figure) || 0));
   const f = Math.min(3, Math.max(0, Number(look.facial ?? look.facialHair) || 0));
-  return `${s}${t}${p}${sh}${h}${st}${sl}${g}${f}`;
+  const ht = look.height;
+  const cm = Number.isInteger(ht) && ht >= AVATAR_HEIGHT.min && ht <= AVATAR_HEIGHT.max ? String(ht).padStart(3, '0') : '';
+  return `${s}${t}${p}${sh}${h}${st}${sl}${g}${f}${cm}`;
 }
 
 export function decodeAvatarLook(str, seed = 'anon') {
   const base = defaultAvatarLook(seed);
-  if (typeof str !== 'string' || !/^[0-4][0-9][0-5][0-3][0-7][0-3][0-1]([0-1][0-3])?$/.test(str)) return base;
+  if (!avatarCodeValid(str)) return base;
   const gender = str.length >= 9 ? Number(str[7]) : 0;
   const facial = str.length >= 9 ? Number(str[8]) : 0;
   const lk = {
@@ -4988,6 +5027,7 @@ export function decodeAvatarLook(str, seed = 'anon') {
     gender,
     facial,
   };
+  if (str.length === 12) { lk.height = Number(str.slice(9)); lk.tall = lk.height / AVATAR_HEIGHT.base; } // (tall: name tags etc.)
   Object.defineProperty(lk, 'figure', { get() { return this.gender; }, set(v) { this.gender = v; }, enumerable: true, configurable: true });
   Object.defineProperty(lk, 'facialHair', { get() { return this.facial; }, set(v) { this.facial = v; }, enumerable: true, configurable: true });
   return lk;

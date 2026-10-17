@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   SKIN, HAIR, TOPS, PANTS, SHOES,
-  avatarLook, encodeAvatarLook, decodeAvatarLook, RESET_KEEP
+  avatarLook, encodeAvatarLook, decodeAvatarLook, RESET_KEEP,
+  AVATAR_HEIGHT, PLAYER, avatarHeightCm, avatarProportions, avatarEyeHeight, avatarCodeValid
 } from '../src/config.js';
 import { clearLocalHome } from '../src/reset.js';
 
@@ -60,6 +61,43 @@ test('avatar customization: palettes and encoding roundtrip', () => {
   // Fallback on invalid code
   const fallback = decodeAvatarLook('invalid', 'player123');
   assert.deepEqual(fallback, avatarLook('player123'));
+});
+
+test('#1136 avatar height: backward-compatible code, proportions and eye height', () => {
+  // old codes decode exactly as before: no height, the seed's own tall, the standard eye height
+  for (const code of ['2413021', '241302113']) {
+    const lk = decodeAvatarLook(code, 'player123');
+    assert.equal(lk.height, undefined);
+    assert.equal(lk.tall, avatarLook('player123').tall);
+    assert.equal(encodeAvatarLook(lk), code.length === 7 ? code + '00' : code, 'no height digits without a chosen height');
+    assert.equal(avatarEyeHeight(lk), PLAYER.eye);
+    assert.equal(avatarHeightCm(lk), Math.round(AVATAR_HEIGHT.base * lk.tall));
+  }
+  // a chosen height adds three digits and round-trips
+  for (const cm of [AVATAR_HEIGHT.min, 120, 165, 195, AVATAR_HEIGHT.max]) {
+    const code = encodeAvatarLook({ ...decodeAvatarLook('241302113', 'p'), height: cm });
+    assert.equal(code, '241302113' + String(cm).padStart(3, '0'));
+    assert.ok(avatarCodeValid(code));
+    const lk = decodeAvatarLook(code, 'p');
+    assert.equal(lk.height, cm); assert.equal(lk.style, 2); assert.equal(lk.facial, 3);
+    assert.equal(avatarHeightCm(lk), cm);
+    const pr = avatarProportions(cm);
+    // the whole figure (head pivot + scaled head) is the chosen height; the eye a little below the top
+    assert.ok(Math.abs(pr.body * (AVATAR_HEIGHT.pivot + AVATAR_HEIGHT.top * pr.head) - cm / 100) < 1e-9);
+    assert.ok(pr.eye < cm / 100 && pr.eye > cm / 100 - 0.2);
+    assert.equal(avatarEyeHeight(lk), pr.eye);
+  }
+  // the standard figure: 175 cm = scale 1 with today's eye height; a child's head is relatively larger
+  assert.ok(Math.abs(avatarProportions(AVATAR_HEIGHT.base).body - 1) < 1e-9);
+  assert.ok(Math.abs(avatarProportions(AVATAR_HEIGHT.base).eye - PLAYER.eye) < 1e-9);
+  assert.ok(avatarProportions(120).head > 1.1);
+  assert.equal(avatarProportions(195).head, 1);
+  assert.ok(Math.abs(avatarProportions(120).eye - 1.1) < 0.05, 'a 120 cm child looks from about 1.1 m');
+  // out of range or malformed heights are rejected as a whole (as the Worker does)
+  for (const bad of ['241302113099', '241302113201', '24130211317', '2413021131750', '2413021175'])
+    assert.equal(avatarCodeValid(bad), false, bad);
+  assert.deepEqual(decodeAvatarLook('241302113201', 'p'), avatarLook('p'));
+  assert.equal(encodeAvatarLook({ ...avatarLook('p'), height: 250 }).length, 9, 'an out-of-range height is not encoded');
 });
 
 test('avatar customization: avatarLook seed vs look object independence', () => {

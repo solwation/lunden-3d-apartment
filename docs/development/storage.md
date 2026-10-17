@@ -362,6 +362,12 @@ The existing `lunden.stats` record gains `pvpRangePoints` (default0), containing
 
 ### Canonical avatar appearance (#892 preparation)
 
+Look code (#890/#1136, `encodeAvatarLook`/`decodeAvatarLook`/`avatarCodeValid` in config.js, Worker `cleanAvatar`): 7 or 9
+digits as before, or 9 + three digits of a chosen height in cm within `AVATAR_HEIGHT` (12). The height is written only when
+chosen, so old saved `lunden.avatar` values and codes stay byte-identical and decode to the seed's own `tall`. An
+out-of-range or malformed height rejects the whole code (client and Worker alike). Older cached clients that receive a
+12-digit code fall back to that player's seed look; deploy the Worker before the client.
+
 `config.js.avatarLook(seed)` is the single deterministic palette/style/sleeves/build/height
 implementation. `avatar.js` reexports it as the existing `look` API and uses it directly.
 The extraction preserves the original pick sequence, colours, physical scale and all

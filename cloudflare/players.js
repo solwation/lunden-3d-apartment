@@ -2,7 +2,7 @@ import { ballHeadContact } from '../src/ballflight.js';
 import { nerfHeadContact } from '../src/nerf.js';
 import { bowHeadContact } from '../src/bowflight.js';
 import { fallDamage } from '../src/falldamage.js';
-import { TOYS, SCORE, pvpHitPoints, PVP_RIFLE_HEAD as RH, rifleHeadContact, PVP_HEAD_BOXES as HB, rifleBoxHeadContact, straightBoxHeadContact } from '../src/config.js';
+import { TOYS, SCORE, pvpHitPoints, PVP_RIFLE_HEAD as RH, rifleHeadContact, PVP_HEAD_BOXES as HB, rifleBoxHeadContact, straightBoxHeadContact, avatarCodeValid } from '../src/config.js';
 
 // Other players as ghosts (#666): one Durable Object room for everybody (`idFromName('world')`), WebSockets with the
 // Hibernation API. A client sends its position / heading at most 5 times a second and only when it changed (a heartbeat
@@ -121,7 +121,7 @@ export function cleanGreet(text) {
 }
 
 export function cleanAvatar(v) {
-  return typeof v === 'string' && /^[0-4][0-9][0-5][0-3][0-7][0-3][0-1]([0-1][0-3])?$/.test(v) ? v : null;
+  return avatarCodeValid(v) ? v : null; // (#1136: 7, 9 or 12 digits, the last three a height in cm)
 }
 
 /** A checked, rounded state from a client's message, or null. */
