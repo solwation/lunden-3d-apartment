@@ -520,6 +520,17 @@
     #rearrange-help .primary { background: #4c6857; }
     #rearrange-help .keyboard-hint { display: block; margin-top: 8px; opacity: .7; font-size: 11px; }
     body.touch #rearrange-help .keyboard-hint { display: none; }
+    /* #1112: on touch the panel stays compact and ends above the stick hint's corner (as #chat-box, #1087): Vrid/Höj/Sänk
+       become icon buttons so the actions fit one row on a phone; the desktop layout is unchanged */
+    body.touch #rearrange-help { padding: 8px 10px; max-height: max(88px, calc(100dvh - 112px - var(--st) - max(150px, var(--stick-base) + 20px) - var(--sb) - 8px)); overflow-y: auto; overscroll-behavior: contain; }
+    body.touch #rearrange-help strong { margin-bottom: 2px; font-size: 14px; }
+    body.touch .rearrange-actions { gap: 4px; margin-top: 6px; }
+    body.touch #rearrange-help button { min-height: 38px; padding: 6px 9px; }
+    body.touch #rearrange-rotate, body.touch #rearrange-raise, body.touch #rearrange-lower { min-width: 42px; font-size: 0; }
+    body.touch #rearrange-rotate::before, body.touch #rearrange-raise::before, body.touch #rearrange-lower::before { font-size: 18px; line-height: 1; }
+    body.touch #rearrange-rotate::before { content: '\21BB'; }
+    body.touch #rearrange-raise::before { content: '\25B2'; }
+    body.touch #rearrange-lower::before { content: '\25BC'; }
     #terminal-message { white-space: pre-wrap; }
     #cheat-note { position: fixed; inset: 0; z-index: 20; background: #0008; display: grid; place-items: center; }
     #cheat-note[hidden] { display: none; }
@@ -1101,7 +1112,7 @@
   <div id="hud" hidden>
     <button id="terminal-btn" aria-label="Öppna konsolen">&gt;_</button>
     <div id="rearrange-help" hidden role="region" aria-label="Möblera om"><strong id="rearrange-step">1. Välj ett föremål</strong><span id="rearrange-status" aria-live="polite"></span>
-      <div class="rearrange-actions"><button id="rearrange-rotate" hidden>Vrid</button><button id="rearrange-raise" type="button" hidden>Höj</button><button id="rearrange-lower" type="button" hidden>Sänk</button><button id="rearrange-material-confirm" type="button" hidden>Bekräfta material</button>
+      <div class="rearrange-actions"><button id="rearrange-rotate" title="Vrid" hidden>Vrid</button><button id="rearrange-raise" type="button" title="Höj" hidden>Höj</button><button id="rearrange-lower" type="button" title="Sänk" hidden>Sänk</button><button id="rearrange-material-confirm" type="button" hidden>Bekräfta material</button>
         <button id="rearrange-cancel" hidden>Avbryt flytt</button><button id="rearrange-menu">Meny</button><button id="rearrange-finish" class="primary">Klart</button></div>
       <small class="keyboard-hint">E: välj / placera · R: vrid · hjul / PgUp / PgDn: taklampans höjd · X: avbryt · §: meny · Esc: klart</small>
     </div>
