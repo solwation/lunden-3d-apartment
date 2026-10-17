@@ -1617,7 +1617,7 @@ function use(thing) {
   else if (thing.kind === 'appliance') { thing.toggle(); if (thing.isOpen) bump('appliances', 1, idOf(thing)); } // oven, microwave (#82)
   else if (thing.kind === 'coffee') thing.toggle();
   else if (thing.kind === 'speaker') { if (!sonos.playing) sonos.play(); showSonos(true); } // music in all the speakers (#187)
-  else if (thing.kind === 'grill') { thing.toggle(); if (thing.on) bump('grill'); } // light / put out the grill (#204)
+  else if (thing.kind === 'grill' || thing.kind === 'kettle') { thing.toggle(); if (thing.on) bump('grill'); } // light / put out the courtyard's grill (#204) or the patio's kettle (#1121, #1194)
   else if (thing.kind === 'hood') { thing.toggle(); if (thing.on) bump('hood'); } // the cooker hood's fan (#194)
   else if (thing.kind === 'hob') { thing.toggle(); if (thing.on) bump('appliances', 1, 'hob'); } // the induction hob (#158)
   else if (thing.kind === 'cabinet') { thing.toggle(); if (thing.isOpen) bump('cabinets', 1, idOf(thing)); } // wall cabinets that open (#138)
@@ -1676,7 +1676,8 @@ function use(thing) {
     thing.toggle();
     if (thing.isOpen) bump('taps', 1, idOf(thing));
   }
-  else useDoor(thing);
+  else if (typeof thing.opening === 'function') useDoor(thing); // a real door: sound at its opening, the cat (#1194)
+  else thing.toggle?.(); // anything else with a plain toggle (e.g. the free-throw line) never reaches the door path (#1194)
 }
 actionBtn.addEventListener('click', () => { if (measure.active) return; if (reading) showNote(false); else if (focused?.kind === 'fusebox' && !power.on) return; /* held, not clicked (#604) */ else if (focused) use(focused); else if (heldItem()?.useLabel) heldItem().use(); else if (rest.active || player.riding) standUp(); });
 const standBtn = document.getElementById('stand-btn'); // touch, sitting with something in reach or in the hand: get up (#184)

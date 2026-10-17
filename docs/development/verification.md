@@ -238,6 +238,7 @@ tools/cuptest.html     headless test: an empty cup out without brewing, onto the
 tools/cupshadetest.html the closed cup cabinet door vs its neighbour, pixel by pixel at noon + two evenings; hand-built doors receive shadows (#602); notes, signs, hob, letter box, suit too (#607); coffee maker, toaster, drawers, smart devices, lamp speaker (#609)
 tools/grilltest.html   headless test: light the grill (flames, light, lid), F keeps it, put it out, it burns out by itself
 tools/patiogrilltest.cjs the patio's big kettle (#1121): placement clear of hedge/walk/parasol (lid open too), E label, lit, light follows a move, F, draw-call cost, day/evening shots
+tools/patiousetest.cjs  Använd (the touch action button) from (1.4, 15.5) on the patio kettle, the free-throw line, the nearest swing door and a parasol: no pageerror; only targets with `opening()` take main.js `useDoor` (#1194)
 tools/postertest.html  headless test: take the drawing (blank sheet stays), back on the desk, tape it up in the hall and on
                        the fridge door (swings with it), none on the kitchen window, reload → both back; look at one (panel, no walking,
                        ×/E close), Släng → ball lands and vanishes, out of storage; Ta ner → taped up elsewhere; lying in each lower bunk:
