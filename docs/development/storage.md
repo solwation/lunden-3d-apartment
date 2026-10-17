@@ -393,8 +393,8 @@ as a before control via `BASELINE_GHOSTS`. It checks constructor/setMyLook,
 newcomer/reconnect/name changes, exact vertical body/head alignment, explicit
 120/165/195cm, old save codes, rest/crouch and ordinary authoritative head/body
 2/1 damage. Its one rendered component scene is not a full World, physical-phone
-or FPS claim. The old reset assertion failing in avatarcustomizertest is tracked
-separately in #1174; the focused appearance/height cases remain required.
+or FPS claim. #1174 updates the existing avatarcustomizertest reset assertion: the saved look
+is retained verbatim, transient home keys reset and other origin keys stay intact.
 
 `config.js.avatarLook(seed)` is the single deterministic palette/style/sleeves/build/height
 implementation. `avatar.js` reexports it as the existing `look` API and uses it directly.

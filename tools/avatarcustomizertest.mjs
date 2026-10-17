@@ -292,12 +292,17 @@ test('avatar customization: customizer UI and callbacks', async () => {
   assert.equal(lastCloseKey, 'Escape');
 });
 
-test('avatar customization: clearLocalHome removes lunden.avatar without polluting RESET_KEEP', () => {
-  assert.ok(!RESET_KEEP.includes('lunden.avatar'), 'lunden.avatar must not be in RESET_KEEP');
+test('avatar customization: clearLocalHome preserves the chosen avatar and resets home keys', (t) => {
+  assert.ok(RESET_KEEP.includes('lunden.avatar'), 'the chosen avatar survives reset (#1148)');
+  const previousStorage = globalThis.localStorage;
+  t.after(() => { globalThis.localStorage = previousStorage; });
+  const savedAvatar = '241302113165c5e8';
 
   const storage = new Map();
-  storage.set('lunden.avatar', '0000000');
-  storage.set('lunden.keepMe', 'score'); // hypothetical keep key
+  storage.set('lunden.avatar', savedAvatar);
+  storage.set('lunden.resume', '{"position":[1,0,2]}');
+  storage.set('lunden.keepMe', 'transient'); // unknown home keys reset by default
+  storage.set('other-project.setting', 'keep on the shared origin');
   globalThis.localStorage = {
     getItem: (k) => storage.get(k) ?? null,
     setItem: (k, v) => storage.set(k, String(v)),
@@ -308,8 +313,11 @@ test('avatar customization: clearLocalHome removes lunden.avatar without polluti
   };
 
   const removed = clearLocalHome();
-  assert.ok(removed.includes('lunden.avatar'), 'lunden.avatar was removed during reset');
-  assert.equal(storage.has('lunden.avatar'), false, 'lunden.avatar removed from storage');
+  assert.deepEqual(removed.sort(), ['lunden.keepMe', 'lunden.resume'], 'ordinary and unknown home keys reset');
+  assert.equal(storage.get('lunden.avatar'), savedAvatar, 'appearance, chosen height and face fields preserved verbatim');
+  assert.equal(storage.has('lunden.resume'), false);
+  assert.equal(storage.has('lunden.keepMe'), false);
+  assert.equal(storage.get('other-project.setting'), 'keep on the shared origin', 'other projects are untouched');
 });
 
 test('#1138 face fields: extension encoding, old codes unchanged, unknown tags skipped', async () => {
