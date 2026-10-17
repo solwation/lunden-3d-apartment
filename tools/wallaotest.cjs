@@ -15,6 +15,8 @@ const kit = require('./testkit.cjs');
     const near = rc.near, far = rc.far, V = rc.ray.origin.constructor;
     const meshes = [], others = [];
     scene.traverse((o) => { if (o.name === 'wall-ao') meshes.push(o); else if (o.isMesh && o.visible) others.push(o); });
+    // #1198: a shower screen's frosted glass sits flush with a wall end; only real (opaque) wall materials count as solids
+    const glassy = (m) => !!m && (m.transparent || m.opacity < 1 || m.transmission > 0);
     const fix = (v) => v.toArray().map((q) => +q.toFixed(2));
     const sides = others.map((o) => [o.material, o.material?.side]), wallMats = new Set();
     const out = meshes.map((m) => {
@@ -30,7 +32,7 @@ const kit = require('./testkit.cjs');
         rc.ray.direction.copy(n).negate();
         const hits = rc.intersectObjects(others, false);
         if (!hits.length) bad.push(fix(rc.ray.origin));
-        else wallMats.add(hits[0].object.material);
+        else if (!glassy(hits[0].object.material)) wallMats.add(hits[0].object.material); // #1198: glass is fixture, not wall
       }
       // inside a solid: straight down from just in front of the triangle to just above the floor (aDist.x = y - floor),
       // more wall faces pointing down (a solid's underside seen from inside) than up (both sides hit for this check)
