@@ -385,7 +385,7 @@ test('#1173 wire-only seeded height preserves exact local proportions and saved 
   for (const cm of [120, 165, 195]) {
     const look = { ...avatarLook('explicit'), height: cm };
     const code = encodeAvatarLook(look);
-    assert.equal(encodeAvatarWireLook(look), code, 'chosen height code unchanged');
+    assert.equal(encodeAvatarWireLook(look), code + `d${look.build}`, 'saved chosen-height code unchanged; only wire build appended');
     assert.equal(decodeAvatarLook(code + 's0', 'peer-id').height, cm);
     assert.equal(decodeAvatarLook(code + 's0', 'peer-id').tall, cm / AVATAR_HEIGHT.base);
   }
@@ -394,4 +394,32 @@ test('#1173 wire-only seeded height preserves exact local proportions and saved 
     const seedTall = avatarLook('original-seed').tall;
     assert.equal(decodeAvatarLook(old+'s9','original-seed').tall,seedTall,'invalid scale ignored');
   }
+});
+
+
+test('#1175 wire-only build preserves own width and saved codes across receiver seeds', () => {
+  const own = avatarLook('renamed-height'), legacy = encodeAvatarLook(own);
+  assert.equal(own.build,1);assert.equal(decodeAvatarLook(legacy,'peer-id').build,2,'before: old saved encoding still derives receiver build');
+  for (const build of [0,1,2]) for (const height of [undefined,120,165,195]) {
+    const look={...own,build,...(height?{height}:{})}, saved=encodeAvatarLook(look), wire=encodeAvatarWireLook(look);
+    assert.equal(encodeAvatarLook(look),saved,'persistent encoding unchanged');
+    for (const seed of ['peer-id','new-peer','reconnected-id']) assert.equal(decodeAvatarLook(wire,seed).build,build);
+    const state={p:[0,0,0],r:0,...splitAvatarCode(wire)}, width=[.93,1,1.08][build];
+    // A side ray's entry must follow the logical middle box's exact canonical width.
+    const logicalTall=height?avatarLook('peer-id').tall:own.tall; // Existing chosen-cm collision scope remains #1137.
+    const hit=rifleBoxHeadContact('peer-id',state,[2,logicalTall*1.64,0],[-1,0,0],4);
+    assert.ok(hit);assert.ok(Math.abs(hit.point[0]-.105*width)<1e-10);
+  }
+  for (const tag of ['d3','d999']) assert.equal(decodeAvatarLook(legacy+tag,'peer-id').build,avatarLook('peer-id').build,'out-of-range build ignored');
+});
+
+test('#1175 all current face fields plus body/scale fit existing Worker extension bounds', async () => {
+  const C=await import('../src/config.js'), {cleanState}=await import('../cloudflare/players.js');
+  const look={...avatarLook('face-max'),eyes:C.EYES.at(-1),build:2};
+  for(const field of Object.keys(C.AVATAR_SHAPE.fields))look[field]=C.AVATAR_SHAPE.steps-1;
+  const wire=splitAvatarCode(encodeAvatarWireLook(look));
+  assert.ok(wire.ax.length<=C.AVATAR_LOOK_EXT_MAX);assert.ok([...wire.ax.matchAll(/[a-z]/g)].length<=16);
+  const state=cleanState(JSON.stringify({p:[0,0,0],r:0,...wire}));
+  assert.equal(state.ax,wire.ax,'maximal current extension is forwarded without being dropped');
+  assert.equal(decodeAvatarLook(state.av+state.ax,'peer-id').build,2);
 });

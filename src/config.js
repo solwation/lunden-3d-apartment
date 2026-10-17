@@ -5037,6 +5037,8 @@ function decodeLookExt(ext, lk) {
   for (const [, tag, digits] of ext.matchAll(/([a-z])([0-9]{1,3})/g)) {
     const v = Number(digits);
     if (tag === 'c') { if (v < EYES.length) lk.eyes = EYES[v]; continue; }
+    // #1175: the actual existing body build on the wire, independently of each receiver's player-id seed.
+    if (tag === 'd') { if (v <= 2) lk.build = v; continue; }
     // #1173: wire-only seeded scale; explicit chosen cm always take precedence.
     if (tag === 's') { if (!Number.isInteger(lk.height) && v < AVATAR_SEEDED_TALL.length) lk.tall = AVATAR_SEEDED_TALL[v]; continue; }
     const name = Object.keys(AVATAR_SHAPE.fields).find((k) => AVATAR_SHAPE.fields[k].tag === tag);
@@ -5104,11 +5106,13 @@ export function encodeAvatarLook(look) {
   const cm = Number.isInteger(ht) && ht >= AVATAR_HEIGHT.min && ht <= AVATAR_HEIGHT.max ? String(ht).padStart(3, '0') : '';
   return `${s}${t}${p}${sh}${h}${st}${sl}${g}${f}${cm}${encodeLookExt(look)}`;
 }
-/** Network appearance (#1173): transmit the actual seeded scale without migrating saved codes or
+/** Network appearance (#1173/#1175): transmit actual build and seeded scale without migrating saved codes or
  * converting it to whole-cm proportions. Older clients ignore the optional extension tag. */
 export function encodeAvatarWireLook(look) {
-  const code = encodeAvatarLook(look);
-  if (!code || Number.isInteger(look.height)) return code;
+  let code = encodeAvatarLook(look);
+  if (!code) return code;
+  if (Number.isInteger(look.build) && look.build >= 0 && look.build <= 2) code += `d${look.build}`;
+  if (Number.isInteger(look.height)) return code;
   const scale = AVATAR_SEEDED_TALL.indexOf(look.tall);
   return scale < 0 ? code : `${code}s${scale}`;
 }
@@ -5537,6 +5541,8 @@ function rifleBoxPose(seed, state) {
   const crouch = state.c === undefined || state.c === false ? 0 : state.c === true ? 1 : state.c;
   if (!Number.isFinite(crouch) || crouch < 0 || crouch > 1) return null;
   const look = avatarLook(seed), wire = decodeAvatarLook(typeof state.av === 'string' ? state.av + (state.ax ?? '') : null, seed);
+  // #1175: use the same existing build as the rendered avatar, including chosen-height looks.
+  look.build = wire.build;
   // #1173: follow the transmitted legacy vertical scale. Chosen-cm proportions remain #1137.
   if (!Number.isInteger(wire.height)) look.tall = wire.tall;
   const yaw = state.r + Math.PI, lean = state.pose === 2 ? Math.PI / 2 : state.pose === 1 ? .1 : PVP_HEAD_BOXES.crouchLean * crouch;

@@ -1498,3 +1498,16 @@ test('#1150 authoritative head contact follows seated and lying torso frames', a
   }
   a.ws.close();b.ws.close();await settle(env);
 });
+
+test('#1175 actual wire build is forwarded and controls ordinary authoritative head width', async () => {
+  const C=await import('../src/config.js'),env=setup(),a=await connect(env,'Shooter'),b=await connect(env,'Target');
+  for(const build of [0,2]) {
+    const wire=C.splitAvatarCode(C.encodeAvatarWireLook({...C.avatarLook('canonical-build'),build,tall:1}));
+    now+=1000;a.send({p:[.105,.04,3],r:0,h:'rifle'});b.send({p:[0,0,0],r:0,h:'rifle',...wire});await settle(env);
+    assert.equal(a.states().at(-1).ax,wire.ax);
+    const late=await connect(env,'Late');assert.equal(late.got[0].ps.find(p=>p.i===b.got[0].i).ax,wire.ax);late.ws.close();await settle(env);
+    now+=250;a.send({t:'a',w:'rifle',o:[.105,1.64,3],d:[0,0,-1],to:b.got[0].i,hc:[2,0,0,0]});await settle(env);
+    assert.equal(!!a.got.filter(m=>m.t==='hit').at(-1)?.head,build===2,`wire build ${build} determines bounded side ray`);
+  }
+  a.ws.close();b.ws.close();await settle(env);
+});

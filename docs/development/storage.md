@@ -382,15 +382,22 @@ their existing encoding and take precedence over an `s` tag. Invalid scale indic
 are ignored. Existing ax validation forwards the bounded tag, and older clients
 ignore it safely. New clients receive it in states and welcome/reconnect snapshots.
 
+#1175 additionally sends the existing `build` as wire-only `d0`–`d2`, including
+looks with a chosen height. It preserves the local mesh/proportions and saved
+codes; receivers stop deriving body width from their own unrelated player-id
+seed. `b` remains the face's nose-width tag. Unknown/out-of-range `d` values
+keep the legacy seed fallback. All current face fields plus `d`/`s` fit the
+existing 48-character/16-tag extension contract; no Worker bound is widened.
+
 Combat's rifle/straight, bow, Nerf, basketball, jetpack and body/cone proxy states
 carry av/ax to the shared head/neck/rest-frame helpers; the same helpers use the
-accepted state on the Worker. This follows the affected seeded vertical scale.
+accepted state on the Worker. This follows the transmitted existing build and affected seeded vertical scale.
 The pre-existing chosen-cm collision/movement/head-proportion scope remains in
 [#1137](https://github.com/solwation/lunden-3d-apartment/issues/1137).
 `tools/avatardefaultheighttest.cjs GAME WORKER OUT` uses native Ghosts/Avatar/Combat
 and two actual local PlayerRoom clients, with an exact pre-change ghosts source
 as a before control via `BASELINE_GHOSTS`. It checks constructor/setMyLook,
-newcomer/reconnect/name changes, exact vertical body/head alignment, explicit
+newcomer/reconnect/name changes, exact vertical body/head alignment and actual skinned horizontal width, explicit
 120/165/195cm, old save codes, rest/crouch and ordinary authoritative head/body
 2/1 damage. Its one rendered component scene is not a full World, physical-phone
 or FPS claim. #1174 updates the existing avatarcustomizertest reset assertion: the saved look
