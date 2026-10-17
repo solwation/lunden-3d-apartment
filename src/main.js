@@ -68,6 +68,7 @@ import { shownRows } from './actions.js';
 import { buildStores } from './stores.js';
 import { clearLocalHome, takeResetDone, takeResetHideMenu, RESET_HIDE_MENU } from './reset.js';
 import { Rest, chooseSpot } from './rest.js';
+import { restState } from './remote-pose.js';
 import { Saber } from './saber.js';
 import { buildToys } from './toys.js';
 import { Remote } from './remote.js';
@@ -2480,7 +2481,7 @@ const weaponIs = { saber: (h) => h === saber, nerf: (h) => toys.blasters.include
   rifle: (h) => !!h?.isRifle, ball: (h) => h === ball, bow: (h) => !!bow && h === bow, web: (h) => !h && suit.worn, jetpack: () => jetpack.worn };
 const weaponKey = () => { if (player.riding) return ''; const h = heldItem(); return COMBAT.weapons.find((k) => weaponIs[k]?.(h)) ?? ''; };
 const ghosts = new Ghosts({ scene, camera, url: cloud.url, name: () => leaderboard.name, active: () => overlay.hidden, weapon: weaponKey, mirrored: () => !rest.active,
-  state: () => ({ p: [player.pos.x, player.pos.y, player.pos.z], r: camera.rotation.y, c: player.crouched, sp: suit.worn, cat: heldCatState(miele, cat) }) });
+  state: () => ({ p: [player.pos.x, player.pos.y, player.pos.z], r: camera.rotation.y, c: player.crouched, sp: suit.worn, cat: heldCatState(miele, cat), ...restState(rest, ghosts.avatarCode, ghosts.me) }) });
 const combat = new Combat({ ghosts, camera, scene, weapon: weaponKey, feet: () => player.pos, jetpack, basket: ball, sfx, darts: toys.darts, sparkles: toys.sparkles, arrows, life, fruit, fish, chicken, fries, beer, beerCans,
   onHit: () => bump('pvpHits'), onHurt: () => penalize('pvpHurt'),
   onDie: () => { goToStart(() => respawnOutdoors(player)); badge('💀 Slut på liv – du lever igen', false); } }); // only the place changes (#665)

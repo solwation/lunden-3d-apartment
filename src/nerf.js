@@ -1,4 +1,4 @@
-import { TOYS, LEVELS, COMBAT, rifleBoxHeadContact, rifleHeadBaseY } from './config.js';
+import { TOYS, LEVELS, COMBAT, rifleBoxHeadContact, rifleHeadBaseY, restCombatFrame } from './config.js';
 
 /** The same analytic segment for a visible foam dart and its combat prediction (#714). Returns travel distance. */
 export function stepNerf(position, velocity, dt, remaining = Infinity, floor = -Infinity) {
@@ -76,7 +76,8 @@ export function nerfBodyContact(origin, direction, length, feet, ceiling = Infin
 /** Nearest head or existing body contact within one finite muzzle segment. */
 export function nerfPlayerContact(seed, state, segment, radius = 0) {
   const head=rifleBoxHeadContact(seed,state,segment.origin,segment.direction,segment.length,radius);
-  const body=nerfBodyContact(segment.origin,segment.direction,segment.length,state.p,rifleHeadBaseY(seed,state) + radius,radius);
+  const frame=restCombatFrame(seed,state,segment.origin,segment.direction);
+  const body=nerfBodyContact(frame.origin,frame.direction,segment.length,frame.feet,frame.ceiling + radius,radius);
   if (head && (body===null || head.distance<body)) return {distance:head.distance,point:head.point,head:true};
   return body===null?null:{distance:body,head:false};
 }

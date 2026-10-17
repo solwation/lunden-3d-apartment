@@ -3200,6 +3200,8 @@ export const HOME_DRAWINGS = [
 // turn your head (yaw ± from the way the seat faces) and the pitch range, and the move time.
 export const REST = {
   sitEye: 0.72, lieEye: 0.22, move: 0.5,
+  // #1150: visual rest anchors, guesses based on the shared Olof skeleton (metres before avatar scaling).
+  avatarSeat: 0.45, avatarLieHip: 0.9, avatarLieClearance: 0.1,
   sit: { yaw: 1.7, pitch: [-1.1, 0.8] },
   lie: { yaw: 1.3, pitch: [0.15, 1.45], startPitch: 1.45 }, // lying on your back, looking at the ceiling
   reach: { sit: 1.7, lie: 0.8 }, // how far from the eye you can reach things while sitting (leaning forward) / lying (#184, #472)
@@ -5516,9 +5518,43 @@ function rifleBoxPose(seed, state) {
   if (!state || !vector(state.p) || !Number.isFinite(state.r) || Math.abs(state.r) > 100) return null;
   const crouch = state.c === undefined || state.c === false ? 0 : state.c === true ? 1 : state.c;
   if (!Number.isFinite(crouch) || crouch < 0 || crouch > 1) return null;
-  const look = avatarLook(seed), yaw = state.r + Math.PI, lean = PVP_HEAD_BOXES.crouchLean * crouch;
+  const look = avatarLook(seed), yaw = state.r + Math.PI, lean = state.pose === 2 ? Math.PI / 2 : state.pose === 1 ? .1 : PVP_HEAD_BOXES.crouchLean * crouch;
   return { width: [.93, 1, 1.08][look.build], tall: look.tall, yawCos: Math.cos(yaw), yawSin: Math.sin(yaw),
-    leanCos: Math.cos(lean), leanSin: Math.sin(lean), crouch };
+    leanCos: Math.cos(lean), leanSin: Math.sin(lean), crouch,
+    hipY: state.pose === 2 ? REST.avatarLieHip : state.pose === 1 ? REST.avatarSeat + .075 : PVP_HEAD_BOXES.hipY - PVP_HEAD_BOXES.hipDrop * crouch,
+    hipZ: state.pose === 1 ? .07 : PVP_HEAD_BOXES.hipForward * crouch };
+}
+
+/** #1150: rigid rest frame for the existing generous capsule; no mesh/anatomical classification. */
+export function restCombatFrame(seed, state, origin, direction) {
+  const pose = rifleBoxPose(seed, state);
+  if (!pose || !state.pose) return { origin, direction, feet: state.p, ceiling: rifleHeadBaseY(seed, state) };
+  const inverse = (v, point) => {
+    const x = pose.yawCos * v[0] - pose.yawSin * v[2];
+    const y = v[1] - (point ? pose.hipY * pose.tall : 0);
+    const z = pose.yawSin * v[0] + pose.yawCos * v[2] - (point ? pose.hipZ * pose.width : 0);
+    return [x, pose.leanCos * y - pose.leanSin * z + (point ? PVP_HEAD_BOXES.hipY * pose.tall : 0), pose.leanSin * y + pose.leanCos * z];
+  };
+  return { origin: inverse(origin.map((v,i)=>v-state.p[i]), true), direction: inverse(direction, false), feet: [0,0,0], ceiling: PVP_HEAD_BOXES.boxes[0].low * pose.tall };
+}
+
+/** Existing body capsule endpoints in world space, rotated only for actual rest. */
+export function playerBodySegment(seed, state) {
+  if (!state.pose) return COMBAT.body.map(y => [state.p[0], state.p[1] + y, state.p[2]]);
+  const pose = rifleBoxPose(seed,state), H = PVP_HEAD_BOXES;
+  return COMBAT.body.map(y => {
+    const dy = y - H.hipY * pose.tall;
+    const ly = pose.hipY * pose.tall + pose.leanCos * dy;
+    const lz = pose.hipZ * pose.width - pose.leanSin * dy;
+    return [state.p[0] + pose.yawSin * lz, state.p[1] + ly, state.p[2] + pose.yawCos * lz];
+  });
+}
+
+/** Mesh body contacts are below the logical neck in the torso frame, including horizontal rest. */
+export function playerBodyContact(seed, state, point) {
+  if (!state.pose) return point[1] < rifleHeadBaseY(seed, state);
+  const frame = restCombatFrame(seed, state, point, [0,0,0]);
+  return frame.origin[1] < frame.ceiling;
 }
 
 /** Lowest world height of the logical head: body mesh contacts below this remain ordinary body hits. */
@@ -5526,7 +5562,7 @@ export function rifleHeadBaseY(seed, state) {
   const pose = rifleBoxPose(seed, state);
   if (!pose) return null;
   const H = PVP_HEAD_BOXES;
-  return state.p[1] + pose.tall * Math.min(...H.boxes.map(box => H.hipY - H.hipDrop * pose.crouch +
+  return state.p[1] + pose.tall * Math.min(...H.boxes.map(box => pose.hipY +
     pose.leanCos * (box.low - H.hipY) + Math.min(pose.leanSin * box.back, pose.leanSin * box.front)));
 }
 
@@ -5541,8 +5577,8 @@ export function rifleBoxHeadContact(seed, state, origin, direction, range, radiu
   // Invert heading, appearance scale and the simple crouch transform, retaining a world-distance ray parameter.
   const inverse = (v, point) => {
     const x = (pose.yawCos * v[0] - pose.yawSin * v[2]) / pose.width;
-    const y = v[1] / pose.tall - (point ? H.hipY - H.hipDrop * pose.crouch : 0);
-    const z = (pose.yawSin * v[0] + pose.yawCos * v[2]) / pose.width - (point ? H.hipForward * pose.crouch : 0);
+    const y = v[1] / pose.tall - (point ? pose.hipY : 0);
+    const z = (pose.yawSin * v[0] + pose.yawCos * v[2]) / pose.width - (point ? pose.hipZ : 0);
     return [x, pose.leanCos * y - pose.leanSin * z + (point ? H.hipY : 0), pose.leanSin * y + pose.leanCos * z];
   };
   const o = inverse(origin.map((x, i) => x - state.p[i]), true), d = inverse(unit, false);

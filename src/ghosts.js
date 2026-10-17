@@ -1,6 +1,7 @@
+import { applyRestPose } from './remote-pose.js';
 import * as THREE from 'three';
 import { FALL } from './config.js';
-import { GHOSTS as G, COMBAT, AVATAR, AVATAR_CROUCH, CHAT, encodeAvatarLook, decodeAvatarLook, splitAvatarCode } from './config.js';
+import { GHOSTS as G, COMBAT, AVATAR, AVATAR_CROUCH, CHAT, encodeAvatarLook, decodeAvatarLook, splitAvatarCode, playerBodySegment } from './config.js';
 import { Avatar, armTarget } from './avatar.js';
 import { totalScore } from './stats.js';
 import { acquireBadge, releaseBadge, badgeScore, badgeLives } from './ghostbadge.js';
@@ -134,7 +135,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
   }
 
   /** A state from the room at time t (ms). After a pause the last one is repeated just before it, so it walks off smoothly. */
-  push({ p, r, h = '', score = 0, l, c = false, sp = false, av, ax, cat }, t) {
+  push({ p, r, h = '', score = 0, l, c = false, sp = false, pose = 0, av, ax, cat }, t) {
     if (av && typeof ax === 'string') av += ax; // #1138: the face extension beside the digits
     if (av && av !== this.avatarCode) {
       this.avatarCode = av;
@@ -147,8 +148,8 @@ export class Ghost { // (exported for tools/ghostprops.html)
     this.avatar.setSuit(sp);
     this.refreshBadge();
     const last = this.snaps.at(-1);
-    if (last && t - last.t > 1000 / G.hz * 1.5) this.snaps.push({ t: t - 1000 / G.hz, p: last.p, r: last.r, c: last.c });
-    this.snaps.push({ t, p: new THREE.Vector3(...p), r, c: c === true ? 1 : 0 });
+    if (last && t - last.t > 1000 / G.hz * 1.5) this.snaps.push({ t: t - 1000 / G.hz, p: last.p, r: last.r, c: last.c, pose: last.pose });
+    this.snaps.push({ t, p: new THREE.Vector3(...p), r, c: c === true ? 1 : 0, pose: pose === 1 || pose === 2 ? pose : 0 });
     if (this.snaps.length > 8) this.snaps.splice(0, this.snaps.length - 8);
   }
 
@@ -179,7 +180,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
   wave() { this.waveT = G.wave; }
 
   /** Over its head (the speech bubble's anchor, greet.js). */
-  get head() { return this.root.position.clone().setY(this.root.position.y + 1.78 * this.avatar.look.tall); }
+  get head() { return this.pose ? this.avatar.bones.head.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0, 0.1, 0)) : this.root.position.clone().setY(this.root.position.y + 1.78 * this.avatar.look.tall); }
 
   /** A swing of what it holds (#667: the saber's cut, seen by the others). */
   swing() { this.swingT = SWING; }
@@ -206,6 +207,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     this.root.position.lerpVectors(a.p, b.p, k);
     this.root.rotation.y = lerpAngle(a.r, b.r, k);
     this.crouch = THREE.MathUtils.lerp(a.c, b.c, k);
+    this.pose = (k < 1 ? a : b).pose;
     const d = this.root.position.distanceTo(eye), sec = b === a ? 0 : (b.t - a.t) / 1000;
     this.root.visible = d < G.far;
     if (this.tag) this.tag.visible = d < G.tagFar;
@@ -219,8 +221,9 @@ export class Ghost { // (exported for tools/ghostprops.html)
     const dt = this.lastDraw ? Math.min(0.1, (t - this.lastDraw) / 1000) : 0;
     this.lastDraw = t;
     if (d > AVATAR.poseFar) return;
-    const gaze = this.root.rotation.y, sp = Math.hypot(vx, vz);
+    const gaze = this.root.rotation.y, sp = this.pose ? 0 : Math.hypot(vx, vz);
     this.speed += ((sp > 8 ? 0 : sp) - this.speed) * Math.min(1, dt * 10);
+    if (this.pose) { this.body = gaze; this.speed = 0; }
     if (!this.have) { this.body = gaze; this.have = true; }
     if (this.speed > AVATAR.walkSpeed) { // the body faces where it goes, unless that is backwards / sideways to the look
       const going = Math.atan2(-vx, -vz);
@@ -245,7 +248,21 @@ export class Ghost { // (exported for tools/ghostprops.html)
     if (this.heldCat.object) Object.assign(hands, this.heldCat.hands());
     Object.assign(hands, this.hands);
     this.avatar.update(dt, { speed: this.speed, turn, hands, crouch: this.crouch ?? 0 });
+    applyRestPose(this.avatar, this.pose);
     this.heldCat.update(this.avatar, this.root);
+    if (this.tag) {
+      if (this.pose) { this.tag.position.copy(this.root.worldToLocal(this.head)); this.tag.position.y += (G.tagY - 1.78) * this.avatar.look.tall; }
+      else this.tag.position.set(0, this.tagY, 0);
+    }
+    if (this.pick) {
+      if (this.pose) {
+        const ends = playerBodySegment(this.id, { p: this.feet.toArray(), r: gaze, pose: this.pose }).map(p => this.root.worldToLocal(new THREE.Vector3(...p)));
+        this.pick.position.copy(ends[0]).add(ends[1]).multiplyScalar(0.5);
+        const axis = ends[1].sub(ends[0]);
+        this.pick.scale.y = (axis.length() + 0.6) / 1.8;
+        this.pick.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), axis.normalize());
+      } else { this.pick.position.set(0, 0.9, 0); this.pick.scale.set(1, 1, 1); this.pick.quaternion.identity(); }
+    }
     if (this.prop && this.prop.name !== 'ghost-prop:jetpack') {
       this.avatar.object.updateMatrixWorld(true);
       this.root.worldToLocal(this.avatar.hand('R', tmpV));
@@ -398,13 +415,14 @@ export class Ghosts {
     const t = performance.now(), s = this.state(), w = this.weapon();
     s.h = COMBAT.weapons.includes(w) ? w : '';
     s.c = s.c === true;
+    s.pose = s.pose === 1 || s.pose === 2 ? s.pose : 0;
     s.sp = s.sp === true;
     s.catKey = JSON.stringify(s.cat ?? null);
     this.track(s, t);
     if (!this.on) return;
     s.score = badgeScore(this.score());
     const prev = this.prev;
-    if (!prev || Math.hypot(s.p[0] - prev.p[0], s.p[1] - prev.p[1], s.p[2] - prev.p[2]) > G.move || Math.abs(s.r - prev.r) > G.turn || s.h !== prev.h || s.c !== prev.c || s.sp !== prev.sp || s.catKey !== prev.catKey || this.sentAv !== this.avatarCode) { this.lastMove = t; this.prev = s; }
+    if (!prev || Math.hypot(s.p[0] - prev.p[0], s.p[1] - prev.p[1], s.p[2] - prev.p[2]) > G.move || Math.abs(s.r - prev.r) > G.turn || s.h !== prev.h || s.c !== prev.c || s.pose !== prev.pose || s.sp !== prev.sp || s.catKey !== prev.catKey || this.sentAv !== this.avatarCode) { this.lastMove = t; this.prev = s; }
     if (this.prev?.score !== s.score) this.prev = s; // score changes use the same 5 Hz slot; do not reset movement idle time
     const playing = this.active() && !document.hidden && t - this.lastMove < G.idleMs;
     if (!playing) { if (this.ws) this.disconnect(); }
@@ -413,7 +431,7 @@ export class Ghosts {
       const sent = this.sent;
       if (t - this.lastSent >= 1000 / G.hz && (!sent || sent !== this.prev || this.sentAv !== this.avatarCode)) {
         const p = this.prev ?? s;
-        this.ws.send(JSON.stringify({ p: p.p.map((v) => Math.round(v * 100) / 100), r: Math.round(p.r * 100) / 100, score: p.score, ...(p.h ? { h: p.h } : {}), ...(p.c ? { c: true } : {}), ...(p.sp ? { sp: true } : {}), ...(p.cat ? { cat: p.cat } : {}), ...(this.avatarCode ? avatarWire(this.avatarCode) : {}) }));
+        this.ws.send(JSON.stringify({ p: p.p.map((v) => Math.round(v * 100) / 100), r: Math.round(p.r * 100) / 100, score: p.score, ...(p.h ? { h: p.h } : {}), ...(p.c ? { c: true } : {}), ...(p.pose ? { pose: p.pose } : {}), ...(p.sp ? { sp: true } : {}), ...(p.cat ? { cat: p.cat } : {}), ...(this.avatarCode ? avatarWire(this.avatarCode) : {}) }));
         this.sent = p; this.sentAv = this.avatarCode; this.lastSent = this.lastBeat = t; this.messages++;
       }
     }
@@ -431,7 +449,7 @@ export class Ghosts {
       const k = Math.min(1, dt * 8);
       m.vx += ((far ? 0 : vx) - m.vx) * k; m.vz += ((far ? 0 : vz) - m.vz) * k;
     }
-    m.p.set(...s.p); m.r = s.r; m.h = s.h; m.c = s.c; m.sp = s.sp; m.cat = s.cat; m.t = t;
+    m.p.set(...s.p); m.r = s.r; m.h = s.h; m.c = s.c; m.pose = s.pose; m.sp = s.sp; m.cat = s.cat; m.t = t;
   }
 
   /** Our avatar for the mirrors: one per name (the look comes from it); hidden but for the mirror's pass. */
@@ -452,6 +470,7 @@ export class Ghosts {
     const g = this.selfGhost();
     g.setHeld(m.h);
     g.heldCat.set(m.cat, g.root);
+    g.pose = m.pose;
     g.avatar.setSuit(m.sp);
     g.root.position.copy(m.p);
     g.root.rotation.y = m.r;

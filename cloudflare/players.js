@@ -140,7 +140,7 @@ export function cleanState(text) {
   // #1147: bounded appearance indices only; invalid/missing cat clears the carried visual.
   const cat = Array.isArray(m.cat) && m.cat.length === 3 && Number.isInteger(m.cat[0]) && m.cat[0] >= 0 && m.cat[0] <= 7 && Number.isInteger(m.cat[1]) && m.cat[1] >= 0 && m.cat[1] < [6, 1, 1, 3, 3, 3, 1, 1][m.cat[0]] && typeof m.cat[2] === 'boolean' && !(m.cat[0] === 7 && m.cat[2]) ? { cat: m.cat } : {};
   // #878: c reports actual Player.crouched; anything except literal true is standing, including legacy clients.
-  return { ...cat, p: m.p.map(r2), r: r2(m.r), score, h: typeof m.h === 'string' && Object.hasOwn(COMBAT.weapons, m.h) ? m.h : '', ...(m.c === true ? { c: true } : {}), ...(m.sp === true ? { sp: true } : {}), ...(av ? { av } : {}), ...(ax ? { ax } : {}) };
+  return { ...cat, p: m.p.map(r2), r: r2(m.r), score, h: typeof m.h === 'string' && Object.hasOwn(COMBAT.weapons, m.h) ? m.h : '', ...(m.c === true ? { c: true } : {}), ...(m.pose === 1 || m.pose === 2 ? { pose: m.pose } : {}), ...(m.sp === true ? { sp: true } : {}), ...(av ? { av } : {}), ...(ax ? { ax } : {}) };
 }
 
 /** A shot from a client, or null: { t: 'a', w, o: [x, y, z] start, d: [dx, dy, dz] unit direction, s?: speed m/s, to?: id hit }

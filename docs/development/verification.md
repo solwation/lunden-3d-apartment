@@ -7054,3 +7054,16 @@ Desktop and low-memory campus modes both passed. Screenshots from100m south/west
 captured under OUT; desktop close and100m south images were opened for visual inspection. Two instanced clock draws,
 144 triangles; total campus71425/29766 triangles. This is camera-distance verification, not physical-phone FPS evidence.
 The original clock/campus tests also check the actual app's `day.hour` connection, retained building geometry and budgets.
+
+## Remote resting posture (#1150)
+
+`PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/restposetest.cjs GAME WORKER OUT --render`
+uses two real Ghosts/Avatar clients, Rest/restTarget and local PlayerRoom. It
+executes the verbatim main.js state callback, checks seat-height placement,
+horizontal lying, actual Combat rifle head/wall rejection, logical chest classification,
+combined held-cat anchors and restored standing,
+and captures the real bounded WebGL scene. It does not build World, exercise
+furniture focus/E dispatch, certify physical phones or measure frame rate.
+Run with `node --test cloudflare/players.test.mjs cloudflare/headboxes.test.mjs
+cloudflare/nerfhead.test.mjs cloudflare/bowhead.test.mjs`; protocol coverage includes
+resting observers, late joins and malformed/omitted pose returning to standing.

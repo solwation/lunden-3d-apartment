@@ -1171,3 +1171,20 @@ fresh owned local Worker. Run with `PLAYWRIGHT_MODULE`, `CHROME_PATH`,
 static server: `node tools/reportcapturetest.cjs http://localhost:8896 /tmp/report-capture`.
 Worker port 8897 must be free; the fixture owns it and normally cleans it up.
 The image is actual component evidence, not apartment or physical phone performance.
+
+## Remote resting posture (#1150)
+
+`remote-pose.js` derives the ordinary position and heading from the actual
+`Rest.spot` (seat/mattress height, fixed direction), rather than the old standing
+`Player.pos`. The virtual root accounts for avatar height. `pose:1` means sitting,
+`pose:2` lying; missing/invalid values restore standing. `PlayerRoom.cleanState`
+accepts only those two numeric enums, forwarding them through ordinary state,
+late-join and hibernation snapshots under the existing message/rate bounds.
+There are no extra client-controlled transforms or persistence keys.
+
+`Ghost` applies the shared Olof skeleton pose after `Avatar.update`; held models
+follow the resulting hands. Name/speech/greeting anchors and shared logical
+head/capsule frames follow the same rest pose. Standing/crouching retains its
+previous frame and ordinary damage/obstacle checks. The broad body capsule is
+still a generous gameplay approximation, not furniture or mesh anatomy.
+This character/gameplay change does not apply to the public viewer.

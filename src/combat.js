@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { fallDamage } from './falldamage.js';
 import { recordPlayerKill, awardPvpRange } from './stats.js';
 import { HitMarker } from './hitmarker.js';
-import { COMBAT as C, TOYS, BASKET, pvpHitPoints, PVP_HEAD_BOXES as HB, rifleBoxHeadContact, rifleHeadBaseY, straightBoxHeadContact } from './config.js';
+import { COMBAT as C, TOYS, BASKET, pvpHitPoints, PVP_HEAD_BOXES as HB, rifleBoxHeadContact, straightBoxHeadContact, playerBodyContact, playerBodySegment } from './config.js';
 import { nerfSegments, nerfPlayerContact } from './nerf.js';
 import { bowSegments, bowPlayerContact } from './bowflight.js';
 import { combatWorldHits, combatWorldPath, combatWorldPathBlocked, prepareCombatWorld } from './combatworld.js';
@@ -127,7 +127,7 @@ export class Combat {
     for (const segment of bowSegments(launch, range)) {
       let nearest = null;
       for (const foe of foes) {
-        const state = { p: foe.feet.toArray(), r: foe.root.rotation.y, c: foe.crouch ?? 0 };
+        const state = { p: foe.feet.toArray(), r: foe.root.rotation.y, c: foe.crouch ?? 0, pose: foe.pose };
         const hit = bowPlayerContact(foe.id, state, segment);
         if (hit && (!nearest || hit.distance<nearest.hit.distance)) nearest = { foe, hit };
       }
@@ -158,7 +158,7 @@ export class Combat {
       const p = new THREE.Vector3(...segment.origin), direction = new THREE.Vector3(...segment.direction), length = segment.length;
       let best = null;
       for (const foe of foes) {
-        const state = { p: foe.feet.toArray(), r: foe.root.rotation.y, c: foe.crouch ?? 0 };
+        const state = { p: foe.feet.toArray(), r: foe.root.rotation.y, c: foe.crouch ?? 0, pose: foe.pose };
         const hit = nerfPlayerContact(foe.id, state, segment);
         if (hit && (!best || hit.distance < best.along)) best = { foe, along: hit.distance,
           hc: hit.head ? [HB.version, ...hit.point] : null };
@@ -193,7 +193,7 @@ export class Combat {
       const origin=new THREE.Vector3(...segment.origin), direction=new THREE.Vector3(...segment.direction);
       let best=null;
       for(const foe of this.foes()) {
-        const hit=ballPlayerContact(foe.id,{p:foe.feet.toArray(),r:foe.root.rotation.y,c:foe.crouch??0},segment);
+        const hit=ballPlayerContact(foe.id,{p:foe.feet.toArray(),r:foe.root.rotation.y,c:foe.crouch??0,pose:foe.pose},segment);
         if(hit&&(!best||hit.distance<best.distance))best={...hit,target:foe};
       }
       const length=best?.distance??segment.length;
@@ -219,13 +219,12 @@ export class Combat {
     ray.set(o, direction); ray.far = range; ray.layers.mask = this.camera.layers.mask; ray.camera = this.camera;
     let best = null;
     for (const g of this.foes()) {
-      const state = { p: g.feet.toArray(), r: g.root.rotation.y, c: g.crouch ?? 0 };
+      const state = { p: g.feet.toArray(), r: g.root.rotation.y, c: g.crouch ?? 0, pose: g.pose };
       const head = rifleBoxHeadContact(g.id, state, o.toArray(), raw.toArray(), range);
-      const neck = rifleHeadBaseY(g.id, state);
       g.root.updateMatrixWorld(true);
       // The old full-height capsule encloses the head. Instead keep real body surfaces
       // below the logical neck; cosmetic hair/eyes cannot veto a box hit or become damage regions.
-      const body = ray.intersectObject(g.avatar.mesh, false).find(hit => hit.point.y < neck);
+      const body = ray.intersectObject(g.avatar.mesh, false).find(hit => playerBodyContact(g.id, state, hit.point.toArray()));
       const isHead = head && (!body || head.distance < body.distance);
       const along = isHead ? head.distance : body?.distance;
       if (along !== undefined && (!best || along < best.along)) {
@@ -245,8 +244,7 @@ export class Combat {
     // A saber is still a swing/cone: it cannot acquire a new target outside its old attack.
     if (key === 'saber' && contact.target !== target) return { ...contact, target, hc: null };
     if (contact.hc && target && target !== contact.target) {
-      const a = target.feet.clone().setY(target.feet.y + C.body[0]);
-      const b = target.feet.clone().setY(target.feet.y + C.body[1]);
+      const [a, b] = playerBodySegment(target.id, {p:target.feet.toArray(),r:target.root.rotation.y,pose:target.pose}).map(v=>new THREE.Vector3(...v));
       const [, along] = rayToSegment(contact.o, contact.d.clone().normalize(), this.rules.weapons[key].range, a, b);
       const headAlong = contact.o.distanceTo(new THREE.Vector3(...contact.hc.slice(1)));
       if (along < headAlong) return { ...contact, target, hc: null };
@@ -268,10 +266,11 @@ export class Combat {
     const d = dir.clone();
     let best = null;
     for (const g of this.foes()) {
-      const a = g.feet.clone().setY(g.feet.y + C.body[0]), b = g.feet.clone().setY(g.feet.y + C.body[1]);
+      const [a, b] = playerBodySegment(g.id, {p:g.feet.toArray(),r:g.root.rotation.y,pose:g.pose}).map(v=>new THREE.Vector3(...v));
       let along;
       if (key === 'saber') {
-        q.set(g.feet.x, THREE.MathUtils.clamp(eye.y, a.y, b.y), g.feet.z);
+        v.subVectors(b, a);
+        q.copy(a).addScaledVector(v, THREE.MathUtils.clamp(new THREE.Vector3().subVectors(eye,a).dot(v) / v.lengthSq(), 0, 1));
         along = eye.distanceTo(q);
         if (along > W.range || v.subVectors(q, eye).normalize().dot(d) < C.saberCone) continue;
       } else {
@@ -450,14 +449,14 @@ export class Combat {
           this.jetT = this.rules.weapons?.jetpack?.every ?? 1;
           const round = v => Math.round(v * 100) / 100;
           const shot = { t: 'a', w: 'jetpack', o: [me.x, me.y + 1, me.z].map(round), d: [0, -1, 0], to: g.id };
-          const state = { p: g.feet.toArray(), r: g.root.rotation.y, c: g.crouch ?? 0 };
+          const state = { p: g.feet.toArray(), r: g.root.rotation.y, c: g.crouch ?? 0, pose: g.pose };
           const head = straightBoxHeadContact(g.id, state, shot, this.rules.weapons.jetpack.range);
           if (head) {
             const origin = new THREE.Vector3(...shot.o), point = new THREE.Vector3(...head.point);
             ray.set(origin, new THREE.Vector3(0, -1, 0)); ray.far = head.distance;
             ray.layers.mask = this.camera.layers.mask; ray.camera = this.camera;
             g.root.updateMatrixWorld(true);
-            const body = ray.intersectObject(g.avatar.mesh, false).find(hit => hit.point.y < rifleHeadBaseY(g.id, state));
+            const body = ray.intersectObject(g.avatar.mesh, false).find(hit => playerBodyContact(g.id, state, hit.point.toArray()));
             if (!body && this.clear(origin, point.clone().add(new THREE.Vector3(0, -.3, 0)))) shot.hc = [HB.version, ...head.point];
           }
           if (!shot.hc && !this.jetBodyClear(new THREE.Vector3(...shot.o), g.feet)) continue;
