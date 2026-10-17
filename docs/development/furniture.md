@@ -72,6 +72,10 @@ src/xmastree.js        the Christmas tree (#571, XMAS_TREE): a FURNITURE builder
                        flat-shaded mesh), stand/skirt/trunk/presents (one matte mesh), baubles + bead garland (one shiny mesh), a gold
                        star + additive halo sprite, LED string = instanced bulb cores + additive point halos; a small-lamp spec
                        ('julgranen', not auto) with one pool anchor in front; `crownRadius(y)` for the overlap test
+src/newyear.js         New Year's Eve (#1199, part of #1170, NEW_YEAR): `newYearPhase(day)` ('count' the last 10 s before 00:00
+                       on 31/12, 'cheer' 60 s after), every TV switched on with a countdown via Screen.overlay (screens.js) and the
+                       ones it switched on off again; four merged champagne flutes (2 draw calls) on the coffee table until 04:00.
+                       Fireworks: #1200. Test: tools/newyeartest.cjs BASE OUT (frozen + running clock, screenshots, draw calls)
 src/christmas.js       the season layer (#571): `inChristmas(y, m, d)` (1 Dec – 6 Jan inclusive, over the new year) and
                        `ChristmasSeason` (main.js, every frame by the day cycle's date): shows/hides the tree, hides the pieces whose
                        current pose reaches into its crown (+ what stands on them, loose things on them) via `userData.seasonHidden`,

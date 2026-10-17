@@ -24,6 +24,7 @@ URL parameters (debugging / screenshots):
 - `&time=HH[.h]` — start at that hour (default: the browser's time), `&month=1–12`, `&day=1–31` (default: today), `&freeze` pauses the clock,
   `&clock` opens the wall clock's strip (its "Nu" / N returns to the real time, #1145; the day runs in real time),
   `&lights` turns every lamp on, ceiling lamps too, and keeps the small ones on (#234).
+- `&newyear` — start at 23:59:45 on 31 December: the TVs count down to midnight, flutes on the coffee table (#1199; `&freeze` holds it).
 - `&jetpack` — the jetpack on your back (outdoors, #359).
 - `&spidersuit` — the Spider-Man suit on (#597; climbing outdoors only).
 - `&weather=rain|storm|snow|hail|clear` — force the weather (#248, #249).

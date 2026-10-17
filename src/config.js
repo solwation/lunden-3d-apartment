@@ -5786,3 +5786,14 @@ export const VENTS = {
   offsets: [0.8, 0.6, 1.0, 0.45, 1.2, 0.35],
   wall: 0.25, cabinet: 0.12, lamp: [0.4, 0.25], hole: 0.3, soffit: 0.05,
 };
+
+// New Year's Eve (#1199, part of #1170, src/newyear.js): the last `count` game seconds before 00:00 on 31 December every
+// TV switches itself on and counts down (10 … 1), then shows "Gott nytt år!" for `cheer` s after midnight; the TVs it
+// switched on go off again afterwards. Champagne flutes stand on the ILVA coffee table (top 0.47 m, x 3.04…4.24,
+// z 10.26…10.86) from the countdown until `glassesUntil` o'clock on 1 January, on its east half clear of the fruit bowl
+// (x 3.33), the cups in the middle and the remote (3.98, 10.72). A flute (*guess*, a common 17–18 cl shape): foot Ø 7 cm,
+// stem, bowl to `h` 22 cm, rim Ø 5.6 cm, `fill` of the bowl. `?newyear` starts at `debugHour` on 31 December.
+export const NEW_YEAR = { count: 10, cheer: 60, glassesUntil: 4, debugHour: 23 + 59 / 60 + 45 / 3600,
+  h: 0.22, fill: 0.7,
+  glasses: [[3.86, 10.36], [3.99, 10.44], [4.12, 10.35], [4.15, 10.52]],
+  colors: { glass: 0xe8f0f2, champagne: 0xf1d27a, bg: '#08102a', digit: '#ffffff', gold: '#f3cf6a' } };

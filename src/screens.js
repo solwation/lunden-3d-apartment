@@ -185,6 +185,7 @@ export class Screen {
     this.snowCanvas = document.createElement('canvas');
     this.snowCanvas.width = 96; this.snowCanvas.height = 54;
     this.channel = 0; this.t = 0; this.snow = 0; this.rand = Math.random;
+    this.overlay = null; // (ctx, w, h) → Ambilight [h, s, l]: drawn instead of the programme while set (#1199)
   }
 
   get program() { return PROGRAMS[this.channel]; }
@@ -201,6 +202,12 @@ export class Screen {
   draw(dt) {
     this.t += dt;
     const { ctx, canvas: c } = this;
+    if (this.overlay) { // a picture drawn over the programme, e.g. the New Year countdown (#1199, newyear.js)
+      this.snow = 0;
+      const glow = this.overlay(ctx, c.width, c.height);
+      this.texture.needsUpdate = true;
+      return glow;
+    }
     if (this.snow > 0) {
       this.snow -= dt;
       const s = this.snowCanvas, sc = s.getContext('2d'), img = sc.createImageData(s.width, s.height);
