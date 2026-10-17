@@ -222,17 +222,25 @@ bindGroundAOShadow(sun.shadow.matrix); // the distant ground shadows fade out wh
 // The shadow map is only redrawn when it can have changed (#48): the sun moved > 0.2°, something
 // was just opened/closed (doors, lids … swing for ~1 s), or at least twice a second.
 renderer.shadowMap.autoUpdate = false;
-const shadowState = { dir: new THREE.Vector3(), hold: 0, age: Infinity };
+// #1100: on phones a hold (every "Använd") redrew the whole shadow map in EVERY frame for 1.5 s (~1 → 30-60 shadow passes
+// per second, each ~600-850 draw calls); the iPhone reports lose the WebGL context within seconds of such a tap. There a
+// held shadow is redrawn at most every LOW_MEMORY.shadowHoldEvery s, plus once after the hold so the final pose is drawn.
+const shadowState = { dir: new THREE.Vector3(), hold: 0, age: Infinity, pending: false };
+const shadowHoldEvery = lowMemory ? LOW_MEMORY.shadowHoldEvery : 0; // 0 = every frame (desktop, unchanged)
 function updateShadows(dt) {
   const dir = new THREE.Vector3().subVectors(sun.position, sun.target.position).normalize();
   shadowState.hold -= dt;
   shadowState.age += dt;
   const maxAge = QUALITY.shadowInterval[quality.level];
-  if (shadowState.hold > 0 || shadowState.age > maxAge || dir.angleTo(shadowState.dir) > 0.0035) {
-    if (hitch.enabled) hitch.frameInfo.shadowWhy = shadowState.hold > 0 ? 'hold' : shadowState.age > maxAge ? 'age' : 'sun';
+  const held = shadowState.hold > 0;
+  if (shadowHoldEvery && held) shadowState.pending = true;
+  const holdDue = shadowHoldEvery ? shadowState.pending && shadowState.age >= shadowHoldEvery : held;
+  if (holdDue || shadowState.age > maxAge || dir.angleTo(shadowState.dir) > 0.0035) {
+    if (hitch.enabled) hitch.frameInfo.shadowWhy = holdDue ? 'hold' : shadowState.age > maxAge ? 'age' : 'sun';
     renderer.shadowMap.needsUpdate = true;
     shadowState.dir.copy(dir);
     shadowState.age = 0;
+    shadowState.pending = shadowHoldEvery > 0 && held; // still moving: one more redraw after it stops
   }
 }
 

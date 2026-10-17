@@ -730,3 +730,24 @@ Warm custom intersections (#949): private combat proxies require the original ca
 Native visible far mesh/triangle totals: A8/572→8/2722, B0→8/3760, C0→8/6540. Near A67/10790 stays unchanged; B55→56 meshes with10458 triangles unchanged; C76→77 meshes with17242 triangles unchanged. These CPU geometry counts exclude outlines and are not screen draw calls or live performance. Additional distant shell triangles are bounded original static geometry; the heavier lift/stair detail stays gated.
 
 Final actual World screen-pass comparison (900×560/DPR1, desktop quality0/3): A far169→173 calls/+5836 triangles, B far118→131/+6398, C far115→126/+6530. Near A adds1 call and B/C3 calls each, with unchanged screen triangles. L far adds19 calls/+12382 triangles; L near adds13/15 calls and12342/12366 triangles at quality0/3 respectively because the scene also includes the newly retained neighbouring core shells. L’s own geometry and through-passage stay unchanged. All16 final views are within the existing desktop520-call/1,000,000-triangle bounds; maxima are463 calls and784326 triangles. The quality0 check is not a lowmem-phone benchmark; no live FPS, texture-memory or physical-device claim is made.
+
+## Shadow redraws after "Använd" on phones (#1100 — not verified on a device)
+
+iPhone reports (`/crash/public`, builds a3541b8 … 8650128) lose the WebGL context mostly in the hall and kitchen, typically
+0–3 s after `tap action`, and restore it within 13–31 ms (the page then reloads, `reloadOnContextRestore`). What the button
+hits there (iPhone profile, headless): the hall mirror's night lamp, the front door, the fuse box, the inner doors, the
+kitchen board, fridge, drawers and drawing. All of them go through `use()`/`runChoice()`, which set `shadowState.hold = 1.5`:
+the whole shadow map (~600–850 draw calls on a phone) was redrawn **every frame** for 1.5 s of game time (longer in wall
+time below 20 fps, since `dt` is clamped to 0.05), instead of once per `QUALITY.shadowInterval` (1 s at level 0).
+
+`sourceTexMB` jumping from ~40 to ~120 MB around up 20 s is **not** a late load: the crashlog's texture walk runs after
+~10 s and then every 60 s (`CRASHLOG.textureEveryMs`), and nearly every session (Android too) settles at 115–127 MB.
+
+**Change (phones only, `lowMemory`):** during a hold the shadow map is redrawn at most every `LOW_MEMORY.shadowHoldEvery`
+(0.15 s, *guess*), plus once after the hold so the final pose is drawn. Desktop keeps every-frame redraws (`shadowHoldEvery`
+is 0 there; the code path is the old one). Measured with a probe (iPhone profile 852×393 @3, `google-chrome --headless=new
+--use-angle=gl`, real Iris 640 GPU) at 11 targets: shadow passes in the 1.5 s after the tap, before → after: every frame
+(8–16 of 8–16 frames) → 4–7 of 13–33 frames; the following 1.5 s 6–11 (all frames) → 1–5. Draw calls per window drop
+accordingly although the after-run drew more frames. Screenshots: `~/lunden-shots/krasch1100/` (outside the repo).
+To go back: set `shadowHoldEvery: 0`. The cause is a *guess* (a sustained GPU spike tripping iOS); the context loss itself
+cannot be reproduced without a device.
