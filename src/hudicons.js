@@ -1,3 +1,4 @@
+import { TOUCH } from './config.js';
 // Own 24 px outline drawings: one stroke, no emoji/font dependency or icon library (#525).
 const paths={
  sofa:'<path d="M5 11V7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4M5 17v2m14-2v2M5 12h14M4 10a2 2 0 0 0-2 2v5h20v-5a2 2 0 0 0-4 0v3H6v-3a2 2 0 0 0-2-2Z"/>',
@@ -61,6 +62,22 @@ export function setTextIcon(button,name,text) {
 export function setPressed(button,on) {
  if(!button)return;
  if(button?.getAttribute('aria-pressed')!==String(!!on)){button.setAttribute('aria-pressed',!!on);button.classList.toggle('on',!!on)}
+}
+/** #1116: touch choice buttons wrap only between words. A long Swedish compound ("spegelbelysningen") that does not fit
+ * its grid column first steps the font down by up to TOUCH.choiceFit.shrink px, then takes the full width of the band
+ * (both columns) at its own size, and only then shrinks further to TOUCH.choiceFit.minFont; the CSS overflow-wrap
+ * fallback may split a word only when even that does not fit. */
+export function fitChoiceLabels(container) {
+ const over=b=>b.scrollWidth>b.clientWidth;
+ for(const b of container?.querySelectorAll('button')??[]){
+  Object.assign(b.style,{fontSize:'',gridColumn:'',overflowWrap:'normal'});
+  const base=parseFloat(getComputedStyle(b).fontSize);
+  const shrink=floor=>{let size=parseFloat(b.style.fontSize)||base;while(over(b)&&size>floor){size-=1;b.style.fontSize=size+'px';}};
+  shrink(base-TOUCH.choiceFit.shrink);
+  if(over(b)&&getComputedStyle(container).display==='grid'){b.style.fontSize='';b.style.gridColumn='1 / -1';shrink(TOUCH.choiceFit.minFont);}
+  else shrink(TOUCH.choiceFit.minFont);
+  if(over(b))b.style.overflowWrap='';
+ }
 }
 export function initHudIcons() {
  // Close corners delegate to the panel's existing cancel/finish action.

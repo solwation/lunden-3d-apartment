@@ -90,7 +90,9 @@ equipment with jetpack down/up stacked from the bottom and the web shooter above
 whatever else is visible (all 32 equipment masks × seated × choices). Neighbours keep at least the `TOUCH.gap` spacing;
 the space between slots still passes through to look. Action choices take the corner band from the right edge to the
 Stand column (two columns; two rows when there are three or more choices, height-clamped with bounded scrolling, one row
-on short landscape); while they show, the slots above the band and Stand/turn move up by its height, and the equipment
+on short landscape). Choice labels wrap only between words (#1116, `fitChoiceLabels` in `src/hudicons.js`, `TOUCH.choiceFit`):
+a word that does not fit its column first shrinks the font up to 2 px, then the row spans both columns, and only below
+11 px may the word be split; while they show, the slots above the band and Stand/turn move up by its height, and the equipment
 column stays. At 844×390 the cluster reaches 289 px in from the right edge (66 % across) and 211 px up; on 568×320 with
 44 px insets it stays right of 45 % of the width. `tools/touchlayouttest.cjs` also checks the corner band, the 8 px
 neighbour spacing and the distance order from the resting thumb (jump, then crouch, then the rest). The slot geometry is

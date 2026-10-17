@@ -12,7 +12,7 @@ import { fetchStartupJSON } from './startuprecovery.js';
 import { lowMemory, reloadOnContextRestore, freeSceneGeometryCopies } from './lowmemory.js';
 import { loadBeerShelf } from './beershelfdata.js';
 import { BeerShelf } from './beershelf.js';
-import { initHudIcons, setIcon, setPressed, setWeatherIcon, formatTemp } from './hudicons.js';
+import { initHudIcons, fitChoiceLabels, setIcon, setPressed, setWeatherIcon, formatTemp } from './hudicons.js';
 import * as THREE from 'three';
 import { UNIT_TOP, SITE, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS, GARAGE, OLOF, CORE_A, CORE_B, CORE_C, avatarLook } from './config.js';
 import { setupAvatarCustomizer, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen } from './customizer.js';
@@ -1485,9 +1485,12 @@ function showChoices(rows, target) {
     const keepSel = target === choices.target && rows && choices.rows && rows.length === choices.rows.length;
     Object.assign(choices, { rows, target, key, sel: keepSel ? choices.sel : Math.max(0, rows?.findIndex((r) => !r.reason) ?? 0) });
     renderChoices();
+    choicesEl.hidden = !rows;
+    if (rows && touch.enabled) fitChoiceLabels(choicesEl); // (#1116: measured once laid out)
   } else choices.rows = rows; // (fresh closures for run)
   choicesEl.hidden = !rows;
 }
+addEventListener('resize', () => { if (!choicesEl.hidden && touch.enabled) fitChoiceLabels(choicesEl); }); // (columns follow the short side)
 // Short touch labels only when the aimed-at object unambiguously owns the action (#502).
 // Item names and destinations remain in package/tool/transfer actions and blocked reasons.
 function shortButtonLabel(target, label) {

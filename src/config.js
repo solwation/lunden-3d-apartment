@@ -3236,6 +3236,10 @@ export const TOUCH = {
   // buttons (0.8 keeps a 57 px phone button at about 46 px, near the 48 px floor of #1057) and the stick, opacity so a
   // control never vanishes, the largest offset from its slot (× the short side), and px kept clear of the safe edges.
   custom: { buttonScale: [0.8, 1.6], stickScale: [0.7, 1.5], opacity: [0.3, 1], maxOffset: 3, margin: 4 },
+  // #1116 (src/hudicons.js fitChoiceLabels; *guess* values chosen by eye): a choice button whose longest word does not
+  // fit its column may shrink its font by `shrink` px, then spans both columns, and only then shrinks to `minFont` px
+  // (still readable on a phone; short landscape already uses 13) before a word may be split mid-word.
+  choiceFit: { shrink: 2, minFont: 11 },
 };
 
 export const PLAYER = {
