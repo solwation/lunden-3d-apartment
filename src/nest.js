@@ -298,8 +298,10 @@ export class Nests {
   }
 
   /** E on a speaker: wake, chime, then the answer. Returns the answer. */
-  press(sp, key = null) {
-    const a = this.choose(sp, key);
+  press(sp, key = null) { return this.reply(sp, this.choose(sp, key)); }
+
+  /** Answer `a` ({ key, text, sound? }) from speaker `sp`: wake, chime, then the words (#1176: a light mode's reply). */
+  reply(sp, a) {
     this.last = a.key;
     try { this.synthesis?.cancel?.(); } catch { /* none here */ }
     for (const o of this.speakers) if (o !== sp && o.talking) { o.talkT = o.chimeT = 0; }

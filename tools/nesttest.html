@@ -18,7 +18,7 @@ document.body.append(f);
 f.onload = async () => {
   const w = f.contentWindow, d = f.contentDocument;
   while (!w.__app) await wait(100);
-  const { player, camera, world, step, stats, toggleFurniture, nests, day } = w.__app;
+  const { player, camera, world, step, stats, toggleFurniture, nests, day, choices, focus } = w.__app;
   const lines = [];
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
   d.getElementById('start-touch').click();
@@ -32,7 +32,6 @@ f.onload = async () => {
   const hub = sps.find((s) => s.type === 'hub'), minis = sps.filter((s) => s.type === 'mini');
   let pass = check(sps.length === 3 && hub && minis.length === 2, `three speakers: ${sps.map((s) => s.type).join(', ')}`);
   const V = camera.position.constructor;
-  const btn = d.getElementById('action');
   /** Stand at (x, z) on `level` and look at world point p. */
   const lookAt = (x, z, level, p) => {
     player.spawn(x, z, 0);
@@ -49,9 +48,10 @@ f.onload = async () => {
     const p = sp.pos(new V());
     if (sp.type === 'hub') p.y += 0.06;
     lookAt(x, z, lv, p);
-    pass &= check(!btn.hidden && /prata med den smarta (skärmen|högtalaren)/i.test(btn.textContent), `${sp.type} @${p.x.toFixed(2)},${p.z.toFixed(2)}: "${btn.textContent}"`);
+    const talk = d.querySelector('#choices button'); // its menu (#1176): Prata, Ljuslägen …, Myslägen …
+    pass &= check(!d.getElementById('choices').hidden && choices.target === sp.target && talk?.textContent === 'Prata', `${sp.type} @${p.x.toFixed(2)},${p.z.toFixed(2)}: menu "${[...d.querySelectorAll('#choices button')].map((b) => b.textContent).join(' / ')}"`);
     const n0 = answers.length, s0 = spoken.length, c0 = stats.nest ?? 0;
-    btn.click();
+    talk.click();
     run(0.3);
     const lit = sp.type === 'hub' ? /^wake/.test(sp.stamp) : sp.dots.every((m) => m.material.opacity > 0.5);
     pass &= check(answers.length === n0 + 1 && lit, `${sp.type}: an answer chosen (${answers.at(-1)?.key}), the wake light on`);
@@ -97,17 +97,17 @@ f.onload = async () => {
   // not through a wall: the hall's round one from the room west of it
   const hall = [...spots].find(([, s]) => s[2] === 1)[0], hp = hall.pos(new V());
   lookAt(hp.x - 0.7, hp.z, 1, hp);
-  pass &= check(btn.hidden || !/smarta/i.test(btn.textContent), `not through the wall ("${btn.hidden ? '' : btn.textContent}")`);
+  pass &= check(focus().focused?.kind !== 'nest', `not through the wall (${focus().focused?.kind ?? 'nothing'} aimed at)`);
   // F: hidden, no target, quiet
   const [x0, z0] = spots.get(hub);
   const p0 = hub.pos(new V()); p0.y += 0.06;
   lookAt(x0, z0, 0, p0);
-  btn.click(); run(0.2);
+  d.querySelector('#choices button').click(); run(0.2);
   toggleFurniture(false);
   lookAt(x0, z0, 0, p0);
   const shown = (o) => { for (; o; o = o.parent) if (!o.visible) return false; return true; };
   pass &= check(sps.every((s) => !shown(s.object)), 'F: all three hidden');
-  pass &= check((btn.hidden || !/smarta/i.test(btn.textContent)) && !nests.talking, `F: no target, quiet ("${btn.hidden ? '' : btn.textContent}")`);
+  pass &= check(focus().focused?.kind !== 'nest' && !nests.talking, `F: no target, quiet (${focus().focused?.kind ?? 'nothing'} aimed at)`);
   toggleFurniture(true);
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };

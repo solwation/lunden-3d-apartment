@@ -610,6 +610,37 @@ export class Lights {
     for (const f of this.floorLamps) f.set(on);
   }
 
+  /** What is on now (#1176, a light mode's before / after): { rooms: Map(Room → on), lamps: Map(FloorLamp → on), dark }. */
+  snapshot() {
+    return { rooms: new Map([...this.rooms.values()].map((R) => [R, R.on])), lamps: new Map(this.floorLamps.map((f) => [f, f.room.on])), dark: this.dark };
+  }
+
+  /** A light mode (#1176): every room's ceiling lamp to `room(R)`, every small lamp to `lamp(f)` (they fade, as at dusk).
+   * While `held` the dusk leaves the small lamps alone. Returns the snapshot of what it set. */
+  preset(room, lamp) {
+    for (const R of this.rooms.values()) if (R.on !== !!room(R)) R.toggle();
+    for (const s of this.switches) s.update();
+    for (const f of this.floorLamps) f.room.on = !!lamp(f);
+    return this.snapshot();
+  }
+
+  /** Back from a light mode (#1176): what still is as the mode set it (`applied`) goes back to `before`; what the visitor
+   * switched meanwhile stays as they left it. A small lamp that follows the dusk takes the dusk's state if dusk or dawn
+   * came in between. Colours are never touched. */
+  restore(before, applied) {
+    for (const [R, on] of before.rooms) if (R.on === applied.rooms.get(R) && R.on !== on) R.toggle();
+    for (const s of this.switches) s.update();
+    for (const [f, on] of before.lamps) {
+      if (f.room.on !== applied.lamps.get(f)) continue;
+      f.room.on = f.auto && !this.forced && this.dark !== undefined && this.dark !== before.dark ? this.dark : on;
+    }
+  }
+
+  /** Is this small lamp on a window board (#1176): a pool anchor within `reach` m of a façade's inner face? */
+  onWindowBoard(f, reach) {
+    return f.room.lamps.some((l) => L.wash.facade.some((z) => Math.abs(l.pos.z - z) < reach));
+  }
+
   /** The small lamps follow the dusk (#234): on below LIGHTING.auto.on daylight, off above .off. Only a change of
    * that state switches them, so a lamp toggled by hand stays as it is until the next dusk / dawn. The first call
    * sets them at once; later changes fade. `forced` (&lights) keeps everything on. */
@@ -618,7 +649,7 @@ export class Lights {
     const dark = first ? daylight < (A.on + A.off) / 2 : this.dark ? daylight < A.off : daylight < A.on;
     if (dark !== this.dark) {
       this.dark = dark;
-      if (!this.forced) for (const f of this.floorLamps) if (f.auto) { if (first) f.set(dark); else f.room.on = dark; }
+      if (!this.forced && !this.held) for (const f of this.floorLamps) if (f.auto) { if (first) f.set(dark); else f.room.on = dark; } // (#1176: a light mode holds them)
     }
     for (const f of this.floorLamps) f.update(dt);
     // the copper pendants' reflections (#307): the painted room shows by day and when their room is lit

@@ -122,6 +122,7 @@ import { CoreHouse } from './corehouse.js';
 import { OlofDriver } from './olof.js';
 import { Greetings } from './greet.js';
 import { Nests } from './nest.js';
+import { LightModes } from './lightmodes.js';
 import { Weather } from './weather.js';
 import { createRealWeather } from './realweather.js';
 import { Posters, HeldDrawing, paperOnly } from './posters.js';
@@ -1103,6 +1104,11 @@ for (const l of laptops) l.onClip = (key) => bump('clips', 1, key);
 if (params.has('laptop')) for (const l of laptops) l.set(true);
 // the smart speakers (#325): E wakes one, it answers (the time, the weather, the coffee, jokes …)
 const nests = new Nests(world.furnitureTargets.filter((t) => t.kind === 'nest'), { day, weather, coffee: world.lids.find((l) => l.kind === 'coffee'), camera, layer: document.getElementById('speech') });
+// light modes from the smart speakers (#1176): their E opens a menu — Prata (the answer above), Ljuslägen …, Myslägen …
+const lightModes = new LightModes(lights);
+for (const sp of nests.speakers) sp.target.options = () => lightModes.rows(
+  () => { sp.target.toggle(); bump('nest', 1, idOf(sp.target)); },
+  (text, key) => nests.reply(sp, { key, text }));
 // the power cut (#604, power.js): the fuse box in the hall's EL/C cabinet; Kv. Lunden dark until it is mended (never saved)
 const power = new Power(scene, world.lids.find((l) => l.fuse));
 const POWERED = new Set(['tv', 'pc', 'laptop', 'speaker', 'nest', 'hob', 'hood', 'coffee', 'liftcall', 'liftbtn', 'garagebutton']); // E targets that need the mains
@@ -1112,6 +1118,7 @@ power.onCut = () => { // screens, music and the cooker go off and stay off (only
   if (sonos.playing) sonos.pause();
   world.hob?.set(false); world.hood?.set(false);
   nests.powered = false; window.speechSynthesis?.cancel(); core.setPower(false); garage.powerOff = true;
+  lightModes.release(); // (#1176: the lamps stay as they are; the mode is over)
   mainsAppliances(false);
 };
 // #612: fridge/freezer/oven/microwave lamps dark, a brew, the dishwasher and the laundry programmes pause and go on afterwards
@@ -2047,6 +2054,7 @@ function updateFocus() {
   // a life-sim thing (#367): its actions; one = the usual prompt, several = the choice menu
   const rows = focused?.options ? shownRows(focused.options()) : null;
   showChoices(rows && rows.length > 1 && !reading ? rows : null, focused);
+  if (focused?.kind !== 'nest' && lightModes.page !== 'top') lightModes.page = 'top'; // a speaker's menu starts at its first page (#1176)
   const outlineRow=choices.rows?.[choices.sel] ?? (rows?.length===1?rows[0]:null);
   interactionOutline.update(!reading && !life.runner.job && !outlineRow?.reason ? focused : null);
   showItemGhost(item); // actual placement or the selected allowed return action (#368, #487)
@@ -2125,7 +2133,7 @@ function toggleFurniture(on = !world.furnitureOn) {
   if (!on && cat.visible && !(cat.released || cat.leaving)) cat.hide(); // (Any cat just put down walks off, #1061) // the cat goes too (and stops purring); none turn up until F is back
   if (!on) for (const t of world.furnitureTargets) if ((t.kind === 'tv' || t.kind === 'pc') && t.isOpen) t.toggle(); // screens off
   if (!on) for (const l of laptops) l.set(false); // Tilly's laptop too (#283)
-  if (!on) nests.hush(); // the smart speakers stop talking (#325)
+  if (!on) { nests.hush(); lightModes.release(); } // the smart speakers stop talking (#325), their light mode lets go (#1176)
   if (!on) world.hob?.set(false); // the hob stays (Peab's kitchen), but off
   if (!on) chicken?.reset(); // home to the fridge, no smoke
   if (!on) { world.hood?.set(false); smokeAlarm.reset(); } // the fan off, the alarm quiet (#194)
@@ -3132,4 +3140,4 @@ hideLoading();
 
 crashlog.attach({ renderer, camera, quality, player, world, sun, scene, mirrorTarget, frameDiag, viewportBinding }); // what the crash heartbeat shows (#629)
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { newYear, sausages, frameRate, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };
+window.__app = { newYear, sausages, frameRate, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };

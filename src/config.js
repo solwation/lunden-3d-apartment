@@ -3999,6 +3999,30 @@ export const LIGHTING = {
   pendantMove: { minBottom: 1.4, ceilingGap: 0, step: 0.05, wallGap: 0.03, band: 0.07 },
 };
 
+// Light modes from the smart speakers (#1176, part of #1155: "tända alla lampor på Google Home, bara all
+// extrabelysning … mys … allt på … bara fönsterlampor … kvällsmys"). src/lightmodes.js; the existing lamps only (no new
+// light, shadow caster or pool slot). `rooms`: the ceiling lamps (room switches) — true = all on, false = all off.
+// `lamps`: the small lamps (lights.floorLamps by their `name`) — true = all on, 'window' = those standing on a window
+// board (a pool anchor within `windowReach` m of a façade's inner face, LIGHTING.wash.facade: the SYMFONISK lamp behind
+// the sofa and Sovrum 1's Hue Go), or a list of names; the rest go off. `skip`: names left off with `lamps: true`.
+// Which lamps make "mys" and "kvällsmys" are *guesses* (the report names the modes only): mys = the decorative and
+// living-room lamps all over the home, kvällsmys = the living room's sofa corner, the Christmas tree and the night lights.
+// `say`: the speaker's reply. `menu`: the speaker's choice menu pages (≤ 4 rows each: #1176's 600 px desktop limit).
+export const LIGHT_MODES = {
+  windowReach: 0.25, // *guess*: window-board lamps measured 0.07–0.14 m from the façade face; the next lamp is > 1 m off
+  modes: [
+    { id: 'all', label: 'allt på', page: 'light', rooms: true, lamps: true, say: 'Okej, jag tänder alla lampor.' },
+    { id: 'extra', label: 'extrabelysning', page: 'light', rooms: false, lamps: true, skip: ['lampan i köksfläkten'], say: 'Okej, all extrabelysning på.' },
+    { id: 'window', label: 'fönsterlampor', page: 'light', rooms: false, lamps: 'window', say: 'Okej, bara fönsterlamporna.' },
+    { id: 'cozy', label: 'mys', page: 'cozy', rooms: false, say: 'Mysläge på. Ta det lugnt nu!',
+      lamps: ['golvlampan', 'spotsen', 'långlampan', 'lampan', 'julgranen', 'rottinglampan', 'Hue Go-lampan', 'bänkbelysningen', 'enhörningslampan', 'dödsstjärnan', 'spegelns nattlampa'] },
+    { id: 'evening', label: 'kvällsmys', page: 'cozy', rooms: false, say: 'Kvällsmys på. Mysigt!',
+      lamps: ['golvlampan', 'långlampan', 'lampan', 'julgranen', 'nattlampan', 'spegelns nattlampa'] },
+  ],
+  menu: { light: 'ljuslägen …', cozy: 'myslägen …', end: 'avsluta ljusläget', back: 'tillbaka', talk: 'prata', on: ' (på nu)' },
+  ended: 'Okej, ljusläget är avslutat.',
+};
+
 // Furniture (issue #8). IKEA LANDSKRONA, Gunnared ljusgrön, oak legs.
 // 3-sits: 204 × 89 × 78 cm, seat height 44, seat depth 61, armrest height 64 (ikea.com).
 // With schäslong 282 cm wide, chaise 158 cm deep; armchair 89 × 89
