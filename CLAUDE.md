@@ -86,10 +86,14 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   records the exact label in #420. Never remove another active orchestrator's label. The `orkester:` prefix is
   ownership metadata, distinct from the `orkester` coordination label, and does not change priority or replace claims.
 - **Priorities are labels.** Every issue carries exactly one of `priority: high`, `priority: medium`,
-  `priority: low` (set it when creating the issue; the user decides when unsure, default `priority: medium`).
+  `priority: low`, set when creating the issue. **Whoever creates the issue (the agent/LLM, not the reporter) judges the
+  priority (user, 2026-10-17):** bugs (`Bugg:`, broken behaviour, crashes, data loss, wrong geometry/rendering) get
+  `priority: high`; features are triaged by value: `high` for what blocks or clearly hurts everyday play/use, `medium`
+  for solid improvements, `low` for nice-to-have, cosmetic polish or "some day" ideas. Do not default everything to
+  medium; reporters never have to state a priority.
   When picking work, take the highest-priority open issue that is not `in-progress` (oldest first within a level;
-  `gh issue list --state open --label "priority: high"`); an issue without a priority label counts as medium. Change a
-  priority only when the user asks. Topic labels (e.g. `architecture`) are optional extras. Architecture issues whose
+  `gh issue list --state open --label "priority: high"`); an issue without a priority label counts as medium. Change an existing
+  issue's priority only when the user asks. Topic labels (e.g. `architecture`) are optional extras. Architecture issues whose
   exact measurements are missing from Peab's material keep their geometry preliminary: centralise and mark the values as
   assumptions (*guess*), never replace one guess with another and call it verified (docs/peab/arkitekturgranskning-2026-10-04.md).
 - **Every new issue gets a `Lapp: <text>` line** in its body (#340): 2–6 plain everyday Swedish words
