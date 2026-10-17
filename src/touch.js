@@ -62,7 +62,7 @@ export function setupTouch({ onLook }) {
   }
 
   document.addEventListener('pointerdown', (e) => {
-    if (!enabled || !isTouch(e) || e.target.closest?.('button, #hud-top, #stats, #task-note, #terminal, #rearrange-help')) return; // buttons; the stats panel scrolls (#245)
+    if (!enabled || !isTouch(e) || e.target.closest?.('button, input, textarea, select, dialog, #hud-top, #stats, #task-note, #terminal, #rearrange-help')) return; // buttons/inputs/dialogs; the stats panel scrolls (#245, #1214)
     const vw = gameView.w || window.innerWidth; // the stick side: left, or right when mirrored for left-handers (#1090)
     if (stickId === null && (stickLayout().mirror ? e.clientX > vw * 0.55 : e.clientX < vw * 0.45)) {
       stickId = e.pointerId;

@@ -64,7 +64,7 @@ export class AdminReports {
     panel.querySelector('#admin-report-camera').addEventListener('click',pick);
     panel.querySelector('#admin-report-photo-change').addEventListener('click',pick);
     panel.querySelector('#admin-report-photo-remove').addEventListener('click',()=>{this.setPhoto(null);this.reportStatus.textContent='Fotot är borttaget. Bara bilden av spelvyn följer med.';panel.querySelector('#admin-report-camera').focus();});
-    file.addEventListener('change',()=>{const f=file.files?.[0];file.value='';if(f)this.choosePhoto(f);});
+    file.addEventListener('change',()=>{const f=file.files?.[0];file.value='';if(f)this.choosePhoto(f);else this.reportInput?.focus();});
     const files=e=>[...(e.dataTransfer?.types??[])].includes('Files');
     panel.addEventListener('dragover',e=>{if(!files(e))return;e.preventDefault();e.dataTransfer.dropEffect='copy';panel.classList.add('dragging');});
     panel.addEventListener('dragleave',e=>{if(!panel.contains(e.relatedTarget))panel.classList.remove('dragging');});
@@ -76,9 +76,11 @@ export class AdminReports {
       const image=await prepareReportPhoto(file);
       if(job!==this.photoJob)return;
       this.setPhoto(image);this.reportStatus.textContent='Fotot skickas med rapporten tillsammans med bilden av spelvyn.';
+      this.reportInput?.focus();
     }catch(error){
       if(job!==this.photoJob)return;
       this.reportStatus.textContent=error?.code==='type'?'Filen är ingen bild. Välj en bild eller ta ett foto.':error?.code==='format'?'Bildformatet stöds inte av webbläsaren. Välj en JPEG- eller PNG-bild.':'Fotot kunde inte förberedas. Försök med en annan bild.';
+      this.reportInput?.focus();
     }finally{if(job===this.photoJob)this.photoBusy=false;}
   }
   setPhoto(image){
