@@ -4237,12 +4237,21 @@ function rugLiftFor(item, obj, toWorld) {
   return h;
 }
 
+/** The loose furniture in one synchronous call (tests, tools). */
 export function buildFurniture() {
+  const parts = furnitureParts();
+  for (;;) { const r = parts.next(); if (r.done) return r.value; }
+}
+
+/** buildFurniture in parts (#1133, #1161): yields progress between batches of pieces. */
+export function* furnitureParts() {
   const group = new THREE.Group();
   const segments = [[], []], footprints = [[], []];
   const lights = [], interactives = [], surfaces = [], things = [], movable = [];
   const ids = new Map(), shadowed = [];
-  for (const item of FURNITURE) {
+  const n = FURNITURE.length;
+  for (let i = 0; i < n; i++) {
+    const item = FURNITURE[i];
     const obj = BUILDERS[item.type](item, lights);
     if(obj.userData.bedCareCount)obj.traverse(m=>{if(m.isMesh&&!m.geometry.attributes.bedCare)m.geometry.setAttribute('bedCare',new THREE.BufferAttribute(new Uint8Array(m.geometry.attributes.position.count),1));});
     // one mesh per material per piece (#48); the parasol folds and the beers come and go
@@ -4301,6 +4310,7 @@ export function buildFurniture() {
       for (let i = 0; i < 4; i++) segments[item.level].push(top !== undefined ? [...pts[i], ...pts[(i + 1) % 4], pts.top] : [...pts[i], ...pts[(i + 1) % 4]]);
       footprints[item.level].push(pts);
     }
+    if ((i + 1) % 10 === 0 && i + 1 < n) yield (i + 1) / n;
   }
   group.add(buildContactShadows(shadowed)); // last child: the pieces' matrices are current when it follows them (#1075)
   linkPatioTextiles(movable); // #1015: canonical outdoor cushion choices also drive stored copies.

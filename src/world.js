@@ -13,7 +13,7 @@ import { sfx } from './audio.js';
 import { SwingDoor, SlidingDoor, wardrobeDoors } from './doors.js';
 import { fitPrivacyDoors } from './doorfittings.js';
 import { buildExterior, husLLayout } from './exterior.js';
-import { buildFurniture, surfaceBox } from './furniture.js';
+import { buildFurniture, furnitureParts, surfaceBox } from './furniture.js';
 import { buildWallShelves } from './shelves.js';
 import { buildHallWall } from './keycabinet.js';
 import { mergeStatic } from './merge.js';
@@ -567,7 +567,14 @@ function ourCeilingThings(li) {
   return pts;
 }
 
+/** Builds a level in one synchronous call (tests, tools). */
 function buildLevel(floor, li, group, how = OURS) {
+  const parts = levelParts(floor, li, group, how);
+  for (;;) { const r = parts.next(); if (r.done) return r.value; }
+}
+
+/** buildLevel in parts (#1133, #1161): yields between walls/windows, doors, interior fittings and AO. */
+function* levelParts(floor, li, group, how = OURS) {
   const M = how.mats, std = how.standard; // (a visited flat: the standard finish, none of our choices, #574)
   const L = (how.levels ?? LEVELS)[li], hole = how.hole ?? STAIR.hole; // (a visited flat's own storeys and opening, #573)
   const opening = how.opening ?? hole; // the slab's opening out to the stairwell's wall faces (#1119)
@@ -637,6 +644,7 @@ function buildLevel(floor, li, group, how = OURS) {
     addRadiator(group, M, r.x0, r.x1, inner, facade === 'north' ? 1 : -1, sill, y0, [...floor.cabinets, li === 1 ? hole : null]); // under the board (#1071)
     segments.push(...rectSegments(pr));
   }
+  yield 0.25;
 
   // Doors: lintel over the gap + an interactive leaf that fills the whole gap. All start
   // closed (several open leaves block the passage by the stair, e.g. Badrum and Klk).
@@ -742,6 +750,7 @@ function buildLevel(floor, li, group, how = OURS) {
     mesh.castShadow = mesh.receiveShadow = true;
     group.add(mesh);
   }
+  yield 0.5;
 
   // Wardrobes (G): adjacent units become one hollow wardrobe with sliding doors.
   const wardrobeCabs = floor.cabinets.filter((c) => WARDROBE_LABELS.includes(c.label));
@@ -833,6 +842,7 @@ function buildLevel(floor, li, group, how = OURS) {
         break;
     }
   }
+  yield 0.75;
 
   // Floor of this level (upper level has the stair opening); the sheets' edges tucked into the stairwell's walls (#1164)
   const sheetHole = tuckOpening(opening, wallBoxes);
@@ -996,10 +1006,14 @@ function buildOwnStructure(group, lower, upper, l1, P, L, map) {
   for (const m of [...buildHandrails(SM.rail, map.handrail).children]) group.add(m);
 }
 
-/** A flat you can walk into (#574, #573, VISIT_UNITS): built like ours from its sheet, in Peab's standard finish and
- * empty, in a group at its own place in the row (`ox` along x, `oz` along z), then handed to visitunit.js (collision,
- * targets, rooms). 'shared': L1007's sheet (L1004: same storeys, same stair); else its own plan + config (L1201). */
+/** A flat you can walk into (#574, #573, VISIT_UNITS): built in one synchronous call (tests, tools). */
 function buildVisitFlat(plan, U, ox) {
+  const parts = visitFlatParts(plan, U, ox);
+  for (;;) { const r = parts.next(); if (r.done) return r.value; }
+}
+
+/** buildVisitFlat in parts (#1133, #1161): yields between its lower level, upper level and static merge. */
+function* visitFlatParts(plan, U, ox) {
   const own = U.plan === 'L1201', P = own ? L1201 : null;
   if (own) plan = L1201_PLAN;
   const oz = own ? HUS_L.loftgangDepth : 0;
@@ -1014,7 +1028,20 @@ function buildVisitFlat(plan, U, ox) {
     ...(own ? { levels: L, hole: P.hole, windows: P.windows, soffits: P.soffits, extDoorHead: P.extDoorHead, kitchen: P.kitchen }
       : { opening: slabOpening(STAIR.hole, plan.floors) }) }; // (L1201's own hole already meets its walls, #1119)
   const keep = wardrobeSpecs.length;
-  const l0 = buildLevel(lower, 0, group, how), l1 = buildLevel(upper, 1, group, how);
+  let l0;
+  for (const parts = levelParts(lower, 0, group, how);;) {
+    const r = parts.next();
+    if (r.done) { l0 = r.value; break; }
+    yield 0.35 * r.value;
+  }
+  yield 0.35;
+  let l1;
+  for (const parts = levelParts(upper, 1, group, how);;) {
+    const r = parts.next();
+    if (r.done) { l1 = r.value; break; }
+    yield 0.35 + 0.35 * r.value;
+  }
+  yield 0.7;
   wardrobeSpecs.length = keep; // empty wardrobes: nobody lives here
   const map = own ? stairMap(P, L) : null;
   if (own) buildOwnStructure(group, lower, upper, l1, P, L, map); else buildStructure(group, lower, l1, W, D, SM, how.opening);
@@ -1031,6 +1058,7 @@ function buildVisitFlat(plan, U, ox) {
       { cabinets: f.cabinets, hole: how.hole ?? STAIR.hole, soffits: (own ? P.soffits : SOFFITS).filter((s) => s.level === li) });
     if (v) group.add(v);
   });
+  yield 0.85;
   const box3 = new THREE.Box3(), mid = new THREE.Vector3();
   mergeStatic(group, moving.concat(edges ? [edges] : []), (o) => { box3.setFromObject(o).getCenter(mid); return mid.y < L[1].floor - 0.05 ? 'l0' : 'l1'; });
   for (const d of doors) mergeStatic(d.object, d.keep ?? [], () => '', { tagged: true });
@@ -1060,24 +1088,43 @@ function* worldParts(plan) {
   const W = lower.size.x, D = lower.size.z;
 
   OURS.opening = slabOpening(STAIR.hole, plan.floors); // the slab's opening out to the stairwell's walls (#1119)
-  const l0 = buildLevel(lower, 0, scene);
+  let l0;
+  for (const parts = levelParts(lower, 0, scene);;) {
+    const r = parts.next();
+    if (r.done) { l0 = r.value; break; }
+    yield 0.08 * r.value;
+  }
   yield 0.08;
-  const l1 = buildLevel(upper, 1, scene);
+  let l1;
+  for (const parts = levelParts(upper, 1, scene);;) {
+    const r = parts.next();
+    if (r.done) { l1 = r.value; break; }
+    yield 0.08 + (0.15 - 0.08) * r.value;
+  }
   yield 0.15;
 
   buildStructure(scene, lower, l1, W, D, M, OURS.opening); // the slab, the roof zone, the stair and its railing
   // the other flats you can walk into (#574), each at its own slot in the row
   const slots = husLLayout(W).units;
   const units = [];
-  for (const U of VISIT_UNITS) {
-    units.push(buildVisitFlat(plan, U, slots.find((u) => u.lower === U.slot || u.upper === U.slot).ox));
-    yield 0.15 + 0.15 * units.length / VISIT_UNITS.length;
+  for (let ui = 0; ui < VISIT_UNITS.length; ui++) {
+    const U = VISIT_UNITS[ui];
+    const ox = slots.find((u) => u.lower === U.slot || u.upper === U.slot).ox;
+    let unit;
+    for (const parts = visitFlatParts(plan, U, ox);;) {
+      const r = parts.next();
+      if (r.done) { unit = r.value; break; }
+      yield 0.15 + (0.15 / VISIT_UNITS.length) * (ui + r.value);
+    }
+    units.push(unit);
+    yield 0.15 + 0.15 * (ui + 1) / VISIT_UNITS.length;
   }
 
   const PD=PORTIK.door;
   const portikDoor=new SwingDoor({hinge:[PD.x,PD.z1],tip:[PD.x-(PD.z1-PD.z0),PD.z1],wall:[PD.x,PD.z0]},0,mat(PD.color),false);
   portikDoor.name='dörren till lilla rummet';scene.add(portikDoor.object);
 
+  yield 0.31;
   // Capture only architecture, before adding loose furniture, plants, curtains and cabinet contents.
   const edgeLines = architectureEdges(scene, {
     moving: [...l0.doors, ...l1.doors, portikDoor, ...l0.lids, ...l1.lids, ...l0.appliances, ...l1.appliances].map(d => d.object),
@@ -1086,7 +1133,12 @@ function* worldParts(plan) {
 
   yield 0.33;
   // Loose furniture (IKEA LANDSKRONA etc., see FURNITURE in config)
-  const furniture = buildFurniture();
+  let furniture;
+  for (const parts = furnitureParts();;) {
+    const r = parts.next();
+    if (r.done) { furniture = r.value; break; }
+    yield 0.33 + (0.42 - 0.33) * r.value;
+  }
   yield 0.42;
   scene.add(furniture.object);
   // the kitchen worktop as cup surfaces (fitted, so they stay with F; the first one is where a fresh cup stands)
@@ -1094,11 +1146,13 @@ function* worldParts(plan) {
   const sillPlants = buildSillPlants([...l0.sills, ...l1.sills]); // flower pots on every window board (#136)
   scene.add(sillPlants);
   const sillSurfaces = [...l0.sills, ...l1.sills].map((r) => { const m = surfaceBox(r); scene.add(m); return m; }); // things go down on window boards too (#185)
+  yield 0.44;
   // pleated blinds in every window (#273): fittings (F keeps them); the rails and cords are baked below
   const blinds = new Blinds();
   for (const sp of [...l0.blindSpecs, ...l1.blindSpecs]) blinds.add(sp);
   blinds.addCurtains(); // Sovrum 1's curtains on a ceiling track (#342): fittings too, the track baked with the rails
   scene.add(blinds.object, blinds.statics);
+  yield 0.46;
   const shelves = buildWallShelves(); // kitchen wall shelves (WALL_SHELVES)
   scene.add(shelves);
   shelves.updateMatrixWorld(true);

@@ -830,3 +830,11 @@ runs alternated: longest task 19.4 s / 13.0 s (Möblerar) → 3.8 s (Bygger huse
 1.4–1.7 s as a step; card done 98 / 74 s → 86 / 92 s (noisy). Part of that queued GPU work now lands in warm-up's
 first renders instead (its longest tasks 3–4 s → 4.7–5.5 s), still behind the cover; #1159 owns that cost.
 Warm-up (#697) and `STARTUP` are unchanged.
+
+**Smaller buildWorld parts (#1161).** The remaining long synchronous chunks in Bygger huset (the upper floor `buildLevel`,
+loose `buildFurniture`, the visited flats `buildVisitFlat`, and the group with blinds, wall shelves and the hall wall)
+are now generators or delegated:
+- `buildFurniture`: synchronous wrapper around `furnitureParts()`, which yields progress every 10 pieces.
+- `buildLevel`: synchronous wrapper around `levelParts()`, yielding between walls/windows, doors/trims, interior fittings/fixtures, and AO plates.
+- `buildVisitFlat`: synchronous wrapper around `visitFlatParts()`, yielding between lower/upper level parts and the static merge.
+- `worldParts`: yields around `architectureEdges`, between blinds, shelves and hall wall.
