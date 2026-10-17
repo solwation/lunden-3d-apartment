@@ -249,7 +249,7 @@ tools/inventorytest.html headless test (#365): the `&life` scenario's start stat
 
 ## Recent implementation notes
 
-Vacuum bin capacity (#485) is configured by `CLEANING.vacuum.dustCapacity`: 3.0 mess units (three times the former 1.0, a gameplay choice). The HUD, full stop and suction limit all use this value. Browser checks: `tools/life3test.html?only=390,391,485`.
+Vacuum bin capacity (#485, #1096) is configured by `CLEANING.vacuum.dustCapacity`: 6.0 mess units (#485 tripled the former 1.0 to 3.0, #1096 doubled it to 6.0; gameplay choices). The HUD, full stop and suction limit all use this value. Browser checks: `tools/life3test.html?only=390,391,485`.
 
 Uppdragslapp (#509): `TasksManager.build3DCard(cups.cabinet)` monterar ett enda blad på koppskåpets faktiska innerblad (`cabinet.innerFace`, från dess fronttjocklek och gångjärn). `TASK_NOTE` innehåller pappersmått och relativa höjd-/sidlägen, alla visuella antaganden. Kortet följer luckans transform, är spärrat när skåpet är stängt och använder befintlig rekursiv skåpraycast; ingen lapp på arbetsbänken. Luckans `userData.moving` uppdaterar DetailCuller under animation. `taskstest` täcker innerplacering, verklig rörelse och touchläsning utöver tidigare uppdragsflöden.
 
