@@ -1010,7 +1010,8 @@ function loggias(blocks) {
       walls.push(quad(cx, iz, ix, iz, 0, -sz, y0, top), quad(ix, cz, ix, iz, -sx, 0, y0, top)); // the rendered inner walls
       for (let st = 0; st <= b.storeys; st++) {
         const y = b.base + st * S.storey, kind = loggiaKind(b, st, y, g);
-        if (st > 0) slabs.push(new THREE.BoxGeometry(lx, 0.22, lz).translate(mx, y - 0.11, mz)); // floor above / ceiling below
+        // #1203: no slab at or below the solid corner's top (st0): its side faces stood flush with the corner's brick (z-fighting white strip)
+        if (st > st0) slabs.push(new THREE.BoxGeometry(lx, 0.22, lz).translate(mx, y - 0.11, mz)); // floor above / ceiling below
         else if (kind === 'ground') slabs.push(new THREE.BoxGeometry(lx, 0.06, lz).translate(mx, y + 0.03, mz)); // over the plinth
         if (kind === 'ground') { // brick, with the opening next to the flat's wall on the longer front (#266)
           const ox = lx >= lz ? P.open : 0, oz = lx >= lz ? 0 : P.open, py = Math.max(y, g);
