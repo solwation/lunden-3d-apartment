@@ -156,10 +156,13 @@ export class Items {
   /** store: { id, name, slots: [{ size, accepts? }], accepts? (tags, any of), isOpen() → bool, shutText, fullText } */
   addStore(store) { this.stores.set(store.id, store); return store; }
   store(id) { return this.stores.get(id) ?? null; }
-  /** The first free slot of `storeId` that takes `item`, or -1. */
+  /** The free slot of `storeId` that takes `item`, or -1: its own home slot there when that is free (#1188: the sausage
+   * pack goes back beside the chicken, not into the first gap behind the beer), else the first free one. */
   freeSlot(storeId, item, by = null) {
     const s = this.store(storeId);
     if (!s) return -1;
+    const h = item?.home;
+    if (h?.at === 'slot' && h.store === storeId && h.slot < s.slots.length && !this.check(item, h, { ignoreShut: true, by })) return h.slot;
     for (let k = 0; k < s.slots.length; k++) if (!this.check(item, { at: 'slot', store: storeId, slot: k }, { ignoreShut: true, by })) return k;
     return -1;
   }

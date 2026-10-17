@@ -92,8 +92,10 @@ export function buildStores(life, world) {
       fridge.door.add(a);
       slots.push({ size: 's', anchor: a });
     }
-    // slot 11 (#1124): the chicken's shelf, beside its plate — the sausage pack's home (appended: old indices stay)
-    slots.push({ size: 'm', anchor: anchorIn(fridge.object, new THREE.Vector3(cx + 0.205 * iw / 0.55, y0 + 0.82 + 0.004, cz), -Math.PI / 2) });
+    // slot 11 (#1124, #1188): the sausage pack's home on the milk's shelf below the beer, beside the carton (appended: old
+    // indices stay; beside the chicken's plate it overlapped the plate and the liner)
+    const P = S.fridge.pack;
+    slots.push({ size: 'm', anchor: anchorIn(fridge.object, new THREE.Vector3(cx + P.dx * iw / 0.55, y0 + P.y + 0.004, cz), -Math.PI / 2) });
     const box = pickBox(fridge.object, new THREE.Vector3(cx - iw / 2, y0 + 0.4, cz - depth / 2), new THREE.Vector3(cx + iw / 2, y0 + 1.7, cz + depth / 2), () => holding() && fridge.isOpen);
     add('fridge', { outlineRoot: fridge.object, outlineOwner: fridge, name: 'kylskåpet', shutText: 'Öppna kylen först', fullText: 'Kylskåpet är fullt', isOpen: () => fridge.isOpen, carriers: true }, slots, box); // (a plate with food on it goes in too, #370)
   }

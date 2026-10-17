@@ -53,7 +53,7 @@ src/chicken.js         #708: whole fridge chicken cooks only on the existing cou
                        tools/patiochickentest.cjs: real game, kettle refusal unlit, placement, golden +35 once, burn, save/load, courtyard.
 src/sausages.js        #1124: grill sausages. Each kettle grill's grate is a life store (courtyard 'grillGrate', L1007's patio kettle
                        'kettleGrate', #1121; SAUSAGE.slots spots across the bars, clear of the chicken in the middle): a raw sausage
-                       from 'sausagePack' (fridge slot 11, beside the chicken's plate) goes on with putIn, grills only while that grill
+                       from 'sausagePack' (fridge slot 11, on the milk's shelf below the beer, #1188) goes on with putIn, grills only while that grill
                        is lit (`machine.cook`/`cooked`, burnt from SAUSAGE.burnAt), is taken off like any life item and saved with the
                        items. The chicken and sausages do not share a grate. A grilled sausage goes into a 'hotdogBun' (bunBag, pantry
                        slot 1) through cooking.js addTopping (one per bun, raw refused); eating it ("varmkorven") bumps `hotdogs`

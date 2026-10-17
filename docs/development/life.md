@@ -166,7 +166,8 @@ src/stores.js          the life sim's storage places (#369, LIFE.stores): slots 
                        'pantry': boxes / jars at the back, slots in front) and the utensil drawer (on its towels). Anchors sit in the
                        front's contents group (contents.js: ride with a drawer, hidden while shut). A pick box per store is the target
                        "Lägga … i kylskåpet" (action putIn) while a life item is held; shut: "Öppna kylen först", full: "Fryslådan är
-                       full" — nothing moves. interior.js `stock()` leaves `o.stockFrame` (the contents box, `at(u, d, y)`, `yaw`)
+                       full" — nothing moves. putIn (items.js `freeSlot`) uses the held thing's own home slot in that store when it is free, else
+                       the first free one (#1188: a taken-out pack returns to its shelf, not the first gap behind the beer). interior.js `stock()` leaves `o.stockFrame` (the contents box, `at(u, d, y)`, `yaw`)
                        Carriers (#370): an item type with `carrier` { slots, size, accepts, spots (per-spot accepts / size: the
                        board's spot 0 = what is being cut, 1–8 = slices), order, fullText } holds others ('on' places, models on its
                        anchors: they ride when it is carried, put down or put in the fridge — `carriers: true` stores only); never on

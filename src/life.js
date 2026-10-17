@@ -400,7 +400,7 @@ function baseActions(life) {
       sfx.click(c.life.camera.position);
       return true;
     },
-    consumes: 'nothing', result: 'the held thing in the store\'s first free slot that takes it (its size class)',
+    consumes: 'nothing', result: 'the held thing in its own home slot of the store when free (#1188), else the store\'s first free slot that takes it (its size class)',
   });
   A.define({
     id: 'loadOnto', order: 12, label: (c) => `lägga ${nm(c.target)} på ${nm(c.held)}`, // a plate in the hand, a slice on the table (#370)

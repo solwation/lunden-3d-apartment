@@ -2347,7 +2347,8 @@ export const LIFE = {
   // storage slots (#369, stores.js): the fridge's free glass shelves (m over its floor; 0.82 = the chicken's, 1.2 = the milk's stay
   // as they are) and its door bins [y on the door, spots as fractions of the door's width]; freezer slots 0–2 now sit
   // on its upper glass shelf instead of anonymous frozen blocks (#504). Stable store/slot ids preserve saved food.
-  stores: { fridge: { shelves: [0.45, 1.52], bins: [[0.85, [0.3, 0.7]], [1.3, [0.3, 0.7]], [0.4, [0.7]]] }, freezer: { y: 1.604, peas: 0.15 },
+  stores: { fridge: { shelves: [0.45, 1.52], bins: [[0.85, [0.3, 0.7]], [1.3, [0.3, 0.7]], [0.4, [0.7]]],
+    pack: { y: 1.2, dx: 0.1 } }, freezer: { y: 1.604, peas: 0.15 }, // fridge.pack: slot 11, the sausage pack (#1188): on the milk's shelf, its ~17 cm pack clear of the carton (at −0.12) and the liner (our pick)
     boardRack: { z: 2.95, lean: 10 }, plates: { stack: 0.019 }, glasses: [0.25, 0.5, 0.75] }, // glasses: the drinking glasses' spots across the glass cabinet's lower shelf (fractions, #382) // plates: the height of one plate in the stack (#379) // the cutting board on its long edge against the splashback (#374): its middle's z, leaning ° off upright // peas: the lower open shelf's spot east of the fish-finger carton (x from the middle, #373)
   place: { grid: 0.05, floorGrid: 0.1, margin: 0.04, turn: 45, outlineOpacity: .85 },
   // saving (#371): localStorage `key` written `every` s after a change; a thing whose place is gone lands on the free worktop (`lost`)
@@ -2415,7 +2416,7 @@ export const LIFE_FOOD = {
   stock: [['cheese', 'fridge', 0], ['cucumber', 'fridge', 1], ['butter', 'fridge', 6], ['eggCarton', 'fridge', 2], // the bottom shelf; the butter in the door's top bin
     ['peas', 'freezer', 3], // on the lower open shelf beside the fish-finger carton
     ['breadBag', 'pantry', 0], // the bottom of the pantry cabinet
-    ['sausagePack', 'fridge', 11], ['bunBag', 'pantry', 1]], // #1124: grill sausages beside the chicken's plate, hot-dog buns on the pantry shelf
+    ['sausagePack', 'fridge', 11], ['bunBag', 'pantry', 1]], // #1124: grill sausages on the milk's shelf (#1188), hot-dog buns on the pantry shelf
 };
 
 // The kitchen's tools (#374, LIFE-010), kept like the food (life.js `restock`): the kitchen knife, the butter knife and the
