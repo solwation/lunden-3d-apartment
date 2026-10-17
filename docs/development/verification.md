@@ -6428,6 +6428,17 @@ two HTTP peers, shared reload, simultaneous independent surfaces/legacy move,
 passed actualCLI0. Renderer and final-rebase evidence are recorded after their
 actual runs; no phone/FPS/World acceptance is inferred from native.
 
+#1167 updated the fixture to #1146's contract: only the sofa carries the
+decorative `cushions` surface/mesh, the divans have only `textile`, and the box
+stores one sofa copy (`patioCushionCopies` = `sofa`). The baseline git3ce54a6
+patio source reads the current `P.cushions`, so its one stack still matches the
+new sofa-only stack exactly. The divan catalogue ids remain for legacy layouts.
+The same commit also caught up `tools/veronamaterialtest.cjs` and this fixture
+with later main.js names (`towelMaterialTargets`, `lights.pendants`,
+`adminReports`, `editMenuSurfaceId`) and an absent `/proc/net/tcp6`; the
+Verona uv1 cloth checks skip the sofa's decorative cushion mesh. Native runs:
+patio 42/42 and Verona 33/33, CLI0.
+
 
 The sole granted #1015 component run produced six inspected900×560/DPR1
 PNGs with18 small before/after/pair passes, actual17/17 checks/CLI0 in54.196s.
