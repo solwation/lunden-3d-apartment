@@ -304,6 +304,18 @@ Samordningen får aldrig vara skälet till att en agentplats står tom eller ett
     släpper den som tog över. Vid kapplöpning gäller den äldsta reservationen/övertagandet.
   - Delar ni filer efter en överlåtelse (t.ex. samma modul eller protokoll): dela upp efter ansvar i #420, lägg nya
     delar i egna block/moduler, rebasa före varje push och behåll båda sidor vid konflikt.
+  - **All kö ägs av andra och du har lediga platser** (användaren 2026-10-17): stå inte bara och vänta. Gå igenom
+    de andra orkestrarnas aktiva ärenden (båda reporna) och avlasta det som körts längst:
+    - Ett ärende vars agent har kört **över 45 minuter** sedan start, eller vars senaste lägesrapport nämner återstående
+      delar, delas upp. Föreslå i #420 och på ärendet en avgränsad del du tar (t.ex. ett annat hus/rum, en separat
+      skärm, kvarvarande tester/dokumentation, överföring till kvarteret-lunden) och vilka filer den rör.
+    - Ägaren svarar vid sin nästa kökontroll (högst 5 min). Säger ägaren ja, eller har ingen invändning kommit inom
+      **15 minuter**, skapar du ett `Del av #N`-ärende (samma prioritet, `Lapp:`-rad, exakt vad som ingår och inte) och
+      startar en agent på det. Föräldern och dess `in-progress`/ägaretikett lämnas orörda.
+    - Ta aldrig över själva ärendet eller dubblera arbete medan dess agent syns köra (commit, kommentar eller status
+      inom 30 minuter); då gäller bara uppdelning. Saknas en avgränsbar del: skriv det i #420 och vänta på nästa kontroll.
+    - Omvänt: den som har ett ärende som passerat 45 minuter och ser att en annan orkester har lediga platser erbjuder
+      själv en avgränsad del i #420 i stället för att vänta på att någon frågar.
 - Förbättringar av själva synken diskuteras som kommentarer i #420; den som ändrar `/orkester` säger det där.
 
 ## Orkestrering
