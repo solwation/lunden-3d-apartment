@@ -406,6 +406,36 @@ test('#1165 hair length and glasses: tags h / g, old codes unchanged, bad values
   assert.ok(ext.length <= 48, ext);
 });
 
+test('#1191 neck length slider: tag a, mid default omitted, roundtrips, shifts head hitbox base Y', async () => {
+  const { AVATAR_SHAPE, avatarShape, splitAvatarCode, rifleHeadBaseY } = await import('../src/config.js');
+  const plain = avatarLook('neck-plain'), base = encodeAvatarLook(plain);
+  assert.equal(avatarShape('neck', AVATAR_SHAPE.mid), 0);
+  assert.equal(decodeAvatarLook(base, 'p').neck, AVATAR_SHAPE.mid);
+  // Default neck is omitted from encoded string
+  assert.equal(encodeAvatarLook({ ...plain, neck: AVATAR_SHAPE.mid }), base);
+  // Min (0 -> -0.04) and Max (8 -> +0.04)
+  assert.equal(avatarShape('neck', 0), -0.04);
+  assert.equal(avatarShape('neck', 8), 0.04);
+  const shortNeck = encodeAvatarLook({ ...plain, neck: 0 });
+  assert.equal(shortNeck, base + 'a0');
+  assert.equal(decodeAvatarLook(shortNeck, 'p').neck, 0);
+  const longNeck = encodeAvatarLook({ ...plain, neck: 8 });
+  assert.equal(longNeck, base + 'a8');
+  assert.equal(decodeAvatarLook(longNeck, 'p').neck, 8);
+  // Invalid values fallback to mid
+  assert.equal(decodeAvatarLook(base + 'a9', 'p').neck, AVATAR_SHAPE.mid);
+  // rifleHeadBaseY follows neck length
+  const stateMid = { p: [0, 0, 0], r: 0, ...splitAvatarCode(base) };
+  const stateLong = { p: [0, 0, 0], r: 0, ...splitAvatarCode(longNeck) };
+  const stateShort = { p: [0, 0, 0], r: 0, ...splitAvatarCode(shortNeck) };
+  const yMid = rifleHeadBaseY('neck-plain', stateMid);
+  const yLong = rifleHeadBaseY('neck-plain', stateLong);
+  const yShort = rifleHeadBaseY('neck-plain', stateShort);
+  assert.ok(Math.abs(yLong - (yMid + 0.04 * plain.tall)) < 1e-6);
+  assert.ok(Math.abs(yShort - (yMid - 0.04 * plain.tall)) < 1e-6);
+});
+
+
 
 test('#1173 wire-only seeded height preserves exact local proportions and saved codes', () => {
   for (const tall of AVATAR_SEEDED_TALL) {

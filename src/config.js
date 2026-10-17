@@ -5051,6 +5051,8 @@ export const AVATAR_SHAPE = {
     // #1165: the hair's length, a vertical scale of everything below the crown (src/avatar.js faceShape): the curtain of long hair, the nape and
     // sideburns of the others; the long end is capped so the curtain stays off the chest (*guess*, by eye)
     hairLength: { tag: 'h', min: 0.45, max: 1.25, label: 'Hårlängd' },
+    // #1191: the neck's length delta (*guess*), m up / down in the avatars' vertex shader (src/avatar.js faceShape)
+    neck:       { tag: 'a', min: -0.04, max: 0.04, zero: 0, label: 'Hals' },
   },
 };
 // #1165: glasses, 0 none, 1 round, 2 square frames: a look field `glasses`, the extension's `g` tag (absent when 0). The frames are part
@@ -5643,6 +5645,8 @@ function rifleBoxPose(seed, state) {
   // #1137: a chosen height scales the figure uniformly (Avatar: body × build sideways) and a child's head bone around
   // its pivot (AVATAR_HEIGHT.pivot), so the three shared boxes grow with the head the same way.
   let width = avatarBuildWidth(look), tall = look.tall, boxes = PVP_HEAD_BOXES.boxes;
+  const neckDelta = avatarShape('neck', wire.neck ?? look.neck); // #1191: head boxes follow neck length
+  if (neckDelta) boxes = boxes.map(b => ({ ...b, low: b.low + neckDelta, high: b.high + neckDelta }));
   if (Number.isInteger(wire.height)) {
     const { body, head } = avatarProportions(wire.height), P = AVATAR_HEIGHT.pivot;
     width *= body; tall = body;

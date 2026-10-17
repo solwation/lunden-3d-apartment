@@ -70,6 +70,7 @@ export function drawAvatarPreview(canvas, look) {
   const sh = (name) => avatarShape(name, look[name]);
   const headW = sh('headWidth'), headL = sh('headLength'), jaw = sh('jaw'), eyeS = sh('eyeSize'), eyeO = sh('eyeShape');
   const noseS = sh('noseSize'), noseW = sh('noseWidth'), earS = sh('ears'), browT = sh('browThick'), browY = sh('browY') * 1000;
+  const neck = sh('neck'), neckPx = Math.round(neck * 200);
   const iris = toHex(EYES.includes(look.eyes) ? look.eyes : EYES[0]);
 
   const cx = width / 2;
@@ -140,7 +141,7 @@ export function drawAvatarPreview(canvas, look) {
 
   // Neck (y: 78 - 93)
   ctx.fillStyle = skin;
-  ctx.fillRect(cx - 7, 78, 14, 16);
+  ctx.fillRect(cx - 7, 78 - neckPx, 14, 16 + neckPx);
 
   // Arms (y: 95 - 190)
   for (const s of [-1, 1]) {
@@ -165,6 +166,7 @@ export function drawAvatarPreview(canvas, look) {
   }
 
   ctx.restore(); // (#1139: the head keeps its own width in the preview)
+  ctx.save(); ctx.translate(0, -neckPx); // #1191: head follows neck length in 2D preview
 
   // Long hair behind shoulders (style === 1)
   if (style === 1) {
@@ -314,7 +316,8 @@ export function drawAvatarPreview(canvas, look) {
     ctx.fill();
   }
 
-  ctx.restore();
+  ctx.restore(); // #1191: restore neck translation
+  ctx.restore(); // restore dpr scale
 }
 
 /** A random look (#1140): colours, hairstyle, sleeves, figure, facial hair, eye colour, the face sliders and a height in cm
@@ -533,7 +536,7 @@ function initCustomizerDOM() {
  * figure's sections: swatches for the eye colour, a 0 … steps − 1 slider per field (the middle is the plain face). */
 const FACE_SECTIONS = [
   ['Ögon', ['eyeSize', 'eyeShape'], true],
-  ['Huvudform', ['headWidth', 'headLength', 'jaw']],
+  ['Huvudform', ['headWidth', 'headLength', 'jaw', 'neck']],
   ['Näsa & öron', ['noseSize', 'noseWidth', 'ears']],
   ['Ögonbryn', ['browThick', 'browY']],
   ['Hår och glasögon', ['hairLength'], false, true], // #1165
