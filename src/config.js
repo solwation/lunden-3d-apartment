@@ -4024,7 +4024,14 @@ export const LIGHT_MODES = {
       lamps: ['golvlampan', 'spotsen', 'långlampan', 'lampan', 'julgranen', 'rottinglampan', 'Hue Go-lampan', 'bänkbelysningen', 'enhörningslampan', 'dödsstjärnan', 'spegelns nattlampa'] },
     { id: 'evening', label: 'kvällsmys', page: 'cozy', rooms: false, say: 'Kvällsmys på. Mysigt!',
       lamps: ['golvlampan', 'långlampan', 'lampan', 'julgranen', 'nattlampan', 'spegelns nattlampa'] },
+    { id: 'disco', label: 'disco', page: 'cozy', rooms: false, lamps: true, skip: ['lampan i köksfläkten'], disco: true, say: 'Disco! Nu dansar vi.' },
   ],
+  // The disco (#1177, the report: "disco med färger och befintlig musik"): the small lamps switched on as `extrabelysning`
+  // change colour every `beat` s through `colors`, each lamp `spread` colours ahead of the one before (so the room is never
+  // one colour); their glow, pool light and wash follow (Lights tint, no new light). The SYMFONISK speakers play `channel`
+  // (SONOS.channels id) unless music already plays. All *guesses*: beat ≈ 120 BPM pop (not synced to the recording),
+  // a saturated party palette, Pop och rock as the liveliest of the existing channels.
+  disco: { beat: 0.5, spread: 2, channel: 'synth', colors: [0xff2a4a, 0xff8a1a, 0xffe14a, 0x3dff6a, 0x2ad8ff, 0x3a5cff, 0xb03aff, 0xff3ad0] },
   menu: { light: 'ljuslägen …', cozy: 'myslägen …', end: 'avsluta ljusläget', back: 'tillbaka', talk: 'prata', on: ' (på nu)' },
   ended: 'Okej, ljusläget är avslutat.',
 };

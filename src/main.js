@@ -1109,7 +1109,7 @@ if (params.has('laptop')) for (const l of laptops) l.set(true);
 // the smart speakers (#325): E wakes one, it answers (the time, the weather, the coffee, jokes …)
 const nests = new Nests(world.furnitureTargets.filter((t) => t.kind === 'nest'), { day, weather, coffee: world.lids.find((l) => l.kind === 'coffee'), camera, layer: document.getElementById('speech') });
 // light modes from the smart speakers (#1176): their E opens a menu — Prata (the answer above), Ljuslägen …, Myslägen …
-const lightModes = new LightModes(lights);
+const lightModes = new LightModes(lights, undefined, sonos); // (the disco plays the SYMFONISK music, #1177)
 for (const sp of nests.speakers) sp.target.options = () => lightModes.rows(
   () => { sp.target.toggle(); bump('nest', 1, idOf(sp.target)); },
   (text, key) => nests.reply(sp, { key, text }));
@@ -2650,6 +2650,7 @@ function step(dt) {
   if (wet && !inShower && performance.now() > shriekAt) { sfx.shriek(); shriekAt = performance.now() + 1500; }
   inShower = wet;
   animateWater(dt);
+  lightModes.update(dt); // the disco's colours (#1177)
   lights.updateAuto(day.daylight * (1 - 0.6 * weather.overcast), dt); // under rain clouds the small lamps come on earlier (#248)
   lights.update(player.aloft ? -1 : Math.max(0, player.level), player.pos, dt, camera.getWorldDirection(lookDir)); // (looking towards a lamp keeps its pool light, #276)
   visitLights.update(lights.supply); // the visited flats' lamps: shader light only, out in a power cut (#620)

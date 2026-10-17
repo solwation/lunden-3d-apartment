@@ -266,6 +266,15 @@ class FloorLamp {
     for (const l of this.room.lamps) l.color = hex;
     this.spec.shade.emissive?.setHex(hex);
     this.color = hex; // (keep.js)
+    this.colorRev = (this.colorRev ?? 0) + 1; // (#1177: a choice of the visitor's, which a disco never undoes)
+    this.recolored = true;
+  }
+
+  /** A passing colour (#1177, the disco): the glow, the pool light and the wash like recolor, but not `color` (keep.js
+   * never saves it) and not `colorRev`. Lights.restoreColors puts the lamp back. */
+  tint(hex) {
+    for (const l of this.room.lamps) l.color = hex;
+    this.spec.shade.emissive?.setHex(hex);
     this.recolored = true;
   }
 }
@@ -633,6 +642,21 @@ export class Lights {
     for (const [f, on] of before.lamps) {
       if (f.room.on !== applied.lamps.get(f)) continue;
       f.room.on = f.auto && !this.forced && this.dark !== undefined && this.dark !== before.dark ? this.dark : on;
+    }
+  }
+
+  /** The small lamps' colours now (#1177, before a disco): Map(FloorLamp → { rev, anchors, emissive }). */
+  colorSnapshot() {
+    return new Map(this.floorLamps.map((f) => [f, { rev: f.colorRev ?? 0, anchors: f.room.lamps.map((l) => l.color), emissive: f.spec.shade.emissive?.getHex() }]));
+  }
+
+  /** Back to the colours of `snap` (#1177), except on a lamp whose colour the visitor chose meanwhile (Hue Go). */
+  restoreColors(snap) {
+    for (const [f, c] of snap) {
+      if ((f.colorRev ?? 0) !== c.rev) continue;
+      f.room.lamps.forEach((l, i) => { l.color = c.anchors[i]; });
+      if (c.emissive !== undefined) f.spec.shade.emissive.setHex(c.emissive);
+      f.recolored = true;
     }
   }
 

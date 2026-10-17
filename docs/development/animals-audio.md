@@ -52,7 +52,11 @@ src/nest.js            smart speakers (#325, NEST): a smart display (screen + fa
 src/lightmodes.js      light modes from the speakers (#1176, LIGHT_MODES): E opens a menu (≤ 4 rows a page) — Prata (the random
                        answer), Ljuslägen … (allt på, extrabelysning, fönsterlampor), Myslägen … (mys, kvällsmys), Avsluta
                        ljusläget; Lights.preset switches the existing lamps (no new light) and holds the dusk; end = Lights.restore
-                       (what the visitor switched meanwhile stays; dusk lamps catch up); power cut / F / reset release the mode
+                       (what the visitor switched meanwhile stays; dusk lamps catch up); power cut / F / reset release the mode.
+                       Disco (#1177, Myslägen …, LIGHT_MODES.disco): extrabelysning + every small lamp a new colour each beat
+                       (FloorLamp.tint: glow, pool light, wash; never `color`, so keep.js saves none; colorSnapshot/restoreColors
+                       put them back except a lamp recoloured meanwhile, colorRev); quiet speakers play the `synth` channel and
+                       Avsluta / another mode pause them and put the channel back only while Sonos.rev is still the disco's
 src/sonos.js           music in the SYMFONISK speakers (#187, SONOS): six CC BY 4.0 channels, two recordings each, one mix
                        → a panner per speaker (walls / the other floor muffle), #sonos-panel (⏮ ⏭ ⏯ volume, reading mode);
                        `Composer` (channel sub-mix + scheduling) is shared with the car's `CarRadio` (#268).
@@ -83,7 +87,9 @@ tools/nesttest.html    headless test (#325): aim at the display and both round s
                        caption / bubble, the (mocked) speech call, counted, the Sonos ducked, quiet after; 300 presses never repeat;
                        the time answer follows the game clock; the weather; muted = no speech; not through a wall; F hides them
 tools/lightmodestest.cjs headless (#1176): `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/lightmodestest.cjs BASE OUT` — the
-                       menu by native E / number keys, every mode's lamps + a picture, manual change kept, dusk, power cut, F, phone
+                       menu by native E / number keys, every mode's lamps + a picture, manual change kept, dusk, power cut, F, phone;
+                       the disco (#1177): colours per beat + wash, nothing saved, Hue Go choice kept, music start / restore /
+                       the visitor's channel kept, another mode, power cut, F, two disco pictures (media/AudioContext state only)
 tools/kittentest.html  headless test of kittens (#363): the seeded draw (~KITTEN.chance, never Miele), found (stats, points, badge), smaller
                        with paws on the floor, plays on the spot, a pat (kittenPets, more points, the photo marked), a pounce then a
                        fast scamper, a cup on the floor batted over (no deduction), hurt: faster and a bigger deduction

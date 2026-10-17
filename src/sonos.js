@@ -77,7 +77,7 @@ export class Sonos extends Composer {
   /** speakers: the furniture targets of kind 'speaker'; panel: #sonos-panel. */
   constructor(speakers, panel) {
     super();
-    Object.assign(this, { speakers, panel, playing: false, channel: 0, volume: S.start, bus: null, ch: null, barNo: 0 });
+    Object.assign(this, { speakers, panel, playing: false, channel: 0, rev: 0, volume: S.start, bus: null, ch: null, barNo: 0 });
     const self = this;
     for (const t of speakers) Object.defineProperty(t, 'verb', { get: () => (self.playing ? 'styra musiken på' : 'spela musik på') });
     this.nameEl = panel.querySelector('.name');
@@ -126,12 +126,14 @@ export class Sonos extends Composer {
     const A = this.ensureBus();
     this.onPlay?.(this.channel); // statistics and points (#197): each channel once
     this.playing = true;
+    this.rev++; // (#1177: every play / pause / channel change counts, so a disco knows whether the music is still its own)
     if (A) { this.startChannel(A); this.bus.mix.gain.setTargetAtTime(this.gain, A.ctx.currentTime, 0.05); }
     this.render();
   }
 
   pause() {
     this.playing = false;
+    this.rev++;
     const A = audioParts();
     if (A && this.bus) this.bus.mix.gain.setTargetAtTime(0, A.ctx.currentTime, 0.08);
     this.stopChannel();
@@ -143,6 +145,7 @@ export class Sonos extends Composer {
 
   next(d) {
     this.channel = (this.channel + d + S.channels.length) % S.channels.length;
+    this.rev++;
     if (this.playing) { const A = audioParts(); if (A) this.startChannel(A); this.onPlay?.(this.channel); }
     this.render();
   }
