@@ -422,7 +422,7 @@ function baseActions(life) {
     consumes: 'nothing', result: 'the thing (and what lies on it) in the hand',
   });
   A.define({
-    id: 'open', order: 30, label: (c) => `öppna ${nm(c.target)}`,
+    id: 'open', order: 30, label: (c) => I.def(c.target)?.unwrap ?? `öppna ${nm(c.target)}`, // (#1209: a wrapped piece is unwrapped)
     applies: (c) => c.target?.pkg === 'closed',
     check: (c) => c.targetView?.shutReason() ?? null,
     run: (c) => { I.set(c.target, { pkg: 'open' }); sfx.click(c.targetView?.where()); },
@@ -430,7 +430,7 @@ function baseActions(life) {
   });
   A.define({
     id: 'close', order: 31, label: (c) => `stänga ${nm(c.target)}`,
-    applies: (c) => c.target?.pkg === 'open',
+    applies: (c) => c.target?.pkg === 'open' && !I.def(c.target)?.unwrap, // (unwrapped film does not go back on, #1209)
     check: (c) => c.targetView?.shutReason() ?? null,
     run: (c) => { I.set(c.target, { pkg: 'closed' }); sfx.click(c.targetView?.where()); },
     consumes: 'nothing', result: 'the package is closed again',

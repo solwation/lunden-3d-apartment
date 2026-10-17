@@ -1,0 +1,53 @@
+<!doctype html><html><meta charset="utf-8"><title>Frozen pizza and pirogs (#1209)</title><pre id="out">running…</pre><script type="module">
+// #1209 (part of #1206): the real game (?life&shot&test) — Billys and Gorby's boxes at home in the freezer, closed freezer
+// and closed box refused, one wrapped piece into the hand, unwrapped (no rewrapping), frozen = not edible yet, onto a plate,
+// save/load with its state, an old save without the boxes gets them by restock, no second box while one exists.
+const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS':'FAIL')+' '+s);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
+try{
+ const frame=document.createElement('iframe');frame.width=480;frame.height=300;frame.src='../index.html?life&shot&test';document.body.append(frame);await new Promise(r=>frame.onload=r);while(!frame.contentWindow.__app)await wait(100);
+ const w=frame.contentWindow,A=w.__app,T=await w.eval("import('three')"),{FROZEN_MEALS:F}=await w.eval("import('../src/config.js')"),L=A.life,I=L.items;
+ frame.contentDocument.documentElement.requestFullscreen=undefined;frame.contentDocument.getElementById('start-touch').click();A.renderer.setAnimationLoop(null);
+ const action=(target,id)=>L.options(target).find(a=>a.id===id),run=(target,id)=>action(target,id)?.run(),finish=s=>L.runner.update(s??1);
+ const tgt=it=>L.view(it).target,freezer=A.world.lids.find(l=>l.kind==='fridge'&&l.freezer);
+ let pizzaBox=I.all().find(i=>i.type==='billysBox'),pirogBox=I.all().find(i=>i.type==='gorbysBox');
+ check(pizzaBox?.amount===F.billys.count&&pizzaBox.place.store==='freezer'&&pizzaBox.place.slot===0,'Billys box at home on the freezer\'s upper shelf');
+ check(pirogBox?.amount===F.gorbys.count&&pirogBox.place.store==='freezer'&&pirogBox.place.slot===2,'Gorby\'s box at home on the freezer\'s upper shelf');
+ check(L.view(pizzaBox).model.parent?.parent===freezer.object||!!L.view(pizzaBox).model.parent,'box model sits in the freezer');
+ check(action(tgt(pizzaBox),'dispense')?.reason==='Öppna frysen först','closed freezer blocks the box');
+ freezer.toggle();for(let i=0;i<20;i++)freezer.update(.1);L.update(0);
+ check(/^Öppna Billys-kartongen först$/.test(action(tgt(pizzaBox),'dispense')?.reason??''),'a closed box must be opened first');
+ run(tgt(pizzaBox),'open');check(pizzaBox.pkg==='open','the box opens');
+ const dl=action(tgt(pizzaBox),'dispense');check(dl&&!dl.reason&&dl.label==='ta en Billys pan pizza','offers taking a pan pizza');dl.run();finish();
+ const pz=I.held();check(pz?.type==='billys'&&pz.pkg==='closed'&&pizzaBox.amount===F.billys.count-1&&I.name(pz)==='den inplastade pizzan','one wrapped pizza in the hand');
+ check(action({instance:pz},'eat')?.reason==='Pizzan är djupfryst – värm den först','a frozen pizza cannot be eaten');
+ const un=action({instance:pz},'open');check(un&&!un.reason&&un.label==='packa upp pizzan','offers unwrapping it in the hand');un.run();
+ check(pz.pkg==='open'&&I.name(pz)==='den frysta pizzan'&&!action({instance:pz},'close'),'unwrapped: frozen, no rewrapping');
+ const film=L.view(pz).model.children.find(c=>c.material?.transparent);check(film&&!film.visible,'the film is gone from the model');
+ // a plate from the cabinet onto the worktop, the pizza on it
+ const plate=I.all().find(i=>i.type==='plate'&&i.place.at!=='slot')??I.all().find(i=>i.type==='plate');
+ L.view(pz).placeAt(new T.Vector3(5.0,.931,3.1));
+ if(plate.place.at==='slot'){const lid=A.world.lids.find(l=>l.stock==='platesLife');lid.toggle();for(let i=0;i<30;i++)lid.update?.(.1);L.update(0);}
+ L.view(plate).take();L.view(plate).placeAt(new T.Vector3(5.25,.931,2.8));
+ L.view(pz).take();const on=action(tgt(plate),'putOn')??L.options(tgt(plate)).find(a=>/tallrik/.test(a.label)&&!a.reason);
+ check(on&&!on.reason,'the pizza offers going onto the plate: '+(on?.id??'none'));on?.run();
+ check(pz.place.at==='on'&&pz.place.parent===plate.id&&!I.held(),'the pizza lies on the plate');
+ // the pirog: wrapped from its own box
+ run(tgt(pirogBox),'open');run(tgt(pirogBox),'dispense');finish();const pg=I.held();
+ check(pg?.type==='pirog'&&I.name(pg)==='den inplastade pirogen'&&pirogBox.amount===F.gorbys.count-1,'one wrapped pirog in the hand');
+ run({instance:pg},'open');check(pg.pkg==='open'&&I.name(pg)==='den frysta pirogen','the pirog unwrapped');
+ check(action({instance:pg},'eat')?.reason==='Pirogen är djupfryst – värm den först','a frozen pirog cannot be eaten');
+ // save/load keeps state and places
+ const rec=JSON.parse(JSON.stringify(L.serialize()));L.load(rec);
+ const pz2=I.get(pz.id),pg2=I.get(pg.id),b2=I.get(pizzaBox.id);
+ check(pz2?.pkg==='open'&&pz2.place.at==='on'&&pz2.place.parent===plate.id,'save/load: unwrapped pizza stays on the plate');
+ check(pg2?.pkg==='open'&&pg2.place.at==='hand','save/load: unwrapped pirog still in the hand');
+ check(b2?.amount===F.billys.count-1&&b2.pkg==='open','save/load: the box keeps its count');
+ check(L.restock('freezer').length===0,'no second box while the old one exists');
+ // an old save without the boxes: restock brings them in
+ const old=JSON.parse(JSON.stringify(rec));old.items=old.items.filter(e=>!['billysBox','gorbysBox','billys','pirog'].includes(e.type));L.load(old);
+ const made=L.restock().map(i=>i.type);check(made.includes('billysBox')&&made.includes('gorbysBox'),'an old save gets both boxes by restock');
+ window.frozenMealTest={A,lines};
+ check(true,'done');
+}catch(e){lines.push('FAIL '+e.stack);pass=false;}
+document.getElementById('out').textContent=(pass?'ALL PASS':'SOME FAILED')+'\n'+lines.join('\n');
+</script></html>

@@ -300,6 +300,8 @@ export function cookingActions(life) {
     },
     consumes: 'the topping in the hand (removed)', result: 'one more part on the bread: { type, amount } exactly as the topping was',
   });
+  // #1209: a frozen meal's name from its state: wrapped, frozen, hot (heated: machine.cooked)
+  for (const [type, d] of Object.entries(I.defs)) if (d.wrappedName) I.namers[type] = (it) => it.pkg === 'closed' ? d.wrappedName : it.machine?.cooked ? d.hotName : d.frozenName;
   /** A sandwich's name from what is on it (#379): "ost- och gurkmackan", "ostmackan", "smörgåsen med smör" … */
   I.namers.breadSlice = (it) => {
     const has = (t) => it.parts?.some((p) => p.type === t);

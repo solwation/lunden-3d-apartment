@@ -2417,7 +2417,8 @@ export const LIFE_FOOD = {
   stock: [['cheese', 'fridge', 0], ['cucumber', 'fridge', 1], ['butter', 'fridge', 6], ['eggCarton', 'fridge', 2], // the bottom shelf; the butter in the door's top bin
     ['peas', 'freezer', 3], // on the lower open shelf beside the fish-finger carton
     ['breadBag', 'pantry', 0], // the bottom of the pantry cabinet
-    ['sausagePack', 'fridge', 11], ['bunBag', 'pantry', 1]], // #1124: grill sausages on the milk's shelf (#1188), hot-dog buns on the pantry shelf
+    ['sausagePack', 'fridge', 11], ['bunBag', 'pantry', 1], // #1124: grill sausages on the milk's shelf (#1188), hot-dog buns on the pantry shelf
+    ['billysBox', 'freezer', 0], ['gorbysBox', 'freezer', 2]], // #1209: frozen pan pizzas and pirogs on the freezer's upper glass shelf (appended: old saves get them by restock)
 };
 
 // The kitchen's tools (#374, LIFE-010), kept like the food (life.js `restock`): the kitchen knife, the butter knife and the
@@ -2451,6 +2452,15 @@ export const LIFE_TOOLS = {
 // its middle along x, scaled with the kettle), kept clear of the whole chicken in the middle.
 export const SAUSAGE = { pack: 6, buns: 4, len: 0.13, r: 0.012, seconds: 12, burnAt: 36, slots: [-0.2, -0.165, 0.165, 0.2],
   bun: { len: 0.16, h: 0.04, w: 0.055 }, colors: { raw: 0xd9a294, grilled: 0x9a4d22, burnt: 0x2e1a10 } };
+// #1209 (part of #1206, an in-game wish): Billys Pan Pizza and Gorby's pirogs in the freezer. Box counts and sizes are
+// assumptions (*guess*: a ~13 cm square pan pizza ~2.4 cm thick, a ~13 × 7 cm pirog), not product measures; the boxes'
+// prints are our own canvas versions of the brands' colours (Billys red/yellow, Gorby's blue/yellow). Each piece comes
+// wrapped in plastic (pkg 'closed'): "packa upp" takes the film off; frozen, it cannot be eaten yet (heating: #1210).
+export const FROZEN_MEALS = {
+  billys: { count: 3, box: [0.165, 0.09, 0.15], piece: [0.13, 0.024, 0.13], crust: 0xc98b45, film: 0.006 },
+  gorbys: { count: 4, box: [0.15, 0.08, 0.17], piece: [0.13, 0.034, 0.072], crust: 0xc58a4a, film: 0.006 },
+  frost: 0.35, // how pale/frosty a frozen piece looks (0 = as baked, 1 = white)
+};
 export const EGG = { count: 6, crack: .65, seconds: 8, burnAt: 24, shellRadius: .022, whiteRadius: .051, yolkRadius: .017, carton: { w: .155, d: .105, h: .067 } };
 // Laundry gameplay and interior proportions are assumptions (#395/#550), not product specifications.
 export const LAUNDRY = {
@@ -2503,6 +2513,13 @@ export const ITEMS = {
   sausagePack: { name: 'korvpaketet', noun: 'korv', tags: ['food', 'package'], unit: 'count', amount: SAUSAGE.pack, size: 'm', pkg: 'closed', model: 'sausagePack', dispense: 'sausage', dispenseLabel: 'ta en grillkorv' },
   sausage: { name: 'korven', noun: 'korv', tags: ['food', 'topping', 'sausage'], unit: 'count', amount: 1, size: 's', model: 'sausage', bites: 3, needsCooking: true, cookText: 'Grilla korven först' },
   bunBag: { name: 'korvbrödspåsen', noun: 'korvbröd', tags: ['food', 'package'], unit: 'count', amount: SAUSAGE.buns, size: 's', pkg: 'closed', model: 'bunBag', dispense: 'hotdogBun', dispenseLabel: 'ta ett korvbröd' },
+  // #1209: frozen meals from the freezer; the piece is wrapped (pkg closed) until unwrapped (`unwrap` = that action's label)
+  billysBox: { name: 'Billys-kartongen', noun: 'pizza', tags: ['food', 'frozen', 'package'], unit: 'count', amount: FROZEN_MEALS.billys.count, size: 'm', pkg: 'closed', model: 'billysBox', dispense: 'billys', dispenseLabel: 'ta en Billys pan pizza' },
+  billys: { name: 'pizzan', noun: 'pizza', tags: ['food', 'frozen'], unit: 'count', amount: 1, size: 's', pkg: 'closed', model: 'billys', bites: 4, needsCooking: true,
+    cookText: 'Pizzan är djupfryst – värm den först', unwrap: 'packa upp pizzan', wrappedName: 'den inplastade pizzan', frozenName: 'den frysta pizzan', hotName: 'den varma pizzan' },
+  gorbysBox: { name: 'Gorbys-kartongen', noun: 'piroger', tags: ['food', 'frozen', 'package'], unit: 'count', amount: FROZEN_MEALS.gorbys.count, size: 'm', pkg: 'closed', model: 'gorbysBox', dispense: 'pirog', dispenseLabel: 'ta en Gorbys pirog' },
+  pirog: { name: 'pirogen', noun: 'pirog', tags: ['food', 'frozen'], unit: 'count', amount: 1, size: 's', pkg: 'closed', model: 'pirog', bites: 3, needsCooking: true,
+    cookText: 'Pirogen är djupfryst – värm den först', unwrap: 'packa upp pirogen', wrappedName: 'den inplastade pirogen', frozenName: 'den frysta pirogen', hotName: 'den varma pirogen' },
   hotdogBun: { name: 'korvbrödet', noun: 'korvbröd', tags: ['food', 'base', 'bun'], unit: 'count', amount: 1, size: 's', model: 'hotdogBun', bites: 4 },
   plate: { name: 'tallriken', tags: ['dish', 'carrier', 'dishwasherSafe'], unit: 'count', amount: 1, size: 'm', clean: 'clean', model: 'plate',
     carrier: { slots: 6, size: 's', accepts: ['food'], fullText: 'Tallriken är full', order: [0, 1, 2, 3, 4, 5] } }, // the middle first, then round it

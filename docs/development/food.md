@@ -58,6 +58,14 @@ src/sausages.js        #1124: grill sausages. Each kettle grill's grate is a lif
                        items. The chicken and sausages do not share a grate. A grilled sausage goes into a 'hotdogBun' (bunBag, pantry
                        slot 1) through cooking.js addTopping (one per bun, raw refused); eating it ("varmkorven") bumps `hotdogs`
                        (SCORE guesses) and consumes +1 life like a sandwich. Counts, sizes, colours and times are assumptions.
+src/frozenmealmodels.js #1209 (part of #1206): Billys Pan Pizza and Gorby's pirogs. ITEMS billysBox/gorbysBox (freezer slots 0
+                       and 2, the upper glass shelf; appended stock, so old saves get them by restock) dispense one wrapped piece
+                       (billys/pirog, pkg 'closed'); the shared `open` action is labelled by the def's `unwrap` ("packa upp
+                       pizzan") and cannot be undone (no `close`). Frozen pieces refuse eating (`needsCooking`, cookText) until
+                       heated (machine.cooked, microwave in #1210); names from wrappedName/frozenName/hotName (cooking.js).
+                       Box prints are our own canvas versions of the brands' colours; FROZEN_MEALS sizes/counts are *guess*.
+tools/frozenmealtest.html real game: stock homes, shut freezer/closed box refusals, wrapped piece in the hand, unwrap, frozen
+                       refusal, onto a plate, save/load, restock for an old save.
 src/sausagemodels.js   #1124 builders for lifemodels.js: pack, sausage (browns with cook), bun bag, split bun with its sausage part.
 tools/sausagetest.html real game (?life&shot&test): stock homes, closed fridge, raw refusal, both grates, lit-only grilling, burn,
                        chicken/sausage sharing, save/load, bun assembly, one per bun, eating and score.
