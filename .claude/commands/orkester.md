@@ -350,6 +350,7 @@ Samordningen får aldrig vara skälet till att en agentplats står tom eller ett
   - Dör en agent finns arbetet kvar i dess worktree (`.claude/worktrees/agent-<id>` eller `~/lunden-wt/<namn>`): återuppta den (SendMessage) eller starta en ny som utgår från worktreens commits (`git log origin/main..HEAD`) i stället för att göra om det.
 - Leverera små fungerande steg inom det högst prioriterade startbara ärendet, så att nytt syns ofta; välj inte
   mindre eller mer synliga issues framför högre prioritet eller äldre skapandetid.
+- **Modellval (användaren 2026-10-17):** arbetsagenterna kör en **billigare modell** (i Claude Code `model: "sonnet"` i Agent-anropet; i andra verktyg motsvarande mellanklassmodell), medan dirigenten som väljer ärenden, bryter ner, samordnar och **granskar agenternas arbete** (skärmdumpar, tester, diff, issue-kommentarer) kör en rimligt kompetent modell. Dirigenten ska därför alltid själv titta på skärmdumparna och kontrollera rapporterna innan ett ärende räknas som klart; uppgradera en enskild agent till en starkare modell bara när ärendet uttryckligen kräver det (t.ex. svår felsökning eller arkitektur) och skriv varför i statusen.
 - Skriv varje agents prompt med: issuenumren och ordningen, vilka andra agenter som kör och vilka filer/områden de
   rör (undvik dem), agentens egen port och skärmdumpskatalog (utanför repot), och reglerna nedan.
 - När en agent rapporterar: titta på dess skärmdump, kör om de viktigaste testerna på main om agenten inte gjorde det
