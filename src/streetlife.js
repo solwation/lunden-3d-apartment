@@ -39,6 +39,29 @@ export function carGeometry() {
   return [bare(parts.paint), mergeGeometries(trim), bare(parts.glass), bare(parts.tyre)];
 }
 
+/** The coarse parked car for the phone view beyond VIEW_LOD.carNear (#1213), facing +x like carGeometry: the side profile
+ * of MEGANE extruded (paint, white: the instance colour tints it), a narrower dark glasshouse on it, a dark block per axle;
+ * one geometry with vertex colours (~100 triangles instead of ~5.1 k). */
+export function carFarGeometry(S = MEGANE) {
+  const top = S.top, front = top.filter(([x]) => x >= S.belt[0][0]), rear = top.filter(([x]) => x <= S.belt.at(-1)[0]);
+  const ext = (pts, w, hex) => {
+    const g = keep(new THREE.ExtrudeGeometry(new THREE.Shape(pts.map(([x, y]) => new THREE.Vector2(x, y))), { depth: w, bevelEnabled: false }).translate(0, 0, -w / 2));
+    return paint(g, hex);
+  };
+  const paint = (g, hex) => {
+    const c = new THREE.Color(hex), n = g.attributes.position.count, col = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) col.set([c.r, c.g, c.b], i * 3);
+    if (g.attributes.uv) g.deleteAttribute('uv');
+    g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    return g;
+  };
+  const body = ext([...front, ...S.belt.slice(1, -1), ...rear, ...[...S.bot].reverse()], S.W, 0xffffff);
+  const glass = ext([...top.filter(([x]) => x < S.belt[0][0] && x > S.belt.at(-1)[0]), ...[...S.belt].reverse()].reverse(), S.W * 0.86, 0x1a2128);
+  const wx = S.wheelbase / 2, d = S.wheelR * 1.8;
+  const axles = [wx, -wx].map((x) => paint(keep(new THREE.BoxGeometry(d, S.wheelR + 0.08, S.W * 0.94).translate(x, (S.wheelR + 0.08) / 2, 0)), 0x141517));
+  return mergeGeometries([body, glass, ...axles]);
+}
+
 let spokeMap;
 /** A small shared radial spoke pattern; drawn as a wheel-sized alpha card, not individual geometry. */
 export function bikeSpokeTexture() {
@@ -121,10 +144,12 @@ export function buildStreetLife({ entrances = [] } = {}) {
   }
   group.add(new THREE.Mesh(merge(lines), white));
   const [body, trim, glass, carTyres] = carGeometry();
-  group.add(instanced(body, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.25, metalness: 0.35 }), cars, carColors),
+  const carBatches = [instanced(body, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.25, metalness: 0.35 }), cars, carColors),
     instanced(trim, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.3, metalness: 0.45 }), cars),
     instanced(glass, new THREE.MeshStandardMaterial({ color: 0x33495c, roughness: 0.05, metalness: 0.55 }), cars),
-    instanced(carTyres, new THREE.MeshStandardMaterial({ color: 0x141517, roughness: 0.85 }), cars));
+    instanced(carTyres, new THREE.MeshStandardMaterial({ color: 0x141517, roughness: 0.85 }), cars)];
+  for (const m of carBatches) m.userData.carBatch = 'street'; // (#1213: the phone view draws the far ones coarse, src/viewlod.js)
+  group.add(...carBatches);
   // the bike yard NW of Hus L (#260): light stone paving, a lighter bike place, lawns
   const tex = pavingTexture(), tw = 2.4;
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping;

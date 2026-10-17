@@ -43,6 +43,7 @@ export function addShadowTiles(mesh, size = C.size) {
 
 /** Copy the batch's current matrices (and colours) into its squares when they changed since the last copy. */
 function sync(e) {
+  if (e.frozen) return;
   const { mesh } = e, im = mesh.instanceMatrix, ic = mesh.instanceColor;
   if (im.version !== e.matrix) {
     e.matrix = im.version;
@@ -61,6 +62,13 @@ function sync(e) {
       t.instanceColor.needsUpdate = true;
     }
   }
+}
+
+/** The batch's own matrices will be reordered (src/viewlod.js, #1213): its squares keep the instances they copied. */
+export function freezeShadowTiles(mesh) {
+  const e = tracked.find((x) => x.mesh === mesh);
+  if (e) { sync(e); e.frozen = true; }
+  return !!e;
 }
 
 /** Every shadow-casting InstancedMesh under `root` whose instances spread wider than `C.minSpread` m gets squares. */

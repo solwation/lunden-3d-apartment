@@ -438,6 +438,7 @@ export class Garage {
         const m = new THREE.InstancedMesh(geo, mat, mats.length);
         mats.forEach((x, i) => { m.setMatrixAt(i, x); if (cols) m.setColorAt(i, new THREE.Color(cols[i])); });
         m.computeBoundingSphere();
+        m.userData.carBatch = 'garage'; // (#1213: the phone view draws the far ones coarse, src/viewlod.js)
         return m;
       };
       this.carArea.add(inst(body, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, metalness: 0.3 }), colors),

@@ -2643,6 +2643,11 @@ export const LOW_MEMORY = { maxTextureSize: 512, shadowMapSize: 1536, maxPixelRa
 // site's batch on every shadow redraw. `size` *guess*: about the shadow box's width; smaller squares mean more objects to
 // test per shadow pass, larger ones more far instances drawn. Batches under `minInstances` are left alone.
 export const SHADOW_TILES = { size: 32, minInstances: 8, minSpread: 40 };
+// #1213 (phones, src/viewlod.js): in the view, a parked car (the north street's car park, the garage) further than `carNear`
+// m from the camera is drawn as a coarse body (streetlife.js `carFarGeometry`, ~100 instead of ~5.1 k triangles), all of
+// them in one draw call; the near ones keep the full batches. A car changes side `band` m past `carNear` (no flicker on
+// the edge); the split is redone when the camera has moved `step` m. All three *guess* (judged by screenshots, not a device).
+export const VIEW_LOD = { carNear: 30, band: 2, step: 1 };
 
 // Campus facades on phones (#589, src/lowmemory.js): #576–#581 took the east backdrop from ~21k to ~75k triangles. On
 // LOW_MEMORY devices campusfacades.js and schoolfacade.js keep every body, roof, colour, window and the clock tower but

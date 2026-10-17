@@ -813,6 +813,35 @@ perfcount `?lowmem&w=390&h=844` view numbers are identical with and without (its
 share the batches' programs and are drawn by the warm-up's shadow pass). View-pass detail for the cars and trees is #1213. The iPhone check
 remains: whether outdoor rotations and the first seconds after Börja keep the context.
 
+## Far parked cars coarse in the phone view (#1213 — not verified on a device)
+
+The car park on the north street (19 cars) and the garage (23 cars) draw their cars as four InstancedMeshes (paint, trim,
+glass, tyres; ~5.1 k triangles a car) culled by one sphere, so the start view drew all street cars in full although most
+stand 30–75 m away. On `lowMemory` (`src/viewlod.js`, `VIEW_LOD` in config, batches tagged `userData.carBatch`) each set
+keeps only the cars within `carNear` m (30, *guess*; 2 m hysteresis) in its batches (`count` + instances packed to the
+front); the others go to one extra InstancedMesh of a coarse body (`streetlife.js carFarGeometry`, ~125 triangles, vertex
+colours, paint as instance colour). The split is redone when the camera moved `step` m. Shadows are unchanged: the
+batches' shadow squares (#1195) are frozen with the full cars before the buffers are reordered (`freezeShadowTiles`).
+An emptied batch gets a far-away bounding sphere (no zero-instance draw). Rays hit near cars in the batches and far cars
+on the coarse body. `&nocarlod` turns it off. Desktop never calls it.
+
+Measured (headless Chromium/SwiftShader, iPhone 14 Pro profile, quality 0, noon in July; view pass, calls / triangles):
+
+| spot | before | after |
+|---|---:|---:|
+| start, yaw 135° | 514 / 897 k | 515 / 817 k |
+| start, yaw 180° | 486 / 857 k | 482 / 759 k |
+| start, yaw 0° | 87 / 447 k | 83 / 349 k |
+| outside the front door, yaw 135° | 255 / 742 k | 252 / 646 k |
+| x 13.7 z 1.4, yaw 90° | 398 / 850 k | 395 / 754 k |
+
+Calls change by at most +1 (the coarse batch next to a partly near set) and drop where the near set is empty. Read-back
+pixels at six spots (start, the car park from both ends and its middle, the garage drive) differ between on/off by
+0.06–2.7 %, the same as two runs with it on (0.1–3.3 %). `turntest.html?lowmem&spots=start,courtyard,street`: ALL PASS
+(the one program on arriving at `street` is there with `&nocarlod` too). The trees were left alone: their crowns (56
+triangles) and trunks (46) are already coarse, seasons.js rewrites the crowns, and a near/far split would add a call
+per batch for ~8 % of the start view's triangles.
+
 ## Startup long tasks and the world built in parts (#1133)
 
 `src/longtasks.js` records startup long tasks (`PerformanceObserver` `longtask`, buffered, until `#loading` is done), each
