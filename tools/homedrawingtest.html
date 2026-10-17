@@ -89,7 +89,7 @@ const settle = async (app) => { for (let i = 0; i < 50 && !homes(app).length; i+
     const cloud = new Cloud({ posters: app.posters, drawing: app.drawing }, 'http://cloud.invalid');
     clearInterval(cloud.timer);
     const sent = [];
-    cloud.req = async (method, path) => { sent.push(`${method} ${path}`); return { ok: true, status: 200, json: async () => (path === '/drawings' && method === 'GET' ? [] : {}), blob: async () => new Blob() }; };
+    cloud.req = async (method, path) => { sent.push(`${method} ${path}`); return { ok: true, status: 200, json: async () => (path === '/drawings' && method === 'GET' ? [{ id: 'old-visitor-1', updated: 1 }] : {}), blob: async () => new Blob() }; };
     homes(app)[0].rec.synced = true;
     await cloud.sync(); await wait(100);
     check(homes(app).length === 1 && !sent.some((s) => s.includes(ID)), `the cloud's sync leaves it alone (${sent.join(', ')})`);
