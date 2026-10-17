@@ -330,7 +330,13 @@ material/              screenshots of our choices in Peab's option portal (local
   style 'copper3', `copperPendants` in lights.js): a dome canopy with two arms along the table, glossy copper drops on
   black cords (the middle one higher), frosted discs that glow with the kitchen switch, one pool anchor; merged into 4
   meshes; the copper reflects a small painted room (`roomEnv`, strength by daylight / switch). The kitchen's ceiling dome
-  stays. The user finds the kitchen cramped easily — keep it airy. F (#75) shows the bare flat: `world.looseItems` (furniture, kitchen shelves, the hall
+  stays. The user finds the kitchen cramped easily — keep it airy.
+- Living-room pendant (#1105, the user 2026-10-17): an Umage Silvia in copper, Ø 32 × 24.5 cm (Nordic Nest 22136-01,
+  docs/taklampa-silvia-umage-koppar.jpg; `LIGHTING.pendants` style 'silvia', `silviaPendant` in lights.js) over the
+  coffee table's centre; pointed petals in 7 rings merged into one geometry drawn copper outside / white inside (glows
+  with the switch), a bulb, a white cord + cup + hub = 4 draw calls. Hang height (bottom 1.6 m) and the white cord are
+  *guesses*. The white paper pendant (#134) it replaced hangs in Sovrum 2 (Walter & Kian) in the free floor between the
+  door, desk, bunk and MALM, replacing that room's ceiling dome. Moving/height-adjusting pendants: #1106. F (#75) shows the bare flat: `world.looseItems` (furniture, kitchen shelves, the hall
   mirror/key cabinet/coat rack, door signs, the Moccamaster, the cat board) are hidden, their collision
   segments go, the cat leaves and none turns up, hidden things are no E target and give no light.
   Kept: Peab's kitchen and wet rooms (incl. bathroom mirrors), wardrobes, doors, stair, ceiling lamps,

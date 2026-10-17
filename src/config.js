@@ -3953,10 +3953,20 @@ export const LIGHTING = {
     { level: 0, room: 'Kök / matplats', x: 3.5, z: 1.41, style: 'copper3', drop: 0, // = SKANSNAS.table's centre
       canopy: 0.12, arm: 0.38, bend: 0.04, shadeR: 0.085, shadeH: 0.2, neck: 0.035, bottoms: [1.47, 1.6, 1.47],
       copper: 0xc8845e },
-    // the living room's folded white paper pendant (#134, docs/taklampa-vit-veckad-papper.png; Le Klint style),
-    // over the sitting group between the coffee table and the TV; 45 × 32 cm and the 55 cm cord are *guesses*
-    // (shade bottom ~2.1 m up). It replaces the room's ceiling dome.
-    { level: 0, room: 'Vardagsrum', x: 3.64, z: 10.2, drop: 0.55, style: 'paper', w: 0.45, h: 0.32, cord: 0xf2f2f0, replaces: true },
+    // the living room's Umage Silvia in copper (#1105, docs/taklampa-silvia-umage-koppar.jpg; Nordic Nest art. 22136-01):
+    // Ø 32 × 24.5 cm (product facts), pointed polypropylene petals in `rows` rings like a pine cone, glossy copper outside,
+    // white inside, an E27 bulb in the middle. Over the ILVA coffee table's centre (x 3.64, z 11.26 − 0.4 − 0.3 = 10.56);
+    // the shade's bottom `bottom` m above the floor (~1.1 m over the 0.47 table top, above the line from the sofa to the
+    // TV), the white cord and the ceiling cup (Ø `cup`) are *guesses* — the cord length is not given. It replaces the
+    // room's ceiling dome.
+    { level: 0, room: 'Vardagsrum', x: 3.64, z: 10.56, style: 'silvia', d: 0.32, h: 0.245, bottom: 1.6, rows: 7,
+      cup: 0.1, cord: 0xf2f2f0, copper: 0xc98a66, inner: 0xf3ede6, replaces: true },
+    // the folded white paper pendant (#134, docs/taklampa-vit-veckad-papper.png; Le Klint style), moved from the living
+    // room to Walter & Kian's room (#1105): in the free floor between the door, the gaming desk (z ≥ 10.75), the bunk
+    // (x ≥ 4.55, z ≥ 10.05) and the MALM (x ≥ 4.65) — the room's own dome hung 0.4 m from the bunk. 45 × 32 cm are
+    // *guesses*; the 40 cm cord (*guess*, shorter than the living room's 55 cm under this 2.8 m ceiling) puts the shade's
+    // bottom ~2.08 m up. It replaces the room's ceiling dome.
+    { level: 1, room: 'Sovrum 2', x: 3.7, z: 9.6, drop: 0.4, style: 'paper', w: 0.45, h: 0.32, cord: 0xf2f2f0, replaces: true },
     // Sovrum 1's black string ceiling lamp (#174, docs/taklampa-sovrum1-svart-snore.jpg): a short black cup under a
     // white ceiling plate, a truncated cone of vertical black strings, a clear filament globe inside. All sizes are
     // *guesses* from the photo (bottom Ø 55, top Ø 35, 28 high, cup 10 cm); in the middle of the room, south of the

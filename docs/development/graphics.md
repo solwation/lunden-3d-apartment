@@ -60,7 +60,8 @@ src/ao.js              baked ambient occlusion: distance field → multiply over
                        each quad is wound to face the room whatever the piece polygon's orientation (#1084: rectangle
                        lintels/window infills and L1201's plan were back-face culled); the ceiling overlay's blockers
                        include door lintels and windows so its band runs over openings too (tools/wallaotest.cjs)
-src/lights.js          room switches (E), ceiling lamps/pendant/spots/LED (by hand only), small lamps (FloorLamp:
+src/lights.js          room switches (E), ceiling lamps/pendants (`LIGHTING.pendants` styles copper3 #307, silvia #1105,
+                       paper #134, string #174)/spots/LED (by hand only), small lamps (FloorLamp:
                        E, and they switch themselves with the dusk, #234); a pool of 4 point lights goes to the lit
                        lamps that matter (own room, in sight, nearest), fading when it moves
 src/weather.js         weather (WEATHER, #248): a seeded draw per date (`showersOn`, `rainAt`): showers in spring/autumn (a little

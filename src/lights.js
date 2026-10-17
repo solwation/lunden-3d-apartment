@@ -348,6 +348,7 @@ export class Lights {
       const shade = new THREE.MeshStandardMaterial({ color: 0xe9e9e6, roughness: 0.6, side: THREE.DoubleSide });
       R.mats.push(shade);
       if (p.style === 'copper3') { this.copperPendants(scene, R, p, y, shade); continue; }
+      if (p.style === 'silvia') { this.silviaPendant(scene, R, p, y); continue; }
       const cord = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, p.drop, 6), new THREE.MeshStandardMaterial({ color: p.cord ?? 0x222222 }));
       cord.position.set(p.x, y - p.drop / 2, p.z);
       if (p.style === 'string') {
@@ -491,6 +492,78 @@ export class Lights {
     }
     (this.copper ??= []).push({ material: copper, room: R });
     R.lamps.push({ pos: new THREE.Vector3(p.x, floor + (p.bottoms[0] + p.bottoms[1]) / 2 - 0.06, p.z), ...L.pendant, level: p.level });
+  }
+
+  /**
+   * Umage Silvia (#1105, docs/taklampa-silvia-umage-koppar.jpg): `p.rows` rings of pointed, cupped petals round a hidden
+   * core, few long ones pointing down at the bottom, more and more horizontal ones towards the top, every ring turned
+   * half a petal, so the outline is a pine cone widest just under its top (Ø p.d, p.h tall). One merged petal geometry
+   * drawn twice: glossy copper on the outside (FrontSide) and white on the inside (BackSide, it glows when lit), plus the
+   * bulb and the white cord / ceiling cup / top hub = 4 draw calls, 77 petals × 40 = ~3.1k triangles per side. One pool anchor
+   * inside the shade (no light of its own); the copper's painted-room reflection follows updateAuto like #307's.
+   */
+  silviaPendant(scene, R, p, y) {
+    const floor = LEVELS[p.level].floor, H = p.h, Rmax = p.d / 2;
+    const bottom = floor + p.bottom, top = bottom + H;
+    const petals = [];
+    const K = p.rows, US = 4, VS = 5; // petal grid: across × along
+    for (let k = 0; k < K; k++) {
+      const t = k / (K - 1); // 0 the bottom ring … 1 the top one
+      const alpha = THREE.MathUtils.degToRad(20 + 62 * t); // from straight down
+      const yb = top - H * (0.673 - 0.612 * t); // where its base sits (from the shade's top)
+      const rb = Rmax * (0.094 + 0.437 * Math.sqrt(t));
+      const len = Rmax * (0.53 - 0.06 * t);
+      const n = Math.round(6 + 10 * t);
+      const ca = Math.cos(alpha), sa = Math.sin(alpha);
+      const rMid = rb + len * sa * 0.5;
+      const w = (Math.PI * 2 * Math.max(rMid, 0.03)) / n * 0.78; // half-width: neighbours overlap
+      for (let i = 0; i < n; i++) {
+        const phi = (i + (k % 2) * 0.5) / n * Math.PI * 2 + k * 0.17;
+        const rx = Math.cos(phi), rz = Math.sin(phi); // radial
+        const tx = -rz, tz = rx;                     // tangent
+        const out = 0.0015 * (i % 2);                // alternate petals a hair apart (no z-fighting where they overlap)
+        const pos = [];
+        for (let b = 0; b <= VS; b++) {
+          const v = b / VS;
+          const wv = v < 0.5 ? 1 - 0.25 * (1 - v / 0.5) ** 2 : Math.max(0, 1 - ((v - 0.5) / 0.5) ** 2.2); // shield: full, then a point
+          for (let a = 0; a <= US; a++) {
+            const u = (a / US) * 2 - 1, half = w * wv;
+            const bulge = 0.35 * half * (1 - u * u) + out + 0.012 * v * v; // cupped across, the tip curling out a little
+            const d = len * v, nrm = bulge; // along the petal, out of its plane
+            pos.push(
+              p.x + rx * (rb + d * sa + nrm * ca) + tx * u * half,
+              yb - d * ca + nrm * sa,
+              p.z + rz * (rb + d * sa + nrm * ca) + tz * u * half);
+          }
+        }
+        const idx = [];
+        for (let b = 0; b < VS; b++) for (let a = 0; a < US; a++) {
+          const q = b * (US + 1) + a;
+          idx.push(q, q + 1, q + US + 1, q + 1, q + US + 2, q + US + 1);
+        }
+        const g = new THREE.BufferGeometry();
+        g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+        g.setIndex(idx);
+        g.computeVertexNormals();
+        petals.push(g);
+      }
+    }
+    const geo = mergeGeometries(petals); // wound with the outside (tangent × down the petal) as the front
+    const copper = new THREE.MeshStandardMaterial({ color: p.copper, metalness: 0.85, roughness: 0.25, envMap: roomEnv() });
+    const inner = new THREE.MeshStandardMaterial({ color: p.inner, roughness: 0.6, side: THREE.BackSide });
+    inner.userData.lit = { emissive: 0xffc68a, intensity: 0.5 };
+    const bulbMat = new THREE.MeshStandardMaterial({ color: 0xf4efe6, roughness: 0.4 });
+    bulbMat.userData.lit = { emissive: 0xffd2a0, intensity: 2.0 };
+    R.mats.push(inner, bulbMat);
+    const white = new THREE.MeshStandardMaterial({ color: p.cord, roughness: 0.6 });
+    const cup = new THREE.CylinderGeometry(p.cup / 2 * 0.8, p.cup / 2, 0.03, 20); cup.translate(p.x, y - 0.015, p.z);
+    const cord = new THREE.CylinderGeometry(0.0035, 0.0035, y - 0.03 - top, 6); cord.translate(p.x, (y - 0.03 + top) / 2, p.z);
+    const hub = new THREE.CylinderGeometry(0.03, 0.05, 0.03, 16); hub.translate(p.x, top - 0.012, p.z); // the clear top star, as white plastic
+    const bulb = new THREE.SphereGeometry(0.045, 16, 10); bulb.translate(p.x, top - H * 0.45, p.z);
+    const meshes = [new THREE.Mesh(geo, copper), new THREE.Mesh(geo, inner), new THREE.Mesh(bulb, bulbMat), new THREE.Mesh(mergeGeometries([cup, cord, hub]), white)];
+    for (const m of meshes) { m.name = 'silvialampan'; scene.add(m); }
+    (this.copper ??= []).push({ material: copper, room: R });
+    R.lamps.push({ pos: new THREE.Vector3(p.x, top - H * 0.45, p.z), ...L.pendant, level: p.level });
   }
 
   addSwitch(R, x, y, z, normal, scene) {
