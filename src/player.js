@@ -631,8 +631,13 @@ export class Player {
       let yaw=r.yaw+angle/n, p=this.pos.clone().add(new THREE.Vector3(Math.cos(yaw)*travel/n,0,-Math.sin(yaw)*travel/n));
       let support=p.equals(this.pos)&&yaw===r.yaw?previous:this.bikeSupport(p,yaw);
       // Check each wheel's rise: averaging the two contacts would incorrectly halve a stair riser.
-      if(!this.bikeRiseAllowed(previous,support) || !this.bikeHull(new THREE.Vector3(p.x,Math.max(p.y,support?.y??p.y),p.z),yaw,[],support)) {
-        p=this.pos.clone();yaw=r.yaw;support=previous;
+      const fits=(q,w,s)=>this.bikeRiseAllowed(previous,s) && this.bikeHull(new THREE.Vector3(q.x,Math.max(q.y,s?.y??q.y),q.z),w,[],s);
+      if(!fits(p,yaw,support)) {
+        // A blocked forward move must not swallow the steering (#1178): try the turn on the spot,
+        // and keep the old heading only when the turn itself would hit something.
+        p=this.pos.clone();
+        const turned=yaw!==r.yaw&&travel!==0?this.bikeSupport(p,yaw):null;
+        if(turned&&fits(p,yaw,turned))support=turned;else {yaw=r.yaw;support=previous;}
       }
       if(!support)continue;
       const falling = !!this.fall || this.pos.y-support.y>C.maxDrop;
