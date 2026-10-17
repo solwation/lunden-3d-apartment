@@ -39,6 +39,8 @@ src/chicken.js         #708: whole fridge chicken cooks only on the existing cou
                        Golden completion rewards once per bird, then existing smoke/darkening leads to burnt + deduction.
                        Life extra x.chicken saves progress, placement, consumed parts and reward/penalty flags; loading is silent.
                        F returns it home quietly without replenishing parts or clearing cooking/reward flags.
+                       #1124: eating the last piece of a cooked (or burnt) bird renews it (`renewIfEaten`): a new raw generation on its
+                       plate at home in the fridge, rewardable again, saved through x.chicken; event chickenRestocked + a hint.
                        Events chickenPlaced/chickenTaken/grilled/chickenBurnt/chickenEaten/chickenReturnedHome carry
                        stable item.id/type, machine.cook/cooked/burnt, state and (where relevant) surface; pan refusal is explicit.
                        tools/grillchickentest.html: bounded actual Chicken/Grill/Pan/Life fixture + raw/golden/burnt images.

@@ -80,6 +80,16 @@ export class Chicken extends Holdable {
     this.life.dirty = true;
   }
 
+  /** #1124: the last piece of a cooked bird eaten: a fresh raw chicken on its plate in the fridge (a new generation). */
+  renewIfEaten() {
+    if (!this.done || this.bodyLeft > 0 || !this.parts.every((p) => p.gone) || heldItem()?.isChickenPiece) return false;
+    this.piece = null;
+    this.loadState({ v: 1, generation: this.generation + 1, cooked: 0, bodyLeft: C.bodyBites, gone: [], place: null });
+    if (this.life) { this.life.dirty = true; this.life.say('En ny rå kyckling ligger i kylen.'); }
+    this.event('chickenRestocked', { surface: 'fridge' });
+    return true;
+  }
+
   get cookState() { return this.burnt ? 'burnt' : this.done ? 'golden' : 'raw'; }
   event(kind, extra = {}) {
     this.life?.emit(kind, { item: { id: this.id, type: 'chicken', machine: { cook: this.cooked, cooked: this.done, burnt: this.burnt } },
@@ -350,6 +360,7 @@ export class ChickenPiece {
         this.bird.onEaten?.(this);
         this.bird.onConsume?.(this, portionId);
         this.bird.life && (this.bird.life.dirty = true);
+        this.bird.renewIfEaten(); // #1124
         return;
       }
     }

@@ -66,6 +66,15 @@ check(bird.burnt&&bird.parts[0].gone&&events.length===nb&&stats.penalties.burnt=
 bird.take();bird.placeAt(new THREE.Vector3(2,.5,2),.4);const pose=JSON.parse(JSON.stringify(life.serialize()));life.load(pose);check(bird.placed&&!bird.inGrill&&bird.where().distanceTo(new THREE.Vector3(...pose.x.chicken.place.pos))<.001,'off-grill world pose restores');
 const silentLit=events.length;grill.set(false);grill.set(true,{silent:true});check(events.length===silentLit,'saved grill relight is silent');
 const late=new Chicken(scene,camera,fridge,pan,hob),laterLife=new Life({scene,camera});laterLife.load(golden);late.initLife(laterLife,grill);check(late.done&&late.rewarded&&late.inGrill,'late keepPart registration restores pending saved golden bird');late.model.removeFromParent();
+// #1124: eating the whole cooked bird puts a fresh raw one on its plate in the fridge
+const eatPiece=()=>{const pc=heldItem();for(let i=0;i<C.bites;i++){pc.use();pc.update(.5);}};const gen0=bird.generation;
+for(const p of bird.parts.filter(p=>!p.gone)){bird.breakOff(p);eatPiece();}
+for(let i=0;i<C.bodyBites-1;i++){bird.breakOff(null);eatPiece();}
+check(bird.generation===gen0&&bird.done&&bird.bodyLeft===1,'bird not renewed while body is left');
+bird.breakOff(null);eatPiece();
+check(bird.generation===gen0+1&&!bird.done&&!bird.burnt&&!bird.rewarded&&bird.cooked===0&&bird.bodyLeft===C.bodyBites&&bird.parts.every(p=>!p.gone)&&!bird.placed&&bird.where().distanceTo(fridge.shelfSpot)<.01,'#1124: eaten bird renews raw at home in the fridge');
+check(events.at(-1).kind==='chickenRestocked'&&events.at(-1).item.id===`chicken:${gen0+1}`&&hints.at(-1).includes('kyckling'),'#1124: restock event and hint');
+const fresh=JSON.parse(JSON.stringify(life.serialize())),nf=events.length;life.load(fresh);check(bird.generation===gen0+1&&!bird.done&&bird.cooked===0&&events.length===nf,'#1124: renewed bird survives reload silently');
 window.grillTest={captures,lines,bird,grill,renderer,scene,camera};document.querySelector('#out').textContent=(pass?'ALL PASS':'FAIL')+'\n'+lines.join('\n');
 } catch(e){document.querySelector('#out').textContent='FAIL '+e.stack;console.error(e);}
 </script></html>
