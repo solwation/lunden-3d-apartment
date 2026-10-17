@@ -1,5 +1,8 @@
 import { SKIN, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES } from './config.js';
 
+// #1220: the brows' colours (config.js HAIR, the hair swatches' names) and a first choice that follows the hair
+const BROW_NAMES = ['Mörkbruna', 'Bruna', 'Ljusbruna', 'Guldbruna', 'Blonda', 'Grå', 'Röda', 'Svarta'];
+
 /** The E choice every mirror offers (#1110): the avatar editor. */
 export const mirrorChoice = () => ({ label: 'byt utseende vid spegeln', run: () => openAvatarCustomizer() });
 
@@ -62,6 +65,7 @@ export function drawAvatarPreview(canvas, look) {
   const pants = toHex(look.pants);
   const shoes = toHex(look.shoes);
   const hair = toHex(look.hair);
+  const brows = toHex(HAIR.includes(look.brows) ? look.brows : look.hair); // #1220: own colour, else the hair's
   const style = look.style ?? 0;
   const sleeves = look.sleeves ?? 0;
   const gender = Number(look.gender ?? look.figure) || 0;
@@ -207,7 +211,7 @@ export function drawAvatarPreview(canvas, look) {
     ctx.beginPath();
     ctx.arc(ex, ey, 0.9 * eyeS, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = hair;
+    ctx.strokeStyle = brows;
     ctx.lineWidth = 1.5 * browT;
     ctx.beginPath();
     ctx.moveTo(ex - 3.5, 52 - browY);
@@ -333,6 +337,7 @@ export function randomAvatarLook(base, rnd = Math.random) {
   const H = AVATAR_HEIGHT, lo = rnd() < 0.15 ? H.min + 20 : H.adult, hi = rnd() < 0.15 ? H.adult : H.max - 5;
   lk.height = Math.max(H.min, Math.min(H.max, Math.round(lo + rnd() * (hi - lo))));
   lk.tall = lk.height / H.base;
+  lk.brows = rnd() < 0.25 ? HAIR[pick(HAIR.length)] : null; // #1220: mostly brows like the hair
   return lk;
 }
 
@@ -351,6 +356,7 @@ function updateActiveSwatches() {
     { type: 'hair', value: currentLook.hair, list: HAIR },
   ];
   groups.push({ type: 'glasses', value: Number(currentLook.glasses) || 0 }); // #1165
+  groups.push({ type: 'brows', value: HAIR.includes(currentLook.brows) ? HAIR.indexOf(currentLook.brows) : -1 }); // #1220 (-1: like the hair)
   groups.push({ type: 'eyes', value: EYES.includes(currentLook.eyes) ? currentLook.eyes : EYES[0], list: EYES });
   for (const name of Object.keys(AVATAR_SHAPE.fields)) { // #1138: the face sliders
     const input = customizerEl.querySelector(`input[data-shape="${name}"]`);
@@ -479,6 +485,9 @@ function initCustomizerDOM() {
     } else if (type === 'eyes' && EYES[idx] !== undefined) {
       currentLook.eyes = EYES[idx];
       applyAndRefresh();
+    } else if (type === 'brows' && (idx === -1 || HAIR[idx] !== undefined)) { // #1220: -1 = like the hair
+      currentLook.brows = idx === -1 ? null : HAIR[idx];
+      applyAndRefresh();
     } else if (type === 'hair' && HAIR[idx] !== undefined) {
       currentLook.hair = HAIR[idx];
       applyAndRefresh();
@@ -538,13 +547,13 @@ const FACE_SECTIONS = [
   ['Ögon', ['eyeSize', 'eyeShape'], true],
   ['Huvudform', ['headWidth', 'headLength', 'jaw', 'neck']],
   ['Näsa & öron', ['noseSize', 'noseWidth', 'ears']],
-  ['Ögonbryn', ['browThick', 'browY']],
+  ['Ögonbryn', ['browThick', 'browY'], false, false, true], // #1220: their colour
   ['Hår och glasögon', ['hairLength'], false, true], // #1165
 ];
 const EYE_NAMES = ['Bruna', 'Mörkbruna', 'Hasselbruna', 'Gröna', 'Gröngrå', 'Blå', 'Ljusblå', 'Grå'];
 function addFaceSections(controls) {
   if (!controls || controls.querySelector?.('[data-face-section]')) return;
-  for (const [title, fields, eyes, glasses] of FACE_SECTIONS) {
+  for (const [title, fields, eyes, glasses, brows] of FACE_SECTIONS) {
     const sec = document.createElement('section');
     sec.className = 'customizer-section';
     sec.dataset.faceSection = '';
@@ -560,6 +569,26 @@ function addFaceSections(controls) {
         Object.assign(b.dataset, { type: 'eyes', index: String(i) });
         b.style.background = toHex(c);
         b.setAttribute('aria-label', `${EYE_NAMES[i] ?? 'Färg ' + (i + 1)} ögon`);
+        sw.append(b);
+      });
+      sec.append(sw);
+    }
+    if (brows) { // #1220: like the hair, or one of the hair colours
+      const row = document.createElement('div');
+      row.className = 'btn-group';
+      const same = document.createElement('button');
+      Object.assign(same.dataset, { type: 'brows', index: '-1' });
+      same.textContent = 'Som håret';
+      row.append(same);
+      sec.append(row);
+      const sw = document.createElement('div');
+      sw.className = 'swatches';
+      sw.dataset.group = 'brows';
+      HAIR.forEach((c, i) => {
+        const b = document.createElement('button');
+        Object.assign(b.dataset, { type: 'brows', index: String(i) });
+        b.style.background = toHex(c);
+        b.setAttribute('aria-label', `${BROW_NAMES[i] ?? 'Färg ' + (i + 1)} ögonbryn`);
         sw.append(b);
       });
       sec.append(sw);

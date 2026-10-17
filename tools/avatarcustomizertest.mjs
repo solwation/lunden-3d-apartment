@@ -559,3 +559,47 @@ test('#1140: Slumpa gives a valid look (palettes, ranges, wire code valid); Åte
   assert.ok([...seen].some((h) => h < 150) && [...seen].some((h) => h > 170), 'children and tall adults');
   const b2 = { ...base }; randomAvatarLook(b2, rnd); assert.deepEqual(b2, base, 'does not mutate its input');
 });
+
+test('#1220 brow colour: tag v (HAIR index), absent = like the hair, old codes unchanged, wire + every tag still decodes', async () => {
+  const { AVATAR_SHAPE, AVATAR_BROWS, splitAvatarCode, encodeAvatarWireLook, defaultFaceLook } = await import('../src/config.js');
+  assert.equal(AVATAR_BROWS.tag, 'v');
+  assert.equal(defaultFaceLook().brows, null, 'default: brows follow the hair');
+  for (const old of ['240302101', '240302101172', '240302101e7h1g2', '210302101u10']) {
+    const lk = decodeAvatarLook(old, 'old');
+    assert.equal(lk.brows, null, `${old}: no own brow colour`);
+    assert.equal(encodeAvatarLook(lk), old, `${old}: re-encodes identically`);
+  }
+  const blond = { ...decodeAvatarLook('240302101', 'b'), hair: HAIR[4] };
+  const plainCode = encodeAvatarLook(blond);
+  assert.equal(plainCode, '240342101', 'blond hair, brows like the hair: no tag');
+  const code = encodeAvatarLook({ ...blond, brows: HAIR[7] });
+  assert.equal(code, '240342101v7', 'blond hair, black brows');
+  const back = decodeAvatarLook(code, 'b');
+  assert.equal(back.hair, HAIR[4]); assert.equal(back.brows, HAIR[7]); assert.equal(encodeAvatarLook(back), code);
+  assert.equal(encodeAvatarLook({ ...blond, brows: HAIR[4] }), '240342101v4', 'a chosen colour equal to the hair is kept');
+  assert.equal(encodeAvatarLook({ ...blond, brows: 0x123456 }), plainCode, 'a colour outside the palette is not written');
+  assert.equal(decodeAvatarLook('240342101v9', 'b').brows, null, 'out-of-range index ignored');
+  assert.deepEqual(splitAvatarCode(encodeAvatarLook({ ...blond, height: 150, brows: HAIR[7] })), { av: '240342101150', ax: 'v7' });
+  // every tag at once (+ the wire's d) is within the limits and still decodes
+  const everything = { ...blond, glasses: 2, eyes: 0x7c8288, top: TOPS[10], bodyBuild: 8, brows: HAIR[7] };
+  for (const n of Object.keys(AVATAR_SHAPE.fields)) everything[n] = n === 'jaw' ? 0 : 8;
+  const wire = encodeAvatarWireLook(everything), ext = splitAvatarCode(wire).ax;
+  assert.ok(ext.length <= 48, ext);
+  const { cleanAvatarExt } = await import('../cloudflare/players.js');
+  assert.equal(cleanAvatarExt(ext), ext, 'the Worker passes it unchanged');
+  const w = decodeAvatarLook(wire, 'b');
+  assert.equal(w.brows, HAIR[7]); assert.equal(w.glasses, 2); assert.equal(w.top, TOPS[10]); assert.equal(w.bodyBuild, 8); assert.equal(w.neck, 8);
+});
+
+test('#1220 Slumpa: brows are null or a hair colour, and survive the code', async () => {
+  const { randomAvatarLook } = await import('../src/customizer.js');
+  let s = 3; const rnd = () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
+  const base = avatarLook('brow-rand'); let own = 0;
+  for (let i = 0; i < 200; i++) {
+    const lk = randomAvatarLook(base, rnd);
+    assert.ok(lk.brows === null || HAIR.includes(lk.brows));
+    if (lk.brows !== null) own++;
+    assert.equal(decodeAvatarLook(encodeAvatarLook(lk), 'x').brows, lk.brows);
+  }
+  assert.ok(own > 10 && own < 150, `some own brow colours (${own})`);
+});

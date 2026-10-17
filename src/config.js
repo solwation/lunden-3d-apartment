@@ -5089,6 +5089,10 @@ export const AVATAR_SHAPE = {
 // #1165: glasses, 0 none, 1 round, 2 square frames: a look field `glasses`, the extension's `g` tag (absent when 0). The frames are part
 // of the shared head geometry and collapse to a point in the vertex shader when not chosen (src/avatar.js), so no extra draw call.
 export const AVATAR_GLASSES = { tag: 'g', names: ['Inga', 'Runda', 'Fyrkantiga'], colour: 0x1c1c20 };
+// #1220: the brows' own colour, a look field `brows` (one of HAIR's colours; null / absent = the hair's colour, as before), the
+// extension's `v` tag with the HAIR index (absent when following the hair, so old codes keep their brows). The brows are their
+// own colour region in the avatar's per-player colour attribute (src/avatar.js), so no extra draw call.
+export const AVATAR_BROWS = { tag: 'v' };
 /** The value (scale or offset) of a face / head slider `name` at integer step `v` (#1138). */
 export function avatarShape(name, v) {
   const f = AVATAR_SHAPE.fields[name], n = AVATAR_SHAPE.steps - 1;
@@ -5099,7 +5103,8 @@ export function avatarShape(name, v) {
 // the default, so an untouched look keeps only its digits. Unknown tags are skipped (newer clients may add fields), and the
 // Worker only checks the form (cloudflare/players.js cleanAvatarExt, sent as `ax` beside the digits `av` so older
 // clients keep reading `av`). `c` the eye colour (EYES), `u` a top beyond the digit (#1156), then AVATAR_SHAPE's tags.
-const LOOK_EXT = /^(?:[a-z][0-9]{1,3}){0,16}$/;
+// (#1220: up to 24 tags; every tag at once, `u10` and the wire's `d` / `s` included, is 20 tags / 39 characters, within the 48)
+const LOOK_EXT = /^(?:[a-z][0-9]{1,3}){0,24}$/;
 export const AVATAR_LOOK_EXT_MAX = 48;
 function encodeLookExt(look) {
   let out = '';
@@ -5114,6 +5119,8 @@ function encodeLookExt(look) {
     if (Number.isInteger(v) && v >= 0 && v < AVATAR_SHAPE.steps && v !== AVATAR_SHAPE.mid) out += `${f.tag}${v}`;
   }
   if (Number.isInteger(look.glasses) && look.glasses > 0 && look.glasses < AVATAR_GLASSES.names.length) out += `${AVATAR_GLASSES.tag}${look.glasses}`;
+  const brows = look.brows == null ? -1 : HAIR.indexOf(look.brows); // #1220
+  if (brows >= 0) out += `${AVATAR_BROWS.tag}${brows}`;
   return out;
 }
 function decodeLookExt(ext, lk) {
@@ -5126,6 +5133,7 @@ function decodeLookExt(ext, lk) {
     if (tag === 'u') { if (v < TOPS.length) lk.top = TOPS[v]; continue; } // #1156
     if (tag === AVATAR_BUILD.tag) { if (v < AVATAR_BUILD.steps) lk.bodyBuild = v; continue; } // #1139
     if (tag === AVATAR_GLASSES.tag) { if (v < AVATAR_GLASSES.names.length) lk.glasses = v; continue; } // #1165
+    if (tag === AVATAR_BROWS.tag) { if (v < HAIR.length) lk.brows = HAIR[v]; continue; } // #1220
     // #1173: wire-only seeded scale; explicit chosen cm always take precedence.
     if (tag === 's') { if (!Number.isInteger(lk.height) && v < AVATAR_SEEDED_TALL.length) lk.tall = AVATAR_SEEDED_TALL[v]; continue; }
     const name = Object.keys(AVATAR_SHAPE.fields).find((k) => AVATAR_SHAPE.fields[k].tag === tag);
@@ -5157,9 +5165,9 @@ function nearestSeededBuild(look) {
   return S.reduce((best, s, i) => (Math.abs(s - k) < Math.abs(S[best] - k) ? i : best), 0);
 }
 
-/** The face fields' defaults (#1138): the original brown eyes and every slider in the middle. */
+/** The face fields' defaults (#1138): the original brown eyes, every slider in the middle and brows like the hair (#1220). */
 export function defaultFaceLook() {
-  const lk = { eyes: EYES[0], glasses: 0 };
+  const lk = { eyes: EYES[0], glasses: 0, brows: null };
   for (const name of Object.keys(AVATAR_SHAPE.fields)) lk[name] = AVATAR_SHAPE.mid;
   return lk;
 }

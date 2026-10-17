@@ -23,7 +23,7 @@ import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, SHIN, bindAt, lathe, torsoR, a
 
 export { avatarLook as look } from './config.js';
 const look = avatarLook;
-const REGION = { skin: 0, top: 1, pants: 2, hair: 3, fixed: 4, lips: 6, iris: 7, beard: 8 }; // 5: the shoes; 8 (#1156): facial hair, the look's `beard` or its hair colour
+const REGION = { skin: 0, top: 1, pants: 2, hair: 3, fixed: 4, lips: 6, iris: 7, beard: 8, brow: 9 }; // 5: the shoes; 8 (#1156): facial hair, the look's `beard` or its hair colour; 9 (#1220): the brows, the look's `brows` or its hair colour
 // #1138: which face part a head-bone vertex belongs to (the `facePart` attribute; 0 = not on the head), see faceShape
 // #1165: hair (the scalp shell / curtain, lengthened below the crown), round and square glasses frames and the temples + bridge shared by both
 const FACE_PART = { head: 1, neck: 2, eye: 3, nose: 4, ear: 5, brow: 6, hair: 7, rimRound: 8, rimSquare: 9, specs: 10 };
@@ -425,7 +425,7 @@ function addFace(add, sphere, P) {
     // (#1138: a tube-less copy of the same arc is each brow vertex's pivot, so the brow thickens about its centre line)
     const arc = (tube) => new THREE.TorusGeometry(B.radius, tube, 3, 6, B.arc).rotateZ(Math.PI / 2 - B.arc / 2).translate(0, -B.radius, 0)
       .scale(1, 1, 0.6).rotateZ(s * B.tilt).rotateY(s * B.turn).translate(s * B.at[0], B.at[1], B.at[2]);
-    add(arc(B.tube), 'hair', 'head', [0, 0, 0], 0.85);
+    add(arc(B.tube), 'brow', 'head', [0, 0, 0], 0.85); // (#1220: their own colour region)
     facePart(P, FACE_PART.brow, arc(0));
     add(sphere(N.alar[3], 7, 5).scale(0.9, 0.8, 1), 'skin', 'head', [s * N.alar[0], N.alar[1], N.alar[2]], 0.95); // the nose's wings
     P[P.length - 1].rifleNose = true; // internal nose identity, no trusted wire flag
@@ -460,7 +460,7 @@ const TORSO_PROFILE_FEMALE = [[0, 0], [0.13, 0.0], [0.15, 0.04], [0.152, 0.12], 
 // the same material per avatar; areas in config.js AVATAR_SKIN.
 /** A clothes / hair vertex's shade factor (1 = unchanged) from its bone-local bind position. */
 function clothShade(bone, region, pos, i) {
-  if (region !== REGION.top && region !== REGION.pants && region !== REGION.hair && region !== REGION.beard) return 1;
+  if (region !== REGION.top && region !== REGION.pants && region !== REGION.hair && region !== REGION.beard && region !== REGION.brow) return 1;
   const b = bindAt(bone), x = pos.getX(i) - b.x, y = pos.getY(i) - b.y, z = pos.getZ(i) - b.z, C = SK.cloth;
   let k = 0;
   if (bone === 'torso') k = C.armpit * smoothstep(0.12, 0.18, Math.abs(x)) * bump(y, 0.45, 0.09); // under the arms
@@ -571,6 +571,7 @@ function geometryFor(lk) {
   pal[6] = pal[0].clone().lerp(new THREE.Color(FACE.lipTint), 0.35).multiplyScalar(0.92); // #1101: the lips, from the skin
   pal[7] = new THREE.Color(EYES.includes(lk.eyes) ? lk.eyes : EYES[0]); // #1138: the irises
   pal[8] = new THREE.Color(lk.beard ?? lk.hair); // #1156: a beard of its own colour (Olof's grey one; players' follow their hair)
+  pal[9] = new THREE.Color(lk.brows ?? lk.hair); // #1220: the brows' own colour, else the hair's
   const base3 = b.attributes.color.array, reg = b.attributes.region.array, col = new Float32Array(n * 3);
   for (let i = 0; i < n; i++) {
     const r = reg[i];
