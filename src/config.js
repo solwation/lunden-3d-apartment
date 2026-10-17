@@ -543,7 +543,7 @@ export const SITE = {
       // Assumed 58 cm total height above ground, 44 cm depth and 35 cm clear margin either side of each doorway.
       hedge: { height: .5, depth: .44, rounding: .045, color: 0x48733c, roughness: .92, bump: .009,
         texturePeriod: .32, textureLeaves: 1700, snowDepth: .035, entranceMargin: .35,
-        cell: .11, dent: .03, footScale: .9 } }, // #1143: shared hedge form (hedgeform.js), *guess*
+        cell: .17, dent: .03, footScale: .9 } }, // #1143 (cell .11 → .17 in #1211: perfcount budget): shared hedge form (hedgeform.js), *guess*
     yard: { x0: -66, x1: -46.33, z0: -3.5, z1: 9.6 },                              // the bike yard's paving
     lawns: [[-65, -59.1, 1.2, 8.5], [-53, -50.1, 1.2, 8.5]],                         // x0, x1, z0, z1
     bikePlace: { x0: -59.1, x1: -53, z0: 1.2, z1: 8.5 },                              // lighter paving
@@ -4243,7 +4243,7 @@ export const PATIO = {
   // #680: clipped privet/hornbeam appearance, visual guesses; original height/plan footprint retained.
   // #1143: shared hedge form: `cell` grid (m), `dent` relief depth (m), *guess*.
   hedge: { height: 1.1, rounding: .065, footScale: .86, topNoise: .03, waveLength: .8,
-    color: 0x78a64b, texturePeriod: .48, bump: .012, roughness: .95, segments: 2, cell: .14, dent: .07 },
+    color: 0x78a64b, texturePeriod: .48, bump: .012, roughness: .95, segments: 2, cell: .2, dent: .07 },
   frame: 0x3b3e41, // the parasol's pole and base
   // Rusta "Loungemodul Verona" (#408, docs/utesoffa-rusta-verona.jpg, the family's own: docs/utesoffa-verona-utan-dynor.jpg):
   // one module 68.5 × 66 × 67 cm (W × D × H, rusta.se); the rest *guess* from the photos: a square steel tube `tube`, the
