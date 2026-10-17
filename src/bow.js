@@ -82,6 +82,7 @@ export class Arrows {
   fire(o, v, remote = false) {
     const a = this.list[this.next++ % this.list.length];
     a.m.position.copy(o); a.v.copy(v); a.flying = true; a.life = B.flight; a.remote = remote; a.hit = null;
+    a.origin = o.clone();
     a.m.lookAt(o.clone().add(v));
     a.m.visible = true;
     if (!remote) this.fired++;
@@ -118,7 +119,10 @@ export class Arrows {
       if (h) { // in it: the point a few cm deep, the arrow stays a while
         a.m.position.copy(h.point).addScaledVector(a.v.clone().normalize(), 0.06 - B.len);
         a.flying = false; a.life = B.stick; a.hit = h.point.clone();
-        if (!a.remote) this.stuck++;
+        if (!a.remote) {
+          this.stuck++;
+          h.object.userData.target?.hit(h.point, a.origin ?? from);
+        }
         sfx.splat?.(h.point);
       } else a.m.position.copy(to);
       a.m.lookAt(a.m.position.clone().add(a.v));
@@ -160,7 +164,7 @@ export class Bow extends Holdable {
       pick: { pos: pickPos, size: [info.L * 0.9, info.hb, info.D * 0.8] },
       cooldown: 0, useLabel: 'Skjut', grip: B.grip,
     });
-    Object.assign(this, { isBow: true, clickIsUse: true, shoots: true, arrows, string, nocked, box: info, drawing: false, draw: 0, releasedAt: -1e9, shots: 0 });
+    Object.assign(this, { isBow: true, clickIsUse: true, shoots: true, hitsTarget: true, arrows, string, nocked, box: info, drawing: false, draw: 0, releasedAt: -1e9, shots: 0 });
     // the quiver lies beside it, drawn with the box's contents (only while the lid is open)
     const quiver = new THREE.Mesh(quiverGeometry(), vmat);
     quiver.position.set(info.L / 2 - info.t - 0.12, 0.09, -0.08);
