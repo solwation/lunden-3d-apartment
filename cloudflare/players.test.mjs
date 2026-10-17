@@ -2,7 +2,7 @@
 // the admin brake. Runs the real Worker + PlayerRoom on Node with the runtime stand-ins in devws.mjs.
 //   node --test cloudflare/players.test.mjs
 import { test } from 'node:test';
-import { PVP_SCORE, SCORE, pvpHitPoints } from '../src/config.js';
+import { PVP_SCORE, SCORE, pvpHitPoints, avatarLook } from '../src/config.js';
 import assert from 'node:assert/strict';
 import { installRuntime, fakeNamespace } from './devws.mjs';
 import worker, { PlayerRoom } from './worker.js';
@@ -32,6 +32,17 @@ async function connect(env, name = '', origin = 'https://solwation.github.io') {
   c.send = (m) => ws.send(typeof m === 'string' ? m : JSON.stringify(m));
   await settle(env);
   return c;
+}
+// #1108: a player id is crypto.randomUUID().slice(0, 8) and picks the default avatar look, so tests that need a
+// specific look must not reconnect until chance delivers one (that search failed ~2% of runs). Instead the next id
+// matching `want` is found by a deterministic counter scan and handed to the room's real join path for this connection.
+let lookSeq = 0x10000000;
+async function connectLook(env, name, want) {
+  let id;
+  do id = (lookSeq++).toString(16); while (!want(avatarLook(id)));
+  const randomUUID = crypto.randomUUID;
+  crypto.randomUUID = () => `${id}-0000-4000-8000-000000000000`;
+  try { return await connect(env, name); } finally { crypto.randomUUID = randomUUID; }
 }
 const admin = (env, method, what = 'players', token = 'tok') => worker.fetch(new Request(`https://w/admin/${what}`, { method, headers: { Authorization: `Bearer ${token}` } }), env);
 
@@ -1061,7 +1072,7 @@ test('#953 accepted larger standing turn after greeting gives authoritative LEFT
 test('#951 immutable Rear greeting uses existing private history; changed/legacy return, healing and death never reopen it',async()=>{
   const C=await import('../src/config.js'),env=setup(),a=await connect(env,'Rear shooter'),peers=[a],state={p:[0,0,0],r:3.14,h:'rifle'};
   const send=async(c,m)=>{now+=1000;c.send(m);await settle(env);};
-  const join=async()=>{for(let n=0;n<80;n++){const b=await connect(env,'Rear target');if(C.avatarLook(b.got[0].i).style===2){peers.push(b);return b;}b.ws.close();await settle(env);}throw Error('no bounded canonical style2');};
+  const join=async()=>{const b=await connectLook(env,'Rear target',l=>l.style===2);assert.equal(C.avatarLook(b.got[0].i).style,2);peers.push(b);return b;};
   const attachment=b=>b.ws.peer.deserializeAttachment();
   const shotFor=id=>{const lk=C.avatarLook(id);for(const yy of[.021,.022,.023])for(const distance of[3.07,3.5,4,4.5]){const o=[0,1.55,-distance],aim=[0,(C.PVP_RIFLE_HEAD.headY+yy)*lk.tall,-.065],v=aim.map((x,i)=>x-o[i]),d=v.map(x=>+(x/Math.hypot(...v)).toFixed(3)),unit=d.map(x=>x/Math.hypot(...d)),entry=C.rifleSkullEntry(id,state,o,d);if(entry===null)continue;const hc=[1,...o.map((x,i)=>+(x+unit[i]*entry).toFixed(3))];if(C.rifleHeadRearRegion(id,state,hc.slice(1),o,d))return{t:'a',w:'rifle',to:id,o,d,hc};}throw Error('no bounded actual production Rear cell');};
   const fire=async b=>{const s=shotFor(b.got[0].i);await send(a,{p:[s.o[0],0,s.o[2]],r:0,h:'rifle'});await send(a,s);return a.got.filter(m=>m.t==='hit').at(-1);};
@@ -1129,7 +1140,7 @@ test('#952 greeted post-turn Rear: normalized authority, history, lethal/replay 
 test('#950 immutable Nose depth uses existing private history; changed/legacy return, healing and death never reopen it',async()=>{
   const C=await import('../src/config.js'),env=setup(),a=await connect(env,'Nose depth shooter'),peers=[a],state={p:[0,0,0],r:0,h:'rifle'};
   const send=async(c,m)=>{now+=1000;c.send(m);await settle(env);};
-  const join=async()=>{for(let n=0;n<80;n++){const b=await connect(env,'Nose depth target');if(C.avatarLook(b.got[0].i).build===1&&C.avatarLook(b.got[0].i).tall===.975){peers.push(b);return b;}b.ws.close();await settle(env);}throw Error('no bounded canonical style2');};
+  const join=async()=>{const b=await connectLook(env,'Nose depth target',l=>l.build===1&&l.tall===.975);const l=C.avatarLook(b.got[0].i);assert.ok(l.build===1&&l.tall===.975,'canonical build1/tall.975 target');peers.push(b);return b;};
   const attachment=b=>b.ws.peer.deserializeAttachment();
   // Actual native immutable idle-6 contact, independently sampled for all four styles at build1/tall.975.
   const shotFor=id=>({t:'a',w:'rifle',to:id,o:[0,1.58,-3.13],d:[.001,0,1],hc:[1,.003,1.58,-.13]});
@@ -1325,7 +1336,7 @@ test('#967 source-derived style0 whole-cell admission preserves old regions and 
 test('#971 immutable Nose prism uses existing private history; changed/legacy return, healing and death never reopen it',async()=>{
   const C=await import('../src/config.js'),env=setup(),a=await connect(env,'Nose prism shooter'),peers=[a],state={p:[0,0,0],r:0,h:'rifle'};
   const send=async(c,m)=>{now+=1000;c.send(m);await settle(env);};
-  const join=async()=>{for(let n=0;n<80;n++){const b=await connect(env,'Nose prism target');if(C.avatarLook(b.got[0].i).build===1&&C.avatarLook(b.got[0].i).tall===.975){peers.push(b);return b;}b.ws.close();await settle(env);}throw Error('no bounded canonical style2');};
+  const join=async()=>{const b=await connectLook(env,'Nose prism target',l=>l.build===1&&l.tall===.975);const l=C.avatarLook(b.got[0].i);assert.ok(l.build===1&&l.tall===.975,'canonical build1/tall.975 target');peers.push(b);return b;};
   const attachment=b=>b.ws.peer.deserializeAttachment();
   // Actual native saved FIRST Nose contact, all four styles share identical original Nose geometry at build1/tall.975.
   const shotFor=id=>({t:'a',w:'rifle',to:id,o:[-.01,1.58,-3.13],d:[.001,0,1],hc:[1,-.007,1.58,-.129]});
