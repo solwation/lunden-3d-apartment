@@ -3089,6 +3089,10 @@ export const GHOSTS = { enabled: true, hz: 5, move: 0.02, turn: 0.03, beatMs: 10
 // is lit normally (`emissiveSolid`). `walkSpeed` m/s: above it the legs walk; `poseFar` m: beyond it the pose is not updated;
 // `bodyTurn` rad: how far the head may turn from the body before the body follows. All by eye (*guess*).
 export const AVATAR = { fill: 0.07, rim: 0.85, rimPower: 2.2, emissiveOutline: 0.28, emissiveSolid: 0.06, walkSpeed: 0.25, poseFar: 30, bodyTurn: 0.9 };
+// The avatars' full beard (#1097, src/avatar.js beardShell) *guess* tuned by eye against the avatar head (PVP_RIFLE_HEAD skull / jaw): degrees from `centre` (head-bone frame, metres);
+// the grid's rows/columns line up with the moustache variant's mouth opening [half width, bottom, top] (one quad high, two wide); lips: the patch behind it, reaching under the beard so an oblique view sees no gap [half width, bottom, top]; lipsNotch: the same in the beard-only notch
+export const AVATAR_BEARD = { centre: [0, 0.075, 0.02], azimuth: 92, bottom: -76, cols: 16, rows: 10, cheek: [-6, 10], cheekAz: [22, 90],
+  chinTop: -27, notch: [8, 22], mouth: [12, -27, -20], lips: [22, -30, -17], lipsNotch: [12.5, -27.5, -19.5], thickness: 0.011, lift: 0.0015 };
 // Combat between players (#667, src/combat.js; the room's check: cloudflare/players.js COMBAT). Only when both hold a weapon:
 // `weapons` = what counts, in the order they are looked for (the room's list must have each one: there its range and rate);
 // remove one here to leave it out. Both armed: drawn solid (`solid` opacity), else a ghost. A hit is judged by the shooter

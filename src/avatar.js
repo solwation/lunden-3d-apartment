@@ -1,12 +1,12 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { AVATAR as A, SPIDER, avatarLook, PVP_RIFLE_HEAD as RH, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
+import { AVATAR as A, AVATAR_BEARD as BEARD, SPIDER, avatarLook, PVP_RIFLE_HEAD as RH, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
 import { topTexture } from './spidersuit.js';
 import { NAMES, HIP, UPPER, FORE, HAND, SH, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
 
 // The players' avatars (#705): a neutral human figure for the other players (src/ghosts.js) and for our own reflection in the
 // mirrors (#691). The skeleton, the proportions and the two-bone IK are Olof's (src/olof.js, #671); the figure itself is a
-// plainer one: no beard, hoodie or can, but a face (eyes, brows, nose, mouth, ears), hands with fingers, a T-shirt or a
+// plainer one: no hoodie or can, but optional facial hair (a full beard shell, #1097, and/or a moustache) and a face (eyes, brows, nose, mouth, ears), hands with fingers, a T-shirt or a
 // long-sleeved top with a collar and a hem, trousers with a belt, shoes and one of four hairstyles / a hat. Colours (skin,
 // hair, top, trousers, shoes) and the build come from the player's seed (the name or the id), so players can be told apart.
 //
@@ -67,17 +67,15 @@ function parts(style, sleeves, gender = 0, facial = 0) {
   add(new THREE.BoxGeometry(0.04, 0.007, 0.008), 'fixed', 'head', [0, H - 0.058, 0.106], 1, 0x9a5a52); // the mouth
   // facial hair: 0 none, 1 beard, 2 mustache, 3 beard + mustache
   const f = Number(facial) || 0;
-  if (f === 2 || f === 3) { // mustache
+  if (f === 2) { // mustache only
     for (const s of [-1, 1]) {
       add(new THREE.BoxGeometry(0.024, 0.010, 0.014).rotateZ(s * -0.15), 'hair', 'head', [s * 0.014, H - 0.046, 0.114], 0.95);
     }
   }
-  if (f === 1 || f === 3) { // beard
-    add(new THREE.BoxGeometry(0.042, 0.026, 0.024), 'hair', 'head', [0, H - 0.066, 0.102], 0.92); // chin goatee
-    for (const s of [-1, 1]) {
-      add(new THREE.BoxGeometry(0.020, 0.036, 0.048).rotateZ(s * 0.22), 'hair', 'head', [s * 0.055, H - 0.052, 0.065], 0.9); // jaw sides
-    }
-    add(new THREE.BoxGeometry(0.046, 0.016, 0.035), 'hair', 'head', [0, H - 0.082, 0.088], 0.88); // chin underside
+  if (f === 1 || f === 3) { // #1097: one continuous full beard, the lips showing through its mouth opening
+    const { beard, lips } = beardShell(f === 3);
+    add(beard, 'hair', 'head', [0, 0, 0], 0.9);
+    add(lips, 'fixed', 'head', [0, 0, 0], 1, 0x8a4c45);
   }
   // hair: a cap over the skull in every style; then a style's own parts (all hair-coloured, the beanie in the top's colour)
   const skull = () => sphere(0.12, 14, 8, 0, Math.PI * 2, 0, Math.PI * 0.5).rotateX(-0.62).scale(0.96, 1.02, 1.04);
@@ -123,6 +121,57 @@ function parts(style, sleeves, gender = 0, facial = 0) {
     add(new THREE.BoxGeometry(0.098, 0.02, 0.255).translate(0, -0.452, 0.05), 'fixed', 'knee' + s, [0, 0, 0], 1, 0xe9e6df); // the sole
   }
   return P;
+}
+/** A continuous full beard (#1097) in the head bone's frame: a shell projected from a point inside the jaw onto the
+ * union of the skull and jaw ellipsoids (RH.skull / RH.jaw), lifted off the skin by a thickness that is fullest at the
+ * chin and tapers to nothing at the edges, so it follows the head's rounding without gaps. It covers the cheeks (up to
+ * sideburns in front of the ears), the jawline, the chin and the mouth corners; `lip` (facial 3) also covers the upper lip
+ * as the moustache. The mouth stays visible: a U-shaped notch without the moustache, an opening with it; `lips` is a
+ * thin patch on the skin behind that opening (the plain mouth box sits inside the jaw sphere and barely shows). */
+function beardShell(lip) {
+  const B = BEARD, c = B.centre, deg = Math.PI / 180;
+  const smooth = (e0, e1, x) => { const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0))); return t * t * (3 - 2 * t); };
+  const dir = (a, e) => [Math.sin(a * deg) * Math.cos(e * deg), Math.sin(e * deg), Math.cos(a * deg) * Math.cos(e * deg)];
+  const skin = (d) => { // the far intersection of the ray c + t·d with each ellipsoid; the outermost one
+    let best = 0;
+    for (const e of [RH.skull, RH.jaw]) {
+      const o = [0, 1, 2].map((i) => (c[i] - e.centre[i]) / e.scale[i]), v = [0, 1, 2].map((i) => d[i] / e.scale[i]);
+      const qa = v[0] ** 2 + v[1] ** 2 + v[2] ** 2, qb = o[0] * v[0] + o[1] * v[1] + o[2] * v[2], qc = o[0] ** 2 + o[1] ** 2 + o[2] ** 2 - e.radius ** 2;
+      best = Math.max(best, (-qb + Math.sqrt(qb * qb - qa * qc)) / qa);
+    }
+    return best;
+  };
+  // a cols × rows grid over azimuth (0 = straight ahead, + = the figure's left) and elevation; `range(a)` → [bottom, top]
+  // elevation, `lift(a, s)` the distance off the skin (s: 0 at the bottom row → 1 at the top), `keep(a, e)` per quad
+  const grid = (az, cols, rows, range, lift, keep = () => true) => {
+    const pos = [], ae = [], idx = [], at = (i, j) => i * (rows + 1) + j;
+    for (let i = 0; i <= cols; i++) {
+      const a = az[0] + ((az[1] - az[0]) * i) / cols, [e0, e1] = range(a);
+      for (let j = 0; j <= rows; j++) {
+        const s = j / rows, e = e0 + (e1 - e0) * s, d = dir(a, e), t = skin(d) + lift(a, s);
+        pos.push(c[0] + d[0] * t, c[1] + d[1] * t, c[2] + d[2] * t); ae.push([a, e]);
+      }
+    }
+    for (let i = 0; i < cols; i++) for (let j = 0; j < rows; j++) {
+      const q = [at(i, j), at(i + 1, j), at(i, j + 1), at(i + 1, j + 1)].map((k) => ae[k]);
+      if (!keep(q.reduce((m, p) => m + p[0], 0) / 4, q.reduce((m, p) => m + p[1], 0) / 4)) continue;
+      idx.push(at(i, j), at(i + 1, j), at(i, j + 1), at(i + 1, j), at(i + 1, j + 1), at(i, j + 1));
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    g.setIndex(idx);
+    g.computeVertexNormals();
+    return g;
+  };
+  const top = (a) => { // the top edge: sideburns → cheeks → (without the moustache) down under the mouth at the front
+    const side = B.cheek[0] + (B.cheek[1] - B.cheek[0]) * smooth(B.cheekAz[0], 90, Math.abs(a));
+    return lip ? side : B.chinTop + (side - B.chinTop) * smooth(B.notch[0], B.notch[1], Math.abs(a));
+  };
+  const beard = grid([-B.azimuth, B.azimuth], B.cols, B.rows, (a) => [B.bottom, top(a)],
+    (a, s) => B.thickness * (1 - 0.6 * smooth(0, 1, Math.abs(a) / B.azimuth)) * Math.sin(Math.PI * (0.15 + s * 0.85)) ** 0.6 + B.lift,
+    (a, e) => !lip || Math.abs(a) > B.mouth[0] || e < B.mouth[1] || e > B.mouth[2]);
+  const L = lip ? B.lips : B.lipsNotch, lips = grid([-L[0], L[0]], 6, 3, () => [L[1], L[2]], () => B.lift);
+  return { beard, lips };
 }
 const TORSO_PROFILE = [[0, 0], [0.13, 0.0], [0.155, 0.04], [0.16, 0.12], [0.142, 0.26], [0.155, 0.4], [0.17, 0.5], [0.16, 0.57],
   [0.11, 0.62], [0.05, 0.64], [0.045, 0.7], [0, 0.71]];
