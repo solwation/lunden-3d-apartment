@@ -6439,6 +6439,14 @@ with later main.js names (`towelMaterialTargets`, `lights.pendants`,
 Verona uv1 cloth checks skip the sofa's decorative cushion mesh. Native runs:
 patio 42/42 and Verona 33/33, CLI0.
 
+#1184 applied the same catch-up to `tools/materiallibrarytest.cjs`,
+`tools/longpiletest.cjs` and `tools/curtainmaterialtest.cjs` (`towelMaterialTargets`,
+`lights.pendants`, `adminReports`, `editMenuSurfaceId`); the curtain fixture's
+`#997` register fragment also gets an empty `handWash`, and its preview/library
+counts follow `materialChoices('gardin')` (the #1070 neutrals made it 15).
+`tools/crashviewporttest.cjs` gets only the UI names (`showTerminal(false)` calls
+`adminReports.closeLogin`). None of these four fixtures reads `/proc/net/tcp6`.
+
 
 The sole granted #1015 component run produced six inspected900×560/DPR1
 PNGs with18 small before/after/pair passes, actual17/17 checks/CLI0 in54.196s.
