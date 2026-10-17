@@ -424,7 +424,11 @@ src/combatworld.js     combat solid-hit broad phase (#715): fresh filtered trave
                        consume the lifetime admission quota and safely fall back. COMBAT.collision caps bitsets plus reserved
                        bookkeeping, not measured JavaScript heap. No transforms or world membership are cached.
 src/avatar.js          the players' avatars (#705): a neutral human figure on Olof's skeleton and IK (src/olof.js exports `attachSkeleton`, `poseOlof`, `bindAt`,
-                       `lathe`; his look is untouched): a face (eyes, brows, nose, mouth, ears), the body (#1103, `bodyParts`: a torso with chest/bust,
+                       `lathe`; his look is untouched): a face (#1101, `addFace` / `faceWarp`, tunables `AVATAR_FACE`, *guess* by eye: eyeballs with
+                       iris, pupil and upper/lower lids in a shaded socket under a brow ridge, arched brows, a bridge-to-tip nose with wings, two
+                       lips in a skin-derived lip colour (region 6) with a seam, a chin; the whole head 7 % narrower and the jaw narrowing toward
+                       the chin, applied to every head-bone part so the beard shell stays on the skin; skull and jaw rounder, their normals
+                       blended at the seam), ears, the body (#1103, `bodyParts`: a torso with chest/bust,
                        shoulder blades and sloping shoulders, deltoid caps, wrists reaching flat hands with the palm to the thigh, fingers and a thumb,
                        a T-shirt with sleeve hems / long-sleeved top with elbow folds and cuffs, collar, hem, belt with buckle, trousers with seat,
                        fly seam and hems, low trainers with a sole), one of four hair styles (short, long, bun, beanie; #1102 `hairParts`, tunables
@@ -437,7 +441,7 @@ src/avatar.js          the players' avatars (#705): a neutral human figure on Ol
                        the upper-lip moustache band); 2 = two moustache boxes; +≈ 0.35 k triangles. It is cosmetic only (head hits use the
                        shared three-box collider). `look(seed)` (the player's id, ours
                        `me:<name>`) picks skin, hair, top, trousers, shoes, sleeves, hair style, build and height, so players differ. ONE SkinnedMesh
-                       (one draw call) per avatar, no texture, ≈ 4.1–4.9 k triangles (`avatarTriangles(variant)`; 8 shared base geometries, built lazily;
+                       (one draw call) per avatar, no texture, ≈ 5.1–5.9 k triangles (#1101 face +≈ 1.0 k; `avatarTriangles(variant)`; 8 shared base geometries, built lazily;
                        an avatar owns only a colour attribute, a 13-bone skeleton and a material). The material is a MeshLambertMaterial patched with a
                        lit and opaque (#1025: players always see normal visible avatar appearance; ghost outline removed).
                        `update(dt, { speed, turn, hands, crouch })`: legs walk above AVATAR.walkSpeed (the phase follows the distance), arms swing,

@@ -1,12 +1,12 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, SPIDER, avatarLook, PVP_RIFLE_HEAD as RH, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
+import { AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, SPIDER, avatarLook, PVP_RIFLE_HEAD as RH, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
 import { topTexture } from './spidersuit.js';
 import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
 
 // The players' avatars (#705): a neutral human figure for the other players (src/ghosts.js) and for our own reflection in the
 // mirrors (#691). The skeleton, the proportions and the two-bone IK are Olof's (src/olof.js, #671); the figure itself is a
-// plainer one: no hoodie or can, but optional facial hair (a full beard shell, #1097, and/or a moustache) and a face (eyes, brows, nose, mouth, ears), a body that follows a person's shape (#1103,
+// plainer one: no hoodie or can, but optional facial hair (a full beard shell, #1097, and/or a moustache) and a face (#1101: eyes with lids and irises under a brow ridge, brows, a nose with wings, lips, a jawline; ears), a body that follows a person's shape (#1103,
 // bodyParts: shoulders, hands with fingers, a T-shirt or a long-sleeved top with a collar and a hem, trousers with a belt, trainers) and one of four hairstyles / a hat. Colours (skin,
 // hair, top, trousers, shoes) and the build come from the player's seed (the name or the id), so players can be told apart.
 //
@@ -23,8 +23,8 @@ import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, bindAt, lathe, torsoR, attachS
 
 export { avatarLook as look } from './config.js';
 const look = avatarLook;
-const REGION = { skin: 0, top: 1, pants: 2, hair: 3, fixed: 4 };
-const H = 0.1; // Existing head geometry remains unchanged.
+const REGION = { skin: 0, top: 1, pants: 2, hair: 3, fixed: 4, lips: 6 }; // 5: the shoes
+const H = 0.1; // The head bone's eye-height reference (ears, hair, moustache).
 
 // --- the geometry (built once per variant) -----------------------------------------------------------------------------
 const bases = new Map();
@@ -33,7 +33,8 @@ const bases = new Map();
 function parts(style, sleeves, gender = 0, facial = 0) {
   const P = [];
   const add = (g, region, bone, [x = 0, y = 0, z = 0] = [], shade = 1, fixed = 0) => {
-    const b = bindAt(bone); g.translate(b.x + x, b.y + y, b.z + z); P.push([g, REGION[region], shade, fixed]); P[P.length - 1].bone = bone;
+    const b = bindAt(bone); g.translate(x, y, z); if (bone === 'head') faceWarp(g);
+    g.translate(b.x, b.y, b.z); P.push([g, REGION[region], shade, fixed]); P[P.length - 1].bone = bone;
   };
   add.last = () => P[P.length - 1];
   const sphere = (r, w = 10, h = 7, ...a) => new THREE.SphereGeometry(r, w, h, ...a);
@@ -44,21 +45,15 @@ function parts(style, sleeves, gender = 0, facial = 0) {
   // the head: neck, head, ears, face, hair
   add(new THREE.CylinderGeometry(0.05, 0.055, 0.12, 8), 'skin', 'head', [0, 0.02, 0]);
   const skullShape = RH.skull;
-  add(sphere(skullShape.radius, skullShape.width, skullShape.height).scale(...skullShape.scale), 'skin', 'head', skullShape.centre);
-  P[P.length - 1].rifleSkull = true;
   const jawShape = RH.jaw;
-  add(sphere(jawShape.radius, jawShape.width, jawShape.height).scale(...jawShape.scale), 'skin', 'head', jawShape.centre, 0.97);
-  P[P.length - 1].rifleJaw = true; // unchanged jaw; internal identity only
-  for (const s of [-1, 1]) {
-    add(sphere(0.028, 8, 5).scale(0.55, 1, 0.72), 'skin', 'head', [s * 0.1, H - 0.005, 0], 0.94); // ears
-    add(sphere(0.019, 8, 6).scale(1, 0.8, 0.5), 'fixed', 'head', [s * 0.036, H + 0.018, 0.103], 1, 0xf2f2ee); // the eye whites
-    add(sphere(0.0105, 6, 5), 'fixed', 'head', [s * 0.036, H + 0.018, 0.1085], 1, 0x2a2420);   // the pupils
-    add(new THREE.BoxGeometry(0.032, 0.0075, 0.01).rotateZ(s * -0.12), 'hair', 'head', [s * 0.037, H + 0.045, 0.103], 0.85); // brows
-  }
-  const noseShape = RH.nose;
-  add(sphere(noseShape.radius, noseShape.width, noseShape.height).scale(...noseShape.scale), 'skin', 'head', noseShape.centre, 0.96);
-  P[P.length - 1].rifleNose = true; // exact internal surface, no trusted wire flag
-  add(new THREE.BoxGeometry(0.04, 0.007, 0.008), 'fixed', 'head', [0, H - 0.058, 0.106], 1, 0x9a5a52); // the mouth
+  // #1101: the same skull and jaw ellipsoids (the beard shell projects onto them), rounder, shaded as one surface where
+  // they meet (no jagged crease across the cheeks); faceWarp narrows the jaw towards the chin
+  add(blendNormals(sphere(skullShape.radius, ...FACE.skullSegments).scale(...skullShape.scale).translate(...skullShape.centre), skullShape, jawShape), 'skin', 'head');
+  P[P.length - 1].rifleSkull = true;
+  add(blendNormals(sphere(jawShape.radius, ...FACE.jawSegments).scale(...jawShape.scale).translate(...jawShape.centre), jawShape, skullShape), 'skin', 'head');
+  P[P.length - 1].rifleJaw = true; // internal identity only
+  for (const s of [-1, 1]) add(sphere(0.028, 8, 5).scale(0.55, 1, 0.72), 'skin', 'head', [s * 0.1, H - 0.005, 0], 0.94); // ears
+  addFace(add, sphere, P);
   // facial hair: 0 none, 1 beard, 2 mustache, 3 beard + mustache
   const f = Number(facial) || 0;
   if (f === 2) { // mustache only
@@ -322,6 +317,84 @@ function longHair(az, top, onSkull, sheet, strand, thick, hit, smooth) { // az: 
   const inner = sheet(cols, L.rows, false, (i, j) => { const [x, y, z, r] = cols3[i][j], k = (r - L.depth) / r; return [x * k, y, z * k]; }, () => 0.7, true);
   return [[outer, 'hair', 0.97], [inner, 'hair', 1]];
 }
+
+// --- the face (#1101) -----------------------------------------------------------------------------------------------------
+
+/** The head is a little narrower than the ball it was, its lower face narrowing toward the chin (a jawline), applied to every head-bone part alike so the
+ * beard shell, lips and chin stay on the skin; positions in the head bone's frame, normals follow approximately. */
+function faceWarp(g) {
+  const W = FACE.warp, p = g.attributes.position, n = g.attributes.normal, v = new THREE.Vector3();
+  for (let i = 0; i < p.count; i++) {
+    const k = W.width * (1 - W.narrow * smoothstep(W.y[0], W.y[1], p.getY(i)) * smoothstep(W.z[0], W.z[1], p.getZ(i)));
+    if (k === 1) continue;
+    p.setX(i, p.getX(i) * k);
+    if (n) { v.fromBufferAttribute(n, i); v.x /= k; v.normalize(); n.setXYZ(i, v.x, v.y, v.z); }
+  }
+}
+
+/** Near where ellipsoid `own` meets `other` (RH shapes: radius, scale, centre), the vertex normals turn toward the average
+ * of both surfaces' normals, so the two read as one smooth head; elsewhere they keep their own. */
+function blendNormals(g, own, other) {
+  const p = g.attributes.position, n = g.attributes.normal, a = new THREE.Vector3(), b = new THREE.Vector3(), q = new THREE.Vector3();
+  const grad = (e, out) => out.set(...[0, 1, 2].map((i) => (q.getComponent(i) - e.centre[i]) / e.scale[i] ** 2)).normalize();
+  const dist = (e) => Math.hypot(...[0, 1, 2].map((i) => (q.getComponent(i) - e.centre[i]) / e.scale[i])) - e.radius;
+  for (let i = 0; i < p.count; i++) {
+    q.fromBufferAttribute(p, i);
+    const w = 0.5 * (1 - smoothstep(0, FACE.blend, Math.abs(dist(other))));
+    if (w <= 0) continue;
+    grad(own, a).multiplyScalar(1 - w).add(grad(other, b).multiplyScalar(w)).normalize();
+    n.setXYZ(i, a.x, a.y, a.z);
+  }
+  return g;
+}
+
+/** Bends a part around the face: z falls back by k·x² (lips, so their corners meet the cheeks). */
+function bend(g, k) {
+  const p = g.attributes.position;
+  for (let i = 0; i < p.count; i++) p.setZ(i, p.getZ(i) - k * p.getX(i) ** 2);
+  return g;
+}
+
+/** The nose: a narrow bridge between the eyes widening and coming forward to a rounded tip, its underside back to the lip. */
+function noseGeometry(N) {
+  const g = new THREE.SphereGeometry(1, 10, 8), p = g.attributes.position, cy = (N.top + N.bottom) / 2, hh = (N.top - N.bottom) / 2;
+  for (let i = 0; i < p.count; i++) {
+    const ux = p.getX(i), uy = p.getY(i), uz = p.getZ(i), t = (1 - uy) / 2;
+    const w = N.width[0] + (N.width[1] - N.width[0]) * t, d = N.depth[0] + (N.depth[1] - N.depth[0]) * t ** 1.5;
+    p.setXYZ(i, ux * w, cy + uy * hh, N.z + (uz > 0 ? uz * d : uz * 0.004));
+  }
+  g.computeVertexNormals();
+  return g;
+}
+
+/** Eyes set in shallow sockets under a brow ridge (eyeball, iris, pupil, upper and lower lids), brows along the ridge,
+ * a nose with wings, two lips with a seam, cheekbones and a chin. All on the head bone; numbers AVATAR_FACE. */
+function addFace(add, sphere, P) {
+  const F = FACE, E = F.eye, L = F.lid, N = F.nose, B = F.brow;
+  for (const s of [-1, 1]) {
+    const x = s * E.at[0], [, y, z] = E.at;
+    add(sphere(F.socket.r, 10, 4).scale(...F.socket.scale), 'skin', 'head', [x, y, F.socket.z], F.socket.shade); // the socket's shade
+    add(sphere(E.r, 8, 5).scale(...E.scale), 'fixed', 'head', [x, y, z], 1, E.white);
+    const irisZ = z + E.r * E.scale[2] * Math.sqrt(1 - (E.iris / E.r) ** 2);
+    add(sphere(E.iris, 10, 3).scale(1, 1, 0.4), 'fixed', 'head', [x, y - 0.0005, irisZ], 1, E.irisColour);
+    add(sphere(E.pupil, 8, 3).scale(1, 1, 0.3), 'fixed', 'head', [x, y - 0.0005, irisZ + E.iris * 0.4 - E.pupil * 0.15], 1, E.pupilColour);
+    add(sphere(L.r, 8, 3, 0, Math.PI * 2, 0, Math.PI * L.upper).scale(...L.scale), 'skin', 'head', [x, y, z], 0.9); // upper lid
+    add(sphere(L.r, 8, 2, 0, Math.PI * 2, Math.PI * (1 - L.lower), Math.PI * L.lower).scale(...L.scale), 'skin', 'head', [x, y, z], 0.94);
+    add(sphere(F.ridge.r, 8, 4).scale(...F.ridge.scale), 'skin', 'head', [s * F.ridge.at[0], F.ridge.at[1], F.ridge.at[2]], F.ridge.shade);
+    const brow = new THREE.TorusGeometry(B.radius, B.tube, 3, 6, B.arc).rotateZ(Math.PI / 2 - B.arc / 2).translate(0, -B.radius, 0)
+      .scale(1, 1, 0.6).rotateZ(s * B.tilt).rotateY(s * B.turn);
+    add(brow, 'hair', 'head', [s * B.at[0], B.at[1], B.at[2]], 0.85);
+    add(sphere(N.alar[3], 7, 5).scale(0.9, 0.8, 1), 'skin', 'head', [s * N.alar[0], N.alar[1], N.alar[2]], 0.95); // the nose's wings
+    P[P.length - 1].rifleNose = true; // internal nose identity, no trusted wire flag
+  }
+  add(noseGeometry(N), 'skin', 'head', [0, 0, 0], 0.97);
+  P[P.length - 1].rifleNose = true;
+  const [uy, uz, ur, us] = F.lips.upper, [ly, lz, lr, ls] = F.lips.lower;
+  add(bend(sphere(ur, 10, 4).scale(...us), F.lips.bend), 'lips', 'head', [0, uy, uz]);
+  add(bend(sphere(lr, 10, 4).scale(...ls), F.lips.bend), 'lips', 'head', [0, ly, lz], 1.05);
+  add(bend(sphere(Math.min(ur, lr), 10, 3).scale(1, 0.06, 0.22), F.lips.bend), 'fixed', 'head', [0, (uy + ly) / 2, (uz + lz) / 2 + 0.0015], 1, F.lips.seam);
+  add(sphere(F.chin.r, 7, 4).scale(...F.chin.scale), 'skin', 'head', F.chin.at, 0.98);
+}
 // the tops' torso (hip at 0; scaled 1.15 / 1.08 × 1 × 0.7): a narrower waist, the chest, sloping shoulders (the trapezius)
 // up to the neck (#1103). The suit's atlas (#891) maps over the widest radius and the top height, both kept.
 const TORSO_PROFILE = [[0, 0], [0.13, 0.0], [0.152, 0.04], [0.155, 0.12], [0.14, 0.25], [0.162, 0.44], [0.17, 0.5],
@@ -367,6 +440,7 @@ function base(style = 0, sleeves = 0, gender = 0, facial = 0) {
 function geometryFor(lk) {
   const b = base(lk.style, lk.sleeves, lk.gender ?? lk.figure ?? 0, lk.facial ?? lk.facialHair ?? 0), n = b.attributes.position.count;
   const pal = [lk.skin, lk.top, lk.pants, lk.hair, 0, lk.shoes].map((c) => new THREE.Color(c));
+  pal[6] = pal[0].clone().lerp(new THREE.Color(FACE.lipTint), 0.35).multiplyScalar(0.92); // #1101: the lips, from the skin
   const base3 = b.attributes.color.array, reg = b.attributes.region.array, col = new Float32Array(n * 3);
   for (let i = 0; i < n; i++) {
     const r = reg[i];
