@@ -289,9 +289,9 @@ export class Chicken extends Holdable {
     }
   }
 
-  /** Smoke the hood does not take care of (the smoke alarm listens to this, #194). */
+  /** Only active cooking owned by the kitchen pan can feed its alarm; lingering grill smoke is visual only (#1179). */
   get freeSmoke() {
-    if (this.inGrill || !this.smoking || !this.model.parent || !this.visibleUp()) return false;
+    if (this.inGrill || !this.inPan || !this.pan?.onHob || !this.hob?.on || this.model.parent !== this.pan.model || !this.smoking || !this.visibleUp()) return false;
     return !this.hood?.draws(this.where(new THREE.Vector3()).add(new THREE.Vector3(0, 0.12, 0)));
   }
 

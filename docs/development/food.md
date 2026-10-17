@@ -64,7 +64,7 @@ tools/sausagetest.html real game (?life&shot&test): stock homes, closed fridge, 
 src/hood.js            the cooker hood (#194, `world.hood`, in world.lids): E runs the fan (whoosh, green LED; its light is a
                        separate button = its own lamp, #221 — the fan does not light it, like a real hood) and
                        draws the chicken's smoke up into it; the smoke alarm in the kitchen ceiling (SMOKE_ALARM) beeps
-                       and blinks red after `delay` s of smoke the hood does not take (`chicken.freeSmoke`); F: fan off
+                       and blinks red after `delay` s from an active kitchen source; F: fan off
                        #1043 shell is brushed steel with a glass control strip, two merged texture-mesh filter panels
                        and two LED diffusers sharing the existing lamp material; no new light or smoke/audio controller.
 src/coffee.js          Moccamaster on the worktop (MOCCAMASTER): E brews (red light, sound, the jug fills); tank + switch on the left, jug
@@ -247,3 +247,22 @@ Final combined-source verification after preserving #1059/#1057: focused
 Every focused runtime/producer hash matches the committed source. The earlier
 104-check bicycle run retains every executed main-function fragment byte-for-byte;
 its sole whole-file drift is the unrelated removed material-library close handler.
+
+
+## Finished grill food and the kitchen alarm (#1179)
+
+`Chicken.freeSmoke` requires actual ownership by the kitchen pan, that pan on
+the hob, active hob heat, visible smoke and no capture by the running hood.
+Whole chicken currently cooks only on the two outdoor grills, so all reachable
+chicken states remain excluded from the indoor alarm: grilling, served/held
+golden or burnt food, and the existing cooling smoke. Grill smoke/sprites and
+cooking/reward/save behaviour stay intact. Active burning fish/fries in the air
+fryer retain their existing alarm path, delay, stop/pause and F/reset behaviour.
+
+`tools/smokealarmtest.cjs BASE OUT` runs the actual Chicken, both Grill variants,
+Pan, Hood, AirFryer, FishPack, Fries and SmokeAlarm with the verbatim main alarm
+binding. `BASELINE_CHICKEN=/path/to/old/chicken.js` reproduces the finished patio
+bird's false alarm and checks the original kitchen sources. Alarm start/stop
+requests use counted audio-output stubs; model/controller/LED/alarm state is
+real. WebGL is forbidden. The DOM evidence is a test report, not a rendered
+apartment, audible hardware or physical-device test.

@@ -560,7 +560,7 @@ const beerShelf = fridge ? new BeerShelf(fridge, await beerShelfData) : null;
 const chicken = fridge ? new Chicken(scene, camera, fridge, pan, world.hob) : null; // the whole chicken: cook it on the courtyard grill (#708)
 if (pan) pan.occupied = () => !!chicken?.inPan || !!fish?.inPan.length;
 if (chicken) holdables.push(chicken);
-// the cooker hood draws the chicken's smoke; without it the smoke alarm in the kitchen ceiling goes off (#194)
+// Kitchen alarm sources require active cooking; finished grill food keeps visual smoke only (#1179).
 const smokeAlarm = new SmokeAlarm();
 for (const g of chickenGrills) g.onLit = () => life.emit('grillLit', { surface: 'grill' });
 lights.extra.push(grill.lamp);
