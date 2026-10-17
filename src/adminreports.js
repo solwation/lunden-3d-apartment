@@ -108,7 +108,7 @@ export class AdminReports {
         catch{if(epoch===this.epoch)this.say('Kunde inte ta bilden. Försök igen; texten finns kvar.');return;}
       }
       if(epoch!==this.epoch||!this.active)return;
-      const r=await fetch(this.url+'/reports/'+pending.id,{redirect:'error',method:'PUT',headers:{'Content-Type':'application/json',Authorization:'Bearer '+this.token},body:JSON.stringify({text,image:pending.image})});
+      const r=await fetch(this.url+'/reports/'+pending.id,{redirect:'error',method:'PUT',headers:{'Content-Type':'application/json',Authorization:'Bearer '+this.token},body:JSON.stringify({text,image:pending.image,...(pending.photo?{photo:pending.photo}:{})})});
       if(epoch!==this.epoch)return;
       if(r.status===403){this.logout();this.say('Adminsessionen har gått ut. Skriv din adminkod i chatten igen.');return;}
       if(!r.ok){this.say(r.status===429?'Vänta en minut och skicka rapporten igen.':'Rapporten kunde inte sparas. Texten finns kvar.');return;}
