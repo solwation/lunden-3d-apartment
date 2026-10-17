@@ -308,10 +308,31 @@ Only L1201 has the half wall (#631: the user; #627 wrongly gave it to ours and L
 
 Lift panel (#640): `src/liftpanel.js` `buildLiftPanel({ car, group, box, floors: [{ y, label }], landingZ, callX, press, doorTime })` builds everything a rider sees and hears, so Hus A/B/C lifts (#637-#639) call it with their own floor list and car box (names come from config: `CORE.lift.floors`, Hus L `['−1','1','2','3']`; sizes in `LIFT_PANEL`, all *guess*). Car: one canvas plate on the east wall with a round button per stop (lit ring until the car arrives, pressed look 220 ms); beside each landing door a call plate with ▲/▼ as the stop has floors above/below (lit while called); a floor indicator (large name + direction triangle) over the car's door and over every landing door, all sharing one texture and redrawn only when the floor/direction changes; a mirror (frame + baked gradient picture, no reflection pass or cube map) on the back wall above the handrail. Pick areas are invisible boxes (`noArchitectureEdges`) sized for touch. Core's `Lift` only calls `panel.pressed(k, inCar)` (E on a button), `panel.sync(lift)` each update (also in the rescue drive) and `panel.mains(on)`. Sounds (all through `sfx`, so they follow the game's sound setting): button click, door slide at each open/close start, `sfx.liftHum` while moving, a soft tick passing a floor, `sfx.liftChime` on arrival (higher going up). Power cut: no call is kept, lit buttons go out, indicators and plates dark, no chime or hum; the rescue drive still opens the doors with their sound. About 10 draw calls for the whole lift.
 
-Park-level basement entries (#729): Hus A west (leaf z42.25…43.30) and B east (46.8…47.85) are real Garage steel doors behind their own `SITE.blocks[].recesses[].basement` walk-in specs; main-entry CORE_A/B/C specs stay independent. Garage rects join the recess mouths to A's wider corridor end and B's east corridor. B's east core-wall opening is only `s:[0,0]`, z46.1…47.0 on the flat −1 landing, north of the rising flight. Niche and doorway floors are partitioned with the passage (one surface at GARAGE.floor + floorLift); grass is omitted under the niches. West-facing façade clipping now uses the west plane/normal. The two actual animated leaves/picks have an independent exterior batch, so far approaches do not lose closed doors or draw the entire garage; picks and outdoor leaf collisions are restricted to basement height. [Sources, guesses and focused validation](../validation/issue-729/README.md); `tools/basemententrytest.cjs` drives the actual E/touch/floor routes.
+Park-level basement entries (#729): Hus A west (leaf z42.25…43.30) and B east (46.8…47.85) are real Garage glazed doors (#1152) behind their own `SITE.blocks[].recesses[].basement` walk-in specs; main-entry CORE_A/B/C specs stay independent. Garage rects join the recess mouths to A's wider corridor end and B's east corridor. B's east core-wall opening is only `s:[0,0]`, z46.1…47.0 on the flat −1 landing, north of the rising flight. Niche and doorway floors are partitioned with the passage (one surface at GARAGE.floor + floorLift); grass is omitted under the niches. West-facing façade clipping now uses the west plane/normal. The two actual animated leaves/picks have an independent exterior batch, so far approaches do not lose closed doors or draw the entire garage; picks and outdoor leaf collisions are restricted to basement height. [Sources, guesses and focused validation](../validation/issue-729/README.md); `tools/basemententrytest.cjs` drives the actual E/touch/floor routes.
 
 ## Entrances across A/B/C/L (#976)
 
 All three `CoreHouse` variants keep their actual glazed entrance, lobby floors/ceiling and original static wall shell in `exterior`, alongside the gated lift/stair details. The A-only partition from #887 left B/C facade openings empty beyond the near rectangle. B’s fixed sidelight faces a multi-storey shaft wall, while C’s door looks through its corridor into the hall/shaft. Selecting only single-storey lobby walls or walls immediately touching lobby floors therefore leaves holes. The final shared implementation retains every original static wall run and existing dark flat-door cell, using each house’s actual data. It moves geometry between batches without adding walls, changing openings or copying A’s dimensions. The complete triangle/color/material multiset and collision/zone/floor/door dimensions stay identical. Lift, stair and other detail remain on the original near gate; all shell meshes retain normal frustum culling.
 
 A’s original representative view already worked after #887 and remains protected. B and C are independently reproduced and corrected; their actual different entry orientation, corridor, shaft and openings remain intact. L uses the separate `Core` plus `exterior.js`/`portikPlan` envelope, unchanged by this source fix. L’s through-passage is intentional and remains open; it must not be filled merely because background is visible through it. Representative browser far/near checks cover A/B/C and L independently at quality0/3.
+
+
+## Glazed A/B park doors (#1152)
+
+Only `Garage.parkLeaves` changes from solid infill to stiles/rails around a clear
+pane, following the user's report. `GARAGE.parkDoorGlass` records visual rail,
+pane and tint assumptions; existing doorway extents, frames, hardware, hinge,
+animation and full-leaf collision remain unchanged. The two glass panes share
+one extra instanced draw, using the exact same matrices as their metal leaves;
+no textures, lights or live reflection pass are added. Internal steel leaves,
+including A/B core/garage and C's basement connections, retain their original
+geometry. C has no independently evidenced common outdoor basement door. L has
+no corresponding park door; its existing portik glazing remains unchanged.
+
+`tools/parkdoorglasstest.cjs BASE OUT [BASELINE_GARAGE_JS]` constructs the actual
+Garage and drives its production targets/update/instance matrices. Both A/B
+leaves are checked open/closed, including glass openings in actual opaque
+geometry, panes, unchanged collision/height gates and inside/outside WebGL
+captures. This bounded component omits World/facade construction, E/touch input
+and physical-phone/FPS measurements. The public viewer's equivalent transfer
+is tracked in [kvarteret-lunden #43](https://github.com/solwation/kvarteret-lunden/issues/43).

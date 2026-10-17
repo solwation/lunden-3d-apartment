@@ -448,7 +448,7 @@ export const SITE = {
       hip: { box: { x0: -1.64, x1: 1.28, z0: 33.49, z1: 37.39, h: 1.0 } }, // roof plan on the våning 5 sheet (#348)
       corners: { nw: [3.4, 2.0], ne: [3.4, 2.0], se: [5.9, 2.05], sw: [5.9, 2.05] },
       recesses: [{ face: 'n', a0: 0.23, a1: 2.22, depth: 2.1, from: 1, to: 1, door: 1, walkIn: true }, // the main entrance from the courtyard (våning 1); a real door into the stair core (#637, CORE_A)
-        { face: 'w', a0: 41.4, a1: 43.4, depth: 0.75, from: 0, to: 0, door: 0, walkIn: true, basement: { door: [42.25, 43.30], height: 2.1, floorEdge: -9.05 } }] },    // #729: p46 exterior leaf range; setback 0.75 and steel finish/height remain *guess* (formerly decorative, #647)
+        { face: 'w', a0: 41.4, a1: 43.4, depth: 0.75, from: 0, to: 0, door: 0, walkIn: true, basement: { door: [42.25, 43.30], height: 2.1, floorEdge: -9.05 } }] },    // #729: p46 exterior leaf range; setback 0.75 and finish/height remain *guess* (formerly decorative, #647)
     { name: 'Hus B', x0: -41.74, x1: -22.6, z0: 33.3, z1: 57.35, base: -3, storeys: 4, roof: 'hip', // våning -1…3
       hip: { box: { x0: -33.59, x1: -30.67, z0: 38.01, z1: 41.91, h: 1.0 } }, // roof plan on the våning 4 sheet (#348)
       corners: { nw: [3.4, 2.0], ne: [3.4, 2.0], se: [5.9, 2.05], sw: [5.9, 2.05] },
@@ -1654,6 +1654,8 @@ export const OUTDOOR = { x0: -78.5, x1: 27.5, z0: -14, z1: 64 };
 export const GARAGE = {
   floor: -3,          // = SITE.terrain.park: the drive is level with the door (#346)
   parkDoorMaterial: { color: 0x7d858b, roughness: .7 }, // *guess*: existing steel colour, daylight-lit park leaves (#729)
+  // #1152: A/B exterior park doors are glazed per user; rail/pane sizes and tint are visual guesses, not surveyed.
+  parkDoorGlass: { stile: .12, rail: .08, bottom: .16, thickness: .012, color: 0x9fb4bf, opacity: .35, roughness: .05, metalness: .3 },
   floorLift: .003, // existing visible floor offset, *guess*: shared by the park thresholds (#729)
   doorClearance: .25, // #523: assumed extra side clearance at actual basement doorways
   doorHead: 2.1, // ASSUMPTION: existing basement lintel height; shared with the A/B brick openings.
@@ -1733,7 +1735,7 @@ export const GARAGE = {
     {id:'coreBWest',x0:-33.6,x1:-33.08,z0:41.8,z1:43.4,room:'Trapphus B',area:'hallW'},
     {id:'coreBSouth',x0:-33.6,x1:-33.08,z0:44.9,z1:45.9,room:'Trapphus B',area:'hallW'},
     // #729 DRAWING: west corridor's wider end around the actual p46 leaf z42.25..43.30.
-    // Existing recess setback, steel finish/head and outward swing are *guess*, not construction details.
+    // Existing recess setback, finish/head and outward swing are *guess*, not construction details.
     {id:'passageAWestEnd',x0:-9.05,x1:-6.8,z0:42.75,z1:44.1,room:'Trapphus A',area:'hallE'},
     {id:'passageAWestWing',x0:-6.8,x1:-1.37,z0:42.75,z1:43.4,room:'Trapphus A',area:'hallE'},
     {id:'parkARecess',x0:-9.76,x1:-9.12,z0:41.4,z1:43.4,room:'Trapphus A',area:'hallE',outside:'w'},

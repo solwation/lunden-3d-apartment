@@ -995,7 +995,7 @@ export class Garage {
       return bicycle;
     });
     // the doors: one instanced leaf for the cages (mesh in a steel frame), one for the steel doors; an invisible pick box each
-    const leafGeo = (w, h, mesh) => {
+    const leafGeo = (w, h, mesh, glazed = false) => {
       const parts = [];
       if (mesh) {
         const g = new THREE.PlaneGeometry(w, h).translate(w / 2, F + 0.05 + h / 2, 0), uv = g.attributes.uv;
@@ -1035,8 +1035,13 @@ export class Garage {
           parts.push(b);
         };
         const t = DD.leafThickness, lw = w - 0.01, lh = h - 0.015;
-        // Main steel leaf body
-        addSteelBox(lw, lh, t, 0.005 + lw / 2, F + 0.005 + lh / 2, 0, DD.colors.leaf);
+        // #1152: only the two outdoor park leaves have a real opening for glazing.
+        if (glazed) {
+          const P = G.parkDoorGlass;
+          for (const x of [0.005 + P.stile / 2, 0.005 + lw - P.stile / 2]) addSteelBox(P.stile, lh, t, x, F + 0.005 + lh / 2, 0, DD.colors.leaf);
+          addSteelBox(lw - 2 * P.stile, P.bottom, t, w / 2, F + 0.005 + P.bottom / 2, 0, DD.colors.leaf);
+          addSteelBox(lw - 2 * P.stile, P.rail, t, w / 2, F + 0.005 + lh - P.rail / 2, 0, DD.colors.leaf);
+        } else addSteelBox(lw, lh, t, 0.005 + lw / 2, F + 0.005 + lh / 2, 0, DD.colors.leaf);
         // Rebated leaf perimeter trim (överfals)
         addSteelBox(lw, 0.014, t + 0.006, 0.005 + lw / 2, F + 0.005 + lh - 0.007, 0, DD.colors.frame);
         addSteelBox(0.014, lh, t + 0.006, 0.005 + lw - 0.007, F + 0.005 + lh / 2, 0, DD.colors.frame);
@@ -1077,9 +1082,15 @@ export class Garage {
     }
     this.leaves = new THREE.InstancedMesh(leafGeo(ST.door, 2.0, true), new THREE.MeshBasicMaterial({ map: meshTex, alphaTest: 0.5, side: THREE.DoubleSide }), cages.length);
     this.steelLeaves = new THREE.InstancedMesh(leafGeo(ST.door, G.doorHead, false), new THREE.MeshBasicMaterial({ color: 0xffffff, vertexColors: true }), steel.length);
-    const parkGeo=this.steelLeaves.geometry.clone();parkGeo.computeVertexNormals(); // Basic steel geometry has no normals; outdoor lighting needs its own clone
+    const parkGeo=leafGeo(ST.door, G.doorHead, false, true);parkGeo.computeVertexNormals(); // Basic steel geometry has no normals; outdoor lighting needs its own clone
     this.parkLeaves=new THREE.InstancedMesh(parkGeo, new THREE.MeshStandardMaterial({ ...G.parkDoorMaterial, color: 0xffffff, vertexColors: true }), park.length);
     this.parkLeaves.raycast=()=>{};this.parkLeaves.frustumCulled=false;this.parkLeaves.castShadow=this.parkLeaves.receiveShadow=true;this.parkObject.add(this.parkLeaves);
+    const P = G.parkDoorGlass, paneH = G.doorHead - 0.015 - P.bottom - P.rail;
+    const pane = new THREE.BoxGeometry(ST.door - 0.01 - 2 * P.stile, paneH, P.thickness)
+      .translate(ST.door / 2, F + 0.005 + P.bottom + paneH / 2, 0);
+    this.parkGlass = new THREE.InstancedMesh(pane, new THREE.MeshStandardMaterial({ color: P.color, roughness: P.roughness, metalness: P.metalness, transparent: true, opacity: P.opacity, depthWrite: false }), park.length);
+    this.parkGlass.name = 'park-door-glass'; this.parkGlass.raycast = () => {}; this.parkGlass.frustumCulled = false;
+    this.parkGlass.receiveShadow = true; this.parkObject.add(this.parkGlass);
     for (const m of [this.leaves, this.steelLeaves]) { m.raycast = () => {}; m.frustumCulled = false; group.add(m); }
     const pickMat = new THREE.MeshBasicMaterial();
     this.targets = this.cageDoors.map((d) => {
@@ -1297,6 +1308,7 @@ export class Garage {
     d.pivot.rotation.y = yaw; d.pivot.updateMatrix(); d.pivot.updateMatrixWorld(true);
     d.inst.setMatrixAt(d.index, new THREE.Matrix4().makeRotationY(yaw).scale(new THREE.Vector3(d.w / ST.door, 1, 1)).setPosition(d.hx, 0, d.hz));
     d.inst.instanceMatrix.needsUpdate = true;
+    if (d.rect?.door?.park) { this.parkGlass.setMatrixAt(d.index, new THREE.Matrix4().fromArray(d.inst.instanceMatrix.array, d.index * 16)); this.parkGlass.instanceMatrix.needsUpdate = true; }
     (d.segment ??= [])[0] = d.hx; d.segment[1] = d.hz; d.segment[2] = d.hx + dx * d.w; d.segment[3] = d.hz + dz * d.w;
   }
 
