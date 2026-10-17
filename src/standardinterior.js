@@ -448,7 +448,7 @@ function bathroom(B, floor, room, y0, handled, open) {
  * `fit` (a flat with a plan of its own, #573): { level, area, layout: 'galley' + tallDir / baseDir, tiled } — the
  * kitchen's level and rectangle, its layout, the wet rooms; default the shared sheet's (L1004: the corner kitchen).
  * `opens`: the level's E targets, where the kitchen's opening doors and drawers go (#621). */
-export function buildStandardInterior(group, floor, li, y0, yC, wallBoxes, handled, doorways = [], fit = null, opens = []) {
+export function buildStandardInterior(group, floor, li, y0, yC, wallBoxes, handled, doorways = [], fit = null, opens = [], floorHole = null) {
   const B = new Batch(), rects = [], f = fit ?? { level: K.level, area: K.area, tiled: S.tiled }, open = { group, list: opens };
   if (li === f.level) rects.push(...(f.layout === 'galley' ? galley(B, floor, y0, yC, handled, f.area, f, open) : kitchen(B, floor, y0, yC, handled, f.area, open)));
   const tiled = f.tiled.filter((r) => r.level === li).map((r) => ({ ...r, floor: 'wet', generic: !!fit }));
@@ -458,7 +458,7 @@ export function buildStandardInterior(group, floor, li, y0, yC, wallBoxes, handl
     else rects.push(...laundry(B, floor, room, y0, handled));
   }
   doorwayTiles(B, tiled, doorways, y0, { wet: M.wet });
-  skirting(B, [...wallBoxes, ...floor.windows], li, floor.size, y0, tiled, M.skirting);
+  skirting(B, [...wallBoxes, ...floor.windows], li, floor.size, y0, tiled, M.skirting, floorHole); // (none over the stair opening, #1135)
   group.add(...B.meshes());
   return rects;
 }

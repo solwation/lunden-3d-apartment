@@ -1592,7 +1592,7 @@ export function tileWalls(B, room, wallBoxes, y0, h, material) {
  * White skirting (golvsockel) on every wall face that faces into the house, except in the
  * tiled rooms. `boxes` = wall boxes + window infills (the wall below the sill).
  */
-export function skirting(B, boxes, li, size, y0, rooms = TILED_ROOMS, material = M.skirting) {
+export function skirting(B, boxes, li, size, y0, rooms = TILED_ROOMS, material = M.skirting, floorHole = null) {
   const tiled = rooms.filter((r) => r.level === li);
   const inTiled = (x, z) => tiled.some((r) => x > r.x0 - 0.02 && x < r.x1 + 0.02 && z > r.z0 - 0.02 && z < r.z1 + 0.02);
   const solid = (x, z) => x <= 0.01 || z <= 0.01 || x >= size.x - 0.01 || z >= size.z - 0.01
@@ -1606,10 +1606,19 @@ export function skirting(B, boxes, li, size, y0, rooms = TILED_ROOMS, material =
       if (a1 - a0 < 0.04) continue;
       // walk the face in 10 cm steps and emit runs where the room side is free floor
       let run = null;
+      // no floor in front of the face over the stair opening (#1135): a wall running down the stairwell keeps no skirting
+      // at the upper floor's level (it hung there as a 7 cm ledge that caught the sun and broke the wall at the slab)
+      const gap = floorHole && (n === 'x' ? [floorHole.z0, floorHole.z1, floorHole.x0, floorHole.x1] : [floorHole.x0, floorHole.x1, floorHole.z0, floorHole.z1]);
+      const over = gap && c + s * 0.03 > gap[2] && c + s * 0.03 < gap[3];
+      const emit = (lo, hi) => {
+        if (hi - lo <= 0.03) return;
+        if (n === 'x') B.box(s > 0 ? c : c - t, s > 0 ? c + t : c, lo, hi, y0, y1, material);
+        else B.box(lo, hi, s > 0 ? c : c - t, s > 0 ? c + t : c, y0, y1, material);
+      };
       const flush = (end) => {
-        if (run && end - run > 0.03) {
-          if (n === 'x') B.box(s > 0 ? c : c - t, s > 0 ? c + t : c, run, end, y0, y1, material);
-          else B.box(run, end, s > 0 ? c : c - t, s > 0 ? c + t : c, y0, y1, material);
+        if (run !== null && end - run > 0.03) {
+          if (over && gap[0] < end && gap[1] > run) { emit(run, Math.min(end, gap[0])); emit(Math.max(run, gap[1]), end); }
+          else emit(run, end);
         }
         run = null;
       };
@@ -1691,7 +1700,7 @@ export function doorwayTiles(B, rooms, doorways, y0, mats = M) {
   }
 }
 
-export function buildInterior(group, floor, li, y0, yC, wallBoxes, handled, taps = [], appliances = [], doorways = []) {
+export function buildInterior(group, floor, li, y0, yC, wallBoxes, handled, taps = [], appliances = [], doorways = [], floorHole = null) {
   const B = new Batch();
   const rects = [];
   if (li === K.level) rects.push(...buildKitchen(B, group, floor, y0, yC, handled, taps, appliances));
@@ -1704,7 +1713,7 @@ export function buildInterior(group, floor, li, y0, yC, wallBoxes, handled, taps
     if (room.name === 'Tvätt') rects.push(...buildLaundry(B, group, floor, { ...room, ceiling: 2.5 }, y0, handled, taps, appliances));
   }
   doorwayTiles(B, TILED_ROOMS.filter((r) => r.level === li), doorways, y0);
-  skirting(B, [...wallBoxes, ...floor.windows], li, floor.size, y0);
+  skirting(B, [...wallBoxes, ...floor.windows], li, floor.size, y0, TILED_ROOMS, M.skirting, floorHole);
   group.add(...B.meshes());
   return rects;
 }

@@ -748,8 +748,8 @@ function buildLevel(floor, li, group, how = OURS) {
   const handled = new Set();
   const taps = []; // tap/shower outlets for running water (main.js)
   const appliances = [...windows]; // things that open with E but aren't doors (the fridge, the windows)
-  const fitted = std ? buildStandardInterior(group, floor, li, y0, yC, wallBoxes, handled, doorways, how.kitchen, appliances) // Peab's standard (#574; its kitchen fronts open, #621)
-    : buildInterior(group, floor, li, y0, yC, wallBoxes, handled, taps, appliances, doorways);
+  const fitted = std ? buildStandardInterior(group, floor, li, y0, yC, wallBoxes, handled, doorways, how.kitchen, appliances, li === 1 ? opening : null) // Peab's standard (#574; its kitchen fronts open, #621)
+    : buildInterior(group, floor, li, y0, yC, wallBoxes, handled, taps, appliances, doorways, li === 1 ? opening : null); // (no skirting over the stair opening, #1135)
   for (const r of fitted) segments.push(...rectSegments(r));
 
   // Other fixed cabinets
