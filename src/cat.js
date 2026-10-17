@@ -66,6 +66,34 @@ export function pickCat(rand = Math.random) {
   return { breed, coat: breed.coats[Math.floor(rand() * breed.coats.length)] };
 }
 
+/** The visitor's local calendar date, 'YYYY-MM-DD' (#1134). */
+export const localDay = (d = new Date()) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+/** Miele's extra chance for the k-th new cat (1-based) of a day she has not been seen yet (#1134, MIELE.daily). */
+export const mieleExtra = (k, { grace, by } = MIELE.daily) => Math.min(1, Math.max(0, (k - grace) / (by - grace)));
+
+/**
+ * Miele's daily guarantee (#1134): a record { day, seen, cats } for the local date, read with `load` and stored with `keep`
+ * (main.js: the saved statistics). A new date starts over; once she is seen that day only her BREEDS weight applies.
+ */
+export class MieleDaily {
+  constructor({ load = () => null, keep = () => {}, now = () => new Date() } = {}) { Object.assign(this, { load, keep, now }); }
+  today() {
+    const day = localDay(this.now());
+    let r = null;
+    try { r = this.load(); } catch { /* a broken record re-arms */ }
+    if (!r || r.day !== day || typeof r.seen !== 'boolean' || !Number.isSafeInteger(r.cats) || r.cats < 0) r = { day, seen: false, cats: 0 };
+    return { ...r };
+  }
+  /** The extra chance that the next new cat is her (0 once she has been seen today). */
+  extra() { const r = this.today(); return r.seen ? 0 : mieleExtra(r.cats + 1); }
+  /** Another cat (not her) turned up. */
+  counted() { const r = this.today(); if (r.seen) return; r.cats++; this.keep(r); }
+  /** She was seen (main.js checkMiele). */
+  seen() { const r = this.today(); if (r.seen) return; r.seen = true; this.keep(r); }
+}
+
 /** A kitten's name (#363): one of KITTEN.names, or "Lilla" + a grown cat's name. */
 export function kittenName(rand = Math.random) {
   if (rand() < KITTEN.lilla) return `Lilla ${CAT_NAMES[Math.floor(rand() * CAT_NAMES.length)]}`;
@@ -433,6 +461,7 @@ export class CatSpawner {
     // next new cat is her; `seen` = found this time (main.js checkMiele); `held` = in the visitor's arms (miele.js);
     // `released` = just put down: she looks at you, then walks off
     Object.assign(this, { mieleLock: false, forceMiele: false, seen: false, held: false, released: null, hugging: false });
+    this.mieleDaily = null; // MieleDaily (#1134): the main cat's daily guarantee (main.js); null = only her BREEDS weight
     cat.traverse((o) => { o.userData.door = this.interact; });
     this.stars = buildStars(); // only for rare cats while they are petted
     cat.add(this.stars);
@@ -599,6 +628,10 @@ export class CatSpawner {
       let { breed, coat } = pickCat(this.rand);
       if (this.forceMiele) breed = BREEDS.find((b) => b.superRare);
       else if (breed.superRare && this.mieleLock) breed = BREEDS[0]; // she is only out once until she has walked off (#328)
+      else if (!breed.superRare && !this.mieleLock && this.mieleDaily) { // not seen today: her chance ramps up (#1134)
+        const extra = this.mieleDaily.extra();
+        if (extra > 0 && this.rand() < extra) breed = BREEDS.find((b) => b.superRare);
+      }
       if (breed.coats.indexOf(coat) < 0) coat = breed.coats[Math.floor(this.rand() * breed.coats.length)];
       this.forceMiele = false;
       const kitten = this.kittenNext && !breed.superRare; // Miele is always grown
@@ -606,7 +639,7 @@ export class CatSpawner {
       this.catName = kitten ? kittenName(this.rand) : CAT_NAMES[Math.floor(this.rand() * CAT_NAMES.length)];
       this.setCat(breed, coat, kitten);
       if (breed.superRare) { this.seen = false; this.photoDone = false; } // counted when first seen (main.js checkMiele)
-      else this.onFound?.(catLabel(breed, coat), !!breed.rare, breed.name, kitten);
+      else { this.mieleDaily?.counted(); this.onFound?.(catLabel(breed, coat), !!breed.rare, breed.name, kitten); }
     }
     this.stopPetting();
     this.dropFish();

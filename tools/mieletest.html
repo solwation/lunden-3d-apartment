@@ -164,6 +164,7 @@ f.onload = async () => {
   const rand0 = cat.rand;
   cat.rand = rand;
   player.spawn(from.x, from.z, 0);
+  w.__app.cat.mieleDaily.seen(); // (already seen above; the base weight only)
   let n = 0, mieles = 0;
   for (let i = 0; i < 4000; i++) {
     cat.hide(); cat.mieleLock = false;
@@ -173,7 +174,57 @@ f.onload = async () => {
     if (cat.isMiele) mieles++;
   }
   const rate = mieles / n;
-  pass &= check(n > 3000 && rate > 1 / 400 && rate < 1 / 100, `rare: ${mieles} of ${n} cats (1 in ${Math.round(1 / rate)})`);
+  pass &= check(n > 3000 && rate > 1 / 120 && rate < 1 / 40, `rare: ${mieles} of ${n} cats (1 in ${Math.round(1 / rate)}, seen today: base weight only)`);
+  // #1134: the daily guarantee. The real one (main.js) remembers that she was seen today in the saved statistics.
+  const { MieleDaily, localDay, BREEDS } = await w.eval(`import('${new URL('src/cat.js', w.location.href)}')`);
+  const { MIELE } = await w.eval(`import('${new URL('src/config.js', w.location.href)}')`);
+  pass &= check(stats.mieleDay?.seen === true && stats.mieleDay.day === localDay() && cat.mieleDaily.extra() === 0,
+    `seen today is stored (${JSON.stringify(stats.mieleDay)}), the extra chance is off`);
+  // A fresh day for 400 seeded visitors: she turns up by the MIELE.daily.by-th cat at the latest.
+  const daily0 = cat.mieleDaily;
+  let clock = new Date(2026, 9, 17, 9), rec = null;
+  const daily = new MieleDaily({ load: () => rec, keep: (r) => { rec = r; }, now: () => clock });
+  cat.mieleDaily = daily;
+  const metAt = [];
+  for (let v = 0; v < 400; v++) {
+    s = 1000 + v * 7919; rec = null;
+    let k = 0;
+    for (let tries = 0; k < 30 && tries < 300; tries++) {
+      cat.hide(); cat.mieleLock = false;
+      cat.placeBehind(door, from);
+      if (!cat.visible) continue;
+      k++;
+      if (cat.isMiele) { daily.seen(); break; } // (main.js checkMiele)
+    }
+    metAt.push(k);
+  }
+  metAt.sort((a, b) => a - b);
+  const median = metAt[metAt.length >> 1], max = metAt[metAt.length - 1], early = metAt.filter((k) => k <= MIELE.daily.grace).length;
+  pass &= check(max <= MIELE.daily.by && median >= 3 && median <= 6 && early < 40,
+    `fresh day: Miele by cat ${max} at the latest (bound ${MIELE.daily.by}), median cat ${median}, within the first ${MIELE.daily.grace}: ${early} of 400`);
+  // seen today: back to the base weight for the rest of the day
+  let after = 0, afterN = 0;
+  for (let i = 0; i < 3000; i++) { cat.hide(); cat.mieleLock = false; cat.placeBehind(door, from); if (!cat.visible) continue; afterN++; if (cat.isMiele) after++; }
+  pass &= check(rec.seen && daily.extra() === 0 && after / afterN < 1 / 40 && rec.cats < MIELE.daily.by,
+    `after she was seen: ${after} of ${afterN} cats (1 in ${Math.round(afterN / Math.max(1, after))}), the counter stops at ${rec.cats}`);
+  // drawn but never seen (the door closed): the ramp goes on, she comes back soon; never while she is out
+  rec = null; s = 4242;
+  for (let k = 0; k < MIELE.daily.by - 1; k++) daily.counted();
+  cat.hide(); cat.mieleLock = true; cat.placeBehind(door, from);
+  const lockedOk = cat.visible && !cat.isMiele;
+  cat.hide(); cat.mieleLock = false; cat.forceKitten = true; cat.placeBehind(door, from);
+  pass &= check(lockedOk && daily.extra() === 1 && cat.isMiele && !cat.kitten && !rec.seen,
+    `unseen: still due (extra ${daily.extra()}), not while she is out, then her (grown: ${!cat.kitten})`);
+  cat.forceKitten = false;
+  // the next local day re-arms; a broken record too
+  daily.seen();
+  clock = new Date(2026, 9, 18, 0, 5);
+  const re = daily.today();
+  rec = { day: '2026-10-18', seen: 'ja', cats: -3 };
+  const broken = daily.today();
+  pass &= check(re.day === '2026-10-18' && !re.seen && re.cats === 0 && !broken.seen && broken.cats === 0 && BREEDS.find((b) => b.superRare).weight === MIELE.weight,
+    `next day re-arms (${JSON.stringify(re)}); a broken record re-arms`);
+  cat.mieleDaily = daily0;
   // no second Miele while she is out (or until she has walked off)
   let again = 0;
   cat.hide(); cat.mieleLock = true;

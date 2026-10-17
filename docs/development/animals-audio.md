@@ -60,7 +60,7 @@ tools/cattest.html     headless test of cat placement behind every door/wardrobe
 tools/pettest.html     headless test of petting the cat (eyes, hand, stats counter, the photo; then it walks off and is gone)
 tools/mieletest.html   headless test of Miele (#328, &miele): her coat, first sight (fireworks, +1000, once), taken up (both hands, not
                        hit by a shot), the board photo "Miele", a hug, not on a table, down on the floor → walks off, found again
-                       (+100), F while held, the rarity (seeded draws, ~1 in 180) and the lock
+                       (+100), F while held, the rarity (seeded draws, ~1 in 68), the daily guarantee (#1134) and the lock
 tools/sonostest.html   headless test: music in all three speakers, songs, volume, panel, pause, upstairs, F; each channel
                        rendered offline (only outside --virtual-time-budget; there it says SKIP)
 tools/laptoptest.html  headless test: Tilly's laptop (#283) on with E on the screen, swipes by itself and with E, every clip kind
@@ -121,7 +121,7 @@ tools/kittentest.html  headless test of kittens (#363): the seeded draw (~KITTEN
 - Miele (#328, `MIELE` in config, `MIELE_COAT` + the BREEDS entry 'Miele' with `superRare` in cat.js, src/miele.js): the family's
   own cat (the photo on the Sovrum 1 window board, #322), a brown mackerel tabby and white (docs/miele-foto-ram.jpg): the tabby
   is painted on canvases (`tabbyTextures`: the coat material's map — white below the middle, stripes, a white V up the face —
-  and rings on the tail), the rest plain colours; amber eyes. Drawn by her BREEDS `weight` (~1 in 180 cats), never through
+  and rings on the tail), the rest plain colours; amber eyes. Drawn by her BREEDS `weight` (~1 in 68 cats, plus the daily guarantee below), never through
   `&catb`; `mieleLock` keeps a second one out until she has walked off. Named "Miele" always. First seen (main.js
   `checkMiele`: within `see` m, on screen, not `behindWall`) once per time she turns up: heart fireworks, a trill + pling,
   stats `miele` (SCORE.first 1000, again 100), "💖 Du hittade Miele!"; not counted as a found cat / breed. E takes her up
@@ -137,6 +137,14 @@ tools/kittentest.html  headless test of kittens (#363): the seeded draw (~KITTEN
   bed or table top in that room `chance` of the time (one seen straight from the doorway within `reach`; the height from a
   ray down onto the furniture, so it sits on the cushion and never in something on a table; `cat.on` = 'sit'/'lie'/
   'table'). `chooseSpot` skips the seat it is on; after a pat it fades where it sits; it ignores fish fingers up there.
+- Miele's daily guarantee (#1134, `MIELE.weight`/`MIELE.daily` in config, cat.js `MieleDaily`/`mieleExtra`/`localDay`): base
+  weight 1.5 (~1 in 68 cats). Until she has been seen on the local date, the k-th new cat that day gets an extra chance
+  clamp((k − grace)/(by − grace)) = 0, 0, 1/6 … 1 (grace 2, by 8, *guess*): median about the 5th cat, never later than the 8th.
+  The record `{ day, seen, cats }` lives in the saved statistics (`stats.mieleDay`, `keepMieleDay`, try/catch storage); main.js
+  wires it to the main cat and `checkMiele` marks her seen. A new date or a broken record re-arms it; resetting the statistics
+  too. Spawners without `mieleDaily` (seeded tests) keep the pure weight draw and RNG sequence; `mieleLock`, &miele/&catb and
+  "never a kitten" are unchanged. Scores unchanged: one 1000 first find, then SCORE.again.miele 100 about once a day (≈ a
+  kitten's 120). Test: tools/mieletest.html (400 seeded fresh days, reset after seen, unseen-but-drawn, next day, broken record).
 - Kittens (#363, `KITTEN` in config): a new cat (any breed and coat, never Miele) is a kitten with `KITTEN.chance` (~1 in 30,
   *guess*; `cat.kitten`, `setCat(breed, coat, kitten)`); the same parts and POSE re-proportioned by `shapeOf` (× KITTEN.shape:
   half size, bigger head / eyes / ears, short muzzle, short legs — `legs` lowers the body in `pose` — a thin short tail,

@@ -3004,13 +3004,17 @@ export const KITTEN = { chance: 1 / 30, furniture: 0.65, every: [3, 7], play: 1.
   shape: { size: 0.5, head: 1.38, eyes: 1.45, ears: 1.3, muzzle: 0.6, legs: 0.72, tail: 0.55, tailLen: 0.7, fluff: 1.15 },
   lilla: 0.5, names: ['Pyttan', 'Smulis', 'Tussi', 'Lillsnorre', 'Knyttet', 'Pippi', 'Fjutten', 'Nusse', 'Mini', 'Bus', 'Pysen', 'Tofsen'] };
 // Miele (#328, cat.js / src/miele.js): the family's own cat (the photo on the Sovrum 1 window board, #322) as a super-rare
-// find. `weight` = her draw weight among BREEDS (whose weights add up to 100): ~1 in 180 cats (*guess*, the issue's
-// 1 in 150–200); at most once until she has walked off. Seen within `see` m (on screen, no wall between) she counts:
+// find. `weight` = her draw weight among BREEDS (whose weights add up to 100): 1.5 ≈ 1 in 68 cats (*guess*, #1134 raised it
+// from 0.56 ≈ 1 in 180, which nobody ever met); at most once until she has walked off. `daily` (#1134, *guess*): until she has
+// been seen on the visitor's local date, the k-th new cat of that day (1-based) is her with an extra chance
+// clamp((k − grace) / (by − grace), 0, 1) on top of `weight`: the first `grace` cats are ordinary draws, then 1/6, 2/6 … and
+// the `by`-th cat at the latest is her (with CHANCE_APPEAR 0.3 roughly 25 door openings, a short play session). Median
+// about the 5th cat, so she still feels like a find rather than a fixture; once seen today only `weight` applies again. Seen within `see` m (on screen, no wall between) she counts:
 // heart fireworks (`fireworks` shells that pop into `sparks` small hearts each over ~`life` s), SCORE.first.miele.
 // E takes her into your arms like Pingping: `held` = where she sits (camera space, her feet), `tilt` back (rad), the
 // hands round her sides at `grips` (her frame); a hug (click / "Krama") pulls her in `pull` m, squeezed by `squash`,
 // over `hugTime` s. Put down she looks at you for `linger` s, then walks off. Coat colours read off docs/miele-foto-ram.jpg.
-export const MIELE = { weight: 0.56, see: 7, fireworks: 7, sparks: 12, life: 3,
+export const MIELE = { weight: 1.5, daily: { grace: 2, by: 8 }, see: 7, fireworks: 7, sparks: 12, life: 3,
   held: { x: 0.0, y: -0.43, z: -0.5, tilt: -0.3 }, grips: [[0.108, 0.16, -0.005], [-0.108, 0.16, -0.005]], // *guess* #914: sides of ribcage
   pull: 0.08, squash: 0.12, hugTime: 0.8, linger: 2,
   carryPurr: 3.2, // #1061 *guess*: two breathing cycles per renewable, cancellable carry sound (s).

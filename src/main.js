@@ -35,13 +35,13 @@ import { respawnOutdoors } from './respawn.js';
 import { setupTouch } from './touch.js';
 import { setupTouchLayout } from './touchlayout.js';
 import { watchForUpdates, BUILD } from './version.js';
-import { CatSpawner, VARIANTS, BREEDS, kittenName } from './cat.js';
+import { CatSpawner, VARIANTS, BREEDS, kittenName, MieleDaily } from './cat.js';
 import { initAudio, sfx, toggleMuted, isMuted, updateListener } from './audio.js';
 import { stairHeight, stairUnderside } from './stairs.js';
 import { rugLift } from './rugs.js';
 import { loadChangelog, retryChangelog, renderChangelog, buildNote, scrollNote } from './changelog.js';
 import { loadTodo, buildTodoNotes } from './todo.js';
-import { setScoreElement, totalScore, setStatsExtra, stats, bump, badge, catFound, secretFound, renderStats, resetStats, visitRoom, setRoomTotal, setBadgeElement, penalize } from './stats.js';
+import { setScoreElement, totalScore, setStatsExtra, stats, keepMieleDay, bump, badge, catFound, secretFound, renderStats, resetStats, visitRoom, setRoomTotal, setBadgeElement, penalize } from './stats.js';
 import { Minimap } from './minimap.js';
 import { Compass } from './compass.js';
 import { Measure } from './measure.js';
@@ -905,6 +905,7 @@ const miePhoto = () => { // her photo on the cat board: the first time she is he
 miele.onPickUp = () => { if (cat.isMiele) miePhoto(); };
 miele.onHug = () => { if (cat.isMiele) { bump('mieleHugs'); miePhoto(); } else { cat.onPet?.(); if (!cat.photoDone) { cat.photoDone = true; cat.onPhoto?.(); } } };
 if (params0.has('kitten')) cat.forceKitten = true; // &kitten: the next cat to turn up is a kitten (#363)
+cat.mieleDaily = new MieleDaily({ load: () => stats.mieleDay, keep: keepMieleDay }); // at least once a play day (#1134)
 if (params0.has('miele')) cat.forceMiele = true; // &miele: the next cat to turn up is her (tests, screenshots)
 const mieleFrustum = new THREE.Frustum(), mieleAt = new THREE.Vector3();
 function checkMiele() {
@@ -915,6 +916,7 @@ function checkMiele() {
   mieleFrustum.setFromProjectionMatrix(buttMat.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
   if (!mieleFrustum.containsPoint(head) || behindWall(head)) return;
   cat.seen = true;
+  cat.mieleDaily?.seen();
   const again = !!stats.seen?.miele?.Miele;
   bump('miele', 1, 'Miele');
   badge(again ? '💖 Miele igen!' : '💖 Du hittade Miele!', false);
