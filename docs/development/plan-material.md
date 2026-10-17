@@ -189,6 +189,10 @@ material/              screenshots of our choices in Peab's option portal (local
 - Foot of the stair (#286): coming down flight A (west) you face Badrum's east wall (x 2.152, passage side); an unframed
   black and white canvas ~80 × 80 cm (*guess*) hangs there centred on the wall between the Badrum door's architrave and the living room (#300: z 7.014, centre 1.55 m) — FURNITURE
   `pictures` with `frame: 0` (a black stretcher box, the picture on its face), textures/tavla-svartvit-trappan.jpg.
+- Living room, right of the TV (#1094): the user's gold and purple acrylic/gold-leaf canvas, 40 × 30 cm landscape (the user),
+  unframed, ~2 cm deep (*guess*), on the north wall centred between the TV's east edge and the Långlampa (x 5.066), centre
+  1.30 m up (*guess*). FURNITURE `pictures` with `frame: 0` and `edge` (the painted edges, purple → ochre),
+  textures/tavla-guld-lila-vardagsrum.jpg from docs/tavla-guld-lila-40x30.jpg.
 - Stair pictures (#220, #233): four black-framed pictures 2 × 2 (fikus, akvarell | peace, solros) in the upstairs
   stairwell, on the east party wall across the stair hole (seen face on from the upstairs hall and on the winders),
   centred on it (z 6.654), centre 1.57 m over the Övre plan floor. Each picture 30 × 40 cm, 40 × 50 cm outside with

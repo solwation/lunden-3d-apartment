@@ -4561,6 +4561,15 @@ export const FURNITURE = [
   // anthracite pedestal; depth, stand size and the ~78 cm total height are guesses. E switches it on: a
   // slowly moving colourful demo picture (canvas, ~12 fps) and an Ambilight glow on the wall behind.
   { type: 'tv', level: 0, x: 4.25, z: 7.8 + 0.2, y: 0.45, rot: 180, w: 1.23, h: 0.715, fps: 12 },
+  // The gold and purple painting (#1094, docs/tavla-guld-lila-40x30.jpg): acrylic and gold leaf on an unframed stretched
+  // canvas, 40 × 30 cm landscape (the user); the stretcher depth ~2 cm is a *guess*. On the north wall (inner face z 7.804)
+  // right of the TV seen from the sofa, centred in the gap between the TV's east edge (4.25 + 1.23 / 2 = 4.865) and the
+  // Långlampa's shade (5.551 − 0.16 − LANGLAMPA.r = 5.266) → x 5.066; centre 1.30 m up (*guess*: near the screen's top
+  // edge at 1.24). textures/tavla-guld-lila-vardagsrum.jpg = the photo's canvas straightened (800 × 600 px); `edge` = its
+  // painted edges, purple above, ochre below (the texture's mean top/bottom rows).
+  { type: 'pictures', level: 0, x: (4.25 + 1.23 / 2 + 5.551 - 0.16 - 0.125) / 2, z: 7.804, y: 1.3, rot: 180, w: 0.4, h: 0.3,
+    gap: 0, frame: 0, depth: 0.02, rough: 0.6, edge: [0x544859, 0x785f3b], cols: 1, rows: 1,
+    atlas: 'textures/tavla-guld-lila-vardagsrum.jpg', grid: [1, 1], order: [0] },
   // IKEA SYMFONISK (Sonos) speakers (#186, SYMFONISK below): two bookshelf speakers and the lamp speaker (frosted glass
   // shade) on the window board behind the sofa. #298 (the user): the white and the black bookshelf speakers swapped places.
   // the white one stands in Sovrum 1's window (#201, the user). #418 (Sarah, docs/symfonisk-bokhylla-staende.jpg): standing

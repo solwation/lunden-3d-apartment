@@ -3397,7 +3397,8 @@ function painting(item) {
  * row-major from the top left), `order[i]` = the cell shown in slot i (row-major from the top left). One material
  * for the frames and one for the pictures, so the whole group merges into two meshes. A little gloss stands in
  * for the glass. `frame: 0` = an unframed stretched canvas (#286): a black box `depth` deep (the wrapped, painted
- * edges) with the picture on its front face; `rough` overrides the picture's roughness (matte paint). */
+ * edges) with the picture on its front face, or `edge: [top, bottom]` colours blended up the edges; `rough` overrides the
+ * picture's roughness (matte paint). */
 const pictureAtlases = new Map();
 
 /** A picture drawn on a canvas instead of loaded (`paint` = its cache key, `print` = how, on a `pictures` item with
@@ -3475,7 +3476,15 @@ function pictures(item) {
     pic.position.set(cx, cy, f ? d - 0.006 : d + 0.0005);
     g.add(pic);
     if (!f) { // unframed canvas: the stretcher with its black-painted edges
-      const box = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), black);
+      const geo = new THREE.BoxGeometry(w, h, d);
+      let mat = black;
+      if (item.edge) { // `edge: [top, bottom]` (#1094): edges painted with the motif, a vertical blend instead of black
+        const [top, bottom] = item.edge.map((c) => new THREE.Color(c)), p = geo.attributes.position, col = [], c = new THREE.Color();
+        for (let k = 0; k < p.count; k++) col.push(...c.lerpColors(bottom, top, p.getY(k) / h + 0.5).toArray());
+        geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+        mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: item.rough ?? 0.6 });
+      }
+      const box = new THREE.Mesh(geo, mat);
       box.position.set(cx, cy, d / 2); box.castShadow = true;
       g.add(box);
       continue;
