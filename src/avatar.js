@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, SPIDER, avatarLook, PVP_RIFLE_HEAD as RH, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
+import { AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_SKIN as SK, SPIDER, avatarLook, PVP_RIFLE_HEAD as RH, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
 import { topTexture } from './spidersuit.js';
 import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
 
@@ -402,6 +402,52 @@ const TORSO_PROFILE = [[0, 0], [0.13, 0.0], [0.152, 0.04], [0.155, 0.12], [0.14,
 const TORSO_PROFILE_FEMALE = [[0, 0], [0.13, 0.0], [0.15, 0.04], [0.152, 0.12], [0.128, 0.26], [0.158, 0.43], [0.16, 0.5],
   [0.152, 0.55], [0.13, 0.59], [0.095, 0.615], [0.055, 0.635], [0.043, 0.7], [0, 0.71]];
 
+// --- skin and material shading (#1104) ----------------------------------------------------------------------------------
+// Instead of flat colours: clothes and hair get a soft ambient-occlusion-like darkening in their folds, baked once into the
+// shared base colour (clothShade); bare skin (the shared `bare` attribute) is shaded in the avatars' one fragment shader
+// (skinShading): warm cheeks, nose tip and lip surround, darker eye sockets, the shadow under the jaw and in the ears, a
+// little warmth on hands and elbows and a reddish edge where light scatters through skin. No texture, no extra draw call,
+// the same material per avatar; areas in config.js AVATAR_SKIN.
+/** A clothes / hair vertex's shade factor (1 = unchanged) from its bone-local bind position. */
+function clothShade(bone, region, pos, i) {
+  if (region !== REGION.top && region !== REGION.pants && region !== REGION.hair) return 1;
+  const b = bindAt(bone), x = pos.getX(i) - b.x, y = pos.getY(i) - b.y, z = pos.getZ(i) - b.z, C = SK.cloth;
+  let k = 0;
+  if (bone === 'torso') k = C.armpit * smoothstep(0.12, 0.18, Math.abs(x)) * bump(y, 0.45, 0.09); // under the arms
+  else if (bone.startsWith('shoulder')) k = C.armpit * smoothstep(0.01, 0.05, -x * (bone.endsWith('L') ? 1 : -1)) * smoothstep(-0.12, 0.0, y) * 0.8; // the sleeve's inside
+  else if (bone === 'hips') k = C.crotch * (1 - smoothstep(0.02, 0.07, Math.abs(x))) * smoothstep(-0.03, -0.1, y);
+  else if (bone.startsWith('thigh')) k = C.crotch * 0.7 * smoothstep(0.0, 0.05, -x * (bone.endsWith('L') ? 1 : -1)) * smoothstep(-0.12, 0.02, y);
+  else if (bone.startsWith('knee')) k = C.knee * smoothstep(0.0, -0.04, z) * bump(y, 0.0, 0.08); // behind the knee
+  else if (bone === 'head') k = C.hairUnder * smoothstep(H + 0.02, H - 0.14, y); // hair (and a beard) darker underneath
+  return 1 - k;
+}
+/** The fragment shader's skin shading (after the colour, before lighting): `q` the bind position in the head bone's frame. */
+const skinArea = (name, [x, y, z, r, k, wide = 1]) => {
+  const d = `vec2((${x ? `abs(q.x) - ${x.toFixed(4)}` : 'q.x'}) / ${wide.toFixed(2)}, q.y - ${y.toFixed(4)})`;
+  return `float ${name} = ${k.toFixed(3)} * exp(-dot(${d}, ${d}) / ${(r * r).toFixed(6)}) * step(${z.toFixed(3)}, q.z);`;
+};
+const v3 = (c) => `vec3(${c.map((v) => v.toFixed(3)).join(',')})`;
+function skinShading() {
+  const hb = bindAt('head'), bone = (n) => `${NAMES.indexOf(n)}.0`;
+  return `if (vBare > 0.5 && uSuit < 0.5) {
+        float sb = floor(vSuitBone + 0.5); vec3 tone = vec3(1.0);
+        if (sb == ${bone('head')}) {
+          vec3 q = vSuitAt - vec3(${hb.x.toFixed(4)}, ${hb.y.toFixed(4)}, ${hb.z.toFixed(4)});
+          ${skinArea('cheek', SK.cheek)}
+          ${skinArea('noseTip', SK.nose)}
+          ${skinArea('lipRim', SK.lipRim)}
+          ${skinArea('socket', SK.eye)}
+          float under = ${SK.under[2].toFixed(3)} * (1.0 - smoothstep(${SK.under[0].toFixed(3)}, ${SK.under[1].toFixed(3)}, q.y));
+          float ear = ${SK.ear[2].toFixed(3)} * smoothstep(${SK.ear[0].toFixed(3)}, ${SK.ear[1].toFixed(3)}, abs(q.x)) * (1.0 - smoothstep(0.0, 0.03, q.z));
+          tone *= mix(vec3(1.0), ${v3(SK.blush)}, clamp(cheek + noseTip + lipRim + ear * 0.5, 0.0, 1.0));
+          tone *= mix(vec3(1.0), ${v3(SK.socket)}, clamp(socket, 0.0, 1.0));
+          tone *= mix(vec3(1.0), ${v3(SK.underTint)}, clamp(under + ear * 0.4, 0.0, 1.0));
+        } else if (sb == ${bone('handL')} || sb == ${bone('handR')}) tone = ${v3(SK.hand)};
+        else tone = ${v3(SK.limb)};
+        diffuseColor.rgb *= tone;
+      }`;
+}
+
 /** The shared base geometry of a variant: positions, normals, skin attributes and `region` + `base` colour per vertex. */
 function base(style = 0, sleeves = 0, gender = 0, facial = 0) {
   const key = `${style}_${sleeves}_${gender}_${facial}`;
@@ -415,19 +461,21 @@ function base(style = 0, sleeves = 0, gender = 0, facial = 0) {
     }
     const g = g0.index ? g0.toNonIndexed() : g0;
     const n = g.attributes.position.count, k = NAMES.indexOf(part.bone), c = new THREE.Color(fixed), vs = g.attributes.shade?.array; // per-vertex shade (hair strands, #1102)
-    const col = new Float32Array(n * 3), reg = new Float32Array(n), si = new Uint16Array(n * 4), sw = new Float32Array(n * 4), contact = new Uint8Array(n), nose = new Uint8Array(n), jaw = new Uint8Array(n);
+    const col = new Float32Array(n * 3), bare = new Float32Array(n), reg = new Float32Array(n), si = new Uint16Array(n * 4), sw = new Float32Array(n * 4), contact = new Uint8Array(n), nose = new Uint8Array(n), jaw = new Uint8Array(n);
     for (let i = 0; i < n; i++) {
-      if (region === REGION.fixed && !part.shoe) { col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b; } else col.fill(vs ? shade * vs[i] : shade, i * 3, i * 3 + 3);
+      if (region === REGION.fixed && !part.shoe) { col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b; } else col.fill((vs ? shade * vs[i] : shade) * clothShade(part.bone, region, g.attributes.position, i), i * 3, i * 3 + 3);
+      bare[i] = region === REGION.skin ? 1 : 0;
       jaw[i] = part.rifleJaw ? 1 : 0; nose[i] = part.rifleNose ? 1 : 0; contact[i] = part.rifleSkull ? 1 : 0; reg[i] = part.shoe ? 5 : region; si[i * 4] = k; sw[i * 4] = 1;
     }
     g.setAttribute('color', new THREE.BufferAttribute(col, 3));
     g.setAttribute('region', new THREE.BufferAttribute(reg, 1));
+    g.setAttribute('bare', new THREE.BufferAttribute(bare, 1));
     g.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(si, 4));
     g.setAttribute('skinWeight', new THREE.BufferAttribute(sw, 4));
     g.setAttribute('rifleJaw', new THREE.Uint8BufferAttribute(jaw, 1));
     g.setAttribute('rifleNose', new THREE.Uint8BufferAttribute(nose, 1));
     g.setAttribute('rifleSkull', new THREE.Uint8BufferAttribute(contact, 1));
-    for (const a of Object.keys(g.attributes)) if (!['position', 'normal', 'color', 'region', 'skinIndex', 'skinWeight', 'rifleSkull', 'rifleNose', 'rifleJaw'].includes(a)) g.deleteAttribute(a);
+    for (const a of Object.keys(g.attributes)) if (!['position', 'normal', 'color', 'region', 'bare', 'skinIndex', 'skinWeight', 'rifleSkull', 'rifleNose', 'rifleJaw'].includes(a)) g.deleteAttribute(a);
     geos.push(g);
   }
   b = mergeGeometries(geos);
@@ -449,7 +497,7 @@ function geometryFor(lk) {
     col[i * 3] = c.r * s; col[i * 3 + 1] = c.g * s; col[i * 3 + 2] = c.b * s;
   }
   const g = new THREE.BufferGeometry();
-  for (const name of ['position', 'normal', 'skinIndex', 'skinWeight', 'rifleSkull', 'rifleNose', 'rifleJaw']) g.setAttribute(name, b.attributes[name]);
+  for (const name of ['position', 'normal', 'bare', 'skinIndex', 'skinWeight', 'rifleSkull', 'rifleNose', 'rifleJaw']) g.setAttribute(name, b.attributes[name]);
   g.setAttribute('color', new THREE.BufferAttribute(col, 3));
   g.userData.headProjection = b.userData.headProjection;
   g.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0.95, 0), 1.3); // limbs and a raised arm stay inside (culling by the root)
@@ -476,10 +524,10 @@ function makeMaterial(rim, headProjection) {
     Object.assign(sh.uniforms, u);
     // Bind-pose coordinates follow the original skin: colours/own canvas only, no new
     // geometry, skeleton, head envelope or per-avatar colour-buffer replacement (#891).
-    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vSuitAt; varying float vSuitBone;')
-      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvSuitAt = position; vSuitBone = skinIndex.x;');
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vSuitAt; varying float vSuitBone; attribute float bare; varying float vBare;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvSuitAt = position; vSuitBone = skinIndex.x; vBare = bare;');
     sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', '#include <common>\nuniform float uOutline, uFill, uRim;\nuniform vec3 uRimColor;\nuniform float uSuit, uSuitMaskBand; uniform sampler2D uSuitTexture; varying vec3 vSuitAt; varying float vSuitBone;')
+      .replace('#include <common>', '#include <common>\nuniform float uOutline, uFill, uRim;\nuniform vec3 uRimColor;\nuniform float uSuit, uSuitMaskBand; uniform sampler2D uSuitTexture; varying vec3 vSuitAt; varying float vSuitBone; varying float vBare;')
       .replace('#include <color_fragment>', `#include <color_fragment>
       if (uSuit > 0.5) {
         vec3 red = vec3(${new THREE.Color(SPIDER.colors.red).toArray().join(',')}), blue = vec3(${new THREE.Color(SPIDER.colors.blue).toArray().join(',')});
@@ -497,13 +545,15 @@ function makeMaterial(rim, headProjection) {
             diffuseColor.rgb = texture2D(uSuitTexture, clamp(uv, 0.0, 1.0)).rgb;
           }
         } else if (suitBone == ${NAMES.indexOf('handL')}.0 || suitBone == ${NAMES.indexOf('handR')}.0 || suitBone == ${NAMES.indexOf('kneeL')}.0 || suitBone == ${NAMES.indexOf('kneeR')}.0) diffuseColor.rgb = red;
-      }`)
+      }
+      ${skinShading()}`)
       .replace('#include <opaque_fragment>', `float edge = pow(1.0 - clamp(abs(dot(normalize(normal), normalize(vViewPosition))), 0.0, 1.0), ${A.rimPower.toFixed(2)});
       outgoingLight = mix(outgoingLight, uRimColor, uOutline * edge);
+      outgoingLight *= mix(vec3(1.0), ${v3(SK.rimTint.slice(0, 3))}, vBare * (1.0 - uSuit) * edge * ${SK.rimTint[3].toFixed(3)}); // light scattered through skin reddens its edges
       diffuseColor.a = mix(diffuseColor.a, mix(uFill, uRim, edge), uOutline);
       #include <opaque_fragment>`);
   };
-  m.customProgramCacheKey = () => 'avatar-outline-suit-v1';
+  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-v2';
   return m;
 }
 

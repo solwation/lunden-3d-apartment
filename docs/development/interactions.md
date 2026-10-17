@@ -439,7 +439,11 @@ src/avatar.js          the players' avatars (#705): a neutral human figure on Ol
                        one continuous full-beard shell (#1097, `beardShell`, tunables `AVATAR_BEARD`) projected onto the skull ∪ jaw ellipsoids,
                        fullest at the chin and tapering to the skin at its edges, a lips patch showing through the mouth notch / opening (3 adds
                        the upper-lip moustache band); 2 = two moustache boxes; +≈ 0.35 k triangles. It is cosmetic only (head hits use the
-                       shared three-box collider). `look(seed)` (the player's id, ours
+                       shared three-box collider). Skin and material shading (#1104, tunables `AVATAR_SKIN`): clothes and hair are
+                       baked darker in folds per vertex (`clothShade`: armpits, crotch, behind the knee, hair underneath); bare skin
+                       (shared `bare` attribute) gets warm cheeks / nose tip / lip surround, darker eye sockets, the shadow under the
+                       jaw and in the ears and a reddish grazing edge in the same fragment shader (`skinShading`, off under the suit).
+                       `look(seed)` (the player's id, ours
                        `me:<name>`) picks skin, hair, top, trousers, shoes, sleeves, hair style, build and height, so players differ. ONE SkinnedMesh
                        (one draw call) per avatar, no texture, ≈ 5.1–5.9 k triangles (#1101 face +≈ 1.0 k; `avatarTriangles(variant)`; 8 shared base geometries, built lazily;
                        an avatar owns only a colour attribute, a 13-bone skeleton and a material). The material is a MeshLambertMaterial patched with a

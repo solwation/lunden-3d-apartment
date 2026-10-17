@@ -3124,6 +3124,19 @@ export const AVATAR_HAIR = { centre: [0, 0.09, 0], rows: 6, step: 12, streak: 0.
   beanie: [[0, 35], [35, 32], [60, 19], [80, 9], [100, 9], [140, -8], [180, -14]],
   thick: [[0.016, 0.006, 0.009], [0.014, 0.011, 0.013], [0.006, 0.004, 0.005], [0.004, 0.003, 0.004]],
   long: { top: 50, from: 64, front: 72, back: 100, hem: [-0.035, -0.25], gap: 0.016, depth: 0.012, rows: 8 } };
+// The avatars' skin and material shading (#1104, src/avatar.js skinShading / clothShade) *guess* tuned by eye in day and
+// evening light, not measured: soft areas in the head bone's frame (metres; H = 0.1 is the head's centre) as
+// [x (mirrored), y, z (in front of it), radius, strength, horizontal stretch] with an RGB multiplier: warm cheeks / nose tip / lip surround,
+// darker eye sockets, the shadow under the jaw on the neck and inside the ears; `hand`/`limb` warm the bare hands and
+// elbows a little; `rimTint` [r, g, b, strength] reddens skin at grazing angles (scattered light). `cloth` darkens clothes in folds (armpits, crotch, behind the knee) and hair underneath, per vertex.
+export const AVATAR_SKIN = {
+  cheek: [0.056, 0.072, 0.06, 0.028, 0.85], blush: [1.08, 0.8, 0.76],
+  nose: [0, 0.076, 0.12, 0.016, 0.5], lipRim: [0, 0.042, 0.09, 0.02, 0.4],
+  eye: [0.034, 0.107, 0.06, 0.02, 0.8, 1.3], socket: [0.66, 0.58, 0.62],
+  under: [-0.03, 0.04, 0.55], underTint: [0.8, 0.74, 0.74], ear: [0.085, 0.102, 0.5],
+  hand: [1.03, 0.94, 0.92], limb: [1.02, 0.96, 0.95], rimTint: [1.0, 0.86, 0.8, 0.6],
+  cloth: { armpit: 0.22, crotch: 0.2, knee: 0.12, hairUnder: 0.25 },
+};
 // Combat between players (#667, src/combat.js; the room's check: cloudflare/players.js COMBAT). Only when both hold a weapon:
 // `weapons` = what counts, in the order they are looked for (the room's list must have each one: there its range and rate);
 // remove one here to leave it out. Both armed: drawn solid (`solid` opacity), else a ghost. A hit is judged by the shooter
