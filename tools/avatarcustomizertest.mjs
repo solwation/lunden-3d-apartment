@@ -488,7 +488,7 @@ test('#1140: Slumpa gives a valid look (palettes, ranges, wire code valid); Åte
     assert.ok(lk.style >= 0 && lk.style < 4 && [0, 1].includes(lk.sleeves) && [0, 1].includes(lk.gender) && lk.facial >= 0 && lk.facial < 4);
     for (const n of Object.keys(C.AVATAR_SHAPE.fields)) assert.ok(Number.isInteger(lk[n]) && lk[n] >= 0 && lk[n] < C.AVATAR_SHAPE.steps, n);
     assert.ok(lk.height >= AVATAR_HEIGHT.min && lk.height <= AVATAR_HEIGHT.max);
-    assert.equal(lk.build, base.build, 'build is kept');
+    assert.equal(lk.build, base.build, 'the old build field is kept'); assert.ok(lk.bodyBuild >= 0 && lk.bodyBuild < C.AVATAR_BUILD.steps);
     const code = encodeAvatarLook(lk), back = decodeAvatarLook(code, 'x');
     assert.ok(avatarCodeValid(code.slice(0, 12)));
     assert.equal(back.height, lk.height); assert.equal(back.eyes, lk.eyes); assert.equal(back.eyeSize, lk.eyeSize);

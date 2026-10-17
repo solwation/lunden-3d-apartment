@@ -318,7 +318,7 @@ export function drawAvatarPreview(canvas, look) {
 }
 
 /** A random look (#1140): colours, hairstyle, sleeves, figure, facial hair, eye colour, the face sliders and a height in cm
- * (mostly adult, sometimes a child; *guess*). Keeps what is not a plain choice (build, any extra fields) from `base`. */
+ * (mostly adult, sometimes a child; *guess*). Keeps the rest (the old build field, any extra fields) from `base`. */
 export function randomAvatarLook(base, rnd = Math.random) {
   const pick = (n) => Math.min(n - 1, Math.floor(rnd() * n));
   const lk = { ...base };
@@ -326,6 +326,7 @@ export function randomAvatarLook(base, rnd = Math.random) {
   lk.pants = PANTS[pick(PANTS.length)]; lk.shoes = SHOES[pick(SHOES.length)]; lk.eyes = EYES[pick(EYES.length)];
   lk.style = pick(4); lk.sleeves = pick(2); lk.gender = pick(2); lk.facial = pick(4);
   for (const name of Object.keys(AVATAR_SHAPE.fields)) lk[name] = pick(AVATAR_SHAPE.steps);
+  lk.bodyBuild = pick(AVATAR_BUILD.steps);
   const H = AVATAR_HEIGHT, lo = rnd() < 0.15 ? H.min + 20 : H.adult, hi = rnd() < 0.15 ? H.adult : H.max - 5;
   lk.height = Math.max(H.min, Math.min(H.max, Math.round(lo + rnd() * (hi - lo))));
   lk.tall = lk.height / H.base;
