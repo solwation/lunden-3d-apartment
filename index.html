@@ -552,7 +552,7 @@
     #admin-report-status { white-space: pre-wrap; }
     #admin-report button { min-height: 44px; padding: 10px 14px; margin: 8px 4px 0 0; border: 1px solid #809488; border-radius: 6px; background: #172322; color: #fff; cursor: pointer; }
     @media (max-height: 450px) { #admin-report { padding: 12px; } #admin-report textarea { min-height: 64px; height: 64px; } }
-    /* #1181: chosen photo (camera, file picker or drag and drop) replaces the automatic screenshot. */
+    /* #1181: chosen photo (camera, file picker or drag and drop) goes beside the automatic screenshot. */
     #admin-report-photo { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin-top: 8px; }
     #admin-report-photo:has(#admin-report-preview:not([hidden])) > #admin-report-camera, #admin-report-photo:has(#admin-report-preview:not([hidden])) > .report-drop-hint { display: none; }
     #admin-report .report-drop-hint { color: #9fbfa8; font-size: 13px; }
@@ -1138,7 +1138,7 @@
           </figcaption>
         </figure>
       </div>
-      <p id="admin-report-help">En bild av spelvyn följer med automatiskt. Väljer du ett foto skickas det i stället.</p>
+      <p id="admin-report-help">En bild av spelvyn följer med automatiskt, och ett foto du väljer skickas med bredvid.</p>
       <p id="admin-report-status" role="status" aria-live="polite"></p>
       <button id="admin-report-send" type="submit">Skicka rapport</button>
 

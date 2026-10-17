@@ -1740,15 +1740,15 @@ codecs (`createImageBitmap(..., {imageOrientation:'from-image'})`, so EXIF orien
 applied; HEIC only where the browser decodes it, otherwise a clear Swedish error), scales to
 `REPORTS.imageEdge` and re-encodes through the shared `encodeReportJpeg` (also used by
 `ReportCapture`) under `REPORTS.imageBytes`. Canvas re-encoding writes no EXIF, so GPS/device
-metadata never leaves the browser. A preview offers Byt/Ta bort. Until the Worker accepts a
-second image (#1182), a chosen photo replaces the automatic screenshot in the existing `image`
-field; legacy chat `/rapport` still sends the screenshot. A changed photo gets a new report UUID,
+metadata never leaves the browser. A preview offers Byt/Ta bort. The screenshot is still
+captured and sent as `image`; the photo goes beside it as the optional `photo` field (#1182).
+Legacy chat `/rapport` sends only the screenshot. A changed photo gets a new report UUID,
 and a successful send clears it. Layout: full screen inside the safe area with a compact
 one-line header on phones (`max-width: 600px` or `max-height: 500px`, as #1141), text and
 photo side by side in landscape, and a large two-column modal on desktops of at least 1100×720.
 Probe used: real index DOM + AdminReports with stubbed Worker routes, 4032×3024 EXIF-rotated
-GPS-tagged JPEG via `setInputFiles` at 390×844, 844×390 and 1920×1080, sent image checked
-with `validReportImage`.
+GPS-tagged JPEG via `setInputFiles` at 390×844, 844×390 and 1920×1080, sent photo checked
+with `validReportImage` and the PUT body against `REPORTS.putBytes`.
 
 ### Shared dialog close corners (#1059)
 

@@ -56,14 +56,14 @@ export class AdminReports {
     });
     addEventListener('pagehide',()=>{this.logout();this.closeLogin();});
   }
-  // #1181: camera/file input and desktop drag and drop; the chosen photo replaces the screenshot.
+  // #1181: camera/file input and desktop drag and drop; the chosen photo goes beside the screenshot (#1182).
   photoSetup(panel){
     const file=panel.querySelector('#admin-report-file');if(!file)return;
     this.photoEls={file,preview:panel.querySelector('#admin-report-preview'),img:panel.querySelector('#admin-report-preview-img')};
     const pick=()=>{file.value='';file.click();};
     panel.querySelector('#admin-report-camera').addEventListener('click',pick);
     panel.querySelector('#admin-report-photo-change').addEventListener('click',pick);
-    panel.querySelector('#admin-report-photo-remove').addEventListener('click',()=>{this.setPhoto(null);this.reportStatus.textContent='Fotot är borttaget. En bild av spelvyn följer med i stället.';panel.querySelector('#admin-report-camera').focus();});
+    panel.querySelector('#admin-report-photo-remove').addEventListener('click',()=>{this.setPhoto(null);this.reportStatus.textContent='Fotot är borttaget. Bara bilden av spelvyn följer med.';panel.querySelector('#admin-report-camera').focus();});
     file.addEventListener('change',()=>{const f=file.files?.[0];file.value='';if(f)this.choosePhoto(f);});
     const files=e=>[...(e.dataTransfer?.types??[])].includes('Files');
     panel.addEventListener('dragover',e=>{if(!files(e))return;e.preventDefault();e.dataTransfer.dropEffect='copy';panel.classList.add('dragging');});
@@ -75,7 +75,7 @@ export class AdminReports {
     try{
       const image=await prepareReportPhoto(file);
       if(job!==this.photoJob)return;
-      this.setPhoto(image);this.reportStatus.textContent='Fotot skickas med rapporten i stället för spelvyn.';
+      this.setPhoto(image);this.reportStatus.textContent='Fotot skickas med rapporten tillsammans med bilden av spelvyn.';
     }catch(error){
       if(job!==this.photoJob)return;
       this.reportStatus.textContent=error?.code==='type'?'Filen är ingen bild. Välj en bild eller ta ett foto.':error?.code==='format'?'Bildformatet stöds inte av webbläsaren. Välj en JPEG- eller PNG-bild.':'Fotot kunde inte förberedas. Försök med en annan bild.';
@@ -133,7 +133,7 @@ export class AdminReports {
     if(this.photoBusy&&source===this.reportInput){this.say('Vänta tills fotot är klart.');return;}
     // A chosen photo belongs to the report popup; legacy chat /rapport keeps the screenshot.
     const photo=source===this.reportInput?this.photo:null;
-    if(!this.pending||this.pending.text!==text||this.pending.photo!==photo)this.pending={id:crypto.randomUUID(),text,photo,image:photo||undefined};
+    if(!this.pending||this.pending.text!==text||this.pending.photo!==photo)this.pending={id:crypto.randomUUID(),text,photo};
     const pending=this.pending, draft=source.value, epoch=this.epoch;this.busy=true;
     try{
       if(!pending.image){
@@ -150,7 +150,7 @@ export class AdminReports {
       // Preserve any new draft typed while the request was in flight.
       if(source.value===draft)source.value='';
       if(photo&&this.photo===photo)this.setPhoto(null);
-      this.say('Rapporten med bild är sparad och väntar på granskning.');
+      this.say(photo?'Rapporten med foto och bild är sparad och väntar på granskning.':'Rapporten med bild är sparad och väntar på granskning.');
     }catch{if(epoch===this.epoch)this.say('Rapporten kunde inte skickas. Försök igen; texten finns kvar.');}
     finally{if(epoch===this.epoch)this.busy=false;}
   }
