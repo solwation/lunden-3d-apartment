@@ -64,6 +64,11 @@ src/lights.js          room switches (E), ceiling lamps/pendants (`LIGHTING.pend
                        paper #134, string #174)/spots/LED (by hand only), small lamps (FloorLamp:
                        E, and they switch themselves with the dusk, #234); a pool of 4 point lights goes to the lit
                        lamps that matter (own room, in sight, nearest), fading when it moves
+src/pendants.js        movable pendants (#1106): every LIGHTING.pendants lamp is built into its own group and becomes a
+                       Möblera om piece; parts within `pendantMove.band` of the ceiling stay there, cords stretch (vertex
+                       rewrite on a move only), the pool-light anchors and lamp washes (`wash.relocate`) follow; no new
+                       draw calls at home (the string lamp's cord shows only when lowered). Visited flats' bare-bulb
+                       outlets (visitlights.js) are not pendants and stay fixed. tools/pendanttest.html
 src/weather.js         weather (WEATHER, #248): a seeded draw per date (`showersOn`, `rainAt`): showers in spring/autumn (a little
                        in summer, none Dec–Feb), thunderstorms 20 Jul – 31 Aug; follows the clock/calendar. Rain = one
                        LineSegments of streaks around the eye ending on the ground or a roof (`roofAt`: the house boxes of

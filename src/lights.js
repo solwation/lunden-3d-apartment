@@ -5,6 +5,7 @@ import { lampMaterials, lampGlows } from './interior.js';
 import { sfx } from './audio.js';
 import { stairHeight } from './stairs.js';
 import { buildLampWashes } from './lampwash.js';
+import { Pendant } from './pendants.js';
 
 // Room lights: a switch by every room's door (E) turns the room's lamps on and off — a ceiling
 // lamp per room (spots / globe / LED strips where interior.js built those) — and floor lamps
@@ -342,8 +343,13 @@ export class Lights {
       }
     });
     // extra pendants (over the dining table)
+    const holds = [];
     for (const p of L.pendants) {
       const R = room(p.level, p.room);
+      // #1106: each pendant is built into a group of its own (the builders below add to `scene` — this one), made a
+      // movable piece after the loop (pendants.js)
+      const scene = new THREE.Group(); // (shadows the real scene inside this loop)
+      holds.push({ p, R, hold: scene, from: R.lamps.length });
       const y = ceilingAt(p.level, p.x, p.z);
       const shade = new THREE.MeshStandardMaterial({ color: 0xe9e9e6, roughness: 0.6, side: THREE.DoubleSide });
       R.mats.push(shade);
@@ -359,6 +365,10 @@ export class Lights {
         plate.position.set(p.x, y - 0.004, p.z);
         const cup = new THREE.Mesh(new THREE.CylinderGeometry(p.cupTop / 2, p.cupBottom / 2, p.cup, 20), black);
         cup.position.set(p.x, y - 0.008 - p.cup / 2, p.z);
+        cup.userData.pendant = 'hang'; // (#1106: it hangs from the plate on a cord when lowered, it does not stretch)
+        const wire = new THREE.Mesh(new THREE.CylinderGeometry(0.003, 0.003, 0.002, 6), black); // none until lowered
+        wire.position.set(p.x, y - 0.008 - 0.001, p.z);
+        wire.userData.pendant = 'cord'; wire.userData.pendantShort = true; wire.visible = false; // (no draw call at home)
         const top = y - 0.008 - p.cup, mid = top - p.h / 2;
         Object.assign(shade, { color: new THREE.Color(0xffffff), roughness: 0.9, map: stringTexture(p.strings), transparent: true, opacity: p.opacity, depthWrite: false });
         shade.userData.lit = { emissive: 0x4a2c14, intensity: 0.5 };
@@ -375,7 +385,7 @@ export class Lights {
         bulb.position.set(p.x, top - p.bulbDrop, p.z);
         const holder = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, p.bulbDrop - p.bulb / 2, 10), black);
         holder.position.set(p.x, top - (p.bulbDrop - p.bulb / 2) / 2, p.z);
-        scene.add(plate, cup, cone, ...rims, bulb, holder);
+        scene.add(plate, wire, cup, cone, ...rims, bulb, holder);
         R.lamps.push({ pos: new THREE.Vector3(p.x, top - p.bulbDrop, p.z), ...L.pendant, level: p.level });
         continue;
       }
@@ -397,6 +407,15 @@ export class Lights {
       scene.add(cord, cone);
       R.lamps.push({ pos: new THREE.Vector3(p.x, y - p.drop - 0.2, p.z), ...L.pendant, level: p.level });
     }
+    // #1106: the pendants as pieces for Möblera om (main.js adds `pendants` to the movable furniture); their light
+    // anchors are the ones their builder added to the room
+    this.pendants = holds.map(({ p, R, hold, from }, i) => {
+      const next = holds.slice(i + 1).find((h) => h.R === R)?.from ?? R.lamps.length;
+      const pendant = new Pendant(p, R, hold, R.lamps.slice(from, next), world);
+      pendant.onMove = (lamps) => this.wash?.relocate(new Set(lamps));
+      scene.add(pendant.object);
+      return pendant.piece;
+    });
     for (const R of this.rooms.values()) for (const m of R.mats) setGlow(m, false);
 
     // switches: by the latch side of every interior swing door (room side), plus the manual ones

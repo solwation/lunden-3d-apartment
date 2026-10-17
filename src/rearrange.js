@@ -1,7 +1,7 @@
 import { MATERIAL_VERSION, validMaterialChoice } from './materialcatalog.js';
 import { isPrivateCode, layoutWriteCredential } from './privatecodes.js';
 import * as THREE from 'three';
-import { LEVELS, LIFE, REARRANGE } from './config.js';
+import { LEVELS, LIFE, LIGHTING, REARRANGE } from './config.js';
 import { cloudUrl } from './cloud.js';
 import { migratePosterLayout, migrateVeronaLayout } from './layoutmigrations.js';
 import { rugLift, rugSupport } from './rugs.js';
@@ -118,11 +118,11 @@ export class Rearrange {
     const group = this.groupFor(piece), original = piece.object.matrixWorld.clone();
     const loose = [...new Set(group.flatMap((p) => this.looseOn(p)))];
     this.selected = { piece, group, original, base: Object.fromEntries(group.map((p) => [p.id, p.revision])), loose };
-    this.turn = 0; this.valid = false; this.ghost.clear();
+    this.turn = 0; this.lift = 0; this.valid = false; this.ghost.clear();
     const inverse = original.clone().invert();
     for (const root of [...group.map((p) => p.object), ...loose.map((h) => h.model)]) {
       root.traverse((o) => {
-        if (!o.isMesh || !shown(o) || !o.geometry || o.userData.surface !== undefined || o.material?.blending === THREE.AdditiveBlending) return;
+        if (!o.isMesh || !shown(o) || !o.geometry || o.userData.surface !== undefined || o.userData.noGhost || o.material?.blending === THREE.AdditiveBlending) return;
         let m;
         if (o.isInstancedMesh) { m = new THREE.InstancedMesh(o.geometry, this.ghostMat, o.count); m.instanceMatrix = o.instanceMatrix; }
         else m = new THREE.Mesh(o.geometry, this.ghostMat);
@@ -150,6 +150,11 @@ export class Rearrange {
     if (this.pending) { const s = this.pending, restore = !!this.pendingRestore; this.pending = null; this.pendingRestore = false; this.apply(s, { restore }); }
   }
   rotate() { if (this.selected && !this.saving) this.turn += THREE.MathUtils.degToRad(LIFE.place.turn); }
+  /** A pendant's height (#1106): one step up (+1) or down (−1) while it is being placed; the next update clamps it. */
+  raise(dir) {
+    if (!this.selected?.piece.pendant || this.saving) return false;
+    this.lift += dir * LIGHTING.pendantMove.step; this.liftAsked = true; return true;
+  }
   update() {
     this.camera.updateMatrixWorld(); this.ray.setFromCamera({ x: 0, y: 0 }, this.camera); this.ray.far = REARRANGE.reach;
     if (this.materialEdit) { this.target = { kind: 'rearrange', name: this.materialEdit.piece.name, piece: this.materialEdit.piece, verb: 'material' }; return; }
@@ -165,7 +170,14 @@ export class Rearrange {
     if (this.saving) { this.target = { kind: 'rearrange', blocked: true, blockedText: 'Sparar möbleringen…' }; return; }
     const { piece, original, bounds } = this.selected;
     const old = poseOf(original), q = new Q(...old.quat), pos = new V(); let valid = true, destination = piece.level;
-    if (piece.picture) {
+    if (piece.place) { // a pendant (#1106): along the ceiling of its room, at the height asked for
+      const r = piece.place({ ray: this.ray.ray, camera: this.camera, original, turn: this.turn, lift: this.lift, reach: REARRANGE.reach, grid: LIFE.place.floorGrid });
+      valid = r.valid && this.player.level === piece.level;
+      if (valid) {
+        pos.copy(r.pos); q.copy(r.quat); this.lift = r.lift;
+        if (this.liftAsked) { this.liftAsked = false; this.say(`Lampan hänger ${piece.pendant.bottomAt(pos.y).toFixed(2).replace('.', ',')} m över golvet.`); }
+      }
+    } else if (piece.picture) {
       const hit = this.marks.hit(this.ray.ray.origin, this.ray.ray.origin.clone().addScaledVector(this.ray.ray.direction, REARRANGE.reach));
       valid = !!hit?.normal && Math.abs(hit.normal.y) < 0.1;
       if (valid) {
@@ -214,7 +226,7 @@ export class Rearrange {
       }
     }
     this.valid = valid; this.ghost.visible = valid;
-    this.target = { kind: 'rearrange', name: piece.name, verb: 'placera', blocked: !valid, blockedText: piece.picture ? 'Sikta på en vägg' : usesSupport(piece) ? 'Sikta på en avställningsyta eller golvet' : 'Sikta på golvet inom räckhåll' };
+    this.target = { kind: 'rearrange', name: piece.name, verb: 'placera', blocked: !valid, blockedText: piece.place ? 'Sikta på taket i lampans rum' : piece.picture ? 'Sikta på en vägg' : usesSupport(piece) ? 'Sikta på en avställningsyta eller golvet' : 'Sikta på golvet inom räckhåll' };
   }
   async act(target = this.target) {
     if (!target || target.blocked || this.saving) return false;
@@ -353,6 +365,7 @@ export class Rearrange {
       for (const lamp of spec.lamp?.room.lamps ?? []) { lamp.pos.applyMatrix4(delta); delete lamp.roomName; }
     }
     worldPose(p.object, matrix);
+    p.placed?.(); // a pendant's cords and light (#1106)
     return { p, matrix, delta };
   }
   reconcileRugSupport(snapshot, moved = new Set()) {

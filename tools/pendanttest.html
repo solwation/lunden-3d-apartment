@@ -1,0 +1,86 @@
+<!doctype html><html><meta charset="utf-8"><title>Movable pendants (#1106)</title><pre id="out">running…</pre><script src="./rearrangesetup.js"></script><script type="module">
+// Every LIGHTING.pendants lamp is a piece in Möblera om: moved along its room's ceiling, raised / lowered within
+// LIGHTING.pendantMove, the ceiling fittings stay up, the cords stretch, the light anchors and washes follow, reload keeps it.
+const lines=[];let pass=true;const check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);pass&&=!!ok;};
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+try {
+ localStorage.removeItem('lunden.furniture.layout');localStorage.removeItem('lunden.furniture.unlocked');
+ const f=document.createElement('iframe');f.width=480;f.height=300;document.body.append(f);
+ async function load(){f.src='../index.html?test&life&shot&cloud=&r='+Math.random();await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);return f.contentWindow.__app;}
+ let A=await load(),R=A.rearrange,w=f.contentWindow;const T=await w.eval("import('three')"),C=await w.eval("import('/src/config.js')");
+ const PM=C.LIGHTING.pendantMove,LV=C.LEVELS;
+ const start=()=>{const d=f.contentDocument;d.documentElement.requestFullscreen=undefined;d.getElementById('start-touch').click();setupRearrangeForFixture(R,w);};
+ start();
+ const pend=R.pieces.filter(p=>p.pendant);
+ check(pend.length===C.LIGHTING.pendants.length&&pend.length>=3,`every pendant is a movable piece (${pend.map(p=>p.item.style).join(', ')})`);
+ check(new Set(R.pieces.map(p=>p.id)).size===R.pieces.length,'ids stay unique');
+ const aim=(level,eye,pt)=>{A.player.spawn(eye[0],eye[1],0);A.player.pos.y=LV[level].floor;A.step(1/60);const e=A.camera.position;A.camera.rotation.set(Math.atan2(pt.y-e.y,Math.hypot(pt.x-e.x,pt.z-e.z)),Math.atan2(-(pt.x-e.x),-(pt.z-e.z)),0,'YXZ');A.camera.updateMatrixWorld();R.update();};
+ const ceilAt=(l,x,z)=>{const s=C.SOFFITS.find(s=>s.level===l&&x>s.x0&&x<s.x1&&z>s.z0&&z<s.z1);return LV[l].floor+(s?s.height:LV[l].ceiling);};
+ const lampsOf=p=>p.pendant.lamps,box=o=>{o.updateMatrixWorld(true);return new T.Box3().setFromObject(o);};
+ const results={};
+ for(const p of pend){
+  const st=p.item.style,lv=p.level,home=p.object.matrixWorld.clone(),h0=new T.Vector3().setFromMatrixPosition(home);
+  const spec=p.pendant.spec,anchor0=lampsOf(p)[0].pos.clone(),washIdx=A.lights.wash.entries.findIndex(e=>e.lamp===lampsOf(p)[0]);
+  check(washIdx>=0,`${st}: its light is in the lamp wash`);
+  // pick: aim at the lamp itself
+  const center=box(p.object).getCenter(new T.Vector3());
+  aim(lv,[spec.x+0.9,spec.z+0.05],center);
+  check(R.target?.piece===p,`${st}: aiming at it selects it (${R.target?.name})`);
+  check(R.begin(p)&&R.ghost.children.length>0,`${st}: move starts with a preview of what hangs`);
+  // a spot 0.3 m away in the same room, aimed at the ceiling
+  let dest=null;
+  for(const [dx,dz] of [[0.3,0],[-0.3,0],[0,0.3],[0,-0.3],[0.2,0.2],[-0.2,-0.2]]){
+   const x=spec.x+dx,z=spec.z+dz;aim(lv,[x+0.8,z+0.6],new T.Vector3(x,LV[lv].floor+LV[lv].ceiling,z));
+   if(R.valid){dest=[x,z];break;}
+  }
+  check(!!dest,`${st}: a ceiling spot nearby in its room is valid`);
+  if(!dest){R.cancel();continue;}
+  const yBefore=R.candidate.elements[13];
+  for(let i=0;i<4;i++)R.raise(-1);R.update();
+  check(Math.abs(R.candidate.elements[13]-(yBefore-4*PM.step))<1e-6||R.candidate.elements[13]>yBefore-4*PM.step,`${st}: lowered (or clamped at the lowest)`);
+  const yLow=R.candidate.elements[13];
+  check(await R.confirm(),`${st}: confirmed`);
+  const at=new T.Vector3().setFromMatrixPosition(p.object.matrixWorld);
+  check(Math.abs(at.x-dest[0])<0.051&&Math.abs(at.z-dest[1])<0.051&&Math.abs(at.y-yLow)<1e-6,`${st}: pose saved where placed (${at.toArray().map(v=>v.toFixed(2))})`);
+  const b=box(p.object),ceil=ceilAt(lv,at.x,at.z);
+  check(Math.abs(b.max.y-ceil)<0.01,`${st}: ceiling fitting still at the ceiling (top ${b.max.y.toFixed(3)} vs ${ceil.toFixed(3)})`);
+  check(b.min.y-LV[lv].floor>=PM.minBottom-1e-6,`${st}: lowest point ${(b.min.y-LV[lv].floor).toFixed(2)} m ≥ ${PM.minBottom}`);
+  const a1=lampsOf(p)[0].pos;
+  check(Math.abs(a1.x-anchor0.x-(at.x-h0.x))<1e-4&&Math.abs(a1.y-anchor0.y-(at.y-h0.y))<1e-4,`${st}: pool-light anchor follows the lamp`);
+  const data=A.lights.wash.data,n=A.lights.wash.n;
+  check(Math.abs(data[washIdx*4]-a1.x)<1e-4&&Math.abs(data[washIdx*4+1]-a1.y)<1e-4&&Math.abs(data[(2*n+washIdx)*4]-a1.x)<1e-4,`${st}: lamp wash moved with it`);
+  // highest / lowest bound
+  R.begin(p);aim(lv,[at.x+0.8,at.z+0.6],new T.Vector3(at.x,LV[lv].floor+LV[lv].ceiling,at.z));
+  for(let i=0;i<60;i++)R.raise(-1);R.update();
+  const lo=R.candidate.elements[13];
+  for(let i=0;i<120;i++)R.raise(1);R.update();
+  const hi=R.candidate.elements[13];
+  check(R.valid&&hi>lo,`${st}: height range ${(lo-LV[lv].floor).toFixed(2)}…${(hi-LV[lv].floor).toFixed(2)} (origin above floor)`);
+  check(/Lampan hänger/.test(R.message),`${st}: status says the height (${R.message})`);
+  R.cancel();
+  // a wall / another room is refused
+  aim(lv,[at.x,at.z],new T.Vector3(at.x,LV[lv].floor+LV[lv].ceiling,at.z));
+  R.begin(p);
+  const walls=A.world.levels[lv].wallSegments;let refused=false;
+  for(const wseg of walls.slice(0,400)){const x=(wseg[0]+wseg[2])/2,z=(wseg[1]+wseg[3])/2;if(Math.hypot(x-at.x,z-at.z)>3||Math.hypot(x-at.x,z-at.z)<0.5)continue;aim(lv,[at.x,at.z],new T.Vector3(x,LV[lv].floor+LV[lv].ceiling,z));if(!R.valid){refused=true;break;}}
+  check(refused,`${st}: aiming at a wall is refused (${R.target?.blockedText})`);
+  R.cancel();
+  results[p.id]=p.object.matrixWorld.clone();
+ }
+ // the string lamp's cup hangs on a visible cord when lowered
+ const s=pend.find(p=>p.item.style==='string');
+ if(s){const wire=s.object.children.find(m=>m.userData.pendantShort);check(wire?.visible,'string lamp: its cord shows when lowered');}
+ // reload keeps every pose; the lights follow from the saved layout
+ A=await load();R=A.rearrange;w=f.contentWindow;
+ for(const [id,m] of Object.entries(results)){
+  const p=R.byId.get(id);const at=new T.Vector3().setFromMatrixPosition(p.object.matrixWorld),want=new T.Vector3().setFromMatrixPosition(m);
+  check(at.distanceTo(want)<1e-4,`${p.item.style}: kept after reload`);
+  const b=box(p.object);check(Math.abs(b.max.y-ceilAt(p.level,at.x,at.z))<0.01,`${p.item.style}: ceiling fitting at the ceiling after reload`);
+  const off=p.pendant.offsets[0].clone().applyMatrix4(p.object.matrixWorld);check(off.distanceTo(p.pendant.lamps[0].pos)<1e-4,`${p.item.style}: light anchor follows after reload`);
+ }
+ start();
+ for(const id of Object.keys(results)){const p=R.byId.get(id);check(await R.restoreOriginal(p),`${p.item.style}: restore`);const h=new T.Vector3(p.pendant.origin.x,p.pendant.origin.y,p.pendant.origin.z);check(new T.Vector3().setFromMatrixPosition(p.object.matrixWorld).distanceTo(h)<1e-4,`${p.item.style}: back home`);}
+ const s2=R.pieces.find(p=>p.item.style==='string');if(s2)check(!s2.object.children.find(m=>m.userData.pendantShort)?.visible,'string lamp: no extra cord draw at home');
+ document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+}catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack;}
+</script></html>

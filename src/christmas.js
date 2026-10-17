@@ -98,7 +98,7 @@ export class ChristmasSeason {
     const t = this.tree, at = new V().setFromMatrixPosition(t.object.matrixWorld), floor = at.y, margin = 0.02;
     const top = floor + X.crown.top + X.star.size * 1.7;
     return this.rearrange.pieces.filter((p) => {
-      if (p === t || p.level !== t.level || p.item.type === 'rug' || !p.object.visible) return false;
+      if (p === t || p.level !== t.level || p.item.type === 'rug' || p.pendant || !p.object.visible) return false; // (a pendant is a fixture: never hidden, #1106)
       const b = solidBounds(p.object);
       if (b.isEmpty() || b.min.y > top) return false;
       const fp = p.object.userData.footprint;

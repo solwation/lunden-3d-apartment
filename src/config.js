@@ -3983,6 +3983,10 @@ export const LIGHTING = {
     { level: 1, room: 'Klk', x: 4.85, z: 4.28, normal: [0, 1] },
     { level: 0, room: 'Klk', x: 3.35, z: 5.55, normal: [-1, 0] },        // outside, by the door (it spans the whole Klk)
   ],
+  // moving and raising / lowering the pendants in Möblera om (#1106, pendants.js): the lowest point of a lamp at least
+  // `minBottom` m above the floor (*guess*: you walk under it), its top at most `ceilingGap` below its ceiling fitting;
+  // `step` per wheel notch / Höj / Sänk; kept `wallGap` from walls; the parts within `band` of the ceiling stay there
+  pendantMove: { minBottom: 1.4, ceilingGap: 0, step: 0.05, wallGap: 0.03, band: 0.07 },
 };
 
 // Furniture (issue #8). IKEA LANDSKRONA, Gunnared ljusgrön, oak legs.

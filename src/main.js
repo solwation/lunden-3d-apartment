@@ -2112,6 +2112,7 @@ const towelMaterialTargets = handWash.kitchen ? [{ id: KITCHEN_TOWEL_MATERIAL.id
 for (const piece of [...world.furniture.movable, ...curtainMaterialTargets, ...towelMaterialTargets]) for (const surface of piece.object.userData.materialSurfaces ?? []) {
   surface.prepare = mesh => { lights.wash?.patch(mesh); visitLights.wash?.patch(mesh); };
 }
+world.furniture.movable.push(...lights.pendants); // the pendants move too (#1106)
 const rearrange = new Rearrange({ scene, camera, world, player, life, marks, materialOnly: [...curtainMaterialTargets, ...towelMaterialTargets],
   carryables: () => [...holdables, ...cups.cups, ...life.views.values(), fruit.carryable, ...fruit.placed],
   busy: () => !!heldItem() || rest.active || drawing.active || !world.furnitureOn,
@@ -2151,6 +2152,7 @@ function renderRearrangeHUD() {
   editHelp.hidden=!rearrange.enabled||reading;
   document.getElementById('rearrange-step').textContent=rearrange.saving?'Sparar möbleringen…':m?`${m.surface.name}: ${materialChoice(m.choice)?.name??'Original'}`:p?`2. Placera ${p.name}`:'1. Välj ett föremål';
   for(const id of ['rearrange-rotate','rearrange-cancel']){const b=document.getElementById(id);b.hidden=!p&&!(m&&id==='rearrange-cancel');b.disabled=rearrange.saving;}
+  for(const id of ['rearrange-raise','rearrange-lower']){const b=document.getElementById(id);b.hidden=!p?.pendant;b.disabled=rearrange.saving;} // a pendant's height (#1106)
   document.getElementById('rearrange-cancel').textContent=m?'Avbryt materialval':'Avbryt flytt';
   document.getElementById('rearrange-menu').disabled=rearrange.saving;
   const materialConfirm=document.getElementById('rearrange-material-confirm');materialConfirm.hidden=!m;materialConfirm.disabled=rearrange.saving;
@@ -2384,6 +2386,10 @@ document.getElementById('terminal-confirm-yes').addEventListener('click', async 
 document.getElementById('terminal-cancel-move').addEventListener('click', () => { rearrange.cancel(); rearrange.say('Flytten avbröts.'); editUI(); });
 document.getElementById('rearrange-cancel').addEventListener('click', () => { const wasMaterial = !!rearrange.materialEdit; rearrange.cancel(); rearrange.say(wasMaterial ? 'Materialvalet avbröts. Välj ett föremål.' : 'Flytten avbröts. Välj ett föremål.'); editUI(); });
 document.getElementById('rearrange-rotate').addEventListener('click', () => rearrange.rotate());
+document.getElementById('rearrange-raise').addEventListener('click', () => rearrange.raise(1));
+document.getElementById('rearrange-lower').addEventListener('click', () => rearrange.raise(-1));
+// a pendant's height with the wheel (#1106): up = higher
+document.addEventListener('wheel', (e) => { if (rearrange.enabled && terminal.hidden && rearrange.selected?.piece.pendant && e.deltaY) { e.preventDefault(); rearrange.raise(e.deltaY < 0 ? 1 : -1); } }, { passive: false });
 document.getElementById('rearrange-menu').addEventListener('click', () => showTerminal(true));
 document.getElementById('rearrange-finish').addEventListener('click', exitRearranging);
 document.addEventListener('keydown', (e) => {
@@ -2397,8 +2403,9 @@ document.addEventListener('keydown', (e) => {
   const enterKey = (e.code === 'Enter' || e.code === 'NumpadEnter' || e.key === 'Enter') && !e.isComposing && !rearrange.enabled
     && !e.target?.closest?.('input, textarea, select, [contenteditable=""], [contenteditable="true"]') && (locked || !e.target?.closest?.('button, a[href], summary'));
   if ((e.code === 'Backquote'||e.key === '§'||enterKey) && active() && !reading && !drawing.active && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); e.stopImmediatePropagation(); showTerminal(true); return; }
-  if (rearrange.enabled && !reading && ['KeyR', 'KeyX', 'KeyF', 'Home'].includes(e.code)) {
+  if (rearrange.enabled && !reading && ['KeyR', 'KeyX', 'KeyF', 'Home', 'PageUp', 'PageDown'].includes(e.code)) {
     e.preventDefault(); e.stopImmediatePropagation();
+    if (e.code === 'PageUp' || e.code === 'PageDown') rearrange.raise(e.code === 'PageUp' ? 1 : -1); // a pendant's height (#1106)
     if (!e.repeat && e.code === 'KeyR') rearrange.rotate();
     if (!e.repeat && e.code === 'Home') requestFurnitureReset(false, rearrange.selected?.piece ?? rearrange.target?.piece);
     if (!e.repeat && e.code === 'KeyX') { if (rearrange.selected || rearrange.materialEdit) rearrange.cancel(); else rearrange.enable(false); editUI(); }

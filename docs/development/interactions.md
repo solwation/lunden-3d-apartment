@@ -303,6 +303,10 @@ src/rearrange.js       furniture cheat (#465): § / Enter (#596; not from a focu
                        Whole-layout reset also asks for confirmation, writes every registered home pose atomically, and rejects a changed global revision (#481).
                        tools/rearrangeresettest.html covers both confirmations, cancellation, followers and all-room reset.
                        Physical bounds ignore Ambilight; the TV targets support surfaces and follows BYÅS in the same saved batch, repairing legacy sunk TV poses on load (#478, tools/rearrangetvtest.html). Browser tests: tools/rearrangetest.html, tools/rearrangefollowtest.html;
+                       Pendants (#1106, src/pendants.js): `piece.place` moves them along their own room's ceiling (aim at the
+                       ceiling or the floor below; walls, other rooms and the stair opening refused), Höj/Sänk, the wheel or
+                       PgUp/PgDn change the height within LIGHTING.pendantMove (lowest point ≥ 1.4 m, *guess*); the pose's y is the
+                       hanging part's height, so older layouts need no new field. tools/pendanttest.html.
                        Wine racks use wall placement with their detached bottles; SYMFONISK lamps/speakers use support surfaces like the TV (#482).
                        tools/rearrangeplacementtest.html verifies wall rotation, bottle followers, sill/table placement and reload.
                        The Christmas tree (#571) is an ordinary piece ('julgranen') while it stands; out of season it is hidden and
