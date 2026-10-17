@@ -263,7 +263,10 @@ const BUILD = {
   },
 };
 
-const CROWNS = ['palm', 'banana', 'agave', 'olive', 'bush'], CLEAR = 0.04, GABLE = 0.13; // (the gable's railing stands 0.1 inside it)
+// #1120: the neighbours' patios (patiodecor.js) build their varied furniture from the same models
+export { Parts, BUILD as DECOR_BUILD, rng, fitCrown };
+export const CROWNS = ['palm', 'banana', 'agave', 'olive', 'bush'];
+const CLEAR = 0.04, GABLE = 0.13; // (the gable's railing stands 0.1 inside it)
 /** Squeeze a plant's foliage (in its own frame, the pot at the origin) towards its stem so it stays clear of the screens
  * either side (`west` / `east` m free) and the set-back wall (`north`); it may lean out over the railing. */
 function fitCrown(geos, west, east, north) {

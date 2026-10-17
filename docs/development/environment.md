@@ -40,10 +40,15 @@ src/terracedecor.js    the furnished roof terraces (#605, TERRACE_DECOR, all *gu
 tools/terracedecortest.html L1201 empty, every other terrace furnished in its own style, items on the deck and clear of the
                        terrace door, no leaf through a screen / the wall, three meshes, triangle budget, the gate, the bulbs,
                        every chair / sofa faces its table (#1091; the module turns items by −r: r 90 faces west)
-src/patiodecor.js      #888: the neighbours' ground-floor patios on Hus L's back (PATIO_DECOR, every placement a *guess*; L1007 is
-                       ours, in FURNITURE): reused patio models merged per material, no collision, an `isLOD` gate like the terraces.
-                       Turned by +r (r 90 faces east, the opposite sense of TERRACE_DECOR); #1091: chairs face their table, sofas
-                       have their backs to the façade. tools/patiodecortest.html checks the facing, door/passage clearance, budget
+src/patiodecor.js      #888, #1120: the neighbours' ground-floor patios on Hus L's back (PATIO_DECOR, every placement/colour a *guess*;
+                       L1007 is ours, in FURNITURE, never touched). #1120: like the roof terraces, each patio gets a varied style
+                       (bistro, matgrupp, lounge, solstolar, grill, odling, grönska; dealt by a seeded shuffle) built from
+                       terracedecor.js's exported generic models (`DECOR_BUILD`, `Parts`, `rng`, `fitCrown`) — none of our own
+                       Åborg/Verona/Randers pieces. Colours from `palette`, a seeded mirror/shift per flat (`patioLayout(id, style)`).
+                       Two merged meshes (solid; soft with plant wind), no collision, an `isLOD` gate like the terraces; seats face
+                       their table, sofas have their backs to the façade (#1091). Hus A/B/C's ground loggias only carry their simple
+                       loggia plants (surroundings.js), no copied furniture. tools/patiodecortest.html checks the facing, door/passage
+                       clearance, hedge/screen-wall clearance, determinism, no L1007 models, budget
 src/surroundings.js    the site (SITE): Hus A/B/C + buildings around, roads, paving, the 3 m drop to the park,
                        Höje å, instanced trees (leaf-card crowns, branching trunks: foliage.js, #679), lit windows, cloudy sky; #604: windows of Hus A–C are `lunden` and go dark in a power
                        cut (`update(hour, night, power)`), the rest of the site and the street lamps do not; world.windowLights passes

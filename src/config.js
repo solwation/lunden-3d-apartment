@@ -1254,87 +1254,31 @@ export const TERRACE_DECOR = {
   },
 };
 
-// #888: furnished ground-floor patios on Hus L's back (src/patiodecor.js; decoration only, nothing to pick or sit on).
-// EVERY item, position, and style below is our own *guess* — no neighbour's patio is documented.
-// Per patio (id L1001–L1008 from exterior.js husLLayout; L1007 is skipped as our own flat has its furniture):
-// `items`, each { k: kind, u: m east of unit origin ox, v: m south of south facade D (12.748), r: yaw in degrees }.
-// The models face south (+z, away from the façade) at r 0; r 90 turns them to face EAST (+x) — the opposite sense of
-// TERRACE_DECOR. #1091: chairs face their table, sofas have their backs to the façade.
-// The patio door (u 0.95–1.87) and passage to the hedge opening (u 0.0–1.26) keep clear.
-// Reuses existing models aborgtable, aborgchair, slattable, veronasofa, randers, planter, dynbox.
+// #888, #1120: furnished ground-floor patios on Hus L's back (src/patiodecor.js; decoration only, nothing to pick or sit on).
+// EVERY style, colour and position is our own *guess* — no neighbour's patio is documented. #1120: like the roof
+// terraces (TERRACE_DECOR), each neighbour gets its own varied furniture built from terracedecor.js's generic models
+// (no longer our own Åborg / Verona / Randers pieces), laid out by a deterministic random stream per flat (`seed`):
+// the `styles` are dealt out over the patios in a seeded shuffle (all different while there are enough), and each
+// layout picks its colours from `palette`, may be mirrored across the free zone and shifts a little.
+// L1007 is skipped: our own patio's furniture is in FURNITURE (PATIO) and stays as it is.
+// Local frame: u m east of the unit origin ox, v m south of the south façade D. The patio door (u 0.95–1.87, `door.depth`
+// out) and the passage to the hedge opening (`passage` u 0–1.9) keep clear: furniture stands in `zone` (u0–u1, v0–v1,
+// in front of the patio hedge at v ≈ 4.05). Chairs face their table, sofas have their backs to the façade (#1091).
 export const PATIO_DECOR = {
-  skip: ['L1007'], far: 140,
+  skip: ['L1007'], far: 140, seed: 1120, jitter: 0.15,
   door: { x0: 0.95, x1: 1.87, depth: 1.1 },
   passage: { x0: 0.0, x1: 1.9 },
-  patios: {
-    L1001: {
-      style: 'café',
-      items: [
-        { k: 'aborgtable', u: 3.7, v: 1.9, r: 0 },
-        { k: 'aborgchair', u: 3.0, v: 1.9, r: 90 },
-        { k: 'aborgchair', u: 4.4, v: 1.9, r: -90 },
-        { k: 'planter', u: 4.9, v: 3.2, plant: 'agave', r: 0 },
-        { k: 'planter', u: 2.5, v: 3.2, plant: 'palm', r: 0 },
-      ],
-    },
-    L1002: {
-      style: 'lounge',
-      items: [
-        { k: 'veronasofa', part: 'divan1', u: 4.2, v: 1.1, r: 180 },
-        { k: 'randers', u: 3.1, v: 1.3, r: 0 },
-        { k: 'aborgchair', u: 2.45, v: 1.0, r: 0 },
-        { k: 'planter', u: 4.9, v: 3.1, plant: 'banana', r: 45 },
-      ],
-    },
-    L1003: {
-      style: 'trä & dynor',
-      items: [
-        { k: 'slattable', u: 3.8, v: 2.0, r: 0 },
-        { k: 'aborgchair', u: 3.8, v: 1.3, r: 0 },
-        { k: 'aborgchair', u: 3.8, v: 2.7, r: 180 },
-        { k: 'dynbox', u: 5.2, v: 1.5, r: -90 },
-        { k: 'planter', u: 4.8, v: 3.2, plant: 'agave', r: 0 },
-      ],
-    },
-    L1004: {
-      style: 'sofgrupp',
-      items: [
-        { k: 'veronasofa', part: 'sofa', u: 3.8, v: 0.9, r: 0 },
-        { k: 'slattable', u: 3.8, v: 1.9, r: 180 },
-        { k: 'randers', u: 4.9, v: 1.0, r: 0 },
-        { k: 'planter', u: 4.9, v: 3.0, plant: 'palm', r: 30 },
-      ],
-    },
-    L1005: {
-      style: 'bistro & dynbox',
-      items: [
-        { k: 'aborgtable', u: 3.6, v: 2.1, r: 45 },
-        { k: 'aborgchair', u: 3.0, v: 2.1, r: 90 },
-        { k: 'aborgchair', u: 4.2, v: 2.1, r: -90 },
-        { k: 'dynbox', u: 5.2, v: 1.4, r: -90 },
-        { k: 'planter', u: 2.5, v: 3.2, plant: 'banana', r: 0 },
-      ],
-    },
-    L1006: {
-      style: 'sommarbänk',
-      items: [
-        { k: 'veronasofa', part: 'divan1', u: 4.0, v: 1.2, r: 180 },
-        { k: 'slattable', u: 4.0, v: 2.1, r: 180 },
-        { k: 'aborgchair', u: 4.8, v: 2.1, r: -90 },
-        { k: 'planter', u: 2.6, v: 3.2, plant: 'agave', r: 0 },
-        { k: 'planter', u: 5.0, v: 1.2, plant: 'palm', r: 30 },
-      ],
-    },
-    L1008: {
-      style: 'veronagrupp',
-      items: [
-        { k: 'veronasofa', part: 'sofa', u: 4.0, v: 0.9, r: 0 },
-        { k: 'slattable', u: 4.0, v: 1.9, r: 180 },
-        { k: 'aborgchair', u: 3.0, v: 1.9, r: 90 },
-        { k: 'aborgchair', u: 5.0, v: 1.9, r: -90 },
-        { k: 'planter', u: 5.2, v: 3.0, plant: 'palm', r: 60 },
-      ],
-    },
+  zone: { u0: 2.1, u1: 5.55, v0: 0.2, v1: 3.75 },
+  fence: { u0: 0.08, u1: 5.67 }, // the screen walls either side (plan.json site.fences) — plant crowns stay inside
+  styles: ['bistro', 'matgrupp', 'lounge', 'solstolar', 'grill', 'odling', 'grönska'],
+  palette: {
+    frame: [0x2a2c2e, 0xf1efe9, 0x3c5a45, 0x2f5d9e, 0x9a9da0, 0xb04a32],
+    wood: [0xa77b4f, 0x8a6a48, 0xc19a6b, 0x6e5440],
+    cushion: [0xe2b33c, 0xc9472f, 0x5d7f4f, 0xe9e4d8, 0x2f5d9e, 0x9a9da0, 0xd98aa0],
+    pot: [0xb5643c, 0x2e3133, 0x6b6f6a, 0xf3f0e8, 0x7a5a44],
+    parasol: [[0xf6f4ee, 0x2f5d9e], [0xe9e4d8], [0xc9472f, 0xf6f4ee], [0x5d7f4f, 0xe9e4d8], [0xe2b33c, 0xf6f4ee], [0x2a2c2e]],
+    rug: [[0xf2efe6, 0x2f5d9e], [0x4f6b43], [0x9a9da0, 0xe9e4d8], [0xc9472f, 0xf2efe6], [0xd8cdb5]],
+    flowers: [[0xd8262f, 0xe8484f], [0xf5f2ee, 0xf2c522], [0xd98aa0, 0xf5f2ee], [0x8a5fb8, 0xb59ad8], [0xe08a2c, 0xf2c522]],
   },
 };
 
