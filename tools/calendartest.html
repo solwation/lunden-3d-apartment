@@ -68,7 +68,8 @@ f.onload = async () => {
   day.month = 3; day.date = 3; calendar.update();
   pass &= check(calendar.shown.endsWith('-3-3'), `the page follows the date (${calendar.shown})`);
   // the day rolls over at midnight while the clock runs
-  day.paused = false; day.hour = 23.999; day.month = 1; day.date = 31; for (let i = 0; i < 10; i++) step(0.1);
+  day.paused = false; day.hour = 24 - 0.0001; // 0.36 s before midnight at the real pace (#1145: 1 s = 1/3600 h)
+  day.month = 1; day.date = 31; for (let i = 0; i < 10; i++) step(0.1);
   pass &= check(day.month === 2 && day.date === 1, `midnight on 31 January → 1 February (${day.date}/${day.month})`);
   d.getElementById('cal-close').click();
   pass &= check(!calPanel.open, 'closed');
