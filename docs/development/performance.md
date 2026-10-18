@@ -424,7 +424,7 @@ room looks slightly crisper, nothing else changes).
 Ghosts (#666, `src/ghosts.js`), avatars (#705, `src/avatar.js`): each other player costs two draw calls (one SkinnedMesh with vertex colours, one
 name tag sprite; an armed player one more for the prop, `src/ghostprops.js` (#1126): the weapon's own model baked to one vertex-coloured
 geometry shared by every ghost — rifle ≈ 0.3 k, lite blaster ≈ 0.4 k, saber 0.6 k + its blade (one more call), wand 0.1 k, bow 0.5 k triangles), no shadow pass, no extra pass for the outline (a fresnel term in the same Lambert material's shader, one program for
-all), at most `GHOSTS.max` (30); hidden beyond `GHOSTS.far`, the tag beyond `GHOSTS.tagFar`, posed only within `AVATAR.poseFar` m (a
+all), at most `GHOSTS.max` (30); hidden beyond `GHOSTS.far` (900 m, the whole walk/fly area; #1296 — it was 60 m, so far players vanished), the tag (fog-free) grows linearly beyond `GHOSTS.tagFar` so a far player stays a constant-size marker (no pop-out; `node tools/ghostfartest.cjs GAME WORKER`), posed only within `AVATAR.poseFar` m (a
 13-bone IK pose + matrix update, ~0.05 ms). **Triangles per avatar: 4 056 – 4 856** (the 8 hairstyle × sleeve variants; `avatarTriangles(v)`; #1102's hair shells added short +0.2 k, bun/beanie +0.4 k, long +0.8 k
 to #1103's 3 874 – 4 082 (body/hands/clothes ≈ +0.3 k on the earlier 3 554 – 3 766);
 the earlier merged dummy was 1 652), before and after: one draw call each, no texture (#1104's skin shading is a few ALU per skin fragment plus a

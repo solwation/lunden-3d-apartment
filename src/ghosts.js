@@ -166,7 +166,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     this.badge = acquireBadge(this.name, this.score, lives);
     this.tag.material = this.badge.material;
     const height = G.tagHeight * this.badge.height / 64;
-    this.tag.scale.y = height;
+    this.tagH = height; this.tag.scale.y = height;
     this.tag.position.y = this.tagY + (height - G.tagHeight) / 2; // name/score keep their original world positions
     releaseBadge(previous);
   }
@@ -249,7 +249,11 @@ export class Ghost { // (exported for tools/ghostprops.html)
     this.bikeAt(a, b, k);
     const d = this.root.position.distanceTo(eye), sec = b === a ? 0 : (b.t - a.t) / 1000;
     this.root.visible = d < G.far;
-    if (this.tag) this.tag.visible = d < G.tagFar;
+    if (this.tag) { // (#1296) beyond tagFar the tag grows with distance: constant size on screen, no pop-out
+      this.tag.visible = d < G.far;
+      const f = Math.max(1, d / G.tagFar);
+      this.tag.scale.set(G.tagWidth * f, (this.tagH ?? G.tagHeight) * f, 1);
+    }
     if (this.root.visible) this.animate(t, d, sec ? (b.p.x - a.p.x) / sec : 0, sec ? (b.p.z - a.p.z) / sec : 0);
   }
 

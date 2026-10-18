@@ -32,7 +32,7 @@ export function acquireBadge(name, value, remaining = null) {
     if (lives !== null) { ctx.fillStyle = '#ffb6be'; ctx.fillText(lifeText, 128, 20, 230); }
     const map = new THREE.CanvasTexture(canvas);
     map.colorSpace = THREE.SRGBColorSpace;
-    badge = { key, score, lives, height: canvas.height, material: new THREE.SpriteMaterial({ map, transparent: true, depthWrite: false }), users: 0 };
+    badge = { key, score, lives, height: canvas.height, material: new THREE.SpriteMaterial({ map, transparent: true, depthWrite: false, fog: false }), users: 0 };
     badges.set(key, badge);
   }
   badge.users++;
