@@ -1221,8 +1221,8 @@ function addSurroundingRoofWalk(b, walk) {
 
 /** Every tree's foot as built: [{ x, z, kind }] (tools/terraintest.html: none on asphalt or paving, #435). */
 export const treeFeet = [];
-/** Every tree's crown as built: [{ x, z, r (m), y (its centre) }] (groundao.js, #1079). */
-const aoTrees = [];
+/** Every tree's crown as built: [{ x, z, r (m), y (its centre) }] (groundao.js, #1079; flare.js, #1283). */
+export const aoTrees = [];
 
 /** #1083: narrow a crown lobe (centre `pos`, instance `scale`) so its cards stay FOLIAGE.wallClearance outside every
  * SITE.blocks footprint its height overlaps; the trunk's position and the crown's height stay as placed. */

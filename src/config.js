@@ -4223,6 +4223,22 @@ export const CAT_CARD = {
   ],
 };
 
+// Lens flare (#1283, src/flare.js): additive screen-space quads along the sun-to-center line
+// when looking towards the sun on a clear day or above the clouds. Occluded by buildings and trees.
+export const FLARE = {
+  enabled: true,
+  smoothTime: 0.12, // seconds exponential response (no popping/flicker)
+  elements: [
+    { t: 0.0,  size: 0.68, color: [1.0, 0.96, 0.86], alpha: 0.45, type: 0 }, // Sun core glow
+    { t: 0.0,  size: 0.30, color: [1.0, 0.90, 0.65], alpha: 0.40, type: 1 }, // Sun corona halo
+    { t: 0.25, size: 0.12, color: [1.0, 0.82, 0.50], alpha: 0.22, type: 2 }, // Warm secondary disc
+    { t: 0.50, size: 0.22, color: [0.65, 0.95, 0.75], alpha: 0.15, type: 3 }, // Soft greenish-golden halo
+    { t: 0.85, size: 0.09, color: [1.0, 0.70, 0.40], alpha: 0.18, type: 2 }, // Warm disc near center
+    { t: 1.25, size: 0.16, color: [0.55, 0.75, 1.0],  alpha: 0.20, type: 2 }, // Cool blue/violet reflection
+    { t: 1.65, size: 0.07, color: [1.0, 0.60, 0.85], alpha: 0.14, type: 2 }, // Distant magenta spot
+  ],
+};
+
 // Room lights (src/lights.js). Intensities are candela-ish (three.js physical lights), tuned by
 // eye at night. `pool` = point lights shared by the nearest lit lamps (keep small: Iris 640).
 export const LIGHTING = {

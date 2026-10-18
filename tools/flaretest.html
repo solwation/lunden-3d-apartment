@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Flare test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// #1283: lens flare (linsreflex) when looking towards the sun on a clear day or above clouds,
+// occluded behind buildings and trees, extinguished at night, in rain or overcast.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/flaretest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600;
+f.src = '../index.html?shot&time=12&month=6&freeze';
+document.body.append(f);
+f.onload = () => run().catch((e) => { out.textContent = `FAIL ${e}\n${e.stack}\nSOME FAILED`; });
+
+async function run() {
+  const w = f.contentWindow;
+  while (!w.__app || !w.__app.flare) await wait(100);
+  const { player, camera, flare, day, weather, step } = w.__app;
+  const mod = (p) => w.eval(`import('${new URL(p, location.href).href}')`);
+  const THREE = await w.eval("import('three')");
+  const { FLARE } = await mod('../src/config.js');
+  const { isSunOccluded, rayHitsBox, rayHitsSphere } = await mod('../src/flare.js');
+  const { aoTrees } = await mod('../src/surroundings.js');
+
+  const lines = [];
+  let pass = true;
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+  const dt = 1 / 60;
+
+  // Aim camera directly at a target vector
+  const lookTowards = (dir) => {
+    camera.lookAt(new THREE.Vector3().copy(camera.position).add(dir));
+    camera.updateMatrixWorld();
+  };
+
+  // Helper to advance simulation
+  const advance = (secs = 0.5) => {
+    const n = Math.ceil(secs / dt);
+    for (let i = 0; i < n; i++) step(dt);
+  };
+
+  // 1. Ray intersection unit tests
+  const box = { x0: -10, x1: 10, y0: 0, y1: 15, z0: -10, z1: 10 };
+  check(rayHitsBox(0, 5, -20, 0, 0, 1, box), 'rayHitsBox direct hit');
+  check(!rayHitsBox(0, 5, -20, 0, 0, -1, box), 'rayHitsBox opposite direction misses');
+  check(!rayHitsBox(20, 5, -20, 0, 0, 1, box), 'rayHitsBox parallel offset misses');
+
+  const sphere = { cx: 0, cy: 10, cz: 20, r: 5 };
+  check(rayHitsSphere(0, 10, 0, 0, 0, 1, sphere.cx, sphere.cy, sphere.cz, sphere.r), 'rayHitsSphere direct hit');
+  check(!rayHitsSphere(0, 10, 0, 0, 0, -1, sphere.cx, sphere.cy, sphere.cz, sphere.r), 'rayHitsSphere opposite direction misses');
+  check(!rayHitsSphere(0, 20, 0, 0, 0, 1, sphere.cx, sphere.cy, sphere.cz, sphere.r), 'rayHitsSphere high ray misses');
+
+  // 2. Clear sunny day outdoors in open area (no occlusion, looking directly at sun)
+  // Position outdoors east of Hus L (x: 20, z: 0) where sky to the east/south is completely open
+  player.spawn(20, 0, 0);
+  lookTowards(day.sunDir);
+  day.overcast = 0;
+  weather.rain = 0;
+  advance(0.6);
+
+  check(flare.inView, 'open view: sun is in view');
+  check(!flare.occluded, 'open view: sun is unoccluded');
+  check(flare.intensity > 0.5, `open view: flare intensity active (${flare.intensity.toFixed(2)}) target=${flare.target} occluded=${flare.occluded} inView=${flare.inView} sunDirY=${day.sunDir.y.toFixed(2)} oc=${day.overcast} rain=${weather.rain} camPos=${camera.position.x.toFixed(1)},${camera.position.y.toFixed(1)},${camera.position.z.toFixed(1)}`);
+  check(flare.mesh.visible, 'open view: flare mesh is visible');
+
+  // 3. Turning away from the sun (looking opposite direction)
+  lookTowards(new THREE.Vector3().copy(day.sunDir).negate());
+  advance(1.0); // allow smooth transition
+  check(!flare.inView, 'looking away: sun is not in view');
+  check(flare.intensity < 0.01, `looking away: flare decayed to 0 (${flare.intensity.toFixed(3)})`);
+  check(!flare.mesh.visible, 'looking away: flare mesh hidden');
+
+  // 4. Above clouds vs inside clouds
+  // Above clouds: high aloft (y > 200m) where day.above reaches 1.0
+  player.spawn(0, 10, 0);
+  camera.position.set(0, 220, 10);
+  lookTowards(day.sunDir);
+  day.above = 1.0;
+  day.overcast = 1.0; // even with overcast set below clouds
+  flare.update(0.8); // advance flare
+  check(day.above > 0.8, 'above clouds: day.above is high');
+  check(flare.intensity > 0.5, `above clouds: flare active despite cloud cover below (${flare.intensity.toFixed(2)})`);
+
+  // Inside cloud deck: simulated whiteout
+  day.uniforms.uWhite.value = 1.0;
+  flare.update(0.8);
+  check(flare.intensity < 0.01, `inside cloud whiteout: flare suppressed (${flare.intensity.toFixed(3)})`);
+  day.uniforms.uWhite.value = 0.0;
+  day.above = 0.0;
+
+  // 5. Weather attenuation under clouds
+  player.spawn(20, 0, 0);
+  lookTowards(day.sunDir);
+  day.above = 0;
+  day.overcast = 0.8; // thick overcast
+  flare.update(0.8);
+  check(flare.intensity < 0.01, `thick overcast under clouds: flare extinguished (${flare.intensity.toFixed(3)})`);
+
+  // Rain
+  day.overcast = 0.2;
+  weather.rain = 0.8;
+  flare.update(0.8);
+  check(flare.intensity < 0.01, `rain: flare extinguished (${flare.intensity.toFixed(3)})`);
+  weather.rain = 0;
+  day.overcast = 0;
+
+  // 6. Night (1 AM)
+  day.hour = 1;
+  day.update(0); // calculates natural night sunDir (below horizon)
+  flare.update(0.8);
+  check(day.sunDir.y < 0, `night: sun is below horizon (${day.sunDir.y.toFixed(2)})`);
+  check(flare.intensity < 0.01, `night: flare extinguished (${flare.intensity.toFixed(3)})`);
+  day.hour = 12;
+  day.update(0); // restore noon
+
+  // 7. Occlusion behind a house
+  // Position close west of Hus B (x: -45, z: 40). Sun from x: +0.57, y: +0.82 passes directly through Hus B
+  player.spawn(-45, 40, 0);
+  lookTowards(day.sunDir);
+  advance(1.0);
+  check(flare.occluded, 'behind Hus B: sun is occluded by house');
+  check(flare.intensity < 0.01, `behind Hus B: flare intensity 0 (${flare.intensity.toFixed(3)})`);
+  check(!flare.mesh.visible, 'behind Hus B: flare mesh hidden');
+
+  // 8. Occlusion behind a tree
+  if (aoTrees.length > 0) {
+    const tree = aoTrees[0]; // first tree crown
+    // Position camera so ray towards sun intersects this tree crown
+    const dist = 6;
+    const treeCamPos = new THREE.Vector3(
+      tree.x - day.sunDir.x * dist,
+      tree.y - day.sunDir.y * dist,
+      tree.z - day.sunDir.z * dist
+    );
+    check(isSunOccluded(treeCamPos, day.sunDir), 'behind tree: isSunOccluded detects tree crown');
+  }
+
+  // 9. Underground / indoors
+  // Garage
+  const garagePos = new THREE.Vector3(-30, -2, 20);
+  check(isSunOccluded(garagePos, day.sunDir, player), 'garage: isSunOccluded returns true underground');
+
+  // Inside flat away from window (looking at indoor ceiling/solid wall)
+  player.spawn(3.5, 3, 0); // kitchen
+  player.pos.y = 0;
+  camera.position.set(3.5, 1.62, 3);
+  check(isSunOccluded(camera.position, day.sunDir, player), 'indoors: solid ceiling/wall occludes sun');
+
+  // 10. Config disable toggle
+  FLARE.enabled = false;
+  flare.update(0.1);
+  check(!flare.mesh.visible && flare.intensity === 0, 'FLARE.enabled = false disables flare mesh');
+  FLARE.enabled = true;
+
+  lines.push(pass ? 'ALL PASS' : 'SOME FAILED');
+  out.textContent = lines.join('\n');
+}
+</script>
+</body>
+</html>
