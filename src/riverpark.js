@@ -33,8 +33,8 @@ export function parkTreeSpots(ground) {
   const rand=random(533),spots=[];
   for(const patch of P.patches) {
     const xs=patch.polygon.map(p=>p[0]),zs=patch.polygon.map(p=>p[1]),x0=Math.min(...xs),z0=Math.min(...zs);
-    const dx=Math.max(...xs)-x0,dz=Math.max(...zs)-z0; let count=0;
-    for(let k=0;k<patch.n*80&&count<patch.n;k++) {
+    const dx=Math.max(...xs)-x0,dz=Math.max(...zs)-z0; let count=0;const n=Math.round(patch.n*(P.treeDensity??1));
+    for(let k=0;k<n*80&&count<n;k++) {
       const x=x0+rand()*dx,z=z0+rand()*dz;
       if(!inside(x,z,patch.polygon)||!clear(x,z)||spots.some(t=>Math.hypot(t.x-x,t.z-z)<P.treeSpacing))continue;
       const s=P.treeScale[0]+rand()*(P.treeScale[1]-P.treeScale[0]);

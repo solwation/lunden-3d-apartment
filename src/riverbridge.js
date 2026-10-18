@@ -15,7 +15,7 @@ export function riverAt(x,z){let best={distance:Infinity};for(let i=1;i<R.path.l
  const[a,b]=R.path[i-1],[c,d]=R.path[i],dx=c-a,dz=d-b,len=Math.hypot(dx,dz),t=Math.max(0,Math.min(1,((x-a)*dx+(z-b)*dz)/(len*len)));
  const distance=Math.hypot(x-a-t*dx,z-b-t*dz);if(distance<best.distance){
  const interp=(values,fallback)=>values?values[i-1]+(values[i]-values[i-1])*t:fallback;
- best={distance,x:a+t*dx,z:b+t*dz,nx:-dz/len,nz:dx/len,width:interp(R.widths,R.width),bank:interp(R.banks,R.bank),segment:i,t};}}
+ best={distance,x:a+t*dx,z:b+t*dz,nx:-dz/len,nz:dx/len,width:interp(R.widths,R.width),bank:interp(R.banks,R.bank)*(R.bankScale??1),segment:i,t};}}
  return best;}
 export function riverDistance(x,z){return riverAt(x,z).distance;}
 export function riverGround(x,z,base){const r=riverAt(x,z),u=Math.max(0,Math.min(1,(r.distance-r.width/2)/r.bank));return B.bedY+(base-B.bedY)*(u*u*(3-2*u));}
