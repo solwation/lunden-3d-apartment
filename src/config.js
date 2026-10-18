@@ -3367,7 +3367,11 @@ export const REST = {
   avatarSeat: 0.45, avatarLieHip: 0.9, avatarLieClearance: 0.1,
   // #1234: a lying figure sinks under the cover: its centre line (spot `body`, local y) is `avatarLieSink` below the
   // duvet's top, and the torso tilts up `avatarLieTilt` rad so the head rests on the pillows (*guesses*, tuned by eye).
-  avatarLieSink: 0.07, avatarLieTilt: 0.4,
+  avatarLieSink: 0.1, avatarLieTilt: 0.4,
+  // #1275: a lie spot is where the HEAD rests (the pillow); the figure is rooted at the hips, so `restState` moves it
+  // `avatarLieTorso` * cos(tilt) (hips to head bone along the tilted torso, metres before avatar scaling; measured on the
+  // pose, *guess* for other builds) towards the feet. Without it the head poked through the headboard.
+  avatarLieTorso: 0.69,
   // #1237: pose 3 "long sit" (chaise, sitting up in bed): the legs stretch out on the furniture; the feet `avatarLegsUp` above the
   // seat surface and `avatarLegsReach` in front of the hip (*guesses*; the leg is 0.85 m long and the hip sits 0.07 m forward, so it is almost straight).
   avatarLegsUp: 0.08, avatarLegsReach: 0.9,

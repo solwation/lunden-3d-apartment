@@ -1237,3 +1237,4 @@ pose 3 dropped, so observers see the sitter standing (the Worker only whitelists
 receiving 3 from the new Worker also shows a standing figure (it snaps only 1/2). Nothing breaks, the posture is just missing, and the owner's own view is unaffected.
 Houses A/B/C/L have no furniture; only L1007's `sofa()`/`bed()` carry the spots. Not applicable to the public viewer.
 This character/gameplay change does not apply to the public viewer.
+#1275: a lie spot is where the HEAD rests (the pillow); `restState` roots the figure at the hips, `REST.avatarLieTorso` * cos(`avatarLieTilt`) * tall towards the feet (along the spot's yaw), so the head lands on the spot instead of poking through the headboard. Only `p.x/z` change (no wire field); legs level at hip height (`y - 0.03`), `avatarLieSink` 0.1. Checked: double bed (both sides), both bunks (numerically, rooms too tight for a camera), daybed.

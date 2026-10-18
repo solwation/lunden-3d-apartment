@@ -11,7 +11,9 @@ export function restState(rest, code, seed) {
   const y = spot.pos.y - (lie ? REST.lieEye : REST.sitEye);
   // lying: the centre line sits at the spot's `bodyY` (under the duvet, #1234), else a little over the surface
   const root = lie ? (spot.bodyY ?? y + REST.avatarLieClearance * tall) - REST.avatarLieHip * tall : y - REST.avatarSeat * tall;
-  return { p: [spot.pos.x, root, spot.pos.z],
+  // lying: the spot is the head's place; the hips lie that far towards the feet (#1275), along the way the spot faces
+  const back = lie ? REST.avatarLieTorso * Math.cos(REST.avatarLieTilt) * tall : 0;
+  return { p: [spot.pos.x - Math.sin(spot.yaw) * back, root, spot.pos.z - Math.cos(spot.yaw) * back],
     r: spot.yaw, c: false, pose: lie ? 2 : spot.legsUp ? 3 : 1 }; // 3: legs stretched out on the furniture (#1237)
 }
 
@@ -26,7 +28,7 @@ export function applyRestPose(avatar, pose) {
   else if (pose === 2) {
     const y = REST.avatarLieHip;
     // tilted up a little: the head on the pillows while the body lies under the cover (#1234)
-    poseOlof(avatar, { hip: [y, 0], lean: Math.PI / 2 - REST.avatarLieTilt, feet: [[0.11, y - 0.11, 0.83], [-0.11, y - 0.11, 0.83]], knee: [0, 0.05, 1], // nearly straight legs: no knees poking up through the duvet
+    poseOlof(avatar, { hip: [y, 0], lean: Math.PI / 2 - REST.avatarLieTilt, feet: [[0.11, y - 0.03, 0.83], [-0.11, y - 0.03, 0.83]], knee: [0, 0.05, 1], // nearly straight legs: no knees poking up through the duvet
      
       hands: [1, -1].map(s => ({ at: [s * 0.22, y, -0.25], pole: [s, 0, 0] })), can: null });
   }
