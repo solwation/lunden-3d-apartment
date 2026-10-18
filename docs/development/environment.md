@@ -258,3 +258,27 @@ A visitor reported that the area behind HepCat Store is a whole car park in real
 - `src/sitebackdrop.js` `eastLotParts`: the asphalt of these polygons is cut into ≤ 2 m triangles that follow `renderedTerrainY` (lift 0.02, under the roads' own 0.025), the stall lines (lift 0.045) and the flat concrete edge strip (0.035; none across road mouths or at buildings) are cut every 2.5 m to follow the slope; all of it merged into the existing `east-access` vertex-colour mesh (no new draw call, no texture).
 - `src/eastlot.js`: the cars as four instanced batches (paint, trim, glass, tyres from `streetlife.js carGeometry`) in `east-lot-cars`, tagged `userData.carBatch = 'eastlot'` so the view LOD (`viewlod.js`, #1213/#1246) draws the far ones coarse; each car stands on the ground under its footprint, pitched/rolled to the slope. `src/farwalk.js` adds each car's footprint as a collision box (`parkedCarSegments()`); the aisles stay open.
 - Test: `tools/eastlottest.html` (stalls/cars inside their polygon, clear of roads/buildings/each other; asphalt covers the polygon on the terrain; walkable gradient; cars block, aisles stay open; batches/LOD; no new mesh). Perfcount spot `east lot`.
+
+Real elevation data (#1288, slice 1): `data/elevation.json` is a 10 m grid (x -260...320, z -200...250 = `WALK`, 59 x 46, decimetres, 18 KB) sampled from Copernicus DEM GLO-30 (30 m, tile N55 E013, AWS Open Data `copernicus-dem-30m`, no account; licence: Copernicus DEM licence, attribution "Contains modified Copernicus data"). Lantmateriet's markhojdmodell needs an account/API key and was not used. GLO-30 is a **DSM** (roofs and canopy included): `h` is the DSM as sampled, `g` a bare-earth estimate (minimum of the 3 x 3 samples 30 m round the point; strips most building/canopy height but can be 1-2 m low in narrow valleys). Both are relative to `g` at the courtyard (plan 0,0 = the model's y 0; absolute 14.75 m ASL, DSM 17.7 m). Plan to lon/lat uses `SITE.geo` (+ `DAY.planNorth`), horizontal registration ~3-5 m, so the 10 m grid is not finer than the data (30 m). Regenerate: `python3 -I tools/elevation_grid.py <tile.tif>` (own TIFF decoder, standard library only; the tile is downloaded to its own directory, never executed). `tools/elevationcompare.cjs` (server on any port; `PLAYWRIGHT_MODULE`/`CHROME_PATH`) samples the model's terrain (`groundBelowDeckY`) on the same grid and `tools/elevationtable.py` prints the deviation. Result 2026-10-18 (m, model = current terrain; ground = `g`; bold deviation = more than 2 m):
+
+```
+point                                         x      z   model     DSM  ground g-model
+L1007 courtyard (ref)                         0      0     0.0     3.0     0.0     0.0
+Street east of block (Sankt Lars vag)        45    -30     0.0     3.4     2.7     2.7
+Park south of block                           0     40    -3.0     1.7    -0.6     2.4
+Meadow before the river (SE)                100     60    -3.0    -0.7    -3.1    -0.1
+Road bridge north end                        24     98    -3.0    -1.8    -2.1     0.9
+Water under road bridge                      24    123    -6.4    -2.2    -3.2     3.2
+South bank                                   24    150    -3.0    -2.2    -3.1    -0.1
+St Lars area (south, Hus 41 front)          -20    250    -3.0     6.3    -1.9     1.1
+Karpvagen / west park                      -120     40    -3.0     2.3     0.4     3.4
+School: Klockhuset front                     45   -100     0.0     7.6     6.5     6.5
+School: parking E of Klockhuset              62      0    -0.4     2.7     0.2     0.6
+Campus north edge                            40   -190     0.0     6.5     6.5     6.5
+Far west (x-250,z0)                        -250      0    -0.2     3.4     2.3     2.5
+Far east (x300,z-50)                        300    -50     0.0     1.0    -1.1    -1.1
+Far SW (x-200,z220)                        -200    220    -6.7    -3.0    -3.8     2.9
+Far SE (x280,z220)                          280    220    -3.0     4.7     1.2     4.2
+```
+
+Findings: the model is flat (0) over the whole north (campus, hospital area) while the ground rises 2.5-6.5 m towards the Klockhuset and the northern edge (a 3-6 m step to the block is missing); east of the block Sankt Lars vag lies ~2.7 m higher than the courtyard in the data (the model has 0); the park level -3 holds roughly (-0.6 to -3.1) with the meadow/south bank exact; the river valley in the data is shallower and wider than the model's (-3.2 vs -6.4 under the bridge; the DEM mixes water and bank in a 30 m cell, so the model's river depth from #1285 is NOT overruled by it); the south side (St Lars area) is about 1-3 m higher than the model's -3 (+4 m far SE); the far south-west corner lies 3 m higher. Everything away from the block is generally +1...+3 m higher than the flat -3 plain, and the north +3...+6 m. Not yet changed: slice 2 (terrain from the grid) is tracked in the sub-issues of #1288.
