@@ -7,7 +7,7 @@ import { totalScore } from './stats.js';
 import { acquireBadge, releaseBadge, badgeScore, badgeLives } from './ghostbadge.js';
 import { setMirrorExtra } from './reflections.js';
 import { GhostCat } from './ghostcat.js';
-import { ghostProp } from './ghostprops.js'; // what an armed player holds: their weapon's own model (#667, #1126)
+import { ghostProp, ghostJetpack } from './ghostprops.js'; // what an armed player holds: their weapon's own model (#667, #1126)
 
 // Other players as ghosts (#666): a WebSocket to the Worker's players' room (cloudflare/players.js, one Durable Object for
 // everybody). Inert without the cloud (cloud.js `cloudUrl`), with GHOSTS.enabled false or ?mp=0. We send our feet and
@@ -125,6 +125,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     this.avatar = new Avatar(look, tint(this.name));
     this.avatar.setSolid(true); // always solid (#1025)
     if (hadSuit) this.avatar.setSuit(true);
+    if (this.pack) { this.avatar.bones.torso.add(this.pack); }
     this.mesh = this.avatar.mesh;
     this.mesh.name = `ghost:${this.name}`;
     this.root.add(this.avatar.object);
@@ -135,7 +136,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
   }
 
   /** A state from the room at time t (ms). After a pause the last one is repeated just before it, so it walks off smoothly. */
-  push({ p, r, h = '', score = 0, l, c = false, sp = false, pose = 0, av, ax, cat }, t) {
+  push({ p, r, h = '', score = 0, l, c = false, sp = false, jp = 0, pose = 0, av, ax, cat }, t) {
     if (av && typeof ax === 'string') av += ax; // #1138: the face extension beside the digits
     if (av && av !== this.avatarCode) {
       this.avatarCode = av;
@@ -146,6 +147,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     this.setHeld(h);
     this.heldCat.set(cat, this.root);
     this.avatar.setSuit(sp);
+    this.setJetpack(h === 'jetpack' && !jp ? 1 : jp); // (an older client only says h: 'jetpack')
     this.refreshBadge();
     const last = this.snaps.at(-1);
     if (last && t - last.t > 1000 / G.hz * 1.5) this.snaps.push({ t: t - 1000 / G.hz, p: last.p, r: last.r, c: last.c, pose: last.pose });
@@ -174,6 +176,16 @@ export class Ghost { // (exported for tools/ghostprops.html)
     this.prop?.removeFromParent();
     this.prop = ghostProp(h);
     if (this.prop) this.root.add(this.prop);
+  }
+
+  /** The jetpack on the back (#1286): `jp` 0 off, 1 worn, 2 thrusting (flames). One mesh on the torso bone, one more for the flames. */
+  setJetpack(jp) {
+    jp = jp === 2 ? 2 : jp === 1 ? 1 : 0;
+    if (jp === this.jp) return;
+    this.jp = jp;
+    if (!jp) { this.pack?.removeFromParent(); this.pack = null; return; }
+    if (!this.pack) { this.pack = ghostJetpack(); this.avatar.bones.torso.add(this.pack); }
+    this.pack.children[0].visible = jp === 2;
   }
 
   /** A wave (#673): the right arm up and waving for GHOSTS.wave s (armTarget.up, the surface #705 left for it). */
@@ -418,12 +430,13 @@ export class Ghosts {
     s.c = s.c === true;
     s.pose = s.pose >= 1 && s.pose <= 3 && Number.isInteger(s.pose) ? s.pose : 0; // 3: long sit (#1237)
     s.sp = s.sp === true;
+    s.jp = s.jp === 1 || s.jp === 2 ? s.jp : 0;
     s.catKey = JSON.stringify(s.cat ?? null);
     this.track(s, t);
     if (!this.on) return;
     s.score = badgeScore(this.score());
     const prev = this.prev;
-    if (!prev || Math.hypot(s.p[0] - prev.p[0], s.p[1] - prev.p[1], s.p[2] - prev.p[2]) > G.move || Math.abs(s.r - prev.r) > G.turn || s.h !== prev.h || s.c !== prev.c || s.pose !== prev.pose || s.sp !== prev.sp || s.catKey !== prev.catKey || this.sentAv !== this.avatarCode) { this.lastMove = t; this.prev = s; }
+    if (!prev || Math.hypot(s.p[0] - prev.p[0], s.p[1] - prev.p[1], s.p[2] - prev.p[2]) > G.move || Math.abs(s.r - prev.r) > G.turn || s.h !== prev.h || s.c !== prev.c || s.pose !== prev.pose || s.sp !== prev.sp || s.jp !== prev.jp || s.catKey !== prev.catKey || this.sentAv !== this.avatarCode) { this.lastMove = t; this.prev = s; }
     if (this.prev?.score !== s.score) this.prev = s; // score changes use the same 5 Hz slot; do not reset movement idle time
     const playing = this.active() && !document.hidden && t - this.lastMove < G.idleMs;
     if (!playing) { if (this.ws) this.disconnect(); }
@@ -432,7 +445,7 @@ export class Ghosts {
       const sent = this.sent;
       if (t - this.lastSent >= 1000 / G.hz && (!sent || sent !== this.prev || this.sentAv !== this.avatarCode)) {
         const p = this.prev ?? s;
-        this.ws.send(JSON.stringify({ p: p.p.map((v) => Math.round(v * 100) / 100), r: Math.round(p.r * 100) / 100, score: p.score, ...(p.h ? { h: p.h } : {}), ...(p.c ? { c: true } : {}), ...(p.pose ? { pose: p.pose } : {}), ...(p.sp ? { sp: true } : {}), ...(p.cat ? { cat: p.cat } : {}), ...(this.avatarCode ? avatarWire(this.avatarCode) : {}) }));
+        this.ws.send(JSON.stringify({ p: p.p.map((v) => Math.round(v * 100) / 100), r: Math.round(p.r * 100) / 100, score: p.score, ...(p.h ? { h: p.h } : {}), ...(p.c ? { c: true } : {}), ...(p.pose ? { pose: p.pose } : {}), ...(p.sp ? { sp: true } : {}), ...(p.jp ? { jp: p.jp } : {}), ...(p.cat ? { cat: p.cat } : {}), ...(this.avatarCode ? avatarWire(this.avatarCode) : {}) }));
         this.sent = p; this.sentAv = this.avatarCode; this.lastSent = this.lastBeat = t; this.messages++;
       }
     }
@@ -450,7 +463,7 @@ export class Ghosts {
       const k = Math.min(1, dt * 8);
       m.vx += ((far ? 0 : vx) - m.vx) * k; m.vz += ((far ? 0 : vz) - m.vz) * k;
     }
-    m.p.set(...s.p); m.r = s.r; m.h = s.h; m.c = s.c; m.pose = s.pose; m.sp = s.sp; m.cat = s.cat; m.t = t;
+    m.p.set(...s.p); m.r = s.r; m.h = s.h; m.c = s.c; m.pose = s.pose; m.sp = s.sp; m.jp = s.jp; m.cat = s.cat; m.t = t;
   }
 
   /** Our avatar for the mirrors: one per name (the look comes from it); hidden but for the mirror's pass. */
@@ -473,6 +486,7 @@ export class Ghosts {
     g.heldCat.set(m.cat, g.root);
     g.pose = m.pose;
     g.avatar.setSuit(m.sp);
+    g.setJetpack(m.jp);
     g.root.position.copy(m.p);
     g.root.rotation.y = m.r;
     const now = performance.now(), goal = m.c ? 1 : 0, last = g.mirrorAt ?? -Infinity; // (#1149: goes down / up over AVATAR_CROUCH.time, as the eye)

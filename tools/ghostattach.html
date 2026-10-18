@@ -1,0 +1,41 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Ghost attachments</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#bfc6cc}canvas{display:block}</style></head>
+<body><script type="module">
+// #1286 component page: other players (Ghost) wearing the jetpack (off / worn / thrusting / worn + saber), front/back/side.
+// Driven by tools/ghostattachtest.cjs.
+import * as THREE from 'three';
+import { Ghost } from '../src/ghosts.js';
+const KEYS = [[0, ''], [1, ''], [2, ''], [1, 'saber']];
+const W = 1500, Hh = 520, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, Hh); document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbfc6cc);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f72, 1.6));
+const sun = new THREE.DirectionalLight(0xfff2e0, 2.2); sun.position.set(2, 4, 3); scene.add(sun);
+const ghosts = KEYS.map((k, i) => {
+  const g = new Ghost(scene, i + 1, 'Spelare ' + (i + 1));
+  if (g.tag) g.tag.visible = false;
+  g.root.position.set((i - (KEYS.length - 1) / 2) * 1.0, 0, 0);
+  scene.add(g.root); g.root.visible = true;
+  g.setHeld(k[1]); g.setJetpack(k[0]);
+  return g;
+});
+const cam = new THREE.PerspectiveCamera(22, W / Hh, 0.05, 50);
+// view: front (they face the camera), side (turned 90° right), close: one ghost's hand
+window.__shot = (view = 'front', i = null) => {
+  let t = 1000;
+  for (const g of ghosts) { g.root.rotation.y = view === 'side' ? Math.PI / 2 : view === 'back' ? 0 : Math.PI; g.have = false; for (let k = 0; k < 30; k++) g.animate(t += 33, 1, 0, 0); }
+  const x = i === null ? 0 : ghosts[i].root.position.x;
+  cam.fov = i === null ? 22 : 7; cam.updateProjectionMatrix();
+  cam.position.set(x + (i === null ? 0 : -0.6), i === null ? 1.3 : 1.25, i === null ? 5.4 : 4.6); cam.lookAt(x - (i === null ? 0 : 0.15), i === null ? 0.95 : 1.1, 0);
+  renderer.info.reset(); renderer.render(scene, cam);
+  return { calls: renderer.info.render.calls, packs: ghosts.map((g) => g.pack?.name ?? null), tris: renderer.info.render.triangles };
+};
+window.__ready = true;
+</script></body></html>

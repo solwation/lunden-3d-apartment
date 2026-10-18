@@ -450,6 +450,7 @@ src/combat.js          fights between players (#667, on the ghosts of #666): onl
                        blaster in `blasterModel(…, lite)`, buildSaber's hilt + an unshaded blade, the first wand, bowGeometry; baked
                        lazily, grip at the hand, −z forward); the state's `h` carries no variant, so one blaster / wand stands for all.
                        Check: `node tools/ghostpropstest.cjs BASE OUT` (tools/ghostprops.html, one Ghost per weapon).
+                       Jetpack on others (#1286): the wire field `jp` (1 worn, 2 thrusting; Worker `cleanState` validates, old clients ignore it; an older client's `h: 'jetpack'` counts as 1) puts the real pack (jetpack.js `packGeometry`, 0.8 scale) on the ghost's torso bone, `Ghost.setJetpack` / ghostprops.js `ghostJetpack`, plus the flames child at jp 2. Checks: `node tools/ghostattachtest.cjs BASE OUT` (tools/ghostattach.html), `node tools/ghostjetpackpeertest.cjs GAME WORKER` (two real Ghosts via a local Worker).
                        The room checks a hit (cloudflare/players.js COMBAT: armed both, distance ≤ range +
                        slack, `every`, ≤ perMinute points a minute) and tells both: hit → bump('pvpHits') (unchanged SCORE.each.pvpHits base),
                        plus the confirmed shared distance bonus (#873), a splat, the badge; hurt → penalize('pvpHurt'), a red edge flash, sfx.ouch, checked life damage;

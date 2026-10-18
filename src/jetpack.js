@@ -30,7 +30,7 @@ function paint(geo, hex) {
 }
 
 /** The model, local: nozzle tips at y 0, the back plate at z 0, the tanks out towards +z, the straps towards −z. */
-function packGeometry() {
+export function packGeometry() {
   const dark = 0x2c3238, shell = 0xe2e5e8, accent = 0xe8642a, metal = 0x4a4f55, strap = 0x1b1c1e, red = 0xd8242a;
   const g = [];
   const box = (w, h, d, x, y, z, c) => g.push(paint(new THREE.BoxGeometry(w, h, d).translate(x, y, z), c));
@@ -58,7 +58,7 @@ function packGeometry() {
 }
 
 /** The flames: two cones under the nozzles (bright at the nozzle, red at the tip), local like the model. */
-function flameGeometry() {
+export function flameGeometry() {
   const g = [];
   for (const s of [-1, 1]) {
     const c = new THREE.ConeGeometry(0.045, 0.4, 10, 3, true).rotateX(Math.PI).translate(s * 0.105, -0.2, 0.13);

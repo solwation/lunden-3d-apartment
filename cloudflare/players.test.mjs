@@ -1557,3 +1557,11 @@ test('#1156 Olof\'s top colour (TOPS 10) passes the room as the digit fallback p
   assert.equal(decodeAvatarLook(s.av + s.ax, 'peer').top, TOPS[10], 'a new client decodes Olof\'s colour');
   assert.equal(decodeAvatarLook(s.av, 'peer').top, TOPS[1], 'an old client (digits only) shows red');
 });
+
+test('#1286 jp (jetpack worn / thrusting) is validated and forwarded; anything else is dropped', async () => {
+  const { cleanState } = await import('./players.js');
+  const s = jp => cleanState(JSON.stringify({ p: [1, 0, 2], r: 0, jp }));
+  assert.equal(s(1).jp, 1); assert.equal(s(2).jp, 2);
+  for (const jp of [0, 3, -1, true, '1', null, 1.5, [1]]) assert.equal('jp' in s(jp), false, JSON.stringify(jp));
+  assert.equal('jp' in cleanState(JSON.stringify({ p: [1, 0, 2], r: 0 })), false);
+});

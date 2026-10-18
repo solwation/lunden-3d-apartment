@@ -4,6 +4,7 @@ import { SABER, TOYS } from './config.js';
 import { rifleModel } from './rifle.js';
 import { buildSaber } from './saber.js';
 import { bowGeometry } from './bow.js';
+import { packGeometry, flameGeometry } from './jetpack.js';
 import { blasterModel, wandModel } from './toys.js';
 
 // What an armed player carries, seen by the others (#667, #1126): the same models the player holds in first person,
@@ -66,9 +67,8 @@ const BUILD = {
 const bladeGeo = () => new THREE.CylinderGeometry(0.016, 0.016, SABER.blade, 8).rotateX(-Math.PI / 2).translate(0, 0, -(SABER.hilt * 0.6 + SABER.blade / 2));
 const bladeMat = new THREE.MeshBasicMaterial({ color: 0x7fe3ff });
 
-const SIMPLE = { // no first-person model to borrow (the ball is a sphere anyway; the jetpack sits on the back)
+const SIMPLE = { // no first-person model to borrow (the ball is a sphere anyway; the jetpack is worn, ghostJetpack)
   ball: () => [new THREE.SphereGeometry(0.12, 14, 10).translate(0, 0, -0.08), new THREE.MeshLambertMaterial({ color: 0xd8641e })],
-  jetpack: () => [new THREE.BoxGeometry(0.32, 0.46, 0.18), new THREE.MeshLambertMaterial({ color: 0xc8ccd0 })],
 };
 
 const cache = new Map();
@@ -83,7 +83,22 @@ export function ghostProp(key) {
   }
   const [geo, mat, blade] = cache.get(key), m = new THREE.Mesh(geo, mat);
   if (blade) { const b = new THREE.Mesh(blade, bladeMat); b.name = 'ghost-prop-blade'; m.add(b); }
-  if (key === 'jetpack') m.position.set(0, 1.2, 0.2); // (the others follow the hand, Ghost.animate)
   m.name = `ghost-prop:${key}`;
+  return m;
+}
+
+let packGeo = null, flameGeo = null, flameMat = null, packMat = null;
+/** The jetpack worn on an avatar's back (#1286), for the torso bone (origin at the hips, +z forward): the real model (jetpack.js)
+ * at 0.8 scale, the tanks behind the back; child 0 = the flames (additive, shown while thrusting). Geometry/materials shared. */
+export function ghostJetpack() {
+  packGeo ??= packGeometry(); flameGeo ??= flameGeometry();
+  packMat ??= new THREE.MeshLambertMaterial({ vertexColors: true });
+  flameMat ??= new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+  const m = new THREE.Mesh(packGeo, packMat);
+  const f = new THREE.Mesh(flameGeo, flameMat);
+  f.visible = false; f.raycast = () => {};
+  m.add(f); m.raycast = () => {};
+  m.rotation.y = Math.PI; m.scale.setScalar(0.8); m.position.set(0, 0.1, -0.09);
+  m.name = 'ghost-jetpack';
   return m;
 }
