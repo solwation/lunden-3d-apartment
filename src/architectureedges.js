@@ -180,11 +180,12 @@ export function architectureEdges(root, { moving = [], exclude = [], floor = 3, 
   const anchors = new Set(moving.filter(Boolean)), skipped = new Set(exclude.filter(Boolean));
   const batches = new Map(), solids = new Map(), creases = new Map(), cache = new WeakMap(), point = new THREE.Vector3();
   const material = new THREE.LineBasicMaterial({ color: 0x394047, transparent: true, opacity, depthTest: true, depthWrite: false });
-  // Move the depth by 1 mm toward the eye, not the geometry: stable on coplanar faces,
-  // with ordinary depth testing still hiding edges behind walls and furniture.
+  // Move the depth toward the eye, not the geometry: stable on coplanar faces, with ordinary depth testing still hiding
+  // edges behind walls and furniture. 1 mm plus 0.4 % of the distance (#1247): a flat 1 mm broke a corner line seen
+  // obliquely from 4-5 m into dots, since a wall's depth changes by more than that across one pixel there.
   material.onBeforeCompile = (shader) => {
     shader.vertexShader = shader.vertexShader.replace('#include <project_vertex>', `#include <project_vertex>
-      gl_Position = projectionMatrix * vec4(mvPosition.xyz * max(0.0, 1.0 - 0.001 / max(length(mvPosition.xyz), 0.001)), mvPosition.w);`);
+      gl_Position = projectionMatrix * vec4(mvPosition.xyz * max(0.0, 1.0 - 0.001 / max(length(mvPosition.xyz), 0.001) - 0.004), mvPosition.w);`);
   };
   root.updateWorldMatrix(true, true);
   function visit(o, anchor = root) {
