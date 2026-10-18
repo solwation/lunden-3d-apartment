@@ -5,7 +5,7 @@
 <pre id="out">running…</pre>
 <script>
 // #359: the jetpack on its hook by the garage door: E puts it on (hands free, the HUD's heat bar), Space lifts (flames,
-// the first flight counts), letting go falls, C pushes down; the ceiling and OUTDOOR's edge hold; no flying through
+// the first flight counts), letting go falls, C pushes down; the ceiling and the walkable area's (WALK) edge hold; no flying through
 // Hus L or into Hus A's façade; a soft landing on Hus C's roof (the roof counts); E stands it down there and it stays,
 // E on it again; walking in through the front door stands it down outside; overheating cuts the thrust; a cut high up
 // is a fall that hurts and wakes you on checked outdoor ground with the jetpack back on its hook; F sends it home; keep.js
@@ -23,7 +23,7 @@ async function run() {
   while (!w.__app) await wait(100);
   const { player, fall, world, step, stats, camera, renderer, jetpack, toggleFurniture, touch, keepWorld } = w.__app;
   const mod = (p) => w.eval(`import('${new URL(p, location.href).href}')`);
-  const { FALL, PLAYER, JETPACK, OUTDOOR, SITE, GARAGE, RESPAWN } = await mod('../src/config.js');
+  const { FALL, PLAYER, JETPACK, OUTDOOR, WALK, SITE, GARAGE, RESPAWN } = await mod('../src/config.js');
   const { safeRespawnPoint } = await mod('../src/respawn.js');
   const lines = [];
   let pass = true;
@@ -151,12 +151,12 @@ async function run() {
     player.keys = new Set(); await settle(); jetpack.goHome(); jetpack.putOn(); place(px, pz, 0); // (the hurt fall woke us elsewhere)
   }
   player.pos.y = 30; player.eyeY = player.pos.y + PLAYER.eye; player.vy = 0; // (#1250: not a 300 m dive into the rest of the test)
-  // (4) OUTDOOR's edge holds in the air
+  // (4) the walkable area's edge (WALK, #1236; OUTDOOR is only the home block now) holds in the air
   jetpack.heat = 0;
   for (let i = 0; i < 600 && player.vy < 0.5; i++) { player.keys = new Set(['Space']); step(dt); } // (out of the dive)
   player.keys = new Set();
-  flyTo(OUTDOOR.x0 - 10, 30, H.z, 8);
-  check(player.pos.x > OUTDOOR.x0 && !fall.active, `the area's west edge holds in the air (x ${f2(player.pos.x)} > ${OUTDOOR.x0}, y ${f2(player.pos.y)}${landings.length ? `, landed: ${JSON.stringify(landings)}` : ''})`);
+  flyTo(WALK.x0 - 10, 30, H.z, 60);
+  check(player.pos.x > WALK.x0 && player.pos.x < WALK.x0 + 5 && !fall.active, `the area's west edge holds in the air (x ${f2(player.pos.x)} just inside ${WALK.x0}, y ${f2(player.pos.y)}${landings.length ? `, landed: ${JSON.stringify(landings)}` : ''})`);
 
   // (5) Hus C's roof: fly over, come down softly; it counts
   jetpack.heat = 0;
