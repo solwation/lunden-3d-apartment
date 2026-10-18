@@ -67,7 +67,7 @@ f.onload = async () => {
   // (4) the face pot with glasses (#343): off the lower shelf, onto the dining table, back on the shelf with E, then off again for F
   if (heldItem()) { heldItem().putBack?.(); step(1 / 60); }
   const face = things.find((t) => t.kind === 'plant' && /glasögonen/.test(t.name));
-  pass &= check(!!face && Math.abs(face.home.pos.y - 1.85) < 0.01, `the face pot on the lower shelf (y ${face?.home.pos.y.toFixed(3)})`);
+  pass &= check(!!face && Math.abs(face.home.pos.y - 1.923) < 0.01, `the face pot on the String shelf's lowest board (#1298: 1.84 + 0.075 + 0.008) (y ${face?.home.pos.y.toFixed(3)})`);
   required(face,'face pot');
   label = aim(face.where().add(new V(0, 0.06, 0)), [face.home.pos.x + 0.9, face.home.pos.z]);
   pass &= check(/ta krukan med glasögonen/i.test(label)&&A.focus().focused===face.takeTarget, `at the shelf: "${label}"`);

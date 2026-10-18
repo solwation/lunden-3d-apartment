@@ -243,6 +243,8 @@ Pendant placement (#1106): each `LIGHTING.pendants` lamp is an ordinary layout e
 
 Christmas tree placement (#571): the tree is a normal entry in the shared furniture layout (`lunden.furniture.layout` / GET-PUT `/furniture`, id `f-xmastree-0-0.82-8.45-0-0` since #591; an entry under the #571 id `f-xmastree-0-1.08-11.5-0-0` carries over if it was moved off the old default, else it is dropped — rearrange.js `apply` `carryOld`), so a confirmed move survives reloads, later visits, dates out of season and the next season (the pose is applied while it is hidden too). What it hides is a pure visibility layer recomputed on load — nothing about the season or the hidden pieces is stored, and their own layout entries are never written. tools/christmastest.html reloads in December and October.
 
+String shelf placement (#1298): the piece id comes from its x/z (`f-stringshelf-0-2.15-1.06-0-0` since #1298); `carryOld('stringshelf', [2.152, 4.55], [2.152, 4.16])` in rearrange.js `apply` drops entries under the #1272 and #1291 default ids (all stale ids, also when a full reset wrote both) so the new default applies, and carries over one that was moved away from every old default. tools/stringshelftest.html writes both old saves and reloads.
+
 Visited flats (#574, src/visitunit.js): a flat you walk into (L1004) has no save of its own and writes none of L1007's keys:
 its doors / windows / lids are not in `world.doors` / `world.lids` (so keep.js `open` never sees them), they start shut on
 every visit, using them bumps no stat, and nothing can be put down there. Only the ordinary resume / session record (a place,

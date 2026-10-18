@@ -14,7 +14,6 @@ import { SwingDoor, SlidingDoor, wardrobeDoors } from './doors.js';
 import { fitPrivacyDoors } from './doorfittings.js';
 import { buildExterior, husLLayout } from './exterior.js';
 import { buildFurniture, furnitureParts, surfaceBox } from './furniture.js';
-import { buildWallShelves } from './shelves.js';
 import { buildHallWall } from './keycabinet.js';
 import { mergeStatic } from './merge.js';
 import { architectureEdges } from './architectureedges.js';
@@ -1156,9 +1155,6 @@ function* worldParts(plan) {
   blinds.addCurtains(); // Sovrum 1's curtains on a ceiling track (#342): fittings too, the track baked with the rails
   scene.add(blinds.object, blinds.statics);
   yield 0.46;
-  const shelves = buildWallShelves(); // kitchen wall shelves (WALL_SHELVES)
-  scene.add(shelves);
-  shelves.updateMatrixWorld(true);
   const hallWall = buildHallWall(); // mirror + Solstickan key cabinet (HALL_WALL)
   scene.add(hallWall.object);
   for (const m of hallWall.mirrors) furniture.movable.push({ id: `f-mirror-${m.key}-${m.level}`,
@@ -1276,7 +1272,7 @@ function* worldParts(plan) {
   const box3 = new THREE.Box3(), mid = new THREE.Vector3();
   const merged = mergeStatic(scene, [
     ...l0.doors, ...l1.doors, portikDoor, ...l0.lids, ...l1.lids, ...l0.appliances, ...l1.appliances,
-  ].map((d) => d.object).concat([blinds.object, sillPlants, hallWall.object, furniture.object, exterior, surroundings, shelves, ...interiorLoose]), (o) => { // loose items stay separate (F hides them)
+  ].map((d) => d.object).concat([blinds.object, sillPlants, hallWall.object, furniture.object, exterior, surroundings, ...interiorLoose]), (o) => { // loose items stay separate (F hides them)
     box3.setFromObject(o).getCenter(mid);
     if (mid.x < 0 || mid.x > W || mid.z < 0 || mid.z > D) return 'out';
     return mid.y < LEVELS[1].floor - 0.05 ? 'l0' : 'l1';
@@ -1291,10 +1287,10 @@ function* worldParts(plan) {
   const levels = [l0, l1];
   levels.forEach((l, i) => { l.fixedSegments = fixed[i]; }); // walls, windows, fittings: no furniture (#302)
   // F (#75) shows the bare flat: everything we furnished and decorated is a loose item — furniture,
-  // shelves and what is on them, the hall mirror + key cabinet + coat rack, door signs, the coffee
+  // the hall mirror + key cabinet + coat rack, door signs, the coffee
   // machine (main.js hides the cat). Kept: Peab's kitchen, wet rooms, built-in
   // wardrobes, doors, stair, ceiling lamps, switches, the wall clock and the note on the freezer.
-  const looseItems = [furniture.object, sillPlants, shelves, hallWall.object, ...signs, ...interiorLoose];
+  const looseItems = [furniture.object, sillPlants, hallWall.object, ...signs, ...interiorLoose];
   const platforms = []; // low seats you can jump up on and stand on (#693, player.js `groundAt`): the footprints that carry a `top`
   const setFurniture = (on) => {
     for (const o of looseItems) o.visible = on;
@@ -1325,7 +1321,7 @@ function* worldParts(plan) {
     looseItems, // hidden by F (main.js may add more)
     cupSurfaces: [...furniture.surfaces, ...kitchenSurfaces, ...sillSurfaces, ...courtyard.surfaces], // table tops a cup can be put on (#90), the window boards (#185)
     cupCabinet,
-    things: [...furniture.things, ...shelves.userData.plants], // bottles, glasses, pot plants main.js turns into Holdables (#152, #185)
+    things: furniture.things, // bottles, glasses, pot plants main.js turns into Holdables (#152, #185)
     sillPlants, // the window boards' pots (main.js makes each one a Holdable, #185)
     courtyardTargets: courtyard.targets, // the courtyard's benches to sit on (#438): kept with F
     furnitureTargets: furniture.interactives, // E targets among the furniture (the TV), hidden with F

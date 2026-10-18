@@ -1,7 +1,10 @@
-<!doctype html><html><meta charset="utf-8"><title>String shelf under the kitchen clock (#1272, #1291)</title><pre id="out">running…</pre><script src="./rearrangesetup.js"></script><script type="module">
-// The String wall shelf: where it hangs (under the clock, clear of the calendar), its size, merged meshes, wall placement in
-// rearrange mode (pick up, rotate, move to another spot on the wall, confirm), saved layout survives a reload, Home/restore.
-import { STRING_SHELF as S, WALL_CLOCK as C, CALENDAR as K } from '../src/config.js';
+<!doctype html><html><meta charset="utf-8"><title>String shelf on the kitchen wall (#1272, #1291, #1298)</title><pre id="out">running…</pre><script src="./rearrangesetup.js"></script><script type="module">
+// The String wall shelf (#1298: on the hall/kitchen partition where the oak wall boards were, lowest point 1.84 m): where it hangs, its
+// size, what stands on its three boards (the old shelf's things incl. the two pot plants), no old boards left, clock and calendar back at
+// their old spots, merged meshes, wall placement in rearrange mode (pick up, rotate, move, confirm), the plants follow, saved layout
+// survives a reload, restore, and the old #1272 / #1291 saved defaults migrate to the new one without a ghost shelf.
+import * as CFG from '../src/config.js';
+const { STRING_SHELF: S, WALL_CLOCK: C, CALENDAR: K, LEVELS } = CFG;
 const lines=[];let pass=true;const check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);pass&&=!!ok;};
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 try {
@@ -14,18 +17,43 @@ try {
  check(!!shelf&&shelf.picture&&shelf.name==='stringhyllan','shelf is a movable wall piece named stringhyllan');
  A.scene.updateMatrixWorld(true);
  const box=new T.Box3().setFromObject(shelf.object);
- check(Math.abs(box.max.z-box.min.z-S.W)<.02&&Math.abs(box.max.x-box.min.x-S.D)<.02&&Math.abs(box.max.y-box.min.y-S.H)<.02,'size 81 × 32.5 × 75.5 cm (width along the wall)');
- check(Math.abs(box.min.x-2.152)<.012&&box.max.x<2.152+S.D+.012,'back at the wall x 2.152, boards stand out into the kitchen');
- check(box.max.y<C.y-C.d/2&&box.max.y>C.y-C.d/2-.2,'top is just below the clock');
- check(Math.abs((box.min.z+box.max.z)/2-C.z)<.01,'centred under the clock');
- check(box.max.z<K.z-K.w/2-.1&&K.z+K.w/2<5.174-.1&&box.min.z>3.145+.1,'clear of the calendar, the Badrum door trim and the hall opening; centred between the latter two');
- check(Math.abs(C.z-(3.145+5.174)/2)<.01&&box.min.y>1.0,'section centre; hung from 1.05 m up (#1291)');
- let meshes=0;shelf.object.traverse(o=>{if(o.isMesh)meshes++;});check(meshes<=2,'merged to at most two meshes ('+meshes+')');
- let tris=0;shelf.object.traverse(o=>{if(o.isMesh)tris+=(o.geometry.index?.count??o.geometry.attributes.position.count)/3;});check(tris<1500,'triangle count '+tris);
+ check(Math.abs(box.max.z-box.min.z-S.W)<.02&&box.max.x-box.min.x>S.D-.02&&box.max.x-box.min.x<S.D+.03&&box.max.y-box.min.y>S.H-.02,'frame 81 wide along the wall, 32.5 deep, sides 75.5 high (things on it may rise above)');
+ check(Math.abs(box.min.x-2.15)<.012&&box.max.x<2.15+S.D+.03,'back at the kitchen face of the hall partition (x 2.15), boards stand out into the kitchen');
+ check(Math.abs(box.min.y-1.84)<.01&&S.bottom===1.84,'LOWEST point 1.84 m above the floor (#1298)');
+ check(Math.abs(box.min.y+S.H-2.595)<.01&&2.595<LEVELS[0].ceiling-.3,'frame top 2.595 m, clear of the 3.0 m ceiling');
+ check(Math.abs((box.min.z+box.max.z)/2-1.06)<.02&&box.min.z>.46&&box.max.z<1.76,'centred on the partition (z 1.06, the old boards spot), within z 0.46–1.76');
+ check(box.min.y>1.45+.25+.05,'clear of the framed print below (top 1.70) and well above the light switch (1.05 m)');
+ check(C.y===2&&C.z===4.16&&K.z===C.z&&K.y===1.5,'wall clock and calendar are back at their old spots (z 4.16, y 2.0 / 1.5)');
+ check(CFG.WALL_SHELVES===undefined&&!!CFG.SHELF_DRESSING,'the old oak wall boards are gone from the config');
+ { // nothing of the old boards (z 0.56–1.56, tops 1.85 / 2.25) is left: rays 1 cm beside the String shelf's ends hit the wall itself
+   const ray=new T.Raycaster(),hits=[];
+   for(const [y,z] of [[2.24,.6],[2.24,1.52],[1.84,.6],[1.84,1.52]]){ray.set(new T.Vector3(3.4,y,z),new T.Vector3(-1,0,0));const h=ray.intersectObjects(A.scene.children,true).filter(o=>o.object.visible&&o.object.isMesh&&o.distance<1.5);hits.push(h[0]?.point.x);}
+   check(hits.every(x=>x!==undefined&&x<2.16),'no oak board in the old spots (rays hit the wall, x '+hits.map(x=>x?.toFixed(3))+')');
+ }
+ // what stands on the boards: the face pot (lower) and the pothos (middle) are takable things on the shelf's boards
+ const top=i=>box.min.y+S.boards[i]+S.t/2,things=A.things;
+ const face=things.find(t=>t.kind==='plant'&&/glasögonen/.test(t.name)),pot=things.find(t=>t.kind==='plant'&&t.name==='blomkrukan'&&/stringhyllan/.test(t.backTarget.name));
+ check(!!face&&!!pot&&/stringhyllan/.test(face.backTarget.name),'face pot and pothos are takable things that go back on the String shelf');
+ const inFootprint=p=>p.x>box.min.x-.02&&p.x<box.max.x+.02&&p.z>box.min.z&&p.z<box.max.z;
+ check(face&&Math.abs(face.home.pos.y-top(0))<.01&&inFootprint(face.home.pos),'face pot stands on the lowest board (y '+face?.home.pos.y.toFixed(3)+')');
+ check(pot&&Math.abs(pot.home.pos.y-top(1))<.01&&inFootprint(pot.home.pos),'pothos stands on the middle board (y '+pot?.home.pos.y.toFixed(3)+')');
+ { // the loose decoration: vertices of the dressing (not the boards/wires) in the 25 cm band over each board, spread over all three boards
+   const n=[0,0,0],v=new T.Vector3();shelf.object.traverse(o=>{if(!o.isMesh||o.userData.surface!==undefined)return;const pos=o.geometry.attributes.position;
+     for(let k=0;k<pos.count;k++){v.fromBufferAttribute(pos,k).applyMatrix4(o.matrixWorld);if(v.x<2.15+.03||v.x>2.15+S.D)continue;for(let i=0;i<3;i++)if(v.y>top(i)+.012&&v.y<top(i)+.25)n[i]++;}});
+   check(n.every(c=>c>300),'dressing on every board: vertices over the boards '+n);
+ }
+ { // nothing hangs past the shelf's ends (the pothos' trailing vine, #1298) or in front of its boards
+   const v=new T.Vector3(),bad=[];shelf.object.traverse(o=>{if(!o.isMesh||o.userData.surface!==undefined)return;const pos=o.geometry.attributes.position;
+     for(let k=0;k<pos.count;k++){v.fromBufferAttribute(pos,k).applyMatrix4(o.matrixWorld);if(v.z<box.min.z-.01||v.z>box.max.z+.01||v.x>2.15+S.D+.03)bad.push(v.toArray().map(q=>+q.toFixed(2)).join());}});
+   check(bad.length===0,'nothing sticks out past the shelf sides/front '+bad.slice(0,3));
+ }
+ { const hb=new T.Box3().setFromObject(shelf.object),top3=top(2);check(hb.max.y<LEVELS[0].ceiling-.05&&top3+.35<LEVELS[0].ceiling,'top-board things stay under the ceiling (max y '+hb.max.y.toFixed(2)+')');}
+ let meshes=0;shelf.object.traverse(o=>{if(o.isMesh)meshes++;});check(meshes<=14,'merged meshes incl. dressing and the two plants ('+meshes+')');
+ let tris=0;shelf.object.traverse(o=>{if(o.isMesh)tris+=(o.geometry.index?.count??o.geometry.attributes.position.count)/3;});check(tris<60000,'triangle count '+tris);
  // look at the shelf from the kitchen and pick it
- const home=shelf.home.clone(),centre=box.getCenter(new T.Vector3());
+ const home=shelf.home.clone(),centre=box.getCenter(new T.Vector3()),rel0=face.where().clone().sub(centre),relP0=pot.where().clone().sub(centre);
  A.player.spawn(3.4,centre.z,0);A.step(1/60);
- const mid=new T.Vector3(2.152+S.D*.6,centre.y-S.H/2+S.boards[1]+S.t/2,centre.z);A.camera.position.set(3.4,1.5,centre.z);A.camera.lookAt(mid);R.update();
+ const mid=new T.Vector3(2.15+S.D*.6,centre.y-S.H/2+S.boards[1]+S.t/2,centre.z);A.camera.position.set(3.4,1.5,centre.z);A.camera.lookAt(mid);R.update();
  check(R.target?.piece===shelf,'real look ray targets the shelf');
  check(R.begin(shelf)&&!shelf.object.visible&&R.ghost.visible,'pick up: hidden original, ghost preview');
  // aim at another spot on the same wall (north of the calendar side, lower) and rotate once
@@ -36,11 +64,24 @@ try {
  check(await R.confirm(),'confirm the move');
  const moved=shelf.object.matrixWorld.clone(),id=shelf.id;
  check(!close(moved,home),'pose changed');
+ { A.scene.updateMatrixWorld(true);const c1=new T.Box3().setFromObject(shelf.object).getCenter(new T.Vector3());
+   check(face.where().clone().sub(c1).distanceTo(rel0)<.02&&pot.where().clone().sub(c1).distanceTo(relP0)<.02&&c1.distanceTo(centre)>.5,'the plants moved with the shelf (same place on the boards)'); }
  A=await load();R=A.rearrange;
  check(close(R.byId.get(id).object.matrixWorld,moved),'moved shelf survives a reload (saved layout)');
- check(await R.restoreOriginal(R.byId.get(id))&&close(R.byId.get(id).object.matrixWorld,home),'it returns to the original spot under the clock');
- // Home reset restores it too
- R.byId.get(id);A.camera.position.set(3.4,1.5,3.5);A.camera.lookAt(2.152,1.3,3.5);
+ check(await R.restoreOriginal(R.byId.get(id))&&close(R.byId.get(id).object.matrixWorld,home),'it returns to the original spot on the kitchen wall');
+ // migration (#1298): saves from #1272 (z 4.55) and #1291 (z 4.16) must not leave a ghost shelf or a double set of things
+ {
+  const q=R.byId.get(id).object.getWorldQuaternion(new T.Quaternion()).toArray();
+  const ent=(x,y,z,rev)=>({revision:rev,pos:[x,y,z],quat:q}),a='f-stringshelf-0-2.152-4.55-0',b='f-stringshelf-0-2.152-4.16-0';
+  const centreOf=(A2)=>{A2.scene.updateMatrixWorld(true);const p=A2.rearrange.pieces.find(x=>x.item.type==='stringshelf');return [p,new T.Box3().setFromObject(p.object)];};
+  localStorage.setItem('lunden.furniture.layout',JSON.stringify({revision:9,pieces:{[a]:ent(2.152,1.4,4.55,4),[b]:ent(2.152,1.4,4.16,6)}}));
+  A=await load();let [p2,b2]=centreOf(A);
+  check(A.rearrange.pieces.filter(x=>x.item.type==='stringshelf').length===1&&Math.abs(b2.min.y-1.84)<.01&&Math.abs((b2.min.z+b2.max.z)/2-1.06)<.02,'old #1272 + #1291 default saves: the shelf hangs at the new default (1.84 m, z 1.06)');
+  check(A.things.filter(t=>/glasögonen/.test(t.name)).length===1&&A.things.filter(t=>t.name==='blomkrukan'&&/stringhyllan/.test(t.backTarget.name)).length===1,'one set of things (no doubled plants)');
+  localStorage.setItem('lunden.furniture.layout',JSON.stringify({revision:9,pieces:{[a]:ent(2.152,1.4,4.55,4),[b]:ent(2.152,1.5,3.0,6)}}));
+  A=await load();[p2,b2]=centreOf(A);
+  check(Math.abs((b2.min.z+b2.max.z)/2-3.0)<.06&&A.rearrange.pieces.filter(x=>x.item.type==='stringshelf').length===1,'a shelf the player moved away from the old default carries over to where it was put');
+ }
  document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
 }catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack;}
 </script></html>

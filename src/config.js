@@ -3970,17 +3970,27 @@ export const COFFEE_JAR = { w: 0.1, h: 0.18, r: 0.016, lid: 0.02, gap: 0.03, fil
   ground: 0x2a170c, bamboo: 0xd9bc8e, bambooEdge: 0xa7835a, beech: 0xdcc39a, stain: 0x7a5434,
   held: { x: 0.1, y: -0.12, z: -0.42 } };
 
-// Wall shelves in the kitchen (src/shelves.js) where the cat board used to hang: the kitchen face of
-// the hall/kitchen partition (x 2.15, z 0.46–1.76), above the light switch (1.05 m) and the framed print (#333). Two oak shelves
-// 100 × 20 cm on black brackets (#38). Dressed like a Scandinavian kitchen shelf (#291): cookbooks, glass jars of dry
-// goods, stoneware (a speckled jug, plates, a bowl, vases), a mortar, brass candlesticks, a cutting board, three framed
-// prints; a face pot with wire glasses and faux baby eucalyptus (#343, it replaced a vase of dried eucalyptus) and a trailing pothos can be taken. Sizes are everyday-object guesses; `colors`
-// are soft, muted glazes and materials (guess).
-export const WALL_SHELVES = {
-  x: 2.15, z0: 0.56, z1: 1.56, depth: 0.2, thick: 0.025, heights: [1.85, 2.25], // raised for the print under them (#333, guess)
-  // the face pot on the lower shelf (#343, docs/kruka-ansikte-glasogon-eukalyptus-*.jpg): Ø 11.5 × 11 cm (*guess*), glasses
+// What stands on the String shelf in the kitchen (src/shelves.js `buildShelfDressing`, called by furniture.js `stringshelf`). It used to
+// stand on two oak wall boards on black brackets (#38, #291) where the cat board hung: the kitchen face of the hall/kitchen partition
+// (x 2.15, z 0.46–1.76), above the light switch (1.05 m) and the framed print (#333). #1298: those boards are gone and the String shelf
+// (STRING_SHELF) hangs there instead; everything that stood on them moved onto its three boards. Dressed like a Scandinavian kitchen
+// shelf (#291): cookbooks, glass jars of dry goods, stoneware (a speckled jug, plates, a bowl, vases), a mortar, brass candlesticks, a
+// cutting board, three framed prints; a face pot with wire glasses and faux baby eucalyptus (#343, it replaced a vase of dried
+// eucalyptus) and a trailing pothos can be taken. Sizes are everyday-object guesses; `colors` are soft, muted glazes and materials (guess).
+// Layout (*guesses*, our own arrangement of the old items over the three boards; m): `wall` = the first thing's distance from the wall,
+// `mid` = the usual depth of the things (the middle of the 32.5 cm boards), `u` = along the wall from the shelf's middle (the world's +z
+// side when it hangs on the east-facing wall). Lower board: cookbooks, jars, the face pot, a landscape print with the bud vase and the tea tin in front of it;
+// middle board: jug, vase, mortar, a small print and the pothos at the right end (its vine runs along the board towards the middle, so it
+// must stand 20 cm from the end); nothing is taller than the 28 cm between the boards; top board (open above): candles, the
+// olive bottle, the botanical print, the cutting board with plates and a bowl.
+export const SHELF_DRESSING = {
+  wall: 0.012, mid: 0.16, pothosDepth: 0.2,
+  u: { books: -0.375, jars: [-0.22, -0.14], facePot: 0.03, print1: 0.25, bud: 0.23, tin: 0.31,
+    pothos: 0.32, jug: -0.29, vase: -0.17, mortar: 0.0, print2: 0.18,
+    print0: -0.26, candles: [-0.07, 0.0], bottle: 0.15, board: 0.3 },
+  // the face pot (#343, docs/kruka-ansikte-glasogon-eukalyptus-*.jpg): Ø 11.5 × 11 cm (*guess*), glasses
   // rings Ø 5.2 cm, the plant ~22 cm wide and ~15 cm over the rim (*guess*, measured on the photo against the pot)
-  facePot: { z: 0.975, r: 0.0575, h: 0.11, ring: 0.026, branches: 50, spread: 0.1, back: 0.085, seed: 13 },
+  facePot: { r: 0.0575, h: 0.11, ring: 0.026, branches: 50, spread: 0.1, back: 0.085, seed: 13 },
   colors: {
     oak: 0xd2b48c, bracket: 0x2a2a2a, black: 0x262524, pages: 0xf1ead9,
     books: [0x5d6448, 0xa9674c, 0xd8cbb0, 0x55657a], // olive, terracotta, oat, slate blue
@@ -4123,29 +4133,29 @@ export const DAY = {
 
 // Analog wall clock (src/wallclock.js) on the kitchen side of the Tvätt/Badrum wall, centred on the
 // wall between the hall and the Badrum door (the user, #121): wall face x 2.152, z 3.145 to the door
-// architrave at 5.244 − DOOR_TRIM.width = 5.174 → z 4.16 (#1291: back at the centre of that section, 0.1 m higher (y 2.1, bottom 1.90 m)
-// so the string shelf (STRING_SHELF) fits under it, centred at the same z). rotY π/2 = facing east. Diameter 40 cm: the user's own
+// architrave at 5.244 − DOOR_TRIM.width = 5.174 → z 4.16 (#1272/#1291 moved it south and up for the String shelf; #1298 put the shelf on the hall/kitchen partition instead, so the
+// clock is back at its original spot: y 2.0, bottom 1.80 m). rotY π/2 = facing east. Diameter 40 cm: the user's own
 // clock (user report 2026-10-17, #1205; bottom 1.80 m, still above the calendar's top at 1.725 m). `depth` = the
 // frame's depth from the wall and `lip` = the frame's front ring width as a share of the radius — *visual guesses*
 // from the reporter's photo (docs/ingame-reports/3ad70257-7a01-4ec9-a4a0-855d8db12de8-2.jpg), not measured.
-export const WALL_CLOCK = { x: 2.152, y: 2.1, z: 4.16, rotY: Math.PI / 2, d: 0.4, depth: 0.045, lip: 0.055 };
+export const WALL_CLOCK = { x: 2.152, y: 2.0, z: 4.16, rotY: Math.PI / 2, d: 0.4, depth: 0.045, lip: 0.055 };
 
 // The cat calendar (#95, src/calendar.js) on the kitchen face of the Tvätt/Badrum wall, centred under the wall clock (#121; the
 // cork board that used to hang beside it was replaced by the cat card binder, #1255, so it is no longer shifted north): a 30 × 45 cm
 // paper calendar with a cat picture for each month and the days; E opens a strip to pick the month and the day, which set the
 // day cycle's date.
-// #1272/#1291: the shelf under the clock took the calendar's old spot, so the calendar hangs at z 4.87 between the shelf (to 4.565)
-// and the Badrum door's architrave (5.174): spans 4.72–5.02, 15 cm clear of both; it is no longer near the "Till mamma" drawing.
-export const CALENDAR = { x: 2.152, y: 1.5, z: 4.87, w: 0.3, h: 0.45, rotY: Math.PI / 2 };
+// #1298: back under the clock (z = WALL_CLOCK.z), where it hung before the String shelf's detour under the clock (#1272/#1291).
+export const CALENDAR = { x: 2.152, y: 1.5, z: WALL_CLOCK.z, w: 0.3, h: 0.45, rotY: Math.PI / 2 };
 
 // The String-style wall shelf (#1272, src/furniture.js `stringshelf`; docs/stringhylla-referens-foto.jpg, user's own 60s shelf, measured
 // in docs/stringhylla-matt-anteckning.jpg): three dark-brown boards between two white wire ladder sides. `W` × `D` = board width ×
 // depth (81 × 32.5 cm) and `H` = the sides' height (75.5 cm) are the user's measurements. The board thickness `t` and the boards'
 // `boards` heights (centres, m above the sides' bottom) are *guesses* read off the photo (the "Hyllplan …" line of the note is
 // illegible); so are the wire thickness `wire`, the ladder `rung` pitch, the `rail` offsets and the colours (our picks, flat
-// colours, no texture). `bottom` = the default hanging height of the sides' lower end above the floor (#1291: 1.05, was 0.95, which hung too low).
+// colours, no texture). `bottom` = the default hanging height of the sides' lower end above the floor (#1298: 1.84, the user's "ca 1,84 m" so nobody bumps
+// their head, *guess*; it was 0.95 in #1272 and 1.05 in #1291; the Entréplan ceiling over the kitchen is 3.0 m, so the top is at 2.595).
 export const STRING_SHELF = { W: 0.81, D: 0.325, H: 0.755, t: 0.016, boards: [0.075, 0.375, 0.665], wire: 0.004, rung: 0.04, inset: 0.012,
-  board: 0x4a2a20, white: 0xf0eee8, bottom: 1.05 };
+  board: 0x4a2a20, white: 0xf0eee8, bottom: 1.84 };
 
 // The cat card binder as an object (#1255, src/catbinderprop.js, built into furniture.js `coffeetable`): a small ring binder
 // lying on the coffee table's slat shelf, in the table's local frame (x along the length, z across, y up from the floor).
@@ -4268,7 +4278,7 @@ export const LIGHTING = {
   // switches for rooms without a door of their own (normal = the way the wall faces)
   manual: [
     { level: 0, room: 'Hall', x: 1.95, z: 0.465, normal: [0, 1] },          // by the front door
-    { level: 0, room: 'Kök / matplats', x: 2.15, z: 1.65, normal: [1, 0] },  // under the wall shelves
+    { level: 0, room: 'Kök / matplats', x: 2.15, z: 1.65, normal: [1, 0] },  // under the String shelf
     { level: 0, room: 'Vardagsrum', x: 3.4, z: 7.8, normal: [0, 1] },
     { level: 1, room: 'Hall', x: 2.65, z: 5.13, normal: [0, 1] },           // between the bedroom doors
     { level: 1, room: 'Klk', x: 4.85, z: 4.28, normal: [0, 1] },
@@ -4877,10 +4887,11 @@ export const FURNITURE = [
   // south = the viewer's left), two champagne with gold foil. On the west wall between the armchair/floor lamp
   // (z < 9.1) and the BESTÅ (z > 9.95), bottom 1.1 m up; 38 × 105 cm and the 10 cm depth are *guesses*.
   { type: 'winerack', level: 0, x: 0.202, z: 9.52, y: 1.1, rot: -90, w: 0.38, h: 1.05, n: 8, depth: 0.1, tilt: 0, champagne: [1, 5] },
-  // The String shelf under the kitchen wall clock (#1272, STRING_SHELF): on the Tvätt/Badrum wall's kitchen face (x 2.152, facing east),
-  // #1291: centred on the wall section between the hall opening (3.145) and the Badrum door's architrave (5.174), z 4.16 (spans
-  // 3.755–4.565), lower end 1.05 m up, so its top (1.805) stays below the clock's bottom (1.90). y = the shelf's centre.
-  { type: 'stringshelf', level: 0, x: 2.152, z: 4.16, y: 1.05 + 0.755 / 2, rot: -90 },
+  // The String shelf on the hall/kitchen partition's kitchen face (#1298; it hung under the clock in #1272/#1291), where the two oak wall
+  // boards were (x 2.15, z 0.56–1.56, centre 1.06; the shelf spans 0.655–1.465), the lowest point of its wire sides 1.84 m up (the
+  // user's *guess*), so its top is at 2.595 under the 3.0 m ceiling, clear of the framed print below (to 1.70) and of the light
+  // switch (z 1.65). Carries what stood on the old boards (SHELF_DRESSING). y = the shelf's centre.
+  { type: 'stringshelf', level: 0, x: 2.15, z: 1.06, y: 1.84 + 0.755 / 2, rot: -90 },
   // The watercolour painting (#133, docs/tavla-abstrakt-svart-ram.png): portrait, thin flat black frame, ~70 × 100 cm
   // (*guess*), centred over the chaise on the east wall (x 5.5; the chaise spans z ~10.55–12.15), centre 1.55 m up.
   // textures/tavla-akvarell-schaslong.jpg (#1095) is the user's photo docs/tavla-akvarell-ansikte-foto.jpg cropped inside
@@ -4905,7 +4916,7 @@ export const FURNITURE = [
   // per frame inside) holds fikus, akvarell | peace, solros; `order` = which atlas cell hangs in each slot, top left
   // → bottom right.
   // The framed print "THIS KITCHEN IS FOR DANCING" (#333, docs/tavla-kitchen-is-for-dancing.jpg), 40 × 50 cm, a thin black
-  // frame, no passe-partout, under the kitchen wall shelves (WALL_SHELVES, x 2.15, z 0.56–1.56) on the kitchen face of the
+  // frame, no passe-partout, under the kitchen String shelf (SHELF_DRESSING, x 2.15, z 0.655–1.465; the oak wall boards before #1298) on the kitchen face of the
   // hall/kitchen partition, centred under them (z 1.06; the switch at z 1.65 stays free); centre 1.45 m up (*guess*: eye
   // height from the dining table). Drawn on a canvas (`print`, furniture.js paintedPicture): the paper colour and the
   // gold are *guesses* from the photo (cool light, glass reflections); `block` / `width` / `top` = the text's share of

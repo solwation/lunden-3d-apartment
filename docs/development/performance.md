@@ -916,7 +916,7 @@ first renders instead (its longest tasks 3–4 s → 4.7–5.5 s), still behind 
 Warm-up (#697) and `STARTUP` are unchanged.
 
 **Smaller buildWorld parts (#1161).** The remaining long synchronous chunks in Bygger huset (the upper floor `buildLevel`,
-loose `buildFurniture`, the visited flats `buildVisitFlat`, and the group with blinds, wall shelves and the hall wall)
+loose `buildFurniture`, the visited flats `buildVisitFlat`, and the group with blinds and the hall wall)
 are now generators or delegated:
 - `buildFurniture`: synchronous wrapper around `furnitureParts()`, which yields progress every 10 pieces.
 - `buildLevel`: synchronous wrapper around `levelParts()`, yielding between walls/windows, doors/trims, interior fittings/fixtures, and AO plates.

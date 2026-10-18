@@ -3,6 +3,7 @@ import { materialChoice } from './materialcatalog.js';
 import { MATERIAL_LIBRARY, LONG_PILE, SHADE_CANOPY_TEXTILES } from './config.js';
 import { windPlant, windMaterial } from './plantwind.js';
 import { MusicLoop } from './music.js';
+import { buildShelfDressing } from './shelves.js';
 import { MUSIC, STAND_ON, CONTACT_SHADOW, REST, STRING_SHELF } from './config.js';
 import { buildContactShadows } from './contactshadow.js';
 import * as THREE from 'three';
@@ -4068,7 +4069,8 @@ function winerack(item) {
 /**
  * The String-style wall shelf (#1272, STRING_SHELF): local z 0 = the wall, x along it, origin at the shelf's centre. Two white
  * wire ladder sides (two vertical rails and a rung every few cm across the depth) carry three dark-brown boards. Thin boxes only
- * (two materials, merged to two meshes); no collision (it hangs on the wall like the wine rack) and no texture.
+ * (two materials, merged to two meshes); no collision (it hangs on the wall like the wine rack) and no texture. It carries the old
+ * kitchen shelf's things (#1298, SHELF_DRESSING).
  */
 function stringshelf(item) {
   const S = STRING_SHELF, g = new THREE.Group();
@@ -4082,6 +4084,10 @@ function stringshelf(item) {
     for (let y = S.rung / 2; y < S.H; y += S.rung) box(white, w, w, S.D, x, y0 + y, S.D / 2); // the rungs across the depth
   }
   for (const b of S.boards) box(wood, S.W, S.t, S.D - 0.004, 0, y0 + b, (S.D - 0.004) / 2 + 0.004);
+  // #1298: what stood on the old oak wall boards now stands on the three boards (shelves.js); the two pot plants can be taken (#185)
+  const things = buildShelfDressing(S.boards.map((b) => y0 + b + S.t / 2), g);
+  g.userData.keep = things.map((t) => t.model);
+  g.userData.things = things;
   g.position.y = item.y;
   return g;
 }

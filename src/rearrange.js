@@ -422,18 +422,23 @@ export class Rearrange {
     // a piece whose default spot moved gets a new id (furniture.js: from its x/z): an entry under its old id carries over
     // when it was confirmed somewhere else, and is dropped when it still holds the old default (a full reset writes every
     // home pose) so the new default applies
-    const carryOld = (type, oldDefX, oldDefZ) => {
+    // `olds` = every earlier default [x, z] of the piece (#1298: the String shelf had two); stale entries under any old id go, the first one
+    // confirmed away from all the old defaults carries over to the current id
+    const carryOld = (type, ...olds) => {
       const piece = this.pieces.find((p) => p.item.type === type);
       if (!piece || state.pieces[piece.id]) return;
-      const oldId = Object.keys(state.pieces).find((k) => k.startsWith(`f-${type}-`));
-      if (!oldId) return;
-      const entry = state.pieces[oldId];
-      delete state.pieces[oldId];
-      const moved = Math.hypot(entry.pos?.[0] - oldDefX, entry.pos?.[2] - oldDefZ) > 0.05;
-      if (moved) state.pieces[piece.id] = entry;
+      const oldIds = Object.keys(state.pieces).filter((k) => k.startsWith(`f-${type}-`));
+      let carry = null;
+      for (const oldId of oldIds) {
+        const entry = state.pieces[oldId];
+        delete state.pieces[oldId];
+        const moved = olds.every(([x, z]) => Math.hypot(entry.pos?.[0] - x, entry.pos?.[2] - z) > 0.05);
+        if (moved && !carry) carry = entry;
+      }
+      if (carry) state.pieces[piece.id] = carry;
     };
-    carryOld('stringshelf', 2.152, 4.55); // #1291: from under the clock's old spot (#1272) to the centre of the wall section
-    carryOld('xmastree', 1.08, 11.5); // #591: from the palm corner (#571) to the armchair corner
+    carryOld('stringshelf', [2.152, 4.55], [2.152, 4.16]); // #1298: from under the clock (#1272, #1291) to the old kitchen shelf's wall
+    carryOld('xmastree', [1.08, 11.5]); // #591: from the palm corner (#571) to the armchair corner
     // #571: what the Christmas tree hides is shown again while poses change (a hidden piece moved elsewhere takes the
     // things on it along); the layer re-judges the overlap afterwards
     const fresh = (p) => Number.isInteger(state.pieces[p.id]?.revision) && state.pieces[p.id].revision > p.revision;

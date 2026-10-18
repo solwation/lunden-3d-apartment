@@ -59,11 +59,11 @@ src/stuff.js           what is inside wardrobes and drawers (#228, STUFF): `Pack
                        hat shelf, shoes — by the room's person, `personFor`), `drawerFill` (addDrawer `fill`: tees, socks,
                        underwear, pyjamas, jeans, toys, crafts, nightstand). Sovrum 1: NORDLI, NORDKISA, IDANAS drawers;
                        Sovrum 2: wardrobe L, the `pictures` posters "EAT SLEEP GAME REPEAT" (#430, east wall) and "THE GULAG" (#694, west wall over the gaming desk; *guess* 42 × 59 cm); Sovrum 3: wardrobe G + ALEX drawers (#230)
-src/shelves.js         kitchen wall shelves (WALL_SHELVES, #291; raised to 1.85 / 2.25 m in #333 for the framed print "THIS KITCHEN IS FOR
-                       DANCING" 40 × 50 under them, a FURNITURE `pictures` item drawn on a canvas: `paint` / `print`): cookbooks, glass jars, lathe-turned stoneware (speckle map),
+src/shelves.js         what stands on the kitchen's String shelf (`buildShelfDressing`, `SHELF_DRESSING`; #291, moved from the two oak wall boards in #1298,
+                       called by furniture.js `stringshelf`): cookbooks, glass jars, lathe-turned stoneware (speckle map),
                        brass candlesticks, a mortar, a cutting board, framed prints (one canvas atlas); merged per material;
-                       the white face pot with wire glasses and faux baby eucalyptus hair (#343, `WALL_SHELVES.facePot`, lower
-                       shelf, 'krukan med glasögonen'; it replaced the eucalyptus vase) and the trailing pothos are Things (kind 'plant', #185)
+                       the white face pot with wire glasses and faux baby eucalyptus hair (#343, lowest board, 'krukan med glasögonen')
+                       and the trailing pothos (middle board) are Things (kind 'plant', #185, `userData.things`/`keep` of the shelf piece)
 src/aborg.js           the JYSK ABORG café set outside the kitchen window (#406, ABORG): a folding table + two folding chairs (seats)
 src/randers.js         the JYSK RANDERS tray table by the armchair (#405, RANDERS): tray, rails, straight legs, a low cross
 src/pineapple.js       Livia's pineapple mirror in Sovrum 3 (#412, PINEAPPLE_MIRROR): an extruded oval frame with a scale bump map,
@@ -286,15 +286,30 @@ contents remain unchanged. `tools/cutlerystocktest.cjs GAME OUT` checks the actu
 and Openable, individual compartment bounds, stock count and real WebGL costs.
 [Paired pictures, costs and limits](../validation/issue-1052/README.md).
 
-## String shelf under the kitchen clock (#1272)
+## String shelf on the kitchen wall (#1272, #1291, #1298)
 
 `stringshelf` (`STRING_SHELF`, `src/furniture.js` `stringshelf`): the user's 60s String-style wall shelf
 (docs/stringhylla-referens-foto.jpg, measures from docs/stringhylla-matt-anteckning.jpg: 81 wide, 32.5 deep, sides 75.5 high).
 Two white wire ladder sides (rails + a rung every 4 cm across the depth) and three dark-brown boards, thin boxes in two flat-colour
-materials (2 meshes, ~540 triangles, no texture). Board thickness, board heights, wire sizes and colours are *guesses* (the
-"Hyllplan …" line of the note is illegible). Origin = the shelf's centre, local z 0 = the wall. It hangs on the Tvätt/Badrum
-wall's kitchen face (x 2.152) centred under the clock, both centred on the wall section between the hall opening (z 3.145) and the Badrum door's
-architrave (5.174), i.e. z 4.16 (#1291: shelf lower end 1.05 m up, clock y 2.1; `CALENDAR.z` 4.87 between shelf and door trim). An old save of the
-shelf at the #1272 default (z 4.55) is dropped so the new default applies; a moved one carries over (`carryOld('stringshelf', …)` in `src/rearrange.js`). Like the wine rack it is a `picture` piece in `src/rearrange.js` (wall placement via the wall ray, rotate, saved layout,
+materials (no texture). Board thickness, board heights, wire sizes and colours are *guesses* (the
+"Hyllplan …" line of the note is illegible). Origin = the shelf's centre, local z 0 = the wall.
+
+**#1298: it replaced the two oak wall boards.** It hangs on the kitchen face of the hall/kitchen partition (x 2.15, centred on z 1.06 = where
+the oak boards with black brackets were, z 0.56–1.56; the shelf spans 0.655–1.465), the LOWEST point of its sides 1.84 m above the floor (the
+user's "ca 1,84 m" so nobody bumps their head, *guess*), the top at 2.595 under the 3.0 m Entréplan ceiling (the 2.5 m soffit is only over
+Tvätt/Badrum, west of x 2.06), clear of the framed print below (top 1.70) and of the light switch (z 1.65). The wall clock and the calendar
+are back at their old spots (`WALL_CLOCK` z 4.16 / y 2.0, `CALENDAR.z` = the clock's); the drawings by the toilet door were never moved.
+What stood on the old boards (`src/shelves.js`, `SHELF_DRESSING`) now stands on the three boards (by the shelf's own `boards` heights,
+28 cm between boards, so nothing there is taller than that): lowest board — cookbooks, two jars, the face pot (Thing 'krukan med glasögonen'),
+the landscape print; middle — the pothos (Thing, vines over the front edge), jug, vase, mortar on a book, the small print, bud vase, tea tin;
+top (open above) — candles, the olive bottle, the botanical print, the cutting board with plates and a bowl. The static items are merged per
+material into the shelf piece (they move with it in Möblera-läget); the two plants are `things` + `keep` of the piece, exactly like the wine
+rack's bottles, so they can be taken and put back and follow the shelf when it is moved. The old `buildWallShelves` / `WALL_SHELVES` and the
+`shelves` loose group in `world.js` are gone.
+
+Like the wine rack it is a `picture` piece in `src/rearrange.js` (wall placement via the wall ray, rotate, saved layout,
 Home reset, NAMES `stringhyllan`, floor/ceiling box check) and has no collision footprint; on another wall it may reach into a
-perpendicular wall near a corner (explicit limitation). Test: `tools/stringshelftest.html`.
+perpendicular wall near a corner (explicit limitation). Saved layouts: the piece id comes from its x/z, so `carryOld('stringshelf', …)`
+in `src/rearrange.js` `apply` takes both earlier defaults (#1272 z 4.55, #1291 z 4.16): stale entries under any old id are dropped so the new
+default applies, one that was moved away from every old default carries over. Test: `tools/stringshelftest.html` (position 1.84 m,
+dressing on every board, no old board left, plants follow, migration), `tools/planttest.html` (taking the plants off the shelf).
