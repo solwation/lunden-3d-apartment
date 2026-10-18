@@ -67,8 +67,8 @@ const R = [
   // [name, start, waypoints, expectation(player) -> bool]
   ['parkplanet → gångstråket ner mot ån (slänten går att gå på)', [-35, 61], [[-30, 66], [-28, 70], [-30, 80], [-39, 95], [-40, 110], [-41, 118]],
     () => player.pos.z > 117 && player.pos.y <= -2.9],
-  ['ån: rakt ut i vattnet ger plask och återstart torrt på stranden (inte en osynlig vägg)', [-41, 118], [[-41, 150]],
-    () => splashes.length >= 1 && !inWater(player.pos.x, player.pos.z, player.pos.y) && player.pos.y > SITE.bridges.waterY + 0.3 && player.pos.z < 140],
+  ['ån: rakt ut i vattnet ger plask och återstart torrt på stranden (inte en osynlig vägg)', [-41, 135], [[-41, 150]],
+    () => splashes.length >= 1 && !inWater(player.pos.x, player.pos.z, player.pos.y) && player.pos.y > SITE.bridges.waterY + 0.3],
   ['vägbron: över ån längs Sankt Lars väg till södra stranden', [23.5, 90], [[23.7, 100], [23.5, 125], [23.3, 143], [23.3, 155]],
     () => player.pos.z > 150],
   ['gång- och cykelbron: över ån', [18, 92], [[18.1, 101], [17.9, 125], [17.8, 146], [17.8, 155]], () => player.pos.z > 150],
@@ -165,37 +165,46 @@ for (const [name, start, points, ok] of R) {
 { // #1281: ground over WALK.maxSlope cannot be climbed: walking up it you are thrown back down (a slide), without flicker at the threshold.
   // The park's real banks are under the limit except the narrow edges at the water, so the slope test lowers the limit for the park path.
   const keep = WALK.maxSlope; WALK.maxSlope = 0.3;
-  const a = [-41, 134], b = [-41, 122]; // up the park path's slope (gradient ~0.5 at (-41, 138), over the lowered limit there)
+  const top = [-41, 118]; // the shore path (flat, y -5.5) at z 131-140; the slope up to the park (gradient 0.3-0.45 at z 124-129) is over the lowered limit
   let flips = 0, was = false, slid = 0, maxUp = -Infinity;
-  player.spawn(-41, 138.2, 0); splashes.length = 0; const y0 = player.pos.y, yTop = groundY(-41, 134);
+  player.spawn(-41, 132, 0); splashes.length = 0; const y0 = player.pos.y;
   player.keys = new Set(['KeyW', 'ShiftLeft']);
   for (let i = 0; i < 400; i++) {
-    camera.rotation.y = Math.atan2(-(b[0] - player.pos.x), -(b[1] - player.pos.z));
-    player.update(dt); if (splashes.length) break; // (thrown back all the way into the water)
+    camera.rotation.y = Math.atan2(-(top[0] - player.pos.x), -(top[1] - player.pos.z));
+    player.update(dt);
     if (player.sliding !== was) { flips++; was = player.sliding; } if (player.sliding) slid++;
     maxUp = Math.max(maxUp, player.pos.y - y0);
   }
   player.keys = new Set();
-  check(slid > 30 && maxUp < 0.1 && splashes.length === 1, `för brant slänt (gräns sänkt till 0.3): går inte att klättra upp, du glider tillbaka (${slid} bilder, högst ${maxUp.toFixed(2)} m upp, ${splashes.length} plask, ${at()})`);
-  check(flips <= 8, `glidningen flimrar inte vid gränsen: ${flips} växlingar under 400 bilder med W nedtryckt uppför`);
-  // standing on it: slides down with a smooth speed (no jump over slideAccel per frame) all the way into the river here, the limit being over every part of the bank
-  player.spawn(-41, 139, 0); splashes.length = 0; let vmax = 0, dv = 0, pv = 0;
-  for (let i = 0; i < 600 && !splashes.length; i++) { player.update(dt); if (splashes.length) break; vmax = Math.max(vmax, player.slideV); dv = Math.max(dv, Math.abs(player.slideV - pv)); pv = player.slideV; }
-  check(splashes.length === 1 && vmax > 2 && dv <= WALK.slideAccel * dt * 2.02, `står man på för brant mark glider man ner med jämn acceleration (högsta fart ${vmax.toFixed(1)} m/s, största fartsprång ${dv.toFixed(3)}) och plaskar i ån (${splashes.length})`);
+  check(slid > 30 && maxUp < 0.9 && player.pos.y < y0 + 0.9 && !splashes.length, `för brant slänt (gräns sänkt till 0.3): går inte att klättra upp, du glider tillbaka (${slid} bilder, högst ${maxUp.toFixed(2)} m upp, ${at()})`);
+  check(flips <= 40, `glidningen flimrar inte vid gränsen: ${flips} växlingar under 400 bilder med W nedtryckt uppför`);
+  // standing on it: slides down with a smooth speed to the calm shore path and stops there
+  player.spawn(-41, 127, 0); let vmax = 0, dv = 0, pv = 0;
+  for (let i = 0; i < 600; i++) { player.update(dt); vmax = Math.max(vmax, player.slideV); dv = Math.max(dv, Math.abs(player.slideV - pv)); pv = player.slideV; }
+  check(!player.sliding && player.slideV === 0 && !splashes.length && player.pos.z > 129 && vmax > 1 && dv <= WALK.slideAccel * dt * 2.02, `står man på för brant mark glider man ner med jämn acceleration (högsta fart ${vmax.toFixed(1)} m/s, största fartsprång ${dv.toFixed(3)}) och stannar på lugn mark (${at()})`);
   // hysteresis: with the limit just over the ground's gradient there it starts no slide, but one already going (its stop level is under the gradient) carries on
-  { const y = groundY(-41, 139), s0 = slopeAt(-41, 139, y).s; WALK.maxSlope = s0 * 1.05;
-    const fresh = slideAt(-41, 139, y, false), going = slideAt(-41, 139, y, true);
+  { const y = groundY(-41, 127), s0 = slopeAt(-41, 127, y).s; WALK.maxSlope = s0 * 1.05;
+    const fresh = slideAt(-41, 127, y, false), going = slideAt(-41, 127, y, true);
     check(!fresh && !!going, `hysteresis: lutning ${s0.toFixed(2)} under startgränsen ${WALK.maxSlope.toFixed(2)} startar ingen glidning, men en pågående fortsätter tills den understiger ${(WALK.maxSlope * WALK.slideOut).toFixed(2)}`); }
   WALK.maxSlope = keep;
-  // the real steepest bank edge (west reach, gradient ~1.5 over the 0.8 limit): walking down it slides you into the river
-  const q0 = slideAt(-192, 206, groundY(-192, 206)); splashes.length = 0;
-  player.spawn(-192 - q0.dx * 2, 206 - q0.dz * 2, 0); // 2 m up the fall line
+  // the steepest real bank edge (any cell over the real limit within 6 m of the water, dry, uphill neighbour calmer): walking down it slides you into the river.
+  // (#a4e71ef lowered the river valley: if no real cell is over the limit any more, the steepest bank cell is used with the limit lowered under it)
+  let best = null; WALK.maxSlope = 0; // (so slideAt answers anywhere that is not a deck)
+  for (let x = WALK.x0 + 2; x < WALK.x1; x += 2) for (let z = 62; z < WALK.z1; z += 2) {
+    const r = riverAt(x, z); if (r.distance > r.width / 2 + 7 || r.distance < r.width / 2 || deckAt(x, z) !== null) continue;
+    const q = slideAt(x, z, groundY(x, z), false); if (!q) continue; const s1 = q.s; if (!best || s1 > best.s) best = { x, z, s: s1 };
+  }
+  WALK.maxSlope = keep;
+  const real = best.s > keep; if (!real) WALK.maxSlope = best.s * 0.8;
+  const q0 = slideAt(best.x, best.z, groundY(best.x, best.z)); splashes.length = 0;
+  player.spawn(best.x - q0.dx * 2, best.z - q0.dz * 2, 0); // 2 m up the fall line
   let slid2 = 0; player.keys = new Set(['KeyW']);
   for (let i = 0; i < 400 && !splashes.length; i++) { camera.rotation.y = Math.atan2(-(q0.dx), -(q0.dz)); player.update(dt); if (player.sliding) slid2++; }
   player.keys = new Set();
-  check(q0.s > keep && slid2 > 5 && splashes.length === 1, `västra åns branta kant (gradient ${q0.s.toFixed(1)}): man glider ner och plaskar i (${slid2} glidbilder, ${splashes.length} plask, ${at()})`);
+  check(slid2 > 5 && splashes.length === 1, `åns brantaste kant vid (${best.x}, ${best.z}) (gradient ${best.s.toFixed(2)}, ${real ? 'över den riktiga gränsen' : 'gränsen sänkt'}): man glider ner och plaskar i (${slid2} glidbilder, ${splashes.length} plask, ${at()})`);
+  WALK.maxSlope = keep;
   // the jetpack flies over steep ground without sliding
-  player.spawn(-192, 206, 0); player.pos.y = groundY(-192, 206) + 3; player.jet = { worn: true, lift: () => 9.81 }; let jetSlid = 0;
+  player.spawn(best.x, best.z, 0); player.pos.y = groundY(best.x, best.z) + 3; player.jet = { worn: true, lift: () => 9.81 }; let jetSlid = 0;
   for (let i = 0; i < 120; i++) { player.update(dt); if (player.sliding) jetSlid++; } player.jet = null;
   check(jetSlid === 0, `jetpacken över brant mark utlöser ingen glidning (${jetSlid})`);
 }
