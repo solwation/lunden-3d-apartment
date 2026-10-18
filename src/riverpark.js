@@ -49,7 +49,8 @@ export function parkShrubSpots(ground) {
     const cx=a+(c-a)*t,cz=b+(d-b)*t,r=riverAt(cx,cz),side=rand()<.5?-1:1,off=r.width/2+3+rand()*r.bank*.65;
     const x=cx+r.nx*off*side,z=cz+r.nz*off*side;
     if(!clear(x,z)||!P.patches.some(p=>inside(x,z,p.polygon)))continue;
-    spots.push({x,z,y:ground(x,z),s:P.shrubScale[0]+rand()*(P.shrubScale[1]-P.shrubScale[0])});
+    const y=ground(x,z);if(y<=SITE.bridges.waterY)continue;
+    spots.push({x,z,y,s:P.shrubScale[0]+rand()*(P.shrubScale[1]-P.shrubScale[0])});
   }return spots;
 }
 export const parkShoreFeet=[];

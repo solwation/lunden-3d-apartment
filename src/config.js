@@ -600,13 +600,13 @@ export const SITE = {
   // All heights, widths, pier dimensions, rail/truss section sizes and colours below are visual ASSUMPTIONS.
   bridges: {road:{ends:[[23.9,100],[23.3,145.8]],width:7.2,slab:.45,pier:.75,foot:1.8},
     gc:{ends:[[18.1,101],[17.8,146.5]],length:40,width:3,slab:.18,truss:1.45,panels:10,steel:.10},
-    deckY:-3,waterY:-6.2,bedY:-6.8,rail:1.1,post:.07,railStep:1.9,approach:8,
-    // #1271: the river-side footpath (OSM way 44447963, no layer tag, under the layer=1 bridge ways) passes UNDER both decks, so the ground
-    // under the decks is cut into a depression: `floorY` m the floor of the cut (0.6 m over the water line, *guess*: head room under the road
-    // slab is then 2.15 m, under the GC deck 2.4 m, over PLAYER.headroom 1.85), `run` the side slope's run per metre of depth (*guess*, gives
-    // a gradient of about 0.6 at its steepest, under WALK.maxSlope), `taper` m over which the slopes narrow to the deck width towards the
-    // abutments (the cut ends inside the abutment blocks, `endInset` m short of the deck end), `pier` m the clearance kept round a pier.
-    underpass:{floorY:-5.6,run:2.4,taper:4,endInset:.2,pier:.2}},
+    deckY:-3,waterY:-6.2,bedY:-6.8,shoreY:-5.5,shoreSpan:7.5,valleySpan:8.5,rail:1.1,post:.07,railStep:1.9,approach:8,pierMargin:.2,
+    // #1285 (supersedes #1271 local underpass cut): Höje å and its valley lie generally lower than the road bridge.
+    // Road deck at deckY (-3), river surface at waterY (-6.2, guess; ~10.5 m vs ~7.5 m ASL in Lantmäteriet data),
+    // riverbed at bedY (-6.8), riverside shore/path at shoreY (-5.5, guess, 0.7 m above water; gives 2.05 m clearance
+    // under road slab and 2.32 m under GC bridge). Valley slopes up from shoreSpan (4.5 m past bank) over valleySpan
+    // (8.5 m) to base terrain (-3), meeting the road bridge abutments (ends at z ~100 and z ~145.8) from bank to bank.
+    underpass:{floorY:-5.5,pier:.2}},
   // #532 foundation: sourced horizontal river centreline near the two bridges; #533 owns detailed banks/paths/vegetation.
   // Width and uniform depth remain assumptions; do not describe these as measured water levels or surveyed banks.
   // #1233: `bankScale` (guess) shortens every bank span (visual estimates below) so the slope down to the water is steeper; the real
