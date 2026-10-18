@@ -7,13 +7,16 @@ import { lobeGeometry, leafMaterial, leafAtlasParts } from './foliage.js';
 import { buildStLars41 } from './stlars41.js';
 const S=SITE.south;
 const inside=(x,z,p)=>{let yes=false;for(let i=0,j=p.length-1;i<p.length;j=i++)if((p[i][1]>z)!==(p[j][1]>z)&&x<(p[j][0]-p[i][0])*(z-p[i][1])/(p[j][1]-p[i][1])+p[i][0])yes=!yes;return yes;};
-const shape=b=>{const s=new THREE.Shape(b.polygon.slice(0,-1).map(([x,z])=>new THREE.Vector2(x,-z)));s.holes=(b.holes??[]).map(p=>new THREE.Path(p.slice(0,-1).map(([x,z])=>new THREE.Vector2(x,-z))));return s;};
+const ring=p=>(p[0][0]===p[p.length-1][0]&&p[0][1]===p[p.length-1][1]?p.slice(0,-1):p);
+const shape=b=>{const s=new THREE.Shape(ring(b.polygon).map(([x,z])=>new THREE.Vector2(x,-z)));s.holes=(b.holes??[]).map(p=>new THREE.Path(ring(p).map(([x,z])=>new THREE.Vector2(x,-z))));return s;};
 const plain=g=>{g=g.index?g.toNonIndexed():g;g.deleteAttribute('uv');return g;};
 const tint=(g,hex)=>{g=plain(g);const c=new THREE.Color(hex),a=[];for(let i=0;i<g.attributes.position.count;i++)a.push(c.r,c.g,c.b);g.setAttribute('color',new THREE.Float32BufferAttribute(a,3));return g;};
 const geo=points=>{const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(points.flat(),3));g.computeVertexNormals();return g;};
 // Clip each original footprint triangle, so concave wings/courtyard holes never acquire a bridging roof.
 const clip=(poly,f)=>{const out=[];for(let i=0;i<poly.length;i++){const a=poly[i],b=poly[(i+1)%poly.length],fa=f(a),fb=f(b);if(fa>=-1e-8)out.push(a);if((fa>=0)!==(fb>=0)){const t=fa/(fa-fb);out.push([a[0]+t*(b[0]-a[0]),a[1]+t*(b[1]-a[1])]);}}return out;};
-const onAccess=(x,z)=>S.paths.some(p=>p.path.slice(1).some(([c,d],i)=>{const[a,b]=p.path[i],dx=c-a,dz=d-b,t=Math.max(0,Math.min(1,((x-a)*dx+(z-b)*dz)/(dx*dx+dz*dz)));return Math.hypot(x-a-t*dx,z-b-t*dz)<p.w/2+.5;}));
+const onAccess=(x,z)=>[...S.paths,...(S.access??[])].some(p=>p.path.slice(1).some(([c,d],i)=>{const[a,b]=p.path[i],dx=c-a,dz=d-b,t=Math.max(0,Math.min(1,((x-a)*dx+(z-b)*dz)/(dx*dx+dz*dz)));return Math.hypot(x-a-t*dx,z-b-t*dz)<p.w/2+.5;}));
+const onParking=(x,z)=>(S.parking??[]).some(p=>p.polygon&&inside(x,z,p.polygon));
+const lineQuad=(p0,p1,w,yLift,col,ground)=>{const dx=p1[0]-p0[0],dz=p1[1]-p0[1],len=Math.hypot(dx,dz);if(!len)return null;const nx=-dz/len*(w/2),nz=dx/len*(w/2);const pts=[[p0[0]-nx,p0[1]-nz],[p0[0]+nx,p0[1]+nz],[p1[0]+nx,p1[1]+nz],[p1[0]-nx,p1[1]-nz]];const pos=[pts[0][0],ground(...pts[0])+yLift,pts[0][1],pts[1][0],ground(...pts[1])+yLift,pts[1][1],pts[2][0],ground(...pts[2])+yLift,pts[2][1],pts[0][0],ground(...pts[0])+yLift,pts[0][1],pts[2][0],ground(...pts[2])+yLift,pts[2][1],pts[3][0],ground(...pts[3])+yLift,pts[3][1]];const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.computeVertexNormals();return tint(g,col);};
 /** The southern backdrop in one call; southBackdropParts yields a rough share (0–1) between its parts (#1133). */
 export function buildSouthBackdrop(ground){const parts=southBackdropParts(ground);for(;;){const r=parts.next();if(r.done)return r.value;}}
 export function* southBackdropParts(ground){
@@ -40,7 +43,33 @@ export function* southBackdropParts(ground){
  for(const [x0,x1]of[[G.x0,SITE.backgroundGround.x0],[SITE.backgroundGround.x1,G.x1]])parts.land.push(tint(new THREE.PlaneGeometry(x1-x0,260-SITE.backgroundGround.z0).rotateX(-Math.PI/2).translate((x0+x1)/2,-3.01,(260+SITE.backgroundGround.z0)/2),COLORS.grass));
  for(const f of S.fields){const g=new THREE.ShapeGeometry(shape(f)).rotateX(-Math.PI/2),a=g.attributes.position;for(let i=0;i<a.count;i++)a.setY(i,farGround(a.getX(i),a.getZ(i))+.018);g.computeVertexNormals();parts.land.push(tint(g,f.color));}
  yield .7;
- for(const p of S.paths)parts.land.push(tint(pathStrip(p,w=>-w/2,w=>w/2,.025,farGround),0xa7a397));
+ const surfColor=p=>p.color??(p.surface==='asphalt'?0x5f6164:p.surface==='gravel'?0xb5ac90:0xa7a397);
+ for(const p of [...S.paths,...(S.access??[])])parts.land.push(tint(pathStrip(p,w=>-w/2,w=>w/2,.025,farGround),surfColor(p)));
+ for(const p of (S.parking??[])){
+  if(p.polygon){
+   const g=new THREE.ShapeGeometry(shape(p)).rotateX(-Math.PI/2),a=g.attributes.position;
+   for(let i=0;i<a.count;i++)a.setY(i,farGround(a.getX(i),a.getZ(i))+.022);
+   g.computeVertexNormals();
+   parts.land.push(tint(g,surfColor(p)));
+   if(p.capacity&&p.polygon.length>=4){
+    const poly=ring(p.polygon);
+    if(poly.length===4){
+     const[p0,p1,p2,p3]=poly;
+     const d01=Math.hypot(p1[0]-p0[0],p1[1]-p0[1]),d12=Math.hypot(p2[0]-p1[0],p2[1]-p1[1]);
+     const[eA0,eA1,eB0,eB1]=d01>=d12?[p0,p1,p3,p2]:[p1,p2,p0,p3];
+     const curb=lineQuad(eA0,eA1,0.14,0.024,0xb0aba2,farGround);
+     if(curb)parts.land.push(curb);
+     for(let k=1;k<p.capacity;k++){
+      const t=k/p.capacity;
+      const a=[eA0[0]+(eA1[0]-eA0[0])*t,eA0[1]+(eA1[1]-eA0[1])*t];
+      const b=[eB0[0]+(eB1[0]-eB0[0])*t,eB0[1]+(eB1[1]-eB0[1])*t];
+      const line=lineQuad(a,b,0.08,0.024,0xeeeeea,farGround);
+      if(line)parts.land.push(line);
+     }
+    }
+   }
+  }
+ }
  yield .8;
  const mats={facade:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.95,side:THREE.DoubleSide}),roof:new THREE.MeshStandardMaterial({color:S.roofColor,roughness:.95,side:THREE.DoubleSide}),glass:new THREE.MeshStandardMaterial({color:0x35444d,roughness:.7,side:THREE.DoubleSide}),land:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:1,side:THREE.DoubleSide})};
  registerSnow(mats.roof,SEASON.snow.roof);registerSnow(mats.land,SEASON.snow.ground);
@@ -49,7 +78,7 @@ export function* southBackdropParts(ground){
  yield .9;
  for(const parts=leafAtlasParts();!parts.next().done;)yield .9; // the shared leaf atlas, drawn on first use: a long block of its own (#1133)
  let seed=536;const rand=()=>((seed=seed*16807%2147483647)/2147483647),trees=[];
- for(const f of S.forests){const xs=f.polygon.map(q=>q[0]),zs=f.polygon.map(q=>q[1]),x0=Math.min(...xs),x1=Math.max(...xs),z0=Math.min(...zs),z1=Math.max(...zs);let n=0;for(let i=0;i<f.n*30&&n<f.n;i++){const x=x0+rand()*(x1-x0),z=z0+rand()*(z1-z0);if(!inside(x,z,f.polygon)||onAccess(x,z)||S.buildings.some(b=>inside(x,z,b.polygon))||S.fields.some(b=>inside(x,z,b.polygon)))continue;trees.push({x,z,y:farGround(x,z),source:f.source,h:S.treeHeight[0]+rand()*(S.treeHeight[1]-S.treeHeight[0]),r:S.treeRadius[0]+rand()*(S.treeRadius[1]-S.treeRadius[0])});n++;}}
+ for(const f of S.forests){const xs=f.polygon.map(q=>q[0]),zs=f.polygon.map(q=>q[1]),x0=Math.min(...xs),x1=Math.max(...xs),z0=Math.min(...zs),z1=Math.max(...zs);let n=0;for(let i=0;i<f.n*30&&n<f.n;i++){const x=x0+rand()*(x1-x0),z=z0+rand()*(z1-z0);if(!inside(x,z,f.polygon)||onAccess(x,z)||onParking(x,z)||S.buildings.some(b=>inside(x,z,b.polygon))||S.fields.some(b=>inside(x,z,b.polygon)))continue;trees.push({x,z,y:farGround(x,z),source:f.source,h:S.treeHeight[0]+rand()*(S.treeHeight[1]-S.treeHeight[0]),r:S.treeRadius[0]+rand()*(S.treeRadius[1]-S.treeRadius[0])});n++;}}
  const trunks=new THREE.InstancedMesh(new THREE.CylinderGeometry(.2,.35,1,4).translate(0,.5,0),new THREE.MeshStandardMaterial({color:0x5a4636,roughness:1}),trees.length),crowns=new THREE.InstancedMesh(lobeGeometry('far'),leafMaterial(),trees.length),seeds=[],m=new THREE.Matrix4(),q=new THREE.Quaternion();
  trees.forEach((t,i)=>{trunks.setMatrixAt(i,m.compose(new THREE.Vector3(t.x,t.y,t.z),q,new THREE.Vector3(1,t.h*.65,1)));const sd={pos:new THREE.Vector3(t.x,t.y+t.h*.7,t.z),rot:q.clone(),scale:new THREE.Vector3(t.r,t.h*.4,t.r),r1:rand(),r2:rand(),r3:rand(),r4:1};crowns.setMatrixAt(i,m.compose(sd.pos,sd.rot,sd.scale));crowns.setColorAt(i,new THREE.Color(0x718a49));seeds.push(sd)});registerTrees(crowns,seeds);trunks.name='south-trunks';crowns.name='south-crowns';group.add(trunks,crowns);group.userData={buildings:records,trees};return group;
 }

@@ -212,3 +212,12 @@ all outward clock faces against the real WallClock, DayCycle/ClockPanel pause/sp
 Close and100m south/west images are captured for both desktop and low-memory campus geometry.
 
 [Rendering and verification images](../validation/issue-1067/README.md).
+
+## School courtyards, parking, and roads south of Höje å (#1262)
+
+`SITE.east.access` and `SITE.south.parking`/`SITE.south.access` map courtyards, parking areas, stall lines, and access roads from OpenStreetMap snapshot data (`osm-south-2026-10-08.json`, `campus-areas-2026-10-08.json`):
+- School courtyards and parking: school parking lots (OSM ways 145221623, 44447969), paved and asphalt school courtyards (ways 145221566, 145221567, 145221572, 145221740, 94054863, 145221570).
+- South parking lots and street-side bays along Sankt Lars väg: parking areas (ways 145221619, 850235113, 145221624, 145221626, 145221628, 145221629) with sourced stall counts/capacities and marked stall dividers (`0xeeeeea`, *guess* width 0.1 m) and concrete curbs (`0xb0aba2`, *guess* width 0.15 m); street-side perpendicular parking bays along Sankt Lars väg (ways 1379042014, 1379042106, 1379042188, 1379042235, 1379043164, 1379043165).
+- Sourced service access roads south of Höje å: ways 850235114, 850235115, 36918923, 189432572, 30633544, 30633545, 145221590, 145221588.
+- Materials and batching: asphalt (`0x5f6164`), gravel (`0xb5ac90`), paving (`0xa7a397`). East access and courtyards are merged into the existing `east-access` mesh with vertex colors. South parking, stall dividers, curbs, access roads, and paths are merged into the single existing `south-land` mesh with vertex colors. No new draw calls, textures, or lights are introduced, remaining strictly within the performance budget (`tools/perfcount.html`). Forest trees in the south exclude parking polygons (`!onParking(x, z)`).
+
