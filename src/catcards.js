@@ -42,8 +42,9 @@ export function idbStore(withStore) {
 export class CatCards {
   /** `store`: {all, put, delete, legacy?}; `stats`: the saved statistics object; `touch`: called after a counter changed;
    * `flag`: {get, set} for the one-time migration marker. A failing store keeps this visit's cards in memory. */
-  constructor({ store = new MemoryStore(), stats = {}, touch = () => {}, flag = null, now = () => Date.now() } = {}) {
-    Object.assign(this, { store, stats, touch, now, cards: [], migrated: false });
+  constructor({ store = new MemoryStore(), stats = {}, touch = () => {}, flag = null, now = () => Date.now(), onNotice = null } = {}) {
+    // `onNotice({type: 'rotated', breed, card})` / `({type: 'full', breed})`: a new find pushed the oldest unsaved card out / found no room (#1257)
+    Object.assign(this, { store, stats, touch, now, onNotice, cards: [], migrated: false });
     this.flag = flag ?? { value: false, get() { return this.value; }, set() { this.value = true; } };
   }
 
@@ -78,14 +79,21 @@ export class CatCards {
   /** The cards of a slot, oldest first. The legacy key lists the old photos without a breed. */
   of(breed) { return this.cards.filter((c) => c.breed === breed).sort((a, b) => a.time - b.time); }
 
+  /** The card a new find of `breed` would push out: the oldest unsaved one, once the slot holds the maximum; else null. */
+  nextOut(breed) { const l = this.of(breed); return l.length >= C.max ? l.find((c) => !c.saved) ?? null : null; }
+  /** True when the slot holds the maximum and every card is saved: a new find is not added. */
+  isFull(breed) { const l = this.of(breed); return l.length >= C.max && l.every((c) => c.saved); }
+  savedCount(breed) { return this.of(breed).filter((c) => c.saved).length; }
+
   /** Add a card (photo JPEG data URL) for a find of `breed`. Returns the card, or null when the slot is full of saved ones. */
   async add(breed, { name, data, coat = null, kitten = false } = {}) {
     if (!slotOf(breed)) return null;
     // (migration may leave a slot above the maximum: unsaved cards go until there is room)
     while (this.of(breed).length >= C.max) {
       const old = this.of(breed).find((c) => !c.saved);
-      if (!old) return null;
+      if (!old) { try { this.onNotice?.({ type: 'full', breed }); } catch { /* UI only */ } return null; }
       await this.discard(old.id);
+      try { this.onNotice?.({ type: 'rotated', breed, card: old }); } catch { /* UI only */ }
     }
     const card = { id: uid(), breed, name, time: this.now(), data, saved: false, kitten: !!kitten, ...(coat ? { coat } : {}) };
     this.cards.push(card);

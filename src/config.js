@@ -4023,6 +4023,9 @@ export const CAT_BINDER = { w: 0.3, d: 0.22, h: 0.035, x: 0.05, z: 0.085, turn: 
 // plain guess; nobody has weighed her in the game). `legacy` = the key for old board photos whose breed was never saved.
 export const CAT_CARD = {
   max: 5, legacy: 'okänd',
+  // Photo menu of the binder (#1257, src/catbinder.js, index.html #cat-notice): seconds the "oldest card rotated out" / "slot full"
+  // notice stays on screen after a find; *guess* (long enough to read two sentences, short enough not to nag).
+  noticeS: 8,
   tiers: [
     { id: 'common', label: 'Vanlig', from: 0 }, { id: 'uncommon', label: 'Ovanlig', from: 30 }, { id: 'rare', label: 'Sällsynt', from: 100 },
     { id: 'epic', label: 'Episk', from: 250 }, { id: 'legendary', label: 'Legendarisk', from: 1000 },

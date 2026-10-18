@@ -269,6 +269,30 @@
     #binder-view .dot { width: 44px; height: 44px; border: 0; background: none; padding: 0; cursor: pointer; touch-action: manipulation; position: relative; }
     #binder-view .dot::after { content: ''; position: absolute; inset: 15px; border-radius: 50%; background: #2f4f86; }
     #binder-view .dot.empty::after { background: transparent; box-shadow: inset 0 0 0 2px #8a93a6; } #binder-view .dot.star::after { background: #d8a62a; } #binder-view .dot.on::after { inset: 12px; }
+    /* photo menu (#1257): save / throw buttons, the enlarged photo and the throw-away question; DOM + CSS only, targets >= 44 px */
+    #binder-view .photo .pic { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; touch-action: manipulation; }
+    #binder-view .photo .acts { display: flex; gap: 6px; margin-top: 5px; }
+    /* 'body' beats hudicons.css's .hud-button glass on these panel buttons */
+    body #binder-view button.save, body #binder-view button.throw, body #binder-view .photosbtn, body #binder-view .vacts button, body #binder-view .confirm button { min-height: 44px; min-width: 44px; border: 2px solid #2f4f86; border-radius: 8px; background: #fff; color: #2f4f86; font: 600 14px system-ui, sans-serif; cursor: pointer; touch-action: manipulation; padding: 0 10px; }
+    body #binder-view .photo .acts button { flex: 1; padding: 0 4px; }
+    body #binder-view button.save.on, body #binder-view .vacts button[aria-pressed=true] { background: #2f4f86; color: #fff; }
+    body #binder-view button.throw, body #binder-view .confirm .danger { border-color: #b3261e; color: #b3261e; } body #binder-view .confirm .danger { background: #b3261e; color: #fff; }
+    body #binder-view .photosbtn { margin-top: 4px; } body #binder-view .photosbtn:disabled { opacity: .4; cursor: default; }
+    #binder-view button:focus-visible { outline: 3px solid #d8a62a; outline-offset: 2px; }
+    #binder-view .slotline { margin: 2px 0 0; font-size: 13px; } #binder-view .slotline.full { color: #b3261e; font-weight: 600; }
+    #binder-view .photo.next-out { outline: 2px dashed #d97a1a; outline-offset: 1px; }
+    #binder-view .photo .badge.out { background: #d97a1a; }
+    #binder-view .viewer, #binder-view .confirm { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(15, 25, 35, .8); z-index: 3; padding: 8px; box-sizing: border-box; }
+    #binder-view .confirm { z-index: 4; } #binder-view .viewer[hidden], #binder-view .confirm[hidden] { display: none; }
+    #binder-view .vbox { display: flex; flex-direction: column; gap: 8px; max-width: min(900px, 100%); max-height: 100%; background: #f1ead8; color: #23324a; padding: 10px; border-radius: 10px; box-sizing: border-box; }
+    #binder-view .vbox img { width: 100%; aspect-ratio: 4 / 3; min-height: 0; max-height: calc(100vh - 230px - var(--st) - var(--sb)); object-fit: contain; background: #222; border-radius: 6px; }
+    #binder-view .viewer .cap { display: flex; flex-direction: column; font-size: 13px; } #binder-view .viewer .cap b { font-size: 17px; } #binder-view .viewer .cap .st.on { color: #b3261e; font-weight: 700; }
+    #binder-view .vacts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; } #binder-view .vacts .close { margin-left: auto; }
+    #binder-view .cbox { background: #fff; color: #23324a; border-radius: 12px; padding: 16px; max-width: 360px; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+    #binder-view .cbox .q { margin: 0 0 4px; font-size: 18px; font-weight: 700; } #binder-view .cbox .sub { margin: 0 0 12px; font-size: 14px; } #binder-view .cbox .row { display: flex; gap: 10px; } #binder-view .cbox .row button { flex: 1; }
+    @media (max-height: 520px) { #binder-view .vbox { flex-direction: row; align-items: stretch; } #binder-view .vbox img { flex: none; width: min(52vw, calc((100vh - 60px - var(--st) - var(--sb)) * 1.333)); max-height: none; height: auto; aspect-ratio: 4 / 3; } #binder-view .viewer .side { display: flex; flex-direction: column; justify-content: space-between; min-width: 0; } }
+    #cat-notice { position: fixed; top: calc(16px + var(--st)); left: 50%; transform: translateX(-50%); z-index: 12; pointer-events: none; background: var(--ink); color: #fff; padding: 10px 16px; border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,.35); font-size: 15px; max-width: min(520px, calc(100vw - 24px)); text-align: center; border: 2px solid #d8a62a; }
+    #cat-notice[hidden] { display: none; }
     #binder-view .hint { text-align: center; font-size: 12px; opacity: .7; margin: 6px 0 0; }
     @media (max-height: 520px) { #binder-view .binder { padding: 6px 12px 8px; border-width: 8px; } #binder-view header { margin-bottom: 4px; } #binder-view h2 { font-size: 18px; } #binder-view .spread { grid-template-columns: 220px 1fr; gap: 10px; } #binder-view .card { min-height: 0; padding: 8px 10px; gap: 3px; } #binder-view .card h3 { font-size: 20px; } #binder-view .card .qm { font-size: 44px; margin: 0; } #binder-view .photos { grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 8px; } #binder-view .photo figcaption { font-size: 11px; } #binder-view .pager { margin-top: 4px; } #binder-view .hint { display: none; } }
     @media (max-width: 720px) { #binder-view .spread { grid-template-columns: 1fr; } #binder-view .card { min-height: 0; } #binder-view .photos { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; } #binder-view .hint { display: none; } }
@@ -1072,7 +1096,27 @@
       <nav class="pager"><button type="button" data-nav="prev">Förra</button><div class="dots"></div><button type="button" data-nav="next">Nästa</button></nav>
       <p class="hint">Piltangenter bläddrar · E / Esc stänger</p>
     </div>
+    <div class="viewer" hidden role="dialog" aria-label="Foto">
+      <div class="vbox">
+        <img alt="">
+        <div class="side">
+          <div class="cap"></div>
+          <div class="vacts">
+            <button type="button" data-act="save" aria-pressed="false">☆ Spara</button>
+            <button type="button" data-act="throw" class="throw">Kasta</button>
+            <button type="button" data-act="vprev" aria-label="Förra fotot">‹</button>
+            <button type="button" data-act="vnext" aria-label="Nästa foto">›</button>
+            <button type="button" data-act="vclose" class="close">Tillbaka</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="confirm" hidden role="alertdialog" aria-label="Kasta foto">
+      <div class="cbox"><p class="q"></p><p class="sub"></p>
+        <div class="row"><button type="button" data-act="no">Behåll</button><button type="button" data-act="yes" class="danger">Kasta</button></div></div>
+    </div>
   </div>
+  <div id="cat-notice" hidden role="status" aria-live="polite"></div>
   <div id="draw-panel" hidden role="dialog" aria-label="Rita">
     <button type="button" class="dialog-close" aria-label="Stäng" data-close-target="drawing-done">×</button>
     <div class="row colors"></div>

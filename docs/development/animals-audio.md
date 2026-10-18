@@ -41,13 +41,18 @@ src/catbinderprop.js   the binder as an object (#1255, `CAT_BINDER`): a small ri
 src/catbinder.js       the browse UI `BinderPanel` (#binder-view, main.js `showBinder`, frees the mouse like the old board panel): one page per breed
                        (Miele last, an unfound breed is a "???" placeholder with "Plats n av 8"), then an "Äldre foton" page when old photos exist;
                        the card (name, tier text + points, weight, facts, found / pat / hug
-                       counters; rarity visuals #1256: `fx-N` class + CSS layers by tier, see Graphics) and CAT_CARD.max photo places. ← → / A D / Home / End / dots / swipe / Nästa–Förra; E / Esc / × close. Photos are
-                       read-only here: the photo menu with keep / throw away is #1257. Test: `tools/bindertest.cjs`.
+                       counters; rarity visuals #1256: `fx-N` class + CSS layers by tier, see Graphics) and CAT_CARD.max photo places. ← → / A D / Home / End / dots / swipe / Nästa–Förra; E / Esc / × close. Test: `tools/bindertest.cjs`.
+                       Photo menu (#1257, the last part of #1249; DOM + CSS only, perfcount unchanged): every photo has `Spara`/`Sparad` (aria-pressed toggle = the card's `saved` flag, a saved card is never rotated out;
+                       persisted by the existing 'catCards' store) and `Kasta` (opens `.confirm`, the safe "Behåll" has focus; "Kasta" deletes the card). Tapping a photo or the card's "Visa foton (n av 5)" opens it enlarged
+                       (`.viewer`, ‹ › / ← → / swipe browse the page's photos, same Spara / Kasta). `back()` (E / Esc, wired in main.js) closes the question, then the enlarged photo, then the panel. The card line `slotline`
+                       says what the next find does ("byter ut det äldsta osparade fotot (X)", that photo is outlined + badged "Byts ut först"; all saved: red "Alla platser är sparade…"). `CatCards.onNotice` ({type:'rotated'|'full'})
+                       drives the in-game toast `#cat-notice` (main.js `catNotice`, `CAT_CARD.noticeS` *guess*): "…det äldsta osparade fotot (X) byttes ut" / "alla fem kort … är sparade, det nya fotot lades inte till. Kasta eller avmarkera…".
+                       Model helpers: `nextOut(breed)`, `isFull(breed)`, `savedCount(breed)`. The legacy page has the same buttons (no limit there). Buttons are ≥ 44 px; the viewer is a row (photo + buttons) at max-height 520 px.
                        Rarity visuals (#1256, UI only — no texture, light or draw call; perfcount unchanged: 507 calls max at 'park'): `CAT_CARD.fx` (level / ★ count / tilt per tier, *guess*) →
                        `decorate()` in catbinder.js adds `fx-0..4` (+ `miele` for the `star` breed) and aria-hidden layers (`.foil`, `.shine`, `.glitter`, `.holo`, `.star-fx`); the CSS is in index.html.
                        0 plain · 1 coloured border + glow · 2 foil + shine band + ★ · 3 glitter + holographic sheen + more ★ · 4 rainbow frame, gold foil, most ★ (Miele extra ★ and a ★ after the name).
                        Pointer / touch movement tilts the card and moves the sheen (CSS vars --rx --ry --mx --my); prefers-reduced-motion: no animation, no tilt, the still layers stay.
-src/catcards.js        cat card binder data model (#1249, part 1 of 4 — #1254–#1257; the binder object + UI are #1255 above; card design / photo menu follow). No DOM: one slot per BREED (`CAT_CARD.breeds`, Miele last;
+src/catcards.js        cat card binder data model (#1249, part 1 of 4 — #1254–#1257, all delivered: binder object + UI #1255, rarity #1256, photo menu #1257, all above). No DOM: one slot per BREED (`CAT_CARD.breeds`, Miele last;
                        a game cat is random — breed + coat + random name — so there are no fixed individuals), points from SCORE (breeds;
                        Miele `first.miele` 1000), rarity tier = highest `CAT_CARD.tiers` entry reached (common <30, ovanlig 30–99, sällsynt
                        100, episk 250, legendarisk = Miele). A card = a photo of a find; max `CAT_CARD.max` 5 per breed, a new one rotates

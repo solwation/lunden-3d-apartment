@@ -103,3 +103,30 @@ test('a slot above the maximum after migration keeps saved cards and trims unsav
   assert.equal(c.of('Miele').filter((x) => x.saved).length, 2);
   assert.ok(c.of('Miele').length <= 5);
 });
+
+test('notices: rotated out and full, plus the helpers the binder UI uses (#1257)', async () => {
+  const seen = [];
+  const c = await mk({ onNotice: (n) => seen.push(n) }).load();
+  for (let i = 0; i < 5; i++) await c.add('maine coon', { name: `M${i}`, data: 'x' });
+  assert.equal(c.nextOut('maine coon').name, 'M0');
+  assert.equal(c.isFull('maine coon'), false);
+  assert.equal(seen.length, 0);
+  await c.toggleSave(c.of('maine coon')[0].id);
+  assert.equal(c.nextOut('maine coon').name, 'M1', 'a saved card is skipped');
+  await c.add('maine coon', { name: 'M5', data: 'x' });
+  assert.deepEqual(seen.map((n) => [n.type, n.card.name]), [['rotated', 'M1']]);
+  for (const x of c.of('maine coon')) if (!x.saved) await c.toggleSave(x.id);
+  assert.equal(c.savedCount('maine coon'), 5);
+  assert.equal(c.isFull('maine coon'), true);
+  assert.equal(c.nextOut('maine coon'), null);
+  assert.equal(await c.add('maine coon', { name: 'M6', data: 'x' }), null);
+  assert.equal(seen.at(-1).type, 'full');
+  assert.equal(seen.at(-1).breed, 'maine coon');
+  assert.equal(seen.length, 2);
+  await c.toggleSave(c.of('maine coon')[2].id); // unsave: the slot takes a find again
+  assert.ok(await c.add('maine coon', { name: 'M7', data: 'x' }));
+  assert.equal(seen.length, 3);
+  assert.equal(c.isFull('perser'), false);
+  const throwing = await mk({ onNotice: () => { throw new Error('ui'); } }).load();
+  for (let i = 0; i < 6; i++) assert.ok(await throwing.add('perser', { name: `P${i}`, data: 'x' }), 'a failing notice never blocks the add');
+});

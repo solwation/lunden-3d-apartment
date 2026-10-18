@@ -6,7 +6,10 @@ import { CAT_CARD as C } from './config.js';
 // been found is a "?" placeholder. Pure DOM + CatCards (src/catcards.js); keys: ← → (A / D) turn the page, Home / End jump,
 // E / Esc close (main.js). Rarity visuals (#1256): a card gets `fx-N` (CAT_CARD.fx level by tier) and decorative layers
 // (foil, shine, glitter, holo, ★ sparkles) drawn by CSS in index.html; pointer / touch movement tilts it and moves the holo
-// sheen (not under prefers-reduced-motion). The photo menu with keep / throw away (#1257) comes later: photos are read-only here.
+// sheen (not under prefers-reduced-motion). Photo menu (#1257): every photo has Spara / Sparad (toggle: a saved card is never rotated
+// out) and Kasta (asks first); tapping a photo, or the card's "Visa foton" button, opens it enlarged (#binder-view .viewer, ‹ ›
+// browse the page's photos, same buttons). `.confirm` is the throw-away question. Esc / E close the topmost layer first
+// (`back()`), a new find's "rotated out" / "full" notice is shown by main.js (#cat-notice) and the page says what the next find does.
 
 const fmtTime = (t) => new Date(t).toLocaleString('sv-SE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 const kg = (n) => n.toLocaleString('sv-SE', { maximumFractionDigits: 1 });
@@ -20,7 +23,13 @@ export class BinderPanel {
     this.body = el.querySelector('.page');
     this.dots = el.querySelector('.dots');
     this.title = el.querySelector('.count');
+    this.viewer = el.querySelector('.viewer');
+    this.confirm = el.querySelector('.confirm');
+    this.view = null; // { ids, i }: the enlarged photo and the photos of its page
+    this.asking = null; // id of the card the throw-away question is about
     el.addEventListener('click', (e) => {
+      const a = e.target.closest('[data-act]');
+      if (a) { this.act(a.dataset.act, a.dataset.id); return; }
       const b = e.target.closest('button[data-nav]');
       if (!b) return;
       const v = b.dataset.nav;
@@ -32,7 +41,8 @@ export class BinderPanel {
     el.addEventListener('touchend', (e) => {
       if (x0 === null) return;
       const dx = e.changedTouches[0].clientX - x0; x0 = null;
-      if (Math.abs(dx) > 60) this.turn(dx < 0 ? 1 : -1);
+      if (Math.abs(dx) <= 60 || this.asking) return;
+      if (this.view) this.step(dx < 0 ? 1 : -1); else this.turn(dx < 0 ? 1 : -1); // (an enlarged photo swipes between photos)
     }, { passive: true });
   }
 
@@ -47,8 +57,106 @@ export class BinderPanel {
   show(show, index = null) {
     this.open = show;
     this.el.hidden = !show;
+    this.view = this.asking = null;
+    this.viewer.hidden = this.confirm.hidden = true;
     if (show) { this.index = index ?? this.firstFound(); this.render(); }
   }
+
+  /** E / Esc: close the topmost layer (question, then enlarged photo). True if one was closed, false: close the whole panel. */
+  back() {
+    if (this.asking) { this.ask(null); return true; }
+    if (this.view) { this.look(null); return true; }
+    return false;
+  }
+
+  act(a, id) {
+    if (a === 'save') this.save(id);
+    else if (a === 'throw') this.ask(id);
+    else if (a === 'yes') this.throwAway();
+    else if (a === 'no') this.ask(null);
+    else if (a === 'look') this.look(id);
+    else if (a === 'photos') this.look(this.current().ids.at(-1) ?? null);
+    else if (a === 'vprev') this.step(-1);
+    else if (a === 'vnext') this.step(1);
+    else if (a === 'vclose') this.look(null);
+  }
+
+  /** The photos of the current page, oldest first (the same order the cards are stored in). */
+  current() { const p = this.pages[this.index]; return { ids: (p?.legacy ?? p?.slot?.cards ?? []).map((c) => c.id) }; }
+  card(id) { return this.cards.cards.find((c) => c.id === id) ?? null; }
+
+  async save(id) {
+    const done = this.cards.toggleSave(id); // the flag flips at once, the store write follows
+    this.render();
+    this.focusOn(`[data-act=save][data-id="${id}"]`);
+    await done;
+  }
+
+  ask(id) {
+    this.asking = id;
+    this.confirm.hidden = !id;
+    if (!id) { this.focusOn(this.view ? '.viewer [data-act=throw]' : `[data-act=throw][data-id="${this.last}"]`); return; }
+    this.last = id;
+    const c = this.card(id);
+    this.confirm.querySelector('.q').textContent = `Kasta fotot${c ? ` av ${c.name} (${fmtTime(c.time)})` : ''}?`;
+    this.confirm.querySelector('.sub').textContent = c?.saved ? 'Fotot är sparat. Det försvinner för gott och går inte att ångra.' : 'Det försvinner för gott och går inte att ångra.';
+    this.focusOn('.confirm [data-act=no]'); // the safe answer has focus
+  }
+
+  async throwAway() {
+    const id = this.asking, i = this.view ? this.view.i : 0;
+    this.asking = null; this.confirm.hidden = true;
+    if (!id) return;
+    const ids = this.view?.ids ?? [];
+    await this.cards.discard(id);
+    if (this.view) {
+      const rest = ids.filter((x) => x !== id);
+      this.view = rest.length ? { ids: rest, i: Math.min(i, rest.length - 1) } : null;
+    }
+    this.render();
+    this.focusOn(this.view ? '.viewer [data-act=throw]' : '.card [data-act=photos], .pager [data-nav=next]');
+  }
+
+  /** Open a photo enlarged (null closes it). */
+  look(id) {
+    if (!id) {
+      const was = this.view && this.view.ids[this.view.i];
+      this.view = null; this.viewer.hidden = true;
+      this.focusOn(`[data-act=look][data-id="${was}"]`);
+      return;
+    }
+    const ids = this.current().ids.slice().reverse(); // newest first, like the page
+    this.view = { ids, i: Math.max(0, ids.indexOf(id)) };
+    this.render();
+    this.focusOn('.viewer [data-act=vclose]');
+  }
+  step(d) {
+    if (!this.view) return;
+    const n = this.view.ids.length;
+    this.view.i = (this.view.i + d + n) % n;
+    this.renderViewer();
+  }
+
+  focusOn(sel) { try { (this.el.querySelector(sel) ?? this.el.querySelector('.dialog-close'))?.focus({ preventScroll: true }); } catch { /* UI only */ } }
+
+  renderViewer() {
+    const v = this.viewer;
+    if (!this.view) { v.hidden = true; return; }
+    const c = this.card(this.view.ids[this.view.i]);
+    if (!c) { this.view = null; v.hidden = true; return; }
+    const n = this.view.ids.length;
+    v.hidden = false;
+    const img = v.querySelector('img');
+    img.src = c.data; img.alt = `${c.name}, ${fmtTime(c.time)}`;
+    v.querySelector('.cap').replaceChildren(el('b', '', c.kitten ? `${c.name} (kattunge)` : c.name), el('span', '', `${fmtTime(c.time)} · foto ${this.view.i + 1} av ${n}`),
+      el('span', c.saved ? 'st on' : 'st', c.saved ? 'Sparad: byts aldrig ut' : this.out(c) ? 'Osparad: byts ut först av nästa fynd' : 'Osparad'));
+    const sv = v.querySelector('[data-act=save]'), th = v.querySelector('[data-act=throw]');
+    sv.dataset.id = th.dataset.id = c.id;
+    sv.textContent = c.saved ? '★ Sparad' : '☆ Spara'; sv.setAttribute('aria-pressed', String(c.saved));
+    v.querySelector('[data-act=vprev]').disabled = v.querySelector('[data-act=vnext]').disabled = n < 2;
+  }
+  /** Is this the card the next find of its breed would push out? */
+  out(c) { return !c.legacy && this.cards.nextOut(c.breed)?.id === c.id; }
 
   /** The binder opens at the first page with a card, else the first one. */
   firstFound() { const i = this.pages.findIndex((p) => p.slot?.has); return i < 0 ? 0 : i; }
@@ -58,6 +166,11 @@ export class BinderPanel {
 
   /** A key while the panel is open; true if it was used. */
   key(code) {
+    if (this.asking) return true; // the question takes no paging keys (Tab / Enter / Space still reach its buttons)
+    if (this.view) {
+      if (code === 'ArrowRight' || code === 'KeyD') this.step(1); else if (code === 'ArrowLeft' || code === 'KeyA') this.step(-1); else return false;
+      return true;
+    }
     if (code === 'ArrowRight' || code === 'KeyD' || code === 'PageDown') this.turn(1);
     else if (code === 'ArrowLeft' || code === 'KeyA' || code === 'PageUp') this.turn(-1);
     else if (code === 'Home') this.go(0);
@@ -84,6 +197,7 @@ export class BinderPanel {
     this.el.querySelector('[data-nav=prev]').disabled = this.index === 0;
     this.el.querySelector('[data-nav=next]').disabled = this.index === pages.length - 1;
     this.el.dataset.page = String(this.index);
+    this.renderViewer();
   }
 
   breedPage(s, i) {
@@ -101,13 +215,48 @@ export class BinderPanel {
       const ul = el('ul', 'lore');
       ul.append(...s.facts.map((f) => el('li', '', f)));
       card.append(ul);
+      card.append(el('p', `slotline${this.cards.isFull(s.key) ? ' full' : ''}`, this.slotLine(s)));
+      const pb = el('button', 'photosbtn', `Visa foton (${s.cards.length} av ${C.max})`);
+      pb.type = 'button'; pb.dataset.act = 'photos'; pb.disabled = !s.cards.length;
+      card.append(pb);
     }
     const photos = el('div', 'photos');
     photos.setAttribute('aria-label', 'Foton av var katten hittats');
     const cards = [...s.cards].reverse(); // newest first
-    for (let k = 0; k < C.max; k++) photos.append(cards[k] ? photoEl(cards[k]) : el('div', 'photo empty', s.has ? 'Tom plats' : ''));
+    for (let k = 0; k < C.max; k++) photos.append(cards[k] ? this.photoEl(cards[k]) : el('div', 'photo empty', s.has ? 'Tom plats' : ''));
     wrap.append(card, photos);
     return wrap;
+  }
+
+  /** What the next find of this breed will do, in words (#1257). */
+  slotLine(s) {
+    const sv = `Sparade: ${s.saved} av ${C.max}. `;
+    if (this.cards.isFull(s.key)) return `${sv}Alla platser är sparade, så nya fynd läggs inte till. Avmarkera eller kasta ett foto för att få plats.`;
+    const out = this.cards.nextOut(s.key);
+    if (out) return `${sv}Nästa fynd byter ut det äldsta osparade fotot (${out.name}).`;
+    return `${sv}Spara de foton du vill behålla.`;
+  }
+
+  photoEl(c) {
+    const f = el('figure', `photo${c.saved ? ' saved' : ''}${this.out(c) ? ' next-out' : ''}`);
+    const open = el('button', 'pic'); open.type = 'button'; open.dataset.act = 'look'; open.dataset.id = c.id;
+    open.setAttribute('aria-label', `Visa fotot av ${c.name}, ${fmtTime(c.time)}, större`);
+    const img = document.createElement('img');
+    img.alt = ''; img.src = c.data;
+    open.append(img);
+    const cap = el('figcaption', '', '');
+    cap.append(el('b', '', c.kitten ? `${c.name} (kattunge)` : c.name), el('span', '', fmtTime(c.time)));
+    f.append(open, cap);
+    if (c.saved) f.append(el('i', 'badge', 'Sparad'));
+    else if (this.out(c)) f.append(el('i', 'badge out', 'Byts ut först'));
+    const acts = el('div', 'acts');
+    const sv = el('button', `save${c.saved ? ' on' : ''}`, c.saved ? '★ Sparad' : '☆ Spara');
+    sv.type = 'button'; sv.dataset.act = 'save'; sv.dataset.id = c.id; sv.setAttribute('aria-pressed', String(c.saved));
+    const th = el('button', 'throw', 'Kasta'); th.type = 'button'; th.dataset.act = 'throw'; th.dataset.id = c.id;
+    th.setAttribute('aria-label', `Kasta fotot av ${c.name}`);
+    acts.append(sv, th);
+    f.append(acts);
+    return f;
   }
 
   legacyPage(list) {
@@ -116,7 +265,7 @@ export class BinderPanel {
     card.append(el('small', 'no', 'Extra sida'), el('h3', '', 'Äldre foton'),
       el('p', 'note', 'Bilder från den gamla anslagstavlan i köket där rasen inte sparades.'));
     const photos = el('div', 'photos many');
-    for (const c of [...list].reverse()) photos.append(photoEl(c));
+    for (const c of [...list].reverse()) photos.append(this.photoEl(c));
     wrap.append(card, photos);
     return wrap;
   }
@@ -152,18 +301,6 @@ function decorate(card, t, star) {
   card.addEventListener('pointermove', move);
   card.addEventListener('pointerleave', rest);
   card.addEventListener('pointercancel', rest);
-}
-
-function photoEl(c) {
-  const f = el('figure', `photo${c.saved ? ' saved' : ''}`);
-  const img = document.createElement('img');
-  img.alt = `${c.name}, ${fmtTime(c.time)}`;
-  img.src = c.data;
-  const cap = el('figcaption', '', '');
-  cap.append(el('b', '', c.kitten ? `${c.name} (kattunge)` : c.name), el('span', '', fmtTime(c.time)));
-  f.append(img, cap);
-  if (c.saved) f.append(el('i', 'badge', 'Sparad'));
-  return f;
 }
 
 function el(tag, cls = '', text = '') {

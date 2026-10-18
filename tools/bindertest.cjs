@@ -1,6 +1,7 @@
 // The cat card binder (#1255): the prop under the coffee table, E / tap opens the browse UI, one page per breed
 // (Miele last) + the legacy page, placeholders for unfound cats, counters, desktop + phone viewport; the kitchen wall
-// has no cork board any more and the calendar is centred under the clock.
+// has no cork board any more and the calendar is centred under the clock. #1257: per-photo save / throw (confirm), the enlarged
+// photo, saved flag across reload, rotation of the oldest unsaved card, the all-saved refusal + notices (desktop, touch, reduced motion).
 //   PLAYWRIGHT_MODULE=/path/to/playwright [CHROME_PATH=…] node tools/bindertest.cjs http://localhost:8771 [/tmp/shots1255]
 const kit = require('./testkit.cjs');
 const game = process.argv[2] || 'http://localhost:8771', out = process.argv[3] || '';
@@ -121,6 +122,11 @@ const text = (page, sel) => page.evaluate((s) => document.querySelector(s)?.text
       return { fx: c.dataset.fx, anim, ry: c.style.getPropertyValue('--ry'), layers: c.querySelectorAll('.fx').length };
     });
     check(still.fx === '4' && still.layers > 0 && still.anim.every((a) => a === 'none') && still.ry === '', `prefers-reduced-motion: the layers stay, no animation, no tilt (${JSON.stringify(still.anim.slice(0, 3))})`);
+    await rm.evaluate(() => window.__app.binderPanel.show(false));
+    const rmv = await rm.evaluate(() => { const P = window.__app.binderPanel; P.show(true, 0); const b = document.querySelector('.page .photo:not(.empty) [data-act=look]'); b.click();
+      const v = document.querySelector('#binder-view .viewer'); return { open: !v.hidden, anim: [v, v.querySelector('.vbox'), document.querySelector('#binder-view .confirm')].map((x) => getComputedStyle(x).animationName).join() }; });
+    check(rmv.open && !/[a-z]/.test(rmv.anim.replace(/none/g, '').replace(/,/g, '')), `prefers-reduced-motion: the photo view works and nothing animates (${rmv.anim})`);
+    await rm.keyboard.press('Escape');
     if (out) await snap(rm, `${out}/card-miele-reduced.png`, 844, 390);
     await rm.context().close();
   }
@@ -151,6 +157,87 @@ const text = (page, sel) => page.evaluate((s) => document.querySelector(s)?.text
     await kit.shot(page, `${out}/binder-under-table.png`);
   }
   await page.context().close();
+
+  // --- photo menu (#1257), desktop: save / unsave persists across a reload, throw asks first, the enlarged photo, rotation, refusal ---
+  ({ page } = await kit.open(browser, `${game}/?shot&time=12&at=3.6,9.0,180,-40,0`));
+  page.on('pageerror', (e) => { fails++; console.log('PAGEERR', e.message); });
+  await setup(page);
+  await page.evaluate(() => { window.__app.binderPanel.show(true, 0); });
+  const nPhotos = () => page.evaluate(() => document.querySelectorAll('.page .photo:not(.empty)').length);
+  check(await page.evaluate(() => document.querySelectorAll('.page .photo:not(.empty) [data-act=save]').length === 2 && document.querySelectorAll('.page .photo:not(.empty) [data-act=throw]').length === 2 && !!document.querySelector('.page [data-act=photos]')), '#1257 every photo has Spara + Kasta buttons and the card has "Visa foton"');
+  check(/Sparade: 0 av 5/.test(await text(page, '.slotline')), 'the card says how many photos are saved');
+  await page.click('.page .photo:not(.empty) [data-act=save]'); // newest = Totte
+  check(await page.evaluate(() => document.querySelectorAll('.page .photo.saved').length === 1 && document.querySelector('.page .photo.saved [data-act=save]').getAttribute('aria-pressed') === 'true' && /Sparade: 1 av 5/.test(document.querySelector('.slotline').textContent)), 'Spara marks the photo saved (aria-pressed, badge, count)');
+  check(await page.evaluate(() => document.activeElement?.dataset?.act === 'save'), 'focus stays on the save button after the page re-renders');
+  await page.waitForTimeout(300);
+  await page.reload({ waitUntil: 'commit' });
+  await page.waitForFunction(() => window.__app?.catCardsLoaded, null, { timeout: 600000 });
+  await page.evaluate(async () => { await window.__app.catCardsLoaded; });
+  check(await page.evaluate(() => { const l = window.__app.catCards.of('huskatt'); return l.length >= 1 && l.filter((c) => c.saved).map((c) => c.name).join() === 'Totte'; }), 'the saved flag survives a reload (IndexedDB)');
+  await page.evaluate(() => window.__app.binderPanel.show(true, 0));
+  check(await page.evaluate(() => document.querySelectorAll('.page .photo.saved').length === 1), 'the saved photo is still marked after the reload');
+  await page.click('.page .photo.saved [data-act=save]');
+  check(await page.evaluate(() => document.querySelectorAll('.page .photo.saved').length === 0 && window.__app.catCards.of('huskatt').every((c) => !c.saved)), 'Spara again un-saves it');
+  // enlarged photo
+  await page.click('.page .photo:not(.empty) [data-act=look]');
+  check(await page.evaluate(() => !document.querySelector('#binder-view .viewer').hidden && /foto 1 av 2/.test(document.querySelector('.viewer .cap').textContent) && document.querySelector('.viewer img').naturalWidth > 0), 'clicking a photo opens it enlarged (foto 1 av 2)');
+  if (out) await snap(page, `${out}/photo-viewer-desktop.png`, 1280, 800);
+  await key(page, 'ArrowRight');
+  check(/foto 2 av 2/.test(await text(page, '.viewer .cap')) && await page.evaluate(() => window.__app.binderPanel.index === 0), 'arrow keys browse the photos, not the pages, while one is enlarged');
+  await page.click('.viewer [data-act=save]');
+  check(await page.evaluate(() => window.__app.catCards.of('huskatt').filter((c) => c.saved).length === 1) && /Sparad/.test(await text(page, '.viewer .st')), 'the enlarged view can save too');
+  await key(page, 'Escape');
+  check(await page.evaluate(() => document.querySelector('#binder-view .viewer').hidden && !document.getElementById('binder-view').hidden), 'Esc closes the enlarged photo first, the panel stays open');
+  await page.click('.page .photo:not(.empty) [data-act=save]'); await page.click('.page .photo:not(.empty) [data-act=save]'); // newest: save then un-save
+  // throw away asks first
+  const before = await nPhotos();
+  await page.click('.page .photo:not(.empty) [data-act=throw]');
+  check(await page.evaluate(() => !document.querySelector('#binder-view .confirm').hidden && /Kasta fotot av/.test(document.querySelector('.confirm .q').textContent)) && await nPhotos() === before, 'Kasta opens the question and throws nothing yet');
+  check(await page.evaluate(() => document.activeElement?.dataset?.act === 'no'), 'the safe answer (Behåll) has focus');
+  if (out) await snap(page, `${out}/photo-confirm-desktop.png`, 1280, 800);
+  await key(page, 'Escape');
+  check(await page.evaluate(() => document.querySelector('#binder-view .confirm').hidden && !document.getElementById('binder-view').hidden) && await nPhotos() === before, 'Esc cancels the question; the photo is kept and the panel stays open');
+  await page.click('.page .photo:not(.empty) [data-act=throw]'); await page.click('.confirm [data-act=no]');
+  check(await nPhotos() === before, 'Behåll keeps the photo');
+  await page.click('.page .photo:not(.empty) [data-act=throw]'); await page.click('.confirm [data-act=yes]');
+  await page.waitForTimeout(200);
+  check(await nPhotos() === before - 1 && await page.evaluate(() => window.__app.catCards.of('huskatt').length === 1), 'Kasta + confirm removes the photo and the card');
+  // rotation of the oldest unsaved + refusal, with the notices
+  const rot = await page.evaluate(async () => {
+    const a = window.__app, C = a.catCards, jp = (c) => { const k = document.createElement('canvas'); k.width = 8; k.height = 6; return k.toDataURL('image/jpeg'); };
+    for (const c of [...C.of('huskatt')]) await C.discard(c.id);
+    const ns = [];
+    for (let i = 0; i < 5; i++) { await new Promise((r) => setTimeout(r, 5)); await C.add('huskatt', { name: `H${i}`, data: jp() }); }
+    await C.toggleSave(C.of('huskatt')[0].id); // H0 saved
+    a.binderPanel.show(true, 0);
+    const line1 = document.querySelector('.slotline').textContent, out = document.querySelector('.photo.next-out figcaption b')?.textContent;
+    await C.add('huskatt', { name: 'H5', data: jp() });
+    const names = C.of('huskatt').map((c) => c.name).join();
+    const notice = document.getElementById('cat-notice');
+    return { line1, out, names, notice: notice.hidden ? '' : notice.textContent };
+  });
+  check(/Nästa fynd byter ut det äldsta osparade fotot \(H1\)/.test(rot.line1) && rot.out === 'H1', `the page names the card the next find replaces (${rot.out})`);
+  check(rot.names === 'H0,H2,H3,H4,H5', `a sixth find rotates out the oldest unsaved card, the saved H0 stays (${rot.names})`);
+  check(/äldsta osparade fotot \(H1\) byttes ut/.test(rot.notice), `the rotated-out notice is shown in the game (${rot.notice.slice(0, 60)}…)`);
+  const full = await page.evaluate(async () => {
+    const C = window.__app.catCards;
+    for (const c of C.of('huskatt')) if (!c.saved) await C.toggleSave(c.id);
+    const n = C.of('huskatt').length;
+    document.getElementById('cat-notice').hidden = true;
+    const r = await C.add('huskatt', { name: 'Ny', data: 'x' });
+    return { r, n, after: C.of('huskatt').length, notice: document.getElementById('cat-notice').textContent, hidden: document.getElementById('cat-notice').hidden, line: document.querySelector('.slotline').textContent, cls: document.querySelector('.slotline').className };
+  });
+  check(full.r === null && full.n === 5 && full.after === 5 && !full.hidden && /alla fem kort för Huskatt är sparade/.test(full.notice) && /Kasta eller avmarkera/.test(full.notice), `all five saved: the new find is refused with a clear notice (${full.notice.slice(0, 50)}…)`);
+  check(/Alla platser är sparade/.test(full.line) && /full/.test(full.cls), 'the page shows the "full" hint in red');
+  if (out) await snap(page, `${out}/photo-full-desktop.png`, 1280, 800);
+  await page.click('.page .photo:not(.empty) [data-act=save]'); // unsave newest: room again
+  check(await page.evaluate(async () => { const C = window.__app.catCards; return !!(await C.add('huskatt', { name: 'Ny2', data: 'x' })); }), 'freeing a slot lets the next find in');
+  // legacy page: same buttons, no limit text (the reload dropped the test's in-memory legacy card)
+  await page.evaluate(() => { window.__app.catCards.cards.push({ id: 'legacy-y', breed: 'okänd', name: 'Gammal', time: 1, data: 'data:image/jpeg;base64,/9j/4AAQ', saved: false, legacy: true }); });
+  await page.evaluate(() => window.__app.binderPanel.go(window.__app.binderPanel.pages.length - 1));
+  check(await page.evaluate(() => document.querySelectorAll('.page .photo [data-act=save]').length >= 1 && /Äldre foton/.test(document.querySelector('.page h3').textContent)), 'the legacy page has the same save / throw buttons');
+  await page.evaluate(() => window.__app.showBinder(false));
+  await page.context().close();
   // --- phone viewport (landscape, the game's phone orientation; portrait only for the fit), touch ---
   ({ page } = await kit.open(browser, `${game}/?shot&time=12&at=3.6,9.0,180,-40,0&phone`, { viewport: { width: 844, height: 390 }, contextOptions: { hasTouch: true, isMobile: true } }));
   page.on('pageerror', (e) => { fails++; console.log('PAGEERR', e.message); });
@@ -173,6 +260,37 @@ const text = (page, sel) => page.evaluate((s) => document.querySelector(s)?.text
   await page.tap('#binder-view .dot:nth-child(6)');
   check((await text(page, '.page h3')) === 'Perser', 'phone: a tap on a page dot jumps to that page');
   if (out) await page.screenshot({ path: `${out}/binder-perser-phone.png` });
+
+  // --- photo menu on a phone (#1257): tap targets >= 44 px, the enlarged photo and the question fit 844x390 and 390x844 ---
+  await page.evaluate(() => window.__app.binderPanel.show(true, 0));
+  const tgt = () => page.evaluate(() => [...document.querySelectorAll('#binder-view button:not([disabled])')].filter((b) => b.offsetParent && !b.closest('[hidden]') && !b.classList.contains('dot') && !b.classList.contains('pic')).map((b) => { const r = b.getBoundingClientRect(); return { n: (b.dataset.act || b.dataset.nav || b.id), h: r.height, w: r.width }; }));
+  let tg = await tgt();
+  check(tg.length >= 6 && tg.every((b) => b.h >= 43.5 && b.w >= 43.5), `phone: page buttons (Spara, Kasta, Visa foton, nav) are >= 44 px (${tg.length} checked, min h ${Math.min(...tg.map((b) => b.h))})`);
+  await page.tap('.page .photo:not(.empty) [data-act=save]');
+  check(await page.evaluate(() => document.querySelectorAll('.page .photo.saved').length === 1), 'phone: tap Spara saves');
+  await page.tap('.page .photo:not(.empty) [data-act=look]');
+  check(await page.evaluate(() => !document.querySelector('#binder-view .viewer').hidden), 'phone: tapping a photo opens it enlarged');
+  for (const [w, h] of [[844, 390], [390, 844]]) {
+    await page.setViewportSize({ width: w, height: h });
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+    const f = await page.evaluate(() => { const b = document.querySelector('#binder-view .vbox').getBoundingClientRect(); const btn = [...document.querySelectorAll('#binder-view .viewer button')].map((x) => x.getBoundingClientRect()); return { l: b.left, r: b.right, t: b.top, b: b.bottom, vw: innerWidth, vh: innerHeight, min: Math.min(...btn.map((x) => Math.min(x.width, x.height))), inside: btn.every((x) => x.left >= 0 && x.right <= innerWidth && x.top >= 0 && x.bottom <= innerHeight) }; });
+    check(f.l >= 0 && f.r <= f.vw && f.t >= 0 && f.b <= f.vh && f.inside && f.min >= 43.5, `phone ${w}x${h}: the enlarged photo and all its buttons fit on screen, buttons >= 44 px (min ${Math.round(f.min)})`);
+    if (out) await page.screenshot({ path: `${out}/photo-viewer-phone-${w}x${h}.png` });
+  }
+  await page.setViewportSize({ width: 844, height: 390 });
+  await page.tap('.viewer [data-act=vnext]');
+  check(/foto 2 av 2/.test(await text(page, '.viewer .cap')), 'phone: › shows the next photo');
+  await page.tap('.viewer [data-act=throw]');
+  check(await page.evaluate(() => { const c = document.querySelector('#binder-view .confirm'), r = c.querySelector('.cbox').getBoundingClientRect(); return !c.hidden && r.top >= 0 && r.bottom <= innerHeight; }), 'phone: Kasta asks first and the question fits 844x390');
+  if (out) await page.screenshot({ path: `${out}/photo-confirm-phone-844x390.png` });
+  await page.tap('.confirm [data-act=no]');
+  check(await page.evaluate(() => window.__app.catCards.of('huskatt').length === 2), 'phone: Behåll throws nothing away');
+  await page.tap('.viewer [data-act=throw]'); await page.tap('.confirm [data-act=yes]');
+  await page.waitForTimeout(300);
+  check(await page.evaluate(() => window.__app.catCards.of('huskatt').length === 1 && !document.querySelector('#binder-view .viewer').hidden && /foto 1 av 1/.test(document.querySelector('.viewer .cap').textContent)), 'phone: after a confirmed throw the viewer shows the remaining photo');
+  await page.tap('.viewer [data-act=vclose]');
+  check(await page.evaluate(() => document.querySelector('#binder-view .viewer').hidden), 'phone: Tillbaka closes the enlarged photo');
+  if (out) await page.screenshot({ path: `${out}/photo-menu-phone-844x390.png` });
   await page.tap('#binder-close');
   check(await page.evaluate(() => document.getElementById('binder-view').hidden), 'phone: × closes the panel');
   await browser.close();

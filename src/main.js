@@ -145,7 +145,7 @@ import { Ghosts } from './ghosts.js';
 import { Combat } from './combat.js';
 import { Bow, Arrows } from './bow.js';
 import { Chat } from './chat.js';
-import { COMBAT, CHAT, GHOSTS, TOUCH, NEW_YEAR, TOAST, TOAST_LINES } from './config.js';
+import { COMBAT, CHAT, GHOSTS, TOUCH, NEW_YEAR, TOAST, TOAST_LINES, CAT_CARD } from './config.js';
 import { Basketball, Hoop } from './basket.js';
 import { Mess } from './mess.js';
 import { readTestMode, makeTestController } from './testmode.js';
@@ -306,7 +306,7 @@ function showBinder(show, byKey = 'E') {
 document.getElementById('binder-close').addEventListener('click', () => showBinder(false, 'button'));
 document.addEventListener('keydown', (e) => { // the binder panel's keys, with or without pointer lock
   if (!binderPanel?.open) return;
-  if (e.code === 'KeyE' || e.code === 'Escape') { e.preventDefault(); showBinder(false, e.code); }
+  if (e.code === 'KeyE' || e.code === 'Escape') { e.preventDefault(); if (!binderPanel.back()) showBinder(false, e.code); } // the photo / question layers close first (#1257)
   else if (binderPanel.key(e.code)) e.preventDefault();
   e.stopImmediatePropagation();
 }, true);
@@ -866,7 +866,19 @@ cat.onTip = (c) => {
 };
 // a photo of every cat you pet becomes a card in the cat binder under the coffee table (#1249, #1255): cards per breed in
 // src/catcards.js; the old kitchen board's photos are copied in once (its 'catPhotos' store is left untouched)
-const catCards = new CatCards({ store: idbStore(idbWithStore), stats, touch: keepCatCounts, flag: {
+const catNoticeEl = document.getElementById('cat-notice');
+let catNoticeTimer = 0;
+const catNotice = ({ type, breed, card }) => { // a find rotated the oldest unsaved card out, or found the slot full of saved ones (#1257)
+  const label = CAT_CARD.breeds.find((b) => b.key === breed)?.label ?? breed;
+  catNoticeEl.textContent = type === 'full'
+    ? `Kattpärmen: alla fem kort för ${label} är sparade, så det nya fotot lades inte till. Kasta eller avmarkera ett foto i pärmen för att få plats.`
+    : `Kattpärmen: ${label} hade fem kort, så det äldsta osparade fotot (${card?.name ?? ''}) byttes ut mot det nya.`;
+  catNoticeEl.hidden = false;
+  clearTimeout(catNoticeTimer);
+  catNoticeTimer = setTimeout(() => { catNoticeEl.hidden = true; }, CAT_CARD.noticeS * 1000);
+  if (binderPanel?.open) binderPanel.render();
+};
+const catCards = new CatCards({ onNotice: catNotice, store: idbStore(idbWithStore), stats, touch: keepCatCounts, flag: {
   get: () => localStorage.getItem('lunden.catCards.migrated') === '1', set: () => localStorage.setItem('lunden.catCards.migrated', '1') } });
 binderPanel = new BinderPanel(catCards, binderEl);
 const catCardsLoaded = catCards.load().catch(() => {});
