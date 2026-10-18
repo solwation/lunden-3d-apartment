@@ -2946,6 +2946,9 @@ export const CAT_LEAVE = { dist: 3, speed: 0.6, fade: 1.2 };
 // just put down, a fish finger, a kitten's toy) it walks off away from the visitor like after a pat (CAT_LEAVE) and is gone.
 // Any engagement starts the count over; kept across a reload (keep.js `cat.i`). 60 s is the in-game report's wish (*guess*).
 export const CAT_IGNORED = { after: 60 };
+// A cat put down outdoors / on a roof (#1287) stays where it is (sitting) until picked up; left alone this long (s) it fades away
+// there (it cannot walk home: nothing there to navigate, and it must not fall off an edge). *guess*
+export const CAT_OUTDOOR = { stay: 600 };
 // The cat walks on all four (#224, cat.js `pose`): it rises from sitting to standing in `rise` s before it walks and sits
 // down again in the same time when it stops; a diagonal-pair gait, one leg cycle per `stride` m (× breed size), legs
 // swinging ±`swing` rad, the hind knee flexing up to `knee` rad as the paw comes forward, the body bobbing `bob` m. Our picks.

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { LEVELS, CAT_FLOOR_HEADROOM, CAT_FISH, CAT_LEAVE, CAT_IGNORED, CAT_FURNITURE, CAT_WALK, CAT_TAIL_UP, CAT_HURT, REST, MIELE, KITTEN } from './config.js';
+import { LEVELS, CAT_FLOOR_HEADROOM, CAT_FISH, CAT_LEAVE, CAT_IGNORED, CAT_OUTDOOR, CAT_FURNITURE, CAT_WALK, CAT_TAIL_UP, CAT_HURT, REST, MIELE, KITTEN } from './config.js';
 import { stairHeight, stairUnderside } from './stairs.js';
 import { rugLift } from './rugs.js';
 import { sfx } from './audio.js';
@@ -599,6 +599,7 @@ export class CatSpawner {
 
   hide() {
     this.object.visible = false;
+    this.outdoor = false;
     this.door = null;
     this.released = null;
     if (this.held) { this.held = false; this.hugging = false; this.root?.add(this.object); this.onDropped?.(); } // (miele.js lets go)
@@ -808,7 +809,7 @@ export class CatSpawner {
   countIgnored(dt) {
     if (this.held || this.released || this.petting || this.leaving || this.fish || this.toy || this.treadmill) { this.ignored = 0; return; }
     this.ignored += dt;
-    if (this.ignored < CAT_IGNORED.after) return;
+    if (this.ignored < (this.outdoor ? CAT_OUTDOOR.stay : CAT_IGNORED.after)) return;
     this.ignored = 0;
     const eye = this.watchPoint?.();
     if (eye) this.petFrom = { x: eye.x, z: eye.z }; // away from where the visitor is now
@@ -1198,6 +1199,7 @@ export class CatSpawner {
     this.play = null; this.toy = null; // no kitten pounce/batting survives reparenting (#1061)
     this.leaving = null;
     this.released = null;
+    this.outdoor = false;
     this.setOpacity(1);
     this.tailUp = false; this.tailU = 0; this.tailWait = this.nextTailWait();
     this.root ??= this.object.parent;
@@ -1217,7 +1219,8 @@ export class CatSpawner {
     const o = this.object, floor = p.y > LEVELS[0].floor + 1.6 ? LEVELS[1].floor : LEVELS[0].floor;
     o.position.set(p.x, p.y, p.z);
     o.rotation.set(0, Math.atan2(face.x - p.x, face.z - p.z), 0);
-    this.on = p.y - floor > 0.1 ? 'sit' : null; // on a bed / sofa: she fades out there (`leave`)
+    this.outdoor = !!this.outdoorAt?.(p); // #1287: put down outdoors / on a roof (main.js): she stays where she is, no walking off
+    this.on = this.outdoor || p.y - floor > 0.1 ? 'sit' : null; // on a bed / sofa / outdoors: she fades out there (`leave`)
     this.rugY = this.on ? null : rugLift(p.y > LEVELS[0].floor + 1.6 ? 1 : 0, p.x, p.z);
     this.petFrom = { x: face.x, z: face.z };
     for (const e of this.eyes) { e.eye.visible = true; e.shut.visible = false; }
@@ -1243,7 +1246,7 @@ export class CatSpawner {
     this.wantStand = this.on ? 0 : 1;
     if (this.watchPoint) this.lookTowards(this.watchPoint(), Math.min(1, R.t * 3));
     if (!R.meowed && R.t > 0.5) { R.meowed = true; sfx.meow({ x: p.x, y: p.y + 0.3, z: p.z }, this.variant.pitch * (this.breed.pitch ?? 1), this.voice); }
-    if (R.t >= MIELE.linger) { this.released = null; this.leave(); }
+    if (R.t >= MIELE.linger) { this.released = null; if (!this.outdoor) this.leave(); } // outdoors she sits on (#1287, CAT_OUTDOOR)
   }
 
   // --- a fish finger on the floor (#163) ---------------------------------------------------------------

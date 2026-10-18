@@ -627,6 +627,24 @@ placeGhost.visible = false;
 placeGhost.userData.ghost = true; // (not a thing standing there, furniture.js standingOn, #447)
 scene.add(placeGhost);
 const floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), floorHit = new THREE.Vector3();
+/** #1287: a held cat goes down anywhere the visitor can stand outside: the ground, a roof, a terrace, a bridge (`groundAt`).
+ * The look ray meets the plane of the feet within reach; that spot must be level with them (no stepping off an edge) with no wall between. */
+function outdoorSpot() {
+  if (player.unit || player.inCore || player.flying || player.fall || !player.outdoors) return null;
+  const fy = player.pos.y;
+  if (Math.abs(fy - player.groundAt(player.pos.x, player.pos.z, fy)) > 0.05) return null;
+  floorPlane.constant = -fy;
+  const ray = raycaster.ray, d = ray.intersectPlane(floorPlane, floorHit) ? floorHit.distanceTo(camera.position) : Infinity;
+  const dir = new THREE.Vector3(ray.direction.x, 0, ray.direction.z);
+  if (dir.lengthSq() < 1e-6) return null;
+  dir.normalize();
+  const h = Math.min(Number.isFinite(d) ? Math.hypot(floorHit.x - camera.position.x, floorHit.z - camera.position.z) : 0.8, HOLD.reach - 0.2);
+  const x = camera.position.x + dir.x * h, z = camera.position.z + dir.z * h, gy = player.groundAt(x, z, fy + 0.1);
+  if (!Number.isFinite(gy) || Math.abs(gy - fy) > 0.12) return null;
+  const [stat, dyn] = player.segments();
+  if ([...stat, ...dyn].some((s) => crosses(player.pos.x, player.pos.z, x, z, s))) return null;
+  return { point: new THREE.Vector3(x, gy, z), distance: Math.max(0.3, h), outdoor: true }; // (the wall check is done above: the flat's roof slab must not count)
+}
 /** Where the look ray meets the floor the visitor stands on, within reach — or null (stairs, the stair opening). */
 function floorSpot() {
   if (player.unit) return null; // nothing of ours is left in a visited flat: it stays empty (#574)
@@ -965,9 +983,16 @@ cat.interact.options = () => {
   return cat.canHold() ? (cat.isMiele ? [take, pet] : [pet, take]) : [pet];
 };
 cat.watchPoint ??= () => camera.position;
+// #1287: a cat put down outside the flat (the ground, a roof, a terrace) stays there sitting (cat.js `outdoor`, CAT_OUTDOOR)
+cat.outdoorAt = (p) => !player.unit && !player.inCore && (!player.inFootprint(p.x, p.z) || p.y > UNIT_TOP - 0.3);
 miele.dropSpot = () => { // at your feet, a little in front
   const f = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion).setY(0).normalize().multiplyScalar(0.45);
   const x = player.pos.x + f.x, z = player.pos.z + f.z;
+  if (cat.outdoorAt({ x, z, y: player.pos.y })) { // F in the air (jetpack): down to what is below, not hanging there
+    const gy = player.groundAt(x, z, player.pos.y);
+    if (Number.isFinite(gy) && gy <= player.pos.y + 0.05) return new THREE.Vector3(x, gy, z);
+    return new THREE.Vector3(player.pos.x, player.groundAt(player.pos.x, player.pos.z, player.pos.y), player.pos.z);
+  }
   return new THREE.Vector3(x, player.pos.y + rugLift(Math.max(0, player.level), x, z), z);
 };
 const miePhoto = () => { // her photo in the cat binder: the first time she is held or hugged, each time she turns up
@@ -2005,7 +2030,7 @@ function updateFocus() {
     if (spot && item.softOnly && !top.object.userData.soft) { // Cats: not on a table or a worktop (#1061)
       if (!hit || spot.distance <= hit.distance + 0.05) focused = { name: '', kind: 'place', blocked: true, blockedText: `${item.name === 'Miele' ? 'Miele' : item.name === 'kattungen' ? 'Kattungen' : 'Katten'} får inte vara på bordet` };
       spot = null;
-    } else if (!spot) { const f = floorSpot(); if (f && f.distance < reach && !behindWall(f.point)) spot = f; } // a table top is always above (before) the floor
+    } else if (!spot) { const f = floorSpot() ?? (item.softOnly ? outdoorSpot() : null); if (f && f.distance < reach && (f.outdoor || !behindWall(f.point))) spot = f; } // a table top is always above (before) the floor
     if (spot && item.isVacuum && stairUnderside(spot.point.x, spot.point.z) !== null && stairUnderside(spot.point.x, spot.point.z) < spot.point.y + 0.3) {
       spot = null; // low headroom under the stair winders / soffit (#389)
     }
@@ -3244,4 +3269,4 @@ hideLoading();
 
 crashlog.attach({ renderer, camera, quality, player, world, sun, scene, mirrorTarget, frameDiag, viewportBinding }); // what the crash heartbeat shows (#629)
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { paddock, birds, microwave, carLodState, showFireworks, newYear, sausages, frameRate, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, catCards, catCardsLoaded, binderPanel, showBinder, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };
+window.__app = { outdoorSpot, paddock, birds, microwave, carLodState, showFireworks, newYear, sausages, frameRate, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, catCards, catCardsLoaded, binderPanel, showBinder, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };
