@@ -18,7 +18,7 @@ const [base='http://localhost:8795', worker='http://localhost:8796', out='/tmp/l
     window.ghosts=new Ghosts({scene,camera,url:worker,name:()=>i?'Observer':'Resting',state:eval(callback),active:()=>true});
     window.setRest=kind=>{
      if(!kind){rest.end();return;}
-     const obj=new T.Group();obj.userData.rest={kind,name:'Bänk/säng',verb:'vila',spots:[{x:0,y:kind==='lie'?.6:.45,z:0}]};
+     const long=kind==='long';const obj=new T.Group();obj.userData.rest={kind:long?'sit':kind,name:'Bänk/säng',verb:'vila',spots:[{x:0,y:kind==='lie'?.6:.45,z:0,...(long?{legsUp:true}:{})}]};
      const target=restTarget(obj,{x:0,z:0,level:0},0);rest.begin(target,target.spots[0],{pos:player.pos.clone(),yaw:0});
     };
     const {Combat}=await import('/src/combat.js');window.combat=new Combat({ghosts,camera,scene,weapon:()=> 'rifle',feet:()=>player.pos});
@@ -37,18 +37,19 @@ const [base='http://localhost:8795', worker='http://localhost:8796', out='/tmp/l
    },{i,worker});
   }
   const [a,b]=pages;await Promise.all(pages.map(p=>p.waitForFunction(()=>ghosts.connected&&peer()?.snaps.length)));
-  for(const [kind,pose] of [[null,0],['sit',1],['lie',2],[null,0]]){
+  for(const [kind,pose] of [[null,0],['sit',1],['lie',2],['long',3],[null,0]]){
    await a.evaluate(k=>setRest(k),kind);await b.waitForFunction(n=>peer().pose===n,pose);const sample=await b.evaluate(()=>sample());samples.push({kind,...sample});fs.writeFileSync(`${out}/samples.json`,JSON.stringify(samples,null,2));assert.ok(sample.catVisible,'held cat remains visible in final pose');assert.ok(sample.nativeHead,'actual Combat rifle ray classifies posed head');assert.ok(sample.blocked,'ordinary wall stops actual Combat rifle ray');assert.ok(sample.headHit,'ordinary head ray matches posed bone');assert.ok(sample.chestBody,'posed chest stays body');
    if(kind==='sit'){assert.ok(Math.abs(sample.hip[1]-(.45+.075*sample.tall))<.025,'hips on bench');assert.ok(Math.abs(sample.knee[2]-sample.hip[2])>.2,'seated thighs extend forwards');}
    if(kind==='lie'){assert.ok(sample.head[1]-sample.hip[1]>0&&sample.head[1]-sample.hip[1]<.35*sample.tall,'lying: head a little above the hips, resting on the pillows (#1234)');assert.ok(Math.abs(sample.head[2]-sample.foot[2])>1,'lying extends along mattress');}
+   if(kind==='long'){assert.ok(Math.abs(sample.hip[1]-(.45+.075*sample.tall))<.025,'long sit: hips on the seat');assert.ok(Math.abs(sample.foot[2]-sample.hip[2])>.6*sample.tall,'long sit: feet far in front of the hips (#1237)');assert.ok(Math.abs(sample.foot[1]-(.45+.08*sample.tall))<.06*sample.tall+.02,'long sit: feet resting on the surface, not on the floor');assert.ok(Math.abs(sample.knee[1]-sample.foot[1])<.12*sample.tall,'long sit: legs stretched out, not hanging');}
    if(mode==='--render'){
     await b.evaluate(()=>{
      if(!window.renderer){scene.background=new T.Color('#c1d5e1');scene.add(new T.HemisphereLight(0xffffff,0x465b35,2));const l=new T.DirectionalLight(0xffffff,2);l.position.set(4,5,3);scene.add(l);window.renderer=new T.WebGLRenderer({antialias:true});renderer.setSize(720,520);document.body.replaceChildren(renderer.domElement);window.renderCamera=new T.PerspectiveCamera(45,720/520,.1,100);}
-     const g=peer();if(window.support)scene.remove(support);if(g.pose){window.support=new T.Mesh(new T.BoxGeometry(g.pose===2?1.2:1.6,.1,g.pose===2?2.1:.6),new T.MeshStandardMaterial({color:0x8b6951}));support.position.set(0,g.pose===2?.55:.4,0);scene.add(support);}renderCamera.position.set(2.6,1.8,3.5);renderCamera.lookAt(0,.8,0);renderer.render(scene,renderCamera);renderer.getContext().finish();
+     const g=peer();if(window.support)scene.remove(support);if(g.pose){window.support=new T.Mesh(new T.BoxGeometry(g.pose===2?1.2:1.6,.1,g.pose===2?2.1:g.pose===3?1.6:.6),new T.MeshStandardMaterial({color:0x8b6951}));support.position.set(0,g.pose===2?.55:.4,g.pose===3?.6:0);scene.add(support);}renderCamera.position.set(2.6,1.8,3.5);renderCamera.lookAt(0,.8,0);renderer.render(scene,renderCamera);renderer.getContext().finish();
     });await b.screenshot({path:`${out}/${samples.length}-${kind||'standing'}.png`});
    }
   }
-  assert.deepEqual(samples[3].root,samples[0].root,'stand restores original feet');assert.ok(Math.abs(samples[3].head[1]-samples[0].head[1])<.02,'standing skeleton restored');assert.deepEqual(errors,[]);
+  assert.deepEqual(samples[4].root,samples[0].root,'stand restores original feet');assert.ok(Math.abs(samples[4].head[1]-samples[0].head[1])<.02,'standing skeleton restored');assert.deepEqual(errors,[]);
   fs.writeFileSync(`${out}/result.json`,JSON.stringify({samples,errors,sourceCallback:await a.evaluate(()=>sourceCallback),rendered:mode==='--render'},null,2));console.log('PASS real two-client sit/lie/standing + production main state callback');
  }finally{for(const p of pages)await p.evaluate(()=>{clearInterval(tick);ghosts.disconnect();}).catch(()=>{});await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

@@ -1506,10 +1506,10 @@ test('#1147 carried cat appearance is bounded, forwarded, welcomed and cleared',
 // #1150: the existing bounded movement contract carries only two extra pose enums.
 test('rest posture forwards to observers and late joins, omission and malformed pose clear it', async () => {
   const env = setup(), a = await connect(env, 'Resting'), b = await connect(env, 'Observer');
-  for (const pose of [1, 2, undefined, true, '2', -1, 3, { kind: 2 }]) {
+  for (const pose of [1, 2, 3, undefined, true, '2', -1, 4, 3.5, { kind: 2 }]) { // 3: long sit (#1237)
     now += 250; a.send({ p: [2, -.35, 3], r: 1.57, pose }); await settle(env);
     const state = b.states().at(-1);
-    assert.equal(state.pose, pose === 1 || pose === 2 ? pose : undefined);
+    assert.equal(state.pose, pose === 1 || pose === 2 || pose === 3 ? pose : undefined);
     assert.deepEqual(state.p, [2, -.35, 3]);
     if (pose === 2) { const late = await connect(env, 'Late'); assert.equal(late.got[0].ps.find(p => p.n === 'Resting').pose, 2); late.ws.close(); await settle(env); }
   }
@@ -1519,10 +1519,10 @@ test('rest posture forwards to observers and late joins, omission and malformed 
 test('#1150 authoritative head contact follows seated and lying torso frames', async () => {
   const env=setup(), a=await connect(env,'Shooter'), b=await connect(env,'Resting target');
   const look=avatarLook(b.got[0].i), width=[.93,1,1.08][look.build], { REST } = await import('../src/config.js');
-  for (const pose of [1,2]) {
-    const lean=pose===1?.1:Math.PI/2-REST.avatarLieTilt, // #1234: a lying figure's torso is tilted up on the pillows
-     hip=pose===1?.525:.9;
-    const y=(hip+Math.cos(lean)*.76)*look.tall, z=-( (pose===1?.07:0)-Math.sin(lean)*.76)*width;
+  for (const pose of [1,2,3]) { // 3: the seated torso with the legs out (#1237)
+    const lean=pose!==2?.1:Math.PI/2-REST.avatarLieTilt, // #1234: a lying figure's torso is tilted up on the pillows
+     hip=pose!==2?.525:.9;
+    const y=(hip+Math.cos(lean)*.76)*look.tall, z=-( (pose!==2?.07:0)-Math.sin(lean)*.76)*width;
     now+=1000;a.send({p:[2,y-1.6,z],r:0,h:'rifle'});b.send({p:[0,0,0],r:0,h:'rifle',pose});await settle(env);
     now+=250;a.send({t:'a',w:'rifle',o:[2,y,z],d:[-1,0,0],to:b.got[0].i,hc:[2,0,0,0]});await settle(env);
     assert.equal(a.got.filter(m=>m.t==='hit').at(-1)?.head,true,`pose ${pose} head hit recomputed by room`);

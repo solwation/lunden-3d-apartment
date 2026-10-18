@@ -1228,5 +1228,12 @@ still a generous gameplay approximation, not furniture or mesh anatomy.
 top minus `REST.avatarLieSink`; beds, bunks, daybed in `src/furniture.js`), `restTarget` exposes it as `bodyY`, and
 `restState` roots the figure there (no new wire field: only `p.y` changes). The torso is tilted up `REST.avatarLieTilt`
 so the head rests on the pillows (`applyRestPose`, logical head frame `rifleBoxPose`); the legs lie nearly straight.
-Sitting with the legs up on the chaise / in bed is split off in #1237.
+#1237: pose 3 "long sit" is the wire value for a sit spot with `legsUp: true` (the chaise spot of `soffan`, the `sätta dig upp i` spots of
+beds; armchair, other sofa seats, chairs and the bunk's `watch` seat keep pose 1). `restState` sends 3, `applyRestPose` keeps the seated torso and
+stretches the legs out (`REST.avatarLegsUp` / `avatarLegsReach`), and `rifleBoxPose` gives pose 3 the seated torso frame, so the three head boxes are unchanged.
+`cloudflare/players.js` accepts `pose` 1, 2 or 3 (anything else is standing and omitted); `Ghosts` snaps the same three values.
+**Rollout order:** deploy the Worker first (`cloudflare/`, by the owner; not done by agents), then Pages. A client on the new Pages with the OLD Worker has its
+pose 3 dropped, so observers see the sitter standing (the Worker only whitelists 1/2) until the Worker is redeployed; an OLD client
+receiving 3 from the new Worker also shows a standing figure (it snaps only 1/2). Nothing breaks, the posture is just missing, and the owner's own view is unaffected.
+Houses A/B/C/L have no furniture; only L1007's `sofa()`/`bed()` carry the spots. Not applicable to the public viewer.
 This character/gameplay change does not apply to the public viewer.

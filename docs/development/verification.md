@@ -7086,4 +7086,9 @@ Lying under the duvet (#1234): in the real game (`?at=5,2,0&shot&freeze&time=12&
 diagonally; the bunks are numerically checked only (the room is too tight for a camera). Then
 `node tools/restposetest.cjs …` and `node --test cloudflare/players.test.mjs`.
 
+Long sit (#1237): `node tools/restposetest.cjs …` now also runs pose 3 (hips on the seat, feet far in front and resting on the surface, legs almost
+straight; same head-ray/wall/chest checks); `players.test.mjs` accepts pose 3 and checks the logical head frame for it. Real game
+(`?at=5,9.5,0&shot&freeze&time=12&lights&test=lazy`): root an `Avatar` with `restState`/`applyRestPose` from the `soffan` chaise spot (index 3) and the double bed's `sätta dig upp i` spot, move `__app.player.pos` next to
+it so the detail culler keeps the furniture, `testMode.setFull(true); draw()` and read the canvas with `toDataURL`; the legs rest on the chaise / duvet.
+
 Microwave (#1210): `PLAYWRIGHT_MODULE=… CHROME_PATH=… SHOTS=… node tools/microwavetest.cjs GAME` — the real game, aimed focus + `use()`: door, plate with food in, refusals (door open, empty, power cut), time button, warm / hot / burnt, pause on opening, save/load, plate out. Run after changing `src/microwave.js` or the microwave part of `src/ovens.js`.

@@ -390,7 +390,7 @@ export function sofa(item) {
   const T = CUSHIONS.sofaThrow;
   addFoldedThrow(g, { ...T, x: T.x * flip, z: -D / 2 + L.chaiseDepth - T.zFront, y: seatTop, yaw: T.yaw * flip });
   g.userData.rest = { kind: 'sit', name: 'soffan', verb: 'sätta dig i', spots: [0.5, 1.5, 2.5].map((k) => ({ x: sx0 + third * k, y: L.seatHeight, z: -0.08 }))
-    .concat([{ x: (chX0 + chX1) / 2, y: L.seatHeight, z: -0.08 }]) };
+    .concat([{ x: (chX0 + chX1) / 2, y: L.seatHeight, z: -0.08, legsUp: true }]) }; // the chaise: legs stretched out on it (#1237)
   // the seats, where a plush toy can be put down (#269; `soft`: not cups and glasses)
   g.userData.surfaces = [{ x0: mainX0 + 0.06, x1: mainX1 - 0.06, z0: -0.25, z1: D / 2 - 0.06, y: L.seatHeight, soft: true },
     { x0: chX0 + 0.06, x1: chX1 - 0.06, z0: -0.25, z1: -D / 2 + L.chaiseDepth - 0.06, y: L.seatHeight, soft: true }];
@@ -1139,7 +1139,7 @@ export function bed(item) {
   // sitting up against the headboard (#213), chosen by looking at the foot half of the bed; `tv` = the room whose
   // TV comes on while you sit there
   if (item.sitUp) for (const x of (w > 1.2 ? [-w / 4, w / 4] : [0])) {
-    g.userData.rest.spots.push({ kind: 'sit', verb: 'sätta dig upp i', x, y: top - 0.05, z: z0 + 0.42, aim: [x, -z0 - 0.5], tv: item.sitUp.tv });
+    g.userData.rest.spots.push({ kind: 'sit', verb: 'sätta dig upp i', x, y: top - 0.05, z: z0 + 0.42, aim: [x, -z0 - 0.5], tv: item.sitUp.tv, legsUp: true }); // legs out on the duvet (#1237)
   }
   // Pingping (#269): sitting up between the pillows, leaning back against the headboard, facing the foot end; a Thing
   if (item.pingping) {

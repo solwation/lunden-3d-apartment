@@ -149,7 +149,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     this.refreshBadge();
     const last = this.snaps.at(-1);
     if (last && t - last.t > 1000 / G.hz * 1.5) this.snaps.push({ t: t - 1000 / G.hz, p: last.p, r: last.r, c: last.c, pose: last.pose });
-    this.snaps.push({ t, p: new THREE.Vector3(...p), r, c: c === true ? 1 : 0, pose: pose === 1 || pose === 2 ? pose : 0 });
+    this.snaps.push({ t, p: new THREE.Vector3(...p), r, c: c === true ? 1 : 0, pose: pose >= 1 && pose <= 3 && Number.isInteger(pose) ? pose : 0 });
     if (this.snaps.length > 8) this.snaps.splice(0, this.snaps.length - 8);
   }
 
@@ -416,7 +416,7 @@ export class Ghosts {
     const t = performance.now(), s = this.state(), w = this.weapon();
     s.h = COMBAT.weapons.includes(w) ? w : '';
     s.c = s.c === true;
-    s.pose = s.pose === 1 || s.pose === 2 ? s.pose : 0;
+    s.pose = s.pose >= 1 && s.pose <= 3 && Number.isInteger(s.pose) ? s.pose : 0; // 3: long sit (#1237)
     s.sp = s.sp === true;
     s.catKey = JSON.stringify(s.cat ?? null);
     this.track(s, t);

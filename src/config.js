@@ -3253,6 +3253,9 @@ export const REST = {
   // #1234: a lying figure sinks under the cover: its centre line (spot `body`, local y) is `avatarLieSink` below the
   // duvet's top, and the torso tilts up `avatarLieTilt` rad so the head rests on the pillows (*guesses*, tuned by eye).
   avatarLieSink: 0.07, avatarLieTilt: 0.4,
+  // #1237: pose 3 "long sit" (chaise, sitting up in bed): the legs stretch out on the furniture; the feet `avatarLegsUp` above the
+  // seat surface and `avatarLegsReach` in front of the hip (*guesses*; the leg is 0.85 m long and the hip sits 0.07 m forward, so it is almost straight).
+  avatarLegsUp: 0.08, avatarLegsReach: 0.9,
   sit: { yaw: 1.7, pitch: [-1.1, 0.8] },
   lie: { yaw: 1.3, pitch: [0.15, 1.45], startPitch: 1.45 }, // lying on your back, looking at the ceiling
   reach: { sit: 1.7, lie: 0.8 }, // how far from the eye you can reach things while sitting (leaning forward) / lying (#184, #472)
@@ -5707,11 +5710,12 @@ function rifleBoxPose(seed, state) {
     if (head !== 1) boxes = boxes.map(b => ({ low: P + (b.low - P) * head, high: P + (b.high - P) * head,
       halfWidth: b.halfWidth * head, back: b.back * head, front: b.front * head }));
   }
-  const yaw = state.r + Math.PI, lean = state.pose === 2 ? Math.PI / 2 - REST.avatarLieTilt : state.pose === 1 ? .1 : PVP_HEAD_BOXES.crouchLean * crouch;
+  const sitting = state.pose === 1 || state.pose === 3; // #1237: a long sit has the ordinary seated torso, only the legs differ
+  const yaw = state.r + Math.PI, lean = state.pose === 2 ? Math.PI / 2 - REST.avatarLieTilt : sitting ? .1 : PVP_HEAD_BOXES.crouchLean * crouch;
   return { width, tall, boxes, yawCos: Math.cos(yaw), yawSin: Math.sin(yaw),
     leanCos: Math.cos(lean), leanSin: Math.sin(lean), crouch,
-    hipY: state.pose === 2 ? REST.avatarLieHip : state.pose === 1 ? REST.avatarSeat + .075 : PVP_HEAD_BOXES.hipY - PVP_HEAD_BOXES.hipDrop * crouch,
-    hipZ: state.pose === 1 ? .07 : PVP_HEAD_BOXES.hipForward * crouch };
+    hipY: state.pose === 2 ? REST.avatarLieHip : sitting ? REST.avatarSeat + .075 : PVP_HEAD_BOXES.hipY - PVP_HEAD_BOXES.hipDrop * crouch,
+    hipZ: sitting ? .07 : PVP_HEAD_BOXES.hipForward * crouch };
 }
 
 /** #1150: rigid rest frame for the existing generous capsule; no mesh/anatomical classification. */
