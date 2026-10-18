@@ -208,6 +208,43 @@ for (const [name, start, points, ok] of R) {
   for (let i = 0; i < 120; i++) { player.update(dt); if (player.sliding) jetSlid++; } player.jet = null;
   check(jetSlid === 0, `jetpacken över brant mark utlöser ingen glidning (${jetSlid})`);
 }
+{ // #1304: the bicycle follows the same river rule and slope limit (Player.bikeSplash / bikeSteepUp); bridge decks and the underpass stay dry
+  const bike = { position: new THREE.Vector3(), ridden: true, pick: { visible: false }, place(p) { this.position.copy(p); }, restore() {} };
+  const heading = (x, z) => Math.atan2(-(x - player.pos.x), -(z - player.pos.z)) + Math.PI / 2; // (the bike's yaw towards (x, z))
+  const mount = (x, z, tx, tz) => { player.spawn(x, z, 0); player.riding = { bike, yaw: heading(tx, tz), pitch: 0, lastStanding: player.pos.clone() }; player.riding.pitch = player.bikeSupport(player.pos, player.riding.yaw)?.pitch ?? 0; splashes.length = 0; player.safeUntil = 0; };
+  const ride = (tx, tz, frames, stop) => { player.keys = new Set(['KeyW']); for (let i = 0; i < frames; i++) { camera.rotation.y = heading(tx, tz) - Math.PI / 2; player.update(dt); if (stop?.()) break; } player.keys = new Set(); };
+  const r0 = riverAt(-41, 143), sgn = surfaceY0(r0.x + r0.nx * 12, r0.z + r0.nz * 12) > SITE.bridges.waterY + 0.4 ? 1 : -1, sx = r0.x + sgn * r0.nx * 12, sz = r0.z + sgn * r0.nz * 12;
+  function surfaceY0(x, z) { return groundY(x, z); }
+  mount(sx, sz, r0.x, r0.z); let drowned = false;
+  ride(r0.x, r0.z, 900, () => { if (splashes.length) { drowned = true; return true; } });
+  const rid = !!player.riding;
+  check(drowned && splashes.length === 1 && !inWater(player.pos.x, player.pos.z, player.pos.y) && player.pos.y > SITE.bridges.waterY + 0.3 && player.safeUntil > performance.now() && player.vy === 0 && !player.fall,
+    `cykel rakt ut i ån: plask, tillbaka torrt på stranden, skyddad mot fallskada (${at()}, ${splashes.length} plask, ${rid ? 'cykeln följer med' : 'föraren står vid cykeln'})`);
+  const p1 = player.pos.clone(); ride(sx, sz, 60); // riding on away from the water afterwards: nothing breaks, no second splash
+  check(splashes.length === 1 && Number.isFinite(player.pos.x), `cykeln efter återstarten: inget andra plask (${at()}), flyttade ${p1.distanceTo(player.pos).toFixed(2)} m`);
+  if (player.riding) player.dismountBicycle();
+  // steep ground: the bike cannot climb it (lowered limit like the walking test), but can ride down it
+  const keep = WALK.maxSlope; WALK.maxSlope = 0.3;
+  mount(-41, 132, -41, 118); const y0 = player.pos.y; let maxUp = -Infinity;
+  ride(-41, 118, 400, () => { maxUp = Math.max(maxUp, player.pos.y - y0); return false; });
+  const upEnd = player.pos.y - y0;
+  check(maxUp < 0.9 && !splashes.length, `cykeln kommer inte uppför för brant slänt (gräns 0.3): högst ${maxUp.toFixed(2)} m upp, slutar ${upEnd.toFixed(2)} m, ${at()}`);
+  WALK.maxSlope = keep; if (player.riding) player.dismountBicycle();
+  mount(-41, 132, -41, 118); let maxFree = -Infinity; ride(-41, 118, 500, () => { maxFree = Math.max(maxFree, player.pos.y - y0); return false; });
+  check(maxFree > 1.5 && !splashes.length, `samma slänt med riktig gräns: cykeln tar sig upp (${maxFree.toFixed(2)} m, ${at()})`);
+  if (player.riding) player.dismountBicycle();
+  // the underpass footpath and the decks: no splash
+  const B = SITE.bridges, pts = [[36.2, 106.4], [29.2, 110.9], [23.6, 111.1], [18, 111.5], [6.6, 111.8]]; let under = 0;
+  mount(pts[0][0], pts[0][1], pts[1][0], pts[1][1]);
+  for (const [x, z] of pts.slice(1)) ride(x, z, 400, () => { if (deckAt(player.pos.x, player.pos.z) !== null) under++; return Math.hypot(player.pos.x - x, player.pos.z - z) < 0.5; });
+  check(splashes.length === 0 && under > 20 && player.riding, `cykeln på gångvägen under broarna: inget plask (${under} steg under däcken, ${at()})`);
+  if (player.riding) player.dismountBicycle();
+  let onDeckN = 0; mount(18, 92, 18.1, 101);
+  for (const [x, z] of [[18.1, 101], [17.9, 125], [17.8, 146], [17.8, 155]]) ride(x, z, 600, () => { if (player.pos.y > B.deckY - 0.5) onDeckN++; return Math.hypot(player.pos.x - x, player.pos.z - z) < 0.5; });
+  check(splashes.length === 0 && onDeckN > 20 && player.pos.z > 125, `cykeln över gång- och cykelbron: inget plask (${onDeckN} steg på däcket, ${at()})`);
+  if (player.riding) player.dismountBicycle();
+  player.keys = new Set();
+}
 out.textContent = log.join('\n');
 out.dataset.log = log.join('\n');
 out.dataset.done = pass ? 'pass' : 'fail';

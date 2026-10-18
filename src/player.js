@@ -3,7 +3,7 @@ import { SITE, WALK, LEVELS, PLAYER, STAIR, UNIT_TOP, ROOFS, GARAGE, JETPACK, je
 import { stairHeight, stairUnderside } from './stairs.js';
 import { groundY, groundBelowDeckY } from './surroundings.js';
 import { deckAt, deckUnderAt } from './riverbridge.js';
-import { farWalls, slideAt, inWater, splashBank, buildingRescue, atEdge, surfaceY, underDeck } from './farwalk.js'; // #1236: walking beyond the block
+import { farWalls, slideAt, inWater, splashBank, tooSteep, buildingRescue, atEdge, surfaceY, underDeck } from './farwalk.js'; // #1236: walking beyond the block
 import { bicycleCurbY } from './street.js';
 import { stowBicycleHand, restoreBicycleHand } from './holdable.js';
 
@@ -622,6 +622,26 @@ export class Player {
     this.camera.rotation.set(BICYCLE.pitch + pitch, r.yaw - Math.PI / 2, 0, 'YXZ');
   }
 
+  /** #1304: the bicycle cannot climb ground steeper than `WALK.maxSlope` (it stops; riding down such a slope is allowed, so a bank still leads
+   * into the river). True when the move a -> b goes uphill onto too-steep ground. Not on decks / indoors (`tooSteep`). */
+  bikeSteepUp(a, b) {
+    return tooSteep(b.x, b.z, WALK.maxSlope, b.y) && surfaceY(b.x, b.z, b.y) > surfaceY(a.x, a.z, a.y) + 1e-4;
+  }
+
+  /** #1304: the bicycle in the river: the same splash as on foot (`splashCheck`: message, safe from falls), then the bike is set on the
+   * bank pointing away from the water (the first free heading of a few tried), else the rider is put off beside it. True when it happened. */
+  bikeSplash() {
+    const r = this.riding, from = { x: this.pos.x, z: this.pos.z };
+    if (!r || !this.splashCheck()) return false;
+    const y0 = Math.atan2(-(this.pos.z - from.z), this.pos.x - from.x);
+    for (const o of [0, 0.6, -0.6, 1.2, -1.2, Math.PI / 2, -Math.PI / 2, Math.PI]) {
+      const yaw = y0 + o, s = this.bikeSupport(this.pos, yaw);
+      if (s && this.bikeHull(new THREE.Vector3(this.pos.x, s.y, this.pos.z), yaw, [], s)) { this.pos.y = s.y; r.yaw = yaw; r.pitch = s.pitch; r.airborne = false; return true; }
+    }
+    this.dismountBicycle(); // (no room for the bike on that spot: the rider stands, the bike beside)
+    return true;
+  }
+
   bikeStep(dt) {
     dt = Math.max(0, Math.min(BICYCLE.maxDt, Number.isFinite(dt) ? dt : 0));
     const r = this.riding, C = BICYCLE, k = this.keys;
@@ -638,7 +658,7 @@ export class Player {
       let yaw=r.yaw+angle/n, p=this.pos.clone().add(new THREE.Vector3(Math.cos(yaw)*travel/n,0,-Math.sin(yaw)*travel/n));
       let support=p.equals(this.pos)&&yaw===r.yaw?previous:this.bikeSupport(p,yaw);
       // Check each wheel's rise: averaging the two contacts would incorrectly halve a stair riser.
-      const fits=(q,w,s)=>this.bikeRiseAllowed(previous,s) && this.bikeHull(new THREE.Vector3(q.x,Math.max(q.y,s?.y??q.y),q.z),w,[],s);
+      const fits=(q,w,s)=>this.bikeRiseAllowed(previous,s) && !this.bikeSteepUp(this.pos,q) && this.bikeHull(new THREE.Vector3(q.x,Math.max(q.y,s?.y??q.y),q.z),w,[],s);
       if(!fits(p,yaw,support)) {
         // A blocked forward move must not swallow the steering (#1178): try the turn on the spot,
         // and keep the old heading only when the turn itself would hit something.
@@ -660,6 +680,7 @@ export class Player {
       this.pos.set(p.x,y,p.z);previous=support;r.yaw=yaw;r.pitch=support.pitch;this.vy=falling?vy:0;r.airborne=y>support.y+1e-6;
       if(this.fall&&!r.airborne) {const f=this.fall;this.fall=null;this.vy=0;this.onLand?.(f.top-this.pos.y,f.gap);if(this.riding!==r)return;}
     }
+    this.bikeSplash(); // #1304: into the river
     this.camera.rotation.y = r.yaw - Math.PI / 2; this.sprinting = false; this.jumpPress = false; this.crouch = this.crouched = false;
     this.bikePose();
   }
