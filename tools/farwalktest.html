@@ -22,7 +22,7 @@ import { Player } from '../src/player.js';
 import { Garage } from '../src/garage.js';
 import { Core } from '../src/core.js';
 import { WALK, SITE } from '../src/config.js';
-import { groundY, renderedTerrainY } from '../src/surroundings.js';
+import { groundY, renderedTerrainY, treeFeet } from '../src/surroundings.js';
 import { riverAt } from '../src/riverbridge.js';
 
 const out = document.getElementById('out');
@@ -77,7 +77,10 @@ const R = [
   ['skolbyggnaden öster om Klockhuset stoppar', [100, -108], [[100, -125]], () => player.pos.z > -112.6 && player.pos.z < -111.5],
   ['skolområdet: söderut mellan Höjebroskolan och Kunskapsskolan tillbaka till kvarteret', [130, -60], [[130, -30], [75, -25], [40, -20], [25, -5]], () => player.pos.x < 30],
   ['Realgymnasiet: byggnadens östra vägg stoppar', [66, -30], [[66, -60], [55, -60]], () => player.pos.x > 61 && player.pos.x < 62],
-  ['ytterkanten (WALK) stoppar västerut', [-100, 30], [[-130, 30]], () => player.pos.x >= WALK.x0],
+  ['ytterkanten (WALK) stoppar västerut', [-240, 30], [[-290, 30]], () => player.pos.x >= WALK.x0 && player.pos.x < WALK.x0 + 0.6],
+  ['ytterkanten (WALK) stoppar österut', [300, 20], [[340, 20]], () => player.pos.x <= WALK.x1 && player.pos.x > WALK.x1 - 0.6],
+  ['ytterkanten (WALK) stoppar norrut', [60, -180], [[60, -230]], () => player.pos.z >= WALK.z0],
+  ['ytterkanten (WALK) stoppar söderut', [60, 230], [[60, 280]], () => player.pos.z <= WALK.z1],
 ];
 
 for (const [name, start, points, ok] of R) {
@@ -86,6 +89,24 @@ for (const [name, start, points, ok] of R) {
   const good = ok();
   check(good, `${name}${good ? '' : ` — stannade vid ${at()} (hinder vid punkt ${stuckAt})`}`);
   log.push(`   ended ${at()}`);
+}
+{ // a tree trunk in the park woods stops the body (a diamond, WALK.trunk)
+  const alone = treeFeet.find((t) => t.kind === 'big' && t.patch && t.x > -100 && t.x < 100 && t.z > 70 && t.z < 130 && !treeFeet.some((u) => u !== t && Math.hypot(u.x - t.x, u.z - t.z) < 6));
+  player.spawn(alone.x - 3, alone.z, 0); walk([[alone.x + 3, alone.z]]);
+  check(player.pos.x < alone.x - 0.2, `trädstammen i parken stoppar (${at()}, stam ${alone.x.toFixed(1)},${alone.z.toFixed(1)})`);
+}
+{ // landed in a closed courtyard (Realgymnasiet's hole): put out on the street, and told so
+  const hole = SITE.east.buildings.find((b) => b.holes?.length).holes[0], cx = hole.reduce((a, p) => a + p[0], 0) / hole.length, cz = hole.reduce((a, p) => a + p[1], 0) / hole.length;
+  let told = ''; player.onWaterRescue = (w) => { told = w; };
+  player.spawn(cx, cz, 0); player.update(dt);
+  const b = SITE.east.buildings.find((q) => q.holes?.length), ins = (x, z, p) => { let y = false; for (let i = 0, j = p.length - 1; i < p.length; j = i++) if ((p[i][1] > z) !== (p[j][1] > z) && x < (p[j][0] - p[i][0]) * (z - p[i][1]) / (p[j][1] - p[i][1]) + p[i][0]) y = !y; return y; };
+  check(told === 'building' && !ins(player.pos.x, player.pos.z, b.polygon), `innergården utan väg ut: flyttas ut på gatan (${at()})`);
+  player.onWaterRescue = null;
+}
+{ // the outer wall tells the visitor
+  let told = 0; player.onEdge = () => told++; player.edgeAt = undefined;
+  player.spawn(WALK.x1 - 3, 20, 0); walk([[WALK.x1 + 20, 20]]);
+  check(told === 1, `ytterkanten säger ifrån en gång (${told})`);
 }
 { // ended up in the water (a fall off a bridge, a jetpack drop): put back on the bank, dry
   const r0 = riverAt(-41, 143), side = [r0.x + r0.nx * 0.2, r0.z + r0.nz * 0.2];

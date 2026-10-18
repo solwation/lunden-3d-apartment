@@ -2,10 +2,10 @@
 // the timber footbridge's rails, and the river itself as an obstacle. Everything is derived from the data the backdrops are
 // built from (SITE.west/east/north/south polygons, SITE.bridges, SITE.river), so what is drawn is what blocks. Segments are
 // [x0, z0, x1, z1]; `farWalls(x, z)` returns the ones in the buckets round a point (a stable array per bucket, no per-frame work).
-import { SITE, WALK, PLAYER } from './config.js';
+import { SITE, WALK, PLAYER, OUTDOOR } from './config.js';
 import { riverAt, deckAt, bridgeRecords } from './riverbridge.js';
 import { parkDeckAt } from './riverpark.js';
-import { groundY } from './surroundings.js';
+import { groundY, treeFeet } from './surroundings.js';
 
 const ringSegs = (p) => {
   const out = [], n = p.length, closed = p[0][0] === p[n - 1][0] && p[0][1] === p[n - 1][1], m = closed ? n - 1 : n;
@@ -36,6 +36,11 @@ export function farSegments() {
   if (P.woodBridge) {
     const [[ax, az], [bx, bz]] = P.woodBridge.ends, len = Math.hypot(bx - ax, bz - az);
     out.push(...railSegs((ax + bx) / 2, (az + bz) / 2, (bx - ax) / len, (bz - az) / len, len, P.woodBridge.width / 2 - 0.03));
+  }
+  for (const t of treeFeet) { // trunks outside the home block (the park woods, the campus avenues): a small diamond each (*guess* radii)
+    if (t.x > OUTDOOR.x0 && t.x < OUTDOOR.x1 && t.z > OUTDOOR.z0 && t.z < OUTDOOR.z1) continue;
+    const r = W.trunk[t.kind] ?? W.trunk.tree;
+    out.push([t.x - r, t.z, t.x, t.z - r], [t.x, t.z - r, t.x + r, t.z], [t.x + r, t.z, t.x, t.z + r], [t.x, t.z + r, t.x - r, t.z]);
   }
   all = out.filter((s) => overlaps(s, W.x0, W.x1, W.z0, W.z1));
   return all;
@@ -76,4 +81,27 @@ export function waterRescue(x, z) {
   if (r.distance >= r.width / 2) return null;
   const side = (x - r.x) * r.nx + (z - r.z) * r.nz >= 0 ? 1 : -1, d = r.width / 2 + WALK.rescue;
   return { x: r.x + r.nx * side * d, z: r.z + r.nz * side * d, r: PLAYER.radius };
+}
+
+const inPoly = (p, x, z) => { let yes = false; for (let i = 0, j = p.length - 1; i < p.length; j = i++) if ((p[i][1] > z) !== (p[j][1] > z) && x < (p[j][0] - p[i][0]) * (z - p[i][1]) / (p[j][1] - p[i][1]) + p[i][0]) yes = !yes; return yes; };
+let bodies = null;
+/** Someone standing inside a far building's outline or in its closed courtyard (a jetpack landing): the open point just outside, or null. */
+export function buildingRescue(x, z) {
+  bodies ??= [SITE.west, SITE.east, SITE.north, SITE.south].flatMap((g) => g.buildings).map((b) => ({ p: b.polygon, xs: [Math.min(...b.polygon.map((q) => q[0])), Math.max(...b.polygon.map((q) => q[0]))], zs: [Math.min(...b.polygon.map((q) => q[1])), Math.max(...b.polygon.map((q) => q[1]))] }));
+  const b = bodies.find((q) => x > q.xs[0] && x < q.xs[1] && z > q.zs[0] && z < q.zs[1] && inPoly(q.p, x, z));
+  if (!b) return null;
+  let best = null;
+  for (let i = 0; i + 1 < b.p.length; i++) { // the nearest point on the outline, then a step further out
+    const [ax, az] = b.p[i], [cx, cz] = b.p[i + 1], dx = cx - ax, dz = cz - az, l2 = dx * dx + dz * dz || 1;
+    const t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / l2)), qx = ax + t * dx, qz = az + t * dz, d = Math.hypot(qx - x, qz - z);
+    if (!best || d < best.d) best = { d, qx, qz };
+  }
+  const k = (best.d || 1), out = PLAYER.radius + 0.6; // (x, z) -> nearest wall point -> out by `out`
+  const nx = (best.qx - x) / k, nz = (best.qz - z) / k;
+  return { x: best.qx + nx * out, z: best.qz + nz * out };
+}
+
+/** The visitor is at the outer wall of the walkable area (within `m`): the side, or null. */
+export function atEdge(x, z, m = 0.6) {
+  return x < WALK.x0 + m || x > WALK.x1 - m || z < WALK.z0 + m || z > WALK.z1 - m;
 }

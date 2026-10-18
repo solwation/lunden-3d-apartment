@@ -441,6 +441,8 @@ const player = new Player(world, camera);
 // Harmful free falls request shared lives; only confirmed death blacks out and wakes outdoors.
 const fall = new Fall({ el: document.getElementById('fall'), player, camera, onHurt: () => { bump('falls'); penalize('fall'); } });
 player.onLand = (drop, gap) => fall.land(drop, gap);
+player.onWaterRescue = (what) => badge(what === 'water' ? 'Du klev upp ur ån' : 'Du flyttades ut på gatan', false); // #1236: put back after the river / a closed courtyard
+player.onEdge = () => badge('Här slutar promenadområdet', false); // #1236: the outer wall
 // the jetpack on its hook by the garage door (#359): worn on the back, flies; home again after a bad fall
 const jetpack = new Jetpack({ scene, camera, player, groundY, hud: { el: document.getElementById('jetpack'), glow: document.getElementById('jet-glow'),
   up: document.getElementById('jet-up'), down: document.getElementById('jet-down') } });

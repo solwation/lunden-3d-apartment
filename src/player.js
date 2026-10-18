@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { LEVELS, PLAYER, STAIR, UNIT_TOP, ROOFS, GARAGE, JETPACK, SPIDER, SOFFITS, BICYCLE } from './config.js';
 import { stairHeight, stairUnderside } from './stairs.js';
 import { groundY } from './surroundings.js';
-import { farWalls, waterBlocked, tooSteep, waterRescue } from './farwalk.js'; // #1236: walking beyond the block
+import { farWalls, waterBlocked, tooSteep, waterRescue, buildingRescue, atEdge } from './farwalk.js'; // #1236: walking beyond the block
 import { bicycleCurbY } from './street.js';
 import { stowBicycleHand, restoreBicycleHand } from './holdable.js';
 
@@ -754,7 +754,12 @@ export class Player {
 
     if (!this.flying && !this.aloft && this.pos.z > 60 && this.pos.y <= groundY(this.pos.x, this.pos.z) + 0.05) { // ended up in the river (#1236): back on the bank
       const back = waterRescue(this.pos.x, this.pos.z);
-      if (back) { this.pos.set(back.x, groundY(back.x, back.z), back.z); this.vy = 0; this.fall = null; this.fling = null; this.onWaterRescue?.(); }
+      if (back) { this.pos.set(back.x, groundY(back.x, back.z), back.z); this.vy = 0; this.fall = null; this.fling = null; this.onWaterRescue?.('water'); }
+    }
+    if (!this.flying && !this.aloft && !this.inFootprint() && !this.unit) { // #1236: landed inside a far building / its closed courtyard: out onto the street
+      const out = buildingRescue(this.pos.x, this.pos.z);
+      if (out && this.pos.y <= groundY(this.pos.x, this.pos.z) + 0.05) { this.pos.set(out.x, groundY(out.x, out.z), out.z); this.vy = 0; this.fall = null; this.fling = null; this.onWaterRescue?.('building'); }
+      if (atEdge(this.pos.x, this.pos.z)) { const now = performance.now(); if (now - (this.edgeAt ?? -1e9) > 20000) { this.edgeAt = now; this.onEdge?.(); } } // the outer wall: say so once in a while
     }
     if (this.flying) { this.jv.x = (this.pos.x - x0) / dt; this.jv.z = (this.pos.z - z0) / dt; } // (a wall takes the speed)
 
