@@ -11,7 +11,7 @@ const [base='http://localhost:8795', worker='http://localhost:8796', out='/tmp/l
    await p.route('**/src/bootstrap.js',r=>r.fulfill({body:'// native module fixture',contentType:'text/javascript'})); await p.goto(base);
    await p.evaluate(async({i,worker})=>{
     window.T=await import('three');const {Ghosts}=await import('/src/ghosts.js'),{Rest,restTarget}=await import('/src/rest.js'),{restState}=await import('/src/remote-pose.js'),{heldCatState}=await import('/src/ghostcat.js'),{BREEDS}=await import('/src/cat.js');
-    window.miele={held:true};window.cat={held:true,visible:true,breed:BREEDS[0],variant:BREEDS[0].coats[0],kitten:false};
+    window.jetpack={worn:false,k:0};window.heldItem=()=>null;window.heldCategory=(await import('/src/heldcategory.js')).heldCategory; /* (the evaluated production state callback reads these: jp #1286, hi #1297) */ window.miele={held:true};window.cat={held:true,visible:true,breed:BREEDS[0],variant:BREEDS[0].coats[0],kitten:false};
     window.scene=new T.Scene();window.camera=new T.PerspectiveCamera(45,720/520,.1,100);window.player={pos:new T.Vector3(i*3,0,0),crouched:false};window.suit={worn:false};window.rest=new Rest(camera);
     const main=await(await fetch('/src/main.js')).text();const callback=main.match(/state: \(\) => \(\{ p: \[player.pos.x[^\n]+/)[0].replace(/^state: /,'').replace(/ \}\);$/,'');
     window.sourceCallback=callback;

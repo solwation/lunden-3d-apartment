@@ -120,3 +120,40 @@ export function ghostBike() {
   m.raycast = () => {}; m.name = 'ghost-bike';
   return m;
 }
+
+// What an unarmed player holds (#1297): one simple proxy per category (heldcategory.js), flat colours, a few dozen triangles,
+// baked once into one vertex-coloured geometry (one draw call, the shared Lambert material, no textures). Prop space as the weapons':
+// the origin in the right hand, forward = -z; the things sit just in front of / above the palm.
+const ITEM_PARTS = {
+  cup: () => [[new THREE.CylinderGeometry(0.04, 0.034, 0.09, 8), 0xe9e6dc, [0, 0.02, -0.07]], [new THREE.BoxGeometry(0.012, 0.05, 0.03), 0xe9e6dc, [0.052, 0.02, -0.07]], [new THREE.CylinderGeometry(0.034, 0.034, 0.004, 8), 0x4a2c1a, [0, 0.062, -0.07]]],
+  plate: () => [[new THREE.CylinderGeometry(0.12, 0.09, 0.016, 10), 0xf3f1ea, [0, 0, -0.14]], [new THREE.CylinderGeometry(0.06, 0.06, 0.012, 7), 0xd9a441, [0, 0.012, -0.14]]],
+  food: () => [[new THREE.IcosahedronGeometry(0.05, 0), 0xc8321f, [0, 0.03, -0.08]], [new THREE.BoxGeometry(0.008, 0.03, 0.008), 0x5a3a1c, [0, 0.092, -0.08]]],
+  bottle: () => [[new THREE.CylinderGeometry(0.035, 0.035, 0.17, 6), 0x2f6b3a, [0, 0.05, -0.08]], [new THREE.CylinderGeometry(0.014, 0.018, 0.08, 6), 0x2f6b3a, [0, 0.175, -0.08]], [new THREE.CylinderGeometry(0.017, 0.017, 0.016, 6), 0xd8d2c0, [0, 0.223, -0.08]]],
+  book: () => [[new THREE.BoxGeometry(0.15, 0.03, 0.21), 0x24457a, [0, 0, -0.13]], [new THREE.BoxGeometry(0.14, 0.024, 0.2), 0xf1ead6, [0.004, 0, -0.13]]],
+  paper: () => [[new THREE.BoxGeometry(0.21, 0.003, 0.297), 0xf7f6f0, [0, 0, -0.17]]],
+  tool: () => [[new THREE.BoxGeometry(0.022, 0.022, 0.3), 0x8a8f94, [0, 0, -0.14]], [new THREE.BoxGeometry(0.075, 0.035, 0.07), 0xd1862a, [0, 0, -0.3]]],
+  plant: () => [[new THREE.CylinderGeometry(0.065, 0.048, 0.1, 8), 0xb5603a, [0, 0.02, -0.1]], [new THREE.IcosahedronGeometry(0.085, 0), 0x3f8a3c, [0, 0.13, -0.1]]],
+  box: () => [[new THREE.BoxGeometry(0.13, 0.09, 0.13), 0xb98f5c, [0, 0.02, -0.1]]],
+};
+const itemCache = new Map();
+/** A new proxy mesh for held-item category `key`, or null for an unknown one; geometry and material shared by every ghost. */
+export function ghostItem(key) {
+  if (!ITEM_PARTS[key]) return null;
+  if (!itemCache.has(key)) {
+    const parts = ITEM_PARTS[key]().map(([geo, hex, at]) => {
+      const g = geo.index ? geo.toNonIndexed() : geo.clone(), c = new THREE.Color(hex), n = g.attributes.position.count, a = new Float32Array(n * 3);
+      for (let i = 0; i < n; i++) { a[i * 3] = c.r; a[i * 3 + 1] = c.g; a[i * 3 + 2] = c.b; }
+      g.deleteAttribute('uv'); g.translate(...at); g.setAttribute('color', new THREE.BufferAttribute(a, 3));
+      return g;
+    });
+    const geo = mergeGeometries(parts); geo.computeBoundingSphere();
+    itemCache.set(key, geo);
+  }
+  packMat ??= new THREE.MeshLambertMaterial({ vertexColors: true });
+  const m = new THREE.Mesh(itemCache.get(key), packMat);
+  m.raycast = () => {}; m.name = `ghost-item:${key}`;
+  return m;
+}
+
+/** Triangle count of a category's proxy (for tests / budgets). */
+export const ghostItemTriangles = (key) => { const m = ghostItem(key); return m ? m.geometry.attributes.position.count / 3 : 0; };

@@ -8,7 +8,8 @@ import { totalScore } from './stats.js';
 import { acquireBadge, releaseBadge, badgeScore, badgeLives } from './ghostbadge.js';
 import { setMirrorExtra } from './reflections.js';
 import { GhostCat } from './ghostcat.js';
-import { ghostProp, ghostJetpack, ghostBike } from './ghostprops.js'; // what an armed player holds: their weapon's own model (#667, #1126)
+import { cleanHeldCategory } from './heldcategory.js';
+import { ghostProp, ghostJetpack, ghostBike, ghostItem } from './ghostprops.js'; // what an armed player holds: their weapon's own model (#667, #1126)
 
 // Other players as ghosts (#666): a WebSocket to the Worker's players' room (cloudflare/players.js, one Durable Object for
 // everybody). Inert without the cloud (cloud.js `cloudUrl`), with GHOSTS.enabled false or ?mp=0. We send our feet and
@@ -87,7 +88,7 @@ const pickMat = new THREE.MeshBasicMaterial();
 export class Ghost { // (exported for tools/ghostprops.html)
   /** `self`: our own reflection in the mirrors (#691): no name tag, never shown to the main camera. */
   constructor(parent, id, name, self = false, look = null) {
-    this.id = id; this.name = name || ANON; this.snaps = []; this.h = ''; this.solid = false; this.prop = null; this.self = self;
+    this.id = id; this.name = name || ANON; this.snaps = []; this.h = ''; this.hi = ''; this.itemProp = null; this.solid = false; this.prop = null; this.self = self;
     this.avatarLook = look ?? (self ? `me:${name}` : id);
     this.avatar = new Avatar(this.avatarLook, tint(name));
     this.avatar.setSolid(true); // always solid (#1025)
@@ -137,7 +138,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
   }
 
   /** A state from the room at time t (ms). After a pause the last one is repeated just before it, so it walks off smoothly. */
-  push({ p, r, h = '', score = 0, l, c = false, sp = false, jp = 0, bk, pose = 0, av, ax, cat }, t) {
+  push({ p, r, h = '', hi = '', score = 0, l, c = false, sp = false, jp = 0, bk, pose = 0, av, ax, cat }, t) {
     if (av && typeof ax === 'string') av += ax; // #1138: the face extension beside the digits
     if (av && av !== this.avatarCode) {
       this.avatarCode = av;
@@ -146,6 +147,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     this.score = badgeScore(score);
     this.lives = badgeLives(l); // never infer remote health from a client's default maximum
     this.setHeld(h);
+    this.setItem(hi); // (#1297: an ordinary held thing, by category)
     this.heldCat.set(cat, this.root);
     this.avatar.setSuit(sp);
     this.bikeWire = Number.isFinite(bk) ? bk : null; // (#1286: the bicycle's heading while riding)
@@ -178,6 +180,16 @@ export class Ghost { // (exported for tools/ghostprops.html)
     this.prop?.removeFromParent();
     this.prop = ghostProp(h);
     if (this.prop) this.root.add(this.prop);
+  }
+
+  /** What it holds besides a weapon (#1297): `hi` a category key (heldcategory.js) or ''. A cheap proxy mesh at the right hand (see animate). */
+  setItem(hi) {
+    hi = cleanHeldCategory(hi);
+    if (hi === this.hi) return;
+    this.hi = hi;
+    this.itemProp?.removeFromParent();
+    this.itemProp = hi ? ghostItem(hi) : null;
+    if (this.itemProp) this.root.add(this.itemProp);
   }
 
   /** The jetpack on the back (#1286): `jp` 0 off, 1 worn, 2 thrusting (flames). One mesh on the torso bone, one more for the flames. */
@@ -263,7 +275,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
   animate(t, d, vx, vz) {
     const dt = this.lastDraw ? Math.min(0.1, (t - this.lastDraw) / 1000) : 0;
     this.lastDraw = t;
-    if (d > AVATAR.poseFar) return;
+    if (d > AVATAR.poseFar) { if (this.itemProp) this.itemProp.visible = false; return; } // (#1297: the hand prop only near, with the posed avatar)
     const gaze = this.root.rotation.y, sp = this.pose ? 0 : Math.hypot(vx, vz);
     this.speed += ((sp > 8 ? 0 : sp) - this.speed) * Math.min(1, dt * 10);
     if (this.pose) { this.body = gaze; this.speed = 0; }
@@ -285,6 +297,9 @@ export class Ghost { // (exported for tools/ghostprops.html)
       hands.R = armTarget.forward(-1, 0.04);
       hands.R.at[0] += 0.45 * sw; hands.R.at[1] += 0.1 * sw;
     }
+    const showItem = !!this.itemProp && !this.prop && !this.bikeMesh; // a weapon or the handlebar has the hands (#1297)
+    if (this.itemProp) this.itemProp.visible = showItem;
+    if (showItem) hands.R = armTarget.forward(-1, 0.04);
     if (this.waveT > 0) { // (#673) up for the wave, the hand going side to side; down again at the end
       this.waveT = Math.max(0, this.waveT - dt);
       hands.R = armTarget.up(-1, (G.wave - this.waveT) * 11);
@@ -307,6 +322,11 @@ export class Ghost { // (exported for tools/ghostprops.html)
         this.pick.scale.y = (axis.length() + 0.6) / 1.8;
         this.pick.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), axis.normalize());
       } else { this.pick.position.set(0, 0.9, 0); this.pick.scale.set(1, 1, 1); this.pick.quaternion.identity(); }
+    }
+    if (showItem) {
+      this.avatar.object.updateMatrixWorld(true);
+      this.root.worldToLocal(this.avatar.hand('R', tmpV));
+      this.itemProp.position.copy(tmpV);
     }
     if (this.prop && this.prop.name !== 'ghost-prop:jetpack') {
       this.avatar.object.updateMatrixWorld(true);
@@ -464,13 +484,14 @@ export class Ghosts {
     s.pose = s.pose >= 1 && s.pose <= 3 && Number.isInteger(s.pose) ? s.pose : 0; // 3: long sit (#1237)
     s.sp = s.sp === true;
     s.jp = s.jp === 1 || s.jp === 2 ? s.jp : 0;
+    s.hi = cleanHeldCategory(s.hi);
     s.bk = Number.isFinite(s.bk) ? s.bk : null;
     s.catKey = JSON.stringify(s.cat ?? null);
     this.track(s, t);
     if (!this.on) return;
     s.score = badgeScore(this.score());
     const prev = this.prev;
-    if (!prev || Math.hypot(s.p[0] - prev.p[0], s.p[1] - prev.p[1], s.p[2] - prev.p[2]) > G.move || Math.abs(s.r - prev.r) > G.turn || s.h !== prev.h || s.c !== prev.c || s.pose !== prev.pose || s.sp !== prev.sp || s.jp !== prev.jp || (s.bk === null) !== (prev.bk === null) || Math.abs((s.bk ?? 0) - (prev.bk ?? 0)) > G.turn || s.catKey !== prev.catKey || this.sentAv !== this.avatarCode) { this.lastMove = t; this.prev = s; }
+    if (!prev || Math.hypot(s.p[0] - prev.p[0], s.p[1] - prev.p[1], s.p[2] - prev.p[2]) > G.move || Math.abs(s.r - prev.r) > G.turn || s.h !== prev.h || s.hi !== prev.hi || s.c !== prev.c || s.pose !== prev.pose || s.sp !== prev.sp || s.jp !== prev.jp || (s.bk === null) !== (prev.bk === null) || Math.abs((s.bk ?? 0) - (prev.bk ?? 0)) > G.turn || s.catKey !== prev.catKey || this.sentAv !== this.avatarCode) { this.lastMove = t; this.prev = s; }
     if (this.prev?.score !== s.score) this.prev = s; // score changes use the same 5 Hz slot; do not reset movement idle time
     const playing = this.active() && !document.hidden && t - this.lastMove < G.idleMs;
     if (!playing) { if (this.ws) this.disconnect(); }
@@ -479,7 +500,7 @@ export class Ghosts {
       const sent = this.sent;
       if (t - this.lastSent >= 1000 / G.hz && (!sent || sent !== this.prev || this.sentAv !== this.avatarCode)) {
         const p = this.prev ?? s;
-        this.ws.send(JSON.stringify({ p: p.p.map((v) => Math.round(v * 100) / 100), r: Math.round(p.r * 100) / 100, score: p.score, ...(p.h ? { h: p.h } : {}), ...(p.c ? { c: true } : {}), ...(p.pose ? { pose: p.pose } : {}), ...(p.sp ? { sp: true } : {}), ...(p.jp ? { jp: p.jp } : {}), ...(p.bk !== null && p.bk !== undefined ? { bk: Math.round(p.bk * 100) / 100 } : {}), ...(p.cat ? { cat: p.cat } : {}), ...(this.avatarCode ? avatarWire(this.avatarCode) : {}) }));
+        this.ws.send(JSON.stringify({ p: p.p.map((v) => Math.round(v * 100) / 100), r: Math.round(p.r * 100) / 100, score: p.score, ...(p.h ? { h: p.h } : {}), ...(p.hi ? { hi: p.hi } : {}), ...(p.c ? { c: true } : {}), ...(p.pose ? { pose: p.pose } : {}), ...(p.sp ? { sp: true } : {}), ...(p.jp ? { jp: p.jp } : {}), ...(p.bk !== null && p.bk !== undefined ? { bk: Math.round(p.bk * 100) / 100 } : {}), ...(p.cat ? { cat: p.cat } : {}), ...(this.avatarCode ? avatarWire(this.avatarCode) : {}) }));
         this.sent = p; this.sentAv = this.avatarCode; this.lastSent = this.lastBeat = t; this.messages++;
       }
     }
@@ -497,7 +518,7 @@ export class Ghosts {
       const k = Math.min(1, dt * 8);
       m.vx += ((far ? 0 : vx) - m.vx) * k; m.vz += ((far ? 0 : vz) - m.vz) * k;
     }
-    m.p.set(...s.p); m.r = s.r; m.h = s.h; m.c = s.c; m.pose = s.pose; m.sp = s.sp; m.jp = s.jp; m.bk = s.bk; m.cat = s.cat; m.t = t;
+    m.p.set(...s.p); m.r = s.r; m.h = s.h; m.hi = s.hi; m.c = s.c; m.pose = s.pose; m.sp = s.sp; m.jp = s.jp; m.bk = s.bk; m.cat = s.cat; m.t = t;
   }
 
   /** Our avatar for the mirrors: one per name (the look comes from it); hidden but for the mirror's pass. */
@@ -517,6 +538,7 @@ export class Ghosts {
     if (!m || !this.mirrored()) return;
     const g = this.selfGhost();
     g.setHeld(m.h);
+    g.setItem(m.hi);
     g.heldCat.set(m.cat, g.root);
     g.pose = m.pose;
     g.avatar.setSuit(m.sp);

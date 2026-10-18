@@ -1,0 +1,43 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Ghost held items</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#bfc6cc}canvas{display:block}</style></head>
+<body><script type="module">
+// #1297 component page: other players (Ghost) with a held-item proxy per category, none, and a weapon that wins over a category.
+// Driven by tools/ghostitemtest.cjs.
+import * as THREE from 'three';
+import { Ghost } from '../src/ghosts.js';
+import { HELD_CATEGORIES } from '../src/heldcategory.js';
+import { ghostItemTriangles } from '../src/ghostprops.js';
+const CASES = [...HELD_CATEGORIES.map((k) => [k, '']), ['', ''], ['cup', 'saber']]; // [hi, h]
+const W = 1800, Hh = 460, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, Hh); document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbfc6cc);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f72, 1.6));
+const sun = new THREE.DirectionalLight(0xfff2e0, 2.2); sun.position.set(2, 4, 3); scene.add(sun);
+const ghosts = CASES.map(([hi, h], i) => {
+  const g = new Ghost(scene, i + 1, 'Spelare ' + (i + 1));
+  if (g.tag) g.tag.visible = false;
+  g.root.position.set((i - (CASES.length - 1) / 2) * 0.8, 0, 0);
+  scene.add(g.root); g.root.visible = true;
+  g.push({ p: [g.root.position.x, 0, 0], r: Math.PI, h, hi }, 1000); // the wire path: hi / h as the room sends them
+  return g;
+});
+const cam = new THREE.PerspectiveCamera(22, W / Hh, 0.05, 50);
+window.__shot = (i = null, far = false) => {
+  let t = 1000;
+  for (const g of ghosts) { g.root.rotation.y = Math.PI; g.have = false; for (let k = 0; k < 30; k++) g.animate(t += 33, far ? 1000 : 1, 0, 0); }
+  const x = i === null ? 0 : ghosts[i].root.position.x;
+  cam.fov = i === null ? 24 : 7; cam.updateProjectionMatrix();
+  cam.position.set(x + (i === null ? 0 : -0.5), i === null ? 1.2 : 1.2, i === null ? 6.5 : 4.6); cam.lookAt(x - (i === null ? 0 : 0.15), i === null ? 0.95 : 1.05, 0);
+  renderer.info.reset(); renderer.render(scene, cam);
+  return { calls: renderer.info.render.calls, tris: renderer.info.render.triangles, items: ghosts.map((g) => g.itemProp && g.itemProp.visible ? g.itemProp.name : null), his: ghosts.map((g) => g.hi),
+    itemTris: Object.fromEntries(HELD_CATEGORIES.map((k) => [k, ghostItemTriangles(k)])) };
+};
+window.__ready = true;
+</script></body></html>

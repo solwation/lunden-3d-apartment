@@ -1572,3 +1572,28 @@ test('#1286 bk (bicycle heading) is a bounded finite number, rounded, else dropp
   assert.equal(s(1.2345).bk, 1.23); assert.equal(s(-3).bk, -3);
   for (const bk of [101, '1', null, true, [1], {}]) assert.equal('bk' in s(bk), false, JSON.stringify(bk));
 });
+
+test('#1297 hi (held-item category) is whitelisted, forwarded in states, late welcomes and hibernation; anything else is dropped', async () => {
+  const { cleanState } = await import('./players.js');
+  const { HELD_CATEGORIES } = await import('../src/heldcategory.js');
+  const s = hi => cleanState(JSON.stringify({ p: [1, 0, 2], r: 0, hi }));
+  for (const k of HELD_CATEGORIES) assert.equal(s(k).hi, k, k);
+  for (const hi of ['', 'sword', 'CUP', 'cup ', 0, 1, true, null, ['cup'], { a: 1 }, '__proto__', 'constructor', 'x'.repeat(5000)]) assert.equal('hi' in s(hi), false, JSON.stringify(hi)?.slice(0, 40));
+  assert.equal('hi' in cleanState(JSON.stringify({ p: [1, 0, 2], r: 0 })), false, 'a missing field stays missing');
+  assert.equal(cleanState(JSON.stringify({ p: [1, 0, 2], r: 0, h: 'saber', hi: 'cup' })).h, 'saber', 'weapons keep h');
+  const worst = JSON.stringify(cleanState(JSON.stringify({ p: [1, 0, 2], r: 0, hi: 'bottle' })));
+  assert.ok(worst.length - JSON.stringify(cleanState(JSON.stringify({ p: [1, 0, 2], r: 0 }))).length <= 14, 'the field adds a handful of bytes (no new message, socket or timer)');
+});
+
+test('#1297 hi travels through the room: forwarded to others, in the late welcome, cleared when dropped; an invalid one never arrives', async () => {
+  const env = setup(), a = await connect(env, 'Olof'), b = await connect(env);
+  a.send({ p: [1, 0, 2], r: 0, hi: 'book' }); await settle(env);
+  assert.equal(b.states().at(-1).hi, 'book');
+  const c = await connect(env, 'Sen');
+  assert.equal(c.got[0].ps.find(p => p.n === 'Olof').hi, 'book', 'the late welcome carries it');
+  now += 1000; a.send({ p: [1, 0, 2], r: 0, hi: 'sword' }); await settle(env);
+  assert.equal('hi' in b.states().at(-1), false, 'unknown value dropped');
+  now += 1000; a.send({ p: [1, 0, 2], r: 0, hi: 'cup' }); await settle(env);
+  now += 1000; a.send({ p: [1, 0, 2], r: 0 }); await settle(env);
+  assert.equal('hi' in b.states().at(-1), false, 'an empty hand clears it');
+});

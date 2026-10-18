@@ -2,6 +2,7 @@ import { ballHeadContact } from '../src/ballflight.js';
 import { nerfHeadContact } from '../src/nerf.js';
 import { bowHeadContact } from '../src/bowflight.js';
 import { fallDamage } from '../src/falldamage.js';
+import { cleanHeldCategory } from '../src/heldcategory.js';
 import { TOYS, SCORE, pvpHitPoints, PVP_RIFLE_HEAD as RH, rifleHeadContact, PVP_HEAD_BOXES as HB, rifleBoxHeadContact, straightBoxHeadContact, avatarCodeValid } from '../src/config.js';
 
 // Other players as ghosts (#666): one Durable Object room for everybody (`idFromName('world')`), WebSockets with the
@@ -17,7 +18,7 @@ import { TOYS, SCORE, pvpHitPoints, PVP_RIFLE_HEAD as RH, rifleHeadContact, PVP_
 // after PLAYERS.idleMs without a message or heartbeat. The admin emergency brake (DELETE /admin/players or /admin/all)
 // switches the room off (4003) until PUT /admin/players.
 //
-// Protocol (JSON text; client → room): { p: [x, y, z] feet in metres, r: yaw (rad), c?: true when actually crouched, jp?: 1 jetpack worn / 2 thrusting, bk?: the bicycle's heading in rad while riding (#1286), h: weapon key or '', score: integer 0…1e7,
+// Protocol (JSON text; client → room): { p: [x, y, z] feet in metres, r: yaw (rad), c?: true when actually crouched, jp?: 1 jetpack worn / 2 thrusting, bk?: the bicycle's heading in rad while riding (#1286), hi?: the held thing's category key (src/heldcategory.js whitelist, #1297; unknown values are dropped), h: weapon key or '', score: integer 0…1e7,
 // av?: the look code's digits, ax?: its face extension (#1138) } and a shot
 // { t: 'a', w, o, d, s?, to? } (#667, `cleanShot`; forwarded to the armed others as { t: 'a', i, w, o, d, s? }) — anything
 // else is dropped.
@@ -152,7 +153,7 @@ export function cleanState(text) {
   // #1147: bounded appearance indices only; invalid/missing cat clears the carried visual.
   const cat = Array.isArray(m.cat) && m.cat.length === 3 && Number.isInteger(m.cat[0]) && m.cat[0] >= 0 && m.cat[0] <= 7 && Number.isInteger(m.cat[1]) && m.cat[1] >= 0 && m.cat[1] < [6, 1, 1, 3, 3, 3, 1, 1][m.cat[0]] && typeof m.cat[2] === 'boolean' && !(m.cat[0] === 7 && m.cat[2]) ? { cat: m.cat } : {};
   // #878: c reports actual Player.crouched; anything except literal true is standing, including legacy clients.
-  return { ...cat, p: m.p.map(r2), r: r2(m.r), score, h: typeof m.h === 'string' && Object.hasOwn(COMBAT.weapons, m.h) ? m.h : '', ...(m.c === true ? { c: true } : {}), ...(m.pose === 1 || m.pose === 2 || m.pose === 3 ? { pose: m.pose } : {}), ...(m.sp === true ? { sp: true } : {}), ...(m.jp === 1 || m.jp === 2 ? { jp: m.jp } : {}), ...(fin(m.bk, 100) ? { bk: r2(m.bk) } : {}), ...(av ? { av } : {}), ...(ax ? { ax } : {}) };
+  return { ...cat, p: m.p.map(r2), r: r2(m.r), score, h: typeof m.h === 'string' && Object.hasOwn(COMBAT.weapons, m.h) ? m.h : '', ...(m.c === true ? { c: true } : {}), ...(m.pose === 1 || m.pose === 2 || m.pose === 3 ? { pose: m.pose } : {}), ...(m.sp === true ? { sp: true } : {}), ...(m.jp === 1 || m.jp === 2 ? { jp: m.jp } : {}), ...(fin(m.bk, 100) ? { bk: r2(m.bk) } : {}), ...(cleanHeldCategory(m.hi) ? { hi: m.hi } : {}), ...(av ? { av } : {}), ...(ax ? { ax } : {}) };
 }
 
 /** A shot from a client, or null: { t: 'a', w, o: [x, y, z] start, d: [dx, dy, dz] unit direction, s?: speed m/s, to?: id hit }

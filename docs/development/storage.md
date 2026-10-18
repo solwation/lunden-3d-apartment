@@ -1240,3 +1240,9 @@ receiving 3 from the new Worker also shows a standing figure (it snaps only 1/2)
 Houses A/B/C/L have no furniture; only L1007's `sofa()`/`bed()` carry the spots. Not applicable to the public viewer.
 This character/gameplay change does not apply to the public viewer.
 #1275: a lie spot is where the HEAD rests (the pillow); `restState` roots the figure at the hips, `REST.avatarLieTorso` * cos(`avatarLieTilt`) * tall towards the feet (along the spot's yaw), so the head lands on the spot instead of poking through the headboard. Only `p.x/z` change (no wire field); legs level at hip height (`y - 0.03`), `avatarLieSink` 0.1. Checked: double bed (both sides), both bunks (numerically, rooms too tight for a camera), daybed.
+
+## Held-item category on the wire (`hi`, #1297)
+
+Players' states carry an optional `hi` (one of `HELD_CATEGORIES` in `src/heldcategory.js`, a short lowercase key; no names, photos or content) beside the weapon key `h`. It rides the existing 5 Hz state message, the welcome snapshot (`ps`, taken from the socket attachment's last clean state, so also after hibernation) and the `t:'s'` broadcast — no new message type, socket or timer, and at most ~14 extra bytes. `cleanState` (cloudflare/players.js) keeps `hi` only when it is exactly a whitelisted string; everything else is dropped, so a stale or hostile client cannot grow the state.
+
+Rollout order (the Worker is deployed by the owner only): (1) deploy the Worker (`cloudflare/`, `wrangler deploy`), (2) publish the client (GitHub Pages). Mixed versions are safe in every order: an old Worker's `cleanState` drops the unknown `hi` (clients keep working, others just see nothing in the hand); an old client ignores `hi` in states it receives; a new Worker with old clients simply never sees the field. Published before the Worker, the feature is dormant until the Worker is deployed.
