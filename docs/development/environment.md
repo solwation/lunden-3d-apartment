@@ -227,7 +227,6 @@ Close and100m south/west images are captured for both desktop and low-memory cam
 - Materials and batching: asphalt (`0x5f6164`), gravel (`0xb5ac90`), paving (`0xa7a397`). East access and courtyards are merged into the existing `east-access` mesh with vertex colors. South parking, stall dividers, curbs, access roads, and paths are merged into the single existing `south-land` mesh with vertex colors. No new draw calls, textures, or lights are introduced, remaining strictly within the performance budget (`tools/perfcount.html`). Forest trees in the south exclude parking polygons (`!onParking(x, z)`).
 
 
-<<<<<<< HEAD
 ## Pony paddock (#1280)
 
 The kidney-shaped meadow south of the timber footbridge (OSM field way 237019759, `SITE.south.fields`, ~9 700 m²) is a fenced paddock with two C ponies.
@@ -249,7 +248,7 @@ tools/paddocktest.cjs, tools/paddockgeotest.mjs   browser checks and node plan-g
 Ponies are not targets (no raycast: rays, Nerf darts and arrows pass through, like the gulls) and make no sound. Not simulated or drawn beyond `viewDist` 280 m
 from the paddock or underground; the fence is drawn whenever in view. Cost at the gate: +2 draw calls, ~8 000 triangles (`tools/perfcount.html` spots `paddock`).
 Downstream (kvarteret-lunden): the fence/ground could be transferred as a generic paddock; the named ponies are personal gameplay and must not be.
-=======
+
 ## East campus car parks: the lot behind HepCat Store (#1278)
 
 A visitor reported that the area behind HepCat Store is a whole car park in reality. The repository's OSM snapshots (`docs/references/surrounding-views/*.json`) hold **no** `amenity=parking` / `parking_space` ways and no stall data; the polygon of that lot (way 145221623, "Parkering vid Sankt Thomas/Klockhuset", x 38.7…85.5, z −19…17 east of HepCat's x 28…36) and the campus' east lot (44447969) were added by #1262 (web-sourced, 2026-10-18) without stalls, kerbs or cars, and drawn as one flat 4-corner polygon that sank under the sloping ground (the lot falls 1.7 m from z −19 to 17).
@@ -258,4 +257,3 @@ A visitor reported that the area behind HepCat Store is a whole car park in real
 - `src/sitebackdrop.js` `eastLotParts`: the asphalt of these polygons is cut into ≤ 2 m triangles that follow `renderedTerrainY` (lift 0.02, under the roads' own 0.025), the stall lines (lift 0.045) and the flat concrete edge strip (0.035; none across road mouths or at buildings) are cut every 2.5 m to follow the slope; all of it merged into the existing `east-access` vertex-colour mesh (no new draw call, no texture).
 - `src/eastlot.js`: the cars as four instanced batches (paint, trim, glass, tyres from `streetlife.js carGeometry`) in `east-lot-cars`, tagged `userData.carBatch = 'eastlot'` so the view LOD (`viewlod.js`, #1213/#1246) draws the far ones coarse; each car stands on the ground under its footprint, pitched/rolled to the slope. `src/farwalk.js` adds each car's footprint as a collision box (`parkedCarSegments()`); the aisles stay open.
 - Test: `tools/eastlottest.html` (stalls/cars inside their polygon, clear of roads/buildings/each other; asphalt covers the polygon on the terrain; walkable gradient; cars block, aisles stay open; batches/LOD; no new mesh). Perfcount spot `east lot`.
->>>>>>> 3fb197cf (wip)
