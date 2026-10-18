@@ -337,3 +337,10 @@ geometry, panes, unchanged collision/height gates and inside/outside WebGL
 captures. This bounded component omits World/facade construction, E/touch input
 and physical-phone/FPS measurements. The public viewer's equivalent transfer
 is tracked in [kvarteret-lunden #43](https://github.com/solwation/kvarteret-lunden/issues/43).
+
+## Park basement recess ceilings and lintels (#1270)
+
+Outdoor walk-in recesses (`parkARecess` and `parkBRecess` with `outside: 'w'/'e'`) connect the park-level basement entrances to the inner corridors. Because `parkARecess` has a narrow depth (`x1 - x0 = 0.64 m < 0.7 m`), it was previously picked up by the doorway lintel generator in `src/garage.js`, which placed vertical panels and a soffit across its exterior mouth at `x = -9.76`, plus a ceiling flat at `C = 0`. This formed a solid floating concrete box across the entrance recess under the canopy.
+
+Filtering out outdoor rectangles (`!q.outside`) from doorway lintels leaves the exterior recess mouth open. Excluding them from ceiling flat generation (`!r.outside`) prevents duplicating ceiling geometry already handled by surroundings and the entrance canopy. Verified with `tools/garagerecesstest.mjs` across Houses A and B. Equivalent houses: Hus C has no exterior basement entrance; Hus L uses the separate garage door opening (`doorway`).
+

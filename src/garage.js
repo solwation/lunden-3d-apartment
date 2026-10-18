@@ -226,7 +226,7 @@ export class Garage {
       seg(segs, ax, az, bx, bz);
     }
     // over every doorway (a thin rectangle through a wall): the lintel; the garage door's: up to the ceiling from its head
-    for (const r of RECTS.filter((q) => Math.min(q.x1 - q.x0, q.z1 - q.z0) < 0.7)) {
+    for (const r of RECTS.filter((q) => !q.outside && Math.min(q.x1 - q.x0, q.z1 - q.z0) < 0.7)) {
       const across = r.x1 - r.x0 < r.z1 - r.z0, head = r.id === 'doorway' ? F + GD.h : F + G.doorHead;
       for (const v of across ? [r.x0, r.x1] : [r.z0, r.z1]) this.areas[r.area].geos.shell.push(bake(across ? panel(v, r.z0, v, r.z1, head, C) : panel(r.x0, v, r.x1, v, head, C), WALL));
       // #646: the soffit across the wall's thickness — without it the 5 cm gap over a steel leaf (2.05 under a 2.1 head) looks
@@ -280,7 +280,7 @@ export class Garage {
       const mx = (r.x0 + r.x1) / 2, mz = (r.z0 + r.z1) / 2;
       if (canvasRooms[r.id]) this.areas[r.area].floors.push({ geo: bake(flat(r.x0, r.x1, r.z0, r.z1, F + G.floorLift, 1.0), 0xffffff, true), tex: floorTexture(r, canvasRooms[r.id]) });
       else if (!r.core && !r.outside && !r.door?.park) put('shell', bake(flat(r.x0, r.x1, r.z0, r.z1, F + G.floorLift), FLOOR), mx, mz); // (a `core` rect's floor is the stair core's own, #637)
-      if (r.id !== 'core' && !r.core) put('shell', bake(flat(r.x0, r.x1, r.z0, r.z1, C), CEIL), mx, mz); // (the stairwell goes on up, #415, #637)
+      if (r.id !== 'core' && !r.core && !r.outside) put('shell', bake(flat(r.x0, r.x1, r.z0, r.z1, C), CEIL), mx, mz); // (the stairwell goes on up, #415, #637)
     }
     // wheel stops, our stall's and the car pool's charging posts, ducts and a sprinkler main under the big hall's ceiling
     for (const s of STALLS) {
