@@ -49,6 +49,9 @@ for (const [w, h] of [[390, 844], [844, 390]]) {
     assert.equal(st.open, true); assert.equal(st.disabled, false); assert.equal(st.readOnly, false);
     assert.equal(st.hit, 'admin-report-text', 'nothing covers the field');
     assert.equal(st.focused, false, 'no script focus on touch (it would not raise the iOS keyboard)');
+    // #1269: no capture attribute so mobile browsers allow choosing an image from the photo album/gallery
+    assert.equal(await page.getAttribute('#admin-report-file', 'capture'), null, 'no capture attribute on file input');
+    assert.equal(await page.getAttribute('#admin-report-file', 'accept'), 'image/*');
     const box = await page.locator('#admin-report-text').boundingBox();
     await page.touchscreen.tap(box.x + box.width / 2, box.y + 20);
     await page.keyboard.type('efter foto');

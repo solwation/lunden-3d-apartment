@@ -1751,7 +1751,8 @@ submission and starts one login request. Escape retains terminal close behavior 
 ### Photo in the report popup (#1181)
 
 The report popup has a camera button backed by `#admin-report-file`
-(`<input type="file" accept="image/*" capture="environment">`); on a computer an image can
+(`<input type="file" accept="image/*">`, without `capture="environment"` so mobile browsers offer
+both photo album and camera choice, #1269); on a computer an image can
 also be dropped anywhere on the popup. `src/reportphoto.js` decodes with the browser's own
 codecs (`createImageBitmap(..., {imageOrientation:'from-image'})`, so EXIF orientation is
 applied; HEIC only where the browser decodes it, otherwise a clear Swedish error), scales to
