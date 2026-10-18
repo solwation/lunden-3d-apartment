@@ -225,6 +225,7 @@ tools/lighttest.html   headless test: aim at every light switch / floor lamp, to
 tools/powertest.html   the power cut (#604): fuse box, flicker, Kv. Lunden dark / surroundings lit, hold-to-mend on touch, reload has power;
                        #612: fridge/freezer/oven/microwave lamps dark, brew/dishwasher/washer/dryer paused and resumed, the lift's rescue drive
 tools/visitlightstest.html  the visitable flats' lamps (#620): a switch with a wall behind it in every room of L1004 and L1201, E lights / puts out, the frame gets brighter, power cut + mend, no extra light object
+tools/farwalktest.html / .cjs (#1236) the real Player outside the home block: slope down to the river, water as obstacle, bridges and rails, far buildings, the WALK edge, water rescue (`node tools/farwalktest.cjs http://localhost:8776`)
 tools/perfcount.html   draw calls / triangles at a few spots (compare before/after optimising); fails past PERF.budget (#592), `?lowmem&w=390&h=844` for phones;
                        counts each draw to the screen (#695: `renderer.info` was reset by nested renders and under-counted the start view)
 tools/startuprecoverytest.html / .cjs (#864) native request/body/cache stalls, optional fallbacks, retry and saved storage;

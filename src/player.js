@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { LEVELS, PLAYER, STAIR, UNIT_TOP, ROOFS, GARAGE, JETPACK, SPIDER, SOFFITS, BICYCLE } from './config.js';
 import { stairHeight, stairUnderside } from './stairs.js';
 import { groundY } from './surroundings.js';
+import { farWalls, waterBlocked, tooSteep, waterRescue } from './farwalk.js'; // #1236: walking beyond the block
 import { bicycleCurbY } from './street.js';
 import { stowBicycleHand, restoreBicycleHand } from './holdable.js';
 
@@ -196,7 +197,8 @@ export class Player {
     const doorSegs = this.world.doors
       .filter((d) => (d.object.position.y < LEVELS[0].floor + 1.6 ? 0 : 1) === this.level)
       .map((d) => d.segment());
-    return [lvl.segments, [...doorSegs, ...up, ...(this.world.movingSegments?.(this.level) ?? [])]]; // + open furniture flaps (#118)
+    const far = this.inFootprint() ? [] : farWalls(this.pos.x, this.pos.z); // the mapped buildings, bridge rails (#1236)
+    return [lvl.segments, [...doorSegs, ...up, ...far, ...(this.world.movingSegments?.(this.level) ?? [])]]; // + open furniture flaps (#118)
   }
 
   /** The feet height to keep for a reload (resume.js): where they stand, mid-jump the ground under them (a record in the
@@ -731,6 +733,13 @@ export class Player {
         else if (!this.blockedByStair(tryZ.x, tryZ.z, prev.y)) this.pos.copy(tryZ);
         else this.pos.copy(prev);
       }
+      if (!this.flying && !this.aloft && this.pos.z > 60 && (waterBlocked(this.pos.x, this.pos.z) || tooSteep(this.pos.x, this.pos.z))) {
+        // #1236: the river and ground too steep to climb are obstacles: slide along one axis or stay put
+        const bad = (px, pz) => waterBlocked(px, pz) || tooSteep(px, pz);
+        if (!bad(this.pos.x, prev.z)) this.pos.z = prev.z;
+        else if (!bad(prev.x, this.pos.z)) this.pos.x = prev.x;
+        else { this.pos.x = prev.x; this.pos.z = prev.z; }
+      }
       if (jet && this.aloft && this.world.roofs) { // flying into a roof's edge / a canopy: in the way of the body (#359)
         const R = this.world.roofs, y0 = prev.y + PLAYER.stepUp, y1 = prev.y + PLAYER.headroom;
         if (R.blocks(this.pos.x, this.pos.z, y0, y1)) {
@@ -743,6 +752,10 @@ export class Player {
       if (g >= this.pos.y) { this.pos.y = g; this.vy = 0; }
     }
 
+    if (!this.flying && !this.aloft && this.pos.z > 60 && this.pos.y <= groundY(this.pos.x, this.pos.z) + 0.05) { // ended up in the river (#1236): back on the bank
+      const back = waterRescue(this.pos.x, this.pos.z);
+      if (back) { this.pos.set(back.x, groundY(back.x, back.z), back.z); this.vy = 0; this.fall = null; this.fling = null; this.onWaterRescue?.(); }
+    }
     if (this.flying) { this.jv.x = (this.pos.x - x0) / dt; this.jv.z = (this.pos.z - z0) / dt; } // (a wall takes the speed)
 
     // the Spider-Man suit (#597): walking (or falling) into the façade of a building taller than you holds you on it

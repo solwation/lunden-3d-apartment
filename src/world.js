@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import {
   LAUNDRY, WARDROBE, LEVELS, UNIT_TOP, SOFFITS, DOOR_HEIGHT, DOOR_TRIM, EXT_DOOR_HEAD, WINDOWS, WINDOW_TOP_HUNG_MAX, BLINDS, RADIATOR, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT, TOILET,
-  STAIR, COLORS, FENCE_HEIGHT, SITE, OUTDOOR, CABINET_FIXES, KLK, SEASON, FINISH, OPTIONS, EXTRA_WALLS, SLIDE_FLIP, ROOM_RENAMES, EXTRA_ROOMS, ROOM_DIVIDERS, CORE, PORTIK,
+  STAIR, COLORS, FENCE_HEIGHT, SITE, OUTDOOR, WALK, CABINET_FIXES, KLK, SEASON, FINISH, OPTIONS, EXTRA_WALLS, SLIDE_FLIP, ROOM_RENAMES, EXTRA_ROOMS, ROOM_DIVIDERS, CORE, PORTIK,
   STANDARD, VISIT_UNITS, L1201, HUS_L, storeyFloor, HUS_L_REVEAL, VENTS, TILED_ROOMS, LIGHTING, SMOKE_ALARM,
 } from './config.js';
 import { buildStairs, buildHandrails, stairHeight, stairUnderside } from './stairs.js';
@@ -1212,7 +1212,7 @@ function* worldParts(plan) {
   // the walkable block (#355): OUTDOOR's rectangle round Kv. Lunden; Hus L's row is a wall all round except our own
   // façades (the flat's walls take over there) and the portik through the stair core; the neighbours' screen walls and
   // hedges block like ours, the Å-husen's outlines and the garage box's edge (except down its stairs) like walls
-  const o = OUTDOOR, { xw, xe, portik: [p0, p1] } = husLLayout(W);
+  const o = OUTDOOR, w = WALK, { xw, xe, portik: [p0, p1] } = husLLayout(W);
   // a visited flat's façades are its own walls, like ours (#574): the row's lines are cut out there
   const cut = (segs) => segs.flatMap(([ax, az, bx, bz]) => {
     if (az !== bz) return [[ax, az, bx, bz]];
@@ -1221,7 +1221,7 @@ function* worldParts(plan) {
     return parts.map(([a, b]) => [a, az, b, bz]);
   });
   outdoor.push(
-    [o.x0, o.z0, o.x1, o.z0], [o.x1, o.z0, o.x1, o.z1], [o.x1, o.z1, o.x0, o.z1], [o.x0, o.z1, o.x0, o.z0],
+    [w.x0, w.z0, w.x1, w.z0], [w.x1, w.z0, w.x1, w.z1], [w.x1, w.z1, w.x0, w.z1], [w.x0, w.z1, w.x0, w.z0], // #1236: the walkable area's edge (WALK), no longer the home block's
     ...cut([[xw, 0, p0, 0], [p1, 0, 0, 0], [W, 0, xe, 0], [xe, 0, xe, D], [xw, D, p0, D], [p1, D, 0, D], [W, D, xe, D], [xw, D, xw, 0]]),
     ...units.filter((u) => u.ground).flatMap((u) => u.fixed[0]), // its Entréplan walls: in the way from the street and the patio too
     ...exterior.userData.portik.segments, // same calibrated room boundaries as actual geometry (#520)
@@ -1233,7 +1233,7 @@ function* worldParts(plan) {
   // up on the roofs (#360, src/roofs.js): Hus L's loftgång, terraces, roof, loft and drums, the Å-husen's roofs and
   // canopies; OUTDOOR's edge is a wall at every height
   const walkable = [exterior.userData.walk, surroundings.userData.walk], roofWalls = walkable.flatMap((w) => w.walls);
-  wallRect(roofWalls, o.x0, o.x1, o.z0, o.z1, -100, 1000);
+  wallRect(roofWalls, w.x0, w.x1, w.z0, w.z1, -100, 1000);
   const roofs = new Roofs(walkable.flatMap((w) => w.surfaces), roofWalls);
 
   yield 0.76;

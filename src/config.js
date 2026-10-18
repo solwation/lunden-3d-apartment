@@ -1717,6 +1717,16 @@ export const OLOF = {
 // ramp's wall stop the visitor (world.js; surroundings.js `userData.segments`). The bounds are a choice, not a plot line.
 export const OUTDOOR = { x0: -78.5, x1: 27.5, z0: -14, z1: 64 };
 
+// #1236 (user answer on #1233, 2026-10-18): the visitor may walk well beyond the block, down to Höje å and along its park paths
+// (over the two bridges), later also among the school buildings to the clock tower. `WALK` is the outer edge of that
+// walkable area (world.js: the perimeter wall, also at every height for the roofs/jetpack); OUTDOOR stays the home block for
+// respawn zones and ball returns. Bounds are a choice (*guess*), grown in steps as the terrain/buildings behind them get collision.
+// `cell` m: edge of the buckets the far collision (src/farwalk.js) is looked up in. `wade` m: how far from the water's edge the
+// shallow bank already stops the visitor (water is an obstacle; the bed is at SITE.bridges.bedY, so ground there is still under the water line). `rescue` m: where a visitor who still ends up in the river
+// is put back, measured from the edge of the water (*guess*). `maxSlope` rise/run: steeper ground holds the visitor back
+// (the #1233 banks stay under it: bankScale .55 gives roughly 0.5-0.7).
+export const WALK = { x0: -110, x1: 110, z0: -14, z1: 165, cell: 40, wade: 2, rescue: 3, maxSlope: 1.2 };
+
 // The garage under the courtyard and Hus L's basement (#357, #417, src/garage.js), per the våning −1 overview plan
 // (plan brochure p. 46; docs/peab/garage-vaning-m1.jpg, measured on docs/peab/kalibrerad/vaning-m1-300dpi.png with the
 // #253 transform x = (px − 1909.5) × 0.042356, z = (py − 1073) × 0.042356 — it fits Hus L's outline on this sheet:

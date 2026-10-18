@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <title>Far walk test</title>
+  <script type="importmap">
+    { "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+    } }
+  </script>
+</head>
+<body>
+<pre id="out">running…</pre>
+<script type="module">
+// #1236: headless walk through the real world beyond the home block: the river (water is an obstacle), the bridges (rails,
+// deck ends), the mapped buildings and the outer edge. Same Player/collision as the game; exposes `window.far` for probing.
+//   python3 tools/devserve.py 8776 .   then   node tools/farwalktest.cjs http://localhost:8776
+import * as THREE from 'three';
+import { buildWorld } from '../src/world.js';
+import { Player } from '../src/player.js';
+import { Garage } from '../src/garage.js';
+import { Core } from '../src/core.js';
+import { WALK, SITE } from '../src/config.js';
+import { groundY } from '../src/surroundings.js';
+import { riverAt } from '../src/riverbridge.js';
+
+const out = document.getElementById('out');
+const plan = await fetch('../data/plan.json').then((r) => r.json());
+const world = buildWorld(plan);
+world.garage = new Garage();
+world.core = new Core();
+const camera = new THREE.PerspectiveCamera();
+camera.rotation.order = 'YXZ';
+const player = new Player(world, camera);
+window.far = { world, player, groundY, riverAt, WALK, SITE };
+const dt = 1 / 60;
+const log = [];
+let pass = true;
+const walk = (points, { run = true } = {}) => { // walks the waypoints; returns the first one it got stuck on, or -1
+  for (let i = 0; i < points.length; i++) {
+    const [x, z] = points[i];
+    const limit = 8 + Math.hypot(player.pos.x - x, player.pos.z - z) / 1.6;
+    let t = 0;
+    while (Math.hypot(player.pos.x - x, player.pos.z - z) > 0.2) {
+      camera.rotation.y = Math.atan2(-(x - player.pos.x), -(z - player.pos.z));
+      player.keys = new Set(run ? ['KeyW', 'ShiftLeft'] : ['KeyW']);
+      player.update(dt);
+      t += dt;
+      if (t > limit) { player.keys = new Set(); return i; }
+    }
+  }
+  player.keys = new Set();
+  for (let i = 0; i < 30; i++) player.update(dt);
+  return -1;
+};
+const check = (ok, text) => { pass &&= ok; log.push(`${ok ? 'PASS' : 'FAIL'} ${text}`); };
+const at = () => `(${player.pos.x.toFixed(1)}, ${player.pos.z.toFixed(1)}) y=${player.pos.y.toFixed(2)}`;
+const routes = window.routes = [];
+export const route = (name, start, points, expect) => routes.push({ name, start, points, expect });
+
+const R = [
+  // [name, start, waypoints, expectation(player) -> bool]
+  ['parkplanet → gångstråket ner mot ån (slänten går att gå på)', [-35, 61], [[-30, 66], [-28, 70], [-30, 80], [-39, 95], [-40, 110], [-41, 118]],
+    () => player.pos.z > 117 && player.pos.y <= -2.9],
+  ['ån är ett hinder: rakt ut i vattnet stoppar vid strandkanten', [-41, 118], [[-41, 150]],
+    () => { const r = riverAt(player.pos.x, player.pos.z); return r.distance >= r.width / 2 + 1.5 && player.pos.y > SITE.bridges.waterY - 0.1 && player.pos.y < -4; }],
+  ['vägbron: över ån längs Sankt Lars väg till södra stranden', [23.5, 90], [[23.7, 100], [23.5, 125], [23.3, 143], [23.3, 155]],
+    () => player.pos.z > 150],
+  ['gång- och cykelbron: över ån', [18, 92], [[18.1, 101], [17.9, 125], [17.8, 146], [17.8, 155]], () => player.pos.z > 150],
+  ['vägbrons räcke stoppar: ut över sidan', [23.5, 125], [[30, 125]], () => player.pos.x < 27.5 + 0.3 && player.pos.y > -3.05],
+  ['HepCat Store: byggnaden stoppar', [24, 0], [[34, 0]], () => player.pos.x < 28],
+  ['Villan i parken: väggen stoppar', [-70, 75], [[-55, 75]], () => player.pos.x < -63],
+  ['ytterkanten (WALK) stoppar västerut', [-100, 30], [[-130, 30]], () => player.pos.x >= WALK.x0],
+];
+
+for (const [name, start, points, ok] of R) {
+  player.spawn(start[0], start[1], 0);
+  const stuckAt = walk(points);
+  const good = ok();
+  check(good, `${name}${good ? '' : ` — stannade vid ${at()} (hinder vid punkt ${stuckAt})`}`);
+  log.push(`   ended ${at()}`);
+}
+{ // ended up in the water (a fall off a bridge, a jetpack drop): put back on the bank, dry
+  const r0 = riverAt(-41, 143), side = [r0.x + r0.nx * 0.2, r0.z + r0.nz * 0.2];
+  player.spawn(...side, 0); player.pos.y = SITE.bridges.bedY; player.update(dt);
+  const r = riverAt(player.pos.x, player.pos.z);
+  check(r.distance >= r.width / 2 + 1 && Math.abs(player.pos.y - groundY(player.pos.x, player.pos.z)) < 0.1, `i ån: flyttas tillbaka till stranden (${at()})`);
+}
+out.textContent = log.join('\n');
+out.dataset.log = log.join('\n');
+out.dataset.done = pass ? 'pass' : 'fail';
+</script>
+</body>
+</html>
