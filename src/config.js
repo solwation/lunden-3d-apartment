@@ -1769,6 +1769,12 @@ export const PARKING_LOT = {
 // `wallStep` m: spacing of the samples that set a wall's height along a gable end (*guess*); `wallLift` m: the wall's top over the roof line;
 // `depth` m: the walls reach this far under y 0 (the garage-box cut and the river park lie lower).
 export const BUILDING_ROOFS = { flatLift: 0.05, wallStep: 4, wallLift: 0.05, depth: 10 };
+// #1305: the terrain outside the built block follows data/elevation.json's bare-earth grid (src/elevation.js). The weight is 0 inside
+// `protect` (a rectangle round Hus A/B/C/L, the courtyard, the garage box and Karpvägen / Sankt Lars väg's designed profiles: today's
+// levels, y 0 = courtyard), rises smoothly to 1 over `ramp` m, drops to 0 again within `river` [clear, ramp] m of Höje å (#1285's
+// valley depth is kept: the DSM mixes water and bank in a 30 m cell) and over `edge` m towards the mesh's x edges and its south edge
+// (the flat -3.01 planes beyond). All *guess* tunables; roads, paths, tree feet and the backdrop buildings sample the terrain themselves.
+export const ELEVATION = { protect: { x0: -86, x1: 46, z0: -36, z1: 72 }, ramp: 30, river: [32, 30], edge: 30 };
 export const WALK = { x0: -260, x1: 320, z0: -200, z1: 250, cell: 40, maxSlope: 0.7, // gradient (rise/run, ~35°) above which the ground cannot be climbed and you slide back (#1281, *guess*; the park paths (0.3-0.45) stay under it; the drop from the shore path into the water (up to ~0.8), the steepest bank edges and the bridge embankments are over)
   slideOut: 0.85, slideSpeed: 3.5, slideAccel: 9, // #1281: hysteresis (sliding stops below maxSlope * slideOut), the slide's top speed (m/s) and acceleration (m/s²), *guess*
   waterDepth: 0.15, splashSafe: 2, // #1281: feet this far under the water line (m) are in the river; no fall damage for `splashSafe` s after the splash

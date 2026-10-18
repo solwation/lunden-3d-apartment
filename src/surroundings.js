@@ -5,7 +5,8 @@ import { buildRiverPark, parkDeckAt, parkTreeSpots, parkShrubSpots } from './riv
 import * as THREE from 'three';
 import { grassUV } from './grass.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE, CORE_A, CORE_B, CORE_C, NEIGHBOR_OPENINGS as O, HUS_L, FOLIAGE } from './config.js';
+import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE, CORE_A, CORE_B, CORE_C, NEIGHBOR_OPENINGS as O, HUS_L, FOLIAGE, ELEVATION } from './config.js';
+import { gridGround } from './elevation.js';
 import { glowMaterial, poolGeometry, washGeometry, fadeGlow } from './groundglow.js';
 import { neighborGlass } from './neighborglass.js';
 import { registerTrees, registerSnow } from './seasons.js';
@@ -94,7 +95,19 @@ export function groundY(x, z) {
 export const groundBelowDeckY = (x, z) => terrainY(x, z);
 /** The terrain itself (the grass / asphalt surface; groundY without the stairs' treads and the recesses' floors). */
 function terrainY(x,z) {
-  const base=terrainBase(x,z);return z<60?base:riverGround(x,z,base);
+  let base=terrainBase(x,z);
+  const w=elevationWeight(x,z);if(w>0)base+=w*(gridGround(x,z)-base); // #1305: the real ground levels outside the block
+  return z<60?base:riverGround(x,z,base);
+}
+const smooth=t=>t*t*(3-2*t);
+/** #1305: 0 near the block, the river valley and the mesh's outer edges (today's levels), 1 in between (the grid's ground). */
+function elevationWeight(x,z){
+  const P=ELEVATION.protect,dx=Math.max(P.x0-x,0,x-P.x1),dz=Math.max(P.z0-z,0,z-P.z1);
+  let w=smooth(Math.min(1,Math.hypot(dx,dz)/ELEVATION.ramp));
+  if(w===0)return 0;
+  const B=S.backgroundGround;w*=smooth(Math.max(0,Math.min(1,Math.min(x-B.x0,B.x1-x,B.z1-z)/ELEVATION.edge)));
+  if(w>0&&z>10)w*=smooth(Math.max(0,Math.min(1,(riverDistance(x,z)-ELEVATION.river[0])/ELEVATION.river[1])));
+  return w;
 }
 function terrainBase(x, z) {
   if (onRamp(x, z)) return rampY(z);
@@ -120,12 +133,13 @@ export const renderedTerrainY = (x,z) => terrainSurface(x,z);
 /** Holes in the terrain mesh [x0, x1, z0, z1]: Hus C stands at the courtyard's level (y 0), so its stair well (CORE_C.pit) would be covered by the grass (#639). */
 const TERRAIN_PITS = [CORE_C.pit];
 function terrainGeometry() {
-  const St = Wst.stair, z0 = terrainNorth;
+  const St = Wst.stair, z0 = S.backgroundGround.z0; // #1305: from the world's north edge (the flat plate there is gone)
   const xs = new Set([S.backgroundGround.x0, -200, 200, S.backgroundGround.x1, E.x0 - 0.01, E.x0 + 0.01, E.x1, E.x1 + E.blend, E.gable, E.level, E.walk, R.x0 + 0.01, R.x1 - 0.01, R.x1 + 0.01,
       Wst.x - 0.01, Wst.x + 0.01, St.x1 - 0.01, St.x1 + 0.01]),
-    zs = new Set([z0, 0, T.north, 260, T.north + T.slope, ...E.profile.map((p) => p[0]), ...Wst.profile.map((p) => p[0]), R.z0, R.z1, St.z1 - 0.01, St.z1 + 0.01, T.garageDoor.z0, T.garageDoor.z1]);
+    zs = new Set([z0, terrainNorth, 0, T.north, 260, T.north + T.slope, ...E.profile.map((p) => p[0]), ...Wst.profile.map((p) => p[0]), R.z0, R.z1, St.z1 - 0.01, St.z1 + 0.01, T.garageDoor.z0, T.garageDoor.z1]);
   for (let x = S.backgroundGround.x0; x <= S.backgroundGround.x1; x += 4) xs.add(x);
-  for (let z = z0; z <= 260; z += 4) zs.add(z);
+  for (let z = z0; z < terrainNorth; z += 5) zs.add(z); // the north: 5 m rows (#1305; the grid is smooth, Catmull-Rom)
+  for (let z = terrainNorth; z <= 260; z += 4) zs.add(z);
   for (const b of T.box) { for (const x of [b.x0, b.x1]) { xs.add(x - 0.01); xs.add(x + 0.01); } for (const z of [b.z0, b.z1]) { zs.add(z - 0.01); zs.add(z + 0.01); } }
   // #647, #975: no ground under Hus A / Hus B (base −3, the garage's basement floors lie at the park level):
   // the north face sits on the garage box edge (z0 = b.z0 − 0.01), so the pit starts there to avoid a 3 m steep
@@ -145,7 +159,7 @@ function terrainGeometry() {
   for (let j = 0; j < Z.length - 1; j++) for (let i = 0; i < nx - 1; i++) {
     const a = j * nx + i, b = a + 1, c = a + nx, d = c + 1;
     const mx = (X[i] + X[i + 1]) / 2, mz = (Z[j] + Z[j + 1]) / 2;
-    if (mz < T.north && mx > westEdge(mz) && mx < E.gable) continue; // world.js's flat plate
+    if (mz >= terrainNorth && mz < T.north && mx > westEdge(mz) && mx < E.gable) continue; // world.js's flat plate
     if (inPit(mx, mz)) continue; // under Hus A / B (see above)
     if (TERRAIN_PITS.some((p) => mx > p[0] && mx < p[1] && mz > p[2] && mz < p[3])) continue; // a stair well's footprint (#639)
     if (Math.abs(mx - T.garageDoor.x) < 0.02 && mz > T.garageDoor.z0 && mz < T.garageDoor.z1) continue; // the box edge's face: the garage door's opening (#357)

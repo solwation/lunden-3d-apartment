@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { SITE } from './config.js';
+import { SITE, ELEVATION } from './config.js';
 
 // The roads round Kv. Lunden (SITE.roads, #257): a road is a rectangle (`x0 x1 z0 z1`), a centre line (`path`: [x, z, r]
 // points, the corner at a point rounded to an arc of radius r; `w` = the width at each point, interpolated along the
@@ -140,7 +140,14 @@ export function pathStrip(road, a, b, lift, groundY, clip = false) {
     if (typeof clip==='function' ? clip(c) : clip && c.every(([x, z]) => onRoad(x, z, -0.05, road))) continue;
     // where the ground slopes, 10 cm pieces, so the strip stays on it through the slope's kinks
     const sloped = c.some(([x, z]) => Math.abs(groundY(x, z) - groundY(...c[0])) > 1e-4);
-    const n = sloped ? Math.ceil(Math.hypot(q.x - p.x, q.z - p.z) / 0.1) : 1;
+    // (#1305: outside ELEVATION.protect the ground is smooth: the strip is cut into the fewest equal pieces (1…16) whose edge midpoints lie within 1 cm of the chord, not always 10 cm ones)
+    const P = ELEVATION.protect, far = c[0][0] < P.x0 - 5 || c[0][0] > P.x1 + 5 || c[0][1] < P.z0 - 5 || c[0][1] > P.z1 + 5, full = Math.ceil(Math.hypot(q.x - p.x, q.z - p.z) / 0.1);
+    let n = sloped ? full : 1;
+    if (sloped && far) for (const m of [1, 2, 4, 8, 16]) {
+      if (m >= full) break;
+      const ok = [[c[0], c[2]], [c[1], c[3]]].every(([u, w]) => { for (let j = 0; j < m; j++) { const e0 = [u[0] + (w[0] - u[0]) * j / m, u[1] + (w[1] - u[1]) * j / m], e1 = [u[0] + (w[0] - u[0]) * (j + 1) / m, u[1] + (w[1] - u[1]) * (j + 1) / m]; if (Math.abs(groundY((e0[0] + e1[0]) / 2, (e0[1] + e1[1]) / 2) - (groundY(...e0) + groundY(...e1)) / 2) > 0.01) return false; } return true; });
+      if (ok) { n = m; break; }
+    }
     const lerp = (u, v, f) => [u[0] + (v[0] - u[0]) * f, u[1] + (v[1] - u[1]) * f];
     for (let j = 0; j < n; j++) {
       const v = [lerp(c[0], c[2], j / n), lerp(c[1], c[3], j / n), lerp(c[0], c[2], (j + 1) / n), lerp(c[1], c[3], (j + 1) / n)]
