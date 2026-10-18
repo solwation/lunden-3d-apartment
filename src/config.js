@@ -1725,7 +1725,7 @@ export const OUTDOOR = { x0: -78.5, x1: 27.5, z0: -14, z1: 64 };
 // shallow bank already stops the visitor (water is an obstacle; the bed is at SITE.bridges.bedY, so ground there is still under the water line). `rescue` m: where a visitor who still ends up in the river
 // is put back, measured from the edge of the water (*guess*). `maxSlope` rise/run: steeper ground holds the visitor back
 // (the #1233 banks stay under it: bankScale .55 gives roughly 0.5-0.7).
-export const WALK = { x0: -110, x1: 110, z0: -14, z1: 165, cell: 40, wade: 2, rescue: 3, maxSlope: 1.2 };
+export const WALK = { x0: -110, x1: 175, z0: -160, z1: 165, cell: 40, wade: 2, rescue: 3, maxSlope: 1.2 };
 
 // The garage under the courtyard and Hus L's basement (#357, #417, src/garage.js), per the våning −1 overview plan
 // (plan brochure p. 46; docs/peab/garage-vaning-m1.jpg, measured on docs/peab/kalibrerad/vaning-m1-300dpi.png with the

@@ -26,6 +26,11 @@ export function farSegments() {
   for (const group of [SITE.west, SITE.east, SITE.north, SITE.south]) for (const b of group.buildings) {
     out.push(...[b.polygon, ...(b.holes ?? [])].flatMap(ringSegs)); // a courtyard hole (Realgym) stays open ground inside its ring
   }
+  for (const b of [...SITE.west.buildings, ...SITE.east.buildings, ...SITE.north.buildings]) { // the Klockhuset's drawn centre (pilasters, pediment, clock tower) stands in front of its footprint
+    const c = b.campus?.centre; if (!c) continue;
+    const z0 = c.normal > 0 ? c.face - c.depth : c.face, z1 = z0 + c.depth;
+    out.push([c.x[0], z0, c.x[1], z0], [c.x[1], z0, c.x[1], z1], [c.x[1], z1, c.x[0], z1], [c.x[0], z1, c.x[0], z0]);
+  }
   for (const b of SITE.blocks) if (b.style) out.push([b.x0, b.z0, b.x1, b.z0], [b.x1, b.z0, b.x1, b.z1], [b.x1, b.z1, b.x0, b.z1], [b.x0, b.z1, b.x0, b.z0]);
   for (const r of bridgeRecords) out.push(...railSegs(r.x, r.z, r.dx, r.dz, r.len, r.width / 2 - 0.03)); // the bridges' side rails (the deck ends stay open)
   if (P.woodBridge) {
