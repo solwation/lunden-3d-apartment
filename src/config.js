@@ -2452,7 +2452,8 @@ export const LIFE_FOOD = {
     ['peas', 'freezer', 3], // on the lower open shelf beside the fish-finger carton
     ['breadBag', 'pantry', 0], // the bottom of the pantry cabinet
     ['sausagePack', 'fridge', 11], ['bunBag', 'pantry', 1], // #1124: grill sausages on the milk's shelf (#1188), hot-dog buns on the pantry shelf
-    ['billysBox', 'freezerDrawer4', 0], ['gorbysBox', 'freezerDrawer4', 1]], // #1209: frozen pan pizzas and pirogs (appended: old saves get them by restock); #1219: in the top freezer drawer, not beside the fries (items.js MIGRATIONS[2] moves old saves)
+    ['billysBox', 'freezerDrawer4', 0], ['gorbysBox', 'freezerDrawer4', 1], // #1209: frozen pan pizzas and pirogs (appended: old saves get them by restock); #1219: in the top freezer drawer, not beside the fries (items.js MIGRATIONS[2] moves old saves)
+    ['iceCreamBox', 'freezerDrawer3', 0]], // #1229: ice cream cone box in the drawer under Billys and Gorbys
 };
 
 // The kitchen's tools (#374, LIFE-010), kept like the food (life.js `restock`): the kitchen knife, the butter knife and the
@@ -2494,6 +2495,19 @@ export const FROZEN_MEALS = {
   billys: { count: 3, box: [0.165, 0.09, 0.15], piece: [0.13, 0.024, 0.13], crust: 0xc98b45, film: 0.006 },
   gorbys: { count: 4, box: [0.15, 0.08, 0.17], piece: [0.13, 0.034, 0.072], crust: 0xc58a4a, film: 0.006 },
   frost: 0.35, // how pale/frosty a frozen piece looks (0 = as baked, 1 = white)
+};
+// #1229: Ice cream cones in the freezer (a box of 6 cones with three flavours: vanilla, strawberry, chocolate).
+// Placed in freezerDrawer3 (under Billy and Gorby in freezerDrawer4). The cones are paper-wrapped (pkg closed);
+// unwrapping ('ta av pappret') allows eating the cone in bites.
+export const ICECREAM_CONES = {
+  count: 6,
+  box: [0.18, 0.09, 0.14],
+  flavors: {
+    vanilla: { id: 'vanilla', name: 'vaniljstruten', label: 'ta en vaniljstrut', color: 0xfff6dd, wrap: 0x3a7bd5 },
+    strawberry: { id: 'strawberry', name: 'jordgubbsstruten', label: 'ta en jordgubbsstrut', color: 0xf4729b, wrap: 0xe64980 },
+    chocolate: { id: 'chocolate', name: 'chokladstruten', label: 'ta en chokladstrut', color: 0x542e18, wrap: 0x845ec2 },
+  },
+  cone: { h: 0.11, r: 0.024, waffle: 0xd49b55 },
 };
 // #1210: warming a plate of food in L1007's microwave (src/microwave.js). The panel's time button cycles `presets` (display
 // seconds); one real second runs `clock` display seconds. A heatable food (ITEMS `heat`: warm / hot / burn in display seconds
@@ -2559,6 +2573,19 @@ export const ITEMS = {
   gorbysBox: { name: 'Gorbys-kartongen', noun: 'piroger', tags: ['food', 'frozen', 'package'], unit: 'count', amount: FROZEN_MEALS.gorbys.count, size: 'm', pkg: 'closed', model: 'gorbysBox', dispense: 'pirog', dispenseLabel: 'ta en Gorbys pirog' },
   pirog: { name: 'pirogen', noun: 'pirog', tags: ['food', 'frozen'], unit: 'count', amount: 1, size: 's', pkg: 'closed', model: 'pirog', bites: 3, needsCooking: true, heat: { ...MICROWAVE.heat },
     cookText: 'Pirogen är djupfryst – värm den först', unwrap: 'packa upp pirogen', wrappedName: 'den inplastade pirogen', frozenName: 'den frysta pirogen', hotName: 'den varma pirogen' },
+  // #1229: ice cream cone box and cones in three flavours
+  iceCreamBox: { name: 'glasskartongen', noun: 'strutglass', tags: ['food', 'frozen', 'package'], unit: 'count', amount: ICECREAM_CONES.count, size: 'm', pkg: 'closed', model: 'iceCreamBox',
+    dispenseOptions: [
+      { type: 'iceCreamConeVanilla', label: 'ta en vaniljstrut' },
+      { type: 'iceCreamConeStrawberry', label: 'ta en jordgubbsstrut' },
+      { type: 'iceCreamConeChocolate', label: 'ta en chokladstrut' },
+    ] },
+  iceCreamConeVanilla: { name: 'vaniljstruten', noun: 'strutglass', tags: ['food', 'frozen'], unit: 'count', amount: 1, size: 's', pkg: 'closed', model: 'iceCreamConeVanilla', bites: 4,
+    unwrap: 'ta av pappret', wrappedName: 'den inslagna vaniljstruten', frozenName: 'vaniljstruten', eatClosedText: 'Ta av pappret först', crumbs: true },
+  iceCreamConeStrawberry: { name: 'jordgubbsstruten', noun: 'strutglass', tags: ['food', 'frozen'], unit: 'count', amount: 1, size: 's', pkg: 'closed', model: 'iceCreamConeStrawberry', bites: 4,
+    unwrap: 'ta av pappret', wrappedName: 'den inslagna jordgubbsstruten', frozenName: 'jordgubbsstruten', eatClosedText: 'Ta av pappret först', crumbs: true },
+  iceCreamConeChocolate: { name: 'chokladstruten', noun: 'strutglass', tags: ['food', 'frozen'], unit: 'count', amount: 1, size: 's', pkg: 'closed', model: 'iceCreamConeChocolate', bites: 4,
+    unwrap: 'ta av pappret', wrappedName: 'den inslagna chokladstruten', frozenName: 'chokladstruten', eatClosedText: 'Ta av pappret först', crumbs: true },
   hotdogBun: { name: 'korvbrödet', noun: 'korvbröd', tags: ['food', 'base', 'bun'], unit: 'count', amount: 1, size: 's', model: 'hotdogBun', bites: 4 },
   plate: { name: 'tallriken', tags: ['dish', 'carrier', 'dishwasherSafe'], unit: 'count', amount: 1, size: 'm', clean: 'clean', model: 'plate',
     carrier: { slots: 6, size: 's', accepts: ['food'], fullText: 'Tallriken är full', order: [0, 1, 2, 3, 4, 5] } }, // the middle first, then round it

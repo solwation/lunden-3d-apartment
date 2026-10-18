@@ -1,0 +1,107 @@
+<!doctype html><html><meta charset="utf-8"><title>Ice cream cones (#1229)</title><pre id="out">running…</pre><script type="module">
+// #1229: Ice cream cones in the freezer (a box of 6 cones with three flavours: vanilla, strawberry, chocolate).
+// Located in freezerDrawer3, slot 0 (drawer under Billys and Gorbys in freezerDrawer4).
+// Cones are paper-wrapped (pkg closed); unwrapping ('ta av pappret') allows eating the cone in 4 bites.
+const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS':'FAIL')+' '+s);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
+try{
+  const frame=document.createElement('iframe');frame.width=480;frame.height=300;frame.src='../index.html?life&shot&test';document.body.append(frame);await new Promise(r=>frame.onload=r);while(!frame.contentWindow.__app)await wait(100);
+  const w=frame.contentWindow,A=w.__app,T=await w.eval("import('three')"),{ICECREAM_CONES:C}=await w.eval("import('../src/config.js')"),L=A.life,I=L.items;
+  frame.contentDocument.documentElement.requestFullscreen=undefined;frame.contentDocument.getElementById('start-touch').click();A.renderer.setAnimationLoop(null);
+  const action=(target,id)=>L.options(target).find(a=>a.id===id),run=(target,id)=>action(target,id)?.run(),finish=s=>L.runner.update(s??1);
+  const tgt=it=>L.view(it).target,freezer=A.world.lids.find(l=>l.kind==='fridge'&&l.freezer);
+
+  // 1. Box location in freezerDrawer3, slot 0
+  let box=I.all().find(i=>i.type==='iceCreamBox');
+  check(box?.amount===C.count&&box.place.store==='freezerDrawer3'&&box.place.slot===0,'ice cream box at home in freezerDrawer3, slot 0');
+  const drawer=freezer.drawers.find(d=>d.storeId==='freezerDrawer3');
+  check(!!drawer&&L.view(box).model.parent?.parent===drawer.object,'the box rides with freezerDrawer3');
+
+  // 2. Closed freezer blocks taking
+  check(action(tgt(box),'dispense_0')?.reason==='Öppna frysen först','closed freezer blocks taking cones');
+
+  // 3. Open freezer, but drawer 3 is closed
+  freezer.toggle();for(let i=0;i<20;i++)freezer.update(.1);L.update(0);
+  check(/^Dra ut fryslåda 3 helt först$/.test(action(tgt(box),'dispense_0')?.reason??''),'freezer drawer 3 must be pulled out first');
+
+  // 4. Pull out drawer 3, but box is closed
+  drawer.toggle();for(let i=0;i<20;i++)drawer.update(.1);L.update(0);
+  check(/^Öppna glasskartongen först$/.test(action(tgt(box),'dispense_0')?.reason??''),'closed box must be opened first');
+
+  // 5. Open the box
+  run(tgt(box),'open');check(box.pkg==='open','the ice cream box opens');
+
+  // 6. Three flavour choices available
+  const d0=action(tgt(box),'dispense_0'),d1=action(tgt(box),'dispense_1'),d2=action(tgt(box),'dispense_2');
+  check(d0&&!d0.reason&&d0.label==='ta en vaniljstrut','offers vanilla cone choice');
+  check(d1&&!d1.reason&&d1.label==='ta en jordgubbsstrut','offers strawberry cone choice');
+  check(d2&&!d2.reason&&d2.label==='ta en chokladstrut','offers chocolate cone choice');
+
+  // 7. Dispense vanilla cone into hand
+  d0.run();finish();
+  const c0=I.held();
+  check(c0?.type==='iceCreamConeVanilla'&&c0.pkg==='closed'&&box.amount===C.count-1&&I.name(c0)==='den inslagna vaniljstruten','one wrapped vanilla cone in the hand');
+
+  // 8. Cannot eat while paper wrapper is on
+  check(action({instance:c0},'eat')?.reason==='Ta av pappret först','cannot eat while wrapped: Ta av pappret först');
+
+  // 9. Unwrap paper
+  const un=action({instance:c0},'open');
+  check(un&&!un.reason&&un.label==='ta av pappret','offers unwrapping paper: ta av pappret');
+  un.run();
+  check(c0.pkg==='open'&&I.name(c0)==='vaniljstruten','unwrapped cone: pkg open, name vaniljstruten');
+  check(!action({instance:c0},'close'),'no re-wrapping paper');
+
+  // 10. Eat the cone in 4 bites
+  check(!action({instance:c0},'eat')?.reason,'can eat unwrapped cone');
+  run({instance:c0},'eat');finish(0.6); // bite 1
+  check(c0.amount===0.75,'bite 1: amount is 0.75');
+  run({instance:c0},'eat');finish(0.6); // bite 2
+  check(c0.amount===0.5,'bite 2: amount is 0.5');
+  run({instance:c0},'eat');finish(0.6); // bite 3
+  check(c0.amount===0.25,'bite 3: amount is 0.25');
+  run({instance:c0},'eat');finish(0.6); // bite 4 (finishes cone)
+  check(!I.held()&&!I.get(c0.id),'bite 4: cone is eaten up completely');
+
+  // 11. Dispense strawberry cone and chocolate cone
+  const dStrawberry=action(tgt(box),'dispense_1');
+  dStrawberry.run();finish();
+  const c1=I.held();
+  check(c1?.type==='iceCreamConeStrawberry'&&c1.pkg==='closed'&&box.amount===C.count-2&&I.name(c1)==='den inslagna jordgubbsstruten','one wrapped strawberry cone in hand');
+  run({instance:c1},'open');
+  check(c1.pkg==='open'&&I.name(c1)==='jordgubbsstruten','strawberry cone unwrapped');
+
+  // 12. Save / load persistence
+  const rec=JSON.parse(JSON.stringify(L.serialize()));L.load(rec);
+  const c1After=I.get(c1.id),boxAfter=I.get(box.id);
+  check(c1After?.pkg==='open'&&c1After.place.at==='hand','save/load: unwrapped cone still in hand');
+  check(boxAfter?.amount===C.count-2&&boxAfter.pkg==='open','save/load: box keeps amount and open state');
+
+  // 13. Eat strawberry cone to clear hand
+  run({instance:c1After},'eat');finish(0.6);
+  run({instance:c1After},'eat');finish(0.6);
+  run({instance:c1After},'eat');finish(0.6);
+  run({instance:c1After},'eat');finish(0.6);
+  check(!I.held(),'strawberry cone finished');
+
+  // 14. Dispense chocolate cone
+  const dChocolate=action(tgt(boxAfter),'dispense_2');
+  dChocolate.run();finish();
+  const c2=I.held();
+  check(c2?.type==='iceCreamConeChocolate'&&c2.pkg==='closed'&&boxAfter.amount===C.count-3,'chocolate cone dispensed');
+  run({instance:c2},'open');
+  check(c2.pkg==='open'&&I.name(c2)==='chokladstruten','chocolate cone unwrapped');
+
+  // 15. Restock check: old save without iceCreamBox gets it
+  const old=JSON.parse(JSON.stringify(rec));
+  old.items=old.items.filter(e=>!['iceCreamBox','iceCreamConeVanilla','iceCreamConeStrawberry','iceCreamConeChocolate'].includes(e.type));
+  L.load(old);
+  const restocked=L.restock().map(i=>i.type);
+  check(restocked.includes('iceCreamBox'),'an old save gets iceCreamBox by restock');
+  const restoredBox=I.all().find(i=>i.type==='iceCreamBox');
+  check(restoredBox?.place.store==='freezerDrawer3'&&restoredBox?.place.slot===0,'restocked box lands in freezerDrawer3 slot 0');
+
+  window.iceCreamShot={A,freezer,drawer};
+  check(true,'done');
+}catch(e){lines.push('FAIL '+e.stack);pass=false;}
+document.getElementById('out').textContent=(pass?'ALL PASS':'SOME FAILED')+'\n'+lines.join('\n');
+</script></html>

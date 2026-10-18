@@ -122,7 +122,7 @@ export function cookingActions(life) {
   A.define({
     id: 'dispense', order: 3, duration: LIFE.dispense.seconds,
     label: (c) => I.def(c.target).dispenseLabel ?? `ta ${I.name({ type: I.def(c.target).dispense })}`,
-    applies: (c) => !!I.def(c.target)?.dispense && c.target.place.at !== 'hand',
+    applies: (c) => !I.def(c.target)?.dispenseOptions && !!I.def(c.target)?.dispense && c.target.place.at !== 'hand',
     check: (c) => {
       if (c.heldView) return `Lägg ifrån dig ${c.heldView.name ?? 'det du håller'} först`;
       const shut = c.targetView?.shutReason();
@@ -143,12 +143,43 @@ export function cookingActions(life) {
     consumes: 'one (count) out of the package', result: 'one new thing of its `dispense` type in the hand; an empty package stays (pkg empty)',
   });
 
+  // #1229: multiple dispense options (e.g. ice cream cone flavours)
+  for (let i = 0; i < 4; i++) {
+    A.define({
+      id: `dispense_${i}`, order: 3 + i * 0.05, duration: LIFE.dispense.seconds,
+      label: (c) => I.def(c.target)?.dispenseOptions?.[i]?.label ?? '',
+      applies: (c) => !!I.def(c.target)?.dispenseOptions?.[i] && c.target.place.at !== 'hand',
+      check: (c) => {
+        if (c.heldView) return `Lägg ifrån dig ${c.heldView.name ?? 'det du håller'} först`;
+        const shut = c.targetView?.shutReason();
+        if (shut) return shut;
+        if (c.target.pkg === 'closed') return `Öppna ${nm(c.target)} först`;
+        if (c.target.amount < 1 - 1e-6) return `${cap(nm(c.target))} är tom`;
+        return null;
+      },
+      reserve: (c) => ({ inputs: [c.target] }),
+      commit: (c) => {
+        I.consume(c.target, 1);
+        const opt = I.def(c.target).dispenseOptions[i];
+        const got = I.create(opt.type, { at: 'hand' });
+        if (I.isEmpty(c.target)) I.set(c.target, { pkg: 'empty' });
+        sfx.rustle?.(c.targetView?.where());
+        return got;
+      },
+      consumes: 'one (count) out of the package', result: 'one new item of the chosen option in the hand; an empty package stays (pkg empty)',
+    });
+  }
+
   // a bite (#377; the sandwich's in #380): the thing in the hand to the mouth, a bite off half-way, the last one eats it up
   A.define({
     id: 'eat', order: 0, duration: LIFE.eat.seconds, commitAt: 0.5,
     label: 'äta',
     applies: (c) => !!c.target && c.target === c.held && !!I.def(c.target)?.bites,
-    check: (c) => I.def(c.target).needsCooking && !c.target.machine.cooked ? I.def(c.target).cookText ?? 'Stek ägget först' : (c.target.amount > 1e-6 ? null : 'Det finns inget kvar'),
+    check: (c) => {
+      if (c.target.pkg === 'closed') return I.def(c.target).eatClosedText ?? (I.def(c.target).unwrap ? 'Ta av pappret först' : `Öppna ${nm(c.target)} först`);
+      if (I.def(c.target).needsCooking && !c.target.machine.cooked) return I.def(c.target).cookText ?? 'Stek ägget först';
+      return c.target.amount > 1e-6 ? null : 'Det finns inget kvar';
+    },
     reserve: (c) => ({ inputs: [c.target] }),
     animate: (c, k, job) => { // to the mouth and back
       const v = c.heldView;
