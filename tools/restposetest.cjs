@@ -26,7 +26,8 @@ const [base='http://localhost:8795', worker='http://localhost:8796', out='/tmp/l
     window.peer=()=>[...ghosts.others.values()].find(g=>g.name===(i?'Resting':'Observer'));
     const C=await import('/src/config.js');
     window.sample=()=>{const g=peer();g.root.updateMatrixWorld(true);const head=g.avatar.bones.head.getWorldPosition(new T.Vector3());const center=head.clone().add(new T.Vector3(0,.1,0).applyQuaternion(g.avatar.bones.torso.getWorldQuaternion(new T.Quaternion())));
-      const state={p:g.feet.toArray(),r:g.root.rotation.y,pose:g.pose};const origin=center.clone().add(new T.Vector3(2,0,0));const hit=C.rifleBoxHeadContact(g.id,state,origin.toArray(),[-1,0,0],4);
+      // #1267: like Combat, the state carries the peer's wire avatar code; without it the boxes use the id-seeded default look and the ray missed for some ids
+      const state={p:g.feet.toArray(),r:g.root.rotation.y,pose:g.pose,...C.splitAvatarCode(g.avatarCode)};const origin=center.clone().add(new T.Vector3(2,0,0));const hit=C.rifleBoxHeadContact(g.id,state,origin.toArray(),[-1,0,0],4);
       const chest=g.avatar.bones.torso.localToWorld(new T.Vector3(0,.3,0));
       const oldH=g.h;g.h='rifle';camera.position.copy(origin);camera.lookAt(center);camera.updateMatrixWorld(true);
       const nativeHead=combat.rifleContact().hc?.[0]===2;
