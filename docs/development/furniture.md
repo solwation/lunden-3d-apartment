@@ -83,6 +83,8 @@ src/newyear.js         New Year's Eve (#1199, part of #1170, NEW_YEAR): `newYear
                        #1222 "Skåla": any held Glass has `useAlt` (right click / the 🥂 button): sfx.clink, the glass raised (`toastT`, TOAST.raise s),
                        a line from TOAST and one room message; a nearby player's toast is answered once while a glass is held; Olof
                        answers from the car within TOAST.olof m. main.js `toastHandler`; test: tools/newyeartoasttest.cjs BASE OUT.
+                       #1239: each client counts down at its own local midnight (the game clock starts at the visitor's real h:m:s, no
+                       longer minute-truncated); TVs retry while the phase lasts (mains back on); entering 'cheer' from any phase starts the fireworks.
                        Fireworks: #1200. Test: tools/newyeartest.cjs BASE OUT (frozen + running clock, screenshots, draw calls)
 src/christmas.js       the season layer (#571): `inChristmas(y, m, d)` (1 Dec – 6 Jan inclusive, over the new year) and
                        `ChristmasSeason` (main.js, every frame by the day cycle's date): shows/hides the tree, hides the pieces whose

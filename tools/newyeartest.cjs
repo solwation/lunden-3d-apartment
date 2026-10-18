@@ -70,6 +70,32 @@ const check = (ok, name) => { console.log(`${ok ? 'PASS' : 'FAIL'} ${name}`); if
     check(errors.length === 0, `no page errors ${errors.join(' | ')}`);
     await page.context().close();
 
+    // 1b) #1239: players must see it at the same instant, whatever their state
+    // (a) mains off at the countdown start, back on a few seconds later: the TVs still get the countdown
+    const q = await kit.open(browser, `${base}/?newyear&freeze&shot&at=3.95,12.3,0,-14`, { lazy: true });
+    const qs = (src) => q.page.evaluate(async (src) => { const { day, step } = window.__app; new Function('day', src)(day); for (let i = 0; i < 12; i++) step(1 / 60); return window.__app.world.furnitureTargets.filter((t) => t.kind === 'tv').map((t) => t.isOpen); }, src);
+    await q.page.evaluate(() => { window.__app.power.state = 'off'; });
+    let tvs = await qs('day.hour = 24 - 8 / 3600;');
+    check(tvs.every((v) => !v), 'mains off: the TVs stay off');
+    await q.page.evaluate(() => { window.__app.power.state = 'on'; });
+    tvs = await qs('day.hour = 24 - 6 / 3600;');
+    check(tvs.length && tvs.every(Boolean), 'mains back on during the countdown: the TVs switch on (#1239)');
+    // (b) no countdown frame drawn (hidden tab / stall): straight into 1 January 00:00:30 still sets off the fireworks
+    const before = await q.page.evaluate(() => window.__app.showFireworks.active());
+    await qs('day.hour = 22;'); await qs('day.addDays(1); day.hour = 30 / 3600;');
+    const fw = await q.page.evaluate(() => window.__app.showFireworks.active());
+    check(!before && fw, 'a missed countdown still starts the fireworks at midnight (#1239)');
+    await q.ctx.close();
+    // (c) the game clock starts at the visitor's real second (not up to a minute behind), in any time zone
+    for (const tz of ['Europe/Stockholm', 'Pacific/Auckland', 'America/Los_Angeles']) {
+      const c = await kit.open(browser, `${base}/?shot`, { lazy: true, contextOptions: { timezoneId: tz },
+        init: () => { const R = Date, off = new R(2026, 11, 31, 23, 59, 41).getTime() - R.now(); // 23:59:41 local, whatever the zone
+          globalThis.Date = class extends R { constructor(...a) { a.length ? super(...a) : super(R.now() + off); } static now() { return R.now() + off; } }; } });
+      const [h, real] = await c.page.evaluate(() => { const n = new Date(); return [window.__app.day.hour * 3600, n.getHours() * 3600 + n.getMinutes() * 60 + n.getSeconds()]; });
+      check(Math.abs(h - real) < 3 || Math.abs(Math.abs(h - real) - 86400) < 3, `${tz}: game clock ${h.toFixed(0)} s of the day vs the real ${real} s (was up to 60 s behind)`);
+      await c.ctx.close();
+    }
+
     // 2) the running clock through midnight
     const r = await kit.open(browser, `${base}/?newyear&shot`, { lazy: true });
     const seen = new Set();

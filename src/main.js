@@ -355,7 +355,7 @@ const lookDir = new THREE.Vector3(); // (the light pool prefers lamps in front, 
 // ?day=1–31 (with ?month alone the date is the 15th)
 const now = new Date();
 const newYearDebug = params0.has('newyear'); // ?newyear: 23:59:45 on 31 December, just before the TV countdown (#1199)
-const startHour = params0.has('time') ? Number(params0.get('time')) : newYearDebug ? NEW_YEAR.debugHour : now.getHours() + now.getMinutes() / 60;
+const startHour = params0.has('time') ? Number(params0.get('time')) : newYearDebug ? NEW_YEAR.debugHour : now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600; // (with the seconds: without them every visit ran up to a minute behind the real clock, so the New Year countdown (#1239) started late and out of step with other players)
 const month = params0.has('month') ? Number(params0.get('month')) : newYearDebug ? 12 : now.getMonth() + 1;
 const date = params0.has('day') ? Number(params0.get('day')) : newYearDebug ? 31 : params0.has('month') ? 15 : now.getDate();
 const day = new DayCycle({ scene, camera, renderer, lights: { sun, hemi, ambient, fill }, clouds: cloudTexture(), startHour, month, date, year: params0.has('year') ? Number(params0.get('year')) : now.getFullYear() }); // (&year= with &month= &day=: a date in another year, #674)

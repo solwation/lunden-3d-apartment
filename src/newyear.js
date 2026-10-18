@@ -117,7 +117,7 @@ export class NewYear {
   /** tvs: the TV targets (furniture.js tv(), with .screen and toggle()); allowed(): may the TVs switch on (mains, furniture shown);
    * shown(): is the furniture shown (F hides the flutes with it). `flutes`: the glasses (main.js adds them to the holdables). */
   constructor({ scene, camera, day, tvs, allowed = () => true, shown = () => true, onMidnight = null }) {
-    Object.assign(this, { scene, day, tvs, allowed, shown, onMidnight, phase: '', forced: new Set(), glasses: null, decorKey: '', out: false, st: null, year: 0 });
+    Object.assign(this, { scene, day, tvs, allowed, shown, onMidnight, phase: '', engaged: false, forced: new Set(), glasses: null, decorKey: '', out: false, st: null, year: 0 });
     this.flutes = N.glasses.map((xz, i) => new Flute(scene, camera, this, xz, i));
     this.overlay = (ctx, w, h) => drawNewYear(ctx, w, h, this.st, this.year); // one shared overlay for every TV
   }
@@ -125,7 +125,9 @@ export class NewYear {
   update() {
     const st = this.st = newYearPhase(this.day);
     this.year = this.day.month === 1 ? this.day.year : this.day.year + 1;
-    if (st.phase && !this.phase && this.allowed()) {
+    if (!st.phase) this.engaged = false;
+    if (st.phase && !this.engaged && this.allowed()) { // (retried while the phase lasts: mains back on / furniture shown again late still gets the countdown, #1239)
+      this.engaged = true;
       for (const t of this.tvs) if (!t.isOpen) { t.toggle(); this.forced.add(t); }
     }
     if (!st.phase && this.phase) {
@@ -134,7 +136,7 @@ export class NewYear {
       this.forced.clear();
     }
     if (st.phase) for (const t of this.tvs) t.screen.overlay = t.isOpen ? this.overlay : null;
-    if (this.phase === 'count' && st.phase === 'cheer') this.onMidnight?.(); // the countdown reached 0: the fireworks (#1200)
+    if (st.phase === 'cheer' && this.phase !== 'cheer') this.onMidnight?.(); // (also when no countdown frame was drawn: hidden tab or stall at midnight, #1239) // the countdown reached 0: the fireworks (#1200)
     this.phase = st.phase;
     this.updateFlutes();
   }
