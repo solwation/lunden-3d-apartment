@@ -1,6 +1,6 @@
 import { applyRestPose } from './remote-pose.js';
 import * as THREE from 'three';
-import { FALL } from './config.js';
+import { FALL, TOAST } from './config.js';
 import { GHOSTS as G, COMBAT, AVATAR, AVATAR_CROUCH, CHAT, encodeAvatarWireLook, decodeAvatarLook, splitAvatarCode, playerBodySegment } from './config.js';
 import { Avatar, armTarget } from './avatar.js';
 import { totalScore } from './stats.js';
@@ -382,6 +382,7 @@ export class Ghosts {
     else if (m.t === 'hurt') this.onHurt(m, this.others.get(m.by));
     else if (m.t === 'a') { const g = this.others.get(m.i); if (g) this.onShot?.(m, g); }
     else if (m.t === 'g') { const g = this.others.get(m.i); if (g) { g.wave(); this.greetsSeen++; this.onGreet?.(m, g, m.to === this.me ? null : this.others.get(m.to) ?? null); } }
+    else if (m.t === 'c') { const g = this.others.get(m.i); if (g) this.onToast?.(m, g); } // a toast (#1222): the room sends it only from within PLAYERS.toastRange
     else if (m.t === 'm' || m.t === 'mx' || m.t === 'k') this.onTalk?.(m, this.others.get(m.i)); // chat (#675) and "skriver…" (#676), src/chat.js
   }
 
@@ -537,6 +538,18 @@ export class Ghosts {
     while (this.outbox.length > G.outbox) this.outbox.splice(this.outbox.findIndex(m => m.t !== 'fall' && m.t !== 'consume'), 1);
     this.sendShot();
     return G.hello[k].replace('{n}', g.name);
+  }
+
+  /** Our toast (#1222): line index `k` of TOAST_LINES (never text), `back` when it answers one. One small message; the room
+   * passes it to the players near us. At most one every TOAST.every s. False when not connected / too soon. */
+  toast(k, back = false) {
+    const t = performance.now();
+    if (!this.connected || t - (this.toastAt ?? -1e9) < TOAST.every * 1000) return false;
+    this.toastAt = t;
+    this.outbox.push({ t: 'c', k, ...(back ? { b: true } : {}) });
+    while (this.outbox.length > G.outbox) this.outbox.splice(this.outbox.findIndex(m => m.t !== 'fall' && m.t !== 'consume'), 1);
+    this.sendShot();
+    return true;
   }
 
   /** A shot (#667): { w, o: [x, y, z], d: [dx, dy, dz] unit, s?: speed, to?: the id it hit }, every one, misses too, so

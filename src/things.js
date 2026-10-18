@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { Holdable, heldItem, handBusy } from './holdable.js';
 import { sfx } from './audio.js';
-import { DRINKS as D, PHOTO_FRAME } from './config.js';
+import { DRINKS as D, PHOTO_FRAME, TOAST } from './config.js';
 import { Contents, GlassLiquid, pourAmount, drinkName } from './drinks.js';
 
 // Small things in the living room you can take (#152): the wine bottles in the wine rack, the whisky bottles and
@@ -66,12 +66,16 @@ export class Bottle extends Thing {
 }
 
 /** A glass: something to pour into, and to drink from. */
+/** Set by main.js: (glass) => true when the toast happens (#1222). */
+export const toastHandler = { fn: null };
+
 export class Glass extends Thing {
   constructor(scene, camera, opts) {
     super(scene, camera, opts);
     this.contents = new Contents();
     this.liquid = new GlassLiquid(this.model, opts.inner ?? [[0.03, 0.01], [0.03, 0.09]]);
     this.sipT = 0;
+    this.toastT = 0;
     const self = this;
     Object.defineProperties(this.takeTarget, {
       verb: { get: () => self.pourVerb, configurable: true },
@@ -120,6 +124,11 @@ export class Glass extends Thing {
   /** "Drick" while something is in it. */
   get useLabel() { return this.held && this.fill > 0.01 ? 'Drick' : null; }
 
+  /** Right click / the 🥂 button while holding it: "Skåla" (#1222). main.js (`toastHandler`) makes the clink, the line and the message. */
+  get altLabel() { return 'Skåla'; }
+  get altIcon() { return '🥂'; }
+  useAlt(back = false) { if (this.held && this.toastT <= 0 && toastHandler.fn?.(this, back === true)) this.toastT = 1; }
+
   onUse() {
     if (this.fill <= 0.01) return;
     this.sipT = 1; this.used = true;
@@ -145,6 +154,12 @@ export class Glass extends Thing {
     const k = Math.sin(this.sipT * Math.PI), p = this.heldPose.pos, r = this.heldPose.rot; // up to the mouth, tipped, down again
     this.model.position.set(p.x - 0.14 * k, p.y + 0.15 * k, p.z + 0.16 * k);
     this.model.rotation.set(r.x + 1.1 * k, r.y, r.z);
+    if (this.toastT > 0) { // the toast: out and up, a small clink-jerk at the top (TOAST.raise s), down again
+      this.toastT = Math.max(0, this.toastT - dt / TOAST.raise);
+      const u = Math.sin(this.toastT * Math.PI), jerk = this.toastT < 0.55 && this.toastT > 0.4 ? 0.02 : 0;
+      this.model.position.x += 0.04 * u; this.model.position.y += 0.1 * u + jerk; this.model.position.z -= 0.14 * u;
+      this.model.rotation.z += 0.25 * u;
+    }
   }
 
   update(dt) {

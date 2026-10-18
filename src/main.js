@@ -62,7 +62,7 @@ import { Quality } from './quality.js';
 import { HitchLog } from './hitchlog.js';
 import { applySeason } from './seasons.js';
 import { ChristmasSeason } from './christmas.js';
-import { NewYear } from './newyear.js';
+import { NewYear, glassesOut } from './newyear.js';
 import { saveResume, saveSession, takeResume } from './resume.js';
 import { saveWorld, loadWorld, hasRestoredBicycleHand } from './keep.js';
 import { lifeDev, devScenario, Life } from './life.js';
@@ -92,7 +92,7 @@ import { DetailCuller } from './detail.js';
 import { BlindPanel } from './blinds.js';
 import { Turbo } from './turbo.js';
 import { Beer } from './beer.js';
-import { buildThings } from './things.js';
+import { buildThings, toastHandler, Glass } from './things.js';
 import { buildSecret } from './secret.js';
 import { Hand, handLook } from './hand.js';
 import { HandWash } from './handwash.js';
@@ -141,7 +141,7 @@ import { Ghosts } from './ghosts.js';
 import { Combat } from './combat.js';
 import { Bow, Arrows } from './bow.js';
 import { Chat } from './chat.js';
-import { COMBAT, CHAT, GHOSTS, TOUCH, NEW_YEAR } from './config.js';
+import { COMBAT, CHAT, GHOSTS, TOUCH, NEW_YEAR, TOAST, TOAST_LINES } from './config.js';
 import { Basketball, Hoop } from './basket.js';
 import { Mess } from './mess.js';
 import { readTestMode, makeTestController } from './testmode.js';
@@ -2123,7 +2123,7 @@ function updateFocus() {
   actionBtn.hidden = !(focused || reading || holding || seated) || !touch.enabled || (!!choices.rows && !reading) || clockPanel.open || calPanel.open || blindPanel.open || sonos.open || !!viewing || isAvatarCustomizerOpen(); // the strips have their own ×
   powerBtn.hidden = !touch.enabled || !heldItem()?.useAlt || reading;
   turnBtn.hidden = !touch.enabled || reading || focused?.kind !== 'place' || !!focused.blocked || !itemGhost.visible; // ⟳ (#368)
-  if (!powerBtn.hidden) setIcon(powerBtn,heldItem().altIcon==='🏀'?'basketball':'power',heldItem().altLabel??'Stäng av / slå på TV:n');
+  if (!powerBtn.hidden) setIcon(powerBtn,heldItem().altIcon==='🏀'?'basketball':heldItem().altIcon==='🥂'?'cheers':'power',heldItem().altLabel??'Stäng av / slå på TV:n');
 }
 
 // --- furniture on/off (F / 🛋) ---------------------------------------------
@@ -2571,6 +2571,28 @@ function greetPlayer(g) {
   if (!greetedPlayers.has(g.name)) { greetedPlayers.add(g.name); bump('greets', 1, `player:${g.name}`); }
 }
 ghosts.onGreet = (m, g, other) => greet.say({ head: g.head, s: 1 }, GHOSTS.hello[m.k]?.replace('{n}', other ? other.name : (leaderboard.name || 'Anonym')) ?? 'Hej!', { pitch: 1.1, rate: 1.05, voice: 1 }, undefined, g.avatar);
+// toasting (#1222): "Skåla" with a glass in the hand (right click / 🥂): a clink, the glass raised (things.js), a line and one small
+// message; a player near us who holds a glass hears it and toasts back once (flagged, so no ping-pong); Olof answers from his car.
+toastHandler.fn = (glass, back = false) => {
+  const pool = back ? TOAST.answer : glassesOut(day) ? TOAST.newYear : TOAST.lines;
+  const line = pool[Math.floor(Math.random() * pool.length)];
+  if (ghosts.connected && !ghosts.toast(TOAST_LINES.indexOf(line), back)) return false; // (too soon after the last: the room allows the same)
+  sfx.clink(glass.where());
+  greet.sayMine(line);
+  const olofHead = olofDriver.greetable(rest.active && rest.target?.car === car) ? olofDriver.fig.head.getWorldPosition(new THREE.Vector3()) : null;
+  if (!back && olofHead && olofHead.distanceTo(camera.position) < TOAST.olof) setTimeout(() => { // Olof toasts back (nice-to-have)
+    greet.say({ head: olofDriver.fig.head, s: 1 }, TOAST.back.replace('{n}', leaderboard.name || 'Anonym'), { pitch: 0.85, rate: 1, voice: 3 }, undefined, olofDriver.avatar);
+    sfx.clink(olofHead);
+  }, 900);
+  return true;
+};
+ghosts.onToast = (m, g) => {
+  greet.say({ head: g.head, s: 1 }, TOAST_LINES[m.k] ?? 'Skål!', { pitch: 1.1, rate: 1.05, voice: 1 }, undefined, g.avatar);
+  sfx.clink(g.head);
+  const mine = heldItem();
+  if (!m.b && mine instanceof Glass) mine.useAlt(true); // answer once with our own glass
+  else if (mine instanceof Glass && mine.toastT <= 0) mine.toastT = 1; // … and raise it for an answered toast too
+};
 greet.mineAvatar = () => ghosts.selfGhost().avatar; // (#1122: your spoken lines move your mirror image's mouth)
 window.__ghosts = ghosts; window.__combat = combat; window.__bow = bow; window.__arrows = arrows; window.__presence = presence;
 chat = new Chat({ ghosts, log: document.getElementById('chat-log'), setting: document.getElementById('menu-chat-setting'), name: () => leaderboard.name, // #675

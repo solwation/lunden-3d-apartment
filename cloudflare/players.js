@@ -21,6 +21,8 @@ import { TOYS, SCORE, pvpHitPoints, PVP_RIFLE_HEAD as RH, rifleHeadContact, PVP_
 // av?: the look code's digits, ax?: its face extension (#1138) } and a shot
 // { t: 'a', w, o, d, s?, to? } (#667, `cleanShot`; forwarded to the armed others as { t: 'a', i, w, o, d, s? }) — anything
 // else is dropped.
+// A toast (#1222) { t: 'c', k, b? } (k: a line index, b: true when it answers a toast) goes to the players within
+// PLAYERS.toastRange m as { t: 'c', i, k, b? }; no text, at most one per toastEvery s per connection.
 // A greeting (#673) { t: 'g', to, k } goes to everybody else as { t: 'g', i, to, k } (k: a phrase index, no text).
 // Room → client: { t: 'w', i: your id, ps: [{ i, n, p, r, h, score, l }], c: { lives, weapons } } on joining; { t: 'j', i, n, l } someone
 // joined; { t: 's', i, p, r, h, score, l } a state (l = server-owned remaining lives); { t: 'x', i } someone left; 'hit' / 'hurt' (#667). n = the name ('' = "Anonym").
@@ -39,6 +41,9 @@ export const PLAYERS = {
   nameMax: 20,         // as the leaderboard
   greetEvery: 3,       // #673: a greeting at most this often per connection (s; the client's GHOSTS.greetEvery)
   greetPhrases: 16,    // #673: the phrase is an index below this into the client's fixed list, never text
+  toastEvery: 2,       // #1222: a toast at most this often per connection (s; the client's TOAST.every)
+  toastRange: 6,       // #1222: only players within this many metres of the toaster's last known position get it (*guess*)
+  toastPhrases: 8,     // #1222: the line is an index below this into the client's TOAST.all, never text
 };
 
 // Combat (#667): only between two players who both hold a weapon (the state's `h`, one of COMBAT.weapons' keys). Every shot
@@ -119,6 +124,13 @@ export function cleanGreet(text) {
   let m;
   try { m = JSON.parse(text); } catch { return null; }
   return m?.t === 'g' && typeof m.to === 'string' && m.to.length <= 16 && Number.isInteger(m.k) && m.k >= 0 && m.k < PLAYERS.greetPhrases ? { to: m.to, k: m.k } : null;
+}
+
+/** A toast (#1222) { t: 'c', k: line index, b?: true }, or null. */
+export function cleanToast(text) {
+  let m;
+  try { m = JSON.parse(text); } catch { return null; }
+  return m?.t === 'c' && Number.isInteger(m.k) && m.k >= 0 && m.k < PLAYERS.toastPhrases && (m.b === undefined || m.b === true) ? { k: m.k, ...(m.b ? { b: true } : {}) } : null;
 }
 
 export function cleanAvatar(v) {
@@ -345,7 +357,7 @@ export class PlayerRoom {
       else if (m?.t === 'consume' && Number.isSafeInteger(m.id) && m.id > 0 && typeof m.portion === 'string' && m.portion.length > 0 && m.portion.length <= 64) consuming = m;
     } catch {}
     let lifeChanged = false;
-    const talk = cleanTalk(message), hello = !talk && cleanGreet(message), shot = !talk && !hello && cleanShot(message);
+    const talk = cleanTalk(message), hello = !talk && cleanGreet(message), toast = !talk && !hello && cleanToast(message), shot = !talk && !hello && !toast && cleanShot(message);
     if (falling) {
       const damage = fallDamage(falling.drop, falling.gap, COMBAT.lives);
       if (damage !== null) {
@@ -385,6 +397,15 @@ export class PlayerRoom {
       if (now - (a.gt ?? 0) >= PLAYERS.greetEvery * 800 && hello.to !== a.i && this.open().some((x) => x !== ws && att(x).i === hello.to)) {
         a.gt = now;
         this.broadcast({ t: 'g', i: a.i, to: hello.to, k: hello.k }, ws);
+      }
+    } else if (toast) { // #1222: to the players near the toaster, not too often
+      if (now - (a.ct ?? 0) >= PLAYERS.toastEvery * 800 && a.s?.p) {
+        a.ct = now;
+        const out = JSON.stringify({ t: 'c', i: a.i, k: toast.k, ...(toast.b ? { b: true } : {}) });
+        for (const x of this.open()) {
+          const q = x !== ws && att(x).s?.p;
+          if (q && Math.hypot(q[0] - a.s.p[0], q[1] - a.s.p[1], q[2] - a.s.p[2]) <= PLAYERS.toastRange) send(x, out);
+        }
       }
     } else if (shot) {
       // a shot is drawn by the others only from someone armed with that weapon, starting near where the room has them,

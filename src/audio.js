@@ -734,6 +734,15 @@ export const sfx = {
     noise(t, 0.08, d, { type: 'lowpass', freq: 600, gain: 0.25 });
     tone(t + 0.18, 0.1, d, { type: 'sine', from: 150, to: 80, gain: 0.15 });
   },
+  /** Two glasses touching (#1222): a bright double ring of glass, a little tick of noise first. */
+  clink(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime + 0.1, d = out(pos, 0.9), p = 0.95 + Math.random() * 0.1;
+    noise(t, 0.02, d, { type: 'highpass', freq: 4000, gain: 0.2 });
+    tone(t, 0.5, d, { type: 'sine', from: 2350 * p, to: 2330 * p, gain: 0.1 });
+    tone(t, 0.35, d, { type: 'sine', from: 3520 * p, to: 3500 * p, gain: 0.06 });
+    tone(t + 0.07, 0.4, d, { type: 'sine', from: 2790 * p, to: 2770 * p, gain: 0.05 });
+  },
   /** The cooker hood's fan (#194): a low, steady whoosh until stopped. */
   fan(pos) {
     if (!ready()) return null;

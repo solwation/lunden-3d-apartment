@@ -80,6 +80,9 @@ src/newyear.js         New Year's Eve (#1199, part of #1170, NEW_YEAR): `newYear
                        taken); taken/put down it is an ordinary glass (drink, refill from the champagne bottle, F/cleaning send it
                        home); at home outside the glasses' hours it is away (no target). Not in world.looseItems: newYear owns its
                        visibility. Test: tools/newyearglasstest.cjs BASE OUT.
+                       #1222 "Skåla": any held Glass has `useAlt` (right click / the 🥂 button): sfx.clink, the glass raised (`toastT`, TOAST.raise s),
+                       a line from TOAST and one room message; a nearby player's toast is answered once while a glass is held; Olof
+                       answers from the car within TOAST.olof m. main.js `toastHandler`; test: tools/newyeartoasttest.cjs BASE OUT.
                        Fireworks: #1200. Test: tools/newyeartest.cjs BASE OUT (frozen + running clock, screenshots, draw calls)
 src/christmas.js       the season layer (#571): `inChristmas(y, m, d)` (1 Dec – 6 Jan inclusive, over the new year) and
                        `ChristmasSeason` (main.js, every frame by the day cycle's date): shows/hides the tree, hides the pieces whose

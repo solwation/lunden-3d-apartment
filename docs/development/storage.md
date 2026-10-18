@@ -153,6 +153,9 @@ src/ghosts.js          other players as ghosts with a name tag (#666), inert wit
                        localStorage 'lunden.mp.capMonth' = this month: no retry; 4003 (brake) / 4029 (full) wait; others back off.
                        No KV, nothing written per position (presence.js's KV counter #424 is untouched). `window.__ghosts` for tests
                        #673: a greeting { t: 'g', to, k } through the same outbox (to another player here, at most PLAYERS.greetEvery);
+                       #1222: a toast { t: 'c', k, b? } (k an index into config.js TOAST_LINES below PLAYERS.toastPhrases, b = an answer
+                       that is never answered) goes to the players within PLAYERS.toastRange m of the sender's last known position, at most
+                       one per PLAYERS.toastEvery s per connection (GHOSTS.toast / ghosts.onToast; room test in players.test.mjs);
                        #667: the state's `h` (weapon key or '') and one shot message per shot { t: 'a', w, o, d, s?, to? } go the
                        same way (outbox of GHOSTS.outbox, within the same 5 Hz); lives are
                        counted per connection in the room (a socket's attachment), nothing is stored about fights

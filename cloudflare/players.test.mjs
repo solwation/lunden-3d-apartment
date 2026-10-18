@@ -274,6 +274,31 @@ test('greetings (#673): to someone here, a phrase index only, not too often; eve
   assert.equal(greets(b).length, 2);
 });
 
+test('toasts (#1222): an index only, to the players within range, not too often, never echoed', async () => {
+  const env = setup();
+  const a = await connect(env, 'A'), b = await connect(env, 'B'), c = await connect(env, 'C'), d = await connect(env, 'D');
+  const ia = a.got[0].i;
+  const toasts = (x) => x.got.filter((m) => m.t === 'c');
+  now += 5000;
+  a.send({ p: [0, 0, 0], r: 0 }); b.send({ p: [2, 0, 1], r: 0 }); c.send({ p: [PLAYERS.toastRange + 1, 0, 0], r: 0 }); // d never sends a state: position unknown
+  await settle(env);
+  now += 5000;
+  a.send({ t: 'c', k: 1 }); await settle(env);
+  assert.deepEqual(toasts(b), [{ t: 'c', i: ia, k: 1 }]);
+  assert.equal(toasts(c).length, 0, 'out of range');
+  assert.equal(toasts(d).length, 0, 'unknown position');
+  assert.equal(toasts(a).length, 0, 'not echoed');
+  a.send({ t: 'c', k: 2 }); await settle(env);
+  assert.equal(toasts(b).length, 1, 'not more often than toastEvery');
+  now += 5000;
+  a.send({ t: 'c', k: PLAYERS.toastPhrases }); a.send({ t: 'c', k: 'Skål!' }); a.send({ t: 'c', k: -1 }); a.send({ t: 'c', k: 0, b: 'yes' });
+  await settle(env);
+  assert.equal(toasts(b).length, 1, 'a line out of range, text, a bad flag: dropped');
+  now += 5000;
+  b.send({ t: 'c', k: 0, b: true }); await settle(env);
+  assert.deepEqual(toasts(a), [{ t: 'c', i: b.got[0].i, k: 0, b: true }], 'an answer carries b');
+});
+
 test.after(() => { Date.now = realNow; });
 
 // Score rides the same bounded state: no new message type or billing path.

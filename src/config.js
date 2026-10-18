@@ -5885,7 +5885,9 @@ export const NEW_YEAR = { count: 10, cheer: 60, glassesUntil: 4, debugHour: 23 +
 // and a line (`newYear` from the countdown until NEW_YEAR.glassesUntil, else `lines`); at most one every `every` s (the
 // player room's PLAYERS.toastEvery, kept equal by hand). Players within that room's toastRange see it; one holding a glass
 // toasts back once. Olof toasts back from within `olof` m. Our picks (*guess*).
-export const TOAST = { every: 2, raise: 0.9, olof: 6, lines: ['Skål!'], newYear: ['Skål! Gott nytt år!', 'Gott nytt år!'], back: 'Skål, {n}!' };
+export const TOAST = { every: 2, raise: 0.9, olof: 6, lines: ['Skål!'], newYear: ['Skål! Gott nytt år!', 'Gott nytt år!'], back: 'Skål, {n}!', answer: ['Skål!', 'Skål på dig!'] };
+/** Every toast line in one fixed list: an index of it goes to the player room, never text (PLAYERS.toastPhrases above its length). */
+export const TOAST_LINES = [...TOAST.lines, ...TOAST.newYear, ...TOAST.answer];
 
 // Midnight fireworks over the block (#1200, src/fireworks.js; #1199's New Year trigger calls `start()`): `seconds` of
 // rockets (a pool of `shells` shells, each bursting into `sparks` sparks; the phone profile uses the `phone*` counts),
