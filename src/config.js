@@ -689,6 +689,22 @@ export const SITE = {
     branchRise: 1,
     branchWidth: 0.55,
   },
+  // #1301: the bus stop "Lund Sankt Lars" (A) at the fork south of the river, where the asphalt cycle route to Circle K (OSM 61112061,
+  // SITE.riverPark.paths) meets Sankt Lars väg. Source OSM 2026-10-18 (api.openstreetmap.org, docs/references/surrounding-views/bus-stop-sankt-lars-2026-10-18.json):
+  // platform way 189432570 (bench, bin, shelter, lit, tactile_paving; Skånetrafiken), shelter node 2000527685, stop_position 2000527662, the bus bay
+  // roads 189432572 / 95035967. The platform way is its road-side kerb line; the platform lies on the far side (width, heights, colours: *guess*).
+  // Generic Swedish-style bus shelter and green/yellow stop sign without any operator logo; every dimension is a visual *guess*. Plan coordinates via SITE.geo.
+  busStop: {
+    source: 'OSM way 189432570 + node 2000527685 (2026-10-18)',
+    kerb: [[33.39, 190.95], [35.59, 192.31], [51.45, 202.12]], // the platform way: the road-side edge, platform to its left (−normal)
+    width: 3.6, lift: 0.04, kerbH: 0.1, kerbW: 0.18, // platform width (m), surface lift over the ground, kerb stone height / width (*guess*)
+    tactile: { w: 0.6, color: 0xd8c25a, from: 0.25, len: 6 }, // tactile paving strip along the kerb (OSM tactile_paving=yes), pale yellow, 6 m centred on the node 2000527695 (*guess*)
+    colors: { paving: 0x8d8b86, kerb: 0xbdb9b0, steel: 0x3b4046, wood: 0x9a6b3f, glass: 0xaecbd0, bin: 0x2f5d3a },
+    shelter: { at: [36.89, 189.99], len: 3.4, depth: 1.5, h: 2.5, roof: 0.1, glassY: [0.15, 2.3], post: 0.08, bench: { len: 2.0, depth: 0.42, h: 0.46 } }, // node 2000527685 = the shelter's centre; sizes *guess*
+    sign: { s: 11, t: 0.55, h: 2.6, panel: [0.5, 0.7], colors: { bg: '#0b5d3b', fg: '#ffffff', accent: '#f2c400' }, name: 'Sankt Lars' }, // stop sign s m along the kerb from its first point, t m in from it (the bus's stopping point, *guess*)
+    bin: { s: 5.2, t: 2.8, r: 0.17, h: 0.8 }, // OSM bin=yes (position *guess*)
+    cycleSign: { at: [60.5, 199.9], yaw: -90, h: 2.4, panel: [0.6, 0.21], color: '#1d5fb4', text: 'Circle K' }, // direction sign beside the cycle route (OSM 61112061, 2.4 m asphalt) 9 m east of the platform end; faces west (yaw: normal = (sin, cos)); *guess*
+  },
   // #534 west: exact OSM footprint points registered by SITE.geo; levelsSource distinguishes tagged floors.
   // Heights, colours, windows and roof details are visual assumptions. Access paving/tree locations are approximate aerial traces.
   west: {
@@ -850,6 +866,7 @@ export const SITE = {
       {"source":"850235114","surface":"asphalt","path":[[61.04,242.66],[73.13,233.86]],"w":4.5},
       {"source":"850235115","surface":"asphalt","path":[[60.53,217.65],[73.13,233.86],[82.72,246.3]],"w":4.5},
       {"source":"36918923","surface":"asphalt","path":[[45.85,215.95],[46.16,211.77],[46.1,209.57],[45.43,205.77],[44.88,203.85]],"w":4.5},
+      {"source":"95035967","surface":"asphalt","path":[[44.88,203.85],[34.91,195.45]],"w":4.5}, // #1301: the bus bay's approach (psv-only one-way), missing before
       {"source":"189432572","surface":"asphalt","path":[[34.91,195.45],[30.49,192.5],[26.53,188.72]],"w":4.5},
       {"source":"30633544","surface":"asphalt","path":[[205.42,403.66],[201.18,405.79],[181.19,415.77],[165.86,417.17],[152.17,419.96],[137.95,425.61],[130.67,429.21],[120.07,431.09],[114.48,433.98],[108.38,439.73],[103.1,445.37],[102.06,452.75],[107.83,459.09],[116.59,461.57],[125.79,454.77],[181.19,415.77]],"w":4.5},
       {"source":"30633545","surface":"asphalt","path":[[194.62,384.62],[205.62,380.22],[279.48,359.11],[273.25,340.22],[265.3,314.56],[213.05,330.44],[173.12,342.21]],"w":4.5},

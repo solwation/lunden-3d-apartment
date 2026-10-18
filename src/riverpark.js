@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SITE, SEASON } from './config.js';
 import { onRoad, onWalk, pathStrip } from './roads.js';
+import { onBusStop } from './busstopgeo.js';
 import { riverAt, deckAt, underpassAt } from './riverbridge.js';
 import { registerSnow, registerSeasonal } from './seasons.js';
 const P = SITE.riverPark;
@@ -25,7 +26,7 @@ export function parkDeckAt(x,z) {
 function clear(x,z) {
   const r=riverAt(x,z);
   return z>64 && !onEastBuilding(x,z) && !onEastAccess(x,z,.5) && !onWestBuilding(x,z) && !onWestAccess(x,z,.5) && !inParkGlade(x,z) && !onParkPath(x,z,P.pathClearance) &&
-    !onRoad(x,z,P.bridgeClearance) && !onWalk(x,z,.5) && deckAt(x,z)===null && !underpassAt(x,z) && parkDeckAt(x,z)===null &&
+    !onRoad(x,z,P.bridgeClearance) && !onWalk(x,z,.5) && !onBusStop(x,z,2.5) && deckAt(x,z)===null && !underpassAt(x,z) && parkDeckAt(x,z)===null &&
     r.distance>r.width/2+2 && !SITE.blocks.some(b=>x>b.x0-2&&x<b.x1+2&&z>b.z0-2&&z<b.z1+2);
 }
 // Stable, patch-constrained density sampling: a visual canopy interpretation, not measured individual trees.
@@ -57,9 +58,10 @@ export const parkShoreFeet=[];
 /** Four merged background batches: asphalt paths, gravel paths, timber footbridge, low bank tussocks. */
 export function buildRiverPark(ground, terrain=ground) {
   const group=new THREE.Group();group.name='river-park';
+  // #1301: the cycle route towards Circle K (61112061) now runs to the edge of the ground (it stopped at x 220 although the walkable area reaches 320)
   // #1235: asphalt (shared walking/cycling) and gravel paths are two merged meshes, one per surface material; both follow the rendered terrain.
   for(const kind of ['asphalt','gravel']) {
-    const strips=P.paths.filter(p=>p.surface===kind).map(p=>pathStrip(p,w=>-w/2,w=>w/2,kind==='asphalt'?.03:.025,terrain,c=>c.some(([x,z])=>z<64||x<-270||x>220||z>260)||c.every(([x,z])=>onRoad(x,z,-.05))));
+    const strips=P.paths.filter(p=>p.surface===kind).map(p=>pathStrip(p,w=>-w/2,w=>w/2,kind==='asphalt'?.03:.025,terrain,c=>c.some(([x,z])=>z<64||x<-270||x>SITE.backgroundGround.x1-10||z>260)||c.every(([x,z])=>onRoad(x,z,-.05))));
     const mat=new THREE.MeshStandardMaterial({color:P.surfaces[kind].color,roughness:kind==='asphalt'?.9:1});registerSnow(mat,SEASON.snow.paving);
     const mesh=new THREE.Mesh(mergeGeometries(strips),mat);mesh.name=kind==='asphalt'?'park-paths-asphalt':'park-paths';mesh.receiveShadow=true;group.add(mesh);
   }

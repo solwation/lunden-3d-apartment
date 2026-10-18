@@ -1,3 +1,4 @@
+import { buildBusStop } from './busstop.js';
 import {southBackdropParts} from './southbackdrop.js';
 import {buildWestBackdrop,buildEastBackdrop,buildNorthBackdrop,westTreeSpots,eastTreeSpots,northTreeSpots} from './sitebackdrop.js';
 import { buildRiverPark, parkDeckAt, parkTreeSpots, parkShrubSpots } from './riverpark.js';
@@ -1571,6 +1572,7 @@ export function* surroundingsParts({ grass, husL = null }) {
   group.add(buildRiverBridges());
   yield 0.2;
   group.add(buildRiverPark(renderedTerrainY,renderedTerrainY));
+  group.add(buildBusStop(renderedTerrainY)); // #1301
   yield 0.25;
   const backdrops = [buildWestBackdrop(renderedTerrainY,{glass:glassMaterial})];
   yield 0.32;

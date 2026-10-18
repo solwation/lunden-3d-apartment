@@ -1,0 +1,137 @@
+{
+ "source": "https://api.openstreetmap.org/api/0.6/ (way/189432570/full, way/189432572/full, way/95035967/full, nodes, way/61112061)",
+ "retrieved": "2026-10-18",
+ "attribution": "© OpenStreetMap contributors, ODbL, https://www.openstreetmap.org/copyright",
+ "purpose": "#1301: the bus stop Lund Sankt Lars (A) and the cycle route to Circle K",
+ "platform_way_189432570": {
+  "tags": {
+   "bench": "yes",
+   "bin": "yes",
+   "bus": "yes",
+   "highway": "platform",
+   "lit": "yes",
+   "network": "Skånetrafiken",
+   "public_transport": "platform",
+   "ref": "A",
+   "shelter": "yes",
+   "tactile_paving": "yes"
+  },
+  "nodes": [
+   2000527697,
+   2000527695,
+   1613725846
+  ]
+ },
+ "bus_bay_ways": {
+  "189432572": {
+   "tags": {
+    "access": "no",
+    "bicycle": "yes",
+    "foot": "yes",
+    "highway": "service",
+    "oneway": "yes",
+    "psv": "yes",
+    "surface": "asphalt"
+   },
+   "nodes": [
+    2000527662,
+    2000527698,
+    338807341
+   ]
+  },
+  "95035967": {
+   "tags": {
+    "access": "no",
+    "bicycle": "yes",
+    "foot": "yes",
+    "highway": "service",
+    "oneway": "yes",
+    "psv": "yes",
+    "surface": "asphalt"
+   },
+   "nodes": [
+    429352000,
+    2000527662
+   ]
+  }
+ },
+ "cycle_route_way_61112061": {
+  "tags": {
+   "bicycle": "designated",
+   "foot": "designated",
+   "highway": "path",
+   "lit": "yes",
+   "segregated": "no",
+   "surface": "asphalt"
+  },
+  "note": "runs from the river park to Circle K (way 40462584, 55.6799N 13.1825E); already SITE.riverPark.paths in the model (#1235)"
+ },
+ "nodes": [
+  {
+   "id": 338807341,
+   "lat": 55.6841087,
+   "lon": 13.1784114,
+   "tags": {}
+  },
+  {
+   "id": 429352000,
+   "lat": 55.6838969,
+   "lon": 13.1783619,
+   "tags": {
+    "crossing": "uncontrolled",
+    "highway": "crossing"
+   }
+  },
+  {
+   "id": 1613725846,
+   "lat": 55.6838551,
+   "lon": 13.1784408,
+   "tags": {}
+  },
+  {
+   "id": 2000527662,
+   "lat": 55.6840129,
+   "lon": 13.1783913,
+   "tags": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Lund Sankt Lars",
+    "network": "Skånetrafiken",
+    "network:wikidata": "Q1934330",
+    "network:wikipedia": "sv:Skånetrafiken",
+    "public_transport": "stop_position",
+    "ref": "A"
+   }
+  },
+  {
+   "id": 2000527685,
+   "lat": 55.6840238,
+   "lon": 13.1784818,
+   "tags": {
+    "amenity": "shelter",
+    "bench": "yes",
+    "shelter_type": "public_transport"
+   }
+  },
+  {
+   "id": 2000527695,
+   "lat": 55.6840226,
+   "lon": 13.1784394,
+   "tags": {
+    "tactile_paving": "yes"
+   }
+  },
+  {
+   "id": 2000527697,
+   "lat": 55.6840459,
+   "lon": 13.1784392,
+   "tags": {}
+  },
+  {
+   "id": 2000527698,
+   "lat": 55.6840606,
+   "lon": 13.1783938,
+   "tags": {}
+  }
+ ]
+}

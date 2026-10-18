@@ -49,6 +49,11 @@ src/patiodecor.js      #888, #1120: the neighbours' ground-floor patios on Hus L
                        their table, sofas have their backs to the façade (#1091). Hus A/B/C's ground loggias only carry their simple
                        loggia plants (surroundings.js), no copied furniture. tools/patiodecortest.html checks the facing, door/passage
                        clearance, hedge/screen-wall clearance, determinism, no L1007 models, budget
+src/busstop.js         #1301: the bus stop "Lund Sankt Lars" (`SITE.busStop`, OSM platform way 189432570 + shelter node 2000527685, saved in docs/references/surrounding-views/bus-stop-sankt-lars-2026-10-18.json):
+                       a low platform (kerb stones, tactile strip), glass shelter with bench, bin and a generic green/yellow stop sign (no operator logo) in four merged meshes, ground-following
+                       via `renderedTerrainY`; every size *guess*. `src/busstopgeo.js` (pure) holds the kerb frame, `onBusStop` (the park trees keep off it) and the shelter's three glass collision
+                       segments (farwalk.js); the platform is visual only (+4 cm over the ground, like the paths). The bus bay's approach road (way 95035967) is in SITE.south.access.
+                       The cycle route to Circle K is the existing asphalt park path 61112061 (#1235), which meets the stop; Circle K itself lies beyond `WALK`. Test: `node --test tools/busstopgeotest.mjs`.
 src/surroundings.js    the site (SITE): Hus A/B/C + buildings around, roads, paving, the 3 m drop to the park,
                        Höje å, instanced trees (leaf-card crowns, branching trunks: foliage.js, #679), lit windows, cloudy sky; #604: windows of Hus A–C are `lunden` and go dark in a power
                        cut (`update(hour, night, power)`), the rest of the site and the street lamps do not; world.windowLights passes
