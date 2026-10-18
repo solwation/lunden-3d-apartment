@@ -54,7 +54,7 @@ const data=await page.evaluate(async()=>{
 fs.writeFileSync(out+'/terrain-before-input.json',JSON.stringify(data,null,2));
 for(const r of data.routes){const moved=Math.hypot(r.to[0]-r.from[0],r.to[2]-r.from[2]);if(r.name.endsWith('Up')&&!r.name.startsWith('ramp'))check(moved<1.2, r.name+': actual stair riser stops ascent',r);else check(moved>(r.name==='NWDown'?3:5)&&r.samples.every(s=>s.p.every(Number.isFinite)),r.name+': actual terrain route is supported and passable',r);}
 check(data.curbCount>1000&&data.curbMismatch===0,'bicycle support matches every actual rendered curb box ray', {count:data.curbCount,mismatches:data.curbMismatch});
-for(const r of data.curbRoute)if(r.name==='highUp')check(Math.abs(r.to[0]-r.from[0])<1.2,'actual 10 cm granite curb blocks upward ride',r);else check(Math.abs(r.to[0]-r.from[0])>.7&&r.to[1]<r.from[1]-.01,'actual granite curb permits downward departure',r);
+for(const r of data.curbRoute)if(r.name==='highUp')check(r.to[0]-r.from[0]>3&&r.samples.some(s=>s.p[1]>r.from[1]+.02),'actual 10 cm granite curb is ridden up over (#1300)',r);else check(Math.abs(r.to[0]-r.from[0])>.7&&r.to[1]<r.from[1]-.01,'actual granite curb permits downward departure',r);
 check(data.small.to[2]>data.small.from[2]+5&&data.small.samples.some(s=>s.p[1]>.02),'actual 5 cm StreetLife concrete edge permits small upward step',data.small);
 check(data.tiltWall.rejected&&data.tiltWall.actualModelMaxX>data.tiltWall.wallX&&data.tiltWall.oldCapsuleMaxX<data.tiltWall.wallX,'full tilted model overhang is stopped by wall beyond old ground capsule',data.tiltWall);
 check(data.high.to[2]>51,'actual high courtyard edge blocks upward passage',data.high);
