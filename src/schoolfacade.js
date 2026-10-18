@@ -115,7 +115,7 @@ export function buildSchoolFacade(p, base, bottom, eave, parts, lite = lowMemory
     parts.schoolBrick.push(plain(new THREE.BoxGeometry(...P.chimney).translate(x,y+.5,z)));
     parts.schoolRoof.push(new THREE.BoxGeometry(...P.cap).toNonIndexed().translate(x,y+1.28,z));
   }
-  return {windows,ridge:eave+P.roofRise};
+  return {windows,ridge:eave+P.roofRise,roofY:top};
 }
 
 /** Deterministic muted masonry and metal seams, each shared by the whole school. */

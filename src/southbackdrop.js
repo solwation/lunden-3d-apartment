@@ -36,7 +36,7 @@ export function* southBackdropParts(ground){
   // Far facades: only landmark windows, no individual trims, handles, interiors or small shadows.
   for(const [ring,hole]of [[p,false],...(b.holes??[]).map(h=>[h.slice(0,-1),true])]){const sign=(hole?-1:1)*Math.sign(ring.reduce((s,q,i)=>{const r=ring[(i+1)%ring.length];return s+q[0]*r[1]-r[0]*q[1]},0));for(let i=0;i<ring.length;i++){const a=ring[i],c=ring[(i+1)%ring.length],dx=c[0]-a[0],dz=c[1]-a[1],d=Math.hypot(dx,dz);parts.facade.push(tint(geo([[a[0],eave,a[1]],[c[0],eave,c[1]],[c[0],roofHeight(c),c[1]],[a[0],eave,a[1]],[c[0],roofHeight(c),c[1]],[a[0],roofHeight(a),a[1]]]),b.facade));
     if(b.levels<4)continue;const nx=sign*dz/d,nz=-sign*dx/d;for(let k=1;k*S.bay+S.window[0]/2<d;k++)for(let floor=0;floor<b.levels;floor++)parts.glass.push(plain(new THREE.PlaneGeometry(...S.window).rotateY(Math.atan2(nx,nz)).translate(a[0]+dx/d*k*S.bay+nx*.025,base+floor*S.storey+S.sill+S.window[1]/2,a[1]+dz/d*k*S.bay+nz*.025)));
-  }}records.push({...b,base,bottom,eave});
+  }}records.push({...b,base,bottom,eave,roofY:(x,z)=>roofHeight([x,z])}); // roofY: the drawn roof's height, for the walkable roof (#1294)
  }
  yield .6;
  // Continuation overlaps only the old outer boundary. Fog fully covers its outer edges from every accessible camera.

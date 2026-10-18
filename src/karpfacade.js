@@ -184,7 +184,8 @@ export function buildKarpFacade(b, polygon, base, bottom, storey, parts) {
     const [w, h, d] = K.roofBox;
     parts.facade.push(tint(plain(new THREE.BoxGeometry(w, h, d).rotateY(-Math.atan2(U[1], U[0])).translate(x, top + h / 2, z)), C.roofBox));
   }
-  return { windows, eave: top, ridge: top + K.endBox.rise, brickTop };
+  const roofY = (x, z) => (inside(x, z, q) ? top : parapet + 0.01); // the walkable roof (#1294): the top storey's roof, else the terrace deck round it
+  return { windows, eave: top, ridge: top + K.endBox.rise, brickTop, roofY };
 }
 function inside(x, z, p) { let yes = false; for (let i = 0, j = p.length - 1; i < p.length; j = i++) if ((p[i][1] > z) !== (p[j][1] > z) && x < (p[j][0] - p[i][0]) * (z - p[i][1]) / (p[j][1] - p[i][1]) + p[i][0]) yes = !yes; return yes; }
 

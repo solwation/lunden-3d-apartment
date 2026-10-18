@@ -173,10 +173,11 @@ export function buildCampusFacade(b, p, holes, base, bottom, parts, lite = lowMe
       parts.schoolBrick.push(tint(plain(new THREE.BoxGeometry(...S.chimney).translate(x, y + S.chimney[1] / 2 - .4, z)), S.chimneyTint ?? 0xffffff));
       parts.schoolRoof.push(new THREE.BoxGeometry(S.chimney[0] + .16, .12, S.chimney[2] + .16).toNonIndexed().translate(x, y + S.chimney[1] - .34, z));
     }
-    piece.eave = eave; piece.ridge = eave + R.rise;
+    piece.eave = eave; piece.ridge = eave + R.rise; piece.top = top;
   }
   if (S.centre) Object.assign(S, buildCentre(p, base, pieces, eaveOf, S, parts, windows));
-  return { windows, eave: Math.max(...pieces.map(eaveOf)), ridge: Math.max(...pieces.map(q => q.ridge)), pieces: pieces.map(q => ({ name: q.name, levels: q.levels, eave: q.eave, ridge: q.ridge, area: Math.abs(signedArea(q.poly)) })), tower: S.towerTop, clock: S.clock };
+  const roofY = (x, z) => pieces.reduce((y, q) => (inside(x, z, q.poly) && !q.holes.some((h) => inside(x, z, h)) ? Math.max(y, q.top(x, z)) : y), -Infinity); // the drawn roof's height, for the walkable roof (#1294)
+  return { roofY, windows, eave: Math.max(...pieces.map(eaveOf)), ridge: Math.max(...pieces.map(q => q.ridge)), pieces: pieces.map(q => ({ name: q.name, levels: q.levels, eave: q.eave, ridge: q.ridge, area: Math.abs(signedArea(q.poly)) })), tower: S.towerTop, clock: S.clock };
 }
 
 /** A window with frame, opaque reflective glass, sill, crown and glazing bars; t along the edge from a. */

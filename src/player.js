@@ -187,7 +187,7 @@ export class Player {
   walkSegments() {
     if (this.aloft) { // up on the roofs (#360): the walls that stand in the way of the body, feet + step … head
       const y = this.pos.y;
-      return [this.world.roofs?.walls(y + PLAYER.stepUp, y + PLAYER.headroom) ?? [], [...(this.world.core?.dynamic(y) ?? []), // (+ the stairwell's door onto the loftgång, #415)
+      return [this.world.roofs?.walls(y + PLAYER.stepUp, y + PLAYER.headroom, this.pos.x, this.pos.z) ?? [], [...(this.world.core?.dynamic(y) ?? []), // (+ the stairwell's door onto the loftgång, #415)
         ...(this.world.units ?? []).flatMap((u) => u.doorSegmentsAt(y))]]; // a visited flat's street / terrace door (#573)
     }
     if (this.inCore) return this.world.core.segments(this.pos.y); // the stairwell (#415)

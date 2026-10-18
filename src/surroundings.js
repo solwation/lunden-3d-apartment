@@ -14,6 +14,7 @@ import { buildStreetSigns } from './streetsigns.js';
 import { buildGroundAO } from './groundao.js';
 import { onRoad, onWalk, pathStrip, filletGeometry } from './roads.js';
 import { wallRect } from './roofs.js';
+import { buildingRoofWalk } from './buildingroofs.js';
 import {buildRiverBridges,deckAt,riverGround,riverDistance,roadBridgeSpan,bridgeRecords} from './riverbridge.js';
 
 // The rest of Kv. Lunden and its neighbourhood (SITE in config): the brick point blocks Hus A, B, C
@@ -1672,6 +1673,8 @@ export function* surroundingsParts({ grass, husL = null }) {
     walk.surfaces.push({ id: 'school-wall', name: 'Skolmuren', x0: W.x0, x1: W.x1, z0: W.z - W.t / 2, z1: W.z + W.t / 2, y: W.h + 0.06 });
     wallRect(walk.walls, W.x0, W.x1, W.z - W.t / 2, W.z + W.t / 2, -10, W.h + 0.06);
   }
+  const roofWalk = buildingRoofWalk([...backdrops, backdrops.south].flatMap((g) => g?.userData.buildings ?? [])); // every mapped building's roof and walls (#1294)
+  walk.surfaces.push(...roofWalk.surfaces); walk.walls.push(...roofWalk.walls);
   group.userData.walk = walk;
   const pipes = [];
   for (const b of modern) {

@@ -220,6 +220,7 @@ tools/rooftest.html    headless test (#360): placed on the loftgång (level, the
                        the flat's lamps, the culler hides its inside, the railing at the east end, both sides of the east drum's landing and by the west drum's doorway holds (#449), into both drums), our terrace (railing,
                        set-back wall, skärmvägg), Hus L's roof (a panel row, the loft in the way, off the edge onto the loftgång), Hus A's
                        slope and eaves, Villa's ("kyrkan", #1274) and HepCat's roofs, a canopy; the rain ends on each roof; the first visits counted
+tools/roofaudittest.html (#1294) every building inside WALK (mapped west/east/north/south buildings + SITE.blocks): the point deepest inside and one 1.2 m from the longest edge are found, the roof actually drawn there is read with a ray down through the scene, the real Player is dropped 2.5 m above it and must land within `TOL` (1.6 m, *guess*) of it; then it flies at the longest wall 3 m up and must not get in; names the buildings without a roof. `node tools/runtests.cjs roofaudittest.html`
 tools/terracetest.html Hus L's roof terraces (#350): one per upper flat, areas vs 10/11/12 m², the joins at the loft and
                        the gables, the railing's top over the finished deck
 tools/gabletest.html  Hus L's gables (#351): each opening tagged with side / storey / end flat, inside its storey (not in a

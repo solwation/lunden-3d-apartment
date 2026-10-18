@@ -101,7 +101,7 @@ function buildBackdrop(W,key,ground,brick=null,reflectiveGlass=null,karp=null){
     const geo=new THREE.PlaneGeometry(...W.window);geo.rotateY(Math.atan2(nx,nz)).translate(x+nx*.02,y+W.window[1]/2,z+nz*.02);parts.glass.push(plain(geo));windows.push({x:x+nx*.02,y:y+W.window[1]/2,z:z+nz*.02,n:[nx,nz],width:W.window[0],height:W.window[1]});
    }
   }
-  records.push({...b,base,bottom,eave,ridge:eave+rise,windows});
+  records.push({...b,base,bottom,eave,ridge:eave+rise,windows,roofY:(x,z)=>top([x,z])}); // roofY: the drawn roof's height, for the walkable roof (#1294)
  }
  for(const p of [...W.paths,...W.access]){
   const surfColor=p.color??(p.surface==='asphalt'?0x5f6164:p.surface==='gravel'?0xb5ac90:0xa7a397);

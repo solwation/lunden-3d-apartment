@@ -922,3 +922,8 @@ are now generators or delegated:
 - `buildLevel`: synchronous wrapper around `levelParts()`, yielding between walls/windows, doors/trims, interior fittings/fixtures, and AO plates.
 - `buildVisitFlat`: synchronous wrapper around `visitFlatParts()`, yielding between lower/upper level parts and the static merge.
 - `worldParts`: yields around `architectureEdges`, between blinds, shelves and hall wall.
+
+
+## Walkable roofs of the mapped buildings (#1294)
+
+Collision only: `src/buildingroofs.js` adds polygon surfaces and ring walls for the mapped backdrop buildings to `userData.walk` (no meshes, no draw calls, no triangles). `Roofs` looks surfaces and walls up in a 20 m grid (`Roofs.CELL`), so the extra ~54 roofs / ~700 wall segments cost one cell lookup per query; `Roofs.walls(y0, y1, x, z)` returns only the 3x3 cells round the body.
