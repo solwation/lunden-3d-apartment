@@ -7,6 +7,7 @@ import { lobeGeometry, leafMaterial, leafAtlasParts } from './foliage.js';
 import { buildStLars41 } from './stlars41.js';
 import { paddockLandParts } from './paddock.js';
 const S=SITE.south;
+const LAND_MESH=6,LAND_LIFT=.03; // m: #1306, fields / car parks are cut into triangles <= LAND_MESH m where the sloping terrain lies and sit LAND_LIFT higher than the corner heights say (*guess*)
 const inside=(x,z,p)=>{let yes=false;for(let i=0,j=p.length-1;i<p.length;j=i++)if((p[i][1]>z)!==(p[j][1]>z)&&x<(p[j][0]-p[i][0])*(z-p[i][1])/(p[j][1]-p[i][1])+p[i][0])yes=!yes;return yes;};
 const ring=p=>(p[0][0]===p[p.length-1][0]&&p[0][1]===p[p.length-1][1]?p.slice(0,-1):p);
 const shape=b=>{const s=new THREE.Shape(ring(b.polygon).map(([x,z])=>new THREE.Vector2(x,-z)));s.holes=(b.holes??[]).map(p=>new THREE.Path(ring(p).map(([x,z])=>new THREE.Vector2(x,-z))));return s;};
@@ -18,6 +19,16 @@ const clip=(poly,f)=>{const out=[];for(let i=0;i<poly.length;i++){const a=poly[i
 const onAccess=(x,z)=>[...S.paths,...(S.access??[])].some(p=>p.path.slice(1).some(([c,d],i)=>{const[a,b]=p.path[i],dx=c-a,dz=d-b,t=Math.max(0,Math.min(1,((x-a)*dx+(z-b)*dz)/(dx*dx+dz*dz)));return Math.hypot(x-a-t*dx,z-b-t*dz)<p.w/2+.5;}));
 const onParking=(x,z)=>(S.parking??[]).some(p=>p.polygon&&inside(x,z,p.polygon));
 const lineQuad=(p0,p1,w,yLift,col,ground)=>{const dx=p1[0]-p0[0],dz=p1[1]-p0[1],len=Math.hypot(dx,dz);if(!len)return null;const nx=-dz/len*(w/2),nz=dx/len*(w/2);const pts=[[p0[0]-nx,p0[1]-nz],[p0[0]+nx,p0[1]+nz],[p1[0]+nx,p1[1]+nz],[p1[0]-nx,p1[1]-nz]];const pos=[pts[0][0],ground(...pts[0])+yLift,pts[0][1],pts[1][0],ground(...pts[1])+yLift,pts[1][1],pts[2][0],ground(...pts[2])+yLift,pts[2][1],pts[0][0],ground(...pts[0])+yLift,pts[0][1],pts[2][0],ground(...pts[2])+yLift,pts[2][1],pts[3][0],ground(...pts[3])+yLift,pts[3][1]];const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.computeVertexNormals();return tint(g,col);};
+/** #1306: a polygon's triangles, cut (longest-edge bisection) to `max` m where they touch the terrain mesh (x/z inside SITE.backgroundGround, z <= 260), as flat [x, z] triples; a few big triangles beyond it, where the flat land lies. The corners alone sank a field's middle under the sloping ground. */
+function terrainTriangles(poly,max){
+ const B=SITE.backgroundGround,r=ring(poly),idx=THREE.ShapeUtils.triangulateShape(r.map(([x,z])=>new THREE.Vector2(x,z)),[]),stack=idx.map(t=>t.map(i=>[r[i][0],r[i][1]])),out=[];
+ const near=t=>Math.max(...t.map(q=>q[0]))>B.x0&&Math.min(...t.map(q=>q[0]))<B.x1&&Math.min(...t.map(q=>q[1]))<260&&Math.max(...t.map(q=>q[1]))>B.z0;
+ while(stack.length){const t=stack.pop();let li=0,ll=0;for(let i=0;i<3;i++){const a=t[i],b=t[(i+1)%3],l=Math.hypot(a[0]-b[0],a[1]-b[1]);if(l>ll){ll=l;li=i;}}
+  if(ll<=max||!near(t)){out.push(...t);continue;}
+  const a=t[li],b=t[(li+1)%3],c=t[(li+2)%3],m=[(a[0]+b[0])/2,(a[1]+b[1])/2];stack.push([a,m,c],[m,b,c]);}
+ return out;
+}
+const upGeometry=(pts,y)=>{const pos=[];for(let i=0;i<pts.length;i+=3){let [a,b,c]=[pts[i],pts[i+1],pts[i+2]];if((b[1]-a[1])*(c[0]-a[0])-(b[0]-a[0])*(c[1]-a[1])<0)[b,c]=[c,b];for(const q of [a,b,c])pos.push(q[0],y(q[0],q[1]),q[1]);}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('normal',new THREE.Float32BufferAttribute(Array.from({length:pos.length/3},()=>[0,1,0]).flat(),3));return g;};
 /** The southern backdrop in one call; southBackdropParts yields a rough share (0–1) between its parts (#1133). */
 export function buildSouthBackdrop(ground){const parts=southBackdropParts(ground);for(;;){const r=parts.next();if(r.done)return r.value;}}
 export function* southBackdropParts(ground){
@@ -42,17 +53,18 @@ export function* southBackdropParts(ground){
  // Continuation overlaps only the old outer boundary. Fog fully covers its outer edges from every accessible camera.
  const G=S.ground;parts.land.push(tint(new THREE.PlaneGeometry(G.x1-G.x0,G.z1-260).rotateX(-Math.PI/2).translate((G.x0+G.x1)/2,-3.01,(G.z1+260)/2),COLORS.grass));
  for(const [x0,x1]of[[G.x0,SITE.backgroundGround.x0],[SITE.backgroundGround.x1,G.x1]])parts.land.push(tint(new THREE.PlaneGeometry(x1-x0,260-SITE.backgroundGround.z0).rotateX(-Math.PI/2).translate((x0+x1)/2,-3.01,(260+SITE.backgroundGround.z0)/2),COLORS.grass));
- for(const f of S.fields){const g=new THREE.ShapeGeometry(shape(f)).rotateX(-Math.PI/2),a=g.attributes.position;for(let i=0;i<a.count;i++)a.setY(i,farGround(a.getX(i),a.getZ(i))+.018);g.computeVertexNormals();parts.land.push(tint(g,f.color));}
+ for(const f of S.fields){if(!(f.holes??[]).length){parts.land.push(tint(upGeometry(terrainTriangles(f.polygon,LAND_MESH),(x,z)=>farGround(x,z)+.018+LAND_LIFT),f.color));continue;}const g=new THREE.ShapeGeometry(shape(f)).rotateX(-Math.PI/2),a=g.attributes.position;for(let i=0;i<a.count;i++)a.setY(i,farGround(a.getX(i),a.getZ(i))+.018);g.computeVertexNormals();parts.land.push(tint(g,f.color));}
  parts.land.push(...paddockLandParts(farGround)); // #1280: the pony paddock's worn track (soil colour, snow-covered with the rest of the land)
  yield .7;
  const surfColor=p=>p.color??(p.surface==='asphalt'?0x5f6164:p.surface==='gravel'?0xb5ac90:0xa7a397);
  for(const p of [...S.paths,...(S.access??[])])parts.land.push(tint(pathStrip(p,w=>-w/2,w=>w/2,.025,farGround),surfColor(p)));
  for(const p of (S.parking??[])){
   if(p.polygon){
-   const g=new THREE.ShapeGeometry(shape(p)).rotateX(-Math.PI/2),a=g.attributes.position;
+   if(!(p.holes??[]).length)parts.land.push(tint(upGeometry(terrainTriangles(p.polygon,LAND_MESH),(x,z)=>farGround(x,z)+.022+LAND_LIFT),surfColor(p)));
+   else{const g=new THREE.ShapeGeometry(shape(p)).rotateX(-Math.PI/2),a=g.attributes.position;
    for(let i=0;i<a.count;i++)a.setY(i,farGround(a.getX(i),a.getZ(i))+.022);
    g.computeVertexNormals();
-   parts.land.push(tint(g,surfColor(p)));
+   parts.land.push(tint(g,surfColor(p)));}
    if(p.capacity&&p.polygon.length>=4){
     const poly=ring(p.polygon);
     if(poly.length===4){

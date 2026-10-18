@@ -95,9 +95,54 @@ export function groundY(x, z) {
 export const groundBelowDeckY = (x, z) => terrainY(x, z);
 /** The terrain itself (the grass / asphalt surface; groundY without the stairs' treads and the recesses' floors). */
 function terrainY(x,z) {
+  const y=terrainRawY(x,z);
+  if(!buildingPads)buildingPads=makeBuildingPads();
+  let out=y;const flat=[];
+  for(const pad of buildingPads){
+    if(x<pad.x0||x>pad.x1||z<pad.z0||z>pad.z1)continue;
+    const d=pad.dist(x,z);if(d>=ELEVATION.pad)continue;
+    const w=padWeight(x,z);if(w<=0)continue;
+    if(d===0)flat.push(pad,w);else out+=smooth(1-d/ELEVATION.pad)*w*(pad.level-out); // #1306: the ground levels out under a far building, grading back over ELEVATION.pad m
+  }
+  for(let i=0;i<flat.length;i+=2)out+=flat[i+1]*(flat[i].level-out); // (a neighbour's slope never tilts a footprint)
+  return out;
+}
+function terrainRawY(x,z) {
   let base=terrainBase(x,z);
   const w=elevationWeight(x,z);if(w>0)base+=w*(gridGround(x,z)-base); // #1305: the real ground levels outside the block
   return z<60?base:riverGround(x,z,base);
+}
+/** #1306: 0 inside the protected block rectangle and within ELEVATION.river[0] m of Höje å (the designed levels stay), 1 a few metres beyond. */
+function padWeight(x,z){
+  const P=ELEVATION.protect,dx=Math.max(P.x0-x,0,x-P.x1),dz=Math.max(P.z0-z,0,z-P.z1);
+  let w=smooth(Math.min(1,Math.hypot(dx,dz)/ELEVATION.padRamp));
+  if(w>0&&z>10)w*=smooth(Math.max(0,Math.min(1,(riverDistance(x,z)-ELEVATION.river[0])/ELEVATION.padRamp)));
+  return w;
+}
+let buildingPads=null;const skipped=[];
+/** #1306 (tests): the level pads [{ name, level, x0, x1, z0, z1 }]. */
+export const buildingPadSkipped=()=>{buildingPads??=makeBuildingPads();return skipped;};
+export const buildingPadList=()=>(buildingPads??=makeBuildingPads()).map(({name,level,x0,x1,z0,z1})=>({name,level,x0,x1,z0,z1}));
+/** #1306: one level platform per mapped far building on the elevation grid's sloping ground (outside the protected block and the river valley), so its base meets the ground instead of a plinth up to 5 m tall:
+ *  the level is the mean raw ground under the footprint, the footprint is flat, the ground grades back over ELEVATION.pad m (all samplers - roads, trees, cars, backdrop bases - follow `terrainY`). */
+function makeBuildingPads(){
+  const pads=[];pads.skipped=skipped;
+  for(const k of ['west','east','north','south'])for(const b of S[k].buildings){
+    const ring=b.polygon.slice(0,-1),xs=ring.map(q=>q[0]),zs=ring.map(q=>q[1]);
+    const x0=Math.min(...xs),x1=Math.max(...xs),z0=Math.min(...zs),z1=Math.max(...zs);
+    if(z1>260||x0<S.backgroundGround.x0||x1>S.backgroundGround.x1||z0<S.backgroundGround.z0){skipped.push([b.name,'edge']);continue;}
+    const inside=(x,z)=>{let yes=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++)if((ring[i][1]>z)!==(ring[j][1]>z)&&x<(ring[j][0]-ring[i][0])*(z-ring[i][1])/(ring[j][1]-ring[i][1])+ring[i][0])yes=!yes;return yes;};
+    const pts=[];for(const q of ring)pts.push(q);
+    for(let x=Math.ceil(x0/4)*4;x<=x1;x+=4)for(let z=Math.ceil(z0/4)*4;z<=z1;z+=4)if(inside(x,z))pts.push([x,z]);
+    // outside the grid's ground (the block, its ramp zone, the river valley): keep the old plinth
+    if(pts.some(([x,z])=>padWeight(x,z)<=0)){skipped.push([b.name,'weight']);continue;}
+    const ys=pts.map(([x,z])=>terrainRawY(x,z)),lo=Math.min(...ys),hi=Math.max(...ys);
+    if(hi-lo<ELEVATION.padMin){skipped.push([b.name,'flat']);continue;}
+    const level=ys.reduce((a,c)=>a+c,0)/ys.length,R=ELEVATION.pad;
+    const dist=(x,z)=>{if(inside(x,z))return 0;let d=Infinity;for(let i=0,j=ring.length-1;i<ring.length;j=i++){const a=ring[j],c=ring[i],dx=c[0]-a[0],dz=c[1]-a[1],t=Math.max(0,Math.min(1,((x-a[0])*dx+(z-a[1])*dz)/(dx*dx+dz*dz||1)));d=Math.min(d,Math.hypot(x-a[0]-dx*t,z-a[1]-dz*t));}return d;};
+    pads.push({x0:x0-R,x1:x1+R,z0:z0-R,z1:z1+R,level,dist,name:b.name});
+  }
+  return pads;
 }
 const smooth=t=>t*t*(3-2*t);
 /** #1305: 0 near the block, the river valley and the mesh's outer edges (today's levels), 1 in between (the grid's ground). */
