@@ -3480,6 +3480,16 @@ export const JETPACK = {
   heat: { up: 1 / 45, cool: 1 / 20, ground: 1 / 5, warn: 0.8, resume: 0.35 }, // (hovering just about holds; 45 s of steady thrust)
   drop: 0.55, // m in front of the feet where "Ta av jetpacken" stands it
 };
+// Thin air (#1282): the higher over the ground, the faster the jetpack climbs and flies and the lighter gravity feels, so the
+// cloud deck (SKYLAYER) is reached quickly. Not physics; every number a *guess*. Between `from` and `full` m above the ground the
+// factor eases (smoothstep, no jerk) from 1 up to `climb` (× the climb cap), `speed` (× the flying speed) and down to `gravity`
+// (× g while the jetpack is worn); the thrust follows the climb factor so it can still get there. Capped above `full`.
+JETPACK.thin = { from: 10, full: 200, climb: 3, speed: 2.5, gravity: 0.6 };
+/** The thin-air factors at `h` m over the ground: { climb, speed, gravity } (all 1 near the ground). */
+export function jetThin(h) {
+  const T = JETPACK.thin, t = Math.min(1, Math.max(0, (h - T.from) / (T.full - T.from))), e = t * t * (3 - 2 * t);
+  return { climb: 1 + (T.climb - 1) * e, speed: 1 + (T.speed - 1) * e, gravity: 1 + (T.gravity - 1) * e };
+}
 
 // The cloud deck (#1251, src/daycycle.js `deck`): in cloudy weather (`DayCycle.overcast`) one flat cloud layer between `base` and
 // `top` m above the ground (all *guess*: low clouds, a few hundred metres up, nothing measured). Flying up into it whites the

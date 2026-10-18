@@ -125,6 +125,31 @@ async function run() {
   check(fallB > fallA + 1, `C pushes down: ${f2(fallB)} m in 0.8 s against ${f2(fallA)} m falling`);
   check(!player.crouched, 'no crouching in the air');
 
+  // (3b) #1282: thin air: ground -> above the cloud deck (SKYLAYER top + fade) faster than with a constant climb cap
+  {
+    const { SKYLAYER } = await mod('../src/config.js');
+    const px = player.pos.x, pz = player.pos.z, goal = SKYLAYER.top + SKYLAYER.fade, gy = player.groundAt(player.pos.x, player.pos.z, 0);
+    const climbTime = () => {
+      player.pos.y = gy + 0.05; player.eyeY = player.pos.y + PLAYER.eye; player.vy = 0; player.jv.x = player.jv.z = 0; jetpack.heat = 0; jetpack.cut = false;
+      player.keys = new Set(['Space']); let t = 0, vmax = 0;
+      for (; t < 150 && player.pos.y < goal; t += dt) { jetpack.heat = Math.min(jetpack.heat, 0.5); step(dt); vmax = Math.max(vmax, player.vy); }
+      player.keys = new Set();
+      return { t, vmax };
+    };
+    const T = JETPACK.thin, saved = { ...T };
+    Object.assign(T, { climb: 1, speed: 1, gravity: 1 });
+    const before = climbTime();
+    Object.assign(T, saved);
+    const after = climbTime();
+    lines.push(`INFO climb to ${goal} m: before ${f2(before.t)} s (max ${f2(before.vmax)} m/s), after ${f2(after.t)} s (max ${f2(after.vmax)} m/s)`);
+    check(after.t < before.t * 0.6 && after.t < 60, `thin air: ground to above the clouds in ${f2(after.t)} s instead of ${f2(before.t)} s`);
+    check(after.vmax <= JETPACK.climb * T.climb + 1e-6, `climb stays capped (${f2(after.vmax)} m/s)`);
+    // a cut at 215 m: the fall is hard but the landing speed (and so the damage) is no worse than free fall in full gravity
+    player.pos.y = gy + 215; player.eyeY = player.pos.y + PLAYER.eye; player.vy = 0; jetpack.cut = true; jetpack.heat = 1;
+    let vmin = 0; for (let i = 0; i < 60 * 40 && player.pos.y > gy + 0.1; i++) { step(dt); vmin = Math.min(vmin, player.vy); if (fall.active) break; }
+    check(vmin >= -Math.sqrt(2 * 9.8 * 215) - 1, `fall from 215 m: peak speed ${f2(-vmin)} m/s`);
+    player.keys = new Set(); await settle(); jetpack.goHome(); jetpack.putOn(); place(px, pz, 0); // (the hurt fall woke us elsewhere)
+  }
   player.pos.y = 30; player.eyeY = player.pos.y + PLAYER.eye; player.vy = 0; // (#1250: not a 300 m dive into the rest of the test)
   // (4) OUTDOOR's edge holds in the air
   jetpack.heat = 0;

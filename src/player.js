@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { SITE, LEVELS, PLAYER, STAIR, UNIT_TOP, ROOFS, GARAGE, JETPACK, SPIDER, SOFFITS, BICYCLE } from './config.js';
+import { SITE, LEVELS, PLAYER, STAIR, UNIT_TOP, ROOFS, GARAGE, JETPACK, jetThin, SPIDER, SOFFITS, BICYCLE } from './config.js';
 import { stairHeight, stairUnderside } from './stairs.js';
 import { groundY, groundBelowDeckY } from './surroundings.js';
 import { deckAt, deckUnderAt } from './riverbridge.js';
@@ -690,6 +690,7 @@ export class Player {
     const g0 = jet ? this.groundAt(this.pos.x, this.pos.z, this.pos.y) : 0;
     const lift = jet ? jet.lift(dt, this.pos.y <= g0 + 0.02) : 0;
     this.flying = !!jet && (this.pos.y > g0 + 0.02 || lift > GRAVITY);
+    const thin = jet ? jetThin(this.pos.y - g0) : null; // thinner air higher up (#1282)
     this.crouched = !this.flying && (this.crouch || this.kneel || (this.crouched && !this.roomToStand()));
     this.sprinting = wantsRun && !this.crouched && (keyFwd || keySide || amount > 0);
     const speed = (this.sprinting ? PLAYER.run : PLAYER.walk * amount) * (this.crouched ? PLAYER.crouchSpeed : 1) * (this.boost ?? 1); // boost: Kaffeturbo (#217)
@@ -703,7 +704,7 @@ export class Player {
     if (m > 0) { mx = (mx / m) * speed * dt; mz = (mz / m) * speed * dt; }
     const x0 = this.pos.x, z0 = this.pos.z;
     if (this.flying) { // flying across (#359): towards JETPACK.speed in the steered direction, with some inertia
-      const v = JETPACK.speed * Math.min(1, keyFwd || keySide ? 1 : amount), k = Math.min(1, JETPACK.accel * dt);
+      const v = JETPACK.speed * (thin?.speed ?? 1) * Math.min(1, keyFwd || keySide ? 1 : amount), k = Math.min(1, JETPACK.accel * (thin?.speed ?? 1) * dt);
       const tx = m > 0 ? (mx / (Math.hypot(mx, mz) || 1)) * v : 0, tz = m > 0 ? (mz / (Math.hypot(mx, mz) || 1)) * v : 0;
       this.jv.x += (tx - this.jv.x) * k; this.jv.z += (tz - this.jv.z) * k;
       mx = this.jv.x * dt; mz = this.jv.z * dt;
@@ -797,9 +798,9 @@ export class Player {
       const f = (this.fall ??= { top: this.pos.y, gap: 0 }); // falls (#361)
       f.top = Math.max(f.top, this.pos.y); f.gap = Math.max(f.gap, this.pos.y - g);
       const y0 = this.pos.y;
-      this.vy += (lift - GRAVITY) * dt;
+      this.vy += (lift * (thin?.climb ?? 1) - GRAVITY * (thin?.gravity ?? 1)) * dt;
       if (jet) {
-        if (lift > 0) this.vy = Math.min(this.vy, JETPACK.climb);
+        if (lift > 0) this.vy = Math.min(this.vy, JETPACK.climb * thin.climb);
         else if (lift < 0) this.vy = Math.max(this.vy, Math.min(-JETPACK.sink, this.vy - lift * dt)); // (no faster than `sink` by the push)
       }
       this.pos.y = Math.max(g, this.pos.y + this.vy * dt);
