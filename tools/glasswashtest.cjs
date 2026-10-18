@@ -98,6 +98,9 @@ const check = (ok, name) => { console.log(`${ok ? 'PASS' : 'FAIL'} ${name}`); if
         const dw = A.world.lids.find((l) => l.name === 'diskmaskinen');
         if (g.rackStore) g.unpark();
         g.take(); g.used = dt; const st = A.life.items.store('dwUpper'); st.parkCup(g, 2); g.contents.clear(); g.show();
+        const cup = A.cups.cups[0]; // a coffee cup in the same rack (#1264), slot 3
+        if (cup.state === 'dishwasher') cup.unpark();
+        cup.take(); cup.contents.clear(); cup.dirty = dt; st.parkCup(cup, 3); cup.show();
         const open = d === 'open';
         dw.isOpen = open; dw.t = open ? 1 : 0; dw.pose(dw.t);
         for (const r of dw.racks) { r.isOpen = open; r.t = open ? 1 : 0; r.pose(r.t); }
@@ -113,6 +116,15 @@ const check = (ok, name) => { console.log(`${ok ? 'PASS' : 'FAIL'} ${name}`); if
           dist: w.distanceTo(a), inRackNode: g.model.parent === anchor };
       });
       check(r.parked && !r.held && r.inRackNode && r.dist < 0.05, `reload, door ${door}, ${dirty ? 'dirty' : 'clean'}: glass parked in rack slot 2 ${JSON.stringify(r)}`);
+      const rc = await page2.evaluate(() => {
+        const A = window.__app, c = A.cups.cups[0], st = A.life.items.store('dwUpper'), anchor = A.life.anchors.get('dwUpper')(3);
+        A.scene.updateMatrixWorld(true);
+        const V = c.model.position.constructor;
+        return { parked: st.parkedCups.get(3) === c && c.state === 'dishwasher' && c.rackSlot === 3 && !!c.rackStore, held: A.heldItem() === c, dirty: !!c.dirty,
+          inRackNode: c.model.parent === anchor, dist: c.model.getWorldPosition(new V()).distanceTo(anchor.getWorldPosition(new V())), visible: c.model.visible };
+      });
+      check(rc.parked && !rc.held && rc.inRackNode && rc.dist < 0.05 && rc.visible, `reload, door ${door}, ${dirty ? 'dirty' : 'clean'}: cup parked in rack slot 3 ${JSON.stringify(rc)}`);
+      check(rc.dirty === dirty, `reload, door ${door}: cup ${dirty ? 'still dirty' : 'still clean'}`);
       check(r.used === dirty && r.dirty === dirty, `reload, door ${door}: ${dirty ? 'still dirty' : 'still clean'}`);
       check(r.doorOpen === (door === 'open'), `reload: door stays ${door}`);
     }

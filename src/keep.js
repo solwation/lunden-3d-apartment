@@ -224,6 +224,7 @@ const PARTS = {
       const cups = a.cups.cups.map((c) => {
         const e = { s: c.state, d: c.design };
         if (c.state === 'cabinet') e.slot = c.slot;
+        if (c.state === 'dishwasher' && Number.isInteger(c.rackSlot)) e.rk = c.rackSlot; // standing in the dishwasher's upper rack (#1264): the slot
         if (c.state === 'placed') { e.p = vec(c.model.position); e.ry = r3(c.model.rotation.y); }
         if (c.fill > 0) { e.a = c.contents.a; e.heat = r3(c.heat); }
         if (c.dirty) e.u = 1; // (#383)
@@ -282,7 +283,11 @@ const PARTS = {
       for (const [e, c] of order) {
         if (typeof e.d === 'string') c.setDesign(e.d);
         if (e.s === 'cabinet' && Number.isInteger(e.slot) && e.slot >= 0 && e.slot < a.cups.slots.length) c.goHome(e.slot);
-        else if (e.s === 'spare') { c.held = false; c.state = 'spare'; c.slot = null; c.model.removeFromParent(); }
+        else if (e.s === 'dishwasher' && Number.isInteger(e.rk)) { // back in the upper rack's slot (#1264); an unusable slot (taken, out of range) leaves the cup spare
+          const st = a.life?.items.store('dwUpper');
+          if (st?.parkCup && e.rk >= 0 && e.rk < st.slots.length && !st.parkedCups.has(e.rk)) { c.held = false; c.model.removeFromParent(); st.parkCup(c, e.rk); }
+          else { c.held = false; c.state = 'spare'; c.slot = null; c.model.removeFromParent(); }
+        } else if (e.s === 'spare') { c.held = false; c.state = 'spare'; c.slot = null; c.model.removeFromParent(); }
         else if (e.s === 'placed' && isVec(e.p)) {
           c.held = false; c.state = 'placed'; c.slot = null; c.placedAt = performance.now();
           a.scene.add(c.model);
