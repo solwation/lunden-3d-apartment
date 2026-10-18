@@ -25,7 +25,7 @@ async function run() {
   const { player, fall, world, step, stats, camera, renderer, weather, lights, detail } = w.__app;
   const mod = (p) => w.eval(`import('${new URL(p, location.href).href}')`); // the page's own module instances
   const { FALL, PLAYER, HUS_L, VERTICAL, UNIT_TOP, SITE } = await mod('../src/config.js');
-  const { husLLayout, husLTerraces } = await mod('../src/exterior.js');
+  const { husLLayout, husLTerraces, tiltedPanelGeo } = await mod('../src/exterior.js');
   const lines = [];
   let pass = true;
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
@@ -149,6 +149,21 @@ async function run() {
   check(Math.abs(player.pos.y - roofY) < 0.01 && world.roofs.standingOn(player.pos.x, player.pos.z, player.pos.y)?.id === 'L-roof', `on Hus L's roof at ${f2(player.pos.y)} m`);
   r = walkTo(3, 3.0);
   check(r.ok && r.hi > roofY + 0.15 && r.hi < roofY + 0.3 && !landings.some((l) => l.r), `stepped over a row of solar panels (up to ${f2(r.hi)} m)`);
+  { // #1277: every panel sits wholly above the roof capping and tilts its face to the south (+z), north edge raised
+    const S = HUS_L.solar, bad = [], cap = roofY;
+    for (const [xa, xb] of S.x) for (const [za, zb] of S.z) {
+      const g = tiltedPanelGeo(xa, xb, roofY + S.lift, za, zb), pos = g.attributes.position, nrm = g.attributes.normal;
+      let minY = 1e9, northY = -1e9, southY = 1e9, up = [0, 0, 0], nUp = 0;
+      for (let i = 0; i < pos.count; i++) {
+        minY = Math.min(minY, pos.getY(i));
+        if (pos.getZ(i) < za + 0.05) northY = Math.max(northY, pos.getY(i)); // (the north end's top corner)
+        if (pos.getZ(i) > zb - 0.05) southY = Math.min(southY, pos.getY(i));
+        if (nrm.getY(i) > 0.9) { up[1] += nrm.getY(i); up[2] += nrm.getZ(i); nUp++; }
+      }
+      if (minY < cap + S.lift - 1e-6 || !(northY > southY + 0.1) || !(up[2] > 0)) bad.push(`${xa},${za} minY ${minY.toFixed(3)} n ${northY.toFixed(2)} s ${southY.toFixed(2)} nz ${up[2].toFixed(2)}`);
+    }
+    check(bad.length === 0, `all solar panels above the roof (${f2(roofY)} m) and tilted up towards the south ${bad.join('; ')}`);
+  }
   place(loftX1 + 1.5, 10.6, roofY, 90); // (between the last row of panels and the set-back line)
   push(90, 4);
   check(player.pos.x > loftX1 + PLAYER.radius - 0.02 && Math.abs(player.pos.y - roofY) < 0.01, `the loft over the lift stands in the way (x ${f2(player.pos.x)}, its wall ${f2(loftX1)}, feet ${f2(player.pos.y)})`);

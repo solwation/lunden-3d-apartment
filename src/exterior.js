@@ -103,11 +103,11 @@ function boxGeo(x0, x1, y0, y1, z0, z1) {
 
 /** Solar panel tilted up to the south sun (#1232): a slab hinged on its low south edge, the north edge raised by
  * HUS_L.solar.tilt degrees. `y` = the height of the low edge's underside; one box per panel, merged with the rest. */
-function tiltedPanelGeo(xa, xb, y, za, zb) {
+export function tiltedPanelGeo(xa, xb, y, za, zb) {
   const t = H.solar.thickness, a = (H.solar.tilt * Math.PI) / 180;
   const geo = new THREE.BoxGeometry(xb - xa, t, zb - za);
   geo.translate(0, t / 2, -(zb - za) / 2); // hinge = the south edge's underside at the origin
-  geo.rotateX(-a); // rotation about +x by -a lifts -z, the north side
+  geo.rotateX(a); // rotation about +x by +a lifts -z (the north side) and tips the face normal to +z (south)
   geo.translate((xa + xb) / 2, y, zb);
   return geo;
 }
