@@ -10,6 +10,7 @@ import { parkingLots, onEastRoad, onEastBuildingAt } from './parkinglayout.js';
 import { buildKarpFacade, karpBrickTexture } from './karpfacade.js';
 const W=SITE.west;
 const PAVE_MESH=4, PAVE_LIFT=.03; // m: #1305, paved/gravel polygons (school yards, squares) are cut into triangles no longer than PAVE_MESH and lie PAVE_LIFT higher, so they stay on the sloping terrain whose own triangles differ (*guess*)
+const PAVE_CUT=100; // m: #1310, with the terrain's grid the paving is cut along the terrain's own lines (cutAtTerrain) instead of into PAVE_MESH triangles: it lies on the ground exactly and needs far fewer triangles
 const ring=p=>(p[0][0]===p[p.length-1][0]&&p[0][1]===p[p.length-1][1]?p.slice(0,-1):p);
 const shape=poly=>new THREE.Shape(ring(poly).map(([x,z])=>new THREE.Vector2(x,-z)));
 const strip=(a,b,low,top)=>{const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute([a[0],low,a[1],b[0],low,b[1],b[0],top[1],b[1],a[0],low,a[1],b[0],top[1],b[1],a[0],top[0],a[1]],3));g.computeVertexNormals();return g;};
@@ -98,7 +99,7 @@ function eastLotParts(ground,access,surfColor){
  for(const lot of parkingLots().lots){
   const src=SITE.east.access.find(p=>p.source===lot.source),pos=[];
   const tris=refinedTriangles(lot.polygon,P.mesh),grid=ground.grid?.();
-  if(grid)for(let t=0;t<tris.length;t+=3)for(const q of cutAtTerrain(tris.slice(t,t+3),grid))for(const[x,z]of q)pos.push(x,ground(x,z)+P.lift.asphalt,z);
+  if(grid)for(let t=0;t<tris.length;t+=3)for(const q of cutAtTerrain(tris.slice(t,t+3),grid)){if(q.every(([x,z])=>onEastBuildingAt(x,z)))continue;for(const[x,z]of q)pos.push(x,ground(x,z)+P.lift.asphalt,z);} // (#1310: pieces wholly under a building are never seen)
   else for(const[x,z]of tris)pos.push(x,ground(x,z)+P.lift.asphalt,z);
   const asphalt=flatGeometry(pos);asphalt.userData.tint=surfColor(src);access.push(asphalt);
   for(const run of lot.runs){ // the stalls' side lines (one between every two stalls and at both ends) and one back line
@@ -148,7 +149,7 @@ function buildBackdrop(W,key,ground,brick=null,reflectiveGlass=null,karp=null){
   const surfColor=p.color??(p.surface==='asphalt'?0x5f6164:p.surface==='gravel'?0xb5ac90:0xa7a397);
   if(p.path){const s=plain(pathStrip(p,w=>-w/2,w=>w/2,W.pathLift,ground));s.userData.tint=surfColor;parts.access.push(s);}
   else if(key==='east'&&p.capacity&&parkingLots().lots.some(l=>l.source===p.source))continue; // a car park: drawn below (#1278)
-  else{const pos=[];for(const[x,z]of refinedTriangles(ring(p.polygon),PAVE_MESH))pos.push(x,ground(x,z)+W.pathLift+PAVE_LIFT,z);const pl=flatGeometry(pos);pl.userData.tint=surfColor;parts.access.push(pl);} // #1305: cut into small triangles so the paving follows the real ground
+  else{const pos=[],grid=ground.grid?.();if(grid){const tris=refinedTriangles(ring(p.polygon),PAVE_CUT);for(let t=0;t<tris.length;t+=3)for(const q of cutAtTerrain(tris.slice(t,t+3),grid)){if(key==='east'&&q.every(([x,z])=>onEastBuildingAt(x,z)))continue;for(const[x,z]of q)pos.push(x,ground(x,z)+W.pathLift+PAVE_LIFT,z);}}else for(const[x,z]of refinedTriangles(ring(p.polygon),PAVE_MESH))pos.push(x,ground(x,z)+W.pathLift+PAVE_LIFT,z);const pl=flatGeometry(pos);pl.userData.tint=surfColor;parts.access.push(pl);} // #1305: cut into small triangles so the paving follows the real ground
  }
  if(key==='east')eastLotParts(ground,parts.access,p=>p.color??(p.surface==='asphalt'?0x5f6164:p.surface==='gravel'?0xb5ac90:0xa7a397));
  const mats={facade:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.95,side:THREE.DoubleSide}),roof:new THREE.MeshStandardMaterial({color:W.roof,roughness:.85,side:THREE.DoubleSide}),glass:new THREE.MeshStandardMaterial({color:brick?0xffffff:W.glass,vertexColors:!!brick,roughness:.3,metalness:.25,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:DECAL_OFFSET.factor,polygonOffsetUnits:DECAL_OFFSET.units}),access:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:1,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:DECAL_OFFSET.factor,polygonOffsetUnits:DECAL_OFFSET.units})}; // #1309: paths/asphalt wear the decal depth bias too, so a coarse sample cannot sink under a terrain crease as green slivers (same as kvarteret-lunden#70)
