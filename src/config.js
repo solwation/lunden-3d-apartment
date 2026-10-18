@@ -3189,7 +3189,9 @@ export const AVATAR_BEARD = { centre: [0, 0.075, 0.02], azimuth: 92, bottom: -76
 export const AVATAR_HAIR = { centre: [0, 0.09, 0], rows: 6, step: 12, streak: 0.07,
   hairline: [[0, 37], [22, 36], [42, 29], [58, 16], [64, -4], [72, -6], [78, 13], [102, 15], [120, -6], [146, -26], [180, -30]],
   beanie: [[0, 35], [35, 32], [60, 19], [80, 9], [100, 9], [140, -8], [180, -14]],
-  thick: [[0.016, 0.006, 0.009], [0.014, 0.011, 0.013], [0.006, 0.004, 0.005], [0.004, 0.003, 0.004]],
+  thick: [[0.016, 0.006, 0.009], [0.014, 0.011, 0.013], [0.006, 0.004, 0.005], [0.004, 0.003, 0.004], [0.016, 0.008, 0.012]],
+  // #1244 curly hair (style 4): `rings` [elevation°, curls, azimuth phase] of icosahedron curls of `radius` m sunk `sink` × radius into the shell, `margin`° above the hairline *guess*
+  curly: { radius: 0.021, sink: 0.35, margin: 5, rings: [[88, 1, 0], [76, 6, 0.5], [62, 10, 0], [47, 13, 0.5], [32, 15, 0], [17, 16, 0.5], [3, 16, 0], [-12, 14, 0.5]] },
   long: { top: 50, from: 64, front: 72, back: 100, hem: [-0.035, -0.25], gap: 0.016, depth: 0.012, rows: 8 } };
 // The avatars' skin and material shading (#1104, src/avatar.js skinShading / clothShade) *guess* tuned by eye in day and
 // evening light, not measured: soft areas in the head bone's frame (metres; H = 0.1 is the head's centre) as
@@ -5292,7 +5294,7 @@ export function avatarBody(look) {
 
 /** A well-formed look code (#1136): 7 or 9 digits, or 9 + a height in cm within AVATAR_HEIGHT (the Worker uses it too). */
 export function avatarCodeValid(str) {
-  if (typeof str !== 'string' || !/^[0-4][0-9][0-5][0-3][0-7][0-3][0-1]([0-1][0-3](\d{3})?)?$/.test(str)) return false;
+  if (typeof str !== 'string' || !/^[0-4][0-9][0-5][0-3][0-7][0-4][0-1]([0-1][0-3](\d{3})?)?$/.test(str)) return false;
   if (str.length < 12) return true;
   const h = Number(str.slice(9));
   return h >= AVATAR_HEIGHT.min && h <= AVATAR_HEIGHT.max;
@@ -5305,7 +5307,7 @@ export function encodeAvatarLook(look) {
   const p = Math.max(0, PANTS.indexOf(look.pants));
   const sh = Math.max(0, SHOES.indexOf(look.shoes));
   const h = Math.max(0, HAIR.indexOf(look.hair));
-  const st = Math.min(3, Math.max(0, Number(look.style) || 0));
+  const st = Math.min(4, Math.max(0, Number(look.style) || 0));
   const sl = Math.min(1, Math.max(0, Number(look.sleeves) || 0));
   const g = Math.min(1, Math.max(0, Number(look.gender ?? look.figure) || 0));
   const f = Math.min(3, Math.max(0, Number(look.facial ?? look.facialHair) || 0));

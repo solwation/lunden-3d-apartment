@@ -17,11 +17,11 @@ renderer.setSize(W, Hh); document.body.appendChild(renderer.domElement);
 const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbfc6cc);
 scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f72, 1.6));
 const sun = new THREE.DirectionalLight(0xfff2e0, 2.2); sun.position.set(2, 4, 3); scene.add(sun);
-const hairs = [0x3b2a1e, 0xc9a46a, 0x1c1714, 0x7a3b1f], tops = [0x3d6b8f, 0x8f3d4f, 0x4f7a3d, 0x6b5a8f];
-const skins = [0xe8bf9f, 0xd6a07c, 0xf0cdb2, 0xb07a55], avatars = [];
-for (let s = 0; s < 4; s++) {
+const hairs = [0x3b2a1e, 0xc9a46a, 0x1c1714, 0x7a3b1f, 0x5a3320], tops = [0x3d6b8f, 0x8f3d4f, 0x4f7a3d, 0x6b5a8f, 0x3d8f7a];
+const skins = [0xe8bf9f, 0xd6a07c, 0xf0cdb2, 0xb07a55, 0xe0ae8a], avatars = [];
+for (let s = 0; s < 5; s++) {
   const lk = { ...avatarLook('hair' + s), style: s, hair: hairs[s], top: tops[s], skin: skins[s], tall: 1, build: 1, gender: s % 2, facial: 0 };
-  const a = new Avatar(lk); a.object.position.set((s - 1.5) * 0.6, 0, 0); scene.add(a.object); avatars.push(a);
+  const a = new Avatar(lk); a.object.position.set((s - 2) * 0.45, 0, 0); scene.add(a.object); avatars.push(a);
 }
 const cam = new THREE.PerspectiveCamera(22, W / Hh, 0.05, 50);
 // view: front / q (three-quarter) / side / back; `far` frames the whole figures instead of the heads
@@ -33,6 +33,6 @@ window.__shot = (view, far = false) => {
   renderer.render(scene, cam);
   return true;
 };
-window.__info = () => ({ tris: [0, 1, 2, 3, 4, 5, 6, 7].map((v) => avatarTriangles(v)), calls: renderer.info.render.calls });
+window.__info = () => ({ tris: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((v) => avatarTriangles(v)), calls: renderer.info.render.calls });
 window.__ready = true;
 </script></body></html>

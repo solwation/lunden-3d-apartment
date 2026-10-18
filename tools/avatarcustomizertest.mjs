@@ -42,7 +42,7 @@ test('avatar customization: palettes and encoding roundtrip', () => {
   };
 
   const code = encodeAvatarLook(originalLook);
-  assert.match(code, /^[0-4][0-9][0-5][0-3][0-7][0-3][0-1][0-1][0-3]$/, 'encoded look is 9 digits within palette and variant ranges');
+  assert.match(code, /^[0-4][0-9][0-5][0-3][0-7][0-4][0-1][0-1][0-3]$/, 'encoded look is 9 digits within palette and variant ranges');
 
   const decoded = decodeAvatarLook(code, 'player123');
   assert.equal(decoded.skin, originalLook.skin);
@@ -74,6 +74,16 @@ test('avatar customization: palettes and encoding roundtrip', () => {
   // Fallback on invalid code
   const fallback = decodeAvatarLook('invalid', 'player123');
   assert.deepEqual(fallback, avatarLook('player123'));
+});
+
+test('#1244: curly hair (style 4) roundtrips; styles above 4 are rejected; old codes decode unchanged', () => {
+  const lk = { skin: SKIN[1], top: TOPS[2], pants: PANTS[1], shoes: SHOES[0], hair: HAIR[3], style: 4, sleeves: 1, gender: 0, facial: 0 };
+  const code = encodeAvatarLook(lk);
+  assert.equal(code[5], '4');
+  assert.equal(decodeAvatarLook(code).style, 4);
+  assert.equal(encodeAvatarLook({ ...lk, style: 9 })[5], '4', 'clamped');
+  assert.ok(avatarCodeValid(code) && !avatarCodeValid(code.slice(0, 5) + '5' + code.slice(6)));
+  assert.equal(decodeAvatarLook(code.slice(0, 5) + '3' + code.slice(6)).style, 3);
 });
 
 test('#1136 avatar height: backward-compatible code, proportions and eye height', () => {
@@ -551,7 +561,7 @@ test('#1140: Slumpa gives a valid look (palettes, ranges, wire code valid); Åte
   for (let i = 0; i < 300; i++) {
     const lk = randomAvatarLook(base, rnd);
     assert.ok(SKIN.includes(lk.skin) && HAIR.includes(lk.hair) && TOPS.includes(lk.top) && PANTS.includes(lk.pants) && SHOES.includes(lk.shoes) && C.EYES.includes(lk.eyes));
-    assert.ok(lk.style >= 0 && lk.style < 4 && [0, 1].includes(lk.sleeves) && [0, 1].includes(lk.gender) && lk.facial >= 0 && lk.facial < 4);
+    assert.ok(lk.style >= 0 && lk.style < 5 && [0, 1].includes(lk.sleeves) && [0, 1].includes(lk.gender) && lk.facial >= 0 && lk.facial < 4);
     for (const n of Object.keys(C.AVATAR_SHAPE.fields)) assert.ok(Number.isInteger(lk[n]) && lk[n] >= 0 && lk[n] < C.AVATAR_SHAPE.steps, n);
     assert.ok(lk.height >= AVATAR_HEIGHT.min && lk.height <= AVATAR_HEIGHT.max);
     assert.equal(lk.build, base.build, 'the old build field is kept'); assert.ok(lk.bodyBuild >= 0 && lk.bodyBuild < C.AVATAR_BUILD.steps);

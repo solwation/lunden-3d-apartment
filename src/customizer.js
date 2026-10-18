@@ -302,6 +302,16 @@ export function drawAvatarPreview(canvas, look) {
     ctx.beginPath();
     ctx.roundRect(cx - 6, crown - 0.5, 12, 4, 2);
     ctx.fill();
+  } else if (style === 4) { // Curly (#1244): the cap with a ring of curls round the crown and temples
+    ctx.fillStyle = hair;
+    cap(1.8, hairline);
+    for (let i = 0; i < 11; i++) {
+      const t = Math.PI * (1.05 + 0.9 * i / 10), r = 4.2 + (i % 3) * 0.6;
+      ctx.beginPath();
+      ctx.arc(cx + Math.cos(t) * (rx + 2.5), hy + Math.sin(t) * (ry + 2.5), r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.arc(cx - 9 + i * 6, crown + 2, 4.5, 0, Math.PI * 2); ctx.fill(); }
   } else if (style === 3) { // Beanie: a knitted cap with a folded brim, both ending above the brows
     ctx.fillStyle = top;
     cap(2.5, hairline - 1);
@@ -331,7 +341,7 @@ export function randomAvatarLook(base, rnd = Math.random) {
   const lk = { ...base };
   lk.skin = SKIN[pick(SKIN.length)]; lk.hair = HAIR[pick(HAIR.length)]; lk.top = TOPS[pick(TOPS.length)];
   lk.pants = PANTS[pick(PANTS.length)]; lk.shoes = SHOES[pick(SHOES.length)]; lk.eyes = EYES[pick(EYES.length)];
-  lk.style = pick(4); lk.sleeves = pick(2); lk.gender = pick(2); lk.facial = pick(4);
+  lk.style = pick(5); lk.sleeves = pick(2); lk.gender = pick(2); lk.facial = pick(4);
   for (const name of Object.keys(AVATAR_SHAPE.fields)) lk[name] = pick(AVATAR_SHAPE.steps);
   lk.bodyBuild = pick(AVATAR_BUILD.steps);
   const H = AVATAR_HEIGHT, lo = rnd() < 0.15 ? H.min + 20 : H.adult, hi = rnd() < 0.15 ? H.adult : H.max - 5;

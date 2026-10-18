@@ -7,7 +7,7 @@ import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, SHIN, bindAt, lathe, torsoR, a
 // The players' avatars (#705): a neutral human figure for the other players (src/ghosts.js) and for our own reflection in the
 // mirrors (#691). The skeleton, the proportions and the two-bone IK are Olof's (src/olof.js, #671); the figure itself is a
 // plainer one: no hoodie or can, but optional facial hair (a full beard shell, #1097, and/or a moustache) and a face (#1101: eyes with lids and irises under a brow ridge, brows, a nose with wings, lips, a jawline; ears), a body that follows a person's shape (#1103,
-// bodyParts: shoulders, hands with fingers, a T-shirt or a long-sleeved top with a collar and a hem, trousers with a belt, trainers) and one of four hairstyles / a hat. Colours (skin,
+// bodyParts: shoulders, hands with fingers, a T-shirt or a long-sleeved top with a collar and a hem, trousers with a belt, trainers) and one of five hairstyles (short, long, bun, beanie, curly #1244) / a hat. Colours (skin,
 // hair, top, trousers, shoes) and the build come from the player's seed (the name or the id), so players can be told apart.
 //
 // Cost: ONE SkinnedMesh (one draw call) per avatar with its own small skeleton and material; only current suit wearers share one existing-artwork atlas (#891). The geometry is
@@ -314,6 +314,16 @@ function hairParts(style) {
     (a, e, s, i) => Math.max(0.0015, thick(a, e) * (curtain(a) ? 1 : feather(s)) * (parting && a === 0 ? 0.55 : 1) + bump(a, s, i)),
     (a, s, i) => strand(i) * (parting && a === 0 && s > 0.15 ? 0.8 : 1) * (0.92 + 0.08 * smooth(0, 0.3, s))), 'hair', 1]);
   if (style === 1) out.push(...longHair([...az.filter((a) => a >= L.from), ...az.filter((a) => a <= -L.from)], low, onSkull, sheet, strand, thick, hit, smooth));
+  if (style === 4) { // curly hair (#1244): rings of small irregular curls over the short-hair shell, kept above the hairline
+    const C = HAIR.curly;
+    C.rings.forEach(([e, n, phase], r) => { for (let k = 0; k < n; k++) {
+      const a = ((k + phase) / n) * 360 - 180, e0 = hairline(a) + C.margin;
+      if (e < e0 && e < 85) continue;
+      const j = Math.sin(r * 7.3 + k * 2.1), t = 0.5 + 0.5 * Math.sin(r * 3.1 + k * 4.7), rad = C.radius * (0.85 + 0.3 * t);
+      const q = onSkull(a, e, thick(a, e) + rad * C.sink);
+      out.push([new THREE.IcosahedronGeometry(rad, 0).scale(1, 0.9 + 0.2 * j, 1).rotateY(k + r).translate(...q), 'hair', 0.92 + 0.14 * t]);
+    } });
+  }
   if (style === 2) { // the bun at the back of the crown: a coil around a knot, tilted with the head's curve, and its band
     const at = [0, 0.212, -0.078], tilt = -0.66;
     out.push([new THREE.SphereGeometry(0.036, 10, 7).scale(1.05, 0.9, 1).rotateX(tilt).translate(...at), 'hair', 1.06]);

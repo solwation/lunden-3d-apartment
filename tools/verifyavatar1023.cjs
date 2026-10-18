@@ -129,7 +129,7 @@ async function run() {
 
     const savedCode = await page.evaluate(() => localStorage.getItem('lunden.avatar'));
     console.log('Saved avatar code in localStorage:', savedCode);
-    if (!/^[0-4][0-9][0-5][0-3][0-7][0-3][0-1][0-1][0-3]$/.test(savedCode)) {
+    if (!/^[0-4][0-9][0-5][0-3][0-7][0-4][0-1][0-1][0-3]$/.test(savedCode)) {
       throw new Error(`Saved avatar code invalid format: ${savedCode}`);
     }
 
