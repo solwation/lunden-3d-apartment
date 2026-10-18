@@ -208,6 +208,7 @@ const PARTS = {
       list.forEach((h, i) => {
         const e = {};
         if (h.held || h === stowedItem()) held = k[i];
+        else if (h.rackStore && Number.isInteger(h.rackSlot)) e.rk = h.rackSlot; // standing in the dishwasher's upper rack (#1245): the slot, not a world place
         else if (h.placed) {
           e.p = vec(h.model.getWorldPosition(new THREE.Vector3()));
           const q = h.model.getWorldQuaternion(new THREE.Quaternion());
@@ -258,7 +259,10 @@ const PARTS = {
       for (const [k, e] of Object.entries(items)) {
         const h = map.get(k);
         if (!h) continue;
-        if (isVec(e.p) && Array.isArray(e.q) && e.q.length === 4 && e.q.every(Number.isFinite)) {
+        if (Number.isInteger(e.rk) && h.parkInRack) { // back in the dishwasher's upper rack (#1245); the contents and `used` follow below
+          const st = a.life?.items.store('dwUpper');
+          if (st?.parkCup && e.rk >= 0 && e.rk < st.slots.length && !st.parkedCups.has(e.rk)) { h.take(); st.parkCup(h, e.rk); h.model.visible = true; }
+        } else if (isVec(e.p) && Array.isArray(e.q) && e.q.length === 4 && e.q.every(Number.isFinite)) {
           h.take(); // (out of its home first: a pot leaves its merged window board, a trinket its drawer)
           h.placeAt(new THREE.Vector3(...e.p));
           h.model.position.set(...e.p);

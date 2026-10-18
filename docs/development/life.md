@@ -127,7 +127,7 @@ src/dishes.js          the life sim's drinks and dishes (M2): #382 the drinking 
                        null is removed
 src/things.js          (#1238) the cabinet's wine / whisky / champagne `Glass` is a dish like a cup (`isDishThing`, `dirty` = `used`, `wash()`,
                        `parkInRack`/`unpark`): dishes.js `wash` / `pourOut` and life.js/stores.js `putIn` (dwUpper, via `parkCup`) accept it
-                       beside `isCup`; the dishwasher washes it with the cups. Test: `tools/glasswashtest.cjs`. A glass in the rack is saved as placed.
+                       beside `isCup`; the dishwasher washes it with the cups. Test: `tools/glasswashtest.cjs`. A glass in the rack is saved as its rack slot (`rk` in keep.js things, #1245) and parked again on reload, open or shut door, dirty/clean kept.
 src/dishwasher.js      the dishwasher (#384, DISHWASHER): `buildRacks` (interior.js's DM unit) — two wire racks, Openable 'drawer's
                        in world.lids ("Dra ut / Skjuta in underkorgen"), `blocked` while the door is up ("Fäll ner luckan först");
                        the door is blocked while a rack is out ("Skjut in korgarna först"); a cutlery tray rides on the upper rack.
