@@ -1,7 +1,8 @@
 import { applyRestPose } from './remote-pose.js';
 import { poseOlof } from './olof.js';
 import * as THREE from 'three';
-import { FALL, TOAST } from './config.js';
+import { FALL, TOAST, SOUNDS } from './config.js';
+import { makesSteps, strideFor } from './spatialsound.js';
 import { GHOSTS as G, COMBAT, AVATAR, AVATAR_CROUCH, CHAT, encodeAvatarWireLook, decodeAvatarLook, splitAvatarCode, playerBodySegment } from './config.js';
 import { Avatar, armTarget } from './avatar.js';
 import { totalScore } from './stats.js';
@@ -261,6 +262,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     this.bikeAt(a, b, k);
     const d = this.root.position.distanceTo(eye), sec = b === a ? 0 : (b.t - a.t) / 1000;
     this.root.visible = d < G.far;
+    this.dEye = d; this.vh = sec ? Math.hypot(b.p.x - a.p.x, b.p.z - a.p.z) / sec : 0; this.vy = sec ? (b.p.y - a.p.y) / sec : 0; // (#1302: what the footsteps derive from)
     if (this.tag) { // (#1296) beyond tagFar the tag grows with distance: constant size on screen, no pop-out
       this.tag.visible = d < G.far;
       const f = Math.max(1, d / G.tagFar);
@@ -448,6 +450,7 @@ export class Ghosts {
     else if (m.t === 'a') { const g = this.others.get(m.i); if (g) this.onShot?.(m, g); }
     else if (m.t === 'g') { const g = this.others.get(m.i); if (g) { g.wave(); this.greetsSeen++; this.onGreet?.(m, g, m.to === this.me ? null : this.others.get(m.to) ?? null); } }
     else if (m.t === 'c') { const g = this.others.get(m.i); if (g) this.onToast?.(m, g); } // a toast (#1222): the room sends it only from within PLAYERS.toastRange
+    else if (m.t === 'snd') { const g = this.others.get(m.i); if (g && SOUNDS.kinds.includes(m.k)) this.onPlayerSound?.(m, g); } // a sound event (#1302): the room sends it only from within PLAYERS.soundRange
     else if (m.t === 'm' || m.t === 'mx' || m.t === 'k') this.onTalk?.(m, this.others.get(m.i)); // chat (#675) and "skriver…" (#676), src/chat.js
   }
 
@@ -506,6 +509,41 @@ export class Ghosts {
     }
     const eye = this.camera.position, armed = !!s.h;
     for (const g of this.others.values()) { g.draw(t, eye); g.setSolid(armed && !!g.h); }
+    if (this.onStep || this.onJet) this.soundTick(t);
+  }
+
+  /** The others' footsteps and jetpack roar (#1302), derived locally from their state (speed, crouch, pose, `bk`, `jp`): no
+   * extra traffic and no allocation per frame. `onStep(ghost)` once per stride of a ghost walking on the ground within
+   * SOUNDS.range.step; `onJet(ghost)` every SOUNDS.jetEvery s from the SOUNDS.jetNearest nearest thrusting ghosts in range. */
+  soundTick(t) {
+    const dt = this.soundAt ? Math.min(0.1, (t - this.soundAt) / 1000) : 0;
+    this.soundAt = t;
+    if (!dt) return;
+    for (const g of this.others.values()) {
+      if (!g.root.visible || g.dEye > SOUNDS.range.step + SOUNDS.range.jet) { g.stride = 0; continue; }
+      if (g.jp === 2 && g.dEye < SOUNDS.range.jet) {
+        let nearer = 0;
+        for (const o of this.others.values()) if (o !== g && o.jp === 2 && o.dEye < g.dEye) nearer++;
+        g.jetT = (g.jetT ?? 0) - dt;
+        if (nearer < SOUNDS.jetNearest && g.jetT <= 0) { g.jetT = SOUNDS.jetEvery; this.onJet?.(g); }
+      }
+      if (g.dEye < SOUNDS.range.step && makesSteps({ speed: g.vh, vy: g.vy, crouch: g.crouch, pose: g.pose, riding: !!g.bikeMesh, jp: g.jp }, SOUNDS)) {
+        g.stride = (g.stride ?? 0) + g.vh * dt;
+        if (g.stride >= strideFor(g.vh, SOUNDS)) { g.stride = 0; this.onStep?.(g); }
+      } else g.stride = 0;
+    }
+  }
+
+  /** Our own sound event (#1302): `k` a key of SOUNDS.kinds (never text). One small message; the room passes it to the players
+   * near us. At most one every SOUNDS.every s. False when not connected / too soon. */
+  sound(k) {
+    const t = performance.now();
+    if (!this.connected || !SOUNDS.kinds.includes(k) || t - (this.soundSentAt ?? -1e9) < SOUNDS.every * 1000) return false;
+    this.soundSentAt = t;
+    this.outbox.push({ t: 'snd', k });
+    while (this.outbox.length > G.outbox) this.outbox.splice(this.outbox.findIndex(m => m.t !== 'fall' && m.t !== 'consume'), 1);
+    this.sendShot();
+    return true;
   }
 
   /** Our own state for the mirror image (#691): where we stand, which way we look, what we hold and how fast we walk (the

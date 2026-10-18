@@ -159,6 +159,7 @@ body.touch #touch-controls #stand-btn {
 body.touch #touch-controls #measure-btn { right: var(--c0); bottom: var(--r2); }
 body.touch #touch-controls #power-btn { right: var(--c1); bottom: var(--r2); }
 body.touch #touch-controls #turn-btn { right: var(--c2); bottom: calc(var(--side) + var(--tu)); }
+body.touch #touch-controls #bell-btn { right: var(--c2); bottom: calc(var(--side) + var(--tu)); } /* the bicycle bell (#1302): the turn button's slot, never shown together (riding holds nothing to turn) */
 body.touch #touch-controls #jet-down { right: var(--c3); bottom: 0; }
 body.touch #touch-controls #jet-up { right: var(--c3); bottom: var(--tu); }
 body.touch #touch-controls #web-btn { right: var(--c3); bottom: calc(2 * var(--tu)); }

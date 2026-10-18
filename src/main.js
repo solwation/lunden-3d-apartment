@@ -147,7 +147,7 @@ import { Ghosts } from './ghosts.js';
 import { Combat } from './combat.js';
 import { Bow, Arrows } from './bow.js';
 import { Chat } from './chat.js';
-import { COMBAT, CHAT, GHOSTS, TOUCH, NEW_YEAR, TOAST, TOAST_LINES, CAT_CARD } from './config.js';
+import { COMBAT, CHAT, GHOSTS, TOUCH, NEW_YEAR, TOAST, TOAST_LINES, CAT_CARD, SOUNDS } from './config.js';
 import { Basketball, Hoop } from './basket.js';
 import { Mess } from './mess.js';
 import { readTestMode, makeTestController } from './testmode.js';
@@ -1865,6 +1865,7 @@ document.addEventListener('keydown', (e) => {
   else if (e.code === 'KeyE' && rest.active) standUp();
   else if ((e.code === 'Space' || e.code === 'KeyC') && (rest.active || player.riding)) { e.preventDefault(); player.keys.delete(e.code); standUp(); } // seated, C gets you up (the Space that does it is no jump, #636)
   else if (e.code === 'KeyC' && !e.repeat) player.crouch = true; // (the repeats of the C that just stood you up do not crouch)
+  if (e.code === SOUNDS.bellKey && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) ringBell();
   if (e.code === 'KeyM') updateMute(toggleMuted());
   if (e.code === 'KeyT') toggleStats();
   if (e.code === 'Tab') { e.preventDefault(); if (!e.repeat) holdStats(true); }
@@ -1944,11 +1945,12 @@ function updateBicycleControls() {
   const label = player.riding ? 'Kliv av cykeln' : 'Res dig';
   const shortLabel = player.riding ? 'Kliv av' : 'Res dig';
   if (standBtn.textContent !== shortLabel) standBtn.textContent = shortLabel;
+  bellBtn.hidden = !(player.riding && touch.enabled && !reading); // (#1302: the bell button, touch only)
   standBtn.setAttribute('aria-label', label); standBtn.title = label;
   if (player.riding && !reading) {
     if ((!focused || focused.kind === 'bicycle') && !heldItem()?.useLabel) actionBtn.textContent = label;
     promptEl.hidden = false;
-    promptEl.textContent = touch.enabled ? 'Cyklar' : 'Cyklar · WASD · E / mellanslag för att kliva av';
+    promptEl.textContent = touch.enabled ? 'Cyklar' : 'Cyklar · WASD · B ringer klockan · E / mellanslag för att kliva av';
   }
 }
 
@@ -2653,6 +2655,22 @@ ghosts.onToast = (m, g) => {
   if (!m.b && mine instanceof Glass) mine.useAlt(true); // answer once with our own glass
   else if (mine instanceof Glass && mine.toastT <= 0) mine.toastT = 1; // … and raise it for an answered toast too
 };
+// sounds from other players (#1302): the bicycle bell is a sound event (the room passes it to the players nearby, never echoed);
+// their footsteps and jetpack roar are derived here from their state (ghosts.js soundTick), all through sfx.playAt (fade, direction, voice cap)
+ghosts.onPlayerSound = (m, g) => { if (m.k === 'bell') sfx.playAt(g.head, 'bell'); };
+ghosts.onStep = (g) => sfx.playAt(g.feet, 'step');
+ghosts.onJet = (g) => sfx.playAt(g.head, 'jet');
+const bellBtn = document.getElementById('bell-btn');
+/** Ring the bicycle bell (#1302, B / the 🔔 button while riding): we hear it right away, the players nearby hear it from us. */
+function ringBell() {
+  if (!player.riding || reading || bellAt > performance.now() - SOUNDS.every * 1000) return false;
+  bellAt = performance.now();
+  sfx.bell(null);
+  ghosts.sound('bell');
+  return true;
+}
+let bellAt = -1e9;
+bellBtn.addEventListener('click', ringBell);
 greet.mineAvatar = () => ghosts.selfGhost().avatar; // (#1122: your spoken lines move your mirror image's mouth)
 window.__ghosts = ghosts; window.__combat = combat; window.__bow = bow; window.__arrows = arrows; window.__presence = presence;
 chat = new Chat({ ghosts, log: document.getElementById('chat-log'), setting: document.getElementById('menu-chat-setting'), name: () => leaderboard.name, // #675

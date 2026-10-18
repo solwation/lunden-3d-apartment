@@ -358,3 +358,10 @@ Ponies (#1280, #1293): Zoey (grey/white) and Princess (bay, black points, white 
 shader-animated legs/neck/head/ears/tail, grazing, standing and wandering, walking to the fence when the visitor is within 40 m. Not targets for rays and darts (like the gulls). **Klappa (#1293):** `Paddock.targets()` gives
 one invisible pick box per pony (kept out of the scene, tested only by main.js's focus ray, `HOLD.reach`) with `userData.door` = {kind 'pony', verb 'klappa', pet()}; E / click runs `use()` → `pet()`: the arm reaches out (generic
 `hand.reach`), the pony stops (`state 'pet'`, `PADDOCK.pony.pet` s), turns its head and body to the visitor, lowers its muzzle, flicks its ears, swishes its tail and nickers (`sfx.nicker`). No stats counter.
+
+Sounds from other players (#1302): the bicycle bell (B while riding, the touch button `#bell-btn` in the turn button's slot, `ringBell()` in main.js) plays `sfx.bell(null)` for us and sends
+`ghosts.sound('bell')` (Worker relay: storage.md). Everything others make goes through `sfx.playAt(pos, kind, gain)` (audio.js; kinds 'bell' | 'step' | 'jet'): squared distance fade to nothing at
+`SOUNDS.range[kind]` (spatialsound.js `distanceGain`), the panner's direction from the camera listener, at most `SOUNDS.maxVoices` (8) at once (`VoiceCap`), silent when muted / before the audio unlock.
+Footsteps and the jetpack roar are derived in `Ghosts.soundTick` from each ghost's interpolated speed, crouch, pose, `bk` and `jp` (no extra traffic, no per-frame allocation): one step per stride within 25 m
+while walking on the ground, a roar burst every 0.35 s from the 2 nearest thrusting ghosts. Shots already sound through `combat.remote` (`sfx.nerf`). Tests: `node --test cloudflare/spatialsound.test.mjs cloudflare/players.test.mjs`;
+`node tools/playersoundpeertest.cjs GAME WORKER` (real Ghosts clients through `node cloudflare/dev.mjs PORT`) and `node tools/bellapptest.cjs GAME WORKER` (the whole app on a phone context: B / the button ring, not riding: nothing).

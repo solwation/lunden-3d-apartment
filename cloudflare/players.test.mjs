@@ -7,6 +7,7 @@ import assert from 'node:assert/strict';
 import { installRuntime, fakeNamespace } from './devws.mjs';
 import worker, { PlayerRoom } from './worker.js';
 import { PLAYERS, CLOSE, COMBAT, CHAT, cleanText } from './players.js';
+import { SOUNDS } from '../src/config.js';
 
 installRuntime();
 const realNow = Date.now;
@@ -1596,4 +1597,32 @@ test('#1297 hi travels through the room: forwarded to others, in the late welcom
   now += 1000; a.send({ p: [1, 0, 2], r: 0, hi: 'cup' }); await settle(env);
   now += 1000; a.send({ p: [1, 0, 2], r: 0 }); await settle(env);
   assert.equal('hi' in b.states().at(-1), false, 'an empty hand clears it');
+});
+
+test('sound events (#1302): a whitelisted key only, to the players within range, rate-limited, never echoed; the client list matches', async () => {
+  assert.deepEqual(PLAYERS.sounds, SOUNDS.kinds, 'the room\'s whitelist equals the client\'s');
+  assert.ok(PLAYERS.soundEvery <= SOUNDS.every);
+  const env = setup();
+  const a = await connect(env, 'A'), b = await connect(env, 'B'), c = await connect(env, 'C'), d = await connect(env, 'D');
+  const ia = a.got[0].i;
+  const snds = (x) => x.got.filter((m) => m.t === 'snd');
+  now += 5000;
+  a.send({ p: [0, 0, 0], r: 0 }); b.send({ p: [20, 0, 1], r: 0 }); c.send({ p: [PLAYERS.soundRange + 1, 0, 0], r: 0 }); // d: unknown position
+  await settle(env);
+  now += 5000;
+  a.send({ t: 'snd', k: 'bell' }); await settle(env);
+  assert.deepEqual(snds(b), [{ t: 'snd', i: ia, k: 'bell' }]);
+  assert.equal(snds(c).length, 0, 'out of range');
+  assert.equal(snds(d).length, 0, 'unknown position');
+  assert.equal(snds(a).length, 0, 'not echoed');
+  a.send({ t: 'snd', k: 'bell' }); await settle(env);
+  assert.equal(snds(b).length, 1, 'not more often than soundEvery');
+  now += 5000;
+  for (const bad of [{ t: 'snd', k: 'boom' }, { t: 'snd', k: 3 }, { t: 'snd' }, { t: 'snd', k: ['bell'] }, { t: 'snd', k: 'Bell' }]) a.send(bad);
+  await settle(env);
+  assert.equal(snds(b).length, 1, 'an unknown key, a number, none, an array: dropped');
+  now += 1000;
+  a.send({ t: 'snd', k: 'bell' }); await settle(env);
+  assert.equal(snds(b).length, 2, 'allowed again after the gap');
+  assert.equal(a.closed, null);
 });

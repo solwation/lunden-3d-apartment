@@ -156,6 +156,12 @@ src/ghosts.js          other players as ghosts with a name tag (#666), inert wit
                        #1222: a toast { t: 'c', k, b? } (k an index into config.js TOAST_LINES below PLAYERS.toastPhrases, b = an answer
                        that is never answered) goes to the players within PLAYERS.toastRange m of the sender's last known position, at most
                        one per PLAYERS.toastEvery s per connection (GHOSTS.toast / ghosts.onToast; room test in players.test.mjs);
+                       #1302: a sound event { t: 'snd', k } (k only a key of PLAYERS.sounds = config.js SOUNDS.kinds, today 'bell' = the bicycle
+                       bell; `cleanSound`) goes as { t: 'snd', i, k } to the players within PLAYERS.soundRange (45 m) of the sender's last known
+                       position, at most one per PLAYERS.soundEvery s (the client's SOUNDS.every is longer), never echoed, no text; an old Worker
+                       drops the unknown type and an old client ignores it. Footsteps / jetpack roar of others are derived locally from their
+                       state (no traffic). **Rollout order: deploy the Worker first (`cloudflare/`, by the owner), then Pages**; nothing is deployed from
+                       the agent. Tests: players.test.mjs (valid / invalid / rate-limited / nearby-only), spatialsound.test.mjs.
                        #667: the state's `h` (weapon key or '') and one shot message per shot { t: 'a', w, o, d, s?, to? } go the
                        same way (outbox of GHOSTS.outbox, within the same 5 Hz); lives are
                        counted per connection in the room (a socket's attachment), nothing is stored about fights

@@ -2,7 +2,11 @@
 // given a world position and is panned/attenuated relative to the camera.
 // The AudioContext can only start after a user gesture — call initAudio() from a click.
 
+import { SOUNDS } from './config.js';
+import { distanceGain, VoiceCap } from './spatialsound.js';
+
 let ctx = null, master = null, noiseBuf = null;
+const listenerAt = { x: 0, y: 0, z: 0 }, voices = new VoiceCap(SOUNDS.maxVoices); // (#1302: where we hear from; the cap on other players' sounds)
 let muted = false;
 
 export function initAudio() {
@@ -31,6 +35,7 @@ export const audioParts = () => (ctx ? { ctx, master, noiseBuf } : null);
 export function updateListener(camera) {
   if (!ctx) return;
   const l = ctx.listener, p = camera.position;
+  listenerAt.x = p.x; listenerAt.y = p.y; listenerAt.z = p.z;
   const f = { x: -Math.sin(camera.rotation.y), z: -Math.cos(camera.rotation.y) };
   if (l.positionX) {
     l.positionX.value = p.x; l.positionY.value = p.y; l.positionZ.value = p.z;
@@ -763,6 +768,34 @@ export const sfx = {
     tone(t, 0.5, d, { type: 'sine', from: 2350 * p, to: 2330 * p, gain: 0.1 });
     tone(t, 0.35, d, { type: 'sine', from: 3520 * p, to: 3500 * p, gain: 0.06 });
     tone(t + 0.07, 0.4, d, { type: 'sine', from: 2790 * p, to: 2770 * p, gain: 0.05 });
+  },
+  /** The bicycle bell (#1302): a bright 'ding-ding', two short sine partials with a quick decay (a ring bell's metallic overtone). */
+  bell(pos, gain = 1) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.9 * gain);
+    for (const dt of [0, 0.16]) {
+      tone(t + dt, 0.55, d, { type: 'sine', from: 2090, to: 2080, gain: 0.16 });
+      tone(t + dt, 0.3, d, { type: 'sine', from: 3140, to: 3130, gain: 0.07 });
+    }
+    noise(t, 0.015, d, { type: 'highpass', freq: 5000, gain: 0.06 });
+  },
+  /** Somebody else's sound at a world position (#1302): kind 'bell' | 'step' | 'jet' (a short burst of the jetpack's roar), with
+   * a squared distance fade to nothing at SOUNDS.range[kind], the panner's direction, and at most SOUNDS.maxVoices at once. */
+  playAt(pos, kind, gain = 1) {
+    if (!ready() || !pos) return false;
+    const k = distanceGain(Math.hypot(pos.x - listenerAt.x, pos.y - listenerAt.y, pos.z - listenerAt.z), SOUNDS.range[kind] ?? SOUNDS.range.step) * gain * (SOUNDS.gain[kind] ?? 1);
+    if (k < 0.01 || !voices.take(ctx.currentTime, kind === 'step' ? 0.15 : kind === 'jet' ? 0.5 : 0.8)) return false;
+    if (kind === 'bell') this.bell(pos, k);
+    else if (kind === 'jet') {
+      const t = ctx.currentTime, d = out(pos, k);
+      noise(t, 0.5, d, { type: 'lowpass', freq: 1100, gain: 0.3, attack: 0.04 });
+      noise(t, 0.4, d, { type: 'bandpass', freq: 2400, q: 0.7, gain: 0.05, attack: 0.04 });
+    } else {
+      const t = ctx.currentTime, d = out(pos, k), v = 0.8 + Math.random() * 0.4;
+      noise(t, 0.06, d, { type: 'lowpass', freq: 650, gain: 0.3 * v });
+      tone(t, 0.08, d, { from: 115, to: 60, gain: 0.2 * v });
+    }
+    return true;
   },
   /** The cooker hood's fan (#194): a low, steady whoosh until stopped. */
   fan(pos) {

@@ -24,6 +24,8 @@ import { TOYS, SCORE, pvpHitPoints, PVP_RIFLE_HEAD as RH, rifleHeadContact, PVP_
 // else is dropped.
 // A toast (#1222) { t: 'c', k, b? } (k: a line index, b: true when it answers a toast) goes to the players within
 // PLAYERS.toastRange m as { t: 'c', i, k, b? }; no text, at most one per toastEvery s per connection.
+// A sound event (#1302) { t: 'snd', k } (k: a key of PLAYERS.sounds, today only 'bell' = the bicycle bell) goes to the players
+// within PLAYERS.soundRange m as { t: 'snd', i, k }; no text, at most one per soundEvery s per connection, never echoed.
 // A greeting (#673) { t: 'g', to, k } goes to everybody else as { t: 'g', i, to, k } (k: a phrase index, no text).
 // Room → client: { t: 'w', i: your id, ps: [{ i, n, p, r, h, score, l }], c: { lives, weapons } } on joining; { t: 'j', i, n, l } someone
 // joined; { t: 's', i, p, r, h, score, l } a state (l = server-owned remaining lives); { t: 'x', i } someone left; 'hit' / 'hurt' (#667). n = the name ('' = "Anonym").
@@ -44,6 +46,9 @@ export const PLAYERS = {
   greetPhrases: 16,    // #673: the phrase is an index below this into the client's fixed list, never text
   toastEvery: 2,       // #1222: a toast at most this often per connection (s; the client's TOAST.every)
   toastRange: 6,       // #1222: only players within this many metres of the toaster's last known position get it (*guess*)
+  soundEvery: 0.4,     // #1302: a sound event at most this often per connection (s; the client's SOUNDS.every is a little longer)
+  soundRange: 45,      // #1302: only players within this many metres of the sender's last known position get it (*guess*; the client fades it out earlier)
+  sounds: ['bell'],    // #1302: the whitelist of sound-event keys (the client's SOUNDS.kinds), never free text
   toastPhrases: 8,     // #1222: the line is an index below this into the client's TOAST.all, never text
 };
 
@@ -132,6 +137,13 @@ export function cleanToast(text) {
   let m;
   try { m = JSON.parse(text); } catch { return null; }
   return m?.t === 'c' && Number.isInteger(m.k) && m.k >= 0 && m.k < PLAYERS.toastPhrases && (m.b === undefined || m.b === true) ? { k: m.k, ...(m.b ? { b: true } : {}) } : null;
+}
+
+/** A sound event (#1302) { t: 'snd', k: whitelisted key }, or null. */
+export function cleanSound(text) {
+  let m;
+  try { m = JSON.parse(text); } catch { return null; }
+  return m?.t === 'snd' && typeof m.k === 'string' && PLAYERS.sounds.includes(m.k) ? { k: m.k } : null;
 }
 
 export function cleanAvatar(v) {
@@ -358,7 +370,7 @@ export class PlayerRoom {
       else if (m?.t === 'consume' && Number.isSafeInteger(m.id) && m.id > 0 && typeof m.portion === 'string' && m.portion.length > 0 && m.portion.length <= 64) consuming = m;
     } catch {}
     let lifeChanged = false;
-    const talk = cleanTalk(message), hello = !talk && cleanGreet(message), toast = !talk && !hello && cleanToast(message), shot = !talk && !hello && !toast && cleanShot(message);
+    const talk = cleanTalk(message), hello = !talk && cleanGreet(message), toast = !talk && !hello && cleanToast(message), sound = !talk && !hello && !toast && cleanSound(message), shot = !talk && !hello && !toast && !sound && cleanShot(message);
     if (falling) {
       const damage = fallDamage(falling.drop, falling.gap, COMBAT.lives);
       if (damage !== null) {
@@ -406,6 +418,15 @@ export class PlayerRoom {
         for (const x of this.open()) {
           const q = x !== ws && att(x).s?.p;
           if (q && Math.hypot(q[0] - a.s.p[0], q[1] - a.s.p[1], q[2] - a.s.p[2]) <= PLAYERS.toastRange) send(x, out);
+        }
+      }
+    } else if (sound) { // #1302: a sound (the bicycle bell) to the players near the sender, not too often
+      if (now - (a.sd ?? 0) >= PLAYERS.soundEvery * 800 && a.s?.p) {
+        a.sd = now;
+        const out = JSON.stringify({ t: 'snd', i: a.i, k: sound.k });
+        for (const x of this.open()) {
+          const q = x !== ws && att(x).s?.p;
+          if (q && Math.hypot(q[0] - a.s.p[0], q[1] - a.s.p[1], q[2] - a.s.p[2]) <= PLAYERS.soundRange) send(x, out);
         }
       }
     } else if (shot) {

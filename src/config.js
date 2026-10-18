@@ -6164,6 +6164,17 @@ export const TOAST = { every: 2, raise: 0.9, olof: 6, lines: ['Skål!'], newYear
 /** Every toast line in one fixed list: an index of it goes to the player room, never text (PLAYERS.toastPhrases above its length). */
 export const TOAST_LINES = [...TOAST.lines, ...TOAST.newYear, ...TOAST.answer];
 
+// Sounds from other players (#1302, src/spatialsound.js, audio.js `playAt`, ghosts.js `soundTick`). `kinds` = the sound-event keys
+// sent to the player room (its PLAYERS.sounds, kept equal by hand; today the bicycle bell); `every` = our minimum gap between two
+// sent events (the room's PLAYERS.soundEvery is shorter). `range` = metres where each kind has faded out for the listener (a
+// squared linear fade, on top of the panner's own roll-off; the room's PLAYERS.soundRange 45 m is the outer bound for events).
+// `maxVoices` = most such sounds playing at once (no flooding by a crowd). Footsteps / jetpack are derived locally from the
+// others' state (no traffic): steps only from a ghost walking on the ground (not crouched, seated, riding or thrusting) within
+// `range.step`, one per stride; the jetpack roar only from the `jetNearest` nearest thrusting ghosts, a burst every `jetEvery` s.
+// Our picks (*guess*).
+export const SOUNDS = { kinds: ['bell'], every: 0.5, maxVoices: 8, range: { bell: 40, step: 25, jet: 35 },
+  stride: { walk: 0.62, run: 0.95, runSpeed: 3.6, minSpeed: 0.5, maxSpeed: 8, maxClimb: 1.5 }, jetNearest: 2, jetEvery: 0.35, bellKey: 'KeyB', gain: { bell: 1, step: 0.7, jet: 0.7 } };
+
 // Midnight fireworks over the block (#1200, src/fireworks.js; #1199's New Year trigger calls `start()`): `seconds` of
 // rockets (a pool of `shells` shells, each bursting into `sparks` sparks; the phone profile uses the `phone*` counts),
 // a new one every `interval` s (the last `finale` s: `finaleInterval`) launched inside `area` (x/z, plan m, over the
