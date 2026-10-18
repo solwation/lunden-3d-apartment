@@ -85,7 +85,9 @@ try {
  // ── reloads: the confirmed spot comes back in season; out of season the tree is gone and the table back
  A=await load('month=12&day=10');R=A.rearrange;X=A.christmas;tree=X.tree;
  const t2=R.pieces.find(p=>p.item.type==='coffeetable');
- check(pos(tree.object).distanceTo(new T.Vector3(...saved))<1e-6&&tree.object.visible&&!t2.object.visible&&!A.fruit.group.visible,'reload in December: the tree where it was put, the table and bowl hidden');
+ // the move above is a raw translation (no rug lift in the saved y); the living-room rug under the table lifts the tree on load (#1225), so compare x/z exactly and y within the rug thickness
+ const tp=pos(tree.object),dyRug=tp.y-saved[1];
+ check(Math.hypot(tp.x-saved[0],tp.z-saved[2])<1e-6&&dyRug>=-1e-6&&dyRug<0.03&&tree.object.visible&&!t2.object.visible&&!A.fruit.group.visible,'reload in December: the tree where it was put, the table and bowl hidden');
  check(['palm','armchair'].every(t=>R.pieces.find(p=>p.item.type===t).object.visible),'reload: the plants and the armchair corner shown');
  A=await load('month=10&day=9');R=A.rearrange;X=A.christmas;tree=X.tree;
  const t3=R.pieces.find(p=>p.item.type==='coffeetable');
