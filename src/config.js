@@ -3994,6 +3994,12 @@ export const CAT_CARD = {
     { id: 'common', label: 'Vanlig', from: 0 }, { id: 'uncommon', label: 'Ovanlig', from: 30 }, { id: 'rare', label: 'Sällsynt', from: 100 },
     { id: 'epic', label: 'Episk', from: 250 }, { id: 'legendary', label: 'Legendarisk', from: 1000 },
   ],
+  // Rarity visuals of the binder cards (#1256, src/catbinder.js + the #binder-view CSS in index.html; UI only, no 3D cost).
+  // Per tier, in tier order: effect level (0 plain card, 1 coloured border + glow, 2 foil + shine band, 3 glitter + holographic
+  // shimmer + stars, 4 the same with a rainbow frame and more of everything), number of ★ sparkles, and the max pointer / touch
+  // tilt in degrees (0 = the card stays flat). Chosen by eye like rare trading cards; *guess*. `starExtra` = extra ★ for the
+  // `star` breed (Miele), the most spectacular card. Reduced motion: no animation and no tilt, the still layers remain.
+  fx: { level: [0, 1, 2, 3, 4], stars: [0, 0, 3, 6, 9], tilt: [0, 0, 6, 9, 12], starExtra: 4 },
   breeds: [
     { key: 'huskatt', label: 'Huskatt', weightKg: [3.5, 5], facts: ['Den vanligaste katten i huset.', 'Finns i många färger.'] },
     { key: 'siames', label: 'Siames', weightKg: [3, 5], facts: ['Pratar gärna och högt.', 'Mörka öron, tassar och svans.'] },

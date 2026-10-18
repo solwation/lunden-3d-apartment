@@ -82,6 +82,60 @@ const text = (page, sel) => page.evaluate((s) => document.querySelector(s)?.text
   if (out) await snap(page, `${out}/binder-perser-desktop.png`, 1280, 800);
   await page.evaluate(() => window.__app.binderPanel.go(0));
   if (out) await snap(page, `${out}/binder-huskatt-desktop.png`, 1280, 800);
+  // --- rarity visuals (#1256): every found breed's card gets its tier's fx level; Miele the top one; reduced motion stills it ---
+  const jp = () => page.evaluate(async () => { const a = window.__app; const k = document.createElement('canvas'); k.width = 8; k.height = 6; for (const b of ['siames', 'brittiskt korthår', 'maine coon', 'norsk skogkatt', 'sphynx']) if (!a.catCards.slot(b).has) await a.catCards.add(b, { name: 'T', data: k.toDataURL('image/jpeg') }); });
+  await jp();
+  const fx = await page.evaluate(() => {
+    const a = window.__app, P = a.binderPanel, out = [];
+    P.show(true, 0);
+    for (let i = 0; i < 8; i++) {
+      P.go(i); const c = document.querySelector('.page .card'), cs = c.className;
+      out.push({ i, name: c.querySelector('h3').textContent, cls: cs, fx: c.dataset.fx, layers: [...c.querySelectorAll('.fx')].map((x) => x.className.replace('fx ', '')), stars: c.querySelectorAll('.star-fx').length,
+        anim: [...c.querySelectorAll('.shine,.star-fx,.glitter')].some((x) => getComputedStyle(x).animationName !== 'none') });
+    }
+    return out;
+  });
+  const lv = fx.map((x) => Number(x.fx));
+  check(fx.every((x) => /tier-/.test(x.cls)) && lv.every((v, i) => i === 0 || v >= 0), 'every card page renders a tier class');
+  const byTier = {}; for (const x of fx) { const t = /tier-(\w+)/.exec(x.cls)[1]; byTier[t] = Math.max(byTier[t] ?? 0, Number(x.fx)); }
+  check(byTier.common === 0 && byTier.uncommon === 1 && byTier.rare === 2 && byTier.epic === 3 && byTier.legendary === 4, `tiers map to fx levels 0..4 ${JSON.stringify(byTier)}`);
+  const mi = fx[7], rare = fx.find((x) => /tier-rare/.test(x.cls)), epic = fx.find((x) => /tier-epic/.test(x.cls)), plain = fx.find((x) => /tier-common/.test(x.cls));
+  check(/fx-4/.test(mi.cls) && /miele/.test(mi.cls) && mi.name.includes('Miele') && mi.layers.includes('holo') && mi.layers.includes('glitter'), `Miele has the top effect (fx-4 + miele, holo + glitter) ${JSON.stringify(mi)}`);
+  check(mi.stars > epic.stars && epic.stars > rare.stars && rare.stars >= 0 && mi.stars >= 9, `star count grows with rarity (rare ${rare.stars}, epic ${epic.stars}, Miele ${mi.stars})`);
+  check(plain.layers.length === 0 && /fx-0/.test(plain.cls) && !rare.layers.includes('glitter') && rare.layers.includes('foil') && epic.layers.includes('holo'), 'common is plain; rare has foil but no glitter; epic gets holo');
+  check(mi.anim, 'full motion: the sparkle / shine animations run');
+  // tilt moves the holo sheen on pointer movement (epic)
+  await page.evaluate((i) => window.__app.binderPanel.go(i), epic.i);
+  const tilt = await page.evaluate(() => { const c = document.querySelector('.page .card'), r = c.getBoundingClientRect(); c.dispatchEvent(new PointerEvent('pointermove', { clientX: r.right - 5, clientY: r.top + 5 })); return { ry: c.style.getPropertyValue('--ry'), rx: c.style.getPropertyValue('--rx'), mx: c.style.getPropertyValue('--mx') }; });
+  check(parseFloat(tilt.ry) > 5 && parseFloat(tilt.rx) > 5 && parseInt(tilt.mx) > 90, `pointer movement tilts the card and moves the sheen (${JSON.stringify(tilt)})`);
+  if (out) { for (const [i, n] of [[plain.i, 'common'], [fx.find((x) => /tier-uncommon/.test(x.cls)).i, 'uncommon'], [rare.i, 'rare'], [epic.i, 'epic'], [7, 'miele']]) { await page.evaluate((i) => window.__app.binderPanel.go(i), i); await snap(page, `${out}/card-${n}-desktop.png`, 1280, 800); } }
+  await page.context().close();
+  {
+    const { page: rm } = await kit.open(browser, `${game}/?shot&time=12&phone`, { contextOptions: { reducedMotion: 'reduce' } });
+    rm.on('pageerror', (e) => { fails++; console.log('PAGEERR', e.message); });
+    await setup(rm); await rm.evaluate(() => { window.__app.stats.miele = 2; }); page = rm; await jp();
+    const still = await rm.evaluate(() => {
+      const P = window.__app.binderPanel; P.show(true, 7); const c = document.querySelector('.page .card');
+      const r = c.getBoundingClientRect(); c.dispatchEvent(new PointerEvent('pointermove', { clientX: r.right - 5, clientY: r.top + 5 }));
+      const anim = [...c.querySelectorAll('.fx,.glitter')].map((x) => getComputedStyle(x).animationName).concat(getComputedStyle(c, '::before').animationName);
+      return { fx: c.dataset.fx, anim, ry: c.style.getPropertyValue('--ry'), layers: c.querySelectorAll('.fx').length };
+    });
+    check(still.fx === '4' && still.layers > 0 && still.anim.every((a) => a === 'none') && still.ry === '', `prefers-reduced-motion: the layers stay, no animation, no tilt (${JSON.stringify(still.anim.slice(0, 3))})`);
+    if (out) await snap(rm, `${out}/card-miele-reduced.png`, 844, 390);
+    await rm.context().close();
+  }
+  ({ page } = await kit.open(browser, `${game}/?shot&time=12&phone`, { viewport: { width: 844, height: 390 }, contextOptions: { hasTouch: true, isMobile: true } }));
+  await setup(page); await page.evaluate(() => { window.__app.stats.miele = 2; }); await jp();
+  await page.evaluate(() => window.__app.binderPanel.show(true, 7));
+  for (const [w, h] of [[844, 390], [390, 844]]) { await page.setViewportSize({ width: w, height: h }); await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))); if (out) await page.screenshot({ path: `${out}/card-miele-phone-${w}x${h}.png` }); }
+  await page.evaluate((i) => window.__app.binderPanel.show(true, i), epic.i);
+  await page.setViewportSize({ width: 844, height: 390 });
+  if (out) await page.screenshot({ path: `${out}/card-epic-phone-844x390.png` });
+  await page.evaluate(() => window.__app.showBinder(false));
+  await page.context().close();
+  ({ page } = await kit.open(browser, `${game}/?shot&time=12&at=3.6,9.0,180,-40,0`));
+  await setup(page);
+  await page.evaluate(() => window.__app.showBinder(true));
   await key(page, 'Escape');
   check(await page.evaluate(() => document.getElementById('binder-view').hidden), 'Esc closes the panel');
   // --- the kitchen wall: no board, the calendar under the clock ---

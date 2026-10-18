@@ -40,9 +40,13 @@ src/catbinderprop.js   the binder as an object (#1255, `CAT_BINDER`): a small ri
                        'binder' (E / the action button); `occluded()` refuses a pick through the table top from above (the pick ray has no table in it).
 src/catbinder.js       the browse UI `BinderPanel` (#binder-view, main.js `showBinder`, frees the mouse like the old board panel): one page per breed
                        (Miele last, an unfound breed is a "???" placeholder with "Plats n av 8"), then an "Äldre foton" page when old photos exist;
-                       the card (name, tier text + points — a plain placeholder, the rarity visuals are #1256 — weight, facts, found / pat / hug
-                       counters) and CAT_CARD.max photo places. ← → / A D / Home / End / dots / swipe / Nästa–Förra; E / Esc / × close. Photos are
+                       the card (name, tier text + points, weight, facts, found / pat / hug
+                       counters; rarity visuals #1256: `fx-N` class + CSS layers by tier, see Graphics) and CAT_CARD.max photo places. ← → / A D / Home / End / dots / swipe / Nästa–Förra; E / Esc / × close. Photos are
                        read-only here: the photo menu with keep / throw away is #1257. Test: `tools/bindertest.cjs`.
+                       Rarity visuals (#1256, UI only — no texture, light or draw call; perfcount unchanged: 507 calls max at 'park'): `CAT_CARD.fx` (level / ★ count / tilt per tier, *guess*) →
+                       `decorate()` in catbinder.js adds `fx-0..4` (+ `miele` for the `star` breed) and aria-hidden layers (`.foil`, `.shine`, `.glitter`, `.holo`, `.star-fx`); the CSS is in index.html.
+                       0 plain · 1 coloured border + glow · 2 foil + shine band + ★ · 3 glitter + holographic sheen + more ★ · 4 rainbow frame, gold foil, most ★ (Miele extra ★ and a ★ after the name).
+                       Pointer / touch movement tilts the card and moves the sheen (CSS vars --rx --ry --mx --my); prefers-reduced-motion: no animation, no tilt, the still layers stay.
 src/catcards.js        cat card binder data model (#1249, part 1 of 4 — #1254–#1257; the binder object + UI are #1255 above; card design / photo menu follow). No DOM: one slot per BREED (`CAT_CARD.breeds`, Miele last;
                        a game cat is random — breed + coat + random name — so there are no fixed individuals), points from SCORE (breeds;
                        Miele `first.miele` 1000), rarity tier = highest `CAT_CARD.tiers` entry reached (common <30, ovanlig 30–99, sällsynt

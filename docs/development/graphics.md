@@ -451,3 +451,7 @@ child of the furniture group: F hides it, and its `updateMatrixWorld` copies eac
 piece moved in Möblera om, hidden for the season or culled by detail takes its shadow along (a hidden piece's instance
 is scaled to zero; during a move the piece is hidden behind the ghost, so its shadow appears again on confirm).
 Strength, soft width, corner radius and lift are *guesses* tuned by eye in `CONTACT_SHADOW` (config.js).
+
+## Cat card rarity visuals (#1256)
+
+The binder cards (`#binder-view .card`, src/catbinder.js) get progressively fancier by tier with CSS only: no texture, light or draw call in the 3D scene (tools/perfcount.html unchanged). Levels, ★ counts and tilt come from `CAT_CARD.fx`; details and the reduced-motion fallback are in [animals-audio.md](animals-audio.md). Animations are opacity / transform only (twinkle, shine sweep) plus one rotating rainbow frame on the top tier.

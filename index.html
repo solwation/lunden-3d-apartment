@@ -219,6 +219,34 @@
     #binder-view .spread { display: grid; grid-template-columns: 270px 1fr; gap: 16px; align-items: start; }
     #binder-view .card { border: 3px solid #8a93a6; border-radius: 12px; background: #fff; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; min-height: 250px; box-sizing: border-box; }
     #binder-view .card.tier-uncommon { border-color: #4f9a62; } #binder-view .card.tier-rare { border-color: #3f7fc4; } #binder-view .card.tier-epic { border-color: #8a56c4; } #binder-view .card.tier-legendary { border-color: #d8a62a; }
+    /* rarity visuals (#1256; CAT_CARD.fx, src/catbinder.js): pure CSS layers inside the card, text stays above them */
+    #binder-view .card { position: relative; isolation: isolate; overflow: hidden; transform: perspective(700px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform .15s ease-out; }
+    #binder-view .card > :not(.fx) { position: relative; z-index: 2; }
+    #binder-view .card .fx { position: absolute; pointer-events: none; z-index: 1; }
+    #binder-view .card.fx-1 { background: linear-gradient(160deg, #fff 55%, #e9f4ec); box-shadow: inset 0 0 0 2px rgba(79,154,98,.35), 0 0 10px rgba(79,154,98,.35); }
+    #binder-view .card.fx-2 { background: linear-gradient(135deg, #f4f9ff, #cfe2f7 45%, #f7fbff 60%, #b9d3ee); box-shadow: inset 0 0 0 2px rgba(255,255,255,.7), 0 0 14px rgba(63,127,196,.5); }
+    #binder-view .card.fx-3 { background: linear-gradient(135deg, #f6efff, #d8c4f0 40%, #f9f3ff 58%, #c3a6e6); box-shadow: inset 0 0 0 2px rgba(255,255,255,.75), 0 0 18px rgba(138,86,196,.65); }
+    #binder-view .card.fx-4 { background: linear-gradient(135deg, #fff6d6, #f2cf63 38%, #fff3c0 56%, #e6b53a); border-color: transparent; box-shadow: inset 0 0 0 2px rgba(255,255,255,.85), 0 0 22px rgba(240,190,50,.9), 0 0 4px #fff; }
+    #binder-view .card.fx-4::before { content: ''; position: absolute; inset: 0; z-index: 0; border-radius: 9px; padding: 3px; background: conic-gradient(from var(--spin, 0deg), #ff5e5e, #ffd84d, #62e08a, #4dc8ff, #b06cff, #ff5e5e); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); animation: card-spin 6s linear infinite; pointer-events: none; }
+    @property --spin { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+    #binder-view .card .foil { inset: 0; background: repeating-linear-gradient(115deg, rgba(255,255,255,0) 0 14px, rgba(255,255,255,.28) 14px 18px, rgba(255,255,255,0) 18px 32px); opacity: .7; }
+    #binder-view .card .shine { top: -20%; bottom: -20%; left: -60%; width: 40%; background: linear-gradient(100deg, transparent, rgba(255,255,255,.65), transparent); transform: skewX(-18deg); animation: card-shine 4.5s ease-in-out infinite; }
+    #binder-view .card .glitter { inset: 0; }
+    #binder-view .card .glitter::before, #binder-view .card .glitter::after { content: ''; position: absolute; inset: 0; animation: card-twinkle 2.4s ease-in-out infinite; }
+    #binder-view .card .glitter::before { background: radial-gradient(circle, #fff 0 1.2px, transparent 1.8px) 0 0 / 23px 29px, radial-gradient(circle, #fff 0 1px, transparent 1.6px) 11px 17px / 37px 31px, radial-gradient(circle, rgba(255,240,170,.95) 0 1.4px, transparent 2px) 5px 9px / 53px 47px; }
+    #binder-view .card .glitter::after { background: radial-gradient(circle, #fff 0 1.2px, transparent 1.8px) 7px 13px / 31px 27px, radial-gradient(circle, rgba(190,230,255,.95) 0 1.3px, transparent 1.9px) 19px 4px / 43px 39px; animation-delay: -1.2s; }
+    #binder-view .card .holo { inset: 0; background: linear-gradient(115deg, #ff5e9c, #ffd84d, #62e08a, #4dc8ff, #b06cff, #ff5e9c) var(--mx, 30%) var(--my, 30%) / 250% 250%; mix-blend-mode: soft-light; opacity: .6; transition: background-position .15s ease-out; }
+    #binder-view .card.fx-4 .holo { opacity: .85; }
+    #binder-view .card .star-fx { color: #fff; text-shadow: 0 0 4px #ffd84d, 0 0 8px rgba(255,200,60,.9); transform: translate(-50%, -50%); line-height: 1; animation: card-twinkle 2.2s ease-in-out infinite; }
+    #binder-view .card.fx-3 .star-fx { text-shadow: 0 0 4px #b06cff, 0 0 8px rgba(176,108,255,.9); }
+    #binder-view .card.fx-2 .star-fx { text-shadow: 0 0 4px #4dc8ff; }
+    #binder-view .card.miele { box-shadow: inset 0 0 0 2px rgba(255,255,255,.9), 0 0 30px rgba(255,200,60,1), 0 0 8px #fff; }
+    #binder-view .card.miele h3::after { content: ' ★'; color: #c98a00; text-shadow: 0 0 6px #fff; }
+    #binder-view .card.fx-2 .tier, #binder-view .card.fx-3 .tier, #binder-view .card.fx-4 .tier { text-shadow: 0 1px 0 rgba(255,255,255,.8); }
+    @keyframes card-shine { 0%, 55% { left: -60%; } 100% { left: 130%; } }
+    @keyframes card-twinkle { 0%, 100% { opacity: .15; } 50% { opacity: 1; } }
+    @keyframes card-spin { to { --spin: 360deg; } }
+    @media (prefers-reduced-motion: reduce) { #binder-view .card, #binder-view .card .fx, #binder-view .card .glitter::before, #binder-view .card .glitter::after, #binder-view .card.fx-4::before { animation: none !important; transition: none !important; } #binder-view .card .shine { left: 35%; opacity: .5; } #binder-view .card .glitter::before, #binder-view .card .glitter::after { opacity: .7; } #binder-view .card .star-fx { opacity: .9; } }
     #binder-view .card.unknown { background: #e6e1d3; border-style: dashed; border-color: #a29d8f; color: #6a6659; }
     #binder-view .card .no { font-size: 12px; opacity: .7; }
     #binder-view .card h3 { margin: 0; font-size: 24px; }

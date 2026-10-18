@@ -250,7 +250,8 @@ tools/homedrawingtest.html headless test (#1099): "Till mamma" — an old saved 
                        hall survives a reload with its date, put back = rehung, thrown = back at the default spot, never synced
                        (#1113: `STEP <name>` lines show progress; each await is bounded → `FAIL <step> timeout`, never a silent hang)
 tools/bindertest.cjs   Playwright (#1255): the cat binder under the coffee table (target, merged, part of the table piece, no pick through the top), E opens the
-                       browse UI, pages / placeholders / counters / Miele last / legacy page, desktop + phone viewport, no kitchen board, calendar under the clock.
+                       browse UI, pages / placeholders / counters / Miele last / legacy page, desktop + phone viewport, no kitchen board, calendar under the clock. #1256: every tier's card gets its fx level (common 0 … legendary 4), Miele the top one with the most ★,
+                       pointer tilt moves the sheen, reduced motion removes animation and tilt; with a shot dir it saves a card of each tier + Miele (desktop, phone).
                        `PLAYWRIGHT_MODULE=… node tools/bindertest.cjs http://localhost:PORT [shotdir]`. (boardtest.html was removed with the board.)
 tools/detailtest.html  headless test: from the doorstep through the open front door the hall's doors are drawn (#210); inside
                        every apartment Entréplan door is on a drawn layer, open or shut; exterior portik doors are excluded (#544); outside the culler still works

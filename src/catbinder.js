@@ -4,8 +4,9 @@ import { CAT_CARD as C } from './config.js';
 // with the old board photos that belong to no breed, when there are any. A page shows the card (name, points, weight, facts,
 // counters) and one place per card slot (C.max): a photo of where the cat was found, or an empty place. A breed that has not
 // been found is a "?" placeholder. Pure DOM + CatCards (src/catcards.js); keys: ← → (A / D) turn the page, Home / End jump,
-// E / Esc close (main.js). Rarity visuals (#1256) and the photo menu with keep / throw away (#1257) come later: the tier is
-// shown as plain text and the photos are read-only here.
+// E / Esc close (main.js). Rarity visuals (#1256): a card gets `fx-N` (CAT_CARD.fx level by tier) and decorative layers
+// (foil, shine, glitter, holo, ★ sparkles) drawn by CSS in index.html; pointer / touch movement tilts it and moves the holo
+// sheen (not under prefers-reduced-motion). The photo menu with keep / throw away (#1257) comes later: photos are read-only here.
 
 const fmtTime = (t) => new Date(t).toLocaleString('sv-SE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 const kg = (n) => n.toLocaleString('sv-SE', { maximumFractionDigits: 1 });
@@ -88,6 +89,7 @@ export class BinderPanel {
   breedPage(s, i) {
     const wrap = el('div', 'spread');
     const card = el('div', `card tier-${s.tier.id}${s.has ? '' : ' unknown'}`);
+    if (s.has) decorate(card, C.tiers.indexOf(s.tier), !!C.breeds.find((b) => b.key === s.key)?.star);
     card.append(el('small', 'no', `Plats ${i + 1} av ${C.breeds.length}`));
     if (!s.has) {
       card.append(el('h3', '', '???'), el('p', 'qm', '?'), el('p', 'note', 'Ingen katt av den här sorten har hittats än. Klappa en katt så får du ett kort!'));
@@ -118,6 +120,38 @@ export class BinderPanel {
     wrap.append(card, photos);
     return wrap;
   }
+}
+
+/** Rarity layers (#1256): level / ★ count / tilt from CAT_CARD.fx by tier index; Miele (`star`) adds `miele` + extra ★. */
+function decorate(card, t, star) {
+  const F = C.fx, level = F.level[t] ?? 0;
+  card.classList.add(`fx-${level}`);
+  if (star) card.classList.add('miele');
+  card.dataset.fx = String(level);
+  if (level < 2) return;
+  for (const c of ['foil', 'shine', ...(level >= 3 ? ['glitter', 'holo'] : [])]) { const l = el('span', `fx ${c}`); l.setAttribute('aria-hidden', 'true'); card.append(l); }
+  const n = (F.stars[t] ?? 0) + (star ? F.starExtra : 0);
+  for (let i = 0; i < n; i++) {
+    const s = el('span', 'fx star-fx', '★');
+    s.setAttribute('aria-hidden', 'true');
+    // a golden-angle spread around the card's edge band, sizes and twinkle phases vary
+    const a = i * 2.39996, x = 50 + 46 * Math.cos(a), y = 50 + 46 * Math.sin(a);
+    s.style.cssText = `left:${x.toFixed(1)}%;top:${y.toFixed(1)}%;font-size:${10 + (i * 7) % 9}px;animation-delay:${(-(i * 0.55) % 3).toFixed(2)}s`;
+    card.append(s);
+  }
+  const tilt = F.tilt[t] ?? 0;
+  if (!tilt || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const move = (e) => {
+    const r = card.getBoundingClientRect(), px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
+    card.style.setProperty('--ry', `${((px - 0.5) * 2 * tilt).toFixed(1)}deg`);
+    card.style.setProperty('--rx', `${((0.5 - py) * 2 * tilt).toFixed(1)}deg`);
+    card.style.setProperty('--mx', `${Math.round(px * 100)}%`);
+    card.style.setProperty('--my', `${Math.round(py * 100)}%`);
+  };
+  const rest = () => { for (const v of ['--rx', '--ry', '--mx', '--my']) card.style.removeProperty(v); };
+  card.addEventListener('pointermove', move);
+  card.addEventListener('pointerleave', rest);
+  card.addEventListener('pointercancel', rest);
 }
 
 function photoEl(c) {
