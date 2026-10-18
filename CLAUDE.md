@@ -51,6 +51,9 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   Send chat updates only for state changes, new work, blockers or completion, without recurring empty-queue messages.
   Do not keep active labels during idle waiting. Keep waits interruptible in steps of at most 60 seconds and stop
   promptly on the user’s pause/stop. See `.claude/commands/orkester.md` for the full lifecycle and final-check rules.
+- **Orchestra capacity (user, 2026-10-18).** At most 2 worker agents **per orchestrator** (not per machine) and always
+  at least 1 active agent per orchestrator while startable work exists, regardless of machine load or how many agents
+  other orchestrators on the same machine run. Aim for ~30 minutes per issue; split large issues rather than adding agents.
 - **No branches, no PRs.** Commit and push directly to `main`.
 - **Basic function first.** Work that isn't needed right now goes into a GitHub issue
   (`gh issue create`) instead of being done on the side. Keep issues small and concrete;
