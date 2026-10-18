@@ -112,7 +112,8 @@ import { Drawing } from './drawing.js';
 import { CatCalendar, CalendarPanel } from './calendar.js';
 import { heldItem, handBusy } from './holdable.js';
 import { Tap, animateWater } from './water.js';
-import { CatBoard, BoardPanel, snapshot } from './catboard.js';
+import { snapshot } from './catphoto.js';
+import { BinderPanel } from './catbinder.js';
 import { CatCards, idbStore } from './catcards.js';
 import { withStore as idbWithStore } from './idb.js';
 import { Lights } from './lights.js';
@@ -286,26 +287,26 @@ renderChangelog(document.getElementById('note-list'), changelog);
 if (!changelog.fresh) retryChangelog((list) => { note.refresh(list); renderChangelog(document.getElementById('note-list'), list); }); // #655
 // the open issues as post-its on the fridge door (#340); only a teaser, nothing to read up close (#431)
 const todo = buildTodoNotes(await loadTodo(), world.lids.find((l) => l.kind === 'fridge' && !l.freezer));
-const boardEl = document.getElementById('board-view');
+const binderEl = document.getElementById('binder-view');
 let reading = false;
 let onEditPointerUnlock = null;
-let boardPanel = null, boardFreed = false; // the panel (#170) frees the mouse to click its buttons
-function showBoard(show, byKey = 'E') {
+let binderPanel = null, binderFreed = false; // the cat binder's panel (#1255, was the board's #170) frees the mouse to click its buttons
+function showBinder(show, byKey = 'E') {
   reading = show;
-  boardPanel.show(show);
+  binderPanel.show(show);
   player.keys.clear();
-  if (show && locked) { boardFreed = true; document.exitPointerLock(); }
-  if (!show && boardFreed) {
-    boardFreed = false;
+  if (show && locked) { binderFreed = true; document.exitPointerLock(); }
+  if (!show && binderFreed) {
+    binderFreed = false;
     if (byKey === 'Escape') { overlay.hidden = true; armEl.hidden = false; } // Esc can't grab the mouse: click to go on
     else canvas.requestPointerLock();
   }
 }
-document.getElementById('board-close').addEventListener('click', () => showBoard(false, 'button'));
-document.addEventListener('keydown', (e) => { // the board panel's keys, with or without pointer lock
-  if (!boardPanel?.open) return;
-  if (e.code === 'KeyE' || e.code === 'Escape') { e.preventDefault(); showBoard(false, e.code); }
-  else if (boardPanel.key(e.code)) e.preventDefault();
+document.getElementById('binder-close').addEventListener('click', () => showBinder(false, 'button'));
+document.addEventListener('keydown', (e) => { // the binder panel's keys, with or without pointer lock
+  if (!binderPanel?.open) return;
+  if (e.code === 'KeyE' || e.code === 'Escape') { e.preventDefault(); showBinder(false, e.code); }
+  else if (binderPanel.key(e.code)) e.preventDefault();
   e.stopImmediatePropagation();
 }, true);
 function showTaskNote(show, byKey = 'E') {
@@ -315,10 +316,10 @@ function showTaskNote(show, byKey = 'E') {
   touch.analog.x = touch.analog.y = 0;
   if (show) {
     sfx.paper(taskCard.object.getWorldPosition(new THREE.Vector3()));
-    if (locked) { boardFreed = true; document.exitPointerLock(); }
+    if (locked) { binderFreed = true; document.exitPointerLock(); }
     tasks.closeBtn.focus();
-  } else if (boardFreed) {
-    boardFreed = false;
+  } else if (binderFreed) {
+    binderFreed = false;
     if (byKey === 'Escape') { overlay.hidden = true; armEl.hidden = false; }
     else canvas.requestPointerLock()?.catch(() => { armEl.hidden = false; });
   }
@@ -331,7 +332,7 @@ document.addEventListener('keydown', (e) => {
 }, true);
 function showNote(show) {
   if (!show && !tasks.modalEl.hidden) { showTaskNote(false); return; }
-  if (!show && !boardEl.hidden) { showBoard(false); return; }
+  if (!show && !binderEl.hidden) { showBinder(false); return; }
   if (!show && clockPanel.open) { showClock(false); return; }
   if (!show && sonos.open) { showSonos(false); return; }
   if (!show && calPanel.open) { showCalendar(false); return; }
@@ -861,15 +862,12 @@ cat.onTip = (c) => {
   c.model.position.y += CUPS.r;
   sfx.click(at);
 };
-// a photo of every cat you pet goes up on the board, once its eyes are shut and the hand is there
-const board = new CatBoard();
-boardPanel = new BoardPanel(board, boardEl);
-scene.add(board.object);
-const boardLoaded = board.load();
-// the cat card binder's data (#1249): cards per breed next to the board's photos, which are copied in once (src/catcards.js)
+// a photo of every cat you pet becomes a card in the cat binder under the coffee table (#1249, #1255): cards per breed in
+// src/catcards.js; the old kitchen board's photos are copied in once (its 'catPhotos' store is left untouched)
 const catCards = new CatCards({ store: idbStore(idbWithStore), stats, touch: keepCatCounts, flag: {
   get: () => localStorage.getItem('lunden.catCards.migrated') === '1', set: () => localStorage.setItem('lunden.catCards.migrated', '1') } });
-const catCardsLoaded = boardLoaded.then(() => catCards.load()).catch(() => {});
+binderPanel = new BinderPanel(catCards, binderEl);
+const catCardsLoaded = catCards.load().catch(() => {});
 // the shared world (#178, #119): inert unless CLOUD_URL (or &cloud=) is set — then drawings, the desk sheet and
 // cat photos sync silently with the Cloudflare Worker (cloud.js)
 const cloud = new Cloud({ posters, drawing, holding: () => heldItem() === heldDrawing,
@@ -905,13 +903,12 @@ const privacyDialog = document.getElementById('privacy-dialog'); // #723: what i
 document.getElementById('menu-privacy')?.addEventListener('click', () => { privacyDialog.hidden = false; });
 document.getElementById('privacy-dialog-close')?.addEventListener('click', () => { privacyDialog.hidden = true; });
 setStatsExtra(() => leaderboard.html());
-cloud.ready = cloud.on ? Promise.all([postersLoaded, boardLoaded]).then(() => cloud.sync()) : Promise.resolve(); // (tests wait on it)
+cloud.ready = cloud.on ? Promise.all([postersLoaded, catCardsLoaded]).then(() => cloud.sync()) : Promise.resolve(); // (tests wait on it)
 cat.onPet = () => { bump('petted'); if (cat.kitten) bump('kittenPets'); catCards.recordPet(cat.breed.name); }; // a kitten's pat is worth more (#363)
 cat.onHurt = (weapon) => penalize(cat.kitten ? 'kittenShot' : 'catShot', weapon); // a kitten: extra bad (#363) // shot, cut or hit: it hisses and flees (#288)
 cat.onPhoto = () => { // 0.7 s into the pat (cat.js), before it walks off (#206)
   bump('catPhotos');
   const head = cat.head.getWorldPosition(new THREE.Vector3()), shot = snapshot(renderer, scene, camera, head);
-  board.add(cat.catName, shot, { kitten: cat.kitten }); // a kitten's photo is marked (#363)
   catCards.add(cat.breed.name, { name: cat.catName, data: shot, coat: cat.variant.name, kitten: cat.kitten }); // and a card in the binder (#1249)
 };
 
@@ -947,12 +944,11 @@ miele.dropSpot = () => { // at your feet, a little in front
   const x = player.pos.x + f.x, z = player.pos.z + f.z;
   return new THREE.Vector3(x, player.pos.y + rugLift(Math.max(0, player.level), x, z), z);
 };
-const miePhoto = () => { // her photo on the cat board: the first time she is held or hugged, each time she turns up
+const miePhoto = () => { // her photo in the cat binder: the first time she is held or hugged, each time she turns up
   if (cat.photoDone) return;
   cat.photoDone = true;
   bump('catPhotos');
   const shot = snapshot(renderer, scene, camera, cat.head.getWorldPosition(new THREE.Vector3()));
-  board.add('Miele', shot);
   catCards.add('Miele', { name: 'Miele', data: shot, coat: 'Miele' });
 };
 miele.onPickUp = () => { if (cat.isMiele) miePhoto(); };
@@ -1303,7 +1299,7 @@ function resumeFromMenu() {
   }
 }
 let unlockedAt = -1e9;
-const otherOverlay = () => ['loading', 'install', 'reset-confirm', 'player-dialog', 'leaderboard-dialog', 'privacy-dialog', 'note', 'task-note', 'terminal', 'cheat-note', 'board-view', 'poster-panel'].some((id) => {
+const otherOverlay = () => ['loading', 'install', 'reset-confirm', 'player-dialog', 'leaderboard-dialog', 'privacy-dialog', 'note', 'task-note', 'terminal', 'cheat-note', 'binder-view', 'poster-panel'].some((id) => {
   const el = document.getElementById(id);
   return el && !el.hidden && !el.classList.contains('done');
 })
@@ -1626,7 +1622,7 @@ function use(thing) {
   if (thing.kind === 'fusebox') { thing.power.use(); return; } // the power cut (#604): trip it, or mend it while held
   if (thing.visit && thing.kind !== 'mirror') { visitUse(thing); return; } // a visited flat's door, window or lid (#574; its mirrors: the avatar editor below, #1110)
   if (thing.kind !== 'note') shadowState.hold = 1.5; // reading the DOM note moves no shadow caster (#669)
-  if (!heldItem() && !['rest', 'place', 'note', 'taskNote', 'clock', 'calendar', 'board', 'poster', 'paper', 'mirror'].includes(thing.kind) && focusPoint && thing === focused) hand.reach(focusPoint); // the arm reaches out (#195)
+  if (!heldItem() && !['rest', 'place', 'note', 'taskNote', 'clock', 'calendar', 'binder', 'poster', 'paper', 'mirror'].includes(thing.kind) && focusPoint && thing === focused) hand.reach(focusPoint); // the arm reaches out (#195)
   if (thing.options && thing.kind !== 'life' && choices.rows && choices.target === thing) { // a lamp with a choice (#428): the marked row
     runChoice(choices.sel);
     if (thing.kind === 'lamp' && thing.isOpen) bump('lights', 1, idOf(thing));
@@ -1637,7 +1633,7 @@ function use(thing) {
   else if (thing.kind === 'clock') { showClock(true); bump('clock'); }
   else if (thing.kind === 'calendar') { showCalendar(true); bump('calendar'); }
   else if (thing.kind === 'blind' || thing.kind === 'curtain') showBlind(thing); // a pleated blind (#273), the curtains (#342)
-  else if (thing.kind === 'board') showBoard(true);
+  else if (thing.kind === 'binder') showBinder(true);
   else if (thing.kind === 'poster') showPoster(thing); // a taped-up drawing (#177)
   else if (thing.kind === 'switch' || thing.kind === 'lamp') { thing.toggle(); if (thing.isOpen && !thing.unit) bump('lights', 1, idOf(thing)); }
   else if (thing.kind === 'fridge') { thing.toggle(); if (thing.isOpen) bump('fridge', 1, idOf(thing)); }
@@ -1724,12 +1720,12 @@ document.addEventListener('pointerlockchange', () => {
   const wasLocked = locked;
   locked = document.pointerLockElement === canvas;
   if (!locked) unlockedAt = performance.now();
-  if (wasLocked && !locked && !boardFreed && !reading && !statsFreed) onEditPointerUnlock?.();
+  if (wasLocked && !locked && !binderFreed && !reading && !statsFreed) onEditPointerUnlock?.();
   armEl.hidden = locked || !statsFreed || statsOpen;
   if (locked) { touch.enabled = false; statsFreed = false; }
-  if (!drawing.active && !boardFreed && !statsFreed) showOverlay(!locked); // drawing and the board panel free the mouse on purpose: no start screen
+  if (!drawing.active && !binderFreed && !statsFreed) showOverlay(!locked); // drawing and the binder panel free the mouse on purpose: no start screen
   if (!locked) { player.keys.clear(); if (!statsFreed) holdStats(false); if (!touch.enabled) player.crouch = false; }
-  if (!locked && reading && !boardFreed) showNote(false);
+  if (!locked && reading && !binderFreed) showNote(false);
 });
 document.addEventListener('mousemove', (e) => {
   if (locked && !statsOpen) look(e.movementX * PLAYER.mouseSens, e.movementY * PLAYER.mouseSens);
@@ -1845,7 +1841,7 @@ crouchBtn.addEventListener('click', () => {
 // --- door interaction: look at a door within reach, press E ----------------
 const raycaster = new THREE.Raycaster();
 raycaster.far = 2.2;
-const pickables = [...garage.targets.map((t) => t.pickable), ...core.targets.map((t) => t.pickable), airFryer.basketTarget.pickable, airFryer.panelTarget.pickable, ...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), ...taps.map((t) => t.pickable), note.pickable, board.pickable, ...(coffeeJar ? [coffeeJar.target.pickable] : []), wallClock.pickable, calendar.pickable, ...lights.targets.map((t) => t.pickable), grill.pickable, blinds.object,
+const pickables = [...garage.targets.map((t) => t.pickable), ...core.targets.map((t) => t.pickable), airFryer.basketTarget.pickable, airFryer.panelTarget.pickable, ...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), ...taps.map((t) => t.pickable), note.pickable, ...(coffeeJar ? [coffeeJar.target.pickable] : []), wallClock.pickable, calendar.pickable, ...lights.targets.map((t) => t.pickable), grill.pickable, blinds.object,
   ...world.units.flatMap((u) => u.targets.map((t) => t.pickable)), ...visitLights.targets.map((t) => t.pickable)]; // a visited flat's doors, windows, lids (#574) and light switches (#620)
 const center = new THREE.Vector2(0, 0);
 const keyCabinet = world.lids.find((l) => l.kind === 'keybox');
@@ -1952,6 +1948,7 @@ function updateFocus() {
     .find((h) => shown(h.object) && !(rest.active && (h.object.userData.door === rest.target || h.object.userData.door?.kind === 'rest' || h.object.userData.door?.seat === rest.target.pickable))); // (not the lid you sit on, #445)
   focused = hit && !behindWall(hit.point) ? hit.object.userData.door : null;
   focusPoint = focused ? hit.point.clone() : null; // where the hand reaches on E (#195)
+  if (focused?.occluded?.(camera.position, focusPoint)) { focused = null; focusPoint = null; } // the binder under the coffee table, seen through its top (#1255)
   focused?.aimAt?.(focusPoint); // the car's screen: which of its buttons (#268)
   if (!power.on && focused && POWERED.has(focused.kind)) focused = { name: '', kind: 'unpowered', blocked: true, blockedText: 'Strömmen är borta' }; // a power cut (#604)
   if (!focused) { // a life-sim thing just out of reach (#367): say so instead of nothing
@@ -2175,14 +2172,14 @@ function toggleFurniture(on = !world.furnitureOn) {
   if (!on) car.radio.stop(); // and the car's (#268)
   try { localStorage.setItem('lunden.furniture', on ? '1' : '0'); } catch { /* ignore */ }
 }
-world.looseItems.push(board.object, ...holdables.filter((h) => h !== beer).flatMap((h) => (h.homeParent ? [h.holder] : [h.holder, h.model])), ...toys.deco); // (the secretary's things go home into it with F, and the secret drawer shows one at a time, #183)
+world.looseItems.push(...holdables.filter((h) => h !== beer).flatMap((h) => (h.homeParent ? [h.holder] : [h.holder, h.model])), ...toys.deco); // (the secretary's things go home into it with F, and the secret drawer shows one at a time, #183)
 const milk = fridge?.milkAt ? new Milk(scene, camera, fridge) : null; // the milk carton in the fridge (#168): not hidden with F, only sent home
 if (milk) { holdables.push(milk); life.keepPart('milk', { save: () => milk.keepState(), load: (v) => milk.loadKeep(v) }); } // what is left in it is kept with the life sim's things (#382)
 const beerCans = beerShelf ? beerShelf.packages.map((p, i) => new BeerCan(scene, camera, beerShelf, p, i)) : []; // the beers on the fridge shelf, taken and drunk from (#587): like the milk, sent home with F
 for (const c of beerCans) { c.onGulp = () => bump('beer'); holdables.push(c); } // (kept with the other things, keep.js)
 holdables.push(miele); // Miele in your arms (#328): not a loose item (she is the cat)
 if (fries) holdables.push(fries.bag); // the bag of fries in the freezer (#301): like the milk, not hidden with F, only sent home
-world.looseItems.push(life.group, fruit.group, ...cups.cups.map((c) => c.model), drawing.paper, calendar.object, ...posters.groups, ...(fish ? [fish.object] : [])); // the cups and the paper go with F too // the cat board and the toys go with the furniture (F)
+world.looseItems.push(life.group, fruit.group, ...cups.cups.map((c) => c.model), drawing.paper, calendar.object, ...posters.groups, ...(fish ? [fish.object] : [])); // the cups and the paper go with F too // the toys go with the furniture (F; the cat binder is part of the coffee table)
 try { if (localStorage.getItem('lunden.furniture') === '0') toggleFurniture(false); } catch { /* ignore */ }
 document.getElementById('furniture-btn').addEventListener('click', () => toggleFurniture());
 
@@ -2383,8 +2380,8 @@ function showTerminal(show, byKey = 'button') {
   if (!show) adminReports.closeLogin();
   terminal.hidden = !show; reading = show; player.keys.clear(); touch.analog.x = touch.analog.y = 0;
   chatMode(show);
-  if (show) { editMenuPiece = rearrange.materialEdit?.piece ?? rearrange.selected?.piece ?? rearrange.target?.piece ?? null; if (!rearrange.materialEdit) editMenuSurfaceId = null; if (locked) { boardFreed = true; document.exitPointerLock(); } editUI(); (rearrange.enabled ? document.getElementById('terminal-close') : terminalInput).focus(); }
-  else if (boardFreed) { boardFreed = false; if (byKey === 'Escape') { overlay.hidden = true; armEl.hidden = false; } else canvas.requestPointerLock()?.catch(() => { armEl.hidden = false; }); }
+  if (show) { editMenuPiece = rearrange.materialEdit?.piece ?? rearrange.selected?.piece ?? rearrange.target?.piece ?? null; if (!rearrange.materialEdit) editMenuSurfaceId = null; if (locked) { binderFreed = true; document.exitPointerLock(); } editUI(); (rearrange.enabled ? document.getElementById('terminal-close') : terminalInput).focus(); }
+  else if (binderFreed) { binderFreed = false; if (byKey === 'Escape') { overlay.hidden = true; armEl.hidden = false; } else canvas.requestPointerLock()?.catch(() => { armEl.hidden = false; }); }
   renderRearrangeHUD();
 }
 /** #675: while the players' room is on (and not rearranging) the console is a slim chat bar at the top over the game. */
@@ -2444,8 +2441,8 @@ document.getElementById('terminal-form').addEventListener('submit', e => {
 function showCheatNote(show, byKey='button') {
   const panel=document.getElementById('cheat-note');panel.hidden=!show;reading=show;
   player.keys.clear();touch.analog.x=touch.analog.y=0;
-  if(show){document.getElementById('cheat-note-text').textContent=cheatList();if(locked){boardFreed=true;document.exitPointerLock();}document.getElementById('cheat-note-close').focus();}
-  else if(boardFreed){boardFreed=false;if(byKey==='Escape'){overlay.hidden=true;armEl.hidden=false;}else canvas.requestPointerLock()?.catch(()=>{armEl.hidden=false;});}
+  if(show){document.getElementById('cheat-note-text').textContent=cheatList();if(locked){binderFreed=true;document.exitPointerLock();}document.getElementById('cheat-note-close').focus();}
+  else if(binderFreed){binderFreed=false;if(byKey==='Escape'){overlay.hidden=true;armEl.hidden=false;}else canvas.requestPointerLock()?.catch(()=>{armEl.hidden=false;});}
 }
 document.getElementById('cheat-note-close').addEventListener('click',()=>showCheatNote(false));
 document.addEventListener('keydown', e => {
@@ -2624,15 +2621,15 @@ setupAvatarCustomizer({
     reading = true;
     player.keys.clear();
     if (locked) {
-      boardFreed = true;
+      binderFreed = true;
       document.exitPointerLock();
     }
   },
   onClose: (byKey) => {
     reading = false;
     player.keys.clear();
-    if (boardFreed) {
-      boardFreed = false;
+    if (binderFreed) {
+      binderFreed = false;
       if (byKey === 'Escape') {
         overlay.hidden = true;
         armEl.hidden = false;
@@ -3207,4 +3204,4 @@ hideLoading();
 
 crashlog.attach({ renderer, camera, quality, player, world, sun, scene, mirrorTarget, frameDiag, viewportBinding }); // what the crash heartbeat shows (#629)
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { microwave, carLodState, showFireworks, newYear, sausages, frameRate, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, catCards, catCardsLoaded, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };
+window.__app = { microwave, carLodState, showFireworks, newYear, sausages, frameRate, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, catCards, catCardsLoaded, binderPanel, showBinder, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };

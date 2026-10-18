@@ -10,6 +10,7 @@ import { woodMaterial } from './woodgrain.js';
 import { freeCanvasAfterUpload } from './lowmemory.js';
 import { sfx } from './audio.js';
 import { mergeStatic } from './merge.js';
+import { buildBinderProp } from './catbinderprop.js';
 import { zzplant } from './zzplant.js';
 import { copperPot } from './plantpots.js';
 import { restTarget } from './rest.js';
@@ -896,6 +897,11 @@ function coffeetable(item) {
     g.add(dowel);
   }
   g.traverse((m) => { m.castShadow = m.receiveShadow = true; });
+  // the cat card binder (#1255) lies on the slat shelf: E opens it; it is the piece's child, so it moves with the table
+  const binder = buildBinderProp({ y: sy + 0.02 + C.slat, tableTop: legH, hx: w / 2, hz: d / 2, level: item.level });
+  g.add(binder.group);
+  (g.userData.targets ??= []).push(binder.target);
+  (g.userData.keep ??= []).push(binder.group);
   g.userData.footprint = [{ x0: -w / 2, x1: w / 2, z0: -d / 2, z1: d / 2 }];
   return g;
 }

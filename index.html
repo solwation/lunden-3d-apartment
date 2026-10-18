@@ -210,21 +210,40 @@
     #note .text { display: block; font: 16px/1.45 system-ui, sans-serif; color: #23324a; }
     #note small { display: block; margin: -8px 0 14px; color: #6a7c84; font: 13px system-ui, sans-serif; }
     body.phone #note .kbd, body.touch #note .kbd { display: none; } /* #275: the keys only for the keyboard */
-    #board-view { position: fixed; inset: 0; z-index: 5; display: grid; place-items: center; background: rgba(20, 35, 45, 0.45); }
-    #board-view[hidden] { display: none; }
-    #board-view .cork { position: relative; width: min(980px, calc(100vw - 32px - var(--sl) - var(--sr))); max-height: calc(100vh - 32px - var(--st) - var(--sb)); overflow: auto; background: #c49a6c; border: 10px solid #b98d5c; border-radius: 4px; box-shadow: 0 14px 40px rgba(0,0,0,.4); padding: 56px 14px 14px; box-sizing: border-box; }
-    #board-view .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 14px; }
-    #board-view .card { background: #fbfaf6; padding: 8px 8px 6px; box-shadow: 0 4px 10px rgba(0,0,0,.3); display: flex; flex-direction: column; align-items: center; font-family: 'Segoe Print', 'Comic Sans MS', cursive; color: #23324a; outline: 3px solid transparent; }
-    #board-view .card.sel { outline-color: #2a7ad2; }
-    #board-view .card.kept { box-shadow: 0 0 0 3px #d8141e, 0 4px 10px rgba(0,0,0,.3); }
-    #board-view .card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: #ddd; }
-    #board-view .card b { font-size: 16px; margin-top: 4px; }
-    #board-view .card small { font-size: 12px; }
-    #board-view .acts { display: flex; gap: 6px; margin-top: 6px; width: 100%; }
-    #board-view .acts button { flex: 1; min-height: 44px; border: 0; border-radius: 8px; background: #e8e2d6; color: #23324a; font: 600 13px system-ui, sans-serif; cursor: pointer; touch-action: manipulation; }
-    #board-view .acts button[aria-pressed=true] { background: #d8141e; color: #fff; }
-    #board-view .empty { grid-column: 1 / -1; text-align: center; font: bold 22px 'Comic Sans MS', cursive; color: #4a3220; }
-    #board-view .hint { color: #4a3220; text-align: center; font-size: 12px; margin: 10px 0 0; }
+    #binder-view { position: fixed; inset: 0; z-index: 5; display: grid; place-items: center; background: rgba(20, 35, 45, 0.55); }
+    #binder-view[hidden] { display: none; }
+    #binder-view .binder { position: relative; width: min(940px, calc(100vw - 24px - var(--sl) - var(--sr))); max-height: calc(100vh - 24px - var(--st) - var(--sb)); overflow: auto; background: #f1ead8; color: #23324a; border: 12px solid #2f4f86; border-radius: 10px; box-shadow: 0 14px 40px rgba(0,0,0,.45); padding: 14px 16px 12px; box-sizing: border-box; font: 15px/1.35 system-ui, sans-serif; -webkit-overflow-scrolling: touch; }
+    #binder-view header { display: flex; align-items: baseline; gap: 12px; padding-right: 48px; margin-bottom: 8px; }
+    #binder-view h2 { margin: 0; font-size: 22px; }
+    #binder-view .count { font-size: 13px; opacity: .75; }
+    #binder-view .spread { display: grid; grid-template-columns: 270px 1fr; gap: 16px; align-items: start; }
+    #binder-view .card { border: 3px solid #8a93a6; border-radius: 12px; background: #fff; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; min-height: 250px; box-sizing: border-box; }
+    #binder-view .card.tier-uncommon { border-color: #4f9a62; } #binder-view .card.tier-rare { border-color: #3f7fc4; } #binder-view .card.tier-epic { border-color: #8a56c4; } #binder-view .card.tier-legendary { border-color: #d8a62a; }
+    #binder-view .card.unknown { background: #e6e1d3; border-style: dashed; border-color: #a29d8f; color: #6a6659; }
+    #binder-view .card .no { font-size: 12px; opacity: .7; }
+    #binder-view .card h3 { margin: 0; font-size: 24px; }
+    #binder-view .card .tier { font-size: 13px; font-weight: 600; }
+    #binder-view .card .qm { margin: 8px 0; text-align: center; font-size: 76px; font-weight: 700; opacity: .4; }
+    #binder-view .card .note { margin: 0; font-size: 14px; }
+    #binder-view .facts { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; margin: 4px 0; }
+    #binder-view .facts dt { font-weight: 600; } #binder-view .facts dd { margin: 0; }
+    #binder-view .lore { margin: 4px 0 0; padding-left: 18px; font-size: 14px; }
+    #binder-view .photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
+    #binder-view .photo { position: relative; margin: 0; background: #fbfaf6; padding: 6px 6px 4px; box-shadow: 0 3px 8px rgba(0,0,0,.3); display: flex; flex-direction: column; box-sizing: border-box; }
+    #binder-view .photo img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: #ddd; display: block; }
+    #binder-view .photo figcaption { display: flex; flex-direction: column; font-size: 12px; padding-top: 3px; } #binder-view .photo figcaption b { font-size: 14px; }
+    #binder-view .photo .badge { position: absolute; top: 10px; right: 10px; font-style: normal; font-size: 11px; font-weight: 700; background: #d8141e; color: #fff; border-radius: 6px; padding: 1px 6px; }
+    #binder-view .photo.empty { min-height: 120px; aspect-ratio: 4 / 3; align-items: center; justify-content: center; background: transparent; box-shadow: none; border: 2px dashed #b7b09c; color: #8d8672; font-size: 13px; }
+    #binder-view .pager { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 12px; }
+    #binder-view .pager button[data-nav=prev], #binder-view .pager button[data-nav=next] { min-width: 96px; min-height: 44px; border: 0; border-radius: 8px; background: #2f4f86; color: #fff; font: 600 14px system-ui, sans-serif; cursor: pointer; touch-action: manipulation; }
+    #binder-view .pager button:disabled { opacity: .35; cursor: default; }
+    #binder-view .dots { display: flex; flex-wrap: wrap; justify-content: center; }
+    #binder-view .dot { width: 44px; height: 44px; border: 0; background: none; padding: 0; cursor: pointer; touch-action: manipulation; position: relative; }
+    #binder-view .dot::after { content: ''; position: absolute; inset: 15px; border-radius: 50%; background: #2f4f86; }
+    #binder-view .dot.empty::after { background: transparent; box-shadow: inset 0 0 0 2px #8a93a6; } #binder-view .dot.star::after { background: #d8a62a; } #binder-view .dot.on::after { inset: 12px; }
+    #binder-view .hint { text-align: center; font-size: 12px; opacity: .7; margin: 6px 0 0; }
+    @media (max-height: 520px) { #binder-view .binder { padding: 6px 12px 8px; border-width: 8px; } #binder-view header { margin-bottom: 4px; } #binder-view h2 { font-size: 18px; } #binder-view .spread { grid-template-columns: 220px 1fr; gap: 10px; } #binder-view .card { min-height: 0; padding: 8px 10px; gap: 3px; } #binder-view .card h3 { font-size: 20px; } #binder-view .card .qm { font-size: 44px; margin: 0; } #binder-view .photos { grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 8px; } #binder-view .photo figcaption { font-size: 11px; } #binder-view .pager { margin-top: 4px; } #binder-view .hint { display: none; } }
+    @media (max-width: 720px) { #binder-view .spread { grid-template-columns: 1fr; } #binder-view .card { min-height: 0; } #binder-view .photos { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; } #binder-view .hint { display: none; } }
     #task-note { position: fixed; inset: 0; z-index: 5; display: grid; place-items: center; background: rgba(20, 35, 45, 0.35); }
     #task-note[hidden] { display: none; }
     #task-note .paper { position: relative; width: min(480px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow: auto; box-sizing: border-box; padding: 26px 28px 22px; background: #fffbe9; color: #23324a; box-shadow: 0 14px 40px rgba(0,0,0,.35); transform: rotate(0.8deg); border-radius: 3px; font-family: 'Segoe Print', 'Comic Sans MS', 'Comic Neue', cursive, system-ui; }
@@ -1017,11 +1036,13 @@
       <div id="task-list"></div>
     </div>
   </div>
-  <div id="board-view" hidden role="dialog" aria-label="Anslagstavlan">
-    <div class="cork dialog-card">
-      <button id="board-close" aria-label="Stäng" class="dialog-close">×</button>
-      <div class="grid"></div>
-      <p class="hint">📌 Spara – sparade bilder trillar aldrig ner när nya kommer · 🗑 Släng · piltangenter, S, Delete · E / Esc stänger</p>
+  <div id="binder-view" hidden role="dialog" aria-label="Kattpärmen">
+    <div class="binder dialog-card">
+      <button id="binder-close" aria-label="Stäng" class="dialog-close">×</button>
+      <header><h2>Kattpärmen</h2><span class="count"></span></header>
+      <div class="page"></div>
+      <nav class="pager"><button type="button" data-nav="prev">Förra</button><div class="dots"></div><button type="button" data-nav="next">Nästa</button></nav>
+      <p class="hint">Piltangenter bläddrar · E / Esc stänger</p>
     </div>
   </div>
   <div id="draw-panel" hidden role="dialog" aria-label="Rita">

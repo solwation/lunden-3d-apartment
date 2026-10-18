@@ -1,5 +1,5 @@
 // The one IndexedDB database 'lunden' (shared, so every module opens it at the same version): the cat photos
-// on the kitchen board (catboard.js, 'catPhotos', since version 1) and the drawings taped up on walls and the
+// on the old kitchen board ('catPhotos', since version 1, no longer written since #1255; read once by catcards.js) and the drawings taped up on walls and the
 // fridge (posters.js, 'drawings', #176, version 2) and the cat binder's cards (catcards.js, 'catCards', #1249, version 3). A new store = a new version here, created in onupgradeneeded.
 
 const DB = 'lunden', VERSION = 3;

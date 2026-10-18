@@ -3960,30 +3960,18 @@ export const DAY = {
 // from the reporter's photo (docs/ingame-reports/3ad70257-7a01-4ec9-a4a0-855d8db12de8-2.jpg), not measured.
 export const WALL_CLOCK = { x: 2.152, y: 2.0, z: 4.16, rotY: Math.PI / 2, d: 0.4, depth: 0.045, lip: 0.055 };
 
-// The cat calendar (#95, src/calendar.js) on the kitchen face of the Tvätt/Badrum wall, under the wall clock and
-// beside the cat board (north of it: on its right seen from the kitchen): a 30 × 45 cm paper calendar with a cat picture for each
-// month and the days; E opens a strip to pick the month and the day, which set the day cycle's date.
-// Its z is set below with the cat board's: the two are one group centred under the clock (#121, #225).
-export const CALENDAR = { x: 2.152, y: 1.5, z: 0, w: 0.3, h: 0.45, rotY: Math.PI / 2 };
+// The cat calendar (#95, src/calendar.js) on the kitchen face of the Tvätt/Badrum wall, centred under the wall clock (#121; the
+// cork board that used to hang beside it was replaced by the cat card binder, #1255, so it is no longer shifted north): a 30 × 45 cm
+// paper calendar with a cat picture for each month and the days; E opens a strip to pick the month and the day, which set the
+// day cycle's date.
+export const CALENDAR = { x: 2.152, y: 1.5, z: WALL_CLOCK.z, w: 0.3, h: 0.45, rotY: Math.PI / 2 };
 
-// Cork board with photos of petted cats (src/catboard.js), under the kitchen wall clock (WALL_CLOCK: Tvätt/Badrum
-// wall, kitchen face x 2.152, z 3.145 to the Badrum door's architrave at 5.174, clock bottom 1.85 m). Real Polaroid
-// 600 / i-Type size (#225): 8.8 × 10.7 cm, a 7.9 × 7.9 cm picture 0.45 cm from the top and sides, the wide bottom
-// edge for the handwritten name + time. `cols` × `rows` photos with `gap` between them and `margin` round them;
-// w / h (the cork, frame `frame` round it) are computed from those. `max` photos fit; a new one replaces the oldest
-// that isn't kept (#170). `px` = canvas pixels per metre. The board's top lines up with the calendar's, `space`
-// between them, and the group (calendar + board) is centred under the clock. rotY π/2 = facing east.
-export const CAT_BOARD = (() => {
-  const polaroid = { w: 0.088, h: 0.107, img: 0.079, side: 0.0045 }, cols = 5, rows = 2, gap = 0.015, margin = 0.02;
-  const frame = 0.02, space = 0.08;
-  const w = cols * polaroid.w + (cols - 1) * gap + 2 * margin, h = rows * polaroid.h + (rows - 1) * gap + 2 * margin;
-  const group = CALENDAR.w + space + w + 2 * frame, z0 = WALL_CLOCK.z - group / 2; // the group's north end
-  CALENDAR.z = z0 + CALENDAR.w / 2;
-  return {
-    x: 2.152, y: CALENDAR.y + CALENDAR.h / 2 - frame - h / 2, z: z0 + CALENDAR.w + space + frame + w / 2,
-    w, h, frame, polaroid, cols, rows, gap, margin, rotY: Math.PI / 2, max: cols * rows, px: 4000, tilt: 2,
-  };
-})();
+// The cat card binder as an object (#1255, src/catbinderprop.js, built into furniture.js `coffeetable`): a small ring binder
+// lying on the coffee table's slat shelf, in the table's local frame (x along the length, z across, y up from the floor).
+// `w` × `d` × `h` = the closed binder (A5-ish, *guess*), `x` / `z` its centre on the shelf (towards the sofa side, so a
+// crouching visitor sees its spine), `turn` its yaw in degrees (the long side along the table), colours are our pick.
+// No texture: flat colours, two small gold marks (a paw on the cover).
+export const CAT_BINDER = { w: 0.3, d: 0.22, h: 0.035, x: 0.05, z: 0.085, turn: 6, cover: 0x2f4f86, pages: 0xf1ead8, gold: 0xd8b24a };
 
 // Cat card binder (#1249, src/catcards.js). A cat in the game is random (breed + coat + a random name), so there is one
 // slot, with up to `max` cards (photos of where it was found), per BREED, in this order, Miele last. Points per slot come

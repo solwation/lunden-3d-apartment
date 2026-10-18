@@ -1288,7 +1288,7 @@ function* worldParts(plan) {
   levels.forEach((l, i) => { l.fixedSegments = fixed[i]; }); // walls, windows, fittings: no furniture (#302)
   // F (#75) shows the bare flat: everything we furnished and decorated is a loose item — furniture,
   // shelves and what is on them, the hall mirror + key cabinet + coat rack, door signs, the coffee
-  // machine (main.js adds the cat board and hides the cat). Kept: Peab's kitchen, wet rooms, built-in
+  // machine (main.js hides the cat). Kept: Peab's kitchen, wet rooms, built-in
   // wardrobes, doors, stair, ceiling lamps, switches, the wall clock and the note on the freezer.
   const looseItems = [furniture.object, sillPlants, shelves, hallWall.object, ...signs, ...interiorLoose];
   const platforms = []; // low seats you can jump up on and stand on (#693, player.js `groundAt`): the footprints that carry a `top`

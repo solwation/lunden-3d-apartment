@@ -31,8 +31,9 @@ f.onload = async () => {
   for (let i = 0; i < 5; i++) step(1 / 60);
   const btn = d.querySelector('#choices button');
   let pass = check(!btn.hidden && /klappa katten/i.test(btn.textContent), `action button "${btn.textContent}"`);
-  await w.__app.board.load();
-  const before = w.__app.board.photos.length;
+  const breed = cat.breed.name; // the photo becomes a card in the cat binder (#1255)
+  await w.__app.catCardsLoaded;
+  const before = w.__app.catCards.of(breed).length;
   btn.click();
   for (let i = 0; i < 40; i++) step(1 / 60);
   pass &= check(cat.petting, 'cat is being petted');
@@ -55,10 +56,10 @@ f.onload = async () => {
   for (let i = 0; i < 100 && cat.visible; i++) step(0.1);
   pass &= check(!cat.visible && !cat.leaving, 'and is gone after a few seconds');
   // the photo is taken 0.7 s into the pat; rendering it + IndexedDB can take a while in SwiftShader
-  for (let i = 0; i < 100 && w.__app.board.photos.length === before && before < 10; i++) await wait(100);
-  const after = w.__app.board.photos.length, last = w.__app.board.photos.at(-1);
-  pass &= check((after === before + 1 || (before === 10 && after === 10)) && /^data:image\/jpeg/.test(last?.data ?? ''),
-    `photo on the board (${before} → ${after}, "${last?.name}")`);
+  for (let i = 0; i < 100 && w.__app.catCards.of(breed).length === before && before < 5; i++) await wait(100);
+  const after = w.__app.catCards.of(breed).length, last = w.__app.catCards.of(breed).at(-1);
+  pass &= check((after === before + 1 || (before === 5 && after === 5)) && /^data:image\/jpeg/.test(last?.data ?? ''),
+    `card in the binder (${breed}: ${before} → ${after}, "${last?.name}")`);
   pass &= check(d.getElementById('stats').hidden && d.getElementById('minimap').hidden, 'stats panel and map hidden by default');
   d.getElementById('stats-btn').click();
   await wait(400); // panel refreshes 4×/s

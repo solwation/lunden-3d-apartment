@@ -80,8 +80,8 @@ const realHour = () => { const n = new Date(); return n.getHours() + n.getMinute
   const nameIn = d.getElementById('player-name');
   nameIn.value = 'Återställ-Testaren'; nameIn.dispatchEvent(new w.Event('input'));
   d.getElementById('player-ok').click(); // the name is only kept once confirmed (leaderboard.js confirmName)
-  await app.board.add('Testkatten', sheet('#f2cf2b'));
-  const photos = app.board.photos.length;
+  await app.catCards.add('huskatt', { name: 'Testkatten', data: sheet('#f2cf2b') });
+  const photos = app.catCards.cards.length;
   // the home changed: a door open, the blinds up, the bare flat (F), the target's score, the clock, a resume record
   const door = app.world.doors[0];
   door.toggle(); for (let i = 0; i < 30; i++) door.update(0.1);
@@ -146,8 +146,8 @@ const realHour = () => { const n = new Date(); return n.getHours() + n.getMinute
   check(await until(() => app.posters.byId(id1) && app.posters.byId(id2), 4000), 'both drawings are still on the wall');
   check(!app.drawing.blank, 'the desk drawing is still there');
   check(app.cloud.queue.some((x) => x.id === id2), 'the queue is intact');
-  await until(() => app.board.photos.length >= photos, 3000);
-  check(app.board.photos.length === photos, 'the cat photo is kept');
+  await until(() => app.catCards.cards.length >= photos, 3000);
+  check(app.catCards.cards.length === photos, 'the cat photo is kept');
   check((await api('/drawings')).some((x) => x.id === id1), 'the synced drawing is still on the server');
   d.getElementById('start-touch').click(); await wait(50);
   check(d.getElementById('reset-done').hidden, 'the notice goes with the start screen');

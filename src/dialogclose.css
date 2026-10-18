@@ -1,6 +1,6 @@
 /* #1059: one corner treatment; existing IDs own all dismissal behavior. */
 .dialog-card { position: relative; }
-body :is(#leaderboard-dialog,#privacy-dialog,#install,#reset-confirm,#player-dialog,#terminal,#cheat-note,#book-panel,#poster-panel,#note,#task-note,#board-view,#avatar-customizer) .dialog-card,
+body :is(#leaderboard-dialog,#privacy-dialog,#install,#reset-confirm,#player-dialog,#terminal,#cheat-note,#book-panel,#poster-panel,#note,#task-note,#binder-view,#avatar-customizer) .dialog-card,
 body #admin-report.dialog-native {
   padding-top: 64px;
   max-height: calc(100dvh - 32px);

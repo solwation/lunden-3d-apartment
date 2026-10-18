@@ -340,7 +340,7 @@ material/              screenshots of our choices in Peab's option portal (local
   with the switch), a bulb, a white cord + cup + hub = 4 draw calls. Hang height (bottom 1.6 m) and the white cord are
   *guesses*. The white paper pendant (#134) it replaced hangs in Sovrum 2 (Walter & Kian) in the free floor between the
   door, desk, bunk and MALM, replacing that room's ceiling dome. Moving/height-adjusting pendants: #1106. F (#75) shows the bare flat: `world.looseItems` (furniture, kitchen shelves, the hall
-  mirror/key cabinet/coat rack, door signs, the Moccamaster, the cat board) are hidden, their collision
+  mirror/key cabinet/coat rack, door signs, the Moccamaster) are hidden, their collision
   segments go, the cat leaves and none turns up, hidden things are no E target and give no light.
   Kept: Peab's kitchen and wet rooms (incl. bathroom mirrors), wardrobes, doors, stair, ceiling lamps,
   switches, the wall clock, the note on the freezer. Plants by a wall get `walls: { x0, x1, z0, z1 }` on their FURNITURE item (`keepInside` in furniture.js squeezes

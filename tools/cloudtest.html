@@ -89,7 +89,7 @@ const sheet = (color) => { const c = document.createElement('canvas'); c.width =
   check(await until(async () => { const r = await fetch(W + '/paper'); return r.ok && (await r.json()).updated > 0; }), 'the desk sheet is sent');
   const sent = [], ff = w.fetch;
   w.fetch = (u, o) => { sent.push(String(u)); return ff.call(w, u, o); };
-  await app.board.add('Testkatten', sheet('#f2cf2b'));
+  await app.catCards.add('huskatt', { name: 'Testkatten', data: sheet('#f2cf2b') });
   await syncNow(app);
   w.fetch = ff;
   check(!app.cloud.queue.some((q) => q.type === 'cat') && !sent.some((u) => u.includes('/catphotos')), 'a cat photo is not sent, and no cat photos are fetched');

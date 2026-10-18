@@ -85,7 +85,7 @@ export function initHudIcons() {
  document.querySelectorAll('[data-close-target]').forEach(button=>button.addEventListener('click',()=>document.getElementById(button.dataset.closeTarget)?.click()));
  const ids={'furniture-btn':'sofa','measure-btn':'ruler','crouch-btn':'crouch','stats-btn':'stats','power-btn':'power','turn-btn':'rotate','jet-up':'up','jet-down':'down','jump-btn':'jump','web-btn':'web',pause:'pause',mute:'volume','terminal-btn':'terminal'};
  for(const [id,icon] of Object.entries(ids))setIcon(document.getElementById(id),icon);
- const panels='#book-panel, #poster-panel, #cal-panel, #clock-panel, #blind-panel, #sonos-panel, #draw-panel, #terminal, #rearrange-help, #update, #board-view, #task-note';
+ const panels='#book-panel, #poster-panel, #cal-panel, #clock-panel, #blind-panel, #sonos-panel, #draw-panel, #terminal, #rearrange-help, #update, #binder-view, #task-note';
  document.querySelectorAll(panels).forEach(el=>el.classList.add('hud-controls'));
  document.querySelectorAll('#hud button, '+panels.split(', ').map(p=>p+' button').join(', ')).forEach(b=>b.classList.add('hud-button'));
  document.querySelectorAll('button[aria-label="Stäng"]').forEach(b=>setIcon(b,'close'));

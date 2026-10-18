@@ -31,19 +31,25 @@ src/pingping.js        Pingping (#269, PINGPING): the penguin cushion between th
                        held in both arms (hand.js `handPose: 'hug'`, `hugGrips`; the left arm = the right one mirrored); click /
                        "Krama" hugs (pulled in + squashed, sfx.squeak, rising hearts, stats pingpingHugs); `soft` = may go down on
                        the bed's / sofa's `soft` surfaces too (furniture surfaces with `soft: true`: not for cups, not cat tables)
-src/catboard.js        cork board in the kitchen (under the wall clock): a real-size Polaroid (offscreen render, #225; the board's
-                       size follows from CAT_BOARD.polaroid / cols / rows / gap) of every petted cat,
-                       CAT_BOARD.max of them in IndexedDB 'lunden'/'catPhotos', captioned with name + time; E opens
-                       #board-view (BoardPanel, #170: keep 📌 = red pin, never pushed off; throw away 🗑 asks twice;
-                       arrows/S/Delete; frees the mouse like drawing); a full board drops its oldest unkept photo
-src/catcards.js        cat card binder data model (#1249, part 1 of 4 — #1254–#1257; the binder object / UI / card design / photo menu follow; the
-                       cork board above stays until the binder shows everything). No DOM: one slot per BREED (`CAT_CARD.breeds`, Miele last;
+src/catphoto.js        `snapshot` (the 4:3 offscreen render of a cat's head, a JPEG data URL) that main.js `cat.onPhoto` / `miePhoto` take for a card.
+                       The kitchen cork board (src/catboard.js, CAT_BOARD, BoardPanel #170) was REMOVED in #1255 once the binder showed the migrated photos;
+                       its IndexedDB 'catPhotos' is left untouched (read once by catcards.js `migrate`, never written any more).
+src/catbinderprop.js   the binder as an object (#1255, `CAT_BINDER`): a small ring binder (cover, spine, sheets, a gold paw; three flat-colour
+                       materials merged into three meshes, no texture, no light, no shadow caster) lying on the coffee table's slat shelf; built by
+                       furniture.js `coffeetable`, so it is the table piece's child and moves with it (F rearranging, saved layouts). Target kind
+                       'binder' (E / the action button); `occluded()` refuses a pick through the table top from above (the pick ray has no table in it).
+src/catbinder.js       the browse UI `BinderPanel` (#binder-view, main.js `showBinder`, frees the mouse like the old board panel): one page per breed
+                       (Miele last, an unfound breed is a "???" placeholder with "Plats n av 8"), then an "Äldre foton" page when old photos exist;
+                       the card (name, tier text + points — a plain placeholder, the rarity visuals are #1256 — weight, facts, found / pat / hug
+                       counters) and CAT_CARD.max photo places. ← → / A D / Home / End / dots / swipe / Nästa–Förra; E / Esc / × close. Photos are
+                       read-only here: the photo menu with keep / throw away is #1257. Test: `tools/bindertest.cjs`.
+src/catcards.js        cat card binder data model (#1249, part 1 of 4 — #1254–#1257; the binder object + UI are #1255 above; card design / photo menu follow). No DOM: one slot per BREED (`CAT_CARD.breeds`, Miele last;
                        a game cat is random — breed + coat + random name — so there are no fixed individuals), points from SCORE (breeds;
                        Miele `first.miele` 1000), rarity tier = highest `CAT_CARD.tiers` entry reached (common <30, ovanlig 30–99, sällsynt
                        100, episk 250, legendarisk = Miele). A card = a photo of a find; max `CAT_CARD.max` 5 per breed, a new one rotates
                        out the oldest unsaved, all saved → not added (`add` returns null). Counters: finds = `stats.byBreed` / `stats.miele`,
                        pats / hugs = new `stats.petsByBreed` / `stats.hugsByBreed` (main.js `cat.onPet`, `miele.onHug`). Cards in IndexedDB
-                       'catCards' (idb.js version 3), written by main.js `cat.onPhoto` / `miePhoto` next to the board photo. The old
+                       'catCards' (idb.js version 3), written by main.js `cat.onPhoto` / `miePhoto`. The old
                        'catPhotos' are COPIED in once (`migrate`, flag `lunden.catCards.migrated` in RESET_KEEP, ids `legacy-<id>` so no
                        duplicates): kept → saved, 'Miele' → her slot, the rest (no breed was stored) → the legacy page (`CAT_CARD.legacy`),
                        none deleted. Weights / facts in CAT_CARD are typical breed figures, all *guess*. Test: `node --test tools/catcardstest.mjs`.
@@ -193,9 +199,8 @@ This personal-cat/gameplay feature does not apply to the public downstream.
   `mieleHugs`); her board photo the first time she is held or hugged. E on the floor / a bed / a sofa (`softOnly`: a table
   says "Miele får inte vara på bordet") puts her down (`putDown`): she looks at you, meows, then `leave`s; F or another
   thing in the hand puts her down at your feet. Not kept across a reload while held / walking off.
-- Every new cat gets a name (`CAT_NAMES`); petting it puts a photo on the kitchen board 0.7 s in
-  (`CAT_BOARD` in config: under the wall clock on the Tvätt/Badrum wall, kitchen face; it and the calendar are
-  positioned together, centred under the clock).
+- Every new cat gets a name (`CAT_NAMES`); petting it puts a card in the cat binder under the coffee table 0.7 s in
+  (#1255; the kitchen cork board is gone, the calendar now hangs centred under the wall clock).
 - Up on the furniture (#200, `CAT_FURNITURE`, `furnitureSpot` in cat.js): a cat turning up behind a door sits on a seat,
   bed or table top in that room `chance` of the time (one seen straight from the doorway within `reach`; the height from a
   ray down onto the furniture, so it sits on the cushion and never in something on a table; `cat.on` = 'sit'/'lie'/
@@ -270,9 +275,9 @@ This personal-cat/gameplay feature does not apply to the public downstream.
 - Day cycle: `DAY` in config. Every visit starts at the browser's own time and date (#95; `&time` /
   `&month` / `&day` override, `&month` alone = the 15th); the date rolls over at midnight. The sun
   position is computed (declination, hour angle, equation of time, CEST in summer) for Lund and
-  rotated into plan axes by `DAY.planNorth`. The wall clock in the kitchen (centred on the wall between the hall and the Badrum door, over the cat board + calendar) opens a strip at the bottom
+  rotated into plan axes by `DAY.planNorth`. The wall clock in the kitchen (centred on the wall between the hall and the Badrum door, over the calendar) opens a strip at the bottom
   (`reading` mode, so no walking, but looking works): hold A D / ← → / ⏪ ⏩ to spool, Space / ⏸ pause. The
-  date is picked on the cat calendar beside the cat board (`src/calendar.js`, `CALENDAR`): E opens
+  date is picked on the cat calendar under the clock (`src/calendar.js`, `CALENDAR`): E opens
   #cal-panel, A D / ← → / ◀ ▶ months, W S / ↑ ↓ days (held keys repeat; a key already held while walking up is ignored), or click a day. The neighbours' windows are one instanced additive mesh with a
   random evening/morning routine per window (`buildWindowLights` in surroundings.js).
 - Trees (#130): big old trees with several crown lobes by the school (`SITE.bigTrees`), slim young maples along our
