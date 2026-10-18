@@ -53,12 +53,15 @@ export function parkShrubSpots(ground) {
   }return spots;
 }
 export const parkShoreFeet=[];
-/** Three merged background batches: surfaced paths, timber footbridge, low bank tussocks. */
+/** Four merged background batches: asphalt paths, gravel paths, timber footbridge, low bank tussocks. */
 export function buildRiverPark(ground, terrain=ground) {
   const group=new THREE.Group();group.name='river-park';
-  const paths=P.paths.map(p=>pathStrip(p,w=>-w/2,w=>w/2,.025,terrain,c=>c.some(([x,z])=>z<64||x<-270||x>220||z>260)));
-  const mat=new THREE.MeshStandardMaterial({color:0xb5ac90,roughness:1});registerSnow(mat,SEASON.snow.paving);
-  const pathMesh=new THREE.Mesh(mergeGeometries(paths),mat);pathMesh.name='park-paths';pathMesh.receiveShadow=true;group.add(pathMesh);
+  // #1235: asphalt (shared walking/cycling) and gravel paths are two merged meshes, one per surface material; both follow the rendered terrain.
+  for(const kind of ['asphalt','gravel']) {
+    const strips=P.paths.filter(p=>p.surface===kind).map(p=>pathStrip(p,w=>-w/2,w=>w/2,kind==='asphalt'?.03:.025,terrain,c=>c.some(([x,z])=>z<64||x<-270||x>220||z>260)||c.every(([x,z])=>onRoad(x,z,-.05))));
+    const mat=new THREE.MeshStandardMaterial({color:P.surfaces[kind].color,roughness:kind==='asphalt'?.9:1});registerSnow(mat,SEASON.snow.paving);
+    const mesh=new THREE.Mesh(mergeGeometries(strips),mat);mesh.name=kind==='asphalt'?'park-paths-asphalt':'park-paths';mesh.receiveShadow=true;group.add(mesh);
+  }
   const b=P.woodBridge,[[ax,az],[bx,bz]]=b.ends,dx=bx-ax,dz=bz-az,len=Math.hypot(dx,dz),wood=[];
   const box=(w,h,d,x,y,z)=>wood.push(new THREE.BoxGeometry(w,h,d).translate(x,y,z));
   box(b.width,b.slab,len,0,b.deckY-b.slab/2,0);
