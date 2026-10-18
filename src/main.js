@@ -442,8 +442,16 @@ await loadingStep('Möblerar', 0.5);
 const player = new Player(world, camera);
 // Harmful free falls request shared lives; only confirmed death blacks out and wakes outdoors.
 const fall = new Fall({ el: document.getElementById('fall'), player, camera, onHurt: () => { bump('falls'); penalize('fall'); } });
-player.onLand = (drop, gap) => fall.land(drop, gap);
-player.onWaterRescue = (what) => badge(what === 'water' ? 'Du klev upp ur ån' : 'Du flyttades ut på gatan', false); // #1236: put back after the river / a closed courtyard
+player.onLand = (drop, gap) => (performance.now() < (player.safeUntil ?? 0) ? null : fall.land(drop, gap)); // (no fall damage right after a splash back to the bank, #1281)
+const splashEl = document.createElement('div'); // #1281: a cheap blue wash that fades (one DOM element, no texture / draw call)
+splashEl.style.cssText = 'position:fixed;inset:0;z-index:9;pointer-events:none;background:rgba(40,110,150,.55);opacity:0;transition:opacity 1.2s ease-out';
+document.body.appendChild(splashEl);
+player.onWaterRescue = (what, at) => { // #1236, #1281: put back after the river / a closed courtyard
+  if (what !== 'water') { badge('Du flyttades ut på gatan', false); return; }
+  sfx.splash(at ? new THREE.Vector3(at.x, SITE.bridges.waterY, at.z) : undefined);
+  splashEl.style.transition = 'none'; splashEl.style.opacity = '1'; void splashEl.offsetWidth; splashEl.style.transition = 'opacity 1.2s ease-out'; splashEl.style.opacity = '0';
+  badge('Plask! Du ramlade i ån', false);
+};
 player.onEdge = () => badge('Här slutar promenadområdet', false); // #1236: the outer wall
 // the jetpack on its hook by the garage door (#359): worn on the back, flies; home again after a bad fall
 const jetpack = new Jetpack({ scene, camera, player, groundY, hud: { el: document.getElementById('jetpack'), glow: document.getElementById('jet-glow'),

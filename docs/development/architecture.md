@@ -81,7 +81,7 @@ src/exterior.js        Hus L (HUS_L): brick row with the core/portik, neighbours
                        `loggiaLamp`, 52 lamps: three meshes `loggiaLampGlass/Wash/Pools`, wash/pool kept inside the loggia)
                        `HUS_L.gableWindows`: every gable opening tagged gable / building storey / flat from the end flats'
                        bofakta (L1001 west, L1008 + L1209 east; none for L1201 or on våning 4; no flat is mirrored, #351)
-src/farwalk.js         #1236 walking beyond OUTDOOR (`WALK`): far building/bridge-rail collision buckets (`farWalls`), `waterBlocked`, `tooSteep`, `waterRescue`; used by player.js
+src/farwalk.js         #1236 walking beyond OUTDOOR (`WALK`): far building/bridge-rail collision buckets (`farWalls`), `slopeAt`, `slideAt` / `tooSteep` (ground over `WALK.maxSlope`, #1281), `inWater`, `splashBank` (the river splash's respawn point, #1281); used by player.js (`slideStep`, `splashCheck`)
 src/roofs.js           the walkable roofs (#360, `world.roofs`): surfaces (rect or disk, flat `y` or a slope function, an `id` per roof)
                        and walls with a height range, listed by the builders (`userData.walk`: exterior.js — the loftgång + the east
                        drum's landing, each terrace, Hus L's roof + solar panels (step over), the loft over the lift, the drums' top

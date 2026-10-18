@@ -1,9 +1,9 @@
 import * as THREE from 'three';
-import { SITE, LEVELS, PLAYER, STAIR, UNIT_TOP, ROOFS, GARAGE, JETPACK, jetThin, SPIDER, SOFFITS, BICYCLE } from './config.js';
+import { SITE, WALK, LEVELS, PLAYER, STAIR, UNIT_TOP, ROOFS, GARAGE, JETPACK, jetThin, SPIDER, SOFFITS, BICYCLE } from './config.js';
 import { stairHeight, stairUnderside } from './stairs.js';
 import { groundY, groundBelowDeckY } from './surroundings.js';
 import { deckAt, deckUnderAt } from './riverbridge.js';
-import { farWalls, waterBlocked, tooSteep, waterRescue, buildingRescue, atEdge, surfaceY, underDeck } from './farwalk.js'; // #1236: walking beyond the block
+import { farWalls, slideAt, inWater, splashBank, buildingRescue, atEdge, surfaceY, underDeck } from './farwalk.js'; // #1236: walking beyond the block
 import { bicycleCurbY } from './street.js';
 import { stowBicycleHand, restoreBicycleHand } from './holdable.js';
 
@@ -714,6 +714,7 @@ export class Player {
       mx += this.fling.x * dt; mz += this.fling.z * dt;
     }
 
+    this.slideStep(dt, mx, mz); mx += this.slideD.x; mz += this.slideD.z; // #1281: ground too steep to climb: no way up, and a slide down
     // move in small sub-steps so fast movement can't tunnel through thin walls
     const steps = Math.max(1, Math.ceil(Math.hypot(mx, mz) / 0.05));
     const [stat, dyn] = this.segments();
@@ -739,13 +740,7 @@ export class Player {
         else if (!this.blockedByStair(tryZ.x, tryZ.z, prev.y)) this.pos.copy(tryZ);
         else this.pos.copy(prev);
       }
-      if (!this.flying && !this.aloft && this.pos.z > 60 && (waterBlocked(this.pos.x, this.pos.z, undefined, this.pos.y) || tooSteep(this.pos.x, this.pos.z, undefined, this.pos.y))) {
-        // #1236: the river and ground too steep to climb are obstacles: slide along one axis or stay put
-        const bad = (px, pz) => waterBlocked(px, pz, undefined, this.pos.y) || tooSteep(px, pz, undefined, this.pos.y);
-        if (!bad(this.pos.x, prev.z)) this.pos.z = prev.z;
-        else if (!bad(prev.x, this.pos.z)) this.pos.x = prev.x;
-        else { this.pos.x = prev.x; this.pos.z = prev.z; }
-      }
+      if (this.sliding && surfaceY(this.pos.x, this.pos.z, this.pos.y) > surfaceY(prev.x, prev.z, prev.y) + 1e-4) { this.pos.x = prev.x; this.pos.z = prev.z; } // #1281: no height gained on ground too steep to climb (along the contour is fine)
       if (jet && this.aloft && this.world.roofs) { // flying into a roof's edge / a canopy: in the way of the body (#359)
         const R = this.world.roofs, y0 = prev.y + PLAYER.stepUp, y1 = prev.y + PLAYER.headroom;
         if (R.blocks(this.pos.x, this.pos.z, y0, y1)) {
@@ -758,10 +753,6 @@ export class Player {
       if (g >= this.pos.y) { this.pos.y = g; this.vy = 0; }
     }
 
-    if (!this.flying && !this.aloft && this.pos.z > 60 && this.pos.y <= surfaceY(this.pos.x, this.pos.z, this.pos.y) + 0.05) { // ended up in the river (#1236): back on the bank
-      const back = waterRescue(this.pos.x, this.pos.z, this.pos.y);
-      if (back) { this.pos.set(back.x, surfaceY(back.x, back.z, this.pos.y), back.z); this.vy = 0; this.fall = null; this.fling = null; this.onWaterRescue?.('water'); }
-    }
     if (!this.flying && !this.aloft && !this.inFootprint() && !this.unit) { // #1236: landed inside a far building / its closed courtyard: out onto the street
       const out = buildingRescue(this.pos.x, this.pos.z);
       if (out && this.pos.y <= groundY(this.pos.x, this.pos.z) + 0.05) { this.pos.set(out.x, groundY(out.x, out.z), out.z); this.vy = 0; this.fall = null; this.fling = null; this.onWaterRescue?.('building'); }
@@ -794,6 +785,7 @@ export class Player {
     // gravity (and the jetpack's thrust, #359)
     const g = this.groundAt(this.pos.x, this.pos.z, this.pos.y);
     let impact = 0;
+    if ((this.sliding || this.slideV > 0) && !this.flying && lift <= GRAVITY && this.vy <= 0 && this.pos.y > g && this.pos.y - g < 0.4) { this.pos.y = g; this.vy = 0; this.fall = null; } // #1281: a slide follows the ground (no little falls down the slope)
     if (this.pos.y > g || lift > GRAVITY || this.vy > 0) {
       const f = (this.fall ??= { top: this.pos.y, gap: 0 }); // falls (#361)
       f.top = Math.max(f.top, this.pos.y); f.gap = Math.max(f.gap, this.pos.y - g);
@@ -810,6 +802,7 @@ export class Player {
       }
       if (this.pos.y === g) { impact = -this.vy; this.vy = 0; }
     }
+    if (this.splashCheck()) { this.world.core?.snap(this); this.settleEye(dt); return; } // #1281: into the river (before a landing counts as a fall)
     if (this.fall && this.pos.y <= g) { // landed: with the jetpack on, as hard as the speed it came down at (a soft landing on thrust)
       const f = this.fall; this.fall = null; this.fling = null;
       this.onLand?.(jet ? Math.max(0, impact) ** 2 / (2 * GRAVITY) : f.low ? Math.max(0, f.from - this.pos.y) : f.top - this.pos.y, f.gap); // (an ordinary jump counts from where it left the ground, #636)
@@ -818,6 +811,45 @@ export class Player {
 
     this.world.core?.snap(this); // riding the lift (#415)
     this.settleEye(dt);
+  }
+
+  /** #1281: on ground steeper than `WALK.maxSlope` the walker cannot climb (the uphill part of the step is dropped) and slides down the fall
+   * line, easing up to `WALK.slideSpeed`; stops once the ground eases below `maxSlope * slideOut`. Not flying, on a roof / deck / stairs, in the
+   * lift or indoors. Sets `slideD` (the displacement to add this frame). */
+  slideStep(dt, mx, mz) {
+    const p = this.pos, d = this.slideD ??= { x: 0, z: 0 };
+    d.x = d.z = 0;
+    const out = p.z > 60 && !this.flying && !this.aloft && !this.inCore && !this.unit && !this.climb && !this.swing && !this.inFootprint();
+    const sl = out && p.y <= surfaceY(p.x, p.z, p.y) + 0.25 ? // (feet on the ground: a downhill step leaves them a hair above it, which is no fall)
+       slideAt(p.x, p.z, p.y, this.sliding) : null;
+    this.sliding = !!sl;
+    if (!sl) { // off the slope: the slide runs out over a few tenths of a second (no sudden stop)
+      if (this.slideV > 0 && this.slideDir && out) { this.slideV = Math.max(0, this.slideV - WALK.slideAccel * 2 * dt); d.x = this.slideDir.dx * this.slideV * dt; d.z = this.slideDir.dz * this.slideV * dt; } else this.slideV = 0;
+      return;
+    }
+    this.slideDir = sl;
+    this.slideV = Math.min(WALK.slideSpeed, (this.slideV ?? 0) + WALK.slideAccel * dt);
+    const up = -(mx * sl.dx + mz * sl.dz); // the step's uphill part (the slide's direction is downhill)
+    if (up > 0) { d.x += sl.dx * up; d.z += sl.dz * up; }
+    d.x += sl.dx * this.slideV * dt; d.z += sl.dz * this.slideV * dt;
+  }
+
+  /** #1281: feet under the river's surface (walked, slid, fallen or flown in): a splash, and back on the nearest bank (`splashBank`, else the
+   * last dry spot), standing still and safe from fall damage for `WALK.splashSafe` s. True when it happened. Flying over the water does not count. */
+  splashCheck() {
+    const p = this.pos;
+    if (p.z <= 60 || this.aloft || this.inCore || this.unit || this.inFootprint()) return false;
+    if (!(p.y < SITE.bridges.waterY - WALK.waterDepth) || !inWater(p.x, p.z, p.y)) {
+      if (!this.sliding && p.y <= surfaceY(p.x, p.z, p.y) + 0.05) { const d = this.lastDry ??= { x: p.x, z: p.z }; d.x = p.x; d.z = p.z; } // (the fallback bank)
+      return false;
+    }
+    const at = { x: p.x, z: p.z }, back = splashBank(p.x, p.z, p.y) ?? this.lastDry;
+    if (!back) return false;
+    this.pos.set(back.x, surfaceY(back.x, back.z, p.y), back.z);
+    this.vy = 0; this.fall = null; this.fling = null; this.jv.x = this.jv.z = 0; this.slideV = 0; this.sliding = false;
+    this.safeUntil = performance.now() + WALK.splashSafe * 1000;
+    this.onWaterRescue?.('water', at);
+    return true;
   }
 
   /** The camera to the feet + the eye height (smoothed over stair steps). */

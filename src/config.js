@@ -1752,7 +1752,10 @@ export const PARKING_LOT = {
 // `wallStep` m: spacing of the samples that set a wall's height along a gable end (*guess*); `wallLift` m: the wall's top over the roof line;
 // `depth` m: the walls reach this far under y 0 (the garage-box cut and the river park lie lower).
 export const BUILDING_ROOFS = { flatLift: 0.05, wallStep: 4, wallLift: 0.05, depth: 10 };
-export const WALK = { x0: -260, x1: 320, z0: -200, z1: 250, cell: 40, wade: 2, rescue: 3, maxSlope: 1.2,
+export const WALK = { x0: -260, x1: 320, z0: -200, z1: 250, cell: 40, maxSlope: 0.8, // gradient (rise/run, ~39°) above which the ground cannot be climbed and you slide back (#1281, *guess*; the park's path slopes stay under it, only the steepest bank edges at the water and the bridge embankments are over)
+  slideOut: 0.85, slideSpeed: 3.5, slideAccel: 9, // #1281: hysteresis (sliding stops below maxSlope * slideOut), the slide's top speed (m/s) and acceleration (m/s²), *guess*
+  waterDepth: 0.15, splashSafe: 2, // #1281: feet this far under the water line (m) are in the river; no fall damage for `splashSafe` s after the splash
+  bankStep: 1, bankMax: 40, bankDry: 0.4, bankClear: 1.5, // #1281: the bank search's ring step and reach (m), how far over the water line a bank point must be (m) and the dry margin round it (m)
   trunk: { big: 0.45, tree: 0.3, birch: 0.2, young: 0.15 } }; // `trunk`: half-width of a tree trunk's collision diamond by kind (*guess*, the drawn trunks are thinner than a body)
 
 // The garage under the courtyard and Hus L's basement (#357, #417, src/garage.js), per the våning −1 overview plan

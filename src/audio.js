@@ -307,6 +307,15 @@ export const sfx = {
       },
     };
   },
+  /** Someone falls into the river (#1281): a plunge (low-passed noise burst + a dull thump) and a few bubbles rising. */
+  splash(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 1);
+    noise(t, 0.7, d, { type: 'lowpass', freq: 1400, q: 0.7, gain: 0.5, attack: 0.02 });
+    noise(t + 0.02, 0.35, d, { type: 'highpass', freq: 3000, gain: 0.18, attack: 0.01 });
+    tone(t, 0.25, d, { from: 140, to: 55, gain: 0.5 });
+    for (let i = 0; i < 4; i++) tone(t + 0.25 + i * 0.09 + Math.random() * 0.04, 0.08, d, { from: 420 + Math.random() * 300, to: 900 + Math.random() * 500, gain: 0.05 });
+  },
   /** Hands rubbed under a running tap (#437): wet splashy swishes for `dur` s, a little irregular. */
   handwash(pos, dur = 2) {
     if (!ready()) return;

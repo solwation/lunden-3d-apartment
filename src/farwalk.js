@@ -78,27 +78,60 @@ const onDeck = (x, z, y) => (deckAt(x, z) !== null && !underDeck(y)) || parkDeck
 /** The surface under feet `y` at (x, z): the deck on it, the cut's ground under it (#1271), else `groundY`. */
 export const surfaceY = (x, z, y) => (deckAt(x, z) !== null && underDeck(y) ? groundBelowDeckY(x, z) : groundY(x, z));
 
-/** Water that stops the visitor: the river and its shallow edge (`WALK.wade`), except on a bridge deck. */
-export function waterBlocked(x, z, wade = WALK.wade, y) {
-  if (z < 60 || onDeck(x, z, y)) return false;
-  const r = riverAt(x, z);
-  return r.distance < r.width / 2 + wade;
+/** #1281: ground's gradient at (x, z) for feet `y`: `{ gx, gz, s }` (rise per metre towards +x / +z, and its length), sampled 0.3 m round. */
+export function slopeAt(x, z, y) {
+  const h = 0.3, g = underDeck(y) ? groundBelowDeckY : groundY, gx = (g(x + h, z) - g(x - h, z)) / (2 * h), gz = (g(x, z + h) - g(x, z - h)) / (2 * h);
+  return { gx, gz, s: Math.hypot(gx, gz) };
 }
 
-/** Ground too steep to climb at (x, z): a gradient over `WALK.maxSlope`, sampled 0.3 m round. */
+/** #1281: the downhill direction `{ dx, dz, s }` a walker on ground steeper than `WALK.maxSlope` slides along at (x, z), else null. Once sliding (`was`)
+ * the ground must ease below `maxSlope * slideOut` to stop (hysteresis: no flicker on the threshold). Not on a deck. */
+export function slideAt(x, z, y, was = false) {
+  if (z < 60 || onDeck(x, z, y)) return null;
+  const q = slopeAt(x, z, y);
+  return q.s > WALK.maxSlope * (was ? WALK.slideOut : 1) ? { dx: -q.gx / q.s, dz: -q.gz / q.s, s: q.s } : null;
+}
+
+/** Ground too steep to climb at (x, z): a gradient over `maxSlope` (`WALK.maxSlope`; the walker slides back, `Player.slideStep`). Not on a deck. */
 export function tooSteep(x, z, maxSlope = WALK.maxSlope, y) {
   if (z < 60 || onDeck(x, z, y)) return false;
-  const h = 0.3, g = underDeck(y) ? groundBelowDeckY : groundY, gx = (g(x + h, z) - g(x - h, z)) / (2 * h), gz = (g(x, z + h) - g(x, z - h)) / (2 * h);
-  return Math.hypot(gx, gz) > maxSlope;
+  return slopeAt(x, z, y).s > maxSlope;
 }
 
-/** Someone who ended up in the water (a fall, a jump, the jetpack): the dry bank point to put them back on, or null. */
-export function waterRescue(x, z, y) {
-  if (z < 60 || onDeck(x, z, y)) return null;
+/** #1281: is (x, z) under the river's surface for feet `y`: the terrain there (the bed's slope, `riverGround`) lies `WALK.waterDepth` m
+ * under the water line. The under-bridge footpath's floor (0.6 m over the water) and the decks are dry; so is anything off the river's banks. */
+export function inWater(x, z, y) {
+  if (z < 60 || onDeck(x, z, y)) return false;
   const r = riverAt(x, z);
-  if (r.distance >= r.width / 2) return null;
-  const side = (x - r.x) * r.nx + (z - r.z) * r.nz >= 0 ? 1 : -1, d = r.width / 2 + WALK.rescue;
-  return { x: r.x + r.nx * side * d, z: r.z + r.nz * side * d, r: PLAYER.radius };
+  return r.distance < r.width / 2 + r.bank && surfaceY(x, z, y) < SITE.bridges.waterY - WALK.waterDepth;
+}
+
+/** #1281: the nearest bank point to put someone back on who fell into the river at (x, z): searched on rings round the splash, the first
+ * ring with a dry (`WALK.bankDry` m over the water line), walkable (gradient under `WALK.maxSlope * WALK.slideOut`) spot clear of every wall
+ * (`farWalls`: buildings, fences, rails, trunks, cars) and off the decks. Returns `{ x, z }` or null (nothing within `WALK.bankMax`). */
+export function splashBank(x, z, y) {
+  const calm = WALK.maxSlope * WALK.slideOut, dry = SITE.bridges.waterY + WALK.bankDry, R = PLAYER.radius + 0.15;
+  const ok = (px, pz) => {
+    if (px < WALK.x0 + 1 || px > WALK.x1 - 1 || pz < WALK.z0 + 1 || pz > WALK.z1 - 1) return false;
+    if (onDeck(px, pz, y) || inWater(px, pz, y) || surfaceY(px, pz, y) < dry) return false;
+    if (slopeAt(px, pz, y).s > calm) return false;
+    for (const [ox, oz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (inWater(px + ox * WALK.bankClear, pz + oz * WALK.bankClear, y)) return false; // (a dry margin: not on the very edge)
+    for (const sg of farWalls(px, pz, y)) { // a clear body: further than R from every segment
+      const dx = sg[2] - sg[0], dz = sg[3] - sg[1], l2 = dx * dx + dz * dz || 1e-9, t = Math.max(0, Math.min(1, ((px - sg[0]) * dx + (pz - sg[1]) * dz) / l2));
+      if (Math.hypot(px - sg[0] - dx * t, pz - sg[1] - dz * t) < R) return false;
+    }
+    return true;
+  };
+  for (let d = WALK.bankStep; d <= WALK.bankMax; d += WALK.bankStep) {
+    const n = Math.max(12, Math.ceil(d * 3)); // (a denser ring the further out)
+    let best = null;
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2, px = x + Math.cos(a) * d, pz = z + Math.sin(a) * d;
+      if (ok(px, pz) && (!best || surfaceY(px, pz, y) < best.y)) best = { x: px, z: pz, y: surfaceY(px, pz, y) }; // (the lowest = the nearest to the water on this ring)
+    }
+    if (best) return { x: best.x, z: best.z };
+  }
+  return null;
 }
 
 const inPoly = (p, x, z) => { let yes = false; for (let i = 0, j = p.length - 1; i < p.length; j = i++) if ((p[i][1] > z) !== (p[j][1] > z) && x < (p[j][0] - p[i][0]) * (z - p[i][1]) / (p[j][1] - p[i][1]) + p[i][0]) yes = !yes; return yes; };
