@@ -48,14 +48,16 @@ const ITERATION_SCOPE = 'iteration/test-only, NOT full/test parity';
 // ---------- test discovery ----------
 const GROUPS = { 'a-c': ['a', 'c'], 'd-l': ['d', 'l'], 'm-p': ['m', 'p'], 'r-t': ['r', 't'], 'u-z': ['u', 'z'] };
 function allTests() {
-  return fs.readdirSync(TOOLS).filter((f) => /test.*\.(html|cjs)$/.test(f) && f !== 'testkit.cjs' && f !== 'runtests.cjs').sort()
-    .map((f) => ({ file: f, name: f.replace(/\.(html|cjs)$/, ''), kind: f.endsWith('.cjs') ? 'cjs' : 'html' }));
+  // perfcount.html (#1312) has no "test" in its name but is selectable by name; it is an explicit performance run (full quality,
+  // never &test, #736), so --group does not pick it up.
+  return fs.readdirSync(TOOLS).filter((f) => (/test.*\.(html|cjs)$/.test(f) && f !== 'testkit.cjs' && f !== 'runtests.cjs') || f === 'perfcount.html').sort()
+    .map((f) => ({ file: f, name: f.replace(/\.(html|cjs)$/, ''), kind: f.endsWith('.cjs') ? 'cjs' : 'html', explicitOnly: f === 'perfcount.html' }));
 }
 function select() {
   const all = allTests(); let sel = [];
   if (opt.group) {
     const g = GROUPS[opt.group]; if (!g) { console.error(`--group must be one of ${Object.keys(GROUPS).join(' ')}`); process.exit(2); }
-    sel = all.filter((t) => t.name[0] >= g[0] && t.name[0] <= g[1]);
+    sel = all.filter((t) => !t.explicitOnly && t.name[0] >= g[0] && t.name[0] <= g[1]);
   }
   for (const n of opt.names) {
     const base = path.basename(n);
@@ -214,11 +216,13 @@ async function runHtml(test, { asTest }, game, workerPort = null) {
     if (workerPort !== null) fixtureURL.searchParams.set('worker', `http://localhost:${workerPort}`);
     await page.goto(fixtureURL.href, { waitUntil: 'commit', timeout: opt.timeout * 60000 });
     while (Date.now() - t0 < opt.timeout * 60000) {
-      text = await page.evaluate(() => document.querySelector('#out')?.textContent ?? '').catch(() => text) || text;
+      // A page busy in a long synchronous run cannot answer; do not let the poll itself wait for it forever (#1312).
+      text = await Promise.race([page.evaluate(() => document.querySelector('#out')?.textContent ?? '').catch(() => text), sleep(15000).then(() => text)]) || text;
       if (isComplete(text)) { status = 'DONE'; break; }
       if (log.includes('[page crashed]')) { status = 'CRASH'; break; }
       await sleep(2000);
     }
+    if (status === 'TIMEOUT') log.push(`[runner] ${test.file} never wrote a final "ALL PASS" / "FAIL N checks" line to #out within ${opt.timeout} min; last #out: ${JSON.stringify(text.slice(-300))}`);
     // Retained game frames expose the actual controller; detached reloads retain their loaded URL evidence.
     await Promise.all([...frames].filter(([frame]) => !frame.isDetached()).map(async ([frame, load]) => {
       const evidence = await frame.evaluate(() => ({ viewport: [innerWidth, innerHeight], controller: window.__app ? !!window.__app.testMode : null })).catch(() => null);
@@ -338,7 +342,7 @@ async function main() {
   for (const r of results) {
     console.log(`  ${r.verdict.padEnd(7)} ${(r.name + (r.label ? ` [${r.label}]` : '')).padEnd(34)} ${fmt(r.ms).padStart(7)}  fail ${r.fails.length}  mode ${r.kind === 'cjs' ? 'script-defined' : r.gameLoads?.length ? [...new Set(r.gameLoads.map(load => load.test ? '&test' : 'no &test'))].join(' + ') : r.status === 'DONE' ? 'no game document' : 'unavailable'}`);
     for (const l of r.newFails.slice(0, 8)) console.log(`            NEW ${l.slice(0, 200)}`);
-    if (r.verdict === 'FAIL' || r.verdict === 'ERROR' || r.verdict === 'CRASH') for (const l of r.log.slice(0, 3)) console.log(`            ${l.slice(0, 200)}`);
+    if (r.verdict === 'FAIL' || r.verdict === 'ERROR' || r.verdict === 'CRASH' || r.verdict === 'TIMEOUT') for (const l of r.log.slice(0, 3)) console.log(`            ${l.slice(0, 200)}`);
   }
   let comparisonFailed = false;
   if (opt.compare) {

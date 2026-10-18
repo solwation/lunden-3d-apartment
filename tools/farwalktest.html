@@ -27,6 +27,19 @@ import { groundY, groundBelowDeckY, renderedTerrainY, treeFeet } from '../src/su
 import { riverAt, deckAt, deckUnderAt, bridgeRecords, pierBoxes } from '../src/riverbridge.js';
 
 const out = document.getElementById('out');
+// #1312: the page must always end with a final line the runner (tools/runnerverdict.cjs) recognises: "ALL PASS N checks" or
+// "FAIL N checks". An exception anywhere (or the time budget below) writes the FAIL line, so a hang/crash is a fast FAIL, never a silent wait.
+const T0 = performance.now(), BUDGET_MS = 240000; // every loop below steps player.update; the whole page is one synchronous run (~1 min on SwiftShader)
+const log = [];
+let pass = true;
+const finish = (why) => {
+  if (why) { pass = false; log.push(`FAIL ${why}`); }
+  const n = log.filter((l) => /^(PASS|FAIL) /.test(l)).length, bad = log.filter((l) => l.startsWith('FAIL ')).length;
+  log.push(`time ${((performance.now() - T0) / 1000).toFixed(1)} s`, pass ? `ALL PASS ${n} checks` : `FAIL ${bad} checks`);
+  out.textContent = log.join('\n'); out.dataset.log = log.join('\n'); out.dataset.done = pass ? 'pass' : 'fail';
+};
+window.addEventListener('error', (e) => { if (!out.dataset.done) finish(`exception: ${e.message}`); });
+window.addEventListener('unhandledrejection', (e) => { if (!out.dataset.done) finish(`exception: ${e.reason?.message ?? e.reason}`); });
 const plan = await fetch('../data/plan.json').then((r) => r.json());
 const world = buildWorld(plan);
 world.garage = new Garage();
@@ -36,10 +49,10 @@ camera.rotation.order = 'YXZ';
 const player = new Player(world, camera);
 window.far = { world, player, groundY, renderedTerrainY, riverAt, WALK, SITE };
 const dt = 1 / 60;
-const log = [];
 const splashes = []; // #1281: every splash the player reports
 player.onWaterRescue = (what, at) => { if (what === 'water') splashes.push({ at, to: { x: player.pos.x, z: player.pos.z, y: player.pos.y } }); };
-let pass = true;
+const stepUpdate = player.update.bind(player);
+player.update = (d) => { if (performance.now() - T0 > BUDGET_MS) throw new Error(`time budget ${BUDGET_MS / 1000} s exceeded`); return stepUpdate(d); };
 const walk = (points, { run = true, step = null } = {}) => { // walks the waypoints; returns the first one it got stuck on, or -1
   for (let i = 0; i < points.length; i++) {
     const [x, z] = points[i];
@@ -245,9 +258,7 @@ for (const [name, start, points, ok] of R) {
   if (player.riding) player.dismountBicycle();
   player.keys = new Set();
 }
-out.textContent = log.join('\n');
-out.dataset.log = log.join('\n');
-out.dataset.done = pass ? 'pass' : 'fail';
+finish();
 </script>
 </body>
 </html>

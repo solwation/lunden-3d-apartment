@@ -8,7 +8,14 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     const page = await browser.newPage(), errors = [];
     page.on('pageerror', (e) => errors.push(e.message));
     await page.goto(`${base}/tools/farwalktest.html`);
-    await page.waitForFunction(() => document.getElementById('out')?.dataset.done, null, { timeout: 280000 });
+    // #1312: the page ends with "ALL PASS N checks" / "FAIL N checks" itself (also on an exception or its own 240 s budget);
+    // if even that never comes, fail with the last #out text instead of hanging.
+    try { await page.waitForFunction(() => document.getElementById('out')?.dataset.done, null, { timeout: 300000 }); }
+    catch (e) {
+      console.log(`FAIL farwalktest.html wrote no final line within 300 s; last #out: ${JSON.stringify(await page.evaluate(() => document.getElementById('out')?.textContent).catch(() => '(page unresponsive)'))}`);
+      if (errors.length) console.log('page errors:', errors.join('; '));
+      process.exitCode = 1; return;
+    }
     console.log(await page.evaluate(() => document.getElementById('out').dataset.log));
     if (errors.length) console.log('page errors:', errors.join('; '));
     const ok = await page.evaluate(() => document.getElementById('out').dataset.done === 'pass');

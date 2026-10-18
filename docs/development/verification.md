@@ -627,6 +627,17 @@ Needs Playwright (`PLAYWRIGHT_MODULE=…` or a global install; `CHROME_PATH` opt
 `summary.json`, never the repo. `--jobs N` runs N tests at once (default 1, **max 2**: the VM is shared), `--list` shows the selection,
 `--verbose` prints each test's output.
 
+Driver pages must always end `#out` with a final line (#1312): a page that never writes one is reported as TIMEOUT with the
+message `[runner] <file> never wrote a final "ALL PASS" / "FAIL N checks" line …` and the last `#out` text (the poll itself no
+longer waits on a page busy in a synchronous run). `tools/farwalktest.html` (a single synchronous run, ~1 min on SwiftShader)
+had no such line, so `runtests farwalktest` always waited the full 20 min although every check passed; it now prints
+`ALL PASS N checks` / `FAIL N checks` (plus `time N s`), turns any exception or unhandled rejection into a FAIL line, and has a
+240 s budget checked in every `player.update` step. A bare name runs both formats: `farwalktest` = the page and
+`farwalktest.cjs` (same page through its own Chromium, 300 s limit, prints the last `#out` on a hang), about 2 × 1 min.
+`perfcount` (explicit performance run, #736: full quality, never `&test`, not in `--group`) is selectable by name:
+`node tools/runtests.cjs perfcount` prints `PASS perfcount` or `FAIL …` (exit code 1) with the time; add `--verbose` for the
+per-spot draw call / triangle / memory lines and the `PASS within the performance budget` line (~1 min 10 s).
+
 `node tools/runtests.cjs --test-only pctest.html` (#860) is an optional **iteration** run: each selected HTML fixture runs
 once with actual `&test`, DPR 1, a 480×300 context and the same iframe override/URL normalization/mode verification as
 `--compare`'s test half. Authored query variants such as `test=lazy` remain; actions and assertions are not rewritten.
