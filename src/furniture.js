@@ -2416,7 +2416,7 @@ function gamingdesk(item) {
   const bezel = new THREE.CylinderGeometry(R + 0.012, R + 0.012, sh + 0.02, 32, 1, true, Math.PI - ang / 2 - 0.01, ang + 0.02);
   bezel.translate(0, my, mz + R - pz);
   mon.add(new THREE.Mesh(bezel, new THREE.MeshStandardMaterial({ color: 0x111214, roughness: 0.5, side: THREE.DoubleSide })));
-  mon.add(rbox(0.05, 0.14, 0.04, 0, h + 0.07, 0, nearBlack, 0.01), rbox(0.26, 0.012, 0.18, 0, h + 0.006, 0, nearBlack, 0.004));
+  mon.add(rbox(0.05, 0.14, 0.04, 0, h + 0.07, 0, nearBlack, 0.01));
   // tower on the desk's left end: black case, glass side towards the room, three RGB fan rings
   // (towerSide: which end, local x sign; the glass side faces the middle, the headset gets the other end)
   const ts = item.towerSide ?? -1, tx = ts * (hw - 0.16), tz = z0 + 0.25, hx = -ts * (hw - 0.12);
@@ -2433,11 +2433,34 @@ function gamingdesk(item) {
   g.add(glass);
   const power = new THREE.MeshBasicMaterial({ color: 0x103018, toneMapped: false });
   g.add(rbox(0.004, 0.012, 0.012, tx - ts * 0.112, h + 0.42, tz + 0.18, power, 0.002));
+  const keysMat = new THREE.MeshBasicMaterial({ color: 0x111111, toneMapped: false });
+  // #1279 realism: tower details (top vents, feet, GPU with a green bracket behind the glass, PSU shroud, front mesh, I/O ports)
+  const steel = new THREE.MeshStandardMaterial({ color: 0x2a2d31, roughness: 0.4, metalness: 0.6 }), greenAcc = new THREE.MeshStandardMaterial({ color: neon, roughness: 0.5 });
+  for (let k = 0; k < 6; k++) g.add(rbox(0.16, 0.003, 0.012, tx, h + 0.462, tz - 0.12 + k * 0.045, steel, 0.001)); // top vents
+  for (const fx of [-0.08, 0.08]) for (const fz of [-0.17, 0.17]) g.add(rbox(0.03, 0.012, 0.03, tx + fx, h + 0.006, tz + fz, steel, 0.004)); // feet
+  g.add(rbox(0.19, 0.045, 0.3, tx, h + 0.26, tz, steel, 0.008), rbox(0.192, 0.006, 0.3, tx, h + 0.286, tz, greenAcc, 0.002)); // the graphics card + its green edge
+  g.add(rbox(0.2, 0.1, 0.4, tx, h + 0.065, tz, nearBlack, 0.004)); // PSU shroud
+  for (let k = 0; k < 7; k++) g.add(rbox(0.2, 0.004, 0.012, tx, h + 0.15 + k * 0.045, tz + 0.2, steel, 0.001)); // front mesh slats (towards +z)
+  for (let k = 0; k < 3; k++) g.add(rbox(0.012, 0.006, 0.01, tx - 0.05 + k * 0.025, h + 0.46, tz + 0.2, steel, 0.001)); // front/top ports
+  // cables: tower to the monitor along the desk back, the mains cable down a leg, a cable grommet in the desk top
+  g.add(rbox(0.012, 0.012, 0.3, tx + ts * 0.02, h + 0.006, tz - 0.38 + 0.1, nearBlack, 0.004), rbox(Math.abs(tx) - 0.03, 0.012, 0.012, tx / 2 - 0.0, h + 0.006, z0 + 0.045, nearBlack, 0.004));
+  g.add(rbox(0.012, h - 0.03, 0.012, tx, (h - 0.03) / 2, z0 + 0.015, nearBlack, 0.004), rbox(0.05, 0.006, 0.02, tx - ts * 0.09, h + 0.003, z0 + 0.06, steel, 0.002));
+  g.add(rbox(0.012, 0.012, 0.15, 0.18, h + 0.006, 0.05, nearBlack, 0.004)); // keyboard cable
+  // monitor: a V-foot instead of a plate, a small power light on the chin
+  for (const sx of [-1, 1]) { const f = rbox(0.22, 0.012, 0.03, sx * 0.07, h + 0.006, 0.05, steel, 0.004); f.rotation.y = -sx * 0.45; mon.add(f); }
+  mon.add(rbox(0.008, 0.004, 0.004, 0.36, my - sh / 2 - 0.005, mz + R * (1 - Math.cos(0.36 / R)) - pz + 0.005, power, 0.001));
+  // desk: an RGB strip under the front edge, a steel cross-bar between the legs, rounded front corners
+  g.add(rbox(w - 0.14, 0.008, 0.008, 0, h - 0.034, d / 2 - 0.03, keysMat, 0.002), rbox(w - 0.1, 0.03, 0.02, 0, 0.1, z0 + 0.06, steel, 0.004));
+  g.add(rbox(0.06, 0.012, 0.012, 0.55, h + 0.003, z0 + 0.04, nearBlack, 0.004)); // cable tidy
   // keyboard with a glowing underside strip, mouse on a big pad, headset on a stand, speakers, can, mug
   g.add(rbox(0.9, 0.003, 0.4, 0.1, h + 0.0015, 0.12, new THREE.MeshStandardMaterial({ color: 0x0d0e10, roughness: 0.95 }), 0.002));
   g.add(rbox(0.44, 0.025, 0.15, -0.02, h + 0.015, 0.1, nearBlack, 0.006));
-  const keysMat = new THREE.MeshBasicMaterial({ color: 0x111111, toneMapped: false });
   g.add(rbox(0.42, 0.004, 0.13, -0.02, h + 0.029, 0.1, keysMat, 0.002));
+  for (let r = 0; r < 5; r++) g.add(rbox(r === 4 ? 0.3 : 0.4, 0.006, 0.02, -0.02, h + 0.032, 0.05 + r * 0.025, steel, 0.002)); // key rows (space bar row shorter)
+  g.add(rbox(0.04, 0.012, 0.16, 0.27, h + 0.016, 0.1, nearBlack, 0.004)); // keyboard wrist/side
+  const pad = rbox(0.1, 0.01, 0.008, 0.37, h + 0.016, 0.085, greenAcc, 0.002); g.add(pad); // mouse side-light
+  g.add(rbox(0.012, 0.006, 0.03, 0.37, h + 0.025, 0.105, steel, 0.002)); // scroll wheel
+  for (const x of [-0.5, 0.48]) { const sp = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.032, 0.006, 16), steel); sp.rotation.x = Math.PI / 2; sp.position.set(x, h + 0.06, z0 + 0.1 + 0.047); g.add(sp); g.add(rbox(0.05, 0.004, 0.006, x, h + 0.14, z0 + 0.1 + 0.046, greenAcc, 0.001)); } // speaker cones + tweeters
   const mouse = new THREE.Mesh(new THREE.SphereGeometry(1, 14, 8), nearBlack);
   mouse.scale.set(0.033, 0.02, 0.06); mouse.position.set(0.37, h + 0.012, 0.12);
   g.add(mouse);
@@ -2605,7 +2628,18 @@ export function gamingchair() {
   g.add(textile.part(rbox(0.5, 0.82, 0.1, 0, 0.92, -0.22, cloth, 0.04)));
   for (const x of [-0.12, 0.12]) g.add(textile.part(rbox(0.04, 0.78, 0.005, x, 0.92, -0.168, green, 0.002))); // stripes
   g.add(textile.part(rbox(0.3, 0.12, 0.05, 0, 1.2, -0.16, green, 0.02))); // headrest pillow
-  for (const x of [-0.27, 0.27]) g.add(rbox(0.06, 0.04, 0.3, x, 0.66, 0, nearBlack, 0.015)); // arm rests
+  // #1279 realism: caster wheels, a gas-lift sleeve, tilt mechanism, seat and back bolsters, padded arm rests on posts, lumbar roll
+  for (let k = 0; k < 5; k++) {
+    const a = (k / 5) * Math.PI * 2, wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.028, 0.03, 10), nearBlack);
+    wheel.rotation.z = Math.PI / 2; wheel.rotation.y = -a + Math.PI / 2; wheel.position.set(Math.cos(a) * 0.285, 0.032, Math.sin(a) * 0.285);
+    g.add(wheel);
+  }
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.05, 0.16, 12), nearBlack).translateY(0.15));
+  g.add(rbox(0.3, 0.04, 0.3, 0, 0.405, 0, nearBlack, 0.01));
+  for (const x of [-0.235, 0.235]) g.add(textile.part(rbox(0.07, 0.07, 0.46, x, 0.5, 0.02, green, 0.03))); // seat side bolsters (green)
+  for (const x of [-0.27, 0.27]) g.add(textile.part(rbox(0.07, 0.4, 0.09, x, 1.0, -0.2, green, 0.03))); // back wings
+  g.add(textile.part(rbox(0.3, 0.1, 0.07, 0, 0.78, -0.155, cloth, 0.03))); // lumbar roll
+  for (const x of [-0.27, 0.27]) { g.add(rbox(0.03, 0.2, 0.03, x, 0.55, -0.02, nearBlack, 0.008)); g.add(textile.part(rbox(0.08, 0.035, 0.28, x, 0.68, 0.02, cloth, 0.016))); } // arm rest posts + pads
   // pc: sitting down switches the PC at the desk on (and brings its monitor back from the bunk)
   g.userData.rest = { kind: 'sit', name: 'gamingstolen', verb: 'sätta dig i', spots: [{ x: 0, y: 0.5, z: -0.04, pc: 'game' }] };
   g.userData.footprint = [{ x0: -0.3, x1: 0.3, z0: -0.3, z1: 0.3 }];
