@@ -7,7 +7,7 @@ import { PlantWind, windShadow } from './plantwind.js';
 import { runCheat, cheatList, isCommand } from './cheats.js';
 import { cleanHome } from './cheatclean.js';
 import { buildCheatNote } from './cheatnote.js';
-import { REPORTS, CHEAT_NOTE, LOW_MEMORY, QUALITY, STANDARD, SHADOW_BOX, STARTUP, KITCHEN_TOWEL_MATERIAL, LIGHTING, VIEW_LOD, BIRDS } from './config.js';
+import { REPORTS, CHEAT_NOTE, LOW_MEMORY, QUALITY, STANDARD, SHADOW_BOX, STARTUP, KITCHEN_TOWEL_MATERIAL, LIGHTING, VIEW_LOD, VIEW_NEAR, BIRDS } from './config.js';
 import { fetchStartupJSON } from './startuprecovery.js';
 import { lowMemory, reloadOnContextRestore, freeSceneGeometryCopies } from './lowmemory.js';
 import { addSceneShadowTiles, installShadowTiles } from './shadowtiles.js';
@@ -2696,6 +2696,17 @@ mapEl.hidden = true; // hidden by default (#85); the old saved 'lunden.mapShown'
 let detail = null; // small-detail culling (#189), set up once everything is built (below)
 let lastHeld = null;
 const tmpV = new THREE.Vector3();
+const nearFixed = params0.has('near') ? Number(params0.get('near')) : null; // &near=m (#1276): pin the near plane (comparison shots)
+/** Near plane by altitude (#1276, VIEW_NEAR): more depth precision at distance while flying high; walking keeps 0.05 m. */
+function updateCameraNear() {
+  let near = VIEW_NEAR.min;
+  if (nearFixed) near = nearFixed;
+  else if (player.flying || player.aloft) {
+    const h = player.eyeY - (player.groundAt(player.pos.x, player.pos.z, player.pos.y) ?? 0);
+    near = Math.min(VIEW_NEAR.max, Math.max(VIEW_NEAR.min, VIEW_NEAR.min + (h - VIEW_NEAR.free) * VIEW_NEAR.perMetre));
+  } else if (!player.inFootprint() && !player.unit && !player.inCore && !player.riding && !car.occupied && !world.garage?.inside(player.pos.x, player.pos.z)) near = VIEW_NEAR.outdoor;
+  if (Math.abs(camera.near - near) > near * 0.02) { camera.near = near; camera.updateProjectionMatrix(); }
+}
 function step(dt) {
   autoReload.update(dt);
   // Kaffeturbo (#217): faster feet, a wider view, the speakers turned down under the tune
@@ -2703,6 +2714,7 @@ function step(dt) {
   player.boost = turbo.speed;
   const fov = 72 + TURBO.fov * turbo.k;
   if (Math.abs(camera.fov - fov) > 0.01) { camera.fov = fov; camera.updateProjectionMatrix(); }
+  updateCameraNear();
   const clipsNear = laptops.some((l) => l.on && l.screen.getWorldPosition(tmpV).distanceTo(camera.position) < LAPTOP.near); // Tilly's clips playing near (#283)
   sonos.setDuck(turbo.active ? 0.3 : car.radio.playing && car.occupied ? CAR.music.duckHouse : clipsNear ? LAPTOP.duck : nests.talkingNear(camera.position) ? NEST.duck : (vacuum.running && vacuum.nearSonos(sonos)) ? 0.45 : 1); // (sitting in the car with its music on, #268; vacuum motor nearby, #390)
   car.radio.setDuck(turbo.active ? 0.3 : 1);

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { SITE, SEASON } from './config.js';
+import { SITE, SEASON, DECAL_OFFSET } from './config.js';
 import { pathStrip, onRoad, onWalk } from './roads.js';
 import { registerSnow } from './seasons.js';
 import { buildSchoolFacade, schoolTextures } from './schoolfacade.js';
@@ -67,7 +67,7 @@ function buildBackdrop(W,key,ground,brick=null,reflectiveGlass=null,karp=null){
   if(p.path){const s=plain(pathStrip(p,w=>-w/2,w=>w/2,W.pathLift,ground));s.userData.tint=surfColor;parts.access.push(s);}
   else{const geo=new THREE.ShapeGeometry(shape(p.polygon));geo.rotateX(-Math.PI/2);const a=geo.attributes.position;for(let i=0;i<a.count;i++)a.setY(i,ground(a.getX(i),a.getZ(i))+W.pathLift);geo.computeVertexNormals();const pl=plain(geo);pl.userData.tint=surfColor;parts.access.push(pl);}
  }
- const mats={facade:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.95,side:THREE.DoubleSide}),roof:new THREE.MeshStandardMaterial({color:W.roof,roughness:.85,side:THREE.DoubleSide}),glass:new THREE.MeshStandardMaterial({color:brick?0xffffff:W.glass,vertexColors:!!brick,roughness:.3,metalness:.25,side:THREE.DoubleSide}),access:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:1,side:THREE.DoubleSide})};
+ const mats={facade:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.95,side:THREE.DoubleSide}),roof:new THREE.MeshStandardMaterial({color:W.roof,roughness:.85,side:THREE.DoubleSide}),glass:new THREE.MeshStandardMaterial({color:brick?0xffffff:W.glass,vertexColors:!!brick,roughness:.3,metalness:.25,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:DECAL_OFFSET.factor,polygonOffsetUnits:DECAL_OFFSET.units}),access:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:1,side:THREE.DoubleSide})};
  if(brick)mats.facade.map=brick;
  if(parts.modern){mats.modern=new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.95,side:THREE.DoubleSide});}
  if(parts.schoolGlass)mats.schoolGlass=reflectiveGlass;

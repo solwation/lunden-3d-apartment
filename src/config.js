@@ -2771,6 +2771,20 @@ export const SHADOW_TILES = { size: 32, minInstances: 8, minSpread: 40 };
 // #1246: desktop uses the same split from `carNearDesktop` (*guess*: a parked car's silhouette and colour hold up to ~60 m).
 export const VIEW_LOD = { carNear: 30, carNearDesktop: 60, band: 2, step: 1 };
 
+// Camera near plane by altitude (#1276): the 24-bit depth buffer resolves about d²/(near·2²⁴) m at distance d, so with the
+// walking near plane of `min` m (0.05) coplanar layers (window panes and reveals, roofs, road/ground overlays, 2 mm insets)
+// z-fight and the far houses shimmer from the air (jetpack, 320 m ceiling). Above `free` m over the ground the near plane
+// grows by `perMetre` m per metre, capped at `max` m; walking, roofs and indoors keep `min`. All *guess* (nothing nearer than
+// a few metres is in view that high up; the cap keeps ~4 mm resolution at 300 m).
+export const VIEW_NEAR = { min: 0.05, outdoor: 0.12, free: 3, perMetre: 0.02, max: 1.5 };
+// `outdoor`: walking on the open ground (not indoors, in the stairwell, a visited flat, the garage or a vehicle) the near plane is
+// 0.12 m: the body stops 0.22 m (PLAYER.radius) from a wall, so nothing is cut; far façades get 2.4× the depth precision.
+
+// Depth bias for window glass drawn a few cm in front of a façade (#1276, src/neighborglass.js, sitebackdrop.js, southbackdrop.js):
+// polygonOffset is counted in depth-buffer steps, so unlike the 1–7 cm geometry inset it keeps winning at 300 m, where one step of
+// a 24-bit buffer is ~10 cm and the layers flickered. 2 steps pull a pane ~20 cm at 400 m, less than any reveal or neighbour wall.
+export const DECAL_OFFSET = { factor: -1, units: -2 };
+
 // Campus facades on phones (#589, src/lowmemory.js): #576–#581 took the east backdrop from ~21k to ~75k triangles. On
 // LOW_MEMORY devices campusfacades.js and schoolfacade.js keep every body, roof, colour, window and the clock tower but
 // drop dentils, quoin joints and the finer glazing bars (centre post and one rail stay), merge each stepped cornice into
