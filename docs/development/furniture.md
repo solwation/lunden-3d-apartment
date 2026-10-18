@@ -284,3 +284,15 @@ the insert, detailed geometries and its two material batches; drawer motion and 
 contents remain unchanged. `tools/cutlerystocktest.cjs GAME OUT` checks the actual plan kitchen
 and Openable, individual compartment bounds, stock count and real WebGL costs.
 [Paired pictures, costs and limits](../validation/issue-1052/README.md).
+
+## String shelf under the kitchen clock (#1272)
+
+`stringshelf` (`STRING_SHELF`, `src/furniture.js` `stringshelf`): the user's 60s String-style wall shelf
+(docs/stringhylla-referens-foto.jpg, measures from docs/stringhylla-matt-anteckning.jpg: 81 wide, 32.5 deep, sides 75.5 high).
+Two white wire ladder sides (rails + a rung every 4 cm across the depth) and three dark-brown boards, thin boxes in two flat-colour
+materials (2 meshes, ~540 triangles, no texture). Board thickness, board heights, wire sizes and colours are *guesses* (the
+"Hyllplan …" line of the note is illegible). Origin = the shelf's centre, local z 0 = the wall. It hangs on the Tvätt/Badrum
+wall's kitchen face (x 2.152) centred under the clock; `WALL_CLOCK.z` moved to 4.55 and `CALENDAR.z` to 3.85 (towards the hall) to
+make room. Like the wine rack it is a `picture` piece in `src/rearrange.js` (wall placement via the wall ray, rotate, saved layout,
+Home reset, NAMES `stringhyllan`, floor/ceiling box check) and has no collision footprint; on another wall it may reach into a
+perpendicular wall near a corner (explicit limitation). Test: `tools/stringshelftest.html`.

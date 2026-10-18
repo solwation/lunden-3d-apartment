@@ -1,0 +1,45 @@
+<!doctype html><html><meta charset="utf-8"><title>String shelf under the kitchen clock (#1272)</title><pre id="out">running…</pre><script src="./rearrangesetup.js"></script><script type="module">
+// The String wall shelf: where it hangs (under the clock, clear of the calendar), its size, merged meshes, wall placement in
+// rearrange mode (pick up, rotate, move to another spot on the wall, confirm), saved layout survives a reload, Home/restore.
+import { STRING_SHELF as S, WALL_CLOCK as C, CALENDAR as K } from '../src/config.js';
+const lines=[];let pass=true;const check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);pass&&=!!ok;};
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+try {
+ localStorage.removeItem('lunden.furniture.layout');
+ const f=document.createElement('iframe');f.width=480;f.height=300;document.body.append(f);
+ async function load(){f.src='../index.html?test&life&shot&r='+Math.random();await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const A=f.contentWindow.__app;f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();setupRearrangeForFixture(A.rearrange,f.contentWindow);return A;}
+ let A=await load(),R=A.rearrange,T=await f.contentWindow.eval("import('three')");
+ const close=(a,b)=>a.elements.every((v,i)=>Math.abs(v-b.elements[i])<.001);
+ const shelf=R.pieces.find(p=>p.item.type==='stringshelf');
+ check(!!shelf&&shelf.picture&&shelf.name==='stringhyllan','shelf is a movable wall piece named stringhyllan');
+ A.scene.updateMatrixWorld(true);
+ const box=new T.Box3().setFromObject(shelf.object);
+ check(Math.abs(box.max.z-box.min.z-S.W)<.02&&Math.abs(box.max.x-box.min.x-S.D)<.02&&Math.abs(box.max.y-box.min.y-S.H)<.02,'size 81 × 32.5 × 75.5 cm (width along the wall)');
+ check(Math.abs(box.min.x-2.152)<.012&&box.max.x<2.152+S.D+.012,'back at the wall x 2.152, boards stand out into the kitchen');
+ check(box.max.y<C.y-C.d/2&&box.max.y>C.y-C.d/2-.2,'top is just below the clock');
+ check(Math.abs((box.min.z+box.max.z)/2-C.z)<.01,'centred under the clock');
+ check(box.max.z<5.174-.1&&box.min.z>K.z+K.w/2+.1,'clear of the Badrum door trim and the calendar');
+ let meshes=0;shelf.object.traverse(o=>{if(o.isMesh)meshes++;});check(meshes<=2,'merged to at most two meshes ('+meshes+')');
+ let tris=0;shelf.object.traverse(o=>{if(o.isMesh)tris+=(o.geometry.index?.count??o.geometry.attributes.position.count)/3;});check(tris<1500,'triangle count '+tris);
+ // look at the shelf from the kitchen and pick it
+ const home=shelf.home.clone(),centre=box.getCenter(new T.Vector3());
+ A.player.spawn(3.4,centre.z,0);A.step(1/60);
+ const mid=new T.Vector3(2.152+S.D*.6,centre.y-S.H/2+S.boards[1]+S.t/2,centre.z);A.camera.position.set(3.4,1.5,centre.z);A.camera.lookAt(mid);R.update();
+ check(R.target?.piece===shelf,'real look ray targets the shelf');
+ check(R.begin(shelf)&&!shelf.object.visible&&R.ghost.visible,'pick up: hidden original, ghost preview');
+ // aim at another spot on the same wall (north of the calendar side, lower) and rotate once
+ const aim=new T.Vector3(2.152,1.3,3.5);A.camera.position.set(3.4,1.5,3.5);A.camera.lookAt(aim);R.update();
+ check(R.valid&&Math.abs(R.candidate.elements[13]-1.3)<.2,'wall ray gives a valid placement near the aimed point');
+ const first=R.candidate.clone();R.rotate();R.update();check(R.valid&&!close(first,R.candidate),'it rotates on the wall');
+ R.turn=0;R.update();
+ check(await R.confirm(),'confirm the move');
+ const moved=shelf.object.matrixWorld.clone(),id=shelf.id;
+ check(!close(moved,home),'pose changed');
+ A=await load();R=A.rearrange;
+ check(close(R.byId.get(id).object.matrixWorld,moved),'moved shelf survives a reload (saved layout)');
+ check(await R.restoreOriginal(R.byId.get(id))&&close(R.byId.get(id).object.matrixWorld,home),'it returns to the original spot under the clock');
+ // Home reset restores it too
+ R.byId.get(id);A.camera.position.set(3.4,1.5,3.5);A.camera.lookAt(2.152,1.3,3.5);
+ document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+}catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack;}
+</script></html>

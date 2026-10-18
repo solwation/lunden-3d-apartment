@@ -3,7 +3,7 @@ import { materialChoice } from './materialcatalog.js';
 import { MATERIAL_LIBRARY, LONG_PILE, SHADE_CANOPY_TEXTILES } from './config.js';
 import { windPlant, windMaterial } from './plantwind.js';
 import { MusicLoop } from './music.js';
-import { MUSIC, STAND_ON, CONTACT_SHADOW, REST } from './config.js';
+import { MUSIC, STAND_ON, CONTACT_SHADOW, REST, STRING_SHELF } from './config.js';
 import { buildContactShadows } from './contactshadow.js';
 import * as THREE from 'three';
 import { woodMaterial } from './woodgrain.js';
@@ -4030,6 +4030,27 @@ function winerack(item) {
   return g;
 }
 
+/**
+ * The String-style wall shelf (#1272, STRING_SHELF): local z 0 = the wall, x along it, origin at the shelf's centre. Two white
+ * wire ladder sides (two vertical rails and a rung every few cm across the depth) carry three dark-brown boards. Thin boxes only
+ * (two materials, merged to two meshes); no collision (it hangs on the wall like the wine rack) and no texture.
+ */
+function stringshelf(item) {
+  const S = STRING_SHELF, g = new THREE.Group();
+  const white = new THREE.MeshStandardMaterial({ color: S.white, roughness: 0.5, metalness: 0.2 });
+  const wood = new THREE.MeshStandardMaterial({ color: S.board, roughness: 0.55 });
+  const box = (m, sx, sy, sz, x, y, z) => { const o = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), m); o.position.set(x, y, z); o.castShadow = true; g.add(o); };
+  const y0 = -S.H / 2, w = S.wire;
+  for (const sx of [-1, 1]) {
+    const x = sx * (S.W / 2 - S.inset);
+    for (const z of [w / 2, S.D - w / 2]) box(white, w, S.H, w, x, 0, z); // the back (wall) and front rails
+    for (let y = S.rung / 2; y < S.H; y += S.rung) box(white, w, w, S.D, x, y0 + y, S.D / 2); // the rungs across the depth
+  }
+  for (const b of S.boards) box(wood, S.W, S.t, S.D - 0.004, 0, y0 + b, (S.D - 0.004) / 2 + 0.004);
+  g.position.y = item.y;
+  return g;
+}
+
 /** IKEA BESTÅ display combination (#104): two 60 cm columns hung on the wall, each with a walnut-effect door at
  * the top and the bottom and a glass door between; glass shelves, fine glasses and whisky bottles behind the
  * glass; spots on top lit by the room's switch (its lamp material, no lights of its own). Every door opens on
@@ -4188,7 +4209,7 @@ function aborgtable(item, lights) {
   return aborgTableModel(item, lights, () => { const f = flower(); mergeStatic(f); return f; });
 }
 
-const BUILDERS = { pineapple: pineappleMirror, aborgtable, aborgchair, randerstable, tubelamp, dani, secretary, winerack, besta, painting, pictures, palm, zzplant, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, veronasofa, slattable, parasol, planter, dynbox, weberkettle, bed, skansnasTable, skansnasChair, bunk, daybed, kposters, smastad, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, walllamp, symfonisk, gamingdesk, gamingchair, nordli, malm, alex, kidchair, vanity, vanitystool, laptop, photoframe, huego, nesthub, nestmini, hookrail, towelhooks, klk, cleaning, xmastree };
+const BUILDERS = { pineapple: pineappleMirror, aborgtable, aborgchair, randerstable, tubelamp, dani, secretary, winerack, besta, painting, pictures, palm, zzplant, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, veronasofa, slattable, parasol, planter, dynbox, weberkettle, bed, skansnasTable, skansnasChair, bunk, daybed, kposters, smastad, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, walllamp, symfonisk, gamingdesk, gamingchair, nordli, malm, alex, kidchair, vanity, vanitystool, laptop, photoframe, huego, nesthub, nestmini, hookrail, towelhooks, stringshelf, klk, cleaning, xmastree };
 
 /** An invisible thin box over a table top (raycast target for putting a cup down, #90). Local rect. */
 export function surfaceBox(r, list) {
@@ -4297,7 +4318,7 @@ export function* furnitureParts() {
     for (const [i, object] of (obj.userData.frames ?? [obj]).entries()) {
       const suffix = item.type === 'kposters' ? 'poster-' + object.userData.posterId : i;
       movable.push({ id: `${baseId}-${serial}-${suffix}`, item, object, level: item.level,
-        picture: ['pictures', 'painting', 'kposters', 'pineapple', 'winerack', 'besta'].includes(item.type), name: item.type === 'pictures' ? 'tavlan' : obj.userData.interact?.name ?? item.type });
+        picture: ['pictures', 'painting', 'kposters', 'pineapple', 'winerack', 'besta', 'stringshelf'].includes(item.type), name: item.type === 'pictures' ? 'tavlan' : obj.userData.interact?.name ?? item.type });
     }
     // Decorative wall mirrors are independent of the furniture below them (#479).
     for (const [i, m] of (obj.userData.wallMirrors ?? []).entries()) {
