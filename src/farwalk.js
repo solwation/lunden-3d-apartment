@@ -101,7 +101,10 @@ const inPoly = (p, x, z) => { let yes = false; for (let i = 0, j = p.length - 1;
 let bodies = null;
 /** Someone standing inside a far building's outline or in its closed courtyard (a jetpack landing): the open point just outside, or null. */
 export function buildingRescue(x, z) {
-  bodies ??= [SITE.west, SITE.east, SITE.north, SITE.south].flatMap((g) => g.buildings).map((b) => ({ p: b.polygon, xs: [Math.min(...b.polygon.map((q) => q[0])), Math.max(...b.polygon.map((q) => q[0]))], zs: [Math.min(...b.polygon.map((q) => q[1])), Math.max(...b.polygon.map((q) => q[1]))] }));
+  bodies ??= [
+    ...[SITE.west, SITE.east, SITE.north, SITE.south].flatMap((g) => g.buildings).map((b) => ({ p: b.polygon, xs: [Math.min(...b.polygon.map((q) => q[0])), Math.max(...b.polygon.map((q) => q[0]))], zs: [Math.min(...b.polygon.map((q) => q[1])), Math.max(...b.polygon.map((q) => q[1]))] })),
+    ...SITE.blocks.filter((b) => b.style).map((b) => ({ p: [[b.x0, b.z0], [b.x1, b.z0], [b.x1, b.z1], [b.x0, b.z1], [b.x0, b.z0]], xs: [b.x0, b.x1], zs: [b.z0, b.z1] })),
+  ];
   const b = bodies.find((q) => x > q.xs[0] && x < q.xs[1] && z > q.zs[0] && z < q.zs[1] && inPoly(q.p, x, z));
   if (!b) return null;
   let best = null;

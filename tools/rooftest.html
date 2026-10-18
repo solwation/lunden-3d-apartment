@@ -186,6 +186,21 @@ async function run() {
   check(hurt(), `off the eaves: hurt (drop ${f2(hurt()?.drop ?? 0)} m)`);
   await settle();
 
+  // (4b) Villa's ("kyrkan", #1274) hip roof: standing on the slope, walk on it
+  const Villa = SITE.blocks.find((b) => b.name === 'Villa'), vx = (Villa.x0 + Villa.x1) / 2, vz = (Villa.z0 + Villa.z1) / 2;
+  const vTop = world.roofs.topAt(vx, vz);
+  place(vx, vz, vTop, -90);
+  check(Math.abs(player.pos.y - vTop) < 0.02 && world.roofs.standingOn(vx, vz, player.pos.y)?.id === 'roof-Villa', `on Villa's roof at ${f2(player.pos.y)} m`);
+  r = walkTo(Villa.x1 - 1.5, vz);
+  check(r.ok && r.lo < vTop - 0.1 && Math.abs(player.pos.y - world.roofs.topAt(player.pos.x, player.pos.z)) < 0.05,
+    `walked down Villa's slope to ${f2(player.pos.y)} m (the roof there ${f2(world.roofs.topAt(player.pos.x, player.pos.z))})`);
+
+  // (4c) HepCat Store's gable roof (#1274)
+  const HepCat = SITE.blocks.find((b) => b.name === 'HepCat Store'), hx = (HepCat.x0 + HepCat.x1) / 2;
+  const hTop = world.roofs.topAt(hx, 5.0);
+  place(hx, 5.0, hTop, 0);
+  check(Math.abs(player.pos.y - hTop) < 0.02 && world.roofs.standingOn(hx, 5.0, player.pos.y)?.id === 'roof-HepCat Store', `on HepCat's roof at ${f2(player.pos.y)} m`);
+
   // (5) a canopy over an entrance
   const can = world.roofs.surfaces.find((s) => s.id.startsWith('canopy-'));
   place((can.x0 + can.x1) / 2, (can.z0 + can.z1) / 2, can.y, 0);
@@ -203,7 +218,7 @@ async function run() {
   const onRoof = near.filter((n) => n.floor > roofY - 0.12 && n.floor < roofY + 0.3); // (the roof, or the tilted solar panels' step-over surface, #1232)
   check(near.length > 5 && onRoof.length / near.length > 0.9, `rain within 2 m ends on the roof (${onRoof.length} of ${near.length} at ${f2(roofY)} m)`);
   check(near.some((n) => n.y > roofY + 0.2 && n.y < roofY + PLAYER.eye), 'some of it falls past the visitor');
-  for (const [x, z, y, what] of [[3, 0.8, roofTop, 'the loftgång'], [(T.x0 + T.x1) / 2, 11.5, deckY, 'the terrace'], [3, 5.0, roofY, "Hus L's roof"], [ax, az, top, "Hus A's roof"]])
+  for (const [x, z, y, what] of [[3, 0.8, roofTop, 'the loftgång'], [(T.x0 + T.x1) / 2, 11.5, deckY, 'the terrace'], [3, 5.0, roofY, "Hus L's roof"], [ax, az, top, "Hus A's roof"], [vx, vz, vTop, "Villa's roof"]])
     check(Math.abs(weather.roofAt(x, z) - y) < 0.12, `${what}: the rain stops at ${f2(weather.roofAt(x, z))} m (the surface ${f2(y)})`);
   weather.force = 'clear';
   for (let i = 0; i < 5; i++) step(dt);
@@ -212,7 +227,7 @@ async function run() {
   place(1.3, -4, 0, 180);
   check(!player.aloft && player.level === 0 && player.outdoors && Math.abs(player.pos.y) < 0.01, 'back on the street: not up there');
   const n = Object.keys(stats.seen.roofs ?? {}).length - roofs0;
-  check(n >= 5, `${n} roofs counted for the first time (${Object.keys(stats.seen.roofs ?? {}).join(', ')})`);
+  check(n >= 7, `${n} roofs counted for the first time (${Object.keys(stats.seen.roofs ?? {}).join(', ')})`);
 
   out.textContent = lines.join('\n') + `\n${pass ? 'ALL PASS' : 'SOME FAILED'}`;
 }

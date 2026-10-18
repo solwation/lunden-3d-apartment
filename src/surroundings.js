@@ -1175,6 +1175,29 @@ function roof(b) {
   return geo; // ExtrudeGeometry is already non-indexed
 }
 
+/** Walkable roof surface and wall bounds for surrounding buildings (#1274). */
+function addSurroundingRoofWalk(b, walk) {
+  const o = 0.3, h = b.base + b.storeys * dims(b).storey;
+  const x0 = b.x0 - o, x1 = b.x1 + o, z0 = b.z0 - o, z1 = b.z1 + o;
+  let roofY;
+  if (b.roof === 'hip') {
+    const hx = (x1 - x0) / 2, hz = (z1 - z0) / 2, r = Math.min(hx, hz);
+    const k = dims(b).roofPitch;
+    const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
+    roofY = (x, z) => h + k * Math.max(0, Math.min(hx - Math.abs(x - cx), hz - Math.abs(z - cz)));
+  } else {
+    const alongX = b.x1 - b.x0 >= b.z1 - b.z0;
+    const [a0, a1] = alongX ? [b.z0, b.z1] : [b.x0, b.x1];
+    const ridge = Math.min(4, (a1 - a0) * 0.35);
+    const half = (a1 - a0) / 2 + o, mid = (a0 + a1) / 2;
+    roofY = alongX
+      ? (x, z) => h + ridge * Math.max(0, 1 - Math.abs(z - mid) / half)
+      : (x, z) => h + ridge * Math.max(0, 1 - Math.abs(x - mid) / half);
+  }
+  walk.surfaces.push({ id: `roof-${b.name}`, name: `${b.name}s tak`, x0, x1, z0, z1, y: roofY });
+  wallRect(walk.walls, b.x0, b.x1, b.z0, b.z1, -10, h);
+}
+
 /** Every tree's foot as built: [{ x, z, kind }] (tools/terraintest.html: none on asphalt or paving, #435). */
 export const treeFeet = [];
 /** Every tree's crown as built: [{ x, z, r (m), y (its centre) }] (groundao.js, #1079). */
@@ -1637,6 +1660,18 @@ export function* surroundingsParts({ grass, husL = null }) {
     const R = roofSpec(b), o = R.overhang, d = R.edge + 0.1;
     return new THREE.BoxGeometry(b.x1 - b.x0 + 2 * o, d, b.z1 - b.z0 + 2 * o).translate((b.x0 + b.x1) / 2, R.eave - 0.01 - d / 2, (b.z0 + b.z1) / 2);
   }).concat(lg.metal, roofBoxes), new THREE.MeshStandardMaterial({ color: 0xc7cacb, roughness: 0.45, metalness: 0.2 })); // light grey sheet metal (#146)
+  for (const b of S.blocks) if (b.style) addSurroundingRoofWalk(b, walk); // all surrounding buildings (#1274)
+  const G = S.school?.greenhouse;
+  if (G) {
+    const gcz = (G.z0 + G.z1) / 2, halfGz = (G.z1 - G.z0) / 2;
+    walk.surfaces.push({ id: 'greenhouse', name: 'Växthusets tak', x0: G.x0, x1: G.x1, z0: G.z0, z1: G.z1, y: (x, z) => G.h + G.ridge * Math.max(0, 1 - Math.abs(z - gcz) / halfGz) });
+    wallRect(walk.walls, G.x0, G.x1, G.z0, G.z1, -10, G.h);
+  }
+  const W = S.school?.wall;
+  if (W) {
+    walk.surfaces.push({ id: 'school-wall', name: 'Skolmuren', x0: W.x0, x1: W.x1, z0: W.z - W.t / 2, z1: W.z + W.t / 2, y: W.h + 0.06 });
+    wallRect(walk.walls, W.x0, W.x1, W.z - W.t / 2, W.z + W.t / 2, -10, W.h + 0.06);
+  }
   group.userData.walk = walk;
   const pipes = [];
   for (const b of modern) {

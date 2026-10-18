@@ -219,7 +219,7 @@ tools/lifttest.html    headless test (#415): the portik's door holds shut / E op
 tools/rooftest.html    headless test (#360): placed on the loftgång (level, the railing, no way into the upper units, no pool light for
                        the flat's lamps, the culler hides its inside, the railing at the east end, both sides of the east drum's landing and by the west drum's doorway holds (#449), into both drums), our terrace (railing,
                        set-back wall, skärmvägg), Hus L's roof (a panel row, the loft in the way, off the edge onto the loftgång), Hus A's
-                       slope and eaves, a canopy; the rain ends on each roof; the first visits counted
+                       slope and eaves, Villa's ("kyrkan", #1274) and HepCat's roofs, a canopy; the rain ends on each roof; the first visits counted
 tools/terracetest.html Hus L's roof terraces (#350): one per upper flat, areas vs 10/11/12 m², the joins at the loft and
                        the gables, the railing's top over the finished deck
 tools/gabletest.html  Hus L's gables (#351): each opening tagged with side / storey / end flat, inside its storey (not in a
