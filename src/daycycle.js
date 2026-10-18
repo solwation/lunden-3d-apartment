@@ -105,6 +105,7 @@ const skyFrag = /* glsl */`
     // below the horizon: fade into the horizon colour (fog takes over)
     col = mix(uHorizon, col, smoothstep(-0.02, 0.02, d.y));
     gl_FragColor = vec4(col, 1.0);
+    #include <colorspace_fragment>
   }`;
 
 // The cloud deck (#1251): one flat quad at the layer's base / top that follows the eye; procedural noise (no texture), seen from
@@ -139,6 +140,7 @@ const deckFrag = /* glsl */`
     vec3 col = uEye.y < vW.y ? under : top;
     col += uGlow * uGlowAmt * 0.3;
     gl_FragColor = vec4(col, a);
+    #include <colorspace_fragment>
   }`;
 
 const DAY_ZENITH = new THREE.Color(0x4f8fd0), DAY_HORIZON = new THREE.Color(0xcfe0ec);

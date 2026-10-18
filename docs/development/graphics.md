@@ -106,8 +106,8 @@ src/daycycle.js        real-time day (#1145; DAY.minutes = 24 × 60, was 60): it
                        weather (`overcast` ≥ `cloudy`, full at `full`) one noise quad (`deck`, procedural, no texture, 1 draw call, only drawn from `approach` m under `base`)
                        is the layer's underside (grey) / top (white, sunlit); between `base` and `top` the view whitens (fog near/far `near`/`far`, sky shader `uWhite`);
                        above `top` + `fade` m `above` = 1: `oc` = 0 so the lighting is the clear-day blend (sun 3.0, exposure 1.5) whatever the weather below (night keeps the moon),
-                       and weather.js drops the rain / flakes / sound by (1 − above). One shadow-casting light as before. Known: the ground ends (far plane 1000 m) at a tone-mapping
-                       mismatch with the sky below the horizon, visible from high up. `node` check: climb with `&weather=rain&jetpack`, log `day.above`, `scene.fog`, sun.
+                       and weather.js drops the rain / flakes / sound by (1 − above). One shadow-casting light as before. #1266: sky and cloud deck shaders include `colorspace_fragment` so their fragment colors match the
+                       output color space of the fogged ground, eliminating the horizon edge band. `node` check: climb with `&weather=rain&jetpack`, log `day.above`, `scene.fog`, sun.
 src/birds.js           gulls (#1252, `BIRDS`, all numbers *guess*): ONE instanced draw call (`InstancedBufferGeometry`, 3 triangles per bird: tail wedge + two wings), no lights, no textures, no sound, no
                        raycast. Circling, banking and the wing flap are computed in the vertex shader from per-instance seeds (fixed mulberry32 seed, same flock every visit) and the accumulated game
                        time, so `update(dt, rain, hidden)` only sets uniforms (no allocations). `count` birds (`lowMemoryCount` on phones), the last `high` at `highAlt` m above the cloud deck
@@ -455,3 +455,7 @@ Strength, soft width, corner radius and lift are *guesses* tuned by eye in `CONT
 ## Cat card rarity visuals (#1256)
 
 The binder cards (`#binder-view .card`, src/catbinder.js) get progressively fancier by tier with CSS only: no texture, light or draw call in the 3D scene (tools/perfcount.html unchanged). Levels, ★ counts and tilt come from `CAT_CARD.fx`; details and the reduced-motion fallback are in [animals-audio.md](animals-audio.md). Animations are opacity / transform only (twinkle, shine sweep) plus one rotating rainbow frame on the top tier.
+
+## Smooth sky/ground horizon transition (#1266)
+
+At altitudes above 120 m (up to jetpack ceiling 320 m), the distant ground ends at the far clipping plane (1000 m) in full fog. While `scene.fog.color` is transferred to uniforms in sRGB color space by Three.js standard materials (`getUnlitUniformColorSpace(renderer)`), custom `ShaderMaterial` instances (`this.sky` and `this.deck` in `src/daycycle.js`) originally wrote raw linear values to `gl_FragColor`. Adding `#include <colorspace_fragment>` applies `linearToOutputTexel`, matching the output sRGB color of the fogged ground (`0xcfe0ec` -> `(207, 224, 236)`) and seamlessly blending sky, fog, and distant ground across all altitudes and times of day. Zero extra draw calls or textures (`tools/perfcount.html` PASS).
