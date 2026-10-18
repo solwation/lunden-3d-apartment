@@ -170,6 +170,13 @@ bootstrap; this is no full World, physical-phone or performance acceptance.
 The existing catcarrytest covers the real main pickup options and local carry flow.
 This personal-cat/gameplay feature does not apply to the public downstream.
 
+## Cat put down outdoors (#1287)
+
+A held cat goes down wherever the visitor stands outside the flat (ground, roofs, terraces, bridges: `outdoorSpot` in main.js, the
+spot is level with the feet, no wall between, within reach; `cat.outdoorAt`). `cat.outdoor`: the cat sits there (`on = 'sit'`, no walk-off,
+no height change), until picked up or, left alone `CAT_OUTDOOR.stay` s (600, *guess*), it fades where it sits. F in the air puts it on
+the surface below (`miele.dropSpot`). Kept across a reload (keep.js `out: 1`, same spot, the count goes on). Test: `tools/catputdowntest.cjs`.
+
 ## Cat and sound
 
 - Opening an interior door/wardrobe: 30 % chance a cat appears on the far side (random free
