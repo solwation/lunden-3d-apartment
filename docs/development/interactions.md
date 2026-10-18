@@ -299,6 +299,8 @@ src/rearrange.js       furniture cheat (#465): § / Enter (#596; not from a focu
                        `max-height: 500px` or `max-width: 600px`: one-line header with a 44 px ✕, 44 px footer buttons, only
                        .customizer-controls scrolls; landscape puts the whole preview beside a grid of choice sections, portrait a
                        smaller preview above them. New controls (#1140) are added as further .customizer-section blocks. Desktop is unchanged.
+                       #1201: the phone rotate overlay (#rotate) is hidden while #avatar-customizer is open (via :has and .avatar-customizer-open),
+                       so the portrait layout is usable on phones without the rotate banner blocking the editor; closing returns the overlay.
                        #1136: the first section is a height slider (`#avatar-height`, whole cm within config.js `AVATAR_HEIGHT`, *guess*
                        100–200): it sets `look.height` (shown: the seed's own base × tall until chosen) and applies live. Avatar scales the
                        whole figure by `avatarProportions(cm).body` and a child's head bone by `.head` (larger below `adult` cm; one

@@ -200,7 +200,10 @@ test('avatar customization: customizer UI and callbacks', async () => {
   customizerEl.hidden = true;
   customizerEl.append(canvas);
 
+  const bodyEl = makeElement('body', 'body');
+
   globalThis.document = {
+    body: bodyEl,
     getElementById(id) {
       if (id === 'avatar-customizer') return customizerEl;
       if (id === 'avatar-preview-canvas') return canvas;
@@ -242,6 +245,7 @@ test('avatar customization: customizer UI and callbacks', async () => {
   openAvatarCustomizer();
   assert.equal(isAvatarCustomizerOpen(), true);
   assert.equal(customizerEl.hidden, false);
+  assert.equal(bodyEl.classList.contains('avatar-customizer-open'), true, '#1201: body gets avatar-customizer-open class');
   assert.equal(openedCount, 1);
 
   // Click skin swatch
@@ -279,6 +283,7 @@ test('avatar customization: customizer UI and callbacks', async () => {
 
   assert.equal(isAvatarCustomizerOpen(), false);
   assert.equal(customizerEl.hidden, true);
+  assert.equal(bodyEl.classList.contains('avatar-customizer-open'), false, '#1201: body loses avatar-customizer-open class');
   assert.equal(closedCount, 1);
   assert.equal(lastCloseKey, 'button');
 

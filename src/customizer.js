@@ -413,6 +413,7 @@ export function openAvatarCustomizer() {
   defaultLook = callbacks.getDefaultLook?.() ?? avatarLook('anon');
 
   customizerEl.hidden = false;
+  document.body?.classList?.add('avatar-customizer-open');
   applyAndRefresh();
   callbacks.onOpen?.();
 
@@ -425,6 +426,7 @@ export function closeAvatarCustomizer(byKey = 'close') {
   if (!isOpen) return;
   isOpen = false;
   if (customizerEl) customizerEl.hidden = true;
+  document.body?.classList?.remove('avatar-customizer-open');
 
   if (currentLook) {
     try {

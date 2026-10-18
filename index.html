@@ -384,10 +384,14 @@
     .resume .linkish { margin: 0 0 0 6px; }
     .linkish { border: 0; background: none; color: #6a7c84; font: 13px system-ui, sans-serif; text-decoration: underline; cursor: pointer; padding: 0; margin-top: 12px; }
     #rotate { display: none; position: fixed; inset: 0; z-index: 70; background: var(--ink); color: #fff; place-items: center; text-align: center; font-size: 18px; padding: 24px; }
+    #rotate[hidden] { display: none !important; }
     #rotate .ico { display: inline-block; font-size: 54px; animation: tilt 2s ease-in-out infinite; }
     @keyframes tilt { 0%, 30% { transform: rotate(0); } 60%, 100% { transform: rotate(-90deg); } }
     /* phones/tablets held upright: ask for landscape (the lock above only works on some browsers) */
     @media (orientation: portrait) and (pointer: coarse) and (max-width: 1100px) { #rotate { display: grid; } }
+    /* #1201: hide the rotate screen while the avatar customizer is open so it can be used in portrait */
+    body:has(#avatar-customizer:not([hidden])) #rotate,
+    body.avatar-customizer-open #rotate { display: none !important; }
     #install { position: fixed; inset: 0; z-index: 25; display: grid; place-items: center; background: rgba(20, 35, 45, 0.85); padding: var(--st) var(--sr) var(--sb) var(--sl); }
     #install[hidden] { display: none; }
     /* "Återställ" (#303): asks first, touch-friendly */
