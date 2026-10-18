@@ -32,6 +32,11 @@ A.scene.updateMatrixWorld(true);const mesh=A.scene.getObjectByName('east-access'
 const xs=poly.map(p=>p[0]),zs=poly.map(p=>p[1]);let tested=0,miss=0,worst=0;const rc=new T.Raycaster();
 for(let x=Math.min(...xs)+1.5;x<Math.max(...xs);x+=3)for(let z=Math.min(...zs)+1.5;z<Math.max(...zs);z+=3){if(!L.insidePoly(x,z,hep.polygon)||L.onEastBuildingAt(x,z))continue;tested++;rc.set(new T.Vector3(x,20,z),new T.Vector3(0,-1,0));const h=rc.intersectObject(mesh,false)[0];if(!h){miss++;continue}worst=Math.max(worst,Math.abs(h.point.y-S.renderedTerrainY(x,z)));}
 check(tested>150&&miss===0,`asphalt covers the whole HepCat car park polygon (${tested} points, ${miss} uncovered)`);
+// #1309: dense ray test, both lots: the asphalt never lies under the rendered terrain (green slivers along folds and the south edge); 0.5 m grid
+{let n=0,under=0,min=1;for(const lot of lots){const xs2=lot.polygon.map(p=>p[0]),zs2=lot.polygon.map(p=>p[1]);
+ for(let x=Math.min(...xs2)+.07;x<Math.max(...xs2);x+=.5)for(let z=Math.min(...zs2)+.07;z<Math.max(...zs2);z+=.5){if(!L.insidePoly(x,z,lot.polygon)||L.onEastBuildingAt(x,z))continue;n++;
+  rc.set(new T.Vector3(x,30,z),new T.Vector3(0,-1,0));const h=rc.intersectObject(mesh,false)[0];if(!h)continue;const d=h.point.y-S.renderedTerrainY(x,z);min=Math.min(min,d);if(d<-.001)under++;}}
+ check(n>3000&&under===0,`asphalt never under the rendered terrain: ${n} points on both lots, ${under} below, lowest ${min.toFixed(4)} m over it (#1309)`);}
 check(worst<.08&&worst>.005,`asphalt/lines/edge lie 0.02-0.05 m over the rendered terrain (max ${worst.toFixed(3)} m)`);
 let steep=0;for(let x=Math.min(...xs);x<Math.max(...xs);x+=3)for(let z=Math.min(...zs);z<Math.max(...zs);z+=3)if(L.insidePoly(x,z,hep.polygon)){const g=(S.groundY(x+.3,z)-S.groundY(x-.3,z))/.6,h=(S.groundY(x,z+.3)-S.groundY(x,z-.3))/.6;if(Math.hypot(g,h)>C.WALK.maxSlope)steep++;}
 check(steep===0,'the lot is walkable ground (gradient under WALK.maxSlope everywhere)');
