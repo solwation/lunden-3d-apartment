@@ -1774,6 +1774,9 @@ export const BUILDING_ROOFS = { flatLift: 0.05, wallStep: 4, wallLift: 0.05, dep
 // levels, y 0 = courtyard), rises smoothly to 1 over `ramp` m, drops to 0 again within `river` [clear, ramp] m of Höje å (#1285's
 // valley depth is kept: the DSM mixes water and bank in a 30 m cell) and over `edge` m towards the mesh's x edges and its south edge
 // (the flat -3.01 planes beyond). All *guess* tunables; roads, paths, tree feet and the backdrop buildings sample the terrain themselves.
+/** #1311: where the terrain mesh gets coarser (triangle budget, perfcount big hall): columns outside x colWest..colEast are 12 m instead of 4 m (the river
+ * corridor reaches x ~204 + its refine radius 28, so the east stays fine to colEast), rows further than rowNear north of `terrainNorth` are 10 m instead of 5 m. *guess* */
+export const TERRAIN_FAR = { colWest: -150, colEast: 235, rowNear: 60 };
 export const ELEVATION = { protect: { x0: -86, x1: 46, z0: -36, z1: 72 }, ramp: 30, river: [32, 30], edge: 30 };
 export const WALK = { x0: -260, x1: 320, z0: -200, z1: 250, cell: 40, maxSlope: 0.7, // gradient (rise/run, ~35°) above which the ground cannot be climbed and you slide back (#1281, *guess*; the park paths (0.3-0.45) stay under it; the drop from the shore path into the water (up to ~0.8), the steepest bank edges and the bridge embankments are over)
   slideOut: 0.85, slideSpeed: 3.5, slideAccel: 9, // #1281: hysteresis (sliding stops below maxSlope * slideOut), the slide's top speed (m/s) and acceleration (m/s²), *guess*

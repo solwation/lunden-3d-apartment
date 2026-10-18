@@ -5,7 +5,7 @@ import { buildRiverPark, parkDeckAt, parkTreeSpots, parkShrubSpots } from './riv
 import * as THREE from 'three';
 import { grassUV } from './grass.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE, CORE_A, CORE_B, CORE_C, NEIGHBOR_OPENINGS as O, HUS_L, FOLIAGE, ELEVATION } from './config.js';
+import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE, CORE_A, CORE_B, CORE_C, NEIGHBOR_OPENINGS as O, HUS_L, FOLIAGE, ELEVATION, TERRAIN_FAR } from './config.js';
 import { gridGround } from './elevation.js';
 import { glowMaterial, poolGeometry, washGeometry, fadeGlow } from './groundglow.js';
 import { neighborGlass } from './neighborglass.js';
@@ -141,8 +141,9 @@ function terrainGeometry() {
   const xs = new Set([S.backgroundGround.x0, -200, 200, S.backgroundGround.x1, E.x0 - 0.01, E.x0 + 0.01, E.x1, E.x1 + E.blend, E.gable, E.level, E.walk, R.x0 + 0.01, R.x1 - 0.01, R.x1 + 0.01,
       Wst.x - 0.01, Wst.x + 0.01, St.x1 - 0.01, St.x1 + 0.01]),
     zs = new Set([z0, terrainNorth, 0, T.north, 260, T.north + T.slope, ...E.profile.map((p) => p[0]), ...Wst.profile.map((p) => p[0]), R.z0, R.z1, St.z1 - 0.01, St.z1 + 0.01, T.garageDoor.z0, T.garageDoor.z1]);
-  for (let x = S.backgroundGround.x0; x <= S.backgroundGround.x1; x += 4) xs.add(x);
-  for (let z = z0; z < terrainNorth; z += 5) zs.add(z); // the north: 5 m rows (#1305; the grid is smooth, Catmull-Rom)
+  // #1311: the far west / east columns are 12 m and the far north rows 10 m apart (the ground there is the smooth DEM, no river or block)
+  for (let x = S.backgroundGround.x0; x <= S.backgroundGround.x1; x += 4) if ((x >= TERRAIN_FAR.colWest && x <= TERRAIN_FAR.colEast) || (x - S.backgroundGround.x0) % 12 === 0) xs.add(x);
+  for (let z = z0; z < terrainNorth; z += 5) if (z >= terrainNorth - TERRAIN_FAR.rowNear || (z - z0) % 10 === 0) zs.add(z); // the north: 5 m rows near the block (#1305; the grid is smooth, Catmull-Rom)
   for (let z = terrainNorth; z <= 260; z += 4) zs.add(z);
   for (const b of T.box) { for (const x of [b.x0, b.x1]) { xs.add(x - 0.01); xs.add(x + 0.01); } for (const z of [b.z0, b.z1]) { zs.add(z - 0.01); zs.add(z + 0.01); } }
   // #647, #975: no ground under Hus A / Hus B (base −3, the garage's basement floors lie at the park level):

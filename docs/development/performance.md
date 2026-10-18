@@ -512,6 +512,22 @@ Fix, bounded and reversible:
 
 Desktop peak 960 465 at the big hall, most calls 505 at the park (≤ 520). Phone (`?lowmem&w=390&h=844`): peak 801 744 → 726 892 triangles, calls 348 → 356 (≤ 370). Textures stay ~315 MB in 323 (≤ 320): the big ones are the picture frames, stair pictures and the garage/hall photos (14 MB each at most), none added by #1233/#1235 and none safely shrinkable without visible loss; this is the next budget risk. Next levers if hit again: big hall's 516 k triangles are the garage area shells (unnamed meshes, one per area), and the street/garage car batches could be split by cell like the trees.
 
+## Triangle budget over by the terrain mesh (#1311)
+
+`tools/perfcount.html` failed on desktop at the big hall (1 005 848 > 1 000 000) after #1305: the terrain grid follows the Copernicus ground and got northern 5 m rows over the whole -340..0 range, taking the single `site-terrain` mesh from ~85 k to 111 518 triangles, all drawn from every spot (one bounding sphere; the big hall looks east from underground and still pays for the whole site). Found as in #704 (hook `renderBufferDirect`, sum `index.count / 3`, list the biggest meshes with their bounding boxes).
+
+Fix: `terrainGeometry()` in surroundings.js thins the grid where the ground is smooth DEM and nothing is built (`TERRAIN_FAR` in config.js, *guess*): columns west of x -150 and east of x 235 are 12 m instead of 4 m (the river corridor reaches x ~232, so it keeps its detail), rows further than 60 m north of `terrainNorth` are 10 m instead of 5 m. The mesh is 81 838 triangles (-29.7 k). Roads, backdrop buildings, tree feet and the asphalt cut (#1309) sample `renderedTerrainY` / `renderedTerrainY.grid()`, so they follow the thinner grid. Daylight shots before/after from a rooftop north, west and east look identical; `terraintest` passes.
+
+| desktop view | before (tri) | after (tri) |
+|---|---|---|
+| big hall | 1 005 848 | 976 599 |
+| basement | 963 616 | 934 367 |
+| garage | 902 156 | 872 915 |
+| park | 936 196 (509 calls) | 906 955 (510 calls) |
+| start | 848 181 | 818 940 |
+
+Desktop peak 976 599 at the big hall (≤ 1 000 000), calls 510 at the park (≤ 520), textures ~308 MB (≤ 320). Phone (`?lowmem&w=390&h=844`): peak 742 136 at the big hall (≤ 950 000), calls 363 at start (≤ 370), PASS. Next levers if hit again: `ground-ao` (25 k, one site-wide mesh), `east-modern` (49 k, one mesh for the whole east), the terrain split into culled tiles (costs draw calls at the park, 510 of 520).
+
 ## Phone warm-up before the first complete view (#697)
 
 `WarmUp.blocksView` gates ordinary scene and mirror renders on low-memory devices until sliced warm-up reaches `done`.
