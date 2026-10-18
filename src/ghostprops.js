@@ -5,6 +5,7 @@ import { rifleModel } from './rifle.js';
 import { buildSaber } from './saber.js';
 import { bowGeometry } from './bow.js';
 import { packGeometry, flameGeometry } from './jetpack.js';
+import { bikeGeometry } from './streetlife.js';
 import { blasterModel, wandModel } from './toys.js';
 
 // What an armed player carries, seen by the others (#667, #1126): the same models the player holds in first person,
@@ -100,5 +101,22 @@ export function ghostJetpack() {
   m.add(f); m.raycast = () => {};
   m.rotation.y = Math.PI; m.scale.setScalar(0.8); m.position.set(0, 0.1, -0.09);
   m.name = 'ghost-jetpack';
+  return m;
+}
+
+let bikeGeo = null;
+/** A bicycle under a riding avatar (#1286): the storage bikes' own near model (streetlife.js bikeGeometry, spokes left out),
+ * frame / tyres / metal baked into one vertex-coloured mesh (one draw call). Origin at the bike, its x forward, like Bicycle.place. */
+export function ghostBike() {
+  bikeGeo ??= (() => {
+    const paint = (geo, hex) => { const g = geo.index ? geo.toNonIndexed() : geo.clone(), c = new THREE.Color(hex), n = g.attributes.position.count, a = new Float32Array(n * 3);
+      for (let i = 0; i < n; i++) { a[i * 3] = c.r; a[i * 3 + 1] = c.g; a[i * 3 + 2] = c.b; }
+      g.deleteAttribute('uv'); g.setAttribute('color', new THREE.BufferAttribute(a, 3)); return g; };
+    const [frame, tyres, metal] = bikeGeometry();
+    return mergeGeometries([paint(frame, 0x1d3c6e), paint(tyres, 0x1c1c1e), paint(metal, 0xb4b9bd)]);
+  })();
+  packMat ??= new THREE.MeshLambertMaterial({ vertexColors: true });
+  const m = new THREE.Mesh(bikeGeo, packMat);
+  m.raycast = () => {}; m.name = 'ghost-bike';
   return m;
 }

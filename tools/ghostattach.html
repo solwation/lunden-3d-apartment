@@ -8,11 +8,11 @@
 </script>
 <style>html,body{margin:0;background:#bfc6cc}canvas{display:block}</style></head>
 <body><script type="module">
-// #1286 component page: other players (Ghost) wearing the jetpack (off / worn / thrusting / worn + saber), front/back/side.
+// #1286 component page (the last one rides a bicycle): other players (Ghost) wearing the jetpack (off / worn / thrusting / worn + saber), front/back/side.
 // Driven by tools/ghostattachtest.cjs.
 import * as THREE from 'three';
 import { Ghost } from '../src/ghosts.js';
-const KEYS = [[0, ''], [1, ''], [2, ''], [1, 'saber']];
+const KEYS = [[0, ''], [1, ''], [2, ''], [1, 'saber'], [0, '', 'bike']];
 const W = 1500, Hh = 520, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
 renderer.setSize(W, Hh); document.body.appendChild(renderer.domElement);
 const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbfc6cc);
@@ -23,14 +23,14 @@ const ghosts = KEYS.map((k, i) => {
   if (g.tag) g.tag.visible = false;
   g.root.position.set((i - (KEYS.length - 1) / 2) * 1.0, 0, 0);
   scene.add(g.root); g.root.visible = true;
-  g.setHeld(k[1]); g.setJetpack(k[0]);
+  g.setHeld(k[1]); g.setJetpack(k[0]); if (k[2] === 'bike') g.setBike(true);
   return g;
 });
 const cam = new THREE.PerspectiveCamera(22, W / Hh, 0.05, 50);
 // view: front (they face the camera), side (turned 90° right), close: one ghost's hand
 window.__shot = (view = 'front', i = null) => {
   let t = 1000;
-  for (const g of ghosts) { g.root.rotation.y = view === 'side' ? Math.PI / 2 : view === 'back' ? 0 : Math.PI; g.have = false; for (let k = 0; k < 30; k++) g.animate(t += 33, 1, 0, 0); }
+  for (const g of ghosts) { g.root.rotation.y = view === 'side' ? Math.PI / 2 : view === 'back' ? 0 : Math.PI; g.have = false; if (g.bikeMesh) { g.bikeYaw = g.root.rotation.y + 0.0; g.bikeMesh.rotation.y = Math.PI / 2; } for (let k = 0; k < 30; k++) g.animate(t += 33, 1, 0, 0); }
   const x = i === null ? 0 : ghosts[i].root.position.x;
   cam.fov = i === null ? 22 : 7; cam.updateProjectionMatrix();
   cam.position.set(x + (i === null ? 0 : -0.6), i === null ? 1.3 : 1.25, i === null ? 5.4 : 4.6); cam.lookAt(x - (i === null ? 0 : 0.15), i === null ? 0.95 : 1.1, 0);

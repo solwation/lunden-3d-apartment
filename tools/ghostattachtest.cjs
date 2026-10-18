@@ -19,8 +19,8 @@ const [base = 'http://localhost:8782', out = '/tmp/shots-1286'] = process.argv.s
       const r = await page.evaluate((v) => window.__shot(v), v);
       console.log(v, JSON.stringify(r));
       if (v === 'front') {
-        if (r.packs.join() !== ',ghost-jetpack,ghost-jetpack,ghost-jetpack') errors.push('packs ' + r.packs);
-        if (r.calls !== 11) errors.push(`draw calls ${r.calls}`); // 4 avatars, 3 packs, 1 flame, the saber and its blade, +1 (the room)
+        if (r.packs.join() !== ',ghost-jetpack,ghost-jetpack,ghost-jetpack,') errors.push('packs ' + r.packs);
+        if (r.calls !== 13) errors.push(`draw calls ${r.calls}`); // 4 avatars, 3 packs, 1 flame, the saber and its blade, +1 (the room)
       }
       await page.locator('canvas').screenshot({ path: path.join(out, `ghostattach-${v}.png`) });
     }

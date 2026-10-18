@@ -1565,3 +1565,10 @@ test('#1286 jp (jetpack worn / thrusting) is validated and forwarded; anything e
   for (const jp of [0, 3, -1, true, '1', null, 1.5, [1]]) assert.equal('jp' in s(jp), false, JSON.stringify(jp));
   assert.equal('jp' in cleanState(JSON.stringify({ p: [1, 0, 2], r: 0 })), false);
 });
+
+test('#1286 bk (bicycle heading) is a bounded finite number, rounded, else dropped', async () => {
+  const { cleanState } = await import('./players.js');
+  const s = bk => cleanState(JSON.stringify({ p: [1, 0, 2], r: 0, bk }));
+  assert.equal(s(1.2345).bk, 1.23); assert.equal(s(-3).bk, -3);
+  for (const bk of [101, '1', null, true, [1], {}]) assert.equal('bk' in s(bk), false, JSON.stringify(bk));
+});

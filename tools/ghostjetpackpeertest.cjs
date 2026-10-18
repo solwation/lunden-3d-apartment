@@ -1,4 +1,4 @@
-// #1286: a jetpack state (jp) sent by one real Ghosts peer reaches another through a local Worker (node cloudflare/dev.mjs PORT)
+// #1286: a jetpack (jp) / bicycle (bk) state sent by one real Ghosts peer reaches another through a local Worker (node cloudflare/dev.mjs PORT)
 // and shows as the worn pack (and the flames at jp 2) on that peer's ghost; an old client's h: 'jetpack' shows the pack too.
 // PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/ghostjetpackpeertest.cjs GAME WORKER
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
@@ -21,6 +21,10 @@ const [game = 'http://localhost:8782', worker = 'http://localhost:8792'] = proce
     const out = {};
     out.seen = await until(() => peer());
     for (const jp of [1, 2, 0]) { sa.v = { p: [0, 0, 0.0 + jp * 0.1], r: 0, jp }; out['jp' + jp] = await until(() => (peer().pack?.children[0].visible ? 2 : peer().pack ? 1 : 0) === jp); }
+    sa.v = { p: [0, 0, 1], r: 0.3, bk: 1.1 };
+    out.bike = await until(() => peer().bikeMesh && Math.abs(peer().bikeYaw - 1.1) < 0.05);
+    sa.v = { p: [0, 0, 1.5], r: 0.3 };
+    out.bikeOff = await until(() => !peer().bikeMesh);
     clearInterval(t); return out;
   }, worker);
   console.log(JSON.stringify(res)); const ok = Object.values(res).every(Boolean) && !bad; console.log(ok ? 'PASS' : 'FAIL');
