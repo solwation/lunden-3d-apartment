@@ -3739,7 +3739,7 @@ function yucca(Y = YUCCA) {
   return windPlant(g,Y.pot.h-.012,[bark,g.children.at(-1).material]);
 }
 
-/** The secretary "Bang" (IKEA, c. 1960, #118): teak veneer on black hairpin legs with X braces and a wire shelf;
+/** The secretary "Bang" (IKEA, c. 1960, #118): teak veneer on white hairpin legs with X braces and a wire shelf (white per the user's report, #1292; the photos show black);
  * a drawer under a sloping flap that folds down into a desk. Behind the flap: an open section with a shelf,
  * three small drawers on the right, three tiny ones under the shelf and a secret one behind it, and a little
  * lamp that comes on with the flap. Everything opens with E (`userData.targets`); things in every drawer. An owl
@@ -3750,11 +3750,12 @@ function secretary(item) {
   const teak = woodMaterial(S.teak, 0.5);
   const teakIn = new THREE.MeshStandardMaterial({ color: S.teakInside, roughness: 0.6 });
   const black = new THREE.MeshStandardMaterial({ color: 0x141415, roughness: 0.4, metalness: 0.5 });
+  const frame = new THREE.MeshStandardMaterial({ color: S.frameColor, roughness: 0.45, metalness: 0.2 }); // white legs, braces and wire shelf (#1292)
   const M = { steel: new THREE.MeshStandardMaterial({ color: 0xc9ccd0, roughness: 0.3, metalness: 0.8 }), brass: new THREE.MeshStandardMaterial({ color: 0xb08a3e, roughness: 0.35, metalness: 0.8 }),
     gold: new THREE.MeshStandardMaterial({ color: 0xf2c94c, roughness: 0.3, metalness: 0.8 }) };
   const box = (parent, sx, sy, sz, x, y, z, m) => { const o = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), m); o.position.set(x, y, z); o.castShadow = o.receiveShadow = true; parent.add(o); return o; };
-  const rod = (a, b, r = 0.005) => { // a thin black rod from a to b
-    const v = new THREE.Vector3().subVectors(b, a), m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, v.length(), 6), black);
+  const rod = (a, b, r = 0.005) => { // a thin rod of the white stand from a to b
+    const v = new THREE.Vector3().subVectors(b, a), m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, v.length(), 6), frame);
     m.position.copy(a).addScaledVector(v, 0.5); m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), v.normalize()); g.add(m);
   };
   const V = (x, y, z) => new THREE.Vector3(x, y, z);

@@ -240,6 +240,7 @@ material/              screenshots of our choices in Peab's option portal (local
   Smart speakers (#325, `NEST`, src/nest.js): a smart display in the middle pot's place on the kitchen window board (turned 15°
   towards the dining table), a round one in a wall mount 1.68 m up on the living room's west wall (z 11.6, above the ZZ plant; #689 moved
   it off the south wall's pier by the patio door, which the parked curtain stack has covered since #463), one 1.6 m up on the upstairs hall's west wall (x 1.54, z 6.01: left of the NISSEDAL mirror, by the WC door, #332).
+  The secretary "Bang" (#118) legs, X braces and wire shelf are white (#1292, `frameColor` 0xf4f4f1 in its FURNITURE entry): taken from the user's in-game report, not a measurement; the Bukowskis photo (`docs/sekretar-bang-stangd.png`) shows black, which the report overrides. Teak carcass, top, drawer knobs and the key plate keep their colours.
   The secretary "Bang" (#118): fully open, its flap is a put-down surface (#447: a surface rect with a `gate` group shown only
   then; furniture.js `standingOn` finds anything standing on such a surface, whatever kind of thing it is) and it does not close
   while something stands on it ("Ta bort det som står på skivan först").

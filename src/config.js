@@ -4860,7 +4860,8 @@ export const FURNITURE = [
   // the east wall between the TV bench (z < 8.22) and the chaise (z > 10.55), opposite the BYÅS end. Leg height, the
   // drawer, the flap's slope, the shelf and the right drawer column's width are *guesses* from the photos.
   { type: 'secretary', level: 0, x: 5.5, z: 9.35, rot: 90, w: 0.7, d: 0.3, h: 1.065, legH: 0.55, drawerH: 0.12, slope: 13,
-    shelf: 0.15, rightW: 0.24, teak: 0xb06a32, teakInside: 0xc07a3e },
+    shelf: 0.15, rightW: 0.24, teak: 0xb06a32, teakInside: 0xc07a3e,
+    frameColor: 0xf4f4f1 }, // legs, X braces and wire shelf: white per the user's in-game report (#1292, not a measurement; the Bukowskis photo shows black); knobs and key plate stay black
   // Black metal wine rack (#105, the user's photo): 8 bottles lying level (#151, corked; necks towards the BESTÅ, i.e.
   // south = the viewer's left), two champagne with gold foil. On the west wall between the armchair/floor lamp
   // (z < 9.1) and the BESTÅ (z > 9.95), bottom 1.1 m up; 38 × 105 cm and the 10 cm depth are *guesses*.

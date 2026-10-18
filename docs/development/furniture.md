@@ -97,6 +97,7 @@ tools/christmastest.html headless test (#571): the date line (30/11–1/12, 31/1
 tools/tvtest.html      headless test: TVs on/off (living room + Sovrum 3), new programme each time, the remote, F off
 tools/pctest.html      headless test: switch the gaming PC on/off (game moves, RGB cycles), the chair is a seat and
                        starts the PC, the bunk seat swings the monitor round (film)
+The secretary's stand (legs, braces, wire shelf) uses a white `frame` material from `frameColor` in config (#1292); only knobs and the key plate stay black.
 tools/secretarytest.html headless test: the secretary's flap (desk) and its 8 drawers open/close, the open desk blocks;
                        its trinkets (#182): the car to the coffee table stays when the drawer closes, back in it rides along,
                        its place blocked while the drawer is closed, the crayons, the owl, F sends them home;
