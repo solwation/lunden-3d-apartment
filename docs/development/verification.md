@@ -7080,4 +7080,10 @@ Run with `node --test cloudflare/players.test.mjs cloudflare/headboxes.test.mjs
 cloudflare/nerfhead.test.mjs cloudflare/bowhead.test.mjs`; protocol coverage includes
 resting observers, late joins and malformed/omitted pose returning to standing.
 
+Lying under the duvet (#1234): in the real game (`?at=5,2,0&shot&freeze&time=12&lights`) create an `Avatar`, root it with
+`restState` from the scene's `userData.rest` spot (including `bodyY`) and `applyRestPose`, render and read the canvas
+(`toDataURL`; Playwright `screenshot` times out under SwiftShader). Double bed and daybed inspected from the foot end and
+diagonally; the bunks are numerically checked only (the room is too tight for a camera). Then
+`node tools/restposetest.cjs …` and `node --test cloudflare/players.test.mjs`.
+
 Microwave (#1210): `PLAYWRIGHT_MODULE=… CHROME_PATH=… SHOTS=… node tools/microwavetest.cjs GAME` — the real game, aimed focus + `use()`: door, plate with food in, refusals (door open, empty, power cut), time button, warm / hot / burnt, pause on opening, save/load, plate out. Run after changing `src/microwave.js` or the microwave part of `src/ovens.js`.

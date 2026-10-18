@@ -20,6 +20,8 @@ export function restTarget(obj, item, levelFloor) {
       // `aim` (local x, z[, y]): where to look to pick this spot, when it is not the spot itself (sitting up in a bed, #213;
       // the front of the cushion box, #445)
       aimPos: p.aim ? new THREE.Vector3(item.x + toWorld(p.aim[0], p.aim[1])[0], levelFloor + (p.aim[2] ?? p.y), item.z + toWorld(p.aim[0], p.aim[1])[1]) : null,
+      // `body` (local y): where a lying figure's centre line lies, under the cover (#1234); else just above the surface
+      bodyY: p.body === undefined ? null : levelFloor + p.body,
       yaw: Math.atan2(-dx, -dz), // camera yaw facing that way
     };
   });

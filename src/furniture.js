@@ -3,7 +3,7 @@ import { materialChoice } from './materialcatalog.js';
 import { MATERIAL_LIBRARY, LONG_PILE, SHADE_CANOPY_TEXTILES } from './config.js';
 import { windPlant, windMaterial } from './plantwind.js';
 import { MusicLoop } from './music.js';
-import { MUSIC, STAND_ON, CONTACT_SHADOW } from './config.js';
+import { MUSIC, STAND_ON, CONTACT_SHADOW, REST } from './config.js';
 import { buildContactShadows } from './contactshadow.js';
 import * as THREE from 'three';
 import { woodMaterial } from './woodgrain.js';
@@ -1135,7 +1135,7 @@ export function bed(item) {
   }
   // lying down (#72): head on the pillows, feet towards local +z; one place per side of a double bed
   g.userData.rest = { kind: 'lie', name: 'sängen', verb: 'lägga dig i',
-    spots: (w > 1.2 ? [-w / 4, w / 4] : [0]).map((x) => ({ x, y: top + (item.hotel ? 0.1 : 0), z: z0 + 0.32 })) }; // the head up on the pillow stack (#308)
+    spots: (w > 1.2 ? [-w / 4, w / 4] : [0]).map((x) => ({ x, y: top + (item.hotel ? 0.1 : 0), z: z0 + 0.32, body: top + BEDDING.double.th - REST.avatarLieSink })) }; // the head up on the pillow stack (#308); a lying figure under the duvet (#1234)
   // sitting up against the headboard (#213), chosen by looking at the foot half of the bed; `tv` = the room whose
   // TV comes on while you sit there
   if (item.sitUp) for (const x of (w > 1.2 ? [-w / 4, w / 4] : [0])) {
@@ -1379,7 +1379,7 @@ function bunk(item) {
   for (const z of [lz0, lz1]) g.add(rbox(0.03, top + 0.4, 0.045, lx, (top + 0.4) / 2, z, whiteWood, 0.005));
   for (let k = 1; k <= 3; k++) g.add(rbox(0.03, 0.03, lz1 - lz0, lx, (top / 4) * k + 0.05, (lz0 + lz1) / 2, whiteWood, 0.006));
   g.userData.rest = { kind: 'lie', name: 'våningssängen', verb: 'lägga dig i',
-    spots: M.base.map((y, k) => ({ x: 0, y: y + M.mattress, z: -l / 2 + 0.3, label: k ? 'överslafen' : 'underslafen' })) };
+    spots: M.base.map((y, k) => ({ x: 0, y: y + M.mattress, z: -l / 2 + 0.3, label: k ? 'överslafen' : 'underslafen', body: y + M.mattress + BEDDING.bunk.th - REST.avatarLieSink })) };
   // `watch`: a place to sit in the lower bunk, back to the wall (local −x), facing the room, hunched
   // under the top bunk; the PC in the room swings its monitor round and plays a film
   if (item.watch) g.userData.rest.spots.push({ kind: 'sit', verb: 'sätta dig i', x: -w / 2 + 0.22, y: M.base[0] + M.mattress - 0.04, z: item.watch.z, dir: [1, 0], pc: 'film' });
@@ -1587,7 +1587,7 @@ function daybed() {
   cushion(0.34, 0.2, 0.1, -0.42, m1 + 0.11, z0 + 0.34, M.pink, -0.35, 0.08, pinkCloth);
   g.traverse((m) => { m.castShadow = m.receiveShadow = true; });
   // Tilly's daybed (#72): lie along it, head at the −x end (feet towards +x)
-  g.userData.rest = { kind: 'lie', name: 'dagbädden', verb: 'lägga dig i', spots: [{ x: -W / 2 + 0.35, y: m1, z: 0, dir: [1, 0] }] };
+  g.userData.rest = { kind: 'lie', name: 'dagbädden', verb: 'lägga dig i', spots: [{ x: -W / 2 + 0.35, y: m1, z: 0, dir: [1, 0], body: m1 + BEDDING.spread.th - REST.avatarLieSink }] };
   // the back (7 cm) and the two ends (9 cm, 0.83 m high) are plain walls, the mattress between them can be stood on from the
   // open front (#699, STAND_ON.daybed)
   const eb = 0.07, ee = 0.09;

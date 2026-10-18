@@ -3250,6 +3250,9 @@ export const REST = {
   sitEye: 0.72, lieEye: 0.22, move: 0.5,
   // #1150: visual rest anchors, guesses based on the shared Olof skeleton (metres before avatar scaling).
   avatarSeat: 0.45, avatarLieHip: 0.9, avatarLieClearance: 0.1,
+  // #1234: a lying figure sinks under the cover: its centre line (spot `body`, local y) is `avatarLieSink` below the
+  // duvet's top, and the torso tilts up `avatarLieTilt` rad so the head rests on the pillows (*guesses*, tuned by eye).
+  avatarLieSink: 0.07, avatarLieTilt: 0.4,
   sit: { yaw: 1.7, pitch: [-1.1, 0.8] },
   lie: { yaw: 1.3, pitch: [0.15, 1.45], startPitch: 1.45 }, // lying on your back, looking at the ceiling
   reach: { sit: 1.7, lie: 0.8 }, // how far from the eye you can reach things while sitting (leaning forward) / lying (#184, #472)
@@ -5704,7 +5707,7 @@ function rifleBoxPose(seed, state) {
     if (head !== 1) boxes = boxes.map(b => ({ low: P + (b.low - P) * head, high: P + (b.high - P) * head,
       halfWidth: b.halfWidth * head, back: b.back * head, front: b.front * head }));
   }
-  const yaw = state.r + Math.PI, lean = state.pose === 2 ? Math.PI / 2 : state.pose === 1 ? .1 : PVP_HEAD_BOXES.crouchLean * crouch;
+  const yaw = state.r + Math.PI, lean = state.pose === 2 ? Math.PI / 2 - REST.avatarLieTilt : state.pose === 1 ? .1 : PVP_HEAD_BOXES.crouchLean * crouch;
   return { width, tall, boxes, yawCos: Math.cos(yaw), yawSin: Math.sin(yaw),
     leanCos: Math.cos(lean), leanSin: Math.sin(lean), crouch,
     hipY: state.pose === 2 ? REST.avatarLieHip : state.pose === 1 ? REST.avatarSeat + .075 : PVP_HEAD_BOXES.hipY - PVP_HEAD_BOXES.hipDrop * crouch,

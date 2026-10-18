@@ -1518,9 +1518,10 @@ test('rest posture forwards to observers and late joins, omission and malformed 
 
 test('#1150 authoritative head contact follows seated and lying torso frames', async () => {
   const env=setup(), a=await connect(env,'Shooter'), b=await connect(env,'Resting target');
-  const look=avatarLook(b.got[0].i), width=[.93,1,1.08][look.build];
+  const look=avatarLook(b.got[0].i), width=[.93,1,1.08][look.build], { REST } = await import('../src/config.js');
   for (const pose of [1,2]) {
-    const lean=pose===1?.1:Math.PI/2, hip=pose===1?.525:.9;
+    const lean=pose===1?.1:Math.PI/2-REST.avatarLieTilt, // #1234: a lying figure's torso is tilted up on the pillows
+     hip=pose===1?.525:.9;
     const y=(hip+Math.cos(lean)*.76)*look.tall, z=-( (pose===1?.07:0)-Math.sin(lean)*.76)*width;
     now+=1000;a.send({p:[2,y-1.6,z],r:0,h:'rifle'});b.send({p:[0,0,0],r:0,h:'rifle',pose});await settle(env);
     now+=250;a.send({t:'a',w:'rifle',o:[2,y,z],d:[-1,0,0],to:b.got[0].i,hc:[2,0,0,0]});await settle(env);

@@ -1224,4 +1224,9 @@ follow the resulting hands. Name/speech/greeting anchors and shared logical
 head/capsule frames follow the same rest pose. Standing/crouching retains its
 previous frame and ordinary damage/obstacle checks. The broad body capsule is
 still a generous gameplay approximation, not furniture or mesh anatomy.
+#1234: a lying figure sits under the cover. A lie spot carries `body` (local y of the figure's centre line: the duvet's
+top minus `REST.avatarLieSink`; beds, bunks, daybed in `src/furniture.js`), `restTarget` exposes it as `bodyY`, and
+`restState` roots the figure there (no new wire field: only `p.y` changes). The torso is tilted up `REST.avatarLieTilt`
+so the head rests on the pillows (`applyRestPose`, logical head frame `rifleBoxPose`); the legs lie nearly straight.
+Sitting with the legs up on the chaise / in bed is split off in #1237.
 This character/gameplay change does not apply to the public viewer.
