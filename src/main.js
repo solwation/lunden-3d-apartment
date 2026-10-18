@@ -948,6 +948,7 @@ const privacyDialog = document.getElementById('privacy-dialog'); // #723: what i
 document.getElementById('menu-privacy')?.addEventListener('click', () => { privacyDialog.hidden = false; });
 document.getElementById('privacy-dialog-close')?.addEventListener('click', () => { privacyDialog.hidden = true; });
 setStatsExtra(() => leaderboard.html());
+cloud.gate = postersLoaded.catch(() => {}); // no send before the saved drawings are up (#1308)
 cloud.ready = cloud.on ? Promise.all([postersLoaded, catCardsLoaded]).then(() => cloud.sync()) : Promise.resolve(); // (tests wait on it)
 cat.onPet = () => { bump('petted'); if (cat.kitten) bump('kittenPets'); catCards.recordPet(cat.breed.name); }; // a kitten's pat is worth more (#363)
 cat.onHurt = (weapon) => penalize(cat.kitten ? 'kittenShot' : 'catShot', weapon); // a kitten: extra bad (#363) // shot, cut or hit: it hisses and flees (#288)

@@ -40,6 +40,10 @@ export class Cloud {
   /** posters (posters.js), drawing (drawing.js), holding(): is the desk sheet in the hand? */
   constructor({ posters, drawing, holding = () => false, heldId = () => null }, url = cloudUrl()) {
     Object.assign(this, { url, posters, drawing, holding, heldId, busy: false, pulling: false });
+    // The queue may only be sent once the saved posters are back on the wall (main.js sets this to posters.load()):
+    // send() treats an op whose poster is missing as "gone again" and drops it, so a poll or an `online` event on a
+    // slow start would silently empty the saved queue (#1308).
+    this.gate = Promise.resolve();
     // cat photos queued by an older version are never sent (#211)
     this.queue = readJSON(QKEY, []).filter((q) => q.type !== 'cat');
     try { localStorage.removeItem('lunden.cloud.seenCats'); } catch { /* blocked */ }
@@ -81,6 +85,7 @@ export class Cloud {
   async sendAll() {
     this.busy = true;
     try {
+      await this.gate;
       while (this.queue.length) {
         const op = this.queue[0];
         try { await this.send(op); } catch (e) { if (e instanceof Retry) { log('later:', e.message); break; } log('dropped', op, e); }
