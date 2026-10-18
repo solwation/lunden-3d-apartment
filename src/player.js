@@ -1,8 +1,9 @@
 import * as THREE from 'three';
-import { LEVELS, PLAYER, STAIR, UNIT_TOP, ROOFS, GARAGE, JETPACK, SPIDER, SOFFITS, BICYCLE } from './config.js';
+import { SITE, LEVELS, PLAYER, STAIR, UNIT_TOP, ROOFS, GARAGE, JETPACK, SPIDER, SOFFITS, BICYCLE } from './config.js';
 import { stairHeight, stairUnderside } from './stairs.js';
-import { groundY } from './surroundings.js';
-import { farWalls, waterBlocked, tooSteep, waterRescue, buildingRescue, atEdge } from './farwalk.js'; // #1236: walking beyond the block
+import { groundY, groundBelowDeckY } from './surroundings.js';
+import { deckAt } from './riverbridge.js';
+import { farWalls, waterBlocked, tooSteep, waterRescue, buildingRescue, atEdge, surfaceY, underDeck } from './farwalk.js'; // #1236: walking beyond the block
 import { bicycleCurbY } from './street.js';
 import { stowBicycleHand, restoreBicycleHand } from './holdable.js';
 
@@ -151,6 +152,7 @@ export class Player {
     const cands = unit ? unit.floors(x, z) : [inside ? LEVELS[0].floor : inCore ? -Infinity : groundY(x, z)]; // outdoors: the terrain (the ramp by Hus L's east gable, #256)
     if (inCore) cands.push(...core.heights(x, z)); // the stairwell's floors and flights, the lift's car (#415)
     if (inside && !inHole) cands.push(LEVELS[1].floor);
+    if (!inside && !inCore && !unit && z > 60 && deckAt(x, z) !== null) cands.push(groundBelowDeckY(x, z)); // under a road / GC deck (#1271): the cut the river footpath runs in
     const s = unit ? null : stairHeight(x, z);
     if (s !== null) cands.push(s);
     if (this.world.garage?.inside(x, z)) cands.push(GARAGE.floor); // the garage under the courtyard (#357)
@@ -197,7 +199,7 @@ export class Player {
     const doorSegs = this.world.doors
       .filter((d) => (d.object.position.y < LEVELS[0].floor + 1.6 ? 0 : 1) === this.level)
       .map((d) => d.segment());
-    const far = this.inFootprint() ? [] : farWalls(this.pos.x, this.pos.z); // the mapped buildings, bridge rails (#1236)
+    const far = this.inFootprint() ? [] : farWalls(this.pos.x, this.pos.z, this.pos.y); // the mapped buildings, bridge rails (#1236)
     return [lvl.segments, [...doorSegs, ...up, ...far, ...(this.world.movingSegments?.(this.level) ?? [])]]; // + open furniture flaps (#118)
   }
 
@@ -213,7 +215,7 @@ export class Player {
     if (this.below) return Math.min(R, GARAGE.ceiling);
     const u = this.unit;
     if (u) { const L = u.levels[u.levelAt(y0)]; const s = u.stairUnderside(x, z); return Math.min(R, L.floor + L.ceiling, s !== null && s > y0 ? s : Infinity); }
-    if (!this.inFootprint(x, z)) return R;
+    if (!this.inFootprint(x, z)) return z > 60 && underDeck(y0) && deckAt(x, z) !== null ? Math.min(R, SITE.bridges.deckY - SITE.bridges.road.slab) : R; // under a road / GC deck (#1271)
     const lv = y0 > LEVELS[0].floor + 1.6 ? 1 : 0, L = LEVELS[lv];
     let c = L.floor + L.ceiling;
     for (const f of SOFFITS) if (f.level === lv && x > f.x0 && x < f.x1 && z > f.z0 && z < f.z1) c = Math.min(c, L.floor + f.height);
@@ -733,9 +735,9 @@ export class Player {
         else if (!this.blockedByStair(tryZ.x, tryZ.z, prev.y)) this.pos.copy(tryZ);
         else this.pos.copy(prev);
       }
-      if (!this.flying && !this.aloft && this.pos.z > 60 && (waterBlocked(this.pos.x, this.pos.z) || tooSteep(this.pos.x, this.pos.z))) {
+      if (!this.flying && !this.aloft && this.pos.z > 60 && (waterBlocked(this.pos.x, this.pos.z, undefined, this.pos.y) || tooSteep(this.pos.x, this.pos.z, undefined, this.pos.y))) {
         // #1236: the river and ground too steep to climb are obstacles: slide along one axis or stay put
-        const bad = (px, pz) => waterBlocked(px, pz) || tooSteep(px, pz);
+        const bad = (px, pz) => waterBlocked(px, pz, undefined, this.pos.y) || tooSteep(px, pz, undefined, this.pos.y);
         if (!bad(this.pos.x, prev.z)) this.pos.z = prev.z;
         else if (!bad(prev.x, this.pos.z)) this.pos.x = prev.x;
         else { this.pos.x = prev.x; this.pos.z = prev.z; }
@@ -752,9 +754,9 @@ export class Player {
       if (g >= this.pos.y) { this.pos.y = g; this.vy = 0; }
     }
 
-    if (!this.flying && !this.aloft && this.pos.z > 60 && this.pos.y <= groundY(this.pos.x, this.pos.z) + 0.05) { // ended up in the river (#1236): back on the bank
-      const back = waterRescue(this.pos.x, this.pos.z);
-      if (back) { this.pos.set(back.x, groundY(back.x, back.z), back.z); this.vy = 0; this.fall = null; this.fling = null; this.onWaterRescue?.('water'); }
+    if (!this.flying && !this.aloft && this.pos.z > 60 && this.pos.y <= surfaceY(this.pos.x, this.pos.z, this.pos.y) + 0.05) { // ended up in the river (#1236): back on the bank
+      const back = waterRescue(this.pos.x, this.pos.z, this.pos.y);
+      if (back) { this.pos.set(back.x, surfaceY(back.x, back.z, this.pos.y), back.z); this.vy = 0; this.fall = null; this.fling = null; this.onWaterRescue?.('water'); }
     }
     if (!this.flying && !this.aloft && !this.inFootprint() && !this.unit) { // #1236: landed inside a far building / its closed courtyard: out onto the street
       const out = buildingRescue(this.pos.x, this.pos.z);

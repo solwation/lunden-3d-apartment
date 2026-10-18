@@ -18,7 +18,22 @@ export function riverAt(x,z){let best={distance:Infinity};for(let i=1;i<R.path.l
  best={distance,x:a+t*dx,z:b+t*dz,nx:-dz/len,nz:dx/len,width:interp(R.widths,R.width),bank:interp(R.banks,R.bank)*(R.bankScale??1),segment:i,t};}}
  return best;}
 export function riverDistance(x,z){return riverAt(x,z).distance;}
-export function riverGround(x,z,base){const r=riverAt(x,z),u=Math.max(0,Math.min(1,(r.distance-r.width/2)/r.bank));return B.bedY+(base-B.bedY)*(u*u*(3-2*u));}
+/** #1271: how far (0..1) the ground at (x, z) is cut down to the under-bridge floor `B.underpass.floorY`: 1 on the floor (between the abutments,
+ * under the deck), falling with a smoothstep over the outer side slope (its run narrows to nothing towards the abutments; none on the side facing the other bridge), 0 outside. */
+export function underpassCut(x,z){const U=B.underpass;let f=0;if(!U)return 0;
+ for(const r of bridgeRecords){const[a,b]=local(r,x,z),L=r.len/2-U.endInset,A=Math.abs(a);if(A>L)continue;
+  // the side facing the other bridge keeps no slope (its approach lies at deck level); between the two decks the floor runs on
+  const other=bridgeRecords.find(q=>q!==r),bo=local(r,other.x,other.z)[1],inner=Math.sign(b)===Math.sign(bo),ao=local(other,x,z)[0],between=inner&&Math.abs(ao)<=other.len/2-U.endInset,
+   gap=between?Math.max(0,Math.abs(bo)-r.width/2-other.width/2):0;
+  const sm=t=>t*t*(3-2*t),taper=sm(Math.min(1,(L-A)/U.taper)),run=Math.max(.05,inner?0:U.run*(B.deckY-U.floorY)*taper),out=Math.max(0,Math.abs(b)-r.width/2-gap);
+  if(out<run)f=Math.max(f,1-sm(out/run));}
+ return f;}
+export const underpassAt=(x,z)=>underpassCut(x,z)>0;
+/** Rectangles [cx, cz, hx, hz, dx, dz] (centre, half extents along/across the bridge, its direction) of the road bridge's piers, for collision under the deck. */
+export function pierBoxes(){const out=[];for(const r of bridgeRecords)if(r.kind==='road')for(const z of [-r.len/3,0,r.len/3])for(const side of [-1,1]){
+ const lx=side*r.width*.29,wx=r.x+lx*r.dz+z*r.dx,wz=r.z-lx*r.dx+z*r.dz;out.push({x:wx,z:wz,half:r.pier/2+B.underpass.pier,dx:r.dx,dz:r.dz});}return out;}
+export function riverGround(x,z,base){const r=riverAt(x,z),u=Math.max(0,Math.min(1,(r.distance-r.width/2)/r.bank)),y=B.bedY+(base-B.bedY)*(u*u*(3-2*u)),f=underpassCut(x,z);
+ return f>0&&base>B.underpass.floorY?Math.min(y,base+(B.underpass.floorY-base)*f):y;}
 
 /** Two background bridges, merged by material, independent of the walking boundary. No new lights or render passes. */
 export function buildRiverBridges(){

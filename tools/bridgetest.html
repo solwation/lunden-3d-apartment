@@ -10,6 +10,14 @@ const roadR=M.bridgeRecords.find(r=>r.kind==='road'),gcR=M.bridgeRecords.find(r=
 for(const r of M.bridgeRecords){check(S.groundY(r.x,r.z)===B.deckY&&M.deckAt(r.x,r.z)===B.deckY,`${r.kind} surface joins road/GC at deck level`);for(const sign of [-1,1])check(Math.abs(S.groundY(r.x+r.dx*(r.len/2+.5)*sign,r.z+r.dz*(r.len/2+.5)*sign)-B.deckY)<.05,`${r.kind} bank approach ${sign} joins without a step`);}
 check(B.waterY<B.deckY-B.road.slab-2&&B.bedY<B.waterY,'water and excavated bed lie well below both decks');
 A.scene.updateMatrixWorld(true);const ray=new T.Raycaster(new T.Vector3(roadR.x,B.deckY-.7,roadR.z),new T.Vector3(0,-1,0),.01,10);const hit=ray.intersectObjects(A.scene.children,true).find(h=>{let p=h.object;while(p){if(!p.visible)return false;p=p.parent}return h.object.isMesh&&!h.object.material.transparent&&h.object.layers.test(A.camera.layers)});check(hit?.object.name==='bridges-water'&&Math.abs(hit.point.y-B.waterY)<.001,'actual vertical ray under road hits water, no opaque ground or road across opening');
+// #1271: the ground under both decks is a cut (the river footpath passes under the bridges): head room, abutment joins, hidden cut end
+{const U=B.underpass,under=(x,z)=>S.groundBelowDeckY(x,z);
+for(const r of M.bridgeRecords){let worst=Infinity,n=0;for(let a=-r.len/2+1;a<=r.len/2-1;a+=.5)for(const b of [-1,0,1]){const x=r.x+r.dx*a-r.dz*b*(r.width/2-.2),z=r.z+r.dz*a+r.dx*b*(r.width/2-.2);if(M.riverDistance(x,z)<r.width)continue;n++;worst=Math.min(worst,B.deckY-r.slab-under(x,z)-C.PLAYER.headroom);}
+ check(n>40&&worst>.1,`${r.kind}: ${n} samples under the deck (off the river) leave ${worst.toFixed(2)} m over PLAYER.headroom`);
+ for(const sign of [-1,1]){const e=[r.x+r.dx*(r.len/2+.7)*sign,r.z+r.dz*(r.len/2+.7)*sign],i=[r.x+r.dx*(r.len/2-.7)*sign,r.z+r.dz*(r.len/2-.7)*sign];
+  check(Math.abs(under(...e)-B.deckY)<.06&&under(...i)<U.floorY+.5||M.riverDistance(...i)<r.width,`${r.kind} end ${sign}: ground level with the deck just outside the abutment, down in the cut inside it`);}}
+check(M.underpassCut(M.bridgeRecords[0].x,M.bridgeRecords[0].z)===1&&M.underpassCut(23.6,60)===0&&M.underpassCut(40,111)===0,'cut is 1 under the deck, 0 away from the bridges');
+const piers=M.pierBoxes();check(piers.length===6&&piers.every(p=>M.deckAt(p.x,p.z)!==null),'six road-bridge pier boxes lie under the road deck');}
 check(C.OUTDOOR.z1===64&&M.bridgeRecords.every(r=>r.z-r.len/2>64),'both background bridges are visible geometry beyond unchanged walking boundary');
 let tris=0;group.traverse(m=>{if(m.isMesh)tris+=(m.geometry.index?.count??m.geometry.attributes.position.count)/3});check(tris<5000,`bounded four-batch bridge and water geometry: ${tris} triangles`);
 }catch(e){check(false,e.stack)}document.querySelector('#out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');</script></html>

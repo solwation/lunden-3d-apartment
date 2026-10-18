@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SITE, SEASON } from './config.js';
 import { onRoad, onWalk, pathStrip } from './roads.js';
-import { riverAt, deckAt } from './riverbridge.js';
+import { riverAt, deckAt, underpassAt } from './riverbridge.js';
 import { registerSnow, registerSeasonal } from './seasons.js';
 const P = SITE.riverPark;
 const random = (seed) => () => ((seed = seed * 16807 % 2147483647) / 2147483647);
@@ -25,7 +25,7 @@ export function parkDeckAt(x,z) {
 function clear(x,z) {
   const r=riverAt(x,z);
   return z>64 && !onEastBuilding(x,z) && !onEastAccess(x,z,.5) && !onWestBuilding(x,z) && !onWestAccess(x,z,.5) && !inParkGlade(x,z) && !onParkPath(x,z,P.pathClearance) &&
-    !onRoad(x,z,P.bridgeClearance) && !onWalk(x,z,.5) && deckAt(x,z)===null && parkDeckAt(x,z)===null &&
+    !onRoad(x,z,P.bridgeClearance) && !onWalk(x,z,.5) && deckAt(x,z)===null && !underpassAt(x,z) && parkDeckAt(x,z)===null &&
     r.distance>r.width/2+2 && !SITE.blocks.some(b=>x>b.x0-2&&x<b.x1+2&&z>b.z0-2&&z<b.z1+2);
 }
 // Stable, patch-constrained density sampling: a visual canopy interpretation, not measured individual trees.
@@ -77,7 +77,7 @@ export function buildRiverPark(ground, terrain=ground) {
   for(let k=0;k<P.shoreCount*20&&parkShoreFeet.length<P.shoreCount;k++) {
     const p=SITE.river.path,i=Math.floor(rand()*(p.length-1)),t=rand(),[a,b]=p[i],[c,d]=p[i+1],cx=a+(c-a)*t,cz=b+(d-b)*t,r=riverAt(cx,cz);
     const off=r.width/2+P.shoreOffset[0]+rand()*(P.shoreOffset[1]-P.shoreOffset[0]),side=rand()<.5?-1:1,x=cx+r.nx*off*side,z=cz+r.nz*off*side;
-    const y=ground(x,z);if(y<SITE.bridges.waterY+.03||z<64||onRoad(x,z,1)||onParkPath(x,z,.5)||parkDeckAt(x,z)!==null||deckAt(x,z)!==null)continue;
+    const y=ground(x,z);if(y<SITE.bridges.waterY+.03||z<64||onRoad(x,z,1)||onParkPath(x,z,.5)||parkDeckAt(x,z)!==null||deckAt(x,z)!==null||underpassAt(x,z))continue;
     const h=P.shoreHeight[0]+rand()*(P.shoreHeight[1]-P.shoreHeight[0]);parkShoreFeet.push({x,z,y,h});
     for(let j=0;j<P.shoreLeaves;j++){const a=j*Math.PI*2/P.shoreLeaves+rand(),d=P.shoreRadius[0]+rand()*(P.shoreRadius[1]-P.shoreRadius[0]);
       pos.push(x+Math.cos(a)*d,y,z+Math.sin(a)*d,x,y+h,z,x+Math.cos(a+.9)*d,y,z+Math.sin(a+.9)*d);}

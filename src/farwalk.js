@@ -3,9 +3,9 @@
 // built from (SITE.west/east/north/south polygons, SITE.bridges, SITE.river), so what is drawn is what blocks. Segments are
 // [x0, z0, x1, z1]; `farWalls(x, z)` returns the ones in the buckets round a point (a stable array per bucket, no per-frame work).
 import { SITE, WALK, PLAYER, OUTDOOR } from './config.js';
-import { riverAt, deckAt, bridgeRecords } from './riverbridge.js';
+import { riverAt, deckAt, bridgeRecords, pierBoxes } from './riverbridge.js';
 import { parkDeckAt } from './riverpark.js';
-import { groundY, treeFeet } from './surroundings.js';
+import { groundY, groundBelowDeckY, treeFeet } from './surroundings.js';
 
 const ringSegs = (p) => {
   const out = [], n = p.length, closed = p[0][0] === p[n - 1][0] && p[0][1] === p[n - 1][1], m = closed ? n - 1 : n;
@@ -18,11 +18,15 @@ const railSegs = (cx, cz, dx, dz, len, half) => [-1, 1].map((k) => {
   return [...at(-len / 2), ...at(len / 2)];
 });
 
-let all = null;
-/** Every far collision segment inside the walkable bounds (built once, on first use). */
+/** #1271: feet below this are UNDER a road / GC deck (the river footpath's cut), not on it. */
+export const underDeck = (y) => y !== undefined && y < SITE.bridges.deckY - 0.5;
+
+let all = null, railsOnly = null, piersOnly = null;
+/** Every far collision segment inside the walkable bounds (built once, on first use). The road/GC decks' rails (`railsOnly`) hold only on
+ * the deck, the road bridge's piers (`piersOnly`) only under it (#1271); `farSegments()` is everything else. */
 export function farSegments() {
   if (all) return all;
-  const out = [], W = WALK, P = SITE.riverPark;
+  const out = [], rails = [], piers = [], W = WALK, P = SITE.riverPark;
   for (const group of [SITE.west, SITE.east, SITE.north, SITE.south]) for (const b of group.buildings) {
     out.push(...[b.polygon, ...(b.holes ?? [])].flatMap(ringSegs)); // a courtyard hole (Realgym) stays open ground inside its ring
   }
@@ -32,7 +36,11 @@ export function farSegments() {
     out.push([c.x[0], z0, c.x[1], z0], [c.x[1], z0, c.x[1], z1], [c.x[1], z1, c.x[0], z1], [c.x[0], z1, c.x[0], z0]);
   }
   for (const b of SITE.blocks) if (b.style) out.push([b.x0, b.z0, b.x1, b.z0], [b.x1, b.z0, b.x1, b.z1], [b.x1, b.z1, b.x0, b.z1], [b.x0, b.z1, b.x0, b.z0]);
-  for (const r of bridgeRecords) out.push(...railSegs(r.x, r.z, r.dx, r.dz, r.len, r.width / 2 - 0.03)); // the bridges' side rails (the deck ends stay open)
+  for (const r of bridgeRecords) rails.push(...railSegs(r.x, r.z, r.dx, r.dz, r.len, r.width / 2 - 0.03)); // the bridges' side rails (the deck ends stay open)
+  for (const p of pierBoxes()) { // the road bridge's piers: a square each, turned with the bridge
+    const c = (u, v) => [p.x + (u * p.dz + v * p.dx) * p.half, p.z + (-u * p.dx + v * p.dz) * p.half], q = [c(-1, -1), c(1, -1), c(1, 1), c(-1, 1)];
+    for (let i = 0; i < 4; i++) piers.push([...q[i], ...q[(i + 1) % 4]]);
+  }
   if (P.woodBridge) {
     const [[ax, az], [bx, bz]] = P.woodBridge.ends, len = Math.hypot(bx - ax, bz - az);
     out.push(...railSegs((ax + bx) / 2, (az + bz) / 2, (bx - ax) / len, (bz - az) / len, len, P.woodBridge.width / 2 - 0.03));
@@ -42,41 +50,47 @@ export function farSegments() {
     const r = W.trunk[t.kind] ?? W.trunk.tree;
     out.push([t.x - r, t.z, t.x, t.z - r], [t.x, t.z - r, t.x + r, t.z], [t.x + r, t.z, t.x, t.z + r], [t.x, t.z + r, t.x - r, t.z]);
   }
-  all = out.filter((s) => overlaps(s, W.x0, W.x1, W.z0, W.z1));
+  const inside = (s) => overlaps(s, W.x0, W.x1, W.z0, W.z1);
+  railsOnly = rails.filter(inside); piersOnly = piers.filter(inside);
+  all = out.filter(inside);
   return all;
 }
 
 const buckets = new Map();
-/** The far segments in the 3x3 buckets round (x, z): the same array each time for the same bucket. */
-export function farWalls(x, z) {
-  const c = WALK.cell, cx = Math.floor(x / c), cz = Math.floor(z / c), key = cx * 100003 + cz;
+/** The far segments in the 3x3 buckets round (x, z): the same array each time for the same bucket. `y` (feet): under a deck the piers
+ * count instead of the deck's rails (#1271); without it (or on the deck) the rails. */
+export function farWalls(x, z, y) {
+  const c = WALK.cell, cx = Math.floor(x / c), cz = Math.floor(z / c), under = underDeck(y), key = (cx * 100003 + cz) * 2 + (under ? 1 : 0);
   let list = buckets.get(key);
   if (!list) {
-    list = farSegments().filter((s) => overlaps(s, (cx - 1) * c, (cx + 2) * c, (cz - 1) * c, (cz + 2) * c));
+    farSegments();
+    list = [...farSegments(), ...(under ? piersOnly : railsOnly)].filter((s) => overlaps(s, (cx - 1) * c, (cx + 2) * c, (cz - 1) * c, (cz + 2) * c));
     buckets.set(key, list);
   }
   return list;
 }
 
-const onDeck = (x, z) => deckAt(x, z) !== null || parkDeckAt(x, z) !== null;
+const onDeck = (x, z, y) => (deckAt(x, z) !== null && !underDeck(y)) || parkDeckAt(x, z) !== null; // (feet `y` under a road/GC deck: not on it, #1271)
+/** The surface under feet `y` at (x, z): the deck on it, the cut's ground under it (#1271), else `groundY`. */
+export const surfaceY = (x, z, y) => (deckAt(x, z) !== null && underDeck(y) ? groundBelowDeckY(x, z) : groundY(x, z));
 
 /** Water that stops the visitor: the river and its shallow edge (`WALK.wade`), except on a bridge deck. */
-export function waterBlocked(x, z, wade = WALK.wade) {
-  if (z < 60 || onDeck(x, z)) return false;
+export function waterBlocked(x, z, wade = WALK.wade, y) {
+  if (z < 60 || onDeck(x, z, y)) return false;
   const r = riverAt(x, z);
   return r.distance < r.width / 2 + wade;
 }
 
 /** Ground too steep to climb at (x, z): a gradient over `WALK.maxSlope`, sampled 0.3 m round. */
-export function tooSteep(x, z, maxSlope = WALK.maxSlope) {
-  if (z < 60 || onDeck(x, z)) return false;
-  const h = 0.3, gx = (groundY(x + h, z) - groundY(x - h, z)) / (2 * h), gz = (groundY(x, z + h) - groundY(x, z - h)) / (2 * h);
+export function tooSteep(x, z, maxSlope = WALK.maxSlope, y) {
+  if (z < 60 || onDeck(x, z, y)) return false;
+  const h = 0.3, g = underDeck(y) ? groundBelowDeckY : groundY, gx = (g(x + h, z) - g(x - h, z)) / (2 * h), gz = (g(x, z + h) - g(x, z - h)) / (2 * h);
   return Math.hypot(gx, gz) > maxSlope;
 }
 
 /** Someone who ended up in the water (a fall, a jump, the jetpack): the dry bank point to put them back on, or null. */
-export function waterRescue(x, z) {
-  if (z < 60 || onDeck(x, z)) return null;
+export function waterRescue(x, z, y) {
+  if (z < 60 || onDeck(x, z, y)) return null;
   const r = riverAt(x, z);
   if (r.distance >= r.width / 2) return null;
   const side = (x - r.x) * r.nx + (z - r.z) * r.nz >= 0 ? 1 : -1, d = r.width / 2 + WALK.rescue;

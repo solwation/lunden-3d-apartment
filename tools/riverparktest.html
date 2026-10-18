@@ -17,6 +17,14 @@ const asphaltMesh=A.scene.getObjectByName('park-paths-asphalt'),gravelMesh=A.sce
 check(asphaltMesh&&gravelMesh&&asphaltMesh.material.color.getHex()!==gravelMesh.material.color.getHex()&&asphaltMesh.geometry.attributes.position.count>3000&&gravelMesh.geometry.attributes.position.count>3000,'asphalt and gravel paths are separate surfaces with different colours');
 check(cfg.paths.every(p=>p.surface==='asphalt'||p.surface==='gravel')&&cfg.paths.filter(p=>p.surface==='asphalt').length>=8&&cfg.paths.filter(p=>p.surface==='gravel').length>=5,'every path has a surface; both asphalt and gravel ways exist');
 for(const id of ['61112061','95035891','148276374','237019752'])check(cfg.paths.some(p=>p.source===id&&p.surface==='asphalt'),`#1235 mapped asphalt way ${id} added`);
+{ // #1271: the footpath that passes under both bridges (OSM 44447963) lies in the cut under the decks, on the rendered terrain, with head room
+ const way=cfg.paths.find(q=>q.source==='44447963'),B=C.SITE.bridges;let under=0,worst=Infinity,off=0;
+ for(let i=1;i<way.path.length;i++)for(let t=0;t<1;t+=.05){const x=way.path[i-1][0]+(way.path[i][0]-way.path[i-1][0])*t,z=way.path[i-1][1]+(way.path[i][1]-way.path[i-1][1])*t;
+  if(R.deckAt(x,z)===null)continue;under++;const y=S.renderedTerrainY(x,z);worst=Math.min(worst,B.deckY-B.road.slab-y-C.PLAYER.headroom);if(Math.abs(y-S.groundBelowDeckY(x,z))>.02)off++;}
+ check(under>=8&&worst>.1&&off===0,`path 44447963 runs under the decks (${under} samples) on the cut with ${worst.toFixed(2)} m over head room`);
+ const walls=[...A.scene.getObjectByName('river-park').children].find(m=>m.name==='park-paths');let low=0,tris=0;const pos=walls.geometry.attributes.position;
+ for(let i=0;i<pos.count;i++){const x=pos.getX(i)+0,z=pos.getZ(i);if(R.deckAt(x,z)!==null){low++;if(pos.getY(i)>B.deckY-B.road.slab-C.PLAYER.headroom)tris++;}}
+ check(low>20&&tris===0,`drawn gravel path vertices under the decks (${low}) all lie below the head-room line, none up in or through the deck`);}
 check(cfg.paths.filter(p=>!['44447981'].includes(p.source)).every(p=>{for(let i=1;i<p.path.length;i++)for(const t of [0,.5]){const x=p.path[i-1][0]+(p.path[i][0]-p.path[i-1][0])*t,z=p.path[i-1][1]+(p.path[i][1]-p.path[i-1][1])*t;if(z<64||x<-270||x>220||z>260)continue;if(S.renderedTerrainY(x,z)<C.SITE.bridges.waterY+.05&&!P.parkDeckAt(x,z)&&R.deckAt(x,z)===null)return false}return true}),'no drawn path runs through the river water');
 for(const vertices of [asphaltMesh.geometry.attributes.position,gravelMesh.geometry.attributes.position])
 for(let i=0;i<vertices.count;i+=37){const x=vertices.getX(i),y=vertices.getY(i),z=vertices.getZ(i),ray=new T.Raycaster(new T.Vector3(x,10,z),new T.Vector3(0,-1,0),0,30);const hit=ray.intersectObject(terrain)[0];if(hit){gap=Math.max(gap,Math.abs(y-hit.point.y));samples++;}}

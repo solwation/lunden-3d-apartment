@@ -21,9 +21,9 @@ import { buildWorld } from '../src/world.js';
 import { Player } from '../src/player.js';
 import { Garage } from '../src/garage.js';
 import { Core } from '../src/core.js';
-import { WALK, SITE } from '../src/config.js';
-import { groundY, renderedTerrainY, treeFeet } from '../src/surroundings.js';
-import { riverAt } from '../src/riverbridge.js';
+import { WALK, SITE, PLAYER } from '../src/config.js';
+import { groundY, groundBelowDeckY, renderedTerrainY, treeFeet } from '../src/surroundings.js';
+import { riverAt, deckAt, bridgeRecords, pierBoxes } from '../src/riverbridge.js';
 
 const out = document.getElementById('out');
 const plan = await fetch('../data/plan.json').then((r) => r.json());
@@ -37,7 +37,7 @@ window.far = { world, player, groundY, renderedTerrainY, riverAt, WALK, SITE };
 const dt = 1 / 60;
 const log = [];
 let pass = true;
-const walk = (points, { run = true } = {}) => { // walks the waypoints; returns the first one it got stuck on, or -1
+const walk = (points, { run = true, step = null } = {}) => { // walks the waypoints; returns the first one it got stuck on, or -1
   for (let i = 0; i < points.length; i++) {
     const [x, z] = points[i];
     const limit = 8 + Math.hypot(player.pos.x - x, player.pos.z - z) / 1.6;
@@ -46,6 +46,7 @@ const walk = (points, { run = true } = {}) => { // walks the waypoints; returns 
       camera.rotation.y = Math.atan2(-(x - player.pos.x), -(z - player.pos.z));
       player.keys = new Set(run ? ['KeyW', 'ShiftLeft'] : ['KeyW']);
       player.update(dt);
+      step?.();
       t += dt;
       if (t > limit) { player.keys = new Set(); return i; }
     }
@@ -68,6 +69,7 @@ const R = [
   ['vägbron: över ån längs Sankt Lars väg till södra stranden', [23.5, 90], [[23.7, 100], [23.5, 125], [23.3, 143], [23.3, 155]],
     () => player.pos.z > 150],
   ['gång- och cykelbron: över ån', [18, 92], [[18.1, 101], [17.9, 125], [17.8, 146], [17.8, 155]], () => player.pos.z > 150],
+  // #1271: the river footpath (OSM 44447963) runs UNDER both decks, in the cut; walk it east -> west and back
   ['vägbrons räcke stoppar: ut över sidan', [23.5, 125], [[30, 125]], () => player.pos.x < 27.5 + 0.3 && player.pos.y > -3.05],
   ['HepCat Store: byggnaden stoppar', [24, 0], [[34, 0]], () => player.pos.x < 28],
   ['Villan i parken: väggen stoppar', [-70, 75], [[-55, 75]], () => player.pos.x < -63],
@@ -83,6 +85,24 @@ const R = [
   ['ytterkanten (WALK) stoppar söderut', [60, 230], [[60, 280]], () => player.pos.z <= WALK.z1],
 ];
 
+{ // #1271: the river footpath (OSM 44447963) runs UNDER both decks, in the cut: walk it both ways; under the decks the head clears the underside
+  const B = SITE.bridges, pts = [[29.2, 110.9], [23.6, 111.1], [18, 111.5], [6.6, 111.8]];
+  for (const [name, start, points, endX] of [['öst -> väst', [36.2, 106.4], pts, 8], ['väst -> öst', [6.6, 111.8], [...pts].reverse().slice(1).concat([[36.2, 106.4]]), 35]]) {
+    player.spawn(start[0], start[1], 0);
+    let low = 0, under = 0, head = Infinity, aboveDeck = 0;
+    const stuck = walk(points, { run: false, step: () => {
+      if (deckAt(player.pos.x, player.pos.z) !== null) { under++; head = Math.min(head, B.deckY - B.road.slab - (player.pos.y + PLAYER.headroom)); if (player.pos.y > B.deckY - 1) aboveDeck++; }
+      low = Math.min(low, player.pos.y);
+    } });
+    const ok = stuck === -1 && (endX === 8 ? player.pos.x < endX : player.pos.x > endX) && under > 60 && head > 0.1 && !aboveDeck;
+    check(ok, `gångvägen vid ån under båda broarna, ${name}: ${under} steg under däcken, minsta fria höjd över huvudet ${head.toFixed(2)} m, lägsta y ${low.toFixed(2)}${ok ? '' : ` — stannade vid ${at()} (hinder vid punkt ${stuck})`}`);
+  }
+  // a pier of the road bridge stops the body walking along the cut (the deck's rails do not: walked above), and the deck's rails do not stop the walker under it
+  const p = pierBoxes()[0]; player.spawn(p.x, p.z - 3, 0); player.pos.y = groundBelowDeckY(p.x, p.z - 3); walk([[p.x, p.z + 3]], { run: false });
+  check(Math.abs(player.pos.z - p.z) > p.half - 0.05 && player.pos.z < p.z, `en brostolpe stoppar kroppen under bron (${at()}, stolpe ${p.x.toFixed(1)},${p.z.toFixed(1)})`);
+  const gc = bridgeRecords[1]; const cz = gc.z - 12; player.spawn(gc.x - 6, cz, 0); player.pos.y = groundBelowDeckY(gc.x - 6, cz); walk([[gc.x + 6, cz]], { run: false });
+  check(player.pos.x > gc.x + 5.5 && player.pos.y < B.deckY - 1.9, `tvärs under GC-bron: räcket på däcket stoppar inte (${at()})`);
+}
 for (const [name, start, points, ok] of R) {
   player.spawn(start[0], start[1], 0);
   const stuckAt = walk(points);

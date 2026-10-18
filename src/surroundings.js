@@ -14,7 +14,7 @@ import { buildStreetSigns } from './streetsigns.js';
 import { buildGroundAO } from './groundao.js';
 import { onRoad, onWalk, pathStrip, filletGeometry } from './roads.js';
 import { wallRect } from './roofs.js';
-import {buildRiverBridges,deckAt,riverGround,riverDistance,roadBridgeSpan} from './riverbridge.js';
+import {buildRiverBridges,deckAt,riverGround,riverDistance,roadBridgeSpan,bridgeRecords} from './riverbridge.js';
 
 // The rest of Kv. Lunden and its neighbourhood (SITE in config): the brick point blocks Hus A, B, C
 // with low hip roofs, the schools and buildings around the plot, Sankt Lars väg and Karpvägen,
@@ -88,6 +88,8 @@ export function groundY(x, z) {
   if (z <= Wst.stair.z1) return Math.max(terrainY(x, z), nwTread(x)); // the NW stair's treads over the verge
   return terrainY(x, z);
 }
+/** #1271: the ground UNDER a bridge deck (the cut the river footpath runs in); `groundY` returns the deck there. */
+export const groundBelowDeckY = (x, z) => terrainY(x, z);
 /** The terrain itself (the grass / asphalt surface; groundY without the stairs' treads and the recesses' floors). */
 function terrainY(x,z) {
   const base=terrainBase(x,z);return z<60?base:riverGround(x,z,base);
@@ -133,6 +135,7 @@ function terrainGeometry() {
   for (const f of pits) { xs.add(f.x0); xs.add(f.x1); zs.add(f.z0); zs.add(f.z1); }
   const inPit = (x, z) => pits.some((f) => x > f.x0 && x < f.x1 && z > f.z0 && z < f.z1);
   for (const p of TERRAIN_PITS) { xs.add(p[0]); xs.add(p[1]); zs.add(p[2]); zs.add(p[3]); }
+  for (const r of bridgeRecords) for (const e of [-1, 1]) { const ez = r.z + r.dz * r.len / 2 * e; zs.add(ez - 0.4 * e); zs.add(ez + 0.2 * e); } // #1271: the under-bridge cut ends inside the abutment blocks
   const X = [...xs].sort((a, b) => a - b), Z = [...zs].filter((z) => z >= z0).sort((a, b) => a - b);
   const pos = [], idx = [], cells=new Map();
   for (const z of Z) for (const x of X) pos.push(x, terrainY(x, z) - 0.01, z);
