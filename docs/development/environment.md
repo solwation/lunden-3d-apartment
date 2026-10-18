@@ -226,3 +226,25 @@ Close and100m south/west images are captured for both desktop and low-memory cam
 - Sourced service access roads south of Höje å: ways 850235114, 850235115, 36918923, 189432572, 30633544, 30633545, 145221590, 145221588.
 - Materials and batching: asphalt (`0x5f6164`), gravel (`0xb5ac90`), paving (`0xa7a397`). East access and courtyards are merged into the existing `east-access` mesh with vertex colors. South parking, stall dividers, curbs, access roads, and paths are merged into the single existing `south-land` mesh with vertex colors. No new draw calls, textures, or lights are introduced, remaining strictly within the performance budget (`tools/perfcount.html`). Forest trees in the south exclude parking polygons (`!onParking(x, z)`).
 
+
+## Pony paddock (#1280)
+
+The kidney-shaped meadow south of the timber footbridge (OSM field way 237019759, `SITE.south.fields`, ~9 700 m²) is a fenced paddock with two C ponies.
+Everything is a *guess* except the outline (`PADDOCK` in `src/config.js`: inset, post spacing, rail heights, gate, sizes, speeds, colours, view distance).
+
+```text
+src/paddockgeo.js   plan geometry, no three.js: outline, the fence line (outline inset 1.2 m), posts (<= 3 m apart), the gate span nearest the footpath
+                    (-116, 220), `fenceSegments()` (collision), `insideFence(x, z, margin)`; shared by farwalk.js, paddock.js and the node test
+src/paddock.js      `fenceGeometry` (posts, three rails, a braced gate, a plank trough with water, a three-sided field shelter: ONE vertex-coloured
+                    mesh, no textures, no raycast), `ponyGeometry`/`ponyMaterial` (one pony ~150 triangles; legs, neck, head and tail move in the
+                    vertex shader from `aPart`/`aPivot` and the per-instance `aAnim`; coat/accent colour per instance), `Paddock` (two instances in ONE
+                    InstancedMesh: Zoey white, Princess brown; graze / stand / walk between 5 m waypoints that are flat and clear of trunks, the river
+                    and the fence; within 40 m of the eye they walk to the places nearest to it and watch), `paddockLandParts` (the worn track along the fence,
+                    merged into the south backdrop's land mesh so it is snow-covered with the rest)
+src/farwalk.js      the fence (closed gate included) is in `farSegments()`: walking into it stops, nothing is walkable through the gate (design choice)
+tools/paddocktest.cjs, tools/paddockgeotest.mjs   browser checks and node plan-geometry checks (verification.md)
+```
+
+Ponies are not targets (no raycast: rays, Nerf darts and arrows pass through, like the gulls) and make no sound. Not simulated or drawn beyond `viewDist` 280 m
+from the paddock or underground; the fence is drawn whenever in view. Cost at the gate: +2 draw calls, ~8 000 triangles (`tools/perfcount.html` spots `paddock`).
+Downstream (kvarteret-lunden): the fence/ground could be transferred as a generic paddock; the named ponies are personal gameplay and must not be.

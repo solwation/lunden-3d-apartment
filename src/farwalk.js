@@ -6,6 +6,7 @@ import { SITE, WALK, PLAYER, OUTDOOR } from './config.js';
 import { riverAt, deckAt, bridgeRecords, pierBoxes } from './riverbridge.js';
 import { parkDeckAt } from './riverpark.js';
 import { groundY, groundBelowDeckY, treeFeet } from './surroundings.js';
+import { fenceSegments } from './paddockgeo.js';
 
 const ringSegs = (p) => {
   const out = [], n = p.length, closed = p[0][0] === p[n - 1][0] && p[0][1] === p[n - 1][1], m = closed ? n - 1 : n;
@@ -45,6 +46,7 @@ export function farSegments() {
     const [[ax, az], [bx, bz]] = P.woodBridge.ends, len = Math.hypot(bx - ax, bz - az);
     out.push(...railSegs((ax + bx) / 2, (az + bz) / 2, (bx - ax) / len, (bz - az) / len, len, P.woodBridge.width / 2 - 0.03));
   }
+  out.push(...fenceSegments()); // #1280: the pony paddock's fence, closed gate included (nothing is walkable through it)
   for (const t of treeFeet) { // trunks outside the home block (the park woods, the campus avenues): a small diamond each (*guess* radii)
     if (t.x > OUTDOOR.x0 && t.x < OUTDOOR.x1 && t.z > OUTDOOR.z0 && t.z < OUTDOOR.z1) continue;
     const r = W.trunk[t.kind] ?? W.trunk.tree;

@@ -346,3 +346,6 @@ or physical-phone claim follows from this fixture. Run catcarrytest alongside it
 for rendered arms, size, purr audio, release and bicycle stow regression.
 
 This is personal animal gameplay, excluded from the public downstream scope.
+
+Ponies (#1280): Zoey (white) and Princess (brown) live in the fenced paddock on the kidney-shaped meadow (environment.md, "Pony paddock"): one instanced mesh, shader-animated
+legs/neck/tail, grazing, standing and wandering, walking to the fence when the visitor is within 40 m. No sound, no interaction, not targets (like the gulls).

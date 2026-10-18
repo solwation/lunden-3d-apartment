@@ -5,6 +5,7 @@ import { pathStrip } from './roads.js';
 import { registerTrees, registerSnow, registerSeasonal } from './seasons.js';
 import { lobeGeometry, leafMaterial, leafAtlasParts } from './foliage.js';
 import { buildStLars41 } from './stlars41.js';
+import { paddockLandParts } from './paddock.js';
 const S=SITE.south;
 const inside=(x,z,p)=>{let yes=false;for(let i=0,j=p.length-1;i<p.length;j=i++)if((p[i][1]>z)!==(p[j][1]>z)&&x<(p[j][0]-p[i][0])*(z-p[i][1])/(p[j][1]-p[i][1])+p[i][0])yes=!yes;return yes;};
 const ring=p=>(p[0][0]===p[p.length-1][0]&&p[0][1]===p[p.length-1][1]?p.slice(0,-1):p);
@@ -42,6 +43,7 @@ export function* southBackdropParts(ground){
  const G=S.ground;parts.land.push(tint(new THREE.PlaneGeometry(G.x1-G.x0,G.z1-260).rotateX(-Math.PI/2).translate((G.x0+G.x1)/2,-3.01,(G.z1+260)/2),COLORS.grass));
  for(const [x0,x1]of[[G.x0,SITE.backgroundGround.x0],[SITE.backgroundGround.x1,G.x1]])parts.land.push(tint(new THREE.PlaneGeometry(x1-x0,260-SITE.backgroundGround.z0).rotateX(-Math.PI/2).translate((x0+x1)/2,-3.01,(260+SITE.backgroundGround.z0)/2),COLORS.grass));
  for(const f of S.fields){const g=new THREE.ShapeGeometry(shape(f)).rotateX(-Math.PI/2),a=g.attributes.position;for(let i=0;i<a.count;i++)a.setY(i,farGround(a.getX(i),a.getZ(i))+.018);g.computeVertexNormals();parts.land.push(tint(g,f.color));}
+ parts.land.push(...paddockLandParts(farGround)); // #1280: the pony paddock's worn track (soil colour, snow-covered with the rest of the land)
  yield .7;
  const surfColor=p=>p.color??(p.surface==='asphalt'?0x5f6164:p.surface==='gravel'?0xb5ac90:0xa7a397);
  for(const p of [...S.paths,...(S.access??[])])parts.land.push(tint(pathStrip(p,w=>-w/2,w=>w/2,.025,farGround),surfColor(p)));
