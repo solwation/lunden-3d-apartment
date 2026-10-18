@@ -106,6 +106,7 @@ export function buildAO(size, y0, yC, floorRects, ceilRects, { floorHole, ceilHo
 // distances carried in a vertex attribute, so one merged mesh per level covers every wall.
 
 const STEP = 0.025; // m between exposure samples along a wall face
+const CORNER_TRIM = 0.001; // m (= the overlay's offset from its face, see `quad`)
 const NEAR = 0.01; // m in front of a face where "is something there?" is asked
 
 function insidePoly(pts, x, z) {
@@ -188,7 +189,10 @@ export function buildWallAO(size, y0, yC, pieces, blockers, { floorHole, ceilHol
   let flipped = false; // the face's room side is the left normal (-uz, ux) of its edge, or the right one
   const quad = (ax, az, ux, uz, s0, s1, ya, yb, k0, k1) => {
     // corners of [s0,s1] × [ya,yb] on the face; k0/k1 = distance-to-corner offsets (FAR = no corner)
-    const vs = [[s0, ya], [s1, ya], [s1, yb], [s0, yb]];
+    // An end at an inner corner stops CORNER_TRIM short (#1228): the two faces' overlays hang `ax2` = 1 mm in front of their faces
+    // (the polygon offset) and so met in a 1-2 px strip that was multiplied twice, a hairline down every inner corner
+    const e0 = k0 !== null && s0 === k0 ? CORNER_TRIM : 0, e1 = k1 !== null && s1 === k1 ? CORNER_TRIM : 0;
+    const vs = [[s0 + e0, ya], [s1 - e1, ya], [s1 - e1, yb], [s0 + e0, yb]];
     const v = vs.map(([s, y]) => [ax + ux * s, y, az + uz * s, y - y0, yC - y, k0 === null ? FAR : s - k0, k1 === null ? FAR : k1 - s]);
     // wound to face the room (front faces only): the order 0-1-2 faces (-uz, ux); either polygon orientation (#1084)
     for (const i of flipped ? [0, 2, 1, 0, 3, 2] : [0, 1, 2, 0, 2, 3]) { const p = v[i]; pos.push(p[0], p[1], p[2]); dist.push(p[3], p[4], p[5], p[6]); }
