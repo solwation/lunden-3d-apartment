@@ -207,6 +207,9 @@ export class Player {
    * air would be refused by resumeAt and send the visitor to the start, #636). */
   restY() { return this.fall?.jump ? this.groundAt(this.pos.x, this.pos.z, this.pos.y) : this.pos.y; }
 
+  /** The underside of a road / GC bridge deck over (x, z) for feet `y0` below it, else Infinity (#1271, #1284). */
+  deckCeil(x, z, y0) { return z > 60 && underDeck(y0) && deckAt(x, z) !== null ? SITE.bridges.deckY - SITE.bridges.road.slab : Infinity; }
+
   /** The lowest ceiling over (x, z) above the feet `y0` (#636): a roof / canopy outdoors (roofs.js), the room's ceiling
    * (RH, a lowered soffit, the underside of the stair) in our flat, a visited flat or the garage. */
   ceilingAt(x, z, y0) {
@@ -215,7 +218,7 @@ export class Player {
     if (this.below) return Math.min(R, GARAGE.ceiling);
     const u = this.unit;
     if (u) { const L = u.levels[u.levelAt(y0)]; const s = u.stairUnderside(x, z); return Math.min(R, L.floor + L.ceiling, s !== null && s > y0 ? s : Infinity); }
-    if (!this.inFootprint(x, z)) return z > 60 && underDeck(y0) && deckAt(x, z) !== null ? Math.min(R, SITE.bridges.deckY - SITE.bridges.road.slab) : R; // under a road / GC deck (#1271)
+    if (!this.inFootprint(x, z)) return Math.min(R, this.deckCeil(x, z, y0)); // under a road / GC deck (#1271)
     const lv = y0 > LEVELS[0].floor + 1.6 ? 1 : 0, L = LEVELS[lv];
     let c = L.floor + L.ceiling;
     for (const f of SOFFITS) if (f.level === lv && x > f.x0 && x < f.x1 && z > f.z0 && z < f.z1) c = Math.min(c, L.floor + f.height);
@@ -801,7 +804,7 @@ export class Player {
       }
       this.pos.y = Math.max(g, this.pos.y + this.vy * dt);
       if (jet || this.vy > 0) { // the ceiling, and a canopy / roof over the head on the way up (a jump too, #600)
-        const top = Math.min(jet ? JETPACK.ceiling : Infinity, (jet ? this.world.roofs?.above(this.pos.x, this.pos.z, y0 + PLAYER.stepUp) ?? Infinity : this.ceilingAt(this.pos.x, this.pos.z, y0)) - PLAYER.headroom);
+        const top = Math.min(jet ? JETPACK.ceiling : Infinity, (jet ? Math.min(this.world.roofs?.above(this.pos.x, this.pos.z, y0 + PLAYER.stepUp) ?? Infinity, this.deckCeil(this.pos.x, this.pos.z, y0)) : this.ceilingAt(this.pos.x, this.pos.z, y0)) - PLAYER.headroom);
         if (this.pos.y > top) { this.pos.y = Math.max(Math.min(y0, top), g); this.vy = Math.min(0, this.vy); }
       }
       if (this.pos.y === g) { impact = -this.vy; this.vy = 0; }

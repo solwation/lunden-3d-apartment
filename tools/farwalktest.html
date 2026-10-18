@@ -102,6 +102,13 @@ const R = [
   check(Math.abs(player.pos.z - p.z) > p.half - 0.05 && player.pos.z < p.z, `en brostolpe stoppar kroppen under bron (${at()}, stolpe ${p.x.toFixed(1)},${p.z.toFixed(1)})`);
   const gc = bridgeRecords[1]; const cz = gc.z - 12; player.spawn(gc.x - 6, cz, 0); player.pos.y = groundBelowDeckY(gc.x - 6, cz); walk([[gc.x + 6, cz]], { run: false });
   check(player.pos.x > gc.x + 5.5 && player.pos.y < B.deckY - 1.9, `tvärs under GC-bron: räcket på däcket stoppar inte (${at()})`);
+  // #1284: the jetpack lifting from the cut under a deck stops at the underside (like a jump), but flies freely beside the bridge
+  const jetUp = (x, z, y0) => { player.spawn(x, z, 0); player.pos.y = y0; player.jet = { worn: true, lift: () => 20 }; player.keys = new Set(); let hi = player.pos.y; for (let i = 0; i < 240; i++) { player.update(dt); hi = Math.max(hi, player.pos.y); } player.jet = null; return hi; };
+  for (const [name, rec] of [['vägbron', bridgeRecords[0]], ['GC-bron', bridgeRecords[1]]]) {
+    const hi = jetUp(rec.x - 1, rec.z - 6, groundBelowDeckY(rec.x - 1, rec.z - 6));
+    check(hi < B.deckY - B.road.slab - PLAYER.headroom + 0.01 && hi > groundBelowDeckY(rec.x - 1, rec.z - 6) + 0.3, `jetpacken under ${name} stoppas av däckets undersida (högst y=${hi.toFixed(2)}, undersida ${(B.deckY - B.road.slab).toFixed(2)})`);
+  }
+  { const r = bridgeRecords[0], x = r.x + r.width / 2 + 3, hi = jetUp(x, r.z - 6, groundY(x, r.z - 6)); check(hi > B.deckY + 2, `jetpacken vid sidan om vägbron flyger fritt uppåt (högst y=${hi.toFixed(2)})`); }
 }
 for (const [name, start, points, ok] of R) {
   player.spawn(start[0], start[1], 0);
