@@ -108,6 +108,12 @@ src/daycycle.js        real-time day (#1145; DAY.minutes = 24 × 60, was 60): it
                        above `top` + `fade` m `above` = 1: `oc` = 0 so the lighting is the clear-day blend (sun 3.0, exposure 1.5) whatever the weather below (night keeps the moon),
                        and weather.js drops the rain / flakes / sound by (1 − above). One shadow-casting light as before. Known: the ground ends (far plane 1000 m) at a tone-mapping
                        mismatch with the sky below the horizon, visible from high up. `node` check: climb with `&weather=rain&jetpack`, log `day.above`, `scene.fog`, sun.
+src/birds.js           gulls (#1252, `BIRDS`, all numbers *guess*): ONE instanced draw call (`InstancedBufferGeometry`, 3 triangles per bird: tail wedge + two wings), no lights, no textures, no sound, no
+                       raycast. Circling, banking and the wing flap are computed in the vertex shader from per-instance seeds (fixed mulberry32 seed, same flock every visit) and the accumulated game
+                       time, so `update(dt, rain, hidden)` only sets uniforms (no allocations). `count` birds (`lowMemoryCount` on phones), the last `high` at `highAlt` m above the cloud deck
+                       (hidden by `uHigh` while the deck covers the sky and the eye is below it). The mesh is hidden (no draw) at night (daylight < `day`), in rain/snow/hail (`rain` ≥ `rain`), in the cloud
+                       whiteout (`uWhite`), underground and further than `far` m from `BIRDS.center`; it fades in/out (`fade`). `&nobirds` / `&birds=N` for debugging. The shader compiles on the first
+                       appearance (not in the warm-up). Test: `tools/birdstest.cjs`; perfcount: +1 draw call, +30 triangles where they are in view.
 src/blinds.js          pleated blinds, bottom-up (BLINDS, #273): one per window in the reveal on the room side of the frame
                        (the living room's split window: two), `blind: 'dark' | 'light'` per WINDOWS entry; the fabric (a
                        zig-zag rebuilt only while it moves, castShadow) + the top rail are two meshes per blind, the bottom

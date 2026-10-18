@@ -3383,6 +3383,14 @@ export const JETPACK = {
 // `cloudy` = the overcast from which a deck forms (full at `full`). No textures: the density is procedural noise in the shader.
 export const SKYLAYER = { base: 150, top: 190, fade: 30, approach: 70, radius: 900, near: 1, far: 28, cloudy: 0.12, full: 0.6, scale: 0.006 };
 
+// Birds (#1252, src/birds.js): a few gull-like silhouettes circling over the area, one instanced draw call, no lights, no textures,
+// no sound. All numbers *guess*. `count` birds (`lowMemoryCount` on phones), the last `high` of them at flight altitude (`highAlt`
+// m, above the cloud deck of SKYLAYER; only drawn in clear weather or from above the deck), the rest between `alt` m round the
+// area's `center` (plan x/z, round the courtyard) at `radius` m (ranges [min, max]) at `speed` m/s along the circle. `span` m wingspan, `flap` Hz. Shown by day
+// (daylight ≥ `day`), not in rain / snow (rain ≥ `rain`) nor inside the cloud whiteout; faded over `fade` (1/s); not drawn when the
+// eye is further than `far` m from the centre.
+export const BIRDS = { center: { x: -30, z: 30 }, count: 10, lowMemoryCount: 5, high: 3, radius: [30, 100], alt: [30, 90], highAlt: [215, 290], speed: [6, 10], span: 3.2, flap: 2.6, bank: 0.35, day: 0.3, rain: 0.1, fade: 1.5, far: 500 };
+
 // The Spider-Man suit (#597, src/spidersuit.js): folded in the second drawer of Walter & Kian's MALM (Sovrum 2; the
 // MALM entry's `suit: true`). E puts it on / lays it down folded (like the jetpack, `drop` m in front of the feet).
 // With it on, outdoors only: walking into the façade of a building listed in roofs.js (a roof surface above you behind

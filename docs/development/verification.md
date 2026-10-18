@@ -1,3 +1,4 @@
+Birds (#1252): `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/birdstest.cjs http://localhost:PORT /tmp/shots` — one instanced mesh / one draw call, seeded flock, shown by day, hidden at night / in rain / in the cloud whiteout / far away, visible above the deck, fewer with `&lowmem`, `&nobirds`, no per-call allocation; run after changing src/birds.js or `BIRDS`.
 Cat card binder data (#1249): `node --test tools/catcardstest.mjs` — slots / rarity (Miele top), max 5 per breed with rotation, saved flag, counters, one-time copy of the old board photos; run after changing src/catcards.js, `CAT_CARD` or the 'catCards' store in idb.js (then also tools/boardtest.html: the board is unchanged).
 Ghost weapon props (#1126): `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/ghostpropstest.cjs BASE OUT` — one Ghost per weapon on
 tools/ghostprops.html: front/side/close-up shots, 13 draw calls for six armed avatars, no prop over 4 000 triangles. Run after changing

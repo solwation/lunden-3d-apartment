@@ -59,7 +59,7 @@ export class DetailCuller {
         if (moving) this.moving.push(unit);
       }
       for (const c of o.children) walk(c, moving, unit);
-      if (!(o.isMesh || (o.isLineSegments && o.userData.architectureEdges)) || o.isInstancedMesh || !o.geometry) return;
+      if (!(o.isMesh || (o.isLineSegments && o.userData.architectureEdges)) || o.isInstancedMesh || o.userData.noDetail || !o.geometry) return;
       if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere();
       if (!o.geometry.boundingBox) computeDetailBounds(o.geometry);
       const s = o.geometry.boundingSphere;
