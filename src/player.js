@@ -3,7 +3,7 @@ import { SITE, WALK, LEVELS, PLAYER, STAIR, UNIT_TOP, ROOFS, GARAGE, JETPACK, je
 import { stairHeight, stairUnderside } from './stairs.js';
 import { groundY, groundBelowDeckY } from './surroundings.js';
 import { deckAt, deckUnderAt } from './riverbridge.js';
-import { farWalls, slideAt, inWater, splashBank, tooSteep, buildingRescue, atEdge, surfaceY, underDeck } from './farwalk.js'; // #1236: walking beyond the block
+import { farWalls, slideAt, inWater, splashBank, tooSteep, buildingRescue, atEdge, surfaceY, underDeck, stileSurface } from './farwalk.js'; // #1236: walking beyond the block
 import { bicycleCurbY } from './street.js';
 import { stowBicycleHand, restoreBicycleHand } from './holdable.js';
 
@@ -155,6 +155,7 @@ export class Player {
     if (!inside && !inCore && !unit && z > 60 && deckAt(x, z) !== null) cands.push(groundBelowDeckY(x, z)); // under a road / GC deck (#1271): the cut the river footpath runs in
     const s = unit ? null : stairHeight(x, z);
     if (s !== null) cands.push(s);
+    if (!inside && !inCore && !unit && z > 200) { const st = stileSurface(x, z); if (st !== null) cands.push(st); } // the pony paddock's stile (#1295)
     if (this.world.garage?.inside(x, z)) cands.push(GARAGE.floor); // the garage under the courtyard (#357)
     const r = this.world.roofs?.under(x, z, feet, PLAYER.stepUp); // a roof, the loftgång, a terrace (#360)
     if (r) cands.push(r.y);

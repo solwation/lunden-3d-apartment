@@ -242,12 +242,16 @@ src/paddock.js      `fenceGeometry` (posts, three rails, a braced gate, a plank 
                     InstancedMesh: Zoey white, Princess brown; graze / stand / walk between 5 m waypoints that are flat and clear of trunks, the river
                     and the fence; within 40 m of the eye they walk to the places nearest to it and watch), `paddockLandParts` (the worn track along the fence,
                     merged into the south backdrop's land mesh so it is snow-covered with the rest)
-src/farwalk.js      the fence (closed gate included) is in `farSegments()`: walking into it stops, nothing is walkable through the gate (design choice)
-tools/paddocktest.cjs, tools/paddockgeotest.mjs   browser checks and node plan-geometry checks (verification.md)
+src/farwalk.js      the fence (closed gate included) is in `farSegments()`: walking into it stops, nothing is walkable through the gate (design choice); #1295: the stile's opening has two side walls
+                    (`stileWalls()`) and `stileSurface(x, z)` / `stileBase()` give the steps' walking height (player.js `groundAt` adds it as a candidate, so the ordinary `PLAYER.stepUp` 0.45 walks it)
+tools/paddocktest.cjs, tools/paddockgeotest.mjs, tools/stiletest.cjs   browser checks and node plan-geometry checks (verification.md)
 ```
 
 Ponies are not targets (no raycast: rays, Nerf darts and arrows pass through, like the gulls); only the pet pick boxes (animals-audio.md) are tested by the focus ray, and a pat makes a nicker. Not simulated or drawn beyond `viewDist` 280 m
 from the paddock or underground; the fence is drawn whenever in view. Cost at the gate: +2 draw calls, ~8 000 triangles (`tools/perfcount.html` spots `paddock`).
+**Stile (#1295):** `PADDOCK.stile` (all *guess*): in the span next to the gate (`stile` in paddockgeo.js: the next span, else the one before, that is at least `minSpan` long) the fence has a 1 m opening
+with steep steps (three risers of 0.38 m, treads 0.3 m, a 0.5 m platform over the fence line) on both sides, drawn into the fence mesh (no extra draw call) and walked with the ordinary step-up. The ponies cannot use it: they stay inside
+`insideFence`, and fence rails, gate and fence collision are otherwise unchanged. If the steps are moved, the opening, side walls, rails and heights all follow `stile`.
 Downstream (kvarteret-lunden): the fence/ground could be transferred as a generic paddock; the named ponies are personal gameplay and must not be.
 
 ## East campus car parks: the lot behind HepCat Store (#1278)

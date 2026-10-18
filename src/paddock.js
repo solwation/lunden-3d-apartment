@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { PADDOCK as P } from './config.js';
-import { outline, fenceLine, posts, gateSpan, insideFence, insetRing, ringDist, centre } from './paddockgeo.js';
+import { outline, fenceLine, posts, gateSpan, stile, insideFence, insetRing, ringDist, centre } from './paddockgeo.js';
+import { stileBase } from './farwalk.js';
 import { riverAt } from './riverbridge.js';
 import { sfx } from './audio.js';
 
@@ -80,8 +81,26 @@ export function fenceGeometry(ground, spots = {}) {
     const a = posts[i], b = posts[(i + 1) % n], ya = ground(a[0], a[1]), yb = ground(b[0], b[1]), gate = i === gateSpan;
     const [ix, iz] = inward(a, b), off = gate ? 0 : post.w / 2 + P.rail.w / 2, col = gate ? gateWood : wood[i % wood.length];
     const at = (q, y, k) => V(q[0] + ix * off, y + k, q[1] + iz * off);
-    for (const r of (gate ? [0.25, 0.6, 0.95, 1.3] : P.rails)) s.beam(at(a, ya, r), at(b, yb, r), P.rail.w, P.rail.h, col);
+    const cut = stile && i === stile.span, along = (t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t], yAt = (t) => ya + (yb - ya) * t; // the stile's opening leaves the rails short of it
+    for (const r of (gate ? [0.25, 0.6, 0.95, 1.3] : P.rails)) {
+      if (cut) { s.beam(at(a, ya, r), at(along(stile.t0), yAt(stile.t0), r), P.rail.w, P.rail.h, col); s.beam(at(along(stile.t1), yAt(stile.t1), r), at(b, yb, r), P.rail.w, P.rail.h, col); }
+      else s.beam(at(a, ya, r), at(b, yb, r), P.rail.w, P.rail.h, col);
+    }
     if (gate) s.beam(at(a, ya, 0.25), at(b, yb, 1.3), P.rail.w, 0.1, col); // the diagonal brace
+  }
+  if (stile) { // #1295: the stile: steep steps up both sides of the fence line to a small platform, stepped side cheeks and a post and rail at each side of the platform (local z = into the paddock)
+    const S = P.stile, y0 = stileBase(), W = S.w / 2, col = wood[1], tread = wood[2];
+    s.at(new THREE.Matrix4().makeRotationY(Math.atan2(stile.nx, stile.nz)).setPosition(stile.x, 0, stile.z));
+    for (const side of [-1, 1]) for (let k = 1; k <= 3; k++) { // k 3 = the platform (its half-length `platform`), 2 and 1 the treads either side
+      const s0 = k === 3 ? 0 : S.platform + (k === 2 ? 0 : S.tread), s1 = k === 3 ? S.platform : S.platform + (k === 2 ? 1 : 2) * S.tread, h = k * S.rise;
+      if (k === 3 && side === 1) continue; // (the platform is drawn once, centred)
+      const len = k === 3 ? S.platform * 2 : s1 - s0, mid = k === 3 ? 0 : side * (s0 + s1) / 2;
+      s.boxA(0, y0 + h - 0.03, mid, S.w - 0.02, 0.06, len + 0.04, tread, 0); // the tread / platform plank
+      for (const e of [-1, 1]) s.boxA(e * (W - 0.04), y0 + h / 2 - 0.03, mid, 0.07, h, len, col, 0, '-y'); // a stepped cheek under it, both edges
+    }
+    for (const e of [-1, 1]) for (const f of [-1, 1]) s.boxA(e * (W - 0.04), y0 + 3 * S.rise + S.post / 2 - 0.03, f * (S.platform - 0.04), 0.1, S.post, 0.1, wood[0], 0, '-y'); // four posts round the platform
+    for (const e of [-1, 1]) s.boxA(e * (W - 0.04), y0 + 3 * S.rise + S.post - 0.06, 0, 0.07, 0.07, S.platform * 2 + 0.12, wood[0], 0); // the hand rail along each side
+    s.at(null);
   }
   const dark = lin(0x5b4330), water = lin(0x56737c);
   if (spots.trough) { // a plank trough with water in it

@@ -58,10 +58,34 @@ export const gateSpan = (() => {
   return best;
 })();
 
-/** Collision segments [x0, z0, x1, z1]: the whole fence including the closed gate (nothing is walkable through it). */
-export const fenceSegments = () => posts.map((a, i) => { const b = posts[(i + 1) % posts.length]; return [a[0], a[1], b[0], b[1]]; });
 /** Is (x, z) inside the fence line, at least `margin` m from it? */
 export const insideFence = (x, z, margin = 0) => inPoly(fenceLine, x, z) && (margin <= 0 || ringDist(fenceLine, x, z) >= margin);
+/** The stile (#1295): a step-over beside the gate in the neighbouring span (the next one after the gate, else the one before) that is long enough:
+ *  centre (x, z) on the fence line, `t` along the fence, `n` the horizontal unit normal pointing into the paddock, `half` half its width, `t0`/`t1` its edges as fractions of its span. */
+export const stile = (() => {
+  const n = posts.length, W = P.stile.w / 2;
+  for (const j of [(gateSpan + 1) % n, (gateSpan + n - 1) % n]) {
+    const a = posts[j], b = posts[(j + 1) % n], len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    if (len < P.stile.minSpan) continue;
+    const tx = (b[0] - a[0]) / len, tz = (b[1] - a[1]) / len, cx = (a[0] + b[0]) / 2, cz = (a[1] + b[1]) / 2;
+    let nx = tz, nz = -tx; if (!insideFence(cx + nx * 0.6, cz + nz * 0.6)) { nx = -nx; nz = -nz; }
+    return { span: j, x: cx, z: cz, tx, tz, nx, nz, half: W, len, t0: 0.5 - W / len, t1: 0.5 + W / len };
+  }
+  return null;
+})();
+
+/** Collision segments [x0, z0, x1, z1]: the whole fence including the closed gate (nothing is walkable through it) except the stile's opening. */
+export const fenceSegments = () => posts.flatMap((a, i) => {
+  const b = posts[(i + 1) % posts.length];
+  if (!stile || i !== stile.span) return [[a[0], a[1], b[0], b[1]]];
+  const p = (t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+  return [[a[0], a[1], ...p(stile.t0)], [...p(stile.t1), b[0], b[1]]];
+});
+/** The stile's two side walls (collision only): from `reach` m outside the fence line to `reach` m inside it, along both edges of the steps. */
+export const stileWalls = () => !stile ? [] : [-1, 1].map((k) => {
+  const x = stile.x + stile.tx * k * stile.half, z = stile.z + stile.tz * k * stile.half, r = P.stile.reach;
+  return [x - stile.nx * r, z - stile.nz * r, x + stile.nx * r, z + stile.nz * r];
+});
 /** The point on the fence line nearest (x, z). */
 export function nearestOnFence(x, z) {
   let best = null;

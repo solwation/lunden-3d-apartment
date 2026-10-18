@@ -3551,6 +3551,9 @@ export const PADDOCK = {
     animals: [{ name: 'Zoey', coat: 0xdddbd5, accent: 0x93918c, seed: 7 }, { name: 'Princess', coat: 0x7a4426, accent: 0x1b1410, seed: 19, star: true }], // grey/white with a lighter-grey mane, tail and legs; bay with black points and a white star (photo in #1293)
     pet: 2.6 }, // s a pat takes (#1293: the pony stops, turns its head, flicks its ears, nickers)
   trough: { w: 1.7, d: 0.5, h: 0.42 }, shelter: { w: 4.2, d: 2.6, h: 2.3 },
+  // the stile beside the gate (#1295, *guess*): `w` m wide, `minSpan` m the fence span it needs, three risers of `rise` m (under PLAYER.stepUp 0.45, so the ordinary
+  // stepping walks it) over two treads of `tread` m either side of a platform that is 2 × `platform` m long; `reach` m from the fence line to the walls' ends
+  stile: { w: 1.0, minSpan: 1.9, rise: 0.38, tread: 0.3, platform: 0.25, reach: 0.95, post: 0.95 },
 };
 
 // The Spider-Man suit (#597, src/spidersuit.js): folded in the second drawer of Walter & Kian's MALM (Sovrum 2; the

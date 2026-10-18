@@ -74,7 +74,7 @@ const check = (ok, name, extra = '') => { console.log(`${ok ? 'PASS' : 'FAIL'} $
   const walk = await page.evaluate(async () => {
     const a = window.__app, geo = await import('/src/paddockgeo.js'), fw = await import('/src/farwalk.js');
     const res = []; a.touch.enabled = true; // (movement is only read while the pointer is locked or touch is on)
-    for (const [x, z] of [[-110, 236], [-111.5, 225], [-109, 244]]) {
+    for (const [x, z] of [[-110, 236], [-111.5, 229], [-109, 244]]) {
       a.player.spawn(x, z, 0); a.camera.rotation.set(0, Math.PI / 2, 0, 'YXZ'); a.player.keys.add('KeyW');
       for (let i = 0; i < 300; i++) a.step(1 / 30);
       a.player.keys.delete('KeyW'); res.push([a.player.pos.x.toFixed(1), geo.insideFence(a.player.pos.x, a.player.pos.z), +(a.player.pos.x - x).toFixed(1)]);
