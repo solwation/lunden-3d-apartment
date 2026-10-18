@@ -4666,9 +4666,9 @@ export const FURNITURE = [
   // sizes are guesses): beside the armchair on the sitter's right (the side table is on the left),
   // the spots aimed at the seat; `aim` = plan point they point at
   { type: 'floorlamp', level: 0, x: 0.36, z: 8.86, aim: [0.78, 8.38], h: 1.6, base: 0.25 },
-  // a JYSK RANDERS tray table (#405) in the side table's place by the armchair, turned so local = world axes: the flower
-  // towards the NW (wall / armchair side), the book (BOOK) on the room side of the tray
-  { type: 'randerstable', level: 0, x: 1.52, z: 8.12, rot: 180, flower: true, flowerAt: [-0.09, -0.09] },
+  // a JYSK RANDERS tray table (#405) in the side table's place by the armchair, turned so local = world axes: without a
+  // pot plant (#1248), the book (BOOK) on the room side of the tray
+  { type: 'randerstable', level: 0, x: 1.52, z: 8.12, rot: 180 },
   // The ABORG café set (#406, #422) outside our front, in front of the kitchen window (x 3.05–4.66; the front door x 0.80–1.81
   // swings out to z −0.92): the table centred on the window, 3 cm off the façade (its top 0.71 is under the 0.8 sill, so the
   // top-hung sash swings out over it). The tabletop has no pot plant (#490). The chairs
