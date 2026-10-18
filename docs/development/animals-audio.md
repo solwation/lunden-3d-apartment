@@ -36,6 +36,17 @@ src/catboard.js        cork board in the kitchen (under the wall clock): a real-
                        CAT_BOARD.max of them in IndexedDB 'lunden'/'catPhotos', captioned with name + time; E opens
                        #board-view (BoardPanel, #170: keep 📌 = red pin, never pushed off; throw away 🗑 asks twice;
                        arrows/S/Delete; frees the mouse like drawing); a full board drops its oldest unkept photo
+src/catcards.js        cat card binder data model (#1249, part 1 of 4 — #1254–#1257; the binder object / UI / card design / photo menu follow; the
+                       cork board above stays until the binder shows everything). No DOM: one slot per BREED (`CAT_CARD.breeds`, Miele last;
+                       a game cat is random — breed + coat + random name — so there are no fixed individuals), points from SCORE (breeds;
+                       Miele `first.miele` 1000), rarity tier = highest `CAT_CARD.tiers` entry reached (common <30, ovanlig 30–99, sällsynt
+                       100, episk 250, legendarisk = Miele). A card = a photo of a find; max `CAT_CARD.max` 5 per breed, a new one rotates
+                       out the oldest unsaved, all saved → not added (`add` returns null). Counters: finds = `stats.byBreed` / `stats.miele`,
+                       pats / hugs = new `stats.petsByBreed` / `stats.hugsByBreed` (main.js `cat.onPet`, `miele.onHug`). Cards in IndexedDB
+                       'catCards' (idb.js version 3), written by main.js `cat.onPhoto` / `miePhoto` next to the board photo. The old
+                       'catPhotos' are COPIED in once (`migrate`, flag `lunden.catCards.migrated` in RESET_KEEP, ids `legacy-<id>` so no
+                       duplicates): kept → saved, 'Miele' → her slot, the rest (no breed was stored) → the legacy page (`CAT_CARD.legacy`),
+                       none deleted. Weights / facts in CAT_CARD are typical breed figures, all *guess*. Test: `node --test tools/catcardstest.mjs`.
 src/laptop.js          Tilly's laptop on the vanity (#283, LAPTOP): an unbranded rose-gold laptop with stickers; `Feed` draws "Klipp",
                        an invented short-video app (no real brand / people) on a canvas — eight canvas clips (`CLIPS`) in a phone
                        column, user, caption, likes, progress bar — swiping up every `swipe` s; two E targets (kind 'laptop'): the

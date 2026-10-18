@@ -44,7 +44,7 @@ import { stairHeight, stairUnderside } from './stairs.js';
 import { rugLift } from './rugs.js';
 import { loadChangelog, retryChangelog, renderChangelog, buildNote, scrollNote } from './changelog.js';
 import { loadTodo, buildTodoNotes } from './todo.js';
-import { setScoreElement, totalScore, setStatsExtra, stats, keepMieleDay, bump, badge, catFound, secretFound, renderStats, resetStats, visitRoom, setRoomTotal, setBadgeElement, penalize } from './stats.js';
+import { setScoreElement, totalScore, setStatsExtra, stats, keepMieleDay, bump, badge, catFound, keepCatCounts, secretFound, renderStats, resetStats, visitRoom, setRoomTotal, setBadgeElement, penalize } from './stats.js';
 import { Minimap } from './minimap.js';
 import { Compass } from './compass.js';
 import { Measure } from './measure.js';
@@ -113,6 +113,8 @@ import { CatCalendar, CalendarPanel } from './calendar.js';
 import { heldItem, handBusy } from './holdable.js';
 import { Tap, animateWater } from './water.js';
 import { CatBoard, BoardPanel, snapshot } from './catboard.js';
+import { CatCards, idbStore } from './catcards.js';
+import { withStore as idbWithStore } from './idb.js';
 import { Lights } from './lights.js';
 import { VisitLights } from './visitlights.js';
 import { setupInstall } from './install.js';
@@ -864,6 +866,10 @@ const board = new CatBoard();
 boardPanel = new BoardPanel(board, boardEl);
 scene.add(board.object);
 const boardLoaded = board.load();
+// the cat card binder's data (#1249): cards per breed next to the board's photos, which are copied in once (src/catcards.js)
+const catCards = new CatCards({ store: idbStore(idbWithStore), stats, touch: keepCatCounts, flag: {
+  get: () => localStorage.getItem('lunden.catCards.migrated') === '1', set: () => localStorage.setItem('lunden.catCards.migrated', '1') } });
+const catCardsLoaded = boardLoaded.then(() => catCards.load()).catch(() => {});
 // the shared world (#178, #119): inert unless CLOUD_URL (or &cloud=) is set — then drawings, the desk sheet and
 // cat photos sync silently with the Cloudflare Worker (cloud.js)
 const cloud = new Cloud({ posters, drawing, holding: () => heldItem() === heldDrawing,
@@ -900,12 +906,13 @@ document.getElementById('menu-privacy')?.addEventListener('click', () => { priva
 document.getElementById('privacy-dialog-close')?.addEventListener('click', () => { privacyDialog.hidden = true; });
 setStatsExtra(() => leaderboard.html());
 cloud.ready = cloud.on ? Promise.all([postersLoaded, boardLoaded]).then(() => cloud.sync()) : Promise.resolve(); // (tests wait on it)
-cat.onPet = () => { bump('petted'); if (cat.kitten) bump('kittenPets'); }; // a kitten's pat is worth more (#363)
+cat.onPet = () => { bump('petted'); if (cat.kitten) bump('kittenPets'); catCards.recordPet(cat.breed.name); }; // a kitten's pat is worth more (#363)
 cat.onHurt = (weapon) => penalize(cat.kitten ? 'kittenShot' : 'catShot', weapon); // a kitten: extra bad (#363) // shot, cut or hit: it hisses and flees (#288)
 cat.onPhoto = () => { // 0.7 s into the pat (cat.js), before it walks off (#206)
   bump('catPhotos');
-  const head = cat.head.getWorldPosition(new THREE.Vector3());
-  board.add(cat.catName, snapshot(renderer, scene, camera, head), { kitten: cat.kitten }); // a kitten's photo is marked (#363)
+  const head = cat.head.getWorldPosition(new THREE.Vector3()), shot = snapshot(renderer, scene, camera, head);
+  board.add(cat.catName, shot, { kitten: cat.kitten }); // a kitten's photo is marked (#363)
+  catCards.add(cat.breed.name, { name: cat.catName, data: shot, coat: cat.variant.name, kitten: cat.kitten }); // and a card in the binder (#1249)
 };
 
 // a cat's bum (the X) seen from behind with its tail up (#262): once per tail-up, the first time per cat counts the most
@@ -944,10 +951,12 @@ const miePhoto = () => { // her photo on the cat board: the first time she is he
   if (cat.photoDone) return;
   cat.photoDone = true;
   bump('catPhotos');
-  board.add('Miele', snapshot(renderer, scene, camera, cat.head.getWorldPosition(new THREE.Vector3())));
+  const shot = snapshot(renderer, scene, camera, cat.head.getWorldPosition(new THREE.Vector3()));
+  board.add('Miele', shot);
+  catCards.add('Miele', { name: 'Miele', data: shot, coat: 'Miele' });
 };
 miele.onPickUp = () => { if (cat.isMiele) miePhoto(); };
-miele.onHug = () => { if (cat.isMiele) { bump('mieleHugs'); miePhoto(); } else { cat.onPet?.(); if (!cat.photoDone) { cat.photoDone = true; cat.onPhoto?.(); } } };
+miele.onHug = () => { catCards.recordHug(cat.breed.name); if (cat.isMiele) { bump('mieleHugs'); miePhoto(); } else { cat.onPet?.(); if (!cat.photoDone) { cat.photoDone = true; cat.onPhoto?.(); } } };
 if (params0.has('kitten')) cat.forceKitten = true; // &kitten: the next cat to turn up is a kitten (#363)
 cat.mieleDaily = new MieleDaily({ load: () => stats.mieleDay, keep: keepMieleDay }); // at least once a play day (#1134)
 if (params0.has('miele')) cat.forceMiele = true; // &miele: the next cat to turn up is her (tests, screenshots)
@@ -3198,4 +3207,4 @@ hideLoading();
 
 crashlog.attach({ renderer, camera, quality, player, world, sun, scene, mirrorTarget, frameDiag, viewportBinding }); // what the crash heartbeat shows (#629)
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { microwave, carLodState, showFireworks, newYear, sausages, frameRate, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };
+window.__app = { microwave, carLodState, showFireworks, newYear, sausages, frameRate, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, catCards, catCardsLoaded, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };

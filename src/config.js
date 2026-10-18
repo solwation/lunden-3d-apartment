@@ -2601,6 +2601,7 @@ export const AUTO_RELOAD = { still: 2.5, countdown: 5, cancelled: 1.5, fade: 0.4
 // touched at all: taped-up drawings (synced or, with the cloud off, the visitor's own) and the cat photos stay.
 export const RESET_KEEP = [
   'lunden.cloud.queue', 'lunden.cloud.seenCats', 'lunden.drawing', 'lunden.drawing.updated', // the shared world
+  'lunden.catCards.migrated', // the old board photos were copied into the cat binder (#1249): a reset must not copy thrown-away ones back
   'lunden.stats', 'lunden.name', 'lunden.playerId', // the score and the leaderboard
   'lunden.avatar', // the character's chosen look incl. its height (#1148); "Ny spelare" still drops it (main.js onNewPlayer)
   'lunden.scoreQueue', // completed players awaiting upload, including offline player changes
@@ -3973,6 +3974,29 @@ export const CAT_BOARD = (() => {
     w, h, frame, polaroid, cols, rows, gap, margin, rotY: Math.PI / 2, max: cols * rows, px: 4000, tilt: 2,
   };
 })();
+
+// Cat card binder (#1249, src/catcards.js). A cat in the game is random (breed + coat + a random name), so there is one
+// slot, with up to `max` cards (photos of where it was found), per BREED, in this order, Miele last. Points per slot come
+// from SCORE (breeds; Miele = SCORE.first.miele); the rarity tier is the highest `tiers` entry whose `from` is <= the points.
+// `weightKg` and `facts` are NOT measured from the game: typical figures for the breed, all *guess* (Miele's weight is a
+// plain guess; nobody has weighed her in the game). `legacy` = the key for old board photos whose breed was never saved.
+export const CAT_CARD = {
+  max: 5, legacy: 'okänd',
+  tiers: [
+    { id: 'common', label: 'Vanlig', from: 0 }, { id: 'uncommon', label: 'Ovanlig', from: 30 }, { id: 'rare', label: 'Sällsynt', from: 100 },
+    { id: 'epic', label: 'Episk', from: 250 }, { id: 'legendary', label: 'Legendarisk', from: 1000 },
+  ],
+  breeds: [
+    { key: 'huskatt', label: 'Huskatt', weightKg: [3.5, 5], facts: ['Den vanligaste katten i huset.', 'Finns i många färger.'] },
+    { key: 'siames', label: 'Siames', weightKg: [3, 5], facts: ['Pratar gärna och högt.', 'Mörka öron, tassar och svans.'] },
+    { key: 'brittiskt korthår', label: 'Brittiskt korthår', weightKg: [4, 7], facts: ['Rund och lugn, med tät blå päls.'] },
+    { key: 'maine coon', label: 'Maine coon', weightKg: [5, 9], facts: ['En av de största huskattraserna.', 'Yvig svans.'] },
+    { key: 'norsk skogkatt', label: 'Norsk skogkatt', weightKg: [4, 8], facts: ['Tjock päls för kalla skogar.', 'Klättrar som en ekorre.'] },
+    { key: 'perser', label: 'Perser', weightKg: [3.5, 6], facts: ['Långhårig med platt nos.', 'Lugn och helst inomhus.'] },
+    { key: 'sphynx', label: 'Sphynx', weightKg: [3, 5], facts: ['Nästan hårlös och varm att klappa.', 'Väldigt stora öron.'] },
+    { key: 'Miele', label: 'Miele', weightKg: [4, 4], facts: ['Familjens egen katt.', 'Brun makrillrandig och vit.'], star: true },
+  ],
+};
 
 // Room lights (src/lights.js). Intensities are candela-ish (three.js physical lights), tuned by
 // eye at night. `pool` = point lights shared by the nearest lit lamps (keep small: Iris 640).

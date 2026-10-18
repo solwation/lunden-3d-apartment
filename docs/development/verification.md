@@ -1,3 +1,4 @@
+Cat card binder data (#1249): `node --test tools/catcardstest.mjs` — slots / rarity (Miele top), max 5 per breed with rotation, saved flag, counters, one-time copy of the old board photos; run after changing src/catcards.js, `CAT_CARD` or the 'catCards' store in idb.js (then also tools/boardtest.html: the board is unchanged).
 Ghost weapon props (#1126): `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/ghostpropstest.cjs BASE OUT` — one Ghost per weapon on
 tools/ghostprops.html: front/side/close-up shots, 13 draw calls for six armed avatars, no prop over 4 000 triangles. Run after changing
 src/ghostprops.js or the weapon models it borrows (rifle.js, toys.js blaster/wand, saber.js, bow.js).
