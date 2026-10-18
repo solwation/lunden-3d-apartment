@@ -45,7 +45,7 @@ const DOORWAY_DEPTH = 0.3;
 /** A block's walk-in entrance (#637, #638, #639): its recess `walkIn` + a basement-specific opening or the stair core's entrance spec (CORE_A / B / C in
  *  config: `door` = the leaf's range along the face, `height`, `cut` = the opening through the recess's back wall, default the whole recess). */
 const CORES = { 'Hus A': CORE_A, 'Hus B': CORE_B, 'Hus C': CORE_C };
-const walkIn = (b, r) => { const E = r.walkIn ? (r.basement ?? CORES[b.name]?.entrance) : null; return E ? { E, door: E.door, height: E.height, cut: E.cut ?? (r.basement ? E.door : [r.a0, r.a1]) } : null; };
+const walkIn = (b, r) => { const E = r.walkIn ? (r.basement ?? CORES[b.name]?.entrance) : null; return E ? { E, door: E.door, height: E.height, cut: E.cut ?? (r.basement ? (r.basement.side ? [Math.min(E.door[0], r.basement.side[0]), Math.max(E.door[1], r.basement.side[1])] : E.door) : [r.a0, r.a1]) } : null; };
 /** The Å-husen's entrance recesses as walkable floors (#355): a rectangle inside the house at the recess's lowest
  * storey's floor (the courtyard's level for Hus A's / B's north entrances, the park level for their side doors). */
 export const recessFloors = S.blocks.flatMap((b) => (b.recesses ?? []).flatMap((r) => {

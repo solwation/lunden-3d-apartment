@@ -254,6 +254,18 @@ export class Garage {
         for (const g of fGeos) this.areas[r.area].geos.shell.push(bake(g, DD.colors.frame));
       }
     }
+    // #1258: Glazed sidelight frames and collision for park entrances A and B
+    for (const r of RECTS.filter((q) => q.id === 'parkASide' || q.id === 'parkBSide')) {
+      const w = r.z1 - r.z0, t = r.x1 - r.x0, line = (r.x0 + r.x1) / 2;
+      const fw = DD.frameWidth, casing = t + DD.frameCasingProud * 2;
+      const headY = F + G.doorHead, jambH = G.doorHead, jambY = F + jambH / 2;
+      parkFrameBoxes.push(
+        box(casing, jambH, fw, line, jambY, r.z0 + fw / 2).toNonIndexed(),
+        box(casing, fw, w - fw, line, headY - fw / 2, r.z0 + (w + fw) / 2).toNonIndexed(),
+        box(0.08, DD.thresholdHeight, w - fw, line, F + DD.thresholdHeight / 2, r.z0 + (w + fw) / 2).toNonIndexed(),
+      );
+      seg(segs, line, r.z0, line, r.z1);
+    }
     // the partial walls and the columns: concrete boxes (a yellow foot band on the columns)
     for (const [x0, x1, z0, z1] of G.partials) { put('shell', bake(box(x1 - x0, C - F, z1 - z0, (x0 + x1) / 2, (F + C) / 2, (z0 + z1) / 2), WALL), (x0 + x1) / 2, (z0 + z1) / 2); rectSegs(segs, x0, x1, z0, z1); }
     const K = G.columns.size;
@@ -1036,17 +1048,19 @@ export class Garage {
           parts.push(b);
         };
         const t = DD.leafThickness, lw = w - 0.01, lh = h - 0.015;
+        const leafCol = glazed ? 0x3b4247 : DD.colors.leaf;
+        const frameCol = glazed ? 0x3b4247 : DD.colors.frame;
         // #1152: only the two outdoor park leaves have a real opening for glazing.
         if (glazed) {
           const P = G.parkDoorGlass;
-          for (const x of [0.005 + P.stile / 2, 0.005 + lw - P.stile / 2]) addSteelBox(P.stile, lh, t, x, F + 0.005 + lh / 2, 0, DD.colors.leaf);
-          addSteelBox(lw - 2 * P.stile, P.bottom, t, w / 2, F + 0.005 + P.bottom / 2, 0, DD.colors.leaf);
-          addSteelBox(lw - 2 * P.stile, P.rail, t, w / 2, F + 0.005 + lh - P.rail / 2, 0, DD.colors.leaf);
+          for (const x of [0.005 + P.stile / 2, 0.005 + lw - P.stile / 2]) addSteelBox(P.stile, lh, t, x, F + 0.005 + lh / 2, 0, leafCol);
+          addSteelBox(lw - 2 * P.stile, P.bottom, t, w / 2, F + 0.005 + P.bottom / 2, 0, leafCol);
+          addSteelBox(lw - 2 * P.stile, P.rail, t, w / 2, F + 0.005 + lh - P.rail / 2, 0, leafCol);
         } else addSteelBox(lw, lh, t, 0.005 + lw / 2, F + 0.005 + lh / 2, 0, DD.colors.leaf);
         // Rebated leaf perimeter trim (överfals)
-        addSteelBox(lw, 0.014, t + 0.006, 0.005 + lw / 2, F + 0.005 + lh - 0.007, 0, DD.colors.frame);
-        addSteelBox(0.014, lh, t + 0.006, 0.005 + lw - 0.007, F + 0.005 + lh / 2, 0, DD.colors.frame);
-        addSteelBox(0.014, lh, t + 0.004, 0.005 + 0.007, F + 0.005 + lh / 2, 0, DD.colors.frame);
+        addSteelBox(lw, 0.014, t + 0.006, 0.005 + lw / 2, F + 0.005 + lh - 0.007, 0, frameCol);
+        addSteelBox(0.014, lh, t + 0.006, 0.005 + lw - 0.007, F + 0.005 + lh / 2, 0, frameCol);
+        addSteelBox(0.014, lh, t + 0.004, 0.005 + 0.007, F + 0.005 + lh / 2, 0, frameCol);
         // 3 heavy-duty welded barrel hinges on hinge edge
         for (const yPos of DD.hinges.positions) {
           addSteelBox(0.022, DD.hinges.height, 0.032, 0.005, F + yPos, 0, DD.colors.hinge);
@@ -1075,7 +1089,7 @@ export class Garage {
     this.parkObject=new THREE.Group();this.parkObject.name='park-basement-doors';
     if (parkFrameBoxes.length) {
       const parkFrameMesh = new THREE.Mesh(mergeGeometries(parkFrameBoxes), new THREE.MeshStandardMaterial({
-        color: DD.colors.frame,
+        color: 0x3b4247,
         roughness: 0.65,
       }));
       parkFrameMesh.castShadow = parkFrameMesh.receiveShadow = true;
@@ -1092,6 +1106,20 @@ export class Garage {
     this.parkGlass = new THREE.InstancedMesh(pane, new THREE.MeshStandardMaterial({ color: P.color, roughness: P.roughness, metalness: P.metalness, transparent: true, opacity: P.opacity, depthWrite: false }), park.length);
     this.parkGlass.name = 'park-door-glass'; this.parkGlass.raycast = () => {}; this.parkGlass.frustumCulled = false;
     this.parkGlass.receiveShadow = true; this.parkObject.add(this.parkGlass);
+    // #1258: Glazed sidelights for park entrances A and B
+    const sideGlassBoxes = [];
+    for (const r of RECTS.filter((q) => q.id === 'parkASide' || q.id === 'parkBSide')) {
+      const line = (r.x0 + r.x1) / 2, fw = DD.frameWidth;
+      const paneW = r.z1 - r.z0 - fw, paneZ = r.z0 + fw + paneW / 2;
+      const sidePaneH = G.doorHead - fw - DD.thresholdHeight;
+      const sidePaneY = F + DD.thresholdHeight + sidePaneH / 2;
+      sideGlassBoxes.push(new THREE.BoxGeometry(P.thickness, sidePaneH, paneW).translate(line, sidePaneY, paneZ).toNonIndexed());
+    }
+    if (sideGlassBoxes.length) {
+      const parkSideGlass = new THREE.Mesh(mergeGeometries(sideGlassBoxes), this.parkGlass.material);
+      parkSideGlass.name = 'park-side-glass'; parkSideGlass.raycast = () => {}; parkSideGlass.frustumCulled = false;
+      parkSideGlass.receiveShadow = true; this.parkObject.add(parkSideGlass);
+    }
     for (const m of [this.leaves, this.steelLeaves]) { m.raycast = () => {}; m.frustumCulled = false; group.add(m); }
     const pickMat = new THREE.MeshBasicMaterial();
     this.targets = this.cageDoors.map((d) => {

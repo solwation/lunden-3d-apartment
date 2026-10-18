@@ -449,12 +449,12 @@ export const SITE = {
       hip: { box: { x0: -1.64, x1: 1.28, z0: 33.49, z1: 37.39, h: 1.0 } }, // roof plan on the våning 5 sheet (#348)
       corners: { nw: [3.4, 2.0], ne: [3.4, 2.0], se: [5.9, 2.05], sw: [5.9, 2.05] },
       recesses: [{ face: 'n', a0: 0.23, a1: 2.22, depth: 2.1, from: 1, to: 1, door: 1, walkIn: true }, // the main entrance from the courtyard (våning 1); a real door into the stair core (#637, CORE_A)
-        { face: 'w', a0: 41.4, a1: 43.4, depth: 0.75, from: 0, to: 0, door: 0, walkIn: true, basement: { door: [42.25, 43.30], height: 2.1, floorEdge: -9.05 } }] },    // #729: p46 exterior leaf range; setback 0.75 and finish/height remain *guess* (formerly decorative, #647)
+        { face: 'w', a0: 41.4, a1: 43.4, depth: 0.75, from: 0, to: 0, door: 0, walkIn: true, basement: { door: [42.25, 43.30], side: [41.46, 42.25], height: 2.1, floorEdge: -9.05 } }] },    // #729, #1258: p46 exterior leaf range + sidelight; setback 0.75 and finish/height remain *guess* (formerly decorative, #647)
     { name: 'Hus B', x0: -41.74, x1: -22.6, z0: 33.3, z1: 57.35, base: -3, storeys: 4, roof: 'hip', // våning -1…3
       hip: { box: { x0: -33.59, x1: -30.67, z0: 38.01, z1: 41.91, h: 1.0 } }, // roof plan on the våning 4 sheet (#348)
       corners: { nw: [3.4, 2.0], ne: [3.4, 2.0], se: [5.9, 2.05], sw: [5.9, 2.05] },
       recesses: [{ face: 'n', a0: -34.58, a1: -32.5, depth: 2.1, from: 1, to: 1, door: 1, walkIn: true }, // mirrored: west of the middle; a real door into the stair core (#638, CORE_B)
-        { face: 'e', a0: 46.1, a1: 48.1, depth: 1.0, from: 0, to: 0, door: 0, walkIn: true, basement: { door: [46.8, 47.85], height: 2.1, floorEdge: -23.6 } }] },
+        { face: 'e', a0: 46.1, a1: 48.1, depth: 1.0, from: 0, to: 0, door: 0, walkIn: true, basement: { door: [46.8, 47.85], side: [46.10, 46.80], height: 2.1, floorEdge: -23.6 } }] },
     { name: 'Hus C', x0: -70.6, x1: -51.4, z0: 12.6, z1: 36.68, base: 0, storeys: 5, roof: 'hip', hip: {}, // våning 1…5; no roof plan: the defaults (#348)
       corners: { nw: [5.5, 2.1], ne: [2.0, 4.15], se: [5.4, 2.0], sw: [6.1, 2.0] },
       recesses: [{ face: 'e', a0: 21.5, a1: 24.8, depth: 2.0, door: 0, walkIn: true }] },  // the entrance, loggias above it; a real door into the stair core (#639, CORE_C)
@@ -1761,6 +1761,7 @@ export const GARAGE = {
     {id:'coreBPark',x0:-31.16,x1:-30.86,z0:46.1,z1:47.0,room:'Trapphus B',area:'hallW'},
     {id:'passageBEast',x0:-30.86,x1:-23.6,z0:46.1,z1:47.9,room:'Trapphus B',area:'hallW'},
     {id:'parkBRecess',x0:-23.52,x1:-22.6,z0:46.1,z1:48.1,room:'Trapphus B',area:'hallW',outside:'e'},
+    {id:'parkBSide',x0:-23.6,x1:-23.52,z0:46.10,z1:46.80,room:'Trapphus B',area:'hallW'},
     {id:'parkBDoor',x0:-23.6,x1:-23.52,z0:46.8,z1:47.85,room:'Trapphus B',area:'hallW',door:{kind:'steel',hinge:'x0',open:1,line:-23.6,park:true,name:'källardörren till hus B'}},
     {id:'coreB',x0:-33.08,x1:-31.16,z0:41.74,z1:50,room:'Trapphus B',area:'hallW',core:true},
     {id:'coreBWest',x0:-33.6,x1:-33.08,z0:41.8,z1:43.4,room:'Trapphus B',area:'hallW'},
@@ -1770,6 +1771,7 @@ export const GARAGE = {
     {id:'passageAWestEnd',x0:-9.05,x1:-6.8,z0:42.75,z1:44.1,room:'Trapphus A',area:'hallE'},
     {id:'passageAWestWing',x0:-6.8,x1:-1.37,z0:42.75,z1:43.4,room:'Trapphus A',area:'hallE'},
     {id:'parkARecess',x0:-9.76,x1:-9.12,z0:41.4,z1:43.4,room:'Trapphus A',area:'hallE',outside:'w'},
+    {id:'parkASide',x0:-9.12,x1:-9.05,z0:41.46,z1:42.25,room:'Trapphus A',area:'hallE'},
     {id:'parkADoor',x0:-9.12,x1:-9.05,z0:42.25,z1:43.30,room:'Trapphus A',area:'hallE',door:{kind:'steel',hinge:'x0',open:-1,line:-9.01,park:true,name:'källardörren till hus A'}},
     {id:'passageAWest',x0:-9.05,x1:-1.37,z0:41.4,z1:42.75,room:'Trapphus A',area:'hallE'},
     // #637: Hus A's stair core (CORE_A, src/corehouse.js) is the `core` rect: its band (hall + stair) is drawn / walled there; the
