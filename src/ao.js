@@ -166,7 +166,7 @@ const wallMaterial = () => new THREE.ShaderMaterial({
  * face as dark stripes above the doors (#1129). Where a partial piece's face runs over a wall's end,
  * only the wall's face gets the overlay, so the strip is not darkened twice.
  */
-export function buildWallAO(size, y0, yC, pieces, blockers, { floorHole, ceilHole } = {}) {
+export function buildWallAO(size, y0, yC, pieces, blockers, { floorHole, ceilHole, slabBottom } = {}) {
   const S = AO.wall, FAR = 100;
   const cutF = S.floor.radius * S.cutoff, cutC = S.ceiling.radius * S.cutoff, cutK = S.corner.radius * S.cutoff;
   const bbox = (pts) => {
@@ -187,13 +187,19 @@ export function buildWallAO(size, y0, yC, pieces, blockers, { floorHole, ceilHol
     || boxes.some((b) => hit(b, x, z)) || slab.some((b) => hit(b, x, z));
   const pos = [], dist = [];
   let flipped = false; // the face's room side is the left normal (-uz, ux) of its edge, or the right one
-  const quad = (ax, az, ux, uz, s0, s1, ya, yb, k0, k1) => {
+  const quad = (ax, az, ux, uz, s0, s1, ya, yb, k0, k1, noFloor = false, noCeil = false) => {
     // corners of [s0,s1] × [ya,yb] on the face; k0/k1 = distance-to-corner offsets (FAR = no corner)
     // An end at an inner corner stops CORNER_TRIM short (#1228): the two faces' overlays hang `ax2` = 1 mm in front of their faces
     // (the polygon offset) and so met in a 1-2 px strip that was multiplied twice, a hairline down every inner corner
     const e0 = k0 !== null && s0 === k0 ? CORNER_TRIM : 0, e1 = k1 !== null && s1 === k1 ? CORNER_TRIM : 0;
     const vs = [[s0 + e0, ya], [s1 - e1, ya], [s1 - e1, yb], [s0 + e0, yb]];
-    const v = vs.map(([s, y]) => [ax + ux * s, y, az + uz * s, y - y0, yC - y, k0 === null ? FAR : s - k0, k1 === null ? FAR : k1 - s]);
+    const v = vs.map(([s, y]) => [
+      ax + ux * s, y, az + uz * s,
+      noFloor ? FAR : y - y0,
+      noCeil ? FAR : yC - y,
+      k0 === null ? FAR : s - k0,
+      k1 === null ? FAR : k1 - s,
+    ]);
     // wound to face the room (front faces only): the order 0-1-2 faces (-uz, ux); either polygon orientation (#1084)
     for (const i of flipped ? [0, 2, 1, 0, 3, 2] : [0, 1, 2, 0, 2, 3]) { const p = v[i]; pos.push(p[0], p[1], p[2]); dist.push(p[3], p[4], p[5], p[6]); }
   };
@@ -243,28 +249,54 @@ export function buildWallAO(size, y0, yC, pieces, blockers, { floorHole, ceilHol
           const ax2 = ax + nx * 0.001, az2 = az + nz * 0.001;
           // only where some term is visible: floor band, ceiling band, corner columns between them
           const fTop = Math.min(yb, y0 + cutF), cBot = Math.max(ya, yC - cutC);
-          // [s0,s1] minus where the line just in front of the face crosses a hole
-          const minus = (hole) => {
-            if (!hole) return [[s0, s1]];
+          const holeSpan = (hole) => {
+            if (!hole) return null;
             let t0 = s0, t1 = s1;
             for (const [p, d, lo, hi] of [[ax + nx * NEAR, ux, hole.x0, hole.x1], [az + nz * NEAR, uz, hole.z0, hole.z1]]) {
-              if (Math.abs(d) < 1e-9) { if (p < lo || p > hi) return [[s0, s1]]; continue; }
+              if (Math.abs(d) < 1e-9) { if (p < lo || p > hi) return null; continue; }
               const a = (lo - p) / d, b = (hi - p) / d;
               t0 = Math.max(t0, Math.min(a, b)); t1 = Math.min(t1, Math.max(a, b));
             }
-            if (t1 <= t0) return [[s0, s1]];
-            return [[s0, t0], [t1, s1]].filter(([a, b]) => b - a > 0.005);
+            return t1 - t0 > 0.005 ? [Math.max(s0, t0), Math.min(s1, t1)] : null;
+          };
+          // [s0,s1] minus where the line just in front of the face crosses a hole
+          const minus = (hole) => {
+            const h = holeSpan(hole);
+            if (!h) return [[s0, s1]];
+            return [[s0, h[0]], [h[1], s1]].filter(([a, b]) => b - a > 0.005);
           };
           if (fTop > ya) for (const [a, b] of minus(floorHole)) quad(ax2, az2, ux, uz, a, b, ya, Math.min(fTop, yb), k0, k1);
           if (cBot < yb) for (const [a, b] of minus(ceilHole)) quad(ax2, az2, ux, uz, a, b, Math.max(cBot, ya, fTop), yb, k0, k1);
+          const c0 = k0 === null ? null : Math.min(s1, s0 + cutK), c1 = k1 === null ? null : Math.max(s0, s1 - cutK);
           const m0 = Math.max(ya, fTop), m1 = Math.min(yb, cBot);
           if (m1 > m0) {
-            const c0 = k0 === null ? null : Math.min(s1, s0 + cutK), c1 = k1 === null ? null : Math.max(s0, s1 - cutK);
             if (c0 !== null && c1 !== null && c0 >= c1) quad(ax2, az2, ux, uz, s0, s1, m0, m1, k0, k1);
             else {
               if (c0 !== null) quad(ax2, az2, ux, uz, s0, c0, m0, m1, k0, k1);
               if (c1 !== null) quad(ax2, az2, ux, uz, c1, s1, m0, m1, k0, k1);
             }
+          }
+          // Over floor/ceiling holes (stairwell), corner columns continue uninterrupted without floor/ceiling bands (#1273)
+          const inHoleCorners = (hole, yLo, yHi, noFloor, noCeil) => {
+            if (yHi <= yLo) return;
+            const h = holeSpan(hole);
+            if (!h) return;
+            const use0 = c0 !== null && s0 >= h[0] - 0.005 && s0 <= h[0] + 0.005;
+            const use1 = c1 !== null && s1 >= h[1] - 0.005 && s1 <= h[1] + 0.005;
+            const a0 = use0 ? s0 : null, b0 = use0 ? Math.min(c0, h[1]) : null;
+            const a1 = use1 ? Math.max(c1, h[0]) : null, b1 = use1 ? s1 : null;
+            if (use0 && use1 && b0 >= a1) quad(ax2, az2, ux, uz, a0, b1, yLo, yHi, k0, k1, noFloor, noCeil);
+            else {
+              if (use0 && b0 > a0) quad(ax2, az2, ux, uz, a0, b0, yLo, yHi, k0, k1, noFloor, noCeil);
+              if (use1 && b1 > a1) quad(ax2, az2, ux, uz, a1, b1, yLo, yHi, k0, k1, noFloor, noCeil);
+            }
+          };
+          if (floorHole) {
+            const yFloorLo = c === 0 && slabBottom != null ? slabBottom : ya;
+            inHoleCorners(floorHole, yFloorLo, Math.min(fTop, yb), true, false);
+          }
+          if (ceilHole) {
+            inHoleCorners(ceilHole, Math.max(cBot, ya), yb, false, true);
           }
         };
         let prev = 0, prevOpen = false;

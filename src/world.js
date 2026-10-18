@@ -853,8 +853,10 @@ function* levelParts(floor, li, group, how = OURS) {
   // contact shadows along walls and cabinets (floor) and in the ceiling corners
   group.add(buildAO({ x: W, z: D }, y0, yC, [...wallBoxes, ...floor.windows, ...floor.cabinets], [...wallBoxes, ...floor.windows, ...lintels],
     { floorHole: li === 1 ? sheetHole : null, ceilHole: li === 0 ? sheetHole : null }));
+  const allLevels = how.levels ?? LEVELS;
+  const slabBottom = li === 1 ? allLevels[0].floor + allLevels[0].ceiling : null;
   group.add(buildWallAO({ x: W, z: D }, y0, yC, aoPieces, aoBlockers,
-    { floorHole: li === 1 ? opening : null, ceilHole: li === 0 ? opening : null })); // and on the walls: floor/ceiling bands, inner corners (#1074)
+    { floorHole: li === 1 ? opening : null, ceilHole: li === 0 ? opening : null, slabBottom })); // and on the walls: floor/ceiling bands, inner corners (#1074, #1273)
 
   for (const s of (how.soffits ?? SOFFITS).filter((s) => s.level === li)) {
     group.add(box(s.x0, s.x1, s.z0, s.z1, y0 + s.height, yC - 0.004, M.ceiling, { shadow: false }));
