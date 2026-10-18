@@ -86,6 +86,18 @@ test('#1244: curly hair (style 4) roundtrips; styles above 4 are rejected; old c
   assert.equal(decodeAvatarLook(code.slice(0, 5) + '3' + code.slice(6)).style, 3);
 });
 
+test('#1244: trouser / top models roundtrip as tags; defaults add nothing; bad values ignored', () => {
+  const lk = { skin: SKIN[1], top: TOPS[2], pants: PANTS[1], shoes: SHOES[0], hair: HAIR[3], style: 0, sleeves: 1, gender: 0, facial: 0 };
+  assert.equal(encodeAvatarLook(lk), encodeAvatarLook({ ...lk, legs: 0, cut: 0 }));
+  const code = encodeAvatarLook({ ...lk, legs: 2, cut: 1 });
+  assert.match(code, /p2/); assert.match(code, /m1/);
+  const d = decodeAvatarLook(code);
+  assert.equal(d.legs, 2); assert.equal(d.cut, 1);
+  const bad = decodeAvatarLook(encodeAvatarLook(lk) + 'p9m9');
+  assert.ok(!bad.legs && !bad.cut);
+  assert.ok(encodeAvatarWireLook({ ...lk, legs: 1, cut: 2, bodyBuild: 3, glasses: 2 }).length <= 9 + 48);
+});
+
 test('#1136 avatar height: backward-compatible code, proportions and eye height', () => {
   // old codes decode exactly as before: no height, the seed's own tall, the standard eye height
   for (const code of ['2413021', '241302113']) {

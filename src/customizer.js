@@ -1,4 +1,4 @@
-import { SKIN, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES } from './config.js';
+import { SKIN, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES, AVATAR_CLOTHES } from './config.js';
 
 // #1220: the brows' colours (config.js HAIR, the hair swatches' names) and a first choice that follows the hair
 const BROW_NAMES = ['Mörkbruna', 'Bruna', 'Ljusbruna', 'Guldbruna', 'Blonda', 'Grå', 'Röda', 'Svarta'];
@@ -67,7 +67,8 @@ export function drawAvatarPreview(canvas, look) {
   const hair = toHex(look.hair);
   const brows = toHex(HAIR.includes(look.brows) ? look.brows : look.hair); // #1220: own colour, else the hair's
   const style = look.style ?? 0;
-  const sleeves = look.sleeves ?? 0;
+  const legs = Number(look.legs) || 0, cut = Number(look.cut) || 0; // #1244: trouser / top models
+  const sleeves = cut === 2 ? 1 : cut === 1 ? 0 : look.sleeves ?? 0;
   const gender = Number(look.gender ?? look.figure) || 0;
   const facial = Number(look.facial ?? look.facialHair) || 0;
   // #1138: the face and head sliders (the middle draws the plain face)
@@ -103,13 +104,16 @@ export function drawAvatarPreview(canvas, look) {
   }
 
   // Pants (legs: y 165 - 240)
-  ctx.fillStyle = pants;
   for (const s of [-1, 1]) {
     const lx = cx + s * (gender === 1 ? 12 : 13);
+    const lh = legs === 1 ? 32 : 76, lwid = (gender === 1 ? 16 : 18) + (legs === 2 ? 6 : 0);
+    if (legs === 1) { ctx.fillStyle = skin; ctx.fillRect(lx - 7, 190, 14, 51); } // #1244 shorts: bare legs below
+    ctx.fillStyle = pants;
     ctx.beginPath();
-    ctx.roundRect(lx - (gender === 1 ? 8 : 9), 165, (gender === 1 ? 16 : 18), 76, [0, 0, 3, 3]);
+    ctx.roundRect(lx - lwid / 2, 165, lwid, lh, [0, 0, 3, 3]);
     ctx.fill();
   }
+  ctx.fillStyle = pants;
   // Hips
   ctx.beginPath();
   const hipW = gender === 1 ? 46 : 48;
@@ -137,6 +141,12 @@ export function drawAvatarPreview(canvas, look) {
     ctx.fill();
   }
 
+  if (cut === 2) { // hoodie: a longer body with a pocket
+    ctx.fillStyle = top;
+    ctx.fillRect(cx - 25, 148, 50, 16);
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.14)';
+    ctx.fillRect(cx - 14, 140, 28, 12);
+  }
   // Collar
   ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
   ctx.beginPath();
@@ -151,7 +161,7 @@ export function drawAvatarPreview(canvas, look) {
   for (const s of [-1, 1]) {
     const ax = cx + s * (gender === 1 ? 27 : 30);
     // Upper arm
-    ctx.fillStyle = top;
+    ctx.fillStyle = cut === 1 ? skin : top; // (a tank top leaves the arms bare)
     ctx.beginPath();
     ctx.roundRect(ax - 6, 95, 12, 42, 6);
     ctx.fill();
@@ -341,7 +351,7 @@ export function randomAvatarLook(base, rnd = Math.random) {
   const lk = { ...base };
   lk.skin = SKIN[pick(SKIN.length)]; lk.hair = HAIR[pick(HAIR.length)]; lk.top = TOPS[pick(TOPS.length)];
   lk.pants = PANTS[pick(PANTS.length)]; lk.shoes = SHOES[pick(SHOES.length)]; lk.eyes = EYES[pick(EYES.length)];
-  lk.style = pick(5); lk.sleeves = pick(2); lk.gender = pick(2); lk.facial = pick(4);
+  lk.style = pick(5); lk.legs = pick(AVATAR_CLOTHES.legs.names.length); lk.cut = pick(AVATAR_CLOTHES.cut.names.length); lk.sleeves = pick(2); lk.gender = pick(2); lk.facial = pick(4);
   for (const name of Object.keys(AVATAR_SHAPE.fields)) lk[name] = pick(AVATAR_SHAPE.steps);
   lk.bodyBuild = pick(AVATAR_BUILD.steps);
   const H = AVATAR_HEIGHT, lo = rnd() < 0.15 ? H.min + 20 : H.adult, hi = rnd() < 0.15 ? H.adult : H.max - 5;
@@ -363,6 +373,8 @@ function updateActiveSwatches() {
     { type: 'pants', value: currentLook.pants, list: PANTS },
     { type: 'shoes', value: currentLook.shoes, list: SHOES },
     { type: 'style', value: currentLook.style },
+    { type: 'legs', value: Number(currentLook.legs) || 0 }, // #1244
+    { type: 'cut', value: Number(currentLook.cut) || 0 },
     { type: 'hair', value: currentLook.hair, list: HAIR },
   ];
   groups.push({ type: 'glasses', value: Number(currentLook.glasses) || 0 }); // #1165
@@ -487,6 +499,12 @@ function initCustomizerDOM() {
       applyAndRefresh();
     } else if (type === 'shoes' && SHOES[idx] !== undefined) {
       currentLook.shoes = SHOES[idx];
+      applyAndRefresh();
+    } else if (type === 'legs' && AVATAR_CLOTHES.legs.names[idx] !== undefined) { // #1244
+      currentLook.legs = idx;
+      applyAndRefresh();
+    } else if (type === 'cut' && AVATAR_CLOTHES.cut.names[idx] !== undefined) {
+      currentLook.cut = idx;
       applyAndRefresh();
     } else if (type === 'style') {
       currentLook.style = idx;

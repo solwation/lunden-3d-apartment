@@ -1,0 +1,38 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Avatar clothes models</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#bfc6cc}canvas{display:block}</style></head>
+<body><script type="module">
+// #1244 component page: trouser models (legs 0–2) and top models (cut 0–2), full figures. Driven by tools/avatarhairtest.cjs.
+import * as THREE from 'three';
+import { Avatar, avatarTriangles } from '../src/avatar.js';
+import { avatarLook } from '../src/config.js';
+const W = 1600, Hh = 700, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, Hh); document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbfc6cc);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f72, 1.6));
+const sun = new THREE.DirectionalLight(0xfff2e0, 2.2); sun.position.set(2, 4, 3); scene.add(sun);
+const tops = [0x3d6b8f, 0x8f3d4f, 0x4f7a3d, 0x6b5a8f, 0xd9722e, 0x3a3f4a], pants = [0x2c3140, 0x4b5a78, 0x6d5a45, 0x23272e, 0x2c3140, 0x5b6068];
+const combos = [[0, 0, 0], [1, 0, 0], [2, 0, 0], [0, 1, 0], [1, 1, 1], [0, 2, 2]], avatars = []; // [legs, cut, sleeves]
+combos.forEach(([legs, cut, sl], s) => {
+  const lk = { ...avatarLook('cl' + s), style: 0, hair: 0x3b2a1e, top: tops[s], pants: pants[s], skin: 0xe0ae8a, tall: 1, build: 1, gender: s % 2, facial: 0, legs, cut, sleeves: sl };
+  const a = new Avatar(lk); a.object.position.set((s - 2.5) * 0.7, 0, 0); scene.add(a.object); avatars.push(a);
+});
+const cam = new THREE.PerspectiveCamera(22, W / Hh, 0.05, 50);
+// view: front / q (three-quarter) / side / back; `far` frames the whole figures instead of the heads
+window.__shot = (view, far = false) => {
+  const yaw = { front: 0, q: -Math.PI / 4, side: -Math.PI / 2, back: Math.PI }[view];
+  for (const a of avatars) { a.object.rotation.y = yaw; a.update(0, {}); } // rotation 0: the figure faces +z, the camera
+  cam.fov = far ? 22 : 12; cam.updateProjectionMatrix();
+  if (far) { cam.position.set(0, 1.0, 7.5); cam.lookAt(0, 0.95, 0); } else { cam.position.set(0, 1.0, 9); cam.lookAt(0, 0.95, 0); }
+  renderer.render(scene, cam);
+  return true;
+};
+window.__info = () => ({ tris: [[0, 0], [1, 0], [2, 0], [0, 1], [0, 2]].map(([l, c]) => avatarTriangles(0, l, c)), calls: renderer.info.render.calls });
+window.__ready = true;
+</script></body></html>

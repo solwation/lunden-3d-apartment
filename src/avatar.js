@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
+import { AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_CLOTHES, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
 import { topTexture } from './spidersuit.js';
 import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, SHIN, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
 
@@ -34,7 +34,7 @@ const H = 0.1; // The head bone's eye-height reference (ears, hair, moustache).
 const bases = new Map();
 
 /** Parts of one variant: [geometry, region, shade, bone, fixed colour]. */
-function parts(style, sleeves, gender = 0, facial = 0) {
+function parts(style, sleeves, gender = 0, facial = 0, legs = 0, cut = 0) {
   const P = [];
   const add = (g, region, bone, at = [], shade = 1, fixed = 0) => {
     place(g, bone, at); P.push([g, REGION[region], shade, fixed]); P[P.length - 1].bone = bone;
@@ -45,7 +45,7 @@ function parts(style, sleeves, gender = 0, facial = 0) {
   const cap = (r, h) => new THREE.CapsuleGeometry(r, h, 1, 5);
   // the body below the head (#1103): torso, shoulders, arms, hands, trousers, belt and shoes (bodyParts below)
   const isFemale = (Number(gender) || 0) === 1;
-  bodyParts(add, sleeves, isFemale);
+  bodyParts(add, cut === 2 ? 1 : cut === 1 ? 0 : sleeves, isFemale, legs, cut);
   // the head: neck, head, ears, face, hair
   add(new THREE.CylinderGeometry(0.05, 0.055, 0.12, 8), 'skin', 'head', [0, 0.02, 0]);
   P[P.length - 1].face = FACE_PART.neck;
@@ -130,7 +130,7 @@ function shape(g, f) {
   return g;
 }
 
-function bodyParts(add, sleeves, isFemale) {
+function bodyParts(add, sleeves, isFemale, legs = 0, cut = 0) {
   const sphere = (r, w = 10, h = 7, ...a) => new THREE.SphereGeometry(r, w, h, ...a);
   const cap = (r, h, seg = 5) => new THREE.CapsuleGeometry(r, h, 1, seg);
   const hipScale = isFemale ? [1.2, 1, 0.78] : [1.15, 1, 0.75];
@@ -154,7 +154,7 @@ function bodyParts(add, sleeves, isFemale) {
   // soft folds at the elbow and a cuff at the wrist), the bare skin below, the wrist reaching the hand
   for (const s of ['L', 'R']) {
     const sh = 'shoulder' + s, el = 'elbow' + s, sx = s === 'L' ? 1 : -1;
-    add(sphere(0.056, 8, 5).scale(1, 0.92, 0.95), 'top', sh, [0.004 * sx, 0.004, 0]);
+    add(sphere(0.056, 8, 5).scale(1, 0.92, 0.95), cut === 1 ? 'skin' : 'top', sh, [0.004 * sx, 0.004, 0]);
     if (sleeves) {
       add(lathe([[0, -UPPER - 0.01], [0.043, -UPPER], [0.047, -0.25], [0.044, -0.22], [0.05, -0.15], [0.054, -0.04], [0.052, 0.005]], 9), 'top', sh); // (open at the top: the deltoid closes it)
       add(sphere(0.043, 8, 5), 'top', el);
@@ -162,8 +162,10 @@ function bodyParts(add, sleeves, isFemale) {
       add(lathe([[0.034, -0.245], [0.038, -0.196]], 9), 'top', el, [0, 0, 0], 0.8); // the cuff
       add(lathe([[0, -0.278], [0.024, -0.272], [0.028, -0.235], [0, -0.2]], 7).scale(0.8, 1, 1.1), 'skin', el); // the wrist under it
     } else {
-      add(lathe([[0.051, -0.13], [0.057, -0.125], [0.058, -0.06], [0.055, 0.005]], 9), 'top', sh);
-      add(lathe([[0.058, -0.135], [0.06, -0.112]], 9), 'top', sh, [0, 0, 0], 0.82); // the sleeve's hem
+      if (cut !== 1) { // (#1244: a tank top has no sleeve)
+        add(lathe([[0.051, -0.13], [0.057, -0.125], [0.058, -0.06], [0.055, 0.005]], 9), 'top', sh);
+        add(lathe([[0.058, -0.135], [0.06, -0.112]], 9), 'top', sh, [0, 0, 0], 0.82); // the sleeve's hem
+      } else add(lathe([[0, -0.13], [0.05, -0.12], [0.056, -0.06], [0.054, 0.005]], 9), 'skin', sh); // the bare shoulder
       add(lathe([[0, -UPPER], [0.036, -UPPER + 0.006], [0.039, -0.23], [0.045, -0.15], [0.045, -0.08], [0, -0.05]], 8), 'skin', sh); // biceps
       add(sphere(0.04, 8, 5), 'skin', el);
       add(shape(lathe([[0, -0.278], [0.024, -0.272], [0.028, -0.235], [0.038, -0.13], [0.041, -0.03], [0, 0.01]], 9), (v) => { v.x *= 0.8 + 0.2 * smoothstep(-0.25, -0.12, v.y); v.z *= 0.88 + 0.2 * (1 - smoothstep(-0.25, -0.12, v.y)); }), 'skin', el);
@@ -178,10 +180,25 @@ function bodyParts(add, sleeves, isFemale) {
   }
   // legs: trousers with a little room at the knee and a hem resting on the shoe; low trainers: the upper falls from the
   // ankle collar to a flat toe, on a sole a little wider than it
+  if (cut === 2) { // #1244 hoodie: a long ribbed hem over the belt, a kangaroo pocket, a hood rolled at the back of the neck
+    add(lathe([[0.163, -0.085], [0.162, 0.03]], 14).scale(...torsoScale), 'top', 'torso', [0, 0, 0], 0.82);
+    add(lathe([[0.164, -0.09], [0.166, -0.07]], 14).scale(...torsoScale), 'top', 'torso', [0, 0, 0], 0.7);
+    add(new THREE.BoxGeometry(0.15, 0.07, 0.012), 'top', 'torso', [0, 0.03, 0.113], 0.86);
+    add(new THREE.TorusGeometry(0.072, 0.024, 5, 14).rotateX(Math.PI / 2 - 0.35).scale(1.05, 1, 1), 'top', 'torso', [0, 0.625, -0.035], 0.92);
+  }
+  const lw = legs === 2 ? AVATAR_CLOTHES.legs.wide : 1, hy = AVATAR_CLOTHES.legs.shorts;
   for (const s of ['L', 'R']) {
-    add(lathe([[0, -0.48], [0.044, -0.47], [0.054, -0.44], [0.062, -0.34], [0.077, -0.12], [0.08, -0.04], [0.06, 0.035], [0, 0.045]], 9), 'pants', 'thigh' + s);
-    add(lathe([[0, -0.42], [0.043, -0.4], [0.046, -0.37], [0.048, -0.29], [0.055, -0.13], [0.054, -0.01], [0.042, 0.04], [0, 0.05]], 9), 'pants', 'knee' + s);
-    add(lathe([[0.046, -0.392], [0.048, -0.368]], 9), 'pants', 'knee' + s, [0, 0, 0], 0.8); // the hem
+    if (legs === 1) { // #1244 shorts: mid-thigh hem, bare legs below
+      add(lathe([[0.066, hy], [0.077, -0.12], [0.08, -0.04], [0.06, 0.035], [0, 0.045]], 9), 'pants', 'thigh' + s);
+      add(lathe([[0.067, hy], [0.067, hy + 0.025]], 9), 'pants', 'thigh' + s, [0, 0, 0], 0.8); // the hem
+      add(lathe([[0, -0.48], [0.044, -0.47], [0.054, -0.44], [0.058, -0.34], [0.06, hy + 0.01]], 9), 'skin', 'thigh' + s);
+      add(lathe([[0, -0.42], [0.043, -0.4], [0.046, -0.37], [0.048, -0.29], [0.052, -0.13], [0.05, -0.01], [0.042, 0.04], [0, 0.05]], 9), 'skin', 'knee' + s);
+    } else {
+    const wide = (g, bell) => (lw === 1 ? g : shape(g, (v) => { const f = bell ? lw * (1 + 0.08 * smoothstep(-0.2, -0.39, v.y)) : 1 + (lw - 1) * smoothstep(-0.04, -0.3, v.y); v.x *= f; v.z *= f; })); // #1244: wide legs
+    add(wide(lathe([[0, -0.48], [0.044, -0.47], [0.054, -0.44], [0.062, -0.34], [0.077, -0.12], [0.08, -0.04], [0.06, 0.035], [0, 0.045]], 9)), 'pants', 'thigh' + s);
+    add(wide(lathe([[0, -0.42], [0.043, -0.4], [0.046, -0.37], [0.048, -0.29], [0.055, -0.13], [0.054, -0.01], [0.042, 0.04], [0, 0.05]], 9), true), 'pants', 'knee' + s);
+    add(wide(lathe([[0.046, -0.392], [0.048, -0.368]], 9), true), 'pants', 'knee' + s, [0, 0, 0], 0.8); // the hem
+    }
     add(shape(sphere(0.5, 10, 4, 0, Math.PI * 2, 0, Math.PI / 2).scale(0.105, 0.18, 0.27), (v) => {
       v.y *= 1 - 0.58 * smoothstep(-0.02, 0.12, v.z); v.y += -0.442; v.z += 0.055;
     }), 'fixed', 'foot' + s, [0, SHIN, 0], 1, 0); // (#1149: the shoe and its sole on the ankle, flat on the floor in a squat)
@@ -539,11 +556,11 @@ function mouthWeight(role, x, y, z) {
 }
 
 /** The shared base geometry of a variant: positions, normals, skin attributes and `region` + `base` colour per vertex. */
-function base(style = 0, sleeves = 0, gender = 0, facial = 0) {
-  const key = `${style}_${sleeves}_${gender}_${facial}`;
+function base(style = 0, sleeves = 0, gender = 0, facial = 0, legs = 0, cut = 0) {
+  const key = `${style}_${sleeves}_${gender}_${facial}_${legs}_${cut}`;
   let b = bases.get(key);
   if (b) return b;
-  const list = parts(style, sleeves, gender, facial), geos = []; let headProjection = null, headRadius = 0;
+  const list = parts(style, sleeves, gender, facial, legs, cut), geos = []; let headProjection = null, headRadius = 0;
   for (const part of list) {
     const [g0, region, shade, fixed] = part;
     if (part.rifleSkull) {
@@ -584,7 +601,7 @@ function base(style = 0, sleeves = 0, gender = 0, facial = 0) {
 
 /** A geometry for one player: the variant's shared position / normal / skin attributes and an own colour attribute. */
 function geometryFor(lk) {
-  const b = base(lk.style, lk.sleeves, lk.gender ?? lk.figure ?? 0, lk.facial ?? lk.facialHair ?? 0), n = b.attributes.position.count;
+  const b = base(lk.style, lk.sleeves, lk.gender ?? lk.figure ?? 0, lk.facial ?? lk.facialHair ?? 0, lk.legs | 0, lk.cut | 0), n = b.attributes.position.count;
   const pal = [lk.skin, lk.top, lk.pants, lk.hair, 0, lk.shoes].map((c) => new THREE.Color(c));
   pal[6] = pal[0].clone().lerp(new THREE.Color(FACE.lipTint), 0.35).multiplyScalar(0.92); // #1101: the lips, from the skin
   pal[7] = new THREE.Color(EYES.includes(lk.eyes) ? lk.eyes : EYES[0]); // #1138: the irises
@@ -606,7 +623,7 @@ function geometryFor(lk) {
 }
 
 /** Triangles of one avatar (documented; perfcount): 'tris' of any variant. */
-export const avatarTriangles = (variant = 0) => base(variant >> 1, variant & 1, 0, 0).attributes.position.count / 3;
+export const avatarTriangles = (variant = 0, legs = 0, cut = 0) => base(variant >> 1, variant & 1, 0, 0, legs, cut).attributes.position.count / 3;
 
 // --- the material: lit solid, or an outline -----------------------------------------------------------------------------
 /** MeshLambertMaterial with a rim: `uOutline` 1 → alpha = `uFill` inside and up to `uRim` at the edges (fresnel) with the

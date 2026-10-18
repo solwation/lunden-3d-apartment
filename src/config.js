@@ -5167,6 +5167,11 @@ export const AVATAR_GLASSES = { tag: 'g', names: ['Inga', 'Runda', 'Fyrkantiga']
 // extension's `v` tag with the HAIR index (absent when following the hair, so old codes keep their brows). The brows are their
 // own colour region in the avatar's per-player colour attribute (src/avatar.js), so no extra draw call.
 export const AVATAR_BROWS = { tag: 'v' };
+// #1244: trouser models (look field `legs`, tag `p`) and top models (`cut`, tag `m`) beyond the first, which stay the default and
+// are not carried in the code. Legs: straight, shorts (mid-thigh, bare knees), wide. Tops: T-shirt / long sleeves (the `sleeves`
+// choice), tank (sleeveless), hoodie (always long-sleeved, a long hem, a pocket and a rolled hood). `wide` / `hem` scale the leg's
+// radii (*guess* by eye), `shorts` the hem's height on the thigh bone (m).
+export const AVATAR_CLOTHES = { legs: { tag: 'p', names: ['Raka', 'Shorts', 'Vida'], wide: 1.45, shorts: -0.2 }, cut: { tag: 'm', names: ['T-shirt', 'Linne', 'Luvtröja'] } };
 /** The value (scale or offset) of a face / head slider `name` at integer step `v` (#1138). */
 export function avatarShape(name, v) {
   const f = AVATAR_SHAPE.fields[name], n = AVATAR_SHAPE.steps - 1;
@@ -5195,6 +5200,8 @@ function encodeLookExt(look) {
   if (Number.isInteger(look.glasses) && look.glasses > 0 && look.glasses < AVATAR_GLASSES.names.length) out += `${AVATAR_GLASSES.tag}${look.glasses}`;
   const brows = look.brows == null ? -1 : HAIR.indexOf(look.brows); // #1220
   if (brows >= 0) out += `${AVATAR_BROWS.tag}${brows}`;
+  if (look.legs > 0 && look.legs < AVATAR_CLOTHES.legs.names.length) out += `${AVATAR_CLOTHES.legs.tag}${look.legs}`; // #1244
+  if (look.cut > 0 && look.cut < AVATAR_CLOTHES.cut.names.length) out += `${AVATAR_CLOTHES.cut.tag}${look.cut}`;
   return out;
 }
 function decodeLookExt(ext, lk) {
@@ -5208,6 +5215,8 @@ function decodeLookExt(ext, lk) {
     if (tag === AVATAR_BUILD.tag) { if (v < AVATAR_BUILD.steps) lk.bodyBuild = v; continue; } // #1139
     if (tag === AVATAR_GLASSES.tag) { if (v < AVATAR_GLASSES.names.length) lk.glasses = v; continue; } // #1165
     if (tag === AVATAR_BROWS.tag) { if (v < HAIR.length) lk.brows = HAIR[v]; continue; } // #1220
+    if (tag === AVATAR_CLOTHES.legs.tag) { if (v < AVATAR_CLOTHES.legs.names.length) lk.legs = v; continue; } // #1244
+    if (tag === AVATAR_CLOTHES.cut.tag) { if (v < AVATAR_CLOTHES.cut.names.length) lk.cut = v; continue; }
     // #1173: wire-only seeded scale; explicit chosen cm always take precedence.
     if (tag === 's') { if (!Number.isInteger(lk.height) && v < AVATAR_SEEDED_TALL.length) lk.tall = AVATAR_SEEDED_TALL[v]; continue; }
     const name = Object.keys(AVATAR_SHAPE.fields).find((k) => AVATAR_SHAPE.fields[k].tag === tag);
