@@ -38,7 +38,7 @@ async function run() {
   const dt = 1 / 60;
   const key = (code, down = true) => d.dispatchEvent(new w.KeyboardEvent(down ? 'keydown' : 'keyup', { code, bubbles: true }));
   const prompt = () => d.getElementById('prompt').hidden ? '' : d.getElementById('prompt').textContent;
-  const settle = () => { while (fall.t >= 0) step(dt); };
+  const settle = async () => { while (fall.pending) await wait(10); while (fall.t >= 0) step(dt); };
   const place = (x, z, feet, yawDeg = 180, pitchDeg = 0) => {
     player.spawn(x, z, yawDeg * Math.PI / 180);
     if (feet !== undefined) { player.pos.y = feet; player.eyeY = feet + PLAYER.eye; }
@@ -191,7 +191,7 @@ async function run() {
   const high = player.pos.y;
   run(6);
   check(landings.some((l) => l.r === 'hurt'), `thrust cut at ${f2(high)} m: hurt`);
-  settle();
+  await settle();
   check(jetpack.state === 'hook' && !player.jet && !!safeRespawnPoint(player, player.pos.x, player.pos.z) && RESPAWN.regions.some(r => player.pos.x >= r.x0 && player.pos.x <= r.x1 && player.pos.z >= r.z0 && player.pos.z <= r.z1), 'awake on checked outdoor ground; the jetpack is back on its hook');
 
   // (10) in through the front door with it on: stood down outside
