@@ -101,6 +101,22 @@ function boxGeo(x0, x1, y0, y1, z0, z1) {
   return geo;
 }
 
+/** Solar panel tilted up to the south sun (#1232): a slab hinged on its low south edge, the north edge raised by
+ * HUS_L.solar.tilt degrees. `y` = the height of the low edge's underside; one box per panel, merged with the rest. */
+function tiltedPanelGeo(xa, xb, y, za, zb) {
+  const t = H.solar.thickness, a = (H.solar.tilt * Math.PI) / 180;
+  const geo = new THREE.BoxGeometry(xb - xa, t, zb - za);
+  geo.translate(0, t / 2, -(zb - za) / 2); // hinge = the south edge's underside at the origin
+  geo.rotateX(-a); // rotation about +x by -a lifts -z, the north side
+  geo.translate((xa + xb) / 2, y, zb);
+  return geo;
+}
+/** Height of a tilted panel's highest point above its low edge's underside. */
+const solarRise = () => {
+  const [za, zb] = H.solar.z[0], a = (H.solar.tilt * Math.PI) / 180;
+  return (zb - za) * Math.sin(a) + H.solar.thickness * Math.cos(a);
+};
+
 /** Open brick drum (spiral stair tower) with world-space brick UVs; `gap` = { at, deg, y }: open above y over deg°
  * round the plan angle `at` (deg from +x towards +z) — the doorway onto the loftgång / landing (#444). */
 function drum(x, z, r, h, gap) {
@@ -493,7 +509,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   const rb = VERTICAL.roof.buildUp, rc = rb + VERTICAL.roof.capping; // roof build-up + capping (assumption, #344)
   roofs.push(boxGeo(xw - 0.1, xe + 0.1, upperTop, upperTop + rb, loftD - 0.1, zs + 0.1));
   const capping = [boxGeo(xw - 0.13, xe + 0.13, upperTop + rb, upperTop + rc, loftD - 0.13, zs + 0.13), ...copings]; // light sheet-metal capping on the parapets (#110)
-  for (const [xa, xb] of H.solar.x) for (const [za, zb] of H.solar.z) panels.push(boxGeo(xa, xb, upperTop + rc, upperTop + rc + 0.07, za, zb));
+  for (const [xa, xb] of H.solar.x) for (const [za, zb] of H.solar.z) panels.push(tiltedPanelGeo(xa, xb, upperTop + rc + H.solar.lift, za, zb));
 
   // loftgång deck from the west drum to the east end, plus the landing to the east drum
   const towers = H.towers.map((t) => (t.gable === 'west' ? { ...t, x: xw - t.r } : t)); // right against the gable (#172)
@@ -546,7 +562,8 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   surf('L-loftgang', 'Loftgången', te.x - 1.2, te.x + 1.2, te.z + te.r * 0.7, 0, roofTop); // the landing to the east drum
   for (const t of terraces) surf(`L-terrace-${t.id}`, `Takterrassen ${t.id}`, t.x0, t.x1, zs, D - 0.1, deckY);
   surf('L-roof', 'Hus L:s tak', xw - 0.13, xe + 0.13, loftD - 0.13, zs + 0.13, roofY);
-  for (const [xa, xb] of H.solar.x) for (const [za, zb] of H.solar.z) surf('L-roof', 'Hus L:s tak', xa, xb, za, zb, roofY + 0.07); // step over them
+  const panelTop = roofY + H.solar.lift + solarRise(); // the tilted panels' highest edge (#1232)
+  for (const [xa, xb] of H.solar.x) for (const [za, zb] of H.solar.z) surf('L-roof', 'Hus L:s tak', xa, xb, za, zb, panelTop); // step over them
   surf('L-loft', 'Loftet över hisstoppet', loftX0 - 0.03, loftX1 + 0.03, zt - 0.03, zf + 0.03, loftY);
   wallRect(walls, xw, xe, 0, D, low, roofTop); // våning 1–2 (a fall past the façades stays outside)
   // a visited flat's street door and terrace door are ways in (#573): the walls stop there below the door's head (its own

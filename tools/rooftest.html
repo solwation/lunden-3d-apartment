@@ -147,7 +147,7 @@ async function run() {
   place(3, 5.0, roofY, 0);
   check(Math.abs(player.pos.y - roofY) < 0.01 && world.roofs.standingOn(player.pos.x, player.pos.z, player.pos.y)?.id === 'L-roof', `on Hus L's roof at ${f2(player.pos.y)} m`);
   r = walkTo(3, 3.0);
-  check(r.ok && r.hi > roofY + 0.05 && r.hi < roofY + 0.1 && !landings.some((l) => l.r), `stepped over a row of solar panels (up to ${f2(r.hi)} m)`);
+  check(r.ok && r.hi > roofY + 0.15 && r.hi < roofY + 0.3 && !landings.some((l) => l.r), `stepped over a row of solar panels (up to ${f2(r.hi)} m)`);
   place(loftX1 + 1.5, 10.6, roofY, 90); // (between the last row of panels and the set-back line)
   push(90, 4);
   check(player.pos.x > loftX1 + PLAYER.radius - 0.02 && Math.abs(player.pos.y - roofY) < 0.01, `the loft over the lift stands in the way (x ${f2(player.pos.x)}, its wall ${f2(loftX1)}, feet ${f2(player.pos.y)})`);
@@ -184,7 +184,7 @@ async function run() {
     const o = i * 6, dx = p[o + 3] - player.pos.x, dz = p[o + 5] - player.pos.z;
     if (dx * dx + dz * dz < 4) near.push({ y: p[o + 4], floor: weather.floor[i] });
   }
-  const onRoof = near.filter((n) => Math.abs(n.floor - roofY) < 0.12);
+  const onRoof = near.filter((n) => n.floor > roofY - 0.12 && n.floor < roofY + 0.3); // (the roof, or the tilted solar panels' step-over surface, #1232)
   check(near.length > 5 && onRoof.length / near.length > 0.9, `rain within 2 m ends on the roof (${onRoof.length} of ${near.length} at ${f2(roofY)} m)`);
   check(near.some((n) => n.y > roofY + 0.2 && n.y < roofY + PLAYER.eye), 'some of it falls past the visitor');
   for (const [x, z, y, what] of [[3, 0.8, roofTop, 'the loftgång'], [(T.x0 + T.x1) / 2, 11.5, deckY, 'the terrace'], [3, 5.0, roofY, "Hus L's roof"], [ax, az, top, "Hus A's roof"]])

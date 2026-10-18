@@ -1466,7 +1466,13 @@ export const HUS_L = {
     { gable: 'east', storey: 3, flat: 'L1209', z0: 8.24, z1: 10.0, sill: 0.7, head: 2.3 },  // Vardagsrum
   ],
   // solar panel fields on the roof (situation plan): x ranges × rows of z ranges
-  solar: { x: [[-39.96, -25.77], [-24.13, -6.37], [-4.83, 9.56]], z: [[3.5, 4.5], [5.4, 6.4], [7.4, 8.4], [9.4, 10.4]] },
+  solar: { x: [[-39.96, -25.77], [-24.13, -6.37], [-4.83, 9.56]], z: [[3.5, 4.5], [5.4, 6.4], [7.4, 8.4], [9.4, 10.4]],
+    // Peab's renders show the panels tilted slightly up towards the sun (#1232). Tilt about the panel's long (x) axis,
+    // the north (-z) edge raised so the face looks south; all three values are assumptions (*guess*): no source measures them.
+    tilt: 10,          // degrees above horizontal (*guess*)
+    thickness: 0.05,   // panel slab thickness, m (*guess*; was a 0.07 flat box)
+    lift: 0.04,        // lowest edge (south) above the roof capping, m (*guess*: mounting rail)
+  },
 };
 
 // Seasons (src/seasons.js, #73), by the day cycle's month (the wall clock can change it). Tree crowns:

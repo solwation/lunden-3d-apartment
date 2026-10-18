@@ -65,7 +65,7 @@ src/doors.js           SwingDoor / SlidingDoor (E to open/close, animated, dynam
 src/exterior.js        Hus L (HUS_L): brick row with the core/portik, neighbours' patios, rendered upper
                        units with pilasters, loftgång, spiral-stair drums (a doorway `gap` onto the loftgång / landing; inside a visual-only
                        spiral stair, `HUS_L.spiral`, #444: column, open treads, wall handrail, top landing + guard, all *guess*),
-                       roof with solar panels; the portik paved through (its own material: no snow) with opal ceiling lamps
+                       roof with solar panels tilted 10° up to the south (#1232, HUS_L.solar tilt/thickness/lift = guess); the portik paved through (its own material: no snow) with opal ceiling lamps
                        lit with the front-door lights (`HUS_L.portikLamp`, #451); `husLLayout` gives each
                        strip its flat ids (`lower` L1001…, `upper` L1201…); the upper flats' street openings are their own
                        (`HUS_L.street` per type from bofakta, `floor` = the flat's own floor, not the building storey, #347)
