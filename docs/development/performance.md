@@ -494,6 +494,23 @@ Fix: `bikeGeometry(lod)` / `standGeometry(lod)` in `src/streetlife.js` take a le
 
 Desktop peak is now 922 959 at the big hall (budget 1 000 000), phone peak 820 262 at the basement (budget 950 000). The courtyard rack and the bike yard's instanced bikes only got the lighter near geometry (no distance swap); they are the next lever if the budget is hit again. To find what a view's triangles are made of, hook `onBeforeRender` on every mesh, render once and sum `index.count / 3` (× `count` when instanced) per mesh, with the material colour and bounding box to recognise merged batches.
 
+## Triangle budget over by whole-site instanced batches (#1246)
+
+`tools/perfcount.html` failed on desktop (garage 1 030 833, park 1 026 713, big hall 1 023 703 > 1 000 000; textures 315-317 MB of 320, run dependent) from 622b0268 on. Found as in #704 (hook `onBeforeRender`, sum `index.count / 3` x `count`): the growth was not the river park's own geometry (two path meshes, one bridge, one shore mesh: a few k triangles) but two kinds of site-wide InstancedMesh, each drawn *whole* from every spot because one bounding sphere covers the site: the trees (1 486 crown lobes x 60 = 89 k, 1 232 trunks x 46 = 57 k; #1233's denser park woodland added ~130 trees and ~190 shrubs to these) and the parked cars (23 garage + 19 street cars, ~5.1 k each, ~215 k, drawn although most stand underground or behind the viewer).
+
+Fix, bounded and reversible:
+- `surroundings.js` `trees()` splits the trunk, birch and crown batches into one InstancedMesh per `FOLIAGE.cell` (130 m, *guess*) square, each with its bounding sphere computed from the full-leaf matrices (seasons.js only rewrites instances), so frustum culling drops the cells behind the viewer. Same geometry, material and instances: no visible change. `registerTrees` is called per cell. To go back: one cell larger than the site.
+- `viewlod.js` (#1213, phones only until now) also runs on desktop from `VIEW_LOD.carNearDesktop` (60 m, *guess*; phones keep `carNear` 30 m): parked cars further away use the ~100 triangle body, near ones stay full (+2 calls, `?nocarlod` turns it off).
+
+| desktop view | before (tri / calls) | after (tri / calls) |
+|---|---|---|
+| garage | 1 030 833 / 375 | 853 857 / 395 |
+| park | 1 026 713 / 492 | 861 365 / 505 |
+| big hall | 1 023 703 / 344 | 960 465 / 364 |
+| start | 814 742 / 478 | 774 422 / 494 |
+
+Desktop peak 960 465 at the big hall, most calls 505 at the park (≤ 520). Phone (`?lowmem&w=390&h=844`): peak 801 744 → 726 892 triangles, calls 348 → 356 (≤ 370). Textures stay ~315 MB in 323 (≤ 320): the big ones are the picture frames, stair pictures and the garage/hall photos (14 MB each at most), none added by #1233/#1235 and none safely shrinkable without visible loss; this is the next budget risk. Next levers if hit again: big hall's 516 k triangles are the garage area shells (unnamed meshes, one per area), and the street/garage car batches could be split by cell like the trees.
+
 ## Phone warm-up before the first complete view (#697)
 
 `WarmUp.blocksView` gates ordinary scene and mirror renders on low-memory devices until sliced warm-up reaches `done`.

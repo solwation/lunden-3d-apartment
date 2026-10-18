@@ -1507,6 +1507,11 @@ export const FOLIAGE = {
   // #1083: a crown standing near an Å-hus (SITE.blocks) is narrowed so its leaf cards stay `wallClearance` m outside the
   // façade instead of poking through the brick and windows (a pruned crown; *guess*, by eye — no measurement)
   wallClearance: 0.2,
+  // #1246: the site's tree batches (trunks, birches, crowns) are split into square cells of this side (m, *guess*: ~5 cells
+  // across the site, so a view drops the cells behind it while a cell stays big enough to keep draw calls modest), each its
+  // own InstancedMesh with its own bounding sphere, so frustum culling skips whole groups of trees instead of drawing all ~1500
+  // crowns and ~1200 trunks from every spot.
+  cell: 130,
 };
 
 export const FENCE_HEIGHT = 1.8; // bofakta: Skärmvägg H = 1,8 m
@@ -2674,7 +2679,8 @@ export const SHADOW_TILES = { size: 32, minInstances: 8, minSpread: 40 };
 // m from the camera is drawn as a coarse body (streetlife.js `carFarGeometry`, ~100 instead of ~5.1 k triangles), all of
 // them in one draw call; the near ones keep the full batches. A car changes side `band` m past `carNear` (no flicker on
 // the edge); the split is redone when the camera has moved `step` m. All three *guess* (judged by screenshots, not a device).
-export const VIEW_LOD = { carNear: 30, band: 2, step: 1 };
+// #1246: desktop uses the same split from `carNearDesktop` (*guess*: a parked car's silhouette and colour hold up to ~60 m).
+export const VIEW_LOD = { carNear: 30, carNearDesktop: 60, band: 2, step: 1 };
 
 // Campus facades on phones (#589, src/lowmemory.js): #576–#581 took the east backdrop from ~21k to ~75k triangles. On
 // LOW_MEMORY devices campusfacades.js and schoolfacade.js keep every body, roof, colour, window and the clock tower but

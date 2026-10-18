@@ -7,7 +7,7 @@ import { PlantWind, windShadow } from './plantwind.js';
 import { runCheat, cheatList, isCommand } from './cheats.js';
 import { cleanHome } from './cheatclean.js';
 import { buildCheatNote } from './cheatnote.js';
-import { REPORTS, CHEAT_NOTE, LOW_MEMORY, QUALITY, STANDARD, SHADOW_BOX, STARTUP, KITCHEN_TOWEL_MATERIAL, LIGHTING } from './config.js';
+import { REPORTS, CHEAT_NOTE, LOW_MEMORY, QUALITY, STANDARD, SHADOW_BOX, STARTUP, KITCHEN_TOWEL_MATERIAL, LIGHTING, VIEW_LOD } from './config.js';
 import { fetchStartupJSON } from './startuprecovery.js';
 import { lowMemory, reloadOnContextRestore, freeSceneGeometryCopies } from './lowmemory.js';
 import { addSceneShadowTiles, installShadowTiles } from './shadowtiles.js';
@@ -2884,7 +2884,8 @@ loadingStep('Värmer upp vyn', 0.9); // the first frames compile and upload; pho
 // #1195 (phones): site-wide instanced batches (trees, parked cars) cast their shadows through squares the shadow box can cull
 if (lowMemory && !params0.has('noshadowtiles')) { const st = addSceneShadowTiles(scene); installShadowTiles(renderer); if (perfEl) console.log(`shadow tiles: ${st.batches} batches, ${st.tiles} squares`); }
 // #1213 (phones): parked cars beyond VIEW_LOD.carNear are drawn as one coarse batch in the view (src/viewlod.js)
-if (lowMemory && !params0.has('nocarlod')) { const n = addSceneCarLods(scene); updateCarLods(camera); if (perfEl) console.log(`car lod: ${n} sets`); }
+// #1246: desktop too, from the larger VIEW_LOD.carNearDesktop (the 42 parked cars were ~215 k triangles in every view)
+if (!params0.has('nocarlod')) { const n = addSceneCarLods(scene, lowMemory ? VIEW_LOD.carNear : VIEW_LOD.carNearDesktop); updateCarLods(camera); if (perfEl) console.log(`car lod: ${n} sets`); }
 // Warm-up (#432, #592, src/warmup.js): compile and upload everything behind the start screen, the mirrors' variants too.
 const warm = new WarmUp({ renderer, scene, camera, shadowCamera: sun.shadow.camera, mirrorTarget,
   prepare: () => { lights.wash?.patch(scene); visitLights.wash?.patch(scene); }, // (#668: both lamp washes' periodic patch, now)

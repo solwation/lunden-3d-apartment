@@ -1269,19 +1269,24 @@ function trees(rand) {
       scale: new THREE.Vector3(s * 1.2, s, s * 1.1), r1: 0.2 + rand() * 0.15, r2: 0.9, r3: 0.15 + rand() * 0.2, r4: 1 }); // one red-brown hedge; r2 high: some leaves stay; r4: no blossom
   }
   // #679: tapered trunks with branches into the crown, crowns of leaf cards round an opaque core (src/foliage.js)
-  const trunkGeo = trunkGeometry();
-  const trunk = new THREE.InstancedMesh(trunkGeo, barkMaterial('bark'), trunkM.length);
-  const crown = new THREE.InstancedMesh(lobeGeometry('tree'), leafMaterial(), lobes.length);
-  trunkM.forEach((mm, i) => trunk.setMatrixAt(i, mm));
-  const col = new THREE.Color();
-  lobes.forEach((l, i) => { crown.setMatrixAt(i, m.compose(l.pos, l.rot, l.scale)); crown.setColorAt(i, col.setHSL(0.27, 0.45, 0.3)); });
-  // colours and leaf cover come from the season (seasons.js); keep each tree's own variation
-  registerTrees(crown, lobes);
-  const birches = new THREE.InstancedMesh(trunkGeo, barkMaterial('birch'), Math.max(1, birchM.length));
-  birchM.forEach((mm, i) => birches.setMatrixAt(i, mm));
-  birches.count = birchM.length;
-  trunk.castShadow = crown.castShadow = birches.castShadow = true;
-  return [trunk, birches, crown];
+  // #1246: one InstancedMesh per FOLIAGE.cell square (not one for the whole site) so frustum culling drops the cells behind the
+  // viewer; every cell keeps its bounding sphere from the full-leaf matrices set here, and seasons.js only rewrites instances.
+  const trunkGeo = trunkGeometry(), cell = (x, z) => `${Math.floor(x / FOLIAGE.cell)}|${Math.floor(z / FOLIAGE.cell)}`;
+  const cells = (items, at) => { const g = new Map(); for (const it of items) { const k = cell(...at(it)); (g.get(k) ?? g.set(k, []).get(k)).push(it); } return [...g.entries()].sort(([a], [b]) => (a < b ? -1 : 1)); };
+  const meshes = [], col = new THREE.Color();
+  const batch = (name, geo, mat, items, put) => {
+    const mesh = new THREE.InstancedMesh(geo, mat, items.length); mesh.name = name; mesh.castShadow = true;
+    items.forEach((it, i) => put(mesh, it, i)); mesh.computeBoundingSphere(); meshes.push(mesh); return mesh;
+  };
+  const bark = barkMaterial('bark'), birchBark = barkMaterial('birch'), leaf = leafMaterial();
+  for (const [k, items] of cells(trunkM, (mm) => [mm.elements[12], mm.elements[14]])) batch(`tree-trunks ${k}`, trunkGeo, bark, items, (mesh, mm, i) => mesh.setMatrixAt(i, mm));
+  for (const [k, items] of cells(birchM, (mm) => [mm.elements[12], mm.elements[14]])) batch(`tree-birches ${k}`, trunkGeo, birchBark, items, (mesh, mm, i) => mesh.setMatrixAt(i, mm));
+  for (const [k, items] of cells(lobes, (l) => [l.pos.x, l.pos.z])) {
+    const crown = batch(`tree-crowns ${k}`, lobeGeometry('tree'), leaf, items, (mesh, l, i) => { mesh.setMatrixAt(i, m.compose(l.pos, l.rot, l.scale)); mesh.setColorAt(i, col.setHSL(0.27, 0.45, 0.3)); });
+    // colours and leaf cover come from the season (seasons.js); keep each tree's own variation
+    registerTrees(crown, items);
+  }
+  return meshes;
 }
 
 /** Sky for scene.background: vertical gradient with a few soft clouds (equirectangular). */

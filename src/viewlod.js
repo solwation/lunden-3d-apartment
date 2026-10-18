@@ -16,7 +16,7 @@ const NOWHERE = new THREE.Sphere(new THREE.Vector3(0, -1e6, 0), 0); // (an empti
 let farGeometry = null, farMaterial = null;
 
 /** One set of InstancedMeshes that share one matrix per car (same count and parent). Returns the coarse mesh. */
-export function addCarLod(batches) {
+export function addCarLod(batches, reach = C.carNear) {
   const first = batches[0], n = first.count, parent = first.parent;
   if (!n || !parent || batches.some((b) => b.count !== n || b.parent !== parent)) return null;
   farGeometry ??= carFarGeometry();
@@ -35,20 +35,20 @@ export function addCarLod(batches) {
   parent.updateMatrixWorld(true);
   const at = [], m = new THREE.Matrix4(), p = new THREE.Vector3();
   for (let i = 0; i < n; i++) { m.fromArray(src[0].m, i * 16); at.push(p.setFromMatrixPosition(m).applyMatrix4(first.matrixWorld).clone()); }
-  const set = { batches, src, paint, lo, n, at, near: new Uint8Array(n), from: new THREE.Vector3(Infinity, 0, 0), ready: false };
+  const set = { batches, src, paint, lo, n, at, reach, near: new Uint8Array(n), from: new THREE.Vector3(Infinity, 0, 0), ready: false };
   sets.push(set);
   return lo;
 }
 
 /** Every tagged car batch set under `root` (userData.carBatch, grouped by parent). Returns the number of sets. */
-export function addSceneCarLods(root) {
+export function addSceneCarLods(root, reach = C.carNear) {
   const groups = new Map();
   root.traverse((o) => {
     if (!o.isInstancedMesh || !o.userData.carBatch) return;
     const k = o.parent; let list = groups.get(k); if (!list) groups.set(k, list = []); list.push(o);
   });
   let made = 0;
-  for (const list of groups.values()) if (addCarLod(list)) made++;
+  for (const list of groups.values()) if (addCarLod(list, reach)) made++;
   return made;
 }
 
@@ -61,7 +61,7 @@ export function updateCarLods(camera) {
     let changed = !s.ready;
     for (let i = 0; i < s.n; i++) {
       const d = s.at[i].distanceTo(cam), was = s.near[i];
-      const now = s.ready ? (was ? d < C.carNear + C.band / 2 : d < C.carNear - C.band / 2) : d < C.carNear;
+      const now = s.ready ? (was ? d < s.reach + C.band / 2 : d < s.reach - C.band / 2) : d < s.reach;
       if (now !== !!was) { s.near[i] = now ? 1 : 0; changed = true; }
     }
     s.ready = true;
