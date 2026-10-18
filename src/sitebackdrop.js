@@ -1,11 +1,12 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { SITE, SEASON, DECAL_OFFSET } from './config.js';
+import { SITE, SEASON, DECAL_OFFSET, PARKING_LOT } from './config.js';
 import { pathStrip, onRoad, onWalk } from './roads.js';
 import { registerSnow } from './seasons.js';
 import { buildSchoolFacade, schoolTextures } from './schoolfacade.js';
 import { buildCampusFacade } from './campusfacades.js';
 import { TowerClock } from './towerclock.js';
+import { parkingLots, onEastRoad, onEastBuildingAt } from './parkinglayout.js';
 import { buildKarpFacade, karpBrickTexture } from './karpfacade.js';
 const W=SITE.west;
 const ring=p=>(p[0][0]===p[p.length-1][0]&&p[0][1]===p[p.length-1][1]?p.slice(0,-1):p);
@@ -34,6 +35,46 @@ function campusTreeSpots(E,key,ground){const points=E.trees.map(([x,z,source])=>
 export function buildWestBackdrop(ground,karp=null){return buildBackdrop(SITE.west,'west',ground,null,null,karp);} // #575 karp: {glass} = #569's shared neighbour glass
 export function buildEastBackdrop(ground,brick,reflectiveGlass){return buildBackdrop(SITE.east,'east',ground,brick,reflectiveGlass);}
 export function buildNorthBackdrop(ground,brick){return buildBackdrop(SITE.north,'north',ground,brick);}
+/** #1278: a car park's asphalt cut into triangles no longer than `max` m (longest-edge bisection), as flat [x, z] triples. */
+function refinedTriangles(ring,max){
+ const idx=THREE.ShapeUtils.triangulateShape(ring.map(([x,z])=>new THREE.Vector2(x,z)),[]),stack=idx.map(t=>t.map(i=>[ring[i][0],ring[i][1]])),out=[];
+ while(stack.length){const t=stack.pop();let li=0,ll=0;for(let i=0;i<3;i++){const a=t[i],b=t[(i+1)%3],l=Math.hypot(a[0]-b[0],a[1]-b[1]);if(l>ll){ll=l;li=i;}}
+  if(ll<=max){out.push(...t);continue;}
+  const a=t[li],b=t[(li+1)%3],c=t[(li+2)%3],m=[(a[0]+b[0])/2,(a[1]+b[1])/2];stack.push([a,m,c],[m,b,c]);}
+ return out;
+}
+const flatGeometry=pos=>{pos=pos.slice();for(let i=0;i<pos.length;i+=9){const ux=pos[i+3]-pos[i],uz=pos[i+5]-pos[i+2],vx=pos[i+6]-pos[i],vz=pos[i+8]-pos[i+2];if(uz*vx-ux*vz<0)for(let k=0;k<3;k++){const t=pos[i+3+k];pos[i+3+k]=pos[i+6+k];pos[i+6+k]=t;}} // front faces up (a double-sided material would flip the normal and darken a back face)
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('normal',new THREE.Float32BufferAttribute(Array.from({length:pos.length/3},()=>[0,1,0]).flat(),3));return g;};
+/** #1278: marked lines / edge strips along [a, b] pairs, `w` m wide, cut every 2.5 m so each follows the sloping ground. */
+function ribbon(pairs,w,lift,ground){
+ const pos=[];
+ for(const[a,b]of pairs){const len=Math.hypot(b[0]-a[0],b[1]-a[1]);if(len<1e-6)continue;const n=Math.max(1,Math.ceil(len/2.5)),px=-(b[1]-a[1])/len*w/2,pz=(b[0]-a[0])/len*w/2;
+  const v=(t,s)=>{const x=a[0]+(b[0]-a[0])*t+px*s,z=a[1]+(b[1]-a[1])*t+pz*s;return[x,ground(x,z)+lift,z];};
+  for(let i=0;i<n;i++){const t0=i/n,t1=(i+1)/n,p0=v(t0,-1),p1=v(t0,1),p2=v(t1,1),p3=v(t1,-1);pos.push(...p0,...p1,...p2,...p0,...p2,...p3);}}
+ return pos.length?flatGeometry(pos):null;
+}
+/** #1278: the east car parks' extras, merged into the `access` batch (vertex colours): terrain-following asphalt, white stall lines, a flat concrete edge. */
+function eastLotParts(ground,access,surfColor){
+ const P=PARKING_LOT,lines=[],kerbs=[];
+ for(const lot of parkingLots().lots){
+  const src=SITE.east.access.find(p=>p.source===lot.source),pos=[];
+  for(const[x,z]of refinedTriangles(lot.polygon,P.mesh))pos.push(x,ground(x,z)+P.lift.asphalt,z);
+  const asphalt=flatGeometry(pos);asphalt.userData.tint=surfColor(src);access.push(asphalt);
+  for(const run of lot.runs){ // the stalls' side lines (one between every two stalls and at both ends) and one back line
+   const off=run.road.w/2+PARKING_LOT.bayD/2,mid=j=>[run.a[0]+run.u[0]*j*P.bayW+run.n[0]*off,run.a[1]+run.u[1]*j*P.bayW+run.n[1]*off],hd=P.bayD/2;
+   for(let j=run.k0;j<=run.k1+1;j++){const c=mid(j);lines.push([[c[0]-run.n[0]*hd,c[1]-run.n[1]*hd],[c[0]+run.n[0]*hd,c[1]+run.n[1]*hd]]);}
+   const c0=mid(run.k0),c1=mid(run.k1+1);lines.push([[c0[0]+run.n[0]*hd,c0[1]+run.n[1]*hd],[c1[0]+run.n[0]*hd,c1[1]+run.n[1]*hd]]);
+  }
+  const r=lot.polygon;for(let i=0;i<r.length;i++){ // the edge strip, inside the outline, in 2 m pieces; none across a road mouth or by a building
+   const a=r[i],b=r[(i+1)%r.length],len=Math.hypot(b[0]-a[0],b[1]-a[1]),n=Math.max(1,Math.ceil(len/2)),sgn=(r.reduce((s,q,j)=>{const w=r[(j+1)%r.length];return s+q[0]*w[1]-w[0]*q[1];},0)>0?1:-1);
+   const nx=-(b[1]-a[1])/len*sgn,nz=(b[0]-a[0])/len*sgn,at=t=>[a[0]+(b[0]-a[0])*t+nx*P.kerbW/2,a[1]+(b[1]-a[1])*t+nz*P.kerbW/2];
+   for(let k=0;k<n;k++){const m=at((k+.5)/n);if(!onEastRoad(m[0],m[1],P.kerbW)&&!onEastBuildingAt(m[0],m[1]))kerbs.push([at(k/n),at((k+1)/n)]);}
+  }
+ }
+ const l=ribbon(lines,P.lineW,P.lift.line,ground),k=ribbon(kerbs,P.kerbW,P.lift.kerb,ground);
+ if(l){l.userData.tint=P.lineColor;access.push(l);}
+ if(k){k.userData.tint=P.kerbColor;access.push(k);}
+}
 function buildBackdrop(W,key,ground,brick=null,reflectiveGlass=null,karp=null){
  const group=new THREE.Group();group.name=key+'-backdrop';const parts={facade:[],roof:[],glass:[],access:[],...(brick||W.buildings.some(b=>b.classic)?{modern:[]}: {})},records=[];
  for(const b of W.buildings){const p=b.polygon.slice(0,-1),holes=(b.holes??[]).map(h=>h.slice(0,-1)),height=b.storey??W.storey,heights=p.map(v=>ground(...v)),base=Math.max(...heights),bottom=Math.min(...heights)-.1,eave=base+b.levels*height;const footprint=shape(p);footprint.holes=holes.map(h=>new THREE.Path(h.map(([x,z])=>new THREE.Vector2(x,-z))));const wallParts=b.modern?parts.modern:parts.facade;
@@ -65,8 +106,10 @@ function buildBackdrop(W,key,ground,brick=null,reflectiveGlass=null,karp=null){
  for(const p of [...W.paths,...W.access]){
   const surfColor=p.color??(p.surface==='asphalt'?0x5f6164:p.surface==='gravel'?0xb5ac90:0xa7a397);
   if(p.path){const s=plain(pathStrip(p,w=>-w/2,w=>w/2,W.pathLift,ground));s.userData.tint=surfColor;parts.access.push(s);}
+  else if(key==='east'&&p.capacity&&parkingLots().lots.some(l=>l.source===p.source))continue; // a car park: drawn below (#1278)
   else{const geo=new THREE.ShapeGeometry(shape(p.polygon));geo.rotateX(-Math.PI/2);const a=geo.attributes.position;for(let i=0;i<a.count;i++)a.setY(i,ground(a.getX(i),a.getZ(i))+W.pathLift);geo.computeVertexNormals();const pl=plain(geo);pl.userData.tint=surfColor;parts.access.push(pl);}
  }
+ if(key==='east')eastLotParts(ground,parts.access,p=>p.color??(p.surface==='asphalt'?0x5f6164:p.surface==='gravel'?0xb5ac90:0xa7a397));
  const mats={facade:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.95,side:THREE.DoubleSide}),roof:new THREE.MeshStandardMaterial({color:W.roof,roughness:.85,side:THREE.DoubleSide}),glass:new THREE.MeshStandardMaterial({color:brick?0xffffff:W.glass,vertexColors:!!brick,roughness:.3,metalness:.25,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:DECAL_OFFSET.factor,polygonOffsetUnits:DECAL_OFFSET.units}),access:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:1,side:THREE.DoubleSide})};
  if(brick)mats.facade.map=brick;
  if(parts.modern){mats.modern=new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.95,side:THREE.DoubleSide});}

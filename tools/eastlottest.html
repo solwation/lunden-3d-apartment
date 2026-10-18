@@ -1,0 +1,47 @@
+<!doctype html><html><meta charset="utf-8"><title>East car parks #1278</title><pre id="out">running…</pre><script type="module">
+// #1278: the car park behind HepCat Store (OSM way 145221623, SITE.east.access) and the campus' east car park: asphalt covers the polygon on the
+// terrain, marked stalls and parked cars lie wholly inside it, clear of roads/buildings/each other, the cars block the way (farwalk.js), few draw calls.
+const lines=[];let pass=true;const check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
+try{const f=document.createElement('iframe');f.width=480;f.height=300;f.src='../index.html?test&shot&month=6&cloud=';document.body.append(f);await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);
+const w=f.contentWindow,A=w.__app,T=await w.eval("import('three')"),C=await w.eval("import('/src/config.js')"),L=await w.eval("import('/src/parkinglayout.js')"),S=await w.eval("import('/src/surroundings.js')"),F=await w.eval("import('/src/farwalk.js')");
+const P=C.PARKING_LOT,{lots,cars}=L.parkingLots(),hep=lots.find(l=>l.source==='145221623'),east=lots.find(l=>l.source==='44447969');
+const poly=C.SITE.east.access.find(a=>a.source==='145221623').polygon;
+check(hep&&east,'both OSM car parks (145221623 behind HepCat, 44447969 east campus) get a layout');
+check(hep.bays.length>=30&&hep.bays.length<=60,`HepCat car park: ${hep.bays.length} stalls (polygon guess capacity 35)`);
+check(hep.bays.every(b=>Math.abs(b.hw*2-P.bayW)<1e-9&&Math.abs(b.hd*2-P.bayD)<1e-9),`stalls are ${P.bayW} x ${P.bayD} m (guess, PARKING_LOT)`);
+const corners=b=>[[-1,-1],[1,-1],[1,1],[-1,1]].map(([a,c])=>[b.cx+b.u[0]*a*b.hw+b.n[0]*c*b.hd,b.cz+b.u[1]*a*b.hw+b.n[1]*c*b.hd]);
+let bad=0;for(const l of lots)for(const b of l.bays){const ring=l.polygon;for(const[x,z]of[...corners(b),[b.cx,b.cz]])if(!L.insidePoly(x,z,ring)||L.onEastBuildingAt(x,z)||L.onEastRoad(x,z,-.0999))bad++;}
+check(bad===0,'every stall lies inside its polygon, outside buildings and off every road strip');
+let over=0;for(const l of lots)for(let i=0;i<l.bays.length;i++)for(let j=i+1;j<l.bays.length;j++){const a=l.bays[i],b=l.bays[j];if(Math.hypot(a.cx-b.cx,a.cz-b.cz)<P.bayW*.9&&Math.hypot(a.cx-b.cx,a.cz-b.cz)>0){ /* SAT */
+ const axes=[a.u,a.n,b.u,b.n];let sep=false;for(const ax of axes){const pr=r=>{const c=r.cx*ax[0]+r.cz*ax[1],e=r.hw*Math.abs(r.u[0]*ax[0]+r.u[1]*ax[1])+r.hd*Math.abs(r.n[0]*ax[0]+r.n[1]*ax[1]);return[c-e,c+e]};const[a0,a1]=pr(a),[b0,b1]=pr(b);if(a1<=b0+1e-6||b1<=a0+1e-6)sep=true;}if(!sep)over++;}}
+check(over===0,'no two stalls overlap');
+check(cars.length>=10&&cars.length<=hep.bays.length+east.bays.length,`${cars.length} parked cars, at most one per stall`);
+let carBad=0;for(const c of cars)for(const[x,z]of c.foot){if(L.onEastBuildingAt(x,z)||L.onEastRoad(x,z,-.05)||!L.insidePoly(x,z,(lots.find(l=>l.source===c.lot)).polygon))carBad++;}
+check(carBad===0,'every parked car stands wholly in its car park: inside the outline, off the aisles, clear of buildings');
+const seg=(a,b,c,d)=>{const o=(p,q,r)=>(q[0]-p[0])*(r[1]-p[1])-(q[1]-p[1])*(r[0]-p[0]);return o(a,b,c)*o(a,b,d)<0&&o(c,d,a)*o(c,d,b)<0};
+let cross=0;for(let i=0;i<cars.length;i++)for(let j=i+1;j<cars.length;j++)if(Math.hypot(cars[i].x-cars[j].x,cars[i].z-cars[j].z)<6)for(let p=0;p<4;p++)for(let q=0;q<4;q++)if(seg(cars[i].foot[p],cars[i].foot[(p+1)%4],cars[j].foot[q],cars[j].foot[(q+1)%4]))cross++;
+check(cross===0,'no two parked cars intersect');
+// collision: the cars' footprint edges are in the far segments and block a walker round them; the aisles themselves stay open
+const segs=F.farSegments(),has=c=>c.foot.every((p,i)=>{const q=c.foot[(i+1)%4];return segs.some(s=>Math.abs(s[0]-p[0])<1e-6&&Math.abs(s[1]-p[1])<1e-6&&Math.abs(s[2]-q[0])<1e-6&&Math.abs(s[3]-q[1])<1e-6)});
+check(cars.every(has),'every parked car is a collision box in farSegments');
+const wallsNear=F.farWalls(cars[0].x,cars[0].z,0);check(cars[0].foot.every((p,i)=>wallsNear.some(s=>Math.abs(s[0]-p[0])<1e-6&&Math.abs(s[1]-p[1])<1e-6)),'farWalls returns the car box next to it');
+let blockedAisle=0,aisleSamples=0;for(const r of C.SITE.east.access.filter(a=>a.path&&['145221608','145221600'].includes(a.source)))for(let i=1;i<r.path.length;i++)for(let t=0;t<1;t+=.1){const x=r.path[i-1][0]+(r.path[i][0]-r.path[i-1][0])*t,z=r.path[i-1][1]+(r.path[i][1]-r.path[i-1][1])*t;if(!L.insidePoly(x,z,hep.polygon))continue;aisleSamples++;if(cars.some(c=>L.insidePoly(x,z,c.foot)))blockedAisle++;}
+check(aisleSamples>20&&blockedAisle===0,`the lot's aisles stay open (${aisleSamples} samples, none inside a car)`);
+// the asphalt covers the polygon on the rendered terrain
+A.scene.updateMatrixWorld(true);const mesh=A.scene.getObjectByName('east-access');
+const xs=poly.map(p=>p[0]),zs=poly.map(p=>p[1]);let tested=0,miss=0,worst=0;const rc=new T.Raycaster();
+for(let x=Math.min(...xs)+1.5;x<Math.max(...xs);x+=3)for(let z=Math.min(...zs)+1.5;z<Math.max(...zs);z+=3){if(!L.insidePoly(x,z,hep.polygon)||L.onEastBuildingAt(x,z))continue;tested++;rc.set(new T.Vector3(x,20,z),new T.Vector3(0,-1,0));const h=rc.intersectObject(mesh,false)[0];if(!h){miss++;continue}worst=Math.max(worst,Math.abs(h.point.y-S.renderedTerrainY(x,z)));}
+check(tested>150&&miss===0,`asphalt covers the whole HepCat car park polygon (${tested} points, ${miss} uncovered)`);
+check(worst<.08&&worst>.005,`asphalt/lines/edge lie 0.02-0.05 m over the rendered terrain (max ${worst.toFixed(3)} m)`);
+let steep=0;for(let x=Math.min(...xs);x<Math.max(...xs);x+=3)for(let z=Math.min(...zs);z<Math.max(...zs);z+=3)if(L.insidePoly(x,z,hep.polygon)){const g=(S.groundY(x+.3,z)-S.groundY(x-.3,z))/.6,h=(S.groundY(x,z+.3)-S.groundY(x,z-.3))/.6;if(Math.hypot(g,h)>C.WALK.maxSlope)steep++;}
+check(steep===0,'the lot is walkable ground (gradient under WALK.maxSlope everywhere)');
+// the cars: four instanced batches tagged for the car LOD, nothing else added
+const grp=A.scene.getObjectByName('east-lot-cars'),inst=grp.children.filter(m=>m.isInstancedMesh&&!m.userData.carLod);
+check(inst.length===4&&inst.every(m=>m.instanceMatrix.count===cars.length&&m.userData.carBatch==='eastlot'),`the cars are 4 instanced batches (${cars.length} instances) tagged for the view LOD`);
+const far=grp.children.find(m=>m.userData.carLod);check(far&&far.instanceMatrix.count===cars.length,'the view LOD gave them one coarse mesh for the far ones');
+const px=new T.Vector3(),ground=(m)=>{m.getMatrixAt(0,new T.Matrix4());};let onG=0;{const m4=new T.Matrix4(),v=new T.Vector3();inst[0].getMatrixAt(3,m4);v.setFromMatrixPosition(m4);const c=cars[3];onG=Math.abs(v.y-S.renderedTerrainY(c.x,c.z));}
+check(onG<.25,`a parked car stands on the sloping ground (${onG.toFixed(2)} m off the terrain at its centre)`);
+const eastBackdrop=A.scene.getObjectByName('east-backdrop');const names=eastBackdrop.children.map(m=>m.name);
+check(names.filter(n=>n==='east-access').length===1,'the asphalt, stall lines and edge strip share the one existing east-access mesh (no new draw call)');
+let tris=0;mesh.geometry.index?tris=mesh.geometry.index.count/3:tris=mesh.geometry.attributes.position.count/3;check(tris<14000,`east-access ${Math.round(tris)} triangles`);
+}catch(e){check(false,e.stack)}document.querySelector('#out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');</script></html>

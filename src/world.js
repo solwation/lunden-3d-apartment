@@ -24,13 +24,14 @@ import { registerSnow } from './seasons.js';
 import { buildCourtyard } from './courtyard.js';
 import { grassMaterial } from './grass.js';
 import { buildStreetLife } from './streetlife.js';
+import { buildEastLotCars } from './eastlot.js';
 import { pavingTexture } from './patio.js';
 import { patioHedgeMaterial } from './patiohedge.js';
 import { mirrorLamps, looseItems as interiorLoose, buildInterior, buildElCabinet, cupSurfaces, cupCabinet } from './interior.js';
 import { Toilet } from './toilet.js';
 import { RoomMap } from './rooms.js';
 import { buildAO, buildWallAO, rectPts } from './ao.js';
-import { surroundingsParts, terrainNorth } from './surroundings.js';
+import { surroundingsParts, terrainNorth, renderedTerrainY } from './surroundings.js';
 import { addDoorSigns, namePlate } from './signs.js';
 import { wardrobeFill, personFor } from './stuff.js';
 import { Blinds } from './blinds.js';
@@ -1206,6 +1207,7 @@ function* worldParts(plan) {
   const life = buildStreetLife({entrances}); // parked cars, bikes, the square in front of Hus C (#113)
   scene.add(life.object);
   outdoor.push(...life.segments);
+  scene.add(buildEastLotCars(renderedTerrainY)); // the east campus car parks' cars (#1278; collision: farwalk.js)
   // snow in the winter months (seasons.js): the lawn, the hedges and the patio paving
   registerSnow(M.grass, SEASON.snow.ground);
   registerSnow(M.hedge, SEASON.snow.hedge);

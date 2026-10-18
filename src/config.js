@@ -1731,6 +1731,22 @@ export const OUTDOOR = { x0: -78.5, x1: 27.5, z0: -14, z1: 64 };
 // shallow bank already stops the visitor (water is an obstacle; the bed is at SITE.bridges.bedY, so ground there is still under the water line). `rescue` m: where a visitor who still ends up in the river
 // is put back, measured from the edge of the water (*guess*). `maxSlope` rise/run: steeper ground holds the visitor back
 // (the #1233 banks stay under it: bankScale .55 gives roughly 0.5-0.7).
+// #1278 (a visitor: the area behind HepCat Store is a whole car park in reality): the east campus' OSM parking polygons
+// (SITE.east.access entries with a `capacity`, #1262: the snapshot has no stall data) get marked stalls, an edge strip and parked cars,
+// laid out by src/parkinglayout.js. Stalls stand along the OSM service ways that run inside a polygon (the lot's aisles), on both
+// sides, square to the aisle. Every number here is a *guess* (a typical Swedish car park: stalls 2.5 x 5.0 m, DIN/SS 2.5 m wide); the
+// positions follow the sourced ways and polygon, the stall count is whatever fits (not the polygon's guessed `capacity`).
+export const PARKING_LOT = {
+  bayW: 2.5, bayD: 5.0,    // m: a stall along the aisle x across it (*guess*)
+  edgeClear: 0.3,          // m: stalls keep this far inside the polygon's edge and out of any other road (*guess*)
+  lineW: 0.1, lineColor: 0xeeeeea,  // marked stall lines (same width/colour as the south lots, #1262; *guess*)
+  kerbW: 0.3, kerbColor: 0xb0aba2,  // flat concrete edge strip along the polygon, left out across road mouths and at buildings (*guess*)
+  mesh: 3.0,               // m: the asphalt is cut into triangles no longer than this so it follows the sloping ground behind HepCat (z -19 to 17 falls 1.7 m)
+  lift: { asphalt: 0.02, kerb: 0.035, line: 0.045 }, // m over the terrain: under the roads' own 0.025 so the aisles stay on top, lines/edge over both
+  fill: 0.5, seed: 1278,   // share of stalls with a car (*guess*; the other lots' cars seed their random pick the same way), fixed seed
+  reversed: 0.25,          // share of cars that stand nose out
+  car: { hx: 2.17, hz: 0.92 }, // half length, half width of the street car park's footprint (streetlife.js: 4.34 x 1.84 m), nose toward +x before the yaw
+};
 export const WALK = { x0: -260, x1: 320, z0: -200, z1: 250, cell: 40, wade: 2, rescue: 3, maxSlope: 1.2,
   trunk: { big: 0.45, tree: 0.3, birch: 0.2, young: 0.15 } }; // `trunk`: half-width of a tree trunk's collision diamond by kind (*guess*, the drawn trunks are thinner than a body)
 
