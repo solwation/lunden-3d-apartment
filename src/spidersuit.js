@@ -26,10 +26,11 @@ export function topTexture() {
   const c = document.createElement('canvas'); c.width = 256; c.height = 192;
   const g = c.getContext('2d'), red = `#${new THREE.Color(S.colors.red).getHexString()}`, line = '#140a0a';
   g.fillStyle = red; g.fillRect(0, 0, 256, 192);
-  g.strokeStyle = line; g.lineWidth = 2;
-  const cx = 128, cy = 96;
+
+  const cx = 128, cy = 118; // torso center shifted down slightly to give mask band room
+  g.strokeStyle = line; g.lineWidth = 1.8;
   for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2; g.beginPath(); g.moveTo(cx, cy); g.lineTo(cx + Math.cos(a) * 200, cy + Math.sin(a) * 200); g.stroke(); }
-  for (let r = 22; r < 200; r += 22) {
+  for (let r = 18; r < 180; r += 20) {
     g.beginPath();
     for (let i = 0; i <= 16; i++) { const a = i / 16 * Math.PI * 2, x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r; if (i) g.quadraticCurveTo(cx + Math.cos(a - Math.PI / 16) * r * 0.9, cy + Math.sin(a - Math.PI / 16) * r * 0.9, x, y); else g.moveTo(x, y); }
     g.stroke();
@@ -37,17 +38,58 @@ export function topTexture() {
   g.fillStyle = line; // the spider: a body, a head, eight legs
   g.beginPath(); g.ellipse(cx, cy + 6, 9, 15, 0, 0, Math.PI * 2); g.fill();
   g.beginPath(); g.arc(cx, cy - 13, 6, 0, Math.PI * 2); g.fill();
-  g.lineWidth = 3;
+  g.lineWidth = 2.8;
   for (const s of [-1, 1]) for (const [a, b] of [[-0.9, -1.5], [-0.3, -0.6], [0.3, 0.5], [0.9, 1.4]]) {
     g.beginPath(); g.moveTo(cx + s * 6, cy + a * 8); g.lineTo(cx + s * 24, cy + a * 14); g.lineTo(cx + s * 34, cy + b * 22); g.stroke();
   }
-  const maskY = 26, maskRadius = 22; // existing artwork pixel positions; also delimit the avatar mask atlas band
-  for (const s of [-1, 1]) { // the mask's eyes, at the far end
-    g.fillStyle = '#111'; g.beginPath(); g.ellipse(cx + s * 34, maskY, maskRadius, 13, s * 0.35, 0, Math.PI * 2); g.fill();
-    g.fillStyle = '#f4f4f4'; g.beginPath(); g.ellipse(cx + s * 34, maskY, 17, 9, s * 0.35, 0, Math.PI * 2); g.fill();
+
+  // #1241: the mask band (y: 0 to 56): clean radial web from the nose bridge, expressive white lenses with black frames
+  const maskH = 56, maskCenterY = 28;
+  g.fillStyle = red; g.fillRect(0, 0, 256, maskH);
+
+  g.strokeStyle = 'rgba(20, 10, 10, 0.7)'; g.lineWidth = 1.2;
+  const webRays = 14;
+  for (let i = 0; i < webRays; i++) {
+    const a = -Math.PI + (i / (webRays - 1)) * Math.PI * 2;
+    g.beginPath(); g.moveTo(cx, maskCenterY); g.lineTo(cx + Math.cos(a) * 122, maskCenterY + Math.sin(a) * 26); g.stroke();
   }
+  for (let r = 5; r <= 25; r += 5) {
+    g.beginPath();
+    for (let i = 0; i < webRays; i++) {
+      const a = -Math.PI + (i / (webRays - 1)) * Math.PI * 2;
+      const x = cx + Math.cos(a) * (r * 4.6), y = maskCenterY + Math.sin(a) * r;
+      if (i === 0) g.moveTo(x, y);
+      else {
+        const prevA = -Math.PI + ((i - 0.5) / (webRays - 1)) * Math.PI * 2;
+        g.quadraticCurveTo(cx + Math.cos(prevA) * (r * 4.2), maskCenterY + Math.sin(prevA) * (r * 0.88), x, y);
+      }
+    }
+    g.stroke();
+  }
+
+  for (const s of [-1, 1]) { // classic expressive Spider-Man lenses
+    g.fillStyle = '#0a0a0c'; // outer black frame
+    g.beginPath();
+    g.moveTo(cx + s * 14, maskCenterY + 2); // inner corner
+    g.quadraticCurveTo(cx + s * 46, maskCenterY - 7.5, cx + s * 84, maskCenterY - 5.5); // top outer sweep
+    g.quadraticCurveTo(cx + s * 88, maskCenterY + 2.5, cx + s * 70, maskCenterY + 7.0); // outer corner down
+    g.quadraticCurveTo(cx + s * 38, maskCenterY + 8.5, cx + s * 14, maskCenterY + 2); // bottom curve to inner corner
+    g.closePath(); g.fill();
+
+    g.fillStyle = '#ffffff'; // inner white lens
+    g.beginPath();
+    g.moveTo(cx + s * 19, maskCenterY + 2);
+    g.quadraticCurveTo(cx + s * 46, maskCenterY - 5.5, cx + s * 79, maskCenterY - 4.2);
+    g.quadraticCurveTo(cx + s * 82, maskCenterY + 1.8, cx + s * 67, maskCenterY + 5.2);
+    g.quadraticCurveTo(cx + s * 38, maskCenterY + 6.5, cx + s * 19, maskCenterY + 2);
+    g.closePath(); g.fill();
+
+    g.strokeStyle = 'rgba(210, 230, 245, 0.6)'; g.lineWidth = 1.2; // subtle lens sheen
+    g.beginPath(); g.moveTo(cx + s * 25, maskCenterY + 1.0); g.lineTo(cx + s * 72, maskCenterY - 3.5); g.stroke();
+  }
+
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
-  t.userData.avatarMaskBand = (maskY + maskRadius) / c.height;
+  t.userData.avatarMaskBand = maskH / c.height;
   return t;
 }
 

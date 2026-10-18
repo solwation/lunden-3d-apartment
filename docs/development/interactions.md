@@ -258,6 +258,8 @@ src/spidersuit.js      the Spider-Man suit (#597, SPIDER, all values *guess*): o
                        `web.life` s, at most `web.max`; sfx.thwip. `&spidersuit` = on from the start (tools/spidersuittest.html)
                        #891: actual `suit.worn` is the optional `sp:true` in the existing Ghosts state. Avatar.setSuit overlays the existing red/blue
                        colours and own folded-suit canvas artwork on the original skinned figure: red mask/white eyes, chest spider/webs, gloves/boots.
+                       #1241: Spider-Man mask improved with classic expressive white lenses with black frames, radial webbing from the nose bridge,
+                       skull bounding box projection fix, and collapsing hair, beard, ears, and facial features under the cowl.
                        The base look/colour attribute, skeleton, head silhouette, crouch and held props are untouched; removal restores the existing
                        solid/outline appearance. A suited unarmed figure is visually solid, while Ghost.solid/HP/combat eligibility keeps its armed rule.
                        The same temporary outfit appears in the local mirror; powers/fall/combat mechanics do not change.

@@ -26,7 +26,8 @@ const look = avatarLook;
 const REGION = { skin: 0, top: 1, pants: 2, hair: 3, fixed: 4, lips: 6, iris: 7, beard: 8, brow: 9 }; // 5: the shoes; 8 (#1156): facial hair, the look's `beard` or its hair colour; 9 (#1220): the brows, the look's `brows` or its hair colour
 // #1138: which face part a head-bone vertex belongs to (the `facePart` attribute; 0 = not on the head), see faceShape
 // #1165: hair (the scalp shell / curtain, lengthened below the crown), round and square glasses frames and the temples + bridge shared by both
-const FACE_PART = { head: 1, neck: 2, eye: 3, nose: 4, ear: 5, brow: 6, hair: 7, rimRound: 8, rimSquare: 9, specs: 10 };
+// #1241: cowlHide collapses protruding facial features (lips, brow ridge) under the Spider-Man mask
+const FACE_PART = { head: 1, neck: 2, eye: 3, nose: 4, ear: 5, brow: 6, hair: 7, rimRound: 8, rimSquare: 9, specs: 10, cowlHide: 11 };
 const H = 0.1; // The head bone's eye-height reference (ears, hair, moustache).
 
 // --- the geometry (built once per variant) -----------------------------------------------------------------------------
@@ -66,17 +67,20 @@ function parts(style, sleeves, gender = 0, facial = 0) {
   if (f === 2) { // mustache only
     for (const s of [-1, 1]) {
       add(new THREE.BoxGeometry(0.024, 0.010, 0.014).rotateZ(s * -0.15), 'beard', 'head', [s * 0.014, H - 0.046, 0.114], 0.95);
+      P[P.length - 1].face = FACE_PART.hair;
     }
   }
   if (f === 1 || f === 3) { // #1097: one continuous full beard, the lips showing through its mouth opening
     const { beard, lips } = beardShell(f === 3);
     add(beard, 'beard', 'head', [0, 0, 0], 0.9);
+    P[P.length - 1].face = FACE_PART.hair;
     if (f === 3) P[P.length - 1].mouth = 'moustache'; // (#1122: the moustache over the opening stays, the beard below it drops)
     add(lips, 'fixed', 'head', [0, 0, 0], 1, 0x8a4c45);
     P[P.length - 1].mouth = f === 3 ? 'moustache' : 'upper'; // (#1122: the backdrop's top stays; the lips and the dark seam open in front of it)
+    P[P.length - 1].face = FACE_PART.cowlHide;
   }
   // hair (#1102): 0 short, 1 long, 2 a bun, 3 a beanie (in the top's colour) – see hairParts
-  for (const [g, region, shade] of hairParts(style)) { add(g, region, 'head', [0, 0, 0], shade); if (region === 'hair') P[P.length - 1].face = FACE_PART.hair; }
+  for (const [g, region, shade] of hairParts(style)) { add(g, region, 'head', [0, 0, 0], shade); P[P.length - 1].face = FACE_PART.hair; }
   addGlasses(add, P); // #1165
   return P;
 }
@@ -422,6 +426,7 @@ function addFace(add, sphere, P) {
     eye(sphere(L.r, 8, 3, 0, Math.PI * 2, 0, Math.PI * L.upper).scale(...L.scale), 'skin', 'head', [x, y, z], 0.9); // upper lid
     eye(sphere(L.r, 8, 2, 0, Math.PI * 2, Math.PI * (1 - L.lower), Math.PI * L.lower).scale(...L.scale), 'skin', 'head', [x, y, z], 0.94);
     add(sphere(F.ridge.r, 8, 4).scale(...F.ridge.scale), 'skin', 'head', [s * F.ridge.at[0], F.ridge.at[1], F.ridge.at[2]], F.ridge.shade);
+    P[P.length - 1].face = FACE_PART.cowlHide;
     // (#1138: a tube-less copy of the same arc is each brow vertex's pivot, so the brow thickens about its centre line)
     const arc = (tube) => new THREE.TorusGeometry(B.radius, tube, 3, 6, B.arc).rotateZ(Math.PI / 2 - B.arc / 2).translate(0, -B.radius, 0)
       .scale(1, 1, 0.6).rotateZ(s * B.tilt).rotateY(s * B.turn).translate(s * B.at[0], B.at[1], B.at[2]);
@@ -437,10 +442,13 @@ function addFace(add, sphere, P) {
   const [uy, uz, ur, us] = F.lips.upper, [ly, lz, lr, ls] = F.lips.lower;
   add(bend(sphere(ur, 10, 4).scale(...us), F.lips.bend), 'lips', 'head', [0, uy, uz]);
   P[P.length - 1].mouth = 'upper'; // (#1122: stays put while talking)
+  P[P.length - 1].face = FACE_PART.cowlHide;
   add(bend(sphere(lr, 10, 4).scale(...ls), F.lips.bend), 'lips', 'head', [0, ly, lz], 1.05);
   P[P.length - 1].mouth = 'lower'; // (#1122: drops as a whole)
+  P[P.length - 1].face = FACE_PART.cowlHide;
   add(bend(sphere(Math.min(ur, lr), 10, 3).scale(1, 0.06, 0.22), F.lips.bend), 'fixed', 'head', [0, (uy + ly) / 2, (uz + lz) / 2 + 0.0015], 1, F.lips.seam);
   P[P.length - 1].mouth = 'seam'; // (#1122: its lower half drops with the lower lip, the dark opening)
+  P[P.length - 1].face = FACE_PART.cowlHide;
   add(sphere(F.chin.r, 7, 4).scale(...F.chin.scale), 'skin', 'head', F.chin.at, 0.98);
 }
 // the tops' torso (hip at 0; scaled 1.15 / 1.08 × 1 × 0.7): a narrower waist, the chest, sloping shoulders (the trapezius)
@@ -528,8 +536,8 @@ function base(style = 0, sleeves = 0, gender = 0, facial = 0) {
   const list = parts(style, sleeves, gender, facial), geos = []; let headProjection = null, headRadius = 0;
   for (const part of list) {
     const [g0, region, shade, fixed] = part;
-    if (part.bone === 'head' && region === REGION.skin && g0.type === 'SphereGeometry' && g0.parameters.radius > headRadius) {
-      g0.computeBoundingBox(); headProjection = g0.boundingBox.clone(); headRadius = g0.parameters.radius;
+    if (part.rifleSkull) {
+      g0.computeBoundingBox(); headProjection = g0.boundingBox.clone();
     }
     const g = g0.index ? g0.toNonIndexed() : g0;
     const n = g.attributes.position.count, k = NAMES.indexOf(part.bone), c = new THREE.Color(fixed), vs = g.attributes.shade?.array; // per-vertex shade (hair strands, #1102)
@@ -637,7 +645,7 @@ function makeMaterial(rim, headProjection) {
       diffuseColor.a = mix(diffuseColor.a, mix(uFill, uRim, edge), uOutline);
       #include <opaque_fragment>`);
   };
-  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-v6';
+  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-v7';
   return m;
 }
 
@@ -647,35 +655,39 @@ function makeMaterial(rim, headProjection) {
 // pivot (`faceAnchor`: an eyeball's centre, the nose's bridge, an ear's centre, a brow's centre line), then every head vertex
 // but the neck is widened, lengthened from the chin and its lower face (faceWarp's jaw region) widened or narrowed. No new
 // geometry or draw call; collision and hit regions keep the plain head (CPU raycasts never see the shader).
-const FACE_SHAPE_DECL = 'attribute float facePart; attribute vec3 faceAnchor; uniform vec3 uEye, uNose, uHead; uniform float uEar, uHair, uGlasses, uNeck; uniform vec2 uBrow;';
+const FACE_SHAPE_DECL = 'attribute float facePart; attribute vec3 faceAnchor; uniform vec3 uEye, uNose, uHead; uniform float uEar, uHair, uGlasses, uNeck, uSuit; uniform vec2 uBrow;';
 const CHIN_Y = RH.jaw.centre[1] - RH.jaw.radius * RH.jaw.scale[1]; // the head lengthens from its chin
 function faceShape() {
   const hb = bindAt('head'), W = FACE.warp, f = (v) => v.toFixed(4), P = FACE_PART;
   return `if (facePart > 0.5) {
-      if (abs(facePart - ${P.eye}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * uEye;
-      else if (abs(facePart - ${P.nose}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * uNose;
-      else if (abs(facePart - ${P.ear}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * uEar;
-      else if (abs(facePart - ${P.brow}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * uBrow.x + vec3(0.0, uBrow.y, 0.0);
-      else if (abs(facePart - ${P.hair}.0) < 0.5) { // #1165: the hair's length: below the crown it stretches about the head's centre (the curtain narrows when shortened and widens when long so it clears the chest)
-        float hy = transformed.y - ${f(hb.y)} - ${f(HAIR.centre[1])}, lowK = 1.0 - smoothstep(-0.03, 0.0, hy);
-        transformed.y += (uHair - 1.0) * hy * lowK;
-        transformed.xz = vec2(${f(hb.x)}, ${f(hb.z)}) + (transformed.xz - vec2(${f(hb.x)}, ${f(hb.z)})) * (1.0 + (uHair > 1.0 ? 0.4 : 0.55) * (uHair - 1.0) * clamp(-hy / 0.3, 0.0, 1.0));
-      }
-      else if (abs(facePart - ${P.rimRound}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(0.5, uGlasses) * step(uGlasses, 1.5);
-      else if (abs(facePart - ${P.rimSquare}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(1.5, uGlasses);
-      else if (abs(facePart - ${P.specs}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(0.5, uGlasses);
-      if (abs(facePart - ${P.neck}.0) > 0.5) {
-        vec3 q = transformed - vec3(${f(hb.x)}, ${f(hb.y)}, ${f(hb.z)});
-        float low = (1.0 - smoothstep(${f(W.y[1])}, ${f(W.y[0])}, q.y)) * smoothstep(${f(W.z[0])}, ${f(W.z[1])}, q.z);
-        q.x *= uHead.x * (1.0 + uHead.z * low);
-        q.y = ${f(CHIN_Y)} + (q.y - ${f(CHIN_Y)}) * uHead.y;
-        transformed = q + vec3(${f(hb.x)}, ${f(hb.y)}, ${f(hb.z)});
-      }
-      float ny = transformed.y - ${f(hb.y)};
-      if (abs(facePart - ${P.neck}.0) < 0.5) {
-        transformed.y += uNeck * clamp((ny - (${f(-0.04)})) / ${f(0.12)}, 0.0, 1.0);
+      if (uSuit > 0.5 && abs(facePart - ${P.head}.0) > 0.5 && abs(facePart - ${P.neck}.0) > 0.5) {
+        transformed = vec3(${f(hb.x)}, ${f(hb.y)}, ${f(hb.z)});
       } else {
-        transformed.y += uNeck;
+        if (abs(facePart - ${P.eye}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * uEye;
+        else if (abs(facePart - ${P.nose}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * uNose;
+        else if (abs(facePart - ${P.ear}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * uEar;
+        else if (abs(facePart - ${P.brow}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * uBrow.x + vec3(0.0, uBrow.y, 0.0);
+        else if (abs(facePart - ${P.hair}.0) < 0.5) { // #1165: the hair's length: below the crown it stretches about the head's centre (the curtain narrows when shortened and widens when long so it clears the chest)
+          float hy = transformed.y - ${f(hb.y)} - ${f(HAIR.centre[1])}, lowK = 1.0 - smoothstep(-0.03, 0.0, hy);
+          transformed.y += (uHair - 1.0) * hy * lowK;
+          transformed.xz = vec2(${f(hb.x)}, ${f(hb.z)}) + (transformed.xz - vec2(${f(hb.x)}, ${f(hb.z)})) * (1.0 + (uHair > 1.0 ? 0.4 : 0.55) * (uHair - 1.0) * clamp(-hy / 0.3, 0.0, 1.0));
+        }
+        else if (abs(facePart - ${P.rimRound}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(0.5, uGlasses) * step(uGlasses, 1.5);
+        else if (abs(facePart - ${P.rimSquare}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(1.5, uGlasses);
+        else if (abs(facePart - ${P.specs}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(0.5, uGlasses);
+        if (abs(facePart - ${P.neck}.0) > 0.5) {
+          vec3 q = transformed - vec3(${f(hb.x)}, ${f(hb.y)}, ${f(hb.z)});
+          float low = (1.0 - smoothstep(${f(W.y[1])}, ${f(W.y[0])}, q.y)) * smoothstep(${f(W.z[0])}, ${f(W.z[1])}, q.z);
+          q.x *= uHead.x * (1.0 + uHead.z * low);
+          q.y = ${f(CHIN_Y)} + (q.y - ${f(CHIN_Y)}) * uHead.y;
+          transformed = q + vec3(${f(hb.x)}, ${f(hb.y)}, ${f(hb.z)});
+        }
+        float ny = transformed.y - ${f(hb.y)};
+        if (abs(facePart - ${P.neck}.0) < 0.5) {
+          transformed.y += uNeck * clamp((ny - (${f(-0.04)})) / ${f(0.12)}, 0.0, 1.0);
+        } else {
+          transformed.y += uNeck;
+        }
       }
     }`;
 }
