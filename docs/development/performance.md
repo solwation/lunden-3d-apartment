@@ -38,6 +38,7 @@ Related: [graphics](graphics.md), [verification](verification.md).
   then one frame is drawn with every layer and no frustum culling (shadows too), behind the start screen. SwiftShader
   320 × 200: the door's first frame 5680 → 28 ms. Skipped in headless Chrome (`HeadlessChrome` UA) unless `&warm`;
   `&perf` logs its times. Materials made later (cups, cat coats) still compile when first drawn.
+  Hidden objects the warm-up should still draw once (the gulls, #1265) carry `userData.warmDraw`: `WarmUp.withWarmVisible` shows them for the draw-everything renders only (their size is 0 while faded out), so the first-use link check and geometry upload are not left for the first visible frame.
 - Shadows: `shadowMap.autoUpdate = false`; redrawn when the sun moved > 0.2°, for 1.5 s after any E
   action (doors swing), and at least every `QUALITY.shadowInterval` s of the quality level (`updateShadows` in main.js).
 - Mirror images (#50): one Reflector per mirror, at most ONE active per frame (nearest in view

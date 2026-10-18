@@ -76,6 +76,7 @@ export class Birds {
       uniforms: this.uniforms, vertexShader: vert, fragmentShader: frag, side: THREE.DoubleSide, fog: false,
     }));
     this.mesh.frustumCulled = false; this.mesh.visible = false; this.mesh.raycast = () => {};
+    this.mesh.userData.warmDraw = true; // the warm-up draws it once (size 0 while faded out: no pixels) so the first appearance has nothing left to upload (#1265)
     this.mesh.userData.noDetail = true; // not for the small-detail culler (src/detail.js): it would hide the tiny bird geometry by distance
     scene.add(this.mesh);
   }

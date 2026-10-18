@@ -27,6 +27,7 @@ import { WARM } from './config.js';
 //     threw there ("Script error." in the reports: cross-origin), the promise never settled and the warm-up stayed in
 //     `compiling` for ever (reproduced by disposing a scene material while compiling). `whenReady` guards every read and
 //     gives up after a timeout. Not measured on a device.
+//     (`userData.warmDraw` marks objects that are hidden at the start but drawn in these passes with zero size, #1265: the gulls.)
 // #697: phones start immediately and keep the loading cover until all slices finish; main.js then draws the real view.
 // Headless test browsers skip it (minutes of SwiftShader, nobody looks), `&warm` forces it.
 export class WarmUp {
@@ -71,6 +72,14 @@ export class WarmUp {
         this.state = 'uploading'; this.uploadTextures(); return false;
       default: return false;
     }
+  }
+
+  /** Run `fn` with the objects marked `userData.warmDraw` (#1265: hidden until needed, e.g. the gulls, whose size is 0 while faded out
+   *  so the pass draws no pixels) visible, so their geometry is uploaded and drawn once here, not in the first frame they show. */
+  withWarmVisible(fn, within = null) {
+    const shown = [];
+    this.scene.traverse((o) => { if (o.userData.warmDraw && !o.visible && (!within || within.includes(o))) { o.visible = true; shown.push(o); } });
+    try { return fn(); } finally { for (const o of shown) o.visible = false; }
   }
 
   /** Every mesh / line / points / sprite of the scene (hidden ones too): what there is to compile and draw. */
@@ -144,7 +153,7 @@ export class WarmUp {
   startDraw(target, next) {
     this.prepare();
     if (!this.sliced) { this.drawAll(target); this.state = next; return true; }
-    const items = this.renderables().filter((o) => o.visible), ranges = [];
+    const items = this.renderables().filter((o) => o.visible || o.userData.warmDraw), ranges = [];
     let a = 0, verts = 0;
     for (let k = 0; k < items.length; k++) {
       const v = items[k].geometry?.attributes?.position?.count ?? 0;
@@ -178,7 +187,7 @@ export class WarmUp {
     try {
       r.shadowMap.needsUpdate = !target;
       r.setRenderTarget(target);
-      r.render(scene, camera);
+      this.withWarmVisible(() => r.render(scene, camera), items.slice(a, b));
     } finally {
       r.setRenderTarget(prev);
       camera.layers.mask = camMask; if (shadowCamera) shadowCamera.layers.mask = shadowMask;
@@ -197,8 +206,7 @@ export class WarmUp {
     const prev = r.getRenderTarget();
     r.shadowMap.needsUpdate = !target;
     r.setRenderTarget(target);
-    r.render(scene, camera);
-    r.setRenderTarget(prev);
+    try { this.withWarmVisible(() => r.render(scene, camera)); } finally { r.setRenderTarget(prev); }
     camera.layers.mask = camMask; if (shadowCamera) shadowCamera.layers.mask = shadowMask;
     for (const o of culled) o.frustumCulled = true;
     r.shadowMap.needsUpdate = true; // the real view's shadows next
