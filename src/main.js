@@ -1980,7 +1980,7 @@ function updateFocus() {
     if (spot && item.isVacuum && (!player.crouch || item.running)) {
       spot = null; // in vacuum mode, walking cleans the floor; crouch to place down (#390)
     }
-    const lifeAim = (focused?.kind === 'life' || (focused?.kind === 'tap' && (life.items.held() || heldItem()?.isCup || heldItem()?.isCloth))) && (!!focused.options?.().some((a) => !a.reason) || !!focused.store); // (#382: a glass at the tap, #391: rinse cloth) // a plate it can go on (#367): that, not the table under it
+    const lifeAim = (focused?.kind === 'life' || (focused?.kind === 'tap' && (life.items.held() || heldItem()?.isCup || heldItem()?.isDishThing || heldItem()?.isCloth))) && (!!focused.options?.().some((a) => !a.reason) || !!focused.store); // (#382: a glass at the tap, #391: rinse cloth) // a plate it can go on (#367): that, not the table under it
     const atBack = !!item.backTarget && (focused === item.backTarget || hit?.object?.userData?.door === item.backTarget);
     if (item?.isCloth && top && spot && !lifeAim && !atBack) {
       focused = {

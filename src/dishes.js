@@ -76,7 +76,7 @@ export function dishActions(life) {
   A.define({
     id: 'pourOut', order: 2, duration: LIFE.drink.pour * 0.6,
     label: (c) => (c.held ? `hälla ut ${the(drinkIn(c.held))}` : 'hälla ut det som är i koppen'),
-    applies: (c) => isBasinTap(c.raw) && (isFillable(c.held) ? !!drinkIn(c.held) : !!c.heldView?.isCup && c.heldView.fill > 0.01), // (a coffee cup too, #383)
+    applies: (c) => isBasinTap(c.raw) && (isFillable(c.held) ? !!drinkIn(c.held) : (!!c.heldView?.isCup || !!c.heldView?.isDishThing) && c.heldView.fill > 0.01), // (a coffee cup too, #383)
     reserve: (c) => ({ inputs: c.held ? [c.held] : [] }),
     animate: (c, k, job) => {
       const v = c.heldView;
@@ -94,7 +94,7 @@ export function dishActions(life) {
   });
 
   // washing up by hand (#383): something used / dirty in the hand at the running kitchen tap
-  const washable = (c) => (c.held ? (c.held.clean ?? null) !== null : !!c.heldView?.isCup || !!c.heldView?.isPan);
+  const washable = (c) => (c.held ? (c.held.clean ?? null) !== null : !!c.heldView?.isCup || !!c.heldView?.isDishThing || !!c.heldView?.isPan);
   const isClean = (c) => (c.held ? c.held.clean === 'clean' : !c.heldView.dirty);
   const heldName = (c) => (c.held ? nm(c.held) : c.heldView?.name ?? 'koppen');
   A.define({

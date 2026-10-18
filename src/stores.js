@@ -205,7 +205,7 @@ export function buildStores(life, world) {
       };
     }
     const right = { plate: 'Tallrikar i underkorgen', glass: 'Glas i överkorgen', tool: 'Bestick i bestickkorgen' };
-    const rightText = (it) => (it.isCup ? 'Glas och koppar i överkorgen' : Object.entries(right).find(([t]) => I.has(it, t) || it.type === t)?.[1] ?? `${cap(I.name(it))} ska inte i diskmaskinen`);
+    const rightText = (it) => (it.isCup || it.isDishThing ? 'Glas och koppar i överkorgen' : Object.entries(right).find(([t]) => I.has(it, t) || it.type === t)?.[1] ?? `${cap(I.name(it))} ska inte i diskmaskinen`);
     const the = (k) => ({ water: 'vattnet', milk: 'mjölken' })[k] ?? 'det';
     for (const [id, rack, accept, name, full] of [['dwLower', lower, 'plate', 'underkorgen', 'Underkorgen är full'], ['dwUpper', upper, 'glass', 'överkorgen', 'Överkorgen är full'], ['dwTray', upper, 'tool', 'bestickkorgen', 'Bestickkorgen är full']]) {
       const list = rack.slots.filter((s) => s.accepts.includes(accept));
@@ -213,15 +213,15 @@ export function buildStores(life, world) {
       const bb = new THREE.Box3();
       for (const s of list) bb.expandByPoint(s.pos);
       bb.expandByVector(new THREE.Vector3(0.09, 0.08, 0.09));
-      const box = pickBox(rack.object, bb.min, bb.max, () => (holding() || !!heldItem()?.isCup) && rack.isOpen && dwDoor.isOpen);
+      const box = pickBox(rack.object, bb.min, bb.max, () => (holding() || !!heldItem()?.isCup || !!heldItem()?.isDishThing) && rack.isOpen && dwDoor.isOpen);
       add(id, { outlineRoot: rack.object, outlineOwner: rack, name, fullText: full, isOpen: () => dwDoor.isOpen && rack.isOpen }, slots, box);
       const st = I.store(id);
       Object.defineProperty(st, 'shutText', { get: () => (dwDoor.isOpen ? `Dra ut ${rack.name} först` : 'Öppna diskmaskinen först'), configurable: true });
       Object.assign(st, {
         dishwasher: true,
-        putLabel: (held) => `ställa ${held?.isCup ? 'koppen' : I.name(held)} i ${name}`,
+        putLabel: (held) => `ställa ${held?.isCup ? 'koppen' : held?.isDishThing ? held.name : I.name(held)} i ${name}`,
         refuse: (it) => { // why it may not go in here, or null
-          if (it.isCup) {
+          if (it.isCup || it.isDishThing) {
             if (accept !== 'glass') return rightText(it);
             if (it.fill > 0.01) return 'Häll ut det som är i koppen först';
             return null;

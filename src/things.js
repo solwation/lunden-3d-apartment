@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { Holdable, heldItem, handBusy } from './holdable.js';
+import { Holdable, heldItem, handBusy, setHeld } from './holdable.js';
 import { sfx } from './audio.js';
 import { DRINKS as D, PHOTO_FRAME, TOAST } from './config.js';
 import { Contents, GlassLiquid, pourAmount, drinkName } from './drinks.js';
@@ -80,13 +80,40 @@ export class Glass extends Thing {
     Object.defineProperties(this.takeTarget, {
       verb: { get: () => self.pourVerb, configurable: true },
       blocked: { get: () => self.blocked, configurable: true },
-      blockedText: { get: () => (self.source?.portion && !self.contents.canAddBeer(self.source.portion) ? 'Glaset innehåller redan många ölportioner' : self.pourable ? `${self.name[0].toUpperCase()}${self.name.slice(1)} är fullt` : null), configurable: true },
+      blockedText: { get: () => (self.rackStore?.isOpen && !self.rackStore.isOpen() ? self.rackStore.shutText : self.source?.portion && !self.contents.canAddBeer(self.source.portion) ? 'Glaset innehåller redan många ölportioner' : self.pourable ? `${self.name[0].toUpperCase()}${self.name.slice(1)} är fullt` : null), configurable: true },
     });
     this.takeTarget.toggle = () => this.press();
     this.takeTarget.overflow = () => this.overflow();
   }
 
   get fill() { return this.contents.total; }
+
+  // Washing up (#1238): a wine / whisky / champagne glass is a dish like the coffee cups (cups.js): drunk from (`used`) it
+  // is dirty, washed by hand at the tap (dishes.js `wash`) or in the dishwasher's upper rack (stores.js `parkCup`).
+  get isDishThing() { return true; }
+  get dirty() { return !!this.used; }
+  heat = 0;
+  show() { this.liquid.show(this.contents); }
+  wash() { this.used = false; this.show(); }
+  /** Stand in the dishwasher's upper rack (`anchor`: the slot's frame). */
+  parkInRack(rack, slot, anchor, rackStore) {
+    this.held = false; this.placed = true; // (first: setHeld(null) would otherwise send it home, empty and clean)
+    if (heldItem() === this) setHeld(null);
+    Object.assign(this, { rack, rackSlot: slot, rackStore });
+    anchor.add(this.model);
+    this.model.position.set(0, 0.02, 0);
+    this.model.rotation.set(0, 0, 0);
+  }
+  unpark() {
+    if (!this.rackStore) return;
+    this.rackStore.unparkCup?.(this);
+    this.rack = this.rackSlot = this.rackStore = null;
+  }
+  take() {
+    if (this.rackStore) { if (this.blocked) return; this.unpark(); }
+    super.take();
+  }
+  goHome() { this.unpark?.(); super.goHome(); }
 
   /** E on it full anyway, with something that pours in the hand: it runs over (#288) — the bottle tips, nothing more goes
    * in; the spill's place (world) and colour, or null. main.js makes the splash and the deduction. */
@@ -98,9 +125,9 @@ export class Glass extends Thing {
     return { at: this.where(), color: D[src.drink]?.color ?? 0xffffff };
   }
   /** The held thing that pours, if it can pour into this glass now (the glass standing out, #167). */
-  get source() { const h = heldItem(); return h?.drink && D.pour.glass[h.drink] && this.placed && !this.held ? h : null; }
+  get source() { const h = heldItem(); return h?.drink && D.pour.glass[h.drink] && this.placed && !this.held && !this.rackStore ? h : null; }
   get pourable() { return !!this.source; }
-  get blocked() { return this.pourable ? pourAmount('glass', this.source.drink, this.fill) <= 0 || (!!this.source.portion && !this.contents.canAddBeer(this.source.portion)) : handBusy(this); }
+  get blocked() { if (this.rackStore?.isOpen && !this.rackStore.isOpen()) return true; return this.pourable ? pourAmount('glass', this.source.drink, this.fill) <= 0 || (!!this.source.portion && !this.contents.canAddBeer(this.source.portion)) : handBusy(this); }
   get pourVerb() { return this.pourable ? `hälla ${drinkName(this.source.drink)} i` : 'ta'; }
 
   press() {

@@ -368,7 +368,7 @@ function baseActions(life) {
       const held = c.held ?? c.heldView;
       return I.store(c.raw.store)?.putLabel?.(held) ?? `lägga ${nm(c.held)} i ${I.store(c.raw.store)?.name ?? ''}`;
     },
-    applies: (c) => (!!c.held || !!c.heldView?.isCup) && !!c.raw?.store,
+    applies: (c) => (!!c.held || !!c.heldView?.isCup || !!c.heldView?.isDishThing) && !!c.raw?.store,
     check: (c) => {
       const s = I.store(c.raw.store);
       if (s.isOpen && !s.isOpen()) return s.shutText;
@@ -376,7 +376,7 @@ function baseActions(life) {
       const no = s.refuse?.(held); // (a store's own rule: the dishwasher's racks, #384)
       if (no) return no;
       if (s.cleanOnly && LIFE.rules.washFirst && c.held?.clean && c.held.clean !== 'clean') return 'Diska den först'; // (#383)
-      if (c.heldView?.isCup) {
+      if (c.heldView?.isCup || c.heldView?.isDishThing) {
         if (s.id !== 'dwUpper') return `${held.name ? cap(held.name) : 'Koppen'} ska inte i ${s.name}`;
         const slot = s.freeSlot ? s.freeSlot(held) : -1;
         return slot >= 0 ? null : s.fullText;
@@ -386,7 +386,7 @@ function baseActions(life) {
       return fits ? s.fullText : `${nm(c.held)[0].toUpperCase()}${nm(c.held).slice(1)} får inte plats i ${s.name}`;
     },
     run: (c) => {
-      if (c.heldView?.isCup) {
+      if (c.heldView?.isCup || c.heldView?.isDishThing) {
         const s = I.store(c.raw.store);
         const slot = s.freeSlot ? s.freeSlot(c.heldView) : -1;
         if (slot >= 0) {
