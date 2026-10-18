@@ -2,6 +2,7 @@ import { setIcon } from './hudicons.js';
 import * as THREE from 'three';
 import { WALL_CLOCK as C } from './config.js';
 import { formatHour, sunTimes } from './daycycle.js';
+import { parseClockInput, previewDigits } from './clockinput.js';
 
 // Analog wall clock in the kitchen showing the day cycle's time. E on it opens a small control
 // strip at the bottom of the screen (the view stays visible): spool the time backwards/forwards
@@ -105,6 +106,8 @@ export class WallClock {
 /**
  * The control strip (#clock-panel). Buttons work by click/touch; with the mouse locked the keys
  * do the same: A D / ← → spool (held), Space pause/play. The date is picked on the calendar (#95). `day` is the DayCycle.
+ * An exact time is typed (#1242): with the mouse locked the digit keys fill a HH:MM preview, Enter sets it, Backspace deletes;
+ * on touch (or any free pointer) "Skriv tid" opens a numeric field (OK / Enter sets, Avbryt / Esc cancels).
  */
 export class ClockPanel {
   constructor(day, el) {
@@ -122,13 +125,59 @@ export class ClockPanel {
     }
     this.playBtn.addEventListener('click', () => this.togglePause());
     el.querySelector('[data-act=now]')?.addEventListener('click', () => this.toNow()); // back to the real time (#1145)
+    this.digits = ''; // digits typed with the keys (mouse locked), shown as a preview until Enter
+    this.error = '';
+    this.form = el.querySelector('.set'); this.input = el.querySelector('.set input');
+    this.typeBtn = el.querySelector('[data-act=type]');
+    if (this.form) {
+      this.typeBtn.addEventListener('click', () => this.openForm(this.form.hidden));
+      el.querySelector('[data-act=cancel]').addEventListener('click', () => this.openForm(false));
+      this.input.addEventListener('input', () => { // digits only, shown as H:MM / HH:MM
+        const d = this.input.value.replace(/\D/g, '').slice(0, 4);
+        this.input.value = d.length > 2 ? `${d.slice(0, -2)}:${d.slice(-2)}` : d;
+        this.input.removeAttribute('aria-invalid'); this.error = '';
+        this.render();
+      });
+      for (const t of ['keydown', 'keyup']) this.form.addEventListener(t, (e) => { // typing never walks / spools (#1242)
+        e.stopPropagation();
+        if (t === 'keydown' && e.code === 'Escape') { e.preventDefault(); this.openForm(false); }
+      });
+      this.form.addEventListener('submit', (e) => { e.preventDefault(); this.setTyped(this.input.value); });
+    }
     this.render();
+  }
+
+  /** Open / close the numeric field (touch, free pointer). */
+  openForm(open) {
+    if (!this.form) return;
+    this.form.hidden = !open; this.error = '';
+    this.input.removeAttribute('aria-invalid');
+    this.typeBtn.setAttribute('aria-expanded', String(open));
+    if (open) { this.input.value = ''; this.input.focus(); } else this.input.blur();
+    this.render();
+  }
+
+  /** Set the time of day from typed text (the date stays); false and a message when it is not 00:00–23:59. */
+  setTyped(text) {
+    const h = parseClockInput(text);
+    if (h === null) {
+      this.error = 'Ogiltig tid – skriv 00:00–23:59';
+      this.input?.setAttribute('aria-invalid', 'true');
+      this.render();
+      return false;
+    }
+    this.held.clear(); this.digits = ''; this.error = '';
+    Object.assign(this.day, { hour: h + 1e-6, spool: 0, realAt: Date.now() }); // (a hair over: formatHour floors, 9.6667 must not read 09:39)
+    this.day.update(0);
+    this.openForm(false);
+    return true;
   }
 
   get open() { return !this.el.hidden; }
 
   show(show) {
     this.el.hidden = !show;
+    this.digits = ''; this.error = ''; if (this.form) this.form.hidden = true;
     if (!show) { this.held.clear(); this.day.spool = 0; }
     this.render();
   }
@@ -147,6 +196,14 @@ export class ClockPanel {
 
   /** Keyboard while the strip is open; returns true when the key was used. */
   key(code, down, repeat) {
+    if (down && !repeat && (/^(Digit|Numpad)\d$/.test(code) || code === 'Backspace' || code === 'Enter' || code === 'NumpadEnter' || code === 'Escape')) { // typed time (#1242)
+      if (code === 'Backspace') this.digits = this.digits.slice(0, -1);
+      else if (code === 'Escape') { if (!this.digits) return false; this.digits = ''; }
+      else if (code.endsWith('Enter')) { if (!this.digits) return false; this.setTyped(this.digits); return true; }
+      else if (this.digits.length < 4) this.digits += code.slice(-1);
+      this.error = ''; this.render();
+      return true;
+    }
     code = { KeyA: 'ArrowLeft', KeyD: 'ArrowRight' }[code] ?? code; // A D spool too, like the calendar (#120)
     if (code === 'ArrowLeft' || code === 'ArrowRight') { this.hold(code, down ? (code === 'ArrowLeft' ? -1 : 1) : 0); return true; }
     if (!down || repeat) return code === 'Space';
@@ -158,10 +215,13 @@ export class ClockPanel {
 
   render() {
     const d = this.day;
-    this.timeEl.textContent = formatHour(d.hour);
+    const typing = this.digits ? previewDigits(this.digits) : this.form && !this.form.hidden && this.input.value ? this.input.value : '';
+    this.timeEl.textContent = typing || formatHour(d.hour);
+    this.timeEl.classList.toggle('typing', !!typing);
     const sun = sunTimes(d.doy);
     const state = d.spool < 0 ? 'spolar bakåt' : d.spool > 0 ? 'spolar framåt' : d.paused ? 'pausad' : '';
     this.infoEl.textContent = [`${d.date} ${MONTHS[d.month - 1]}`, sun && `sol upp ${formatHour(sun[0])}, ner ${formatHour(sun[1])}`, state].filter(Boolean).join(' · ');
+    if (this.error) this.infoEl.textContent = this.error;
     setIcon(this.playBtn,d.paused?'play':'pause',d.paused?'Starta tiden':'Pausa tiden');
     this.playBtn.setAttribute('aria-label', d.paused ? 'Starta tiden' : 'Pausa tiden');
   }

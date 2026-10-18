@@ -449,6 +449,11 @@
     #clock-panel .time { font: 700 26px system-ui, sans-serif; font-variant-numeric: tabular-nums; min-width: 84px; }
     #clock-panel button { border: 0; border-radius: 8px; background: rgba(255,255,255,.92); color: var(--ink); font: 600 16px system-ui, sans-serif; min-width: 44px; height: 40px; padding: 0 10px; cursor: pointer; touch-action: none; }
     #clock-panel button:active { background: #fff3d6; }
+    #clock-panel .time.typing { color: #ffd98a; }
+    #clock-panel .set { display: flex; gap: 8px; justify-content: center; margin-top: 8px; }
+    #clock-panel .set[hidden] { display: none; }
+    #clock-panel .set input { width: 6em; height: 40px; box-sizing: border-box; border: 2px solid transparent; border-radius: 8px; padding: 0 10px; font: 700 22px system-ui, sans-serif; font-variant-numeric: tabular-nums; text-align: center; background: #fff; color: var(--ink); }
+    #clock-panel .set input[aria-invalid=true] { border-color: #e5484d; }
     #clock-panel .month { margin-top: 6px; }
     #clock-panel .month button { height: 32px; min-width: 40px; }
     #clock-panel .date { font: 600 16px system-ui, sans-serif; min-width: 120px; }
@@ -1050,10 +1055,15 @@
       <button data-act="fwd" aria-label="Spola framåt (håll inne)">⏩</button>
       <button data-act="play"></button>
       <button data-act="now" aria-label="Tillbaka till riktiga tiden">Nu</button>
+      <button data-act="type" aria-label="Skriv in klockslag" aria-expanded="false" aria-controls="clock-set">Skriv tid</button>
       <button id="clock-close" aria-label="Stäng" class="dialog-close">×</button>
     </div>
-    <div class="info"></div>
-    <small>Håll A D för att spola · Mellanslag pausar · N går till riktiga tiden · E stänger · datumet väljer du på almanackan</small>
+    <form class="set" id="clock-set" hidden autocomplete="off">
+      <input id="clock-input" type="text" inputmode="numeric" pattern="[0-9:]*" maxlength="5" enterkeyhint="done" placeholder="tt:mm" aria-label="Klockslag, timme och minut (00:00–23:59)">
+      <button type="submit">OK</button><button type="button" data-act="cancel">Avbryt</button>
+    </form>
+    <div class="info" role="status" aria-live="polite"></div>
+    <small>Håll A D för att spola · Mellanslag pausar · N går till riktiga tiden · skriv siffror (t.ex. 1430) + Enter för exakt tid · E stänger · datumet väljer du på almanackan</small>
   </div>
   <div id="blind-panel" hidden role="dialog" aria-label="Plisségardinen">
     <div class="row">
