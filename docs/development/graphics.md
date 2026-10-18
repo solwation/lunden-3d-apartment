@@ -102,6 +102,12 @@ src/daycycle.js        real-time day (#1145; DAY.minutes = 24 × 60, was 60): it
                        (glow, stars, clouds), fog colour; paused / spooled by the wall clock. Daylight (#1073): `LIGHTING.sky`
                        blends `overcast` (even sky/ambient/fill, sun 2.2, exposure 1) → `clear` (darker shade side, sun 3.0,
                        exposure 1.5 so rooms stay ~as bright) by daylight × (1 − overcast); night, rain and the garage keep the old light
+                       Cloud deck (#1250/#1251, `SKYLAYER`, all heights *guess*): the jetpack ceiling is 320 m. `DayCycle.update` reads the camera height: in cloudy
+                       weather (`overcast` ≥ `cloudy`, full at `full`) one noise quad (`deck`, procedural, no texture, 1 draw call, only drawn from `approach` m under `base`)
+                       is the layer's underside (grey) / top (white, sunlit); between `base` and `top` the view whitens (fog near/far `near`/`far`, sky shader `uWhite`);
+                       above `top` + `fade` m `above` = 1: `oc` = 0 so the lighting is the clear-day blend (sun 3.0, exposure 1.5) whatever the weather below (night keeps the moon),
+                       and weather.js drops the rain / flakes / sound by (1 − above). One shadow-casting light as before. Known: the ground ends (far plane 1000 m) at a tone-mapping
+                       mismatch with the sky below the horizon, visible from high up. `node` check: climb with `&weather=rain&jetpack`, log `day.above`, `scene.fog`, sun.
 src/blinds.js          pleated blinds, bottom-up (BLINDS, #273): one per window in the reveal on the room side of the frame
                        (the living room's split window: two), `blind: 'dark' | 'light'` per WINDOWS entry; the fabric (a
                        zig-zag rebuilt only while it moves, castShadow) + the top rail are two meshes per blind, the bottom

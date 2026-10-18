@@ -3368,10 +3368,18 @@ export const ROOFS = { aloft: 2.0 };
 export const JETPACK = {
   // #520: east wall of the portik room, faces west. h above floor; sign over m above hook, w m wide.
   hook: { x: -11.39, z: 9.1, h: 1.45, face: -1, floor: 0 }, sign: { w: 0.9, over: 0.75 },
-  thrust: 16, down: 9, climb: 6, sink: 12, speed: 9, accel: 2.2, ceiling: 40,
+  thrust: 16, down: 9, climb: 6, sink: 12, speed: 9, accel: 2.2, ceiling: 320, // ceiling: *guess* (#1250, was 40): above the cloud deck (SKYLAYER) with room to spare
   heat: { up: 1 / 45, cool: 1 / 20, ground: 1 / 5, warn: 0.8, resume: 0.35 }, // (hovering just about holds; 45 s of steady thrust)
   drop: 0.55, // m in front of the feet where "Ta av jetpacken" stands it
 };
+
+// The cloud deck (#1251, src/daycycle.js `deck`): in cloudy weather (`DayCycle.overcast`) one flat cloud layer between `base` and
+// `top` m above the ground (all *guess*: low clouds, a few hundred metres up, nothing measured). Flying up into it whites the
+// view out (fog `near`/`far` m inside it); above `top` + `fade` m the sky is clear and the sun strong whatever the weather
+// below (the lighting follows `above`, 0…1, eased over `fade` m). The deck is a single quad: it appears over the last `approach`
+// m below `base` (from the ground the sky shader's clouds already cover it), `radius` m round the eye (inside the camera far).
+// `cloudy` = the overcast from which a deck forms (full at `full`). No textures: the density is procedural noise in the shader.
+export const SKYLAYER = { base: 150, top: 190, fade: 30, approach: 70, radius: 900, near: 1, far: 28, cloudy: 0.12, full: 0.6, scale: 0.006 };
 
 // The Spider-Man suit (#597, src/spidersuit.js): folded in the second drawer of Walter & Kian's MALM (Sovrum 2; the
 // MALM entry's `suit: true`). E puts it on / lays it down folded (like the jetpack, `drop` m in front of the feet).

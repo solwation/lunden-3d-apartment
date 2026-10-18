@@ -231,7 +231,8 @@ src/fall.js            falling (#361, FALL): player.js keeps `fall` (the highest
                        checked outdoor respawn keeps the home intact and retains existing onWake hooks (jetpack home).
                        FALL.soft: a soft thud/knee-bend, including every suit landing. Off a roof/jetpack edge uses the real
                        drop (jetpack: landing speed v² / 2g); `&fall=h` drops from h m. No life counter or recovery timer in Fall.
-src/jetpack.js         the jetpack (#359, JETPACK): our own unbranded pack (one vertex-coloured mesh) on the east wall of the portik's small room
+src/jetpack.js         (#1250: `JETPACK.ceiling` 320 m *guess*, above the cloud deck of graphics.md; one tank of heat takes you to ~230 m)
+                       the jetpack (#359, JETPACK): our own unbranded pack (one vertex-coloured mesh) on the east wall of the portik's small room
                        (#520: `JETPACK.hook`, `face: -1`, `floor: 0`) under the yellow sign
                        "Låna Jetpack på eget ansvar. Se upp för fiskmåsar." (`sign`); E puts it on (hands free; outdoors and in the
                        garage — under the garage / stairwell / portik's ceiling no thrust, "Inte inomhus", walking back in keeps it on),

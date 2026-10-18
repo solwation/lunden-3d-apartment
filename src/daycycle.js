@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { DAY, WEATHER, GARAGE, LIGHTING } from './config.js';
+import { DAY, WEATHER, GARAGE, LIGHTING, SKYLAYER } from './config.js';
 
 // Day and night: a whole day passes in DAY.minutes real minutes (24 × 60 = real time, #1145: the clock follows the
 // visitor's own clock; the wall clock's spool / pause become an offset from it). The sun follows its real path
@@ -73,7 +73,8 @@ const skyVert = /* glsl */`
 
 const skyFrag = /* glsl */`
   uniform vec3 uSun, uMoon, uZenith, uHorizon, uGlow;
-  uniform float uNight, uGlowAmt, uOvercast, uFlash;
+  uniform float uNight, uGlowAmt, uOvercast, uFlash, uWhite;
+  uniform vec3 uCloudCol;
   uniform sampler2D uClouds;
   varying vec3 vDir;
   float hash(vec3 p) { return fract(sin(dot(p, vec3(12.9898, 78.233, 37.719))) * 43758.5453); }
@@ -100,9 +101,44 @@ const skyFrag = /* glsl */`
     cloud = mix(cloud, mix(vec3(0.5, 0.53, 0.57), vec3(0.08, 0.09, 0.11), uNight), uOvercast * 0.8); // rain clouds (#248)
     col = mix(col, cloud, c * 0.85);
     col += vec3(0.75, 0.78, 0.95) * uFlash; // lightning
+    col = mix(col, uCloudCol, uWhite); // flying through the cloud deck (#1251): all one colour
     // below the horizon: fade into the horizon colour (fog takes over)
     col = mix(uHorizon, col, smoothstep(-0.02, 0.02, d.y));
     gl_FragColor = vec4(col, 1.0);
+  }`;
+
+// The cloud deck (#1251): one flat quad at the layer's base / top that follows the eye; procedural noise (no texture), seen from
+// below as a grey ceiling, from above as a white sunlit sea. Its coverage follows the weather's cloudiness.
+const deckVert = /* glsl */`
+  varying vec3 vW;
+  void main() {
+    vec4 w = modelMatrix * vec4(position, 1.0);
+    vW = w.xyz;
+    gl_Position = projectionMatrix * viewMatrix * w;
+  }`;
+const deckFrag = /* glsl */`
+  uniform float uCover, uDay, uOver, uAlpha, uRadius, uScale, uTime, uGlowAmt;
+  uniform vec3 uEye, uGlow;
+  varying vec3 vW;
+  float h2(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+  float vn(vec2 p) {
+    vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+    return mix(mix(h2(i), h2(i + vec2(1.0, 0.0)), f.x), mix(h2(i + vec2(0.0, 1.0)), h2(i + vec2(1.0, 1.0)), f.x), f.y);
+  }
+  void main() {
+    vec2 p = vW.xz * uScale + vec2(uTime, uTime * 0.4);
+    float n = 0.5 * vn(p) + 0.28 * vn(p * 2.1 + 7.3) + 0.14 * vn(p * 4.3 + 3.1) + 0.08 * vn(p * 8.7 + 1.7);
+    float thr = 0.8 - uCover * 0.9;
+    float d = smoothstep(thr, thr + 0.2, n);
+    float dist = distance(vW.xz, uEye.xz);
+    float a = d * uAlpha * (1.0 - smoothstep(uRadius * 0.4, uRadius, dist));
+    float lit = 0.12 + 0.88 * uDay, k = smoothstep(thr, thr + 0.5, n);
+    float sh = smoothstep(0.4, 0.62, n);
+    vec3 top = mix(vec3(0.66, 0.71, 0.8), vec3(1.0, 1.0, 0.98), sh) * lit;
+    vec3 under = mix(vec3(0.62, 0.65, 0.7), vec3(0.42, 0.45, 0.5), k) * (0.2 + 0.8 * uDay) * (1.0 - 0.25 * uOver);
+    vec3 col = uEye.y < vW.y ? under : top;
+    col += uGlow * uGlowAmt * 0.3;
+    gl_FragColor = vec4(col, a);
   }`;
 
 const DAY_ZENITH = new THREE.Color(0x4f8fd0), DAY_HORIZON = new THREE.Color(0xcfe0ec);
@@ -115,13 +151,23 @@ export class DayCycle {
   /** lights: { sun, hemi, ambient, fill } from main.js; clouds: canvas texture with alpha; renderer (optional): its exposure follows the sky (#1073). */
   constructor({ scene, camera, lights, clouds, startHour, month, date = 15, year = new Date().getFullYear(), renderer = null }) {
     Object.assign(this, { scene, camera, lights, renderer, hour: startHour, month, date, year, paused: false, spool: 0, overcast: 0, flash: 0, dim: 0, under: 0, lit: 0 }); // overcast, flash: weather.js (#248); dim: the blinds (#273)
-    this.fogFar = scene.fog.far;
+    this.fogFar = scene.fog.far; this.fogNear = scene.fog.near;
     this.base = { hemi: 0, ambient: 0, fill: 0, sun: 0, exposure: 1 }; // LIGHTING.sky blended overcast → clear each update (#1073)
     this.uniforms = {
       uSun: { value: new THREE.Vector3() }, uMoon: { value: new THREE.Vector3() },
       uZenith: { value: new THREE.Color() }, uHorizon: { value: new THREE.Color() }, uGlow: { value: GLOW.clone() },
-      uNight: { value: 0 }, uGlowAmt: { value: 0 }, uClouds: { value: clouds }, uOvercast: { value: 0 }, uFlash: { value: 0 },
+      uNight: { value: 0 }, uGlowAmt: { value: 0 }, uClouds: { value: clouds }, uOvercast: { value: 0 }, uFlash: { value: 0 }, uWhite: { value: 0 }, uCloudCol: { value: new THREE.Color(0.9, 0.92, 0.95) },
     };
+    this.deckUniforms = {
+      uCover: { value: 0 }, uDay: { value: 1 }, uOver: { value: 0 }, uAlpha: { value: 1 }, uRadius: { value: SKYLAYER.radius }, uScale: { value: SKYLAYER.scale },
+      uTime: { value: 0 }, uEye: { value: new THREE.Vector3() }, uGlow: { value: GLOW.clone() }, uGlowAmt: { value: 0 },
+    };
+    this.deck = new THREE.Mesh(new THREE.CircleGeometry(SKYLAYER.radius, 40).rotateX(-Math.PI / 2), new THREE.ShaderMaterial({
+      uniforms: this.deckUniforms, vertexShader: deckVert, fragmentShader: deckFrag, transparent: true, depthWrite: false, side: THREE.DoubleSide, fog: false,
+    }));
+    this.deck.frustumCulled = false; this.deck.visible = false; this.deck.raycast = () => {}; this.deck.renderOrder = 5;
+    scene.add(this.deck);
+    this.above = 0; // 0 = under the cloud deck … 1 = clearly above it (#1251): weather.js hides the rain then
     this.sky = new THREE.Mesh(new THREE.SphereGeometry(300, 32, 16), new THREE.ShaderMaterial({
       uniforms: this.uniforms, vertexShader: skyVert, fragmentShader: skyFrag, side: THREE.BackSide, depthWrite: false, fog: false,
     }));
@@ -184,12 +230,33 @@ export class DayCycle {
     u.uZenith.value.copy(NIGHT_ZENITH).lerp(DAY_ZENITH, day);
     u.uHorizon.value.copy(NIGHT_HORIZON).lerp(DAY_HORIZON, day).lerp(DUSK_HORIZON, u.uGlowAmt.value * 0.6);
     // weather (#248): grey under rain clouds, the fog closer, lightning lights it all up for a moment
-    const oc = this.overcast;
-    u.uOvercast.value = oc; u.uFlash.value = this.flash;
+    // the cloud deck (#1251): above it the sky is clear and the sun strong whatever the weather below; inside it the view whites out
+    const L = SKYLAYER, cy = this.camera.position.y;
+    const cover = smooth(L.cloudy, L.full, this.overcast);
+    const above = this.above = smooth(L.top, L.top + L.fade, cy);
+    const inside = smooth(L.base - 15, L.base + 15, cy) * (1 - smooth(L.top - 15, L.top + 15, cy)) * cover;
+    const oc = this.overcast * (1 - above), flash = this.flash * (1 - above);
+    u.uOvercast.value = oc; u.uFlash.value = flash;
     u.uZenith.value.lerp(tmpC.copy(OVERCAST).multiplyScalar(0.15 + 0.85 * day), oc * 0.85);
     u.uHorizon.value.lerp(tmpC.copy(OVERCAST).multiplyScalar(0.2 + 0.8 * day), oc * 0.7);
-    this.scene.fog.color.copy(u.uHorizon.value).lerp(FLASH, Math.min(1, this.flash * 0.5));
+    this.scene.fog.color.copy(u.uHorizon.value).lerp(FLASH, Math.min(1, flash * 0.5));
     this.scene.fog.far = this.fogFar + (WEATHER.fogFar - this.fogFar) * oc;
+    u.uCloudCol.value.setRGB(0.93, 0.94, 0.96).lerp(tmpC.setRGB(0.6, 0.63, 0.67), this.overcast * 0.8).multiplyScalar(0.1 + 0.9 * day);
+    u.uWhite.value = inside;
+    if (inside > 0) {
+      this.scene.fog.color.lerp(u.uCloudCol.value, inside);
+      this.scene.fog.near = this.fogNear + (L.near - this.fogNear) * inside;
+      this.scene.fog.far += (L.far - this.scene.fog.far) * inside;
+    } else this.scene.fog.near = this.fogNear;
+    const D = this.deckUniforms, up = cy > (L.base + L.top) / 2;
+    this.deck.visible = cover > 0.01 && (up || cy > L.base - L.approach) && inside < 0.999;
+    if (this.deck.visible) {
+      this.deck.position.set(this.camera.position.x, up ? L.top : L.base, this.camera.position.z);
+      D.uEye.value.copy(this.camera.position);
+      D.uCover.value = cover; D.uDay.value = day; D.uOver.value = this.overcast; D.uGlowAmt.value = u.uGlowAmt.value;
+      D.uAlpha.value = (up ? 1 : 1 - smooth(0, L.approach, L.base - cy)) * (1 - inside);
+      D.uTime.value = performance.now() / 1000 * 0.01; // drifting (small numbers: shader floats lose the fraction of big ones)
+    }
     this.sky.position.copy(this.camera.position);
 
     // the sun by day, the moon by night: one shadow-casting light either way
@@ -206,9 +273,9 @@ export class DayCycle {
     else sun.color.copy(SUN_LOW).lerp(SUN_HIGH, smooth(0.05, 0.4, this.sunDir.y));
     // the visitor's room's blinds (#273) take away a share of the daylight that reaches it (not the night's)
     const inDay = day * (1 - this.dim) * (1 - this.under); // under: the garage under the courtyard (#357)
-    hemi.intensity = (this.base.hemi * inDay + DAY.nightAmbient) * (1 - 0.3 * oc) + WEATHER.flash.light * this.flash;
+    hemi.intensity = (this.base.hemi * inDay + DAY.nightAmbient) * (1 - 0.3 * oc) + WEATHER.flash.light * flash;
     hemi.color.setHex(0xeaf3ff).lerp(new THREE.Color(0x6b7da8), night);
-    ambient.intensity = (this.base.ambient * inDay + DAY.nightAmbient * 0.5) * (1 - 0.25 * oc) + WEATHER.flash.light * 0.4 * this.flash + this.lit * GARAGE.lights.carLight; // lit: the garage's tubes while the visitor is down there (#440)
+    ambient.intensity = (this.base.ambient * inDay + DAY.nightAmbient * 0.5) * (1 - 0.25 * oc) + WEATHER.flash.light * 0.4 * flash + this.lit * GARAGE.lights.carLight; // lit: the garage's tubes while the visitor is down there (#440)
     fill.intensity = this.base.fill * inDay;
   }
 

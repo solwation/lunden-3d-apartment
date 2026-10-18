@@ -239,7 +239,7 @@ export class Weather {
     Object.assign(this, { rain: s.rain, storm: s.storm, overcast: s.overcast, kind: s.kind, id: s.id, temp: s.temp });
     this.day.overcast = this.overcast * (this.kind === 'snow' ? 0.7 : 1); // snow clouds are lighter
     this.clock += dt;
-    const streaks = this.kind === 'rain', hail = this.kind === 'hail', active = Math.round((streaks ? W.drops : hail ? W.hail.stones : W.snow.flakes) * this.rain * this.particleScale);
+    const streaks = this.kind === 'rain', hail = this.kind === 'hail', active = Math.round((streaks ? W.drops : hail ? W.hail.stones : W.snow.flakes) * this.rain * this.particleScale * (1 - (this.day.above ?? 0))); // (none above the cloud deck, #1251)
     this.lines.visible = streaks && active > 0;
     this.flakes.visible = (this.kind === 'snow' || hail) && active > 0;
     const c = this.camera.position, R2 = (W.radius * 1.3) ** 2;
@@ -287,7 +287,7 @@ export class Weather {
     const loud = this.kind === 'snow' ? 0 : this.kind === 'hail' ? 1.6 : 1;
     const mix = cabin == null ? null : cabinMix(cabin); // in the car: the shut doors keep most of it out (#664)
     this.mix = mix;
-    this.sound?.set(this.rain * W.sound * loud * (inside ? 0.3 : 1) * (mix?.gain ?? 1), Math.min(inside ? 900 : this.kind === 'hail' ? 9000 : 6500, mix?.cutoff ?? Infinity));
+    this.sound?.set(this.rain * (1 - (this.day.above ?? 0)) * W.sound * loud * (inside ? 0.3 : 1) * (mix?.gain ?? 1), Math.min(inside ? 900 : this.kind === 'hail' ? 9000 : 6500, mix?.cutoff ?? Infinity));
     // out in it (#249): walking about outdoors while it falls counts once per shower
     if (!inside && moved > 0 && this.id && this.rain > W.experience.min && !this.done[this.id]) {
       this.walked[this.id] = (this.walked[this.id] ?? 0) + moved;

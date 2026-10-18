@@ -114,7 +114,9 @@ async function run() {
   check(!player.flying && !landings.some((l) => l.r === 'hurt'), `a soft landing on thrust (impact as a drop: ${f2(Math.max(0, ...landings.map((l) => l.drop)))} m)`);
 
   // (3) the ceiling
-  run(10, ['Space']);
+  // (#1250: the ceiling is a few hundred metres up, more than one tank of heat: start just under it)
+  player.pos.y = JETPACK.ceiling - 3; player.eyeY = player.pos.y + PLAYER.eye; player.vy = 0; jetpack.heat = 0; jetpack.cut = false;
+  run(3, ['Space']);
   check(Math.abs(player.pos.y - JETPACK.ceiling) < 0.01, `the ceiling holds at ${f2(player.pos.y)} m`);
   // C pushes down faster than falling
   const fallA = (() => { const y = player.pos.y; run(0.8); return y - player.pos.y; })();
@@ -123,6 +125,7 @@ async function run() {
   check(fallB > fallA + 1, `C pushes down: ${f2(fallB)} m in 0.8 s against ${f2(fallA)} m falling`);
   check(!player.crouched, 'no crouching in the air');
 
+  player.pos.y = 30; player.eyeY = player.pos.y + PLAYER.eye; player.vy = 0; // (#1250: not a 300 m dive into the rest of the test)
   // (4) OUTDOOR's edge holds in the air
   jetpack.heat = 0;
   for (let i = 0; i < 600 && player.vy < 0.5; i++) { player.keys = new Set(['Space']); step(dt); } // (out of the dive)
