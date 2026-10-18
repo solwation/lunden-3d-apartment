@@ -4,6 +4,7 @@ import { SITE, SEASON, COLORS } from './config.js';
 import { pathStrip } from './roads.js';
 import { registerTrees, registerSnow, registerSeasonal } from './seasons.js';
 import { lobeGeometry, leafMaterial, leafAtlasParts } from './foliage.js';
+import { buildStLars41 } from './stlars41.js';
 const S=SITE.south;
 const inside=(x,z,p)=>{let yes=false;for(let i=0,j=p.length-1;i<p.length;j=i++)if((p[i][1]>z)!==(p[j][1]>z)&&x<(p[j][0]-p[i][0])*(z-p[i][1])/(p[j][1]-p[i][1])+p[i][0])yes=!yes;return yes;};
 const shape=b=>{const s=new THREE.Shape(b.polygon.slice(0,-1).map(([x,z])=>new THREE.Vector2(x,-z)));s.holes=(b.holes??[]).map(p=>new THREE.Path(p.slice(0,-1).map(([x,z])=>new THREE.Vector2(x,-z))));return s;};
@@ -19,6 +20,7 @@ export function* southBackdropParts(ground){
  const group=new THREE.Group();group.name='south-backdrop';const parts={facade:[],roof:[],glass:[],land:[]},records=[];
  const farGround=(x,z)=>z<=260?ground(x,z):-3.01; // inherited park level; no southern elevation survey
  let built=0;for(const b of S.buildings){if(built++%6===5)yield .6*built/S.buildings.length;const foot=shape(b),p=b.polygon.slice(0,-1),base=Math.max(...p.map(q=>farGround(...q))),bottom=Math.min(...p.map(q=>farGround(...q)))-.1,eave=base+b.levels*S.storey;
+  if(b.template==='stlars41'){records.push({...b,base,bottom,...buildStLars41(b,p,base,bottom,parts)});continue;}
   parts.facade.push(tint(new THREE.ExtrudeGeometry(foot,{depth:eave-bottom,bevelEnabled:false}).rotateX(-Math.PI/2).translate(0,bottom,0),b.facade));
   let edge=0,len=0;for(let i=0;i<p.length;i++){const q=p[(i+1)%p.length],d=Math.hypot(q[0]-p[i][0],q[1]-p[i][1]);if(d>len){len=d;edge=i;}}
   const a=p[edge],c=p[(edge+1)%p.length],ux=(c[0]-a[0])/len,uz=(c[1]-a[1])/len,u=q=>ux*q[0]+uz*q[1],v=q=>-uz*q[0]+ux*q[1],us=p.map(u),vs=p.map(v),u0=Math.min(...us),u1=Math.max(...us),v0=Math.min(...vs),v1=Math.max(...vs),half=(v1-v0)/2;
