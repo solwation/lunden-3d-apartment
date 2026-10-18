@@ -1,4 +1,4 @@
-<!doctype html><html><meta charset="utf-8"><title>String shelf under the kitchen clock (#1272)</title><pre id="out">running…</pre><script src="./rearrangesetup.js"></script><script type="module">
+<!doctype html><html><meta charset="utf-8"><title>String shelf under the kitchen clock (#1272, #1291)</title><pre id="out">running…</pre><script src="./rearrangesetup.js"></script><script type="module">
 // The String wall shelf: where it hangs (under the clock, clear of the calendar), its size, merged meshes, wall placement in
 // rearrange mode (pick up, rotate, move to another spot on the wall, confirm), saved layout survives a reload, Home/restore.
 import { STRING_SHELF as S, WALL_CLOCK as C, CALENDAR as K } from '../src/config.js';
@@ -18,7 +18,8 @@ try {
  check(Math.abs(box.min.x-2.152)<.012&&box.max.x<2.152+S.D+.012,'back at the wall x 2.152, boards stand out into the kitchen');
  check(box.max.y<C.y-C.d/2&&box.max.y>C.y-C.d/2-.2,'top is just below the clock');
  check(Math.abs((box.min.z+box.max.z)/2-C.z)<.01,'centred under the clock');
- check(box.max.z<5.174-.1&&box.min.z>K.z+K.w/2+.1,'clear of the Badrum door trim and the calendar');
+ check(box.max.z<K.z-K.w/2-.1&&K.z+K.w/2<5.174-.1&&box.min.z>3.145+.1,'clear of the calendar, the Badrum door trim and the hall opening; centred between the latter two');
+ check(Math.abs(C.z-(3.145+5.174)/2)<.01&&box.min.y>1.0,'section centre; hung from 1.05 m up (#1291)');
  let meshes=0;shelf.object.traverse(o=>{if(o.isMesh)meshes++;});check(meshes<=2,'merged to at most two meshes ('+meshes+')');
  let tris=0;shelf.object.traverse(o=>{if(o.isMesh)tris+=(o.geometry.index?.count??o.geometry.attributes.position.count)/3;});check(tris<1500,'triangle count '+tris);
  // look at the shelf from the kitchen and pick it

@@ -293,7 +293,8 @@ and Openable, individual compartment bounds, stock count and real WebGL costs.
 Two white wire ladder sides (rails + a rung every 4 cm across the depth) and three dark-brown boards, thin boxes in two flat-colour
 materials (2 meshes, ~540 triangles, no texture). Board thickness, board heights, wire sizes and colours are *guesses* (the
 "Hyllplan …" line of the note is illegible). Origin = the shelf's centre, local z 0 = the wall. It hangs on the Tvätt/Badrum
-wall's kitchen face (x 2.152) centred under the clock; `WALL_CLOCK.z` moved to 4.55 and `CALENDAR.z` to 3.85 (towards the hall) to
-make room. Like the wine rack it is a `picture` piece in `src/rearrange.js` (wall placement via the wall ray, rotate, saved layout,
+wall's kitchen face (x 2.152) centred under the clock, both centred on the wall section between the hall opening (z 3.145) and the Badrum door's
+architrave (5.174), i.e. z 4.16 (#1291: shelf lower end 1.05 m up, clock y 2.1; `CALENDAR.z` 4.87 between shelf and door trim). An old save of the
+shelf at the #1272 default (z 4.55) is dropped so the new default applies; a moved one carries over (`carryOld('stringshelf', …)` in `src/rearrange.js`). Like the wine rack it is a `picture` piece in `src/rearrange.js` (wall placement via the wall ray, rotate, saved layout,
 Home reset, NAMES `stringhyllan`, floor/ceiling box check) and has no collision footprint; on another wall it may reach into a
 perpendicular wall near a corner (explicit limitation). Test: `tools/stringshelftest.html`.

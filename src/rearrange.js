@@ -432,6 +432,7 @@ export class Rearrange {
       const moved = Math.hypot(entry.pos?.[0] - oldDefX, entry.pos?.[2] - oldDefZ) > 0.05;
       if (moved) state.pieces[piece.id] = entry;
     };
+    carryOld('stringshelf', 2.152, 4.55); // #1291: from under the clock's old spot (#1272) to the centre of the wall section
     carryOld('xmastree', 1.08, 11.5); // #591: from the palm corner (#571) to the armchair corner
     // #571: what the Christmas tree hides is shown again while poses change (a hidden piece moved elsewhere takes the
     // things on it along); the layer re-judges the overlap afterwards

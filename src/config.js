@@ -4112,29 +4112,29 @@ export const DAY = {
 
 // Analog wall clock (src/wallclock.js) on the kitchen side of the Tvätt/Badrum wall, centred on the
 // wall between the hall and the Badrum door (the user, #121): wall face x 2.152, z 3.145 to the door
-// architrave at 5.244 − DOOR_TRIM.width = 5.174 → z 4.16 (moved south to z 4.55 in #1272 so that the calendar can hang to its
-// right, i.e. towards the hall, and the string shelf (STRING_SHELF) fits under it, centred at the same z). rotY π/2 = facing east. Diameter 40 cm: the user's own
+// architrave at 5.244 − DOOR_TRIM.width = 5.174 → z 4.16 (#1291: back at the centre of that section, 0.1 m higher (y 2.1, bottom 1.90 m)
+// so the string shelf (STRING_SHELF) fits under it, centred at the same z). rotY π/2 = facing east. Diameter 40 cm: the user's own
 // clock (user report 2026-10-17, #1205; bottom 1.80 m, still above the calendar's top at 1.725 m). `depth` = the
 // frame's depth from the wall and `lip` = the frame's front ring width as a share of the radius — *visual guesses*
 // from the reporter's photo (docs/ingame-reports/3ad70257-7a01-4ec9-a4a0-855d8db12de8-2.jpg), not measured.
-export const WALL_CLOCK = { x: 2.152, y: 2.0, z: 4.55, rotY: Math.PI / 2, d: 0.4, depth: 0.045, lip: 0.055 };
+export const WALL_CLOCK = { x: 2.152, y: 2.1, z: 4.16, rotY: Math.PI / 2, d: 0.4, depth: 0.045, lip: 0.055 };
 
 // The cat calendar (#95, src/calendar.js) on the kitchen face of the Tvätt/Badrum wall, centred under the wall clock (#121; the
 // cork board that used to hang beside it was replaced by the cat card binder, #1255, so it is no longer shifted north): a 30 × 45 cm
 // paper calendar with a cat picture for each month and the days; E opens a strip to pick the month and the day, which set the
 // day cycle's date.
-// #1272: the shelf under the clock took the calendar's old spot, so the calendar hangs 70 cm further north (towards the hall,
-// the viewer's right), z 3.85 → spans 3.70–4.00, clear of the shelf (from 4.145) and of the "Till mamma" drawing (to 3.62).
-export const CALENDAR = { x: 2.152, y: 1.5, z: 3.85, w: 0.3, h: 0.45, rotY: Math.PI / 2 };
+// #1272/#1291: the shelf under the clock took the calendar's old spot, so the calendar hangs at z 4.87 between the shelf (to 4.565)
+// and the Badrum door's architrave (5.174): spans 4.72–5.02, 15 cm clear of both; it is no longer near the "Till mamma" drawing.
+export const CALENDAR = { x: 2.152, y: 1.5, z: 4.87, w: 0.3, h: 0.45, rotY: Math.PI / 2 };
 
 // The String-style wall shelf (#1272, src/furniture.js `stringshelf`; docs/stringhylla-referens-foto.jpg, user's own 60s shelf, measured
 // in docs/stringhylla-matt-anteckning.jpg): three dark-brown boards between two white wire ladder sides. `W` × `D` = board width ×
 // depth (81 × 32.5 cm) and `H` = the sides' height (75.5 cm) are the user's measurements. The board thickness `t` and the boards'
 // `boards` heights (centres, m above the sides' bottom) are *guesses* read off the photo (the "Hyllplan …" line of the note is
 // illegible); so are the wire thickness `wire`, the ladder `rung` pitch, the `rail` offsets and the colours (our picks, flat
-// colours, no texture). `bottom` = the default hanging height of the sides' lower end above the floor.
+// colours, no texture). `bottom` = the default hanging height of the sides' lower end above the floor (#1291: 1.05, was 0.95, which hung too low).
 export const STRING_SHELF = { W: 0.81, D: 0.325, H: 0.755, t: 0.016, boards: [0.075, 0.375, 0.665], wire: 0.004, rung: 0.04, inset: 0.012,
-  board: 0x4a2a20, white: 0xf0eee8, bottom: 0.95 };
+  board: 0x4a2a20, white: 0xf0eee8, bottom: 1.05 };
 
 // The cat card binder as an object (#1255, src/catbinderprop.js, built into furniture.js `coffeetable`): a small ring binder
 // lying on the coffee table's slat shelf, in the table's local frame (x along the length, z across, y up from the floor).
@@ -4867,9 +4867,9 @@ export const FURNITURE = [
   // (z < 9.1) and the BESTÅ (z > 9.95), bottom 1.1 m up; 38 × 105 cm and the 10 cm depth are *guesses*.
   { type: 'winerack', level: 0, x: 0.202, z: 9.52, y: 1.1, rot: -90, w: 0.38, h: 1.05, n: 8, depth: 0.1, tilt: 0, champagne: [1, 5] },
   // The String shelf under the kitchen wall clock (#1272, STRING_SHELF): on the Tvätt/Badrum wall's kitchen face (x 2.152, facing east),
-  // centred under the clock (z 4.55; spans 4.145–4.955, 22 cm short of the Badrum door's architrave at 5.174), lower end 0.95 m up,
-  // so its top (1.705) stays below the clock's bottom (1.80). y = the shelf's centre.
-  { type: 'stringshelf', level: 0, x: 2.152, z: 4.55, y: 0.95 + 0.755 / 2, rot: -90 },
+  // #1291: centred on the wall section between the hall opening (3.145) and the Badrum door's architrave (5.174), z 4.16 (spans
+  // 3.755–4.565), lower end 1.05 m up, so its top (1.805) stays below the clock's bottom (1.90). y = the shelf's centre.
+  { type: 'stringshelf', level: 0, x: 2.152, z: 4.16, y: 1.05 + 0.755 / 2, rot: -90 },
   // The watercolour painting (#133, docs/tavla-abstrakt-svart-ram.png): portrait, thin flat black frame, ~70 × 100 cm
   // (*guess*), centred over the chaise on the east wall (x 5.5; the chaise spans z ~10.55–12.15), centre 1.55 m up.
   // textures/tavla-akvarell-schaslong.jpg (#1095) is the user's photo docs/tavla-akvarell-ansikte-foto.jpg cropped inside
