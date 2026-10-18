@@ -63,6 +63,7 @@ export function mergeStatic(root, keep = [], cellOf = () => '', { tagged = false
     mesh.receiveShadow = list[0].receiveShadow;
     mesh.matrixAutoUpdate = false;
     if (list[0].userData.door) mesh.userData.door = list[0].userData.door;
+    if (list[0].userData.materialSurfaceId) mesh.userData.materialSurfaceId = list[0].userData.materialSurfaceId;
     root.add(mesh);
     for (const o of list) o.parent.remove(o);
     removed += list.length;

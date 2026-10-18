@@ -199,9 +199,11 @@ En aktiv `/orkester` får inte avslutas direkt när kön blir tom. Fortsätt kon
 - **Disk:** varje worktree är en hel kopia av repot och sessionens disk är begränsad. Ta bort en agents worktree när den
   är klar (`git worktree remove --force .claude/worktrees/agent-<id>` + `git branch -D worktree-agent-<id>`, aldrig en
   som fortfarande kör), och ge Chrome en tillfällig `--user-data-dir` som tas bort efter körningen (`rm -rf`).
-- **Högst 2 agenter samtidigt per maskin** (användaren 2026-10-17; tidigare 3): ~4 CPU:er räcker inte för fler parallella
-  headless-tester utan att varje issue drar ut till timmar. Målet är att varje issue landar inom ca 30 minuter; skala
-  antalet agenter efter det, och bryt hellre ner issues i delissues än att köra fler parallellt.
+- **Högst 2 agenter samtidigt per maskin, minst 1 agent per orkester** (användaren 2026-10-17, förtydligat 2026-10-18):
+  Normalläget är högst 2 agenter samtidigt per maskin (~4 CPU:er räcker sällan för fler parallella headless-tester utan
+  att varje issue drar ut till timmar; bryt hellre ner i delissues). **Varje aktiv orkester ska dock alltid köra minst en agent**,
+  även om en annan orkester på samma maskin nominellt fyllt taket ("maxat prestandan"). När kapaciteten tillåter får
+  orkestern köra upp till 2 agenter, men vid delad maskin garanteras varje orkester minst en körande agent.
 
 ## Miljö (lokal WSL)
 - Repot under `/mnt/c/...` går via 9p-bryggan och är ~100× långsammare. Kör orkestern i ext4-spegeln
@@ -278,8 +280,9 @@ som belägg för att alla hus fungerar. Regeln kräver ingen användarbekräftel
 ### Så att inget låser sig (förtydligande 2026-10-12, ur användarens önskan: allt ska bli klart så fort som möjligt)
 Samordningen får aldrig vara skälet till att en agentplats står tom eller ett issue ligger still. Därför:
 - Alla regler om att fylla platser, reservera och ta över nedan tillämpas **efter prioritetsordningen ovan**.
-- **Fråga inte användaren** om du ska fylla en ledig plats. Har du färre agenter än taket (2 per maskin) och finns något
-  ledigt eller övertagbart: starta en agent direkt. Att välja nästa issue är ditt val, inte användarens.
+- **Fråga inte användaren** om du ska fylla en ledig plats. Varje aktiv orkester ska alltid köra minst 1 agent (även
+  om en annan orkester på samma maskin har maxat prestandan/fyllt 2 agenter), och skalar upp till 2 om maskinkapaciteten
+  tillåter. Finns något ledigt eller övertagbart: starta en agent direkt. Att välja nästa issue är ditt val, inte användarens.
 - **Reservationer går ut snabbt:**
   - En reservationskommentar utan `in-progress` där ingen agent startat inom **30 minuter** är **ledig** – vem som helst
     med ledig plats får ta den (kommentar `Övertagen …` på issuen och i #420).
@@ -298,9 +301,9 @@ Samordningen får aldrig vara skälet till att en agentplats står tom eller ett
   den andra rebasar – ingen behöver be om lov.
 - **Skriv alltid hur många platser som är lediga** i raden `Senast uppdaterad` i din statuskommentar (`lediga platser: N`),
   så att andra orkestrar ser var det finns kapacitet.
-- **Dela kapaciteten — ta hellre över och släpp hellre än att stå still.** Målet är att alla orkestrar håller sina
-  agentplatser fyllda (2 per maskin) och att inget arbete ligger reserverat utan att någon kör det. Kolla på varje
-  agent-klar och varje gång du har färre än 2 agenter igång:
+- **Dela kapaciteten — ta hellre över och släpp hellre än att stå still.** Målet är att alla orkestrar håller aktiv
+  framdrift (minst 1 agent per orkester alltid, upp till 2 per maskin/orkester när kapacitet finns) och att inget arbete
+  ligger reserverat utan att någon kör det. Kolla på varje agent-klar och varje gång du har färre agenter igång än tillåtet:
   - **Du har ledig plats** och inget eget att starta → ta över arbete som en annan session reserverat men **inte
     påbörjat** (issue med bara reservationskommentar eller bara i dess "Kö", utan `in-progress`). Välj
     den högst prioriterade startbara issuen, äldst först, även om den ligger tidigt i kedjan. Skriv en kommentar i #420

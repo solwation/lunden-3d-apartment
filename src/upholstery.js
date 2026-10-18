@@ -41,6 +41,7 @@ export function upholsterySurface(group, name = 'Klädsel', { id = 'textile', ca
         uv[i * 2 + 1] = ay >= ax && ay >= az ? p.getZ(i) : p.getY(i);
       }
       mesh.geometry.setAttribute('uv1', new THREE.BufferAttribute(uv, 2));
+      mesh.userData.materialSurfaceId = id;
       return mesh;
     },
     apply(id) {

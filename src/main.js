@@ -2347,7 +2347,7 @@ function renderMaterialLibrary() {
 document.getElementById('terminal-material-surface').addEventListener('change', e => {
   editMenuSurfaceId = e.target.value;
   const piece = rearrange.materialEdit?.piece ?? editMenuPiece;
-  if (piece && rearrange.materialEdit && rearrange.beginMaterial(piece, e.target.value)) {
+  if (piece && (rearrange.materialEdit || rearrange.enabled) && rearrange.beginMaterial(piece, e.target.value)) {
     renderMaterialLibrary();
     renderRearrangeHUD();
   } else {
@@ -2374,7 +2374,7 @@ function showTerminal(show, byKey = 'button') {
   if (!show) adminReports.closeLogin();
   terminal.hidden = !show; reading = show; player.keys.clear(); touch.analog.x = touch.analog.y = 0;
   chatMode(show);
-  if (show) { editMenuPiece = rearrange.materialEdit?.piece ?? rearrange.selected?.piece ?? rearrange.target?.piece ?? null; if (locked) { boardFreed = true; document.exitPointerLock(); } editUI(); (rearrange.enabled ? document.getElementById('terminal-close') : terminalInput).focus(); }
+  if (show) { editMenuPiece = rearrange.materialEdit?.piece ?? rearrange.selected?.piece ?? rearrange.target?.piece ?? null; if (!rearrange.materialEdit) editMenuSurfaceId = null; if (locked) { boardFreed = true; document.exitPointerLock(); } editUI(); (rearrange.enabled ? document.getElementById('terminal-close') : terminalInput).focus(); }
   else if (boardFreed) { boardFreed = false; if (byKey === 'Escape') { overlay.hidden = true; armEl.hidden = false; } else canvas.requestPointerLock()?.catch(() => { armEl.hidden = false; }); }
   renderRearrangeHUD();
 }
@@ -2464,7 +2464,7 @@ document.getElementById('terminal-confirm-yes').addEventListener('click', async 
   editUI(); await saved; editUI();
 });
 document.getElementById('terminal-cancel-move').addEventListener('click', () => { rearrange.cancel(); rearrange.say('Flytten avbröts.'); editUI(); });
-document.getElementById('rearrange-cancel').addEventListener('click', () => { const wasMaterial = !!rearrange.materialEdit; rearrange.cancel(); rearrange.say(wasMaterial ? 'Materialvalet avbröts. Välj ett föremål.' : 'Flytten avbröts. Välj ett föremål.'); editUI(); });
+document.getElementById('rearrange-cancel').addEventListener('click', () => { const wasMaterial = !!rearrange.materialEdit; rearrange.cancel(); if (wasMaterial) editMenuSurfaceId = null; rearrange.say(wasMaterial ? 'Materialvalet avbröts. Välj ett föremål.' : 'Flytten avbröts. Välj ett föremål.'); editUI(); });
 document.getElementById('rearrange-rotate').addEventListener('click', () => rearrange.rotate());
 document.getElementById('rearrange-raise').addEventListener('click', () => rearrange.raise(1));
 document.getElementById('rearrange-lower').addEventListener('click', () => rearrange.raise(-1));
