@@ -172,13 +172,12 @@ body.touch #touch-controls #action {
 body.touch #touch-controls #action.hud-button:active { transform: scale(.97); }
 /* Action choices take the corner band from the right edge to the stand column, two columns with bounded
    scrolling; the slots above the band (and stand/turn beside it) move up by the band's extra height. */
-body.touch #touch-controls:has(#choices:not([hidden])) { --side: var(--r1); }
 body.touch #touch-controls:has(#choices:not([hidden]) > button:nth-of-type(3)) {
-  --band: clamp(var(--touch-row), calc(100dvh - 4 * var(--touch-size) - 2 * var(--tg) - 20px - var(--st) - var(--sb)), calc(2 * var(--touch-size) + var(--tg)));
+  --band: clamp(var(--touch-row), calc(100dvh - 2 * var(--touch-size) - 2 * var(--tg) - 86px - var(--st) - var(--sb)), calc(2 * var(--touch-size) + var(--tg)));
 }
 body.touch #touch-controls #choices {
   position: absolute; inset: auto; right: 0; bottom: 0; transform: none;
-  width: calc(var(--c2) + var(--touch-size)); height: var(--band); box-sizing: border-box;
+  width: var(--pill-w); height: var(--band); box-sizing: border-box;
   display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: minmax(var(--touch-size), auto); align-items: stretch;
   overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y;
   padding: 0; gap: 8px; pointer-events: auto;
@@ -192,7 +191,6 @@ body.touch #touch-controls #choices button {
 /* Short landscape: a slightly tighter corner. */
 @media (max-height: 375px) {
   body.touch #touch-controls { --touch-size: var(--touch-button, 48px); bottom: calc(12px + var(--sb)); right: calc(12px + var(--sr)); }
-  body.touch #touch-controls:has(#choices:not([hidden]) > button:nth-of-type(3)) { --band: var(--touch-row); }
   body.touch #touch-controls #choices button { font-size: 13px; padding: 4px; }
 }
 /* #1087: one calm glass family for the walking stick and the right-thumb cluster. touch.js writes the
