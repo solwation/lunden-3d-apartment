@@ -331,7 +331,7 @@ function hairParts(style) {
     (a, e, s, i) => Math.max(0.0015, thick(a, e) * (curtain(a) ? 1 : feather(s)) * (parting && a === 0 ? 0.55 : 1) + bump(a, s, i)),
     (a, s, i) => strand(i) * (parting && a === 0 && s > 0.15 ? 0.8 : 1) * (0.92 + 0.08 * smooth(0, 0.3, s))), 'hair', 1]);
   if (style === 1) out.push(...longHair([...az.filter((a) => a >= L.from), ...az.filter((a) => a <= -L.from)], low, onSkull, sheet, strand, thick, hit, smooth));
-  if (style === 4) { // curly hair (#1244): rings of small irregular curls over the short-hair shell, kept above the hairline
+  if (style === 4) { // curly hair (#1244, #1268): rings over the shell, plus hanging locks at sides/back for hairLength
     const C = HAIR.curly;
     C.rings.forEach(([e, n, phase], r) => { for (let k = 0; k < n; k++) {
       const a = ((k + phase) / n) * 360 - 180, e0 = hairline(a) + C.margin;
@@ -340,6 +340,57 @@ function hairParts(style) {
       const q = onSkull(a, e, thick(a, e) + rad * C.sink);
       out.push([new THREE.IcosahedronGeometry(rad, 0).scale(1, 0.9 + 0.2 * j, 1).rotateY(k + r).translate(...q), 'hair', 0.92 + 0.14 * t]);
     } });
+    // #1268: curly curtain with wavy locks down sides and back so hairLength stretches it
+    const ears = [-1, 1].map((s) => ({ radius: 0.028, scale: [0.55, 1, 0.72], centre: [s * 0.1, H - 0.005, 0] }));
+    const torsoAt = (y) => {
+      const t = y + NECK;
+      let r = 0;
+      for (const prof of [TORSO_PROFILE, TORSO_PROFILE_FEMALE]) for (let k = 1; k < prof.length; k++) {
+        const [r0, y0] = prof[k - 1], [r1, y1] = prof[k];
+        if (t >= y0 && t <= y1) r = Math.max(r, r0 + ((r1 - r0) * (t - y0)) / (y1 - y0 || 1));
+      }
+      return r;
+    };
+    const body = (a, y) => {
+      const d = [Math.sin(a), 0, Math.cos(a)], o = [0, y, 0];
+      let r = Math.max(hit(RH.skull, o, d), hit(RH.jaw, o, d), ...ears.map((e) => hit(e, o, d)));
+      if (y > -0.04 && y < 0.08) r = Math.max(r, 0.055);
+      const t = torsoAt(y);
+      if (t > 0) r = Math.max(r, 1 / Math.hypot(d[0] / (t * 1.15), d[2] / (t * 0.7)));
+      return r;
+    };
+    const cFrom = 72;
+    const cAz = [...az.filter((a) => a >= cFrom), ...az.filter((a) => a <= -cFrom)];
+    const cCols = cAz.length - 1, cRows = 5;
+    const cCols3 = cAz.map((a, i) => {
+      const rad = a * deg, p0 = onSkull(a, low(a), thick(a, low(a))), r0 = Math.hypot(p0[0], p0[2]);
+      const absA = Math.abs(a);
+      const k = smooth(cFrom, 125, absA);
+      const hem = (p0[1] - 0.01) + (-0.18 - (p0[1] - 0.01)) * k + 0.006 * Math.sin(i * 1.9) * k;
+      const pts = [];
+      let r = 0;
+      for (let j = cRows; j >= 0; j--) {
+        const t = (1 - j / cRows) ** 1.2, y = p0[1] + (hem - p0[1]) * t;
+        const wave = 0.006 * Math.sin(j * 2.8 + i * 1.7) * smooth(0, 0.2, t) * k;
+        r = Math.max(r, r0, body(rad, y) + 0.01 * k + wave);
+        pts[j] = [Math.sin(rad) * r, y, Math.cos(rad) * r, r];
+      }
+      return pts;
+    });
+    const cOuter = sheet(cCols, cRows, false, (i, j) => cCols3[i][j].slice(0, 3), (i, j) => strand(i + 2) * (0.92 + 0.12 * Math.sin(j * 2.5 + i)));
+    const cInner = sheet(cCols, cRows, false, (i, j) => { const [x, y, z, r] = cCols3[i][j], k = (r - 0.009) / r; return [x * k, y, z * k]; }, () => 0.75, true);
+    out.push([cOuter, 'hair', 0.98], [cInner, 'hair', 1]);
+    // Extra ringlets / curls along the wavy curtain
+    for (let i = 0; i < cAz.length; i += 2) {
+      const a = cAz[i], rad = a * deg;
+      if (Math.abs(a) < 80) continue;
+      for (let j = 1; j < cRows; j += 2) {
+        const [x, y, z, r] = cCols3[i][j];
+        const radC = C.radius * (0.75 + 0.2 * Math.sin(i * 2.7 + j * 3.3));
+        const q = [Math.sin(rad) * (r + radC * 0.3), y, Math.cos(rad) * (r + radC * 0.3)];
+        out.push([new THREE.IcosahedronGeometry(radC, 0).scale(1, 0.95, 1).rotateY(i + j).translate(...q), 'hair', 0.95]);
+      }
+    }
   }
   if (style === 2) { // the bun at the back of the crown: a coil around a knot, tilted with the head's curve, and its band
     const at = [0, 0.212, -0.078], tilt = -0.66;

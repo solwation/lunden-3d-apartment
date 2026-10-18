@@ -630,3 +630,23 @@ test('#1220 Slumpa: brows are null or a hair colour, and survive the code', asyn
   }
   assert.ok(own > 10 && own < 150, `some own brow colours (${own})`);
 });
+
+test('#1268 curly hair length: style 4 hair vertices span down to shoulder level for hairLength uniform scaling', async () => {
+  const { Avatar } = await import('../src/avatar.js');
+  const lkShort = { ...avatarLook('curl-len-0'), style: 4, hairLength: 0 };
+  const avShort = new Avatar(lkShort);
+  const lkLong = { ...avatarLook('curl-len-8'), style: 4, hairLength: 8 };
+  const avLong = new Avatar(lkLong);
+  assert.equal(avShort.mesh.material.userData.u.uHair.value, 0.45);
+  assert.equal(avLong.mesh.material.userData.u.uHair.value, 1.25);
+  const pos = avShort.mesh.geometry.attributes.position;
+  const facePart = avShort.mesh.geometry.attributes.facePart;
+  let minHy = Infinity;
+  for (let i = 0; i < pos.count; i++) {
+    if (Math.abs(facePart.getX(i) - 7) < 0.5) {
+      const hy = pos.getY(i) - 1.54 - 0.09;
+      if (hy < minHy) minHy = hy;
+    }
+  }
+  assert.ok(minHy <= -0.25, `curly hair spans down to shoulder level: ${minHy}`);
+});

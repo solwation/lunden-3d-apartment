@@ -76,6 +76,7 @@ export function drawAvatarPreview(canvas, look) {
   const headW = sh('headWidth'), headL = sh('headLength'), jaw = sh('jaw'), eyeS = sh('eyeSize'), eyeO = sh('eyeShape');
   const noseS = sh('noseSize'), noseW = sh('noseWidth'), earS = sh('ears'), browT = sh('browThick'), browY = sh('browY') * 1000;
   const neck = sh('neck'), neckPx = Math.round(neck * 200);
+  const hairLen = sh('hairLength'); // #1165 / #1268 (0.45 .. 1.25, mid 1.0)
   const iris = toHex(EYES.includes(look.eyes) ? look.eyes : EYES[0]);
 
   const cx = width / 2;
@@ -297,10 +298,11 @@ export function drawAvatarPreview(canvas, look) {
     ctx.arc(cx, lf, 19.5, Math.PI, Math.PI * 2);
     ctx.quadraticCurveTo(cx, lf - 3, cx - 19.5, lf);
     ctx.fill();
-    // Locks falling past the ears and outside the jawline down onto the shoulders
+    // Locks falling past the ears and outside the jawline down onto the shoulders (#1268: scales with hairLength)
+    const lockLen = Math.round(66 * hairLen);
     ctx.beginPath();
-    ctx.roundRect(cx - 24, 48, 7.5, 66, 3);
-    ctx.roundRect(cx + 16.5, 48, 7.5, 66, 3);
+    ctx.roundRect(cx - 24, 48, 7.5, lockLen, 3);
+    ctx.roundRect(cx + 16.5, 48, 7.5, lockLen, 3);
     ctx.fill();
   } else if (style === 2) { // Bun
     ctx.fillStyle = hair;
@@ -312,7 +314,7 @@ export function drawAvatarPreview(canvas, look) {
     ctx.beginPath();
     ctx.roundRect(cx - 6, crown - 0.5, 12, 4, 2);
     ctx.fill();
-  } else if (style === 4) { // Curly (#1244): the cap with a ring of curls round the crown and temples
+  } else if (style === 4) { // Curly (#1244, #1268): cap with curls round crown/temples, plus cascading side curls when longer
     ctx.fillStyle = hair;
     cap(1.8, hairline);
     for (let i = 0; i < 11; i++) {
@@ -322,6 +324,17 @@ export function drawAvatarPreview(canvas, look) {
       ctx.fill();
     }
     for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.arc(cx - 9 + i * 6, crown + 2, 4.5, 0, Math.PI * 2); ctx.fill(); }
+    // #1268: hanging curls at the sides scaling with the hairLength slider
+    const extraCurls = Math.max(0, Math.round((hairLen - 0.45) / 0.16));
+    for (let k = 0; k < extraCurls; k++) {
+      const yk = hy + ry - 4 + k * 8.5;
+      for (const s of [-1, 1]) {
+        const xk = cx + s * (rx + 2.5 + (k % 2) * 2.5);
+        ctx.beginPath();
+        ctx.arc(xk, yk, 4.2 + (k % 3) * 0.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
   } else if (style === 3) { // Beanie: a knitted cap with a folded brim, both ending above the brows
     ctx.fillStyle = top;
     cap(2.5, hairline - 1);
