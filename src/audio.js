@@ -197,6 +197,18 @@ export const sfx = {
     noise(t, 0.04, d, { type: 'highpass', freq: 1800, gain: opening ? 0.2 : 0.35 });
     tone(t, 0.06, d, { from: 900, to: 600, gain: opening ? 0.08 : 0.14 });
   },
+  /** A pony's soft nicker (#1293): a few short low chuffs, then a falling breath. `pitch` ~1 = an average pony. */
+  nicker(pos, pitch = 1) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 1);
+    for (let i = 0; i < 4; i++) {
+      const s = t + i * 0.12;
+      tone(s, 0.11, d, { type: 'sawtooth', from: (310 - i * 12) * pitch, to: (270 - i * 12) * pitch, gain: 0.1 });
+      noise(s, 0.1, d, { freq: 800, q: 1.5, gain: 0.12 });
+    }
+    tone(t + 0.5, 0.35, d, { type: 'sawtooth', from: 400 * pitch, to: 230 * pitch, gain: 0.08 });
+    noise(t + 0.5, 0.3, d, { freq: 600, q: 1, gain: 0.1 });
+  },
   /** Purring for `dur` seconds: a ~26 Hz pulse train through a low formant, breathing in and out.
    * `voice` 'trill' (perser) adds little mrrp chirps, 'rasp' (sphynx) purrs deeper, rougher, louder, 'kitten' (#363)
    * purrs quieter, faster and higher. */

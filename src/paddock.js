@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { PADDOCK as P } from './config.js';
 import { outline, fenceLine, posts, gateSpan, insideFence, insetRing, ringDist, centre } from './paddockgeo.js';
 import { riverAt } from './riverbridge.js';
+import { sfx } from './audio.js';
 
 // #1280: the pony paddock on the kidney-shaped meadow south of the timber footbridge: a merged post-and-rail fence with a closed gate, a
 // water trough and a three-sided shelter (ONE mesh, vertex colours, no textures), two C ponies (Zoey, white; Princess, brown) as ONE
@@ -82,7 +83,7 @@ export function fenceGeometry(ground, spots = {}) {
     for (const r of (gate ? [0.25, 0.6, 0.95, 1.3] : P.rails)) s.beam(at(a, ya, r), at(b, yb, r), P.rail.w, P.rail.h, col);
     if (gate) s.beam(at(a, ya, 0.25), at(b, yb, 1.3), P.rail.w, 0.1, col); // the diagonal brace
   }
-  const dark = lin(0x5b4330), water = lin(0x56737c), felt = lin(0x5a3d2d);
+  const dark = lin(0x5b4330), water = lin(0x56737c);
   if (spots.trough) { // a plank trough with water in it
     const { x, z, yaw } = spots.trough, T = P.trough, y = ground(x, z);
     s.at(new THREE.Matrix4().makeRotationY(yaw).setPosition(x, y, z));
@@ -91,72 +92,116 @@ export function fenceGeometry(ground, spots = {}) {
     for (const k of [-1, 1]) { s.boxA(k * (T.w / 2 - 0.1), 0.1, 0, 0.1, 0.2, T.d + 0.08, wood[0]); }
     s.at(null);
   }
-  if (spots.shelter) { // a field shelter: back and side walls, a sloping felt roof on two front posts, open to the front (+z)
-    const { x, z, yaw } = spots.shelter, S = P.shelter, y = ground(x, z) - 0.1, hs = S.h - 0.35;
+  if (spots.shelter) { // the field shelter after the photo in #1293: dark heavy timber posts and beams, diagonal braces, plank walls (back and sides), a green sedum roof; open to the front (+z)
+    const { x, z, yaw } = spots.shelter, S = P.shelter, y = ground(x, z) - 0.1, tim = lin(0x4b382b), plank = lin(0x5f3d2c), sedum = lin(0x6c8446), sedum2 = lin(0xb5703a), hs = S.h - 0.4;
     s.at(new THREE.Matrix4().makeRotationY(yaw).setPosition(x, y, z));
-    s.boxA(0, S.h / 2, -S.d / 2, S.w, S.h, 0.1, wood[1], 0);
-    for (const k of [-1, 1]) {
-      s.boxA(k * (S.w / 2 - 0.05), hs / 2, 0, 0.1, hs, S.d, wood[2], 0);
-      s.boxA(k * (S.w / 2 - 0.07), hs / 2, S.d / 2, 0.14, hs, 0.14, wood[0], 0, '-y');
-    }
-    s.beam(V(0, S.h + 0.02, -S.d / 2 - 0.25), V(0, hs + 0.02, S.d / 2 + 0.35), S.w + 0.5, 0.1, felt);
+    for (let k = 0; k < 5; k++) s.boxA(0, 0.3 + k * 0.4, -S.d / 2, S.w, 0.36, 0.08, plank, 0); // plank walls: the back …
+    for (const k of [-1, 1]) for (let r = 0; r < 5; r++) s.boxA(k * (S.w / 2 - 0.04), 0.3 + r * 0.4, 0, 0.08, 0.36, S.d, plank, 0); // … and the two sides
+    for (const px of [-S.w / 2, 0, S.w / 2]) s.boxA(px, hs / 2, S.d / 2 - 0.1, 0.22, hs, 0.2, tim, 0, '-y'); // the front posts
+    s.boxA(0, hs + 0.1, S.d / 2 - 0.1, S.w + 0.24, 0.28, 0.22, tim, 0); // the front beam
+    for (const px of [-S.w / 2, S.w / 2]) s.boxA(px, hs / 2, -S.d / 2 + 0.1, 0.22, hs, 0.2, tim, 0, '-y'); // the back corner posts
+    for (const sx of [-S.w / 4, S.w / 4]) for (const dir of [-1, 1]) s.beam(V(sx, hs - 0.05, S.d / 2 - 0.1), V(sx + dir * 0.7, hs - 0.7, S.d / 2 - 0.1), 0.14, 0.12, tim); // the diagonal braces under the beam
+    for (let k = 0; k < 4; k++) s.boxA(-S.w / 2 + 0.3 + k * (S.w - 0.6) / 3, hs + 0.14, 0, 0.16, 0.16, S.d + 0.2, tim, 0); // the rafters
+    s.beam(V(0, S.h - 0.06, -S.d / 2 - 0.2), V(0, S.h - 0.1, S.d / 2 + 0.35), S.w + 0.5, 0.1, tim); // the roof boards
+    s.beam(V(0, S.h + 0.03, -S.d / 2 - 0.15), V(0, S.h, S.d / 2 + 0.3), S.w + 0.4, 0.1, sedum); // the sedum roof
+    s.beam(V(0, S.h + 0.07, S.d / 2 + 0.3), V(0, S.h + 0.06, S.d / 2 + 0.35), S.w + 0.4, 0.06, sedum2); // a rim of red-brown sedum along the front edge
     s.at(null);
   }
   return s.geometry();
 }
 
-/** One C pony (unit: m, nose +z, ground y 0, withers 1.32): body, neck + mane, head, four legs, tail; `aPart` says which moves. */
+/** A lofted tube through `secs` = [{p: [x, y, z], w: half-width (x), d: half-depth}] (an octagonal ring per section, square ends): one colour per segment
+ *  (`cols[i]` for secs i → i+1, else `cols[0]`). The ring's depth axis is perpendicular to the path and to x (necks, legs, tails, a barrel all use it). */
+Soup.prototype.tube = function (secs, cols) {
+  const RING = [[0.6, 1], [1, 0.6], [1, -0.6], [0.6, -1], [-0.6, -1], [-1, -0.6], [-1, 0.6], [-0.6, 1]], X = V(1, 0, 0);
+  const pts = (s, i) => {
+    const a = V(...secs[Math.max(0, i - 1)].p), b = V(...secs[Math.min(secs.length - 1, i + 1)].p), t = b.sub(a).normalize(), v = X.clone().cross(t).normalize().multiplyScalar(s.d), c = V(...s.p);
+    return RING.map(([k, l]) => c.clone().addScaledVector(X, k * s.w).addScaledVector(v, l));
+  };
+  const rings = secs.map(pts);
+  for (let i = 0; i + 1 < secs.length; i++) {
+    const mid = V(...secs[i].p).add(V(...secs[i + 1].p)).multiplyScalar(0.5), col = cols[i] ?? cols[0];
+    for (let k = 0; k < 8; k++) this.quad(rings[i][k], rings[i][(k + 1) % 8], rings[i + 1][(k + 1) % 8], rings[i + 1][k], mid, col);
+  }
+  for (const [ri, s, out] of [[0, secs[0], V(...secs[0].p).sub(V(...secs[1].p))], [secs.length - 1, secs[secs.length - 1], V(...secs[secs.length - 1].p).sub(V(...secs[secs.length - 2].p))]]) {
+    const c = V(...s.p);
+    for (let k = 0; k < 8; k++) {
+      const a = rings[ri][k], b = rings[ri][(k + 1) % 8], n = b.clone().sub(a).cross(c.clone().sub(a));
+      if (n.dot(out) >= 0) this.tri(a, b, c, cols[0]); else this.tri(b, a, c, cols[0]);
+    }
+  }
+};
+
+/** One C pony (unit: m, nose +z, ground y 0, withers 1.32; the C-pony proportions after the photo in #1293): a lofted barrel, a crested neck with a
+ *  mane, a long head with muzzle, forelock, eyes, a blaze-star mark and two ears, four jointed legs (hock, cannon, fetlock) with black hooves and a tail.
+ *  Colour codes: 1 = coat, 0 = the accent (mane, tail, lower legs), 0.45 muzzle, 2 = black, 3 = the white star (only where `aMark`). `aPart` says which part moves:
+ *  0 body, 1 neck + mane, 2 head, 3–6 legs, 7 tail, 8 ears. */
 export function ponyGeometry() {
-  const s = new Soup(), COAT = [1, 0, 0], ACC = [0, 0, 0], BLACK = [2, 0, 0], MUZ = [0.45, 0, 0], SOCK = [0.3, 0, 0], neck = P.pony.neck;
-  const base = V(...neck), lean = 0.66, dir = V(0, Math.cos(lean), Math.sin(lean)), back = V(0, Math.sin(lean), -Math.cos(lean));
-  s.partId = 0; // body
-  s.boxA(0, 0.98, -0.28, 0.5, 0.66, 0.74, COAT); s.boxA(0, 0.95, 0.3, 0.44, 0.62, 0.62, COAT); s.boxA(0, 1.27, 0.33, 0.2, 0.1, 0.3, COAT);
-  s.boxA(0, 0.67, 0.0, 0.3, 0.1, 0.9, [0.8, 0, 0]); // the belly, a little darker
-  s.partId = 1; s.pv = neck; // neck and mane (pivot: the neck's base)
-  const nc = base.clone().addScaledVector(dir, 0.36), mc = nc.clone().addScaledVector(back, 0.14);
-  s.boxA(nc.x, nc.y, nc.z, 0.2, 0.72, 0.26, COAT, lean); s.boxA(mc.x, mc.y, mc.z, 0.05, 0.72, 0.1, ACC, lean);
-  const tip = base.clone().addScaledVector(dir, 0.72), pitch = 0.91, hd = V(0, -Math.sin(pitch), Math.cos(pitch)); // the head hangs 52° below level
-  s.partId = 2; s.pv = [tip.x, tip.y, tip.z]; // head, ears, eyes, forelock, muzzle (pivot: the neck's top)
-  const at = (k, up = 0, side = 0) => V(side, tip.y + hd.y * k + up, tip.z + hd.z * k);
-  const hc = at(0.2); s.boxA(hc.x, hc.y, hc.z, 0.2, 0.24, 0.48, COAT, pitch);
-  const mz = at(0.5); s.boxA(mz.x, mz.y, mz.z, 0.15, 0.17, 0.16, MUZ, pitch);
+  const s = new Soup(), COAT = [1, 0, 0], ACC = [0, 0, 0], BLACK = [2, 0, 0], MUZ = [0.45, 0, 0], STAR = [3, 0, 0], neck = P.pony.neck, base = V(...neck);
+  const lean = 0.66, dir = V(0, Math.cos(lean), Math.sin(lean)), back = V(0, Math.sin(lean), -Math.cos(lean)), at = (t, o = 0) => base.clone().addScaledVector(dir, t).addScaledVector(back, o);
+  s.partId = 0; // the barrel: croup, loin, belly, withers, shoulder, chest (z, belly y, back y, half-width)
+  s.tube([[-0.78, 0.78, 1.18, 0.14], [-0.64, 0.68, 1.30, 0.22], [-0.3, 0.62, 1.27, 0.26], [0.05, 0.6, 1.29, 0.26], [0.35, 0.66, 1.34, 0.24], [0.58, 0.76, 1.26, 0.2], [0.72, 0.9, 1.15, 0.12]]
+    .map(([z, y0, y1, w]) => ({ p: [0, (y0 + y1) / 2, z], w, d: (y1 - y0) / 2 })), [COAT]);
+  s.partId = 1; s.pv = neck; // the neck: thick at the shoulder, slim under the ears (about its base)
+  s.tube([[-0.06, 0.17, 0.25], [0.3, 0.13, 0.17], [0.55, 0.105, 0.13], [0.74, 0.09, 0.115]].map(([t, w, d]) => ({ p: at(t).toArray(), w, d })), [COAT]);
+  s.tube([[0.0, 0.2], [0.25, 0.2], [0.5, 0.19], [0.78, 0.14]].map(([t, o], i) => ({ p: at(t, o + 0.02).toArray(), w: i === 3 ? 0.012 : 0.025, d: 0.07 })), [ACC]); // the mane along the crest
+  const tip = at(0.72), pitch = 0.91, hd = V(0, -Math.sin(pitch), Math.cos(pitch)), hu = V(0, Math.cos(pitch), Math.sin(pitch));
+  const hp = (k, o = 0, x = 0) => tip.clone().addScaledVector(hd, k).addScaledVector(hu, o).add(V(x, 0, 0)).toArray();
+  s.partId = 2; s.pv = tip.toArray(); // the head, hanging about 50° below level (about the neck's top)
+  s.tube([{ p: hp(-0.04), w: 0.085, d: 0.1 }, { p: hp(0.14, -0.015), w: 0.1, d: 0.125 }, { p: hp(0.38), w: 0.065, d: 0.085 }, { p: hp(0.5), w: 0.068, d: 0.075 }, { p: hp(0.58), w: 0.06, d: 0.062 }], [COAT, COAT, MUZ, MUZ]);
+  s.tube([{ p: hp(0.1, 0.118), w: 0.02, d: 0.04 }, { p: hp(0.3, 0.092), w: 0.022, d: 0.04 }], [STAR]); // the star on the forehead (shown on Princess)
+  s.tube([{ p: hp(-0.02, 0.1), w: 0.07, d: 0.03 }, { p: hp(0.06, 0.13), w: 0.045, d: 0.055 }], [ACC]); // the forelock
+  for (const k of [-1, 1]) { // eyes
+    const c = V(...hp(0.12, 0.03, k * 0.1)), e = V(k * 0.012, 0, 0);
+    s.box(c, e, hu.clone().multiplyScalar(0.03), hd.clone().multiplyScalar(0.03), BLACK);
+  }
+  s.partId = 8; // the ears (about their roots)
   for (const k of [-1, 1]) {
-    const e = at(0.02, 0.12, k * 0.07), ey = at(0.17, 0.05, k * 0.11);
-    s.boxA(e.x, e.y, e.z, 0.05, 0.13, 0.04, COAT, -0.15); s.boxA(ey.x, ey.y, ey.z, 0.03, 0.04, 0.05, BLACK);
+    const r = hp(-0.01, 0.1, k * 0.055), up = V(k * 0.12, 0.98, 0.1).normalize(), r1 = V(...r).addScaledVector(up, 0.07).toArray(), r2 = V(...r).addScaledVector(up, 0.15).toArray();
+    s.pv = r; s.tube([{ p: r, w: 0.03, d: 0.02 }, { p: r1, w: 0.03, d: 0.02 }, { p: r2, w: 0.008, d: 0.008 }], [COAT, COAT]);
   }
-  const fl = at(0.08, 0.08); s.boxA(fl.x, fl.y, fl.z, 0.07, 0.12, 0.08, ACC, pitch);
-  const legs = [[3, -0.16, 0.5, 0.14, 0.18], [4, 0.16, 0.5, 0.14, 0.18], [5, -0.17, -0.55, 0.16, 0.22], [6, 0.17, -0.55, 0.16, 0.22]];
-  for (const [id, x, z, w, d] of legs) { // legs swing about the hip (pivot y 0.68)
-    s.partId = id; s.pv = [x, 0.68, z];
-    s.boxA(x, 0.53, z, w, 0.3, d, COAT); s.boxA(x, 0.235, z, 0.09, 0.29, 0.11, SOCK); s.boxA(x, 0.045, z + 0.01, 0.12, 0.09, 0.15, BLACK, 0, '-y');
-  }
-  s.partId = 7; s.pv = [0, 1.22, -0.66]; // tail swishes about its root
-  s.boxA(0, 0.924, -0.752, 0.08, 0.62, 0.1, ACC, 0.3);
+  // legs, swinging about the hip (pivot y 0.68): y, z range, half-width; the lower leg takes the accent, the hoof black
+  const leg = (id, x, rows) => {
+    s.partId = id; s.pv = [x, 0.68, (rows[0][1] + rows[0][2]) / 2];
+    s.tube(rows.map(([y, z0, z1, w]) => ({ p: [x, y, (z0 + z1) / 2], w, d: (z1 - z0) / 2 })), [COAT, COAT, COAT, ACC, ACC, ACC, BLACK, BLACK]);
+  };
+  const fore = [[0.92, 0.34, 0.66, 0.1], [0.62, 0.42, 0.62, 0.075], [0.47, 0.43, 0.6, 0.07], [0.4, 0.46, 0.58, 0.05], [0.13, 0.47, 0.57, 0.045], [0.07, 0.45, 0.59, 0.058], [0.06, 0.45, 0.59, 0.065], [0, 0.42, 0.64, 0.08]];
+  const hind = [[1.0, -0.78, -0.36, 0.12], [0.72, -0.74, -0.42, 0.095], [0.5, -0.8, -0.58, 0.07], [0.42, -0.74, -0.6, 0.05], [0.13, -0.68, -0.56, 0.045], [0.07, -0.7, -0.54, 0.058], [0.06, -0.7, -0.54, 0.065], [0, -0.72, -0.52, 0.08]];
+  leg(3, -0.15, fore); leg(4, 0.15, fore); leg(5, -0.16, hind); leg(6, 0.16, hind);
+  s.partId = 7; s.pv = [0, 1.2, -0.72]; // the tail, a dock and a hanging switch, swishing about its root
+  s.tube([{ p: [0, 1.2, -0.72], w: 0.045, d: 0.05 }, { p: [0, 1.12, -0.85], w: 0.06, d: 0.06 }, { p: [0, 0.8, -0.92], w: 0.07, d: 0.05 }, { p: [0, 0.4, -0.9], w: 0.045, d: 0.035 }], [ACC]);
   return s.geometry(true);
 }
 
-/** The ponies' material: lit, vertex tones mixed per instance between a coat and an accent colour; `aAnim` = (leg phase, leg swing, neck pitch, tail sway). */
+/** The ponies' material: lit, vertex tones mixed per instance between a coat and an accent colour; `aAnim` = (leg phase, leg swing, neck pitch, tail sway),
+ *  `aAnim2` = (ear flick, head turn, 0, 0), `aMark` = the star on the forehead (0 / 1). */
 function ponyMaterial() {
   const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0 });
   m.onBeforeCompile = (sh) => {
-    sh.uniforms.uNeck = { value: V(...P.pony.neck) };
+    const neck = V(...P.pony.neck), lean = 0.66;
+    sh.uniforms.uNeck = { value: neck };
+    sh.uniforms.uTip = { value: neck.clone().addScaledVector(V(0, Math.cos(lean), Math.sin(lean)), 0.72) };
     sh.vertexShader = sh.vertexShader
       .replace('#include <common>', `#include <common>
-        attribute float aPart; attribute vec3 aPivot; attribute vec3 aCoat; attribute vec3 aAccent; attribute vec4 aAnim; uniform vec3 uNeck;
+        attribute float aPart; attribute vec3 aPivot; attribute vec3 aCoat; attribute vec3 aAccent; attribute vec4 aAnim; attribute vec4 aAnim2; attribute float aMark; uniform vec3 uNeck; uniform vec3 uTip;
         vec3 rotX(vec3 v, float a) { float c = cos(a), s = sin(a); return vec3(v.x, v.y * c - v.z * s, v.y * s + v.z * c); }
+        vec3 rotY(vec3 v, float a) { float c = cos(a), s = sin(a); return vec3(v.x * c + v.z * s, v.y, -v.x * s + v.z * c); }
         vec3 rotZ(vec3 v, float a) { float c = cos(a), s = sin(a); return vec3(v.x * c - v.y * s, v.x * s + v.y * c, v.z); }
+        vec3 about(vec3 v, vec3 o, bool isPos, int axis, float a) { vec3 q = isPos ? v - o : v; q = axis == 0 ? rotX(q, a) : axis == 1 ? rotY(q, a) : rotZ(q, a); return isPos ? q + o : q; }
         vec3 animate(vec3 v, bool isPos) {
           float p = aPart;
           if (p < 0.5) return v;
-          if (p < 1.5) { vec3 q = isPos ? v - uNeck : v; q = rotX(q, aAnim.z); return isPos ? q + uNeck : q; }
-          if (p < 2.5) {
-            vec3 q = isPos ? v - aPivot : v; q = rotX(q, -aAnim.z * 0.55); q = isPos ? q + aPivot : q;
-            q = isPos ? q - uNeck : q; q = rotX(q, aAnim.z); return isPos ? q + uNeck : q;
+          if (p < 1.5) return about(about(v, uNeck, isPos, 0, aAnim.z), uNeck, isPos, 1, aAnim2.y * 0.4);
+          if (p < 2.5 || p > 7.5) { // head and ears: counter-pitch and turn about the neck's top, then the neck's own movement
+            vec3 q = v;
+            if (p > 7.5) q = about(q, aPivot, isPos, 0, -aAnim2.x);
+            q = about(about(q, uTip, isPos, 0, -aAnim.z * 0.55), uTip, isPos, 1, aAnim2.y * 0.6);
+            return about(about(q, uNeck, isPos, 0, aAnim.z), uNeck, isPos, 1, aAnim2.y * 0.4);
           }
-          if (p < 6.5) { float ph = (p > 3.5 && p < 5.5) ? 3.14159 : 0.0; if (p > 4.5 && p < 5.5) ph = 3.14159; float a = sin(aAnim.x + ph) * aAnim.y; vec3 q = isPos ? v - aPivot : v; q = rotX(q, a); return isPos ? q + aPivot : q; }
-          vec3 q = isPos ? v - aPivot : v; q = rotZ(q, aAnim.w); return isPos ? q + aPivot : q;
+          if (p < 6.5) { float ph = (p > 3.5 && p < 5.5) ? 3.14159 : 0.0; if (p > 4.5 && p < 5.5) ph = 3.14159; return about(v, aPivot, isPos, 0, sin(aAnim.x + ph) * aAnim.y); }
+          return about(v, aPivot, isPos, 2, aAnim.w);
         }`)
-      .replace('#include <color_vertex>', 'vColor = color.r > 1.5 ? vec3(0.03) : mix(aAccent, aCoat, clamp(color.r, 0.0, 1.0));')
+      .replace('#include <color_vertex>', 'vColor = color.r > 2.5 ? mix(aCoat, vec3(0.9), aMark) : color.r > 1.5 ? vec3(0.03) : mix(aAccent, aCoat, clamp(color.r, 0.0, 1.0));')
       .replace('#include <beginnormal_vertex>', '#include <beginnormal_vertex>\n objectNormal = animate(objectNormal, false);')
       .replace('#include <begin_vertex>', '#include <begin_vertex>\n transformed = animate(transformed, true);');
   };
@@ -212,9 +257,12 @@ export class Paddock {
     // the ponies: one instanced mesh, two instances
     const animals = P.pony.animals, n = animals.length, geo = ponyGeometry();
     geo.setAttribute('aCoat', new THREE.InstancedBufferAttribute(new Float32Array(animals.flatMap((q) => lin(q.coat))), 3));
+    geo.setAttribute('aMark', new THREE.InstancedBufferAttribute(new Float32Array(animals.map((q) => q.star ? 1 : 0)), 1));
     geo.setAttribute('aAccent', new THREE.InstancedBufferAttribute(new Float32Array(animals.flatMap((q) => lin(q.accent))), 3));
     this.anim = new THREE.InstancedBufferAttribute(new Float32Array(n * 4), 4); this.anim.setUsage(THREE.DynamicDrawUsage);
     geo.setAttribute('aAnim', this.anim);
+    this.anim2 = new THREE.InstancedBufferAttribute(new Float32Array(n * 4), 4); this.anim2.setUsage(THREE.DynamicDrawUsage);
+    geo.setAttribute('aAnim2', this.anim2);
     this.mesh = new THREE.InstancedMesh(geo, ponyMaterial(), n);
     this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     this.mesh.name = 'paddock-ponies'; this.mesh.raycast = () => {}; this.mesh.userData.noDetail = true; this.mesh.userData.warmDraw = true; // not a target; drawn once by the warm-up
@@ -225,12 +273,27 @@ export class Paddock {
     const start = [near(gm[0] + nx * 14, gm[1] + nz * 14), near(gm[0] + nx * 18 + nz * 12, gm[1] + nz * 18 - nx * 12)];
     this.ponies = animals.map((a, i) => {
       const w = start[i] ?? this.waypoints[i] ?? [centre.x, centre.z], rnd = mulberry(a.seed * 1000 + 1280);
-      return { name: a.name, rnd, x: w[0], z: w[1], y: ground(w[0], w[1]), yaw: rnd() * 6.283, state: 'graze', left: 2 + rnd() * 8, target: null, goal: null, phase: rnd() * 6.283, amp: 0, neck: 1.2, tail: 0, tailT: rnd() * 6, chew: rnd() * 6, scale: P.pony.withers / 1.32 };
+      return { name: a.name, rnd, x: w[0], z: w[1], y: ground(w[0], w[1]), yaw: rnd() * 6.283, state: 'graze', left: 2 + rnd() * 8, target: null, goal: null, phase: rnd() * 6.283, amp: 0, neck: 1.2, tail: 0, tailT: rnd() * 6, chew: rnd() * 6, ear: 0, earP: -1, earT: 2 + rnd() * 6, headYaw: 0, petT: 0, scale: P.pony.withers / 1.32 };
+    });
+    // "Klappa" (#1293): an invisible pick box per pony, kept out of the scene (so darts and other rays never see it); only main.js's focus ray tests them
+    this.picks = this.ponies.map((p, i) => {
+      const pick = new THREE.Mesh(new THREE.BoxGeometry(0.75, 1.5, 2.1), new THREE.MeshBasicMaterial()); pick.visible = false;
+      pick.userData.door = { name: p.name, kind: 'pony', verb: 'klappa', pickable: pick, pet: () => this.pet(i) };
+      return pick;
     });
     this.matrix = new THREE.Matrix4(); this.quat = new THREE.Quaternion(); this.pos = new THREE.Vector3(); this.scl = new THREE.Vector3(); this.up = new THREE.Vector3(0, 1, 0);
     this.write();
   }
 
+  /** What E can aim at: the ponies' pick boxes while the paddock is within view distance. */
+  targets() { return this.mesh.visible ? this.picks : []; }
+  /** Pat pony `i`: it stops, turns its head to the hand, flicks its ears, lowers its muzzle and nickers (a short sound), its tail swishes. */
+  pet(i) {
+    const p = this.ponies[i]; if (!p) return false;
+    p.state = 'pet'; p.petT = p.left = P.pony.pet; p.target = null; p.goal = null; p.earP = 0; p.earT = 0.5;
+    sfx.nicker({ x: p.x, y: p.y + 1.3, z: p.z }, i ? 0.92 : 1.08);
+    return true;
+  }
   treeNear(x, z, r) { for (const t of this.trees) if (Math.abs(t.x - x) < r && Math.abs(t.z - z) < r && Math.hypot(t.x - x, t.z - z) < r) return true; return false; }
   /** Is the straight walk (x0, z0) → (x1, z1) inside the fence (at least `keep` - 0.8 m from it) and clear of trunks? */
   clear(x0, z0, x1, z1) {
@@ -281,10 +344,19 @@ export class Paddock {
         }
         walking ||= Math.abs(da) >= 0.7;
       }
-    } else if (p.state === 'watch') { // facing the visitor
+    } else if (p.state === 'watch' || p.state === 'pet') { // facing the visitor
       let da = Math.atan2(c.x - p.x, c.z - p.z) - p.yaw; da = Math.atan2(Math.sin(da), Math.cos(da));
-      p.yaw += Math.max(-0.8 * dt, Math.min(0.8 * dt, da));
+      const turn = p.state === 'pet' ? 1.4 : 0.8;
+      p.yaw += Math.max(-turn * dt, Math.min(turn * dt, da));
     }
+    {
+      let da = Math.atan2(c.x - p.x, c.z - p.z) - p.yaw; da = Math.atan2(Math.sin(da), Math.cos(da));
+      const t = (p.state === 'pet' ? 1 : p.state === 'watch' ? 0.6 : 0) * Math.max(-0.8, Math.min(0.8, da));
+      p.headYaw += (t - p.headYaw) * Math.min(1, dt * 3); // the head turns to the visitor while it is petted or watching
+    }
+    if (p.petT > 0) p.petT -= dt;
+    if (p.earP >= 0) { p.earP += dt / 0.35; if (p.earP > 1) p.earP = -1; } else { p.earT -= dt; if (p.earT <= 0) { p.earP = 0; p.earT = p.state === 'pet' ? 0.6 : 3 + p.rnd() * 7; } }
+    p.ear = p.earP >= 0 ? 0.6 * Math.sin(p.earP * Math.PI) : 0;
     if (p.state !== 'walk' && p.left <= 0) this.decide(p, i);
     // keep apart: a gentle push when two ponies stand closer than `gap`
     for (let j = 0; j < this.ponies.length; j++) {
@@ -298,18 +370,21 @@ export class Paddock {
     p.amp += (moving * 0.5 - p.amp) * k;
     p.phase += dt * (walking ? (R.speed / 0.95) * 6.2832 : 0);
     const grazing = p.state === 'graze';
-    const neckT = grazing ? 1.5 + Math.sin(p.chew * 6) * 0.04 : walking ? 0.12 : 0.08 + Math.sin(p.tailT * 0.8) * 0.03;
+    const neckT = p.state === 'pet' ? 0.5 + Math.sin(p.petT * 7) * 0.06 : grazing ? 1.5 + Math.sin(p.chew * 6) * 0.04 : walking ? 0.12 : 0.08 + Math.sin(p.tailT * 0.8) * 0.03;
     p.neck += (neckT - p.neck) * Math.min(1, dt * (grazing ? 1.4 : 2.2));
-    p.tail = Math.sin(p.tailT * 2.3) * Math.max(0, Math.sin(p.tailT * 0.45)) * 0.35;
+    p.tail = Math.sin(p.tailT * (p.state === 'pet' ? 5 : 2.3)) * (p.state === 'pet' ? 0.4 : Math.max(0, Math.sin(p.tailT * 0.45)) * 0.35);
   }
   write() {
-    const a = this.anim.array, e = this.mesh.instanceMatrix;
+    const a = this.anim.array, b = this.anim2.array, e = this.mesh.instanceMatrix;
     this.ponies.forEach((p, i) => {
       this.quat.setFromAxisAngle(this.up, p.yaw); this.pos.set(p.x, p.y, p.z); this.scl.setScalar(p.scale);
       this.mesh.setMatrixAt(i, this.matrix.compose(this.pos, this.quat, this.scl));
       a[i * 4] = p.phase; a[i * 4 + 1] = p.amp; a[i * 4 + 2] = p.neck; a[i * 4 + 3] = p.tail;
+      b[i * 4] = p.ear; b[i * 4 + 1] = p.headYaw;
+      const pk = this.picks[i], s = Math.sin(p.yaw), c = Math.cos(p.yaw);
+      pk.position.set(p.x + s * 0.15, p.y + 0.8, p.z + c * 0.15); pk.rotation.y = p.yaw; pk.updateMatrixWorld(true);
     });
-    e.needsUpdate = true; this.anim.needsUpdate = true;
+    e.needsUpdate = true; this.anim.needsUpdate = true; this.anim2.needsUpdate = true;
   }
   /** Per frame: nothing is simulated or drawn beyond PADDOCK.viewDist m from the paddock, or underground. No allocations. */
   update(dt, hidden = false) {

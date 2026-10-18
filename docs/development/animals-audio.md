@@ -354,5 +354,7 @@ for rendered arms, size, purr audio, release and bicycle stow regression.
 
 This is personal animal gameplay, excluded from the public downstream scope.
 
-Ponies (#1280): Zoey (white) and Princess (brown) live in the fenced paddock on the kidney-shaped meadow (environment.md, "Pony paddock"): one instanced mesh, shader-animated
-legs/neck/tail, grazing, standing and wandering, walking to the fence when the visitor is within 40 m. No sound, no interaction, not targets (like the gulls).
+Ponies (#1280, #1293): Zoey (grey/white) and Princess (bay, black points, white star) live in the fenced paddock on the kidney-shaped meadow (environment.md, "Pony paddock"): one instanced mesh,
+shader-animated legs/neck/head/ears/tail, grazing, standing and wandering, walking to the fence when the visitor is within 40 m. Not targets for rays and darts (like the gulls). **Klappa (#1293):** `Paddock.targets()` gives
+one invisible pick box per pony (kept out of the scene, tested only by main.js's focus ray, `HOLD.reach`) with `userData.door` = {kind 'pony', verb 'klappa', pet()}; E / click runs `use()` → `pet()`: the arm reaches out (generic
+`hand.reach`), the pony stops (`state 'pet'`, `PADDOCK.pony.pet` s), turns its head and body to the visitor, lowers its muzzle, flicks its ears, swishes its tail and nickers (`sfx.nicker`). No stats counter.

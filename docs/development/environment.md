@@ -237,8 +237,8 @@ Everything is a *guess* except the outline (`PADDOCK` in `src/config.js`: inset,
 src/paddockgeo.js   plan geometry, no three.js: outline, the fence line (outline inset 1.2 m), posts (<= 3 m apart), the gate span nearest the footpath
                     (-116, 220), `fenceSegments()` (collision), `insideFence(x, z, margin)`; shared by farwalk.js, paddock.js and the node test
 src/paddock.js      `fenceGeometry` (posts, three rails, a braced gate, a plank trough with water, a three-sided field shelter: ONE vertex-coloured
-                    mesh, no textures, no raycast), `ponyGeometry`/`ponyMaterial` (one pony ~150 triangles; legs, neck, head and tail move in the
-                    vertex shader from `aPart`/`aPivot` and the per-instance `aAnim`; coat/accent colour per instance), `Paddock` (two instances in ONE
+                    mesh, no textures, no raycast), `ponyGeometry`/`ponyMaterial` (#1293: lofted `Soup.tube` barrel, crested neck + mane, head with muzzle/star/ears, jointed legs with hooves, tail; ~540 triangles per pony; legs, neck, head, ears and tail move in the
+                    vertex shader from `aPart`/`aPivot` and the per-instance `aAnim`/`aAnim2`; coat/accent colour + star mark per instance), the shelter after the photo (dark timber posts, braces, plank walls, green sedum roof), `Paddock` (two instances in ONE
                     InstancedMesh: Zoey white, Princess brown; graze / stand / walk between 5 m waypoints that are flat and clear of trunks, the river
                     and the fence; within 40 m of the eye they walk to the places nearest to it and watch), `paddockLandParts` (the worn track along the fence,
                     merged into the south backdrop's land mesh so it is snow-covered with the rest)
@@ -246,7 +246,7 @@ src/farwalk.js      the fence (closed gate included) is in `farSegments()`: walk
 tools/paddocktest.cjs, tools/paddockgeotest.mjs   browser checks and node plan-geometry checks (verification.md)
 ```
 
-Ponies are not targets (no raycast: rays, Nerf darts and arrows pass through, like the gulls) and make no sound. Not simulated or drawn beyond `viewDist` 280 m
+Ponies are not targets (no raycast: rays, Nerf darts and arrows pass through, like the gulls); only the pet pick boxes (animals-audio.md) are tested by the focus ray, and a pat makes a nicker. Not simulated or drawn beyond `viewDist` 280 m
 from the paddock or underground; the fence is drawn whenever in view. Cost at the gate: +2 draw calls, ~8 000 triangles (`tools/perfcount.html` spots `paddock`).
 Downstream (kvarteret-lunden): the fence/ground could be transferred as a generic paddock; the named ponies are personal gameplay and must not be.
 

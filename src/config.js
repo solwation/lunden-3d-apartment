@@ -3548,7 +3548,8 @@ export const PADDOCK = {
   gate: { w: 3.2, near: [-116.2, 219.98] }, track: { w: 0.9, inset: 3.2, color: 0x80724c }, color: 0x7f9a4f,
   wood: [0x8a6a45, 0x7d5f3d, 0x94754d], waypoint: 5, treeClear: 2.6, riverClear: 7, maxSlope: 0.3, viewDist: 280, curious: 40, keep: 2.5,
   pony: { withers: 1.32, neck: [0, 1.12, 0.55], speed: 0.85, turn: 1.4, graze: [6, 16], idle: [3, 8], gap: 2.2,
-    animals: [{ name: 'Zoey', coat: 0xf2efe8, accent: 0xc9c2b2, seed: 7 }, { name: 'Princess', coat: 0x5c3820, accent: 0x261710, seed: 19 }] },
+    animals: [{ name: 'Zoey', coat: 0xdddbd5, accent: 0x93918c, seed: 7 }, { name: 'Princess', coat: 0x7a4426, accent: 0x1b1410, seed: 19, star: true }], // grey/white with a lighter-grey mane, tail and legs; bay with black points and a white star (photo in #1293)
+    pet: 2.6 }, // s a pat takes (#1293: the pony stops, turns its head, flicks its ears, nickers)
   trough: { w: 1.7, d: 0.5, h: 0.42 }, shelter: { w: 4.2, d: 2.6, h: 2.3 },
 };
 

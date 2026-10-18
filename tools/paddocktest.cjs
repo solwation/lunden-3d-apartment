@@ -26,7 +26,7 @@ const check = (ok, name, extra = '') => { console.log(`${ok ? 'PASS' : 'FAIL'} $
   });
   check(info.names.join() === 'Zoey,Princess' && info.n === 2, 'two ponies, Zoey and Princess', JSON.stringify(info.names));
   check(info.coat[0] > 0.7 && info.coat[1] > 0.7 && info.coat[2] > 0.6 && info.coat[3] < 0.25, 'Zoey white, Princess brown (linear coat rgb)', info.coat.map((v) => v.toFixed(2)).join());
-  check(info.fence < 12000 && info.pony < 400, 'triangle budgets', `fence ${info.fence}, pony ${info.pony}`);
+  check(info.fence < 12000 && info.pony < 1200, 'triangle budgets', `fence ${info.fence}, pony ${info.pony}`);
   check(info.waypoints > 50 && info.shelter && info.trough, 'waypoints, trough and shelter', `${info.waypoints}`);
   // one draw call each
   await at(-105, 232, 90, -3);
@@ -84,6 +84,21 @@ const check = (ok, name, extra = '') => { console.log(`${ok ? 'PASS' : 'FAIL'} $
     return { res, n };
   });
   check(walk.res.every(([, inside, moved]) => !inside && moved < -1) && walk.n > 0, 'walking west into the fence is stopped (gate included); fence segments are in farWalls', JSON.stringify(walk));
+  // Klappa (#1293): looking at a pony within reach focuses it (kind 'pony', verb klappa); E pats it: it turns its head, flicks its ears, lowers its muzzle, then carries on
+  const pet = await page.evaluate(async () => {
+    const T = await import('three'), a = window.__app, p = a.paddock, q = p.ponies[0];
+    a.touch.enabled = true; a.player.spawn(q.x - 1.4, q.z, 0); q.state = 'idle'; q.left = 99; q.yaw = 1.5; p.update(0.1); // facing east to the pony's side
+    a.camera.rotation.set(-0.2, -Math.PI / 2, 0, 'YXZ'); a.camera.updateMatrixWorld(true);
+    for (let i = 0; i < 3; i++) { a.camera.rotation.set(-0.2, -Math.PI / 2, 0, 'YXZ'); a.step(1 / 30); }
+    const f = a.focus().focused; const kind = f?.kind, name = f?.name, verb = f?.verb;
+    f?.pet(); let maxEar = 0, maxYaw = 0, minNeck = 9, maxNeck = 0; const st = [];
+    for (let i = 0; i < 40; i++) { p.update(0.1); maxEar = Math.max(maxEar, q.ear); maxYaw = Math.max(maxYaw, Math.abs(q.headYaw)); minNeck = Math.min(minNeck, q.neck); maxNeck = Math.max(maxNeck, q.neck); if (i === 5) st.push(q.state); }
+    for (let i = 0; i < 100; i++) p.update(0.1);
+    a.touch.enabled = false;
+    return { kind, name, verb, maxEar, maxYaw, maxNeck, during: st[0], after: q.state };
+  });
+  check(pet.kind === 'pony' && pet.verb === 'klappa' && pet.name === 'Zoey', 'the crosshair focuses Zoey with the verb klappa', JSON.stringify(pet));
+  check(pet.during === 'pet' && pet.maxEar > 0.3 && pet.maxNeck > 0.35 && pet.after !== 'pet', 'petting: stops, flicks the ears, lowers the muzzle, then moves on', JSON.stringify(pet));
   // screenshots
   const shot = async (name, x, z, yaw, pitch, y) => { await at(x, z, yaw, pitch, y); const d = await page.evaluate(() => { const a = window.__app; for (let i = 0; i < 3; i++) a.step(1 / 30); a.renderer.render(a.scene, a.camera); return a.renderer.domElement.toDataURL('image/png'); }); require('fs').writeFileSync(`${out}/${name}.png`, Buffer.from(d.split(',')[1], 'base64')); };
   await page.evaluate(() => { const a = window.__app; a.player.spawn(-108, 238, 0); for (let i = 0; i < 800; i++) a.paddock.update(0.1); });

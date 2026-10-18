@@ -1746,6 +1746,7 @@ function use(thing) {
     if (thing.isOpen) bump('lids', 1, idOf(thing));
     sfx.lid(thing.object.position, thing.isOpen);
   } else if (thing.kind === 'cat') { if (cat.isMiele && cat.canHold()) miele.take(); else cat.pet(player.pos); } // Single-action fallback; choices also offer carrying (#1066)
+  else if (thing.kind === 'pony') thing.pet(); // pat a paddock pony (#1293)
   else if (thing.kind === 'olofcar') { if (olofDriver.greet()) { greet.sayMine(OLOF.car.hello[Math.floor(Math.random() * OLOF.car.hello.length)]); if (olofDriver.claimScore()) bump('olof', 1, 'car'); } } // a dad joke, he sits on; points once per arrival (#599, #658)
   else if (thing.kind === 'ghost') greetPlayer(thing.ghost); // another player (#673): a greeting, their avatar sees ours wave
   else if (thing.kind === 'towel') handWash.dry(thing, focusPoint); // dry the hands (#437)
@@ -1980,6 +1981,7 @@ function updateFocus() {
   // (the raycaster ignores visibility, so the cat is only a target while it is there)
   // the car key only while its cabinet is open
   const extra = [...(cat.visible && !cat.held ? [cat.object] : []), ...(olofDriver.greetable(rest.active && rest.target?.car === car) ? [olofDriver.fig.pick] : []), ...(keyCabinet?.keyReachable ? [world.carKey.pickable] : []), ...car.targets(rest.target).map((t) => t.pickable), // our car's doors and front seats (#250)
+    ...(paddock?.targets() ?? []), // the paddock's ponies: Klappa (#1293)
     ...jetpack.targets(), // the jetpack on its hook / where it was stood down (#359)
     ...(!weaponKey() ? ghosts.targets() : []), // only unarmed visitors greet other players (#872)
     ...suit.targets(), // the Spider-Man suit in its drawer / where it was laid (#597)
