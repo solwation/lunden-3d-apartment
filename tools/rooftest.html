@@ -42,7 +42,8 @@ async function run() {
   const roofY = upperTop + VERTICAL.roof.buildUp + VERTICAL.roof.capping, { xw, xe, core: [cx0] } = husLLayout();
   const loftX0 = cx0 - HUS_L.wall - C.core.loft.west, loftX1 = cx0 - HUS_L.wall + C.core.loft.w;
 
-  const settle = async () => { while (fall.t >= 0) step(dt); };
+  // the fall's result is confirmed by Combat asynchronously (fall.pending, main.js `await combat.fall`): wait for it, then for the sequence
+  const settle = async () => { for (let i = 0; i < 200 && fall.pending; i++) await wait(10); while (fall.t >= 0) step(dt); };
   const place = (x, z, feet, yawDeg = 180) => {
     player.spawn(x, z, yawDeg * Math.PI / 180);
     player.pos.y = feet; player.eyeY = feet + PLAYER.eye;
