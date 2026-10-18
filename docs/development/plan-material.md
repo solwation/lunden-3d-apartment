@@ -195,6 +195,9 @@ material/              screenshots of our choices in Peab's option portal (local
   unframed, ~2 cm deep (*guess*), on the north wall centred between the TV's east edge and the Långlampa (x 5.066), centre
   1.30 m up (*guess*). FURNITURE `pictures` with `frame: 0` and `edge` (the painted edges, purple → ochre),
   textures/tavla-guld-lila-vardagsrum.jpg from docs/tavla-guld-lila-40x30.jpg.
+- Living room, over the chaise on the east wall (#133, #1095, #1299): the user's watercolour portrait in a thin flat
+  black frame, 50 × 70 cm portrait (user's verified measurement #1299; previously guessed 70 × 100 cm), centred at
+  x 5.5, z 11.35, centre 1.55 m up. FURNITURE `painting`, textures/tavla-akvarell-schaslong.jpg.
 - Stair pictures (#220, #233): four black-framed pictures 2 × 2 (fikus, akvarell | peace, solros) in the upstairs
   stairwell, on the east party wall across the stair hole (seen face on from the upstairs hall and on the winders),
   centred on it (z 6.654), centre 1.57 m over the Övre plan floor. Each picture 30 × 40 cm, 40 × 50 cm outside with

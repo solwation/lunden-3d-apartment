@@ -4919,11 +4919,12 @@ export const FURNITURE = [
   // user's *guess*), so its top is at 2.595 under the 3.0 m ceiling, clear of the framed print below (to 1.70) and of the light
   // switch (z 1.65). Carries what stood on the old boards (SHELF_DRESSING). y = the shelf's centre.
   { type: 'stringshelf', level: 0, x: 2.15, z: 1.06, y: 1.84 + 0.755 / 2, rot: -90 },
-  // The watercolour painting (#133, docs/tavla-abstrakt-svart-ram.png): portrait, thin flat black frame, ~70 × 100 cm
-  // (*guess*), centred over the chaise on the east wall (x 5.5; the chaise spans z ~10.55–12.15), centre 1.55 m up.
+  // The watercolour painting (#133, docs/tavla-abstrakt-svart-ram.png): portrait, thin flat black frame, 50 × 70 cm
+  // (verified user measurement #1299; previously guessed 70 × 100 cm), centred over the chaise on the east wall
+  // (x 5.5; the chaise spans z ~10.55–12.15), centre 1.55 m up.
   // textures/tavla-akvarell-schaslong.jpg (#1095) is the user's photo docs/tavla-akvarell-ansikte-foto.jpg cropped inside
   // the frame, straightened, the glass's reflections (lamp spot, room) flattened out against the white paper.
-  { type: 'painting', level: 0, x: 5.5, z: 11.35, y: 1.55, rot: 90, w: 0.7, h: 1.0, frame: 0.018, depth: 0.025,
+  { type: 'painting', level: 0, x: 5.5, z: 11.35, y: 1.55, rot: 90, w: 0.5, h: 0.7, frame: 0.018, depth: 0.025,
     texture: 'textures/tavla-akvarell-schaslong.jpg' },
   // The black and white canvas at the foot of the stair (#286, docs/tavla-svartvit-trappan.jpg): coming down flight A
   // (going west) it is straight ahead, on the passage face of Badrum's east wall (x 2.152). Square, unframed, the canvas

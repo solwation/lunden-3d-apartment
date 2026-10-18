@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<meta charset="utf-8">
+<title>Painting test #1299</title>
+<pre id="out">running…</pre>
+<script type="module">
+const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS':'FAIL')+' '+s);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
+try {
+  const f = document.createElement('iframe');
+  f.width = 480; f.height = 300;
+  f.src = '../index.html?test&shot&freeze';
+  document.body.append(f);
+  await new Promise(r => f.onload = r);
+  while (!f.contentWindow.__app) await wait(100);
+  const A = f.contentWindow.__app;
+  const { FURNITURE } = await f.contentWindow.eval("import('/src/config.js')");
+  const p = FURNITURE.find(it => it.type === 'painting');
+  check(p !== undefined, 'painting item exists in FURNITURE');
+  check(p.w === 0.5 && p.h === 0.7, `painting has verified user dimensions 50×70 cm (w: ${p.w}, h: ${p.h})`);
+  check(p.texture === 'textures/tavla-akvarell-schaslong.jpg', 'painting uses retouched user watercolor texture');
+
+  // Check the actual mesh in the scene via rearrange pieces
+  await A.rearrange.ready;
+  const piece = A.rearrange.pieces.find(q => q.item?.type === 'painting');
+  check(piece !== undefined, 'painting piece found in rearrange.pieces');
+  const obj = piece?.object;
+  check(obj !== undefined, 'painting object exists');
+
+  // Find the picture mesh
+  const pic = obj?.children.find(c => c.geometry?.type === 'PlaneGeometry');
+  check(pic !== undefined, 'inner picture plane exists');
+  if (pic) {
+    const innerW = pic.geometry.parameters.width;
+    const innerH = pic.geometry.parameters.height;
+    check(Math.abs(innerW - (0.5 - 2 * p.frame)) < 1e-4 && Math.abs(innerH - (0.7 - 2 * p.frame)) < 1e-4,
+      `inner picture plane matches 50×70 minus frame: ${innerW.toFixed(3)} × ${innerH.toFixed(3)} m`);
+  }
+
+  document.getElementById('out').textContent = lines.join('\n') + '\n' + (pass ? 'ALL PASS' : 'SOME FAILED');
+} catch (e) {
+  document.getElementById('out').textContent = lines.join('\n') + '\nFAIL ' + e.stack + '\nSOME FAILED';
+}
+</script>
+</html>
