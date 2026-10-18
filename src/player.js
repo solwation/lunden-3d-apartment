@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { SITE, LEVELS, PLAYER, STAIR, UNIT_TOP, ROOFS, GARAGE, JETPACK, SPIDER, SOFFITS, BICYCLE } from './config.js';
 import { stairHeight, stairUnderside } from './stairs.js';
 import { groundY, groundBelowDeckY } from './surroundings.js';
-import { deckAt } from './riverbridge.js';
+import { deckAt, deckUnderAt } from './riverbridge.js';
 import { farWalls, waterBlocked, tooSteep, waterRescue, buildingRescue, atEdge, surfaceY, underDeck } from './farwalk.js'; // #1236: walking beyond the block
 import { bicycleCurbY } from './street.js';
 import { stowBicycleHand, restoreBicycleHand } from './holdable.js';
@@ -208,7 +208,7 @@ export class Player {
   restY() { return this.fall?.jump ? this.groundAt(this.pos.x, this.pos.z, this.pos.y) : this.pos.y; }
 
   /** The underside of a road / GC bridge deck over (x, z) for feet `y0` below it, else Infinity (#1271, #1284). */
-  deckCeil(x, z, y0) { return z > 60 && underDeck(y0) && deckAt(x, z) !== null ? SITE.bridges.deckY - SITE.bridges.road.slab : Infinity; }
+  deckCeil(x, z, y0) { return z > 60 && underDeck(y0) ? deckUnderAt(x, z) ?? Infinity : Infinity; } // (each deck its own thickness, #1289)
 
   /** The lowest ceiling over (x, z) above the feet `y0` (#636): a roof / canopy outdoors (roofs.js), the room's ceiling
    * (RH, a lowered soffit, the underside of the stair) in our flat, a visited flat or the garage. */

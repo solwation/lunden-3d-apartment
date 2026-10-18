@@ -9,6 +9,8 @@ export const bridgeRecords=['road','gc'].map(kind=>{
 });
 const local=(r,x,z)=>[(x-r.x)*r.dx+(z-r.z)*r.dz,-(x-r.x)*r.dz+(z-r.z)*r.dx];
 export function deckAt(x,z){return bridgeRecords.some(r=>{const[a,b]=local(r,x,z);return Math.abs(a)<=r.len/2&&Math.abs(b)<=r.width/2})?B.deckY:null;}
+/** The underside of the deck over (x, z) (each bridge has its own slab thickness: road .45, GC .18, #1289), else null. */
+export function deckUnderAt(x,z){const r=bridgeRecords.find(r=>{const[a,b]=local(r,x,z);return Math.abs(a)<=r.len/2&&Math.abs(b)<=r.width/2});return r?B.deckY-r.slab:null;}
 export function roadBridgeSpan(x,z){const r=bridgeRecords[0];return Math.abs(local(r,x,z)[0])<=r.len/2;}
 /** Nearest sourced river segment, with interpolated visual width/bank estimates. */
 export function riverAt(x,z){let best={distance:Infinity};for(let i=1;i<R.path.length;i++){
