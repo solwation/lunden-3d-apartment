@@ -72,7 +72,8 @@ await page.evaluate(()=>{const yaw=-Math.PI/2;player.pos.set(12.55,0,26.3);playe
 await page.keyboard.down('w');await page.evaluate(()=>{for(let i=0;i<30;i++)tick(.025);});await page.keyboard.up('w');
 check(await page.evaluate(()=>player.pos.z>30&&player.pos.y<-.9),'original main keyboard drives actual stair descent');
 await page.evaluate(()=>{const yaw=-Math.PI/2;player.pos.set(12.55,player.groundAt(12.55,12.5,0),12.5);player.riding.yaw=yaw;player.riding.pitch=0;player.fall=null;player.vy=0;camera.rotation.y=yaw-Math.PI/2;locked=false;touch.enabled=true;document.body.classList.add('touch');});
-const cdp=await context.newCDPSession(page);await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:150,y:400}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:150,y:344}]});
+// Drag well past the stick's travel (TOUCH.stickTravel scales with the view, up to 84 px; full output from 0.9 of it, #1087/#1088).
+const cdp=await context.newCDPSession(page);await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:150,y:400}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:150,y:250}]});
 check(await page.evaluate(()=>touch.analog.y>.99),'actual touch joystick supplies forward input');
 await page.evaluate(()=>{for(let i=0;i<40;i++)tick(.025);});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
 check(await page.evaluate(()=>player.pos.z>18&&player.pos.y>-.5&&player.riding.pitch>0),'original main touch drives actual ramp with model tilt');
