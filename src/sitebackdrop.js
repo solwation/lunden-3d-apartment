@@ -46,11 +46,23 @@ function refinedTriangles(ring,max){
 }
 const flatGeometry=pos=>{pos=pos.slice();for(let i=0;i<pos.length;i+=9){const ux=pos[i+3]-pos[i],uz=pos[i+5]-pos[i+2],vx=pos[i+6]-pos[i],vz=pos[i+8]-pos[i+2];if(uz*vx-ux*vz<0)for(let k=0;k<3;k++){const t=pos[i+3+k];pos[i+3+k]=pos[i+6+k];pos[i+6+k]=t;}} // front faces up (a double-sided material would flip the normal and darken a back face)
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('normal',new THREE.Float32BufferAttribute(Array.from({length:pos.length/3},()=>[0,1,0]).flat(),3));return g;};
-/** #1278: marked lines / edge strips along [a, b] pairs, `w` m wide, cut every 2.5 m so each follows the sloping ground. */
+/** #1278: marked lines / edge strips along [a, b] pairs, `w` m wide. With the terrain's grid (#1310, `ground.grid()`) each strip is cut only where the
+ * terrain bends (cutAtTerrain, like the asphalt) and sampled at the exact rendered height, so it never sags or rises against it; without a grid it is cut every 2.5 m. */
 function ribbon(pairs,w,lift,ground){
- const pos=[];
- for(const[a,b]of pairs){const len=Math.hypot(b[0]-a[0],b[1]-a[1]);if(len<1e-6)continue;const n=Math.max(1,Math.ceil(len/2.5)),px=-(b[1]-a[1])/len*w/2,pz=(b[0]-a[0])/len*w/2;
-  const v=(t,s)=>{const x=a[0]+(b[0]-a[0])*t+px*s,z=a[1]+(b[1]-a[1])*t+pz*s;return[x,ground(x,z)+lift,z];};
+ const tol=Math.min(.02,lift-PARKING_LOT.lift.asphalt-.003); // m: #1310, how far a strip may leave the exact terrain between its cuts: less than its lift over the asphalt beneath, so it stays on top (lines .02, edge .012)
+ const pos=[],grid=ground.grid?.();
+ for(const[a,b]of pairs){const len=Math.hypot(b[0]-a[0],b[1]-a[1]);if(len<1e-6)continue;const px=-(b[1]-a[1])/len*w/2,pz=(b[0]-a[0])/len*w/2;
+  if(grid){const q=(t,s)=>[a[0]+(b[0]-a[0])*t+px*s,a[1]+(b[1]-a[1])*t+pz*s],ts=new Set([0,1]),ux=(b[0]-a[0])/len,uz=(b[1]-a[1])/len;
+   // the cuts of the strip's two triangles along the terrain's grid and diagonals give every t where either long edge changes slope
+   for(const tri of[[q(0,-1),q(0,1),q(1,1)],[q(0,-1),q(1,1),q(1,-1)]])for(const c of cutAtTerrain(tri,grid))for(const[x,z]of c)ts.add(Math.min(1,Math.max(0,Math.round(((x-a[0])*ux+(z-a[1])*uz)/len*1e5)/1e5)));
+   const K=[...ts].sort((m,n)=>m-n),y=(t,s)=>{const[x,z]=q(t,s);return ground(x,z)+lift;},T=[0]; // keep a kink only where dropping it would move an edge more than tol (lines over a flat stretch stay one quad)
+   for(let i=0;i<K.length-1;){ // from K[i], reach as far as every kink in between stays within the tolerance of the straight piece
+    let end=i+1;
+    for(let e=i+2;e<K.length;e++){let ok=true;for(const sd of[-1,0,1]){const y0=y(K[i],sd),y1=y(K[e],sd);for(let m=i+1;m<e&&ok;m++)if(Math.abs(y0+(y1-y0)*(K[m]-K[i])/(K[e]-K[i])-y(K[m],sd))>tol)ok=false;}if(!ok)break;end=e;}
+    T.push(K[end]);i=end;}
+   for(let i=0;i+1<T.length;i++){if((T[i+1]-T[i])*len<1e-3)continue;const at=(t,s)=>{const[x,z]=q(t,s);return[x,ground(x,z)+lift,z];},p0=at(T[i],-1),p1=at(T[i],1),p2=at(T[i+1],1),p3=at(T[i+1],-1);pos.push(...p0,...p1,...p2,...p0,...p2,...p3);}
+   continue;}
+  const n=Math.max(1,Math.ceil(len/2.5)),v=(t,s)=>{const x=a[0]+(b[0]-a[0])*t+px*s,z=a[1]+(b[1]-a[1])*t+pz*s;return[x,ground(x,z)+lift,z];};
   for(let i=0;i<n;i++){const t0=i/n,t1=(i+1)/n,p0=v(t0,-1),p1=v(t0,1),p2=v(t1,1),p3=v(t1,-1);pos.push(...p0,...p1,...p2,...p0,...p2,...p3);}}
  return pos.length?flatGeometry(pos):null;
 }
@@ -97,7 +109,7 @@ function eastLotParts(ground,access,surfColor){
   const r=lot.polygon;for(let i=0;i<r.length;i++){ // the edge strip, inside the outline, in 2 m pieces; none across a road mouth or by a building
    const a=r[i],b=r[(i+1)%r.length],len=Math.hypot(b[0]-a[0],b[1]-a[1]),n=Math.max(1,Math.ceil(len/2)),sgn=(r.reduce((s,q,j)=>{const w=r[(j+1)%r.length];return s+q[0]*w[1]-w[0]*q[1];},0)>0?1:-1);
    const nx=-(b[1]-a[1])/len*sgn,nz=(b[0]-a[0])/len*sgn,at=t=>[a[0]+(b[0]-a[0])*t+nx*P.kerbW/2,a[1]+(b[1]-a[1])*t+nz*P.kerbW/2];
-   for(let k=0;k<n;k++){const m=at((k+.5)/n);if(!onEastRoad(m[0],m[1],P.kerbW)&&!onEastBuildingAt(m[0],m[1]))kerbs.push([at(k/n),at((k+1)/n)]);}
+   let run=null;for(let k=0;k<n;k++){const m=at((k+.5)/n);if(!onEastRoad(m[0],m[1],P.kerbW)&&!onEastBuildingAt(m[0],m[1])){if(run)run[1]=at((k+1)/n);else kerbs.push(run=[at(k/n),at((k+1)/n)]);}else run=null;} // (#1310: consecutive kept pieces join into one strip; the terrain cuts decide where it bends)
   }
  }
  const l=ribbon(lines,P.lineW,P.lift.line,ground),k=ribbon(kerbs,P.kerbW,P.lift.kerb,ground);
