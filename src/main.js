@@ -2681,6 +2681,8 @@ function greetPlayer(g) {
   if (!greetedPlayers.has(g.name)) { greetedPlayers.add(g.name); bump('greets', 1, `player:${g.name}`); }
 }
 ghosts.onGreet = (m, g, other) => greet.say({ head: g.head, s: 1 }, GHOSTS.hello[m.k]?.replace('{n}', other ? other.name : (leaderboard.name || 'Anonym')) ?? 'Hej!', { pitch: 1.1, rate: 1.05, voice: 1 }, undefined, g.avatar);
+// someone else comes into / leaves the players' room (#1333, src/joinnotice.js): a short notice at the top, no sound
+ghosts.onNotice = (text) => badge(text, false);
 // toasting (#1222): "Skåla" with a glass in the hand (right click / 🥂): a clink, the glass raised (things.js), a line and one small
 // message; a player near us who holds a glass hears it and toasts back once (flagged, so no ping-pong); Olof answers from his car.
 toastHandler.fn = (glass, back = false) => {

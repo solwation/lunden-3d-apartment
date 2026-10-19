@@ -9,6 +9,7 @@ import { totalScore } from './stats.js';
 import { acquireBadge, releaseBadge, badgeScore, badgeLives } from './ghostbadge.js';
 import { setMirrorExtra } from './reflections.js';
 import { GhostCat } from './ghostcat.js';
+import { JoinNotice } from './joinnotice.js';
 import { cleanHeldCategory } from './heldcategory.js';
 import { ghostProp, ghostJetpack, ghostBike, ghostItem } from './ghostprops.js'; // what an armed player holds: their weapon's own model (#667, #1126)
 
@@ -395,7 +396,8 @@ export class Ghosts {
     this.selfGhost();
     if (!this.on) return;
     document.addEventListener('visibilitychange', () => { if (document.hidden) this.disconnect(); });
-    setInterval(() => this.beat(), 1000); // the heartbeat runs on a timer: slow frames must not let the room think us gone
+    this.notice = new JoinNotice((text) => this.onNotice?.(text)); // #1333: "<name> kom in i / lämnade spelet"; onNotice(text) is set by main.js
+    setInterval(() => { this.beat(); this.notice.tick(); }, 1000); // the heartbeat runs on a timer: slow frames must not let the room think us gone
     addEventListener('pagehide', () => this.disconnect());
   }
 
@@ -418,7 +420,7 @@ export class Ghosts {
     this.reset();
   }
 
-  reset() { this.finishFall(null); this.finishConsume(null); this.myGhost?.clearMirrorTyping(); this.me = null; this.sent = null; this.outbox = []; this.talkbox = []; for (const g of this.others.values()) g.dispose(); this.others.clear(); this.onTypingReset?.(); }
+  reset() { this.finishFall(null); this.finishConsume(null); this.myGhost?.clearMirrorTyping(); this.me = null; this.sent = null; this.outbox = []; this.talkbox = []; for (const g of this.others.values()) g.dispose(); this.others.clear(); this.notice?.reset(); this.onTypingReset?.(); }
 
   closed(ws, code) {
     if (ws !== this.ws) return;
@@ -441,9 +443,9 @@ export class Ghosts {
     if (m.t === 'w') {
       this.me = m.i; this.rules = m.c ?? null; this.onWelcome?.(m);
       for (const p of m.ps ?? []) { const g = this.add(p.i, p.n, p.av && typeof p.ax === 'string' ? p.av + p.ax : p.av); if (g && p.p) g.push(p, t); }
-    } else if (m.t === 'j') this.add(m.i, m.n, m.av);
+    } else if (m.t === 'j') { if (this.add(m.i, m.n, m.av)) this.notice.joined(m.n); }
     else if (m.t === 's') (this.others.get(m.i) ?? this.add(m.i, '', m.av && typeof m.ax === 'string' ? m.av + m.ax : m.av))?.push(m, t);
-    else if (m.t === 'x') { this.others.get(m.i)?.dispose(); this.others.delete(m.i); }
+    else if (m.t === 'x') { const g = this.others.get(m.i); if (g) this.notice.left(g.name === ANON ? '' : g.name); g?.dispose(); this.others.delete(m.i); }
     else if (m.t === 'hit') this.onHit(m, this.others.get(m.to));
     else if (m.t === 'life') this.onLife?.(m);
     else if (m.t === 'fall') { if (m.id === this.pendingFall?.id) this.finishFall(m); }

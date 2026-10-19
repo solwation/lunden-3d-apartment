@@ -3298,6 +3298,11 @@ export const GHOSTS = { enabled: true, hz: 5, move: 0.02, turn: 0.03, beatMs: 10
   // name), at most one every `greetEvery` s (the room allows the same), the greeter's ghost waves its right arm `wave` s for
   // everybody who sees it. Our picks (*guess*).
   hello: ['Hej {n}!', 'Tjena {n}!', 'Hallå där, {n}!', 'Hej {n}, vad kul att ses!', 'Hej hej!', 'Tjenare!'], greetEvery: 3, wave: 2.5 };
+// Join / leave notices (#1333, src/joinnotice.js, shown as a badge at the top by main.js): someone else is only announced as gone
+// after `graceMs` without coming back (an Alt+Tab or short tab switch disconnects at once, so it must not count; they are
+// recognised by name), notices within `batchMs` become one line naming at most `names` players (then "och N till"). `anon` =
+// the name of a player without one. Our own picks (*guess*).
+export const JOIN_NOTICE = { graceMs: 45_000, batchMs: 1500, names: 3, anon: 'Anonym' };
 // The players' avatars (#705, src/avatar.js): a neutral human figure (Olof's skeleton, src/olof.js) in the ghosts' place and in our
 // own mirror image (#691). Without a weapon only an outline: alpha `fill` inside (very faint) rising to `rim` at the silhouette
 // (a fresnel term of power `rimPower`, in the shader, no extra pass), a little emissive so it reads in the dark; armed and solid it
