@@ -77,7 +77,10 @@ export class Player {
 
   spawn(x, z, yaw) {
     if (this.riding) { this.riding.bike.ridden = false; this.riding.bike.pick.visible = true; this.riding = null; }
-    this.pos.set(x, this.groundAt(x, z, 0) ?? 0, z);
+    // #1356: elevated terrain is unreachable from a fictitious y=0; groundAt returns −Infinity there.
+    // Preserve ordinary floors/deck choices, but seed a teleport onto the actual terrain when no floor was reachable.
+    const floor = this.groundAt(x, z, 0);
+    this.pos.set(x, Number.isFinite(floor) ? floor : groundY(x, z), z);
     this.vy = 0;
     this.glide = null; // (an unstick under way is for the old place, #314)
     this.fall = null; // (a teleport is no fall, #361)

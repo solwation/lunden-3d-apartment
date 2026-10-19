@@ -345,3 +345,7 @@ Outdoor walk-in recesses (`parkARecess` and `parkBRecess` with `outside: 'w'/'e'
 
 Filtering out outdoor rectangles (`!q.outside`) from doorway lintels leaves the exterior recess mouth open. Excluding them from ceiling flat generation (`!r.outside`) prevents duplicating ceiling geometry already handled by surroundings and the entrance canopy. Verified with `tools/garagerecesstest.mjs` across Houses A and B. Equivalent houses: Hus C has no exterior basement entrance; Hus L uses the separate garage door opening (`doorway`).
 
+
+## Finite elevated spawn (#1356)
+
+`Player.spawn` retains `groundAt(x,z,0)` when it returns a finite floor; only an unreachable result (−Infinity on terrain above the fictitious zero-height step limit) falls back to the model’s actual `groundY(x,z)`. The ordinary `groundAt` reachability contract remains unchanged for walking, underpasses, floors and roofs. This prevents −Infinity feet/eye height and subsequent NaN camera smoothing at valid elevated points, e.g. (−100,−10) at model y1.260207m. No new geometry, guessed level or render resource. Ordinary courtyard/home/park, A/B/C/L cores and both bridge decks preserve their exact previous initial floor; explicitly seeded under-bridge feet remain below both decks, and the hidden room still spawns at0. Verify with `tools/spawntest.cjs` plus farwalktest. The public viewer uses a different finite-foot `Navigation.teleport(x,y,z)` and explicit location heights; assess it separately rather than copying Player.
