@@ -1,0 +1,105 @@
+// #1321 (#1318): headwear in the real app against a local Worker (node cloudflare/dev.mjs PORT). The app stands in front of the hall mirror;
+// a module peer (real Ghosts) stands behind it. Checks: the customizer's "Huvudbonad" buttons set look.hat and the saved code carries `q<n>`
+// (a look without headwear keeps its code), the peer's headwear reaches the app through the Worker (look + uniform), our mirror image wears it.
+// Shots: mirror-hat<n>, peer-hat<n> (outdoors, 3.5 m), customizer-hat. Old codes keep hat 0.
+// PLAYWRIGHT_MODULE=… CHROME_PATH=… SHOTS=/tmp/shots-1321 node tools/avataraccessorygametest.cjs GAME WORKER
+const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const fs = require('node:fs');
+const game = process.argv[2] || 'http://localhost:8632', worker = process.argv[3] || 'http://localhost:8633';
+const shots = process.env.SHOTS || '/tmp/shots-1321';
+let failed = 0;
+const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'} ${label}${detail ? ' — ' + detail : ''}`); if (!ok) failed++; };
+(async () => {
+  fs.mkdirSync(shots, { recursive: true });
+  const launch = () => chromium.launch({ executablePath: process.env.CHROME_PATH || undefined, args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+  const browsers = [await launch(), await launch()];
+  try {
+    const app = await browsers[0].newPage({ viewport: { width: 900, height: 600 } });
+    const errors = []; app.on('pageerror', (e) => errors.push(e.message));
+    await app.addInitScript(() => { localStorage.setItem('lunden.name', 'Hatt'); sessionStorage.setItem('lunden.nameSkipped', '1'); });
+    await app.goto(`${game}/?shot&quality=3&time=12&month=6&freeze&cloud=${encodeURIComponent(worker)}`, { waitUntil: 'commit' });
+    await app.waitForFunction(() => window.__app?.renderer && window.__ghosts, null, { timeout: 600000 });
+    const fix = await app.evaluate(() => {
+      const a = window.__app; a.showOverlay(false); if (a.rest.active) a.standUp(); a.scene.updateMatrixWorld(true);
+      const m = a.reflectors().find((m) => m.name === 'nissedal'); if (!m) throw Error('hall mirror missing');
+      const p = m.r.getWorldPosition(a.camera.position.clone()), n = a.camera.position.clone().set(0, 0, 1).transformDirection(m.r.matrixWorld);
+      const e = p.clone().addScaledVector(n, 0.9); e.y = 1.62;
+      a.player.spawn(e.x, e.z, 0); a.player.pos.y = 0; a.player.eyeY = 1.62; a.step(0);
+      a.renderer.setAnimationLoop(null);
+      const g = window.__ghosts;
+      const top = (av) => { av.object.updateMatrixWorld(true); const v = a.camera.position.clone(), pos = av.mesh.geometry.attributes.position; let y = -1e9;
+        for (let i = 0; i < pos.count; i++) { av.mesh.getVertexPosition(i, v); v.applyMatrix4(av.mesh.matrixWorld); y = Math.max(y, v.y); } return y; };
+      window.__fix = {
+        e, p, n, top,
+        tick: (mirror) => { a.camera.position.copy(e); g.update(); if (mirror) a.updateReflections(a.camera, 0, true, false); },
+        run: (ms, stop = () => false, mirror = false) => new Promise((done) => {
+          const t0 = performance.now(); const f = () => { window.__fix.tick(mirror); if (performance.now() - t0 < ms && !stop()) setTimeout(f, 16); else done(); }; f();
+        }),
+        look: (from, target, fov) => { a.camera.position.copy(from); a.camera.fov = fov; a.camera.updateProjectionMatrix(); a.camera.lookAt(target); a.camera.updateMatrixWorld(true); },
+        render: (mirror) => { if (mirror) a.updateReflections(a.camera, 0, true, false); a.renderer.render(a.scene, a.camera); },
+        peer: () => [...g.others.values()].find((x) => x.name === 'Hattbent'),
+      };
+      return { e: e.toArray(), n: n.toArray(), p: p.toArray() };
+    });
+    // old codes: unchanged scale and eye height
+    const old = await app.evaluate(async () => {
+      const { Avatar } = await import('/src/avatar.js'), C = await import('/src/config.js');
+      return ['2413021', '241302113'].map((code) => { const lk = C.decodeAvatarLook(code, 'old-seed'), av = new Avatar(lk), w = [0.93, 1, 1.08][lk.build];
+        const r = { code, scale: av.object.scale.toArray(), want: [w, lk.tall, w], head: av.bones.head.scale.x, eye: C.avatarEyeHeight(lk), std: 1.62 }; av.dispose(); return r; });
+    });
+    check(old.every((o) => o.scale.every((v, i) => v === o.want[i]) && o.head === 1 && o.eye === o.std), 'old codes keep scale build × tall, head 1 and eye 1.62', JSON.stringify(old));
+    await app.waitForFunction(() => { window.__fix.tick(); return window.__ghosts.connected; }, null, { timeout: 60000, polling: 100 });
+    const peer = await browsers[1].newPage();
+    await peer.route('**/src/bootstrap.js', (r) => r.fulfill({ contentType: 'text/javascript', body: '// module peer' }));
+    await peer.goto(game);
+    await peer.evaluate(async ([worker, fix]) => {
+      const T = await import('three'), { Ghosts } = await import('/src/ghosts.js');
+      const e = new T.Vector3(...fix.e), n = new T.Vector3(...fix.n), side = new T.Vector3(-n.z, 0, n.x), p = e.clone().addScaledVector(n, 0.5).addScaledVector(side, 0.35);
+      const r = Math.atan2(n.x, n.z); // a ghost looks along (−sin r, −cos r) = −n: towards the mirror and the peer camera
+      const scene = new T.Scene(), camera = new T.PerspectiveCamera(60, 1, 0.1, 100);
+      const ghosts = new Ghosts({ scene, camera, url: worker, name: () => 'Hattbent', state: () => ({ p: window.peer.at, r: window.peer.r }), score: () => 0 });
+      window.peer = { ghosts, at: [p.x, 0, p.z], r, home: { at: [p.x, 0, p.z], r } };
+      setInterval(() => ghosts.update(), 50);
+    }, [worker, fix]);
+    await peer.waitForFunction(() => window.peer.ghosts.connected, null, { timeout: 60000 });
+    await app.waitForFunction(() => { window.__fix.tick(); return !!window.__fix.peer(); }, null, { timeout: 30000, polling: 100 });
+    for (const hat of [1, 2, 3, 4]) {
+      // the customizer's own buttons (own look), then the wire (the peer's)
+      const mine = await app.evaluate(async (hat) => { const a = window.__app, C = await import('/src/config.js'); a.openAvatarCustomizer();
+        const b = document.querySelector(`#avatar-customizer button[data-type="hat"][data-index="${hat}"], button[data-type="hat"][data-index="${hat}"]`); b.click();
+        const g = window.__ghosts, u = g.myGhost?.avatar?.mesh?.material?.userData?.u;
+        return { hat: g.myLook.hat, uHat: u?.uHat.value, sel: b.classList.contains('sel') || b.classList.contains('active') || b.getAttribute('aria-pressed') === 'true', code: g.avatarCode, name: C.AVATAR_HAT.names[hat] }; }, hat);
+      check(mine.hat === hat && mine.code.includes(`q${hat}`), `own look: ${mine.name} (button) → q${hat} in the wire code`, JSON.stringify(mine));
+      if (hat === 3) { await app.evaluate(() => document.querySelector('button[data-type="hat"][data-index="3"]').scrollIntoView({ block: 'center' })); await app.screenshot({ path: `${shots}/customizer-hat.png`, timeout: 180000 }); }
+      await app.evaluate(() => window.__app.closeAvatarCustomizer());
+      const code = await peer.evaluate(async (hat) => { const C = await import('/src/config.js'); const lk = { ...C.decodeAvatarLook('130410013', 'peer'), hat };
+        window.peer.ghosts.setMyLook(lk); return C.encodeAvatarWireLook(lk); }, hat);
+      await app.evaluate((code) => window.__fix.run(8000, () => window.__fix.peer()?.avatarCode === code), code);
+      await app.evaluate(() => window.__fix.run(600));
+      const got = await app.evaluate(() => { const g = window.__fix.peer(); g.avatar.update(0, {}); return { code: g.avatarCode, hat: g.avatar.look.hat, u: g.avatar.mesh.material.userData.u.uHat.value }; });
+      check(got.code === code && got.hat === hat && got.u === hat, `the peer's ${hat} reaches the app (look and uniform)`, JSON.stringify(got));
+      const mir = await app.evaluate(() => { const f = window.__fix, a = window.__app; f.e.y = a.player.eyeY; f.look(f.e, f.p.clone().setY(f.e.y - 0.1), 60); f.render(true);
+        const me = window.__ghosts.myGhost; return me ? me.avatar.mesh.material.userData.u.uHat.value : null; });
+      check(mir === hat, `our mirror image wears ${hat}`, String(mir));
+      await app.screenshot({ path: `${shots}/mirror-hat${hat}.png`, timeout: 180000 });
+      const out = await app.evaluate(async () => { const { START } = await import('/src/config.js'), a = window.__app, z = START.z - 1.5;
+        return [START.x, a.player.groundAt(START.x, z, 0), z]; });
+      await peer.evaluate((out) => { window.peer.at = out; window.peer.r = 0; }, out);
+      await app.evaluate((out) => window.__fix.run(8000, () => { const g = window.__fix.peer(); return g && Math.hypot(g.root.position.x - out[0], g.root.position.z - out[2]) < 0.05; }), out);
+      await app.evaluate(() => window.__fix.run(1500));
+      await app.evaluate((out) => { const f = window.__fix, g = f.peer(), T = f.e.constructor; g.avatar.update(0, {});
+        f.look(new T(out[0], out[1] + 1.55, out[2] - 1.6), new T(out[0], out[1] + 1.6, out[2]), 35); window.__app.renderer.render(window.__app.scene, window.__app.camera); }, out);
+      await app.screenshot({ path: `${shots}/peer-hat${hat}.png`, timeout: 180000 });
+      await peer.evaluate((h) => { window.peer.at = h.at; window.peer.r = h.r; }, await peer.evaluate(() => window.peer.home));
+    }
+    const saved = await app.evaluate(() => { return localStorage.getItem('lunden.avatar'); });
+    check(/q4$/.test(saved ?? ''), 'closing saves the code with the headwear', saved);
+    const none = await app.evaluate(async () => { const C = await import('/src/config.js'); const lk = window.__ghosts.myLook; return C.encodeAvatarLook({ ...lk, hat: 0 }); });
+    check(!/q\d/.test(none), 'headwear none is not written', none);
+    await peer.evaluate(() => window.peer.ghosts.disconnect()); await peer.close();
+    check(errors.length === 0, 'no page errors', errors.join(' | '));
+  } catch (e) { check(false, 'crashed', e.stack); }
+  await Promise.all(browsers.map((b) => b.close()));
+  console.log(failed ? `SOME FAILED (${failed})` : 'ALL PASS');
+  process.exitCode = failed ? 1 : 0;
+})();

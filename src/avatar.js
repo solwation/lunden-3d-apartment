@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_CLOTHES, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
+import { AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_HAT as HAT, AVATAR_CLOTHES, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
 import { topTexture } from './spidersuit.js';
 import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, SHIN, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
 
@@ -27,7 +27,7 @@ const REGION = { skin: 0, top: 1, pants: 2, hair: 3, fixed: 4, lips: 6, iris: 7,
 // #1138: which face part a head-bone vertex belongs to (the `facePart` attribute; 0 = not on the head), see faceShape
 // #1165: hair (the scalp shell / curtain, lengthened below the crown), round and square glasses frames and the temples + bridge shared by both
 // #1241: cowlHide collapses protruding facial features (lips, brow ridge) under the Spider-Man mask
-const FACE_PART = { head: 1, neck: 2, eye: 3, nose: 4, ear: 5, brow: 6, hair: 7, rimRound: 8, rimSquare: 9, specs: 10, cowlHide: 11 };
+const FACE_PART = { head: 1, neck: 2, eye: 3, nose: 4, ear: 5, brow: 6, hair: 7, rimRound: 8, rimSquare: 9, specs: 10, cowlHide: 11, hatDome: 12, peakFront: 13, peakBack: 14, knit: 15, hatCrown: 16, hatBrim: 17 };
 const H = 0.1; // The head bone's eye-height reference (ears, hair, moustache).
 
 // --- the geometry (built once per variant) -----------------------------------------------------------------------------
@@ -82,6 +82,7 @@ function parts(style, sleeves, gender = 0, facial = 0, legs = 0, cut = 0) {
   // hair (#1102): 0 short, 1 long, 2 a bun, 3 a beanie (in the top's colour) – see hairParts
   for (const [g, region, shade] of hairParts(style)) { add(g, region, 'head', [0, 0, 0], shade); P[P.length - 1].face = FACE_PART.hair; }
   addGlasses(add, P); // #1165
+  addHats(add, P); // #1321
   return P;
 }
 /** #1165: glasses frames in the head bone's frame, in front of the eyes (FACE.eye): two round rims, two square ones, and the
@@ -99,6 +100,60 @@ function addGlasses(add, P) {
     add(new THREE.BoxGeometry(t, t * 1.3, len).rotateY(Math.atan2(b.x - a.x, b.z - a.z)).translate((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2), 'fixed', 'head', [0, 0, 0], 1, c); mark(FACE_PART.specs);
   }
   add(bar(2 * (E.at[0] - rx) + t, t * 1.3, t, 0, y + 0.004, z), 'fixed', 'head', [0, 0, 0], 1, c); mark(FACE_PART.specs);
+}
+/** #1321 (#1318): headwear in the head bone's frame, built on the skull ellipsoid (RH.skull) lifted by AVATAR_HAT.lift: a cap (the dome plus a
+ * peak at the front or the back), a knitted hat with a cuff, a brimmed hat (crown plus a brim all round). Always in the shared geometry; the
+ * vertex shader collapses the kinds that are not chosen (uHat), so no extra draw call. In the top's colour (shaded darker for peak, cuff and
+ * brim). The dome stands above the hair shell (<= ~0.03 m) so no hair shows through; a bun or curls may still show where a cap leaves room. */
+function addHats(add, P) {
+  const S = RH.skull, c = HAIR.centre, deg = Math.PI / 180, [crownLift, sideLift] = HAT.lift, mark = (id) => facePart(P, id, [0, H, 0]);
+  const smooth = (e0, e1, x) => { const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0))); return t * t * (3 - 2 * t); };
+  const table = (t, a) => { a = Math.abs(a); for (let i = 1; i < t.length; i++) if (a <= t[i][0]) return t[i - 1][1] + ((t[i][1] - t[i - 1][1]) * (a - t[i - 1][0])) / (t[i][0] - t[i - 1][0]); return t.at(-1)[1]; };
+  // the point on the lifted skull at azimuth a (0: straight ahead, +: towards +x) and elevation e, `extra` m further out
+  const skull = (a, e, lift) => {
+    const d = [Math.sin(a * deg) * Math.cos(e * deg), Math.sin(e * deg), Math.cos(a * deg) * Math.cos(e * deg)];
+    return [0, 1, 2].map((i) => c[i] + d[i] * (S.radius * S.scale[i] + lift) + (S.centre[i] - c[i]));
+  };
+  // a cols × rows grid (azimuth i across, row j from the bottom edge up); `wrap` closes the turn; `flip` turns the faces inwards
+  const grid = (cols, rows, wrap, pos, flip = false) => {
+    const p = [], idx = [], n = wrap ? cols : cols + 1, at = (i, j) => (i % n) * (rows + 1) + j;
+    for (let i = 0; i < n; i++) for (let j = 0; j <= rows; j++) p.push(...pos(i, j));
+    for (let i = 0; i < cols; i++) for (let j = 0; j < rows; j++) {
+      const q = [at(i, j), at(i + 1, j), at(i, j + 1), at(i + 1, j), at(i + 1, j + 1), at(i, j + 1)];
+      idx.push(...(flip ? [q[0], q[2], q[1], q[3], q[5], q[4]] : q));
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(p, 3));
+    g.setIndex(idx); g.computeVertexNormals();
+    return g;
+  };
+  const az = (n, from = -180, to = 180) => Array.from({ length: n + 1 }, (_, i) => from + ((to - from) * i) / n);
+  const lift = (e) => sideLift + (crownLift - sideLift) * smooth(10, 70, e);
+  // a dome from the lower edge `edge` (degrees by azimuth) to the crown; rows follow the elevation
+  const dome = (edge, rows = 4, cols = 16, extra = 0) => {
+    const A = az(cols);
+    return grid(cols, rows, true, (i, j) => { const a = A[i], e0 = table(edge, a), e = e0 + ((90 - e0) * j) / rows; return skull(a, e, lift(e) + extra); });
+  };
+  const brim = (a0, a1, cols, edge, len, drop, double = true) => { // a flat plate from the dome's lower edge outwards, both sides
+    const A = az(cols, a0, a1), pos = (i, j) => {
+      const a = A[i], e = table(edge, a), p = skull(a, e, lift(e)), l = len(a) * j;
+      return [p[0] + Math.sin(a * deg) * l, p[1] + drop * j, p[2] + Math.cos(a * deg) * l];
+    };
+    const top = grid(cols, 1, false, (i, j) => pos(i, j)), under = grid(cols, 1, false, (i, j) => pos(i, j), true);
+    return double ? [top, under] : [top];
+  };
+  const put = (g, shade, id) => { add(g, 'top', 'head', [0, 0, 0], shade); mark(id); };
+  put(dome(HAT.edge.cap), 1, FACE_PART.hatDome); // a cap's crown (kinds 1 and 2)
+  const peak = (centre) => brim(centre - 52, centre + 52, 8, HAT.edge.cap, (a) => HAT.peak * Math.cos((a - centre) * deg * 1.2), centre === 0 ? -0.014 : 0.012);
+  for (const g of peak(0)) put(g, 0.82, FACE_PART.peakFront);
+  for (const g of peak(180)) put(g, 0.82, FACE_PART.peakBack);
+  // the knitted hat: a fuller body that reaches over the ears, and a turned-up cuff round its lower edge
+  put(dome(HAT.edge.knit, 4, 16, 0.004), 1, FACE_PART.knit);
+  const E = HAT.edge.knit, A = az(16);
+  put(grid(16, 2, true, (i, j) => { const a = A[i], e = table(E, a) - 2 + 12 * (j / 2); return skull(a, e, lift(e) + 0.012 * Math.sin(Math.min(1, j / 1.2) * Math.PI / 2) + 0.004); }), 0.8, FACE_PART.knit);
+  // the brimmed hat: a crown that is a little taller, and a brim round the head dipping towards its edge
+  put(dome(HAT.edge.hat, 4, 16, 0.012), 0.92, FACE_PART.hatCrown);
+  for (const g of brim(-180, 180, 16, HAT.edge.hat, () => HAT.brim, -0.012)) put(g, 0.8, FACE_PART.hatBrim);
 }
 /** Puts a part on its bone (bone-local offset `at`); head parts are warped into the face's shape first (faceWarp). */
 function place(g, bone, [x = 0, y = 0, z = 0] = []) {
@@ -686,7 +741,7 @@ function releaseSuitTexture() { if (--suitUsers === 0) { suitTexture.dispose(); 
 function makeMaterial(rim, headProjection) {
   const headMin = headProjection.min, headSize = headProjection.getSize(new THREE.Vector3()), headFront = headProjection.getCenter(new THREE.Vector3()).z;
   const u = { uOutline: { value: 0 }, uFill: { value: A.fill }, uRim: { value: A.rim }, uRimColor: { value: rim }, uSuit: { value: 0 }, uSuitTexture: { value: null }, uSuitMaskBand: { value: 0 }, uMouth: { value: 0 },
-    uEye: { value: new THREE.Vector3(1, 1, 1) }, uNose: { value: new THREE.Vector3(1, 1, 1) }, uEar: { value: 1 }, uHair: { value: 1 }, uGlasses: { value: 0 }, uNeck: { value: 0 }, uBrow: { value: new THREE.Vector2(1, 0) }, uHead: { value: new THREE.Vector3(1, 1, 0) } };
+    uEye: { value: new THREE.Vector3(1, 1, 1) }, uNose: { value: new THREE.Vector3(1, 1, 1) }, uEar: { value: 1 }, uHair: { value: 1 }, uGlasses: { value: 0 }, uHat: { value: 0 }, uNeck: { value: 0 }, uBrow: { value: new THREE.Vector2(1, 0) }, uHead: { value: new THREE.Vector3(1, 1, 0) } };
   const m = new THREE.MeshLambertMaterial({ vertexColors: true, transparent: false, depthWrite: true });
   m.emissive.setScalar(A.emissiveSolid);
   m.userData.u = u;
@@ -733,7 +788,7 @@ function makeMaterial(rim, headProjection) {
 // pivot (`faceAnchor`: an eyeball's centre, the nose's bridge, an ear's centre, a brow's centre line), then every head vertex
 // but the neck is widened, lengthened from the chin and its lower face (faceWarp's jaw region) widened or narrowed. No new
 // geometry or draw call; collision and hit regions keep the plain head (CPU raycasts never see the shader).
-const FACE_SHAPE_DECL = 'attribute float facePart; attribute vec3 faceAnchor; uniform vec3 uEye, uNose, uHead; uniform float uEar, uHair, uGlasses, uNeck, uSuit; uniform vec2 uBrow;';
+const FACE_SHAPE_DECL = 'attribute float facePart; attribute vec3 faceAnchor; uniform vec3 uEye, uNose, uHead; uniform float uEar, uHair, uGlasses, uHat, uNeck, uSuit; uniform vec2 uBrow;';
 const CHIN_Y = RH.jaw.centre[1] - RH.jaw.radius * RH.jaw.scale[1]; // the head lengthens from its chin
 function faceShape() {
   const hb = bindAt('head'), W = FACE.warp, f = (v) => v.toFixed(4), P = FACE_PART;
@@ -749,10 +804,20 @@ function faceShape() {
           float hy = transformed.y - ${f(hb.y)} - ${f(HAIR.centre[1])}, lowK = 1.0 - smoothstep(-0.03, 0.0, hy);
           transformed.y += (uHair - 1.0) * hy * lowK;
           transformed.xz = vec2(${f(hb.x)}, ${f(hb.z)}) + (transformed.xz - vec2(${f(hb.x)}, ${f(hb.z)})) * (1.0 + (uHair > 1.0 ? 0.4 : 0.55) * (uHair - 1.0) * clamp(-hy / 0.3, 0.0, 1.0));
+          // #1321: under headwear the hair above the ears (a bun, curls) is drawn in towards the head's centre, inside the hat
+          vec3 hc = vec3(${f(hb.x)}, ${f(hb.y + HAIR.centre[1])}, ${f(hb.z)});
+          transformed = hc + (transformed - hc) * (1.0 - 0.2 * step(0.5, uHat) * smoothstep(0.02, 0.06, hy));
         }
         else if (abs(facePart - ${P.rimRound}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(0.5, uGlasses) * step(uGlasses, 1.5);
         else if (abs(facePart - ${P.rimSquare}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(1.5, uGlasses);
         else if (abs(facePart - ${P.specs}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(0.5, uGlasses);
+        else if (facePart > ${P.cowlHide}.5) { // #1321: headwear collapses to a point unless chosen (a cap: 1 forwards / 2 backwards, 3 knitted, 4 brimmed)
+          float on = abs(facePart - ${P.hatDome}.0) < 0.5 ? step(0.5, uHat) * step(uHat, 2.5)
+            : abs(facePart - ${P.peakFront}.0) < 0.5 ? step(abs(uHat - 1.0), 0.5)
+            : abs(facePart - ${P.peakBack}.0) < 0.5 ? step(abs(uHat - 2.0), 0.5)
+            : abs(facePart - ${P.knit}.0) < 0.5 ? step(abs(uHat - 3.0), 0.5) : step(abs(uHat - 4.0), 0.5);
+          transformed = faceAnchor + (transformed - faceAnchor) * on;
+        }
         if (abs(facePart - ${P.neck}.0) > 0.5) {
           vec3 q = transformed - vec3(${f(hb.x)}, ${f(hb.y)}, ${f(hb.z)});
           float low = (1.0 - smoothstep(${f(W.y[1])}, ${f(W.y[0])}, q.y)) * smoothstep(${f(W.z[0])}, ${f(W.z[1])}, q.z);
@@ -778,6 +843,7 @@ function applyFaceShape(u, lk) {
   u.uBrow.value.set(v('browThick'), v('browY'));
   u.uHair.value = v('hairLength'); // #1165
   u.uGlasses.value = Number.isInteger(lk.glasses) && lk.glasses > 0 && lk.glasses < GLASSES.names.length ? lk.glasses : 0;
+  u.uHat.value = Number.isInteger(lk.hat) && lk.hat > 0 && lk.hat < HAT.names.length ? lk.hat : 0; // #1321
   u.uHead.value.set(v('headWidth'), v('headLength'), v('jaw'));
   u.uNeck.value = v('neck'); // #1191
 }

@@ -28,7 +28,7 @@ const [game='http://localhost:8793',worker='http://localhost:8794',out='/tmp/lun
     window.sample=()=>{
      ghosts.beforeMirror();const g=ghosts.myGhost,av=g.avatar;av.time=0;av.update(0,{});av.object.updateMatrixWorld(true);
      const ys=[],xs=[],v=new T.Vector3(),pos=av.mesh.geometry.attributes.position;
-     for(let j=0;j<pos.count;j++){av.mesh.getVertexPosition(j,v);v.applyMatrix4(av.mesh.matrixWorld);ys.push(v.y-g.feet.y);xs.push(v.x-g.feet.x);}
+     for(let j=0;j<pos.count;j++){if(!av.look.hat&&av.mesh.geometry.attributes.facePart.getX(j)>11.5)continue;/* #1321: unchosen headwear is collapsed in the shader only */av.mesh.getVertexPosition(j,v);v.applyMatrix4(av.mesh.matrixWorld);ys.push(v.y-g.feet.y);xs.push(v.x-g.feet.x);}
      const result={build:av.look.build,scaleX:av.object.scale.x,width:Math.max(...xs)-Math.min(...xs),tall:ghosts.myLook.tall,height:ghosts.myLook.height,scaleY:av.object.scale.y,headScale:av.bones.head.scale.y,top:Math.max(...ys),code:ghosts.avatarCode,eye:C.avatarEyeHeight(ghosts.myLook),saved:localStorage.getItem('lunden.avatar')};ghosts.afterMirror();return result;
     };
    },{worker,i});return p;

@@ -1,4 +1,4 @@
-import { SKIN, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES, AVATAR_CLOTHES } from './config.js';
+import { SKIN, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES, AVATAR_HAT, AVATAR_CLOTHES } from './config.js';
 
 // #1220: the brows' colours (config.js HAIR, the hair swatches' names) and a first choice that follows the hair
 const BROW_NAMES = ['Mörkbruna', 'Bruna', 'Ljusbruna', 'Guldbruna', 'Blonda', 'Grå', 'Röda', 'Svarta'];
@@ -272,7 +272,7 @@ export function drawAvatarPreview(canvas, look) {
   // #1138 height/thickness sliders), so the eyes and brows stay visible. Long hair keeps its own crown.
   const browTop = 52 - browY - 0.75 * browT;
   const hairline = Math.min(45, browTop - 1.5);
-  const crown = hy - ry;
+  const crown = hy - ry, hatOn = Number(look.hat) > 0 && Number(look.hat) < AVATAR_HAT.names.length; // #1321: under headwear the bun / curls on top are left out
   const cap = (pad, front) => {
     const side = 56, r = ry + pad, t = Math.asin(Math.max(-1, Math.min(1, (side - hy) / r)));
     ctx.beginPath();
@@ -288,7 +288,7 @@ export function drawAvatarPreview(canvas, look) {
     ctx.fillStyle = hair;
     cap(1.8, hairline);
     ctx.beginPath();
-    ctx.ellipse(cx, crown + 1, 13 * headW, 6, 0, 0, Math.PI * 2);
+    if (!hatOn) ctx.ellipse(cx, crown + 1, 13 * headW, 6, 0, 0, Math.PI * 2);
     ctx.fill();
   } else if (style === 1) { // Long hair (crown and front locks falling over shoulders)
     ctx.fillStyle = hair;
@@ -307,23 +307,25 @@ export function drawAvatarPreview(canvas, look) {
   } else if (style === 2) { // Bun
     ctx.fillStyle = hair;
     cap(1.2, hairline);
-    ctx.beginPath();
-    ctx.arc(cx, crown - 6, 9, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = top;
-    ctx.beginPath();
-    ctx.roundRect(cx - 6, crown - 0.5, 12, 4, 2);
-    ctx.fill();
+    if (!hatOn) {
+      ctx.beginPath();
+      ctx.arc(cx, crown - 6, 9, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = top;
+      ctx.beginPath();
+      ctx.roundRect(cx - 6, crown - 0.5, 12, 4, 2);
+      ctx.fill();
+    }
   } else if (style === 4) { // Curly (#1244, #1268): cap with curls round crown/temples, plus cascading side curls when longer
     ctx.fillStyle = hair;
     cap(1.8, hairline);
-    for (let i = 0; i < 11; i++) {
+    for (let i = 0; i < (hatOn ? 0 : 11); i++) {
       const t = Math.PI * (1.05 + 0.9 * i / 10), r = 4.2 + (i % 3) * 0.6;
       ctx.beginPath();
       ctx.arc(cx + Math.cos(t) * (rx + 2.5), hy + Math.sin(t) * (ry + 2.5), r, 0, Math.PI * 2);
       ctx.fill();
     }
-    for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.arc(cx - 9 + i * 6, crown + 2, 4.5, 0, Math.PI * 2); ctx.fill(); }
+    for (let i = 0; i < (hatOn ? 0 : 4); i++) { ctx.beginPath(); ctx.arc(cx - 9 + i * 6, crown + 2, 4.5, 0, Math.PI * 2); ctx.fill(); }
     // #1268: hanging curls at the sides scaling with the hairLength slider
     const extraCurls = Math.max(0, Math.round((hairLen - 0.45) / 0.16));
     for (let k = 0; k < extraCurls; k++) {
@@ -351,6 +353,36 @@ export function drawAvatarPreview(canvas, look) {
     ctx.beginPath();
     ctx.arc(cx, crown - 7, 5, 0, Math.PI * 2);
     ctx.fill();
+  }
+
+  // #1321: headwear over the hair, in the top's colour (front view): a cap (1 peak forwards, 2 backwards: only its band shows), a knitted hat, a brimmed hat
+  const hat = Number(look.hat) || 0;
+  if (hat > 0 && hat < AVATAR_HAT.names.length) {
+    const edge = hat === 3 ? hairline + 4 : Math.min(hairline + 1, hy - 6), dome = (pad, y) => {
+      ctx.beginPath();
+      ctx.ellipse(cx, hy, rx + pad, ry + pad, 0, Math.PI, 0);
+      ctx.lineTo(cx + rx + pad, y); ctx.lineTo(cx - rx - pad, y);
+      ctx.closePath();
+      ctx.fill();
+    };
+    const shade = (a) => { ctx.fillStyle = `rgba(0,0,0,${a})`; };
+    ctx.fillStyle = top;
+    dome(hat === 4 ? 3.5 : 3, edge);
+    if (hat === 1 || hat === 2) {
+      shade(0.16);
+      ctx.beginPath(); ctx.roundRect(cx - rx - 2.2, edge - 3, 2 * (rx + 2.2), 3, 1.5); ctx.fill(); // the band
+      if (hat === 1) { shade(0.28); ctx.beginPath(); ctx.ellipse(cx, edge + 1.5, rx + 5, 3.5, 0, 0, Math.PI); ctx.fill(); } // the peak, seen from the front
+      else { shade(0.2); ctx.beginPath(); ctx.roundRect(cx - 4, crown - 1, 8, 3, 1.5); ctx.fill(); } // the strap's buckle at the back
+    } else if (hat === 3) {
+      shade(0.2);
+      ctx.beginPath(); ctx.roundRect(cx - rx - 3, edge - 6, 2 * (rx + 3), 7, 3); ctx.fill(); // the cuff
+      ctx.fillStyle = top; ctx.beginPath(); ctx.arc(cx, crown - 4, 4.5, 0, Math.PI * 2); ctx.fill(); // the bobble
+    } else {
+      shade(0.18);
+      ctx.beginPath(); ctx.roundRect(cx - rx - 3, edge - 4, 2 * (rx + 3), 4, 1.5); ctx.fill(); // the hatband
+      ctx.fillStyle = top; ctx.beginPath(); ctx.ellipse(cx, edge, rx + 14, 4, 0, 0, Math.PI * 2); ctx.fill(); // the brim
+      shade(0.22); ctx.beginPath(); ctx.ellipse(cx, edge + 1, rx + 14, 4, 0, 0, Math.PI); ctx.fill();
+    }
   }
 
   ctx.restore(); // #1191: restore neck translation
@@ -391,6 +423,7 @@ function updateActiveSwatches() {
     { type: 'hair', value: currentLook.hair, list: HAIR },
   ];
   groups.push({ type: 'glasses', value: Number(currentLook.glasses) || 0 }); // #1165
+  groups.push({ type: 'hat', value: Number(currentLook.hat) || 0 }); // #1321
   groups.push({ type: 'brows', value: HAIR.includes(currentLook.brows) ? HAIR.indexOf(currentLook.brows) : -1 }); // #1220 (-1: like the hair)
   groups.push({ type: 'eyes', value: EYES.includes(currentLook.eyes) ? currentLook.eyes : EYES[0], list: EYES });
   for (const name of Object.keys(AVATAR_SHAPE.fields)) { // #1138: the face sliders
@@ -484,6 +517,7 @@ function initCustomizerDOM() {
 
   previewCanvas = customizerEl.querySelector('#avatar-preview-canvas');
   addFaceSections(customizerEl.querySelector('.customizer-controls'));
+  addAccessorySection(customizerEl.querySelector('.customizer-controls')); // #1321
 
   // Handle swatches and style clicks
   customizerEl.addEventListener('click', (e) => {
@@ -524,6 +558,9 @@ function initCustomizerDOM() {
       applyAndRefresh();
     } else if (type === 'glasses' && AVATAR_GLASSES.names[idx] !== undefined) { // #1165
       currentLook.glasses = idx;
+      applyAndRefresh();
+    } else if (type === 'hat' && AVATAR_HAT.names[idx] !== undefined) { // #1321
+      currentLook.hat = idx;
       applyAndRefresh();
     } else if (type === 'eyes' && EYES[idx] !== undefined) {
       currentLook.eyes = EYES[idx];
@@ -660,6 +697,27 @@ function addFaceSections(controls) {
     }
     controls.append(sec);
   }
+}
+
+/** #1321 (#1318): an accessory section per kind (headwear first; headphones, necklaces, rings follow in #1322–#1324, each its own section). */
+function addAccessorySection(controls) {
+  if (!controls || controls.querySelector?.('[data-accessory-section]')) return;
+  const sec = document.createElement('section');
+  sec.className = 'customizer-section';
+  sec.dataset.accessorySection = '';
+  const h = document.createElement('h3');
+  h.textContent = 'Huvudbonad';
+  sec.append(h);
+  const row = document.createElement('div');
+  row.className = 'btn-group';
+  AVATAR_HAT.names.forEach((n, i) => {
+    const b = document.createElement('button');
+    Object.assign(b.dataset, { type: 'hat', index: String(i) });
+    b.textContent = i ? n : 'Ingen huvudbonad';
+    row.append(b);
+  });
+  sec.append(row);
+  controls.append(sec);
 }
 
 /** Configure customizer integration. */

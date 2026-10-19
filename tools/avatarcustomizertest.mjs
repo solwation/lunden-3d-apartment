@@ -650,3 +650,30 @@ test('#1268 curly hair length: style 4 hair vertices span down to shoulder level
   }
   assert.ok(minHy <= -0.25, `curly hair spans down to shoulder level: ${minHy}`);
 });
+
+test('#1321 headwear: tag q, old codes unchanged, bad values skipped, combined with glasses, height and the face', async () => {
+  const { AVATAR_HAT, AVATAR_LOOK_EXT_MAX, AVATAR_SHAPE, splitAvatarCode, defaultFaceLook, encodeAvatarWireLook } = await import('../src/config.js');
+  const plain = avatarLook('hat-plain'), base = encodeAvatarLook(plain);
+  assert.match(base, /^[0-9]{9}$/, 'an untouched look has no extension');
+  assert.equal(defaultFaceLook().hat, 0, 'no headwear by default');
+  assert.equal(decodeAvatarLook(base, 'p').hat, 0);
+  assert.equal(AVATAR_HAT.names.length, 5);
+  for (let h = 1; h < AVATAR_HAT.names.length; h++) {
+    const code = encodeAvatarLook({ ...plain, hat: h });
+    assert.equal(code, `${base}q${h}`);
+    assert.equal(decodeAvatarLook(code, 'p').hat, h);
+  }
+  assert.equal(encodeAvatarLook({ ...plain, hat: 0 }), base, 'none is not written');
+  assert.equal(encodeAvatarLook({ ...plain, hat: 9 }), base, 'an unknown kind is not written');
+  assert.equal(decodeAvatarLook(base + 'q9', 'p').hat, 0, 'out-of-range headwear ignored');
+  const all = encodeAvatarLook({ ...plain, hat: 2, glasses: 1, height: 140, eyeSize: 7 });
+  assert.equal(all, base + '140' + 'e7g1q2');
+  const back = decodeAvatarLook(all, 'p');
+  assert.equal(back.hat, 2); assert.equal(back.glasses, 1); assert.equal(back.height, 140);
+  assert.deepEqual(splitAvatarCode(all), { av: base + '140', ax: 'e7g1q2' });
+  assert.match(encodeAvatarWireLook({ ...plain, hat: 3 }), /q3/, 'on the wire');
+  // every slider at once plus glasses and headwear stays within the extension limit
+  const everything = { ...plain, glasses: 2, hat: 4, brows: HAIR[7], eyes: 0x7c8288 };
+  for (const n of Object.keys(AVATAR_SHAPE.fields)) everything[n] = n === 'jaw' ? 0 : 8;
+  assert.ok(splitAvatarCode(encodeAvatarWireLook({ ...everything, height: 140, bodyBuild: 8, top: TOPS[10] })).ax.length <= AVATAR_LOOK_EXT_MAX);
+});

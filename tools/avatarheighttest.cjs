@@ -31,7 +31,7 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
       a.renderer.setAnimationLoop(null);
       const g = window.__ghosts;
       const top = (av) => { av.object.updateMatrixWorld(true); const v = a.camera.position.clone(), pos = av.mesh.geometry.attributes.position; let y = -1e9;
-        for (let i = 0; i < pos.count; i++) { av.mesh.getVertexPosition(i, v); v.applyMatrix4(av.mesh.matrixWorld); y = Math.max(y, v.y); } return y; };
+        for (let i = 0; i < pos.count; i++) { if (av.look.hat ? false : av.mesh.geometry.attributes.facePart.getX(i) > 11.5) continue; /* #1321: unchosen headwear is collapsed in the shader only */ av.mesh.getVertexPosition(i, v); v.applyMatrix4(av.mesh.matrixWorld); y = Math.max(y, v.y); } return y; };
       window.__fix = {
         e, p, n, top,
         tick: (mirror) => { a.camera.position.copy(e); g.update(); if (mirror) a.updateReflections(a.camera, 0, true, false); },

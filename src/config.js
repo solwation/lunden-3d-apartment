@@ -5421,6 +5421,15 @@ export const AVATAR_GLASSES = { tag: 'g', names: ['Inga', 'Runda', 'Fyrkantiga']
 // extension's `v` tag with the HAIR index (absent when following the hair, so old codes keep their brows). The brows are their
 // own colour region in the avatar's per-player colour attribute (src/avatar.js), so no extra draw call.
 export const AVATAR_BROWS = { tag: 'v' };
+// #1321 (#1318): accessories. The first is headwear, look field `hat`: 0 none, 1 cap (peak forwards), 2 cap (peak backwards), 3 knitted hat, 4 brimmed
+// hat; the extension's `q` tag (absent when 0, so old codes and looks are unchanged). Like the glasses, every kind is in the shared head geometry
+// and collapses to a point in the vertex shader when not chosen (src/avatar.js), so no extra draw call. Further accessories (#1322 headphones,
+// #1323 necklaces, #1324 rings, #1325 more) add their own field and tag beside it.
+// Shape (*guess*, by eye against the skull RH.skull, head-bone frame): `lift` m above the skull at the crown / the sides (hair is at most ~0.03 thick),
+// `edge` the lower edge's elevation (degrees from AVATAR_HAIR.centre) as [|azimuth|, elevation] corners (cap / knitted hat / brimmed hat), `peak` the
+// cap's visor length, `brim` the brimmed hat's brim width (m).
+export const AVATAR_HAT = { tag: 'q', names: ['Ingen', 'Keps framåt', 'Keps bakåt', 'Mössa', 'Hatt'], lift: [0.034, 0.02], peak: 0.075, brim: 0.05,
+  edge: { cap: [[0, 30], [60, 18], [100, 12], [180, 10]], knit: [[0, 27], [60, 12], [90, 0], [140, -6], [180, -10]], hat: [[0, 27], [90, 27], [180, 27]] } };
 // #1244: trouser models (look field `legs`, tag `p`) and top models (`cut`, tag `m`) beyond the first, which stay the default and
 // are not carried in the code. Legs: straight, shorts (mid-thigh, bare knees), wide. Tops: T-shirt / long sleeves (the `sleeves`
 // choice), tank (sleeveless), hoodie (always long-sleeved, a long hem, a pocket and a rolled hood). `wide` / `hem` scale the leg's
@@ -5452,6 +5461,7 @@ function encodeLookExt(look) {
     if (Number.isInteger(v) && v >= 0 && v < AVATAR_SHAPE.steps && v !== AVATAR_SHAPE.mid) out += `${f.tag}${v}`;
   }
   if (Number.isInteger(look.glasses) && look.glasses > 0 && look.glasses < AVATAR_GLASSES.names.length) out += `${AVATAR_GLASSES.tag}${look.glasses}`;
+  if (Number.isInteger(look.hat) && look.hat > 0 && look.hat < AVATAR_HAT.names.length) out += `${AVATAR_HAT.tag}${look.hat}`; // #1321
   const brows = look.brows == null ? -1 : HAIR.indexOf(look.brows); // #1220
   if (brows >= 0) out += `${AVATAR_BROWS.tag}${brows}`;
   if (look.legs > 0 && look.legs < AVATAR_CLOTHES.legs.names.length) out += `${AVATAR_CLOTHES.legs.tag}${look.legs}`; // #1244
@@ -5468,6 +5478,7 @@ function decodeLookExt(ext, lk) {
     if (tag === 'u') { if (v < TOPS.length) lk.top = TOPS[v]; continue; } // #1156
     if (tag === AVATAR_BUILD.tag) { if (v < AVATAR_BUILD.steps) lk.bodyBuild = v; continue; } // #1139
     if (tag === AVATAR_GLASSES.tag) { if (v < AVATAR_GLASSES.names.length) lk.glasses = v; continue; } // #1165
+    if (tag === AVATAR_HAT.tag) { if (v < AVATAR_HAT.names.length) lk.hat = v; continue; } // #1321
     if (tag === AVATAR_BROWS.tag) { if (v < HAIR.length) lk.brows = HAIR[v]; continue; } // #1220
     if (tag === AVATAR_CLOTHES.legs.tag) { if (v < AVATAR_CLOTHES.legs.names.length) lk.legs = v; continue; } // #1244
     if (tag === AVATAR_CLOTHES.cut.tag) { if (v < AVATAR_CLOTHES.cut.names.length) lk.cut = v; continue; }
@@ -5504,7 +5515,7 @@ function nearestSeededBuild(look) {
 
 /** The face fields' defaults (#1138): the original brown eyes, every slider in the middle and brows like the hair (#1220). */
 export function defaultFaceLook() {
-  const lk = { eyes: EYES[0], glasses: 0, brows: null };
+  const lk = { eyes: EYES[0], glasses: 0, hat: 0, brows: null };
   for (const name of Object.keys(AVATAR_SHAPE.fields)) lk[name] = AVATAR_SHAPE.mid;
   return lk;
 }

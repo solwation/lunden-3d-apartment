@@ -1,0 +1,36 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Avatar accessories</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#bfc6cc}canvas{display:block}</style></head>
+<body><script type="module">
+// #1321 component page: headwear (look.hat 0–4) over the hairstyles (style 0–4), heads only. Driven by tools/avataraccessoriestest.cjs.
+import * as THREE from 'three';
+import { Avatar } from '../src/avatar.js';
+import { avatarLook } from '../src/config.js';
+const W = 1600, Hh = 700, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, Hh); document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbfc6cc);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f72, 1.6));
+const sun = new THREE.DirectionalLight(0xfff2e0, 2.2); sun.position.set(2, 4, 3); scene.add(sun);
+const hairs = [0x3b2a1e, 0xc9a24a, 0x20202a], avatars = [];
+const q = new URLSearchParams(location.search), row = [Number(q.get('style') ?? 0)], hats = [0, 1, 2, 3, 4];
+hats.forEach((hat, s) => {
+  const lk = { ...avatarLook('ac' + s), style: row[0], hair: hairs[row[0] % 3], top: [0x3d6b8f, 0x8f3d4f, 0x8f3d4f, 0x4f7a3d, 0x6b5a8f][s], skin: 0xe0ae8a, tall: 1, build: 1, gender: row[0] === 1 ? 1 : 0, facial: 0, hat };
+  const a = new Avatar(lk); a.object.position.set((s - 2) * 0.55, 0, 0); scene.add(a.object); avatars.push(a);
+});
+const cam = new THREE.PerspectiveCamera(12, W / Hh, 0.05, 50);
+window.__shot = (view) => {
+  const yaw = { front: 0, q: -Math.PI / 4, side: -Math.PI / 2, back: Math.PI }[view];
+  for (const a of avatars) { a.object.rotation.y = yaw; a.update(0, {}); }
+  cam.position.set(0, 1.6, 9); cam.lookAt(0, 1.6, 0); cam.fov = 12; cam.updateProjectionMatrix();
+  renderer.render(scene, cam);
+  return true;
+};
+window.__info = () => ({ calls: renderer.info.render.calls, avatars: avatars.length });
+window.__ready = true;
+</script></body></html>
