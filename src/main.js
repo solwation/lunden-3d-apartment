@@ -16,7 +16,7 @@ import { loadBeerShelf } from './beershelfdata.js';
 import { BeerShelf } from './beershelf.js';
 import { initHudIcons, fitChoiceLabels, setIcon, setPressed, setWeatherIcon, formatTemp } from './hudicons.js';
 import * as THREE from 'three';
-import { UNIT_TOP, SITE, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS, GARAGE, OLOF, CORE_A, CORE_B, CORE_C, avatarLook, avatarBody } from './config.js';
+import { UNIT_TOP, SITE, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS, GARAGE, OLOF, CORE_A, CORE_B, CORE_C, PLAYROOM, avatarLook, avatarBody, avatarHeightCm } from './config.js';
 import { setupAvatarCustomizer, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen } from './customizer.js';
 import { MieleHeld, HeartFireworks } from './miele.js';
 import * as showFireworks from './fireworks.js';
@@ -128,6 +128,7 @@ import { Breaker } from './breaking.js';
 import { Target } from './target.js';
 import { Car } from './car.js';
 import { Garage } from './garage.js';
+import { Playroom } from './playroom.js';
 import { Core } from './core.js';
 import { CoreHouse } from './corehouse.js';
 import { OlofDriver } from './olof.js';
@@ -234,6 +235,8 @@ if (garage.bicycles) world.bicycles.push(...garage.bicycles);
 if (garage.storageBicycles) world.bicycles.push(...garage.storageBicycles);
 const cheatNote = await buildCheatNote(garage, () => showCheatNote(true));
 scene.add(garage.object, garage.blackout, garage.door.object, garage.parkObject); // (+ its door, #358)
+const playroom = world.playroom = new Playroom(); // #1319: the playhouse's secret children's room, hidden (and undrawn) until you go in
+scene.add(playroom.object);
 await loadingYield(0.47);
 const core = world.core = new Core(); // Hus L's stairwell and lift by the portik (#415)
 const coreA = core.attach(new CoreHouse(CORE_A)); // … and Hus A's, from its courtyard entrance down to the basement (#637)
@@ -1660,10 +1663,50 @@ function moveChoice(d) {
 }
 document.addEventListener('wheel', (e) => { if (locked && !statsOpen && !reading && choices.rows && moveChoice(Math.sign(e.deltaY))) e.preventDefault(); }, { passive: false });
 
+// #1319 / #1326: the playhouse's secret children's room. E on the playhouse door: only an avatar shorter than PLAYROOM.maxCm gets in
+// (a friendly no otherwise); a short black fade hides the move to the hidden room far off the map, and the door in the room leads
+// back out to just in front of the playhouse. Growing past the limit inside the room never throws you out: you walk out the door.
+const roomFadeEl = document.createElement('div');
+roomFadeEl.style.cssText = 'position:fixed;inset:0;z-index:9;pointer-events:none;background:#14232d;opacity:0;transition:opacity 0.2s linear';
+document.body.appendChild(roomFadeEl);
+let roomMoving = false;
+function roomMove(go) { // fade to black, do `go` (the teleport), fade back in
+  if (roomMoving) return;
+  roomMoving = true;
+  const [out, back] = PLAYROOM.fadeMs;
+  roomFadeEl.style.transition = `opacity ${out}ms linear`; roomFadeEl.style.opacity = '1';
+  setTimeout(() => {
+    try { go(); } finally {
+      camera.updateMatrixWorld();
+      roomFadeEl.style.transition = `opacity ${back}ms linear`; roomFadeEl.style.opacity = '0';
+      setTimeout(() => { roomMoving = false; }, back);
+    }
+  }, out + 30);
+}
+function enterPlayroom() {
+  if (roomMoving || rest.active || player.riding || player.flying || player.fall || player.climb || player.swing) return;
+  if (avatarHeightCm(ghosts.myLook) >= PLAYROOM.maxCm) { sfx.click(camera.position); badge(`Du är för stor för lekstugan (under ${PLAYROOM.maxCm} cm)`, false); return; }
+  roomMove(() => {
+    playroom.setInside(true);
+    const a = playroom.arrival;
+    player.spawn(a.x, a.z, a.yaw);
+  });
+}
+function leavePlayroom() {
+  if (roomMoving || rest.active || player.riding || player.flying || player.fall) return;
+  roomMove(() => {
+    const o = Playroom.outsideSpot;
+    player.spawn(o.x, o.z, o.yaw);
+    playroom.setInside(false);
+  });
+}
+
 /** E / the action button on what you look at: doors toggle, the note opens. */
 function use(thing) {
   if (player.riding && thing.kind !== 'bicycle') return; // both hands are reserved for the actual handlebars
   if (thing.kind === 'bicycle') { if (player.riding) { standUp(); return; } if (rest.active) return; if (!player.mountBicycle(thing.bicycle)) greet.sayMine('Här går det inte att ta ut cykeln säkert.'); return; }
+  if (thing.kind === 'playhouse') { enterPlayroom(); return; }
+  if (thing.kind === 'playroomExit') { leavePlayroom(); return; }
   if (thing.kind === 'ghost' && weaponKey()) { // focus may predate a weapon change (#872)
     const held = heldItem();
     if (!held && suit.worn) suit.shoot();
@@ -1993,6 +2036,7 @@ function updateFocus() {
     ...(!weaponKey() ? ghosts.targets() : []), // only unarmed visitors greet other players (#872)
     ...suit.targets(), // the Spider-Man suit in its drawer / where it was laid (#597)
     ...world.courtyardTargets.map((t) => t.pickable),
+    ...(playroom.inside ? [playroom.exitTarget.pickable] : []), // the way out of the children's room (#1319)
     ...bicyclePickables(), // the courtyard's benches (#438): F keeps them
     ...(power.reachable ? [power.target.pickable] : []), // the fuse box while its cabinet is open (#604)
     ...(world.furnitureOn ? [...(target.object.visible ? [target.target] : []), ...(hoop.object.visible && hoop.freeThrowTarget ? [hoop.freeThrowTarget] : []), ...patio.targets, ...world.furnitureTargets, ...holdables.map((h) => h.target), drawing.target, ...posters.targets].map((t) => t.pickable) : [])]; // parasol, TV, seats, beds, toys — unless F hid the furniture
@@ -2798,8 +2842,9 @@ function step(dt) {
   photoGlow(day.daylight * (1 - 0.5 * weather.overcast), lights.roomLit(1, 'Sovrum 1')); // Miele's photo reads like a lit print (#327)
   core.update(dt, player, camera); // the stairwell's doors, the lift, drawn only near (#415)
   garage.update(dt, player, camera, car); // its door (#358), the förråd doors, the tubes' motion sensor, drawn only near (#357)
-  day.under = garage.under; // down there no daylight
-  day.lit = garage.lit; // … but the tubes' light on the cars (#440)
+  if (playroom.inside && !playroom.contains(player.pos.x, player.pos.z)) playroom.setInside(false); // (respawned / resumed elsewhere: the room is undrawn again)
+  day.under = player.inPlayroom ? 1 : garage.under; // down there no daylight (nor in the children's room, #1319)
+  day.lit = player.inPlayroom ? PLAYROOM.lit : garage.lit; // … but the tubes' light on the cars (#440), the room's own lamp
   { // the sun's shadow box (±14 m round its target) follows the visitor to a visited flat (#574): centred on it within
     // STANDARD.near m of its footprint, else on ours — without it the sun would shine through its roof and walls
     const p = player.pos, n = STANDARD.near, near = world.units.find((u) => p.x > u.box.x0 - n && p.x < u.box.x1 + n && p.z > u.box.z0 - n && p.z < u.box.z1 + n && p.y > u.bottom - n);
@@ -2905,12 +2950,12 @@ function step(dt) {
   if (roof || !player.fall) lastRoof = roof?.id ?? null;
   if (roof) roofName = roof.name; else if (!player.aloft) roofName = null;
   const under = player.inCore ? `${core.houseAt(player.pos.x, player.pos.z, player.pos.y)} · ${core.roomAt(player.pos.x, player.pos.z, player.pos.y)}` // the stairwell, the lift (#415)
-    : player.below ? `Under gården · ${garage.roomAt(player.pos.x, player.pos.z)}` : null; // the garage, the förråd, the lobby (#357)
+    : player.below ? `Under gården · ${garage.roomAt(player.pos.x, player.pos.z)}` : player.inPlayroom ? 'Lekstugan · Barnrummet' : null; // the garage, the förråd, the lobby (#357)
   const visit = outside || under ? null : player.unit; // in a visited flat (#574): its own name, level and room
   const lvl = outside || under || visit ? -1 : player.level; // basement/core take precedence over the apartment x/z footprint (#549)
   const room = lvl < 0 ? null : world.roomAt(lvl, player.pos.x, player.pos.z);
   if (room && active()) visitRoom(`${lvl}:${room}`);
-  if (under && active()) visitRoom(`g:${under.split(' · ')[1]}`);
+  if (under && !player.inPlayroom && active()) visitRoom(`g:${under.split(' · ')[1]}`);
   if (room !== lastRoom && room) lastRoom = room; // keep the last name while inside a doorway
   mapTimer -= dt;
   if (mapTimer <= 0 && !mapEl.hidden) {
@@ -3075,6 +3120,7 @@ function onTap(el, fn) {
 // reload to a fresh URL, so neither the browser's nor GitHub Pages' cache hands back the old page
 /** Where the visitor is, for a reload: place, view, mute, mode (none = still on the first start screen), the build. */
 const placeNow = () => {
+  if (player.inPlayroom) { const o = Playroom.outsideSpot; return { x: o.x, z: o.z, feetY: groundY(o.x, o.z), yaw: o.yaw, pitch: 0, hour: day.hour, month: day.month, muted: isMuted(), fullscreen: !!document.fullscreenElement, build: BUILD, mode: isPhoneDevice() ? 'touch' : (activeMode ?? (touch.enabled ? 'touch' : locked ? 'mouse' : (!armEl.hidden || played) ? 'mouse' : undefined)) }; } // a reload inside the children's room (#1319): back out at the playhouse door
   const p = player.riding ? player.bicycleSavePlace() : player.pos;
   if (!p) return null; // no safe standing save: retain the earlier session/default start, never saddle feet
   return { x: p.x, z: p.z, feetY: player.riding ? p.y : player.restY(), yaw: camera.rotation.y, pitch: camera.rotation.x,

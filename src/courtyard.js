@@ -344,6 +344,12 @@ export function buildCourtyard() {
     }
     geos.metal.push(new THREE.BoxGeometry(0.12, 0.04, d + 0.32).translate(cx, P.ridge + 0.04, cz)); // the ridge cap
     segments.push(...rectSegs(P.x0, P.x1, P.z0, P.z1));
+    // #1319: the door is the way into the secret children's room (main.js `use`: kind 'playhouse'); an invisible pick box over the door leaf
+    const doorPick = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.0, 0.3), new THREE.MeshBasicMaterial({ visible: false }));
+    doorPick.position.set(cx, 0.6, P.z0 - 0.12);
+    const doorTarget = { name: 'lekstugan', kind: 'playhouse', verb: 'gå in i', pickable: doorPick };
+    doorPick.userData.door = doorTarget;
+    group.add(doorPick); targets.push(doorTarget);
   }
   // #681: a wooden A-frame swing with two rubber seats on chains, and a little slide (deck, rails, ladder, a red chute)
   {

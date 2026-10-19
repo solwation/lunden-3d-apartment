@@ -154,6 +154,8 @@ export class Ghost { // (exported for tools/ghostprops.html)
     this.bikeWire = Number.isFinite(bk) ? bk : null; // (#1286: the bicycle's heading while riding)
     this.setJetpack(h === 'jetpack' && !jp ? 1 : jp); // (an older client only says h: 'jetpack')
     this.refreshBadge();
+    const prev = this.snaps.at(-1);
+    if (prev && Math.hypot(p[0] - prev.p.x, p[1] - prev.p.y, p[2] - prev.p.z) > G.jump) this.snaps.length = 0; // a teleport (#1319: into / out of the children's room): appear there, no streak across the map
     const last = this.snaps.at(-1);
     if (last && t - last.t > 1000 / G.hz * 1.5) this.snaps.push({ t: t - 1000 / G.hz, p: last.p, r: last.r, c: last.c, pose: last.pose, bk: last.bk });
     this.snaps.push({ t, bk: this.bikeWire, p: new THREE.Vector3(...p), r, c: c === true ? 1 : 0, pose: pose >= 1 && pose <= 3 && Number.isInteger(pose) ? pose : 0 });

@@ -99,6 +99,7 @@ export class Player {
    * loftgång and the upper units sit on it), elsewhere ROOFS.aloft m over the ground. Then the roofs' walls collide. */
   get aloft() {
     const p = this.pos;
+    if (this.inPlayroom) return false; // (the secret children's room, #1319)
     if (this.inCore) return false; // (Hus L's stairwell: its own walls, on every storey, #456)
     if (this.world.unitAt?.(p.x, p.z, p.y)) return false; // in a visited flat's rooms (#574, #573); over it / its terrace: up
     return this.inFootprint(p.x, p.z) ? p.y > UNIT_TOP - 0.3 : p.y > groundY(p.x, p.z) + ROOFS.aloft;
@@ -130,8 +131,15 @@ export class Player {
     return !!this.world.core?.contains(p.x, p.z, p.y);
   }
 
+  /** In the playhouse's secret children's room (#1319, playroom.js): a hidden interior far outside the map with its own floor, walls and ceiling. */
+  get inPlayroom() {
+    const r = this.world.playroom;
+    return !!r?.inside && r.contains(this.pos.x, this.pos.z);
+  }
+
   /** Outside the flat (street, lawn, patio, up on the roofs); used for terrain and ambience. */
   get outdoors() {
+    if (this.inPlayroom) return false;
     return (!this.inFootprint() && !this.unit) || this.aloft;
   }
 
@@ -143,6 +151,7 @@ export class Player {
 
   /** Highest walkable surface at (x, z) that can be reached from feet height `feet`. */
   groundAt(x, z, feet) {
+    if (this.world.playroom?.inside && this.world.playroom.contains(x, z)) return this.world.playroom.floorY; // the secret children's room (#1319)
     const { x: W, z: D } = this.world.size;
     const inside = x > 0 && x < W && z > 0 && z < D;
     const h = STAIR.hole;
@@ -186,6 +195,7 @@ export class Player {
   }
 
   walkSegments() {
+    if (this.inPlayroom) return [this.world.playroom.segments, []]; // (#1319)
     if (this.aloft) { // up on the roofs (#360): the walls that stand in the way of the body, feet + step … head
       const y = this.pos.y;
       return [this.world.roofs?.walls(y + PLAYER.stepUp, y + PLAYER.headroom, this.pos.x, this.pos.z) ?? [], [...(this.world.core?.dynamic(y) ?? []), // (+ the stairwell's door onto the loftgång, #415)
@@ -214,6 +224,7 @@ export class Player {
   /** The lowest ceiling over (x, z) above the feet `y0` (#636): a roof / canopy outdoors (roofs.js), the room's ceiling
    * (RH, a lowered soffit, the underside of the stair) in our flat, a visited flat or the garage. */
   ceilingAt(x, z, y0) {
+    if (this.inPlayroom) return this.world.playroom.ceiling; // (#1319)
     const R = this.world.roofs?.above(x, z, y0 + PLAYER.stepUp) ?? Infinity;
     if (this.aloft) return R;
     if (this.below) return Math.min(R, GARAGE.ceiling);
@@ -233,6 +244,7 @@ export class Player {
    * furniture back, a resume record, the car parking on you) could never get out.
    */
   obstacles(level = this.level) {
+    if (this.inPlayroom) return []; // (#1319: no furniture yet)
     if (this.aloft || this.inCore) return []; // (the flat's furniture and the car are far below, #360; the stairwell, #415)
     if (this.below) return this.world.garage.obstacles(); // the cars parked down there (#357)
     return [...(this.world.levels[level]?.footprints ?? []), ...(this.world.movingPolys?.(level) ?? [])];
@@ -240,6 +252,7 @@ export class Player {
 
   /** Can the visitor stand at (x, z) on `level` (#314)? Clear of every segment by the radius + `margin`, inside no obstacle. */
   isFree(x, z, level = this.level, margin = 0.02, ignored = []) {
+    if (this.inPlayroom) { const r = this.world.playroom; return r.contains(x, z) && !r.segments.some((sg) => !ignored.includes(sg) && segDist(x, z, sg) < PLAYER.radius + margin); } // (#1319)
     if ((this.world.bicycleSegments?.(this.pos.y, PLAYER.headroom, PLAYER.hurdle) ?? []).some(s => segDist(x,z,s) < PLAYER.radius + margin)
       || (this.world.bicyclePolys?.(this.pos.y, PLAYER.headroom, PLAYER.hurdle) ?? []).some(p => inPoly(p,x,z))) return false;
     if (this.inCore) { const [a, b] = this.world.core.segments(this.pos.y); return this.world.core.covers(x, z) && ![...a, ...b].some((sg) => !ignored.includes(sg) && segDist(x, z, sg) < PLAYER.radius + margin); } // (#415)
@@ -261,7 +274,7 @@ export class Player {
   /** The nearest free spot to (x, z) reached through no wall, window or door (a spiral search), or null (#314). */
   nearestFree(x, z, level = this.level) {
     const u = this.unit, up = u && (!u.ground || u.levelAt(this.pos.y) > 0), ul = u ? u.levelAt(this.pos.y) : 0; // (a visited flat, #574)
-    const walls = this.inCore ? this.world.core.segments(this.pos.y)[0] : this.below ? this.world.garage.walls : up ? [...u.fixed[ul], ...u.doorSegments(ul)] : [...(this.world.levels[level]?.fixedSegments ?? this.world.levels[level].segments),
+    const walls = this.inPlayroom ? this.world.playroom.segments : this.inCore ? this.world.core.segments(this.pos.y)[0] : this.below ? this.world.garage.walls : up ? [...u.fixed[ul], ...u.doorSegments(ul)] : [...(this.world.levels[level]?.fixedSegments ?? this.world.levels[level].segments),
       ...this.world.doors.filter((d) => (d.object.position.y < LEVELS[0].floor + 1.6 ? 0 : 1) === level).map((d) => d.segment())];
     for (let r = 0.05; r < 3.01; r += 0.05) {
       const n = Math.max(8, Math.round(2 * Math.PI * r / 0.05));
@@ -775,7 +788,7 @@ export class Player {
       if (g >= this.pos.y) { this.pos.y = g; this.vy = 0; }
     }
 
-    if (!this.flying && !this.aloft && !this.inFootprint() && !this.unit) { // #1236: landed inside a far building / its closed courtyard: out onto the street
+    if (!this.flying && !this.aloft && !this.inFootprint() && !this.unit && !this.inPlayroom) { // #1236: landed inside a far building / its closed courtyard: out onto the street
       const out = buildingRescue(this.pos.x, this.pos.z);
       if (out && this.pos.y <= groundY(this.pos.x, this.pos.z) + 0.05) { this.pos.set(out.x, groundY(out.x, out.z), out.z); this.vy = 0; this.fall = null; this.fling = null; this.onWaterRescue?.('building'); }
       if (atEdge(this.pos.x, this.pos.z)) { const now = performance.now(); if (now - (this.edgeAt ?? -1e9) > 20000) { this.edgeAt = now; this.onEdge?.(); } } // the outer wall: say so once in a while
@@ -841,7 +854,7 @@ export class Player {
   slideStep(dt, mx, mz) {
     const p = this.pos, d = this.slideD ??= { x: 0, z: 0 };
     d.x = d.z = 0;
-    const out = p.z > 60 && !this.flying && !this.aloft && !this.inCore && !this.unit && !this.climb && !this.swing && !this.inFootprint();
+    const out = p.z > 60 && !this.inPlayroom && !this.flying && !this.aloft && !this.inCore && !this.unit && !this.climb && !this.swing && !this.inFootprint();
     const sl = out && p.y <= surfaceY(p.x, p.z, p.y) + 0.25 ? // (feet on the ground: a downhill step leaves them a hair above it, which is no fall)
        slideAt(p.x, p.z, p.y, this.sliding) : null;
     this.sliding = !!sl;
@@ -860,7 +873,7 @@ export class Player {
    * last dry spot), standing still and safe from fall damage for `WALK.splashSafe` s. True when it happened. Flying over the water does not count. */
   splashCheck() {
     const p = this.pos;
-    if (p.z <= 60 || this.aloft || this.inCore || this.unit || this.inFootprint()) return false;
+    if (p.z <= 60 || this.inPlayroom || this.aloft || this.inCore || this.unit || this.inFootprint()) return false;
     if (!(p.y < SITE.bridges.waterY - WALK.waterDepth) || !inWater(p.x, p.z, p.y)) {
       if (!this.sliding && p.y <= surfaceY(p.x, p.z, p.y) + 0.05) { const d = this.lastDry ??= { x: p.x, z: p.z }; d.x = p.x; d.z = p.z; } // (the fallback bank)
       return false;

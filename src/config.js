@@ -3286,9 +3286,10 @@ export const LEADERBOARD = { show: 10, every: 30, nameMax: 20 };
 // beyond `far` m, the name tag beyond `tagFar` m, at most `max` ghosts. All our picks (*guess*).
 // #1147: guessed cradle in the avatar's unscaled figure frame; natural cat size is preserved.
 export const GHOST_CAT = { gripWidth: .16, gripY: 1.02, gripZ: .38, elbow: [.6, -.6, -.5] };
+// `jump`: a state this many metres from the last is a teleport (the children's room, #1319): the others' ghost appears there instead of streaking across the map
 export const GHOSTS = { enabled: true, hz: 5, move: 0.02, turn: 0.03, beatMs: 10_000, idleMs: 120_000,
   retry: [2000, 5000, 15_000, 30_000, 60_000, 300_000], fullRetry: 60_000, offRetry: 600_000,
-  opacity: 0.25, delay: 200, far: 900, tagFar: 15, max: 30, // #1296: `far` reaches across the whole walk/fly area (WALK x -260..320, z -200..250 is ~740 m corner to corner, camera far 1000); beyond `tagFar` the tag grows with distance (constant angular size, never fogged) so a far player stays a visible marker instead of vanishing
+  opacity: 0.25, delay: 200, jump: 100, far: 900, tagFar: 15, max: 30, // #1296: `far` reaches across the whole walk/fly area (WALK x -260..320, z -200..250 is ~740 m corner to corner, camera far 1000); beyond `tagFar` the tag grows with distance (constant angular size, never fogged) so a far player stays a visible marker instead of vanishing
   tagWidth: 0.64, tagHeight: 0.16, tagY: 1.98, tagNamePx: 22, tagScorePx: 18, // #672: 20% smaller sprite; two compact lines (*guess*)
   scoreMax: 1e7, // matches the existing leaderboard validation in cloudflare/worker.js; display only, not authoritative
   outbox: 3, // outbox: shots waiting for the 5 Hz budget (#667)
@@ -5573,6 +5574,19 @@ export function avatarBody(look) {
   return { eye, scale: s, crouchEye: STANDARD_BODY.crouchEye * s, headroom: STANDARD_BODY.headroom * s,
     radius: STANDARD_BODY.radius * Math.min(hi, Math.max(lo, s)) };
 }
+
+// #1319 / #1326: the secret children's room inside the playhouse (src/playroom.js). Only players shorter than `maxCm` (the avatar's
+// height in cm, #1127) get in. The room is a separate hidden interior far outside the walkable area (WALK: x -260..320,
+// z -200..250) but inside the Worker's ±5000 m pose limit, and further from the playhouse than GHOSTS.far (900 m), so the
+// ordinary pose stream already hides a player who goes in and shows him again inside to the others there. All values are
+// our own choices (*guess*): the room is much bigger than the playhouse's 2.1 × 1.9 m shell on purpose.
+export const PLAYROOM = { maxCm: 140, x: -1500, z: -1500, w: 6.4, d: 5.2, ceiling: 2.4, // centre (m), size (x, z) and height (m)
+  door: { w: 0.8, h: 1.5 }, // the way out in the south wall, scaled for a child
+  standOff: 0.75, // m from the door wall where you arrive inside
+  outside: 0.95, // m north of the playhouse's door wall where you stand when you come out
+  fadeMs: [220, 320], // black fade out before the move / back in after it
+  lit: 0.55, // ambient light added inside (day.lit): enough to see by, not so bright it looks like a day-lit hall
+  colors: { floor: 0xb98a5a, wall: 0xf1d9a8, ceiling: 0xf7f2e8, trim: 0xffffff, door: 0x9c2f24 } };
 
 /** A well-formed look code (#1136): 7 or 9 digits, or 9 + a height in cm within AVATAR_HEIGHT (the Worker uses it too). */
 export function avatarCodeValid(str) {
