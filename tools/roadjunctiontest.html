@@ -4,9 +4,11 @@
 <pre id="out">running…</pre><script type="module">
 import * as T from 'three';
 import { SITE } from '../src/config.js';
-import { pathStrip, vehicleTrim, filletGeometry, isVehicleWay } from '../src/roads.js';
+import { pathStrip, vehicleTrim, filletGeometry, isVehicleWay, samples } from '../src/roads.js';
 const lines=[],check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);if(!ok)window.failed=true;};
 try {
+ const arterial=SITE.roads.find(r=>r.name==='Sankt Lars väg');
+ check(arterial.path.length===arterial.w.length&&arterial.path.find(p=>p[0]===-82.28)?.[2]>0,'map-to-local-street transition is eased and keeps per-point widths aligned');
  const scene=new T.Scene();scene.background=new T.Color(0x7f9954);
  const roadMat=new T.MeshBasicMaterial({color:0x565e62}),pathMat=new T.MeshBasicMaterial({color:0xd4d0b4});
  const roadMeshes=[],footMeshes=[],flat=()=>0;
