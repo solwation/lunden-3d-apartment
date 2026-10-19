@@ -1715,6 +1715,7 @@ function use(thing) {
     if (!playroom.billiards.shoot(camera)) badge(playroom.billiards.blockReason || 'Vänta tills bollarna ligger still', false);
     return;
   }
+  if (thing.kind === 'playroomDisco') { badge(playroom.toggleDisco(), false); return; } // #1365: the disco light on/off
   if (thing.kind === 'playroomBilliardsMode') { const text = playroom.billiards.toggleMode(); if (text) badge(text, false); return; } // #1354: the board at the table
   if (thing.kind === 'playroomBilliardsRack') { const text = playroom.billiards.requestRack(); if (text) badge(text, false); return; }
   if (thing.kind === 'ghost' && weaponKey()) { // focus may predate a weapon change (#872)
@@ -2046,7 +2047,7 @@ function updateFocus() {
     ...(!weaponKey() ? ghosts.targets() : []), // only unarmed visitors greet other players (#872)
     ...suit.targets(), // the Spider-Man suit in its drawer / where it was laid (#597)
     ...world.courtyardTargets.map((t) => t.pickable),
-    ...(playroom.inside ? [playroom.exitTarget.pickable, playroom.billiards.target.pickable, ...playroom.targets.map((t) => t.pickable), ...playroom.billiards.controlPickables] : []), // the way out of the children's room (#1319), the billiard table (#1328), the sofa and stool (#1327)
+    ...(playroom.inside ? [playroom.exitTarget.pickable, playroom.billiards.target.pickable, ...playroom.targets.map((t) => t.pickable), ...playroom.billiards.controlPickables, ...playroom.controlPickables] : []), // the way out of the children's room (#1319), the billiard table (#1328), the sofa and stool (#1327)
     ...bicyclePickables(), // the courtyard's benches (#438): F keeps them
     ...(power.reachable ? [power.target.pickable] : []), // the fuse box while its cabinet is open (#604)
     ...(world.furnitureOn ? [...(target.object.visible ? [target.target] : []), ...(hoop.object.visible && hoop.freeThrowTarget ? [hoop.freeThrowTarget] : []), ...patio.targets, ...world.furnitureTargets, ...holdables.map((h) => h.target), drawing.target, ...posters.targets].map((t) => t.pickable) : [])]; // parasol, TV, seats, beds, toys — unless F hid the furniture
@@ -2859,7 +2860,7 @@ function step(dt) {
   if (playroom.inside && !playroom.contains(player.pos.x, player.pos.z)) playroom.setInside(false); // (respawned / resumed elsewhere: the room is undrawn again)
   playroom.update(dt, camera, focused?.kind === 'playroomBilliards');
   day.under = player.inPlayroom ? 1 : garage.under; // down there no daylight (nor in the children's room, #1319)
-  day.lit = player.inPlayroom ? PLAYROOM.lit : garage.lit; // … but the tubes' light on the cars (#440), the room's own lamp
+  day.lit = player.inPlayroom ? playroom.lit : garage.lit; // … but the tubes' light on the cars (#440), the room's own lamp
   { // the sun's shadow box (±14 m round its target) follows the visitor to a visited flat (#574): centred on it within
     // STANDARD.near m of its footprint, else on ours — without it the sun would shine through its roof and walls
     const p = player.pos, n = STANDARD.near, near = world.units.find((u) => p.x > u.box.x0 - n && p.x < u.box.x1 + n && p.z > u.box.z0 - n && p.z < u.box.z1 + n && p.y > u.bottom - n);

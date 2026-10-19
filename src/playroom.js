@@ -50,7 +50,7 @@ export class Playroom {
     // ---- furniture (#1327), local metres from the room's centre: x east, z south (the door), y up
     const F = R.furniture, sf = F.sofa, sx0 = sf.x - sf.d / 2, sx1 = sf.x + sf.d / 2, sz0 = sf.z - sf.w / 2, sz1 = sf.z + sf.w / 2, seat = F.seatHeight;
     const col = { sofa: 0x2f7f86, cushion: 0x4bb0b6, back: 0xf2b84b, rug: 0xd96a4b, wood: 0x8a5a33, dark: 0x25272e, white: 0xf2f2f2, red: 0xd33a2c, blue: 0x2f6fd0, steel: 0x8b9099 };
-    const third = sf.w / 3, tv = F.tv, tvz = sf.z, tvx = -R.w / 2, cd = 0.35; // the TV cabinet, as deep as `cd`, faces the sofa across the rug
+    const DS = F.discoSwitch, third = sf.w / 3, tv = F.tv, tvz = sf.z, tvx = -R.w / 2, cd = 0.35; // the TV cabinet, as deep as `cd`, faces the sofa across the rug
     const fur = [
       cbox(col.rug, -2.8, sx1 + 0.1, 0, 0.012, tvz - 0.9, tvz + 0.9), // a rug under the sofa and the TV
       // the sofa: frame, back, arms, three seat cushions and three back cushions
@@ -70,6 +70,8 @@ export class Playroom {
       // the stool at the desk (its seat is a rest spot)
       cbox(col.red, F.stool.x - 0.2, F.stool.x + 0.2, F.stool.seat - 0.06, F.stool.seat, F.stool.z - 0.2, F.stool.z + 0.2),
       ...[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([a, b]) => cbox(col.steel, F.stool.x + a * 0.17 - 0.02, F.stool.x + a * 0.17 + 0.02, 0, F.stool.seat - 0.06, F.stool.z + b * 0.17 - 0.02, F.stool.z + b * 0.17 + 0.02)),
+      // #1365: the light switch by the door (the disco ball, TV and PC are also targets themselves)
+      cbox(col.white, DS.x - 0.05, DS.x + 0.05, DS.y - 0.07, DS.y + 0.07, R.d / 2 - 0.012, R.d / 2),
       // the disco ball's mount and cord
       cbox(col.steel, F.ball.x - 0.04, F.ball.x + 0.04, h - 0.03, h, F.ball.z - 0.04, F.ball.z + 0.04), cbox(col.steel, F.ball.x - 0.005, F.ball.x + 0.005, F.ball.y + F.ball.r, h - 0.03, F.ball.z - 0.005, F.ball.z + 0.005),
     ];
@@ -115,6 +117,16 @@ export class Playroom {
     this.spots.frustumCulled = false; this.spots.renderOrder = 2;
     this.object.add(this.spots);
     this.spin = 0;
+    // #1365: the disco light can be switched off and on: from the wall switch by the door or by aiming at the ball itself. `onSwitch(name, on)` is the hook
+    // for sound (#1330) and for syncing the state later; nothing is saved (the room persists no state) nor shared (local, like the room's props).
+    this.discoOn = true; this.onSwitch = null; this.controlPickables = [];
+    this.discoTarget = { kind: 'playroomDisco', name: 'discolampan', get verb() { return self.discoOn ? 'släcka' : 'tända'; } };
+    const self = this;
+    for (const [w, x, y, z, d] of [[0.16, DS.x, DS.y, F.discoSwitch.z, 0.06], [F.ball.r * 3, F.ball.x, F.ball.y, F.ball.z, F.ball.r * 3]]) {
+      const pk = new THREE.Mesh(new THREE.BoxGeometry(w, w, d), new THREE.MeshBasicMaterial({ visible: false }));
+      pk.position.set(R.x + x, y, R.z + z); pk.userData.door = this.discoTarget; this.discoTarget.pickable ??= pk;
+      this.object.add(pk); this.controlPickables.push(pk);
+    }
     this.disco(0);
     const C = R.colors, shell = [...walls.map((g) => paint(g, C.wall)), ...trim.map((g) => paint(g, C.trim)), ...door.map((g) => paint(g, C.door)), paint(box(X0, X1, -0.1, 0, Z0, Z1), C.floor), paint(box(X0, X1, h, h + 0.1, Z0, Z1), C.ceiling), ...handle.map((g) => paint(g, 0x2a2a2a))];
     const parts = [merged([...shell, ...fur, ...screens], furMat), merged(lamp, new THREE.MeshBasicMaterial({ color: 0xfff6dc, toneMapped: false }))]; // the shell, the furniture and the screens are one vertex-coloured mesh
@@ -130,7 +142,20 @@ export class Playroom {
     this.inside = false;
   }
 
-  update(dt,camera,aimed) { if(this.inside){this.billiards.update(dt,camera,aimed);this.disco(dt);} }
+  update(dt,camera,aimed) { if(this.inside){this.billiards.update(dt,camera,aimed);if(this.discoOn)this.disco(dt);} }
+
+  /** #1365: switch the disco light on or off (the ball stops and goes dull, the light spots vanish). Returns the badge text. */
+  setDisco(on) {
+    this.discoOn = !!on;
+    this.ball.material.color.setScalar(this.discoOn ? 1 : 0.28);
+    this.spots.visible = this.discoOn;
+    this.onSwitch?.('disco', this.discoOn);
+    return this.discoOn ? 'Discolampan är tänd' : 'Discolampan är släckt';
+  }
+  toggleDisco() { return this.setDisco(!this.discoOn); }
+
+  /** Ambient light inside (day.lit): a touch dimmer with the disco on, so its colours read. */
+  get lit() { return R.lit * (this.discoOn ? R.litDisco : 1); }
 
   /** The disco ball turns and its light spots sweep round the room (only while inside; each spot is where a fixed ray from the ball meets a wall, the floor or the ceiling). */
   disco(dt) {

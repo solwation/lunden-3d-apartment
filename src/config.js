@@ -5671,6 +5671,7 @@ export const PLAYROOM = { maxCm: 160, x: -1500, z: -1500, w: 6.4, d: 5.2, ceilin
   outside: 0.95, // m north of the playhouse's door wall where you stand when you come out
   fadeMs: [220, 320], // black fade out before the move / back in after it
   lit: 0.55, // ambient light added inside (day.lit): enough to see by, not so bright it looks like a day-lit hall
+  litDisco: 0.82, // #1365: that ambient times this while the disco light is on (mood; our own choice)
   // #1328: local child-size billiards (all dimensions/rolling coefficients are visual/playability guesses).
   billiards: { x: 0, z: 0, length: 1.8, width: 0.9, height: 0.58, rail: 0.09, railH: 0.06, leg: 0.08,
     ballR: 0.024, pocketR: 0.052, cueLength: 1, strokeSpeed: 2.2, strokeSeconds: 0.24, cueTravel: 0.09,
@@ -5680,6 +5681,7 @@ export const PLAYROOM = { maxCm: 160, x: -1500, z: -1500, w: 6.4, d: 5.2, ceilin
   // at z +2.6). Sofa in the north-west corner facing a TV on the west wall (clear of the billiard table in the middle, `billiards` above), a gaming desk with
   // a stool on the east wall south of the table's end, a disco ball over the north half.
   furniture: { seatHeight: 0.36, sofa: { x: -1.58, z: -1.35, w: 1.5, d: 0.75 }, tv: { w: 1.2, h: 0.68, y: 0.52 }, stool: { x: 2.35, z: 1.0, seat: 0.38 },
+    discoSwitch: { x: 0.9, y: 1.05, z: 2.6 }, // #1365: the wall switch east of the door (south wall, z +2.6; height reachable for children, guess)
     ball: { x: 0, z: -1.5, y: 1.95, r: 0.17, spin: 0.5, spots: 26, spotSpin: 0.35 }, // the disco ball hangs 0.45 m under the ceiling, the light spots sweep round it
   } };
 

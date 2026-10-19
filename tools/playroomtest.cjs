@@ -110,6 +110,20 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     const d1 = await page.evaluate(() => { const r = window.__app.world.playroom, p = [...r.spots.geometry.attributes.position.array]; r.disco(1.3); return { a: p, b: [...r.spots.geometry.attributes.position.array], bounds: r.bounds, n: r.rays.length }; });
     const inb = d1.b.every((v, i) => i % 3 === 1 ? v > -0.2 && v < RM.ceiling + 0.2 : true) && d1.b.filter((_, i) => i % 3 === 0).every((v) => v > d1.bounds.x0 - 0.2 && v < d1.bounds.x1 + 0.2) && d1.b.filter((_, i) => i % 3 === 2).every((v) => v > d1.bounds.z0 - 0.2 && v < d1.bounds.z1 + 0.2);
     check(inb && d1.b.some((v, i) => Math.abs(v - d1.a[i]) > 0.3), `the ${d1.n} disco spots lie on the room's surfaces and sweep`, '');
+    // #1365: the disco light switches off and on, from the wall switch and from the ball itself
+    const DSW = RM.furniture.discoSwitch, BL = RM.furniture.ball;
+    const aimAt = (from, to) => page.evaluate(({ from, to }) => { const t = window.__t, P = window.__app.player; P.spawn(from[0], from[1], 0); t.frames(20); t.aim(to[0], to[1], to[2]); return t.focus(); }, { from, to });
+    const fsw = await aimAt([RM.x + DSW.x - 0.3, RM.z + 1.9], [RM.x + DSW.x, DSW.y, RM.z + DSW.z]);
+    check(fsw?.kind === 'playroomDisco' && fsw.verb === 'släcka', 'the wall switch is a target (disco on: släcka)', JSON.stringify(fsw));
+    await page.evaluate(() => window.__app.use(window.__app.focus().focused));
+    const off = await page.evaluate(() => { const r = window.__app.world.playroom, p = [...r.spots.geometry.attributes.position.array]; r.update(1, window.__app.camera, false); return { on: r.discoOn, spots: r.spots.visible, moved: r.spots.geometry.attributes.position.array.some((v, i) => v !== p[i]), lit: r.lit, badge: document.getElementById('badges').textContent }; });
+    check(!off.on && !off.spots && !off.moved && /släckt/.test(off.badge), 'switch used: disco off, spots hidden and still', JSON.stringify(off));
+    await page.evaluate(() => { window.__t.render(); }); await page.screenshot({ path: `${shots}/11-disco-off.png` });
+    const fb = await aimAt([RM.x, RM.z + 0.9], [RM.x + BL.x, BL.y, RM.z + BL.z]);
+    check(fb?.kind === 'playroomDisco' && fb.verb === 'tända', 'the ball itself is a target (disco off: tända)', JSON.stringify(fb));
+    await page.evaluate(() => window.__app.use(window.__app.focus().focused));
+    const on = await page.evaluate(() => { const r = window.__app.world.playroom, p = [...r.spots.geometry.attributes.position.array]; r.update(1, window.__app.camera, false); return { on: r.discoOn, spots: r.spots.visible, moved: r.spots.geometry.attributes.position.array.some((v, i) => v !== p[i]) }; });
+    check(on.on && on.spots && on.moved, 'used again: disco on, spots sweep', JSON.stringify(on));
     const lit = await page.evaluate(() => { const o = window.__app; return o.world.playroom.object.children.filter((c) => c.isLight).length; });
     check(lit === 0, 'no extra lights in the room');
     const views = { 7: [[2.9, 2.3], [-1.8, -1.3]], 8: [[-2.9, 2.3], [2.6, 0.5]], 9: [[2.9, -2.3], [-2.5, -1.3]] };
