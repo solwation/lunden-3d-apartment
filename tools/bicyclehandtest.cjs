@@ -1,6 +1,6 @@
 // #984: actual Player/Hand/Holdable/Cup/Life/keep and source-bound main controls; controlled scene, no World.
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
-const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
+const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');const {installMainGlobals,installMainImports}=require('./mainfixture.cjs');
 const root=path.resolve(__dirname,'..'),base=process.argv[2]||'http://localhost:8870',out=process.argv[3]||'/tmp/lunden-priority-984-resume/native',render=process.argv.includes('--render');
 const read=f=>fs.readFileSync(path.join(root,f),'utf8'),hash=s=>crypto.createHash('sha256').update(s).digest('hex'),main=read('src/main.js'),worldSource=read('src/world.js'),original=read('tools/courtyardbicycletest.cjs');
 const definitions=original.slice(original.indexOf('function span('),original.indexOf('fs.mkdirSync(out')); const parts=new Function('main','worldSource',definitions+';return parts;')(main,worldSource);
@@ -14,7 +14,7 @@ const hashes=Object.fromEntries(files.map(f=>[f,hash(read(f))]));fs.mkdirSync(ou
 const checks=[],errors=[];let browser;function check(ok,label,data){checks.push({ok:!!ok,label,data});console.log((ok?'PASS ':'FAIL ')+label);fs.writeFileSync(out+'/checkpoint.json',JSON.stringify({checks,errors},null,2));}
 (async()=>{try{browser=await chromium.launch({executablePath:process.env.CHROME_PATH,args:['--no-sandbox',...(render?['--use-angle=swiftshader','--enable-unsafe-swiftshader']:['--disable-gpu'])]});const context=await browser.newContext({viewport:{width:800,height:500},hasTouch:true}),page=await context.newPage();page.setDefaultTimeout(5000);page.on('pageerror',e=>errors.push(e.message));
 await page.route('**/src/bootstrap.js*',r=>r.fulfill({contentType:'text/javascript',body:'// controlled components, no bootstrap/World'}));await page.route('**/src/hand-bike984.js',r=>r.fulfill({contentType:'text/javascript',body:read('src/hand.js')+'\nexport {CONTACT};'}));
-async function setup(){await page.goto(base);await page.evaluate(setupOriginal,{parts,index:0,render});await page.evaluate(async({weaponSource,choiceSource})=>{
+async function setup(){await installMainGlobals(page);await page.goto(base);await installMainImports(page);await page.evaluate(setupOriginal,{parts,index:0,render});await page.evaluate(async({weaponSource,choiceSource})=>{
  const Held=await import('/src/holdable.js'),{Hand,CONTACT}=await import('/src/hand-bike984.js'),{Cup}=await import('/src/cups.js'),{Blaster}=await import('/src/toys.js'),{Life}=await import('/src/life.js'),Keep=await import('/src/keep.js'),{buildStreetLife}=await import('/src/streetlife.js');
  window.Held=Held;window.CONTACT=CONTACT;window.Keep=Keep;window.scene=new T.Scene();scene.add(courtyard.object,camera);camera.fov=72;camera.near=.05;camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();window.hand=new Hand(camera);window.street=buildStreetLife();window.sim=new Life({scene,camera});
  window.cup=new Cup(scene,camera,new T.Vector3(0,1,0),new T.Vector3(0,1,0),'blue-stripes');cup.contents.a={coffee:.7,milk:.1};cup.heat=.6;cup.show();

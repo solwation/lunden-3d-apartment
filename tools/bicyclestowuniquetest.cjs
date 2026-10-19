@@ -1,6 +1,6 @@
 // #1035: actual unique owners (Miele, HeldDrawing, Wad)/Player/Life/keep, source-bound real mount/session/reload handlers.
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
-const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
+const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');const {installMainGlobals,installMainImports}=require('./mainfixture.cjs');
 const root=path.resolve(__dirname,'..'),base=process.argv[2]||'http://localhost:8872',out=process.argv[3]||'/tmp/lunden-shots-stowreload1035/unique';
 const read=f=>fs.readFileSync(path.join(root,f),'utf8'),hash=s=>crypto.createHash('sha256').update(s).digest('hex');
 const main=read('src/main.js'),worldSource=read('src/world.js'),original=read('tools/courtyardbicycletest.cjs'),definitions=original.slice(original.indexOf('function span('),original.indexOf('fs.mkdirSync(out'));
@@ -24,7 +24,7 @@ page.setDefaultTimeout(5000);
 await page.route('**/src/bootstrap.js*',r=>r.fulfill({contentType:'text/javascript',body:'// actual native components, no bootstrap/World'}));
 
 async function setup(){
-  await page.goto(base);
+  await installMainGlobals(page);await page.goto(base);await installMainImports(page);
   await page.evaluate(setupOriginal,{parts,index:0,render:false});
   await page.evaluate(async()=>{
     const T=window.T,Held=await import('/src/holdable.js'),Keep=await import('/src/keep.js');
@@ -140,7 +140,7 @@ async function setup(){
   });
 }
 
-await page.goto(base);
+await installMainGlobals(page);await page.goto(base);await installMainImports(page);
 const kinds=['miele','drawing-desk','drawing-poster','wad'];
 
 for(const mode of ['f5','update']){

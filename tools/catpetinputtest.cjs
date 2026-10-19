@@ -2,6 +2,7 @@
 // World collaborators and weapon effects are controlled stand-ins; Ghosts/THREE and the action dispatch are real.
 const fs = require('node:fs'), path = require('node:path'), crypto = require('node:crypto');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const { installMainGlobals, installMainImports } = require('./mainfixture.cjs');
 const game = process.argv[2] || 'http://localhost:8946', out = process.argv[3] || '/tmp/lunden-cats1066-input';
 fs.mkdirSync(out, {recursive:true});
 const source = fs.readFileSync(path.join(__dirname,'../src/main.js'),'utf8');
@@ -33,10 +34,10 @@ const check=(ok,text)=>{checks.push({ok:!!ok,label:text});console.log(`${ok?'PAS
  const browser=await chromium.launch({executablePath:process.env.CHROME_PATH||undefined,args:['--no-sandbox','--disable-gpu']});
  const errors=[];
  try{
-  const page=await browser.newPage({viewport:{width:844,height:390},hasTouch:true,isMobile:true});
+  const page=await browser.newPage({viewport:{width:844,height:390},hasTouch:true,isMobile:true});await installMainGlobals(page);
   page.on('pageerror',e=>errors.push(e.message));
   await page.route('**/src/bootstrap.js',r=>r.fulfill({contentType:'text/javascript',body:'// intentionally no apartment bootstrap'}));
-  await page.goto(game);
+  await page.goto(game);await installMainImports(page);
   await page.evaluate(async(parts)=>{
    const original=HTMLCanvasElement.prototype.getContext;window.webglCalls=0;
    HTMLCanvasElement.prototype.getContext=function(kind,...args){if(/webgl/i.test(kind)){window.webglCalls++;throw Error('no WebGL in native action fixture');}return original.call(this,kind,...args);};

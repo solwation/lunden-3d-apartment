@@ -1,6 +1,7 @@
 // Actual Bow/Hand component and native dispatch; optional --render is WebGL and needs the shared graphics slot.
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
+const {installMainGlobals,installMainImports}=require('./mainfixture.cjs');
 const base=process.argv[2]||'http://localhost:8878',out=process.argv[3]||'/tmp/bow-grip',render=process.argv.includes('--render'),baseline=process.argv.includes('--baseline');
 fs.mkdirSync(out,{recursive:true});const root=path.resolve(__dirname,'..'),read=p=>fs.readFileSync(path.join(root,p),'utf8');
 const reference=require('node:child_process').execFileSync('git',['show','79a574954013ae0a7fe3a840f3d013a4c9587040:src/bow.js'],{cwd:root,encoding:'utf8'});
@@ -12,7 +13,7 @@ let browser,page;const errors=[],checks=[];function check(ok,name){checks.push({
 (async()=>{try{
  browser=await chromium.launch({executablePath:process.env.CHROME_PATH||undefined,args:['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader']});page=await browser.newPage({viewport:{width:480,height:300},hasTouch:true});page.on('pageerror',e=>errors.push(e.message));
  await page.route('**/src/bow-grip-reference.js',r=>r.fulfill({contentType:'text/javascript',body:reference}));
- await page.route('**/src/bootstrap.js',r=>r.fulfill({contentType:'text/javascript',body:'// native/component fixture: no apartment bootstrap'}));await page.goto(base);
+ await page.route('**/src/bootstrap.js',r=>r.fulfill({contentType:'text/javascript',body:'// native/component fixture: no apartment bootstrap'}));await installMainGlobals(page);await page.goto(base);await installMainImports(page);
  const result=await page.evaluate(async({parts,render,baseline})=>{
  const get=HTMLCanvasElement.prototype.getContext;window.webglCalls=0;HTMLCanvasElement.prototype.getContext=function(k,...a){if(/webgl/i.test(k)){webglCalls++;if(!render)throw Error('native forbids WebGL');}return get.call(this,k,...a);};
  const {Bow:ReferenceBow,Arrows:ReferenceArrows}=await import('/src/bow-grip-reference.js');

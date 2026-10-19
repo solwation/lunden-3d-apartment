@@ -2,6 +2,7 @@
 // Native component fixture: collision collaborators are explicitly controlled; no World/phone claim.
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const{chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
+const{installMainGlobals,installMainImports}=require('./mainfixture.cjs');
 const root=path.resolve(__dirname,'..');
 const main=fs.readFileSync(path.join(root,'src/main.js'),'utf8'),worldSource=fs.readFileSync(path.join(root,'src/world.js'),'utf8'),originalFixture=fs.readFileSync(path.join(root,'tools/courtyardbicycletest.cjs'),'utf8');
 const sourceParts=originalFixture.slice(originalFixture.indexOf('function span('),originalFixture.indexOf('fs.mkdirSync(out'));
@@ -14,7 +15,7 @@ fs.mkdirSync(out,{recursive:true});let failures=0;const checks=[];
 function check(ok,name,data){checks.push({ok,name,data});console.log((ok?'PASS ':'FAIL ')+name);if(!ok)failures++;}
 (async()=>{const browser=await chromium.launch({executablePath:process.env.CHROME_PATH,args:['--no-sandbox','--disable-gpu']});
 try{const context=await browser.newContext({viewport:{width:900,height:600},hasTouch:true}),page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
-await page.route('**/src/bootstrap.js',r=>r.fulfill({contentType:'text/javascript',body:'// isolated native fixture'}));await page.goto(base);
+await page.route('**/src/bootstrap.js',r=>r.fulfill({contentType:'text/javascript',body:'// isolated native fixture'}));await installMainGlobals(page);await page.goto(base);await installMainImports(page);
 const data=await page.evaluate(async()=>{
  const T=await import('three'),{Player}=await import('/src/player.js'),C=await import('/src/config.js'),{groundY}=await import('/src/surroundings.js'),{buildStreet,bicycleCurbY}=await import('/src/street.js'),{buildStreetLife}=await import('/src/streetlife.js'),{buildCourtyard}=await import('/src/courtyard.js');
  window.T=T;window.C=C;window.Player=Player;window.groundY=groundY;window.courtyard=buildCourtyard();window.life=buildStreetLife();window.player=null;
@@ -66,7 +67,7 @@ check(data.head.to[2]<data.head.from[2]+.7,'headroom preserved on tilted ramp',d
 check(JSON.stringify(data.pause.before)===JSON.stringify(data.pause.after),'zero-dt pause preserves position');check(data.air.exit===false,'airborne dismount refused');check(data.gl===0,'native probe creates no WebGL context');
 check(errors.length===0,'no browser page errors',errors);
 // Run the existing component setup verbatim: actual main key/action/stand/active/save handlers and Touch.
-await page.evaluate(()=>sessionStorage.clear());await page.goto(base);await page.evaluate(originalSetup,{parts,index:0,render:false});
+await page.evaluate(()=>sessionStorage.clear());await installMainGlobals(page);await page.goto(base);await installMainImports(page);await page.evaluate(originalSetup,{parts,index:0,render:false});
 await page.keyboard.press('e');check(await page.evaluate(()=>!!player.riding),'ordinary original main E mounts actual courtyard bicycle');
 await page.evaluate(()=>{const yaw=-Math.PI/2;player.pos.set(12.55,0,26.3);player.riding.yaw=yaw;camera.rotation.y=yaw-Math.PI/2;locked=true;touch.enabled=false;});
 await page.keyboard.down('w');await page.evaluate(()=>{for(let i=0;i<30;i++)tick(.025);});await page.keyboard.up('w');

@@ -1,5 +1,6 @@
 // #1150: real Rest/Ghosts/Avatar + local PlayerRoom, actual production state callback; bounded scene, no World.
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const { installMainGlobals, installMainImports } = require('./mainfixture.cjs');
 const fs = require('node:fs'), assert = require('node:assert/strict');
 const [base='http://localhost:8795', worker='http://localhost:8796', out='/tmp/lunden-pose1150-codex', mode=''] = process.argv.slice(2);
 (async()=>{
@@ -8,7 +9,7 @@ const [base='http://localhost:8795', worker='http://localhost:8796', out='/tmp/l
  try {
   for(let i=0;i<2;i++){
    const p=await browser.newPage({viewport:{width:720,height:520}});pages.push(p);p.on('pageerror',e=>errors.push(e.message));
-   await p.route('**/src/bootstrap.js',r=>r.fulfill({body:'// native module fixture',contentType:'text/javascript'})); await p.goto(base);
+   await p.route('**/src/bootstrap.js',r=>r.fulfill({body:'// native module fixture',contentType:'text/javascript'})); await installMainGlobals(p); await p.goto(base); await installMainImports(p);
    await p.evaluate(async({i,worker})=>{
     window.T=await import('three');const {Ghosts}=await import('/src/ghosts.js'),{Rest,restTarget}=await import('/src/rest.js'),{restState}=await import('/src/remote-pose.js'),{heldCatState}=await import('/src/ghostcat.js'),{BREEDS}=await import('/src/cat.js');
     window.jetpack={worn:false,k:0};window.heldItem=()=>null;window.heldCategory=(await import('/src/heldcategory.js')).heldCategory; /* (the evaluated production state callback reads these: jp #1286, hi #1297) */ window.miele={held:true};window.cat={held:true,visible:true,breed:BREEDS[0],variant:BREEDS[0].coats[0],kitten:false};
