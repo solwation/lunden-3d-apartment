@@ -50,6 +50,8 @@ for (const g of [SITE.west, SITE.east, SITE.north, SITE.south]) { for (const b o
 const rects = [...SITE.blocks, ...SITE.paving, ...SITE.basementPaving, ...(SITE.roads.filter((r) => r.x0 !== undefined))].map((r) => [[r.x0, r.z0], [r.x1, r.z0], [r.x1, r.z1], [r.x0, r.z1]]);
 const inPoly = (x, z, p) => { let y = false; for (let i = 0, j = p.length - 1; i < p.length; j = i++) if ((p[i][1] > z) !== (p[j][1] > z) && x < (p[j][0] - p[i][0]) * (z - p[i][1]) / (p[j][1] - p[i][1]) + p[i][0]) y = !y; return y; };
 const nearPoly = (x, z, p, m) => inPoly(x, z, p) || p.some((a, i) => distSeg(x, z, a, p[(i + 1) % p.length]) < m);
+/** #1348: distance to the segment's interior only (Infinity beyond its ends): two ways that meet end to end abut, they do not overlap. */
+function distSegIn(x, z, a, b) { const dx = b[0] - a[0], dz = b[1] - a[1], l2 = dx * dx + dz * dz || 1, t = ((x - a[0]) * dx + (z - a[1]) * dz) / l2; return t <= 0 || t >= 1 ? Infinity : Math.hypot(x - a[0] - dx * t, z - a[1] - dz * t); }
 function distSeg(x, z, a, b) { const dx = b[0] - a[0], dz = b[1] - a[1], l2 = dx * dx + dz * dz || 1, t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (z - a[1]) * dz) / l2)); return Math.hypot(x - a[0] - dx * t, z - a[1] - dz * t); }
 const distWay = (x, z, w) => { let d = Infinity; for (let i = 1; i < w.pts.length; i++) d = Math.min(d, distSeg(x, z, w.pts[i - 1], w.pts[i])); return d - w.w / 2; }; // edge distance (<0 = inside)
 const nearAnyWay = (x, z, m, self) => ways.some((w) => w !== self && !(self && w.walkOf === self.walkOf && w.walkOf) && distWay(x, z, w) < m);
@@ -117,7 +119,7 @@ for (let ai = 0; ai < ways.length; ai++) for (let bi = ai + 1; bi < ways.length;
       const x = a[0] + (b[0] - a[0]) * s / n, z = a[1] + (b[1] - a[1]) * s / n;
       // the ends of a way (within its own width) join neighbours on purpose: skip the first/last metres of A
       let best = Infinity, bj = 1;
-      for (let j = 1; j < B.pts.length; j++) { const d = distSeg(x, z, B.pts[j - 1], B.pts[j]); if (d < best) { best = d; bj = j; } }
+      for (let j = 1; j < B.pts.length; j++) { const d = distSegIn(x, z, B.pts[j - 1], B.pts[j]); if (d < best) { best = d; bj = j; } }
       const v = dirAt(B, bj), par = Math.abs(u[0] * v[0] + u[1] * v[1]);
       if (best < Math.min(A.w, B.w) / 2 && par > 0.94) { len += l / n; a0 ??= [x, z]; a1 = [x, z]; }
     }
