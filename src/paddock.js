@@ -6,7 +6,7 @@ import { riverAt } from './riverbridge.js';
 import { sfx } from './audio.js';
 import { Hearts } from './pingping.js';
 import { registerSeasonal } from './seasons.js';
-import { shelterSpots, snowCovered, RainWatch } from './paddockshelter.js';
+import { shelterSpots, snowCovered, RainWatch, footprintGround, shelterSite } from './paddockshelter.js';
 
 // #1280: the pony paddock on the kidney-shaped meadow south of the timber footbridge: a merged post-and-rail fence with a closed gate, a
 // water trough and a three-sided shelter (ONE mesh, vertex colours, no textures), two C ponies (Zoey, white; Princess, brown) as ONE
@@ -115,13 +115,15 @@ export function fenceGeometry(ground, spots = {}) {
     s.at(null);
   }
   if (spots.shelter) { // the field shelter after the photo in #1293: dark heavy timber posts and beams, diagonal braces, plank walls (back and sides), a green sedum roof; open to the front (+z)
-    const { x, z, yaw } = spots.shelter, S = P.shelter, y = ground(x, z) - 0.1, tim = lin(0x4b382b), plank = lin(0x5f3d2c), sedum = lin(0x6c8446), sedum2 = lin(0xb5703a), hs = S.h - 0.4;
+    const { x, z, yaw } = spots.shelter, S = P.shelter, fg = footprintGround(ground, x, z, yaw), y = fg.max, dn = fg.max - fg.min + S.sink, tim = lin(0x4b382b), plank = lin(0x5f3d2c), sedum = lin(0x6c8446), sedum2 = lin(0xb5703a), hs = S.h - 0.4; // #1335: floor at the highest ground under it, posts and sill down to the lowest
     s.at(new THREE.Matrix4().makeRotationY(yaw).setPosition(x, y, z));
+    s.boxA(0, (0.14 - dn) / 2, -S.d / 2, S.w, 0.14 + dn, 0.08, plank, 0); // the sill boards under the walls: back …
+    for (const k of [-1, 1]) s.boxA(k * (S.w / 2 - 0.04), (0.14 - dn) / 2, 0, 0.08, 0.14 + dn, S.d, plank, 0); // … and sides, reaching the ground on the downhill side
     for (let k = 0; k < 5; k++) s.boxA(0, 0.3 + k * 0.4, -S.d / 2, S.w, 0.36, 0.08, plank, 0); // plank walls: the back …
     for (const k of [-1, 1]) for (let r = 0; r < 5; r++) s.boxA(k * (S.w / 2 - 0.04), 0.3 + r * 0.4, 0, 0.08, 0.36, S.d, plank, 0); // … and the two sides
-    for (const px of [-S.w / 2, 0, S.w / 2]) s.boxA(px, hs / 2, S.d / 2 - 0.1, 0.22, hs, 0.2, tim, 0, '-y'); // the front posts
+    for (const px of [-S.w / 2, 0, S.w / 2]) s.boxA(px, (hs - dn) / 2, S.d / 2 - 0.1, 0.22, hs + dn, 0.2, tim, 0, '-y'); // the front posts
     s.boxA(0, hs + 0.1, S.d / 2 - 0.1, S.w + 0.24, 0.28, 0.22, tim, 0); // the front beam
-    for (const px of [-S.w / 2, S.w / 2]) s.boxA(px, hs / 2, -S.d / 2 + 0.1, 0.22, hs, 0.2, tim, 0, '-y'); // the back corner posts
+    for (const px of [-S.w / 2, S.w / 2]) s.boxA(px, (hs - dn) / 2, -S.d / 2 + 0.1, 0.22, hs + dn, 0.2, tim, 0, '-y'); // the back corner posts
     for (const sx of [-S.w / 4, S.w / 4]) for (const dir of [-1, 1]) s.beam(V(sx, hs - 0.05, S.d / 2 - 0.1), V(sx + dir * 0.7, hs - 0.7, S.d / 2 - 0.1), 0.14, 0.12, tim); // the diagonal braces under the beam
     for (let k = 0; k < 4; k++) s.boxA(-S.w / 2 + 0.3 + k * (S.w - 0.6) / 3, hs + 0.14, 0, 0.16, 0.16, S.d + 0.2, tim, 0); // the rafters
     s.beam(V(0, S.h - 0.06, -S.d / 2 - 0.2), V(0, S.h - 0.1, S.d / 2 + 0.35), S.w + 0.5, 0.1, tim); // the roof boards
@@ -296,9 +298,12 @@ export class Paddock {
     let nx = dz / l, nz = -dx / l; if (!insideFence(gm[0] + nx, gm[1] + nz)) { nx = -nx; nz = -nz; }
     this.gate = { x: gm[0], z: gm[1], nx, nz };
     const near = (px, pz, not) => this.waypoints.filter((w) => !not || Math.hypot(w[0] - not[0], w[1] - not[1]) > 9).sort((u, v) => Math.hypot(u[0] - px, u[1] - pz) - Math.hypot(v[0] - px, v[1] - pz))[0];
-    const tw = near(gm[0] + nx * 9, gm[1] + nz * 9), sw = near(gm[0] + nx * 12 - nz * 16, gm[1] + nz * 12 + nx * 16, tw);
+    const tw = near(gm[0] + nx * 9, gm[1] + nz * 9);
+    // #1335/#1336: the shelter stands on flat ground well inside the fence (not on the slope), in view from the gate: the nearest flat site to the old spot, within 45 m of the gate
+    const sw = shelterSite(ground, { target: [gm[0] + nx * 12 - nz * 16, gm[1] + nz * 12 + nx * 16], face: gm, not: tw, bbox: [gm[0] - 45, gm[1] - 45, gm[0] + 45, gm[1] + 45],
+      clear: (x, z) => !this.treeNear(x, z, P.shelter.edge - 1) && (() => { const r = riverAt(x, z); return r.distance >= r.width / 2 + P.riverClear + 3; })() });
     const face = (w) => Math.atan2(gm[0] - w[0], gm[1] - w[1]);
-    this.spots = { trough: tw && { x: tw[0], z: tw[1], yaw: face(tw) + Math.PI / 2 }, shelter: sw && { x: sw[0], z: sw[1], yaw: face(sw) } };
+    this.spots = { trough: tw && { x: tw[0], z: tw[1], yaw: face(tw) + Math.PI / 2 }, shelter: sw && { x: sw.x, z: sw.z, yaw: sw.yaw } };
     this.fence = new THREE.Mesh(fenceGeometry(ground, this.spots), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }));
     this.fence.name = 'paddock-fence'; this.fence.raycast = () => {}; this.fence.userData.noDetail = true; // the fence is seen from afar; fence collision is farwalk.js's
     scene.add(this.fence);

@@ -28,6 +28,14 @@ const check = (ok, name, extra = '') => { console.log(`${ok ? 'PASS' : 'FAIL'} $
   check(info.coat[0] > 0.7 && info.coat[1] > 0.7 && info.coat[2] > 0.6 && info.coat[3] < 0.25, 'Zoey white, Princess brown (linear coat rgb)', info.coat.map((v) => v.toFixed(2)).join());
   check(info.fence < 12000 && info.pony < 1200, 'triangle budgets', `fence ${info.fence}, pony ${info.pony}`);
   check(info.waypoints > 50 && info.shelter && info.trough, 'waypoints, trough and shelter', `${info.waypoints}`);
+  // #1335/#1336: the shelter stands on flat ground well inside the fence, in view of the gate; the trough too
+  const site = await page.evaluate(async () => {
+    const p = window.__app.paddock, geo = await import('/src/paddockgeo.js'), sh = await import('/src/paddockshelter.js'), { PADDOCK } = await import('/src/config.js'), s = p.spots.shelter;
+    const f = sh.footprintGround(p.ground, s.x, s.z, s.yaw), T = p.spots.trough, tg = [-1, 0, 1].flatMap((i) => [-1, 0, 1].map((j) => p.ground(T.x + i * 0.9, T.z + j * 0.3)));
+    return { relief: f.relief, max: PADDOCK.shelter.maxRelief, inside: geo.insideFence(s.x, s.z, PADDOCK.shelter.edge), gate: Math.hypot(s.x - p.gate.x, s.z - p.gate.z), trough: Math.max(...tg) - Math.min(...tg) };
+  });
+  check(site.relief <= site.max && site.inside && site.gate > 8 && site.gate < 45, 'the shelter stands on flat ground well inside the fence and in view of the gate', JSON.stringify(site));
+  check(site.trough < 0.3, 'the trough stands on flat ground', site.trough.toFixed(2));
   // one draw call each
   await at(-105, 232, 90, -3);
   await page.evaluate(() => { const a = window.__app; for (let i = 0; i < 5; i++) a.step(1 / 30); });

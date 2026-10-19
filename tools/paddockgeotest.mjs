@@ -67,3 +67,22 @@ test('shelter places and the rain watch (#1316)', async () => {
   assert.equal(w.update(R.dry - 1, 0), 0); assert.equal(w.update(0.5, 0.5), 0); assert.equal(w.update(R.dry - 1, 0), 0, 'a shower resets the dry timer'); assert.equal(w.update(2, 0), -1); assert.ok(!w.wanted);
   assert.ok(snowCovered(1) && snowCovered(12) && !snowCovered(7));
 });
+
+test('the field shelter (#1335/#1336) stands on flat ground inside the fence, in view of the gate, not over the slope', async () => {
+  const { footprintGround, shelterSite } = await import('../src/paddockshelter.js');
+  const S = PADDOCK.shelter, gate = [(g.posts[g.gateSpan][0] + g.posts[(g.gateSpan + 1) % g.posts.length][0]) / 2, (g.posts[g.gateSpan][1] + g.posts[(g.gateSpan + 1) % g.posts.length][1]) / 2];
+  // synthetic: a slope falling 0.25 m/m on the west side (x < -140) is rejected, the flat east side is taken
+  const slope = (x) => (x < -140 ? (x + 140) * 0.25 : 0), ground = (x) => slope(x);
+  assert.ok(footprintGround(ground, -150, 230, 0).relief > 1, 'a footprint on the slope has relief');
+  assert.ok(footprintGround(ground, -120, 230, 0).relief < 1e-9, 'a flat footprint has none');
+  const site = shelterSite(ground, { target: [-145, 225], face: gate, bbox: [gate[0] - 45, gate[1] - 45, gate[0] + 45, gate[1] + 45] });
+  assert.ok(site, 'a site exists'); assert.ok(site.relief <= S.maxRelief, `relief ${site.relief}`);
+  assert.ok(g.insideFence(site.x, site.z, S.edge), 'well inside the fence');
+  assert.ok(Math.hypot(site.x - gate[0], site.z - gate[1]) < 45, 'in view of the gate');
+  // the real terrain: a flat site exists within reach of the gate, and the old spot (-135, 225, dropping 0.7 m) would have been rejected
+  const { groundY, renderedTerrainY } = await import('../src/surroundings.js');
+  const real = (x, z) => (z > 260 ? -3.01 : Math.max(groundY(x, z), renderedTerrainY(x, z)));
+  assert.ok(footprintGround(real, -135, 225, 1.68).relief > S.maxRelief, 'the old site was on the slope');
+  const r = shelterSite(real, { target: [-135, 225], face: gate, bbox: [gate[0] - 45, gate[1] - 45, gate[0] + 45, gate[1] + 45] });
+  assert.ok(r && r.relief <= S.maxRelief && g.insideFence(r.x, r.z, S.edge), JSON.stringify(r));
+});
