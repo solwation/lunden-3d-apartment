@@ -34,6 +34,7 @@ export function buildSouthBackdrop(ground){const parts=southBackdropParts(ground
 export function* southBackdropParts(ground){
  const group=new THREE.Group();group.name='south-backdrop';const parts={facade:[],roof:[],glass:[],land:[]},records=[];
  const farGround=(x,z)=>z<=260?ground(x,z):-3.01; // inherited park level; no southern elevation survey
+ farGround.grid=()=>ground.grid?.()??null; // #1313: the terrain mesh's grid, so the paths are cut along it
  let built=0;for(const b of S.buildings){if(built++%6===5)yield .6*built/S.buildings.length;const foot=shape(b),p=b.polygon.slice(0,-1),base=Math.max(...p.map(q=>farGround(...q))),bottom=Math.min(...p.map(q=>farGround(...q)))-.1,eave=base+b.levels*S.storey;
   if(b.template==='stlars41'){records.push({...b,base,bottom,...buildStLars41(b,p,base,bottom,parts)});continue;}
   parts.facade.push(tint(new THREE.ExtrudeGeometry(foot,{depth:eave-bottom,bevelEnabled:false}).rotateX(-Math.PI/2).translate(0,bottom,0),b.facade));

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SITE, SEASON, DECAL_OFFSET, PARKING_LOT } from './config.js';
-import { pathStrip, onRoad, onWalk } from './roads.js';
+import { pathStrip, onRoad, onWalk, cutAtTerrain } from './roads.js';
 import { registerSnow } from './seasons.js';
 import { buildSchoolFacade, schoolTextures } from './schoolfacade.js';
 import { buildCampusFacade } from './campusfacades.js';
@@ -66,32 +66,6 @@ function ribbon(pairs,w,lift,ground){
   const n=Math.max(1,Math.ceil(len/2.5)),v=(t,s)=>{const x=a[0]+(b[0]-a[0])*t+px*s,z=a[1]+(b[1]-a[1])*t+pz*s;return[x,ground(x,z)+lift,z];};
   for(let i=0;i<n;i++){const t0=i/n,t1=(i+1)/n,p0=v(t0,-1),p1=v(t0,1),p2=v(t1,1),p3=v(t1,-1);pos.push(...p0,...p1,...p2,...p0,...p2,...p3);}}
  return pos.length?flatGeometry(pos):null;
-}
-/** #1309: clip a convex polygon `poly` ([[x,z],…]) to the half-plane a*x+b*z <= c (Sutherland-Hodgman). */
-function clipHalf(poly,a,b,c){
- const out=[];
- for(let i=0;i<poly.length;i++){const p=poly[i],q=poly[(i+1)%poly.length],dp=a*p[0]+b*p[1]-c,dq=a*q[0]+b*q[1]-c;
-  if(dp<=0)out.push(p);
-  if((dp<0&&dq>0)||(dp>0&&dq<0)){const t=dp/(dp-dq);out.push([p[0]+(q[0]-p[0])*t,p[1]+(q[1]-p[1])*t]);}}
- return out;
-}
-/** #1309: cut one triangle along the terrain mesh's own grid lines and cell diagonals (surroundings.js `terrainGrid`), so every piece lies in
- * a single terrain triangle. Sampled at its corners with the exact rendered height, the asphalt is then parallel to the ground it covers
- * and never dips under a fold of the terrain (that showed as green slivers, thickest along the south edge). Returns triangles [[x,z]×3]. */
-function cutAtTerrain(tri,grid){
- let{X,Z}=grid;
- const xs=tri.map(p=>p[0]),zs=tri.map(p=>p[1]),span=(L,lo,hi)=>{let a=0;while(a<L.length-2&&L[a+1]<=lo)a++;let b=a;while(b<L.length-2&&L[b+1]<hi)b++;return[a,b];};
- X=[X[0]-1e3,...X,X[X.length-1]+1e3];Z=[Z[0]-1e3,...Z,Z[Z.length-1]+1e3]; // beyond the mesh `renderedTerrainY` holds the edge row/column, which stays planar between the same lines
- const[i0,i1]=span(X,Math.min(...xs),Math.max(...xs)),[j0,j1]=span(Z,Math.min(...zs),Math.max(...zs)),out=[];
- for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++){
-  const c=clipHalf(clipHalf(clipHalf(clipHalf(tri,-1,0,-X[i]),1,0,X[i+1]),0,-1,-Z[j]),0,1,Z[j+1]);
-  if(c.length<3)continue;
-  // the cell's diagonal runs through (X[i+1],Z[j]) and (X[i],Z[j+1]); lower-left side first
-  const dx=X[i+1]-X[i],dz=Z[j+1]-Z[j],a=1/dx,b=1/dz,k=1+X[i]/dx+Z[j]/dz;
-  for(const h of[clipHalf(c,a,b,k),clipHalf(c,-a,-b,-k)])
-   if(h.length>=3)for(let m=1;m<h.length-1;m++){const t=[h[0],h[m],h[m+1]];if(Math.abs((t[1][0]-t[0][0])*(t[2][1]-t[0][1])-(t[1][1]-t[0][1])*(t[2][0]-t[0][0]))>1e-9)out.push(t);}
- }
- return out;
 }
 /** #1278: the east car parks' extras, merged into the `access` batch (vertex colours): terrain-following asphalt, white stall lines, a flat concrete edge. */
 function eastLotParts(ground,access,surfColor){

@@ -129,9 +129,57 @@ export function along(road, from, to, step, off) {
   return out;
 }
 
+/** #1309: clip a convex polygon `poly` ([[x,z],…]) to the half-plane a*x+b*z <= c (Sutherland-Hodgman). */
+function clipHalf(poly,a,b,c){
+ const out=[];
+ for(let i=0;i<poly.length;i++){const p=poly[i],q=poly[(i+1)%poly.length],dp=a*p[0]+b*p[1]-c,dq=a*q[0]+b*q[1]-c;
+  if(dp<=0)out.push(p);
+  if((dp<0&&dq>0)||(dp>0&&dq<0)){const t=dp/(dp-dq);out.push([p[0]+(q[0]-p[0])*t,p[1]+(q[1]-p[1])*t]);}}
+ return out;
+}
+/** #1309: cut one triangle along the terrain mesh's own grid lines and cell diagonals (surroundings.js `terrainGrid`), so every piece lies in
+ * a single terrain triangle. Sampled at its corners with the exact rendered height, the asphalt is then parallel to the ground it covers
+ * and never dips under a fold of the terrain (that showed as green slivers, thickest along the south edge). Returns triangles [[x,z]×3]. */
+export function cutAtTerrain(tri,grid){
+ let{X,Z}=grid;
+ const xs=tri.map(p=>p[0]),zs=tri.map(p=>p[1]),span=(L,lo,hi)=>{let a=0;while(a<L.length-2&&L[a+1]<=lo)a++;let b=a;while(b<L.length-2&&L[b+1]<hi)b++;return[a,b];};
+ X=[X[0]-1e3,...X,X[X.length-1]+1e3];Z=[Z[0]-1e3,...Z,Z[Z.length-1]+1e3]; // beyond the mesh `renderedTerrainY` holds the edge row/column, which stays planar between the same lines
+ const[i0,i1]=span(X,Math.min(...xs),Math.max(...xs)),[j0,j1]=span(Z,Math.min(...zs),Math.max(...zs)),out=[];
+ for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++){
+  const c=clipHalf(clipHalf(clipHalf(clipHalf(tri,-1,0,-X[i]),1,0,X[i+1]),0,-1,-Z[j]),0,1,Z[j+1]);
+  if(c.length<3)continue;
+  // the cell's diagonal runs through (X[i+1],Z[j]) and (X[i],Z[j+1]); lower-left side first
+  const dx=X[i+1]-X[i],dz=Z[j+1]-Z[j],a=1/dx,b=1/dz,k=1+X[i]/dx+Z[j]/dz;
+  for(const h of[clipHalf(c,a,b,k),clipHalf(c,-a,-b,-k)])
+   if(h.length>=3)for(let m=1;m<h.length-1;m++){const t=[h[0],h[m],h[m+1]];if(Math.abs((t[1][0]-t[0][0])*(t[2][1]-t[0][1])-(t[1][1]-t[0][1])*(t[2][0]-t[0][0]))>1e-9)out.push(t);}
+ }
+ return out;
+}
+/** #1313: where to cut a patch `P(u, v)` ([x, z], u and v in 0…1) along u: every crossing of its lines of constant v with the terrain mesh's grid
+ * and diagonals, minus the kinks the ground stays within 1 cm of the straight piece over (checked on five lines and between the kinks). Returns the sorted u values. */
+function terrainCuts(P, groundY, grid) {
+  const o = P(0, 0.5), e = P(1, 0.5), ax = e[0] - o[0], az = e[1] - o[1], al = ax * ax + az * az || 1, V = [0, 0.25, 0.5, 0.75, 1], ts = new Set([0, 1]);
+  for (const v of V) { // (a hair-thin triangle along the line)
+    const a = P(0, v), b = P(1, v), hx = -(b[1] - a[1]) * 1e-5, hz = (b[0] - a[0]) * 1e-5;
+    for (const t of cutAtTerrain([a, b, [a[0] + hx, a[1] + hz]], grid)) for (const [x, z] of t) ts.add(Math.min(1, Math.max(0, Math.round((((x - o[0]) * ax + (z - o[1]) * az) / al) * 1e5) / 1e5)));
+  }
+  const K = [...ts].sort((m, n) => m - n), y = (u, v) => { const [x, z] = P(u, v); return groundY(x, z); }, T = [0];
+  for (let m = 0; m < K.length - 1;) {
+    let end = m + 1;
+    for (let k = m + 2; k < K.length; k++) {
+      let ok = true;
+      for (const v of V) { const y0 = y(K[m], v), y1 = y(K[k], v); for (let q = m; q < k && ok; q++) for (const u of q > m ? [K[q], (K[q] + K[q + 1]) / 2] : [(K[q] + K[q + 1]) / 2]) if (Math.abs(y0 + (y1 - y0) * (u - K[m]) / (K[k] - K[m]) - y(u, v)) > 0.01) { ok = false; break; } }
+      if (!ok) break;
+      end = k;
+    }
+    T.push(K[end]); m = end;
+  }
+  return T;
+}
 /** A strip along a path road between offsets `a(w)` and `b(w)` (right of the centre line), lying `lift` m over the
- * ground (`groundY`); a quad whose corners all lie on another road is left out (`clip`). Non-indexed, with uvs. */
-export function pathStrip(road, a, b, lift, groundY, clip = false) {
+ * ground (`groundY`); a quad whose corners all lie on another road is left out (`clip`). Non-indexed, with uvs.
+ * Far from the block, where `groundY.grid()` gives the terrain mesh's grid lines (#1313), a sloping quad is cut along them instead. */
+export function pathStrip(road, a, b, lift, groundY, clip = false, grid = groundY.grid?.()) {
   const S = samples(road), pos = [];
   const at = (p, o) => [p.x + p.nx * o, p.z + p.nz * o];
   for (let k = 1; k < S.length; k++) {
@@ -142,13 +190,23 @@ export function pathStrip(road, a, b, lift, groundY, clip = false) {
     const sloped = c.some(([x, z]) => Math.abs(groundY(x, z) - groundY(...c[0])) > 1e-4);
     // (#1305: outside ELEVATION.protect the ground is smooth: the strip is cut into the fewest equal pieces (1…16) whose edge midpoints lie within 1 cm of the chord, not always 10 cm ones)
     const P = ELEVATION.protect, far = c[0][0] < P.x0 - 5 || c[0][0] > P.x1 + 5 || c[0][1] < P.z0 - 5 || c[0][1] > P.z1 + 5, full = Math.ceil(Math.hypot(q.x - p.x, q.z - p.z) / 0.1);
+    const lerp = (u, v, f) => [u[0] + (v[0] - u[0]) * f, u[1] + (v[1] - u[1]) * f];
+    if (sloped && far && grid) { // (#1313: cut where the quad crosses the terrain mesh's own grid lines and diagonals, so it lies on the ground instead of dipping into a fold between samples; kinks the ground stays within 1 cm of the straight piece over are dropped, which keeps the triangle count low)
+      const pt = (t, s) => lerp(lerp(c[0], c[2], t), lerp(c[1], c[3], t), s);
+      const sc = terrainCuts((s, t) => pt(t, s), groundY, grid);
+      for (let m = 0; m + 1 < sc.length; m++) {
+        const sub = (t, s) => pt(t, sc[m] + (sc[m + 1] - sc[m]) * s), tc = terrainCuts((t, s) => sub(t, s), groundY, grid);
+        const at3 = (t, s) => { const [x, z] = sub(t, s); return [x, groundY(x, z) + lift, z]; };
+        for (let k = 0; k + 1 < tc.length; k++) { const v0 = at3(tc[k], 0), v1 = at3(tc[k], 1), v2 = at3(tc[k + 1], 0), v3 = at3(tc[k + 1], 1); pos.push(...v0, ...v2, ...v1, ...v1, ...v2, ...v3); }
+      }
+      continue;
+    }
     let n = sloped ? full : 1;
     if (sloped && far) for (const m of [1, 2, 4, 8, 16]) {
       if (m >= full) break;
       const ok = [[c[0], c[2]], [c[1], c[3]]].every(([u, w]) => { for (let j = 0; j < m; j++) { const e0 = [u[0] + (w[0] - u[0]) * j / m, u[1] + (w[1] - u[1]) * j / m], e1 = [u[0] + (w[0] - u[0]) * (j + 1) / m, u[1] + (w[1] - u[1]) * (j + 1) / m]; if (Math.abs(groundY((e0[0] + e1[0]) / 2, (e0[1] + e1[1]) / 2) - (groundY(...e0) + groundY(...e1)) / 2) > 0.01) return false; } return true; });
       if (ok) { n = m; break; }
     }
-    const lerp = (u, v, f) => [u[0] + (v[0] - u[0]) * f, u[1] + (v[1] - u[1]) * f];
     for (let j = 0; j < n; j++) {
       const v = [lerp(c[0], c[2], j / n), lerp(c[1], c[3], j / n), lerp(c[0], c[2], (j + 1) / n), lerp(c[1], c[3], (j + 1) / n)]
         .map(([x, z]) => [x, groundY(x, z) + lift, z]);
