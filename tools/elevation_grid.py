@@ -74,4 +74,4 @@ def main():
            'x0': X0, 'z0': Z0, 'step': STEP, 'cols': len(xs), 'rowsN': len(zs), 'unit': 'dm relative to ref (bare-earth estimate at ref)', 'h': rows, 'g': grows}
     open(out, 'w').write(json.dumps(doc, separators=(',', ':')).replace('"h":[[', '"h":[\n[').replace('"g":[[', '"g":[\n[').replace('],[', '],\n['))
     print('ref abs', ref, 'min', min(map(min, rows)), 'max', max(map(max, rows)))
-main()
+if __name__ == "__main__": main()
