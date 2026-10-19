@@ -40,7 +40,7 @@ Om användarens hela område är avgränsat till Kvarteret Lunden används downs
 ## Rapporter från spelet (#1041, #1046)
 
 **Första arbetssteget i varje `/orkester`-session är KV-importen**, före val eller tilldelning
-av GitHub-arbete: läs den privata rapportkön med `python3 tools/ingame_reports.py fetch`
+av GitHub-arbete: läs den privata rapportkön **med Wrangler när det är installerat och inloggat** (annars be användaren köra `! npx wrangler login`; se "Wrangler first" i importguiden), alternativt med `python3 tools/ingame_reports.py fetch`
 enligt [importguiden](../../docs/development/report-import.md), granska rapporterna och skapa
 GitHub-issues för godkända önskemål enligt importreglerna nedan. Läs alla sidor. Kvittera bort
 varje KV-rapport först efter verifierat lyckad GitHubskapelse.

@@ -132,6 +132,15 @@ the code block. Report text travels in structured JSON on `gh api --input -` std
 never as shell syntax or a subprocess argument. The title and labels come only from
 the reviewed metadata and fixed importer policy. Export does not create issues.
 
+## Wrangler first (user, 2026-10-19)
+
+**Read reports with Wrangler whenever it is installed and logged in** (`npx wrangler whoami` from `cloudflare/`);
+do not first try the importer's token fetch, which fails with 403 when the local `REPORT_IMPORT_TOKEN` is stale.
+If Wrangler is not logged in, ask the user to run `! npx wrangler login`. Use the fallback below for the
+read/export; use the importer (token) only for issue creation and acknowledgement. If the token is stale
+and the user has not approved replacing it, create the issues by hand (original image committed to
+`docs/ingame-reports/`, `in-game` label, one reviewed priority) and leave the KV keys for the user to acknowledge.
+
 ## Wrangler fallback
 
 Missing local report credentials do not prove that reports are inaccessible.
