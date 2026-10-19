@@ -1,10 +1,11 @@
 import * as THREE from 'three';
-import { PADDOCK as P } from './config.js';
+import { PADDOCK as P, SEASON } from './config.js';
 import { outline, fenceLine, posts, gateSpan, stile, insideFence, insetRing, ringDist, centre } from './paddockgeo.js';
 import { stileBase } from './farwalk.js';
 import { riverAt } from './riverbridge.js';
 import { sfx } from './audio.js';
 import { Hearts } from './pingping.js';
+import { registerSeasonal } from './seasons.js';
 
 // #1280: the pony paddock on the kidney-shaped meadow south of the timber footbridge: a merged post-and-rail fence with a closed gate, a
 // water trough and a three-sided shelter (ONE mesh, vertex colours, no textures), two C ponies (Zoey, white; Princess, brown) as ONE
@@ -247,6 +248,32 @@ export function paddockLandParts(ground) {
   return [g];
 }
 
+/** The long-grass tufts (#1315): ONE instanced mesh, `n` tufts of three crossed tapered blades (6 triangles). Their height comes from the mask texture in the vertex shader. */
+function grassGeometry() {
+  const G = P.grass, pos = [], col = [], nor = [], a = new THREE.Color(G.colors[0]), b = new THREE.Color(G.colors[1]);
+  for (let k = 0; k < 3; k++) {
+    const ang = k * Math.PI / 3, c = Math.cos(ang) * G.w / 2, s = Math.sin(ang) * G.w / 2, tc = 0.2;
+    const q = [[-c, 0, -s, a], [c, 0, s, a], [c * tc, 1, s * tc, b], [-c * tc, 1, -s * tc, b]];
+    for (const i of [0, 1, 2, 0, 2, 3]) { pos.push(q[i][0], q[i][1], q[i][2]); col.push(q[i][3].r, q[i][3].g, q[i][3].b); nor.push(0, 1, 0); }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3)); g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  return g;
+}
+
+function grassMaterial(mask, box) {
+  const G = P.grass, m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, metalness: 0, side: THREE.DoubleSide });
+  m.onBeforeCompile = (sh) => {
+    sh.uniforms.uMask = { value: mask }; sh.uniforms.uBox = { value: box }; sh.uniforms.uLen = { value: new THREE.Vector2(G.short, G.long) };
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', '#include <common>\n uniform sampler2D uMask; uniform vec4 uBox; uniform vec2 uLen;')
+      .replace('#include <begin_vertex>', `#include <begin_vertex>
+        vec2 gp = instanceMatrix[3].xz; float gm = texture2D(uMask, (gp - uBox.xy) * uBox.zw).r;
+        transformed.y *= mix(uLen.x, uLen.y, smoothstep(0.1, 0.9, gm));`);
+  };
+  return m;
+}
+
 export class Paddock {
   /** `ground(x, z)` → the surface y; `trees`: [{x, z}] trunks to keep clear of (surroundings' treeFeet). */
   constructor({ scene, camera, ground, trees = [] }) {
@@ -304,8 +331,53 @@ export class Paddock {
     this.hearts = this.ponies.map(() => new Hearts(scene, P.pony.hearts, P.pony.heartScale)); // #1320: pink hearts rise from a petted pony's head
     this.onPet = null; // set by main.js: scores a pat (#1320)
     this.matrix = new THREE.Matrix4(); this.quat = new THREE.Quaternion(); this.pos = new THREE.Vector3(); this.scl = new THREE.Vector3(); this.up = new THREE.Vector3(0, 1, 0);
+    this.initGrass(scene, ground);
     this.write();
   }
+
+  /** The grass-length mask (#1315) and its tufts: random grazed patches per session, the places the ponies stand most grazed short. */
+  initGrass(scene, ground) {
+    const G = P.grass, xs = fenceLine.map((q) => q[0]), zs = fenceLine.map((q) => q[1]), x0 = Math.min(...xs) - 2, z0 = Math.min(...zs) - 2;
+    const W = Math.ceil((Math.max(...xs) + 2 - x0) / G.cell), H = Math.ceil((Math.max(...zs) + 2 - z0) / G.cell);
+    this.gm = { x0, z0, W, H, v: new Float32Array(W * H).fill(1), t: 0, dirty: false, acc: 0 };
+    const rnd = mulberry((Math.random() * 1e9) | 0), eat = (x, z, r, lvl) => this.eatAt(x, z, r, lvl, 1);
+    for (let i = 0; i < G.patches && this.waypoints.length; i++) { const w = this.waypoints[Math.floor(rnd() * this.waypoints.length)]; eat(w[0] + (rnd() - 0.5) * 4, w[1] + (rnd() - 0.5) * 4, G.radius[0] + rnd() * (G.radius[1] - G.radius[0]), G.level); }
+    for (const sp of [this.spots.trough, this.spots.shelter]) if (sp) eat(sp.x, sp.z, G.around, G.level);
+    this.maskTex = new THREE.DataTexture(new Uint8Array(W * H), W, H, THREE.RedFormat, THREE.UnsignedByteType);
+    this.maskTex.minFilter = this.maskTex.magFilter = THREE.LinearFilter; this.maskTex.wrapS = this.maskTex.wrapT = THREE.ClampToEdgeWrapping;
+    this.uploadGrass();
+    const spots = [];
+    for (let x = Math.ceil(x0 / G.spacing) * G.spacing; x < x0 + W * G.cell; x += G.spacing) for (let z = Math.ceil(z0 / G.spacing) * G.spacing; z < z0 + H * G.cell; z += G.spacing) {
+      const px = x + (rnd() - 0.5) * G.spacing * 0.9, pz = z + (rnd() - 0.5) * G.spacing * 0.9;
+      if (!insideFence(px, pz, G.margin)) continue;
+      const r = riverAt(px, pz); if (r.distance < r.width / 2 + 2) continue;
+      spots.push([px, pz, rnd() * 6.283, 0.75 + rnd() * 0.6]);
+    }
+    const mesh = new THREE.InstancedMesh(grassGeometry(), grassMaterial(this.maskTex, new THREE.Vector4(x0, z0, 1 / (W * G.cell), 1 / (H * G.cell))), Math.max(1, spots.length));
+    const m = new THREE.Matrix4(), q = new THREE.Quaternion(), v = new THREE.Vector3(), sc = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);
+    spots.forEach((t, i) => mesh.setMatrixAt(i, m.compose(v.set(t[0], ground(t[0], t[1]) + 0.02, t[1]), q.setFromAxisAngle(up, t[2]), sc.set(t[3], t[3], t[3]))));
+    mesh.count = spots.length; mesh.name = 'paddock-grass'; mesh.raycast = () => {}; mesh.userData.noDetail = true; mesh.userData.warmDraw = true; mesh.visible = false;
+    mesh.boundingSphere = this.mesh.boundingSphere.clone(); mesh.castShadow = false; mesh.receiveShadow = false;
+    registerSeasonal((month) => { this.snowy = SEASON.snowMonths.includes(month); });
+    this.grass = mesh; scene.add(mesh);
+  }
+  inside(x, z) { return insideFence(x, z, P.grass.margin); }
+  /** The mask value (0 grazed .. 1 long) at a world point; 1 outside the mask. */
+  grassAt(x, z) {
+    const g = this.gm, i = Math.floor((x - g.x0) / P.grass.cell), j = Math.floor((z - g.z0) / P.grass.cell);
+    return i < 0 || j < 0 || i >= g.W || j >= g.H ? 1 : g.v[j * g.W + i];
+  }
+  /** Graze the mask round (x, z): cells within `r` m lose `amount` (`lvl` mode: set at most to `amount`), softer towards the rim. */
+  eatAt(x, z, r, amount, mode = 0) {
+    const g = this.gm, c = P.grass.cell, i0 = Math.max(0, Math.floor((x - r - g.x0) / c)), i1 = Math.min(g.W - 1, Math.floor((x + r - g.x0) / c)), j0 = Math.max(0, Math.floor((z - r - g.z0) / c)), j1 = Math.min(g.H - 1, Math.floor((z + r - g.z0) / c));
+    for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
+      const d = Math.hypot(g.x0 + (i + 0.5) * c - x, g.z0 + (j + 0.5) * c - z); if (d > r) continue;
+      const k = j * g.W + i, f = 1 - 0.6 * (d / r);
+      g.v[k] = mode ? Math.min(g.v[k], amount + (1 - amount) * (d / r) ** 4) : Math.max(0, g.v[k] - amount * f);
+    }
+    g.dirty = true;
+  }
+  uploadGrass() { const g = this.gm, a = this.maskTex.image.data; for (let i = 0; i < g.v.length; i++) a[i] = Math.round(g.v[i] * 255); this.maskTex.needsUpdate = true; g.dirty = false; }
 
   /** What E can aim at: the ponies' pick boxes while the paddock is within view distance. */
   targets() { return this.mesh.visible ? this.picks : []; }
@@ -355,11 +427,23 @@ export class Paddock {
     }
     p.goal = null;
     const u = r();
-    if (u < 0.5) { p.state = 'graze'; p.left = R.graze[0] + r() * (R.graze[1] - R.graze[0]); return; }
+    const G = P.grass, mx = p.x + Math.sin(p.yaw) * G.reach * p.scale, mz = p.z + Math.cos(p.yaw) * G.reach * p.scale;
+    if (u < 0.5 && this.grassAt(mx, mz) >= G.hungry) { p.state = 'graze'; p.left = R.graze[0] + r() * (R.graze[1] - R.graze[0]); return; }
+    if (u < 0.5) { const w = this.longPlace(p); if (w) { const t = this.hop(p, w[0], w[1]); if (t) { p.state = 'walk'; p.target = t; p.eat = true; return; } } p.state = 'graze'; p.left = R.graze[0] + r() * (R.graze[1] - R.graze[0]); return; } // the grass here is short: walk to a longer place to graze (#1315)
     if (u < 0.7) { p.state = 'idle'; p.left = R.idle[0] + r() * (R.idle[1] - R.idle[0]); return; }
-    const w = this.waypoints[Math.floor(r() * this.waypoints.length)];
+    const w = this.longPlace(p) ?? this.waypoints[Math.floor(r() * this.waypoints.length)];
     const t = w && Math.hypot(w[0] - p.x, w[1] - p.z) < 40 ? this.hop(p, w[0], w[1]) : null;
     if (t) { p.state = 'walk'; p.target = t; } else { p.state = 'idle'; p.left = 2; }
+  }
+  /** The longest-grass waypoint among a few random ones within walking range (#1315), or null. */
+  longPlace(p) {
+    let best = null, bv = -1;
+    for (let k = 0; k < P.grass.tries && this.waypoints.length; k++) {
+      const w = this.waypoints[Math.floor(p.rnd() * this.waypoints.length)], d = Math.hypot(w[0] - p.x, w[1] - p.z);
+      if (d < 2 || d > 40) continue;
+      const v = this.grassAt(w[0], w[1]) - d * 0.004; if (v > bv) { bv = v; best = w; }
+    }
+    return best;
   }
   stepPony(p, i, dt) {
     const R = P.pony, c = this.camera.position;
@@ -367,7 +451,7 @@ export class Paddock {
     let walking = false;
     if (p.state === 'walk') {
       const tx = p.target[0] - p.x, tz = p.target[1] - p.z, dist = Math.hypot(tx, tz);
-      if (dist < 0.5) { if (p.goal && Math.hypot(p.goal[0] - p.x, p.goal[1] - p.z) > 1.2) { p.target = this.hop(p, p.goal[0], p.goal[1]); if (!p.target) { p.state = 'idle'; p.left = 1; } } else { p.state = p.goal ? 'watch' : 'idle'; p.left = 3 + p.rnd() * 5; } }
+      if (dist < 0.5) { if (p.goal && Math.hypot(p.goal[0] - p.x, p.goal[1] - p.z) > 1.2) { p.target = this.hop(p, p.goal[0], p.goal[1]); if (!p.target) { p.state = 'idle'; p.left = 1; } } else { p.state = p.goal ? 'watch' : p.eat ? 'graze' : 'idle'; p.eat = false; p.left = p.state === 'graze' ? P.pony.graze[0] + p.rnd() * (P.pony.graze[1] - P.pony.graze[0]) : 3 + p.rnd() * 5; } }
       else {
         let da = Math.atan2(tx, tz) - p.yaw; da = Math.atan2(Math.sin(da), Math.cos(da));
         p.yaw += Math.max(-R.turn * dt, Math.min(R.turn * dt, da));
@@ -405,6 +489,7 @@ export class Paddock {
     const grazing = p.state === 'graze';
     const neckT = p.state === 'pet' ? 0.5 + Math.sin(p.petT * 7) * 0.06 : grazing ? 1.5 + Math.sin(p.chew * 6) * 0.04 : walking ? 0.12 : 0.08 + Math.sin(p.tailT * 0.8) * 0.03;
     p.neck += (neckT - p.neck) * Math.min(1, dt * (grazing ? 1.4 : 2.2));
+    if (grazing && p.neck > 1.1) { const G = P.grass, e = G.reach * p.scale; this.eatAt(p.x + Math.sin(p.yaw) * e, p.z + Math.cos(p.yaw) * e, G.bite, G.rate * dt); } // the muzzle crops the grass in front of it (#1315)
     p.tail = Math.sin(p.tailT * (p.state === 'pet' ? 5 : 2.3)) * (p.state === 'pet' ? 0.4 : Math.max(0, Math.sin(p.tailT * 0.45)) * 0.35);
   }
   write() {
@@ -423,10 +508,13 @@ export class Paddock {
   update(dt, hidden = false) {
     for (const h of this.hearts) h.update(dt);
     const c = this.camera.position, show = !hidden && Math.hypot(c.x - centre.x, c.z - centre.z) < P.viewDist;
-    this.mesh.visible = show;
+    this.mesh.visible = show; this.grass.visible = show && !this.snowy;
     if (!show) return;
     dt = Math.min(dt, 0.1); this.time += dt;
     this.ponies.forEach((p, i) => this.stepPony(p, i, dt));
+    const g = this.gm; g.acc += dt; g.t += dt;
+    if (g.acc >= 1) { const up = g.acc * P.grass.regrow; g.acc = 0; for (let k = 0; k < g.v.length; k++) if (g.v[k] < 1) g.v[k] = Math.min(1, g.v[k] + up); g.dirty = true; } // slow regrowth
+    if (g.dirty && g.t >= P.grass.period) { g.t = 0; this.uploadGrass(); }
     this.write();
   }
 }

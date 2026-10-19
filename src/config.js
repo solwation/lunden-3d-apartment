@@ -3579,6 +3579,14 @@ export const PADDOCK = {
     animals: [{ name: 'Zoey', coat: 0xdddbd5, accent: 0x93918c, seed: 7 }, { name: 'Princess', coat: 0x7a4426, accent: 0x1b1410, seed: 19, star: true }], // grey/white with a lighter-grey mane, tail and legs; bay with black points and a white star (photo in #1293)
     pet: 2.6, // s a pat takes (#1293: the pony stops, turns its head, flicks its ears, nickers)
     hearts: 10, heartScale: 2.5 }, // #1320: hearts per pat and their size/rise relative to a hug's (*guess*, readable at a few metres)
+  // Grazing (#1315, all *guess*): the paddock's long grass is ONE instanced mesh of crossed-blade tufts (a jittered grid every `spacing` m, `w` m wide,
+  // `colors` base -> tip) whose height the vertex shader takes from a coarse `cell` m grass-length mask (0 grazed .. 1 long): `long` / `short` m tall. A grazing
+  // pony's muzzle (`reach` m ahead of its body, only with the head down) eats a `bite` m radius at `rate` mask units/s; the grass regrows `regrow` units/s
+  // (slow, so the pattern lasts for a session); the mask starts per session with `patches` grazed patches of radius `radius` m (min, max) at level `level`,
+  // plus `around` m round the trough and the shelter (the ponies stand there most). Ponies prefer a long-grass place to graze (`tries` random places, best
+  // mask) and walk on when the grass under them is shorter than `hungry`. `period` s between mask uploads.
+  grass: { cell: 1.5, spacing: 1.3, w: 0.8, long: 0.5, short: 0.03, colors: [0x35601c, 0x8ba94a], reach: 1.15, bite: 1.3, rate: 0.6, regrow: 1 / 4000,
+    patches: 10, radius: [4, 9], level: 0.05, around: 4, tries: 4, hungry: 0.35, period: 0.15, margin: 1.6 },
   trough: { w: 1.7, d: 0.5, h: 0.42 }, shelter: { w: 4.2, d: 2.6, h: 2.3 },
   // the stile beside the gate (#1295, *guess*): `w` m wide, `minSpan` m the fence span it needs, three risers of `rise` m (under PLAYER.stepUp 0.45, so the ordinary
   // stepping walks it) over two treads of `tread` m either side of a platform that is 2 × `platform` m long; `reach` m from the fence line to the walls' ends
