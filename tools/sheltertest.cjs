@@ -53,8 +53,8 @@ const check = (ok, name, extra = '') => { console.log(`${ok ? 'PASS' : 'FAIL'} $
     const a = window.__app, p = a.paddock, geo = await import('/src/paddockgeo.js');
     a.player.spawn(-108, 238, 0); a.step(1 / 30);
     const near = (q) => p.shelterPlaces.some((s) => Math.hypot(s.x - q.x, s.z - q.z) < 1.2);
-    for (let i = 0; i < 200; i++) p.update(0.1, false, 0); // dry: not sheltering
-    const dryUnder = p.ponies.filter(near).length, dryKinds = p.ponies.map((q) => q.state);
+    for (let i = 0; i < 200; i++) p.update(0.1, false, 0); // dry: not sheltering (#1353: measure the shelter state, not distance — a pony may graze beside the shed by chance)
+    const dryUnder = p.ponies.filter((q) => q.spot || q.seek).length, dryKinds = p.ponies.map((q) => q.state);
     let outside = 0;
     for (let i = 0; i < 1500; i++) { p.update(0.1, false, 0.8); for (const q of p.ponies) if (!geo.insideFence(q.x, q.z, 1.0)) outside++; } // 150 s of rain
     const under = p.ponies.filter(near).length, seekers = p.ponies.filter((q) => q.seek).length, kinds = p.ponies.map((q) => p.shelterPlaces.find((s) => Math.hypot(s.x - q.x, s.z - q.z) < 1.2)?.kind ?? null);
