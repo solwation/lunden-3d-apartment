@@ -139,7 +139,7 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     await setHeight(175); await toDoor();
     const after = await page.evaluate(() => window.__t.calls());
     check(before.calls === after.calls && before.tris === after.tris, 'draw calls outside unchanged after a visit', `${JSON.stringify(before)} → ${JSON.stringify(after)}`);
-    check(inside.calls <= 14, 'inside, only the room is drawn: few draw calls', `outside ${before.calls}, inside ${inside.calls}`);
+    check(inside.calls <= 15, 'inside, only the room is drawn: few draw calls', `outside ${before.calls}, inside ${inside.calls}`);
     check(errors.length === 0, 'no page errors', errors.join(' | '));
   } finally { await browser.close(); }
   console.log(failed ? `${failed} FAILED` : 'ALL PASSED');

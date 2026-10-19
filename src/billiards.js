@@ -2,6 +2,7 @@ import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {PLAYROOM as R} from './config.js';
 import {BilliardPhysics} from './billiardphysics.js';
+import {BilliardRules,MODE_NAMES} from './billiardrules.js';
 // #1328: local children's table. Three visible batches (table, instanced balls, moving cue); no lights/textures/services.
 const paint=(g,hex)=>{const c=new T.Color(hex),a=new Float32Array(g.attributes.position.count*3);for(let i=0;i<a.length;i+=3)a.set([c.r,c.g,c.b],i);g.setAttribute('color',new T.BufferAttribute(a,3));return g;};
 const merge=list=>{const flat=list.map(q=>q.index?q.toNonIndexed():q),g=mergeGeometries(flat);new Set([...list,...flat]).forEach(q=>q.dispose());return g;};
@@ -14,6 +15,8 @@ export class Billiards {
     for(const x of[-L*.35,L*.35])for(const z of[-W*.32,W*.32])box(c.leg,H-.14,c.leg,x,(H-.14)/2,z,0x302820);
     for(const z of[-W/2-A/2,W/2+A/2])for(const x of[-L/4,L/4])box(L/2-c.pocketR*2,c.railH,A,x,H+c.railH/2,z,0x6e4c30);
     for(const x of[-L/2-A/2,L/2+A/2])box(A,c.railH,W-c.pocketR*2,x,H+c.railH/2,0,0x6e4c30);
+    const BW=.5,BH=.25,BZ=W/2+A+.045;this.boards=[[-L/4,-BZ,Math.PI],[L/4,BZ,0]]; // #1354: score/turn board on a post outside each long rail
+    for(const[bx,bz]of this.boards){const f=Math.sign(bz);box(BW+.02,BH+.02,.02,bx,H+.07+BH/2,bz,0x302820);box(.04,.1,.03,bx,H-.01,bz-f*.01,0x302820);}
     for(const[x,z]of this.physics.pockets)parts.push(paint(new T.CircleGeometry(c.pocketR,16).rotateX(-Math.PI/2).translate(x,H+.002,z),0x080b09));
     this.table=new T.Mesh(merge(parts),new T.MeshStandardMaterial({vertexColors:true,roughness:.82}));this.table.name='billiard-table';this.object.add(this.table);
     const geometry=new T.SphereGeometry(c.ballR,12,8),stripe=new Float32Array(16);
@@ -27,6 +30,16 @@ export class Billiards {
     this.physics.balls.forEach((b,i)=>this.mesh.setColorAt(i,new T.Color(colours[b.id<9?b.id:b.id-8])));this.object.add(this.mesh);
     const tip=c.cueLength*.04,cue=[paint(new T.CylinderGeometry(.004,.004,tip,8).translate(0,tip/2,0),0xe9dfc4),paint(new T.CylinderGeometry(.009,.004,c.cueLength-tip,8).translate(0,tip+(c.cueLength-tip)/2,0),0x976333)];
     this.cue=new T.Mesh(merge(cue),new T.MeshStandardMaterial({vertexColors:true,roughness:.6}));this.cue.name='billiard-cue';this.object.add(this.cue);
+    this.rules=new BilliardRules('free');this.inShot=false;this.dirty=true;this.onEvent=null;this.blockReason='';this.physics.onPocket=id=>{if(this.inShot)this.rules.notePocket(id);};
+    this.canvas=document.createElement('canvas');this.canvas.width=512;this.canvas.height=256;this.ctx=this.canvas.getContext('2d');
+    this.texture=new T.CanvasTexture(this.canvas);this.texture.colorSpace=T.SRGBColorSpace;
+    const faceMat=new T.MeshBasicMaterial({map:this.texture,toneMapped:false});
+    this.modeTarget={kind:'playroomBilliardsMode',name:'biljardtavlan',get verb(){return `byta till ${MODE_NAMES[self.rules.nextMode()].toLowerCase()} på`;}};
+    this.rackTarget={kind:'playroomBilliardsRack',name:'biljardtavlan',verb:'ställa upp nya bollar på'};
+    const self=this,faces=[];this.controlPickables=[];
+    for(const[bx,bz,ry]of this.boards){const f=Math.sign(bz);faces.push(new T.PlaneGeometry(BW,BH).rotateY(ry).translate(bx,H+.07+BH/2,bz+f*.011));
+      [[this.modeTarget,-1],[this.rackTarget,1]].forEach(([t,side])=>{const p=new T.Mesh(new T.BoxGeometry(BW/2-.01,BH*.3,.08),new T.MeshBasicMaterial({visible:false}));p.position.set(bx+side*(BW/4)*Math.sign(Math.cos(ry)),H+.07+BH*.14,bz+f*.03);p.userData.door=t;t.pickable??=p;this.object.add(p);this.controlPickables.push(p);});}
+    const boards=new T.Mesh(mergeGeometries(faces),faceMat);boards.name='billiard-boards';this.object.add(boards);faces.forEach(q=>q.dispose()); // one draw call for both boards
     this.target={kind:'playroomBilliards',name:'biljardbordet',verb:'stöt på'};
     const pick=this.target.pickable=new T.Mesh(new T.BoxGeometry(L+2*A,.14,W+2*A),new T.MeshBasicMaterial({visible:false}));pick.position.y=H+.05;pick.userData.door=this.target;this.object.add(pick);
     const x=R.x+c.x,z=R.z+c.z,hx=L/2+A,hz=W/2+A;this.segments=[[x-hx,z-hz,x+hx,z-hz],[x+hx,z-hz,x+hx,z+hz],[x+hx,z+hz,x-hx,z+hz],[x-hx,z+hz,x-hx,z-hz]];
@@ -34,9 +47,33 @@ export class Billiards {
     this.matrix=new T.Matrix4();this.pos=new T.Vector3();this.scale=new T.Vector3();this.axis=new T.Vector3();this.spin=new T.Quaternion();this.up=new T.Vector3(0,1,0);this.direction=new T.Vector3(1,0,0);this.strokeT=0;this.strokeOrigin=new T.Vector3();this.strokeDirection=new T.Vector3();this.update(0);
   }
   aim(camera) { camera.getWorldDirection(this.direction);this.direction.y=0;if(this.direction.lengthSq()<1e-8)this.direction.set(-Math.sin(camera.rotation.y),0,-Math.cos(camera.rotation.y));this.direction.normalize(); }
+  /** New rack in the given mode (default: the current one); the cue ball goes back to the head spot. */
+  newRack(mode=this.rules.mode) {
+    this.physics.reset();this.rules.reset(mode);this.inShot=false;this.strokeT=0;this.dirty=true;
+    this.physics.balls.forEach((b,i)=>{this.rotations[i].identity();this.last[i]=[b.x,b.z];});
+  }
+  toggleMode() { this.newRack(this.rules.nextMode());return this.rules.message; }
+  drawBoard() {
+    const g=this.ctx,r=this.rules,eight=r.mode==='eight';this.dirty=false;
+    g.fillStyle='#1d2b25';g.fillRect(0,0,512,256);g.strokeStyle='#d9c27a';g.lineWidth=6;g.strokeRect(3,3,506,250);g.textAlign='center';g.textBaseline='middle';
+    g.fillStyle='#f3f0e5';g.font='bold 52px sans-serif';g.fillText(eight?(r.over?`Spelare ${r.winner+1} vann`:`Tur: ${r.playerName}`):'Fri lek',256,42);
+    g.font='34px sans-serif';g.fillStyle='#e8b72b';
+    const gt={solid:'hela',stripe:'halva'};
+    g.fillText(eight?(r.over?'Ställ upp ny omgång':`Mål: ${r.target}`):'Ingen tur, inga mål',256,100);
+    g.fillStyle='#bfd8cc';g.font='28px sans-serif';
+    if(eight&&!r.over)g.fillText(r.groups[0]?`Spelare 1: ${gt[r.groups[0]]} · Spelare 2: ${gt[r.groups[1]]}`:'Bordet är öppet',256,138);
+    g.fillText(r.message.slice(0,42),256,eight&&!r.over?172:138);
+    g.font='bold 30px sans-serif';
+    [[8,`Läge: ${MODE_NAMES[r.mode]}`],[260,'Ny uppställning']].forEach(([x,t])=>{g.fillStyle='#3d5a4c';g.fillRect(x,188,244,60);g.fillStyle='#fff';g.fillText(t,x+122,218);});
+    this.texture.needsUpdate=true;
+  }
   shoot(camera) {
+    this.blockReason='';
+    if(!this.rules.canShoot){this.blockReason='Spelet är slut – ställ upp en ny omgång på tavlan';return false;}
+    if(this.physics.moving){this.blockReason='Vänta tills bollarna ligger still';return false;}
     this.aim(camera);
-    if(!this.physics.shoot(this.direction.x,this.direction.z))return false;
+    if(!this.physics.shoot(this.direction.x,this.direction.z)){this.blockReason='Vänta tills bollarna ligger still';return false;}
+    this.rules.beginShot();this.inShot=true;
     const b=this.physics.balls[0];
     this.strokeOrigin.set(b.x,this.c.height+this.c.ballR,b.z);this.strokeDirection.copy(this.direction);this.strokeT=this.c.strokeSeconds;return true;
   }
@@ -45,6 +82,8 @@ export class Billiards {
     if(camera)this.aim(camera);
     this.physics.balls.forEach((b,i)=>{const last=this.last[i],dx=b.x-last[0],dz=b.z-last[1],distance=Math.hypot(dx,dz);if(b.active&&distance>1e-8){this.axis.set(dz,0,-dx).normalize();this.rotations[i].premultiply(this.spin.setFromAxisAngle(this.axis,distance/c.ballR));}last[0]=b.x;last[1]=b.z;
       this.pos.set(b.x,c.height+c.ballR,b.z);this.scale.setScalar(b.active?1:0);this.mesh.setMatrixAt(i,this.matrix.compose(this.pos,this.rotations[i],this.scale));});this.mesh.instanceMatrix.needsUpdate=true;
+    if(this.inShot&&this.strokeT<=0&&!this.physics.moving){this.inShot=false;const m=this.rules.endShot(this.physics.firstHit);this.dirty=true;this.onEvent?.(m);}
+    if(this.dirty)this.drawBoard();
     const moving=this.physics.moving;this.cue.visible=this.strokeT>0||(!moving&&aimed);
     const b=this.physics.balls[0],dir=this.strokeT>0?this.strokeDirection:this.direction;
     this.cue.position.copy(this.strokeT>0?this.strokeOrigin:this.pos.set(b.x,c.height+c.ballR,b.z));

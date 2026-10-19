@@ -238,6 +238,7 @@ if (garage.storageBicycles) world.bicycles.push(...garage.storageBicycles);
 const cheatNote = await buildCheatNote(garage, () => showCheatNote(true));
 scene.add(garage.object, garage.blackout, garage.door.object, garage.parkObject); // (+ its door, #358)
 const playroom = world.playroom = new Playroom(); // #1319: the playhouse's secret children's room, hidden (and undrawn) until you go in
+playroom.billiards.onEvent = (text) => badge(text, false); // #1354: the rules' verdict after each stroke
 scene.add(playroom.object);
 await loadingYield(0.47);
 const core = world.core = new Core(); // Hus L's stairwell and lift by the portik (#415)
@@ -1711,9 +1712,11 @@ function use(thing) {
   if (thing.kind === 'playroomExit') { leavePlayroom(); return; }
   if (thing.kind === 'playroomBilliards') {
     if (heldItem()) { badge('Lägg ifrån dig det du håller först', false); return; }
-    if (!playroom.billiards.shoot(camera)) badge('Vänta tills bollarna ligger still', false);
+    if (!playroom.billiards.shoot(camera)) badge(playroom.billiards.blockReason || 'Vänta tills bollarna ligger still', false);
     return;
   }
+  if (thing.kind === 'playroomBilliardsMode') { badge(playroom.billiards.toggleMode(), false); return; } // #1354: the board at the table
+  if (thing.kind === 'playroomBilliardsRack') { playroom.billiards.newRack(); badge('Nya bollar uppställda', false); return; }
   if (thing.kind === 'ghost' && weaponKey()) { // focus may predate a weapon change (#872)
     const held = heldItem();
     if (!held && suit.worn) suit.shoot();
@@ -2043,7 +2046,7 @@ function updateFocus() {
     ...(!weaponKey() ? ghosts.targets() : []), // only unarmed visitors greet other players (#872)
     ...suit.targets(), // the Spider-Man suit in its drawer / where it was laid (#597)
     ...world.courtyardTargets.map((t) => t.pickable),
-    ...(playroom.inside ? [playroom.exitTarget.pickable, playroom.billiards.target.pickable, ...playroom.targets.map((t) => t.pickable)] : []), // the way out of the children's room (#1319), the billiard table (#1328), the sofa and stool (#1327)
+    ...(playroom.inside ? [playroom.exitTarget.pickable, playroom.billiards.target.pickable, ...playroom.targets.map((t) => t.pickable), ...playroom.billiards.controlPickables] : []), // the way out of the children's room (#1319), the billiard table (#1328), the sofa and stool (#1327)
     ...bicyclePickables(), // the courtyard's benches (#438): F keeps them
     ...(power.reachable ? [power.target.pickable] : []), // the fuse box while its cabinet is open (#604)
     ...(world.furnitureOn ? [...(target.object.visible ? [target.target] : []), ...(hoop.object.visible && hoop.freeThrowTarget ? [hoop.freeThrowTarget] : []), ...patio.targets, ...world.furnitureTargets, ...holdables.map((h) => h.target), drawing.target, ...posters.targets].map((t) => t.pickable) : [])]; // parasol, TV, seats, beds, toys — unless F hid the furniture

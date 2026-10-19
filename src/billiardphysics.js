@@ -1,8 +1,8 @@
 // #1328: a small local equal-mass billiard simulation. Metres/seconds, no rendering or network.
 export class BilliardPhysics {
-  constructor(config) { this.c = config; this.onPocket = null; this.reset(); }
+  constructor(config) { this.c = config; this.onPocket = null; this.firstHit = null; this.reset(); }
   reset() {
-    const c=this.c,r=c.ballR;this.balls=[{id:0,x:-c.length*.28,z:0,vx:0,vz:0,active:true}];
+    const c=this.c,r=c.ballR;this.firstHit=null;this.balls=[{id:0,x:-c.length*.28,z:0,vx:0,vz:0,active:true}];
     let id=1;for(let row=0;row<5;row++)for(let j=0;j<=row;j++)this.balls.push({id:id++,x:c.length*.14+row*r*Math.sqrt(3)*1.03,z:(j-row/2)*r*2.06,vx:0,vz:0,active:true});
     this.pockets=[[-c.length/2,-c.width/2],[0,-c.width/2],[c.length/2,-c.width/2],[-c.length/2,c.width/2],[0,c.width/2],[c.length/2,c.width/2]];
   }
@@ -19,6 +19,7 @@ export class BilliardPhysics {
     const len=Math.hypot(dx,dz);if(len<1e-6)return false;
     if(this.balls.slice(1).every(b=>!b.active))this.reset();
     const b=this.balls[0];if(!b.active&&!this.respotCue())return false;
+    this.firstHit=null; // #1354: the first object ball the cue ball touches in this stroke (rules)
     b.vx=dx/len*this.c.strokeSpeed;b.vz=dz/len*this.c.strokeSpeed;return true;
   }
   boundary(b) {
@@ -38,6 +39,7 @@ export class BilliardPhysics {
       for(let pass=0;pass<2;pass++)for(let i=0;i<this.balls.length;i++)for(let j=i+1;j<this.balls.length;j++) {
         const a=this.balls[i],b=this.balls[j];if(!a.active||!b.active)continue;
         const dx=b.x-a.x,dz=b.z-a.z,d=Math.hypot(dx,dz);if(d>=r*2)continue;
+        if(this.firstHit===null&&(a.id===0||b.id===0))this.firstHit=a.id===0?b.id:a.id;
         const nx=d>1e-9?dx/d:1,nz=d>1e-9?dz/d:0,move=(r*2-d)/2;
         a.x-=nx*move;a.z-=nz*move;b.x+=nx*move;b.z+=nz*move;
         const closing=(b.vx-a.vx)*nx+(b.vz-a.vz)*nz;
