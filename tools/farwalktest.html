@@ -24,7 +24,7 @@ import { Core } from '../src/core.js';
 import { WALK, SITE, PLAYER } from '../src/config.js';
 import { farWalls, inWater, slideAt, slopeAt } from '../src/farwalk.js';
 import { groundY, groundBelowDeckY, renderedTerrainY, treeFeet } from '../src/surroundings.js';
-import { riverAt, deckAt, deckUnderAt, bridgeRecords, pierBoxes } from '../src/riverbridge.js';
+import { riverAt, waterYAt, deckAt, deckUnderAt, bridgeRecords, pierBoxes } from '../src/riverbridge.js';
 import { parkRampEnds } from '../src/riverpark.js';
 
 const out = document.getElementById('out');
@@ -82,7 +82,7 @@ const R = [
   ['parkplanet → gångstråket ner mot ån (slänten går att gå på)', [-35, 61], [[-30, 66], [-28, 70], [-30, 80], [-39, 95], [-40, 110], [-41, 118]],
     () => player.pos.z > 117 && player.pos.y <= -2.9],
   ['ån: rakt ut i vattnet ger plask och återstart torrt på stranden (inte en osynlig vägg)', [-41, 135], [[-41, 150]],
-    () => splashes.length >= 1 && !inWater(player.pos.x, player.pos.z, player.pos.y) && player.pos.y > SITE.bridges.waterY + 0.3],
+    () => splashes.length >= 1 && !inWater(player.pos.x, player.pos.z, player.pos.y) && player.pos.y > waterYAt(player.pos.x, player.pos.z) + 0.3],
   ['vägbron: över ån längs Sankt Lars väg till södra stranden', [23.5, 90], [[23.7, 100], [23.5, 125], [23.3, 143], [23.3, 155]],
     () => player.pos.z > 150],
   ['gång- och cykelbron: över ån', [18, 92], [[18.1, 101], [17.9, 125], [17.8, 146], [17.8, 155]], () => player.pos.z > 150],
@@ -154,24 +154,24 @@ for (const [name, start, points, ok] of R) {
 }
 { // #1281: ended up in the water (a drop at the river's middle): a splash, back on the nearest dry bank, still, unhurt for a while
   const r0 = riverAt(-41, 143), side = [r0.x + r0.nx * 0.2, r0.z + r0.nz * 0.2];
-  splashes.length = 0; player.spawn(...side, 0); player.pos.y = SITE.bridges.bedY; player.vy = -3; player.update(dt);
-  check(splashes.length === 1 && !inWater(player.pos.x, player.pos.z, player.pos.y) && player.pos.y > SITE.bridges.waterY + 0.3 && player.vy === 0 && player.safeUntil > performance.now() && Math.hypot(player.pos.x - side[0], player.pos.z - side[1]) < 15,
+  splashes.length = 0; player.spawn(...side, 0); player.pos.y = groundBelowDeckY(player.pos.x, player.pos.z); player.vy = -3; player.update(dt);
+  check(splashes.length === 1 && !inWater(player.pos.x, player.pos.z, player.pos.y) && player.pos.y > waterYAt(player.pos.x, player.pos.z) + 0.3 && player.vy === 0 && player.safeUntil > performance.now() && Math.hypot(player.pos.x - side[0], player.pos.z - side[1]) < 15,
     `i ån: plask, flyttas till närmaste torra strand, stilla, skyddad mot fallskada (${at()}, ${splashes.length} plask)`);
   // the respawn point is clear of every wall and not in the paddock, over a number of river positions along the whole river
   let bad = 0, n = 0;
   for (let z = 62; z < 240; z += 3) for (let x = -250; x < 310; x += 11) {
     const r = riverAt(x, z); if (r.distance > 0.5 || z !== Math.round(z)) continue;
-    n++; splashes.length = 0; player.spawn(x, z, 0); player.pos.y = SITE.bridges.bedY; player.update(dt);
+    n++; splashes.length = 0; player.spawn(x, z, 0); player.pos.y = groundBelowDeckY(player.pos.x, player.pos.z); player.update(dt);
     const hit = farWalls(player.pos.x, player.pos.z, player.pos.y).some((sg) => { const dx = sg[2] - sg[0], dz = sg[3] - sg[1], t = Math.max(0, Math.min(1, ((player.pos.x - sg[0]) * dx + (player.pos.z - sg[1]) * dz) / (dx * dx + dz * dz || 1e-9))); return Math.hypot(player.pos.x - sg[0] - dx * t, player.pos.z - sg[1] - dz * t) < PLAYER.radius - 0.01; });
     if (splashes.length !== 1 || hit || inWater(player.pos.x, player.pos.z, player.pos.y) || slideAt(player.pos.x, player.pos.z, player.pos.y, true)) bad++;
   }
   check(n > 10 && bad === 0, `plaskplatsens återstart är torr, gångbar och fri från väggar på ${n} ställen längs ån (${bad} dåliga)`);
 }
 { // #1281: the jetpack over the water does not splash; coming down into it does
-  const r0 = riverAt(-41, 143); splashes.length = 0; player.spawn(r0.x, r0.z, 0); player.pos.y = SITE.bridges.waterY + 2;
+  const r0 = riverAt(-41, 143); splashes.length = 0; player.spawn(r0.x, r0.z, 0); player.pos.y = waterYAt(r0.x, r0.z) + 2;
   player.jet = { worn: true, lift: () => 9.81 }; player.keys = new Set();
   let low = Infinity; for (let i = 0; i < 180; i++) { player.update(dt); low = Math.min(low, player.pos.y); }
-  check(splashes.length === 0 && low > SITE.bridges.waterY, `jetpacken svävar över ån utan plask (lägsta y ${low.toFixed(2)}, ${splashes.length} plask)`);
+  check(splashes.length === 0 && low > waterYAt(r0.x, r0.z), `jetpacken svävar över ån utan plask (lägsta y ${low.toFixed(2)}, ${splashes.length} plask)`);
   player.jet = { worn: true, lift: () => -20 }; for (let i = 0; i < 300 && !splashes.length; i++) player.update(dt);
   player.jet = null;
   check(splashes.length === 1 && !inWater(player.pos.x, player.pos.z, player.pos.y), `jetpacken ner i ån: plask och tillbaka på stranden (${at()})`);
@@ -227,12 +227,12 @@ for (const [name, start, points, ok] of R) {
   const heading = (x, z) => Math.atan2(-(x - player.pos.x), -(z - player.pos.z)) + Math.PI / 2; // (the bike's yaw towards (x, z))
   const mount = (x, z, tx, tz) => { player.spawn(x, z, 0); player.riding = { bike, yaw: heading(tx, tz), pitch: 0, lastStanding: player.pos.clone() }; player.riding.pitch = player.bikeSupport(player.pos, player.riding.yaw)?.pitch ?? 0; splashes.length = 0; player.safeUntil = 0; };
   const ride = (tx, tz, frames, stop) => { player.keys = new Set(['KeyW']); for (let i = 0; i < frames; i++) { camera.rotation.y = heading(tx, tz) - Math.PI / 2; player.update(dt); if (stop?.()) break; } player.keys = new Set(); };
-  const r0 = riverAt(-41, 143), sgn = surfaceY0(r0.x + r0.nx * 12, r0.z + r0.nz * 12) > SITE.bridges.waterY + 0.4 ? 1 : -1, sx = r0.x + sgn * r0.nx * 12, sz = r0.z + sgn * r0.nz * 12;
+  const r0 = riverAt(-41, 143), sgn = surfaceY0(r0.x + r0.nx * 12, r0.z + r0.nz * 12) > waterYAt(r0.x + r0.nx * 12, r0.z + r0.nz * 12) + 0.4 ? 1 : -1, sx = r0.x + sgn * r0.nx * 12, sz = r0.z + sgn * r0.nz * 12;
   function surfaceY0(x, z) { return groundY(x, z); }
   mount(sx, sz, r0.x, r0.z); let drowned = false;
   ride(r0.x, r0.z, 900, () => { if (splashes.length) { drowned = true; return true; } });
   const rid = !!player.riding;
-  check(drowned && splashes.length === 1 && !inWater(player.pos.x, player.pos.z, player.pos.y) && player.pos.y > SITE.bridges.waterY + 0.3 && player.safeUntil > performance.now() && player.vy === 0 && !player.fall,
+  check(drowned && splashes.length === 1 && !inWater(player.pos.x, player.pos.z, player.pos.y) && player.pos.y > waterYAt(player.pos.x, player.pos.z) + 0.3 && player.safeUntil > performance.now() && player.vy === 0 && !player.fall,
     `cykel rakt ut i ån: plask, tillbaka torrt på stranden, skyddad mot fallskada (${at()}, ${splashes.length} plask, ${rid ? 'cykeln följer med' : 'föraren står vid cykeln'})`);
   const p1 = player.pos.clone(); ride(sx, sz, 60); // riding on away from the water afterwards: nothing breaks, no second splash
   check(splashes.length === 1 && Number.isFinite(player.pos.x), `cykeln efter återstarten: inget andra plask (${at()}), flyttade ${p1.distanceTo(player.pos).toFixed(2)} m`);
@@ -267,7 +267,7 @@ for (const [name, start, points, ok] of R) {
     const [x, z] = along(e, s, o), y = groundY(x, z); if (o === 0) { if (prev !== null) worstStep = Math.max(worstStep, Math.abs(y - prev)); prev = y; }
     steepest = Math.max(steepest, slopeAt(x, z, y).s); } }
   check(steepest < WALK.maxSlope * 0.8 && worstStep < 0.1 * 0.8 * 1.1, `lilla träbron: marken längs båda rampernas mittlinje och kant är jämn (brantaste ${steepest.toFixed(2)} < ${(WALK.maxSlope * 0.8).toFixed(2)}, största steg per 10 cm ${worstStep.toFixed(3)} m)`);
-  check(E0.every((e) => [0, 2, 4, 6, 8, 10, 14].every((s) => { const [x, z] = along(e, s); return groundY(x, z) > SITE.bridges.waterY + 0.3; })), 'lilla träbron: rampernas hela längd ligger över vattenlinjen');
+  check(E0.every((e) => [0, 2, 4, 6, 8, 10, 14].every((s) => { const [x, z] = along(e, s); return groundY(x, z) > waterYAt(x, z) + 0.3; })), 'lilla träbron: rampernas hela längd ligger över vattenlinjen');
   const trip = (name, a, z, bike) => { // up the ramp at `a`, over the deck, down the ramp at `z`
     const A = E0[a], Z = E0[z], peak = { y: -Infinity }, start = along(A, RL), goal = along(Z, RL - 1), mid = [[A.x, A.z], [Z.x, Z.z]];
     player.spawn(start[0], start[1], 0); splashes.length = 0; player.safeUntil = 0; let stuck;
@@ -289,6 +289,13 @@ for (const [name, start, points, ok] of R) {
   };
   for (const bike of [false, true]) { trip('nordvästra rampen → sydöstra', 0, 1, bike); trip('sydöstra rampen → nordvästra', 1, 0, bike); }
   player.keys = new Set();
+}
+// #1350: use actual Player.splashCheck just above/below the LOCAL water surface, not merely the channel floor.
+for(const i of[0,16]){
+ const[x,z]=SITE.river.path[i],water=waterYAt(x,z);player.spawn(x,z,0);splashes.length=0;player.pos.y=water+.05;
+ check(!player.splashCheck()&&splashes.length===0,`station ${i}: feet above local water do not splash`);
+ player.pos.y=water-WALK.waterDepth-.01;const rescued=player.splashCheck();
+ check(rescued&&splashes.length===1&&!inWater(player.pos.x,player.pos.z,player.pos.y)&&player.pos.y>waterYAt(player.pos.x,player.pos.z)+.3,`station ${i}: crossing local water surface splashes and recovers dry`);
 }
 finish();
 </script>

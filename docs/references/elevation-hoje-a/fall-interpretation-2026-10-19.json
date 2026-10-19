@@ -1,0 +1,116 @@
+{
+  "sourceSha256": "6e1a9d10e16dd48cee089e5fdc654d702ebe1b5cb0efb121ddfc08fc1185b89c",
+  "source": "docs/references/elevation-hoje-a/point-api-2026-10-19.json",
+  "method": "Median of all pairwise centreline ground-height slopes; visual interpretation, not a measured water profile",
+  "count": 19,
+  "pairCount": 171,
+  "slope": -0.0009170995546035121,
+  "fallPerM": 0.0009170995546035121,
+  "intercept": 9.147216981561572,
+  "totalLengthM": 525.6463291382489,
+  "totalFallM": 0.4820700143316592,
+  "maxResidualM": 0.48276384316643295,
+  "attribution": "Lantmäteriet via kart-api; CC BY 4.0",
+  "limitations": [
+    "3–5 m approximate horizontal registration",
+    "No measured water surface or submerged bed",
+    "Absolute model water/bed/shore datum remains the existing visual assumption; trend anchored at the road bridge"
+  ],
+  "samples": [
+    {
+      "alongM": 0,
+      "groundRh2000": 9.09,
+      "trendRh2000": 9.147216981561572
+    },
+    {
+      "alongM": 14.673513553338198,
+      "groundRh2000": 9.17,
+      "trendRh2000": 9.133759908817337
+    },
+    {
+      "alongM": 74.2252960623446,
+      "groundRh2000": 9.26,
+      "trendRh2000": 9.079144995602482
+    },
+    {
+      "alongM": 84.19694587569043,
+      "groundRh2000": 9.07,
+      "trendRh2000": 9.07
+    },
+    {
+      "alongM": 102.72968447526065,
+      "groundRh2000": 8.96,
+      "trendRh2000": 9.053003633684751
+    },
+    {
+      "alongM": 117.33588863650665,
+      "groundRh2000": 9.3,
+      "trendRh2000": 9.039608290354025
+    },
+    {
+      "alongM": 129.31714483107993,
+      "groundRh2000": 9,
+      "trendRh2000": 9.028620285634391
+    },
+    {
+      "alongM": 159.67809343286115,
+      "groundRh2000": 9.02,
+      "trendRh2000": 9.000776273194356
+    },
+    {
+      "alongM": 190.35928148026244,
+      "groundRh2000": 8.92,
+      "trendRh2000": 8.97263856930138
+    },
+    {
+      "alongM": 233.83845005556987,
+      "groundRh2000": 8.45,
+      "trendRh2000": 8.932763843166432
+    },
+    {
+      "alongM": 250.77805158571218,
+      "groundRh2000": 8.59,
+      "trendRh2000": 8.917228542147978
+    },
+    {
+      "alongM": 314.4366008937195,
+      "groundRh2000": 8.68,
+      "trendRh2000": 8.8588473149309
+    },
+    {
+      "alongM": 342.3834790735807,
+      "groundRh2000": 8.84,
+      "trendRh2000": 8.83321724539959
+    },
+    {
+      "alongM": 361.7919231121944,
+      "groundRh2000": 8.85,
+      "trendRh2000": 8.81541777001623
+    },
+    {
+      "alongM": 373.0429230677539,
+      "groundRh2000": 8.69,
+      "trendRh2000": 8.805099482968142
+    },
+    {
+      "alongM": 444.36153564539734,
+      "groundRh2000": 8.89,
+      "trendRh2000": 8.739693215138246
+    },
+    {
+      "alongM": 487.61972446555023,
+      "groundRh2000": 8.69,
+      "trendRh2000": 8.700021149438328
+    },
+    {
+      "alongM": 505.35088630001553,
+      "groundRh2000": 8.72,
+      "trendRh2000": 8.683759908817338
+    },
+    {
+      "alongM": 525.6463291382489,
+      "groundRh2000": 8.67,
+      "trendRh2000": 8.665146967229912
+    }
+  ]
+}

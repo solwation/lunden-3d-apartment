@@ -4,7 +4,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SITE, SEASON } from './config.js';
 import { onRoad, onWalk, pathStrip, vehicleTrim, finish as surfaceMesh } from './roads.js';
 import { onBusStop } from './busstopgeo.js';
-import { riverAt, deckAt, underpassAt } from './riverbridge.js';
+import { riverAt, waterYAt, shoreYAt, deckAt, underpassAt } from './riverbridge.js';
 import { registerSnow, registerSeasonal } from './seasons.js';
 const P = SITE.riverPark;
 const random = (seed) => () => ((seed = seed * 16807 % 2147483647) / 2147483647);
@@ -28,17 +28,19 @@ export function parkDeckAt(x,z) {
 let ends=null;
 function rampEnds() {
   const b=P.woodBridge,R=b.ramp;
-  return ends??=b.ends.map(([x,z],i)=>{const [dx,dz]=R.dirs[i],l=Math.hypot(dx,dz);return {x,z,dx:dx/l,dz:dz/l,nx:-dz/l,nz:dx/l};});
+  return ends??=b.ends.map(([x,z],i)=>{const [dx,dz]=R.dirs[i],l=Math.hypot(dx,dz);return {x,z,dx:dx/l,dz:dz/l,nx:-dz/l,nz:dx/l,front:(b.deckY-shoreYAt(x,z)+.1)/R.front};});
 }
 /** Each ramp's frame: `s` runs from the deck end along its heading (negative under the deck, the steep front face towards the river), `o` sideways. */
 const rampLocal=(e,x,z)=>({s:(x-e.x)*e.dx+(z-e.z)*e.dz,o:(x-e.x)*e.nx+(z-e.z)*e.nz});
+// Keep the earth fill's front buried below the local graded shore; deck/top slope remain unchanged.
+const rampFront=e=>e.front;
 export function parkFillAt(x,z) {
   const b=P.woodBridge,R=b.ramp;let best=null;
   const E=rampEnds();
   if(Math.hypot(x-(E[0].x+E[1].x)/2,z-(E[0].z+E[1].z)/2)>40)return null; // (the whole bridge lies within 40 m of its middle: a cheap reject for the many other ground queries)
   for(const e of E){
     const {s,o}=rampLocal(e,x,z),a=Math.abs(o);
-    if(a>R.reach+1e-6||s<-(b.deckY-SITE.bridges.shoreY+.1)/R.front-1e-6||s>R.length+1e-6)continue; // (1 µm of slack: the mesh's own edge vertices must lie on the fill)
+    if(a>R.reach+1e-6||s<-rampFront(e)-1e-6||s>R.length+1e-6)continue; // (1 µm of slack: the mesh's own edge vertices must lie on the fill)
     const h=b.deckY-R.flank*Math.max(0,a-b.width/2)-(s>=0?R.slope*s:R.front*-s);
     if(best===null||h>best)best=h;
   }
@@ -47,8 +49,9 @@ export function parkFillAt(x,z) {
 /** The ramps' triangles (world space): per end a 2 × 3 grid of hinge lines (front face, deck end, far end × left toe, left edge, right edge, right toe) - the fill is a sum of a function of s and one of the sideways offset, so the bilinear cells are exact.
  * `top`: only the middle column (the walking surface), `lift` m over the fill. Without it all three columns (the embankment's grass flanks too), 1 cm under the fill like the terrain mesh. */
 function rampTriangles(top,lift) {
-  const b=P.woodBridge,R=b.ramp,frontLen=(b.deckY-SITE.bridges.shoreY+.1)/R.front,pos=[],cols=[-R.reach,-b.width/2,b.width/2,R.reach],stations=[-frontLen,0,R.length];
+  const b=P.woodBridge,R=b.ramp,pos=[],cols=[-R.reach,-b.width/2,b.width/2,R.reach];
   for(const e of rampEnds()) {
+    const stations=[-rampFront(e),0,R.length];
     const at=(s,o)=>{const x=e.x+e.dx*s+e.nx*o,z=e.z+e.dz*s+e.nz*o;return [x,parkFillAt(x,z)+lift,z];};
     for(let i=0;i<2;i++)for(let j=top?1:0;j<(top?2:3);j++){const v=[at(stations[i],cols[j]),at(stations[i+1],cols[j]),at(stations[i],cols[j+1]),at(stations[i+1],cols[j+1])];pos.push(...v[0],...v[1],...v[2],...v[2],...v[1],...v[3]);}
   }
@@ -60,7 +63,7 @@ export function parkRampFill() {
   geo.setIndex(Array.from({length:n},(_,i)=>i));geo.deleteAttribute('uv');return geo;
 }
 /** Is (x, z) within `m` of a ramp's footprint (trees, shrubs and tussocks keep off it). */
-export const parkFillFootprint=(x,z,m=0)=>{const R=P.woodBridge.ramp,front=(P.woodBridge.deckY-SITE.bridges.shoreY+.1)/R.front;return rampEnds().some(e=>{const {s,o}=rampLocal(e,x,z);return Math.abs(o)<=R.reach+m&&s>=-front-m&&s<=R.length+m;});};
+export const parkFillFootprint=(x,z,m=0)=>{const R=P.woodBridge.ramp;return rampEnds().some(e=>{const {s,o}=rampLocal(e,x,z);return Math.abs(o)<=R.reach+m&&s>=-rampFront(e)-m&&s<=R.length+m;});};
 /** The two ramps' deck ends and headings, for tests: [{ x, z, dx, dz }]. */
 export const parkRampEnds=()=>rampEnds().map(({x,z,dx,dz})=>({x,z,dx,dz}));
 function clear(x,z) {
@@ -90,7 +93,7 @@ export function parkShrubSpots(ground) {
     const cx=a+(c-a)*t,cz=b+(d-b)*t,r=riverAt(cx,cz),side=rand()<.5?-1:1,off=r.width/2+3+rand()*r.bank*.65;
     const x=cx+r.nx*off*side,z=cz+r.nz*off*side;
     if(!clear(x,z)||!P.patches.some(p=>inside(x,z,p.polygon)))continue;
-    const y=ground(x,z);if(y<=SITE.bridges.waterY)continue;
+    const y=ground(x,z);if(y<=waterYAt(x,z))continue;
     spots.push({x,z,y,s:P.shrubScale[0]+rand()*(P.shrubScale[1]-P.shrubScale[0])});
   }return spots;
 }
@@ -120,7 +123,7 @@ export function buildRiverPark(ground, terrain=ground) {
   for(let k=0;k<P.shoreCount*20&&parkShoreFeet.length<P.shoreCount;k++) {
     const p=SITE.river.path,i=Math.floor(rand()*(p.length-1)),t=rand(),[a,b]=p[i],[c,d]=p[i+1],cx=a+(c-a)*t,cz=b+(d-b)*t,r=riverAt(cx,cz);
     const off=r.width/2+P.shoreOffset[0]+rand()*(P.shoreOffset[1]-P.shoreOffset[0]),side=rand()<.5?-1:1,x=cx+r.nx*off*side,z=cz+r.nz*off*side;
-    const y=ground(x,z);if(y<SITE.bridges.waterY+.03||z<64||onRoad(x,z,1)||onParkPath(x,z,.5)||parkDeckAt(x,z)!==null||parkFillFootprint(x,z,.5)||deckAt(x,z)!==null||underpassAt(x,z))continue;
+    const y=ground(x,z);if(y<waterYAt(x,z)+.03||z<64||onRoad(x,z,1)||onParkPath(x,z,.5)||parkDeckAt(x,z)!==null||parkFillFootprint(x,z,.5)||deckAt(x,z)!==null||underpassAt(x,z))continue;
     const h=P.shoreHeight[0]+rand()*(P.shoreHeight[1]-P.shoreHeight[0]);parkShoreFeet.push({x,z,y,h});
     for(let j=0;j<P.shoreLeaves;j++){const a=j*Math.PI*2/P.shoreLeaves+rand(),d=P.shoreRadius[0]+rand()*(P.shoreRadius[1]-P.shoreRadius[0]);
       pos.push(x+Math.cos(a)*d,y,z+Math.sin(a)*d,x,y+h,z,x+Math.cos(a+.9)*d,y,z+Math.sin(a+.9)*d);}

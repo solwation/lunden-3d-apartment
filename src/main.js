@@ -32,6 +32,7 @@ import { BedCare } from './bedcare.js';
 import { HallCare } from './hallcare.js';
 import { Rearrange } from './rearrange.js';
 import { Player, inPoly, crosses } from './player.js';
+import { waterYAt } from './riverbridge.js';
 import { Fall } from './fall.js';
 import { StatsPanel } from './statspanel.js';
 import { respawnOutdoors } from './respawn.js';
@@ -454,7 +455,7 @@ splashEl.style.cssText = 'position:fixed;inset:0;z-index:9;pointer-events:none;b
 document.body.appendChild(splashEl);
 player.onWaterRescue = (what, at) => { // #1236, #1281: put back after the river / a closed courtyard
   if (what !== 'water') { badge('Du flyttades ut på gatan', false); return; }
-  sfx.splash(at ? new THREE.Vector3(at.x, SITE.bridges.waterY, at.z) : undefined);
+  sfx.splash(at ? new THREE.Vector3(at.x, waterYAt(at.x, at.z), at.z) : undefined);
   splashEl.style.transition = 'none'; splashEl.style.opacity = '1'; void splashEl.offsetWidth; splashEl.style.transition = 'opacity 1.2s ease-out'; splashEl.style.opacity = '0';
   badge('Plask! Du ramlade i ån', false);
 };

@@ -604,8 +604,8 @@ export const SITE = {
     gc:{ends:[[18.1,101],[17.8,146.5]],length:40,width:3,slab:.18,truss:1.45,panels:10,steel:.10},
     deckY:-3,waterY:-6.2,bedY:-6.8,shoreY:-5.5,shoreSpan:7.5,valleySpan:8.5,rail:1.1,post:.07,railStep:1.9,approach:8,pierMargin:.2,
     // #1285 (supersedes #1271 local underpass cut): Höje å and its valley lie generally lower than the road bridge.
-    // Road deck at deckY (-3), river surface at waterY (-6.2, guess; ~10.5 m vs ~7.5 m ASL in Lantmäteriet data),
-    // riverbed at bedY (-6.8), riverside shore/path at shoreY (-5.5, guess, 0.7 m above water; gives 2.05 m clearance
+    // Road deck at deckY (-3); waterY (-6.2), bedY and shoreY below are visual guesses at the road-bridge centre (#1350).
+    // No surveyed apartment-floor RH2000 datum or measured bathymetry. Riverbed at bedY (-6.8), shore/path at shoreY (-5.5), 0.7 m above water; gives 2.05 m clearance
     // under road slab and 2.32 m under GC bridge). Valley slopes up from shoreSpan (4.5 m past bank) over valleySpan
     // (8.5 m) to base terrain (-3), meeting the road bridge abutments (ends at z ~100 and z ~145.8) from bank to bank.
     underpass:{floorY:-5.5,pier:.2}},
@@ -614,6 +614,10 @@ export const SITE = {
   // #1233: `bankScale` (guess) shortens every bank span (visual estimates below) so the slope down to the water is steeper; the real
   // slope is not surveyed. 1 = the #533 profile, 0.55 = roughly 25-35 degrees mid-slope.
   river: {width:8,bank:10,bankScale:.55,
+    // #1350: interpreted relative downstream trend from #1349's 19 ground-model points (Lantmäteriet via kart-api, CC BY4.0).
+    // Median of171 pairwise slopes, reproduced by tools/riverfall.mjs; ~0.482m fall over525.646m. NOT measured water/bathymetry.
+    // Existing water/bed/shore levels stay anchored at the road-bridge centre; the bank/valley cross-section is still a guess.
+    fall: { perM: 0.0009170995546035121 },
     // #533 widths/bank spans are visual estimates from the aerial/2016 photos, not surveyed dimensions.
     widths:[6,6,7,8,8,9,9,8,8,8,7,7,6,6,6,7,7,6,6],
     banks:[13,14,15,12,11,12,13,11,10,10,12,14,13,7,3,3,13,12,10],
@@ -1750,7 +1754,7 @@ export const OUTDOOR = { x0: -78.5, x1: 27.5, z0: -14, z1: 64 };
 // walkable area (world.js: the perimeter wall, also at every height for the roofs/jetpack); OUTDOOR stays the home block for
 // respawn zones and ball returns. Bounds are a choice (*guess*), grown in steps as the terrain/buildings behind them get collision.
 // `cell` m: edge of the buckets the far collision (src/farwalk.js) is looked up in. `wade` m: how far from the water's edge the
-// shallow bank already stops the visitor (water is an obstacle; the bed is at SITE.bridges.bedY, so ground there is still under the water line). `rescue` m: where a visitor who still ends up in the river
+// shallow bank already stops the visitor (water is an obstacle; the bed follows SITE.bridges.bedY plus the local river fall, so ground there is still under the local water line). `rescue` m: where a visitor who still ends up in the river
 // is put back, measured from the edge of the water (*guess*). `maxSlope` rise/run: steeper ground holds the visitor back
 // (the #1233 banks stay under it: bankScale .55 gives roughly 0.5-0.7).
 // #1278 (a visitor: the area behind HepCat Store is a whole car park in reality): the east campus' OSM parking polygons

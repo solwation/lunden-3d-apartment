@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { SITE, WALK, LEVELS, PLAYER, STAIR, UNIT_TOP, ROOFS, GARAGE, JETPACK, jetThin, SPIDER, SOFFITS, BICYCLE } from './config.js';
 import { stairHeight, stairUnderside } from './stairs.js';
 import { groundY, groundBelowDeckY } from './surroundings.js';
-import { deckAt, deckUnderAt } from './riverbridge.js';
+import { deckAt, deckUnderAt, waterYAt } from './riverbridge.js';
 import { farWalls, slideAt, inWater, splashBank, tooSteep, buildingRescue, atEdge, surfaceY, underDeck, stileSurface } from './farwalk.js'; // #1236: walking beyond the block
 import { bicycleCurbY } from './street.js';
 import { stowBicycleHand, restoreBicycleHand } from './holdable.js';
@@ -874,7 +874,7 @@ export class Player {
   splashCheck() {
     const p = this.pos;
     if (p.z <= 60 || this.inPlayroom || this.aloft || this.inCore || this.unit || this.inFootprint()) return false;
-    if (!(p.y < SITE.bridges.waterY - WALK.waterDepth) || !inWater(p.x, p.z, p.y)) {
+    if (!(p.y < waterYAt(p.x, p.z) - WALK.waterDepth) || !inWater(p.x, p.z, p.y)) {
       if (!this.sliding && p.y <= surfaceY(p.x, p.z, p.y) + 0.05) { const d = this.lastDry ??= { x: p.x, z: p.z }; d.x = p.x; d.z = p.z; } // (the fallback bank)
       return false;
     }

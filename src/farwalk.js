@@ -3,7 +3,7 @@
 // built from (SITE.west/east/north/south polygons, SITE.bridges, SITE.river), so what is drawn is what blocks. Segments are
 // [x0, z0, x1, z1]; `farWalls(x, z)` returns the ones in the buckets round a point (a stable array per bucket, no per-frame work).
 import { SITE, WALK, PLAYER, OUTDOOR, PADDOCK } from './config.js';
-import { riverAt, deckAt, bridgeRecords, pierBoxes } from './riverbridge.js';
+import { riverAt, waterYAt, deckAt, bridgeRecords, pierBoxes } from './riverbridge.js';
 import { parkDeckAt } from './riverpark.js';
 import { groundY, groundBelowDeckY, treeFeet } from './surroundings.js';
 import { fenceSegments, stile, stileWalls } from './paddockgeo.js';
@@ -119,21 +119,21 @@ export function tooSteep(x, z, maxSlope = WALK.maxSlope, y) {
 }
 
 /** #1281: is (x, z) under the river's surface for feet `y`: the terrain there (the bed's slope, `riverGround`) lies `WALK.waterDepth` m
- * under the water line. The under-bridge footpath's floor (0.6 m over the water) and the decks are dry; so is anything off the river's banks. */
+ * under the water line. The under-bridge footpath's floor (0.7 m over the local water) and the decks are dry; so is anything off the river's banks. */
 export function inWater(x, z, y) {
   if (z < 60 || onDeck(x, z, y)) return false;
   const r = riverAt(x, z);
-  return r.distance < r.width / 2 + r.bank && surfaceY(x, z, y) < SITE.bridges.waterY - WALK.waterDepth;
+  return r.distance < r.width / 2 + r.bank && surfaceY(x, z, y) < waterYAt(x, z, r) - WALK.waterDepth;
 }
 
 /** #1281: the nearest bank point to put someone back on who fell into the river at (x, z): searched on rings round the splash, the first
  * ring with a dry (`WALK.bankDry` m over the water line), walkable (gradient under `WALK.maxSlope * WALK.slideOut`) spot clear of every wall
  * (`farWalls`: buildings, fences, rails, trunks, cars) and off the decks. Returns `{ x, z }` or null (nothing within `WALK.bankMax`). */
 export function splashBank(x, z, y) {
-  const calm = WALK.maxSlope * WALK.slideOut, dry = SITE.bridges.waterY + WALK.bankDry, R = PLAYER.radius + 0.15;
+  const calm = WALK.maxSlope * WALK.slideOut, R = PLAYER.radius + 0.15;
   const ok = (px, pz) => {
     if (px < WALK.x0 + 1 || px > WALK.x1 - 1 || pz < WALK.z0 + 1 || pz > WALK.z1 - 1) return false;
-    if (onDeck(px, pz, y) || inWater(px, pz, y) || surfaceY(px, pz, y) < dry) return false;
+    if (onDeck(px, pz, y) || inWater(px, pz, y) || surfaceY(px, pz, y) < waterYAt(px, pz) + WALK.bankDry) return false;
     if (slopeAt(px, pz, y).s > calm) return false;
     for (const [ox, oz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (inWater(px + ox * WALK.bankClear, pz + oz * WALK.bankClear, y)) return false; // (a dry margin: not on the very edge)
     for (const sg of farWalls(px, pz, y)) { // a clear body: further than R from every segment
