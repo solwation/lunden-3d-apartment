@@ -14,7 +14,7 @@ import { lobeGeometry, leafMaterial, trunkGeometry, barkMaterial } from './folia
 import { buildStreet } from './street.js';
 import { buildStreetSigns } from './streetsigns.js';
 import { buildGroundAO } from './groundao.js';
-import { onRoad, onWalk, pathStrip, filletGeometry } from './roads.js';
+import { onRoad, onWalk, pathStrip, filletGeometry, vehicleTrim } from './roads.js';
 import { wallRect } from './roofs.js';
 import { buildingRoofWalk } from './buildingroofs.js';
 import {buildRiverBridges,deckAt,riverGround,riverDistance,roadBridgeSpan,bridgeRecords} from './riverbridge.js';
@@ -1636,7 +1636,7 @@ export function* surroundingsParts({ grass, husL = null }) {
   // pavements along the roads (left out where they would lie on another road's asphalt: a junction's mouth)
   const pavementClip=(road)=>road.name==='Sankt Lars väg'?c=>roadBridgeSpan(c.reduce((s,p)=>s+p[0],0)/4,c.reduce((s,p)=>s+p[1],0)/4)||c.every(([x,z])=>onRoad(x,z,-.05,road)):true;
   const walks = S.roads.flatMap((r) => (r.walks || []).map((k) => k.side > 0
-    ? pathStrip(r, (w) => w / 2, (w) => w / 2 + k.w, 0.008, roadGround, pavementClip(r)) : pathStrip(r, (w) => -w / 2 - k.w, (w) => -w / 2, 0.008, roadGround, pavementClip(r))));
+    ? pathStrip(r, (w) => w / 2, (w) => w / 2 + k.w, 0.008, roadGround, pavementClip(r), undefined, vehicleTrim()) : pathStrip(r, (w) => -w / 2 - k.w, (w) => -w / 2, 0.008, roadGround, pavementClip(r), undefined, vehicleTrim())));
   flat([...[...S.paving, ...S.basementPaving].map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.008)), ...walks], COLORS.paving, SEASON.snow.paving);
   yield 0.15;
   group.add(buildRiverBridges());

@@ -1,0 +1,49 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Road junction clipping</title>
+<style>body{margin:0;background:#fff}canvas{display:block}pre{white-space:pre-wrap}</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"}}</script>
+<pre id="out">running…</pre><script type="module">
+import * as T from 'three';
+import { SITE } from '../src/config.js';
+import { pathStrip, vehicleTrim, filletGeometry, isVehicleWay } from '../src/roads.js';
+const lines=[],check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);if(!ok)window.failed=true;};
+try {
+ const scene=new T.Scene();scene.background=new T.Color(0x7f9954);
+ const roadMat=new T.MeshBasicMaterial({color:0x565e62}),pathMat=new T.MeshBasicMaterial({color:0xd4d0b4});
+ const roadMeshes=[],footMeshes=[],flat=()=>0;
+ const add=(g,mat,arr)=>{const m=new T.Mesh(g,mat);scene.add(m);arr.push(m);return m;};
+ for(const r of [...SITE.roads,...['west','north','east','south'].flatMap(k=>[...(SITE[k].paths??[]),...(SITE[k].access??[])].filter(isVehicleWay))]) {
+  if(r.path)add(pathStrip(r,w=>-w/2,w=>w/2,.012,flat),roadMat,roadMeshes);
+  else if(r.fillets)for(const f of r.fillets)add(filletGeometry(f,.012,flat),roadMat,roadMeshes);
+  else add(new T.PlaneGeometry(r.x1-r.x0,r.z1-r.z0).rotateX(-Math.PI/2).translate((r.x0+r.x1)/2,.012,(r.z0+r.z1)/2),roadMat,roadMeshes);
+ }
+ // Production path data from every backdrop and the park, plus both pavements.
+ for(const k of ['west','north','east','riverPark'])for(const p of [...(SITE[k].paths??[]),...(SITE[k].access??[])])
+  if(p.path&&!isVehicleWay(p))add(pathStrip(p,w=>-w/2,w=>w/2,.025,flat,false,undefined,vehicleTrim()),pathMat,footMeshes);
+ for(const r of SITE.roads)for(const k of r.walks??[])add(pathStrip(r,w=>k.side>0?w/2:-w/2-k.w,w=>k.side>0?w/2+k.w:-w/2,.025,flat,false,undefined,vehicleTrim()),pathMat,footMeshes);
+ scene.updateMatrixWorld(true);
+ const ray=new T.Raycaster(),down=new T.Vector3(0,-1,0);let tested=0,overlap=0,tris=0;const failures=[];
+ for(const m of footMeshes){const p=m.geometry.attributes.position;tris+=p.count/3;
+  for(let i=0;i<p.count;i+=3){
+   // A triangle centroid samples the emitted surface, not the input centreline.
+   const x=(p.getX(i)+p.getX(i+1)+p.getX(i+2))/3,z=(p.getZ(i)+p.getZ(i+1)+p.getZ(i+2))/3;
+   ray.set(new T.Vector3(x,1,z),down);tested++;
+   if(ray.intersectObjects(roadMeshes).length){overlap++;failures.push({x,z,vertices:[0,1,2].map(j=>[p.getX(i+j),p.getZ(i+j)])});}
+  }
+ }
+ check(tested>5000&&overlap===0,`drawn footpath/pavement triangle centres stay off actual carriageway meshes: ${overlap}/${tested}`);
+ const probe={path:[[-23,-35],[-17,-19]],w:2.4},ground=(x,z)=>x*.03+z*.02;
+ const clipped=pathStrip(probe,w=>-w/2,w=>w/2,.025,ground,false,undefined,vehicleTrim()),p=clipped.attributes.position;
+ let atNorth=0,atSouth=0,badY=0;
+ for(let i=0;i<p.count;i++){const x=p.getX(i),z=p.getZ(i);if(Math.abs(z+30)<1e-4)atNorth++;if(Math.abs(z+24)<1e-4)atSouth++;if(Math.abs(p.getY(i)-ground(x,z)-.025)>1e-6)badY++;}
+ check(atNorth>=2&&atSouth>=2&&badY===0,`oblique crossing reaches both exact kerbs on its terrain plane: north ${atNorth}, south ${atSouth}, bad heights ${badY}`);
+ const preserved=pathStrip(probe,w=>-w/2,w=>w/2,.025,flat,false,undefined,vehicleTrim(null,()=>true));
+ const original=pathStrip(probe,w=>-w/2,w=>w/2,.025,flat);
+ check(JSON.stringify([...preserved.attributes.position.array])===JSON.stringify([...original.attributes.position.array]),'bridge keep predicate retains the complete underpass strip');
+ check(tris<40000,`bounded footpath/pavement geometry: ${tris} triangles`);
+ const renderer=new T.WebGLRenderer({antialias:true});renderer.setSize(1000,650);document.body.append(renderer.domElement);
+ const camera=new T.OrthographicCamera(-80,80,52,-52,.1,500);camera.position.set(-65,100,-5);camera.up.set(0,0,-1);camera.lookAt(-65,0,-5);renderer.render(scene,camera);
+ check(renderer.info.render.calls>0,'production junction surfaces render in the overview');
+ window.result={tested,overlap,tris,calls:renderer.info.render.calls,failures};
+}catch(e){check(false,e.stack)}
+document.querySelector('#out').textContent=lines.join('\n')+'\n'+(window.failed?'SOME FAILED':'ALL PASS');
+</script></html>

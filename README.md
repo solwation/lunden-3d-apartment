@@ -190,6 +190,8 @@ Southern backdrop (#536): `SITE.south`/`southbackdrop.js` add 54 existing mapped
 
 Northern surroundings (#530): `SITE.north`/`sitebackdrop.js` add three missing exact footprints; seven western bodies from #534 and eastern campus bodies remain unique. Far Sankt Lars väg follows its mapped northwestern turn; sourced Källby/Alvägen paths, aerial pixel parking traces and seasonal avenue/grove trees complete the ground. Five exterior batches, shared textures, unchanged OUTDOOR. All untagged heights/roof/parking/tree details are assumptions; no old proposed buildings. `northbackdroptest` checks source polygons, actual outward window rays and no duplicates. [Registration controls, sources and before/after](docs/validation/issue-530/README.md).
 
+Road and footpath junctions use exact carriageway-edge clipping, including oblique approaches and pavements at sharp bends; the [environment guide](docs/development/environment.md#paths-and-roads-audit-1341) lists the geometry and browser checks.
+
 HUD-badgarna har samma skal, tydligare poäng och plats för kompassen även på smala liggande skärmar. Tid visas ovanför väderikon och temperatur i en gemensam, smalare ruta.
 
 Andra spelare har mindre namnskyltar med sina poäng, uppdaterade i samma spökskylt. Deras figurer hukar när de faktiskt är nere, även under rörelse; samma pose syns i din spegel. När någon bär en katt syns rätt katt i figurens famn, även i spegeln; katten försvinner när den sätts ner eller stuvas undan på cykeln. Din standardfigur har samma längd hos andra som i din egen spegel.

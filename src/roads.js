@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { SITE, ELEVATION } from './config.js';
+import { polygonCutter } from './polygoncut.js';
 
 // The roads round Kv. Lunden (SITE.roads, #257): a road is a rectangle (`x0 x1 z0 z1`), a centre line (`path`: [x, z, r]
 // points, the corner at a point rounded to an arc of radius r; `w` = the width at each point, interpolated along the
@@ -108,6 +109,49 @@ export function onVehicle(x, z, margin = 0) {
     }
   }
   return false;
+}
+
+let cutVehicle = null;
+/** Exact junction edges (#1351): subtract the drawn carriageway polygons rather
+ * than discarding full-width 25 cm slices. `skip` optionally excludes a road;
+ * `keep` preserves park paths beneath a bridge, as before. */
+export function vehicleTrim(skip = null, keep = null) {
+  const trim = (x, z) => !keep?.(x, z) && onVehicle(x, z);
+  trim.cut = (positions) => {
+    if (!cutVehicle) {
+      const pieces = [];
+      const roads = [...SITE.roads, ...['west', 'east', 'north', 'south'].flatMap(k =>
+        [...(SITE[k].paths ?? []), ...(SITE[k].access ?? [])].filter(isVehicleWay))];
+      for (const road of roads) {
+        const add = poly => pieces.push({ owner: road, poly });
+        if (road.path) {
+          const s = samples(road), edge = (p, side) => [p.x + p.nx * p.w / 2 * side, p.z + p.nz * p.w / 2 * side];
+          for (let i = 1; i < s.length; i++) {
+            const a = edge(s[i - 1], -1), b = edge(s[i - 1], 1), c = edge(s[i], -1), d = edge(s[i], 1);
+            // Match pathStrip's two triangles, including sharp control points.
+            add([a, c, b]); add([b, c, d]);
+          }
+        } else if (road.fillets) for (const f of road.fillets) {
+          const p = filletOutline(f);
+          for (let i = 1; i + 1 < p.length; i++) add([p[0], p[i], p[i + 1]]);
+        } else add([[road.x0, road.z0], [road.x1, road.z0], [road.x1, road.z1], [road.x0, road.z1]]);
+      }
+      // A road-width-sized cell keeps startup clipping local; no runtime work.
+      cutVehicle = polygonCutter(pieces, Math.max(...SITE.roads.filter(r => typeof r.w === 'number').map(r => r.w)));
+    }
+    const result = [];
+    for (let i = 0; i < positions.length; i += 9) {
+      const triangle = [positions.slice(i, i + 3), positions.slice(i + 3, i + 6), positions.slice(i + 6, i + 9)];
+      const x = triangle.reduce((s, p) => s + p[0], 0) / 3, z = triangle.reduce((s, p) => s + p[2], 0) / 3;
+      const polygons = keep?.(x, z) ? [triangle] : cutVehicle(triangle, skip);
+      for (const p of polygons) for (let j = 1; j + 1 < p.length; j++) {
+        const a = p[0].map(Math.fround), b = p[j].map(Math.fround), c = p[j + 1].map(Math.fround);
+        if (Math.abs((b[0] - a[0]) * (c[2] - a[2]) - (b[2] - a[2]) * (c[0] - a[0])) > 1e-9) result.push(...a, ...b, ...c);
+      }
+    }
+    return result;
+  };
+  return trim;
 }
 
 /** Is (x, z) on a path road's pavement (`walks`), widened by `margin`? (#435: the trees keep off them.) */
@@ -238,7 +282,7 @@ export function pathStrip(road, a, b, lift, groundY, clip = false, grid = ground
     const p = S[k - 1], q = S[k];
     const c = [at(p, a(p.w)), at(p, b(p.w)), at(q, a(q.w)), at(q, b(q.w))], plen = Math.hypot(q.x - p.x, q.z - p.z);
     if (typeof clip==='function' ? clip(c) : clip && c.every(([x, z]) => onRoad(x, z, -0.05, road))) continue;
-    if (trim && plen > 0 && [c[0], c[1], c[2], c[3], lerp(c[0], c[3], 0.5), lerp(c[0], c[2], 0.5), lerp(c[1], c[3], 0.5)].some(([x, z]) => trim(x, z))) {
+    if (trim && !trim.cut && plen > 0 && [c[0], c[1], c[2], c[3], lerp(c[0], c[3], 0.5), lerp(c[0], c[2], 0.5), lerp(c[1], c[3], 0.5)].some(([x, z]) => trim(x, z))) {
       const m = Math.max(2, Math.ceil(plen / TRIM_STEP));
       for (let j = 0; j < m; j++) {
         const u0 = j / m, u1 = (j + 1) / m, d = [lerp(c[0], c[2], u0), lerp(c[1], c[3], u0), lerp(c[0], c[2], u1), lerp(c[1], c[3], u1)];
@@ -247,6 +291,14 @@ export function pathStrip(road, a, b, lift, groundY, clip = false, grid = ground
       continue;
     }
     emit(c, plen);
+  }
+  if (trim?.cut) {
+    const clipped = trim.cut(pos);
+    // New road-edge vertices must lie on the same rendered terrain as the path.
+    // The old mesh tolerates 1 cm between terrain cuts; interpolating a cut edge
+    // can expose that error above the 2.5 cm surface lift.
+    for (let i = 0; i < clipped.length; i += 3) clipped[i + 1] = groundY(clipped[i], clipped[i + 2]) + lift;
+    return finish(clipped);
   }
   return finish(pos);
 }
