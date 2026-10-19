@@ -313,3 +313,9 @@ perpendicular wall near a corner (explicit limitation). Saved layouts: the piece
 in `src/rearrange.js` `apply` takes both earlier defaults (#1272 z 4.55, #1291 z 4.16): stale entries under any old id are dropped so the new
 default applies, one that was moved away from every old default carries over. Test: `tools/stringshelftest.html` (position 1.84 m,
 dressing on every board, no old board left, plants follow, migration), `tools/planttest.html` (taking the plants off the shelf).
+
+## Children’s billiards (#1328)
+
+`src/billiards.js` adds the local child-size table to `Playroom`: merged cloth/frame/legs/six pocket mouths, 16 instanced rolling balls (solids/stripes and cue), and one animated cue. At most three visible draws, no new lights or textures; the complete group is hidden outside the room, and `Playroom.update` freezes its simulation outside. Four outer-frame segments block the player without obstructing the entrance/exit. `PLAYROOM.billiards` centralizes guessed dimensions and playability coefficients; these are not measured apartment fittings.
+
+`src/billiardphysics.js` is a renderer-independent equal-mass local simulation with bounded substeps, linear friction, ball/ball and cushion restitution, six pockets and safe cue respotting after a scratch. Aim over the table and use E/touch; horizontal camera direction selects the stroke, a new stroke waits for rest, and the next stroke after all object balls are pocketed re-racks. No rules, multiplayer or sound are included (#1329/#1330). Verify with `tools/billiardtest.mjs`, real-app `tools/billiardtest.cjs` and the room lifecycle test. Gameplay is excluded from the public downstream.

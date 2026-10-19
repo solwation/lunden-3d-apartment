@@ -1,3 +1,4 @@
+import { Billiards } from './billiards.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { PLAYROOM as R, COURTYARD } from './config.js';
@@ -5,7 +6,7 @@ import { PLAYROOM as R, COURTYARD } from './config.js';
 // #1319 / #1326: the playhouse's secret children's room. A hidden interior, far outside the walkable area (see PLAYROOM in
 // config.js): the playhouse door teleports a player shorter than PLAYROOM.maxCm in, the door in the room's south wall back out.
 // Nothing here is drawn (or has a draw call) while the visitor is outside: the whole group is hidden until `setInside(true)`.
-// The room is empty for now (furniture: #1327, billiards: #1328 / #1329, sound: #1330).
+// Local billiards: #1328 (rules/network: #1329); furniture: #1327, sound: #1330.
 
 const X0 = R.x - R.w / 2, X1 = R.x + R.w / 2, Z0 = R.z - R.d / 2, Z1 = R.z + R.d / 2;
 const box = (x0, x1, y0, y1, z0, z1) => new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0).translate((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
@@ -45,8 +46,11 @@ export class Playroom {
     pick.userData.door = this.exitTarget;
     this.exitTarget.pickable = pick;
     this.object.add(pick);
+    this.billiards = new Billiards();this.object.add(this.billiards.object);this.segments.push(...this.billiards.segments);
     this.inside = false;
   }
+
+  update(dt,camera,aimed) { if(this.inside)this.billiards.update(dt,camera,aimed); }
 
   contains(x, z) { return inPlayroom(x, z); }
 

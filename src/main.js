@@ -1708,6 +1708,11 @@ function use(thing) {
   if (thing.kind === 'bicycle') { if (player.riding) { standUp(); return; } if (rest.active) return; if (!player.mountBicycle(thing.bicycle)) greet.sayMine('Här går det inte att ta ut cykeln säkert.'); return; }
   if (thing.kind === 'playhouse') { enterPlayroom(); return; }
   if (thing.kind === 'playroomExit') { leavePlayroom(); return; }
+  if (thing.kind === 'playroomBilliards') {
+    if (heldItem()) { badge('Lägg ifrån dig det du håller först', false); return; }
+    if (!playroom.billiards.shoot(camera)) badge('Vänta tills bollarna ligger still', false);
+    return;
+  }
   if (thing.kind === 'ghost' && weaponKey()) { // focus may predate a weapon change (#872)
     const held = heldItem();
     if (!held && suit.worn) suit.shoot();
@@ -2037,7 +2042,7 @@ function updateFocus() {
     ...(!weaponKey() ? ghosts.targets() : []), // only unarmed visitors greet other players (#872)
     ...suit.targets(), // the Spider-Man suit in its drawer / where it was laid (#597)
     ...world.courtyardTargets.map((t) => t.pickable),
-    ...(playroom.inside ? [playroom.exitTarget.pickable] : []), // the way out of the children's room (#1319)
+    ...(playroom.inside ? [playroom.exitTarget.pickable, playroom.billiards.target.pickable] : []), // the way out of the children's room (#1319)
     ...bicyclePickables(), // the courtyard's benches (#438): F keeps them
     ...(power.reachable ? [power.target.pickable] : []), // the fuse box while its cabinet is open (#604)
     ...(world.furnitureOn ? [...(target.object.visible ? [target.target] : []), ...(hoop.object.visible && hoop.freeThrowTarget ? [hoop.freeThrowTarget] : []), ...patio.targets, ...world.furnitureTargets, ...holdables.map((h) => h.target), drawing.target, ...posters.targets].map((t) => t.pickable) : [])]; // parasol, TV, seats, beds, toys — unless F hid the furniture
@@ -2846,6 +2851,7 @@ function step(dt) {
   core.update(dt, player, camera); // the stairwell's doors, the lift, drawn only near (#415)
   garage.update(dt, player, camera, car); // its door (#358), the förråd doors, the tubes' motion sensor, drawn only near (#357)
   if (playroom.inside && !playroom.contains(player.pos.x, player.pos.z)) playroom.setInside(false); // (respawned / resumed elsewhere: the room is undrawn again)
+  playroom.update(dt, camera, focused?.kind === 'playroomBilliards');
   day.under = player.inPlayroom ? 1 : garage.under; // down there no daylight (nor in the children's room, #1319)
   day.lit = player.inPlayroom ? PLAYROOM.lit : garage.lit; // … but the tubes' light on the cars (#440), the room's own lamp
   { // the sun's shadow box (±14 m round its target) follows the visitor to a visited flat (#574): centred on it within

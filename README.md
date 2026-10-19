@@ -16,7 +16,7 @@ Bilen stannar för spelare i sin körväg även i svängar och vid backning.
 
 På vintern står båda hästarna synliga inne i hästhagens skjul. När snön försvinner går de ut i hagen igen.
 
-Spelare som är kortare än 160 cm kan gå in i lekstugans hemliga barnrum. Dörren inifrån går alltid att använda för att komma ut.
+Spelare som är kortare än 160 cm kan gå in i lekstugans hemliga barnrum. Dörren inifrån går alltid att använda för att komma ut. Där finns ett barnstort biljardbord: sikta över bordet och tryck E för att stöta, och vänta tills bollarna stannat inför nästa stöt.
 
 När du möblerar om står möbler ovanpå mattan och åter på golvet när de flyttas av den. Flyttar du själva mattan justeras höjden för möbler och saker som står kvar.
 
