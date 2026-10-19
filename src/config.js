@@ -5447,6 +5447,12 @@ export const AVATAR_HAT = { tag: 'q', names: ['Ingen', 'Keps framåt', 'Keps bak
 // [ring radius, height above the head bone, how far the cups hang down the chest, their x] in the torso frame.
 export const AVATAR_PHONES = { tag: 'f', names: ['Inga', 'På öronen', 'Runt halsen'], colour: 0x26282e, pad: 0x3c3f47,
   band: 0.0065, gap: [0.034, 0.027], cup: [0.042, 0.03, 0.128], hatLift: [0, 0.016, 0.016, 0.018, 0.03], hatOut: 0.022, neck: { ring: [0.072, 0.085], y: 0.025, hang: 0.08, x: 0.07 } };
+// #1323 (#1318): necklaces, look field `necklace`: 0 none, 1 thin chain, 2 pearls, 3 pendant (chain with a pendant), 4 thick gold chain; the extension's `x` tag
+// (absent when 0, so old codes are unchanged). In the shared body geometry, collapsed in the vertex shader when not chosen (src/avatar.js).
+// Shape (*guess*, by eye against the torso / neck): `neckY` the ring's height on the neck and `drop` how far the chain hangs at the front, both m in the
+// torso bone's frame; `tube` the chain's thickness (`gold` the thick one's), `bead` a pearl's radius, `pendant` the pendant's radius.
+export const AVATAR_NECKLACE = { tag: 'x', names: ['Inget', 'Tunn kedja', 'Pärlor', 'Hänge', 'Guldkedja'], neckY: 0.665, drop: 0.115, tube: 0.0028, gold: 0.0062, bead: 0.0085, pendant: 0.017,
+  colours: { chain: 0xc9ccd1, pearl: 0xf1ece2, pendant: 0xd4af37, gold: 0xe0b83c } };
 // #1244: trouser models (look field `legs`, tag `p`) and top models (`cut`, tag `m`) beyond the first, which stay the default and
 // are not carried in the code. Legs: straight, shorts (mid-thigh, bare knees), wide. Tops: T-shirt / long sleeves (the `sleeves`
 // choice), tank (sleeveless), hoodie (always long-sleeved, a long hem, a pocket and a rolled hood). `wide` / `hem` scale the leg's
@@ -5480,6 +5486,7 @@ function encodeLookExt(look) {
   if (Number.isInteger(look.glasses) && look.glasses > 0 && look.glasses < AVATAR_GLASSES.names.length) out += `${AVATAR_GLASSES.tag}${look.glasses}`;
   if (Number.isInteger(look.hat) && look.hat > 0 && look.hat < AVATAR_HAT.names.length) out += `${AVATAR_HAT.tag}${look.hat}`; // #1321
   if (Number.isInteger(look.phones) && look.phones > 0 && look.phones < AVATAR_PHONES.names.length) out += `${AVATAR_PHONES.tag}${look.phones}`; // #1322
+  if (Number.isInteger(look.necklace) && look.necklace > 0 && look.necklace < AVATAR_NECKLACE.names.length) out += `${AVATAR_NECKLACE.tag}${look.necklace}`; // #1323
   const brows = look.brows == null ? -1 : HAIR.indexOf(look.brows); // #1220
   if (brows >= 0) out += `${AVATAR_BROWS.tag}${brows}`;
   if (look.legs > 0 && look.legs < AVATAR_CLOTHES.legs.names.length) out += `${AVATAR_CLOTHES.legs.tag}${look.legs}`; // #1244
@@ -5498,6 +5505,7 @@ function decodeLookExt(ext, lk) {
     if (tag === AVATAR_GLASSES.tag) { if (v < AVATAR_GLASSES.names.length) lk.glasses = v; continue; } // #1165
     if (tag === AVATAR_HAT.tag) { if (v < AVATAR_HAT.names.length) lk.hat = v; continue; } // #1321
     if (tag === AVATAR_PHONES.tag) { if (v < AVATAR_PHONES.names.length) lk.phones = v; continue; } // #1322
+    if (tag === AVATAR_NECKLACE.tag) { if (v < AVATAR_NECKLACE.names.length) lk.necklace = v; continue; } // #1323
     if (tag === AVATAR_BROWS.tag) { if (v < HAIR.length) lk.brows = HAIR[v]; continue; } // #1220
     if (tag === AVATAR_CLOTHES.legs.tag) { if (v < AVATAR_CLOTHES.legs.names.length) lk.legs = v; continue; } // #1244
     if (tag === AVATAR_CLOTHES.cut.tag) { if (v < AVATAR_CLOTHES.cut.names.length) lk.cut = v; continue; }
@@ -5534,7 +5542,7 @@ function nearestSeededBuild(look) {
 
 /** The face fields' defaults (#1138): the original brown eyes, every slider in the middle and brows like the hair (#1220). */
 export function defaultFaceLook() {
-  const lk = { eyes: EYES[0], glasses: 0, hat: 0, phones: 0, brows: null };
+  const lk = { eyes: EYES[0], glasses: 0, hat: 0, phones: 0, necklace: 0, brows: null };
   for (const name of Object.keys(AVATAR_SHAPE.fields)) lk[name] = AVATAR_SHAPE.mid;
   return lk;
 }

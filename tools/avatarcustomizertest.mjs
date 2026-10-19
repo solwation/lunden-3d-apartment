@@ -702,3 +702,29 @@ test('#1322 headphones: tag f, old codes unchanged, bad values skipped, combined
   for (const n of Object.keys(AVATAR_SHAPE.fields)) everything[n] = n === 'jaw' ? 0 : 8;
   assert.ok(splitAvatarCode(encodeAvatarWireLook({ ...everything, height: 140, bodyBuild: 8, top: TOPS[10] })).ax.length <= AVATAR_LOOK_EXT_MAX);
 });
+
+test('#1323 necklaces: tag x, old codes unchanged, bad values skipped, combined with headwear, glasses and the face', async () => {
+  const { AVATAR_NECKLACE, AVATAR_LOOK_EXT_MAX, AVATAR_SHAPE, splitAvatarCode, defaultFaceLook, encodeAvatarWireLook } = await import('../src/config.js');
+  const plain = avatarLook('neck-plain'), base = encodeAvatarLook(plain);
+  assert.match(base, /^[0-9]{9}$/, 'an untouched look has no extension');
+  assert.equal(defaultFaceLook().necklace, 0, 'no necklace by default');
+  assert.equal(decodeAvatarLook(base, 'p').necklace, 0);
+  assert.equal(AVATAR_NECKLACE.names.length, 5);
+  for (let n = 1; n < AVATAR_NECKLACE.names.length; n++) {
+    const code = encodeAvatarLook({ ...plain, necklace: n });
+    assert.equal(code, `${base}x${n}`);
+    assert.equal(decodeAvatarLook(code, 'p').necklace, n);
+  }
+  assert.equal(encodeAvatarLook({ ...plain, necklace: 0 }), base, 'none is not written');
+  assert.equal(encodeAvatarLook({ ...plain, necklace: 9 }), base, 'an unknown kind is not written');
+  assert.equal(decodeAvatarLook(base + 'x9', 'p').necklace, 0, 'out-of-range necklace ignored');
+  const all = encodeAvatarLook({ ...plain, necklace: 3, hat: 2, glasses: 1, height: 140 });
+  assert.equal(all, base + '140' + 'g1q2x3');
+  const back = decodeAvatarLook(all, 'p');
+  assert.equal(back.necklace, 3); assert.equal(back.hat, 2); assert.equal(back.glasses, 1); assert.equal(back.height, 140);
+  assert.deepEqual(splitAvatarCode(all), { av: base + '140', ax: 'g1q2x3' });
+  assert.match(encodeAvatarWireLook({ ...plain, necklace: 4 }), /x4/, 'on the wire');
+  const everything = { ...plain, glasses: 2, hat: 4, necklace: 4, brows: HAIR[7], eyes: 0x7c8288 };
+  for (const n of Object.keys(AVATAR_SHAPE.fields)) everything[n] = n === 'jaw' ? 0 : 8;
+  assert.ok(splitAvatarCode(encodeAvatarWireLook({ ...everything, height: 140, bodyBuild: 8, top: TOPS[10] })).ax.length <= AVATAR_LOOK_EXT_MAX);
+});

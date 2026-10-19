@@ -1,4 +1,4 @@
-import { SKIN, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES, AVATAR_HAT, AVATAR_PHONES, AVATAR_CLOTHES } from './config.js';
+import { SKIN, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES, AVATAR_HAT, AVATAR_PHONES, AVATAR_NECKLACE, AVATAR_CLOTHES } from './config.js';
 
 // #1220: the brows' colours (config.js HAIR, the hair swatches' names) and a first choice that follows the hair
 const BROW_NAMES = ['Mörkbruna', 'Bruna', 'Ljusbruna', 'Guldbruna', 'Blonda', 'Grå', 'Röda', 'Svarta'];
@@ -157,6 +157,27 @@ export function drawAvatarPreview(canvas, look) {
   // Neck (y: 78 - 93)
   ctx.fillStyle = skin;
   ctx.fillRect(cx - 7, 78 - neckPx, 14, 16 + neckPx);
+
+  // #1323: necklace (front view) on the neck and chest: a thin chain, pearls, a chain with a pendant, a thick gold chain
+  const neckl = Number(look.necklace) || 0;
+  if (neckl > 0 && neckl < AVATAR_NECKLACE.names.length) {
+    const c = (v) => toHex(v), u = (t, drop) => { // the U-shaped path from the neck's left side, down at the front, to its right side
+      const a = Math.PI * t; return [cx - Math.cos(a) * 8, 88 + Math.sin(a) * drop];
+    };
+    {
+      const drop = neckl === 2 ? 11 : neckl === 4 ? 12 : 18, n = neckl === 2 ? 15 : 24;
+      if (neckl === 2) {
+        ctx.fillStyle = c(AVATAR_NECKLACE.colours.pearl);
+        for (let i = 0; i <= n; i++) { const [x, y] = u(i / n, drop); ctx.beginPath(); ctx.arc(x, y, 1.7, 0, Math.PI * 2); ctx.fill(); }
+      } else {
+        ctx.strokeStyle = c(neckl === 4 ? AVATAR_NECKLACE.colours.gold : AVATAR_NECKLACE.colours.chain); ctx.lineWidth = neckl === 4 ? 2.4 : 1;
+        ctx.beginPath();
+        for (let i = 0; i <= n; i++) { const [x, y] = u(i / n, drop); if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y); }
+        ctx.stroke();
+        if (neckl === 3) { const [x, y] = u(0.5, drop); ctx.fillStyle = c(AVATAR_NECKLACE.colours.pendant); ctx.beginPath(); ctx.arc(x, y + 3.5, 3.4, 0, Math.PI * 2); ctx.fill(); }
+      }
+    }
+  }
 
   // Arms (y: 95 - 190)
   for (const s of [-1, 1]) {
@@ -448,6 +469,7 @@ function updateActiveSwatches() {
   groups.push({ type: 'glasses', value: Number(currentLook.glasses) || 0 }); // #1165
   groups.push({ type: 'hat', value: Number(currentLook.hat) || 0 }); // #1321
   groups.push({ type: 'phones', value: Number(currentLook.phones) || 0 }); // #1322
+  groups.push({ type: 'necklace', value: Number(currentLook.necklace) || 0 }); // #1323
   groups.push({ type: 'brows', value: HAIR.includes(currentLook.brows) ? HAIR.indexOf(currentLook.brows) : -1 }); // #1220 (-1: like the hair)
   groups.push({ type: 'eyes', value: EYES.includes(currentLook.eyes) ? currentLook.eyes : EYES[0], list: EYES });
   for (const name of Object.keys(AVATAR_SHAPE.fields)) { // #1138: the face sliders
@@ -542,6 +564,7 @@ function initCustomizerDOM() {
   previewCanvas = customizerEl.querySelector('#avatar-preview-canvas');
   addFaceSections(customizerEl.querySelector('.customizer-controls'));
   addAccessorySection(customizerEl.querySelector('.customizer-controls')); // #1321
+  addNecklaceSection(customizerEl.querySelector('.customizer-controls')); // #1323
 
   // Handle swatches and style clicks
   customizerEl.addEventListener('click', (e) => {
@@ -588,6 +611,9 @@ function initCustomizerDOM() {
       applyAndRefresh();
     } else if (type === 'phones' && AVATAR_PHONES.names[idx] !== undefined) { // #1322
       currentLook.phones = idx;
+      applyAndRefresh();
+    } else if (type === 'necklace' && AVATAR_NECKLACE.names[idx] !== undefined) { // #1323
+      currentLook.necklace = idx;
       applyAndRefresh();
     } else if (type === 'eyes' && EYES[idx] !== undefined) {
       currentLook.eyes = EYES[idx];
@@ -748,6 +774,27 @@ function addAccessorySection(controls) {
     sec.append(row);
     controls.append(sec);
   }
+}
+
+/** #1323 (#1318): the necklace section (none, thin chain, pearls, pendant, thick gold chain). */
+function addNecklaceSection(controls) {
+  if (!controls || controls.querySelector?.('[data-necklace-section]')) return;
+  const sec = document.createElement('section');
+  sec.className = 'customizer-section';
+  sec.dataset.necklaceSection = '';
+  const h = document.createElement('h3');
+  h.textContent = 'Halsband';
+  sec.append(h);
+  const row = document.createElement('div');
+  row.className = 'btn-group';
+  AVATAR_NECKLACE.names.forEach((n, i) => {
+    const b = document.createElement('button');
+    Object.assign(b.dataset, { type: 'necklace', index: String(i) });
+    b.textContent = i ? n : 'Inget halsband';
+    row.append(b);
+  });
+  sec.append(row);
+  controls.append(sec);
 }
 
 /** Configure customizer integration. */
