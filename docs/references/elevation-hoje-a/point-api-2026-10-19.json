@@ -1,0 +1,1351 @@
+{
+  "version": 1,
+  "issue": 1349,
+  "endpoint": "https://api.kart-api.se/v1/hojd",
+  "documentation": "https://kart-api.se/en/guides/elevation-sweden/",
+  "sourceDescription": "Lantmäteriet Markhöjdmodell via kart-api; provider reports a 1 m source grid",
+  "verticalDatum": "RH 2000 (as reported by provider)",
+  "licence": "CC BY 4.0 (as reported in each response)",
+  "registration": {
+    "anchor": {
+      "lon": 13.181015825,
+      "lat": 55.684965075,
+      "x": 32.3,
+      "z": -0.4
+    },
+    "horizontalAccuracyM": "approximately 3–5 m; existing model registration, not a survey"
+  },
+  "limitations": [
+    "Point samples from a third-party API, not an original 1 m GeoTIFF download.",
+    "Fine source resolution does not improve the model's approximate horizontal registration.",
+    "Ground-model values at water are not measured bathymetry or a measured current water level.",
+    "The model-origin ground sample does not establish the apartment's absolute floor elevation.",
+    "No runtime terrain, river, bridge or path heights are changed by this export."
+  ],
+  "pointSetSha256": "c525a45bb753d97757e451f78b4c019d6661a83daeadef3ed5a19574878f0448",
+  "startedAt": "2026-10-19T11:58:39.916Z",
+  "expectedCount": 60,
+  "complete": true,
+  "points": [
+    {
+      "station": 0,
+      "alongM": 0,
+      "offsetM": -24,
+      "x": 212.42545639970533,
+      "z": 97.07212916552734,
+      "lonLat": [
+        13.181219645911495,
+        55.68312885198694
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68312885198694&lon=13.181219645911495",
+      "fetchedAt": "2026-10-19T11:58:40.395Z",
+      "response": {
+        "lat": 55.68312885198694,
+        "lon": 13.181219645911495,
+        "hojd_m": 9.73,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 0,
+      "alongM": 0,
+      "offsetM": -12,
+      "x": 208.53272819985264,
+      "z": 85.72106458276367,
+      "lonLat": [
+        13.18134016777215,
+        55.68321254234998
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68321254234998&lon=13.18134016777215",
+      "fetchedAt": "2026-10-19T11:58:40.727Z",
+      "response": {
+        "lat": 55.68321254234998,
+        "lon": 13.18134016777215,
+        "hojd_m": 10.05,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 0,
+      "alongM": 0,
+      "offsetM": -6,
+      "x": 206.58636409992633,
+      "z": 80.04553229138185,
+      "lonLat": [
+        13.181400428702478,
+        55.68325438753149
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68325438753149&lon=13.181400428702478",
+      "fetchedAt": "2026-10-19T11:58:41.154Z",
+      "response": {
+        "lat": 55.68325438753149,
+        "lon": 13.181400428702478,
+        "hojd_m": 9.84,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 0,
+      "alongM": 0,
+      "offsetM": -3,
+      "x": 205.61318204996314,
+      "z": 77.20776614569093,
+      "lonLat": [
+        13.18143055916764,
+        55.68327531012225
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68327531012225&lon=13.18143055916764",
+      "fetchedAt": "2026-10-19T11:58:41.495Z",
+      "response": {
+        "lat": 55.68327531012225,
+        "lon": 13.18143055916764,
+        "hojd_m": 9.07,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 0,
+      "alongM": 0,
+      "offsetM": 0,
+      "x": 204.64,
+      "z": 74.37,
+      "lonLat": [
+        13.181460689632805,
+        55.68329623271301
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68329623271301&lon=13.181460689632805",
+      "fetchedAt": "2026-10-19T11:58:41.865Z",
+      "response": {
+        "lat": 55.68329623271301,
+        "lon": 13.181460689632805,
+        "hojd_m": 9.09,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 0,
+      "alongM": 0,
+      "offsetM": 3,
+      "x": 203.66681795003683,
+      "z": 71.53223385430908,
+      "lonLat": [
+        13.181490820097968,
+        55.68331715530377
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68331715530377&lon=13.181490820097968",
+      "fetchedAt": "2026-10-19T11:58:42.232Z",
+      "response": {
+        "lat": 55.68331715530377,
+        "lon": 13.181490820097968,
+        "hojd_m": 9.1,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 0,
+      "alongM": 0,
+      "offsetM": 6,
+      "x": 202.69363590007364,
+      "z": 68.69446770861816,
+      "lonLat": [
+        13.181520950563133,
+        55.683338077894525
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.683338077894525&lon=13.181520950563133",
+      "fetchedAt": "2026-10-19T11:58:42.675Z",
+      "response": {
+        "lat": 55.683338077894525,
+        "lon": 13.181520950563133,
+        "hojd_m": 9.66,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 0,
+      "alongM": 0,
+      "offsetM": 12,
+      "x": 200.74727180014733,
+      "z": 63.018935417236335,
+      "lonLat": [
+        13.18158121149346,
+        55.68337992307604
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68337992307604&lon=13.18158121149346",
+      "fetchedAt": "2026-10-19T11:58:43.230Z",
+      "response": {
+        "lat": 55.68337992307604,
+        "lon": 13.18158121149346,
+        "hojd_m": 10,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 0,
+      "alongM": 0,
+      "offsetM": 24,
+      "x": 196.85454360029465,
+      "z": 51.66787083447266,
+      "lonLat": [
+        13.181701733354114,
+        55.68346361343907
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68346361343907&lon=13.181701733354114",
+      "fetchedAt": "2026-10-19T11:58:43.636Z",
+      "response": {
+        "lat": 55.68346361343907,
+        "lon": 13.181701733354114,
+        "hojd_m": 10.92,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 1,
+      "alongM": 14.673513553338198,
+      "offsetM": 0,
+      "x": 190.76,
+      "z": 79.13,
+      "lonLat": [
+        13.181279160091156,
+        55.68337931332968
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68337931332968&lon=13.181279160091156",
+      "fetchedAt": "2026-10-19T11:58:44.051Z",
+      "response": {
+        "lat": 55.68337931332968,
+        "lon": 13.181279160091156,
+        "hojd_m": 9.17,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 2,
+      "alongM": 74.2252960623446,
+      "offsetM": 0,
+      "x": 131.38,
+      "z": 74.61,
+      "lonLat": [
+        13.180838825755359,
+        55.68385319558538
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68385319558538&lon=13.180838825755359",
+      "fetchedAt": "2026-10-19T11:58:44.451Z",
+      "response": {
+        "lat": 55.68385319558538,
+        "lon": 13.180838825755359,
+        "hojd_m": 9.26,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 3,
+      "alongM": 84.19694587569043,
+      "offsetM": 0,
+      "x": 127.15,
+      "z": 83.64,
+      "lonLat": [
+        13.180681079851244,
+        55.68384243441939
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68384243441939&lon=13.180681079851244",
+      "fetchedAt": "2026-10-19T11:58:44.833Z",
+      "response": {
+        "lat": 55.68384243441939,
+        "lon": 13.180681079851244,
+        "hojd_m": 9.07,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 4,
+      "alongM": 102.72968447526065,
+      "offsetM": -24,
+      "x": 146.90677593730155,
+      "z": 110.15706406674816,
+      "lonLat": [
+        13.180489570935842,
+        55.68356569402739
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68356569402739&lon=13.180489570935842",
+      "fetchedAt": "2026-10-19T11:58:45.113Z",
+      "response": {
+        "lat": 55.68356569402739,
+        "lon": 13.180489570935842,
+        "hojd_m": 10.35,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 4,
+      "alongM": 102.72968447526065,
+      "offsetM": -12,
+      "x": 135.62838796865077,
+      "z": 106.05853203337408,
+      "lonLat": [
+        13.18044971976243,
+        55.683671124860076
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.683671124860076&lon=13.18044971976243",
+      "fetchedAt": "2026-10-19T11:58:45.478Z",
+      "response": {
+        "lat": 55.683671124860076,
+        "lon": 13.18044971976243,
+        "hojd_m": 10.36,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 4,
+      "alongM": 102.72968447526065,
+      "offsetM": -6,
+      "x": 129.98919398432537,
+      "z": 104.00926601668704,
+      "lonLat": [
+        13.180429794175724,
+        55.683723840276414
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.683723840276414&lon=13.180429794175724",
+      "fetchedAt": "2026-10-19T11:58:45.845Z",
+      "response": {
+        "lat": 55.683723840276414,
+        "lon": 13.180429794175724,
+        "hojd_m": 10.06,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 4,
+      "alongM": 102.72968447526065,
+      "offsetM": -3,
+      "x": 127.16959699216268,
+      "z": 102.98463300834351,
+      "lonLat": [
+        13.180419831382371,
+        55.68375019798458
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68375019798458&lon=13.180419831382371",
+      "fetchedAt": "2026-10-19T11:58:46.266Z",
+      "response": {
+        "lat": 55.68375019798458,
+        "lon": 13.180419831382371,
+        "hojd_m": 9.89,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 4,
+      "alongM": 102.72968447526065,
+      "offsetM": 0,
+      "x": 124.35,
+      "z": 101.96,
+      "lonLat": [
+        13.180409868589019,
+        55.68377655569275
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68377655569275&lon=13.180409868589019",
+      "fetchedAt": "2026-10-19T11:58:46.592Z",
+      "response": {
+        "lat": 55.68377655569275,
+        "lon": 13.180409868589019,
+        "hojd_m": 8.96,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 4,
+      "alongM": 102.72968447526065,
+      "offsetM": 3,
+      "x": 121.53040300783731,
+      "z": 100.93536699165648,
+      "lonLat": [
+        13.180399905795666,
+        55.683802913400925
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.683802913400925&lon=13.180399905795666",
+      "fetchedAt": "2026-10-19T11:58:46.921Z",
+      "response": {
+        "lat": 55.683802913400925,
+        "lon": 13.180399905795666,
+        "hojd_m": 9.08,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 4,
+      "alongM": 102.72968447526065,
+      "offsetM": 6,
+      "x": 118.7108060156746,
+      "z": 99.91073398331295,
+      "lonLat": [
+        13.180389943002313,
+        55.68382927110909
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68382927110909&lon=13.180389943002313",
+      "fetchedAt": "2026-10-19T11:58:47.311Z",
+      "response": {
+        "lat": 55.68382927110909,
+        "lon": 13.180389943002313,
+        "hojd_m": 9.19,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 4,
+      "alongM": 102.72968447526065,
+      "offsetM": 12,
+      "x": 113.07161203134922,
+      "z": 97.86146796662591,
+      "lonLat": [
+        13.180370017415607,
+        55.68388198652543
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68388198652543&lon=13.180370017415607",
+      "fetchedAt": "2026-10-19T11:58:47.599Z",
+      "response": {
+        "lat": 55.68388198652543,
+        "lon": 13.180370017415607,
+        "hojd_m": 10.46,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 4,
+      "alongM": 102.72968447526065,
+      "offsetM": 24,
+      "x": 101.79322406269844,
+      "z": 93.76293593325182,
+      "lonLat": [
+        13.180330166242195,
+        55.68398741735811
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68398741735811&lon=13.180330166242195",
+      "fetchedAt": "2026-10-19T11:58:47.934Z",
+      "response": {
+        "lat": 55.68398741735811,
+        "lon": 13.180330166242195,
+        "hojd_m": 10.96,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 5,
+      "alongM": 117.33588863650665,
+      "offsetM": 0,
+      "x": 116.11,
+      "z": 114.02,
+      "lonLat": [
+        13.180177315578337,
+        55.68378191944339
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68378191944339&lon=13.180177315578337",
+      "fetchedAt": "2026-10-19T11:58:48.451Z",
+      "response": {
+        "lat": 55.68378191944339,
+        "lon": 13.180177315578337,
+        "hojd_m": 9.3,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 6,
+      "alongM": 129.31714483107993,
+      "offsetM": 0,
+      "x": 105.35,
+      "z": 119.29,
+      "lonLat": [
+        13.180015239986986,
+        55.683838803669076
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.683838803669076&lon=13.180015239986986",
+      "fetchedAt": "2026-10-19T11:58:48.929Z",
+      "response": {
+        "lat": 55.683838803669076,
+        "lon": 13.180015239986986,
+        "hojd_m": 9,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 7,
+      "alongM": 159.67809343286115,
+      "offsetM": 0,
+      "x": 74.99,
+      "z": 119.53,
+      "lonLat": [
+        13.179755631435949,
+        55.68406894809011
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68406894809011&lon=13.179755631435949",
+      "fetchedAt": "2026-10-19T11:58:49.280Z",
+      "response": {
+        "lat": 55.68406894809011,
+        "lon": 13.179755631435949,
+        "hojd_m": 9.02,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 8,
+      "alongM": 190.35928148026244,
+      "offsetM": -24,
+      "x": 46.128406940981705,
+      "z": 143.73101327142228,
+      "lonLat": [
+        13.179184878238942,
+        55.68417361472036
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68417361472036&lon=13.179184878238942",
+      "fetchedAt": "2026-10-19T11:58:49.701Z",
+      "response": {
+        "lat": 55.68417361472036,
+        "lon": 13.179184878238942,
+        "hojd_m": 10.5,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 8,
+      "alongM": 190.35928148026244,
+      "offsetM": -12,
+      "x": 45.219203470490854,
+      "z": 131.76550663571115,
+      "lonLat": [
+        13.179338896790416,
+        55.68423750111388
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68423750111388&lon=13.179338896790416",
+      "fetchedAt": "2026-10-19T11:58:50.208Z",
+      "response": {
+        "lat": 55.68423750111388,
+        "lon": 13.179338896790416,
+        "hojd_m": 10.32,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 8,
+      "alongM": 190.35928148026244,
+      "offsetM": -6,
+      "x": 44.76460173524543,
+      "z": 125.78275331785557,
+      "lonLat": [
+        13.179415906066152,
+        55.68426944431064
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68426944431064&lon=13.179415906066152",
+      "fetchedAt": "2026-10-19T11:58:50.630Z",
+      "response": {
+        "lat": 55.68426944431064,
+        "lon": 13.179415906066152,
+        "hojd_m": 9.33,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 8,
+      "alongM": 190.35928148026244,
+      "offsetM": -3,
+      "x": 44.53730086762271,
+      "z": 122.79137665892779,
+      "lonLat": [
+        13.17945441070402,
+        55.68428541590902
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68428541590902&lon=13.17945441070402",
+      "fetchedAt": "2026-10-19T11:58:51.031Z",
+      "response": {
+        "lat": 55.68428541590902,
+        "lon": 13.17945441070402,
+        "hojd_m": 9.06,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 8,
+      "alongM": 190.35928148026244,
+      "offsetM": 0,
+      "x": 44.31,
+      "z": 119.8,
+      "lonLat": [
+        13.17949291534189,
+        55.6843013875074
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.6843013875074&lon=13.17949291534189",
+      "fetchedAt": "2026-10-19T11:58:51.536Z",
+      "response": {
+        "lat": 55.6843013875074,
+        "lon": 13.17949291534189,
+        "hojd_m": 8.92,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 8,
+      "alongM": 190.35928148026244,
+      "offsetM": 3,
+      "x": 44.08269913237729,
+      "z": 116.8086233410722,
+      "lonLat": [
+        13.179531419979757,
+        55.68431735910578
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68431735910578&lon=13.179531419979757",
+      "fetchedAt": "2026-10-19T11:58:51.947Z",
+      "response": {
+        "lat": 55.68431735910578,
+        "lon": 13.179531419979757,
+        "hojd_m": 9.13,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 8,
+      "alongM": 190.35928148026244,
+      "offsetM": 6,
+      "x": 43.85539826475458,
+      "z": 113.81724668214443,
+      "lonLat": [
+        13.179569924617626,
+        55.68433333070416
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68433333070416&lon=13.179569924617626",
+      "fetchedAt": "2026-10-19T11:58:52.302Z",
+      "response": {
+        "lat": 55.68433333070416,
+        "lon": 13.179569924617626,
+        "hojd_m": 9.63,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 8,
+      "alongM": 190.35928148026244,
+      "offsetM": 12,
+      "x": 43.40079652950915,
+      "z": 107.83449336428886,
+      "lonLat": [
+        13.179646933893363,
+        55.68436527390092
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68436527390092&lon=13.179646933893363",
+      "fetchedAt": "2026-10-19T11:58:52.814Z",
+      "response": {
+        "lat": 55.68436527390092,
+        "lon": 13.179646933893363,
+        "hojd_m": 10.2,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 8,
+      "alongM": 190.35928148026244,
+      "offsetM": 24,
+      "x": 42.4915930590183,
+      "z": 95.86898672857771,
+      "lonLat": [
+        13.179800952444836,
+        55.68442916029444
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68442916029444&lon=13.179800952444836",
+      "fetchedAt": "2026-10-19T11:58:53.244Z",
+      "response": {
+        "lat": 55.68442916029444,
+        "lon": 13.179800952444836,
+        "hojd_m": 10.75,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 9,
+      "alongM": 233.83845005556987,
+      "offsetM": 0,
+      "x": 1.16,
+      "z": 125.14,
+      "lonLat": [
+        13.1790563868111,
+        55.68460469024871
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68460469024871&lon=13.1790563868111",
+      "fetchedAt": "2026-10-19T11:58:53.547Z",
+      "response": {
+        "lat": 55.68460469024871,
+        "lon": 13.1790563868111,
+        "hojd_m": 8.45,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 10,
+      "alongM": 250.77805158571218,
+      "offsetM": 0,
+      "x": -15.1,
+      "z": 129.89,
+      "lonLat": [
+        13.178854895255936,
+        55.68470594965565
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68470594965565&lon=13.178854895255936",
+      "fetchedAt": "2026-10-19T11:58:54.074Z",
+      "response": {
+        "lat": 55.68470594965565,
+        "lon": 13.178854895255936,
+        "hojd_m": 8.59,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 11,
+      "alongM": 314.4366008937195,
+      "offsetM": 0,
+      "x": -67.45,
+      "z": 166.11,
+      "lonLat": [
+        13.177923382987135,
+        55.68493233985995
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68493233985995&lon=13.177923382987135",
+      "fetchedAt": "2026-10-19T11:58:54.414Z",
+      "response": {
+        "lat": 55.68493233985995,
+        "lon": 13.177923382987135,
+        "hojd_m": 8.68,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 12,
+      "alongM": 342.3834790735807,
+      "offsetM": 0,
+      "x": -89.43,
+      "z": 183.37,
+      "lonLat": [
+        13.177504536674304,
+        55.68501762313472
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68501762313472&lon=13.177504536674304",
+      "fetchedAt": "2026-10-19T11:58:54.852Z",
+      "response": {
+        "lat": 55.68501762313472,
+        "lon": 13.177504536674304,
+        "hojd_m": 8.84,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 13,
+      "alongM": 361.7919231121944,
+      "offsetM": -24,
+      "x": -83.96287514526817,
+      "z": 215.2849876855837,
+      "lonLat": [
+        13.177119418460626,
+        55.68482404740403
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68482404740403&lon=13.177119418460626",
+      "fetchedAt": "2026-10-19T11:58:55.271Z",
+      "response": {
+        "lat": 55.68482404740403,
+        "lon": 13.177119418460626,
+        "hojd_m": 10.71,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 13,
+      "alongM": 361.7919231121944,
+      "offsetM": -12,
+      "x": -92.64143757263409,
+      "z": 206.99749384279184,
+      "lonLat": [
+        13.177158128272136,
+        55.684929613293555
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.684929613293555&lon=13.177158128272136",
+      "fetchedAt": "2026-10-19T11:58:55.664Z",
+      "response": {
+        "lat": 55.684929613293555,
+        "lon": 13.177158128272136,
+        "hojd_m": 10.6,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 13,
+      "alongM": 361.7919231121944,
+      "offsetM": -6,
+      "x": -96.98071878631704,
+      "z": 202.85374692139592,
+      "lonLat": [
+        13.177177483177893,
+        55.68498239623831
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68498239623831&lon=13.177177483177893",
+      "fetchedAt": "2026-10-19T11:58:56.035Z",
+      "response": {
+        "lat": 55.68498239623831,
+        "lon": 13.177177483177893,
+        "hojd_m": 9.96,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 13,
+      "alongM": 361.7919231121944,
+      "offsetM": -3,
+      "x": -99.15035939315851,
+      "z": 200.78187346069797,
+      "lonLat": [
+        13.177187160630771,
+        55.68500878771069
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68500878771069&lon=13.177187160630771",
+      "fetchedAt": "2026-10-19T11:58:56.535Z",
+      "response": {
+        "lat": 55.68500878771069,
+        "lon": 13.177187160630771,
+        "hojd_m": 8.51,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 13,
+      "alongM": 361.7919231121944,
+      "offsetM": 0,
+      "x": -101.32,
+      "z": 198.71,
+      "lonLat": [
+        13.177196838083649,
+        55.685035179183075
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.685035179183075&lon=13.177196838083649",
+      "fetchedAt": "2026-10-19T11:58:56.877Z",
+      "response": {
+        "lat": 55.685035179183075,
+        "lon": 13.177196838083649,
+        "hojd_m": 8.85,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 13,
+      "alongM": 361.7919231121944,
+      "offsetM": 3,
+      "x": -103.48964060684148,
+      "z": 196.63812653930205,
+      "lonLat": [
+        13.177206515536527,
+        55.685061570655456
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.685061570655456&lon=13.177206515536527",
+      "fetchedAt": "2026-10-19T11:58:57.282Z",
+      "response": {
+        "lat": 55.685061570655456,
+        "lon": 13.177206515536527,
+        "hojd_m": 8.68,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 13,
+      "alongM": 361.7919231121944,
+      "offsetM": 6,
+      "x": -105.65928121368295,
+      "z": 194.5662530786041,
+      "lonLat": [
+        13.177216192989405,
+        55.68508796212784
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68508796212784&lon=13.177216192989405",
+      "fetchedAt": "2026-10-19T11:58:57.598Z",
+      "response": {
+        "lat": 55.68508796212784,
+        "lon": 13.177216192989405,
+        "hojd_m": 8.78,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 13,
+      "alongM": 361.7919231121944,
+      "offsetM": 12,
+      "x": -109.9985624273659,
+      "z": 190.42250615720818,
+      "lonLat": [
+        13.17723554789516,
+        55.6851407450726
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.6851407450726&lon=13.17723554789516",
+      "fetchedAt": "2026-10-19T11:58:57.918Z",
+      "response": {
+        "lat": 55.6851407450726,
+        "lon": 13.17723554789516,
+        "hojd_m": 9.79,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 13,
+      "alongM": 361.7919231121944,
+      "offsetM": 24,
+      "x": -118.67712485473182,
+      "z": 182.13501231441631,
+      "lonLat": [
+        13.177274257706673,
+        55.68524631096213
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68524631096213&lon=13.177274257706673",
+      "fetchedAt": "2026-10-19T11:58:58.267Z",
+      "response": {
+        "lat": 55.68524631096213,
+        "lon": 13.177274257706673,
+        "hojd_m": 10.12,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 14,
+      "alongM": 373.0429230677539,
+      "offsetM": 0,
+      "x": -110.41,
+      "z": 205.34,
+      "lonLat": [
+        13.177030485895404,
+        55.68507286703515
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68507286703515&lon=13.177030485895404",
+      "fetchedAt": "2026-10-19T11:58:58.558Z",
+      "response": {
+        "lat": 55.68507286703515,
+        "lon": 13.177030485895404,
+        "hojd_m": 8.69,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 15,
+      "alongM": 444.36153564539734,
+      "offsetM": 0,
+      "x": -181.7,
+      "z": 207.36,
+      "lonLat": [
+        13.176401202999644,
+        55.68560634874497
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68560634874497&lon=13.176401202999644",
+      "fetchedAt": "2026-10-19T11:58:58.894Z",
+      "response": {
+        "lat": 55.68560634874497,
+        "lon": 13.176401202999644,
+        "hojd_m": 8.89,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 16,
+      "alongM": 487.61972446555023,
+      "offsetM": 0,
+      "x": -220.92,
+      "z": 225.61,
+      "lonLat": [
+        13.175823400643983,
+        55.68581825610961
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68581825610961&lon=13.175823400643983",
+      "fetchedAt": "2026-10-19T11:58:59.288Z",
+      "response": {
+        "lat": 55.68581825610961,
+        "lon": 13.175823400643983,
+        "hojd_m": 8.69,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 17,
+      "alongM": 505.35088630001553,
+      "offsetM": 0,
+      "x": -235.63,
+      "z": 235.51,
+      "lonLat": [
+        13.175565402976092,
+        55.68588319160993
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68588319160993&lon=13.175565402976092",
+      "fetchedAt": "2026-10-19T11:58:59.753Z",
+      "response": {
+        "lat": 55.68588319160993,
+        "lon": 13.175565402976092,
+        "hojd_m": 8.72,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 18,
+      "alongM": 525.6463291382489,
+      "offsetM": -24,
+      "x": -229.31862293860053,
+      "z": 266.3007700389068,
+      "lonLat": [
+        13.175202605909867,
+        55.68568853590764
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68568853590764&lon=13.175202605909867",
+      "fetchedAt": "2026-10-19T11:59:00.195Z",
+      "response": {
+        "lat": 55.68568853590764,
+        "lon": 13.175202605909867,
+        "hojd_m": 10.46,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 18,
+      "alongM": 525.6463291382489,
+      "offsetM": -12,
+      "x": -238.74931146930027,
+      "z": 258.8803850194534,
+      "lonLat": [
+        13.175223246946757,
+        55.68579570386559
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68579570386559&lon=13.175223246946757",
+      "fetchedAt": "2026-10-19T11:59:00.559Z",
+      "response": {
+        "lat": 55.68579570386559,
+        "lon": 13.175223246946757,
+        "hojd_m": 9.5,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 18,
+      "alongM": 525.6463291382489,
+      "offsetM": -6,
+      "x": -243.46465573465014,
+      "z": 255.17019250972672,
+      "lonLat": [
+        13.1752335674652,
+        55.68584928784456
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68584928784456&lon=13.1752335674652",
+      "fetchedAt": "2026-10-19T11:59:00.975Z",
+      "response": {
+        "lat": 55.68584928784456,
+        "lon": 13.1752335674652,
+        "hojd_m": 9.4,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 18,
+      "alongM": 525.6463291382489,
+      "offsetM": -3,
+      "x": -245.82232786732507,
+      "z": 253.31509625486336,
+      "lonLat": [
+        13.175238727724423,
+        55.68587607983405
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68587607983405&lon=13.175238727724423",
+      "fetchedAt": "2026-10-19T11:59:01.291Z",
+      "response": {
+        "lat": 55.68587607983405,
+        "lon": 13.175238727724423,
+        "hojd_m": 8.66,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 18,
+      "alongM": 525.6463291382489,
+      "offsetM": 0,
+      "x": -248.18,
+      "z": 251.46,
+      "lonLat": [
+        13.175243887983646,
+        55.685902871823544
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.685902871823544&lon=13.175243887983646",
+      "fetchedAt": "2026-10-19T11:59:01.695Z",
+      "response": {
+        "lat": 55.685902871823544,
+        "lon": 13.175243887983646,
+        "hojd_m": 8.67,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 18,
+      "alongM": 525.6463291382489,
+      "offsetM": 3,
+      "x": -250.53767213267494,
+      "z": 249.60490374513665,
+      "lonLat": [
+        13.175249048242868,
+        55.68592966381303
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68592966381303&lon=13.175249048242868",
+      "fetchedAt": "2026-10-19T11:59:02.092Z",
+      "response": {
+        "lat": 55.68592966381303,
+        "lon": 13.175249048242868,
+        "hojd_m": 8.66,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 18,
+      "alongM": 525.6463291382489,
+      "offsetM": 6,
+      "x": -252.89534426534988,
+      "z": 247.7498074902733,
+      "lonLat": [
+        13.175254208502091,
+        55.68595645580252
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68595645580252&lon=13.175254208502091",
+      "fetchedAt": "2026-10-19T11:59:02.472Z",
+      "response": {
+        "lat": 55.68595645580252,
+        "lon": 13.175254208502091,
+        "hojd_m": 9.54,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 18,
+      "alongM": 525.6463291382489,
+      "offsetM": 12,
+      "x": -257.61068853069975,
+      "z": 244.03961498054662,
+      "lonLat": [
+        13.175264529020534,
+        55.68601003978149
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68601003978149&lon=13.175264529020534",
+      "fetchedAt": "2026-10-19T11:59:02.799Z",
+      "response": {
+        "lat": 55.68601003978149,
+        "lon": 13.175264529020534,
+        "hojd_m": 10.7,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "station": 18,
+      "alongM": 525.6463291382489,
+      "offsetM": 24,
+      "x": -267.0413770613995,
+      "z": 236.6192299610932,
+      "lonLat": [
+        13.175285170057425,
+        55.68611720773945
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.68611720773945&lon=13.175285170057425",
+      "fetchedAt": "2026-10-19T11:59:03.315Z",
+      "response": {
+        "lat": 55.68611720773945,
+        "lon": 13.175285170057425,
+        "hojd_m": 11.24,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    },
+    {
+      "id": "model-origin-ground",
+      "x": 0,
+      "z": 0,
+      "lonLat": [
+        13.180737672577484,
+        55.685209236968404
+      ],
+      "requestedUrl": "https://api.kart-api.se/v1/hojd?lat=55.685209236968404&lon=13.180737672577484",
+      "fetchedAt": "2026-10-19T11:59:03.635Z",
+      "response": {
+        "lat": 55.685209236968404,
+        "lon": 13.180737672577484,
+        "hojd_m": 14.36,
+        "nodata": false,
+        "attribution": [
+          "©Lantmäteriet · Markhöjdmodell · CC BY 4.0"
+        ]
+      }
+    }
+  ],
+  "completedAt": "2026-10-19T11:59:03.786Z",
+  "nodataCount": 0
+}

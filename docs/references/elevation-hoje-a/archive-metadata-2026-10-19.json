@@ -1,0 +1,23 @@
+{
+  "source": "https://api.kart-api.se/v1/tiles/terrain-rgb-1281-1m.pmtiles",
+  "bytes": 114617592,
+  "sha256": "08a4a163ceef7e3613263fe6cf1129f98deaae91771bbdb3ce88923b51bde5f2",
+  "version": 3,
+  "minzoom": 9,
+  "maxzoom": 15,
+  "bounds": [
+    13.083678,
+    55.481382,
+    13.7338884,
+    55.8488905
+  ],
+  "metadata": {
+    "description": "terrain_rgb",
+    "format": "png",
+    "maxzoom": "15",
+    "minzoom": "9",
+    "name": "terrain_rgb",
+    "type": "overlay",
+    "version": "1.1"
+  }
+}

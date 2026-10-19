@@ -374,3 +374,6 @@ När du cyklar håller båda förstapersonshänderna i de befintliga handtagen. 
 Måltavlan står mellan rampen och trappan på södra baksidan, med ryggen mot staketet och ringarna mot gården.
 
 Öl från kylhyllan kan hällas i vanliga glas. En hel ursprunglig ölportion återställer ett liv även när den dricks delvis direkt och delvis ur flera glas; hällning, spill och bortkastad dryck ger inga liv.
+
+
+Fine Höje å height references and the reproducible account-free point-API extraction are documented in the [environment guide](docs/development/environment.md#fine-ground-height-references-for-höje-å-1349). The reference data does not establish submerged bed depth or the apartment’s absolute floor elevation.
