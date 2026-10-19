@@ -16,7 +16,7 @@ Bilen stannar för spelare i sin körväg även i svängar och vid backning.
 
 Återplacering på höjder i området använder markens verkliga modellhöjd, så att kameran stannar över marken.
 
-På vintern står båda hästarna synliga inne i hästhagens skjul. När snön försvinner går de ut i hagen igen.
+På vintern står båda hästarna synliga inne i hästhagens skjul, med halm på golvet, girlang och en varm ljusslinga. När snön försvinner försvinner pyntet och hästarna går ut i hagen igen.
 
 Spelare som är kortare än 160 cm kan gå in i lekstugans hemliga barnrum. Dörren inifrån går alltid att använda för att komma ut. Där finns ett barnstort biljardbord: sikta över bordet och tryck E för att stöta, och vänta tills bollarna stannat inför nästa stöt.
 Kom nära en avatar med Sarah eller Olof i namnet utan vapen i handen och använd E/pekknappen för en puss med hjärtan; på längre avstånd hälsar du som vanligt.

@@ -3610,7 +3610,11 @@ export const PADDOCK = {
   trough: { w: 1.7, d: 0.5, h: 0.42 }, shelter: { w: 4.2, d: 2.6, h: 2.3,
     // #1335/#1336 (all *guess*): the shelter stands where the ground under its footprint (+ `pad` m round it) varies by at most `maxRelief` m (the old spot dropped 0.7 m, so one side hung in the air
     // over the slope), at least `edge` m inside the fence; the posts/sill reach down to the lowest ground there (`sink` m below it), the floor level is the highest ground.
-    maxRelief: 0.2, pad: 0.8, edge: 8, sink: 0.15 },
+    maxRelief: 0.2, pad: 0.8, edge: 8, sink: 0.15,
+    // #1345: winter bedding/greenery/bulbs are visual guesses, two merged batches and no extra lights.
+    winter: { straw: { inset: 0.2, offset: 0.075, thickness: 0.025, grid: 10, blades: 140, bladeLength: 0.16, bladeWidth: 0.008, colors: [0xa77b36, 0xc99c4f, 0xd6af68] },
+      garland: { drop: 0.03, sag: 0.1, step: 0.1, radius: 0.075, leafLength: 0.2, colors: [0x274d28, 0x38613a, 0x486e3a] },
+      lights: { count: 16, radius: 0.036, drop: 0.075, colors: [0xffd48b, 0xffe3aa, 0xffc46b] } } },
   // #1316 (all *guess*): big shade trees in the meadow, [x, z, scale] like `SITE.bigTrees` (surroundings.js builds them as kind 'big': the shared crown/trunk batches,
   // so no extra draw calls; their trunks block through `treeFeet` like every other tree); at least 10 m inside the fence and 25 m from the gate (paddockgeotest checks).
   trees: [[-170, 247, 1.2], [-215, 270, 1.3], [-235, 293, 1.15]],

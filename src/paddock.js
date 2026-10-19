@@ -6,6 +6,7 @@ import { riverAt } from './riverbridge.js';
 import { sfx } from './audio.js';
 import { Hearts } from './pingping.js';
 import { registerSeasonal } from './seasons.js';
+import { shelterWinter } from './shelterwinter.js';
 import { shelterSpots, snowCovered, RainWatch, footprintGround, shelterSite } from './paddockshelter.js';
 
 // #1280: the pony paddock on the kidney-shaped meadow south of the timber footbridge: a merged post-and-rail fence with a closed gate, a
@@ -350,6 +351,7 @@ export class Paddock {
     this.matrix = new THREE.Matrix4(); this.quat = new THREE.Quaternion(); this.pos = new THREE.Vector3(); this.scl = new THREE.Vector3(); this.up = new THREE.Vector3(0, 1, 0);
     this.initGrass(scene, ground);
     this.initShelter();
+    this.winterDecor = shelterWinter(ground, this.spots.shelter); scene.add(this.winterDecor);
     this.write();
   }
 
@@ -615,6 +617,7 @@ export class Paddock {
     for (const h of this.hearts) h.update(dt);
     const c = this.camera.position, show = !hidden && Math.hypot(c.x - centre.x, c.z - centre.z) < P.viewDist;
     this.shelterTick(dt, rain, show); // #1316
+    this.winterDecor.visible = show && this.winter; // #1345: same snow months and distance/underground culling as the occupants
     this.mesh.visible = show && this.ponies.some((q) => !q.gone); this.grass.visible = show && !this.snowy;
     this.growGrass(Math.min(dt, 0.1)); // #1342: 72 h regrowth in real time, also while far away
     if (!show) return;
