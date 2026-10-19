@@ -1,12 +1,15 @@
 <!doctype html><html><meta charset="utf-8"><title>Southern backdrop #536</title><pre id="out">running…</pre><script type="module">
-// Verified full/test parity (#791): all 67 native geometry, camera/fog and seasonal-state result rows identical.
+// Verified full/test parity (#791): all native geometry, camera/fog and seasonal-state result rows identical.
 const lines=[];let pass=true;const check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
 try{const f=document.createElement('iframe');f.width=480;f.height=300;f.src='../index.html?test&shot&month=6&cloud=';document.body.append(f);await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const w=f.contentWindow,A=w.__app,T=await w.eval("import('three')"),C=await w.eval("import('/src/config.js')"),S=await w.eval("import('/src/surroundings.js')"),G=await w.eval("import('/src/sitegeo.js')"),B=await w.eval("import('/src/sitebackdrop.js')"),W=C.SITE.south;
 const source=await fetch('../docs/references/surrounding-views/osm-south-2026-10-08.json').then(r=>r.json()),group=A.scene.getObjectByName('south-backdrop');
 check(W.buildings.length===54&&new Set(W.buildings.map(b=>b.source)).size===54,'54 unique existing mapped south-bank footprints, no proposed plan buildings');
 for(const b of W.buildings){const f=source.features.find(f=>f.id===b.source);check(f&&b.polygon.length===f.points.length&&b.polygon.every((q,i)=>{const p=G.geoToPlan(...f.points[i]);return Math.hypot(p[0]-q[0],p[1]-q[1])<.02}),`${b.name}: actual mapped footprint`);}
 check(W.buildings.filter(b=>b.levelsSource==='OSM').length===2&&W.buildings.filter(b=>b.roofSource==='OSM').every(b=>b.roof==='hipped'),'two tagged four-storey/hipped landmarks separated from assumed heights/roof details');
-check(group.children.length===6&&group.children.filter(m=>m.isInstancedMesh).length===2,'four merged surfaces plus two low-detail vegetation instances');let tris=0;group.traverse(m=>{if(m.isMesh)tris+=(m.geometry.index?.count??m.geometry.attributes.position.count)/3*(m.isInstancedMesh?m.count:1)});check(tris<23000,`bounded far detail: ${tris} triangles including instances`);
+check(group.children.length===6&&group.children.filter(m=>m.isInstancedMesh).length===2,'four merged surfaces plus two low-detail vegetation instances');let tris=0;group.traverse(m=>{if(m.isMesh)tris+=(m.geometry.index?.count??m.geometry.attributes.position.count)/3*(m.isInstancedMesh?m.count:1)});// #1381: retain the old23000 allowance for the original260m extent, plus a field and paving/paint layer
+// per newly covered4m-column × southRow cell. Overall PERF budgets remain unchanged.
+const addedArea=(C.SITE.backgroundGround.x1-C.SITE.backgroundGround.x0)*Math.max(0,C.SITE.backgroundGround.z1-260),limit=23000+Math.ceil(addedArea/(4*C.TERRAIN_FAR.southRow))*4;
+check(tris<limit,`bounded far detail: ${tris} triangles including instances (coverage limit ${limit})`);
 A.scene.updateMatrixWorld(true);const b=W.buildings.find(b=>b.source==='relation/1309428'),h=b.holes[0].slice(0,-1),x=h.reduce((s,p)=>s+p[0],0)/h.length,z=h.reduce((s,p)=>s+p[1],0)/h.length;check(!new T.Raycaster(new T.Vector3(x,60,z),new T.Vector3(0,-1,0),0,70).intersectObjects([A.scene.getObjectByName('south-facade'),A.scene.getObjectByName('south-roof')]).length,'Asylen building44 courtyard has actual open roof/body hole');
 check(group.userData.buildings.every(b=>b.eave>b.base&&Number.isFinite(b.bottom)),'finite landmark heights');
 check(group.userData.trees.length===W.forests.reduce((n,f)=>n+f.n,0)&&group.userData.trees.every(t=>W.forests.some(f=>f.source===t.source&&pointIn(t.x,t.z,f.polygon))&&!W.buildings.some(b=>pointIn(t.x,t.z,b.polygon))&&!W.fields.some(f=>pointIn(t.x,t.z,f.polygon))),'sparse trees confined to mapped woodland, clear of open fields and houses');
@@ -15,5 +18,15 @@ check(A.camera.far===W.view.cameraFar&&A.scene.fog.far>600&&W.ground.x1>W.view.f
 const oldOvercast=A.day.overcast;A.day.overcast=1;A.day.update(0);check(Math.abs(A.scene.fog.far-C.WEATHER.fogFar)<.001,'rain still shortens visibility to existing weather target');A.day.overcast=oldOvercast;A.day.update(0);
 check(group.userData.trees.every(t=>!W.paths.some(p=>p.path.slice(1).some(([c,d],i)=>{const[a,b]=p.path[i],dx=c-a,dz=d-b,k=Math.max(0,Math.min(1,((t.x-a)*dx+(t.z-b)*dz)/(dx*dx+dz*dz)));return Math.hypot(t.x-a-k*dx,t.z-b-k*dz)<p.w/2+.5;}))),'far woodland leaves actual mapped roads clear');
 check(C.OUTDOOR.x0===-78.5&&C.OUTDOOR.x1===27.5&&C.OUTDOOR.z1===64,'walking boundary remains unchanged');
+// Actual emitted land, not a callback compared against itself: long paint bands must not hover over a hill.
+const parkingRay=new T.Raycaster(),land=group.getObjectByName('south-land');let parkingSamples=0,parkingPaint=0,parkingError=0;
+for(const p of W.parking??[]){if(!p.polygon)continue;const xs=p.polygon.map(q=>q[0]),zs=p.polygon.map(q=>q[1]);
+ for(let x=Math.min(...xs)+.5;x<Math.max(...xs);x+=2)for(let z=Math.min(...zs)+.5;z<Math.max(...zs);z+=2){
+  if(!pointIn(x,z,p.polygon))continue;parkingRay.set(new T.Vector3(x,100,z),new T.Vector3(0,-1,0));const h=parkingRay.intersectObject(land)[0];
+  if(!h){parkingError=Infinity;continue;}parkingSamples++;const lift=h.point.y-S.renderedTerrainY(x,z);if(Math.abs(lift-.076)<.001)parkingPaint++;parkingError=Math.max(parkingError,Math.min(Math.abs(lift-.052),Math.abs(lift-.076)));
+ }}
+check(parkingSamples>1000&&parkingPaint>0&&parkingError<.001,`parking surfaces and markings follow actual terrain: ${parkingSamples} samples including ${parkingPaint} paint, worst ${parkingError.toFixed(6)} m`);
+const b41=group.userData.buildings.find(b=>b.name==='Sankt Lars väg 41'),b45=group.userData.buildings.find(b=>b.name==='Sankt Lars väg 45');
+check(Math.abs(b41.base-1.83)<.05&&Math.abs(b45.base-1.94)<.05&&Math.abs(S.groundY(-130,240)+3.51)<.02,'source-relative plateau platforms stand about5.3m above the paddock; not surveyed floor elevations');
 const seasons=await w.eval("import('/src/seasons.js')"),crown=A.scene.getObjectByName('south-crowns'),m=new T.Matrix4(),v=new T.Vector3(),q=new T.Quaternion(),sc=new T.Vector3();seasons.applySeason(1);crown.getMatrixAt(0,m);m.decompose(v,q,sc);check(sc.x<.01&&!A.scene.getObjectByName('south-land').material.vertexColors,'winter removes far leaf cover and makes fields snowy');seasons.applySeason(6);crown.getMatrixAt(0,m);m.decompose(v,q,sc);check(sc.x>2&&A.scene.getObjectByName('south-land').material.vertexColors,'summer restores foliage and field colors');
 }catch(e){check(false,e.stack)}document.querySelector('#out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');</script></html>

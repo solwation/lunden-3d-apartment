@@ -1,3 +1,10 @@
+Southern plateau (#1381): `node --test tools/southplateautest.mjs`, `tools/southbackdroptest.html`,
+`PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/farwalktest.cjs GAME`, and full `perfcount.html?lowmem&w=844&h=390&quality=0`.
+Inspect actual paddock→plateau and overview images. The backdrop test samples2154emitted parking heights
+against terrain and checks relative41/45platforms; its component limit explicitly scales with new surface
+coverage while global PERF limits remain unchanged. Private frozen0b89b99b source/geometry/probe artifacts
+are in `~/.local/state/lunden-orkester/codex-single-20261019/{support1381-*,plateau1381-*}`.
+
 Browser fixture repair (#1372): run `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/runtests.cjs --jobs 1 --port 8900 statspaneltest nerfreciprocaltest restposetest`.
 The runner handles the explicit GAME [WORKER] OUT signatures for statistics/rest poses; no output goes to a relative token-named repository directory.
 Statistics uses the shared main-excerpt defaults, including `SOUNDS` and `binderFreed`; native pointer lock, keyboard, wheel and touch assertions stay intact.

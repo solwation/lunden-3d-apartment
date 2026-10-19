@@ -594,7 +594,7 @@ export const SITE = {
     { x0: -46.33, x1: 13.5, z0: -3.5, z1: 0 },  // path along Hus L's entrances (under the green strip too, #260)
   ],                                         // the pavements: roads' `walks`; the courtyard's own walks: COURTYARD
   // #535: visible terrain extent covers the sourced campus; independent of OUTDOOR walking bounds.
-  backgroundGround: {x0:-350,x1:340,z0:-340,z1:260},
+  backgroundGround: {x0:-350,x1:340,z0:-340,z1:460},
   // #532: geographic registration uses FOJAB/DAY.planNorth (58°) and the HepCat OSM footprint centre
   // (way 130578353) matched to the existing Peab-based model centre. Horizontal accuracy ~3–5 m, not surveying.
   geo: {anchor:{lon:13.181015825,lat:55.684965075,x:32.3,z:-.4},source:'OSM 2026-10-08, way 130578353'},
@@ -1788,9 +1788,15 @@ export const BUILDING_ROOFS = { flatLift: 0.05, wallStep: 4, wallLift: 0.05, dep
 // (the flat -3.01 planes beyond). All *guess* tunables; roads, paths, tree feet and the backdrop buildings sample the terrain themselves.
 /** #1311: where the terrain mesh gets coarser (triangle budget, perfcount big hall): columns outside x colWest..colEast are 12 m instead of 4 m (the river
  * corridor reaches x ~204 + its refine radius 28, so the east stays fine to colEast), rows further than rowNear north of `terrainNorth` are 10 m instead of 5 m. *guess* */
-export const TERRAIN_FAR = { colWest: -150, colEast: 235, rowNear: 60 };
+// #1381: added southern rows8m sample the10m DEM (display guess); old rows north of260 are retained.
+export const TERRAIN_FAR = { colWest: -150, colEast: 235, rowNear: 60, southRow: 8 };
+// #1381: southAnchor3m/apron4m below are platform/interpolation guesses consistent with the3–5m registration.
+// #1381: sampled LM ground via kart-api, docs/references/elevation-hoje-a/point-api-south-road-2026-10-19.json
+// (CC BY 4.0 per provider). Relative to the existing 14.36 RH2000 origin, NOT a surveyed apartment floor.
+// Radius35m and a225..240m north fade are interpolation guesses; only local dry-ground samples, never bathymetry.
+export const SOUTH_PLATEAU = { radius: 35, fade: [225, 240], points: [[-150,255,-3.52],[-130,240,-3.51],[-170,272,-3.57],[-125,275,-2.54],[-40,286,1.83],[30,272,1.94],[10,248,1.26],[-20,262,1.58],[-90,265,-1.0],[-70,275,1.15]] };
 export const ELEVATION = { protect: { x0: -86, x1: 46, z0: -36, z1: 72 }, ramp: 30, river: [32, 30], edge: 30,
-  pad: 10, padRamp: 8, padMin: 0.4 }; // #1306: far buildings stand on a level pad (the ground's mean under them) that grades back over `pad` m, unless the ground under the footprint varies by less than `padMin` m (*guess*)
+  pad: 10, padRamp: 8, padMin: 0.4, southAnchor: 3, southApron: 4 }; // #1306: far buildings stand on a level pad (the ground's mean under them) that grades back over `pad` m, unless the ground under the footprint varies by less than `padMin` m (*guess*)
 export const WALK = { x0: -260, x1: 320, z0: -200, z1: 250, cell: 40, maxSlope: 0.7, // gradient (rise/run, ~35°) above which the ground cannot be climbed and you slide back (#1281, *guess*; the park paths (0.3-0.45) stay under it; the drop from the shore path into the water (up to ~0.8), the steepest bank edges and the bridge embankments are over)
   slideOut: 0.85, slideSpeed: 3.5, slideAccel: 9, // #1281: hysteresis (sliding stops below maxSlope * slideOut), the slide's top speed (m/s) and acceleration (m/s²), *guess*
   waterDepth: 0.15, splashSafe: 2, // #1281: feet this far under the water line (m) are in the river; no fall damage for `splashSafe` s after the splash

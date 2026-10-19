@@ -5,8 +5,8 @@ import { buildRiverPark, parkDeckAt, parkFillAt, renderedParkFillY, parkRampFill
 import * as THREE from 'three';
 import { grassUV } from './grass.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE, CORE_A, CORE_B, CORE_C, NEIGHBOR_OPENINGS as O, HUS_L, FOLIAGE, ELEVATION, TERRAIN_FAR, PADDOCK } from './config.js';
-import { gridGround } from './elevation.js';
+import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE, CORE_A, CORE_B, CORE_C, NEIGHBOR_OPENINGS as O, HUS_L, FOLIAGE, ELEVATION, TERRAIN_FAR, SOUTH_PLATEAU, PADDOCK } from './config.js';
+import { gridGround, southPointGround } from './elevation.js';
 import { glowMaterial, poolGeometry, washGeometry, fadeGlow } from './groundglow.js';
 import { neighborGlass } from './neighborglass.js';
 import { registerTrees, registerSnow } from './seasons.js';
@@ -96,21 +96,30 @@ export function groundY(x, z) {
 export const groundBelowDeckY = (x, z) => terrainY(x, z);
 /** The terrain itself (the grass / asphalt surface; groundY without the stairs' treads and the recesses' floors). */
 function terrainY(x,z) {
-  const y=terrainRawY(x,z);
+  if(!legacyBuildingPads)legacyBuildingPads=makeBuildingPads(terrainRawLegacyY,260,false,[]);
+  if(z<=SOUTH_PLATEAU.fade[0])return paddedTerrainY(x,z,terrainRawLegacyY,legacyBuildingPads);
   if(!buildingPads)buildingPads=makeBuildingPads();
-  let out=y;const flat=[];
-  for(const pad of buildingPads){
+  const next=paddedTerrainY(x,z,terrainRawY,buildingPads);
+  if(z>=SOUTH_PLATEAU.fade[1])return next;
+  const before=paddedTerrainY(x,z,terrainRawLegacyY,legacyBuildingPads),w=smooth((z-SOUTH_PLATEAU.fade[0])/(SOUTH_PLATEAU.fade[1]-SOUTH_PLATEAU.fade[0]));
+  return before+(next-before)*w;
+}
+function paddedTerrainY(x,z,raw,pads) {
+  let out=raw(x,z);const flat=[];
+  for(const pad of pads){
     if(x<pad.x0||x>pad.x1||z<pad.z0||z>pad.z1)continue;
     const d=pad.dist(x,z);if(d>=ELEVATION.pad)continue;
     const w=padWeight(x,z);if(w<=0)continue;
-    if(d===0)flat.push(pad,w);else out+=smooth(1-d/ELEVATION.pad)*w*(pad.level-out); // #1306: the ground levels out under a far building, grading back over ELEVATION.pad m
+    if(d===0)flat.push(pad,w);else out+=smooth(1-d/ELEVATION.pad)*w*(pad.level-out);
   }
-  for(let i=0;i<flat.length;i+=2)out+=flat[i+1]*(flat[i].level-out); // (a neighbour's slope never tilts a footprint)
+  for(let i=0;i<flat.length;i+=2)out+=flat[i+1]*(flat[i].level-out);
   return out;
 }
-function terrainRawY(x,z) {
+const terrainRawLegacyY=(x,z)=>terrainRawBaseY(x,z,260);
+function terrainRawY(x,z) { return southPointGround(x,z,terrainRawBaseY); }
+function terrainRawBaseY(x,z,southEdge=S.backgroundGround.z1) {
   let base=terrainBase(x,z);
-  const w=elevationWeight(x,z);if(w>0)base+=w*(gridGround(x,z)-base); // #1305: the real ground levels outside the block
+  const w=elevationWeight(x,z,southEdge);if(w>0)base+=w*(gridGround(x,z)-base); // #1305: the real ground levels outside the block
   return z<60?base:riverGround(x,z,base);
 }
 /** #1306: 0 inside the protected block rectangle and within ELEVATION.river[0] m of Höje å (the designed levels stay), 1 a few metres beyond. */
@@ -120,38 +129,41 @@ function padWeight(x,z){
   if(w>0&&z>10)w*=smooth(Math.max(0,Math.min(1,(riverDistance(x,z)-ELEVATION.river[0])/ELEVATION.padRamp)));
   return w;
 }
-let buildingPads=null;const skipped=[];
+let buildingPads=null,legacyBuildingPads=null;const skipped=[];
 /** #1306 (tests): the level pads [{ name, level, x0, x1, z0, z1 }]. */
 export const buildingPadSkipped=()=>{buildingPads??=makeBuildingPads();return skipped;};
 export const buildingPadList=()=>(buildingPads??=makeBuildingPads()).map(({name,level,x0,x1,z0,z1})=>({name,level,x0,x1,z0,z1}));
 /** #1306: one level platform per mapped far building on the elevation grid's sloping ground (outside the protected block and the river valley), so its base meets the ground instead of a plinth up to 5 m tall:
  *  the level is the mean raw ground under the footprint, the footprint is flat, the ground grades back over ELEVATION.pad m (all samplers - roads, trees, cars, backdrop bases - follow `terrainY`). */
-function makeBuildingPads(){
-  const pads=[];pads.skipped=skipped;
+function makeBuildingPads(raw=terrainRawY,limit=S.backgroundGround.z1,anchors=true,omitted=skipped){
+  const pads=[];pads.skipped=omitted;
   for(const k of ['west','east','north','south'])for(const b of S[k].buildings){
     const ring=b.polygon.slice(0,-1),xs=ring.map(q=>q[0]),zs=ring.map(q=>q[1]);
     const x0=Math.min(...xs),x1=Math.max(...xs),z0=Math.min(...zs),z1=Math.max(...zs);
-    if(z1>260||x0<S.backgroundGround.x0||x1>S.backgroundGround.x1||z0<S.backgroundGround.z0){skipped.push([b.name,'edge']);continue;}
+    if(z1>limit||x0<S.backgroundGround.x0||x1>S.backgroundGround.x1||z0<S.backgroundGround.z0){omitted.push([b.name,'edge']);continue;}
     const inside=(x,z)=>{let yes=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++)if((ring[i][1]>z)!==(ring[j][1]>z)&&x<(ring[j][0]-ring[i][0])*(z-ring[i][1])/(ring[j][1]-ring[i][1])+ring[i][0])yes=!yes;return yes;};
+    const dist=(x,z)=>{if(inside(x,z))return 0;let d=Infinity;for(let i=0,j=ring.length-1;i<ring.length;j=i++){const a=ring[j],c=ring[i],dx=c[0]-a[0],dz=c[1]-a[1],t=Math.max(0,Math.min(1,((x-a[0])*dx+(z-a[1])*dz)/(dx*dx+dz*dz||1)));d=Math.min(d,Math.hypot(x-a[0]-dx*t,z-a[1]-dz*t));}return d;};
     const pts=[];for(const q of ring)pts.push(q);
     for(let x=Math.ceil(x0/4)*4;x<=x1;x+=4)for(let z=Math.ceil(z0/4)*4;z<=z1;z+=4)if(inside(x,z))pts.push([x,z]);
     // outside the grid's ground (the block, its ramp zone, the river valley): keep the old plinth
-    if(pts.some(([x,z])=>padWeight(x,z)<=0)){skipped.push([b.name,'weight']);continue;}
-    const ys=pts.map(([x,z])=>terrainRawY(x,z)),lo=Math.min(...ys),hi=Math.max(...ys);
-    if(hi-lo<ELEVATION.padMin){skipped.push([b.name,'flat']);continue;}
-    const level=ys.reduce((a,c)=>a+c,0)/ys.length,R=ELEVATION.pad;
-    const dist=(x,z)=>{if(inside(x,z))return 0;let d=Infinity;for(let i=0,j=ring.length-1;i<ring.length;j=i++){const a=ring[j],c=ring[i],dx=c[0]-a[0],dz=c[1]-a[1],t=Math.max(0,Math.min(1,((x-a[0])*dx+(z-a[1])*dz)/(dx*dx+dz*dz||1)));d=Math.min(d,Math.hypot(x-a[0]-dx*t,z-a[1]-dz*t));}return d;};
-    pads.push({x0:x0-R,x1:x1+R,z0:z0-R,z1:z1+R,level,dist,name:b.name});
+    if(pts.some(([x,z])=>padWeight(x,z)<=0)){omitted.push([b.name,'weight']);continue;}
+    const ys=pts.map(([x,z])=>raw(x,z)),lo=Math.min(...ys),hi=Math.max(...ys);
+    if(hi-lo<ELEVATION.padMin){omitted.push([b.name,'flat']);continue;}
+    const anchor=anchors&&z0>=SOUTH_PLATEAU.fade[1]?SOUTH_PLATEAU.points.filter(([x,z])=>dist(x,z)<=ELEVATION.southAnchor).sort((a,b)=>dist(a[0],a[1])-dist(b[0],b[1]))[0]:null;
+    const level=anchor?anchor[2]:ys.reduce((a,c)=>a+c,0)/ys.length,apron=anchor?ELEVATION.southApron:0,R=ELEVATION.pad+apron;
+    const gradedDist=(x,z)=>Math.max(0,dist(x,z)-apron);
+
+    pads.push({x0:x0-R,x1:x1+R,z0:z0-R,z1:z1+R,level,dist:gradedDist,name:b.name});
   }
   return pads;
 }
 const smooth=t=>t*t*(3-2*t);
 /** #1305: 0 near the block, the river valley and the mesh's outer edges (today's levels), 1 in between (the grid's ground). */
-function elevationWeight(x,z){
+function elevationWeight(x,z,southEdge=S.backgroundGround.z1){
   const P=ELEVATION.protect,dx=Math.max(P.x0-x,0,x-P.x1),dz=Math.max(P.z0-z,0,z-P.z1);
   let w=smooth(Math.min(1,Math.hypot(dx,dz)/ELEVATION.ramp));
   if(w===0)return 0;
-  const B=S.backgroundGround;w*=smooth(Math.max(0,Math.min(1,Math.min(x-B.x0,B.x1-x,B.z1-z)/ELEVATION.edge)));
+  const B=S.backgroundGround;w*=smooth(Math.max(0,Math.min(1,Math.min(x-B.x0,B.x1-x,southEdge-z)/ELEVATION.edge)));
   if(w>0&&z>10)w*=smooth(Math.max(0,Math.min(1,(riverDistance(x,z)-ELEVATION.river[0])/ELEVATION.river[1])));
   return w;
 }
@@ -188,11 +200,12 @@ function terrainGeometry() {
   const St = Wst.stair, z0 = S.backgroundGround.z0; // #1305: from the world's north edge (the flat plate there is gone)
   const xs = new Set([S.backgroundGround.x0, -200, 200, S.backgroundGround.x1, E.x0 - 0.01, E.x0 + 0.01, E.x1, E.x1 + E.blend, E.gable, E.level, E.walk, R.x0 + 0.01, R.x1 - 0.01, R.x1 + 0.01,
       Wst.x - 0.01, Wst.x + 0.01, St.x1 - 0.01, St.x1 + 0.01]),
-    zs = new Set([z0, terrainNorth, 0, T.north, 260, T.north + T.slope, ...E.profile.map((p) => p[0]), ...Wst.profile.map((p) => p[0]), R.z0, R.z1, St.z1 - 0.01, St.z1 + 0.01, T.garageDoor.z0, T.garageDoor.z1]);
+    zs = new Set([z0, terrainNorth, 0, T.north, 260, S.backgroundGround.z1, T.north + T.slope, ...E.profile.map((p) => p[0]), ...Wst.profile.map((p) => p[0]), R.z0, R.z1, St.z1 - 0.01, St.z1 + 0.01, T.garageDoor.z0, T.garageDoor.z1]);
   // #1311: the far west / east columns are 12 m and the far north rows 10 m apart (the ground there is the smooth DEM, no river or block)
   for (let x = S.backgroundGround.x0; x <= S.backgroundGround.x1; x += 4) if ((x >= TERRAIN_FAR.colWest && x <= TERRAIN_FAR.colEast) || (x - S.backgroundGround.x0) % 12 === 0) xs.add(x);
   for (let z = z0; z < terrainNorth; z += 5) if (z >= terrainNorth - TERRAIN_FAR.rowNear || (z - z0) % 10 === 0) zs.add(z); // the north: 5 m rows near the block (#1305; the grid is smooth, Catmull-Rom)
   for (let z = terrainNorth; z <= 260; z += 4) zs.add(z);
+  for (let z = 260 + TERRAIN_FAR.southRow; z < S.backgroundGround.z1; z += TERRAIN_FAR.southRow) zs.add(z);
   for (const b of T.box) { for (const x of [b.x0, b.x1]) { xs.add(x - 0.01); xs.add(x + 0.01); } for (const z of [b.z0, b.z1]) { zs.add(z - 0.01); zs.add(z + 0.01); } }
   // #647, #975: no ground under Hus A / Hus B (base −3, the garage's basement floors lie at the park level):
   // the north face sits on the garage box edge (z0 = b.z0 − 0.01), so the pit starts there to avoid a 3 m steep
@@ -1312,7 +1325,7 @@ function trees(rand) {
   }
   spots.push(...parkTreeSpots(renderedTerrainY),...westTreeSpots(renderedTerrainY),...eastTreeSpots(renderedTerrainY),...northTreeSpots(renderedTerrainY));
   for (const [x, z, s] of S.bigTrees) spots.push({ x, z, y: groundY(x, z), s, kind: 'big' });
-  for (const [x, z, s] of PADDOCK.trees) spots.push({ x, z, y: z > 260 ? -3.01 : Math.max(groundY(x, z), renderedTerrainY(x, z)), s, kind: 'big' }); // the pony paddock's shade trees (#1316; the paddock's own ground level)
+  for (const [x, z, s] of PADDOCK.trees) spots.push({ x, z, y: z > S.backgroundGround.z1 ? -3.01 : Math.max(groundY(x, z), renderedTerrainY(x, z)), s, kind: 'big' }); // the pony paddock's shade trees (#1316; the paddock's own ground level)
   for (const [x, z] of S.vergeTrees) spots.push({ x, z, y: groundY(x, z), s: 0.8 + rand() * 0.3, kind: 'tree' }); // by Karpvägen (#257)
   for (const [x, z, s] of S.life.trees) spots.push({ x, z, y: groundY(x, z), s, kind: 'tree' }); // the bike yard's + one by the road (#260, #435)
   treeFeet.length = 0;
@@ -1570,7 +1583,7 @@ function siteGroundAO(backdrops, husL) {
     for (const ring of [outer, ...holes]) add(ring, isIn);
   }
   const south = (backdrops.south?.userData.trees ?? []).map((t) => ({ x: t.x, z: t.z, r: t.r, y: t.y + t.h * 0.7 }));
-  const ground = (x, z) => (z > 260 ? -3.01 : Math.max(groundY(x, z), renderedTerrainY(x, z))); // (southbackdrop.js's far level)
+  const ground = (x, z) => (z > S.backgroundGround.z1 ? -3.01 : Math.max(groundY(x, z), renderedTerrainY(x, z))); // (southbackdrop.js's far level)
   return buildGroundAO({ trees: [...aoTrees, ...south], walls, ground });
 }
 

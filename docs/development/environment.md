@@ -390,3 +390,36 @@ Tests: `node --test tools/roadlampstest.mjs tools/pathlampstest.mjs` and native 
 `renderedParkFillY` in riverpark.js uses the exact existing grass offset (`woodBridge.ramp.grassLift`,−0.01m, moved from the previous literal). Native frozen-source comparison confirms unchanged ramp index/position/normal bytes. `lampGroundY` in surroundings.js takes the higher of the rendered terrain and this rendered fill surface and is supplied only to the appended park/road lamp fittings. Old road fitting prefixes, physics, bridge geometry, A/B/C/L and plant terrain callbacks are unchanged. Glow vertices use the same surface plus their existing5cm offset; no new triangles, lights, materials or batches.
 
 Actual full-World baseline15f9b005: one pole2.215059m below the highest drawn triangle,489 overlapping glow vertices with max2.667783m deviation. `tools/lamprampstest.cjs` samples actual site-terrain triangles at those fixtures, rather than comparing a ground callback to itself. `tools/lamprampstest.mjs` covers unchanged ramp bytes and both ramps' interior grass triangles (Float32 edge coordinates may round outside an analytic footprint, so native height comparison uses triangle centroids). Public#95 already avoids ramp-footprint pole placements, but its generic ground-light support is reviewed separately.
+
+## Southern plateau and parking support (#1381)
+
+The existing10m GLO grid already reaches z460; the drawn terrain and south backdrop now use that extent,
+adding8m rows after the original z260 boundary. The ten plateau/paddock controls in `SOUTH_PLATEAU` come from
+`docs/references/elevation-hoje-a/point-api-south-road-2026-10-19.json` (77-source-point export, provider LM/CC BY4.0).
+They are relative to the existing14.36RH2000 model origin, not measured apartment floors or bathymetry;
+horizontal registration remains approximately3–5m. `southPointGround` uses compact35m smooth corrections,
+blended in over z225..240. The original raw ground and platform list are evaluated north of that fade,
+so southern platform averages cannot change the northern terrain indirectly. New platforms can use a nearby
+control within3m and a4m flat apron; those choices are interpolation/platform assumptions.
+
+Sankt Lars41/45 platforms are about+1.83/+1.94, versus the paddock control−3.51. Parking polygons are cut
+along the actual terrain triangles; stall paint and kerb bands are clipped along those same triangle boundaries.
+Simply tilting long paint quads left a candidate band1.3m above its parking slope. The final actual emitted
+mesh is checked at2154parking points, including20paint probes, with maximum error0.000002m from the52mm paving or76mm paint/kerb lift (paint now sits24mm above the paving). Paddock trees, animals,
+shelter and ground AO use the same expanded boundary. No road or bridge grade is changed in this slice;
+#1382 owns the bank/bridge profile. A frozen native comparison retains58243northern terrain positions and
+all four river-bridge position buffers byte for byte.
+
+The terrain has81862→89490triangles. The southern component grows from19729 to34310triangles because
+it now represents a sloping additional200m strip and ground-following markings. Its old23000allowance
+is extended by a field and paving/paint layer per added4m-column×8m-row cell (limit40252); this is an
+explicit coverage-dependent component-budget change. The global PERF budgets remain unchanged. The
+phone landscape run has445draws (pre-existing #1361/#1383 failure) and932906triangles≤950000/~97MiB.
+No FPS or physical-phone stability is established. Neutral source/data transfer is tracked in public#98.
+
+Desktop quality0 is separately over budget before this change: frozen0b89b99b gives1,019,892triangles
+in big hall, versus1,042,099after (+22,207), same494draws/~308MiB. Both report SOME FAILED;
+this pre-existing desktop triangle bug is #1387. Its global1,000,000limit is unchanged.
+The final navigation rerun passes all53checks; the emitted parking/backdrop checks and six native
+source/interpolation tests pass. Three new personal clubhouse reports were imported separately while
+this work ran; they are not part of the terrain source changes.

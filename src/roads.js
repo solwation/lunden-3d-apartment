@@ -200,7 +200,7 @@ function clipHalf(poly,a,b,c){
   if((dp<0&&dq>0)||(dp>0&&dq<0)){const t=dp/(dp-dq);out.push([p[0]+(q[0]-p[0])*t,p[1]+(q[1]-p[1])*t]);}}
  return out;
 }
-/** #1309: cut one triangle along the terrain mesh's own grid lines and cell diagonals (surroundings.js `terrainGrid`), so every piece lies in
+/** #1309: cut one convex triangle or quad along the terrain mesh's own grid lines and cell diagonals (surroundings.js `terrainGrid`), so every piece lies in
  * a single terrain triangle. Sampled at its corners with the exact rendered height, the asphalt is then parallel to the ground it covers
  * and never dips under a fold of the terrain (that showed as green slivers, thickest along the south edge). Returns triangles [[x,z]×3]. */
 export function cutAtTerrain(tri,grid){

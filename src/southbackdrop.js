@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SITE, SEASON, COLORS, DECAL_OFFSET } from './config.js';
-import { pathStrip } from './roads.js';
+import { pathStrip, cutAtTerrain } from './roads.js';
 import { registerTrees, registerSnow, registerSeasonal } from './seasons.js';
 import { lobeGeometry, leafMaterial, leafAtlasParts } from './foliage.js';
 import { buildStLars41 } from './stlars41.js';
@@ -18,11 +18,18 @@ const geo=points=>{const g=new THREE.BufferGeometry();g.setAttribute('position',
 const clip=(poly,f)=>{const out=[];for(let i=0;i<poly.length;i++){const a=poly[i],b=poly[(i+1)%poly.length],fa=f(a),fb=f(b);if(fa>=-1e-8)out.push(a);if((fa>=0)!==(fb>=0)){const t=fa/(fa-fb);out.push([a[0]+t*(b[0]-a[0]),a[1]+t*(b[1]-a[1])]);}}return out;};
 const onAccess=(x,z)=>[...S.paths,...(S.access??[])].some(p=>p.path.slice(1).some(([c,d],i)=>{const[a,b]=p.path[i],dx=c-a,dz=d-b,t=Math.max(0,Math.min(1,((x-a)*dx+(z-b)*dz)/(dx*dx+dz*dz)));return Math.hypot(x-a-t*dx,z-b-t*dz)<p.w/2+.5;}));
 const onParking=(x,z)=>(S.parking??[]).some(p=>p.polygon&&inside(x,z,p.polygon));
-const lineQuad=(p0,p1,w,yLift,col,ground)=>{const dx=p1[0]-p0[0],dz=p1[1]-p0[1],len=Math.hypot(dx,dz);if(!len)return null;const nx=-dz/len*(w/2),nz=dx/len*(w/2);const pts=[[p0[0]-nx,p0[1]-nz],[p0[0]+nx,p0[1]+nz],[p1[0]+nx,p1[1]+nz],[p1[0]-nx,p1[1]-nz]];const pos=[pts[0][0],ground(...pts[0])+yLift,pts[0][1],pts[1][0],ground(...pts[1])+yLift,pts[1][1],pts[2][0],ground(...pts[2])+yLift,pts[2][1],pts[0][0],ground(...pts[0])+yLift,pts[0][1],pts[2][0],ground(...pts[2])+yLift,pts[2][1],pts[3][0],ground(...pts[3])+yLift,pts[3][1]];const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.computeVertexNormals();return tint(g,col);};
-/** #1306: a polygon's triangles, cut (longest-edge bisection) to `max` m where they touch the terrain mesh (x/z inside SITE.backgroundGround, z <= 260), as flat [x, z] triples; a few big triangles beyond it, where the flat land lies. The corners alone sank a field's middle under the sloping ground. */
-function terrainTriangles(poly,max){
+const lineQuad=(p0,p1,w,yLift,col,ground)=>{
+ const dx=p1[0]-p0[0],dz=p1[1]-p0[1],len=Math.hypot(dx,dz);if(len<1e-8)return null;
+ const nx=-dz/len*w/2,nz=dx/len*w/2;
+ const poly=[[p0[0]-nx,p0[1]-nz],[p0[0]+nx,p0[1]+nz],[p1[0]+nx,p1[1]+nz],[p1[0]-nx,p1[1]-nz]];
+ const grid=ground.grid?.(),triangles=grid?cutAtTerrain(poly,grid):[[poly[0],poly[1],poly[2]],[poly[0],poly[2],poly[3]]];
+ return tint(geo(triangles.flatMap(t=>t.map(([x,z])=>[x,ground(x,z)+yLift,z]))),col);
+};
+/** #1306: a polygon's triangles, cut (longest-edge bisection) to `max` m where they touch the terrain mesh (x/z inside SITE.backgroundGround, z <= SITE.backgroundGround.z1), as flat [x, z] triples; a few big triangles beyond it, where the flat land lies. The corners alone sank a field's middle under the sloping ground. */
+function terrainTriangles(poly,max,grid=null){
  const B=SITE.backgroundGround,r=ring(poly),idx=THREE.ShapeUtils.triangulateShape(r.map(([x,z])=>new THREE.Vector2(x,z)),[]),stack=idx.map(t=>t.map(i=>[r[i][0],r[i][1]])),out=[];
- const near=t=>Math.max(...t.map(q=>q[0]))>B.x0&&Math.min(...t.map(q=>q[0]))<B.x1&&Math.min(...t.map(q=>q[1]))<260&&Math.max(...t.map(q=>q[1]))>B.z0;
+ if(grid)return stack.flatMap(t=>cutAtTerrain(t,grid).flat());
+ const near=t=>Math.max(...t.map(q=>q[0]))>B.x0&&Math.min(...t.map(q=>q[0]))<B.x1&&Math.min(...t.map(q=>q[1]))<B.z1&&Math.max(...t.map(q=>q[1]))>B.z0;
  while(stack.length){const t=stack.pop();let li=0,ll=0;for(let i=0;i<3;i++){const a=t[i],b=t[(i+1)%3],l=Math.hypot(a[0]-b[0],a[1]-b[1]);if(l>ll){ll=l;li=i;}}
   if(ll<=max||!near(t)){out.push(...t);continue;}
   const a=t[li],b=t[(li+1)%3],c=t[(li+2)%3],m=[(a[0]+b[0])/2,(a[1]+b[1])/2];stack.push([a,m,c],[m,b,c]);}
@@ -33,7 +40,7 @@ const upGeometry=(pts,y)=>{const pos=[];for(let i=0;i<pts.length;i+=3){let [a,b,
 export function buildSouthBackdrop(ground){const parts=southBackdropParts(ground);for(;;){const r=parts.next();if(r.done)return r.value;}}
 export function* southBackdropParts(ground){
  const group=new THREE.Group();group.name='south-backdrop';const parts={facade:[],roof:[],glass:[],land:[]},records=[];
- const farGround=(x,z)=>z<=260?ground(x,z):-3.01; // inherited park level; no southern elevation survey
+ const farGround=(x,z)=>z<=SITE.backgroundGround.z1?ground(x,z):-3.01; // sampled-grid coverage; the distant fog boundary retains its old level
  farGround.grid=()=>ground.grid?.()??null; // #1313: the terrain mesh's grid, so the paths are cut along it
  let built=0;for(const b of S.buildings){if(built++%6===5)yield .6*built/S.buildings.length;const foot=shape(b),p=b.polygon.slice(0,-1),base=Math.max(...p.map(q=>farGround(...q))),bottom=Math.min(...p.map(q=>farGround(...q)))-.1,eave=base+b.levels*S.storey;
   if(b.template==='stlars41'){records.push({...b,base,bottom,...buildStLars41(b,p,base,bottom,parts)});continue;}
@@ -52,8 +59,8 @@ export function* southBackdropParts(ground){
  }
  yield .6;
  // Continuation overlaps only the old outer boundary. Fog fully covers its outer edges from every accessible camera.
- const G=S.ground;parts.land.push(tint(new THREE.PlaneGeometry(G.x1-G.x0,G.z1-260).rotateX(-Math.PI/2).translate((G.x0+G.x1)/2,-3.01,(G.z1+260)/2),COLORS.grass));
- for(const [x0,x1]of[[G.x0,SITE.backgroundGround.x0],[SITE.backgroundGround.x1,G.x1]])parts.land.push(tint(new THREE.PlaneGeometry(x1-x0,260-SITE.backgroundGround.z0).rotateX(-Math.PI/2).translate((x0+x1)/2,-3.01,(260+SITE.backgroundGround.z0)/2),COLORS.grass));
+ const G=S.ground;parts.land.push(tint(new THREE.PlaneGeometry(G.x1-G.x0,G.z1-SITE.backgroundGround.z1).rotateX(-Math.PI/2).translate((G.x0+G.x1)/2,-3.01,(G.z1+SITE.backgroundGround.z1)/2),COLORS.grass));
+ for(const [x0,x1]of[[G.x0,SITE.backgroundGround.x0],[SITE.backgroundGround.x1,G.x1]])parts.land.push(tint(new THREE.PlaneGeometry(x1-x0,SITE.backgroundGround.z1-SITE.backgroundGround.z0).rotateX(-Math.PI/2).translate((x0+x1)/2,-3.01,(SITE.backgroundGround.z1+SITE.backgroundGround.z0)/2),COLORS.grass));
  for(const f of S.fields){if(!(f.holes??[]).length){parts.land.push(tint(upGeometry(terrainTriangles(f.polygon,LAND_MESH),(x,z)=>farGround(x,z)+.018+LAND_LIFT),f.color));continue;}const g=new THREE.ShapeGeometry(shape(f)).rotateX(-Math.PI/2),a=g.attributes.position;for(let i=0;i<a.count;i++)a.setY(i,farGround(a.getX(i),a.getZ(i))+.018);g.computeVertexNormals();parts.land.push(tint(g,f.color));}
  parts.land.push(...paddockLandParts(farGround)); // #1280: the pony paddock's worn track (soil colour, snow-covered with the rest of the land)
  yield .7;
@@ -61,7 +68,7 @@ export function* southBackdropParts(ground){
  for(const p of [...S.paths,...(S.access??[])])parts.land.push(tint(pathStrip(p,w=>-w/2,w=>w/2,.025,farGround),surfColor(p)));
  for(const p of (S.parking??[])){
   if(p.polygon){
-   if(!(p.holes??[]).length)parts.land.push(tint(upGeometry(terrainTriangles(p.polygon,LAND_MESH),(x,z)=>farGround(x,z)+.022+LAND_LIFT),surfColor(p)));
+   if(!(p.holes??[]).length)parts.land.push(tint(upGeometry(terrainTriangles(p.polygon,LAND_MESH,farGround.grid()),(x,z)=>farGround(x,z)+.022+LAND_LIFT),surfColor(p)));
    else{const g=new THREE.ShapeGeometry(shape(p)).rotateX(-Math.PI/2),a=g.attributes.position;
    for(let i=0;i<a.count;i++)a.setY(i,farGround(a.getX(i),a.getZ(i))+.022);
    g.computeVertexNormals();
@@ -72,13 +79,13 @@ export function* southBackdropParts(ground){
      const[p0,p1,p2,p3]=poly;
      const d01=Math.hypot(p1[0]-p0[0],p1[1]-p0[1]),d12=Math.hypot(p2[0]-p1[0],p2[1]-p1[1]);
      const[eA0,eA1,eB0,eB1]=d01>=d12?[p0,p1,p3,p2]:[p1,p2,p0,p3];
-     const curb=lineQuad(eA0,eA1,0.14,0.024,0xb0aba2,farGround);
+     const curb=lineQuad(eA0,eA1,0.14,.022+LAND_LIFT+.024,0xb0aba2,farGround);
      if(curb)parts.land.push(curb);
      for(let k=1;k<p.capacity;k++){
       const t=k/p.capacity;
       const a=[eA0[0]+(eA1[0]-eA0[0])*t,eA0[1]+(eA1[1]-eA0[1])*t];
       const b=[eB0[0]+(eB1[0]-eB0[0])*t,eB0[1]+(eB1[1]-eB0[1])*t];
-      const line=lineQuad(a,b,0.08,0.024,0xeeeeea,farGround);
+      const line=lineQuad(a,b,0.08,.022+LAND_LIFT+.024,0xeeeeea,farGround);
       if(line)parts.land.push(line);
      }
     }
