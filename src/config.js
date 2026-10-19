@@ -5640,8 +5640,8 @@ export function avatarBody(look) {
 // z -200..250) but inside the Worker's ±5000 m pose limit, and further from the playhouse than GHOSTS.far (900 m), so the
 // ordinary pose stream already hides a player who goes in and shows him again inside to the others there. All values are
 // our own choices (*guess*): the room is much bigger than the playhouse's 2.1 × 1.9 m shell on purpose.
-export const PLAYROOM = { maxCm: 140, x: -1500, z: -1500, w: 6.4, d: 5.2, ceiling: 2.4, // centre (m), size (x, z) and height (m)
-  door: { w: 0.8, h: 1.5 }, // the way out in the south wall, scaled for a child
+export const PLAYROOM = { maxCm: 160, x: -1500, z: -1500, w: 6.4, d: 5.2, ceiling: 2.4, // centre (m), size (x, z) and height (m)
+  door: { w: 0.8, h: 1.7 }, // #1344: the way out in the south wall, above the under-160 cm entrants (guess)
   standOff: 0.75, // m from the door wall where you arrive inside
   outside: 0.95, // m north of the playhouse's door wall where you stand when you come out
   fadeMs: [220, 320], // black fade out before the move / back in after it

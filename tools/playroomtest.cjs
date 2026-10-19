@@ -1,6 +1,7 @@
 // #1319 / #1326: the playhouse's secret children's room, in the real app (no Worker). A 175 cm avatar aims at the playhouse door and
-// gets a friendly no; a 120 cm avatar goes in (short fade, hidden room far off the map, drawn only inside), walks into the walls,
-// aims at the way out, and comes out in front of the door; growing past 140 cm inside lets you walk out; a reload inside saves the
+// gets a friendly no, as does exactly 160 cm; 140/150 cm avatars enter and exit. A 159 cm avatar enters (short fade, hidden room
+// far off the map, drawn only inside), walks into the walls, aims at the exit and comes out in front of the playhouse;
+// growing past 160 cm inside still lets you walk out, and a reload inside saves the
 // spot at the door. Draw calls: the same outside before and after a visit; the room costs a few calls inside only.
 // PLAYWRIGHT_MODULE=… CHROME_PATH=… SHOTS=/tmp/shots1319 node tools/playroomtest.cjs http://localhost:PORT
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
@@ -45,13 +46,30 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     check(!s1.inRoom && !s1.roomVisible && Math.abs(s1.z - 22.7) < 0.2, '175 cm: not let in', JSON.stringify(s1));
     await page.evaluate(() => window.__t.render()); await page.screenshot({ path: `${shots}/2-denied.png` });
 
-    // 120 cm: in
-    await setHeight(120);
+    // #1344: the new strict boundary and the newly admitted range use real entry/exit.
+    await setHeight(160); await toDoor();
+    await page.evaluate(() => window.__app.use(window.__app.focus().focused));
+    await page.waitForTimeout(700);
+    const boundary = await page.evaluate(() => ({ ...window.__t.state(), badge: document.getElementById('badges').textContent }));
+    check(!boundary.inRoom && /under 160 cm/.test(boundary.badge), '160 cm: denied with the current height limit', JSON.stringify(boundary));
+    for (const cm of [140, 150]) {
+      await setHeight(cm); await toDoor();
+      await page.evaluate(() => window.__app.use(window.__app.focus().focused));
+      await page.waitForTimeout(900);
+      const state = await page.evaluate(() => { window.__t.frames(30); return window.__t.state(); });
+      check(state.inRoom && state.roomVisible, `${cm} cm: admitted through the playhouse door`, JSON.stringify(state));
+      await page.evaluate(() => window.__app.use(window.__app.world.playroom.exitTarget));
+      await page.waitForTimeout(900);
+      check(!(await page.evaluate(() => window.__t.state())).inRoom, `${cm} cm: the actual exit leads back out`);
+    }
+
+    // 159 cm: the tallest allowed integer height, then the whole room lifecycle.
+    await setHeight(159);
     await toDoor();
     await page.evaluate(() => window.__app.use(window.__app.focus().focused));
     await page.waitForTimeout(900);
     const s2 = await page.evaluate(() => { window.__t.frames(60); return window.__t.state(); });
-    check(s2.inRoom && s2.roomVisible && !s2.outdoors && s2.x < -1000, '120 cm: inside the hidden room, drawn', JSON.stringify(s2));
+    check(s2.inRoom && s2.roomVisible && !s2.outdoors && s2.x < -1000, '159 cm: inside the hidden room, drawn', JSON.stringify(s2));
     check(Math.abs(s2.y) < 1e-6, 'standing on the room floor', `y=${s2.y}`);
     const inside = await page.evaluate(() => window.__t.calls());
     await page.evaluate(() => window.__t.render()); await page.screenshot({ path: `${shots}/3-inside.png` });
