@@ -6359,6 +6359,12 @@ export const TOAST_LINES = [...TOAST.lines, ...TOAST.newYear, ...TOAST.answer];
 export const SOUNDS = { kinds: ['bell'], every: 0.5, maxVoices: 8, range: { bell: 40, step: 25, jet: 35 },
   stride: { walk: 0.62, run: 0.95, runSpeed: 3.6, minSpeed: 0.5, maxSpeed: 8, maxClimb: 1.5 }, jetNearest: 2, jetEvery: 0.35, bellKey: 'KeyB', gain: { bell: 1, step: 0.7, jet: 0.7 } };
 
+// #1363: walking-route lamp placements and dimensions are visual guesses, not surveyed fittings.
+// Paths themselves retain their sourced OSM coordinates. Existing street head/glow/material batches are reused.
+export const PATH_LIGHTS = { height: 4.6, step: 18, edge: 0.65, pathClear: 0.25, treeClear: 1.2, fenceClear: 0.8,
+  waterClear: 4, duplicateClear: 10, pool: { along: 7, across: 3.5, rings: 5, segs: 20 },
+  sources: ['44447963', '123898762', '123898761', '130537426', '44447981', '1432565775', '44447962', '1228396153', '185706718', '51890086', '1432565773'] };
+
 // Midnight fireworks over the block (#1200, src/fireworks.js; #1199's New Year trigger calls `start()`): `seconds` of
 // rockets (a pool of `shells` shells, each bursting into `sparks` sparks; the phone profile uses the `phone*` counts),
 // a new one every `interval` s (the last `finale` s: `finaleInterval`) launched inside `area` (x/z, plan m, over the

@@ -1797,7 +1797,7 @@ export function* surroundingsParts({ grass, husL = null }) {
   yield 0.85;
   group.add(siteGroundAO(backdrops, husL)); // distant ground shadows under the trees and along the wall feet (#1079)
   yield 0.9;
-  const windows = buildWindowLights(details.list), street = buildStreet(groundY); // street lamps, crossing, curbs … (#128)
+  const windows = buildWindowLights(details.list), street = buildStreet(groundY, renderedTerrainY, treeFeet); // #1363: path poles/pools follow actual terrain
   group.add(windows.object, street.object, buildStreetSigns(groundY)); // + street name signs at the junctions (#583)
   group.userData.windows = { object: windows.object, update(hour, night, power = true) { for (const b of backdrops) b.userData.updateClocks(hour); windows.update(hour, night, power); updateLoggiaLamps(night, power); street.update(night);glassMaterial.envMapIntensity=THREE.MathUtils.lerp(O.reflectionDay,O.reflectionNight,night); } };
   return group;

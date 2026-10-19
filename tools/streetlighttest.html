@@ -24,7 +24,7 @@ async function run() {
   const { world, scene } = w.__app;
   const { SITE, HUS_L } = await w.eval(`import('${new URL('../src/config.js', location)}')`);
   const { husLLayout } = await w.eval(`import('${new URL('../src/exterior.js', location)}')`);
-  const { groundY } = await w.eval(`import('${new URL('../src/surroundings.js', location)}')`);
+  const { groundY, renderedTerrainY } = await w.eval(`import('${new URL('../src/surroundings.js', location)}')`);
   const lines = [];
   let pass = true;
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
@@ -132,7 +132,11 @@ async function run() {
   // every pool vertex lies just over the ground
   const pos = pools.geometry.attributes.position;
   let worst = 0;
-  for (let i = 0; i < pos.count; i += 7) worst = Math.max(worst, Math.abs(pos.getY(i) - groundY(pos.getX(i), pos.getZ(i)) - 0.05));
+  for (let i = 0; i < pos.count; i += 7) {
+    // #1363: road pools retain their original support; appended path pools use the actual terrain triangle surface.
+    const ground = i < (pools.userData.pathStart ?? pos.count) ? groundY : renderedTerrainY;
+    worst = Math.max(worst, Math.abs(pos.getY(i) - ground(pos.getX(i), pos.getZ(i)) - 0.05));
+  }
   check(worst < 1e-3, `the pools lie on the ground, slopes too (worst ${worst.toFixed(4)} m off)`);
   await run(0.32, 1);
   check(pools.visible, 'just under the switching level they stay on (no flicker at dusk)');

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { SITE } from './config.js';
+import { SITE, PATH_LIGHTS } from './config.js';
+import { pathLampSpots } from './pathlamps.js';
 import { registerSeasonal } from './seasons.js';
 import { samples, onRoad, along, filletOutline } from './roads.js';
 import { glowMaterial, poolGeometry, fadeGlow } from './groundglow.js';
@@ -101,7 +102,7 @@ export function bicycleCurbY(x,z,groundY) {
   return y;
 }
 
-export function buildStreet(groundY) {
+export function buildStreet(groundY, pathGround = groundY, trees = []) {
   const group = new THREE.Group();
   const grey = new THREE.MeshStandardMaterial({ color: 0xa9a7a2, roughness: 0.85 });
   const curbs = curbGeometries(groundY);
@@ -126,23 +127,33 @@ export function buildStreet(groundY) {
       spots.push([p.x, p.z, Math.atan2(-row.side * p.nx, -row.side * p.nz)]); // the arm over the road: (sin yaw, cos yaw)
     }
   }
+  // #1363: park fittings share all three existing batches, materials and night control.
+  const paths = pathLampSpots(trees);
+  group.userData.pathLamps = paths;
+  spots.push(...paths.map(p => [p.x,p.z,p.yaw,true]));
   const L = lampGeometry();
   const body = new THREE.InstancedMesh(mergeGeometries(L.body.map(keepPN)), new THREE.MeshStandardMaterial({ color: 0x3a3d40, roughness: 0.6, metalness: 0.3 }), spots.length);
   const headMat = new THREE.MeshStandardMaterial({ color: 0xf2efe6, emissive: 0xffe2a8, emissiveIntensity: 0, roughness: 0.4 });
   const head = new THREE.InstancedMesh(keepPN(L.glass), headMat, spots.length);
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), one = new THREE.Vector3(1, 1, 1);
-  spots.forEach(([x, z, yaw], i) => {
-    m.compose(new THREE.Vector3(x, groundY(x, z), z), q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw), one);
+  spots.forEach(([x, z, yaw, path], i) => {
+    one.set(1, path ? PATH_LIGHTS.height / S.lamps.h : 1, 1);
+    m.compose(new THREE.Vector3(x, (path ? pathGround : groundY)(x, z), z), q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw), one);
     body.setMatrixAt(i, m); head.setMatrixAt(i, m);
   });
   body.castShadow = true;
+  body.name = 'streetLampPosts'; head.name = 'streetLampHeads';
   group.add(body, head);
   // #434: a warm pool on the ground under each head (one merged additive mesh), a little longer along the road
   const P = S.lamps.pool;
-  const pools = new THREE.Mesh(mergeGeometries(spots.map(([x, z, yaw]) => {
+  const poolGeometries = spots.map(([x, z, yaw, path]) => {
     const ax = Math.sin(yaw), az = Math.cos(yaw); // the arm's direction (across the road)
-    return poolGeometry(x + ax * S.lamps.arm, z + az * S.lamps.arm, -az, ax, P.along, P.across, groundY);
-  })), glowMaterial(P.color));
+    return poolGeometry(x + ax * S.lamps.arm, z + az * S.lamps.arm, -az, ax,
+      path ? PATH_LIGHTS.pool.along : P.along, path ? PATH_LIGHTS.pool.across : P.across, path ? pathGround : groundY,
+      path ? PATH_LIGHTS.pool : {});
+  });
+  const pools = new THREE.Mesh(mergeGeometries(poolGeometries), glowMaterial(P.color));
+  pools.userData.pathStart = poolGeometries.slice(0, spots.length-paths.length).reduce((n,g)=>n+g.attributes.position.count,0);
   pools.name = 'streetLampPools';
   pools.visible = false;
   pools.renderOrder = 2;
