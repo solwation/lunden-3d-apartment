@@ -2,7 +2,7 @@ import {onWestBuilding,onWestAccess,onEastBuilding,onEastAccess} from './sitebac
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SITE, SEASON } from './config.js';
-import { onRoad, onWalk, pathStrip } from './roads.js';
+import { onRoad, onWalk, pathStrip, onVehicle } from './roads.js';
 import { onBusStop } from './busstopgeo.js';
 import { riverAt, deckAt, underpassAt } from './riverbridge.js';
 import { registerSnow, registerSeasonal } from './seasons.js';
@@ -61,7 +61,7 @@ export function buildRiverPark(ground, terrain=ground) {
   // #1301: the cycle route towards Circle K (61112061) now runs to the edge of the ground (it stopped at x 220 although the walkable area reaches 320)
   // #1235: asphalt (shared walking/cycling) and gravel paths are two merged meshes, one per surface material; both follow the rendered terrain.
   for(const kind of ['asphalt','gravel']) {
-    const strips=P.paths.filter(p=>p.surface===kind).map(p=>pathStrip(p,w=>-w/2,w=>w/2,kind==='asphalt'?.03:.025,terrain,c=>c.some(([x,z])=>z<64||x<-270||x>SITE.backgroundGround.x1-10||z>260)||(c.every(([x,z])=>onRoad(x,z,-.05))&&!c.some(([x,z])=>deckAt(x,z)!==null))));
+    const strips=P.paths.filter(p=>p.surface===kind).map(p=>pathStrip(p,w=>-w/2,w=>w/2,kind==='asphalt'?.03:.025,terrain,c=>c.some(([x,z])=>z<64||x<-270||x>SITE.backgroundGround.x1-10||z>260)||(c.every(([x,z])=>onRoad(x,z,-.05))&&!c.some(([x,z])=>deckAt(x,z)!==null)),undefined,(x,z)=>deckAt(x,z)===null&&onVehicle(x,z,-.02))); // #1341: the path ends at the carriageway's edge (not under the bridge decks)
     const mat=new THREE.MeshStandardMaterial({color:P.surfaces[kind].color,roughness:kind==='asphalt'?.9:1});registerSnow(mat,SEASON.snow.paving);
     const mesh=new THREE.Mesh(mergeGeometries(strips),mat);mesh.name=kind==='asphalt'?'park-paths-asphalt':'park-paths';mesh.receiveShadow=true;group.add(mesh);
   }

@@ -1626,13 +1626,17 @@ export function* surroundingsParts({ grass, husL = null }) {
   group.userData.upper = bw.upper; // the box's edge over the garage door: only for those up on the courtyard (#357)
   // roads (#257, src/roads.js): rectangles, centre lines with rounded corners, fillets at the junctions
   const gd = T.garageDoor; // + the drive from Karpvägen to the garage door (#254)
-  const asphalt = [...S.roads, { x0: gd.drive, x1: gd.x + 0.05, z0: gd.z0 - 0.5, z1: gd.z1 + 0.5 }].flatMap((r) => r.path ? [pathStrip(r, (w) => -w / 2, (w) => w / 2, 0.012, groundY)]
+  // #1341: the road asphalt and pavements follow the RENDERED terrain where that lies higher than the exact ground (the mesh interpolates linearly between
+  // its grid nodes and rose up to 0.24 m through the asphalt on Sankt Lars väg and 0.09 m on Karpvägen: green holes in the road), and far from the block
+  // they are cut along the mesh's grid lines like the park paths (#1313; roads.js pathStrip `grid`)
+  const roadGround = (x, z) => Math.max(groundY(x, z), renderedTerrainY(x, z)); roadGround.grid = () => renderedTerrainY.grid();
+  const asphalt = [...S.roads, { x0: gd.drive, x1: gd.x + 0.05, z0: gd.z0 - 0.5, z1: gd.z1 + 0.5 }].flatMap((r) => r.path ? [pathStrip(r, (w) => -w / 2, (w) => w / 2, 0.012, roadGround)]
     : r.fillets ? r.fillets.map((f) => filletGeometry(f, 0.012, groundY)) : [groundStrip(r.x0, r.x1, r.z0, r.z1, 0.012)]);
   flat(asphalt, new THREE.MeshStandardMaterial({ color: COLORS.asphalt, roughness: 0.7 }), 0xd9dfe4); // ploughed, a little grey; damp (#128)
   // pavements along the roads (left out where they would lie on another road's asphalt: a junction's mouth)
   const pavementClip=(road)=>road.name==='Sankt Lars väg'?c=>roadBridgeSpan(c.reduce((s,p)=>s+p[0],0)/4,c.reduce((s,p)=>s+p[1],0)/4)||c.every(([x,z])=>onRoad(x,z,-.05,road)):true;
   const walks = S.roads.flatMap((r) => (r.walks || []).map((k) => k.side > 0
-    ? pathStrip(r, (w) => w / 2, (w) => w / 2 + k.w, 0.008, groundY, pavementClip(r)) : pathStrip(r, (w) => -w / 2 - k.w, (w) => -w / 2, 0.008, groundY, pavementClip(r))));
+    ? pathStrip(r, (w) => w / 2, (w) => w / 2 + k.w, 0.008, roadGround, pavementClip(r)) : pathStrip(r, (w) => -w / 2 - k.w, (w) => -w / 2, 0.008, roadGround, pavementClip(r))));
   flat([...[...S.paving, ...S.basementPaving].map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.008)), ...walks], COLORS.paving, SEASON.snow.paving);
   yield 0.15;
   group.add(buildRiverBridges());

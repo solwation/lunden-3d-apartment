@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SITE, SEASON, DECAL_OFFSET, PARKING_LOT } from './config.js';
-import { pathStrip, onRoad, onWalk, cutAtTerrain } from './roads.js';
+import { pathStrip, onRoad, onWalk, cutAtTerrain, onVehicle, isVehicleWay } from './roads.js';
 import { registerSnow } from './seasons.js';
 import { buildSchoolFacade, schoolTextures } from './schoolfacade.js';
 import { buildCampusFacade } from './campusfacades.js';
@@ -121,7 +121,8 @@ function buildBackdrop(W,key,ground,brick=null,reflectiveGlass=null,karp=null){
  }
  for(const p of [...W.paths,...W.access]){
   const surfColor=p.color??(p.surface==='asphalt'?0x5f6164:p.surface==='gravel'?0xb5ac90:0xa7a397);
-  if(p.path){const s=plain(pathStrip(p,w=>-w/2,w=>w/2,W.pathLift,ground));s.userData.tint=surfColor;parts.access.push(s);}
+  if(p.path){const s=plain(pathStrip(p,w=>-w/2,w=>w/2,W.pathLift,ground,false,undefined,isVehicleWay(p)?null:(x,z)=>onVehicle(x,z,-.02))); // #1341: a footpath ends at the road's edge instead of lying over the asphalt
+  s.userData.tint=surfColor;parts.access.push(s);}
   else if(key==='east'&&p.capacity&&parkingLots().lots.some(l=>l.source===p.source))continue; // a car park: drawn below (#1278)
   else{const pos=[],grid=ground.grid?.();if(grid){const tris=refinedTriangles(ring(p.polygon),PAVE_CUT);for(let t=0;t<tris.length;t+=3)for(const q of cutAtTerrain(tris.slice(t,t+3),grid)){if(key==='east'&&q.every(([x,z])=>onEastBuildingAt(x,z)))continue;for(const[x,z]of q)pos.push(x,ground(x,z)+W.pathLift+PAVE_LIFT,z);}}else for(const[x,z]of refinedTriangles(ring(p.polygon),PAVE_MESH))pos.push(x,ground(x,z)+W.pathLift+PAVE_LIFT,z);const pl=flatGeometry(pos);pl.userData.tint=surfColor;parts.access.push(pl);} // #1305: cut into small triangles so the paving follows the real ground
  }

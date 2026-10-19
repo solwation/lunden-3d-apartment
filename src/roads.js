@@ -6,6 +6,7 @@ import { SITE, ELEVATION } from './config.js';
 // road) or a set of `fillets` (asphalt filling a square corner between two road edges up to a quarter circle).
 // Pure geometry: surroundings.js and street.js build the meshes, with their own ground height.
 
+const TRIM_STEP = 0.25; // m: #1341, the pieces a footpath strip is cut into where it meets a road (pathStrip `trim`)
 const STEP = 1.5; // m between the samples of a straight stretch (arcs: ~1 m)
 
 /** Dense samples of a path road: { x, z, w, nx, nz, s } — (nx, nz) = the right-hand normal (+ = right of the
@@ -87,6 +88,24 @@ export function onRoad(x, z, margin = 0, skip = null) {
     } else if (r.fillets) {
       if (r.fillets.some((f) => inFillet(f, x, z, margin))) return true;
     } else if (x > r.x0 - margin && x < r.x1 + margin && z > r.z0 - margin && z < r.z1 + margin) return true;
+  }
+  return false;
+}
+
+export const isVehicleWay = (p) => p.path && p.surface === 'asphalt' && p.w >= 3.9; // #1341: the backdrop's carriageways (south/east/north `paths`/`access`: OSM roads 4.5-6 m), not footpaths or cycle paths (1.8-3 m)
+let vehicleWays = null;
+/** #1341: is (x, z) on vehicle asphalt, `margin` m widened: the local roads (`SITE.roads`) or any carriageway of the backdrops (west/east/north/south)?
+ * Footpath strips (pathStrip `trim`) keep off it. */
+export function onVehicle(x, z, margin = 0) {
+  if (onRoad(x, z, margin)) return true;
+  vehicleWays ??= ['west', 'east', 'north', 'south'].flatMap((k) => [...(SITE[k].paths ?? []), ...(SITE[k].access ?? [])].filter(isVehicleWay)
+    .map((p) => ({ p, x0: Math.min(...p.path.map((q) => q[0])) - p.w, x1: Math.max(...p.path.map((q) => q[0])) + p.w, z0: Math.min(...p.path.map((q) => q[1])) - p.w, z1: Math.max(...p.path.map((q) => q[1])) + p.w })));
+  for (const { p, x0, x1, z0, z1 } of vehicleWays) {
+    if (x < x0 - margin || x > x1 + margin || z < z0 - margin || z > z1 + margin) continue;
+    for (let i = 1; i < p.path.length; i++) {
+      const [ax, az] = p.path[i - 1], [bx, bz] = p.path[i], dx = bx - ax, dz = bz - az, l2 = dx * dx + dz * dz || 1, t = THREE.MathUtils.clamp(((x - ax) * dx + (z - az) * dz) / l2, 0, 1);
+      if (Math.hypot(x - ax - dx * t, z - az - dz * t) < p.w / 2 + margin) return true;
+    }
   }
   return false;
 }
@@ -179,18 +198,17 @@ function terrainCuts(P, groundY, grid) {
 /** A strip along a path road between offsets `a(w)` and `b(w)` (right of the centre line), lying `lift` m over the
  * ground (`groundY`); a quad whose corners all lie on another road is left out (`clip`). Non-indexed, with uvs.
  * Far from the block, where `groundY.grid()` gives the terrain mesh's grid lines (#1313), a sloping quad is cut along them instead. */
-export function pathStrip(road, a, b, lift, groundY, clip = false, grid = groundY.grid?.()) {
+export function pathStrip(road, a, b, lift, groundY, clip = false, grid = groundY.grid?.(), trim = null) {
   const S = samples(road), pos = [];
   const at = (p, o) => [p.x + p.nx * o, p.z + p.nz * o];
-  for (let k = 1; k < S.length; k++) {
-    const p = S[k - 1], q = S[k];
-    const c = [at(p, a(p.w)), at(p, b(p.w)), at(q, a(q.w)), at(q, b(q.w))];
-    if (typeof clip==='function' ? clip(c) : clip && c.every(([x, z]) => onRoad(x, z, -0.05, road))) continue;
+  const lerp = (u, v, f) => [u[0] + (v[0] - u[0]) * f, u[1] + (v[1] - u[1]) * f];
+  /** #1341: `trim(x, z)` = a point of vehicle asphalt the strip must not lie on (a footpath meeting or crossing a road). A quad that touches it is cut into
+   * TRIM_STEP m pieces and the pieces whose centre is on the asphalt are left out, so the strip ends at the road's edge instead of overlapping it. */
+  const emit = (c, plen) => {
     // where the ground slopes, 10 cm pieces, so the strip stays on it through the slope's kinks
     const sloped = c.some(([x, z]) => Math.abs(groundY(x, z) - groundY(...c[0])) > 1e-4);
     // (#1305: outside ELEVATION.protect the ground is smooth: the strip is cut into the fewest equal pieces (1…16) whose edge midpoints lie within 1 cm of the chord, not always 10 cm ones)
-    const P = ELEVATION.protect, far = c[0][0] < P.x0 - 5 || c[0][0] > P.x1 + 5 || c[0][1] < P.z0 - 5 || c[0][1] > P.z1 + 5, full = Math.ceil(Math.hypot(q.x - p.x, q.z - p.z) / 0.1);
-    const lerp = (u, v, f) => [u[0] + (v[0] - u[0]) * f, u[1] + (v[1] - u[1]) * f];
+    const P = ELEVATION.protect, far = c[0][0] < P.x0 - 5 || c[0][0] > P.x1 + 5 || c[0][1] < P.z0 - 5 || c[0][1] > P.z1 + 5, full = Math.ceil(plen / 0.1);
     if (sloped && far && grid) { // (#1313: cut where the quad crosses the terrain mesh's own grid lines and diagonals, so it lies on the ground instead of dipping into a fold between samples; kinks the ground stays within 1 cm of the straight piece over are dropped, which keeps the triangle count low)
       const pt = (t, s) => lerp(lerp(c[0], c[2], t), lerp(c[1], c[3], t), s);
       const sc = terrainCuts((s, t) => pt(t, s), groundY, grid);
@@ -202,7 +220,7 @@ export function pathStrip(road, a, b, lift, groundY, clip = false, grid = ground
         const sa = m > 0 ? -ds : 0, sb = m + 2 < sc.length ? 1 + ds : 1;
         for (let k = 0; k + 1 < tc.length; k++) { const ta = tc[k] - dt, tb = tc[k + 1] + dt, v0 = at3(ta, sa), v1 = at3(ta, sb), v2 = at3(tb, sa), v3 = at3(tb, sb); pos.push(...v0, ...v2, ...v1, ...v1, ...v2, ...v3); }
       }
-      continue;
+      return;
     }
     let n = sloped ? full : 1;
     if (sloped && far) for (const m of [1, 2, 4, 8, 16]) {
@@ -215,6 +233,20 @@ export function pathStrip(road, a, b, lift, groundY, clip = false, grid = ground
         .map(([x, z]) => [x, groundY(x, z) + lift, z]);
       pos.push(...v[0], ...v[2], ...v[1], ...v[1], ...v[2], ...v[3]);
     }
+  };
+  for (let k = 1; k < S.length; k++) {
+    const p = S[k - 1], q = S[k];
+    const c = [at(p, a(p.w)), at(p, b(p.w)), at(q, a(q.w)), at(q, b(q.w))], plen = Math.hypot(q.x - p.x, q.z - p.z);
+    if (typeof clip==='function' ? clip(c) : clip && c.every(([x, z]) => onRoad(x, z, -0.05, road))) continue;
+    if (trim && plen > 0 && [c[0], c[1], c[2], c[3], lerp(c[0], c[3], 0.5), lerp(c[0], c[2], 0.5), lerp(c[1], c[3], 0.5)].some(([x, z]) => trim(x, z))) {
+      const m = Math.max(2, Math.ceil(plen / TRIM_STEP));
+      for (let j = 0; j < m; j++) {
+        const u0 = j / m, u1 = (j + 1) / m, d = [lerp(c[0], c[2], u0), lerp(c[1], c[3], u0), lerp(c[0], c[2], u1), lerp(c[1], c[3], u1)];
+        if (!trim(...lerp(lerp(d[0], d[3], 0.5), lerp(d[1], d[2], 0.5), 0.5))) emit(d, plen / m);
+      }
+      continue;
+    }
+    emit(c, plen);
   }
   return finish(pos);
 }
