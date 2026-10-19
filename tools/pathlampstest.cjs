@@ -4,6 +4,8 @@ const base=process.argv[2]||'http://localhost:8879',out=process.env.SHOTS||'/tmp
 let bad=0;const check=(ok,label,data)=>{console.log(`${ok?'PASS':'FAIL'} ${label} ${JSON.stringify(data)}`);if(!ok)bad++;};
 (async()=>{fs.mkdirSync(out,{recursive:true});const b=await chromium.launch({executablePath:process.env.CHROME_PATH,args:['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader']});try{
 const p=await b.newPage({viewport:{width:1000,height:600}});const errors=[];p.on('pageerror',e=>errors.push(e.message));await p.route('**/src/bootstrap.js',r=>r.fulfill({contentType:'text/javascript',body:'// bounded street component'}));
+// Keep this bounded park test independent of supplemental road coverage (#1371), tested in roadlampstest.cjs.
+await p.route('**/src/roadlamps.js',r=>r.fulfill({contentType:'text/javascript',body:'export const roadLampSpots=()=>[];'}));
 await p.route('**/src/__pathlamp_baseline.js',r=>r.fulfill({contentType:'text/javascript',body:cp.execFileSync('git',['show','ba5db2f9:src/street.js'],{cwd:process.cwd()})}));await p.goto(base+'/?lowmem');
 const result=await p.evaluate(async()=>{const T=await import('three'),{buildStreet}=await import('/src/street.js'),old=await import('/src/__pathlamp_baseline.js'),{PATH_LIGHTS:L,SITE}=await import('/src/config.js');
 const realNow=performance.now.bind(performance);let now=realNow();performance.now=()=>now;
