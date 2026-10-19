@@ -1,7 +1,7 @@
 // Pony shelter, shade trees and snow (#1316, src/paddockshelter.js, src/paddock.js): `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/sheltertest.cjs http://localhost:PORT /tmp/shots1316`
 // Checks: the shade trees are in treeFeet and block a real walk; in rain (the paddock's own rain input, then the real forced weather) the ponies walk to the shed / under a
-// tree and stay until it has been dry for PADDOCK.rain.dry s, then go out into the paddock; in the snow months (&month=1) the ponies are gone, not drawn, not pettable, and
-// come back when the month is July; the ponies stay inside the fence throughout. Screenshots: trees, sheltering in rain, the empty winter paddock.
+// tree and stay until it has been dry for PADDOCK.rain.dry s, then go out into the paddock; in the snow months (&month=1) both ponies remain visible in the shed and
+// walk back out when the month is July; the ponies stay inside the fence throughout. Screenshots: trees, sheltering in rain, the occupied winter shed.
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const base = process.argv[2] || 'http://localhost:8137', out = process.argv[3] || '/tmp/shots1316';
 require('fs').mkdirSync(out, { recursive: true });
@@ -15,13 +15,20 @@ const check = (ok, name, extra = '') => { console.log(`${ok ? 'PASS' : 'FAIL'} $
     await page.goto(`${base}/index.html?shot&time=12&day=10&freeze&${query}`);
     await page.waitForFunction(() => window.__app?.paddock, null, { timeout: 420000 });
     await page.waitForTimeout(1500);
+    await page.evaluate(() => {
+      // Simulate the real app without drawing thousands of identical GPU frames;
+      // screenshots below explicitly use the original full-quality renderer.
+      const a = window.__app, r = a.renderer, render = r.render;
+      r.setAnimationLoop(null); r.render = () => {};
+      window.__shelterDraw = () => { const idle = r.render; r.render = render; try { r.render(a.scene, a.camera); } finally { r.render = idle; } };
+    });
     return page;
   };
   const view = (page, x, z, yaw, pitch = 0, y = null) => page.evaluate(({ x, z, yaw, pitch, y }) => {
     const a = window.__app; a.day.paused = true; a.player.spawn(x, z, 0); a.step(1 / 30);
     a.camera.position.set(x, y ?? a.camera.position.y, z); a.camera.rotation.set(pitch * Math.PI / 180, yaw * Math.PI / 180, 0, 'YXZ'); a.camera.updateMatrixWorld(true);
   }, { x, z, yaw, pitch, y });
-  const shot = async (page, name) => { await page.waitForTimeout(500); await page.screenshot({ path: `${out}/${name}.png`, timeout: 180000 }); };
+  const shot = async (page, name) => { await page.evaluate(() => window.__shelterDraw()); await page.screenshot({ path: `${out}/${name}.png`, timeout: 180000 }); };
 
   // --- summer, dry: trees, then rain through the paddock's own input
   let page = await open('month=7&weather=clear');
@@ -82,31 +89,37 @@ const check = (ok, name, extra = '') => { console.log(`${ok ? 'PASS' : 'FAIL'} $
   check(real.rainy && real.seekers >= 1 && real.spots >= 1, 'forced rain in the real app sends ponies to shelter', JSON.stringify(real));
   await page.close();
 
-  // --- winter: the snow months
+  // --- winter: both ponies actually occupy the visible shed, also on a cold start
   page = await open('month=1&weather=snow');
   await view(page, -108, 238, 90, -3);
   const win = await page.evaluate(async () => {
-    const a = window.__app, p = a.paddock; a.player.spawn(-108, 238, 0);
-    for (let i = 0; i < 400; i++) a.step(0.1);
-    const r = { winter: p.winter, gone: p.ponies.map((q) => q.gone), visible: p.mesh.visible, targets: p.targets().length, calls: 0 };
-    a.day.month = 7; for (let i = 0; i < 200; i++) a.step(0.1);
-    r.back = { winter: p.winter, gone: p.ponies.map((q) => q.gone), visible: p.mesh.visible, targets: p.targets().length };
+    const a = window.__app, p = a.paddock;
+    const under = () => p.ponies.every((q, i) => { const s = p.stable(i); return s && Math.hypot(q.x-s.x, q.z-s.z)<0.1 && !q.gone; });
+    for (let i = 0; i < 600; i++) a.step(0.1);
+    const T = await import('three'), m = new T.Matrix4(), scale = new T.Vector3(), pos = new T.Vector3(), rot = new T.Quaternion();
+    const scales = p.ponies.map((_,i) => { p.mesh.getMatrixAt(i,m);m.decompose(pos,rot,scale);return scale.x; });
+    const r = { winter:p.winter, gone:p.ponies.map(q=>q.gone), under:under(), visible:p.mesh.visible, targets:p.targets().length, grass:p.grass.visible, scales };
+    // A camera outside the view range hides the draw, but must not erase winter occupants.
+    a.player.spawn(0,0,0);a.step(0.1);r.far={visible:p.mesh.visible,gone:p.ponies.map(q=>q.gone)};
+    a.player.spawn(-108,238,0);a.step(0.1);r.returned=p.mesh.visible&&under();
     return r;
   });
-  check(win.winter && win.gone.every(Boolean) && !win.visible && win.targets === 0, 'snow months: the ponies are gone, not drawn and not pettable', JSON.stringify(win));
-  check(!win.back.winter && win.back.gone.every((g) => !g) && win.back.visible && win.back.targets === 2, 'when the snow is gone they are back', JSON.stringify(win.back));
-  await page.close();
-  page = await open('month=1&weather=snow');
-  await view(page, -108, 238, 90, -3);
-  const walkIn = await page.evaluate(async () => { // the ponies are out when the month flips to winter in front of the visitor: they walk to the shed first
-    const a = window.__app, p = a.paddock; a.day.month = 7; for (let i = 0; i < 100; i++) a.step(0.1);
-    a.player.spawn(-108, 238, 0); for (let i = 0; i < 300; i++) a.step(0.1);
-    const before = p.ponies.filter((q) => !q.gone).length; a.day.month = 1;
-    let popped = 0, first = -1; for (let i = 0; i < 1500; i++) { a.step(0.1); const n = p.ponies.filter((q) => q.gone).length; if (n && first < 0) first = i / 10; }
-    return { before, first, gone: p.ponies.map((q) => q.gone) };
+  check(win.winter && win.under && win.visible && win.scales.every(s=>s>0) && win.targets===2 && !win.grass,
+    'snow months: two visible, full-size ponies stand in the shed; snowy grass stays hidden',JSON.stringify(win));
+  check(!win.far.visible && win.far.gone.every(g=>!g) && win.returned,'distance culling preserves both winter occupants and restores their draw');
+  const front=await page.evaluate(()=>{const p=window.__app.paddock,s=p.spots.shelter;return{x:s.x+Math.sin(s.yaw)*9,z:s.z+Math.cos(s.yaw)*9,yaw:s.yaw*180/Math.PI};});
+  await view(page,front.x,front.z,front.yaw,-4);await shot(page,'winter-occupied-shed');
+  const back=await page.evaluate(()=>{const a=window.__app,p=a.paddock;a.day.month=7;for(let i=0;i<1800;i++)a.step(0.1);return{winter:p.winter,visible:p.mesh.visible,targets:p.targets().length,spots:p.ponies.map(q=>q.spot),out:p.ponies.some((q,i)=>Math.hypot(q.x-p.stable(i).x,q.z-p.stable(i).z)>3)};});
+  check(!back.winter&&back.visible&&back.targets===2&&back.spots.every(s=>!s)&&back.out,'summer releases the ponies back into the paddock',JSON.stringify(back));
+  // Change to winter in view: they walk in, never vanish or teleport in the open.
+  const walkIn=await page.evaluate(()=>{
+    const a=window.__app,p=a.paddock;a.player.spawn(-108,238,0);a.step(0.1);a.day.month=1;
+    let gone=0,maxJump=0;const start=p.ponies.map(q=>[q.x,q.z]);
+    for(let i=0;i<2400;i++){const before=p.ponies.map(q=>[q.x,q.z]);a.step(0.1);p.ponies.forEach((q,j)=>{gone+=q.gone?1:0;maxJump=Math.max(maxJump,Math.hypot(q.x-before[j][0],q.z-before[j][1]));});}
+    return{gone,maxJump,under:p.ponies.every((q,i)=>{const s=p.stable(i);return Math.hypot(q.x-s.x,q.z-s.z)<0.1}),moved:p.ponies.some((q,i)=>Math.hypot(q.x-start[i][0],q.z-start[i][1])>3)};
   });
-  check(walkIn.before === 2 && walkIn.gone.every(Boolean) && walkIn.first > 1, 'a pony in view walks to the shelter before it is gone (no pop in the open)', JSON.stringify(walkIn));
-  await view(page, -108, 238, 90, -3); await shot(page, 'winter-empty-paddock');
+  check(walkIn.under&&walkIn.gone===0&&walkIn.maxJump<0.6&&walkIn.moved,'visible ponies walk into the winter shed without disappearing',JSON.stringify(walkIn));
+  await view(page,front.x,front.z,front.yaw,-4);await shot(page,'winter-after-walk-in');
   await page.close();
   await browser.close();
   console.log(pass ? 'ALL PASS' : 'SOME FAILED'); process.exit(pass ? 0 : 1);

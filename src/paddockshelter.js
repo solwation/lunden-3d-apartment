@@ -16,7 +16,7 @@ export function shelterSpots(shelter, keep = () => true) {
   return out.filter((p) => keep(p.x, p.z));
 }
 
-/** Is the ground white in `month` (1-12)? Then the ponies are not in the paddock. */
+/** Is the ground white in `month` (1-12)? Then the ponies occupy the field shelter. */
 export const snowCovered = (month) => SEASON.snowMonths.includes(month);
 
 /** Rain with hysteresis: `wanted` turns on at PADDOCK.rain.on and off once the rain has been under `off` for `dry` s. `update(dt, rain)` returns +1 when a shower begins, -1 when it is over, else 0. */

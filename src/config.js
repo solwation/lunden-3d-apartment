@@ -3611,7 +3611,7 @@ export const PADDOCK = {
   // Weather (#1316, src/paddockshelter.js; all *guess*): rain (the weather's strength 0..1, not snow) of at least `on` sends ponies to a sheltered spot, until it has been under `off`
   // for `dry` s; each rain a pony goes with probability `chance` (at least one does, the others may stand out in it). A sheltered spot is under the shelter's roof (two, at +-`shedX` m
   // across it) or on a ring of `ring` x tree scale m round a tree (under the crown, clear of the trunk; `treeSpots` of them each). In the snow months (SEASON.snowMonths: the ground
-  // is white) the ponies are not in the paddock: they walk to the shelter and are gone ("in the stable"), and come out of it again when the snow is gone.
+  // is white) the ponies stand visibly in their two places under the shelter roof (#1352), and walk out again when the snow is gone.
   rain: { on: 0.12, off: 0.03, dry: 20, chance: 0.8, ring: 2.3, treeSpots: 4, shedX: 0.9 },
   // the stile beside the gate (#1295, *guess*): `w` m wide, `minSpan` m the fence span it needs, three risers of `rise` m (under PLAYER.stepUp 0.45, so the ordinary
   // stepping walks it) over two treads of `tread` m either side of a platform that is 2 × `platform` m long; `reach` m from the fence line to the walls' ends

@@ -14,6 +14,8 @@ I rutan uppe till vänster visas antalet besökare över bildfrekvensen (FPS). F
 
 Bilen stannar för spelare i sin körväg även i svängar och vid backning.
 
+På vintern står båda hästarna synliga inne i hästhagens skjul. När snön försvinner går de ut i hagen igen.
+
 När du möblerar om står möbler ovanpå mattan och åter på golvet när de flyttas av den. Flyttar du själva mattan justeras höjden för möbler och saker som står kvar.
 
 Soffan och fåtöljen har mjukt välvda dynor och diskreta kederkanter. I materialmenyn kan du välja en enskild kudde, pläd eller klädsel på soffan och fåtöljen. Förhandsvisa färg och mönster, bekräfta för alla besökare eller välj Original för att återställa just den ytan.

@@ -434,9 +434,12 @@ export class Paddock {
     for (const p of this.ponies) { p.spot = null; p.seek = false; p.gone = false; }
   }
   stable(i) { return this.sheds.length ? this.sheds[i % this.sheds.length] : null; }
-  /** Into the stable (snow): gone from the paddock, standing by the shelter's door for when it melts. */
-  vanish(p, i) { const sp = this.stable(i); if (sp) { p.x = sp.x; p.z = sp.z; p.y = this.ground(p.x, p.z); } p.gone = true; p.state = 'idle'; p.left = 1; p.goal = null; p.spot = null; }
-  appear(p, i) { const sp = this.stable(i); if (sp) { p.x = sp.x; p.z = sp.z; p.y = this.ground(p.x, p.z); } p.gone = false; p.state = 'idle'; p.left = 1 + i * 4; p.goal = null; p.spot = null; }
+  /** #1352: winter uses the two actual places under the visible shed's roof. */
+  restInShed(p, i) {
+    const sp = this.stable(i);
+    if (sp) { p.x = sp.x; p.z = sp.z; p.y = this.ground(p.x, p.z); p.yaw = this.spots.shelter.yaw; }
+    p.gone = false; p.state = 'idle'; p.left = 1 + i * 4; p.goal = null; p.target = null; p.spot = sp; p.eat = false;
+  }
   /** Send a pony (not one being patted) to decide again in `after` s. */
   nudge(p, after) { if (p.state === 'pet') return; p.state = 'idle'; p.left = after; p.goal = null; p.eat = false; }
   /** Per frame: the rain watch and the snow months. `show` false = nobody can see the paddock, so things change at once. */
@@ -447,20 +450,23 @@ export class Paddock {
       this.ponies.forEach((p) => { p.seek = p.rnd() < P.rain.chance; });
       if (!this.ponies.some((p) => p.seek)) this.ponies[0].seek = true;
       this.ponies.forEach((p, i) => { if (!p.gone) this.nudge(p, 0.3 + i * 1.5); });
-    } else if (ev < 0) this.ponies.forEach((p, i) => { if (p.spot) { p.spot = null; this.nudge(p, 0.5 + i * 2.5); } }); // dry again: out into the paddock
+    } else if (ev < 0 && !this.winter) this.ponies.forEach((p, i) => { if (p.spot) { p.spot = null; this.nudge(p, 0.5 + i * 2.5); } }); // dry again: out into the paddock (unless winter keeps them in the shed)
     if (this.winter !== this.winterSeen) {
       this.winterSeen = this.winter;
-      this.ponies.forEach((p, i) => { if (!show) { if (this.winter) this.vanish(p, i); else if (p.gone) this.appear(p, i); } else if (this.winter) this.nudge(p, 0.3 + i * 3); else if (p.gone) this.appear(p, i); });
+      this.ponies.forEach((p, i) => {
+        if (this.winter && !show) this.restInShed(p, i);
+        else { p.gone = false; p.spot = null; this.nudge(p, 0.3 + i * 3); }
+      });
     }
   }
   /** Called first by `decide`: true when the rain / snow has decided what pony `p` does next. */
   shelterDecide(p, i) {
     const r = p.rnd;
-    if (this.winter) { // walk to the shelter and go in
+    if (this.winter) { // walk into the visible shelter and remain there
       const sp = this.stable(i);
-      if (!sp || Math.hypot(sp.x - p.x, sp.z - p.z) < 1.3) { this.vanish(p, i); return true; }
+      if (!sp || Math.hypot(sp.x - p.x, sp.z - p.z) < 0.5) { this.restInShed(p, i); return true; }
       const t = this.hop(p, sp.x, sp.z);
-      if (!t) { this.vanish(p, i); return true; }
+      if (!t) { p.state = 'idle'; p.left = 1; p.eat = false; return true; } // retry a route; never disappear in the open
       p.goal = null; p.target = t; p.state = 'walk'; p.eat = false; return true;
     }
     if (!this.rainy || !p.seek) { p.spot = null; return false; }
@@ -574,8 +580,9 @@ export class Paddock {
     if (p.earP >= 0) { p.earP += dt / 0.35; if (p.earP > 1) p.earP = -1; } else { p.earT -= dt; if (p.earT <= 0) { p.earP = 0; p.earT = p.state === 'pet' ? 0.6 : 3 + p.rnd() * 7; } }
     p.ear = p.earP >= 0 ? 0.6 * Math.sin(p.earP * Math.PI) : 0;
     if (p.state !== 'walk' && p.left <= 0) this.decide(p, i);
-    // keep apart: a gentle push when two ponies stand closer than `gap`
-    for (let j = 0; j < this.ponies.length; j++) {
+    // Keep apart in the field. The two assigned winter stalls are closer than
+    // the field gap; do not push an occupant out of its place under the roof.
+    if (!(this.winter && p.spot === this.stable(i))) for (let j = 0; j < this.ponies.length; j++) {
       if (j === i) continue;
       const q = this.ponies[j], dx = p.x - q.x, dz = p.z - q.z, d = Math.hypot(dx, dz);
       if (d < R.gap && d > 1e-3) { const k = (R.gap - d) * Math.min(1, 1.5 * dt) * 0.5, nx = p.x + dx / d * k, nz = p.z + dz / d * k; if (insideFence(nx, nz, P.keep - 1.2)) { p.x = nx; p.z = nz; } }
@@ -594,7 +601,7 @@ export class Paddock {
   write() {
     const a = this.anim.array, b = this.anim2.array, e = this.mesh.instanceMatrix;
     this.ponies.forEach((p, i) => {
-      this.quat.setFromAxisAngle(this.up, p.yaw); this.pos.set(p.x, p.y, p.z); this.scl.setScalar(p.gone ? 0 : p.scale); // (a pony in the stable, #1316, has no size)
+      this.quat.setFromAxisAngle(this.up, p.yaw); this.pos.set(p.x, p.y, p.z); this.scl.setScalar(p.gone ? 0 : p.scale); // Winter occupants retain their normal scale (#1352).
       this.mesh.setMatrixAt(i, this.matrix.compose(this.pos, this.quat, this.scl));
       a[i * 4] = p.phase; a[i * 4 + 1] = p.amp; a[i * 4 + 2] = p.neck; a[i * 4 + 3] = p.tail;
       b[i * 4] = p.ear; b[i * 4 + 1] = p.headYaw;
