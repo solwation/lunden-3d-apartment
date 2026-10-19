@@ -392,3 +392,5 @@ Måltavlan står mellan rampen och trappan på södra baksidan, med ryggen mot s
 Fine Höje å height references and the reproducible account-free point-API extraction are documented in the [environment guide](docs/development/environment.md#fine-ground-height-references-for-höje-å-1349). The reference data does not establish submerged bed depth or the apartment’s absolute floor elevation.
 
 Phone detail visibility (#1361): existing opaque wall rectangles, window infill, door lintels and the actual stair-opening slab conservatively hide fully covered distant boxes on phones. Nearby focus and layer7 physical traces retain their policy; individual distance thresholds are unchanged. This is a partial reduction; the landscape budget still fails and remains tracked by #1383.
+
+Browser fixture repair (#1372): the runner supplies isolated output directories and a local Worker to the statistics/rest-pose fixtures. Statistics installs the shared verbatim-main collaborators; the plain reciprocal Nerf body-hit fixture aligns its native peers to the actual held muzzle and uses a fixed standing look. Gameplay and special apartment/diagnostic modes are unchanged.

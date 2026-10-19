@@ -4,6 +4,7 @@
 // one list instead of stubbing per file. Defaults are installed only when the name is not already defined, and a test's
 // own (richer) stand-ins assigned afterwards always win. When a new main.js global breaks the excerpts, add it HERE once.
 const DEFAULTS = {
+  binderFreed: 'false',                  // cat binder intentionally frees pointer lock (#1255)
   paddock: 'null',                       // main.js: `nopaddock` -> null (no ponies)
   playroom: '{inside:false}',
   SOUNDS: '{}',

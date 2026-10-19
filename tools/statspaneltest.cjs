@@ -1,6 +1,7 @@
 // #886: original index UI and complete production input/panel blocks; actual pointer lock, no apartment/WebGL.
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),{execFileSync}=require('node:child_process');
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
+const {installMainGlobals,installMainImports}=require('./mainfixture.cjs');
 const game=process.argv[2]||'http://localhost:8876',out=process.argv[3]||'/tmp/lunden-statspanel',before=process.argv.includes('--before');
 const root=path.resolve(__dirname,'..'),read=p=>before?execFileSync('git',['show','b2efbc5:'+p],{cwd:root,encoding:'utf8'}):fs.readFileSync(path.join(root,p),'utf8');
 const source=read('src/main.js'),html=read('index.html');
@@ -14,9 +15,9 @@ const parts={active:span('const active =',';\n')+';',start:span('function startM
  stats:span('let mapPinned = false;','\nrenderStats(statsBody);\nsetInterval')};
 let failures=0;const lines=[];const check=(ok,label)=>{lines.push(`${ok?'PASS':'FAIL'} ${label}`);console.log(lines.at(-1));if(!ok)failures++;};
 (async()=>{fs.mkdirSync(out,{recursive:true});const browser=await chromium.launch({executablePath:process.env.CHROME_PATH||undefined,args:['--no-sandbox','--disable-gpu']});const errors=[];
-try{const context=await browser.newContext({viewport:{width:844,height:390},hasTouch:false});const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
+try{const context=await browser.newContext({viewport:{width:844,height:390},hasTouch:false});const page=await context.newPage();await installMainGlobals(page);page.on('pageerror',e=>{errors.push(e.message);console.error('PAGEERROR',e.message);});
 await page.route(game+'/',r=>r.fulfill({contentType:'text/html',body:html}));await page.route('**/src/bootstrap.js',r=>r.fulfill({contentType:'text/javascript',body:'// intentionally no apartment bootstrap'}));
-await page.goto(game);await page.evaluate(async({parts,before})=>{
+await page.goto(game);await installMainImports(page);await page.evaluate(async({parts,before})=>{
  const T=await import('three'),{Player}=await import('/src/player.js'),{setupTouch}=await import('/src/touch.js'),S=await import('/src/stats.js'),{StatsPanel}=await import('/src/statspanel.js');Object.assign(window,{StatsPanel,S,PLAYER:(await import('/src/config.js')).PLAYER});(await import('/src/hudicons.js')).initHudIcons();
  window.player=new Player({size:{x:5.75,z:12.1},levels:[{segments:[],footprints:[]},{segments:[],footprints:[]}],doors:[]},new T.PerspectiveCamera());player.spawn(2,-10,0);
  // This newly-created browser context owns its own statistics; no real visitor data can be read or reset.

@@ -251,11 +251,16 @@ async function workerFor(slot) {
 async function runCjs(test, game, slot) {
   const src = fs.readFileSync(path.join(TOOLS, test.file), 'utf8');
   const args = [path.join('tools', test.file), game];
-  if (/cloudflare\/dev\.mjs|\bworker\s*=\s*process\.argv\[3\]/.test(src)) {
+  // These fixtures use GAME [WORKER] OUT rather than the older GAME WORKER TOKEN contract.
+  // restposetest destructures argv, so the legacy source heuristic cannot discover its Worker.
+  const outputContract = test.name === 'statspaneltest' || test.name === 'restposetest';
+  if (test.name === 'restposetest' || /cloudflare\/dev\.mjs|\bworker\s*=\s*process\.argv\[3\]/.test(src)) {
     const w = await workerFor(slot);
-    // These tests wipe the Worker's state: a Worker per job slot, cleared by the test itself. Token as in the file's header.
-    args.push(`http://localhost:${w.port}`, 'testtoken');
+    // Own Worker per job slot; legacy fixtures also take its local test token.
+    args.push(`http://localhost:${w.port}`);
+    if (!outputContract) args.push('testtoken');
   }
+  if (outputContract) args.push(path.join(LOGDIR, test.name));
   const t0 = Date.now(); let out = '';
   const pw = playwrightPath(), pwRoot = path.dirname(require.resolve(`${pw}/../package.json`));
   const chrome = process.env.CHROME_PATH || process.env.CHROME;
