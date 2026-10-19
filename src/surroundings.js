@@ -5,7 +5,7 @@ import { buildRiverPark, parkDeckAt, parkTreeSpots, parkShrubSpots } from './riv
 import * as THREE from 'three';
 import { grassUV } from './grass.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE, CORE_A, CORE_B, CORE_C, NEIGHBOR_OPENINGS as O, HUS_L, FOLIAGE, ELEVATION, TERRAIN_FAR } from './config.js';
+import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE, CORE_A, CORE_B, CORE_C, NEIGHBOR_OPENINGS as O, HUS_L, FOLIAGE, ELEVATION, TERRAIN_FAR, PADDOCK } from './config.js';
 import { gridGround } from './elevation.js';
 import { glowMaterial, poolGeometry, washGeometry, fadeGlow } from './groundglow.js';
 import { neighborGlass } from './neighborglass.js';
@@ -1309,6 +1309,7 @@ function trees(rand) {
   }
   spots.push(...parkTreeSpots(renderedTerrainY),...westTreeSpots(renderedTerrainY),...eastTreeSpots(renderedTerrainY),...northTreeSpots(renderedTerrainY));
   for (const [x, z, s] of S.bigTrees) spots.push({ x, z, y: groundY(x, z), s, kind: 'big' });
+  for (const [x, z, s] of PADDOCK.trees) spots.push({ x, z, y: z > 260 ? -3.01 : Math.max(groundY(x, z), renderedTerrainY(x, z)), s, kind: 'big' }); // the pony paddock's shade trees (#1316; the paddock's own ground level)
   for (const [x, z] of S.vergeTrees) spots.push({ x, z, y: groundY(x, z), s: 0.8 + rand() * 0.3, kind: 'tree' }); // by Karpvägen (#257)
   for (const [x, z, s] of S.life.trees) spots.push({ x, z, y: groundY(x, z), s, kind: 'tree' }); // the bike yard's + one by the road (#260, #435)
   treeFeet.length = 0;

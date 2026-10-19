@@ -257,6 +257,7 @@ from the paddock or underground; the fence is drawn whenever in view. Cost at th
 **Stile (#1295):** `PADDOCK.stile` (all *guess*): in the span next to the gate (`stile` in paddockgeo.js: the next span, else the one before, that is at least `minSpan` long) the fence has a 1 m opening
 with steep steps (three risers of 0.38 m, treads 0.3 m, a 0.5 m platform over the fence line) on both sides, drawn into the fence mesh (no extra draw call) and walked with the ordinary step-up. The ponies cannot use it: they stay inside
 `insideFence`, and fence rails, gate and fence collision are otherwise unchanged. If the steps are moved, the opening, side walls, rails and heights all follow `stile`.
+**Shade trees (#1316):** `PADDOCK.trees` (*guess*, `[x, z, scale]`, 2-3 of them) are built by surroundings.js `trees()` as kind `'big'` (the shared trunk/crown batches, the seasonal colours and bare winter crowns from seasons.js, `aoTrees` shadows, trunk collision through `treeFeet`/farwalk `WALK.trunk.big`), so they add no draw calls; paddockgeotest checks they are >= 10 m inside the fence and >= 25 m from the gate, and the ponies' waypoints keep clear of them.
 Downstream (kvarteret-lunden): the fence/ground could be transferred as a generic paddock; the named ponies are personal gameplay and must not be.
 
 ## East campus car parks: the lot behind HepCat Store (#1278)

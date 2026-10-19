@@ -3588,6 +3588,10 @@ export const PADDOCK = {
   grass: { cell: 1.5, spacing: 1.3, w: 0.8, long: 0.5, short: 0.03, colors: [0x35601c, 0x8ba94a], reach: 1.15, bite: 1.3, rate: 0.6, regrow: 1 / 4000,
     patches: 10, radius: [4, 9], level: 0.05, around: 4, tries: 4, hungry: 0.35, period: 0.15, margin: 1.6 },
   trough: { w: 1.7, d: 0.5, h: 0.42 }, shelter: { w: 4.2, d: 2.6, h: 2.3 },
+  // #1316 (all *guess*): big shade trees in the meadow, [x, z, scale] like `SITE.bigTrees` (surroundings.js builds them as kind 'big': the shared crown/trunk batches,
+  // so no extra draw calls; their trunks block through `treeFeet` like every other tree); at least 10 m inside the fence and 25 m from the gate (paddockgeotest checks).
+  // A crown shelters the ground under it out to `crown` x scale m from the trunk (the ponies stand at that radius, clear of the trunk's `trunkClear` m).
+  trees: [[-170, 247, 1.2], [-215, 270, 1.3], [-235, 293, 1.15]], crown: 3.2, trunkClear: 1.4,
   // the stile beside the gate (#1295, *guess*): `w` m wide, `minSpan` m the fence span it needs, three risers of `rise` m (under PLAYER.stepUp 0.45, so the ordinary
   // stepping walks it) over two treads of `tread` m either side of a platform that is 2 × `platform` m long; `reach` m from the fence line to the walls' ends
   stile: { w: 1.0, minSpan: 1.9, rise: 0.38, tread: 0.3, platform: 0.25, reach: 0.95, post: 0.95 },

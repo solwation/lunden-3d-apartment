@@ -40,3 +40,14 @@ test('the stile (#1295) sits in the span beside the gate, opens the fence by its
   const closed = [...segs, ...walls]; // the opening is sealed sideways: no way across the fence line except along the steps
   for (const k of [-1, 1]) for (const s of [-0.6, 0.6]) assert.ok(!closed.some((c) => cross(c, [st.x + st.tx * k * 0.3 - st.nx * 2, st.z + st.tz * k * 0.3 - st.nz * 2, st.x + st.tx * k * 0.3 + st.nx * 2, st.z + st.tz * k * 0.3 + st.nz * 2])), 'the walk along the steps is open');
 });
+
+test('the shade trees (#1316) stand well inside the fence, far from the gate and from each other', () => {
+  const gm = [(g.posts[g.gateSpan][0] + g.posts[(g.gateSpan + 1) % g.posts.length][0]) / 2, (g.posts[g.gateSpan][1] + g.posts[(g.gateSpan + 1) % g.posts.length][1]) / 2];
+  assert.ok(PADDOCK.trees.length >= 2 && PADDOCK.trees.length <= 3);
+  PADDOCK.trees.forEach(([x, z, s], i) => {
+    assert.ok(g.insideFence(x, z, 10), `tree ${i} at least 10 m inside the fence`);
+    assert.ok(Math.hypot(x - gm[0], z - gm[1]) > 25, `tree ${i} clear of the gate`);
+    for (const [x2, z2] of PADDOCK.trees.slice(i + 1)) assert.ok(Math.hypot(x - x2, z - z2) > 20, 'trees apart');
+    assert.ok(s >= 1 && s <= 1.5);
+  });
+});
