@@ -54,6 +54,10 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
 - **Orchestra capacity (user, 2026-10-18).** At most 2 worker agents **per orchestrator** (not per machine) and always
   at least 1 active agent per orchestrator while startable work exists, regardless of machine load or how many agents
   other orchestrators on the same machine run. Aim for ~30 minutes per issue; split large issues rather than adding agents.
+- **Heartbeat comment every 30 minutes (user, 2026-10-19).** An agent working an issue posts a short Swedish comment on it
+  at least every 30 minutes (first one when approaching ~25–30 min): what is done, what is in progress, and an estimated time
+  remaining. A partial-delivery comment counts if posted in the same window. Rule 11 in `.claude/commands/orkester.md`;
+  the conductor treats a missing heartbeat (>~35 min) as a stalled agent.
 - **No branches, no PRs.** Commit and push directly to `main`.
 - **Basic function first.** Work that isn't needed right now goes into a GitHub issue
   (`gh issue create`) instead of being done on the side. Keep issues small and concrete;
