@@ -55,8 +55,8 @@ export class DetailCuller {
     const walk = (o, moving, unit) => {
       if (o.userData.moving && !moving) this.movers.push(o);
       moving ||= !!o.userData.moving;
-      if ('detailUnit' in o.userData && !unit) {
-        unit = this.unit(o);
+      if (('detailUnit' in o.userData || (lowMemory && o.userData.phoneDetailUnit)) && !unit) {
+        unit = this.unit(o, lowMemory && !!o.userData.phoneDetailUnit);
         this.items.push(unit);
         if (moving) this.moving.push(unit);
       }
@@ -66,7 +66,7 @@ export class DetailCuller {
       if (!o.geometry.boundingBox) computeDetailBounds(o.geometry);
       const s = o.geometry.boundingSphere;
       const r = s.radius * o.matrixWorld.getMaxScaleOnAxis();
-      if (!(r > 0 && r < D.maxOcclude)) return;
+      if (!(r > 0 && (r < D.maxOcclude || (lowMemory && o.isLineSegments && o.userData.architectureEdges)))) return;
       const lamp = [o.material].flat().some((m) => m?.userData.lamp); // a lamp's lit parts: never too small to draw (#294)
       const baseCut = r < D.maxR && !lamp ? Math.max(D.minDist, r / D.k) : Infinity;
       // Exterior door hardware may have a merged centre on/inside the footprint,
@@ -81,19 +81,41 @@ export class DetailCuller {
     this.outsideScale = lowMemory ? D.lowMemoryOutside ?? 1 : 1;
   }
 
-  /** The item for the whole of `root` (userData.detailUnit, #598): its bounding sphere, every mesh under it. */
-  unit(root) {
+  /** Whole-model bounds: the car keeps its original policy; opted-in furniture uses phone LOD only from outside the flat. */
+  unit(root, phoneUnit = false) {
     const meshes = [], box = new THREE.Box3();
     root.traverse((o) => {
-      if (!o.isMesh || o.isInstancedMesh || !o.geometry) return;
+      if (!(o.isMesh || (phoneUnit && o.isLineSegments)) || (!phoneUnit && o.isInstancedMesh) || !o.geometry || (phoneUnit && o.userData.noDetail)) return;
       meshes.push(o);
       if (!o.geometry.boundingBox) computeDetailBounds(o.geometry);
       box.union(o.geometry.boundingBox.clone().applyMatrix4(o.matrixWorld));
     });
     const s = box.isEmpty() ? new THREE.Sphere() : box.getBoundingSphere(new THREE.Sphere());
     const center = root.worldToLocal(s.center.clone()); // judged in the root's frame: it follows the root as it moves
-    const baseCut = s.radius < D.maxR ? Math.max(D.minDist, s.radius / D.k) : Infinity;
-    return { o: root, meshes, parts: [], r: s.radius, center, cut: baseCut, baseCut, far: false, lamp: false, exteriorDoor: false };
+    const lamp=phoneUnit && meshes.some(o=>[o.material].flat().some(m=>m?.userData.lamp));
+    const near=phoneUnit?D.minDist+s.radius:D.minDist;
+    const baseCut = phoneUnit ? (lamp ? Infinity : Math.max(near,s.radius/D.phoneUnitK)) : (s.radius < D.maxR ? Math.max(D.minDist, s.radius / D.k) : Infinity);
+    const localBox=phoneUnit?box.clone().applyMatrix4(root.matrixWorld.clone().invert()).expandByScalar(D.phoneUnitPad):undefined;
+    return { o: root, meshes, parts: [], r: s.radius, center, box:localBox, near:phoneUnit?near:undefined, phoneUnit, cut: baseCut, baseCut, far: false, lamp, exteriorDoor: false };
+  }
+
+  /** Phone furniture can open or replace a model part; collect its current complete envelope before judging it. */
+  refreshPhoneUnit(it) {
+    const meshes=[],box=new THREE.Box3();it.o.updateMatrixWorld(true);
+    it.o.traverse(o=>{
+      if (!(o.isMesh||o.isLineSegments)||!o.geometry||o.userData.noDetail)return;
+      if(!o.geometry.boundingBox)computeDetailBounds(o.geometry);
+      const b=o.isInstancedMesh?(o.boundingBox??(o.computeBoundingBox(),o.boundingBox)):o.geometry.boundingBox;
+      meshes.push(o);box.union(b.clone().applyMatrix4(o.matrixWorld));
+    });
+    for(const o of it.meshes)if(!meshes.includes(o)&&o.layers.mask===(1<<DETAIL_HIDDEN_LAYER))o.layers.set(0);
+    it.meshes=meshes;
+    if(box.isEmpty())return;
+    const sphere=box.getBoundingSphere(new THREE.Sphere());it.r=sphere.radius;it.center.copy(it.o.worldToLocal(sphere.center));
+    it.box.copy(box).applyMatrix4(it.o.matrixWorld.clone().invert()).expandByScalar(D.phoneUnitPad);
+    it.near=D.minDist+it.r;it.lamp=meshes.some(o=>[o.material].flat().some(m=>m?.userData.lamp));
+    it.baseCut=it.lamp?Infinity:Math.max(it.near,it.r/D.phoneUnitK);
+    it.cut=Math.max(it.near,it.baseCut*this.qualityScale);
   }
 
   /** Set quality distance scaling factor (1.0 = high, 0.7 = medium/low) (#460). */
@@ -101,7 +123,7 @@ export class DetailCuller {
     if (Math.abs(this.qualityScale - scale) < 1e-3) return;
     this.qualityScale = scale;
     for (const it of this.items.flatMap((x) => [x, ...(x.parts ?? [])])) {
-      if (it.baseCut !== Infinity) it.cut = Math.max(D.minDist * 0.8, it.baseCut * scale);
+      if (it.baseCut !== Infinity) it.cut = Math.max(it.near ?? D.minDist * 0.8, it.baseCut * scale);
     }
     this.refresh();
   }
@@ -119,20 +141,27 @@ export class DetailCuller {
     const outside = p.x < 0 || p.x > W || p.z < 0 || p.z > Dz || p.y > roof;
     for (const it of still ? this.moving : this.items) {
       if (!it.parts) this.judge(it, p, outside);
-      else if (it.o.userData.detailUnit) { if (this.judge(it, p, outside)) for (const q of it.parts) q.far = null; } // the whole
+      else if (it.phoneUnit && !outside) {
+        if(it.far!==null)for(const o of it.meshes)o.layers.set(0);
+        it.far=null;for(const q of it.parts)this.judge(q,p,outside);
+      }
+      else if (it.phoneUnit || it.o.userData.detailUnit) { if (this.judge(it, p, outside)) for (const q of it.parts) q.far = null; } // the whole
       else { it.far = null; for (const q of it.parts) this.judge(q, p, outside); } // its flag off: one by one
     }
   }
 
   /** Is item `it` too far / hidden from `p`? Moves its mesh(es) to the right layer; true when that changed. */
   judge(it, p, outside) {
+    if(it.phoneUnit)this.refreshPhoneUnit(it);
     const w = this.w.copy(it.center).applyMatrix4(it.o.matrixWorld), { W, D: Dz, roof } = this.box;
     const inside = outside && w.x > 0 && w.x < W && w.z > 0 && w.z < Dz && w.y < roof;
     // (phones, #695; #1223: the outlines of the doors, lids and appliances inside within `lowMemoryEdgesOutside` m only)
-    const cut = inside ? (it.edges && this.outsideScale < 1 ? Math.min(it.cut, D.lowMemoryEdgesOutside ?? Infinity) : it.cut * this.outsideScale) : it.cut;
+    const distanceCut = inside ? (it.edges && this.outsideScale < 1 ? Math.min(it.cut, D.lowMemoryEdgesOutside ?? Infinity) : it.cut * this.outsideScale) : it.cut;
+    // Other architectural outlines use the same existing distance, plus their radius to protect nearby edges.
+    const cut=it.phoneUnit?Math.max(it.near,distanceCut):(lowMemory && it.edges ? Math.min(distanceCut,D.lowMemoryEdgesOutside+it.r) : distanceCut);
     const far = w.distanceToSquared(p) > cut * cut || (outside && !it.exteriorDoor && (this.hidden(p, w, it.r) || (it.box && this.boxHidden(p, it.box, it.o.matrixWorld)))) ||
       (lowMemory && !it.exteriorDoor && it.box && w.distanceToSquared(p) > D.minDist * D.minDist && this.wallHidden(p, it));
-    if (far === it.far) return false;
+    if (far === it.far && !it.phoneUnit) return false;
     it.far = far;
     for (const o of it.meshes ?? [it.o]) o.layers.set(far ? DETAIL_HIDDEN_LAYER : 0);
     return true;

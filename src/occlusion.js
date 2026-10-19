@@ -1,5 +1,20 @@
 // Conservative visibility against actual opaque wall rectangles and the floor slab.
 // A single convex occluder must cover every box corner: separate walls can leave a doorway between them.
+/** Join only touching coplanar wall strips with identical vertical spans. Never fill a doorway gap. */
+export function mergeOpaqueRects(rects) {
+ const out=rects.map(r=>({...r}));
+ for(let i=0;i<out.length;i++)for(let j=i+1;j<out.length;j++){
+  const a=out[i],b=out[j];if(a.y0!==b.y0||a.y1!==b.y1)continue;
+  const alongX=a.z0===a.z1&&b.z0===b.z1&&a.z0===b.z0;
+  const alongZ=a.x0===a.x1&&b.x0===b.x1&&a.x0===b.x0;
+  if(!alongX&&!alongZ)continue;
+  const lo=alongX?'x0':'z0',hi=alongX?'x1':'z1';
+  if(a[hi]<b[lo]||b[hi]<a[lo])continue;
+  a[lo]=Math.min(a[lo],b[lo]);a[hi]=Math.max(a[hi],b[hi]);out.splice(j,1);j=i;
+ }
+ return out;
+}
+
 export function detailOccluders(walls, slab, W, D) {
   const out = walls.slice();
   if (slab) {

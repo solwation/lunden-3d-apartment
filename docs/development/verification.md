@@ -1,3 +1,11 @@
+Phone visibility (#1383): `node --test tools/phonedetailunittest.mjs tools/occlusiontest.mjs`,
+actual `tools/detailtest.html`, `PLAYWRIGHT_MODULE=… CHROME_PATH=… SHOTS=… node tools/patiousetest.cjs GAME`,
+then full `perfcount.html` at844×390/390×844 with lowmem and quality0. Inspect matched start, living,
+kitchen, upstairs, stairs and park images; verify actual nearby door/touch use, whole model masks and
+wall metadata against emitted geometry. Retain early budget failures and interrupted CLI143 separately.
+A private Chromium component checks actual Combat.moveShots idle/active/expired visibility without WebGL.
+Desktop still has the independently tracked triangle bug#1387; physical iPhone stability is not established.
+
 Southern road bank (#1382): `node --test tools/southbanktest.mjs tools/riverfalltest.mjs tools/southplateautest.mjs`,
 then the real `tools/farwalktest.cjs GAME`, `tools/riverparktest.html`, southern backdrop checks and
 desktop/phone `perfcount`. Inspect both bank sides and bridge approaches; check actual GC approach

@@ -56,6 +56,38 @@ Public applicability: the reviewed public `src/main.js` has no DetailCuller and 
 are excluded. Its architectural `world.js` does not consume these new visibility metadata. No public
 runtime change or transfer is applicable to this partial implementation.
 
+## Whole furnishing visibility and real solid support (#1383)
+
+On phones viewed from outside the flat, explicitly opted-in furniture is judged as a whole model.
+The builder excludes detachable contents and independently movable frames. Bounds and mesh membership
+refresh before judgement, preserving replaced geometry, moved parts and physical layer7 traces.
+Lamp-bearing models keep an infinite distance cutoff; only real opaque geometry can hide them.
+Inside the flat the previous per-part policy remains. `phoneUnitK`0.07 and envelope padding0.2m
+are visual LOD assumptions; minimum distance includes the complete model radius.
+Other architectural outlines use the existing6m distance plus their radius, preserving nearby edges.
+
+Actual ground-floor and patio plates now join the occlusion metadata. The two visitable plans
+export their own fixed opaque rectangles and actual stair-hole slab strips, translated by their real model offsets; their glass
+and moving leaves stay excluded. Retaining-wall rectangles
+are inscribed directly in emitted wall faces, then joined only where coplanar strips with identical
+vertical spans touch. Doorway lintels retain their real lower bounds; gaps are never filled.
+A real World probe checked120points against the actual wall mesh, maximum deviation2.44µm.
+No wall, window, door, floor, collision or light geometry changes. The idle Combat streak pool no
+longer draws degenerate lines; its actual idle/active/expired lifecycle is checked in Chromium.
+Basketball's fully transparent free-throw target has a non-rendered material and remains raycastable.
+
+Native whole-model/occlusion tests14/14, existing door checks and actual patio action checks pass.
+Matched original and candidate living/kitchen/upstairs/park images were opened. The private candidate
+near diagnostics include inactive unit records (`far:null`), so their raw record differences are not
+newly hidden near-mesh counts. Real entrance use opens the door and keeps every near leaf drawn.
+The first frozen baseline image command ended143 after writing complete images/JSON; it is not a
+passing CLI. Raw early budget failures and all final profile results are retained under the session's
+private `phone1383-*` artifacts. Physical iPhone stability remains a separate unanswered#1359 question.
+
+Public applicability: public main has no DetailCuller, the furnishing flags are personal, and the
+Combat/basketball changes are gameplay. Added architectural metadata has no public consumer; no
+runtime transfer applies. Public terrain tasks#98/#99 remain separate.
+
 ## Performance (#48)
 
 - `&perf` shows fps, pixel ratio, draw calls, triangles, geometries, textures; `tools/perfcount.html`
@@ -1004,3 +1036,10 @@ After #1305 (terrain from the elevation grid) `east-access` grew from 8 524 to 1
 ## The playhouse's children's room (#1326)
 
 The hidden room (`src/playroom.js`) adds no cost outside: its group is `visible = false` until the visitor is inside (main.js `playroom.setInside`, synced every frame against the position), so it is neither drawn nor shadow-mapped and the courtyard's draw calls are unchanged before and after a visit (`tools/playroomtest.cjs`: 132 / 570 030 in the test view both times). Inside it is 4 meshes (#1327): one vertex-coloured mesh for the shell, all the furniture and the screens, the emissive lamp panel, the rotating disco ball and the light-spot quads (one alpha-textured 32 px canvas map; their 26 quads are recomputed per frame inside only) plus invisible pick boxes (not drawn); the whole view inside is 12 calls (as before the furniture; the test allows 14). No lights (the daylight is zeroed by `day.under` and `day.lit` lifts the ambient). Billiards (#1328-#1330) must stay in merged batches and keep the room's group hidden outside.
+
+Final partial-delivery measurements at quality0: baseline445maximum calls becomes372 at start,
+with370kitchen/365living/363upstairs/337garage/367park; maximum827536triangles/~97MiB.
+Landscape correctly exits1/SOME FAILED against the unchanged370limit. Portrait293calls/747434triangles/~99MiB
+passes. The independent desktop triangle failure#1387 remains:492calls/1042197triangles/~308MiB.
+Neither#1383 nor#1361 is complete: the concrete shared far-car-batch follow-up is#1392.
+Do not raise the limits or describe this partial change as a solved phone budget or iPhone crash fix.

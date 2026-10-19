@@ -1,3 +1,4 @@
+import { mergeOpaqueRects } from './occlusion.js';
 import { southBankGround } from './southbank.js';
 import { buildBusStop } from './busstop.js';
 import {southBackdropParts} from './southbackdrop.js';
@@ -271,8 +272,11 @@ function terrainGeometry() {
 /** Retaining walls of the garage box where the ground outside is lower, a coping and a railing on top,
  * and the garage door in the west face. */
 function boxWalls() {
+  const opaque=[];
   const walls = [], rails = [];
   const quad = (ax, az, bx, bz, ya0, yb0, top = 0.12) => { // vertical quad from the outside ground up to y 0
+    const bottom=Math.max(ya0,yb0);
+    if(bottom<top&&(ax===bx||az===bz))opaque.push({x0:Math.min(ax,bx),x1:Math.max(ax,bx),z0:Math.min(az,bz),z1:Math.max(az,bz),y0:bottom,y1:top});
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute([ax, ya0, az, bx, yb0, bz, bx, top, bz, ax, ya0, az, bx, top, bz, ax, top, az], 3));
     const ua = (Math.abs(bx - ax) > Math.abs(bz - az) ? ax : az) / 2, ub = (Math.abs(bx - ax) > Math.abs(bz - az) ? bx : bz) / 2; // brick, 2 m per tile (#148)
@@ -356,7 +360,7 @@ function boxWalls() {
   }
   along(T.east.gable + 0.01, 0, T.east.gable + 0.01, T.north, (x, z) => groundY(x + 0.05, z), () => 0.02, walls);
   const stairs = T.stairs.map(terraceStairs);
-  return { walls, rails, slats, segments, upper, stairs: { solid: [...stairs.flatMap((s) => s.solid), ...nwStair()], rails: stairs.flatMap((s) => s.rails), ends: stairs.map((s) => s.end) } };
+  return { walls, rails, slats, segments, upper, opaque, stairs: { solid: [...stairs.flatMap((s) => s.solid), ...nwStair()], rails: stairs.flatMap((s) => s.rails), ends: stairs.map((s) => s.end) } };
 }
 
 /** A stair from the courtyard going south, down `drop` m (default: to the park level) (#148, #254, #255): treads, a
@@ -1612,6 +1616,7 @@ export function* surroundingsParts({ grass, husL = null }) {
   flat([grassUV(terrainGeometry()), grassUV(parkRampFill())], grass, SEASON.snow.ground).name='site-terrain';
   yield 0.05;
   const bw = boxWalls();
+  group.userData.opaqueRects=mergeOpaqueRects(bw.opaque); // exact inscribed rectangles of the emitted solid wall faces, including doorway lintels
   const concrete = new THREE.MeshStandardMaterial({ color: 0xb9b4ab, roughness: 0.95, side: THREE.DoubleSide });
   flat(bw.walls, new THREE.MeshStandardMaterial({ map: historicBrick, roughness: 0.95, side: THREE.DoubleSide })); // brick retaining walls (#148)
   const lightRail = new THREE.MeshStandardMaterial({ color: 0xb9bdbd, roughness: 0.5, metalness: 0.3 });

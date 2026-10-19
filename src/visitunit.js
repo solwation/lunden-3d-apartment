@@ -21,8 +21,10 @@ export class VisitUnit {
   /** { id, ox, oz, object (the group, at ox / oz), levels (above), built: buildLevel's results (plan coordinates), doors,
    *  lids (doors and the rest that open: windows, the letter box, toilet lids), roomMaps (plan coordinates), stair, ground,
    *  shell: the materials of what it shows from afar (walls, ceilings, floors, window frames) } */
-  constructor({ id, ox, oz = 0, object, levels, built, doors, lids, roomMaps, stair, ground = false, shell = [], glass = null, soffits = [] }) {
+  constructor({ id, ox, oz = 0, object, levels, built, doors, lids, roomMaps, stair, ground = false, opaqueRects = [], shell = [], glass = null, soffits = [] }) {
     Object.assign(this, { id, ox, oz, object, levels, roomMaps, stair, ground, soffits });
+    // #1383: the same actual fixed solids as our home, translated with this plan (never moving leaves or glass).
+    this.opaqueRects = opaqueRects.map(r=>({...r,x0:r.x0+ox,x1:r.x1+ox,z0:r.z0+oz,z1:r.z1+oz}));
     this.top = levels.at(-1).top;
     this.bottom = levels[0].floor;
     const r0 = levels[0].rect;

@@ -1,3 +1,4 @@
+import { detailOccluders } from './occlusion.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import {
@@ -851,6 +852,7 @@ function* levelParts(floor, li, group, how = OURS) {
   // Floor of this level (upper level has the stair opening); the sheets' edges tucked into the stairwell's walls (#1164)
   const sheetHole = tuckOpening(opening, wallBoxes);
   group.add(...plateAround(0, W, 0, D, li === 1 ? sheetHole : null, y0 + 0.002, M.floor));
+  if(li===0)opaqueRects.push({x0:0,x1:W,z0:0,z1:D,y0:y0+.002,y1:y0+.002}); // #1383: the actual unbroken ground-floor plate
   // Ceiling: underside of the slab / roof
   group.add(...plateAround(0, W, 0, D, li === 0 ? sheetHole : null, yC - 0.002, M.ceiling, true));
 
@@ -1072,6 +1074,7 @@ function* visitFlatParts(plan, U, ox) {
   const rect = (f) => ({ x0: Math.min(0, ...f.walls.flatMap((w) => w.outer.map((q) => q[0]))), x1: f.size.x, z0: 0, z1: f.size.z });
   const levels = L.map((v, i) => ({ ...v, rect: rect(plan.floors[i]), hole: i === 1 ? (own ? P.hole : STAIR.hole) : null }));
   return new VisitUnit({ id: U.id, ox, oz, object: group, levels, built: [l0, l1], doors, lids, roomMaps, ground: !own,
+    opaqueRects: detailOccluders([...l0.opaqueRects,...l1.opaqueRects],{y:l0.ceiling,hole:how.opening??how.hole??STAIR.hole},W,D),
     stair: own ? map : { height: stairHeight, underside: stairUnderside },
     soffits: own ? P.soffits : SOFFITS, shell: [SM.wall, SM.ceiling, SM.floor, SM.frame], glass: SM.glass }); // (what shows from afar: its rooms behind glass, #574)
 }
@@ -1355,7 +1358,7 @@ function* worldParts(plan) {
     hood: [...l0.appliances, ...l1.appliances].find((a) => a.kind === 'hood') ?? null, // the cooker hood's fan (#194)
     panDrawer: [...l0.appliances, ...l1.appliances].find((a) => a.panHome) ?? null, // the drawer under the hob (#159)
     toasterDrawer: [...l0.appliances, ...l1.appliances].find((a) => a.toasterHome) ?? null, // the toaster's drawer (#401)
-    openings: { north, south, roof: UNIT_TOP, walls: [...l0.wallRects, ...l1.wallRects], opaque: [...l0.opaqueRects, ...l1.opaqueRects], slab: { y: l0.ceiling, hole: OURS.opening } }, // the façade openings (plan x, absolute y) and the roof height: what the flat can be seen through from outside (#189); its walls hide the rest (#695)
+    openings: { north, south, roof: UNIT_TOP, walls: [...l0.wallRects, ...l1.wallRects], opaque: [...l0.opaqueRects, ...l1.opaqueRects, ...units.flatMap(u=>u.opaqueRects), ...(surroundings.userData.opaqueRects??[]), ...(site.patio?[{x0:site.patio.x0,x1:site.patio.x1,z0:D,z1:site.patio.z1,y0:0,y1:0}]:[])], slab: { y: l0.ceiling, hole: OURS.opening } }, // the façade openings (plan x, absolute y) and the roof height: what the flat can be seen through from outside (#189); its walls hide the rest (#695)
     blinds, // the pleated blinds (#273, src/blinds.js)
     carKey: hallWall.key, // only a target while the key cabinet is open (main.js)
     taps: [...l0.taps, ...l1.taps],

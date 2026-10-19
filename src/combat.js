@@ -73,6 +73,7 @@ export class Combat {
     this.lineGeo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(n * 6), 3));
     this.lineMesh = new THREE.LineSegments(this.lineGeo, new THREE.LineBasicMaterial({ vertexColors: true, toneMapped: false }));
     this.lineMesh.frustumCulled = false;
+    this.lineMesh.visible = false; // #1383: no draw of an entirely degenerate, idle streak pool
     this.lineMesh.raycast = () => {};
     this.lineMesh.userData.moving = true;
     this.lines = [...Array(n)].map(() => ({ life: 0, a: new THREE.Vector3(), b: new THREE.Vector3(), col: new THREE.Color() }));
@@ -393,6 +394,7 @@ export class Combat {
       pos.setXYZ(i * 2, L.a.x, L.a.y, L.a.z); pos.setXYZ(i * 2 + 1, k ? L.b.x : L.a.x, k ? L.b.y : L.a.y, k ? L.b.z : L.a.z);
       col.setXYZ(i * 2, L.col.r * k, L.col.g * k, L.col.b * k); col.setXYZ(i * 2 + 1, L.col.r * k, L.col.g * k, L.col.b * k);
     });
+    this.lineMesh.visible = this.lines.some(L => L.life > 0);
     pos.needsUpdate = col.needsUpdate = true;
     for (const b of this.balls) {
       if (!b.m.visible) continue;

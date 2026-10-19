@@ -203,6 +203,7 @@ export class Hoop {
       new THREE.BoxGeometry(B.court?.freeThrowLen ?? 3.6, 0.5, 0.8),
       new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false })
     );
+    ftTrigger.material.visible = false; // #1383: pick-only volume; material visibility preserves its actual raycast target.
     ftTrigger.position.set(0, 0.25, ftLocalZ);
     g.add(ftTrigger);
     this.freeThrowTarget = {

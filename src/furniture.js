@@ -4327,6 +4327,8 @@ export function* furnitureParts() {
       const keep = obj.userData.keep ?? [];
       mergeStatic(obj, keep);
     }
+    // #1383: only whole simple models opt into phone LOD. Keep detachable contents and independently movable frames on their existing policy.
+    obj.userData.phoneDetailUnit = item.type !== 'parasol' && !['things','frames','wallMirrors'].some(k=>obj.userData[k]?.length);
     const yaw = THREE.MathUtils.degToRad(item.rot ?? 0) + Math.PI; // local +z = facing
     if (obj.userData.footprint?.length && !CONTACT_SHADOW.skip.includes(item.type)) { // a contact shadow if it stands on the floor (#1075)
       obj.updateMatrixWorld(true);
