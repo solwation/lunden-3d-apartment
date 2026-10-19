@@ -1,7 +1,7 @@
-// #1321 (#1318): headwear in the real app against a local Worker (node cloudflare/dev.mjs PORT). The app stands in front of the hall mirror;
-// a module peer (real Ghosts) stands behind it. Checks: the customizer's "Huvudbonad" buttons set look.hat and the saved code carries `q<n>`
+// #1321, #1322 (#1318): headwear (tag q) and headphones (tag f) in the real app against a local Worker (node cloudflare/dev.mjs PORT). The app stands in front of the hall mirror;
+// a module peer (real Ghosts) stands behind it. Checks: the customizer's "Huvudbonad" / "Hörlurar" buttons set look.hat / look.phones and the saved code carries `q<n>` / `f<n>`
 // (a look without headwear keeps its code), the peer's headwear reaches the app through the Worker (look + uniform), our mirror image wears it.
-// Shots: mirror-hat<n>, peer-hat<n> (outdoors, 3.5 m), customizer-hat. Old codes keep hat 0.
+// Shots: mirror-<kind><n>, peer-<kind><n> (outdoors, 1.6 m), customizer-<kind>. Old codes keep hat 0.
 // PLAYWRIGHT_MODULE=… CHROME_PATH=… SHOTS=/tmp/shots-1321 node tools/avataraccessorygametest.cjs GAME WORKER
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const fs = require('node:fs');
@@ -63,25 +63,25 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     }, [worker, fix]);
     await peer.waitForFunction(() => window.peer.ghosts.connected, null, { timeout: 60000 });
     await app.waitForFunction(() => { window.__fix.tick(); return !!window.__fix.peer(); }, null, { timeout: 30000, polling: 100 });
-    for (const hat of [1, 2, 3, 4]) {
+    for (const [kind, tag, cfg, uni, vals] of [['hat', 'q', 'AVATAR_HAT', 'uHat', [1, 2, 3, 4]], ['phones', 'f', 'AVATAR_PHONES', 'uPhones', [1, 2]]]) for (const hat of vals) {
       // the customizer's own buttons (own look), then the wire (the peer's)
-      const mine = await app.evaluate(async (hat) => { const a = window.__app, C = await import('/src/config.js'); a.openAvatarCustomizer();
-        const b = document.querySelector(`#avatar-customizer button[data-type="hat"][data-index="${hat}"], button[data-type="hat"][data-index="${hat}"]`); b.click();
+      const mine = await app.evaluate(async ([hat, kind, cfg, uni]) => { const a = window.__app, C = await import('/src/config.js'); a.openAvatarCustomizer();
+        const b = document.querySelector(`#avatar-customizer button[data-type="${kind}"][data-index="${hat}"], button[data-type="${kind}"][data-index="${hat}"]`); b.click();
         const g = window.__ghosts, u = g.myGhost?.avatar?.mesh?.material?.userData?.u;
-        return { hat: g.myLook.hat, uHat: u?.uHat.value, sel: b.classList.contains('sel') || b.classList.contains('active') || b.getAttribute('aria-pressed') === 'true', code: g.avatarCode, name: C.AVATAR_HAT.names[hat] }; }, hat);
-      check(mine.hat === hat && mine.code.includes(`q${hat}`), `own look: ${mine.name} (button) → q${hat} in the wire code`, JSON.stringify(mine));
-      if (hat === 3) { await app.evaluate(() => document.querySelector('button[data-type="hat"][data-index="3"]').scrollIntoView({ block: 'center' })); await app.screenshot({ path: `${shots}/customizer-hat.png`, timeout: 180000 }); }
+        return { hat: g.myLook[kind], uHat: u?.[uni].value, sel: b.classList.contains('sel') || b.classList.contains('active') || b.getAttribute('aria-pressed') === 'true', code: g.avatarCode, name: C[cfg].names[hat] }; }, [hat, kind, cfg, uni]);
+      check(mine.hat === hat && mine.code.includes(`${tag}${hat}`) && mine.uHat === hat, `own look: ${mine.name} (button) → ${tag}${hat} in the wire code`, JSON.stringify(mine));
+      if (hat === (kind === 'hat' ? 3 : 1)) { await app.evaluate((kind) => document.querySelector(`button[data-type="${kind}"][data-index="1"]`).scrollIntoView({ block: 'center' }), kind); await app.screenshot({ path: `${shots}/customizer-${kind}.png`, timeout: 180000 }); }
       await app.evaluate(() => window.__app.closeAvatarCustomizer());
-      const code = await peer.evaluate(async (hat) => { const C = await import('/src/config.js'); const lk = { ...C.decodeAvatarLook('130410013', 'peer'), hat };
-        window.peer.ghosts.setMyLook(lk); return C.encodeAvatarWireLook(lk); }, hat);
+      const code = await peer.evaluate(async ([hat, kind]) => { const C = await import('/src/config.js'); const lk = { ...C.decodeAvatarLook('130410013', 'peer'), [kind]: hat };
+        window.peer.ghosts.setMyLook(lk); return C.encodeAvatarWireLook(lk); }, [hat, kind]);
       await app.evaluate((code) => window.__fix.run(8000, () => window.__fix.peer()?.avatarCode === code), code);
       await app.evaluate(() => window.__fix.run(600));
-      const got = await app.evaluate(() => { const g = window.__fix.peer(); g.avatar.update(0, {}); return { code: g.avatarCode, hat: g.avatar.look.hat, u: g.avatar.mesh.material.userData.u.uHat.value }; });
-      check(got.code === code && got.hat === hat && got.u === hat, `the peer's ${hat} reaches the app (look and uniform)`, JSON.stringify(got));
-      const mir = await app.evaluate(() => { const f = window.__fix, a = window.__app; f.e.y = a.player.eyeY; f.look(f.e, f.p.clone().setY(f.e.y - 0.1), 60); f.render(true);
-        const me = window.__ghosts.myGhost; return me ? me.avatar.mesh.material.userData.u.uHat.value : null; });
-      check(mir === hat, `our mirror image wears ${hat}`, String(mir));
-      await app.screenshot({ path: `${shots}/mirror-hat${hat}.png`, timeout: 180000 });
+      const got = await app.evaluate(([kind, uni]) => { const g = window.__fix.peer(); g.avatar.update(0, {}); return { code: g.avatarCode, hat: g.avatar.look[kind], u: g.avatar.mesh.material.userData.u[uni].value }; }, [kind, uni]);
+      check(got.code === code && got.hat === hat && got.u === hat, `the peer's ${kind} ${hat} reaches the app (look and uniform)`, JSON.stringify(got));
+      const mir = await app.evaluate((uni) => { const f = window.__fix, a = window.__app; f.e.y = a.player.eyeY; f.look(f.e, f.p.clone().setY(f.e.y - 0.1), 60); f.render(true);
+        const me = window.__ghosts.myGhost; return me ? me.avatar.mesh.material.userData.u[uni].value : null; }, uni);
+      check(mir === hat, `our mirror image wears ${kind} ${hat}`, String(mir));
+      await app.screenshot({ path: `${shots}/mirror-${kind}${hat}.png`, timeout: 180000 });
       const out = await app.evaluate(async () => { const { START } = await import('/src/config.js'), a = window.__app, z = START.z - 1.5;
         return [START.x, a.player.groundAt(START.x, z, 0), z]; });
       await peer.evaluate((out) => { window.peer.at = out; window.peer.r = 0; }, out);
@@ -89,13 +89,13 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
       await app.evaluate(() => window.__fix.run(1500));
       await app.evaluate((out) => { const f = window.__fix, g = f.peer(), T = f.e.constructor; g.avatar.update(0, {});
         f.look(new T(out[0], out[1] + 1.55, out[2] - 1.6), new T(out[0], out[1] + 1.6, out[2]), 35); window.__app.renderer.render(window.__app.scene, window.__app.camera); }, out);
-      await app.screenshot({ path: `${shots}/peer-hat${hat}.png`, timeout: 180000 });
+      await app.screenshot({ path: `${shots}/peer-${kind}${hat}.png`, timeout: 180000 });
       await peer.evaluate((h) => { window.peer.at = h.at; window.peer.r = h.r; }, await peer.evaluate(() => window.peer.home));
     }
     const saved = await app.evaluate(() => { return localStorage.getItem('lunden.avatar'); });
-    check(/q4$/.test(saved ?? ''), 'closing saves the code with the headwear', saved);
-    const none = await app.evaluate(async () => { const C = await import('/src/config.js'); const lk = window.__ghosts.myLook; return C.encodeAvatarLook({ ...lk, hat: 0 }); });
-    check(!/q\d/.test(none), 'headwear none is not written', none);
+    check(/q4f2$/.test(saved ?? '') || /f2q4$/.test(saved ?? ''), 'closing saves the code with the headwear and the headphones', saved);
+    const none = await app.evaluate(async () => { const C = await import('/src/config.js'); const lk = window.__ghosts.myLook; return C.encodeAvatarLook({ ...lk, hat: 0, phones: 0 }); });
+    check(!/[qf]\d/.test(none), 'headwear / headphones none is not written', none);
     await peer.evaluate(() => window.peer.ghosts.disconnect()); await peer.close();
     check(errors.length === 0, 'no page errors', errors.join(' | '));
   } catch (e) { check(false, 'crashed', e.stack); }

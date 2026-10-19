@@ -677,3 +677,28 @@ test('#1321 headwear: tag q, old codes unchanged, bad values skipped, combined w
   for (const n of Object.keys(AVATAR_SHAPE.fields)) everything[n] = n === 'jaw' ? 0 : 8;
   assert.ok(splitAvatarCode(encodeAvatarWireLook({ ...everything, height: 140, bodyBuild: 8, top: TOPS[10] })).ax.length <= AVATAR_LOOK_EXT_MAX);
 });
+
+test('#1322 headphones: tag f, old codes unchanged, bad values skipped, combined with headwear, glasses and the face', async () => {
+  const { AVATAR_PHONES, AVATAR_LOOK_EXT_MAX, AVATAR_SHAPE, splitAvatarCode, defaultFaceLook, encodeAvatarWireLook } = await import('../src/config.js');
+  const plain = avatarLook('phones-plain'), base = encodeAvatarLook(plain);
+  assert.equal(defaultFaceLook().phones, 0, 'no headphones by default');
+  assert.equal(decodeAvatarLook(base, 'p').phones, 0);
+  assert.equal(AVATAR_PHONES.names.length, 3);
+  for (let h = 1; h < AVATAR_PHONES.names.length; h++) {
+    const code = encodeAvatarLook({ ...plain, phones: h });
+    assert.equal(code, `${base}f${h}`);
+    assert.equal(decodeAvatarLook(code, 'p').phones, h);
+  }
+  assert.equal(encodeAvatarLook({ ...plain, phones: 0 }), base, 'none is not written');
+  assert.equal(encodeAvatarLook({ ...plain, phones: 9 }), base, 'an unknown kind is not written');
+  assert.equal(decodeAvatarLook(base + 'f9', 'p').phones, 0, 'out-of-range headphones ignored');
+  const all = encodeAvatarLook({ ...plain, phones: 2, hat: 3, glasses: 1, height: 140 });
+  assert.equal(all, base + '140' + 'g1q3f2');
+  const back = decodeAvatarLook(all, 'p');
+  assert.equal(back.phones, 2); assert.equal(back.hat, 3); assert.equal(back.glasses, 1);
+  assert.deepEqual(splitAvatarCode(all), { av: base + '140', ax: 'g1q3f2' });
+  assert.match(encodeAvatarWireLook({ ...plain, phones: 1 }), /f1/, 'on the wire');
+  const everything = { ...plain, glasses: 2, hat: 4, phones: 2, brows: HAIR[7], eyes: 0x7c8288 };
+  for (const n of Object.keys(AVATAR_SHAPE.fields)) everything[n] = n === 'jaw' ? 0 : 8;
+  assert.ok(splitAvatarCode(encodeAvatarWireLook({ ...everything, height: 140, bodyBuild: 8, top: TOPS[10] })).ax.length <= AVATAR_LOOK_EXT_MAX);
+});

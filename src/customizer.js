@@ -1,4 +1,4 @@
-import { SKIN, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES, AVATAR_HAT, AVATAR_CLOTHES } from './config.js';
+import { SKIN, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES, AVATAR_HAT, AVATAR_PHONES, AVATAR_CLOTHES } from './config.js';
 
 // #1220: the brows' colours (config.js HAIR, the hair swatches' names) and a first choice that follows the hair
 const BROW_NAMES = ['Mörkbruna', 'Bruna', 'Ljusbruna', 'Guldbruna', 'Blonda', 'Grå', 'Röda', 'Svarta'];
@@ -385,6 +385,29 @@ export function drawAvatarPreview(canvas, look) {
     }
   }
 
+  // #1322: headphones (front view) over the hair and the headwear: on the ears a band over the head with a cup at each ear, round the neck a band with the cups on the chest
+  const phones = Number(look.phones) || 0;
+  if (phones === 1) {
+    const dark = '#26282e', rim = '#3c3f47', bx = rx + 5.5, top0 = crown - 5 - (hatOn ? 3 : 0), ey = hy + 3;
+    ctx.strokeStyle = dark; ctx.lineWidth = 2.6; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(cx - bx, ey); ctx.bezierCurveTo(cx - bx, top0 - 2, cx + bx, top0 - 2, cx + bx, ey); ctx.stroke();
+    for (const sx of [-1, 1]) {
+      ctx.fillStyle = dark; ctx.beginPath(); ctx.roundRect(cx + sx * (bx + 0.5) - 4.5, ey - 9, 9, 18, 4); ctx.fill();
+      ctx.fillStyle = rim; ctx.beginPath(); ctx.roundRect(cx + sx * (bx - 3) - 1.5, ey - 6.5, 3, 13, 1.5); ctx.fill();
+    }
+  }
+  if (phones === 2) { // (they sit on the chest, so the head's neck translation is undone for them)
+    ctx.save(); ctx.translate(0, neckPx);
+    const dark = '#26282e', rim = '#3c3f47', ny = 96;
+    ctx.strokeStyle = dark; ctx.lineWidth = 2.4; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(cx - 12, ny + 8); ctx.bezierCurveTo(cx - 14, ny - 8, cx + 14, ny - 8, cx + 12, ny + 8); ctx.stroke();
+    for (const sx of [-1, 1]) {
+      ctx.fillStyle = dark; ctx.beginPath(); ctx.ellipse(cx + sx * 11, ny + 14, 7, 8, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = rim; ctx.beginPath(); ctx.ellipse(cx + sx * 11, ny + 14, 3.8, 4.6, 0, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  }
+
   ctx.restore(); // #1191: restore neck translation
   ctx.restore(); // restore dpr scale
 }
@@ -424,6 +447,7 @@ function updateActiveSwatches() {
   ];
   groups.push({ type: 'glasses', value: Number(currentLook.glasses) || 0 }); // #1165
   groups.push({ type: 'hat', value: Number(currentLook.hat) || 0 }); // #1321
+  groups.push({ type: 'phones', value: Number(currentLook.phones) || 0 }); // #1322
   groups.push({ type: 'brows', value: HAIR.includes(currentLook.brows) ? HAIR.indexOf(currentLook.brows) : -1 }); // #1220 (-1: like the hair)
   groups.push({ type: 'eyes', value: EYES.includes(currentLook.eyes) ? currentLook.eyes : EYES[0], list: EYES });
   for (const name of Object.keys(AVATAR_SHAPE.fields)) { // #1138: the face sliders
@@ -562,6 +586,9 @@ function initCustomizerDOM() {
     } else if (type === 'hat' && AVATAR_HAT.names[idx] !== undefined) { // #1321
       currentLook.hat = idx;
       applyAndRefresh();
+    } else if (type === 'phones' && AVATAR_PHONES.names[idx] !== undefined) { // #1322
+      currentLook.phones = idx;
+      applyAndRefresh();
     } else if (type === 'eyes' && EYES[idx] !== undefined) {
       currentLook.eyes = EYES[idx];
       applyAndRefresh();
@@ -699,25 +726,28 @@ function addFaceSections(controls) {
   }
 }
 
-/** #1321 (#1318): an accessory section per kind (headwear first; headphones, necklaces, rings follow in #1322–#1324, each its own section). */
+/** #1321 (#1318): an accessory section per kind (headwear, #1322 headphones; necklaces and rings follow in #1323, #1324, each its own section). */
 function addAccessorySection(controls) {
   if (!controls || controls.querySelector?.('[data-accessory-section]')) return;
-  const sec = document.createElement('section');
-  sec.className = 'customizer-section';
-  sec.dataset.accessorySection = '';
-  const h = document.createElement('h3');
-  h.textContent = 'Huvudbonad';
-  sec.append(h);
-  const row = document.createElement('div');
-  row.className = 'btn-group';
-  AVATAR_HAT.names.forEach((n, i) => {
-    const b = document.createElement('button');
-    Object.assign(b.dataset, { type: 'hat', index: String(i) });
-    b.textContent = i ? n : 'Ingen huvudbonad';
-    row.append(b);
-  });
-  sec.append(row);
-  controls.append(sec);
+  const kinds = [['hat', 'Huvudbonad', AVATAR_HAT, 'Ingen huvudbonad'], ['phones', 'Hörlurar', AVATAR_PHONES, 'Inga hörlurar']];
+  for (const [type, title, cfg, none] of kinds) {
+    const sec = document.createElement('section');
+    sec.className = 'customizer-section';
+    sec.dataset.accessorySection = type;
+    const h = document.createElement('h3');
+    h.textContent = title;
+    sec.append(h);
+    const row = document.createElement('div');
+    row.className = 'btn-group';
+    cfg.names.forEach((n, i) => {
+      const b = document.createElement('button');
+      Object.assign(b.dataset, { type, index: String(i) });
+      b.textContent = i ? n : none;
+      row.append(b);
+    });
+    sec.append(row);
+    controls.append(sec);
+  }
 }
 
 /** Configure customizer integration. */

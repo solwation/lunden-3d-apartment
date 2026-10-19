@@ -28,7 +28,7 @@ const [game='http://localhost:8793',worker='http://localhost:8794',out='/tmp/lun
     window.sample=()=>{
      ghosts.beforeMirror();const g=ghosts.myGhost,av=g.avatar;av.time=0;av.update(0,{});av.object.updateMatrixWorld(true);
      const ys=[],xs=[],v=new T.Vector3(),pos=av.mesh.geometry.attributes.position;
-     for(let j=0;j<pos.count;j++){if(!av.look.hat&&av.mesh.geometry.attributes.facePart.getX(j)>11.5)continue;/* #1321: unchosen headwear is collapsed in the shader only */av.mesh.getVertexPosition(j,v);v.applyMatrix4(av.mesh.matrixWorld);ys.push(v.y-g.feet.y);xs.push(v.x-g.feet.x);}
+     for(let j=0;j<pos.count;j++){{const fp=av.mesh.geometry.attributes.facePart.getX(j);if(fp>11.5&&!(fp<17.5?av.look.hat:av.look.phones))continue;}/* #1321, #1322: unchosen headwear / headphones are collapsed in the shader only */av.mesh.getVertexPosition(j,v);v.applyMatrix4(av.mesh.matrixWorld);ys.push(v.y-g.feet.y);xs.push(v.x-g.feet.x);}
      const result={build:av.look.build,scaleX:av.object.scale.x,width:Math.max(...xs)-Math.min(...xs),tall:ghosts.myLook.tall,height:ghosts.myLook.height,scaleY:av.object.scale.y,headScale:av.bones.head.scale.y,top:Math.max(...ys),code:ghosts.avatarCode,eye:C.avatarEyeHeight(ghosts.myLook),saved:localStorage.getItem('lunden.avatar')};ghosts.afterMirror();return result;
     };
    },{worker,i});return p;
@@ -54,7 +54,7 @@ const [game='http://localhost:8793',worker='http://localhost:8794',out='/tmp/lun
    check((await b.evaluate(()=>sample())).eye===1.62,'legacy own camera height unchanged');
    const match=async(label)=>{
     const own=await b.evaluate(()=>sample());await a.waitForFunction(code=>[...ghosts.others.values()][0]?.avatarCode===code,own.code);
-    const peer=await a.evaluate(()=>{const g=[...ghosts.others.values()][0];g.avatar.time=0;g.avatar.update(0,{});g.root.updateMatrixWorld(true);const v=new T.Vector3(),p=g.avatar.mesh.geometry.attributes.position;let top=-Infinity,minX=Infinity,maxX=-Infinity;for(let j=0;j<p.count;j++){g.avatar.mesh.getVertexPosition(j,v);v.applyMatrix4(g.avatar.mesh.matrixWorld);top=Math.max(top,v.y-g.feet.y);minX=Math.min(minX,v.x-g.feet.x);maxX=Math.max(maxX,v.x-g.feet.x);}return {build:g.avatar.look.build,scaleX:g.avatar.object.scale.x,width:maxX-minX,scaleY:g.avatar.object.scale.y,headScale:g.avatar.bones.head.scale.y,top,tall:g.avatar.look.tall};});
+    const peer=await a.evaluate(()=>{const g=[...ghosts.others.values()][0];g.avatar.time=0;g.avatar.update(0,{});g.root.updateMatrixWorld(true);const v=new T.Vector3(),p=g.avatar.mesh.geometry.attributes.position;let top=-Infinity,minX=Infinity,maxX=-Infinity;for(let j=0;j<p.count;j++){{const fp=g.avatar.mesh.geometry.attributes.facePart.getX(j);if(fp>11.5&&!(fp<17.5?g.avatar.look.hat:g.avatar.look.phones))continue;}g.avatar.mesh.getVertexPosition(j,v);v.applyMatrix4(g.avatar.mesh.matrixWorld);top=Math.max(top,v.y-g.feet.y);minX=Math.min(minX,v.x-g.feet.x);maxX=Math.max(maxX,v.x-g.feet.x);}return {build:g.avatar.look.build,scaleX:g.avatar.object.scale.x,width:maxX-minX,scaleY:g.avatar.object.scale.y,headScale:g.avatar.bones.head.scale.y,top,tall:g.avatar.look.tall};});
     records.push({label,own,peer});console.log(JSON.stringify({label,own,peer}));check(peer.scaleY===own.scaleY&&peer.headScale===own.headScale&&Math.abs(peer.top-own.top)<1e-6,label+' own/peer head and body vertical alignment');check(peer.build===own.build&&peer.scaleX===own.scaleX&&Math.abs(peer.width-own.width)<1e-6,label+' own/peer actual skinned body width matches');return own;
    };
    await match('seeded default');

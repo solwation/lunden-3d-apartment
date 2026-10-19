@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_HAT as HAT, AVATAR_CLOTHES, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
+import { AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_HAT as HAT, AVATAR_PHONES as PHONES, AVATAR_CLOTHES, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
 import { topTexture } from './spidersuit.js';
 import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, SHIN, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
 
@@ -27,7 +27,7 @@ const REGION = { skin: 0, top: 1, pants: 2, hair: 3, fixed: 4, lips: 6, iris: 7,
 // #1138: which face part a head-bone vertex belongs to (the `facePart` attribute; 0 = not on the head), see faceShape
 // #1165: hair (the scalp shell / curtain, lengthened below the crown), round and square glasses frames and the temples + bridge shared by both
 // #1241: cowlHide collapses protruding facial features (lips, brow ridge) under the Spider-Man mask
-const FACE_PART = { head: 1, neck: 2, eye: 3, nose: 4, ear: 5, brow: 6, hair: 7, rimRound: 8, rimSquare: 9, specs: 10, cowlHide: 11, hatDome: 12, peakFront: 13, peakBack: 14, knit: 15, hatCrown: 16, hatBrim: 17 };
+const FACE_PART = { head: 1, neck: 2, eye: 3, nose: 4, ear: 5, brow: 6, hair: 7, rimRound: 8, rimSquare: 9, specs: 10, cowlHide: 11, hatDome: 12, peakFront: 13, peakBack: 14, knit: 15, hatCrown: 16, hatBrim: 17, phoneBand: 18, phoneCup: 19, phoneNeck: 20 };
 const H = 0.1; // The head bone's eye-height reference (ears, hair, moustache).
 
 // --- the geometry (built once per variant) -----------------------------------------------------------------------------
@@ -83,6 +83,7 @@ function parts(style, sleeves, gender = 0, facial = 0, legs = 0, cut = 0) {
   for (const [g, region, shade] of hairParts(style)) { add(g, region, 'head', [0, 0, 0], shade); P[P.length - 1].face = FACE_PART.hair; }
   addGlasses(add, P); // #1165
   addHats(add, P); // #1321
+  addPhones(add, P); // #1322
   return P;
 }
 /** #1165: glasses frames in the head bone's frame, in front of the eyes (FACE.eye): two round rims, two square ones, and the
@@ -154,6 +155,36 @@ function addHats(add, P) {
   // the brimmed hat: a crown that is a little taller, and a brim round the head dipping towards its edge
   put(dome(HAT.edge.hat, 4, 16, 0.012), 0.92, FACE_PART.hatCrown);
   for (const g of brim(-180, 180, 16, HAT.edge.hat, () => HAT.brim, -0.012)) put(g, 0.8, FACE_PART.hatBrim);
+}
+/** #1322 (#1318): headphones, two kinds in the shared geometry (the shader keeps the chosen one, uPhones): 1 on the ears (head bone frame: a band arching over
+ * the head at the ears' height, two cups with a lighter pad on their inner side; the shader lifts the band over headwear and pushes the cups out over a knitted
+ * hat) and 2 round the neck (torso bone frame: a band behind the neck, two cups resting on the chest, each with a lighter disc on its face). Dark (PHONES.colour). */
+function addPhones(add, P) {
+  const K = PHONES, [cr, cd, cx] = K.cup, deg = Math.PI / 180, H0 = H - 0.005, mark = (id) => facePart(P, id, [0, H, 0]);
+  const tube = (pts, seg = 16) => new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map((p) => new THREE.Vector3(...p))), seg, K.band, 4, false);
+  const cupAt = (x, y, z, sx, sy, sz, r = cr) => new THREE.SphereGeometry(r, 10, 6).scale(sx, sy, sz).translate(x, y, z);
+  // 1: on the ears. The band follows the skull's side-to-side section (x half-width 0.103, y 0.121 from y 0.1) at `gap` off it, from one cup over the crown to the other
+  const S = RH.skull, rx = S.radius * S.scale[0], ry = S.radius * S.scale[1], cy = S.centre[1], band = [];
+  for (let t = 4; t <= 176; t += 12) {
+    const g = K.gap[1] + (K.gap[0] - K.gap[1]) * Math.sin(t * deg), a = t * deg;
+    band.push([Math.cos(a) * (rx + g), H0 + Math.sin(a) * (cy + ry + g - H0), -0.004]);
+  }
+  band[0][0] = cx; band[band.length - 1][0] = -cx; band[0][1] = band.at(-1)[1] = H0 + 0.012;
+  add(tube(band, 20), 'fixed', 'head', [0, 0, 0], 1, K.colour); mark(FACE_PART.phoneBand);
+  for (const s of [-1, 1]) {
+    add(cupAt(s * cx, H0, -0.004, cd / cr, 1, 0.92), 'fixed', 'head', [0, 0, 0], 1, K.colour); facePart(P, FACE_PART.phoneCup, [s * cx, H0, -0.004]);
+    add(cupAt(s * (cx - cd * 0.55), H0, -0.004, 0.3, 0.96, 0.9, cr).scale(1, 1, 1), 'fixed', 'head', [0, 0, 0], 1, K.pad); facePart(P, FACE_PART.phoneCup, [s * cx, H0, -0.004]);
+  }
+  // 2: round the neck (torso frame, origin at the hips' top: the neck's base at y 0.64). A band behind the neck, ends dropping to cups on the chest
+  const n = K.neck, [rr, ry2] = n.ring, tor = bindAt('torso'), at = (x, y, z) => [x, y, z], anchor = (x, y, z) => [tor.x + x, tor.y + y, tor.z + z];
+  const neckPart = (g, c) => { add(g, 'fixed', 'torso', [0, 0, 0], 1, c); P.at(-1).face = FACE_PART.phoneNeck; P.at(-1).anchor = anchor(0, ry2, 0); };
+  const cyN = 0.64 + n.y;
+  const pts = (s) => [at(s * n.x, cyN - n.hang + 0.04, 0.108), at(s * (n.x + 0.012), cyN - 0.022, 0.09), at(s * (rr + 0.008), cyN, 0.032), at(s * rr, cyN + 0.003, -0.05)];
+  neckPart(tube([...pts(1), at(0, cyN + 0.005, -rr - 0.004), ...pts(-1).reverse()], 24), K.colour);
+  for (const s of [-1, 1]) {
+    neckPart(cupAt(s * n.x, cyN - n.hang, 0.112, 1, 1.05, 0.7), K.colour);
+    neckPart(cupAt(s * n.x, cyN - n.hang, 0.112 + cd * 0.55, 0.78, 0.8, 0.28), K.pad);
+  }
 }
 /** Puts a part on its bone (bone-local offset `at`); head parts are warped into the face's shape first (faceWarp). */
 function place(g, bone, [x = 0, y = 0, z = 0] = []) {
@@ -741,7 +772,7 @@ function releaseSuitTexture() { if (--suitUsers === 0) { suitTexture.dispose(); 
 function makeMaterial(rim, headProjection) {
   const headMin = headProjection.min, headSize = headProjection.getSize(new THREE.Vector3()), headFront = headProjection.getCenter(new THREE.Vector3()).z;
   const u = { uOutline: { value: 0 }, uFill: { value: A.fill }, uRim: { value: A.rim }, uRimColor: { value: rim }, uSuit: { value: 0 }, uSuitTexture: { value: null }, uSuitMaskBand: { value: 0 }, uMouth: { value: 0 },
-    uEye: { value: new THREE.Vector3(1, 1, 1) }, uNose: { value: new THREE.Vector3(1, 1, 1) }, uEar: { value: 1 }, uHair: { value: 1 }, uGlasses: { value: 0 }, uHat: { value: 0 }, uNeck: { value: 0 }, uBrow: { value: new THREE.Vector2(1, 0) }, uHead: { value: new THREE.Vector3(1, 1, 0) } };
+    uEye: { value: new THREE.Vector3(1, 1, 1) }, uNose: { value: new THREE.Vector3(1, 1, 1) }, uEar: { value: 1 }, uHair: { value: 1 }, uGlasses: { value: 0 }, uHat: { value: 0 }, uPhones: { value: 0 }, uNeck: { value: 0 }, uBrow: { value: new THREE.Vector2(1, 0) }, uHead: { value: new THREE.Vector3(1, 1, 0) } };
   const m = new THREE.MeshLambertMaterial({ vertexColors: true, transparent: false, depthWrite: true });
   m.emissive.setScalar(A.emissiveSolid);
   m.userData.u = u;
@@ -788,10 +819,11 @@ function makeMaterial(rim, headProjection) {
 // pivot (`faceAnchor`: an eyeball's centre, the nose's bridge, an ear's centre, a brow's centre line), then every head vertex
 // but the neck is widened, lengthened from the chin and its lower face (faceWarp's jaw region) widened or narrowed. No new
 // geometry or draw call; collision and hit regions keep the plain head (CPU raycasts never see the shader).
-const FACE_SHAPE_DECL = 'attribute float facePart; attribute vec3 faceAnchor; uniform vec3 uEye, uNose, uHead; uniform float uEar, uHair, uGlasses, uHat, uNeck, uSuit; uniform vec2 uBrow;';
+const FACE_SHAPE_DECL = 'attribute float facePart; attribute vec3 faceAnchor; uniform vec3 uEye, uNose, uHead; uniform float uEar, uHair, uGlasses, uHat, uPhones, uNeck, uSuit; uniform vec2 uBrow;';
 const CHIN_Y = RH.jaw.centre[1] - RH.jaw.radius * RH.jaw.scale[1]; // the head lengthens from its chin
 function faceShape() {
   const hb = bindAt('head'), W = FACE.warp, f = (v) => v.toFixed(4), P = FACE_PART;
+  const lift = PHONES.hatLift.reduceRight((acc, l, i) => `(uHat < ${i}.5 ? ${f(l)} : ${acc})`, '0.0');
   return `if (facePart > 0.5) {
       if (uSuit > 0.5 && abs(facePart - ${P.head}.0) > 0.5 && abs(facePart - ${P.neck}.0) > 0.5) {
         transformed = vec3(${f(hb.x)}, ${f(hb.y)}, ${f(hb.z)});
@@ -811,6 +843,15 @@ function faceShape() {
         else if (abs(facePart - ${P.rimRound}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(0.5, uGlasses) * step(uGlasses, 1.5);
         else if (abs(facePart - ${P.rimSquare}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(1.5, uGlasses);
         else if (abs(facePart - ${P.specs}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(0.5, uGlasses);
+        else if (facePart > ${P.hatBrim}.5) { // #1322: the chosen headphones kind stays (1 on the ears, 2 round the neck), the other collapses
+          float k = facePart > ${P.phoneCup}.5 ? step(abs(uPhones - 2.0), 0.5) : step(abs(uPhones - 1.0), 0.5);
+          vec3 p = transformed;
+          if (abs(facePart - ${P.phoneBand}.0) < 0.5) { // over headwear the band stands higher (config.js AVATAR_PHONES.hatLift)
+            vec2 d = p.xy - vec2(${f(hb.x)}, ${f(hb.y + 0.095)});
+            p.xy += normalize(d) * ${lift} * smoothstep(0.03, 0.08, d.y);
+          } else if (abs(facePart - ${P.phoneCup}.0) < 0.5) p.x += sign(p.x - ${f(hb.x)}) * ${f(PHONES.hatOut)} * step(abs(uHat - 3.0), 0.5); // the knitted hat reaches over the ears
+          transformed = faceAnchor + (p - faceAnchor) * k;
+        }
         else if (facePart > ${P.cowlHide}.5) { // #1321: headwear collapses to a point unless chosen (a cap: 1 forwards / 2 backwards, 3 knitted, 4 brimmed)
           float on = abs(facePart - ${P.hatDome}.0) < 0.5 ? step(0.5, uHat) * step(uHat, 2.5)
             : abs(facePart - ${P.peakFront}.0) < 0.5 ? step(abs(uHat - 1.0), 0.5)
@@ -818,7 +859,7 @@ function faceShape() {
             : abs(facePart - ${P.knit}.0) < 0.5 ? step(abs(uHat - 3.0), 0.5) : step(abs(uHat - 4.0), 0.5);
           transformed = faceAnchor + (transformed - faceAnchor) * on;
         }
-        if (abs(facePart - ${P.neck}.0) > 0.5) {
+        if (abs(facePart - ${P.neck}.0) > 0.5 && facePart < ${P.phoneNeck}.0 - 0.5) {
           vec3 q = transformed - vec3(${f(hb.x)}, ${f(hb.y)}, ${f(hb.z)});
           float low = (1.0 - smoothstep(${f(W.y[1])}, ${f(W.y[0])}, q.y)) * smoothstep(${f(W.z[0])}, ${f(W.z[1])}, q.z);
           q.x *= uHead.x * (1.0 + uHead.z * low);
@@ -828,7 +869,7 @@ function faceShape() {
         float ny = transformed.y - ${f(hb.y)};
         if (abs(facePart - ${P.neck}.0) < 0.5) {
           transformed.y += uNeck * clamp((ny - (${f(-0.04)})) / ${f(0.12)}, 0.0, 1.0);
-        } else {
+        } else if (facePart < ${P.phoneNeck}.0 - 0.5) {
           transformed.y += uNeck;
         }
       }
@@ -844,6 +885,7 @@ function applyFaceShape(u, lk) {
   u.uHair.value = v('hairLength'); // #1165
   u.uGlasses.value = Number.isInteger(lk.glasses) && lk.glasses > 0 && lk.glasses < GLASSES.names.length ? lk.glasses : 0;
   u.uHat.value = Number.isInteger(lk.hat) && lk.hat > 0 && lk.hat < HAT.names.length ? lk.hat : 0; // #1321
+  u.uPhones.value = Number.isInteger(lk.phones) && lk.phones > 0 && lk.phones < PHONES.names.length ? lk.phones : 0; // #1322
   u.uHead.value.set(v('headWidth'), v('headLength'), v('jaw'));
   u.uNeck.value = v('neck'); // #1191
 }

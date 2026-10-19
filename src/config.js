@@ -5439,6 +5439,14 @@ export const AVATAR_BROWS = { tag: 'v' };
 // cap's visor length, `brim` the brimmed hat's brim width (m).
 export const AVATAR_HAT = { tag: 'q', names: ['Ingen', 'Keps framåt', 'Keps bakåt', 'Mössa', 'Hatt'], lift: [0.034, 0.02], peak: 0.075, brim: 0.05,
   edge: { cap: [[0, 30], [60, 18], [100, 12], [180, 10]], knit: [[0, 27], [60, 12], [90, 0], [140, -6], [180, -10]], hat: [[0, 27], [90, 27], [180, 27]] } };
+// #1322 (#1318): headphones, look field `phones`: 0 none, 1 on the ears (a band over the head and two ear cups), 2 round the neck (a band behind the neck and
+// the cups resting on the chest); the extension's `f` tag (absent when 0, so old codes and looks are unchanged). Same mechanism as the headwear: both kinds are
+// in the shared geometry and collapse to a point in the vertex shader when not chosen (src/avatar.js), so no extra draw call. *Guess* shapes, by eye against
+// the head bone's frame: `band` the tube radius (m), `gap` m the band stands off the skull at the crown / at the ears, `cup` the ear cup's [radius, depth, x of its
+// centre] (m), `hatLift` m the band is raised over headwear 1-4 (the knitted hat also pushes the cups out sideways by `hatOut`), `neck` the neck kind's
+// [ring radius, height above the head bone, how far the cups hang down the chest, their x] in the torso frame.
+export const AVATAR_PHONES = { tag: 'f', names: ['Inga', 'På öronen', 'Runt halsen'], colour: 0x26282e, pad: 0x3c3f47,
+  band: 0.0065, gap: [0.034, 0.027], cup: [0.042, 0.03, 0.128], hatLift: [0, 0.016, 0.016, 0.018, 0.03], hatOut: 0.022, neck: { ring: [0.072, 0.085], y: 0.025, hang: 0.08, x: 0.07 } };
 // #1244: trouser models (look field `legs`, tag `p`) and top models (`cut`, tag `m`) beyond the first, which stay the default and
 // are not carried in the code. Legs: straight, shorts (mid-thigh, bare knees), wide. Tops: T-shirt / long sleeves (the `sleeves`
 // choice), tank (sleeveless), hoodie (always long-sleeved, a long hem, a pocket and a rolled hood). `wide` / `hem` scale the leg's
@@ -5471,6 +5479,7 @@ function encodeLookExt(look) {
   }
   if (Number.isInteger(look.glasses) && look.glasses > 0 && look.glasses < AVATAR_GLASSES.names.length) out += `${AVATAR_GLASSES.tag}${look.glasses}`;
   if (Number.isInteger(look.hat) && look.hat > 0 && look.hat < AVATAR_HAT.names.length) out += `${AVATAR_HAT.tag}${look.hat}`; // #1321
+  if (Number.isInteger(look.phones) && look.phones > 0 && look.phones < AVATAR_PHONES.names.length) out += `${AVATAR_PHONES.tag}${look.phones}`; // #1322
   const brows = look.brows == null ? -1 : HAIR.indexOf(look.brows); // #1220
   if (brows >= 0) out += `${AVATAR_BROWS.tag}${brows}`;
   if (look.legs > 0 && look.legs < AVATAR_CLOTHES.legs.names.length) out += `${AVATAR_CLOTHES.legs.tag}${look.legs}`; // #1244
@@ -5488,6 +5497,7 @@ function decodeLookExt(ext, lk) {
     if (tag === AVATAR_BUILD.tag) { if (v < AVATAR_BUILD.steps) lk.bodyBuild = v; continue; } // #1139
     if (tag === AVATAR_GLASSES.tag) { if (v < AVATAR_GLASSES.names.length) lk.glasses = v; continue; } // #1165
     if (tag === AVATAR_HAT.tag) { if (v < AVATAR_HAT.names.length) lk.hat = v; continue; } // #1321
+    if (tag === AVATAR_PHONES.tag) { if (v < AVATAR_PHONES.names.length) lk.phones = v; continue; } // #1322
     if (tag === AVATAR_BROWS.tag) { if (v < HAIR.length) lk.brows = HAIR[v]; continue; } // #1220
     if (tag === AVATAR_CLOTHES.legs.tag) { if (v < AVATAR_CLOTHES.legs.names.length) lk.legs = v; continue; } // #1244
     if (tag === AVATAR_CLOTHES.cut.tag) { if (v < AVATAR_CLOTHES.cut.names.length) lk.cut = v; continue; }
@@ -5524,7 +5534,7 @@ function nearestSeededBuild(look) {
 
 /** The face fields' defaults (#1138): the original brown eyes, every slider in the middle and brows like the hair (#1220). */
 export function defaultFaceLook() {
-  const lk = { eyes: EYES[0], glasses: 0, hat: 0, brows: null };
+  const lk = { eyes: EYES[0], glasses: 0, hat: 0, phones: 0, brows: null };
   for (const name of Object.keys(AVATAR_SHAPE.fields)) lk[name] = AVATAR_SHAPE.mid;
   return lk;
 }
