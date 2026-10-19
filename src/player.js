@@ -9,6 +9,13 @@ import { stowBicycleHand, restoreBicycleHand } from './holdable.js';
 
 const GRAVITY = 9.8;
 
+/** #1358: `segDist(x, z, seg) < r` without a sqrt and with a bounding-box reject first (isFree tests ~1300 segments, hundreds of times per bike step). */
+export function segNear(x, z, [ax, az, bx, bz], r) {
+  if (ax < bx ? (x < ax - r || x > bx + r) : (x < bx - r || x > ax + r)) return false;
+  if (az < bz ? (z < az - r || z > bz + r) : (z < bz - r || z > az + r)) return false;
+  const vx = bx - ax, vz = bz - az, l = vx * vx + vz * vz || 1, t = Math.max(0, Math.min(1, ((x - ax) * vx + (z - az) * vz) / l)), ex = x - ax - vx * t, ez = z - az - vz * t;
+  return ex * ex + ez * ez < r * r;
+}
 /** Distance from (x, z) to a segment. */
 export function segDist(x, z, [ax, az, bx, bz]) {
   const vx = bx - ax, vz = bz - az, l = vx * vx + vz * vz || 1, t = Math.max(0, Math.min(1, ((x - ax) * vx + (z - az) * vz) / l));
@@ -256,7 +263,7 @@ export class Player {
   /** Can the visitor stand at (x, z) on `level` (#314)? Clear of every segment by the radius + `margin`, inside no obstacle. */
   isFree(x, z, level = this.level, margin = 0.02, ignored = []) {
     if (this.inPlayroom) { const r = this.world.playroom; return r.contains(x, z) && !r.segments.some((sg) => !ignored.includes(sg) && segDist(x, z, sg) < PLAYER.radius + margin) && !r.footprints.some((q) => inPoly(q, x, z)); } // (#1319, furniture #1327)
-    if ((this.world.bicycleSegments?.(this.pos.y, PLAYER.headroom, PLAYER.hurdle) ?? []).some(s => segDist(x,z,s) < PLAYER.radius + margin)
+    if ((this.world.bicycleSegments?.(this.pos.y, PLAYER.headroom, PLAYER.hurdle) ?? []).some(s => segNear(x,z,s,PLAYER.radius + margin))
       || (this.world.bicyclePolys?.(this.pos.y, PLAYER.headroom, PLAYER.hurdle) ?? []).some(p => inPoly(p,x,z))) return false;
     if (this.inCore) { const [a, b] = this.world.core.segments(this.pos.y); return this.world.core.covers(x, z) && ![...a, ...b].some((sg) => !ignored.includes(sg) && segDist(x, z, sg) < PLAYER.radius + margin); } // (#415)
     if (this.below) { // in the garage (#357): its walls, the förråd doors, the cars
@@ -267,8 +274,8 @@ export class Player {
     if (u && (!u.ground || u.levelAt(this.pos.y) > 0)) { const lv = u.levelAt(this.pos.y); return u.contains(x, z, this.pos.y) && !(lv && u.inHole(x, z)) && ![...u.fixed[lv], ...u.doorSegments(lv)].some((sg) => !ignored.includes(sg) && segDist(x, z, sg) < PLAYER.radius + margin); }
     const lvl = this.world.levels[level];
     const doorSegs = this.world.doors.filter((d) => (d.object.position.y < LEVELS[0].floor + 1.6 ? 0 : 1) === level).map((d) => d.segment());
-    const segs = [...lvl.segments, ...doorSegs, ...(this.world.movingSegments?.(level) ?? [])];
-    if (segs.some((sg) => !ignored.includes(sg) && segDist(x, z, sg) < PLAYER.radius + margin)) return false;
+    const R = PLAYER.radius + margin, hit = (sg) => !ignored.includes(sg) && segNear(x, z, sg, R);
+    if (lvl.segments.some(hit) || doorSegs.some(hit) || (this.world.movingSegments?.(level) ?? []).some(hit)) return false; // (#1358: no 1300-element copy per call)
     if (this.obstacles(level).some((q) => inPoly(q, x, z))) return false;
     if (level === 1) { const h = STAIR.hole; if (x > h.x0 && x < h.x1 && z > h.z0 && z < h.z1) return false; }
     return true;

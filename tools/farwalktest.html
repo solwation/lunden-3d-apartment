@@ -72,7 +72,7 @@ const walk = (points, { run = true, step = null } = {}) => { // walks the waypoi
   for (let i = 0; i < 30; i++) player.update(dt);
   return -1;
 };
-const check = (ok, text) => { pass &&= ok; log.push(`${ok ? 'PASS' : 'FAIL'} ${text}`); };
+const check = (ok, text) => { pass &&= ok; log.push(`${ok ? 'PASS' : 'FAIL'} ${text} [${((performance.now() - T0) / 1000).toFixed(0)} s]`); }; // #1358: elapsed time per check, to see where the budget goes
 const at = () => `(${player.pos.x.toFixed(1)}, ${player.pos.z.toFixed(1)}) y=${player.pos.y.toFixed(2)}`;
 const routes = window.routes = [];
 export const route = (name, start, points, expect) => routes.push({ name, start, points, expect });
