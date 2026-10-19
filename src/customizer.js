@@ -1,4 +1,4 @@
-import { SKIN, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES, AVATAR_HAT, AVATAR_PHONES, AVATAR_NECKLACE, AVATAR_RING, AVATAR_CLOTHES } from './config.js';
+import { SKIN, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES, AVATAR_HAT, AVATAR_PHONES, AVATAR_NECKLACE, AVATAR_EARRINGS, AVATAR_RING, AVATAR_CLOTHES } from './config.js';
 
 // #1220: the brows' colours (config.js HAIR, the hair swatches' names) and a first choice that follows the hair
 const BROW_NAMES = ['Mörkbruna', 'Bruna', 'Ljusbruna', 'Guldbruna', 'Blonda', 'Grå', 'Röda', 'Svarta'];
@@ -413,6 +413,21 @@ export function drawAvatarPreview(canvas, look) {
     }
   }
 
+  // #1325: earrings (front view) on the lobes: studs, hoops, drops (stud, chain and pearl), pearl studs
+  const earr = Number(look.earrings) || 0;
+  if (earr > 0 && earr < AVATAR_EARRINGS.names.length) {
+    const col = AVATAR_EARRINGS.colours, gold = toHex(col.gold), pearl = toHex(col.pearl);
+    for (const sx of [-1, 1]) {
+      const ex = cx + sx * 18.5 * headW, ly = 62 + 4.6 * earS;
+      ctx.fillStyle = earr === 4 ? pearl : gold; ctx.strokeStyle = gold; ctx.lineWidth = 1;
+      if (earr === 2) { ctx.beginPath(); ctx.arc(ex, ly + 3.2, 3.2, 0, Math.PI * 2); ctx.stroke(); }
+      else {
+        ctx.beginPath(); ctx.arc(ex, ly, 1.6, 0, Math.PI * 2); ctx.fill();
+        if (earr === 3) { ctx.beginPath(); ctx.moveTo(ex, ly); ctx.lineTo(ex, ly + 4); ctx.stroke(); ctx.fillStyle = pearl; ctx.beginPath(); ctx.ellipse(ex, ly + 5.8, 1.9, 2.3, 0, 0, Math.PI * 2); ctx.fill(); }
+      }
+    }
+  }
+
   // #1322: headphones (front view) over the hair and the headwear: on the ears a band over the head with a cup at each ear, round the neck a band with the cups on the chest
   const phones = Number(look.phones) || 0;
   if (phones === 1) {
@@ -474,6 +489,7 @@ function updateActiveSwatches() {
     { type: 'hair', value: currentLook.hair, list: HAIR },
   ];
   groups.push({ type: 'glasses', value: Number(currentLook.glasses) || 0 }); // #1165
+  groups.push({ type: 'earrings', value: Number(currentLook.earrings) || 0 }); // #1325
   groups.push({ type: 'hat', value: Number(currentLook.hat) || 0 }); // #1321
   groups.push({ type: 'phones', value: Number(currentLook.phones) || 0 }); // #1322
   groups.push({ type: 'necklace', value: Number(currentLook.necklace) || 0 }); // #1323
@@ -622,6 +638,9 @@ function initCustomizerDOM() {
     } else if (type === 'phones' && AVATAR_PHONES.names[idx] !== undefined) { // #1322
       currentLook.phones = idx;
       applyAndRefresh();
+    } else if (type === 'earrings' && AVATAR_EARRINGS.names[idx] !== undefined) { // #1325
+      currentLook.earrings = idx;
+      applyAndRefresh();
     } else if (type === 'necklace' && AVATAR_NECKLACE.names[idx] !== undefined) { // #1323
       currentLook.necklace = idx;
       applyAndRefresh();
@@ -748,7 +767,7 @@ function addFaceSections(controls) {
       AVATAR_GLASSES.names.forEach((n, i) => {
         const b = document.createElement('button');
         Object.assign(b.dataset, { type: 'glasses', index: String(i) });
-        b.textContent = i ? `${n} glasögon` : 'Inga glasögon';
+        b.textContent = i === 3 ? n : i ? `${n} glasögon` : 'Inga glasögon';
         row.append(b);
       });
       sec.append(row);
@@ -771,7 +790,7 @@ function addFaceSections(controls) {
 /** #1321 (#1318): an accessory section per kind (headwear, #1322 headphones; necklaces and rings follow in #1323, #1324, each its own section). */
 function addAccessorySection(controls) {
   if (!controls || controls.querySelector?.('[data-accessory-section]')) return;
-  const kinds = [['hat', 'Huvudbonad', AVATAR_HAT, 'Ingen huvudbonad'], ['phones', 'Hörlurar', AVATAR_PHONES, 'Inga hörlurar']];
+  const kinds = [['hat', 'Huvudbonad', AVATAR_HAT, 'Ingen huvudbonad'], ['phones', 'Hörlurar', AVATAR_PHONES, 'Inga hörlurar'], ['earrings', 'Örhängen', AVATAR_EARRINGS, 'Inga örhängen']];
   for (const [type, title, cfg, none] of kinds) {
     const sec = document.createElement('section');
     sec.className = 'customizer-section';

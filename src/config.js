@@ -5425,7 +5425,15 @@ export const AVATAR_SHAPE = {
 };
 // #1165: glasses, 0 none, 1 round, 2 square frames: a look field `glasses`, the extension's `g` tag (absent when 0). The frames are part
 // of the shared head geometry and collapse to a point in the vertex shader when not chosen (src/avatar.js), so no extra draw call.
-export const AVATAR_GLASSES = { tag: 'g', names: ['Inga', 'Runda', 'Fyrkantiga'], colour: 0x1c1c20 };
+// #1325: kind 3 sunglasses (the square frames plus dark lenses, `lens`).
+export const AVATAR_GLASSES = { tag: 'g', names: ['Inga', 'Runda', 'Fyrkantiga', 'Solglasögon'], colour: 0x1c1c20, lens: 0x0e0f14 };
+// #1325 (#1318): earrings, look field `earrings`: 0 none, 1 studs, 2 hoops, 3 drops (a stud with a chain and a pearl), 4 pearl studs. All 26 lowercase tags of the
+// look extension are taken, so earrings share the glasses' `g` tag: the value is `glasses + 10 * earrings` (`g1` round glasses as before, `g20` hoops, `g32` drops with
+// square glasses); absent when both are 0, so old codes are unchanged (an old client reads a combined value as no glasses). In the shared head geometry, collapsed in
+// the vertex shader when not chosen. Shape (*guess*, by eye against the ear ellipsoid): `stud` / `pearl` radii, `hoop` the ring's radius, `wire` its thickness, `drop` the
+// chain's length, all m.
+export const AVATAR_EARRINGS = { names: ['Inga', 'Knoppar', 'Ringar', 'Hängen', 'Pärlknoppar'], stud: 0.0052, pearl: 0.0064, hoop: 0.0135, wire: 0.0016, drop: 0.016, dropPearl: 0.0068,
+  colours: { gold: 0xd4af37, pearl: 0xf1ece2 } };
 // #1220: the brows' own colour, a look field `brows` (one of HAIR's colours; null / absent = the hair's colour, as before), the
 // extension's `v` tag with the HAIR index (absent when following the hair, so old codes keep their brows). The brows are their
 // own colour region in the avatar's per-player colour attribute (src/avatar.js), so no extra draw call.
@@ -5490,7 +5498,9 @@ function encodeLookExt(look) {
     const v = look[name];
     if (Number.isInteger(v) && v >= 0 && v < AVATAR_SHAPE.steps && v !== AVATAR_SHAPE.mid) out += `${f.tag}${v}`;
   }
-  if (Number.isInteger(look.glasses) && look.glasses > 0 && look.glasses < AVATAR_GLASSES.names.length) out += `${AVATAR_GLASSES.tag}${look.glasses}`;
+  const gl = Number.isInteger(look.glasses) && look.glasses > 0 && look.glasses < AVATAR_GLASSES.names.length ? look.glasses : 0;
+  const er = Number.isInteger(look.earrings) && look.earrings > 0 && look.earrings < AVATAR_EARRINGS.names.length ? look.earrings : 0; // #1325: shares the `g` tag, see AVATAR_EARRINGS
+  if (gl || er) out += `${AVATAR_GLASSES.tag}${gl + 10 * er}`;
   if (Number.isInteger(look.hat) && look.hat > 0 && look.hat < AVATAR_HAT.names.length) out += `${AVATAR_HAT.tag}${look.hat}`; // #1321
   if (Number.isInteger(look.phones) && look.phones > 0 && look.phones < AVATAR_PHONES.names.length) out += `${AVATAR_PHONES.tag}${look.phones}`; // #1322
   if (Number.isInteger(look.necklace) && look.necklace > 0 && look.necklace < AVATAR_NECKLACE.names.length) out += `${AVATAR_NECKLACE.tag}${look.necklace}`; // #1323
@@ -5513,7 +5523,10 @@ function decodeLookExt(ext, lk) {
     if (tag === 'd') { if (v <= 2) lk.build = v; continue; }
     if (tag === 'u') { if (v < TOPS.length) lk.top = TOPS[v]; continue; } // #1156
     if (tag === AVATAR_BUILD.tag) { if (v < AVATAR_BUILD.steps) lk.bodyBuild = v; continue; } // #1139
-    if (tag === AVATAR_GLASSES.tag) { if (v < AVATAR_GLASSES.names.length) lk.glasses = v; continue; } // #1165
+    if (tag === AVATAR_GLASSES.tag) { // #1165 glasses, #1325 earrings in the tens
+      if (v % 10 < AVATAR_GLASSES.names.length && Math.floor(v / 10) < AVATAR_EARRINGS.names.length) { lk.glasses = v % 10; lk.earrings = Math.floor(v / 10); }
+      continue;
+    }
     if (tag === AVATAR_HAT.tag) { if (v < AVATAR_HAT.names.length) lk.hat = v; continue; } // #1321
     if (tag === AVATAR_PHONES.tag) { if (v < AVATAR_PHONES.names.length) lk.phones = v; continue; } // #1322
     if (tag === AVATAR_NECKLACE.tag) { if (v < AVATAR_NECKLACE.names.length) lk.necklace = v; continue; } // #1323
@@ -5555,7 +5568,7 @@ function nearestSeededBuild(look) {
 
 /** The face fields' defaults (#1138): the original brown eyes, every slider in the middle and brows like the hair (#1220). */
 export function defaultFaceLook() {
-  const lk = { eyes: EYES[0], glasses: 0, hat: 0, phones: 0, necklace: 0, ring: 0, metal: 0, brows: null };
+  const lk = { eyes: EYES[0], glasses: 0, earrings: 0, hat: 0, phones: 0, necklace: 0, ring: 0, metal: 0, brows: null };
   for (const name of Object.keys(AVATAR_SHAPE.fields)) lk[name] = AVATAR_SHAPE.mid;
   return lk;
 }

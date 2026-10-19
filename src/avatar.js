@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_HAT as HAT, AVATAR_PHONES as PHONES, AVATAR_NECKLACE as NECK_L, AVATAR_RING as RING, AVATAR_CLOTHES, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
+import { AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_EARRINGS as EARR, AVATAR_HAT as HAT, AVATAR_PHONES as PHONES, AVATAR_NECKLACE as NECK_L, AVATAR_RING as RING, AVATAR_CLOTHES, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
 import { topTexture } from './spidersuit.js';
 import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, SHIN, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
 
@@ -27,7 +27,8 @@ const REGION = { skin: 0, top: 1, pants: 2, hair: 3, fixed: 4, lips: 6, iris: 7,
 // #1138: which face part a head-bone vertex belongs to (the `facePart` attribute; 0 = not on the head), see faceShape
 // #1165: hair (the scalp shell / curtain, lengthened below the crown), round and square glasses frames and the temples + bridge shared by both
 // #1241: cowlHide collapses protruding facial features (lips, brow ridge) under the Spider-Man mask
-const FACE_PART = { head: 1, neck: 2, eye: 3, nose: 4, ear: 5, brow: 6, hair: 7, rimRound: 8, rimSquare: 9, specs: 10, cowlHide: 11, hatDome: 12, peakFront: 13, peakBack: 14, knit: 15, hatCrown: 16, hatBrim: 17, phoneBand: 18, phoneCup: 19, phoneNeck: 20,
+const FACE_PART = { head: 1, neck: 2, eye: 3, nose: 4, ear: 5, brow: 6, hair: 7, rimRound: 8, rimSquare: 9, specs: 10, cowlHide: 11, hatDome: 12, peakFront: 13, peakBack: 14, knit: 15, hatCrown: 16, hatBrim: 17, phoneBand: 18, phoneCup: 19, phoneNeck: 20, studs: 21, hoops: 22, drops: 23, pearlStuds: 24, lens: 25, // #1325: earrings (head bone, follow the ear) and sunglass lenses
+ 
   chain: 30, pearls: 31, pendant: 32, goldChain: 33,
   ring: 40 }; // 40 + 0-9: #1324 a ring on one of the ten fingers (the look's `ring` - 1) // #1323: necklaces (on the torso bone, not warped with the head)
 const H = 0.1; // The head bone's eye-height reference (ears, hair, moustache).
@@ -86,6 +87,7 @@ function parts(style, sleeves, gender = 0, facial = 0, legs = 0, cut = 0) {
   addGlasses(add, P); // #1165
   addHats(add, P); // #1321
   addPhones(add, P); // #1322
+  addEarrings(add, P); // #1325
   addNecklaces(add, P, gender); // #1323
   addRings(add, P); // #1324
   return P;
@@ -105,6 +107,27 @@ function addGlasses(add, P) {
     add(new THREE.BoxGeometry(t, t * 1.3, len).rotateY(Math.atan2(b.x - a.x, b.z - a.z)).translate((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2), 'fixed', 'head', [0, 0, 0], 1, c); mark(FACE_PART.specs);
   }
   add(bar(2 * (E.at[0] - rx) + t, t * 1.3, t, 0, y + 0.004, z), 'fixed', 'head', [0, 0, 0], 1, c); mark(FACE_PART.specs);
+}
+/** #1325 (#1318): earrings on the lobes (head bone frame, around the ear ellipsoid at [±0.1, H - 0.005, 0], radii 0.0154 / 0.028 / 0.02): gold studs, hoops through the lobe
+ * (lying in the side plane), drops (a stud with a short chain and a pearl) and pearl studs. They collapse to the ear's centre unless chosen (uEarrings) and scale with the
+ * ear slider (uEar). Also the sunglasses' dark lenses (facePart 25, shown for glasses kind 3). Always in the shared geometry, no extra draw call. */
+function addEarrings(add, P) {
+  const K = EARR, C = K.colours, ey = H - 0.005, lobe = ey - 0.028 * 0.74, outer = 0.1 + 0.0154 * 0.68; // the lobe's outer face
+  for (const s of [-1, 1]) {
+    const at = [s * 0.1, ey, 0], put = (g, colour, id) => { add(g, 'fixed', 'head', [0, 0, 0], 1, colour); facePart(P, id, at); };
+    const ball = (r, x, y, z) => new THREE.SphereGeometry(r, 6, 4).translate(x, y, z);
+    put(ball(K.stud, s * outer, lobe, 0), C.gold, FACE_PART.studs);
+    put(new THREE.TorusGeometry(K.hoop, K.wire, 4, 14).rotateY(Math.PI / 2).translate(s * (outer - 0.002), lobe - K.hoop + 0.004, 0), C.gold, FACE_PART.hoops);
+    put(mergeGeometries([ball(K.stud * 0.8, s * outer, lobe, 0), new THREE.CylinderGeometry(K.wire * 0.6, K.wire * 0.6, K.drop, 3).translate(s * (outer + 0.001), lobe - K.drop / 2, 0)].map((g) => (g.index ? g.toNonIndexed() : g))), C.gold, FACE_PART.drops);
+    put(new THREE.SphereGeometry(K.dropPearl, 8, 5).scale(1, 1.25, 1).translate(s * (outer + 0.001), lobe - K.drop - K.dropPearl * 0.9, 0), C.pearl, FACE_PART.drops);
+    put(ball(K.pearl, s * (outer + 0.001), lobe, 0), C.pearl, FACE_PART.pearlStuds);
+  }
+  // sunglasses: a dark lens in each square frame (see addGlasses), slightly behind the frame's front
+  const E = FACE.eye, z = E.at[2] + 0.017, y = E.at[1], rx = 0.0225, hy = 0.0165;
+  for (const s of [-1, 1]) {
+    add(new THREE.BoxGeometry(2 * rx, 2 * hy, 0.0012).translate(s * E.at[0], y, z), 'fixed', 'head', [0, 0, 0], 1, GLASSES.lens);
+    facePart(P, FACE_PART.lens, [0, y, z]);
+  }
 }
 /** #1321 (#1318): headwear in the head bone's frame, built on the skull ellipsoid (RH.skull) lifted by AVATAR_HAT.lift: a cap (the dome plus a
  * peak at the front or the back), a knitted hat with a cuff, a brimmed hat (crown plus a brim all round). Always in the shared geometry; the
@@ -852,7 +875,7 @@ function releaseSuitTexture() { if (--suitUsers === 0) { suitTexture.dispose(); 
 function makeMaterial(rim, headProjection) {
   const headMin = headProjection.min, headSize = headProjection.getSize(new THREE.Vector3()), headFront = headProjection.getCenter(new THREE.Vector3()).z;
   const u = { uOutline: { value: 0 }, uFill: { value: A.fill }, uRim: { value: A.rim }, uRimColor: { value: rim }, uSuit: { value: 0 }, uSuitTexture: { value: null }, uSuitMaskBand: { value: 0 }, uMouth: { value: 0 },
-    uEye: { value: new THREE.Vector3(1, 1, 1) }, uNose: { value: new THREE.Vector3(1, 1, 1) }, uEar: { value: 1 }, uHair: { value: 1 }, uGlasses: { value: 0 }, uHat: { value: 0 }, uPhones: { value: 0 }, uNecklace: { value: 0 }, uRingFinger: { value: 0 }, uRingColor: { value: new THREE.Color(RING.colours[0]) }, uNeck: { value: 0 }, uBrow: { value: new THREE.Vector2(1, 0) }, uHead: { value: new THREE.Vector3(1, 1, 0) } };
+    uEye: { value: new THREE.Vector3(1, 1, 1) }, uNose: { value: new THREE.Vector3(1, 1, 1) }, uEar: { value: 1 }, uHair: { value: 1 }, uGlasses: { value: 0 }, uEarrings: { value: 0 }, uHat: { value: 0 }, uPhones: { value: 0 }, uNecklace: { value: 0 }, uRingFinger: { value: 0 }, uRingColor: { value: new THREE.Color(RING.colours[0]) }, uNeck: { value: 0 }, uBrow: { value: new THREE.Vector2(1, 0) }, uHead: { value: new THREE.Vector3(1, 1, 0) } };
   const m = new THREE.MeshLambertMaterial({ vertexColors: true, transparent: false, depthWrite: true });
   m.emissive.setScalar(A.emissiveSolid);
   m.userData.u = u;
@@ -901,7 +924,7 @@ function makeMaterial(rim, headProjection) {
 // pivot (`faceAnchor`: an eyeball's centre, the nose's bridge, an ear's centre, a brow's centre line), then every head vertex
 // but the neck is widened, lengthened from the chin and its lower face (faceWarp's jaw region) widened or narrowed. No new
 // geometry or draw call; collision and hit regions keep the plain head (CPU raycasts never see the shader).
-const FACE_SHAPE_DECL = 'attribute float facePart; attribute vec3 faceAnchor; uniform vec3 uEye, uNose, uHead; uniform float uEar, uHair, uGlasses, uHat, uPhones, uNecklace, uRingFinger, uNeck, uSuit; uniform vec2 uBrow;';
+const FACE_SHAPE_DECL = 'attribute float facePart; attribute vec3 faceAnchor; uniform vec3 uEye, uNose, uHead; uniform float uEar, uHair, uGlasses, uEarrings, uHat, uPhones, uNecklace, uRingFinger, uNeck, uSuit; uniform vec2 uBrow;';
 const CHIN_Y = RH.jaw.centre[1] - RH.jaw.radius * RH.jaw.scale[1]; // the head lengthens from its chin
 function faceShape() {
   const hb = bindAt('head'), W = FACE.warp, f = (v) => v.toFixed(4), P = FACE_PART;
@@ -925,6 +948,11 @@ function faceShape() {
         else if (abs(facePart - ${P.rimRound}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(0.5, uGlasses) * step(uGlasses, 1.5);
         else if (abs(facePart - ${P.rimSquare}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(1.5, uGlasses);
         else if (abs(facePart - ${P.specs}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(0.5, uGlasses);
+        else if (abs(facePart - ${P.lens}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(2.5, uGlasses); // #1325: sunglasses' lenses
+        else if (facePart > ${P.phoneNeck}.5 && facePart < ${P.lens}.5) { // #1325: earrings follow the ear's size; the chosen kind stays (1 studs, 2 hoops, 3 drops, 4 pearl studs)
+          float on = step(abs(uEarrings - (facePart - ${P.studs}.0 + 1.0)), 0.5);
+          transformed = faceAnchor + (transformed - faceAnchor) * on * uEar;
+        }
         else if (facePart > ${P.ring}.0 - 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(abs(uRingFinger - (facePart - ${P.ring}.0 + 1.0)), 0.5); // #1324: only the chosen finger's ring stays
         else if (facePart > ${P.chain}.0 - 0.5) { // #1323: a necklace collapses to a point unless chosen (1 chain, 2 pearls, 3 pendant, 4 thick gold chain)
           float on = abs(facePart - ${P.chain}.0) < 0.5 ? step(abs(uNecklace - 1.0), 0.5) + step(abs(uNecklace - 3.0), 0.5)
@@ -932,7 +960,7 @@ function faceShape() {
             : abs(facePart - ${P.pendant}.0) < 0.5 ? step(abs(uNecklace - 3.0), 0.5) : step(abs(uNecklace - 4.0), 0.5);
           transformed = faceAnchor + (transformed - faceAnchor) * on;
         }
-        else if (facePart > ${P.hatBrim}.5 && facePart < ${P.chain}.0 - 0.5) { // #1322: the chosen headphones kind stays (1 on the ears, 2 round the neck), the other collapses
+        else if (facePart > ${P.hatBrim}.5 && facePart < ${P.phoneNeck}.5) { // #1322: the chosen headphones kind stays (1 on the ears, 2 round the neck), the other collapses
           float k = facePart > ${P.phoneCup}.5 ? step(abs(uPhones - 2.0), 0.5) : step(abs(uPhones - 1.0), 0.5);
           vec3 p = transformed;
           if (abs(facePart - ${P.phoneBand}.0) < 0.5) { // over headwear the band stands higher (config.js AVATAR_PHONES.hatLift)
@@ -948,7 +976,8 @@ function faceShape() {
             : abs(facePart - ${P.knit}.0) < 0.5 ? step(abs(uHat - 3.0), 0.5) : step(abs(uHat - 4.0), 0.5);
           transformed = faceAnchor + (transformed - faceAnchor) * on;
         }
-        if (abs(facePart - ${P.neck}.0) > 0.5 && facePart < ${P.phoneNeck}.0 - 0.5) {
+        bool torsoPart = abs(facePart - ${P.phoneNeck}.0) < 0.5 || facePart > ${P.chain}.0 - 0.5; // headphones round the neck and the necklaces sit on the torso bone
+        if (abs(facePart - ${P.neck}.0) > 0.5 && !torsoPart) {
           vec3 q = transformed - vec3(${f(hb.x)}, ${f(hb.y)}, ${f(hb.z)});
           float low = (1.0 - smoothstep(${f(W.y[1])}, ${f(W.y[0])}, q.y)) * smoothstep(${f(W.z[0])}, ${f(W.z[1])}, q.z);
           q.x *= uHead.x * (1.0 + uHead.z * low);
@@ -958,7 +987,7 @@ function faceShape() {
         float ny = transformed.y - ${f(hb.y)};
         if (abs(facePart - ${P.neck}.0) < 0.5) {
           transformed.y += uNeck * clamp((ny - (${f(-0.04)})) / ${f(0.12)}, 0.0, 1.0);
-        } else if (facePart < ${P.phoneNeck}.0 - 0.5) {
+        } else if (!torsoPart) {
           transformed.y += uNeck;
         }
       }
@@ -973,6 +1002,7 @@ function applyFaceShape(u, lk) {
   u.uBrow.value.set(v('browThick'), v('browY'));
   u.uHair.value = v('hairLength'); // #1165
   u.uGlasses.value = Number.isInteger(lk.glasses) && lk.glasses > 0 && lk.glasses < GLASSES.names.length ? lk.glasses : 0;
+  u.uEarrings.value = Number.isInteger(lk.earrings) && lk.earrings > 0 && lk.earrings < EARR.names.length ? lk.earrings : 0; // #1325
   u.uNecklace.value = Number.isInteger(lk.necklace) && lk.necklace > 0 && lk.necklace < NECK_L.names.length ? lk.necklace : 0; // #1323
   u.uRingFinger.value = Number.isInteger(lk.ring) && lk.ring > 0 && lk.ring <= 10 ? lk.ring : 0; // #1324
   u.uRingColor.value.set(RING.colours[Number.isInteger(lk.metal) && lk.metal >= 0 && lk.metal < RING.colours.length ? lk.metal : 0]);

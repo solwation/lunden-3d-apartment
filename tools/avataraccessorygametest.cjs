@@ -63,13 +63,13 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     }, [worker, fix]);
     await peer.waitForFunction(() => window.peer.ghosts.connected, null, { timeout: 60000 });
     await app.waitForFunction(() => { window.__fix.tick(); return !!window.__fix.peer(); }, null, { timeout: 30000, polling: 100 });
-    for (const [kind, tag, cfg, uni, vals] of [['hat', 'q', 'AVATAR_HAT', 'uHat', [1, 2, 3, 4]], ['phones', 'f', 'AVATAR_PHONES', 'uPhones', [1, 2]], ['necklace', 'x', 'AVATAR_NECKLACE', 'uNecklace', [1, 2, 3, 4]], ['ring', 'i', 'AVATAR_RING', 'uRingFinger', [1, 4, 7, 10]]]) for (const hat of vals) {
+    for (const [kind, tag, cfg, uni, vals, mult = 1] of [['hat', 'q', 'AVATAR_HAT', 'uHat', [1, 2, 3, 4]], ['phones', 'f', 'AVATAR_PHONES', 'uPhones', [1, 2]], ['necklace', 'x', 'AVATAR_NECKLACE', 'uNecklace', [1, 2, 3, 4]], ['ring', 'i', 'AVATAR_RING', 'uRingFinger', [1, 4, 7, 10]], ['earrings', 'g', 'AVATAR_EARRINGS', 'uEarrings', [1, 2, 3, 4], 10]]) for (const hat of vals) { // #1325: earrings share the `g` tag (glasses + 10 * earrings)
       // the customizer's own buttons (own look), then the wire (the peer's)
       const mine = await app.evaluate(async ([hat, kind, cfg, uni]) => { const a = window.__app, C = await import('/src/config.js'); a.openAvatarCustomizer();
         const b = document.querySelector(`#avatar-customizer button[data-type="${kind}"][data-index="${hat}"], button[data-type="${kind}"][data-index="${hat}"]`); b.click();
         const g = window.__ghosts, u = g.myGhost?.avatar?.mesh?.material?.userData?.u;
         return { hat: g.myLook[kind], uHat: u?.[uni].value, sel: b.classList.contains('sel') || b.classList.contains('active') || b.getAttribute('aria-pressed') === 'true', code: g.avatarCode, name: (C[cfg].names ?? C[cfg].fingers)[hat % 5] }; }, [hat, kind, cfg, uni]);
-      check(mine.hat === hat && mine.code.includes(`${tag}${hat}`) && mine.uHat === hat, `own look: ${mine.name} (button) → ${tag}${hat} in the wire code`, JSON.stringify(mine));
+      check(mine.hat === hat && mine.code.includes(`${tag}${hat * mult}`) && mine.uHat === hat, `own look: ${mine.name} (button) → ${tag}${hat * mult} in the wire code`, JSON.stringify(mine));
       if (hat === (kind === 'hat' ? 3 : 1)) { await app.evaluate((kind) => document.querySelector(`button[data-type="${kind}"][data-index="1"]`).scrollIntoView({ block: 'center' }), kind); await app.screenshot({ path: `${shots}/customizer-${kind}.png`, timeout: 180000 }); }
       await app.evaluate(() => window.__app.closeAvatarCustomizer());
       const code = await peer.evaluate(async ([hat, kind]) => { const C = await import('/src/config.js'); const lk = { ...C.decodeAvatarLook('130410013', 'peer'), [kind]: hat };
@@ -93,7 +93,7 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
       await peer.evaluate((h) => { window.peer.at = h.at; window.peer.r = h.r; }, await peer.evaluate(() => window.peer.home));
     }
     const saved = await app.evaluate(() => { return localStorage.getItem('lunden.avatar'); });
-    check(/q4/.test(saved ?? '') && /f2/.test(saved ?? '') && /x4/.test(saved ?? '') && /i10/.test(saved ?? ''), 'closing saves the code with the headwear, the headphones, the necklace and the ring', saved);
+    check(/q4/.test(saved ?? '') && /f2/.test(saved ?? '') && /x4/.test(saved ?? '') && /i10/.test(saved ?? '') && /g40/.test(saved ?? ''), 'closing saves the code with the headwear, the headphones, the necklace, the ring and the earrings', saved);
     // #1324: the ring's metal (buttons data-type=metal): own look, the uniform's colour, the code's z tag and the first-person hand's material
     for (const m of [1, 2, 3]) {
       const r = await app.evaluate(async (m) => { const a = window.__app, C = await import('/src/config.js'); a.openAvatarCustomizer();
@@ -103,8 +103,8 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
         return { metal: g.myLook.metal, colour: u?.uRingColor.value.getHex(), want: C.AVATAR_RING.colours[m], code: g.avatarCode, hand: hand?.material.color.getHex() }; }, m);
       check(r.metal === m && r.colour === r.want && r.hand === r.want && r.code.includes(`z${m}`), `metal ${m}: look, shader colour, first-person ring and z${m} in the code`, JSON.stringify(r));
     }
-    const none = await app.evaluate(async () => { const C = await import('/src/config.js'); const lk = window.__ghosts.myLook; return C.encodeAvatarLook({ ...lk, hat: 0, phones: 0, necklace: 0, ring: 0, metal: 0 }); });
-    check(!/[qfxiz]\d/.test(none), 'headwear / headphones / necklace / ring none is not written', none);
+    const none = await app.evaluate(async () => { const C = await import('/src/config.js'); const lk = window.__ghosts.myLook; return C.encodeAvatarLook({ ...lk, hat: 0, phones: 0, necklace: 0, ring: 0, metal: 0, earrings: 0, glasses: 0 }); });
+    check(!/[qfxizg]\d/.test(none), 'headwear / headphones / necklace / ring none is not written', none);
     await peer.evaluate(() => window.peer.ghosts.disconnect()); await peer.close();
     check(errors.length === 0, 'no page errors', errors.join(' | '));
   } catch (e) { check(false, 'crashed', e.stack); }

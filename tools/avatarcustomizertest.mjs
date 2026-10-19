@@ -416,10 +416,10 @@ test('#1165 hair length and glasses: tags h / g, old codes unchanged, bad values
   const back = decodeAvatarLook(code, 'p');
   assert.equal(back.hairLength, 1); assert.equal(back.glasses, 2); assert.equal(encodeAvatarLook(back), code);
   assert.equal(encodeAvatarLook({ ...plain, glasses: 0, hairLength: AVATAR_SHAPE.mid }), base, 'defaults are not written');
-  assert.equal(encodeAvatarLook({ ...plain, glasses: 3 }), base, 'an unknown glasses kind is not written');
+  assert.equal(encodeAvatarLook({ ...plain, glasses: 4 }), base, 'an unknown glasses kind (#1325: 3 is sunglasses) is not written');
   assert.equal(decodeAvatarLook(base + 'g9', 'p').glasses, 0, 'out-of-range glasses ignored');
   assert.equal(decodeAvatarLook(base + 'h9', 'p').hairLength, AVATAR_SHAPE.mid, 'out-of-range length ignored');
-  assert.equal(AVATAR_GLASSES.names.length, 3);
+  assert.equal(AVATAR_GLASSES.names.length, 4);
   // together with the height and the face, and through the wire split
   const all = encodeAvatarLook({ ...lk, height: 140, eyeSize: 7 });
   assert.equal(all, base + '140' + 'e7h1g2');
@@ -751,6 +751,34 @@ test('#1324 rings: tags i (finger 1-10) and z (metal), old codes unchanged, bad 
   assert.equal(decodeAvatarLook(base + 'i3z9', 'p').metal, 0, 'out-of-range metal ignored');
   assert.match(encodeAvatarWireLook({ ...plain, ring: 7, metal: 3 }), /i7z3/, 'on the wire');
   const everything = { ...plain, glasses: 2, hat: 4, phones: 2, necklace: 4, ring: 10, metal: 3, brows: HAIR[7], eyes: 0x7c8288 };
+  for (const n of Object.keys(AVATAR_SHAPE.fields)) everything[n] = n === 'jaw' ? 0 : 8;
+  assert.ok(splitAvatarCode(encodeAvatarWireLook({ ...everything, height: 140, bodyBuild: 8, top: TOPS[10] })).ax.length <= AVATAR_LOOK_EXT_MAX);
+});
+
+test('#1325 earrings and sunglasses: earrings share the g tag (glasses + 10 * earrings), old codes unchanged, bad values skipped', async () => {
+  const { AVATAR_EARRINGS, AVATAR_GLASSES, AVATAR_LOOK_EXT_MAX, AVATAR_SHAPE, splitAvatarCode, defaultFaceLook, encodeAvatarWireLook } = await import('../src/config.js');
+  const plain = avatarLook('ear-plain'), base = encodeAvatarLook(plain);
+  assert.equal(defaultFaceLook().earrings, 0, 'no earrings by default');
+  assert.equal(decodeAvatarLook(base, 'p').earrings, 0);
+  assert.equal(AVATAR_EARRINGS.names.length, 5); assert.equal(AVATAR_GLASSES.names.length, 4);
+  for (let g = 1; g < 4; g++) { // glasses alone are written exactly as before
+    assert.equal(encodeAvatarLook({ ...plain, glasses: g }), `${base}g${g}`);
+    const back = decodeAvatarLook(`${base}g${g}`, 'p'); assert.equal(back.glasses, g); assert.equal(back.earrings, 0);
+  }
+  for (let e = 1; e < 5; e++) {
+    assert.equal(encodeAvatarLook({ ...plain, earrings: e }), `${base}g${e * 10}`);
+    const back = decodeAvatarLook(`${base}g${e * 10}`, 'p'); assert.equal(back.earrings, e); assert.equal(back.glasses, 0);
+    const both = decodeAvatarLook(encodeAvatarLook({ ...plain, earrings: e, glasses: 3 }), 'p'); assert.equal(both.earrings, e); assert.equal(both.glasses, 3);
+  }
+  assert.equal(encodeAvatarLook({ ...plain, earrings: 0, glasses: 0 }), base, 'none is not written');
+  assert.equal(encodeAvatarLook({ ...plain, earrings: 9 }), base, 'an unknown kind is not written');
+  assert.equal(decodeAvatarLook(base + 'g50', 'p').earrings, 0, 'out-of-range earrings ignored');
+  assert.equal(decodeAvatarLook(base + 'g9', 'p').glasses, 0, 'out-of-range glasses ignored');
+  const all = encodeAvatarLook({ ...plain, earrings: 3, glasses: 3, hat: 2, necklace: 1, height: 140 });
+  assert.equal(all, base + '140' + 'g33q2x1');
+  assert.deepEqual(splitAvatarCode(all), { av: base + '140', ax: 'g33q2x1' });
+  assert.match(encodeAvatarWireLook({ ...plain, earrings: 2 }), /g20/, 'on the wire');
+  const everything = { ...plain, glasses: 3, earrings: 4, hat: 4, necklace: 4, brows: HAIR[7], eyes: 0x7c8288 };
   for (const n of Object.keys(AVATAR_SHAPE.fields)) everything[n] = n === 'jaw' ? 0 : 8;
   assert.ok(splitAvatarCode(encodeAvatarWireLook({ ...everything, height: 140, bodyBuild: 8, top: TOPS[10] })).ax.length <= AVATAR_LOOK_EXT_MAX);
 });
