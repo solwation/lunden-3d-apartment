@@ -682,7 +682,10 @@ export const SITE = {
     pathClearance: 0.6,
     bridgeClearance: 1.5,
     branchCount: 3,
-    woodBridge: {"source":"51890085","ends":[[-131.05,199.16],[-124.08,212.06]],"width":2.2,"deckY":-3,"slab":0.22,"rail":1.1,"postStep":2,"railSize":0.08,"postSize":0.1,"abutment":0.35},
+    woodBridge: {"source":"51890085","ends":[[-131.05,199.16],[-124.08,212.06]],"width":2.2,"deckY":-3,"slab":0.22,"rail":1.1,"postStep":2,"railSize":0.08,"postSize":0.1,
+      // #1337/#1338: the deck ends on earth ramps, no vertical abutment boxes. Along the bridge axis the fill falls from deckY by `slope` per metre over `length` m (it then lies under the valley terrain, which rises to meet it);
+      // `flank`: the fill's sides fall this much per metre sideways (under WALK.maxSlope, so they are walkable); `front`: the steep fill face towards the river under the deck end; `reach`: half-width of the fill (m, from its axis); `dirs`: each ramp's heading away from the deck end - towards the next points of the mapped park paths 51890086 (NW) and 1432565773 (SE; it also keeps the fill off the paddock fence beside that path). All *guess* values: the heights are the DSM estimate.
+      "ramp":{"slope":0.125,"length":14,"flank":0.6,"front":1,"reach":3.6,"dirs":[[-0.439,-0.898],[0.704,0.71]]}},
     shoreRadius: [0.16,0.46],
     shoreLeaves: 5,
     shrubAspect: [1,0.65,0.8],

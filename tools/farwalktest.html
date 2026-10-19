@@ -25,6 +25,7 @@ import { WALK, SITE, PLAYER } from '../src/config.js';
 import { farWalls, inWater, slideAt, slopeAt } from '../src/farwalk.js';
 import { groundY, groundBelowDeckY, renderedTerrainY, treeFeet } from '../src/surroundings.js';
 import { riverAt, deckAt, deckUnderAt, bridgeRecords, pierBoxes } from '../src/riverbridge.js';
+import { parkRampEnds } from '../src/riverpark.js';
 
 const out = document.getElementById('out');
 // #1312: the page must always end with a final line the runner (tools/runnerverdict.cjs) recognises: "ALL PASS N checks" or
@@ -256,6 +257,37 @@ for (const [name, start, points, ok] of R) {
   for (const [x, z] of [[18.1, 101], [17.9, 125], [17.8, 146], [17.8, 155]]) ride(x, z, 600, () => { if (player.pos.y > B.deckY - 0.5) onDeckN++; return Math.hypot(player.pos.x - x, player.pos.z - z) < 0.5; });
   check(splashes.length === 0 && onDeckN > 20 && player.pos.z > 125, `cykeln över gång- och cykelbron: inget plask (${onDeckN} steg på däcket, ${at()})`);
   if (player.riding) player.dismountBicycle();
+  player.keys = new Set();
+}
+{ // #1337/#1338: the little timber footbridge by the paddock: earth ramps (no vertical abutment boxes) - walk it on foot AND by bike, held W, both ways
+  const W0 = SITE.riverPark.woodBridge, E0 = parkRampEnds(), [[ax, az], [bx, bz]] = W0.ends, bl = Math.hypot(bx - ax, bz - az), RL = 9; // (a ramp's first 9 m: the fence beside the paddock path starts a few metres on)
+  const along = (e, s, o = 0) => [e.x + e.dx * s - e.dz * o, e.z + e.dz * s + e.dx * o];
+  let steepest = 0, worstStep = 0;
+  for (const e of E0) { let prev = null; for (let s = 0.2; s <= W0.ramp.length; s += 0.1) for (const o of [0, W0.width / 2 - 0.5]) { // the ground along each ramp (and its edge) never steps or gets steeper than the limit
+    const [x, z] = along(e, s, o), y = groundY(x, z); if (o === 0) { if (prev !== null) worstStep = Math.max(worstStep, Math.abs(y - prev)); prev = y; }
+    steepest = Math.max(steepest, slopeAt(x, z, y).s); } }
+  check(steepest < WALK.maxSlope * 0.8 && worstStep < 0.1 * 0.8 * 1.1, `lilla träbron: marken längs båda rampernas mittlinje och kant är jämn (brantaste ${steepest.toFixed(2)} < ${(WALK.maxSlope * 0.8).toFixed(2)}, största steg per 10 cm ${worstStep.toFixed(3)} m)`);
+  check(E0.every((e) => [0, 2, 4, 6, 8, 10, 14].every((s) => { const [x, z] = along(e, s); return groundY(x, z) > SITE.bridges.waterY + 0.3; })), 'lilla träbron: rampernas hela längd ligger över vattenlinjen');
+  const trip = (name, a, z, bike) => { // up the ramp at `a`, over the deck, down the ramp at `z`
+    const A = E0[a], Z = E0[z], peak = { y: -Infinity }, start = along(A, RL), goal = along(Z, RL - 1), mid = [[A.x, A.z], [Z.x, Z.z]];
+    player.spawn(start[0], start[1], 0); splashes.length = 0; player.safeUntil = 0; let stuck;
+    if (!bike) stuck = walk([...mid, goal], { run: false, step: () => { peak.y = Math.max(peak.y, player.pos.y); return splashes.length > 0; } });
+    else {
+      const bk = { position: new THREE.Vector3(), ridden: true, pick: { visible: false }, place(p) { this.position.copy(p); }, restore() {} };
+      stuck = -1;
+      for (const [x, zz] of [...mid, goal]) {
+        const yaw = Math.atan2(-(x - player.pos.x), -(zz - player.pos.z)) + Math.PI / 2;
+        if (!player.riding) player.riding = { bike: bk, yaw, pitch: 0, lastStanding: player.pos.clone() };
+        player.keys = new Set(['KeyW']); camera.rotation.y = yaw - Math.PI / 2; let n = 0;
+        while (Math.hypot(player.pos.x - x, player.pos.z - zz) > 0.8 && n++ < 900) { camera.rotation.y = Math.atan2(-(x - player.pos.x), -(zz - player.pos.z)); player.update(dt); peak.y = Math.max(peak.y, player.pos.y); }
+        if (n >= 900) { stuck = 1; break; }
+      }
+      player.keys = new Set(); if (player.riding) player.dismountBicycle();
+    }
+    const d = Math.hypot(player.pos.x - goal[0], player.pos.z - goal[1]);
+    check(stuck === -1 && !splashes.length && peak.y > W0.deckY - 0.1 && d < (bike ? 1.6 : 0.9), `lilla träbron ${name}: ${bike ? 'cykel' : 'gång'} hela vägen upp, över och ner (högst y=${peak.y.toFixed(2)}, däck ${W0.deckY}, ${at()}, ${splashes.length} plask${stuck === -1 ? '' : `, fastnade vid punkt ${stuck}`})`);
+  };
+  for (const bike of [false, true]) { trip('nordvästra rampen → sydöstra', 0, 1, bike); trip('sydöstra rampen → nordvästra', 1, 0, bike); }
   player.keys = new Set();
 }
 finish();

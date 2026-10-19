@@ -1,7 +1,7 @@
 import { buildBusStop } from './busstop.js';
 import {southBackdropParts} from './southbackdrop.js';
 import {buildWestBackdrop,buildEastBackdrop,buildNorthBackdrop,westTreeSpots,eastTreeSpots,northTreeSpots} from './sitebackdrop.js';
-import { buildRiverPark, parkDeckAt, parkTreeSpots, parkShrubSpots } from './riverpark.js';
+import { buildRiverPark, parkDeckAt, parkFillAt, parkRampFill, parkTreeSpots, parkShrubSpots } from './riverpark.js';
 import * as THREE from 'three';
 import { grassUV } from './grass.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -89,7 +89,8 @@ export function groundY(x, z) {
   for (const [x0, x1, z0, z1, y] of stairTreads) if (x >= x0 && x <= x1 && z > z0 && z <= z1) return y;
   for (const f of recessFloors) if (x > f.x0 && x < f.x1 && z > f.z0 && z < f.z1) return f.y;
   if (z <= Wst.stair.z1) return Math.max(terrainY(x, z), nwTread(x)); // the NW stair's treads over the verge
-  return terrainY(x, z);
+  const fill=parkFillAt(x,z); // #1337: the footbridge's earth ramps
+  return fill===null?terrainY(x, z):Math.max(terrainY(x, z),fill);
 }
 /** #1271: the ground UNDER a bridge deck (the cut the river footpath runs in); `groundY` returns the deck there. */
 export const groundBelowDeckY = (x, z) => terrainY(x, z);
@@ -1591,7 +1592,7 @@ export function* surroundingsParts({ grass, husL = null }) {
   };
   // the ground south of Hus L: the raised courtyard on the garage box and the park level around it (the
   // street side north of Hus L is world.js's ground); retaining walls, railings and the garage door
-  flat([grassUV(terrainGeometry())], grass, SEASON.snow.ground).name='site-terrain';
+  flat([grassUV(terrainGeometry()), grassUV(parkRampFill())], grass, SEASON.snow.ground).name='site-terrain';
   yield 0.05;
   const bw = boxWalls();
   const concrete = new THREE.MeshStandardMaterial({ color: 0xb9b4ab, roughness: 0.95, side: THREE.DoubleSide });

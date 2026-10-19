@@ -311,7 +311,7 @@ export function filletGeometry(f, lift, groundY) {
   return finish(pos);
 }
 
-function finish(pos) {
+export function finish(pos) {
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
   geo.setAttribute('uv', new THREE.Float32BufferAttribute(new Array((pos.length / 3) * 2).fill(0), 2));
