@@ -57,7 +57,7 @@ export function riverGround(x,z,base){
  return base+dy*(1-sm(u));}
 
 /** Two background bridges, merged by material, independent of the walking boundary. No new lights or render passes. */
-export function buildRiverBridges(){
+export function buildRiverBridges(approachGround=()=>B.deckY){
  const group=new THREE.Group();group.name='river-bridges';const parts={concrete:[],steel:[],asphalt:[],water:[]};
  const box=(kind,w,h,d,x,y,z)=>parts[kind].push(new THREE.BoxGeometry(w,h,d).translate(x,y,z));
  const beam=(kind,a,b,size)=>{const start=new THREE.Vector3(...a),end=new THREE.Vector3(...b),v=end.clone().sub(start),g=new THREE.BoxGeometry(size,v.length(),size);g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),v.normalize()));g.translate(...start.add(end).multiplyScalar(.5).toArray());parts[kind].push(g);};
@@ -87,7 +87,7 @@ export function buildRiverBridges(){
   for(const[k,v]of Object.entries(parts))for(let i=before[k];i<v.length;i++)v[i].applyMatrix4(matrix);
  }
  const gc=bridgeRecords[1],ends=[-1,1].map(s=>[gc.x+gc.dx*gc.len/2*s,gc.z+gc.dz*gc.len/2*s]);
- for(let i=0;i<2;i++){const[x,z]=ends[i],sign=i===0?-1:1;parts.asphalt.push(pathStrip({path:[[x,z],[x+.8,z+sign*B.approach],[20,z+sign*B.approach*1.6]],w:B.gc.width},w=>-w/2,w=>w/2,.025,()=>B.deckY));}
+ for(let i=0;i<2;i++){const[x,z]=ends[i],sign=i===0?-1:1;parts.asphalt.push(pathStrip({path:[[x,z],[x+.8,z+sign*B.approach],[20,z+sign*B.approach*1.6]],w:B.gc.width},w=>-w/2,w=>w/2,.025,approachGround));}
  parts.water.push(pathStrip({path:R.path,w:R.widths??R.width},w=>-w/2,w=>w/2,0,waterYAt));
  const mats={concrete:new THREE.MeshStandardMaterial({color:0xaaa79e,roughness:.95}),steel:new THREE.MeshStandardMaterial({color:0x575f5b,metalness:.45,roughness:.55}),asphalt:new THREE.MeshStandardMaterial({color:COLORS.asphalt,roughness:.85}),water:new THREE.MeshStandardMaterial({color:COLORS.water,roughness:.15,metalness:.2})};
  for(const[k,list]of Object.entries(parts)){const geo=mergeGeometries(list.map(g=>g.index?g.toNonIndexed():g));const mesh=new THREE.Mesh(geo,mats[k]);mesh.name=`bridges-${k}`;mesh.castShadow=k!=='water';mesh.receiveShadow=true;group.add(mesh);list.forEach(g=>g.dispose());}

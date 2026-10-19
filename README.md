@@ -396,3 +396,5 @@ Phone detail visibility (#1361): existing opaque wall rectangles, window infill,
 Browser fixture repair (#1372): the runner supplies isolated output directories and a local Worker to the statistics/rest-pose fixtures. Statistics installs the shared verbatim-main collaborators; the plain reciprocal Nerf body-hit fixture aligns its native peers to the actual held muzzle and uses a fixed standing look. Gameplay and special apartment/diagnostic modes are unchanged.
 
 Southern plateau (#1381): the existing terrain grid now draws through z460, with ten documented LM ground controls and consistently placed buildings, parking and paddock. Heights remain a relative model (not surveyed floors); the protected northern terrain and bridge geometry are preserved. Public transfer is tracked in kvarteret-lunden#98.
+
+Southern road bank (#1382): eleven LM ground controls and five separate cross-sections shape the southern road crest and both slopes; a bounded interpolated branch joins the plateau. Bridge deck heights remain explicit assumptions; the GC approach surface follows the same road/terrain sampler. Public transfer: kvarteret-lunden#99.

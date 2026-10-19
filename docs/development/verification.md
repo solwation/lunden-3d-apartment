@@ -1,3 +1,9 @@
+Southern road bank (#1382): `node --test tools/southbanktest.mjs tools/riverfalltest.mjs tools/southplateautest.mjs`,
+then the real `tools/farwalktest.cjs GAME`, `tools/riverparktest.html`, southern backdrop checks and
+desktop/phone `perfcount`. Inspect both bank sides and bridge approaches; check actual GC approach
+vertices against the road/terrain height. Retain the first smooth-ramp navigation failure; bridge
+heights remain assumptions. The unrelated global budget bugs#1383/#1387 stay visible.
+
 Southern plateau (#1381): `node --test tools/southplateautest.mjs`, `tools/southbackdroptest.html`,
 `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/farwalktest.cjs GAME`, and full `perfcount.html?lowmem&w=844&h=390&quality=0`.
 Inspect actual paddock→plateau and overview images. The backdrop test samples2154emitted parking heights

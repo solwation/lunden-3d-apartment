@@ -28,7 +28,7 @@ test('rendered water vertices follow the same continuous downstream level as the
  for(const[x,z]of R.path){const bed=groundBelowDeckY(x,z);near(bed,waterYAt(x,z)-.6);near(shoreYAt(x,z)-waterYAt(x,z),.7);assert(inWater(x,z,bed));}
 });
 
-test('the existing bridge meshes and mapped park paths are byte-for-byte unchanged from 387f802e',()=>{
+test('the default constant-deck bridge geometry and mapped park paths retain the pre-fall buffers',()=>{
  const expected={'bridges-concrete':'06066984e9d7a9be656fe3fe026ae8c839306b0a05d3a58bc56eb649f306d94d','bridges-steel':'2c5342549c68d7789aa6ff6bdcc44675a51bf8c5e94e6b9be6b610774912ba1f','bridges-asphalt':'fbeda52e629caecfadb6b5125d5f68c35981ee35798779ac5fba1af0968eee44'};
  for(const m of buildRiverBridges().children.filter(m=>m.name!=='bridges-water')){const h=createHash('sha256'),g=m.geometry;for(const k of Object.keys(g.attributes).sort())h.update(k).update(Buffer.from(g.attributes[k].array.buffer));if(g.index)h.update(Buffer.from(g.index.array.buffer));assert.equal(h.digest('hex'),expected[m.name]);}
  assert.equal(hash(JSON.stringify(SITE.riverPark.paths)),'2e682c6a3361bbdab008dafb210f8b24b8b5566f784932735b1aafb153173150');

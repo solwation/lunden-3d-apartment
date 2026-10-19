@@ -1,3 +1,4 @@
+import { southBankGround } from './southbank.js';
 import { buildBusStop } from './busstop.js';
 import {southBackdropParts} from './southbackdrop.js';
 import {buildWestBackdrop,buildEastBackdrop,buildNorthBackdrop,westTreeSpots,eastTreeSpots,northTreeSpots} from './sitebackdrop.js';
@@ -95,7 +96,8 @@ export function groundY(x, z) {
 /** #1271: the ground UNDER a bridge deck (the cut the river footpath runs in); `groundY` returns the deck there. */
 export const groundBelowDeckY = (x, z) => terrainY(x, z);
 /** The terrain itself (the grass / asphalt surface; groundY without the stairs' treads and the recesses' floors). */
-function terrainY(x,z) {
+function terrainY(x,z) { return southBankGround(x,z,plateauTerrainY); }
+function plateauTerrainY(x,z) {
   if(!legacyBuildingPads)legacyBuildingPads=makeBuildingPads(terrainRawLegacyY,260,false,[]);
   if(z<=SOUTH_PLATEAU.fade[0])return paddedTerrainY(x,z,terrainRawLegacyY,legacyBuildingPads);
   if(!buildingPads)buildingPads=makeBuildingPads();
@@ -1655,7 +1657,7 @@ export function* surroundingsParts({ grass, husL = null }) {
     ? pathStrip(r, (w) => w / 2, (w) => w / 2 + k.w, 0.008, roadGround, pavementClip(r), undefined, vehicleTrim()) : pathStrip(r, (w) => -w / 2 - k.w, (w) => -w / 2, 0.008, roadGround, pavementClip(r), undefined, vehicleTrim())));
   flat([...[...S.paving, ...S.basementPaving].map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.008)), ...walks], COLORS.paving, SEASON.snow.paving);
   yield 0.15;
-  group.add(buildRiverBridges());
+  group.add(buildRiverBridges(roadGround));
   yield 0.2;
   group.add(buildRiverPark(renderedTerrainY,renderedTerrainY));
   group.add(buildBusStop(renderedTerrainY)); // #1301

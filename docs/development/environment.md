@@ -423,3 +423,28 @@ this pre-existing desktop triangle bug is #1387. Its global1,000,000limit is unc
 The final navigation rerun passes all53checks; the emitted parking/backdrop checks and six native
 source/interpolation tests pass. Three new personal clubhouse reports were imported separately while
 this work ran; they are not part of the terrain source changes.
+
+## Southern road embankment (#1382)
+
+`SOUTH_BANK` holds the11road controls and five10-point cross-sections from the same77-point LM export.
+`src/southbank.js` interpolates the longitudinal crest and separate west/east section shapes; a4m half-width
+crest and15m outer feather are interpolation assumptions. The original bridge deck datum−3 remains
+a guess: ground samples do not measure deck elevation. A linear147..152tie-in preserves both existing
+decks and their undersides, piers and rails; the first smooth tie-in reached0.78gradient and was rejected
+as unwalkable. GC approach asphalt now samples the actual road/terrain support instead of a constant−3.
+The crest continues along mapped road30633546 toward the plateau, with an assumed narrowing to6m and
+fade262..286. LM point registration stays approximately3–5m; no floor/bathymetry claim. All ten plateau
+controls, northern terrain, water, timber bridge and its lamp support stay outside this correction.
+
+`tools/southbanktest.mjs` checks source values, continuous walkable crest, separate low banks, bounded
+fades and unchanged deck/concrete/steel/water. `tools/farwalktest.html` adds four actual Player routes
+for both directions over the road/GC southern connection. Public transfer has its own issue#99, after#98.
+
+Final verification: native16/16, actual navigation57/57 (103.2s), backdrop69/69, river park after
+local-server restart ALL PASS. Both bank sides, deck approach and overhead images were opened;
+276actual GC-approach vertices differ by at most4.41µm from the road/terrain sampler plus25mm.
+Terrain topology remains89490triangles; southern component33586≤40252. Desktop quality0 still
+fails the known global triangle budget#1387:494draws/1042209triangles/~261MiB. Phone landscape
+still fails the known call budget#1383:445draws/932900triangles/~97MiB. Both full checks exit1;
+no global budgets changed. These are browser measurements, not FPS or physical-phone stability.
+House A/B/C/L terrain lies north of the correction start147; their actual geometry is unchanged.
