@@ -1715,8 +1715,8 @@ function use(thing) {
     if (!playroom.billiards.shoot(camera)) badge(playroom.billiards.blockReason || 'Vänta tills bollarna ligger still', false);
     return;
   }
-  if (thing.kind === 'playroomBilliardsMode') { badge(playroom.billiards.toggleMode(), false); return; } // #1354: the board at the table
-  if (thing.kind === 'playroomBilliardsRack') { playroom.billiards.newRack(); badge('Nya bollar uppställda', false); return; }
+  if (thing.kind === 'playroomBilliardsMode') { const text = playroom.billiards.toggleMode(); if (text) badge(text, false); return; } // #1354: the board at the table
+  if (thing.kind === 'playroomBilliardsRack') { const text = playroom.billiards.requestRack(); if (text) badge(text, false); return; }
   if (thing.kind === 'ghost' && weaponKey()) { // focus may predate a weapon change (#872)
     const held = heldItem();
     if (!held && suit.worn) suit.shoot();
@@ -2693,6 +2693,8 @@ function greetPlayer(g) {
 ghosts.onGreet = (m, g, other) => greet.say({ head: g.head, s: 1 }, (m.k === KISS.phrase ? KISS.line : GHOSTS.hello[m.k])?.replace('{n}', other ? other.name : (leaderboard.name || 'Anonym')) ?? 'Hej!', { pitch: 1.1, rate: 1.05, voice: 1 }, undefined, g.avatar);
 // someone else comes into / leaves the players' room (#1333, src/joinnotice.js): a short notice at the top, no sound
 ghosts.onNotice = (text) => badge(text, false);
+playroom.billiards.net = { ready: () => ghosts.connected, send: (m) => ghosts.pool(m), id: () => ghosts.me }; // #1355: the shared billiard table
+ghosts.onPool = (m) => playroom.billiards.onNet(m);
 // toasting (#1222): "Skåla" with a glass in the hand (right click / 🥂): a clink, the glass raised (things.js), a line and one small
 // message; a player near us who holds a glass hears it and toasts back once (flagged, so no ping-pong); Olof answers from his car.
 toastHandler.fn = (glass, back = false) => {

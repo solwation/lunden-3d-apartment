@@ -163,7 +163,7 @@ export class Playroom {
   get arrival() { return { x: R.x, z: Z1 - R.standOff, yaw: 0 }; }
 
   /** Drawn (and its exit pickable live) only while inside. */
-  setInside(on) { this.inside = on; this.object.visible = on; }
+  setInside(on) { this.inside = on; this.billiards.active = on; this.object.visible = on; }
 
   /** Where you stand when you come out: just north of the playhouse's door, facing away from it. */
   static get outsideSpot() {

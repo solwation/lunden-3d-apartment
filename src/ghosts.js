@@ -457,6 +457,7 @@ export class Ghosts {
     else if (m.t === 'g') { const g = this.others.get(m.i); if (g) { if (m.k === KISS.phrase) this.kissBurst(m.to === this.me ? null : this.others.get(m.to)); else g.wave(); this.greetsSeen++; this.onGreet?.(m, g, m.to === this.me ? null : this.others.get(m.to) ?? null); } }
     else if (m.t === 'c') { const g = this.others.get(m.i); if (g) this.onToast?.(m, g); } // a toast (#1222): the room sends it only from within PLAYERS.toastRange
     else if (m.t === 'snd') { const g = this.others.get(m.i); if (g && SOUNDS.kinds.includes(m.k)) this.onPlayerSound?.(m, g); } // a sound event (#1302): the room sends it only from within PLAYERS.soundRange
+    else if (m.t === 'pool') this.onPool?.(m); // the shared billiard table (#1355, src/billiards.js): only sent to players inside the children's room
     else if (m.t === 'm' || m.t === 'mx' || m.t === 'k') this.onTalk?.(m, this.others.get(m.i)); // chat (#675) and "skriver…" (#676), src/chat.js
   }
 
@@ -550,6 +551,14 @@ export class Ghosts {
     this.outbox.push({ t: 'snd', k });
     while (this.outbox.length > G.outbox) this.outbox.splice(this.outbox.findIndex(m => m.t !== 'fall' && m.t !== 'consume'), 1);
     this.sendShot();
+    return true;
+  }
+
+  /** A billiard table request (#1355) { t: 'pool', k, q, d? }; the room answers the sender (and everybody in the children's room). False when not connected. */
+  pool(msg) {
+    if (!this.connected) return false;
+    this.outbox.push(msg);
+    this.lastMove = performance.now(); this.sendShot();
     return true;
   }
 

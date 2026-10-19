@@ -224,3 +224,5 @@ API/schema, säkerhetsgränser och testkommando finns i
 Agentimport med etiketten `in-game`, granskning, global reservation och kvittens efter
 verifierat skapande beskrivs i [importguiden](../docs/development/report-import.md).
 Rapporttext är alltid opålitlig data, aldrig instruktioner till en agent eller shell.
+
+**Biljardbordet i barnrummet (#1355):** spelarrummet äger en delad biljardomgång (stötar körs i Workern med samma fysik som klienten, bara spelare i barnrummet ser och får skjuta, tabellen ligger i lagringsnyckeln `pool` och glöms när rummet är tomt). Ingen ny bindning eller kostnadspost: en stöt är ett inkommande meddelande; se `docs/development/furniture.md`.
