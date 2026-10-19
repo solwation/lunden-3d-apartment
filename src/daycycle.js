@@ -73,7 +73,7 @@ const skyVert = /* glsl */`
 
 const skyFrag = /* glsl */`
   uniform vec3 uSun, uMoon, uZenith, uHorizon, uGlow;
-  uniform float uNight, uGlowAmt, uOvercast, uFlash, uWhite;
+  uniform float uNight, uGlowAmt, uOvercast, uFlash, uWhite, uAbove;
   uniform vec3 uCloudCol;
   uniform sampler2D uClouds;
   varying vec3 vDir;
@@ -99,7 +99,7 @@ const skyFrag = /* glsl */`
     float c = max(texture2D(uClouds, uv).a, uOvercast * (0.85 + 0.15 * texture2D(uClouds, uv * vec2(3.0, 2.0)).a)) * smoothstep(0.0, 0.08, d.y);
     vec3 cloud = mix(vec3(0.95), vec3(0.16, 0.18, 0.24), uNight) + uGlow * uGlowAmt * 0.35;
     cloud = mix(cloud, mix(vec3(0.5, 0.53, 0.57), vec3(0.08, 0.09, 0.11), uNight), uOvercast * 0.8); // rain clouds (#248)
-    col = mix(col, cloud, c * 0.85);
+    col = mix(col, cloud, c * 0.85 * (1.0 - uAbove)); // #1368: these clouds are below us above the deck
     col += vec3(0.75, 0.78, 0.95) * uFlash; // lightning
     col = mix(col, uCloudCol, uWhite); // flying through the cloud deck (#1251): all one colour
     // below the horizon: fade into the horizon colour (fog takes over)
@@ -109,7 +109,7 @@ const skyFrag = /* glsl */`
   }`;
 
 // The cloud deck (#1251): one flat quad at the layer's base / top that follows the eye; procedural noise (no texture), seen from
-// below as a grey ceiling, from above as a white sunlit sea. Its coverage follows the weather's cloudiness.
+// below as a grey ceiling, from above as a white sunlit sea. Flight approach forms a deck even in fair weather (#1368).
 const deckVert = /* glsl */`
   varying vec3 vW;
   void main() {
@@ -118,8 +118,8 @@ const deckVert = /* glsl */`
     gl_Position = projectionMatrix * viewMatrix * w;
   }`;
 const deckFrag = /* glsl */`
-  uniform float uCover, uDay, uOver, uAlpha, uRadius, uScale, uTime, uGlowAmt;
-  uniform vec3 uEye, uGlow;
+  uniform float uCover, uDay, uOver, uAlpha, uRadius, uScale, uTime, uGlowAmt, uAbove;
+  uniform vec3 uEye, uGlow, uHorizon;
   varying vec3 vW;
   float h2(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
   float vn(vec2 p) {
@@ -132,13 +132,16 @@ const deckFrag = /* glsl */`
     float thr = 0.8 - uCover * 0.9;
     float d = smoothstep(thr, thr + 0.2, n);
     float dist = distance(vW.xz, uEye.xz);
-    float a = d * uAlpha * (1.0 - smoothstep(uRadius * 0.4, uRadius, dist));
+    // #1368: retain noise in the colour, but seal holes and the faded rim from above.
+    float edge = 1.0 - smoothstep(uRadius * 0.4, uRadius, dist);
+    float a = mix(d * edge, 1.0, uAbove) * uAlpha;
     float lit = 0.12 + 0.88 * uDay, k = smoothstep(thr, thr + 0.5, n);
     float sh = smoothstep(0.4, 0.62, n);
     vec3 top = mix(vec3(0.66, 0.71, 0.8), vec3(1.0, 1.0, 0.98), sh) * lit;
     vec3 under = mix(vec3(0.62, 0.65, 0.7), vec3(0.42, 0.45, 0.5), k) * (0.2 + 0.8 * uDay) * (1.0 - 0.25 * uOver);
     vec3 col = uEye.y < vW.y ? under : top;
     col += uGlow * uGlowAmt * 0.3;
+    col = mix(col, uHorizon, uAbove * (1.0 - edge)); // atmospheric colour fade remains opaque
     gl_FragColor = vec4(col, a);
     #include <colorspace_fragment>
   }`;
@@ -158,14 +161,15 @@ export class DayCycle {
     this.uniforms = {
       uSun: { value: new THREE.Vector3() }, uMoon: { value: new THREE.Vector3() },
       uZenith: { value: new THREE.Color() }, uHorizon: { value: new THREE.Color() }, uGlow: { value: GLOW.clone() },
-      uNight: { value: 0 }, uGlowAmt: { value: 0 }, uClouds: { value: clouds }, uOvercast: { value: 0 }, uFlash: { value: 0 }, uWhite: { value: 0 }, uCloudCol: { value: new THREE.Color(0.9, 0.92, 0.95) },
+      uNight: { value: 0 }, uGlowAmt: { value: 0 }, uClouds: { value: clouds }, uOvercast: { value: 0 }, uFlash: { value: 0 }, uWhite: { value: 0 }, uAbove: { value: 0 }, uCloudCol: { value: new THREE.Color(0.9, 0.92, 0.95) },
     };
     this.deckUniforms = {
       uCover: { value: 0 }, uDay: { value: 1 }, uOver: { value: 0 }, uAlpha: { value: 1 }, uRadius: { value: SKYLAYER.radius }, uScale: { value: SKYLAYER.scale },
       uTime: { value: 0 }, uEye: { value: new THREE.Vector3() }, uGlow: { value: GLOW.clone() }, uGlowAmt: { value: 0 },
+      uAbove: this.uniforms.uAbove, uHorizon: this.uniforms.uHorizon,
     };
-    this.deck = new THREE.Mesh(new THREE.CircleGeometry(SKYLAYER.radius, 40).rotateX(-Math.PI / 2), new THREE.ShaderMaterial({
-      uniforms: this.deckUniforms, vertexShader: deckVert, fragmentShader: deckFrag, transparent: true, depthWrite: false, side: THREE.DoubleSide, fog: false,
+    this.deck = new THREE.Mesh(new THREE.PlaneGeometry(SKYLAYER.radius * 2, SKYLAYER.radius * 2).rotateX(-Math.PI / 2), new THREE.ShaderMaterial({
+      uniforms: this.deckUniforms, vertexShader: deckVert, fragmentShader: deckFrag, transparent: true, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true, fog: false,
     }));
     this.deck.frustumCulled = false; this.deck.visible = false; this.deck.raycast = () => {}; this.deck.renderOrder = 5;
     scene.add(this.deck);
@@ -234,8 +238,10 @@ export class DayCycle {
     // weather (#248): grey under rain clouds, the fog closer, lightning lights it all up for a moment
     // the cloud deck (#1251): above it the sky is clear and the sun strong whatever the weather below; inside it the view whites out
     const L = SKYLAYER, cy = this.camera.position.y;
-    const cover = smooth(L.cloudy, L.full, this.overcast);
+    // The high-flight experience has a cloud sea in every weather; ground-level weather is untouched.
+    const cover = Math.max(smooth(L.cloudy, L.full, this.overcast), smooth(L.base - L.approach, L.base, cy));
     const above = this.above = smooth(L.top, L.top + L.fade, cy);
+    u.uAbove.value = above;
     const inside = smooth(L.base - 15, L.base + 15, cy) * (1 - smooth(L.top - 15, L.top + 15, cy)) * cover;
     const oc = this.overcast * (1 - above), flash = this.flash * (1 - above);
     u.uOvercast.value = oc; u.uFlash.value = flash;
@@ -254,6 +260,9 @@ export class DayCycle {
     this.deck.visible = cover > 0.01 && (up || cy > L.base - L.approach) && inside < 0.999;
     if (this.deck.visible) {
       this.deck.position.set(this.camera.position.x, up ? L.top : L.base, this.camera.position.z);
+      // Above, cover every possible ground fragment within the camera far plane, without a transparent outer ring.
+      D.uRadius.value = up ? Math.max(L.radius, this.camera.far) : L.radius;
+      this.deck.scale.setScalar(D.uRadius.value / L.radius);
       D.uEye.value.copy(this.camera.position);
       D.uCover.value = cover; D.uDay.value = day; D.uOver.value = this.overcast; D.uGlowAmt.value = u.uGlowAmt.value;
       D.uAlpha.value = (up ? 1 : 1 - smooth(0, L.approach, L.base - cy)) * (1 - inside);

@@ -20,6 +20,8 @@ Bilen stannar för spelare i sin körväg även i svängar och vid backning.
 
 Promenadstråken i parken och längs Höje å har lampor med varma ljusfläckar på marken efter skymningen.
 
+Med jetpacken kan du stiga genom ett molnlager och upp över ett tätt molnhav. Ovanför ligger marken dold under molnen även när vädret på marken är klart.
+
 På vintern står båda hästarna synliga inne i hästhagens skjul, med halm på golvet, girlang och en varm ljusslinga. När snön försvinner försvinner pyntet och hästarna går ut i hagen igen.
 
 Spelare som är kortare än 160 cm kan gå in i lekstugans hemliga barnrum. Dörren inifrån går alltid att använda för att komma ut. Där finns ett barnstort biljardbord: sikta över bordet och tryck E för att stöta, och vänta tills bollarna stannat inför nästa stöt.

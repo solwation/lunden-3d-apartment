@@ -3563,12 +3563,14 @@ export function jetThin(h) {
   return { climb: 1 + (T.climb - 1) * e, speed: 1 + (T.speed - 1) * e, gravity: 1 + (T.gravity - 1) * e };
 }
 
-// The cloud deck (#1251, src/daycycle.js `deck`): in cloudy weather (`DayCycle.overcast`) one flat cloud layer between `base` and
+// The cloud deck (#1251/#1368, src/daycycle.js `deck`): one flat cloud layer between `base` and
 // `top` m above the ground (all *guess*: low clouds, a few hundred metres up, nothing measured). Flying up into it whites the
 // view out (fog `near`/`far` m inside it); above `top` + `fade` m the sky is clear and the sun strong whatever the weather
 // below (the lighting follows `above`, 0…1, eased over `fade` m). The deck is a single quad: it appears over the last `approach`
-// m below `base` (from the ground the sky shader's clouds already cover it), `radius` m round the eye (inside the camera far).
-// `cloudy` = the overcast from which a deck forms (full at `full`). No textures: the density is procedural noise in the shader.
+// m below `base` (from the ground the sky shader's clouds already cover it), initially `radius` m round the eye; above, it spans the camera far plane.
+// `cloudy` = ground weather's overcast from which a deck forms (full at `full`). Approaching by flight also forms it in fair
+// weather; clearly above, the opaque sea covers the camera far plane and overhead sky clouds vanish. Ground weather is unchanged.
+// No textures: the density is procedural noise in the shader.
 export const SKYLAYER = { base: 150, top: 190, fade: 30, approach: 70, radius: 900, near: 1, far: 28, cloudy: 0.12, full: 0.6, scale: 0.006 };
 
 // Birds (#1252, src/birds.js): a few gull-like silhouettes circling over the area, one instanced draw call, no lights, no textures,
