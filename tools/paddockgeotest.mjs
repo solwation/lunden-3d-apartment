@@ -51,3 +51,19 @@ test('the shade trees (#1316) stand well inside the fence, far from the gate and
     assert.ok(s >= 1 && s <= 1.5);
   });
 });
+
+test('shelter places and the rain watch (#1316)', async () => {
+  const { shelterSpots, RainWatch, snowCovered } = await import('../src/paddockshelter.js');
+  const spots = shelterSpots({ x: -130, z: 240, yaw: 0 }), R = PADDOCK.rain;
+  assert.equal(spots.filter((s) => s.kind === 'shed').length, 2);
+  assert.equal(spots.filter((s) => s.kind === 'tree').length, PADDOCK.trees.length * R.treeSpots);
+  for (const s of spots.filter((q) => q.kind === 'tree')) {
+    const t = PADDOCK.trees.reduce((b, q) => (Math.hypot(q[0] - s.x, q[1] - s.z) < Math.hypot(b[0] - s.x, b[1] - s.z) ? q : b));
+    const d = Math.hypot(t[0] - s.x, t[1] - s.z); assert.ok(d > 2 && d < 3.5 * t[2], 'under the crown, clear of the trunk');
+    assert.ok(g.insideFence(s.x, s.z, 3), 'inside the fence');
+  }
+  const w = new RainWatch();
+  assert.equal(w.update(1, R.on - 0.01), 0); assert.equal(w.update(1, R.on), 1); assert.ok(w.wanted);
+  assert.equal(w.update(R.dry - 1, 0), 0); assert.equal(w.update(0.5, 0.5), 0); assert.equal(w.update(R.dry - 1, 0), 0, 'a shower resets the dry timer'); assert.equal(w.update(2, 0), -1); assert.ok(!w.wanted);
+  assert.ok(snowCovered(1) && snowCovered(12) && !snowCovered(7));
+});

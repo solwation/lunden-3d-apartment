@@ -2866,7 +2866,7 @@ function step(dt) {
   const moved = Math.hypot(player.pos.x - lastWeatherPos.x, player.pos.z - lastWeatherPos.z); // on foot (not a jump / spawn)
   lastWeatherPos.copy(player.pos);
   weather.update(dt, !player.outdoors || player.below || player.inCore, moved < 1 ? moved : 0, car.occupied ? car.openness : null); // (the garage: dry and muffled, #357) // after the day: it sets the overcast / flash the next day.update applies (#248)
-  paddock?.update(dt, player.below); // #1280: the ponies move only while the paddock is within view distance
+  paddock?.update(dt, player.below, weather.kind === 'snow' ? 0 : weather.rain); // #1280: the ponies move only while the paddock is within view distance
   birds?.update(dt, day.above > 0.5 ? 0 : weather.rain, player.below); // #1252: after the weather's rain; none at night, in rain or in the whiteout
   flare?.update(dt); // #1283: lens flare towards the sun
   plantWind.update(dt);

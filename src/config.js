@@ -3590,8 +3590,12 @@ export const PADDOCK = {
   trough: { w: 1.7, d: 0.5, h: 0.42 }, shelter: { w: 4.2, d: 2.6, h: 2.3 },
   // #1316 (all *guess*): big shade trees in the meadow, [x, z, scale] like `SITE.bigTrees` (surroundings.js builds them as kind 'big': the shared crown/trunk batches,
   // so no extra draw calls; their trunks block through `treeFeet` like every other tree); at least 10 m inside the fence and 25 m from the gate (paddockgeotest checks).
-  // A crown shelters the ground under it out to `crown` x scale m from the trunk (the ponies stand at that radius, clear of the trunk's `trunkClear` m).
-  trees: [[-170, 247, 1.2], [-215, 270, 1.3], [-235, 293, 1.15]], crown: 3.2, trunkClear: 1.4,
+  trees: [[-170, 247, 1.2], [-215, 270, 1.3], [-235, 293, 1.15]],
+  // Weather (#1316, src/paddockshelter.js; all *guess*): rain (the weather's strength 0..1, not snow) of at least `on` sends ponies to a sheltered spot, until it has been under `off`
+  // for `dry` s; each rain a pony goes with probability `chance` (at least one does, the others may stand out in it). A sheltered spot is under the shelter's roof (two, at +-`shedX` m
+  // across it) or on a ring of `ring` x tree scale m round a tree (under the crown, clear of the trunk; `treeSpots` of them each). In the snow months (SEASON.snowMonths: the ground
+  // is white) the ponies are not in the paddock: they walk to the shelter and are gone ("in the stable"), and come out of it again when the snow is gone.
+  rain: { on: 0.12, off: 0.03, dry: 20, chance: 0.8, ring: 2.3, treeSpots: 4, shedX: 0.9 },
   // the stile beside the gate (#1295, *guess*): `w` m wide, `minSpan` m the fence span it needs, three risers of `rise` m (under PLAYER.stepUp 0.45, so the ordinary
   // stepping walks it) over two treads of `tread` m either side of a platform that is 2 × `platform` m long; `reach` m from the fence line to the walls' ends
   stile: { w: 1.0, minSpan: 1.9, rise: 0.38, tread: 0.3, platform: 0.25, reach: 0.95, post: 0.95 },

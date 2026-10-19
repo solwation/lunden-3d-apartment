@@ -6,6 +6,7 @@ import { riverAt } from './riverbridge.js';
 import { sfx } from './audio.js';
 import { Hearts } from './pingping.js';
 import { registerSeasonal } from './seasons.js';
+import { shelterSpots, snowCovered, RainWatch } from './paddockshelter.js';
 
 // #1280: the pony paddock on the kidney-shaped meadow south of the timber footbridge: a merged post-and-rail fence with a closed gate, a
 // water trough and a three-sided shelter (ONE mesh, vertex colours, no textures), two C ponies (Zoey, white; Princess, brown) as ONE
@@ -332,6 +333,7 @@ export class Paddock {
     this.onPet = null; // set by main.js: scores a pat (#1320)
     this.matrix = new THREE.Matrix4(); this.quat = new THREE.Quaternion(); this.pos = new THREE.Vector3(); this.scl = new THREE.Vector3(); this.up = new THREE.Vector3(0, 1, 0);
     this.initGrass(scene, ground);
+    this.initShelter();
     this.write();
   }
 
@@ -379,8 +381,60 @@ export class Paddock {
   }
   uploadGrass() { const g = this.gm, a = this.maskTex.image.data; for (let i = 0; i < g.v.length; i++) a[i] = Math.round(g.v[i] * 255); this.maskTex.needsUpdate = true; g.dirty = false; }
 
+  /** #1316: the sheltered places (paddockshelter.js) and the rain / snow state. */
+  initShelter() {
+    this.shelterPlaces = shelterSpots(this.spots.shelter, (x, z) => insideFence(x, z, P.keep - 0.8));
+    this.sheds = this.shelterPlaces.filter((q) => q.kind === 'shed');
+    this.rainWatch = new RainWatch(); this.rainy = false; this.winter = false; this.winterSeen = false;
+    registerSeasonal((month) => { this.winter = snowCovered(month); });
+    for (const p of this.ponies) { p.spot = null; p.seek = false; p.gone = false; }
+  }
+  stable(i) { return this.sheds.length ? this.sheds[i % this.sheds.length] : null; }
+  /** Into the stable (snow): gone from the paddock, standing by the shelter's door for when it melts. */
+  vanish(p, i) { const sp = this.stable(i); if (sp) { p.x = sp.x; p.z = sp.z; p.y = this.ground(p.x, p.z); } p.gone = true; p.state = 'idle'; p.left = 1; p.goal = null; p.spot = null; }
+  appear(p, i) { const sp = this.stable(i); if (sp) { p.x = sp.x; p.z = sp.z; p.y = this.ground(p.x, p.z); } p.gone = false; p.state = 'idle'; p.left = 1 + i * 4; p.goal = null; p.spot = null; }
+  /** Send a pony (not one being patted) to decide again in `after` s. */
+  nudge(p, after) { if (p.state === 'pet') return; p.state = 'idle'; p.left = after; p.goal = null; p.eat = false; }
+  /** Per frame: the rain watch and the snow months. `show` false = nobody can see the paddock, so things change at once. */
+  shelterTick(dt, rain, show) {
+    const ev = this.rainWatch.update(dt, rain);
+    this.rainy = this.rainWatch.wanted;
+    if (ev > 0) { // a shower begins: each pony goes under cover with probability `chance` (at least one does)
+      this.ponies.forEach((p) => { p.seek = p.rnd() < P.rain.chance; });
+      if (!this.ponies.some((p) => p.seek)) this.ponies[0].seek = true;
+      this.ponies.forEach((p, i) => { if (!p.gone) this.nudge(p, 0.3 + i * 1.5); });
+    } else if (ev < 0) this.ponies.forEach((p, i) => { if (p.spot) { p.spot = null; this.nudge(p, 0.5 + i * 2.5); } }); // dry again: out into the paddock
+    if (this.winter !== this.winterSeen) {
+      this.winterSeen = this.winter;
+      this.ponies.forEach((p, i) => { if (!show) { if (this.winter) this.vanish(p, i); else if (p.gone) this.appear(p, i); } else if (this.winter) this.nudge(p, 0.3 + i * 3); else if (p.gone) this.appear(p, i); });
+    }
+  }
+  /** Called first by `decide`: true when the rain / snow has decided what pony `p` does next. */
+  shelterDecide(p, i) {
+    const r = p.rnd;
+    if (this.winter) { // walk to the shelter and go in
+      const sp = this.stable(i);
+      if (!sp || Math.hypot(sp.x - p.x, sp.z - p.z) < 1.3) { this.vanish(p, i); return true; }
+      const t = this.hop(p, sp.x, sp.z);
+      if (!t) { this.vanish(p, i); return true; }
+      p.goal = null; p.target = t; p.state = 'walk'; p.eat = false; return true;
+    }
+    if (!this.rainy || !p.seek) { p.spot = null; return false; }
+    const taken = this.ponies.filter((q) => q !== p && q.spot).map((q) => q.spot);
+    if (!p.spot || taken.includes(p.spot)) { // the best free place: near, with some choice (a tree, or the roof)
+      let best = null, bs = Infinity;
+      for (const sp of this.shelterPlaces) { if (taken.some((t) => Math.hypot(t.x - sp.x, t.z - sp.z) < P.pony.gap)) continue; const sc = Math.hypot(sp.x - p.x, sp.z - p.z) + r() * 25; if (sc < bs) { bs = sc; best = sp; } }
+      p.spot = best;
+    }
+    if (!p.spot) return false;
+    if (Math.hypot(p.spot.x - p.x, p.spot.z - p.z) < 0.9) { p.state = 'idle'; p.left = 3 + r() * 4; p.goal = null; return true; } // standing in the dry
+    const t = this.hop(p, p.spot.x, p.spot.z);
+    if (!t) return false;
+    p.goal = null; p.target = t; p.state = 'walk'; p.eat = false; return true;
+  }
+
   /** What E can aim at: the ponies' pick boxes while the paddock is within view distance. */
-  targets() { return this.mesh.visible ? this.picks : []; }
+  targets() { return this.mesh.visible ? this.picks.filter((_, i) => !this.ponies[i].gone) : []; }
   /** Pat pony `i`: it stops, turns its head to the hand, flicks its ears, lowers its muzzle and nickers (a short sound), its tail swishes. */
   pet(i) {
     const p = this.ponies[i]; if (!p) return false;
@@ -417,6 +471,7 @@ export class Paddock {
   }
   /** Pick what a pony does next: walk to the nearest place to the visitor (when near), else graze / stand / wander. */
   decide(p, i) {
+    if (this.shelterDecide(p, i)) return; // #1316: rain / snow
     const c = this.camera.position, R = P.pony, r = p.rnd, d = Math.hypot(c.x - p.x, c.z - p.z), curious = d < P.curious && this.waypoints.length;
     if (curious) {
       const taken = this.ponies.filter((q, j) => j !== i && q.goal).map((q) => q.goal);
@@ -495,7 +550,7 @@ export class Paddock {
   write() {
     const a = this.anim.array, b = this.anim2.array, e = this.mesh.instanceMatrix;
     this.ponies.forEach((p, i) => {
-      this.quat.setFromAxisAngle(this.up, p.yaw); this.pos.set(p.x, p.y, p.z); this.scl.setScalar(p.scale);
+      this.quat.setFromAxisAngle(this.up, p.yaw); this.pos.set(p.x, p.y, p.z); this.scl.setScalar(p.gone ? 0 : p.scale); // (a pony in the stable, #1316, has no size)
       this.mesh.setMatrixAt(i, this.matrix.compose(this.pos, this.quat, this.scl));
       a[i * 4] = p.phase; a[i * 4 + 1] = p.amp; a[i * 4 + 2] = p.neck; a[i * 4 + 3] = p.tail;
       b[i * 4] = p.ear; b[i * 4 + 1] = p.headYaw;
@@ -505,13 +560,14 @@ export class Paddock {
     e.needsUpdate = true; this.anim.needsUpdate = true; this.anim2.needsUpdate = true;
   }
   /** Per frame: nothing is simulated or drawn beyond PADDOCK.viewDist m from the paddock, or underground. No allocations. */
-  update(dt, hidden = false) {
+  update(dt, hidden = false, rain = 0) {
     for (const h of this.hearts) h.update(dt);
     const c = this.camera.position, show = !hidden && Math.hypot(c.x - centre.x, c.z - centre.z) < P.viewDist;
-    this.mesh.visible = show; this.grass.visible = show && !this.snowy;
+    this.shelterTick(dt, rain, show); // #1316
+    this.mesh.visible = show && this.ponies.some((q) => !q.gone); this.grass.visible = show && !this.snowy;
     if (!show) return;
     dt = Math.min(dt, 0.1); this.time += dt;
-    this.ponies.forEach((p, i) => this.stepPony(p, i, dt));
+    this.ponies.forEach((p, i) => { if (!p.gone) this.stepPony(p, i, dt); });
     const g = this.gm; g.acc += dt; g.t += dt;
     if (g.acc >= 1) { const up = g.acc * P.grass.regrow; g.acc = 0; for (let k = 0; k < g.v.length; k++) if (g.v[k] < 1) g.v[k] = Math.min(1, g.v[k] + up); g.dirty = true; } // slow regrowth
     if (g.dirty && g.t >= P.grass.period) { g.t = 0; this.uploadGrass(); }
