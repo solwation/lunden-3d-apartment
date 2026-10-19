@@ -5668,7 +5668,7 @@ export function avatarBody(look) {
 // z -200..250) but inside the Worker's ±5000 m pose limit, and further from the playhouse than GHOSTS.far (900 m), so the
 // ordinary pose stream already hides a player who goes in and shows him again inside to the others there. All values are
 // our own choices (*guess*): the room is much bigger than the playhouse's 2.1 × 1.9 m shell on purpose.
-export const PLAYROOM = { maxCm: 160, x: -1500, z: -1500, w: 6.4, d: 5.2, ceiling: 2.4, // centre (m), size (x, z) and height (m)
+export const PLAYROOM = { maxCm: 160, x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // centre (m), size (x, z) and height (m)
   door: { w: 0.8, h: 1.7 }, // #1344: the way out in the south wall, above the under-160 cm entrants (guess)
   standOff: 0.75, // m from the door wall where you arrive inside
   outside: 0.95, // m north of the playhouse's door wall where you stand when you come out
@@ -5679,13 +5679,17 @@ export const PLAYROOM = { maxCm: 160, x: -1500, z: -1500, w: 6.4, d: 5.2, ceilin
   billiards: { x: 0, z: 0, length: 1.8, width: 0.9, height: 0.58, rail: 0.09, railH: 0.06, leg: 0.08,
     ballR: 0.024, pocketR: 0.052, cueLength: 1, strokeSpeed: 2.2, strokeSeconds: 0.24, cueTravel: 0.09,
     friction: 0.45, bounce: 0.94, cushionBounce: 0.82, stopSpeed: 0.012, maxStep: 1 / 180 },
-  colors: { floor: 0xb98a5a, wall: 0xf1d9a8, ceiling: 0xf7f2e8, trim: 0xffffff, door: 0x9c2f24 },
+  colors: { floor: 0x704a35, wall: 0x28425b, ceiling: 0xe0e7ef, trim: 0xdaa45b, door: 0x9c2f24 },
+  // #1374: a fantasy clubhouse, not measured building architecture; every size/colour is a guess.
+  clubhouse: { side: 3, front: 1.6, wall: 0.12, passage: 1.5, passageH: 2.1,
+    welcome: { x: 0, z: 2.3, y: 2.52, w: 3.2, h: 0.3 }, label: { y: 2.25, w: 1.8, h: 0.25, offset: 0.012 },
+    atlas: [512,256], swatch: 8, lightInk: '#fff6dc', font: 48, signBackground: '#17263b', signInk: '#78eee2' },
   // #1327: the furniture, child-sized for 140-159 cm players (all our own choices, *guess*); local metres from the room's centre (x east, z south, the door
-  // at z +2.6). Sofa in the north-west corner facing a TV on the west wall (clear of the billiard table in the middle, `billiards` above), a gaming desk with
-  // a stool on the east wall south of the table's end, a disco ball over the north half.
-  furniture: { seatHeight: 0.36, sofa: { x: -1.58, z: -1.35, w: 1.5, d: 0.75 }, tv: { w: 1.2, h: 0.68, y: 0.52 }, stool: { x: 2.35, z: 1.0, seat: 0.38 },
-    discoSwitch: { x: 0.9, y: 1.05, z: 2.6 }, // #1365: the wall switch east of the door (south wall, z +2.6; height reachable for children, guess)
-    ball: { x: 0, z: -1.5, y: 1.95, r: 0.17, spin: 0.5, spots: 26, spotSpin: 0.35 }, // the disco ball hangs 0.45 m under the ceiling, the light spots sweep round it
+  // at z +5.2). Sofa/TV in BIO west of the billiards room; desk/stool in SPEL to the east. The disco stays in BILJARD.
+  // desk.x/z offsets retain the old desk geometry and interaction anchors while moving them together.
+  furniture: { seatHeight: 0.36, sofa: { x: -6.7, z: -1.35, w: 1.5, d: 0.75 }, tv: { w: 1.2, h: 0.68, y: 0.52 }, desk: { x: 5.5, z: -0.4 }, stool: { x: 7.85, z: 0.6, seat: 0.38 },
+    discoSwitch: { x: 0.9, y: 1.05, z: 5.2 }, // #1365/#1374: the wall switch east of the door (south wall, z +5.2; height reachable for children, guess)
+    ball: { x: 0, z: -1.5, y: 1.95, r: 0.17, spin: 0.5, spots: 26, spotSpin: 0.35 }, // the disco ball hangs under the ceiling, the light spots sweep round it
   } };
 
 /** A well-formed look code (#1136): 7 or 9 digits, or 9 + a height in cm within AVATAR_HEIGHT (the Worker uses it too). */

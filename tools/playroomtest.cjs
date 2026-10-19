@@ -13,7 +13,7 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
   fs.mkdirSync(shots, { recursive: true });
   const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined, args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   try {
-    const page = await browser.newPage({ viewport: { width: 900, height: 600 } });
+    const page = await browser.newPage(process.env.MOBILE ? {viewport:{width:844,height:390},isMobile:true,hasTouch:true} : { viewport: { width: 900, height: 600 } });
     const errors = []; page.on('pageerror', (e) => errors.push(e.message));
     await page.addInitScript(() => { localStorage.setItem('lunden.name', 'Barn'); sessionStorage.setItem('lunden.nameSkipped', '1'); });
     await page.goto(`${game}/?shot&quality=3&time=12&month=6&freeze`, { waitUntil: 'commit' });
@@ -80,12 +80,12 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     const RM = await page.evaluate(async () => { const C = await import('/src/config.js'); return C.PLAYROOM; });
     const L = (lx, lz) => ({ x: RM.x + lx, z: RM.z + lz });
     const walkTo = (from, yaw, secs) => page.evaluate(({ from, yaw, secs }) => { const P = window.__app.player, cam = window.__app.camera; P.spawn(from.x, from.z, 0); window.__t.frames(10); cam.rotation.y = yaw; P.keys = new Set(['KeyW']); window.__t.frames(secs * 60); P.keys = new Set(); return { x: P.pos.x, z: P.pos.z }; }, { from, yaw, secs });
-    const sofaWalk = await walkTo(L(0, -1.35), Math.PI / 2, 3); // west along the sofa's middle (north of the billiard table)
-    check(sofaWalk.x > RM.x - 1.2 + 0.1 && sofaWalk.x < RM.x - 0.7, 'the sofa holds from behind', `lx=${(sofaWalk.x - RM.x).toFixed(2)}`);
-    const deskWalk = await walkTo(L(1.6, 1.0), -Math.PI / 2, 3); // east into the stool / desk
-    check(deskWalk.x < RM.x + 2.65 - 0.2, 'the stool and desk hold', `lx=${(deskWalk.x - RM.x).toFixed(2)}`);
-    const tvWalk = await walkTo(L(-0.2, 2.1), Math.PI / 2, 4); // west along the south wall, free of furniture
-    check(tvWalk.x < RM.x - 2.5 && tvWalk.x > RM.x - 3.2, 'the floor south of the sofa is walkable up to the west wall', `lx=${(tvWalk.x - RM.x).toFixed(2)}`);
+    const sofaWalk = await walkTo(L(RM.furniture.sofa.x+1.3, RM.furniture.sofa.z), Math.PI / 2, 3); // west along the sofa's middle (north of the billiard table)
+    check(sofaWalk.x > RM.x+RM.furniture.sofa.x+RM.furniture.sofa.d/2+.1 && sofaWalk.x < RM.x+RM.furniture.sofa.x+RM.furniture.sofa.d/2+.5, 'the sofa holds from behind', `lx=${(sofaWalk.x - RM.x).toFixed(2)}`);
+    const deskWalk = await walkTo(L(RM.furniture.desk.x+1.6, RM.furniture.stool.z), -Math.PI / 2, 3); // east into the stool / desk
+    check(deskWalk.x < RM.x + RM.furniture.desk.x+2.65 - 0.2, 'the stool and desk hold', `lx=${(deskWalk.x - RM.x).toFixed(2)}`);
+    const tvWalk = await walkTo(L(-0.2, 2.1), Math.PI / 2, 6); // west along the south wall, free of furniture
+    check(tvWalk.x < RM.x-RM.w/2+.5 && tvWalk.x > RM.x-RM.w/2, 'the floor south of the sofa is walkable up to the west wall', `lx=${(tvWalk.x - RM.x).toFixed(2)}`);
     const clash = await page.evaluate(({ RM }) => { const r = window.__app.world.playroom, b = RM.billiards, hx = b.length / 2 + b.rail + 0.05, hz = b.width / 2 + b.rail + 0.05; // the table's footprint (+ 5 cm), no furniture footprint touches it
       return r.footprints.filter((q) => { const xs = q.map((p) => p[0] - RM.x - b.x), zs = q.map((p) => p[1] - RM.z - b.z); return Math.min(...xs) < hx && Math.max(...xs) > -hx && Math.min(...zs) < hz && Math.max(...zs) > -hz; }).length; }, { RM });
     check(clash === 0, 'no furniture footprint touches the billiard table', `overlaps ${clash}`);
@@ -93,7 +93,7 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     const sofa = RM.furniture.sofa;
     for (const [k, name] of [[0, 'left'], [1, 'middle'], [2, 'right']]) {
       const seatZ = sofa.z - sofa.w / 2 + sofa.w / 3 * (k + 0.5);
-      const f = await page.evaluate(({ at, seatZ }) => { const t = window.__t, P = window.__app.player; P.spawn(at.x, at.z, 0); t.frames(10); t.aim(at.sx, 0.34, seatZ); return t.focus(); }, { at: { ...L(-0.7, sofa.z), sx: RM.x + sofa.x + 0.1 }, seatZ: RM.z + seatZ });
+      const f = await page.evaluate(({ at, seatZ }) => { const t = window.__t, P = window.__app.player; P.spawn(at.x, at.z, 0); t.frames(10); t.aim(at.sx, 0.34, seatZ); return t.focus(); }, { at: { ...L(sofa.x+1.1, sofa.z), sx: RM.x + sofa.x + 0.1 }, seatZ: RM.z + seatZ });
       check(f?.kind === 'rest' && f.name === 'soffan', `the sofa is a seat (${name})`, JSON.stringify(f));
       await page.evaluate(() => window.__app.use(window.__app.focus().focused)); await page.waitForTimeout(300);
       const sat = await page.evaluate(() => { const a = window.__app; for (let i = 0; i < 12; i++) a.rest.update(0.1); window.__t.render(); return { active: a.rest.active, kind: a.rest.kind, x: a.camera.position.x, y: a.camera.position.y, yaw: a.camera.rotation.y }; });
@@ -104,7 +104,7 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
       const up = await page.evaluate(() => { const a = window.__app, P = a.player; return { active: a.rest.active, free: P.isFree(P.pos.x, P.pos.z), inRoom: P.inPlayroom }; });
       check(!up.active && up.free && up.inRoom, `got up from the ${name} seat on free floor`, JSON.stringify(up));
     }
-    const fs2 = await page.evaluate(({ RM }) => { const t = window.__t, P = window.__app.player; P.spawn(RM.x + 1.5, RM.z + RM.furniture.stool.z, Math.PI / 2); t.frames(10); t.aim(RM.x + RM.furniture.stool.x, 0.36, RM.z + RM.furniture.stool.z); return t.focus(); }, { RM });
+    const fs2 = await page.evaluate(({ RM }) => { const t = window.__t, P = window.__app.player; P.spawn(RM.x + RM.furniture.stool.x-.8, RM.z + RM.furniture.stool.z, Math.PI / 2); t.frames(10); t.aim(RM.x + RM.furniture.stool.x, 0.36, RM.z + RM.furniture.stool.z); return t.focus(); }, { RM });
     check(fs2?.kind === 'rest' && fs2.name === 'pallen', 'the stool at the gaming desk is a seat', JSON.stringify(fs2));
     // the disco ball: one spot mesh, all spots inside the room, and they move
     const d1 = await page.evaluate(() => { const r = window.__app.world.playroom, p = [...r.spots.geometry.attributes.position.array]; r.disco(1.3); return { a: p, b: [...r.spots.geometry.attributes.position.array], bounds: r.bounds, n: r.rays.length }; });
@@ -113,7 +113,7 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     // #1365: the disco light switches off and on, from the wall switch and from the ball itself
     const DSW = RM.furniture.discoSwitch, BL = RM.furniture.ball;
     const aimAt = (from, to) => page.evaluate(({ from, to }) => { const t = window.__t, P = window.__app.player; P.spawn(from[0], from[1], 0); t.frames(20); t.aim(to[0], to[1], to[2]); return t.focus(); }, { from, to });
-    const fsw = await aimAt([RM.x + DSW.x - 0.3, RM.z + 1.9], [RM.x + DSW.x, DSW.y, RM.z + DSW.z]);
+    const fsw = await aimAt([RM.x + DSW.x - 0.3, RM.z + DSW.z-.7], [RM.x + DSW.x, DSW.y, RM.z + DSW.z]);
     check(fsw?.kind === 'playroomDisco' && fsw.verb === 'släcka', 'the wall switch is a target (disco on: släcka)', JSON.stringify(fsw));
     await page.evaluate(() => window.__app.use(window.__app.focus().focused));
     const off = await page.evaluate(() => { const r = window.__app.world.playroom, p = [...r.spots.geometry.attributes.position.array]; r.update(1, window.__app.camera, false); return { on: r.discoOn, spots: r.spots.visible, moved: r.spots.geometry.attributes.position.array.some((v, i) => v !== p[i]), lit: r.lit, badge: document.getElementById('badges').textContent }; });
@@ -126,13 +126,22 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     check(on.on && on.spots && on.moved, 'used again: disco on, spots sweep', JSON.stringify(on));
     const lit = await page.evaluate(() => { const o = window.__app; return o.world.playroom.object.children.filter((c) => c.isLight).length; });
     check(lit === 0, 'no extra lights in the room');
-    const views = { 7: [[2.9, 2.3], [-1.8, -1.3]], 8: [[-2.9, 2.3], [2.6, 0.5]], 9: [[2.9, -2.3], [-2.5, -1.3]] };
+    const views = { 7: [[0,4.4],[0,1.6]], 8: [[-5,0.5],[-8,-1.35]], 9: [[5,0.5],[8.5,0.6]] };
     for (const [n, [from, to]] of Object.entries(views)) {
       await page.evaluate(({ RM, from, to }) => { const t = window.__t, P = window.__app.player; P.spawn(RM.x + from[0], RM.z + from[1], 0); t.frames(20); t.aim(RM.x + to[0], 1.1, RM.z + to[1]); window.__app.world.playroom.disco(0.4); t.render(); }, { RM, from, to });
       await page.screenshot({ path: `${shots}/${n}-view.png` });
     }
     await page.evaluate(({ RM }) => { const t = window.__t, P = window.__app.player; P.spawn(RM.x, RM.z + 1.9, 0); t.frames(20); t.aim(RM.x, 2.2, RM.z - 1.5); window.__app.world.playroom.disco(0.4); t.render(); }, { RM });
     await page.screenshot({ path: `${shots}/10-disco.png` });
+    // #1374: the three real doorway routes and a complete unobstructed walk around the unchanged table.
+    for(const x of [-2*RM.clubhouse.side,0,2*RM.clubhouse.side]){
+      const p=await walkTo(L(x,RM.d/2-.8),0,2);
+      check(p.z<RM.z+RM.clubhouse.front-.3,'walk through a labelled room entrance at x='+x,JSON.stringify(p));
+      const back=await walkTo(p,Math.PI,2);
+      check(back.z>RM.z+RM.clubhouse.front+.3,'walk back to the hall at x='+x,JSON.stringify(back));
+    }
+    const circle=await page.evaluate(({RM})=>{const a=__app,P=a.player,targets=[[1.5,-1],[1.5,1.1],[-1.5,1.1],[-1.5,-1]],results=[];P.spawn(RM.x-1.5,RM.z-1,0);__t.frames(10);for(const[x,z]of targets){let d=Infinity;for(let i=0;i<300;i++){const dx=RM.x+x-P.pos.x,dz=RM.z+z-P.pos.z;d=Math.hypot(dx,dz);if(d<.1)break;a.camera.rotation.y=Math.atan2(-dx,-dz);P.keys=new Set(['KeyW']);P.update(1/60);}P.keys=new Set();results.push(d);}return results;},{RM});
+    check(circle.every(d=>d<.1),'walk all four sides of the table without sofa or partition obstruction',JSON.stringify(circle));
     // the exit door
     const f2 = await page.evaluate(() => { const t = window.__t, P = window.__app.player, r = window.__app.world.playroom, a = r.arrival; P.spawn(a.x, a.z, a.yaw); t.frames(30); t.aim(a.x, 0.7, r.bounds.z1); return t.focus(); });
     check(f2?.kind === 'playroomExit' && f2.verb === 'gå ut ur', 'the exit door is a target', JSON.stringify(f2));

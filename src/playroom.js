@@ -1,3 +1,4 @@
+import { clubhouseLayout, clubhouseSigns } from './clubhouse.js';
 import { Billiards } from './billiards.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -7,9 +8,10 @@ import { restTarget } from './rest.js';
 // #1319 / #1326: the playhouse's secret children's room. A hidden interior, far outside the walkable area (see PLAYROOM in
 // config.js): the playhouse door teleports a player shorter than PLAYROOM.maxCm in, the door in the room's south wall back out.
 // Nothing here is drawn (or has a draw call) while the visitor is outside: the whole group is hidden until `setInside(true)`.
+// #1374: clubhouse.js adds the hall and three rooms; static signs share the existing ceiling-panel draw.
 // #1327: child-sized furniture (a sofa you can sit in, a stool, a TV, a gaming desk, a disco ball with sweeping light spots), no TV/game
 // function yet (#1330) and the billiard table (#1328, billiards.js) stays in the middle. Everything is a few
-// merged meshes (one vertex-coloured mesh for the shell, furniture and screens, the lamp, the ball, the spots): 4 draw calls, no extra lights, nothing outside.
+// merged meshes (one vertex-coloured mesh for shell/furniture/screens, signs with ceiling panels, the ball, the spots): 4 draw calls, no extra lights, nothing outside.
 // Rules/network: #1329, sound: #1330.
 
 const X0 = R.x - R.w / 2, X1 = R.x + R.w / 2, Z0 = R.z - R.d / 2, Z1 = R.z + R.d / 2;
@@ -42,17 +44,28 @@ export class Playroom {
     // collision: the four inner walls (the exit is a door you use, not an opening)
     this.segments = [[X0, Z0, X1, Z0], [X1, Z0, X1, Z1], [X1, Z1, X0, Z1], [X0, Z1, X0, Z0]];
     const walls = [box(X0 - t, X1 + t, 0, h, Z0 - t, Z0), box(X0 - t, X1 + t, 0, h, Z1, Z1 + t), box(X0 - t, X0, 0, h, Z0, Z1), box(X1, X1 + t, 0, h, Z0, Z1)];
+    const layout=clubhouseLayout();
+    this.discoWalls=layout.boxes.map(([a,b,c,d,e,f])=>[R.x+a,R.x+b,c,d,R.z+e,R.z+f]);
+    walls.push(...layout.boxes.map(([a,b,c,d,e,f])=>box(R.x+a,R.x+b,c,d,R.z+e,R.z+f)));
+    this.segments.push(...layout.segments.map(([a,b,c,d])=>[R.x+a,R.z+b,R.x+c,R.z+d]));
     const trim = [box(X0, X1, 0, 0.12, Z0, Z0 + 0.02), box(X0, X1, 0, 0.12, Z1 - 0.02, Z1), box(X0, X0 + 0.02, 0, 0.12, Z0, Z1), box(X1 - 0.02, X1, 0, 0.12, Z0, Z1), // skirting
       box(R.x - dw - 0.07, R.x - dw, 0, dh + 0.07, Z1 - 0.04, Z1), box(R.x + dw, R.x + dw + 0.07, 0, dh + 0.07, Z1 - 0.04, Z1), box(R.x - dw - 0.07, R.x + dw + 0.07, dh, dh + 0.07, Z1 - 0.04, Z1)]; // door frame
     const door = [box(R.x - dw, R.x + dw, 0, dh, Z1 - 0.03, Z1)];
     const handle = [box(R.x + dw - 0.2, R.x + dw - 0.12, 0.72, 0.78, Z1 - 0.07, Z1 - 0.03)];
-    const lamp = [box(R.x - 0.6, R.x + 0.6, h - 0.03, h, R.z - 0.6, R.z + 0.6)]; // a ceiling lamp panel (so the empty room reads lit)
+    const lamp = [];
+    for(const x of [-2*R.clubhouse.side,0,2*R.clubhouse.side])for(const z of [(Z0+R.z+R.clubhouse.front)/2,(Z1+R.z+R.clubhouse.front)/2])
+      lamp.push(box(R.x+x-0.6,R.x+x+0.6,h-0.03,h,z-0.6,z+0.6));
+    this.object.add(clubhouseSigns(layout,lamp));
     // ---- furniture (#1327), local metres from the room's centre: x east, z south (the door), y up
     const F = R.furniture, sf = F.sofa, sx0 = sf.x - sf.d / 2, sx1 = sf.x + sf.d / 2, sz0 = sf.z - sf.w / 2, sz1 = sf.z + sf.w / 2, seat = F.seatHeight;
     const col = { sofa: 0x2f7f86, cushion: 0x4bb0b6, back: 0xf2b84b, rug: 0xd96a4b, wood: 0x8a5a33, dark: 0x25272e, white: 0xf2f2f2, red: 0xd33a2c, blue: 0x2f6fd0, steel: 0x8b9099 };
     const DS = F.discoSwitch, third = sf.w / 3, tv = F.tv, tvz = sf.z, tvx = -R.w / 2, cd = 0.35; // the TV cabinet, as deep as `cd`, faces the sofa across the rug
+    const deskBox=(color,a,b,c,d,e,f)=>cbox(color,a+F.desk.x,b+F.desk.x,c,d,e+F.desk.z,f+F.desk.z);
+    const W=R.clubhouse.welcome,edge=R.clubhouse.label.offset;
     const fur = [
-      cbox(col.rug, -2.8, sx1 + 0.1, 0, 0.012, tvz - 0.9, tvz + 0.9), // a rug under the sofa and the TV
+      cbox(col.dark,W.x-W.w/2,W.x+W.w/2,W.y-W.h/2,W.y+W.h/2,W.z-R.clubhouse.wall,W.z-edge),
+      ...[-1,1].map(side=>cbox(col.steel,W.x+side*W.w/3-edge,W.x+side*W.w/3+edge,W.y+W.h/2,h,W.z-R.clubhouse.wall/2-edge,W.z-R.clubhouse.wall/2+edge)),
+      cbox(col.rug, tvx + cd, sx1 + 0.1, 0, 0.012, tvz - 0.9, tvz + 0.9), // a rug under the sofa and the TV
       // the sofa: frame, back, arms, three seat cushions and three back cushions
       cbox(col.sofa, sx0, sx1, 0.04, seat - 0.14, sz0, sz1), cbox(col.sofa, sx1 - 0.17, sx1, seat - 0.14, 0.72, sz0, sz1),
       cbox(col.sofa, sx0, sx1 - 0.17, seat - 0.14, 0.54, sz0, sz0 + 0.14), cbox(col.sofa, sx0, sx1 - 0.17, seat - 0.14, 0.54, sz1 - 0.14, sz1),
@@ -63,10 +76,10 @@ export class Playroom {
       cbox(col.dark, tvx + 0.1, tvx + 0.18, 0.42, 0.52, tvz - 0.15, tvz + 0.15), cbox(col.dark, tvx + 0.18, tvx + 0.28, 0.42, 0.47, tvz - 0.5, tvz + 0.5),
       cbox(col.dark, tvx + 0.03, tvx + 0.1, tv.y, tv.y + tv.h + 0.04, tvz - tv.w / 2 - 0.02, tvz + tv.w / 2 + 0.02),
       // the gaming desk on the east wall: top, two side panels, monitor on a stand, console, two controllers, keyboard
-      cbox(col.wood, 2.65, 3.2, 0.54, 0.58, 0.3, 1.7), cbox(col.wood, 2.65, 3.2, 0, 0.54, 0.3, 0.34), cbox(col.wood, 2.65, 3.2, 0, 0.54, 1.66, 1.7),
-      cbox(col.dark, 2.98, 3.08, 0.58, 0.72, 0.95, 1.05), cbox(col.dark, 2.96, 3.1, 0.58, 0.6, 0.85, 1.15), cbox(col.dark, 2.96, 3.02, 0.7, 1.08, 0.7, 1.3),
-      cbox(col.white, 2.85, 3.12, 0.58, 0.64, 1.38, 1.62), cbox(col.blue, 2.85, 3.12, 0.64, 0.655, 1.38, 1.62),
-      cbox(col.red, 2.78, 2.88, 0.58, 0.615, 0.4, 0.5), cbox(col.blue, 2.78, 2.88, 0.58, 0.615, 0.55, 0.65), cbox(col.dark, 2.72, 2.84, 0.58, 0.6, 0.85, 1.25),
+      deskBox(col.wood, 2.65, 3.2, 0.54, 0.58, 0.3, 1.7), deskBox(col.wood, 2.65, 3.2, 0, 0.54, 0.3, 0.34), deskBox(col.wood, 2.65, 3.2, 0, 0.54, 1.66, 1.7),
+      deskBox(col.dark, 2.98, 3.08, 0.58, 0.72, 0.95, 1.05), deskBox(col.dark, 2.96, 3.1, 0.58, 0.6, 0.85, 1.15), deskBox(col.dark, 2.96, 3.02, 0.7, 1.08, 0.7, 1.3),
+      deskBox(col.white, 2.85, 3.12, 0.58, 0.64, 1.38, 1.62), deskBox(col.blue, 2.85, 3.12, 0.64, 0.655, 1.38, 1.62),
+      deskBox(col.red, 2.78, 2.88, 0.58, 0.615, 0.4, 0.5), deskBox(col.blue, 2.78, 2.88, 0.58, 0.615, 0.55, 0.65), deskBox(col.dark, 2.72, 2.84, 0.58, 0.6, 0.85, 1.25),
       // the stool at the desk (its seat is a rest spot)
       cbox(col.red, F.stool.x - 0.2, F.stool.x + 0.2, F.stool.seat - 0.06, F.stool.seat, F.stool.z - 0.2, F.stool.z + 0.2),
       ...[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([a, b]) => cbox(col.steel, F.stool.x + a * 0.17 - 0.02, F.stool.x + a * 0.17 + 0.02, 0, F.stool.seat - 0.06, F.stool.z + b * 0.17 - 0.02, F.stool.z + b * 0.17 + 0.02)),
@@ -76,9 +89,9 @@ export class Playroom {
       cbox(col.steel, F.ball.x - 0.04, F.ball.x + 0.04, h - 0.03, h, F.ball.z - 0.04, F.ball.z + 0.04), cbox(col.steel, F.ball.x - 0.005, F.ball.x + 0.005, F.ball.y + F.ball.r, h - 0.03, F.ball.z - 0.005, F.ball.z + 0.005),
     ];
     const furMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85 });
-    const screens = [cbox(0x0b0f16, tvx + 0.1, tvx + 0.105, tv.y + 0.02, tv.y + tv.h + 0.02, tvz - tv.w / 2, tvz + tv.w / 2), cbox(0x0b0f16, 2.94, 2.96, 0.72, 1.06, 0.72, 1.28)];
+    const screens = [cbox(0x0b0f16, tvx + 0.1, tvx + 0.105, tv.y + 0.02, tv.y + tv.h + 0.02, tvz - tv.w / 2, tvz + tv.w / 2), deskBox(0x0b0f16, 2.94, 2.96, 0.72, 1.06, 0.72, 1.28)];
     // collision: the furniture's footprints (convex polygons; getting up and `isFree` use them) and their edges as wall segments
-    this.footprints = [rect(sx0, sx1, sz0, sz1), rect(tvx, tvx + cd, tvz - 0.75, tvz + 0.75), rect(2.65, 3.2, 0.3, 1.7), rect(F.stool.x - 0.2, F.stool.x + 0.2, F.stool.z - 0.2, F.stool.z + 0.2)];
+    this.footprints = [rect(sx0, sx1, sz0, sz1), rect(tvx, tvx + cd, tvz - 0.75, tvz + 0.75), rect(2.65+F.desk.x, 3.2+F.desk.x, 0.3+F.desk.z, 1.7+F.desk.z), rect(F.stool.x - 0.2, F.stool.x + 0.2, F.stool.z - 0.2, F.stool.z + 0.2)];
     for (const q of this.footprints) for (let i = 0; i < 4; i++) { const a = q[i], b = q[(i + 1) % 4]; this.segments.push([a[0], a[1], b[0], b[1]]); }
     // the seats: the sofa (three places, facing the TV, west) and the stool (facing the desk, east); invisible pick boxes carry the E target
     this.targets = [];
@@ -129,7 +142,7 @@ export class Playroom {
     }
     this.disco(0);
     const C = R.colors, shell = [...walls.map((g) => paint(g, C.wall)), ...trim.map((g) => paint(g, C.trim)), ...door.map((g) => paint(g, C.door)), paint(box(X0, X1, -0.1, 0, Z0, Z1), C.floor), paint(box(X0, X1, h, h + 0.1, Z0, Z1), C.ceiling), ...handle.map((g) => paint(g, 0x2a2a2a))];
-    const parts = [merged([...shell, ...fur, ...screens], furMat), merged(lamp, new THREE.MeshBasicMaterial({ color: 0xfff6dc, toneMapped: false }))]; // the shell, the furniture and the screens are one vertex-coloured mesh
+    const parts = [merged([...shell, ...fur, ...screens], furMat)]; // the shell, the furniture and the screens are one vertex-coloured mesh
     for (const m of parts) { m.matrixAutoUpdate = false; this.object.add(m); }
     // the way out: an invisible pick box in front of the door (the raycaster ignores `visible: false` materials)
     this.exitTarget = { name: 'lekstugan', kind: 'playroomExit', verb: 'gå ut ur' };
@@ -170,6 +183,12 @@ export class Playroom {
       if (dx > 1e-6) hit((X1 - ox) / dx, -1, 0, 0); else if (dx < -1e-6) hit((X0 - ox) / dx, 1, 0, 0);
       if (dz > 1e-6) hit((Z1 - oz) / dz, 0, 0, -1); else if (dz < -1e-6) hit((Z0 - oz) / dz, 0, 0, 1);
       if (dy > 1e-6) hit((h - oy) / dy, 0, -1, 0); else if (dy < -1e-6) hit((0 - oy) / dy, 0, 1, 0);
+      // Actual partition/header entry faces: an open passage lets a ray continue into the hall.
+      for(const [a,b,c,d,e,f]of this.discoWalls){
+        if(Math.abs(dx)>1e-6){const tt=((dx>0?a:b)-ox)/dx,y=oy+dy*tt,z=oz+dz*tt;if(y>=c&&y<=d&&z>=e&&z<=f)hit(tt,dx>0?-1:1,0,0);}
+        if(Math.abs(dy)>1e-6){const tt=((dy>0?c:d)-oy)/dy,x=ox+dx*tt,z=oz+dz*tt;if(x>=a&&x<=b&&z>=e&&z<=f)hit(tt,0,dy>0?-1:1,0);}
+        if(Math.abs(dz)>1e-6){const tt=((dz>0?e:f)-oz)/dz,x=ox+dx*tt,y=oy+dy*tt;if(x>=a&&x<=b&&y>=c&&y<=d)hit(tt,0,0,dz>0?-1:1);}
+      }
       const px = ox + dx * t + nx * 0.012, py = oy + dy * t + ny * 0.012, pz = oz + dz * t + nz * 0.012, sz = 0.1 + 0.035 * t;
       // the quad's axes in the surface plane: side walls u = z, v = y; end walls u = x, v = y; floor / ceiling u = x, v = z
       const u = nx !== 0 ? [0, 0, 1] : [1, 0, 0], v = ny !== 0 ? [0, 0, 1] : [0, 1, 0];

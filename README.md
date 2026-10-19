@@ -24,7 +24,7 @@ Med jetpacken kan du stiga genom ett molnlager och upp över ett tätt molnhav. 
 
 På vintern står båda hästarna synliga inne i hästhagens skjul, med halm på golvet, girlang och en varm ljusslinga. När snön försvinner försvinner pyntet och hästarna går ut i hagen igen.
 
-Spelare som är kortare än 160 cm kan gå in i lekstugans hemliga barnrum. Dörren inifrån går alltid att använda för att komma ut. Där finns ett barnstort biljardbord: sikta över bordet och tryck E för att stöta, och vänta tills bollarna stannat inför nästa stöt.
+Spelare som är kortare än 160 cm kan gå in i lekstugans hemliga klubbhus. En hall med “LET’S PLAY!” leder till separata rum märkta BIO, BILJARD och SPEL. Soffan och TV:n står i BIO och spelbordet i SPEL, med fri gång runt biljardbordet. Dörren inifrån går alltid att använda för att komma ut. Sikta över biljardbordet och tryck E för att stöta, och vänta tills bollarna stannat inför nästa stöt.
 Kom nära en avatar med Sarah eller Olof i namnet utan vapen i handen och använd E/pekknappen för en puss med hjärtan; på längre avstånd hälsar du som vanligt.
 
 När du möblerar om står möbler ovanpå mattan och åter på golvet när de flyttas av den. Flyttar du själva mattan justeras höjden för möbler och saker som står kvar.

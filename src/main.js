@@ -2966,7 +2966,7 @@ function step(dt) {
   if (roof || !player.fall) lastRoof = roof?.id ?? null;
   if (roof) roofName = roof.name; else if (!player.aloft) roofName = null;
   const under = player.inCore ? `${core.houseAt(player.pos.x, player.pos.z, player.pos.y)} · ${core.roomAt(player.pos.x, player.pos.z, player.pos.y)}` // the stairwell, the lift (#415)
-    : player.below ? `Under gården · ${garage.roomAt(player.pos.x, player.pos.z)}` : player.inPlayroom ? 'Lekstugan · Barnrummet' : null; // the garage, the förråd, the lobby (#357)
+    : player.below ? `Under gården · ${garage.roomAt(player.pos.x, player.pos.z)}` : player.inPlayroom ? 'Lekstugan · Klubbhuset' : null; // the garage, the förråd, the lobby (#357)
   const visit = outside || under ? null : player.unit; // in a visited flat (#574): its own name, level and room
   const lvl = outside || under || visit ? -1 : player.level; // basement/core take precedence over the apartment x/z footprint (#549)
   const room = lvl < 0 ? null : world.roomAt(lvl, player.pos.x, player.pos.z);
