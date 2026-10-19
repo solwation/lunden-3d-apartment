@@ -1,7 +1,8 @@
 #!/usr/bin/env python3 -I
 """#1288: samples Copernicus GLO-30 (DSM, 30 m) over the model's walk extent into data/elevation.json.
 
-Usage: python3 -I tools/elevation_grid.py <Copernicus_DSM_COG_10_N55_00_E013_00_DEM.tif> [out.json]
+Usage: python3 -I tools/elevation_grid.py <Copernicus_DSM_COG_10_N55_00_E013_00_DEM.tif> [out.json] [--z1 Z]
+`--z1` (#1357/#1360) extends the grid southwards past the walk extent (default 250), e.g. 460 to cover Sankt Lars väg 41-49.
 Source tile: https://copernicus-dem-30m.s3.amazonaws.com/Copernicus_DSM_COG_10_N55_00_E013_00_DEM/Copernicus_DSM_COG_10_N55_00_E013_00_DEM.tif
 (AWS open data registry, no account). The tile is untrusted data: it is only decoded here (TIFF, deflate, floating-point
 predictor), nothing in it is executed. Pure standard library + Pillow-free: no third-party packages needed.
@@ -60,10 +61,13 @@ class Tile:
         return a * (1 - tr) + b * tr
 
 def main():
-    t = Tile(sys.argv[1]); out = sys.argv[2] if len(sys.argv) > 2 else 'data/elevation.json'
+    args = sys.argv[1:]; z1 = Z1
+    if '--z1' in args: i = args.index('--z1'); z1 = int(args[i + 1]); del args[i:i + 2]
+    assert z1 >= Z1 and (z1 - Z0) % STEP == 0, '--z1 must be >= %d and on the %d m grid' % (Z1, STEP)
+    t = Tile(args[0]); out = args[1] if len(args) > 1 else 'data/elevation.json'
     def gmin(x, z): return min(t.sample(*plan_to_geo(x + dx, z + dz)) for dx in (-30, 0, 30) for dz in (-30, 0, 30))
     ref = gmin(*REF); rows = []; grows = []
-    zs = range(Z0, Z1 + 1, STEP); xs = range(X0, X1 + 1, STEP)
+    zs = range(Z0, z1 + 1, STEP); xs = range(X0, X1 + 1, STEP)
     for z in zs:
         rows.append([round((t.sample(*plan_to_geo(x, z)) - ref) * 10) for x in xs]); grows.append([round((gmin(x, z) - ref) * 10) for x in xs])
     doc = {'id': 'elevation', 'issue': 1288,
