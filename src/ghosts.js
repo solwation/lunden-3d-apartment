@@ -1,7 +1,7 @@
 import { applyRestPose } from './remote-pose.js';
 import { poseOlof } from './olof.js';
 import * as THREE from 'three';
-import { FALL, TOAST, SOUNDS } from './config.js';
+import { FALL, TOAST, SOUNDS, KISS } from './config.js';
 import { makesSteps, strideFor } from './spatialsound.js';
 import { GHOSTS as G, COMBAT, AVATAR, AVATAR_CROUCH, CHAT, encodeAvatarWireLook, decodeAvatarLook, splitAvatarCode, playerBodySegment } from './config.js';
 import { Avatar, armTarget } from './avatar.js';
@@ -10,6 +10,8 @@ import { acquireBadge, releaseBadge, badgeScore, badgeLives } from './ghostbadge
 import { setMirrorExtra } from './reflections.js';
 import { GhostCat } from './ghostcat.js';
 import { JoinNotice } from './joinnotice.js';
+import { canKiss, kissName } from './kiss.js';
+import { Hearts } from './pingping.js';
 import { cleanHeldCategory } from './heldcategory.js';
 import { ghostProp, ghostJetpack, ghostBike, ghostItem } from './ghostprops.js'; // what an armed player holds: their weapon's own model (#667, #1126)
 
@@ -376,7 +378,7 @@ export class Ghosts {
   /** scene; url: the Worker ('' = off); name(): our name; state(): { p: [x, y, z] feet, r: yaw, c?: actual crouched boolean }; active(): playing (not the
    * start screen); weapon(): the key (COMBAT.weapons) of what we hold or ''; score(): displayed points (defaults to stats.totalScore); onHit / onHurt: the room's word on a hit (#667). */
   constructor({ scene, camera, url, name = () => '', state, active = () => true, weapon = () => '', score = totalScore, onHit = () => {}, onHurt = () => {}, mirrored = () => true }) {
-    Object.assign(this, { camera, name, state, active, weapon, score, onHit, onHurt, mirrored, mine: null, myGhost: null, rules: null, ws: null, me: null, others: new Map(), sent: null, prev: null,
+    Object.assign(this, { scene, camera, name, state, active, weapon, score, onHit, onHurt, mirrored, mine: null, myGhost: null, rules: null, ws: null, me: null, others: new Map(), sent: null, prev: null,
       lastSent: 0, lastBeat: 0, outbox: [], shots: 0, dropped: 0, greetAt: -1e9, greetsSeen: 0, lastMove: -Infinity, retryAt: 0, backoff: 0, openedAt: 0, connects: 0, messages: 0 });
     const savedAv = (() => { try { return localStorage.getItem('lunden.avatar'); } catch { return null; } })();
     this.myLook = decodeAvatarLook(savedAv, this.name());
@@ -420,7 +422,7 @@ export class Ghosts {
     this.reset();
   }
 
-  reset() { this.finishFall(null); this.finishConsume(null); this.myGhost?.clearMirrorTyping(); this.me = null; this.sent = null; this.outbox = []; this.talkbox = []; for (const g of this.others.values()) g.dispose(); this.others.clear(); this.notice?.reset(); this.onTypingReset?.(); }
+  reset() { if (this.kissHearts) this.kissHearts.points.visible = false; this.finishFall(null); this.finishConsume(null); this.myGhost?.clearMirrorTyping(); this.me = null; this.sent = null; this.outbox = []; this.talkbox = []; for (const g of this.others.values()) g.dispose(); this.others.clear(); this.notice?.reset(); this.onTypingReset?.(); }
 
   closed(ws, code) {
     if (ws !== this.ws) return;
@@ -452,7 +454,7 @@ export class Ghosts {
     else if (m.t === 'consume') { if (m.id === this.pendingConsume?.id) this.finishConsume(m); }
     else if (m.t === 'hurt') this.onHurt(m, this.others.get(m.by));
     else if (m.t === 'a') { const g = this.others.get(m.i); if (g) this.onShot?.(m, g); }
-    else if (m.t === 'g') { const g = this.others.get(m.i); if (g) { g.wave(); this.greetsSeen++; this.onGreet?.(m, g, m.to === this.me ? null : this.others.get(m.to) ?? null); } }
+    else if (m.t === 'g') { const g = this.others.get(m.i); if (g) { if (m.k === KISS.phrase) this.kissBurst(m.to === this.me ? null : this.others.get(m.to)); else g.wave(); this.greetsSeen++; this.onGreet?.(m, g, m.to === this.me ? null : this.others.get(m.to) ?? null); } }
     else if (m.t === 'c') { const g = this.others.get(m.i); if (g) this.onToast?.(m, g); } // a toast (#1222): the room sends it only from within PLAYERS.toastRange
     else if (m.t === 'snd') { const g = this.others.get(m.i); if (g && SOUNDS.kinds.includes(m.k)) this.onPlayerSound?.(m, g); } // a sound event (#1302): the room sends it only from within PLAYERS.soundRange
     else if (m.t === 'm' || m.t === 'mx' || m.t === 'k') this.onTalk?.(m, this.others.get(m.i)); // chat (#675) and "skriver…" (#676), src/chat.js
@@ -484,7 +486,8 @@ export class Ghosts {
   }
 
   /** Each frame: connect / disconnect, send what changed (≤ hz), and place the ghosts. */
-  update() {
+  update(dt = 1 / 60) {
+    this.kissHearts?.update(dt);
     const t = performance.now(), s = this.state(), w = this.weapon();
     s.h = COMBAT.weapons.includes(w) ? w : '';
     s.c = s.c === true;
@@ -638,7 +641,17 @@ export class Ghosts {
   swingSelf() { this.myGhost?.swing(); }
 
   /** The other players one can greet (#673): their invisible pick boxes (main.js adds them to what the look ray tries). */
-  targets() { return this.connected ? [...this.others.values()].filter((g) => g.pick && g.root.visible && g.snaps.length).map((g) => g.pick) : []; }
+  targets() { return this.connected ? [...this.others.values()].filter((g) => g.pick && g.root.visible && g.snaps.length).map((g) => {
+    g.door.verb = this.canKiss(g) ? 'pussa' : 'hälsa på'; return g.pick;
+  }) : []; }
+
+  canKiss(g) { return kissName(g.name) && !this.weapon() && canKiss(g.name, this.state().p, g.root.position.toArray()); }
+
+  kissBurst(g) {
+    if (g === undefined) return; // a departed recipient cannot create an effect at the origin
+    this.kissHearts ??= new Hearts(this.scene, KISS.hearts, KISS.scale);
+    this.kissHearts.burst(g ? g.head : this.camera.position);
+  }
 
   /** Greet `g` (#673): a phrase from GHOSTS.hello (an index, never free text), one message to the room, at most one every
    * GHOSTS.greetEvery s. Returns the line said ("{n}" = their name), or null. */
@@ -646,11 +659,12 @@ export class Ghosts {
     const t = performance.now();
     if (!this.connected || t - this.greetAt < G.greetEvery * 1000 || !this.others.has(g.id)) return null;
     this.greetAt = t;
-    const k = Math.floor(Math.random() * G.hello.length);
+    const kiss = this.canKiss(g), k = kiss ? KISS.phrase : Math.floor(Math.random() * G.hello.length);
+    if (kiss) this.kissBurst(g);
     this.outbox.push({ t: 'g', to: g.id, k });
     while (this.outbox.length > G.outbox) this.outbox.splice(this.outbox.findIndex(m => m.t !== 'fall' && m.t !== 'consume'), 1);
     this.sendShot();
-    return G.hello[k].replace('{n}', g.name);
+    return (kiss ? KISS.line : G.hello[k]).replace('{n}', g.name);
   }
 
   /** Our toast (#1222): line index `k` of TOAST_LINES (never text), `back` when it answers one. One small message; the room

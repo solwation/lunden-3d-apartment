@@ -1717,6 +1717,8 @@ export const WEATHER = {
 // Speech bubbles (#247, src/greet.js): Olof's lines and your own show for `bubble` s. The neighbours to greet were
 // removed in #670 (with their lines and `reach`).
 export const GREET = { bubble: 2.8 };
+// #1343: personal near-avatar kiss; distances/effect size are playability guesses. Reserved greeting index, never random.
+export const KISS = { phrase: 15, range: 1.35, serverRange: 1.6, hearts: 10, scale: 1.8, line: 'Puss på dig, {n}!' };
 
 // Olof at the wheel (#900): shared figure colours and the existing car greeting/pose rules.
 export const OLOF = {

@@ -1,3 +1,4 @@
+import { KISS } from './config.js';
 import { MATERIAL_CHOICES, materialChoices, materialChoice } from './materialcatalog.js';
 import { crashlog } from './crashlog.js'; // first: its heartbeat and error hooks start before the rest loads (#629; inert without the cloud)
 import { AdminReports } from './adminreports.js';
@@ -2686,7 +2687,7 @@ function greetPlayer(g) {
   greet.sayMine(line);
   if (!greetedPlayers.has(g.name)) { greetedPlayers.add(g.name); bump('greets', 1, `player:${g.name}`); }
 }
-ghosts.onGreet = (m, g, other) => greet.say({ head: g.head, s: 1 }, GHOSTS.hello[m.k]?.replace('{n}', other ? other.name : (leaderboard.name || 'Anonym')) ?? 'Hej!', { pitch: 1.1, rate: 1.05, voice: 1 }, undefined, g.avatar);
+ghosts.onGreet = (m, g, other) => greet.say({ head: g.head, s: 1 }, (m.k === KISS.phrase ? KISS.line : GHOSTS.hello[m.k])?.replace('{n}', other ? other.name : (leaderboard.name || 'Anonym')) ?? 'Hej!', { pitch: 1.1, rate: 1.05, voice: 1 }, undefined, g.avatar);
 // someone else comes into / leaves the players' room (#1333, src/joinnotice.js): a short notice at the top, no sound
 ghosts.onNotice = (text) => badge(text, false);
 // toasting (#1222): "Skåla" with a glass in the hand (right click / 🥂): a clink, the glass raised (things.js), a line and one small
@@ -3063,7 +3064,7 @@ function frame(raw) {
   if (!warm.done && warm.tick()) hitch.frameInfo.warm = true;
   hitch.phase('adapt');
   step(dt);
-  ghosts.update();
+  ghosts.update(dt);
   combat.update(dt);
   chat.update(dt); // the chat column fades (#675)
   hitch.phase('step');

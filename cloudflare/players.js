@@ -1,3 +1,5 @@
+import { canKiss } from '../src/kiss.js';
+import { KISS } from '../src/config.js';
 import { ballHeadContact } from '../src/ballflight.js';
 import { nerfHeadContact } from '../src/nerf.js';
 import { bowHeadContact } from '../src/bowflight.js';
@@ -26,6 +28,7 @@ import { TOYS, SCORE, pvpHitPoints, PVP_RIFLE_HEAD as RH, rifleHeadContact, PVP_
 // PLAYERS.toastRange m as { t: 'c', i, k, b? }; no text, at most one per toastEvery s per connection.
 // A sound event (#1302) { t: 'snd', k } (k: a key of PLAYERS.sounds, today only 'bell' = the bicycle bell) goes to the players
 // within PLAYERS.soundRange m as { t: 'snd', i, k }; no text, at most one per soundEvery s per connection, never echoed.
+// #1343 reserves index KISS.phrase for a near, unarmed kiss to a Sarah/Olof name; same greeting budget.
 // A greeting (#673) { t: 'g', to, k } goes to everybody else as { t: 'g', i, to, k } (k: a phrase index, no text).
 // Room → client: { t: 'w', i: your id, ps: [{ i, n, p, r, h, score, l }], c: { lives, weapons } } on joining; { t: 'j', i, n, l } someone
 // joined; { t: 's', i, p, r, h, score, l } a state (l = server-owned remaining lives); { t: 'x', i } someone left; 'hit' / 'hurt' (#667). n = the name ('' = "Anonym").
@@ -407,7 +410,9 @@ export class PlayerRoom {
     }
     else if (talk) this.talk(ws, a, talk, now);
     else if (hello) { // #673: to someone here, not too often; everybody else sees the greeter wave
-      if (now - (a.gt ?? 0) >= PLAYERS.greetEvery * 800 && hello.to !== a.i && this.open().some((x) => x !== ws && att(x).i === hello.to)) {
+      const target = this.open().find((x) => x !== ws && att(x).i === hello.to), recipient = target && att(target);
+      const allowed = hello.k !== KISS.phrase || (recipient && !a.s?.h && canKiss(recipient.n, a.s?.p, recipient.s?.p, KISS.serverRange));
+      if (now - (a.gt ?? 0) >= PLAYERS.greetEvery * 800 && hello.to !== a.i && target && allowed) {
         a.gt = now;
         this.broadcast({ t: 'g', i: a.i, to: hello.to, k: hello.k }, ws);
       }
