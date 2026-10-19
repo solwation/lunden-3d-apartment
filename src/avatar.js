@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_EARRINGS as EARR, AVATAR_HAT as HAT, AVATAR_PHONES as PHONES, AVATAR_NECKLACE as NECK_L, AVATAR_RING as RING, AVATAR_CLOTHES, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
+import { AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_EARRINGS as EARR, AVATAR_HAT as HAT, AVATAR_PHONES as PHONES, AVATAR_NECKLACE as NECK_L, AVATAR_RING as RING, AVATAR_WRIST as WRIST, wristValue, AVATAR_CLOTHES, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
 import { topTexture } from './spidersuit.js';
 import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, SHIN, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
 
@@ -30,7 +30,8 @@ const REGION = { skin: 0, top: 1, pants: 2, hair: 3, fixed: 4, lips: 6, iris: 7,
 const FACE_PART = { head: 1, neck: 2, eye: 3, nose: 4, ear: 5, brow: 6, hair: 7, rimRound: 8, rimSquare: 9, specs: 10, cowlHide: 11, hatDome: 12, peakFront: 13, peakBack: 14, knit: 15, hatCrown: 16, hatBrim: 17, phoneBand: 18, phoneCup: 19, phoneNeck: 20, studs: 21, hoops: 22, drops: 23, pearlStuds: 24, lens: 25, // #1325: earrings (head bone, follow the ear) and sunglass lenses
  
   chain: 30, pearls: 31, pendant: 32, goldChain: 33,
-  ring: 40 }; // 40 + 0-9: #1324 a ring on one of the ten fingers (the look's `ring` - 1) // #1323: necklaces (on the torso bone, not warped with the head)
+  ring: 40, braceletBase: 50, watchCase: 60, watchStrap: 70, watchDial: 80, watchFace: 90 }; // 50-55 #1334 bracelets, 60-95 watches (case / strap / dial / glass, + side * 3 + model - 1)
+  // 40 + 0-9: #1324 a ring on one of the ten fingers (the look's `ring` - 1) // #1323: necklaces (on the torso bone, not warped with the head)
 const H = 0.1; // The head bone's eye-height reference (ears, hair, moustache).
 
 // --- the geometry (built once per variant) -----------------------------------------------------------------------------
@@ -90,6 +91,7 @@ function parts(style, sleeves, gender = 0, facial = 0, legs = 0, cut = 0) {
   addEarrings(add, P); // #1325
   addNecklaces(add, P, gender); // #1323
   addRings(add, P); // #1324
+  addWrist(add, P); // #1334
   return P;
 }
 /** #1165: glasses frames in the head bone's frame, in front of the eyes (FACE.eye): two round rims, two square ones, and the
@@ -287,6 +289,35 @@ function addRings(add, P) {
       const part = P[P.length - 1]; g.computeBoundingBox();
       part.face = FACE_PART.ring + side * 5 + k; part.anchor = g.boundingBox.getCenter(new THREE.Vector3()).toArray();
     }
+  }
+}
+/** #1334 (#1318): bracelets and wristwatches on both wrists (elbow bone, the wrist's skin below the cuff), model 1-3 per side, in the shared geometry: the vertex
+ * shader collapses all but the chosen ones (uBracelet, uWatch: 0 none, 1-3 left, 4-6 right), the metal tints the metal parts (uRingColor), the strap and dial keep their own
+ * colours; no extra draw call (~+0.65 k triangles in all). The wrist is wider front to back (z) than across (x), the watch's face points outwards (+x on the left arm). */
+function addWrist(add, P) {
+  const W = WRIST, ring = (r, y0, y1) => lathe([[r, y0], [r, y1]], 9).scale(0.8, 1, 1.1); // an open band (its outer face only: the skin lies right under it), the skin lathe's 9 facets
+  const put = (g, bone, face, colour) => { add(g, 'fixed', bone, [], 1, colour); const part = P[P.length - 1]; g.computeBoundingBox(); part.face = face; part.anchor = g.boundingBox.getCenter(new THREE.Vector3()).toArray(); };
+  for (const [side, s] of ['L', 'R'].entries()) {
+    const sx = s === 'L' ? 1 : -1, el = 'elbow' + s, id = (base, m) => base + side * 3 + m;
+    const yb = W.yBracelet, yw = W.yWatch, r = W.r, out = (rx, dx, y = yw) => [sx * (rx + dx), y, 0], rx = r * 0.8;
+    const disc = (rad, dx) => new THREE.CircleGeometry(rad, 10).rotateY(sx * Math.PI / 2).translate(...out(rx, dx)), plane = (w, h, dx) => new THREE.PlaneGeometry(w, h).rotateY(sx * Math.PI / 2).translate(...out(rx, dx));
+    // bracelets: 1 a thin band, 2 braided (two thin tori crossing at a slant), 3 a wide cuff
+    put(ring(r + 0.0012, yb - 0.0016, yb + 0.0016), el, id(FACE_PART.braceletBase, 0), RING.colours[0]);
+    const braid = [-1, 1].map((k) => new THREE.TorusGeometry(r + 0.0009, 0.0021, 3, 9).rotateX(Math.PI / 2).rotateZ(k * 0.22).scale(0.8, 1, 1.1).translate(0, yb, 0));
+    put(mergeGeometries(braid.map((g) => g.toNonIndexed())), el, id(FACE_PART.braceletBase, 1), RING.colours[0]);
+    put(ring(r + 0.0018, yb - 0.0055, yb + 0.0055), el, id(FACE_PART.braceletBase, 2), RING.colours[0]);
+    // watches: a strap round the wrist, the metal case on its outer side, a dark / light dial and a mark; 1 classic round (leather), 2 square (black rubber), 3 sport (a large case, a wide green strap)
+    put(ring(r + 0.0013, yw - 0.0055, yw + 0.0055), el, id(FACE_PART.watchStrap, 0), W.strap[0]);
+    put(new THREE.CylinderGeometry(0.0155, 0.0155, 0.006, 10).rotateZ(Math.PI / 2).translate(...out(rx, 0.0033)), el, id(FACE_PART.watchCase, 0), RING.colours[0]);
+    put(disc(0.0125, 0.0066), el, id(FACE_PART.watchDial, 0), W.face);
+    put(plane(0.0012, 0.0095, 0.0069), el, id(FACE_PART.watchFace, 0), W.dial); // (the hands' mark, up the wrist)
+    put(ring(r + 0.0013, yw - 0.0055, yw + 0.0055), el, id(FACE_PART.watchStrap, 1), W.strap[1]);
+    put(new THREE.BoxGeometry(0.0055, 0.025, 0.021).translate(...out(rx, 0.003)), el, id(FACE_PART.watchCase, 1), RING.colours[0]);
+    put(plane(0.016, 0.02, 0.0061), el, id(FACE_PART.watchDial, 1), W.dial);
+    put(ring(r + 0.0014, yw - 0.0075, yw + 0.0075), el, id(FACE_PART.watchStrap, 2), W.strap[2]);
+    put(new THREE.CylinderGeometry(0.0195, 0.0195, 0.0085, 12).rotateZ(Math.PI / 2).translate(...out(rx, 0.0043)), el, id(FACE_PART.watchCase, 2), RING.colours[0]);
+    put(disc(0.0155, 0.0089), el, id(FACE_PART.watchDial, 2), W.dial);
+    put(plane(0.0012, 0.0075, 0.0092), el, id(FACE_PART.watchFace, 2), W.face);
   }
 }
 /** Puts a part on its bone (bone-local offset `at`); head parts are warped into the face's shape first (faceWarp). */
@@ -875,7 +906,7 @@ function releaseSuitTexture() { if (--suitUsers === 0) { suitTexture.dispose(); 
 function makeMaterial(rim, headProjection) {
   const headMin = headProjection.min, headSize = headProjection.getSize(new THREE.Vector3()), headFront = headProjection.getCenter(new THREE.Vector3()).z;
   const u = { uOutline: { value: 0 }, uFill: { value: A.fill }, uRim: { value: A.rim }, uRimColor: { value: rim }, uSuit: { value: 0 }, uSuitTexture: { value: null }, uSuitMaskBand: { value: 0 }, uMouth: { value: 0 },
-    uEye: { value: new THREE.Vector3(1, 1, 1) }, uNose: { value: new THREE.Vector3(1, 1, 1) }, uEar: { value: 1 }, uHair: { value: 1 }, uGlasses: { value: 0 }, uEarrings: { value: 0 }, uHat: { value: 0 }, uPhones: { value: 0 }, uNecklace: { value: 0 }, uRingFinger: { value: 0 }, uRingColor: { value: new THREE.Color(RING.colours[0]) }, uNeck: { value: 0 }, uBrow: { value: new THREE.Vector2(1, 0) }, uHead: { value: new THREE.Vector3(1, 1, 0) } };
+    uEye: { value: new THREE.Vector3(1, 1, 1) }, uNose: { value: new THREE.Vector3(1, 1, 1) }, uEar: { value: 1 }, uHair: { value: 1 }, uGlasses: { value: 0 }, uEarrings: { value: 0 }, uHat: { value: 0 }, uPhones: { value: 0 }, uNecklace: { value: 0 }, uRingFinger: { value: 0 }, uBracelet: { value: 0 }, uWatch: { value: 0 }, uRingColor: { value: new THREE.Color(RING.colours[0]) }, uNeck: { value: 0 }, uBrow: { value: new THREE.Vector2(1, 0) }, uHead: { value: new THREE.Vector3(1, 1, 0) } };
   const m = new THREE.MeshLambertMaterial({ vertexColors: true, transparent: false, depthWrite: true });
   m.emissive.setScalar(A.emissiveSolid);
   m.userData.u = u;
@@ -884,7 +915,7 @@ function makeMaterial(rim, headProjection) {
     // Bind-pose coordinates follow the original skin: colours/own canvas only, no new
     // geometry, skeleton, head envelope or per-avatar colour-buffer replacement (#891).
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vSuitAt; varying float vSuitBone; attribute float bare; varying float vBare; varying float vRing; attribute float mouth; uniform float uMouth;\n' + FACE_SHAPE_DECL)
-      .replace('#include <begin_vertex>', `#include <begin_vertex>\nvSuitAt = position; vSuitBone = skinIndex.x; vBare = bare; vRing = step(${FACE_PART.ring}.0 - 0.5, facePart);\n${faceShape()}\ntransformed.y -= uMouth * mouth * ${MOUTH.drop.toFixed(5)}; // #1122: the jaw while talking`);
+      .replace('#include <begin_vertex>', `#include <begin_vertex>\nvSuitAt = position; vSuitBone = skinIndex.x; vBare = bare; vRing = step(${FACE_PART.ring}.0 - 0.5, facePart) * step(facePart, ${FACE_PART.watchStrap}.0 - 0.5); // (#1334: the rings, bracelets and watch cases are metal)\n${faceShape()}\ntransformed.y -= uMouth * mouth * ${MOUTH.drop.toFixed(5)}; // #1122: the jaw while talking`);
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', '#include <common>\nuniform float uOutline, uFill, uRim;\nuniform vec3 uRimColor;\nuniform float uSuit, uSuitMaskBand; uniform sampler2D uSuitTexture; varying vec3 vSuitAt; varying float vSuitBone; varying float vBare; varying float vRing; uniform vec3 uRingColor;')
       .replace('#include <color_fragment>', `#include <color_fragment>
@@ -914,7 +945,7 @@ function makeMaterial(rim, headProjection) {
       diffuseColor.a = mix(diffuseColor.a, mix(uFill, uRim, edge), uOutline);
       #include <opaque_fragment>`);
   };
-  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-v8';
+  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-v9';
   return m;
 }
 
@@ -924,7 +955,7 @@ function makeMaterial(rim, headProjection) {
 // pivot (`faceAnchor`: an eyeball's centre, the nose's bridge, an ear's centre, a brow's centre line), then every head vertex
 // but the neck is widened, lengthened from the chin and its lower face (faceWarp's jaw region) widened or narrowed. No new
 // geometry or draw call; collision and hit regions keep the plain head (CPU raycasts never see the shader).
-const FACE_SHAPE_DECL = 'attribute float facePart; attribute vec3 faceAnchor; uniform vec3 uEye, uNose, uHead; uniform float uEar, uHair, uGlasses, uEarrings, uHat, uPhones, uNecklace, uRingFinger, uNeck, uSuit; uniform vec2 uBrow;';
+const FACE_SHAPE_DECL = 'attribute float facePart; attribute vec3 faceAnchor; uniform vec3 uEye, uNose, uHead; uniform float uEar, uHair, uGlasses, uEarrings, uHat, uPhones, uNecklace, uRingFinger, uBracelet, uWatch, uNeck, uSuit; uniform vec2 uBrow;';
 const CHIN_Y = RH.jaw.centre[1] - RH.jaw.radius * RH.jaw.scale[1]; // the head lengthens from its chin
 function faceShape() {
   const hb = bindAt('head'), W = FACE.warp, f = (v) => v.toFixed(4), P = FACE_PART;
@@ -952,6 +983,11 @@ function faceShape() {
         else if (facePart > ${P.phoneNeck}.5 && facePart < ${P.lens}.5) { // #1325: earrings follow the ear's size; the chosen kind stays (1 studs, 2 hoops, 3 drops, 4 pearl studs)
           float on = step(abs(uEarrings - (facePart - ${P.studs}.0 + 1.0)), 0.5);
           transformed = faceAnchor + (transformed - faceAnchor) * on * uEar;
+        }
+        else if (facePart > ${P.braceletBase}.0 - 0.5) { // #1334: only the chosen bracelet / watch model stays (the value: 1-3 left, 4-6 right; a watch's case, strap, dial and face share it)
+          float grp = floor(facePart / 10.0 + 0.01), idx = facePart - grp * 10.0, want = grp < 5.5 ? uBracelet : uWatch;
+          float on = step(abs(want - (idx + 1.0)), 0.5);
+          transformed = faceAnchor + (transformed - faceAnchor) * on;
         }
         else if (facePart > ${P.ring}.0 - 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(abs(uRingFinger - (facePart - ${P.ring}.0 + 1.0)), 0.5); // #1324: only the chosen finger's ring stays
         else if (facePart > ${P.chain}.0 - 0.5) { // #1323: a necklace collapses to a point unless chosen (1 chain, 2 pearls, 3 pendant, 4 thick gold chain)
@@ -1005,6 +1041,7 @@ function applyFaceShape(u, lk) {
   u.uEarrings.value = Number.isInteger(lk.earrings) && lk.earrings > 0 && lk.earrings < EARR.names.length ? lk.earrings : 0; // #1325
   u.uNecklace.value = Number.isInteger(lk.necklace) && lk.necklace > 0 && lk.necklace < NECK_L.names.length ? lk.necklace : 0; // #1323
   u.uRingFinger.value = Number.isInteger(lk.ring) && lk.ring > 0 && lk.ring <= 10 ? lk.ring : 0; // #1324
+  u.uBracelet.value = wristValue(lk.bracelet); u.uWatch.value = wristValue(lk.watch); // #1334
   u.uRingColor.value.set(RING.colours[Number.isInteger(lk.metal) && lk.metal >= 0 && lk.metal < RING.colours.length ? lk.metal : 0]);
   u.uHat.value = Number.isInteger(lk.hat) && lk.hat > 0 && lk.hat < HAT.names.length ? lk.hat : 0; // #1321
   u.uPhones.value = Number.isInteger(lk.phones) && lk.phones > 0 && lk.phones < PHONES.names.length ? lk.phones : 0; // #1322

@@ -5492,6 +5492,15 @@ export const AVATAR_PHONES = { tag: 'f', names: ['Inga', 'På öronen', 'Runt ha
 // standing in for a metal's gloss (no reflections).
 export const AVATAR_RING = { tag: 'i', metalTag: 'z', fingers: ['Tumme', 'Pekfinger', 'Långfinger', 'Ringfinger', 'Lillfinger'], sides: ['Vänster hand', 'Höger hand'], metals: ['Guld', 'Silver', 'Koppar', 'Svart titan'],
   colours: [0xe0b83c, 0xd2d6db, 0xc2703d, 0x2b2d33], sink: 0.0004, tube: 0.0022, at: 0.5, thumbAt: 0.55, shine: 0.12 };
+// #1334 (#1318, #1325): a bracelet and a wristwatch, look fields `bracelet` and `watch` (each 0 none, 1-3 the model on the left wrist, 4-6 the same on the right) in the metal
+// of the ring (`metal`). All lowercase tags are taken, so they share the metal's `z` tag: `z` = metal + 4 * (bracelet + 7 * watch), written when any is chosen (a ring-only
+// code is the old `z<metal>`, older clients ignore a `z` above 3, losing only the metal). Bracelets: thin band, braided, wide cuff. Watches: classic round (leather strap),
+// square (black rubber), sport (large case, green strap); the case takes the metal, strap and dial their own fixed colours. Shapes (*guess*, by eye): `r` the wrist's radius at the
+// watch / bracelet height and `y` that height on the elbow bone (m; the wrist skin tapers 0.024 -> 0.028 between -0.272 and -0.235, the cuff starts at -0.245), `fp` the first-person hand's
+// position along the wrist (z) and its ellipse's half axes (x, y) in m.
+export const AVATAR_WRIST = { tag: 'z', bracelets: ['Inget', 'Tunt band', 'Flätat', 'Bred manschett'], watches: ['Ingen', 'Klassiskt', 'Fyrkantigt', 'Sport'], sides: ['Vänster handled', 'Höger handled'],
+  strap: [0x5b3a25, 0x23252b, 0x2f5d4a], dial: 0x14161b, face: 0xe9e6dc, r: 0.0262, yWatch: -0.254, yBracelet: -0.2675, fp: { watchZ: 0.004, braceletZ: 0.017, half: [0.0215, 0.0335] } };
+export function wristValue(v) { return Number.isInteger(v) && v >= 0 && v <= 6 ? v : 0; }
 export const AVATAR_NECKLACE = { tag: 'x', names: ['Inget', 'Tunn kedja', 'Pärlor', 'Hänge', 'Guldkedja'], neckY: 0.665, drop: 0.115, tube: 0.0028, gold: 0.0062, bead: 0.0085, pendant: 0.017,
   colours: { chain: 0xc9ccd1, pearl: 0xf1ece2, pendant: 0xd4af37, gold: 0xe0b83c } };
 // #1244: trouser models (look field `legs`, tag `p`) and top models (`cut`, tag `m`) beyond the first, which stay the default and
@@ -5530,10 +5539,12 @@ function encodeLookExt(look) {
   if (Number.isInteger(look.hat) && look.hat > 0 && look.hat < AVATAR_HAT.names.length) out += `${AVATAR_HAT.tag}${look.hat}`; // #1321
   if (Number.isInteger(look.phones) && look.phones > 0 && look.phones < AVATAR_PHONES.names.length) out += `${AVATAR_PHONES.tag}${look.phones}`; // #1322
   if (Number.isInteger(look.necklace) && look.necklace > 0 && look.necklace < AVATAR_NECKLACE.names.length) out += `${AVATAR_NECKLACE.tag}${look.necklace}`; // #1323
-  if (Number.isInteger(look.ring) && look.ring > 0 && look.ring <= 10) { // #1324
-    out += `${AVATAR_RING.tag}${look.ring}`;
-    if (Number.isInteger(look.metal) && look.metal > 0 && look.metal < AVATAR_RING.metals.length) out += `${AVATAR_RING.metalTag}${look.metal}`;
-  }
+  const hasRing = Number.isInteger(look.ring) && look.ring > 0 && look.ring <= 10;
+  if (hasRing) out += `${AVATAR_RING.tag}${look.ring}`; // #1324
+  const br = wristValue(look.bracelet), wa = wristValue(look.watch); // #1334: bracelet and watch share the metal's tag
+  const metal = Number.isInteger(look.metal) && look.metal > 0 && look.metal < AVATAR_RING.metals.length ? look.metal : 0;
+  const zv = (hasRing || br || wa ? metal : 0) + 4 * (br + 7 * wa);
+  if (zv > 0) out += `${AVATAR_RING.metalTag}${zv}`;
   const brows = look.brows == null ? -1 : HAIR.indexOf(look.brows); // #1220
   if (brows >= 0) out += `${AVATAR_BROWS.tag}${brows}`;
   if (look.legs > 0 && look.legs < AVATAR_CLOTHES.legs.names.length) out += `${AVATAR_CLOTHES.legs.tag}${look.legs}`; // #1244
@@ -5557,7 +5568,11 @@ function decodeLookExt(ext, lk) {
     if (tag === AVATAR_PHONES.tag) { if (v < AVATAR_PHONES.names.length) lk.phones = v; continue; } // #1322
     if (tag === AVATAR_NECKLACE.tag) { if (v < AVATAR_NECKLACE.names.length) lk.necklace = v; continue; } // #1323
     if (tag === AVATAR_RING.tag) { if (v >= 1 && v <= 10) lk.ring = v; continue; } // #1324
-    if (tag === AVATAR_RING.metalTag) { if (v < AVATAR_RING.metals.length) lk.metal = v; continue; }
+    if (tag === AVATAR_RING.metalTag) { // the metal in the units, #1334 bracelet and watch above it
+      const w = Math.floor(v / 28);
+      if (w <= 6) { lk.metal = v % 4; lk.bracelet = Math.floor(v / 4) % 7; lk.watch = w; }
+      continue;
+    }
     if (tag === AVATAR_BROWS.tag) { if (v < HAIR.length) lk.brows = HAIR[v]; continue; } // #1220
     if (tag === AVATAR_CLOTHES.legs.tag) { if (v < AVATAR_CLOTHES.legs.names.length) lk.legs = v; continue; } // #1244
     if (tag === AVATAR_CLOTHES.cut.tag) { if (v < AVATAR_CLOTHES.cut.names.length) lk.cut = v; continue; }
@@ -5594,7 +5609,7 @@ function nearestSeededBuild(look) {
 
 /** The face fields' defaults (#1138): the original brown eyes, every slider in the middle and brows like the hair (#1220). */
 export function defaultFaceLook() {
-  const lk = { eyes: EYES[0], glasses: 0, earrings: 0, hat: 0, phones: 0, necklace: 0, ring: 0, metal: 0, brows: null };
+  const lk = { eyes: EYES[0], glasses: 0, earrings: 0, hat: 0, phones: 0, necklace: 0, ring: 0, metal: 0, bracelet: 0, watch: 0, brows: null };
   for (const name of Object.keys(AVATAR_SHAPE.fields)) lk[name] = AVATAR_SHAPE.mid;
   return lk;
 }

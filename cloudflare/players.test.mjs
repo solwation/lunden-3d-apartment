@@ -1458,7 +1458,9 @@ test('#890 avatar appearance sync in state, welcome and validation', async () =>
   a.send({ p: [1.4, 0, 2], r: 0.5, av: validAv9, ax: 'e7h1g2' });
   await settle(env);
   assert.equal(b.got.filter(m => m.t === 's' && m.i === a.got[0].i).at(-1).ax, 'e7h1g2', 'hair length and glasses tags are forwarded');
-  for (const bad of ['C3', 'c', 'c1234', 'x'.repeat(10), 'c1'.repeat(25), 7, { c: 1 }]) {
+  now += 1000; a.send({ p: [1.2, 0, 2], r: 0.5, av: validAv9, ax: 'c1'.repeat(30) }); await settle(env); // #1334: the clients' full 60 characters pass (the Worker said 48)
+  assert.equal(b.got.filter(m => m.t === 's' && m.i === a.got[0].i).at(-1).ax, 'c1'.repeat(30), 'a 60 character extension is forwarded');
+  for (const bad of ['C3', 'c', 'c1234', 'x'.repeat(10), 'c1'.repeat(31), 7, { c: 1 }]) {
     now += 1000;
     a.send({ p: [1.3 + Math.random(), 0, 2], r: 0.5, av: validAv9, ax: bad });
     await settle(env);

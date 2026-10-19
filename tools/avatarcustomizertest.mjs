@@ -748,11 +748,45 @@ test('#1324 rings: tags i (finger 1-10) and z (metal), old codes unchanged, bad 
   assert.equal(encodeAvatarLook({ ...plain, ring: 0, metal: 2 }), base, 'a metal without a ring is not written');
   assert.equal(encodeAvatarLook({ ...plain, ring: 11 }), base, 'an unknown finger is not written');
   assert.equal(decodeAvatarLook(base + 'i11', 'p').ring, 0); assert.equal(decodeAvatarLook(base + 'i0', 'p').ring, 0);
-  assert.equal(decodeAvatarLook(base + 'i3z9', 'p').metal, 0, 'out-of-range metal ignored');
+  assert.equal(decodeAvatarLook(base + 'i3z999', 'p').metal, 0, 'out-of-range metal ignored (z9 is metal 1 + bracelet 2 since #1334)');
   assert.match(encodeAvatarWireLook({ ...plain, ring: 7, metal: 3 }), /i7z3/, 'on the wire');
   const everything = { ...plain, glasses: 2, hat: 4, phones: 2, necklace: 4, ring: 10, metal: 3, brows: HAIR[7], eyes: 0x7c8288 };
   for (const n of Object.keys(AVATAR_SHAPE.fields)) everything[n] = n === 'jaw' ? 0 : 8;
   assert.ok(splitAvatarCode(encodeAvatarWireLook({ ...everything, height: 140, bodyBuild: 8, top: TOPS[10] })).ax.length <= AVATAR_LOOK_EXT_MAX);
+});
+
+test('#1334 bracelets and watches: share the z tag (metal + 4 * (bracelet + 7 * watch)), old codes unchanged, bad values skipped, within the extension limit', async () => {
+  const { AVATAR_WRIST, AVATAR_LOOK_EXT_MAX, AVATAR_SHAPE, splitAvatarCode, defaultFaceLook, encodeAvatarWireLook } = await import('../src/config.js');
+  const plain = avatarLook('wrist-plain'), base = encodeAvatarLook(plain);
+  assert.equal(defaultFaceLook().bracelet, 0); assert.equal(defaultFaceLook().watch, 0);
+  assert.equal(decodeAvatarLook(base, 'p').bracelet, 0); assert.equal(decodeAvatarLook(base, 'p').watch, 0);
+  assert.equal(AVATAR_WRIST.bracelets.length, 4); assert.equal(AVATAR_WRIST.watches.length, 4); assert.equal(AVATAR_WRIST.strap.length, 3);
+  for (let b = 1; b <= 6; b++) {
+    const code = encodeAvatarLook({ ...plain, bracelet: b });
+    assert.equal(code, `${base}z${4 * b}`, 'gold is the default metal');
+    const back = decodeAvatarLook(code, 'p'); assert.equal(back.bracelet, b); assert.equal(back.watch, 0); assert.equal(back.metal, 0);
+  }
+  for (let w = 1; w <= 6; w++) {
+    const code = encodeAvatarLook({ ...plain, watch: w, metal: 2 });
+    assert.equal(code, `${base}z${2 + 28 * w}`);
+    const back = decodeAvatarLook(code, 'p'); assert.equal(back.watch, w); assert.equal(back.bracelet, 0); assert.equal(back.metal, 2);
+  }
+  const both = encodeAvatarLook({ ...plain, ring: 3, bracelet: 5, watch: 2, metal: 3 });
+  assert.equal(both, `${base}i3z${3 + 4 * (5 + 14)}`);
+  const back = decodeAvatarLook(both, 'p'); assert.deepEqual([back.ring, back.bracelet, back.watch, back.metal], [3, 5, 2, 3]);
+  assert.equal(encodeAvatarLook({ ...plain, ring: 3, metal: 1 }), `${base}i3z1`, 'a ring-only code is the old one');
+  assert.equal(decodeAvatarLook(`${base}i3z1`, 'p').bracelet, 0, 'an old ring code has no wrist items');
+  assert.equal(encodeAvatarLook({ ...plain, metal: 2 }), base, 'a metal alone is not written');
+  assert.equal(encodeAvatarLook({ ...plain, bracelet: 7, watch: -1 }), base, 'unknown models are not written');
+  assert.equal(decodeAvatarLook(base + 'z999', 'p').watch, 0, 'an out-of-range watch is ignored');
+  assert.match(encodeAvatarWireLook({ ...plain, bracelet: 4, watch: 6 }), /z\d+/, 'on the wire');
+  const everything = { ...plain, glasses: 2, earrings: 4, hat: 4, phones: 2, necklace: 4, ring: 10, metal: 3, bracelet: 6, watch: 6, brows: HAIR[7], eyes: 0x7c8288 };
+  for (const n of Object.keys(AVATAR_SHAPE.fields)) everything[n] = n === 'jaw' ? 0 : 8;
+  assert.ok(splitAvatarCode(encodeAvatarWireLook({ ...everything, height: 140, bodyBuild: 8, top: TOPS[10] })).ax.length <= AVATAR_LOOK_EXT_MAX);
+  const { cleanAvatarExt } = await import('../cloudflare/players.js');
+  const ax = splitAvatarCode(encodeAvatarWireLook({ ...everything, height: 140, bodyBuild: 8, top: TOPS[10] })).ax;
+  assert.equal(cleanAvatarExt(ax), ax, 'the Worker passes the full extension'); assert.equal(cleanAvatarExt('z1'.repeat(31)), null, 'longer than 60 is rejected');
+  assert.equal(cleanAvatarExt('a1'.repeat(30)), 'a1'.repeat(30), 'exactly 60 characters pass (the clients allow 60)');
 });
 
 test('#1325 earrings and sunglasses: earrings share the g tag (glasses + 10 * earrings), old codes unchanged, bad values skipped', async () => {

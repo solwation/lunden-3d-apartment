@@ -19,6 +19,13 @@ const [base = 'http://localhost:9350', out = '/tmp/shots-1324'] = process.argv.s
       if (ring && !(r.ring === ring)) errors.push(`ring ${ring}: ${JSON.stringify(r)}`);
       await page.locator('canvas').screenshot({ path: path.join(out, `fp-ring${ring}-m${metal}-${pose}.png`) });
     }
+    // #1334: bracelets (1-3 left, 4-6 right) and watches in the open / closed / hug poses, with a ring and with the metals
+    for (const [bracelet, watch, metal, pose, ring] of [[1, 0, 0, 'reach', 0], [2, 0, 1, 'reach', 0], [3, 0, 2, 'reach', 0], [0, 1, 0, 'reach', 0], [0, 2, 1, 'reach', 0], [0, 3, 3, 'reach', 0], [4, 0, 0, 'reach', 0], [5, 0, 1, 'reach', 0], [6, 0, 2, 'reach', 0],
+      [0, 4, 0, 'reach', 0], [0, 5, 1, 'reach', 0], [0, 6, 2, 'reach', 0], [1, 5, 0, 'reach', 3], [0, 4, 1, 'palm', 0], [6, 0, 0, 'grip', 0], [0, 6, 2, 'grip', 0], [2, 6, 1, 'hug', 0], [3, 1, 0, 'hug', 0]]) {
+      const r = await page.evaluate(([a, b, c, d, e]) => window.__go(e, c, d, { bracelet: a, watch: b }), [bracelet, watch, metal, pose, ring]);
+      if (bracelet + watch && r.wrist < 1) errors.push(`wrist b${bracelet} w${watch}: ${JSON.stringify(r)}`);
+      await page.locator('canvas').screenshot({ path: path.join(out, `fp-wrist-b${bracelet}-w${watch}-m${metal}-${pose}.png`) });
+    }
     if (errors.length) { console.log('FAIL', errors); process.exitCode = 1; } else console.log('PASS');
   } finally { await ctx.close(); fs.rmSync(dir, { recursive: true, force: true }); }
 })();

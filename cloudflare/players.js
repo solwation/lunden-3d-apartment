@@ -152,10 +152,10 @@ export function cleanSound(text) {
 export function cleanAvatar(v) {
   return avatarCodeValid(v) ? v : null; // (#1136: 7, 9 or 12 digits, the last three a height in cm)
 }
-/** #1138: the look code's extension (`ax`, beside `av`): tagged fields `[a-z]` + 1–3 digits, at most 48 characters
+/** #1138: the look code's extension (`ax`, beside `av`): tagged fields `[a-z]` + 1–3 digits, at most 60 characters (#1334: it was 48 here while the clients allowed 60)
  * (src/config.js AVATAR_LOOK_EXT_MAX). Only the form is checked, so clients can add fields without a Worker change. */
 export function cleanAvatarExt(v) {
-  return typeof v === 'string' && v.length > 0 && v.length <= 48 && /^(?:[a-z][0-9]{1,3})+$/.test(v) ? v : null;
+  return typeof v === 'string' && v.length > 0 && v.length <= 60 && /^(?:[a-z][0-9]{1,3})+$/.test(v) ? v : null;
 }
 
 /** A checked, rounded state from a client's message, or null. */

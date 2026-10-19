@@ -8,7 +8,7 @@
 </script>
 <style>html,body{margin:0;background:#bfc6cc}canvas{display:block}</style></head>
 <body><script type="module">
-// #1324 component page: the first-person hand with the avatar's ring (look.ring / look.metal) in the relaxed, closed (hug), open (reach) and palm poses.
+// #1324 (#1334: `extra` look fields bracelet / watch) component page: the first-person hand with the avatar's ring (look.ring / look.metal) in the relaxed, closed (hug), open (reach) and palm poses.
 // ?ring=1..10&metal=0..3&pose=hug|palm|reach|grip; driven by tools/handringtest.cjs (window.__ready, window.__go(ring, metal, pose)).
 import * as THREE from 'three';
 import { Hand, handLook } from '../src/hand.js';
@@ -20,14 +20,14 @@ const sun = new THREE.DirectionalLight(0xfff2e0, 2.2); sun.position.set(2, 4, 3)
 const camera = new THREE.PerspectiveCamera(Number(new URLSearchParams(location.search).get('fov') ?? 24), W / Hh, 0.02, 20), hand = new Hand(camera, scene);
 camera.setViewOffset(W, Hh, 240, 250, W, Hh); camera.updateProjectionMatrix();
 const model = new THREE.Object3D(); camera.add(model); model.position.set(0, -0.12, -0.42); model.updateMatrix();
-window.__go = (ring, metal, pose) => {
+window.__go = (ring, metal, pose, extra = {}) => {
   if (pose === 'hug') { camera.clearViewOffset(); camera.fov = 45; camera.updateProjectionMatrix(); }
-  handLook({ skin: 0xe0ae8a, top: 0x3d6b8f, sleeves: 1, ring, metal });
+  handLook({ skin: 0xe0ae8a, top: 0x3d6b8f, sleeves: 1, ring, metal, ...extra });
   const item = pose === 'hug' ? { held: true, model, handPose: 'hug', hugGrips: [[0.2, 0.02, 0], [-0.2, 0.02, 0]] } : pose === 'palm' ? { held: true, model, handPose: 'palm', grip: null } : pose === 'grip' ? { held: true, model, grip: [0, 0, 0] } : null;
   if (pose === 'reach') { camera.updateMatrixWorld(); hand.reach(new THREE.Vector3(0.1, -0.13, -0.5)); hand.reachT = 0.5; }
   for (let i = 0; i < 30; i++) { hand.update(0.05, item); if (pose === 'reach') hand.reachT = 0.5; }
   renderer.render(scene, camera);
-  return { ring: hand.rings.k, visible: [hand.rings.r?.visible, hand.rings.l?.visible], calls: renderer.info.render.calls };
+  return { ring: hand.rings.k, visible: [hand.rings.r?.visible, hand.rings.l?.visible], wrist: hand.wrist.meshes.length, calls: renderer.info.render.calls };
 };
 window.__ready = true;
 </script></body></html>

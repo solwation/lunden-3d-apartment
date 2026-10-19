@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { HAND as H, BICYCLE_GRIP as BIKE_GRIP, AVATAR_RING as RING } from './config.js';
+import { HAND as H, BICYCLE_GRIP as BIKE_GRIP, AVATAR_RING as RING, AVATAR_WRIST as WRIST, wristValue } from './config.js';
 
 // The visitor's right arm and hand (#195, #238), children of the camera, in the lower right of the view. Hidden
 // while the hand is empty. Holding something (holdable.js, a cup), the hand closes round the held thing's grip
@@ -22,9 +22,12 @@ import { HAND as H, BICYCLE_GRIP as BIKE_GRIP, AVATAR_RING as RING } from './con
 const skin = new THREE.MeshStandardMaterial({ color: H.skin, roughness: 0.62, emissive: H.skinGlow, emissiveIntensity: 1 });
 const SKIN = { color: new THREE.Color(H.skin), wet: new THREE.Color(H.skin).multiplyScalar(0.88), rough: 0.62, wetRough: 0.24 };
 // #1215: the arm follows the player's avatar (look.skin, look.top, look.sleeves); HAND.skin / HAND.sleeve are the defaults
-const OWN = { skin: H.skin, sleeve: H.sleeve, long: true, suit: false, ring: 0, metal: 0, glow: new THREE.Color(H.skinGlow) };
+const OWN = { skin: H.skin, sleeve: H.sleeve, long: true, suit: false, ring: 0, metal: 0, bracelet: 0, watch: 0, glow: new THREE.Color(H.skinGlow) };
 // #1324: the avatar's ring (look.ring 1-5 the left hand, 6-10 the right; look.metal) on the first-person hand: a thin band on its own morphing mesh (the same four poses), metal colour from config.js AVATAR_RING
 const ringMat = new THREE.MeshStandardMaterial({ color: RING.colours[0], roughness: 0.4, metalness: 0.3 });
+// #1334: bracelet / watch parts: the metal (ringMat), a strap per watch model, the dial and the face mark
+const wristMat = { strap: WRIST.strap.map((c) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.7 })), dial: new THREE.MeshStandardMaterial({ color: WRIST.dial, roughness: 0.3 }),
+  face: new THREE.MeshStandardMaterial({ color: WRIST.face, roughness: 0.5, emissive: WRIST.face, emissiveIntensity: 0.25 }) };
 const lum = (c) => { const k = new THREE.Color(c); return 0.3 * k.r + 0.59 * k.g + 0.11 * k.b; };
 // water drops on wet hands (#437): little flattened beads on the back of the hand and the fingers
 const dropMat = new THREE.MeshStandardMaterial({ color: 0xf2f8fc, roughness: 0.03, metalness: 0.1, transparent: true, opacity: 0.85, depthWrite: false });
@@ -58,6 +61,7 @@ export function handLook(look) {
   OWN.long = !!(Number(look?.sleeves) > 0);
   OWN.ring = Number.isInteger(look?.ring) && look.ring >= 1 && look.ring <= 10 ? look.ring : 0; // #1324
   OWN.metal = Number.isInteger(look?.metal) && look.metal >= 0 && look.metal < RING.colours.length ? look.metal : 0;
+  OWN.bracelet = wristValue(look?.bracelet); OWN.watch = wristValue(look?.watch); // #1334
   ringMat.color.set(RING.colours[OWN.metal]); ringMat.emissive.set(RING.colours[OWN.metal]).multiplyScalar(0.3); // (no environment map: a little glow instead of a metal sheen)
   OWN.glow.set(H.skinGlow).multiplyScalar(Math.min(1.4, lum(OWN.skin) / lum(H.skin)));
   if (!OWN.suit) { SKIN.color.set(OWN.skin); SKIN.wet.copy(SKIN.color).multiplyScalar(0.88); skin.color.copy(SKIN.color); skin.emissive.copy(OWN.glow); sleeve.color.set(OWN.sleeve); }
@@ -142,6 +146,32 @@ function ringGeometry(pose, k) {
   g.deleteAttribute('uv');
   return g.toNonIndexed().scale(H.size, H.size, H.size);
 }
+/** #1334: a bracelet (`kind` 'bracelet', model 1-3) or a watch ('watch') on the wrist of the right hand's frame (the palm faces +x, so the back of the hand and the watch's face are −x; the left
+ * hand is this mirrored): an ellipse round the wrist at z, as the avatar's (AVATAR_WRIST). Returns [geometry, material] parts, unscaled by the hand's size until the end. */
+function wristParts(kind, model) {
+  const [hx, hy] = WRIST.fp.half, z = kind === 'watch' ? WRIST.fp.watchZ : WRIST.fp.braceletZ;
+  const solid = (g) => { g.deleteAttribute('uv'); return (g.index ? g.toNonIndexed() : g).scale(H.size, H.size, H.size); };
+  const out = [];
+  if (kind === 'bracelet') {
+    if (model === 1) out.push([solid(new THREE.TorusGeometry(1, 0.0016, 4, 22).scale(hx + 0.0015, hy + 0.0015, 1).translate(0, -0.002, z)), ringMat]);
+    else if (model === 2) for (const k of [-1, 1]) out.push([solid(new THREE.TorusGeometry(1, 0.0019, 4, 22).scale(hx + 0.0018, hy + 0.0018, 1).rotateX(k * 0.2).translate(0, -0.002, z)), ringMat]);
+    else out.push([solid(new THREE.CylinderGeometry(1, 1, 0.011, 22, 1, true).rotateX(Math.PI / 2).scale(hx + 0.002, hy + 0.002, 1).translate(0, -0.002, z)), ringMat]);
+  } else {
+    const h = model === 3 ? 0.015 : 0.011, caseX = -(hx + 0.0042);
+    out.push([solid(new THREE.CylinderGeometry(1, 1, h, 22, 1, true).rotateX(Math.PI / 2).scale(hx + 0.0016, hy + 0.0016, 1).translate(0, -0.002, z)), wristMat.strap[model - 1]]);
+    if (model === 1) {
+      out.push([solid(new THREE.CylinderGeometry(0.0155, 0.0155, 0.006, 14).rotateZ(Math.PI / 2).translate(caseX, -0.002, z)), ringMat]);
+      out.push([solid(new THREE.CylinderGeometry(0.0125, 0.0125, 0.0012, 14).rotateZ(Math.PI / 2).translate(caseX - 0.0034, -0.002, z)), wristMat.face]);
+    } else if (model === 2) {
+      out.push([solid(new THREE.BoxGeometry(0.0055, 0.02, 0.025).translate(caseX, -0.002, z)), ringMat]);
+      out.push([solid(new THREE.BoxGeometry(0.0012, 0.016, 0.02).translate(caseX - 0.003, -0.002, z)), wristMat.dial]);
+    } else {
+      out.push([solid(new THREE.CylinderGeometry(0.0195, 0.0195, 0.0085, 16).rotateZ(Math.PI / 2).translate(caseX, -0.002, z)), ringMat]);
+      out.push([solid(new THREE.CylinderGeometry(0.0155, 0.0155, 0.0012, 16).rotateZ(Math.PI / 2).translate(caseX - 0.0045, -0.002, z)), wristMat.dial]);
+    }
+  }
+  return out;
+}
 function buildRing(k) {
   const base = ringGeometry(POSES.relaxed, k), targets = [POSES.grip, POSES.spread, POSES.web].map((p) => ringGeometry(p, k));
   base.morphAttributes.position = targets.map((g) => g.getAttribute('position'));
@@ -195,6 +225,7 @@ export class Hand {
     for (const m of Object.values(this.left)) { m.visible = false; m.castShadow = false; m.renderOrder = 1; m.raycast = () => {}; m.frustumCulled = false; this.mirror.add(m); }
     // #1324: the ring meshes, created for the chosen finger (applyRing), children of the hand meshes (morph influences copied every frame)
     this.rings = { r: null, l: null, k: 0 };
+    this.wrist = { meshes: [], key: '' }; // #1334: bracelets / watches on the wrists (applyWrist)
     this.sleeved = true;
     this.shoulder = new THREE.Vector3(...H.shoulder);
     this.rest = new THREE.Vector3(...H.rest);
@@ -217,6 +248,7 @@ export class Hand {
     this.suit = { on: false, climb: false, up: 0, side: 0, swing: null };
     this.webT = 0; this.sMix = 0; this.cPhase = 0; this.cAmp = 0; this.cDir = new THREE.Vector2(0, 1);
     this.applyRing(); // (the look may have been set before this hand existed)
+    this.applyWrist();
   }
 
   /** Short sleeves (#1215): the arm is bare skin and the cuff goes; the same meshes, only the material and visibility change. */
@@ -226,6 +258,7 @@ export class Hand {
     this.cuff.visible = this.cuff.visible && this.sleeved;
     this.left.cuff.visible = this.left.cuff.visible && this.sleeved;
     this.applyRing();
+    this.applyWrist();
   }
 
   /** #1324: the avatar's ring on its finger of the right or left hand (none under the suit's gloves). */
@@ -243,6 +276,24 @@ export class Hand {
       }
       this.rings.k = want;
     }
+  }
+
+  /** #1334: the avatar's bracelets and watches (value 1-3 the left wrist, 4-6 the right; none under the suit's gloves): static parts on the hand meshes, built when the look changes. */
+  applyWrist() {
+    const b = OWN.suit ? 0 : OWN.bracelet, w = OWN.suit ? 0 : OWN.watch, key = `${b}.${w}`;
+    if (key === this.wrist.key) return;
+    for (const m of this.wrist.meshes) { m.parent?.remove(m); m.geometry.dispose(); }
+    this.wrist.meshes = [];
+    for (const [kind, v] of [['bracelet', b], ['watch', w]]) {
+      if (!v) continue;
+      const host = v > 3 ? this.hand : this.left.hand;
+      for (const [geometry, material] of wristParts(kind, ((v - 1) % 3) + 1)) {
+        const m = new THREE.Mesh(geometry, material);
+        Object.assign(m, { castShadow: false, renderOrder: 1, frustumCulled: false }); m.raycast = () => {};
+        host.add(m); this.wrist.meshes.push(m);
+      }
+    }
+    this.wrist.key = key;
   }
 
   /** A web was shot (#636): the right hand takes the pose for HAND.suit.webHold s. */

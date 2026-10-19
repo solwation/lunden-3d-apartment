@@ -2,6 +2,7 @@
 // for every hairstyle (style 0–4) without and with each kind of headphones (phones 0–2): front, 3/4, side, back; one draw call per avatar; fails on page errors.
 // FIELD=earrings / glasses: look.earrings 0–4 / look.glasses 0–3 (incl. sunglasses) on every hairstyle, without and with headphones on the ears, close-up of the head.
 // FIELD=necklace: the necklaces (look.necklace 0–4) on the T-shirt, tank and hoodie and on both figures instead.
+// FIELD=wrist (#1334): bracelets and watches (every model, left and right wrist, metals) close up.
 // FIELD=ring (#1324): the ten fingers (base 0 = left hand, 5 = right hand) in gold, and every finger-4 ring metal, hands close up from the front and the side.
 // PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/avataraccessoriestest.cjs http://localhost:8743 /tmp/shots-1321 [prefix]
 const fs = require('fs'), os = require('os'), path = require('path');
@@ -25,6 +26,20 @@ const [base = 'http://localhost:8743', out = '/tmp/shots-1321', prefix = 'after'
         for (const v of ['front', 'q', 'side']) {
           await page.evaluate((v) => window.__shot(v), v);
           await page.locator('canvas').screenshot({ path: path.join(out, `${prefix}-ring-${tag}-${v}.png`) });
+        }
+        const info = await page.evaluate(() => window.__info());
+        if (info.calls !== info.avatars) errors.push(`draw calls ${info.calls} for ${info.avatars} avatars`);
+      }
+      if (errors.length) { console.log('FAIL', errors); process.exitCode = 1; } else console.log('PASS');
+      return;
+    }
+    if (process.env.FIELD === 'wrist') { // #1334: bracelets (look.bracelet 0-6) and watches (look.watch 0-6; 1-3 the left wrist, 4-6 the right) in each metal, the arms close up from the front, the quarter and both sides, on a T-shirt, a long sleeve and the tank top
+      for (const [field, base5, metal, cut, sleeves] of [['bracelet', 0, 0, 0, 0], ['bracelet', 2, 1, 0, 1], ['bracelet', 0, 2, 1, 0], ['bracelet', 2, 3, 2, 0], ['watch', 0, 0, 0, 0], ['watch', 2, 1, 0, 1], ['watch', 0, 2, 1, 0], ['watch', 2, 3, 2, 0]]) {
+        await page.goto(`${base}/tools/avataraccessories.html?field=${field}&base=${base5}&metal=${metal}&cut=${cut}&sleeves=${sleeves}&cy=0.85&fov=11`);
+        await page.waitForFunction(() => window.__ready, null, { timeout: 60000 });
+        for (const v of ['front', 'q', 'side', 'side2']) {
+          await page.evaluate((v) => window.__shot(v), v);
+          await page.locator('canvas').screenshot({ path: path.join(out, `${prefix}-wrist-${field}-b${base5}-m${metal}-c${cut}-s${sleeves}-${v}.png`) });
         }
         const info = await page.evaluate(() => window.__info());
         if (info.calls !== info.avatars) errors.push(`draw calls ${info.calls} for ${info.avatars} avatars`);

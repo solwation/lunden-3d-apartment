@@ -20,7 +20,7 @@ const sun = new THREE.DirectionalLight(0xfff2e0, 2.2); sun.position.set(2, 4, 3)
 const hairs = [0x3b2a1e, 0xc9a24a, 0x20202a], avatars = [];
 const q = new URLSearchParams(location.search), row = [Number(q.get('style') ?? 0)], hats = [0, 1, 2, 3, 4], field = q.get('field') ?? 'hat', cut = Number(q.get('cut') ?? 0), gender = Number(q.get('gender') ?? (row[0] === 1 ? 1 : 0));
 hats.forEach((hat, s) => {
-  const lk = { ...avatarLook('ac' + s), style: row[0], hair: hairs[row[0] % 3], top: [0x3d6b8f, 0x8f3d4f, 0x8f3d4f, 0x4f7a3d, 0x6b5a8f][s], skin: 0xe0ae8a, tall: 1, build: 1, gender, cut, facial: Number(q.get('facial') ?? 0), ...(q.get('hl') ? { hairLength: Math.round(Number(q.get('hl'))) } : {}), [field]: hat + Number(q.get('base') ?? 0), metal: Number(q.get('metal') ?? 0), phones: Number(q.get('phones') ?? 0) };
+  const lk = { ...avatarLook('ac' + s), style: row[0], hair: hairs[row[0] % 3], top: [0x3d6b8f, 0x8f3d4f, 0x8f3d4f, 0x4f7a3d, 0x6b5a8f][s], skin: 0xe0ae8a, tall: 1, build: 1, gender, cut, sleeves: Number(q.get('sleeves') ?? 0), facial: Number(q.get('facial') ?? 0), ...(q.get('hl') ? { hairLength: Math.round(Number(q.get('hl'))) } : {}), [field]: hat + Number(q.get('base') ?? 0), metal: Number(q.get('metal') ?? 0), phones: Number(q.get('phones') ?? 0) };
   const a = new Avatar(lk); a.object.position.set((s - 2) * 0.55, 0, 0); scene.add(a.object); avatars.push(a);
 });
 const cam = new THREE.PerspectiveCamera(12, W / Hh, 0.05, 50);

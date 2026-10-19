@@ -1,4 +1,4 @@
-import { SKIN, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES, AVATAR_HAT, AVATAR_PHONES, AVATAR_NECKLACE, AVATAR_EARRINGS, AVATAR_RING, AVATAR_CLOTHES } from './config.js';
+import { SKIN, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES, AVATAR_HAT, AVATAR_PHONES, AVATAR_NECKLACE, AVATAR_EARRINGS, AVATAR_RING, AVATAR_WRIST, wristValue, AVATAR_CLOTHES } from './config.js';
 
 // #1220: the brows' colours (config.js HAIR, the hair swatches' names) and a first choice that follows the hair
 const BROW_NAMES = ['Mörkbruna', 'Bruna', 'Ljusbruna', 'Guldbruna', 'Blonda', 'Grå', 'Röda', 'Svarta'];
@@ -205,6 +205,16 @@ export function drawAvatarPreview(canvas, look) {
       const rx = fingerK === 0 ? ax - s * 6.5 : ax + s * (3.2 - (fingerK - 1) * 2.1), ry = fingerK === 0 ? 177 : 184;
       ctx.fillStyle = toHex(AVATAR_RING.colours[Number(look.metal) > 0 && Number(look.metal) < AVATAR_RING.colours.length ? Number(look.metal) : 0]);
       ctx.fillRect(rx - 1.6, ry - 0.9, 3.2, fingerK === 0 ? 2.4 : 1.8);
+    }
+    // #1334: bracelet and watch on the wrist (the avatar's left arm is on the preview's right); bracelet lowest, the watch above it with its case on the outer edge
+    const metalHex = toHex(AVATAR_RING.colours[Number(look.metal) > 0 && Number(look.metal) < AVATAR_RING.colours.length ? Number(look.metal) : 0]);
+    const mine = (v) => { v = wristValue(Number(v)); return v > 0 && (v <= 3) === (s === 1) ? ((v - 1) % 3) + 1 : 0; };
+    const bm = mine(look.bracelet), wm = mine(look.watch);
+    if (bm) { ctx.fillStyle = metalHex; ctx.fillRect(ax - 5.3, 171.5, 10.6, bm === 3 ? 4 : bm === 2 ? 2.6 : 1.4); if (bm === 2) { ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(ax - 5.3, 172.4, 10.6, 0.7); } }
+    if (wm) {
+      ctx.fillStyle = toHex(AVATAR_WRIST.strap[wm - 1]); ctx.fillRect(ax - 5.4, 165, 10.8, wm === 3 ? 5.4 : 4);
+      ctx.fillStyle = metalHex; const cw = wm === 3 ? 4.6 : 3.8; ctx.fillRect(ax + s * 3.4 - cw / 2, 165.6, cw, wm === 3 ? 4.4 : wm === 2 ? 4.4 : 3.8);
+      ctx.fillStyle = toHex(wm === 1 ? AVATAR_WRIST.face : AVATAR_WRIST.dial); ctx.fillRect(ax + s * 3.4 - cw / 2 + 0.8, 166.4, cw - 1.6, (wm === 3 ? 4.4 : wm === 2 ? 4.4 : 3.8) - 1.6);
     }
   }
 
@@ -495,6 +505,7 @@ function updateActiveSwatches() {
   groups.push({ type: 'necklace', value: Number(currentLook.necklace) || 0 }); // #1323
   groups.push({ type: 'ring', value: Number(currentLook.ring) || 0 }); // #1324
   groups.push({ type: 'metal', value: Number(currentLook.metal) || 0 });
+  groups.push({ type: 'bracelet', value: wristValue(currentLook.bracelet) }, { type: 'watch', value: wristValue(currentLook.watch) }); // #1334
   groups.push({ type: 'brows', value: HAIR.includes(currentLook.brows) ? HAIR.indexOf(currentLook.brows) : -1 }); // #1220 (-1: like the hair)
   groups.push({ type: 'eyes', value: EYES.includes(currentLook.eyes) ? currentLook.eyes : EYES[0], list: EYES });
   for (const name of Object.keys(AVATAR_SHAPE.fields)) { // #1138: the face sliders
@@ -591,6 +602,7 @@ function initCustomizerDOM() {
   addAccessorySection(customizerEl.querySelector('.customizer-controls')); // #1321
   addNecklaceSection(customizerEl.querySelector('.customizer-controls')); // #1323
   addRingSection(customizerEl.querySelector('.customizer-controls')); // #1324
+  addWristSection(customizerEl.querySelector('.customizer-controls')); // #1334
 
   // Handle swatches and style clicks
   customizerEl.addEventListener('click', (e) => {
@@ -646,6 +658,9 @@ function initCustomizerDOM() {
       applyAndRefresh();
     } else if (type === 'ring' && idx >= 0 && idx <= 10) { // #1324
       currentLook.ring = idx;
+      applyAndRefresh();
+    } else if ((type === 'bracelet' || type === 'watch') && idx >= 0 && idx <= 6) { // #1334
+      currentLook[type] = idx;
       applyAndRefresh();
     } else if (type === 'metal' && AVATAR_RING.metals[idx] !== undefined) {
       currentLook.metal = idx;
@@ -862,6 +877,50 @@ function addRingSection(controls) {
     AVATAR_RING.fingers.forEach((f, k) => row.append(mk('ring', 1 + si * 5 + k, f, `${side}: ${f.toLowerCase()}`)));
     sec.append(row);
   });
+  const metals = document.createElement('div');
+  metals.className = 'btn-group';
+  AVATAR_RING.metals.forEach((m, i) => metals.append(mk('metal', i, m)));
+  sec.append(metals);
+  controls.append(sec);
+}
+
+/** #1334 (#1318, #1325): the bracelet and watch section: none or one of three models on the left / right wrist each, and the metal (shared with the ring). */
+function addWristSection(controls) {
+  if (!controls || controls.querySelector?.('[data-wrist-section]')) return;
+  const sec = document.createElement('section');
+  sec.className = 'customizer-section';
+  sec.dataset.wristSection = '';
+  const h = document.createElement('h3');
+  h.textContent = 'Armband och klocka';
+  sec.append(h);
+  const mk = (type, i, text, title) => {
+    const b = document.createElement('button');
+    Object.assign(b.dataset, { type, index: String(i) });
+    b.textContent = text;
+    if (title) b.title = title;
+    return b;
+  };
+  const kinds = [['bracelet', AVATAR_WRIST.bracelets, 'Inget armband'], ['watch', AVATAR_WRIST.watches, 'Ingen klocka']];
+  for (const [type, names, none] of kinds) {
+    const noneRow = document.createElement('div');
+    noneRow.className = 'btn-group';
+    noneRow.append(mk(type, 0, none));
+    sec.append(noneRow);
+    AVATAR_WRIST.sides.forEach((side, si) => {
+      const lab = document.createElement('div');
+      lab.textContent = `${type === 'bracelet' ? 'Armband' : 'Klocka'}, ${side.toLowerCase()}`;
+      lab.style.cssText = 'font-size:0.8em;opacity:0.75;margin:6px 0 2px';
+      sec.append(lab);
+      const row = document.createElement('div');
+      row.className = 'btn-group';
+      for (let m = 1; m < names.length; m++) row.append(mk(type, si * 3 + m, names[m], `${side}: ${names[m].toLowerCase()}`));
+      sec.append(row);
+    });
+  }
+  const lab = document.createElement('div');
+  lab.textContent = 'Metall (även ringen)';
+  lab.style.cssText = 'font-size:0.8em;opacity:0.75;margin:6px 0 2px';
+  sec.append(lab);
   const metals = document.createElement('div');
   metals.className = 'btn-group';
   AVATAR_RING.metals.forEach((m, i) => metals.append(mk('metal', i, m)));
