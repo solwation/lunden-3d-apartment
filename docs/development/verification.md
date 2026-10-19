@@ -13,7 +13,7 @@ Ghost weapon props (#1126): `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/gh
 tools/ghostprops.html: front/side/close-up shots, 13 draw calls for six armed avatars, no prop over 4 000 triangles. Run after changing
 src/ghostprops.js or the weapon models it borrows (rifle.js, toys.js blaster/wand, saber.js, bow.js).
 Avatar height (#1136): `PLAYWRIGHT_MODULE=… CHROME_PATH=… SHOTS=… node tools/avatarheighttest.cjs GAME WORKER` (local `node cloudflare/dev.mjs PORT`) — 120/165/195 cm: own eye height, mirror image, a module peer through the Worker (hall and outdoors), old codes unchanged, the customizer slider and saved 12-digit code; run with `node --test tools/avatarcustomizertest.mjs cloudflare/players.test.mjs` after changing the look code, Avatar scale or `AVATAR_HEIGHT`.
-Avatar accessories (#1321, #1322, #1318): `node --test tools/avatarcustomizertest.mjs cloudflare/players.test.mjs`, `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/avataraccessoriestest.cjs BASE OUT` (component page: five hats × five hairstyles × headphones none / on the ears / round the neck (`?phones=`), front / 3/4 / side / back, one draw call per avatar; look at the shots for hair through the hat) and `SHOTS=… node tools/avataraccessorygametest.cjs GAME WORKER` (customizer buttons, saved code, peer via the Worker, mirror); run after changing accessories, `AVATAR_HAT`, `AVATAR_PHONES` or the head's shader. Necklaces (#1323): the component screenshots with `FIELD=necklace` (five kinds on T-shirt / tank / hoodie and both figures); the game test covers the "Halsband" buttons, `x<n>` code, peer and mirror; run after changing `AVATAR_NECKLACE` or `addNecklaces`. The height tests (`avatarheighttest`, `avatardefaultheighttest`) skip the collapsed accessory vertices (`facePart` > 11.5 unless that kind is chosen); keep that filter when adding accessory ids. Baseline 2026-10-19: the `riflenose*` tests were already failing before #1321 (#1331).
+Avatar accessories (#1321, #1322, #1318): `node --test tools/avatarcustomizertest.mjs cloudflare/players.test.mjs`, `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/avataraccessoriestest.cjs BASE OUT` (component page: five hats × five hairstyles × headphones none / on the ears / round the neck (`?phones=`), front / 3/4 / side / back, one draw call per avatar; look at the shots for hair through the hat) and `SHOTS=… node tools/avataraccessorygametest.cjs GAME WORKER` (customizer buttons, saved code, peer via the Worker, mirror); run after changing accessories, `AVATAR_HAT`, `AVATAR_PHONES` or the head's shader. Necklaces (#1323): the component screenshots with `FIELD=necklace` (five kinds on T-shirt / tank / hoodie and both figures); the game test covers the "Halsband" buttons, `x<n>` code, peer and mirror; run after changing `AVATAR_NECKLACE` or `addNecklaces`. The height tests (`avatarheighttest`, `avatardefaultheighttest`) skip the collapsed accessory vertices (`facePart` > 11.5 unless that kind is chosen); keep that filter when adding accessory ids. The old `riflenose*` tests were retired in #1331 (see "Actual frontal nose contact"); use `headboxestest`, `headboxesbrowsertest` and the avatar body/height tests for head and body checks.
 
 Avatar body (#1137): `node --test tools/avatarbodytest.mjs` and `PLAYWRIGHT_MODULE=… CHROME_PATH=… SHOTS=… node tools/avatarbodytest.cjs GAME` (no Worker) — 120/165/195 cm crouch, wall radius, stair, sofa, door handle and worktop reach, head boxes; run after changing `avatarBody`, `AVATAR_BODY`, `PLAYER` body values or `rifleBoxPose`.
 Talking avatar mouth (#1122): `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/avatarmouthtest.cjs BASE OUT` — the four facial-hair
@@ -4453,6 +4453,8 @@ The original source produced a real native false buffer report for those dimensi
 
 ### Actual frontal nose contact (#920)
 
+> **Retired (#1331).** `tools/riflenosetest.cjs` was removed: it froze the pre-redesign avatar (commit 4b2a75e/023f4ca) and required the Avatar mesh to stay byte-identical with it plus per-polygon nose-profile parity. The avatar face was deliberately redesigned (af460701, #1101) so that contract can no longer hold, and per-polygon/eye/hair head acceptance was superseded by the shared three-box head collider (#974). Head hits are verified by the three-box tests below. The section is kept as history.
+
 Start native static8875 and local Worker8876 after the tested config is saved, then
 run `PLAYWRIGHT_MODULE=/path/to/playwright CHROME_PATH=/path/to/chrome node tools/riflenosetest.cjs http://localhost:8875 http://localhost:8876 /tmp/rifle-nose`.
 The driver obtains the original model directly from historical production commit
@@ -4684,6 +4686,8 @@ Final publication rebase preserved incoming #928 jaw dispatch/attributes and all
 For #715 `tools/nerfreciprocaltest.cjs --projection-plan` runs real native two-client Worker/WS receipts plus final actual local/incoming dart projection under main72° camera (no WebGL). `--apartment` requires a separately approved single240s heavy run: first-send checkpoint precedes early clear/target guard;2×2 actual confirmation/lives checks precede two final draws and CDP PNG. Final retained real effects step1/240; no TTL or frustum changes. A first cache deadline remains CLI1 with incomplete logic/images and completed cleanup, even when native20 and component118/485 are green. See issue715 validation for the preserved post-remedy failure.
 
 ### Extra frontal nose cell verification (#934)
+
+> **Retired (#1331).** `tools/riflenoseextratest.cjs` was removed: it froze the pre-redesign avatar (commit 4b2a75e/023f4ca) and required the Avatar mesh to stay byte-identical with it plus per-polygon nose-profile parity. The avatar face was deliberately redesigned (af460701, #1101) so that contract can no longer hold, and per-polygon/eye/hair head acceptance was superseded by the shared three-box head collider (#974). Head hits are verified by the three-box tests below. The section is kept as history.
 
 Use `tools/riflenoseextratest.cjs GAME WORKER EXTERNAL_OUTPUT` with explicit
 Playwright/Chromium paths. Default runs geometry and protocol; `--geometry`,
@@ -4939,6 +4943,8 @@ succeeded. This closes the diagnostic category slice only; #669 remains open
 for the physical landscape-return question and unreproduced square CSS state.
 
 ### Lower central nose band (#937)
+
+> **Retired (#1331).** `tools/riflenosebandtest.cjs` was removed: it froze the pre-redesign avatar (commit 4b2a75e/023f4ca) and required the Avatar mesh to stay byte-identical with it plus per-polygon nose-profile parity. The avatar face was deliberately redesigned (af460701, #1101) so that contract can no longer hold, and per-polygon/eye/hair head acceptance was superseded by the shared three-box head collider (#974). Head hits are verified by the three-box tests below. The section is kept as history.
 
 `tools/riflenosebandtest.cjs GAME WORKER EXTERNAL_OUTPUT` uses actual index/Avatar/Ghosts/Combat and a fresh local Worker with bootstrap suppressed and WebGL forbidden. `--geometry`, `--highworld`, `--forgery`, `--protocol` and `--legacy` identify separately bounded stages; completion, actual failures and runtime/driver hashes are recorded. Every positive geometry cell gets eight independent native corner rays; historical023f4ca Avatar physical arrays and shared Nose vertices are independently compared. Head aiming and firing occur atomically on the same naturally posed actual closest surface, without changing bones or hiding hair.
 
@@ -5597,6 +5603,8 @@ under the actual `changelog_stamp.id_times` implementation.
 
 ### Immutable central Nose depth (#950)
 
+> **Retired (#1331).** `tools/riflenosedepthtest.cjs` was removed: it froze the pre-redesign avatar (commit 4b2a75e/023f4ca) and required the Avatar mesh to stay byte-identical with it plus per-polygon nose-profile parity. The avatar face was deliberately redesigned (af460701, #1101) so that contract can no longer hold, and per-polygon/eye/hair head acceptance was superseded by the shared three-box head collider (#974). Head hits are verified by the three-box tests below. The section is kept as history.
+
 `tools/riflenosedepthtest.cjs GAME WORKER EXTERNAL_OUTPUT` uses actual Ghosts/Avatar/Combat, the original native closest-triangle raycasts and a fresh owned local Worker. `--matrix-only` records every model and positive contact; `--entry-matrix` independently compares prospective FIRST Nose-profile depth contacts with actual nearest surfaces and all eight rounded-cell corners, including first-far bind. `--legacy-only` requires a separate newly started original Worker; it does not reuse module caches. No apartment renderer or WebGL is constructed.
 
 On83ac60f plus the additive950 patch, the final nearest matrix passed15 checks/CLI0: all60 canonical style/build/height models,115200 rays,1860 new accepted Nose cells and14880 independent corners, no wrong surfaces/corners, maximum original-entry residual4.64655mm within unchanged6mm. Sixteen appearances have zero new positives in this finite grid; none are forced to pass. The separate final current-policy entry matrix passed15 checks/CLI0: 13624 prospective accepted new-family cells, 108992 corners, zero non-Nose/residual/corner errors. These finite four-yaw first/late, wave/repeat/capped-pause, held/saber and idle samples are not all continuous poses.
@@ -5848,6 +5856,8 @@ This establishes publication, not a live-device gameplay test. Only967 is comple
 styles1/2 and3 remain in968/969 and their broader parents stay open.
 
 ### Immutable Nose prism (#971)
+
+> **Retired (#1331).** `tools/riflenosesidetest.cjs` and `tools/riflenosesideproof.py` was removed: it froze the pre-redesign avatar (commit 4b2a75e/023f4ca) and required the Avatar mesh to stay byte-identical with it plus per-polygon nose-profile parity. The avatar face was deliberately redesigned (af460701, #1101) so that contract can no longer hold, and per-polygon/eye/hair head acceptance was superseded by the shared three-box head collider (#974). Head hits are verified by the three-box tests below. The section is kept as history.
 
 Reproduce without WebGL: serve the isolated tree using `tools/devserve.py`, run
 `tools/riflenosesidetest.cjs GAME_URL WORKER_URL OUTPUT --export`, then
