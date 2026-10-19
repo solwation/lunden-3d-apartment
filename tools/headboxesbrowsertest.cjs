@@ -44,11 +44,19 @@ const check = (ok, label) => { checks++; console.log(`${ok ? 'PASS' : 'FAIL'} ${
         window.tick=setInterval(()=>{if(moving)pose.p[0]+=.02;ghosts.update();combat.update(.04);scene.updateMatrixWorld(true);},40);
         window.aim = (kind, index=1) => {
           const foe=combat.foes()[0], H=config.PVP_HEAD_BOXES, look=config.avatarLook(foe.id), box=H.boxes[index];
-          const c=foe.crouch, yaw=foe.root.rotation.y+Math.PI, width=[.93,1,1.08][look.build];
-          const center=new T.Vector3(0,(box.low+box.high)/2-H.hipY,(box.back+box.front)/2);
+          // #1332: mirror config.rifleBoxPose: the boxes follow the foe's wire look (neck #1191, build, chosen height #1137),
+          // which varies with the random seed; the aim point must not assume the default figure.
+          const wire=config.decodeAvatarLook(foe.avatarCode,foe.id); look.build=wire.build; look.bodyBuild=wire.bodyBuild;
+          if(!Number.isInteger(wire.height))look.tall=wire.tall;
+          let width=config.avatarBuildWidth(look),tall=look.tall,low=box.low,high=box.high,back=box.back,front=box.front;
+          const neck=config.avatarShape('neck',wire.neck??look.neck)||0;low+=neck;high+=neck;
+          if(Number.isInteger(wire.height)){const {body,head}=config.avatarProportions(wire.height),P=config.AVATAR_HEIGHT.pivot;
+            width*=body;tall=body;if(head!==1){low=P+(low-P)*head;high=P+(high-P)*head;back*=head;front*=head;}}
+          const c=foe.crouch, yaw=foe.root.rotation.y+Math.PI;
+          const center=new T.Vector3(0,(low+high)/2-H.hipY,(back+front)/2);
           center.applyAxisAngle(new T.Vector3(1,0,0),-H.crouchLean*c);
           center.y+=H.hipY-H.hipDrop*c;center.z+=H.hipForward*c;
-          center.multiply(new T.Vector3(width,look.tall,width)).applyAxisAngle(new T.Vector3(0,1,0),yaw).add(foe.feet);
+          center.multiply(new T.Vector3(width,tall,width)).applyAxisAngle(new T.Vector3(0,1,0),yaw).add(foe.feet);
           if(kind==='body')center.set(foe.feet.x,foe.feet.y+.95,foe.feet.z);
           if(kind==='miss')center.y+=.6;
           camera.position.set(0,center.y,center.z);camera.lookAt(center);camera.updateMatrixWorld(true);
