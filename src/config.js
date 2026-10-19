@@ -3589,11 +3589,14 @@ export const PADDOCK = {
     hearts: 10, heartScale: 2.5 }, // #1320: hearts per pat and their size/rise relative to a hug's (*guess*, readable at a few metres)
   // Grazing (#1315, all *guess*): the paddock's long grass is ONE instanced mesh of crossed-blade tufts (a jittered grid every `spacing` m, `w` m wide,
   // `colors` base -> tip) whose height the vertex shader takes from a coarse `cell` m grass-length mask (0 grazed .. 1 long): `long` / `short` m tall. A grazing
+  // #1342: the tuft is two crossed quads (4 triangles) whose alpha is a procedural row of `blades` fine blades per row, three rows (fragment shader), `w` m wide and `long` m tall at most: a low shaggy
+  // carpet instead of few big tufts; `regrow` mask units per REAL second (the game day is real time, #1145): a fully grazed meadow is long again after 72 h, also while the
+  // player is away: the mask is kept in localStorage (at most every `save` s) with its time stamp and caught up on the next visit. (all *guess*)
   // pony's muzzle (`reach` m ahead of its body, only with the head down) eats a `bite` m radius at `rate` mask units/s; the grass regrows `regrow` units/s
   // (slow, so the pattern lasts for a session); the mask starts per session with `patches` grazed patches of radius `radius` m (min, max) at level `level`,
   // plus `around` m round the trough and the shelter (the ponies stand there most). Ponies prefer a long-grass place to graze (`tries` random places, best
   // mask) and walk on when the grass under them is shorter than `hungry`. `period` s between mask uploads.
-  grass: { cell: 1.5, spacing: 1.3, w: 0.8, long: 0.5, short: 0.03, colors: [0x35601c, 0x8ba94a], reach: 1.15, bite: 1.3, rate: 0.6, regrow: 1 / 4000,
+  grass: { cell: 1.5, spacing: 1.0, w: 1.2, long: 0.28, short: 0.02, blades: 11, colors: [0x4a7a2a, 0x93b457], reach: 1.15, bite: 1.3, rate: 0.6, regrow: 1 / (72 * 3600), save: 20,
     patches: 10, radius: [4, 9], level: 0.05, around: 4, tries: 4, hungry: 0.35, period: 0.15, margin: 1.6 },
   trough: { w: 1.7, d: 0.5, h: 0.42 }, shelter: { w: 4.2, d: 2.6, h: 2.3,
     // #1335/#1336 (all *guess*): the shelter stands where the ground under its footprint (+ `pad` m round it) varies by at most `maxRelief` m (the old spot dropped 0.7 m, so one side hung in the air

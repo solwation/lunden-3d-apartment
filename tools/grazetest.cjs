@@ -54,6 +54,9 @@ const check = (ok, name, extra = '') => { console.log(`${ok ? 'PASS' : 'FAIL'} $
   // regrowth: nothing eaten for a long time raises the mean
   const grow = await page.evaluate(() => { const a = window.__app, p = a.paddock, m = () => { let s = 0; for (const q of p.gm.v) s += q; return s / p.gm.v.length; }; const b = m(); for (const q of p.ponies) { q.state = 'idle'; q.left = 1e9; } for (let i = 0; i < 9000; i++) a.step(1 / 30); return { b, a: m() }; });
   check(grow.a > grow.b, 'the grass regrows slowly', JSON.stringify(grow));
+  // #1342: 72 h of real time regrow the whole meadow, also while nobody is near (the mask is caught up by the wall clock)
+  const real = await page.evaluate(() => { const a = window.__app, p = a.paddock, m = () => { let s = 0; for (const q of p.gm.v) s += q; return s / p.gm.v.length; }; p.gm.v.fill(0.05); const b = m(); p.gm.real -= 72 * 3600e3; for (const q of p.ponies) { q.state = 'idle'; q.left = 1e9; } for (let i = 0; i < 40; i++) a.step(1 / 30); return { b, a: m() }; });
+  check(real.a > 0.99, 'a fully grazed meadow is long again after 72 h of real time', JSON.stringify(real));
   // screenshots from above
   await page.evaluate(() => { const p = window.__app.paddock; p.ponies.forEach((q) => { q.left = 0.1; }); });
   await at(-118, 232, 90, -55, 28);

@@ -251,16 +251,17 @@ export function paddockLandParts(ground) {
   return [g];
 }
 
-/** The long-grass tufts (#1315): ONE instanced mesh, `n` tufts of three crossed tapered blades (6 triangles). Their height comes from the mask texture in the vertex shader. */
+/** The grass tufts (#1315, #1342): ONE instanced mesh, each tuft two crossed quads (4 triangles); the fine blades are cut out in the fragment shader (alpha test), the height comes from the mask texture in the vertex shader. */
 function grassGeometry() {
-  const G = P.grass, pos = [], col = [], nor = [], a = new THREE.Color(G.colors[0]), b = new THREE.Color(G.colors[1]);
-  for (let k = 0; k < 3; k++) {
-    const ang = k * Math.PI / 3, c = Math.cos(ang) * G.w / 2, s = Math.sin(ang) * G.w / 2, tc = 0.2;
-    const q = [[-c, 0, -s, a], [c, 0, s, a], [c * tc, 1, s * tc, b], [-c * tc, 1, -s * tc, b]];
-    for (const i of [0, 1, 2, 0, 2, 3]) { pos.push(q[i][0], q[i][1], q[i][2]); col.push(q[i][3].r, q[i][3].g, q[i][3].b); nor.push(0, 1, 0); }
+  const G = P.grass, pos = [], col = [], nor = [], uvs = [], a = new THREE.Color(G.colors[0]), b = new THREE.Color(G.colors[1]);
+  for (let k = 0; k < 2; k++) {
+    const ang = k * Math.PI / 2 + 0.3, c = Math.cos(ang) * G.w / 2, s = Math.sin(ang) * G.w / 2;
+    const q = [[-c, 0, -s, a, 0, 0], [c, 0, s, a, 1, 0], [c, 1, s, b, 1, 1], [-c, 1, -s, b, 0, 1]];
+    for (const i of [0, 1, 2, 0, 2, 3]) { pos.push(q[i][0], q[i][1], q[i][2]); col.push(q[i][3].r, q[i][3].g, q[i][3].b); nor.push(0, 1, 0); uvs.push(q[i][4] + k * 7.31, q[i][5]); }
   }
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3)); g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  g.setAttribute('gUv', new THREE.Float32BufferAttribute(uvs, 2));
   return g;
 }
 
@@ -269,13 +270,23 @@ function grassMaterial(mask, box) {
   m.onBeforeCompile = (sh) => {
     sh.uniforms.uMask = { value: mask }; sh.uniforms.uBox = { value: box }; sh.uniforms.uLen = { value: new THREE.Vector2(G.short, G.long) };
     sh.vertexShader = sh.vertexShader
-      .replace('#include <common>', '#include <common>\n uniform sampler2D uMask; uniform vec4 uBox; uniform vec2 uLen;')
+      .replace('#include <common>', '#include <common>\n uniform sampler2D uMask; uniform vec4 uBox; uniform vec2 uLen; attribute vec2 gUv; varying vec2 vGu; varying float vGl;')
       .replace('#include <begin_vertex>', `#include <begin_vertex>
         vec2 gp = instanceMatrix[3].xz; float gm = texture2D(uMask, (gp - uBox.xy) * uBox.zw).r;
-        transformed.y *= mix(uLen.x, uLen.y, smoothstep(0.1, 0.9, gm));`);
+        vGu = gUv; vGl = gm; transformed.y *= mix(uLen.x, uLen.y, smoothstep(0.1, 0.9, gm));`);
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', `#include <common>
+        varying vec2 vGu; varying float vGl;
+        float gh(float n) { return fract(sin(n * 91.3458) * 47453.5453); }`)
+      .replace('#include <alphatest_fragment>', `{ bool keep = false; // three overlapping rows of triangular blades: a dense shaggy carpet from 4 triangles
+          for (int r = 0; r < 3; r++) { float fr = float(r), s = vGu.x * ${G.blades.toFixed(1)} + fr * 0.37, id = floor(s), tip = 0.5 + 0.5 * gh(id + fr * 31.0 + floor(vGu.x * 0.14) * 17.0), hw = 0.5 * (1.0 - vGu.y / tip) * (1.0 + 0.3 * fr);
+            if (vGu.y < tip && abs(fract(s) - 0.5) < hw) keep = true; }
+          if (!keep) discard; }`);
   };
   return m;
 }
+
+const GRASS_KEY = 'lunden.paddockGrass';
 
 export class Paddock {
   /** `ground(x, z)` → the surface y; `trees`: [{x, z}] trunks to keep clear of (surroundings' treeFeet). */
@@ -348,8 +359,10 @@ export class Paddock {
     const W = Math.ceil((Math.max(...xs) + 2 - x0) / G.cell), H = Math.ceil((Math.max(...zs) + 2 - z0) / G.cell);
     this.gm = { x0, z0, W, H, v: new Float32Array(W * H).fill(1), t: 0, dirty: false, acc: 0 };
     const rnd = mulberry((Math.random() * 1e9) | 0), eat = (x, z, r, lvl) => this.eatAt(x, z, r, lvl, 1);
-    for (let i = 0; i < G.patches && this.waypoints.length; i++) { const w = this.waypoints[Math.floor(rnd() * this.waypoints.length)]; eat(w[0] + (rnd() - 0.5) * 4, w[1] + (rnd() - 0.5) * 4, G.radius[0] + rnd() * (G.radius[1] - G.radius[0]), G.level); }
-    for (const sp of [this.spots.trough, this.spots.shelter]) if (sp) eat(sp.x, sp.z, G.around, G.level);
+    this.gm.real = Date.now(); this.gm.saved = 0;
+    if (!this.loadGrass()) for (let i = 0; i < G.patches && this.waypoints.length; i++) { const w = this.waypoints[Math.floor(rnd() * this.waypoints.length)]; eat(w[0] + (rnd() - 0.5) * 4, w[1] + (rnd() - 0.5) * 4, G.radius[0] + rnd() * (G.radius[1] - G.radius[0]), G.level); }
+    if (!this.gm.loaded) for (const sp of [this.spots.trough, this.spots.shelter]) if (sp) eat(sp.x, sp.z, G.around, G.level);
+    addEventListener('pagehide', () => this.saveGrass());
     this.maskTex = new THREE.DataTexture(new Uint8Array(W * H), W, H, THREE.RedFormat, THREE.UnsignedByteType);
     this.maskTex.minFilter = this.maskTex.magFilter = THREE.LinearFilter; this.maskTex.wrapS = this.maskTex.wrapT = THREE.ClampToEdgeWrapping;
     this.uploadGrass();
@@ -367,6 +380,32 @@ export class Paddock {
     mesh.boundingSphere = this.mesh.boundingSphere.clone(); mesh.castShadow = false; mesh.receiveShadow = false;
     registerSeasonal((month) => { this.snowy = SEASON.snowMonths.includes(month); });
     this.grass = mesh; scene.add(mesh);
+  }
+  /** #1342: the mask survives reloads (localStorage, with its time stamp); the time away regrows it like time played. Returns whether a saved mask was used. */
+  loadGrass() {
+    const g = this.gm;
+    try {
+      const d = JSON.parse(localStorage.getItem(GRASS_KEY) ?? 'null');
+      if (!d || d.W !== g.W || d.H !== g.H || typeof d.t !== 'number') return false;
+      const bin = atob(d.v); if (bin.length !== g.v.length) return false;
+      const up = Math.max(0, Date.now() - d.t) / 1000 * P.grass.regrow;
+      for (let k = 0; k < bin.length; k++) g.v[k] = Math.min(1, bin.charCodeAt(k) / 255 + up);
+      return g.loaded = true;
+    } catch { return false; }
+  }
+  saveGrass() {
+    const g = this.gm; let bin = ''; for (let k = 0; k < g.v.length; k++) bin += String.fromCharCode(Math.round(g.v[k] * 255));
+    try { localStorage.setItem(GRASS_KEY, JSON.stringify({ W: g.W, H: g.H, t: Date.now(), v: btoa(bin) })); } catch { /* private mode / full */ }
+    g.saved = Date.now();
+  }
+  /** Regrow the whole mask by the larger of the simulated and the real time since the last call (hidden tabs, being far away), save now and then. */
+  growGrass(dt) {
+    const g = this.gm; g.acc += dt;
+    if (g.acc < 1) return;
+    const now = Date.now(), up = Math.max(g.acc, Math.min(now - g.real, 864e5 * 4) / 1000) * P.grass.regrow; g.acc = 0; g.real = now;
+    for (let k = 0; k < g.v.length; k++) if (g.v[k] < 1) g.v[k] = Math.min(1, g.v[k] + up);
+    g.dirty = true;
+    if (now - g.saved > P.grass.save * 1000) this.saveGrass();
   }
   inside(x, z) { return insideFence(x, z, P.grass.margin); }
   /** The mask value (0 grazed .. 1 long) at a world point; 1 outside the mask. */
@@ -570,11 +609,11 @@ export class Paddock {
     const c = this.camera.position, show = !hidden && Math.hypot(c.x - centre.x, c.z - centre.z) < P.viewDist;
     this.shelterTick(dt, rain, show); // #1316
     this.mesh.visible = show && this.ponies.some((q) => !q.gone); this.grass.visible = show && !this.snowy;
+    this.growGrass(Math.min(dt, 0.1)); // #1342: 72 h regrowth in real time, also while far away
     if (!show) return;
     dt = Math.min(dt, 0.1); this.time += dt;
     this.ponies.forEach((p, i) => { if (!p.gone) this.stepPony(p, i, dt); });
-    const g = this.gm; g.acc += dt; g.t += dt;
-    if (g.acc >= 1) { const up = g.acc * P.grass.regrow; g.acc = 0; for (let k = 0; k < g.v.length; k++) if (g.v[k] < 1) g.v[k] = Math.min(1, g.v[k] + up); g.dirty = true; } // slow regrowth
+    const g = this.gm; g.t += dt;
     if (g.dirty && g.t >= P.grass.period) { g.t = 0; this.uploadGrass(); }
     this.write();
   }
