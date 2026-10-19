@@ -197,7 +197,10 @@ export function pathStrip(road, a, b, lift, groundY, clip = false, grid = ground
       for (let m = 0; m + 1 < sc.length; m++) {
         const sub = (t, s) => pt(t, sc[m] + (sc[m + 1] - sc[m]) * s), tc = terrainCuts((t, s) => sub(t, s), groundY, grid);
         const at3 = (t, s) => { const [x, z] = sub(t, s); return [x, groundY(x, z) + lift, z]; };
-        for (let k = 0; k + 1 < tc.length; k++) { const v0 = at3(tc[k], 0), v1 = at3(tc[k], 1), v2 = at3(tc[k + 1], 0), v3 = at3(tc[k + 1], 1); pos.push(...v0, ...v2, ...v1, ...v1, ...v2, ...v3); }
+        // (#1314: each piece overlaps its neighbours by 1.5 cm over the cut lines, so the hairline cracks where a neighbour is cut differently, and the ground differs by up to 1 cm, are covered; no extra triangles)
+        const ds = 0.015 / (Math.hypot(c[1][0] - c[0][0], c[1][1] - c[0][1]) * (sc[m + 1] - sc[m]) || 1), dt = 0.015 / (Math.hypot(c[2][0] - c[0][0], c[2][1] - c[0][1]) || 1);
+        const sa = m > 0 ? -ds : 0, sb = m + 2 < sc.length ? 1 + ds : 1;
+        for (let k = 0; k + 1 < tc.length; k++) { const ta = tc[k] - dt, tb = tc[k + 1] + dt, v0 = at3(ta, sa), v1 = at3(ta, sb), v2 = at3(tb, sa), v3 = at3(tb, sb); pos.push(...v0, ...v2, ...v1, ...v1, ...v2, ...v3); }
       }
       continue;
     }
