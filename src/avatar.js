@@ -65,18 +65,18 @@ function parts(style, sleeves, gender = 0, facial = 0, legs = 0, cut = 0) {
     facePart(P, FACE_PART.ear, [s * 0.1, H - 0.005, 0]);
   }
   addFace(add, sphere, P);
-  // facial hair: 0 none, 1 beard, 2 mustache, 3 beard + mustache
+  // facial hair: 0 none, 1 beard, 2 mustache, 3 beard + mustache (#1340: face part cowlHide, not hair: the hair-length slider must not squash it; the head warp still moves it)
   const f = Number(facial) || 0;
   if (f === 2) { // mustache only
     for (const s of [-1, 1]) {
       add(new THREE.BoxGeometry(0.024, 0.010, 0.014).rotateZ(s * -0.15), 'beard', 'head', [s * 0.014, H - 0.046, 0.114], 0.95);
-      P[P.length - 1].face = FACE_PART.hair;
+      P[P.length - 1].face = FACE_PART.cowlHide;
     }
   }
   if (f === 1 || f === 3) { // #1097: one continuous full beard, the lips showing through its mouth opening
     const { beard, lips } = beardShell(f === 3);
     add(beard, 'beard', 'head', [0, 0, 0], 0.9);
-    P[P.length - 1].face = FACE_PART.hair;
+    P[P.length - 1].face = FACE_PART.cowlHide;
     if (f === 3) P[P.length - 1].mouth = 'moustache'; // (#1122: the moustache over the opening stays, the beard below it drops)
     add(lips, 'fixed', 'head', [0, 0, 0], 1, 0x8a4c45);
     P[P.length - 1].mouth = f === 3 ? 'moustache' : 'upper'; // (#1122: the backdrop's top stays; the lips and the dark seam open in front of it)

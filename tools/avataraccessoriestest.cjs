@@ -32,6 +32,20 @@ const [base = 'http://localhost:8743', out = '/tmp/shots-1321', prefix = 'after'
       if (errors.length) { console.log('FAIL', errors); process.exitCode = 1; } else console.log('PASS');
       return;
     }
+    if (process.env.FIELD === 'beard') { // #1340: every facial hair (beard, moustache, both) × shortest / default / longest hair length (steps 0 / 4 / 8) × headphones on the ears / round the neck, over every hat
+      for (const [facial, hl, phones] of [1, 2, 3].flatMap((f) => [0, 4, 8].flatMap((h) => [1, 2].map((p) => [f, h, p])))) {
+        await page.goto(`${base}/tools/avataraccessories.html?facial=${facial}&hl=${hl}&phones=${phones}&fov=7.5&cy=1.62`);
+        await page.waitForFunction(() => window.__ready, null, { timeout: 60000 });
+        for (const v of ['front', 'q', 'side']) {
+          await page.evaluate((v) => window.__shot(v), v);
+          await page.locator('canvas').screenshot({ path: path.join(out, `${prefix}-beard-f${facial}-h${hl}-ph${phones}-${v}.png`) });
+        }
+        const info = await page.evaluate(() => window.__info());
+        if (info.calls !== info.avatars) errors.push(`draw calls ${info.calls} for ${info.avatars} avatars`);
+      }
+      if (errors.length) { console.log('FAIL', errors); process.exitCode = 1; } else console.log('PASS');
+      return;
+    }
     const field = process.env.FIELD ?? 'hat', necklace = field === 'necklace', head = field === 'earrings' || field === 'glasses', runs = necklace ? [[0, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1], [0, 0, 0, 2]] : [0, 1, 2, 3, 4].flatMap((st) => (head ? [0, 1] : [0, 1, 2]).map((ph) => [st, ph, 0, 0]));
     for (const [style, phones, gender, cut] of runs) {
       await page.goto(`${base}/tools/avataraccessories.html?style=${style}&phones=${phones}${necklace ? `&field=necklace&gender=${gender}&cut=${cut}` : head ? `&field=${field}&fov=7.5&cy=1.62` : ''}`);
