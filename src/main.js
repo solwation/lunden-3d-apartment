@@ -3015,7 +3015,8 @@ quality.register('shadows', { // the sun's shadow map: size (reallocated on a ch
   },
   state: (l) => `${sun.shadow.mapSize.x}² every ${QUALITY.shadowInterval[l]} s`, cost: 'a second pass over every shadow caster' });
 quality.register('mirrors', { // the one mirror image (#50): its resolution, off at the lowest levels
-  apply: (l) => { const n = QUALITY.mirror[l]; if (n && mirrorTarget().width !== n) mirrorTarget().setSize(n, n); },
+  // #1359: an off phone mirror keeps a 1px warm-up target, not unused 512² MSAA buffers.
+  apply: (l) => { const n = QUALITY.mirror[l] || (lowMemory ? 1 : 0); if (n && mirrorTarget().width !== n) mirrorTarget().setSize(n, n); },
   state: (l) => (QUALITY.mirror[l] ? `${QUALITY.mirror[l]}² every ${QUALITY.mirrorEvery[l]} frame(s)` : 'off'), cost: 'a third pass over the room in a mirror' });
 quality.register('weather', { // rain streaks / snowflakes / hail drawn (#248)
   apply: (l) => { weather.particleScale = QUALITY.particles[l]; }, state: (l) => `particles ×${QUALITY.particles[l]}`, cost: 'particle updates + overdraw' });

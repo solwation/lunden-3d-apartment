@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { LOW_MEMORY } from './config.js';
 // Phones and tablets get a smaller memory footprint (LOW_MEMORY, #585; lighter campus facades, #589): iOS otherwise
 // kills the tab after a few steps. iPadOS Safari says "Macintosh", so a Mac with a touch screen counts too.
 // `&lowmem` forces it on a desktop.
@@ -7,13 +8,28 @@ export const lowMemory = typeof navigator !== 'undefined' && (/Mobi|Android|iPho
   || (typeof location !== 'undefined' && /[?&]lowmem\b/.test(location.search)));
 
 /**
- * Free a canvas texture's CPU copy once it is on the GPU (#628): three keeps the source canvas for as long as the texture
- * lives (the measured phone profile held ~186 MB of them). On phones only; desktop is untouched. Use it ONLY for textures
+ * Phone only (#628/#1359): cap a static canvas at the existing upload limit immediately, then free
+ * its CPU bitmap after upload. Hidden textures otherwise retain large sources until first shown.
+ * Desktop is untouched. Use it ONLY for textures
  * that are drawn once and never redrawn (no later `needsUpdate`) and are not cloned/shared after the upload: the canvas
  * shrinks to 1×1, so a second upload would show a blank texture. Returns `tex`.
  */
 export function freeCanvasAfterUpload(tex) {
   if (!lowMemory) return tex;
+  // #1359: hidden static canvases may not upload for a long time. Keep only the same
+  // resolution the phone renderer would upload, rather than retaining their large CPU bitmaps.
+  const c = tex.image, limit = LOW_MEMORY.maxTextureSize;
+  if (typeof HTMLCanvasElement !== 'undefined' && c instanceof HTMLCanvasElement && Math.max(c.width, c.height) > limit) {
+    const scale = limit / Math.max(c.width, c.height), w = Math.max(1, Math.floor(c.width * scale)), h = Math.max(1, Math.floor(c.height * scale));
+    const scratch = document.createElement('canvas'); scratch.width = w; scratch.height = h;
+    const small = scratch.getContext('2d'), context = c.getContext('2d');
+    if (small && context) {
+      small.drawImage(c, 0, 0, w, h);
+      c.width = w; c.height = h; // preserve the source's identity and normalized atlas UVs
+      context.drawImage(scratch, 0, 0);
+    }
+    scratch.width = scratch.height = 1;
+  }
   tex.onUpdate = () => {
     tex.onUpdate = null;
     const c = tex.image;

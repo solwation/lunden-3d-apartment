@@ -3,6 +3,24 @@
 Read [CLAUDE.md](../../CLAUDE.md) first for shared workflow rules. Paths in code spans and module maps are relative to the repository root.
 
 Related: [graphics](graphics.md), [verification](verification.md).
+
+## Static phone canvas sources and disabled mirror target (#1359)
+
+`freeCanvasAfterUpload` now reduces opted-in immutable canvas sources to the existing
+`LOW_MEMORY.maxTextureSize` before first upload, retaining the original canvas identity and
+normalized UVs. The first-upload callback still frees them to 1×1. The static door atlas in
+`buildFlatDoors` follows this policy for A/B/C/L; dynamic lift labels remain redrawable.
+Never use this helper for editable or repeatedly uploaded textures. Context restoration
+still requires the existing guarded reload. A phone mirror disabled by adaptive quality
+keeps a 1×1 warm-up target rather than its unused 512² multisampled half-float allocation;
+enabled levels still resize to their configured dimensions. Desktop behaviour is unchanged.
+
+Matched Chromium phone-profile runs measured GPU peak220.4→205.4MiB, initial CPU canvas
+198.5→105.2MiB, and post-warm-up canvas118.9→87.8MiB. This is a bounded memory reduction,
+not proof of an iPhone crash fix: the aggregate estimate remains above the guessed budget,
+and landscape draw calls independently exceed the existing budget (#1361).
+See [commands, results and limits](../validation/issue-1359/README.md).
+
 ## Performance (#48)
 
 - `&perf` shows fps, pixel ratio, draw calls, triangles, geometries, textures; `tools/perfcount.html`

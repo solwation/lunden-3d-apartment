@@ -49,6 +49,13 @@ source-hashed artifacts and limits. No full World, E/touch-dispatch or physical-
 
 # Browser verification and test selection
 
+Static phone canvas policy (#1359): `PLAYWRIGHT_MODULE=… CHROME_PATH=… SHOTS=/tmp/static-canvas
+node tools/staticcanvascheck.cjs BASE` compares real WebGL pixels with Three's existing
+automatic512px resizing, first-upload release, desktop preservation and all A/B/C/L door
+atlases (8 checks). Pair with `glrestoretest.cjs` and the relevant `phonememtest.cjs` route;
+do not infer physical iPhone stability from Chromium. [Recorded results and remaining
+budget failure](../validation/issue-1359/README.md).
+
 
 Two-point measurement (#1069): `tools/measureinputtest.cjs BASE OUT` passes24/24
 in the full original World with native pointer lock, mobile taps/drag/cancel and

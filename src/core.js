@@ -1,5 +1,6 @@
 import { architectureEdges } from './architectureedges.js';
 import * as THREE from 'three';
+import { freeCanvasAfterUpload } from './lowmemory.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { CORE as K, PORTIK, GARAGE, HUS_L, PLAYER, POWER, storeyFloor } from './config.js';
 import { sfx } from './audio.js';
@@ -328,7 +329,9 @@ export function buildFlatDoors(geo, o = {}) {
     if (fixed) tags.push(quad(D.plate[0], D.plate[1], zc, y + D.plate[2], plate).translate(...off(D.leaf + 0.0045)));
     tags.push(quad(D.sign, D.sign, signSouth ? z1 + D.frame + 0.03 + D.sign / 2 : z0 - D.frame - 0.03 - D.sign / 2, y + 1.55, sign).translate(...off(0.004)));
   });
-  const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
+  // #1359: the immutable door atlas uses the same memory policy in all A/B/C/L variants.
+  const tex = freeCanvasAfterUpload(new THREE.CanvasTexture(cv));
+  tex.name = 'flat-door-atlas'; tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
   return { geos: tags, tex, cells };
 }
 
