@@ -2763,6 +2763,8 @@ export const RESET_KEEP = [
 // Performance (#189): small meshes (radius < maxR m) are not drawn once they would look smaller than `k`
 // (radius / distance, ~0.6° across), never nearer than `minDist`; meshes up to `maxOcclude` inside the flat are
 // not drawn from outside unless seen through a façade opening; re-checked after the camera moved `move` m.
+// Phone whole-box occlusion (#1361): occlusionMargin = 5 mm inside actual opaque rectangles
+// (guess); never infer solidity across a doorway or the stair opening.
 // `hitch` (#592, src/hitchlog.js, `&perf`): a frame of at least `ms` is logged with what changed in it; the last `keep` are
 // kept in `__app.hitch.log`. 50 ms = three missed frames at 60 Hz, the point where a turn visibly freezes (*guess*).
 // Warm-up (#432, #592, src/warmup.js): starts `frames` frames after the scene is built; the idle texture uploads take at
@@ -2804,7 +2806,7 @@ export const WARM = { frames: 3, sliceMs: 8, programs: 4, compileMs: 20, batch: 
 // `detail.lowMemoryEdgesOutside` (#1223): their outline line sets (doors, lids, appliances) only within this many m (*guess*).
 // #884: half-second display windows keep the always-visible FPS readable (UI choice, not a hardware target).
 export const HUD_FPS = { everyMs: 500 };
-export const PERF = { detail: { maxR: 0.5, k: 0.009, minDist: 3.2, maxOcclude: 4, move: 0.3, lowMemoryOutside: 0.7, lowMemoryEdgesOutside: 6 }, hitch: { ms: 50, keep: 100 },
+export const PERF = { detail: { maxR: 0.5, k: 0.009, minDist: 3.2, maxOcclude: 4, move: 0.3, occlusionMargin: 0.005, lowMemoryOutside: 0.7, lowMemoryEdgesOutside: 6 }, hitch: { ms: 50, keep: 100 },
   budget: { calls: 520, tris: 1000000, texMB: 320, lowMemory: { calls: 370, tris: 950000, texMB: 225 } } };
 
 // Phones and tablets (low memory, #585): iOS Safari kills the tab ("Ett problem inträffade flera gånger") once the page's

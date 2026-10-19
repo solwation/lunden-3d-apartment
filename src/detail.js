@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { PERF } from './config.js';
 import { computeDetailBounds } from './combatworld.js';
 import { lowMemory } from './lowmemory.js';
+import { detailOccluders, wholeBoxOccluded } from './occlusion.js';
 
 // Small-detail culling (#189): from the street the whole flat is in the view frustum (the walls don't stop three's
 // culling), so every handle, knob, bottle and trinket inside was a draw call of its own. A mesh smaller than
@@ -45,6 +46,7 @@ export class DetailCuller {
     this.shut = { north: openings.north.flatMap(o => solid(o) ? [{ ...o, y0: o.y0 + box.doorHeight }, ...(o.entryPane ? [o.entryPane] : [])] : [o]), south: openings.south };
     this.full = { north: openings.north, south: openings.south };
     Object.assign(this, { box, doorOpen, open: false, openings: this.shut, walls: openings.walls ?? [], slab: openings.slab ?? null });
+    this.occluders = detailOccluders(openings.opaque ?? this.walls, this.slab, box.W, box.D);
     this.items = [];
     this.last = new THREE.Vector3(1e9, 0, 0);
     this.moving = []; // the items under a root with userData.moving
@@ -128,11 +130,19 @@ export class DetailCuller {
     const inside = outside && w.x > 0 && w.x < W && w.z > 0 && w.z < Dz && w.y < roof;
     // (phones, #695; #1223: the outlines of the doors, lids and appliances inside within `lowMemoryEdgesOutside` m only)
     const cut = inside ? (it.edges && this.outsideScale < 1 ? Math.min(it.cut, D.lowMemoryEdgesOutside ?? Infinity) : it.cut * this.outsideScale) : it.cut;
-    const far = w.distanceToSquared(p) > cut * cut || (outside && !it.exteriorDoor && (this.hidden(p, w, it.r) || (it.box && this.boxHidden(p, it.box, it.o.matrixWorld))));
+    const far = w.distanceToSquared(p) > cut * cut || (outside && !it.exteriorDoor && (this.hidden(p, w, it.r) || (it.box && this.boxHidden(p, it.box, it.o.matrixWorld)))) ||
+      (lowMemory && !it.exteriorDoor && it.box && w.distanceToSquared(p) > D.minDist * D.minDist && this.wallHidden(p, it));
     if (far === it.far) return false;
     it.far = far;
     for (const o of it.meshes ?? [it.o]) o.layers.set(far ? DETAIL_HIDDEN_LAYER : 0);
     return true;
+  }
+
+  /** Phone-only: a single actual opaque wall/floor patch covers the complete world box. Near focus is unchanged. */
+  wallHidden(eye, it) {
+    const b = (this.worldBox ??= new THREE.Box3()).copy(it.box).applyMatrix4(it.o.matrixWorld);
+    // The same real wall can also cover a distant object beyond the flat; no invented exterior wall.
+    return wholeBoxOccluded(eye, b, this.occluders, D.occlusionMargin);
   }
 
   /** Seen from `eye` (outside the flat), is a thing at `c` (radius r) inside it hidden by the walls? */

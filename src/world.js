@@ -599,6 +599,8 @@ function* levelParts(floor, li, group, how = OURS) {
     segments.push(...polySegments(w.outer));
   }
 
+  const opaqueRects = wallRects.slice(); // exact fixed solids for phone visibility; never glass or moving leaves (#1361)
+
   // Windows: sill/head infill, frame with optional transom, one top-hung sash, glass, inner sill board.
   // All windows are in the north/south façades (they run along x).
   const openings = { north: [], south: [] };
@@ -617,10 +619,12 @@ function* levelParts(floor, li, group, how = OURS) {
     if (spec.width && spec.width < pr.x1 - pr.x0) {
       r = { ...pr, x0: cx - spec.width / 2, x1: cx + spec.width / 2 };
       group.add(box(pr.x0, r.x0, pr.z0, pr.z1, y0, yC, M.wall), box(r.x1, pr.x1, pr.z0, pr.z1, y0, yC, M.wall));
+      opaqueRects.push({ ...pr, x1: r.x0, y0, y1: yC }, { ...pr, x0: r.x1, y0, y1: yC });
       aoPieces.push({ pts: rectPts({ ...pr, x1: r.x0 }), y0, y1: yC }, { pts: rectPts({ ...pr, x0: r.x1 }), y0, y1: yC });
     }
     group.add(box(r.x0, r.x1, r.z0, r.z1, y0, sill, M.wall));
     group.add(box(r.x0, r.x1, r.z0, r.z1, head, yC, M.wall));
+    opaqueRects.push({ ...r, y0, y1: sill }, { ...r, y0: head, y1: yC });
     aoPieces.push({ pts: rectPts(r), y0, y1: sill }, { pts: rectPts(r), y0: head, y1: yC }); // (not the glass between)
     aoBlockers.push(rectPts(pr));
     // frame sits towards the outside of the wall
@@ -666,7 +670,7 @@ function* levelParts(floor, li, group, how = OURS) {
     const exterior = tz < 0 || tz > D;
     const head = y0 + (exterior ? how.extDoorHead ?? EXT_DOOR_HEAD : DOOR_HEIGHT);
     const tillval = d.optional && (std || !OPTIONS.allrumDoor); // Peab tillval (dashed door), see OPTIONS
-    if (gap && !(tillval && std)) { group.add(gapBox(gap, head, yC, M.wall)); aoPieces.push({ pts: rectPts(gapRect(gap)), y0: head, y1: yC }); lintels.push(gapRect(gap)); } // (the standard: no tillval wall, no lintel, #574)
+    if (gap && !(tillval && std)) { group.add(gapBox(gap, head, yC, M.wall)); aoPieces.push({ pts: rectPts(gapRect(gap)), y0: head, y1: yC }); lintels.push(gapRect(gap)); opaqueRects.push({ ...gapRect(gap), y0: head, y1: yC }); } // (the standard: no tillval wall, no lintel, #574)
     if (gap) barriers.push(gapRect(gap)); // (a room boundary even when open: Allrum | Hall)
     if (tillval) continue;
 
@@ -862,7 +866,7 @@ function* levelParts(floor, li, group, how = OURS) {
     group.add(box(s.x0, s.x1, s.z0, s.z1, y0 + s.height, yC - 0.004, M.ceiling, { shadow: false }));
   }
 
-  return { segments, wallSegments, wallRects, doors, lids, taps, appliances, openings, sills, barriers, blindSpecs, ceiling: yC };
+  return { segments, wallSegments, wallRects, opaqueRects, doors, lids, taps, appliances, openings, sills, barriers, blindSpecs, ceiling: yC };
 }
 
 /** The slab between the levels (façade band + stair opening), the roof zone, the stair, its railing and handrails into
@@ -1351,7 +1355,7 @@ function* worldParts(plan) {
     hood: [...l0.appliances, ...l1.appliances].find((a) => a.kind === 'hood') ?? null, // the cooker hood's fan (#194)
     panDrawer: [...l0.appliances, ...l1.appliances].find((a) => a.panHome) ?? null, // the drawer under the hob (#159)
     toasterDrawer: [...l0.appliances, ...l1.appliances].find((a) => a.toasterHome) ?? null, // the toaster's drawer (#401)
-    openings: { north, south, roof: UNIT_TOP, walls: [...l0.wallRects, ...l1.wallRects], slab: { y: l0.ceiling, hole: STAIR.hole } }, // the façade openings (plan x, absolute y) and the roof height: what the flat can be seen through from outside (#189); its walls hide the rest (#695)
+    openings: { north, south, roof: UNIT_TOP, walls: [...l0.wallRects, ...l1.wallRects], opaque: [...l0.opaqueRects, ...l1.opaqueRects], slab: { y: l0.ceiling, hole: OURS.opening } }, // the façade openings (plan x, absolute y) and the roof height: what the flat can be seen through from outside (#189); its walls hide the rest (#695)
     blinds, // the pleated blinds (#273, src/blinds.js)
     carKey: hallWall.key, // only a target while the key cabinet is open (main.js)
     taps: [...l0.taps, ...l1.taps],

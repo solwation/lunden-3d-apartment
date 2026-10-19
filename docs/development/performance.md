@@ -21,6 +21,41 @@ not proof of an iPhone crash fix: the aggregate estimate remains above the guess
 and landscape draw calls independently exceed the existing budget (#1361).
 See [commands, results and limits](../validation/issue-1359/README.md).
 
+## Conservative phone occlusion (#1361, partial delivery)
+
+`detail.js` calls the pure `occlusion.js` helper for boxes beyond the existing 3.2 m near distance on
+low-memory devices. One actual convex opaque rectangle must block all eight world AABB corners;
+combining corner hits on different walls would incorrectly erase objects through a doorway.
+Overlapping objects, exposed corners and exterior door hardware remain visible under this new rule.
+`buildLevel.opaqueRects` includes its existing walls, window sill/head infill and real door lintels;
+glass and moving leaves never become occluders. Slab strips use `OURS.opening`, the same expanded
+opening passed to the structural geometry, rather than the smaller stair layout rectangle.
+No geometry, light, texture, distance cutoff or physical trace layer is added or changed.
+
+Matched real `tools/perfcount.html?lowmem&w=844&h=390&quality=0` at frozen `ed781d21`
+versus this partial change: start422→415, kitchen414→372, living458→394, upstairs434→368,
+garage401→400, park485→445 screen draws. Maximum triangles917135→910699; textures~97MiB.
+The existing370/950000/225MiB budget is unchanged: landscape still reports **SOME FAILED/CLI1**.
+Portrait390×844 remains green: maximum328→321draws; the final maximum is785887triangles/~99MiB.
+The settled six-view phone comparison has0changed visible near-item decisions and no browser exceptions;
+actual touch-focus selects the nearby entrance leaf and E opens it, with all its near meshes still drawn.
+The remaining budget reduction is #1383; this delivery does not close #1361 or establish physical iPhone stability.
+
+A private per-mesh distance LOD experiment reached368 calls but was rejected after inspecting images:
+plant pots vanished before their foliage. That distance policy and its furnishing tags are absent from the
+published implementation. Preserve complete objects when developing the next reduction.
+
+`node --test tools/occlusiontest.mjs` checks coverage, silhouettes, doorway gaps, self-overlap,
+intersection ordering, floor strips, stair aperture and window infill. Existing `tools/detailtest.html`
+checks the entrance/open/closed doors and remains green. Full-world phone before/after captures also
+compare settled visible near-object decisions to frozen old `judge`; the matrices and parent visibility
+must be current before making that comparison. Private artifacts are under
+`~/.local/state/lunden-orkester/codex-single-20261019/phone1361-*`.
+
+Public applicability: the reviewed public `src/main.js` has no DetailCuller and the personal furnishings
+are excluded. Its architectural `world.js` does not consume these new visibility metadata. No public
+runtime change or transfer is applicable to this partial implementation.
+
 ## Performance (#48)
 
 - `&perf` shows fps, pixel ratio, draw calls, triangles, geometries, textures; `tools/perfcount.html`

@@ -1,3 +1,9 @@
+Phone occlusion (#1361, partial): `node --test tools/occlusiontest.mjs`, actual `tools/detailtest.html`,
+and `tools/perfcount.html?lowmem&w=844&h=390&quality=0` plus390×844. Inspect living/kitchen/upstairs,
+stair-opening and park captures; compare visible near-item decisions after updating matrices and parent
+visibility. Verify real touch-focus/E on a nearby door. The remaining landscape failure is #1383; do not
+raise the budget or accept independently vanishing plant pots/furniture supports. See performance.md.
+
 Road junction edges (#1351): `node --test tools/polygoncuttest.mjs` and `tools/roadjunctiontest.html` (native Chromium/WebGL): actual emitted path/pavement triangles in every backdrop and the park stay off drawn carriageways, oblique approaches reach both exact kerbs on their original terrain plane, underpass exceptions remain, geometry is bounded. Run riverparktest and perfcount with it after changing `vehicleTrim` / `polygoncut.js`; inspect the overview and full-world junction screenshots.
 
 Held things on others (#1297): `node --test src/heldcategory.test.mjs cloudflare/players.test.mjs`; `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/ghostitemtest.cjs BASE OUT` (component page tools/ghostitem.html: one proxy per category in the right hand, none for an empty hand, a weapon wins over a category, hidden beyond poseFar, exactly one draw call per proxy, ≤ 100 triangles each; read the screenshots) and `SHOTS=… node tools/ghostitempeertest.cjs GAME WORKER` (the real app takes a Book / Glass, a second client sees the proxy; `node cloudflare/dev.mjs PORT` for the Worker). tools/restposetest.cjs evaluates main.js's production state callback, so its fixture defines the globals that callback reads (`jetpack`, `heldItem`, `heldCategory`).
