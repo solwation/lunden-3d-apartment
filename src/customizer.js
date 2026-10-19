@@ -1,4 +1,4 @@
-import { SKIN, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES, AVATAR_HAT, AVATAR_PHONES, AVATAR_NECKLACE, AVATAR_CLOTHES } from './config.js';
+import { SKIN, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES, AVATAR_HAT, AVATAR_PHONES, AVATAR_NECKLACE, AVATAR_RING, AVATAR_CLOTHES } from './config.js';
 
 // #1220: the brows' colours (config.js HAIR, the hair swatches' names) and a first choice that follows the hair
 const BROW_NAMES = ['Mörkbruna', 'Bruna', 'Ljusbruna', 'Guldbruna', 'Blonda', 'Grå', 'Röda', 'Svarta'];
@@ -199,6 +199,13 @@ export function drawAvatarPreview(canvas, look) {
     ctx.beginPath();
     ctx.arc(ax, 178, 7, 0, Math.PI * 2);
     ctx.fill();
+    // #1324: the ring (the avatar's left hand is on the preview's right): a thumb on the body side, the other fingers spread along the hand's lower edge
+    const ringAt = Number(look.ring) || 0, fingerK = ringAt > 5 ? ringAt - 6 : ringAt - 1;
+    if (ringAt > 0 && ringAt <= 10 && (ringAt <= 5) === (s === 1)) {
+      const rx = fingerK === 0 ? ax - s * 6.5 : ax + s * (3.2 - (fingerK - 1) * 2.1), ry = fingerK === 0 ? 177 : 184;
+      ctx.fillStyle = toHex(AVATAR_RING.colours[Number(look.metal) > 0 && Number(look.metal) < AVATAR_RING.colours.length ? Number(look.metal) : 0]);
+      ctx.fillRect(rx - 1.6, ry - 0.9, 3.2, fingerK === 0 ? 2.4 : 1.8);
+    }
   }
 
   ctx.restore(); // (#1139: the head keeps its own width in the preview)
@@ -470,6 +477,8 @@ function updateActiveSwatches() {
   groups.push({ type: 'hat', value: Number(currentLook.hat) || 0 }); // #1321
   groups.push({ type: 'phones', value: Number(currentLook.phones) || 0 }); // #1322
   groups.push({ type: 'necklace', value: Number(currentLook.necklace) || 0 }); // #1323
+  groups.push({ type: 'ring', value: Number(currentLook.ring) || 0 }); // #1324
+  groups.push({ type: 'metal', value: Number(currentLook.metal) || 0 });
   groups.push({ type: 'brows', value: HAIR.includes(currentLook.brows) ? HAIR.indexOf(currentLook.brows) : -1 }); // #1220 (-1: like the hair)
   groups.push({ type: 'eyes', value: EYES.includes(currentLook.eyes) ? currentLook.eyes : EYES[0], list: EYES });
   for (const name of Object.keys(AVATAR_SHAPE.fields)) { // #1138: the face sliders
@@ -565,6 +574,7 @@ function initCustomizerDOM() {
   addFaceSections(customizerEl.querySelector('.customizer-controls'));
   addAccessorySection(customizerEl.querySelector('.customizer-controls')); // #1321
   addNecklaceSection(customizerEl.querySelector('.customizer-controls')); // #1323
+  addRingSection(customizerEl.querySelector('.customizer-controls')); // #1324
 
   // Handle swatches and style clicks
   customizerEl.addEventListener('click', (e) => {
@@ -614,6 +624,12 @@ function initCustomizerDOM() {
       applyAndRefresh();
     } else if (type === 'necklace' && AVATAR_NECKLACE.names[idx] !== undefined) { // #1323
       currentLook.necklace = idx;
+      applyAndRefresh();
+    } else if (type === 'ring' && idx >= 0 && idx <= 10) { // #1324
+      currentLook.ring = idx;
+      applyAndRefresh();
+    } else if (type === 'metal' && AVATAR_RING.metals[idx] !== undefined) {
+      currentLook.metal = idx;
       applyAndRefresh();
     } else if (type === 'eyes' && EYES[idx] !== undefined) {
       currentLook.eyes = EYES[idx];
@@ -794,6 +810,43 @@ function addNecklaceSection(controls) {
     row.append(b);
   });
   sec.append(row);
+  controls.append(sec);
+}
+
+/** #1324 (#1318): the ring section: no ring or one of ten fingers (left / right hand, thumb … little finger), and its metal. */
+function addRingSection(controls) {
+  if (!controls || controls.querySelector?.('[data-ring-section]')) return;
+  const sec = document.createElement('section');
+  sec.className = 'customizer-section';
+  sec.dataset.ringSection = '';
+  const h = document.createElement('h3');
+  h.textContent = 'Ring';
+  sec.append(h);
+  const mk = (type, i, text, title) => {
+    const b = document.createElement('button');
+    Object.assign(b.dataset, { type, index: String(i) });
+    b.textContent = text;
+    if (title) b.title = title;
+    return b;
+  };
+  const none = document.createElement('div');
+  none.className = 'btn-group';
+  none.append(mk('ring', 0, 'Ingen ring'));
+  sec.append(none);
+  AVATAR_RING.sides.forEach((side, si) => {
+    const row = document.createElement('div');
+    row.className = 'btn-group';
+    const lab = document.createElement('div');
+    lab.textContent = side;
+    lab.style.cssText = 'font-size:0.8em;opacity:0.75;margin:6px 0 2px';
+    sec.append(lab);
+    AVATAR_RING.fingers.forEach((f, k) => row.append(mk('ring', 1 + si * 5 + k, f, `${side}: ${f.toLowerCase()}`)));
+    sec.append(row);
+  });
+  const metals = document.createElement('div');
+  metals.className = 'btn-group';
+  AVATAR_RING.metals.forEach((m, i) => metals.append(mk('metal', i, m)));
+  sec.append(metals);
   controls.append(sec);
 }
 

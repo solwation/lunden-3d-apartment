@@ -5451,6 +5451,13 @@ export const AVATAR_PHONES = { tag: 'f', names: ['Inga', 'På öronen', 'Runt ha
 // (absent when 0, so old codes are unchanged). In the shared body geometry, collapsed in the vertex shader when not chosen (src/avatar.js).
 // Shape (*guess*, by eye against the torso / neck): `neckY` the ring's height on the neck and `drop` how far the chain hangs at the front, both m in the
 // torso bone's frame; `tube` the chain's thickness (`gold` the thick one's), `bead` a pearl's radius, `pendant` the pendant's radius.
+// #1324 (#1318): one ring, look fields `ring` (0 none, 1-5 left hand thumb, index, middle, ring finger, little finger, 6-10 the right hand) and `metal`
+// (0 gold, 1 silver, 2 copper, 3 black / titanium); the extension's `i` (ring) and `z` (metal) tags, absent when 0, so old codes are unchanged. One small torus
+// per finger in the shared body geometry, collapsed in the vertex shader unless chosen and tinted by the metal's colour (uRing); the first-person hand (src/hand.js) draws it too.
+// `sink` m the band's centre line lies inside the finger's radius, `tube` its thickness in m, `at` how far along the finger it sits (share of its length from the knuckle), `shine` a light emissive lift
+// standing in for a metal's gloss (no reflections).
+export const AVATAR_RING = { tag: 'i', metalTag: 'z', fingers: ['Tumme', 'Pekfinger', 'Långfinger', 'Ringfinger', 'Lillfinger'], sides: ['Vänster hand', 'Höger hand'], metals: ['Guld', 'Silver', 'Koppar', 'Svart titan'],
+  colours: [0xe0b83c, 0xd2d6db, 0xc2703d, 0x2b2d33], sink: 0.0004, tube: 0.0022, at: 0.5, thumbAt: 0.55, shine: 0.12 };
 export const AVATAR_NECKLACE = { tag: 'x', names: ['Inget', 'Tunn kedja', 'Pärlor', 'Hänge', 'Guldkedja'], neckY: 0.665, drop: 0.115, tube: 0.0028, gold: 0.0062, bead: 0.0085, pendant: 0.017,
   colours: { chain: 0xc9ccd1, pearl: 0xf1ece2, pendant: 0xd4af37, gold: 0xe0b83c } };
 // #1244: trouser models (look field `legs`, tag `p`) and top models (`cut`, tag `m`) beyond the first, which stay the default and
@@ -5469,8 +5476,8 @@ export function avatarShape(name, v) {
 // Worker only checks the form (cloudflare/players.js cleanAvatarExt, sent as `ax` beside the digits `av` so older
 // clients keep reading `av`). `c` the eye colour (EYES), `u` a top beyond the digit (#1156), then AVATAR_SHAPE's tags.
 // (#1220: up to 24 tags; every tag at once, `u10` and the wire's `d` / `s` included, is 20 tags / 39 characters, within the 48)
-const LOOK_EXT = /^(?:[a-z][0-9]{1,3}){0,24}$/;
-export const AVATAR_LOOK_EXT_MAX = 48;
+const LOOK_EXT = /^(?:[a-z][0-9]{1,3}){0,28}$/;
+export const AVATAR_LOOK_EXT_MAX = 60;
 function encodeLookExt(look) {
   let out = '';
   const eyes = EYES.indexOf(look.eyes);
@@ -5487,6 +5494,10 @@ function encodeLookExt(look) {
   if (Number.isInteger(look.hat) && look.hat > 0 && look.hat < AVATAR_HAT.names.length) out += `${AVATAR_HAT.tag}${look.hat}`; // #1321
   if (Number.isInteger(look.phones) && look.phones > 0 && look.phones < AVATAR_PHONES.names.length) out += `${AVATAR_PHONES.tag}${look.phones}`; // #1322
   if (Number.isInteger(look.necklace) && look.necklace > 0 && look.necklace < AVATAR_NECKLACE.names.length) out += `${AVATAR_NECKLACE.tag}${look.necklace}`; // #1323
+  if (Number.isInteger(look.ring) && look.ring > 0 && look.ring <= 10) { // #1324
+    out += `${AVATAR_RING.tag}${look.ring}`;
+    if (Number.isInteger(look.metal) && look.metal > 0 && look.metal < AVATAR_RING.metals.length) out += `${AVATAR_RING.metalTag}${look.metal}`;
+  }
   const brows = look.brows == null ? -1 : HAIR.indexOf(look.brows); // #1220
   if (brows >= 0) out += `${AVATAR_BROWS.tag}${brows}`;
   if (look.legs > 0 && look.legs < AVATAR_CLOTHES.legs.names.length) out += `${AVATAR_CLOTHES.legs.tag}${look.legs}`; // #1244
@@ -5506,6 +5517,8 @@ function decodeLookExt(ext, lk) {
     if (tag === AVATAR_HAT.tag) { if (v < AVATAR_HAT.names.length) lk.hat = v; continue; } // #1321
     if (tag === AVATAR_PHONES.tag) { if (v < AVATAR_PHONES.names.length) lk.phones = v; continue; } // #1322
     if (tag === AVATAR_NECKLACE.tag) { if (v < AVATAR_NECKLACE.names.length) lk.necklace = v; continue; } // #1323
+    if (tag === AVATAR_RING.tag) { if (v >= 1 && v <= 10) lk.ring = v; continue; } // #1324
+    if (tag === AVATAR_RING.metalTag) { if (v < AVATAR_RING.metals.length) lk.metal = v; continue; }
     if (tag === AVATAR_BROWS.tag) { if (v < HAIR.length) lk.brows = HAIR[v]; continue; } // #1220
     if (tag === AVATAR_CLOTHES.legs.tag) { if (v < AVATAR_CLOTHES.legs.names.length) lk.legs = v; continue; } // #1244
     if (tag === AVATAR_CLOTHES.cut.tag) { if (v < AVATAR_CLOTHES.cut.names.length) lk.cut = v; continue; }
@@ -5542,7 +5555,7 @@ function nearestSeededBuild(look) {
 
 /** The face fields' defaults (#1138): the original brown eyes, every slider in the middle and brows like the hair (#1220). */
 export function defaultFaceLook() {
-  const lk = { eyes: EYES[0], glasses: 0, hat: 0, phones: 0, necklace: 0, brows: null };
+  const lk = { eyes: EYES[0], glasses: 0, hat: 0, phones: 0, necklace: 0, ring: 0, metal: 0, brows: null };
   for (const name of Object.keys(AVATAR_SHAPE.fields)) lk[name] = AVATAR_SHAPE.mid;
   return lk;
 }

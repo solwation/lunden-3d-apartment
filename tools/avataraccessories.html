@@ -8,7 +8,7 @@
 </script>
 <style>html,body{margin:0;background:#bfc6cc}canvas{display:block}</style></head>
 <body><script type="module">
-// #1321 / #1322 / #1323 component page: headwear (look.hat 0–4) over the hairstyles (style 0–4), head and shoulders; ?phones=0|1|2 adds headphones (#1322); ?field=necklace shows look.necklace 0–4 instead (?cut=0|1|2 the top, ?gender=1; #1323). Driven by tools/avataraccessoriestest.cjs.
+// #1321 / #1322 / #1323 component page: headwear (look.hat 0–4) over the hairstyles (style 0–4), head and shoulders; ?phones=0|1|2 adds headphones (#1322); ?field=ring&base=0|5&metal=0–3 shows look.ring base…base+4 (#1324) and ?field=necklace shows look.necklace 0–4 instead (?cut=0|1|2 the top, ?gender=1; #1323). Driven by tools/avataraccessoriestest.cjs.
 import * as THREE from 'three';
 import { Avatar } from '../src/avatar.js';
 import { avatarLook } from '../src/config.js';
@@ -20,12 +20,12 @@ const sun = new THREE.DirectionalLight(0xfff2e0, 2.2); sun.position.set(2, 4, 3)
 const hairs = [0x3b2a1e, 0xc9a24a, 0x20202a], avatars = [];
 const q = new URLSearchParams(location.search), row = [Number(q.get('style') ?? 0)], hats = [0, 1, 2, 3, 4], field = q.get('field') ?? 'hat', cut = Number(q.get('cut') ?? 0), gender = Number(q.get('gender') ?? (row[0] === 1 ? 1 : 0));
 hats.forEach((hat, s) => {
-  const lk = { ...avatarLook('ac' + s), style: row[0], hair: hairs[row[0] % 3], top: [0x3d6b8f, 0x8f3d4f, 0x8f3d4f, 0x4f7a3d, 0x6b5a8f][s], skin: 0xe0ae8a, tall: 1, build: 1, gender, cut, facial: 0, [field]: hat, phones: Number(q.get('phones') ?? 0) };
+  const lk = { ...avatarLook('ac' + s), style: row[0], hair: hairs[row[0] % 3], top: [0x3d6b8f, 0x8f3d4f, 0x8f3d4f, 0x4f7a3d, 0x6b5a8f][s], skin: 0xe0ae8a, tall: 1, build: 1, gender, cut, facial: 0, [field]: hat + Number(q.get('base') ?? 0), metal: Number(q.get('metal') ?? 0), phones: Number(q.get('phones') ?? 0) };
   const a = new Avatar(lk); a.object.position.set((s - 2) * 0.55, 0, 0); scene.add(a.object); avatars.push(a);
 });
 const cam = new THREE.PerspectiveCamera(12, W / Hh, 0.05, 50);
 window.__shot = (view) => {
-  const yaw = { front: 0, q: -Math.PI / 4, side: -Math.PI / 2, back: Math.PI }[view];
+  const yaw = { front: 0, q: -Math.PI / 4, side: -Math.PI / 2, back: Math.PI, side2: Math.PI / 2 }[view];
   for (const a of avatars) { a.object.rotation.y = yaw; a.update(0, {}); }
   const cy = field === 'necklace' ? 1.38 : 1.6, zoom = Number(q.get('fov')) || (field === 'necklace' ? 8 : 12); const cx = Number(q.get('x')) || 0; cam.position.set(cx, Number(q.get('cy')) || cy, 9); cam.lookAt(cx, Number(q.get('cy')) || cy, 0); cam.fov = zoom; cam.updateProjectionMatrix();
   renderer.render(scene, cam);

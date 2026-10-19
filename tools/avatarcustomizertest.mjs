@@ -728,3 +728,29 @@ test('#1323 necklaces: tag x, old codes unchanged, bad values skipped, combined 
   for (const n of Object.keys(AVATAR_SHAPE.fields)) everything[n] = n === 'jaw' ? 0 : 8;
   assert.ok(splitAvatarCode(encodeAvatarWireLook({ ...everything, height: 140, bodyBuild: 8, top: TOPS[10] })).ax.length <= AVATAR_LOOK_EXT_MAX);
 });
+
+test('#1324 rings: tags i (finger 1-10) and z (metal), old codes unchanged, bad values skipped, combined with the necklace', async () => {
+  const { AVATAR_RING, AVATAR_LOOK_EXT_MAX, AVATAR_SHAPE, splitAvatarCode, defaultFaceLook, encodeAvatarWireLook } = await import('../src/config.js');
+  const plain = avatarLook('ring-plain'), base = encodeAvatarLook(plain);
+  assert.equal(defaultFaceLook().ring, 0); assert.equal(defaultFaceLook().metal, 0);
+  assert.equal(decodeAvatarLook(base, 'p').ring, 0);
+  assert.equal(AVATAR_RING.metals.length, AVATAR_RING.colours.length);
+  for (let r = 1; r <= 10; r++) {
+    const code = encodeAvatarLook({ ...plain, ring: r });
+    assert.equal(code, `${base}i${r}`, 'gold is the default metal and is not written');
+    assert.equal(decodeAvatarLook(code, 'p').ring, r);
+  }
+  for (let m = 1; m < AVATAR_RING.metals.length; m++) {
+    const code = encodeAvatarLook({ ...plain, ring: 4, metal: m });
+    assert.equal(code, `${base}i4z${m}`);
+    const back = decodeAvatarLook(code, 'p'); assert.equal(back.ring, 4); assert.equal(back.metal, m);
+  }
+  assert.equal(encodeAvatarLook({ ...plain, ring: 0, metal: 2 }), base, 'a metal without a ring is not written');
+  assert.equal(encodeAvatarLook({ ...plain, ring: 11 }), base, 'an unknown finger is not written');
+  assert.equal(decodeAvatarLook(base + 'i11', 'p').ring, 0); assert.equal(decodeAvatarLook(base + 'i0', 'p').ring, 0);
+  assert.equal(decodeAvatarLook(base + 'i3z9', 'p').metal, 0, 'out-of-range metal ignored');
+  assert.match(encodeAvatarWireLook({ ...plain, ring: 7, metal: 3 }), /i7z3/, 'on the wire');
+  const everything = { ...plain, glasses: 2, hat: 4, phones: 2, necklace: 4, ring: 10, metal: 3, brows: HAIR[7], eyes: 0x7c8288 };
+  for (const n of Object.keys(AVATAR_SHAPE.fields)) everything[n] = n === 'jaw' ? 0 : 8;
+  assert.ok(splitAvatarCode(encodeAvatarWireLook({ ...everything, height: 140, bodyBuild: 8, top: TOPS[10] })).ax.length <= AVATAR_LOOK_EXT_MAX);
+});

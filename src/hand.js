@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { HAND as H, BICYCLE_GRIP as BIKE_GRIP } from './config.js';
+import { HAND as H, BICYCLE_GRIP as BIKE_GRIP, AVATAR_RING as RING } from './config.js';
 
 // The visitor's right arm and hand (#195, #238), children of the camera, in the lower right of the view. Hidden
 // while the hand is empty. Holding something (holdable.js, a cup), the hand closes round the held thing's grip
@@ -22,7 +22,9 @@ import { HAND as H, BICYCLE_GRIP as BIKE_GRIP } from './config.js';
 const skin = new THREE.MeshStandardMaterial({ color: H.skin, roughness: 0.62, emissive: H.skinGlow, emissiveIntensity: 1 });
 const SKIN = { color: new THREE.Color(H.skin), wet: new THREE.Color(H.skin).multiplyScalar(0.88), rough: 0.62, wetRough: 0.24 };
 // #1215: the arm follows the player's avatar (look.skin, look.top, look.sleeves); HAND.skin / HAND.sleeve are the defaults
-const OWN = { skin: H.skin, sleeve: H.sleeve, long: true, suit: false, glow: new THREE.Color(H.skinGlow) };
+const OWN = { skin: H.skin, sleeve: H.sleeve, long: true, suit: false, ring: 0, metal: 0, glow: new THREE.Color(H.skinGlow) };
+// #1324: the avatar's ring (look.ring 1-5 the left hand, 6-10 the right; look.metal) on the first-person hand: a thin band on its own morphing mesh (the same four poses), metal colour from config.js AVATAR_RING
+const ringMat = new THREE.MeshStandardMaterial({ color: RING.colours[0], roughness: 0.4, metalness: 0.3 });
 const lum = (c) => { const k = new THREE.Color(c); return 0.3 * k.r + 0.59 * k.g + 0.11 * k.b; };
 // water drops on wet hands (#437): little flattened beads on the back of the hand and the fingers
 const dropMat = new THREE.MeshStandardMaterial({ color: 0xf2f8fc, roughness: 0.03, metalness: 0.1, transparent: true, opacity: 0.85, depthWrite: false });
@@ -54,6 +56,9 @@ export function handLook(look) {
   OWN.skin = Number.isFinite(look?.skin) ? look.skin : H.skin;
   OWN.sleeve = Number.isFinite(look?.top) ? look.top : H.sleeve;
   OWN.long = !!(Number(look?.sleeves) > 0);
+  OWN.ring = Number.isInteger(look?.ring) && look.ring >= 1 && look.ring <= 10 ? look.ring : 0; // #1324
+  OWN.metal = Number.isInteger(look?.metal) && look.metal >= 0 && look.metal < RING.colours.length ? look.metal : 0;
+  ringMat.color.set(RING.colours[OWN.metal]); ringMat.emissive.set(RING.colours[OWN.metal]).multiplyScalar(0.3); // (no environment map: a little glow instead of a metal sheen)
   OWN.glow.set(H.skinGlow).multiplyScalar(Math.min(1.4, lum(OWN.skin) / lum(H.skin)));
   if (!OWN.suit) { SKIN.color.set(OWN.skin); SKIN.wet.copy(SKIN.color).multiplyScalar(0.88); skin.color.copy(SKIN.color); skin.emissive.copy(OWN.glow); sleeve.color.set(OWN.sleeve); }
   armsChanged?.();
@@ -119,6 +124,32 @@ function handGeometry(pose) {
   return geo.scale(H.size, H.size, H.size);
 }
 
+/** #1324: the ring on finger `k` (0 thumb, 1 index … 4 little) in one pose: a thin torus round the first free joint (the proximal phalanx), same vertex order in every pose. */
+function ringGeometry(pose, k) {
+  const m = new THREE.Matrix4(), one = new THREE.Vector3(1, 1, 1);
+  let start, q, len, r;
+  if (k === 0) { // the thumb: the metacarpal (no bend) first, the ring on the second joint
+    const t = pose.thumb, q0 = new THREE.Quaternion().setFromAxisAngle(X, -t.up).multiply(new THREE.Quaternion().setFromAxisAngle(Y, t.in));
+    start = new THREE.Vector3(0.006, 0.026, 0.02).add(Z.clone().applyQuaternion(q0).multiplyScalar(0.045 - 0.0125 * 0.35));
+    q = q0.multiply(new THREE.Quaternion().setFromAxisAngle(Y, t.bend[0])); len = 0.034; r = 0.0108;
+  } else {
+    const f = FINGERS[k - 1], b = Array.isArray(pose.fingers[0]) ? pose.fingers[k - 1] : pose.fingers;
+    q = new THREE.Quaternion().setFromAxisAngle(X, pose.spread[k - 1]).multiply(new THREE.Quaternion().setFromAxisAngle(Y, b[0]));
+    start = new THREE.Vector3(0.002, f.y, f.z - 0.006); len = PHALANX[0] * f.l; r = f.r;
+  }
+  const at = start.add(Z.clone().applyQuaternion(q).multiplyScalar(len * 0.6));
+  const g = new THREE.TorusGeometry(r - RING.sink, RING.tube, 4, 12).applyMatrix4(m.compose(at, q, one)); // (the torus' axis is z, the finger's)
+  g.deleteAttribute('uv');
+  return g.toNonIndexed().scale(H.size, H.size, H.size);
+}
+function buildRing(k) {
+  const base = ringGeometry(POSES.relaxed, k), targets = [POSES.grip, POSES.spread, POSES.web].map((p) => ringGeometry(p, k));
+  base.morphAttributes.position = targets.map((g) => g.getAttribute('position'));
+  base.morphAttributes.normal = targets.map((g) => g.getAttribute('normal'));
+  base.computeBoundingSphere();
+  return base;
+}
+
 function buildHand() {
   const base = handGeometry(POSES.relaxed), targets = [POSES.grip, POSES.spread, POSES.web].map(handGeometry);
   base.morphAttributes.position = targets.map((g) => g.getAttribute('position'));
@@ -162,6 +193,8 @@ export class Hand {
     this.left = { hand: new THREE.Mesh(this.hand.geometry, skin), arm: new THREE.Mesh(this.arm.geometry, sleeve), cuff: new THREE.Mesh(this.cuff.geometry, sleeve) };
     this.left.hand.morphTargetInfluences = [0, 0, 0];
     for (const m of Object.values(this.left)) { m.visible = false; m.castShadow = false; m.renderOrder = 1; m.raycast = () => {}; m.frustumCulled = false; this.mirror.add(m); }
+    // #1324: the ring meshes, created for the chosen finger (applyRing), children of the hand meshes (morph influences copied every frame)
+    this.rings = { r: null, l: null, k: 0 };
     this.sleeved = true;
     this.shoulder = new THREE.Vector3(...H.shoulder);
     this.rest = new THREE.Vector3(...H.rest);
@@ -183,6 +216,7 @@ export class Hand {
     // the suit's arms (#636): `suit` is fed every frame by spidersuit.js (`feedHand`), `webT` = s left of the web pose
     this.suit = { on: false, climb: false, up: 0, side: 0, swing: null };
     this.webT = 0; this.sMix = 0; this.cPhase = 0; this.cAmp = 0; this.cDir = new THREE.Vector2(0, 1);
+    this.applyRing(); // (the look may have been set before this hand existed)
   }
 
   /** Short sleeves (#1215): the arm is bare skin and the cuff goes; the same meshes, only the material and visibility change. */
@@ -191,6 +225,24 @@ export class Hand {
     for (const side of [this.right, this.left]) side.arm.material = this.sleeved ? sleeve : skin;
     this.cuff.visible = this.cuff.visible && this.sleeved;
     this.left.cuff.visible = this.left.cuff.visible && this.sleeved;
+    this.applyRing();
+  }
+
+  /** #1324: the avatar's ring on its finger of the right or left hand (none under the suit's gloves). */
+  applyRing() {
+    const want = OWN.suit ? 0 : OWN.ring, k = want ? (want > 5 ? want - 6 : want - 1) : -1;
+    if (want !== this.rings.k) {
+      for (const key of ['r', 'l']) { const m = this.rings[key]; if (m) { m.parent?.remove(m); m.geometry.dispose(); this.rings[key] = null; } }
+      if (k >= 0) {
+        const geometry = buildRing(k), host = want > 5 ? this.hand : this.left.hand;
+        const m = new THREE.Mesh(geometry, ringMat);
+        m.morphTargetInfluences = [0, 0, 0];
+        Object.assign(m, { castShadow: false, renderOrder: 1, frustumCulled: false }); m.raycast = () => {};
+        host.add(m);
+        this.rings[want > 5 ? 'r' : 'l'] = m;
+      }
+      this.rings.k = want;
+    }
   }
 
   /** A web was shot (#636): the right hand takes the pose for HAND.suit.webHold s. */
@@ -368,6 +420,9 @@ export class Hand {
     if (L) { lInf[0] += (L.grip - lInf[0]) * a; lInf[1] = L.spread; lInf[2] += (L.web - lInf[2]) * a; }
     else { lInf[0] = inf[0]; lInf[1] = inf[1]; lInf[2] = inf[2]; }
     for (const m of Object.values(this.left)) m.visible = hug || !!L;
+    const { r: ringR, l: ringL } = this.rings; // #1324: the ring follows its hand's fingers
+    if (ringR) for (let i = 0; i < 3; i++) ringR.morphTargetInfluences[i] = inf[i];
+    if (ringL) for (let i = 0; i < 3; i++) ringL.morphTargetInfluences[i] = lInf[i];
     this.left.cuff.visible = this.left.cuff.visible && this.sleeved;
     // on a wall / a strand the hands are drawn over it: the eyes are closer to the façade than the hands' reach (#636)
     skin.depthTest = sleeve.depthTest = !suitLeft || suitLeft.depth;
