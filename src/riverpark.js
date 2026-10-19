@@ -46,6 +46,10 @@ export function parkFillAt(x,z) {
   }
   return best;
 }
+/** The actual drawn grass surface, including its existing terrain offset (#1378). */
+export function renderedParkFillY(x,z) {
+  const y=parkFillAt(x,z);return y===null?null:y+P.woodBridge.ramp.grassLift;
+}
 /** The ramps' triangles (world space): per end a 2 × 3 grid of hinge lines (front face, deck end, far end × left toe, left edge, right edge, right toe) - the fill is a sum of a function of s and one of the sideways offset, so the bilinear cells are exact.
  * `top`: only the middle column (the walking surface), `lift` m over the fill. Without it all three columns (the embankment's grass flanks too), 1 cm under the fill like the terrain mesh. */
 function rampTriangles(top,lift) {
@@ -59,7 +63,7 @@ function rampTriangles(top,lift) {
 }
 /** #1337: the embankment of both ramps as grass geometry (indexed, position + normal, to merge into the terrain mesh `site-terrain`: same material, season and snow, no extra draw call). */
 export function parkRampFill() {
-  const geo=surfaceMesh(rampTriangles(false,-.01)),n=geo.attributes.position.count;
+  const geo=surfaceMesh(rampTriangles(false,P.woodBridge.ramp.grassLift)),n=geo.attributes.position.count;
   geo.setIndex(Array.from({length:n},(_,i)=>i));geo.deleteAttribute('uv');return geo;
 }
 /** Is (x, z) within `m` of a ramp's footprint (trees, shrubs and tussocks keep off it). */

@@ -1,7 +1,7 @@
 import { buildBusStop } from './busstop.js';
 import {southBackdropParts} from './southbackdrop.js';
 import {buildWestBackdrop,buildEastBackdrop,buildNorthBackdrop,westTreeSpots,eastTreeSpots,northTreeSpots} from './sitebackdrop.js';
-import { buildRiverPark, parkDeckAt, parkFillAt, parkRampFill, parkTreeSpots, parkShrubSpots } from './riverpark.js';
+import { buildRiverPark, parkDeckAt, parkFillAt, renderedParkFillY, parkRampFill, parkTreeSpots, parkShrubSpots } from './riverpark.js';
 import * as THREE from 'three';
 import { grassUV } from './grass.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -176,6 +176,8 @@ export const terrainNorth = Math.min(E.profile[0][0], Wst.profile[0][0]);
 let terrainSurface = (x,z) => terrainY(x,z)-.01;
 /** Rendered triangle surface for background planting/paths; no change to the player's ground queries. */
 export const renderedTerrainY = (x,z) => terrainSurface(x,z);
+/** #1378: the visible highest grass triangle, including the timber bridge earth fill. Only new lamp fittings use this. */
+export const lampGroundY = (x,z) => Math.max(renderedTerrainY(x,z),renderedParkFillY(x,z)??-Infinity);
 /** #1309: the terrain mesh's grid lines ({X, Z}, sorted; set by terrainGeometry) so a surface laid on it can be cut along the same
  * cells: each cell is two triangles split along the (X[i+1],Z[j])-(X[i],Z[j+1]) diagonal, and `renderedTerrainY` is exactly linear in each. */
 let terrainGrid = null;
@@ -1797,7 +1799,7 @@ export function* surroundingsParts({ grass, husL = null }) {
   yield 0.85;
   group.add(siteGroundAO(backdrops, husL)); // distant ground shadows under the trees and along the wall feet (#1079)
   yield 0.9;
-  const windows = buildWindowLights(details.list), street = buildStreet(groundY, renderedTerrainY, treeFeet); // #1363: path poles/pools follow actual terrain
+  const windows = buildWindowLights(details.list), street = buildStreet(groundY, lampGroundY, treeFeet); // #1363: path poles/pools follow actual terrain
   group.add(windows.object, street.object, buildStreetSigns(groundY)); // + street name signs at the junctions (#583)
   group.userData.windows = { object: windows.object, update(hour, night, power = true) { for (const b of backdrops) b.userData.updateClocks(hour); windows.update(hour, night, power); updateLoggiaLamps(night, power); street.update(night);glassMaterial.envMapIntensity=THREE.MathUtils.lerp(O.reflectionDay,O.reflectionNight,night); } };
   return group;
