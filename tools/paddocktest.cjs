@@ -91,14 +91,19 @@ const check = (ok, name, extra = '') => { console.log(`${ok ? 'PASS' : 'FAIL'} $
     a.camera.rotation.set(-0.2, -Math.PI / 2, 0, 'YXZ'); a.camera.updateMatrixWorld(true);
     for (let i = 0; i < 3; i++) { a.camera.rotation.set(-0.2, -Math.PI / 2, 0, 'YXZ'); a.step(1 / 30); }
     const f = a.focus().focused; const kind = f?.kind, name = f?.name, verb = f?.verb;
-    f?.pet(); let maxEar = 0, maxYaw = 0, minNeck = 9, maxNeck = 0; const st = [];
+    const pts0 = a.stats.ponyPets ?? 0, sc0 = a.totalScore(); f?.pet(); f?.pet(); const pets = (a.stats.ponyPets ?? 0) - pts0, dscore = a.totalScore() - sc0, hearts = p.hearts[0].points.visible; let maxEar = 0, maxYaw = 0, minNeck = 9, maxNeck = 0; const st = [];
     for (let i = 0; i < 40; i++) { p.update(0.1); maxEar = Math.max(maxEar, q.ear); maxYaw = Math.max(maxYaw, Math.abs(q.headYaw)); minNeck = Math.min(minNeck, q.neck); maxNeck = Math.max(maxNeck, q.neck); if (i === 5) st.push(q.state); }
     for (let i = 0; i < 100; i++) p.update(0.1);
     a.touch.enabled = false;
-    return { kind, name, verb, maxEar, maxYaw, maxNeck, during: st[0], after: q.state };
+    return { kind, name, verb, pets, dscore, hearts, maxEar, maxYaw, maxNeck, during: st[0], after: q.state };
   });
   check(pet.kind === 'pony' && pet.verb === 'klappa' && pet.name === 'Zoey', 'the crosshair focuses Zoey with the verb klappa', JSON.stringify(pet));
   check(pet.during === 'pet' && pet.maxEar > 0.3 && pet.maxNeck > 0.35 && pet.after !== 'pet', 'petting: stops, flicks the ears, lowers the muzzle, then moves on', JSON.stringify(pet));
+  check(pet.pets === 1 && pet.dscore === 1 && pet.hearts, 'a pat scores exactly 1 point (a repeat during the same pat does not) and shows hearts (#1320)', JSON.stringify(pet));
+  // hearts screenshot (#1320): pat Zoey from 2.5 m and capture while the hearts rise
+  await page.evaluate(() => { const a = window.__app, q = a.paddock.ponies[0]; a.player.spawn(q.x - 2.5, q.z, 0); q.state = 'idle'; q.left = 99; q.yaw = 1.5; a.paddock.update(0.1); a.paddock.pet(0); for (let i = 0; i < 8; i++) a.paddock.update(0.1); a.day.hour = 12; a.step(1 / 30); const c = a.camera; c.position.set(q.x - 2.5, c.position.y, q.z); c.rotation.set(-0.08, -Math.PI / 2, 0, 'YXZ'); c.updateMatrixWorld(true); });
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: `${out}/pet-hearts.png` });
   // screenshots
   const shot = async (name, x, z, yaw, pitch, y) => { await at(x, z, yaw, pitch, y); const d = await page.evaluate(() => { const a = window.__app; for (let i = 0; i < 3; i++) a.step(1 / 30); a.renderer.render(a.scene, a.camera); return a.renderer.domElement.toDataURL('image/png'); }); require('fs').writeFileSync(`${out}/${name}.png`, Buffer.from(d.split(',')[1], 'base64')); };
   await page.evaluate(() => { const a = window.__app; a.player.spawn(-108, 238, 0); for (let i = 0; i < 800; i++) a.paddock.update(0.1); });

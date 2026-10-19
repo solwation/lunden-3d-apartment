@@ -107,12 +107,14 @@ export function heartTexture() {
 
 /** Hearts rising from a point in the world: a burst per hug, each lives `life` s. */
 export class Hearts {
-  constructor(scene, n) {
+  /** `scale` 1 = a hug's small hearts; larger = a bigger, higher-rising burst (the petted ponies, #1320). */
+  constructor(scene, n, scale = 1) {
+    this.k = scale;
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
     geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
-    this.points = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.045, map: heartTexture(), vertexColors: true, transparent: true,
-      depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }));
+    this.points = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.045 * scale, map: heartTexture(), vertexColors: true, transparent: true,
+      depthWrite: false, blending: scale > 1 ? THREE.NormalBlending : THREE.AdditiveBlending, toneMapped: false }));
     Object.assign(this.points, { frustumCulled: false, visible: false, renderOrder: 2 });
     this.points.raycast = () => {}; // never an E target
     scene.add(this.points);
@@ -122,9 +124,9 @@ export class Hearts {
 
   burst(at) {
     this.p.forEach((h, i) => {
-      const a = i * 2.39996, r = 0.05 + Math.random() * 0.1;
+      const a = i * 2.39996, r = (0.05 + Math.random() * 0.1) * this.k;
       h.o.set(at.x + Math.sin(a) * r, at.y + Math.random() * 0.06, at.z + Math.cos(a) * r);
-      h.v.set(Math.sin(a) * 0.08, 0.28 + Math.random() * 0.2, Math.cos(a) * 0.08);
+      h.v.set(Math.sin(a) * 0.08 * this.k, (0.28 + Math.random() * 0.2) * this.k, Math.cos(a) * 0.08 * this.k);
       h.t = -i * 0.03; // one after another
     });
     this.points.visible = true;
@@ -133,17 +135,19 @@ export class Hearts {
   update(dt) {
     if (!this.points.visible) return;
     const pos = this.points.geometry.attributes.position, col = this.points.geometry.attributes.color;
-    let alive = false;
+    let alive = false, fade = 0;
     this.p.forEach((h, i) => {
       h.t += dt;
       const k = h.t / this.life;
-      if (k < 0 || k >= 1) { col.setXYZ(i, 0, 0, 0); if (k < 0) alive = true; return; }
+      if (k < 0 || k >= 1) { col.setXYZ(i, 0, 0, 0); pos.setY(i, -1000); if (k < 0) alive = true; return; } // (dead ones are parked far below: normal blending would show black)
       alive = true;
       const s = h.t;
       pos.setXYZ(i, h.o.x + h.v.x * s + Math.sin(s * 5 + i) * 0.02, h.o.y + h.v.y * s, h.o.z + h.v.z * s);
       const b = Math.sin(Math.PI * Math.min(1, k * 1.4)) * (1 - k * 0.4);
-      col.setXYZ(i, b * 0.75, b * 0.16, b * 0.34); // pink: added onto what is behind
+      if (this.k > 1) { col.setXYZ(i, 1, 0.42, 0.62); fade = Math.max(fade, b); } // big hearts (#1320): opaque pink over the sky, faded together
+      else col.setXYZ(i, b * 0.75, b * 0.16, b * 0.34); // pink: added onto what is behind
     });
+    if (this.k > 1) this.points.material.opacity = Math.min(1, fade * 1.5);
     pos.needsUpdate = col.needsUpdate = true;
     this.points.visible = alive;
   }

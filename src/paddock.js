@@ -4,6 +4,7 @@ import { outline, fenceLine, posts, gateSpan, stile, insideFence, insetRing, rin
 import { stileBase } from './farwalk.js';
 import { riverAt } from './riverbridge.js';
 import { sfx } from './audio.js';
+import { Hearts } from './pingping.js';
 
 // #1280: the pony paddock on the kidney-shaped meadow south of the timber footbridge: a merged post-and-rail fence with a closed gate, a
 // water trough and a three-sided shelter (ONE mesh, vertex colours, no textures), two C ponies (Zoey, white; Princess, brown) as ONE
@@ -300,6 +301,8 @@ export class Paddock {
       pick.userData.door = { name: p.name, kind: 'pony', verb: 'klappa', pickable: pick, pet: () => this.pet(i) };
       return pick;
     });
+    this.hearts = this.ponies.map(() => new Hearts(scene, P.pony.hearts, P.pony.heartScale)); // #1320: pink hearts rise from a petted pony's head
+    this.onPet = null; // set by main.js: scores a pat (#1320)
     this.matrix = new THREE.Matrix4(); this.quat = new THREE.Quaternion(); this.pos = new THREE.Vector3(); this.scl = new THREE.Vector3(); this.up = new THREE.Vector3(0, 1, 0);
     this.write();
   }
@@ -309,9 +312,20 @@ export class Paddock {
   /** Pat pony `i`: it stops, turns its head to the hand, flicks its ears, lowers its muzzle and nickers (a short sound), its tail swishes. */
   pet(i) {
     const p = this.ponies[i]; if (!p) return false;
+    const fresh = p.state !== 'pet'; // a pat while it is already being petted renews it but scores and nickers once
     p.state = 'pet'; p.petT = p.left = P.pony.pet; p.target = null; p.goal = null; p.earP = 0; p.earT = 0.5;
-    sfx.nicker({ x: p.x, y: p.y + 1.3, z: p.z }, i ? 0.92 : 1.08);
+    if (fresh) {
+      const head = this.headPos(p);
+      sfx.whinny(head, i ? 0.92 : 1.08); // a happy whinny (#1320)
+      this.hearts[i].burst(head);
+      this.onPet?.(p.name);
+    }
     return true;
+  }
+  /** World point just above pony `p`'s head (the muzzle end of the neck, lifted a little so hearts rise clear of it). */
+  headPos(p) {
+    const s = p.scale, n = P.pony.neck, c = this.camera.position, d = Math.hypot(c.x - p.x, c.z - p.z) || 1; // it turns to face the visitor while petted, so its head ends up on that side
+    return new THREE.Vector3(p.x + (c.x - p.x) / d * n[2] * s, p.y + (n[1] + 0.25) * s, p.z + (c.z - p.z) / d * n[2] * s);
   }
   treeNear(x, z, r) { for (const t of this.trees) if (Math.abs(t.x - x) < r && Math.abs(t.z - z) < r && Math.hypot(t.x - x, t.z - z) < r) return true; return false; }
   /** Is the straight walk (x0, z0) → (x1, z1) inside the fence (at least `keep` - 0.8 m from it) and clear of trunks? */
@@ -407,6 +421,7 @@ export class Paddock {
   }
   /** Per frame: nothing is simulated or drawn beyond PADDOCK.viewDist m from the paddock, or underground. No allocations. */
   update(dt, hidden = false) {
+    for (const h of this.hearts) h.update(dt);
     const c = this.camera.position, show = !hidden && Math.hypot(c.x - centre.x, c.z - centre.z) < P.viewDist;
     this.mesh.visible = show;
     if (!show) return;

@@ -226,6 +226,7 @@ await loadingStep('Bygger huset', 0.25); // each awaited step paints once before
 const world = await buildWorldSliced(plan, (share) => loadingYield(0.25 + 0.17 * share)); // in parts, the heartbeat painted between them (#1133)
 scene.add(world.object);
 const paddock = params0.has('nopaddock') ? null : new Paddock({ scene, camera, ground: (x, z) => (z > 260 ? -3.01 : Math.max(groundY(x, z), renderedTerrainY(x, z))), trees: treeFeet }); // #1280: the fenced pony paddock and its two ponies (southbackdrop.js's far ground level)
+if (paddock) paddock.onPet = () => bump('ponyPets'); // #1320: a pat of a pony is worth a point
 await loadingYield(0.43);
 const garage = world.garage = new Garage(); // the garage and the förråd under the courtyard (#357)
 await loadingYield(0.46);

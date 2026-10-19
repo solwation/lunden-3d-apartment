@@ -3166,6 +3166,7 @@ export const SCORE = {
   },
   each: {
     petted: 8, catPhotos: 2, catFish: 25,                 // a pat (a cat to find first), its photo; feeding one takes a plan
+    ponyPets: 1,                                          // a pat of a paddock pony (#1320)
     kittenPets: 12,                                       // a kitten's pat on top of `petted` (#363)
     target: 1, splashes: 0.2, cuts: 0.1, magic: 0.3,      // Nerf target: per target point (rings × distance = skill)
     baskets: 6, threes: 6, dribbles: 0.1,                 // a three = a basket + a three (12)
@@ -3576,7 +3577,8 @@ export const PADDOCK = {
   wood: [0x8a6a45, 0x7d5f3d, 0x94754d], waypoint: 5, treeClear: 2.6, riverClear: 7, maxSlope: 0.3, viewDist: 280, curious: 40, keep: 2.5,
   pony: { withers: 1.32, neck: [0, 1.12, 0.55], speed: 0.85, turn: 1.4, graze: [6, 16], idle: [3, 8], gap: 2.2,
     animals: [{ name: 'Zoey', coat: 0xdddbd5, accent: 0x93918c, seed: 7 }, { name: 'Princess', coat: 0x7a4426, accent: 0x1b1410, seed: 19, star: true }], // grey/white with a lighter-grey mane, tail and legs; bay with black points and a white star (photo in #1293)
-    pet: 2.6 }, // s a pat takes (#1293: the pony stops, turns its head, flicks its ears, nickers)
+    pet: 2.6, // s a pat takes (#1293: the pony stops, turns its head, flicks its ears, nickers)
+    hearts: 10, heartScale: 2.5 }, // #1320: hearts per pat and their size/rise relative to a hug's (*guess*, readable at a few metres)
   trough: { w: 1.7, d: 0.5, h: 0.42 }, shelter: { w: 4.2, d: 2.6, h: 2.3 },
   // the stile beside the gate (#1295, *guess*): `w` m wide, `minSpan` m the fence span it needs, three risers of `rise` m (under PLAYER.stepUp 0.45, so the ordinary
   // stepping walks it) over two treads of `tread` m either side of a platform that is 2 × `platform` m long; `reach` m from the fence line to the walls' ends

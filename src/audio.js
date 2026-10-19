@@ -214,6 +214,19 @@ export const sfx = {
     tone(t + 0.5, 0.35, d, { type: 'sawtooth', from: 400 * pitch, to: 230 * pitch, gain: 0.08 });
     noise(t + 0.5, 0.3, d, { freq: 600, q: 1, gain: 0.1 });
   },
+  /** A pony's happy whinny (#1320): a short rising squeal that breaks into a few bright, falling neighs. `pitch` ~1 = an average pony. */
+  whinny(pos, pitch = 1) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 1.3);
+    tone(t, 0.22, d, { type: 'sawtooth', from: 420 * pitch, to: 900 * pitch, gain: 0.1 });
+    noise(t, 0.22, d, { freq: 1800, q: 1.2, gain: 0.07 });
+    for (let i = 0; i < 3; i++) {
+      const s = t + 0.24 + i * 0.17;
+      tone(s, 0.16, d, { type: 'sawtooth', from: (880 - i * 90) * pitch, to: (560 - i * 70) * pitch, gain: 0.09 - i * 0.015 });
+      noise(s, 0.14, d, { freq: 1400, q: 1.2, gain: 0.06 });
+    }
+    tone(t + 0.75, 0.3, d, { type: 'sawtooth', from: 520 * pitch, to: 260 * pitch, gain: 0.06 });
+  },
   /** Purring for `dur` seconds: a ~26 Hz pulse train through a low formant, breathing in and out.
    * `voice` 'trill' (perser) adds little mrrp chirps, 'rasp' (sphynx) purrs deeper, rougher, louder, 'kitten' (#363)
    * purrs quieter, faster and higher. */
