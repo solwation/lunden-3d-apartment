@@ -5656,7 +5656,13 @@ export const PLAYROOM = { maxCm: 160, x: -1500, z: -1500, w: 6.4, d: 5.2, ceilin
   billiards: { x: 0, z: 0, length: 1.8, width: 0.9, height: 0.58, rail: 0.09, railH: 0.06, leg: 0.08,
     ballR: 0.024, pocketR: 0.052, cueLength: 1, strokeSpeed: 2.2, strokeSeconds: 0.24, cueTravel: 0.09,
     friction: 0.45, bounce: 0.94, cushionBounce: 0.82, stopSpeed: 0.012, maxStep: 1 / 180 },
-  colors: { floor: 0xb98a5a, wall: 0xf1d9a8, ceiling: 0xf7f2e8, trim: 0xffffff, door: 0x9c2f24 } };
+  colors: { floor: 0xb98a5a, wall: 0xf1d9a8, ceiling: 0xf7f2e8, trim: 0xffffff, door: 0x9c2f24 },
+  // #1327: the furniture, child-sized for 140-159 cm players (all our own choices, *guess*); local metres from the room's centre (x east, z south, the door
+  // at z +2.6). Sofa in the north-west corner facing a TV on the west wall (clear of the billiard table in the middle, `billiards` above), a gaming desk with
+  // a stool on the east wall south of the table's end, a disco ball over the north half.
+  furniture: { seatHeight: 0.36, sofa: { x: -1.58, z: -1.35, w: 1.5, d: 0.75 }, tv: { w: 1.2, h: 0.68, y: 0.52 }, stool: { x: 2.35, z: 1.0, seat: 0.38 },
+    ball: { x: 0, z: -1.5, y: 1.95, r: 0.17, spin: 0.5, spots: 26, spotSpin: 0.35 }, // the disco ball hangs 0.45 m under the ceiling, the light spots sweep round it
+  } };
 
 /** A well-formed look code (#1136): 7 or 9 digits, or 9 + a height in cm within AVATAR_HEIGHT (the Worker uses it too). */
 export function avatarCodeValid(str) {

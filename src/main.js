@@ -2043,7 +2043,7 @@ function updateFocus() {
     ...(!weaponKey() ? ghosts.targets() : []), // only unarmed visitors greet other players (#872)
     ...suit.targets(), // the Spider-Man suit in its drawer / where it was laid (#597)
     ...world.courtyardTargets.map((t) => t.pickable),
-    ...(playroom.inside ? [playroom.exitTarget.pickable, playroom.billiards.target.pickable] : []), // the way out of the children's room (#1319)
+    ...(playroom.inside ? [playroom.exitTarget.pickable, playroom.billiards.target.pickable, ...playroom.targets.map((t) => t.pickable)] : []), // the way out of the children's room (#1319), the billiard table (#1328), the sofa and stool (#1327)
     ...bicyclePickables(), // the courtyard's benches (#438): F keeps them
     ...(power.reachable ? [power.target.pickable] : []), // the fuse box while its cabinet is open (#604)
     ...(world.furnitureOn ? [...(target.object.visible ? [target.target] : []), ...(hoop.object.visible && hoop.freeThrowTarget ? [hoop.freeThrowTarget] : []), ...patio.targets, ...world.furnitureTargets, ...holdables.map((h) => h.target), drawing.target, ...posters.targets].map((t) => t.pickable) : [])]; // parasol, TV, seats, beds, toys — unless F hid the furniture

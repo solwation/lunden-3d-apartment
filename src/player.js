@@ -247,7 +247,7 @@ export class Player {
    * furniture back, a resume record, the car parking on you) could never get out.
    */
   obstacles(level = this.level) {
-    if (this.inPlayroom) return []; // (#1319: no furniture yet)
+    if (this.inPlayroom) return this.world.playroom.footprints; // (#1319; the room's furniture, #1327)
     if (this.aloft || this.inCore) return []; // (the flat's furniture and the car are far below, #360; the stairwell, #415)
     if (this.below) return this.world.garage.obstacles(); // the cars parked down there (#357)
     return [...(this.world.levels[level]?.footprints ?? []), ...(this.world.movingPolys?.(level) ?? [])];
@@ -255,7 +255,7 @@ export class Player {
 
   /** Can the visitor stand at (x, z) on `level` (#314)? Clear of every segment by the radius + `margin`, inside no obstacle. */
   isFree(x, z, level = this.level, margin = 0.02, ignored = []) {
-    if (this.inPlayroom) { const r = this.world.playroom; return r.contains(x, z) && !r.segments.some((sg) => !ignored.includes(sg) && segDist(x, z, sg) < PLAYER.radius + margin); } // (#1319)
+    if (this.inPlayroom) { const r = this.world.playroom; return r.contains(x, z) && !r.segments.some((sg) => !ignored.includes(sg) && segDist(x, z, sg) < PLAYER.radius + margin) && !r.footprints.some((q) => inPoly(q, x, z)); } // (#1319, furniture #1327)
     if ((this.world.bicycleSegments?.(this.pos.y, PLAYER.headroom, PLAYER.hurdle) ?? []).some(s => segDist(x,z,s) < PLAYER.radius + margin)
       || (this.world.bicyclePolys?.(this.pos.y, PLAYER.headroom, PLAYER.hurdle) ?? []).some(p => inPoly(p,x,z))) return false;
     if (this.inCore) { const [a, b] = this.world.core.segments(this.pos.y); return this.world.core.covers(x, z) && ![...a, ...b].some((sg) => !ignored.includes(sg) && segDist(x, z, sg) < PLAYER.radius + margin); } // (#415)

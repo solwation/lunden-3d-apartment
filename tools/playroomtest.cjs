@@ -74,8 +74,51 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     const inside = await page.evaluate(() => window.__t.calls());
     await page.evaluate(() => window.__t.render()); await page.screenshot({ path: `${shots}/3-inside.png` });
     // the walls hold: run into the west wall
-    const wall = await page.evaluate(() => { const P = window.__app.player, cam = window.__app.camera; cam.rotation.y = Math.PI / 2; P.keys = new Set(['KeyW', 'ShiftLeft']); window.__t.frames(400); P.keys = new Set(); return { x: P.pos.x, bounds: window.__app.world.playroom.bounds }; });
+    const wall = await page.evaluate(() => { const P = window.__app.player, r0 = window.__app.world.playroom; P.spawn(r0.bounds.x0 + 3.2, r0.bounds.z1 - 0.45, 0); window.__t.frames(10); const cam = window.__app.camera; cam.rotation.y = Math.PI / 2; P.keys = new Set(['KeyW', 'ShiftLeft']); window.__t.frames(400); P.keys = new Set(); return { x: P.pos.x, bounds: window.__app.world.playroom.bounds }; });
     check(wall.x > wall.bounds.x0 && wall.x < wall.bounds.x0 + 0.5, 'the west wall holds', `x=${wall.x.toFixed(2)} wall=${wall.bounds.x0}`);
+    // #1327: the furniture. Walls and furniture hold, the sofa and stool can be sat in, nothing overlaps the billiard table, the disco spots sweep.
+    const RM = await page.evaluate(async () => { const C = await import('/src/config.js'); return C.PLAYROOM; });
+    const L = (lx, lz) => ({ x: RM.x + lx, z: RM.z + lz });
+    const walkTo = (from, yaw, secs) => page.evaluate(({ from, yaw, secs }) => { const P = window.__app.player, cam = window.__app.camera; P.spawn(from.x, from.z, 0); window.__t.frames(10); cam.rotation.y = yaw; P.keys = new Set(['KeyW']); window.__t.frames(secs * 60); P.keys = new Set(); return { x: P.pos.x, z: P.pos.z }; }, { from, yaw, secs });
+    const sofaWalk = await walkTo(L(0, -1.35), Math.PI / 2, 3); // west along the sofa's middle (north of the billiard table)
+    check(sofaWalk.x > RM.x - 1.2 + 0.1 && sofaWalk.x < RM.x - 0.7, 'the sofa holds from behind', `lx=${(sofaWalk.x - RM.x).toFixed(2)}`);
+    const deskWalk = await walkTo(L(1.6, 1.0), -Math.PI / 2, 3); // east into the stool / desk
+    check(deskWalk.x < RM.x + 2.65 - 0.2, 'the stool and desk hold', `lx=${(deskWalk.x - RM.x).toFixed(2)}`);
+    const tvWalk = await walkTo(L(-0.2, 2.1), Math.PI / 2, 4); // west along the south wall, free of furniture
+    check(tvWalk.x < RM.x - 2.5 && tvWalk.x > RM.x - 3.2, 'the floor south of the sofa is walkable up to the west wall', `lx=${(tvWalk.x - RM.x).toFixed(2)}`);
+    const clash = await page.evaluate(({ RM }) => { const r = window.__app.world.playroom, b = RM.billiards, hx = b.length / 2 + b.rail + 0.05, hz = b.width / 2 + b.rail + 0.05; // the table's footprint (+ 5 cm), no furniture footprint touches it
+      return r.footprints.filter((q) => { const xs = q.map((p) => p[0] - RM.x - b.x), zs = q.map((p) => p[1] - RM.z - b.z); return Math.min(...xs) < hx && Math.max(...xs) > -hx && Math.min(...zs) < hz && Math.max(...zs) > -hz; }).length; }, { RM });
+    check(clash === 0, 'no furniture footprint touches the billiard table', `overlaps ${clash}`);
+    // sit on the sofa (left, middle, right seats), see the TV, get up in a free spot
+    const sofa = RM.furniture.sofa;
+    for (const [k, name] of [[0, 'left'], [1, 'middle'], [2, 'right']]) {
+      const seatZ = sofa.z - sofa.w / 2 + sofa.w / 3 * (k + 0.5);
+      const f = await page.evaluate(({ at, seatZ }) => { const t = window.__t, P = window.__app.player; P.spawn(at.x, at.z, 0); t.frames(10); t.aim(at.sx, 0.34, seatZ); return t.focus(); }, { at: { ...L(-0.7, sofa.z), sx: RM.x + sofa.x + 0.1 }, seatZ: RM.z + seatZ });
+      check(f?.kind === 'rest' && f.name === 'soffan', `the sofa is a seat (${name})`, JSON.stringify(f));
+      await page.evaluate(() => window.__app.use(window.__app.focus().focused)); await page.waitForTimeout(300);
+      const sat = await page.evaluate(() => { const a = window.__app; for (let i = 0; i < 12; i++) a.rest.update(0.1); window.__t.render(); return { active: a.rest.active, kind: a.rest.kind, x: a.camera.position.x, y: a.camera.position.y, yaw: a.camera.rotation.y }; });
+      check(sat.active && sat.kind === 'sit' && sat.y > 0.7 && sat.y < 1.2 && Math.abs(Math.abs(sat.yaw) - Math.PI / 2) < 0.2, `sitting in the sofa's ${name} seat, facing the TV`, JSON.stringify(sat));
+      if (k === 1) await page.screenshot({ path: `${shots}/6-sofa-seated.png` });
+      await page.evaluate(() => window.__app.standUp());
+      await page.waitForTimeout(300);
+      const up = await page.evaluate(() => { const a = window.__app, P = a.player; return { active: a.rest.active, free: P.isFree(P.pos.x, P.pos.z), inRoom: P.inPlayroom }; });
+      check(!up.active && up.free && up.inRoom, `got up from the ${name} seat on free floor`, JSON.stringify(up));
+    }
+    const fs2 = await page.evaluate(({ RM }) => { const t = window.__t, P = window.__app.player; P.spawn(RM.x + 1.5, RM.z + RM.furniture.stool.z, Math.PI / 2); t.frames(10); t.aim(RM.x + RM.furniture.stool.x, 0.36, RM.z + RM.furniture.stool.z); return t.focus(); }, { RM });
+    check(fs2?.kind === 'rest' && fs2.name === 'pallen', 'the stool at the gaming desk is a seat', JSON.stringify(fs2));
+    // the disco ball: one spot mesh, all spots inside the room, and they move
+    const d1 = await page.evaluate(() => { const r = window.__app.world.playroom, p = [...r.spots.geometry.attributes.position.array]; r.disco(1.3); return { a: p, b: [...r.spots.geometry.attributes.position.array], bounds: r.bounds, n: r.rays.length }; });
+    const inb = d1.b.every((v, i) => i % 3 === 1 ? v > -0.2 && v < RM.ceiling + 0.2 : true) && d1.b.filter((_, i) => i % 3 === 0).every((v) => v > d1.bounds.x0 - 0.2 && v < d1.bounds.x1 + 0.2) && d1.b.filter((_, i) => i % 3 === 2).every((v) => v > d1.bounds.z0 - 0.2 && v < d1.bounds.z1 + 0.2);
+    check(inb && d1.b.some((v, i) => Math.abs(v - d1.a[i]) > 0.3), `the ${d1.n} disco spots lie on the room's surfaces and sweep`, '');
+    const lit = await page.evaluate(() => { const o = window.__app; return o.world.playroom.object.children.filter((c) => c.isLight).length; });
+    check(lit === 0, 'no extra lights in the room');
+    const views = { 7: [[2.9, 2.3], [-1.8, -1.3]], 8: [[-2.9, 2.3], [2.6, 0.5]], 9: [[2.9, -2.3], [-2.5, -1.3]] };
+    for (const [n, [from, to]] of Object.entries(views)) {
+      await page.evaluate(({ RM, from, to }) => { const t = window.__t, P = window.__app.player; P.spawn(RM.x + from[0], RM.z + from[1], 0); t.frames(20); t.aim(RM.x + to[0], 1.1, RM.z + to[1]); window.__app.world.playroom.disco(0.4); t.render(); }, { RM, from, to });
+      await page.screenshot({ path: `${shots}/${n}-view.png` });
+    }
+    await page.evaluate(({ RM }) => { const t = window.__t, P = window.__app.player; P.spawn(RM.x, RM.z + 1.9, 0); t.frames(20); t.aim(RM.x, 2.2, RM.z - 1.5); window.__app.world.playroom.disco(0.4); t.render(); }, { RM });
+    await page.screenshot({ path: `${shots}/10-disco.png` });
     // the exit door
     const f2 = await page.evaluate(() => { const t = window.__t, P = window.__app.player, r = window.__app.world.playroom, a = r.arrival; P.spawn(a.x, a.z, a.yaw); t.frames(30); t.aim(a.x, 0.7, r.bounds.z1); return t.focus(); });
     check(f2?.kind === 'playroomExit' && f2.verb === 'gå ut ur', 'the exit door is a target', JSON.stringify(f2));
@@ -96,7 +139,7 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     await setHeight(175); await toDoor();
     const after = await page.evaluate(() => window.__t.calls());
     check(before.calls === after.calls && before.tris === after.tris, 'draw calls outside unchanged after a visit', `${JSON.stringify(before)} → ${JSON.stringify(after)}`);
-    check(inside.calls <= 20, 'inside, only the room is drawn: few draw calls', `outside ${before.calls}, inside ${inside.calls}`);
+    check(inside.calls <= 14, 'inside, only the room is drawn: few draw calls', `outside ${before.calls}, inside ${inside.calls}`);
     check(errors.length === 0, 'no page errors', errors.join(' | '));
   } finally { await browser.close(); }
   console.log(failed ? `${failed} FAILED` : 'ALL PASSED');
