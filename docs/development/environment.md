@@ -532,3 +532,21 @@ platform remain unchanged and are tracked independently in#1429.
 A/B/C/L house equivalents: not applicable; this is the one mapped bus stop.
 Neutral public transfer is queued separately as
 [kvarteret-lunden#110](https://github.com/solwation/kvarteret-lunden/issues/110), low priority.
+
+## Addressed southern low-rise windows (#1418)
+
+`SITE.south.lowRiseWindows.sources` explicitly selects39 addressed main bodies
+from the checked-in2026-10-08 OSM snapshot:13 Sankt Lars väg buildings,10 each
+on Sävsländegatan/Nattsländegatan and6 on Hattsnäckegränden. `building=yes`
+does not establish use or facade details. Seven unaddressed/uncertain bodies
+remain blank; the seven generic landmarks and detailed Sankt Lars väg41 retain
+all old glass. `src/southwindows.js` appends480 simple panes/960triangles to the
+existing shared glass batch, after its unchanged old geometry. Longitudinal faces
+parallel to the existing assumed ridge receive the existing guessed bay/window/
+sill pattern; gables and short returns stay blank. This is a visual assumption,
+not surveyed window positions. Footprints, holes, base/eave/roof heights, paths,
+parking, terrain and materials remain unchanged. Houses A/B/C/L use separate
+builders and are not affected by this south-only selection.
+Neutral downstream transfer is queued separately in
+[public#111](https://github.com/solwation/kvarteret-lunden/issues/111), priority low;
+original#1418 remains open after source delivery until that transfer is verified.

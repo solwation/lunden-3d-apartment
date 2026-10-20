@@ -794,6 +794,14 @@ export const SITE = {
   // Named campus polygons identify buildings; names are orientation only. All floor counts/heights/roof details remain assumptions.
   // #536 existing south-bank OSM footprints/landuse. All untagged heights, colors and roof details are visual assumptions.
   south: {
+    // #1418: OSM 2026-10-08 addressed main bodies; building=yes does not verify use or window positions.
+    // Seven unaddressed/uncertain bodies stay blank. Longitudinal-only rows, face cutoff and spacing are visual guesses.
+    lowRiseWindows: { parallelCos: .98, minFaceShare: .45, sources: [
+      '88457551', '88457559', '88457560', '88457562', '88457571', '88457572', '88457578', '88457584', '88457587', '88457589', '88457593', '88457596', '88457604', // Sankt Lars väg
+      '333642383', '333642385', '333642389', '333642392', '333642396', '403628166', '403628168', '403628172', '403628174', '403628178', // Sävsländegatan
+      '333642384', '333642387', '333642391', '333642393', '333642395', '367079610', '367079611', '367079612', '367079613', '367079616', // Nattsländegatan
+      '333642386', '333642390', '333642397', '403628164', '403628170', '403628176', // Hattsnäckegränden
+    ] },
     buildings: [
       {"source":"88457551","polygon":[[246.3,350.37],[250.7,348.97],[251.42,351.23],[255.49,349.95],[258.92,360.68],[244.6,365.21],[241.15,354.37],[246.99,352.53],[246.3,350.37]],"levels":2,"levelsSource":"visual assumption","name":"Sankt Lars väg 64","roof":"gable","roofSource":"visual assumption","rise":1.6,"facade":13024420},
       {"source":"88457554","polygon":[[42.86,466.69],[57.77,455.6],[62.18,461.53],[47.28,472.62],[42.86,466.69]],"levels":2,"levelsSource":"visual assumption","name":"Sankt Lars 88457554","roof":"gable","roofSource":"visual assumption","rise":1.6,"facade":13024420},

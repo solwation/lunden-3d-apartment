@@ -7575,3 +7575,26 @@ within unchanged profile caps. These are targeted views, not a full global budge
 Ordinary drop tracking seeded by the existing top deck is cleared on validated entry;
 fatal fall recovery still prevents entry. Top native entry and actual session save use feetY0.
 [Persistent raw logs, screenshots and fixture notes](/home/olw/.local/state/lunden-orkester/codex-surface-20261020/slide1414/README.md).
+
+## Southern low-rise glazing (#1418)
+
+`node --test tools/southwindowstest.mjs` verifies39 explicit addressed source IDs,
+seven uncertain bodies/eight detailed bodies excluded, finite/outward emitted
+panes and both polygon windings. `tools/southwindowsgametest.cjs` runs one real
+World per desktop/landscape/portrait process, using ordinary perfcount's19views
+and quality checks with unchanged caps. Set `PROFILE`, `SHOTS`, `BASELINE`
+(frozen source southbackdrop.js), `PLAYWRIGHT_MODULE`, `CHROME_PATH`; pass BASE.
+Desktop/landscape then compare all actual non-glass buffers and old glass prefix,
+building footprints/holes/heights, independent rays on all new panes and existing
+courtyard-facing panes. Matched near/overview images swap only old/new glass in
+the same real World; production player poses/step refresh ordinary culling.
+Phone CPU-freed normal/colour arrays are explicitly excluded from byte comparisons;
+triangle-derived normals keep actual ray evidence independent of those freed arrays.
+The desktop comparison retains all prepack attributes. Standard budgets allPASS:
+desktop437draws/996784tri/~309MiB, landscape369/831161/~97MiB,
+portrait290/722245/~101MiB. Caps are unchanged; only960window triangles are added.
+[Persistent raw checks and fixture limitations](/home/olw/.local/state/lunden-orkester/codex-surface-20261020/windows1418/README.md).
+
+These raw profiles precede the independent reviewed#1417 apron merge (+344triangles/
+0draws); the additive desktop upper bound997128 stays below1M. The final rebase
+preserves that apron and all other owners’ blocks; no full budget repeat was needed.

@@ -4,6 +4,7 @@ import { SITE, SEASON, COLORS, DECAL_OFFSET, PADDOCK } from './config.js';
 import { pathStrip, cutAtTerrain } from './roads.js';
 import { registerTrees, registerSnow, registerSeasonal } from './seasons.js';
 import { lobeGeometry, leafMaterial, leafAtlasParts } from './foliage.js';
+import { lowRiseWindowParts } from './southwindows.js';
 import { buildStLars41 } from './stlars41.js';
 import { paddockLandParts } from './paddock.js';
 import { busStopApron } from './busstopgeo.js';
@@ -59,6 +60,8 @@ export function* southBackdropParts(ground){
     if(b.levels<4)continue;const nx=sign*dz/d,nz=-sign*dx/d;for(let k=1;k*S.bay+S.window[0]/2<d;k++)for(let floor=0;floor<b.levels;floor++)parts.glass.push(plain(new THREE.PlaneGeometry(...S.window).rotateY(Math.atan2(nx,nz)).translate(a[0]+dx/d*k*S.bay+nx*.025,base+floor*S.storey+S.sill+S.window[1]/2,a[1]+dz/d*k*S.bay+nz*.025)));
   }}records.push({...b,base,bottom,eave,roofY:(x,z)=>roofHeight([x,z])}); // roofY: the drawn roof's height, for the walkable roof (#1294)
  }
+ // Append new panes after all old glass: existing landmark/special facade geometry stays an exact prefix.
+ for(const b of records)parts.glass.push(...lowRiseWindowParts(b,b.base));
  yield .6;
  // Continuation overlaps only the old outer boundary. Fog fully covers its outer edges from every accessible camera.
  const G=S.ground;parts.land.push(tint(new THREE.PlaneGeometry(G.x1-G.x0,G.z1-SITE.backgroundGround.z1).rotateX(-Math.PI/2).translate((G.x0+G.x1)/2,-3.01,(G.z1+SITE.backgroundGround.z1)/2),COLORS.grass));
