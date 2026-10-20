@@ -16,7 +16,7 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     const page = await browser.newPage(process.env.MOBILE ? {viewport:{width:844,height:390},isMobile:true,hasTouch:true} : { viewport: { width: 900, height: 600 } });
     const errors = []; page.on('pageerror', (e) => errors.push(e.message));
     await page.addInitScript(() => { localStorage.setItem('lunden.name', 'Barn'); sessionStorage.setItem('lunden.nameSkipped', '1'); });
-    await page.goto(`${game}/?shot&quality=3&time=12&month=6&freeze`, { waitUntil: 'commit' });
+    await page.goto(`${game}/?shot&cloud=&mp=0&quality=3&time=12&month=6&freeze`, { waitUntil: 'commit' });
     await page.waitForFunction(() => window.__app?.renderer && window.__ghosts, null, { timeout: 600000 });
     await page.evaluate(() => {
       const a = window.__app; a.showOverlay(false); if (a.rest.active) a.standUp(); a.renderer.setAnimationLoop(null);
@@ -169,10 +169,11 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     await aimAt([RM.x+remoteSeat.x+0.78,RM.z+remoteSeat.z], [RM.x+remoteSeat.x,.48,RM.z+remoteSeat.z]);
     await deviceUse();
     const remoteFocus = await page.evaluate(async ({RM}) => { const a=__app,F=RM.furniture; for(let i=0;i<12;i++)a.rest.update(.1); __t.aim(RM.x+F.cinema.remote.x,F.cinema.remote.y+0.04,RM.z+F.cinema.remote.z); return { seated:a.rest.active, focus:__t.focus() }; }, {RM});
-    check(remoteFocus.seated && remoteFocus.focus?.name === 'TV:n med fjärrkontrollen', 'TV remote is reachable from a real cinema seat', JSON.stringify(remoteFocus));
-    await deviceUse(); check((await deviceState()).tv, 'native E/touch starts TV while seated');
+    check(remoteFocus.seated && remoteFocus.focus?.name === 'film med bions fjärrkontroll' && remoteFocus.focus?.verb === 'välja', 'TV remote is reachable from a real cinema seat', JSON.stringify(remoteFocus));
+    await deviceUse(); check(await page.locator('#cinema-player').evaluate(el => el.open), 'native E/touch opens film choice while seated');
     await page.evaluate(() => __t.render()); await page.screenshot({ path: `${shots}/15-cinema-remote.png` });
-    await deviceUse();
+    await page.locator('[data-cinema=close]').click();
+    check(!await page.locator('#cinema-player').evaluate(el => el.open), 'cinema back button closes the player and restores room controls');
     await page.evaluate(() => __app.standUp());
     await page.evaluate(() => { window.deviceSwitches = []; __app.world.playroom.onSwitch = (name, on) => deviceSwitches.push([name, on]); });
     const tvFocus = await aimAt([RM.x-RM.w/2+1,RM.z+cinema.screen.z], [RM.x+RM.furniture.tv.x+.08,RM.furniture.tv.y+RM.furniture.tv.h/2,RM.z+cinema.screen.z]);

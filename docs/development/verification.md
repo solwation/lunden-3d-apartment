@@ -7419,3 +7419,49 @@ were separately exercised with pointer lock. Raw aborted input-fixture attempts 
 exposed missing pointer-lock transition waits and focused-placement priority, without runtime changes.
 The paired bounded Cat/Miele/Hand/WebAudio carry regression passes29/29 with native exit0;
 card storage model passes10/10. No render geometry, routing or budget behavior changed.
+
+
+## Cinema network video (#1376)
+
+`PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/cinemavideotest.cjs GAME OUT`
+checks the actual app, rear cinema chair, real raycast and native E; `MOBILE=1`
+uses844×390 and the actual touch action. It loads the visitor-selected official
+YouTube iframe, explicitly presses Play, observes the real HTML video currentTime
+and totalVideoFrames counter, then verifies pause, off, a second own URL and
+back-to-room. TotalVideoFrames includes dropped frames; it is not a count of
+presented or individually certified decoded frames. The screenshot, real media
+source and time progression establish actual playback. This is not mocked media.
+
+The fixture also checks invalid hosts, typing/Enter/Escape, desktop pointer-lock
+restoration, close while the actual API script is held pending, actual vendor
+error150 with an actionable denied-embed message and iframe removal, deterministic
+101/error-message coverage, playing-room-exit destruction and late-ready suppression.
+The constructor delegate only records real vendor errors; the separately identified
+101 case is synthetic. No production game Worker or player service is contacted.
+The official sample M7lc1UVf-VE and Blender's aqz-KE-bpKQ appear only in tests;
+the product has no preset video. Inspect playing, unavailable and blocked-embed
+images on both profiles. The minimum iframe viewport is200×200; every app control
+has44px height and is visible at844×390. This does not establish physical-iPhone
+behaviour or circumvent owner restrictions, regional availability or sign-in.
+
+Final complete media runs: desktop23/23 and mobile22/22PASS, bothCLI0.
+Desktop media advances0.069992→1.268036s (total frame counter5→43), and pause
+stays1.375198s; mobile advances0.345184→1.534722s (14→51), and pause stays
+1.760761s. Both receive real vendor150 and remove the iframe.
+
+The complete existing room/device regression remains
+`PLAYWRIGHT_MODULE=… CHROME_PATH=… SHOTS=… node tools/playroomtest.cjs GAME`
+and its `MOBILE=1` variant: desktop83/83 and mobile85/85PASS, bothCLI0.
+All original seats/routes, TV channel, PC game, disco, power hooks, exit and outside
+draw counts remain covered. This DOM player changes no room geometry, lights,
+WebGL submissions or terrain, so no new global performance suite is required.
+
+Raw evidence lives under `/tmp/orkester-katt-20261020/video1376/`.
+The early native-lock setup failure and opening-E text insertion are preserved;
+the latter was fixed by preventing E's default before using a playroom device.
+Further failed media attempts used an overly narrow expected error string: the
+provider actually returned denied-embed150, not missing-video100. TheirCLI1 logs
+remain, alongside the green targeted desktop tail and corrected complete runs.
+A desktop fixture timing failure after Escape waited for the DOM lock before
+main's pointer-lock listener had run; the final helper also waits for the actual
+arm to hide. Browser/runtime assertions and timeouts were not weakened.

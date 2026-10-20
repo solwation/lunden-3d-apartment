@@ -325,9 +325,11 @@ while open passages and side contacts within the flame volume remain valid (#978
 
 The actual entrance/lobby shells in Houses A, B and C remain visible beyond the lift/stair detail distance, using each house’s existing dimensions. House L’s open portik remains a through-passage (#976).
 
-I lekstugans klubbhus kan barn starta TV:ns animerade klubbkanal (även med
-fjärrkontrollen från en biostol) och spela Pricka grönt på datorn med E eller
-tryckknappen. Den vita spelboxen stänger av datorn; båda skärmarna stängs av
+I lekstugans klubbhus kan barn starta TV:ns animerade klubbkanal och spela
+Pricka grönt på datorn med E eller tryckknappen. Bions fjärrkontroll öppnar
+filmvalet: klistra in en egen YouTube-länk och tryck Spela. Filmen visas i
+bions spelarfönster med paus och avstängning; Tillbaka till rummet stänger
+filmen. Videon måste tillåta inbäddning. Den vita spelboxen stänger av datorn; båda skärmarna stängs av
 när man lämnar klubbhuset. Discolampans strömbrytare fungerar som tidigare (#1365).
 
 Kattpärmen har fyra fasta samlarkortsplatser på varje sida: varje kattvariant

@@ -345,8 +345,8 @@ Tests: `node --test tools/clubhousetest.mjs cloudflare/billiards.test.mjs`; `too
 
 `src/playroomdevices.js` owns two local canvas screens at the TV/desk
 positions, following `furniture.cinema` and `furniture.desk` offsets. E/touch on the
-TV or its visible remote on a rear seat arm toggles a silent procedural sailing
-animation. The monitor starts the computer, then starts/stops a timing game:
+TV toggles a silent procedural sailing animation. The visible remote on a rear
+seat arm opens the separate cinema player (#1376). The monitor starts the computer, then starts/stops a timing game:
 stop the marker inside green to add a hit; misses still count as attempts and
 allow a new round. The white/blue box beside the monitor toggles its power.
 The normal biostol/stool seats and rest reach remain; no new input mode is needed.
@@ -354,9 +354,39 @@ The normal biostol/stool seats and rest reach remain; no new input mode is neede
 Both power controls forward to the existing `Playroom.onSwitch('tv'|'pc', on)`
 hook; disco uses its original hook and switching behaviour. Leaving powers down
 both devices and freezes their animation/game updates. Device state is local,
-not saved or synchronized. Audio remains #1330 and selectable real network
-video remains #1376. This is gameplay, excluded from the public downstream.
+not saved or synchronized. Room/device audio remains #1330. This is gameplay, excluded from the public downstream.
 `PLAYROOM.devices` holds the assumed texture size, redraw cap and timing-game
 settings. The two screens add at most two draws/four triangles; the remote
-shares the furniture batch. No lights, external media requests or audio nodes
-are added. Tests: real-app `tools/playroomtest.cjs`, desktop and `MOBILE=1`.
+shares the furniture batch. The canvas screens add no lights or audio nodes. Tests: real-app `tools/playroomtest.cjs`, desktop and `MOBILE=1`.
+
+
+### Cinema network video (#1376)
+
+`src/cinemaplayer.js` accepts a visitor's own HTTPS YouTube watch/shorts/live/embed
+link, youtu.be link or 11-character video ID. The rear-chair remote opens a native
+modal dialog and frees pointer lock; movement stops while it is open. The official
+YouTube IFrame API is loaded only after film selection, with a privacy-enhanced
+`youtube-nocookie.com` iframe, explicit origin/referrer and `playsinline=1`.
+Nothing autoplays: the visitor presses Spela or the player's own play control for
+sound. Pause preserves the media position; Stäng av, back, Escape, movie end,
+room exit/respawn and pagehide destroy the player and remove its iframe. A
+request generation prevents late API callbacks from reopening a closed player.
+The existing physical TV still toggles its local sailing animation; computer,
+disco, seat anchors, reach and stand-up controls are unchanged.
+
+The video is shown in the cinema dialog, not on a WebGL texture: an external
+iframe is not a canvas image source, and this app does not extract or download
+third-party video. No account or key is required. Video choice is visit-only;
+no URL is stored, shared with peers or sent to the game Worker. YouTube receives
+the chosen video request. Private/missing videos, denied embeds (101/150), missing
+client identity (153), network failure and timeout have actionable Swedish messages.
+Some videos require sign-in or disallow embedding; choosing a different video is
+necessary. A blocked autoplay prompts a native player click.
+
+Primary references: [official IFrame API](https://developers.google.com/youtube/iframe_api_reference)
+(play/pause/destroy, errors, autoplay and minimum200×200 viewport),
+[player parameters](https://developers.google.com/youtube/player_parameters)
+(origin, playsinline and autoplay), [canvas image sources](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Using_images).
+The tracked app has no CSP declaration and the Pages HTTP response checked on
+2026-10-20 has no CSP header; no policy relaxation was needed. The iframe remains
+cross-origin. This personal clubhouse gameplay has no public downstream transfer.

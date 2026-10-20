@@ -31,7 +31,7 @@ export class PlayroomDevices {
     };
     this.tv = screen('TV:n', tv.w, tv.h, tv.x + 0.08, tv.y + tv.h / 2, F.cinema.screen.z, Math.PI / 2,
       () => this.power('tv', !this.tvOn), () => this.tvOn ? 'stänga av' : 'starta');
-    this.remoteTarget = { kind: 'playroomDevice', name: 'TV:n med fjärrkontrollen', get verb() { return self.tvOn ? 'stänga av' : 'starta'; }, use: () => this.power('tv', !this.tvOn) };
+    this.remoteTarget = { kind: 'playroomDevice', name: 'film med bions fjärrkontroll', verb: 'välja', use: () => { this.onVideoRequest?.(); return 'Välj film i bion'; } };
     this.pick(this.remoteTarget, F.cinema.remote.x, F.cinema.remote.y + 0.04, F.cinema.remote.z, 0.22, 0.12, 0.14);
     this.pc = screen('datorn', 0.56, 0.34, F.desk.x + 2.939, 0.89, F.desk.z + 1, -Math.PI / 2,
       () => this.play(), () => !this.pcOn ? 'starta' : this.playing ? 'stoppa markören på' : 'spela på');
@@ -71,6 +71,7 @@ export class PlayroomDevices {
   setInside(on) {
     this.active = on;
     if (!on) {
+      this.onLeave?.();
       if (this.tvOn) this.power('tv', false);
       if (this.pcOn) this.power('pc', false);
     }

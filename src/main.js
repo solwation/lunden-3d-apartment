@@ -1,6 +1,7 @@
 import { KISS } from './config.js';
 import { MATERIAL_CHOICES, materialChoices, materialChoice } from './materialcatalog.js';
 import { crashlog } from './crashlog.js'; // first: its heartbeat and error hooks start before the rest loads (#629; inert without the cloud)
+import { CinemaPlayer } from './cinemaplayer.js';
 import { AdminReports } from './adminreports.js';
 import { ReportCapture } from './reportcapture.js';
 import { bindGameViewport, gameView } from './viewport.js';
@@ -343,6 +344,7 @@ document.addEventListener('keydown', (e) => {
   e.stopImmediatePropagation();
 }, true);
 function showNote(show) {
+  if (!show && cinema.open) { cinema.close(); return; }
   if (!show && !tasks.modalEl.hidden) { showTaskNote(false); return; }
   if (!show && !binderEl.hidden) { showBinder(false); return; }
   if (!show && clockPanel.open) { showClock(false); return; }
@@ -1267,6 +1269,23 @@ if (params0.has('spidersuit')) suit.putOn(); // &spidersuit (#597): the suit on 
 const touchLayout = setupTouchLayout(); // own button layout (#1090): opened from the pause menu, applied in play
 const active = () => !statsOpen && (locked || touch.enabled);
 
+// The cinema remote frees the pointer for the official player and its own controls.
+const cinema = new CinemaPlayer(document.getElementById('cinema-player'), reason => {
+  reading = false; player.keys.clear(); touch.analog.x = touch.analog.y = 0;
+  if (binderFreed) {
+    binderFreed = false;
+    if (reason === 'button') canvas.requestPointerLock()?.catch(() => { armEl.hidden = false; });
+    else if (reason === 'Escape') { overlay.hidden = true; armEl.hidden = false; }
+  }
+});
+playroom.devices.onVideoRequest = () => {
+  if (!playroom.inside) return;
+  reading = true; player.keys.clear(); touch.analog.x = touch.analog.y = 0;
+  if (locked) { binderFreed = true; document.exitPointerLock(); }
+  cinema.show();
+};
+playroom.devices.onLeave = () => cinema.close('exit');
+
 // Native mouse lock picks the crosshair on mousedown. Free touch/pen picks the
 // tapped canvas coordinate on release; drags, cancelled and secondary touches do not pick.
 let measureDown = null;
@@ -1918,7 +1937,7 @@ document.addEventListener('keydown', (e) => {
   if (measure.active && (e.code === 'KeyE' || /^Digit[1-9]$/.test(e.code))) return;
   if (choices.rows && /^Digit[1-9]$/.test(e.code) && runChoice(Number(e.code.slice(5)) - 1)) e.preventDefault(); // a menu row (#367)
   if (e.code === 'KeyE' && (player.riding || focused?.kind === 'bicycle')) { if (!e.repeat) { if (player.riding) standUp(); else use(focused); } }
-  else if (e.code === 'KeyE' && focused) { if (!(e.repeat && focused.kind === 'fusebox')) use(focused); } // also while sitting: what is within reach (#184); the fuse box: a fresh press (#604)
+  else if (e.code === 'KeyE' && focused) { if (focused.kind === 'playroomDevice') e.preventDefault(); if (!(e.repeat && focused.kind === 'fusebox')) use(focused); } // also while sitting: what is within reach (#184); the fuse box: a fresh press (#604)
   else if (e.code === 'KeyE' && heldItem()?.useLabel) heldItem().use();
   else if (e.code === 'KeyE' && rest.active) standUp();
   else if ((e.code === 'Space' || e.code === 'KeyC') && (rest.active || player.riding)) { e.preventDefault(); player.keys.delete(e.code); standUp(); } // seated, C gets you up (the Space that does it is no jump, #636)
@@ -3361,4 +3380,4 @@ hideLoading();
 
 crashlog.attach({ renderer, camera, quality, player, world, sun, scene, mirrorTarget, frameDiag, viewportBinding }); // what the crash heartbeat shows (#629)
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { flare, outdoorSpot, paddock, birds, microwave, carLodState, showFireworks, newYear, sausages, frameRate, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, catCards, catCardsLoaded, binderPanel, showBinder, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };
+window.__app = { cinema, flare, outdoorSpot, paddock, birds, microwave, carLodState, showFireworks, newYear, sausages, frameRate, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, catCards, catCardsLoaded, binderPanel, showBinder, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };
