@@ -1,5 +1,41 @@
 # Rendering performance
 
+## Complete pergola lamp groups (#1438, partial #1431)
+
+The courtyard's existing272 sphere instances now form two complete pergola batches
+(152/120), sharing the same geometry and material. Flattened instance order, all matrix
+elements, geometry attributes/index, night/power colours and physical rays are exact.
+Each full pergola retains `CeilingBatchGate`; its bound equals every transformed sphere
+vertex. The existing gate and frustum can judge the two pergolas separately. No actual
+ceiling, opening, distance/quality policy, light or budget changes.
+
+Matched ordinary19-view standard-quality profiles on14530bfe reduce basement triangles
+1011120→1001520 (9600, the second pergola's120 unchanged spheres). Hall stays1000412.
+The result is still **SOME FAILED/CLI1** against1M; #1439 owns the remaining standard
+profile, and historical quality0 passes do not establish a standard-quality regression.
+Peak calls478/520 and textures~309/320MiB remain within their limits.
+Both complete phone quality0 profiles are **ALL PASS/CLI0** with unchanged370/950000/225
+limits:844×390 peaks370calls/831517tri/~97MiB;390×844 peaks289/701183/~101MiB.
+The rejected per-string experiment's380calls and all failed logs remain private.
+The final rebase includes93c7d220's independent speakers in the hidden remote playroom;
+a fresh integrated844×39019-view/quality run still passes370/831517/~97MiB, CLI0.
+
+Native ceiling/occlusion tests pass13/13. An ordinary quality3 World additionally passes
+18 original-builder identity/lifecycle checks, all272 physical layer0/7 sphere rays and
+real garage-button focus/Använd (one press, fully open after normal simulation).
+Six actual/forced-on image pairs have0changed pixels, including both visible pergolas,
+garage roof edge, basement and hall. The extra upward ceiling framing is not visual
+evidence of a core opening. All12 pictures were opened; existing native rectangle/hole
+tests cover the unchanged shared A/B/C/L ceiling filter, not four new house renderings.
+Raw scripts, images, profiles and failed fixture attempts remain outside the repo in
+`/tmp/orkester-katt-20261020/budget1431/` (`takeover1438/` for final identity/images).
+The first native attempt lacked the pinned Three package; the first browser fixture
+incorrectly omitted the source cross-string's+0.12m z offset. Corrected fixtures pass
+without changing production geometry or relaxing the exact vertex-bound comparison.
+
+Neutral public applicability is tracked separately as kvarteret-lunden#115, after its
+existing gate transfer#108. No private courtyard contents or services are transferred.
+
 ## Desktop exterior detail behind actual walls and floors (#1421)
 
 The upward patio view submits557calls/1096203triangles on the measured pre-fix

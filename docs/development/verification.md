@@ -1,3 +1,23 @@
+Complete pergola lamp groups (#1438): `node --test tools/ceilingbatchtest.mjs tools/occlusiontest.mjs`
+passes13/13. Compare the original14530bfe courtyard builder with current matrices in an
+ordinary World: exactly152+120 instances, identical flattened order, geometry attributes/
+index and material, independent full transformed-vertex bounds, night/power lifecycle and
+all272 physical layer0/7 rays. The final external driver adds18 identity/lifecycle checks
+and actual garage-button focus/touch Använd through the normal9second opening.
+Six quality3 actual/forced lamp captures have0changed pixels; both visible pergolas,
+garage roof edge, basement and hall were inspected. The auxiliary ceiling-only framing
+does not establish visible core-hole restoration; existing native hole tests retain that
+contract for the shared A/B/C/L source filter. No architecture is changed.
+Full19-view profiles retain every budget and quality assertion: phone844×390 ALLPASS/CLI0,
+370calls/831517tri/~97MiB;390×844 ALLPASS/CLI0,289/701183/~101MiB.
+The final integrated landscape rerun after93c7d220 remains370/831517/~97MiB, CLI0.
+Standard desktop remains SOMEFAILED/CLI1 at basement1001520 and hall1000412tri;
+#1439/#1431 remain open.
+Basement's matched reduction is9600tri from1011120. Do not substitute historical quality0
+results for standardquality3. Final proof/logs/images plus original failures are in
+`/tmp/orkester-katt-20261020/budget1431/takeover1438/` and its parent profile directory.
+See [performance](performance.md) for fixture limitations and public transfer#115.
+
 Bus platform terrain projection (#1429): `node --test tools/busstopplatformtest.mjs tools/busstopgeotest.mjs` (9 checks).
 Inspect actual rectangle area/bounds,48 paving/12 tactile triangle centroids and independent
 terrain rays,462 old/new platform rays, unchanged kerb/other meshes/materials/collision/

@@ -166,7 +166,7 @@ function herringbone() {
 export function buildCourtyard() {
   const group = new THREE.Group();
   const geos = { paving: [], gravel: [], sand: [], wood: [], metal: [], soil: [], pergola: [], brick: [] };
-  const vines = [], bulbs = []; // climbing plants and string-light bulbs on the pergolas (#149)
+  const vines = [], bulbs = [], bulbRanges = []; // climbing plants and string-light bulbs on the pergolas (#149)
   const swings = []; // two moving seats under the existing fixed A-frame (#1413)
   const segments = [];
   const seats = { segments: [], footprints: [] }, targets = [], surfaces = []; // #438: kept apart from the fixed segments (getting up off a bench)
@@ -179,6 +179,7 @@ export function buildCourtyard() {
   for (const g of C.gravel) geos.gravel.push(plate(g, 0.003));
   // pergolas: posts, beams, cross slats; a dining table and two benches under them
   for (const p of C.pergolas) {
+    const bulbStart = bulbs.length;
     const posts = [];
     for (const x of [p.x0, p.x1]) for (let z = p.z0; z <= p.z1 + 1e-3; z += (p.z1 - p.z0) / 3) posts.push([x, z]);
     // pale timber frames like Peab's evening render (#149), red brick in herringbone underneath
@@ -200,6 +201,7 @@ export function buildCourtyard() {
       const n = Math.round((p.z1 - p.z0) / 0.3);
       for (let k = 0; k <= n; k++) { const u = (k / n) * 3 % 1; bulbs.push([x, 2.8 - 0.3 * 4 * u * (1 - u), p.z0 + (k / n) * (p.z1 - p.z0)]); }
     }
+    bulbRanges.push([bulbStart, bulbs.length]);
     const cx = (p.x0 + p.x1) / 2, tl = (p.z1 - p.z0) * 0.7, z0 = (p.z0 + p.z1) / 2 - tl / 2;
     // #682: a long table of six planks and two benches of three slats each, on black steel trestles about every 1.6 m
     const plank = (x, w, t, y) => new RoundedBoxGeometry(w, t, tl, 1, 0.006).translate(x, y, z0 + tl / 2);
@@ -581,10 +583,16 @@ export function buildCourtyard() {
   registerTrees(vine, seeds);
   vine.castShadow = true;
   const bulbMat = new THREE.MeshBasicMaterial({ color: 0x2a2620, toneMapped: false });
-  const bulb = new THREE.InstancedMesh(new THREE.SphereGeometry(0.03, 8, 6), bulbMat, bulbs.length);
-  bulbs.forEach(([x, y, z], i) => bulb.setMatrixAt(i, m.makeTranslation(x, y, z)));
-  bulb.name = 'courtyard-pergola-bulbs';
-  group.add(vine, new CeilingBatchGate([bulb]));
+  const bulbGeo = new THREE.SphereGeometry(0.03, 8, 6);
+  // Keep each complete pergola's bounds separate for the existing frustum and
+  // whole-box ceiling tests; a site-wide box can span different ceiling rectangles.
+  group.add(vine);
+  for (const [start, end] of bulbRanges) {
+    const bulb = new THREE.InstancedMesh(bulbGeo, bulbMat, end - start);
+    bulbs.slice(start, end).forEach(([x, y, z], i) => bulb.setMatrixAt(i, m.makeTranslation(x, y, z)));
+    bulb.name = 'courtyard-pergola-bulbs';
+    group.add(new CeilingBatchGate([bulb]));
+  }
   const lit = new THREE.Color(0xffd08a), off = new THREE.Color(0x2a2620); const bollardOff = new THREE.Color(0x8d8b84);
   return { object: group, segments, seats, targets, surfaces, bicycles, swings,
     updateSwings(dt, target) {

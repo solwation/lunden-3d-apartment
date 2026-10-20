@@ -439,6 +439,11 @@ across reload, independently of discovery; petting, hugs and their ordinary poin
 
 När du går under gården slipper visningen rita hela terrassdekoren och pergolornas lampor genom ett täckande garagetak (#1387).
 
+Pergolornas oförändrade lampor bedöms nu som två hela grupper, så onödigt arbete bakom
+garagetaken minskar (#1438). Båda telefonprofilerna klarar sina befintliga gränser;
+standardprofilens återstående triangelöverskridanden i källare och hall följs i #1439/#1431.
+Den neutrala offentliga överföringen följs separat i kvarteret-lunden#115.
+
 Utsikten upp mot terrasserna kräver mindre ritningsarbete bakom lägenhetens täta väggar och golv (#1421).
 
 Bus boarding asphalt (#1417) joins the existing mapped kerb to the actual bus-bay
