@@ -94,15 +94,30 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   ownership metadata, distinct from the `orkester` coordination label, and does not change priority or replace claims.
 - **Priorities are labels.** Every issue carries exactly one of `priority: high`, `priority: medium`,
   `priority: low`, set when creating the issue. **Whoever creates the issue (the agent/LLM, not the reporter) judges the
-  priority (user, 2026-10-17):** bugs (`Bugg:`, broken behaviour, crashes, data loss, wrong geometry/rendering) get
+  priority (user, 2026-10-17):** subject to the child-priority ceiling below, bugs (`Bugg:`, broken behaviour, crashes,
+  data loss, wrong geometry/rendering) get
   `priority: high`; features are triaged by value: `high` for what blocks or clearly hurts everyday play/use, `medium`
   for solid improvements, `low` for nice-to-have, cosmetic polish or "some day" ideas. Do not default everything to
   medium; reporters never have to state a priority.
   When picking work, take the highest-priority open issue that is not `in-progress` (oldest first within a level;
   `gh issue list --state open --label "priority: high"`); an issue without a priority label counts as medium. Change an existing
-  issue's priority only when the user asks. Topic labels (e.g. `architecture`) are optional extras. Architecture issues whose
+  issue's priority only when the user asks, except for the automatic child-priority corrections below. Topic labels
+  (e.g. `architecture`) are optional extras. Architecture issues whose
   exact measurements are missing from Peab's material keep their geometry preliminary: centralise and mark the values as
   assumptions (*guess*), never replace one guess with another and call it verified (docs/peab/arkitekturgranskning-2026-10-04.md).
+- **Child priorities never exceed their parents (user, 2026-10-20).** New child stories default to the parent's
+  priority; a lower priority is allowed and must be preserved. This applies to every child, including bugs,
+  regressions, test/support stories and further subdivisions, and overrides the default high priority for bugs.
+  Use the lowest priority in the complete ancestor chain as the ceiling, including closed parents and explicit
+  cross-repository parentage; a missing priority counts as medium. Read GitHub parent/sub-issue links and explicit
+  parentage in titles, bodies and comments (`Del av #N`); an ordinary reference, dependency, transfer link or a bug
+  discovered while working on another issue does not by itself establish parentage. Do not reclassify a genuine
+  child as independent to bypass the ceiling, or raise a parent to preserve a child's higher priority.
+  At creation, when linking/reparenting, after a parent's priority changes and before each queue selection/idle check,
+  automatically lower any child label that exceeds the ceiling, recursively through all open descendants. No further
+  user approval is required for these corrections; keep exactly one priority label, record the parent and reason,
+  and preserve ownership, active labels, dependencies and already lower priorities. Raising a parent does not
+  automatically raise existing children. Fetch missing parents before deciding; do not guess at unresolved links.
 - **Every new issue gets a `Lapp: <text>` line** in its body (#340): 2–6 plain everyday Swedish words
   ("Laga glitchiga kuddar", "Kaffeburk vid bryggaren") — the open issues are post-its on the fridge door; without
   the line the title is cleaned up automatically (src/todo.js `cleanTitle`).

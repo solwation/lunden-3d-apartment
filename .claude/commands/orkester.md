@@ -142,13 +142,27 @@ En aktiv `/orkester` får inte avslutas direkt när kön blir tom. Fortsätt kon
 - **Globalt över båda reporna: hög → medel → låg, äldst först inom varje nivå** enligt `created_at` (därefter fullständigt reponamn och numeriskt ärendenummer).
   Etiketterna är `priority: high`, `priority: medium`, `priority: low`; utan prioritet räknas som medel.
 - **Prioritetsbedömning vid skapande (användaren 2026-10-17):** den som skapar ärendet (orkestern/agenten, inte den som
-  rapporterar) avgör prioriteten. **Buggar får `priority: high`** (fel beteende, krascher, grafik-/geometrifel, förlorad
+  rapporterar) avgör prioriteten inom föräldrataket nedan. **Fristående buggar får `priority: high`**
+  (fel beteende, krascher, grafik-/geometrifel, förlorad
   data). Önskemål bedöms kreativt efter värde: `high` om det blockerar eller tydligt försämrar vardagsspelandet, `medium`
   för rejäla förbättringar, `low` för trevligt-att-ha, kosmetisk finputs eller sådant som kan komma någon gång. Sätt
-  inte allt till medel. Gäller även importerade rapporter, nya `Bugg:`-ärenden och delärenden (som annars ärver
-  förälderns prioritet).
-  Ändra inte befintliga prioriteter utan användarens uppdrag. Storlek, synlighet i spelet, filområde, korta kedjor,
+  inte allt till medel. Gäller även importerade rapporter och nya `Bugg:`-ärenden; delärenden följer alltid
+  föräldrataket nedan, även när de är buggar.
+  Ändra inte befintliga prioriteter utan användarens uppdrag, utom automatisk sänkning enligt föräldrataket.
+  Storlek, synlighet i spelet, filområde, korta kedjor,
   reservationer och önskan att fylla platser får inte sätta denna ordning ur spel.
+- **Föräldratak för alla delärenden (användaren 2026-10-20):** nya barn får normalt förälderns prioritet;
+  lägre är tillåten och ska bevaras. Ett barn får aldrig ha högre prioritet än någon förälder i hela kedjan,
+  även stängda föräldrar och uttryckliga relationer mellan reporna. Regeln gäller även buggar, regressioner,
+  test-/stödärenden och vidare uppdelning och går före buggar-high-regeln ovan. Saknad prioritet räknas som medel.
+  Läs GitHubs föräldra-/delärenderelationer och uttryckligt föräldraskap i titel, body och kommentarer (`Del av #N`).
+  Vanliga referenser, beroenden, överföringslänkar eller fynd under annat arbete skapar inte i sig föräldraskap.
+  Gör inte om ett faktiskt barn till fristående för att kringgå taket och höj inte föräldern för att behålla barnets nivå.
+  Vid skapande, länkning/byte av förälder, ändrad föräldraprioritet och före varje köval/bevakningskontroll:
+  hämta föräldrarna och sänk automatiskt för höga prioritetslabels genom alla öppna undernivåer utan ny användarfråga.
+  Behåll exakt en prioritetslabel, redan lägre nivåer, ägarskap, aktivetiketter och beroenden. Kommentera relationen
+  och skälet på ändrade ärenden och uppdatera köstatus i #420/#4. En höjd föräldraprioritet höjer inte barn automatiskt.
+  Hämta saknade föräldrar innan beslut; gissa inte vid olösta relationer.
 - **Hämta hela kön före varje tilldelning, reservation, övertagande och kedjefortsättning:**
   båda REST-anropen i avsnittet om gemensamt ansvar ovan.
   Filtrera bort pull requests, #420/etiketten `orkester` (samordning, inte implementationsarbete) och issues utanför
@@ -158,7 +172,8 @@ En aktiv `/orkester` får inte avslutas direkt när kön blir tom. Fortsätt kon
 - **Kompakt read-only-hämtning (#926):** `python3 tools/orkester_queue.py --issue 715 --issue 669 --out-dir /tmp/lunden-queue`
   kan ersätta originalrepots manuella köhämtning/sortering ovan, men måste kompletteras med publicsidans kompletta kö och relevant status/ärendedata före globalt urval. Varje körning hämtar hela öppna kön och aktuell body samt
   **alla kommentarer** för #420 och varje `--issue`, med explicit `per_page=100`, `--paginate` och HTTP/Link-kontroll.
-  Tabellen behåller `orkester:`-ägaretiketter; föräldra-/barnuppgifter är bara information, aldrig automatiska hinder.
+  Tabellen behåller `orkester:`-ägaretiketter; föräldra-/barnuppgifter är inte automatiska hinder men måste granskas
+  för föräldrataket före urval. Verktyget ändrar inga labels; orkestern rättar dem och hämtar sedan en färsk kö.
   Fulla råfält, sid-/kommentarsantal och start/sluttid sparas i en unik atomisk snapshot **utanför repot**. Läs valda
   bodies/hela kommentarhistoriken och #420 i filens `requests[].data` före beslut; tabellen ersätter inte den läsningen.
   Ett exempel för full valda-data-läsning är `jq '.requests[] | select(.endpoint | contains("state=open") | not) | {endpoint,data}' SNAPSHOT`.
@@ -185,7 +200,8 @@ En aktiv `/orkester` får inte avslutas direkt när kön blir tom. Fortsätt kon
   ett nytt val från den uppdaterade kön innan nästa issue startas, även om nästa är reserverad i samma kedja.
   Släpp eller flytta väntande reservationer om ett högre prioriterat eller äldre startbart ärende kommit in.
   Avbryt inte redan påbörjat arbete bara för att kön ändrats; den nya ordningen gäller nästa start.
-- **Beroenden och nedbrytning:** nya delissues ärver förälderns prioritet vid skapandet. Krävs ett befintligt lägre
+- **Beroenden och nedbrytning:** nya delissues ärver normalt förälderns prioritet, får sättas lägre och begränsas alltid av
+  hela föräldrakedjans tak enligt ovan, även buggar. Krävs ett befintligt lägre
   prioriterat beroende för att låsa upp ett högre prioriterat ärende, dokumentera sambandet och varför beroendet
   måste göras först i #420; ändra inte dess etikett. Välj annars startbart arbete i ordinarie prioritetsordning.
   Filkonflikter hanteras genom ansvarsfördelning och rebase, inte genom att välja lägre prioritet för enkelhetens skull.
@@ -325,7 +341,7 @@ Samordningen får aldrig vara skälet till att en agentplats står tom eller ett
       delar, delas upp. Föreslå i #420 och på ärendet en avgränsad del du tar (t.ex. ett annat hus/rum, en separat
       skärm, kvarvarande tester/dokumentation, överföring till kvarteret-lunden) och vilka filer den rör.
     - Ägaren svarar vid sin nästa kökontroll (högst 5 min). Säger ägaren ja, eller har ingen invändning kommit inom
-      **15 minuter**, skapar du ett `Del av #N`-ärende (samma prioritet, `Lapp:`-rad, exakt vad som ingår och inte) och
+      **15 minuter**, skapar du ett `Del av #N`-ärende (samma eller lägre prioritet enligt föräldrataket, `Lapp:`-rad, exakt vad som ingår och inte) och
       startar en agent på det. Föräldern och dess `in-progress`/ägaretikett lämnas orörda.
     - Ta aldrig över själva ärendet eller dubblera arbete medan dess agent syns köra (commit, kommentar eller status
       inom 30 minuter); då gäller bara uppdelning. Saknas en avgränsbar del: skriv det i #420 och vänta på nästa kontroll.
@@ -389,7 +405,8 @@ Samordningen får aldrig vara skälet till att en agentplats står tom eller ett
    `Lapp:`-rad och prioritet (`Del av #N`) och stäng inte föräldern förrän allt är klart.
 4. Changelog (bara synliga ändringar): precis före pushen id = högsta id + 1, överst i listan.
 5. Testa bara det ändringen rimligen påverkar ([verifieringsguiden](../../docs/development/verification.md)); listan i prompten är ett maxtak.
-6. Problem utanför den egna issuen → en ny issue `Bugg: …` med en `Lapp:`-rad och `priority: high`, vad som felar, hur det återskapas och
+6. Problem utanför den egna issuen → en ny issue `Bugg: …` med en `Lapp:`-rad och `priority: high` för fristående buggar
+   (delärenden begränsas alltid av föräldrataket), vad som felar, hur det återskapas och
    trolig orsak. Fixa inte i farten; gör klart den egna issuen.
 7. Frågor till användaren postas som kommentar på issuen och issuen får etiketten `user-question`; ta bort `in-progress`
    och orkesteretiketten, lämna issuen öppen och säg det i rapporten. Fråga aldrig i chatten.
