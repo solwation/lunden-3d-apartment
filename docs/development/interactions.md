@@ -10,6 +10,11 @@ animation; the rear-seat arm remote opens Bion for an own YouTube link (#1376); 
 the separate white/blue box switches its power off. Cinema seats and the game
 stool use normal rest reach and stand-up handling. [Device lifecycle and tests](furniture.md#clubhouse-tv-and-computer-1365).
 
+Clubhouse speakers (#1423): either `playroomMusic` target uses the shared choices
+for play/pause/resume/OFF and volume ±, through E/number keys or touch rows. No new
+panel; leaving the room or hiding the document stops playback without auto-resume.
+See [audio lifecycle and verification](animals-audio.md#billiard-room-speakers-1423).
+
 Cats (#1061): free-hand E / touch action takes adults and kittens into both arms; click / Krama cuddles, E on floor/bed/sofa puts them down. Occupied-hand E still pets. The shared `MieleHeld` preserves cat scale and adjusts hug grips; carry purrs cancel on release/hide/bicycle stow. See [animal behavior and verification](animals-audio.md#cat-and-sound).
 ## Two-point measurement (#1069)
 

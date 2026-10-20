@@ -13,7 +13,7 @@ export const failedFiles = new Set();
 
 export class MusicFile {
   constructor(A, dest, track, { loop = false, ended = () => {}, failed = () => {} } = {}) {
-    Object.assign(this, { A, dest, track, loop, ended, failed, el: null, node: null, src: null, stopped: false });
+    Object.assign(this, { A, dest, track, loop, ended, failed, el: null, node: null, src: null, stopped: false, paused: false, playGeneration: 0 });
     this.start();
   }
   start() {
@@ -30,17 +30,29 @@ export class MusicFile {
       else this.failed(); // autoplay refusal is not a corrupt file
     };
     const arm = () => {
-      if (this.stopped || this.el !== el) return;
+      if (this.stopped || this.paused || this.el !== el) return;
       clearTimeout(this.timer); this.timer = setTimeout(() => bad(), MUSIC.loadTimeout);
     };
     el.addEventListener('error', () => bad());
     el.addEventListener('playing', () => clearTimeout(this.timer));
     el.addEventListener('waiting', arm);
     el.addEventListener('ended', () => { if (!this.stopped && this.el === el) this.ended(); });
-    el.src = src; el.load(); arm();
-    el.play()?.catch((e) => bad(e?.name !== 'NotAllowedError'));
+    this.run = () => {
+      const generation = ++this.playGeneration;
+      arm();
+      el.play()?.catch((e) => {
+        // pause/stop can reject an earlier play() with AbortError: it is not a bad file.
+        if (generation !== this.playGeneration) return;
+        bad(e?.name !== 'NotAllowedError');
+      });
+    };
+    el.src = src; el.load();
+    if (!this.paused) this.run();
   }
+  pause() { this.paused = true; this.playGeneration++; clearTimeout(this.timer); this.el?.pause(); }
+  resume() { if (!this.stopped && this.el) { this.paused = false; this.run(); } }
   drop() {
+    this.playGeneration++;
     clearTimeout(this.timer);
     const el = this.el; this.el = null;
     if (el) { el.pause(); el.removeAttribute('src'); el.load(); }

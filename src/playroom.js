@@ -5,6 +5,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { PLAYROOM as R, COURTYARD } from './config.js';
 import { restTarget } from './rest.js';
 import { PlayroomDevices } from './playroomdevices.js';
+import { PlayroomMusic } from './playroommusic.js';
 
 // #1319 / #1326: the playhouse's secret children's room. A hidden interior, far outside the walkable area (see PLAYROOM in
 // config.js): the playhouse door teleports a player shorter than PLAYROOM.maxCm in, the door in the room's south wall back out.
@@ -165,6 +166,17 @@ export class Playroom {
       pk.position.set(R.x + x, y, R.z + z); pk.userData.door = this.discoTarget; this.discoTarget.pickable ??= pk;
       this.object.add(pk); this.controlPickables.push(pk);
     }
+    this.music = new PlayroomMusic();
+    const speaker = R.speakers;
+    for (const x of speaker.x) {
+      fur.push(cbox(col.dark, x-speaker.w/2, x+speaker.w/2, speaker.y-speaker.h/2, speaker.y+speaker.h/2, speaker.z-speaker.d/2, speaker.z+speaker.d/2));
+      for (const [dy, radius, segments] of [[-.065, .075, 10], [.105, .035, 8]]) {
+        fur.push(paint(new THREE.CylinderGeometry(radius, radius, .012, segments).rotateX(Math.PI/2).translate(R.x+x, speaker.y+dy, R.z+speaker.z+speaker.d/2), col.steel));
+      }
+      const pk = new THREE.Mesh(new THREE.BoxGeometry(speaker.w, speaker.h, speaker.d+.04), new THREE.MeshBasicMaterial({ visible: false }));
+      pk.position.set(R.x+x, speaker.y, R.z+speaker.z); pk.userData.door = this.music.target;
+      this.music.target.pickable ??= pk; this.object.add(pk); this.controlPickables.push(pk);
+    }
     this.devices = new PlayroomDevices((name, on) => this.onSwitch?.(name, on));
     this.object.add(this.devices.object); this.controlPickables.push(...this.devices.pickables);
     this.disco(0);
@@ -234,7 +246,7 @@ export class Playroom {
   get arrival() { return { x: R.x, z: Z1 - R.standOff, yaw: 0 }; }
 
   /** Drawn (and its exit pickable live) only while inside. */
-  setInside(on) { this.inside = on; this.billiards.active = on; this.object.visible = on; this.devices.setInside(on); }
+  setInside(on) { this.inside = on; this.billiards.active = on; this.object.visible = on; this.devices.setInside(on); this.music.setInside(on); }
 
   /** Where you stand when you come out: just north of the playhouse's door, facing away from it. */
   static get outsideSpot() {

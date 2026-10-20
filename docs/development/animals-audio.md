@@ -411,3 +411,33 @@ attempt for this encounter: no automatic retry or repeated JPEG generation. Bloc
 its visit-only photo fallback. Existing photos/IDs/saved flags and statistics are not migrated.
 The private guard and JPEGs never enter Ghosts/peer state. Tests: `tools/catphototest.cjs` and
 existing cat carry / card model regressions; see verification.md for the actual reload cases.
+
+## Billiard-room speakers (#1423)
+
+`PlayroomMusic` uses one existing licensed local recording (Morning Blue, Josh Woodward;
+`music/CREDITS.md`) through `MusicFile` → local gain → `audioParts().master`.
+Aiming at either speaker uses the normal E/number-key/touch choices: play, pause,
+resume the same media/time, OFF and volume ± (the existing SONOS 0–10 gain curve).
+No request before a play gesture. Global mute applies; exit, hidden document and
+pagehide release media/nodes and never restart automatically. No new engine or track.
+`MusicFile.pause/resume` invalidate pending play promises, so pause during loading
+cannot misclassify AbortError as a corrupt track or start the fallback while paused.
+Real decode fallback retains pause; existing auto-start callers keep their behaviour.
+
+Pair dimensions/placement in `PLAYROOM.speakers` are guesses; the high rear-wall pair
+adds 168 triangles to the existing furniture batch: no new visible mesh, material or
+texture. Outside the whole room remains hidden; collision and billiard yaw π/2 match
+14530bfe exactly. Matched actual-app desktop 960×600 and touch 844×390 views measured
+17 calls / 11,966 → 12,134 triangles; these are targeted interior views, not global profiles.
+`node --test tools/playroommusictest.mjs`: five native lifecycle/race/fallback tests.
+Actual app E and touch verified real .ogg progression, same-element pause/resume,
+master mute/zero-volume RMS 0, OFF, room exit and native pagehide release (0 page errors).
+A 3 s delayed real media request remained paused at time 0 through load, resumed on
+explicit touch and did not poison failedFiles; OFF during pending load also stayed OFF.
+Headless popup/freeze did not change visibility, so hidden-event coverage is native
+unit coverage, not a claimed physical browser-background measurement. Early E before
+pointer-lock settled and two missing analyser fixture calls were superseded by final
+native-* logs; unsupported visibility CDP command was not an app failure or a pass.
+Raw evidence: local orkester state `codex-surface-20261020/speakers1423/final/`.
+A/B/C/L: clubhouse gameplay only. Public downstream has no clubhouse/MusicFile;
+its building viewer excludes this personal gameplay/audio feature, so no port applies.
