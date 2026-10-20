@@ -1318,3 +1318,38 @@ Landscape correctly exits1/SOME FAILED against the unchanged370limit. Portrait29
 passes. The independent desktop triangle failure#1387 remains:492calls/1042197triangles/~308MiB.
 Neither#1383 nor#1361 is complete: the concrete shared far-car-batch follow-up is#1392.
 Do not raise the limits or describe this partial change as a solved phone budget or iPhone crash fix.
+
+## Complete roof-terrace batches (#1448, partial source delivery)
+
+Standard/max quality3, July noon, actual1280×800 World at patio spawn(2.9,16),
+pitch−5°, normal1.62m eye/step exceeds1M triangles. No regression cause is claimed.
+The three long roof-decoration spheres admitted geometry wholly above the view.
+Desktop now merges complete source terraces separately (21 meshes, three shared
+surface materials); phones keep the original three combined batches. The original
+single generation pass/master arrays, ordered position/normal/color/plantWind
+values (including phases), records, depth material and wind-sphere padding are exact.
+ONE original CeilingBatchGate retains its full union bounds, occluders/base conditions;
+the distance/behind-building gate is unchanged. No movable furniture policy changes.
+
+Fresh de1bc21b World measured patio507/1,029,670→504/998,466 (-31,204), pixel0 with
+fresh shadows. Subsequent road source9eb4ccfa adds2,873 daytime triangles; a NEW actual
+World measures506/1,032,541→503/1,001,337, again pixel0. **The latest target remains
+1,337 over budget: #1448 stays open pending railing source
+child #1454.** The roof-decor split is a verified useful partial delivery, not a resolved
+latest-main budget claim. No railing changes belong to this private-decor commit.
+Corner/upward-patio and clearly exposed furnished-roof pairs also have pixel equality;
+the exposed roof is a diagnostic camera, not a walking-route claim. Existing native
+terrace checks pass68, including all8 styles, emptyL1201, layout/gates/night/power.
+Native touch opens/closes the real glazed patio door; child geometry references and
+physical ray hits are exact, and all21 decorative meshes remain non-blocking.
+
+All19 standard desktop views and quality/texture checks passed on de1bc21b: peak481
+calls/979,658tri/~311MiB. With the reviewed road-only+2,873/0calls/0textures delta,
+the conservative composition is≤481/982,531/~311; no repeated latest-main19 claimed.
+Phone quality0 batching is exactly unchanged: inherited landscape370/834,390/~97MiB
+from9eb4ccfa; portrait≤289/702,028/~101 is de1bc21b+road-delta composition. No fresh
+phone profiles are claimed; pre-existing phone quality3 excess remains separate#1453.
+Raw logs/images: persistent `codex-surface-20261020/patio1448/`. Early diagnostic
+rebuild wind phases/eight gates and capture-string errors were superseded by canonical
+one-pass/one-union-gate proofs. Only Hus L's private decor uses this builder; A/B/C
+are untouched. Current public main has no private terracedecor.js: no applicable port.

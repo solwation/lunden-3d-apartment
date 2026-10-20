@@ -7708,3 +7708,15 @@ unions stop at0.22m; open paths finish1.12m beyond each facade. Surroundings
 26,453,512bytes/502attributes are unchanged; matched A-NE/C-NE images differ by
 0pixels, with156/533062 and160/638359draws/triangles identical in both states.
 [Persistent raw logs, pixel comparison and fixture notes](/home/olw/.local/state/lunden-orkester/codex-surface-20261020/loggia1430/README.md).
+
+Roof-terrace batches (#1448): `tools/terracedecortest.html` now expects21 desktop
+or3 phone meshes; all68 existing asset/layout/gate/night/power checks pass against
+the actual fresh World. Full ordered attributes including wind phases, shared
+materials/depth shader and original full-union gate bounds are verified against
+canonical original-three batches. Fresh-shadow target/corner/upward/exposed-roof
+pairs have0 changed pixels; actual native glazed-door touch open/close is green.
+The de1bc21b ordinary desktop19/quality/texture check is ALL PASS; latest-road
+composition remains within its limits, while the separately measured latest patio
+target still exceeds1M and #1448 remains open pending railing child #1454. Phone quality0
+figures are inherited/composed with exact unchanged batching, not freshly measured. See
+[performance](performance.md#complete-roof-terrace-batches-1448) for numbers/limits.

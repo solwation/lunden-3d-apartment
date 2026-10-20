@@ -7,7 +7,7 @@
 // &test: actual original-full/test pair has identical complete native geometry/gate/color rows (#795); no pixel claim.
 // The furnished roof terraces (#605, src/terracedecor.js, TERRACE_DECOR in config): L1201's terrace is EMPTY (#573), every
 // other terrace has its own style with plants, somewhere to sit and railing boxes; every item stays on its own deck and
-// clear of its terrace door; everything is three merged meshes (finite, a triangle budget); the gate hides them from the
+// clear of its terrace door; complete terraces use shared material batches (finite, a triangle budget); the gate hides them from the
 // street (behind Hus L) and far away and shows them from the courtyard and above.
 //   node runtest.cjs terracedecortest.html  (Playwright, real time)
 const out = document.getElementById('out');
@@ -29,7 +29,8 @@ async function run() {
   let ext = null;
   scene.traverse((o) => { if (o.userData.terraces) ext = o; });
   const U = ext.userData.terraces, gate = scene.getObjectByName('terrace-decor');
-  check(gate && gate.meshes.length === 3, `three merged meshes: ${gate?.meshes.map((m) => m.name).join(', ')}`);
+  const { lowMemory } = await w.eval(`import('${new URL('../src/lowmemory.js', location)}')`);
+  check(gate && gate.meshes.length === (lowMemory ? 3 : 21), `complete terrace batches: ${gate?.meshes.length} (phone ${lowMemory})`);
   const D = U.list[0].poly[2][1], zs = D - HUS_L.court.setback;
   const recs = gate.userData.records, byId = Object.fromEntries(recs.map((r) => [r.id, r]));
 

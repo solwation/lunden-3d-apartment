@@ -2,13 +2,14 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { TERRACE_DECOR as T, HUS_L as H } from './config.js';
 import { CeilingBatchGate } from './ceilingbatchgate.js';
+import { lowMemory } from './lowmemory.js';
 import { planter } from './patio.js';
 import { windGeometry, windMaterial, windShadow } from './plantwind.js';
 
 // #605: the furnished roof terraces on Hus L — palms and pot plants, loungers, tables and chairs, parasols, grills, rugs,
 // railing boxes and string lights, one style per terrace (TERRACE_DECOR in config; every placement is a *guess*). L1201's
 // terrace stays empty (#573). Decoration only: no pick targets, no collision, no lights.
-// Cost: everything on every terrace is baked into THREE meshes — `solid` (vertex colours: furniture, pots, soil, boxes),
+// Cost: phones retain three combined meshes; desktops batch each complete source terrace with the same three materials — `solid` (vertex colours: furniture, pots, soil, boxes),
 // `soft` (vertex colours, double-sided, plant wind: foliage, flowers, parasol cloth) and `bulbs` (unlit; the string
 // lights' bulbs and lantern glass, warm after dusk). The pot plants reuse patio.js `planter` (the same shared cheap palm /
 // banana / agave geometry as the entrance plants). A gate (`isLOD`: three calls its `update(camera)` while projecting)
@@ -285,10 +286,11 @@ function fitCrown(geos, west, east, north) {
  */
 export function buildTerraceDecor(exterior, D) {
   const info = exterior.userData.terraces, C = H.court, zs = D - C.setback, zp = D - 0.25, rail = info.deck + C.rail;
-  const solid = [], soft = [], bulbs = [], records = [];
+  const solid = [], soft = [], bulbs = [], records = [], batches = [];
   for (const t of info.list) {
     const spec = T.terraces[t.id];
     if (!spec || T.skip.includes(t.id)) continue;
+    const start = [solid.length, soft.length, bulbs.length];
     const rec = { id: t.id, style: spec.style, items: [], door: null };
     const ox = t.id === 'L1205' ? t.x0 - C.core.loft.w : t.x0 - H.wall;
     const door = (t.id === 'L1205' ? C.core.upper : C.upper).find((o) => o.sill === 0);
@@ -322,6 +324,7 @@ export function buildTerraceDecor(exterior, D) {
         face: it.k === 'chair' || it.k === 'sofa' ? [-Math.sin((it.r ?? 0) * Math.PI / 180), Math.cos((it.r ?? 0) * Math.PI / 180)] : null });
     });
     records.push(rec);
+    batches.push([solid.slice(start[0]), soft.slice(start[1]), bulbs.slice(start[2])]);
   }
   const gate = new TerraceGate({ zs, upperTop: info.y3 + (H.upperStoreys - 1) * H.storeyHeight, xw: info.list[0].x0, xe: info.list.at(-1).x1, deck: info.deck });
   gate.name = 'terrace-decor';
@@ -334,11 +337,17 @@ export function buildTerraceDecor(exterior, D) {
     gate.add(mesh); meshes.push(mesh);
     return mesh;
   };
-  add(solid, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.78, metalness: 0.05 }), 'terraceDecorSolid', true);
-  const leaves = add(soft, windMaterial(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8, side: THREE.DoubleSide })), 'terraceDecorSoft', true);
-  if (leaves) windShadow(leaves);
+  const solidMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.78, metalness: 0.05 });
+  const softMat = windMaterial(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8, side: THREE.DoubleSide }));
   const bulbMat = new THREE.MeshBasicMaterial({ color: T.bulbs.day, toneMapped: false });
-  add(bulbs, bulbMat, 'terraceDecorBulbs', false);
+  // Complete source terraces retain their original one-pass geometry/wind seeds. Native spheres
+  // can reject the roof decoration above the patio view; phones retain their original three draws.
+  for (const [s, f, b] of lowMemory ? [[solid, soft, bulbs]] : batches) {
+    add(s, solidMat, 'terraceDecorSolid', true);
+    const leaves = add(f, softMat, 'terraceDecorSoft', true);
+    if (leaves) windShadow(leaves); // includes the existing full shader-sway sphere margin
+    add(b, bulbMat, 'terraceDecorBulbs', false);
+  }
   const day = new THREE.Color(T.bulbs.day), night = new THREE.Color(T.bulbs.night);
   const prev = exterior.userData.update;
   exterior.userData.update = (n, power = true) => { prev?.(n, power); bulbMat.color.copy(n > T.bulbs.on && power ? night : day); }; // (out in a power cut, #604)
