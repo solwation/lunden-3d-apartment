@@ -3,6 +3,7 @@ import { PERF, PLANT_WIND } from './config.js';
 import { computeDetailBounds } from './combatworld.js';
 import { lowMemory } from './lowmemory.js';
 import { detailOccluders, wholeBoxOccluded } from './occlusion.js';
+import { garageCeilings } from './ceilingbatchgate.js';
 
 // Small-detail culling (#189): from the street the whole flat is in the view frustum (the walls don't stop three's
 // culling), so every handle, knob, bottle and trinket inside was a draw call of its own. A mesh smaller than
@@ -40,13 +41,20 @@ export class DetailCuller {
   /** Collect the small meshes under `root` (call once everything is built). */
   /** box: { W, D, roof, floor1, doorHeight } the flat's footprint (plan), roof height, Övre plan's floor, the door height; openings: { north: [], south: [] } (x0 x1 y0 y1);
    * doorOpen(): is the front door open (then its whole doorway counts, #210)? */
-  constructor(root, box, openings, doorOpen = () => false) {
+  constructor(root, box, openings, doorOpen = () => false, garage = null) {
     // the front door's leaf is solid while it is shut: through it its transom and small high pane count (doorHeight above its sill)
     const solid = (o) => o.y0 < 0.05 || Math.abs(o.y0 - box.floor1) < 0.05;
     this.shut = { north: openings.north.flatMap(o => solid(o) ? [{ ...o, y0: o.y0 + box.doorHeight }, ...(o.entryPane ? [o.entryPane] : [])] : [o]), south: openings.south };
     this.full = { north: openings.north, south: openings.south };
     Object.assign(this, { box, doorOpen, open: false, openings: this.shut, walls: openings.walls ?? [], slab: openings.slab ?? null });
-    this.occluders = detailOccluders(openings.opaque ?? this.walls, this.slab, box.W, box.D);
+    this.baseOccluders = detailOccluders(openings.opaque ?? this.walls, this.slab, box.W, box.D);
+    this.occluders = this.baseOccluders;
+    // Use the actual shell batch for each emitted ceiling, including its existing area visibility.
+    this.garageCeilings = garage ? garageCeilings().map(rect => {
+      const source = garage.rects.find(r => r.x0 === rect.x0 && r.x1 === rect.x1 && r.z0 === rect.z0 && r.z1 === rect.z1);
+      const area = garage.areas[source.area];
+      return { rect, mesh: area.group.children.find(o => o.isMesh && o.material === area.mats.shell) };
+    }) : [];
     this.items = [];
     this.last = new THREE.Vector3(1e9, 0, 0);
     this.moving = []; // the items under a root with userData.moving
@@ -128,7 +136,24 @@ export class DetailCuller {
     this.refresh();
   }
 
+  updateGarageCeilings(camera) {
+    if (!this.garageCeilings.length) return;
+    let signature = '';
+    const active = [];
+    for (const {rect, mesh} of this.garageCeilings) {
+      let shown = !!mesh && mesh.material.visible !== false;
+      for (let o = mesh; shown && o; o = o.parent) shown = o.visible && o.layers.test(camera.layers);
+      signature += shown ? '1' : '0';
+      if (shown) active.push(rect);
+    }
+    if (signature === this.garageSignature) return;
+    this.garageSignature = signature;
+    this.occluders = active.length ? [...this.baseOccluders, ...active] : this.baseOccluders;
+    this.last.set(1e9, 0, 0); // a stationary eye must still restore contents when a shell disappears
+  }
+
   update(camera) {
+    this.updateGarageCeilings(camera);
     const p = camera.getWorldPosition(this.tmp ??= new THREE.Vector3());
     const open = !!this.doorOpen();
     if (open !== this.open) { this.open = open; this.openings = open ? this.full : this.shut; this.last.set(1e9, 0, 0); } // look again now

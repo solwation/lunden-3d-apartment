@@ -3076,7 +3076,7 @@ function showPerf() {
 }
 await loadingStep('Förbereder grafiken', 0.75);
 const frontDoor = world.doors.find((d) => d.name === 'ytterdörren' && Math.abs(d.object.getWorldPosition(new THREE.Vector3()).z) < 0.5);
-detail = new DetailCuller(scene, { W: world.size.x, D: world.size.z, roof: world.openings.roof, floor1: LEVELS[1].floor, doorHeight: DOOR_HEIGHT }, world.openings, () => frontDoor.t > 0.02); // everything is built by now (the holdables too); the open front door shows the hall (#210)
+detail = new DetailCuller(scene, { W: world.size.x, D: world.size.z, roof: world.openings.roof, floor1: LEVELS[1].floor, doorHeight: DOOR_HEIGHT }, world.openings, () => frontDoor.t > 0.02, garage); // everything is built by now (the holdables too); the open front door shows the hall (#210)
 document.addEventListener('furniture-moved', () => detail?.last.set(1e9, 0, 0));
 quality.register('detail', { // DetailCuller's distances (#189, #460): small things vanish sooner at lower levels
   apply: (l) => detail.setQuality(QUALITY.detail[l]), state: (l) => `distance ×${QUALITY.detail[l]}`, cost: 'draw calls of small far things' });

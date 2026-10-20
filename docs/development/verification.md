@@ -1,3 +1,27 @@
+Garage contents behind drawn ceilings (#1439):
+`node --test tools/garageocclusiontest.mjs tools/desktopocclusiontest.mjs tools/phonedetailunittest.mjs tools/occlusiontest.mjs`
+checks22cases, including exact included/excluded A/B/C/L ceiling rectangles,
+current movable bounds/physical layer7 rays, stationary visibility changes,
+near/straddling/open-hole cases and unchanged no-Garage tools.
+
+`PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/garageocclusiontest.cjs BASE OUT`
+uses the normal1280×800 actual World at standardmaximumquality3, not `test` or
+quality0. Compare original versus active-shell ceiling policy in the same World:
+hall, basement, a diagnostic underground ceiling edge, the real core hole, patio
+and open ramp. Require pixel parity; the underground edge is a rendering diagnostic,
+not a reachable walking route. Move a real registered movable furniture root through
+the existing `furniture-moved` refresh, restore it and expose it from above; demand
+positive physical mesh hits on both render layers and unchanged geometry/material/matrix.
+The tool then runs the unchanged `perfcount.html`19-pose/quality script in that same
+World. Run explicit `quality=0` landscape844×390 and portrait390×844 `lowmem` profiles
+serially, one browser per profile, and focus/use a real garage button after production
+start-touch and three simulation steps. Default highest-shot level3 landscape calls
+fail independently in#1453; never call quality0 evidence a level3 phone pass.
+Limits remain1Mdesktoptriangles and the existing phone/call/texture budgets.
+Source/profile distinctions, the rejected undrawn-ceiling candidate and private raw
+logs are summarized in [performance](performance.md); public has no corresponding
+private culler, so this connection is not transferred.
+
 Complete pergola lamp groups (#1438): `node --test tools/ceilingbatchtest.mjs tools/occlusiontest.mjs`
 passes13/13. Compare the original14530bfe courtyard builder with current matrices in an
 ordinary World: exactly152+120 instances, identical flattened order, geometry attributes/

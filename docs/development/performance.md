@@ -1,5 +1,45 @@
 # Rendering performance
 
+## Contents behind currently drawn garage ceilings (#1439)
+
+`DetailCuller` optionally receives the actual `Garage` and reuses the exact
+`garageCeilings()` filter: no core, outside recess or new slab becomes opaque.
+A rectangle counts only while its actual area shell/material/ancestors are visible
+on the camera layers. Parent-layer checks are conservative additional exclusions,
+not Three traversal semantics. A visibility signature refreshes stationary eyes;
+tools without Garage retain their old policy. Complete current AABBs, full wind
+bounds, near/exterior-door guards, distances, physical layer7 and geometry stay intact.
+Rearrangement uses the existing `furniture-moved` hook; no movable gets a static gate.
+
+Native22cases pass, including A/B/C/L ceiling/hole mappings. Paired standardquality3
+hall345/1000412 becomes282/955792; basement334/1001520 becomes314/979612 on426f9922.
+Six matched hall/basement/core/edge/patio/ramp pairs have0changed pixels. The underground
+edge is diagnostic, not a normal walking route. A real registered Verona root follows
+128→1below→128restored→1exposed using the production refresh; actual triangle192 gives
+one identical physical hit at~2m, with geometry/material/raycast/root-matrix identities.
+Full standard19-view desktop/quality checks pass480calls/979614triangles/~311MiB against
+520/1M/320. Extra arbitrary patio poses exceeding1M in both policies are separate#1448.
+
+The first unpinned phone profile fails410calls against370; its initial level was not
+logged. A separate shot start records actualinitial3 before quality callbacks,410new/
+411old calls and0active ceilings. Warmed post-quality-test level3 old/new/new is exactly
+412calls/763874triangles. Highest-shot phone failure#1453 is independent; the configured
+non-shot phone start is2. Explicit quality0 profiles pass: landscape370calls/831517tri/~97MiB,
+portrait289/699155/~101MiB, all19views/quality checks. Landscape's later harness tap failed
+for missing hasTouch; its budget phase passed. Portrait hasTouch tap opens the actual
+garage door once(t=1,presses1), CLI0; its post-profile fullscreen picture is1400×950,
+not a phone-size/FPS or physical-device claim.
+
+An unconditional-ceiling prototype was rejected for2186changed pixels where the
+actual shell was culled; corrected active-shell pairs are exact. Failed ray/relocation
+fixture attempts remain private. Initial93c7d220 metrics and old quality0 passes do
+not establish a historical regression cause. Final rebased source includesdae61d45's
+independent hidden-room DJ change; no outdoor cost is attributed to that feature.
+Public6c69323a has no corresponding private `DetailCuller` or furniture, so this
+connection has no applicable target; no private contents/new culling system is ported.
+Raw logs, images and honest failed-fixture history are outside the repo at
+`~/.local/state/lunden-orkester/codex-surface-20261020/budget1439/`.
+
 ## Complete pergola lamp groups (#1438, partial #1431)
 
 The courtyard's existing272 sphere instances now form two complete pergola batches
