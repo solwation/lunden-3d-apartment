@@ -61,10 +61,58 @@ function rampTriangles(top,lift) {
   }
   return pos;
 }
-/** #1337: the embankment of both ramps as grass geometry (indexed, position + normal, to merge into the terrain mesh `site-terrain`: same material, season and snow, no extra draw call). */
-export function parkRampFill() {
-  const geo=surfaceMesh(rampTriangles(false,P.woodBridge.ramp.grassLift)),n=geo.attributes.position.count;
-  geo.setIndex(Array.from({length:n},(_,i)=>i));geo.deleteAttribute('uv');return geo;
+/** Close only exposed fill edges against the already emitted valley terrain. The top and walking height do not change. */
+function rampEdgeFaces(terrain) {
+  const b=P.woodBridge,R=b.ramp,pos=[],uv=[],lift=R.grassLift;
+  const grid=terrain.grid?.(),sub=grid?.subdivisions??1;
+  const lines=axis=>grid?.[axis].flatMap((v,i,a)=>i<a.length-1?Array.from({length:sub},(_,k)=>v+(a[i+1]-v)*k/sub):[v])??[];
+  const X=lines('X'),Z=lines('Z');
+  const cell=(a,v)=>{let lo=0,hi=a.length-1;while(hi-lo>1){const m=(lo+hi)>>1;if(a[m]<=v)lo=m;else hi=m;}return lo;};
+  for(const e of rampEnds()) {
+    const edges=[
+      [[R.length,-R.reach],[-rampFront(e),-R.reach]],
+      [[-rampFront(e),R.reach],[R.length,R.reach]],
+      [[-rampFront(e),-R.reach],[-rampFront(e),R.reach]],
+      [[R.length,R.reach],[R.length,-R.reach]]
+    ]; // each edge runs so top → bottom → next top faces outwards
+    for(const [[s0,o0],[s1,o1]] of edges) {
+      const length=Math.hypot(s1-s0,o1-o0);
+      const at=t=>{const s=s0+(s1-s0)*t,o=o0+(o1-o0)*t,x=e.x+e.dx*s+e.nx*o,z=e.z+e.dz*s+e.nz*o,top=parkFillAt(x,z)+lift,bottom=terrain(x,z);return {x,z,top,bottom,gap:top-bottom,u:t*length};};
+      const start=at(0),end=at(1),dx=end.x-start.x,dz=end.z-start.z,cuts=new Set([0,1]);
+      const add=t=>{if(t>1e-9&&t<1-1e-9)cuts.add(t);};
+      // The fill's own slope hinges must share vertices with its existing top triangles.
+      if(s0!==s1)add(-s0/(s1-s0));
+      if(o0!==o1)for(const o of [-b.width/2,b.width/2])add((o-o0)/(o1-o0));
+      // Match every emitted terrain plane, including the river corridor's refined cells and their diagonals.
+      if(dx)for(const x of X)add((x-start.x)/dx);
+      if(dz)for(const z of Z)add((z-start.z)/dz);
+      const first=[...cuts].sort((a,c)=>a-c);
+      if(grid)for(let i=0;i<first.length-1;i++){
+        const a=at(first[i]),c=at(first[i+1]),mid=at((first[i]+first[i+1])/2),ix=cell(X,mid.x),iz=cell(Z,mid.z);
+        const side=p=>(p.x-X[ix])/(X[ix+1]-X[ix])+(p.z-Z[iz])/(Z[iz+1]-Z[iz])-1;
+        const fa=side(a),fc=side(c);if(fa*fc<0)add(first[i]+(first[i+1]-first[i])*fa/(fa-fc));
+      }
+      const ts=[...cuts].sort((a,c)=>a-c);
+      for(let i=0;i<ts.length-1;i++) {
+        let a=at(ts[i]),c=at(ts[i+1]);
+        if(a.gap<=0&&c.gap<=0)continue;
+        if(a.gap<=0||c.gap<=0){const t=a.gap/(a.gap-c.gap),cross=at(ts[i]+(ts[i+1]-ts[i])*t);cross.top=cross.bottom;
+          if(a.gap<=0)a=cross;else c=cross;}
+        // Top → bottom → next top faces out.
+        pos.push(a.x,a.top,a.z,a.x,a.bottom,a.z,c.x,c.top,c.z,
+          c.x,c.top,c.z,a.x,a.bottom,a.z,c.x,c.bottom,c.z);
+        uv.push(a.u,a.top,a.u,a.bottom,c.u,c.top,c.u,c.top,a.u,a.bottom,c.u,c.bottom);
+      }
+    }
+  }
+  return {pos,uv};
+}
+/** #1337/#1389: the embankment and its exposed sides join `site-terrain` (same material, season and snow, no extra draw call). */
+export function parkRampFill(terrain=null) {
+  const top=rampTriangles(false,P.woodBridge.ramp.grassLift),sides=terrain?rampEdgeFaces(terrain):{pos:[],uv:[]},geo=surfaceMesh([...top,...sides.pos]),p=geo.attributes.position,n=p.count,uv=new Float32Array(n*2);
+  for(let i=0;i<top.length/3;i++){uv[i*2]=p.getX(i);uv[i*2+1]=p.getZ(i);} // existing terrain-aligned top mapping
+  uv.set(sides.uv,top.length/3*2); // side texture uses horizontal edge distance and actual vertical metres
+  geo.setAttribute('uv',new THREE.BufferAttribute(uv,2));geo.setIndex(Array.from({length:n},(_,i)=>i));return geo;
 }
 /** Is (x, z) within `m` of a ramp's footprint (trees, shrubs and tussocks keep off it). */
 export const parkFillFootprint=(x,z,m=0)=>{const R=P.woodBridge.ramp;return rampEnds().some(e=>{const {s,o}=rampLocal(e,x,z);return Math.abs(o)<=R.reach+m&&s>=-rampFront(e)-m&&s<=R.length+m;});};

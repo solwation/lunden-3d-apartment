@@ -13,6 +13,21 @@ const river=C.SITE.river;check(new Set(river.widths).size>=4&&new Set(river.bank
 for(const i of [4,8,12,15]){const[x,z]=river.path[i],r=R.riverAt(x,z),values=[0,.3,.7,1].map(u=>S.groundY(x+r.nx*(r.width/2+r.bank*u),z+r.nz*(r.width/2+r.bank*u)));check(values[0]<R.waterYAt(x,z)&&values.every((v,k)=>!k||v>=values[k-1]-.01),`bank ${i} rises continuously from submerged bed to park`);}
 const group=A.scene.getObjectByName('river-park');check(group?.children.length===4,'asphalt paths, gravel paths, timber crossing and shore growth use four material batches');let tris=0;group.traverse(m=>{if(m.isMesh)tris+=(m.geometry.index?.count??m.geometry.attributes.position.count)/3});check(tris<12000,`bounded park detail geometry: ${tris} triangles`);
 const terrain=A.scene.getObjectByName('site-terrain');A.scene.updateMatrixWorld(true);let gap=0,samples=0;
+{const top=P.parkRampFill(),sealed=P.parkRampFill(S.renderedTerrainY),same=['position','normal'].every(k=>top.attributes[k].array.every((v,i)=>v===sealed.attributes[k].array[i]));
+ check(same&&sealed.attributes.position.count>top.attributes.position.count,'timber ramp top vertices and normals stay exact while exposed sides join the terrain');
+ const p=sealed.attributes.position;let seam=0;for(let i=top.attributes.position.count;i<p.count;i+=6){const ax=p.getX(i+1),az=p.getZ(i+1),cx=p.getX(i+5),cz=p.getZ(i+5),my=(p.getY(i+1)+p.getY(i+5))/2;
+  for(const [x,y,z] of [[ax,p.getY(i+1),az],[cx,p.getY(i+5),cz],[(ax+cx)/2,my,(az+cz)/2]])seam=Math.max(seam,Math.abs(y-S.renderedTerrainY(x,z)));}
+ check(seam<.0001,`both ramp skirts follow every emitted terrain triangle edge (max seam ${seam.toFixed(6)} m)`);top.dispose();sealed.dispose();}
+{ // #1389: from each outer bank, actual mesh rays meet the earth-filled side below its top, instead of passing through a suspended sheet.
+ const ends=P.parkRampEnds(),r=cfg.woodBridge.ramp;let exposed=0,closed=0;
+ for(const e of ends)for(const s of [0,2])for(const sign of [-1,1]){
+  const x=e.x+e.dx*s-e.dz*sign*r.reach,z=e.z+e.dz*s+e.dx*sign*r.reach,top=P.renderedParkFillY(x,z),bottom=S.renderedTerrainY(x,z);
+  if(top-bottom<.15)continue;exposed++;
+  const origin=new T.Vector3(x-e.dz*sign*.3,(top+bottom)/2,z+e.dx*sign*.3),dir=new T.Vector3(e.dz*sign,0,-e.dx*sign),ray=new T.Raycaster(origin,dir,.01,.6),hit=ray.intersectObject(terrain)[0];
+  if(hit&&Math.abs(hit.distance-.3)<.04)closed++;
+ }
+ check(exposed===8&&closed===exposed,`both timber ramp banks have outward-facing grass side faces (${closed}/${exposed} actual horizontal mesh rays)`);
+}
 const asphaltMesh=A.scene.getObjectByName('park-paths-asphalt'),gravelMesh=A.scene.getObjectByName('park-paths');
 check(asphaltMesh&&gravelMesh&&asphaltMesh.material.color.getHex()!==gravelMesh.material.color.getHex()&&asphaltMesh.geometry.attributes.position.count>3000&&gravelMesh.geometry.attributes.position.count>3000,'asphalt and gravel paths are separate surfaces with different colours');
 check(cfg.paths.every(p=>p.surface==='asphalt'||p.surface==='gravel')&&cfg.paths.filter(p=>p.surface==='asphalt').length>=8&&cfg.paths.filter(p=>p.surface==='gravel').length>=5,'every path has a surface; both asphalt and gravel ways exist');

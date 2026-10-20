@@ -195,6 +195,7 @@ Uteplatsens stora solfjäderspalm har en öppen rundad kruka med jord, fiberrik 
 Vägbron och den separata gång- och cykelbron vid Sankt Lars väg syns över en nedsänkt Höje å, även bortom gångområdets gräns. Vattnet, stranden och dalbotten följer nu ett svagt fall nedströms; vattenstånd och djup är fortfarande uppskattningar. [Kartjämförelse, vyer och antaganden](docs/validation/issue-532/README.md).
 
 Höje å omges av varierande slänter, kartans huvudstigar, öppna gräsytor, större lövträdsdungar och strandvegetation som följer årstiderna. [Underlag och jämförelsevyer](docs/validation/issue-533/README.md).
+Jordrampernas öppna sidor vid den lilla träbron är tätade mot den ritade marken, så slänterna hänger inte längre som tunna skivor ovanför åstranden.
 
 Gräsmattorna på gården och längs gatan har fin grässtruktur och ojämna gröna toner; på hösten gulnar de och på vintern täcks de av snö.
 

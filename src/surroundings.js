@@ -225,7 +225,7 @@ function terrainGeometry() {
   const pos = [], idx = [], cells=new Map();
   for (const z of Z) for (const x of X) pos.push(x, terrainY(x, z) - 0.01, z);
   const nx = X.length;
-  terrainGrid = { X, Z };
+  terrainGrid = { X, Z, subdivisions:S.river.terrainSubdivisions };
   for (let j = 0; j < Z.length - 1; j++) for (let i = 0; i < nx - 1; i++) {
     const a = j * nx + i, b = a + 1, c = a + nx, d = c + 1;
     const mx = (X[i] + X[i + 1]) / 2, mz = (Z[j] + Z[j + 1]) / 2;
@@ -1613,7 +1613,7 @@ export function* surroundingsParts({ grass, husL = null }) {
   };
   // the ground south of Hus L: the raised courtyard on the garage box and the park level around it (the
   // street side north of Hus L is world.js's ground); retaining walls, railings and the garage door
-  flat([grassUV(terrainGeometry()), grassUV(parkRampFill())], grass, SEASON.snow.ground).name='site-terrain';
+  flat([grassUV(terrainGeometry()), parkRampFill(renderedTerrainY)], grass, SEASON.snow.ground).name='site-terrain';
   yield 0.05;
   const bw = boxWalls();
   group.userData.opaqueRects=mergeOpaqueRects(bw.opaque); // exact inscribed rectangles of the emitted solid wall faces, including doorway lintels

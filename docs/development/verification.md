@@ -70,6 +70,14 @@ desktop/phone `perfcount`. Inspect both bank sides and bridge approaches; check 
 vertices against the road/terrain height. Retain the first smooth-ramp navigation failure; bridge
 heights remain assumptions. The unrelated global budget bugs#1383/#1387 stay visible.
 
+Timber ramp seams (#1389): `tools/riverparktest.html` compares unchanged top positions/normals,
+checks both side faces with horizontal rays through the actual `site-terrain` mesh, and checks
+each side's lower edge plus segment midpoint against the emitted terrain triangle height.
+Pair with `tools/farwalktest.cjs GAME` for foot/bike crossings in both directions,
+`tools/bridgetest.html` for the river opening, and `tools/lamprampstest.cjs GAME`
+for unchanged lamp support. Inspect matched eye-height views from both banks and the water
+below the deck. The site bridge has no A/B/C/L house equivalent.
+
 Southern plateau (#1381): `node --test tools/southplateautest.mjs`, `tools/southbackdroptest.html`,
 `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/farwalktest.cjs GAME`, and full `perfcount.html?lowmem&w=844&h=390&quality=0`.
 Inspect actual paddock→plateau and overview images. The backdrop test samples2154emitted parking heights
