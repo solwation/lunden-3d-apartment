@@ -78,6 +78,7 @@ import { shownRows } from './actions.js';
 import { buildStores } from './stores.js';
 import { clearLocalHome, takeResetDone, takeResetHideMenu, RESET_HIDE_MENU } from './reset.js';
 import { Rest, chooseSpot } from './rest.js';
+import { SlideRide } from './slidemovement.js';
 import { restState } from './remote-pose.js';
 import { Saber } from './saber.js';
 import { buildToys } from './toys.js';
@@ -476,6 +477,10 @@ const suit = new SpiderSuit({ scene, camera, player, drawer: scene.getObjectByNa
 suit.onWear = () => badge(touch.enabled ? '🕷 Dräkten på: klättra på ytterväggar, 🕸 skjuter nät, hoppknappen hoppar' : '🕷 Dräkten på: klättra på ytterväggar, klicka för nät, Mellanslag hoppar och släpper', false);
 const flare = params0.has('noflare') ? null : new Flare({ scene, camera, day, player, weather, lowMemory }); // lens flare looking towards the sun (#1283)
 const rest = new Rest(camera); // sitting / lying down (#71/#72)
+// #1414: slide-only transient movement; swings use their separate rest flow.
+const slideRide = new SlideRide({ player, camera, ground: (x,z)=>player.groundAt(x,z,0),
+  free: (x,z,ignored)=>player.isFree(x,z,0,.02,ignored),
+  allowed: ()=>!heldItem()&&!rest.active&&!player.riding&&!player.flying&&!fall.active&&!player.climb&&!player.swing&&!player.glide&&!jetpack.worn&&!suit.worn&&!roomMoving });
 const saber = new Saber(scene, camera); // the lightsaber in Sovrum 2 (#78)
 const toys = buildToys(scene, camera); // Nerf blasters, magic wands, the flashlight (#86, #87, #89)
 // the TV remote (#101): works on the TV in the look direction, within reach, not through a wall
@@ -1091,6 +1096,7 @@ function footsteps() {
   sfx.step(player.outdoors ? 'outside' : player.stairAt(x, z) !== null ? 'stair' : 'wood'); // (the loftgång over the flat: outside, #360; a visited flat's stair, #574)
 }
 function spawnAtStart() {
+  slideRide.cancel(false); // a reset owns the new position, never return to an old ride start
   player.spawn(START.x, START.z, THREE.MathUtils.degToRad(START.yawDeg));
   camera.rotation.x = THREE.MathUtils.degToRad(START.pitchDeg);
 }
@@ -1147,6 +1153,7 @@ document.getElementById('restart')?.addEventListener('click', () => {
  * wall or strand, out of the lift or the air, to START. The clock, the weather, what you hold, the suit / jetpack and
  * everything else carry on as they were. */
 function goToStart(spawn = spawnAtStart) {
+  slideRide.cancel(false);
   if (rest.active) standUp(); // (the TV / the film monitor as on getting up)
   const sh = suit.shot;
   if (sh && !sh.stuck) { sh.stuck = true; sh.at = sh.t; } // a web still on its way sticks to nothing (no swing from afar)
@@ -1586,6 +1593,7 @@ function standFree(seat, x, z, path) {
   return true;
 }
 function standUp() {
+  if (slideRide.active) { slideRide.cancel(); return; }
   if (player.riding) { if (!player.dismountBicycle()) greet.sayMine('Här finns ingen säker plats att kliva av.'); return; }
   const film = rest.spot?.pc === 'film';
   const bed = rest.target?.rest === 'lie'; // lying or sitting up in a bed (#213)
@@ -1724,6 +1732,8 @@ function leavePlayroom() {
 
 /** E / the action button on what you look at: doors toggle, the note opens. */
 function use(thing) {
+  if (slideRide.active) { slideRide.cancel(); return; }
+  if (thing.kind === 'courtyardSlide') { if (slideRide.begin(thing)) life.interrupt('åker rutschkana'); else badge('Gå till stegen med tomma händer och utan annan utrustning',false); return; }
   if (player.riding && thing.kind !== 'bicycle') return; // both hands are reserved for the actual handlebars
   if (thing.kind === 'bicycle') { if (player.riding) { standUp(); return; } if (rest.active) return; if (!player.mountBicycle(thing.bicycle)) greet.sayMine('Här går det inte att ta ut cykeln säkert.'); return; }
   if (thing.kind === 'playhouse') { enterPlayroom(); return; }
@@ -1835,7 +1845,7 @@ function use(thing) {
   else if (typeof thing.opening === 'function') useDoor(thing); // a real door: sound at its opening, the cat (#1194)
   else thing.toggle?.(); // anything else with a plain toggle (e.g. the free-throw line) never reaches the door path (#1194)
 }
-actionBtn.addEventListener('click', () => { if (measure.active) return; if (reading) showNote(false); else if (focused?.kind === 'fusebox' && !power.on) return; /* held, not clicked (#604) */ else if (focused) use(focused); else if (heldItem()?.useLabel) heldItem().use(); else if (rest.active || player.riding) standUp(); });
+actionBtn.addEventListener('click', () => { if (slideRide.active) { slideRide.cancel(); return; } if (measure.active) return; if (reading) showNote(false); else if (focused?.kind === 'fusebox' && !power.on) return; /* held, not clicked (#604) */ else if (focused) use(focused); else if (heldItem()?.useLabel) heldItem().use(); else if (rest.active || player.riding) standUp(); });
 const standBtn = document.getElementById('stand-btn'); // touch, sitting with something in reach or in the hand: get up (#184)
 standBtn.addEventListener('click', () => { if (rest.active || player.riding) standUp(); });
 const muteBtn = document.getElementById('mute');
@@ -1908,7 +1918,7 @@ const turnBtn = document.getElementById('turn-btn');
 turnBtn.addEventListener('click', () => turnPlacement());
 powerBtn.addEventListener('click', () => heldItem()?.useAlt?.());
 // touch: the jump button (#600, #636) = Space's press, suit or not (the suit's high jump, wall / strand let-go: player.js)
-document.getElementById('jump-btn').addEventListener('pointerdown', (e) => { e.preventDefault(); if (active()) player.jumpPress = true; });
+document.getElementById('jump-btn').addEventListener('pointerdown', (e) => { e.preventDefault(); if (slideRide.active) slideRide.cancel(); else if (active()) player.jumpPress = true; });
 const stripKeys = new Set(); // keys pressed while a strip / the note is open
 const isCtrl = (code) => code === 'ControlLeft' || code === 'ControlRight';
 document.addEventListener('keydown', (e) => {
@@ -1936,11 +1946,12 @@ document.addEventListener('keydown', (e) => {
   else if (e.ctrlKey) e.preventDefault();
   if (measure.active && (e.code === 'KeyE' || /^Digit[1-9]$/.test(e.code))) return;
   if (choices.rows && /^Digit[1-9]$/.test(e.code) && runChoice(Number(e.code.slice(5)) - 1)) e.preventDefault(); // a menu row (#367)
-  if (e.code === 'KeyE' && (player.riding || focused?.kind === 'bicycle')) { if (!e.repeat) { if (player.riding) standUp(); else use(focused); } }
+  if (e.code === 'KeyE' && slideRide.active) { if (!e.repeat) slideRide.cancel(); }
+  else if (e.code === 'KeyE' && (player.riding || focused?.kind === 'bicycle')) { if (!e.repeat) { if (player.riding) standUp(); else use(focused); } }
   else if (e.code === 'KeyE' && focused) { if (focused.kind === 'playroomDevice') e.preventDefault(); if (!(e.repeat && focused.kind === 'fusebox')) use(focused); } // also while sitting: what is within reach (#184); the fuse box: a fresh press (#604)
   else if (e.code === 'KeyE' && heldItem()?.useLabel) heldItem().use();
   else if (e.code === 'KeyE' && rest.active) standUp();
-  else if ((e.code === 'Space' || e.code === 'KeyC') && (rest.active || player.riding)) { e.preventDefault(); player.keys.delete(e.code); standUp(); } // seated, C gets you up (the Space that does it is no jump, #636)
+  else if ((e.code === 'Space' || e.code === 'KeyC') && (rest.active || player.riding || slideRide.active)) { e.preventDefault(); player.keys.delete(e.code); standUp(); } // seated, C gets you up (the Space that does it is no jump, #636)
   else if (e.code === 'KeyC' && !e.repeat) player.crouch = true; // (the repeats of the C that just stood you up do not crouch)
   if (e.code === SOUNDS.bellKey && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) ringBell();
   if (e.code === 'KeyM') updateMute(toggleMuted());
@@ -2032,6 +2043,11 @@ function updateBicycleControls() {
 }
 
 function updateFocus() {
+  if (slideRide.active) {
+    focused=null;focusPoint=null;showChoices(null,null);placeGhost.visible=itemGhost.visible=false;
+    powerBtn.hidden=turnBtn.hidden=true;actionBtn.hidden=!touch.enabled;actionBtn.textContent='Avbryt åket';
+    promptEl.hidden=false;promptEl.textContent=touch.enabled?'Åker rutschkana':'Åker rutschkana · E / mellanslag avbryter';standBtn.hidden=true;interactionOutline.update(null);return;
+  }
   setPressed(document.getElementById('furniture-btn'),world.furnitureOn);
   setPressed(document.getElementById('measure-btn'),measure.active);
   setPressed(document.getElementById('crouch-btn'),player.crouch);
@@ -2965,6 +2981,7 @@ function step(dt) {
   if (touch.enabled) touch.update(dt); // the eased drag-to-look (#1088)
   if (active() && reading) updateFocus();
   else if (drawing.active) drawing.update(dt); // drawing: the camera over the paper, nothing else moves you
+  else if (active() && slideRide.active) { slideRide.update(dt); updateFocus(); }
   else if (active() && rest.active) { rest.update(dt); updateFocus(); } // sitting / lying: look, no walking
   else if (fall.active) fall.update(dt); // hurt by a fall (#361): no walking until awake outside the door
   else if (active()) {
@@ -3160,9 +3177,10 @@ function onTap(el, fn) {
 /** Where the visitor is, for a reload: place, view, mute, mode (none = still on the first start screen), the build. */
 const placeNow = () => {
   if (player.inPlayroom) { const o = Playroom.outsideSpot; return { x: o.x, z: o.z, feetY: groundY(o.x, o.z), yaw: o.yaw, pitch: 0, hour: day.hour, month: day.month, muted: isMuted(), fullscreen: !!document.fullscreenElement, build: BUILD, mode: isPhoneDevice() ? 'touch' : (activeMode ?? (touch.enabled ? 'touch' : locked ? 'mouse' : (!armEl.hidden || played) ? 'mouse' : undefined)) }; } // a reload inside the children's room (#1319): back out at the playhouse door
-  const p = player.riding ? player.bicycleSavePlace() : player.pos;
+  const slideStanding = slideRide.savePlace();
+  const p = slideStanding ?? (player.riding ? player.bicycleSavePlace() : player.pos);
   if (!p) return null; // no safe standing save: retain the earlier session/default start, never saddle feet
-  return { x: p.x, z: p.z, feetY: player.riding ? p.y : player.restY(), yaw: camera.rotation.y, pitch: camera.rotation.x,
+  return { x: p.x, z: p.z, feetY: slideStanding ? slideStanding.y : player.riding ? p.y : player.restY(), yaw: camera.rotation.y, pitch: camera.rotation.x,
     hour: day.hour, month: day.month, muted: isMuted(), fullscreen: !!document.fullscreenElement, build: BUILD,
     mode: isPhoneDevice() ? 'touch' : (activeMode ?? (touch.enabled ? 'touch' : locked ? 'mouse' : (!armEl.hidden || played) ? 'mouse' : undefined)) };
 };
@@ -3380,4 +3398,4 @@ hideLoading();
 
 crashlog.attach({ renderer, camera, quality, player, world, sun, scene, mirrorTarget, frameDiag, viewportBinding }); // what the crash heartbeat shows (#629)
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { cinema, flare, outdoorSpot, paddock, birds, microwave, carLodState, showFireworks, newYear, sausages, frameRate, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, catCards, catCardsLoaded, binderPanel, showBinder, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };
+window.__app = { slideRide, cinema, flare, outdoorSpot, paddock, birds, microwave, carLodState, showFireworks, newYear, sausages, frameRate, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, catCards, catCardsLoaded, binderPanel, showBinder, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };

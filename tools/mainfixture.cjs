@@ -5,6 +5,7 @@
 // own (richer) stand-ins assigned afterwards always win. When a new main.js global breaks the excerpts, add it HERE once.
 const DEFAULTS = {
   binderFreed: 'false',                  // cat binder intentionally frees pointer lock (#1255)
+  slideRide: '{active:false,cancel:()=>false,begin:()=>false,savePlace:()=>null}', // #1414: transient slide excerpts
   paddock: 'null',                       // main.js: `nopaddock` -> null (no ponies)
   playroom: '{inside:false}',
   SOUNDS: '{}',

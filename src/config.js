@@ -1214,7 +1214,9 @@ export const COURTYARD = {
   // splayed `spread` m to either side, two rubber seats) in the playground's free north-west corner and a little slide
   // (platform `h` m up, a `len` m chute in `color` running east) along its south edge
   swing: { x: -27.9, z: 21.0, len: 2.4, h: 2.1, spread: 0.7 },
-  slide: { x: -27.3, z: 28.6, h: 1.0, len: 2.0, color: 0xd9452b },
+  // #1414: assisted ladder/slide durations, seated eye and clear landing distances are gameplay guesses.
+  slide: { x: -27.3, z: 28.6, h: 1.0, len: 2.0, color: 0xd9452b,
+    ride: { approach: .3, climb: 1.1, settle: .4, slide: .95, runout: .2, exit: .55, eye: .65, pitch: -.3, entryReach: 1.35, exitGap: .3, exitSide: .5, maxExitDrop: .3, clearanceStep: .12 } },
   bikeRack: { x: -12.16, z0: 13.4, n: 5, gap: 0.7, colors: [0x2f5d8c, 0xc23b32, 0x2e2e30, 0x5e8f4a, 0xe8e4da] },
   trees: [ // tree squares and single trees as drawn (#259)
     [-43.2, 20.5], [-39.6, 20.5], [-43.2, 24.1], [-39.6, 24.1], [-42.4, 27.9], [-39.7, 28.1], // the west lawn

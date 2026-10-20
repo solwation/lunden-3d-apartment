@@ -7532,3 +7532,25 @@ Public already has the neutral projection fix in5cfecd3d5eab5a778529f63b19ec3b9d
 (#105), so no new transfer is needed. This is Chromium/SwiftShader, not physical-phone evidence.
 [Local evidence and fixture notes](/home/olw/.local/state/lunden-orkester/codex-surface-20261020/surface1420/README.md)
 retain before/after images, all raw successes and failed/interrupted fixture attempts.
+
+## Courtyard slide (#1414)
+
+`node --test tools/slidemovementtest.mjs` checks finite guided travel along the
+existing chute, checked landing, abort cleanup, external spawn ownership,
+blocked entry/landing and safe ground saves from the top platform.
+`PLAYWRIGHT_MODULE=… CHROME_PATH=… SHOTS=… node tools/slidetest.cjs BASE`
+uses one real World and native pointer-locked E; repeat with `MOBILE=1` for
+844×390 touch. Production `step` advances the climb, visible descent and exit;
+one render per retained picture avoids queued heavy frames. The test covers
+native abort, top entry/session save, reset, external spawn, restored walking,
+competing-mode guards and the same-pose render counts before/after the lifecycle.
+The two new pick meshes stay invisible; visible geometry and colliders are unchanged.
+This personal gameplay has no public downstream counterpart to transfer.
+Final native6/6, desktop17/17 and landscape touch16/16 checks pass. Frozen e1a61da
+visible courtyard buffers/transforms (21 objects,4,703,836 bytes) and all164 collision
+segments are exact; mode off/on adds0draws/triangles. Actual courtyard snapshots use
+126–127draws/599570–599600triangles desktop and133–134/607758–607788 touch,
+within unchanged profile caps. These are targeted views, not a full global budget sweep.
+Ordinary drop tracking seeded by the existing top deck is cleared on validated entry;
+fatal fall recovery still prevents entry. Top native entry and actual session save use feetY0.
+[Persistent raw logs, screenshots and fixture notes](/home/olw/.local/state/lunden-orkester/codex-surface-20261020/slide1414/README.md).

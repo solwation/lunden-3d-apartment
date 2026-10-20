@@ -379,7 +379,14 @@ export function buildCourtyard() {
     for (const s of [-1, 1]) toys.push(...barX(z + s * 0.235, path.map(([px, py]) => [px, py + 0.06]), 0.14, 0.022).map((g) => tint(g, L.color)));
     const xm = x + 0.28 + run / 2, ym = (h + 0.32) / 2 - 0.02; // legs under the chute's middle and its run-out
     for (const s of [-1, 1]) geos.wood.push(box(xe + 0.26, xe + 0.32, 0, 0.27, z + s * 0.17 - 0.03, z + s * 0.17 + 0.03), box(xm - 0.03, xm + 0.03, 0, ym, z + s * 0.17 - 0.03, z + s * 0.17 + 0.03));
-    segments.push(...rectSegs(x - 0.8, xe + 0.4, z - 0.32, z + 0.32));
+    const slideSegments = rectSegs(x - 0.8, xe + 0.4, z - 0.32, z + 0.32);
+    segments.push(...slideSegments); // unchanged collision; the assisted ride ignores only its own outline
+    for (const [name,px,py,sx,sy,sz] of [['ladder',x-.52,h/2,.5,h+.3,.5],['top',x,h+.1,.55,.25,.55]]) {
+      const pick = new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),new THREE.MeshBasicMaterial());
+      pick.visible=false;pick.name=`slide-${name}`;pick.position.set(px,py,z);group.add(pick);
+      const target={kind:'courtyardSlide',name:'rutschkanan',verb:'Klättra upp och åk',pickable:pick,slide:L,slideSegments};
+      pick.userData.door=target;targets.push(target);
+    }
   }
   {
     const B = C.bikeRack; // (tint: module level since #681)

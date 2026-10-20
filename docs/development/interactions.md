@@ -1821,3 +1821,15 @@ Cat encounter photos (#1400): E/Touch Klappa and held Krama share the physical c
 attempt; pickup alone does not take a photograph. Repeated pet/hug actions still animate and score
 normally. Move/drop/pickup/stow retains the guard; a genuinely new appearance can add another photo
 under the existing eight/full/archive policy. Kept Miele retains true or false across reload.
+
+## Courtyard slide (#1414)
+
+Aim at the existing ladder or top platform and use E / the touch action to climb,
+sit, slide along the chute and step onto checked free ground. E, Space, C or the
+primary touch action abort; the touch jump button also aborts without jumping.
+`src/slidemovement.js` owns this transient movement, separate from Rest and swings.
+Occupied hands, sitting, bicycle, flight, suit and other active movement modes
+prevent entry. Normal walking resumes after completion or abort; an external
+respawn always keeps its new position. A session saved during a ride uses checked
+ground, including when starting on the top platform. Ride state is not saved, and riding awards no points. `COURTYARD.slide.ride` holds timing, eye and clearance guesses; the existing
+visible slide and collision footprint remain unchanged.
