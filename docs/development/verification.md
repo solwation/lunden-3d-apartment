@@ -7809,3 +7809,14 @@ full19 still fails399calls; parent#1453 remains open. Empty-batch failure and it
 positive same-World diagnosis remain in raw evidence, not counted as passes.
 Persistent raw profiles, pairs, native checks and rejected diagnostics:
 `/home/olw/.local/state/lunden-orkester/codex-surface-20261020/rigid1455/`.
+
+Source patio hedges (#1458): verify every attribute of all8actual source geometries
+against canonical patioHedgeGeometry, shared material/depth/shadows/world bounds
+and24positive physical ray distances. Match cold and legitimate previous-bike patio
+states plus exposed own/neighbor and corner views with fresh shadows. Exercise
+production Player KeyW hedge blocking and actual touch glazed-door open/close.
+The ordinary desktop20-view/quality profile passes504/997953/~311MiB; unchanged
+phone batching inherits the explicitly identified e4914dcb quality0 profiles.
+The separately refreshed corner remains a real pre-existing budget failure#1459,
+not evidence that all camera directions pass. See [performance](performance.md#complete-source-patio-hedges-1458)
+and persistent `codex-surface-20261020/patio1458/production/` raw files.

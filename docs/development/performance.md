@@ -1485,3 +1485,38 @@ FAIL399calls/841837tri/~98MiB against unchanged
 independent children. These are submission/resource checks, not device frame times.
 Persistent raw and rejected candidates are linked in [verification](verification.md).
 Public main6c69323a has no corresponding entrance-plant group or DetailCuller; N/A.
+
+## Complete source patio hedges (#1458)
+
+Only Hus L's existing hedge submissions change: desktop merges each of the eight
+complete source geometries separately; phones keep the original single merge.
+Generation, all ordered position/normal/UV/color/hedgeLow attributes, shared shader
+material/depth, shadow flags, union/world bounds, rays and collision data stay exact.
+Native camera/shadow spheres reject unnecessary whole runs; no gate, car hysteresis,
+quality, camera or regression order changes. A/B/C use distinct surroundings/loggia
+planting; shared hedgeBody/entrance boxwood and their callers are unchanged.
+
+Actual standardmaximumquality3 on e4914dcb plus this two-line change gives
+cold503/998537→503/995905 and legitimate bike-room→patio504/1000585→504/997953.
+Each saves2632triangles with0changed pixels/fresh shadows. Clearly exposed own
+and neighbor hedge pairs also match exactly;24positive physical rays and all eight
+canonical source variants match, and production Player KeyW stops at the original
+hedge boundary z17.8182. Actual844×390 touch opens/closes the same glazed door.
+The unchanged desktop20-view/quality/mess/texture profile is **ALL PASS** at
+504calls/997953triangles/~311MiB against520/1M/320, with2047triangle margin.
+
+Inherited phone quality0 coverage from e4914dcb is explicitly not remeasured:
+landscape367calls/840699tri/~98MiB; portrait289/705267/~102MiB. Exact original
+phone merge/bounds/material/state means zero delta. Defaultquality3 phone failures
+remain separate#1453/#1457; no level3 phone pass is claimed. These full phone
+profiles precede59b771cc; its independently reviewed phone-only guard reduces its
+actual target398→391calls, with all40entrance pots outside phoneUnit membership.
+No new combined-main full phone profile is claimed. Desktop code is unchanged by that rebase.
+
+Another actual corner view is independent#1459: after final camera direction plus
+one productionstep, original562/1165094→candidate568/1164718, both over budget
+with0changed pixels (+6calls/−376tri). The earlier corner picture lacked that final
+step and remains diagnostic only. No broader all-view budget claim is made.
+Raw proof/images/profile: `~/.local/state/lunden-orkester/codex-surface-20261020/patio1458/`.
+The current public hedge builder has the same complete-source array/single merge;
+a selective neutral LOW-port will be cross-linked after source/live publication.

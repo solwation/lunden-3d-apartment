@@ -465,3 +465,5 @@ De befintliga öppningarna till markloggiorna i Hus A, B och C går nu att gå i
 
 Phone entrance pots (#1455): the existing twenty L-house planters share six rigid pot/soil
 color batches, retaining the original leaves, physical objects and shadow casters.
+
+Uteplatsens vy mot huset kräver mindre onödigt ritarbete genom att hela häckar bedöms var för sig på datorn; telefonens häckar är oförändrade (#1458).

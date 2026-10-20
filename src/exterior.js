@@ -731,7 +731,8 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   add(roofs, roofMat);
   add(panels, new THREE.MeshStandardMaterial({ color: COLORS.solar, roughness: 0.3, metalness: 0.5 }), false);
   add(patios, mats.patio, false);
-  add(hedges, mats.hedge);
+  // Whole source hedges retain their geometry/shadows; tighter native frustums avoid drawing distant runs.
+  for (const parts of lowMemory ? [hedges] : hedges.map((g) => [g])) add(parts, mats.hedge);
   add(fences, mats.fence);
   group.userData.segments = segments;
   group.add(group.userData.terraceDecor = buildTerraceDecor(group, D)); // #605: the furnished roof terraces (src/terracedecor.js)
