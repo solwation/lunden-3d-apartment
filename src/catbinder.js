@@ -2,7 +2,7 @@ import { CAT_CARD as C } from './config.js';
 
 // #1379: fixed collection pockets in CAT_CARD.breeds order; each found card opens its own photo album.
 // The album retains facts, counters, saved flags and photo actions; the old board photos retain their extra page.
-// The presentation prepares eight photo spaces without changing CatCards' existing five-photo collection limit.
+// #1399: eight-photo normal capacity; older larger archives remain visible without automatic rotation.
 // Pure DOM + CatCards (src/catcards.js); keys: ← → (A / D) turn the page, Home / End jump,
 // E / Esc close (main.js). Rarity visuals (#1256): a card gets `fx-N` (CAT_CARD.fx level by tier) and decorative layers
 // (foil, shine, glitter, holo, ★ sparkles) drawn by CSS in index.html; pointer / touch movement tilts it and moves the holo
@@ -274,7 +274,7 @@ export class BinderPanel {
       ul.append(...s.facts.map((f) => el('li', '', f)));
       card.append(ul);
       card.append(el('p', `slotline${this.cards.isFull(s.key) ? ' full' : ''}`, this.slotLine(s)));
-      const pb = el('button', 'photosbtn', `Visa foton (${s.cards.length} av ${C.max})`);
+      const pb = el('button', 'photosbtn', `Visa foton (${s.cards.length}${this.cards.isArchive(s.key) ? ' i äldre arkiv' : ` av ${C.max}`})`);
       pb.type = 'button'; pb.dataset.act = 'photos'; pb.disabled = !s.cards.length;
       card.append(pb);
     }
@@ -288,6 +288,7 @@ export class BinderPanel {
 
   /** What the next find of this breed will do, in words (#1257). */
   slotLine(s) {
+    if (this.cards.isArchive(s.key)) return `Äldre arkiv: ${s.cards.length} foton, ${s.saved} sparade. Alla bilder behålls. Nya fynd läggs inte till när arkivet har fler än ${C.max} foton. Du kan själv kasta foton; avmarkering raderar inget.`;
     const sv = `Sparade: ${s.saved} av ${C.max}. `;
     if (this.cards.isFull(s.key)) return `${sv}Alla platser är sparade, så nya fynd läggs inte till. Avmarkera eller kasta ett foto för att få plats.`;
     const out = this.cards.nextOut(s.key);

@@ -3,7 +3,7 @@ import { CAT_CARD as C, SCORE } from './config.js';
 // Cat card binder data model (#1249, part 1). No DOM, no three.js: the binder UI (later parts) and the tests use this.
 // One slot per BREED (CAT_CARD.breeds; a game cat is random: breed + coat + a random name). A card = one photo of where
 // a cat of that breed was found. Per breed at most C.max cards; a new find rotates out the oldest card that is not saved,
-// and when all of them are saved the new one is not added. Counters (finds, pats, hugs) live in the saved statistics
+// and when all of them are saved the new one is not added. Older archives above C.max reject additions without trimming. Counters (finds, pats, hugs) live in the saved statistics
 // (`stats.byBreed`, `stats.miele`, `stats.petsByBreed`, `stats.hugsByBreed`); cards live in IndexedDB 'catCards'.
 // Photos from the old kitchen cork board ('catPhotos') are COPIED in once (`migrate`); nothing there is deleted.
 
@@ -45,6 +45,7 @@ export class CatCards {
   constructor({ store = new MemoryStore(), stats = {}, touch = () => {}, flag = null, now = () => Date.now(), onNotice = null } = {}) {
     // `onNotice({type: 'rotated', breed, card})` / `({type: 'full', breed})`: a new find pushed the oldest unsaved card out / found no room (#1257)
     Object.assign(this, { store, stats, touch, now, onNotice, cards: [], migrated: false });
+    this.adding = Promise.resolve(); // serialize overlapping photo callbacks, including their persistence writes
     this.flag = flag ?? { value: false, get() { return this.value; }, set() { this.value = true; } };
   }
 
@@ -79,25 +80,35 @@ export class CatCards {
   /** The cards of a slot, oldest first. The legacy key lists the old photos without a breed. */
   of(breed) { return this.cards.filter((c) => c.breed === breed).sort((a, b) => a.time - b.time); }
 
-  /** The card a new find of `breed` would push out: the oldest unsaved one, once the slot holds the maximum; else null. */
-  nextOut(breed) { const l = this.of(breed); return l.length >= C.max ? l.find((c) => !c.saved) ?? null : null; }
-  /** True when the slot holds the maximum and every card is saved: a new find is not added. */
-  isFull(breed) { const l = this.of(breed); return l.length >= C.max && l.every((c) => c.saved); }
+  /** At exactly normal capacity, the oldest unsaved photo rotates. Older larger archives never rotate. */
+  nextOut(breed) { const l = this.of(breed); return l.length === C.max ? l.find((c) => !c.saved) ?? null : null; }
+  /** An older archive retains more photos than normal capacity. */
+  isArchive(breed) { return this.of(breed).length > C.max; }
+  /** Archives and all-saved normal slots reject new finds. */
+  isFull(breed) { const l = this.of(breed); return l.length > C.max || (l.length === C.max && l.every((c) => c.saved)); }
   savedCount(breed) { return this.of(breed).filter((c) => c.saved).length; }
 
-  /** Add a card (photo JPEG data URL) for a find of `breed`. Returns the card, or null when the slot is full of saved ones. */
-  async add(breed, { name, data, coat = null, kitten = false } = {}) {
+  /** Add a card (photo JPEG data URL) for a find of `breed`. Returns the card, or null for an archive or all-saved full slot. */
+  add(breed, photo = {}) {
+    const added = this.adding.then(() => this.#add(breed, photo));
+    this.adding = added.catch(() => {});
+    return added;
+  }
+
+  async #add(breed, { name, data, coat = null, kitten = false } = {}) {
     if (!slotOf(breed)) return null;
-    // (migration may leave a slot above the maximum: unsaved cards go until there is room)
-    while (this.of(breed).length >= C.max) {
-      const old = this.of(breed).find((c) => !c.saved);
-      if (!old) { try { this.onNotice?.({ type: 'full', breed }); } catch { /* UI only */ } return null; }
-      await this.discard(old.id);
-      try { this.onNotice?.({ type: 'rotated', breed, card: old }); } catch { /* UI only */ }
+    // #1399: older over-capacity archives are read/write only through explicit photo actions.
+    // A new find must never trim them, even when some photographs are unsaved.
+    if (this.isFull(breed)) {
+      try { this.onNotice?.({ type: 'full', breed, archive: this.isArchive(breed) }); } catch { /* UI only */ }
+      return null;
     }
+    const old = this.nextOut(breed);
+    if (old) await this.discard(old.id);
     const card = { id: uid(), breed, name, time: this.now(), data, saved: false, kitten: !!kitten, ...(coat ? { coat } : {}) };
     this.cards.push(card);
     try { await this.store.put(card); } catch { /* this visit only */ }
+    if (old) { try { this.onNotice?.({ type: 'rotated', breed, card: old }); } catch { /* UI only */ } }
     return card;
   }
 

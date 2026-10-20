@@ -4283,8 +4283,8 @@ export const CAT_BINDER = { w: 0.3, d: 0.22, h: 0.035, x: 0.05, z: 0.085, turn: 
 // `weightKg` and `facts` are NOT measured from the game: typical figures for the breed, all *guess* (Miele's weight is a
 // plain guess; nobody has weighed her in the game). `legacy` = the key for old board photos whose breed was never saved.
 export const CAT_CARD = {
-  max: 5, legacy: 'okänd',
-  pageSize: 4, albumSlots: 8, // #1379: fixed collection pockets / prepared photo layout, UI choices; collection limit remains max=5.
+  max: 8, legacy: 'okänd',
+  pageSize: 4, albumSlots: 8, // #1379/#1399: fixed collection pockets / eight-photo normal capacity; larger old archives remain intact.
   // Photo menu of the binder (#1257, src/catbinder.js, index.html #cat-notice): seconds the "oldest card rotated out" / "slot full"
   // notice stays on screen after a find; *guess* (long enough to read two sentences, short enough not to nag).
   noticeS: 8,

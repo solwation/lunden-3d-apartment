@@ -908,11 +908,13 @@ cat.onTip = (c) => {
 // src/catcards.js; the old kitchen board's photos are copied in once (its 'catPhotos' store is left untouched)
 const catNoticeEl = document.getElementById('cat-notice');
 let catNoticeTimer = 0;
-const catNotice = ({ type, breed, card }) => { // a find rotated the oldest unsaved card out, or found the slot full of saved ones (#1257)
+const catNotice = ({ type, breed, card, archive }) => { // a find rotated the oldest unsaved card out, or found the slot full of saved ones (#1257)
   const label = CAT_CARD.breeds.find((b) => b.key === breed)?.label ?? breed;
-  catNoticeEl.textContent = type === 'full'
-    ? `Kattpärmen: alla fem kort för ${label} är sparade, så det nya fotot lades inte till. Kasta eller avmarkera ett foto i pärmen för att få plats.`
-    : `Kattpärmen: ${label} hade fem kort, så det äldsta osparade fotot (${card?.name ?? ''}) byttes ut mot det nya.`;
+  catNoticeEl.textContent = archive
+    ? `Kattpärmen: äldre arkiv för ${label} har fler än ${CAT_CARD.max} foton. Alla behålls; det nya fotot lades inte till.`
+    : type === 'full'
+    ? `Kattpärmen: alla ${CAT_CARD.max} foton för ${label} är sparade, så det nya fotot lades inte till. Kasta eller avmarkera ett foto i pärmen för att få plats.`
+    : `Kattpärmen: ${label} hade ${CAT_CARD.max} foton, så det äldsta osparade fotot (${card?.name ?? ''}) byttes ut mot det nya.`;
   catNoticeEl.hidden = false;
   clearTimeout(catNoticeTimer);
   catNoticeTimer = setTimeout(() => { catNoticeEl.hidden = true; }, CAT_CARD.noticeS * 1000);

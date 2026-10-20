@@ -415,3 +415,7 @@ Phone rendering (#1383): complete opted-in furnishings share a visibility decisi
 Shelter hay (#1396): both ponies walk to their own low hay box and visibly eat its shrinking portion.
 Patting pauses the meal; winter/rain shelter and ordinary grass grazing remain available. The ambient
 portions refill automatically while nearby; this adds no hunger or inventory system.
+
+Cat albums (#1399): each variant holds eight normal encounter photos. Saved photos remain protected
+from rotation, and older archives above eight retain every photo with clear archive/full information.
+Photo capture and first-interaction identity are a separate remaining task (#1400).

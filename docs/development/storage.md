@@ -92,11 +92,21 @@ and `tools/fruitremainstest.cjs` for the native reload checks and visual limits.
 
 Cat binder presentation (#1379): four stable collection pockets per page and
 per-variant photo albums are DOM-only views over the existing `CatCards.slots()`
-and `of()` records. `CAT_CARD.max` remains5; `pageSize=4` and `albumSlots=8`
-configure presentation only. There is no new store, migration, photo capture,
-rotation rule or statistics format. Old five-photo records, saved flags and
-legacy-board photographs remain intact. The new eight-encounter collection
-rules belong to#1380, not this intermediate UI.
+and `of()` records. `CAT_CARD.max=8` is the normal photo capacity (#1399);
+`pageSize=4` and `albumSlots=8` control presentation. There is no new store/schema
+or destructive migration. All old five-photo data, ids, JPEG bytes, saved flags,
+discoveries/statistics and legacy-board photos remain intact. At exactly eight,
+a new find replaces only the oldest unsaved photo; all saved rejects the find.
+An older archive above eight rejects all incoming finds without deleting any
+photo, including unsaved ones. `isArchive()` drives its explicit album/full notice;
+`nextOut()` returns no automatic replacement there. Save/unsave does not unlock
+archive rotation: only a player's explicit confirmed deletion can reduce it to
+normal capacity. Migration/load never cap arrays. Blocked IndexedDB retains the
+existing visit-only in-memory fallback; no persistence is promised there.
+Overlapping additions are serialized through their persistence writes, preventing
+a ninth normal photo or a late put restoring a rotated record.
+First-interaction/instance identity remains separate in #1400. Private photos
+remain local and no peer schema changes.
 
 ```text
 src/privatecodes.js     shared synchronous UTF-8 SHA-256 and exact private-code/layout-credential verifier (#853)

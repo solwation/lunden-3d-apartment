@@ -9,6 +9,19 @@ const check=(ok,label,data)=>{console.log(`${ok?'PASS':'FAIL'} ${label}${data===
 const state=page=>page.evaluate(()=>{const p=__app.binderPanel;return {page:p.index,album:p.albumKey,view:!!p.view,asking:!!p.asking,open:p.open};});
 const shot=async(page,name)=>{await page.screenshot({path:`${out}/${name}.png`});};
 const click=async(page,sel,mobile)=>mobile?page.locator(sel).first().tap():page.locator(sel).first().click();
+const albumShots=async(page,tag,mobile)=>{
+ if(!mobile)return;
+ for(const [width,height] of [[844,390],[390,844]]){
+  await page.setViewportSize({width,height});
+  await page.locator('.album [data-act=aclose]').scrollIntoViewIfNeeded();
+  check(await page.evaluate(()=>{const r=document.querySelector('.album [data-act=aclose]').getBoundingClientRect();return r.width>=44&&r.height>=44&&r.left>=0&&r.right<=innerWidth&&r.top>=0&&r.bottom<=innerHeight;}),`${tag} ${width}×${height}: album close remains reachable`);
+  await shot(page,`${tag}-${width}x${height}`);
+  const last=page.locator('.album .photo:not(.empty) [data-act=look]').last();await last.scrollIntoViewIfNeeded();
+  check(await last.boundingBox().then(r=>r&&r.width>=44&&r.height>=44&&r.x>=0&&r.x+r.width<=width&&r.y>=0&&r.y+r.height<=height),`${tag} ${width}×${height}: last photograph stays reachable by scrolling`);
+  await shot(page,`${tag}-photos-${width}x${height}`);
+  await page.locator('.album [data-act=aclose]').scrollIntoViewIfNeeded();
+ }
+};
 (async()=>{
  const browser=await kit.launch();
  try{
@@ -97,12 +110,19 @@ const click=async(page,sel,mobile)=>mobile?page.locator(sel).first().tap():page.
    check(JSON.stringify(before)===JSON.stringify(after),`${tag}: actual reload preserves every photo byte, id and save flag`);
    await click(page,'.collection-card[data-slot=huskatt]',mobile);
    check(await page.evaluate(()=>__app.catCards.of('huskatt').length===5&&__app.catCards.of('huskatt').filter(c=>c.saved).length===1),`${tag}: old five-image save data survives the UI change`);
-   // Simulate the next task's eight stored images without changing collection/add/migration rules.
-   await page.evaluate(()=>{const a=__app,base=a.catCards.of('huskatt')[0];for(let i=0;i<3;i++)a.catCards.cards.push({...base,id:'future-'+i,time:Date.now()+i});a.binderPanel.render();});
-   check(await page.locator('.album .photo:not(.empty)').count()===8,`${tag}: presentation already supports eight incoming photos`);
+   // Real additions now fill the eight-photo capacity; preserve all five older ids/bytes/flags.
+   const five=await page.evaluate(()=>structuredClone(__app.catCards.of('huskatt')));
+   await page.evaluate(async()=>{const a=__app,base=a.catCards.of('huskatt')[0];for(let i=0;i<3;i++)await a.catCards.add('huskatt',{name:'Nytt möte '+i,data:base.data});a.binderPanel.render();});
+   check(await page.locator('.album .photo:not(.empty)').count()===8,`${tag}: actual additions fill all eight album places`);
+   check(await page.evaluate(old=>old.every(c=>JSON.stringify(__app.catCards.cards.find(x=>x.id===c.id))===JSON.stringify(c)),five),`${tag}: filling eight preserves all five older photographs exactly`);
+   await shot(page,`${tag}-album-eight`);await albumShots(page,`${tag}-album-eight`,mobile);
    await click(page,'.album .photo:not(.empty) [data-act=look]',mobile);await page.keyboard.press('ArrowLeft');
-   check(await page.locator('.viewer .cap').textContent().then(t=>/foto 8 av 8/.test(t)),`${tag}: enlarged viewer can browse all eight future images`);
+   check(await page.locator('.viewer .cap').textContent().then(t=>/foto 8 av 8/.test(t)),`${tag}: enlarged viewer can browse all eight stored images`);
    await page.keyboard.press('Escape');await click(page,'.album [data-act=aclose]',mobile);
+   const eight=await page.evaluate(()=>structuredClone(__app.catCards.of('huskatt')));
+   await page.reload({waitUntil:'commit'});await page.waitForFunction(()=>window.__app?.catCardsLoaded,null,{timeout:600000});
+   await page.evaluate(async()=>{await __app.catCardsLoaded;__app.renderer.setAnimationLoop(null);__app.showOverlay(false);__app.showBinder(true);});
+   check(await page.evaluate(old=>{const list=__app.catCards.of('huskatt'),byId=l=>[...l].sort((a,b)=>a.id.localeCompare(b.id));return JSON.stringify(byId(list))===JSON.stringify(byId(old))&&list.every((c,i)=>!i||list[i-1].time<=c.time);},eight),`${tag}: actual reload preserves all eight album ids, bytes and saved flags`);
    // Preserve the actual confirmed-delete path, including a still-open remaining photo.
    await page.evaluate(async()=>{const a=__app,c=a.catCards.of('perser')[0];await a.catCards.add('perser',{name:'Perser igen',data:c.data});a.binderPanel.go(1);a.binderPanel.openAlbum('perser');});
    await click(page,'.album .photo:not(.empty) [data-act=look]',mobile);
@@ -121,27 +141,43 @@ const click=async(page,sel,mobile)=>mobile?page.locator(sel).first().tap():page.
    await page.waitForFunction(()=>__app.catCards.of('perser').length===1&&!document.querySelector('.viewer').hidden&&/foto 1 av 1/.test(document.querySelector('.viewer .cap').textContent));
    check(await page.evaluate(()=>!document.querySelector('.viewer').hidden&&/foto 1 av 1/.test(document.querySelector('.viewer .cap').textContent)&&__app.catCards.of('perser')[0].name==='perser'),`${tag}: confirmed deletion keeps the remaining photo in the viewer`);
    await click(page,'.viewer [data-act=vclose]',mobile);await click(page,'.album [data-act=aclose]',mobile);
-   // Existing five-photo rotation/refusal remains visible in the new per-variant album.
+   // Existing oldest-unsaved rotation/refusal remains visible in the new per-variant album.
    const rot=await page.evaluate(async()=>{
     const a=__app,C=a.catCards,data=C.of('huskatt')[0].data;
     for(const c of [...C.of('huskatt')])await C.discard(c.id);
-    for(let i=0;i<5;i++)await C.add('huskatt',{name:'H'+i,data});
+    for(let i=0;i<8;i++)await C.add('huskatt',{name:'H'+i,data});
     await C.toggleSave(C.of('huskatt')[0].id);a.binderPanel.go(0);a.binderPanel.openAlbum('huskatt');
     const line=document.querySelector('.album .slotline').textContent,out=document.querySelector('.album .photo.next-out figcaption b')?.textContent;
-    await C.add('huskatt',{name:'H5',data});
+    await C.add('huskatt',{name:'H8',data});
     return{line,out,names:C.of('huskatt').map(c=>c.name).join(),notice:document.getElementById('cat-notice').textContent};
    });
    check(rot.out==='H1'&&/äldsta osparade fotot \(H1\)/.test(rot.line),`${tag}: album identifies the oldest unsaved photograph`);
-   check(rot.names==='H0,H2,H3,H4,H5'&&/äldsta osparade fotot \(H1\) byttes ut/.test(rot.notice),`${tag}: rotation keeps saved H0 and shows its actual toast`,rot);
+   check(rot.names==='H0,H2,H3,H4,H5,H6,H7,H8'&&/äldsta osparade fotot \(H1\) byttes ut/.test(rot.notice),`${tag}: rotation keeps saved H0 and shows its actual toast`,rot);
    const full=await page.evaluate(async()=>{
     const C=__app.catCards;for(const c of C.of('huskatt'))if(!c.saved)await C.toggleSave(c.id);
     document.getElementById('cat-notice').hidden=true;const r=await C.add('huskatt',{name:'Ny',data:C.of('huskatt')[0].data});
     const notice=document.getElementById('cat-notice');return {refused:r===null,n:C.of('huskatt').length,notice:notice.textContent,visible:!notice.hidden,line:document.querySelector('.album .slotline').textContent,full:document.querySelector('.album .slotline').classList.contains('full')};
    });
-   check(full.refused&&full.n===5&&full.visible&&/alla fem kort för Huskatt är sparade/.test(full.notice),`${tag}: all-saved refusal still shows the actual game toast`,full);
+   check(full.refused&&full.n===8&&full.visible&&/alla 8 foton för Huskatt är sparade/.test(full.notice),`${tag}: all-saved refusal still shows the actual game toast`,full);
    check(full.full&&/Alla platser är sparade/.test(full.line),`${tag}: album visibly explains the full saved-photo capacity`);
+   await shot(page,`${tag}-album-full-eight`);
    await click(page,'.album .photo:not(.empty) [data-act=save]',mobile);
    check(await page.evaluate(async()=>!!(await __app.catCards.add('huskatt',{name:'Ny2',data:__app.catCards.of('huskatt')[0].data}))),`${tag}: unmarking one saved photo permits a new find`);
+   // A pre-existing nine-photo archive must never be trimmed by a find or an actual reload.
+   const archive=await page.evaluate(async()=>{
+    const a=__app,C=a.catCards,base=C.of('huskatt')[0],extra={...base,id:'old-archive-ninth',name:'Äldre nionde möte',time:base.time-1,saved:false};await C.store.put(extra);C.cards.push(extra);a.binderPanel.render();
+    const before=structuredClone(C.of('huskatt')),stats=JSON.stringify(a.stats),score=a.totalScore(),refused=await C.add('huskatt',{name:'Får inte trimma',data:base.data});
+    return{before,unchanged:JSON.stringify(before)===JSON.stringify(C.of('huskatt')),refused:refused===null,line:document.querySelector('.album .slotline').textContent,notice:document.querySelector('#cat-notice').textContent,stats:JSON.stringify(a.stats)===stats,score:a.totalScore()===score};
+   });
+   check(archive.refused&&archive.unchanged&&archive.stats&&archive.score,`${tag}: nine-photo archive rejects a find without deleting bytes or changing stats/score`,{...archive,before:archive.before.map(c=>({id:c.id,saved:c.saved}))});
+   check(await page.locator('.album .photo:not(.empty)').count()===9&&/Äldre arkiv: 9 foton/.test(archive.line)&&/Alla behålls/.test(archive.notice),`${tag}: every archived photo and explicit archive/full information stay visible`);
+   await shot(page,`${tag}-archive-nine`);await albumShots(page,`${tag}-archive-nine`,mobile);
+   await page.reload({waitUntil:'commit'});await page.waitForFunction(()=>window.__app?.catCardsLoaded,null,{timeout:600000});
+   await page.evaluate(async()=>{await __app.catCardsLoaded;__app.renderer.setAnimationLoop(null);__app.showOverlay(false);__app.showBinder(true);__app.binderPanel.openAlbum('huskatt');});
+   check(await page.evaluate(old=>{const list=__app.catCards.of('huskatt'),byId=l=>[...l].sort((a,b)=>a.id.localeCompare(b.id));return JSON.stringify(byId(list))===JSON.stringify(byId(old))&&list.every((c,i)=>!i||list[i-1].time<=c.time);},archive.before),`${tag}: actual reload preserves all nine ids, photo bytes and saved flags`);
+   await click(page,'.album .photo:not(.empty) [data-act=save]',mobile);
+   const preserved=await page.evaluate(async()=>{const C=__app.catCards,before=JSON.stringify(C.of('huskatt'));const r=await C.add('huskatt',{data:C.of('huskatt')[0].data});return r===null&&JSON.stringify(C.of('huskatt'))===before;});
+   check(preserved,`${tag}: save/unsave in an older archive never permits implicit trimming`);
    await click(page,'.album [data-act=aclose]',mobile);
    if(mobile){
     await page.setViewportSize({width:390,height:844});
@@ -154,6 +190,9 @@ const click=async(page,sel,mobile)=>mobile?page.locator(sel).first().tap():page.
    check(errors.length===0,`${tag}: no page errors`,errors);
    await ctx.close();
   }
+  const {page:blocked,ctx:blockedCtx}=await kit.open(browser,`${game}/?shot&freeze`,{lazy:true,viewport:{width:390,height:844},init:()=>{Object.defineProperty(window,'indexedDB',{value:{open(){throw new Error('blocked IndexedDB');}}});localStorage.setItem('lunden.name','Pärmtest');sessionStorage.setItem('lunden.nameSkipped','1');}});
+  const fallback=await blocked.evaluate(async()=>{const a=__app;await a.catCardsLoaded;a.renderer.setAnimationLoop(null);a.showOverlay(false);const stats=JSON.stringify(a.stats),score=a.totalScore();for(let i=0;i<8;i++){const c=await a.catCards.add('huskatt',{name:'Minne '+i,data:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"/>'});await a.catCards.toggleSave(c.id);}a.showBinder(true);a.binderPanel.openAlbum('huskatt');const rejected=await a.catCards.add('huskatt',{data:'new'});return{n:a.catCards.of('huskatt').length,rejected:rejected===null,stats:JSON.stringify(a.stats)===stats,score:a.totalScore()===score};});
+  check(fallback.n===8&&fallback.rejected&&fallback.stats&&fallback.score,'blocked IndexedDB keeps eight usable in-memory photos and unchanged gameplay statistics',fallback);await blockedCtx.close();
  }finally{await browser.close();}
  console.log(failed?`${failed} FAILED`:'ALL PASSED');process.exitCode=failed?1:0;
 })();

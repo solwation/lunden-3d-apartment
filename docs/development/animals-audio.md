@@ -47,14 +47,14 @@ src/catbinderprop.js   the binder as an object (#1255, `CAT_BINDER`): a small ri
 src/catbinder.js       `BinderPanel` (#1379, main.js `showBinder`): four fixed pockets per page in CAT_CARD.breeds order (Miele last),
                        silhouettes for undiscovered variants; found cards use an uncropped existing photo, name, breed, tier and points.
                        Click/touch opens that variant's album with weight/facts/find/pat/hug counters and photo actions; an extra page retains legacy photos.
-                       CAT_CARD.pageSize/albumSlots are presentation settings (4/8); collection capacity remains CAT_CARD.max=5 until#1380.
+                       CAT_CARD.pageSize/albumSlots are presentation settings (4/8); normal capacity is CAT_CARD.max=8 (#1399); older larger archives are retained.
                        ← → / A D / Home / End / dots / swipe / Nästa–Förra; E / Esc closes the top layer first. Test: `tools/bindertest.cjs`.
                        Photo menu (#1257, the last part of #1249; DOM + CSS only, perfcount unchanged): every photo has `Spara`/`Sparad` (aria-pressed toggle = the card's `saved` flag, a saved card is never rotated out;
-                       persisted by the existing 'catCards' store) and `Kasta` (opens `.confirm`, the safe "Behåll" has focus; "Kasta" deletes the card). Tapping a photo or the card's "Visa foton (n av 5)" opens it enlarged
+                       persisted by the existing 'catCards' store) and `Kasta` (opens `.confirm`, the safe "Behåll" has focus; "Kasta" deletes the card). Tapping a photo or the card's "Visa foton (n av 8)" opens it enlarged
                        (`.viewer`, ‹ › / ← → / swipe browse the variant's photos, same Spara / Kasta). `back()` (E / Esc, wired in main.js) closes the question, then enlarged photo, then album, then panel. The card line `slotline`
                        says what the next find does ("byter ut det äldsta osparade fotot (X)", that photo is outlined + badged "Byts ut först"; all saved: red "Alla platser är sparade…"). `CatCards.onNotice` ({type:'rotated'|'full'})
-                       drives the in-game toast `#cat-notice` (main.js `catNotice`, `CAT_CARD.noticeS` *guess*): "…det äldsta osparade fotot (X) byttes ut" / "alla fem kort … är sparade, det nya fotot lades inte till. Kasta eller avmarkera…".
-                       Model helpers: `nextOut(breed)`, `isFull(breed)`, `savedCount(breed)`. The legacy page has the same buttons (no limit there). Buttons are ≥ 44 px; the viewer is a row (photo + buttons) at max-height 520 px.
+                       drives the in-game toast `#cat-notice` (main.js `catNotice`, `CAT_CARD.noticeS` *guess*): "…det äldsta osparade fotot (X) byttes ut" / "alla 8 foton … är sparade, det nya fotot lades inte till. Kasta eller avmarkera…".
+                       Model helpers: `nextOut(breed)`, `isFull(breed)`, `isArchive(breed)`, `savedCount(breed)`. The legacy page has the same buttons (no limit there). Buttons are ≥ 44 px; the viewer is a row (photo + buttons) at max-height 520 px.
                        Rarity visuals (#1256, UI only — no texture, light or draw call; perfcount unchanged: 507 calls max at 'park'): `CAT_CARD.fx` (level / ★ count / tilt per tier, *guess*) →
                        `decorate()` in catbinder.js adds `fx-0..4` (+ `miele` for the `star` breed) and aria-hidden layers (`.foil`, `.shine`, `.glitter`, `.holo`, `.star-fx`); the CSS is in index.html.
                        0 plain · 1 coloured border + glow · 2 foil + shine band + ★ · 3 glitter + holographic sheen + more ★ · 4 rainbow frame, gold foil, most ★ (Miele extra ★ and a ★ after the name).
@@ -62,7 +62,7 @@ src/catbinder.js       `BinderPanel` (#1379, main.js `showBinder`): four fixed p
 src/catcards.js        cat card binder data model (#1249, part 1 of 4 — #1254–#1257, all delivered: binder object + UI #1255, rarity #1256, photo menu #1257, all above). No DOM: one slot per BREED (`CAT_CARD.breeds`, Miele last;
                        a game cat is random — breed + coat + random name — so there are no fixed individuals), points from SCORE (breeds;
                        Miele `first.miele` 1000), rarity tier = highest `CAT_CARD.tiers` entry reached (common <30, ovanlig 30–99, sällsynt
-                       100, episk 250, legendarisk = Miele). A card = a photo of a find; max `CAT_CARD.max` 5 per breed, a new one rotates
+                       100, episk 250, legendarisk = Miele). A card = a photo of a find; normal max `CAT_CARD.max` 8 per breed, a new one rotates
                        out the oldest unsaved, all saved → not added (`add` returns null). Counters: finds = `stats.byBreed` / `stats.miele`,
                        pats / hugs = new `stats.petsByBreed` / `stats.hugsByBreed` (main.js `cat.onPet`, `miele.onHug`). Cards in IndexedDB
                        'catCards' (idb.js version 3), written by main.js `cat.onPhoto` / `miePhoto`. The old
@@ -382,3 +382,8 @@ See environment.md for assumed dimensions/timing, refill and shelter priorities.
 ## Mutual kiss sound (#1398)
 
 `sfx.kiss(pos)` synthesizes a short two-part closed-lip hum followed by filtered noise and a falling pop for “mmm-smack”. It uses the existing AudioContext, positional panner and master mute; it creates no file or speech-synthesis utterance. `Ghosts.updateKisses` starts the hum before contact so the smack aligns with hearts and love points. Only a server-accepted complementary Sarah/Olof pair creates the effect, within `KISS.soundRange`. See the mutual-kiss contract in interactions.md and `tools/kisspeertest.cjs` for native Web Audio signal, pose and three-client checks.
+
+Older cat archives above eight (#1399) show every photograph and reject new additions without
+rotation or trimming, even with unsaved photos. Save/unsave and confirmed deletion remain usable;
+only explicit deletion down to normal capacity restores ordinary rotation. Capture/instance policy
+is unchanged here (separate #1400). See storage.md and the model/UI tests.

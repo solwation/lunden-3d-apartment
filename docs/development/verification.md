@@ -7365,3 +7365,21 @@ the existing1M cap tracked by #1387. No budget was raised. Added local feed draw
 Native name/Worker tests pass64/64; avatar code/height/body regressions pass37/37 after installing the required Three.js test dependency. Three actual Ghosts clients through the local Worker pass: both-name eligibility, server receipt echo, no optimistic effects, both forward poses/pursed mouths and own mirror, initiator-only +100, reverse initiation, duplicate packet and saved receipt rejection, statistics row, departure cancellation, pose reset, ordinary greeting and master mute. The bounded overview is5draws without hearts and6with them, with no added avatar mesh/light. Web Audio has a real nonzero waveform; mute is silent. The accepted-event poses and lip close-up were opened and reviewed; the first visual candidate leaned away and the next detached lips, both corrected before delivery.
 
 The real World passes native pointer-lock E and a supported844×390landscape touch/action-button run. Both use the real focused ghost, send one accepted kiss, award exactly100 and call the generic hand reach0times. Earlier input fixture attempts left the shot-mode menu hidden / omitted the real input start; they were discarded, and final runs explicitly open/start the menu. Final desktop/mobile images were opened, with no page errors. Ordinary mouth regression passes (116samples,10open/shut changes; four avatars remain four draws). This is Chromium emulation with a local Worker, no physical-device or production visitor interaction claim.
+
+Cat album capacity (#1399): `node --test tools/catcardstest.mjs` checks eight-photo rotation/all-saved
+refusal and exact old archive bytes/ids/flags through migration, load and rejected finds.
+`PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/bindertest.cjs GAME SHOTDIR` retains the existing
+fixed-card, photo save/unsave, safe discard/focus, paging and mobile orientation regressions. It uses
+actual app/IndexedDB for normal eight-photo albums and older nine-photo archives, actual reload,
+full/rotation/archive notices and blocked-IDB visit-only fallback. Open desktop/mobile album-eight,
+full-eight and archive-nine PNGs. No geometry/performance changes: no full 3D perf sweep required.
+Reload preservation compares complete records canonically by id and separately asserts nondecreasing
+photo time: IndexedDB getAll is key-ordered, so equal-millisecond photos need not keep their original
+insertion order. The first new order-sensitive array assertions falsely failed (raw log retained);
+actual targeted app reloads compare every id/data/saved/time field instead. Production sorting is unchanged.
+Final #1399 evidence: model10/10 (including DeferredStore overlap with zero/seven saved),
+100 other UI checks green including blocked-IDB and native photo actions. The two order-sensitive
+reload assertions were corrected after the diagnostic run (exit1 retained); targeted actual app
+8/9-photo reloads in desktop/mobile and post-reload archive refusal pass6/6 with native exit0.
+A separate actual IndexedDB reload preserves nine complete records and time order[1,2,3,4,4,5,7,8,9]
+(exit0). All desktop/mobile album/full/archive pictures were independently reviewed.

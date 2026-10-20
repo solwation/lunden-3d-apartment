@@ -1,4 +1,4 @@
-// node --test tools/catcardstest.mjs — cat card binder data model (#1249): slots, rarity, max 5 per breed with rotation,
+// node --test tools/catcardstest.mjs — cat card binder data model (#1249): slots, rarity, max 8 per breed with rotation,
 // saved flag, per-breed counters, one-time migration of the old board photos.
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -24,22 +24,22 @@ test('one slot per breed, Miele last and rarest', () => {
   for (const id of SLOTS) for (const b of CAT_CARD.breeds) if (b.key === id) assert.ok(b.weightKg[0] <= b.weightKg[1]);
 });
 
-test('max 5 cards per breed: the oldest unsaved one rotates out', async () => {
+test('max 8 cards per breed: the oldest unsaved one rotates out', async () => {
   const c = await mk().load();
   const ids = [];
-  for (let i = 0; i < 5; i++) ids.push((await c.add('perser', { name: `P${i}`, data: 'x' })).id);
-  assert.equal(c.of('perser').length, 5);
+  for (let i = 0; i < 8; i++) ids.push((await c.add('perser', { name: `P${i}`, data: 'x' })).id);
+  assert.equal(c.of('perser').length, 8);
   await c.toggleSave(ids[0]); // the oldest is saved: the next oldest goes
-  await c.add('perser', { name: 'P5', data: 'x' });
-  assert.deepEqual(c.of('perser').map((x) => x.name), ['P0', 'P2', 'P3', 'P4', 'P5']);
+  await c.add('perser', { name: 'P8', data: 'x' });
+  assert.deepEqual(c.of('perser').map((x) => x.name), ['P0', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8']);
   assert.equal(c.of('huskatt').length, 0);
 });
 
-test('all five saved: a new card is not added', async () => {
+test('all eight saved: a new card is not added', async () => {
   const c = await mk().load();
-  for (let i = 0; i < 5; i++) { const x = await c.add('sphynx', { name: `S${i}`, data: 'x' }); await c.toggleSave(x.id); }
+  for (let i = 0; i < 8; i++) { const x = await c.add('sphynx', { name: `S${i}`, data: 'x' }); await c.toggleSave(x.id); }
   assert.equal(await c.add('sphynx', { name: 'new', data: 'x' }), null);
-  assert.equal(c.of('sphynx').length, 5);
+  assert.equal(c.of('sphynx').length, 8);
   const first = c.of('sphynx')[0];
   await c.toggleSave(first.id); // unsave one: room again
   assert.ok(await c.add('sphynx', { name: 'new', data: 'x' }));
@@ -94,39 +94,81 @@ test('migration copies the old board photos once, losing none', async () => {
   await assert.doesNotReject(async () => { const f = mk({ store: { all: async () => { throw new Error('x'); }, put: async () => { throw new Error('x'); }, delete: async () => {}, legacy: async () => { throw new Error('x'); } } }); await f.load(); await f.add('huskatt', { data: 'x' }); assert.equal(f.of('huskatt').length, 1); });
 });
 
-test('a slot above the maximum after migration keeps saved cards and trims unsaved ones', async () => {
-  const legacy = Array.from({ length: 7 }, (_, i) => ({ id: i + 1, time: i + 1, name: 'Miele', data: 'x', kept: i < 2 }));
-  const store = new MemoryStore(); store.legacy = async () => legacy;
-  const c = await mk({ store }).load();
-  assert.equal(c.of('Miele').length, 7);
-  await c.add('Miele', { name: 'Miele', data: 'x' });
-  assert.equal(c.of('Miele').filter((x) => x.saved).length, 2);
-  assert.ok(c.of('Miele').length <= 5);
+test('migration keeps every byte of older over-capacity archives, including unsaved photographs', async () => {
+  const legacy = Array.from({ length: 11 }, (_, i) => ({ id: i + 1, time: i + 1, name: 'Miele', data: `old-jpeg-${i}`, kept: i % 3 === 0 }));
+  const store = new MemoryStore(); store.legacy = async () => structuredClone(legacy);
+  const c = await mk({ store }).load(), before = structuredClone(c.cards), persisted = await store.all();
+  assert.equal(c.of('Miele').length, 11); assert.equal(c.isArchive('Miele'), true);
+  assert.equal(c.nextOut('Miele'), null); assert.equal(c.isFull('Miele'), true);
+  assert.equal(await c.add('Miele', { name: 'new', data: 'new-jpeg' }), null);
+  assert.deepEqual(c.cards, before); assert.deepEqual(await store.all(), persisted);
+  assert.deepEqual((await mk({ store }).load()).cards, before);
+  assert.deepEqual(await store.legacy(), legacy);
+  await c.toggleSave(before[1].id);
+  assert.equal(await c.add('Miele', { data: 'new' }), null, 'unmarking never implicitly trims an archive');
+  assert.equal(c.cards.length, 11);
+  for (const x of c.of('Miele').slice(0, 3)) await c.discard(x.id);
+  assert.equal(c.isArchive('Miele'), false, 'only explicit deletion restores normal capacity');
+  assert.ok(await c.add('Miele', { data: 'normal rotation' }));
+  assert.equal(c.cards.length, 8);
+});
+
+test('stored nine-photo archive stays identical on load and on a rejected find without changing statistics', async () => {
+  const photos = Array.from({ length: 9 }, (_, i) => ({ id: `old-${i}`, breed: 'huskatt', time: i, data: `jpeg-${i}`, name: `H${i}`, saved: i % 2 === 0 }));
+  const store = new MemoryStore(structuredClone(photos)), stats = { byBreed: { huskatt: 4 }, petsByBreed: { huskatt: 5 }, hugsByBreed: { huskatt: 2 } }, before = structuredClone(stats), notices=[];
+  const c = await mk({ store, stats, onNotice: n => notices.push(n) }).load();
+  assert.deepEqual(c.cards, photos); assert.equal(await c.add('huskatt', { data: 'new' }), null);
+  assert.deepEqual(await store.all(), photos); assert.deepEqual(stats, before);
+  assert.equal(notices[0].archive, true);
 });
 
 test('notices: rotated out and full, plus the helpers the binder UI uses (#1257)', async () => {
   const seen = [];
   const c = await mk({ onNotice: (n) => seen.push(n) }).load();
-  for (let i = 0; i < 5; i++) await c.add('maine coon', { name: `M${i}`, data: 'x' });
+  for (let i = 0; i < 8; i++) await c.add('maine coon', { name: `M${i}`, data: 'x' });
   assert.equal(c.nextOut('maine coon').name, 'M0');
   assert.equal(c.isFull('maine coon'), false);
   assert.equal(seen.length, 0);
   await c.toggleSave(c.of('maine coon')[0].id);
   assert.equal(c.nextOut('maine coon').name, 'M1', 'a saved card is skipped');
-  await c.add('maine coon', { name: 'M5', data: 'x' });
+  await c.add('maine coon', { name: 'M8', data: 'x' });
   assert.deepEqual(seen.map((n) => [n.type, n.card.name]), [['rotated', 'M1']]);
   for (const x of c.of('maine coon')) if (!x.saved) await c.toggleSave(x.id);
-  assert.equal(c.savedCount('maine coon'), 5);
+  assert.equal(c.savedCount('maine coon'), 8);
   assert.equal(c.isFull('maine coon'), true);
   assert.equal(c.nextOut('maine coon'), null);
-  assert.equal(await c.add('maine coon', { name: 'M6', data: 'x' }), null);
+  assert.equal(await c.add('maine coon', { name: 'M9', data: 'x' }), null);
   assert.equal(seen.at(-1).type, 'full');
   assert.equal(seen.at(-1).breed, 'maine coon');
   assert.equal(seen.length, 2);
   await c.toggleSave(c.of('maine coon')[2].id); // unsave: the slot takes a find again
-  assert.ok(await c.add('maine coon', { name: 'M7', data: 'x' }));
+  assert.ok(await c.add('maine coon', { name: 'M10', data: 'x' }));
   assert.equal(seen.length, 3);
   assert.equal(c.isFull('perser'), false);
   const throwing = await mk({ onNotice: () => { throw new Error('ui'); } }).load();
-  for (let i = 0; i < 6; i++) assert.ok(await throwing.add('perser', { name: `P${i}`, data: 'x' }), 'a failing notice never blocks the add');
+  for (let i = 0; i < 9; i++) assert.ok(await throwing.add('perser', { name: `P${i}`, data: 'x' }), 'a failing notice never blocks the add');
+});
+
+
+test('overlapping finds serialize through a paused store delete and never create a ninth photo', async () => {
+  for (const protectedCount of [0, 7]) {
+    const originals = Array.from({ length: 8 }, (_, i) => ({ id: `old-${i}`, breed: 'huskatt', time: i, data: `jpeg-${i}`, name: `H${i}`, saved: i < protectedCount }));
+    let release, started;
+    const gate = new Promise(r => { release = r; }), deleting = new Promise(r => { started = r; });
+    class DeferredStore extends MemoryStore {
+      async delete(id) { started(); await gate; return super.delete(id); }
+    }
+    const store = new DeferredStore(structuredClone(originals)), c = await mk({ store }).load();
+    const first = c.add('huskatt', { name: 'A', data: 'a' });
+    await deleting;
+    const second = c.add('huskatt', { name: 'B', data: 'b' });
+    await Promise.resolve();
+    assert.ok(c.of('huskatt').length <= 8);
+    release(); await Promise.all([first, second]);
+    assert.equal(c.of('huskatt').length, 8);
+    assert.equal(c.isArchive('huskatt'), false);
+    assert.deepEqual((await store.all()).sort((a,b)=>a.id.localeCompare(b.id)), [...c.cards].sort((a,b)=>a.id.localeCompare(b.id)));
+    for (const old of originals.slice(0, protectedCount)) assert.deepEqual(c.cards.find(x=>x.id===old.id), old);
+    assert.equal(c.of('huskatt').at(-1).name, 'B');
+  }
 });
