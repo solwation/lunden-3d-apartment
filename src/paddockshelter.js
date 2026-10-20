@@ -1,6 +1,6 @@
 // #1316: where the paddock's ponies take shelter and when. No three.js: the places and the rain/snow rules are shared by paddock.js and the node test.
 import { PADDOCK as P, SEASON } from './config.js';
-import { insideFence } from './paddockgeo.js';
+import { insideFence, fenceLine, ringDist } from './paddockgeo.js';
 
 /** The sheltered places: under the field shelter's roof (`shed`, two) and on a ring under each tree's crown (`tree`). `shelter` = {x, z, yaw} (the shelter's frame: open to +z), `keep(x, z)` says a place is usable. */
 export function shelterSpots(shelter, keep = () => true) {
@@ -52,11 +52,37 @@ export function shelterSite(ground, { target, face, not, clear = () => true, bbo
     if (!insideFence(x, z, S.edge) || !clear(x, z)) continue;
     if (not && Math.hypot(x - not[0], z - not[1]) < 9) continue;
     const c = Math.cos(yaw), s = Math.sin(yaw), r = Math.hypot(S.w, S.d) / 2 + S.pad;
-    if ([[1, 1], [1, -1], [-1, 1], [-1, -1]].some(([a, b]) => !insideFence(x + (a * r) * c + (b * r) * s, z - (a * r) * s + (b * r) * c, 2.5))) continue;
+    if ([[1, 1], [1, -1], [-1, 1], [-1, -1]].some(([a, b]) => !insideFence(x + (a * r) * c + (b * r) * s, z - (a * r) * s + (b * r) * c, S.cornerClear))) continue;
     const g = footprintGround(ground, x, z, yaw);
     if (g.relief > S.maxRelief) continue;
     const score = Math.hypot(x - target[0], z - target[1]) + g.relief * 15;
     if (!best || score < best.score) best = { x, z, yaw, score, ...g };
   }
   return best;
+}
+
+/** #1395: move the existing shelter/trough frame together, preserving their relative distances and orientations.
+ * The preferred transform is an assumption. Keep the original flat site if the real terrain or clearances reject it. */
+export function relocateShelter(ground, spots, clear = () => true) {
+  const S = P.shelter, M = S.move, old = spots.shelter;
+  if (!old || !spots.trough) return spots;
+  const c = Math.cos(M.yaw), s = Math.sin(M.yaw);
+  const move = (p) => ({ ...p, x: old.x + M.delta[0] + (p.x - old.x) * c + (p.z - old.z) * s,
+    z: old.z + M.delta[1] - (p.x - old.x) * s + (p.z - old.z) * c, yaw: p.yaw + M.yaw });
+  const shelter = move(old), trough = move(spots.trough), sc = Math.cos(shelter.yaw), ss = Math.sin(shelter.yaw);
+  const r = Math.hypot(S.w, S.d) / 2 + S.pad;
+  if (!insideFence(shelter.x, shelter.z, S.edge) || !clear(shelter.x, shelter.z)
+    || [[1, 1], [1, -1], [-1, 1], [-1, -1]].some(([a, b]) => !insideFence(shelter.x + a * r * sc + b * r * ss,
+      shelter.z - a * r * ss + b * r * sc, S.cornerClear))
+    || footprintGround(ground, shelter.x, shelter.z, shelter.yaw).relief > S.maxRelief
+    || ringDist(fenceLine, shelter.x, shelter.z) >= ringDist(fenceLine, old.x, old.z)) return spots;
+  const tc = Math.cos(trough.yaw), ts = Math.sin(trough.yaw), heights = [];
+  for (const a of [-0.5, 0, 0.5]) for (const b of [-0.5, 0, 0.5]) {
+    const x = trough.x + a * P.trough.w * tc + b * P.trough.d * ts;
+    const z = trough.z - a * P.trough.w * ts + b * P.trough.d * tc;
+    if (!insideFence(x, z, M.passage) || !clear(x, z)) return spots;
+    heights.push(ground(x, z));
+  }
+  if (Math.max(...heights) - Math.min(...heights) >= M.troughRelief) return spots;
+  return { ...spots, shelter, trough };
 }

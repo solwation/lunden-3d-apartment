@@ -1,3 +1,14 @@
+Shelter frame (#1395): `node --test tools/paddockgeotest.mjs` includes rigid shelter/trough transforms,
+unchanged relief/fence limits, a free passage at the trough and safe fallback on unsuitable terrain/obstacles.
+Use `sheltertest.cjs`, `shelterwintertest.cjs`, `paddocktest.cjs` and the relevant full phone budget serially;
+inspect matched gate/front/overhead views and the fully occupied winter shed. Gate/stile paths and
+A/B/C/L geometry are unchanged; no shelter equivalent exists in those buildings.
+Final checks: native10/10, real paddock/pet/gate16/16, winter decoration5/5 and winter lifecycle4/4 pass.
+The first shelter fixture passed8rain/tree assertions before its server exited143; its winter navigation
+failed with connection refused, so only the unchanged winter phase was resumed separately (CLI0).
+The complete phone844×390quality0budget passes369calls/827536triangles/~98MiB with every quality check;
+370/950000/225limits and the winter decoration's2draws/3362triangles remain unchanged.
+
 Empty mess batches (#1392): `tools/messvisibilitytest.html` checks actual WebGL submissions
 for empty/populated/cleaned/loaded records and parent visibility, retaining native buffer,
 material, geometry and raycast identity. Pair with `messplacementtest.html`, actual vacuum/cloth

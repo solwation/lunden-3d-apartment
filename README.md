@@ -23,6 +23,7 @@ Promenadstråken i parken och längs Höje å samt vägarna i resten av området
 Med jetpacken kan du stiga genom ett molnlager och upp över ett tätt molnhav. Ovanför ligger marken dold under molnen även när vädret på marken är klart.
 
 På vintern står båda hästarna synliga inne i hästhagens skjul, med halm på golvet, girlang och en varm ljusslinga. När snön försvinner försvinner pyntet och hästarna går ut i hagen igen.
+Skjulet och vattenhon står nu närmare staketet vid grinden, med samma storlek och fri passage vid stättan. Placeringen är en uppskattning och väljs bara om marken är tillräckligt plan.
 
 Spelare som är kortare än 160 cm kan gå in i lekstugans hemliga klubbhus. En hall med “LET’S PLAY!” leder till separata rum märkta BIO, BILJARD och SPEL. Soffan och TV:n står i BIO och spelbordet i SPEL, med fri gång runt biljardbordet. Dörren inifrån går alltid att använda för att komma ut. Sikta över biljardbordet och tryck E för att stöta, och vänta tills bollarna stannat inför nästa stöt.
 Kom nära en avatar med Sarah eller Olof i namnet utan vapen i handen och använd E/pekknappen för en puss med hjärtan; på längre avstånd hälsar du som vanligt.

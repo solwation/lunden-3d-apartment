@@ -7,7 +7,7 @@ import { sfx } from './audio.js';
 import { Hearts } from './pingping.js';
 import { registerSeasonal } from './seasons.js';
 import { shelterWinter } from './shelterwinter.js';
-import { shelterSpots, snowCovered, RainWatch, footprintGround, shelterSite } from './paddockshelter.js';
+import { shelterSpots, snowCovered, RainWatch, footprintGround, shelterSite, relocateShelter } from './paddockshelter.js';
 
 // #1280: the pony paddock on the kidney-shaped meadow south of the timber footbridge: a merged post-and-rail fence with a closed gate, a
 // water trough and a three-sided shelter (ONE mesh, vertex colours, no textures), two C ponies (Zoey, white; Princess, brown) as ONE
@@ -312,10 +312,10 @@ export class Paddock {
     const near = (px, pz, not) => this.waypoints.filter((w) => !not || Math.hypot(w[0] - not[0], w[1] - not[1]) > 9).sort((u, v) => Math.hypot(u[0] - px, u[1] - pz) - Math.hypot(v[0] - px, v[1] - pz))[0];
     const tw = near(gm[0] + nx * 9, gm[1] + nz * 9);
     // #1335/#1336: the shelter stands on flat ground well inside the fence (not on the slope), in view from the gate: the nearest flat site to the old spot, within 45 m of the gate
-    const sw = shelterSite(ground, { target: [gm[0] + nx * 12 - nz * 16, gm[1] + nz * 12 + nx * 16], face: gm, not: tw, bbox: [gm[0] - 45, gm[1] - 45, gm[0] + 45, gm[1] + 45],
-      clear: (x, z) => !this.treeNear(x, z, P.shelter.edge - 1) && (() => { const r = riverAt(x, z); return r.distance >= r.width / 2 + P.riverClear + 3; })() });
+    const clearSite = (x, z) => !this.treeNear(x, z, P.shelter.edge - 1) && (() => { const r = riverAt(x, z); return r.distance >= r.width / 2 + P.riverClear + 3; })();
+    const sw = shelterSite(ground, { target: [gm[0] + nx * 12 - nz * 16, gm[1] + nz * 12 + nx * 16], face: gm, not: tw, bbox: [gm[0] - 45, gm[1] - 45, gm[0] + 45, gm[1] + 45], clear: clearSite });
     const face = (w) => Math.atan2(gm[0] - w[0], gm[1] - w[1]);
-    this.spots = { trough: tw && { x: tw[0], z: tw[1], yaw: face(tw) + Math.PI / 2 }, shelter: sw && { x: sw.x, z: sw.z, yaw: sw.yaw } };
+    this.spots = relocateShelter(ground, { trough: tw && { x: tw[0], z: tw[1], yaw: face(tw) + Math.PI / 2 }, shelter: sw && { x: sw.x, z: sw.z, yaw: sw.yaw } }, clearSite);
     this.fence = new THREE.Mesh(fenceGeometry(ground, this.spots), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }));
     this.fence.name = 'paddock-fence'; this.fence.raycast = () => {}; this.fence.userData.noDetail = true; // the fence is seen from afar; fence collision is farwalk.js's
     scene.add(this.fence);

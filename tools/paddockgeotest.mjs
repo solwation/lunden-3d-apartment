@@ -86,3 +86,32 @@ test('the field shelter (#1335/#1336) stands on flat ground inside the fence, in
   const r = shelterSite(real, { target: [-135, 225], face: gate, bbox: [gate[0] - 45, gate[1] - 45, gate[0] + 45, gate[1] + 45] });
   assert.ok(r && r.relief <= S.maxRelief && g.insideFence(r.x, r.z, S.edge), JSON.stringify(r));
 });
+
+test('the shelter and trough move rigidly nearer the fence without relaxing terrain or passage limits (#1395)', async () => {
+  const { relocateShelter, footprintGround } = await import('../src/paddockshelter.js');
+  const { groundY, renderedTerrainY } = await import('../src/surroundings.js');
+  const ground = (x, z) => z > SITE.backgroundGround.z1 ? -3.01 : Math.max(groundY(x, z), renderedTerrainY(x, z));
+  // Frozen actual pre-move frame, not a surveyed location.
+  const before = { shelter: { x: -137.60330511794984, z: 229.09850519646565, yaw: 1.8692952583810758 }, trough: { x: -125, z: 230, yaw: 3.9273386830044474 } };
+  const saved = JSON.stringify(before), after = relocateShelter(ground, before), S = PADDOCK.shelter;
+  assert.notEqual(after, before, 'real rendered terrain admits the preferred move');
+  assert.equal(JSON.stringify(before), saved, 'original frame is not mutated');
+  const distance = p => Math.hypot(p.shelter.x - p.trough.x, p.shelter.z - p.trough.z);
+  assert.ok(Math.abs(distance(after) - distance(before)) < 1e-10);
+  assert.ok(Math.abs((after.shelter.yaw - after.trough.yaw) - (before.shelter.yaw - before.trough.yaw)) < 1e-10);
+  assert.ok(g.ringDist(g.fenceLine, after.shelter.x, after.shelter.z) < g.ringDist(g.fenceLine, before.shelter.x, before.shelter.z) - 5);
+  assert.ok(g.insideFence(after.shelter.x, after.shelter.z, S.edge));
+  assert.ok(footprintGround(ground, after.shelter.x, after.shelter.z, after.shelter.yaw).relief <= S.maxRelief);
+  const t = after.trough, c = Math.cos(t.yaw), s = Math.sin(t.yaw);
+  for (const a of [-0.5, 0.5]) for (const b of [-0.5, 0.5]) assert.ok(g.insideFence(t.x + a * PADDOCK.trough.w * c + b * PADDOCK.trough.d * s,
+    t.z - a * PADDOCK.trough.w * s + b * PADDOCK.trough.d * c, S.move.passage), 'full trough leaves the walking passage');
+});
+
+test('unsafe relocation preserves the existing site, including obstacles and missing fittings (#1395)', async () => {
+  const { relocateShelter } = await import('../src/paddockshelter.js');
+  const before = { shelter: { x: -137.60330511794984, z: 229.09850519646565, yaw: 1.8692952583810758 }, trough: { x: -125, z: 230, yaw: 3.9273386830044474 } };
+  assert.equal(relocateShelter(x => x * 10, before), before, 'steep ground retains the old frame');
+  assert.equal(relocateShelter(() => 0, before, () => false), before, 'blocked site retains the old frame');
+  const absent = { shelter: null, trough: before.trough };
+  assert.equal(relocateShelter(() => 0, absent), absent);
+});

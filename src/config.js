@@ -3629,7 +3629,10 @@ export const PADDOCK = {
   trough: { w: 1.7, d: 0.5, h: 0.42 }, shelter: { w: 4.2, d: 2.6, h: 2.3,
     // #1335/#1336 (all *guess*): the shelter stands where the ground under its footprint (+ `pad` m round it) varies by at most `maxRelief` m (the old spot dropped 0.7 m, so one side hung in the air
     // over the slope), at least `edge` m inside the fence; the posts/sill reach down to the lowest ground there (`sink` m below it), the floor level is the highest ground.
-    maxRelief: 0.2, pad: 0.8, edge: 8, sink: 0.15,
+    maxRelief: 0.2, pad: 0.8, edge: 8, cornerClear: 2.5, sink: 0.15,
+    // #1395: assumed rigid move towards the gate-side fence, about the shelter centre; no terrain alteration.
+    // Retain the original flat-site fallback if either footprint fails. Trough relief retains the existing 0.3 m check.
+    move: { delta: [11.5, -1], yaw: -Math.PI / 6, passage: 1.5, troughRelief: 0.3 },
     // #1345: winter bedding/greenery/bulbs are visual guesses, two merged batches and no extra lights.
     winter: { straw: { inset: 0.2, offset: 0.075, thickness: 0.025, grid: 10, blades: 140, bladeLength: 0.16, bladeWidth: 0.008, colors: [0xa77b36, 0xc99c4f, 0xd6af68] },
       garland: { drop: 0.03, sag: 0.1, step: 0.1, radius: 0.075, leafLength: 0.2, colors: [0x274d28, 0x38613a, 0x486e3a] },

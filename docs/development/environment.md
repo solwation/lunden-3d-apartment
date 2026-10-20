@@ -262,6 +262,18 @@ with steep steps (three risers of 0.38 m, treads 0.3 m, a 0.5 m platform over th
 **Shelter site (#1335/#1336):** the field shelter no longer stands at a fixed waypoint. `shelterSite` (paddockshelter.js, pure) searches a 1.5 m lattice within 45 m of the gate for the point nearest the old spot whose footprint (`footprintGround`: 5x5 samples over the shelter + `PADDOCK.shelter.pad`) varies by at most `maxRelief` (0.2 m), is at least `edge` (8 m) inside the fence with all corners inside, clear of trunks and the river, 9 m from the trough, open side towards the gate. `fenceGeometry` puts the floor at the highest ground under it and extends the posts and a sill board down to the lowest ground (`sink`), so nothing hangs in the air even if the ground varies a little. Numbers are *guess*. Checked by paddockgeotest.mjs (the old site, -135/225, dropped 0.7 m and is rejected) and paddocktest.cjs (relief, inside, in view of the gate, flat trough).
 Downstream (kvarteret-lunden): the fence/ground could be transferred as a generic paddock; the named ponies are personal gameplay and must not be.
 
+**Nearer shelter frame (#1395):** after the existing flat-site search, `relocateShelter` tries one assumed rigid
+transform about the shelter centre:11.5m east,1m north and−30° yaw. The trough, shelter, winter decoration
+and roof shelter spots share the frame; no size, animal behaviour, gate/stile, terrain or path changes.
+The original0.2m footprint relief,8m centre clearance and2.5m conservative corner clearance remain.
+All sampled trough corners retain an assumed1.5m walking strip and the existing0.3m relief check.
+Trunk/river clearances apply to both fittings, and a rejected move retains the original site.
+Current actual World: shelter distance to the fence15.443→9.365m, relief0.026→0.091m;
+trough body corners remain at least1.767m inside. These are rendered-model checks, not surveyed placements.
+Ground-dependent posts, sills and winter bedding use the relocated frame's actual ground as before.
+The neutral public import is tracked in[kvarteret-lunden#102](https://github.com/solwation/kvarteret-lunden/issues/102);
+no original animal interaction or personal content belongs in that transfer.
+
 ## East campus car parks: the lot behind HepCat Store (#1278)
 
 A visitor reported that the area behind HepCat Store is a whole car park in reality. The repository's OSM snapshots (`docs/references/surrounding-views/*.json`) hold **no** `amenity=parking` / `parking_space` ways and no stall data; the polygon of that lot (way 145221623, "Parkering vid Sankt Thomas/Klockhuset", x 38.7…85.5, z −19…17 east of HepCat's x 28…36) and the campus' east lot (44447969) were added by #1262 (web-sourced, 2026-10-18) without stalls, kerbs or cars, and drawn as one flat 4-corner polygon that sank under the sloping ground (the lot falls 1.7 m from z −19 to 17).
