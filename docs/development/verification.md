@@ -7820,3 +7820,28 @@ phone batching inherits the explicitly identified e4914dcb quality0 profiles.
 The separately refreshed corner remains a real pre-existing budget failure#1459,
 not evidence that all camera directions pass. See [performance](performance.md#complete-source-patio-hedges-1458)
 and persistent `codex-surface-20261020/patio1458/production/` raw files.
+
+
+## Fixed entrance foliage (#1457)
+
+Run `node --test tools/entrancefoliagetest.mjs tools/entranceplantbatchtest.mjs`
+(nine cases). Verify actual color/depth shader branches, exact per-instance origin
+inputs/local rotation at multiple times/powers, complete proxy sway bounds, original
+geometry/material/wind/depth/raycast identities, foliage-off baseline, nested/error
+cleanup and zero-eligible disappearance/exposure. Actual quality3 zero/positive-wind
+pairs freeze time within each comparison and force fresh original shadows. Original
+wind meshes stay non-instanced; color proxies never cast shadows or answer rays.
+
+Ten actual physical/Player checks pass, including a positive original foliage ray
+with three identical hits and no proxy hits, pot collisions and both loft directions.
+The visible native front-door action’s DOM handler opens false→true with touch enabled.
+Low-memory plantWind CPU arrays are freed; numerical probes need uploaded GPU
+attribute readback. Separate#1460 tracks the old sphere defect using shader
+reconstruction, without claiming transform-feedback or an observed disappearing leaf.
+Original source spheres remain unchanged; rejected CPU/matrix diagnostics stay raw.
+Fresh explicitURLquality0 landscape passes all19views/quality checks at367calls/
+840699tri/~98MiB (start349); separate fresh390×844 quality0 also passes all19views/
+quality checks at279calls/705447tri/~102MiB. Highestquality3 still fails399calls
+at kitchen; parent#1453 remains open.
+Persistent pairs/raw profiles/diagnostics: `~/.local/state/lunden-orkester/
+codex-surface-20261020/foliage1457/`. See performance for cost and public N/A.

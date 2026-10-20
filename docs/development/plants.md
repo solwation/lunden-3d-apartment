@@ -91,3 +91,22 @@ No main-camera selection removes a caster, and no dynamic instance indices enter
 existing shadow tiles. Explicit mixed/all-layer warm draws retain their original policy;
 prefilled native buffers let WarmUp compile/upload the instance variant behind its cover.
 See [performance](performance.md) and [verification](verification.md) for measured limits.
+
+
+## Fixed entrance foliage on phones (#1457)
+
+The same narrow adapter opts into the existing26 foliage meshes of20 L-house
+entrance plants: four extra geometry/material groups, ten including rigid pots/soil.
+Default callers retain the six rigid groups. Materials, plantWind arrays/seeds and
+original custom-depth references stay shared. The instanced shader derives phase
+from `(modelMatrix * instanceMatrix)[3].xz` before local sway/rotation; the ordinary
+mesh branch retains the original phase line. The actual pre-change phone World has
+63 wind meshes and no wind instances; A/B/C have no corresponding entrance group.
+
+Original meshes still cast all shadows and answer physical rays with their original
+masks/bounds. Color proxies never cast; their own spheres contain full emitted
+position boxes expanded by the known local ±PLANT_WIND.maxDisplacement in x/z, then
+transformed by the stored instance matrices. They never trust or mutate the source
+windBounds flag/sphere: compression has removed that old margin (#1460, separate).
+The foliage comparison switch leaves rigid batching active and shows original leaves
+when off; per-source near/distance/opaque eligibility and empty-group handling remain.

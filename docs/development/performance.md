@@ -1520,3 +1520,36 @@ step and remains diagnostic only. No broader all-view budget claim is made.
 Raw proof/images/profile: `~/.local/state/lunden-orkester/codex-surface-20261020/patio1458/`.
 The current public hedge builder has the same complete-source array/single merge;
 a selective neutral LOW-port will be cross-linked after source/live publication.
+
+
+## Fixed entrance foliage batches (#1457)
+
+Four phone-only foliage color groups reuse exact source geometry/materials and
+per-part Detail eligibility. Ordinary meshes/depth shaders retain the original
+world-origin phase; native color instances use their complete per-instance world
+origin before local sway and rotation. Original meshes remain the physical and
+shadow sources. New proxy spheres contain full transformed local sway without
+changing source spheres. No desktop culling/geometry or quality policy changes.
+
+Actual same-World maximumquality3 pairs on117851d7:
+
+| Pose / wind time / power | Before calls / triangles | Current calls / triangles |
+|---|---:|---:|
+| Start /0.0167 /0 |391 /767728|380 /768904|
+| Near entry /0.0167 /0 |515 /803946|515 /808038|
+| Near entry /6.0167 /.0247902 |541 /842256|541 /846348|
+| Loft /10.0167 /.0249925 |215 /654863|217 /659251|
+
+Full eligible groups can add offscreen triangles/calls; startup−11 is not a global
+promise. All four fresh-shadow caster UUID/count/triangle/mask comparisons are exact.
+Actual instance-origin error and full proxy-envelope excess are0. Raster differences
+are2/6/4/18 pixels (maxchannel14/5/1/7), retained honestly. Native9cases and actual10
+source/ray/walking checks pass. The visible front-door action uses its real DOM click
+handler in touch mode; this is not claimed as a trusted native tap.
+
+Highestquality3 full19 remains FAIL399calls at kitchen (start382),841837tri/~98MiB,
+with all quality checks passing; parent#1453 remains open. Limits370/950000/225 stay
+unchanged. Fresh explicitURLquality0 landscape passes367/840699/~98MiB (start349);
+a separate fresh390×844 quality0 profile also passes279/705447/~102MiB.
+These submission/resource checks do not establish device frame time. Public6c69323a
+has no entrance-plant builder, adapter, plantwind or DetailCuller: no port applies.

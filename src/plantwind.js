@@ -11,7 +11,11 @@ uniform float uPlantWindPower;
 vec2 plantSway() {
   if(uPlantWindPower==0.0)return vec2(0.0);
   float t=uPlantWindTime*plantWind.w;
+  #ifdef USE_INSTANCING
+  float phase=plantWind.y+dot((modelMatrix*instanceMatrix)[3].xz,vec2(.37,.61));
+  #else
   float phase=plantWind.y+dot(modelMatrix[3].xz,vec2(.37,.61));
+  #endif
   float gust=.75+.25*sin(uPlantWindTime*.43+phase);
   return clamp(vec2(sin(t+phase)+.25*sin(t*2.13+phase*1.7),.6*sin(t*.83+phase+1.2))
     *plantWind.x*plantWind.z*uPlantWindPower*gust,vec2(-${P.maxDisplacement}),vec2(${P.maxDisplacement}));
@@ -24,7 +28,7 @@ function patch(material) {
     shader.vertexShader=shader.vertexShader.replace('#include <common>',`#include <common>\n${head}`)
       .replace('#include <begin_vertex>','#include <begin_vertex>\ntransformed.xz += plantSway();');
   };
-  material.customProgramCacheKey=()=>`${base()}|plant-wind-v1`;material.userData.plantWind=true;
+  material.customProgramCacheKey=()=>`${base()}|plant-wind-v2`;material.userData.plantWind=true;
   return material;
 }
 export function windMaterial(source) {

@@ -467,3 +467,6 @@ Phone entrance pots (#1455): the existing twenty L-house planters share six rigi
 color batches, retaining the original leaves, physical objects and shadow casters.
 
 Uteplatsens vy mot huset kräver mindre onödigt ritarbete genom att hela häckar bedöms var för sig på datorn; telefonens häckar är oförändrade (#1458).
+
+Phone entrance foliage (#1457): four additional color batches retain each plant’s
+original wind origin, leaves, physical meshes and original shadow casters.
