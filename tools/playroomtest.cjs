@@ -124,6 +124,63 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     await page.evaluate(() => window.__app.use(window.__app.focus().focused));
     const on = await page.evaluate(() => { const r = window.__app.world.playroom, p = [...r.spots.geometry.attributes.position.array]; r.update(1, window.__app.camera, false); return { on: r.discoOn, spots: r.spots.visible, moved: r.spots.geometry.attributes.position.array.some((v, i) => v !== p[i]) }; });
     check(on.on && on.spots && on.moved, 'used again: disco on, spots sweep', JSON.stringify(on));
+    // #1365: actual native keyboard E / mobile action button, not direct device calls.
+    if (!process.env.MOBILE) {
+      await page.evaluate(() => document.getElementById('game-canvas').requestPointerLock());
+      await page.waitForFunction(() => document.pointerLockElement?.id === 'game-canvas');
+    }
+    const deviceUse = async () => {
+      if (process.env.MOBILE) {
+        await page.evaluate(() => { __app.touch.enabled = true; document.body.classList.add('touch'); __app.showOverlay(false); __app.step(0); });
+        await page.locator('#action').tap();
+      } else await page.keyboard.press('KeyE');
+    };
+    const deviceState = () => page.evaluate(() => { const d = __app.world.playroom.devices; return { tv: d.tvOn, pc: d.pcOn, playing: d.playing, hits: d.hits, rounds: d.round, cursor: d.cursor, result: d.result }; });
+    await aimAt([RM.x+sofa.x+1.1,RM.z+sofa.z], [RM.x+sofa.x+.1,.34,RM.z+sofa.z]);
+    await deviceUse();
+    const remoteFocus = await page.evaluate(({RM}) => { const a=__app,sf=RM.furniture.sofa; for(let i=0;i<12;i++)a.rest.update(.1); __t.aim(RM.x+sf.x-.02,.565,RM.z+sf.z+sf.w/2-.07); return { seated:a.rest.active, focus:__t.focus() }; }, {RM});
+    check(remoteFocus.seated && remoteFocus.focus?.name === 'TV:n med fjärrkontrollen', 'TV remote is reachable from the actual sofa seat', JSON.stringify(remoteFocus));
+    await deviceUse(); check((await deviceState()).tv, 'native E/touch starts TV while seated');
+    await page.evaluate(() => __t.render()); await page.screenshot({ path: `${shots}/15-sofa-remote.png` });
+    await deviceUse();
+    await page.evaluate(() => __app.standUp());
+    await page.evaluate(() => { window.deviceSwitches = []; __app.world.playroom.onSwitch = (name, on) => deviceSwitches.push([name, on]); });
+    const tvFocus = await aimAt([RM.x-RM.w/2+1,RM.z+sofa.z], [RM.x-RM.w/2+.106,RM.furniture.tv.y+RM.furniture.tv.h/2+.02,RM.z+sofa.z]);
+    check(tvFocus?.kind === 'playroomDevice' && tvFocus.verb === 'starta', 'TV screen is a reachable start target', JSON.stringify(tvFocus));
+    await deviceUse();
+    check((await deviceState()).tv, 'native E/touch starts the TV');
+    const animated = await page.evaluate(() => { const d = __app.world.playroom.devices, before = d.tv.canvas.toDataURL(); __app.world.playroom.update(1, __app.camera, false); __t.render(); return before !== d.tv.canvas.toDataURL(); });
+    check(animated, 'TV displays a changing local animation');
+    await page.screenshot({ path: `${shots}/12-tv-on.png` });
+    await deviceUse(); check(!(await deviceState()).tv, 'native E/touch switches TV off');
+    const DX=RM.furniture.desk.x,DZ=RM.furniture.desk.z;
+    await aimAt([RM.x+RM.furniture.stool.x-.8,RM.z+RM.furniture.stool.z], [RM.x+RM.furniture.stool.x,.36,RM.z+RM.furniture.stool.z]); await deviceUse();
+    const pcFocus = await page.evaluate(({RM}) => { const a=__app,F=RM.furniture; for(let i=0;i<12;i++)a.rest.update(.1); __t.aim(RM.x+F.desk.x+2.939,.89,RM.z+F.desk.z+1); return { seated:a.rest.active, focus:__t.focus() }; }, {RM});
+    check(pcFocus.seated && pcFocus.focus?.kind === 'playroomDevice' && pcFocus.focus.verb === 'starta', 'computer screen is reachable from the actual stool seat', JSON.stringify(pcFocus));
+    await deviceUse(); check((await deviceState()).pc && !(await deviceState()).playing, 'native E/touch powers the computer on');
+    await deviceUse(); check((await deviceState()).playing, 'native E/touch starts a timing-game round');
+    await page.evaluate(({RM}) => { __app.world.playroom.update(RM.devices.sweepSeconds/2, __app.camera, false); __t.render(); }, {RM});
+    await page.screenshot({ path: `${shots}/13-pc-playing.png` });
+    await deviceUse();
+    let played = await deviceState();
+    check(!played.playing && played.hits === 1 && played.rounds === 1, 'stopping in green records one hit', JSON.stringify(played));
+    await deviceUse();
+    await page.evaluate(() => { __app.world.playroom.update(.1, __app.camera, false); __t.render(); });
+    await deviceUse(); played = await deviceState();
+    check(!played.playing && played.hits === 1 && played.rounds === 2, 'a miss records an attempt and permits another round', JSON.stringify(played));
+    await page.evaluate(() => __t.render()); await page.screenshot({ path: `${shots}/14-pc-result.png` });
+    const powerFocus = await page.evaluate(({RM})=>{__t.aim(RM.x+RM.furniture.desk.x+2.985,.62,RM.z+RM.furniture.desk.z+1.5); return __t.focus();},{RM});
+    check(powerFocus?.name === 'datorns spelbox' && powerFocus.verb === 'stänga av', 'separate white box offers computer power off', JSON.stringify(powerFocus));
+    await deviceUse(); check(!(await deviceState()).pc, 'native E/touch switches the computer off');
+    const hook = await page.evaluate(() => deviceSwitches);
+    check(JSON.stringify(hook) === JSON.stringify([['tv',true],['tv',false],['pc',true],['pc',false]]), 'existing onSwitch hook receives device power changes', JSON.stringify(hook));
+    const cost = await page.evaluate(() => { const d=__app.world.playroom.devices;d.tv.mesh.frustumCulled=d.pc.mesh.frustumCulled=false;const shown=__t.calls();d.object.visible=false;const hidden=__t.calls();d.object.visible=true;d.tv.mesh.frustumCulled=d.pc.mesh.frustumCulled=true;return {calls:shown.calls-hidden.calls,tris:shown.tris-hidden.tris}; });
+    check(cost.calls===2 && cost.tris===4,'submitting both screens costs exactly two draws and four triangles',JSON.stringify(cost));
+    // Leave both running to exercise exit cleanup later in the lifecycle.
+    await deviceUse();
+    await page.evaluate(() => __app.standUp());
+    await aimAt([RM.x-RM.w/2+1,RM.z+sofa.z], [RM.x-RM.w/2+.106,RM.furniture.tv.y+RM.furniture.tv.h/2+.02,RM.z+sofa.z]); await deviceUse();
+    if (!process.env.MOBILE) { await page.evaluate(() => document.exitPointerLock()); await page.waitForFunction(() => !document.pointerLockElement); await page.evaluate(() => __app.showOverlay(false)); }
     const lit = await page.evaluate(() => { const o = window.__app; return o.world.playroom.object.children.filter((c) => c.isLight).length; });
     check(lit === 0, 'no extra lights in the room');
     const views = { 7: [[0,4.4],[0,1.6]], 8: [[-5,0.5],[-8,-1.35]], 9: [[5,0.5],[8.5,0.6]] };
@@ -157,12 +214,14 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     await page.waitForTimeout(900);
     const s4 = await page.evaluate(() => { window.__t.frames(60); return window.__t.state(); });
     check(!s4.inRoom && !s4.roomVisible && Math.abs(s4.x + 28.85) < 0.05 && Math.abs(s4.z - 22.85) < 0.1 && s4.outdoors, 'out again in front of the door, room undrawn', JSON.stringify(s4));
+    const stopped = await page.evaluate(() => { const d = __app.world.playroom.devices, t=d.time; d.update(3); return !d.tvOn && !d.pcOn && !d.playing && d.time===t; });
+    check(stopped, 'leaving powers off both devices and freezes their updates');
     check(Math.abs(s4.yaw) < 0.01, 'facing away from the door');
     await page.evaluate(() => { window.__t.aim(-28.85, 1.0, 10); window.__t.render(); }); await page.screenshot({ path: `${shots}/5-out-again.png` });
     await setHeight(175); await toDoor();
     const after = await page.evaluate(() => window.__t.calls());
     check(before.calls === after.calls && before.tris === after.tris, 'draw calls outside unchanged after a visit', `${JSON.stringify(before)} → ${JSON.stringify(after)}`);
-    check(inside.calls <= 15, 'inside, only the room is drawn: few draw calls', `outside ${before.calls}, inside ${inside.calls}`);
+    check(inside.calls <= 17, 'inside, only the room is drawn: existing budget plus two screens', `outside ${before.calls}, inside ${inside.calls}`);
     check(errors.length === 0, 'no page errors', errors.join(' | '));
   } finally { await browser.close(); }
   console.log(failed ? `${failed} FAILED` : 'ALL PASSED');

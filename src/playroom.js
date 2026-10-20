@@ -4,14 +4,15 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { PLAYROOM as R, COURTYARD } from './config.js';
 import { restTarget } from './rest.js';
+import { PlayroomDevices } from './playroomdevices.js';
 
 // #1319 / #1326: the playhouse's secret children's room. A hidden interior, far outside the walkable area (see PLAYROOM in
 // config.js): the playhouse door teleports a player shorter than PLAYROOM.maxCm in, the door in the room's south wall back out.
 // Nothing here is drawn (or has a draw call) while the visitor is outside: the whole group is hidden until `setInside(true)`.
 // #1374: clubhouse.js adds the hall and three rooms; static signs share the existing ceiling-panel draw.
-// #1327: child-sized furniture (a sofa you can sit in, a stool, a TV, a gaming desk, a disco ball with sweeping light spots), no TV/game
-// function yet (#1330) and the billiard table (#1328, billiards.js) stays in the middle. Everything is a few
-// merged meshes (one vertex-coloured mesh for shell/furniture/screens, signs with ceiling panels, the ball, the spots): 4 draw calls, no extra lights, nothing outside.
+// #1327/#1365: child-sized furniture, usable TV/computer, and a switchable disco ball with sweeping light spots.
+// The billiard table (#1328, billiards.js) stays in the middle. Everything is a few
+// merged meshes (shell/furniture, signs with ceiling panels, ball, spots) plus two animated screens: no extra lights or draws outside.
 // Rules/network: #1329, sound: #1330.
 
 const X0 = R.x - R.w / 2, X1 = R.x + R.w / 2, Z0 = R.z - R.d / 2, Z1 = R.z + R.d / 2;
@@ -75,6 +76,9 @@ export class Playroom {
       cbox(col.wood, tvx, tvx + cd, 0, 0.42, tvz - 0.75, tvz + 0.75), cbox(col.dark, tvx + cd, tvx + cd + 0.002, 0.05, 0.38, tvz - 0.73, tvz + 0.73),
       cbox(col.dark, tvx + 0.1, tvx + 0.18, 0.42, 0.52, tvz - 0.15, tvz + 0.15), cbox(col.dark, tvx + 0.18, tvx + 0.28, 0.42, 0.47, tvz - 0.5, tvz + 0.5),
       cbox(col.dark, tvx + 0.03, tvx + 0.1, tv.y, tv.y + tv.h + 0.04, tvz - tv.w / 2 - 0.02, tvz + tv.w / 2 + 0.02),
+      // TV remote on the sofa's south arm, within reach from its seats.
+      cbox(col.dark, sf.x - 0.1, sf.x + 0.06, 0.54, 0.56, sz1 - 0.11, sz1 - 0.03),
+      cbox(col.red, sf.x - 0.07, sf.x - 0.04, 0.56, 0.563, sz1 - 0.09, sz1 - 0.05),
       // the gaming desk on the east wall: top, two side panels, monitor on a stand, console, two controllers, keyboard
       deskBox(col.wood, 2.65, 3.2, 0.54, 0.58, 0.3, 1.7), deskBox(col.wood, 2.65, 3.2, 0, 0.54, 0.3, 0.34), deskBox(col.wood, 2.65, 3.2, 0, 0.54, 1.66, 1.7),
       deskBox(col.dark, 2.98, 3.08, 0.58, 0.72, 0.95, 1.05), deskBox(col.dark, 2.96, 3.1, 0.58, 0.6, 0.85, 1.15), deskBox(col.dark, 2.96, 3.02, 0.7, 1.08, 0.7, 1.3),
@@ -89,7 +93,6 @@ export class Playroom {
       cbox(col.steel, F.ball.x - 0.04, F.ball.x + 0.04, h - 0.03, h, F.ball.z - 0.04, F.ball.z + 0.04), cbox(col.steel, F.ball.x - 0.005, F.ball.x + 0.005, F.ball.y + F.ball.r, h - 0.03, F.ball.z - 0.005, F.ball.z + 0.005),
     ];
     const furMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85 });
-    const screens = [cbox(0x0b0f16, tvx + 0.1, tvx + 0.105, tv.y + 0.02, tv.y + tv.h + 0.02, tvz - tv.w / 2, tvz + tv.w / 2), deskBox(0x0b0f16, 2.94, 2.96, 0.72, 1.06, 0.72, 1.28)];
     // collision: the furniture's footprints (convex polygons; getting up and `isFree` use them) and their edges as wall segments
     this.footprints = [rect(sx0, sx1, sz0, sz1), rect(tvx, tvx + cd, tvz - 0.75, tvz + 0.75), rect(2.65+F.desk.x, 3.2+F.desk.x, 0.3+F.desk.z, 1.7+F.desk.z), rect(F.stool.x - 0.2, F.stool.x + 0.2, F.stool.z - 0.2, F.stool.z + 0.2)];
     for (const q of this.footprints) for (let i = 0; i < 4; i++) { const a = q[i], b = q[(i + 1) % 4]; this.segments.push([a[0], a[1], b[0], b[1]]); }
@@ -140,9 +143,11 @@ export class Playroom {
       pk.position.set(R.x + x, y, R.z + z); pk.userData.door = this.discoTarget; this.discoTarget.pickable ??= pk;
       this.object.add(pk); this.controlPickables.push(pk);
     }
+    this.devices = new PlayroomDevices((name, on) => this.onSwitch?.(name, on));
+    this.object.add(this.devices.object); this.controlPickables.push(...this.devices.pickables);
     this.disco(0);
     const C = R.colors, shell = [...walls.map((g) => paint(g, C.wall)), ...trim.map((g) => paint(g, C.trim)), ...door.map((g) => paint(g, C.door)), paint(box(X0, X1, -0.1, 0, Z0, Z1), C.floor), paint(box(X0, X1, h, h + 0.1, Z0, Z1), C.ceiling), ...handle.map((g) => paint(g, 0x2a2a2a))];
-    const parts = [merged([...shell, ...fur, ...screens], furMat)]; // the shell, the furniture and the screens are one vertex-coloured mesh
+    const parts = [merged([...shell, ...fur], furMat)]; // shell and furniture share one vertex-coloured mesh; screens animate separately
     for (const m of parts) { m.matrixAutoUpdate = false; this.object.add(m); }
     // the way out: an invisible pick box in front of the door (the raycaster ignores `visible: false` materials)
     this.exitTarget = { name: 'lekstugan', kind: 'playroomExit', verb: 'gå ut ur' };
@@ -155,7 +160,7 @@ export class Playroom {
     this.inside = false;
   }
 
-  update(dt,camera,aimed) { if(this.inside){this.billiards.update(dt,camera,aimed);if(this.discoOn)this.disco(dt);} }
+  update(dt,camera,aimed) { if(this.inside){this.billiards.update(dt,camera,aimed);this.devices.update(dt);if(this.discoOn)this.disco(dt);} }
 
   /** #1365: switch the disco light on or off (the ball stops and goes dull, the light spots vanish). Returns the badge text. */
   setDisco(on) {
@@ -207,7 +212,7 @@ export class Playroom {
   get arrival() { return { x: R.x, z: Z1 - R.standOff, yaw: 0 }; }
 
   /** Drawn (and its exit pickable live) only while inside. */
-  setInside(on) { this.inside = on; this.billiards.active = on; this.object.visible = on; }
+  setInside(on) { this.inside = on; this.billiards.active = on; this.object.visible = on; this.devices.setInside(on); }
 
   /** Where you stand when you come out: just north of the playhouse's door, facing away from it. */
   static get outsideSpot() {

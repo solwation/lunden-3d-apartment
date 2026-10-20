@@ -5691,6 +5691,8 @@ export const PLAYROOM = { maxCm: 160, x: -1500, z: -1500, w: 18, d: 10.4, ceilin
   fadeMs: [220, 320], // black fade out before the move / back in after it
   lit: 0.55, // ambient light added inside (day.lit): enough to see by, not so bright it looks like a day-lit hall
   litDisco: 0.82, // #1365: that ambient times this while the disco light is on (mood; our own choice)
+  // #1365: local TV animation and timing game; visual/playability choices, not measured hardware.
+  devices: { canvas: [512, 288], fps: 12, pickDepth: 0.08, sweepSeconds: 1.5, targetHalf: 0.12, boatSpeed: 0.4 },
   // #1328: local child-size billiards (all dimensions/rolling coefficients are visual/playability guesses).
   billiards: { x: 0, z: 0, length: 1.8, width: 0.9, height: 0.58, rail: 0.09, railH: 0.06, leg: 0.08,
     ballR: 0.024, pocketR: 0.052, cueLength: 1, strokeSpeed: 2.2, strokeSeconds: 0.24, cueTravel: 0.09,

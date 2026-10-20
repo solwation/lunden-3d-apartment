@@ -1716,6 +1716,7 @@ function use(thing) {
     return;
   }
   if (thing.kind === 'playroomDisco') { badge(playroom.toggleDisco(), false); return; } // #1365: the disco light on/off
+  if (thing.kind === 'playroomDevice') { badge(thing.use(), false); return; } // #1365: local TV and computer, E/touch
   if (thing.kind === 'playroomBilliardsMode') { const text = playroom.billiards.toggleMode(); if (text) badge(text, false); return; } // #1354: the board at the table
   if (thing.kind === 'playroomBilliardsRack') { const text = playroom.billiards.requestRack(); if (text) badge(text, false); return; }
   if (thing.kind === 'ghost' && weaponKey()) { // focus may predate a weapon change (#872)

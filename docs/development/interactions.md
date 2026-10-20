@@ -4,6 +4,12 @@ Read [CLAUDE.md](../../CLAUDE.md) first for shared workflow rules. Paths in code
 
 Related: [life](life.md), [storage](storage.md), [verification](verification.md).
 
+Clubhouse devices (#1365): `playroomDevice` targets use the existing focus,
+keyboard E and touch action path. The TV screen/sofa-arm remote toggle the local
+animation; the computer screen starts power then plays/stops Pricka grönt, and
+the separate white/blue box switches its power off. Normal sofa/stool seating
+and reach limits apply. [Device lifecycle and tests](furniture.md#clubhouse-tv-and-computer-1365).
+
 Cats (#1061): free-hand E / touch action takes adults and kittens into both arms; click / Krama cuddles, E on floor/bed/sofa puts them down. Occupied-hand E still pets. The shared `MieleHeld` preserves cat scale and adjusts hug grips; carry purrs cancel on release/hide/bicycle stow. See [animal behavior and verification](animals-audio.md#cat-and-sound).
 ## Two-point measurement (#1069)
 

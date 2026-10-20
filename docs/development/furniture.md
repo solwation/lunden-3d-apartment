@@ -339,4 +339,24 @@ With the players room connected (`ghosts.connected`) the children's-room table i
 
 `clubhouseSigns()` draws four labels in one512×256static atlas. The existing ceiling panels sample a cream atlas swatch and share the signs' draw, keeping the whole visible room at15draws in the lifecycle checks; no new real lights. Static canvas data is released after upload on phone profiles. Disco rays test actual partition/header entry faces; an open doorway lets a ray continue to the hall instead of painting an invisible plane. Room mesh/targets/updates remain hidden outside.
 
-Tests: `node --test tools/clubhousetest.mjs cloudflare/billiards.test.mjs`; `tools/playroomtest.cjs` includes three held-W doorway routes, a complete four-side walk around the table, entry/exit/height gates, sitting/getting up, switches and outside draw preservation; `MOBILE=1` uses the supported844×390touch profile. `tools/billiardpeertest.cjs` exercises real app entry and the shared table through an isolated local Worker. This personal game interior is never transferred to the public repository. Cinema seating/video remain separate#1375/#1376 and device functions remain#1365.
+Tests: `node --test tools/clubhousetest.mjs cloudflare/billiards.test.mjs`; `tools/playroomtest.cjs` includes three held-W doorway routes, a complete four-side walk around the table, entry/exit/height gates, sitting/getting up, switches and outside draw preservation; `MOBILE=1` uses the supported844×390touch profile. `tools/billiardpeertest.cjs` exercises real app entry and the shared table through an isolated local Worker. This personal game interior is never transferred to the public repository. Cinema seating/video remain separate#1375/#1376.
+
+### Clubhouse TV and computer (#1365)
+
+`src/playroomdevices.js` owns two local canvas screens at the existing TV/desk
+positions, following `furniture.sofa` and `furniture.desk` offsets. E/touch on the
+TV or its visible remote on the sofa arm toggles a silent procedural sailing
+animation. The monitor starts the computer, then starts/stops a timing game:
+stop the marker inside green to add a hit; misses still count as attempts and
+allow a new round. The white/blue box beside the monitor toggles its power.
+The normal sofa/stool seats and rest reach remain; no new input mode is needed.
+
+Both power controls forward to the existing `Playroom.onSwitch('tv'|'pc', on)`
+hook; disco uses its original hook and switching behaviour. Leaving powers down
+both devices and freezes their animation/game updates. Device state is local,
+not saved or synchronized. Audio remains #1330 and selectable real network
+video remains #1376. This is gameplay, excluded from the public downstream.
+`PLAYROOM.devices` holds the assumed texture size, redraw cap and timing-game
+settings. The two screens add at most two draws/four triangles; the remote
+shares the furniture batch. No lights, external media requests or audio nodes
+are added. Tests: real-app `tools/playroomtest.cjs`, desktop and `MOBILE=1`.

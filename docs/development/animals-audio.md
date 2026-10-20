@@ -3,6 +3,12 @@
 Read [CLAUDE.md](../../CLAUDE.md) first for shared workflow rules. Paths in code spans and module maps are relative to the repository root.
 
 Related: [interactions](interactions.md), [graphics](graphics.md).
+
+Clubhouse TV/computer (#1365) now work locally through E/touch, with silent
+canvas animation and a timing game. Power calls the existing
+`Playroom.onSwitch('disco'|'tv'|'pc', on)` hook. Audio remains #1330; no new
+sound source or generated musical fallback is introduced. See
+[device controls and lifecycle](furniture.md#clubhouse-tv-and-computer-1365).
 ## Module and test map
 
 ```text

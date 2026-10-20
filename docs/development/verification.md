@@ -7230,3 +7230,37 @@ Existing `tools/billiardpeertest.cjs` passes15/15 with real app client plus two 
 Final supported landscape touch profile844×390 also passes45/45,15inside draws and138calls/616322triangles outside exactly preserved before/after a visit. Its actual hall/label image was opened (no rotate-device cover). The portrait cover is kept as a discarded visual attempt, not evidence of portrait gameplay support. No physical iPhone stability claim is made.
 
 A final targeted844×390quality0capture verifies the larger48pxatlas lettering on BIO/SPEL; both close approach images opened. This font-only refinement adds no room draw or geometry. The complete layout/interaction suites above use the same topology and controls.
+
+
+## Clubhouse device controls (#1365)
+
+`PLAYWRIGHT_MODULE=… CHROME_PATH=… SHOTS=… node tools/playroomtest.cjs GAME`
+now also acquires real native pointer lock and presses keyboard E for the TV,
+sofa-arm remote, computer game and separate power box. `MOBILE=1` uses the
+supported844×390touch context and taps the actual `#action` button. Both run
+the full existing room lifecycle, doorway walks, seats, disco switches and exit.
+The new cases cover TV animation changing, actual sofa/stool reach, game hit
+and miss/retry, power hooks and shutdown/frozen updates on exit.
+
+Desktop final61/61 and mobile60/60 passed, with no page exceptions; the mobile
+run preceded the added desktop worst-case draw assertion. Submitting both
+screens adds exactly2draws/4triangles; ordinary frustum culling remains enabled
+outside that diagnostic. Entry view costs14desktop/15mobile draws, within the
+old15plus2screen cap. Outside before/after is exactly131calls/631215triangles
+(desktop) and137/638639(mobile), with no extra lights. The remote shares the
+furniture batch. `node --test tools/billiardtest.mjs tools/clubhousetest.mjs`
+passes15/15; `tools/avatarbodytest.mjs` passes12/12.
+
+TV/program, PC playing/result, sofa remote and room images were opened on both
+profiles and reviewed by the orchestrator. Raw logs and screenshots live under
+`/tmp/room1365-codex20*`, including the retained first desktop58/58. These are
+real app/raycast/native input checks, not physical-phone comfort, sound,
+network-video or multiplayer-device verification. Device state is local;
+sound and selectable network video remain#1330/#1376. Personal gameplay is
+excluded from the public downstream.
+
+The required `tools/farwalktest.cjs` regression passed57/57 in126.1s on a
+serial retry. Retain the first concurrent run:44functional checks passed, then
+the unchanged240s budget expired (CLI1); it is not recorded as green. No
+navigation assertion failed, and no budget was raised. The final rebase added
+only shared workflow documentation, leaving all tested runtime files unchanged.
