@@ -10,7 +10,7 @@ Chatten visar de senaste meddelandena även när utrymmet är trångt. Varje rad
 
 På telefonen ligger laddningsskärmen kvar medan grafiken förbereds i små steg, tills hela den första 3D-bilden är klar. Tillfälliga nätfel när planritningen hämtas får ett automatiskt återförsök. Om starten ändå misslyckas eller fastnar visas ”Försök igen”, utan att din sparade plats eller ditt hem raderas. Grafiken arbetar mindre när du läser en lapp eller pausar, och vilar bakom uppmaningen att vrida telefonen.
 
-Telefoner behåller mindre bildminne för färdigritade statiska ytor, inklusive färdig väggtext, och avstängda speglar. [Mätningen](docs/validation/issue-1359/README.md) visar en minskning i telefonprofil; stabiliteten på fysisk iPhone följs fortfarande upp.
+Telefoner behåller mindre bildminne för färdigritade statiska ytor, inklusive färdig väggtext, och avstängda speglar. [Mätningen](docs/validation/issue-1359/README.md) visar en minskning i telefonprofil. Användaren bekräftade den 20 oktober 2026 att senaste testet på fysisk iPhone gick utan krasch; #1359 är stängd.
 
 I rutan uppe till vänster visas antalet besökare över bildfrekvensen (FPS). FPS räknar visade 3D-bilder, uppdateras lugnt och visar ett streck när spelet är pausat eller dolt. Träfftexten håller sig fri från livsrutan även på små skärmar.
 
@@ -382,7 +382,7 @@ HEMNES-dagbäddens två madrassöverdrag, överkast och fem olika kuddar har egn
 tygval i Möblera om. Original återställer varje textils ursprungliga utförande;
 trästomme och lådor behåller sina material.
 
-Crash diagnostics (#669): `tools/crashviewporttest.cjs` checks real console focus and startup navigation with explicitly simulated visual-viewport insets; this does not certify an Android keyboard or fix the still-open physical iPhone context-loss issue.
+Crash diagnostics (#669): `tools/crashviewporttest.cjs` checks real console focus and startup navigation with explicitly simulated visual-viewport insets; this does not certify an Android keyboard. The physical iPhone follow-up #1359 was closed after the user reported a crash-free test on 2026-10-20.
 Parasollväven och långlampans respektive DANI-lampans tygskärm kan väljas i
 Möblera om. Original behåller vävdetaljerna; parasollets vikning och lampornas
 vanliga tändning och glöd fungerar som tidigare.

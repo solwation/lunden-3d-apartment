@@ -60,9 +60,8 @@ they show no JS exceptions. Full private probe logs/JSON/images remain outside t
   explicitly supplied for lowmemory/core/main in the comparison. Existing independent
   landscape failure is tracked in #1361; no budget has been raised.
 
-This is a verified partial delivery (`Refs #1359`). #1359 remains open for physical
-iPhone acceptance and the remaining memory/performance investigation. A user must test
-the published candidate before any claim that their reported crashes are resolved.
+At this delivery, #1359 remained open for physical iPhone acceptance and further
+memory/performance investigation. The later user acceptance is recorded below.
 
 ## Follow-up, 2026-10-20: immutable wall-text source
 
@@ -148,3 +147,14 @@ authentication error, so it is not presented as another complete fresh read.
 This remains `Refs #1359`, not an established crash fix. No render budget is raised;
 the change adds no geometry or rendering pass. There is no downstream transfer because
 this particular wall text is gameplay excluded from the public project.
+
+## Physical user acceptance, 2026-10-20
+
+The user reported that no crash occurred when testing the latest version and explicitly
+clarified that the report concerned #1359 (initially mistyped as #1357). #1359 was then
+closed and its `user-question` label removed. The prior mixed result above remains part
+of the history. The user did not specify the exact tested commit or test duration.
+
+This is physical-device acceptance from the user, separate from the emulated browser
+measurements. It does not establish a single crash cause or guarantee that future
+crashes cannot occur. No performance budget or historical measurement is changed.
