@@ -443,3 +443,6 @@ Utsikten upp mot terrasserna kräver mindre ritningsarbete bakom lägenhetens t�
 
 Bus boarding asphalt (#1417) joins the existing mapped kerb to the actual bus-bay
 edges without moving the platform; see [environment verification](docs/development/environment.md#bus-boarding-apron-1417).
+
+The bus platform and tactile strip also follow the actual terrain triangles (#1429),
+keeping their existing heights and stopping grass from protruding through the walking surface.

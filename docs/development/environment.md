@@ -536,7 +536,7 @@ no holes; the unchanged road tessellation meets it with at most5.54mm height cha
 Four real W-key routes pass both ways along the platform and across the apron.
 Desktop's19standard poses pass438calls/996536triangles at quality0; phone results
 are recorded in verification.md. The pre-existing terrain intrusions inside the
-platform remain unchanged and are tracked independently in#1429.
+platform were unchanged by#1417 and are corrected separately in#1429 below.
 A/B/C/L house equivalents: not applicable; this is the one mapped bus stop.
 Neutral public transfer is queued separately as
 [kvarteret-lunden#110](https://github.com/solwation/kvarteret-lunden/issues/110), low priority.
@@ -558,3 +558,32 @@ builders and are not affected by this south-only selection.
 Neutral downstream transfer is queued separately in
 [public#111](https://github.com/solwation/kvarteret-lunden/issues/111), priority low;
 original#1418 remains open after source delivery until that transfer is verified.
+
+
+## Bus platform follows the emitted terrain (#1429)
+
+`busstop.js::busStopStripGeometry` partitions the unchanged platform and tactile
+rectangles with `cutAtTerrain` on `ground.surfaceGrid()` (then `grid()` fallback).
+Callers without a grid retain the original1m strips. The platform remains at4cm
+and the tactile strip at4.4cm above the terrain: no raised lift or flattened ground.
+The mapped kerb/bounds, width, kerb stones, shelter, furniture, glass, sign, collision,
+walking support, terrain and#1417 boarding asphalt are unchanged. There is only one
+mapped stop, with no A/B/C/L house equivalent. Neutral public port#113 is queued LOW.
+
+Native9/9 includes folded/refined actual triangles, unchanged rectangle area/bounds,
+upward normals, lift and legacy fallback. A fresh actual844×390 lowmem World on
+b6472013 reproduces6.093cm grass intrusion before the change;462 independent actual
+platform/terrain rays then give at least3.99993cm clearance. All48 paving and12tactile
+triangle centroids preserve the exact lifts within0.000001m. Actual footprint areas
+are76.446640m² and3.351879m² (float32 precision); original mapped bounds are retained.
+Canonical old builder positions match the actual scene; its full CPU attributes
+verify unchanged kerb/other meshes/materials, since phones release uploaded CPU arrays.
+Four real W-key routes pass; mobile and wider1280×800 framings use the same phone
+World, with render/readback together. Wider images are not a desktop profile.
+The platform changes152→156triangles; the actual same-pose submission is56calls/
+321186→56/321190. No batches/materials/textures are added. Its corrected interior
+height slightly changes the3D culling bound, so zero calls at one pose is not a global
+zero-call guarantee. The conductor approved a conservative bound of one additional
+existing platform batch/156triangles against reviewed b6472013 full profiles:
+desktop≤438/996940/~309MiB; landscape≤370/831317/~97; portrait≤291/722401/~101.
+All remain within unchanged caps. These are composed bounds, not new full profiles.

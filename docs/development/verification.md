@@ -1,3 +1,20 @@
+Bus platform terrain projection (#1429): `node --test tools/busstopplatformtest.mjs tools/busstopgeotest.mjs` (9 checks).
+Inspect actual rectangle area/bounds,48 paving/12 tactile triangle centroids and independent
+terrain rays,462 old/new platform rays, unchanged kerb/other meshes/materials/collision/
+terrain/asphalt and four W-key routes. Compare matched mobile and wide framings from the
+same actual lowmem World; wide images are not a new desktop profile. Baseline b6472013
+profiles are composed with conductor approval: measured same-pose+4triangles/0calls,
+but conservatively allow one existing batch/156triangles because the3D culling bound shifts.
+Upper bounds: desktop438/996940, landscape370/831317, portrait291/722401; texture/material
+cost is unchanged. These are not newly measured full profiles.
+The first two ray fixtures failed at floating-point t≈3.6 on the exact outer edge; final
+interior samples avoid edge roundoff while native and emitted-area/bounds tests retain full
+footprint coverage. Those failed fixtures remain in browser.log and are not pass results.
+Phone CPU attributes are released after upload: compare canonical old/new builders, verify
+old positions against the actual scene, then use actual rays/unchanged geometry references.
+Raw proof, before/after images and source response data: `~/.local/state/lunden-orkester/codex-surface-20261020/platform1429/`.
+The source stays open only for the separate LOW public#113 after Pages/live completion.
+
 Bus boarding apron (#1417): `node --test tools/busstopgeotest.mjs` (6 checks).
 Compare actual emitted terrain/old southern triangle identities and new apron centroid/rays,
 road-edge continuity, four W-key routes, overhead/both ends and phone views; inspect full

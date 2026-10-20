@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SEASON } from './config.js';
+import { cutAtTerrain } from './roads.js';
 import { registerSnow, registerSeasonal } from './seasons.js';
 import { B, length as len, dir as d, busStopPoint, toLocal } from './busstopgeo.js';
 
@@ -22,11 +23,16 @@ const cylAt = (r, h, x, z, y, color) => {
   return g;
 };
 const cyl = (r, h, s, t, y, color) => cylAt(r, h, ...busStopPoint(s, t), y, color);
-/** a ground-following strip s0..s1 × t0..t1 at `lift` over the ground, tinted (1 m pieces) */
-const strip = (ground, s0, s1, t0, t1, lift, color) => {
+/** #1429: the same rectangle/lift, partitioned on the actual emitted terrain.
+ * Standalone callers without a terrain grid retain the original 1m strips. */
+export function busStopStripGeometry(ground, s0, s1, t0, t1, lift, color) {
   const pos = [], n = Math.max(1, Math.ceil((s1 - s0) / 1));
   const v = (s, t) => { const [x, z] = busStopPoint(s, t); return [x, ground(x, z) + lift, z]; };
-  for (let k = 0; k < n; k++) {
+  const grid = ground.surfaceGrid?.() ?? ground.grid?.();
+  if (grid) {
+    const rect = [[s0, t0], [s1, t0], [s1, t1], [s0, t1]].map(([s, t]) => busStopPoint(s, t));
+    for (const tri of cutAtTerrain(rect, grid)) for (const [x, z] of tri) pos.push(x, ground(x, z) + lift, z);
+  } else for (let k = 0; k < n; k++) {
     const a = s0 + ((s1 - s0) * k) / n, b = s0 + ((s1 - s0) * (k + 1)) / n, p = [v(a, t0), v(a, t1), v(b, t0), v(b, t1)];
     pos.push(...p[0], ...p[2], ...p[1], ...p[1], ...p[2], ...p[3]);
   }
@@ -38,7 +44,7 @@ const strip = (ground, s0, s1, t0, t1, lift, color) => {
   const c = new THREE.Color(color), a = []; for (let i = 0; i < g.attributes.position.count; i++) a.push(c.r, c.g, c.b);
   g.setAttribute('color', new THREE.Float32BufferAttribute(a, 3));
   return g;
-};
+}
 const signTexture = () => {
   const S = B.sign, c = document.createElement('canvas'); c.width = 256; c.height = 180;
   const g = c.getContext('2d'), w = 128, h = c.height; // left half: the stop sign
@@ -65,7 +71,7 @@ export function buildBusStop(ground) {
   const C = B.colors, Sh = B.shelter;
   // platform: surface, kerb stones along the road edge, tactile strip (OSM tactile_paving=yes) — one vertex-coloured batch
   const tac = B.tactile, [ts] = toLocal(35.59, 192.31); // the tactile_paving node 2000527695
-  const plat = [strip(ground, 0, len, 0, B.width, B.lift, C.paving), strip(ground, Math.max(0, ts - tac.len / 2), Math.min(len, ts + tac.len / 2), tac.from, tac.from + tac.w, B.lift + 0.004, tac.color)];
+  const plat = [busStopStripGeometry(ground, 0, len, 0, B.width, B.lift, C.paving), busStopStripGeometry(ground, Math.max(0, ts - tac.len / 2), Math.min(len, ts + tac.len / 2), tac.from, tac.from + tac.w, B.lift + 0.004, tac.color)];
   for (let a = 0; a < len; a += 3) { const l = Math.min(3, len - a), [kx, kz] = busStopPoint(a + l / 2, B.kerbW / 2); plat.push(box(B.kerbW, B.kerbH, l + 0.01, a + l / 2, B.kerbW / 2, ground(kx, kz), C.kerb)); } // 3 m stones, each level on the ground under its middle
   const platMat = new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.92 }); registerSnow(platMat, SEASON.snow.paving);
   registerSeasonal((month) => { const colored = !SEASON.snowMonths.includes(month); if (platMat.vertexColors !== colored) { platMat.vertexColors = colored; platMat.needsUpdate = true; } });
