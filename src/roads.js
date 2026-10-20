@@ -211,6 +211,8 @@ export function cutAtTerrain(tri,grid){
  for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++){
   const c=clipHalf(clipHalf(clipHalf(clipHalf(tri,-1,0,-X[i]),1,0,X[i+1]),0,-1,-Z[j]),0,1,Z[j+1]);
   if(c.length<3)continue;
+  const subdivisions=grid.refined?.(i-1,j-1)??1; // #1420: explicitly requested emitted river cells only
+  if(subdivisions>1){out.push(...cutAtTerrain(c,{X:Array.from({length:subdivisions+1},(_,k)=>X[i]+(X[i+1]-X[i])*k/subdivisions),Z:Array.from({length:subdivisions+1},(_,k)=>Z[j]+(Z[j+1]-Z[j])*k/subdivisions)}));continue;}
   // the cell's diagonal runs through (X[i+1],Z[j]) and (X[i],Z[j+1]); lower-left side first
   const dx=X[i+1]-X[i],dz=Z[j+1]-Z[j],a=1/dx,b=1/dz,k=1+X[i]/dx+Z[j]/dz;
   for(const h of[clipHalf(c,a,b,k),clipHalf(c,-a,-b,-k)])

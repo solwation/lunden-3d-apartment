@@ -8,6 +8,7 @@ import { Hearts } from './pingping.js';
 import { registerSeasonal } from './seasons.js';
 import { shelterWinter } from './shelterwinter.js';
 import { PaddockFeed } from './paddockfeed.js';
+import { cutAtTerrain } from './roads.js';
 import { ponyBlankets } from './ponyblanket.js';
 import { shelterSpots, snowCovered, RainWatch, footprintGround, shelterSite, relocateShelter } from './paddockshelter.js';
 
@@ -243,7 +244,8 @@ export function paddockLandParts(ground) {
     const a = ring[i], b = ring[(i + 1) % n], dx = b[0] - a[0], dz = b[1] - a[1], l = Math.hypot(dx, dz);
     if (!l) continue;
     const nx = -dz / l * w, nz = dx / l * w, q = [[a[0] - nx, a[1] - nz], [a[0] + nx, a[1] + nz], [b[0] + nx, b[1] + nz], [b[0] - nx, b[1] - nz]];
-    for (const k of [0, 1, 2, 0, 2, 3]) pos.push(q[k][0], ground(q[k][0], q[k][1]) + 0.07, q[k][1]);
+    const grid = ground.surfaceGrid?.() ?? ground.grid?.(), triangles = grid ? cutAtTerrain(q, grid) : [[q[0], q[1], q[2]], [q[0], q[2], q[3]]];
+    for (const t of triangles) for (const [x, z] of t) pos.push(x, ground(x, z) + 0.07, z); // #1420: same quad footprint/lift across every actual terrain fold
   }
   if (!pos.length) return [];
   for (let i = 0; i < pos.length / 3; i++) col.push(c.r, c.g, c.b);

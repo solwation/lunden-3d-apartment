@@ -195,8 +195,10 @@ export const renderedTerrainY = (x,z) => terrainSurface(x,z);
 export const lampGroundY = (x,z) => Math.max(renderedTerrainY(x,z),renderedParkFillY(x,z)??-Infinity);
 /** #1309: the terrain mesh's grid lines ({X, Z}, sorted; set by terrainGeometry) so a surface laid on it can be cut along the same
  * cells: each cell is two triangles split along the (X[i+1],Z[j])-(X[i],Z[j+1]) diagonal, and `renderedTerrainY` is exactly linear in each. */
-let terrainGrid = null;
+let terrainGrid = null, terrainDetailGrid = null;
 renderedTerrainY.grid = () => terrainGrid;
+// #1420: opt-in emitted river subdivisions for the paddock overlays; existing grid consumers are unchanged.
+renderedTerrainY.surfaceGrid = () => terrainDetailGrid;
 /** Holes in the terrain mesh [x0, x1, z0, z1]: Hus C stands at the courtyard's level (y 0), so its stair well (CORE_C.pit) would be covered by the grass (#639). */
 const TERRAIN_PITS = [CORE_C.pit];
 function terrainGeometry() {
@@ -253,6 +255,7 @@ function terrainGeometry() {
       for(let v=0;v<n;v++)for(let u=0;u<n;u++)idx.push(row[v][u],row[v+1][u],row[v][u+1],row[v][u+1],row[v+1][u],row[v+1][u+1]);
     }else idx.push(a,c,b,b,c,d);
   }
+  terrainDetailGrid = { X, Z, refined: (i, j) => i >= 0 && i < X.length - 1 && j >= 0 && j < Z.length - 1 ? (cells.get(j * nx + i)?.length - 1 || 1) : 1 };
   // Same barycentric interpolation as the emitted triangles: bank paths/plants cannot hover over a curved cell.
   const find=(list,v)=>{let lo=0,hi=list.length-1;while(hi-lo>1){const mid=(lo+hi)>>1;if(list[mid]<=v)lo=mid;else hi=mid;}return lo;};
   terrainSurface=(x,z)=>{

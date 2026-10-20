@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { SITE, SEASON, COLORS, DECAL_OFFSET } from './config.js';
+import { SITE, SEASON, COLORS, DECAL_OFFSET, PADDOCK } from './config.js';
 import { pathStrip, cutAtTerrain } from './roads.js';
 import { registerTrees, registerSnow, registerSeasonal } from './seasons.js';
 import { lobeGeometry, leafMaterial, leafAtlasParts } from './foliage.js';
@@ -41,6 +41,7 @@ export function buildSouthBackdrop(ground){const parts=southBackdropParts(ground
 export function* southBackdropParts(ground){
  const group=new THREE.Group();group.name='south-backdrop';const parts={facade:[],roof:[],glass:[],land:[]},records=[];
  const farGround=(x,z)=>z<=SITE.backgroundGround.z1?ground(x,z):-3.01; // sampled-grid coverage; the distant fog boundary retains its old level
+ farGround.surfaceGrid=()=>ground.surfaceGrid?.()??ground.grid?.()??null; // #1420: only the paddock field/track request detailed cells
  farGround.grid=()=>ground.grid?.()??null; // #1313: the terrain mesh's grid, so the paths are cut along it
  let built=0;for(const b of S.buildings){if(built++%6===5)yield .6*built/S.buildings.length;const foot=shape(b),p=b.polygon.slice(0,-1),base=Math.max(...p.map(q=>farGround(...q))),bottom=Math.min(...p.map(q=>farGround(...q)))-.1,eave=base+b.levels*S.storey;
   if(b.template==='stlars41'){records.push({...b,base,bottom,...buildStLars41(b,p,base,bottom,parts)});continue;}
@@ -61,7 +62,7 @@ export function* southBackdropParts(ground){
  // Continuation overlaps only the old outer boundary. Fog fully covers its outer edges from every accessible camera.
  const G=S.ground;parts.land.push(tint(new THREE.PlaneGeometry(G.x1-G.x0,G.z1-SITE.backgroundGround.z1).rotateX(-Math.PI/2).translate((G.x0+G.x1)/2,-3.01,(G.z1+SITE.backgroundGround.z1)/2),COLORS.grass));
  for(const [x0,x1]of[[G.x0,SITE.backgroundGround.x0],[SITE.backgroundGround.x1,G.x1]])parts.land.push(tint(new THREE.PlaneGeometry(x1-x0,SITE.backgroundGround.z1-SITE.backgroundGround.z0).rotateX(-Math.PI/2).translate((x0+x1)/2,-3.01,(SITE.backgroundGround.z1+SITE.backgroundGround.z0)/2),COLORS.grass));
- for(const f of S.fields){if(!(f.holes??[]).length){parts.land.push(tint(upGeometry(terrainTriangles(f.polygon,LAND_MESH),(x,z)=>farGround(x,z)+.018+LAND_LIFT),f.color));continue;}const g=new THREE.ShapeGeometry(shape(f)).rotateX(-Math.PI/2),a=g.attributes.position;for(let i=0;i<a.count;i++)a.setY(i,farGround(a.getX(i),a.getZ(i))+.018);g.computeVertexNormals();parts.land.push(tint(g,f.color));}
+ for(const f of S.fields){if(!(f.holes??[]).length){parts.land.push(tint(upGeometry(terrainTriangles(f.polygon,LAND_MESH,f.source===PADDOCK.field?farGround.surfaceGrid():null),(x,z)=>farGround(x,z)+.018+LAND_LIFT),f.color));continue;}const g=new THREE.ShapeGeometry(shape(f)).rotateX(-Math.PI/2),a=g.attributes.position;for(let i=0;i<a.count;i++)a.setY(i,farGround(a.getX(i),a.getZ(i))+.018);g.computeVertexNormals();parts.land.push(tint(g,f.color));}
  parts.land.push(...paddockLandParts(farGround)); // #1280: the pony paddock's worn track (soil colour, snow-covered with the rest of the land)
  yield .7;
  const surfColor=p=>p.color??(p.surface==='asphalt'?0x5f6164:p.surface==='gravel'?0xb5ac90:0xa7a397);

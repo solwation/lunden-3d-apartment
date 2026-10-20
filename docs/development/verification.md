@@ -7491,3 +7491,38 @@ remain, alongside the green targeted desktop tail and corrected complete runs.
 A desktop fixture timing failure after Escape waited for the DOM lock before
 main's pointer-lock listener had run; the final helper also waits for the actual
 arm to hide. Browser/runtime assertions and timeouts were not weakened.
+
+
+## Paddock track/field projection (#1420)
+
+`node --test tools/paddocksurfacetest.mjs tools/paddockgeotest.mjs` passes13/13:
+area-preserving detailed cuts, subtriangle linearity, legacy partitions and fence/shelter contracts.
+`PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/paddocksurfacetest.cjs BASE OUT` checks
+the real World. `--baseline` freezes the four changed modules to579336bd; use sibling
+`before`/`after` directories for exact buffer and footprint comparisons. `APP_VERSION`
+selects the published module stamp when checking live sources.
+
+Baseline track68triangles/0.748277m intrusion and field2173triangles/0.189239m become
+681/4049triangles, retaining original70/48mm lifts within4.41/4.01µm at every centroid.
+All66 510terrain positions, normals/indices and all other land positions/normals/colors
+remain byte-identical. Bounds are exact; Float32 area deltas are0.000797/0.000267m²
+on382.175/9747.327m² footprints. No terrain, bank, grass, parking or house geometry changes.
+
+65independent downward rays locate actual base triangles within4.28µm of the sampler.
+Atx−121.100510,z217.756638 the timber bridge fill intentionally covers the field:
+actual hits−4.2550404m/−5.5727691m are both retained; the lower base hit differs by
+0.228µm and field lift is48.00032mm. The field stays under the ramp, not above it.
+
+Existing paddock16+stile4assertions pass20/20 in one real World: pony movement/petting,
+fence/gate blocking, shelter and walks in/out over the stile, with production `step` simulation.
+The ordinary19-view/quality budget suite uses real player poses and unchanged caps:
+desktop489draws/993854triangles/~309MiB (520/1M/320 limits),
+landscape369/830201/~97MiB and portrait290/718549/~101MiB
+(both370/950000/225 limits), all quality checks green.
+The extra render-only close-camera pictures retain stale home-detail state; their counts
+are geometry-display observations, not verified gameplay budgets or product regressions.
+
+Public already has the neutral projection fix in5cfecd3d5eab5a778529f63b19ec3b9d1698524f
+(#105), so no new transfer is needed. This is Chromium/SwiftShader, not physical-phone evidence.
+[Local evidence and fixture notes](/home/olw/.local/state/lunden-orkester/codex-surface-20261020/surface1420/README.md)
+retain before/after images, all raw successes and failed/interrupted fixture attempts.

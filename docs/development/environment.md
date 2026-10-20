@@ -489,3 +489,19 @@ fails the known global triangle budget#1387:494draws/1042209triangles/~261MiB. P
 still fails the known call budget#1383:445draws/932900triangles/~97MiB. Both full checks exit1;
 no global budgets changed. These are browser measurements, not FPS or physical-phone stability.
 House A/B/C/L terrain lies north of the correction start147; their actual geometry is unchanged.
+
+
+## Paddock track and field surface (#1420)
+
+The worn-track quads and the one field identified by `PADDOCK.field` are split along
+actual emitted terrain triangles before their existing70mm/48mm offsets are applied.
+`renderedTerrainY.surfaceGrid()` exposes the already-built river cell subdivisions;
+`cutAtTerrain` uses them only when explicitly requested. The older `grid()` remains
+unchanged for roads, parking and other fields. Terrain samples, bank geometry, grass,
+collision, pony behavior and every polygon footprint are unchanged. A/B/C/L building
+geometry is unaffected; none has an equivalent paddock overlay.
+
+This selectively reuses the projection principle already verified in public
+`solwation/kvarteret-lunden@5cfecd3d5eab5a778529f63b19ec3b9d1698524f` (#105).
+No further public transfer is needed: its neutral track/field fix is already present.
+No public source tree, personal content, gameplay or Cloudflare integration was copied.
