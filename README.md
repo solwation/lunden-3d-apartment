@@ -24,6 +24,8 @@ Med jetpacken kan du stiga genom ett molnlager och upp över ett tätt molnhav. 
 
 Vintervyerna kräver mindre ritarbete när trädens och klängväxternas löv har fallit.
 
+Entréväxternas grafikgränser rymmer även lövens fulla vindsvängning vid bildkanten.
+
 I källaren slipper grafiken rita hela föremål som är helt skymda av garagets synliga, täta tak.
 
 På vintern har båda hästarna varsitt täcke och står synliga inne i hästhagens skjul, med halm på golvet, girlang och en varm ljusslinga. När snön försvinner försvinner täckena och pyntet och hästarna går ut i hagen igen.

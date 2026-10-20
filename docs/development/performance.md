@@ -1,5 +1,28 @@
 # Rendering performance
 
+Entrance wind bounds (#1460): source spheres are repaired after compression;
+the color adapter and its own envelopes remain unchanged. Native10 cases include
+all four actual compressed geometries, every vertex at the full local XZ clamp,
+unchanged attributes and repeated shadow setup. In the actual quality3/lowmem
+World, uploaded-source data reconstructs vertex835 at time10.016667/power.0249941
+outside the old sphere by.0263409m. A real diagnostic orthographic frustum includes
+that point and submits its original mesh0→1 times (+408tri). Both diagnostic
+images are gray: this proves draw eligibility, not an observed visible leaf return
+or GPU transform feedback. Normal front/loft pairs match; fresh shadow submissions
+increase258→259 and281→282. The production clones retain all26 wind-depth callbacks.
+The matched full19-view phone quality3 profiles both remain SOMEFAILED:
+399calls/841837tri/~95MiB against370/950000/225. The matched standard20-view desktop
+profiles both pass513/989457/~311MiB with the front door open and wind frozen;
+this fixture is separate from the older closed-door profile and #1459's corner.
+The targeted quality0 zero-wind pair retains294/740506 main submissions with
+192→193 shadow draws and0 changed pixels; no new full quality0 profile is claimed.
+Runtime arrays/materials/matrices/raycast/shadow callbacks remain identical after
+one setup draw. The combined zero/identity driver exits1 later on a hidden phone-menu
+mouse button; its completed phases are saved separately, with no completed E/touch
+suite claim. An earlier identity fixture failure is also retained. Public6c69323a has no entranceplants,
+plantwind or windShadow target, so no port applies. Raw drivers, images, profiles
+and rejected fixtures remain in `/tmp/orkester-katt-20261020/windbounds1460/`.
+
 ## Complete phone models behind separate actual opaque patches (#1456, partial #1453)
 
 Only existing complete `phoneDetailUnit` models with an actual Garage can use the

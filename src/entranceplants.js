@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { ENTRANCE_PLANTS as C } from './config.js';
 import { planter } from './patio.js';
+import { windShadow } from './plantwind.js';
 
 /** Shared geometry/material templates; one merged foliage mesh per plant, handled by the normal DetailCuller. */
 export function buildEntrancePlants(doors, groundY) {
@@ -15,7 +16,12 @@ export function buildEntrancePlants(doors, groundY) {
       for(let i=0;i<p.count;i++) radius=Math.max(radius,Math.hypot(p.getX(i),p.getZ(i)));
     }
     const compress = Math.min(1,C.foliageRadius/radius);
-    for (const m of foliage) m.geometry.scale(compress,1,compress);
+    for (const m of foliage) {
+      m.geometry.scale(compress,1,compress);
+      // scale recomputes the static sphere; restore the full local shader sway after the final transform.
+      m.geometry.userData.windBounds = false;
+      windShadow(m);
+    }
     const pot = model.children[0]; pot.material = pot.material.clone(); pot.material.color.setHex(v.color);
     return model;
   });

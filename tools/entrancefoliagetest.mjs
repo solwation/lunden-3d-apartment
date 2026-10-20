@@ -4,6 +4,29 @@ import * as T from 'three';
 import {installEntrancePlantBatch} from '../src/entranceplantbatch.js';
 import {windGeometry,windMaterial,windShadow} from '../src/plantwind.js';
 import {PLANT_WIND as P} from '../src/config.js';
+import {buildEntrancePlants} from '../src/entranceplants.js';
+
+test('all actual compressed entrance templates retain full local wind bounds and idempotent shadow setup',()=>{
+ const plants=buildEntrancePlants(Array.from({length:3},(_,i)=>({index:i,unit:`fixture-${i}`,x0:i*3,x1:i*3+1,z:0,y:0})),()=>0),seen=new Set(),v=new T.Vector3();
+ for(const {model} of plants.userData.records)for(const mesh of model.children){
+  const g=mesh.geometry;if(!g.attributes.plantWind||seen.has(g))continue;seen.add(g);
+  windShadow(mesh); // establish the callback on this cloned fixture before checking repeated setup
+  const sphere=g.boundingSphere.clone(),attrs=Object.entries(g.attributes).map(([name,a])=>({name,a,values:a.array.slice()})),material=mesh.material,depth=mesh.customDepthMaterial;
+  const p=g.attributes.position;
+  for(let i=0;i<p.count;i++)for(const dx of [-P.maxDisplacement,P.maxDisplacement])for(const dz of [-P.maxDisplacement,P.maxDisplacement]){
+   v.set(p.getX(i)+dx,p.getY(i),p.getZ(i)+dz);assert(v.distanceTo(sphere.center)<=sphere.radius+1e-12,'every actual vertex and full XZ shader clamp fits after compression');
+  }
+  windShadow(mesh);windShadow(mesh);assert.deepEqual(g.boundingSphere,sphere,'repeated shadow setup adds no further margin');
+  assert.equal(mesh.material,material);assert.equal(mesh.customDepthMaterial,depth);assert(g.userData.windBounds);
+  for(const {name,a,values}of attrs){assert.equal(g.attributes[name],a);assert.deepEqual(a.array,values)}
+ }
+ assert.equal(seen.size,4,'all four foliage geometries across the three real variants');
+ const mesh=plants.userData.records.find(r=>r.variant===0).model.children[2],g=mesh.geometry,fixed=g.boundingSphere.clone();g.computeBoundingSphere();const old=g.boundingSphere.clone();g.boundingSphere.copy(fixed);
+ // Actual positive-wind point independently recorded from the production shader inputs in #1460.
+ const point=new T.Vector3(-.317505141,1.573803186,-.182776401),normal=point.clone().sub(old.center).normalize(),outside=point.distanceTo(old.center)-old.radius;
+ assert(outside>.0263);const plane=new T.Plane(normal,-normal.dot(old.center)-old.radius-outside/2),frustum=new T.Frustum(plane,...Array.from({length:5},()=>new T.Plane(new T.Vector3(),1)));
+ assert(frustum.containsPoint(point));assert(!frustum.intersectsSphere(old));assert(frustum.intersectsSphere(g.boundingSphere));
+});
 
 function fixture(){
  const scene=new T.Scene(),plants=new T.Group(),records=[],pot=new T.CylinderGeometry(.2,.15,.3,8),soil=new T.CircleGeometry(.15,8),material=new T.MeshStandardMaterial(),wind=windMaterial(new T.MeshStandardMaterial());

@@ -3,6 +3,16 @@
 Read [CLAUDE.md](../../CLAUDE.md) first for shared workflow rules. Paths in code spans and module maps are relative to the repository root.
 
 Related: [furniture](furniture.md), [graphics](graphics.md), [environment](environment.md).
+
+Entrance wind bounds (#1460): after the final template compression,
+`entranceplants.js` invalidates the old windBounds marker and reuses `windShadow`.
+All four foliage geometries regain the full local XZ shader-clamp margin
+`sqrt(2) * .06` metres, independent of compression; repeated setup is idempotent.
+Positions, attributes, seeds, programs, materials, physical footprints and proxy
+bounds remain unchanged. Production's later `scene.traverse(windShadow)` assigns
+the original clones' depth shader as before. This builder belongs to Hus L;
+A/B/C have no corresponding entrance-plant group. See [performance](performance.md).
+
 ## Module and test map
 
 ```text
