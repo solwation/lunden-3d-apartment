@@ -1407,3 +1407,28 @@ Exposed-roof/corner cameras are rendering diagnostics, not walking-route claims.
 Raw evidence: `~/.local/state/lunden-orkester/codex-surface-20261020/rails1454/`.
 Current public exterior has the same neutral single rail batch; its selective
 LOW-priority transfer will be linked after source publication, without private decor.
+
+## Fixed L entrance pots on phones (#1455)
+
+Only the rigid pot/soil color draws use six native batches; original leaves and
+per-part Detail eligibility remain. Original meshes cast fresh shadows with their
+exact masks/frusta; color proxies never cast or answer physical rays. Desktop is
+unchanged. Startup quality3 matched411→398 calls with769976triangles unchanged;
+near entrance487→487 /793864→794984, loft204→200 /598121→598653. Whole eligible
+batches can submit offscreen triangles: there is no global thirteen-call guarantee.
+All three fresh-shadow caster lists/counts/triangles and physical masks are exact.
+Pixels differ0at startup,1(maxchannel1)near entrance and11(maxchannel4)on the loft;
+small native-matrix raster rounding is retained rather than claimed pixel-exact.
+
+The first candidate submitted six empty batches at the park (366old→372new calls).
+Final source hides zero-count groups: the same diagnostic returns366/761793 exactly.
+Native five cases and actual nine physical/walking checks pass; native start-touch
+and the real front-door action button also work. Fresh production-main-installed
+landscape explicitURLquality0 passes all19views/quality checks at367calls/840699tri/
+~98MiB; a separate fresh390×844 explicitURLquality0 World also passes all19views/
+quality checks at289calls/705267tri/~102MiB. Highestquality3 full19 remains
+FAIL399calls/841837tri/~98MiB against unchanged
+370/950000/225 limits; all quality checks pass. Parent#1453 waits for its other
+independent children. These are submission/resource checks, not device frame times.
+Persistent raw and rejected candidates are linked in [verification](verification.md).
+Public main6c69323a has no corresponding entrance-plant group or DetailCuller; N/A.

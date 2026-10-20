@@ -7758,3 +7758,21 @@ budget work is tracked in #1458 under #1448. Exact unchanged phone batching perm
 quality0 profile composition; it does not establish defaultquality3 phone acceptance.
 See [performance](performance.md#complete-architectural-terrace-rail-groups-1454-partial-1448)
 and persistent `codex-surface-20261020/rails1454/final-review-summary.json`.
+
+## Fixed entrance pots on phones (#1455)
+
+Run `node --test tools/entranceplantbatchtest.mjs` (five cases): exact matrices and
+geometry/material/raycast identities, positive original physical rays, per-source
+eligibility, nested renders, color/shadow exception cleanup, mixed/all-layer warm
+compatibility and empty-batch disappearance/exposure restoration. In an actual
+quality3 phone World, compare enabled/disabled startup, entrance and loft views
+with freshly rendered shadows and actual caster UUIDs. Use `entranceplantstest.html`
+for the existing pot/door/loft routes; actual production Player routes and the native
+start-touch/action button were also exercised in the retained World. Public main
+`6c69323a` has no entrance-plant builder or DetailCuller: no downstream target applies.
+Final production-main-installed explicitURLquality0 landscape and separate portrait
+full19/quality profiles pass367/840699/~98MiB and289/705267/~102MiB. Highestquality3
+full19 still fails399calls; parent#1453 remains open. Empty-batch failure and its
+positive same-World diagnosis remain in raw evidence, not counted as passes.
+Persistent raw profiles, pairs, native checks and rejected diagnostics:
+`/home/olw/.local/state/lunden-orkester/codex-surface-20261020/rigid1455/`.

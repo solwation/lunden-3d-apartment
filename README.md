@@ -458,3 +458,6 @@ The bus platform and tactile strip also follow the actual terrain triangles (#14
 keeping their existing heights and stopping grass from protruding through the walking surface.
 
 De befintliga öppningarna till markloggiorna i Hus A, B och C går nu att gå igenom åt båda håll.
+
+Phone entrance pots (#1455): the existing twenty L-house planters share six rigid pot/soil
+color batches, retaining the original leaves, physical objects and shadow casters.
