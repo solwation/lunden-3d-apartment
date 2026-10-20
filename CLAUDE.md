@@ -22,6 +22,14 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   Downstream instructions and its adapted `/orkester` live in its `CLAUDE.md` and `.claude/commands/orkester.md`;
   downstream orchestration is coordinated in its #4. Initial import history remains in this repo's #1064.
   This is an agent responsibility, not an automatic synchronization service.
+- **Ports have the lowest priority (user, 2026-10-20).** Work that transfers improvements from
+  `lunden-3d-apartment` to `kvarteret-lunden` always has `priority: low`, unless the user explicitly
+  specifies otherwise. This includes bug-fix ports and their implementation, test and support children;
+  the original issue's priority does not raise the port's priority. Apply this rule when creating work
+  and before every queue selection: lower existing higher-priority ports unless an explicit user exception
+  applies, then enforce the full ancestor ceiling. Preserve ownership, dependencies and the original
+  issue's own priority. Continue to review both queues and transfer applicable improvements; independent
+  public-project work that is not a port keeps its ordinary triage.
 - **Material-library scope (user, 2026-10-14):** #991 covers furniture upholstery/visible furnishing textiles,
   rugs and curtains; hanging towels are also approved. Do not add material editing for garments, wardrobe/cupboard/drawer
   contents, stored textiles/towels or cleaning cloths. #1028/#1030/#1031/#1032/#1033 are cancelled, not prerequisites.
