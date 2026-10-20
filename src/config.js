@@ -3626,6 +3626,10 @@ export const PADDOCK = {
   // mask) and walk on when the grass under them is shorter than `hungry`. `period` s between mask uploads.
   grass: { cell: 1.5, spacing: 1.0, w: 1.2, long: 0.28, short: 0.02, blades: 11, colors: [0x4a7a2a, 0x93b457], reach: 1.15, bite: 1.3, rate: 0.6, regrow: 1 / (72 * 3600), save: 20,
     patches: 10, radius: [4, 9], level: 0.05, around: 4, tries: 4, hungry: 0.35, period: 0.15, margin: 1.6 },
+  // #1397: assumed winter rugs in the pony's existing 1.32 m local frame; open neck/underside, no cloth simulation.
+  blanket: { colors: [0x315b75, 0x843e50], clearance: 0.025, hem: 0.70, trim: 0.035, trimTone: 0.42,
+    sections: [[-0.72, 0.73, 1.26, 0.18], [-0.64, 0.68, 1.30, 0.22], [-0.3, 0.62, 1.27, 0.26],
+      [0.05, 0.6, 1.29, 0.26], [0.35, 0.66, 1.34, 0.24], [0.50, 0.72, 1.29, 0.21]] },
   trough: { w: 1.7, d: 0.5, h: 0.42 }, shelter: { w: 4.2, d: 2.6, h: 2.3,
     // #1335/#1336 (all *guess*): the shelter stands where the ground under its footprint (+ `pad` m round it) varies by at most `maxRelief` m (the old spot dropped 0.7 m, so one side hung in the air
     // over the slope), at least `edge` m inside the fence; the posts/sill reach down to the lowest ground there (`sink` m below it), the floor level is the highest ground.

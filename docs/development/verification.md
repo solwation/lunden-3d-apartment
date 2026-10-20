@@ -1,3 +1,27 @@
+Winter rugs (#1397): `node --test tools/ponyblankettest.mjs` checks torso coverage/open neck and
+underside, finite normals,70triangles each, exact shared moving/scaled matrix buffer and season reuse.
+`PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/ponyblankettest.cjs GAME OUT` uses the actual World:
+two occupied winter stalls, distinct rugs, one rug draw/140triangles, summer/winter and hidden/far
+culling/reappearance, an actual winter walk with leg animation and main focus/use petting with head/ears.
+Inspect both sides as well as the occupied front and summer images. Pair with relevant full phone
+perfcount using unchanged budgets; preserve any failed/interrupted fixture attempts separately.
+
+Final combined check after feeding#1396: native3/3 and actual World7/7PASS, CLI0.
+The valid-waypoint winter walk covers0.68m with leg amplitude0.492; real main focus/use gives
+one pet point and moving ears/head. Both winter meals consume0.99portion with neck angle1.510,
+while rugs keep the exact torso buffer. Opened both-colour side, occupied front and summer images.
+An earlier6/6 functional pass had obstructed side images; the next attempt failed its arbitrary
+one-second displacement check during a natural turn. Both logs/images remain separate; the final
+fixture waits for0.6m actual movement (max10s) from valid existing field waypoints.
+
+The complete winter phone844×390quality0perfcount has one pre-existing failure: start371calls>370,
+with max828497triangles and~95MiB textures within950000/225. All other winter views and quality
+checks pass. An exact pre-rug9f45d93a paddock-module start baseline gives the same371calls/735194tri,
+so the existing winter startup overrun is tracked separately as#1404; it is not a green full budget.
+A bounded real-app start probe confirms parentVisible=false and zero rug submissions/zero
+draw delta with the child forced on versus off. Its separate render stage is not a full-perfcount
+absolute budget comparison. No global budget or whole-model/physical visibility is changed.
+
 Shelter frame (#1395): `node --test tools/paddockgeotest.mjs` includes rigid shelter/trough transforms,
 unchanged relief/fence limits, a free passage at the trough and safe fallback on unsuitable terrain/obstacles.
 Use `sheltertest.cjs`, `shelterwintertest.cjs`, `paddocktest.cjs` and the relevant full phone budget serially;

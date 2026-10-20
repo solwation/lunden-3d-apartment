@@ -8,6 +8,7 @@ import { Hearts } from './pingping.js';
 import { registerSeasonal } from './seasons.js';
 import { shelterWinter } from './shelterwinter.js';
 import { PaddockFeed } from './paddockfeed.js';
+import { ponyBlankets } from './ponyblanket.js';
 import { shelterSpots, snowCovered, RainWatch, footprintGround, shelterSite, relocateShelter } from './paddockshelter.js';
 
 // #1280: the pony paddock on the kidney-shaped meadow south of the timber footbridge: a merged post-and-rail fence with a closed gate, a
@@ -336,6 +337,7 @@ export class Paddock {
     this.mesh.boundingSphere.center.y = ground(centre.x, centre.z);
     this.mesh.visible = false;
     scene.add(this.mesh);
+    this.blankets = ponyBlankets(this.mesh); // #1397: shared actual torso matrices and parent culling.
     const start = [near(gm[0] + nx * 14, gm[1] + nz * 14), near(gm[0] + nx * 18 + nz * 12, gm[1] + nz * 18 - nx * 12)];
     this.ponies = animals.map((a, i) => {
       const w = start[i] ?? this.waypoints[i] ?? [centre.x, centre.z], rnd = mulberry(a.seed * 1000 + 1280);
