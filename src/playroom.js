@@ -106,9 +106,23 @@ export class Playroom {
       // the disco ball's mount and cord
       cbox(col.steel, F.ball.x - 0.04, F.ball.x + 0.04, h - 0.03, h, F.ball.z - 0.04, F.ball.z + 0.04), cbox(col.steel, F.ball.x - 0.005, F.ball.x + 0.005, F.ball.y + F.ball.r, h - 0.03, F.ball.z - 0.005, F.ball.z + 0.005),
     ];
+    // #1424: a small DJ bench; every dimension/placement is a fantasy-room guess.
+    const DJ = R.dj, djBox = (color, a,b,c,d,e,f) => cbox(color, DJ.x+a,DJ.x+b,c,d,DJ.z+e,DJ.z+f);
+    fur.push(djBox(col.wood,-DJ.w/2,DJ.w/2,DJ.h-DJ.top,DJ.h,-DJ.d/2,DJ.d/2));
+    for (const x of [-1,1]) for (const z of [-1,1])
+      fur.push(djBox(col.steel,x*(DJ.w/2-.07)-.025,x*(DJ.w/2-.07)+.025,0,DJ.h-DJ.top,z*(DJ.d/2-.07)-.025,z*(DJ.d/2-.07)+.025));
+    fur.push(djBox(col.dark,-.57,.57,DJ.h,DJ.h+.055,-.22,.22),djBox(col.steel,-.12,.12,DJ.h+.055,DJ.h+.065,-.18,.18));
+    for (const x of [-.35,.35]) {
+      fur.push(paint(new THREE.CylinderGeometry(.16,.16,.018,12).translate(R.x+DJ.x+x,DJ.h+.064,R.z+DJ.z),col.steel));
+      fur.push(paint(new THREE.CylinderGeometry(.035,.035,.02,8).translate(R.x+DJ.x+x,DJ.h+.074,R.z+DJ.z),col.dark));
+      for(const z of [-.15,.15])fur.push(djBox(col.blue,x-.025,x+.025,DJ.h+.055,DJ.h+.065,z-.018,z+.018));
+    }
+    for(const x of [-.065,.065])for(const z of [-.1,0])
+      fur.push(paint(new THREE.CylinderGeometry(.018,.018,.025,6).translate(R.x+DJ.x+x,DJ.h+.0775,R.z+DJ.z+z),col.dark));
+    fur.push(djBox(col.dark,-.075,.075,DJ.h+.065,DJ.h+.069,.09,.11),djBox(col.red,-.012,.012,DJ.h+.069,DJ.h+.085,.075,.125));
     const furMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85 });
     // Collision edges stop at each chair; the wide center aisle and the route behind the rear row stay open.
-    this.footprints = [...cinema.seat.rowX.flatMap((x) => cinema.seat.z.map((z) => rect(x - S.depth / 2, x + S.depth / 2, z - S.width / 2, z + S.width / 2))),
+    this.footprints = [rect(DJ.x-DJ.w/2,DJ.x+DJ.w/2,DJ.z-DJ.d/2,DJ.z+DJ.d/2), ...cinema.seat.rowX.flatMap((x) => cinema.seat.z.map((z) => rect(x - S.depth / 2, x + S.depth / 2, z - S.width / 2, z + S.width / 2))),
       rect(tvx - 0.02, tvx + 0.075, tvz - scr.w / 2 - 0.3, tvz + scr.w / 2 + 0.3),
       rect(2.65+F.desk.x, 3.2+F.desk.x, 0.3+F.desk.z, 1.7+F.desk.z), rect(F.stool.x - 0.2, F.stool.x + 0.2, F.stool.z - 0.2, F.stool.z + 0.2)];
     for (const q of this.footprints) for (let i = 0; i < 4; i++) { const a = q[i], b = q[(i + 1) % 4]; this.segments.push([a[0], a[1], b[0], b[1]]); }
@@ -177,6 +191,9 @@ export class Playroom {
       pk.position.set(R.x+x, speaker.y, R.z+speaker.z); pk.userData.door = this.music.target;
       this.music.target.pickable ??= pk; this.object.add(pk); this.controlPickables.push(pk);
     }
+    const djPick = new THREE.Mesh(new THREE.BoxGeometry(1.18,.14,.48), new THREE.MeshBasicMaterial({ visible: false }));
+    djPick.position.set(R.x+DJ.x,DJ.h+.07,R.z+DJ.z); djPick.userData.door=this.music.target;
+    this.object.add(djPick); this.controlPickables.push(djPick);
     this.devices = new PlayroomDevices((name, on) => this.onSwitch?.(name, on));
     this.object.add(this.devices.object); this.controlPickables.push(...this.devices.pickables);
     this.disco(0);

@@ -5716,6 +5716,7 @@ export function avatarBody(look) {
 // ordinary pose stream already hides a player who goes in and shows him again inside to the others there. All values are
 // our own choices (*guess*): the room is much bigger than the playhouse's 2.1 × 1.9 m shell on purpose.
 export const PLAYROOM = { maxCm: 160, x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // centre (m), size (x, z) and height (m)
+  dj: { x: 2, z: -4.6, w: 1.4, d: .65, h: .68, top: .06 }, // guess: child-sized corner bench, clear of table/cue and passage
   speakers: { x: [-2.2, 2.2], y: 1.1, z: -4.98, w: .25, h: .38, d: .18 }, // guess: small wall-mounted pair, clear of cue/walking space
   door: { w: 0.8, h: 1.7 }, // #1344: the way out in the south wall, above the under-160 cm entrants (guess)
   standOff: 0.75, // m from the door wall where you arrive inside

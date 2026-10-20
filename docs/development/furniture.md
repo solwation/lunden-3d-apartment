@@ -390,3 +390,27 @@ Primary references: [official IFrame API](https://developers.google.com/youtube/
 The tracked app has no CSP declaration and the Pages HTTP response checked on
 2026-10-20 has no CSP header; no policy relaxation was needed. The iframe remains
 cross-origin. This personal clubhouse gameplay has no public downstream transfer.
+
+## Clubhouse DJ bench (#1424)
+
+`PLAYROOM.dj` describes a guessed 1.4 × .65 m corner bench, .68 m high, at
+local (2, −4.6), under the right speaker. The top, four legs, two platters and
+small mixer share the existing static furniture mesh/material. Its pick box
+uses the **same** `PlayroomMusic.target`/choices as both speakers (#1423), with
+no new controller, media, audio policy or panel. Its one full footprint adds
+four ordinary collision edges; all previous footprints/edges and table yaw
+π/2 are exact. The actual table north edge is −.99, bench front −4.275:
+3.285 m separation, leaving a conservative 2.285 m beyond the full 1 m cue.
+These are model distances, not measurements of a real room.
+
+Actual app: E start/pause, touch same-element resume/OFF and audio RMS .011–.022;
+W walks from the south hall round the table to the bench and back, blocks in
+front of the bench at z−4.100, then native touch exit releases the playing media.
+Standing-eye matched desktop/touch images and room overview are retained in
+local orkester state `codex-surface-20261020/dj1424/`. The pair of room builders
+shows +412 triangles, no new visible mesh/material/texture, with the entire
+room still hidden outdoors. The static mesh box/sphere are exact. Matched
+960×600 desktop and 844×390 touch views stay at 13 calls, 8,974 → 9,386 triangles;
+these targeted views are not a new global performance profile. The audio lifecycle/race tests from #1423 remain
+applicable to unchanged audio code. A/B/C/L and public downstream: not applicable
+to this personal clubhouse gameplay feature.
