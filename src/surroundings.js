@@ -64,6 +64,9 @@ export const recessFloors = S.blocks.flatMap((b) => (b.recesses ?? []).flatMap((
   if (r.basement) return [floor]; // GARAGE owns the continuous doorway floor behind it (#729).
   return [floor, nz ? { block: b, r, y, x0: d0, x1: d1, z0: c1, z1: c1 + DOORWAY_DEPTH } : { block: b, r, y, x0: c0 - DOORWAY_DEPTH, x1: c0, z0: d0, z1: d1 }];
 }));
+// A/B's north loggias begin above solid basement corners. Their exposed first floor must also support walking;
+// the terrain mesh has a deliberate hole under these houses (#647).
+const raisedLoggiaFloors = [];
 /** The stairs down from the courtyard (T.stairs, terraceStairs below): [x0, x1, z0, z1, y] per tread (#355: walkable). */
 const stairTreads = T.stairs.flatMap((St) => {
   const drop = St.drop ?? -T.park, steps = St.steps ?? Math.round(drop / 0.17), rise = drop / steps, half = St.landing ? Math.floor(steps / 2) : -1;
@@ -90,6 +93,7 @@ export function groundY(x, z) {
 
   for (const [x0, x1, z0, z1, y] of stairTreads) if (x >= x0 && x <= x1 && z > z0 && z <= z1) return y;
   for (const f of recessFloors) if (x > f.x0 && x < f.x1 && z > f.z0 && z < f.z1) return f.y;
+  for (const f of raisedLoggiaFloors) if (x > f.x0 && x < f.x1 && z > f.z0 && z < f.z1) return f.y;
   if (z <= Wst.stair.z1) return Math.max(terrainY(x, z), nwTread(x)); // the NW stair's treads over the verge
   const fill=parkFillAt(x,z); // #1337: the footbridge's earth ramps
   return fill===null?terrainY(x, z):Math.max(terrainY(x, z),fill);
@@ -981,6 +985,13 @@ function loggiaKind(b, st, y, g) {
 }
 /** Is loggia l (cornerLoggias) buried on storey st, i.e. a solid corner there (#1153)? */
 const buriedLoggia = (b, l, st) => st < b.storeys && loggiaKind(b, st, b.base + st * S.storey, frontGround(l)) === 'buried';
+for (const b of S.blocks.filter((block) => block.corners)) for (const l of cornerLoggias(b)) {
+  let st = 0;
+  while (st < b.storeys && buriedLoggia(b, l, st)) st++;
+  const y = b.base + st * S.storey;
+  if (st && st < b.storeys && loggiaKind(b, st, y, frontGround(l)) === 'ground')
+    raisedLoggiaFloors.push({ x0: Math.min(l.cx, l.ix), x1: Math.max(l.cx, l.ix), z0: Math.min(l.cz, l.iz), z1: Math.max(l.cz, l.iz), y });
+}
 
 /** The door and window on a loggia's longer inner wall on each storey above the ground (#266): { kind, x0, z0, x1,
  * z1 (a line along the wall), n (facing [x, z]), y0, y1 }. */
@@ -1105,8 +1116,9 @@ function loggias(blocks) {
       walls.push(quad(cx, iz, ix, iz, 0, -sz, y0, top), quad(ix, cz, ix, iz, -sx, 0, y0, top)); // the rendered inner walls
       for (let st = 0; st <= b.storeys; st++) {
         const y = b.base + st * S.storey, kind = loggiaKind(b, st, y, g);
-        // #1203: no slab at or below the solid corner's top (st0): its side faces stood flush with the corner's brick (z-fighting white strip)
+        // #1203: no slab side at the solid corner's top (st0): it would fight the brick. Its exposed top still needs a floor (#1428).
         if (st > st0) slabs.push(new THREE.BoxGeometry(lx, 0.22, lz).translate(mx, y - 0.11, mz)); // floor above / ceiling below
+        else if (st === st0 && st0 > 0 && kind === 'ground') slabs.push(new THREE.PlaneGeometry(lx, lz).rotateX(-Math.PI / 2).translate(mx, y, mz));
         else if (kind === 'ground' && st0 === 0) slabs.push(new THREE.BoxGeometry(lx, 0.06, lz).translate(mx, y + 0.03, mz)); // over the plinth (#1212: not on a solid corner's top, st0 > 0: its sides stand flush with the brick, a thin light line)
         if (kind === 'ground') { // brick, with the opening next to the flat's wall on the longer front (#266)
           const ox = lx >= lz ? P.open : 0, oz = lx >= lz ? 0 : P.open, py = Math.max(y, g);
