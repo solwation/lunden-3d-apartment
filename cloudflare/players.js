@@ -30,7 +30,7 @@ import { freshTable, validSnapshot, cleanDirection, simulateStroke } from '../sr
 // PLAYERS.toastRange m as { t: 'c', i, k, b? }; no text, at most one per toastEvery s per connection.
 // A sound event (#1302) { t: 'snd', k } (k: a key of PLAYERS.sounds, today only 'bell' = the bicycle bell) goes to the players
 // within PLAYERS.soundRange m as { t: 'snd', i, k }; no text, at most one per soundEvery s per connection, never echoed.
-// #1343 reserves index KISS.phrase for a near, unarmed kiss to a Sarah/Olof name; same greeting budget.
+// #1398 reserves KISS.phrase for a complementary Sarah/Olof pair; accepted kisses echo id/at, optional q rejects replay.
 // A greeting (#673) { t: 'g', to, k } goes to everybody else as { t: 'g', i, to, k } (k: a phrase index, no text).
 // The children's-room billiard table (#1355, src/billiardsync.js): ONE shared game owned by the room. A player standing in the
 // children's room (their last state's position, PLAYERS.pool) sends { t: 'pool', k: 's', q, d: [dx, dz] } (a stroke direction),
@@ -143,7 +143,8 @@ export function cleanTalk(text) {
 export function cleanGreet(text) {
   let m;
   try { m = JSON.parse(text); } catch { return null; }
-  return m?.t === 'g' && typeof m.to === 'string' && m.to.length <= 16 && Number.isInteger(m.k) && m.k >= 0 && m.k < PLAYERS.greetPhrases ? { to: m.to, k: m.k } : null;
+  if (m?.q !== undefined && (!Number.isSafeInteger(m.q) || m.q <= 0)) return null;
+  return m?.t === 'g' && typeof m.to === 'string' && m.to.length <= 16 && Number.isInteger(m.k) && m.k >= 0 && m.k < PLAYERS.greetPhrases ? { to: m.to, k: m.k, ...(m.q !== undefined ? { q: m.q } : {}) } : null;
 }
 
 /** A toast (#1222) { t: 'c', k: line index, b?: true }, or null. */
@@ -487,10 +488,20 @@ export class PlayerRoom {
     else if (talk) this.talk(ws, a, talk, now);
     else if (hello) { // #673: to someone here, not too often; everybody else sees the greeter wave
       const target = this.open().find((x) => x !== ws && att(x).i === hello.to), recipient = target && att(target);
-      const allowed = hello.k !== KISS.phrase || (recipient && !a.s?.h && canKiss(recipient.n, a.s?.p, recipient.s?.p, KISS.serverRange));
+      const allowed = hello.k !== KISS.phrase || (recipient && !a.s?.h && !recipient.s?.h && canKiss(a.n, recipient.n, a.s?.p, recipient.s?.p, KISS.serverRange));
       if (now - (a.gt ?? 0) >= PLAYERS.greetEvery * 800 && hello.to !== a.i && target && allowed) {
-        a.gt = now;
-        this.broadcast({ t: 'g', i: a.i, to: hello.to, k: hello.k }, ws);
+        if (hello.k === KISS.phrase) {
+          if ((hello.q !== undefined && hello.q <= (a.kq ?? 0)) || now - (recipient.kt ?? 0) < KISS.duration * 1000 || now - (a.kt ?? 0) < KISS.duration * 1000) return;
+          if (hello.q !== undefined) a.kq = hello.q;
+          a.kt = recipient.kt = now;
+          a.gt = now;
+          target.serializeAttachment(recipient);
+          // Echo only accepted kisses: no optimistic effects or rewards, stable receipt for duplicates.
+          this.broadcast({ t: 'g', i: a.i, to: hello.to, k: hello.k, id: `${a.i}:${now}`, at: now });
+        } else {
+          a.gt = now;
+          this.broadcast({ t: 'g', i: a.i, to: hello.to, k: hello.k }, ws);
+        }
       }
     } else if (toast) { // #1222: to the players near the toaster, not too often
       if (now - (a.ct ?? 0) >= PLAYERS.toastEvery * 800 && a.s?.p) {

@@ -10,7 +10,7 @@ import { acquireBadge, releaseBadge, badgeScore, badgeLives } from './ghostbadge
 import { setMirrorExtra } from './reflections.js';
 import { GhostCat } from './ghostcat.js';
 import { JoinNotice } from './joinnotice.js';
-import { canKiss, kissName } from './kiss.js';
+import { canKiss, kissAmount } from './kiss.js';
 import { Hearts } from './pingping.js';
 import { cleanHeldCategory } from './heldcategory.js';
 import { ghostProp, ghostJetpack, ghostBike, ghostItem } from './ghostprops.js'; // what an armed player holds: their weapon's own model (#667, #1126)
@@ -313,7 +313,14 @@ export class Ghost { // (exported for tools/ghostprops.html)
     }
     if (this.heldCat.object) Object.assign(hands, this.heldCat.hands());
     Object.assign(hands, this.hands);
-    this.avatar.update(dt, { speed: this.speed, turn, hands, crouch: this.crouch ?? 0 });
+    const kiss = this.kiss;
+    const age = kiss ? (t - kiss.start) / 1000 : -1, amount = kissAmount(age);
+    if (kiss && age >= KISS.duration) this.kiss = null;
+    if (amount) {
+      const direction = Math.atan2(kiss.toward.x - this.root.position.x, kiss.toward.z - this.root.position.z);
+      this.avatar.object.rotation.y = lerpAngle(this.avatar.object.rotation.y, direction - this.root.rotation.y, amount);
+    }
+    this.avatar.update(dt, { speed: this.speed * (1 - amount), turn: turn * (1 - amount), hands, crouch: this.crouch ?? 0, kiss: amount, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0 });
     applyRestPose(this.avatar, this.pose);
     if (this.bikeMesh) this.poseBike(dt, Math.hypot(vx, vz));
     this.heldCat.update(this.avatar, this.root);
@@ -422,7 +429,7 @@ export class Ghosts {
     this.reset();
   }
 
-  reset() { if (this.kissHearts) this.kissHearts.points.visible = false; this.finishFall(null); this.finishConsume(null); this.myGhost?.clearMirrorTyping(); this.me = null; this.sent = null; this.outbox = []; this.talkbox = []; for (const g of this.others.values()) g.dispose(); this.others.clear(); this.notice?.reset(); this.onTypingReset?.(); }
+  reset() { this.kisses = []; this.myGhost && (this.myGhost.kiss = null); if (this.kissHearts) this.kissHearts.points.visible = false; this.finishFall(null); this.finishConsume(null); this.myGhost?.clearMirrorTyping(); this.me = null; this.sent = null; this.outbox = []; this.talkbox = []; for (const g of this.others.values()) g.dispose(); this.others.clear(); this.notice?.reset(); this.onTypingReset?.(); }
 
   closed(ws, code) {
     if (ws !== this.ws) return;
@@ -454,7 +461,10 @@ export class Ghosts {
     else if (m.t === 'consume') { if (m.id === this.pendingConsume?.id) this.finishConsume(m); }
     else if (m.t === 'hurt') this.onHurt(m, this.others.get(m.by));
     else if (m.t === 'a') { const g = this.others.get(m.i); if (g) this.onShot?.(m, g); }
-    else if (m.t === 'g') { const g = this.others.get(m.i); if (g) { if (m.k === KISS.phrase) this.kissBurst(m.to === this.me ? null : this.others.get(m.to)); else g.wave(); this.greetsSeen++; this.onGreet?.(m, g, m.to === this.me ? null : this.others.get(m.to) ?? null); } }
+    else if (m.t === 'g') {
+      if (m.k === KISS.phrase) this.startKiss(m, t);
+      else { const g = this.others.get(m.i); if (g) { g.wave(); this.greetsSeen++; this.onGreet?.(m, g, this.others.get(m.to) ?? null); } }
+    }
     else if (m.t === 'c') { const g = this.others.get(m.i); if (g) this.onToast?.(m, g); } // a toast (#1222): the room sends it only from within PLAYERS.toastRange
     else if (m.t === 'snd') { const g = this.others.get(m.i); if (g && SOUNDS.kinds.includes(m.k)) this.onPlayerSound?.(m, g); } // a sound event (#1302): the room sends it only from within PLAYERS.soundRange
     else if (m.t === 'pool') this.onPool?.(m); // the shared billiard table (#1355, src/billiards.js): only sent to players inside the children's room
@@ -517,6 +527,7 @@ export class Ghosts {
     }
     const eye = this.camera.position, armed = !!s.h;
     for (const g of this.others.values()) { g.draw(t, eye); g.setSolid(armed && !!g.h); }
+    this.updateKisses(t);
     if (this.onStep || this.onJet) this.soundTick(t);
   }
 
@@ -654,12 +665,55 @@ export class Ghosts {
     g.door.verb = this.canKiss(g) ? 'pussa' : 'hälsa på'; return g.pick;
   }) : []; }
 
-  canKiss(g) { return kissName(g.name) && !this.weapon() && canKiss(g.name, this.state().p, g.root.position.toArray()); }
+  canKiss(g) { return !this.weapon() && !g.h && canKiss(this.name(), g.name, this.state().p, g.root.position.toArray()); }
 
-  kissBurst(g) {
-    if (g === undefined) return; // a departed recipient cannot create an effect at the origin
-    this.kissHearts ??= new Hearts(this.scene, KISS.hearts, KISS.scale);
-    this.kissHearts.burst(g ? g.head : this.camera.position);
+  startKiss(m, now) {
+    if (typeof m.id !== 'string' || m.id.length > 80 || !Number.isFinite(m.at)) return; // old server: greet only, no unconfirmed reward
+    this.kissSeen ??= new Set();
+    if (this.kissSeen.has(m.id)) return;
+    const a = m.i === this.me ? this.selfGhost() : this.others.get(m.i);
+    const b = m.to === this.me ? this.selfGhost() : this.others.get(m.to);
+    if (!a || !b || a === b) return;
+    const from = m.i === this.me ? this.state().p : a.root.position.toArray();
+    const to = m.to === this.me ? this.state().p : b.root.position.toArray();
+    if (!canKiss(a.name, b.name, from, to, KISS.serverRange)) return;
+    this.kissSeen.add(m.id);
+    if (this.kissSeen.size > KISS.receipts) this.kissSeen.delete(this.kissSeen.values().next().value);
+    const start = now; // one room broadcast starts every local monotonic clock; no wall-clock skew dependency
+    a.waveT = b.waveT = 0;
+    const reach = THREE.MathUtils.clamp((Math.hypot(to[0] - from[0], to[2] - from[2]) - KISS.faceGap) / (KISS.range - KISS.faceGap), 0, 1);
+    const heightA = from[1] + a.avatar.look.tall * KISS.mouthHeight, heightB = to[1] + b.avatar.look.tall * KISS.mouthHeight;
+    a.kiss = { start, toward: new THREE.Vector3(...to), reach, lift: Math.min(0, heightB - heightA) / a.avatar.look.tall };
+    b.kiss = { start, toward: new THREE.Vector3(...from), reach, lift: Math.min(0, heightA - heightB) / b.avatar.look.tall };
+    (this.kisses ??= []).push({ m, a, b, start, done: false });
+  }
+
+  updateKisses(now) {
+    if (!this.kisses?.length) return;
+    this.kisses = (this.kisses ?? []).filter(event => {
+      const { m, a, b, start } = event, age = (now - start) / 1000;
+      const from = m.i === this.me ? this.state().p : this.others.get(m.i)?.root.position.toArray();
+      const to = m.to === this.me ? this.state().p : this.others.get(m.to)?.root.position.toArray();
+      if (!canKiss(a.name, b.name, from, to, KISS.serverRange) || (m.i === this.me ? this.weapon() : a.h) || (m.to === this.me ? this.weapon() : b.h)) {
+        a.kiss = b.kiss = null; return false;
+      }
+      const at = new THREE.Vector3(...from).add(new THREE.Vector3(...to)).multiplyScalar(.5);
+      at.y += Math.min(a.avatar.look.tall, b.avatar.look.tall) * KISS.mouthHeight;
+      const near = at.distanceTo(this.camera.position) <= KISS.soundRange;
+      if (!event.sounded && age >= KISS.contact - KISS.hum) {
+        event.sounded = true;
+        if (near) this.onKiss?.(m, at);
+      }
+      if (!event.done && age >= KISS.contact) {
+        event.done = true;
+        if (near) {
+          this.kissHearts ??= new Hearts(this.scene, KISS.hearts, KISS.scale);
+          this.kissHearts.burst(at);
+        }
+        if (m.i === this.me) this.onLove?.(m.id);
+      }
+      return age < KISS.duration;
+    });
   }
 
   /** Greet `g` (#673): a phrase from GHOSTS.hello (an index, never free text), one message to the room, at most one every
@@ -669,8 +723,7 @@ export class Ghosts {
     if (!this.connected || t - this.greetAt < G.greetEvery * 1000 || !this.others.has(g.id)) return null;
     this.greetAt = t;
     const kiss = this.canKiss(g), k = kiss ? KISS.phrase : Math.floor(Math.random() * G.hello.length);
-    if (kiss) this.kissBurst(g);
-    this.outbox.push({ t: 'g', to: g.id, k });
+    this.outbox.push({ t: 'g', to: g.id, k, ...(kiss ? { q: this.kissSeq = (this.kissSeq ?? 0) + 1 } : {}) });
     while (this.outbox.length > G.outbox) this.outbox.splice(this.outbox.findIndex(m => m.t !== 'fall' && m.t !== 'consume'), 1);
     this.sendShot();
     return (kiss ? KISS.line : G.hello[k]).replace('{n}', g.name);

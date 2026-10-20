@@ -1631,13 +1631,13 @@ test('sound events (#1302): a whitelisted key only, to the players within range,
 
 test('kiss (#1343): same greeting budget, server validates target name, proximity, weapon and state', async () => {
   const {KISS}=await import('../src/config.js');
-  const env=setup(),a=await connect(env,'Anna'),b=await connect(env,'sArAh 2'),c=await connect(env,'Bertil');
+  const env=setup(),a=await connect(env,'Olof'),b=await connect(env,'sArAh 2'),c=await connect(env,'Bertil');
   const ia=a.got[0].i,ib=b.got[0].i,ic=c.got[0].i,kisses=x=>x.got.filter(m=>m.t==='g'&&m.k===KISS.phrase);
   const state=async(x,p,h='')=>{now+=5000;x.send({p,r:0,h});await settle(env);};
   const kiss=async(to=ib)=>{now+=5000;a.send({t:'g',to,k:KISS.phrase});await settle(env);};
   await kiss();assert.equal(kisses(b).length,0,'no known positions');
   await state(a,[0,0,0]);await state(b,[0,0,1]);await state(c,[0,0,1]);await kiss();
-  assert.deepEqual(kisses(b),[{t:'g',i:ia,to:ib,k:KISS.phrase}]);assert.equal(kisses(c).length,1,'observer sees same bounded event');assert.equal(kisses(a).length,0,'no duplicate echo');
+  assert.equal(kisses(b).length,1);assert.deepEqual(kisses(b)[0],{t:'g',i:ia,to:ib,k:KISS.phrase,id:`${ia}:${now}`,at:now});assert.equal(kisses(c).length,1,'observer sees same bounded event');assert.equal(kisses(a).length,1,'initiator receives the same authoritative receipt');
   a.send({t:'g',to:ib,k:KISS.phrase});await settle(env);assert.equal(kisses(b).length,1,'shared cooldown');
   await kiss(ic);assert.equal(kisses(b).length,1,'unmatched target name rejected');
   await state(b,[0,0,KISS.serverRange+.05]);await kiss();assert.equal(kisses(b).length,1,'too far');
@@ -1645,4 +1645,24 @@ test('kiss (#1343): same greeting budget, server validates target name, proximit
   await state(b,[0,0,1]);await state(a,[0,0,0],'rifle');await kiss();assert.equal(kisses(b).length,1,'armed sender rejected');
   await state(a,[0,0,0]);await kiss();assert.equal(kisses(b).length,2,'unarmed again');
   now+=5000;a.send({t:'g',to:ic,k:0});await settle(env);assert(c.got.some(m=>m.t==='g'&&m.k===0),'ordinary greeting preserved');
+});
+
+
+test('kiss #1398: server pair matrix, ambiguous names and replayed request IDs', async()=>{
+ const {KISS}=await import('../src/config.js');
+ for(const [na,nb,ok] of [['Sarah','Olof',true],['Olof','Sarah',true],['sArAh 2','Ｏｌｏｆsson',true],['Sarah','Sarah',false],['Olof','Olof',false],['Sarah','Bertil',false],['Bertil','Olof',false],['Bertil','Anna',false],['Sarah Olof','Sarah',false],['Sarah','Sarah Olof',false]]){
+  const env=setup(),a=await connect(env,na),b=await connect(env,nb),ib=b.got[0].i;
+  now+=5000;a.send({p:[0,0,0],r:0});b.send({p:[0,0,1],r:0});await settle(env);
+  now+=5000;a.send({t:'g',to:ib,k:KISS.phrase,q:1});await settle(env);
+  const received=()=>b.got.filter(m=>m.t==='g'&&m.k===KISS.phrase);
+  assert.equal(received().length,ok?1:0,`${na}/${nb}`);
+  if(ok){
+   assert.equal(a.got.filter(m=>m.id===received()[0].id).length,1);
+   now+=5000;a.send({t:'g',to:ib,k:KISS.phrase,q:1});await settle(env);
+   assert.equal(received().length,1,'same request cannot be replayed after cooldown');
+   now+=5000;b.send({p:[0,0,1],r:0,h:'rifle'});await settle(env);
+   now+=5000;a.send({t:'g',to:ib,k:KISS.phrase,q:2});await settle(env);
+   assert.equal(received().length,1,'armed recipient also rejected');
+  }
+ }
 });

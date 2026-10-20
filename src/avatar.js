@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_EARRINGS as EARR, AVATAR_HAT as HAT, AVATAR_PHONES as PHONES, AVATAR_NECKLACE as NECK_L, AVATAR_RING as RING, AVATAR_WRIST as WRIST, wristValue, AVATAR_CLOTHES, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
+import { KISS, AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_EARRINGS as EARR, AVATAR_HAT as HAT, AVATAR_PHONES as PHONES, AVATAR_NECKLACE as NECK_L, AVATAR_RING as RING, AVATAR_WRIST as WRIST, wristValue, AVATAR_CLOTHES, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
 import { topTexture } from './spidersuit.js';
 import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, SHIN, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
 
@@ -839,7 +839,7 @@ function base(style = 0, sleeves = 0, gender = 0, facial = 0, legs = 0, cut = 0)
     }
     const g = g0.index ? g0.toNonIndexed() : g0;
     const n = g.attributes.position.count, k = NAMES.indexOf(part.bone), c = new THREE.Color(fixed), vs = g.attributes.shade?.array; // per-vertex shade (hair strands, #1102)
-    const col = new Float32Array(n * 3), bare = new Float32Array(n), reg = new Float32Array(n), si = new Uint16Array(n * 4), sw = new Float32Array(n * 4), contact = new Uint8Array(n), nose = new Uint8Array(n), jaw = new Uint8Array(n), mouth = new Float32Array(n);
+    const col = new Float32Array(n * 3), bare = new Float32Array(n), reg = new Float32Array(n), si = new Uint16Array(n * 4), sw = new Float32Array(n * 4), contact = new Uint8Array(n), nose = new Uint8Array(n), jaw = new Uint8Array(n), mouth = new Float32Array(n), pucker = new Uint8Array(n);
     const hb = part.bone === 'head' ? bindAt('head') : null, gp = g.attributes.position;
     const facePt = new Float32Array(n).fill(part.face ?? 0), anchor = new Float32Array(n * 3); // (#1138, see faceShape)
     const anc = part.anchor?.isBufferGeometry ? (part.anchor.index ? part.anchor.toNonIndexed() : part.anchor).attributes.position.array : null;
@@ -847,6 +847,12 @@ function base(style = 0, sleeves = 0, gender = 0, facial = 0, legs = 0, cut = 0)
     for (let i = 0; i < n; i++) {
       if (region === REGION.fixed && !part.shoe) { col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b; } else col.fill((vs ? shade * vs[i] : shade) * clothShade(part.bone, region, g.attributes.position, i), i * 3, i * 3 + 3);
       bare[i] = region === REGION.skin ? 1 : 0;
+      // Pull the adjacent muzzle skin with the lips, so a pout never leaves floating lip islands.
+      if (hb) {
+        const x = gp.getX(i) - hb.x, y = gp.getY(i) - hb.y, z = gp.getZ(i) - hb.z;
+        const skin = part.rifleNose ? 0 : Math.max(0, 1 - (x / KISS.muzzleWidth) ** 2 - ((y - SEAM_Y) / KISS.muzzleHeight) ** 2) * smoothstep(...KISS.muzzleFront, z);
+        pucker[i] = Math.round(255 * (['upper', 'lower', 'seam'].includes(part.mouth) ? 1 : skin));
+      }
       if (hb) mouth[i] = mouthWeight(part.mouth, gp.getX(i) - hb.x, gp.getY(i) - hb.y, gp.getZ(i) - hb.z);
       jaw[i] = part.rifleJaw ? 1 : 0; nose[i] = part.rifleNose ? 1 : 0; contact[i] = part.rifleSkull ? 1 : 0; reg[i] = part.shoe ? 5 : region; si[i * 4] = k; sw[i * 4] = 1;
     }
@@ -856,12 +862,13 @@ function base(style = 0, sleeves = 0, gender = 0, facial = 0, legs = 0, cut = 0)
     g.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(si, 4));
     g.setAttribute('skinWeight', new THREE.BufferAttribute(sw, 4));
     g.setAttribute('rifleJaw', new THREE.Uint8BufferAttribute(jaw, 1));
+    g.setAttribute('pucker', new THREE.Uint8BufferAttribute(pucker, 1, true));
     g.setAttribute('mouth', new THREE.BufferAttribute(mouth, 1));
     g.setAttribute('rifleNose', new THREE.Uint8BufferAttribute(nose, 1));
     g.setAttribute('rifleSkull', new THREE.Uint8BufferAttribute(contact, 1));
     g.setAttribute('facePart', new THREE.BufferAttribute(facePt, 1));
     g.setAttribute('faceAnchor', new THREE.BufferAttribute(anchor, 3));
-    for (const a of Object.keys(g.attributes)) if (!['position', 'normal', 'color', 'region', 'bare', 'skinIndex', 'skinWeight', 'rifleSkull', 'rifleNose', 'rifleJaw', 'mouth', 'facePart', 'faceAnchor'].includes(a)) g.deleteAttribute(a);
+    for (const a of Object.keys(g.attributes)) if (!['position', 'normal', 'color', 'region', 'bare', 'skinIndex', 'skinWeight', 'rifleSkull', 'rifleNose', 'rifleJaw', 'mouth', 'pucker', 'facePart', 'faceAnchor'].includes(a)) g.deleteAttribute(a);
     geos.push(g);
   }
   b = mergeGeometries(geos);
@@ -886,7 +893,7 @@ function geometryFor(lk) {
     col[i * 3] = c.r * s; col[i * 3 + 1] = c.g * s; col[i * 3 + 2] = c.b * s;
   }
   const g = new THREE.BufferGeometry();
-  for (const name of ['position', 'normal', 'bare', 'skinIndex', 'skinWeight', 'rifleSkull', 'rifleNose', 'rifleJaw', 'mouth', 'facePart', 'faceAnchor']) g.setAttribute(name, b.attributes[name]);
+  for (const name of ['position', 'normal', 'bare', 'skinIndex', 'skinWeight', 'rifleSkull', 'rifleNose', 'rifleJaw', 'mouth', 'pucker', 'facePart', 'faceAnchor']) g.setAttribute(name, b.attributes[name]);
   g.setAttribute('color', new THREE.BufferAttribute(col, 3));
   g.userData.headProjection = b.userData.headProjection;
   g.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0.95, 0), 1.3); // limbs and a raised arm stay inside (culling by the root)
@@ -905,7 +912,7 @@ function releaseSuitTexture() { if (--suitUsers === 0) { suitTexture.dispose(); 
 
 function makeMaterial(rim, headProjection) {
   const headMin = headProjection.min, headSize = headProjection.getSize(new THREE.Vector3()), headFront = headProjection.getCenter(new THREE.Vector3()).z;
-  const u = { uOutline: { value: 0 }, uFill: { value: A.fill }, uRim: { value: A.rim }, uRimColor: { value: rim }, uSuit: { value: 0 }, uSuitTexture: { value: null }, uSuitMaskBand: { value: 0 }, uMouth: { value: 0 },
+  const u = { uOutline: { value: 0 }, uFill: { value: A.fill }, uRim: { value: A.rim }, uRimColor: { value: rim }, uSuit: { value: 0 }, uSuitTexture: { value: null }, uSuitMaskBand: { value: 0 }, uMouth: { value: 0 }, uKiss: { value: 0 },
     uEye: { value: new THREE.Vector3(1, 1, 1) }, uNose: { value: new THREE.Vector3(1, 1, 1) }, uEar: { value: 1 }, uHair: { value: 1 }, uGlasses: { value: 0 }, uEarrings: { value: 0 }, uHat: { value: 0 }, uPhones: { value: 0 }, uNecklace: { value: 0 }, uRingFinger: { value: 0 }, uBracelet: { value: 0 }, uWatch: { value: 0 }, uRingColor: { value: new THREE.Color(RING.colours[0]) }, uNeck: { value: 0 }, uBrow: { value: new THREE.Vector2(1, 0) }, uHead: { value: new THREE.Vector3(1, 1, 0) } };
   const m = new THREE.MeshLambertMaterial({ vertexColors: true, transparent: false, depthWrite: true });
   m.emissive.setScalar(A.emissiveSolid);
@@ -914,8 +921,8 @@ function makeMaterial(rim, headProjection) {
     Object.assign(sh.uniforms, u);
     // Bind-pose coordinates follow the original skin: colours/own canvas only, no new
     // geometry, skeleton, head envelope or per-avatar colour-buffer replacement (#891).
-    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vSuitAt; varying float vSuitBone; attribute float bare; varying float vBare; varying float vRing; attribute float mouth; uniform float uMouth;\n' + FACE_SHAPE_DECL)
-      .replace('#include <begin_vertex>', `#include <begin_vertex>\nvSuitAt = position; vSuitBone = skinIndex.x; vBare = bare; vRing = step(${FACE_PART.ring}.0 - 0.5, facePart) * step(facePart, ${FACE_PART.watchStrap}.0 - 0.5); // (#1334: the rings, bracelets and watch cases are metal)\n${faceShape()}\ntransformed.y -= uMouth * mouth * ${MOUTH.drop.toFixed(5)}; // #1122: the jaw while talking`);
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vSuitAt; varying float vSuitBone; attribute float bare; varying float vBare; varying float vRing; attribute float mouth; uniform float uMouth; attribute float pucker; uniform float uKiss;\n' + FACE_SHAPE_DECL)
+      .replace('#include <begin_vertex>', `#include <begin_vertex>\nvSuitAt = position; vSuitBone = skinIndex.x; vBare = bare; vRing = step(${FACE_PART.ring}.0 - 0.5, facePart) * step(facePart, ${FACE_PART.watchStrap}.0 - 0.5); // (#1334: the rings, bracelets and watch cases are metal)\n${faceShape()}\ntransformed.x *= 1.0 - uKiss * pucker * ${KISS.narrow.toFixed(5)};\ntransformed.z += uKiss * pucker * ${KISS.pucker.toFixed(5)};\ntransformed.y -= uMouth * mouth * ${MOUTH.drop.toFixed(5)}; // #1122: the jaw while talking`);
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', '#include <common>\nuniform float uOutline, uFill, uRim;\nuniform vec3 uRimColor;\nuniform float uSuit, uSuitMaskBand; uniform sampler2D uSuitTexture; varying vec3 vSuitAt; varying float vSuitBone; varying float vBare; varying float vRing; uniform vec3 uRingColor;')
       .replace('#include <color_fragment>', `#include <color_fragment>
@@ -945,7 +952,7 @@ function makeMaterial(rim, headProjection) {
       diffuseColor.a = mix(diffuseColor.a, mix(uFill, uRim, edge), uOutline);
       #include <opaque_fragment>`);
   };
-  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-v9';
+  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-v10';
   return m;
 }
 
@@ -1183,7 +1190,7 @@ export class Avatar {
 
   /** Pose it. `speed`: m/s along the ground (walks when above A.walkSpeed, the legs' phase follows the distance), `turn`:
    * the head's yaw against the body (rad), `hands`: { L, R } overrides (see `armTarget`), `crouch`: 0 … 1. */
-  update(dt, { speed = 0, turn = 0, hands = {}, crouch = 0 } = {}) {
+  update(dt, { speed = 0, turn = 0, hands = {}, crouch = 0, kiss = 0, kissReach = 1, kissLift = 0 } = {}) {
     this.time += dt;
     const walking = speed > A.walkSpeed, k = THREE.MathUtils.clamp(speed / 1.6, 0.4, 1.4);
     if (walking) this.phase += dt * speed / STRIDE * Math.PI * 2;
@@ -1192,7 +1199,7 @@ export class Avatar {
     const breathe = Math.sin(this.time * 1.7) * 0.004;
     // #1149: crouching is a deep squat (AVATAR_CROUCH), every term linear in `crouch` (the head boxes follow the same hips and lean)
     const c = THREE.MathUtils.clamp(crouch, 0, 1), F = CR.feet, step = sw * (1 - CR.step * c);
-    const hipY = HIP - 0.02 - CR.hipDrop * c + breathe - 0.012 * g * Math.abs(Math.cos(ph)) * k, hipZ = CR.hipForward * c;
+    const hipY = HIP - 0.02 - CR.hipDrop * c + kissLift * kiss + breathe - 0.012 * g * Math.abs(Math.cos(ph)) * k, hipZ = CR.hipForward * c;
     const lift = (v) => Math.max(0, v) * 0.12 * g * k * (1 - 0.5 * c);
     const fx = 0.11 + (F.x - 0.11) * c, fz = 0.02 + (F.z - 0.02) * c;
     const feet = [[fx, F.y + lift(Math.cos(ph)), fz + step], [-fx, F.y + lift(-Math.cos(ph)), fz - step]];
@@ -1205,8 +1212,10 @@ export class Avatar {
     const held = (h) => { if (!c || !h) return h; const d = shoulderShift(c, hipY - (HIP - 0.02 + breathe), hipZ); return { ...h, at: h.at.map((v, i) => v + d[i]) }; };
     const handL = held(hands.L) ?? rest(1, armSwing), handR = held(hands.R) ?? rest(-1, -armSwing);
     this.updateMouth(dt);
+    this.material.userData.u.uKiss.value = kiss;
+    if (kiss) this.material.userData.u.uMouth.value = 0;
     const knee = c ? CR.knees.map((v, i) => KNEE_REST[i] + (v - KNEE_REST[i]) * c) : KNEE_REST;
-    poseOlof(this, { hip: [hipY, hipZ], lean: 0.03 * g + CR.lean * c, head: 0.03 * Math.sin(this.time * 0.6), turn, feet, hands: [handL, handR], can: null,
+    poseOlof(this, { hip: [hipY, hipZ + KISS.forward * kiss * kissReach], lean: 0.03 * g + CR.lean * c - KISS.lean * kiss * kissReach, head: 0.03 * Math.sin(this.time * 0.6) + KISS.head * kiss * kissReach, turn, feet, hands: [handL, handR], can: null,
       knee, flat: c, toes: F.turn * c });
   }
 

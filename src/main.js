@@ -46,7 +46,7 @@ import { stairHeight, stairUnderside } from './stairs.js';
 import { rugLift } from './rugs.js';
 import { loadChangelog, retryChangelog, renderChangelog, buildNote, scrollNote } from './changelog.js';
 import { loadTodo, buildTodoNotes } from './todo.js';
-import { setScoreElement, totalScore, setStatsExtra, stats, keepMieleDay, bump, badge, catFound, keepCatCounts, secretFound, renderStats, resetStats, visitRoom, setRoomTotal, setBadgeElement, penalize } from './stats.js';
+import { setScoreElement, totalScore, setStatsExtra, stats, keepMieleDay, bump, awardLove, badge, catFound, keepCatCounts, secretFound, renderStats, resetStats, visitRoom, setRoomTotal, setBadgeElement, penalize } from './stats.js';
 import { Minimap } from './minimap.js';
 import { Compass } from './compass.js';
 import { Measure } from './measure.js';
@@ -1733,7 +1733,7 @@ function use(thing) {
   if (thing.kind === 'fusebox') { thing.power.use(); return; } // the power cut (#604): trip it, or mend it while held
   if (thing.visit && thing.kind !== 'mirror') { visitUse(thing); return; } // a visited flat's door, window or lid (#574; its mirrors: the avatar editor below, #1110)
   if (thing.kind !== 'note') shadowState.hold = 1.5; // reading the DOM note moves no shadow caster (#669)
-  if (!heldItem() && !['rest', 'place', 'note', 'taskNote', 'clock', 'calendar', 'binder', 'poster', 'paper', 'mirror'].includes(thing.kind) && focusPoint && thing === focused) hand.reach(focusPoint); // the arm reaches out (#195)
+  if (!heldItem() && !(thing.kind === 'ghost' && ghosts.canKiss(thing.ghost)) && !['rest', 'place', 'note', 'taskNote', 'clock', 'calendar', 'binder', 'poster', 'paper', 'mirror'].includes(thing.kind) && focusPoint && thing === focused) hand.reach(focusPoint); // the arm reaches out (#195)
   if (thing.options && thing.kind !== 'life' && choices.rows && choices.target === thing) { // a lamp with a choice (#428): the marked row
     runChoice(choices.sel);
     if (thing.kind === 'lamp' && thing.isOpen) bump('lights', 1, idOf(thing));
@@ -2689,9 +2689,12 @@ function greetPlayer(g) {
   if (weaponKey()) return; // guard the current hand, including calls with an old target (#872)
   const line = ghosts.greet(g);
   if (!line) return;
+  if (ghosts.canKiss(g)) return; // effects/reward follow the room's accepted kiss, never an optimistic greeting
   greet.sayMine(line);
   if (!greetedPlayers.has(g.name)) { greetedPlayers.add(g.name); bump('greets', 1, `player:${g.name}`); }
 }
+ghosts.onLove = awardLove;
+ghosts.onKiss = (m, at) => sfx.kiss(at);
 ghosts.onGreet = (m, g, other) => greet.say({ head: g.head, s: 1 }, (m.k === KISS.phrase ? KISS.line : GHOSTS.hello[m.k])?.replace('{n}', other ? other.name : (leaderboard.name || 'Anonym')) ?? 'Hej!', { pitch: 1.1, rate: 1.05, voice: 1 }, undefined, g.avatar);
 // someone else comes into / leaves the players' room (#1333, src/joinnotice.js): a short notice at the top, no sound
 ghosts.onNotice = (text) => badge(text, false);

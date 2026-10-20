@@ -378,3 +378,7 @@ Shelter hay (#1396): `PaddockFeed` is an isolated ambient feeding controller; th
 walk/neck animation, native pat target, hearts/whinny and score callback remain in `Paddock`.
 Patting interrupts bites, then the pony can finish its portion. Feeding does not crop the grass mask.
 See environment.md for assumed dimensions/timing, refill and shelter priorities.
+
+## Mutual kiss sound (#1398)
+
+`sfx.kiss(pos)` synthesizes a short two-part closed-lip hum followed by filtered noise and a falling pop for “mmm-smack”. It uses the existing AudioContext, positional panner and master mute; it creates no file or speech-synthesis utterance. `Ghosts.updateKisses` starts the hum before contact so the smack aligns with hearts and love points. Only a server-accepted complementary Sarah/Olof pair creates the effect, within `KISS.soundRange`. See the mutual-kiss contract in interactions.md and `tools/kisspeertest.cjs` for native Web Audio signal, pose and three-client checks.

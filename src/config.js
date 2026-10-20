@@ -1719,7 +1719,13 @@ export const WEATHER = {
 // removed in #670 (with their lines and `reach`).
 export const GREET = { bubble: 2.8 };
 // #1343: personal near-avatar kiss; distances/effect size are playability guesses. Reserved greeting index, never random.
-export const KISS = { phrase: 15, range: 1.35, serverRange: 1.6, hearts: 10, scale: 1.8, line: 'Puss på dig, {n}!' };
+export const KISS = { phrase: 15, range: 1.35, serverRange: 1.6, hearts: 10, scale: 1.8, line: 'Puss på dig, {n}!',
+  // #1398: animation/audio timings and pose are playability guesses; +100 is the user's explicit reward.
+  duration: 2.2, contact: .85, release: 1.25, lean: .65, head: .5, forward: .12,
+  pucker: .018, narrow: .4, muzzleWidth: .085, muzzleHeight: .075, muzzleFront: [.05, .1], faceGap: .12, mouthHeight: 1.5, receipts: 256, soundRange: 12,
+  hum: .36, humHz: 180, smackHz: 850, soundGain: .7,
+  humGain: .3, overtoneGain: .08, smackGain: .7, smackDuration: .085, smackQ: 2, smackAttack: .003,
+  popDuration: .075, popHz: [480, 140], popGain: .3 };
 
 // Olof at the wheel (#900): shared figure colours and the existing car greeting/pose rules.
 export const OLOF = {
@@ -3193,6 +3199,7 @@ export const SCORE = {
     washDish: { first: 10, again: 2 }, makeBed: { first: 15, again: 3 },
   },
   each: {
+    love: 100, // #1398: the initiator earns +100 for a completed, server-accepted kiss (user).
     petted: 8, catPhotos: 2, catFish: 25,                 // a pat (a cat to find first), its photo; feeding one takes a plan
     ponyPets: 1,                                          // a pat of a paddock pony (#1320)
     kittenPets: 12,                                       // a kitten's pat on top of `petted` (#363)

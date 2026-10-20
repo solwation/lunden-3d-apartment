@@ -2,7 +2,7 @@
 // given a world position and is panned/attenuated relative to the camera.
 // The AudioContext can only start after a user gesture — call initAudio() from a click.
 
-import { SOUNDS } from './config.js';
+import { SOUNDS, KISS } from './config.js';
 import { distanceGain, VoiceCap } from './spatialsound.js';
 
 let ctx = null, master = null, noiseBuf = null;
@@ -106,6 +106,15 @@ function thump(t, dest, gain = 0.8) {
 }
 
 export const sfx = {
+  /** #1398: a closed-lip 'mmm' followed by a wet smack, through the ordinary positional/mute path. */
+  kiss(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, KISS.soundGain);
+    tone(t, KISS.hum, d, { from: KISS.humHz, to: KISS.humHz * .8, gain: KISS.humGain });
+    tone(t, KISS.hum, d, { from: KISS.humHz * 2, to: KISS.humHz * 1.6, gain: KISS.overtoneGain });
+    noise(t + KISS.hum, KISS.smackDuration, d, { freq: KISS.smackHz, q: KISS.smackQ, gain: KISS.smackGain, attack: KISS.smackAttack });
+    tone(t + KISS.hum, KISS.popDuration, d, { from: KISS.popHz[0], to: KISS.popHz[1], gain: KISS.popGain });
+  },
   /** Handle + latch, then the leaf swinging through the air. */
   doorOpen(pos) {
     if (!ready()) return;

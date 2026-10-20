@@ -1,10 +1,10 @@
 // Visitor statistics (cats found and petted, doors, steps …), kept in localStorage so they
 // survive a reload. The panel is hidden (Tab held / T / the 📊 button shows it); instead a
 // small badge ("✋ Klappat katt +1") pops up for each counted event.
-import { SECRET, SCORE } from './config.js';
+import { KISS, SECRET, SCORE } from './config.js';
 const KEY = 'lunden.stats';
 
-const fresh = () => ({ pvpKills: 0, killReceipts: {}, cats: 0, rare: 0, byVariant: {}, petted: 0, ponyPets: 0, doors: 0, lids: 0, flushes: 0, taps: 0, fridge: 0, appliances: 0, cabinets: 0, beer: 0, coffee: 0, fish: 0, turbo: 0, shots: 0, fried: 0, burnt: 0, catFish: 0, chicken: 0, wine: 0, champagne: 0, whisky: 0, milk: 0, kask: 0, posted: 0, thrown: 0, lights: 0, sat: 0, lay: 0, steps: 0, metres: 0, stairs: 0, seconds: 0, visited: {}, secrets: 0, secretKinds: {}, catPhotos: 0, grill: 0, hood: 0, songs: 0, carMusic: 0, read: 0, car: 0, magic: 0, target: 0, baskets: 0, threes: 0, freeThrows: 0, twoPointers: 0, basketPoints: 0,
+const fresh = () => ({ love: 0, loveReceipts: [], pvpKills: 0, killReceipts: {}, cats: 0, rare: 0, byVariant: {}, petted: 0, ponyPets: 0, doors: 0, lids: 0, flushes: 0, taps: 0, fridge: 0, appliances: 0, cabinets: 0, beer: 0, coffee: 0, fish: 0, turbo: 0, shots: 0, fried: 0, burnt: 0, catFish: 0, chicken: 0, wine: 0, champagne: 0, whisky: 0, milk: 0, kask: 0, posted: 0, thrown: 0, lights: 0, sat: 0, lay: 0, steps: 0, metres: 0, stairs: 0, seconds: 0, visited: {}, secrets: 0, secretKinds: {}, catPhotos: 0, grill: 0, hood: 0, songs: 0, carMusic: 0, read: 0, car: 0, magic: 0, target: 0, baskets: 0, threes: 0, freeThrows: 0, twoPointers: 0, basketPoints: 0,
   byBreed: {}, seen: {}, secretRare: {}, tv: 0, pc: 0, parasol: 0, clock: 0, calendar: 0, cooked: 0, brews: 0, drawn: 0, splashes: 0, cuts: 0, dribbles: 0, catButts: 0, shattered: 0, shatterRange: 0, pingpingHugs: 0, blinds: 0, curtains: 0, airfried: 0, clips: 0, penalties: {}, penaltyPoints: 0, kittens: 0, kittenPets: 0, petsByBreed: {}, hugsByBreed: {}, vacuumed: 0, tasks: 0, taskCounts: {}, taskRewardDays: {}, taskBonusDays: {}, taskBonusPoints: 0, taskDay: null, mieleDay: null, legacyTaskPoints: 0, pvpRangePoints: 0 });
 
 
@@ -15,6 +15,7 @@ function load() {
     // thing done before counts as one distinct thing
     if (!old.byBreed && s.cats) s.byBreed = { huskatt: s.cats - s.rare, ...(s.rare ? { perser: s.rare } : {}) };
     if (!old.seen) for (const k of Object.keys(SCORE.first)) if (typeof s[k] === 'number' && s[k] > 0) s.seen[k] = { tidigare: 1 };
+    s.loveReceipts = Array.isArray(s.loveReceipts) ? s.loveReceipts.filter(id => typeof id === 'string' && id.length <= 80).slice(-KISS.receipts) : [];
     if (!old.taskCounts) { // retain already-earned generic task points when upgrading #709
       const distinct = Object.keys(s.seen.tasks ?? {}).length;
       s.legacyTaskPoints = distinct * SCORE.first.tasks + Math.max(0, s.tasks - distinct) * SCORE.again.tasks;
@@ -37,7 +38,7 @@ let dirty = false;
 const BADGES = {
   petted: '✋ Klappat katt', ponyPets: '🐴 Klappat en häst', doors: '🚪 Dörr öppnad', lids: '🚽 Toalettlock', flushes: '🌊 Spolat', toiletPaper: '🧻 Toapapper slängt', handwash: '🧼 Tvättat händerna', handdry: '🧺 Torkat händerna', taps: '💧 Kran påslagen',
   fridge: '🍗 Kylskåpet öppnat', appliances: '🍳 Ugn/mikro öppnad', cabinets: '🗄 Skåp öppnat', beer: '🍺 Klunk öl', coffee: '☕ Klunk kaffe', turbo: '⚡ Kaffeturbo!', fish: '🐟 Fiskpinne uppäten', fruit: '🍎 Frukt uppäten', fried: '🍳 Fiskpinne stekt', airfried: '🍟 Airfryern klar', toaster: '🍞 Brödrosten rostar', fries: '🍟 Pommes uppäten', sandwiches: '🥪 Du gjorde en macka!', hotdogs: '🌭 Korv med bröd!', friesCooked: '🍟 Pommes frites klara', friesBurnt: '🔥 Pommes brända', burnt: '🔥 Fiskpinne bränd', catFish: '🐈 Katten åt en fiskpinne', catButts: '🍑 Kattens rumpa', chicken: '🍗 Kycklingbit uppäten', wine: '🍷 Klunk vin', champagne: '🥂 Klunk champagne', whisky: '🥃 Klunk whisky', milk: '🥛 Klunk mjölk', kask: '☕ Klunk kaffekask', lights: '💡 Lampa tänd', stairs: '🪜 Trapptur',
-  pvpHits: '🎯 Träffade en spelare', greets: '👋 Hälsade på en spelare', olof: '👋 Vinkat till Olof', sat: '🪑 Satt ner', lay: '🛏 Lagt sig', posted: '📌 Teckning uppsatt', thrown: '🗑 Teckning slängd',
+  love: '💕 Kärlek +100', pvpHits: '🎯 Träffade en spelare', greets: '👋 Hälsade på en spelare', olof: '👋 Vinkat till Olof', sat: '🪑 Satt ner', lay: '🛏 Lagt sig', posted: '📌 Teckning uppsatt', thrown: '🗑 Teckning slängd',
   grilledChicken: '🍗 Kycklingen är grillad', catPhotos: '📸 Kattfoto', cooked: '🍗 Kycklingen är klar', brews: '☕ Kaffet är klart', tv: '📺 Tv på', pc: '🎮 Datorn på', parasol: '⛱ Parasollet', clock: '🕰 Väggklockan', calendar: '📅 Kattkalendern', grill: '🔥 Grillen tänd', hood: '🌀 Fläkten på', songs: '🎵 Musik på', carMusic: '🚗 Musik i bilen', read: '📖 Läste boken', pingpingHugs: '🐧 Kramat Pingping', mieleHugs: '💖 Kramat Miele', car: '🚗 Bilen kallad', magic: '✨ Trolleri', blinds: '🪟 Plisségardin', curtains: '🦓 Gardinerna', clips: '📱 Nytt klipp', nest: '🔊 Smart högtalare', roofs: '🏠 Uppe på taket', liftFloors: '🛗 Hissen', flights: '🚀 Jetpacken lyfter',
   kittens: '🐾 Kattunge!', washed: '🧽 Diskat', dishwasher: '🍽 Disken är klar', rubbishOut: '🗑 Soporna utburna', tasks: '📋 Uppdrag utfört!',
 };
@@ -143,8 +144,19 @@ export function bump(key, n = 1, id = key) {
   }
   dirty = true;
   renderScore();
-  if (BADGES[key] && fresh) badge(BADGES[key]);
+  if (BADGES[key] && fresh) badge(BADGES[key], key !== 'love');
   if (key === 'steps' && stats.steps % STEP_BADGE === 0) badge(`👣 ${stats.steps} steg`, false);
+}
+
+/** #1398: initiator-only love; one reward per accepted, completed event, including saved receipt deduplication. */
+export function awardLove(id) {
+  if (typeof id !== 'string' || id.length > 80 || !id.includes(':')) return false;
+  const receipts = stats.loveReceipts ??= [];
+  if (receipts.includes(id)) return false;
+  receipts.push(id);
+  if (receipts.length > KISS.receipts) receipts.shift();
+  bump('love');
+  return true;
 }
 
 /** The server-confirmed extra distance points, in the existing saved statistics record. */
@@ -342,6 +354,7 @@ export function statRows() {
     ['🌊 Spolningar', `${stats.flushes}`],
     ...(stats.toiletPaper ? [['🧻 Toapapper slängt', `${stats.toiletPaper}`]] : []), // (#426)
     ...(stats.handwash ? [['🧼 Tvättat händerna', `${stats.handwash}`]] : []), // (#437)
+    ...(stats.love ? [['💕 Kärlek', `${stats.love} pussar`, `${stats.love * SCORE.each.love} poäng`]] : []),
     ...(stats.greets ? [['👋 Hälsat', `${stats.greets}`]] : []), // old saves only: the neighbours are gone (#670), their greetings still count
     ['🌦 Ute i vädret', `${['walkRain', 'walkSnow', 'walkHail', 'walkStorm'].reduce((n, k) => n + (stats[k] ?? 0), 0)}`,
       [['regn', 'walkRain'], ['snö', 'walkSnow'], ['hagel', 'walkHail'], ['åska', 'walkStorm']].filter(([, k]) => stats[k]).map(([t, k]) => `${t} ${stats[k]}`).join(', ')],

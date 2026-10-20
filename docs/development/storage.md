@@ -1264,3 +1264,8 @@ Rollout order (the Worker is deployed by the owner only): (1) deploy the Worker 
 Kiss greeting (#1343): reserved `KISS.phrase`15 in existing `{t:'g',to,k}`; no new message shape, timers or billable periodic traffic. PlayerRoom checks cleaned target Sarah/Olof substring, finite stored 3D positions within `KISS.serverRange`, unarmed sender and existing greeting cooldown before forwarding. Normal greetings remain unchanged. See [interaction contract](interactions.md#near-avatar-kiss-1343) and players/kiss peer tests.
 
 Shared billiard table (#1355): the players room also owns the children's-room billiard game (`{ t: 'pool', k: 's'|'m'|'r', q, d? }` requests, `T`/`S`/`no` answers, storage key `pool`, authoritative `simulateStroke` from `src/billiardsync.js`); protocol, limits, seats and empty-room behaviour in [furniture.md](furniture.md#shared-table-1355). `cloud.yml` redeploys on `src/billiard*.js` changes.
+
+
+## Love receipts in visitor statistics (#1398)
+
+`stats.love` counts completed, server-accepted kisses initiated by this visitor; `SCORE.each.love` contributes 100 points each. `stats.loveReceipts` keeps the most recent `KISS.receipts` ids (256) in the existing `lunden.stats` save, sanitized when loading older/corrupt records. `awardLove(id)` rejects a duplicate before counting. Normal save/reload retains both points and receipts; no new key/store or destructive migration is introduced. Ghosts also deduplicates receipt packets in memory and cancels pending completion on disconnect. Ordinary greeting points are unchanged for ordinary greetings and are not granted for a kiss. The room supplies the accepted event identity, not a general server-owned score economy. This personal gameplay is not transferred to the public project.
