@@ -1,3 +1,36 @@
+Whole phone model occlusion (#1456): run
+`node --test tools/phonewholeocclusiontest.mjs tools/phonedetailunittest.mjs tools/desktopocclusiontest.mjs tools/garageocclusiontest.mjs tools/occlusiontest.mjs`
+(30cases). The new cases cover whole-unit exposure and near/door/noDetail vetoes,
+private actual-position bounds versus unchanged authored boxes, version invalidation,
+current child/root/instance transforms, physical rays, unsupported vertex/shadow callbacks,
+the no-Garage policy and exact fragment-only lampwash callback chains.
+Known actual wind shader chains veto the new path; the wind-attribute test is only an
+independent conservative mathematical envelope, not rendered-plant optimization evidence.
+
+The external `wholemodels1456/proof.cjs` records actual844×390 quality3/max3, no testmode,
+same-World before/current with fresh shadow updates at start/kitchen/two near-lamp views/
+patio/basement. Six image pairs have0changed pixels. Positive native layer7 rays and
+three registered lamp roots preserve arrays/materials/matrices/authored boxes/shadow flags
+through the production furniture-moved refresh, exposure and restoration.
+Both complete19-view/quality profiles remain SOMEFAILED:412→405peak calls against370,
+841837peak triangles/~98MiB within950000/225. Initial preflight411→404 is separately
+primed. The targeted quality0 start371→364 is not a full green quality0 profile.
+The combined driver exits1 after its otherwise completed phases because it incorrectly
+expects E in touch mode; use the separate actual pointer-lock/touch `interaction.cjs` for
+the corrected control result: both native pointer-locked E and native touch tap open
+the focused garage with one press, CLI0/no page errors (quality0, no testmode).
+Do not call that failed combined run CLI0.
+Native fixture failures and both0-save padded hypotheses are preserved with all raw
+images/logs in `/tmp/orkester-katt-20261020/wholemodels1456/`; see [performance](performance.md).
+After preserving1454/1455 at e4914dcb, the new targeted quality3 point gives398→391→398
+calls with the same2248-triangle saving. All40 entrance-rigid sources are outside every
+phoneUnit and keep identical layer masks, so adapter eligibility is unaffected. No full
+post-rebase profile or repeated image run is claimed. The inherited desktop20-view
+SOMEFAILED504/1000585/~311MiB remains #1458; inherited1455 phone quality3 is FAIL399,
+while its explicit quality0 landscape/portrait profiles pass367/840699 and289/705267.
+The unchanged shared actual garage filter's A/B/C/L cores/recesses stay covered by existing
+native tests; the newly improved private models belong to Hus L. No house is remodeled.
+
 Southern crossroad (#1433): run
 `node --test tools/servicecrossing1433test.mjs tools/serviceaccess1432test.mjs tools/roadlampstest.mjs`
 (10checks). Check raw SERVICE tags/projected shared nodes, explicit guessed3/4.5m widths,

@@ -4,6 +4,7 @@ import { computeDetailBounds } from './combatworld.js';
 import { lowMemory } from './lowmemory.js';
 import { detailOccluders, wholeBoxOccluded } from './occlusion.js';
 import { garageCeilings } from './ceilingbatchgate.js';
+import { hasNativeVertexCompile } from './lampwash.js';
 
 // Small-detail culling (#189): from the street the whole flat is in the view frustum (the walls don't stop three's
 // culling), so every handle, knob, bottle and trinket inside was a draw call of its own. A mesh smaller than
@@ -36,6 +37,23 @@ import { garageCeilings } from './ceilingbatchgate.js';
 
 export const DETAIL_HIDDEN_LAYER = 7; // render-only culling; physical traces include this layer
 const D = PERF.detail;
+const phonePositionBounds = new WeakMap();
+// This extra proof cannot trust authored geometry.boundingBox values shared with other systems.
+function phoneGeometryBounds(geometry) {
+  const p = geometry.attributes.position;
+  if (!p || p.isInterleavedBufferAttribute || p.isGLBufferAttribute || p.itemSize !== 3 || p.normalized ||
+      !(p.array instanceof Float32Array) || p.usage !== THREE.StaticDrawUsage ||
+      p.getX !== THREE.BufferAttribute.prototype.getX || p.getY !== THREE.BufferAttribute.prototype.getY ||
+      p.getZ !== THREE.BufferAttribute.prototype.getZ) return null;
+  let entry = phonePositionBounds.get(geometry);
+  if (!entry || entry.position !== p || entry.array !== p.array || entry.version !== p.version || entry.count !== p.count) {
+    const box = new THREE.Box3().setFromBufferAttribute(p);
+    if (box.isEmpty() || ![...box.min.toArray(), ...box.max.toArray()].every(Number.isFinite)) return null;
+    entry = { position:p, array:p.array, version:p.version, count:p.count, box };
+    phonePositionBounds.set(geometry, entry);
+  }
+  return entry.box;
+}
 
 export class DetailCuller {
   /** Collect the small meshes under `root` (call once everything is built). */
@@ -109,15 +127,17 @@ export class DetailCuller {
 
   /** Phone furniture can open or replace a model part; collect its current complete envelope before judging it. */
   refreshPhoneUnit(it) {
-    const meshes=[],box=new THREE.Box3();it.o.updateMatrixWorld(true);
+    const meshes=[],box=new THREE.Box3();let complete=true;it.o.updateMatrixWorld(true);
     it.o.traverse(o=>{
-      if (!(o.isMesh||o.isLineSegments)||!o.geometry||o.userData.noDetail)return;
+      if(o.isSprite||o.isPoints||(o.isLine&&!o.isLineSegments))complete=false;
+      if (!(o.isMesh||o.isLineSegments)||!o.geometry)return;
+      if(o.userData.noDetail){complete=false;return;}
       if(!o.geometry.boundingBox)computeDetailBounds(o.geometry);
       const b=o.isInstancedMesh?(o.boundingBox??(o.computeBoundingBox(),o.boundingBox)):o.geometry.boundingBox;
       meshes.push(o);box.union(b.clone().applyMatrix4(o.matrixWorld));
     });
     for(const o of it.meshes)if(!meshes.includes(o)&&o.layers.mask===(1<<DETAIL_HIDDEN_LAYER))o.layers.set(0);
-    it.meshes=meshes;
+    it.meshes=meshes;it.opaqueComplete=complete;
     if(box.isEmpty())return;
     const sphere=box.getBoundingSphere(new THREE.Sphere());it.r=sphere.radius;it.center.copy(it.o.worldToLocal(sphere.center));
     it.box.copy(box).applyMatrix4(it.o.matrixWorld.clone().invert()).expandByScalar(D.phoneUnitPad);
@@ -202,7 +222,53 @@ export class DetailCuller {
     }
     b.applyMatrix4(it.o.matrixWorld);
     // The same real wall can also cover a distant object beyond the flat; no invented exterior wall.
-    return wholeBoxOccluded(eye, b, this.occluders, D.occlusionMargin);
+    return wholeBoxOccluded(eye, b, this.occluders, D.occlusionMargin) ||
+      (lowMemory && it.phoneUnit && this.garageCeilings.length > 0 && this.phoneUnitHidden(eye, it));
+  }
+
+  /** Hide a whole phone model only when every current part has its own complete opaque proof. */
+  phoneUnitHidden(eye, it) {
+    if (!it.opaqueComplete || !it.meshes.length) return false;
+    if (eye.distanceTo(it.center.clone().applyMatrix4(it.o.matrixWorld)) <= it.near) return false;
+    const union = (this.phoneUnion ??= new THREE.Box3()).makeEmpty();
+    const box = this.phoneBox ??= new THREE.Box3(), geometryBox = this.phoneGeometryBox ??= new THREE.Box3();
+    const part = this.phonePart ??= new THREE.Box3(), instance = this.phoneInstance ??= new THREE.Matrix4();
+    for (const o of it.meshes) {
+      const g = o.geometry, materials = [o.material, o.customDepthMaterial, o.customDistanceMaterial].flat().filter(Boolean);
+      // These renderers can move vertices outside ordinary geometry bounds without a supported envelope.
+      if (o.isSkinnedMesh || o.isBatchedMesh || g.morphAttributes.position?.length ||
+          o.onBeforeRender !== THREE.Object3D.prototype.onBeforeRender ||
+          materials.some(m => m?.isShaderMaterial || m?.isRawShaderMaterial || m?.displacementMap || !hasNativeVertexCompile(m))) return false;
+      for (let p = o; p; p = p.parent) {
+        if (p.userData.door?.exterior) return false;
+        if (p === it.o) break;
+      }
+      const bounds = phoneGeometryBounds(g);
+      if (!bounds) return false;
+      geometryBox.copy(bounds);
+      // The known wind shader moves in geometry-local space, before instance/root rotation and scaling.
+      if (g.attributes.plantWind) {
+        geometryBox.min.x -= PLANT_WIND.maxDisplacement; geometryBox.max.x += PLANT_WIND.maxDisplacement;
+        geometryBox.min.z -= PLANT_WIND.maxDisplacement; geometryBox.max.z += PLANT_WIND.maxDisplacement;
+      }
+      if (o.isInstancedMesh) {
+        if (o.getMatrixAt !== THREE.InstancedMesh.prototype.getMatrixAt || !Number.isInteger(o.count) ||
+            o.count <= 0 || o.count > o.instanceMatrix.count) return false;
+        box.makeEmpty();
+        for (let i = 0; i < o.count; i++) {
+          o.getMatrixAt(i, instance);
+          box.union(part.copy(geometryBox).applyMatrix4(instance));
+        }
+      } else box.copy(geometryBox);
+      // This separate exact-geometry proof leaves the original padded LOD/union box untouched.
+      box.applyMatrix4(o.matrixWorld);
+      if (box.isEmpty() || ![...box.min.toArray(), ...box.max.toArray()].every(Number.isFinite) ||
+          !wholeBoxOccluded(eye, box, this.occluders, D.occlusionMargin)) return false;
+      union.union(box);
+    }
+    const sphere = union.getBoundingSphere(this.phoneSphere ??= new THREE.Sphere());
+    // A near part keeps the complete model available, even when its centre is far behind a wall.
+    return eye.distanceTo(sphere.center) > D.minDist + sphere.radius;
   }
 
   /** Seen from `eye` (outside the flat), is a thing at `c` (radius r) inside it hidden by the walls? */

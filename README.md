@@ -431,6 +431,10 @@ Southern road bank (#1382): eleven LM ground controls and five separate cross-se
 
 Phone rendering (#1383): complete opted-in furnishings share a visibility decision from outside the home; actual floor and retaining-wall support hides covered geometry. Nearby use and physical objects remain intact. See development/performance.md for profiles and limitations.
 
+Helt skymda telefonmodeller kan nu döljas tillsammans även bakom olika verkliga väggytor
+(#1456). Synliga delar och nära användning behålls; högsta telefonprofilens återstående
+ritanropsöverskridande följs i #1453.
+
 Shelter hay (#1396): both ponies walk to their own low hay box and visibly eat its shrinking portion.
 Patting pauses the meal; winter/rain shelter and ordinary grass grazing remain available. The ambient
 portions refill automatically while nearby; this adds no hunger or inventory system.

@@ -1,5 +1,58 @@
 # Rendering performance
 
+## Complete phone models behind separate actual opaque patches (#1456, partial #1453)
+
+Only existing complete `phoneDetailUnit` models with an actual Garage can use the
+additional proof. Every current mesh/line part must have its entire conservative box
+covered by one existing actual opaque rectangle. Different parts may use different
+rectangles; any exposed, near, exterior-door or unsupported part vetoes this new proof.
+All model layers change together. The old padded union box,0.2m visual LOD guess,
+near/distance/quality policy and actual-visible-garage/no-Garage rules remain unchanged.
+This independent exact-point coverage proof does not duplicate a visual LOD pad onto
+each part. Private full native static Float32-position bounds ignore authored geometry
+boxes and refresh on attribute/array/version/count changes without modifying shared bounds.
+All current instance matrices participate; full wind attributes expand locally before
+transforms. Actual wind shader callbacks remain unsupported in this added path.
+
+`lampwash.js` records exact fragment-only callback wrappers and their captured predecessors.
+Only chains ending at the native callback qualify; unknown vertex/shadow callbacks,
+skin/morph/custom shaders/displacement and dynamic/custom position attributes veto.
+The shader body, uniforms, keys and lighting are unchanged. This is a rigid-model
+improvement, not an optimization of actual wind plants or new geometry/culling distances.
+
+On80c78366 the actual844×390 lowmem/shot quality3/max3 preflight gives411/769982→
+404/767734→411/769982 in one World. Exactly seven submissions/2248triangles disappear:
+the complete tube floor lamp and lower-bunk wall lamp in Hus L. A later primed World's
+matched full19-view/quality profiles give412→405peak calls, unchanged841837peak triangles
+and~98MiB. Both remain **SOME FAILED** against370; #1453 stays open. The separate
+quality0 point probe is371→364→371, not a new complete quality0 acceptance run.
+Desktop has no added decision path and fragment-only shader output is unchanged.
+After integration, #1454's20-view desktop profile is inherited as **SOME FAILED**:
+504calls/1000585tri/~311MiB; the old19views pass, and #1458 tracks the remaining overrun.
+No new full desktop profile is run here. #1455 separately measured full quality3 phone
+FAIL399calls/841837tri/~98MiB, full quality0 landscape PASS367/840699/~98MiB and
+portrait PASS289/705267/~102MiB. Those are inherited results, not new #1456 full runs.
+The fresh integrated quality3 start on e4914dcb measures398/769982→391/767734→
+398/769982. None of the40 rigid entrance source meshes belongs to any phoneUnit,
+and their exact layer masks match before/current; the new proof cannot change their
+adapter eligibility. This is a targeted integration check, not a post-rebase full profile.
+
+Native30/30 passes. Six normal phone image pairs with fresh shadow updates have0changed
+pixels; all12 pictures were inspected. Three real lamp records (including the already
+hidden upper-bunk sibling control) restore on `furniture-moved`, retain positive identical
+physical layer7 rays and exact geometry/material/position-array/authored-box/transform/
+shadow identities. The first combined driver retains CLI1 because keyboard E was attempted
+after touch without mouse lock; its complete image/lifecycle/profile phases are saved.
+Separate actual pointer-locked E and native touch-tap controls both open the focused
+garage with one press, CLI0 and no page errors, at explicit quality0/testmode-off.
+The duplicated-LOD-pad hypothesis saved0 and remains recorded separately.
+The six image pairs/lifecycle/full19 profiles above precede the independent1454/1455
+rebase; the targeted point/membership check is the new final integration evidence.
+Raw drivers/results/failures live in `/tmp/orkester-katt-20261020/wholemodels1456/`.
+
+The private furniture policy has no current public runtime target: public `origin/main`
+has no `detail.js` or `lampwash.js`. No unused culling system or private furniture is ported.
+
 ## Southern crossroad (#1433)
 
 Two exact-terrain service strips add1822asphalt triangles. The existing lamp generator
