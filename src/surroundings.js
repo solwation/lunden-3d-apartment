@@ -1,3 +1,4 @@
+import { cutSegmentOpenings } from './segmentopenings.js';
 import { mergeOpaqueRects } from './occlusion.js';
 import { southBankGround } from './southbank.js';
 import { buildBusStop } from './busstop.js';
@@ -1643,7 +1644,7 @@ export function* surroundingsParts({ grass, husL = null }) {
   // (#355: the outline at the ground — the loggias' parapets / railings stand in the façade line, the entrance recesses
   // are walked into; `recessFloors` gives their floors)
   group.userData.segments = [...bw.segments, ...S.blocks.filter((b) => !b.style).flatMap((b) => {
-    const pts = groundOutline(b);
+    const pts = groundOutline(b), loggiaWays = groundWaysIn([b]).filter(w => w.kind === 'loggia');
     return pts.map((p, i) => [...p, ...pts[(i + 1) % pts.length]]).flatMap((sg) => {
       // Hus A's walk-in entrance (#637): the door's opening in the recess's back wall (the door leaf and the sidelight are corehouse.js's)
       const hit = (b.recesses ?? []).map((q) => [q, walkIn(b, q)]).find(([q, W]) => W && (q.face === 'n'
@@ -1658,7 +1659,7 @@ export function* surroundingsParts({ grass, husL = null }) {
       const along = north ? [Math.min(sg[0], sg[2]), Math.max(sg[0], sg[2])] : [Math.min(sg[1], sg[3]), Math.max(sg[1], sg[3])], c = north ? sg[1] : sg[0], c2 = north ? c + D : c - D;
       const mk = (a, k, b, l) => (north ? [a, k, b, l] : [k, a, l, b]); // (along, across) → [x, z]
       return [mk(along[0], c, d0, c), mk(d1, c, along[1], c), mk(d0, c, d0, c2), mk(d1, c, d1, c2), mk(d0, c2, d1, c2)].filter((t) => Math.abs(t[2] - t[0]) + Math.abs(t[3] - t[1]) > 1e-3);
-    });
+    }).flatMap(sg => cutSegmentOpenings(sg, loggiaWays)); // #1430: same exact visual parapet openings, after entrance/vestibule cuts
   })];
   yield 0.1;
   group.userData.upper = bw.upper; // the box's edge over the garage door: only for those up on the courtyard (#357)

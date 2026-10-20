@@ -446,3 +446,5 @@ edges without moving the platform; see [environment verification](docs/developme
 
 The bus platform and tactile strip also follow the actual terrain triangles (#1429),
 keeping their existing heights and stopping grass from protruding through the walking surface.
+
+De befintliga öppningarna till markloggiorna i Hus A, B och C går nu att gå igenom åt båda håll.

@@ -587,3 +587,17 @@ zero-call guarantee. The conductor approved a conservative bound of one addition
 existing platform batch/156triangles against reviewed b6472013 full profiles:
 desktop≤438/996940/~309MiB; landscape≤370/831317/~97; portrait≤291/722401/~101.
 All remain within unchanged caps. These are composed bounds, not new full profiles.
+
+## Ground loggia collision openings (#1430)
+
+The existing12 `groundWaysIn` loggia intervals (four each in A/B/C, including
+C's east-facing one) also cut `groundOutline`'s ground collision segments.
+`segmentopenings.js` subtracts only collinear interval unions and retains source
+cut coordinates exactly; the connection follows the existing walk-in entrance/
+vestibule handling. Remaining parapets, retaining walls and five entrance mouths
+are unchanged. There is no visual/measurement/floor change; the independent four
+A/B north floor/support fixes belong to#1428. Hus L's separate patio paths do
+not use this builder. Native/actual navigation checks are in verification.md.
+Neutral downstream transfer is queued as
+[public#114](https://github.com/solwation/kvarteret-lunden/issues/114), priority low;
+original#1430 remains open after source delivery until that transfer is verified.

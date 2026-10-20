@@ -7615,3 +7615,25 @@ portrait290/722245/~101MiB. Caps are unchanged; only960window triangles are adde
 These raw profiles precede the independent reviewed#1417 apron merge (+344triangles/
 0draws); the additive desktop upper bound997128 stays below1M. The final rebase
 preserves that apron and all other owners’ blocks; no full budget repeat was needed.
+
+## Loggia ground access (#1430)
+
+`node --test tools/segmentopeningstest.mjs` checks exact source cut endpoints,
+source directions, overlapping/reversed unions, boundary clipping, untouched
+noncollinear walls and all12 A/B/C openings at their existing0.85m width.
+`PLAYWRIGHT_MODULE=… CHROME_PATH=… SHOTS=… node tools/loggiawalktest.cjs BASE`
+uses one real World and native `Player.update` in both directions for every
+opening, neighboring solid-wall blocking and Hus L's separate patio route.
+The old collision union is reconstructed by adding back just the original
+opening intervals; no ground callback or floor geometry is patched. Final full
+walking requires the independently delivered#1428 floor support. The same real
+World hashes surroundings geometry/index/instance arrays and compares identical
+camera draw counts/pictures with closed versus open collision intervals. No
+full global budget sweep is needed for this collision-only change.
+Final merged397ce265 includes independently delivered floorb58d0d7e and platform
+397ce265. Native4/4 and actual7/7 pass:24/24 opening traversals with real0/−3m
+floor support,12/12 neighboring wall blocks and both1.92m L routes. Old wall
+unions stop at0.22m; open paths finish1.12m beyond each facade. Surroundings
+26,453,512bytes/502attributes are unchanged; matched A-NE/C-NE images differ by
+0pixels, with156/533062 and160/638359draws/triangles identical in both states.
+[Persistent raw logs, pixel comparison and fixture notes](/home/olw/.local/state/lunden-orkester/codex-surface-20261020/loggia1430/README.md).
