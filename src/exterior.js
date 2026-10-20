@@ -13,6 +13,7 @@ import { portikPlan } from './portik.js';
 import { buildEntrancePlants } from './entranceplants.js';
 import { buildTerraceDecor } from './terracedecor.js';
 import { buildPatioDecor } from './patiodecor.js';
+import { lowMemory } from './lowmemory.js';
 
 // Brick: 250 × 65 mm + 10 mm joints → 0.26 m per brick, 0.075 m per course.
 const TILE_W = 1.04, TILE_H = 0.6; // one texture tile = 4 bricks × 8 courses
@@ -407,7 +408,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   const C = H.court, y3 = roofTop + H.storeyHeight, zs = D - C.setback, par = y3 + C.parapet, deckY = y3 + C.deck;
   const LT = C.core.loft, coreW = coreX0 - H.wall, loftX0 = coreW - LT.west, loftX1 = coreW + LT.w, loftTop = upperTop + LT.rise, zt = zs - LT.back, zf = D - LT.face;
   const uppers = [...units.map((u) => [u.x0, u.x1, u.ox, u.upper]), [coreX0, coreX1, null, 'L1205']];
-  const Lf = H.loft, lampBox = [], lampGlow = [], balc = [], litGlass = [];
+  const Lf = H.loft, lampBox = [], lampGlow = [], balc = [], terraceRailBatches = [], litGlass = [];
   let seed = 337;
   const isLit = () => ((seed = (seed * 16807) % 2147483647) / 2147483647) < C.lit;
   const open = (list, ox, base) => list.map((o) => ({ x0: ox + o.x0, x1: ox + o.x1, y0: base + o.sill, y1: base + o.head }));
@@ -471,6 +472,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   // rail, bars every 11 cm; its top `rail` over the finished deck), skärmväggar between the units
   const zp = D - 0.25, trz = D - 0.1, capY = par + 0.05;
   for (const { x0: a, x1: b } of terraces) {
+    const railStart = balc.length;
     const pg = boxGeo(a, b, y3, deckY, zs, zp);
     const pp = pg.attributes.position, uv = pg.attributes.uv;
     for (let i = 0; i < pp.count; i++) uv.setXY(i, pp.getX(i), pp.getZ(i));
@@ -479,12 +481,15 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     copings.push(boxGeo(a - 0.02, b + 0.02, par, capY, zp - 0.02, D + 0.04));
     balc.push(boxGeo(a + 0.03, b - 0.03, deckY + C.rail - 0.04, deckY + C.rail, trz - 0.03, trz + 0.03), boxGeo(a + 0.03, b - 0.03, capY + 0.06, capY + 0.09, trz - 0.015, trz + 0.015));
     for (let x = a + 0.08; x < b - 0.05; x += 0.11) balc.push(boxGeo(x - 0.01, x + 0.01, capY, deckY + C.rail - 0.04, trz - 0.01, trz + 0.01));
+    terraceRailBatches.push(balc.slice(railStart));
   }
   for (const [x, s] of [[xw, 1], [xe, -1]]) { // along the gables: the parapet and a railing from the set-back wall to the edge
+    const railStart = balc.length;
     copings.push(boxGeo(Math.min(x - 0.04 * s, x + 0.25 * s), Math.max(x - 0.04 * s, x + 0.25 * s), par, capY, zs, D + 0.04));
     const rx = x + 0.1 * s;
     balc.push(boxGeo(rx - 0.03, rx + 0.03, deckY + C.rail - 0.04, deckY + C.rail, zs, D - 0.07));
     for (let z = zs + 0.08; z < D - 0.12; z += 0.11) balc.push(boxGeo(rx - 0.01, rx + 0.01, capY, deckY + C.rail - 0.04, z - 0.01, z + 0.01));
+    terraceRailBatches.push(balc.slice(railStart));
   }
   for (let i = 0; i + 1 < terraces.length; i++) { // skärmvägg h 1.8 where two terraces meet (not at the loft, the gables)
     const x = terraces[i].x1;
@@ -649,8 +654,12 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   group.userData.neighborOpenings=neighborOpenings;
   add(rails, new THREE.MeshStandardMaterial({ color: COLORS.balcony, roughness: 0.5, metalness: 0.3 }));
   add([...fascia, ...capping, ...flashings], new THREE.MeshStandardMaterial({ color: Lf.fascia, roughness: 0.4, metalness: 0.4 }));
-  const railMesh = add(balc, new THREE.MeshStandardMaterial({ color: Lf.door, roughness: 0.45, metalness: 0.2 }));
-  if (railMesh) railMesh.name = 'terraceRails'; // the terraces' railings (tools/terracetest.html)
+  const terraceRailMaterial = new THREE.MeshStandardMaterial({ color: Lf.door, roughness: 0.45, metalness: 0.2 });
+  // Complete source terraces/gables get tighter native camera AND shadow frustums; phones retain their original batch.
+  for (const parts of lowMemory ? [balc] : terraceRailBatches) {
+    const railMesh = add(parts, terraceRailMaterial);
+    if (railMesh) railMesh.name = 'terraceRails';
+  }
   group.userData.terraces = { list: terraces, y3, deck: deckY, parapet: par }; // #350
   const entryMats=entryMaterials();
   add(entryWood,entryMats.wood);add(entryFrames,entryMats.frame);add(entryGlass,glassMaterial,false).name="neighborEntryGlass";

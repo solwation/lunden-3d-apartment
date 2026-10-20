@@ -7745,3 +7745,16 @@ composition remains within its limits, while the separately measured latest pati
 target still exceeds1M and #1448 remains open pending railing child #1454. Phone quality0
 figures are inherited/composed with exact unchanged batching, not freshly measured. See
 [performance](performance.md#complete-roof-terrace-batches-1448) for numbers/limits.
+
+Architectural terrace rail batching (#1454): run the existing `tools/terracetest.html`
+against the actual World; aggregate every named terraceRails mesh for the original
+height contract. Compare flattened production attributes/bounds/shared material and
+33independent positive physical rays against the canonical original batch. Inspect
+fresh-shadow target, clearly exposed railing, corner and upward matched pictures
+(all0changed pixels), then actual native touch glazed-door open/close. The new
+20-view desktop regression intentionally retains its real1000585triangle FAIL after
+the preceding bike-room state; no reordering/warmup hides that result. Remaining
+budget work is tracked in #1458 under #1448. Exact unchanged phone batching permits inherited
+quality0 profile composition; it does not establish defaultquality3 phone acceptance.
+See [performance](performance.md#complete-architectural-terrace-rail-groups-1454-partial-1448)
+and persistent `codex-surface-20261020/rails1454/final-review-summary.json`.

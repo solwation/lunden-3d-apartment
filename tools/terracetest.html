@@ -58,9 +58,8 @@ async function run() {
   check(ext, 'the exterior carries its terrace data');
   const U = ext.userData.terraces;
   check(near(U.deck - U.y3, C.deck, 1e-6) && near(U.parapet - U.y3, C.parapet, 1e-6), `deck ${C.deck} and parapet ${C.parapet} over våning 4's floor`);
-  const rails = ext.getObjectByName('terraceRails');
-  rails.geometry.computeBoundingBox();
-  const top = rails.geometry.boundingBox.max.y;
+  const rails = ext.children.filter((o) => o.name === 'terraceRails');
+  const top = Math.max(...rails.map((m) => { m.geometry.computeBoundingBox(); return m.geometry.boundingBox.max.y; }));
   check(near(top - U.deck, C.rail, 0.005), `the railing's top is ${(top - U.deck).toFixed(3)} m over the finished deck (rail ${C.rail}; not parapet + rail = ${(C.parapet + C.rail).toFixed(2)})`);
   lines.push(`\n${pass ? 'ALL PASS' : 'SOME FAILED'}`);
   out.textContent = lines.join('\n');

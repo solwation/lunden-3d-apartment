@@ -1374,3 +1374,36 @@ Raw logs/images: persistent `codex-surface-20261020/patio1448/`. Early diagnosti
 rebuild wind phases/eight gates and capture-string errors were superseded by canonical
 one-pass/one-union-gate proofs. Only Hus L's private decor uses this builder; A/B/C
 are untouched. Current public main has no private terracedecor.js: no applicable port.
+
+## Complete architectural terrace rail groups (#1454, partial #1448)
+
+Hus L's existing6024 railing triangles now form11 complete source terrace/gable
+batches on desktop, sharing the original material. Native camera and shadow
+frustums use their tighter spheres; no main-camera gate, quality/distance rule,
+geometry, opening, shadow or collision policy changes. Phones retain the original
+single master-array merge, identical ordered buffers/bounds/material/state.
+A/B/C use separate alpha-tested loggia panels in surroundings.js, unchanged.
+
+Actual1280×800 standardmaximumquality3 on80c78366, including both new road sources,
+measures504/1004561 →503/998537 at spawn(2.9,16), yaw0°, pitch−5°, normal eye1.62.
+Fresh-shadow target/exposed-rail/corner/upward pairs change0pixels. All ordered
+position/normal/UV data, union bounds, shared material/shadow/raycast behavior and
+33positive physical rays match the canonical original batch. Existing terrace
+layout/height checks pass; actual844×390 touch opens/closes the same glazed door.
+
+The desktop perfcount now has20poses, adding “patio toward house”; phones keep19.
+The full actual20/quality/texture run is **SOME FAILED**:504calls/1000585triangles/
+~311MiB, with unchanged520/1M/320limits. All old19views and quality checks pass.
+A legitimate existing bike-room→patio car-LOD hysteresis state contributes one
+extra2048-triangle car-far batch; no hysteresis/car behavior is changed here.
+The remaining585-triangle overrun stays tracked in child #1458 under #1448.
+Inherited quality0 phone coverage is not a new measurement:1433 landscape
+370/837612/~97MiB; portrait conservative composition≤289/705250/~101MiB.
+Independent defaultquality3 phone failure#1453 is unaffected.
+
+Initial desktop touch CSS/locator failures remain raw, not passes; the successful
+first tap's prequeued filename says close although its recorded actual state is open.
+Exposed-roof/corner cameras are rendering diagnostics, not walking-route claims.
+Raw evidence: `~/.local/state/lunden-orkester/codex-surface-20261020/rails1454/`.
+Current public exterior has the same neutral single rail batch; its selective
+LOW-priority transfer will be linked after source publication, without private decor.
