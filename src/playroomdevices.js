@@ -29,10 +29,10 @@ export class PlayroomDevices {
       this.pick(target, x, y, z, R.devices.pickDepth, h, w);
       return { canvas, ctx: canvas.getContext('2d'), texture, mesh, target };
     };
-    this.tv = screen('TV:n', tv.w, tv.h, -R.w / 2 + 0.106, tv.y + tv.h / 2 + 0.02, F.sofa.z, Math.PI / 2,
+    this.tv = screen('TV:n', tv.w, tv.h, tv.x + 0.08, tv.y + tv.h / 2, F.cinema.screen.z, Math.PI / 2,
       () => this.power('tv', !this.tvOn), () => this.tvOn ? 'stänga av' : 'starta');
     this.remoteTarget = { kind: 'playroomDevice', name: 'TV:n med fjärrkontrollen', get verb() { return self.tvOn ? 'stänga av' : 'starta'; }, use: () => this.power('tv', !this.tvOn) };
-    this.pick(this.remoteTarget, F.sofa.x - 0.02, 0.565, F.sofa.z + F.sofa.w / 2 - 0.07, 0.2, 0.07, 0.12);
+    this.pick(this.remoteTarget, F.cinema.remote.x, F.cinema.remote.y + 0.04, F.cinema.remote.z, 0.22, 0.12, 0.14);
     this.pc = screen('datorn', 0.56, 0.34, F.desk.x + 2.939, 0.89, F.desk.z + 1, -Math.PI / 2,
       () => this.play(), () => !this.pcOn ? 'starta' : this.playing ? 'stoppa markören på' : 'spela på');
     this.powerTarget = { kind: 'playroomDevice', name: 'datorns spelbox', get verb() { return self.pcOn ? 'stänga av' : 'starta'; }, use: () => this.power('pc', !this.pcOn) };

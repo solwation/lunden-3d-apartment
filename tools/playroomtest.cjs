@@ -76,34 +76,72 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     // the walls hold: run into the west wall
     const wall = await page.evaluate(() => { const P = window.__app.player, r0 = window.__app.world.playroom; P.spawn(r0.bounds.x0 + 3.2, r0.bounds.z1 - 0.45, 0); window.__t.frames(10); const cam = window.__app.camera; cam.rotation.y = Math.PI / 2; P.keys = new Set(['KeyW', 'ShiftLeft']); window.__t.frames(400); P.keys = new Set(); return { x: P.pos.x, bounds: window.__app.world.playroom.bounds }; });
     check(wall.x > wall.bounds.x0 && wall.x < wall.bounds.x0 + 0.5, 'the west wall holds', `x=${wall.x.toFixed(2)} wall=${wall.bounds.x0}`);
-    // #1327: the furniture. Walls and furniture hold, the sofa and stool can be sat in, nothing overlaps the billiard table, the disco spots sweep.
+    // #1375: walk from the BIO doorway into the cinema's open center aisle and round the back row.
     const RM = await page.evaluate(async () => { const C = await import('/src/config.js'); return C.PLAYROOM; });
     const L = (lx, lz) => ({ x: RM.x + lx, z: RM.z + lz });
     const walkTo = (from, yaw, secs) => page.evaluate(({ from, yaw, secs }) => { const P = window.__app.player, cam = window.__app.camera; P.spawn(from.x, from.z, 0); window.__t.frames(10); cam.rotation.y = yaw; P.keys = new Set(['KeyW']); window.__t.frames(secs * 60); P.keys = new Set(); return { x: P.pos.x, z: P.pos.z }; }, { from, yaw, secs });
-    const sofaWalk = await walkTo(L(RM.furniture.sofa.x+1.3, RM.furniture.sofa.z), Math.PI / 2, 3); // west along the sofa's middle (north of the billiard table)
-    check(sofaWalk.x > RM.x+RM.furniture.sofa.x+RM.furniture.sofa.d/2+.1 && sofaWalk.x < RM.x+RM.furniture.sofa.x+RM.furniture.sofa.d/2+.5, 'the sofa holds from behind', `lx=${(sofaWalk.x - RM.x).toFixed(2)}`);
+    const cinema = RM.furniture.cinema, seat = cinema.seat;
+    const aisleWalk = await walkTo(L(-5.6, 1.35), 0, 1.55); // north from the BIO doorway into the center aisle
+    check(Math.abs(aisleWalk.z - (RM.z + (cinema.seat.z[1] + cinema.seat.z[2]) / 2)) < 0.5, 'walk from the BIO doorway to the open center aisle', `z=${(aisleWalk.z - RM.z).toFixed(2)}`);
+    const behindWalk = await walkTo(L(-4.15, (cinema.seat.z[1] + cinema.seat.z[2]) / 2), -Math.PI / 2, 1.8);
+    check(behindWalk.x > RM.x - 4.72 + seat.depth / 2 + 0.3, 'the route remains open behind the rear seat row', `lx=${(behindWalk.x - RM.x).toFixed(2)}`);
     const deskWalk = await walkTo(L(RM.furniture.desk.x+1.6, RM.furniture.stool.z), -Math.PI / 2, 3); // east into the stool / desk
     check(deskWalk.x < RM.x + RM.furniture.desk.x+2.65 - 0.2, 'the stool and desk hold', `lx=${(deskWalk.x - RM.x).toFixed(2)}`);
-    const tvWalk = await walkTo(L(-0.2, 2.1), Math.PI / 2, 6); // west along the south wall, free of furniture
-    check(tvWalk.x < RM.x-RM.w/2+.5 && tvWalk.x > RM.x-RM.w/2, 'the floor south of the sofa is walkable up to the west wall', `lx=${(tvWalk.x - RM.x).toFixed(2)}`);
     const clash = await page.evaluate(({ RM }) => { const r = window.__app.world.playroom, b = RM.billiards, hx = b.length / 2 + b.rail + 0.05, hz = b.width / 2 + b.rail + 0.05; // the table's footprint (+ 5 cm), no furniture footprint touches it
       return r.footprints.filter((q) => { const xs = q.map((p) => p[0] - RM.x - b.x), zs = q.map((p) => p[1] - RM.z - b.z); return Math.min(...xs) < hx && Math.max(...xs) > -hx && Math.min(...zs) < hz && Math.max(...zs) > -hz; }).length; }, { RM });
-    check(clash === 0, 'no furniture footprint touches the billiard table', `overlaps ${clash}`);
-    // sit on the sofa (left, middle, right seats), see the TV, get up in a free spot
-    const sofa = RM.furniture.sofa;
-    for (const [k, name] of [[0, 'left'], [1, 'middle'], [2, 'right']]) {
-      const seatZ = sofa.z - sofa.w / 2 + sofa.w / 3 * (k + 0.5);
-      const f = await page.evaluate(({ at, seatZ }) => { const t = window.__t, P = window.__app.player; P.spawn(at.x, at.z, 0); t.frames(10); t.aim(at.sx, 0.34, seatZ); return t.focus(); }, { at: { ...L(sofa.x+1.1, sofa.z), sx: RM.x + sofa.x + 0.1 }, seatZ: RM.z + seatZ });
-      check(f?.kind === 'rest' && f.name === 'soffan', `the sofa is a seat (${name})`, JSON.stringify(f));
-      await page.evaluate(() => window.__app.use(window.__app.focus().focused)); await page.waitForTimeout(300);
-      const sat = await page.evaluate(() => { const a = window.__app; for (let i = 0; i < 12; i++) a.rest.update(0.1); window.__t.render(); return { active: a.rest.active, kind: a.rest.kind, x: a.camera.position.x, y: a.camera.position.y, yaw: a.camera.rotation.y }; });
-      check(sat.active && sat.kind === 'sit' && sat.y > 0.7 && sat.y < 1.2 && Math.abs(Math.abs(sat.yaw) - Math.PI / 2) < 0.2, `sitting in the sofa's ${name} seat, facing the TV`, JSON.stringify(sat));
-      if (k === 1) await page.screenshot({ path: `${shots}/6-sofa-seated.png` });
-      await page.evaluate(() => window.__app.standUp());
+    check(clash === 0, 'cinema screen and seats stay clear of the billiard table', `overlaps ${clash}`);
+    check(cinema.seat.z[2] - cinema.seat.z[1] - seat.width > 0.75, 'the center aisle has a clear walking width', `${(cinema.seat.z[2] - cinema.seat.z[1] - seat.width).toFixed(2)} m`);
+    check(cinema.seat.rowX[1] - cinema.seat.rowX[0] > seat.depth + 0.9, 'there is standing and walking space between seat rows');
+    if (!process.env.MOBILE) {
+      await page.evaluate(() => document.getElementById('game-canvas').requestPointerLock());
+      await page.waitForFunction(() => document.pointerLockElement?.id === 'game-canvas');
+    }
+    const nativeUse = async () => {
+      if (process.env.MOBILE) {
+        await page.evaluate(() => { __app.touch.enabled = true; document.body.classList.add('touch'); __app.showOverlay(false); __app.step(0); });
+        await page.locator('#action').tap();
+      } else await page.keyboard.press('KeyE');
+    };
+    const nativeStand = async () => {
+      if (process.env.MOBILE) {
+        await page.evaluate(() => __app.step(0));
+        if (await page.locator('#stand-btn').isVisible()) await page.locator('#stand-btn').tap();
+        else {
+          const action = page.locator('#action');
+          check(await action.isVisible() && await action.textContent() === 'Res dig', 'touch action offers a safe stand-up');
+          await action.tap();
+        }
+      }
+      else await page.keyboard.press('KeyC');
+    };
+    // Sit in all eight individually selectable seats, view the screen, then stand safely from each one.
+    const seatCases = [[0, 0, 'front outer'], [0, 1, 'front aisle'], [0, 2, 'front aisle'], [0, 3, 'front outer'], [1, 0, 'rear outer'], [1, 1, 'rear aisle'], [1, 2, 'rear aisle'], [1, 3, 'rear outer']];
+    for (const [row, i, name] of seatCases) {
+      const x = cinema.seat.rowX[row], z = cinema.seat.z[i], seatName = `biostol ${row * cinema.seat.z.length + i + 1}`;
+      const f = await page.evaluate(async ({ x, z, seatName }) => { const { PLAYROOM: RM } = await import('/src/config.js'), t = window.__t, P = window.__app.player; P.spawn(RM.x + x + 0.78, RM.z + z, 0); t.frames(10); t.aim(RM.x + x, 0.48, RM.z + z); return t.focus(); }, { x, z, seatName });
+      check(f?.kind === 'rest' && f.name === seatName, `E/touch focus reaches ${name} seat`, JSON.stringify(f));
+      await nativeUse(); await page.waitForTimeout(300);
+      const sat = await page.evaluate(async ({ x, z }) => { const { PLAYROOM: RM } = await import('/src/config.js'), { Vector3 } = await import('three'), a = window.__app; for (let i = 0; i < 12; i++) a.rest.update(0.1); window.__t.render(); const yaw = a.camera.rotation.y, expected = Math.atan2(-(RM.furniture.cinema.screen.x - x), -(RM.furniture.cinema.screen.z - z)); let d = Math.atan2(Math.sin(yaw - expected), Math.cos(yaw - expected)); const s = RM.furniture.cinema.screen, tx = RM.furniture.tv.x + 0.08, corners = [[s.z-s.w/2,s.bottom],[s.z+s.w/2,s.bottom],[s.z-s.w/2,s.bottom+s.h],[s.z+s.w/2,s.bottom+s.h]].map(([zz, yy]) => new Vector3(RM.x+tx, yy, RM.z+zz).project(a.camera)); return { active: a.rest.active, kind: a.rest.kind, x: a.camera.position.x, y: a.camera.position.y, yaw, viewError: d, screenInView: corners.every((p) => Math.abs(p.x)<1 && Math.abs(p.y)<1 && p.z>-1 && p.z<1) }; }, { x, z });
+      check(sat.active && sat.kind === 'sit' && sat.y > 0.8 && sat.y < 1.3 && Math.abs(sat.viewError) < 0.2 && sat.screenInView, `${name} seat sits with the full screen in view`, JSON.stringify(sat));
+      if (row === 0 && i === 1) await page.screenshot({ path: `${shots}/6-front-seat.png` });
+      if (row === 1 && i === 2) await page.screenshot({ path: `${shots}/7-rear-seat.png` });
+      if ((row === 0 && i === 0) || (row === 1 && i === 3)) await nativeStand();
+      else await page.evaluate(() => window.__app.standUp());
       await page.waitForTimeout(300);
       const up = await page.evaluate(() => { const a = window.__app, P = a.player; return { active: a.rest.active, free: P.isFree(P.pos.x, P.pos.z), inRoom: P.inPlayroom }; });
-      check(!up.active && up.free && up.inRoom, `got up from the ${name} seat on free floor`, JSON.stringify(up));
+      check(!up.active && up.free && up.inRoom, `${name} seat has a safe standing spot`, JSON.stringify(up));
     }
+    await setHeight(140);
+    for (const [row, i] of [[0, 0], [1, 3]]) {
+      const x = cinema.seat.rowX[row], z = cinema.seat.z[i];
+      const focus = await page.evaluate(async ({ x, z, row, i }) => { const { PLAYROOM: RM } = await import('/src/config.js'), P = window.__app.player; P.spawn(RM.x + x + 0.78, RM.z + z, 0); window.__t.frames(10); window.__t.aim(RM.x + x, 0.48, RM.z + z); const f = window.__t.focus(); return { f, expected: `biostol ${row * RM.furniture.cinema.seat.z.length + i + 1}` }; }, { x, z, row, i });
+      check(focus.f?.kind === 'rest' && focus.f.name === focus.expected, `140 cm avatar focuses the ${row ? 'rear' : 'front'} seat`, JSON.stringify(focus));
+      await nativeUse(); await page.waitForTimeout(300);
+      const view = await page.evaluate(async () => { const { PLAYROOM: RM } = await import('/src/config.js'), { Vector3 } = await import('three'), a = window.__app, s = RM.furniture.cinema.screen, tx = RM.furniture.tv.x + 0.08; for (let i=0;i<12;i++) a.rest.update(.1); a.camera.updateMatrixWorld(true); const p = [[s.z-s.w/2,s.bottom],[s.z+s.w/2,s.bottom],[s.z-s.w/2,s.bottom+s.h],[s.z+s.w/2,s.bottom+s.h]].map(([z,y])=>new Vector3(RM.x+tx,y,RM.z+z).project(a.camera)); return { active: a.rest.active, kind: a.rest.kind, visible: p.every(v=>Math.abs(v.x)<1&&Math.abs(v.y)<1&&v.z>-1&&v.z<1), camera: [a.camera.position.x,a.camera.position.y,a.camera.position.z,a.camera.rotation.x,a.camera.rotation.y], corners:p.map(v=>[v.x,v.y,v.z]) }; });
+      check(view.visible, `140 cm avatar sees the whole ${row ? 'rear' : 'front'} row screen in landscape`, JSON.stringify(view));
+      await page.evaluate(() => window.__app.standUp());
+    }
+    await setHeight(159);
     const fs2 = await page.evaluate(({ RM }) => { const t = window.__t, P = window.__app.player; P.spawn(RM.x + RM.furniture.stool.x-.8, RM.z + RM.furniture.stool.z, Math.PI / 2); t.frames(10); t.aim(RM.x + RM.furniture.stool.x, 0.36, RM.z + RM.furniture.stool.z); return t.focus(); }, { RM });
     check(fs2?.kind === 'rest' && fs2.name === 'pallen', 'the stool at the gaming desk is a seat', JSON.stringify(fs2));
     // the disco ball: one spot mesh, all spots inside the room, and they move
@@ -125,27 +163,19 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     const on = await page.evaluate(() => { const r = window.__app.world.playroom, p = [...r.spots.geometry.attributes.position.array]; r.update(1, window.__app.camera, false); return { on: r.discoOn, spots: r.spots.visible, moved: r.spots.geometry.attributes.position.array.some((v, i) => v !== p[i]) }; });
     check(on.on && on.spots && on.moved, 'used again: disco on, spots sweep', JSON.stringify(on));
     // #1365: actual native keyboard E / mobile action button, not direct device calls.
-    if (!process.env.MOBILE) {
-      await page.evaluate(() => document.getElementById('game-canvas').requestPointerLock());
-      await page.waitForFunction(() => document.pointerLockElement?.id === 'game-canvas');
-    }
-    const deviceUse = async () => {
-      if (process.env.MOBILE) {
-        await page.evaluate(() => { __app.touch.enabled = true; document.body.classList.add('touch'); __app.showOverlay(false); __app.step(0); });
-        await page.locator('#action').tap();
-      } else await page.keyboard.press('KeyE');
-    };
+    const deviceUse = nativeUse;
     const deviceState = () => page.evaluate(() => { const d = __app.world.playroom.devices; return { tv: d.tvOn, pc: d.pcOn, playing: d.playing, hits: d.hits, rounds: d.round, cursor: d.cursor, result: d.result }; });
-    await aimAt([RM.x+sofa.x+1.1,RM.z+sofa.z], [RM.x+sofa.x+.1,.34,RM.z+sofa.z]);
+    const remoteSeat = { x: cinema.seat.rowX[1], z: cinema.seat.z[0] };
+    await aimAt([RM.x+remoteSeat.x+0.78,RM.z+remoteSeat.z], [RM.x+remoteSeat.x,.48,RM.z+remoteSeat.z]);
     await deviceUse();
-    const remoteFocus = await page.evaluate(({RM}) => { const a=__app,sf=RM.furniture.sofa; for(let i=0;i<12;i++)a.rest.update(.1); __t.aim(RM.x+sf.x-.02,.565,RM.z+sf.z+sf.w/2-.07); return { seated:a.rest.active, focus:__t.focus() }; }, {RM});
-    check(remoteFocus.seated && remoteFocus.focus?.name === 'TV:n med fjärrkontrollen', 'TV remote is reachable from the actual sofa seat', JSON.stringify(remoteFocus));
+    const remoteFocus = await page.evaluate(async ({RM}) => { const a=__app,F=RM.furniture; for(let i=0;i<12;i++)a.rest.update(.1); __t.aim(RM.x+F.cinema.remote.x,F.cinema.remote.y+0.04,RM.z+F.cinema.remote.z); return { seated:a.rest.active, focus:__t.focus() }; }, {RM});
+    check(remoteFocus.seated && remoteFocus.focus?.name === 'TV:n med fjärrkontrollen', 'TV remote is reachable from a real cinema seat', JSON.stringify(remoteFocus));
     await deviceUse(); check((await deviceState()).tv, 'native E/touch starts TV while seated');
-    await page.evaluate(() => __t.render()); await page.screenshot({ path: `${shots}/15-sofa-remote.png` });
+    await page.evaluate(() => __t.render()); await page.screenshot({ path: `${shots}/15-cinema-remote.png` });
     await deviceUse();
     await page.evaluate(() => __app.standUp());
     await page.evaluate(() => { window.deviceSwitches = []; __app.world.playroom.onSwitch = (name, on) => deviceSwitches.push([name, on]); });
-    const tvFocus = await aimAt([RM.x-RM.w/2+1,RM.z+sofa.z], [RM.x-RM.w/2+.106,RM.furniture.tv.y+RM.furniture.tv.h/2+.02,RM.z+sofa.z]);
+    const tvFocus = await aimAt([RM.x-RM.w/2+1,RM.z+cinema.screen.z], [RM.x+RM.furniture.tv.x+.08,RM.furniture.tv.y+RM.furniture.tv.h/2,RM.z+cinema.screen.z]);
     check(tvFocus?.kind === 'playroomDevice' && tvFocus.verb === 'starta', 'TV screen is a reachable start target', JSON.stringify(tvFocus));
     await deviceUse();
     check((await deviceState()).tv, 'native E/touch starts the TV');
@@ -179,13 +209,13 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     // Leave both running to exercise exit cleanup later in the lifecycle.
     await deviceUse();
     await page.evaluate(() => __app.standUp());
-    await aimAt([RM.x-RM.w/2+1,RM.z+sofa.z], [RM.x-RM.w/2+.106,RM.furniture.tv.y+RM.furniture.tv.h/2+.02,RM.z+sofa.z]); await deviceUse();
+    await aimAt([RM.x-RM.w/2+1,RM.z+cinema.screen.z], [RM.x+RM.furniture.tv.x+.08,RM.furniture.tv.y+RM.furniture.tv.h/2,RM.z+cinema.screen.z]); await deviceUse();
     if (!process.env.MOBILE) { await page.evaluate(() => document.exitPointerLock()); await page.waitForFunction(() => !document.pointerLockElement); await page.evaluate(() => __app.showOverlay(false)); }
     const lit = await page.evaluate(() => { const o = window.__app; return o.world.playroom.object.children.filter((c) => c.isLight).length; });
     check(lit === 0, 'no extra lights in the room');
-    const views = { 7: [[0,4.4],[0,1.6]], 8: [[-5,0.5],[-8,-1.35]], 9: [[5,0.5],[8.5,0.6]] };
+    const views = { 7: [[0,4.4],[0,1.6]], 8: [[5,0.5],[8.5,0.6]], 9: [[-6,1.25],[-5.9,-1.8]], 16: [[-5.6,-1.6],[-8.3,-1.65]], 17: [[-4.72,-0.8],[-8.3,-1.65]] };
     for (const [n, [from, to]] of Object.entries(views)) {
-      await page.evaluate(({ RM, from, to }) => { const t = window.__t, P = window.__app.player; P.spawn(RM.x + from[0], RM.z + from[1], 0); t.frames(20); t.aim(RM.x + to[0], 1.1, RM.z + to[1]); window.__app.world.playroom.disco(0.4); t.render(); }, { RM, from, to });
+      await page.evaluate(({ RM, from, to }) => { const t = window.__t, P = window.__app.player; P.spawn(RM.x + from[0], RM.z + from[1], 0); t.frames(20); t.aim(RM.x + to[0], to[2] ?? 1.7, RM.z + to[1]); window.__app.world.playroom.disco(0.4); t.render(); }, { RM, from, to });
       await page.screenshot({ path: `${shots}/${n}-view.png` });
     }
     await page.evaluate(({ RM }) => { const t = window.__t, P = window.__app.player; P.spawn(RM.x, RM.z + 1.9, 0); t.frames(20); t.aim(RM.x, 2.2, RM.z - 1.5); window.__app.world.playroom.disco(0.4); t.render(); }, { RM });

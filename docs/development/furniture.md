@@ -335,7 +335,7 @@ With the players room connected (`ghosts.connected`) the children's-room table i
 
 ## Expanded hidden clubhouse (#1374, part of #1369)
 
-`src/clubhouse.js` supplies the assumed18×10.4×2.7m fantasy plan: a south hall, west BIO, middle BILJARD and east SPEL. These are game choices, not measured A/B/C/L architecture. `clubhouseLayout()` supplies partition/header boxes and collision edges with three1.5m clear doorways; the outer room bounds remain shared through PLAYROOM, including Worker presence. The existing billiard table stays exactly at(-1500,-1500), so ball snapshots, reach and physics do not move. Sofa/TV and gaming desk/stool move to the side rooms; `furniture.desk.x/z` offsets keep the old desk pieces together. All three sofa seats and the stool retain their normal rest targets. The under160cm gate and always usable exit remain.
+`src/clubhouse.js` supplies the assumed18×10.4×2.7m fantasy plan: a south hall, west BIO, middle BILJARD and east SPEL. These are game choices, not measured A/B/C/L architecture. `clubhouseLayout()` supplies partition/header boxes and collision edges with three1.5m clear doorways; the outer room bounds remain shared through PLAYROOM, including Worker presence. The existing billiard table stays exactly at(-1500,-1500), so ball snapshots, reach and physics do not move. The west room now has a framed2.6×1.46m local TV screen, red velvet side curtains and eight armrest seats in two rows, split by an assumed0.82m center aisle. Each seat has a normal rest target aimed at the screen; per-chair footprints leave the aisle and route behind the east row available for approach and standing. Dimensions, colors and finishes are guesses. The gaming desk/stool remain in SPEL; `furniture.desk.x/z` offsets keep the pieces together. The under160cm gate and always usable exit remain.
 
 `clubhouseSigns()` draws four labels in one512×256static atlas. The existing ceiling panels sample a cream atlas swatch and share the signs' draw, keeping the whole visible room at15draws in the lifecycle checks; no new real lights. Static canvas data is released after upload on phone profiles. Disco rays test actual partition/header entry faces; an open doorway lets a ray continue to the hall instead of painting an invisible plane. Room mesh/targets/updates remain hidden outside.
 
@@ -343,13 +343,13 @@ Tests: `node --test tools/clubhousetest.mjs cloudflare/billiards.test.mjs`; `too
 
 ### Clubhouse TV and computer (#1365)
 
-`src/playroomdevices.js` owns two local canvas screens at the existing TV/desk
-positions, following `furniture.sofa` and `furniture.desk` offsets. E/touch on the
-TV or its visible remote on the sofa arm toggles a silent procedural sailing
+`src/playroomdevices.js` owns two local canvas screens at the TV/desk
+positions, following `furniture.cinema` and `furniture.desk` offsets. E/touch on the
+TV or its visible remote on a rear seat arm toggles a silent procedural sailing
 animation. The monitor starts the computer, then starts/stops a timing game:
 stop the marker inside green to add a hit; misses still count as attempts and
 allow a new round. The white/blue box beside the monitor toggles its power.
-The normal sofa/stool seats and rest reach remain; no new input mode is needed.
+The normal biostol/stool seats and rest reach remain; no new input mode is needed.
 
 Both power controls forward to the existing `Playroom.onSwitch('tv'|'pc', on)`
 hook; disco uses its original hook and switching behaviour. Leaving powers down

@@ -27,7 +27,7 @@ Vintervyerna kräver mindre ritarbete när trädens och klängväxternas löv ha
 På vintern har båda hästarna varsitt täcke och står synliga inne i hästhagens skjul, med halm på golvet, girlang och en varm ljusslinga. När snön försvinner försvinner täckena och pyntet och hästarna går ut i hagen igen.
 Skjulet och vattenhon står nu närmare staketet vid grinden, med samma storlek och fri passage vid stättan. Placeringen är en uppskattning och väljs bara om marken är tillräckligt plan.
 
-Spelare som är kortare än 160 cm kan gå in i lekstugans hemliga klubbhus. En hall med “LET’S PLAY!” leder till separata rum märkta BIO, BILJARD och SPEL. Soffan och TV:n står i BIO och spelbordet i SPEL, med fri gång runt biljardbordet. Dörren inifrån går alltid att använda för att komma ut. Sikta över biljardbordet och tryck E för att stöta, och vänta tills bollarna stannat inför nästa stöt.
+Spelare som är kortare än 160 cm kan gå in i lekstugans hemliga klubbhus. En hall med “LET’S PLAY!” leder till separata rum märkta BIO, BILJARD och SPEL. Bion har en stor duk, röda sammetsgardiner och två rader biostolar med fri mittgång. I SPEL står spelbordet och runt biljardbordet finns fri gång. Dörren inifrån går alltid att använda för att komma ut. Sikta över biljardbordet och tryck E för att stöta, och vänta tills bollarna stannat inför nästa stöt.
 Pussar fungerar bara mellan en Sarah och en Olof, i båda riktningarna; namnen får innehålla respektive namn men inte båda. Kom nära utan vapen och använd E/pekknappen: båda lutar sig fram, putar med läpparna och pussas med ett ”mmm-smack” och hjärtan. Den som börjar får +100 poäng för kärlek när pussen genomförs. Andra par och längre avstånd ger vanlig hälsning.
 
 När du möblerar om står möbler ovanpå mattan och åter på golvet när de flyttas av den. Flyttar du själva mattan justeras höjden för möbler och saker som står kvar.
@@ -326,7 +326,7 @@ while open passages and side contacts within the flame volume remain valid (#978
 The actual entrance/lobby shells in Houses A, B and C remain visible beyond the lift/stair detail distance, using each house’s existing dimensions. House L’s open portik remains a through-passage (#976).
 
 I lekstugans klubbhus kan barn starta TV:ns animerade klubbkanal (även med
-fjärrkontrollen på soffarmen) och spela Pricka grönt på datorn med E eller
+fjärrkontrollen från en biostol) och spela Pricka grönt på datorn med E eller
 tryckknappen. Den vita spelboxen stänger av datorn; båda skärmarna stängs av
 när man lämnar klubbhuset. Discolampans strömbrytare fungerar som tidigare (#1365).
 

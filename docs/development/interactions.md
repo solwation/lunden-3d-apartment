@@ -5,10 +5,10 @@ Read [CLAUDE.md](../../CLAUDE.md) first for shared workflow rules. Paths in code
 Related: [life](life.md), [storage](storage.md), [verification](verification.md).
 
 Clubhouse devices (#1365): `playroomDevice` targets use the existing focus,
-keyboard E and touch action path. The TV screen/sofa-arm remote toggle the local
+keyboard E and touch action path. The TV screen/rear-seat arm remote toggle the local
 animation; the computer screen starts power then plays/stops Pricka grönt, and
-the separate white/blue box switches its power off. Normal sofa/stool seating
-and reach limits apply. [Device lifecycle and tests](furniture.md#clubhouse-tv-and-computer-1365).
+the separate white/blue box switches its power off. Cinema seats and the game
+stool use normal rest reach and stand-up handling. [Device lifecycle and tests](furniture.md#clubhouse-tv-and-computer-1365).
 
 Cats (#1061): free-hand E / touch action takes adults and kittens into both arms; click / Krama cuddles, E on floor/bed/sofa puts them down. Occupied-hand E still pets. The shared `MieleHeld` preserves cat scale and adjusts hug grips; carry purrs cancel on release/hide/bicycle stow. See [animal behavior and verification](animals-audio.md#cat-and-sound).
 ## Two-point measurement (#1069)
@@ -362,6 +362,7 @@ src/minimap.js         plan view with the visitor's arrow, current room highligh
                        stats (Tab / T / 📊, #85), K shows it alone
 src/measure.js         tape measure mode (Q / 📏), two surface clicks/taps, distance label
 src/rest.js            sitting / lying down (REST): seat & bed spots from furniture userData.rest, look clamp
+src/playroom.js        eight individual cinema seats use the same `restTarget` / E / touch / stand-up flow, with a clear walk-up aisle
 src/holdable.js        things you take and hold (one at a time): home + pick box, held pose in camera space,
                        use = click / touch button / fast look; E on the home puts it back, E on a table top /
                        worktop / the floor (HOLD.reach) puts it down (`placeAt`, lying by its shape — `restPose`;

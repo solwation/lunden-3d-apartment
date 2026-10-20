@@ -58,27 +58,40 @@ export class Playroom {
       lamp.push(box(R.x+x-0.6,R.x+x+0.6,h-0.03,h,z-0.6,z+0.6));
     this.object.add(clubhouseSigns(layout,lamp));
     // ---- furniture (#1327), local metres from the room's centre: x east, z south (the door), y up
-    const F = R.furniture, sf = F.sofa, sx0 = sf.x - sf.d / 2, sx1 = sf.x + sf.d / 2, sz0 = sf.z - sf.w / 2, sz1 = sf.z + sf.w / 2, seat = F.seatHeight;
-    const col = { sofa: 0x2f7f86, cushion: 0x4bb0b6, back: 0xf2b84b, rug: 0xd96a4b, wood: 0x8a5a33, dark: 0x25272e, white: 0xf2f2f2, red: 0xd33a2c, blue: 0x2f6fd0, steel: 0x8b9099 };
-    const DS = F.discoSwitch, third = sf.w / 3, tv = F.tv, tvz = sf.z, tvx = -R.w / 2, cd = 0.35; // the TV cabinet, as deep as `cd`, faces the sofa across the rug
+    const F = R.furniture, cinema = F.cinema, S = cinema.seat, scr = cinema.screen, tv = F.tv;
+    const col = { seat: 0x641b27, velvet: 0x8e2635, piping: 0xb8494d, brass: 0xb8874d, rug: 0x6a2631, wood: 0x553b35, dark: 0x17171d, white: 0xf2f2f2, red: 0xd33a2c, blue: 0x2f6fd0, steel: 0x8b9099 };
+    const DS = F.discoSwitch, tvz = scr.z, tvx = scr.x, cd = 0.12;
     const deskBox=(color,a,b,c,d,e,f)=>cbox(color,a+F.desk.x,b+F.desk.x,c,d,e+F.desk.z,f+F.desk.z);
     const W=R.clubhouse.welcome,edge=R.clubhouse.label.offset;
     const fur = [
       cbox(col.dark,W.x-W.w/2,W.x+W.w/2,W.y-W.h/2,W.y+W.h/2,W.z-R.clubhouse.wall,W.z-edge),
       ...[-1,1].map(side=>cbox(col.steel,W.x+side*W.w/3-edge,W.x+side*W.w/3+edge,W.y+W.h/2,h,W.z-R.clubhouse.wall/2-edge,W.z-R.clubhouse.wall/2+edge)),
-      cbox(col.rug, tvx + cd, sx1 + 0.1, 0, 0.012, tvz - 0.9, tvz + 0.9), // a rug under the sofa and the TV
-      // the sofa: frame, back, arms, three seat cushions and three back cushions
-      cbox(col.sofa, sx0, sx1, 0.04, seat - 0.14, sz0, sz1), cbox(col.sofa, sx1 - 0.17, sx1, seat - 0.14, 0.72, sz0, sz1),
-      cbox(col.sofa, sx0, sx1 - 0.17, seat - 0.14, 0.54, sz0, sz0 + 0.14), cbox(col.sofa, sx0, sx1 - 0.17, seat - 0.14, 0.54, sz1 - 0.14, sz1),
-      ...[0, 1, 2].flatMap((k) => [cbox(col.cushion, sx0 + 0.03, sx1 - 0.19, seat - 0.14, seat, sz0 + 0.14 + (third - 0.1) * k, sz0 + 0.14 + (third - 0.1) * (k + 1) - 0.01),
-        cbox(col.back, sx1 - 0.25, sx1 - 0.17, seat, 0.64, sz0 + 0.16 + (third - 0.1) * k, sz0 + 0.14 + (third - 0.1) * (k + 1) - 0.03)]),
-      // the TV cabinet on the west wall with a soundbar, the TV on a short stand, a frame round the (separate) screen
-      cbox(col.wood, tvx, tvx + cd, 0, 0.42, tvz - 0.75, tvz + 0.75), cbox(col.dark, tvx + cd, tvx + cd + 0.002, 0.05, 0.38, tvz - 0.73, tvz + 0.73),
-      cbox(col.dark, tvx + 0.1, tvx + 0.18, 0.42, 0.52, tvz - 0.15, tvz + 0.15), cbox(col.dark, tvx + 0.18, tvx + 0.28, 0.42, 0.47, tvz - 0.5, tvz + 0.5),
-      cbox(col.dark, tvx + 0.03, tvx + 0.1, tv.y, tv.y + tv.h + 0.04, tvz - tv.w / 2 - 0.02, tvz + tv.w / 2 + 0.02),
-      // TV remote on the sofa's south arm, within reach from its seats.
-      cbox(col.dark, sf.x - 0.1, sf.x + 0.06, 0.54, 0.56, sz1 - 0.11, sz1 - 0.03),
-      cbox(col.red, sf.x - 0.07, sf.x - 0.04, 0.56, 0.563, sz1 - 0.09, sz1 - 0.05),
+      // A dark-red carpet leaves a clear central aisle between the two seat banks.
+      cbox(col.rug, tvx + cd, cinema.seat.rowX[1] + S.depth / 2 + 0.15, 0, 0.012, -3.75, 0.48),
+      // The large west-wall screen has a shallow frame, gathered red velvet curtains and a soft gold valance.
+      cbox(col.wood, tvx - 0.02, tvx + 0.06, scr.bottom - 0.08, scr.bottom + scr.h + 0.08, tvz - scr.w / 2 - 0.08, tvz + scr.w / 2 + 0.08),
+      cbox(col.dark, tvx + 0.06, tvx + 0.075, scr.bottom - 0.02, scr.bottom + scr.h + 0.02, tvz - scr.w / 2 - 0.02, tvz + scr.w / 2 + 0.02),
+      cbox(col.velvet, tvx + 0.03, tvx + 0.16, 0.42, scr.bottom + scr.h + 0.12, tvz - scr.w / 2 - 0.27, tvz - scr.w / 2 - 0.04),
+      cbox(col.velvet, tvx + 0.03, tvx + 0.16, 0.42, scr.bottom + scr.h + 0.12, tvz + scr.w / 2 + 0.04, tvz + scr.w / 2 + 0.27),
+      ...[-1, 1].flatMap((side) => Array.from({ length: 9 }, (_, i) => {
+        const edge = side < 0 ? tvz - scr.w / 2 - 0.25 + i * 0.022 : tvz + scr.w / 2 + 0.052 + i * 0.022;
+        return cbox(col.piping, tvx + 0.165, tvx + 0.178, 0.48, scr.bottom + scr.h + 0.1, edge, edge + 0.014);
+      })),
+      cbox(col.brass, tvx + 0.025, tvx + 0.13, scr.bottom + scr.h + 0.12, scr.bottom + scr.h + 0.19, tvz - scr.w / 2 - 0.3, tvz + scr.w / 2 + 0.3),
+      // TV remote rests on the outer arm of a rear-row seat, within reach while seated.
+      cbox(col.dark, cinema.remote.x - 0.11, cinema.remote.x + 0.11, cinema.remote.y, cinema.remote.y + 0.025, cinema.remote.z - 0.055, cinema.remote.z + 0.055),
+      cbox(col.red, cinema.remote.x - 0.075, cinema.remote.x - 0.04, cinema.remote.y + 0.025, cinema.remote.y + 0.028, cinema.remote.z - 0.02, cinema.remote.z + 0.02),
+      ...cinema.seat.rowX.flatMap((x) => cinema.seat.z.flatMap((z) => {
+        const x0 = x - S.depth / 2, x1 = x + S.depth / 2, z0 = z - S.width / 2, z1 = z + S.width / 2, y = S.height;
+        return [
+          cbox(col.wood, x0 + 0.1, x1 - 0.06, 0.03, y - 0.06, z0 + 0.06, z1 - 0.06),
+          cbox(col.velvet, x0 + 0.03, x1 - 0.12, y - 0.06, y, z0 + 0.08, z1 - 0.08),
+          cbox(col.seat, x1 - 0.16, x1 - 0.07, y - 0.02, S.back, z0 + 0.07, z1 - 0.07),
+          cbox(col.piping, x1 - 0.18, x1 - 0.16, y - 0.025, S.back - 0.06, z0 + 0.1, z1 - 0.1),
+          ...[z0, z1 - 0.12].map((za) => cbox(col.brass, x0, x1 - 0.03, y - 0.01, y + 0.075, za, za + 0.12)),
+          ...[z0 + 0.09, z1 - 0.11].flatMap((za) => [x0 + 0.08, x1 - 0.12].map((xa) => cbox(col.brass, xa, xa + 0.045, 0.03, y - 0.06, za, za + 0.045))),
+        ];
+      })),
       // the gaming desk on the east wall: top, two side panels, monitor on a stand, console, two controllers, keyboard
       deskBox(col.wood, 2.65, 3.2, 0.54, 0.58, 0.3, 1.7), deskBox(col.wood, 2.65, 3.2, 0, 0.54, 0.3, 0.34), deskBox(col.wood, 2.65, 3.2, 0, 0.54, 1.66, 1.7),
       deskBox(col.dark, 2.98, 3.08, 0.58, 0.72, 0.95, 1.05), deskBox(col.dark, 2.96, 3.1, 0.58, 0.6, 0.85, 1.15), deskBox(col.dark, 2.96, 3.02, 0.7, 1.08, 0.7, 1.3),
@@ -93,10 +106,12 @@ export class Playroom {
       cbox(col.steel, F.ball.x - 0.04, F.ball.x + 0.04, h - 0.03, h, F.ball.z - 0.04, F.ball.z + 0.04), cbox(col.steel, F.ball.x - 0.005, F.ball.x + 0.005, F.ball.y + F.ball.r, h - 0.03, F.ball.z - 0.005, F.ball.z + 0.005),
     ];
     const furMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85 });
-    // collision: the furniture's footprints (convex polygons; getting up and `isFree` use them) and their edges as wall segments
-    this.footprints = [rect(sx0, sx1, sz0, sz1), rect(tvx, tvx + cd, tvz - 0.75, tvz + 0.75), rect(2.65+F.desk.x, 3.2+F.desk.x, 0.3+F.desk.z, 1.7+F.desk.z), rect(F.stool.x - 0.2, F.stool.x + 0.2, F.stool.z - 0.2, F.stool.z + 0.2)];
+    // Collision edges stop at each chair; the wide center aisle and the route behind the rear row stay open.
+    this.footprints = [...cinema.seat.rowX.flatMap((x) => cinema.seat.z.map((z) => rect(x - S.depth / 2, x + S.depth / 2, z - S.width / 2, z + S.width / 2))),
+      rect(tvx - 0.02, tvx + 0.075, tvz - scr.w / 2 - 0.3, tvz + scr.w / 2 + 0.3),
+      rect(2.65+F.desk.x, 3.2+F.desk.x, 0.3+F.desk.z, 1.7+F.desk.z), rect(F.stool.x - 0.2, F.stool.x + 0.2, F.stool.z - 0.2, F.stool.z + 0.2)];
     for (const q of this.footprints) for (let i = 0; i < 4; i++) { const a = q[i], b = q[(i + 1) % 4]; this.segments.push([a[0], a[1], b[0], b[1]]); }
-    // the seats: the sofa (three places, facing the TV, west) and the stool (facing the desk, east); invisible pick boxes carry the E target
+    // the individual cinema chairs and the stool carry invisible pick boxes for the ordinary E / touch rest targets
     this.targets = [];
     const seatAt = (name, verb, x, z, w, d, yaw, spots) => {
       const pick = new THREE.Mesh(new THREE.BoxGeometry(w, 0.5, d), new THREE.MeshBasicMaterial({ visible: false }));
@@ -105,7 +120,14 @@ export class Playroom {
       pick.userData.door = pick.userData.interact = restTarget(pick, { x: R.x + x, z: R.z + z, level: 0 }, 0);
       this.object.add(pick); this.targets.push(pick.userData.interact);
     };
-    seatAt('soffan', 'sätta dig i', sf.x, sf.z, sf.w, sf.d, -Math.PI / 2, [0.5, 1.5, 2.5].map((k) => ({ x: -sf.w / 2 + third * k, y: seat, z: -0.08 })));
+    cinema.seat.rowX.forEach((x, row) => cinema.seat.z.forEach((z, i) => {
+      const pick = new THREE.Mesh(new THREE.BoxGeometry(S.width, 0.92, S.depth), new THREE.MeshBasicMaterial({ visible: false }));
+      pick.position.set(R.x + x, 0.48, R.z + z); pick.rotation.y = -Math.PI / 2; pick.updateMatrixWorld(true);
+      pick.userData.rest = { kind: 'sit', name: `biostol ${row * cinema.seat.z.length + i + 1}`, verb: 'sätta dig i', spots: [{ x: 0, y: S.height, z: 0.03,
+        look: [scr.z - z, x - scr.x, scr.bottom + scr.h / 2] }] };
+      pick.userData.door = pick.userData.interact = restTarget(pick, { x: R.x + x, z: R.z + z, level: 0 }, 0);
+      this.object.add(pick); this.targets.push(pick.userData.interact);
+    }));
     seatAt('pallen', 'sätta dig på', F.stool.x, F.stool.z, 0.4, 0.4, Math.PI / 2, [{ x: 0, y: F.stool.seat, z: 0, aim: [0, 0] }]);
     this.object.userData.furnitureCount = fur.length;
     // the disco ball: a faceted silver sphere that turns, and light spots sweeping over the walls, floor and ceiling (one mesh, no real light)

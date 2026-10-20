@@ -5722,9 +5722,12 @@ export const PLAYROOM = { maxCm: 160, x: -1500, z: -1500, w: 18, d: 10.4, ceilin
     welcome: { x: 0, z: 2.3, y: 2.52, w: 3.2, h: 0.3 }, label: { y: 2.25, w: 1.8, h: 0.25, offset: 0.012 },
     atlas: [512,256], swatch: 8, lightInk: '#fff6dc', font: 48, signBackground: '#17263b', signInk: '#78eee2' },
   // #1327: the furniture, child-sized for 140-159 cm players (all our own choices, *guess*); local metres from the room's centre (x east, z south, the door
-  // at z +5.2). Sofa/TV in BIO west of the billiards room; desk/stool in SPEL to the east. The disco stays in BILJARD.
+  // at z +5.2). Cinema screen/seats in BIO west of the billiards room; desk/stool in SPEL to the east. The disco stays in BILJARD.
   // desk.x/z offsets retain the old desk geometry and interaction anchors while moving them together.
-  furniture: { seatHeight: 0.36, sofa: { x: -6.7, z: -1.35, w: 1.5, d: 0.75 }, tv: { w: 1.2, h: 0.68, y: 0.52 }, desk: { x: 5.5, z: -0.4 }, stool: { x: 7.85, z: 0.6, seat: 0.38 },
+  furniture: { seatHeight: 0.36, cinema: { screen: { x: -8.78, z: -1.65, w: 2.6, h: 1.46, bottom: 1.0 },
+      seat: { width: 0.78, depth: 0.82, height: 0.39, back: 0.83, rowX: [-6.55, -4.72], z: [-3.25, -2.4, -0.8, 0.05] },
+      remote: { x: -4.72, z: -2.91, y: 0.60 } },
+    tv: { x: -8.78, w: 2.6, h: 1.46, y: 1.0 }, desk: { x: 5.5, z: -0.4 }, stool: { x: 7.85, z: 0.6, seat: 0.38 },
     discoSwitch: { x: 0.9, y: 1.05, z: 5.2 }, // #1365/#1374: the wall switch east of the door (south wall, z +5.2; height reachable for children, guess)
     ball: { x: 0, z: -1.5, y: 1.95, r: 0.17, spin: 0.5, spots: 26, spotSpin: 0.35 }, // the disco ball hangs under the ceiling, the light spots sweep round it
   } };

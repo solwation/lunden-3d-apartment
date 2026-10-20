@@ -5,7 +5,8 @@ import { REST } from './config.js';
 // spots }` on a piece (spots in its local frame: x, y = seat/mattress height, z, optional dir = the way
 // the face / the feet point, default local +z). furniture.js turns them into world-space E targets.
 // While resting the visitor cannot walk; the camera moves smoothly to the spot, looking can turn
-// within REST limits, and E again stands up where you were standing before.
+// within REST limits, and E again stands up where you were standing before. Optional local `look`
+// aims a spot's initial seated view at a world point; spots without it keep the default level gaze.
 
 /** World-space rest target for a furniture piece (called by buildFurniture). */
 export function restTarget(obj, item, levelFloor) {
@@ -20,6 +21,7 @@ export function restTarget(obj, item, levelFloor) {
       // `aim` (local x, z[, y]): where to look to pick this spot, when it is not the spot itself (sitting up in a bed, #213;
       // the front of the cushion box, #445)
       aimPos: p.aim ? new THREE.Vector3(item.x + toWorld(p.aim[0], p.aim[1])[0], levelFloor + (p.aim[2] ?? p.y), item.z + toWorld(p.aim[0], p.aim[1])[1]) : null,
+      lookPos: p.look ? new THREE.Vector3(item.x + toWorld(p.look[0], p.look[1])[0], levelFloor + (p.look[2] ?? p.y), item.z + toWorld(p.look[0], p.look[1])[1]) : null,
       // `body` (local y): where a lying figure's centre line lies, under the cover (#1234); else just above the surface
       bodyY: p.body === undefined ? null : levelFloor + p.body,
       yaw: Math.atan2(-dx, -dz), // camera yaw facing that way
@@ -69,7 +71,9 @@ export class Rest {
     this.t = 0;
     this.from = { pos: cam.position.clone(), yaw: cam.rotation.y, pitch: cam.rotation.x };
     const lim = REST[spot.kind];
-    this.to = { yaw: spot.yaw, pitch: spot.kind === 'lie' ? lim.startPitch : 0 };
+    const look = spot.lookPos, eye = this.eyeAt(spot), dx = look?.x - eye.x, dz = look?.z - eye.z;
+    this.to = { yaw: look ? Math.atan2(-dx, -dz) : spot.yaw,
+      pitch: spot.kind === 'lie' ? lim.startPitch : look ? Math.atan2(look.y - eye.y, Math.hypot(dx, dz)) : 0 };
     this.onBegin?.(target,spot);
   }
 
