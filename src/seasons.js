@@ -3,7 +3,7 @@ import { SEASON } from './config.js';
 
 // Seasons by month (#73): tree crowns change colour (fresh green → deep green → autumn yellows and
 // reds → bare in winter, a few blossoming trees in spring), and in the snow months the ground, the
-// roofs, the hedges and the patio paving turn white. Only colours change (no new geometry); the work
+// roofs, the hedges and the patio paving turn white. Colours, instance scale and seasonal visibility change (no new geometry); the work
 // is done once per month change.
 
 const registry = { crowns: [], materials: [], hooks: [] }; // materials: { mat, snow (hex) } with the original colour kept
@@ -29,6 +29,7 @@ export function applySeason(month) {
   const [h, s, l, leaves] = SEASON.trees[month];
   const blossom = SEASON.blossomMonths.includes(month), autumn = month >= 9 && month <= 11;
   for (const { crown, seeds } of registry.crowns) {
+    crown.visible = leaves > 0; // #1404: bare seasonal crowns/vines keep their buffers but submit no draws.
     seeds.forEach((sd, i) => {
       // autumn: every tree its own colour, from yellow through orange and red to brown
       const hue = autumn ? h + (sd.r1 - 0.5) * 0.12 : h + (sd.r1 - 0.5) * 0.04;

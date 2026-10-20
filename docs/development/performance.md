@@ -4,6 +4,44 @@ Read [CLAUDE.md](../../CLAUDE.md) first for shared workflow rules. Paths in code
 
 Related: [graphics](graphics.md), [verification](verification.md).
 
+## Bare seasonal foliage batches (#1404)
+
+`seasons.applySeason` omits registered tree-crown/vine batches only when the existing
+`SEASON.trees[month].leaves` is zero (December, January, February). Their exact historical
+nonzero epsilon matrices, colour buffers, geometry, materials, cached bounds, layers and raycast
+remain unchanged; positive cover restores the same objects in March/summer. Trunks, evergreen
+boxwood and its intentional winter snow cap are not registered leaf crowns and remain drawn.
+No distance/occlusion threshold, model dimension, quality control or global budget changes.
+`Detail` skips these instanced outdoor batches; their other culling parents retain authority.
+
+The actual full-world844×390quality0January10start submitted371calls/735194triangles.
+A source-level submission profile found ten named tree-crown cells, `south-crowns` and
+courtyard.js's193-instance seasonal vine still submitted at epsilon scale with zero leaf cover.
+The eleven named crown draws cost63028triangles, the vine another7720. The intentional
+front-boxwood snow surface is a genuine seasonal addition and is preserved. A warm seasonal
+switch to July gave370calls in the same process; the separate cold July baseline369 is not
+an identical initialization and must not be conflated with that comparison.
+
+`node --test tools/seasoncrowntest.mjs` executes the actual frozen pre-fix seasonal module
+from4a96a152 with its own registry and compares every matrix/colour element over all months,
+checks buffer/material/layer/raycast identity, first positive month/summer restoration,
+parent visibility and actual sibling-trunk ray intersections. Relevant real-world checks are
+winter/summer/March submissions, matched start images and real nearby entrance focus/use,
+then complete winter phone budgets in both formats. Desktop#1387 remains separate.
+Targeted before/after start measurement:371→359screen draws and735194→664446triangles
+(the twelve already-bare batches total70748triangles). March and summer restore all eleven
+named crown batches plus the vine; the warm summer measurement remains370/732662.
+Matched winter118404-pixel captures differ at111pixels by at most2/255 per channel; summer
+at257pixels, max2/255. All pictures are opened for visual review. The actual trunk ray returns
+identical2.9328345123m distances with the same buffer/raycast; real nearby touch-focus/use opens
+the entrance and all its near meshes retain their layers. This is a rendering change, not a
+physical tree, complete-model or architecture change.
+Complete winter phone budgets pass in both formats with unchanged370/950000/225limits:
+844×390peaks361calls at kitchen,764469triangles at living/~95MiB;390×844peaks284calls
+at start,703101triangles at big hall/~98MiB. Every view and adaptive-quality assertion passes;
+no JavaScript exceptions. These are Chromium phone profiles, not physical iPhone stability/FPS.
+The generic helper is relevant to public scenery and needs a separately tracked reviewed transfer.
+
 ## Empty mess batches (#1392)
 
 `Mess` keeps each decal batch invisible while its instance count is zero. Its existing

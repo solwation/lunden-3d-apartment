@@ -1,3 +1,21 @@
+Bare seasonal leaf batches (#1404): `node --test tools/seasoncrowntest.mjs` compares the actual
+frozen4a96a152 season module against all current monthly matrices/colours and identities, plus
+first-leaf/summer restore, parent culling and a real sibling-trunk ray. Profile actual screen
+submissions at `tools/perfcount.html?lowmem&w=844&h=390&quality=0&month=1&day=10&weather=clear&cloud=`;
+compare identical start cameras before/after and inspect winter/summer/March and near-door images.
+In the full World verify actual trunk ray distances, touch-focus/use on the entrance and all its
+near meshes, then run complete winter844×390/390×844phone budgets without changing limits.
+Keep the initial circular-userData JSON-export error as a failed profiler attempt; final profile
+exports primitive tags only. No geometry, physics, head/whole-model or quality cutoffs change.
+
+Final#1404: native2/2PASS and actual start371→359calls/735194→664446tri, twelve bare leaf batches.
+March/summer restore the same eleven named crown batches and the193-instance courtyard vine.
+Actual trunk-ray distances are identical2.9328345123m; main touch-focus/use opens the entrance with
+all nearby door meshes drawn. Before/after winter/summer, March and near-door pictures reviewed.
+Complete winter844×390and390×844perfcount bothALLPASS/CLI0, all19views/quality checks:
+landscape361calls/764469tri/~95MiB, portrait284/703101/~98MiB. Limits370/950000/225unchanged.
+This resolves the historical winter failure recorded below under#1397; its original red logs remain.
+
 Winter rugs (#1397): `node --test tools/ponyblankettest.mjs` checks torso coverage/open neck and
 underside, finite normals,70triangles each, exact shared moving/scaled matrix buffer and season reuse.
 `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/ponyblankettest.cjs GAME OUT` uses the actual World:

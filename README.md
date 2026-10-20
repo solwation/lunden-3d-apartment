@@ -22,6 +22,8 @@ Promenadstråken i parken och längs Höje å samt vägarna i resten av området
 
 Med jetpacken kan du stiga genom ett molnlager och upp över ett tätt molnhav. Ovanför ligger marken dold under molnen även när vädret på marken är klart.
 
+Vintervyerna kräver mindre ritarbete när trädens och klängväxternas löv har fallit.
+
 På vintern har båda hästarna varsitt täcke och står synliga inne i hästhagens skjul, med halm på golvet, girlang och en varm ljusslinga. När snön försvinner försvinner täckena och pyntet och hästarna går ut i hagen igen.
 Skjulet och vattenhon står nu närmare staketet vid grinden, med samma storlek och fri passage vid stättan. Placeringen är en uppskattning och väljs bara om marken är tillräckligt plan.
 
