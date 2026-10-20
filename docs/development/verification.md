@@ -1,3 +1,24 @@
+Bus boarding apron (#1417): `node --test tools/busstopgeotest.mjs` (6 checks).
+Compare actual emitted terrain/old southern triangle identities and new apron centroid/rays,
+road-edge continuity, four W-key routes, overhead/both ends and phone views; inspect full
+standard desktop and relevant phone budgets. Persistent raw before/current results are in
+`~/.local/state/lunden-orkester/codex-surface-20261020/busstop1417/`.
+The measured budget baseline is6e80a121 plus the final1417 modules. Rebase onto4421b4c5
+includes#1413's same-batch/material/cost swing change; the conductor approved composing
+its independently verified unchanged cost with this immutable344-triangle/zero-call append.
+The initial nominal-edge/strict old-road sampler diagnostic is retained; only the final
+actual-emitted-edge seam proof is a pass. A supplemental desktop quality/adaptive callback
+stalled at high GPU quality and was interrupted after the19 standard poses had passed;
+it is not a completed quality pass. Desktop's309MiB texture estimate is inherited from the
+previous full profile, with zero new materials/textures in this change; the published smoke
+will repeat only the texture walk without additional renders. The platform's existing green
+intrusions are tracked independently in#1429. Final own-module phone profiles (19poses plus all quality checks): landscape369calls/
+833632triangles/~97MiB; portrait290/718908/~101MiB. Landscape's post-budget iframe
+screenshot timed out waiting for element stability; portrait's separate canvas readback was
+blank after the drawing buffer cleared. Neither is a valid local mobile picture. The single
+published integrated844×390smoke captures render/readback together and verifies actual apron
+rays and textures. After source publication, issue#1417 remains open only for LOW public#110.
+
 Desktop exterior occlusion (#1421): run `node --test tools/desktopocclusiontest.mjs tools/phonedetailunittest.mjs tools/occlusiontest.mjs`.
 Compare exact pre-fix/current production methods in the actual960×600 touch app at
 (2.9,1.62,16), yaw0°, pitch25°, clear July noon/quality0; inspect matched images and

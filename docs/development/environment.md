@@ -505,3 +505,30 @@ This selectively reuses the projection principle already verified in public
 `solwation/kvarteret-lunden@5cfecd3d5eab5a778529f63b19ec3b9d1698524f` (#105).
 No further public transfer is needed: its neutral track/field fix is already present.
 No public source tree, personal content, gameplay or Cloudflare integration was copied.
+
+
+## Bus boarding apron (#1417)
+
+The inferred asphalt between the unchanged OSM platform kerb and the bus bay is
+merged into `south-land`. `busstopgeo.js::busStopApron` follows the nearest edge
+of the three already emitted bus-bay road meshes, including their seam overlaps.
+The asphalt outline between these mapped features is a visual assumption; the
+broad eastern wedge (about6.48m) is not a surveyed bus-lane width. No road centre,
+platform, shelter, terrain, height control, collision or bridge is moved.
+Only88 local road triangles participate; identical winning-edge intervals merge
+exactly (36polygons, about30ms native diagnostic), retaining every boundary switch.
+The apron is projected through the actual `surfaceGrid` cells at the roads' existing
+2.5cm lift. It adds344triangles and no draw calls/materials/textures.
+
+Verification: native6/6; actual World before/current triangle multisets preserve
+all previous southern geometry, terrain and complete platform/shelter exactly.
+All344 new triangle centroids match the terrain lift within0.000001m; independent
+terrain rays agree within0.000001m.396 apron rays and36 road-edge seam probes have
+no holes; the unchanged road tessellation meets it with at most5.54mm height change.
+Four real W-key routes pass both ways along the platform and across the apron.
+Desktop's19standard poses pass438calls/996536triangles at quality0; phone results
+are recorded in verification.md. The pre-existing terrain intrusions inside the
+platform remain unchanged and are tracked independently in#1429.
+A/B/C/L house equivalents: not applicable; this is the one mapped bus stop.
+Neutral public transfer is queued separately as
+[kvarteret-lunden#110](https://github.com/solwation/kvarteret-lunden/issues/110), low priority.

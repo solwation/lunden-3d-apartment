@@ -6,6 +6,7 @@ import { registerTrees, registerSnow, registerSeasonal } from './seasons.js';
 import { lobeGeometry, leafMaterial, leafAtlasParts } from './foliage.js';
 import { buildStLars41 } from './stlars41.js';
 import { paddockLandParts } from './paddock.js';
+import { busStopApron } from './busstopgeo.js';
 const S=SITE.south;
 const LAND_MESH=6,LAND_LIFT=.03; // m: #1306, fields / car parks are cut into triangles <= LAND_MESH m where the sloping terrain lies and sit LAND_LIFT higher than the corner heights say (*guess*)
 const inside=(x,z,p)=>{let yes=false;for(let i=0,j=p.length-1;i<p.length;j=i++)if((p[i][1]>z)!==(p[j][1]>z)&&x<(p[j][0]-p[i][0])*(z-p[i][1])/(p[j][1]-p[i][1])+p[i][0])yes=!yes;return yes;};
@@ -66,7 +67,19 @@ export function* southBackdropParts(ground){
  parts.land.push(...paddockLandParts(farGround)); // #1280: the pony paddock's worn track (soil colour, snow-covered with the rest of the land)
  yield .7;
  const surfColor=p=>p.color??(p.surface==='asphalt'?0x5f6164:p.surface==='gravel'?0xb5ac90:0xa7a397);
- for(const p of [...S.paths,...(S.access??[])])parts.land.push(tint(pathStrip(p,w=>-w/2,w=>w/2,.025,farGround),surfColor(p)));
+ const bayPolygons=[];
+ for(const p of [...S.paths,...(S.access??[])]){
+  const drawn=pathStrip(p,w=>-w/2,w=>w/2,.025,farGround);
+  if(['95035967','189432572','36918923'].includes(p.source)){
+   // Reuse the actual float32 footprint, including pathStrip's seam overlaps.
+   const a=drawn.attributes.position;
+   for(let i=0;i<a.count;i+=3)bayPolygons.push([0,1,2].map(k=>[a.getX(i+k),a.getZ(i+k)]));
+  }
+  parts.land.push(tint(drawn,surfColor(p)));
+ }
+ // #1417: inferred hard boarding apron, bounded by unchanged mapped features.
+ // Only the three local bus-bay roads participate (88 triangles, not site-wide).
+ for(const p of busStopApron(bayPolygons))parts.land.push(tint(upGeometry(terrainTriangles(p,LAND_MESH,farGround.surfaceGrid()),(x,z)=>farGround(x,z)+.025),0x5f6164));
  for(const p of (S.parking??[])){
   if(p.polygon){
    if(!(p.holes??[]).length)parts.land.push(tint(upGeometry(terrainTriangles(p.polygon,LAND_MESH,farGround.grid()),(x,z)=>farGround(x,z)+.022+LAND_LIFT),surfColor(p)));

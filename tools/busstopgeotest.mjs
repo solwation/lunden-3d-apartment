@@ -29,3 +29,34 @@ test('the platform keeps off the carriageways (bus bay approach and Sankt Lars v
     assert.ok(dist(p, busStopPoint(s, t)) > p.w / 2 - 0.05, `${p.source} at ${s},${t}`);
   }
 });
+
+test('boarding apron follows the nearest road edge through every bend and envelope switch', async () => {
+  const { busStopApron } = await import('../src/busstopgeo.js');
+  const P = points => points.map(([s,t])=>busStopPoint(s,t));
+  const roadA=P([[-1,-1],[length+1,-4],[length+1,-8],[-1,-8]]);
+  const roadB=P([[-1,-4],[length+1,-1],[length+1,-9],[-1,-9]]);
+  const pieces=busStopApron([roadA,roadB]).map(p=>p.map(q=>toLocal(...q)));
+  assert(pieces.length>=2,'the crossing road edges require an envelope switch');
+  assert(Math.abs(pieces[0][0][0])<1e-8);
+  assert(Math.abs(pieces.at(-1)[1][0]-length)<1e-8);
+  for(let i=0;i<pieces.length;i++){
+    const p=pieces[i],s=(p[0][0]+p[1][0])/2,u=(s+1)/(length+2);
+    const nearest=Math.max(-1-3*u,-4+3*u);
+    assert(Math.abs((p[2][1]+p[3][1])/2-nearest)<1e-8,'road side is the exact closest edge');
+    assert(p.every(([s,t])=>s>=-1e-8&&s<=length+1e-8&&t<=1e-8),'no platform or kerb-end encroachment');
+    if(i)assert(Math.abs(p[0][0]-pieces[i-1][1][0])<1e-8,'no gaps between consecutive apron pieces');
+  }
+});
+
+test('boarding apron fails closed if no actual road connects a kerb section', async () => {
+  const { busStopApron } = await import('../src/busstopgeo.js');
+  assert.throws(()=>busStopApron([]),/no connecting carriageway/);
+  assert.throws(()=>busStopApron([[[0,0],[1,0],[1,1]].map(([s,t])=>busStopPoint(s,t+1))]),/no connecting carriageway/);
+});
+
+test('triangulating the actual road footprint preserves its apron and bounded envelope', async () => {
+  const { busStopApron } = await import('../src/busstopgeo.js');
+  const p=[[-2,-1],[length+2,-3],[length+2,-6],[-2,-6]].map(([s,t])=>busStopPoint(s,t));
+  const normalize=pieces=>pieces.map(p=>p.map(q=>q.map(v=>Math.round(v*1e8)/1e8)));
+  assert.deepEqual(normalize(busStopApron([[p[0],p[1],p[2]],[p[0],p[2],p[3]]])),normalize(busStopApron([p])));
+});

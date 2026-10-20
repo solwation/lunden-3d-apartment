@@ -436,3 +436,6 @@ across reload, independently of discovery; petting, hugs and their ordinary poin
 När du går under gården slipper visningen rita hela terrassdekoren och pergolornas lampor genom ett täckande garagetak (#1387).
 
 Utsikten upp mot terrasserna kräver mindre ritningsarbete bakom lägenhetens täta väggar och golv (#1421).
+
+Bus boarding asphalt (#1417) joins the existing mapped kerb to the actual bus-bay
+edges without moving the platform; see [environment verification](docs/development/environment.md#bus-boarding-apron-1417).
