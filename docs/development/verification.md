@@ -1,3 +1,14 @@
+Complete static batch ceiling occlusion (#1387): run `node --test tools/ceilingbatchtest.mjs`,
+then the full actual quality0 `tools/perfcount.html` desktop and both phone dimensions
+844×390/390×844 with `lowmem`. Check whole batches under the garage ceiling, exposed
+courtyard/ramp/roof edges and a real garage button opening after its normal animation.
+Compare matched actual versus forced-on batch images; original terrace behind/far policy
+must remain active in both. Inspect returned per-camera layer masks and physical-ray identity
+from the native proof. This changes no architecture, collision or global budget.
+Fresh recovery logs/images are outside the repo in
+`~/.local/state/lunden-orkester/codex-surface-20261020/perf1387/`; historical pre-crash raw
+artifacts were lost, as documented in [performance](performance.md).
+
 Bare seasonal leaf batches (#1404): `node --test tools/seasoncrowntest.mjs` compares the actual
 frozen4a96a152 season module against all current monthly matrices/colours and identities, plus
 first-leaf/summer restore, parent culling and a real sibling-trunk ray. Profile actual screen

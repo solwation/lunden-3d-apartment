@@ -427,3 +427,5 @@ from rotation, and older archives above eight retain every photo with clear arch
 Cat encounter photos (#1400): a cat's first pet or hug makes one private encounter photograph.
 Pickup alone and repeated interactions do not duplicate it. A kept Miele remembers the photo attempt
 across reload, independently of discovery; petting, hugs and their ordinary points remain available.
+
+När du går under gården slipper visningen rita hela terrassdekoren och pergolornas lampor genom ett täckande garagetak (#1387).

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { TERRACE_DECOR as T, HUS_L as H } from './config.js';
+import { CeilingBatchGate } from './ceilingbatchgate.js';
 import { planter } from './patio.js';
 import { windGeometry, windMaterial, windShadow } from './plantwind.js';
 
@@ -341,6 +342,7 @@ export function buildTerraceDecor(exterior, D) {
   const day = new THREE.Color(T.bulbs.day), night = new THREE.Color(T.bulbs.night);
   const prev = exterior.userData.update;
   exterior.userData.update = (n, power = true) => { prev?.(n, power); bulbMat.color.copy(n > T.bulbs.on && power ? night : day); }; // (out in a power cut, #604)
+  gate.add(new CeilingBatchGate(meshes, () => gate.shown !== false));
   gate.meshes = meshes;
   gate.userData.records = records;
   return gate;

@@ -1,5 +1,72 @@
 # Rendering performance
 
+## Complete static batches behind actual garage ceilings (#1387)
+
+Only two opted-in static roots are affected: the three merged roof-terrace decoration
+meshes and the courtyard pergolas’ complete272-bulb instance batch. `CeilingBatchGate`
+uses the existing `wholeBoxOccluded` proof: one actual opaque ceiling rectangle must
+cover every corner of the complete world AABB. Rectangles use exactly Garage’s
+ceiling filter (`id !== core`, no `core`, no `outside`); stair cores and exterior
+recesses remain open. No union of disconnected slabs, fake blocker, distance change
+or partial-model clipping. The plant AABB includes the shader’s existing±0.06m
+maximum horizontal sway. The old terrace behind/far gate remains an explicit input.
+
+The render pass moves only these complete meshes between layers0/7. Their original
+visible flags, geometry, instance buffers, matrices, castShadow and raycast references
+remain untouched; physical traces already include layer7. Per-camera LOD updates
+restore exposed batches; all-layer/sliced warm-up retains its own masks. No new
+meshes/materials/textures/lights or budget changes.
+
+The saved pre-crash desktop62a75c17 baseline at1280×800 quality0 (no lowmem/test)
+reported344calls/1042197triangles at the hall, exceeding the triangle limit.
+The opted-in batches contain31204terrace-decor and21760pergola-bulb triangles;
+fresh same-World submission comparisons below independently recover their exact savings.
+
+Shared structure mapping, not four independently rendered house inspections: L’s
+`bikeNW`/basement bands have ceilings while `core` remains open; A’s passages/
+`coreAWest`/`coreAEast` retain ceilings while `coreA` and `parkARecess` are excluded;
+B’s passages/`coreBPark`/side door strips retain ceilings while `coreB` and
+`parkBRecess` are excluded; C’s utility cells/passages retain ceilings while `coreC`
+is excluded. All other actual ceiling rectangles use the identical builder filter.
+No house shell, entrance geometry, ramp, bridge, navigation or collision is changed.
+
+`node --test tools/ceilingbatchtest.mjs` covers5cases: actual included/excluded roof
+rectangles, complete-box edges/straddling/hole cases, exact render-only identities
+and physical rays, original terrace policy, per-camera restoration, wind bounds and
+warm-up masks. Its orthographic shadow-like camera is a direct mathematical gate
+probe, not evidence that Three’s shadow traversal calls LOD.update. Pinned Three0.170
+WebGLRenderer projects the main-camera scene/LODs before WebGLShadowMap.render;
+the shadow traversal tests the main camera’s layer mask and has no independent LOD
+update. Thus outside/portal main-camera restoration also restores the caster layers
+before the real shadow pass. Existing shadow flags/materials stay unchanged.
+
+Fresh recovery on579336bd: desktop all19views/quality checks PASS with
+489calls/991365triangles/~309MiB (hall340/989409); landscape phone ALLPASS,
+369/827712/~98MiB (native exit0); portrait phone ALLPASS,290/716060/~101MiB.
+A fresh same-World actual/forced probe confirms exactly4draws/52964triangles saved
+in the hall;5matched hall/ramp/courtyard/terrace/core-hole image pairs have0changed
+pixels. Exposed ramp/courtyard/terrace batches restore, and the core opening restores
+the bulbs while retaining the older terrace policy. The actual focused garage button
+opens the door after its normal9seconds (t differs from1 only by floating-point rounding).
+The corrected targeted door runner passes with native exit0 and no page errors; its
+actual/forced fully open garage-ramp images also have0changed pixels.
+The extra upward terrace view remains over budget in both states; independent#1421
+tracks it. Independent read-only paddock surface finding#1420 is outside this change.
+
+Historical raw artifacts in `/tmp/desktop1387-codex20/` were lost in the restart;
+the earlier baseline summary is from the saved handoff. Fresh recovery logs/images
+are retained outside the repo at
+`~/.local/state/lunden-orkester/codex-surface-20261020/perf1387/`. The first recovery
+launch had an exited devserver. Desktop and portrait complete passing budget results
+were saved before browser-teardown failures (portrait CLI1); the first door fixture
+also used strict floating-point equality. These harness failures remain separate from
+actual application assertions and are not described as green CLI runs.
+
+Only the neutral courtyard lamp gate is applicable downstream: public issue
+solwation/kvarteret-lunden#108 tracks the selective transfer. Private roof-terrace
+decoration is excluded. Original #1387 stays open until that transfer is verified.
+
+
 Read [CLAUDE.md](../../CLAUDE.md) first for shared workflow rules. Paths in code spans and module maps are relative to the repository root.
 
 Related: [graphics](graphics.md), [verification](verification.md).
