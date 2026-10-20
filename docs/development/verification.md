@@ -7319,3 +7319,18 @@ green. Final waits target completed UI state without increasing a timeout.
 This is browser emulation, not physical-phone verification. No Three.js mesh,
 light, render pass, collection migration or new photo-capture behaviour is
 introduced. Personal collection gameplay is excluded from public downstream.
+
+Shelter hay (#1396): `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/paddockfeedtest.cjs GAME SHOTDIR`
+uses the actual full World and natural pony walks. It captures each first meal when the native neck
+is lowered, probes the actual shader-transformed muzzle geometry against its portion, checks native
+touch pat/pause/resume, consumed portions, released goals, winter/refill, rain/dry release, normal grass
+grazing and distance/underground culling. No pony pose or feed-state injection. Inspect before, both
+individual eating, after, winter and mobile PNGs. Pair with paddockgeotest and full desktop/phone
+perfcount; the added feed batch must remain exactly1 draw/648 triangles.
+The `--mobile-only` option starts at844×390 and captures a native meal without replaying the desktop
+suite. A stopped render loop must redraw after the viewport resize has settled; otherwise Chromium
+can clear the screenshot canvas.
+Final #1396 checks: feeding11/11, native geometry10/10 and existing paddock16/16 pass. Full phone
+budgets: landscape369calls/827536triangles/~98MiB and portrait290/747434/~101MiB, all within
+370/950000/225. Desktop504calls/~311MiB stay within520/320; big hall1049249triangles still exceeds
+the existing1M cap tracked by #1387. No budget was raised. Added local feed draw delta:1/648.

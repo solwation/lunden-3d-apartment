@@ -411,3 +411,7 @@ Southern plateau (#1381): the existing terrain grid now draws through z460, with
 Southern road bank (#1382): eleven LM ground controls and five separate cross-sections shape the southern road crest and both slopes; a bounded interpolated branch joins the plateau. Bridge deck heights remain explicit assumptions; the GC approach surface follows the same road/terrain sampler. Public transfer: kvarteret-lunden#99.
 
 Phone rendering (#1383): complete opted-in furnishings share a visibility decision from outside the home; actual floor and retaining-wall support hides covered geometry. Nearby use and physical objects remain intact. See development/performance.md for profiles and limitations.
+
+Shelter hay (#1396): both ponies walk to their own low hay box and visibly eat its shrinking portion.
+Patting pauses the meal; winter/rain shelter and ordinary grass grazing remain available. The ambient
+portions refill automatically while nearby; this adds no hunger or inventory system.

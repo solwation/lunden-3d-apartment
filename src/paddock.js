@@ -7,6 +7,7 @@ import { sfx } from './audio.js';
 import { Hearts } from './pingping.js';
 import { registerSeasonal } from './seasons.js';
 import { shelterWinter } from './shelterwinter.js';
+import { PaddockFeed } from './paddockfeed.js';
 import { shelterSpots, snowCovered, RainWatch, footprintGround, shelterSite, relocateShelter } from './paddockshelter.js';
 
 // #1280: the pony paddock on the kidney-shaped meadow south of the timber footbridge: a merged post-and-rail fence with a closed gate, a
@@ -351,6 +352,7 @@ export class Paddock {
     this.matrix = new THREE.Matrix4(); this.quat = new THREE.Quaternion(); this.pos = new THREE.Vector3(); this.scl = new THREE.Vector3(); this.up = new THREE.Vector3(0, 1, 0);
     this.initGrass(scene, ground);
     this.initShelter();
+    this.feed = new PaddockFeed(scene, ground, this.spots.shelter, this.sheds);
     this.winterDecor = shelterWinter(ground, this.spots.shelter); scene.add(this.winterDecor);
     this.write();
   }
@@ -523,6 +525,7 @@ export class Paddock {
   }
   /** Pick what a pony does next: walk to the nearest place to the visitor (when near), else graze / stand / wander. */
   decide(p, i) {
+    if (this.feed.decide(p, i, this)) return; // #1396: only feed under the roof when shelter rules permit it
     if (this.shelterDecide(p, i)) return; // #1316: rain / snow
     const c = this.camera.position, R = P.pony, r = p.rnd, d = Math.hypot(c.x - p.x, c.z - p.z), curious = d < P.curious && this.waypoints.length;
     if (curious) {
@@ -558,7 +561,7 @@ export class Paddock {
     let walking = false;
     if (p.state === 'walk') {
       const tx = p.target[0] - p.x, tz = p.target[1] - p.z, dist = Math.hypot(tx, tz);
-      if (dist < 0.5) { if (p.goal && Math.hypot(p.goal[0] - p.x, p.goal[1] - p.z) > 1.2) { p.target = this.hop(p, p.goal[0], p.goal[1]); if (!p.target) { p.state = 'idle'; p.left = 1; } } else { p.state = p.goal ? 'watch' : p.eat ? 'graze' : 'idle'; p.eat = false; p.left = p.state === 'graze' ? P.pony.graze[0] + p.rnd() * (P.pony.graze[1] - P.pony.graze[0]) : 3 + p.rnd() * 5; } }
+      if (dist < (p.feedGoal === i ? P.feed.arrive : 0.5)) { if (p.goal && Math.hypot(p.goal[0] - p.x, p.goal[1] - p.z) > 1.2) { p.target = this.hop(p, p.goal[0], p.goal[1]); if (!p.target) { p.state = 'idle'; p.left = 1; } } else { p.state = p.goal ? 'watch' : p.eat ? 'graze' : 'idle'; p.eat = false; p.left = p.state === 'graze' ? P.pony.graze[0] + p.rnd() * (P.pony.graze[1] - P.pony.graze[0]) : 3 + p.rnd() * 5; } }
       else {
         let da = Math.atan2(tx, tz) - p.yaw; da = Math.atan2(Math.sin(da), Math.cos(da));
         p.yaw += Math.max(-R.turn * dt, Math.min(R.turn * dt, da));
@@ -578,13 +581,14 @@ export class Paddock {
       const t = (p.state === 'pet' ? 1 : p.state === 'watch' ? 0.6 : 0) * Math.max(-0.8, Math.min(0.8, da));
       p.headYaw += (t - p.headYaw) * Math.min(1, dt * 3); // the head turns to the visitor while it is petted or watching
     }
+    this.feed.step(p, i, dt, this); // #1396: arrival, head alignment and consumption; petting pauses feeding
     if (p.petT > 0) p.petT -= dt;
     if (p.earP >= 0) { p.earP += dt / 0.35; if (p.earP > 1) p.earP = -1; } else { p.earT -= dt; if (p.earT <= 0) { p.earP = 0; p.earT = p.state === 'pet' ? 0.6 : 3 + p.rnd() * 7; } }
     p.ear = p.earP >= 0 ? 0.6 * Math.sin(p.earP * Math.PI) : 0;
     if (p.state !== 'walk' && p.left <= 0) this.decide(p, i);
-    // Keep apart in the field. The two assigned winter stalls are closer than
-    // the field gap; do not push an occupant out of its place under the roof.
-    if (!(this.winter && p.spot === this.stable(i))) for (let j = 0; j < this.ponies.length; j++) {
+    // Keep apart in the field. Winter occupants and active feeding stalls are
+    // closer than the field gap; do not push an eater away from its portion.
+    if (!(this.winter && p.spot === this.stable(i)) && p.state !== 'feed') for (let j = 0; j < this.ponies.length; j++) {
       if (j === i) continue;
       const q = this.ponies[j], dx = p.x - q.x, dz = p.z - q.z, d = Math.hypot(dx, dz);
       if (d < R.gap && d > 1e-3) { const k = (R.gap - d) * Math.min(1, 1.5 * dt) * 0.5, nx = p.x + dx / d * k, nz = p.z + dz / d * k; if (insideFence(nx, nz, P.keep - 1.2)) { p.x = nx; p.z = nz; } }
@@ -594,10 +598,10 @@ export class Paddock {
     const k = Math.min(1, dt * 4), moving = walking ? 1 : 0;
     p.amp += (moving * 0.5 - p.amp) * k;
     p.phase += dt * (walking ? (R.speed / 0.95) * 6.2832 : 0);
-    const grazing = p.state === 'graze';
+    const feeding = p.state === 'feed', grazing = p.state === 'graze' || feeding;
     const neckT = p.state === 'pet' ? 0.5 + Math.sin(p.petT * 7) * 0.06 : grazing ? 1.5 + Math.sin(p.chew * 6) * 0.04 : walking ? 0.12 : 0.08 + Math.sin(p.tailT * 0.8) * 0.03;
     p.neck += (neckT - p.neck) * Math.min(1, dt * (grazing ? 1.4 : 2.2));
-    if (grazing && p.neck > 1.1) { const G = P.grass, e = G.reach * p.scale; this.eatAt(p.x + Math.sin(p.yaw) * e, p.z + Math.cos(p.yaw) * e, G.bite, G.rate * dt); } // the muzzle crops the grass in front of it (#1315)
+    if (grazing && !feeding && p.neck > 1.1) { const G = P.grass, e = G.reach * p.scale; this.eatAt(p.x + Math.sin(p.yaw) * e, p.z + Math.cos(p.yaw) * e, G.bite, G.rate * dt); } // hay never consumes the grass mask (#1396)
     p.tail = Math.sin(p.tailT * (p.state === 'pet' ? 5 : 2.3)) * (p.state === 'pet' ? 0.4 : Math.max(0, Math.sin(p.tailT * 0.45)) * 0.35);
   }
   write() {
@@ -619,6 +623,7 @@ export class Paddock {
     this.shelterTick(dt, rain, show); // #1316
     this.winterDecor.visible = show && this.winter; // #1345: same snow months and distance/underground culling as the occupants
     this.mesh.visible = show && this.ponies.some((q) => !q.gone); this.grass.visible = show && !this.snowy;
+    this.feed.update(Math.min(dt, 0.1), show); // #1396: same distance/underground gate as the ponies
     this.growGrass(Math.min(dt, 0.1)); // #1342: 72 h regrowth in real time, also while far away
     if (!show) return;
     dt = Math.min(dt, 0.1); this.time += dt;

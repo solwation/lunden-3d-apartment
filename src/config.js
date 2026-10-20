@@ -3645,6 +3645,10 @@ export const PADDOCK = {
   // across it) or on a ring of `ring` x tree scale m round a tree (under the crown, clear of the trunk; `treeSpots` of them each). In the snow months (SEASON.snowMonths: the ground
   // is white) the ponies stand visibly in their two places under the shelter roof (#1352), and walk out again when the snow is gone.
   rain: { on: 0.12, off: 0.03, dry: 20, chance: 0.8, ring: 2.3, treeSpots: 4, shedX: 0.9 },
+  // #1396: two hay boxes at the existing roof stalls; visual dimensions (m) and ambient feeding times (s) are guesses.
+  feed: { w: 0.8, d: 0.65, base: 0.06, rail: 0.045, h: 0.1, mound: 0.14, strand: 0.025, strands: 22,
+    wood: 0x765337, hay: [0xd6ad55, 0xb88d35, 0xe2c778], reach: 1.05, arrive: 0.15, neck: 1.1, facing: 0.2,
+    seconds: 16, interval: 95, refillSeconds: 120, stagger: 5, rate: 0.09, empty: 0.015 },
   // the stile beside the gate (#1295, *guess*): `w` m wide, `minSpan` m the fence span it needs, three risers of `rise` m (under PLAYER.stepUp 0.45, so the ordinary
   // stepping walks it) over two treads of `tread` m either side of a platform that is 2 × `platform` m long; `reach` m from the fence line to the walls' ends
   stile: { w: 1.0, minSpan: 1.9, rise: 0.38, tread: 0.3, platform: 0.25, reach: 0.95, post: 0.95 },

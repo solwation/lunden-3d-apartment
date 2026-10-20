@@ -373,3 +373,8 @@ Sounds from other players (#1302): the bicycle bell (B while riding, the touch b
 Footsteps and the jetpack roar are derived in `Ghosts.soundTick` from each ghost's interpolated speed, crouch, pose, `bk` and `jp` (no extra traffic, no per-frame allocation): one step per stride within 25 m
 while walking on the ground, a roar burst every 0.35 s from the 2 nearest thrusting ghosts. Shots already sound through `combat.remote` (`sfx.nerf`). Tests: `node --test cloudflare/spatialsound.test.mjs cloudflare/players.test.mjs`;
 `node tools/playersoundpeertest.cjs GAME WORKER` (real Ghosts clients through `node cloudflare/dev.mjs PORT`) and `node tools/bellapptest.cjs GAME WORKER` (the whole app on a phone context: B / the button ring, not riding: nothing).
+
+Shelter hay (#1396): `PaddockFeed` is an isolated ambient feeding controller; the normal pony
+walk/neck animation, native pat target, hearts/whinny and score callback remain in `Paddock`.
+Patting interrupts bites, then the pony can finish its portion. Feeding does not crop the grass mask.
+See environment.md for assumed dimensions/timing, refill and shelter priorities.
