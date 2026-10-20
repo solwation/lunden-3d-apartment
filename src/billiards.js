@@ -12,7 +12,7 @@ const merge=list=>{const flat=list.map(q=>q.index?q.toNonIndexed():q),g=mergeGeo
 export class Billiards {
   constructor() {
     const c=this.c=R.billiards,L=c.length,W=c.width,H=c.height,A=c.rail;this.physics=new BilliardPhysics(c);
-    this.object=new T.Group();this.object.name='playroom-billiards';this.object.position.set(R.x+c.x,0,R.z+c.z);
+    this.object=new T.Group();this.object.name='playroom-billiards';this.object.position.set(R.x+c.x,0,R.z+c.z);this.object.rotation.y=c.yaw;
     const parts=[],box=(w,h,d,x,y,z,col)=>parts.push(paint(new T.BoxGeometry(w,h,d).translate(x,y,z),col));
     box(L+2*A,.12,W+2*A,0,H-.08,0,0x593c29);box(L,.025,W,0,H-.0125,0,0x226b55);
     for(const x of[-L*.35,L*.35])for(const z of[-W*.32,W*.32])box(c.leg,H-.14,c.leg,x,(H-.14)/2,z,0x302820);
@@ -45,11 +45,14 @@ export class Billiards {
     const boards=new T.Mesh(mergeGeometries(faces),faceMat);boards.name='billiard-boards';this.object.add(boards);faces.forEach(q=>q.dispose()); // one draw call for both boards
     this.target={kind:'playroomBilliards',name:'biljardbordet',verb:'stöt på'};
     const pick=this.target.pickable=new T.Mesh(new T.BoxGeometry(L+2*A,.14,W+2*A),new T.MeshBasicMaterial({visible:false}));pick.position.y=H+.05;pick.userData.door=this.target;this.object.add(pick);
-    const x=R.x+c.x,z=R.z+c.z,hx=L/2+A,hz=W/2+A;this.segments=[[x-hx,z-hz,x+hx,z-hz],[x+hx,z-hz,x+hx,z+hz],[x+hx,z+hz,x-hx,z+hz],[x-hx,z+hz,x-hx,z-hz]];
+    // Collision uses the same transformed corners as the rendered table; physics and network snapshots remain table-local.
+    this.object.updateMatrixWorld(true);
+    const hx=L/2+A,hz=W/2+A,corners=[[-hx,-hz],[hx,-hz],[hx,hz],[-hx,hz]].map(([x,z])=>this.object.localToWorld(new T.Vector3(x,0,z)));
+    this.segments=corners.map((p,i)=>{const q=corners[(i+1)%corners.length];return[p.x,p.z,q.x,q.z];});
     this.rotations=this.physics.balls.map(()=>new T.Quaternion());this.last=this.physics.balls.map(b=>[b.x,b.z]);
     this.matrix=new T.Matrix4();this.pos=new T.Vector3();this.scale=new T.Vector3();this.axis=new T.Vector3();this.spin=new T.Quaternion();this.up=new T.Vector3(0,1,0);this.direction=new T.Vector3(1,0,0);this.strokeT=0;this.strokeOrigin=new T.Vector3();this.strokeDirection=new T.Vector3();this.update(0);
   }
-  aim(camera) { camera.getWorldDirection(this.direction);this.direction.y=0;if(this.direction.lengthSq()<1e-8)this.direction.set(-Math.sin(camera.rotation.y),0,-Math.cos(camera.rotation.y));this.direction.normalize(); }
+  aim(camera) { camera.getWorldDirection(this.direction);this.direction.y=0;if(this.direction.lengthSq()<1e-8)this.direction.set(-Math.sin(camera.rotation.y),0,-Math.cos(camera.rotation.y));this.direction.applyAxisAngle(this.up,-this.object.rotation.y).normalize(); }
   /** New rack in the given mode (default: the current one); the cue ball goes back to the head spot. */
   newRack(mode=this.rules.mode) {
     this.physics.reset();this.rules.reset(mode);this.inShot=false;this.strokeT=0;this.dirty=true;

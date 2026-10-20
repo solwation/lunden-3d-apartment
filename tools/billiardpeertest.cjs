@@ -52,16 +52,16 @@ const until = async (f, n = 150) => { for (let i = 0; i < n; i++) { if (await f(
       setInterval(() => { a.step(0.05); window.__ghosts.update(0.05); }, 50); // (ghosts.update runs in main.js's frame(), not step())
     });
     await sleep(1500);
-    const standA = () => A.evaluate(() => { const a = window.__app, r = a.world.playroom, c = r.billiards.c, o = r.billiards.object.position; a.player.spawn(o.x - c.length / 2 - .65, o.z, -Math.PI / 2); window.__bt.aim(o.x, c.height, o.z); });
+    const standA = () => A.evaluate(() => { const a = window.__app, r = a.world.playroom, c = r.billiards.c, o = r.billiards.object.position; a.player.spawn(o.x, o.z + c.length / 2 + .65, 0); window.__bt.aim(o.x, c.height, o.z); });
     await standA();
     const bA = () => A.evaluate(() => { const b = window.__app.world.playroom.billiards; return { seq: b.seq, ready: b.netReady(), inside: window.__app.world.playroom.inside, mode: b.rules.mode, turn: b.rules.turn, moving: b.physics.moving || b.inShot, events: window.__ev ?? [] }; });
     check(await until(async () => (await bA()).ready && (await bA()).seq > 0), 'A: connected, in the children\'s room, got the table from the room', await bA());
     await A.evaluate(() => { const b = window.__app.world.playroom.billiards; window.__ev = []; const f = b.onEvent; b.onEvent = (t) => { window.__ev.push(t); f?.(t); }; window.__tbl = async () => JSON.stringify((await import('/src/billiardsync.js')).snapshotTable(b.physics, b.rules, b.seq)); });
 
-    // --- client B: component page at the east end
+    // --- client B: component page at the north short end
     const B = await (await browser.newContext({ viewport: { width: 760, height: 500 } })).newPage(); B.on('pageerror', (e) => errors.push(e.message));
-    await COMPONENT(B, [1.45, 0], 'Bertil');
-    const lookAtBoard = () => B.evaluate(() => { const c = window.__c.camera, o = window.__c.b.object.position; c.position.set(o.x + 0.45, 1.25, o.z + 1.25); c.lookAt(o.x + 0.45, 0.78, o.z + 0.585); });
+    await COMPONENT(B, [0, -1.45], 'Bertil');
+    const lookAtBoard = () => B.evaluate(() => { const c = window.__c.camera, b = window.__c.b, p = b.controlPickables[0].getWorldPosition(c.position.clone()); c.position.set(p.x - .7, 1.25, p.z); c.lookAt(p); });
     check(await until(() => B.evaluate(() => window.__c.b.seq > 0)), 'B: joined the existing table');
     const same = async (list, label, minQ = 0) => { const ok = await until(async () => { const s = await Promise.all(list.map((p) => p === A ? A.evaluate(() => window.__tbl()) : state(p))); return s.every((x) => x === s[0]) && JSON.parse(s[0]).q >= minQ && !(await Promise.all(list.map((p) => p === A ? bA().then((v) => v.moving) : p.evaluate(() => window.__c.b.physics.moving || window.__c.b.inShot)))).some(Boolean); }, 100);
       const s = await Promise.all(list.map((p) => p === A ? A.evaluate(() => window.__tbl()) : state(p))); check(ok, label, { q: JSON.parse(s[0]).q, mode: JSON.parse(s[0]).m, turn: JSON.parse(s[0]).t, msg: JSON.parse(s[0]).s }); return JSON.parse(s[0]); };
@@ -76,6 +76,8 @@ const until = async (f, n = 150) => { for (let i = 0; i < n; i++) { if (await f(
     const started = await until(() => B.evaluate(() => window.__c.b.inShot || window.__c.b.seq > 2), 30);
     check(started, 'B sees A\'s stroke start');
     const s2 = await same([A, B], 'after A\'s stroke both clients rest in the same state (balls, turn, verdict)', 3);
+    const worldBalls = await Promise.all([A.evaluate(async()=>{const T=await import('three'),b=window.__app.world.playroom.billiards,m=new T.Matrix4();b.object.updateMatrixWorld(true);b.mesh.getMatrixAt(0,m);return new T.Vector3().setFromMatrixPosition(m).applyMatrix4(b.object.matrixWorld).toArray();}),B.evaluate(async()=>{const T=await import('three'),b=window.__c.b,m=new T.Matrix4();b.object.updateMatrixWorld(true);b.mesh.getMatrixAt(0,m);return new T.Vector3().setFromMatrixPosition(m).applyMatrix4(b.object.matrixWorld).toArray();})]);
+    check(worldBalls[0].every((v,i)=>Math.abs(v-worldBalls[1][i])<.005),'both clients render the shared cue ball at the same rotated world position',worldBalls);
     const drift = await Promise.all([A.evaluate(() => window.__app.world.playroom.billiards.drift), B.evaluate(() => window.__c.b.drift)]);
     check(drift.every((d) => d >= 0 && d < 5), 'each client\'s own fixed-step animation ended within 5 mm of the room\'s authoritative result', drift);
     check(s2.q === s1.q + 1 && s2.q === 3 && s2.p.some((v, i) => v !== s1.p[i]), 'the stroke moved the balls and advanced the table sequence once', { q: s2.q });

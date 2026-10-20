@@ -5714,7 +5714,7 @@ export const PLAYROOM = { maxCm: 160, x: -1500, z: -1500, w: 18, d: 10.4, ceilin
   devices: { videoTimeoutMs: 20000, // Assumed network timeout for the optional cinema player (#1376).
     canvas: [512, 288], fps: 12, pickDepth: 0.08, sweepSeconds: 1.5, targetHalf: 0.12, boatSpeed: 0.4 },
   // #1328: local child-size billiards (all dimensions/rolling coefficients are visual/playability guesses).
-  billiards: { x: 0, z: 0, length: 1.8, width: 0.9, height: 0.58, rail: 0.09, railH: 0.06, leg: 0.08,
+  billiards: { x: 0, z: 0, yaw: Math.PI / 2, length: 1.8, width: 0.9, height: 0.58, rail: 0.09, railH: 0.06, leg: 0.08, // #1411: guessed quarter-turn puts the short end toward the south doorway; centre stays fixed.
     ballR: 0.024, pocketR: 0.052, cueLength: 1, strokeSpeed: 2.2, strokeSeconds: 0.24, cueTravel: 0.09,
     friction: 0.45, bounce: 0.94, cushionBounce: 0.82, stopSpeed: 0.012, maxStep: 1 / 180 },
   colors: { floor: 0x704a35, wall: 0x28425b, ceiling: 0xe0e7ef, trim: 0xdaa45b, door: 0x9c2f24 },
