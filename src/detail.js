@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { PERF } from './config.js';
+import { PERF, PLANT_WIND } from './config.js';
 import { computeDetailBounds } from './combatworld.js';
 import { lowMemory } from './lowmemory.js';
 import { detailOccluders, wholeBoxOccluded } from './occlusion.js';
@@ -160,16 +160,22 @@ export class DetailCuller {
     // Other architectural outlines use the same existing distance, plus their radius to protect nearby edges.
     const cut=it.phoneUnit?Math.max(it.near,distanceCut):(lowMemory && it.edges ? Math.min(distanceCut,D.lowMemoryEdgesOutside+it.r) : distanceCut);
     const far = w.distanceToSquared(p) > cut * cut || (outside && !it.exteriorDoor && (this.hidden(p, w, it.r) || (it.box && this.boxHidden(p, it.box, it.o.matrixWorld)))) ||
-      (lowMemory && !it.exteriorDoor && it.box && w.distanceToSquared(p) > D.minDist * D.minDist && this.wallHidden(p, it));
+      ((lowMemory || outside) && !it.exteriorDoor && it.box && w.distanceToSquared(p) > D.minDist * D.minDist && this.wallHidden(p, it));
     if (far === it.far && !it.phoneUnit) return false;
     it.far = far;
     for (const o of it.meshes ?? [it.o]) o.layers.set(far ? DETAIL_HIDDEN_LAYER : 0);
     return true;
   }
 
-  /** Phone-only: a single actual opaque wall/floor patch covers the complete world box. Near focus is unchanged. */
+  /** A single actual opaque wall/floor patch covers the complete render item; desktop uses this only outside. */
   wallHidden(eye, it) {
-    const b = (this.worldBox ??= new THREE.Box3()).copy(it.box).applyMatrix4(it.o.matrixWorld);
+    const b = (this.worldBox ??= new THREE.Box3()).copy(it.box);
+    // The new desktop proof also covers the shader's full local sway before world rotation/scaling.
+    if (!lowMemory && it.o.geometry?.attributes.plantWind) {
+      b.min.x -= PLANT_WIND.maxDisplacement; b.max.x += PLANT_WIND.maxDisplacement;
+      b.min.z -= PLANT_WIND.maxDisplacement; b.max.z += PLANT_WIND.maxDisplacement;
+    }
+    b.applyMatrix4(it.o.matrixWorld);
     // The same real wall can also cover a distant object beyond the flat; no invented exterior wall.
     return wholeBoxOccluded(eye, b, this.occluders, D.occlusionMargin);
   }

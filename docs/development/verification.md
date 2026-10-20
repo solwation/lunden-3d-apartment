@@ -1,3 +1,9 @@
+Desktop exterior occlusion (#1421): run `node --test tools/desktopocclusiontest.mjs tools/phonedetailunittest.mjs tools/occlusiontest.mjs`.
+Compare exact pre-fix/current production methods in the actual960×600 touch app at
+(2.9,1.62,16), yaw0°, pitch25°, clear July noon/quality0; inspect matched images and
+screen-submission counts, inside policy parity and real near-door use. Pair with full
+standard desktop and844×390/390×844phone perfcount; see [performance](performance.md).
+
 Complete static batch ceiling occlusion (#1387): run `node --test tools/ceilingbatchtest.mjs`,
 then the full actual quality0 `tools/perfcount.html` desktop and both phone dimensions
 844×390/390×844 with `lowmem`. Check whole batches under the garage ceiling, exposed

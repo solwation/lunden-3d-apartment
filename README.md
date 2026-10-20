@@ -431,3 +431,5 @@ Pickup alone and repeated interactions do not duplicate it. A kept Miele remembe
 across reload, independently of discovery; petting, hugs and their ordinary points remain available.
 
 När du går under gården slipper visningen rita hela terrassdekoren och pergolornas lampor genom ett täckande garagetak (#1387).
+
+Utsikten upp mot terrasserna kräver mindre ritningsarbete bakom lägenhetens täta väggar och golv (#1421).

@@ -1,5 +1,40 @@
 # Rendering performance
 
+## Desktop exterior detail behind actual walls and floors (#1421)
+
+The upward patio view submits557calls/1096203triangles on the measured pre-fix
+source. Most extra calls belong to apartment contents beyond its windows. The exact
+opaque-rectangle proof in `DetailCuller.wallHidden` previously ran only on phones.
+Desktop now also uses it from outside, with the existing3.2m near exemption and
+exterior-door, whole-unit, distance and quality policies retained. One real wall/floor
+rectangle must cover every corner of one complete existing render item's world AABB.
+This removes no visible model fragment and introduces no new wall, model clipping,
+frustum rule or distance cutoff. Desktop wind meshes expand their local bounds by
+the shader's existing maximum sway before rotation/scaling. Phone policy is unchanged.
+
+The rejected logical furniture-model strategy saved only31calls/45724triangles.
+The complete-render-item proof saves134calls/110782triangles with0changed pixels. Geometry,
+buffers, matrices, visibility flags, shadows, targets and physical layer7 rays stay intact.
+The same existing A/B/C/L opaque-data builders retain their original openings;
+no house geometry or opening is added or changed.
+
+`node --test tools/desktopocclusiontest.mjs tools/phonedetailunittest.mjs tools/occlusiontest.mjs`
+passes18cases: opaque floor, separate patches/opening, overlap, exposure restoration,
+inside/near/exterior-door exemptions, rotated/scaled wind bounds and physical identity.
+Actual production verification after e1a61da7 uses960×600 touch, quality0, clear July
+noon at(2.9,1.62,16), yaw0°, pitch25°:558/1098694→424/987912,0changed pixels.
+Inside counts remain409/961868 under both policies; real near-button focus/Använd
+opens the garage with1press and0page errors. Native final runners exit0.
+Full19-view/quality profiles allPASS: desktop437calls/996190tri/~309MiB;
+landscape phone369/833288/~97MiB; portrait290/718564/~101MiB. Limits unchanged.
+
+The earlier running-loop image pair is excluded from pixel-parity evidence.
+Raw profiles, exact-rectangle proofs, matched images and final logs are outside the
+repo in `~/.local/state/lunden-orkester/codex-surface-20261020/upward1421/`.
+Downstream assessment: the public app has no `DetailCuller`/`src/detail.js` and excludes
+the private furniture causing this case. This branch change has no applicable current
+downstream target; no new public culling system or transfer issue is introduced.
+
 ## Complete static batches behind actual garage ceilings (#1387)
 
 Only two opted-in static roots are affected: the three merged roof-terrace decoration
