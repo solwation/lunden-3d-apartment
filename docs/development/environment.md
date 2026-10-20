@@ -440,6 +440,30 @@ Tests: `node --test tools/roadlampstest.mjs tools/pathlampstest.mjs` and native 
 
 Actual full-World baseline15f9b005: one pole2.215059m below the highest drawn triangle,489 overlapping glow vertices with max2.667783m deviation. `tools/lamprampstest.cjs` samples actual site-terrain triangles at those fixtures, rather than comparing a ground callback to itself. `tools/lamprampstest.mjs` covers unchanged ramp bytes and both ramps' interior grass triangles (Float32 edge coordinates may round outside an analytic footprint, so native height comparison uses triangle centroids). Public#95 already avoids ramp-footprint pole placements, but its generic ground-light support is reviewed separately.
 
+## Southern crossroad and narrow service link (#1433)
+
+Only OSM SERVICE145221576 and199056948 are added (254.150m), using the same committed
+2026-10-08 snapshot and1cm-rounded `geoToPlan` registration as#1432. Exact shared nodes
+connect36918924,145221573 and the two new roads. Neither way has sourced width/surface:
+asphalt is guessed, as are4.5m for145221576 and3m for the short199056948 single lane.
+The latter's4/4.5m candidates intersect house45 and were rejected without moving nodes
+or buildings. Whole emitted-triangle edges clear all building bodies/courtyard holes;
+minimum boundary distance is3.027892m and0.370694m respectively. These are model clearances,
+not surveyed civil dimensions. `highway: 'service'` explicitly retains vehicle semantics
+below the old3.9m width heuristic; existing untyped roads and actual footways keep their
+old classification. Both strips reuse#1432's existing exact terrain opt-in.
+
+Actual World before/after data preserves terrain, pads/controls,70southern trees and all
+old south-land position/normal bytes around one1822triangle insertion. Park paths plus
+west/east/north access geometry stay exact despite the vehicle-clip registration. Existing
+automatic lighting adds seven guessed fittings along145221576; all117old roadside records
+stay exact. Cost is1822asphalt+1400post/head+420night-pool triangles, no new batches,
+materials or textures. All road points are outside WALKz250: verification is local geometry/
+ray support and normal camera views, with no claimed production walk or expanded boundary.
+A/B/C/L house layout is outside this site-road scope and their dimensions/openings stay intact.
+Neutral transfer is queued separately as LOW kvarteret-lunden#117, depending on#116;
+no public implementation or reservation is part of this source change.
+
 ## Northern southern-site service entrance (#1432)
 
 `SITE.south.access` adds only service ways145221573/145221582/145221583/145221596

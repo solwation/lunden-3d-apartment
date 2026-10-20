@@ -93,7 +93,7 @@ export function onRoad(x, z, margin = 0, skip = null) {
   return false;
 }
 
-export const isVehicleWay = (p) => p.path && p.surface === 'asphalt' && p.w >= 3.9; // #1341: the backdrop's carriageways (south/east/north `paths`/`access`: OSM roads 4.5-6 m), not footpaths or cycle paths (1.8-3 m)
+export const isVehicleWay = (p) => p.path && p.surface === 'asphalt' && (p.highway === 'service' || p.w >= 3.9); // #1433: explicit sourced service ways retain vehicle semantics at a narrow guessed width; old untyped roads keep #1341's width rule.
 let vehicleWays = null;
 /** #1341: is (x, z) on vehicle asphalt, `margin` m widened: the local roads (`SITE.roads`) or any carriageway of the backdrops (west/east/north/south)?
  * Footpath strips (pathStrip `trim`) keep off it. */

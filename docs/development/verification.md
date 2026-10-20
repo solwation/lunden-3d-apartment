@@ -1,3 +1,28 @@
+Southern crossroad (#1433): run
+`node --test tools/servicecrossing1433test.mjs tools/serviceaccess1432test.mjs tools/roadlampstest.mjs`
+(10checks). Check raw SERVICE tags/projected shared nodes, explicit guessed3/4.5m widths,
+full emitted footprints against building bodies with courtyard holes, forests plus0.5m
+exclusion, unchanged old vehicle classification and a real FOOTWAY remaining non-vehicle.
+Whole actual triangle edges give minimum house45 clearances0.370694/3.027892m.
+Actual World old south-land position/normal bytes, terrain, pads/controls,70trees and park/
+west/east/north access arrays remain exact.7288independent THREE rays through the1822new
+faces give25mm lift within2.08e-6m. The first fixture missed the exact dead-end cap at
+(−97.60,388.93) through Float32 boundary rounding; its failed script/log remain separate.
+Final probes use1cm inside each cap with unchanged height tolerances, and measure the
+source-to-emitted-footprint drift (maximum5.31e-6m). Three actual road junctions use both old/new road spans
+verified against the frozen World arrays,2cm-inside probes and24circle samples per junction.
+No whole merged top-paving assumption replaces those actual road hits.
+All new points are beyond WALKz250; no native walking route is claimed. Open normal
+960×600quality3 desktop and844×390quality0lowmem touch before/after junction/overview
+images (testfalse,0pageerrors). Full standard desktop/quality profile passes478calls/
+985707tri/~309MiB; the full explicitquality0 landscape phone/quality profile passes
+370calls/837612tri/~97MiB. After rebase onto e6b74287 (#1448), rerun the full standard
+desktop profile for its changed terrace policy: ALL PASS/CLI0,478calls/985707tri/~309MiB.
+The phone result is an honest composition
+of the previous full PASS and source generation/lowMemory-branch/lifecycle parity; it is
+not a fresh post-rebase full phone run. Raw geometry, profiles, images and rejected fixtures are retained in
+`/tmp/orkester-katt-20261020/crossroad1433/`.
+
 Northern southern-site service roads (#1432): run
 `node --test tools/serviceaccess1432test.mjs tools/polygoncuttest.mjs tools/roadlampstest.mjs`
 (10checks). Verify source tags/projected nodes, full emitted strips against house bodies

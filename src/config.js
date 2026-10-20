@@ -881,6 +881,10 @@ export const SITE = {
     ],
     // #1262: sourced service access roads south of Höje å (OSM snapshot 2026-10-08 / 2026-10-18)
     access: [
+      // #1433: same committed OSM snapshot/projection as #1432. Only highway=service is sourced.
+      // Asphalt/width are guesses; 199056948 uses a narrow 3 m single lane to clear the unchanged house45 footprint.
+      {"source":"145221576","highway":"service","surface":"asphalt","surfaceSource":"guess","widthSource":"guess","path":[[-97.60,388.93],[16.04,308.22],[17.82,306.95],[76.61,264.96]],"w":4.5,"terrain":"triangles"},
+      {"source":"199056948","highway":"service","surface":"asphalt","surfaceSource":"guess","widthSource":"guess","path":[[-10.07,291.54],[0.80,285.10],[17.82,306.95]],"w":3,"terrain":"triangles"},
       // #1432: OSM snapshot osm-south-2026-10-08.json, projected by sitegeo.js and rounded to 1 cm like existing shared nodes.
       // Raw tags only say highway=service: 4.5 m width and asphalt are visual guesses, not surveyed civil levels/materials.
       // Opt in only these new strips to exact emitted terrain triangles; existing roads retain their original geometry.

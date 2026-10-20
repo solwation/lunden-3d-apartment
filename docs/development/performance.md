@@ -1,5 +1,26 @@
 # Rendering performance
 
+## Southern crossroad (#1433)
+
+Two exact-terrain service strips add1822asphalt triangles. The existing lamp generator
+adds seven guessed fittings while preserving all117old roadside records:1400post/head
+plus420night-pool triangles. Static daytime growth is3222triangles; total resource/night
+growth3642triangles. Batches, materials, textures, terrain and existing access/path arrays
+stay unchanged. A full standard19-view desktop/quality run on9eb4ccfa plus these roads
+passes478calls/985707triangles/~309MiB, with unchanged520/1M/320limits. The full explicit
+quality0 landscape844×390 phone/quality profile also passes370calls/837612triangles/~97MiB
+against unchanged370/950000/225limits. Ordinary running
+before/after camera captures differ by3278triangles; their extra56frame submissions are
+not attributed to the verified static buffer delta, and no pixel-parity claim uses them.
+After final rebase onto e6b74287 (#1448), a new full standard desktop19-view/quality
+profile passes478calls/985707triangles/~309MiB with every quality check. Phone coverage is explicitly
+composed from the earlier full PASS and source branch parity: the original master-array
+generation is byte-equal after removing new slice bookkeeping, lowMemory still selects
+exactly the same three combined arrays, and the lifecycle suffix is byte-identical.
+No fresh post-rebase full phone run is claimed.
+Raw profiles, rejected width candidates and the original Float32-cap ray failure remain
+in `/tmp/orkester-katt-20261020/crossroad1433/`; see [verification](verification.md).
+
 ## Northern southern-site service roads (#1432)
 
 Four new source strips use exact emitted-terrain clipping only through their explicit
