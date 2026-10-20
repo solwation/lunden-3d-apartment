@@ -105,11 +105,12 @@ export class MieleHeld extends Holdable {
   /** #1035: stow-only reload for bicycle; preserves Miele's exact cat instance and hug count. */
   saveStowed(item) {
     if (item !== this || !this.cat?.visible || !this.cat?.isMiele || !this.cat?.held || this.cat.leaving || this.cat.released) return null;
-    return { name: this.cat.catName ?? 'Miele', seen: !!this.cat.seen, hugs: Number.isSafeInteger(this.hugs) ? this.hugs : 0 };
+    return { name: this.cat.catName ?? 'Miele', seen: !!this.cat.seen, photo: !!this.cat.photoDone, hugs: Number.isSafeInteger(this.hugs) ? this.hugs : 0 };
   }
 
   loadStowed(s) {
     if (!s || typeof s !== 'object' || typeof s.name !== 'string' || s.name !== 'Miele' || typeof s.seen !== 'boolean') return null;
+    if (s.photo !== undefined && typeof s.photo !== 'boolean') return null;
     if (s.hugs !== undefined && (!Number.isSafeInteger(s.hugs) || s.hugs < 0)) return null;
     if (!this.cat) return null;
     const mieleBreed = BREEDS.find((b) => b.superRare);
@@ -118,7 +119,7 @@ export class MieleHeld extends Holdable {
     this.cat.setCat(mieleBreed, coat, false);
     this.cat.catName = s.name;
     this.cat.seen = s.seen;
-    this.cat.photoDone = s.seen;
+    this.cat.photoDone = typeof s.photo === 'boolean' ? s.photo : s.seen; // #1400: legacy seen is conservative; explicit false is a first encounter
     this.cat.leaving = null;
     this.cat.released = null;
     this.cat.setOpacity(1);

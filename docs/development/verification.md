@@ -7401,3 +7401,21 @@ reload assertions were corrected after the diagnostic run (exit1 retained); targ
 8/9-photo reloads in desktop/mobile and post-reload archive refusal pass6/6 with native exit0.
 A separate actual IndexedDB reload preserves nine complete records and time order[1,2,3,4,4,5,7,8,9]
 (exit0). All desktop/mobile album/full/archive pictures were independently reviewed.
+
+Cat encounter photo (#1400): `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/catphototest.cjs GAME SHOTDIR`
+uses the actual app, real Cat/Miele actions, actual scene snapshot, CatCards/IndexedDB and native
+keep/resume/stow serialization across page reloads. Check pet→hug, hug→pet, repeated actions,
+pickup without capture, new appearance, preserved protected eight, seen-but-untouched Miele's
+explicit false over keep and stow reload, photographed true over stow reload, legacy fallback and
+blocked IDB/callback failure. Native E requires actual pointer lock; native secondary click invokes
+the held hug regardless of an unrelated place target; restore touch through the actual start handler.
+Inspect desktop-first-pet, desktop-eight-preserved and mobile-miele-one-after-reload images.
+Pair with `catcarrytest.cjs` and `node --test tools/catcardstest.mjs`; no 3D budget change.
+
+Final #1400 actual-app run: all26 assertions pass with native exit0, including three actual resume reloads
+and blocked IDB (one photo, three ordinary pet actions). The wide scene/album screenshots use a
+touch-capable viewport after returning through the touch start handler; native E and secondary click
+were separately exercised with pointer lock. Raw aborted input-fixture attempts are retained: they
+exposed missing pointer-lock transition waits and focused-placement priority, without runtime changes.
+The paired bounded Cat/Miele/Hand/WebAudio carry regression passes29/29 with native exit0;
+card storage model passes10/10. No render geometry, routing or budget behavior changed.

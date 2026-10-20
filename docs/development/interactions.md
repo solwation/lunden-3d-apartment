@@ -1815,3 +1815,8 @@ The reserved greeting index `KISS.phrase` is still never randomly chosen. New re
 At approach end the ordinary positional/muted audio path makes a closed-lip hum then a smack. Hearts burst at contact through one reused pool (one extra draw only while visible). Initiator-only `onLove` calls `stats.awardLove(id)` at contact; a departure, weapon change or separation before contact cancels the event without reward. `SCORE.each.love` is exactly 100 (user); no greeting points are added. The HUD badge says “Kärlek +100”, the statistics panel shows kisses and love points, and bounded receipt ids are saved in the existing statistics record. Reset/disconnect clears pending poses; stale/duplicate events cannot run twice.
 
 This is personal gameplay, excluded from the public downstream. Tests: `tools/kisstest.mjs`, `cloudflare/players.test.mjs`, `tools/kisspeertest.cjs`, `tools/kissapptest.cjs` and the unchanged talking-mouth regression `tools/avatarmouthtest.cjs`. All new tunable timings, reach, lip and audio parameters live in `KISS` (guesses except the requested score).
+
+Cat encounter photos (#1400): E/Touch Klappa and held Krama share the physical cat's one photo
+attempt; pickup alone does not take a photograph. Repeated pet/hug actions still animate and score
+normally. Move/drop/pickup/stow retains the guard; a genuinely new appearance can add another photo
+under the existing eight/full/archive policy. Kept Miele retains true or false across reload.

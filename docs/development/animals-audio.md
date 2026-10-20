@@ -37,7 +37,7 @@ src/pingping.js        Pingping (#269, PINGPING): the penguin cushion between th
                        held in both arms (hand.js `handPose: 'hug'`, `hugGrips`; the left arm = the right one mirrored); click /
                        "Krama" hugs (pulled in + squashed, sfx.squeak, rising hearts, stats pingpingHugs); `soft` = may go down on
                        the bed's / sofa's `soft` surfaces too (furniture surfaces with `soft: true`: not for cups, not cat tables)
-src/catphoto.js        `snapshot` (the 4:3 offscreen render of a cat's head, a JPEG data URL) that main.js `cat.onPhoto` / `miePhoto` take for a card.
+src/catphoto.js        `snapshot` (the 4:3 offscreen render of a cat's head, a JPEG data URL) that main.js `cat.onPhoto` take for a card.
                        The kitchen cork board (src/catboard.js, CAT_BOARD, BoardPanel #170) was REMOVED in #1255 once the binder showed the migrated photos;
                        its IndexedDB 'catPhotos' is left untouched (read once by catcards.js `migrate`, never written any more).
 src/catbinderprop.js   the binder as an object (#1255, `CAT_BINDER`): a small ring binder (cover, spine, sheets, a gold paw; three flat-colour
@@ -65,7 +65,7 @@ src/catcards.js        cat card binder data model (#1249, part 1 of 4 — #1254�
                        100, episk 250, legendarisk = Miele). A card = a photo of a find; normal max `CAT_CARD.max` 8 per breed, a new one rotates
                        out the oldest unsaved, all saved → not added (`add` returns null). Counters: finds = `stats.byBreed` / `stats.miele`,
                        pats / hugs = new `stats.petsByBreed` / `stats.hugsByBreed` (main.js `cat.onPet`, `miele.onHug`). Cards in IndexedDB
-                       'catCards' (idb.js version 3), written by main.js `cat.onPhoto` / `miePhoto`. The old
+                       'catCards' (idb.js version 3), written by main.js `cat.onPhoto`. The old
                        'catPhotos' are COPIED in once (`migrate`, flag `lunden.catCards.migrated` in RESET_KEEP, ids `legacy-<id>` so no
                        duplicates): kept → saved, 'Miele' → her slot, the rest (no breed was stored) → the legacy page (`CAT_CARD.legacy`),
                        none deleted. Weights / facts in CAT_CARD are typical breed figures, all *guess*. Test: `node --test tools/catcardstest.mjs`.
@@ -193,7 +193,7 @@ the surface below (`miele.dropSpot`). Kept across a reload (keep.js `out: 1`, sa
   and sphynx are `rare` and count as "ovanliga katter". `&catb=i` picks a breed for screenshots.
   Rare breeds have a `voice` ('trill' perser, 'rasp' sphynx) passed to `sfx.meow`/`sfx.purr`, and
   stars (one additive `Points`, raycast disabled) rise around them while they are petted.
-- With free hands, ordinary adult cats and kittens offer the existing action menu: Klappa first (E / click / 1), Ta upp second (2 / wheel then E / touch row), restoring direct petting (#1066). Miele keeps Ta upp first and Klappa second. Pickup uses the existing `MieleHeld` arms (#1061); occupied hands retain a single pet action. Click / Krama cuddles (ordinary `petted`/`kittenPets` plus one photo per appearance; Miele keeps her special counters). Its native cat scale and size-adjusted arm grips are preserved. Short cancellable, listener-relative purrs renew while held and stop on release, hide or bicycle stow; the same cat returns on dismount. E on the floor/bed/sofa puts it down, then it meows and walks off (on furniture it fades there). F also lets a carried cat finish leaving. Tables stay blocked. Ordinary cats remain transient, including reload during bicycle stow; the existing Miele-only bicycle save schema is unchanged. `tools/catcarrytest.cjs GAME OUT` verifies the actual cat/holder/hands/audio and exact main cat options factory in a bounded rendered scene, without full World or physical-phone acceptance.
+- With free hands, ordinary adult cats and kittens offer the existing action menu: Klappa first (E / click / 1), Ta upp second (2 / wheel then E / touch row), restoring direct petting (#1066). Miele keeps Ta upp first and Klappa second. Pickup uses the existing `MieleHeld` arms (#1061); occupied hands retain a single pet action. Click / Krama cuddles (ordinary `petted`/`kittenPets` plus one photo per appearance; Miele keeps her special counters). Its native cat scale and size-adjusted arm grips are preserved. Short cancellable, listener-relative purrs renew while held and stop on release, hide or bicycle stow; the same cat returns on dismount. E on the floor/bed/sofa puts it down, then it meows and walks off (on furniture it fades there). F also lets a carried cat finish leaving. Tables stay blocked. Ordinary cats remain transient, including reload during bicycle stow; the Miele-only bicycle save adds the optional local photo-attempt guard (#1400). `tools/catcarrytest.cjs GAME OUT` verifies the actual cat/holder/hands/audio and exact main cat options factory in a bounded rendered scene, without full World or physical-phone acceptance.
 - E / Klappa pets it (also with occupied hands): purring (`sfx.purr`), eyes shut, head rubs the visitor's hand
   (`PET_TIME` in cat.js). Raycasts ignore visibility, so main.js only adds the cat as a target
   while it is visible. Tests must call `updateMatrixWorld` on objects they move (no render runs).
@@ -219,7 +219,7 @@ the surface below (`miele.dropSpot`). Kept across a reload (keep.js `out: 1`, sa
   stats `miele` (SCORE.first 1000, again 100), "💖 Du hittade Miele!"; not counted as a found cat / breed. E takes her up
   (`cat.pickUp` into `MieleHeld.model` in the camera; pet only with the hand busy): held she sits, paws forward, looking up,
   no fish fingers / leaving / tail-up, out of the E and weapon raycasts (`cat.held`); click / "Krama" hugs (stats
-  `mieleHugs`); her board photo the first time she is held or hugged. E on the floor / a bed / a sofa (`softOnly`: a table
+  `mieleHugs`); her album photo at the first pet or hug (pickup alone takes none). E on the floor / a bed / a sofa (`softOnly`: a table
   says "Miele får inte vara på bordet") puts her down (`putDown`): she looks at you, meows, then `leave`s; F or another
   thing in the hand puts her down at your feet. Not kept across a reload while held / walking off.
 - Every new cat gets a name (`CAT_NAMES`); petting it puts a card in the cat binder under the coffee table 0.7 s in
@@ -387,3 +387,27 @@ Older cat archives above eight (#1399) show every photograph and reject new addi
 rotation or trimming, even with unsaved photos. Save/unsave and confirmed deletion remain usable;
 only explicit deletion down to normal capacity restores ordinary rotation. Capture/instance policy
 is unchanged here (separate #1400). See storage.md and the model/UI tests.
+
+## One photograph per physical encounter (#1400)
+
+`CatSpawner.photoOnce()` is the shared local guard for the existing delayed pet photograph
+(0.7s into the pat) and the held hug. It takes `photoDone` before calling `onPhoto`, including
+asynchronous storage, and catches callback failure without stopping the interaction. All breeds
+and kittens use it; pickup alone never photographs. The real scene/head `snapshot` and normal
+`CatCards.add` remain unchanged. Photo statistics/bonus occur once per attempted encounter photo;
+ordinary pet/kitten/hug and Miele hug counters/points retain their existing action policy.
+
+A new `setCat`/spawn starts a new physical encounter and resets the guard. Moving the same cat,
+pickup, putting it down, re-petting, or bicycle stow/restore retains it. Hide ends that visible
+encounter; the next actual appearance calls `setCat`. No UUID, global identity registry or peer
+field is introduced. Keep/resume and Miele-only stow persist the optional `photo` boolean and
+restore it immediately after `setCat`, including false for a seen but untouched Miele. Legacy
+records without it use `seen` only for Miele, conservatively suppressing a possible old duplicate;
+ordinary legacy cats do not infer a photograph from discovery. Ordinary F5 without an existing
+world/stow keep still follows the previous transient-cat policy; a kept physical cat retains its guard.
+
+Full albums, protected older archives, blocked IndexedDB or snapshot/save failure consume the
+attempt for this encounter: no automatic retry or repeated JPEG generation. Blocked IDB retains
+its visit-only photo fallback. Existing photos/IDs/saved flags and statistics are not migrated.
+The private guard and JPEGs never enter Ghosts/peer state. Tests: `tools/catphototest.cjs` and
+existing cat carry / card model regressions; see verification.md for the actual reload cases.

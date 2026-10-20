@@ -563,6 +563,7 @@ export class CatSpawner {
 
   /** Make it this breed and coat; `kitten` (#363) = a kitten of it (never Miele). */
   setCat(breed, coat, kitten = false) {
+    this.photoDone = false; // #1400: new physical encounter; keep/stowed restores its explicit guard afterwards
     if (breed.superRare) { this.mieleLock = true; this.catName = 'Miele'; } // always her own name
     this.breed = breed;
     this.variant = coat;
@@ -612,6 +613,15 @@ export class CatSpawner {
   }
 
   setOpacity(a) { for (const m of catMats()) m.opacity = a; }
+
+  /** One local photo attempt per physical cat, shared by pet and hug. Full/failing storage never retries. */
+  photoOnce() {
+    if (this.photoDone) return false;
+    this.photoDone = true; // take the guard before callbacks, including asynchronous persistence
+    const failed = (e) => console.warn('cat photo failed', e);
+    try { Promise.resolve(this.onPhoto?.()).catch(failed); } catch (e) { failed(e); }
+    return true;
+  }
 
   get petting() { return this.petT > 0; }
 
@@ -1367,7 +1377,7 @@ export class CatSpawner {
   updatePetting(dt) {
     this.petT -= dt;
     this.petPhase += dt;
-    if (!this.photoTaken && this.petPhase >= 0.7) { this.photoTaken = true; this.onPhoto?.(); } // eyes shut, the hand there: a photo (game time, it walks off afterwards, #206)
+    if (!this.photoTaken && this.petPhase >= 0.7) { this.photoTaken = true; this.photoOnce(); } // eyes shut, the hand there: a photo (game time, it walks off afterwards, #206)
     const k = Math.min(1, this.petPhase / 0.4) * Math.min(1, this.petT / 0.4); // ease in/out
     const closed = this.petPhase > 0.3 && this.petT > 0.2;
     for (const e of this.eyes) { e.eye.visible = !closed; e.shut.visible = closed; }

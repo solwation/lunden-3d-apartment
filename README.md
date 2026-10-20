@@ -420,4 +420,7 @@ portions refill automatically while nearby; this adds no hunger or inventory sys
 
 Cat albums (#1399): each variant holds eight normal encounter photos. Saved photos remain protected
 from rotation, and older archives above eight retain every photo with clear archive/full information.
-Photo capture and first-interaction identity are a separate remaining task (#1400).
+
+Cat encounter photos (#1400): a cat's first pet or hug makes one private encounter photograph.
+Pickup alone and repeated interactions do not duplicate it. A kept Miele remembers the photo attempt
+across reload, independently of discovery; petting, hugs and their ordinary points remain available.

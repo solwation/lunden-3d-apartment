@@ -966,7 +966,7 @@ cat.onHurt = (weapon) => penalize(cat.kitten ? 'kittenShot' : 'catShot', weapon)
 cat.onPhoto = () => { // 0.7 s into the pat (cat.js), before it walks off (#206)
   bump('catPhotos');
   const head = cat.head.getWorldPosition(new THREE.Vector3()), shot = snapshot(renderer, scene, camera, head);
-  catCards.add(cat.breed.name, { name: cat.catName, data: shot, coat: cat.variant.name, kitten: cat.kitten }); // and a card in the binder (#1249)
+  return catCards.add(cat.breed.name, { name: cat.catName, data: shot, coat: cat.isMiele ? 'Miele' : cat.variant.name, kitten: cat.kitten }); // and a card in the binder (#1249)
 };
 
 // a cat's bum (the X) seen from behind with its tail up (#262): once per tail-up, the first time per cat counts the most
@@ -1008,15 +1008,12 @@ miele.dropSpot = () => { // at your feet, a little in front
   }
   return new THREE.Vector3(x, player.pos.y + rugLift(Math.max(0, player.level), x, z), z);
 };
-const miePhoto = () => { // her photo in the cat binder: the first time she is held or hugged, each time she turns up
-  if (cat.photoDone) return;
-  cat.photoDone = true;
-  bump('catPhotos');
-  const shot = snapshot(renderer, scene, camera, cat.head.getWorldPosition(new THREE.Vector3()));
-  catCards.add('Miele', { name: 'Miele', data: shot, coat: 'Miele' });
+// #1400: pickup alone never photographs; pet and hug share CatSpawner.photoOnce().
+miele.onHug = () => {
+  catCards.recordHug(cat.breed.name);
+  if (cat.isMiele) bump('mieleHugs'); else cat.onPet?.();
+  cat.photoOnce();
 };
-miele.onPickUp = () => { if (cat.isMiele) miePhoto(); };
-miele.onHug = () => { catCards.recordHug(cat.breed.name); if (cat.isMiele) { bump('mieleHugs'); miePhoto(); } else { cat.onPet?.(); if (!cat.photoDone) { cat.photoDone = true; cat.onPhoto?.(); } } };
 if (params0.has('kitten')) cat.forceKitten = true; // &kitten: the next cat to turn up is a kitten (#363)
 cat.mieleDaily = new MieleDaily({ load: () => stats.mieleDay, keep: keepMieleDay }); // at least once a play day (#1134)
 if (params0.has('miele')) cat.forceMiele = true; // &miele: the next cat to turn up is her (tests, screenshots)

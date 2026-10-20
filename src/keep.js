@@ -360,7 +360,7 @@ const PARTS = {
       const o = cat.object, b = BREEDS.indexOf(cat.breed), coats = cat.breed.name === 'huskatt' ? VARIANTS : cat.breed.coats;
       const doorKeys = keys(world.doors, openKey), di = world.doors.indexOf(cat.door);
       return { p: vec(o.position), ry: r3(o.rotation.y), b, c: coats.indexOf(cat.variant), n: cat.catName, on: cat.on ?? null,
-        door: di >= 0 ? doorKeys[di] : null, shut: cat.closedSince ? 1 : 0, seen: cat.seen ? 1 : 0, i: Math.round(cat.ignored ?? 0), ...(cat.kitten ? { k: 1 } : {}), ...(cat.outdoor ? { out: 1 } : {}) }; // out: put down outdoors / on a roof, stays (#1287) // i: s ignored (#1154) // k: a kitten (#363)
+        door: di >= 0 ? doorKeys[di] : null, shut: cat.closedSince ? 1 : 0, seen: cat.seen ? 1 : 0, photo: !!cat.photoDone, i: Math.round(cat.ignored ?? 0), ...(cat.kitten ? { k: 1 } : {}), ...(cat.outdoor ? { out: 1 } : {}) }; // out: put down outdoors / on a roof, stays (#1287) // i: s ignored (#1154) // k: a kitten (#363)
     },
     load({ cat, world, BREEDS, VARIANTS }, s) {
       const breed = BREEDS[s.b];
@@ -375,7 +375,8 @@ const PARTS = {
       cat.outdoor = !!s.out && !!cat.on; // #1287: stays where the visitor put it down
       cat.door = s.door ? byKey(world.doors, openKey).get(s.door) ?? null : null;
       cat.closedSince = !!s.shut;
-      cat.seen = !!s.seen; cat.photoDone = cat.seen; // Miele (#328): found already, not again
+      cat.seen = !!s.seen;
+      cat.photoDone = typeof s.photo === 'boolean' ? s.photo : cat.isMiele && cat.seen; // #1400: explicit false survives; conservative legacy Miele fallback
       cat.leaving = null;
       cat.ignored = Number.isFinite(s.i) && s.i > 0 ? s.i : 0; // its minute goes on after a reload (#1154)
       cat.setOpacity(1);

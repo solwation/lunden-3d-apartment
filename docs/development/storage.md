@@ -105,7 +105,7 @@ normal capacity. Migration/load never cap arrays. Blocked IndexedDB retains the
 existing visit-only in-memory fallback; no persistence is promised there.
 Overlapping additions are serialized through their persistence writes, preventing
 a ninth normal photo or a late put restoring a rotated record.
-First-interaction/instance identity remains separate in #1400. Private photos
+The first-interaction guard is described below (#1400). Private photos
 remain local and no peer schema changes.
 
 ```text
@@ -1108,7 +1108,7 @@ The one transient `restoredBicycleHand` pointer keeps a standing hand that alrea
 ### Unique bicycle-stowed objects across reload (#1035, completes #984)
 
 The bicycle-hand stow bridge is extended from food (#1034) to the three unique objects: Miele (`miele`), HeldDrawing (`drawing` / `heldDrawing`), and ToiletPaper (`paper` / `toiletPaper`).
-1. **Miele (cat):** `saveStowed` serializes variant/coat, custom name, seen state, and hug count. `loadStowed` restores identity and enters `hug` pose silently (`silent: true`), suppressing purr audio and preventing duplicate photo or badge awards. On release/drop, `forgetBicycleHand` clears the active stow reservation.
+1. **Miele (cat):** `saveStowed` serializes variant/coat, custom name, seen state, photo-attempt guard, and hug count. `loadStowed` restores identity and enters `hug` pose silently (`silent: true`), suppressing purr audio and preventing duplicate photo or badge awards. On release/drop, `forgetBicycleHand` clears the active stow reservation.
 2. **HeldDrawing:** `saveStowed` persists image data and origin metadata (`origin: 'wall' | 'desk'`, and poster ID if taken from wall). `take()` on desk immediately blanks the desk state in `localStorage` so exactly one sheet exists in the world. Restore uses `silent: true` to suppress paper audio and avoid duplicate posters on the wall. On release/putBack, `forgetBicycleHand` clears the stow pointer.
 3. **ToiletPaper (wad):** `saveStowed` preserves loose sheet count (`sheets`). On reload, `Wad.restore()` rebuilds the wad geometry and hand attachment without deducting sheets from Life toilet rolls again. On drop/hide, `forgetBicycleHand` clears the stow pointer.
 4. **Resurrection guards:** `restoreBicycleHand` rejects stowed hands for items that were hidden, dropped, or reset while riding (`cat.visible && cat.held`, `drawing.image`, `paper.sheets && paper.sink < 0`).
@@ -1279,3 +1279,15 @@ Shared billiard table (#1355): the players room also owns the children's-room bi
 ## Love receipts in visitor statistics (#1398)
 
 `stats.love` counts completed, server-accepted kisses initiated by this visitor; `SCORE.each.love` contributes 100 points each. `stats.loveReceipts` keeps the most recent `KISS.receipts` ids (256) in the existing `lunden.stats` save, sanitized when loading older/corrupt records. `awardLove(id)` rejects a duplicate before counting. Normal save/reload retains both points and receipts; no new key/store or destructive migration is introduced. Ghosts also deduplicates receipt packets in memory and cancels pending completion on disconnect. Ordinary greeting points are unchanged for ordinary greetings and are not granted for a kiss. The room supplies the accepted event identity, not a general server-owned score economy. This personal gameplay is not transferred to the public project.
+
+## Cat encounter photo guard (#1400)
+
+The existing world `cat` record and Miele-only bicycle stow `state` add optional `photo: boolean`.
+This is a consumed-attempt flag, independent of `seen`/discovery and of any album photo id. Restoring
+explicit false keeps the first real interaction available; true prevents duplicate capture after
+keep/resume/stow reload. Old records without the field remain accepted: Miele falls back to `seen`,
+ordinary cats to false. A corrupt non-boolean stow field is rejected without modifying the cat.
+No DB version/key, JPEG/album migration or peer field is added. Save failure/full capacity consumes
+the same attempt, so reload of the kept cat never starts a retry loop. Other persistence/ordinary
+transient-cat policies remain unchanged. `MieleHeld.saveStowed` remains Miele-only and silent restore
+still suppresses pickup sound/actions; pickup itself no longer produces a photo.
