@@ -4,6 +4,34 @@ Read [CLAUDE.md](../../CLAUDE.md) first for shared workflow rules. Paths in code
 
 Related: [graphics](graphics.md), [verification](verification.md).
 
+## Empty mess batches (#1392)
+
+`Mess` keeps each decal batch invisible while its instance count is zero. Its existing
+`redraw()` restores visibility when spots are added or loaded, and removes the draw when
+the last spot is cleaned or cleared. Geometry, materials, instance buffers, the nonblocking
+raycast and the life group's parent visibility retain their existing behaviour.
+
+The proposed shared distant-car batch was rejected after profiling the actual full-world
+start view: only one `car-far` submission was present, so merging car groups could save
+no calls there. Three empty crumb/dust/smear batches were submitted instead. No car LOD,
+furnishing cutoff, physical trace, architectural opening or global budget changes.
+`tools/messvisibilitytest.html` verifies actual WebGL draws through the complete empty,
+populated, partially cleaned, cleared, saved/loaded and hidden-parent lifecycle.
+Native WebGL10/10 and existing dust-placement16/16 pass. A real-app touch profile
+also passes8/8: running vacuum and cloth remove the final spots, focus/use opens the
+near entrance and all its meshes remain drawn, without JavaScript exceptions.
+
+Full phone quality0 `perfcount` now passes every view and quality check in both formats:
+844×390 peak372→369calls, unchanged827536triangles/~97MiB;390×844 peak293→290calls,
+unchanged747434triangles/~99MiB. The370/950000/225limits are unchanged. This fixes the
+remaining #1383/#1361 budget failure; physical iPhone stability is still a separate #1359 question.
+After rebasing the independent clubhouse screens (#1365), the final landscape confirmation
+still passes369calls/827536triangles; its two new screen textures make the global estimate~98MiB.
+Desktop quality0 remains over its existing triangle limit (#1387):489calls,
+1042197triangles/~308MiB, with the other quality checks passing. No desktop budget is raised.
+The public main tree has no Mess/life simulator, so this household-only change has no
+applicable neutral downstream transfer.
+
 ## Static phone canvas sources and disabled mirror target (#1359)
 
 `freeCanvasAfterUpload` now reduces opted-in immutable canvas sources to the existing

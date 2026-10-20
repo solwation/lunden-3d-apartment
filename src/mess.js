@@ -82,6 +82,7 @@ export class Mess {
       const m = new THREE.InstancedMesh(geo, mat, M.max[k]);
       m.name = `mess-${k}`;
       m.count = 0;
+      m.visible = false; // Empty instanced batches still submit a draw (#1392).
       m.frustumCulled = false; // (spread over the flat: one bounding sphere would be wrong)
       m.raycast = () => {}; // (never an E target, never in the way of one)
       m.receiveShadow = true;
@@ -161,7 +162,12 @@ export class Mess {
       DUMMY.updateMatrix();
       m.setMatrixAt(i, DUMMY.matrix);
     }
-    for (const k of KINDS) { const m = this.meshes[k]; m.count = Math.min(n[k], M.max[k]); m.instanceMatrix.needsUpdate = true; }
+    for (const k of KINDS) {
+      const m = this.meshes[k];
+      m.count = Math.min(n[k], M.max[k]);
+      m.visible = m.count > 0;
+      m.instanceMatrix.needsUpdate = true;
+    }
   }
 
   // --- where mess comes from -------------------------------------------------------------------------------------

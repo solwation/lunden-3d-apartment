@@ -1,0 +1,29 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Empty mess draw regression</title>
+<pre id="out">running…</pre>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { Mess } from '../src/mess.js';
+const rows=[],check=(ok,text)=>rows.push(`${ok?'PASS':'FAIL'} ${text}`);
+const scene=new THREE.Scene(),group=new THREE.Group();scene.add(group);
+const camera=new THREE.PerspectiveCamera(60,1,.1,20);camera.position.set(0,3,3);camera.lookAt(0,0,0);
+const renderer=new THREE.WebGLRenderer();renderer.setSize(64,64);document.body.append(renderer.domElement);
+const mess=new Mess({group}),identities=Object.values(mess.meshes).map(m=>[m,m.geometry,m.material,m.instanceMatrix,m.raycast]);
+const draws=()=>{renderer.render(scene,camera);return renderer.info.render.calls;};
+check(draws()===0,'fresh empty scene submits no mess draw');
+for(const kind of ['crumb','dust','smear'])mess.add(kind,0,0,0,{amt:.8});
+check(draws()===3,'each populated kind submits one draw');
+const saved=mess.save();
+mess.take(0,0,1,{rate:.2});
+check(draws()===3&&mess.spots.every(s=>Math.abs(s.amt-.6)<1e-6),'partial cleaning keeps every remaining kind drawn');
+mess.take(0,0,1,{kinds:['dust']});
+check(draws()===2&&mess.meshes.dust.count===0,'cleaning the last dust removes exactly its draw');
+mess.clear();check(draws()===0,'clearing the scene removes all mess draws');
+mess.load(saved);check(draws()===3&&JSON.stringify(mess.save())===JSON.stringify(saved),'saved spots restore their draws and existing millimetre/rotation serialization');
+group.visible=false;check(draws()===0,'hidden furniture/life parent still hides populated mess');
+group.visible=true;check(draws()===3,'showing the parent restores populated mess');
+mess.load(null);check(draws()===0,'loading an empty record removes every draw');
+check(identities.every(([m,g,mat,im,ray])=>m.geometry===g&&m.material===mat&&m.instanceMatrix===im&&m.raycast===ray),'geometry, material, instance buffers and nonblocking raycast retain identity');
+document.getElementById('out').textContent=rows.join('\n')+'\n'+(rows.some(r=>r.startsWith('FAIL'))?'SOME FAILED':'ALL PASS');
+renderer.dispose();
+</script></html>
