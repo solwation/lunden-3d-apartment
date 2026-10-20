@@ -170,6 +170,13 @@ atlases (8 checks). Pair with `glrestoretest.cjs` and the relevant `phonememtest
 do not infer physical iPhone stability from Chromium. [Recorded results and remaining
 budget failure](../validation/issue-1359/README.md).
 
+The 2026-10-20 wall-text follow-up also compares the actual `buildCheatNote` output
+against its frozen pre-change module at the existing 512px upload cap, checks desktop
+preservation and the normal read target, repeats phone orientation/reload, and runs the
+real context-restore driver with that actual texture selected. Private raw producers,
+results and inspected component/World images stay outside the repository; the dated
+[validation record](../validation/issue-1359/README.md) distinguishes them from device proof.
+
 
 Two-point measurement (#1069): `tools/measureinputtest.cjs BASE OUT` passes24/24
 in the full original World with native pointer lock, mobile taps/drag/cancel and

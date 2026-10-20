@@ -139,6 +139,15 @@ applicable neutral downstream transfer.
 
 ## Static phone canvas sources and disabled mirror target (#1359)
 
+Follow-up 2026-10-20: `buildCheatNote` opts its immutable wall-text canvas into the same
+existing policy. It is painted once after its bundled font loads, is never cloned or
+redrawn, and keeps the same geometry, normalized UVs, material and ordinary read target.
+The hidden source is 512×341 instead of 1536×1024 (6→0.666 MiB); first upload releases
+it to 1×1. Desktop keeps the original source. This is a small retained-memory reduction,
+not an established explanation or resolution of the reported physical iPhone crash.
+There is no applicable public transfer: the source is gameplay text, excluded downstream.
+See the dated follow-up in the [validation record](../validation/issue-1359/README.md).
+
 `freeCanvasAfterUpload` now reduces opted-in immutable canvas sources to the existing
 `LOW_MEMORY.maxTextureSize` before first upload, retaining the original canvas identity and
 normalized UVs. The first-upload callback still frees them to 1×1. The static door atlas in
