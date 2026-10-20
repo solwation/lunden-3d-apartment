@@ -1213,7 +1213,9 @@ export const COURTYARD = {
   // the equipment, places and sizes are all *guess*): a wooden A-frame swing (beam `len` m along x at height `h`, legs
   // splayed `spread` m to either side, two rubber seats) in the playground's free north-west corner and a little slide
   // (platform `h` m up, a `len` m chute in `color` running east) along its south edge
-  swing: { x: -27.9, z: 21.0, len: 2.4, h: 2.1, spread: 0.7 },
+  swing: { x: -27.9, z: 21.0, len: 2.4, h: 2.1, spread: 0.7,
+    // #1413: gentle seated motion, gameplay *guesses*; neither dimensions nor the stand's location change.
+    angle: 0.24, period: 2.6, returnRate: 3 },
   // #1414: assisted ladder/slide durations, seated eye and clear landing distances are gameplay guesses.
   slide: { x: -27.3, z: 28.6, h: 1.0, len: 2.0, color: 0xd9452b,
     ride: { approach: .3, climb: 1.1, settle: .4, slide: .95, runout: .2, exit: .55, eye: .65, pitch: -.3, entryReach: 1.35, exitGap: .3, exitSide: .5, maxExitDrop: .3, clearanceStep: .12 } },

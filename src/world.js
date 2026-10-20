@@ -1331,6 +1331,8 @@ function* worldParts(plan) {
     things: furniture.things, // bottles, glasses, pot plants main.js turns into Holdables (#152, #185)
     sillPlants, // the window boards' pots (main.js makes each one a Holdable, #185)
     courtyardTargets: courtyard.targets, // the courtyard's benches to sit on (#438): kept with F
+    courtyardSwings: courtyard.swings,
+    updateSwings: (dt, target) => courtyard.updateSwings(dt, target),
     furnitureTargets: furniture.interactives, // E targets among the furniture (the TV), hidden with F
     /** Collision of moving furniture parts (the secretary's open flap, #118) on `level`. */
     movingSegments(level) {

@@ -25,9 +25,10 @@ f.onload = async () => {
   const btn = d.getElementById('action');
   world.object.updateMatrixWorld(true); // no render has run yet in headless
   const court = world.courtyardTargets ?? []; // the courtyard's benches (#438): sat on and got up from like the furniture
-  const targets = [...world.furnitureTargets.filter((t) => t.kind === 'rest'), ...court];
+  const benches = court.filter((t) => t.kind === 'rest' && !t.swing); // the bench matrix excludes moving swings (#1413) and the slide (#1414)
+  const targets = [...world.furnitureTargets.filter((t) => t.kind === 'rest'), ...benches];
   let pass = check(targets.length >= 9, `${targets.length} seats/beds`);
-  pass &= check(court.length >= 12 && court.every((t) => t.spots.length >= 3), `#438: ${court.length} courtyard benches, ${court.reduce((n, t) => n + t.spots.length, 0)} spots`);
+  pass &= check(benches.length >= 12 && benches.every((t) => t.spots.length >= 3), `#438: ${benches.length} courtyard benches, ${benches.reduce((n, t) => n + t.spots.length, 0)} spots`);
   { // #453: no courtyard bench stands in front of a loggia's parapet opening or an entrance at the ground (≥ 1 m clear)
     const { groundWaysIn } = await w.eval(`import('${new URL('../src/surroundings.js', location)}')`);
     const { COURTYARD } = await w.eval(`import('${new URL('../src/config.js', location)}')`);
@@ -261,10 +262,10 @@ f.onload = async () => {
   // #670: nobody else sits on the courtyard's benches any more (the neighbours are gone): every spot is free, and the
   // bench in front of Hus A (where the bench sitter used to be, #438) takes the visitor
   {
-    const taken = court.flatMap((t) => t.spots).filter((sp) => sp.taken?.());
-    pass &= check(court.length > 0 && !taken.length, `#670: ${court.length} courtyard seats, ${taken.length} spots taken`);
+    const taken = benches.flatMap((t) => t.spots).filter((sp) => sp.taken?.());
+    pass &= check(benches.length > 0 && !taken.length, `#670: ${benches.length} courtyard seats, ${taken.length} spots taken`);
     const near = (sp) => Math.hypot(sp.pos.x + 3.4, sp.pos.z - 28.1) < 0.6;
-    const t = court.find((x) => x.spots.some(near)), sp = t?.spots.find(near);
+    const t = benches.find((x) => x.spots.some(near)), sp = t?.spots.find(near);
     const label = t && sitOn(t, sp); for (let i = 0; i < 60; i++) step(1 / 60);
     pass &= check(!!label && rest.active && rest.spot === sp, `#670: sat on the Hus A bench (${label})`);
     standUp(); for (let i = 0; i < 3; i++) step(1 / 60);

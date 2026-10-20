@@ -2,7 +2,7 @@ import { CeilingBatchGate } from './ceilingbatchgate.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { COURTYARD as C, COLORS, SITE, PLAYER, BICYCLE } from './config.js';
+import { COURTYARD as C, COLORS, SITE, PLAYER, BICYCLE, REST } from './config.js';
 import { pavingTexture } from './patio.js';
 import { registerSnow, registerTrees } from './seasons.js';
 import { SEASON } from './config.js';
@@ -167,6 +167,7 @@ export function buildCourtyard() {
   const group = new THREE.Group();
   const geos = { paving: [], gravel: [], sand: [], wood: [], metal: [], soil: [], pergola: [], brick: [] };
   const vines = [], bulbs = []; // climbing plants and string-light bulbs on the pergolas (#149)
+  const swings = []; // two moving seats under the existing fixed A-frame (#1413)
   const segments = [];
   const seats = { segments: [], footprints: [] }, targets = [], surfaces = []; // #438: kept apart from the fixed segments (getting up off a bench)
   const solid = (x0, x1, z0, z1, top) => { // `top`: the seat's top y, where a jump can land on it (#693)
@@ -362,8 +363,17 @@ export function buildCourtyard() {
       segments.push(...rectSegs(x - 0.1, x + 0.1, S.z - S.spread - 0.06, S.z + S.spread + 0.06));
     }
     for (const sx of [S.x - 0.55, S.x + 0.55]) {
-      toys.push(tint(new RoundedBoxGeometry(0.44, 0.03, 0.17, 1, 0.012).translate(sx, 0.43, S.z), 0x1e1e1e));
-      for (const dx of [-0.2, 0.2]) geos.metal.push(box(sx + dx - 0.005, sx + dx + 0.005, 0.43, y - 0.03, S.z - 0.005, S.z + 0.005), box(sx + dx - 0.02, sx + dx + 0.02, y - 0.05, y - 0.02, S.z - 0.06, S.z + 0.06));
+      for (const dx of [-0.2, 0.2]) geos.metal.push(box(sx + dx - 0.02, sx + dx + 0.02, y - 0.05, y - 0.02, S.z - 0.06, S.z + 0.06)); // fixed beam attachments
+      const pick = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.32, 0.3), new THREE.MeshBasicMaterial({ visible: false }));
+      pick.position.set(sx, 0.43, S.z);
+      pick.userData.rest = { kind: 'sit', name: 'gungan', verb: 'sätta dig på',
+        spots: [{ x: 0, y: 0.43, z: 0, dir: [0, -1], aim: [0, 0, 0.43], follow: true }] };
+      const target = restTarget(pick, { x: sx, z: S.z, level: 0 }, 0);
+      const swing = { x: sx, angle: 0, phase: 0, pick, target,
+        begin() { this.phase = Math.asin(THREE.MathUtils.clamp(this.angle / S.angle, -1, 1)); } };
+      target.swing = swing;
+      pick.userData.door = target;
+      group.add(pick); targets.push(target); swings.push(swing);
     }
     segments.push(...rectSegs(S.x - 0.85, S.x + 0.85, S.z - 0.2, S.z + 0.2)); // (the seats)
   }
@@ -405,6 +415,21 @@ export function buildCourtyard() {
     segments.push(...bicycleRack);
   }
 
+  // The moving parts occupy known tails of the existing metal and toy batches.
+  // Keep the old materials and draw-call count while the fixed beam attachments stay put.
+  const S = C.swing, vertexCount = g => g.index?.count ?? g.attributes.position.count;
+  const metalStart = geos.metal.reduce((n, g) => n + vertexCount(g), 0);
+  const chainCounts = swings.map(swing => {
+    const pair = [-0.2, 0.2].map(dx => box(swing.x + dx - 0.005, swing.x + dx + 0.005, 0.43, S.h - 0.03, S.z - 0.005, S.z + 0.005));
+    geos.metal.push(...pair);
+    return pair.reduce((n, g) => n + vertexCount(g), 0);
+  });
+  const seatStart = [...bikes, ...toys].reduce((n, g) => n + vertexCount(g), 0);
+  const seatCounts = swings.map(swing => {
+    const g = tint(new RoundedBoxGeometry(0.44, 0.03, 0.17, 1, 0.012).translate(swing.x, 0.43, S.z), 0x1e1e1e);
+    toys.push(g);
+    return vertexCount(g);
+  });
   const paveTex = pavingTexture();
   const mats = {
     paving: new THREE.MeshStandardMaterial({ map: paveTex, roughness: 0.95 }),
@@ -420,18 +445,61 @@ export function buildCourtyard() {
   registerSnow(mats.paving, SEASON.snow.paving);
   registerSnow(mats.gravel, SEASON.snow.ground);
   registerSnow(mats.sand, SEASON.snow.ground);
+  let metalBatch;
   for (const [k, list] of Object.entries(geos)) {
     if (!list.length) continue;
     const mesh = new THREE.Mesh(mergeGeometries(list.map((g, i) => (k === 'wood' ? grain(g, i) : k === 'sand' ? mottle(g) : g.index ? g.toNonIndexed() : g))), mats[k]);
     mesh.castShadow = k === 'wood' || k === 'metal';
     mesh.receiveShadow = true;
     group.add(mesh);
+    if (k === 'metal') metalBatch = mesh;
   }
   const add = (list, mat, shadow = true) => { const mesh = new THREE.Mesh(mergeGeometries(list.map((g) => (g.index ? g.toNonIndexed() : g))), mat); mesh.castShadow = shadow; mesh.receiveShadow = true; group.add(mesh); return mesh; };
   add(paint, new THREE.MeshStandardMaterial({ color: C.playhouse.color, roughness: 0.85, side: THREE.DoubleSide }));
   // #906: keep the same two batches/materials. Each existing bicycle owns only its
   // contiguous vertex ranges; the toy tail, colours, UVs and all other bikes stay untouched.
   const solidBikes = add([...bikes, ...toys], new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.4, metalness: 0.3 }));
+  // Capture only the two seats and four chains; the rest of either merged batch never changes for swings.
+  const capture = (mesh, start, count) => {
+    const a = mesh.geometry.attributes;
+    return { mesh, start, count, position: a.position.array.slice(start * 3, (start + count) * 3),
+      normal: a.normal.array.slice(start * 3, (start + count) * 3) };
+  };
+  let nextSeat = seatStart, nextChain = metalStart;
+  const swingRanges = swings.map((swing, i) => {
+    const ranges = [capture(solidBikes, nextSeat, seatCounts[i]), capture(metalBatch, nextChain, chainCounts[i])];
+    nextSeat += seatCounts[i]; nextChain += chainCounts[i];
+    return ranges;
+  });
+  const swingVector = new THREE.Vector3(), swingNormal = new THREE.Vector3();
+  const swingMatrix = new THREE.Matrix4(), swingRotation = new THREE.Matrix4(), swingOrigin = new THREE.Matrix4();
+  const normal = new THREE.Matrix3();
+  const placeSwing = (swing, index) => {
+    swingMatrix.makeTranslation(swing.x, S.h, S.z)
+      .multiply(swingRotation.makeRotationX(swing.angle))
+      .multiply(swingOrigin.makeTranslation(-swing.x, -S.h, -S.z));
+    normal.getNormalMatrix(swingMatrix);
+    for (const range of swingRanges[index]) {
+      const a = range.mesh.geometry.attributes;
+      for (let i = 0; i < range.count; i++) {
+        swingVector.fromArray(range.position, i * 3).applyMatrix4(swingMatrix);
+        a.position.setXYZ(range.start + i, swingVector.x, swingVector.y, swingVector.z);
+        swingNormal.fromArray(range.normal, i * 3).applyMatrix3(normal);
+        a.normal.setXYZ(range.start + i, swingNormal.x, swingNormal.y, swingNormal.z);
+      }
+      a.position.needsUpdate = a.normal.needsUpdate = true;
+    }
+    const y = S.h + (0.43 - S.h) * Math.cos(swing.angle), z = S.z + (0.43 - S.h) * Math.sin(swing.angle);
+    swing.pick.position.set(swing.x, y, z);
+    swing.target.spots[0].pos.set(swing.x, y + REST.sitEye, z);
+    swing.target.spots[0].aimPos.set(swing.x, y, z);
+  };
+  swings.forEach(placeSwing);
+  for (const mesh of [solidBikes, metalBatch]) {
+    mesh.userData.moving = true; // detail bounds are refreshed while the swings move
+    mesh.geometry.attributes.position.setUsage(THREE.DynamicDrawUsage);
+    mesh.geometry.attributes.normal.setUsage(THREE.DynamicDrawUsage); // phone keeps writable float normals
+  }
   const spokes = new THREE.Mesh(mergeGeometries(bikeSpokes.map(g => g.index ? g.toNonIndexed() : g)), new THREE.MeshStandardMaterial({ vertexColors: true, alphaMap: bikeSpokeTexture(), alphaTest: 0.35, side: THREE.DoubleSide, metalness: 0.35, roughness: 0.5 }));
   spokes.castShadow = false; spokes.receiveShadow = false; group.add(spokes);
   const components = [solidBikes, spokes];
@@ -518,7 +586,22 @@ export function buildCourtyard() {
   bulb.name = 'courtyard-pergola-bulbs';
   group.add(vine, new CeilingBatchGate([bulb]));
   const lit = new THREE.Color(0xffd08a), off = new THREE.Color(0x2a2620); const bollardOff = new THREE.Color(0x8d8b84);
-  return { object: group, segments, seats, targets, surfaces, bicycles,
+  return { object: group, segments, seats, targets, surfaces, bicycles, swings,
+    updateSwings(dt, target) {
+      let changed = false;
+      swings.forEach((swing, i) => {
+        const before = swing.angle;
+        if (target === swing.target) {
+          swing.phase += dt * Math.PI * 2 / S.period;
+          swing.angle = S.angle * Math.sin(swing.phase);
+        } else swing.angle *= Math.exp(-S.returnRate * dt);
+        if (Math.abs(swing.angle) < 1e-5) swing.angle = 0;
+        if (swing.angle !== before) { placeSwing(swing, i); changed = true; }
+      });
+      if (changed) for (const mesh of [solidBikes, metalBatch]) {
+        mesh.geometry.computeBoundingBox(); mesh.geometry.computeBoundingSphere();
+      }
+    },
     /** night 0 … 1 (with the window lights): the pergola's bulbs glow after dusk (no lights, colour only). */
     update(night, power = true) { const on = night > 0.35 && power; bulbMat.color.copy(on ? lit : off); bollardGlow.color.copy(on ? lit : bollardOff); } }; // the bollards too (#112); power: not in a power cut (#604)
 }

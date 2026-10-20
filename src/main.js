@@ -1465,7 +1465,7 @@ function sitOrLie(target) {
   const spot = chooseSpot(target, raycaster.ray, cat.visible ? cat.object.position : null);
   if (!spot) return;
   sitAt(target, spot, { x: player.pos.x, z: player.pos.z, y: player.pos.y, yaw: camera.rotation.y });
-  bump(spot.kind === 'lie' ? 'lay' : 'sat', 1, `${target.name}@${spot.pos.x.toFixed(1)},${spot.pos.y.toFixed(1)},${spot.pos.z.toFixed(1)}`); // each seat / side of a bed once
+  if (!target.swing) bump(spot.kind === 'lie' ? 'lay' : 'sat', 1, `${target.name}@${spot.pos.x.toFixed(1)},${spot.pos.y.toFixed(1)},${spot.pos.z.toFixed(1)}`); // each ordinary seat / side of a bed once; playground swings add no reward (#1413)
   sfx.rustle(spot.pos);
   if (target.name === 'loungesoffan') beer.serve(spot); // a big beer on the table (#117, #472)
 }
@@ -1473,6 +1473,7 @@ function sitOrLie(target) {
 function sitAt(target, spot, stand, now = false) {
   player.crouch = false;
   rest.begin(target, spot, stand);
+  target.swing?.begin(); // #1413: restart the shared gentle swing phase from its current seat angle
   if (now) { rest.t = 1; camera.position.copy(rest.eyeAt(spot)); rest.clampLook(camera); }
   if (target.name === 'loungesoffan' && now && beer.out) beer.serve(spot);
   if (spot.pc) usePc(spot);
@@ -2979,6 +2980,7 @@ function step(dt) {
   showFireworks.update(dt); // the midnight show (#1200): after day.update, it adds its flash to the lights
   measure.update(dt, gameView.w, gameView.h);
   if (touch.enabled) touch.update(dt); // the eased drag-to-look (#1088)
+  world.updateSwings(active() && !reading && !drawing.active && !fall.active ? dt : 0, rest.target); // #1413: move before the seated camera/pose, freeze with its other paused paths
   if (active() && reading) updateFocus();
   else if (drawing.active) drawing.update(dt); // drawing: the camera over the paper, nothing else moves you
   else if (active() && slideRide.active) { slideRide.update(dt); updateFocus(); }

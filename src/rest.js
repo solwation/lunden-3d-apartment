@@ -7,6 +7,7 @@ import { REST } from './config.js';
 // While resting the visitor cannot walk; the camera moves smoothly to the spot, looking can turn
 // within REST limits, and E again stands up where you were standing before. Optional local `look`
 // aims a spot's initial seated view at a world point; spots without it keep the default level gaze.
+// `follow` marks a moving spot whose updated eye position the camera must track after the entry glide.
 
 /** World-space rest target for a furniture piece (called by buildFurniture). */
 export function restTarget(obj, item, levelFloor) {
@@ -84,7 +85,9 @@ export class Rest {
   }
 
   update(dt) {
-    if (!this.active || this.t >= 1) return;
+    if (!this.active) return;
+    // Only explicitly moving seats follow the spot after the usual entry glide.
+    if (this.t >= 1) { if (this.spot.follow) this.camera.position.copy(this.eyeAt(this.spot)); return; }
     this.t = Math.min(1, this.t + dt / REST.move);
     const e = this.t * this.t * (3 - 2 * this.t), cam = this.camera;
     cam.position.lerpVectors(this.from.pos, this.eyeAt(this.spot), e);

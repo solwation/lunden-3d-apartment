@@ -171,6 +171,7 @@ och gården med pergola, grill, lekplats och boulebana är uppmätta på Peabs s
 `docs/peab/`). Solen går efter verkliga väderstreck: entrén vetter mot östnordost. Entréstråket längs hus L är fritt från parkerade cyklar; cykelparkeringen vid kvarterets hörn har sina ställ kvar. Alla nio befintliga cyklar på nordvästra gården kan användas med E eller touchknappen: WASD/joysticken kör, E eller avstigningsknappen kliver av på en säker ståplats. Vid omladdning står spelaren säkert och cyklarna återgår till sina ställ.
 
 Rutschkanan på gården används med E eller touch vid stegen eller plattformen: du klättrar upp, åker synligt längs rännan och kliver av på fri mark. E, mellanslag eller touch avbryter åket.
+De två gungorna på lekplatsen används med E eller touchknappen. Sätet och kedjorna rör sig medan sittvyn följer med; E, mellanslag, C eller touchknappen reser dig på fri mark.
 
 Inredningen följer våra materialval i Peabs tillvalsportal: köket med grågröna Form Tall-luckor,
 överskåp och kyl/frys enligt vår köksritning, Ek Chalk-parkett, klinker i hall och våtrum, kakel i
