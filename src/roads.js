@@ -251,6 +251,13 @@ export function pathStrip(road, a, b, lift, groundY, clip = false, grid = ground
   /** #1341: `trim(x, z)` = a point of vehicle asphalt the strip must not lie on (a footpath meeting or crossing a road). A quad that touches it is cut into
    * TRIM_STEP m pieces and the pieces whose centre is on the asphalt are left out, so the strip ends at the road's edge instead of overlapping it. */
   const emit = (c, plen) => {
+    // #1432: explicit opt-in for new service roads. Keep each face in one actually
+    // emitted terrain triangle, including refined cells, without changing old strips.
+    if (road.terrain === 'triangles' && grid) {
+      for (const tri of cutAtTerrain([c[0], c[2], c[3], c[1]], grid))
+        for (const [x, z] of tri) pos.push(x, groundY(x, z) + lift, z);
+      return;
+    }
     // where the ground slopes, 10 cm pieces, so the strip stays on it through the slope's kinks
     const sloped = c.some(([x, z]) => Math.abs(groundY(x, z) - groundY(...c[0])) > 1e-4);
     // (#1305: outside ELEVATION.protect the ground is smooth: the strip is cut into the fewest equal pieces (1…16) whose edge midpoints lie within 1 cm of the chord, not always 10 cm ones)

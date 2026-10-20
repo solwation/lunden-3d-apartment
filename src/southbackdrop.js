@@ -72,7 +72,7 @@ export function* southBackdropParts(ground){
  const surfColor=p=>p.color??(p.surface==='asphalt'?0x5f6164:p.surface==='gravel'?0xb5ac90:0xa7a397);
  const bayPolygons=[];
  for(const p of [...S.paths,...(S.access??[])]){
-  const drawn=pathStrip(p,w=>-w/2,w=>w/2,.025,farGround);
+  const drawn=pathStrip(p,w=>-w/2,w=>w/2,.025,farGround,false,p.terrain==='triangles'?farGround.surfaceGrid():farGround.grid());
   if(['95035967','189432572','36918923'].includes(p.source)){
    // Reuse the actual float32 footprint, including pathStrip's seam overlaps.
    const a=drawn.attributes.position;

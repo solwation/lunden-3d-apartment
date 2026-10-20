@@ -440,6 +440,35 @@ Tests: `node --test tools/roadlampstest.mjs tools/pathlampstest.mjs` and native 
 
 Actual full-World baseline15f9b005: one pole2.215059m below the highest drawn triangle,489 overlapping glow vertices with max2.667783m deviation. `tools/lamprampstest.cjs` samples actual site-terrain triangles at those fixtures, rather than comparing a ground callback to itself. `tools/lamprampstest.mjs` covers unchanged ramp bytes and both ramps' interior grass triangles (Float32 edge coordinates may round outside an analytic footprint, so native height comparison uses triangle centroids). Public#95 already avoids ramp-footprint pole placements, but its generic ground-light support is reviewed separately.
 
+## Northern southern-site service entrance (#1432)
+
+`SITE.south.access` adds only service ways145221573/145221582/145221583/145221596
+(286.622m) from the committed2026-10-08 OSM snapshot. `geoToPlan` coordinates are
+rounded to1cm like existing data, preserving the shared30633546 and145221590 nodes.
+The raw ways only have `highway=service`:4.5m width and asphalt remain explicit guesses.
+Their `terrain: 'triangles'` opt-in makes `pathStrip` use the existing `cutAtTerrain`
+with `renderedTerrainY.surfaceGrid()`; each new face lies on one actually emitted
+terrain triangle, including refined cells. Old strip generation and terrain stay unchanged.
+The new road lift is25mm. Where existing parking overlaps it, the unchanged52mm
+parking surface and76mm paint/kerb remain the top layer; those surfaces are not regraded
+as part of this road change (#1390/#1416 retain that separate scope).
+
+The new asphalt adds2273triangles in `south-land`, with no new batch/material/texture.
+Existing automatic roadside lighting adds four guessed fittings and removes one old
+30633546 fitting at(7.1821,238.9569), which would stand in the new entrance. The other
+113 roadside records retain their exact positions. Net lighting cost is600post/head
+triangles and180night-pool triangles; total resource growth3053triangles. Existing
+park/east footway clipping is unchanged in the actual World. Southern forest records
+and trunk matrices remain exact; full-width strips plus the0.5m tree exclusion margin
+do not touch either forest. No building foot, opening, parking polygon/paint, bridge,
+paddock or height control changes. A/B/C/L house geometry is outside this site-road scope.
+
+Only the northern entrance and branch are inside existing `WALK.z1=250`; three real
+Player W-key routes cover those connections. The rest receives local emitted-surface
+and endpoint rays, not a claimed production walk. See `tools/serviceaccess1432test.mjs`
+and [verification](verification.md). Neutral downstream transfer is tracked separately
+as kvarteret-lunden#116, always low priority.
+
 ## Southern plateau and parking support (#1381)
 
 The existing10m GLO grid already reaches z460; the drawn terrain and south backdrop now use that extent,

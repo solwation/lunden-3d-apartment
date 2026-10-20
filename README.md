@@ -204,6 +204,8 @@ Vägbron och den separata gång- och cykelbron vid Sankt Lars väg syns över en
 Höje å omges av varierande slänter, kartans huvudstigar, öppna gräsytor, större lövträdsdungar och strandvegetation som följer årstiderna. [Underlag och jämförelsevyer](docs/validation/issue-533/README.md).
 Jordrampernas öppna sidor vid den lilla träbron är tätade mot den ritade marken, så slänterna hänger inte längre som tunna skivor ovanför åstranden.
 
+Den norra serviceinfarten söder om ån följer kartans fyra väglänkar och ansluter till Sankt Lars väg och parkeringarnas korta tillfarter. Vägbredd och asfalt är illustrativa antaganden; den befintliga promenadgränsen är oförändrad.
+
 Gräsmattorna på gården och längs gatan har fin grässtruktur och ojämna gröna toner; på hösten gulnar de och på vintern täcks de av snö.
 
 Västervyn har kartans husrad och angöring längs Karpvägen, som fortsätter mot nordväst förbi öppna parkytor. [Fotavtryck och sommar-/vinterjämförelse](docs/validation/issue-534/README.md).

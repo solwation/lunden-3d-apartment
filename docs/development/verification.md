@@ -1,3 +1,30 @@
+Northern southern-site service roads (#1432): run
+`node --test tools/serviceaccess1432test.mjs tools/polygoncuttest.mjs tools/roadlampstest.mjs`
+(10checks). Verify source tags/projected nodes, full emitted strips against house bodies
+with courtyard holes retained, refined terrain folds and both forests including the0.5m
+tree exclusion margin. Actual ordinary World before/after data preserves terrain positions/
+index/normals, building pads, controls,70southern tree records/trunk matrices and all old
+south-land position/normal floats around one exact2273triangle insertion. Independent
+THREE rays through9092new-face samples differ from the25mm terrain lift by at most
+2.70e-6m; all16road-node records retain continuous existing asphalt/parking support.
+This25mm result belongs to the new2273faces: unchanged older parking lies52mm above
+terrain at several shared nodes, with paint/kerb up to76mm. The topmost merged paving
+ray can therefore hit that older layer; it must not be mistaken for the new road face.
+Parking's existing shape/marking issues remain in#1390/#1416.
+Park asphalt/gravel and east-access arrays are exact; the automatic lamp generator changes
+only four new guessed fittings and one old fitting now obstructing the entrance.
+Three real Player W-key routes pass inside WALKz250 (maxz247.67); no full southern
+walk is claimed. Open normal960×600quality3desktop and844×390quality0lowmem touch
+before/after entrance/overview images; all have testmode off and no page errors.
+Pre-rebase dae61d45 phone19-view/quality perfcount passes370calls/834390tri/~97MiB;
+standard desktop retained its known#1439failure at1004393tri/478calls/~309MiB.
+After final integration onto de1bc21b (#1439), a fresh full standard19-view desktop/quality
+profile passes478calls/982485triangles/~309MiB. The final explicitquality0 landscape
+profile also passes370calls/834390tri/~97MiB; the historical failure stays separately saved.
+The initial server session exited143, causing two connection-refused harness attempts;
+their logs remain separate from successful reruns. Raw scripts/arrays/images/verdicts:
+`/tmp/orkester-katt-20261020/service1432/`. The public port is separateLOW#116.
+
 Garage contents behind drawn ceilings (#1439):
 `node --test tools/garageocclusiontest.mjs tools/desktopocclusiontest.mjs tools/phonedetailunittest.mjs tools/occlusiontest.mjs`
 checks22cases, including exact included/excluded A/B/C/L ceiling rectangles,

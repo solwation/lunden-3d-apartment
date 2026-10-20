@@ -881,6 +881,13 @@ export const SITE = {
     ],
     // #1262: sourced service access roads south of Höje å (OSM snapshot 2026-10-08 / 2026-10-18)
     access: [
+      // #1432: OSM snapshot osm-south-2026-10-08.json, projected by sitegeo.js and rounded to 1 cm like existing shared nodes.
+      // Raw tags only say highway=service: 4.5 m width and asphalt are visual guesses, not surveyed civil levels/materials.
+      // Opt in only these new strips to exact emitted terrain triangles; existing roads retain their original geometry.
+      {"source":"145221573","surface":"asphalt","surfaceSource":"guess","widthSource":"guess","path":[[-127.61,345.26],[-99.51,325.04],[-85.75,315.14],[-72.11,305.33],[-58.09,295.24],[-43.79,315.05],[-10.07,291.54],[-24.28,273.42],[11.51,247.67],[3.68,236.83]],"w":4.5,"terrain":"triangles"},
+      {"source":"145221582","surface":"asphalt","surfaceSource":"guess","widthSource":"guess","path":[[11.51,247.67],[31.81,234.04]],"w":4.5,"terrain":"triangles"},
+      {"source":"145221583","surface":"asphalt","surfaceSource":"guess","widthSource":"guess","path":[[-99.51,325.04],[-90.69,337.26]],"w":4.5,"terrain":"triangles"},
+      {"source":"145221596","surface":"asphalt","surfaceSource":"guess","widthSource":"guess","path":[[-72.11,305.33],[-63.07,317.85]],"w":4.5,"terrain":"triangles"},
       {"source":"850235114","surface":"asphalt","path":[[61.04,242.66],[73.13,233.86]],"w":4.5},
       {"source":"850235115","surface":"asphalt","path":[[60.53,217.65],[73.13,233.86],[82.72,246.3]],"w":4.5},
       {"source":"36918923","surface":"asphalt","path":[[45.85,215.95],[46.16,211.77],[46.1,209.57],[45.43,205.77],[44.88,203.85]],"w":4.5},

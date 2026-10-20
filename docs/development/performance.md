@@ -1,5 +1,27 @@
 # Rendering performance
 
+## Northern southern-site service roads (#1432)
+
+Four new source strips use exact emitted-terrain clipping only through their explicit
+`terrain: 'triangles'` opt-in:2273asphalt triangles, zero additional batches/materials/
+textures. The existing road-light generator adds four guessed fittings and removes
+one newly obstructing fitting, preserving the other113roadside records. Net lighting
+is600post/head plus180night-pool triangles:3053resource triangles total,2873submitted
+daytime triangles in the matched ordinary desktop entrance/overview captures, unchanged25/31calls.
+Full844×390lowmem quality0perfcount passes all19poses and quality checks at370calls,
+834390triangles/~97MiB; limits370/950000/225 are unchanged. On pre-rebase dae61d45, standard desktop was
+SOME FAILED/CLI1 at hall1003285/basement1004393, exactly the previous1000412/1001520
+plus2873daytime triangles;478calls/~309MiB remain within limits. This historical failure remains recorded separately from final integration after#1439;
+do not infer desktop acceptance from the phone result.
+After final integration onto de1bc21b (#1439), a fresh full standard19-view desktop/quality
+profile passes478calls/982485triangles/~309MiB (hall958665/basement982485). The reviewed
+service runtime files are byte-identical across that rebase. The fresh final explicit
+quality0 phone844×390 profile also passes all19views/quality checks at370calls/834390tri/~97MiB.
+Both historical failures and final integration results are retained separately.
+Actual geometry/identity/ray evidence and failed server attempts are retained in
+`/tmp/orkester-katt-20261020/service1432/`. See [environment](environment.md) and
+[verification](verification.md) for the source/guess and reachable-walk boundaries.
+
 ## Contents behind currently drawn garage ceilings (#1439)
 
 `DetailCuller` optionally receives the actual `Garage` and reuses the exact
