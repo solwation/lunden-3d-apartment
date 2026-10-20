@@ -44,13 +44,14 @@ src/catbinderprop.js   the binder as an object (#1255, `CAT_BINDER`): a small ri
                        materials merged into three meshes, no texture, no light, no shadow caster) lying on the coffee table's slat shelf; built by
                        furniture.js `coffeetable`, so it is the table piece's child and moves with it (F rearranging, saved layouts). Target kind
                        'binder' (E / the action button); `occluded()` refuses a pick through the table top from above (the pick ray has no table in it).
-src/catbinder.js       the browse UI `BinderPanel` (#binder-view, main.js `showBinder`, frees the mouse like the old board panel): one page per breed
-                       (Miele last, an unfound breed is a "???" placeholder with "Plats n av 8"), then an "Äldre foton" page when old photos exist;
-                       the card (name, tier text + points, weight, facts, found / pat / hug
-                       counters; rarity visuals #1256: `fx-N` class + CSS layers by tier, see Graphics) and CAT_CARD.max photo places. ← → / A D / Home / End / dots / swipe / Nästa–Förra; E / Esc / × close. Test: `tools/bindertest.cjs`.
+src/catbinder.js       `BinderPanel` (#1379, main.js `showBinder`): four fixed pockets per page in CAT_CARD.breeds order (Miele last),
+                       silhouettes for undiscovered variants; found cards use an uncropped existing photo, name, breed, tier and points.
+                       Click/touch opens that variant's album with weight/facts/find/pat/hug counters and photo actions; an extra page retains legacy photos.
+                       CAT_CARD.pageSize/albumSlots are presentation settings (4/8); collection capacity remains CAT_CARD.max=5 until#1380.
+                       ← → / A D / Home / End / dots / swipe / Nästa–Förra; E / Esc closes the top layer first. Test: `tools/bindertest.cjs`.
                        Photo menu (#1257, the last part of #1249; DOM + CSS only, perfcount unchanged): every photo has `Spara`/`Sparad` (aria-pressed toggle = the card's `saved` flag, a saved card is never rotated out;
                        persisted by the existing 'catCards' store) and `Kasta` (opens `.confirm`, the safe "Behåll" has focus; "Kasta" deletes the card). Tapping a photo or the card's "Visa foton (n av 5)" opens it enlarged
-                       (`.viewer`, ‹ › / ← → / swipe browse the page's photos, same Spara / Kasta). `back()` (E / Esc, wired in main.js) closes the question, then the enlarged photo, then the panel. The card line `slotline`
+                       (`.viewer`, ‹ › / ← → / swipe browse the variant's photos, same Spara / Kasta). `back()` (E / Esc, wired in main.js) closes the question, then enlarged photo, then album, then panel. The card line `slotline`
                        says what the next find does ("byter ut det äldsta osparade fotot (X)", that photo is outlined + badged "Byts ut först"; all saved: red "Alla platser är sparade…"). `CatCards.onNotice` ({type:'rotated'|'full'})
                        drives the in-game toast `#cat-notice` (main.js `catNotice`, `CAT_CARD.noticeS` *guess*): "…det äldsta osparade fotot (X) byttes ut" / "alla fem kort … är sparade, det nya fotot lades inte till. Kasta eller avmarkera…".
                        Model helpers: `nextOut(breed)`, `isFull(breed)`, `savedCount(breed)`. The legacy page has the same buttons (no limit there). Buttons are ≥ 44 px; the viewer is a row (photo + buttons) at max-height 520 px.

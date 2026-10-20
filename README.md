@@ -326,6 +326,11 @@ I lekstugans klubbhus kan barn starta TV:ns animerade klubbkanal (även med
 fjärrkontrollen på soffarmen) och spela Pricka grönt på datorn med E eller
 tryckknappen. Den vita spelboxen stänger av datorn; båda skärmarna stängs av
 när man lämnar klubbhuset. Discolampans strömbrytare fungerar som tidigare (#1365).
+
+Kattpärmen har fyra fasta samlarkortsplatser på varje sida: varje kattvariant
+har sin egen plats och de oupptäckta visas som silhuetter. Tryck på ett funnet
+kort för kattens mötesbilder, fakta och vanliga Spara/Kasta-knappar; befintliga
+bilder och äldre foton finns kvar. Pärmen kan även läsas på en stående telefon (#1379).
 Basketball PvP follows the real release and falling throw, including the existing
 ball radius and glass/solid/floor obstruction before the first contact (#980).
 The server confirms head2/body1; the original basket physics and scoring remain.

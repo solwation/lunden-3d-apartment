@@ -90,6 +90,14 @@ and `tools/fruitremainstest.cjs` for the native reload checks and visual limits.
 
 ## Module and test map
 
+Cat binder presentation (#1379): four stable collection pockets per page and
+per-variant photo albums are DOM-only views over the existing `CatCards.slots()`
+and `of()` records. `CAT_CARD.max` remains5; `pageSize=4` and `albumSlots=8`
+configure presentation only. There is no new store, migration, photo capture,
+rotation rule or statistics format. Old five-photo records, saved flags and
+legacy-board photographs remain intact. The new eight-encounter collection
+rules belong to#1380, not this intermediate UI.
+
 ```text
 src/privatecodes.js     shared synchronous UTF-8 SHA-256 and exact private-code/layout-credential verifier (#853)
 src/layoutmigrations.js  retire old grouped poster layout ids while preserving later individual moves (#493)

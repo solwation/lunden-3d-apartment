@@ -1,9 +1,9 @@
 import { CAT_CARD as C } from './config.js';
 
-// The cat card binder's browse UI (#1255, part 2 of #1249): one page per breed (CAT_CARD.breeds, Miele last), then a page
-// with the old board photos that belong to no breed, when there are any. A page shows the card (name, points, weight, facts,
-// counters) and one place per card slot (C.max): a photo of where the cat was found, or an empty place. A breed that has not
-// been found is a "?" placeholder. Pure DOM + CatCards (src/catcards.js); keys: ← → (A / D) turn the page, Home / End jump,
+// #1379: fixed collection pockets in CAT_CARD.breeds order; each found card opens its own photo album.
+// The album retains facts, counters, saved flags and photo actions; the old board photos retain their extra page.
+// The presentation prepares eight photo spaces without changing CatCards' existing five-photo collection limit.
+// Pure DOM + CatCards (src/catcards.js); keys: ← → (A / D) turn the page, Home / End jump,
 // E / Esc close (main.js). Rarity visuals (#1256): a card gets `fx-N` (CAT_CARD.fx level by tier) and decorative layers
 // (foil, shine, glitter, holo, ★ sparkles) drawn by CSS in index.html; pointer / touch movement tilts it and moves the holo
 // sheen (not under prefers-reduced-motion). Photo menu (#1257): every photo has Spara / Sparad (toggle: a saved card is never rotated
@@ -15,6 +15,7 @@ const fmtTime = (t) => new Date(t).toLocaleString('sv-SE', { day: 'numeric', mon
 const kg = (n) => n.toLocaleString('sv-SE', { maximumFractionDigits: 1 });
 const weight = ([a, b]) => `ca ${a === b ? kg(a) : `${kg(a)}–${kg(b)}`} kg`;
 const times = (n) => (n === 1 ? '1 gång' : `${n} gånger`);
+const photoCount = (n) => n === 1 ? '1 mötesbild' : `${n} mötesbilder`;
 
 export class BinderPanel {
   /** `cards`: the CatCards; `el`: #binder-view. */
@@ -25,6 +26,8 @@ export class BinderPanel {
     this.title = el.querySelector('.count');
     this.viewer = el.querySelector('.viewer');
     this.confirm = el.querySelector('.confirm');
+    this.album = el.querySelector('.album');
+    this.albumKey = null;
     this.view = null; // { ids, i }: the enlarged photo and the photos of its page
     this.asking = null; // id of the card the throw-away question is about
     el.addEventListener('click', (e) => {
@@ -41,14 +44,15 @@ export class BinderPanel {
     el.addEventListener('touchend', (e) => {
       if (x0 === null) return;
       const dx = e.changedTouches[0].clientX - x0; x0 = null;
-      if (Math.abs(dx) <= 60 || this.asking) return;
+      if (Math.abs(dx) <= 60 || this.asking || (this.albumKey && !this.view)) return;
       if (this.view) this.step(dx < 0 ? 1 : -1); else this.turn(dx < 0 ? 1 : -1); // (an enlarged photo swipes between photos)
     }, { passive: true });
   }
 
   /** The pages in order: the breeds, then the legacy page if the old photos left any. */
   get pages() {
-    const p = this.cards.slots().map((s) => ({ slot: s }));
+    const slots = this.cards.slots(), p = [];
+    for (let i = 0; i < slots.length; i += C.pageSize) p.push({ slots: slots.slice(i, i + C.pageSize), start: i });
     const old = this.cards.legacy();
     if (old.length) p.push({ legacy: old });
     return p;
@@ -58,6 +62,7 @@ export class BinderPanel {
     this.open = show;
     this.el.hidden = !show;
     this.view = this.asking = null;
+    this.albumKey = null; this.album.hidden = true;
     this.viewer.hidden = this.confirm.hidden = true;
     if (show) { this.index = index ?? this.firstFound(); this.render(); }
   }
@@ -66,6 +71,7 @@ export class BinderPanel {
   back() {
     if (this.asking) { this.ask(null); return true; }
     if (this.view) { this.look(null); return true; }
+    if (this.albumKey) { this.openAlbum(null); return true; }
     return false;
   }
 
@@ -79,16 +85,33 @@ export class BinderPanel {
     else if (a === 'vprev') this.step(-1);
     else if (a === 'vnext') this.step(1);
     else if (a === 'vclose') this.look(null);
+    else if (a === 'album') this.openAlbum(id);
+    else if (a === 'aclose') this.openAlbum(null);
   }
 
   /** The photos of the current page, oldest first (the same order the cards are stored in). */
-  current() { const p = this.pages[this.index]; return { ids: (p?.legacy ?? p?.slot?.cards ?? []).map((c) => c.id) }; }
+  current() { const p = this.pages[this.index]; return { ids: (this.albumKey ? this.cards.of(this.albumKey) : p?.legacy ?? []).map((c) => c.id) }; }
   card(id) { return this.cards.cards.find((c) => c.id === id) ?? null; }
+
+  openAlbum(key) {
+    const old = this.albumKey;
+    this.albumKey = key; this.view = null; this.viewer.hidden = true;
+    this.renderAlbum();
+    this.focusOn(key ? '.album [data-act=aclose]' : `[data-act=album][data-id="${old}"]`);
+  }
+
+  renderAlbum() {
+    this.album.hidden = !this.albumKey;
+    if (!this.albumKey) return;
+    const slot = this.cards.slot(this.albumKey), index = C.breeds.findIndex((b) => b.key === this.albumKey);
+    this.album.querySelector('.album-title').textContent = `${slot.label} · mötesbilder`;
+    this.album.querySelector('.album-body').replaceChildren(this.breedPage(slot, index));
+  }
 
   async save(id) {
     const done = this.cards.toggleSave(id); // the flag flips at once, the store write follows
     this.render();
-    this.focusOn(`[data-act=save][data-id="${id}"]`);
+    this.focusOn(`${this.view ? '.viewer ' : ''}[data-act=save][data-id="${id}"]`);
     await done;
   }
 
@@ -114,7 +137,7 @@ export class BinderPanel {
       this.view = rest.length ? { ids: rest, i: Math.min(i, rest.length - 1) } : null;
     }
     this.render();
-    this.focusOn(this.view ? '.viewer [data-act=throw]' : '.card [data-act=photos], .pager [data-nav=next]');
+    this.focusOn(this.view ? '.viewer [data-act=throw]' : this.albumKey ? '.album [data-act=aclose]' : '.pager [data-nav=next]');
   }
 
   /** Open a photo enlarged (null closes it). */
@@ -159,9 +182,9 @@ export class BinderPanel {
   out(c) { return !c.legacy && this.cards.nextOut(c.breed)?.id === c.id; }
 
   /** The binder opens at the first page with a card, else the first one. */
-  firstFound() { const i = this.pages.findIndex((p) => p.slot?.has); return i < 0 ? 0 : i; }
+  firstFound() { const i = this.pages.findIndex((p) => p.slots?.some((s) => s.has)); return i < 0 ? 0 : i; }
 
-  go(i) { const n = this.pages.length; this.index = Math.max(0, Math.min(n - 1, i)); this.render(); }
+  go(i) { const n = this.pages.length; this.albumKey = null; this.view = null; this.index = Math.max(0, Math.min(n - 1, i)); this.render(); }
   turn(d) { this.go(this.index + d); }
 
   /** A key while the panel is open; true if it was used. */
@@ -171,6 +194,7 @@ export class BinderPanel {
       if (code === 'ArrowRight' || code === 'KeyD') this.step(1); else if (code === 'ArrowLeft' || code === 'KeyA') this.step(-1); else return false;
       return true;
     }
+    if (this.albumKey) return false; // Tab/Enter operate the album; paging never changes the hidden collection.
     if (code === 'ArrowRight' || code === 'KeyD' || code === 'PageDown') this.turn(1);
     else if (code === 'ArrowLeft' || code === 'KeyA' || code === 'PageUp') this.turn(-1);
     else if (code === 'Home') this.go(0);
@@ -184,20 +208,54 @@ export class BinderPanel {
     this.index = Math.min(this.index, pages.length - 1);
     const page = pages[this.index];
     this.title.textContent = `${this.cards.collected()} av ${C.breeds.length} katter hittade`;
-    this.body.replaceChildren(page.legacy ? this.legacyPage(page.legacy) : this.breedPage(page.slot, this.index));
+    this.body.replaceChildren(page.legacy ? this.legacyPage(page.legacy) : this.collectionPage(page));
     this.dots.replaceChildren(...pages.map((p, i) => {
       const b = document.createElement('button');
       b.type = 'button';
       b.dataset.nav = String(i);
-      b.className = `dot${i === this.index ? ' on' : ''}${p.slot && !p.slot.has ? ' empty' : ''}${p.slot?.tier?.id === 'legendary' ? ' star' : ''}`;
-      b.setAttribute('aria-label', p.legacy ? 'Äldre foton' : `Sida ${i + 1}: ${p.slot.has ? p.slot.label : 'ej hittad'}`);
+      b.className = `dot${i === this.index ? ' on' : ''}${p.slots?.every((s) => !s.has) ? ' empty' : ''}`;
+      b.setAttribute('aria-label', p.legacy ? 'Äldre foton' : `Sida ${i + 1}: kort ${p.start + 1}–${p.start + p.slots.length}`);
       if (i === this.index) b.setAttribute('aria-current', 'page');
       return b;
     }));
     this.el.querySelector('[data-nav=prev]').disabled = this.index === 0;
     this.el.querySelector('[data-nav=next]').disabled = this.index === pages.length - 1;
     this.el.dataset.page = String(this.index);
+    this.renderAlbum();
     this.renderViewer();
+  }
+
+  collectionPage(page) {
+    const wrap = el('div', 'collection-page');
+    wrap.append(el('p', 'page-label', `Sida ${this.index + 1} av ${Math.ceil(C.breeds.length / C.pageSize)} · Kort ${page.start + 1}–${page.start + page.slots.length}`));
+    const pockets = el('div', 'pockets');
+    for (let i = 0; i < C.pageSize; i++) {
+      const s = page.slots[i], pocket = el('div', 'pocket');
+      if (s) pocket.append(this.collectionCard(s, page.start + i));
+      else { pocket.classList.add('unused'); pocket.setAttribute('aria-hidden', 'true'); }
+      pockets.append(pocket);
+    }
+    wrap.append(pockets); return wrap;
+  }
+
+  collectionCard(s, i) {
+    const card = el(s.has ? 'button' : 'div', `card collection-card tier-${s.tier.id}${s.has ? '' : ' unknown'}`);
+    card.dataset.slot = s.key;
+    if (s.has) {
+      card.type = 'button'; card.dataset.act = 'album'; card.dataset.id = s.key;
+      card.setAttribute('aria-label', `Öppna ${s.label}, ${photoCount(s.cards.length)}`);
+      decorate(card, C.tiers.indexOf(s.tier), !!C.breeds[i].star);
+    } else card.setAttribute('aria-label', `Kort ${i + 1}, ej hittad`);
+    card.append(el('small', 'no', `#${String(i + 1).padStart(2, '0')} / ${String(C.breeds.length).padStart(2, '0')}`), el('h3', '', s.has ? s.label : 'Ej hittad'));
+    const portrait = el('div', 'portrait'), photo = s.cards.at(-1);
+    if (s.has && photo?.data) {
+      const img = el('img'); img.src = photo.data; img.alt = `${photo.name}${photo.coat ? `, ${photo.coat}` : ''}`; portrait.append(img);
+    } else { const icon = el('span', 'cat-silhouette'); icon.setAttribute('aria-hidden', 'true'); portrait.append(icon); }
+    card.append(portrait);
+    if (s.has) {
+      card.append(el('b', 'cat-name', photo ? `${photo.name}${photo.kitten ? ' · kattunge' : ''}` : s.label), el('span', 'tier', `${s.tier.label} · ${s.points} poäng`), el('span', 'card-count', `${photoCount(s.cards.length)} · Hittad ${times(s.found)}`));
+    } else card.append(el('p', 'note', 'En plats väntar på din nästa katt.'));
+    return card;
   }
 
   breedPage(s, i) {
@@ -223,7 +281,7 @@ export class BinderPanel {
     const photos = el('div', 'photos');
     photos.setAttribute('aria-label', 'Foton av var katten hittats');
     const cards = [...s.cards].reverse(); // newest first
-    for (let k = 0; k < C.max; k++) photos.append(cards[k] ? this.photoEl(cards[k]) : el('div', 'photo empty', s.has ? 'Tom plats' : ''));
+    for (let k = 0; k < Math.max(C.albumSlots, cards.length); k++) photos.append(cards[k] ? this.photoEl(cards[k]) : el('div', 'photo empty', s.has ? 'Tom fotoplats' : ''));
     wrap.append(card, photos);
     return wrap;
   }

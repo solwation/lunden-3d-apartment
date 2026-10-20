@@ -54,7 +54,7 @@ Stile (#1295): `node --test tools/paddockgeotest.mjs` and `… node tools/stilet
 
 String shelf (#1272, #1298): `tools/stringshelftest.html` (run through Playwright like the other tools pages) — lowest point 1.84 m on the kitchen partition at z 1.06, 81 × 32.5 × 75.5 cm, dressing on all three boards, no old oak board left, face pot / pothos Things on the boards and moving with the shelf, wall placement in rearrange mode, saved layout survives a reload, restore to the original spot, #1272/#1291 saves migrate; with it run planttest, rearrangefollowtest, rearrangeresettest, rearrangeplacementtest, resettest (needs `node cloudflare/dev.mjs 8144`), hudiconstest, calendartest and perfcount after changing the shelf, `shelves.js`, `WALL_CLOCK` or `CALENDAR`.
 Birds (#1252): `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/birdstest.cjs http://localhost:PORT /tmp/shots` — one instanced mesh / one draw call, seeded flock, shown by day, hidden at night / in rain / in the cloud whiteout / far away, visible above the deck, fewer with `&lowmem`, `&nobirds`, no per-call allocation; run after changing src/birds.js or `BIRDS`.
-Cat card binder data (#1249): `node --test tools/catcardstest.mjs` — slots / rarity (Miele top), max 5 per breed with rotation, saved flag, rotation / full notices (`onNotice`, `nextOut`, `isFull`), counters, one-time copy of the old board photos; run after changing src/catcards.js, `CAT_CARD` or the 'catCards' store in idb.js (then also tools/boardtest.html: the board is unchanged).
+Cat card binder data (#1249): `node --test tools/catcardstest.mjs` — slots / rarity (Miele top), max 5 per breed with rotation, saved flag, rotation / full notices (`onNotice`, `nextOut`, `isFull`), counters, one-time copy of the old board photos; run after changing src/catcards.js, `CAT_CARD` or the 'catCards' store in idb.js; pair with tools/bindertest.cjs (the old board was removed in#1255).
 Ghost weapon props (#1126): `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/ghostpropstest.cjs BASE OUT` — one Ghost per weapon on
 tools/ghostprops.html: front/side/close-up shots, 13 draw calls for six armed avatars, no prop over 4 000 triangles. Run after changing
 src/ghostprops.js or the weapon models it borrows (rifle.js, toys.js blaster/wand, saber.js, bow.js).
@@ -319,8 +319,8 @@ tools/homedrawingtest.html headless test (#1099): "Till mamma" — an old saved 
                        hall survives a reload with its date, put back = rehung, thrown = back at the default spot, never synced
                        (#1113: `STEP <name>` lines show progress; each await is bounded → `FAIL <step> timeout`, never a silent hang)
 tools/bindertest.cjs   Playwright (#1255): the cat binder under the coffee table (target, merged, part of the table piece, no pick through the top), E opens the
-                       browse UI, pages / placeholders / counters / Miele last / legacy page, desktop + phone viewport, no kitchen board, calendar under the clock. #1256: every tier's card gets its fx level (common 0 … legendary 4), Miele the top one with the most ★,
-                       pointer tilt moves the sheen, reduced motion removes animation and tilt. #1257: photo menu — Spara / Kasta buttons, saved flag across a reload (IndexedDB), the enlarged photo (click / keys / Esc layers), throw-away asks first (Behåll / Esc keep, Kasta deletes), rotation of the oldest unsaved card + "Byts ut först", all-saved refusal + the `#cat-notice` toasts, legacy page, phone tap targets ≥ 44 px and fit at 844x390 / 390x844, reduced motion; with a shot dir it saves a card of each tier + Miele (desktop, phone).
+                       browse UI; #1379 uses four fixed variant pockets per page, silhouettes, uncropped photo portraits and a per-variant album; Miele stays last and legacy photos retain their extra page. Desktop and phone portrait/landscape, counters, real IndexedDB reload and byte-preserved photographs are covered. #1256: every tier's card gets its fx level (common 0 … legendary 4), Miele the top one with the most ★,
+                       pointer tilt moves the sheen, reduced motion removes animation and tilt. #1257: photo menu — Spara / Kasta buttons, saved flag across a reload (IndexedDB), the enlarged photo (click / keys / Esc through confirmation, photo, album, collection), throw-away asks first (Behåll / Esc keep, Kasta deletes), rotation of the oldest unsaved card + "Byts ut först", all-saved refusal + the `#cat-notice` toasts, legacy page, phone tap targets ≥ 44 px and fit at 844x390 / 390x844, reduced motion; with a shot dir it saves a card of each tier + Miele (desktop, phone).
                        `PLAYWRIGHT_MODULE=… node tools/bindertest.cjs http://localhost:PORT [shotdir]`. (boardtest.html was removed with the board.)
 tools/detailtest.html  headless test: from the doorstep through the open front door the hall's doors are drawn (#210); inside
                        every apartment Entréplan door is on a drawn layer, open or shut; exterior portik doors are excluded (#544); outside the culler still works
@@ -7269,3 +7269,42 @@ serial retry. Retain the first concurrent run:44functional checks passed, then
 the unchanged240s budget expired (CLI1); it is not recorded as green. No
 navigation assertion failed, and no budget was raised. The final rebase added
 only shared workflow documentation, leaving all tested runtime files unchanged.
+
+
+## Fixed collection pockets and variant photo albums (#1379)
+
+`PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/bindertest.cjs GAME SHOTDIR`
+uses the actual app, `BinderPanel`, CatCards/IndexedDB and native mouse/touch
+buttons plus keyboard events. Fixed four-pocket pages are checked empty,
+partly collected and complete; all eight variant keys retain their places.
+The real cat models supply seeded fixture portraits through the existing
+snapshot helper. This does not test new random encounter capture, which
+remains#1380. No production player services are exercised.
+
+Final81/81 checks pass in desktop1280×800 and touch390×844 contexts, each with
+a real reload preserving every photograph byte/id/save flag, including legacy
+photos and existing five-image records. Photo actions cover save/unsave and
+viewer focus, safe confirmation focus, Escape/keep cancellation, confirmed
+deletion with a remaining photograph still enlarged, rotation of the oldest
+unsaved image, actual rotation/full toasts and freeing saved-photo capacity.
+Eight incoming images are also presented/browsed in memory, without changing
+collection rules or writing that future fixture to storage. Model suite
+`node --test tools/catcardstest.mjs` remains8/8.
+
+Full collection pager/close bounds and >=44px controls pass at1280×800,
+844×390 and390×844. Only the collection content scrolls; header, pager and
+close remain accessible. Photo viewer/buttons fit both phone orientations.
+Portrait frames use flex and `object-fit: contain`, preventing intrinsic grid
+rows from clipping the old photographs. Portrait browsing is usable while
+the binder is open; closing restores the normal rotate cover. Reduced motion
+and Miele's final slot/rarity decoration remain covered.
+
+The final dimension-named full-collection and photo-viewer screenshots were
+opened under `/tmp/catbinder1379-codex20`; raw final result is
+`/tmp/catbinder1379-codex20-final.log`. Earlier fixture selector, reload-global
+and premature async-render checks remain in the first/second/third logs; the
+stopped-server143/connection-refused attempt is separate. None is counted as
+green. Final waits target completed UI state without increasing a timeout.
+This is browser emulation, not physical-phone verification. No Three.js mesh,
+light, render pass, collection migration or new photo-capture behaviour is
+introduced. Personal collection gameplay is excluded from public downstream.
