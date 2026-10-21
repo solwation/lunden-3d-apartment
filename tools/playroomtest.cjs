@@ -1,8 +1,6 @@
-// #1319 / #1326: the playhouse's secret children's room, in the real app (no Worker). A 175 cm avatar aims at the playhouse door and
-// gets a friendly no, as does exactly 160 cm; 140/150 cm avatars enter and exit. A 159 cm avatar enters (short fade, hidden room
-// far off the map, drawn only inside), walks into the walls, aims at the exit and comes out in front of the playhouse;
-// growing past 160 cm inside still lets you walk out, and a reload inside saves the
-// spot at the door. Draw calls: the same outside before and after a visit; the room costs a few calls inside only.
+// Room lifecycle: all avatar heights can enter (#1489), including the former160cm
+// boundary and tallest200cm look. Room navigation/cinema/disco remain covered here;
+// shared computer apps use tools/computermediatest.cjs.
 // PLAYWRIGHT_MODULE=… CHROME_PATH=… SHOTS=/tmp/shots1319 node tools/playroomtest.cjs http://localhost:PORT
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const fs = require('node:fs');
@@ -34,7 +32,7 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     const door = { x: -28.85, z: 23.8 };
     const toDoor = () => page.evaluate((door) => { const t = window.__t, P = window.__app.player; P.spawn(door.x, door.z - 1.1, Math.PI); t.frames(60); t.aim(door.x, 0.6, door.z - 0.2); return t.focus(); }, door);
 
-    // outside, before: the playhouse door is a target; a tall avatar gets a no
+    // The playhouse door is a target for tall avatars too.
     await setHeight(175);
     const f1 = await toDoor();
     check(f1?.kind === 'playhouse' && f1.verb === 'gå in i', 'the playhouse door is a target', JSON.stringify(f1));
@@ -43,16 +41,10 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     await page.evaluate(() => window.__app.use(window.__app.focus().focused));
     await page.waitForTimeout(700);
     const s1 = await page.evaluate(() => window.__t.state());
-    check(!s1.inRoom && !s1.roomVisible && Math.abs(s1.z - 22.7) < 0.2, '175 cm: not let in', JSON.stringify(s1));
-    await page.evaluate(() => window.__t.render()); await page.screenshot({ path: `${shots}/2-denied.png` });
-
-    // #1344: the new strict boundary and the newly admitted range use real entry/exit.
-    await setHeight(160); await toDoor();
-    await page.evaluate(() => window.__app.use(window.__app.focus().focused));
-    await page.waitForTimeout(700);
-    const boundary = await page.evaluate(() => ({ ...window.__t.state(), badge: document.getElementById('badges').textContent }));
-    check(!boundary.inRoom && /under 160 cm/.test(boundary.badge), '160 cm: denied with the current height limit', JSON.stringify(boundary));
-    for (const cm of [140, 150]) {
+    check(s1.inRoom && s1.roomVisible, '175 cm: admitted without a height gate', JSON.stringify(s1));
+    await page.evaluate(() => window.__app.use(window.__app.world.playroom.exitTarget));
+    await page.waitForTimeout(900);
+    for (const cm of [140,160,200]) {
       await setHeight(cm); await toDoor();
       await page.evaluate(() => window.__app.use(window.__app.focus().focused));
       await page.waitForTimeout(900);
@@ -63,7 +55,7 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
       check(!(await page.evaluate(() => window.__t.state())).inRoom, `${cm} cm: the actual exit leads back out`);
     }
 
-    // 159 cm: the tallest allowed integer height, then the whole room lifecycle.
+    // A shorter avatar still has the same room lifecycle.
     await setHeight(159);
     await toDoor();
     await page.evaluate(() => window.__app.use(window.__app.focus().focused));

@@ -5730,15 +5730,15 @@ export function avatarBody(look) {
     radius: STANDARD_BODY.radius * Math.min(hi, Math.max(lo, s)) };
 }
 
-// #1319 / #1326: the secret children's room inside the playhouse (src/playroom.js). Only players shorter than `maxCm` (the avatar's
-// height in cm, #1127) get in. The room is a separate hidden interior far outside the walkable area (WALK: x -260..320,
+// #1319 / #1326: the secret clubhouse inside the playhouse (src/playroom.js), open to every avatar height (#1489).
+// The room is a separate hidden interior far outside the walkable area (WALK: x -260..320,
 // z -200..250) but inside the Worker's ±5000 m pose limit, and further from the playhouse than GHOSTS.far (900 m), so the
 // ordinary pose stream already hides a player who goes in and shows him again inside to the others there. All values are
 // our own choices (*guess*): the room is much bigger than the playhouse's 2.1 × 1.9 m shell on purpose.
-export const PLAYROOM = { maxCm: 160, x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // centre (m), size (x, z) and height (m)
+export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // centre (m), size (x, z) and height (m)
   dj: { x: 2, z: -4.6, w: 1.4, d: .65, h: .68, top: .06 }, // guess: child-sized corner bench, clear of table/cue and passage
   speakers: { x: [-2.2, 2.2], y: 1.1, z: -4.98, w: .25, h: .38, d: .18 }, // guess: small wall-mounted pair, clear of cue/walking space
-  door: { w: 0.8, h: 1.7 }, // #1344: the way out in the south wall, above the under-160 cm entrants (guess)
+  door: { w: 0.8, h: 1.7 }, // Assumed low playhouse-style exit; its interaction works for every avatar height.
   standOff: 0.75, // m from the door wall where you arrive inside
   outside: 0.95, // m north of the playhouse's door wall where you stand when you come out
   fadeMs: [220, 320], // black fade out before the move / back in after it
@@ -5767,7 +5767,7 @@ export const PLAYROOM = { maxCm: 160, x: -1500, z: -1500, w: 18, d: 10.4, ceilin
   clubhouse: { side: 3, front: 1.6, wall: 0.12, passage: 1.5, passageH: 2.1,
     welcome: { x: 0, z: 2.3, y: 2.52, w: 3.2, h: 0.3 }, label: { y: 2.25, w: 1.8, h: 0.25, offset: 0.012 },
     atlas: [512,256], swatch: 8, lightInk: '#fff6dc', font: 48, signBackground: '#17263b', signInk: '#78eee2' },
-  // #1327: the furniture, child-sized for 140-159 cm players (all our own choices, *guess*); local metres from the room's centre (x east, z south, the door
+  // #1327: the child-sized fantasy furniture (all our own choices, *guess*); local metres from the room's centre (x east, z south, the door
   // at z +5.2). Cinema screen/seats in BIO west of BILJARD; COMPUTER_MEDIA places four desks/chairs in SPEL east of it.
   furniture: { seatHeight: 0.36, cinema: { screen: { x: -8.78, bottom: .4, topGap: .4, sideGap: .2 }, // #1415: user asks 40 cm below/above; assumed 20 cm side margins.
       curtain: { overlap: .06, bottom: .12 }, // Assumed small screen-edge overlap; hem clears the existing skirting.

@@ -1708,9 +1708,8 @@ function moveChoice(d) {
 }
 document.addEventListener('wheel', (e) => { if (locked && !statsOpen && !reading && choices.rows && moveChoice(Math.sign(e.deltaY))) e.preventDefault(); }, { passive: false });
 
-// #1319 / #1326: the playhouse's secret children's room. E on the playhouse door: only an avatar shorter than PLAYROOM.maxCm gets in
-// (a friendly no otherwise); a short black fade hides the move to the hidden room far off the map, and the door in the room leads
-// back out to just in front of the playhouse. Growing past the limit inside the room never throws you out: you walk out the door.
+// The playhouse door opens the hidden clubhouse for every avatar height (#1489).
+// A short fade hides the teleport; the room's exit returns to the courtyard.
 const roomFadeEl = document.createElement('div');
 roomFadeEl.style.cssText = 'position:fixed;inset:0;z-index:9;pointer-events:none;background:#14232d;opacity:0;transition:opacity 0.2s linear';
 document.body.appendChild(roomFadeEl);
@@ -1730,7 +1729,6 @@ function roomMove(go) { // fade to black, do `go` (the teleport), fade back in
 }
 function enterPlayroom() {
   if (roomMoving || rest.active || player.riding || player.flying || player.fall || player.climb || player.swing) return;
-  if (avatarHeightCm(ghosts.myLook) >= PLAYROOM.maxCm) { sfx.click(camera.position); badge(`Du är för stor för lekstugan (under ${PLAYROOM.maxCm} cm)`, false); return; }
   roomMove(() => {
     playroom.setInside(true);
     const a = playroom.arrival;

@@ -7722,7 +7722,19 @@ it so the detail culler keeps the furniture, `testMode.setFull(true); draw()` an
 
 Microwave (#1210): `PLAYWRIGHT_MODULE=… CHROME_PATH=… SHOTS=… node tools/microwavetest.cjs GAME` — the real game, aimed focus + `use()`: door, plate with food in, refusals (door open, empty, power cut), time button, warm / hot / burnt, pause on opening, save/load, plate out. Run after changing `src/microwave.js` or the microwave part of `src/ovens.js`.
 
-Playhouse children's room (#1319/#1326): `PLAYWRIGHT_MODULE=… CHROME_PATH=… SHOTS=… node tools/playroomtest.cjs http://localhost:PORT` — the playhouse door is a target, 175 and exactly 160 cm avatars get the friendly no (under 160 cm), 140/150 cm avatars enter and exit, and a 159 cm avatar goes in (hidden room far off the map, drawn only inside, standing on its floor, the walls hold), the exit door is a target and leads out in front of the playhouse door facing away, a height change inside keeps you in and the door still works, a reload inside saves the spot at the door, draw calls and triangles outside are identical before and after a visit (inside at most 17 calls), furniture (#1327/#1375): desk/stool hold; the billiard zone remains free; walk from BIO doorway through the 0.82 m center aisle and behind the rear row; all eight cinema seats are separate focus targets with screen-facing seated views, all screen corners in the actual camera frustum and safe stand-up positions; front and rear row visibility also holds for a140cm avatar in supported landscape touch. The 26 disco spots stay on room surfaces and move, with no extra lights. Existing TV/computer controls, remote reach, animation/game, exit power-off and no-error checks remain. Screenshots cover outside, entry, denial, room/exit, front and rear seats, doorway overview, aisle, remote, TV, four game-room views and disco. Run after changing src/playroom.js, `PLAYROOM`, the playhouse door in courtyard.js, the `inPlayroom` branches in player.js or the room hooks in main.js (with avatarbodytest and farwalktest); use `MOBILE=1` for the supported844×390touch profile.
+Playhouse clubhouse (#1319/#1326, height gate removed #1489): every supported
+avatar height can enter through the same playhouse target and leave through the
+same exit. `tools/playroomheighttest.cjs GAME LOCAL_WORKER OUT` is the focused
+native-E/touch entry/exit check at max height200cm, the former160cm boundary and
+min height100cm. All three passed with feet on the room floor, eyes below its
+ceiling and return to the courtyard door; no page exceptions. Evidence:
+`/tmp/playroom-height/result.json`. Diff/search review confirms no remaining
+`PLAYROOM.maxCm` gate or denial copy. `tools/playroomtest.cjs` retains broader room/navigation,
+cinema/disco/resume checks; its old height-denial expectations are replaced by
+admission checks. Computer controls use `tools/computermediatest.cjs` (#1488).
+The height change alters no geometry or A/B/C/L building variant; the private
+clubhouse gameplay is excluded from the public downstream.
+
 
 
 Höje å relative downstream fall (#1350): `node --test tools/riverfalltest.mjs` verifies the checked data hash/median slope, rendered native water vertices, shared channel/shore separation, actual bank recovery, unchanged fixed bridge meshes/path controls from 387f802e, and buried timber-ramp toes. `node tools/riverfall.mjs INPUT OUTPUT` reproduces the offline interpretation byte-for-byte. Run `bridgetest.html` (actual scene water rays upstream/downstream), `riverparktest.html` (vegetation and paths against the local level) and `farwalktest.cjs` (existing walk/bike/bridge/slide checks plus actual Player feet just above/below local water at both ends), then perfcount and reviewed full-quality river views. Source/data caveats: [environment guide](environment.md#relative-downstream-grade-for-höje-å-1350).

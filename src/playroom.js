@@ -15,7 +15,7 @@ import { clubhouseSurface, clubhouseMaterial, FINISH } from './clubhousematerial
 import { clubhouseRoundedBox, cinemaChair, cinemaCurtain } from './clubhousefurnishings.js';
 
 // #1319 / #1326: the playhouse's secret children's room. A hidden interior, far outside the walkable area (see PLAYROOM in
-// config.js): the playhouse door teleports a player shorter than PLAYROOM.maxCm in, the door in the room's south wall back out.
+// config.js): the playhouse door teleports any avatar in, the door in the room's south wall back out.
 // Nothing here is drawn (or has a draw call) while the visitor is outside: the whole group is hidden until `setInside(true)`.
 // #1374: clubhouse.js adds the hall and three rooms; static signs share the existing ceiling-panel draw.
 // #1327/#1365: child-sized furniture, usable TV/computer, and a switchable disco ball with sweeping light spots.
