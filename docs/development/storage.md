@@ -3,6 +3,24 @@
 Read [CLAUDE.md](../../CLAUDE.md) first for shared workflow rules. Paths in code spans and module maps are relative to the repository root.
 
 Related: [deployment](deployment.md), [life](life.md).
+## Shared cinema authority (#1477)
+
+`cloudflare/cinema.js` owns one `cinema` snapshot in PlayerRoom storage:
+revision, connection-owned controller/name, validated YouTube ID, playing flag,
+position and server-time anchor. `t:cinema` requests support claim/release/get,
+select/play/pause/stop; transport writes require the current revision and owner.
+Only room occupants receive snapshots. Position comes from existing server-
+validated player presence. Leaving/disconnecting releases control while other
+viewers retain the film; the last viewer clears the snapshot and storage.
+Hibernation reconciles persisted ownership against live socket attachments.
+This is event-driven, with no playback ticker or media/buffer transfer.
+
+`cloudflare/cinema.test.mjs` covers racing claims, forged ownership, stale writes,
+late entry, paused/running anchors, release/disconnect, empty room, hibernation
+and outsiders. Existing Worker message/connection/monthly limits apply. This
+server slice does not itself put a video on the physical screen; the client and
+world-surface integration is #1476. Original-only gameplay, no public import.
+
 ## Current shared head contract (#974, #893, #894, #979)
 
 Version 2 uses three shared logical head boxes from `PVP_HEAD_BOXES` in `src/config.js`:

@@ -15,6 +15,16 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## Shared cinema server (#1477)
+
+`node --test --test-isolation=none cloudflare/cinema.test.mjs` passes6cases:
+bounded parsing, simultaneous/forged claims and rejected nonowner writes,
+authoritative pause/resume/stale/late-join state, owner departure and empty-room
+cleanup, disconnect/reconnect/hibernation including dead persisted ownership,
+and outsider/malformed-message isolation. The existing billiard Worker suite
+retains7passes and the existing PlayerRoom suite retains61passes. These are real Worker/PlayerRoom tests using the existing runtime
+stand-in; world-screen rendering and actual two-browser playback remain #1476.
+
 ## Centred billiard table (#1482)
 
 The shared table is at local(0,-1.83), the midpoint of BILJARD's free wall faces.
