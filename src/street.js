@@ -5,7 +5,7 @@ import { pathLampSpots } from './pathlamps.js';
 import { roadLampSpots } from './roadlamps.js';
 import { registerSeasonal } from './seasons.js';
 import { samples, onRoad, along, filletOutline } from './roads.js';
-import { glowMaterial, poolGeometry, fadeGlow } from './groundglow.js';
+import { glowMaterial, poolGeometry, fadeGlow, fadeGlowWithFog } from './groundglow.js';
 
 // Sankt Lars väg's details (#128, SITE.street; the user's photos in docs/foton/): granite curbs, darker patches
 // in the asphalt, slender street lamps with a curved arm (their heads glow at night, and a soft pool of light lies on
@@ -157,7 +157,7 @@ export function buildStreet(groundY, pathGround = groundY, trees = []) {
     return poolGeometry(x + ax * S.lamps.arm, z + az * S.lamps.arm, -az, ax,
       shape.along, shape.across, path ? pathGround : groundY, path ? shape : {});
   });
-  const pools = new THREE.Mesh(mergeGeometries(poolGeometries), glowMaterial(P.color));
+  const pools = new THREE.Mesh(mergeGeometries(poolGeometries), fadeGlowWithFog(glowMaterial(P.color)));
   pools.userData.pathStart = poolGeometries.slice(0, pathEnd-paths.length).reduce((n,g)=>n+g.attributes.position.count,0);
   pools.userData.roadStart = poolGeometries.slice(0,pathEnd).reduce((n,g)=>n+g.attributes.position.count,0);
   pools.name = 'streetLampPools';

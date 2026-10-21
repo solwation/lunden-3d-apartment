@@ -7867,3 +7867,15 @@ Ten extra A/B/C/L/river/paddock base-surface rays agree with the unchanged sampl
 6.64e−8m. Real CDP touchStart/touchEnd on the visible focused action opens the entrance
 false→true/t=1 without a fatal fall or page errors. Reverse-patio car-LOD states retain
 505/506calls and improve995905/997953→960261/962309triangles respectively.
+
+
+## Distant street-lamp pool fog (#1466)
+
+Run `node tools/runtests.cjs --test-only tools/streetlighttest.html`: existing day/night
+and geometry checks pass and confirm the street-pool material installs its fog-opacity
+fade. Open the actual-World pairs in
+`~/.local/state/lunden-orkester/codex-surface-20261020/lamp1466/`: same scene/camera and
+45/80m fog, with the 174-post merged pool mesh's fog fade disabled/enabled and opacity
+held at0.55 to isolate distance behavior. Distant pools disappear; the matched near view
+retains its pool. Calls/triangles are unchanged and the browser reports no errors. This
+uses production fog and merged lamp geometry, not a synthetic light substitute.

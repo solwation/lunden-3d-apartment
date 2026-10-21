@@ -24,6 +24,20 @@ export function glowMaterial(color) {
     depthWrite: false, side: THREE.DoubleSide, fog: false, toneMapped: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -4 });
 }
 
+/** Additive outdoor glows should vanish into scene fog instead of adding the fog colour at full alpha. */
+export function fadeGlowWithFog(material) {
+  material.fog = true;
+  const previous = material.onBeforeCompile;
+  material.onBeforeCompile = (shader, renderer) => {
+    previous.call(material, shader, renderer);
+    const fog = '#include <fog_fragment>';
+    if (!shader.fragmentShader.includes(fog)) throw new Error('Glow material has no fog fragment');
+    shader.fragmentShader = shader.fragmentShader.replace(fog, `${fog}\n#ifdef USE_FOG\n  gl_FragColor.a *= 1.0 - fogFactor;\n#endif`);
+  };
+  material.customProgramCacheKey = () => 'ground-glow-fade-with-fog-v1';
+  return material;
+}
+
 /** A pool on the ground: an ellipse round (cx, cz), `ra` m along (ax, az) and `rb` m across it, its vertices
  * `lift` m over `groundY`. Polar grid (rings × segments), uvs for the fall-off; non-indexed position + uv. */
 export function poolGeometry(cx, cz, ax, az, ra, rb, groundY, { lift = 0.05, rings = 8, segs = 28 } = {}) {

@@ -37,6 +37,10 @@ async function run() {
   const pools = scene.getObjectByName('streetLampPools');
   const wash = scene.getObjectByName('doorLampWash'), doorPools = scene.getObjectByName('doorLampPools');
   check(!!pools, 'the street lamps\' pools exist');
+  const glowShader = { fragmentShader: '#include <fog_fragment>' };
+  pools?.material.onBeforeCompile(glowShader, {});
+  check(pools?.material.fog === true && glowShader.fragmentShader.includes('gl_FragColor.a *= 1.0 - fogFactor'),
+    'street-lamp pools fade their additive opacity into scene fog');
   const DL = HUS_L.doorLamp, PL = HUS_L.portikLamp, PT = HUS_L.patioLamp, PATIO = 8 + 9, layout = husLLayout(world.size.x);
   const frontDoor = world.openings.north.find(o => o.y0 < 0.05 && o.y1 > 2);
   // exterior appends one complete primitive per front door, then the portik parts.

@@ -23,6 +23,15 @@ suite claim. An earlier identity fixture failure is also retained. Public6c69323
 plantwind or windShadow target, so no port applies. Raw drivers, images, profiles
 and rejected fixtures remain in `/tmp/orkester-katt-20261020/windbounds1460/`.
 
+## Distant street-lamp pools (#1466)
+
+The merged path/road lamp-pool mesh keeps its positions, batches, color and day/night
+opacity. Its additive opacity now follows the scene's existing linear/exponential fog
+factor, so distant pools disappear into fog instead of adding bright fog-colored patches;
+near pools remain visible. This is a fragment-alpha change. The controlled actual-World
+comparison retains 616 calls/1,120,820 triangles in the far view and 27/242,562 in the
+near view. No light objects or draw submissions were added.
+
 ## Complete terrain source cells (#1462, partial #1459)
 
 Desktop separates complete original grid cells whose centers are east of x0 and south

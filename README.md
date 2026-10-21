@@ -427,6 +427,8 @@ Browser fixture repair (#1372): the runner supplies isolated output directories 
 
 Desktop terrain (#1462): two fixed groups of complete existing cells reduce off-screen terrain submissions; the original query mesh and phone master remain unchanged.
 
+Street lights (#1466): distant additive ground glows fade with scene fog; nearby pools and lamp geometry remain unchanged.
+
 Paddock surface (#1420): the existing worn track and field follow the actual terrain triangles, preserving their footprints and original70/48mm lifts.
 
 Southern plateau (#1381): the existing terrain grid now draws through z460, with ten documented LM ground controls and consistently placed buildings, parking and paddock. Heights remain a relative model (not surveyed floors); the protected northern terrain and bridge geometry are preserved. Public transfer is tracked in kvarteret-lunden#98.
