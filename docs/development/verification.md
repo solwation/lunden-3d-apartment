@@ -15,6 +15,29 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## Softer clubhouse rendering (#1481)
+
+`tools/clubhouserealismtest.cjs GAME OUT` uses the actual app at ordinary quality3,
+1100×760, noon, disco off, without test mode. It passes bounds and unit-normal
+checks for all eight modelled chairs, counts curved normals, checks both curtains
+face the room, verifies linear vertex colour and the native-geometry shader
+classification after existing lampwash wrappers, and captures hall/BIO/BILJARD/
+SPEL plus a chair close-up. No page or shader errors. All after images were opened
+and inspected; the valid comparison baseline is772fa7df's `/tmp/clubhouse-after/`.
+An initial harness lookup required an exact material key and missed the existing
+lampwash suffix; correcting the lookup to retain that suffix made it pass.
+
+Final artifacts: `/tmp/clubhouse-realism-final/`; input:
+`/tmp/clubhouse-realism-input/`. The existing `cinemavideotest.cjs` with
+`INPUT_ONLY=1` passes native E sitting, screen focus/open/back and absence of the
+removed remote, with no page exceptions. This is not new media or physical-touch
+verification. `clubhousefinishtest.mjs` retains3passing geometry/clear-passage checks.
+
+In the same SPEL view, baseline16calls/37823triangles becomes16calls/60387triangles
+(+22564triangles, no added draws). The hidden room remains8calls/34585triangles
+and has zero real lights. The shader adds procedural fragment work; no FPS or
+whole-site profile claim is made. Source hashes accompany the final artifacts.
+
 ## Clubhouse wall finishes (#1480)
 
 `node --test --test-isolation=none tools/clubhousefinishtest.mjs` passes3checks:

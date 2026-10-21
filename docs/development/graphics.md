@@ -29,6 +29,18 @@ comes from the wall union in `clubhousefinish.js`; pass-through headers do not
 cast a floor barrier. See [furniture](furniture.md#clubhouse-finishes-1480) and
 the scoped before/after evidence in [verification](verification.md#clubhouse-wall-finishes-1480).
 
+Clubhouse materials (#1481): `clubhousematerials.js` adds a surface-ID attribute
+to the existing merged batches; its shared Standard-material shader distinguishes
+wood, woven cloth, matte paint, metal and staggered floor planks. Colours use
+Three's sRGB-to-linear conversion before becoming vertex colours. Procedural
+patterns are evaluated in clubhouse-local world metres; cloth weave fades with
+pixel footprint. The warm ceiling wash is a static room-local approximation,
+not a dynamic shadow light. Geometry remains native during shader compilation,
+with an audited callback registered in `vertexcompile.js`. Rounded/crowned
+furnishings are built once in `clubhousefurnishings.js`. No extra visible draws,
+image downloads or postprocessing are introduced. See the scoped evidence in
+[verification](verification.md#softer-clubhouse-rendering-1481).
+
 ## Module and test map
 
 ```text

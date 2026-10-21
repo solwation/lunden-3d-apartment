@@ -341,6 +341,25 @@ With the players room connected (`ghosts.connected`) the children's-room table i
 
 Tests: `node --test tools/clubhousetest.mjs cloudflare/billiards.test.mjs`; `tools/playroomtest.cjs` includes three held-W doorway routes, a complete four-side walk around the table, entry/exit/height gates, sitting/getting up, switches and outside draw preservation; `MOBILE=1` uses the supported844×390touch profile. `tools/billiardpeertest.cjs` exercises real app entry and the shared table through an isolated local Worker. This personal game interior is never transferred to the public repository. Cinema seating/video remain separate#1375/#1376.
 
+### Softer clubhouse furnishings and materials (#1481)
+
+`clubhousefurnishings.js` builds rounded, slightly crowned cinema cushions,
+padded armrests, cylindrical legs and continuous folded curtain meshes. The
+seat top, back height and original collision/rest footprints remain the limits;
+the gaming stool now has a round upholstered seat. Furniture edges, lamp rims
+and the billiard-table rails have small bevels. Billiard physics and pick targets
+remain independent of these visual meshes.
+
+`clubhousematerials.js` supplies one PBR finish shader for the existing room and
+table batches: linear vertex colours, metre-scale staggered floorboards, subtle
+wood grain, filtered cloth weave and distinct paint/wood/fabric/metal roughness.
+A static, room-local ceiling-light approximation and cloth grazing response add
+warm light variation; these are visual approximations without new light objects,
+shadow maps, external textures or vertex deformation. The callback is explicitly
+registered with `vertexcompile.js`, preserving the phone's geometry-bound culling.
+`PLAYROOM.appearance` centralizes the artistic assumptions. These gameplay
+furnishings have no counterpart in the public viewer and are not ported.
+
 ### Clubhouse finishes (#1480)
 
 `src/clubhousefinish.js` derives exposed skirting runs from the actual outer and

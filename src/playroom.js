@@ -10,6 +10,8 @@ import { clubhouseWallBoxes, clubhouseSkirting } from './clubhousefinish.js';
 import { buildAO, buildWallAO, rectPts } from './ao.js';
 import { architectureEdges } from './architectureedges.js';
 import { buildContactShadows } from './contactshadow.js';
+import { clubhouseSurface, clubhouseMaterial, FINISH } from './clubhousematerials.js';
+import { clubhouseRoundedBox, cinemaChair, cinemaCurtain } from './clubhousefurnishings.js';
 
 // #1319 / #1326: the playhouse's secret children's room. A hidden interior, far outside the walkable area (see PLAYROOM in
 // config.js): the playhouse door teleports a player shorter than PLAYROOM.maxCm in, the door in the room's south wall back out.
@@ -22,16 +24,11 @@ import { buildContactShadows } from './contactshadow.js';
 
 const X0 = R.x - R.w / 2, X1 = R.x + R.w / 2, Z0 = R.z - R.d / 2, Z1 = R.z + R.d / 2;
 const box = (x0, x1, y0, y1, z0, z1) => new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0).translate((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
-const hexRgb = (c) => [((c >> 16) & 255) / 255, ((c >> 8) & 255) / 255, (c & 255) / 255];
-/** A box with a vertex colour, so one material draws every piece (local metres from the room's centre). */
-const paint = (g0, color) => {
-  const g = g0.index ? g0.toNonIndexed() : g0, n = g.attributes.position.count, [r, gr, b] = hexRgb(color), c = new Float32Array(n * 3);
-  for (let i = 0; i < n; i++) c.set([r, gr, b], i * 3);
-  g.setAttribute('color', new THREE.BufferAttribute(c, 3));
-  g.deleteAttribute('uv');
-  return g;
-};
-const cbox = (color, x0, x1, y0, y1, z0, z1) => paint(box(R.x + x0, R.x + x1, y0, y1, R.z + z0, R.z + z1), color);
+// Shared surface IDs add material detail without splitting the existing room batch.
+const finishFor = colour => [0x641b27,0x8e2635,0xb8494d,0x6a2631,0xd33a2c].includes(colour) ? FINISH.fabric
+  : colour === 0x553b35 ? FINISH.wood : [0xb8874d,0x8b9099].includes(colour) ? FINISH.metal : FINISH.paint;
+const paint = (g, colour, finish = finishFor(colour)) => clubhouseSurface(g,colour,finish);
+const cbox = (colour,x0,x1,y0,y1,z0,z1) => paint(clubhouseRoundedBox(R.x+x0,R.x+x1,y0,y1,R.z+z0,R.z+z1),colour);
 const rect = (x0, x1, z0, z1) => [[R.x + x0, R.z + z0], [R.x + x1, R.z + z0], [R.x + x1, R.z + z1], [R.x + x0, R.z + z1]]; // a footprint (convex, world)
 const merged = (list, material) => { const mesh = new THREE.Mesh(mergeGeometries(list.map((g) => (g.index ? g.toNonIndexed() : g))), material); mesh.receiveShadow = false; return mesh; };
 
@@ -77,37 +74,32 @@ export class Playroom {
       // The large west-wall screen has a shallow frame, gathered red velvet curtains and a soft gold valance.
       cbox(col.wood, tvx - 0.02, tvx + 0.06, scr.bottom - 0.08, scr.bottom + scr.h + 0.08, tvz - scr.w / 2 - 0.08, tvz + scr.w / 2 + 0.08),
       cbox(col.dark, tvx + 0.06, tvx + 0.075, scr.bottom - 0.02, scr.bottom + scr.h + 0.02, tvz - scr.w / 2 - 0.02, tvz + scr.w / 2 + 0.02),
-      cbox(col.velvet, tvx + 0.03, tvx + 0.16, 0.42, scr.bottom + scr.h + 0.12, tvz - scr.w / 2 - 0.27, tvz - scr.w / 2 - 0.04),
-      cbox(col.velvet, tvx + 0.03, tvx + 0.16, 0.42, scr.bottom + scr.h + 0.12, tvz + scr.w / 2 + 0.04, tvz + scr.w / 2 + 0.27),
-      ...[-1, 1].flatMap((side) => Array.from({ length: 9 }, (_, i) => {
-        const edge = side < 0 ? tvz - scr.w / 2 - 0.25 + i * 0.022 : tvz + scr.w / 2 + 0.052 + i * 0.022;
-        return cbox(col.piping, tvx + 0.165, tvx + 0.178, 0.48, scr.bottom + scr.h + 0.1, edge, edge + 0.014);
-      })),
+      cinemaCurtain(-1), cinemaCurtain(1),
       cbox(col.brass, tvx + 0.025, tvx + 0.13, scr.bottom + scr.h + 0.12, scr.bottom + scr.h + 0.19, tvz - scr.w / 2 - 0.3, tvz + scr.w / 2 + 0.3),
-      ...cinema.seat.rowX.flatMap((x) => cinema.seat.z.flatMap((z) => {
-        const x0 = x - S.depth / 2, x1 = x + S.depth / 2, z0 = z - S.width / 2, z1 = z + S.width / 2, y = S.height;
-        return [
-          cbox(col.wood, x0 + 0.1, x1 - 0.06, 0.03, y - 0.06, z0 + 0.06, z1 - 0.06),
-          cbox(col.velvet, x0 + 0.03, x1 - 0.12, y - 0.06, y, z0 + 0.08, z1 - 0.08),
-          cbox(col.seat, x1 - 0.16, x1 - 0.07, y - 0.02, S.back, z0 + 0.07, z1 - 0.07),
-          cbox(col.piping, x1 - 0.18, x1 - 0.16, y - 0.025, S.back - 0.06, z0 + 0.1, z1 - 0.1),
-          ...[z0, z1 - 0.12].map((za) => cbox(col.brass, x0, x1 - 0.03, y - 0.01, y + 0.075, za, za + 0.12)),
-          ...[z0 + 0.09, z1 - 0.11].flatMap((za) => [x0 + 0.08, x1 - 0.12].map((xa) => cbox(col.brass, xa, xa + 0.045, 0.03, y - 0.06, za, za + 0.045))),
-        ];
-      })),
+      ...cinema.seat.rowX.flatMap(x => cinema.seat.z.flatMap(z => cinemaChair(x,z))),
       // the gaming desk on the east wall: top, two side panels, monitor on a stand, console, two controllers, keyboard
       deskBox(col.wood, 2.65, 3.2, 0.54, 0.58, 0.3, 1.7), deskBox(col.wood, 2.65, 3.2, 0, 0.54, 0.3, 0.34), deskBox(col.wood, 2.65, 3.2, 0, 0.54, 1.66, 1.7),
       deskBox(col.dark, 2.98, 3.08, 0.58, 0.72, 0.95, 1.05), deskBox(col.dark, 2.96, 3.1, 0.58, 0.6, 0.85, 1.15), deskBox(col.dark, 2.96, 3.02, 0.7, 1.08, 0.7, 1.3),
       deskBox(col.white, 2.85, 3.12, 0.58, 0.64, 1.38, 1.62), deskBox(col.blue, 2.85, 3.12, 0.64, 0.655, 1.38, 1.62),
       deskBox(col.red, 2.78, 2.88, 0.58, 0.615, 0.4, 0.5), deskBox(col.blue, 2.78, 2.88, 0.58, 0.615, 0.55, 0.65), deskBox(col.dark, 2.72, 2.84, 0.58, 0.6, 0.85, 1.25),
       // the stool at the desk (its seat is a rest spot)
-      cbox(col.red, F.stool.x - 0.2, F.stool.x + 0.2, F.stool.seat - 0.06, F.stool.seat, F.stool.z - 0.2, F.stool.z + 0.2),
+      paint(new THREE.CylinderGeometry(.2,.2,.06,32).translate(R.x+F.stool.x,F.stool.seat-.03,R.z+F.stool.z),col.red),
       ...[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([a, b]) => cbox(col.steel, F.stool.x + a * 0.17 - 0.02, F.stool.x + a * 0.17 + 0.02, 0, F.stool.seat - 0.06, F.stool.z + b * 0.17 - 0.02, F.stool.z + b * 0.17 + 0.02)),
       // #1365: the light switch by the door (the disco ball, TV and PC are also targets themselves)
       cbox(col.white, DS.x - 0.05, DS.x + 0.05, DS.y - 0.07, DS.y + 0.07, R.d / 2 - 0.012, R.d / 2),
       // the disco ball's mount and cord
       cbox(col.steel, F.ball.x - 0.04, F.ball.x + 0.04, h - 0.03, h, F.ball.z - 0.04, F.ball.z + 0.04), cbox(col.steel, F.ball.x - 0.005, F.ball.x + 0.005, F.ball.y + F.ball.r, h - 0.03, F.ball.z - 0.005, F.ball.z + 0.005),
     ];
+    // Shallow diffusers sit inside a slim rounded frame instead of floating light squares.
+    const rim=R.appearance.panelRimWidth;
+    for(const x of [-2*R.clubhouse.side,0,2*R.clubhouse.side])for(const z of [(-R.d/2+R.clubhouse.front)/2,(R.d/2+R.clubhouse.front)/2]) {
+      for(const side of [-1,1]) {
+        const e=x+side*.6;
+        fur.push(cbox(col.white,e-rim/2,e+rim/2,h-.065,h-.025,z-.6,z+.6));
+        const f=z+side*.6;
+        fur.push(cbox(col.white,x-.6,x+.6,h-.065,h-.025,f-rim/2,f+rim/2));
+      }
+    }
     // #1424: a small DJ bench; every dimension/placement is a fantasy-room guess.
     const DJ = R.dj, djBox = (color, a,b,c,d,e,f) => cbox(color, DJ.x+a,DJ.x+b,c,d,DJ.z+e,DJ.z+f);
     fur.push(djBox(col.wood,-DJ.w/2,DJ.w/2,DJ.h-DJ.top,DJ.h,-DJ.d/2,DJ.d/2));
@@ -122,7 +114,7 @@ export class Playroom {
     for(const x of [-.065,.065])for(const z of [-.1,0])
       fur.push(paint(new THREE.CylinderGeometry(.018,.018,.025,6).translate(R.x+DJ.x+x,DJ.h+.0775,R.z+DJ.z+z),col.dark));
     fur.push(djBox(col.dark,-.075,.075,DJ.h+.065,DJ.h+.069,.09,.11),djBox(col.red,-.012,.012,DJ.h+.069,DJ.h+.085,.075,.125));
-    const furMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85 });
+    const furMat = clubhouseMaterial();
     // Collision edges stop at each chair; the wide center aisle and the route behind the rear row stay open.
     this.footprints = [rect(DJ.x-DJ.w/2,DJ.x+DJ.w/2,DJ.z-DJ.d/2,DJ.z+DJ.d/2), ...cinema.seat.rowX.flatMap((x) => cinema.seat.z.map((z) => rect(x - S.depth / 2, x + S.depth / 2, z - S.width / 2, z + S.width / 2))),
       rect(tvx - 0.02, tvx + 0.075, tvz - scr.w / 2 - 0.3, tvz + scr.w / 2 + 0.3),
@@ -199,7 +191,7 @@ export class Playroom {
     this.devices = new PlayroomDevices((name, on) => this.onSwitch?.(name, on));
     this.object.add(this.devices.object); this.controlPickables.push(...this.devices.pickables);
     this.disco(0);
-    const C = R.colors, shell = [...walls.map((g) => paint(g, C.wall)), ...trim.map((g) => paint(g, C.trim)), ...door.map((g) => paint(g, C.door)), paint(box(X0, X1, -0.1, 0, Z0, Z1), C.floor), paint(box(X0, X1, h, h + 0.1, Z0, Z1), C.ceiling), ...handle.map((g) => paint(g, 0x2a2a2a))];
+    const C = R.colors, shell = [...walls.map((g) => paint(g, C.wall)), ...trim.map((g) => paint(g, C.trim, FINISH.wood)), ...door.map((g) => paint(g, C.door)), paint(box(X0, X1, -0.1, 0, Z0, Z1), C.floor, FINISH.floor), paint(box(X0, X1, h, h + 0.1, Z0, Z1), C.ceiling), ...handle.map((g) => paint(g, 0x2a2a2a))];
     // Capture construction only, before furniture joins the existing shell batch.
     const edgeRoot = new THREE.Group(), source = merged(shell, furMat);
     source.userData.edgeSources = shell; edgeRoot.add(source);

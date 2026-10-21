@@ -1,4 +1,6 @@
 import * as T from 'three';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { clubhouseSurface, clubhouseMaterial, FINISH } from './clubhousematerials.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {PLAYROOM as R} from './config.js';
 import {BilliardPhysics} from './billiardphysics.js';
@@ -7,13 +9,13 @@ import {STEP,snapshotTable,restoreTable,validSnapshot} from './billiardsync.js';
 // #1355: refusal reasons the room can send (Swedish UI text)
 const NO_TEXT={stale:'Bordet hade ändrats – försök igen',busy:'Vänta tills bollarna ligger still',turn:'Det är inte din tur',away:'Gå närmare bordet',fast:'Inte så fort',over:'Spelet är slut – ställ upp en ny omgång på tavlan'};
 // #1328: local children's table. Three visible batches (table, instanced balls, moving cue); no lights/textures/services.
-const paint=(g,hex)=>{const c=new T.Color(hex),a=new Float32Array(g.attributes.position.count*3);for(let i=0;i<a.length;i+=3)a.set([c.r,c.g,c.b],i);g.setAttribute('color',new T.BufferAttribute(a,3));return g;};
+const paint=(g,hex)=>clubhouseSurface(g,hex,hex===0x226b55?FINISH.fabric:FINISH.wood);
 const merge=list=>{const flat=list.map(q=>q.index?q.toNonIndexed():q),g=mergeGeometries(flat);new Set([...list,...flat]).forEach(q=>q.dispose());return g;};
 export class Billiards {
   constructor() {
     const c=this.c=R.billiards,L=c.length,W=c.width,H=c.height,A=c.rail;this.physics=new BilliardPhysics(c);
     this.object=new T.Group();this.object.name='playroom-billiards';this.object.position.set(R.x+c.x,0,R.z+c.z);this.object.rotation.y=c.yaw;
-    const parts=[],box=(w,h,d,x,y,z,col)=>parts.push(paint(new T.BoxGeometry(w,h,d).translate(x,y,z),col));
+    const parts=[],box=(w,h,d,x,y,z,col)=>parts.push(paint(new RoundedBoxGeometry(w,h,d,R.appearance.frameSegments,Math.min(R.appearance.edgeRadius,w/2.01,h/2.01,d/2.01)).translate(x,y,z),col));
     box(L+2*A,.12,W+2*A,0,H-.08,0,0x593c29);box(L,.025,W,0,H-.0125,0,0x226b55);
     for(const x of[-L*.35,L*.35])for(const z of[-W*.32,W*.32])box(c.leg,H-.14,c.leg,x,(H-.14)/2,z,0x302820);
     for(const z of[-W/2-A/2,W/2+A/2])for(const x of[-L/4,L/4])box(L/2-c.pocketR*2,c.railH,A,x,H+c.railH/2,z,0x6e4c30);
@@ -21,7 +23,7 @@ export class Billiards {
     const BW=.5,BH=.25,BZ=W/2+A+.045;this.boards=[[-L/4,-BZ,Math.PI],[L/4,BZ,0]]; // #1354: score/turn board on a post outside each long rail
     for(const[bx,bz]of this.boards){const f=Math.sign(bz);box(BW+.02,BH+.02,.02,bx,H+.07+BH/2,bz,0x302820);box(.04,.1,.03,bx,H-.01,bz-f*.01,0x302820);}
     for(const[x,z]of this.physics.pockets)parts.push(paint(new T.CircleGeometry(c.pocketR,16).rotateX(-Math.PI/2).translate(x,H+.002,z),0x080b09));
-    this.table=new T.Mesh(merge(parts),new T.MeshStandardMaterial({vertexColors:true,roughness:.82}));this.table.name='billiard-table';this.object.add(this.table);
+    this.table=new T.Mesh(merge(parts),clubhouseMaterial());this.table.name='billiard-table';this.object.add(this.table);
     const geometry=new T.SphereGeometry(c.ballR,12,8),stripe=new Float32Array(16);
     this.physics.balls.forEach((b,i)=>stripe[i]=b.id>=9?1:0);geometry.setAttribute('aStripe',new T.InstancedBufferAttribute(stripe,1));
     const material=new T.MeshStandardMaterial({roughness:.25,metalness:.05});

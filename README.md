@@ -350,7 +350,8 @@ och tryck Spela; även egna YouTube-länkar fungerar. Filmen visas i
 bions spelarfönster med paus och avstängning; Tillbaka till rummet stänger
 filmen. Videon måste tillåta inbäddning. Den vita spelboxen stänger av datorn; datorn och filmen stängs av
 när man lämnar klubbhuset. Alla väggar har golvlister, tydliga hörn och mjuka
-kontaktskuggor, med samma grundteknik som i L1007. Discolampans strömbrytare fungerar som tidigare (#1365).
+kontaktskuggor, med samma grundteknik som i L1007. Rundade stoppade biostolar,
+veckade gardiner, trästruktur och ett plankgolv ger lekstugan ett mjukare uttryck. Discolampans strömbrytare fungerar som tidigare (#1365).
 
 Kattpärmen har fyra fasta samlarkortsplatser på varje sida: varje kattvariant
 har sin egen plats och de oupptäckta visas som silhuetter. Tryck på ett funnet
