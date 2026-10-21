@@ -1,3 +1,4 @@
+import { rememberFragmentCompile } from './vertexcompile.js';
 import * as THREE from 'three';
 import { FOLIAGE as F } from './config.js';
 import { lowMemory } from './lowmemory.js';
@@ -114,6 +115,7 @@ export function leafMaterial() {
     shader.fragmentShader = shader.fragmentShader.replace('#include <normal_fragment_begin>',
       THREE.ShaderChunk.normal_fragment_begin.replace('float faceDirection = gl_FrontFacing ? 1.0 : - 1.0;', 'float faceDirection = 1.0;'));
   };
+  rememberFragmentCompile(leafMat.onBeforeCompile); // exact fragment-only normal patch, native vertex positions (#1453)
   leafMat.customProgramCacheKey = () => 'foliage-leaves-v1';
   leafMat.name = 'foliage-leaves';
   return leafMat;

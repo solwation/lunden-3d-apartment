@@ -2852,7 +2852,8 @@ export const WARM = { frames: 3, sliceMs: 8, programs: 4, compileMs: 20, batch: 
 // #884: half-second display windows keep the always-visible FPS readable (UI choice, not a hardware target).
 export const HUD_FPS = { everyMs: 500 };
 // #1383: phoneUnitK angular cutoff and phoneUnitPad bounding margin are visual LOD guesses for whole simple furnishings.
-export const PERF = { detail: { maxR: 0.5, k: 0.009, minDist: 3.2, maxOcclude: 4, move: 0.3, occlusionMargin: 0.005, phoneUnitK: 0.07, phoneUnitPad: 0.2, lowMemoryOutside: 0.7, lowMemoryEdgesOutside: 6 }, hitch: { ms: 50, keep: 100 },
+export const PERF = { frustumPad: 0.01, // metres: conservative Float32 transform guard for exact-box frustum proof (#1453)
+  detail: { maxR: 0.5, k: 0.009, minDist: 3.2, maxOcclude: 4, move: 0.3, occlusionMargin: 0.005, phoneUnitK: 0.07, phoneUnitPad: 0.2, lowMemoryOutside: 0.7, lowMemoryEdgesOutside: 6 }, hitch: { ms: 50, keep: 100 },
   budget: { calls: 520, tris: 1000000, texMB: 320, lowMemory: { calls: 370, tris: 950000, texMB: 225 } } };
 
 // Phones and tablets (low memory, #585): iOS Safari kills the tab ("Ett problem inträffade flera gånger") once the page's

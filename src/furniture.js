@@ -688,6 +688,7 @@ function dani(item, lights) {
   pick.position.y = y0 + Hc / 2 - lamp.position.y;
   pick.visible = false;
   lamp.add(inner, cap, pick);
+  mergeStatic(lamp); // one rigid fabric surface; preserve its UV1/material target and invisible pick mesh (#1453)
   g.add(lamp);
   // the light through the rods: a striped pool on the floor round it (cut off at `item.edge`, the stair hole's edge east of
   // it, so none floats over the stair) and a soft spot on the ceiling over the open top

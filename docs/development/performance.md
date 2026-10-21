@@ -1,5 +1,45 @@
 # Rendering performance
 
+## Highest phone quality within budget (#1453)
+
+`src/tightfrustum.js` refines Three's existing sphere-frustum test with a private
+full-position box on low-memory color renders. It preserves the actual current
+world/instance transforms and adds a 1cm numerical guard (`PERF.frustumPad`),
+without changing quality, distance, occlusion or authored geometry bounds.
+Position and instance boxes cache by attribute/array/version/count. Dynamic,
+custom/interleaved position access, skins/morphs, displacement, custom render
+callbacks and unknown vertex programs veto the additional proof. Ordinary mesh
+and line-segment positions qualify; `vertexcompile.js` recognizes only exact
+registered fragment-only callbacks (lamp wash and foliage normal shading).
+Wind and other deformation remain excluded. The shader bodies/cache keys are unchanged.
+
+The wrapper installs after entrance batching and shadow tiles. Original masks
+are restored before shadow tiles copy their sources, for nested render cameras/
+render targets, and in `finally`, including exceptions. Mixed/all-layer warm-up
+keeps its old policy. Physical source objects, rays and persistent Detail masks
+are unchanged outside rendering; existing entrance originals/proxies are excluded.
+
+The two rigid shade parts in the Hue Go bowl and Dani fabric cylinder/cap share
+one material/anchor and now merge at construction. Their vertices, normals, UVs
+and Dani UV1 match the original builders exactly;48 positive rays and lamp targets
+are retained. Transparent rims, glow planes, pick meshes and material selection
+stay separate. This does not change geometry detail or texture quality.
+
+The fresh full19-view highest-quality landscape profile improves399calls at
+kitchen (FAIL) to369 at start (PASS); max814172tri/~97MiB, unchanged limits
+370/950000/225. Initial level3/max3/testMode-null are recorded before any quality
+checks. Fresh portrait passes298calls/683734tri/~101MiB; desktop (no phone
+frustum hook) passes504/986353/~309MiB against520/1M/320. Both production lamp
+targets toggle through trusted touch; Hue Go color action and actual movable
+root/refresh retain their sources. Normal startup completes the existing warm-up.
+The published revision is recorded with final issue verification. Six frozen frustum image pairs have identical
+fresh shadow submissions; eight measured image pairs have0changed pixels.
+The initial post-upload attribute comparison had freed CPU normal/UV arrays and
+is not accepted as attribute evidence; separate pre-upload actual builders give
+finite exact position/normal/UV/UV1 matches and24 positive rays per lamp.
+Raw scripts, all rejected probes, full profiles and images are retained in
+`/tmp/orkester-katt-20261020/phonepeak1453/`.
+
 Entrance wind bounds (#1460): source spheres are repaired after compression;
 the color adapter and its own envelopes remain unchanged. Native10 cases include
 all four actual compressed geometries, every vertex at the full local XZ clamp,

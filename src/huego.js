@@ -9,6 +9,7 @@ import * as THREE from 'three';
 import { HUE_GO } from './config.js';
 import { sfx } from './audio.js';
 import { ActionSet } from './actions.js';
+import { mergeStatic } from './merge.js';
 
 /** The lit shell's glow: one emissive map over the whole lamp — the flat face full, the dome dimmer towards its pole. */
 function glowMap() {
@@ -46,6 +47,7 @@ export function huego(item, lights, H = HUE_GO) {
   rim.rotation.x = Math.PI / 2;
   const domeM = new THREE.Mesh(dome, shell), faceM = new THREE.Mesh(face, shell);
   for (const m of [domeM, faceM, rim]) { m.castShadow = true; bowl.add(m); }
+  mergeStatic(bowl); // dome and face share one rigid anchor/material; the transparent rim stays separate (#1453)
   lamp.add(bowl);
   // the small flat foot under the lowest point of the curve
   const foot = new THREE.Mesh(new THREE.CylinderGeometry(H.foot.r, H.foot.r, H.foot.h, 32), new THREE.MeshStandardMaterial({ color: H.rim, roughness: 0.6 }));

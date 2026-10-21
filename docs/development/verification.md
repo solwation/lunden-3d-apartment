@@ -1,3 +1,27 @@
+## Tight phone frustum and rigid lamp parts (#1453)
+
+Run `node --test tools/tightfrustumtest.mjs tools/phonewholeocclusiontest.mjs tools/phonedetailunittest.mjs`
+(25cases): native sphere false positives, full actual position boxes, instance/root/
+geometry updates, callback/deformation vetoes, original shadow masks, nested cameras
+including shadow-time recursion, render targets, warm-up layers and exception cleanup.
+Check actual full19-view `tools/perfcount.html?cloud=&lowmem&w=844&h=390` and its
+`w=390&h=844` variant at initial3/max3, without test mode or a quality override.
+Do not infer initial quality from the fixture's final quality-knob tests.
+
+The retained external `final-profiles.cjs` runs fresh baseline/current worlds using
+frozen original lamp builders only for baseline; current uses production main.
+`proof-final-v2.cjs` checks actual fresh caster UUIDs/triangles/masks and source/ray
+identity, while `model-factory-proof.cjs` compares the actual old/new builders BEFORE
+upload frees phone normal/UV arrays. All differences must be finite. `pixels.cjs`
+compares original PNG bytes via decoded RGBA; initial gray mirror/obstructed lamp
+probes are not evidence of visible reflections/lamps. Corrected ordinary-warm-up
+and trusted touch checks live in `finish-smoke-fixed.cjs`; the earlier action-only
+fixture failed because Hue Go correctly exposes its actions in the choices menu. The phone-adapted existing mirror suite also passes30 checks with the hook active:
+its manually moved cameras must refresh the existing Detail masks before rendering
+(layer128→1), as the production step does. The earlier desktop-only fixture retained
+stale phone masks and its avatar assertions failed; no product mirror fix was needed.
+See [performance](performance.md).
+
 Whole phone model occlusion (#1456): run
 `node --test tools/phonewholeocclusiontest.mjs tools/phonedetailunittest.mjs tools/desktopocclusiontest.mjs tools/garageocclusiontest.mjs tools/occlusiontest.mjs`
 (30cases). The new cases cover whole-unit exposure and near/door/noDetail vetoes,

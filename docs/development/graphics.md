@@ -11,6 +11,11 @@ Interior supplies the original hood-lamp material to both LED spots, preserving
 the existing lamp wash/pool and independent fan switch. The measured kitchen
 component adds3 calls/220 triangles, no shader programs or lights.
 [Normal-light before/after pictures and limitations](../validation/issue-1043/README.md).
+`src/vertexcompile.js` records exact fragment-only compile callbacks so the
+phone's tight-frustum proof can distinguish native vertex positions from unknown
+deformation. Lamp-wash and foliage normal callbacks retain their original GLSL
+and cache keys; a material flag/name alone never qualifies a callback (#1453).
+
 ## Module and test map
 
 ```text

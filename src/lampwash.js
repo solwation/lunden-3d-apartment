@@ -2,14 +2,8 @@ import * as THREE from 'three';
 import { INTERACTION_MATERIAL_SOURCE } from './interactionoutline.js';
 import { LEVELS, LIGHTING } from './config.js';
 
-const lampWashCompiles = new WeakMap();
-const nativeCompile = THREE.Material.prototype.onBeforeCompile;
-/** Only the native vertex program plus these exact fragment-only wrappers is known here. */
-export function hasNativeVertexCompile(material) {
-  let compile = material?.onBeforeCompile;
-  while (lampWashCompiles.has(compile)) compile = lampWashCompiles.get(compile);
-  return compile === nativeCompile;
-}
+import { rememberFragmentCompile } from './vertexcompile.js';
+export { hasNativeVertexCompile } from './vertexcompile.js';
 
 // The lamps' light wherever the visitor is (#276, #294, #295). The pool of point lights only lights the few lamps that
 // matter to the visitor (constant light count), so a lit room you had walked out of went dark around its glowing
@@ -179,7 +173,7 @@ class LampWashes {
             .replace('#include <common>', `#include <common>\n${head}`)
             .replace('#include <lights_fragment_end>', `#include <lights_fragment_end>\n${body}`);
         };
-        lampWashCompiles.set(m.onBeforeCompile, before);
+        rememberFragmentCompile(m.onBeforeCompile, before);
         const base = key === THREE.Material.prototype.customProgramCacheKey ? () => before.toString() : key; // (the default keys on onBeforeCompile's source: now ours)
         m.customProgramCacheKey = function () { return `${base.call(this)}|lampwash${sfx}`; };
         m.needsUpdate = true;

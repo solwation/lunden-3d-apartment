@@ -26,6 +26,8 @@ Vintervyerna kräver mindre ritarbete när trädens och klängväxternas löv ha
 
 Entréväxternas grafikgränser rymmer även lövens fulla vindsvängning vid bildkanten.
 
+På telefonen slipper grafiken även rita föremål som ligger helt utanför bilden.
+
 I källaren slipper grafiken rita hela föremål som är helt skymda av garagets synliga, täta tak.
 
 På vintern har båda hästarna varsitt täcke och står synliga inne i hästhagens skjul, med halm på golvet, girlang och en varm ljusslinga. När snön försvinner försvinner täckena och pyntet och hästarna går ut i hagen igen.

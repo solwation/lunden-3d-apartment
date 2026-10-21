@@ -414,3 +414,10 @@ room still hidden outdoors. The static mesh box/sphere are exact. Matched
 these targeted views are not a new global performance profile. The audio lifecycle/race tests from #1423 remain
 applicable to unchanged audio code. A/B/C/L and public downstream: not applicable
 to this personal clubhouse gameplay feature.
+
+Rigid lamp batches (#1453): Hue Go's opaque dome/face merge within their shared
+bowl anchor; Dani's inner fabric cylinder/cap merge within their common lamp
+anchor. Original material references, lamp targets, pick meshes, glow planes,
+Dani materialSurfaceId/UV1 and the Hue Go color menu are retained. No parts are
+removed or simplified. The pre-upload canonical builder comparison retains
+all ordered attributes and24 positive physical rays per lamp.
