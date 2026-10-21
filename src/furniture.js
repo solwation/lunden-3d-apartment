@@ -2570,7 +2570,7 @@ function gamingdesk(item) {
     music,
     name: 'datorn', kind: 'pc', pickable: g,
     get isOpen() { return on; },
-    get verb() { return item.mediaId?'välja på':on ? 'stänga av' : 'starta'; },
+    get verb() { return item.mediaId?(on?'välja på':'starta'):on ? 'stänga av' : 'starta'; },
     toggle() {
       on = !on;
       screen.material = on ? onMat : offMat;

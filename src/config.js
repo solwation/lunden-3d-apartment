@@ -6500,7 +6500,7 @@ export function tvViewer(id,p) {
 
 // #1486: personal computer stations and child-sized clubhouse desks; all dimensions/themes are visual/playability guesses.
 export const COMPUTER_MEDIA = {
-  reach: 2.8, floorTolerance: .7,
+  reach: 2.8, floorTolerance: .7, offColor:0x030407, // Assumed dark, unlit monitor glass.
   desk: { width:1.45, depth:.6, height:.65, seat:.38, seatOffset:.8,
     monitorWidth:.65, monitorHeight:.38, monitorY:1, monitorDepth:.04, bezel:.025,
     top:.04, leg:.04, keyboard:[.4,.025,.14], chair:[.42,.06,.42], backHeight:.35,

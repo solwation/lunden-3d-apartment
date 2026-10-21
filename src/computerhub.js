@@ -6,8 +6,8 @@ import { drawSnake, drawComputerMenu } from './snakeview.js';
 
 /** One app selector per physical computer; all game clients share one server arena. */
 export class ComputerHub {
-  constructor({canvas,targets,template,onClose,onOpen,endpoint}) {
-    this.sessions=new Map();this.onOpen=onOpen;this.seq=0;this.angle=0;
+  constructor({canvas,targets,template,onClose,onOpen,endpoint,onNotice}) {
+    this.sessions=new Map();this.onOpen=onOpen;this.onNotice=onNotice;this.seq=0;this.angle=0;this.offMaterial=new THREE.MeshBasicMaterial({color:C.offColor,toneMapped:false});
     for(const target of targets.filter(t=>t.mediaId&&C.stations.some(s=>s.id===t.mediaId))) {
       const info=C.stations.find(s=>s.id===target.mediaId),el=template.cloneNode(true);
       el.id=`computer-${info.id}`;el.removeAttribute('open');el.classList.add('computer-player');
@@ -35,9 +35,10 @@ export class ComputerHub {
       }
       const claim=document.createElement('button');claim.type='button';claim.textContent='Ta kontroll';claim.dataset.computerClaim='';nav.after(claim);session.claim=claim;
       claim.addEventListener('click',()=>{player.wantsControl=true;player.awaitingPresence=!player.state;player.command('claim');});
+      const off=document.createElement('button');off.type='button';off.textContent='Stäng av datorn';off.dataset.computerPower='';claim.after(off);off.addEventListener('click',()=>this.requestPower(session,false));
       const controls=player.controls.bind(player);player.controls=()=>{controls();this.controls(session);};
       const close=player.close.bind(player);player.close=(reason)=>{this.stopInput(session);close(reason);};
-      const receive=player.receive.bind(player);player.receive=m=>{receive(m);this.controls(session);if(m.k==='state'&&player.state?.app!=='youtube')player.status.textContent=player.owns?'Du styr datorn. Välj YouTube eller Spel.':player.state?.owner?`${player.state.name} använder datorn.`:'Datorn är ledig.';};
+      const receive=player.receive.bind(player);player.receive=m=>{receive(m);if(m.k==='no'&&session.pendingPower!==undefined)this.onNotice?.(player.status.textContent);session.pendingPower=undefined;this.syncPower(session);this.controls(session);if(m.k==='state'&&player.state?.app!=='youtube')player.status.textContent=player.owns?'Du styr datorn. Välj YouTube eller Spel.':player.state?.owner?`${player.state.name} använder datorn.`:'Datorn är ledig.';};
       session.join.addEventListener('click',()=>{if(player.owns){this.pendingScreen=info.id;this.send({k:'join',screen:info.id});session.joining=true;this.controls(session);board.focus();}});
       for(const b of game.querySelectorAll('[data-angle]'))b.addEventListener('click',()=>{this.angle=Number(b.dataset.angle);board.focus();});
       const headings={ArrowRight:0,KeyD:0,ArrowDown:Math.PI/2,KeyS:Math.PI/2,ArrowLeft:Math.PI,KeyA:Math.PI,ArrowUp:-Math.PI/2,KeyW:-Math.PI/2};
@@ -49,7 +50,7 @@ export class ComputerHub {
       };
       board.addEventListener('pointerdown',e=>{e.preventDefault();board.focus();board.setPointerCapture(e.pointerId);steer(e);});
       board.addEventListener('pointermove',e=>{if(e.pointerType==='mouse'||e.buttons)steer(e);});
-      this.controls(session);drawComputerMenu(poster,info,'menu','');texture.needsUpdate=true;
+      this.controls(session);drawComputerMenu(poster,info,'menu','');texture.needsUpdate=true;this.syncPower(session);
     }
   }
   connect(net){this.net=net;for(const [id,{player}]of this.sessions)player.net={ready:net.ready,id:net.id,send:m=>net.send({...m,screen:id})};}
@@ -68,6 +69,7 @@ export class ComputerHub {
     s.lastApp=app;
     for(const b of s.nav.children){b.disabled=!p.owns;b.setAttribute('aria-pressed',String(b.dataset.app===app));}
     if(s.claim){s.claim.hidden=p.owns;s.claim.disabled=!p.connected||!!p.state?.owner;}
+    const off=p.el.querySelector('[data-computer-power]');if(off)off.disabled=!p.connected||!s.target.isOpen||!!p.state?.owner&&!p.owns;
     s.join.disabled=!p.owns||!!mine?.alive||!!s.joining;s.join.textContent=mine&&!mine.alive?'Spela igen':'Gå med i spelet';
     for(const b of s.game.querySelectorAll('[data-angle]'))b.disabled=!p.owns||!mine?.alive;
     s.score.textContent=mine?mine.alive?`Du: ${mine.score} poäng · ${mine.length} längd · ${mine.kills} besegrade`:`Du åkte ut: ${mine.why}. Spela igen!`:'Gå med från den här datorn. Alla datorer delar samma arena.';
@@ -76,22 +78,46 @@ export class ComputerHub {
   stopInput(s){
     if(this.playing===s||s.joining){this.send({k:'leave'});this.playing=null;s.joining=false;this.pendingScreen=null;}
   }
-  show(target){const s=this.sessions.get(target.mediaId);if(!s?.player.inside||!nearComputer(s.info.id,this.position))return false;if(s.player.activate())return true;this.close();if(target.kind==='pc'&&!target.isOpen)target.toggle();if(target.kind==='laptop')target.laptop.set(true);this.onOpen();s.player.show();return true;}
+  requestPower(s,on) {
+    if(s.pendingPower!==undefined)return false;
+    if(!s.player.connected){this.onNotice?.('Datorn väntar på anslutning. Försök igen.');return false;}
+    if(!on)this.stopInput(s);
+    const sent=s.player.command('power',{on});if(sent)s.pendingPower=on;return sent;
+  }
+  syncPower(s) {
+    const on=s.player.inside&&s.player.state?.power===true;
+    s.target.media?.(on);
+    if(s.target.kind==='laptop')s.target.laptop.set(on);else if(!!s.target.isOpen!==on)s.target.toggle();
+    if(!on){this.stopInput(s);s.player.close('button');s.target.mesh.material=this.offMaterial;}
+    else s.target.mesh.material=s.player.surface.active?s.player.surface.aperture:s.material;
+  }
+  power(target) {
+    const s=[...this.sessions.values()].find(s=>s.target===target||target.laptop&&s.target.laptop===target.laptop);
+    if(!s?.enabled||!nearComputer(s.info.id,this.position))return false;
+    this.requestPower(s,!s.target.isOpen);return true;
+  }
+  show(target) {
+    const s=this.sessions.get(target.mediaId);if(!s?.enabled||!nearComputer(s.info.id,this.position))return false;
+    if(!s.target.isOpen){this.requestPower(s,true);return true;}
+    if(!s.player.inside)return true;
+    if(s.player.activate())return true;
+    this.close();this.onOpen();s.player.show();return true;
+  }
   close(reason='button'){for(const s of this.sessions.values())if(s.player.open)s.player.close(reason);}
   update(visitor,camera,renderer,available,furniture=true) {
     this.position=[visitor.pos.x,visitor.pos.y,visitor.pos.z];const now=performance.now();let any=false;
     if(!this.net?.ready()){this.arena=null;this.previous=null;this.arenaConnection=null;}
     for(const [id,s]of this.sessions){
-      const inside=available&&(s.info.clubhouse||furniture)&&computerViewer(id,this.position),p=s.player;
+      s.enabled=available&&(s.info.clubhouse||furniture)&&computerViewer(id,this.position);
+      const inside=s.enabled,p=s.player;
       const changed=inside!==s.available;
-      if(changed&&inside){s.target.media?.(true);s.target.mesh.material=s.material;}
       p.update(inside,camera,renderer);
-      if(changed){s.available=inside;if(!inside)s.target.media?.(false);}any||=inside;
+      if(changed||s.connected!==p.connected){s.available=inside;s.connected=p.connected;this.syncPower(s);}any||=inside;
       const mine=this.arena?.snakes.find(a=>a.id===this.net?.id()&&a.screen===id);
       const playing=inside&&p.open&&p.owns&&p.state?.app==='snake'&&mine?.alive&&nearComputer(id,this.position);
       if(playing){this.playing=s;if(now-(this.inputAt??0)>=SNAKE.inputMs){this.inputAt=now;this.send({k:'input',screen:id,seq:++this.seq,angle:this.angle});}}
       else if(this.playing===s&&(!inside||!p.open||!p.owns||p.state?.app!=='snake'||!nearComputer(id,this.position)))this.stopInput(s);
-      if(!inside)continue;
+      if(!inside||!s.target.isOpen)continue;
       if(now-(s.renderAt??0)>=SNAKE.renderMs){
         s.renderAt=now;const blend=Math.min(1,(now-(this.receivedAt??0))/SNAKE.inputMs);
         if(p.state?.app==='snake'){

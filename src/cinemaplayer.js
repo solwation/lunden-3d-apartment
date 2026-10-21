@@ -122,7 +122,7 @@ export class CinemaPlayer {
     if(m.k==='no') {
       this.pendingSeek=undefined;this.pendingVideo=null;this.surface?.loading(false);if(!this.open)this.wantsControl=false;
       if(m.why==='away'&&this.wantsControl)this.awaitingPresence=true;
-      this.status.textContent=({owned:'Någon annan styr skärmen just nu.',owner:'Bara den som styr får ändra filmen.',stale:'Filmen har ändrats. Försök igen.',away:`Gå fram till ${this.place} för att välja film.`})[m.why]??'Bion kunde inte ändras.';
+      this.status.textContent=({off:'Starta datorn först.',owned:'Någon annan styr skärmen just nu.',owner:'Bara den som styr får ändra filmen.',stale:'Filmen har ändrats. Försök igen.',away:`Gå fram till ${this.place} för att välja film.`})[m.why]??'Bion kunde inte ändras.';
       return;
     }
     const s=m.s;

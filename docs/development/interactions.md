@@ -1881,6 +1881,11 @@ selectors; `showNote(false)` also closes an open TV chooser.
 
 `ComputerHub` opens an independent YouTube/Spel app selector through ordinary
 E/touch on each of the six registered computers, within `COMPUTER_MEDIA.reach`.
+All start off: the first interaction requests shared power-on without opening a modal;
+the next opens app selection. Walking near or sitting in a gaming/bunk chair never
+powers a registered station on. The laptop keyboard toggles shared power, and every
+app selector has a shutdown action. Power snapshots drive monitor darkness, hardware
+lights/fans and laptop state; disconnect/room exit restores the dark off surface.
 One RoomCinema lease controls each screen. Read-only visitors cannot change apps,
 select films or join as that computer. YouTube uses the same official world-space
 iframe and shared film clock as the TVs. Switching to a game stops that computer's

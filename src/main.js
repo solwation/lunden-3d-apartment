@@ -1298,7 +1298,7 @@ const openVideoControls=()=>{reading=true;player.keys.clear();touch.analog.x=tou
 const tvMedia=new TVMedia({canvas,targets:world.furnitureTargets,template:document.getElementById('cinema-player'),onClose:closeVideoControls,onOpen:openVideoControls,endpoint:cloudUrl()?`${cloudUrl()}/youtube-search`:''});
 remote.onVideo=tv=>tvMedia.show(tv);remote.onPower=tv=>tvMedia.power(tv);
 remote.onSeek=(tv,delta)=>{const ok=tvMedia.seek(tv,delta);if(!ok)badge('Någon annan styr TV:n just nu. Försök igen om en stund.',false);return ok;};
-const computerHub=new ComputerHub({canvas,targets:[...world.furnitureTargets,...playroom.devices.computers.map(s=>s.target)],template:document.getElementById('cinema-player'),onClose:closeVideoControls,onOpen:openVideoControls,endpoint:cloudUrl()?`${cloudUrl()}/youtube-search`:''});
+const computerHub=new ComputerHub({onNotice:text=>badge(text,false),canvas,targets:[...world.furnitureTargets,...playroom.devices.computers.map(s=>s.target)],template:document.getElementById('cinema-player'),onClose:closeVideoControls,onOpen:openVideoControls,endpoint:cloudUrl()?`${cloudUrl()}/youtube-search`:''});
 playroom.devices.onComputerRequest=target=>computerHub.show(target);
 cinema.surface = new CinemaSurface(canvas, playroom.devices.tv.mesh);
 playroom.devices.onVideoRequest = () => {
@@ -1499,12 +1499,12 @@ function sitAt(target, spot, stand, now = false) {
     if (tv && (!tv.isOpen || now)) { if (!tv.isOpen) { tv.toggle(); sfx.tvClick(tv.pickable.getWorldPosition(new THREE.Vector3()), true); } rest.tvOn = tv; }
   }
 }
-/** The gaming chair starts the PC; the seat in the bunk also swings its monitor round for a film. */
+/** Seats position the monitor; registered computers require an explicit power-on (#1492). */
 function usePc(spot) {
   const pc = world.furnitureTargets.find((t) => t.kind === 'pc' && t.pickable.getWorldPosition(new THREE.Vector3()).distanceTo(spot.pos) < 3);
   if (!pc) return;
   pc.watch(spot.pc === 'film' ? spot.pos : null);
-  if (!pc.isOpen) { pc.toggle(); sfx.tvClick(pc.pickable.getWorldPosition(new THREE.Vector3()), true); }
+  if (!pc.isOpen&&!computerHub.sessions.has(pc.mediaId)) { pc.toggle(); sfx.tvClick(pc.pickable.getWorldPosition(new THREE.Vector3()), true); }
 }
 /** Drawing mode (#93): the view over the paper, the pointer free (mouse) / touch looking off, the palette. */
 const drawPanel = document.getElementById('draw-panel');
@@ -1824,7 +1824,7 @@ function use(thing) {
   else if (thing.kind === 'tape') { posters.tape(heldDrawing.image, thing.spot, heldDrawing.meta ?? {}); heldDrawing.release(); drawing.save(); bump('posted'); } // tape the drawing up (#176)
   else if (thing.kind === 'pc') { if(computerHub.show(thing))return;const on = thing.toggle(); if (on) bump('pc', 1, idOf(thing)); sfx.tvClick(thing.pickable.getWorldPosition(new THREE.Vector3()), on); }
   else if (thing.kind === 'nest') { thing.toggle(); bump('nest', 1, idOf(thing)); } // a smart speaker answers (#325)
-  else if (thing.kind === 'laptop') { if(thing.part==='screen'&&computerHub.show(thing))return; // the screen: on, then the next clip; the keyboard: on / off (#283)
+  else if (thing.kind === 'laptop') { if(thing.part==='screen'&&computerHub.show(thing))return;if(thing.part==='power'&&computerHub.power(thing))return; // the screen: on, then the next clip; the keyboard: on / off (#283)
     const was = thing.isOpen;
     thing.toggle();
     if (thing.isOpen !== was) sfx.tvClick(thing.pickable.getWorldPosition(new THREE.Vector3()), thing.isOpen);

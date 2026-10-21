@@ -308,7 +308,7 @@ export function laptop(item) {
     media(on) {self.appActive=on;if(on)music.stop();else screen.material=self.on?onMat:offMat;},
     get isOpen() { return on; },
     get name() { return item.mediaId?'laptopen':on ? 'nästa klipp' : 'laptopen'; },
-    get verb() { return item.mediaId?'välja på':on ? 'bläddra till' : 'slå på'; },
+    get verb() { return item.mediaId?(on?'välja på':'starta'):on ? 'bläddra till' : 'slå på'; },
     toggle() { if (!on) self.set(true); else feed.swipe(); return on; },
     update: (dt) => self.update(dt),
   };

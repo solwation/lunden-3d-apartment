@@ -1,32 +1,33 @@
-import { PLAYROOM, TV_MEDIA, COMPUTER_MEDIA } from '../src/config.js';
+import { PLAYROOM, TV_MEDIA, COMPUTER_MEDIA, nearComputer } from '../src/config.js';
 
 export function cleanCinema(text) {
   let m;
   try { m=JSON.parse(text); } catch { return null; }
-  if(m?.t!=='cinema' || !['claim','release','get','select','play','pause','stop','app','seek'].includes(m.k)) return null;
+  if(m?.t!=='cinema' || !['claim','release','get','select','play','pause','stop','app','seek','power'].includes(m.k)) return null;
   if(m.screen!==undefined&&![...TV_MEDIA.screens,...COMPUTER_MEDIA.stations].some(s=>s.id===m.screen))return null;
   const screen=m.screen===undefined?{}:{screen:m.screen};
+  if(m.k==='power'&&(!COMPUTER_MEDIA.stations.some(s=>s.id===m.screen)||typeof m.on!=='boolean'))return null;
   if(m.k==='app'&&(!COMPUTER_MEDIA.stations.some(s=>s.id===m.screen)||!['menu','youtube','snake'].includes(m.app)))return null;
   if(['claim','release','get'].includes(m.k)) return {k:m.k,...screen};
   if(!Number.isSafeInteger(m.q)||m.q<0) return null;
   if(m.k==='select' && (typeof m.v!=='string'||!/^[A-Za-z0-9_-]{11}$/.test(m.v))) return null;
   if(m.k==='seek'&&m.p===undefined)return null;
   if(m.p!==undefined && (!Number.isFinite(m.p)||m.p<0||m.p>PLAYROOM.cinemaSync.maxPosition)) return null;
-  return {k:m.k,q:m.q,...screen,...(m.k==='select'?{v:m.v}:{}),...(m.k==='app'?{app:m.app}:{}),...(['pause','seek'].includes(m.k)&&m.p!==undefined?{p:m.p}:{})};
+  return {k:m.k,q:m.q,...screen,...(m.k==='select'?{v:m.v}:{}),...(m.k==='app'?{app:m.app}:{}),...(m.k==='power'?{on:m.on}:{}),...(['pause','seek'].includes(m.k)&&m.p!==undefined?{p:m.p}:{})};
 }
 
 const fresh = () => ({q:0,owner:null,name:'',video:'',playing:false,position:0,at:Date.now()});
 const valid = s => s && Number.isSafeInteger(s.q) && s.q>=0 &&
   (s.owner===null||typeof s.owner==='string') && typeof s.name==='string' &&
   (s.video===''||/^[A-Za-z0-9_-]{11}$/.test(s.video)) && typeof s.playing==='boolean' &&
-  (s.app===undefined||['menu','youtube','snake'].includes(s.app))&&
+  (s.app===undefined||['menu','youtube','snake'].includes(s.app))&&(s.power===undefined||typeof s.power==='boolean')&&
   Number.isFinite(s.position)&&s.position>=0&&s.position<=PLAYROOM.cinemaSync.maxPosition&&Number.isFinite(s.at);
 
 /** One authoritative cinema per players room; no playback ticker or ball/media stream. */
 export class RoomCinema {
   constructor(ctx, peers, send, id=null) { this.id=id;this.computer=COMPUTER_MEDIA.stations.some(s=>s.id===id);this.key=id?`cinema:${id}`:'cinema';this.flag=id?`tv_${id}`:'ci';this.ctx=ctx;this.peers=peers;this.send=send;this.state=null;this.dirty=false; }
-  fresh(){return {...fresh(),...(this.computer?{app:'menu'}:{})};}
-  async load() { const s=await this.ctx.storage.get(this.key);this.state=valid(s)?s:null;this.trim();await this.flush(); }
+  fresh(){return {...fresh(),...(this.computer?{app:'menu',power:false}:{})};}
+  async load() { const s=await this.ctx.storage.get(this.key);this.state=valid(s)?s:null;if(this.computer&&this.state&&this.state.power===undefined){this.state={...this.state,power:!!this.state.video||this.state.app==='snake'||!!this.state.owner};this.dirty=true;}this.trim();await this.flush(); }
   occupants(except) { return this.peers().filter(p=>p.ws!==except&&p.a[this.flag]===true); }
   message() { return JSON.stringify({t:'cinema',...(this.id?{screen:this.id}:{}),k:'state',s:this.state??this.fresh(),now:Date.now()}); }
   broadcast(except) { const m=this.message();for(const {ws} of this.occupants(except))this.send(ws,m); }
@@ -55,6 +56,14 @@ export class RoomCinema {
     this.trim();
     if(m.k==='get') { this.send(ws,this.message());return; }
     const s=this.state??this.fresh();
+    if(m.k==='power') {
+      if(!this.computer||!nearComputer(this.id,a.s?.p))return this.refuse(ws,'away');
+      if(s.owner&&s.owner!==a.i)return this.refuse(ws,'owned');
+      if(m.q!==s.q)return this.refuse(ws,'stale');
+      this.state={...s,q:s.q+1,power:m.on,app:'menu',owner:null,name:'',video:'',position:0,playing:false,at:now};
+      this.dirty=true;this.broadcast();return;
+    }
+    if(this.computer&&!s.power&&m.k!=='release')return this.refuse(ws,'off');
     if(m.k==='claim') {
       if(s.owner&&s.owner!==a.i)return this.refuse(ws,'owned');
       if(s.owner===a.i){this.send(ws,this.message());return;}

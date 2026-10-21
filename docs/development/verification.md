@@ -35,6 +35,19 @@ The final generic center-prompt suppression is a source-reviewed presentation
 condition using the already verified active-media state.
 Original-only shared media gameplay, no public downstream import.
 
+## Computer startup power (#1492)
+
+Scoped plan: eight server/arena cases using `node --test --test-isolation=none tools/snakearenatest.mjs cloudflare/snake.test.mjs` and
+`tools/computerpowertest.cjs GAME FRESH_LOCAL_WORKER OUT`. The real ComputerHub
+component covers all six stations: initially dark, passive presence stays off,
+explicit startup without a modal, subsequent app choice, shutdown/input cleanup
+and disconnected off material. The actual world route checks native E on the
+home PC and touch on the laptop/four clubhouse PCs. Server cases cover shared
+power snapshots, all-six off defaults, near-only startup, foreign-controller
+rejection and cleanup of game/video. No geometry counts or broad scene profiles.
+All scoped checks pass; evidence: `/tmp/power1492-fixedpose/result.json` (six native routes, no page errors). The first world attempt used a camera eye height from the ground floor after spawning upstairs and missed the PC; setting the floor-relative eye height before settling fixed the fixture. Existing broader computer-media fixtures now explicitly start stations and are not rerun as extra profiles.
+Original-only furnishings/gameplay; no public downstream import.
+
 ## Shared computer clients (#1488)
 
 Scoped checks: `tools/computerfurnituretest.mjs` with the pinned Three loader;

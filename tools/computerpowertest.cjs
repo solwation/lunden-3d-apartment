@@ -1,0 +1,36 @@
+// Scoped actual ComputerHub fixture plus one world route across all six stations.
+const fs=require('node:fs'),assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
+const [game,worker,out]=process.argv.slice(2);
+(async()=>{fs.mkdirSync(out,{recursive:true});const b=await chromium.launch({executablePath:process.env.CHROME_PATH,args:['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader']});const errors=[];let page;
+try{
+ page=await b.newPage({viewport:{width:1100,height:760},hasTouch:true});page.on('pageerror',e=>errors.push(e.message));await page.route('**/src/bootstrap.js*',r=>r.fulfill({contentType:'text/javascript',body:''}));await page.goto(game,{waitUntil:'domcontentloaded'});
+ const component=await page.evaluate(async()=>{
+  const T=await import('three'),{ComputerHub}=await import('/src/computerhub.js'),{COMPUTER_MEDIA:C,LEVELS}=await import('/src/config.js');
+  const canvas=document.createElement('canvas');document.body.append(canvas);let opened=0,connected=true;const sent=[];
+  const targets=C.stations.map(info=>{let on=false;const t={kind:'pc',mediaId:info.id,mesh:new T.Mesh(new T.PlaneGeometry(.65,.38),new T.MeshBasicMaterial()),get isOpen(){return on;},toggle(){return on=!on;},media(){}};if(info.id==='laptop-home'){t.kind='laptop';t.laptop={set(v){on=v;}};}return t;});
+  const hub=new ComputerHub({canvas,targets,template:document.getElementById('cinema-player'),onClose:()=>{},onOpen:()=>opened++});hub.connect({ready:()=>connected,id:()=> 'me',send:m=>{sent.push(m);return true;},snake:()=>true});
+  const initial=[...hub.sessions.values()].every(s=>!s.target.isOpen&&s.target.mesh.material===hub.offMaterial);
+  const results=[];for(const s of hub.sessions.values()){
+   const pos=new T.Vector3(s.info.x,s.info.clubhouse?0:LEVELS[s.info.level].floor,s.info.z);hub.update({pos},null,null,true);
+   const receive=(q,power,extra={})=>hub.receive({screen:s.info.id,k:'state',now:Date.now(),s:{q,power,app:'menu',owner:null,name:'',video:'',position:0,playing:false,at:Date.now(),...extra}});
+   receive(0,false);const passive=!s.target.isOpen&&!s.player.open;const before=opened;hub.show(s.target);const startup=sent.at(-1).k==='power'&&sent.at(-1).on&&!s.player.open&&opened===before;receive(1,true);const on=s.target.isOpen&&s.target.mesh.material===s.material;hub.show(s.target);const choice=s.player.open&&sent.at(-1).k==='claim';receive(2,true,{owner:'me'});
+   s.joining=true;hub.playing=s;hub.requestPower(s,false);receive(3,false);const off=!s.target.isOpen&&!s.player.open&&hub.playing===null&&s.target.mesh.material===hub.offMaterial;
+   connected=false;hub.update({pos},null,null,true);const disconnected=s.target.mesh.material===hub.offMaterial;connected=true;hub.update({pos},null,null,true);
+   results.push({id:s.info.id,passive,startup,on,choice,off,disconnected});
+  }return{initial,results};
+ });assert(component.initial);for(const s of component.results)for(const [k,v]of Object.entries(s))if(k!=='id')assert(v,`${s.id} ${k}`);console.log('PASS actual six-station component: dark startup, passive presence, explicit power, chooser, shutdown and disconnect',component);
+ await page.close();if(process.env.COMPONENT_ONLY)return;
+ page=await b.newPage({viewport:{width:1100,height:760},hasTouch:true});page.on('pageerror',e=>errors.push(e.message));await page.addInitScript(()=>{localStorage.setItem('lunden.name','Starttest');sessionStorage.setItem('lunden.nameSkipped','1');});await page.goto(`${game}/?shot&test=lazy&cloud=${encodeURIComponent(worker)}&freeze&time=12&month=6`,{waitUntil:'commit'});await page.waitForFunction(()=>window.__app?.computerHub,null,{timeout:180000});await page.evaluate(()=>{__app.showOverlay(false);__app.touch.enabled=true;document.body.classList.add('touch');});
+ assert(await page.evaluate(()=>[...__app.computerHub.sessions.values()].every(s=>!s.target.isOpen&&!s.player.open)));const results=[];
+ for(const id of ['pc-home','laptop-home','pc-lime','pc-cyan','pc-rose','pc-amber']){
+  await page.evaluate(id=>{if(__app.computerHub.sessions.get(id).info.clubhouse&&!__app.player.inPlayroom)__app.use({kind:'playhouse'});},id);await page.waitForFunction(id=>!__app.computerHub.sessions.get(id).info.clubhouse||__app.player.inPlayroom,id);await page.waitForTimeout(700);
+  await page.evaluate(async id=>{const a=__app,T=await import('three'),C=await import('/src/config.js'),s=a.computerHub.sessions.get(id),m=s.target.mesh;m.updateWorldMatrix(true,false);const center=m.getWorldPosition(new T.Vector3()),pos=center.clone().addScaledVector(new T.Vector3(0,0,1).transformDirection(m.matrixWorld),.95);if(id==='laptop-home'){pos.x=center.x-.75;pos.z=center.z-.1;}a.player.spawn(pos.x,pos.z,0);a.player.pos.y=s.info.clubhouse?0:C.LEVELS[1].floor;a.player.eyeY=a.player.pos.y+(s.info.clubhouse?1.4:1.62);for(let i=0;i<4;i++)a.step(1/60);a.camera.position.set(a.player.pos.x,a.player.eyeY,a.player.pos.z);a.camera.lookAt(center);a.camera.updateMatrixWorld(true);a.step(0);},id);
+  await page.waitForFunction(id=>__ghosts.connected&&__app.computerHub.sessions.get(id).player.state&&__app.focus().focused?.mediaId===id,id,{timeout:30000});assert(await page.evaluate(id=>{const s=__app.computerHub.sessions.get(id);return !s.target.isOpen&&!s.player.open&&s.target.verb==='starta';},id));
+  const action=async()=>{if(id==='pc-home')await page.keyboard.press('KeyE');else await page.locator('#action').tap();};
+  if(id==='pc-home'){await page.evaluate(()=>{__app.touch.enabled=false;document.body.classList.remove('touch');document.getElementById('game-canvas').requestPointerLock();});await page.waitForFunction(()=>!!document.pointerLockElement&&document.getElementById('arm').hidden);}
+  await action();await page.waitForFunction(id=>__app.computerHub.sessions.get(id).target.isOpen,id);assert(!await page.evaluate(id=>__app.computerHub.sessions.get(id).player.open,id));await action();await page.waitForFunction(id=>__app.computerHub.sessions.get(id).player.owns,id);await page.locator(`#computer-${id} [data-computer-power]`).click();await page.waitForFunction(id=>{const s=__app.computerHub.sessions.get(id);return !s.target.isOpen&&!s.player.open&&s.player.state.power===false;},id);results.push(id);console.log('PASS native power/start chooser/shutdown',id);
+  if(id==='pc-home'){await page.evaluate(()=>document.exitPointerLock());await page.waitForFunction(()=>!document.pointerLockElement);await page.evaluate(()=>{__app.activeMode='touch';__app.touch.enabled=true;__app.showOverlay(false);document.body.classList.add('touch');});}
+ }
+ assert.deepEqual(errors,[]);fs.writeFileSync(`${out}/result.json`,JSON.stringify({component,results,errors},null,2));
+}catch(e){if(page&&!page.isClosed())try{console.log('DIAGNOSTIC',await page.evaluate(()=>window.__app?{pos:__app.player.pos.toArray(),focus:__app.focus().focused?.mediaId,camera:__app.camera.position.toArray(),ray:__app.focus().raycaster.ray.direction.toArray(),states:[...__app.computerHub.sessions].map(([id,s])=>({id,power:s.target.isOpen,state:s.player.state,open:s.player.open}))}:null));await page.screenshot({path:`${out}/failure.png`});}catch{}throw e;}finally{if(page&&!page.isClosed())try{await page.evaluate(()=>window.__ghosts?.disconnect());}catch{}await b.close();}
+})().catch(e=>{console.error(e);process.exitCode=1;});

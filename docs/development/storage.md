@@ -3,6 +3,18 @@
 Read [CLAUDE.md](../../CLAUDE.md) first for shared workflow rules. Paths in code spans and module maps are relative to the repository root.
 
 Related: [deployment](deployment.md), [life](life.md).
+
+## Shared computer power (#1492)
+
+Each computer's existing RoomCinema snapshot carries boolean `power`, initially
+false. Near-only `power` commands use the current sequence and respect another
+controller's lease; shutdown resets app, video, clock and ownership and removes
+that computer's snake. Power is shared with other room viewers and uses the
+existing socket, presence and persistence. The last room viewer still resets the
+station. Legacy active snapshots migrate to on; idle ones migrate to off.
+Cinema and TV power semantics are unchanged. This is personal gameplay/Cloudflare
+state and is excluded from the public downstream.
+
 ## Shared cinema authority (#1477)
 
 `cloudflare/cinema.js` owns one `cinema` snapshot in PlayerRoom storage:

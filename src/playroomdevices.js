@@ -18,8 +18,10 @@ export class PlayroomDevices {
     this.tv=screen('bioduken',tv.w,tv.h,R.x+tv.x+.08,tv.y+tv.h/2,R.z+F.cinema.screen.z,Math.PI/2,()=>{this.onVideoRequest?.();return 'Välj film i bion';});
     this.cinemaTarget=this.tv.target;this.cinemaTarget.verb='välja film på';
     this.computers=C.stations.filter(s=>s.clubhouse).map(info=>{
-      const s=screen(info.name,C.desk.monitorWidth,C.desk.monitorHeight,info.x+Math.sin(info.yaw)*C.desk.bezel/4,C.desk.monitorY,info.z,info.yaw,()=>{this.onComputerRequest?.(s.target);return 'Välj YouTube eller Spel';});
-      s.info=info;s.target.mediaId=info.id;s.target.media=()=>{};return s;
+      const s=screen(info.name,C.desk.monitorWidth,C.desk.monitorHeight,info.x+Math.sin(info.yaw)*C.desk.bezel/4,C.desk.monitorY,info.z,info.yaw,()=>{const was=s.target.isOpen;this.onComputerRequest?.(s.target);return was?'Välj YouTube eller Spel':`Startar ${info.name}…`;});
+      let on=false;s.info=info;s.target.mediaId=info.id;s.target.media=()=>{};
+      Object.defineProperty(s.target,'isOpen',{get:()=>on});Object.defineProperty(s.target,'verb',{get:()=>on?'välja på':'starta'});
+      s.target.toggle=()=>on=!on;return s;
     });
     const c=this.tv.ctx,w=this.tv.canvas.width,h=this.tv.canvas.height;c.fillStyle='#080e18';c.fillRect(0,0,w,h);c.textAlign='center';
     for(const [text,y,size,color]of [['BION',.35,48,'#ffe094'],['Vad vill du se?',.56,28,'#fff'],['E / tryck på duken för filmförslag',.78,22,'#a5bdd4']]){c.fillStyle=color;c.font=`bold ${size}px sans-serif`;c.fillText(text,w/2,h*y);}
