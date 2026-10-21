@@ -218,14 +218,14 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     }
     await page.evaluate(({ RM }) => { const t = window.__t, P = window.__app.player; P.spawn(RM.x, RM.z + 1.9, 0); t.frames(20); t.aim(RM.x, 2.2, RM.z - 1.5); window.__app.world.playroom.disco(0.4); t.render(); }, { RM });
     await page.screenshot({ path: `${shots}/10-disco.png` });
-    // #1374: the three real doorway routes and a complete unobstructed walk around the unchanged table.
+    // #1374: the three real doorway routes and a complete unobstructed walk around the centred table.
     for(const x of [-2*RM.clubhouse.side,0,2*RM.clubhouse.side]){
       const p=await walkTo(L(x,RM.d/2-.8),0,2);
       check(p.z<RM.z+RM.clubhouse.front-.3,'walk through a labelled room entrance at x='+x,JSON.stringify(p));
       const back=await walkTo(p,Math.PI,2);
       check(back.z>RM.z+RM.clubhouse.front+.3,'walk back to the hall at x='+x,JSON.stringify(back));
     }
-    const circle=await page.evaluate(({RM})=>{const a=__app,P=a.player,targets=[[1.5,-1],[1.5,1.1],[-1.5,1.1],[-1.5,-1]],results=[];P.spawn(RM.x-1.5,RM.z-1,0);__t.frames(10);for(const[x,z]of targets){let d=Infinity;for(let i=0;i<300;i++){const dx=RM.x+x-P.pos.x,dz=RM.z+z-P.pos.z;d=Math.hypot(dx,dz);if(d<.1)break;a.camera.rotation.y=Math.atan2(-dx,-dz);P.keys=new Set(['KeyW']);P.update(1/60);}P.keys=new Set();results.push(d);}return results;},{RM});
+    const circle=await page.evaluate(({RM})=>{const a=__app,P=a.player,targets=[[1.5,-1],[1.5,1.1],[-1.5,1.1],[-1.5,-1]],results=[];P.spawn(RM.x-1.5,RM.z+RM.billiards.z-1,0);__t.frames(10);for(const[x,z]of targets){let d=Infinity;for(let i=0;i<300;i++){const dx=RM.x+x-P.pos.x,dz=RM.z+RM.billiards.z+z-P.pos.z;d=Math.hypot(dx,dz);if(d<.1)break;a.camera.rotation.y=Math.atan2(-dx,-dz);P.keys=new Set(['KeyW']);P.update(1/60);}P.keys=new Set();results.push(d);}return results;},{RM});
     check(circle.every(d=>d<.1),'walk all four sides of the table without sofa or partition obstruction',JSON.stringify(circle));
     // the exit door
     const f2 = await page.evaluate(() => { const t = window.__t, P = window.__app.player, r = window.__app.world.playroom, a = r.arrival; P.spawn(a.x, a.z, a.yaw); t.frames(30); t.aim(a.x, 0.7, r.bounds.z1); return t.focus(); });

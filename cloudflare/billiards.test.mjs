@@ -26,7 +26,7 @@ async function connect(env) {
   await settle(env);
   return c;
 }
-const ROOM = [PLAYROOM.x, 0, PLAYROOM.z + 1.2], OUT = [0, 0, 0];
+const ROOM = [PLAYROOM.x + PLAYROOM.billiards.x, 0, PLAYROOM.z + PLAYROOM.billiards.z + 1.2], OUT = [0, 0, 0];
 const place = async (env, c, p) => { now += 250; c.send({ p, r: 0 }); await settle(env); };
 const act = async (env, c, m) => { now += 700; c.send({ t: 'pool', ...m }); await settle(env); };
 const rest = (ms) => { now += ms + 400; };
@@ -60,6 +60,17 @@ test('only players in the room get the table and strokes; a stroke from outside 
   const local = simulateStroke(PLAYROOM.billiards, b.pool()[0].e, sa.d); // deterministic: a client can reproduce it from the start snapshot
   assert.deepEqual({ ...local.snap, q: 2 }, sa.e); assert.equal(local.ms, sa.ms);
   assert.deepEqual(table(env).snap, sa.e);
+});
+
+test('server reach follows the centred table rather than the old doorway position', async () => {
+  const env=setup(), a=await connect(env);
+  await place(env,a,[PLAYROOM.x,0,PLAYROOM.z+PLAYROOM.billiards.z-2.5]);
+  await act(env,a,{k:'s',q:1,d:[1,0]});
+  assert.equal(a.last().k,'S','north side is reachable around the new centre');
+  rest(30000);
+  await place(env,a,[PLAYROOM.x,0,PLAYROOM.z+1.5]);
+  await act(env,a,{k:'s',q:2,d:[1,0]});
+  assert.equal(a.last().why,'away','old entrance-side reach must not allow a remote stroke');
 });
 
 test('stale, simultaneous, early and malformed requests are refused; the table never forks', async () => {

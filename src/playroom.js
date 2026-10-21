@@ -222,8 +222,8 @@ export class Playroom {
       object:this.object, base:i > 0 && i <= seatCount ? R.finish.rugHeight : 0,
       rects:[{ x0:points[0][0], x1:points[1][0], z0:points[0][1], z1:points[2][1] }],
     }]);
-    const B = R.billiards, bw = Math.abs(Math.cos(B.yaw))*B.width+Math.abs(Math.sin(B.yaw))*B.length,
-      bd = Math.abs(Math.sin(B.yaw))*B.width+Math.abs(Math.cos(B.yaw))*B.length;
+    const B = R.billiards, bw = Math.abs(Math.cos(B.yaw))*(B.length+2*B.rail)+Math.abs(Math.sin(B.yaw))*(B.width+2*B.rail),
+      bd = Math.abs(Math.sin(B.yaw))*(B.length+2*B.rail)+Math.abs(Math.cos(B.yaw))*(B.width+2*B.rail);
     shadows.push({ object:this.object, base:0, rects:[{x0:R.x+B.x-bw/2,x1:R.x+B.x+bw/2,z0:R.z+B.z-bd/2,z1:R.z+B.z+bd/2}] });
     this.object.add(buildContactShadows(shadows));
     this.finishInfo = { skirtingRuns:skirtBoxes.length, edgeBatches:edges.length, contactFootprints:shadows.length };

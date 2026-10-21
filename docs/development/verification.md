@@ -15,6 +15,21 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## Centred billiard table (#1482)
+
+The shared table is at local(0,-1.83), the midpoint of BILJARD's free wall faces.
+`cloudflare/billiards.test.mjs` passes7checks, including accepted north-side
+strokes around the new centre and refusal from the old entrance-side reach.
+The clubhouse plan test checks that midpoint rather than preserving the old
+origin. The actual Player walks from the hall to localz0.347 without touching
+the table, then completes all four sides of a ring around the new centre
+(endpoint errors below7cm). Model and collision span localz[-2.82,-0.84]; the
+contact shadow centre matches the model within0.1mm. Ordinary quality3 views
+were captured and the BILJARD image opened/inspected. No page exceptions and
+unchanged16calls/60387triangles in the scoped view. Artifacts and driver:
+`/tmp/billiard-placement/`, `/tmp/billiard-placement.cjs`.
+This is the separate fantasy clubhouse, with no A/B/C/L or public-viewer equivalent.
+
 ## Softer clubhouse rendering (#1481)
 
 `tools/clubhouserealismtest.cjs GAME OUT` uses the actual app at ordinary quality3,

@@ -3,7 +3,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { PLAYROOM as R } from './config.js';
 import { freeCanvasAfterUpload } from './lowmemory.js';
 
-/** Assumed hidden clubhouse plan, local metres. The table stays at its existing world position. */
+/** Assumed hidden clubhouse plan, local metres. The table is centred in BILJARD using PLAYROOM.billiards. */
 export function clubhouseLayout() {
   const C=R.clubhouse,t=C.wall,h=R.ceiling,x0=-R.w/2,x1=R.w/2,z0=-R.d/2,boxes=[],segments=[];
   const block=(a,b,c,d)=>{boxes.push([a,b,0,h,c,d]);segments.push([a,c,b,c],[b,c,b,d],[b,d,a,d],[a,d,a,c]);};
