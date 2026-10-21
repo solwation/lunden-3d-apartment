@@ -95,7 +95,8 @@ tools/christmastest.html headless test (#571): the date line (30/11–1/12, 31/1
                        bowl), cancelled vs confirmed move, saved spot across reloads and out of season, the season ending mid-move,
                        the #591 default in the armchair corner (doorway free) and the #571 layout id carried over / dropped
 tools/tvtest.html      legacy offline channel/power test; shared TV input/playback uses tools/tvmediatest.cjs
-tools/pctest.html      headless test: switch the gaming PC on/off (game moves, RGB cycles), the chair is a seat and
+tools/computermediatest.cjs shared apps, actual screens, two peers, keys/touch, video and lifecycle (#1488)
+tools/pctest.html      legacy offline fallback fixture (shared selector disabled): switch the gaming PC on/off (game moves, RGB cycles), the chair is a seat and
                        starts the PC, the bunk seat swings the monitor round (film)
 The secretary's stand (legs, braces, wire shelf) uses a white `frame` material from `frameColor` in config (#1292); only knobs and the key plate stay black.
 tools/secretarytest.html headless test: the secretary's flap (desk) and its 8 drawers open/close, the open desk blocks;
@@ -335,7 +336,7 @@ With the players room connected (`ghosts.connected`) the children's-room table i
 
 ## Expanded hidden clubhouse (#1374, part of #1369)
 
-`src/clubhouse.js` supplies the assumed18×10.4×2.7m fantasy plan: a south hall, west BIO, middle BILJARD and east SPEL. These are game choices, not measured A/B/C/L architecture. `clubhouseLayout()` supplies partition/header boxes and collision edges with three1.5m clear doorways; the outer room bounds remain shared through PLAYROOM, including Worker presence. The billiard table is centred inside BILJARD at(-1500,-1501.83), halfway between its north wall and the south partition inner face (#1482). Its short end still faces the doorway (#1411). The render transform, collision, shadow and server reach share PLAYROOM.billiards; ball snapshots remain table-local. The west room now has a framed6.34×1.90m shared cinema screen40cm above the floor, wall-reaching red velvet side curtains and eight armrest seats in two rows, split by an assumed0.82m center aisle. Each seat has a normal rest target aimed at the screen; per-chair footprints leave the aisle and route behind the east row available for approach and standing. Dimensions, colors and finishes are guesses. The gaming desk/stool remain in SPEL; `furniture.desk.x/z` offsets keep the pieces together. The under160cm gate and always usable exit remain.
+`src/clubhouse.js` supplies the assumed18×10.4×2.7m fantasy plan: a south hall, west BIO, middle BILJARD and east SPEL. These are game choices, not measured A/B/C/L architecture. `clubhouseLayout()` supplies partition/header boxes and collision edges with three1.5m clear doorways; the outer room bounds remain shared through PLAYROOM, including Worker presence. The billiard table is centred inside BILJARD at(-1500,-1501.83), halfway between its north wall and the south partition inner face (#1482). Its short end still faces the doorway (#1411). The render transform, collision, shadow and server reach share PLAYROOM.billiards; ball snapshots remain table-local. The west room now has a framed6.34×1.90m shared cinema screen40cm above the floor, wall-reaching red velvet side curtains and eight armrest seats in two rows, split by an assumed0.82m center aisle. Each seat has a normal rest target aimed at the screen; per-chair footprints leave the aisle and route behind the east row available for approach and standing. Dimensions, colors and finishes are guesses. Four themed computer desks/chairs occupy the SPEL side walls, configured by `COMPUTER_MEDIA` (#1488). The under160cm gate and always usable exit remain.
 
 `clubhouseSigns()` draws four labels in one512×256static atlas. The existing ceiling panels sample a cream atlas swatch and share the signs' draw, keeping the whole visible room at15draws in the lifecycle checks; no new real lights. Static canvas data is released after upload on phone profiles. Disco rays test actual partition/header entry faces; an open doorway lets a ray continue to the hall instead of painting an invisible plane. Room mesh/targets/updates remain hidden outside.
 
@@ -374,23 +375,25 @@ cinema carpet), desk, stool, DJ bench and billiard table. All belong to the hidd
 Playroom group, with no real lights and no new frame-loop code. The public viewer
 has no gameplay clubhouse, so this finish has no downstream transfer.
 
-### Clubhouse TV and computer (#1365)
+### Clubhouse screens and computer stations (#1488)
 
-`src/playroomdevices.js` owns two local canvas screens at the TV/desk
-positions, following `furniture.cinema` and `furniture.desk` offsets. E/touch on the
-cinema screen opens film suggestions/search and shared playback controls
-(#1475/#1476); it shows BION while idle and the actual film while playing. The armrest remote is removed. The
-monitor starts the computer, then starts/stops a timing game:
-stop the marker inside green to add a hit; misses still count as attempts and
-allow a new round. The white/blue box beside the monitor toggles its power.
-The normal biostol/stool seats and rest reach remain; no new input mode is needed.
+`src/playroomdevices.js` owns the cinema plane and four independently selectable
+computer planes. `computerfurniture.js` makes four child-sized rounded desks,
+matching chairs, monitor stands, keyboards and cases, merged into the existing
+clubhouse furniture material. `COMPUTER_MEDIA` defines the four themes and
+placements: two against each side wall of SPEL, with a clear central approach.
+Their collision footprints, contact shadows and ordinary rest targets follow
+the same dimensions; the chairs face their monitors. No additional lights.
 
-Computer power forwards to the existing `Playroom.onSwitch('pc', on)` hook;
-disco uses its original hook and switching behaviour. Leaving powers down the
-computer, freezes its game updates and removes the local cinema player. Computer state is local;
-cinema playback is shared until the last clubhouse occupant leaves. Room/device audio remains #1330. This is gameplay, excluded from the public downstream.
-`PLAYROOM.devices` holds the assumed texture size, redraw cap and timing-game
-settings. The two screens add at most two draws/four triangles. The canvas screens add no lights or audio nodes. Tests: real-app `tools/playroomtest.cjs`, desktop and `MOBILE=1`.
+`computerhub.js` registers these four screens plus the retained articulated
+home gaming monitor and the laptop lid screen. Each has its own CinemaPlayer
+lease, YouTube surface and canvas poster/game texture. Legacy local demo music
+and animation yield while an app owns the screen; monitor-arm and lid transforms
+remain intact. See [computer controls](interactions.md#shared-computers-1488)
+and [focused verification](verification.md#shared-computer-clients-1488).
+Cinema playback remains independent and lasts until its last occupant leaves.
+The old Pricka grönt game and white power box were replaced by the app selector.
+These are personal furnishings and gameplay, excluded from the public downstream.
 
 
 ### Cinema network video (#1376)

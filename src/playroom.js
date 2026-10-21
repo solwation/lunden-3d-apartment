@@ -2,7 +2,8 @@ import { clubhouseLayout, clubhouseSigns } from './clubhouse.js';
 import { Billiards } from './billiards.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { PLAYROOM as R, COURTYARD } from './config.js';
+import { PLAYROOM as R, COURTYARD, COMPUTER_MEDIA } from './config.js';
+import { computerFurniture } from './computerfurniture.js';
 import { restTarget } from './rest.js';
 import { PlayroomDevices } from './playroomdevices.js';
 import { PlayroomMusic } from './playroommusic.js';
@@ -64,7 +65,7 @@ export class Playroom {
     const F = R.furniture, cinema = F.cinema, S = cinema.seat, scr = cinema.screen, tv = F.tv;
     const col = { seat: 0x641b27, velvet: 0x8e2635, piping: 0xb8494d, brass: 0xb8874d, rug: 0x6a2631, wood: 0x553b35, dark: 0x17171d, white: 0xf2f2f2, red: 0xd33a2c, blue: 0x2f6fd0, steel: 0x8b9099 };
     const DS = F.discoSwitch, tvz = scr.z, tvx = scr.x, cd = 0.12;
-    const deskBox=(color,a,b,c,d,e,f)=>cbox(color,a+F.desk.x,b+F.desk.x,c,d,e+F.desk.z,f+F.desk.z);
+
     const W=R.clubhouse.welcome,edge=R.clubhouse.label.offset;
     const fur = [
       cbox(col.dark,W.x-W.w/2,W.x+W.w/2,W.y-W.h/2,W.y+W.h/2,W.z-R.clubhouse.wall,W.z-edge),
@@ -77,19 +78,12 @@ export class Playroom {
       cinemaCurtain(-1), cinemaCurtain(1),
       cbox(col.velvet, tvx + 0.025, tvx + 0.13, scr.bottom + scr.h + 0.08, h, -R.d/2, R.clubhouse.front-R.clubhouse.wall/2),
       ...cinema.seat.rowX.flatMap(x => cinema.seat.z.flatMap(z => cinemaChair(x,z))),
-      // the gaming desk on the east wall: top, two side panels, monitor on a stand, console, two controllers, keyboard
-      deskBox(col.wood, 2.65, 3.2, 0.54, 0.58, 0.3, 1.7), deskBox(col.wood, 2.65, 3.2, 0, 0.54, 0.3, 0.34), deskBox(col.wood, 2.65, 3.2, 0, 0.54, 1.66, 1.7),
-      deskBox(col.dark, 2.98, 3.08, 0.58, 0.72, 0.95, 1.05), deskBox(col.dark, 2.96, 3.1, 0.58, 0.6, 0.85, 1.15), deskBox(col.dark, 2.96, 3.02, 0.7, 1.08, 0.7, 1.3),
-      deskBox(col.white, 2.85, 3.12, 0.58, 0.64, 1.38, 1.62), deskBox(col.blue, 2.85, 3.12, 0.64, 0.655, 1.38, 1.62),
-      deskBox(col.red, 2.78, 2.88, 0.58, 0.615, 0.4, 0.5), deskBox(col.blue, 2.78, 2.88, 0.58, 0.615, 0.55, 0.65), deskBox(col.dark, 2.72, 2.84, 0.58, 0.6, 0.85, 1.25),
-      // the stool at the desk (its seat is a rest spot)
-      paint(new THREE.CylinderGeometry(.2,.2,.06,32).translate(R.x+F.stool.x,F.stool.seat-.03,R.z+F.stool.z),col.red),
-      ...[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([a, b]) => cbox(col.steel, F.stool.x + a * 0.17 - 0.02, F.stool.x + a * 0.17 + 0.02, 0, F.stool.seat - 0.06, F.stool.z + b * 0.17 - 0.02, F.stool.z + b * 0.17 + 0.02)),
       // #1365: the light switch by the door (the disco ball, TV and PC are also targets themselves)
       cbox(col.white, DS.x - 0.05, DS.x + 0.05, DS.y - 0.07, DS.y + 0.07, R.d / 2 - 0.012, R.d / 2),
       // the disco ball's mount and cord
       cbox(col.steel, F.ball.x - 0.04, F.ball.x + 0.04, h - 0.03, h, F.ball.z - 0.04, F.ball.z + 0.04), cbox(col.steel, F.ball.x - 0.005, F.ball.x + 0.005, F.ball.y + F.ball.r, h - 0.03, F.ball.z - 0.005, F.ball.z + 0.005),
     ];
+    fur.push(...computerFurniture());
     // Shallow diffusers sit inside a slim rounded frame instead of floating light squares.
     const rim=R.appearance.panelRimWidth;
     for(const x of [-2*R.clubhouse.side,0,2*R.clubhouse.side])for(const z of [(-R.d/2+R.clubhouse.front)/2,(R.d/2+R.clubhouse.front)/2]) {
@@ -118,9 +112,9 @@ export class Playroom {
     // Collision edges stop at each chair; the wide center aisle and the route behind the rear row stay open.
     this.footprints = [rect(DJ.x-DJ.w/2,DJ.x+DJ.w/2,DJ.z-DJ.d/2,DJ.z+DJ.d/2), ...cinema.seat.rowX.flatMap((x) => cinema.seat.z.map((z) => rect(x - S.depth / 2, x + S.depth / 2, z - S.width / 2, z + S.width / 2))),
       rect(tvx - 0.02, tvx + 0.075, -R.d/2, R.clubhouse.front-R.clubhouse.wall/2),
-      rect(2.65+F.desk.x, 3.2+F.desk.x, 0.3+F.desk.z, 1.7+F.desk.z), rect(F.stool.x - 0.2, F.stool.x + 0.2, F.stool.z - 0.2, F.stool.z + 0.2)];
+      ...COMPUTER_MEDIA.stations.filter(s=>s.clubhouse).flatMap(s=>{const D=COMPUTER_MEDIA.desk,x=s.x-R.x,z=s.z-R.z,cx=x+Math.sin(s.yaw)*D.seatOffset;return[rect(x-D.depth/2,x+D.depth/2,z-D.width/2,z+D.width/2),rect(cx-D.chair[2]/2,cx+D.chair[2]/2,z-D.chair[0]/2,z+D.chair[0]/2)];})];
     for (const q of this.footprints) for (let i = 0; i < 4; i++) { const a = q[i], b = q[(i + 1) % 4]; this.segments.push([a[0], a[1], b[0], b[1]]); }
-    // the individual cinema chairs and the stool carry invisible pick boxes for the ordinary E / touch rest targets
+    // the individual cinema and computer chairs carry invisible pick boxes for the ordinary E / touch rest targets
     this.targets = [];
     const seatAt = (name, verb, x, z, w, d, yaw, spots) => {
       const pick = new THREE.Mesh(new THREE.BoxGeometry(w, 0.5, d), new THREE.MeshBasicMaterial({ visible: false }));
@@ -137,7 +131,7 @@ export class Playroom {
       pick.userData.door = pick.userData.interact = restTarget(pick, { x: R.x + x, z: R.z + z, level: 0 }, 0);
       this.object.add(pick); this.targets.push(pick.userData.interact);
     }));
-    seatAt('pallen', 'sätta dig på', F.stool.x, F.stool.z, 0.4, 0.4, Math.PI / 2, [{ x: 0, y: F.stool.seat, z: 0, aim: [0, 0] }]);
+    for(const s of COMPUTER_MEDIA.stations.filter(s=>s.clubhouse)){const D=COMPUTER_MEDIA.desk;seatAt(`datorstolen · ${s.name}`, 'sätta dig på', s.x-R.x+Math.sin(s.yaw)*D.seatOffset,s.z-R.z,D.chair[0],D.chair[2],s.yaw,[{x:0,y:D.seat,z:0,aim:[0,0],dir:[0,-1],look:[0,-D.seatOffset,D.monitorY]}]);}
     this.object.userData.furnitureCount = fur.length;
     // the disco ball: a faceted silver sphere that turns, and light spots sweeping over the walls, floor and ceiling (one mesh, no real light)
     const bg0 = new THREE.IcosahedronGeometry(F.ball.r, 2), bg = bg0.index ? bg0.toNonIndexed() : bg0, bn = bg.attributes.position.count, bc = new Float32Array(bn * 3);

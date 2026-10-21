@@ -4,6 +4,7 @@
 <body>
 <pre id="out">running…</pre>
 <script>
+// Local demo fallback regression; shared apps are covered by computermediatest.cjs (#1488).
 // Tilly's laptop on the vanity (#283): E on the screen switches it on (the feed draws), the clip swipes up to the next
 // after LAPTOP.swipe s and with E, each clip kind counts once (stats.clips), E on the keyboard switches it off; not
 // through the wall from Sovrum 2; F switches it off and it is no target.
@@ -27,6 +28,7 @@ f.onload = async () => {
   const ts = world.furnitureTargets.filter((t) => t.kind === 'laptop');
   const scr = ts.find((t) => t.part === 'screen'), pow = ts.find((t) => t.part === 'power');
   let pass = check(!!(scr && pow), `laptop targets: ${ts.map((t) => t.part).join(', ')}`);
+  w.__app.computerHub.sessions.delete(scr.mediaId);scr.media(false);
   const lap = scr.laptop, feed = lap.feed;
   const V = camera.position.constructor;
   const sp = lap.screen.getWorldPosition(new V());
@@ -41,7 +43,7 @@ f.onload = async () => {
   };
   const front = [sp.x - 0.75, sp.z - 0.1]; // in front of the vanity, beside the stool
   lookAt(...front, sp);
-  pass &= check(!btn.hidden && /slå på laptopen/i.test(btn.textContent), `the screen: "${btn.textContent}"`);
+  pass &= check(!btn.hidden && /välja på laptopen/i.test(btn.textContent), `the screen: "${btn.textContent}"`);
   const c0 = stats.clips;
   btn.click(); step(1 / 60);
   const v0 = feed.texture.version;
@@ -54,7 +56,7 @@ f.onload = async () => {
   pass &= check(feed.clip.key !== k0 && stats.clips === c0 + 2, `swiped by itself: ${k0} → ${feed.clip.key} (clips ${stats.clips})`);
   // E on the screen: the next clip at once
   lookAt(...front, sp);
-  pass &= check(/bläddra till nästa klipp/i.test(btn.textContent), `on, the screen: "${btn.textContent}"`);
+  pass &= check(/välja på laptopen/i.test(btn.textContent), `on, the screen: "${btn.textContent}"`);
   const k1 = feed.clip.key;
   btn.click();
   for (let i = 0; i < 20; i++) step(1 / 30);

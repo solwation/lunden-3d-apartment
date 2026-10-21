@@ -33,7 +33,7 @@ I källaren slipper grafiken rita hela föremål som är helt skymda av garagets
 På vintern har båda hästarna varsitt täcke och står synliga inne i hästhagens skjul, med halm på golvet, girlang och en varm ljusslinga. När snön försvinner försvinner täckena och pyntet och hästarna går ut i hagen igen.
 Skjulet och vattenhon står nu närmare staketet vid grinden, med samma storlek och fri passage vid stättan. Placeringen är en uppskattning och väljs bara om marken är tillräckligt plan.
 
-Spelare som är kortare än 160 cm kan gå in i lekstugans hemliga klubbhus. En hall med “LET’S PLAY!” leder till separata rum märkta BIO, BILJARD och SPEL. Bion har en stor duk, röda sammetsgardiner och två rader biostolar med fri mittgång. I SPEL står spelbordet och i BILJARD står bordets kortsida mot dörren med fri gång runtom. Dörren inifrån går alltid att använda för att komma ut. Sikta över biljardbordet och tryck E för att stöta, och vänta tills bollarna stannat inför nästa stöt.
+Spelare som är kortare än 160 cm kan gå in i lekstugans hemliga klubbhus. En hall med “LET’S PLAY!” leder till separata rum märkta BIO, BILJARD och SPEL. Bion har en stor duk, röda sammetsgardiner och två rader biostolar med fri mittgång. I SPEL står fyra färgtemade datorbord, två längs varje sidovägg och i BILJARD står bordets kortsida mot dörren med fri gång runtom. Dörren inifrån går alltid att använda för att komma ut. Sikta över biljardbordet och tryck E för att stöta, och vänta tills bollarna stannat inför nästa stöt.
 Pussar fungerar bara mellan en Sarah och en Olof, i båda riktningarna; namnen får innehålla respektive namn men inte båda. Kom nära utan vapen och använd E/pekknappen: båda lutar sig fram, putar med läpparna och pussas med ett ”mmm-smack” och hjärtan. Den som börjar får +100 poäng för kärlek när pussen genomförs. Andra par och längre avstånd ger vanlig hälsning.
 
 När du möblerar om står möbler ovanpå mattan och åter på golvet när de flyttas av den. Flyttar du själva mattan justeras höjden för möbler och saker som står kvar.
@@ -344,8 +344,14 @@ while open passages and side contacts within the flame volume remain valid (#978
 
 The actual entrance/lobby shells in Houses A, B and C remain visible beyond the lift/stair detail distance, using each house’s existing dimensions. House L’s open portik remains a through-passage (#976).
 
-I lekstugans klubbhus kan barn spela Pricka grönt på datorn med E eller
-tryckknappen. Interagera direkt med bioduken, även från biostolarna, för att öppna
+På alla datorer, även laptopen, väljer man YouTube eller Spel med E eller
+tryckknappen. Ormstriden är ett gemensamt ormspel: ät, väx och få de andra
+att krocka med din kropp. En större orm vinner vid huvudkrock. Styr med pilar,
+WASD, mus eller pekskärm; lämna datorn för att lämna matchen. Fyra färgtemade
+datorbord står i lekstugan, två längs varje sidovägg. En person styr varje dator
+och samma arena delas med datorerna hemma.
+
+Interagera direkt med bioduken, även från biostolarna, för att öppna
 filmvalet med förslag, bildkort och sökning efter filmer eller kanaler. Sökningen
 väljer filmer som tillåter inbäddning och visning utanför YouTube. Välj en film
 så spelas den på den nästan väggbreda bioduken för alla i lekstugan; även egna YouTube-länkar fungerar.
@@ -353,7 +359,7 @@ Duken har 40 cm till golv och tak, med mörkröda sammetsgardiner ut till sidov�
 En person i taget väljer film och styr paus och uppspelning. Tillbaka till rummet
 släpper kontrollen medan filmen fortsätter. Aktivera ljudet med knappen vid behov.
 Filmen stängs av när den sista personen lämnar lekstugan. Videon måste tillåta
-inbäddning. Den vita spelboxen stänger av datorn; datorn stängs av när man lämnar klubbhuset. Lekstugan håller regn, snö och hagel utanför taket. Alla väggar har golvlister, tydliga hörn och mjuka
+inbäddning. Lekstugan håller regn, snö och hagel utanför taket. Alla väggar har golvlister, tydliga hörn och mjuka
 kontaktskuggor, med samma grundteknik som i L1007. Rundade stoppade biostolar,
 veckade gardiner, trästruktur och ett plankgolv ger lekstugan ett mjukare uttryck.
 Biljardbordet står mitt i biljardrummet med fri yta innanför dörren. Discolampans strömbrytare fungerar som tidigare (#1365).

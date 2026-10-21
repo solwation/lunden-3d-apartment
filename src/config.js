@@ -5342,10 +5342,10 @@ export const FURNITURE = [
   // Walter & Kian's gaming corner (#77, #84, #459): a black desk 140 × 70 along the west wall (opposite the bunk),
   // moved 8 cm north of the south window wall to clear the curtains, facing east; curved 34" ultrawide on a monitor arm, RGB
   // tower at the window end (out of the bunk's line of sight), keyboard, mouse, headset, speakers (sizes
-  // our pick). E on it switches the PC on (animated game screen, RGB cycling, game sounds). The black/green
+  // our pick). E opens the shared YouTube/game selector (#1488). The black/green
   // gaming chair in front of it is a seat (#71) and sitting down starts the PC; sitting in the lower bunk
   // swings the monitor round towards it and plays a film.
-  { type: 'gamingdesk', level: 1, x: 2.75 + 0.35, z: 12.23 - 0.7 - 0.08, rot: -90, w: 1.4, d: 0.7, fps: 12 },
+  { type: 'gamingdesk', mediaId:'pc-home', level: 1, x: 2.75 + 0.35, z: 12.23 - 0.7 - 0.08, rot: -90, w: 1.4, d: 0.7, fps: 12 },
   { type: 'gamingchair', level: 1, x: 2.75 + 0.35 + 0.62, z: 12.23 - 0.7 - 0.08, rot: 90 },
   // Sovrum 4 (Tilly): IKEA HEMNES dagbädd m 3 lådor, vit, 207 × 89 × 83 cm (ikea.com, HEMNES_DAYBED), back to the
   // west wall, charcoal and lilac bedding (#280), its head end by the window (#312, DAYBED_Z). rot = the way the seat faces.
@@ -5360,7 +5360,7 @@ export const FURNITURE = [
   // her K-pop posters (#280, KPOP_POSTERS): world coordinates, so the item sits at the origin unturned (rot 180 = yaw 0)
   { type: 'kposters', level: 1, x: 0, z: 0, rot: 180 },
   // Tilly's laptop (#283, LAPTOP) on the vanity's free end (vanity-local x 0.29), turned 15° towards the stool
-  { type: 'laptop', level: 1, x: 2.632 - VANITY.d / 2 - 0.004 - 0.02, z: 11.45 + 0.29, y: VANITY.h, rot: 75 },
+  { type: 'laptop', mediaId:'laptop-home', level: 1, x: 2.632 - VANITY.d / 2 - 0.004 - 0.02, z: 11.45 + 0.29, y: VANITY.h, rot: 75 },
   // Matplats: IKEA SKANSNÄS (#62/#63), closed (150 cm), the short end to the kitchen window and a little
   // west of its centre so the east chairs clear the kitchen fronts (x 4.95); two chairs on each long
   // side, pushed in under the top (#57)
@@ -5744,9 +5744,9 @@ export const PLAYROOM = { maxCm: 160, x: -1500, z: -1500, w: 18, d: 10.4, ceilin
   fadeMs: [220, 320], // black fade out before the move / back in after it
   lit: 0.55, // ambient light added inside (day.lit): enough to see by, not so bright it looks like a day-lit hall
   litDisco: 0.82, // #1365: that ambient times this while the disco light is on (mood; our own choice)
-  // #1365: local TV animation and timing game; visual/playability choices, not measured hardware.
+  // Cinema poster dimensions and network timeout are visual/usability guesses.
   devices: { videoTimeoutMs: 20000, // Assumed network timeout for the optional cinema player (#1376).
-    canvas: [512, 288], fps: 12, pickDepth: 0.08, sweepSeconds: 1.5, targetHalf: 0.12, boatSpeed: 0.4 },
+    canvas: [512, 288] },
   cinemaSync: { maxPosition: 604800, driftSeconds: 1.5, syncEveryMs: 2000, width: 1280 }, // Assumed media bounds, local drift correction and iframe viewport.
   // #1328: local child-size billiards (all dimensions/rolling coefficients are visual/playability guesses).
   billiards: { x: 0, z: -1.83, yaw: Math.PI / 2, length: 1.8, width: 0.9, height: 0.58, rail: 0.09, railH: 0.06, leg: 0.08, // #1482: centre between north z=-5.2 and the partition inner face z=1.54; retain #1411 orientation.
@@ -5768,13 +5768,12 @@ export const PLAYROOM = { maxCm: 160, x: -1500, z: -1500, w: 18, d: 10.4, ceilin
     welcome: { x: 0, z: 2.3, y: 2.52, w: 3.2, h: 0.3 }, label: { y: 2.25, w: 1.8, h: 0.25, offset: 0.012 },
     atlas: [512,256], swatch: 8, lightInk: '#fff6dc', font: 48, signBackground: '#17263b', signInk: '#78eee2' },
   // #1327: the furniture, child-sized for 140-159 cm players (all our own choices, *guess*); local metres from the room's centre (x east, z south, the door
-  // at z +5.2). Cinema screen/seats in BIO west of the billiards room; desk/stool in SPEL to the east. The disco stays in BILJARD.
-  // desk.x/z offsets retain the old desk geometry and interaction anchors while moving them together.
+  // at z +5.2). Cinema screen/seats in BIO west of BILJARD; COMPUTER_MEDIA places four desks/chairs in SPEL east of it.
   furniture: { seatHeight: 0.36, cinema: { screen: { x: -8.78, bottom: .4, topGap: .4, sideGap: .2 }, // #1415: user asks 40 cm below/above; assumed 20 cm side margins.
       curtain: { overlap: .06, bottom: .12 }, // Assumed small screen-edge overlap; hem clears the existing skirting.
       reach: 6, // Assumed screen-selection distance covering both cinema seat rows, only within BIO.
       seat: { width: 0.78, depth: 0.82, height: 0.39, back: 0.83, rowX: [-6.55, -4.72], z: [-3.25, -2.4, -0.8, 0.05] } },
-    tv: {}, desk: { x: 5.5, z: -0.4 }, stool: { x: 7.85, z: 0.6, seat: 0.38 },
+    tv: {},
     discoSwitch: { x: 0.9, y: 1.05, z: 5.2 }, // #1365/#1374: the wall switch east of the door (south wall, z +5.2; height reachable for children, guess)
     ball: { x: 0, z: -1.5, y: 1.95, r: 0.17, spin: 0.5, spots: 26, spotSpin: 0.35 }, // the disco ball hangs under the ceiling, the light spots sweep round it
   } };
@@ -6502,7 +6501,10 @@ export function tvViewer(id,p) {
 // #1486: personal computer stations and child-sized clubhouse desks; all dimensions/themes are visual/playability guesses.
 export const COMPUTER_MEDIA = {
   reach: 2.8, floorTolerance: .7,
-  desk: { width: 1.45, depth: .6, height: .65, seat: .38, seatOffset: .8, monitorWidth: .65, monitorHeight: .38, monitorY: 1.0 },
+  desk: { width:1.45, depth:.6, height:.65, seat:.38, seatOffset:.8,
+    monitorWidth:.65, monitorHeight:.38, monitorY:1, monitorDepth:.04, bezel:.025,
+    top:.04, leg:.04, keyboard:[.4,.025,.14], chair:[.42,.06,.42], backHeight:.35,
+    case:[.18,.32,.3], homePlaneOffset:.085 },
   stations: [
     { id:'pc-home', name:'Speldatorn', x:3.1, z:11.45, level:1, bounds:[2.75,5.57,7.8,12.52], color:'#73e66b' },
     { id:'laptop-home', name:'Laptopen', x:2.332, z:11.74, level:1, bounds:[.18,2.75,7.8,12.52], color:'#c89aff' },

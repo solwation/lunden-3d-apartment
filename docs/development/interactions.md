@@ -8,9 +8,8 @@ Clubhouse devices (#1365): `playroomDevice` targets use the existing focus,
 keyboard E and touch action path. The cinema screen opens Bion with film
 suggestions and search (#1475); the armrest remote is removed. The screen can
 be selected from either seat row within BIO; hall and billiards-room positions
-never gain the longer screen-only reach. the computer screen starts power then plays/stops Pricka grönt, and
-the separate white/blue box switches its power off. Cinema seats and the game
-stool use normal rest reach and stand-up handling. [Device lifecycle and tests](furniture.md#clubhouse-tv-and-computer-1365).
+never gain the longer screen-only reach. The four computer screens open the shared
+app selector (#1488). Cinema and computer chairs use normal rest reach and stand-up handling. [Device lifecycle and tests](furniture.md#clubhouse-tv-and-computer-1365).
 
 Cinema search (#1472 first slice): the Bion dialog queries the Worker's
 `/youtube-search?q=…` endpoint and renders returned titles/channels as text.
@@ -1871,3 +1870,28 @@ returns to existing programmes. During a shared film the remote's power action
 opens the same shared controls, preserving the exclusive owner rule.
 Unique dialog/input/title IDs and shared CSS replace the earlier cinema-only
 selectors; `showNote(false)` also closes an open TV chooser.
+
+## Shared computers (#1488)
+
+`ComputerHub` opens an independent YouTube/Spel app selector through ordinary
+E/touch on each of the six registered computers, within `COMPUTER_MEDIA.reach`.
+One RoomCinema lease controls each screen. Read-only visitors cannot change apps,
+select films or join as that computer. YouTube uses the same official world-space
+iframe and shared film clock as the TVs. Switching to a game stops that computer's
+film; it does not change other computers, TVs or the cinema.
+
+`snakeview.js` renders the server arena both on the physical monitor's texture
+and in the control panel. Snapshots interpolate at a capped20Hz; static menu
+textures upload only when changed. Arrow/WASD headings, pointer/touch steering
+and44px directional buttons never feed the avatar movement keys. A join/restart
+is explicit. Food grows length/girth; larger head collisions win, equal heads
+both die, and body collisions leave edible remains. Names/scores show actual peers.
+
+`Ghosts.snake` coalesces pending headings within the existing shared5Hz socket
+budget, without extra sockets. App, lease and join/leave commands take precedence
+over superseded inputs. Closing controls, changing apps, leaving reach/room,
+hiding the page, power/furniture removal or disconnect removes the active snake.
+The last departure removes the ephemeral arena; films retain the existing
+last-room-viewer lifetime. Reconnection clears old ownership and requires a
+fresh control claim/join. Rules/food/collisions are server-owned in `snakearena.js`;
+clients never submit positions, lengths, food or kills. No game state is saved.

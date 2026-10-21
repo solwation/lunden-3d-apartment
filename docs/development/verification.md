@@ -15,6 +15,31 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## Shared computer clients (#1488)
+
+Scoped checks: `tools/computerfurnituretest.mjs` with the pinned Three loader;
+`tools/computermediatest.cjs GAME FRESH_LOCAL_WORKER OUT`, including its
+`PHASE=laptop` targeted continuation. The component check passes four themes,
+two desks per wall, seat reach, finite geometry and clear central approach:
+84 parts/9,072 triangles, merged into the existing furniture batch, no new lights.
+
+Two actual app instances passed home-PC E, clubhouse touch, the same live
+arena across the two rooms, native arrow/touch headings, stationary avatar,
+physical monitor canvas, wall death/restart, real advancing YouTube frames on
+the monitor while the other computer retains its game, all four themed app
+selectors and refusal of a second controller. The complete two-client run passes with no page/shader exceptions. An earlier laptop camera
+missed its small screen after collision repositioning; the corrected pose aims
+after settling the player. A focused laptop continuation also passed native
+touch choice/join, pointer steering, disconnect/new identity, fresh control
+claim/rejoin and last-game cleanup, with no page/shader exceptions.
+Local evidence: `/tmp/computer-media-images/` (desktop/touch game, physical
+YouTube monitor, SPEL view and `laptop-result.json`). This is functional evidence
+under Chromium software rendering, not a hardware performance measurement.
+Historical PC/laptop HTML fixtures explicitly disable their shared session to
+retain coverage of local demo/arm fallback; the old clubhouse timing-game
+assertions are replaced by the dedicated shared-computer suite. Those broad
+legacy fixtures were adapted but not rerun for this scoped delivery.
+
 ## Shared computer arena server (#1487)
 
 `node --test --test-isolation=none tools/snakearenatest.mjs cloudflare/snake.test.mjs`

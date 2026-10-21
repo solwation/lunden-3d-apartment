@@ -4,6 +4,7 @@
 <body>
 <pre id="out">running…</pre>
 <script>
+// Local demo/monitor-arm regression; shared apps are covered by computermediatest.cjs (#1488).
 // Walter & Kian's gaming PC (#77): find a place from which the action button says "Starta datorn",
 // switch it on (the game screen moves, the RGB fans change colour), off again; the gaming chair is a seat
 // and sitting in it starts the PC; the seat in the lower bunk swings the monitor round (a film).
@@ -25,6 +26,8 @@ f.onload = async () => {
   world.object.updateMatrixWorld(true);
   const btn = d.getElementById('action');
   const pc = world.furnitureTargets.find((t) => t.kind === 'pc');
+  // Exercise the retained offline fallback without opening the shared app selector.
+  w.__app.computerHub.sessions.delete(pc.mediaId);pc.media(false);
   let pass = check(!!pc, 'PC exists');
   const target = pc.pickable.getWorldPosition(new pc.pickable.position.constructor());
   target.y += 0.95;
@@ -36,7 +39,7 @@ f.onload = async () => {
     camera.rotation.y = Math.atan2(-dx, -dz);
     camera.rotation.x = Math.atan2(target.y - camera.position.y, Math.hypot(dx, dz));
     step(1 / 60);
-    if (!btn.hidden && /starta datorn/i.test(btn.textContent)) { found = true; break; }
+    if (!btn.hidden && /välja på datorn/i.test(btn.textContent)) { found = true; break; }
   }
   pass &= check(found, `button "${btn.textContent}"`);
   btn.click();

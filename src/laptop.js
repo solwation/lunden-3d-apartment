@@ -290,11 +290,11 @@ export function laptop(item) {
       if (on === v) return;
       on = v;
       if (!on) music.stop();
-      screen.material = on ? onMat : offMat;
-      if (on) { feed.t = 0; feed.slide = -1; feed.draw(); feed.texture.needsUpdate = true; acc = 0; self.onClip?.(feed.clip.key); }
+      if(!self.appActive)screen.material = on ? onMat : offMat;
+      if (on && !self.appActive) { feed.t = 0; feed.slide = -1; feed.draw(); feed.texture.needsUpdate = true; acc = 0; self.onClip?.(feed.clip.key); }
     },
     update(dt) {
-      if (!on) return;
+      if (!on || self.appActive) return;
       const fresh = feed.step(dt);
       if (fresh) self.onClip?.(fresh.key);
       acc += dt;
@@ -304,10 +304,11 @@ export function laptop(item) {
     },
   };
   const screenT = {
-    kind: 'laptop', part: 'screen', pickable: lid, laptop: self,
+    kind: 'laptop', part: 'screen', pickable: lid, laptop: self, mesh:screen, mediaId:item.mediaId,
+    media(on) {self.appActive=on;if(on)music.stop();else screen.material=self.on?onMat:offMat;},
     get isOpen() { return on; },
-    get name() { return on ? 'nästa klipp' : 'laptopen'; },
-    get verb() { return on ? 'bläddra till' : 'slå på'; },
+    get name() { return item.mediaId?'laptopen':on ? 'nästa klipp' : 'laptopen'; },
+    get verb() { return item.mediaId?'välja på':on ? 'bläddra till' : 'slå på'; },
     toggle() { if (!on) self.set(true); else feed.swipe(); return on; },
     update: (dt) => self.update(dt),
   };

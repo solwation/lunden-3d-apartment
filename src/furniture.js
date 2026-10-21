@@ -1,3 +1,4 @@
+import { COMPUTER_MEDIA } from './config.js';
 import { upholsterySurface } from './upholstery.js';
 import { materialChoice } from './materialcatalog.js';
 import { MATERIAL_LIBRARY, LONG_PILE, SHADE_CANOPY_TEXTILES } from './config.js';
@@ -2559,11 +2560,17 @@ function gamingdesk(item) {
   const turn = { to: 0, out: 0 }; // monitor arm: target yaw, how far it is pulled out from the wall (0–1)
   const where = () => g.getWorldPosition(new THREE.Vector3()).setY(g.getWorldPosition(new THREE.Vector3()).y + 1);
   const music = new MusicLoop(MUSIC.pcGain);
+  // A retained flat app surface follows the existing articulated monitor arm.
+  const appScreen=new THREE.Mesh(new THREE.PlaneGeometry(sw,sh),offMat);
+  appScreen.position.set(0,my,mz-pz+COMPUTER_MEDIA.desk.homePlaneOffset);mon.add(appScreen);appScreen.visible=false;
+  let appActive=false;
   const interact = {
+    mesh:appScreen,mediaId:item.mediaId,
+    media(on) { appActive=on;appScreen.visible=on;screen.visible=!on;if(on)music.stop(); },
     music,
     name: 'datorn', kind: 'pc', pickable: g,
     get isOpen() { return on; },
-    get verb() { return on ? 'stänga av' : 'starta'; },
+    get verb() { return item.mediaId?'välja på':on ? 'stänga av' : 'starta'; },
     toggle() {
       on = !on;
       screen.material = on ? onMat : offMat;
@@ -2595,7 +2602,7 @@ function gamingdesk(item) {
       mon.position.z = pz + 0.3 * turn.out;
       arm.scale.z = Math.max(0.001, 0.3 * turn.out);
       if (!on) return;
-      music.update(watching ? MUSIC.ambient[0] : MUSIC.game[1], where());
+      if(!appActive)music.update(watching ? MUSIC.ambient[0] : MUSIC.game[1], where());
       t += dt; acc += dt;
       const hue = (t * 0.15) % 1; // RGB cycling (cheap: only colours change)
       rgb.forEach((m, i) => m.color.setHSL((hue + i * 0.12) % 1, 1, 0.55));
@@ -2603,6 +2610,7 @@ function gamingdesk(item) {
       glowMat.color.setHSL(0.8 + 0.1 * Math.sin(t), 0.8, 0.22);
       if (acc < 1 / item.fps) return;
       acc = 0;
+      if(appActive)return;
       if (watching) { drawFilm(); return; } // a film: no game sounds
       const [px, py] = draw();
       if (t > nextShot) { nextShot = t + 0.25 + Math.random() * 0.9; sfx.game(where(), shoot(px, py)); }

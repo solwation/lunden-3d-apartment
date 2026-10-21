@@ -764,6 +764,14 @@
     .cinema-watch span { display: block; }
     .cinema-watch button { min-height: 44px; margin-top: 4px; border: 0; border-radius: 6px; padding: 8px; touch-action: manipulation; }
     .cinema-player { box-sizing: border-box; width: min(920px, calc(100% - 24px - var(--sl) - var(--sr))); max-height: calc(100% - 16px - var(--st) - var(--sb)); overflow: auto; border: 1px solid #788b98; border-radius: 12px; padding: 12px; background: #14212c; color: #fff; touch-action: auto; }
+    .computer-player[open] { display:block; }
+    .computer-player [hidden] { display:none !important; }
+    .computer-player > .cinema-row:first-child { position:sticky;top:0;background:#14212c;z-index:1;padding:4px 0; }
+    .computer-apps { margin:12px 0; }
+    .computer-apps [aria-pressed=true] { background:#93dfb0; }
+    .computer-game canvas { display:block;width:100%;height:auto;aspect-ratio:8/5;background:#0a1220;touch-action:none; }
+    .computer-game p { font-size:14px; }
+    .computer-player .computer-movie form .cinema-row { display:flex; }
     .cinema-player::backdrop { background: rgba(0, 0, 0, .78); }
     .cinema-player .cinema-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     .cinema-player h2 { font-size: 20px; margin: 0; flex: 1; }

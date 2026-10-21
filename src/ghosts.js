@@ -468,6 +468,7 @@ export class Ghosts {
     else if (m.t === 'c') { const g = this.others.get(m.i); if (g) this.onToast?.(m, g); } // a toast (#1222): the room sends it only from within PLAYERS.toastRange
     else if (m.t === 'snd') { const g = this.others.get(m.i); if (g && SOUNDS.kinds.includes(m.k)) this.onPlayerSound?.(m, g); } // a sound event (#1302): the room sends it only from within PLAYERS.soundRange
     else if (m.t === 'cinema') this.onCinema?.(m);
+    else if (m.t === 'snake') this.onSnake?.(m);
     else if (m.t === 'pool') this.onPool?.(m); // the shared billiard table (#1355, src/billiards.js): only sent to players inside the children's room
     else if (m.t === 'm' || m.t === 'mx' || m.t === 'k') this.onTalk?.(m, this.others.get(m.i)); // chat (#675) and "skriver…" (#676), src/chat.js
   }
@@ -578,6 +579,15 @@ export class Ghosts {
   cinema(msg) {
     if (!this.connected) return false;
     this.outbox.push(msg); this.lastMove = performance.now(); this.sendShot(); return true;
+  }
+
+  /** Coalesce headings in the existing shared 5 Hz budget; never grow a game-input queue. */
+  snake(msg) {
+    if(!this.connected)return false;
+    this.outbox=this.outbox.filter(m=>m.t!=='snake'||m.k!=='input');
+    if(msg.k==='input'&&this.outbox.length>=G.outbox)return false;
+    if(msg.k==='get'&&this.outbox.some(m=>m.t==='snake'&&m.k==='get'))return true;
+    this.outbox.push(msg);this.lastMove=performance.now();this.sendShot();return true;
   }
 
   /** Our own state for the mirror image (#691): where we stand, which way we look, what we hold and how fast we walk (the

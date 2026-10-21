@@ -85,8 +85,8 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     check(Math.abs(aisleWalk.z - (RM.z + (cinema.seat.z[1] + cinema.seat.z[2]) / 2)) < 0.5, 'walk from the BIO doorway to the open center aisle', `z=${(aisleWalk.z - RM.z).toFixed(2)}`);
     const behindWalk = await walkTo(L(-4.15, (cinema.seat.z[1] + cinema.seat.z[2]) / 2), -Math.PI / 2, 1.8);
     check(behindWalk.x > RM.x - 4.72 + seat.depth / 2 + 0.3, 'the route remains open behind the rear seat row', `lx=${(behindWalk.x - RM.x).toFixed(2)}`);
-    const deskWalk = await walkTo(L(RM.furniture.desk.x+1.6, RM.furniture.stool.z), -Math.PI / 2, 3); // east into the stool / desk
-    check(deskWalk.x < RM.x + RM.furniture.desk.x+2.65 - 0.2, 'the stool and desk hold', `lx=${(deskWalk.x - RM.x).toFixed(2)}`);
+    const deskWalk = await walkTo(L(6,-.3), -Math.PI / 2, 3); // east into the stool / desk
+    check(deskWalk.x < RM.x+8.6, 'the computer chair and desk hold', `lx=${(deskWalk.x - RM.x).toFixed(2)}`);
     const clash = await page.evaluate(({ RM }) => { const r = window.__app.world.playroom, b = RM.billiards, hx = b.length / 2 + b.rail + 0.05, hz = b.width / 2 + b.rail + 0.05; // the table's footprint (+ 5 cm), no furniture footprint touches it
       return r.footprints.filter((q) => { const xs = q.map((p) => p[0] - RM.x - b.x), zs = q.map((p) => p[1] - RM.z - b.z); return Math.min(...xs) < hx && Math.max(...xs) > -hx && Math.min(...zs) < hz && Math.max(...zs) > -hz; }).length; }, { RM });
     check(clash === 0, 'cinema screen and seats stay clear of the billiard table', `overlaps ${clash}`);
@@ -142,8 +142,7 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
       await page.evaluate(() => window.__app.standUp());
     }
     await setHeight(159);
-    const fs2 = await page.evaluate(({ RM }) => { const t = window.__t, P = window.__app.player; P.spawn(RM.x + RM.furniture.stool.x-.8, RM.z + RM.furniture.stool.z, Math.PI / 2); t.frames(10); t.aim(RM.x + RM.furniture.stool.x, 0.36, RM.z + RM.furniture.stool.z); return t.focus(); }, { RM });
-    check(fs2?.kind === 'rest' && fs2.name === 'pallen', 'the stool at the gaming desk is a seat', JSON.stringify(fs2));
+    // Computer chair/screen and app controls: tools/computermediatest.cjs (#1488).
     // the disco ball: one spot mesh, all spots inside the room, and they move
     const d1 = await page.evaluate(() => { const r = window.__app.world.playroom, p = [...r.spots.geometry.attributes.position.array]; r.disco(1.3); return { a: p, b: [...r.spots.geometry.attributes.position.array], bounds: r.bounds, n: r.rays.length }; });
     const inb = d1.b.every((v, i) => i % 3 === 1 ? v > -0.2 && v < RM.ceiling + 0.2 : true) && d1.b.filter((_, i) => i % 3 === 0).every((v) => v > d1.bounds.x0 - 0.2 && v < d1.bounds.x1 + 0.2) && d1.b.filter((_, i) => i % 3 === 2).every((v) => v > d1.bounds.z0 - 0.2 && v < d1.bounds.z1 + 0.2);
@@ -164,7 +163,7 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     check(on.on && on.spots && on.moved, 'used again: disco on, spots sweep', JSON.stringify(on));
     // #1365: actual native keyboard E / mobile action button, not direct device calls.
     const deviceUse = nativeUse;
-    const deviceState = () => page.evaluate(() => { const d = __app.world.playroom.devices; return { tv: d.tvOn, pc: d.pcOn, playing: d.playing, hits: d.hits, rounds: d.round, cursor: d.cursor, result: d.result }; });
+
     const cinemaSeat = { x: cinema.seat.rowX[1], z: cinema.seat.z[0] };
     await aimAt([RM.x+cinemaSeat.x+0.78,RM.z+cinemaSeat.z], [RM.x+cinemaSeat.x,.48,RM.z+cinemaSeat.z]);
     await deviceUse();
@@ -172,7 +171,7 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     check(screenFocus.seated && screenFocus.focus?.name === 'bioduken' && screenFocus.focus?.verb === 'välja film på', 'cinema screen can be selected from a real seat', JSON.stringify(screenFocus));
     await deviceUse(); check(await page.locator('#cinema-player').evaluate(el => el.open), 'native E/touch opens film choice while seated');
     await page.evaluate(() => __t.render()); await page.screenshot({ path: `${shots}/15-cinema-screen.png` });
-    await page.locator('[data-cinema=close]').click();
+    await page.locator('#cinema-player [data-cinema=close]').click();
     check(!await page.locator('#cinema-player').evaluate(el => el.open), 'cinema back button closes the player and restores room controls');
     await page.evaluate(() => __app.standUp());
     await page.evaluate(() => { window.deviceSwitches = []; __app.world.playroom.onSwitch = (name, on) => deviceSwitches.push([name, on]); });
@@ -180,33 +179,11 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     check(tvFocus?.name === 'bioduken' && tvFocus.verb === 'välja film på', 'screen itself opens film discovery', JSON.stringify(tvFocus));
     await deviceUse();
     check(await page.locator('#cinema-player').evaluate(el => el.open), 'native E/touch opens cinema by the screen');
-    await page.locator('[data-cinema=close]').click();
-    const DX=RM.furniture.desk.x,DZ=RM.furniture.desk.z;
-    await aimAt([RM.x+RM.furniture.stool.x-.8,RM.z+RM.furniture.stool.z], [RM.x+RM.furniture.stool.x,.36,RM.z+RM.furniture.stool.z]); await deviceUse();
-    const pcFocus = await page.evaluate(({RM}) => { const a=__app,F=RM.furniture; for(let i=0;i<12;i++)a.rest.update(.1); __t.aim(RM.x+F.desk.x+2.939,.89,RM.z+F.desk.z+1); return { seated:a.rest.active, focus:__t.focus() }; }, {RM});
-    check(pcFocus.seated && pcFocus.focus?.kind === 'playroomDevice' && pcFocus.focus.verb === 'starta', 'computer screen is reachable from the actual stool seat', JSON.stringify(pcFocus));
-    await deviceUse(); check((await deviceState()).pc && !(await deviceState()).playing, 'native E/touch powers the computer on');
-    await deviceUse(); check((await deviceState()).playing, 'native E/touch starts a timing-game round');
-    await page.evaluate(({RM}) => { __app.world.playroom.update(RM.devices.sweepSeconds/2, __app.camera, false); __t.render(); }, {RM});
-    await page.screenshot({ path: `${shots}/13-pc-playing.png` });
-    await deviceUse();
-    let played = await deviceState();
-    check(!played.playing && played.hits === 1 && played.rounds === 1, 'stopping in green records one hit', JSON.stringify(played));
-    await deviceUse();
-    await page.evaluate(() => { __app.world.playroom.update(.1, __app.camera, false); __t.render(); });
-    await deviceUse(); played = await deviceState();
-    check(!played.playing && played.hits === 1 && played.rounds === 2, 'a miss records an attempt and permits another round', JSON.stringify(played));
-    await page.evaluate(() => __t.render()); await page.screenshot({ path: `${shots}/14-pc-result.png` });
-    const powerFocus = await page.evaluate(({RM})=>{__t.aim(RM.x+RM.furniture.desk.x+2.985,.62,RM.z+RM.furniture.desk.z+1.5); return __t.focus();},{RM});
-    check(powerFocus?.name === 'datorns spelbox' && powerFocus.verb === 'stänga av', 'separate white box offers computer power off', JSON.stringify(powerFocus));
-    await deviceUse(); check(!(await deviceState()).pc, 'native E/touch switches the computer off');
-    const hook = await page.evaluate(() => deviceSwitches);
-    check(JSON.stringify(hook) === JSON.stringify([['pc',true],['pc',false]]), 'existing onSwitch hook receives device power changes', JSON.stringify(hook));
-    const cost = await page.evaluate(() => { const d=__app.world.playroom.devices;d.tv.mesh.frustumCulled=d.pc.mesh.frustumCulled=false;const shown=__t.calls();d.object.visible=false;const hidden=__t.calls();d.object.visible=true;d.tv.mesh.frustumCulled=d.pc.mesh.frustumCulled=true;return {calls:shown.calls-hidden.calls,tris:shown.tris-hidden.tris}; });
-    check(cost.calls===2 && cost.tris===4,'submitting both screens costs exactly two draws and four triangles',JSON.stringify(cost));
-    // Leave the computer running to exercise exit cleanup later in the lifecycle.
-    await deviceUse();
-    await page.evaluate(() => __app.standUp());
+    await page.locator('#cinema-player [data-cinema=close]').click();
+    // Shared computers replace the local timing game; covered with a real Worker
+    // and two actual apps in computermediatest.cjs. This offline room test retains cinema/disco/exit.
+    const cost = await page.evaluate(() => {const d=__app.world.playroom.devices,screens=[d.tv,...d.computers];for(const s of screens)s.mesh.frustumCulled=false;const shown=__t.calls();d.object.visible=false;const hidden=__t.calls();d.object.visible=true;for(const s of screens)s.mesh.frustumCulled=true;return{calls:shown.calls-hidden.calls,tris:shown.tris-hidden.tris};});
+    check(cost.calls===5&&cost.tris===10,'cinema and four monitors submit five planes',JSON.stringify(cost));
     await aimAt([RM.x-RM.w/2+1,RM.z+cinema.screen.z], [RM.x+RM.furniture.tv.x+.08,RM.furniture.tv.y+RM.furniture.tv.h/2,RM.z+cinema.screen.z]);
     if (!process.env.MOBILE) { await page.evaluate(() => document.exitPointerLock()); await page.waitForFunction(() => !document.pointerLockElement); await page.evaluate(() => __app.showOverlay(false)); }
     const lit = await page.evaluate(() => { const o = window.__app; return o.world.playroom.object.children.filter((c) => c.isLight).length; });
@@ -242,14 +219,14 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     await page.waitForTimeout(900);
     const s4 = await page.evaluate(() => { window.__t.frames(60); return window.__t.state(); });
     check(!s4.inRoom && !s4.roomVisible && Math.abs(s4.x + 28.85) < 0.05 && Math.abs(s4.z - 22.85) < 0.1 && s4.outdoors, 'out again in front of the door, room undrawn', JSON.stringify(s4));
-    const stopped = await page.evaluate(() => { const d = __app.world.playroom.devices, t=d.time; d.update(3); return !d.tvOn && !d.pcOn && !d.playing && d.time===t; });
-    check(stopped, 'leaving powers off both devices and freezes their updates');
+    const stopped = await page.evaluate(() => { const d = __app.world.playroom.devices;d.update(3);return !d.active&&!d.tvOn&&!__app.computerHub.open; });
+    check(stopped, 'leaving closes computer controls and deactivates clubhouse devices');
     check(Math.abs(s4.yaw) < 0.01, 'facing away from the door');
     await page.evaluate(() => { window.__t.aim(-28.85, 1.0, 10); window.__t.render(); }); await page.screenshot({ path: `${shots}/5-out-again.png` });
     await setHeight(175); await toDoor();
     const after = await page.evaluate(() => window.__t.calls());
     check(before.calls === after.calls && before.tris === after.tris, 'draw calls outside unchanged after a visit', `${JSON.stringify(before)} → ${JSON.stringify(after)}`);
-    check(inside.calls <= 17, 'inside, only the room is drawn: existing budget plus two screens', `outside ${before.calls}, inside ${inside.calls}`);
+    check(inside.calls <= 20, 'inside, only the room is drawn: cinema plus four computer planes', `outside ${before.calls}, inside ${inside.calls}`);
     check(errors.length === 0, 'no page errors', errors.join(' | '));
   } finally { await browser.close(); }
   console.log(failed ? `${failed} FAILED` : 'ALL PASSED');
