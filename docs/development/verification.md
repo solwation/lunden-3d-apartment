@@ -107,6 +107,15 @@ The initial server session exited143, causing two connection-refused harness att
 their logs remain separate from successful reruns. Raw scripts/arrays/images/verdicts:
 `/tmp/orkester-katt-20261020/service1432/`. The public port is separateLOW#116.
 
+Southern inner service loop (#1435): run `node --test tools/serviceloop1435test.mjs` and open
+`tools/serviceloop1435test.html` against the actual World. The four highway=service ways use the
+saved `osm-south-2026-10-08.json` projection; asphalt and 4.5m width are explicit guesses because
+the source has no `surface` or `width` tags. Check all10segment-centre rays against actual merged
+south-land road faces at the25mm lift (including overlaps hidden by older parking), exact shared
+nodes to saved outer-ring way `95036048`, the inner loop and `145221588`, complete-strip clearance of mapped building footprints and
+forests with a 0.5m tree margin, and unchanged `WALK.z1=250`. The distant loop is not a claimed
+walkable route. Terrain-triangle cuts apply only to these four new strips.
+
 Garage contents behind drawn ceilings (#1439):
 `node --test tools/garageocclusiontest.mjs tools/desktopocclusiontest.mjs tools/phonedetailunittest.mjs tools/occlusiontest.mjs`
 checks22cases, including exact included/excluded A/B/C/L ceiling rectangles,

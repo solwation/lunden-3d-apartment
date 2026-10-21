@@ -901,6 +901,11 @@ export const SITE = {
       {"source":"30633545","surface":"asphalt","path":[[194.62,384.62],[205.62,380.22],[279.48,359.11],[273.25,340.22],[265.3,314.56],[213.05,330.44],[173.12,342.21]],"w":4.5},
       {"source":"145221590","surface":"asphalt","path":[[-85.75,315.14],[-76.77,327.58]],"w":4.5},
       {"source":"145221588","surface":"asphalt","path":[[27.71,396.53],[9.95,373.66]],"w":4.5},
+      // #1435: inner service loop from the saved 2026-10-08 OSM snapshot. Its tags identify service roads only; width/asphalt are visual guesses.
+      {"source":"145221614","highway":"service","surface":"asphalt","surfaceSource":"guess","widthSource":"guess","path":[[-10.57,376.93],[12.47,408.16],[19.61,402.79],[27.71,396.53],[43.50,384.31],[49.03,380.04],[68.88,405.62]],"w":4.5,"terrain":"triangles"},
+      {"source":"145221585","highway":"service","surface":"asphalt","surfaceSource":"guess","widthSource":"guess","path":[[43.50,384.31],[26.85,362.85]],"w":4.5,"terrain":"triangles"},
+      {"source":"145221592","highway":"service","surface":"asphalt","surfaceSource":"guess","widthSource":"guess","path":[[19.61,402.79],[38.47,427.10]],"w":4.5,"terrain":"triangles"},
+      {"source":"145221599","highway":"service","surface":"asphalt","surfaceSource":"guess","widthSource":"guess","path":[[36.11,343.59],[58.24,372.91],[49.03,380.04]],"w":4.5,"terrain":"triangles"},
     ],
     // #1262: sourced parking areas and street-side bays south of Höje å (OSM snapshot 2026-10-18)
     parking: [
