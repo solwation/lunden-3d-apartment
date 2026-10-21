@@ -212,7 +212,7 @@ cloudflare/crash.js    POST /crash, admin GET /crash and /crash/<id>, DELETE /ad
                        Additive v2 fields: older reports stay readable, missing worst omitted and age/surface null.
                        `tools/crashsnapshottest.cjs` tests production CrashLog with native browser DOM/events and synthetic renderer
                        counters/context events, without loading the apartment or WebGL; not a physical phone reproduction.
-cloudflare/            the Worker (NOT published on Pages): worker.js (API, limits, CORS, admin emergency brake), wrangler.toml,
+cloudflare/            the Worker (NOT published on Pages): worker.js (API, limits, CORS, admin emergency brake), `youtubesearch.js` (`GET /youtube-search`, server-only `YOUTUBE_API_KEY`), wrangler.toml,
                        setup.sh (the user's one-command setup: login, KV, deploy, ADMIN_TOKEN, CLOUD_URL into config),
                        dev.mjs (the same Worker on Node with an in-memory KV, for tests), README.md (Swedish, for the user);
                        .github/workflows/cloud.yml redeploys on cloudflare/** and shared schema/verifier changes when the repo has Cloudflare secrets

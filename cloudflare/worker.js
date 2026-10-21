@@ -1,5 +1,6 @@
 import { reportsFetch } from './reports.js';
 import { beerShelfFetch } from './beershelf.js';
+import { youtubeSearchFetch } from './youtubesearch.js';
 import { layoutFetch } from './layout.js';
 import { crashFetch } from './crash.js';
 import { PlayerRoom, refuse, CLOSE } from './players.js';
@@ -109,6 +110,10 @@ const worker = {
     if (parts.length > 2 || (id !== undefined && !ID.test(id) && what !== 'admin')) return fail(404, 'not found', h);
     if (what === 'report-session' || what === 'reports') return reportsFetch(request, env, h, limited);
     if (what === 'beer-shelf' && !id) return beerShelfFetch(request, env, h);
+    if (what === 'youtube-search' && !id) {
+      if (await limited(request, env)) return fail(429, 'too many requests', h);
+      return youtubeSearchFetch(request, env, h);
+    }
     if (what === 'crash') return crashFetch(request, env, h, id); // #629
     if (what === 'players' && !id) { // #666: only a WebSocket from the site (a request without Origin is not a browser page)
       const origin = request.headers.get('Origin');

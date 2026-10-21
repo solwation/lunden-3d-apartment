@@ -6,9 +6,18 @@ Related: [life](life.md), [storage](storage.md), [verification](verification.md)
 
 Clubhouse devices (#1365): `playroomDevice` targets use the existing focus,
 keyboard E and touch action path. The TV screen toggles the local
-animation; the rear-seat arm remote opens Bion for an own YouTube link (#1376); the computer screen starts power then plays/stops Pricka grönt, and
+animation; the rear-seat arm remote opens Bion, where YouTube search results can be selected (#1472, first slice; the current screen still needs that remote); the computer screen starts power then plays/stops Pricka grönt, and
 the separate white/blue box switches its power off. Cinema seats and the game
 stool use normal rest reach and stand-up handling. [Device lifecycle and tests](furniture.md#clubhouse-tv-and-computer-1365).
+
+Cinema search (#1472 first slice): the Bion dialog queries the Worker's
+`/youtube-search?q=…` endpoint and renders returned titles/channels as text.
+The Worker keeps `YOUTUBE_API_KEY` server-side and returns only validated video
+IDs and bounded display strings. Search is limited by the existing per-IP
+Worker request limiter. This slice does not synchronize the selected video or
+transport controls between players. Tests: `node --test cloudflare/youtubesearch.test.mjs`;
+browser selection is covered by `tools/cinemavideotest.cjs` when run with its
+documented live YouTube access.
 
 Clubhouse speakers (#1423): either `playroomMusic` target uses the shared choices
 for play/pause/resume/OFF and volume ±, through E/number keys or touch rows. No new

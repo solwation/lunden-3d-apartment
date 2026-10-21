@@ -50,14 +50,16 @@ function youtubeAPI() {
 }
 
 export class CinemaPlayer {
-  constructor(el, onClose) {
+  constructor(el, onClose, searchEndpoint = '') {
     this.el = el; this.onClose = onClose; this.generation = 0;
     this.mount = el.querySelector('.cinema-video');
     this.status = el.querySelector('[role="status"]');
     this.input = el.querySelector('input');
+    this.searchEndpoint = searchEndpoint;
+    this.results = el.querySelector('[data-cinema="results"]');
     this.playButton = el.querySelector('[data-cinema="play"]');
     this.pauseButton = el.querySelector('[data-cinema="pause"]');
-    el.querySelector('form').addEventListener('submit', e => { e.preventDefault(); this.choose(this.input.value); });
+    el.querySelector('form').addEventListener('submit', e => { e.preventDefault(); this.search(this.input.value); });
     this.playButton.addEventListener('click', () => this.player?.playVideo());
     this.pauseButton.addEventListener('click', () => this.player?.pauseVideo());
     el.querySelector('[data-cinema="off"]').addEventListener('click', () => this.stop());
@@ -83,6 +85,34 @@ export class CinemaPlayer {
     this.mount.replaceChildren();
     this.playButton.disabled = this.pauseButton.disabled = true;
     this.status.textContent = 'Avstängd. Välj en YouTube-film som får bäddas in.';
+  }
+  async search(query) {
+    this.results.replaceChildren();
+    const q = query.trim();
+    if (q.length < 2 || q.length > 80) { this.status.textContent = 'Skriv minst två och högst 80 tecken.'; return; }
+    if (youtubeId(q)) { this.choose(q); return; }
+    if (/youtube|youtu\.be/i.test(q)) { this.status.textContent = 'Det där är ingen giltig YouTube-film.'; return; }
+    if (!this.searchEndpoint) { this.status.textContent = 'Filmsökningen är inte tillgänglig just nu.'; return; }
+    const generation = this.generation;
+    this.status.textContent = 'Söker på YouTube…';
+    try {
+      const url = new URL(this.searchEndpoint, location.href); url.searchParams.set('q', q);
+      const response = await fetch(url, { signal: AbortSignal.timeout(8000) });
+      if (!response.ok) throw new Error('search');
+      const data = await response.json();
+      if (!this.open || generation !== this.generation) return;
+      if (!Array.isArray(data.items)) throw new Error('search');
+      for (const item of data.items) {
+        if (!/^[A-Za-z0-9_-]{11}$/.test(item.id) || typeof item.title !== 'string' || typeof item.channel !== 'string') continue;
+        const button = document.createElement('button'); button.type = 'button';
+        button.className = 'cinema-result'; button.textContent = `${item.title} · ${item.channel}`;
+        button.addEventListener('click', () => { this.input.value = item.id; this.choose(item.id); });
+        this.results.append(button);
+      }
+      this.status.textContent = this.results.childElementCount ? 'Välj en film i listan.' : 'Inga filmer hittades.';
+    } catch {
+      if (this.open && generation === this.generation) this.status.textContent = 'Filmsökningen kunde inte nås. Försök igen.';
+    }
   }
   async choose(value) {
     this.stop();

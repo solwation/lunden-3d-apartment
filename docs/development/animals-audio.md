@@ -1,5 +1,11 @@
 # Animals, audio and smart devices
 
+The clubhouse cinema search endpoint and first browser selection slice are
+documented in [interactions](interactions.md#cinema-search-1472-first-slice).
+It uses the private Worker secret `YOUTUBE_API_KEY`; never put its value in
+source, test fixtures, logs, or issue comments. Shared playback ownership,
+late-arrival position and reconnect handling remain open work in #1472.
+
 Read [CLAUDE.md](../../CLAUDE.md) first for shared workflow rules. Paths in code spans and module maps are relative to the repository root.
 
 Related: [interactions](interactions.md), [graphics](graphics.md).

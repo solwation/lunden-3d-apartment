@@ -20,6 +20,8 @@ const check = (v, label, details) => { if (!v) throw Error(label + ' ' + JSON.st
    a.showOverlay(false); a.renderer.setAnimationLoop(null); if (a.rest.active) a.standUp(); a.use({kind:'playhouse'});
   });
   await page.waitForFunction(()=>__app.player.inPlayroom); await page.waitForTimeout(600);
+  const searchRequests=[];
+  await page.route('**/youtube-search?*',async route=>{const url=new URL(route.request().url());searchRequests.push(url.searchParams.get('q'));await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({items:[{id:'M7lc1UVf-VE',title:'Lunden biofilm',channel:'Lunden kanal'}]})});});
   await page.evaluate(async()=>{
    const a=__app,{PLAYROOM:R}=await import('/src/config.js'),c=R.furniture.cinema;
    a.player.spawn(R.x+c.seat.rowX[1]+.78,R.z+c.seat.z[0],0);
@@ -42,17 +44,23 @@ const check = (v, label, details) => { if (!v) throw Error(label + ' ' + JSON.st
   check(typing.value==='wasde'&&typing.x===position.x&&typing.z===position.z&&typing.keys.length===0&&typing.open,'typing and Enter stay in video form without game movement',typing);
   await page.keyboard.press('Escape');check(!await page.locator('#cinema-player').evaluate(el=>el.open)&&!await page.evaluate(()=>!!document.pointerLockElement),'Escape closes without grabbing pointer');
   await nativeUse();check(await page.locator('#cinema-player').evaluate(el=>el.open),'native remote reopens after Escape');
-  const submit=async value=>{await page.locator('#cinema-url').fill(value);await page.getByRole('button',{name:'Välj film',exact:true}).click();};
+  await page.evaluate(()=>{__app.cinema.searchEndpoint='/youtube-search';});
+  const submit=async value=>{await page.locator('#cinema-url').fill(value);await page.getByRole('button',{name:'Sök',exact:true}).click();};
   const play=page.locator('[data-cinema=play]'),pause=page.locator('[data-cinema=pause]');
   await submit('https://www.youtube.com.evil.invalid/watch?v=M7lc1UVf-VE');
   check(await page.locator('#cinema-player [role=status]').textContent().then(t=>t.includes('giltig')) && await page.locator('#cinema-player iframe').count()===0,'invalid host rejected before external player');
   let releaseAPI; const gate=new Promise(resolve=>{releaseAPI=resolve;});
   await page.route('https://www.youtube.com/iframe_api',async route=>{await gate;await route.continue();});
   const requestedAPI=page.waitForRequest('https://www.youtube.com/iframe_api');
-  await submit('M7lc1UVf-VE');await requestedAPI;
+  await page.locator('#cinema-url').fill('Lunden film');await page.getByRole('button',{name:'Sök',exact:true}).click();
+  await page.getByRole('button',{name:'Lunden biofilm · Lunden kanal',exact:true}).waitFor();
+  check(searchRequests[0]==='Lunden film','real browser sends search text to the search endpoint',searchRequests);
+  await page.getByRole('button',{name:'Lunden biofilm · Lunden kanal',exact:true}).click();
+  check(await page.locator('#cinema-url').inputValue()==='M7lc1UVf-VE','choosing a screen search result selects its video');
+  await requestedAPI;
   await page.locator('[data-cinema=close]').click();releaseAPI();
   await page.waitForFunction(()=>window.YT?.Player,null,{timeout:45000});
-  check(await page.locator('#cinema-player iframe').count()===0&&!await page.locator('#cinema-player').evaluate(el=>el.open),'closing during actual pending API script cannot resurrect media');
+  check(await page.locator('#cinema-player iframe').count()===0&&!await page.locator('#cinema-player').evaluate(el=>el.open),'closing after screen selection removes pending YouTube media');
   if(!mobile) { await page.waitForFunction(()=>!!document.pointerLockElement);check(true,'back button restores desktop pointer lock'); }
   await nativeUse();
   await submit('https://www.youtube.com/watch?v=M7lc1UVf-VE');

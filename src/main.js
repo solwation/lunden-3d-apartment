@@ -2,6 +2,7 @@ import { KISS } from './config.js';
 import { MATERIAL_CHOICES, materialChoices, materialChoice } from './materialcatalog.js';
 import { crashlog } from './crashlog.js'; // first: its heartbeat and error hooks start before the rest loads (#629; inert without the cloud)
 import { CinemaPlayer } from './cinemaplayer.js';
+import { cloudUrl } from './cloud.js';
 import { AdminReports } from './adminreports.js';
 import { ReportCapture } from './reportcapture.js';
 import { bindGameViewport, gameView } from './viewport.js';
@@ -1286,7 +1287,7 @@ const cinema = new CinemaPlayer(document.getElementById('cinema-player'), reason
     if (reason === 'button') canvas.requestPointerLock()?.catch(() => { armEl.hidden = false; });
     else if (reason === 'Escape') { overlay.hidden = true; armEl.hidden = false; }
   }
-});
+}, cloudUrl() ? `${cloudUrl()}/youtube-search` : '');
 playroom.devices.onVideoRequest = () => {
   if (!playroom.inside) return;
   reading = true; player.keys.clear(); touch.analog.x = touch.analog.y = 0;
