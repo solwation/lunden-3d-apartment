@@ -584,8 +584,8 @@ src/breaking.js        shooting things to pieces (#263, BREAK): glasses, bottles
                        a cat near meows; `mend()` after BREAK.back s or F. Stats shattered (first per kind) + shatterRange
                        (`Breaker.points`: distance × weapon)
 src/trigrid.js         world-space triangle grid per big static mesh, so short segment hits skip three's full raycast
-src/remote.js          the TV remote on the coffee table (REMOTE), a Holdable: click = next programme (on if off),
-                       right click / ⏻ (touch) = power, on the TV in the look direction (not through walls)
+src/remote.js          the TV remote on the coffee table (REMOTE), a Holdable: click opens shared film choice;
+                       right click / ⏻ = ordinary power or shared-film controls, with the existing wall/reach ray
 src/toys.js            Nerf blasters (#236: pistol, drum, long — rounded profiles merged per material) + darts (Sovrum 2), magic wands + sparkles (Sovrum 3), the flashlight
                        (#604: on top of the fuse box in the hall's EL/C cabinet; one always-present SpotLight), all Holdables (TOYS)
 src/power.js           the power cut (#604, POWER): the fuse box in the open EL/C cabinet (an invisible pick box, kind 'fusebox')
@@ -1859,3 +1859,15 @@ prevent entry. Normal walking resumes after completion or abort; an external
 respawn always keeps its new position. A session saved during a ride uses checked
 ground, including when starting on the top platform. Ride state is not saved, and riding awards no points. `COURTYARD.slide.ride` holds timing, eye and clearance guesses; the existing
 visible slide and collision footprint remain unchanged.
+
+## Home TV film controls (#1483)
+
+All three TVs open a shared film chooser through nearby E/touch or the held remote
+click/action button. The existing remote ray retains wall rejection and9m reach.
+Each screen has independent exclusive control; other viewers see its controller
+and disabled editing. Closing releases control and keeps the film playing.
+The local sound button only activates that viewer's sound. “Vanliga TV-kanaler”
+returns to existing programmes. During a shared film the remote's power action
+opens the same shared controls, preserving the exclusive owner rule.
+Unique dialog/input/title IDs and shared CSS replace the earlier cinema-only
+selectors; `showNote(false)` also closes an open TV chooser.

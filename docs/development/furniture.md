@@ -94,7 +94,7 @@ tools/christmastest.html headless test (#571): the date line (30/11–1/12, 31/1
                        no collision / pick / light, overlap hiding (plants, armchair corner + its floor lamp, coffee table + fruit
                        bowl), cancelled vs confirmed move, saved spot across reloads and out of season, the season ending mid-move,
                        the #591 default in the armchair corner (doorway free) and the #571 layout id carried over / dropped
-tools/tvtest.html      headless test: TVs on/off (living room + Sovrum 3), new programme each time, the remote, F off
+tools/tvtest.html      legacy offline channel/power test; shared TV input/playback uses tools/tvmediatest.cjs
 tools/pctest.html      headless test: switch the gaming PC on/off (game moves, RGB cycles), the chair is a seat and
                        starts the PC, the bunk seat swings the monitor round (film)
 The secretary's stand (legs, braces, wire shelf) uses a white `frame` material from `frameColor` in config (#1292); only knobs and the key plate stay black.
@@ -465,3 +465,30 @@ anchor. Original material references, lamp targets, pick meshes, glow planes,
 Dani materialSurfaceId/UV1 and the Hue Go color menu are retained. No parts are
 removed or simplified. The pre-upload canonical builder comparison retains
 all ordered attributes and24 positive physical rays per lamp.
+
+## Shared YouTube on home TVs (#1483)
+
+`src/tvmedia.js` registers all three `kind:tv` personal home targets (living
+room, Sovrum1 and Sovrum3). FURNITURE `mediaId` is a stable identity independent
+of movable-object IDs and poses. Each target exposes its retained screen mesh;
+`CinemaSurface` follows its actual matrix after moving/rotating the TV and bench.
+An active film replaces that plane's material with the existing depth aperture;
+normal programme updates stop, and the on/off material and LED are restored
+after media removal, respecting power supply. No additional WebGL meshes/lights.
+
+Each TV has its own CinemaPlayer, lazily loaded official iframe, unique chooser
+IDs and Worker snapshot. `TV_MEDIA` defines assumed room viewing zones and floor
+tolerance; these are player/media areas, not changes to building geometry.
+Viewers leave the old TV and follow the new TV when changing rooms. Last departure
+clears only that TV; the cinema and other TVs are independent. UI editing requires
+exclusive ownership. Close releases control while the film continues. Local sound
+activation does not change ownership.
+
+Near-screen E/touch and held-remote click use the same chooser. The remote retains
+its existing9m reach and wall ray checks. Its power button toggles ordinary TV;
+while shared YouTube is active it opens the shared controls, where only the owner
+can turn the film off. “Vanliga TV-kanaler” stops shared media and returns the
+caller to the existing local programme renderer. Power cuts, hidden furniture,
+hidden page and leaving the viewing zone remove local media. Standing viewers
+retain their multiplayer connection. This is personal furnishing/gameplay/Cloudflare;
+A/B/C/L public variants have no such TVs and no downstream port applies.

@@ -21,6 +21,18 @@ and outsiders. Existing Worker message/connection/monthly limits apply. The clie
 on the depth-occluded physical screen (#1476); audio activation is local and
 does not acquire control. Original-only gameplay, no public import.
 
+## Home TV authority (#1483)
+
+The same RoomCinema implementation is instantiated per whitelisted TV ID, with
+`screen` on `t:cinema` requests/replies and storage keys `cinema:lounge`,
+`cinema:bedroom1`, `cinema:bedroom3`. Unknown IDs are rejected. No screen field
+retains the original cinema protocol and storage key. Server position/floor
+checks against `TV_MEDIA` viewing zones derive socket membership; clients cannot
+assert an owner or subscriber flag. Each screen independently reconciles live
+attachments after hibernation, releases a departed controller, preserves films
+for remaining viewers and deletes storage when its last viewer leaves.
+No additional playback ticker/media stream is introduced.
+
 ## Current shared head contract (#974, #893, #894, #979)
 
 Version 2 uses three shared logical head boxes from `PVP_HEAD_BOXES` in `src/config.js`:

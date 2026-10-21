@@ -68,3 +68,35 @@ test('outside clients cannot read or mutate the cinema and malformed payloads do
  assert.equal(b.messages().length,0);await act(env,b,'get');assert.deepEqual(b.messages(),[{t:'cinema',k:'no',why:'away'}]);
  const n=a.messages().length;now+=1100;a.send({t:'cinema',k:'select',q:a.state().q,v:'javascript:bad'});await settle(env);assert.equal(a.messages().length,n);
 });
+
+
+test('all home TVs have independent controllers and films, scoped by room and floor',async()=>{
+ const env=setup(),a=await connect(env,'Anna'),b=await connect(env,'Bo'),c=await connect(env,'Cia');
+ const tvState=(c,id)=>c.messages().filter(m=>m.screen===id&&m.k==='state').at(-1)?.s;
+ const tvAct=async(c,id,k,extra={})=>{now+=1100;c.send({t:'cinema',screen:id,k,q:tvState(c,id)?.q??0,...extra});await settle(env);};
+ await place(env,a,[4,0,9]);await place(env,b,[3,0,10]);await place(env,c,[4,3.25,2]);
+ await tvAct(a,'lounge','claim');await tvAct(b,'lounge','claim');
+ assert.equal(tvState(a,'lounge').owner,a.id);assert.equal(tvState(b,'lounge').owner,a.id);
+ await tvAct(a,'lounge','select',{v:'aqz-KE-bpKQ'});
+ await tvAct(c,'bedroom1','claim');await tvAct(c,'bedroom1','select',{v:'M7lc1UVf-VE'});
+ assert.equal(tvState(a,'lounge').video,'aqz-KE-bpKQ');assert.equal(tvState(c,'bedroom1').video,'M7lc1UVf-VE');
+ assert.equal(tvState(a,'bedroom1'),undefined);assert.equal(tvState(c,'lounge'),undefined);
+ await tvAct(b,'lounge','stop');assert.equal(tvState(a,'lounge').video,'aqz-KE-bpKQ');
+ await place(env,a,[1,0,1]);assert.equal(tvState(b,'lounge').owner,null);
+ await place(env,b,[1,0,1]);assert.equal(env.PLAYERS.ctx('world').data.has('cinema:lounge'),false);
+ assert.equal(tvState(c,'bedroom1').video,'M7lc1UVf-VE');
+ await place(env,c,[1,3.25,2]);await tvAct(c,'bedroom3','claim');await tvAct(c,'bedroom3','select',{v:'aqz-KE-bpKQ'});
+ assert.equal(tvState(c,'bedroom3').video,'aqz-KE-bpKQ');assert.equal(env.PLAYERS.ctx('world').data.has('cinema:bedroom1'),false);
+ assert.equal(env.PLAYERS.object('world').cinema.state,null);
+});
+
+test('TV identities and outsider commands are bounded; hibernation keeps live TV viewers',async()=>{
+ assert.equal(cleanCinema(JSON.stringify({t:'cinema',screen:'arbitrary',k:'claim'})),null);
+ assert.deepEqual(cleanCinema(JSON.stringify({t:'cinema',screen:'lounge',k:'get'})),{k:'get',screen:'lounge'});
+ const env=setup(),a=await connect(env);await place(env,a,[4,3.25,9]);
+ a.send({t:'cinema',screen:'lounge',k:'claim'});await settle(env);assert.equal(a.messages().at(-1).why,'away');
+ await place(env,a,[4,0,9]);a.send({t:'cinema',screen:'lounge',k:'claim'});await settle(env);
+ env.PLAYERS.hibernate('world');await settle(env);
+ const tv=env.PLAYERS.object('world').tvs.find(t=>t.id==='lounge');assert.equal(tv.state.owner,a.id);
+ a.ws.close();await settle(env);assert.equal(tv.state,null);assert.equal(env.PLAYERS.ctx('world').data.has('cinema:lounge'),false);
+});

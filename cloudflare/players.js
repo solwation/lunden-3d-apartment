@@ -1,3 +1,4 @@
+import { TV_MEDIA, tvViewer } from '../src/config.js';
 import { canKiss } from '../src/kiss.js';
 import { KISS } from '../src/config.js';
 import { ballHeadContact } from '../src/ballflight.js';
@@ -274,7 +275,8 @@ export class PlayerRoom {
     this.ctx = ctx; this.env = env; this.bill = null; this.unsaved = 0;
     this.pool = null; this.poolWrite = null; // #1355: { snap, st: [id|null, id|null], busy: ms } while anybody is in the children's room
     this.cinema=new RoomCinema(ctx,()=>this.open().map(ws=>({ws,a:att(ws)})),send);
-    ctx.blockConcurrencyWhile?.(async () => { this.pool = (await ctx.storage.get('pool')) ?? null;await this.cinema.load(); });
+    this.tvs=TV_MEDIA.screens.map(s=>new RoomCinema(ctx,()=>this.open().map(ws=>({ws,a:att(ws)})),send,s.id));
+    ctx.blockConcurrencyWhile?.(async () => { this.pool = (await ctx.storage.get('pool')) ?? null;await this.cinema.load();for(const tv of this.tvs)await tv.load(); });
     if (typeof WebSocketRequestResponsePair === 'function') ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('p', 'q'));
   }
 
@@ -345,8 +347,8 @@ export class PlayerRoom {
     try { ws.close(code, reason); } catch { /* gone */ }
     if (a) this.broadcast({ t: 'x', i: a.i }, ws);
     this.poolTrim(ws);
-    this.cinema.trim(ws);
-    const cinemaSave=this.cinema.flush();this.ctx.waitUntil?.(cinemaSave);
+    this.cinema.trim(ws);for(const tv of this.tvs)tv.trim(ws);
+    const cinemaSave=Promise.all([this.cinema.flush(),...this.tvs.map(tv=>tv.flush())]);this.ctx.waitUntil?.(cinemaSave);
   }
   closeAll(code, reason) { for (const ws of this.open()) this.drop(ws, code, reason); }
 
@@ -526,7 +528,7 @@ export class PlayerRoom {
         }
       }
     } else if (pool) this.poolMsg(ws, a, pool, now); // #1355
-    else if(cinema)this.cinema.handle(ws,a,cinema,now);
+    else if(cinema){const screen=cinema.screen?this.tvs.find(tv=>tv.id===cinema.screen):this.cinema;screen?.handle(ws,a,cinema,now);}
     else if (shot) {
       // a shot is drawn by the others only from someone armed with that weapon, starting near where the room has them,
       // and only for those armed too (a fight is between two armed players)
@@ -573,12 +575,12 @@ export class PlayerRoom {
         if (!a.s || s.r !== a.s.r || s.p.some((v, i) => v !== a.s.p[i])) a.movedAt = now;
         a.s = s; this.publishState(ws, a);
         this.poolPresence(ws, a); // #1355
-        this.cinema.presence(ws,a,inPlayroom(a.s?.p));
+        this.cinema.presence(ws,a,inPlayroom(a.s?.p));for(const tv of this.tvs)tv.presence(ws,a,tvViewer(tv.id,a.s?.p));
       }
     }
     ws.serializeAttachment(a);
     await this.poolFlush();
-    await this.cinema.flush();
+    await this.cinema.flush();for(const tv of this.tvs)await tv.flush();
     if (lifeChanged) await this.scheduleRecovery();
     this.sweep(now);
     if (shot?.to || this.recoveryAlarm === undefined) await this.scheduleRecovery();
@@ -655,7 +657,7 @@ export class PlayerRoom {
     try { ws.close(code === 1005 || code === 1006 ? 1000 : code, 'bye'); } catch { /* already closed */ }
     if (a) this.broadcast({ t: 'x', i: a.i }, ws);
     this.poolTrim(ws); await this.poolFlush();
-    this.cinema.trim(ws);await this.cinema.flush();
+    this.cinema.trim(ws);for(const tv of this.tvs)tv.trim(ws);await this.cinema.flush();for(const tv of this.tvs)await tv.flush();
     await this.scheduleRecovery();
   }
 

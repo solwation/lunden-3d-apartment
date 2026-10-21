@@ -2138,16 +2138,17 @@ function tv(item) {
   glow.position.set(0, y0 + h / 2 + (wall ? h * 0.08 : 0), glowZ); // 3-sided Ambilight: a bit more above than below
   glow.visible = item.ambilight !== false; // `ambilight: false`: a TV without it
   g.add(glow);
-  let on = false, acc = 0;
+  let on = false, acc = 0, supplied = true;
   const target = new THREE.Color();
   const shine = ([hh, ss, ll]) => target.setHSL(hh, ss, ll);
   const interact = {
-    name: item.name ?? 'tv:n', kind: 'tv', pickable: g, screen: scr, room: item.room,
+    name: item.name ?? 'tv:n', kind: 'tv', pickable: g, screen: scr, mesh: screen, mediaId: item.mediaId, room: item.room,
+    video(active) { interact.videoActive=active;screen.material=active?interact.videoMaterial:(on?screenMat:offMat);led.material.color.setHex(!supplied?0x1a0a0a:active||on?0xf4f4f4:0xff2a2a); },
     get isOpen() { return on; },
-    get verb() { return on ? 'stänga av' : 'slå på'; },
+    get verb() { return 'välja film på'; },
     toggle() {
       on = !on;
-      screen.material = on ? screenMat : offMat;
+      if(!interact.videoActive)screen.material = on ? screenMat : offMat;
       led.material.color.setHex(on ? 0xf4f4f4 : 0xff2a2a);
       if (on) { scr.tune(); shine(scr.draw(0)); glowMat.color.copy(target); } else glowMat.color.setHex(0x000000);
       return on;
@@ -2155,9 +2156,9 @@ function tv(item) {
     /** The remote's channel button (#101): the next programme, through snow. */
     channel() { if (!on) return false; scr.tune(); return true; },
     /** The mains (#604): in a power cut even the standby LED goes dark (main.js switches it off first). */
-    mains(v) { led.material.color.setHex(!v ? 0x1a0a0a : on ? 0xf4f4f4 : 0xff2a2a); },
+    mains(v) { supplied=v;led.material.color.setHex(!v ? 0x1a0a0a : on||interact.videoActive ? 0xf4f4f4 : 0xff2a2a); },
     update(dt) {
-      if (!on) return;
+      if (!on||interact.videoActive) return;
       acc += dt;
       if (acc < 1 / item.fps) return;
       shine(scr.draw(acc));

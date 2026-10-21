@@ -4,7 +4,7 @@ import { PLAYROOM } from './config.js';
 
 /** Official cross-origin iframe in world space, behind a depth-tested canvas aperture. */
 export class CinemaSurface {
-  constructor(canvas, mesh) {
+  constructor(canvas, mesh, id='cinema-world-surface') {
     this.mesh=mesh;this.poster=mesh.material;this.scene=new THREE.Scene();
     this.renderer=new CSS3DRenderer();this.size=new THREE.Vector2();
     this.mount=document.createElement('div');
@@ -14,7 +14,7 @@ export class CinemaSurface {
     this.object=new CSS3DObject(this.mount);this.object.matrixAutoUpdate=false;this.object.element.style.pointerEvents='none';
     this.scene.add(this.object);
     Object.assign(this.renderer.domElement.style,{position:'fixed',inset:'0',pointerEvents:'none'});
-    this.renderer.domElement.id='cinema-world-surface';this.renderer.domElement.hidden=true;
+    this.renderer.domElement.id=id;this.renderer.domElement.hidden=true;
     canvas.before(this.renderer.domElement);
     // NoBlending deliberately retains alpha=0 while still writing depth. Foreground
     // chairs, avatars and walls write opaque pixels over it in either draw order.

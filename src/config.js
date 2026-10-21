@@ -5132,7 +5132,7 @@ export const FURNITURE = [
   // Philips 55" The One PUS8897 on the bench (#68): panel ~123 × 71 cm, thin black bezel, one central
   // anthracite pedestal; depth, stand size and the ~78 cm total height are guesses. E switches it on: a
   // slowly moving colourful demo picture (canvas, ~12 fps) and an Ambilight glow on the wall behind.
-  { type: 'tv', level: 0, x: 4.25, z: 7.8 + 0.2, y: 0.45, rot: 180, w: 1.23, h: 0.715, fps: 12 },
+  { type: 'tv', mediaId: 'lounge', level: 0, x: 4.25, z: 7.8 + 0.2, y: 0.45, rot: 180, w: 1.23, h: 0.715, fps: 12 },
   // The gold and purple painting (#1094, docs/tavla-guld-lila-40x30.jpg): acrylic and gold leaf on an unframed stretched
   // canvas, 40 × 30 cm landscape (the user); the stretcher depth ~2 cm is a *guess*. On the north wall (inner face z 7.804)
   // right of the TV seen from the sofa, centred in the gap between the TV's east edge (4.25 + 1.23 / 2 = 4.865) and the
@@ -5303,8 +5303,8 @@ export const FURNITURE = [
   // Sovrum 1 (#213, docs/tv-philips-43-pqs7801.png): Philips 43" PQS7801 QLED (~96 × 56 cm; slim black frame, a silver
   // edge below; Ambilight, the user #223) on the west wall straight across from the double bed (BED1_Z), centre 1.3 m up for
   // sitting up in bed (guess). Faces east.
-  { type: 'tv', level: 1, room: 'Sovrum 1', x: 2.752, z: BED1_Z, y: 1.3, rot: -90, w: 0.96, h: 0.56, fps: 12, px: 320, mount: 'wall', frame: 'black', name: 'tv:n' }, // with Ambilight (#223)
-  { type: 'tv', level: 1, x: 2.61, z: 1.75, y: 1.2, rot: 90, w: 0.71, h: 0.41, fps: 12, px: 256, mount: 'wall', name: 'tv:n' },
+  { type: 'tv', mediaId: 'bedroom1', level: 1, room: 'Sovrum 1', x: 2.752, z: BED1_Z, y: 1.3, rot: -90, w: 0.96, h: 0.56, fps: 12, px: 320, mount: 'wall', frame: 'black', name: 'tv:n' }, // with Ambilight (#223)
+  { type: 'tv', mediaId: 'bedroom3', level: 1, x: 2.61, z: 1.75, y: 1.2, rot: 90, w: 0.71, h: 0.41, fps: 12, px: 256, mount: 'wall', name: 'tv:n' },
   { type: 'alex', level: 1, x: 2.61 - 0.66 - 0.02, z: 0.465 + 0.29 + 0.08, rot: 180, w: 1.32, d: 0.58, h: 0.76 },
   { type: 'kidchair', level: 1, x: 2.61 - 0.66 - 0.02, z: 0.465 + 0.58 + 0.25 + 0.08, rot: 0 },
   // a round dusty-pink short-pile rug (#310, the user; docs/matta-sovrum3-rosa-farg.png for the colour,
@@ -6473,3 +6473,20 @@ export const FIREWORKS = {
   phoneInterval: [0.45, 0.9], area: { x: [-48, 16], z: [4, 56] }, height: [28, 55], radius: [8, 16], rise: [1.1, 1.8], life: 2.6,
   flash: { hemi: 0.55, ambient: 0.25, decay: 4.5, indoors: 0.4 }, soundDistance: 10, volume: 0.5,
 };
+
+// #1483: assumed viewing zones inside the existing L1007 room walls (not new building geometry).
+// Stable identities survive rearranging; only the personal home's three TV targets participate.
+export const TV_MEDIA = {
+  floorTolerance: .7, // Feet/crouch/stair-edge tolerance around the current storey's finished floor.
+  screens: [
+    { id: 'lounge', name: 'TV · Vardagsrummet', level: 0, bounds: [.18,5.57,7.8,12.52] },
+    { id: 'bedroom1', name: 'TV · Sovrum 1', level: 1, bounds: [2.75,5.57,.18,4.42] },
+    { id: 'bedroom3', name: 'TV · Sovrum 3', level: 1, bounds: [.18,2.75,.18,4.42] },
+  ],
+};
+export function tvViewer(id,p) {
+  const s=TV_MEDIA.screens.find(s=>s.id===id);
+  if(!s||!Array.isArray(p)||p.length!==3||!p.every(Number.isFinite))return false;
+  const [x0,x1,z0,z1]=s.bounds;
+  return Math.abs(p[1]-LEVELS[s.level].floor)<=TV_MEDIA.floorTolerance&&p[0]>=x0&&p[0]<=x1&&p[2]>=z0&&p[2]<=z1;
+}

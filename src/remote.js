@@ -5,8 +5,8 @@ import { REMOTE as R } from './config.js';
 
 // The TV remote (#101): a slim black remote on the coffee table, a Holdable. Held and pointed at a TV
 // (the one in the look direction, not through walls — main.js finds it): a click / the touch button
-// changes the programme (switching the TV on if it is off), right click / the ⏻ touch button switches the
-// TV on and off. Its red LED blinks on every press (emissive, no light).
+// opens the shared film chooser; right click / the ⏻ touch button switches ordinary
+// TV on/off, or opens shared controls when a YouTube film is active. Its red LED blinks on every press (emissive, no light).
 
 function remoteModel() {
   const g = new THREE.Group();
@@ -38,7 +38,7 @@ export class Remote extends Holdable {
       name: 'fjärrkontrollen', verb: 'ta', backName: 'fjärrkontrollen på soffbordet', backVerb: 'lägga tillbaka',
       model: g, home: { pos: home, rot: new THREE.Euler(0, THREE.MathUtils.degToRad(R.turn), 0) },
       heldPose: { pos: new THREE.Vector3(R.held.x, R.held.y, R.held.z), rot: new THREE.Euler(0.25, 0.08, 0) }, // pointing ahead
-      pick: { pos: home.clone().setY(R.y + 0.02), size: [0.12, 0.05, 0.24] }, cooldown: 0.25, useLabel: 'Byt kanal',
+      pick: { pos: home.clone().setY(R.y + 0.02), size: [0.12, 0.05, 0.24] }, cooldown: 0.25, useLabel: 'Välj film på TV',
     });
     Object.assign(this, { led, findTv, blink: 0, presses: 0 });
   }
@@ -51,6 +51,8 @@ export class Remote extends Holdable {
     const tv = this.findTv();
     if (!tv) return null;
     const at = tv.pickable.getWorldPosition(new THREE.Vector3());
+    if(!power&&this.onVideo){this.onVideo(tv);return tv;}
+    if(power&&this.onPower?.(tv))return tv;
     if (power || !tv.isOpen) { const on = tv.toggle(); sfx.tvClick(at, on); }
     else { tv.channel(); sfx.tvStatic(at); }
     return tv;

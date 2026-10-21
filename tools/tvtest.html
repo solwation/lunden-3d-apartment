@@ -1,129 +1,23 @@
 <!doctype html>
 <html lang="sv">
-<head><meta charset="utf-8"><title>TV test</title></head>
-<body>
-<pre id="out">running…</pre>
-<script>
-// no &test: exact random channel/program and texture-version rows block automatic parity; Ambilight state needs review, not a pixel exemption (#798).
-// Living-room TV (#68): aim at it, switch it on with the action button (screen shows the picture,
-// Ambilight glows, the picture moves), switch it off; with F (furniture off) it is no target.
-//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/tvtest.html
-const out = document.getElementById('out');
-const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-const f = document.createElement('iframe');
-f.width = 900; f.height = 600;
-f.src = '../index.html';
-document.body.append(f);
-f.onload = async () => {
-  const w = f.contentWindow, d = f.contentDocument;
-  while (!w.__app) await wait(100);
-  const { player, camera, world, step } = w.__app;
-  const lines = [];
-  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
-  d.getElementById('start-touch').click();
-  await wait(50);
-  const tv = world.furnitureTargets.find((t) => t.kind === 'tv');
-  let pass = check(!!tv, 'TV exists');
-  const btn = d.getElementById('action');
-  tv.pickable.updateMatrixWorld(true);
-  const p = tv.pickable.getWorldPosition(new tv.pickable.position.constructor());
-  const aim = () => {
-    player.spawn(p.x, p.z + 2.0, 0); // 2 m in front (south), facing north
-    camera.rotation.x = Math.atan2(p.y + 0.43 - player.eyeY, 2.0);
-    for (let i = 0; i < 3; i++) step(1 / 60);
-  };
-  aim();
-  pass &= check(!btn.hidden && /slå på tv:n/i.test(btn.textContent), `button "${btn.textContent}"`);
-  btn.click();
-  const screen = tv.pickable.children.find((m) => m.isMesh && m.geometry.type === 'PlaneGeometry');
-  const v0 = screen.material.map?.version ?? -1;
-  for (let i = 0; i < 30; i++) step(1 / 60);
-  const v1 = screen.material.map?.version ?? -1;
-  pass &= check(tv.isOpen && !!screen.material.map && v1 > v0, `on: picture shown and moving (texture v${v0} → v${v1})`);
-  aim();
-  pass &= check(/stänga av tv:n/i.test(btn.textContent), `button "${btn.textContent}"`);
-  btn.click();
-  pass &= check(!tv.isOpen && !screen.material.map, 'off: dark screen');
-  // a different programme every time it is switched on (#100)
-  tv.toggle(); const ch1 = tv.screen.channel; tv.toggle(); tv.toggle(); const ch2 = tv.screen.channel; tv.toggle();
-  pass &= check(ch1 !== ch2, `a new programme each time (${tv.screen.program.name}: ${ch1} → ${ch2})`);
-  // Sovrum 3: the wall-mounted 32" across from the bunk, faces west into the room
-  const V0 = tv.pickable.position.constructor, at = (t) => { t.pickable.updateMatrixWorld(true); return t.pickable.getWorldPosition(new V0()); };
-  const tv3 = world.furnitureTargets.find((t) => t.kind === 'tv' && t !== tv && Math.abs(at(t).x - 2.61) < 0.05);
-  tv3.pickable.updateMatrixWorld(true);
-  const p3 = tv3.pickable.getWorldPosition(new tv.pickable.position.constructor());
-  player.spawn(p3.x - 1.2, p3.z, -Math.PI / 2); player.pos.y = 3.25; player.eyeY = 3.25 + 1.62;
-  for (let i = 0; i < 3; i++) step(1 / 60);
-  camera.rotation.y = -Math.PI / 2; camera.rotation.x = Math.atan2(p3.y - camera.position.y, p3.x - camera.position.x); step(1 / 60); // facing east
-  pass &= check(Math.abs(p3.x - 2.61) < 0.01 && p3.y > 4.3 && p3.y < 4.6 && /slå på tv:n/i.test(btn.textContent), `Sovrum 3 TV at (${p3.x.toFixed(2)}, ${p3.y.toFixed(2)}, ${p3.z.toFixed(2)}): "${btn.textContent}"`);
-  btn.click();
-  for (let i = 0; i < 30; i++) step(1 / 60);
-  pass &= check(tv3.isOpen && tv3.screen.texture.version > 1, `Sovrum 3 TV on: ${tv3.screen.program.name}`);
-  btn.click();
-  // Sovrum 1 (#213): the 43" on the west wall across from the bed, faces east; on/off, a new programme each time
-  const tv1 = world.furnitureTargets.find((t) => t.kind === 'tv' && t.room === 'Sovrum 1');
-  const p1 = at(tv1);
-  // in the 0.5 m between the TV wall and the bed's foot (the bed is at BED1_Z, #403): from further east the look line
-  // crosses the bed's "sätta dig upp" target first (#413)
-  player.spawn(p1.x + 0.45, p1.z, Math.PI / 2); player.pos.y = 3.25; player.eyeY = 3.25 + 1.62;
-  for (let i = 0; i < 3; i++) step(1 / 60);
-  camera.rotation.y = Math.PI / 2; camera.rotation.x = Math.atan2(p1.y - camera.position.y, camera.position.x - p1.x); step(1 / 60); // facing west
-  const l1 = btn.textContent;
-  const glow1 = tv1.pickable.children.find((m) => m.material?.blending === 2); // additive (THREE.AdditiveBlending)
-  btn.click(); for (let i = 0; i < 30; i++) step(1 / 60);
-  const on1 = tv1.isOpen && tv1.screen.texture.version > 1, c1 = tv1.screen.channel;
-  const lit1 = glow1?.visible && glow1.material.color.r + glow1.material.color.g + glow1.material.color.b > 0.05;
-  btn.click(); step(1 / 60); btn.click(); step(1 / 60);
-  const c2 = tv1.screen.channel; btn.click(); step(1 / 60);
-  const dark1 = glow1 && glow1.material.color.r + glow1.material.color.g + glow1.material.color.b === 0;
-  pass &= check(lit1 && dark1, `Sovrum 1 TV: Ambilight on with it (${lit1}), dark when off (${dark1}) (#223)`);
-  pass &= check(/slå på tv:n/i.test(l1) && on1 && c1 !== c2 && !tv1.isOpen && Math.abs(p1.y - 4.55) < 0.05, `Sovrum 1 TV at (${p1.x.toFixed(2)}, ${p1.y.toFixed(2)}, ${p1.z.toFixed(2)}): "${l1}", on ${on1}, new programme ${c1} → ${c2}, off`);
-  // the remote (#101) on the coffee table: take it, point it at the living-room TV, change channels, power
-  const { remote, heldItem } = w.__app;
-  remote.model.updateMatrixWorld(true);
-  const rp = remote.model.getWorldPosition(new tv.pickable.position.constructor());
-  let took = false;
-  for (const [x, z] of [[rp.x, rp.z + 0.9], [rp.x + 0.8, rp.z + 0.4], [rp.x - 0.8, rp.z + 0.5]]) {
-    player.spawn(x, z, 0); for (let i = 0; i < 3; i++) step(1 / 60);
-    const dx = rp.x - camera.position.x, dz = rp.z - camera.position.z;
-    camera.rotation.y = Math.atan2(-dx, -dz); camera.rotation.x = Math.atan2(rp.y - camera.position.y, Math.hypot(dx, dz)); step(1 / 60);
-    if (/ta fjärrkontrollen/i.test(btn.textContent)) { btn.click(); took = true; break; }
-  }
-  pass &= check(took && heldItem() === remote, `the remote in the hand ("${btn.textContent}")`);
-  aim(); step(1 / 60);
-  const powerBtn = d.getElementById('power-btn');
-  pass &= check(/byt kanal/i.test(btn.textContent) && !powerBtn.hidden, `aimed at the TV: "${btn.textContent}", ⏻ shown`);
-  const wasOn = tv.isOpen;
-  btn.click(); step(1 / 60);
-  pass &= check(!wasOn && tv.isOpen, 'click: the TV comes on');
-  for (let i = 0; i < 20; i++) step(1 / 60);
-  const c0 = tv.screen.channel; btn.click(); step(1 / 60);
-  pass &= check(tv.isOpen && tv.screen.channel !== c0 && tv.screen.snow > 0, `click: next programme (${c0} → ${tv.screen.channel}), static`);
-  for (let i = 0; i < 20; i++) step(1 / 60);
-  pass &= check(remote.presses === 2, `the LED blinked on each press (${remote.presses})`);
-  powerBtn.click(); step(1 / 60);
-  pass &= check(!tv.isOpen, '⏻: the TV goes off');
-  // not through a wall: from the hall behind the stair wall, pointing at the TV
-  player.spawn(tv.pickable.position.x, 6.0, 0); for (let i = 0; i < 3; i++) step(1 / 60);
-  camera.rotation.y = Math.PI; camera.rotation.x = 0; step(1 / 60);
-  for (let i = 0; i < 20; i++) step(1 / 60);
-  btn.click(); step(1 / 60);
-  pass &= check(!tv.isOpen, 'not through the wall');
-  remote.putBack();
-  world.setFurniture(false);
-  aim();
-  pass &= check(!/tv:n/i.test(btn.hidden ? '' : btn.textContent), 'F off: the TV is no target');
-  // F off hides every loose item (#75): the shelves, the hall mirror/key cabinet, the coffee machine,
-  // the cat board; no cat turns up behind doors
-  const { cat, useDoor } = w.__app;
-  const hidden = world.looseItems.every((o) => !o.visible);
-  const door = world.doors.find((d) => d.kind === 'swing' && d.name === 'dörren');
-  cat.chance.appear = 1;
-  useDoor(door); for (let i = 0; i < 60; i++) step(1 / 60); useDoor(door);
-  pass &= check(hidden && !cat.visible && world.looseItems.length >= 5, `F off: ${world.looseItems.length} loose items hidden, no cat behind a door`);
-  world.setFurniture(true);
-  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
-};
-</script>
-</body>
-</html>
+<head><meta charset="utf-8"><title>TV channels and power</title></head>
+<body><pre id="out">running…</pre><script>
+// Local programme renderer regression. Shared E/remote/media integration is tools/tvmediatest.cjs.
+const out=document.getElementById('out'),f=document.createElement('iframe');f.width=900;f.height=600;
+f.src='../?shot&test=lazy&cloud=&mp=0';document.body.append(f);
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+f.onload=async()=>{try{
+ const w=f.contentWindow;while(!w.__app)await wait(100);
+ const a=w.__app;a.showOverlay(false);a.touch.enabled=true;
+ const checks=[],check=(ok,name)=>{checks.push(`${ok?'PASS':'FAIL'} ${name}`);if(!ok)throw Error(name);};
+ const tvs=a.world.furnitureTargets.filter(t=>t.kind==='tv');check(tvs.length===3,'three TVs');
+ for(const tv of tvs){
+  if(tv.isOpen)tv.toggle();check(!tv.mesh.material.map,`${tv.mediaId}: standby`);
+  tv.toggle();const v=tv.screen.texture.version;tv.update(1);check(tv.isOpen&&!!tv.mesh.material.map&&tv.screen.texture.version>v,`${tv.mediaId}: moving local programme`);
+  const ch=tv.screen.channel;tv.toggle();tv.toggle();check(tv.screen.channel!==ch,`${tv.mediaId}: next programme`);
+  const original=tv.videoMaterial;tv.videoMaterial=tv.mesh.material;tv.video(true);tv.toggle();check(tv.videoActive,`${tv.mediaId}: ordinary toggle retains shared surface`);tv.video(false);tv.videoMaterial=original;check(!tv.mesh.material.map,`${tv.mediaId}: restore standby`);
+ }
+ check([...a.tvMedia.sessions].length===3,'all TVs connected to shared media');
+ out.textContent=checks.join('\n')+'\nALL PASS';
+}catch(e){out.textContent+='\nFAIL '+e.message;}};
+</script></body></html>

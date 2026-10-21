@@ -519,3 +519,8 @@ occlusion. The scene background still writes opaque pixels elsewhere. Inactive
 surfaces restore their original material and hide the CSS layer. No video
 texture extraction, per-frame downloads or new lights are used. See
 [furniture lifecycle](furniture.md#cinema-network-video-1376).
+
+The same surface supports all three home TVs (#1483), using unique CSS layers
+and their retained screen mesh matrices. Media updates run after movement/rest/
+touch camera changes at the end of `step`, so CSS and WebGL use the same final
+camera pose instead of allowing a one-frame projection lag.

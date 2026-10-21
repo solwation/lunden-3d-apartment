@@ -355,6 +355,12 @@ kontaktskuggor, med samma grundteknik som i L1007. Rundade stoppade biostolar,
 veckade gardiner, trästruktur och ett plankgolv ger lekstugan ett mjukare uttryck.
 Biljardbordet står mitt i biljardrummet med fri yta innanför dörren. Discolampans strömbrytare fungerar som tidigare (#1365).
 
+Husets tre TV-apparater kan också visa YouTube direkt på skärmen. Gå nära
+och använd E/tryckknappen, eller sikta med fjärrkontrollen i handen och klicka.
+Varje TV har en egen gemensam film och en person som styr åt gången. Filmen
+stängs av när sista tittaren lämnar TV-rummet. Vanliga TV-kanaler finns i
+filmvalet; fjärrkontrollens strömknapp fungerar fortfarande.
+
 Kattpärmen har fyra fasta samlarkortsplatser på varje sida: varje kattvariant
 har sin egen plats och de oupptäckta visas som silhuetter. Tryck på ett funnet
 kort för kattens mötesbilder, fakta och vanliga Spara/Kasta-knappar; befintliga

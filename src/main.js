@@ -3,6 +3,7 @@ import { MATERIAL_CHOICES, materialChoices, materialChoice } from './materialcat
 import { crashlog } from './crashlog.js'; // first: its heartbeat and error hooks start before the rest loads (#629; inert without the cloud)
 import { CinemaPlayer } from './cinemaplayer.js';
 import { CinemaSurface } from './cinemasurface.js';
+import { TVMedia } from './tvmedia.js';
 import { cloudUrl } from './cloud.js';
 import { AdminReports } from './adminreports.js';
 import { ReportCapture } from './reportcapture.js';
@@ -350,6 +351,7 @@ document.addEventListener('keydown', (e) => {
 }, true);
 function showNote(show) {
   if (!show && cinema.open) { cinema.close(); return; }
+  if (!show && tvMedia.open) { tvMedia.close(); return; }
   if (!show && !tasks.modalEl.hidden) { showTaskNote(false); return; }
   if (!show && !binderEl.hidden) { showBinder(false); return; }
   if (!show && clockPanel.open) { showClock(false); return; }
@@ -1281,14 +1283,18 @@ const touchLayout = setupTouchLayout(); // own button layout (#1090): opened fro
 const active = () => !statsOpen && (locked || touch.enabled);
 
 // Selecting the cinema screen frees the pointer for film discovery and playback.
-const cinema = new CinemaPlayer(document.getElementById('cinema-player'), reason => {
+const closeVideoControls = reason => {
   reading = false; player.keys.clear(); touch.analog.x = touch.analog.y = 0;
   if (binderFreed) {
     binderFreed = false;
     if (reason === 'button') canvas.requestPointerLock()?.catch(() => { armEl.hidden = false; });
     else if (reason === 'Escape') { overlay.hidden = true; armEl.hidden = false; }
   }
-}, cloudUrl() ? `${cloudUrl()}/youtube-search` : '');
+};
+const cinema = new CinemaPlayer(document.getElementById('cinema-player'),closeVideoControls,cloudUrl() ? `${cloudUrl()}/youtube-search` : '');
+const openVideoControls=()=>{reading=true;player.keys.clear();touch.analog.x=touch.analog.y=0;if(locked){binderFreed=true;document.exitPointerLock();}};
+const tvMedia=new TVMedia({canvas,targets:world.furnitureTargets,template:document.getElementById('cinema-player'),onClose:closeVideoControls,onOpen:openVideoControls,endpoint:cloudUrl()?`${cloudUrl()}/youtube-search`:''});
+remote.onVideo=tv=>tvMedia.show(tv);remote.onPower=tv=>tvMedia.power(tv);
 cinema.surface = new CinemaSurface(canvas, playroom.devices.tv.mesh);
 playroom.devices.onVideoRequest = () => {
   if (!playroom.inside) return;
@@ -1820,6 +1826,7 @@ function use(thing) {
     if (thing.isOpen !== was) sfx.tvClick(thing.pickable.getWorldPosition(new THREE.Vector3()), thing.isOpen);
     else sfx.beat(thing.pickable.getWorldPosition(new THREE.Vector3()), 'hat', 0.2); // a soft swipe
   } else if (thing.kind === 'tv') {
+    if(tvMedia.show(thing))return;
     const on = thing.toggle();
     if (on) bump('tv', 1, idOf(thing));
     sfx.tvClick(thing.pickable.getWorldPosition(new THREE.Vector3()), on);
@@ -2239,8 +2246,8 @@ function updateFocus() {
   if (!focused && !rest.active && jetpack.canTakeOff) focused = jetpack.dropTarget;
   else if (!focused && !rest.active && suit.canTakeOff) focused = suit.dropTarget; // (#597)
   // the remote in the hand, aimed at a TV: the click / the touch button are the remote's (#101)
-  const remoteAim = heldItem() === remote && focused?.kind === 'tv';
-  if (remoteAim) focused = null;
+  const remoteAim = heldItem() === remote && !!remote.findTv();
+  if (remoteAim) { focused = null; focusPoint = null; placeGhost.visible = false; }
   // a bed with a seat in it: the verb of the spot the look ray picks
   const spot = focused?.kind === 'rest' ? chooseSpot(focused, raycaster.ray, null) : null;
   let verb = !focused ? '' : spot?.verb ?? focused.verb ?? (focused.isOpen ? 'stänga' : 'öppna');
@@ -2280,7 +2287,7 @@ function updateFocus() {
   updateBicycleControls();
   const job = life.runner.job; // a timed life action going on (#372): what and how far
   if (job && !reading) { promptEl.textContent = `${job.label[0].toUpperCase()}${job.label.slice(1)} … ${Math.round(Math.min(1, job.t / Math.max(job.duration, 1e-6)) * 100)} %`; promptEl.hidden = false; }
-  if (remoteAim && !touch.enabled && !reading) { promptEl.textContent = 'Klicka för att byta kanal · högerklick: av/på'; promptEl.hidden = false; }
+  if (remoteAim && !touch.enabled && !reading) { promptEl.textContent = 'Klicka för att välja film · högerklick: av/på'; promptEl.hidden = false; }
   const mending = focused === power.target && power.state === 'off' && !reading; // the fuse box in a power cut (#604): hold to mend, with progress
   if (mending) {
     const pct = Math.round(power.fraction * 100);
@@ -2749,8 +2756,9 @@ ghosts.onNotice = (text) => badge(text, false);
 playroom.billiards.net = { ready: () => ghosts.connected, send: (m) => ghosts.pool(m), id: () => ghosts.me }; // #1355: the shared billiard table
 ghosts.onPool = (m) => playroom.billiards.onNet(m);
 cinema.net = { ready: () => ghosts.connected, send: m => ghosts.cinema(m), id: () => ghosts.me };
-ghosts.onCinema = m => cinema.receive(m);
-ghosts.keepConnected = () => player.inPlayroom && !!cinema.state?.video;
+tvMedia.connect(cinema.net);
+ghosts.onCinema = m => m.screen?tvMedia.receive(m):cinema.receive(m);
+ghosts.keepConnected = () => (player.inPlayroom && !!cinema.state?.video)||tvMedia.watching;
 // toasting (#1222): "Skåla" with a glass in the hand (right click / 🥂): a clink, the glass raised (things.js), a line and one small
 // message; a player near us who holds a glass hears it and toasts back once (flagged, so no ping-pong); Olof answers from his car.
 toastHandler.fn = (glass, back = false) => {
@@ -2915,7 +2923,6 @@ function step(dt) {
   if (playroom.inside && !playroom.contains(player.pos.x, player.pos.z)) playroom.setInside(false); // (respawned / resumed elsewhere: the room is undrawn again)
   playroom.update(dt, camera, focused?.kind === 'playroomBilliards');
   day.under = player.inPlayroom ? 1 : garage.under; // down there no daylight (nor in the children's room, #1319)
-  cinema.update(player.inPlayroom, camera, renderer);
   day.lit = player.inPlayroom ? playroom.lit : garage.lit; // … but the tubes' light on the cars (#440), the room's own lamp
   { // the sun's shadow box (±14 m round its target) follows the visitor to a visited flat (#574): centred on it within
     // STANDARD.near m of its footprint, else on ours — without it the sun would shine through its roof and walls
@@ -3052,6 +3059,9 @@ function step(dt) {
   for (const u of world.units) u.cull(camera.position, away); // a visited flat: its shell from afar, nothing from there (#574)
   detail?.update(camera); // far-away small things are not drawn (#189)
   updateCarLods(camera); // phones: far parked cars coarse (#1213; no sets on desktop)
+  // Media projection must use the final camera pose, just like the following WebGL frame.
+  cinema.update(player.inPlayroom, camera, renderer);
+  tvMedia.update(player,camera,renderer,power.on&&world.furnitureOn!==false&&!document.hidden);
 }
 // &perf: fps + what the renderer did last frame (draw calls, triangles, geometries, textures)
 const perfEl = new URLSearchParams(location.search).has('perf') ? document.createElement('pre') : null;
@@ -3419,4 +3429,4 @@ hideLoading();
 
 crashlog.attach({ renderer, camera, quality, player, world, sun, scene, mirrorTarget, frameDiag, viewportBinding }); // what the crash heartbeat shows (#629)
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { phoneFrustum, slideRide, cinema, flare, outdoorSpot, paddock, birds, microwave, carLodState, showFireworks, newYear, sausages, frameRate, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, catCards, catCardsLoaded, binderPanel, showBinder, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };
+window.__app = { tvMedia, phoneFrustum, slideRide, cinema, flare, outdoorSpot, paddock, birds, microwave, carLodState, showFireworks, newYear, sausages, frameRate, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, catCards, catCardsLoaded, binderPanel, showBinder, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };

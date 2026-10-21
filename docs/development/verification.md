@@ -15,6 +15,28 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## Home TV YouTube (#1483)
+
+Minimum checks: the existing cinema authority suite plus two TV-specific cases
+(`node --test --test-isolation=none cloudflare/cinema.test.mjs`,8passes), and
+`tools/tvmediatest.cjs GAME FRESH_LOCAL_WORKER OUT` in real Chrome. The latter
+registers all three actual screen meshes, uses nearby desktop E and the held
+remote's touch action beyond arm reach, plays real YouTube in two clients,
+then plays on both upstairs TVs independently before returning to ordinary
+channels and remote power. Search only is a bounded fixture; media/API are real.
+Final two-client run `/tmp/tv-media-verified/` passes all cases: real playback
+clocks3.762/3.778s, three physical screen screenshots, ordinary-channel return,
+remote power and unique IDs, with no page/shader exceptions. All screen images
+were opened and inspected. The driver first exposed an arm-reach target masking
+the longer remote ray; remote priority now uses its actual existing ray. A real
+stop/release race was corrected so incoming transport state is still applied
+while the lock is being released. The final camera-order correction has an
+additional scoped real-app check (`/tmp/tv-surface-frame.cjs`): the actual Player
+moves16cm in one step and the CSS/WebGL camera matrices differ by exactly0.
+That check uses a local colour surface without external media; actual YouTube
+playback is the two-client evidence above. `tools/tvtest.html` retains local programme-renderer/power coverage;
+its former direct-E toggle assertions are replaced by the shared chooser suite.
+
 ## Shared physical cinema (#1476)
 
 `tools/cinemapeertest.cjs GAME WORKER OUT` uses two real apps (desktop E and

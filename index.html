@@ -759,39 +759,39 @@
     #chat-log .chat-line.mine b { color: #9fdcff; }
     #chat-log .chat-line.note { font-style: italic; opacity: .85; }
 
-    #cinema-watch { position: fixed; top: calc(82px + var(--st)); left: calc(12px + var(--sl)); z-index: 8; max-width: min(340px, 75vw); padding: 8px; border-radius: 8px; background: #14212ce8; color: white; font-size: 13px; }
-    #cinema-watch[hidden] { display: none; }
-    #cinema-watch span { display: block; }
-    #cinema-watch button { min-height: 44px; margin-top: 4px; border: 0; border-radius: 6px; padding: 8px; touch-action: manipulation; }
-    #cinema-player { box-sizing: border-box; width: min(920px, calc(100% - 24px - var(--sl) - var(--sr))); max-height: calc(100% - 16px - var(--st) - var(--sb)); overflow: auto; border: 1px solid #788b98; border-radius: 12px; padding: 12px; background: #14212c; color: #fff; touch-action: auto; }
-    #cinema-player::backdrop { background: rgba(0, 0, 0, .78); }
-    #cinema-player .cinema-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-    #cinema-player h2 { font-size: 20px; margin: 0; flex: 1; }
-    #cinema-player button { min-height: 44px; padding: 6px 14px; border: 0; border-radius: 8px; font: 600 16px system-ui; cursor: pointer; touch-action: manipulation; }
-    #cinema-player button:disabled { opacity: .45; }
-    #cinema-player form { margin: 10px 0; }
-    #cinema-player label { display: block; margin-bottom: 4px; }
-    #cinema-player input { min-width: 100px; flex: 1; box-sizing: border-box; min-height: 44px; font: 16px system-ui; padding: 8px; user-select: text; touch-action: auto; }
-    #cinema-player [data-cinema="results"] { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(180px, 100%), 1fr)); gap: 10px; max-height: 340px; overflow: auto; }
-    #cinema-player .cinema-result { text-align: left; font-weight: 500; padding: 0; overflow: hidden; background: #263b4b; color: #fff; }
-    #cinema-player .cinema-result img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
-    #cinema-player .cinema-result span { display: block; padding: 10px; overflow-wrap: anywhere; }
-    #cinema-player h3 { font-size: 17px; margin: 12px 0 8px; }
-    #cinema-player .cinema-suggestions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
-    #cinema-player .cinema-video:empty { display: none; }
-    #cinema-player .cinema-video iframe { display: block; width: 100%; height: min(50vh, 440px); min-height: 200px; border: 0; background: #000; }
+    .cinema-watch { position: fixed; top: calc(82px + var(--st)); left: calc(12px + var(--sl)); z-index: 8; max-width: min(340px, 75vw); padding: 8px; border-radius: 8px; background: #14212ce8; color: white; font-size: 13px; }
+    .cinema-watch[hidden] { display: none; }
+    .cinema-watch span { display: block; }
+    .cinema-watch button { min-height: 44px; margin-top: 4px; border: 0; border-radius: 6px; padding: 8px; touch-action: manipulation; }
+    .cinema-player { box-sizing: border-box; width: min(920px, calc(100% - 24px - var(--sl) - var(--sr))); max-height: calc(100% - 16px - var(--st) - var(--sb)); overflow: auto; border: 1px solid #788b98; border-radius: 12px; padding: 12px; background: #14212c; color: #fff; touch-action: auto; }
+    .cinema-player::backdrop { background: rgba(0, 0, 0, .78); }
+    .cinema-player .cinema-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .cinema-player h2 { font-size: 20px; margin: 0; flex: 1; }
+    .cinema-player button { min-height: 44px; padding: 6px 14px; border: 0; border-radius: 8px; font: 600 16px system-ui; cursor: pointer; touch-action: manipulation; }
+    .cinema-player button:disabled { opacity: .45; }
+    .cinema-player form { margin: 10px 0; }
+    .cinema-player label { display: block; margin-bottom: 4px; }
+    .cinema-player input { min-width: 100px; flex: 1; box-sizing: border-box; min-height: 44px; font: 16px system-ui; padding: 8px; user-select: text; touch-action: auto; }
+    .cinema-player [data-cinema="results"] { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(180px, 100%), 1fr)); gap: 10px; max-height: 340px; overflow: auto; }
+    .cinema-player .cinema-result { text-align: left; font-weight: 500; padding: 0; overflow: hidden; background: #263b4b; color: #fff; }
+    .cinema-player .cinema-result img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+    .cinema-player .cinema-result span { display: block; padding: 10px; overflow-wrap: anywhere; }
+    .cinema-player h3 { font-size: 17px; margin: 12px 0 8px; }
+    .cinema-player .cinema-suggestions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+    .cinema-player .cinema-video:empty { display: none; }
+    .cinema-player .cinema-video iframe { display: block; width: 100%; height: min(50vh, 440px); min-height: 200px; border: 0; background: #000; }
     @media (min-width: 650px) and (max-height: 500px) {
-      #cinema-player[open] { display: grid; grid-template-columns: 250px minmax(200px, 1fr); gap: 8px 12px; }
-      #cinema-player > .cinema-row:first-child { grid-column: 1 / -1; }
-      #cinema-player form { grid-column: 1; grid-row: 2; margin: 0; }
-      #cinema-player form .cinema-row { display: block; }
-      #cinema-player input { width: 100%; margin-bottom: 8px; }
-      #cinema-player .cinema-video { grid-column: 2; grid-row: 2 / 4; }
-      #cinema-player .cinema-video iframe { height: 200px; }
-      #cinema-player > .cinema-row:last-child { grid-column: 1; grid-row: 3; align-self: end; }
-      #cinema-player [role=status] { grid-column: 1 / -1; margin: 0; }
+      .cinema-player[open] { display: grid; grid-template-columns: 250px minmax(200px, 1fr); gap: 8px 12px; }
+      .cinema-player > .cinema-row:first-child { grid-column: 1 / -1; }
+      .cinema-player form { grid-column: 1; grid-row: 2; margin: 0; }
+      .cinema-player form .cinema-row { display: block; }
+      .cinema-player input { width: 100%; margin-bottom: 8px; }
+      .cinema-player .cinema-video { grid-column: 2; grid-row: 2 / 4; }
+      .cinema-player .cinema-video iframe { height: 200px; }
+      .cinema-player > .cinema-row:last-child { grid-column: 1; grid-row: 3; align-self: end; }
+      .cinema-player [role=status] { grid-column: 1 / -1; margin: 0; }
     }
-    #cinema-player [role=status] { margin: 8px 0; font-size: 14px; }
+    .cinema-player [role=status] { margin: 8px 0; font-size: 14px; }
   </style>
   <link rel="stylesheet" href="src/hudicons.css">
   <link rel="stylesheet" href="src/dialogclose.css">
@@ -1236,7 +1236,7 @@
     <div class="pct"></div>
     <small>W/S: dra upp/ner · E: klar</small>
   </div>
-  <dialog id="cinema-player" aria-labelledby="cinema-title">
+  <dialog class="cinema-player" id="cinema-player" aria-labelledby="cinema-title">
     <div class="cinema-row"><h2 id="cinema-title">Bion</h2><button type="button" data-cinema="close">Tillbaka till rummet</button></div>
     <form><label for="cinema-url">Vad vill du se?</label><div class="cinema-row"><input id="cinema-url" type="text" autocomplete="off" maxlength="80" placeholder="Sök efter film eller kanal"><button type="submit">Sök</button></div>
       <nav class="cinema-suggestions" aria-label="Filmförslag"><button type="button" data-query="animerad kortfilm">Kortfilmer</button><button type="button" data-query="natur djur dokumentär">Natur &amp; djur</button><button type="button" data-query="rymden dokumentär">Rymden</button><button type="button" data-query="gaming highlights">Spel</button></nav>

@@ -51,14 +51,15 @@ function youtubeAPI() {
 }
 
 export class CinemaPlayer {
-  constructor(el, onClose, searchEndpoint = '') {
+  constructor(el, onClose, searchEndpoint = '', options = {}) {
+    this.label=options.label??'Bion';this.place=options.place??'bioduken';
     this.el=el;this.onClose=onClose;this.searchEndpoint=searchEndpoint;
     this.generation=0;this.searchGeneration=0;this.inside=false;this.ready=false;
     this.status=el.querySelector('[role="status"]');this.input=el.querySelector('input');
     this.results=el.querySelector('[data-cinema="results"]');this.resultsTitle=el.querySelector('[data-cinema="results-title"]');
     this.playButton=el.querySelector('[data-cinema="play"]');this.pauseButton=el.querySelector('[data-cinema="pause"]');
     this.offButton=el.querySelector('[data-cinema="off"]');this.joinButton=el.querySelector('[data-cinema="join"]');
-    this.watch=document.createElement('aside');this.watch.id='cinema-watch';this.watch.hidden=true;
+    this.watch=document.createElement('aside');this.watch.id=options.id?`watch-${options.id}`:'cinema-watch';this.watch.className='cinema-watch';this.watch.hidden=true;
     this.watchText=document.createElement('span');
     this.soundButton=document.createElement('button');this.soundButton.type='button';this.soundButton.textContent='Aktivera bild och ljud';
     this.watch.append(this.watchText,this.soundButton);document.body.append(this.watch);
@@ -80,13 +81,13 @@ export class CinemaPlayer {
   get connected(){return !!this.net?.ready();}
   get owns(){return this.connected&&this.state?.owner===this.net.id();}
   command(k,extra={}) {
-    if(!this.connected){this.status.textContent='Bion saknar anslutning. Försök igen när ni är anslutna.';return false;}
+    if(!this.connected){this.status.textContent=`${this.label} saknar anslutning. Försök igen när ni är anslutna.`;return false;}
     return this.net.send({t:'cinema',k,q:this.state?.q??0,...extra});
   }
   show() {
     if(this.open)return;
     this.wantsControl=true;this.el.showModal();this.input.focus();
-    this.awaitingPresence=!this.state;this.status.textContent='Begär kontroll över bion…';this.command('claim');this.controls();
+    this.awaitingPresence=!this.state;this.status.textContent=`Begär kontroll över ${this.label}…`;this.command('claim');this.controls();
   }
   close(reason='button') {
     this.wantsControl=false;this.searchGeneration++;
@@ -119,7 +120,7 @@ export class CinemaPlayer {
     if(!this.inside)return;
     if(m.k==='no') {
       if(m.why==='away'&&this.wantsControl)this.awaitingPresence=true;
-      this.status.textContent=({owned:'Någon annan styr bion just nu.',owner:'Bara den som styr bion får ändra filmen.',stale:'Bion har ändrats. Försök igen.',away:'Gå in i lekstugan för att använda bion.'})[m.why]??'Bion kunde inte ändras.';
+      this.status.textContent=({owned:'Någon annan styr skärmen just nu.',owner:'Bara den som styr får ändra filmen.',stale:'Filmen har ändrats. Försök igen.',away:`Gå fram till ${this.place} för att välja film.`})[m.why]??'Bion kunde inte ändras.';
       return;
     }
     const s=m.s;
@@ -130,13 +131,13 @@ export class CinemaPlayer {
     this.state=s;
     if(this.awaitingPresence&&this.wantsControl&&!s.owner){this.awaitingPresence=false;this.command('claim');}
     this.receivedServerNow=m.now;this.receivedAt=performance.now();this.controls();
-    if(this.owns&&!this.wantsControl){this.command('release');return;}
-    this.status.textContent=this.owns?'Du styr bion. Filmen visas på bioduken.':s.owner?`${s.name} styr bion. Du tittar på samma film.`:'Ingen styr bion just nu.';
-    if(this.owns&&!hadControl){if(this.open)this.input.focus();if(!this.results.childElementCount&&this.searchEndpoint)this.search('animerad kortfilm',true);}
+    if(this.owns&&!this.wantsControl)this.command('release');
+    this.status.textContent=this.owns?`Du styr ${this.label}. Filmen visas på ${this.place}.`:s.owner?`${s.name} styr ${this.label}. Du tittar på samma film.`:`Ingen styr ${this.label} just nu.`;
+    if(this.owns&&!hadControl&&this.open){this.input.focus();if(!this.results.childElementCount&&this.searchEndpoint)this.search('animerad kortfilm',true);}
     if(!s.video){this.destroyMedia();this.watch.hidden=true;return;}
     if(this.video!==s.video)this.load(s.video);
     else this.synchronize();
-    this.watch.hidden=false;this.watchText.textContent=`Bion · ${s.playing?'Spelar':'Pausad'}${s.owner?` · ${s.name} styr`:''}`;
+    this.watch.hidden=false;this.watchText.textContent=`${this.label} · ${s.playing?'Spelar':'Pausad'}${s.owner?` · ${s.name} styr`:''}`;
   }
   async search(query,suggestions=false) {
     if(!this.owns)return;
@@ -162,7 +163,7 @@ export class CinemaPlayer {
         const caption=document.createElement('span');caption.textContent=`${item.title} · ${item.channel}`;button.append(img,caption);
         button.addEventListener('click',()=>{if(this.owns){this.input.value=item.id;this.choose(item.id);}});this.results.append(button);
       }
-      this.status.textContent=this.results.childElementCount?'Välj vad alla ska se på bioduken.':'Inga filmer hittades.';
+      this.status.textContent=this.results.childElementCount?`Välj vad alla ska se på ${this.place}.`:'Inga filmer hittades.';
     }catch{if(this.open&&this.owns&&request===this.searchGeneration)this.status.textContent='Filmsökningen kunde inte nås. Försök igen.';}
   }
   choose(value) {
@@ -176,7 +177,7 @@ export class CinemaPlayer {
     try{
       const YT=await youtubeAPI();if(!current())return;
       const frame=document.createElement('iframe'),C=PLAYROOM.cinemaSync;
-      frame.title='Gemensam film på bioduken';frame.width=C.width;frame.height=C.height;
+      frame.title=`Gemensam film på ${this.place}`;frame.width=C.width;frame.height=C.height;
       frame.allow='autoplay; encrypted-media';frame.referrerPolicy='strict-origin-when-cross-origin';frame.style.cssText='display:block;width:100%;height:100%;border:0;pointer-events:none';
       const url=new URL(`https://www.youtube-nocookie.com/embed/${id}`);
       url.search=new URLSearchParams({enablejsapi:'1',origin:location.origin,playsinline:'1',autoplay:'1',mute:'1',controls:'0',disablekb:'1'});
@@ -184,8 +185,8 @@ export class CinemaPlayer {
       this.timer=setTimeout(()=>{if(current()&&!this.ready){this.status.textContent='YouTube svarar inte. Välj film igen eller kontrollera anslutningen.';this.watchText.textContent=this.status.textContent;}},PLAYROOM.devices.videoTimeoutMs);
       this.player=new YT.Player(frame,{events:{
         onReady:()=>{if(!current())return;clearTimeout(this.timer);this.ready=true;if(this.soundEnabled)this.player.unMute();else this.player.mute();this.synchronize();this.controls();},
-        onStateChange:e=>{if(!current())return;if(e.data===0){this.ended=true;this.watchText.textContent='Bion · Filmen är slut.';}},
-        onAutoplayBlocked:()=>{if(current()){this.soundButton.hidden=false;this.watchText.textContent='Bion · Aktivera bild och ljud för att följa filmen.';}},
+        onStateChange:e=>{if(!current())return;if(e.data===0){this.ended=true;this.watchText.textContent=`${this.label} · Filmen är slut.`;}},
+        onAutoplayBlocked:()=>{if(current()){this.soundButton.hidden=false;this.watchText.textContent=`${this.label} · Aktivera bild och ljud för att följa filmen.`;}},
         onError:e=>{if(current()){clearTimeout(this.timer);this.failed=true;this.status.textContent=youtubeError(e.data);this.watchText.textContent=this.status.textContent;}},
       }});
     }catch{if(current()){this.failed=true;this.status.textContent='YouTube kunde inte nås. Försök igen.';this.watchText.textContent=this.status.textContent;}}
@@ -211,7 +212,7 @@ export class CinemaPlayer {
     if(this.wasConnected!==connected){
       this.wasConnected=connected;
       if(connected)this.command('get');
-      else{this.wantsControl=false;this.awaitingPresence=false;this.destroyMedia();this.state=null;this.watch.hidden=true;this.status.textContent='Bion väntar på anslutning till de andra spelarna.';}
+      else{this.wantsControl=false;this.awaitingPresence=false;this.destroyMedia();this.state=null;this.watch.hidden=true;this.status.textContent=`${this.label} väntar på anslutning till de andra spelarna.`;}
       this.controls();
     }
     this.surface?.update(camera,renderer);
