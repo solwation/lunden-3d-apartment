@@ -7903,3 +7903,15 @@ fade. Open the actual-World pairs in
 held at0.55 to isolate distance behavior. Distant pools disappear; the matched near view
 retains its pool. Calls/triangles are unchanged and the browser reports no errors. This
 uses production fog and merged lamp geometry, not a synthetic light substitute.
+
+
+Final phone-budget follow-up (#1453): the real World contains one flat lobby pane
+in each A/B/C variant, and Hus L retains a noncoplanar multi-pane batch. The
+external `glass-proof.cjs` records12 front/back/oblique pairs on actual pane
+geometries/materials: all before/after PNG files are byte-identical, each draw
+changes2→1 (4→2 triangles), with unchanged source geometry/material/mask/raycast/
+shadow flags. These isolated pane pictures establish material parity, not full
+entrance navigation. The fresh full19-view phone profile passes368calls/
+814170triangles/~97MiB at initial3/max3/testmode-null. Native35/35 still pass.
+Published43f6701's earlier371-call FAIL is retained; final live verification is
+recorded separately on #1453. Raw evidence: `/tmp/orkester-katt-20261020/phonepeak1453/`.

@@ -16,6 +16,11 @@ phone's tight-frustum proof can distinguish native vertex positions from unknown
 deformation. Lamp-wash and foliage normal callbacks retain their original GLSL
 and cache keys; a material flag/name alone never qualifies a callback (#1453).
 
+An individual flat A/B/C CoreHouse lobby pane uses `forceSinglePass` with the
+same double-sided transparent material. This avoids the redundant back/front
+draw for one plane. The condition is exactly one generated pane; multi-pane
+batches, including Hus L's noncoplanar glass, keep two passes (#1453).
+
 ## Module and test map
 
 ```text

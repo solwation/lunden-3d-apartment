@@ -258,7 +258,8 @@ export class CoreHouse {
     add(geo.light, this.mats.light);
     add(numGeos, new THREE.MeshBasicMaterial({ map: nums.t }), numGeos); // (the plates, signs and panes get outlines, as Hus A's did, #652)
     if (signs) { this.mats.sign = new THREE.MeshBasicMaterial({ map: signs.tex }); add(signs.geos, this.mats.sign, signs.geos); }
-    add(geo.glass, new THREE.MeshBasicMaterial({ color: 0xbfd3dc, transparent: true, opacity: 0.35, side: THREE.DoubleSide, depthWrite: false }), geo.glass, this.exterior ?? group);
+    // A single flat pane has no overlapping front/back surfaces; keep two passes for multi-pane batches.
+    add(geo.glass, new THREE.MeshBasicMaterial({ color: 0xbfd3dc, transparent: true, opacity: 0.35, side: THREE.DoubleSide, depthWrite: false, forceSinglePass: geo.glass.length === 1 }), geo.glass, this.exterior ?? group);
 
     // ---- the entrance door: glazed, hinged at its `hinge` end, opening out into the recess
     const E = C.entrance, nzf = E.face === 'n', hi = E.hinge === 'hi', hingeA = hi ? E.door[1] : E.door[0], sgn = hi ? -1 : 1;

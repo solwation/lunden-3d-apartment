@@ -2,6 +2,15 @@
 
 ## Highest phone quality within budget (#1453)
 
+Final published acceptance is separate from the local369-call result below:
+43f6701's live startup includes two extra two-triangle surfaces and measured371
+calls (FAIL). A lone planar CoreHouse pane now uses one double-sided transparent
+pass (`forceSinglePass` only when `geo.glass.length === 1`). A/B/C each have one
+flat pane; Hus L's noncoplanar multi-pane batch remains unchanged. No geometry,
+alpha, depth, side, collision or query policy changes. The fresh local full19-view
+quality3 profile is368calls/814170triangles/~97MiB, ALL PASS. Final published
+results and the exact source revision are recorded in #1453 after deployment.
+
 `src/tightfrustum.js` refines Three's existing sphere-frustum test with a private
 full-position box on low-memory color renders. It preserves the actual current
 world/instance transforms and adds a 1cm numerical guard (`PERF.frustumPad`),
