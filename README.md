@@ -357,7 +357,7 @@ väljer filmer som tillåter inbäddning och visning utanför YouTube. Välj en 
 så spelas den på den nästan väggbreda bioduken för alla i lekstugan; även egna YouTube-länkar fungerar.
 Duken har 40 cm till golv och tak, med mörkröda sammetsgardiner ut till sidoväggarna.
 En person i taget väljer film och styr paus och uppspelning. Tillbaka till rummet
-släpper kontrollen medan filmen fortsätter. Aktivera ljudet med knappen vid behov.
+släpper kontrollen medan filmen fortsätter. Tryck på själva skärmen igen om webbläsaren kräver det för att starta ljudet.
 Filmen stängs av när den sista personen lämnar lekstugan. Videon måste tillåta
 inbäddning. Lekstugan håller regn, snö och hagel utanför taket. Alla väggar har golvlister, tydliga hörn och mjuka
 kontaktskuggor, med samma grundteknik som i L1007. Rundade stoppade biostolar,

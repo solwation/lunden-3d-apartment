@@ -76,7 +76,7 @@ export class ComputerHub {
   stopInput(s){
     if(this.playing===s||s.joining){this.send({k:'leave'});this.playing=null;s.joining=false;this.pendingScreen=null;}
   }
-  show(target){const s=this.sessions.get(target.mediaId);if(!s?.player.inside||!nearComputer(s.info.id,this.position))return false;this.close();if(target.kind==='pc'&&!target.isOpen)target.toggle();if(target.kind==='laptop')target.laptop.set(true);this.onOpen();s.player.show();return true;}
+  show(target){const s=this.sessions.get(target.mediaId);if(!s?.player.inside||!nearComputer(s.info.id,this.position))return false;if(s.player.activate())return true;this.close();if(target.kind==='pc'&&!target.isOpen)target.toggle();if(target.kind==='laptop')target.laptop.set(true);this.onOpen();s.player.show();return true;}
   close(reason='button'){for(const s of this.sessions.values())if(s.player.open)s.player.close(reason);}
   update(visitor,camera,renderer,available,furniture=true) {
     this.position=[visitor.pos.x,visitor.pos.y,visitor.pos.z];const now=performance.now();let any=false;

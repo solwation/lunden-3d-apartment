@@ -33,6 +33,7 @@ export class TVMedia {
   show(target) {
     const session=this.sessions.get(target.mediaId);if(!session)return false;
     if(!session.player.inside)return false;
+    if(session.player.activate())return true;
     this.close();this.onOpen();session.player.show();return true;
   }
   close(reason='button'){for(const {player} of this.sessions.values())if(player.open)player.close(reason);}

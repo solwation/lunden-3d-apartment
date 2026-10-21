@@ -1303,6 +1303,7 @@ playroom.devices.onComputerRequest=target=>computerHub.show(target);
 cinema.surface = new CinemaSurface(canvas, playroom.devices.tv.mesh);
 playroom.devices.onVideoRequest = () => {
   if (!playroom.inside) return;
+  if(cinema.activate())return;
   reading = true; player.keys.clear(); touch.analog.x = touch.analog.y = 0;
   if (locked) { binderFreed = true; document.exitPointerLock(); }
   cinema.show();

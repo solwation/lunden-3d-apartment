@@ -22,7 +22,7 @@ plus `tools/mediatransporttest.cjs GAME FRESH_LOCAL_WORKER OUT`. The lightweight
 actual CinemaPlayer/CinemaSurface fixture controls vendor events: immediate modal
 close/HUD hiding, world-surface loader before API readiness, loader retained at
 onReady and hidden at PLAYING, buffering/error text, stale-callback isolation,
-cleanup and transient claim→seek→release with no duplicate release. Server cases
+cleanup and transient claim→seek→release with no duplicate release. The activation-button correction also asserts that neither dialog nor viewing HUD has an activation button and that a blocked player activates through screen interaction. Server cases
 check finite/ranged positions, foreign/stale rejection and preservation of pause.
 The actual-TV part uses native E, real YouTube frames, touch forward/J rewind and
 a lightweight socket observer on the same server clock. One observer is necessary

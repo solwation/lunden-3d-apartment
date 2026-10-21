@@ -58,13 +58,10 @@ export class CinemaPlayer {
     this.status=el.querySelector('[role="status"]');this.input=el.querySelector('input');
     this.results=el.querySelector('[data-cinema="results"]');this.resultsTitle=el.querySelector('[data-cinema="results-title"]');
     this.playButton=el.querySelector('[data-cinema="play"]');this.pauseButton=el.querySelector('[data-cinema="pause"]');
-    this.offButton=el.querySelector('[data-cinema="off"]');this.joinButton=el.querySelector('[data-cinema="join"]');
+    this.offButton=el.querySelector('[data-cinema="off"]');
     this.watch=document.createElement('aside');this.watch.id=options.id?`watch-${options.id}`:'cinema-watch';this.watch.className='cinema-watch';this.watch.hidden=true;
     this.watchText=document.createElement('span');
-    this.soundButton=document.createElement('button');this.soundButton.type='button';this.soundButton.textContent='Aktivera bild och ljud';
-    this.watch.append(this.watchText,this.soundButton);document.body.append(this.watch);
-    this.soundButton.addEventListener('click',e=>{e.stopPropagation();this.localStart();});
-    this.joinButton.addEventListener('click',()=>this.localStart());
+    this.watch.append(this.watchText);document.body.append(this.watch);
     el.querySelector('form').addEventListener('submit',e=>{e.preventDefault();this.search(this.input.value);});
     for(const button of el.querySelectorAll('[data-query]'))button.addEventListener('click',()=>{this.input.value=button.dataset.query;this.search(button.dataset.query);});
     this.playButton.addEventListener('click',()=>this.command('play'));
@@ -89,7 +86,7 @@ export class CinemaPlayer {
     return sent;
   }
   show() {
-    if(this.open)return;
+    if(this.activate()||this.open)return;
     this.wantsControl=true;this.el.showModal();this.input.focus();
     this.awaitingPresence=!this.state;this.status.textContent=`Begär kontroll över ${this.label}…`;this.command('claim');this.controls();
   }
@@ -114,7 +111,6 @@ export class CinemaPlayer {
     for(const field of this.el.querySelectorAll('form input,form button'))field.disabled=!owns;
     this.playButton.disabled=this.pauseButton.disabled=this.offButton.disabled=!owns||!this.state?.video;
     for(const b of this.el.querySelectorAll('[data-cinema-seek]'))b.disabled=!owns||!this.state?.video;
-    this.joinButton.disabled=!this.ready||!this.state?.video;this.soundButton.disabled=!this.ready;
   }
   position() {
     if(!this.state)return 0;
@@ -196,10 +192,14 @@ export class CinemaPlayer {
     this.pendingSeek=delta;this.wantsControl=true;
     return this.command('claim');
   }
-  updateWatch(){this.watch.hidden=!this.inside||!this.video||this.failed||(!this.autoplayBlocked&&(this.soundEnabled||!this.ready));}
+  updateWatch(){this.watch.hidden=true;}
+  activate(){
+    if(!this.ready||this.failed||!this.state?.video||(this.soundEnabled&&!this.autoplayBlocked))return false;
+    this.localStart();return true;
+  }
   mediaError(text){clearTimeout(this.timer);this.failed=true;this.status.textContent=text;this.watchText.textContent=text;this.surface?.loading(true,text,true);this.updateWatch();}
   async load(id) {
-    this.destroyMedia();this.video=id;this.failed=false;this.ended=false;this.autoplayBlocked=false;this.soundButton.hidden=!!this.soundEnabled;
+    this.destroyMedia();this.video=id;this.failed=false;this.ended=false;this.autoplayBlocked=false;
     this.surface?.show(true);this.surface?.loading(true);
     const generation=this.generation,current=()=>this.inside&&this.video===id&&generation===this.generation;
     this.timer=setTimeout(()=>{if(current())this.mediaError('YouTube svarar inte. Välj film igen eller kontrollera anslutningen.');},PLAYROOM.devices.videoTimeoutMs);
@@ -220,7 +220,7 @@ export class CinemaPlayer {
           if(e.data===3){this.surface?.loading(true);clearTimeout(this.timer);this.timer=setTimeout(()=>{if(current())this.mediaError('Filmen kunde inte laddas. Välj film igen.');},PLAYROOM.devices.videoTimeoutMs);}
           if(e.data===0){this.ended=true;this.watchText.textContent=`${this.label} · Filmen är slut.`;}
         },
-        onAutoplayBlocked:()=>{if(current()){clearTimeout(this.timer);this.autoplayBlocked=true;this.surface?.loading(true,'Aktivera bild och ljud för att börja',true);this.soundButton.hidden=false;this.watchText.textContent=`${this.label} · Aktivera bild och ljud för att följa filmen.`;this.updateWatch();}},
+        onAutoplayBlocked:()=>{if(current()){clearTimeout(this.timer);this.autoplayBlocked=true;this.surface?.loading(true,'Tryck på skärmen eller använd E för att starta.',true);this.updateWatch();}},
         onError:e=>{if(current())this.mediaError(youtubeError(e.data));},
       }});
     }catch{if(current())this.mediaError('YouTube kunde inte nås. Försök igen.');}
@@ -237,7 +237,7 @@ export class CinemaPlayer {
     if(!this.ready)return;
     this.soundEnabled=true;this.player.seekTo(this.position(),true);this.player.unMute();
     if(this.state?.playing)this.player.playVideo();else this.player.pauseVideo();
-    this.soundButton.hidden=true;this.autoplayBlocked=false;this.updateWatch();
+    this.autoplayBlocked=false;const state=this.player.getPlayerState();this.surface?.loading(state!==1&&state!==2);this.updateWatch();
   }
   update(inside,camera,renderer) {
     if(!inside){if(this.inside)this.leave();return;}

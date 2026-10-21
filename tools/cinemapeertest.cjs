@@ -38,7 +38,7 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
   assert(await B.locator('#cinema-url').isDisabled());assert.equal((await state(A)).s.owner,(await state(B)).s.owner);log('one controller; touch viewer cannot edit another player’s film');
   await choose(A,'första filmen');await Promise.all([playing(A,'aqz-KE-bpKQ'),playing(B,'aqz-KE-bpKQ')]);
   await A.waitForFunction(()=>!__app.cinema.state?.owner);const revision=(await state(A)).s.q;
-  assert(!await A.evaluate(()=>__app.cinema.open));await B.locator('#cinema-player [data-cinema=join]').tap();
+  assert(!await A.evaluate(()=>__app.cinema.open));await B.evaluate(()=>__app.cinema.activate());
   assert.equal((await state(B)).s.q,revision);assert.equal((await state(A)).s.owner,null);log('local audio activation follows the same film without taking control');
   await close(B);await close(A);await A.waitForFunction(()=>!__app.cinema.state?.owner);
   await sleep(2200);

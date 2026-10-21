@@ -1871,7 +1871,7 @@ All three TVs open a shared film chooser through nearby E/touch or the held remo
 click/action button. The existing remote ray retains wall rejection and9m reach.
 Each screen has independent exclusive control; other viewers see its controller
 and disabled editing. Closing releases control and keeps the film playing.
-The local sound button only activates that viewer's sound. “Vanliga TV-kanaler”
+There are no separate activation buttons. If the browser requires a sound/playback gesture, the next interaction with the physical screen activates that viewer locally before opening any chooser; TV, cinema and computer routes check this before unlocking the pointer. “Vanliga TV-kanaler”
 returns to existing programmes. During a shared film the remote's power action
 opens the same shared controls, preserving the exclusive owner rule.
 Unique dialog/input/title IDs and shared CSS replace the earlier cinema-only
