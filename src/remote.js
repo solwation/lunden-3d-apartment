@@ -1,12 +1,12 @@
 import * as THREE from 'three';
 import { Holdable } from './holdable.js';
 import { sfx } from './audio.js';
-import { REMOTE as R } from './config.js';
+import { REMOTE as R, PLAYROOM } from './config.js';
 
 // The TV remote (#101): a slim black remote on the coffee table, a Holdable. Held and pointed at a TV
 // (the one in the look direction, not through walls — main.js finds it): a click / the touch button
 // opens the shared film chooser; right click / the ⏻ touch button switches ordinary
-// TV on/off, or opens shared controls when a YouTube film is active. Its red LED blinks on every press (emissive, no light).
+// TV on/off, or opens shared controls when a YouTube film is active. J/L and the held touch buttons seek ±10s. Its red LED blinks on every press (emissive, no light).
 
 function remoteModel() {
   const g = new THREE.Group();
@@ -58,6 +58,12 @@ export class Remote extends Holdable {
     return tv;
   }
 
+  seek(direction) {
+    if(!this.held||this.cool>0)return false;
+    const tv=this.findTv();if(!tv)return false;
+    this.cool=.25;this.blink=.18;this.presses++;sfx.click(this.where());
+    return this.onSeek?.(tv,Math.sign(direction)*PLAYROOM.cinemaSync.seekSeconds)??false;
+  }
   onUse() { this.press(false); }
   /** The power button: right click / the ⏻ touch button. */
   useAlt() { if (this.held && this.cool <= 0) { this.cool = 0.25; this.press(true); } }

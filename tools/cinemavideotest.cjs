@@ -45,7 +45,7 @@ const check = (v, label, details) => { if (!v) throw Error(label + ' ' + JSON.st
   check(await page.evaluate(()=>!__app.world.playroom.devices.remoteTarget),'cinema remote target removed');
   if (process.env.INPUT_ONLY) {
     await page.screenshot({path:`${out}/chooser.png`});
-    await page.locator('#cinema-player [data-cinema=close]').click();
+    if(await page.locator('#cinema-player').evaluate(el=>el.open))await page.locator('#cinema-player [data-cinema=close]').click();
     check(!await page.locator('#cinema-player').evaluate(el=>el.open),'back returns to cinema');
     check(errors.length===0,'no app page exceptions',errors);
     fs.writeFileSync(`${out}/result.json`,JSON.stringify({mobile,focus,errors},null,2));

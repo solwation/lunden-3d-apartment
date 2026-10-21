@@ -15,6 +15,26 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## Film handoff and shared seeking (#1490)
+
+Scoped plan:9server cases in `node --test --test-isolation=none cloudflare/cinema.test.mjs`
+plus `tools/mediatransporttest.cjs GAME FRESH_LOCAL_WORKER OUT`. The lightweight
+actual CinemaPlayer/CinemaSurface fixture controls vendor events: immediate modal
+close/HUD hiding, world-surface loader before API readiness, loader retained at
+onReady and hidden at PLAYING, buffering/error text, stale-callback isolation,
+cleanup and transient claim→seek→release with no duplicate release. Server cases
+check finite/ranged positions, foreign/stale rejection and preservation of pause.
+The actual-TV part uses native E, real YouTube frames, touch forward/J rewind and
+a lightweight socket observer on the same server clock. One observer is necessary
+when the fixture switches desktop input to touch via the pause menu, because the
+last viewer's disconnect deliberately clears the shared film. Evidence and actual
+loading/playing captures: `/tmp/media1490/`. Existing broad cinema/TV/computer
+scripts are adapted for automatic dismissal; they are not rerun as extra profiles.
+All three scoped checks pass; loading/playing captures were visually reviewed.
+The final generic center-prompt suppression is a source-reviewed presentation
+condition using the already verified active-media state.
+Original-only shared media gameplay, no public downstream import.
+
 ## Shared computer clients (#1488)
 
 Scoped checks: `tools/computerfurnituretest.mjs` with the pinned Three loader;

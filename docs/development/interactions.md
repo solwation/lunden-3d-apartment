@@ -21,8 +21,14 @@ buttons. A request counter prevents late suggestions from replacing a newer sear
 YouTube may still restrict a film for a particular account, network or region; its
 player remains authoritative and reports an actionable error (including restriction151). Search is limited by the existing per-IP
 Worker request limiter. Film choice, play and pause are synchronized by the Worker (#1476/#1477).
-The chooser acquires exclusive control; closing it releases control while the
-film continues on the physical bioduk. Viewers enable local audio separately. Tests: `node --test cloudflare/youtubesearch.test.mjs`;
+The chooser acquires exclusive control. Selecting a film immediately closes it,
+restores world input and queues release after selection (#1490). The physical
+screen shows a CSS loading spinner before the API/iframe is ready, until actual
+PLAYING (not merely onReady); buffering restores it, errors/timeouts replace it
+with a message, and stale callbacks cannot touch a replacement film. Normal
+playback hides the film HUD; a local audio/autoplay activation prompt remains
+available only when needed. Manual close also releases control while the film
+continues on the physical screen. Viewers enable local audio separately. Tests: `node --test cloudflare/youtubesearch.test.mjs`;
 two-client world playback is covered by `tools/cinemapeertest.cjs` with an isolated
 local Worker and live YouTube access.
 
@@ -1895,3 +1901,15 @@ The last departure removes the ephemeral arena; films retain the existing
 last-room-viewer lifetime. Reconnection clears old ownership and requires a
 fresh control claim/join. Rules/food/collisions are server-owned in `snakearena.js`;
 clients never submit positions, lengths, food or kills. No game state is saved.
+
+## Shared media transport (#1490)
+
+Every CinemaPlayer chooser (TV/cinema/computer) includes ±10s buttons. The held
+TV remote exposes matching touch buttons while aimed at a playing TV and J/L
+keyboard shortcuts (bracket-key aliases retained). `Remote.seek` reuses the
+existing click cooldown/LED feedback. `TVMedia.seek` calls `remoteSeek`; when
+unowned it briefly claims the same exclusive lease, sends the bounded absolute
+seek and releases it without opening a panel. Another controller cannot be
+preempted. RoomCinema keeps the existing playing/paused flag and revision check,
+so all viewers follow the same server-time anchor. No new sockets or timer tick.
+The step size is a usability choice in `PLAYROOM.cinemaSync.seekSeconds`.

@@ -5747,7 +5747,7 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
   // Cinema poster dimensions and network timeout are visual/usability guesses.
   devices: { videoTimeoutMs: 20000, // Assumed network timeout for the optional cinema player (#1376).
     canvas: [512, 288] },
-  cinemaSync: { maxPosition: 604800, driftSeconds: 1.5, syncEveryMs: 2000, width: 1280 }, // Assumed media bounds, local drift correction and iframe viewport.
+  cinemaSync: { maxPosition: 604800, driftSeconds: 1.5, syncEveryMs: 2000, seekSeconds: 10, width: 1280 }, // Assumed media bounds, local drift correction and iframe viewport.
   // #1328: local child-size billiards (all dimensions/rolling coefficients are visual/playability guesses).
   billiards: { x: 0, z: -1.83, yaw: Math.PI / 2, length: 1.8, width: 0.9, height: 0.58, rail: 0.09, railH: 0.06, leg: 0.08, // #1482: centre between north z=-5.2 and the partition inner face z=1.54; retain #1411 orientation.
     ballR: 0.024, pocketR: 0.052, cueLength: 1, strokeSpeed: 2.2, strokeSeconds: 0.24, cueTravel: 0.09,

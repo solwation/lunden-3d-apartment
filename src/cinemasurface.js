@@ -20,10 +20,17 @@ export class CinemaSurface {
     // NoBlending deliberately retains alpha=0 while still writing depth. Foreground
     // chairs, avatars and walls write opaque pixels over it in either draw order.
     this.aperture=new THREE.MeshBasicMaterial({color:0,opacity:0,blending:THREE.NoBlending,depthWrite:true,toneMapped:false});
+    this.overlay=document.createElement('div');this.overlay.className='cinema-world-loading';this.overlay.hidden=true;
+    this.spinner=document.createElement('i');this.spinner.setAttribute('aria-hidden','true');this.message=document.createElement('span');
+    this.overlay.append(this.spinner,this.message);
     this.active=false;
   }
+  loading(on,text='Loading...',error=false) {
+    if(this.overlay.parentNode!==this.mount)this.mount.append(this.overlay);
+    this.overlay.hidden=!on;this.spinner.hidden=error;this.message.textContent=text;
+  }
   show(on) {
-    this.active=!!on;this.mesh.material=on?this.aperture:this.poster;
+    this.active=!!on;if(!on)this.loading(false);this.mesh.material=on?this.aperture:this.poster;
     this.renderer.domElement.hidden=!on;
   }
   update(camera,renderer) {

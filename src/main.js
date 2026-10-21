@@ -1289,7 +1289,7 @@ const closeVideoControls = reason => {
   reading = false; player.keys.clear(); touch.analog.x = touch.analog.y = 0;
   if (binderFreed) {
     binderFreed = false;
-    if (reason === 'button') canvas.requestPointerLock()?.catch(() => { armEl.hidden = false; });
+    if (reason === 'button'||reason==='selected') canvas.requestPointerLock()?.catch(() => { armEl.hidden = false; });
     else if (reason === 'Escape') { overlay.hidden = true; armEl.hidden = false; }
   }
 };
@@ -1297,6 +1297,7 @@ const cinema = new CinemaPlayer(document.getElementById('cinema-player'),closeVi
 const openVideoControls=()=>{reading=true;player.keys.clear();touch.analog.x=touch.analog.y=0;if(locked){binderFreed=true;document.exitPointerLock();}};
 const tvMedia=new TVMedia({canvas,targets:world.furnitureTargets,template:document.getElementById('cinema-player'),onClose:closeVideoControls,onOpen:openVideoControls,endpoint:cloudUrl()?`${cloudUrl()}/youtube-search`:''});
 remote.onVideo=tv=>tvMedia.show(tv);remote.onPower=tv=>tvMedia.power(tv);
+remote.onSeek=(tv,delta)=>{const ok=tvMedia.seek(tv,delta);if(!ok)badge('Någon annan styr TV:n just nu. Försök igen om en stund.',false);return ok;};
 const computerHub=new ComputerHub({canvas,targets:[...world.furnitureTargets,...playroom.devices.computers.map(s=>s.target)],template:document.getElementById('cinema-player'),onClose:closeVideoControls,onOpen:openVideoControls,endpoint:cloudUrl()?`${cloudUrl()}/youtube-search`:''});
 playroom.devices.onComputerRequest=target=>computerHub.show(target);
 cinema.surface = new CinemaSurface(canvas, playroom.devices.tv.mesh);
@@ -1930,6 +1931,9 @@ for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) actionBtn.addEv
 // touch: the remote's power button beside the action button while it is held
 const powerBtn = document.getElementById('power-btn');
 const turnBtn = document.getElementById('turn-btn');
+const remoteSeekControls=document.getElementById('remote-seek');
+for(const b of remoteSeekControls.querySelectorAll('[data-remote-seek]'))b.addEventListener('click',()=>remote.seek(Number(b.dataset.remoteSeek)));
+remoteSeekControls.addEventListener('pointerdown',e=>e.stopPropagation());
 turnBtn.addEventListener('click', () => turnPlacement());
 powerBtn.addEventListener('click', () => heldItem()?.useAlt?.());
 // touch: the jump button (#600, #636) = Space's press, suit or not (the suit's high jump, wall / strand let-go: player.js)
@@ -1953,6 +1957,7 @@ document.addEventListener('keydown', (e) => {
     else if (!noteEl.hidden && scrollNote(notePaper, e.code, e.shiftKey)) e.preventDefault(); // #275
     return;
   }
+  if(heldItem()===remote&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&['KeyJ','KeyL','BracketLeft','BracketRight'].includes(e.code)){e.preventDefault();if(!e.repeat)remote.seek(['KeyJ','BracketLeft'].includes(e.code)?-1:1);return;}
   player.keys.add(e.code);
   if (e.code === 'Space') e.preventDefault(); // jump (#636), thrust (#359), let go of a wall (#597): never scrolls or presses a focused button
   // crouch while held (#70): C, so crouching and walking is never Ctrl+W = close the tab (#274); Ctrl still works,
@@ -2058,6 +2063,7 @@ function updateBicycleControls() {
 }
 
 function updateFocus() {
+  remoteSeekControls.hidden=true;
   if (slideRide.active) {
     focused=null;focusPoint=null;showChoices(null,null);placeGhost.visible=itemGhost.visible=false;
     powerBtn.hidden=turnBtn.hidden=true;actionBtn.hidden=!touch.enabled;actionBtn.textContent='Avbryt åket';
@@ -2289,7 +2295,8 @@ function updateFocus() {
   updateBicycleControls();
   const job = life.runner.job; // a timed life action going on (#372): what and how far
   if (job && !reading) { promptEl.textContent = `${job.label[0].toUpperCase()}${job.label.slice(1)} … ${Math.round(Math.min(1, job.t / Math.max(job.duration, 1e-6)) * 100)} %`; promptEl.hidden = false; }
-  if (remoteAim && !touch.enabled && !reading) { promptEl.textContent = 'Klicka för att välja film · högerklick: av/på'; promptEl.hidden = false; }
+  if (remoteAim && !touch.enabled && !reading) { promptEl.textContent = 'Klicka för att välja film · J / L: spola 10 s · högerklick: av/på'; promptEl.hidden = false; }
+  if(!reading&&((focused?.kind==='tv'&&tvMedia.seekable(focused))||(focused===playroom.devices.cinemaTarget&&cinema.state?.video)||(focused?.mediaId&&computerHub.sessions.get(focused.mediaId)?.player.state?.video)||(remoteAim&&tvMedia.seekable(remote.findTv()))))promptEl.hidden=true;
   const mending = focused === power.target && power.state === 'off' && !reading; // the fuse box in a power cut (#604): hold to mend, with progress
   if (mending) {
     const pct = Math.round(power.fraction * 100);
@@ -2300,6 +2307,7 @@ function updateFocus() {
   } else if (promptEl.style.backgroundImage) promptEl.style.backgroundImage = '';
   if (heldItem() === ball && !focused && !touch.enabled && !reading) { promptEl.textContent = 'Klicka för att skjuta · högerklick: studsa bollen'; promptEl.hidden = false; }
   actionBtn.hidden = !(focused || reading || holding || seated) || !touch.enabled || (!!choices.rows && !reading) || clockPanel.open || calPanel.open || blindPanel.open || sonos.open || !!viewing || isAvatarCustomizerOpen(); // the strips have their own ×
+  remoteSeekControls.hidden=!touch.enabled||reading||!remoteAim||!tvMedia.seekable(remote.findTv());
   powerBtn.hidden = !touch.enabled || !heldItem()?.useAlt || reading;
   turnBtn.hidden = !touch.enabled || reading || focused?.kind !== 'place' || !!focused.blocked || !itemGhost.visible; // ⟳ (#368)
   if (!powerBtn.hidden) setIcon(powerBtn,heldItem().altIcon==='🏀'?'basketball':heldItem().altIcon==='🥂'?'cheers':'power',heldItem().altLabel??'Stäng av / slå på TV:n');

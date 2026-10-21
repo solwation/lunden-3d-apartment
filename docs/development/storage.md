@@ -8,7 +8,9 @@ Related: [deployment](deployment.md), [life](life.md).
 `cloudflare/cinema.js` owns one `cinema` snapshot in PlayerRoom storage:
 revision, connection-owned controller/name, validated YouTube ID, playing flag,
 position and server-time anchor. `t:cinema` requests support claim/release/get,
-select/play/pause/stop; transport writes require the current revision and owner.
+select/play/pause/seek/stop; transport writes require the current revision and owner.
+Seek requires a finite bounded absolute position and preserves playing/paused
+state (#1490); remote-only requests briefly claim and release the same lease.
 Only room occupants receive snapshots. Position comes from existing server-
 validated player presence. Leaving/disconnecting releases control while other
 viewers retain the film; the last viewer clears the snapshot and storage.

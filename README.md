@@ -368,7 +368,10 @@ Husets tre TV-apparater kan också visa YouTube direkt på skärmen. Gå nära
 och använd E/tryckknappen, eller sikta med fjärrkontrollen i handen och klicka.
 Varje TV har en egen gemensam film och en person som styr åt gången. Filmen
 stängs av när sista tittaren lämnar TV-rummet. Vanliga TV-kanaler finns i
-filmvalet; fjärrkontrollens strömknapp fungerar fortfarande.
+filmvalet; fjärrkontrollens strömknapp fungerar fortfarande. När du väljer film
+stängs väljaren direkt och en Loading...-animation visas på själva skärmen tills
+filmen spelar. Spola tio sekunder framåt/bakåt med fjärrkontrollens pekknappar,
+J/L när du håller den eller spolknapparna i filmvalet; alla följer samma position.
 
 Kattpärmen har fyra fasta samlarkortsplatser på varje sida: varje kattvariant
 har sin egen plats och de oupptäckta visas som silhuetter. Tryck på ett funnet

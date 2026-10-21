@@ -759,6 +759,17 @@
     #chat-log .chat-line.mine b { color: #9fdcff; }
     #chat-log .chat-line.note { font-style: italic; opacity: .85; }
 
+    .cinema-world-video { position:relative; }
+    .cinema-world-loading { position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;background:#080e18;color:#f4f8ff;font:56px system-ui;text-align:center; }
+    .cinema-world-loading[hidden] { display:none; }
+    .cinema-world-loading span { max-width:90%; }
+    .cinema-world-loading i { width:72px;height:72px;border:8px solid #405469;border-top-color:#f4f8ff;border-radius:50%;animation:cinema-loading .85s linear infinite; }
+    .cinema-world-loading i[hidden] { display:none; }
+    @keyframes cinema-loading { to { transform:rotate(360deg); } }
+    @media (prefers-reduced-motion:reduce) { .cinema-world-loading i { animation:none;border-right-color:#f4f8ff; } }
+    #remote-seek { position:fixed;left:50%;bottom:calc(16px + var(--sb));transform:translateX(-50%);display:flex;gap:8px;pointer-events:auto; }
+    #remote-seek[hidden] { display:none; }
+    #remote-seek button { min-width:56px;min-height:48px;border:0;border-radius:12px;background:var(--panel);color:#fff;font:600 16px system-ui;touch-action:manipulation; }
     .cinema-watch { position: fixed; top: calc(82px + var(--st)); left: calc(12px + var(--sl)); z-index: 8; max-width: min(340px, 75vw); padding: 8px; border-radius: 8px; background: #14212ce8; color: white; font-size: 13px; }
     .cinema-watch[hidden] { display: none; }
     .cinema-watch span { display: block; }
@@ -1251,7 +1262,7 @@
       <h3 data-cinema="results-title">Förslag för filmkvällen</h3><div data-cinema="results" aria-label="Filmer att välja bland"></div></form>
     <div class="cinema-video"></div>
     <p role="status" aria-live="polite">Välj en YouTube-film som får bäddas in.</p>
-    <div class="cinema-row"><button type="button" data-cinema="join" disabled>Aktivera bild och ljud här</button><button type="button" data-cinema="play" disabled>Spela</button><button type="button" data-cinema="pause" disabled>Pausa</button><button type="button" data-cinema="off">Stäng av</button></div>
+    <div class="cinema-row"><button type="button" data-cinema="join" disabled>Aktivera bild och ljud här</button><button type="button" data-cinema="play" disabled>Spela</button><button type="button" data-cinema="pause" disabled>Pausa</button><button type="button" data-cinema-seek="-1" aria-label="Spola tillbaka 10 sekunder" disabled>⏪ 10 s</button><button type="button" data-cinema-seek="1" aria-label="Spola fram 10 sekunder" disabled>10 s ⏩</button><button type="button" data-cinema="off">Stäng av</button></div>
   </dialog>
   <div id="sonos-panel" hidden role="dialog" aria-label="Musiken">
     <div class="row">
@@ -1504,6 +1515,7 @@
       <button id="crouch-btn" class="touch-only" aria-label="Huka dig">🧎</button>
       <div id="choices" hidden aria-live="polite"></div>
       <button id="action" class="touch-only" hidden></button>
+      <nav id="remote-seek" hidden aria-label="Fjärrkontrollens spolknappar"><button type="button" data-remote-seek="-1" aria-label="Spola tillbaka 10 sekunder">⏪ 10 s</button><button type="button" data-remote-seek="1" aria-label="Spola fram 10 sekunder">10 s ⏩</button></nav>
       <button id="power-btn" class="touch-only" hidden aria-label="Stäng av / slå på TV:n">⏻</button>
       <button id="turn-btn" class="touch-only" hidden aria-label="Vrid">⟳</button>
       <button id="stand-btn" class="touch-only" hidden>Res dig</button>

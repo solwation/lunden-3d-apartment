@@ -3,15 +3,16 @@ import { PLAYROOM, TV_MEDIA, COMPUTER_MEDIA } from '../src/config.js';
 export function cleanCinema(text) {
   let m;
   try { m=JSON.parse(text); } catch { return null; }
-  if(m?.t!=='cinema' || !['claim','release','get','select','play','pause','stop','app'].includes(m.k)) return null;
+  if(m?.t!=='cinema' || !['claim','release','get','select','play','pause','stop','app','seek'].includes(m.k)) return null;
   if(m.screen!==undefined&&![...TV_MEDIA.screens,...COMPUTER_MEDIA.stations].some(s=>s.id===m.screen))return null;
   const screen=m.screen===undefined?{}:{screen:m.screen};
   if(m.k==='app'&&(!COMPUTER_MEDIA.stations.some(s=>s.id===m.screen)||!['menu','youtube','snake'].includes(m.app)))return null;
   if(['claim','release','get'].includes(m.k)) return {k:m.k,...screen};
   if(!Number.isSafeInteger(m.q)||m.q<0) return null;
   if(m.k==='select' && (typeof m.v!=='string'||!/^[A-Za-z0-9_-]{11}$/.test(m.v))) return null;
+  if(m.k==='seek'&&m.p===undefined)return null;
   if(m.p!==undefined && (!Number.isFinite(m.p)||m.p<0||m.p>PLAYROOM.cinemaSync.maxPosition)) return null;
-  return {k:m.k,q:m.q,...screen,...(m.k==='select'?{v:m.v}:{}),...(m.k==='app'?{app:m.app}:{}),...(m.k==='pause'&&m.p!==undefined?{p:m.p}:{})};
+  return {k:m.k,q:m.q,...screen,...(m.k==='select'?{v:m.v}:{}),...(m.k==='app'?{app:m.app}:{}),...(['pause','seek'].includes(m.k)&&m.p!==undefined?{p:m.p}:{})};
 }
 
 const fresh = () => ({q:0,owner:null,name:'',video:'',playing:false,position:0,at:Date.now()});
@@ -69,7 +70,7 @@ export class RoomCinema {
       else {
         if(!s.video){this.state=s;return this.refuse(ws,'empty');}
         const position=Math.min(PLAYROOM.cinemaSync.maxPosition,s.position+(s.playing?Math.max(0,now-s.at)/1000:0));
-        Object.assign(this.state,{position:m.k==='pause'?(m.p??position):position,playing:m.k==='play',at:now});
+        Object.assign(this.state,{position:['pause','seek'].includes(m.k)?(m.p??position):position,playing:m.k==='seek'?s.playing:m.k==='play',at:now});
       }
     }
     this.dirty=true;this.broadcast();

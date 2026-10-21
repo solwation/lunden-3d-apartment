@@ -36,6 +36,8 @@ export class TVMedia {
     this.close();this.onOpen();session.player.show();return true;
   }
   close(reason='button'){for(const {player} of this.sessions.values())if(player.open)player.close(reason);}
+  seekable(target){const p=this.sessions.get(target?.mediaId)?.player;return !!p?.inside&&!!p.state?.video;}
+  seek(target,delta){return this.sessions.get(target?.mediaId)?.player.remoteSeek(delta)??false;}
   power(target){const player=this.sessions.get(target.mediaId)?.player;if(!player?.state?.video)return false;return this.show(target);}
   update(player,camera,renderer,available) {
     const p=[player.pos.x,player.pos.y,player.pos.z];

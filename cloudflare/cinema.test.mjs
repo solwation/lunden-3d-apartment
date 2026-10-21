@@ -100,3 +100,14 @@ test('TV identities and outsider commands are bounded; hibernation keeps live TV
  const tv=env.PLAYERS.object('world').tvs.find(t=>t.id==='lounge');assert.equal(tv.state.owner,a.id);
  a.ws.close();await settle(env);assert.equal(tv.state,null);assert.equal(env.PLAYERS.ctx('world').data.has('cinema:lounge'),false);
 });
+
+test('shared seek preserves play/pause, rejects stale/foreign writes and bounds positions',async()=>{
+ for(const p of [undefined,-1,Infinity,'10',R.cinemaSync.maxPosition+1])assert.equal(cleanCinema(JSON.stringify({t:'cinema',k:'seek',q:1,...(p===undefined?{}:{p})})),null);
+ assert.deepEqual(cleanCinema('{"t":"cinema","k":"seek","q":1,"p":0,"owner":"fake"}'),{k:'seek',q:1,p:0});
+ const env=setup(),a=await connect(env),b=await connect(env);await place(env,a);await place(env,b);await act(env,a,'claim');await act(env,a,'select',{v:'aqz-KE-bpKQ'});
+ await act(env,a,'seek',{p:45});assert.equal(b.state().position,45);assert.equal(b.state().playing,true);
+ const q=a.state().q;await act(env,b,'seek',{p:100});assert.equal(a.state().q,q);assert.equal(b.messages().at(-2).why,'owner');
+ await act(env,a,'seek',{p:60,q:q-1});assert.equal(a.state().position,45);assert.equal(a.messages().at(-2).why,'stale');
+ await act(env,a,'pause',{p:46});await act(env,a,'seek',{p:0});assert.equal(b.state().position,0);assert.equal(b.state().playing,false);
+ await act(env,a,'seek',{p:R.cinemaSync.maxPosition});assert.equal(b.state().position,R.cinemaSync.maxPosition);assert.equal(b.state().playing,false);
+});
