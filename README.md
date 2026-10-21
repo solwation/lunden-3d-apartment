@@ -348,7 +348,8 @@ I lekstugans klubbhus kan barn spela Pricka grönt på datorn med E eller
 tryckknappen. Interagera direkt med bioduken, även från biostolarna, för att öppna
 filmvalet med förslag, bildkort och sökning efter filmer eller kanaler. Sökningen
 väljer filmer som tillåter inbäddning och visning utanför YouTube. Välj en film
-så spelas den på själva bioduken för alla i lekstugan; även egna YouTube-länkar fungerar.
+så spelas den på den nästan väggbreda bioduken för alla i lekstugan; även egna YouTube-länkar fungerar.
+Duken har 40 cm till golv och tak, med mörkröda sammetsgardiner ut till sidoväggarna.
 En person i taget väljer film och styr paus och uppspelning. Tillbaka till rummet
 släpper kontrollen medan filmen fortsätter. Aktivera ljudet med knappen vid behov.
 Filmen stängs av när den sista personen lämnar lekstugan. Videon måste tillåta

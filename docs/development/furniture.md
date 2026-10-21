@@ -335,7 +335,7 @@ With the players room connected (`ghosts.connected`) the children's-room table i
 
 ## Expanded hidden clubhouse (#1374, part of #1369)
 
-`src/clubhouse.js` supplies the assumed18×10.4×2.7m fantasy plan: a south hall, west BIO, middle BILJARD and east SPEL. These are game choices, not measured A/B/C/L architecture. `clubhouseLayout()` supplies partition/header boxes and collision edges with three1.5m clear doorways; the outer room bounds remain shared through PLAYROOM, including Worker presence. The billiard table is centred inside BILJARD at(-1500,-1501.83), halfway between its north wall and the south partition inner face (#1482). Its short end still faces the doorway (#1411). The render transform, collision, shadow and server reach share PLAYROOM.billiards; ball snapshots remain table-local. The west room now has a framed2.6×1.46m local TV screen, red velvet side curtains and eight armrest seats in two rows, split by an assumed0.82m center aisle. Each seat has a normal rest target aimed at the screen; per-chair footprints leave the aisle and route behind the east row available for approach and standing. Dimensions, colors and finishes are guesses. The gaming desk/stool remain in SPEL; `furniture.desk.x/z` offsets keep the pieces together. The under160cm gate and always usable exit remain.
+`src/clubhouse.js` supplies the assumed18×10.4×2.7m fantasy plan: a south hall, west BIO, middle BILJARD and east SPEL. These are game choices, not measured A/B/C/L architecture. `clubhouseLayout()` supplies partition/header boxes and collision edges with three1.5m clear doorways; the outer room bounds remain shared through PLAYROOM, including Worker presence. The billiard table is centred inside BILJARD at(-1500,-1501.83), halfway between its north wall and the south partition inner face (#1482). Its short end still faces the doorway (#1411). The render transform, collision, shadow and server reach share PLAYROOM.billiards; ball snapshots remain table-local. The west room now has a framed6.34×1.90m shared cinema screen40cm above the floor, wall-reaching red velvet side curtains and eight armrest seats in two rows, split by an assumed0.82m center aisle. Each seat has a normal rest target aimed at the screen; per-chair footprints leave the aisle and route behind the east row available for approach and standing. Dimensions, colors and finishes are guesses. The gaming desk/stool remain in SPEL; `furniture.desk.x/z` offsets keep the pieces together. The under160cm gate and always usable exit remain.
 
 `clubhouseSigns()` draws four labels in one512×256static atlas. The existing ceiling panels sample a cream atlas swatch and share the signs' draw, keeping the whole visible room at15draws in the lifecycle checks; no new real lights. Static canvas data is released after upload on phone profiles. Disco rays test actual partition/header entry faces; an open doorway lets a ray continue to the hall instead of painting an invisible plane. Room mesh/targets/updates remain hidden outside.
 
@@ -492,3 +492,23 @@ caller to the existing local programme renderer. Power cuts, hidden furniture,
 hidden page and leaving the viewing zone remove local media. Standing viewers
 retain their multiplayer connection. This is personal furnishing/gameplay/Cloudflare;
 A/B/C/L public variants have no such TVs and no downstream port applies.
+
+## Wall-wide cinema screen (#1415)
+
+The user specifies approximately40cm below/above the screen and dark-red velvet
+curtains reaching both side walls with only slight overlap. `cinema.screen`
+derives its centre/width from BIO's actual existing wall faces (localz−5.2
+to1.54), with assumed20cm side gaps:6.34×1.90m at bottom0.40m under the2.70m
+ceiling. The device plane dimensions/position derive from this same screen.
+Curved velvet side panels extend from the existing12cm skirting height to the
+ceiling, touch both side walls, and overlap only6cm of each screen edge. A
+dark-red wall-wide valance replaces the gold header. The shallow collision
+footprint remains within the wall faces. Seats, paths and shared control are
+unchanged. This is the personal fantasy room, not measured A/B/C/L architecture
+and not public-project content.
+
+The official iframe and idle canvas use the physical screen's aspect ratio.
+`CinemaSurface` derives pixel height from its1280px width and the plane ratio
+(384px high for this screen); CSS transforms use those same dimensions. The
+YouTube player fits each film within this wide viewport without stretching it.
+Home-TV surfaces use their own plane ratio through the same implementation.

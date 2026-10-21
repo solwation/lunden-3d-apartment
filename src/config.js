@@ -5747,7 +5747,7 @@ export const PLAYROOM = { maxCm: 160, x: -1500, z: -1500, w: 18, d: 10.4, ceilin
   // #1365: local TV animation and timing game; visual/playability choices, not measured hardware.
   devices: { videoTimeoutMs: 20000, // Assumed network timeout for the optional cinema player (#1376).
     canvas: [512, 288], fps: 12, pickDepth: 0.08, sweepSeconds: 1.5, targetHalf: 0.12, boatSpeed: 0.4 },
-  cinemaSync: { maxPosition: 604800, driftSeconds: 1.5, syncEveryMs: 2000, width: 1280, height: 720 }, // Assumed media bounds, local drift correction and iframe viewport.
+  cinemaSync: { maxPosition: 604800, driftSeconds: 1.5, syncEveryMs: 2000, width: 1280 }, // Assumed media bounds, local drift correction and iframe viewport.
   // #1328: local child-size billiards (all dimensions/rolling coefficients are visual/playability guesses).
   billiards: { x: 0, z: -1.83, yaw: Math.PI / 2, length: 1.8, width: 0.9, height: 0.58, rail: 0.09, railH: 0.06, leg: 0.08, // #1482: centre between north z=-5.2 and the partition inner face z=1.54; retain #1411 orientation.
     ballR: 0.024, pocketR: 0.052, cueLength: 1, strokeSpeed: 2.2, strokeSeconds: 0.24, cueTravel: 0.09,
@@ -5770,13 +5770,21 @@ export const PLAYROOM = { maxCm: 160, x: -1500, z: -1500, w: 18, d: 10.4, ceilin
   // #1327: the furniture, child-sized for 140-159 cm players (all our own choices, *guess*); local metres from the room's centre (x east, z south, the door
   // at z +5.2). Cinema screen/seats in BIO west of the billiards room; desk/stool in SPEL to the east. The disco stays in BILJARD.
   // desk.x/z offsets retain the old desk geometry and interaction anchors while moving them together.
-  furniture: { seatHeight: 0.36, cinema: { screen: { x: -8.78, z: -1.65, w: 2.6, h: 1.46, bottom: 1.0 },
+  furniture: { seatHeight: 0.36, cinema: { screen: { x: -8.78, bottom: .4, topGap: .4, sideGap: .2 }, // #1415: user asks 40 cm below/above; assumed 20 cm side margins.
+      curtain: { overlap: .06, bottom: .12 }, // Assumed small screen-edge overlap; hem clears the existing skirting.
       reach: 6, // Assumed screen-selection distance covering both cinema seat rows, only within BIO.
       seat: { width: 0.78, depth: 0.82, height: 0.39, back: 0.83, rowX: [-6.55, -4.72], z: [-3.25, -2.4, -0.8, 0.05] } },
-    tv: { x: -8.78, w: 2.6, h: 1.46, y: 1.0 }, desk: { x: 5.5, z: -0.4 }, stool: { x: 7.85, z: 0.6, seat: 0.38 },
+    tv: {}, desk: { x: 5.5, z: -0.4 }, stool: { x: 7.85, z: 0.6, seat: 0.38 },
     discoSwitch: { x: 0.9, y: 1.05, z: 5.2 }, // #1365/#1374: the wall switch east of the door (south wall, z +5.2; height reachable for children, guess)
     ball: { x: 0, z: -1.5, y: 1.95, r: 0.17, spin: 0.5, spots: 26, spotSpin: 0.35 }, // the disco ball hangs under the ceiling, the light spots sweep round it
   } };
+// #1415: derive the large screen from the actual BIO wall span, with one source for the device plane.
+{
+  const R=PLAYROOM,s=R.furniture.cinema.screen;
+  const north=-R.d/2,south=R.clubhouse.front-R.clubhouse.wall/2;
+  Object.assign(s,{z:(north+south)/2,w:south-north-2*s.sideGap,h:R.ceiling-s.bottom-s.topGap});
+  Object.assign(R.furniture.tv,{x:s.x,w:s.w,h:s.h,y:s.bottom});
+}
 
 /** A well-formed look code (#1136): 7 or 9 digits, or 9 + a height in cm within AVATAR_HEIGHT (the Worker uses it too). */
 export function avatarCodeValid(str) {

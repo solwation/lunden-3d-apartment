@@ -71,11 +71,11 @@ export class Playroom {
       ...[-1,1].map(side=>cbox(col.steel,W.x+side*W.w/3-edge,W.x+side*W.w/3+edge,W.y+W.h/2,h,W.z-R.clubhouse.wall/2-edge,W.z-R.clubhouse.wall/2+edge)),
       // A dark-red carpet leaves a clear central aisle between the two seat banks.
       cbox(col.rug, tvx + cd, cinema.seat.rowX[1] + S.depth / 2 + 0.15, 0, R.finish.rugHeight, -3.75, 0.48),
-      // The large west-wall screen has a shallow frame, gathered red velvet curtains and a soft gold valance.
+      // The large west-wall screen has a shallow frame, gathered red velvet curtains and a wall-wide dark velvet valance.
       cbox(col.wood, tvx - 0.02, tvx + 0.06, scr.bottom - 0.08, scr.bottom + scr.h + 0.08, tvz - scr.w / 2 - 0.08, tvz + scr.w / 2 + 0.08),
       cbox(col.dark, tvx + 0.06, tvx + 0.075, scr.bottom - 0.02, scr.bottom + scr.h + 0.02, tvz - scr.w / 2 - 0.02, tvz + scr.w / 2 + 0.02),
       cinemaCurtain(-1), cinemaCurtain(1),
-      cbox(col.brass, tvx + 0.025, tvx + 0.13, scr.bottom + scr.h + 0.12, scr.bottom + scr.h + 0.19, tvz - scr.w / 2 - 0.3, tvz + scr.w / 2 + 0.3),
+      cbox(col.velvet, tvx + 0.025, tvx + 0.13, scr.bottom + scr.h + 0.08, h, -R.d/2, R.clubhouse.front-R.clubhouse.wall/2),
       ...cinema.seat.rowX.flatMap(x => cinema.seat.z.flatMap(z => cinemaChair(x,z))),
       // the gaming desk on the east wall: top, two side panels, monitor on a stand, console, two controllers, keyboard
       deskBox(col.wood, 2.65, 3.2, 0.54, 0.58, 0.3, 1.7), deskBox(col.wood, 2.65, 3.2, 0, 0.54, 0.3, 0.34), deskBox(col.wood, 2.65, 3.2, 0, 0.54, 1.66, 1.7),
@@ -117,7 +117,7 @@ export class Playroom {
     const furMat = clubhouseMaterial();
     // Collision edges stop at each chair; the wide center aisle and the route behind the rear row stay open.
     this.footprints = [rect(DJ.x-DJ.w/2,DJ.x+DJ.w/2,DJ.z-DJ.d/2,DJ.z+DJ.d/2), ...cinema.seat.rowX.flatMap((x) => cinema.seat.z.map((z) => rect(x - S.depth / 2, x + S.depth / 2, z - S.width / 2, z + S.width / 2))),
-      rect(tvx - 0.02, tvx + 0.075, tvz - scr.w / 2 - 0.3, tvz + scr.w / 2 + 0.3),
+      rect(tvx - 0.02, tvx + 0.075, -R.d/2, R.clubhouse.front-R.clubhouse.wall/2),
       rect(2.65+F.desk.x, 3.2+F.desk.x, 0.3+F.desk.z, 1.7+F.desk.z), rect(F.stool.x - 0.2, F.stool.x + 0.2, F.stool.z - 0.2, F.stool.z + 0.2)];
     for (const q of this.footprints) for (let i = 0; i < 4; i++) { const a = q[i], b = q[(i + 1) % 4]; this.segments.push([a[0], a[1], b[0], b[1]]); }
     // the individual cinema chairs and the stool carry invisible pick boxes for the ordinary E / touch rest targets

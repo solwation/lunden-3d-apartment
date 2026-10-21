@@ -15,6 +15,28 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## Wall-wide cinema screen (#1415)
+
+`tools/cinemascreentest.mjs` has2passing component checks using the pinned Three
+Node loader: the6.34×1.90m screen has exact40cm floor/ceiling gaps and20cm side
+gaps; curved curtain geometry reaches both room faces, overlaps6cm, clears the
+12cm skirting and has finite forward-facing unit normals.
+`tools/cinemascreentest.cjs GAME FRESH_WORKER OUT` seats a140cm avatar in an
+actual rear chair, opens the screen through native desktop E, chooses a searched
+film and plays actual YouTube. It checks model/poster/iframe dimensions, source
+video-vs-player aspect, all three TV aspect ratios and page/shader exceptions.
+The first completed functional run `/tmp/cinema-wide-final/` passes with real
+854×480 video fitted at683×384 in a1280×384 iframe, without stretching. An
+earlier driver had an unscoped close selector after the TV dialogs were added;
+selectors are now scoped to the cinema in all relevant cinema drivers.
+Invalid early pictures were discarded: restoring cheap test quality before
+saving cleared the render buffer. Corrected capture saves before resetting
+quality; its output is `/tmp/cinema-wide-images/`, with both idle and real-film
+images opened/inspected. The corrected run passes all checks and retains exact
+854×480 →683×384 video fitting. Shared transport is unchanged
+and retains the previously verified two-client evidence. Personal off-map room:
+no A/B/C/L geometry or public downstream equivalent.
+
 ## Dry clubhouse (#1485)
 
 `tools/playroomweathertest.cjs GAME OUT` enters the real room with a140cm

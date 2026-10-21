@@ -536,3 +536,11 @@ guard. This also avoids transient particle/roof-edge and hail-bounce cases.
 Ordinary indoor windows still show outdoor weather. No geometry, audio gains
 or particle budgets change. A/B/C/L house guards are unchanged. This off-map
 game room has no public downstream equivalent and must not be ported there.
+
+## Wide screen aspect ratio (#1415)
+
+CSS3D iframe height derives from each physical screen's width/height, and both
+projection axes use that derived viewport. The expanded6.34×1.90m cinema plane
+uses1280×384px; YouTube adds its normal fitting/bars instead of stretching a
+16:9 iframe across the wider physical plane. The idle poster is proportional
+as well. Curtain topology, material batch and light count are unchanged.

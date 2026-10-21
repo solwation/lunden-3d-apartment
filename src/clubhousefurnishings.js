@@ -55,12 +55,14 @@ export function cinemaChair(x,z) {
 
 /** Continuous fabric folds, replacing the row of rectangular curtain ribs. */
 export function cinemaCurtain(side) {
-  const s=R.furniture.cinema.screen,C=R.appearance,n=C.curtainSegments,rows=6;
-  const pos=[],indices=[],width=.26,edge=s.z+side*(s.w/2+.04);
+  const s=R.furniture.cinema.screen,curtain=R.furniture.cinema.curtain,C=R.appearance,n=C.curtainSegments,rows=6;
+  const wall=side<0?-R.d/2:R.clubhouse.front-R.clubhouse.wall/2;
+  const edge=s.z+side*(s.w/2-curtain.overlap),width=Math.abs(wall-edge);
+  const pos=[],indices=[];
   for(let j=0;j<=rows;j++)for(let i=0;i<=n;i++) {
-    const u=i/n,v=j/rows,gather=1-.12*v;
+    const u=i/n,v=j/rows;
     pos.push(R.x+s.x+.09+C.curtainDepth*(.5+.5*Math.cos(u*C.curtainFolds*Math.PI*2)),
-      .42+v*(s.bottom+s.h+.1-.42),R.z+edge+side*(.012+u*width*gather));
+      curtain.bottom+v*(R.ceiling-curtain.bottom),R.z+edge+side*u*width);
   }
   for(let j=0;j<rows;j++)for(let i=0;i<n;i++) {
     const a=j*(n+1)+i,b=a+1,c=a+n+1,d=c+1;

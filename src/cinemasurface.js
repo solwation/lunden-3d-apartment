@@ -8,8 +8,9 @@ export class CinemaSurface {
     this.mesh=mesh;this.poster=mesh.material;this.scene=new THREE.Scene();
     this.renderer=new CSS3DRenderer();this.size=new THREE.Vector2();
     this.mount=document.createElement('div');
-    const C=PLAYROOM.cinemaSync;
-    Object.assign(this.mount.style,{width:`${C.width}px`,height:`${C.height}px`,background:'#000',pointerEvents:'none'});
+    const C=PLAYROOM.cinemaSync,g=mesh.geometry.parameters;
+    this.pixelWidth=C.width;this.pixelHeight=Math.round(C.width*g.height/g.width);
+    Object.assign(this.mount.style,{width:`${this.pixelWidth}px`,height:`${this.pixelHeight}px`,background:'#000',pointerEvents:'none'});
     this.mount.className='cinema-world-video';
     this.object=new CSS3DObject(this.mount);this.object.matrixAutoUpdate=false;this.object.element.style.pointerEvents='none';
     this.scene.add(this.object);
@@ -32,8 +33,8 @@ export class CinemaSurface {
       this.width=this.size.x;this.height=this.size.y;this.renderer.setSize(this.width,this.height);
     }
     this.mesh.updateWorldMatrix(true,false);
-    const g=this.mesh.geometry.parameters,C=PLAYROOM.cinemaSync;
-    this.object.matrix.copy(this.mesh.matrixWorld).scale(new THREE.Vector3(g.width/C.width,g.height/C.height,1));
+    const g=this.mesh.geometry.parameters;
+    this.object.matrix.copy(this.mesh.matrixWorld).scale(new THREE.Vector3(g.width/this.pixelWidth,g.height/this.pixelHeight,1));
     this.renderer.render(this.scene,camera);
   }
 }

@@ -176,8 +176,8 @@ export class CinemaPlayer {
     const generation=this.generation,current=()=>this.inside&&this.video===id&&generation===this.generation;
     try{
       const YT=await youtubeAPI();if(!current())return;
-      const frame=document.createElement('iframe'),C=PLAYROOM.cinemaSync;
-      frame.title=`Gemensam film på ${this.place}`;frame.width=C.width;frame.height=C.height;
+      const frame=document.createElement('iframe');
+      frame.title=`Gemensam film på ${this.place}`;frame.width=this.surface.pixelWidth;frame.height=this.surface.pixelHeight;
       frame.allow='autoplay; encrypted-media';frame.referrerPolicy='strict-origin-when-cross-origin';frame.style.cssText='display:block;width:100%;height:100%;border:0;pointer-events:none';
       const url=new URL(`https://www.youtube-nocookie.com/embed/${id}`);
       url.search=new URLSearchParams({enablejsapi:'1',origin:location.origin,playsinline:'1',autoplay:'1',mute:'1',controls:'0',disablekb:'1'});

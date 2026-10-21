@@ -20,6 +20,7 @@ export class PlayroomDevices {
     const screen = (name, w, h, x, y, z, facing, use, verb) => {
       const canvas = document.createElement('canvas');
       [canvas.width, canvas.height] = R.devices.canvas;
+      if(name==='bioduken')canvas.height=Math.round(canvas.width*h/w); // Match the wide physical screen without stretching its poster.
       const texture = new THREE.CanvasTexture(canvas);
       texture.colorSpace = THREE.SRGBColorSpace;
       const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: texture, toneMapped: false }));
