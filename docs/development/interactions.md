@@ -557,9 +557,12 @@ src/marks.js           marks on surfaces (MARKS, #96): `hit(from, to)` = first s
                        Physical rays include DetailCuller's shared hidden-render layer (#805); semantic ancestor visibility,
                        held/protected breakability and normal renderer/focus layers retain their existing policies.
 src/breaking.js        shooting things to pieces (#263, BREAK): glasses, bottles, cups, the jug and the beer are registered
-                       (`breaker.add(item, kind)`); Marks.hit with `{ weapon }` (rifle / dart / saber / wand; `glass: true` =
-                       the bullet goes through window panes) smashes one standing in the way (not held; darts only `light`
-                       kinds): `item.shatter()` (Holdable: hidden, no E target; a cup goes 'spare'), shards in two pooled
+                       (`breaker.add(item, kind)`); Marks.hit with `{ weapon }` (rifle / dart / saber / wand; `glass: true`)
+                       passes through ordinary transparent props. Production window panes registered with
+                       `userData.projectileBarrier` stop weapon hits, including rifle and dart impacts. An open sash
+                       moves with its pane, leaving the opening clear. Non-weapon physical queries keep their prior
+                       glass policy. Regression coverage: `tools/combatworldtest.html` and
+                       `tools/marksphysicstest.html`. Breakable kinds: `item.shatter()` (Holdable: hidden, no E target; a cup goes 'spare'), shards in two pooled
                        InstancedMeshes (glass / china) that bounce once and fade, a 'splash' of what it held, sfx.shatter,
                        a cat near meows; `mend()` after BREAK.back s or F. Stats shattered (first per kind) + shatterRange
                        (`Breaker.points`: distance × weapon)

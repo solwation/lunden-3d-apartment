@@ -16,7 +16,7 @@ ray.camera = camera;
 const material = () => new T.MeshBasicMaterial({ side: T.DoubleSide });
 const mesh = () => new T.Mesh(new T.BoxGeometry(1, 1, 1), material());
 const old = () => ray.intersectObjects(scene.children, true).filter(({ object: o }) => {
-  if (!o.isMesh || o.material?.transparent || o.material?.visible === false) return false;
+  if (!o.isMesh || (o.material?.transparent && !o.userData.projectileBarrier) || o.material?.visible === false) return false;
   for (let p = o; p; p = p.parent) if (!p.visible || p === ghosts || p === camera || p.userData.moving) return false;
   return true;
 });
@@ -28,6 +28,15 @@ const same = (name) => {
   return after;
 };
 const clear = () => { scene.clear(); scene.add(ghosts, camera); ghosts.clear(); camera.clear(); ray.layers.set(0); };
+// A registered window pane is a projectile obstacle even though its render material is transparent.
+// Other transparent meshes retain the existing see-through policy.
+const pane = new T.Mesh(new T.BoxGeometry(1, 1, .02), new T.MeshBasicMaterial({ transparent: true, opacity: .1, side: T.DoubleSide }));
+pane.userData.projectileBarrier = true; pane.position.z = 3;
+const ordinaryGlass = new T.Mesh(new T.BoxGeometry(1, 1, .02), new T.MeshBasicMaterial({ transparent: true, opacity: .1, side: T.DoubleSide })); ordinaryGlass.position.z = 2;
+scene.add(pane, ordinaryGlass); scene.updateMatrixWorld(true);
+const glassHits = query();
+check(glassHits.some(h => h.object === pane) && !glassHits.some(h => h.object === ordinaryGlass), 'registered transparent window blocks projectiles while ordinary transparent props remain see-through');
+clear();
 // Each prepared query is used synchronously for exactly the supplied polyline, as aimNerf does.
 const equalVector = (a, b) => a == null || b == null ? a == null && b == null : a.distanceTo(b) < 1e-8;
 const pathSame = (points, label) => {

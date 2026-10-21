@@ -138,7 +138,7 @@ export class Marks {
    * Overlays (the AO multiply layer, additive glows) and hidden things are looked through.
    * opts (#263): `weapon` ('rifle', 'dart', 'saber', 'wand') — a breakable thing (breaking.js, `this.breaker`) it
    * reaches first is smashed (seen from `eye`, for the points) and { broke: item, point } comes back; `glass` — see-through
-   * panes (windows, glazed doors) are passed through (the bullet).
+   * panes (windows, glazed doors) are passed through unless registered as projectile barriers.
    */
   hit(from, to, { weapon = null, eye = from, glass = false } = {}) {
     const brk = weapon ? this.breaker : null;
@@ -155,7 +155,12 @@ export class Marks {
         if (brk.can(item, weapon)) { brk.smash(item, h.point.clone(), eye, weapon); return { broke: item, point: h.point.clone() }; }
         if (!brk.standing(item)) continue;
       }
-      if (glass && m.transparent && !(this.cat && isUnder(o, this.cat.object))) continue; // a bullet goes through window panes (#263)
+      if (weapon && m.transparent && o.userData.projectileBarrier) {
+        const normal = h.normal.clone();
+        if (normal.dot(this.ray.ray.direction) > 0) normal.negate();
+        return { blocked: true, point: h.point.clone(), normal, object: o };
+      }
+      if (glass && m.transparent && !(this.cat && isUnder(o, this.cat.object))) continue;
       if (this.cat && isUnder(o, this.cat.object)) return { cat: true, point: h.point };
       if (o.isInstancedMesh || m.transparent || moving(o)) return null; // glass, plants, doors, lids, things that move
       const normal = h.normal.clone();

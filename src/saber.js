@@ -104,7 +104,7 @@ export class Saber extends Holdable {
   /** The first surface between the eye and the tip: burn it (the line we see the blade along). */
   burnCheck() {
     const h = this.marks.hit(this.camera.getWorldPosition(new THREE.Vector3()), this.tip(), { weapon: 'saber' }); // cuts glass and bottles to pieces (#263)
-    if (!h || h.broke) return;
+    if (!h || h.broke || h.blocked) return;
     if (h.cat) { this.cat?.hurt?.('saber', this.camera.getWorldPosition(new THREE.Vector3())); return; } // it hisses and flees (#288)
     if (this.marks.burn(h)) {
       this.burns = (this.burns ?? 0) + 1; sfx.sizzle(h.point); this.onBurn?.();

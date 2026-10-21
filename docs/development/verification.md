@@ -7915,3 +7915,11 @@ entrance navigation. The fresh full19-view phone profile passes368calls/
 814170triangles/~97MiB at initial3/max3/testmode-null. Native35/35 still pass.
 Published43f6701's earlier371-call FAIL is retained; final live verification is
 recorded separately on #1453. Raw evidence: `/tmp/orkester-katt-20261020/phonepeak1453/`.
+## #1469: projectile obstruction by closed window panes
+
+`tools/combatworldtest.html` checks the production combat-world ray acceptance: explicitly registered transparent
+window panes block, while ordinary transparent props remain see-through. `tools/marksphysicstest.html` exercises
+the rifle/Marks hit path with the same policy, including the `blocked` result that suppresses impact marks and the
+unchanged behavior of non-weapon queries. Production
+panes are tagged in `src/world.js`; moving sashes carry their pane, so opening the sash moves the obstruction with it.
+These fixtures use actual Three.js raycasts without WebGL; they do not claim a hardware-specific visual or ballistics test.

@@ -433,7 +433,7 @@ export function combatWorldPath(scene, ghosts, camera, points, layers) {
 }
 
 function accepts(object, ghosts, camera) {
-  if (!object?.isMesh || object.material?.transparent || object.material?.visible === false) return false;
+  if (!object?.isMesh || (object.material?.transparent && !object.userData.projectileBarrier) || object.material?.visible === false) return false;
   for (let p = object; p; p = p.parent) if (!p.visible || p === ghosts || p === camera || p.userData.moving) return false;
   return true;
 }

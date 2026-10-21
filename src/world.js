@@ -395,6 +395,12 @@ function toiletAgainstWall(tank, bowl, wallBoxes) {
  * ('a' = x0, 'b' = x1), the other side is a fixed pane. Returns the Openables. */
 function addWindowFrame(group, x0, x1, fz, y0, y1, transom, out = -1, opens = true, { split = 0, opens: side = 'a', max = WINDOW_TOP_HUNG_MAX, ox = 0, oz = 0 } = {}) {
   const ft = 0.06, d = 0.05;
+  const pane = (a, b, za, zb, lo, hi) => {
+    const mesh = box(a, b, za, zb, lo, hi, M.glass, { shadow: false });
+    mesh.userData.projectileBarrier = true;
+    group.add(mesh);
+    return mesh;
+  };
   const z0 = fz - d, z1 = fz + d;
   group.add(box(x0, x1, z0, z1, y0, y0 + ft, M.frame));
   group.add(box(x0, x1, z0, z1, y1 - ft, y1, M.frame));
@@ -402,8 +408,8 @@ function addWindowFrame(group, x0, x1, fz, y0, y1, transom, out = -1, opens = tr
   group.add(box(x1 - ft, x1, z0, z1, y0, y1, M.frame));
   const ty = transom > 0 ? y1 - transom : y1;
   if (transom > 0) group.add(box(x0, x1, z0, z1, ty - ft / 2, ty + ft / 2, M.frame));
-  if (!opens) { group.add(box(x0, x1, fz - 0.008, fz + 0.008, y0, y1, M.glass, { shadow: false })); return []; } // a fixed light
-  if (transom > 0) group.add(box(x0, x1, fz - 0.008, fz + 0.008, ty, y1, M.glass, { shadow: false })); // fixed transom light
+  if (!opens) { pane(x0, x1, fz - 0.008, fz + 0.008, y0, y1); return []; } // a fixed light
+  if (transom > 0) pane(x0, x1, fz - 0.008, fz + 0.008, ty, y1); // fixed transom light
   const lo = y0 + ft, hi = (transom > 0 ? ty - ft / 2 : y1 - ft);
   // the sash's span; with `split` a mullion and a fixed pane beside it
   let a = x0 + ft, b = x1 - ft;
@@ -411,7 +417,7 @@ function addWindowFrame(group, x0, x1, fz, y0, y1, transom, out = -1, opens = tr
     const mx = side === 'a' ? x0 + split * (x1 - x0) : x1 - split * (x1 - x0);
     group.add(box(mx - ft / 2, mx + ft / 2, z0, z1, y0, ty, M.frame));
     const [fa, fb] = side === 'a' ? [mx + ft / 2, x1 - ft] : [x0 + ft, mx - ft / 2];
-    group.add(box(fa, fb, fz - 0.008, fz + 0.008, lo, hi, M.glass, { shadow: false }));
+    pane(fa, fb, fz - 0.008, fz + 0.008, lo, hi);
     if (side === 'a') b = mx - ft / 2; else a = mx + ft / 2;
   }
   // the sash: a slim frame with its glass, in a pivot along the head on the outer face of the frame
@@ -422,9 +428,9 @@ function addWindowFrame(group, x0, x1, fz, y0, y1, transom, out = -1, opens = tr
     box(a, a + s, zo - 0.02, zo + 0.02, lo, hi, M.frame), box(b - s, b, zo - 0.02, zo + 0.02, lo, hi, M.frame)];
   const sash = new THREE.Mesh(mergeGeometries(rails.map((m) => m.geometry.translate(...m.position.clone().sub(pivot.position).toArray()))), M.frame);
   sash.castShadow = sash.receiveShadow = true; // one mesh for the sash (#48)
-  const pane = box(a + s, b - s, zo - 0.006, zo + 0.006, lo + s, hi - s, M.glass, { shadow: false });
-  pane.position.sub(pivot.position);
-  pivot.add(sash, pane);
+  const glassPane = pane(a + s, b - s, zo - 0.006, zo + 0.006, lo + s, hi - s);
+  glassPane.position.sub(pivot.position);
+  pivot.add(sash, glassPane);
   group.add(pivot);
   // top-hung: turning +y about +x sends the bottom towards −z
   const o = new Openable({ name: 'fönstret', object: pivot, mode: 'flap', axis: [1, 0, 0], sign: -out, max, speed: 1.6 }); // (`max`: a per-window stop, #429)

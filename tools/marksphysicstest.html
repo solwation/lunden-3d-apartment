@@ -17,6 +17,17 @@ try {
  const large=new THREE.Mesh(new THREE.SphereGeometry(.1,32,16),new THREE.MeshBasicMaterial({side:THREE.DoubleSide}));large.position.set(12,.846,10);scene.add(large);
  scene.updateMatrixWorld(true);
  const marks=new Marks(scene,camera,[large]),breaker=new Breaker(scene,marks);marks.breaker=breaker;breaker.add(glass,'glass');
+ const projectileScene=new THREE.Scene(),windowRoot=new THREE.Group();projectileScene.add(windowRoot);
+ const windowPane=new THREE.Mesh(new THREE.BoxGeometry(2,2,.02),new THREE.MeshBasicMaterial({transparent:true,opacity:.1,side:THREE.DoubleSide}));windowPane.userData.projectileBarrier=true;windowPane.position.z=3;windowRoot.add(windowPane);
+ const ordinaryPane=new THREE.Mesh(new THREE.BoxGeometry(2,2,.02),new THREE.MeshBasicMaterial({transparent:true,opacity:.1,side:THREE.DoubleSide}));ordinaryPane.position.z=2;windowRoot.add(ordinaryPane);
+ const targetWall=new THREE.Mesh(new THREE.BoxGeometry(2,2,.1),new THREE.MeshBasicMaterial({side:THREE.DoubleSide}));targetWall.position.z=0;windowRoot.add(targetWall);projectileScene.updateMatrixWorld(true);
+ const projectileMarks=new Marks(projectileScene,camera,[windowRoot]),from=new THREE.Vector3(0,0,5),to=new THREE.Vector3(0,0,-1);
+ const blocked=projectileMarks.hit(from,to,{weapon:'rifle',glass:true});
+ check(blocked?.blocked&&blocked.object===windowPane&&blocked.normal.length()>0,'rifle hit stops on a registered transparent window pane with a surface normal');
+ check(!projectileMarks.hit(from,to)?.blocked,'non-weapon physical queries retain their existing transparent-pane policy');
+ windowPane.visible=false;projectileScene.updateMatrixWorld(true);
+ check(projectileMarks.hit(from,to,{weapon:'rifle',glass:true})?.object===targetWall,'ordinary transparent props remain see-through to rifle rounds');
+ windowPane.visible=true;
  const detail=new DetailCuller(scene,{W:100,D:100,roof:100,floor1:3.25,doorHeight:2.1},{north:[],south:[]});
  const center=()=>new THREE.Box3().setFromObject(glass.model).getCenter(new THREE.Vector3());
  const place=()=>{breaker.reset();glass.placeAt(new THREE.Vector3(10,.75,10),0);scene.updateMatrixWorld(true);camera.position.set(10,1.62,18);camera.lookAt(center());camera.updateMatrixWorld(true);detail.refresh();detail.update(camera);};
