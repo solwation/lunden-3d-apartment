@@ -33,6 +33,31 @@ attachments after hibernation, releases a departed controller, preserves films
 for remaining viewers and deletes storage when its last viewer leaves.
 No additional playback ticker/media stream is introduced.
 
+## Shared computer arena (#1487, part of #1486)
+
+`COMPUTER_MEDIA` identifies six stations (home gaming PC/laptop and four
+clubhouse desks) with room/floor viewer bounds and2.8m join reach. The existing
+RoomCinema authority also serves these IDs; computer snapshots add
+`app:menu|youtube|snake`. Owner/revision-checked app changes stop previous media;
+selecting a movie sets the YouTube app. Original cinema/TV fields remain compatible.
+
+`cloudflare/snake.js` validates `t:snake` get/join/input/leave. Join requires the
+connection's actual screen ownership, snake app and nearby validated feet; input
+contains only bounded heading/sequence, never position/length/score/food. One
+SnakeArena (`src/snakearena.js`) serves all computer rooms. It advances bounded
+30Hz substeps from the existing≤5Hz incoming slots; snapshots are at most5Hz,
+with no background timer/storage writes when nobody plays. The client must
+coalesce steering into the existing socket budget, not raise the connection cap.
+
+Food grows length/girth; head/body hits and walls kill, unequal head-on collisions
+allow the larger snake to eat the smaller; equal head-on collisions kill both.
+Deaths drop food, credit a surviving opponent and have a respawn delay. Screen
+release/app switch, departure and disconnect trim players; the last clears arena
+memory. DO hibernation deliberately starts a fresh ephemeral arena; screen leases
+still reconcile through the existing stored authority, and clients can rejoin.
+This server slice exposes no unfinished UI; the physical six-computer app and
+multiplayer controls are #1488. No public downstream counterpart.
+
 ## Current shared head contract (#974, #893, #894, #979)
 
 Version 2 uses three shared logical head boxes from `PVP_HEAD_BOXES` in `src/config.js`:

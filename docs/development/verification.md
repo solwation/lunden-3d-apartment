@@ -15,6 +15,19 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## Shared computer arena server (#1487)
+
+`node --test --test-isolation=none tools/snakearenatest.mjs cloudflare/snake.test.mjs`
+passes7cases: real food growth, bounded speed/turn, body collision/dropped food,
+larger/equal head collisions, walls/respawn/catch-up, bounded parsing, two
+connections across home/clubhouse, lock races/forgery, app/media transitions and
+disconnect/empty cleanup. `cloudflare/cinema.test.mjs` separately retains8passes.
+Run the cinema time-fixture in a separate process: both suites replace Date.now,
+so combining those files with process isolation disabled corrupts their clocks.
+The move-forgery fixture also keeps natural food away from the measured step;
+ordinary random food correctly grew length in the first assertion attempt.
+World screen/input and real two-browser game verification follow in #1488.
+
 ## Wall-wide cinema screen (#1415)
 
 `tools/cinemascreentest.mjs` has2passing component checks using the pinned Three

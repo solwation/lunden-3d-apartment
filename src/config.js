@@ -6498,3 +6498,39 @@ export function tvViewer(id,p) {
   const [x0,x1,z0,z1]=s.bounds;
   return Math.abs(p[1]-LEVELS[s.level].floor)<=TV_MEDIA.floorTolerance&&p[0]>=x0&&p[0]<=x1&&p[2]>=z0&&p[2]<=z1;
 }
+
+// #1486: personal computer stations and child-sized clubhouse desks; all dimensions/themes are visual/playability guesses.
+export const COMPUTER_MEDIA = {
+  reach: 2.8, floorTolerance: .7,
+  desk: { width: 1.45, depth: .6, height: .65, seat: .38, seatOffset: .8, monitorWidth: .65, monitorHeight: .38, monitorY: 1.0 },
+  stations: [
+    { id:'pc-home', name:'Speldatorn', x:3.1, z:11.45, level:1, bounds:[2.75,5.57,7.8,12.52], color:'#73e66b' },
+    { id:'laptop-home', name:'Laptopen', x:2.332, z:11.74, level:1, bounds:[.18,2.75,7.8,12.52], color:'#c89aff' },
+    ...[
+      ['pc-lime','Lime',3.4,-3.5,Math.PI/2,'#94e76b'],
+      ['pc-cyan','Turkos',3.4,-.3,Math.PI/2,'#58d9ec'],
+      ['pc-rose','Rosa',8.6,-3.5,-Math.PI/2,'#f193be'],
+      ['pc-amber','Guld',8.6,-.3,-Math.PI/2,'#ffc369'],
+    ].map(([id,name,x,z,yaw,color])=>({id,name:`Dator · ${name}`,x:PLAYROOM.x+x,z:PLAYROOM.z+z,y:0,level:0,yaw,color,clubhouse:true,
+      bounds:[PLAYROOM.x+PLAYROOM.clubhouse.side+PLAYROOM.clubhouse.wall/2,PLAYROOM.x+PLAYROOM.w/2,PLAYROOM.z-PLAYROOM.d/2,PLAYROOM.z+PLAYROOM.clubhouse.front-PLAYROOM.clubhouse.wall/2]})),
+  ],
+};
+export function computerViewer(id,p) {
+  const s=COMPUTER_MEDIA.stations.find(s=>s.id===id);
+  if(!s||!Array.isArray(p)||p.length!==3||!p.every(Number.isFinite))return false;
+  const [x0,x1,z0,z1]=s.bounds,y=s.clubhouse?0:LEVELS[s.level].floor;
+  return Math.abs(p[1]-y)<=COMPUTER_MEDIA.floorTolerance&&p[0]>=x0&&p[0]<=x1&&p[2]>=z0&&p[2]<=z1;
+}
+export function nearComputer(id,p) {
+  const s=COMPUTER_MEDIA.stations.find(s=>s.id===id);
+  return !!s&&computerViewer(id,p)&&Math.hypot(p[0]-s.x,p[2]-s.z)<=COMPUTER_MEDIA.reach;
+}
+// #1487: first shared snake game. Tuned for a small arena/5 Hz existing socket budget; not measured real-world values.
+export const SNAKE = {
+  width:32,height:20,step:1/30,catchUp:.5,inputMs:210,snapshotMs:190,
+  spawn:[[.2,.25],[.5,.25],[.8,.25],[.2,.75],[.5,.75],[.8,.75]],
+  speed:2.8,turnRate:3.8,initialSegments:24,maxSegments:160,radius:.22,radiusGrowth:.0012,
+  foodCount:110,foodMax:200,foodMargin:.7,foodRadius:.12,foodGrowth:2,dropStride:3,
+  headAdvantage:1.08,collisionScale:.8,respawnMs:1400,staleMs:2000,spawnClearance:2,
+  canvasWidth:800,canvasHeight:500,screenWidth:512,renderMs:50,
+};
