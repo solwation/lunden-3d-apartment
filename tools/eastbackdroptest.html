@@ -7,13 +7,13 @@ const source=await fetch('../docs/references/surrounding-views/osm-2026-10-08.js
 check(W.buildings.length===16&&new Set(W.buildings.map(b=>b.source)).size===16,'sixteen unique campus footprints');
 for(const b of W.buildings){const f=source.features.find(f=>f.id===b.source);check(f&&b.polygon.length===f.points.length&&b.polygon.every((q,i)=>{const p=G.geoToPlan(...f.points[i]);return Math.hypot(p[0]-q[0],p[1]-q[1])<.02}),`${b.name}: actual source polygon`);}
 check(C.SITE.blocks.filter(b=>b.style==='hepcat'||b.style==='hepcatWhite').length===2&&!C.SITE.blocks.some(b=>['school','longhouse'].includes(b.style)||b.name==='S:t Lars (old hospital)'),'HepCat detailed bodies retained, replaced school placeholders removed');
-const group=A.scene.getObjectByName('east-backdrop');check(group?.children.filter(m=>m.isMesh).length===8&&group.userData.clocks.length===1,'eight merged exterior/access batches plus one working four-face tower clock');
+const group=A.scene.getObjectByName('east-backdrop');check(group?.children.filter(m=>m.isMesh).length===(lite?8:10)&&group.userData.clocks.length===1,'original batches plus three desktop modern source groups (phone master) and one working four-face tower clock');
 check(group.userData.buildings.every(b=>b.bottom<=Math.min(...b.polygon.map(p=>S.renderedTerrainY(...p)))&&b.eave>b.base+2),'plinths cover terrain');
-const glass=A.scene.getObjectByName('east-glass'),schoolGlass=A.scene.getObjectByName('east-schoolGlass'),facade=A.scene.getObjectByName('east-facade'),modern=A.scene.getObjectByName('east-modern');A.scene.updateMatrixWorld(true);let visible=0,total=0;
+const glass=A.scene.getObjectByName('east-glass'),schoolGlass=A.scene.getObjectByName('east-schoolGlass'),facade=A.scene.getObjectByName('east-facade'),modern=group.children.filter(m=>m.name==='east-modern'||m.name.startsWith('east-modern-'));A.scene.updateMatrixWorld(true);let visible=0,total=0;
 // Geometric window centres are independent of arch tessellation and trim topology.
 for(const b of group.userData.buildings)for(const win of b.windows??[]){
  total++;const n=new T.Vector3(win.n[0],0,win.n[1]),centre=new T.Vector3(win.x+win.n[1]*win.width*.13,win.y+.09,win.z-win.n[0]*win.width*.13),ray=new T.Raycaster(centre.clone().addScaledVector(n,1),n.clone().negate(),0,2);
- if([glass,schoolGlass].includes(ray.intersectObjects([glass,schoolGlass,facade,modern,A.scene.getObjectByName('east-schoolBrick')])[0]?.object))visible++;
+ if([glass,schoolGlass].includes(ray.intersectObjects([glass,schoolGlass,facade,...modern,A.scene.getObjectByName('east-schoolBrick')])[0]?.object))visible++;
 }
 check(visible===total&&total>300,`actual outward windows ${visible}/${total}`);
 const school=group.userData.buildings.find(b=>b.classic);
@@ -30,7 +30,7 @@ const b8=ward('88457606'),p8=b8.pieces;
 check(p8.length===4&&p8.slice(1).every(q=>q.levels===2&&q.eave>p8[0].eave+1)&&Math.abs(p8[0].eave-b8.base-8.6)<.01,'8: pavilions and centre stand above the two-storey wings');
 const eastPav=b8.windows.filter(w=>w.floor===0&&w.n[0]<-.9&&w.x<72.5);
 check(eastPav.length===6&&b8.windows.filter(w=>w.floor===0&&w.n[1]<-.9&&w.x>71&&w.x<82).length===2,`8: six windows along the west pavilion side, two on its courtyard front (${eastPav.length})`);
-check(new T.Raycaster(new T.Vector3(99.3,b8.eave+1.2,-75),new T.Vector3(0,0,1),0,8).intersectObject(modern)[0]?.point.z<-68.5,'8: pediment on the courtyard centre');
+check(new T.Raycaster(new T.Vector3(99.3,b8.eave+1.2,-75),new T.Vector3(0,0,1),0,8).intersectObjects(modern)[0]?.point.z<-68.5,'8: pediment on the courtyard centre');
 // #580: byggnad 88 is red brick with piers and broad windows, its roof rising from the outer eave to glazing over the court.
 const b88=ward('relation/1309427');
 check(b88.campus&&!b88.modern&&b88.pieces[0].levels===2&&b88.windows.length>60&&b88.windows.every(w=>!w.arched&&w.width>2),'88: two storeys of broad straight windows');
@@ -49,9 +49,9 @@ for(const [b,name] of [[ward('130678797'),'2'],[ward('88457552'),'7']])check(b.c
 // #579: byggnad 1 has a pediment centre with a great round-arched window and a clock tower over the courtyard axis.
 const b1=ward('88457546'),centreWin=b1.windows.find(w=>w.edge==='centre');
 check(centreWin&&centreWin.arched&&centreWin.height>3.5&&centreWin.n[1]>.9,'1: great round-arched window on the courtyard front');
-const towerHit=new T.Raycaster(new T.Vector3(45.6,b1.tower-1.2,-100),new T.Vector3(0,0,-1),0,40).intersectObjects([modern,A.scene.getObjectByName('east-schoolRoof')])[0];
+const towerHit=new T.Raycaster(new T.Vector3(45.6,b1.tower-1.2,-100),new T.Vector3(0,0,-1),0,40).intersectObjects([...modern,A.scene.getObjectByName('east-schoolRoof')])[0];
 check(b1.tower>b1.eave+9&&towerHit&&Math.abs(towerHit.point.z+116.6)<2,`1: clock tower with spire ${(b1.tower-b1.eave).toFixed(1)} m above the eave`);
-const real=W.buildings.find(b=>b.source==='relation/1309427'),hole=real.holes[0].slice(0,-1),cx=hole.reduce((v,p)=>v+p[0],0)/hole.length,cz=hole.reduce((v,p)=>v+p[1],0)/hole.length;check(!new T.Raycaster(new T.Vector3(cx,40,cz),new T.Vector3(0,-1,0),0,50).intersectObjects([facade,modern,A.scene.getObjectByName('east-roof'),A.scene.getObjectByName('east-schoolRoof'),A.scene.getObjectByName('east-schoolBrick')]).length,'Realgym courtyard remains actually open through roof/body');
+const real=W.buildings.find(b=>b.source==='relation/1309427'),hole=real.holes[0].slice(0,-1),cx=hole.reduce((v,p)=>v+p[0],0)/hole.length,cz=hole.reduce((v,p)=>v+p[1],0)/hole.length;check(!new T.Raycaster(new T.Vector3(cx,40,cz),new T.Vector3(0,-1,0),0,50).intersectObjects([facade,...modern,A.scene.getObjectByName('east-roof'),A.scene.getObjectByName('east-schoolRoof'),A.scene.getObjectByName('east-schoolBrick')]).length,'Realgym courtyard remains actually open through roof/body');
 let shared=0;A.scene.traverse(m=>{if(m.isMesh&&m!==facade&&m.material.map===facade.material.map)shared++});check(facade.material.map&&shared>0,'brick texture reused from existing surrounding masonry');
 const trees=S.treeFeet.filter(t=>t.patch==='east-park');check(trees.length>50&&trees.every(t=>!B.onEastBuilding(t.x,t.z)&&!B.onEastAccess(t.x,t.z,.5)),`park rows/groves clear of houses and access: ${trees.length}`);check(trees.filter(t=>typeof t.source==='string'&&!t.source.startsWith('aerial')).length===5,'five actual mapped trees distinguished from aerial-interpreted rows');
 check(C.OUTDOOR.x0===-78.5&&C.OUTDOOR.x1===27.5&&C.OUTDOOR.z1===64,'walking boundary unchanged');let tris=0;group.traverse(m=>{if(m.isMesh)tris+=(m.geometry.index?.count??m.geometry.attributes.position.count)/3*(m.isInstancedMesh?m.count:1)});check(tris<(lite?C.CAMPUS_LOD.maxTris:CAMPUS_TRIS),`campus geometry budget${lite?' (phone)':''}: ${tris} triangles`);

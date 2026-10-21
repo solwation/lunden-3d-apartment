@@ -23,6 +23,46 @@ suite claim. An earlier identity fixture failure is also retained. Public6c69323
 plantwind or windShadow target, so no port applies. Raw drivers, images, profiles
 and rejected fixtures remain in `/tmp/orkester-katt-20261020/windbounds1460/`.
 
+## Complete east-campus material contributions (#1461, partial #1459)
+
+Desktop `sitebackdrop.js` merges the existing `east-modern` contributions into three
+fixed complete-source geographic groups: northern campus, eastern campus and western/
+street campus. These are ten complete building contributions to one material, not ten
+standalone complete building meshes. Every other brick/roof/glass/access batch, source
+record and original one-pass generation remains unchanged. Phones retain the original
+single modern master batch. Native main/shadow-camera frusta decide submission; there
+is no added camera gate, distance rule, LOD or quality change.
+
+On2199c273, the normal standard-quality3 corner (6.5,19), lookAt(3,.7,17.2), final
+production step gives557calls/1137384tri→557/1110020:27364saved with unchanged calls.
+This remains over520/1M and #1459 remains unresolved. The normal exposed hedge view
+increases518→520calls with unchanged976845triangles: exactly the cap, no draw headroom.
+Both fresh-shadow pairs have0changed pixels. Full20-view desktop/quality checks pass
+506calls/997953tri/~311MiB against unchanged520/1M/320limits. These are actual production-
+builder meshes installed in the retained real World. After rebase onto1fac368a, a CPU-only
+census of all26 entrance wind meshes at those20 cameras plus corner/exposed hedge
+finds no eligible main-camera membership changes; exact repaired spheres are applied.
+The first census mutated its logged old spheres during final application; corrected
+static-versus-padded sphere records retain the same zero membership delta.
+
+Ordered position/normal/color attributes, all seven other material batches and complete
+source query records compare exactly. Thirty positive modern-surface rays retain their
+hit counts/distances. Three modern meshes share the original surface material and shadow
+flags. The existing source/window/pediment/tower/open-courtyard checks pass, including
+1013outward windows. Its old78000 asset cap fails81997 in this full-World fixture,
+exactly the unchanged original81997; hidden diagnostic meshes caused the earlier
+131035fixture count and were removed. Actual native touch opens/closes the focused
+glazed door0→1→0 with positive wind and0page errors. The original phone generation/
+batch selection is unchanged; phone results are
+inherited from #1457's explicitquality0 profiles (landscape367/840699/~98MiB,
+portrait279/705447/~102MiB), not fresh #1461 runs or defaultquality3 acceptance.
+
+The public app has the same neutral campus builder; a separate LOW transfer is required
+after source publication. A/B/C/L shells use separate builders and are not changed;
+west/north use this shared function's original unsplit branch. Raw proofs/pairs/profile:
+`~/.local/state/lunden-orkester/codex-surface-20261020/east1461/`.
+
+
 ## Complete phone models behind separate actual opaque patches (#1456, partial #1453)
 
 Only existing complete `phoneDetailUnit` models with an actual Garage can use the

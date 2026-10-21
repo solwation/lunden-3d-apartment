@@ -472,3 +472,5 @@ Uteplatsens vy mot huset kräver mindre onödigt ritarbete genom att hela häcka
 
 Phone entrance foliage (#1457): four additional color batches retain each plant’s
 original wind origin, leaves, physical meshes and original shadow casters.
+
+Östra campusets fasta materialgrupper ritas separat på dator för snävare naturlig vyavgränsning; telefonens geometri är oförändrad (#1461).
