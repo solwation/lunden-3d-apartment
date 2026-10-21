@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="sv"><head><meta charset="utf-8"><title>#1442 parking geometry</title></head>
+<body><pre id="out">Running…</pre><canvas id="preview" width="720" height="560"></canvas><style>body{margin:12px;background:#f6f4ef;color:#222;font:14px sans-serif}#preview{display:block;width:min(100%,720px);height:auto;border:1px solid #bbb;margin-top:12px}</style><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script><script type="module">
+import * as THREE from 'three';
+import { SITE, WALK } from '../src/config.js';
+import { renderedTerrainY } from '../src/surroundings.js';
+import { southBackdropParts } from '../src/southbackdrop.js';
+import { createParkingGrade, createParkingLayout, parking1442Parts } from '../src/parkinglot1442.js';
+const out=document.querySelector('#out'),lines=[];let ok=true;
+const check=(pass,text)=>{ok&&=!!pass;lines.push(`${pass?'PASS':'FAIL'} ${text}`);};
+const lot=SITE.south.parking.find(p=>p.source==='145221624');
+const grade=createParkingGrade(lot,renderedTerrainY),layout=createParkingLayout(lot),ground=(x,z)=>renderedTerrainY(x,z);ground.grid=()=>renderedTerrainY.grid();
+const parts=parking1442Parts(ground),pointIn=(x,z,p)=>{let inside=false;for(let i=0,j=p.length-1;i<p.length;j=i++){const a=p[i],b=p[j];const cross=(x-a[0])*(b[1]-a[1])-(z-a[1])*(b[0]-a[0]);if(Math.abs(cross)<1e-6&&x>=Math.min(a[0],b[0])-1e-6&&x<=Math.max(a[0],b[0])+1e-6&&z>=Math.min(a[1],b[1])-1e-6&&z<=Math.max(a[1],b[1])+1e-6)return true;if((a[1]>z)!==(b[1]>z)&&x<(b[0]-a[0])*(z-a[1])/(b[1]-a[1])+a[0])inside=!inside;}return inside;};
+check(grade.contains(143.285,295.2175)&&!grade.contains(120,295.2),'grade sampler matches only the exact sourced polygon');
+check(grade.bounds.x0===129.03&&grade.bounds.x1===157.54&&grade.bounds.z0===281.76&&grade.bounds.z1===308.68,'grade bounds preserve the supplied OSM polygon coordinates');
+check(Math.hypot(...grade.plane.slope)<WALK.maxSlope&&grade.plane.maxResidual<.6,`fitted assumed plane has safe slope and bounded residual (${Math.hypot(...grade.plane.slope).toFixed(4)}, ${grade.plane.maxResidual.toFixed(3)}m)`);
+check(!grade.contains(120,295.2)&&grade(120,295.2)===renderedTerrainY(120,295.2),'outside grade sample is bit-exact to baseline');
+const baseline=renderedTerrainY(143.285,295.2175),planar=grade(143.285,295.2175);
+check(Math.abs(planar-grade(143.285,295.2175))===0&&Number.isFinite(planar)&&Math.abs(planar-baseline)<.6,`interior grade produces a finite local correction (${(planar-baseline).toFixed(3)}m)`);
+let maxSlope=0;for(let x=124;x<=163;x+=.25)for(let z=278;z<=313;z+=.25){if(!grade.contains(x,z))continue;const gx=(grade(x+.25,z)-grade(x-.25,z))/.5,gz=(grade(x,z+.25)-grade(x,z-.25))/.5;maxSlope=Math.max(maxSlope,Math.hypot(gx,gz));}
+check(maxSlope<WALK.maxSlope,`grade and its local transition remain below WALK.maxSlope (${maxSlope.toFixed(3)}m/m)`);
+check(layout.stalls.length===lot.capacity&&layout.markingSegments.length===13&&layout.segments.length===17,`layout provides ${layout.stalls.length} bays, 13 internal dividers and 4 footprint-only outer edges`);
+check(Math.abs(layout.dimensions.bayWidth-2.5)<1e-8&&Math.abs(layout.dimensions.bayDepth-5)<1e-8&&Math.abs(layout.dimensions.aisleWidth-6)<1e-8,`guessed stall and aisle dimensions are 2.5×5m and 6m (${layout.dimensions.lotWidth.toFixed(2)}m clear width)`);
+check(layout.stalls.every(s=>s.polygon.every(([x,z])=>pointIn(x,z,lot.polygon))),'every complete guessed stall footprint lies inside the unchanged OSM boundary');
+check(layout.stalls.length===lot.capacity&&layout.stalls.every(s=>Math.abs(s.area-12.5)<.02),`all ${layout.stalls.length} clipped bay footprints retain the full 12.5m² 2.5×5m area (min ${Math.min(...layout.stalls.map(s=>s.area)).toFixed(3)})`);
+check(layout.aisle.every(([x,z])=>pointIn(x,z,lot.polygon)),'the complete clear aisle lies inside the unchanged OSM boundary');
+check(parts.surface===null&&parts.markings.length===layout.markingSegments.length,'existing exact asphalt surface is reused; outer bay boundaries use the polygon edge');
+const triangles=parts.markings.reduce((n,g)=>n+g.attributes.position.count/3,0),ray=new THREE.Raycaster(),marks=parts.markings.map(g=>new THREE.Mesh(g,new THREE.MeshBasicMaterial({side:THREE.DoubleSide})));let missed=0;
+let maxPaintError=0,outsidePaint=0,outsidePoints=[];for(const m of marks){const a=m.geometry.attributes.position;ray.set(new THREE.Vector3(a.getX(0),20,a.getZ(0)),new THREE.Vector3(0,-1,0));if(!ray.intersectObject(m).length)missed++;for(let i=0;i<a.count;i++){const x=a.getX(i),y=a.getY(i),z=a.getZ(i);maxPaintError=Math.max(maxPaintError,Math.abs(y-ground(x,z)-.076));if(!pointIn(x,z,lot.polygon)){outsidePaint++;if(outsidePoints.length<4)outsidePoints.push([x,z]);}}}
+check(triangles===26&&missed===0,`13 internal dividers emit ${triangles} triangles (≤26 baseline budget) and raycast (${missed} misses)`);
+check(maxPaintError<1e-5&&outsidePaint===0,`markings follow the supplied ground + 7.6cm and remain in the OSM outline (error ${maxPaintError.toExponential(2)}m, outside vertices ${outsidePaint} ${JSON.stringify(outsidePoints)})`);
+const southBuilder=southBackdropParts(ground);let southResult;do{southResult=southBuilder.next();}while(!southResult.done);const south=southResult.value,land=south.children.find(c=>c.name==='south-land'),pos=land.geometry.attributes.position,col=land.geometry.attributes.color;let integratedWhite=0;
+for(let i=0;i<pos.count;i++){const x=pos.getX(i),y=pos.getY(i),z=pos.getZ(i);if(pointIn(x,z,lot.polygon)&&col.getX(i)>.85&&col.getY(i)>.85&&col.getZ(i)>.8&&Math.abs(y-ground(x,z)-.076)<1e-5)integratedWhite++;}
+check(integratedWhite===parts.markings.reduce((n,g)=>n+g.attributes.position.count,0),`actual south-backdrop land contains only the custom ${integratedWhite}-vertex internal layout; old transverse stripes are suppressed`);
+const renderer=new THREE.WebGLRenderer({canvas:document.querySelector('#preview'),antialias:true});renderer.setSize(720,560,false);renderer.setPixelRatio(1);const scene=new THREE.Scene();scene.background=new THREE.Color(0xdde5e7);scene.add(new THREE.AmbientLight(0xffffff,1.2));const sun=new THREE.DirectionalLight(0xffffff,1.5);sun.position.set(-20,60,30);scene.add(sun);scene.add(land);const camera=new THREE.OrthographicCamera(-18,18,14,-14,.1,200);camera.position.set(143,80,295);camera.up.set(0,0,-1);camera.lookAt(143,0,295);renderer.render(scene,camera);
+out.textContent=`${lines.join('\n')}\n${ok?'ALL PASS':'SOME FAILED'}`;
+</script></body></html>

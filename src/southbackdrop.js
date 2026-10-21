@@ -8,6 +8,7 @@ import { lowRiseWindowParts } from './southwindows.js';
 import { buildStLars41 } from './stlars41.js';
 import { paddockLandParts } from './paddock.js';
 import { busStopApron } from './busstopgeo.js';
+import { parking1442Parts } from './parkinglot1442.js';
 const S=SITE.south;
 const LAND_MESH=6,LAND_LIFT=.03; // m: #1306, fields / car parks are cut into triangles <= LAND_MESH m where the sloping terrain lies and sit LAND_LIFT higher than the corner heights say (*guess*)
 const inside=(x,z,p)=>{let yes=false;for(let i=0,j=p.length-1;i<p.length;j=i++)if((p[i][1]>z)!==(p[j][1]>z)&&x<(p[j][0]-p[i][0])*(z-p[i][1])/(p[j][1]-p[i][1])+p[i][0])yes=!yes;return yes;};
@@ -90,7 +91,8 @@ export function* southBackdropParts(ground){
    for(let i=0;i<a.count;i++)a.setY(i,farGround(a.getX(i),a.getZ(i))+.022);
    g.computeVertexNormals();
    parts.land.push(tint(g,surfColor(p)));}
-   if(p.capacity&&p.polygon.length>=4){
+   if(p.source==='145221624')parts.land.push(...parking1442Parts(farGround).markings); // #1442: double-loaded bays around a clear aisle
+   if(p.capacity&&p.polygon.length>=4&&p.source!=='145221624'){
     const poly=ring(p.polygon);
     if(poly.length===4){
      const[p0,p1,p2,p3]=poly;

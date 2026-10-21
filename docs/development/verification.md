@@ -7932,3 +7932,19 @@ the rifle/Marks hit path with the same policy, including the `blocked` result th
 unchanged behavior of non-weapon queries. Production
 panes are tagged in `src/world.js`; moving sashes carry their pane, so opening the sash moves the obstruction with it.
 These fixtures use actual Three.js raycasts without WebGL; they do not claim a hardware-specific visual or ballistics test.
+
+## #1442: graded Nattsländegatan parking
+
+The browser fixture `tools/parking1442test.html` checks the sourced OSM
+outline, assumed plane and four-metre edge fade, unchanged samples outside the
+lot, 15 full 2.5×5 m stalls, a six-metre clear aisle, 13 internal dividers,
+and no paint outside the outline. Integrated World verification runs
+`tools/parkinggrade1440test.html` and `tools/southbackdroptest.html`: the
+parking support ray suite passes 2,154 samples (worst difference 2e-6 m),
+and paint ray checks pass 19 samples. The integrated south-backdrop candidate
+uses 42,953 triangles versus 43,077 on baseline (−124). The broader existing
+detail-budget check still fails its 40,252 cap at 42,953; this inherited
+high-detail budget issue is tracked separately by #1474. The assumed parking
+plane and capacity are guesses because the source has no surveyed levels or
+stall markings. Asphalt is reused and no access road is added. Public port:
+[kvarteret-lunden#130](https://github.com/solwation/kvarteret-lunden/issues/130).
