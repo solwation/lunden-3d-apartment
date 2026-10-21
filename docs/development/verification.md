@@ -15,6 +15,20 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## Dry clubhouse (#1485)
+
+`tools/playroomweathertest.cjs GAME OUT` enters the real room with a140cm
+avatar and reproduces the old mode before applying the enclosed-room flag:
+11,529 interior rain endpoints across120frames. The actual main update then
+hides precipitation on entry. Each of rain/snow/hail runs120frames in each of
+BIO/BILJARD/SPEL/HALL, with0drawn interior particles in all12cases. Actual exit
+restores outdoor rain (1008draw vertices) and no page exceptions. The captured
+room image was opened/inspected. Artifacts: `/tmp/playroom-weather-final/`.
+A first roof-box-only candidate had an intermittent particle-boundary failure
+and was replaced by the explicit fully-enclosed-room visibility contract.
+Climate/audio, ordinary window views and A/B/C/L roof guards are unchanged;
+the personal off-map game room does not apply to the public downstream.
+
 ## Quieter rain (#1470)
 
 `tools/rainsoundtest.cjs GAME OUT` loads the actual Weather and audio modules

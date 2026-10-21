@@ -524,3 +524,15 @@ The same surface supports all three home TVs (#1483), using unique CSS layers
 and their retained screen mesh matrices. Media updates run after movement/rest/
 touch camera changes at the end of `step`, so CSS and WebGL use the same final
 camera pose instead of allowing a one-frame projection lag.
+
+## Clubhouse precipitation guard (#1485)
+
+The fantasy clubhouse is a completely enclosed off-map interior, without an
+outdoor view or normal house occluder. `Weather.update` takes an optional
+`enclosed` flag; main passes `player.inPlayroom`. It disables both precipitation
+draws for that interior while retaining the actual climate and muffled audio.
+Leaving restores ordinary roof-aware precipitation, including the existing car
+guard. This also avoids transient particle/roof-edge and hail-bounce cases.
+Ordinary indoor windows still show outdoor weather. No geometry, audio gains
+or particle budgets change. A/B/C/L house guards are unchanged. This off-map
+game room has no public downstream equivalent and must not be ported there.

@@ -352,7 +352,7 @@ så spelas den på själva bioduken för alla i lekstugan; även egna YouTube-l�
 En person i taget väljer film och styr paus och uppspelning. Tillbaka till rummet
 släpper kontrollen medan filmen fortsätter. Aktivera ljudet med knappen vid behov.
 Filmen stängs av när den sista personen lämnar lekstugan. Videon måste tillåta
-inbäddning. Den vita spelboxen stänger av datorn; datorn stängs av när man lämnar klubbhuset. Alla väggar har golvlister, tydliga hörn och mjuka
+inbäddning. Den vita spelboxen stänger av datorn; datorn stängs av när man lämnar klubbhuset. Lekstugan håller regn, snö och hagel utanför taket. Alla väggar har golvlister, tydliga hörn och mjuka
 kontaktskuggor, med samma grundteknik som i L1007. Rundade stoppade biostolar,
 veckade gardiner, trästruktur och ett plankgolv ger lekstugan ett mjukare uttryck.
 Biljardbordet står mitt i biljardrummet med fri yta innanför dörren. Discolampans strömbrytare fungerar som tidigare (#1365).

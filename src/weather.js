@@ -232,7 +232,8 @@ export class Weather {
 
   /** `inside`: the visitor is in the flat (muffled); `moved`: metres walked this frame (#249: out in it, it counts);
    * `cabin`: sitting in our car (#664), how far its doors stand open 0…1 (`cabinMix`), else null. */
-  update(dt, inside = false, moved = 0, cabin = null) {
+  // Enclosed off-map rooms have no outdoor view; keep climate/audio but draw no precipitation.
+  update(dt, inside = false, moved = 0, cabin = null, enclosed = false) {
     this.real?.tick(this.day.year, this.day.month, this.day.date); // (the first request waits for the first frames, #674)
     const s = this.ease(this.state(), dt);
     if (s.kind !== this.kind) this.seeded = null; // another kind: start the particles afresh
@@ -240,8 +241,8 @@ export class Weather {
     this.day.overcast = this.overcast * (this.kind === 'snow' ? 0.7 : 1); // snow clouds are lighter
     this.clock += dt;
     const streaks = this.kind === 'rain', hail = this.kind === 'hail', active = Math.round((streaks ? W.drops : hail ? W.hail.stones : W.snow.flakes) * this.rain * this.particleScale * (1 - (this.day.above ?? 0))); // (none above the cloud deck, #1251)
-    this.lines.visible = streaks && active > 0;
-    this.flakes.visible = (this.kind === 'snow' || hail) && active > 0;
+    this.lines.visible = !enclosed && streaks && active > 0;
+    this.flakes.visible = !enclosed && (this.kind === 'snow' || hail) && active > 0;
     const c = this.camera.position, R2 = (W.radius * 1.3) ** 2;
     if (this.lines.visible) {
       if (this.seeded !== 'streaks') { for (let i = 0; i < W.drops; i++) this.spawn(i, false); this.seeded = 'streaks'; }
