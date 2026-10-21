@@ -1,3 +1,20 @@
+# Verification policy
+
+Choose 2–3 minimum sufficient, risk-based checks before starting; stop when they pass.
+The [orchestra policy](../../.claude/commands/orkester.md#minsta-tillräckliga-verifiering-användaren-2026-10-21)
+applies to ongoing work too: docs need only diff/link/contradiction review; local changes
+need the affected component and route/view. Extra platforms/orientations or broad scene
+profiles require changed branches/UI or concrete global risk. Reuse valid source-SHA,
+input and quality-bound evidence across unrelated rebases; do not recount unchanged geometry.
+The conductor reviews existing results without routine duplicate runs. Reconsider cost
+near 10 minutes of verification, before further expensive sweeps. User requirements,
+established hard contracts, isolation and reproduced bug checks remain mandatory;
+a historical guessed triangle threshold alone does not justify an optimization chain.
+
+The dated issue records and test inventories below are candidate coverage and retained
+historical evidence, not a minimum checklist for every change. Retake only bad camera
+poses; extend a passing plan only for new code, failure or a concrete material risk.
+
 ## Tight phone frustum and rigid lamp parts (#1453)
 
 Run `node --test tools/tightfrustumtest.mjs tools/phonewholeocclusiontest.mjs tools/phonedetailunittest.mjs`

@@ -8,6 +8,37 @@ Du är orkestrerare för repot solwation/lunden-3d-apartment. Läs CLAUDE.md fö
 **Område för den här sessionen:** $ARGUMENTS
 (Om inget område anges: implementationsärenden i båda reporna.)
 
+## Minsta tillräckliga verifiering (användaren 2026-10-21)
+
+Gäller även pågående orkestrar, agentprompter och äldre testlistor.
+Välj före arbetet 2–3 små kontroller som kan upptäcka ändringens konkreta risker;
+ange dem kort i tilldelningen och stoppa när de passerar.
+Uttryckliga användarkrav och etablerade hårda kontrakt gäller fortfarande.
+
+- **Bara dokument:** granska diff, relativa länkar och motsägelser. Ingen webbläsare,
+  WebGL, sceninventering eller triangelräkning; automatiska releasekontroller kvarstår.
+- **Lokal ändring:** relevant komponentprov och berörd verklig rutt eller vy räcker
+  normalt. Extra plattform/orientering kräver ändrad kodgren, UI eller konkret risk.
+- **Breda svep:** fulla scen-/bild-/plattform-/triangelprofiler kräver motiverad global
+  risk, exempelvis renderer, culling eller gemensam fysik. Gamla listor är kandidater
+  och ett täckningstak, inte obligatoriska minimikrav.
+- **Återbruk:** återanvänd giltigt bevis med käll-SHA, berörda indata och kvalitetsläge.
+  En orelaterad rebase kräver inget omprov. Räkna oförändrad geometri en gång;
+  dela webbläsaruppvärmning och samla kameror i samma körning där det passar.
+  Skapa inte nya harnessar eller kedjor av mikrobevis som standard.
+- **Granskning:** dirigenten läser diff och befintliga resultat, granskar relevanta
+  bilder om sådana behövdes och kör inte automatiskt om redan gröna kontroller.
+  Omprov kräver ändrad relevant kod/indata, fel eller en uttrycklig materiell risk.
+- **Stoppregel:** leverera när den avgränsade planen är grön. Utöka bara för ny kod,
+  reproducerat fel eller konkret risk; ta bara om en felaktig kameraposition.
+  Optimera inte fungerande detaljgeometri utan observerat behov. Ett gammalt gissat
+  triangeltak är ensamt inget blockerande produktfel eller skäl till en optimeringskedja.
+  Bevara verkliga hårda kontrakt, avskiljning och verifiering av reproducerade buggar;
+  dölj inte fel eller begränsningar bakom ett grönt resultat.
+- **Kostnadsgräns:** när själva verifieringen närmar sig cirka 10 minuter omprövar
+  dirigenten kostnad och omfattning före fler dyra svep. Rapportera status och välj
+  minsta återstående bevis eller en avgränsad leverans; fortsätt inte tyst i timmar.
+
 ## Gemensamt ansvar för båda reporna (användaren 2026-10-16)
 
 `/orkester` i endera repot ansvarar för både `solwation/lunden-3d-apartment` och `solwation/kvarteret-lunden`. Utan uttrycklig snävare användaravgränsning ingår startbara implementationsärenden i båda. Starta även arbete i det andra repot med egna arbetsagenter/checkouter; startrepot ger ingen förtur. Användarens senaste avgränsning styr implementationen, men får aldrig göra kökontrollen blind för det andra repot. Dokumentera ärenden utanför området i status och slutrapport.
@@ -45,7 +76,7 @@ issues inom området finns kvar. Nya issues dyker upp löpande — lista om varj
 
 ## Kvarteret Lunden (publik visning)
 
-Ändringar för `solwation/kvarteret-lunden` kräver egna implementationsissues **i kvarteret-lunden-repot**, enligt användarens senare uttryckliga instruktion 2026-10-16 (ersätter den centrala originalkön), med `Lapp:`, prioritet, `in-progress` och aktiv orkesteretikett enligt samma livscykel. Samordna downstreamarbete i dess #4; korslänka båda repornas ärenden vid gemensamma ändringar. Läs downstreams `AGENTS.md`, `CLAUDE.md` och anpassade [orkesterkommando](https://github.com/solwation/kvarteret-lunden/blob/main/.claude/commands/orkester.md). Arbeta i en separat downstream-checkout, verifiera webbläsarbeteendet, publicera via dess Pages-workflow och länka downstream-commit och resultat innan ärendet stängs och aktivetiketterna tas bort. Ingen personlig inredning, speldata eller Cloudflare får följa med.
+Ändringar för `solwation/kvarteret-lunden` kräver egna implementationsissues **i kvarteret-lunden-repot**, enligt användarens senare uttryckliga instruktion 2026-10-16 (ersätter den centrala originalkön), med `Lapp:`, prioritet, `in-progress` och aktiv orkesteretikett enligt samma livscykel. Samordna downstreamarbete i dess #4; korslänka båda repornas ärenden vid gemensamma ändringar. Läs downstreams `AGENTS.md`, `CLAUDE.md` och anpassade [orkesterkommando](https://github.com/solwation/kvarteret-lunden/blob/main/.claude/commands/orkester.md). Arbeta i en separat downstream-checkout, verifiera enligt den riskbaserade planen ovan, publicera via dess Pages-workflow och länka downstream-commit och resultat innan ärendet stängs och aktivetiketterna tas bort. Ingen personlig inredning, speldata eller Cloudflare får följa med.
 
 Om användarens hela område är avgränsat till Kvarteret Lunden används downstreamkommandot och dess ärenden väljs ur dess egen kö. Även då hämtas båda GitHub-köerna och ärenden utanför området redovisas enligt det gemensamma ansvaret ovan. Avsnitten om originalspelets rapportimport/KV/Workers nedan gäller då **inte**; publicsidan har ingen sådan tjänst. För originalarbete eller blandade sessioner gäller rapportimporten som vanligt för originaldelen.
 
@@ -382,11 +413,11 @@ Samordningen får aldrig vara skälet till att en agentplats står tom eller ett
   - Dör en agent finns arbetet kvar i dess worktree (`.claude/worktrees/agent-<id>` eller `~/lunden-wt/<namn>`): återuppta den (SendMessage) eller starta en ny som utgår från worktreens commits (`git log origin/main..HEAD`) i stället för att göra om det.
 - Leverera små fungerande steg inom det högst prioriterade startbara ärendet, så att nytt syns ofta; välj inte
   mindre eller mer synliga issues framför högre prioritet eller äldre skapandetid.
-- **Modellval (användaren 2026-10-17):** arbetsagenterna kör en **billigare modell** (i Claude Code `model: "sonnet"` i Agent-anropet; i andra verktyg motsvarande mellanklassmodell), medan dirigenten som väljer ärenden, bryter ner, samordnar och **granskar agenternas arbete** (skärmdumpar, tester, diff, issue-kommentarer) kör en rimligt kompetent modell. Dirigenten ska därför alltid själv titta på skärmdumparna och kontrollera rapporterna innan ett ärende räknas som klart; uppgradera en enskild agent till en starkare modell bara när ärendet uttryckligen kräver det (t.ex. svår felsökning eller arkitektur) och skriv varför i statusen.
+- **Modellval (användaren 2026-10-17):** arbetsagenterna kör en **billigare modell** (i Claude Code `model: "sonnet"` i Agent-anropet; i andra verktyg motsvarande mellanklassmodell), medan dirigenten som väljer ärenden, bryter ner, samordnar och **granskar agenternas arbete** (skärmdumpar, tester, diff, issue-kommentarer) kör en rimligt kompetent modell. Dirigenten ska därför själv granska diff, rapporter och relevanta skärmdumpar när sådana behövs enligt testplanen; uppgradera en enskild agent till en starkare modell bara när ärendet uttryckligen kräver det (t.ex. svår felsökning eller arkitektur) och skriv varför i statusen.
 - Skriv varje agents prompt med: issuenumren och ordningen, vilka andra agenter som kör och vilka filer/områden de
-  rör (undvik dem), agentens egen port och skärmdumpskatalog (utanför repot), och reglerna nedan.
-- När en agent rapporterar: titta på dess skärmdump, kör om de viktigaste testerna på main om agenten inte gjorde det
-  efter sin sista rebase, och sammanfatta kort för mig. Skicka sedan nästa issue till en ledig plats.
+  rör (undvik dem), agentens egen port och eventuell skärmdumpskatalog (utanför repot), en riskbaserad plan med 2–3 kontroller och reglerna nedan.
+- När en agent rapporterar: granska diff och befintliga bevis enligt policyn ovan. En orelaterad rebase
+  är inget skäl att upprepa gröna tester. Sammanfatta kort och gör sedan nästa färska köval.
 - **Orkestern körs oövervakad (användaren 2026-10-17).** Fråga aldrig användaren i chatten och använd inte
   AskUserQuestion. Val som är användarens (produktbeslut, saknade mått/foton, oklar avsikt) ställs som en kommentar
   på det berörda GitHub-ärendet i rätt repo: konkret fråga, gärna 2–4 alternativ med ett markerat "(rekommenderat)",
@@ -416,13 +447,14 @@ Samordningen får aldrig vara skälet till att en agentplats står tom eller ett
    force-push. Blir issuen större än väntat: leverera den fungerande delmängden, lägg resten som nya delissues med
    `Lapp:`-rad och prioritet (`Del av #N`) och stäng inte föräldern förrän allt är klart.
 4. Changelog (bara synliga ändringar): precis före pushen id = högsta id + 1, överst i listan.
-5. Testa bara det ändringen rimligen påverkar ([verifieringsguiden](../../docs/development/verification.md)); listan i prompten är ett maxtak.
+5. Välj och följ 2–3 riskbaserade kontroller enligt policyn ovan och [verifieringsguiden](../../docs/development/verification.md).
+   Äldre listor/promptlistor anger möjlig täckning och ett maxtak; uttryckliga användarkrav gäller. Stoppa när planen passerar.
 6. Problem utanför den egna issuen → en ny issue `Bugg: …` med en `Lapp:`-rad och `priority: high` för fristående buggar
    (delärenden begränsas alltid av föräldrataket), vad som felar, hur det återskapas och
    trolig orsak. Fixa inte i farten; gör klart den egna issuen.
 7. Frågor till användaren postas som kommentar på issuen och issuen får etiketten `user-question`; ta bort `in-progress`
    och orkesteretiketten, lämna issuen öppen och säg det i rapporten. Fråga aldrig i chatten.
-8. Titta på skärmdumparna innan du påstår att något fungerar. Hitta inte på "uppmätta" värden — gissningar märks *guess*.
+8. Granska de relevanta skärmdumpar som testplanen kräver; dokumentändringar behöver inga bilder. Hitta inte på "uppmätta" värden — gissningar märks *guess*.
 9. GitHub-kommentarer avslutas med Claude Code-footern (en tom rad, `---`, `_Generated by [Claude Code](https://claude.ai/code)_`).
 10. Slutrapport (kort, engelska): vad som ändrats, testresultat, commit-SHA, skärmdumpar, öppna frågor, vad som inte gjorts.
 11. **Livstecken var 30:e minut (användaren 2026-10-19).** Medan du arbetar på ett issue postar du en kort kommentar på det
