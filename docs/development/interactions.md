@@ -21,10 +21,11 @@ Opening the chooser loads short-film suggestions, with thumbnail cards and categ
 buttons. A request counter prevents late suggestions from replacing a newer search.
 YouTube may still restrict a film for a particular account, network or region; its
 player remains authoritative and reports an actionable error (including restriction151). Search is limited by the existing per-IP
-Worker request limiter. This slice does not synchronize the selected video or
-transport controls between players. Tests: `node --test cloudflare/youtubesearch.test.mjs`;
-browser selection is covered by `tools/cinemavideotest.cjs` when run with its
-documented live YouTube access.
+Worker request limiter. Film choice, play and pause are synchronized by the Worker (#1476/#1477).
+The chooser acquires exclusive control; closing it releases control while the
+film continues on the physical bioduk. Viewers enable local audio separately. Tests: `node --test cloudflare/youtubesearch.test.mjs`;
+two-client world playback is covered by `tools/cinemapeertest.cjs` with an isolated
+local Worker and live YouTube access.
 
 Clubhouse speakers (#1423): either `playroomMusic` target uses the shared choices
 for play/pause/resume/OFF and volume ±, through E/number keys or touch rows. No new

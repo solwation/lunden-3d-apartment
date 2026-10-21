@@ -15,6 +15,34 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## Shared physical cinema (#1476)
+
+`tools/cinemapeertest.cjs GAME WORKER OUT` uses two real apps (desktop E and
+844×390 touch) with a fresh isolated local Worker. Search responses supply two
+known film IDs; the official YouTube API, iframes and media are real. Coverage:
+exclusive controller/read-only viewer, local audio without ownership changes,
+advancing unmuted media clocks, shared pause/resume/film change, reconnect and
+late entry, idle keepalive, simultaneous claims, last-departure cleanup and
+empty re-entry. A rendered pixel check requires screen alpha0 and an opaque
+foreground box alpha255; the inactive scene remains opaque. Page/shader errors
+are collected. Use a fresh `node cloudflare/dev.mjs PORT` instance per run,
+not an old room left by an abruptly terminated browser run.
+
+Final run: `/tmp/cinema-shared-final/` passes all cases with no page/shader
+exceptions. Initial playback clocks differ by0.12s; late entry aligns within0.80s;
+paused media clocks remain unchanged. Screen/foreground alpha is0/255. Desktop
+and touch screenshots were opened and inspected (same physical screen, perspective
+and frame). The first failed driver used standing poses whose ray did not hit the
+screen; later arrival assertions were corrected to wait for the actual vendor
+seek. A real automatic re-claim after reconnect was fixed by clearing pending
+control intent on disconnect. A/B/C/L N/A; personal gameplay/Cloudflare excluded
+from the public downstream.
+
+The `cinemavideotest.cjs GAME OUT` entry point delegates to this shared test,
+using `CINEMA_WORKER` (default localhost8782). `INPUT_ONLY=1` retains the native
+chair/screen reach check without network media. Old #1376 local-dialog playback
+assertions are superseded by shared world playback.
+
 ## Shared cinema server (#1477)
 
 `node --test --test-isolation=none cloudflare/cinema.test.mjs` passes6cases:
@@ -23,7 +51,7 @@ authoritative pause/resume/stale/late-join state, owner departure and empty-room
 cleanup, disconnect/reconnect/hibernation including dead persisted ownership,
 and outsider/malformed-message isolation. The existing billiard Worker suite
 retains7passes and the existing PlayerRoom suite retains61passes. These are real Worker/PlayerRoom tests using the existing runtime
-stand-in; world-screen rendering and actual two-browser playback remain #1476.
+stand-in; world-screen rendering and actual two-browser playback use the #1476 check above.
 
 ## Centred billiard table (#1482)
 

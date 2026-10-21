@@ -4,6 +4,10 @@ const fs = require('node:fs');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const game = process.argv[2], out = process.argv[3];
 if (!game || !out) throw Error('Usage: cinemavideotest.cjs GAME OUT');
+if (!process.env.INPUT_ONLY) {
+ const result=require('node:child_process').spawnSync(process.execPath,[require('node:path').join(__dirname,'cinemapeertest.cjs'),game,process.env.CINEMA_WORKER||'http://localhost:8782',out],{stdio:'inherit',env:process.env});
+ process.exit(result.status??1);
+}
 fs.mkdirSync(out, { recursive: true });
 const check = (v, label, details) => { if (!v) throw Error(label + ' ' + JSON.stringify(details)); console.log('PASS', label, details ? JSON.stringify(details) : ''); };
 (async () => {
@@ -47,71 +51,5 @@ const check = (v, label, details) => { if (!v) throw Error(label + ' ' + JSON.st
     fs.writeFileSync(`${out}/result.json`,JSON.stringify({mobile,focus,errors},null,2));
     return;
   }
-  const position=await page.evaluate(()=>({x:__app.player.pos.x,z:__app.player.pos.z}));
-  await page.locator('#cinema-url').focus();await page.keyboard.type('wasde');await page.keyboard.press('Enter');
-  const typing=await page.evaluate(()=>({value:document.querySelector('#cinema-url').value,x:__app.player.pos.x,z:__app.player.pos.z,keys:[...__app.player.keys],open:__app.cinema.open}));
-  check(typing.value==='wasde'&&typing.x===position.x&&typing.z===position.z&&typing.keys.length===0&&typing.open,'typing and Enter stay in video form without game movement',typing);
-  await page.keyboard.press('Escape');check(!await page.locator('#cinema-player').evaluate(el=>el.open)&&!await page.evaluate(()=>!!document.pointerLockElement),'Escape closes without grabbing pointer');
-  await nativeUse();check(await page.locator('#cinema-player').evaluate(el=>el.open),'native screen reopens after Escape');
-  await page.evaluate(()=>{__app.cinema.searchEndpoint='/youtube-search';});
-  const submit=async value=>{await page.locator('#cinema-url').fill(value);await page.getByRole('button',{name:'Sök',exact:true}).click();};
-  const play=page.locator('[data-cinema=play]'),pause=page.locator('[data-cinema=pause]');
-  await submit('https://www.youtube.com.evil.invalid/watch?v=M7lc1UVf-VE');
-  check(await page.locator('#cinema-player [role=status]').textContent().then(t=>t.includes('giltig')) && await page.locator('#cinema-player iframe').count()===0,'invalid host rejected before external player');
-  let releaseAPI; const gate=new Promise(resolve=>{releaseAPI=resolve;});
-  await page.route('https://www.youtube.com/iframe_api',async route=>{await gate;await route.continue();});
-  const requestedAPI=page.waitForRequest('https://www.youtube.com/iframe_api');
-  await page.locator('#cinema-url').fill('Lunden film');await page.getByRole('button',{name:'Sök',exact:true}).click();
-  await page.getByRole('button',{name:'Lunden biofilm · Lunden kanal',exact:true}).waitFor();
-  check(searchRequests.includes('Lunden film'),'real browser sends search text to the search endpoint',searchRequests);
-  await page.getByRole('button',{name:'Lunden biofilm · Lunden kanal',exact:true}).click();
-  check(await page.locator('#cinema-url').inputValue()==='M7lc1UVf-VE','choosing a screen search result selects its video');
-  await requestedAPI;
-  await page.locator('[data-cinema=close]').click();releaseAPI();
-  await page.waitForFunction(()=>window.YT?.Player,null,{timeout:45000});
-  check(await page.locator('#cinema-player iframe').count()===0&&!await page.locator('#cinema-player').evaluate(el=>el.open),'closing after screen selection removes pending YouTube media');
-  if(!mobile) { await page.waitForFunction(()=>!!document.pointerLockElement);check(true,'back button restores desktop pointer lock'); }
-  await nativeUse();
-  await submit('https://www.youtube.com/watch?v=M7lc1UVf-VE');
-  await play.waitFor({state:'visible'}); await page.waitForFunction(()=>!document.querySelector('[data-cinema=play]').disabled,null,{timeout:45000});
-  check(await page.evaluate(()=>__app.cinema.player.getPlayerState()!==1),'video waits for explicit user play');
-  await play.click(); await page.waitForFunction(()=>__app.cinema.player?.getPlayerState()===1,null,{timeout:45000});
-  const frame=page.frames().find(f=>f.url().includes('youtube-nocookie.com/embed/'));
-  await frame.waitForFunction(()=>document.querySelector('video')?.getVideoPlaybackQuality().totalVideoFrames>2,null,{timeout:45000});
-  const media=()=>frame.evaluate(()=>{const v=document.querySelector('video');return{time:v.currentTime,frames:v.getVideoPlaybackQuality().totalVideoFrames,muted:v.muted,paused:v.paused,src:!!v.currentSrc};});
-  const before=await media(); await page.waitForTimeout(1300); const after=await media();
-  check(after.time>before.time+.5 && after.frames>before.frames && !after.muted && after.src,'real unmuted video time and total frame counter advance',{before,after});
-  const layout=await page.locator('#cinema-player iframe').boundingBox();check(layout.width>=200&&layout.height>=200,'official iframe minimum size',layout);
-  const bounds=await page.evaluate(()=>[...document.querySelectorAll('#cinema-player button')].map(el=>{const r=el.getBoundingClientRect();return {text:el.textContent,x:r.x,y:r.y,h:r.height,bottom:r.bottom};}));
-  check(bounds.every(r=>r.h>=44),'all cinema controls at least 44px',bounds);
-  await page.screenshot({path:`${out}/playing.png`});
-  await pause.click();await page.waitForFunction(()=>__app.cinema.player?.getPlayerState()===2);const paused=await media();await page.waitForTimeout(1100);const frozen=await media();
-  check(Math.abs(frozen.time-paused.time)<.15,'pause freezes actual media time',{paused,frozen});
-  await page.locator('[data-cinema=off]').click();check(await page.locator('#cinema-player iframe').count()===0&&await page.evaluate(()=>!__app.cinema.player),'off destroys player and iframe');
-  // A second visitor-chosen URL, rather than a hardcoded application sample.
-  await submit('https://youtu.be/aqz-KE-bpKQ');await page.waitForFunction(()=>!document.querySelector('[data-cinema=play]').disabled,null,{timeout:45000});await play.click();await page.waitForFunction(()=>__app.cinema.player?.getPlayerState()===1&&__app.cinema.player?.getCurrentTime()>1,null,{timeout:45000});
-  check(await page.evaluate(()=>__app.cinema.player.getVideoData().video_id==='aqz-KE-bpKQ'),'second own URL really plays');
-  await page.locator('[data-cinema=close]').click();check(!await page.locator('#cinema-player').evaluate(el=>el.open)&&await page.locator('#cinema-player iframe').count()===0,'back to room unloads media');
-  // Close re-locks desktop input. Open again through the same native screen.
-  await nativeUse();
-  await page.evaluate(()=>{window.cinemaVendorErrors=[];const Original=YT.Player;YT.Player=function(frame,options){const handler=options.events.onError;options.events.onError=e=>{window.cinemaVendorErrors.push(e.data);handler(e);};return new Original(frame,options);};});
-  await submit('https://youtu.be/aaaaaaaaaaa');
-  try { await page.waitForFunction(()=>/Filmen saknas|Filmen kunde inte spelas|Ägaren tillåter inte/.test(document.querySelector('#cinema-player [role=status]').textContent),null,{timeout:45000}); } catch(e) { console.log('ACTUAL ERROR STATUS',await page.locator('#cinema-player [role=status]').textContent());await page.screenshot({path:`${out}/error-timeout.png`});throw e; }
-  check(await page.locator('#cinema-player iframe').count()===0,'real rejected video reports actionable error and unloads',await page.evaluate(()=>({codes:window.cinemaVendorErrors,status:document.querySelector('#cinema-player [role=status]').textContent})));await page.screenshot({path:`${out}/unavailable.png`});
-  // Deterministic vendor callback coverage supplements, not replaces, real playback/error evidence.
-  await submit('M7lc1UVf-VE');await page.waitForFunction(()=>!document.querySelector('[data-cinema=play]').disabled,null,{timeout:45000});
-  const mapped=await page.evaluate(async()=>{const {youtubeError,youtubeId}=await import('/src/cinemaplayer.js');return {a:youtubeError(101),b:youtubeError(150),c:youtubeError(153),bad:youtubeId('javascript:M7lc1UVf-VE')};});
-  check(mapped.a.includes('Ägaren')&&mapped.b===mapped.a&&mapped.c.includes('visningsplatsen')&&mapped.bad===null,'blocked embedding and client identity errors have actionable Swedish messages',mapped);
-  await page.locator('[data-cinema=off]').click();
-  await page.evaluate(async()=>{const Original=YT.Player;let events;YT.Player=function(frame,options){events=options.events;this.destroy=()=>frame.remove();};await __app.cinema.choose('M7lc1UVf-VE');events.onError({data:101});YT.Player=Original;});
-  check((await page.locator('#cinema-player [role=status]').textContent()).includes('Ägaren')&&await page.locator('#cinema-player iframe').count()===0,'deterministic official blocked-embed callback shows error and unloads');
-  await page.screenshot({path:`${out}/blocked-embed.png`});
-  await submit('M7lc1UVf-VE');await page.waitForFunction(()=>!document.querySelector('[data-cinema=play]').disabled,null,{timeout:45000});await play.click();await page.waitForFunction(()=>__app.cinema.player?.getPlayerState()===1,null,{timeout:45000});
-  await page.evaluate(()=>__app.world.playroom.setInside(false));check(!await page.locator('#cinema-player').evaluate(el=>el.open)&&await page.locator('#cinema-player iframe').count()===0,'room exit closes and destroys playing media');
-  // A queued async selection must not recreate a player after close/pagehide.
-  await page.evaluate(async()=>{__app.cinema.show();const pending=__app.cinema.choose('M7lc1UVf-VE');__app.cinema.close('pagehide');await pending;});
-  check(await page.locator('#cinema-player iframe').count()===0&&!await page.locator('#cinema-player').evaluate(el=>el.open),'closing while API readiness is pending cannot resurrect media');
-  check(errors.length===0,'no app page exceptions',errors);
-  fs.writeFileSync(`${out}/result.json`,JSON.stringify({mobile,before,after,paused,frozen,bounds,layout,vendorErrors:await page.evaluate(()=>window.cinemaVendorErrors),errors},null,2));
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

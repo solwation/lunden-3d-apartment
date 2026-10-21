@@ -378,8 +378,8 @@ has no gameplay clubhouse, so this finish has no downstream transfer.
 
 `src/playroomdevices.js` owns two local canvas screens at the TV/desk
 positions, following `furniture.cinema` and `furniture.desk` offsets. E/touch on the
-cinema screen opens film suggestions/search and the separate cinema player
-(#1475); it shows a static BION prompt. The armrest remote is removed. The
+cinema screen opens film suggestions/search and shared playback controls
+(#1475/#1476); it shows BION while idle and the actual film while playing. The armrest remote is removed. The
 monitor starts the computer, then starts/stops a timing game:
 stop the marker inside green to add a hit; misses still count as attempts and
 allow a new round. The white/blue box beside the monitor toggles its power.
@@ -387,8 +387,8 @@ The normal biostol/stool seats and rest reach remain; no new input mode is neede
 
 Computer power forwards to the existing `Playroom.onSwitch('pc', on)` hook;
 disco uses its original hook and switching behaviour. Leaving powers down the
-computer, freezes its game updates and closes the cinema player. Device state is local,
-not saved or synchronized. Room/device audio remains #1330. This is gameplay, excluded from the public downstream.
+computer, freezes its game updates and removes the local cinema player. Computer state is local;
+cinema playback is shared until the last clubhouse occupant leaves. Room/device audio remains #1330. This is gameplay, excluded from the public downstream.
 `PLAYROOM.devices` holds the assumed texture size, redraw cap and timing-game
 settings. The two screens add at most two draws/four triangles. The canvas screens add no lights or audio nodes. Tests: real-app `tools/playroomtest.cjs`, desktop and `MOBILE=1`.
 
@@ -400,23 +400,32 @@ link, youtu.be link or 11-character video ID. The cinema screen opens a native
 modal dialog and frees pointer lock; movement stops while it is open. The official
 YouTube IFrame API is loaded only after film selection, with a privacy-enhanced
 `youtube-nocookie.com` iframe, explicit origin/referrer and `playsinline=1`.
-Nothing autoplays: the visitor presses Spela or the player's own play control for
-sound. Pause preserves the media position; Stäng av, back, Escape, movie end,
-room exit/respawn and pagehide destroy the player and remove its iframe. A
-request generation prevents late API callbacks from reopening a closed player.
-The physical cinema screen shows BION and an E/touch prompt. Its target opens
-the chooser from standing positions and both seat rows within BIO; its armrest
-remote and old sailing channel are removed (#1475). Computer, disco and seat
-anchors remain available.
+The selected film plays on the physical 3D screen for all clubhouse occupants.
+`cinemasurface.js` uses the pinned Three CSS3DRenderer to position the official
+iframe behind the WebGL canvas. A zero-alpha, depth-writing NoBlending screen
+material opens only the screen's pixels; opaque foreground furniture, people
+and walls still occlude it. The WebGL context has alpha enabled, while the
+ordinary scene background remains opaque. No third-party pixels are extracted
+into a WebGL texture. The iframe has no independent controls or pointer input.
 
-The video is shown in the cinema dialog, not on a WebGL texture: an external
-iframe is not a canvas image source, and this app does not extract or download
-third-party video. Visitors need no account or API key. Video choice is visit-only;
-no URL is stored, shared with peers or sent to the game Worker. YouTube receives
-the chosen video request. Private/missing videos, denied embeds (101/150), missing
-client identity (153), network failure and timeout have actionable Swedish messages.
-Some videos require sign-in or disallow embedding; choosing a different video is
-necessary. A blocked autoplay prompts a native player click.
+The Worker owns the film, timeline and single controller. The chooser claims
+control; closing it releases control and continues the film. Search and transport
+are disabled for other viewers. A local “Aktivera bild och ljud” gesture enables
+audio without changing the shared film or claiming control. Muted autoplay is
+attempted first. Each client follows the server-time anchor and corrects drift
+locally; no media or periodic playback ticks pass through the Worker. Stationary
+viewers retain their multiplayer connection while a film is selected.
+
+The physical screen target works from standing positions and both seat rows
+within BIO; its armrest remote and sailing channel are removed. Computer,
+disco and seat anchors remain available. Leaving, hiding the page or disconnecting
+removes local media; reconnecting/late arrival follows the current shared time.
+The final clubhouse departure clears the shared film. A generation guard prevents
+late API callbacks from recreating a departed player's iframe. Video IDs, not
+arbitrary URLs or media, are shared. YouTube receives each viewer's film request.
+Private/missing videos, denied embeds (101/150), account/network restriction151,
+missing client identity153 and network/timeouts have Swedish messages. YouTube
+can still restrict individual viewers despite the discovery filters.
 
 Primary references: [official IFrame API](https://developers.google.com/youtube/iframe_api_reference)
 (play/pause/destroy, errors, autoplay and minimum200×200 viewport),

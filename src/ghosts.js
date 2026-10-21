@@ -467,6 +467,7 @@ export class Ghosts {
     }
     else if (m.t === 'c') { const g = this.others.get(m.i); if (g) this.onToast?.(m, g); } // a toast (#1222): the room sends it only from within PLAYERS.toastRange
     else if (m.t === 'snd') { const g = this.others.get(m.i); if (g && SOUNDS.kinds.includes(m.k)) this.onPlayerSound?.(m, g); } // a sound event (#1302): the room sends it only from within PLAYERS.soundRange
+    else if (m.t === 'cinema') this.onCinema?.(m);
     else if (m.t === 'pool') this.onPool?.(m); // the shared billiard table (#1355, src/billiards.js): only sent to players inside the children's room
     else if (m.t === 'm' || m.t === 'mx' || m.t === 'k') this.onTalk?.(m, this.others.get(m.i)); // chat (#675) and "skriver…" (#676), src/chat.js
   }
@@ -514,7 +515,7 @@ export class Ghosts {
     const prev = this.prev;
     if (!prev || Math.hypot(s.p[0] - prev.p[0], s.p[1] - prev.p[1], s.p[2] - prev.p[2]) > G.move || Math.abs(s.r - prev.r) > G.turn || s.h !== prev.h || s.hi !== prev.hi || s.c !== prev.c || s.pose !== prev.pose || s.sp !== prev.sp || s.jp !== prev.jp || (s.bk === null) !== (prev.bk === null) || Math.abs((s.bk ?? 0) - (prev.bk ?? 0)) > G.turn || s.catKey !== prev.catKey || this.sentAv !== this.avatarCode) { this.lastMove = t; this.prev = s; }
     if (this.prev?.score !== s.score) this.prev = s; // score changes use the same 5 Hz slot; do not reset movement idle time
-    const playing = this.active() && !document.hidden && t - this.lastMove < G.idleMs;
+    const playing = this.active() && !document.hidden && (this.keepConnected?.() || t - this.lastMove < G.idleMs);
     if (!playing) { if (this.ws) this.disconnect(); }
     else if (!this.ws && !this.capped && t >= this.retryAt) this.connect();
     if (this.connected && !this.sendTalk() && !this.sendShot()) {
@@ -571,6 +572,12 @@ export class Ghosts {
     this.outbox.push(msg);
     this.lastMove = performance.now(); this.sendShot();
     return true;
+  }
+
+  /** Shared cinema requests are event-driven and use the existing bounded outbox. */
+  cinema(msg) {
+    if (!this.connected) return false;
+    this.outbox.push(msg); this.lastMove = performance.now(); this.sendShot(); return true;
   }
 
   /** Our own state for the mirror image (#691): where we stand, which way we look, what we hold and how fast we walk (the

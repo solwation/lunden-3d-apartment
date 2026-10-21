@@ -759,6 +759,10 @@
     #chat-log .chat-line.mine b { color: #9fdcff; }
     #chat-log .chat-line.note { font-style: italic; opacity: .85; }
 
+    #cinema-watch { position: fixed; top: calc(82px + var(--st)); left: calc(12px + var(--sl)); z-index: 8; max-width: min(340px, 75vw); padding: 8px; border-radius: 8px; background: #14212ce8; color: white; font-size: 13px; }
+    #cinema-watch[hidden] { display: none; }
+    #cinema-watch span { display: block; }
+    #cinema-watch button { min-height: 44px; margin-top: 4px; border: 0; border-radius: 6px; padding: 8px; touch-action: manipulation; }
     #cinema-player { box-sizing: border-box; width: min(920px, calc(100% - 24px - var(--sl) - var(--sr))); max-height: calc(100% - 16px - var(--st) - var(--sb)); overflow: auto; border: 1px solid #788b98; border-radius: 12px; padding: 12px; background: #14212c; color: #fff; touch-action: auto; }
     #cinema-player::backdrop { background: rgba(0, 0, 0, .78); }
     #cinema-player .cinema-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
@@ -1239,7 +1243,7 @@
       <h3 data-cinema="results-title">Förslag för filmkvällen</h3><div data-cinema="results" aria-label="Filmer att välja bland"></div></form>
     <div class="cinema-video"></div>
     <p role="status" aria-live="polite">Välj en YouTube-film som får bäddas in.</p>
-    <div class="cinema-row"><button type="button" data-cinema="play" disabled>Spela</button><button type="button" data-cinema="pause" disabled>Pausa</button><button type="button" data-cinema="off">Stäng av</button></div>
+    <div class="cinema-row"><button type="button" data-cinema="join" disabled>Aktivera bild och ljud här</button><button type="button" data-cinema="play" disabled>Spela</button><button type="button" data-cinema="pause" disabled>Pausa</button><button type="button" data-cinema="off">Stäng av</button></div>
   </dialog>
   <div id="sonos-panel" hidden role="dialog" aria-label="Musiken">
     <div class="row">

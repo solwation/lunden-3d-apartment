@@ -17,9 +17,9 @@ This is event-driven, with no playback ticker or media/buffer transfer.
 
 `cloudflare/cinema.test.mjs` covers racing claims, forged ownership, stale writes,
 late entry, paused/running anchors, release/disconnect, empty room, hibernation
-and outsiders. Existing Worker message/connection/monthly limits apply. This
-server slice does not itself put a video on the physical screen; the client and
-world-surface integration is #1476. Original-only gameplay, no public import.
+and outsiders. Existing Worker message/connection/monthly limits apply. The client follows server-time anchors locally and presents an official iframe
+on the depth-occluded physical screen (#1476); audio activation is local and
+does not acquire control. Original-only gameplay, no public import.
 
 ## Current shared head contract (#974, #893, #894, #979)
 

@@ -2,6 +2,7 @@ import { KISS } from './config.js';
 import { MATERIAL_CHOICES, materialChoices, materialChoice } from './materialcatalog.js';
 import { crashlog } from './crashlog.js'; // first: its heartbeat and error hooks start before the rest loads (#629; inert without the cloud)
 import { CinemaPlayer } from './cinemaplayer.js';
+import { CinemaSurface } from './cinemasurface.js';
 import { cloudUrl } from './cloud.js';
 import { AdminReports } from './adminreports.js';
 import { ReportCapture } from './reportcapture.js';
@@ -185,7 +186,7 @@ setupInstall({ force: new URLSearchParams(location.search).has('install') });
 
 const TEST = readTestMode(); // `&test` (#703, src/testmode.js): cheap drawing for headless tests, the game itself unchanged
 loadingStep('Startar 3D-grafiken', 0.1); // names a failed WebGL context in the startup error view (#1132)
-const renderer = new THREE.WebGLRenderer({ antialias: !TEST });
+const renderer = new THREE.WebGLRenderer({ antialias: !TEST, alpha: true });
 // Phones and tablets get a smaller memory footprint (LOW_MEMORY, src/lowmemory.js): iOS otherwise kills the tab.
 if (lowMemory) renderer.capabilities.maxTextureSize = Math.min(renderer.capabilities.maxTextureSize, LOW_MEMORY.maxTextureSize);
 const MAX_PIXEL_RATIO = Math.min(window.devicePixelRatio, 1.5, lowMemory ? LOW_MEMORY.maxPixelRatio : Infinity);
@@ -1288,13 +1289,14 @@ const cinema = new CinemaPlayer(document.getElementById('cinema-player'), reason
     else if (reason === 'Escape') { overlay.hidden = true; armEl.hidden = false; }
   }
 }, cloudUrl() ? `${cloudUrl()}/youtube-search` : '');
+cinema.surface = new CinemaSurface(canvas, playroom.devices.tv.mesh);
 playroom.devices.onVideoRequest = () => {
   if (!playroom.inside) return;
   reading = true; player.keys.clear(); touch.analog.x = touch.analog.y = 0;
   if (locked) { binderFreed = true; document.exitPointerLock(); }
   cinema.show();
 };
-playroom.devices.onLeave = () => cinema.close('exit');
+playroom.devices.onLeave = () => cinema.leave('exit');
 
 // Native mouse lock picks the crosshair on mousedown. Free touch/pen picks the
 // tapped canvas coordinate on release; drags, cancelled and secondary touches do not pick.
@@ -2746,6 +2748,9 @@ ghosts.onGreet = (m, g, other) => greet.say({ head: g.head, s: 1 }, (m.k === KIS
 ghosts.onNotice = (text) => badge(text, false);
 playroom.billiards.net = { ready: () => ghosts.connected, send: (m) => ghosts.pool(m), id: () => ghosts.me }; // #1355: the shared billiard table
 ghosts.onPool = (m) => playroom.billiards.onNet(m);
+cinema.net = { ready: () => ghosts.connected, send: m => ghosts.cinema(m), id: () => ghosts.me };
+ghosts.onCinema = m => cinema.receive(m);
+ghosts.keepConnected = () => player.inPlayroom && !!cinema.state?.video;
 // toasting (#1222): "Skåla" with a glass in the hand (right click / 🥂): a clink, the glass raised (things.js), a line and one small
 // message; a player near us who holds a glass hears it and toasts back once (flagged, so no ping-pong); Olof answers from his car.
 toastHandler.fn = (glass, back = false) => {
@@ -2910,6 +2915,7 @@ function step(dt) {
   if (playroom.inside && !playroom.contains(player.pos.x, player.pos.z)) playroom.setInside(false); // (respawned / resumed elsewhere: the room is undrawn again)
   playroom.update(dt, camera, focused?.kind === 'playroomBilliards');
   day.under = player.inPlayroom ? 1 : garage.under; // down there no daylight (nor in the children's room, #1319)
+  cinema.update(player.inPlayroom, camera, renderer);
   day.lit = player.inPlayroom ? playroom.lit : garage.lit; // … but the tubes' light on the cars (#440), the room's own lamp
   { // the sun's shadow box (±14 m round its target) follows the visitor to a visited flat (#574): centred on it within
     // STANDARD.near m of its footprint, else on ours — without it the sun would shine through its roof and walls

@@ -509,3 +509,13 @@ The deck is now a two-triangle plane. From above its half-span grows to at least
 A real full-World flight invokes production Jetpack.putOn, holds Space in Player's input state and steps the normal app at1/60s, without raising/clamping heat. Before and after reach feet300.0604m in25.9167 **simulated** seconds, heat0.57593 and no cut, identical positions. At camera165.0563m, whiteout changes0→0.99983; at300.6947m the old cover0/hidden deck becomes cover1/visible deck and above1. Four real-world down/horizon before/after images were opened, with no browser JS exceptions. This is controlled Chromium verification, not E/touch end-to-end or physical-phone FPS.
 
 Public applicability: inspected `kvarteret-lunden` at0afb8bd; it has a fixed daylight scene and no DayCycle, SKYLAYER or jetpack/high-flight feature. This flight-specific sky change does not apply there and no gameplay is transferred.
+
+## Shared physical cinema screen (#1476)
+
+`cinemasurface.js` positions the official cross-origin YouTube iframe with the
+pinned CSS3DRenderer behind an alpha-enabled WebGL canvas. A zero-alpha
+NoBlending material writes depth at the real screen, preserving foreground
+occlusion. The scene background still writes opaque pixels elsewhere. Inactive
+surfaces restore their original material and hide the CSS layer. No video
+texture extraction, per-frame downloads or new lights are used. See
+[furniture lifecycle](furniture.md#cinema-network-video-1376).

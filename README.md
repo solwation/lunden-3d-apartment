@@ -346,10 +346,11 @@ I lekstugans klubbhus kan barn spela Pricka grönt på datorn med E eller
 tryckknappen. Interagera direkt med bioduken, även från biostolarna, för att öppna
 filmvalet med förslag, bildkort och sökning efter filmer eller kanaler. Sökningen
 väljer filmer som tillåter inbäddning och visning utanför YouTube. Välj en film
-och tryck Spela; även egna YouTube-länkar fungerar. Filmen visas i
-bions spelarfönster med paus och avstängning; Tillbaka till rummet stänger
-filmen. Videon måste tillåta inbäddning. Den vita spelboxen stänger av datorn; datorn och filmen stängs av
-när man lämnar klubbhuset. Alla väggar har golvlister, tydliga hörn och mjuka
+så spelas den på själva bioduken för alla i lekstugan; även egna YouTube-länkar fungerar.
+En person i taget väljer film och styr paus och uppspelning. Tillbaka till rummet
+släpper kontrollen medan filmen fortsätter. Aktivera ljudet med knappen vid behov.
+Filmen stängs av när den sista personen lämnar lekstugan. Videon måste tillåta
+inbäddning. Den vita spelboxen stänger av datorn; datorn stängs av när man lämnar klubbhuset. Alla väggar har golvlister, tydliga hörn och mjuka
 kontaktskuggor, med samma grundteknik som i L1007. Rundade stoppade biostolar,
 veckade gardiner, trästruktur och ett plankgolv ger lekstugan ett mjukare uttryck.
 Biljardbordet står mitt i biljardrummet med fri yta innanför dörren. Discolampans strömbrytare fungerar som tidigare (#1365).
