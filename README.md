@@ -344,7 +344,9 @@ The actual entrance/lobby shells in Houses A, B and C remain visible beyond the 
 
 I lekstugans klubbhus kan barn starta TV:ns animerade klubbkanal och spela
 Pricka grönt på datorn med E eller tryckknappen. Bions fjärrkontroll öppnar
-filmvalet: klistra in en egen YouTube-länk och tryck Spela. Filmen visas i
+filmvalet med förslag, bildkort och sökning efter filmer eller kanaler. Sökningen
+väljer filmer som tillåter inbäddning och visning utanför YouTube. Välj en film
+och tryck Spela; även egna YouTube-länkar fungerar. Filmen visas i
 bions spelarfönster med paus och avstängning; Tillbaka till rummet stänger
 filmen. Videon måste tillåta inbäddning. Den vita spelboxen stänger av datorn; båda skärmarna stängs av
 när man lämnar klubbhuset. Discolampans strömbrytare fungerar som tidigare (#1365).

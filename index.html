@@ -768,8 +768,12 @@
     #cinema-player form { margin: 10px 0; }
     #cinema-player label { display: block; margin-bottom: 4px; }
     #cinema-player input { min-width: 100px; flex: 1; box-sizing: border-box; min-height: 44px; font: 16px system-ui; padding: 8px; user-select: text; touch-action: auto; }
-    #cinema-player [data-cinema="results"] { display: grid; gap: 6px; max-height: 220px; overflow: auto; }
-    #cinema-player .cinema-result { text-align: left; font-weight: 500; }
+    #cinema-player [data-cinema="results"] { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(180px, 100%), 1fr)); gap: 10px; max-height: 340px; overflow: auto; }
+    #cinema-player .cinema-result { text-align: left; font-weight: 500; padding: 0; overflow: hidden; background: #263b4b; color: #fff; }
+    #cinema-player .cinema-result img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+    #cinema-player .cinema-result span { display: block; padding: 10px; overflow-wrap: anywhere; }
+    #cinema-player h3 { font-size: 17px; margin: 12px 0 8px; }
+    #cinema-player .cinema-suggestions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
     #cinema-player .cinema-video:empty { display: none; }
     #cinema-player .cinema-video iframe { display: block; width: 100%; height: min(50vh, 440px); min-height: 200px; border: 0; background: #000; }
     @media (min-width: 650px) and (max-height: 500px) {
@@ -1230,7 +1234,9 @@
   </div>
   <dialog id="cinema-player" aria-labelledby="cinema-title">
     <div class="cinema-row"><h2 id="cinema-title">Bion</h2><button type="button" data-cinema="close">Tillbaka till rummet</button></div>
-    <form><label for="cinema-url">Sök efter en YouTube-film</label><div class="cinema-row"><input id="cinema-url" type="text" autocomplete="off" maxlength="80" placeholder="Sök efter film eller kanal"><button type="submit">Sök</button></div><div data-cinema="results" aria-label="Sökresultat"></div></form>
+    <form><label for="cinema-url">Vad vill du se?</label><div class="cinema-row"><input id="cinema-url" type="text" autocomplete="off" maxlength="80" placeholder="Sök efter film eller kanal"><button type="submit">Sök</button></div>
+      <nav class="cinema-suggestions" aria-label="Filmförslag"><button type="button" data-query="animerad kortfilm">Kortfilmer</button><button type="button" data-query="natur djur dokumentär">Natur &amp; djur</button><button type="button" data-query="rymden dokumentär">Rymden</button><button type="button" data-query="gaming highlights">Spel</button></nav>
+      <h3 data-cinema="results-title">Förslag för filmkvällen</h3><div data-cinema="results" aria-label="Filmer att välja bland"></div></form>
     <div class="cinema-video"></div>
     <p role="status" aria-live="polite">Välj en YouTube-film som får bäddas in.</p>
     <div class="cinema-row"><button type="button" data-cinema="play" disabled>Spela</button><button type="button" data-cinema="pause" disabled>Pausa</button><button type="button" data-cinema="off">Stäng av</button></div>

@@ -21,7 +21,8 @@ export function youtubeError(code) {
   if (code === 101 || code === 150) return 'Ägaren tillåter inte att filmen visas här. Välj en annan film.';
   if (code === 100) return 'Filmen saknas eller är privat. Välj en annan film.';
   if (code === 153) return 'YouTube kunde inte godkänna visningsplatsen. Prova en annan film eller webbläsare.';
-  return 'Filmen kunde inte spelas. Kontrollera länken och välj en annan film.';
+  if (code === 151) return 'YouTube begränsar den här filmen för ditt konto eller nätverk. Välj en annan film.';
+  return `Filmen kunde inte spelas (YouTube-fel ${code}). Välj en annan film.`;
 }
 
 let apiPromise;
@@ -51,12 +52,17 @@ function youtubeAPI() {
 
 export class CinemaPlayer {
   constructor(el, onClose, searchEndpoint = '') {
-    this.el = el; this.onClose = onClose; this.generation = 0;
+    this.el = el; this.onClose = onClose; this.generation = 0; this.searchGeneration = 0;
     this.mount = el.querySelector('.cinema-video');
     this.status = el.querySelector('[role="status"]');
     this.input = el.querySelector('input');
     this.searchEndpoint = searchEndpoint;
     this.results = el.querySelector('[data-cinema="results"]');
+    this.resultsTitle = el.querySelector('[data-cinema="results-title"]');
+    for (const button of el.querySelectorAll('[data-query]')) button.addEventListener('click', () => {
+      this.input.value = button.dataset.query;
+      this.search(button.dataset.query);
+    });
     this.playButton = el.querySelector('[data-cinema="play"]');
     this.pauseButton = el.querySelector('[data-cinema="pause"]');
     el.querySelector('form').addEventListener('submit', e => { e.preventDefault(); this.search(this.input.value); });
@@ -72,7 +78,12 @@ export class CinemaPlayer {
   }
 
   get open() { return this.el.open; }
-  show() { if (!this.open) { this.el.showModal(); this.input.focus(); } }
+  show() {
+    if (!this.open) {
+      this.el.showModal(); this.input.focus();
+      if (!this.results.childElementCount && this.searchEndpoint) this.search('animerad kortfilm', true);
+    }
+  }
   close(reason = 'button') {
     this.stop();
     if (this.open) { this.el.close(); this.onClose(reason); }
@@ -86,8 +97,10 @@ export class CinemaPlayer {
     this.playButton.disabled = this.pauseButton.disabled = true;
     this.status.textContent = 'Avstängd. Välj en YouTube-film som får bäddas in.';
   }
-  async search(query) {
+  async search(query, suggestions = false) {
+    const searchGeneration = ++this.searchGeneration;
     this.results.replaceChildren();
+    if (this.resultsTitle) this.resultsTitle.textContent = suggestions ? 'Förslag för filmkvällen' : 'Sökresultat';
     const q = query.trim();
     if (q.length < 2 || q.length > 80) { this.status.textContent = 'Skriv minst två och högst 80 tecken.'; return; }
     if (youtubeId(q)) { this.choose(q); return; }
@@ -100,18 +113,23 @@ export class CinemaPlayer {
       const response = await fetch(url, { signal: AbortSignal.timeout(8000) });
       if (!response.ok) throw new Error('search');
       const data = await response.json();
-      if (!this.open || generation !== this.generation) return;
+      if (!this.open || generation !== this.generation || searchGeneration !== this.searchGeneration) return;
       if (!Array.isArray(data.items)) throw new Error('search');
       for (const item of data.items) {
         if (!/^[A-Za-z0-9_-]{11}$/.test(item.id) || typeof item.title !== 'string' || typeof item.channel !== 'string') continue;
         const button = document.createElement('button'); button.type = 'button';
-        button.className = 'cinema-result'; button.textContent = `${item.title} · ${item.channel}`;
+        button.className = 'cinema-result';
+        const thumbnail = document.createElement('img');
+        thumbnail.src = `https://i.ytimg.com/vi/${item.id}/mqdefault.jpg`;
+        thumbnail.alt = ''; thumbnail.loading = 'lazy'; thumbnail.referrerPolicy = 'no-referrer';
+        const caption = document.createElement('span'); caption.textContent = `${item.title} · ${item.channel}`;
+        button.append(thumbnail, caption);
         button.addEventListener('click', () => { this.input.value = item.id; this.choose(item.id); });
         this.results.append(button);
       }
       this.status.textContent = this.results.childElementCount ? 'Välj en film i listan.' : 'Inga filmer hittades.';
     } catch {
-      if (this.open && generation === this.generation) this.status.textContent = 'Filmsökningen kunde inte nås. Försök igen.';
+      if (this.open && generation === this.generation && searchGeneration === this.searchGeneration) this.status.textContent = 'Filmsökningen kunde inte nås. Försök igen.';
     }
   }
   async choose(value) {

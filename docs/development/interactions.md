@@ -13,7 +13,12 @@ stool use normal rest reach and stand-up handling. [Device lifecycle and tests](
 Cinema search (#1472 first slice): the Bion dialog queries the Worker's
 `/youtube-search?q=…` endpoint and renders returned titles/channels as text.
 The Worker keeps `YOUTUBE_API_KEY` server-side and returns only validated video
-IDs and bounded display strings. Search is limited by the existing per-IP
+IDs and bounded display strings. Requests require `videoEmbeddable=true` and
+`videoSyndicated=true`, following the [YouTube search filters](https://developers.google.com/youtube/v3/docs/search/list#videoEmbeddable).
+Opening the chooser loads short-film suggestions, with thumbnail cards and category
+buttons. A request counter prevents late suggestions from replacing a newer search.
+YouTube may still restrict a film for a particular account, network or region; its
+player remains authoritative and reports an actionable error (including restriction151). Search is limited by the existing per-IP
 Worker request limiter. This slice does not synchronize the selected video or
 transport controls between players. Tests: `node --test cloudflare/youtubesearch.test.mjs`;
 browser selection is covered by `tools/cinemavideotest.cjs` when run with its

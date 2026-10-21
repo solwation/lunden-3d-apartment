@@ -14,6 +14,8 @@ test('YouTube search sends a bounded video-only request and returns safe plain r
   assert.equal(seen.url.origin + seen.url.pathname, 'https://www.googleapis.com/youtube/v3/search');
   assert.equal(seen.url.searchParams.get('q'), 'lunden');
   assert.equal(seen.url.searchParams.get('type'), 'video');
+  assert.equal(seen.url.searchParams.get('videoEmbeddable'), 'true');
+  assert.equal(seen.url.searchParams.get('videoSyndicated'), 'true');
   assert.equal(seen.url.searchParams.get('maxResults'), '8');
   assert.equal(seen.url.searchParams.get('key'), 'never-logged-test-key');
   assert.equal(seen.options.redirect, 'manual');

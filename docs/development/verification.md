@@ -15,6 +15,19 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## Cinema discovery and playback (#1479)
+
+`node --test cloudflare/youtubesearch.test.mjs` checks the Worker route, bounded
+responses and both external-playback search filters. The production dialog and
+CinemaPlayer were exercised in Chromium with controlled search responses:
+opening suggestions, a newer manual search winning over delayed suggestions,
+category selection, thumbnail cards and closing/unloading. With the real IFrame
+API, M7lc1UVf-VE reached state1 and currentTime2.07s after pressing Spela.
+The reported Drewd0g first result (_dJ4wz9CrV4) returned restriction151/MRM
+from YouTube on this network; filters cannot guarantee account/network-specific
+permission. This is distinct from the confirmed missing embedding search filters.
+Temporary browser evidence: `/tmp/cinema-splash.cjs`, `/tmp/cinema-splash.png`.
+
 ## Tight phone frustum and rigid lamp parts (#1453)
 
 Run `node --test tools/tightfrustumtest.mjs tools/phonewholeocclusiontest.mjs tools/phonedetailunittest.mjs`

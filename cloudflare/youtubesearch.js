@@ -6,7 +6,8 @@ export async function searchYouTube(query, { key, fetcher = fetch } = {}) {
   const q = typeof query === 'string' ? query.trim() : '';
   if (q.length < 2 || q.length > 80 || /[\u0000-\u001f\u007f]/.test(q)) throw new Error('query');
   const url = new URL(API);
-  url.search = new URLSearchParams({ part: 'snippet', type: 'video', maxResults: '8', safeSearch: 'moderate', q, key });
+  // Search must offer videos that YouTube permits in an external embedded player.
+  url.search = new URLSearchParams({ part: 'snippet', type: 'video', videoEmbeddable: 'true', videoSyndicated: 'true', maxResults: '8', safeSearch: 'moderate', q, key });
   const response = await fetcher(url, { signal: AbortSignal.timeout(TIMEOUT), redirect: 'manual' });
   if (!response.ok || Number(response.headers.get('Content-Length')) > MAX_BYTES) throw new Error('upstream');
   const reader = response.body?.getReader();
