@@ -15,6 +15,24 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## Quieter rain (#1470)
+
+`tools/rainsoundtest.cjs GAME OUT` loads the actual Weather and audio modules
+with bootstrap suppressed, starts WebAudio with a trusted click (no autoplay
+flag/stub), and measures a real AnalyserNode after gain/filter settling. It
+compares the old0.22 baseline against the current0.07 source level at forced
+rain0.8; the live ratio is0.3187 (-9.93dB), not silence. RMS before/outdoors:
+0.05672/0.01808; indoors0.00215; car open/shut0.01190/0.000816; mute and snow0.
+Master remains0.8 (Float32 tolerance1e-6), AudioContext runs. Artifact:
+`/tmp/rain-1470/result.json`. This is scoped source/mix audio evidence, not a
+new full-world/car-door regression. The first driver reached the final assertion
+and needed Float32 tolerance for the unchanged master value.
+
+Downstream assessment: public `src/audio.js` deliberately returns silent stubs
+(`audioParts` null) and there is no weather module; no rain-volume port applies.
+A/B/C/L building geometry is unchanged; this one weather gain applies everywhere
+in the original game.
+
 ## Home TV YouTube (#1483)
 
 Minimum checks: the existing cinema authority suite plus two TV-specific cases

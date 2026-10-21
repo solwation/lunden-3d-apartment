@@ -4,7 +4,8 @@ The clubhouse cinema search endpoint and first browser selection slice are
 documented in [interactions](interactions.md#cinema-search-1472-first-slice).
 It uses the private Worker secret `YOUTUBE_API_KEY`; never put its value in
 source, test fixtures, logs, or issue comments. Shared playback ownership,
-late-arrival position and reconnect handling remain open work in #1472.
+late-arrival position and reconnect handling are implemented on the physical
+duk (#1476/#1477), and the same shared controls support all three home TVs (#1483).
 
 Read [CLAUDE.md](../../CLAUDE.md) first for shared workflow rules. Paths in code spans and module maps are relative to the repository root.
 
@@ -447,3 +448,11 @@ native-* logs; unsupported visibility CDP command was not an app failure or a pa
 Raw evidence: local orkester state `codex-surface-20261020/speakers1423/final/`.
 A/B/C/L: clubhouse gameplay only. Public downstream has no clubhouse/MusicFile;
 its building viewer excludes this personal gameplay/audio feature, so no port applies.
+
+## Quieter rain (#1470)
+
+`WEATHER.sound` is0.07 instead of0.22 (an assumed comfortable level, about10dB
+lower). This changes only the continuous weather/rain source; the master gain,
+other effects/music, rain appearance and weather strength are unchanged. The
+existing indoor30%/low-pass and interpolated car-cabin mix still apply. Rain
+remains nonzero, snow remains silent and mute retains control.

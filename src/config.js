@@ -1714,7 +1714,7 @@ export const WEATHER = {
   drops: 1800, radius: 13, height: 9, speed: 9.5, len: 0.5, wind: 0.12,
   sunCut: 0.85, fogFar: 80,
   flash: { every: [6, 22], dist: [400, 4000], light: 2.2 },
-  sound: 0.22, // the rain's gain outdoors (indoors a quarter, muffled)
+  sound: 0.07, // #1470: assumed comfortable rain gain, down from .22 (~10 dB); indoors retains 30% plus muffling.
   // #249: snow — the chance per day by month (Jan…Dec; mostly the snow months), `flakes` Points drifting down at `speed`
   // m/s, swaying `sway` m/s, `size` m; hail — short showers in `months` (`chance` per day) and at the start of a
   // thunderstorm (`storm`): `stones` white pellets of `size` m falling ~`speed` m/s, bouncing once

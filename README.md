@@ -148,6 +148,8 @@ Högtalarna och bilradion har sex musikkanaler med två låtar var. Även datorn
 inspelad musik. Under *Om musiken* i menyn finns musiker och källor; alla inspelningar har CC BY 4.0-licens och kan provspelas där.
 Låtarna har full längd och stereo. Musiken laddas först när den spelas; om inspelningarna inte kan hämtas förblir det tyst.
 
+Regnljudet är dämpat så att andra ljud hörs bättre, med fortsatt extra dämpning inomhus och i stängd bil.
+
 Vädret hämtas från [Open-Meteo.com](https://open-meteo.com/) (väderdata under CC BY 4.0); källan anges på startskärmen.
 
 De 100 senaste nyhetspunkterna står på lappen på frysen i köket (gå fram och tryck <kbd>E</kbd>). Det som
