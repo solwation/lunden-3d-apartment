@@ -341,6 +341,20 @@ With the players room connected (`ghosts.connected`) the children's-room table i
 
 Tests: `node --test tools/clubhousetest.mjs cloudflare/billiards.test.mjs`; `tools/playroomtest.cjs` includes three held-W doorway routes, a complete four-side walk around the table, entry/exit/height gates, sitting/getting up, switches and outside draw preservation; `MOBILE=1` uses the supported844×390touch profile. `tools/billiardpeertest.cjs` exercises real app entry and the shared table through an isolated local Worker. This personal game interior is never transferred to the public repository. Cinema seating/video remain separate#1375/#1376.
 
+### Clubhouse finishes (#1480)
+
+`src/clubhousefinish.js` derives exposed skirting runs from the actual outer and
+partition wall solids, including both sides and passage jamb returns. No trim
+crosses the three passages or the exit threshold. Dimensions in `PLAYROOM.finish`
+remain visual assumptions; no Peab measurements or house A/B/C/L layouts change.
+The construction shell uses the existing `architectureEdges` builder before
+furniture merges into it. L1007's `buildAO`/`buildWallAO` add floor/ceiling bands
+and concave corner shading; headers affect the ceiling without closing passages.
+The existing `buildContactShadows` supplies one batch under chairs (above the
+cinema carpet), desk, stool, DJ bench and billiard table. All belong to the hidden
+Playroom group, with no real lights and no new frame-loop code. The public viewer
+has no gameplay clubhouse, so this finish has no downstream transfer.
+
 ### Clubhouse TV and computer (#1365)
 
 `src/playroomdevices.js` owns two local canvas screens at the TV/desk
@@ -378,7 +392,7 @@ anchors remain available.
 
 The video is shown in the cinema dialog, not on a WebGL texture: an external
 iframe is not a canvas image source, and this app does not extract or download
-third-party video. No account or key is required. Video choice is visit-only;
+third-party video. Visitors need no account or API key. Video choice is visit-only;
 no URL is stored, shared with peers or sent to the game Worker. YouTube receives
 the chosen video request. Private/missing videos, denied embeds (101/150), missing
 client identity (153), network failure and timeout have actionable Swedish messages.

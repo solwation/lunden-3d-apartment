@@ -15,6 +15,25 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## Clubhouse wall finishes (#1480)
+
+`node --test --test-isolation=none tools/clubhousefinishtest.mjs` passes3checks:
+all outer/partition wall sides, jamb returns with clear passages/exit, finite
+trim bounds outside the wall union. An initial jamb assertion sampled inside
+the wall instead of the opening; correcting that test point made it pass.
+The real app was captured before/after at ordinary quality3 (no test mode),
+1100×760, noon, disco off: hall, BIO, BILJARD and SPEL. All four after images
+were opened and inspected. They show continuous trim, visible jamb/corner edges,
+soft floor/ceiling contact bands and furniture grounding. No page exceptions.
+In the same SPEL view, shown rendering changes11calls/37047triangles to
+16calls/37823triangles (+5calls/+776triangles, plus line primitives); hiding the
+room gives exactly8calls/34585triangles before and after. This is a scoped
+room/view comparison, not a global profile or FPS claim. No real light objects
+are added. There are49exposed skirting runs, one edge batch and12contact
+footprints. Artifacts: `/tmp/clubhouse-{before,after}/`; driver:
+`/tmp/clubhouse-finish.cjs`. Geometry belongs to the fantasy clubhouse only;
+houses A/B/C/L and the public viewer have no corresponding gameplay interior.
+
 ## Cinema screen interaction (#1475)
 
 `tools/cinemavideotest.cjs GAME OUT` passed against the real app on desktop:

@@ -1,7 +1,7 @@
 import { PLAYROOM } from './config.js';
 
 // The official iframe is a separate viewing surface, never a WebGL texture.
-// No third-party connection is made until the visitor submits their own video.
+// Discovery starts when the visitor opens the cinema; the player loads after film selection.
 export function youtubeId(value) {
   const text = value.trim();
   if (/^[\w-]{11}$/.test(text)) return text;

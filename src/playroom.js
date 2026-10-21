@@ -6,6 +6,10 @@ import { PLAYROOM as R, COURTYARD } from './config.js';
 import { restTarget } from './rest.js';
 import { PlayroomDevices } from './playroomdevices.js';
 import { PlayroomMusic } from './playroommusic.js';
+import { clubhouseWallBoxes, clubhouseSkirting } from './clubhousefinish.js';
+import { buildAO, buildWallAO, rectPts } from './ao.js';
+import { architectureEdges } from './architectureedges.js';
+import { buildContactShadows } from './contactshadow.js';
 
 // #1319 / #1326: the playhouse's secret children's room. A hidden interior, far outside the walkable area (see PLAYROOM in
 // config.js): the playhouse door teleports a player shorter than PLAYROOM.maxCm in, the door in the room's south wall back out.
@@ -13,7 +17,7 @@ import { PlayroomMusic } from './playroommusic.js';
 // #1374: clubhouse.js adds the hall and three rooms; static signs share the existing ceiling-panel draw.
 // #1327/#1365: child-sized furniture, usable TV/computer, and a switchable disco ball with sweeping light spots.
 // The billiard table (#1328, billiards.js) stays in the middle. Everything is a few
-// merged meshes (shell/furniture, signs with ceiling panels, ball, spots) plus two animated screens: no extra lights or draws outside.
+// merged meshes (shell/furniture, signs with ceiling panels, ball, spots) plus the cinema/computer screens: no extra lights or draws outside.
 // Rules/network: #1329, sound: #1330.
 
 const X0 = R.x - R.w / 2, X1 = R.x + R.w / 2, Z0 = R.z - R.d / 2, Z1 = R.z + R.d / 2;
@@ -36,7 +40,7 @@ export const inPlayroom = (x, z) => x > X0 - 1 && x < X1 + 1 && z > Z0 - 1 && z 
 
 export class Playroom {
   constructor() {
-    const t = 0.2, h = R.ceiling, dw = R.door.w / 2, dh = R.door.h;
+    const t = R.finish.wallDepth, h = R.ceiling, dw = R.door.w / 2, dh = R.door.h;
     this.object = new THREE.Group();
     this.object.name = 'playroom';
     this.object.visible = false; // drawn only while the visitor is inside
@@ -45,12 +49,13 @@ export class Playroom {
     this.bounds = { x0: X0, x1: X1, z0: Z0, z1: Z1 };
     // collision: the four inner walls (the exit is a door you use, not an opening)
     this.segments = [[X0, Z0, X1, Z0], [X1, Z0, X1, Z1], [X1, Z1, X0, Z1], [X0, Z1, X0, Z0]];
-    const walls = [box(X0 - t, X1 + t, 0, h, Z0 - t, Z0), box(X0 - t, X1 + t, 0, h, Z1, Z1 + t), box(X0 - t, X0, 0, h, Z0, Z1), box(X1, X1 + t, 0, h, Z0, Z1)];
     const layout=clubhouseLayout();
+    const wallBoxes = clubhouseWallBoxes(layout);
+    const walls = wallBoxes.map(([a,b,c,d,e,f]) => box(R.x+a,R.x+b,c,d,R.z+e,R.z+f));
     this.discoWalls=layout.boxes.map(([a,b,c,d,e,f])=>[R.x+a,R.x+b,c,d,R.z+e,R.z+f]);
-    walls.push(...layout.boxes.map(([a,b,c,d,e,f])=>box(R.x+a,R.x+b,c,d,R.z+e,R.z+f)));
     this.segments.push(...layout.segments.map(([a,b,c,d])=>[R.x+a,R.z+b,R.x+c,R.z+d]));
-    const trim = [box(X0, X1, 0, 0.12, Z0, Z0 + 0.02), box(X0, X1, 0, 0.12, Z1 - 0.02, Z1), box(X0, X0 + 0.02, 0, 0.12, Z0, Z1), box(X1 - 0.02, X1, 0, 0.12, Z0, Z1), // skirting
+    const skirtBoxes = clubhouseSkirting(wallBoxes);
+    const trim = [...skirtBoxes.map(([a,b,c,d,e,f]) => box(R.x+a,R.x+b,c,d,R.z+e,R.z+f)),
       box(R.x - dw - 0.07, R.x - dw, 0, dh + 0.07, Z1 - 0.04, Z1), box(R.x + dw, R.x + dw + 0.07, 0, dh + 0.07, Z1 - 0.04, Z1), box(R.x - dw - 0.07, R.x + dw + 0.07, dh, dh + 0.07, Z1 - 0.04, Z1)]; // door frame
     const door = [box(R.x - dw, R.x + dw, 0, dh, Z1 - 0.03, Z1)];
     const handle = [box(R.x + dw - 0.2, R.x + dw - 0.12, 0.72, 0.78, Z1 - 0.07, Z1 - 0.03)];
@@ -68,7 +73,7 @@ export class Playroom {
       cbox(col.dark,W.x-W.w/2,W.x+W.w/2,W.y-W.h/2,W.y+W.h/2,W.z-R.clubhouse.wall,W.z-edge),
       ...[-1,1].map(side=>cbox(col.steel,W.x+side*W.w/3-edge,W.x+side*W.w/3+edge,W.y+W.h/2,h,W.z-R.clubhouse.wall/2-edge,W.z-R.clubhouse.wall/2+edge)),
       // A dark-red carpet leaves a clear central aisle between the two seat banks.
-      cbox(col.rug, tvx + cd, cinema.seat.rowX[1] + S.depth / 2 + 0.15, 0, 0.012, -3.75, 0.48),
+      cbox(col.rug, tvx + cd, cinema.seat.rowX[1] + S.depth / 2 + 0.15, 0, R.finish.rugHeight, -3.75, 0.48),
       // The large west-wall screen has a shallow frame, gathered red velvet curtains and a soft gold valance.
       cbox(col.wood, tvx - 0.02, tvx + 0.06, scr.bottom - 0.08, scr.bottom + scr.h + 0.08, tvz - scr.w / 2 - 0.08, tvz + scr.w / 2 + 0.08),
       cbox(col.dark, tvx + 0.06, tvx + 0.075, scr.bottom - 0.02, scr.bottom + scr.h + 0.02, tvz - scr.w / 2 - 0.02, tvz + scr.w / 2 + 0.02),
@@ -195,6 +200,12 @@ export class Playroom {
     this.object.add(this.devices.object); this.controlPickables.push(...this.devices.pickables);
     this.disco(0);
     const C = R.colors, shell = [...walls.map((g) => paint(g, C.wall)), ...trim.map((g) => paint(g, C.trim)), ...door.map((g) => paint(g, C.door)), paint(box(X0, X1, -0.1, 0, Z0, Z1), C.floor), paint(box(X0, X1, h, h + 0.1, Z0, Z1), C.ceiling), ...handle.map((g) => paint(g, 0x2a2a2a))];
+    // Capture construction only, before furniture joins the existing shell batch.
+    const edgeRoot = new THREE.Group(), source = merged(shell, furMat);
+    source.userData.edgeSources = shell; edgeRoot.add(source);
+    const edges = architectureEdges(edgeRoot, { floor: h + 1 });
+    for (const line of edges) this.object.add(line);
+    source.geometry.dispose();
     const parts = [merged([...shell, ...fur], furMat)]; // shell and furniture share one vertex-coloured mesh; screens animate separately
     for (const m of parts) { m.matrixAutoUpdate = false; this.object.add(m); }
     // the way out: an invisible pick box in front of the door (the raycaster ignores `visible: false` materials)
@@ -205,6 +216,25 @@ export class Playroom {
     this.exitTarget.pickable = pick;
     this.object.add(pick);
     this.billiards = new Billiards();this.object.add(this.billiards.object);this.segments.push(...this.billiards.segments);
+    // Reuse L1007's baked floor/ceiling and wall/corner shading, in a small local
+    // coordinate frame. Door headers only occlude the ceiling, never the passage floor.
+    const ox = -R.w/2-t, oz = -R.d/2-t, size = { x: R.w+2*t, z: R.d+2*t };
+    const solids = wallBoxes.map(([a,b,c,d,e,f]) => ({ x0:a-ox, x1:b-ox, z0:e-oz, z1:f-oz, y0:c, y1:d }));
+    const floorRects = solids.filter(s => s.y0 <= 0), ceilRects = solids.filter(s => s.y1 >= h);
+    const shading = buildAO(size, 0, h, floorRects, ceilRects);
+    shading.name = 'clubhouse-ao'; shading.position.set(R.x+ox,0,R.z+oz);
+    shading.add(buildWallAO(size, 0, h, solids.map(s => ({ pts:rectPts(s), y0:s.y0, y1:s.y1 })), floorRects.map(rectPts)));
+    this.object.add(shading);
+    const seatCount = S.rowX.length*S.z.length;
+    const shadows = this.footprints.flatMap((points,i) => i === seatCount+1 ? [] : [{
+      object:this.object, base:i > 0 && i <= seatCount ? R.finish.rugHeight : 0,
+      rects:[{ x0:points[0][0], x1:points[1][0], z0:points[0][1], z1:points[2][1] }],
+    }]);
+    const B = R.billiards, bw = Math.abs(Math.cos(B.yaw))*B.width+Math.abs(Math.sin(B.yaw))*B.length,
+      bd = Math.abs(Math.sin(B.yaw))*B.width+Math.abs(Math.cos(B.yaw))*B.length;
+    shadows.push({ object:this.object, base:0, rects:[{x0:R.x+B.x-bw/2,x1:R.x+B.x+bw/2,z0:R.z+B.z-bd/2,z1:R.z+B.z+bd/2}] });
+    this.object.add(buildContactShadows(shadows));
+    this.finishInfo = { skirtingRuns:skirtBoxes.length, edgeBatches:edges.length, contactFootprints:shadows.length };
     this.inside = false;
   }
 

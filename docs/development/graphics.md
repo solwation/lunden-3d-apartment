@@ -21,6 +21,14 @@ same double-sided transparent material. This avoids the redundant back/front
 draw for one plane. The condition is exactly one generated pane; multi-pane
 batches, including Hus L's noncoplanar glass, keep two passes (#1453).
 
+Clubhouse finishes (#1480): `playroom.js` now reuses `architectureEdges` for the
+construction shell, `buildAO`/`buildWallAO` for floor/ceiling/concave-corner
+contact shading, and `buildContactShadows` for furniture. It adds five visible
+batches only inside the room, with no lights or postprocessing. Exposed trim
+comes from the wall union in `clubhousefinish.js`; pass-through headers do not
+cast a floor barrier. See [furniture](furniture.md#clubhouse-finishes-1480) and
+the scoped before/after evidence in [verification](verification.md#clubhouse-wall-finishes-1480).
+
 ## Module and test map
 
 ```text

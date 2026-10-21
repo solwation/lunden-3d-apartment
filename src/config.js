@@ -5752,6 +5752,8 @@ export const PLAYROOM = { maxCm: 160, x: -1500, z: -1500, w: 18, d: 10.4, ceilin
     ballR: 0.024, pocketR: 0.052, cueLength: 1, strokeSpeed: 2.2, strokeSeconds: 0.24, cueTravel: 0.09,
     friction: 0.45, bounce: 0.94, cushionBounce: 0.82, stopSpeed: 0.012, maxStep: 1 / 180 },
   colors: { floor: 0x704a35, wall: 0x28425b, ceiling: 0xe0e7ef, trim: 0xdaa45b, door: 0x9c2f24 },
+  // Fantasy-room finish assumptions; retain the existing outer wall, trim and carpet dimensions.
+  finish: { wallDepth: 0.2, skirting: { height: 0.12, depth: 0.02 }, rugHeight: 0.012 },
   // #1374: a fantasy clubhouse, not measured building architecture; every size/colour is a guess.
   clubhouse: { side: 3, front: 1.6, wall: 0.12, passage: 1.5, passageH: 2.1,
     welcome: { x: 0, z: 2.3, y: 2.52, w: 3.2, h: 0.3 }, label: { y: 2.25, w: 1.8, h: 0.25, offset: 0.012 },
