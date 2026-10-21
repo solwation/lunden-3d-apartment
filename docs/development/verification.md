@@ -7845,3 +7845,25 @@ quality checks at279calls/705447tri/~102MiB. Highestquality3 still fails399calls
 at kitchen; parent#1453 remains open.
 Persistent pairs/raw profiles/diagnostics: `~/.local/state/lunden-orkester/
 codex-surface-20261020/foliage1457/`. See performance for cost and public N/A.
+
+
+## Complete terrain cell groups (#1462)
+
+Run `node --test tools/terraincellstest.mjs`: ordered complete-range coverage, unchanged
+shared attributes/material/shadow flags, conservative indexed bounds and positive default-
+layer physical rays from the invisible query master without duplicate proxy hits.
+Actual fresh production World verifies all old position/normal/UV/index SHA256 hashes,
+all ordered partition indices,54022+35644 triangles, and101 independent positive rays
+and unchanged rendered-height queries. Both complete source-cell and refined river
+subdivision triangles stay together. A/B/C pits and L/park/river/paddock surfaces use
+the exact same original buffers and samplers; no building, seam or collision is rebuilt.
+Open three normal desktop before/current image pairs and compare fresh shadow caster
+identities/counts/triangles. All pairs are pixel-identical. Run the actual standard20-view
+and quality profile, not just the corner, and retain its honest partial budget limitation
+(see performance). Raw source-consumer census, bounds, queries, pairs and fresh profile:
+`~/.local/state/lunden-orkester/codex-surface-20261020/terrain1462/`.
+
+Ten extra A/B/C/L/river/paddock base-surface rays agree with the unchanged sampler within
+6.64e−8m. Real CDP touchStart/touchEnd on the visible focused action opens the entrance
+false→true/t=1 without a fatal fall or page errors. Reverse-patio car-LOD states retain
+505/506calls and improve995905/997953→960261/962309triangles respectively.

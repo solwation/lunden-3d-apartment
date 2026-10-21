@@ -23,6 +23,27 @@ suite claim. An earlier identity fixture failure is also retained. Public6c69323
 plantwind or windShadow target, so no port applies. Raw drivers, images, profiles
 and rejected fixtures remain in `/tmp/orkester-katt-20261020/windbounds1460/`.
 
+## Complete terrain source cells (#1462, partial #1459)
+
+Desktop separates complete original grid cells whose centers are east of x0 and south
+of z60 from the remainder, including the unchanged park fill. `TERRAIN_FAR.renderSplit`
+records these measured render boundaries; no height/grid/LOD/quality rule changes.
+The two meshes share the original position/normal/UV attributes and seasonal material,
+partition its ordered indices exactly, and bound only their referenced vertices.
+Native main/shadow-camera frusta determine submission. The invisible `site-terrain`
+query master retains its original object, geometry, default layers and physical rays;
+render siblings have no raycast. Phones keep the original visible single master.
+
+Actual same-World standard quality3 pairs on35a75c93: corner558/1110428 →
+558/1074784 calls/triangles; exposed hedge520/976845 →520/941201;
+river46/342434 →47/342434. All three pictures and fresh shadow caster identities,
+counts and triangles are exact. The corner remains over520/1M; #1459 is unresolved.
+The earlier557/1110020 baseline belongs to its separately recorded fixture, with no
+historical cause inferred. Complete fresh production20-view/quality profile passes
+506calls/977835triangles/~311MiB. Other views can add one call; no global call saving
+is claimed. No new full phone profile is claimed for its unchanged master branch.
+
+
 ## Complete east-campus material contributions (#1461, partial #1459)
 
 Desktop `sitebackdrop.js` merges the existing `east-modern` contributions into three

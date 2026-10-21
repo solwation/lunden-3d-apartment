@@ -425,6 +425,8 @@ Phone detail visibility (#1361): existing opaque wall rectangles, window infill,
 
 Browser fixture repair (#1372): the runner supplies isolated output directories and a local Worker to the statistics/rest-pose fixtures. Statistics installs the shared verbatim-main collaborators; the plain reciprocal Nerf body-hit fixture aligns its native peers to the actual held muzzle and uses a fixed standing look. Gameplay and special apartment/diagnostic modes are unchanged.
 
+Desktop terrain (#1462): two fixed groups of complete existing cells reduce off-screen terrain submissions; the original query mesh and phone master remain unchanged.
+
 Paddock surface (#1420): the existing worn track and field follow the actual terrain triangles, preserving their footprints and original70/48mm lifts.
 
 Southern plateau (#1381): the existing terrain grid now draws through z460, with ten documented LM ground controls and consistently placed buildings, parking and paddock. Heights remain a relative model (not surveyed floors); the protected northern terrain and bridge geometry are preserved. Public transfer is tracked in kvarteret-lunden#98.

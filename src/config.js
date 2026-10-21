@@ -1825,7 +1825,10 @@ export const SOUTH_BANK = { start:147, full:152, flat:4, feather:15, extensionWi
  road:[[23.3,145.8,-1.02],[23.6,152,-0.34],[23.8,160,-0.3],[24.3,168,-0.18],[24.9,176,-0.06],[25.6,184,0.02],[26.5,188.7,0.15],[27.8,193.5,0.29],[28.4,203.9,0.54],[28.3,208.8,0.6],[27.7,213.6,0.66]],
  cross:[[150,23.6,[[-30.0,-4.3],[-20.0,-4.33],[-12.0,-2.27],[-8.0,-0.55],[-5.0,-0.17],[5.0,-0.29],[8.0,-1.03],[12.0,-3.4],[20.0,-3.7],[30.0,-3.7]]],[165,24,[[-30,-4.18],[-20,-4.11],[-12,-2.26],[-8,-0.41],[-5,-0.2],[5,-0.24],[8,-0.24],[12,-2.24],[20,-3.17],[30,-3.23]]],[180,25.4,[[-30.0,-4.3],[-20.0,-3.97],[-12.0,-1.74],[-8.0,0.07],[-5.0,-0.02],[5.0,0.09],[8.0,0.01],[12.0,0.03],[20.0,-2.47],[30.0,-2.39]]],[195,27.8,[[-30.0,-3.39],[-20.0,-2.88],[-12.0,-0.2],[-8.0,0.47],[-5.0,0.42],[5.0,0.27],[8.0,0.22],[12.0,0.38],[20.0,0.41],[30.0,-0.44]]],[210,28.4,[[-30.0,-2.34],[-20.0,-1.23],[-12.0,0.68],[-8.0,0.72],[-5.0,0.57],[5.0,0.58],[8.0,0.61],[12.0,0.64],[20.0,0.62],[30.0,0.83]]]] };
 
-export const TERRAIN_FAR = { colWest: -150, colEast: 235, rowNear: 60, southRow: 8 };
+export const TERRAIN_FAR = {
+  colWest: -150, colEast: 235, rowNear: 60, southRow: 8,
+  renderSplit: { x: 0, z: 60 } // #1462: measured complete-cell render grouping only; no change to heights or grid.
+};
 // #1381: southAnchor3m/apron4m below are platform/interpolation guesses consistent with the3–5m registration.
 // #1381: sampled LM ground via kart-api, docs/references/elevation-hoje-a/point-api-south-road-2026-10-19.json
 // (CC BY 4.0 per provider). Relative to the existing 14.36 RH2000 origin, NOT a surveyed apartment floor.
