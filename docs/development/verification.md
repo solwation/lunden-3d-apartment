@@ -7948,3 +7948,12 @@ high-detail budget issue is tracked separately by #1474. The assumed parking
 plane and capacity are guesses because the source has no surveyed levels or
 stall markings. Asphalt is reused and no access road is added. Public port:
 [kvarteret-lunden#130](https://github.com/solwation/kvarteret-lunden/issues/130).
+
+## #1440: Sankt Lars 46 parking grade
+
+Run `node tools/runtests.cjs --test-only parkinggrade1440test.html`. The test loads the
+actual World and checks the emitted terrain triangles inside OSM parking way850235113,
+including slope against the existing `WALK.maxSlope`, terrain-ray/sampler agreement,
+the unchanged Sankt Lars väg46 building base, and mapped access850235115 against the
+existing 1cm strip tolerance. The OSM outline/capacity and `WALK` boundary are also
+checked; the assumed grade is not presented as surveyed civil levels.

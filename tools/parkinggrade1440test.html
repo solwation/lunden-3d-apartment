@@ -1,0 +1,25 @@
+<!doctype html><html><meta charset="utf-8"><title>Parking grade #1440</title><pre id="out">running…</pre><script type="module">
+const out=document.querySelector('#out'),lines=[];let pass=true;const check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);pass&&=!!ok;out.textContent=lines.join('\n');};
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+try{
+ const frame=document.createElement('iframe');frame.width=480;frame.height=300;frame.src='../index.html?test&shot&month=6&cloud=';document.body.append(frame);await new Promise(r=>frame.onload=r);const w=frame.contentWindow;for(let i=0;i<360&&!w.__app?.scene;i++)await wait(500);if(!w.__app?.scene)throw Error('actual World did not finish loading');
+ const A=w.__app,T=await w.eval("import('three')"),C=await w.eval("import('/src/config.js')"),S=await w.eval("import('/src/surroundings.js')"),lot=C.SITE.south.parking.find(p=>p.source==='850235113'),poly=lot.polygon;
+ const inside=(x,z)=>{let yes=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++)if((poly[i][1]>z)!==(poly[j][1]>z)&&x<(poly[j][0]-poly[i][0])*(z-poly[i][1])/(poly[j][1]-poly[i][1])+poly[i][0])yes=!yes;return yes;};
+ check(!!lot&&lot.capacity===25&&poly.length===14,'keeps OSM parking outline/capacity and changes only its local ground sampler');
+ check(C.WALK.maxSlope===.7&&C.WALK.z1===250,'preserves existing slope limit and WALK boundary');
+ const terrain=A.scene.getObjectByName('site-terrain'),ray=new T.Raycaster(),down=new T.Vector3(0,-1,0);let rayN=0,rayErr=0,miss=0,triSlope=0,triN=0;
+ if(terrain){const g=terrain.geometry,pos=g.attributes.position,idx=g.index?.array;const count=idx?idx.length:pos.count;
+  for(let i=0;i<count;i+=3){const ids=idx?[idx[i],idx[i+1],idx[i+2]]:[i,i+1,i+2],p=ids.map(k=>[pos.getX(k),pos.getY(k),pos.getZ(k)]),cx=(p[0][0]+p[1][0]+p[2][0])/3,cz=(p[0][2]+p[1][2]+p[2][2])/3;if(!inside(cx,cz))continue;const [a,b,c]=p,det=(b[0]-a[0])*(c[2]-a[2])-(c[0]-a[0])*(b[2]-a[2]);if(Math.abs(det)<1e-10)continue;const dx=((b[1]-a[1])*(c[2]-a[2])-(c[1]-a[1])*(b[2]-a[2]))/det,dz=((b[0]-a[0])*(c[1]-a[1])-(c[0]-a[0])*(b[1]-a[1]))/det;triSlope=Math.max(triSlope,Math.hypot(dx,dz));triN++;}
+  for(let x=54;x<92;x+=2)for(let z=212;z<253;z+=2)if(inside(x,z)){ray.set(new T.Vector3(x,20,z),down);const hit=ray.intersectObject(terrain,true)[0];if(!hit){miss++;continue;}rayN++;rayErr=Math.max(rayErr,Math.abs(hit.point.y-S.renderedTerrainY(x,z)));}
+ }
+ check(!!terrain&&triN>0&&triSlope<=C.WALK.maxSlope,`actual emitted terrain triangles stay walkable: ${triN} lot triangles, max slope ${triSlope.toFixed(3)} (limit ${C.WALK.maxSlope})`);
+ check(rayN>100&&miss===0&&rayErr<1e-5,`actual terrain raycasts match the sampler: ${rayN} samples, max error ${rayErr.toExponential(2)} m`);
+ const south=A.scene.getObjectByName('south-backdrop'),house=south?.userData.buildings?.find(b=>b.name==='Sankt Lars väg 46');
+ check(!!house&&Math.abs(house.base-4.425480136383553)<1e-5,`adjacent Sankt Lars väg 46 building base stays at baseline ${house?.base?.toFixed(6)} m`);
+ const road=[...C.SITE.south.paths,...C.SITE.south.access].find(p=>p.source==='850235115'),land=south?.getObjectByName('south-land');let roadN=0,roadMiss=0,roadErr=0;
+ if(road&&land){for(let s=0;s<road.path.length-1;s++){const[a,b]=road.path[s],[c,d]=road.path[s+1],len=Math.hypot(c-a,d-b),steps=Math.max(1,Math.floor(len));for(let k=0;k<=steps;k++){const t=k/steps,x=a+(c-a)*t,z=b+(d-b)*t;if(!inside(x,z))continue;ray.set(new T.Vector3(x,20,z),down);const hit=ray.intersectObject(land,true)[0];if(!hit){roadMiss++;continue;}roadN++;const lift=hit.point.y-S.renderedTerrainY(x,z);roadErr=Math.max(roadErr,Math.min(Math.abs(lift-.035),Math.abs(lift-.062)));}}}
+ check(roadN>10&&roadMiss===0&&roadErr<=.0105,`mapped access 850235115 meets emitted parking/road surfaces within the existing 1 cm strip tolerance: ${roadN} ray samples, max error ${roadErr.toFixed(4)} m`);
+ check(!frame.contentWindow.document.querySelector('#error'),'actual World remains loaded');
+}catch(e){check(false,`test error: ${e.message}`)}
+out.textContent+=`\n${pass?'ALL PASS':'SOME FAILED'}`;
+</script></html>

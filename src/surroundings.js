@@ -20,6 +20,7 @@ import { buildStreet } from './street.js';
 import { buildStreetSigns } from './streetsigns.js';
 import { buildGroundAO } from './groundao.js';
 import { onRoad, onWalk, pathStrip, filletGeometry, vehicleTrim } from './roads.js';
+import { createParkingGrade } from './parkinglot1442.js';
 import { wallRect } from './roofs.js';
 import { buildingRoofWalk } from './buildingroofs.js';
 import {buildRiverBridges,deckAt,riverGround,riverDistance,roadBridgeSpan,bridgeRecords} from './riverbridge.js';
@@ -99,12 +100,15 @@ export function groundY(x, z) {
   for (const f of raisedLoggiaFloors) if (x > f.x0 && x < f.x1 && z > f.z0 && z < f.z1) return f.y;
   if (z <= Wst.stair.z1) return Math.max(terrainY(x, z), nwTread(x)); // the NW stair's treads over the verge
   const fill=parkFillAt(x,z); // #1337: the footbridge's earth ramps
-  return fill===null?terrainY(x, z):Math.max(terrainY(x, z),fill);
+  const y=fill===null?terrainY(x,z):Math.max(terrainY(x,z),fill);
+  // Once terrainGeometry has built its actual triangles, collision/contact uses that same
+  // local parking surface rather than the unsplit smooth sampler used to place its vertices.
+  return parkingGradeAt(x,z)&&terrainGrid?renderedTerrainY(x,z)+.01:y;
 }
 /** #1271: the ground UNDER a bridge deck (the cut the river footpath runs in); `groundY` returns the deck there. */
 export const groundBelowDeckY = (x, z) => terrainY(x, z);
 /** The terrain itself (the grass / asphalt surface; groundY without the stairs' treads and the recesses' floors). */
-function terrainY(x,z) { return plateauTerrainY(x,z); }
+function terrainY(x,z) { const grade=parkingGradeAt(x,z);return grade?grade(x,z):plateauTerrainY(x,z); }
 function plateauTerrainY(x,z) {
   if(!legacyBuildingPads)legacyBuildingPads=makeBuildingPads(terrainRawLegacyY,260,false,[]);
   if(z<=SOUTH_PLATEAU.fade[0])return paddedTerrainY(x,z,bankLegacyY,legacyBuildingPads);
@@ -170,6 +174,11 @@ function makeBuildingPads(raw=terrainRawY,limit=S.backgroundGround.z1,anchors=tr
   return pads;
 }
 const smooth=t=>t*t*(3-2*t);
+// #1440/#1442: OSM fixes only the lot outlines, not their levels. Fit an assumed
+// plane to each lot's existing ground and blend it to the unchanged edge over the
+// configured transition; roads, building pads and all outside terrain stay anchored.
+const PARKING_GRADES=S.south.parking.filter(p=>['850235113','145221624'].includes(p.source)).map(lot=>createParkingGrade(lot,plateauTerrainY));
+function parkingGradeAt(x,z){return PARKING_GRADES.find(g=>x>=g.bounds.x0&&x<=g.bounds.x1&&z>=g.bounds.z0&&z<=g.bounds.z1&&g.contains(x,z))??null;}
 /** #1305: 0 near the block, the river valley and the mesh's outer edges (today's levels), 1 in between (the grid's ground). */
 function elevationWeight(x,z,southEdge=S.backgroundGround.z1){
   const P=ELEVATION.protect,dx=Math.max(P.x0-x,0,x-P.x1),dz=Math.max(P.z0-z,0,z-P.z1);
