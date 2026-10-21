@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {SOUTH_BANK as S,SITE,SOUTH_PLATEAU} from '../src/config.js';
 import {southBankGround,southBankCentre} from '../src/southbank.js';
-import {groundY,groundBelowDeckY} from '../src/surroundings.js';
+import {groundY,groundBelowDeckY,buildingPadList} from '../src/surroundings.js';
 import {buildRiverBridges,bridgeRecords,deckAt,deckUnderAt} from '../src/riverbridge.js';
 const source=JSON.parse(readFileSync(new URL('../docs/references/elevation-hoje-a/point-api-south-road-2026-10-19.json',import.meta.url)));
 const near=(a,b,e=1e-8)=>assert(Math.abs(a-b)<e,`${a} versus ${b}`);
@@ -22,6 +22,24 @@ test('the sampled crest is continuous and rises to the plateau without the forme
 });
 test('both actual bank sides are lower than the road, with separately sourced profiles',()=>{
  for(const z of [155,165,180]){const x=southBankCentre(z),top=groundY(x,z),west=groundY(x-20,z),east=groundY(x+20,z);assert(top-west>3);assert(top-east>2);assert(Math.abs(west-east)>.1);}
+});
+test('the bank is shaped before existing southern building pads and aprons',()=>{
+ const pads=new Map(buildingPadList().map(p=>[p.name,p]));let affected=0;
+ const inside=(x,z,ring)=>{let yes=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++)if((ring[i][1]>z)!==(ring[j][1]>z)&&x<(ring[j][0]-ring[i][0])*(z-ring[i][1])/(ring[j][1]-ring[i][1])+ring[i][0])yes=!yes;return yes;};
+ for(const side of ['west','east','north','south'])for(const b of SITE[side].buildings){
+  const pad=pads.get(b.name);if(!pad)continue;const ring=b.polygon.slice(0,-1),xs=ring.map(p=>p[0]),zs=ring.map(p=>p[1]);
+  for(let x=Math.min(...xs)+.25;x<=Math.max(...xs);x+=1)for(let z=Math.min(...zs)+.25;z<=Math.max(...zs);z+=1){
+   if(!inside(x,z,ring)||Math.abs(southBankGround(x,z,()=>pad.level)-pad.level)<.001)continue;
+   affected++;near(groundBelowDeckY(x,z),pad.level,1e-8);
+  }
+ }
+ assert(affected>=100,`sampled all bank-affected source-pad points (${affected})`);
+ const padByName=new Map([...SITE.south.buildings].map(b=>[b.name,pads.get(b.name)]));
+ for(const name of ['Sankt Lars väg 41','Sankt Lars väg 45']){
+  const b=SITE.south.buildings.find(q=>q.name===name),pad=padByName.get(name),ring=b.polygon.slice(0,-1);
+  for(let i=0;i<ring.length;i++){const a=ring[i],c=ring[(i+1)%ring.length];for(let k=0;k<=20;k++){const t=k/20,x=a[0]+(c[0]-a[0])*t,z=a[1]+(c[1]-a[1])*t;near(groundBelowDeckY(x,z),pad.level,1e-8);}}
+ }
+ near(groundY(-35.42,267.93),1.83,1e-8);
 });
 test('bounded fades and the flat-crest edge have no discrete jumps; unsupported ground stays exact',()=>{
  const base=(x,z)=>Math.sin(x/30)-z/80;

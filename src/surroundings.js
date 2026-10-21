@@ -104,16 +104,18 @@ export function groundY(x, z) {
 /** #1271: the ground UNDER a bridge deck (the cut the river footpath runs in); `groundY` returns the deck there. */
 export const groundBelowDeckY = (x, z) => terrainY(x, z);
 /** The terrain itself (the grass / asphalt surface; groundY without the stairs' treads and the recesses' floors). */
-function terrainY(x,z) { return southBankGround(x,z,plateauTerrainY); }
+function terrainY(x,z) { return plateauTerrainY(x,z); }
 function plateauTerrainY(x,z) {
   if(!legacyBuildingPads)legacyBuildingPads=makeBuildingPads(terrainRawLegacyY,260,false,[]);
-  if(z<=SOUTH_PLATEAU.fade[0])return paddedTerrainY(x,z,terrainRawLegacyY,legacyBuildingPads);
+  if(z<=SOUTH_PLATEAU.fade[0])return paddedTerrainY(x,z,bankLegacyY,legacyBuildingPads);
   if(!buildingPads)buildingPads=makeBuildingPads();
-  const next=paddedTerrainY(x,z,terrainRawY,buildingPads);
+  const next=paddedTerrainY(x,z,bankRawY,buildingPads);
   if(z>=SOUTH_PLATEAU.fade[1])return next;
-  const before=paddedTerrainY(x,z,terrainRawLegacyY,legacyBuildingPads),w=smooth((z-SOUTH_PLATEAU.fade[0])/(SOUTH_PLATEAU.fade[1]-SOUTH_PLATEAU.fade[0]));
+  const before=paddedTerrainY(x,z,bankLegacyY,legacyBuildingPads),w=smooth((z-SOUTH_PLATEAU.fade[0])/(SOUTH_PLATEAU.fade[1]-SOUTH_PLATEAU.fade[0]));
   return before+(next-before)*w;
 }
+// The southern bank shapes raw terrain before existing building pads preserve their anchored levels.
+const bankRawY=(x,z)=>southBankGround(x,z,terrainRawY),bankLegacyY=(x,z)=>southBankGround(x,z,terrainRawLegacyY);
 function paddedTerrainY(x,z,raw,pads) {
   let out=raw(x,z);const flat=[];
   for(const pad of pads){
