@@ -342,8 +342,8 @@ while open passages and side contacts within the flame volume remain valid (#978
 
 The actual entrance/lobby shells in Houses A, B and C remain visible beyond the lift/stair detail distance, using each house’s existing dimensions. House L’s open portik remains a through-passage (#976).
 
-I lekstugans klubbhus kan barn starta TV:ns animerade klubbkanal och spela
-Pricka grönt på datorn med E eller tryckknappen. Bions fjärrkontroll öppnar
+I lekstugans klubbhus kan barn spela Pricka grönt på datorn med E eller
+tryckknappen. Interagera direkt med bioduken, även från biostolarna, för att öppna
 filmvalet med förslag, bildkort och sökning efter filmer eller kanaler. Sökningen
 väljer filmer som tillåter inbäddning och visning utanför YouTube. Välj en film
 och tryck Spela; även egna YouTube-länkar fungerar. Filmen visas i

@@ -79,9 +79,6 @@ export class Playroom {
         return cbox(col.piping, tvx + 0.165, tvx + 0.178, 0.48, scr.bottom + scr.h + 0.1, edge, edge + 0.014);
       })),
       cbox(col.brass, tvx + 0.025, tvx + 0.13, scr.bottom + scr.h + 0.12, scr.bottom + scr.h + 0.19, tvz - scr.w / 2 - 0.3, tvz + scr.w / 2 + 0.3),
-      // TV remote rests on the outer arm of a rear-row seat, within reach while seated.
-      cbox(col.dark, cinema.remote.x - 0.11, cinema.remote.x + 0.11, cinema.remote.y, cinema.remote.y + 0.025, cinema.remote.z - 0.055, cinema.remote.z + 0.055),
-      cbox(col.red, cinema.remote.x - 0.075, cinema.remote.x - 0.04, cinema.remote.y + 0.025, cinema.remote.y + 0.028, cinema.remote.z - 0.02, cinema.remote.z + 0.02),
       ...cinema.seat.rowX.flatMap((x) => cinema.seat.z.flatMap((z) => {
         const x0 = x - S.depth / 2, x1 = x + S.depth / 2, z0 = z - S.width / 2, z1 = z + S.width / 2, y = S.height;
         return [

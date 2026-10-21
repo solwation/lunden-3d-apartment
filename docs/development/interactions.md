@@ -5,8 +5,10 @@ Read [CLAUDE.md](../../CLAUDE.md) first for shared workflow rules. Paths in code
 Related: [life](life.md), [storage](storage.md), [verification](verification.md).
 
 Clubhouse devices (#1365): `playroomDevice` targets use the existing focus,
-keyboard E and touch action path. The TV screen toggles the local
-animation; the rear-seat arm remote opens Bion, where YouTube search results can be selected (#1472, first slice; the current screen still needs that remote); the computer screen starts power then plays/stops Pricka grönt, and
+keyboard E and touch action path. The cinema screen opens Bion with film
+suggestions and search (#1475); the armrest remote is removed. The screen can
+be selected from either seat row within BIO; hall and billiards-room positions
+never gain the longer screen-only reach. the computer screen starts power then plays/stops Pricka grönt, and
 the separate white/blue box switches its power off. Cinema seats and the game
 stool use normal rest reach and stand-up handling. [Device lifecycle and tests](furniture.md#clubhouse-tv-and-computer-1365).
 

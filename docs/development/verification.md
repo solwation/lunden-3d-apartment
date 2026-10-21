@@ -15,6 +15,16 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## Cinema screen interaction (#1475)
+
+`tools/cinemavideotest.cjs GAME OUT` passed against the real app on desktop:
+native E from a rear chair, screen focus, typing/Escape, search selection,
+real unmuted video/frame progress, pause, two chosen videos, unavailable video,
+close/room exit and late callbacks; no page exceptions. `MOBILE=1 INPUT_ONLY=1`
+passed native touch sit/screen-open/back with the remote target absent. This
+short mode checks input only and does not claim fresh mobile media verification.
+Artifacts: `/tmp/cinema-screen-desktop/` and `/tmp/cinema-screen-touch/`.
+
 ## Cinema discovery and playback (#1479)
 
 `node --test cloudflare/youtubesearch.test.mjs` checks the Worker route, bounded

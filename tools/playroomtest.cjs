@@ -165,25 +165,22 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     // #1365: actual native keyboard E / mobile action button, not direct device calls.
     const deviceUse = nativeUse;
     const deviceState = () => page.evaluate(() => { const d = __app.world.playroom.devices; return { tv: d.tvOn, pc: d.pcOn, playing: d.playing, hits: d.hits, rounds: d.round, cursor: d.cursor, result: d.result }; });
-    const remoteSeat = { x: cinema.seat.rowX[1], z: cinema.seat.z[0] };
-    await aimAt([RM.x+remoteSeat.x+0.78,RM.z+remoteSeat.z], [RM.x+remoteSeat.x,.48,RM.z+remoteSeat.z]);
+    const cinemaSeat = { x: cinema.seat.rowX[1], z: cinema.seat.z[0] };
+    await aimAt([RM.x+cinemaSeat.x+0.78,RM.z+cinemaSeat.z], [RM.x+cinemaSeat.x,.48,RM.z+cinemaSeat.z]);
     await deviceUse();
-    const remoteFocus = await page.evaluate(async ({RM}) => { const a=__app,F=RM.furniture; for(let i=0;i<12;i++)a.rest.update(.1); __t.aim(RM.x+F.cinema.remote.x,F.cinema.remote.y+0.04,RM.z+F.cinema.remote.z); return { seated:a.rest.active, focus:__t.focus() }; }, {RM});
-    check(remoteFocus.seated && remoteFocus.focus?.name === 'film med bions fjärrkontroll' && remoteFocus.focus?.verb === 'välja', 'TV remote is reachable from a real cinema seat', JSON.stringify(remoteFocus));
+    const screenFocus = await page.evaluate(async ({RM}) => { const a=__app,F=RM.furniture; for(let i=0;i<12;i++)a.rest.update(.1); const sc=F.cinema.screen; __t.aim(RM.x+sc.x+.08,sc.bottom+sc.h/2,RM.z+sc.z); return { seated:a.rest.active, focus:__t.focus() }; }, {RM});
+    check(screenFocus.seated && screenFocus.focus?.name === 'bioduken' && screenFocus.focus?.verb === 'välja film på', 'cinema screen can be selected from a real seat', JSON.stringify(screenFocus));
     await deviceUse(); check(await page.locator('#cinema-player').evaluate(el => el.open), 'native E/touch opens film choice while seated');
-    await page.evaluate(() => __t.render()); await page.screenshot({ path: `${shots}/15-cinema-remote.png` });
+    await page.evaluate(() => __t.render()); await page.screenshot({ path: `${shots}/15-cinema-screen.png` });
     await page.locator('[data-cinema=close]').click();
     check(!await page.locator('#cinema-player').evaluate(el => el.open), 'cinema back button closes the player and restores room controls');
     await page.evaluate(() => __app.standUp());
     await page.evaluate(() => { window.deviceSwitches = []; __app.world.playroom.onSwitch = (name, on) => deviceSwitches.push([name, on]); });
     const tvFocus = await aimAt([RM.x-RM.w/2+1,RM.z+cinema.screen.z], [RM.x+RM.furniture.tv.x+.08,RM.furniture.tv.y+RM.furniture.tv.h/2,RM.z+cinema.screen.z]);
-    check(tvFocus?.kind === 'playroomDevice' && tvFocus.verb === 'starta', 'TV screen is a reachable start target', JSON.stringify(tvFocus));
+    check(tvFocus?.name === 'bioduken' && tvFocus.verb === 'välja film på', 'screen itself opens film discovery', JSON.stringify(tvFocus));
     await deviceUse();
-    check((await deviceState()).tv, 'native E/touch starts the TV');
-    const animated = await page.evaluate(() => { const d = __app.world.playroom.devices, before = d.tv.canvas.toDataURL(); __app.world.playroom.update(1, __app.camera, false); __t.render(); return before !== d.tv.canvas.toDataURL(); });
-    check(animated, 'TV displays a changing local animation');
-    await page.screenshot({ path: `${shots}/12-tv-on.png` });
-    await deviceUse(); check(!(await deviceState()).tv, 'native E/touch switches TV off');
+    check(await page.locator('#cinema-player').evaluate(el => el.open), 'native E/touch opens cinema by the screen');
+    await page.locator('[data-cinema=close]').click();
     const DX=RM.furniture.desk.x,DZ=RM.furniture.desk.z;
     await aimAt([RM.x+RM.furniture.stool.x-.8,RM.z+RM.furniture.stool.z], [RM.x+RM.furniture.stool.x,.36,RM.z+RM.furniture.stool.z]); await deviceUse();
     const pcFocus = await page.evaluate(({RM}) => { const a=__app,F=RM.furniture; for(let i=0;i<12;i++)a.rest.update(.1); __t.aim(RM.x+F.desk.x+2.939,.89,RM.z+F.desk.z+1); return { seated:a.rest.active, focus:__t.focus() }; }, {RM});
@@ -204,13 +201,13 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     check(powerFocus?.name === 'datorns spelbox' && powerFocus.verb === 'stänga av', 'separate white box offers computer power off', JSON.stringify(powerFocus));
     await deviceUse(); check(!(await deviceState()).pc, 'native E/touch switches the computer off');
     const hook = await page.evaluate(() => deviceSwitches);
-    check(JSON.stringify(hook) === JSON.stringify([['tv',true],['tv',false],['pc',true],['pc',false]]), 'existing onSwitch hook receives device power changes', JSON.stringify(hook));
+    check(JSON.stringify(hook) === JSON.stringify([['pc',true],['pc',false]]), 'existing onSwitch hook receives device power changes', JSON.stringify(hook));
     const cost = await page.evaluate(() => { const d=__app.world.playroom.devices;d.tv.mesh.frustumCulled=d.pc.mesh.frustumCulled=false;const shown=__t.calls();d.object.visible=false;const hidden=__t.calls();d.object.visible=true;d.tv.mesh.frustumCulled=d.pc.mesh.frustumCulled=true;return {calls:shown.calls-hidden.calls,tris:shown.tris-hidden.tris}; });
     check(cost.calls===2 && cost.tris===4,'submitting both screens costs exactly two draws and four triangles',JSON.stringify(cost));
-    // Leave both running to exercise exit cleanup later in the lifecycle.
+    // Leave the computer running to exercise exit cleanup later in the lifecycle.
     await deviceUse();
     await page.evaluate(() => __app.standUp());
-    await aimAt([RM.x-RM.w/2+1,RM.z+cinema.screen.z], [RM.x+RM.furniture.tv.x+.08,RM.furniture.tv.y+RM.furniture.tv.h/2,RM.z+cinema.screen.z]); await deviceUse();
+    await aimAt([RM.x-RM.w/2+1,RM.z+cinema.screen.z], [RM.x+RM.furniture.tv.x+.08,RM.furniture.tv.y+RM.furniture.tv.h/2,RM.z+cinema.screen.z]);
     if (!process.env.MOBILE) { await page.evaluate(() => document.exitPointerLock()); await page.waitForFunction(() => !document.pointerLockElement); await page.evaluate(() => __app.showOverlay(false)); }
     const lit = await page.evaluate(() => { const o = window.__app; return o.world.playroom.object.children.filter((c) => c.isLight).length; });
     check(lit === 0, 'no extra lights in the room');

@@ -1279,7 +1279,7 @@ if (params0.has('spidersuit')) suit.putOn(); // &spidersuit (#597): the suit on 
 const touchLayout = setupTouchLayout(); // own button layout (#1090): opened from the pause menu, applied in play
 const active = () => !statsOpen && (locked || touch.enabled);
 
-// The cinema remote frees the pointer for the official player and its own controls.
+// Selecting the cinema screen frees the pointer for film discovery and playback.
 const cinema = new CinemaPlayer(document.getElementById('cinema-player'), reason => {
   reading = false; player.keys.clear(); touch.analog.x = touch.analog.y = 0;
   if (binderFreed) {
@@ -2098,8 +2098,16 @@ function updateFocus() {
   if (world.furnitureOn) cupTargets.push(...fruit.targets()); // the fruit in the bowl / lying out, the bowl with something in the hand (#326)
   cupTargets.push(...life.targets().map((t) => t.pickable));
   cupTargets.push(...toiletPaper.targets()); // the toilet-paper rolls and the strips hanging (#426) // the life sim's things (#366; F hides the ones lying out: `shown`)
-  const hit = raycaster.intersectObjects([...pickables, ...extra, ...cupTargets], true)
+  let hit = raycaster.intersectObjects([...pickables, ...extra, ...cupTargets], true)
     .find((h) => shown(h.object) && !(rest.active && (h.object.userData.door === rest.target || h.object.userData.door?.kind === 'rest' || h.object.userData.door?.seat === rest.target.pickable))); // (not the lid you sit on, #445)
+  // The screen can be selected from both seat rows, but never through the BIO
+  // partitions from the hall/billiards room. Other targets keep normal arm reach.
+  if (!hit && playroom.inside && camera.position.x < PLAYROOM.x - PLAYROOM.clubhouse.side - PLAYROOM.clubhouse.wall / 2
+      && camera.position.z < PLAYROOM.z + PLAYROOM.clubhouse.front - PLAYROOM.clubhouse.wall / 2) {
+    raycaster.far = PLAYROOM.furniture.cinema.reach;
+    hit = raycaster.intersectObject(playroom.devices.cinemaTarget.pickable)[0];
+    raycaster.far = reach;
+  }
   focused = hit && !behindWall(hit.point) ? hit.object.userData.door : null;
   focusPoint = focused ? hit.point.clone() : null; // where the hand reaches on E (#195)
   if (focused?.occluded?.(camera.position, focusPoint)) { focused = null; focusPoint = null; } // the binder under the coffee table, seen through its top (#1255)
