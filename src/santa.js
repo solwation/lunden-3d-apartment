@@ -20,7 +20,12 @@ const ball = (color, at, scale) => part(new THREE.SphereGeometry(1, 16, 10), col
 const box = (color, at, scale) => part(new THREE.BoxGeometry(1, 1, 1), color, at, scale);
 function joined(parts, mat) {
   const geometry = mergeGeometries(parts), mesh = new THREE.Mesh(geometry, mat);
-  parts.forEach((g) => g.dispose());
+  let offset = 0; mesh.userData.cheeks = [];
+  for (const g of parts) {
+    const count = g.getAttribute('position').count;
+    if (g.userData.blush) mesh.userData.cheeks.push({ start: offset, count });
+    offset += count; g.dispose();
+  }
   mesh.castShadow = mesh.receiveShadow = true;
   return mesh;
 }
@@ -43,6 +48,10 @@ function hatGeometry() {
   }
   geo.computeVertexNormals(); return geo;
 }
+function cheek(side) {
+  const g = ball(S.blush.base, [side * 0.092, 0.785, 0.132], [0.043, 0.033, 0.024]);
+  g.userData.blush = true; return g;
+}
 function figure() {
   const object = new THREE.Group(), mat = material();
   object.name = 'jultomten';
@@ -64,7 +73,7 @@ function figure() {
   for (const side of [-1, 1]) {
     parts.push(ball(C.white, [side * 0.06, 0.865, 0.18], [0.045, 0.013, 0.018]));
     parts.push(ball(C.skin, [side * 0.147, 0.785, 0.02], [0.035, 0.06, 0.035])); // ears
-    parts.push(ball(0xe4a39b, [side * 0.092, 0.785, 0.132], [0.043, 0.033, 0.024])); // cheeks
+    parts.push(cheek(side));
     parts.push(ball(C.white, [side * 0.055, 0.83, 0.178], [0.023, 0.019, 0.009]));
     parts.push(ball(0x547687, [side * 0.055, 0.83, 0.187], [0.011, 0.013, 0.006]));
     parts.push(ball(C.black, [side * 0.055, 0.83, 0.193], [0.005, 0.008, 0.004]));
@@ -74,7 +83,9 @@ function figure() {
 
   }
   parts.push(ball(C.white, [S.hat.bend, 1.04 + S.hat.height / 2 - S.hat.drop, 0.01], [0.06, 0.06, 0.06]));
-  object.add(joined(parts, mat));
+  const body = joined(parts, mat);
+  body.geometry.getAttribute('color').setUsage(THREE.DynamicDrawUsage); // cheek colours change after upload, including on phones
+  object.add(body);
   const legs = new THREE.Mesh(new THREE.BufferGeometry(), mat); // actual seat dimensions below
   legs.castShadow = legs.receiveShadow = true;
   object.add(legs);
@@ -95,7 +106,7 @@ function figure() {
   ctx.lineWidth = 5; ctx.strokeStyle = '#35251b'; ctx.strokeText('Zzzzz', 128, 40); ctx.fillStyle = '#fff8df'; ctx.fillText('Zzzzz', 128, 40);
   const text = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas), depthTest: true, transparent: true }));
   text.scale.set(...S.sleep.text, 1); text.visible = false;
-  return { object, legs, left, right, glass, pick, text, head: new THREE.Vector3() };
+  return { object, body, legs, left, right, glass, pick, text, head: new THREE.Vector3() };
 }
 
 /** One continuous trouser segment between two joints, merged with the other leg parts. */
@@ -127,7 +138,7 @@ export class Santa {
   /** `sofa`: existing rest target. Santa waits offscreen when the player already occupies a required spot.
    * `onStateChange(next, previous)` is also the hook for the living-room TV programme. */
   constructor({ scene, day, sofa, rest = null, onStateChange = null }) {
-    Object.assign(this, { day, sofa, rest, onStateChange, state: 'away', t: 0, greeting: 0 });
+    Object.assign(this, { day, sofa, rest, onStateChange, state: 'away', t: 0, greeting: 0, sips: 0, sipInProgress: false, visitKey: '' });
     this.fig = figure();
     this.object = this.fig.object;
     if (sofa) {
@@ -144,6 +155,18 @@ export class Santa {
     this.originalTaken = sofa?.spots.map((spot) => spot.taken) ?? [];
     sofa?.spots.forEach((spot, index) => { const prior = spot.taken; spot.taken = () => !!prior?.() || this.reserves(index); });
     this.update(0);
+  }
+  get dateKey() { return `${this.day.year ?? 0}-${this.day.month}-${this.day.date}`; }
+  updateBlush() {
+    const color = new THREE.Color(S.blush.base).lerp(new THREE.Color(S.blush.red), Math.min(1, this.sips / S.blush.fullAfterSips));
+    const colors = this.fig.body.geometry.getAttribute('color');
+    for (const { start, count } of this.fig.body.userData.cheeks) for (let i = start; i < start + count; i++) colors.setXYZ(i, color.r, color.g, color.b);
+    colors.needsUpdate = true;
+  }
+  keepState() { return { date: this.visitKey, sips: this.sips }; }
+  loadState(state) {
+    if (state?.date !== this.dateKey || !Number.isSafeInteger(state.sips) || state.sips < 0) return;
+    this.visitKey = state.date; this.sips = Math.min(S.blush.fullAfterSips, state.sips); this.updateBlush();
   }
   get present() { return this.state !== 'away'; }
   get sleeping() { return this.state === 'sleeping'; }
@@ -171,13 +194,15 @@ export class Santa {
     }
     if (next !== this.state) {
       const prior = this.state;
-      this.state = next; this.t = 0; this.greeting = 0;
+      this.state = next; this.t = 0; this.greeting = 0; this.sipInProgress = false;
+      if (next !== 'away' && this.visitKey !== this.dateKey) { this.visitKey = this.dateKey; this.sips = 0; this.updateBlush(); }
       if (this.legPoses) this.fig.legs.geometry = this.legPoses[this.sleeping ? 'sleeping' : 'sitting'];
       this.object.visible = this.present;
       this.onStateChange?.(next, prior);
     }
     this.fig.text.visible = this.visible && this.sleeping && !this.greeting;
     if (!this.present) return;
+    const previousT = this.t;
     this.t += dt;
     this.greeting = Math.max(0, this.greeting - dt);
     const local = this.sofa.pickable.userData.rest.spots[Math.min(S.seatIndex, this.sofa.spots.length - 1)];
@@ -189,7 +214,16 @@ export class Santa {
       this.object.position.set(local.x, local.y + 0.04, local.z);
       this.object.rotation.set(0, Math.atan2(...(local.dir ?? [0, 1])), 0);
     }
-    const phase = this.t % S.sip.every, sip = !this.sleeping && !this.greeting && phase < S.sip.seconds ? Math.sin(Math.PI * phase / S.sip.seconds) ** 2 : 0;
+    const phase = this.t % S.sip.every;
+    if (this.sleeping || this.greeting) this.sipInProgress = false;
+    else {
+      const ended = phase >= S.sip.seconds || Math.floor(this.t / S.sip.every) > Math.floor(previousT / S.sip.every);
+      if (this.sipInProgress && ended) {
+        this.sipInProgress = false; this.sips = Math.min(S.blush.fullAfterSips, this.sips + 1); this.updateBlush();
+      }
+      if (phase > S.sip.seconds / 2 && phase < S.sip.seconds) this.sipInProgress = true;
+    }
+    const sip = !this.sleeping && !this.greeting && phase < S.sip.seconds ? Math.sin(Math.PI * phase / S.sip.seconds) ** 2 : 0;
     this.fig.right.rotation.x = -0.6 - sip * S.sip.arm;
     this.fig.right.rotation.z = sip * S.sip.inward;
     // Keep the tumbler outside the fist; its rim travels from the lap to the mouth.

@@ -15,6 +15,12 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## Santa visit, TV volume, gift piles and billiards (#1500–#1503)
+
+Run the focused volume/sound unit checks, gift component and `tools/santavisittest.cjs`
+actual route. Reuse the one relevant actual Web Audio billiard route. Inspect only
+blush/pile images; no broad profiles. [Results and scope](../validation/issue-1500-1503/README.md).
+
 ## Santa seating report (#1499)
 
 `tools/santaseatingtest.cjs BASE OUT` checks actual leg vertices below seat height

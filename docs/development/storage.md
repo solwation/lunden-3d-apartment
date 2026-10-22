@@ -1374,3 +1374,5 @@ remain unchanged; no name is guessed from old text. See [report import](report-i
 ## Christmas presents (#1409/#1410)
 
 `keep.js` excludes dynamic `isChristmasGift` Holdables from the generic things map. The optional `christmasGifts` section records IDs, the once-chosen trinket, opening state, home/placed pose and held status. It restores after existing ordinary/Life hand owners; an occupied hand makes a restored gift return home safely. Duplicate IDs/restores never recreate a package. The temporary Santa/TV state is derived from the restored DayCycle rather than saved separately.
+
+Santa follow-ups (#1500/#1501): the optional `santa` section restores completed sip count for the same game-calendar date after clock restoration. Gift records additionally retain support IDs for stacks; validated existing package poses remain backward compatible. Taking a lower package settles descendants and updates their saved homes. No Cloudflare protocol changes.

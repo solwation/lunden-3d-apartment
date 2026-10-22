@@ -1,0 +1,52 @@
+{
+  "control": {
+    "chooserClosed": true,
+    "powerHeld": true,
+    "channelBlocked": true,
+    "seekBlocked": true,
+    "remotePower": true,
+    "commandBlocked": true,
+    "otherWorks": true,
+    "near": 100,
+    "back": 35,
+    "far": 19
+  },
+  "loop": {
+    "time": 1.8557779809265136,
+    "state": 1
+  },
+  "blush": {
+    "before": [
+      0.7503395676612854,
+      0.33331626653671265,
+      0.2993738055229187
+    ],
+    "after": [
+      0.520995557308197,
+      0.03688944876194,
+      0.04373503103852272
+    ],
+    "sips": 10,
+    "restored": true,
+    "sleepingLoop": true,
+    "dynamic": true
+  },
+  "pile": {
+    "count": 3,
+    "placed": [
+      0.12300000137090683,
+      0.24600000274181366
+    ],
+    "noOverlap": true,
+    "supports": [
+      null,
+      1,
+      2
+    ]
+  },
+  "end": {
+    "released": true,
+    "ordinaryPower": true
+  },
+  "errors": []
+}

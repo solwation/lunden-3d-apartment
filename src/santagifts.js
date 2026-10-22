@@ -6,6 +6,11 @@ import { PLAYER } from './config.js';
 
 const vector = a => new THREE.Vector3(...a);
 const finite = (a, n) => Array.isArray(a) && a.length === n && a.every(Number.isFinite);
+const worldYaw = model => {
+  model.updateWorldMatrix(true, false);
+  const forward = new THREE.Vector3(0, 0, 1).transformDirection(model.matrixWorld);
+  return Math.atan2(forward.x, forward.z);
+};
 
 function wrapping() {
   const model = new THREE.Group();
@@ -53,9 +58,40 @@ class ChristmasGift extends Holdable {
     this.owner.onMessage?.(`Du fick ${this.name}!`);
   }
 
+  take() {
+    if (handBusy(this)) return;
+    if (!this.held) this.owner?.removeSupport(this);
+    this.stackSupport = null;
+    super.take();
+  }
+
+  putBack() {
+    if (this.held && !this.opened) {
+      // A removed lower parcel returns on top of the settled column, never inside it.
+      let support = null, top = -Infinity;
+      for (const candidate of this.owner.items) {
+        if (!this.owner.canSupport(candidate, this)) continue;
+        const bounds = new THREE.Box3().setFromObject(candidate.model), center = bounds.getCenter(new THREE.Vector3());
+        if (Math.abs(center.x - this.home.pos.x) > C.stack.tolerance || Math.abs(center.z - this.home.pos.z) > C.stack.tolerance || bounds.max.y <= top) continue;
+        support = candidate; top = bounds.max.y;
+      }
+      if (support) {
+        const point = this.home.pos.clone(); point.y = top;
+        this.poseAt(this.model, point, worldYaw(support.model));
+        this.home.pos.copy(this.model.position); this.home.rot.copy(this.model.rotation);
+        this.stackSupport = support.giftId; this.backTarget.pickable.position.copy(this.home.pos);
+      }
+    }
+    super.putBack();
+  }
+
   // F / handsfree return to the last real placement, rather than to Santa's temporary model.
   placeAt(p, yaw) {
+    if (!this.held) return;
+    const support = this.owner.supportAt(p, this);
+    if (support) yaw = worldYaw(support.model);
     super.placeAt(p, yaw);
+    this.stackSupport = support?.giftId ?? null;
     this.home.pos.copy(this.model.position); this.home.rot.copy(this.model.rotation);
     this.backTarget.pickable.position.copy(this.home.pos);
   }
@@ -72,6 +108,56 @@ export class ChristmasGifts {
     this.items.push(item); this.nextId = Math.max(this.nextId, id + 1);
     this.onItem?.(item);
     return item;
+  }
+
+  /** A real top-face ray, snapped to the centre and yaw so the whole equal-sized parcel fits.
+   * Main retains distance for normal wall/nearer-object checks; stackSupport skips floor-grid snapping. */
+  stackHit(raycaster, item) {
+    if (!item?.isChristmasGift || item.opened || !item.held || raycaster.ray.direction.y >= 0) return null;
+    let nearest = null;
+    for (const support of this.items) {
+      if (!this.canSupport(support, item)) continue;
+      support.model.updateWorldMatrix(true, true);
+      const hit = raycaster.intersectObject(support.model, true).find(h => h.face &&
+        h.face.normal.clone().transformDirection(h.object.matrixWorld).y >= C.stack.topNormal);
+      if (!hit || (nearest && nearest.distance <= hit.distance)) continue;
+      const bounds = new THREE.Box3().setFromObject(support.model);
+      support.model.userData.surface = bounds.max.y;
+      const point = bounds.getCenter(new THREE.Vector3()); point.y = bounds.max.y;
+      nearest = { ...hit, object: support.model, point, stackYaw: worldYaw(support.model), stackSupport: support };
+    }
+    return nearest;
+  }
+
+  canSupport(support, item) {
+    if (support === item || support.opened || support.held || support === stowedItem() || support.broken) return false;
+    for (let node = support.model; node; node = node.parent) if (!node.visible) return false;
+    return !!support.model.parent;
+  }
+
+  supportAt(point, item) {
+    if (item.opened) return null;
+    return this.items.find(support => {
+      if (!this.canSupport(support, item)) return false;
+      const bounds = new THREE.Box3().setFromObject(support.model), center = bounds.getCenter(new THREE.Vector3());
+      return Math.abs(point.y - bounds.max.y) <= C.stack.tolerance &&
+        Math.abs(point.x - center.x) <= C.stack.tolerance && Math.abs(point.z - center.z) <= C.stack.tolerance;
+    }) ?? null;
+  }
+
+  /** Taking a lower parcel lets the remaining column settle onto its former support. */
+  removeSupport(item) {
+    const children = this.items.filter(h => !h.held && h.stackSupport === item.giftId);
+    if (!children.length) return;
+    const bounds = new THREE.Box3().setFromObject(item.model), fall = bounds.max.y - bounds.min.y + C.stack.gap;
+    const descendants = new Set(children);
+    for (const h of descendants) for (const child of this.items) if (!child.held && child.stackSupport === h.giftId) descendants.add(child);
+    for (const h of descendants) {
+      h.model.position.y -= fall; h.home.pos.y -= fall;
+      h.backTarget.pickable.position.copy(h.home.pos); h.model.updateWorldMatrix(true, true);
+    }
+    for (const child of children) child.stackSupport = item.stackSupport ?? null;
+    this.onChange?.(item);
   }
 
   give() {
@@ -96,6 +182,7 @@ export class ChristmasGifts {
       p: item.model.getWorldPosition(new THREE.Vector3()).toArray(),
       q: item.model.getWorldQuaternion(new THREE.Quaternion()).toArray(),
       placed: !!item.placed,
+      support: item.stackSupport ?? null,
     })) };
   }
 
@@ -112,6 +199,7 @@ export class ChristmasGifts {
       if (finite(e.homeRotation, 3)) item.home.rot.set(...e.homeRotation);
       item.model.position.set(...e.p); item.model.quaternion.set(...e.q).normalize();
       item.placed = !!e.placed;
+      item.stackSupport = Number.isSafeInteger(e.support) && e.support !== e.id ? e.support : null;
       if (e.held && !handBusy()) item.take();
       else if (e.held) item.goHome();
     }

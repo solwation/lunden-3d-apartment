@@ -563,6 +563,8 @@ export const sfx = {
     const duration=kind==='pocket'?C.pocketDuration:C.hitDuration;
     tone(t,duration,d,{type:'triangle',from:hz,to:hz*C.pitchDrop,gain:C.toneGain});
     noise(t,duration,d,{type:'bandpass',freq:hz,q:1,gain:kind==='pocket'?C.pocketNoise:C.hitNoise});
+    // A low drop followed by the ball rattling in the pocket, distinct from the sharp impact clicks.
+    if(kind==='pocket')noise(t+C.pocketRattleDelay,C.pocketRattleDuration,d,{type:'bandpass',freq:C.pocketRattleHz,q:1,gain:C.pocketRattleGain});
     return true;
   },
   /** One step of the laptop's short-video beat (#283): 'kick', 'snare', 'hat' or a 'blip' at `freq` Hz, quiet (`gain`). */

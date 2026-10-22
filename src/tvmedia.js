@@ -16,10 +16,13 @@ export class TVMedia {
       const channels=document.createElement('button');channels.type='button';channels.textContent='Vanliga TV-kanaler';channels.dataset.tvChannels='';
       el.querySelector('[data-cinema=off]').after(channels);document.body.append(el);
       const player=new CinemaPlayer(el,onClose,endpoint,{id:info.id,label:info.name,place:'TV-skärmen'});
+      player.soundSource=target.mesh;
       player.surface=new CinemaSurface(canvas,target.mesh,`tv-world-${info.id}`);
       target.videoMaterial=player.surface.aperture;
       const show=player.surface.show.bind(player.surface);
       player.surface.show=on=>{show(on);target.video(on);};
+      const command=player.command.bind(player);
+      player.command=(kind,extra)=>target.mediaLocked?.()&&!['get','release'].includes(kind)?false:command(kind,extra);
       const controls=player.controls.bind(player);
       player.controls=()=>{controls();channels.disabled=!player.owns;};player.controls();
       channels.addEventListener('click',()=>{if(!player.owns)return;player.command('stop');if(!target.isOpen)target.toggle();else target.channel();player.close();});
@@ -31,17 +34,18 @@ export class TVMedia {
   connect(net) {for(const [id,{player}] of this.sessions)player.net={ready:net.ready,id:net.id,send:m=>net.send({...m,screen:id})};}
   receive(m){this.sessions.get(m.screen)?.player.receive(m);}
   show(target) {
+    if(target.mediaLocked?.())return true;
     const session=this.sessions.get(target.mediaId);if(!session)return false;
     if(!session.player.inside)return false;
     if(session.player.activate())return true;
     this.close();this.onOpen();session.player.show();return true;
   }
   close(reason='button'){for(const {player} of this.sessions.values())if(player.open)player.close(reason);}
-  seekable(target){const p=this.sessions.get(target?.mediaId)?.player;return !!p?.inside&&!!p.state?.video;}
-  seek(target,delta){return this.sessions.get(target?.mediaId)?.player.remoteSeek(delta)??false;}
-  power(target){const player=this.sessions.get(target.mediaId)?.player;if(!player?.state?.video)return false;return this.show(target);}
+  seekable(target){if(target?.mediaLocked?.())return false;const p=this.sessions.get(target?.mediaId)?.player;return !!p?.inside&&!!p.state?.video;}
+  seek(target,delta){if(target?.mediaLocked?.())return false;return this.sessions.get(target?.mediaId)?.player.remoteSeek(delta)??false;}
+  power(target){if(target.mediaLocked?.())return true;const player=this.sessions.get(target.mediaId)?.player;if(!player?.state?.video)return false;return this.show(target);}
   update(player,camera,renderer,available) {
     const p=[player.pos.x,player.pos.y,player.pos.z];
-    for(const [id,session] of this.sessions)session.player.update(available&&tvViewer(id,p),camera,renderer);
+    for(const [id,session] of this.sessions)session.player.update(available&&!session.target.mediaLocked?.()&&tvViewer(id,p),camera,renderer);
   }
 }

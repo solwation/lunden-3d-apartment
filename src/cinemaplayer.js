@@ -1,4 +1,5 @@
 import { PLAYROOM } from './config.js';
+import { TVVolume } from './tvsound.js';
 
 // The official iframe is a separate viewing surface, never a WebGL texture.
 // Discovery starts when the visitor opens the cinema; the player loads after film selection.
@@ -52,6 +53,7 @@ export function youtubeAPI() {
 
 export class CinemaPlayer {
   constructor(el, onClose, searchEndpoint = '', options = {}) {
+    this.soundVolume=new TVVolume();
     this.label=options.label??'Bion';this.place=options.place??'bioduken';
     this.el=el;this.onClose=onClose;this.searchEndpoint=searchEndpoint;
     this.generation=0;this.searchGeneration=0;this.inside=false;this.ready=false;
@@ -100,6 +102,7 @@ export class CinemaPlayer {
   }
   stop(){this.command('stop');}
   destroyMedia() {
+    this.soundVolume.volume=undefined;this.soundVolume.at=-Infinity;
     this.generation++;clearTimeout(this.timer);this.ready=false;this.video=null;
     const player=this.player;this.player=null;
     try{player?.destroy();}catch{/* A vendor failure must not retain a viewing surface. */}
@@ -250,6 +253,7 @@ export class CinemaPlayer {
       this.controls();
     }
     this.surface?.update(camera,renderer);
+    if(this.ready&&this.soundSource)this.soundVolume.update(this.player,camera,this.soundSource,this.soundEnabled);
     if(performance.now()-(this.lastSync??0)>PLAYROOM.cinemaSync.syncEveryMs){this.lastSync=performance.now();this.synchronize();}
   }
 }

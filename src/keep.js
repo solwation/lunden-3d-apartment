@@ -354,6 +354,11 @@ const PARTS = {
     load: ({ life }, s) => { life?.load(s, { hand: true }); },
   },
 
+  santa: {
+    save: ({ santa }) => santa?.keepState(),
+    load: ({ santa }, state) => santa?.loadState(state),
+  },
+
   christmasGifts: {
     save: ({ christmasGifts }) => christmasGifts?.saveState(),
     load: ({ christmasGifts }, state) => christmasGifts?.loadState(state),
@@ -395,7 +400,7 @@ const restKey = (t) => `${t.name}|${t.spots[0] ? vec(t.spots[0].pos).join(',') :
 
 // the order things come back in: the clock before the lamps (dusk), the car before its seat, fronts before what
 // lies in them, the TV before sitting in front of it
-const ORDER = ['clock', 'car', 'lift', 'open', 'lamps', 'on', 'grill', 'coffee', 'sonos', 'parasol', 'things', 'jetpack', 'spidersuit', 'life', 'christmasGifts', 'rest', 'cat', 'bicycleHand'];
+const ORDER = ['clock', 'santa', 'car', 'lift', 'open', 'lamps', 'on', 'grill', 'coffee', 'sonos', 'parasol', 'things', 'jetpack', 'spidersuit', 'life', 'christmasGifts', 'rest', 'cat', 'bicycleHand'];
 
 /** The world part of a reload record. */
 export function saveWorld(a) {

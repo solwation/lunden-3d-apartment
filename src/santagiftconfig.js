@@ -4,4 +4,6 @@ export const SANTA_GIFTS = {
   size: [0.16, 0.12, 0.14], ribbon: 0.022,
   held: [0.14, -0.19, -0.36], heldRotation: [0.25, -0.3, 0],
   handReach: 0.7, floorLift: 0.002,
+  // Only horizontal package tops support a pile; tolerances are gameplay guesses in metres.
+  stack: { topNormal: 0.99, tolerance: 0.005, gap: 0.001 },
 };

@@ -1306,6 +1306,7 @@ remote.onSeek=(tv,delta)=>{const ok=tvMedia.seek(tv,delta);if(!ok)badge('Någon 
 const computerHub=new ComputerHub({onNotice:text=>badge(text,false),canvas,targets:[...world.furnitureTargets,...playroom.devices.computers.map(s=>s.target)],template:document.getElementById('cinema-player'),onClose:closeVideoControls,onOpen:openVideoControls,endpoint:cloudUrl()?`${cloudUrl()}/youtube-search`:''});
 playroom.devices.onComputerRequest=target=>computerHub.show(target);
 cinema.surface = new CinemaSurface(canvas, playroom.devices.tv.mesh);
+cinema.soundSource = playroom.devices.tv.mesh;
 playroom.devices.onVideoRequest = () => {
   if (!playroom.inside) return;
   if(cinema.activate())return;
@@ -2165,7 +2166,9 @@ function updateFocus() {
   }
   posters.showGhost(posterSpot, heldDrawing.tex);
   if (item?.placeAt) {
-    const top = !item.floorOnly && raycaster.intersectObjects(world.cupSurfaces, false).find((h) => shown(h.object) && h.point.y >= h.object.userData.surface - 0.02 && (item.soft || !h.object.userData.soft)); // a bed / a sofa only for a plush toy (#269)
+    const ordinaryTop = !item.floorOnly && raycaster.intersectObjects(world.cupSurfaces, false).find((h) => shown(h.object) && h.point.y >= h.object.userData.surface - 0.02 && (item.soft || !h.object.userData.soft)); // a bed / a sofa only for a plush toy (#269)
+    const stackTop = christmasGifts.stackHit(raycaster, item);
+    const top = stackTop && (!ordinaryTop || stackTop.distance < ordinaryTop.distance) ? stackTop : ordinaryTop;
     let spot = top && top.distance < reach && !behindWall(top.point) ? { point: top.point.clone().setY(top.object.userData.surface), distance: top.distance } : null;
     if (spot && item.softOnly && !top.object.userData.soft) { // Cats: not on a table or a worktop (#1061)
       if (!hit || spot.distance <= hit.distance + 0.05) focused = { name: '', kind: 'place', blocked: true, blockedText: `${item.name === 'Miele' ? 'Miele' : item.name === 'kattungen' ? 'Kattungen' : 'Katten'} får inte vara på bordet` };
@@ -2191,8 +2194,8 @@ function updateFocus() {
       };
       placeGhost.visible = false;
     } else if (spot && !lifeAim && !atBack && (!hit || spot.distance <= hit.distance + 0.05)) {
-      snapSpot(spot, top && spot.point.y > LEVELS[Math.max(0, player.level)].floor + 0.05 ? top.object : null); // on a grid (#368)
-      placeTarget = { name: `${item.name} här`, kind: 'place', verb: item.placeVerb ?? 'lägga ner', item, point: spot.point, yaw: placeYaw() };
+      if (!top?.stackSupport) snapSpot(spot, top && spot.point.y > LEVELS[Math.max(0, player.level)].floor + 0.05 ? top.object : null); // on a grid (#368)
+      placeTarget = { name: `${item.name} här`, kind: 'place', verb: item.placeVerb ?? 'lägga ner', item, point: spot.point, yaw: top?.stackYaw ?? placeYaw() };
       focused = placeTarget;
       placeGhost.position.copy(spot.point).y += 0.003;
       placeGhost.visible = true;
@@ -2427,8 +2430,9 @@ const christmasGifts = new ChristmasGifts(scene, camera, {
 });
 const santa = new Santa({ scene, day, rest, sofa: world.furnitureTargets.find(t => t.kind === 'rest' && t.name === 'soffan') });
 const santaTV = new SantaTV({ canvas, day, tv: world.furnitureTargets.find(t => t.mediaId === 'lounge'), tvMedia,
-  available: () => power.on && world.furnitureOn !== false && !document.hidden && santa.visible && !santa.sleeping
-    && tvViewer('lounge', [player.pos.x, player.pos.y, player.pos.z]), muted: isMuted });
+  watching: () => santa.visible && power.on,
+  available: () => power.on && world.furnitureOn !== false && !document.hidden,
+  muted: () => isMuted() || !tvViewer('lounge', [player.pos.x, player.pos.y, player.pos.z]) });
 document.addEventListener('pointerdown', () => santaTV.activate(), { passive: true });
 document.addEventListener('keydown', () => santaTV.activate(), { passive: true });
 let santaDelivery = null;
@@ -3466,7 +3470,7 @@ function continueAfterReload(r) {
   setTimeout(() => { reloadedEl.hidden = true; }, RELOAD_NOTE_S * 1000 + 700);
 }
 // the world's state for a reload made by the page (#277, keep.js): what each part needs
-const keepApp = { christmasGifts, bicycleStow: { fruit, fish, fries, chicken }, life, jetpack, suit, car, world, lights, day, grill, sonos, patio, holdables, cups, beer, chicken, scene, rest, cat, BREEDS, VARIANTS,
+const keepApp = { santa, christmasGifts, bicycleStow: { fruit, fish, fries, chicken }, life, jetpack, suit, car, world, lights, day, grill, sonos, patio, holdables, cups, beer, chicken, scene, rest, cat, BREEDS, VARIANTS,
   sitAt: (target, spot, stand) => sitAt(target, spot, stand, true) };
 Object.assign(keepApp.bicycleStow, { miele, heldDrawing, drawing: heldDrawing, toiletPaper, paper: toiletPaper });
 function keepWorld() { try { return saveWorld(keepApp); } catch (e) { console.warn('keep', e); return null; } }

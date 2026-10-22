@@ -5756,10 +5756,11 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
     board: { width:1.2, height:.6, y:1.2, wallGap:.04, depth:.04, rim:.025, faceGap:.002, pickDepth:.08,
       canvas:[768,384], buttonY:.39, buttonHeight:.2,
       ui:{titleY:.12,modeY:.24,nameY:.37,scoreY:.51,messageY:.64,seatY:.72,buttonTop:.78,buttonH:.19,titleSize:.1,textSize:.065,scoreSize:.1,pad:.02} } },
-  // #1330: assumed quiet synth mix/rhythm and impact throttling for the fantasy room.
+  // Assumed quiet disco mix and clearly audible nearby billiard impacts; drop gain includes gravity, not only table speed.
   sound: { beat:.125, steps:16, musicGain:.09, melodyGain:.045, notes:[220,261.63,329.63,293.66,220,329.63,392,293.66],
-    minSpeed:.08, hitInterval:.035, cueHz:1450, ballHz:2100, railHz:480, pocketHz:130, impactGain:.32,
-    voiceSeconds:.12, hitDuration:.045, pocketDuration:.12, minGain:.1, pitchDrop:.6, toneGain:.35, pocketNoise:.3, hitNoise:.14 },
+    minSpeed:.08, hitInterval:.035, cueHz:1450, ballHz:2100, railHz:480, pocketHz:130, impactGain:.75,
+    voiceSeconds:.12, hitDuration:.045, pocketDuration:.12, minGain:.25, pitchDrop:.6, toneGain:.35, pocketNoise:.3, hitNoise:.14,
+    pocketRattleDelay:.045, pocketRattleDuration:.08, pocketRattleHz:720, pocketRattleGain:.24 },
   colors: { floor: 0x9c7956, wall: 0x526876, ceiling: 0xe0e7ef, trim: 0xc5a77c, door: 0x9c2f24 },
   // Fantasy-room finish assumptions; retain the existing outer wall, trim and carpet dimensions.
   finish: { wallDepth: 0.2, skirting: { height: 0.12, depth: 0.02 }, rugHeight: 0.012 },
@@ -6497,6 +6498,8 @@ export const FIREWORKS = {
 // #1483: assumed viewing zones inside the existing L1007 room walls (not new building geometry).
 // Stable identities survive rearranging; only the personal home's three TV targets participate.
 export const TV_MEDIA = {
+  // Scalar YouTube volume: Sonos-like inverse distance plus head-facing attenuation (visual/audio guesses).
+  sound: { ref: 1, rolloff: 1.1, range: 14, behind: 0.35, intervalMs: 100 },
   floorTolerance: .7, // Feet/crouch/stair-edge tolerance around the current storey's finished floor.
   screens: [
     { id: 'lounge', name: 'TV · Vardagsrummet', level: 0, bounds: [.18,5.57,7.8,12.52] },

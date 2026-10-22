@@ -466,3 +466,9 @@ lower). This changes only the continuous weather/rain source; the master gain,
 other effects/music, rain appearance and weather strength are unchanged. The
 existing indoor30%/low-pass and interpolated car-cabin mix still apply. Rain
 remains nonzero, snow remains silent and mute retains control.
+
+## TV volume and audible billiards (#1502/#1503)
+
+`TVVolume` (`src/tvsound.js`) applies scalar distance/head-direction volume through YouTube's API for the three home TVs, clubhouse TV and Santa's local loop. TV_MEDIA.sound centralises falloff, rear gain, range and message cadence. Global mute is immediate. This intentionally implements the user's approved volume approximation, not stereo/HRTF panning of inaccessible iframe audio.
+
+Playroom billiards retain physical cue/ball/pocket event positions and the existing positional master graph. Impact mix is stronger and square-root strength makes soft collisions audible; pocket drops no longer depend on horizontal ball speed. `sfx.billiard` adds a short pocket rattle after the drop. Scoped tests include real Web Audio RMS and mute/exit silence; no physics rules changed.

@@ -28,3 +28,10 @@ test('physics reports actual cue, ball, cushion and pocket impacts without chang
  const n=events.length;a.step(1/120);assert.equal(events.length,n);
  assert(events.every(e=>e.slice(1).every(Number.isFinite)));
 });
+
+test('slow pocket drops remain audible and soft collisions use a perceptible strength curve',()=>{
+ const hits=[],s=new PlayroomSound({beat(){},billiard:(...a)=>hits.push(a)}),pos={x:1,y:2,z:3};
+ s.setInside(true);s.hit('pocket',pos,0);assert.equal(hits[0][1],'pocket');assert.equal(hits[0][2],1);
+ s.hit('ball',pos,R.sound.minSpeed);assert(hits[1][2]>R.sound.minSpeed/R.billiards.strokeSpeed);
+ s.update(R.sound.hitInterval,false);s.hit('ball',pos,NaN);assert.equal(hits.length,2);
+});

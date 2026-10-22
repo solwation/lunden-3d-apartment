@@ -19,7 +19,9 @@ export class PlayroomSound {
   }
   hit(kind,position,speed) {
     const C=R.sound;
-    if(!this.active||document.hidden||speed<C.minSpeed||this.time-(this.hits.get(kind)??-Infinity)<C.hitInterval)return;
-    this.hits.set(kind,this.time);this.effects.billiard(position,kind,Math.min(1,speed/R.billiards.strokeSpeed));
+    // A ball falling into a pocket makes a drop even if it barely reached the lip.
+    if(!this.active||document.hidden||!Number.isFinite(speed)||(kind!=='pocket'&&speed<C.minSpeed)||this.time-(this.hits.get(kind)??-Infinity)<C.hitInterval)return;
+    const strength=kind==='pocket'?1:Math.sqrt(Math.min(1,Math.max(0,speed)/R.billiards.strokeSpeed));
+    this.hits.set(kind,this.time);this.effects.billiard(position,kind,strength);
   }
 }
