@@ -1189,8 +1189,8 @@ export class Avatar {
   }
 
   /** Pose it. `speed`: m/s along the ground (walks when above A.walkSpeed, the legs' phase follows the distance), `turn`:
-   * the head's yaw against the body (rad), `hands`: { L, R } overrides (see `armTarget`), `crouch`: 0 … 1. */
-  update(dt, { speed = 0, turn = 0, hands = {}, crouch = 0, kiss = 0, kissReach = 1, kissLift = 0 } = {}) {
+   * the head's yaw against the body (rad), `pitch`: camera elevation (rad), `hands`: { L, R } overrides (see `armTarget`), `crouch`: 0 … 1. */
+  update(dt, { speed = 0, turn = 0, pitch = 0, hands = {}, crouch = 0, kiss = 0, kissReach = 1, kissLift = 0 } = {}) {
     this.time += dt;
     const walking = speed > A.walkSpeed, k = THREE.MathUtils.clamp(speed / 1.6, 0.4, 1.4);
     if (walking) this.phase += dt * speed / STRIDE * Math.PI * 2;
@@ -1215,7 +1215,7 @@ export class Avatar {
     this.material.userData.u.uKiss.value = kiss;
     if (kiss) this.material.userData.u.uMouth.value = 0;
     const knee = c ? CR.knees.map((v, i) => KNEE_REST[i] + (v - KNEE_REST[i]) * c) : KNEE_REST;
-    poseOlof(this, { hip: [hipY, hipZ + KISS.forward * kiss * kissReach], lean: 0.03 * g + CR.lean * c - KISS.lean * kiss * kissReach, head: 0.03 * Math.sin(this.time * 0.6) + KISS.head * kiss * kissReach, turn, feet, hands: [handL, handR], can: null,
+    poseOlof(this, { hip: [hipY, hipZ + KISS.forward * kiss * kissReach], lean: 0.03 * g + CR.lean * c - KISS.lean * kiss * kissReach, head: Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch)) + 0.03 * Math.sin(this.time * 0.6) + KISS.head * kiss * kissReach, turn, feet, hands: [handL, handR], can: null,
       knee, flat: c, toes: F.turn * c });
   }
 

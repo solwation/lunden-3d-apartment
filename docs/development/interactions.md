@@ -1960,8 +1960,11 @@ Wrapped gifts provide `ChristmasGifts.stackHit` for ordinary main placement. A v
 for seated poses 1 and 3. `Ghosts` detects head-only movement within its existing 5 Hz budget;
 `Ghost.draw` interpolates the angles and `applyRestPose` uses them on the shared head bone.
 The body/legs keep their existing rest pose. The mirror tracks the same angles. Missing angles
-are neutral for older clients; standing and lying keep existing behaviour. `PlayerRoom.cleanState`
-accepts only two finite seated angles within the existing `REST.sit` camera limits (plus .01 rounding
-slack), rounds them and includes them in forwarding/late welcomes. No new gameplay hit regions.
+are neutral for older clients; lying keeps existing behaviour. `PlayerRoom.cleanState`
+accepts only two finite angles, rounds them and includes them in forwarding/late welcomes.
+Seated limits follow `REST.sit` (plus .01 rounding slack). #1505 also sends `[0, cameraPitch]`
+when standing, walking, crouching or cycling; standing yaw stays in `r`, elevation is bounded by
+±π/2. `Avatar.update` adds pitch to its existing idle/kiss head pose; the bicycle pose retains
+its posture offset and adds the same pitch. Head-only changes use the existing movement slot. No new gameplay hit regions.
 Scoped check: `tools/seatedlooktest.cjs BASE LOCAL_WORKER OUT`, two browser clients using the
 actual main.js state callback; proof in `docs/validation/issue-1504/`.

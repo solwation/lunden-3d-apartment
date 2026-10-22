@@ -199,8 +199,11 @@ export function cleanState(text) {
   // #1147: bounded appearance indices only; invalid/missing cat clears the carried visual.
   const cat = Array.isArray(m.cat) && m.cat.length === 3 && Number.isInteger(m.cat[0]) && m.cat[0] >= 0 && m.cat[0] <= 7 && Number.isInteger(m.cat[1]) && m.cat[1] >= 0 && m.cat[1] < [6, 1, 1, 3, 3, 3, 1, 1][m.cat[0]] && typeof m.cat[2] === 'boolean' && !(m.cat[0] === 7 && m.cat[2]) ? { cat: m.cat } : {};
   // #878: c reports actual Player.crouched; anything except literal true is standing, including legacy clients.
-  // #1504: optional seated head yaw/pitch; old clients remain neutral, invalid angles are dropped.
-  const look = (m.pose === 1 || m.pose === 3) && Array.isArray(m.look) && m.look.length === 2 && fin(m.look[0], REST.sit.yaw + 0.01) && Number.isFinite(m.look[1]) && m.look[1] >= REST.sit.pitch[0] - 0.01 && m.look[1] <= REST.sit.pitch[1] + 0.01 ? { look: m.look.map(r2) } : {};
+  // #1504/#1505: optional head yaw/pitch; standing keeps its existing body/gaze yaw.
+  // Camera elevation is bounded by a half-turn; seated limits stay unchanged.
+  const seated = m.pose === 1 || m.pose === 3;
+  const pitch = seated ? REST.sit.pitch : [-Math.PI / 2, Math.PI / 2];
+  const look = m.pose !== 2 && Array.isArray(m.look) && m.look.length === 2 && fin(m.look[0], seated ? REST.sit.yaw + 0.01 : 0) && Number.isFinite(m.look[1]) && m.look[1] >= pitch[0] - 0.01 && m.look[1] <= pitch[1] + 0.01 ? { look: m.look.map(r2) } : {};
   return { ...cat, ...look, p: m.p.map(r2), r: r2(m.r), score, h: typeof m.h === 'string' && Object.hasOwn(COMBAT.weapons, m.h) ? m.h : '', ...(m.c === true ? { c: true } : {}), ...(m.pose === 1 || m.pose === 2 || m.pose === 3 ? { pose: m.pose } : {}), ...(m.sp === true ? { sp: true } : {}), ...(m.jp === 1 || m.jp === 2 ? { jp: m.jp } : {}), ...(fin(m.bk, 100) ? { bk: r2(m.bk) } : {}), ...(cleanHeldCategory(m.hi) ? { hi: m.hi } : {}), ...(av ? { av } : {}), ...(ax ? { ax } : {}) };
 }
 

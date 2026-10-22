@@ -22,11 +22,11 @@ const [base='http://localhost:8795', worker='http://localhost:8796', out='/tmp/l
      const long=kind==='long';const obj=new T.Group();obj.userData.rest={kind:long?'sit':kind,name:'Bänk/säng',verb:'vila',spots:[{x:0,y:kind==='lie'?.6:.45,z:0,...(long?{legsUp:true}:{})}]};
      const target=restTarget(obj,{x:0,z:0,level:0},0);rest.begin(target,target.spots[0],{pos:player.pos.clone(),yaw:0});
     };
-    window.tick=setInterval(()=>{rest.update(.04);ghosts.update();},40);
+    window.tick=setInterval(()=>{if(window.walking)player.pos.z-=.04;rest.update(.04);ghosts.update();},40);
     window.peer=()=>[...ghosts.others.values()].find(g=>g.name===(i?'Resting':'Observer'));
 
     window.measure=()=>{const g=peer();g.root.updateMatrixWorld(true);return {
-      pose:g.pose,look:g.look,body:g.root.rotation.y+g.avatar.object.rotation.y,
+      pose:g.pose,look:g.look,headLocal:g.avatar.bones.head.rotation.x,body:g.root.rotation.y+g.avatar.object.rotation.y,
       torso:g.avatar.bones.torso.getWorldQuaternion(new T.Quaternion()).toArray(),
       head:g.avatar.bones.head.getWorldQuaternion(new T.Quaternion()).toArray(),
       hips:g.avatar.bones.hips.getWorldPosition(new T.Vector3()).toArray(),
@@ -34,14 +34,31 @@ const [base='http://localhost:8795', worker='http://localhost:8796', out='/tmp/l
     };};
     window.capture=()=>{
       if(!window.renderer){scene.background=new T.Color('#c1d5e1');scene.add(new T.HemisphereLight(0xffffff,0x465b35,2));const light=new T.DirectionalLight(0xffffff,2);light.position.set(-4,5,-3);scene.add(light);window.renderer=new T.WebGLRenderer({antialias:true});renderer.setSize(720,520);document.body.replaceChildren(renderer.domElement);window.renderCamera=new T.PerspectiveCamera(45,720/520,.1,100);
-        const bench=new T.Mesh(new T.BoxGeometry(2,.12,.65),new T.MeshStandardMaterial({color:0x8b6951}));bench.position.set(0,.39,0);scene.add(bench);
+        window.bench=new T.Mesh(new T.BoxGeometry(2,.12,.65),new T.MeshStandardMaterial({color:0x8b6951}));bench.position.set(0,.39,0);scene.add(bench);
       }
-      renderCamera.position.set(2,1.6,2.6);renderCamera.lookAt(0,1.05,0);renderer.render(scene,renderCamera);renderer.getContext().finish();
+      bench.visible=!!peer().pose;renderCamera.position.set(peer().pose?2:-2,1.6,peer().pose?2.6:-2.6);renderCamera.lookAt(0,1.05,0);renderer.render(scene,renderCamera);renderer.getContext().finish();
     };
    },{i,worker});
   }
   const [a,b]=pages;
   await Promise.all(pages.map(p=>p.waitForFunction(()=>ghosts.connected&&peer()?.snaps.length)));
+  // #1505: head-only changes must send even with no feet/yaw movement.
+  for(const stance of ['standing','walking','crouched','cycling']){
+    await a.evaluate(stance=>{window.walking=stance==='walking';player.crouched=stance==='crouched';player.riding=stance==='cycling'?{yaw:Math.PI/2}:null;camera.rotation.set(0,0,0);},stance);
+    await b.waitForTimeout(400);
+    const neutral=await b.evaluate(()=>measure());
+    for(const pitch of [.9,-.9,0]){
+      await a.evaluate(pitch=>camera.rotation.x=pitch,pitch);
+      await b.waitForFunction(pitch=>Math.abs(peer().look[1]-pitch)<.02,pitch);
+      const sample=await b.evaluate(()=>measure());
+      assert.ok(Math.abs(sample.headLocal-neutral.headLocal+pitch)<.06,'head pitches with camera, retaining ordinary stance');
+      const mirror=await a.evaluate(()=>{ghosts.mirrored=()=>true;ghosts.beforeMirror();return ghosts.myGhost.avatar.bones.head.rotation.x;});
+      assert.ok(Math.abs(mirror-sample.headLocal)<.06,'mirror pitch agrees with peer');
+      samples.push({stance,pitch,...sample});
+      if(stance==='standing'&&pitch){await b.evaluate(()=>capture());await b.screenshot({path:`${out}/${pitch>0?'up':'down'}.png`});}
+    }
+  }
+  await a.evaluate(()=>{window.walking=false;player.crouched=false;player.riding=null;player.pos.set(0,0,0);});
   for(const kind of ['sit','long']){
     await a.evaluate(k=>setRest(k),kind);
     await a.waitForFunction(()=>rest.t>=1);
@@ -68,6 +85,6 @@ const [base='http://localhost:8795', worker='http://localhost:8796', out='/tmp/l
   assert.deepEqual(await b.evaluate(()=>peer().look),[0,0]);
   assert.deepEqual(errors,[]);
   fs.writeFileSync(`${out}/result.json`,JSON.stringify({samples,errors,standingRestored:true},null,2));
-  console.log('PASS two-client seated/long-sit yaw/pitch, fixed body, mirror and standing reset');
+  console.log('PASS two-client standing/walking/crouching/cycling pitch + seated gaze, mirror and reset');
  }finally{for(const p of pages)await p.evaluate(()=>{clearInterval(tick);ghosts.disconnect();}).catch(()=>{});await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

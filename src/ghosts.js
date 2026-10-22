@@ -224,10 +224,10 @@ export class Ghost { // (exported for tools/ghostprops.html)
   }
 
   /** Seated on the saddle, the hands on the handlebar, the feet turning the pedals (animate, after the ordinary pose). */
-  poseBike(dt, speed) {
+  poseBike(dt, speed, turn = 0) {
     this.bikePhase = ((this.bikePhase ?? 0) + dt * speed * 5) % (Math.PI * 2);
     const ph = this.bikePhase, pedal = (s) => [s * 0.115, 0.44 + 0.17 * Math.sin(ph + (s > 0 ? 0 : Math.PI)), -0.05 + 0.17 * Math.cos(ph + (s > 0 ? 0 : Math.PI))];
-    poseOlof(this.avatar, { hip: [0.86, -0.12], lean: -0.45, head: -0.25,
+    poseOlof(this.avatar, { hip: [0.86, -0.12], lean: -0.45, head: -0.25 + (this.look?.[1] ?? 0), turn,
       feet: [pedal(1), pedal(-1)], knee: [0.3, 0.9, 1],
       hands: [1, -1].map((s) => ({ at: [s * 0.27, 0.95, 0.31], pole: [s, 0, -0.5] })), can: null });
   }
@@ -321,9 +321,9 @@ export class Ghost { // (exported for tools/ghostprops.html)
       const direction = Math.atan2(kiss.toward.x - this.root.position.x, kiss.toward.z - this.root.position.z);
       this.avatar.object.rotation.y = lerpAngle(this.avatar.object.rotation.y, direction - this.root.rotation.y, amount);
     }
-    this.avatar.update(dt, { speed: this.speed * (1 - amount), turn: turn * (1 - amount), hands, crouch: this.crouch ?? 0, kiss: amount, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0 });
+    this.avatar.update(dt, { speed: this.speed * (1 - amount), turn: turn * (1 - amount), pitch: (this.look?.[1] ?? 0) * (1 - amount), hands, crouch: this.crouch ?? 0, kiss: amount, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0 });
     applyRestPose(this.avatar, this.pose, this.look);
-    if (this.bikeMesh) this.poseBike(dt, Math.hypot(vx, vz));
+    if (this.bikeMesh) this.poseBike(dt, Math.hypot(vx, vz), turn);
     this.heldCat.update(this.avatar, this.root);
     if (this.tag) {
       if (this.pose) { this.tag.position.copy(this.root.worldToLocal(this.head)); this.tag.position.y += (G.tagY - 1.78) * this.avatar.look.tall; }
@@ -510,7 +510,7 @@ export class Ghosts {
     s.jp = s.jp === 1 || s.jp === 2 ? s.jp : 0;
     s.hi = cleanHeldCategory(s.hi);
     s.bk = Number.isFinite(s.bk) ? s.bk : null;
-    s.look = (s.pose === 1 || s.pose === 3) && Array.isArray(s.look) ? s.look : [0, 0];
+    s.look = s.pose !== 2 && Array.isArray(s.look) ? s.look : [0, 0];
     s.catKey = JSON.stringify(s.cat ?? null);
     this.track(s, t);
     if (!this.on) return;
@@ -525,7 +525,7 @@ export class Ghosts {
       const sent = this.sent;
       if (t - this.lastSent >= 1000 / G.hz && (!sent || sent !== this.prev || this.sentAv !== this.avatarCode)) {
         const p = this.prev ?? s;
-        this.ws.send(JSON.stringify({ p: p.p.map((v) => Math.round(v * 100) / 100), r: Math.round(p.r * 100) / 100, score: p.score, ...(p.h ? { h: p.h } : {}), ...(p.hi ? { hi: p.hi } : {}), ...(p.c ? { c: true } : {}), ...(p.pose ? { pose: p.pose } : {}), ...((p.pose === 1 || p.pose === 3) ? { look: p.look.map(v => Math.round(v * 100) / 100) } : {}), ...(p.sp ? { sp: true } : {}), ...(p.jp ? { jp: p.jp } : {}), ...(p.bk !== null && p.bk !== undefined ? { bk: Math.round(p.bk * 100) / 100 } : {}), ...(p.cat ? { cat: p.cat } : {}), ...(this.avatarCode ? avatarWire(this.avatarCode) : {}) }));
+        this.ws.send(JSON.stringify({ p: p.p.map((v) => Math.round(v * 100) / 100), r: Math.round(p.r * 100) / 100, score: p.score, ...(p.h ? { h: p.h } : {}), ...(p.hi ? { hi: p.hi } : {}), ...(p.c ? { c: true } : {}), ...(p.pose ? { pose: p.pose } : {}), ...(p.pose !== 2 ? { look: p.look.map(v => Math.round(v * 100) / 100) } : {}), ...(p.sp ? { sp: true } : {}), ...(p.jp ? { jp: p.jp } : {}), ...(p.bk !== null && p.bk !== undefined ? { bk: Math.round(p.bk * 100) / 100 } : {}), ...(p.cat ? { cat: p.cat } : {}), ...(this.avatarCode ? avatarWire(this.avatarCode) : {}) }));
         this.sent = p; this.sentAv = this.avatarCode; this.lastSent = this.lastBeat = t; this.messages++;
       }
     }

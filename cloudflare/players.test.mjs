@@ -1687,3 +1687,20 @@ test('seated look forwards, survives late join and clears with invalid or standi
   }
   a.ws.close(); b.ws.close(); await settle(env);
 });
+
+
+test('standing head pitch forwards while walking crouched or cycling and clears for legacy states', async () => {
+  const env = setup(), a = await connect(env, 'Looking'), b = await connect(env, 'Observer');
+  for (const extra of [{}, {c:true}, {bk:0}]) for (const pitch of [-1.45, 1.45, 0]) {
+    now += 250; a.send({p:[2,0,3], r:0, look:[0,pitch], ...extra}); await settle(env);
+    assert.deepEqual(b.states().at(-1).look,[0,pitch]);
+  }
+  const late = await connect(env, 'Late');
+  assert.deepEqual(late.got[0].ps.find(p => p.n === 'Looking').look,[0,0]);
+  late.ws.close(); await settle(env);
+  for (const look of [undefined, [0,2], [0,'1'], [0,null], [1,0]]) {
+    now += 250; a.send({p:[2,0,3], r:0, look}); await settle(env);
+    assert.equal(b.states().at(-1).look,undefined);
+  }
+  a.ws.close(); b.ws.close(); await settle(env);
+});

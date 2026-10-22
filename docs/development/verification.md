@@ -15,12 +15,13 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
-## Seated head direction (#1504)
+## Player head direction (#1504, #1505)
 
-Run only the `seated look|rest posture` cases in `cloudflare/players.test.mjs`, then
+Run only the `standing head pitch|seated look|rest posture` cases in `cloudflare/players.test.mjs`, then
 `tools/seatedlooktest.cjs BASE LOCAL_WORKER OUT`. Two real browser clients cover seated and
-legs-up yaw/pitch, fixed torso/feet, mirror agreement and standing reset. Inspect the paired
-head views. [Results](../validation/issue-1504/README.md). No broad scene or combat sweep.
+legs-up yaw/pitch, fixed torso/feet, mirror agreement and standing reset. #1505 also checks
+standing/walking/crouching/cycling pitch and mirror agreement. Inspect the paired
+head views. [Seated results](../validation/issue-1504/README.md), [pitch results](../validation/issue-1505/README.md). No broad scene or combat sweep.
 
 ## Santa visit, TV volume, gift piles and billiards (#1500–#1503)
 
