@@ -548,18 +548,30 @@ function hairParts(style) {
   const low = (a) => (curtain(a) ? Math.max(hairline(a), longTop(a)) : hairline(a));
   const bump = style === 0 ? (a, s, i) => 0.0045 * Math.sin(i * 1.9 + 0.4) * smooth(0.45, 0.9, s) + 0.004 * smooth(0.25, 0.7, s) * (1 - smooth(25, 55, Math.abs(a))) : () => 0;
   out.push([shell(az, low, crownTop, HC.rows,
-    (a, e, s, i) => Math.max(0.0015, thick(a, e) * (curtain(a) ? 1 : feather(s)) * (parting && a === 0 ? 0.55 : 1) + bump(a, s, i)),
+    (a, e, s, i) => Math.max(0.0015, thick(a, e) * (curtain(a) || (style === 4 && Math.abs(a) >= 72) ? 1 : feather(s)) * (parting && a === 0 ? 0.55 : 1) + bump(a, s, i)),
     (a, s, i) => strand(i) * (parting && a === 0 && s > 0.15 ? 0.8 : 1) * (0.92 + 0.08 * smooth(0, 0.3, s))), 'hair', 1]);
   if (style === 1) out.push(...longHair([...az.filter((a) => a >= L.from), ...az.filter((a) => a <= -L.from)], low, onSkull, sheet, strand, thick, hit, smooth));
-  if (style === 4) { // curly hair (#1244, #1268): rings over the shell, plus hanging locks at sides/back for hairLength
+  if (style === 4) { // #1377: continuous winding locks, rooted in the scalp rather than separate balls
     const C = HAIR.curly;
-    C.rings.forEach(([e, n, phase], r) => { for (let k = 0; k < n; k++) {
-      const a = ((k + phase) / n) * 360 - 180, e0 = hairline(a) + C.margin;
-      if (e < e0 && e < 85) continue;
-      const j = Math.sin(r * 7.3 + k * 2.1), t = 0.5 + 0.5 * Math.sin(r * 3.1 + k * 4.7), rad = C.radius * (0.85 + 0.3 * t);
-      const q = onSkull(a, e, thick(a, e) + rad * C.sink);
-      out.push([new THREE.IcosahedronGeometry(rad, 0).scale(1, 0.9 + 0.2 * j, 1).rotateY(k + r).translate(...q), 'hair', 0.92 + 0.14 * t]);
-    } });
+    const lock = (points, radius, shade) => {
+      const curve = new THREE.CatmullRomCurve3(points.map((p) => new THREE.Vector3(...p)));
+      out.push([new THREE.TubeGeometry(curve, C.segments, radius, C.sides, false), 'hair', shade]);
+    };
+    for (let k = 0; k < C.locks; k++) {
+      const a = k * 360 / C.locks - 180;
+      const start = C.top - C.stagger * (0.5 + 0.5 * Math.sin(k * 2.39));
+      const end = hairline(a) + C.margin;
+      const points = [];
+      for (let j = 0; j <= C.segments; j++) {
+        const t = j / C.segments, envelope = Math.sin(Math.PI * t);
+        const phase = t * Math.PI * 2 * C.turns + k * 2.39;
+        const e = start + (end - start) * t;
+        const angle = a + C.sway * Math.sin(phase) * envelope;
+        const lift = thick(angle, e) + C.lift * envelope * (0.5 + 0.5 * Math.cos(phase)) - C.radius * (1 - envelope);
+        points.push(onSkull(angle, e, lift));
+      }
+      lock(points, C.radius * (0.9 + 0.1 * Math.sin(k * 1.7)), strand(k));
+    }
     // #1268: curly curtain with wavy locks down sides and back so hairLength stretches it
     const ears = [-1, 1].map((s) => ({ radius: 0.028, scale: [0.55, 1, 0.72], centre: [s * 0.1, H - 0.005, 0] }));
     const torsoAt = (y) => {
@@ -600,16 +612,19 @@ function hairParts(style) {
     const cOuter = sheet(cCols, cRows, false, (i, j) => cCols3[i][j].slice(0, 3), (i, j) => strand(i + 2) * (0.92 + 0.12 * Math.sin(j * 2.5 + i)));
     const cInner = sheet(cCols, cRows, false, (i, j) => { const [x, y, z, r] = cCols3[i][j], k = (r - 0.009) / r; return [x * k, y, z * k]; }, () => 0.75, true);
     out.push([cOuter, 'hair', 0.98], [cInner, 'hair', 1]);
-    // Extra ringlets / curls along the wavy curtain
-    for (let i = 0; i < cAz.length; i += 2) {
-      const a = cAz[i], rad = a * deg;
-      if (Math.abs(a) < 80) continue;
-      for (let j = 1; j < cRows; j += 2) {
-        const [x, y, z, r] = cCols3[i][j];
-        const radC = C.radius * (0.75 + 0.2 * Math.sin(i * 2.7 + j * 3.3));
-        const q = [Math.sin(rad) * (r + radC * 0.3), y, Math.cos(rad) * (r + radC * 0.3)];
-        out.push([new THREE.IcosahedronGeometry(radC, 0).scale(1, 0.95, 1).rotateY(i + j).translate(...q), 'hair', 0.95]);
+    // Continuous side/back ringlets follow the existing body-cleared curtain.
+    for (let i = 1; i < cAz.length - 1; i += 2) {
+      const rad = cAz[i] * deg, points = [];
+      for (let j = 0; j <= C.segments; j++) {
+        const t = j / C.segments, row = t * cRows, lo = Math.min(cRows - 1, Math.floor(row)), f = row - lo;
+        const p = cCols3[i][lo], q = cCols3[i][lo + 1];
+        const y = p[1] + (q[1] - p[1]) * f;
+        const envelope = Math.sin(Math.PI * t), phase = t * Math.PI * 2 * C.curtainTurns + i * 1.7;
+        const angle = rad + C.curtainSway * Math.sin(phase) * envelope;
+        const r = Math.max(p[3] + (q[3] - p[3]) * f - C.radius * 0.4, body(angle, y) + C.radius) + C.lift * (0.5 + 0.5 * Math.cos(phase)) * envelope;
+        points.push([Math.sin(angle) * r, y, Math.cos(angle) * r]);
       }
+      lock(points, C.radius, strand(i));
     }
   }
   if (style === 2) { // the bun at the back of the crown: a coil around a knot, tilted with the head's curve, and its band

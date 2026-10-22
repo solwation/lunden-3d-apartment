@@ -354,27 +354,31 @@ export function drawAvatarPreview(canvas, look) {
       ctx.roundRect(cx - 6, crown - 0.5, 12, 4, 2);
       ctx.fill();
     }
-  } else if (style === 4) { // Curly (#1244, #1268): cap with curls round crown/temples, plus cascading side curls when longer
+  } else if (style === 4) { // #1377: connected waves, matching the 3D locks instead of little circles
     ctx.fillStyle = hair;
     cap(1.8, hairline);
-    for (let i = 0; i < (hatOn ? 0 : 11); i++) {
-      const t = Math.PI * (1.05 + 0.9 * i / 10), r = 4.2 + (i % 3) * 0.6;
+    ctx.strokeStyle = hair;
+    ctx.lineWidth = 5;
+    ctx.lineCap = 'round';
+    for (const side of [-1, 1]) {
+      const bottom = hy + ry - 4 + 34 * hairLen;
       ctx.beginPath();
-      ctx.arc(cx + Math.cos(t) * (rx + 2.5), hy + Math.sin(t) * (ry + 2.5), r, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.moveTo(cx + side * (rx - 1), hairline);
+      for (let y = hairline; y <= bottom; y += 2) {
+        ctx.lineTo(cx + side * (rx + 1 + 2 * Math.sin((y - hairline) * 0.35)), y);
+      }
+      ctx.stroke();
     }
-    for (let i = 0; i < (hatOn ? 0 : 4); i++) { ctx.beginPath(); ctx.arc(cx - 9 + i * 6, crown + 2, 4.5, 0, Math.PI * 2); ctx.fill(); }
-    // #1268: hanging curls at the sides scaling with the hairLength slider
-    const extraCurls = Math.max(0, Math.round((hairLen - 0.45) / 0.16));
-    for (let k = 0; k < extraCurls; k++) {
-      const yk = hy + ry - 4 + k * 8.5;
-      for (const s of [-1, 1]) {
-        const xk = cx + s * (rx + 2.5 + (k % 2) * 2.5);
+    if (!hatOn) {
+      ctx.lineWidth = 3;
+      for (let i = -2; i <= 2; i++) {
         ctx.beginPath();
-        ctx.arc(xk, yk, 4.2 + (k % 3) * 0.5, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.moveTo(cx + i * 5, crown + 1);
+        ctx.bezierCurveTo(cx + i * 5 - 5, crown - 3, cx + i * 5 + 5, hairline - 6, cx + i * 5, hairline);
+        ctx.stroke();
       }
     }
+    ctx.lineCap = 'butt';
   } else if (style === 3) { // Beanie: a knitted cap with a folded brim, both ending above the brows
     ctx.fillStyle = top;
     cap(2.5, hairline - 1);

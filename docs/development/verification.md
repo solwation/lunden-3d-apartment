@@ -8439,3 +8439,18 @@ responses and expiry. Zero browser errors; source hashes and screenshots are in
 use a local Worker; apartment/WebGL and image capture remain bounded fixture
 collaborators. No production report or real GitHub test issue was created.
 No product files or public downstream behaviour change in this test-only fix.
+
+## Connected curly hair (#1377)
+
+Run `node --test tools/avatarcustomizertest.mjs tools/avatarbodytest.mjs` (37 checks) and
+`tools/avatarhairtest.cjs BASE OUT` for front/quarter/side/back and distant views of all five styles.
+Use `tools/avatarfacetest.cjs BASE OUT lengths "240304100h0,240344100h8,240374100h8q1,240334100h0q3,240354100w0l8"`
+for short/long hair, colours, cap/beanie and head proportions. Both browser drivers use
+`PLAYWRIGHT_MODULE`/`CHROME_PATH` and reject page errors; face checks retain one draw per avatar.
+The curls replace separate balls with shared winding tube geometry; other styles are unchanged.
+This is character content, excluded from the public downstream.
+
+Verified37/37 native checks plus both browser drivers and a real Canvas2D preview.
+Inspected front/quarter/side/back, five colours and short/long/hat combinations.
+Style4 changes12,182→15,102 triangles (sleeveless), retaining one avatar draw and no new lights/textures.
+Other four styles have identical triangle counts. This is component Chromium evidence, not a full-world performance profile.

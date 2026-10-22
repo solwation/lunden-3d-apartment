@@ -3418,8 +3418,9 @@ export const AVATAR_HAIR = { centre: [0, 0.09, 0], rows: 6, step: 12, streak: 0.
   hairline: [[0, 37], [22, 36], [42, 29], [58, 16], [64, -4], [72, -6], [78, 13], [102, 15], [120, -6], [146, -26], [180, -30]],
   beanie: [[0, 35], [35, 32], [60, 19], [80, 9], [100, 9], [140, -8], [180, -14]],
   thick: [[0.016, 0.006, 0.009], [0.014, 0.011, 0.013], [0.006, 0.004, 0.005], [0.004, 0.003, 0.004], [0.016, 0.008, 0.012]],
-  // #1244 curly hair (style 4): `rings` [elevation°, curls, azimuth phase] of icosahedron curls of `radius` m sunk `sink` × radius into the shell, `margin`° above the hairline *guess*
-  curly: { radius: 0.021, sink: 0.35, margin: 5, rings: [[88, 1, 0], [76, 6, 0.5], [62, 10, 0], [47, 13, 0.5], [32, 15, 0], [17, 16, 0.5], [3, 16, 0], [-12, 14, 0.5]] },
+  // #1377 continuous curls: aesthetic guesses in metres/degrees; bounded four-sided tubes share the avatar draw.
+  curly: { locks: 24, segments: 16, sides: 4, radius: 0.008, lift: 0.004, margin: 3,
+    top: 86, stagger: 18, sway: 9, turns: 2, curtainTurns: 2.5, curtainSway: 0.065 },
   long: { top: 50, from: 64, front: 72, back: 100, hem: [-0.035, -0.25], gap: 0.016, depth: 0.012, rows: 8 } };
 // The avatars' skin and material shading (#1104, src/avatar.js skinShading / clothShade) *guess* tuned by eye in day and
 // evening light, not measured: soft areas in the head bone's frame (metres; H = 0.1 is the head's centre) as
