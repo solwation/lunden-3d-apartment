@@ -1,0 +1,11 @@
+{
+  "checks": [
+    "own actual avatar sits left of player name",
+    "online named, anonymous and legacy visitors get portraits with score",
+    "editing appearance repaints own thumbnail",
+    "next existing heartbeat updates own online portrait",
+    "narrow landscape list fits viewport",
+    "zero browser errors"
+  ],
+  "errors": []
+}

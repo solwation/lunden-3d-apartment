@@ -15,6 +15,13 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## Start-menu portraits (#1517)
+
+Seven `cloudflare/scores.test.mjs` tests and the six actual-menu checks in
+`tools/menuportraitstest.cjs BASE LOCAL_WORKER OUT` pass. The browser checks
+exact own/online wire codes, anonymous and legacy rows, live editing, heartbeat
+updates and narrow landscape layout. [Images and scope](../verification/1517/README.md).
+
 ## Local player profiles and avatar picker (#1515)
 
 Run `node --test --test-isolation=none tools/playerprofilestest.mjs` and the scoped

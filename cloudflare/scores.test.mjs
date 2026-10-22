@@ -59,3 +59,27 @@ test('presence: anonymous visitors are counted and listed one by one, named ones
   const g = await (await call(env, '/presence', 'GET')).json(); // reading does not join
   assert.equal(g.count, 4);
 });
+
+test('presence portraits preserve validated complete codes for named and anonymous visitors', async () => {
+  const env = { LUNDEN: kv() }, avatar = '240302101h8q3d1s2';
+  await call(env, '/presence/portrait-a', 'PUT', { name: 'Olof', score: 10, avatar });
+  const data = await (await call(env, '/presence/portrait-b', 'PUT', { name: '', score: 20, avatar: '053124101h2q1' })).json();
+  assert.deepEqual(data.players, [{ name:'Olof', score:10, avatar }, { name:'', score:20, avatar:'053124101h2q1' }]);
+  assert.equal(JSON.parse(await env.LUNDEN.get('presence:portrait-a')).avatar, avatar);
+});
+
+test('presence portraits omit malformed, oversized and legacy codes without hiding players', async () => {
+  const env = { LUNDEN: kv() };
+  for (const [i, avatar] of [undefined, '<img>', '999999999', '240302101q', '240302101'+'h123'.repeat(20)].entries()) {
+    await call(env, `/presence/invalid-${i}`, 'PUT', { name:`Player ${i}`, score:5, avatar });
+  }
+  const data = await (await call(env, '/presence', 'GET')).json();
+  assert.equal(data.players.length,5); assert.ok(data.players.every(p => !('avatar' in p)));
+});
+
+test('presence same-name aggregation keeps the best-score players own portrait', async () => {
+  const env = { LUNDEN: kv() };
+  await call(env, '/presence/portrait-a', 'PUT', { name:'Olof', score:10, avatar:'240302101h8q3' });
+  const data = await (await call(env, '/presence/portrait-b', 'PUT', { name:'Olof', score:20, avatar:'053124101h2q1' })).json();
+  assert.deepEqual(data.players,[{name:'Olof',score:20,avatar:'053124101h2q1'}]);
+});

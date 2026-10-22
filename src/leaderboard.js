@@ -1,3 +1,4 @@
+import { drawPlayerPortrait } from './playerportraits.js';
 import { profiles } from './playerprofiles.js';
 import { deletePlayerPhotos } from './idb.js';
 import { drawAvatarPreview } from './customizer.js';
@@ -70,6 +71,11 @@ export class Leaderboard {
     if (this.newPlayer) this.newPlayer.hidden = false;
     if (this.badge) this.badge.hidden = false;
     if (this.display) this.display.textContent = this.name || ANON_NAME;
+    this.renderAvatar();
+  }
+
+  renderAvatar(code = get('lunden.avatar')) {
+    drawPlayerPortrait(this.badge?.querySelector('#player-avatar'), code, this.name);
   }
 
   openDialog(mode = 'initial') {

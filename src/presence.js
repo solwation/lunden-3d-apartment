@@ -10,8 +10,8 @@ const visitorId = () => {
 };
 
 export class Presence {
-  constructor(url, el, { getName = () => '', getScore = () => 0, onUpdate = () => {} } = {}) {
-    Object.assign(this, { url, el, getName, getScore, onUpdate, id: visitorId(), timer: null, count: 0, names: [], players: [] });
+  constructor(url, el, { getName = () => '', getScore = () => 0, getAvatar = () => '', onUpdate = () => {} } = {}) {
+    Object.assign(this, { url, el, getName, getScore, getAvatar, onUpdate, id: visitorId(), timer: null, count: 0, names: [], players: [] });
     // #884: own both stacked cells once; heartbeat responses update only the online count.
     if (el && !el.querySelector('.presence-online')) {
       el.setAttribute('aria-label', 'Besökare online och bildfrekvens');
@@ -30,7 +30,7 @@ export class Presence {
       const name = this.getName?.() ?? '';
       const score = Number(this.getScore?.() ?? 0) | 0;
       // #677: anonymous players are online too (name '')
-      const r = await fetch(`${this.url}/presence/${this.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, score }), cache: 'no-store' });
+      const r = await fetch(`${this.url}/presence/${this.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, score, avatar: this.getAvatar() }), cache: 'no-store' });
       if (r.ok) {
         const data = await r.json();
         if (Number.isInteger(data.count)) {

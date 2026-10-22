@@ -1,3 +1,4 @@
+import { renderPlayingNow } from './playerportraits.js';
 import { saveStats } from './stats.js';
 import { playerLocalStorage as localStorage, playerSessionStorage as sessionStorage } from './playerprofiles.js';
 import { KISS } from './config.js';
@@ -31,7 +32,7 @@ import { loadBeerShelf } from './beershelfdata.js';
 import { BeerShelf } from './beershelf.js';
 import { initHudIcons, fitChoiceLabels, setIcon, setPressed, setWeatherIcon, formatTemp } from './hudicons.js';
 import * as THREE from 'three';
-import { UNIT_TOP, SITE, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS, GARAGE, OLOF, CORE_A, CORE_B, CORE_C, PLAYROOM, avatarLook, avatarBody, avatarHeightCm } from './config.js';
+import { UNIT_TOP, SITE, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS, GARAGE, OLOF, CORE_A, CORE_B, CORE_C, PLAYROOM, encodeAvatarWireLook, decodeAvatarLook, avatarLook, avatarBody, avatarHeightCm } from './config.js';
 import { setupAvatarCustomizer, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen } from './customizer.js';
 import { MieleHeld, HeartFireworks } from './miele.js';
 import * as showFireworks from './fireworks.js';
@@ -2738,25 +2739,14 @@ document.getElementById('score').prepend(weatherEl, tempEl, levelEl);
 document.getElementById('score').append(document.getElementById('terminal-btn')); // preserve its listener inside the touch score badge (#501)
 
 const menuPresenceEl = document.getElementById('menu-presence');
-const menuPresenceListEl = document.getElementById('menu-presence-list');
-function renderMenuPresence(p) {
-  if (!menuPresenceEl || !menuPresenceListEl) return;
-  const players = p.players && p.players.length ? p.players
-    : (p.names && p.names.length ? p.names.map((n) => ({ name: n, score: 0 })) : []);
-  if (!players.length) {
-    menuPresenceEl.hidden = true;
-    return;
-  }
-  menuPresenceEl.hidden = false;
-  menuPresenceListEl.textContent = players.map((pl) => {
-    const s = Number(pl.score) | 0;
-    return `${pl.name} (${s}p)`;
-  }).join(', ');
-}
+let presenceAvatar = '';
+try { presenceAvatar = encodeAvatarWireLook(decodeAvatarLook(localStorage.getItem('lunden.avatar'), leaderboard.name)); } catch { /* storage blocked */ }
+const renderMenuPresence = p => renderPlayingNow(menuPresenceEl, p);
 
 const presence = new Presence(cloud.url, document.getElementById('presence'), {
   getName: () => leaderboard.name,
   getScore: () => totalScore(),
+  getAvatar: () => presenceAvatar,
   onUpdate: (p) => renderMenuPresence(p)
 });
 leaderboard.activePlayers = () => presence.names;
@@ -2871,7 +2861,9 @@ window.__chat = chat;
 // #1136/#1137: the standing eye height and the body (crouch eye, headroom, radius) follow the chosen avatar height
 // (settleEye eases the camera there; Rest lowers a seated eye by the same share)
 const applyBody = (lk) => { const { scale, ...body } = avatarBody(lk); Object.assign(PLAYER, body); rest.scale = scale; };
-const setMyLook = (lk) => { ghosts.setMyLook(lk); applyBody(lk); handLook(lk); };
+const setMyLook = (lk) => { ghosts.setMyLook(lk); applyBody(lk); handLook(lk); presenceAvatar = ghosts.avatarCode; leaderboard.renderAvatar(presenceAvatar); };
+presenceAvatar = ghosts.avatarCode;
+leaderboard.renderAvatar(presenceAvatar);
 applyBody(ghosts.myLook); handLook(ghosts.myLook);
 setupAvatarCustomizer({
   getLook: () => ghosts.myLook,

@@ -412,7 +412,7 @@
     #rotate .rotate-qr img { width: 120px; height: 120px; border-radius: 6px; background: #fff; padding: 4px; box-sizing: border-box; }
     #player-badge { margin: 8px 0 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; background: #eaf1f5; border: 1px solid #c8d6df; border-radius: 8px; padding: 8px 12px; }
     #player-badge[hidden] { display: none; }
-    #player-badge .badge-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    #player-badge .badge-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
     #player-badge .badge-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #6a7c84; }
     #player-badge #player-display { font-size: 15px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     #player-badge button { border: 0; border-radius: 6px; padding: 6px 12px; min-height: 38px; cursor: pointer; background: #fff; color: var(--accent); font: 600 13px system-ui, sans-serif; box-shadow: inset 0 0 0 1.5px var(--accent); white-space: nowrap; }
@@ -439,6 +439,9 @@
     .menu-presence .presence-icon { font-size: 18px; line-height: 1.2; flex: none; }
     .menu-presence .presence-info { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
     .menu-presence .presence-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #6a7c84; }
+    .player-portrait { width: 36px; height: 56px; flex: none; border-radius: 4px; }
+    .online-player { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+    .online-player span { min-width: 0; overflow-wrap: anywhere; }
     .menu-presence .presence-list { font-size: 14px; font-weight: 600; color: var(--ink); line-height: 1.4; word-break: break-word; }
     #stats small { flex-basis: 100%; opacity: .7; font-size: 11px; line-height: 1.2; margin: -2px 0 2px 20px; }
     /* top right under the HUD buttons, on every device: bottom left the long stats panel ran over it */
@@ -909,6 +912,7 @@
       <p class="resume" id="reset-done" hidden role="status">Hemmet är återställt.</p>
       <p class="resume" id="to-start-done" hidden role="status">Platsen har återställts till startplatsen.</p>
       <div id="player-badge" hidden>
+        <canvas id="player-avatar" class="player-portrait" aria-hidden="true"></canvas>
         <div class="badge-info">
           <span class="badge-label">Spelare</span>
           <span id="player-display"></span>

@@ -1,4 +1,5 @@
 [
+  {"id": 1165, "date": "2026-10-22", "text": "Din avatar syns bredvid spelarnamnet och aktiva spelare visas med sina avatarer i startmenyn."},
   {"id": 1164, "date": "2026-10-22", "text": "Du kan välja sparade spelare med avatarbilder och egna spellägen eller ta bort dem efter bekräftelse."},
   {"id": 1163, "date": "2026-10-22", "text": "Markeringen av dörrar och föremål förbereds före start för att minska hack."},
   {"id": 1162, "date": "2026-10-22", "text": "Prestandaläget kan nu fånga och exportera långa bildstopp."},

@@ -3,7 +3,7 @@ import { beerShelfFetch } from './beershelf.js';
 import { youtubeSearchFetch } from './youtubesearch.js';
 import { layoutFetch } from './layout.js';
 import { crashFetch } from './crash.js';
-import { PlayerRoom, refuse, CLOSE } from './players.js';
+import { PlayerRoom, refuse, CLOSE, cleanAvatar, cleanAvatarExt } from './players.js';
 export { PlayerRoom };
 // Kv. Lunden L1007 — the shared world (#178, #119): a small Cloudflare Worker with one KV namespace (binding
 // LUNDEN). It keeps the drawings taped up in the flat, and the sheet on the Sovrum 3 desk,
@@ -31,6 +31,14 @@ export { PlayerRoom };
 // KV keys: 'drawings' (the metadata list), 'drawing:<id>' (image bytes, metadata { type }), 'paper' (JSON),
 // 'scores' (all rows { id, name, score, updated }, the best MAX_SCORES), 'presence:<id>' (short-lived visitors).
 // Cat photos are personal and stay in each visitor's browser (#211).
+
+// Same compact appearance validation as the existing multiplayer protocol.
+const presenceAvatar = code => {
+  if (typeof code !== 'string' || code.length > 72) return null;
+  const match = /^([0-9]+)(.*)$/.exec(code);
+  if (!match || !cleanAvatar(match[1]) || (match[2] && !cleanAvatarExt(match[2]))) return null;
+  return code;
+};
 
 const ORIGINS = [/^https:\/\/solwation\.github\.io$/, /^http:\/\/localhost(:\d+)?$/, /^http:\/\/127\.0\.0\.1(:\d+)?$/];
 const MAX_IMAGE = 300 * 1024;  // bytes per image
@@ -169,11 +177,12 @@ const worker = {
             try { parsed = JSON.parse(raw); } catch { if (typeof raw === 'string' && raw.trim()) parsed = { name: raw.trim() }; }
             if (!parsed || typeof parsed !== 'object') continue;
             const s = Number.isFinite(parsed.score) ? Number(parsed.score) : 0;
-            if (!parsed.name) { anon++; players.push({ name: '', score: s }); continue; }
+            const avatar = presenceAvatar(parsed.avatar), look = avatar ? { avatar } : {};
+            if (!parsed.name) { anon++; players.push({ name: '', score: s, ...look }); continue; }
             if (!names.includes(parsed.name)) names.push(parsed.name);
             const pEntry = players.find((p) => p.name === parsed.name);
-            if (!pEntry) players.push({ name: parsed.name, score: s });
-            else if (s > pEntry.score) pEntry.score = s;
+            if (!pEntry) players.push({ name: parsed.name, score: s, ...look });
+            else if (s > pEntry.score) { pEntry.score = s; delete pEntry.avatar; Object.assign(pEntry, look); }
           }
           cursor = page.list_complete ? '' : page.cursor;
         } while (cursor);
@@ -181,13 +190,14 @@ const worker = {
       };
       if (m === 'GET' && !id) return list();
       if (m === 'PUT' && id) {
-        let name = '', score = 0;
+        let name = '', score = 0, avatar = null;
         try {
           const b = await request.json();
+          avatar = presenceAvatar(b?.avatar);
           if (b?.name && typeof b.name === 'string') name = b.name.replace(/[\u0000-\u001f<>&"]/g, '').trim().slice(0, 30);
           if (Number.isFinite(b?.score)) score = Math.max(0, Math.min(3000, Number(b.score) | 0));
         } catch { /* empty body or non-json */ }
-        await env.LUNDEN.put(`presence:${id}`, JSON.stringify({ name, score, t: Date.now() }), { expirationTtl: 120 });
+        await env.LUNDEN.put(`presence:${id}`, JSON.stringify({ name, score, ...(avatar ? { avatar } : {}), t: Date.now() }), { expirationTtl: 120 });
         return list();
       }
     }

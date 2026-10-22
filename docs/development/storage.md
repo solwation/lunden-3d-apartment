@@ -4,6 +4,17 @@ Read [CLAUDE.md](../../CLAUDE.md) first for shared workflow rules. Paths in code
 
 Related: [deployment](deployment.md), [life](life.md).
 
+## Start-menu portraits (#1517)
+
+The local badge uses `Leaderboard.renderAvatar` and `playerportraits.js` to show
+the current avatar left of the name. Live appearance edits update it immediately.
+Presence adds an optional complete `avatar` wire code to the existing30-second
+heartbeat. The Worker reuses multiplayer digit/extension validation and returns
+it alongside name/score; missing or invalid codes retain seeded fallback portraits.
+Existing same-name aggregation keeps the highest-score row's own portrait.
+Anonymous rows remain separate. `renderPlayingNow` builds text-safe DOM rows
+with the customizer's Canvas2D preview; no WebGL contexts or extra polling.
+
 ## Local player profiles (#1515)
 
 `src/playerprofiles.js` maintains `lunden.players.v1`: version, active UUID and
