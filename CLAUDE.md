@@ -140,6 +140,15 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   evidence across unrelated rebases; the conductor reviews it rather than automatically rerunning it. Reassess
   verification cost near 10 minutes. Follow the [orchestra policy](.claude/commands/orkester.md#minsta-tillräckliga-verifiering-användaren-2026-10-21)
   and [verification guide](docs/development/verification.md#verification-policy). Never claim untested behaviour as tested.
+- **Result images before closing (user, 2026-10-22).** Before closing an implementation issue, save
+  representative screenshots of the finished result under `docs/verification/<issue-number>/`, commit and push
+  them, then post them as embedded Markdown images in a comment on that issue. Choose views that make the
+  result easy to evaluate without opening the game; add before/after views when useful. Briefly describe what
+  each image shows and which checks passed. Use permanent repository image URLs pinned to the image commit,
+  not local paths or temporary CI artifacts, and verify that the images are accessible before closing.
+  Do this before the closing push too: `Fixes #N` closes an issue automatically, so publish the images and
+  comment first, then push the resolving commit. For work with no meaningful visual result (such as docs-only
+  changes), explain this in the completion comment and provide the relevant concrete verification instead.
 - **Every user-visible change gets an entry in `data/changelog.json`** (Swedish, newest first,
   next `id`), in the same commit — **one short sentence**, no digressions. It is shown only on the
   note on the freezer (the start screen says nothing about news; visitors find the note themselves);
