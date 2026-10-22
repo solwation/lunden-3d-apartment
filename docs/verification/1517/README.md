@@ -12,3 +12,8 @@ minneslagring och `test=lazy`; inga produktionsdata ändras och ingen prestanda
 eller fysisk telefon hävdas. Endast kompakt avatarkod tillkommer i befintlig
 närvarouppdatering; inga nya pollningsloopar. Gameplay/Cloudflare överförs inte
 till det publika kvarteret-lunden.
+
+Publicerade bilder: [issue-kommentaren](https://github.com/solwation/lunden-3d-apartment/issues/1517#issuecomment-6347792009), låsta till `e624345721976b95b03a0c434050d9ac912ab91b`.
+[Pages](https://github.com/solwation/lunden-3d-apartment/actions/runs/39828577873)
+och [Worker inklusive wrangler-deploy](https://github.com/solwation/lunden-3d-apartment/actions/runs/39828577818)
+passerade.
