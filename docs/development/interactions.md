@@ -1891,9 +1891,14 @@ select films or join as that computer. YouTube uses the same official world-spac
 iframe and shared film clock as the TVs. Switching to a game stops that computer's
 film; it does not change other computers, TVs or the cinema.
 
-`snakeview.js` renders the server arena both on the physical monitor's texture
-and in the control panel. Snapshots interpolate at a capped20Hz; static menu
-textures upload only when changed. Arrow/WASD headings, pointer/touch steering
+`snakeview.js` renders the server arena only on the physical monitor texture
+(#1491). Selecting Spel changes the app dialog to a nonmodal bottom toolbar and
+frames the actual screen without moving the avatar. Closing or switching apps
+restores the saved camera pose. Esc/E and Lämna datorn leave; Startsida
+and YouTube return to the modal app selector. Window capture isolates game keys
+and mouse/touch from world input; steering raycasts the actual screen UVs and
+accounts for the arena letterboxing. Snapshots interpolate at a capped20Hz; static
+menu textures upload only when changed. Arrow/WASD headings, pointer/touch steering
 and44px directional buttons never feed the avatar movement keys. A join/restart
 is explicit. Food grows length/girth; larger head collisions win, equal heads
 both die, and body collisions leave edible remains. Names/scores show actual peers.

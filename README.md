@@ -347,7 +347,8 @@ The actual entrance/lobby shells in Houses A, B and C remain visible beyond the 
 Alla datorer, även laptopen, börjar avstängda. Starta med E eller tryckknappen;
 interagera igen för att välja YouTube eller Spel. I appvalet kan datorn stängas av. Ormstriden är ett gemensamt ormspel: ät, väx och få de andra
 att krocka med din kropp. En större orm vinner vid huvudkrock. Styr med pilar,
-WASD, mus eller pekskärm; lämna datorn för att lämna matchen. Fyra färgtemade
+WASD, mus eller pekskärm direkt på den fysiska datorskärmen. Esc, E eller
+Lämna datorn lämnar datorn och matchen. Fyra färgtemade
 datorbord står i lekstugan, två längs varje sidovägg. En person styr varje dator
 och samma arena delas med datorerna hemma.
 

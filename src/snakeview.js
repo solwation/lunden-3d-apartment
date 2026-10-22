@@ -1,6 +1,6 @@
 import { SNAKE as C } from './config.js';
 
-/** Shared arena on a physical monitor and in its accessible control panel. */
+/** Shared arena rendered on each physical computer monitor. */
 export function drawSnake(canvas,state,me,theme,previous=null,blend=1) {
   const c=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
   c.fillStyle='#0a1220';c.fillRect(0,0,w,h);

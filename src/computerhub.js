@@ -7,7 +7,7 @@ import { drawSnake, drawComputerMenu } from './snakeview.js';
 /** One app selector per physical computer; all game clients share one server arena. */
 export class ComputerHub {
   constructor({canvas,targets,template,onClose,onOpen,endpoint,onNotice}) {
-    this.sessions=new Map();this.onOpen=onOpen;this.onNotice=onNotice;this.seq=0;this.angle=0;this.offMaterial=new THREE.MeshBasicMaterial({color:C.offColor,toneMapped:false});
+    this.canvas=canvas;this.raycaster=new THREE.Raycaster();this.pointer=new THREE.Vector2();this.sessions=new Map();this.onOpen=onOpen;this.onNotice=onNotice;this.seq=0;this.angle=0;this.offMaterial=new THREE.MeshBasicMaterial({color:C.offColor,toneMapped:false});
     for(const target of targets.filter(t=>t.mediaId&&C.stations.some(s=>s.id===t.mediaId))) {
       const info=C.stations.find(s=>s.id===target.mediaId),el=template.cloneNode(true);
       el.id=`computer-${info.id}`;el.removeAttribute('open');el.classList.add('computer-player');
@@ -17,8 +17,7 @@ export class ComputerHub {
       movie.append(el.querySelector('form'),el.querySelector('.cinema-video'),el.lastElementChild);
       const nav=document.createElement('nav');nav.className='cinema-row computer-apps';nav.setAttribute('aria-label','Välj på datorn');
       const game=document.createElement('section');game.className='computer-game';game.hidden=true;
-      game.innerHTML='<h3>Ormstriden</h3><p>Ät ljuspunkter och väx. Få de andra att krocka med din kropp och ät det som blir kvar. Vid huvudkrock vinner den större ormen. Undvik väggarna!</p><canvas tabindex="0" aria-label="Ormarena. Styr med piltangenter, WASD eller tryck dit du vill svänga."></canvas><p class="computer-score" aria-live="polite"></p><div class="cinema-row"><button type="button" data-snake="join">Gå med i spelet</button><button type="button" data-angle="-1.5707963267948966" aria-label="Sväng upp">↑</button><button type="button" data-angle="3.141592653589793" aria-label="Sväng vänster">←</button><button type="button" data-angle="1.5707963267948966" aria-label="Sväng ner">↓</button><button type="button" data-angle="0" aria-label="Sväng höger">→</button></div><p class="computer-players"></p>';
-      const board=game.querySelector('canvas');board.width=SNAKE.canvasWidth;board.height=SNAKE.canvasHeight;
+      game.innerHTML='<h3>Ormstriden</h3><p>Ät ljuspunkter och väx. Få de andra att krocka med din kropp och ät det som blir kvar. Vid huvudkrock vinner den större ormen. Undvik väggarna!</p><p class="computer-help">Piltangenter / WASD eller peka på skärmen. Esc / E lämnar datorn.</p><p class="computer-score" aria-live="polite"></p><div class="cinema-row"><button type="button" data-snake="join">Gå med i spelet</button><button type="button" data-angle="-1.5707963267948966" aria-label="Sväng upp">↑</button><button type="button" data-angle="3.141592653589793" aria-label="Sväng vänster">←</button><button type="button" data-angle="1.5707963267948966" aria-label="Sväng ner">↓</button><button type="button" data-angle="0" aria-label="Sväng höger">→</button></div><p class="computer-players"></p>';
       el.append(nav,movie,game);document.body.append(el);
       const player=new CinemaPlayer(el,onClose,endpoint,{id:info.id,label:info.name,place:'datorskärmen'});
       // No film search before the player chooses the YouTube app.
@@ -27,7 +26,7 @@ export class ComputerHub {
       const texture=new THREE.CanvasTexture(poster);texture.colorSpace=THREE.SRGBColorSpace;
       const material=new THREE.MeshBasicMaterial({map:texture,toneMapped:false});
       player.surface=new CinemaSurface(canvas,target.mesh,`computer-world-${info.id}`);player.surface.poster=material;
-      const session={info,target,player,poster,texture,material,nav,movie,game,board,score:game.querySelector('.computer-score'),list:game.querySelector('.computer-players'),join:game.querySelector('[data-snake=join]'),available:false};
+      const session={info,target,player,poster,texture,material,nav,movie,game,score:game.querySelector('.computer-score'),list:game.querySelector('.computer-players'),join:game.querySelector('[data-snake=join]'),available:false};
       this.sessions.set(info.id,session);
       for(const [app,label]of [['menu','Startsida'],['youtube','YouTube'],['snake','Spel · Ormstriden']]) {
         const button=document.createElement('button');button.type='button';button.dataset.app=app;button.textContent=label;nav.append(button);
@@ -37,21 +36,68 @@ export class ComputerHub {
       claim.addEventListener('click',()=>{player.wantsControl=true;player.awaitingPresence=!player.state;player.command('claim');});
       const off=document.createElement('button');off.type='button';off.textContent='Stäng av datorn';off.dataset.computerPower='';claim.after(off);off.addEventListener('click',()=>this.requestPower(session,false));
       const controls=player.controls.bind(player);player.controls=()=>{controls();this.controls(session);};
-      const close=player.close.bind(player);player.close=(reason)=>{this.stopInput(session);close(reason);};
+      const close=player.close.bind(player);player.close=(reason)=>{this.stopInput(session);this.worldMode(session,false);close(reason);};
       const receive=player.receive.bind(player);player.receive=m=>{receive(m);if(m.k==='no'&&session.pendingPower!==undefined)this.onNotice?.(player.status.textContent);session.pendingPower=undefined;this.syncPower(session);this.controls(session);if(m.k==='state'&&player.state?.app!=='youtube')player.status.textContent=player.owns?'Du styr datorn. Välj YouTube eller Spel.':player.state?.owner?`${player.state.name} använder datorn.`:'Datorn är ledig.';};
-      session.join.addEventListener('click',()=>{if(player.owns){this.pendingScreen=info.id;this.send({k:'join',screen:info.id});session.joining=true;this.controls(session);board.focus();}});
-      for(const b of game.querySelectorAll('[data-angle]'))b.addEventListener('click',()=>{this.angle=Number(b.dataset.angle);board.focus();});
+      session.join.addEventListener('click',()=>{if(player.owns){this.pendingScreen=info.id;this.send({k:'join',screen:info.id});session.joining=true;this.controls(session);session.join.focus();}});
+      for(const b of game.querySelectorAll('[data-angle]'))b.addEventListener('click',()=>{this.angle=Number(b.dataset.angle);session.join.focus();});
       const headings={ArrowRight:0,KeyD:0,ArrowDown:Math.PI/2,KeyS:Math.PI/2,ArrowLeft:Math.PI,KeyA:Math.PI,ArrowUp:-Math.PI/2,KeyW:-Math.PI/2};
       el.addEventListener('keydown',e=>{if(player.state?.app==='snake'&&e.code in headings){e.preventDefault();this.angle=headings[e.code];}});
-      const steer=e=>{
-        if(!player.owns)return;const mine=this.arena?.snakes.find(s=>s.id===this.net?.id()&&s.alive);if(!mine?.points[0])return;
-        const r=board.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*SNAKE.width,y=(e.clientY-r.top)/r.height*SNAKE.height;
-        this.angle=Math.atan2(y-mine.points[0][1],x-mine.points[0][0]);
-      };
-      board.addEventListener('pointerdown',e=>{e.preventDefault();board.focus();board.setPointerCapture(e.pointerId);steer(e);});
-      board.addEventListener('pointermove',e=>{if(e.pointerType==='mouse'||e.buttons)steer(e);});
       this.controls(session);drawComputerMenu(poster,info,'menu','');texture.needsUpdate=true;this.syncPower(session);
     }
+    const headings={ArrowRight:0,KeyD:0,ArrowDown:Math.PI/2,KeyS:Math.PI/2,ArrowLeft:Math.PI,KeyA:Math.PI,ArrowUp:-Math.PI/2,KeyW:-Math.PI/2};
+    for(const type of ['keydown','keyup'])window.addEventListener(type,e=>{
+      const s=this.worldSession;if(!s)return;
+      if(e.code==='Tab'){
+        e.preventDefault();e.stopImmediatePropagation();
+        const buttons=[...s.player.el.querySelectorAll('button')].filter(b=>!b.disabled&&b.getClientRects().length);
+        const i=buttons.indexOf(document.activeElement),next=(i+(e.shiftKey?-1:1)+buttons.length)%buttons.length;buttons[next]?.focus();return;
+      }
+      if(e.target.closest?.('button')&&['Enter','Space'].includes(e.code))return;
+      e.preventDefault();e.stopImmediatePropagation();
+      if(type==='keyup')return;
+      if(e.code==='Escape'||e.code==='KeyE'){s.player.close('Escape');return;}
+      if(e.code in headings)this.angle=headings[e.code];
+      if(e.code==='Space'&&!s.join.disabled)s.join.click();
+    },true);
+    for(const type of ['pointerdown','pointermove','pointerup','pointercancel','touchstart','touchmove','touchend','mousedown','mouseup','click','contextmenu','wheel'])window.addEventListener(type,e=>{
+      const s=this.worldSession;if(!s||s.player.el.contains(e.target))return;
+      e.preventDefault();e.stopImmediatePropagation();
+      if((type==='pointerdown'||type==='pointermove')&&(e.pointerType==='mouse'||e.buttons))this.steerScreen(s,e);
+    },{capture:true,passive:false});
+  }
+  worldMode(s,on) {
+    if(!!s.inWorld===on)return;
+    s.inWorld=on;s.player.el.classList.toggle('computer-world-controls',on);
+    s.player.el.querySelector('[data-cinema=close]').textContent=on?'Lämna datorn':'Tillbaka till rummet';
+    if(on){this.worldSession=s;s.player.el.close();s.player.el.show();s.join.focus();}
+    else {
+      if(this.worldSession===s)this.worldSession=null;
+      if(s.view){s.view.camera.position.copy(s.view.position);s.view.camera.quaternion.copy(s.view.quaternion);s.view.camera.updateMatrixWorld(true);s.view=null;}
+    }
+  }
+  frameScreen(s,camera) {
+    if(!s.view)s.view={camera,position:camera.position.clone(),quaternion:camera.quaternion.clone()};
+    const mesh=s.target.mesh;mesh.updateWorldMatrix(true,false);
+    const center=mesh.getWorldPosition(new THREE.Vector3()),scale=mesh.getWorldScale(new THREE.Vector3()),g=mesh.geometry.parameters;
+    const halfFov=Math.tan(THREE.MathUtils.degToRad(camera.fov/2));
+    const distance=Math.max(g.height*scale.y/SNAKE.viewHeight,g.width*scale.x/(camera.aspect*SNAKE.viewWidth))/(2*halfFov);
+    const normal=new THREE.Vector3(0,0,1).transformDirection(mesh.matrixWorld);
+    const up=new THREE.Vector3(0,1,0).transformDirection(mesh.matrixWorld);
+    const aim=center.clone().addScaledVector(up,-distance*halfFov*SNAKE.viewLift);
+    camera.position.copy(aim).addScaledVector(normal,distance);camera.lookAt(aim);camera.updateMatrixWorld(true);
+    this.camera=camera;
+  }
+  steerScreen(s,e) {
+    if(!s.player.owns||!this.camera)return;
+    const mine=this.arena?.snakes.find(a=>a.id===this.net?.id()&&a.screen===s.info.id&&a.alive);if(!mine?.points[0])return;
+    const r=this.canvas.getBoundingClientRect();this.pointer.set((e.clientX-r.left)/r.width*2-1,1-(e.clientY-r.top)/r.height*2);
+    this.raycaster.setFromCamera(this.pointer,this.camera);
+    const hit=this.raycaster.intersectObject(s.target.mesh,false)[0];if(!hit?.uv)return;
+    // Match the centered arena on monitors with a different aspect ratio.
+    const w=s.poster.width,h=s.poster.height,scale=Math.min(w/SNAKE.width,h/SNAKE.height);
+    const x=(hit.uv.x*w-(w-SNAKE.width*scale)/2)/scale,y=((1-hit.uv.y)*h-(h-SNAKE.height*scale)/2)/scale;
+    if(x<0||y<0||x>SNAKE.width||y>SNAKE.height)return;
+    this.angle=Math.atan2(y-mine.points[0][1],x-mine.points[0][0]);
   }
   connect(net){this.net=net;for(const [id,{player}]of this.sessions)player.net={ready:net.ready,id:net.id,send:m=>net.send({...m,screen:id})};}
   send(m){return this.net?.snake({t:'snake',...m});}
@@ -64,6 +110,9 @@ export class ComputerHub {
   }
   controls(s){
     const p=s.player,app=p.state?.app??'menu',mine=this.arena?.snakes.find(a=>a.id===this.net?.id()&&a.screen===s.info.id);
+    const wasWorld=s.inWorld;
+    this.worldMode(s,app==='snake'&&p.open&&p.owns);
+    if(wasWorld&&!s.inWorld&&p.open){p.el.close();p.el.showModal();}
     s.movie.hidden=app!=='youtube';s.game.hidden=app!=='snake';
     if(app==='youtube'&&s.lastApp!==app&&p.owns&&p.open&&p.searchEndpoint)p.search('animerad kortfilm',true);
     s.lastApp=app;
@@ -113,6 +162,8 @@ export class ComputerHub {
       const changed=inside!==s.available;
       p.update(inside,camera,renderer);
       if(changed||s.connected!==p.connected){s.available=inside;s.connected=p.connected;this.syncPower(s);}any||=inside;
+      if(s.inWorld&&(!p.connected||!p.owns||!inside||!nearComputer(id,this.position)))p.close('exit');
+      if(s.inWorld)this.frameScreen(s,camera);
       const mine=this.arena?.snakes.find(a=>a.id===this.net?.id()&&a.screen===id);
       const playing=inside&&p.open&&p.owns&&p.state?.app==='snake'&&mine?.alive&&nearComputer(id,this.position);
       if(playing){this.playing=s;if(now-(this.inputAt??0)>=SNAKE.inputMs){this.inputAt=now;this.send({k:'input',screen:id,seq:++this.seq,angle:this.angle});}}
@@ -122,7 +173,6 @@ export class ComputerHub {
         s.renderAt=now;const blend=Math.min(1,(now-(this.receivedAt??0))/SNAKE.inputMs);
         if(p.state?.app==='snake'){
           drawSnake(s.poster,this.arena,this.net?.id(),s.info.color,this.previous,blend);
-          if(p.open)drawSnake(s.board,this.arena,this.net?.id(),s.info.color,this.previous,blend);
         }else if(!p.state?.video&&s.menuKey!==`${p.state?.q}`){drawComputerMenu(s.poster,s.info,p.state?.app,p.state?.name);s.menuKey=`${p.state?.q}`;}
         if(p.state?.app==='snake'||s.drawnMenu!==s.menuKey){s.texture.needsUpdate=true;s.drawnMenu=s.menuKey;}
       }

@@ -780,8 +780,15 @@
     .computer-player > .cinema-row:first-child { position:sticky;top:0;background:#14212c;z-index:1;padding:4px 0; }
     .computer-apps { margin:12px 0; }
     .computer-apps [aria-pressed=true] { background:#93dfb0; }
-    .computer-game canvas { display:block;width:100%;height:auto;aspect-ratio:8/5;background:#0a1220;touch-action:none; }
     .computer-game p { font-size:14px; }
+    .computer-player.computer-world-controls[open] { position:fixed; inset:auto 0 max(8px, var(--sb)); margin:0 auto; width:max-content; max-width:calc(100% - 16px - var(--sl) - var(--sr)); max-height:38vh; padding:8px; border:0; background:rgba(20,33,44,.94); display:grid; grid-template-columns:1fr auto; gap:4px; }
+    .computer-world-controls h2, .computer-world-controls > [role=status], .computer-world-controls > [data-computer-claim], .computer-world-controls > [data-computer-power], .computer-world-controls .computer-game > h3, .computer-world-controls .computer-game > p:first-of-type, .computer-world-controls .computer-players, .computer-world-controls [data-app=snake] { display:none; }
+    .computer-player.computer-world-controls > .cinema-row:first-child { position:static; grid-column:auto; padding:0; }
+    .computer-world-controls .computer-apps { margin:0; }
+    .computer-world-controls .computer-game { grid-column:1 / -1; }
+    @media (max-height:450px) { .computer-world-controls .computer-help { display:none; } }
+    .computer-world-controls .computer-game p { margin:4px 0; }
+    body:has(.computer-world-controls[open]) #touch-controls, body:has(.computer-world-controls[open]) #stick-hint, body:has(.computer-world-controls[open]) #crosshair, body:has(.computer-world-controls[open]) #action, body:has(.computer-world-controls[open]) #arm { visibility:hidden; }
     .computer-player .computer-movie form .cinema-row { display:flex; }
     .cinema-player::backdrop { background: rgba(0, 0, 0, .78); }
     .cinema-player .cinema-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }

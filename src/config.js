@@ -6534,5 +6534,7 @@ export const SNAKE = {
   speed:2.8,turnRate:3.8,initialSegments:24,maxSegments:160,radius:.22,radiusGrowth:.0012,
   foodCount:110,foodMax:200,foodMargin:.7,foodRadius:.12,foodGrowth:2,dropStride:3,
   headAdvantage:1.08,collisionScale:.8,respawnMs:1400,staleMs:2000,spawnClearance:2,
-  canvasWidth:800,canvasHeight:500,screenWidth:512,renderMs:50,
+  screenWidth:512,renderMs:50,
+  // #1491: guessed screen coverage, leaving the monitor bezel and room visible.
+  viewWidth:.82,viewHeight:.58,viewLift:.4,
 };

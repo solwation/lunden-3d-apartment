@@ -8251,3 +8251,26 @@ including slope against the existing `WALK.maxSlope`, terrain-ray/sampler agreem
 the unchanged Sankt Lars väg46 building base, and mapped access850235115 against the
 existing 1cm strip tolerance. The OSM outline/capacity and `WALK` boundary are also
 checked; the assumed grade is not presented as surveyed civil levels.
+
+## Physical computer game (#1491)
+
+`tools/computerscreentest.cjs GAME LOCAL_WORKER OUT` opens actual Worlds on desktop
+and emulated touch. It uses all six real screen meshes, checks the absence of a
+modal/second arena canvas, native WASD and pointer steering on projected monitor
+points, unchanged avatar feet, restored camera and keyboard/touch exit. Two
+simultaneous stations share the arena; app switching removes only that snake and
+a second visitor cannot control an occupied computer. Screenshots use normal
+quality/shadows through the existing testMode full render. The placement helper
+waits for the actual clubhouse exit before positioning the laptop camera.
+
+Keep `tools/computerpowertest.cjs` for all six power/session lifecycle paths and
+`tools/snakearenatest.mjs` / `cloudflare/snake.test.mjs` for authoritative rules
+and exclusive leases. This is Chromium emulation with a local Worker, not a
+physical phone test or a production multiplayer session. Gameplay is original-only.
+
+The final #1491 toolbar was separately checked at844×390,390×844 and568×320
+using the actual ComputerHub and production CSS (`/tmp/snake1491-layout.cjs`).
+Every enabled exit/app/direction button remains inside the viewport; the short
+cinema modal media rule cannot override the game toolbar columns. This is a
+DOM layout check, alongside the six actual-World images in
+`/tmp/snake1491-complete/` and the8passing arena/server tests.
