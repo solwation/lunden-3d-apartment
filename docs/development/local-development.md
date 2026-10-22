@@ -38,7 +38,7 @@ URL parameters (debugging / screenshots):
 - `&beers=http://localhost:8144/beer-shelf` — test the daily beer source through `node cloudflare/dev.mjs 8144`; separate from shared-layout `&cloud=`. `&life` normally uses the prepared beer snapshot and no persistent beer cache.
 - `&lowmem` — the phone memory limits (#585, `LOW_MEMORY`: textures ≤ 1024 px, 1024² shadows, pixel ratio ≤ 1) and the lighter campus facades (#589, `CAMPUS_LOD`) on a desktop.
 - `&keepgeo` — on a phone / with `&lowmem`, keep the geometry's CPU copies and float normals (A/B of #628 step 4, `freeSceneGeometryCopies`).
-- `&perf` — fps / draw-call overlay and the hitch log (#592): frames ≥ 50 ms go to the console with what changed in them.
+- `&perf` — fps / draw-call overlay, CPU hitch log and bounded raw callback intervals (#592/#1507); [capture/export protocol](frame-intervals.md).
 - `&quality=0–3` — pin the adaptive graphics level (#592: resolution, shadows, mirrors, detail distance, particles); not remembered.
 - `&test[=lazy]` — test mode for headless runs (#703, `src/testmode.js`): only the drawing gets cheaper (no antialiasing, no shadows, quality pinned to 0 unless `&quality=` is given, no start warm-up); game logic, collision, network and timing are unchanged. `=lazy` also skips the loop's own `render()` (logic frames still run). `__app.testMode.setFull(true/false)` = quality 3 + shadows for a real screenshot, `.draw()` renders one frame. Never with `perfcount`, `turntest`, `phonememtest`, `glrestoretest` or pixel comparisons ([verification](verification.md)).
 - `&warm` — run the start's shader / upload warm-up (#432) in headless Chrome too (it skips it otherwise).

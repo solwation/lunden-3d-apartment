@@ -8472,3 +8472,7 @@ The additional608triangles per shared avatar (plus912for the hairstyle beanie) a
 draws, textures or lights. No full-world performance profile is claimed. Character content
 is excluded from the public downstream. Saved before/after pictures are in
 `docs/verification/1513/` and the issue comment.
+
+## Raw callback intervals (#1507)
+
+Use `node --test tools/frameintervalstest.mjs` and the real-browser `tools/frameintervaltest.cjs BASE OUT`. See [the fixed protocol and limits](frame-intervals.md). Deliberate long stalls and native background/menu tests establish instrumentation, not a cause or improvement on the affected GPU.

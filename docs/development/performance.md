@@ -1,5 +1,7 @@
 # Rendering performance
 
+Raw callback interval diagnostics (#1507): [capture protocol, state classification, statistics and measurement limits](frame-intervals.md).
+
 ## Patio corner within the desktop budget (#1459)
 
 The exact normal1280×800 quality3/max3 repro is `spawn(6.5,19,0)`, one production

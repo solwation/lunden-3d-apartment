@@ -6,6 +6,7 @@
 // whether the shadow map was redrawn, which mirror reflected, where the camera looked. `tools/turntest.html` reads the
 // same counters. Off by default: the only cost then is one `if` per frame.
 import { PERF } from './config.js';
+import { FrameIntervals } from './frameintervals.js';
 
 const COUNTED = {
   programs: ['createProgram'],
@@ -31,6 +32,7 @@ function uploadPixels(name, a) {
 export class HitchLog {
   constructor(renderer, { enabled = false } = {}) {
     this.renderer = renderer;
+    this.intervals = new FrameIntervals();
     this.counts = Object.fromEntries(Object.keys(COUNTED).map((k) => [k, 0]));
     this.counts.texPixels = 0;
     this.phases = {};          // ms per phase this frame

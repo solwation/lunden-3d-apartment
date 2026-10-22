@@ -512,3 +512,5 @@ original wind origin, leaves, physical meshes and original shadow casters.
 Östra campusets fasta materialgrupper ritas separat på dator för snävare naturlig vyavgränsning; telefonens geometri är oförändrad (#1461).
 
 TV-ljudet dämpas när du går bort från skärmen eller vänder dig bort. Biljardens köstötar, bollkollisioner och fickor har tydliga ljud från bordet.
+
+Diagnostic frame intervals (`?perf`, #1507): see the [fixed capture protocol](docs/development/frame-intervals.md) for raw callback gaps, bounded export and Chrome Performance correlation.

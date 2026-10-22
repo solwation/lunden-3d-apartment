@@ -3243,13 +3243,37 @@ function frame(raw) {
   }
   showFrameRate(performance.now(), drewView, warm.done && startupSceneReady && overlay.hidden && !document.hidden && !portraitCover.matches);
   hitch.phase('render');
-  hitch.end();
+  hitch.intervals.complete(hitch.end());
   const fMs = performance.now() - f0;
   if (fMs > frameDiag.ms) Object.assign(frameDiag, { ms: fMs, progs: (renderer.info.programs?.length ?? 0) - p0, shadow: renderer.shadowMap.needsUpdate ? 1 : 0, warm: warm.detail });
   if (perfEl) showPerf();
 }
 const testMode = makeTestController(TEST, { renderer, quality, levels: QUALITY.levels, render: () => renderer.render(scene, camera) }); // null outside `&test`
-renderer.setAnimationLoop(() => frame(clock.getDelta()));
+// Capture callback entry before Clock/warm-up/quality can reset or clamp elapsed time.
+const intervalState = () => ({ startup: !startupSceneReady, warmup: !warm.done,
+  paused: !overlay.hidden, background: document.hidden,
+  covered: lowMemory && portraitCover.matches });
+hitch.intervals.metadata = () => {
+  const gl = renderer.getContext(), ext = gl.getExtension('WEBGL_debug_renderer_info');
+  return { build: BUILD, source: 'animation-callback-entry/performance.now',
+    gpu: ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER),
+    contextLost: gl.isContextLost(), acceleration: 'Check chrome://gpu; renderer string alone is not proof',
+    viewport: { width: innerWidth, height: innerHeight, dpr: devicePixelRatio,
+      renderWidth: renderer.domElement.width, renderHeight: renderer.domElement.height },
+    quality: quality.level, pinned, lowMemory, test: TEST, warmup: warm.detail,
+    scenario: Object.fromEntries(['time', 'month', 'day', 'freeze', 'weather', 'mess', 'life']
+      .filter(k => params0.has(k)).map(k => [k, params0.get(k)])) };
+};
+if (perfEl) hitch.intervals.start();
+document.addEventListener('visibilitychange', () => hitch.intervals.note({ background: true }));
+// Menu changes can occur between callbacks (including a complete pause/resume).
+if (perfEl) new MutationObserver(records => {
+  if (!overlay.hidden || records.some(r => r.oldValue === null)) hitch.intervals.note({ paused: true });
+}).observe(overlay, { attributes: true, attributeFilter: ['hidden'], attributeOldValue: true });
+renderer.setAnimationLoop(() => {
+  if (hitch.intervals.running) hitch.intervals.callback(performance.now(), intervalState());
+  frame(clock.getDelta());
+});
 
 // --- "new version published" notice ------------------------------------
 const updateEl = document.getElementById('update');
