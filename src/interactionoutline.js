@@ -5,6 +5,11 @@ import { INTERACTION_OUTLINE as P } from './config.js';
 export const INTERACTION_MATERIAL_SOURCE=Symbol('interactionMaterialSource');
 
 const shown=o=>{for(;o;o=o.parent)if(!o.visible)return false;return true};
+const rootOf=target=>{
+  let root=target?.outlineRoot??target?.piece?.object??target?.pickable??target?.item?.model??target?.object;
+  if(root?.isMesh&&!root.visible)root=target?.item?.model;
+  return root;
+};
 // #531: a subtle brightness change on the actual physical target, with no edge geometry.
 // Private temporary materials keep shared neighbours unchanged; the normal depth buffer
 // and material properties still handle walls, glass, textures, shadows and animation.
@@ -66,9 +71,46 @@ export class InteractionOutline {
     material.customProgramCacheKey=()=>`${original.customProgramCacheKey.call(original)}|interaction-brightness:${P.brightness}:${index===null?'mesh':'instance'}`;
     variants.set(index,material);return material;
   }
+  /** Compile the first-focus variants during the existing warm-up, including its mirror/phone stages.
+   * Discover real interaction roots, including currently hidden cupboard contents. The compiler calls
+   * this immediately AFTER each original object, so currentProgram describes that exact geometry.
+   * One representative per base program/mode keeps shared material families from multiplying work. */
+  warmCompiler(renderer,scene) {
+    const candidates=new WeakMap(),targets=new Set(),seen=new Set();
+    scene.traverse(o=>{if(o.userData.door)targets.add(o.userData.door)});
+    const register=target=>{
+      const owner=target.outlineOwner??target,root=rootOf(target),strict=!!target.outlineOwner||target.pickable===root;
+      const accept=(o,index=null)=>{
+        if(!o.isMesh||!o.geometry?.attributes.position?.count||o.userData.surface!==undefined)return;
+        if(strict&&o.userData.door&&o.userData.door!==owner&&o.userData.door!==target)return;
+        if(o.isInstancedMesh&&index===null)return;
+        candidates.set(o,index);
+      };
+      if(target.outlineInstances)for(const p of target.outlineInstances)accept(p.object,p.index);
+      else root?.traverse(o=>accept(o));
+    };
+    for(const target of targets)register(target);
+    return object=>{
+      // Saved drawings/items can finish loading between discovery and the compile stage.
+      if(!candidates.has(object)&&object.userData.door)register(object.userData.door);
+      if(!candidates.has(object))return [];
+      const index=candidates.get(object),out=[];
+      for(const original of [object.material].flat()) {
+        if(!original||original[INTERACTION_MATERIAL_SOURCE]||!original.visible||original.opacity===0||
+          original.blending===THREE.AdditiveBlending||original.blending===THREE.CustomBlending)continue;
+        const program=renderer.properties.get(original).currentProgram;
+        if(!program)continue;
+        const key=program.cacheKey+'|'+(index===null?'mesh':'instance');
+        if(seen.has(key))continue;
+        // Detached compile-only view: no scene child, buffers, draw call or physical ray is added.
+        const proxy=Object.create(object);proxy.material=this.highlight(original,index);
+        seen.add(key);out.push(proxy);
+      }
+      return out;
+    };
+  }
   update(target) {
-    let root=target?.outlineRoot??target?.piece?.object??target?.pickable??target?.item?.model??target?.object;
-    if(root?.isMesh&&!root.visible)root=target?.item?.model;
+    const root=rootOf(target);
     if(!target||target.blocked||!root||!shown(root)){if(this.root)this.clear();return}
     const owner=target.outlineOwner??target,strict=!!target.outlineOwner||target.pickable===root;
     const meshes=[];

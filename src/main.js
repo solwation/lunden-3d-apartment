@@ -3183,6 +3183,7 @@ const phoneFrustum = lowMemory ? colorFrustum : null;
 // Install outside the frustum hook so original source masks are restored before every shadow pass.
 const siteInstances = lowMemory ? null : installSiteInstanceBatch(renderer, scene, () => detail.occluders);
 const warm = new WarmUp({ renderer, scene, camera, shadowCamera: sun.shadow.camera, mirrorTarget,
+  compileExtras: skipWarmUp ? null : interactionOutline.warmCompiler(renderer, scene), // #1508: first-focus variants share the existing compile/readiness budget
   prepare: () => { lights.wash?.patch(scene); visitLights.wash?.patch(scene); }, // (#668: both lamp washes' periodic patch, now)
   skip: skipWarmUp, lazyHidden: lowMemory, sliced: lowMemory, log: perfEl ? (t) => console.log(t) : null,
   onSlowFrame: () => clock.getDelta() }); // (a slow warm-up frame is no reason to lower the resolution)

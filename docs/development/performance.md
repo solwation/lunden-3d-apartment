@@ -1731,3 +1731,34 @@ unchanged. Fresh explicitURLquality0 landscape passes367/840699/~98MiB (start349
 a separate fresh390×844 quality0 profile also passes279/705447/~102MiB.
 These submission/resource checks do not establish device frame time. Public6c69323a
 has no entrance-plant builder, adapter, plantwind or DetailCuller: no port applies.
+
+## First-focus program warm-up (#1508)
+
+The Windows Intel UHD630 trace from #1506 showed 7 of 8 >250ms intervals waiting in
+Three's first-use `getProgramInfoLog` path. Targeted draw instrumentation identified
+all 18 late programs as `interaction-brightness` variants, including mirror output.
+`InteractionOutline` already cached them after first focus (#558); the missing step
+was compiling them before that first focus. Disabling shader error checks is not
+used: that could just move the wait to another GL call.
+
+`InteractionOutline.warmCompiler(renderer, scene)` discovers existing physical
+interaction roots from their `userData.door` targets. It provides detached compile-only
+views of eligible meshes, including hidden contents and explicit instance targets.
+`WarmUp.compileObjects` visits each original first, then its extras, with the real
+scene's lights/fog and current screen/mirror target. Deduplication uses the original's
+exact just-compiled program key and mesh/instance mode, so shared source materials
+with different geometry flags remain distinct while equivalent material families
+reuse a representative. Extras join the existing readiness set and phone compile
+budget; no extra scene children, draw passes, textures or geometry are introduced.
+The original focus shaders, source-driven appearance, cache/disposal and fallback
+for objects arriving after the relevant compile stage remain intact; the remaining
+asynchronous drawing case is tracked separately in #1514. Headless/test-mode skip avoids
+building this warm-up discovery map when no warm-up runs.
+
+Run `tools/focuswarmtest.html` and the existing `tools/focusperftest.html`. The new
+fixture checks the very first focus for screen/mirror, hidden/double-sided/instance
+objects, source identity/appearance/disposal and sliced compileObjects. See the
+[dated validation record](../validation/issue-1508/README.md) for matched native-GPU measurements and remaining
+strong-GPU uncertainty. The public project has neither WarmUp nor InteractionOutline;
+its opening fronts use an already-built focus uniform, so this private focus-material
+fix has no corresponding downstream code path.

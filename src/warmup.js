@@ -32,8 +32,8 @@ import { WARM } from './config.js';
 // Headless test browsers skip it (minutes of SwiftShader, nobody looks), `&warm` forces it.
 export class WarmUp {
   /** `mirrorTarget()` → the render target mirrors draw into (or null); `log(text)` for `&perf`; `sliced` = phones (#669). */
-  constructor({ renderer, scene, camera, shadowCamera, mirrorTarget = () => null, prepare = () => {}, skip = false, lazyHidden = false, sliced = false, log = null, onSlowFrame = () => {} }) {
-    Object.assign(this, { renderer, scene, camera, shadowCamera, mirrorTarget, prepare, lazyHidden, sliced, log, onSlowFrame });
+  constructor({ renderer, scene, camera, shadowCamera, mirrorTarget = () => null, prepare = () => {}, compileExtras = null, skip = false, lazyHidden = false, sliced = false, log = null, onSlowFrame = () => {} }) {
+    Object.assign(this, { renderer, scene, camera, shadowCamera, mirrorTarget, prepare, compileExtras, lazyHidden, sliced, log, onSlowFrame });
     this.state = skip ? 'skipped' : 'pending'; // → compiling → draw (→ drawing) → mirror → compiling → mirror-draw (→ drawing) → textures → uploading → done
     this.wait = sliced ? 1 : WARM.frames; // phones compile before their first normal render (#697)
     this.textures = null;
@@ -95,7 +95,14 @@ export class WarmUp {
     r.setRenderTarget(target);
     try {
       // (a stand-in for the scene that holds just these objects: the lights and fog still come from the real scene)
-      return r.compile(objects ? { traverseVisible() {}, traverse: (f) => objects.forEach(f) } : this.scene, this.camera, this.scene);
+      const visit=f=>objects?objects.forEach(f):this.scene.traverse(f);
+      const input=this.compileExtras?{traverseVisible() {},traverse:f=>visit(o=>{
+        f(o);
+        // First-focus materials use the same real lighting/fog and this exact object's program.
+        // Returned materials join the existing readiness wait and sliced compile budget.
+        for(const extra of this.compileExtras(o))f(extra);
+      })}:objects?{traverseVisible() {},traverse:visit}:this.scene;
+      return r.compile(input, this.camera, this.scene);
     } finally { r.setRenderTarget(prev); }
   }
 

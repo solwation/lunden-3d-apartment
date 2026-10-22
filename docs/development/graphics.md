@@ -551,3 +551,8 @@ UVs, geometry, unlit material, ceiling-light swatch and room visibility are
 unchanged. `PLAYROOM.clubhouse.neon` holds the assumed colours/pixel widths;
 there are no new lights, passes or draws. The private fantasy room has no
 public downstream counterpart. See [verification](verification.md#lekstuga-neon-1384).
+
+First-focus stalls (#1508): `InteractionOutline.warmCompiler` feeds the existing
+screen/mirror and sliced phone warm-up with compile-only focus variants. Runtime
+brightness shaders and source-material appearance/lifetime remain unchanged; no
+extra geometry or render pass is added. See [performance](performance.md#first-focus-program-warm-up-1508).

@@ -1,0 +1,50 @@
+<!doctype html><html><meta charset="utf-8"><title>First-focus warm-up #1508</title><pre id="out">running…</pre>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"}}</script>
+<script type="module">
+import * as T from 'three';
+import {InteractionOutline} from '../src/interactionoutline.js';
+import {WarmUp} from '../src/warmup.js';
+const lines=[];let pass=true;const check=(v,s)=>{pass&&=!!v;lines.push((v?'PASS ':'FAIL ')+s)};
+try {
+ const scene=new T.Scene(),camera=new T.PerspectiveCamera(50,1,.1,20);camera.position.z=4;
+ scene.add(new T.HemisphereLight(0xffffff,0x555555,2));
+ const renderer=new T.WebGLRenderer({antialias:false});renderer.setSize(64,64);document.body.append(renderer.domElement);
+ const gl=renderer.getContext(),create=gl.createProgram.bind(gl);let programs=0;
+ gl.createProgram=(...args)=>{programs++;return create(...args)};
+ const geometry=new T.BoxGeometry(.6,.6,.6),a=new T.Mesh(geometry,new T.MeshStandardMaterial({color:0x777777}));
+ const b=new T.Mesh(geometry,a.material.clone());a.position.x=-.5;b.position.x=.5;scene.add(a,b);
+ const ta={pickable:a},tb={pickable:b};a.userData.door=ta;b.userData.door=tb;
+ const hidden=new T.Group(),leaf=new T.Mesh(geometry,new T.MeshBasicMaterial({color:0x999999,transparent:true,side:T.DoubleSide,opacity:.7}));
+ hidden.visible=false;hidden.add(leaf);scene.add(hidden);const th={pickable:hidden};leaf.userData.door=th;
+ const batch=new T.InstancedMesh(geometry,a.material,2);batch.position.y=1;scene.add(batch);
+ const ti=i=>({outlineRoot:batch,outlineInstances:[{object:batch,index:i}]});batch.userData.door=ti(0);
+ const outline=new InteractionOutline(scene,camera),target=new T.WebGLRenderTarget(64,64,{type:T.HalfFloatType});
+ const children=scene.children.slice(),original=[a.material,b.material,leaf.material,batch.material];
+ const warm=new WarmUp({renderer,scene,camera,mirrorTarget:()=>target,compileExtras:outline.warmCompiler(renderer,scene)});
+ const late=new T.Mesh(geometry,new T.MeshStandardMaterial({color:0xabcdef,alphaTest:.04})),tl={pickable:late};late.userData.door=tl;scene.add(late);children.push(late);
+ const compile=async target=>{const materials=warm.compileObjects(null,target);await warm.whenReady(materials,10000);return materials};
+ const screen=await compile(null),mirror=await compile(target),afterWarm=programs;
+ check(screen.size>3&&mirror.size>3,'focus materials join screen/mirror readiness sets before first focus');
+ check(scene.children.length===children.length&&scene.children.every((o,i)=>o===children[i]),'compilation adds no renderable or scene child');
+ check([a.material,b.material,leaf.material,batch.material].every((m,i)=>m===original[i]),'all actual materials remain original during compilation');
+ const draw=t=>{outline.update(t);renderer.render(scene,camera)};
+ for(const rt of [null,target]) {
+  renderer.setRenderTarget(rt);hidden.visible=true;
+  for(const t of [ta,tb,th,tl,ti(0),ti(1),null])draw(t);
+ }
+ check(programs===afterWarm,'first real focus on mesh/late-loaded/hidden/double-side/instance targets adds zero programs for screen and mirror: '+(programs-afterWarm));
+ const first=outline.highlight(a.material,null),second=outline.highlight(b.material,null);
+ check(first!==second,'sharing a GPU program does not merge independent source appearance state');
+ b.material.color.set(0x123456);check(second.color.getHex()===0x123456&&first.color.getHex()!==0x123456,'live source appearance still follows each source separately');
+ renderer.setRenderTarget(null);draw(ta);const oldFocus=a.material;let released=0;oldFocus.addEventListener('dispose',()=>released++);original[0].dispose();draw(ta);
+ check(released===1&&a.material!==oldFocus,'source disposal releases its cached focus material and permits safe recreation even with shared GPU programs');outline.clear();
+ check(a.material===original[0]&&b.material===original[1],'focus clear restores exact originals after disposal');
+ // Sliced path compiles originals + extras through the same per-batch API.
+ const sliced=new WarmUp({renderer,scene,camera,sliced:true,compileExtras:outline.warmCompiler(renderer,scene)});
+ const materials=sliced.compileObjects([a,b,leaf,batch],null);await sliced.whenReady(materials,10000);
+ const warmed=programs;for(const t of [ta,tb,th,ti(1),null])draw(t);
+ check(programs===warmed,'sliced compileObjects includes first-focus variants too');
+ renderer.dispose();target.dispose();geometry.dispose();
+ document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+}catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack}
+</script></html>

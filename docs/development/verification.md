@@ -8476,3 +8476,11 @@ is excluded from the public downstream. Saved before/after pictures are in
 ## Raw callback intervals (#1507)
 
 Use `node --test tools/frameintervalstest.mjs` and the real-browser `tools/frameintervaltest.cjs BASE OUT`. See [the fixed protocol and limits](frame-intervals.md). Deliberate long stalls and native background/menu tests establish instrumentation, not a cause or improvement on the affected GPU.
+
+## First-focus warm-up (#1508)
+
+Run `tools/focuswarmtest.html` (9 checks) plus existing `tools/focusperftest.html`
+(6 checks), then the matched native-GPU route and a short actual lowmem/sliced
+warm-up check. Verify first-focus program counts, ordinary focused appearance and
+real interaction, not merely repeated focus after its shader already compiled.
+See [performance](performance.md#first-focus-program-warm-up-1508).
