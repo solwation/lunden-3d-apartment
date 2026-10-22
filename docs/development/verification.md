@@ -8305,3 +8305,10 @@ Images were opened in `/tmp/lekstuga1384/`; no page errors. These are scoped roo
 counts, not a new full-world performance profile. `clubhousefinishtest.mjs` passes
 3checks. The pre-existing `clubhousetest.mjs` height assertion fails after #1489's
 intentional removal of the160cm rule and is separately tracked in #1494.
+
+#1494 removes only the stale `PLAYROOM.maxCm === 160` assertion from the layout
+suite. `clubhousetest.mjs` + `clubhousefinishtest.mjs` now pass5/5. The actual
+`playroomtest.cjs` run admitted140/160/175/200cm and exited correctly, with159cm
+also present inside; its unrelated front outer cinema-seat framing check failed
+(`screenInView:false`). That broader run was stopped after the scope checks;
+it is not reported as a passing full suite. The seat failure is tracked in #1496.
