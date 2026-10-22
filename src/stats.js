@@ -1,3 +1,4 @@
+import { playerLocalStorage as localStorage } from './playerprofiles.js';
 // Visitor statistics (cats found and petted, doors, steps …), kept in localStorage so they
 // survive a reload. The panel is hidden (Tab held / T / the 📊 button shows it); instead a
 // small badge ("✋ Klappat katt +1") pops up for each counted event.
@@ -429,3 +430,5 @@ export function renderStats(el) {
     `<div class="stat-row"><span>${label}</span><b>${value}</b>${sub ? `<small>${sub}</small>` : ''}</div>`).join('') + extra();
   if (el.innerHTML !== html) el.innerHTML = html;
 }
+
+export { save as saveStats };

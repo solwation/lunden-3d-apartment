@@ -1,9 +1,14 @@
+import { profiles } from './playerprofiles.js';
+import { deletePlayerPhotos } from './idb.js';
+import { drawAvatarPreview } from './customizer.js';
+import { decodeAvatarLook } from './config.js';
+import { playerLocalStorage as localStorage, playerSessionStorage as sessionStorage } from './playerprofiles.js';
 import { LEADERBOARD as L } from './config.js';
 
 // The global leaderboard (#198): with the shared world on (cloud.js's address) the start screen asks for a name
 // (optional — skipping it never holds up the start) and shows the top list, which is also at the bottom of the
 // statistics panel (Tab). The score (stats.js totalScore) is sent when it has changed, at most every L.every s, and
-// with sendBeacon when the tab is hidden or closed. One row per browser: a random player id in localStorage. Without a
+// with sendBeacon when the tab is hidden or closed. One row per local player UUID. Without a
 // name you are "Anonym" (#677: an own row with the name '', shown as "Anonym"; a name later renames the same row).
 // Everybody shows up for others (#723 removed the opt-out box; an old 'lunden.share' value is just deleted). Names are
 // only ever shown as text (escaped). Off (no address): nothing shows, nothing is sent.
@@ -27,13 +32,12 @@ export class Leaderboard {
   constructor(url, score, { dialog, badge, display, nameRow, input, list, ok, skip, newPlayer, lbDialog, dialogList, onNewPlayer = () => {} }) {
     Object.assign(this, { url, score, dialog, badge, display, nameRow, input, list, ok, skip, newPlayer, lbDialog, dialogList, onNewPlayer,
       top: [], sent: null, switching: false, dialogMode: 'initial', activePlayers: null });
-    if (!this.on) return;
     this.confirmedName = cleanName(get(NAME));
     this.id = get(PID) || uid(); // anonymous players have a row too (#677)
     set(PID, this.id);
     remove(OLD_SHARE);
     if (nameRow) nameRow.hidden = false;
-    const note = document.getElementById?.('share-note'); if (note) note.hidden = false; // #723: you are visible to others
+    const note = document.getElementById?.('share-note'); if (note) note.hidden = !this.on; // #723: you are visible to others
     input.maxLength = L.nameMax;
     input.value = this.confirmedName;
     this.renderIdentity();
@@ -49,7 +53,7 @@ export class Leaderboard {
     if (!this.confirmedName && getSession(SKIP) !== '1') {
       this.openDialog('initial');
     }
-    this.refresh();
+    if (this.on) this.refresh();
     this.flush(); // upload results saved by the previous player, even before a new name is entered
     this.timer = setInterval(() => this.send(), L.every * 1000);
     const bye = () => this.beacon();
@@ -63,8 +67,8 @@ export class Leaderboard {
   renderIdentity() {
     this.input.disabled = !!this.name;
     if (this.ok) this.ok.hidden = !!this.name;
-    if (this.newPlayer) this.newPlayer.hidden = !this.name;
-    if (this.badge) this.badge.hidden = !this.name;
+    if (this.newPlayer) this.newPlayer.hidden = false;
+    if (this.badge) this.badge.hidden = false;
     if (this.display) this.display.textContent = this.name || ANON_NAME;
   }
 
@@ -75,7 +79,7 @@ export class Leaderboard {
     const desc = this.dialog.querySelector('#player-dialog-desc');
     if (mode === 'new') {
       if (title) title.textContent = 'Byt spelare';
-      if (desc) desc.textContent = 'Starta en ny spelsession med noll poäng och ett nytt namn. Det tidigare resultatet sparas på topplistan.';
+      if (desc) desc.textContent = 'Välj en sparad spelare eller skriv ett nytt namn. Varje spelare har sitt eget utseende, hem, poäng och statistik.';
       if (this.skip) this.skip.textContent = 'Avbryt';
       this.input.disabled = false;
       this.input.value = '';
@@ -88,6 +92,7 @@ export class Leaderboard {
       this.input.value = this.name;
       if (this.ok) this.ok.hidden = !!this.name;
     }
+    this.renderPlayers();
     this.dialog.hidden = false;
     setTimeout(() => { this.input.focus(); }, 50);
   }
@@ -143,19 +148,52 @@ export class Leaderboard {
     this.send();
   }
 
-  startNewPlayer(newName = null) {
+  async startNewPlayer(newName = null) {
     if (this.switching) return;
     this.beacon(); // captures the old id/name/score before anything is reset; queue survives reload
     this.switching = true;
-    clearInterval(this.timer);
-    if (newName) {
-      set(NAME, newName);
-      set(PID, uid());
-    } else {
-      remove(NAME);
-      remove(PID);
+    try {
+      const target = profiles.create(newName || 'Anonym');
+      await this.onNewPlayer(() => profiles.select(target));
+    } catch (error) { this.switching = false; this.showPlayerError(error); }
+  }
+
+  showPlayerError(error) {
+    const el = this.dialog?.querySelector('#player-error');
+    if (el) { el.textContent = `Kunde inte spara spelarbytet: ${error.message}`; el.hidden = false; }
+    if (this.dialog) this.dialog.hidden = false;
+  }
+
+  renderPlayers() {
+    const list = this.dialog?.querySelector('#saved-players');
+    if (!list || !profiles) return;
+    list.replaceChildren();
+    for (const p of profiles.list()) {
+      const row = document.createElement('li');
+      const pick = document.createElement('button'); pick.type = 'button'; pick.className = 'player-pick';
+      const canvas = document.createElement('canvas'); canvas.setAttribute('aria-hidden', 'true');
+      drawAvatarPreview(canvas, decodeAvatarLook(p.avatar, p.name));
+      const label = document.createElement('span'); label.textContent = `${p.name || ANON_NAME}${p.id === profiles.id ? ' (du)' : ''}`;
+      pick.append(canvas, label); pick.addEventListener('click', async () => {
+        if (p.id === profiles.id) { this.handleSkip(); return; }
+        if (this.switching) return;
+        this.beacon(); this.switching = true;
+        try { await this.onNewPlayer(() => profiles.select(p.id)); } catch (error) { this.switching = false; this.showPlayerError(error); }
+      });
+      const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = 'Ta bort';
+      remove.setAttribute('aria-label', `Ta bort ${p.name || ANON_NAME}`);
+      remove.addEventListener('click', async () => {
+        if (this.switching || !confirm(`Vill du verkligen ta bort kontot ”${p.name || ANON_NAME}” och all dess lokala speldata, inklusive utseende, foton, poäng och statistik? Det går inte att ångra. Delade teckningar och publicerade topplisteresultat finns kvar.`)) return;
+        remove.disabled = true;
+        try {
+          if (p.id === profiles.id) {
+            this.switching = true;
+            await this.onNewPlayer(() => profiles.remove(p.id, deletePlayerPhotos), { discard: true });
+          } else { await profiles.remove(p.id, deletePlayerPhotos); this.renderPlayers(); }
+        } catch (error) { this.switching = false; remove.disabled = false; this.showPlayerError(error); }
+      });
+      row.append(pick, remove); list.append(row);
     }
-    this.onNewPlayer();
   }
 
   enqueue() {
@@ -188,6 +226,7 @@ export class Leaderboard {
   }
 
   async refresh() {
+    if (!this.on) return;
     try {
       const r = await fetch(`${this.url}/scores`, { cache: 'no-store' });
       if (r.ok) this.show(await r.json());

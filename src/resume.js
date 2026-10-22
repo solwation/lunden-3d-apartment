@@ -1,3 +1,4 @@
+import { playerLocalStorage as localStorage, playerSessionStorage as sessionStorage } from './playerprofiles.js';
 // Keep the visitor's place across the "Ladda om" button (#74): the button stores the position, the
 // view direction and the clock in a ONE-TIME record; the next page load reads it, deletes it at once
 // and starts there. F5 / Ctrl+F5 / opening the page anew find no record and start at START as usual.

@@ -1,3 +1,4 @@
+import { playerLocalStorage as localStorage } from './playerprofiles.js';
 import * as THREE from 'three';
 import { awardTask, taskReward, taskPaid, keepTaskDay, taskBonusFor, reconcileTaskDay, stats } from './stats.js';
 import { TASK_NOTE, TASK_POOL, HALL_CARE } from './config.js';

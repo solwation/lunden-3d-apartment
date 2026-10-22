@@ -1,3 +1,5 @@
+import { saveStats } from './stats.js';
+import { playerLocalStorage as localStorage, playerSessionStorage as sessionStorage } from './playerprofiles.js';
 import { KISS } from './config.js';
 import { MATERIAL_CHOICES, materialChoices, materialChoice } from './materialcatalog.js';
 import { crashlog } from './crashlog.js'; // first: its heartbeat and error hooks start before the rest loads (#629; inert without the cloud)
@@ -962,14 +964,16 @@ const leaderboard = new Leaderboard(cloud.url, totalScore, {
   newPlayer: document.getElementById('player-new'),
   lbDialog: document.getElementById('leaderboard-dialog'),
   dialogList: document.getElementById('lb-dialog-list'),
-  onNewPlayer: () => {
+  onNewPlayer: async (select, { discard = false } = {}) => {
+    if (!discard) {
+      savePlayerWorld();
+      life.flush();
+      saveStats();
+    }
     resetHome.going = true;
     reloading = true;
-    resetStats();
-    tasks.reset({ newChicken: true });
-    clearLocalHome();
-    try { localStorage.removeItem('lunden.avatar'); } catch { /* unavailable */ } // a new player gets their own look; Återställ keeps it (#1148)
-    try { sessionStorage.removeItem('lunden.resetDone'); } catch { /* unavailable */ }
+    try { await select(); }
+    catch (error) { resetHome.going = false; reloading = false; throw error; }
     resetHome.go(location.href);
   }
 });
@@ -1116,7 +1120,13 @@ function spawnAtStart() {
 spawnAtStart();
 // after the "Ladda om" button: back where the visitor was (resume.js), unless that spot is no longer
 // walkable (the plan changed) — then the usual start. The start screen offers "Börja från start".
-const resumed = takeResume();
+let savedPlayerWorld = null;
+try { if (!lifeDev()) savedPlayerWorld = JSON.parse(localStorage.getItem('lunden.playerWorld')); } catch { /* unavailable */ }
+if (!savedPlayerWorld?.playerSnapshot || ![savedPlayerWorld.x, savedPlayerWorld.z, savedPlayerWorld.feetY, savedPlayerWorld.yaw, savedPlayerWorld.pitch].every(Number.isFinite)) savedPlayerWorld = null;
+const resumed = takeResume() ?? savedPlayerWorld;
+if (resumed && !resumed.world && savedPlayerWorld?.world) {
+  resumed.world = savedPlayerWorld.world; resumed.playerSnapshot = true;
+}
 function resumeAt(r) {
   player.spawn(r.x, r.z, r.yaw);
   player.pos.y = r.feetY;
@@ -3311,6 +3321,14 @@ function saveCurrentResume(extra) { const p = placeNow(); if (p) saveResume({ ..
 const keepSession = () => { const p = played && !resetHome.going && placeNow(); if (p) saveSession(player.riding || hasRestoredBicycleHand() ? { ...p, world: keepWorld() } : p); };
 setInterval(keepSession, 2000);
 window.addEventListener('pagehide', keepSession);
+function savePlayerWorld() {
+  if (resetHome.going || lifeDev()) return;
+  const p = placeNow();
+  if (p) localStorage.setItem('lunden.playerWorld', JSON.stringify({ ...p, mode: undefined, playerSnapshot: true, world: keepWorld() }));
+}
+const persistPlayerWorld = () => { try { savePlayerWorld(); } catch { /* keep earlier record if storage is full */ } };
+window.addEventListener('pagehide', persistPlayerWorld);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') persistPlayerWorld(); });
 window.addEventListener('pagehide', () => { if (life.dirty) life.flush(); }); // the life sim's stock (#371)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') keepSession(); });
 // Ctrl+W by mistake (#274): the browser keeps Ctrl+W to itself, so while a visit runs (not on the start screen) leaving
@@ -3511,7 +3529,7 @@ const glReload = () => {
 const glLostEl = document.getElementById('gl-lost');
 onTap(document.getElementById('gl-lost-reload'), glReload);
 reloadOnContextRestore(renderer.domElement, glReload, () => { glLostEl.hidden = false; });
-if (resumeOk && resumed.mode && resumed.world) loadWorld(keepApp, resumed.world); // mid-visit only: the game's clock too (a new visit: real time, #143)
+if (resumeOk && (resumed.mode || resumed.playerSnapshot) && resumed.world) loadWorld(keepApp, resumed.world); // mid-visit only: the game's clock too (a new visit: real time, #143)
 if (resumeOk && resumed.mode) continueAfterReload(resumed);
 // &life (#365): the life simulator's developer scenario — a cleared worktop, a few test things, never saved (life.js)
 if (lifeDev()) devScenario({ life, world, holdables, cups, things, milk, fish, fries, fruit, airFryer, beer, cat, day, player, camera, at: !!at, timeGiven: params0.has('time'), keepOpen: params0.has('open') });

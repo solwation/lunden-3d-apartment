@@ -1,3 +1,4 @@
+import { playerLocalStorage as localStorage } from './playerprofiles.js';
 import * as THREE from 'three';
 import { LIFE, ITEMS, LIFE_FOOD, LIFE_TOOLS } from './config.js';
 import { cookingActions } from './cooking.js';

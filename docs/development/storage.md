@@ -4,6 +4,44 @@ Read [CLAUDE.md](../../CLAUDE.md) first for shared workflow rules. Paths in code
 
 Related: [deployment](deployment.md), [life](life.md).
 
+## Local player profiles (#1515)
+
+`src/playerprofiles.js` maintains `lunden.players.v1`: version, active UUID and
+player metadata. Each loaded page pins its UUID; another tab selecting a player
+cannot redirect that page's later saves. Personal modules import scoped Storage
+adapters rather than changing browser globals. Existing players retain legacy
+keys and their UUID/data; new profiles use `lunden.player.<uuid>.<suffix>`.
+`PERSONAL` is the explicit inventory of profile-owned keys; add new personal
+persistence there and import the adapter in its owning module. Device settings,
+shared drawings/cloud queues and crash limits stay browser-wide. Reset enumerates
+only the current profile plus shared settings, never the registry or other players.
+
+`lunden.playerWorld` retains a validated full `keep.js` snapshot and safe position
+on player change, page hide and visibility loss. Life/statistics retain their
+existing frequent saves. Returning through the menu restores the home behind the
+start screen; ordinary tab resume still takes precedence for position. Profile
+world data fills a position-only tab resume. The developer `&life` scenario does
+not read or save the persistent world. Avatar codes use the existing complete
+codec and default looks are persisted so later name changes cannot change them.
+`Leaderboard.renderPlayers` reuses the customizer's Canvas2D preview for each row.
+This local player UI also works with cloud disabled.
+
+IndexedDB `drawings` always remains in the shared `lunden` database. Personal
+`catPhotos` and `catCards` use the legacy database for the original player and
+`lunden-player-<uuid>` for new players. Confirmed local deletion clears only that
+player's photo stores/database and personal keys; it preserves shared drawings
+and already published scores, as the confirmation explains. Deleting the active
+last player selects a clean anonymous UUID. Removed players cannot write through
+old Storage adapters or open new personal database transactions. Failed deletion
+keeps the registry entry available for retry. A blocked photo database asks the
+player to close other tabs. No server account or cross-device login is introduced.
+
+Checks: `node --test --test-isolation=none tools/playerprofilestest.mjs` and
+`tools/playerprofilesbrowser.cjs BASE OUT` with `PLAYWRIGHT_MODULE`/`CHROME_PATH`.
+The browser driver uses the actual start/menu route, production save/restore,
+avatar codec and IndexedDB; no production cloud mutation. Gameplay is excluded
+from the public downstream.
+
 ## Shared computer power (#1492)
 
 Each computer's existing RoomCinema snapshot carries boolean `power`, initially
@@ -195,7 +233,7 @@ src/leaderboard.js     the global leaderboard (#198), only with the cloud on: op
                        never blocks starting; localStorage 'lunden.name', a random 'lunden.playerId'), the top list there
                        (#lb-start) and under the stats (setStatsExtra); the score (stats.js totalScore, SCORE in config) is
                        POSTed as text/plain when changed, every LEADERBOARD.every s, sendBeacon when hidden; names escaped.
-                       #677: without a name you are "Anonym": the row has name '' (one per 'lunden.playerId', created for everybody;
+                       #677: without a name you are "Anonym": the row has name '' (one per scoped 'lunden.playerId', created for everybody;
                        a name later renames the same row; the Worker never lets an anonymous post strip a name; equal points list
                        named first), anonymous players are online too (presence.js sends name '' + score; the Worker lists them
                        one by one and counts `anon`) and ghosts. Everybody is visible (#723 removed the opt-out box "Visa mig inte för andra"; an old

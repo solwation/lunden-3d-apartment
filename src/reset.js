@@ -1,4 +1,6 @@
+import { playerLocalStorage as localStorage, playerSessionStorage as sessionStorage } from './playerprofiles.js';
 // "Återställ" on the start screen (#303): the whole home back to how it was at the very first visit, locally only.
+// The scoped adapters expose only this player and shared settings; other profiles are never enumerated.
 // Every 'lunden.*' key in this browser's localStorage and sessionStorage goes except the whitelist RESET_KEEP (the
 // shared world's queue and drawings, the score, the leaderboard name, the character's look (#1148), conveniences); the resume / F5 records go with
 // the rest, so the clean reload that follows (main.js) starts at START at the real time with every door shut, the

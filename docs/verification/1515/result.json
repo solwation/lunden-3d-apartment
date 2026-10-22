@@ -1,0 +1,37 @@
+{
+  "checks": [
+    "new UUID starts with own score, home and photos",
+    "one avatar miniature per saved player",
+    "returning player restores UUID, exact avatar, score, dust, door and personal photo",
+    "reload retains avatar, score, dust and home",
+    "deletion explicitly confirms player and all local data",
+    "cancel preserves both accounts",
+    "confirmed deletion removes only selected account",
+    "deleting active last player creates clean anonymous profile",
+    "zero browser errors: "
+  ],
+  "errors": [],
+  "initial": {
+    "id": "5c4680a5-32b2-44e7-804e-ea2d705dbf69",
+    "avatar": "240302101h8q3",
+    "score": 8,
+    "door": true,
+    "doorBefore": false,
+    "dust": {
+      "v": 1,
+      "s": [
+        [
+          "dust",
+          0,
+          2,
+          0.01,
+          3,
+          "floor",
+          "hall",
+          0.731,
+          0
+        ]
+      ]
+    }
+  }
+}

@@ -15,6 +15,17 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## Local player profiles and avatar picker (#1515)
+
+Run `node --test --test-isolation=none tools/playerprofilestest.mjs` and the scoped
+avatar codec/customizer tests listed in [the verification record](../verification/1515/README.md).
+`tools/playerprofilesbrowser.cjs BASE OUT` covers the actual start/menu route,
+separate UUIDs, miniature avatars, exact restored appearance, score, dust, door
+state and personal photos, reload, cancelled/confirmed deletion and deleting the
+last active player. Five storage tests,13 scoped avatar tests and9 browser
+checks passed with zero browser errors. No new graphics geometry or cloud schema;
+no full-world performance sweep or public gameplay port is required.
+
 ## Player head direction (#1504, #1505)
 
 Run only the `standing head pitch|seated look|rest posture` cases in `cloudflare/players.test.mjs`, then

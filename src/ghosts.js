@@ -1,9 +1,10 @@
+import { playerLocalStorage as localStorage } from './playerprofiles.js';
 import { applyRestPose } from './remote-pose.js';
 import { poseOlof } from './olof.js';
 import * as THREE from 'three';
 import { FALL, TOAST, SOUNDS, KISS } from './config.js';
 import { makesSteps, strideFor } from './spatialsound.js';
-import { GHOSTS as G, COMBAT, AVATAR, AVATAR_CROUCH, CHAT, encodeAvatarWireLook, decodeAvatarLook, splitAvatarCode, playerBodySegment } from './config.js';
+import { GHOSTS as G, COMBAT, AVATAR, AVATAR_CROUCH, CHAT, encodeAvatarLook, encodeAvatarWireLook, decodeAvatarLook, splitAvatarCode, playerBodySegment } from './config.js';
 import { Avatar, armTarget } from './avatar.js';
 import { totalScore } from './stats.js';
 import { acquireBadge, releaseBadge, badgeScore, badgeLives } from './ghostbadge.js';
@@ -390,6 +391,7 @@ export class Ghosts {
       lastSent: 0, lastBeat: 0, outbox: [], shots: 0, dropped: 0, greetAt: -1e9, greetsSeen: 0, lastMove: -Infinity, retryAt: 0, backoff: 0, openedAt: 0, connects: 0, messages: 0 });
     const savedAv = (() => { try { return localStorage.getItem('lunden.avatar'); } catch { return null; } })();
     this.myLook = decodeAvatarLook(savedAv, this.name());
+    if (!savedAv) { try { localStorage.setItem('lunden.avatar', encodeAvatarLook(this.myLook)); } catch { /* visit-only */ } }
     this.avatarCode = encodeAvatarWireLook(this.myLook);
     this.sentAv = null;
     this.on = !!url && G.enabled && params.get('mp') !== '0';

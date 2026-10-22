@@ -1,3 +1,4 @@
+import { playerLocalStorage as localStorage } from './playerprofiles.js';
 import { MATERIAL_VERSION, validMaterialChoice } from './materialcatalog.js';
 import { isPrivateCode, layoutWriteCredential } from './privatecodes.js';
 import * as THREE from 'three';

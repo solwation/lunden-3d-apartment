@@ -6,6 +6,8 @@ Gå runt i lägenheten L1007 (Kv. Lunden, Peab) i webbläsaren som i ett FPS-spe
 
 Skriv en befintlig privat adminkod i den vanliga chattrutan. Efter lyckad inloggning visas **Rapportera** och **Möblera** under textfältet. **Rapportera** öppnar en egen popup med textfält, sändknapp och status; en bild av spelvyn följer automatiskt med. **Möblera** startar ommöbleringen först när du klickar på knappen. Sessionen försvinner vid utloggning, omladdning eller utgången inloggningstid. Agenter granskar rapporterna och skapar GitHub-ärenden märkta `in-game`; spelarnamnet följer med i titeln och som en egen rapportörsetikett, och rapporten tas sedan bort från kön. [Importguide för agenter](docs/development/report-import.md).
 
+**Byt spelare** i startmenyn låter dig välja en sparad spelare med avatarminiatyr eller ange ett nytt namn. Varje spelare behåller sitt utseende, hem, smuts, poäng, statistik och kattfoton i samma webbläsare. **Ta bort** frågar först och raderar den valda spelarens lokala data.
+
 Chatten visar de senaste meddelandena även när utrymmet är trångt. Varje rad ligger kvar i upp till en minut; pratbubblan över spelaren försvinner efter tio sekunder.
 
 På telefonen ligger laddningsskärmen kvar medan grafiken förbereds i små steg, tills hela den första 3D-bilden är klar. Tillfälliga nätfel när planritningen hämtas får ett automatiskt återförsök. Om starten ändå misslyckas eller fastnar visas ”Försök igen”, utan att din sparade plats eller ditt hem raderas. Grafiken arbetar mindre när du läser en lapp eller pausar, och vilar bakom uppmaningen att vrida telefonen.

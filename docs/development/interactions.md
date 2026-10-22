@@ -1976,3 +1976,10 @@ temple hair instead of pushing it through skin. All surfaces retain their origin
 and merged avatar material; no global DoubleSide or additional draw is used.
 `tools/avatarhattest.cjs` adds genuine upward views, solid-interior rays and a GPU part-colour
 check that adding a hat does not reveal skin where curly hair was visible.
+
+## Saved player picker (#1515)
+
+The start menu’s Byt spelare dialog lists local UUID profiles with the existing
+Canvas2D avatar preview, choose buttons and confirmed local deletion. New names
+create profiles; an existing name selects its profile without replacing data.
+Avatar and persistence details: [local player profiles](storage.md#local-player-profiles-1515).

@@ -1,3 +1,4 @@
+import { playerLocalStorage as localStorage } from './playerprofiles.js';
 import { setIcon } from './hudicons.js';
 import * as THREE from 'three';
 import { BLINDS, CURTAINS } from './config.js';

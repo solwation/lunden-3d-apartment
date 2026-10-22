@@ -1,3 +1,4 @@
+import { playerLocalStorage as localStorage } from './playerprofiles.js';
 import * as THREE from 'three';
 import { TARGET as T } from './config.js';
 import { sfx } from './audio.js';
