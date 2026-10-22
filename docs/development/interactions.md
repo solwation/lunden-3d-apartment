@@ -1923,3 +1923,7 @@ seek and releases it without opening a panel. Another controller cannot be
 preempted. RoomCinema keeps the existing playing/paused flag and revision check,
 so all viewers follow the same server-time anchor. No new sockets or timer tick.
 The step size is a usability choice in `PLAYROOM.cinemaSync.seekSeconds`.
+
+Lekstuga audio (#1330): the existing disco wall switch also gates a quiet local
+synth rhythm. Manual speaker playback/pause takes precedence; billiard strokes
+and contacts use positional, bounded effects. See [audio](animals-audio.md).

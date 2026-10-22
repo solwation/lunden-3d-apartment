@@ -7,6 +7,7 @@ import { computerFurniture } from './computerfurniture.js';
 import { restTarget } from './rest.js';
 import { PlayroomDevices } from './playroomdevices.js';
 import { PlayroomMusic } from './playroommusic.js';
+import { PlayroomSound } from './playroomsound.js';
 import { clubhouseWallBoxes, clubhouseSkirting } from './clubhousefinish.js';
 import { buildAO, buildWallAO, rectPts } from './ao.js';
 import { architectureEdges } from './architectureedges.js';
@@ -168,7 +169,7 @@ export class Playroom {
       pk.position.set(R.x + x, y, R.z + z); pk.userData.door = this.discoTarget; this.discoTarget.pickable ??= pk;
       this.object.add(pk); this.controlPickables.push(pk);
     }
-    this.music = new PlayroomMusic();
+    this.music = new PlayroomMusic();this.sound = new PlayroomSound();
     const speaker = R.speakers;
     for (const x of speaker.x) {
       fur.push(cbox(col.dark, x-speaker.w/2, x+speaker.w/2, speaker.y-speaker.h/2, speaker.y+speaker.h/2, speaker.z-speaker.d/2, speaker.z+speaker.d/2));
@@ -201,7 +202,7 @@ export class Playroom {
     pick.userData.door = this.exitTarget;
     this.exitTarget.pickable = pick;
     this.object.add(pick);
-    this.billiards = new Billiards();this.object.add(this.billiards.object);this.segments.push(...this.billiards.segments);
+    this.billiards = new Billiards();this.billiards.onSound=(...args)=>this.sound.hit(...args);this.object.add(this.billiards.object);this.segments.push(...this.billiards.segments);
     // Reuse L1007's baked floor/ceiling and wall/corner shading, in a small local
     // coordinate frame. Door headers only occlude the ceiling, never the passage floor.
     const ox = -R.w/2-t, oz = -R.d/2-t, size = { x: R.w+2*t, z: R.d+2*t };
@@ -224,7 +225,7 @@ export class Playroom {
     this.inside = false;
   }
 
-  update(dt,camera,aimed) { if(this.inside){this.billiards.update(dt,camera,aimed);this.devices.update(dt);if(this.discoOn)this.disco(dt);} }
+  update(dt,camera,aimed) { if(this.inside){this.sound.update(dt,this.discoOn,this.music.state!=='off');this.billiards.update(dt,camera,aimed);this.devices.update(dt);if(this.discoOn)this.disco(dt);} }
 
   /** #1365: switch the disco light on or off (the ball stops and goes dull, the light spots vanish). Returns the badge text. */
   setDisco(on) {
@@ -276,7 +277,7 @@ export class Playroom {
   get arrival() { return { x: R.x, z: Z1 - R.standOff, yaw: 0 }; }
 
   /** Drawn (and its exit pickable live) only while inside. */
-  setInside(on) { this.inside = on; this.billiards.active = on; this.object.visible = on; this.devices.setInside(on); this.music.setInside(on); }
+  setInside(on) { this.inside = on; this.sound.setInside(on); this.billiards.active = on; this.object.visible = on; this.devices.setInside(on); this.music.setInside(on); }
 
   /** Where you stand when you come out: just north of the playhouse's door, facing away from it. */
   static get outsideSpot() {

@@ -8274,3 +8274,20 @@ Every enabled exit/app/direction button remains inside the viewport; the short
 cinema modal media rule cannot override the game toolbar columns. This is a
 DOM layout check, alongside the six actual-World images in
 `/tmp/snake1491-complete/` and the8passing arena/server tests.
+
+## Lekstuga sound (#1330)
+
+Run `node --test tools/playroomsoundtest.mjs tools/billiardtest.mjs
+cloudflare/billiards.test.mjs tools/playroommusictest.mjs` (28 cases). The new
+callback-enabled and callback-free physics runs finish with identical ball values;
+room/lamp/manual-music/hidden gates and repeated/quiet impact filtering are covered.
+
+`tools/playroomsoundtest.cjs GAME OUT` opens the actual World with real Web Audio,
+an analyser on the existing master and a local offline table. It measures disco
+on/off, master mute, a real local stroke (cue/ball/rail callbacks), a ball placed
+at a pocket for the actual physics callback, and room exit. Samples are taken
+every10ms so short45ms impact envelopes cannot fall between100ms observations.
+The fixture uses Chromium's autoplay flag to enable audio; it does not establish
+physical speaker quality or production visitor interactions. No new scene meshes,
+lights, media files, sockets or protocol messages are introduced. Gameplay is
+original-only. Raw measurements: `/tmp/lekstuga1330-final/result.json`.

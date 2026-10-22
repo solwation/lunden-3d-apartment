@@ -11,11 +11,21 @@ Read [CLAUDE.md](../../CLAUDE.md) first for shared workflow rules. Paths in code
 
 Related: [interactions](interactions.md), [graphics](graphics.md).
 
-Clubhouse TV/computer (#1365) now work locally through E/touch, with silent
-canvas animation and a timing game. Power calls the existing
-`Playroom.onSwitch('disco'|'tv'|'pc', on)` hook. Audio remains #1330; no new
-sound source or generated musical fallback is introduced. See
-[device controls and lifecycle](furniture.md#clubhouse-tv-and-computer-1365).
+Clubhouse media uses the shared screen apps (see [interactions](interactions.md#shared-computers-1488)).
+`PlayroomSound` (#1330) supplies a quiet positional synth disco while the lamp is
+on and the visitor is inside. Manual speaker music, including paused transport,
+suppresses that rhythm. No beat catch-up runs after a slow/hidden frame; switching
+the disco off or leaving stops new notes. Master mute applies to all effects.
+
+`BilliardPhysics.onSound` reports cue, approaching ball, cushion and pocket contacts
+without changing simulation values. `Billiards` transforms their positions through
+the real table matrix and forwards only while active. `PlayroomSound.hit` filters
+quiet/repeated contacts and `sfx.billiard` uses the shared voice cap/master with
+short, distinct synth envelopes. No new media downloads or network messages.
+Tuning lives in `PLAYROOM.sound`; gameplay is excluded from the public downstream.
+Tests: `tools/playroomsoundtest.mjs`, actual Web Audio/World
+`tools/playroomsoundtest.cjs`, existing billiard and speaker transport regressions.
+
 ## Module and test map
 
 ```text

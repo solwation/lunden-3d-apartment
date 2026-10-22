@@ -2,7 +2,7 @@
 // given a world position and is panned/attenuated relative to the camera.
 // The AudioContext can only start after a user gesture — call initAudio() from a click.
 
-import { SOUNDS, KISS } from './config.js';
+import { SOUNDS, KISS, PLAYROOM } from './config.js';
 import { distanceGain, VoiceCap } from './spatialsound.js';
 
 let ctx = null, master = null, noiseBuf = null;
@@ -542,6 +542,17 @@ export const sfx = {
     const t = ctx.currentTime, d = out(pos, 0.7);
     noise(t, 0.015, d, { type: 'highpass', freq: 2500, gain: 0.25 });
     tone(t + 0.03, 0.18, d, { from: on ? 520 : 780, to: on ? 780 : 520, gain: 0.05 });
+  },
+  /** #1330: a short cue/ball click, soft cushion knock, or pocket drop. */
+  billiard(pos,kind,strength=1) {
+    const C=PLAYROOM.sound;
+    if(!ready()||!voices.take(ctx.currentTime,C.voiceSeconds))return false;
+    const t=ctx.currentTime,d=out(pos,C.impactGain*Math.max(C.minGain,Math.min(1,strength)));
+    const hz=kind==='cue'?C.cueHz:kind==='ball'?C.ballHz:kind==='rail'?C.railHz:C.pocketHz;
+    const duration=kind==='pocket'?C.pocketDuration:C.hitDuration;
+    tone(t,duration,d,{type:'triangle',from:hz,to:hz*C.pitchDrop,gain:C.toneGain});
+    noise(t,duration,d,{type:'bandpass',freq:hz,q:1,gain:kind==='pocket'?C.pocketNoise:C.hitNoise});
+    return true;
   },
   /** One step of the laptop's short-video beat (#283): 'kick', 'snare', 'hat' or a 'blip' at `freq` Hz, quiet (`gain`). */
   beat(pos, kind, gain = 0.12, freq = 440) {

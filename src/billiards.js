@@ -14,6 +14,7 @@ const merge=list=>{const flat=list.map(q=>q.index?q.toNonIndexed():q),g=mergeGeo
 export class Billiards {
   constructor() {
     const c=this.c=R.billiards,L=c.length,W=c.width,H=c.height,A=c.rail;this.physics=new BilliardPhysics(c);
+    const soundPoint=new T.Vector3();this.physics.onSound=(kind,x,z,speed)=>{if(this.active&&this.onSound){this.object.updateWorldMatrix(true,false);this.onSound(kind,this.object.localToWorld(soundPoint.set(x,c.height+c.ballR,z)),speed);}};
     this.object=new T.Group();this.object.name='playroom-billiards';this.object.position.set(R.x+c.x,0,R.z+c.z);this.object.rotation.y=c.yaw;
     const parts=[],box=(w,h,d,x,y,z,col)=>parts.push(paint(new RoundedBoxGeometry(w,h,d,R.appearance.frameSegments,Math.min(R.appearance.edgeRadius,w/2.01,h/2.01,d/2.01)).translate(x,y,z),col));
     box(L+2*A,.12,W+2*A,0,H-.08,0,0x593c29);box(L,.025,W,0,H-.0125,0,0x226b55);

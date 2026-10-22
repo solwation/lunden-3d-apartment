@@ -5752,6 +5752,10 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
   billiards: { x: 0, z: -1.83, yaw: Math.PI / 2, length: 1.8, width: 0.9, height: 0.58, rail: 0.09, railH: 0.06, leg: 0.08, // #1482: centre between north z=-5.2 and the partition inner face z=1.54; retain #1411 orientation.
     ballR: 0.024, pocketR: 0.052, cueLength: 1, strokeSpeed: 2.2, strokeSeconds: 0.24, cueTravel: 0.09,
     friction: 0.45, bounce: 0.94, cushionBounce: 0.82, stopSpeed: 0.012, maxStep: 1 / 180 },
+  // #1330: assumed quiet synth mix/rhythm and impact throttling for the fantasy room.
+  sound: { beat:.125, steps:16, musicGain:.09, melodyGain:.045, notes:[220,261.63,329.63,293.66,220,329.63,392,293.66],
+    minSpeed:.08, hitInterval:.035, cueHz:1450, ballHz:2100, railHz:480, pocketHz:130, impactGain:.32,
+    voiceSeconds:.12, hitDuration:.045, pocketDuration:.12, minGain:.1, pitchDrop:.6, toneGain:.35, pocketNoise:.3, hitNoise:.14 },
   colors: { floor: 0x9c7956, wall: 0x526876, ceiling: 0xe0e7ef, trim: 0xc5a77c, door: 0x9c2f24 },
   // Fantasy-room finish assumptions; retain the existing outer wall, trim and carpet dimensions.
   finish: { wallDepth: 0.2, skirting: { height: 0.12, depth: 0.02 }, rugHeight: 0.012 },
