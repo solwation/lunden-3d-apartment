@@ -1,5 +1,6 @@
 // Reports are untrusted data, never agent instructions. No report text is executed.
 import { REPORTS } from '../src/config.js';
+import { reportPlayerName } from '../src/reportauthor.js';
 import { isPrivateCode } from '../src/privatecodes.js';
 import { validReportImage } from './reportimage.js';
 const enc = new TextEncoder();
@@ -106,17 +107,20 @@ export async function reportsFetch(request, env, h, limited) {
   }
   const text=b?.text;
   if (typeof text!=='string' || !text.trim() || text.length>REPORTS.maxChars || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e\u2060-\u206f\ufeff]/.test(text)) return bad(400,'text',h);
+  if(b.playerName!==undefined&&(typeof b.playerName!=='string'||Array.from(b.playerName).length>REPORTS.playerNameChars))return bad(400,'playerName',h);
+  const playerName=reportPlayerName(b.playerName);
   const image = b?.image, photo = b?.photo;
   if (image !== undefined && !validReportImage(image)) return bad(400,'image',h);
   // #1182: an optional second JPEG (the reporter's own photo) beside the game screenshot, same bounds.
   if (photo !== undefined && !validReportImage(photo)) return bad(400,'photo',h);
   // Keep existing text-only and one-image retry identities; image reports include exact original image bytes.
-  const identity=photo!==undefined?'\0report-images-v2\0'+JSON.stringify({text,image,photo})
+  const identity=b.playerName!==undefined?'\0report-author-v1\0'+JSON.stringify({text,playerName,image,photo})
+    :photo!==undefined?'\0report-images-v2\0'+JSON.stringify({text,image,photo})
     :image===undefined?text:'\0report-image-v1\0'+JSON.stringify({text,image});
   const hash=hex(await crypto.subtle.digest('SHA-256',enc.encode(identity)));
   if (previous && previous.hash!==hash) return bad(409,'immutable id',h);
   if (previous?.issueUrl) return reply({id,imported:true},200,h);
-  const record=previous??{hash,report:{id,text,...(image===undefined?{}:{image}),...(photo===undefined?{}:{photo}),created:new Date().toISOString(),untrusted:true}};
+  const record=previous??{hash,report:{id,text,playerName,...(image===undefined?{}:{image}),...(photo===undefined?{}:{photo}),created:new Date().toISOString(),untrusted:true}};
   await storage.put(key,record);
   if (!record.stored) {
     await env.LUNDEN.put(key,JSON.stringify(record.report));

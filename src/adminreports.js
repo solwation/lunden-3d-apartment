@@ -1,3 +1,4 @@
+import { reportPlayerName } from './reportauthor.js';
 import { REPORTS, CLOUD_URL } from './config.js';
 import { cloudUrl } from './cloud.js';
 import { isPrivateCode } from './privatecodes.js';
@@ -8,8 +9,8 @@ const normalizeCode = text => text.trim().replace(/^\//, '').trim().toLowerCase(
 
 // Admin and furniture editing share one in-memory session on this page.
 export class AdminReports {
-  constructor({ form, input, message, panel, password, login, cancel, menu, reportPanel, reportInput, reportStatus, help = () => '', changed = () => {}, capture = () => Promise.reject(Error('capture unavailable')) }, url = cloudUrl()) {
-    Object.assign(this,{form,input,message,panel,password,login,cancel,menu,reportPanel,reportInput,reportStatus,help,changed,capture,url});
+  constructor({ form, input, message, panel, password, login, cancel, menu, reportPanel, reportInput, reportStatus, help = () => '', changed = () => {}, capture = () => Promise.reject(Error('capture unavailable')), playerName = () => '' }, url = cloudUrl()) {
+    Object.assign(this,{form,input,message,panel,password,login,cancel,menu,reportPanel,reportInput,reportStatus,help,changed,capture,playerName,url});
     // The public cloud debug override must never redirect an admin code to an arbitrary host.
     const loopback = value => ['localhost','127.0.0.1'].includes(value);
     try {
@@ -144,7 +145,7 @@ export class AdminReports {
     if(this.photoBusy&&source===this.reportInput){this.say('Vänta tills fotot är klart.');return;}
     // A chosen photo belongs to the report popup; legacy chat /rapport keeps the screenshot.
     const photo=source===this.reportInput?this.photo:null;
-    if(!this.pending||this.pending.text!==text||this.pending.photo!==photo)this.pending={id:crypto.randomUUID(),text,photo};
+    if(!this.pending||this.pending.text!==text||this.pending.photo!==photo)this.pending={id:crypto.randomUUID(),text,photo,playerName:reportPlayerName(this.playerName())};
     const pending=this.pending, draft=source.value, epoch=this.epoch;this.busy=true;
     try{
       if(!pending.image){
@@ -153,7 +154,7 @@ export class AdminReports {
         catch{if(epoch===this.epoch)this.say('Kunde inte ta bilden. Försök igen; texten finns kvar.');return;}
       }
       if(epoch!==this.epoch||!this.active)return;
-      const r=await fetch(this.url+'/reports/'+pending.id,{redirect:'error',method:'PUT',headers:{'Content-Type':'application/json',Authorization:'Bearer '+this.token},body:JSON.stringify({text,image:pending.image,...(pending.photo?{photo:pending.photo}:{})})});
+      const r=await fetch(this.url+'/reports/'+pending.id,{redirect:'error',method:'PUT',headers:{'Content-Type':'application/json',Authorization:'Bearer '+this.token},body:JSON.stringify({text,playerName:pending.playerName,image:pending.image,...(pending.photo?{photo:pending.photo}:{})})});
       if(epoch!==this.epoch)return;
       if(r.status===403){this.logout();this.say('Adminsessionen har gått ut. Skriv din adminkod i chatten igen.');return;}
       if(!r.ok){this.say(r.status===429?'Vänta en minut och skicka rapporten igen.':'Rapporten kunde inte sparas. Texten finns kvar.');return;}

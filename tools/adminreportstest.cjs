@@ -41,6 +41,7 @@ const sourceHashes=Object.fromEntries(['index.html','src/adminreports.js','src/m
    const reportCapture={capture:async()=>captureFixture};
    const {isCommand,runCheat}=await import('/src/cheats.js');
    const lifecycle=`
+    const leaderboard={name:'Rapporttest'};
     const editHelp=document.getElementById('rearrange-help'),editToggle=document.getElementById('rearrange-toggle');
     let editMenuPiece=null,editMenuSurfaceId=null,resetFurnitureRequest=null,editHUDKey='';
     let reading=true,locked=false,boardFreed=false;
@@ -140,7 +141,7 @@ const sourceHashes=Object.fromEntries(['index.html','src/adminreports.js','src/m
  check((await message()).includes('sparad')&&await page.locator('#terminal-code').inputValue()==='','successful mixed-case/whitespace command clears unchanged draft');
  check(await page.evaluate(()=>fixture.chat.sent.length===1),'admin commands and report contents never reached chat send');
  const listed=await fetch(worker+'/reports',{headers:{Authorization:'Bearer testtoken'}}).then(r=>r.json());
- check(listed.reports.filter(report=>report.id===captured[0].url.split('/').pop()).length===1&&listed.reports.find(report=>report.id===captured[0].url.split('/').pop()).text===captured[0].body.text&&listed.reports.find(report=>report.id===captured[0].url.split('/').pop()).untrusted===true,'actual Worker stores exact injection-shaped text once as untrusted data');
+ check(listed.reports.filter(report=>report.id===captured[0].url.split('/').pop()).length===1&&listed.reports.find(report=>report.id===captured[0].url.split('/').pop()).text===captured[0].body.text&&listed.reports.find(report=>report.id===captured[0].url.split('/').pop()).untrusted===true&&listed.reports.find(report=>report.id===captured[0].url.split('/').pop()).playerName==='Rapporttest','actual Worker stores exact injection-shaped text and player name once as untrusted data');
  await page.screenshot({path:path.join(out,'report-saved-phone.png')});
  await page.unroute(worker+'/reports/*');
  await page.locator('#terminal-code').fill('Unsent ordinary chat');

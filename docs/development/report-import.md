@@ -2,8 +2,9 @@
 
 `tools/ingame_reports.py` uses Python 3 standard-library modules and an authenticated
 `gh` CLI. It always targets `solwation/lunden-3d-apartment`, GitHub.com, and the labels
-`in-game` plus one reviewed `priority: high|medium|low`. It never reads repository,
-labels, commands or permissions from report text. `in-game` must already exist.
+`in-game`, one reviewed `priority: high|medium|low`, and the importer-generated
+`rapportör: <namn>` label (#1493). It never reads repository, arbitrary labels,
+commands or permissions from report text. `in-game` must already exist.
 The default Worker is the fixed HTTPS endpoint
 `https://lunden-l1007.olw.workers.dev`; only explicit loopback alternatives are
 allowed for local fixtures. Credential-bearing redirects are rejected.
@@ -129,8 +130,8 @@ python3 tools/ingame_reports.py import \
 The original report appears in a separately labelled untrusted code block in the
 GitHub body. The fence is lengthened if the text contains backticks; it cannot escape
 the code block. Report text travels in structured JSON on `gh api --input -` stdin,
-never as shell syntax or a subprocess argument. The title and labels come only from
-the reviewed metadata and fixed importer policy. Export does not create issues.
+never as shell syntax or a subprocess argument. The reviewed title gets a fixed `[Spelarnamn] ` prefix from report metadata;
+labels come from reviewed priority and the fixed reporter-label policy. Export does not create issues.
 
 ## Wrangler first (user, 2026-10-19)
 
@@ -262,7 +263,7 @@ and authorization before deciding on a manual recovery. Confirming that no issue
 created is an operator decision; the tool has no automatic reset command.
 
 Only a fresh GitHub GET confirming the exact repository URL, issue number, first-line
-marker, and `in-game` label permits acknowledgement. The importer first persists
+marker, `in-game` label, reporter title prefix and reporter label permits acknowledgement. The importer first persists
 `created` and the issue URL, then sends `DELETE /reports/<id>` with
 `{claimId,token,issueUrl}`. Failed acknowledgement leaves the report/receipt retryable.
 If acknowledgement succeeded but its reply was lost, the same claim returns its
@@ -310,3 +311,40 @@ Set `LUNDEN_REPORT_TEST_IMAGE=/private/actual-game-view.jpg` to use an actual lo
 game-view JPEG in that optional integration instead of the tiny genuine canvas
 fixture. Its original bytes are verified through the real local API and fake
 Contents upload/issue attachment, including receipt-only recovery.
+
+
+## Reporter names (#1493)
+
+The browser freezes `playerName` from the current leaderboard/profile name when
+it creates a pending report, including legacy chat commands. Lost replies reuse
+the same UUID, image and name even if the profile name changes before retry. The
+Worker stores/exports/claims that metadata and includes it in the immutable identity
+for new clients. Old clients keep their previous text/image retry hashes; missing
+names are represented as `Okänd spelare`. Names are display data, not authenticated
+identities or instructions. Browser/Worker `reportauthor.js` and the importer use
+NFKC normalization, whitespace/control cleanup and a32-codepoint bound.
+
+New imports use titles such as `[Lin] Laga dörren` and one reusable label
+`rapportör: lin`. Casefolding groups equivalent name casing; the namespaced label
+cannot become priority/ownership metadata. Longer casefold expansions are bounded
+with a deterministic hash suffix. Labels are listed/created/confirmed through
+fixed GitHub endpoints with JSON payloads; a lost create reply rechecks the label.
+The existing `in-game`, reviewed priority and all other issue labels are preserved.
+
+The durable journal now also freezes `playerName`. After creating or recovering an
+issue, the importer adds/verifies the prefix and label before acknowledging the
+report. Missing/changed metadata retains the report. A pending old issue can gain
+title/label metadata without rewriting its body; the existing attachment/body
+hashes remain byte-compatible. Already acknowledged historical reports are not
+re-imported, and names absent from historical data cannot be reconstructed.
+
+Verification:64 importer tests including actual loopback Worker integration and
+an export from the production report dialog,13 Worker/name checks and3 browser
+photo-field regressions. `reportauthorbrowser.cjs GAME LOCAL_WORKER OUT` uses the
+actual production binding/dialog, submits two named fixture reports and simulates
+a lost response. `LUNDEN_REPORT_BROWSER_EXPORT=OUT/reports.json` feeds those exact
+records/images through the reviewed importer into a multi-issue fake GitHub API:
+one reporter label, two titles/attachments and no duplicate issue on retry. No
+real GitHub test issues or production reports are written. The older broad admin
+fixture stops before reporting on a hidden furniture-finish button (#1497), so
+it is not claimed as a passing full suite.

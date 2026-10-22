@@ -174,3 +174,17 @@ test('JPEG bytes, canonical encoding, frame dimensions and both body limits are 
  assert.equal(response.status,413);assert.equal(cancelled,true);
  assert.equal(f.kv.size,0);
 });
+
+test('player name is stored/claimed, immutable across retries, bounded and compatible with old clients',async()=>{
+ const f=fixture(),token=await f.login();
+ assert.equal((await f.call('/reports/'+id,'PUT',{text:'Name snapshot',playerName:'  Lin  '},token)).status,201);
+ assert.equal((await f.call('/reports/'+id,'PUT',{text:'Name snapshot',playerName:'Lin'},token)).status,200);
+ assert.equal((await f.call('/reports/'+id,'PUT',{text:'Name snapshot',playerName:'Moa'},token)).status,409);
+ const listed=await(await f.call('/reports','GET',undefined,adminToken)).json();assert.equal(listed.reports[0].playerName,'Lin');
+ const claim=await(await f.call('/reports/'+id,'POST',{claimId},adminToken)).json();assert.equal(claim.report.playerName,'Lin');
+ const other='b24c49e6-b974-4d23-8875-cdd4568138ab';
+ for(const playerName of [{},'x'.repeat(REPORTS.playerNameChars+1)])assert.equal((await f.call('/reports/'+other,'PUT',{text:'Bad name',playerName},token)).status,400);
+ assert.equal((await f.call('/reports/'+other,'PUT',{text:'Old client'},token)).status,201);
+ assert.equal((await f.call('/reports/'+other,'PUT',{text:'Old client'},token)).status,200);
+ assert.equal(JSON.parse(f.kv.get('report:'+other)).playerName,REPORTS.unknownPlayer);
+});

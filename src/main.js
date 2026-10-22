@@ -2405,7 +2405,7 @@ for (const f of newYear.flutes) { f.onSip = (drink) => { if (drink) bump(drink);
 const terminal = document.getElementById('terminal'), terminalInput = document.getElementById('terminal-code');
 const reportCapture = new ReportCapture(renderer);
 const adminReports = new AdminReports({ help: () => chat?.help ?? '', form: document.getElementById('terminal-form'), input: terminalInput,
-  capture: () => reportCapture.capture(),
+  capture: () => reportCapture.capture(), playerName: () => leaderboard.name,
   menu: document.getElementById('terminal-admin-menu'), reportPanel: document.getElementById('admin-report'), reportInput: document.getElementById('admin-report-text'), reportStatus: document.getElementById('admin-report-status'),
   message: document.getElementById('terminal-message'), panel: document.getElementById('admin-login'),
   password: document.getElementById('admin-password'), login: document.getElementById('admin-signin'), cancel: document.getElementById('admin-cancel'),

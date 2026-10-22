@@ -6368,7 +6368,10 @@ export function straightBoxHeadContact(seed, state, shot, range) {
 }
 
 // #1045: report size and one-page admin lifetime; server and client share these bounds.
-export const REPORTS = { maxChars: 4000, maxBytes: 16384, sessionSeconds: 3600,
+export const REPORTS = {
+  // #1493: bounded reporter metadata; old/unnamed clients use a consistent display name.
+  playerNameChars:32, unknownPlayer:'Okänd spelare',
+  maxChars: 4000, maxBytes: 16384, sessionSeconds: 3600,
   // #1049: bounded private JPEG report attachment and total PUT body; capture waits for a real screen frame.
   // #1182: putBytes fits two base64 images (screenshot + photo, ~273 kB each) plus text; 640 kB is a *guess*.
   imageBytes: 200 * 1024, imageEdge: 1280, putBytes: 640 * 1024, captureMs: 5000 };

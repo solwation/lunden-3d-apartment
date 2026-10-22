@@ -8341,3 +8341,16 @@ observation is not a product defect and must not prompt seat/screen/camera chang
 The cinema fixture now preserves its pose/reach/safe-standing checks while
 allowing front-row cropping per the explicit #1496 clarification; rear-row
 full-screen checks remain. No production cinema geometry or camera changed.
+
+
+## Reporter attribution (#1493)
+
+The new actual-DOM `reportauthorbrowser.cjs` executes the production AdminReports
+binding with a local Worker, native form submission, two same-name reports and a
+lost PUT response. Both stored records retain the original name/UUID on retry.
+The records/images then pass through64 importer tests (including actual local
+claim/ack integration) with a fake multi-issue GitHub API.13 Worker/name cases and
+3 portrait/landscape/mouse photo-field regressions pass. No real GitHub test issues
+or production report mutations are used. Raw scoped browser result/export:
+`/tmp/rapporter1493-browser/`. The older broad adminreportstest stops before its
+report stage on a hidden Klart button (#1497); it is not a green full suite.

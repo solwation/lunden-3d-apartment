@@ -4,7 +4,7 @@ Gå runt i lägenheten L1007 (Kv. Lunden, Peab) i webbläsaren som i ett FPS-spe
 övre plan med trappan emellan, byggt direkt från den måttsatta planritningen
 (`L1007_mattsatt_planritning.pdf`).
 
-Skriv en befintlig privat adminkod i den vanliga chattrutan. Efter lyckad inloggning visas **Rapportera** och **Möblera** under textfältet. **Rapportera** öppnar en egen popup med textfält, sändknapp och status; en bild av spelvyn följer automatiskt med. **Möblera** startar ommöbleringen först när du klickar på knappen. Sessionen försvinner vid utloggning, omladdning eller utgången inloggningstid. Agenter granskar rapporterna och skapar GitHub-ärenden märkta `in-game`; rapporten tas sedan bort från kön. [Importguide för agenter](docs/development/report-import.md).
+Skriv en befintlig privat adminkod i den vanliga chattrutan. Efter lyckad inloggning visas **Rapportera** och **Möblera** under textfältet. **Rapportera** öppnar en egen popup med textfält, sändknapp och status; en bild av spelvyn följer automatiskt med. **Möblera** startar ommöbleringen först när du klickar på knappen. Sessionen försvinner vid utloggning, omladdning eller utgången inloggningstid. Agenter granskar rapporterna och skapar GitHub-ärenden märkta `in-game`; spelarnamnet följer med i titeln och som en egen rapportörsetikett, och rapporten tas sedan bort från kön. [Importguide för agenter](docs/development/report-import.md).
 
 Chatten visar de senaste meddelandena även när utrymmet är trångt. Varje rad ligger kvar i upp till en minut; pratbubblan över spelaren försvinner efter tio sekunder.
 

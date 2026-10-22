@@ -1360,3 +1360,13 @@ No DB version/key, JPEG/album migration or peer field is added. Save failure/ful
 the same attempt, so reload of the kept cat never starts a retry loop. Other persistence/ordinary
 transient-cat policies remain unchanged. `MieleHeld.saveStowed` remains Miele-only and silent restore
 still suppresses pickup sound/actions; pickup itself no longer produces a photo.
+
+
+## Report player names (#1493)
+
+New report writes freeze the profile name as `playerName` alongside UUID/text/images.
+The Worker normalizes/bounds it through `reportauthor.js`; new-client identities
+include the name while old-client retry hashes stay valid. Nameless old clients
+store `Okänd spelare`. Reviewed import retains the name in its journal and verifies
+GitHub title/`rapportör: <namn>` before acknowledgement. Existing image/body hashes
+remain unchanged; no name is guessed from old text. See [report import](report-import.md#reporter-names-1493).

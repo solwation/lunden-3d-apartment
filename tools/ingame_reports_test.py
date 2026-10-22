@@ -70,6 +70,7 @@ class FakeGitHub(m.GitHub):
     def __init__(self):
         self.issue = None
         self.calls = []
+        self.labels = {}
         self.fail_create = False
         self.lose_create = False
         self.bad_verify = False
@@ -77,6 +78,18 @@ class FakeGitHub(m.GitHub):
 
     def request(self, method, endpoint, payload=None):
         self.calls.append((method, endpoint, payload))
+        if endpoint.startswith(m.LABELS):
+            if method == 'GET':
+                return [{'name': name} for name in self.labels]
+            if method == 'POST':
+                self.labels[payload['name']] = payload
+                return payload
+        if endpoint == m.API + '/45/labels' and method == 'POST':
+            self.issue['labels'] += [{'name': label} for label in payload['labels']]
+            return self.issue['labels']
+        if endpoint == m.API + '/45' and method == 'PATCH':
+            self.issue.update(payload)
+            return self.issue
         if method == 'GET' and '?' in endpoint:
             return [] if self.issue is None else [self.issue]
         if method == 'POST':
@@ -84,7 +97,7 @@ class FakeGitHub(m.GitHub):
                 m.fail('Create failed.')
             self.issue = {'number': 45, 'html_url': m.ISSUES + '45',
                           'url': 'https://api.github.com/' + m.API + '/45',
-                          'body': payload['body'], 'labels': [{'name': 'in-game'}],
+                          'title': payload['title'], 'body': payload['body'], 'labels': [{'name': label} for label in payload['labels']],
                           'state': 'closed' if self.closed else 'open'}
             if self.lose_create:
                 m.fail('Create response lost.')
@@ -97,7 +110,7 @@ class FakeGitHub(m.GitHub):
 
     @property
     def creates(self):
-        return sum(method == 'POST' for method, _, _ in self.calls)
+        return sum(method == 'POST' and endpoint == m.API for method, endpoint, _ in self.calls)
 
 
 class ImportTests(unittest.TestCase):
@@ -124,9 +137,9 @@ class ImportTests(unittest.TestCase):
         self.run_import()
         self.assertEqual(self.github.creates, 1)
         self.assertEqual(sum(call[0] == 'DELETE' for call in self.worker.calls), 1)
-        payload = next(call[2] for call in self.github.calls if call[0] == 'POST')
-        self.assertEqual(payload['title'], ENTRY['title'])
-        self.assertEqual(payload['labels'], ['in-game', 'priority: medium'])
+        payload = next(call[2] for call in self.github.calls if call[0] == 'POST' and call[1] == m.API)
+        self.assertEqual(payload['title'], '[Okänd spelare] ' + ENTRY['title'])
+        self.assertEqual(payload['labels'], ['in-game', 'priority: medium', 'rapportör: okänd spelare'])
         self.assertIn('````text\n' + REPORT['text'] + '\n````', payload['body'])
 
     def test_ambiguous_create_requeries_and_recovers_closed_issue(self):
@@ -294,7 +307,7 @@ class ImageGitHub(FakeGitHub):
                     m.fail('Image PUT response lost.')
                 return {'content': self.files[endpoint]}
             raise AssertionError(method)
-        if method == 'POST':
+        if method == 'POST' and endpoint == m.API:
             ident = payload['body'].split('\n', 1)[0].split(':')[-1].split(' ')[0]
             for suffix, needle in (('', 'Bildbedömning'), ('-2', 'Fotobedömning')):
                 if needle in payload['body']:
@@ -888,6 +901,168 @@ class ActualWorkerTests(unittest.TestCase):
             self.assertEqual(m.read_json(journal_path)['entries'][ident]['state'], 'acknowledged')
             with self.assertRaises(m.ImportErrorSafe):
                 real_worker.request('POST', '/reports/' + ident, {'claimId': str(m.uuid.uuid4())})
+
+
+class MultiGitHub(ImageGitHub):
+    """Offline REST adapter with multiple issues and real shared label identity."""
+    def __init__(self):
+        super().__init__()
+        self.issues = {}
+
+    def request(self, method, endpoint, payload=None, **kwargs):
+        if endpoint.startswith(m.CONTENTS) or endpoint.startswith(m.LABELS):
+            return super().request(method, endpoint, payload, **kwargs)
+        self.calls.append((method, endpoint, payload))
+        if endpoint.startswith(m.API + '?') and method == 'GET':
+            return list(self.issues.values())
+        if endpoint == m.API and method == 'POST':
+            number = 45 + len(self.issues)
+            issue = {'number': number, 'title': payload['title'], 'body': payload['body'],
+                     'labels': [{'name': label} for label in payload['labels']],
+                     'html_url': m.ISSUES + str(number), 'url': 'https://api.github.com/' + m.API + '/' + str(number)}
+            self.issues[number] = issue
+            return issue
+        number = int(endpoint[len(m.API)+1:].split('/')[0])
+        issue = self.issues[number]
+        if endpoint.endswith('/labels') and method == 'POST':
+            issue['labels'] += [{'name': label} for label in payload['labels']]
+            return issue['labels']
+        if method == 'PATCH':
+            issue.update(payload)
+        return issue
+
+
+class MultiWorker:
+    base = m.WORKER
+    def __init__(self, reports):
+        self.reports = {r['id']: r for r in reports}
+        self.receipts = {}
+        self.owners = {}
+    def request(self, method, path, payload):
+        ident = path.rsplit('/', 1)[1]
+        if method == 'POST':
+            owner = self.owners.setdefault(ident, payload['claimId'])
+            if owner != payload['claimId']:
+                m.fail('Fixture ownership conflict.')
+            claim = {'id': ident, 'claimId': owner, 'token': TOKEN}
+            return {**claim, **({'issueUrl': self.receipts[ident]} if ident in self.receipts else {'report': self.reports[ident]})}
+        self.receipts[ident] = payload['issueUrl']
+        return {'ok': True}
+
+
+class ReporterTests(unittest.TestCase):
+    def test_two_reports_share_one_safe_reporter_label_and_rerun_never_duplicates(self):
+        reports = [{**REPORT, 'playerName': ' Lin '}, {**REPORT, 'id': OTHER, 'playerName': 'Lin'}]
+        manifest = {**MANIFEST, 'reports': [ENTRY, {**ENTRY, 'id': OTHER}]}
+        worker, github = MultiWorker(reports), MultiGitHub()
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'journal.json'
+            m.import_reports(manifest, path, worker, github, lambda _: None)
+            m.import_reports(manifest, path, worker, github, lambda _: None)
+            self.assertEqual(github.creates, 2)
+            self.assertEqual(list(github.labels), ['rapportör: lin'])
+            self.assertEqual(len(worker.receipts), 2)
+            for issue in github.issues.values():
+                self.assertTrue(issue['title'].startswith('[Lin] '))
+                self.assertIn({'name': 'rapportör: lin'}, issue['labels'])
+
+    def test_name_policy_unicode_casefold_bounds_and_no_priority_or_ownership_labels(self):
+        self.assertEqual(m.player_name(' A\u030asa\n Test\u202e '), 'Åsa Test')
+        self.assertEqual(m.reporter_label('LIN'), m.reporter_label('Lin'))
+        label = m.reporter_label('ß' * 32)
+        self.assertLessEqual(len(label), 50)
+        payload = m.issue_payload(ENTRY, {**REPORT, 'playerName': 'priority: high'})
+        self.assertEqual(payload['labels'], ['in-game', 'priority: medium', 'rapportör: priority: high'])
+        self.assertNotIn('in-progress', payload['labels'])
+        self.assertEqual(m.reporter_label(''), 'rapportör: okänd spelare')
+        self.assertLessEqual(len(m.reporter_title('x'*256, 'Lin')), 256)
+
+    def test_existing_issue_metadata_is_recovered_without_changing_body_or_duplicate_create(self):
+        worker, github = MultiWorker([{**REPORT, 'playerName': 'Lin'}]), MultiGitHub()
+        payload = m.issue_payload(ENTRY, REPORT)
+        payload['title'] = ENTRY['title']
+        payload['labels'] = ['in-game', 'priority: medium', 'in-progress']
+        issue = github.request('POST', m.API, payload)
+        original_body = issue['body']
+        with tempfile.TemporaryDirectory() as directory:
+            m.import_reports(MANIFEST, Path(directory)/'journal.json', worker, github, lambda _: None)
+        self.assertEqual(github.creates, 1)
+        self.assertEqual(issue['body'], original_body)
+        self.assertEqual(issue['title'], '[Lin] ' + ENTRY['title'])
+        self.assertIn({'name': 'in-progress'}, issue['labels'])
+        self.assertIn({'name': 'rapportör: lin'}, issue['labels'])
+
+    def test_durable_name_change_and_missing_metadata_cannot_acknowledge(self):
+        worker, github = FakeWorker(), FakeGitHub()
+        worker.report['playerName'] = 'Lin'
+        worker.fail_ack = True
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)/'journal.json'
+            with self.assertRaises(m.ImportErrorSafe):
+                m.import_reports(MANIFEST, path, worker, github, lambda _: None)
+            worker.fail_ack = False
+            worker.report['playerName'] = 'Moa'
+            with self.assertRaisesRegex(m.ImportErrorSafe, 'player name differs'):
+                m.import_reports(MANIFEST, path, worker, github, lambda _: None)
+            self.assertFalse(worker.acked)
+            github.issue['labels'] = [{'name': 'in-game'}]
+            with self.assertRaisesRegex(m.ImportErrorSafe, 'reporter title/label'):
+                github.verify(45, ID, reporter='Lin')
+
+    def test_lost_label_create_reply_is_verified_without_duplicate_creation(self):
+        worker, github = FakeWorker(), FakeGitHub()
+        worker.report['playerName'] = 'Lin'
+        original = github.request
+        def lost(method, endpoint, payload=None):
+            result = original(method, endpoint, payload)
+            if method == 'POST' and endpoint == m.LABELS:
+                m.fail('Lost reporter-label reply.')
+            return result
+        github.request = lost
+        with tempfile.TemporaryDirectory() as directory:
+            m.import_reports(MANIFEST, Path(directory)/'journal.json', worker, github, lambda _: None)
+        self.assertTrue(worker.acked)
+        self.assertEqual(github.creates, 1)
+        self.assertEqual(sum(method == 'POST' and endpoint == m.LABELS for method, endpoint, _ in github.calls), 1)
+
+    def test_final_reporter_verification_blocks_ack_then_recovers_same_issue(self):
+        worker, github = FakeWorker(), FakeGitHub()
+        worker.report['playerName'] = 'Lin'
+        original = github.request
+        def hidden_label(method, endpoint, payload=None):
+            result = original(method, endpoint, payload)
+            if method == 'GET' and endpoint == m.API + '/45':
+                return {**result, 'labels': [{'name': 'in-game'}]}
+            return result
+        github.request = hidden_label
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)/'journal.json'
+            with self.assertRaisesRegex(m.ImportErrorSafe, 'reporter title/label'):
+                m.import_reports(MANIFEST, path, worker, github, lambda _: None)
+            self.assertFalse(worker.acked)
+            github.request = original
+            m.import_reports(MANIFEST, path, worker, github, lambda _: None)
+            self.assertTrue(worker.acked)
+            self.assertEqual(github.creates, 1)
+
+    @unittest.skipUnless(os.environ.get('LUNDEN_REPORT_BROWSER_EXPORT'), 'optional production-dialog export')
+    def test_actual_browser_reports_through_reviewed_import_and_fake_github(self):
+        reports = json.loads(Path(os.environ['LUNDEN_REPORT_BROWSER_EXPORT']).read_text())
+        self.assertEqual(len(reports), 2)
+        entries = []
+        for report in reports:
+            _, metadata = m.decode_image(report['image'])
+            entries.append({**ENTRY, 'id': report['id'], 'imageRelevance': 'related', 'imageSha256': metadata['sha256']})
+        worker, github = MultiWorker(reports), MultiGitHub()
+        manifest = {**MANIFEST, 'reports': entries}
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)/'journal.json'
+            m.import_reports(manifest, path, worker, github, lambda _: None)
+            m.import_reports(manifest, path, worker, github, lambda _: None)
+        self.assertEqual(github.creates, 2)
+        self.assertEqual(github.uploads, 2)
+        self.assertEqual(list(github.labels), ['rapportör: lin'])
+        self.assertTrue(all(issue['title'].startswith('[Lin] ') for issue in github.issues.values()))
 
 
 if __name__ == '__main__':
