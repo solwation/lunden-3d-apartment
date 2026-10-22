@@ -26,6 +26,33 @@ Tuning lives in `PLAYROOM.sound`; gameplay is excluded from the public downstrea
 Tests: `tools/playroomsoundtest.mjs`, actual Web Audio/World
 `tools/playroomsoundtest.cjs`, existing billiard and speaker transport regressions.
 
+## Softer surface footsteps (#1519)
+
+`footsteps.js` synthesizes a sine body and low-pass sole scuff through independent
+zero-start18ms envelopes, a smooth release to zero and bounded variation. It
+replaces the abrupt old tone and bright2200Hz outside band. `FOOTSTEPS` contains
+artistic wood/hard/grass/gravel profiles; they are not measured material acoustics.
+Both `sfx.step(surface)` and `sfx.playAt(pos,'step',gain,surface)` use the same
+synth. Positional fade, master mute and eight-voice cap remain; each peer contact
+reserves the full new envelope lifetime. No new sound files are loaded by the game.
+
+`stepsurface.js` runs only when a stride emits: existing apartment/tiled-room,
+core/garage, elevated roof/deck, actual horizontal patio, paving, courtyard and
+path metadata pick the profile. Path bounds are precomputed and reject distant
+segments. Timber bridge wood is height-gated so its underpass does not inherit
+wood. Unclassified exterior ground falls back to grass; this is an acoustic
+approximation, not a new collision/material map. Self and peer callbacks share
+the classifier; movement, stride cadence and network packets do not change.
+
+`tools/footstepstest.cjs BASE OUT` renders deterministic before/after PCM using
+real OfflineAudioContext, compares high-frequency energy and sample jumps,
+then drives the real World controller over representative surfaces and checks
+the production nearby-player callback, mute, range and voice cap. L1007 room/
+patio, courtyard paving/grass/gravel and the timber bridge are representative;
+this is not an exhaustive survey of every remote footpath or furnishing.
+The public walkthrough has no audio engine or footsteps; this audio-only game
+change introduces no applicable geometry/navigation port or new public subsystem.
+
 ## Module and test map
 
 ```text

@@ -1,0 +1,253 @@
+{
+  "checks": [
+    "wood: audible, no clipping, less high-frequency energy and smoother waveform",
+    "hard: audible, no clipping, less high-frequency energy and smoother waveform",
+    "grass: audible, no clipping, less high-frequency energy and smoother waveform",
+    "gravel: audible, no clipping, less high-frequency energy and smoother waveform",
+    "four distinct underfoot timbres",
+    "actual rooms, paving, grass, gravel and timber bridge select correct profiles",
+    "actual controller walking emits wood contacts",
+    "actual controller walking emits hard contacts",
+    "actual controller walking emits grass contacts",
+    "actual controller walking emits gravel contacts",
+    "nearby-player callback uses same underfoot classifier",
+    "mute, distance and simultaneous voice cap still suppress peer steps",
+    "zero browser errors"
+  ],
+  "metrics": [
+    {
+      "version": "before",
+      "surface": "wood",
+      "rms": 0.0061473835201089275,
+      "highShare": 0.0020261820865580802,
+      "peak": 0.0645972341299057,
+      "delta": 0.002209031954407692
+    },
+    {
+      "version": "before",
+      "surface": "hard",
+      "rms": 0.006200098333943423,
+      "highShare": 0.009796746606428519,
+      "peak": 0.06773050874471664,
+      "delta": 0.004548884928226471
+    },
+    {
+      "version": "before",
+      "surface": "grass",
+      "rms": 0.0016361640890739527,
+      "highShare": 1.040696090052827,
+      "peak": 0.025954043492674828,
+      "delta": 0.02079109044279903
+    },
+    {
+      "version": "before",
+      "surface": "gravel",
+      "rms": 0.0016361640890739527,
+      "highShare": 1.040696090052827,
+      "peak": 0.025954043492674828,
+      "delta": 0.02079109044279903
+    },
+    {
+      "version": "after",
+      "surface": "wood",
+      "rms": 0.00748673906016507,
+      "highShare": 0.00009667871332423253,
+      "peak": 0.05605139955878258,
+      "delta": 0.0008133705705404282
+    },
+    {
+      "version": "after",
+      "surface": "hard",
+      "rms": 0.006852526805221836,
+      "highShare": 0.0010709594020781971,
+      "peak": 0.05220339447259903,
+      "delta": 0.001609833911061287
+    },
+    {
+      "version": "after",
+      "surface": "grass",
+      "rms": 0.003469973428273579,
+      "highShare": 0.0005325652327514772,
+      "peak": 0.025149622932076454,
+      "delta": 0.00048633571714162827
+    },
+    {
+      "version": "after",
+      "surface": "gravel",
+      "rms": 0.004273818988900464,
+      "highShare": 0.012860287685653084,
+      "peak": 0.03148721531033516,
+      "delta": 0.0020023714751005173
+    }
+  ],
+  "classification": [
+    {
+      "expected": "wood",
+      "actual": "wood",
+      "p": {
+        "x": 3,
+        "y": 0,
+        "z": 10.8
+      }
+    },
+    {
+      "expected": "hard",
+      "actual": "hard",
+      "p": {
+        "x": 1,
+        "y": 0,
+        "z": 1.8
+      }
+    },
+    {
+      "expected": "hard",
+      "actual": "hard",
+      "p": {
+        "x": 2,
+        "y": 0,
+        "z": -1
+      }
+    },
+    {
+      "expected": "hard",
+      "actual": "hard",
+      "p": {
+        "x": 3,
+        "y": 0,
+        "z": 14
+      }
+    },
+    {
+      "expected": "grass",
+      "actual": "grass",
+      "p": {
+        "x": -9,
+        "y": 0,
+        "z": 23
+      }
+    },
+    {
+      "expected": "gravel",
+      "actual": "gravel",
+      "p": {
+        "x": -25,
+        "y": 0,
+        "z": 21
+      }
+    },
+    {
+      "expected": "wood",
+      "actual": "wood",
+      "p": {
+        "x": -127.565,
+        "y": -3,
+        "z": 205.61
+      }
+    }
+  ],
+  "movement": [
+    {
+      "surface": "wood",
+      "events": [
+        {
+          "surface": "wood",
+          "p": {
+            "x": 3.5,
+            "y": 0,
+            "z": 3.533279999999702
+          }
+        }
+      ],
+      "pose": {
+        "p": {
+          "x": 3.5,
+          "y": 0,
+          "z": 3.4523200000002983
+        },
+        "active": true,
+        "rest": false,
+        "vy": 0
+      }
+    },
+    {
+      "surface": "hard",
+      "events": [
+        {
+          "surface": "hard",
+          "p": {
+            "x": 1.0615,
+            "y": 0,
+            "z": 1.2270908583097748
+          }
+        }
+      ],
+      "pose": {
+        "p": {
+          "x": 1.0615,
+          "y": 0,
+          "z": 1.093330858310371
+        },
+        "active": true,
+        "rest": false,
+        "vy": 0
+      }
+    },
+    {
+      "surface": "grass",
+      "events": [
+        {
+          "surface": "grass",
+          "p": {
+            "x": -9,
+            "y": 0,
+            "z": 22.4881600000009
+          }
+        }
+      ],
+      "pose": {
+        "p": {
+          "x": -9,
+          "y": 0,
+          "z": 22.374400000001497
+        },
+        "active": true,
+        "rest": false,
+        "vy": 0
+      }
+    },
+    {
+      "surface": "gravel",
+      "events": [
+        {
+          "surface": "gravel",
+          "p": {
+            "x": -25,
+            "y": 0,
+            "z": 20.4905599999994
+          }
+        }
+      ],
+      "pose": {
+        "p": {
+          "x": -25,
+          "y": 0,
+          "z": 20.410719999998804
+        },
+        "active": true,
+        "rest": false,
+        "vy": 0
+      }
+    }
+  ],
+  "peer": {
+    "kind": "step",
+    "surface": "gravel"
+  },
+  "guards": {
+    "muted": false,
+    "far": false,
+    "accepted": 8
+  },
+  "errors": [],
+  "baseline": "7d0a0570"
+}

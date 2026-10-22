@@ -1,8 +1,9 @@
+import { synthFootstep } from './footsteps.js';
 // Sound effects, synthesised with Web Audio (no sound files). Positional: each effect can be
 // given a world position and is panned/attenuated relative to the camera.
 // The AudioContext can only start after a user gesture — call initAudio() from a click.
 
-import { SOUNDS, KISS, PLAYROOM, SANTA } from './config.js';
+import { SOUNDS, KISS, PLAYROOM, SANTA, FOOTSTEPS } from './config.js';
 import { distanceGain, VoiceCap } from './spatialsound.js';
 
 let ctx = null, master = null, noiseBuf = null;
@@ -827,19 +828,17 @@ export const sfx = {
   },
   /** Somebody else's sound at a world position (#1302): kind 'bell' | 'step' | 'jet' (a short burst of the jetpack's roar), with
    * a squared distance fade to nothing at SOUNDS.range[kind], the panner's direction, and at most SOUNDS.maxVoices at once. */
-  playAt(pos, kind, gain = 1) {
+  playAt(pos, kind, gain = 1, surface = 'wood') {
     if (!ready() || !pos) return false;
     const k = distanceGain(Math.hypot(pos.x - listenerAt.x, pos.y - listenerAt.y, pos.z - listenerAt.z), SOUNDS.range[kind] ?? SOUNDS.range.step) * gain * (SOUNDS.gain[kind] ?? 1);
-    if (k < 0.01 || !voices.take(ctx.currentTime, kind === 'step' ? 0.15 : kind === 'jet' ? 0.5 : 0.8)) return false;
+    if (k < 0.01 || !voices.take(ctx.currentTime, kind === 'step' ? FOOTSTEPS.voiceDuration : kind === 'jet' ? 0.5 : 0.8)) return false;
     if (kind === 'bell') this.bell(pos, k);
     else if (kind === 'jet') {
       const t = ctx.currentTime, d = out(pos, k);
       noise(t, 0.5, d, { type: 'lowpass', freq: 1100, gain: 0.3, attack: 0.04 });
       noise(t, 0.4, d, { type: 'bandpass', freq: 2400, q: 0.7, gain: 0.05, attack: 0.04 });
     } else {
-      const t = ctx.currentTime, d = out(pos, k), v = 0.8 + Math.random() * 0.4;
-      noise(t, 0.06, d, { type: 'lowpass', freq: 650, gain: 0.3 * v });
-      tone(t, 0.08, d, { from: 115, to: 60, gain: 0.2 * v });
+      synthFootstep(ctx, noiseBuf, out(pos, k * FOOTSTEPS.gain), surface);
     }
     return true;
   },
@@ -1267,16 +1266,9 @@ export const sfx = {
     o.start(t);
     o.stop(t + dur + 0.05);
   },
-  /** A soft footstep; `surface` 'wood' | 'stair' | 'outside'. */
+  /** A soft sole contact, selected by the existing underfoot surface data. */
   step(surface = 'wood') {
     if (!ready()) return;
-    const t = ctx.currentTime, d = out(null, 0.5);
-    const v = 0.8 + Math.random() * 0.4;
-    if (surface === 'outside') {
-      noise(t, 0.09, d, { freq: 2200, q: 0.6, gain: 0.12 * v });
-    } else {
-      noise(t, 0.06, d, { type: 'lowpass', freq: surface === 'stair' ? 900 : 600, gain: 0.22 * v });
-      tone(t, 0.08, d, { from: surface === 'stair' ? 140 : 110, to: 60, gain: 0.18 * v });
-    }
+    synthFootstep(ctx, noiseBuf, out(null, FOOTSTEPS.gain), surface);
   },
 };

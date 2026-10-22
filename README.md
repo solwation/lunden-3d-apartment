@@ -18,6 +18,8 @@ Telefoner behåller mindre bildminne för färdigritade statiska ytor, inklusive
 
 I rutan uppe till vänster visas antalet besökare över bildfrekvensen (FPS). FPS räknar visade 3D-bilder, uppdateras lugnt och visar ett streck när spelet är pausat eller dolt. Träfftexten håller sig fri från livsrutan även på små skärmar.
 
+Fotstegen har mjukare anslag och dovare klang, med olika ljud på trä, hårda golv och stenläggning, gräs och grus. Det gäller också spelare i närheten.
+
 Bilen stannar för spelare i sin körväg även i svängar och vid backning.
 
 Återplacering på höjder i området använder markens verkliga modellhöjd, så att kameran stannar över marken.

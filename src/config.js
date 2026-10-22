@@ -6564,3 +6564,15 @@ export const SNAKE = {
 export { SANTA } from './santaconfig.js';
 export { SANTA_GIFTS } from './santagiftconfig.js';
 export { SANTA_TV } from './santatvconfig.js';
+
+// #1519: deliberately soft synthetic shoe contacts; artistic tuning, not measured material acoustics.
+export const FOOTSTEPS = {
+  gain: .38, attack: .018, noiseQ: .5, releaseFloor: .0001, sourceTail: .03, voiceDuration: .28,
+  variation: .12, floorBand: .35, indoorTopMargin: .2, garageHeadroom: 1.5,
+  profiles: {
+    wood:   { duration: .18, hz: 86, endHz: 46, body: .18, noise: .11, cutoff: 420 },
+    hard:   { duration: .16, hz: 98, endHz: 52, body: .17, noise: .13, cutoff: 700 },
+    grass:  { duration: .22, hz: 64, endHz: 36, body: .07, noise: .085, cutoff: 480 },
+    gravel: { duration: .20, hz: 76, endHz: 42, body: .09, noise: .12, cutoff: 1050 },
+  },
+};

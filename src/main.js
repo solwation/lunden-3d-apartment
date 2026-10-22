@@ -1,3 +1,4 @@
+import { stepSurface } from './stepsurface.js';
 import { MenuSettings } from './menusettings.js';
 import { renderPlayingNow } from './playerportraits.js';
 import { saveStats } from './stats.js';
@@ -1113,8 +1114,7 @@ function footsteps() {
   if (stride < (player.sprinting ? PLAYER.strideRun : PLAYER.strideWalk)) return;
   stride = 0;
   bump('steps');
-  const { x, z } = player.pos;
-  sfx.step(player.outdoors ? 'outside' : player.stairAt(x, z) !== null ? 'stair' : 'wood'); // (the loftgång over the flat: outside, #360; a visited flat's stair, #574)
+  sfx.step(stepSurface(world, player.pos));
 }
 function spawnAtStart() {
   slideRide.cancel(false); // a reset owns the new position, never return to an old ride start
@@ -2841,7 +2841,7 @@ ghosts.onToast = (m, g) => {
 // sounds from other players (#1302): the bicycle bell is a sound event (the room passes it to the players nearby, never echoed);
 // their footsteps and jetpack roar are derived here from their state (ghosts.js soundTick), all through sfx.playAt (fade, direction, voice cap)
 ghosts.onPlayerSound = (m, g) => { if (m.k === 'bell') sfx.playAt(g.head, 'bell'); };
-ghosts.onStep = (g) => sfx.playAt(g.feet, 'step');
+ghosts.onStep = (g) => sfx.playAt(g.feet, 'step', 1, stepSurface(world, g.feet));
 ghosts.onJet = (g) => sfx.playAt(g.head, 'jet');
 const bellBtn = document.getElementById('bell-btn');
 /** Ring the bicycle bell (#1302, B / the 🔔 button while riding): we hear it right away, the players nearby hear it from us. */

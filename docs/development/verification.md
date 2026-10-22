@@ -15,6 +15,14 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## Softer surface footsteps (#1519)
+
+`tools/footstepstest.cjs BASE OUT` passes13checks: real OfflineAudioContext
+before/after PCM and high-frequency/sample-jump measurements, actual World
+surface classification, Player walking contacts on four surfaces, native peer
+callback and mute/range/voice cap. No page errors. [Audio and precise scope](../verification/1519/README.md).
+There is no changed visual result; saved WAV comparisons replace screenshots.
+
 ## Separate settings modal (#1518)
 
 `tools/menusettingstest.cjs BASE OUT` passes17actual-menu checks, including native
