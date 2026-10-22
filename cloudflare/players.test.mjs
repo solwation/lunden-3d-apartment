@@ -1666,3 +1666,24 @@ test('kiss #1398: server pair matrix, ambiguous names and replayed request IDs',
   }
  }
 });
+
+// #1504: only seated look angles, bounded like the existing camera limits.
+test('seated look forwards, survives late join and clears with invalid or standing state', async () => {
+  const env = setup(), a = await connect(env, 'Seated'), b = await connect(env, 'Observer');
+  for (const pose of [1, 3]) {
+    now += 250; a.send({ p: [2, -.35, 3], r: 1.57, pose, look: [1.571, -.351] }); await settle(env);
+    assert.deepEqual(b.states().at(-1).look, [1.57, -.35]);
+    const late = await connect(env, 'Late');
+    assert.deepEqual(late.got[0].ps.find(p => p.n === 'Seated').look, [1.57, -.35]);
+    late.ws.close(); await settle(env);
+  }
+  for (const look of [undefined, null, 'left', [0], [0, 0, 0], [2, 0], [0, 2], [true, 0], [0, '0']]) {
+    now += 250; a.send({ p: [2, -.35, 3], r: 1.57, pose: 1, look }); await settle(env);
+    assert.equal(b.states().at(-1).look, undefined);
+  }
+  for (const pose of [0, 2, undefined]) {
+    now += 250; a.send({ p: [2, -.35, 3], r: 1.57, pose, look: [1, .5] }); await settle(env);
+    assert.equal(b.states().at(-1).look, undefined);
+  }
+  a.ws.close(); b.ws.close(); await settle(env);
+});

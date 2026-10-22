@@ -1952,3 +1952,16 @@ Santa's cheek vertex colours interpolate toward red after completed glögg sips,
 Wrapped gifts provide `ChristmasGifts.stackHit` for ordinary main placement. A valid top hit centres and aligns the new equal-sized package, bypassing floor grid snapping. World-matrix yaw handles rotations over 90°. Support IDs/poses are saved; taking a lower parcel settles its column and returning it places it on top. Opened trinkets supply no package support.
 
 `src/tvsound.js` computes scalar YouTube volume from full 3D distance and camera-forward angle for all home TVs, the clubhouse TV and Santa's clip. The inverse-distance attenuation follows the Sonos approach, with quieter rear/side listening. Global mute disables it immediately; ordinary changes are coalesced to 10 messages/s. This is the user-approved volume approximation, not stereo panning or a Web Audio stream from the iframe. Computers are outside the TV request.
+
+
+### Seated player gaze (#1504)
+
+`remote-pose.js` keeps `restState.r` aligned with the seat and adds `look: [relativeYaw, cameraPitch]`
+for seated poses 1 and 3. `Ghosts` detects head-only movement within its existing 5 Hz budget;
+`Ghost.draw` interpolates the angles and `applyRestPose` uses them on the shared head bone.
+The body/legs keep their existing rest pose. The mirror tracks the same angles. Missing angles
+are neutral for older clients; standing and lying keep existing behaviour. `PlayerRoom.cleanState`
+accepts only two finite seated angles within the existing `REST.sit` camera limits (plus .01 rounding
+slack), rounds them and includes them in forwarding/late welcomes. No new gameplay hit regions.
+Scoped check: `tools/seatedlooktest.cjs BASE LOCAL_WORKER OUT`, two browser clients using the
+actual main.js state callback; proof in `docs/validation/issue-1504/`.

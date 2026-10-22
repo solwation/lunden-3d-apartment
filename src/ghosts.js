@@ -142,7 +142,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
   }
 
   /** A state from the room at time t (ms). After a pause the last one is repeated just before it, so it walks off smoothly. */
-  push({ p, r, h = '', hi = '', score = 0, l, c = false, sp = false, jp = 0, bk, pose = 0, av, ax, cat }, t) {
+  push({ p, r, h = '', hi = '', score = 0, l, c = false, sp = false, jp = 0, bk, pose = 0, look = [0, 0], av, ax, cat }, t) {
     if (av && typeof ax === 'string') av += ax; // #1138: the face extension beside the digits
     if (av && av !== this.avatarCode) {
       this.avatarCode = av;
@@ -160,8 +160,8 @@ export class Ghost { // (exported for tools/ghostprops.html)
     const prev = this.snaps.at(-1);
     if (prev && Math.hypot(p[0] - prev.p.x, p[1] - prev.p.y, p[2] - prev.p.z) > G.jump) this.snaps.length = 0; // a teleport (#1319: into / out of the children's room): appear there, no streak across the map
     const last = this.snaps.at(-1);
-    if (last && t - last.t > 1000 / G.hz * 1.5) this.snaps.push({ t: t - 1000 / G.hz, p: last.p, r: last.r, c: last.c, pose: last.pose, bk: last.bk });
-    this.snaps.push({ t, bk: this.bikeWire, p: new THREE.Vector3(...p), r, c: c === true ? 1 : 0, pose: pose >= 1 && pose <= 3 && Number.isInteger(pose) ? pose : 0 });
+    if (last && t - last.t > 1000 / G.hz * 1.5) this.snaps.push({ t: t - 1000 / G.hz, p: last.p, r: last.r, c: last.c, pose: last.pose, look: last.look, bk: last.bk });
+    this.snaps.push({ t, look, bk: this.bikeWire, p: new THREE.Vector3(...p), r, c: c === true ? 1 : 0, pose: pose >= 1 && pose <= 3 && Number.isInteger(pose) ? pose : 0 });
     if (this.snaps.length > 8) this.snaps.splice(0, this.snaps.length - 8);
   }
 
@@ -264,6 +264,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     this.root.rotation.y = lerpAngle(a.r, b.r, k);
     this.crouch = THREE.MathUtils.lerp(a.c, b.c, k);
     this.pose = (k < 1 ? a : b).pose;
+    this.look = [THREE.MathUtils.lerp(a.look[0], b.look[0], k), THREE.MathUtils.lerp(a.look[1], b.look[1], k)];
     this.bikeAt(a, b, k);
     const d = this.root.position.distanceTo(eye), sec = b === a ? 0 : (b.t - a.t) / 1000;
     this.root.visible = d < G.far;
@@ -321,7 +322,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
       this.avatar.object.rotation.y = lerpAngle(this.avatar.object.rotation.y, direction - this.root.rotation.y, amount);
     }
     this.avatar.update(dt, { speed: this.speed * (1 - amount), turn: turn * (1 - amount), hands, crouch: this.crouch ?? 0, kiss: amount, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0 });
-    applyRestPose(this.avatar, this.pose);
+    applyRestPose(this.avatar, this.pose, this.look);
     if (this.bikeMesh) this.poseBike(dt, Math.hypot(vx, vz));
     this.heldCat.update(this.avatar, this.root);
     if (this.tag) {
@@ -509,12 +510,13 @@ export class Ghosts {
     s.jp = s.jp === 1 || s.jp === 2 ? s.jp : 0;
     s.hi = cleanHeldCategory(s.hi);
     s.bk = Number.isFinite(s.bk) ? s.bk : null;
+    s.look = (s.pose === 1 || s.pose === 3) && Array.isArray(s.look) ? s.look : [0, 0];
     s.catKey = JSON.stringify(s.cat ?? null);
     this.track(s, t);
     if (!this.on) return;
     s.score = badgeScore(this.score());
     const prev = this.prev;
-    if (!prev || Math.hypot(s.p[0] - prev.p[0], s.p[1] - prev.p[1], s.p[2] - prev.p[2]) > G.move || Math.abs(s.r - prev.r) > G.turn || s.h !== prev.h || s.hi !== prev.hi || s.c !== prev.c || s.pose !== prev.pose || s.sp !== prev.sp || s.jp !== prev.jp || (s.bk === null) !== (prev.bk === null) || Math.abs((s.bk ?? 0) - (prev.bk ?? 0)) > G.turn || s.catKey !== prev.catKey || this.sentAv !== this.avatarCode) { this.lastMove = t; this.prev = s; }
+    if (!prev || Math.hypot(s.p[0] - prev.p[0], s.p[1] - prev.p[1], s.p[2] - prev.p[2]) > G.move || Math.abs(s.r - prev.r) > G.turn || s.h !== prev.h || s.hi !== prev.hi || s.c !== prev.c || s.pose !== prev.pose || Math.abs(s.look[0] - prev.look[0]) > G.turn || Math.abs(s.look[1] - prev.look[1]) > G.turn || s.sp !== prev.sp || s.jp !== prev.jp || (s.bk === null) !== (prev.bk === null) || Math.abs((s.bk ?? 0) - (prev.bk ?? 0)) > G.turn || s.catKey !== prev.catKey || this.sentAv !== this.avatarCode) { this.lastMove = t; this.prev = s; }
     if (this.prev?.score !== s.score) this.prev = s; // score changes use the same 5 Hz slot; do not reset movement idle time
     const playing = this.active() && !document.hidden && (this.keepConnected?.() || t - this.lastMove < G.idleMs);
     if (!playing) { if (this.ws) this.disconnect(); }
@@ -523,7 +525,7 @@ export class Ghosts {
       const sent = this.sent;
       if (t - this.lastSent >= 1000 / G.hz && (!sent || sent !== this.prev || this.sentAv !== this.avatarCode)) {
         const p = this.prev ?? s;
-        this.ws.send(JSON.stringify({ p: p.p.map((v) => Math.round(v * 100) / 100), r: Math.round(p.r * 100) / 100, score: p.score, ...(p.h ? { h: p.h } : {}), ...(p.hi ? { hi: p.hi } : {}), ...(p.c ? { c: true } : {}), ...(p.pose ? { pose: p.pose } : {}), ...(p.sp ? { sp: true } : {}), ...(p.jp ? { jp: p.jp } : {}), ...(p.bk !== null && p.bk !== undefined ? { bk: Math.round(p.bk * 100) / 100 } : {}), ...(p.cat ? { cat: p.cat } : {}), ...(this.avatarCode ? avatarWire(this.avatarCode) : {}) }));
+        this.ws.send(JSON.stringify({ p: p.p.map((v) => Math.round(v * 100) / 100), r: Math.round(p.r * 100) / 100, score: p.score, ...(p.h ? { h: p.h } : {}), ...(p.hi ? { hi: p.hi } : {}), ...(p.c ? { c: true } : {}), ...(p.pose ? { pose: p.pose } : {}), ...((p.pose === 1 || p.pose === 3) ? { look: p.look.map(v => Math.round(v * 100) / 100) } : {}), ...(p.sp ? { sp: true } : {}), ...(p.jp ? { jp: p.jp } : {}), ...(p.bk !== null && p.bk !== undefined ? { bk: Math.round(p.bk * 100) / 100 } : {}), ...(p.cat ? { cat: p.cat } : {}), ...(this.avatarCode ? avatarWire(this.avatarCode) : {}) }));
         this.sent = p; this.sentAv = this.avatarCode; this.lastSent = this.lastBeat = t; this.messages++;
       }
     }
@@ -600,7 +602,7 @@ export class Ghosts {
       const k = Math.min(1, dt * 8);
       m.vx += ((far ? 0 : vx) - m.vx) * k; m.vz += ((far ? 0 : vz) - m.vz) * k;
     }
-    m.p.set(...s.p); m.r = s.r; m.h = s.h; m.hi = s.hi; m.c = s.c; m.pose = s.pose; m.sp = s.sp; m.jp = s.jp; m.bk = s.bk; m.cat = s.cat; m.t = t;
+    m.p.set(...s.p); m.r = s.r; m.h = s.h; m.hi = s.hi; m.c = s.c; m.pose = s.pose; m.look = s.look; m.sp = s.sp; m.jp = s.jp; m.bk = s.bk; m.cat = s.cat; m.t = t;
   }
 
   /** Our avatar for the mirrors: one per name (the look comes from it); hidden but for the mirror's pass. */
@@ -623,6 +625,7 @@ export class Ghosts {
     g.setItem(m.hi);
     g.heldCat.set(m.cat, g.root);
     g.pose = m.pose;
+    g.look = m.look;
     g.avatar.setSuit(m.sp);
     g.setJetpack(m.jp);
     g.root.position.copy(m.p);
