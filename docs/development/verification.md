@@ -15,6 +15,14 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## Santa seating report (#1499)
+
+`tools/santaseatingtest.cjs BASE OUT` checks actual leg vertices below seat height
+against LANDSKRONA's front edge, sole/floor contact, the existing gift callback
+and cached sleeping geometry. Inspect only the affected sitting/sleeping views.
+[Results and original report](../validation/issue-1499/README.md). No broad scene
+or unchanged media/control suites are needed.
+
 ## Christmas Eve guest (#1406–#1410)
 
 Scoped checks: `node --test tools/santatest.mjs`, `tools/santagiftstest.cjs BASE` and

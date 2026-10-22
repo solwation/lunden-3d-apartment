@@ -1,0 +1,15 @@
+{
+  "results": {
+    "below": 4548,
+    "minClearance": 0.03500000238418577,
+    "minY": 1.0728836041806744e-8,
+    "gift": true,
+    "beforeGeometry": 116875
+  },
+  "sleep": {
+    "sleeping": true,
+    "geometrySwapped": true,
+    "glassHidden": true
+  },
+  "errors": []
+}

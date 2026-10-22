@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SANTA as S, santaState } from './santaconfig.js';
+import { LANDSKRONA } from './config.js';
 
 // An original-only Christmas Eve guest. All poses are in the movable sofa's frame.
-// Static coloured parts are merged; the two arms, glass and sleep text are the only separate draws.
+// Static coloured parts are merged; the pose-specific legs, two arms, glass and sleep text stay separate.
 const C = { red: 0xa51d28, white: 0xf4efe5, skin: 0xe6af89, black: 0x26201c, gold: 0xd7ad45 };
 const material = () => new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.88 });
 function part(geometry, color, at, scale = [1, 1, 1], rot = [0, 0, 0]) {
@@ -15,7 +16,7 @@ function part(geometry, color, at, scale = [1, 1, 1], rot = [0, 0, 0]) {
   g.deleteAttribute('uv');
   return g;
 }
-const ball = (color, at, scale) => part(new THREE.SphereGeometry(1, 12, 8), color, at, scale);
+const ball = (color, at, scale) => part(new THREE.SphereGeometry(1, 16, 10), color, at, scale);
 const box = (color, at, scale) => part(new THREE.BoxGeometry(1, 1, 1), color, at, scale);
 function joined(parts, mat) {
   const geometry = mergeGeometries(parts), mesh = new THREE.Mesh(geometry, mat);
@@ -34,12 +35,21 @@ function arm(mat, right) {
   pivot.rotation.x = -0.6;
   return pivot;
 }
+function hatGeometry() {
+  const H = S.hat, geo = new THREE.ConeGeometry(H.radius, H.height, 16, 8), p = geo.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const t = (p.getY(i) / H.height + 0.5) ** 3;
+    p.setXYZ(i, p.getX(i) + H.bend * t, p.getY(i) - H.drop * t, p.getZ(i));
+  }
+  geo.computeVertexNormals(); return geo;
+}
 function figure() {
   const object = new THREE.Group(), mat = material();
   object.name = 'jultomten';
   const parts = [
     ball(C.red, [0, 0.3, 0.03], S.size.belly),
-    box(C.black, [0, 0.17, 0.06], [0.61, 0.085, 0.49]),
+    ball(C.white, [0, 0.025, 0.035], [0.29, 0.045, 0.25]), // fur coat hem
+    box(C.black, [0, 0.17, 0.06], [0.61, 0.065, 0.49]),
     box(C.gold, [0, 0.17, 0.313], [0.105, 0.09, 0.025]),
     box(C.black, [0, 0.17, 0.328], [0.065, 0.055, 0.01]),
     box(C.white, [0, 0.35, 0.3], [0.048, 0.28, 0.03]),
@@ -48,19 +58,26 @@ function figure() {
     ball(C.skin, [0, 0.8, 0.18], [0.047, 0.04, 0.045]),
     ball(C.white, [-0.055, 0.747, 0.176], [0.065, 0.025, 0.04]),
     ball(C.white, [0.055, 0.747, 0.176], [0.065, 0.025, 0.04]),
-    part(new THREE.ConeGeometry(0.16, 0.36, 12), C.red, [0.025, 1.04, 0.01], [1, 1, 1], [0, 0, -0.25]),
+    part(hatGeometry(), C.red, [0, 1.04, 0.01]),
     ball(C.white, [0, 0.91, 0.02], [0.17, 0.045, 0.16]),
-    ball(C.white, [0.07, 1.2, 0.01], [0.058, 0.058, 0.058]),
   ];
   for (const side of [-1, 1]) {
-    parts.push(ball(C.black, [side * 0.055, 0.83, 0.18], [0.014, 0.017, 0.012]));
     parts.push(ball(C.white, [side * 0.06, 0.865, 0.18], [0.045, 0.013, 0.018]));
-    parts.push(ball(C.red, [side * 0.155, -0.04, 0.18], [0.12, 0.12, 0.25]));
-    parts.push(ball(C.red, [side * 0.155, -0.2, 0.35], [0.095, 0.22, 0.095]));
-    parts.push(ball(C.white, [side * 0.155, -0.34, 0.35], [0.1, 0.035, 0.1]));
-    parts.push(ball(C.black, [side * 0.155, -0.4, 0.42], [0.105, 0.09, 0.18]));
+    parts.push(ball(C.skin, [side * 0.147, 0.785, 0.02], [0.035, 0.06, 0.035])); // ears
+    parts.push(ball(0xe4a39b, [side * 0.092, 0.785, 0.132], [0.043, 0.033, 0.024])); // cheeks
+    parts.push(ball(C.white, [side * 0.055, 0.83, 0.178], [0.023, 0.019, 0.009]));
+    parts.push(ball(0x547687, [side * 0.055, 0.83, 0.187], [0.011, 0.013, 0.006]));
+    parts.push(ball(C.black, [side * 0.055, 0.83, 0.193], [0.005, 0.008, 0.004]));
+    // Tapered locks break up the beard's old single-oval outline.
+    for (let j = 0; j < 3; j++) parts.push(ball(j % 2 ? 0xe5e1d8 : C.white,
+      [side * (0.04 + j * 0.042), 0.51 + j * 0.035, 0.245 - j * 0.012], [0.046, 0.125 - j * 0.02, 0.035]));
+
   }
+  parts.push(ball(C.white, [S.hat.bend, 1.04 + S.hat.height / 2 - S.hat.drop, 0.01], [0.06, 0.06, 0.06]));
   object.add(joined(parts, mat));
+  const legs = new THREE.Mesh(new THREE.BufferGeometry(), mat); // actual seat dimensions below
+  legs.castShadow = legs.receiveShadow = true;
+  object.add(legs);
   const left = arm(mat, false), right = arm(mat, true);
   object.add(left, right);
   const glass = new THREE.Group();
@@ -78,7 +95,32 @@ function figure() {
   ctx.lineWidth = 5; ctx.strokeStyle = '#35251b'; ctx.strokeText('Zzzzz', 128, 40); ctx.fillStyle = '#fff8df'; ctx.fillText('Zzzzz', 128, 40);
   const text = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas), depthTest: true, transparent: true }));
   text.scale.set(...S.sleep.text, 1); text.visible = false;
-  return { object, left, right, glass, pick, text, head: new THREE.Vector3() };
+  return { object, legs, left, right, glass, pick, text, head: new THREE.Vector3() };
+}
+
+/** One continuous trouser segment between two joints, merged with the other leg parts. */
+function limb(a, b, radius, color) {
+  const from = new THREE.Vector3(...a), to = new THREE.Vector3(...b), delta = to.clone().sub(from);
+  const geo = new THREE.CapsuleGeometry(radius, Math.max(0.001, delta.length() - radius * 2), 4, 10);
+  const rot = new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), delta.normalize()));
+  return part(geo, color, from.add(to).multiplyScalar(0.5).toArray(), [1, 1, 1], rot.toArray().slice(0, 3));
+}
+
+function legGeometry(local, sleeping) {
+  const L = S.legs, rootY = local.y + 0.04;
+  const kneeZ = sleeping ? 0.22 : LANDSKRONA.depth / 2 - local.z + L.radius + L.clearance;
+  const ankleY = sleeping ? -0.18 : L.bootY + L.bootH - rootY;
+  const parts = [];
+  for (const side of [-1, 1]) {
+    const x = side * L.spread, knee = [x, L.kneeY, kneeZ];
+    parts.push(limb([x, L.thighY, 0.04], knee, L.radius, C.red));
+    parts.push(limb(knee, [x, ankleY, kneeZ], L.radius * 0.88, C.red));
+    parts.push(ball(C.black, [x, sleeping ? -0.25 : L.bootY - rootY, kneeZ + 0.08], [0.105, L.bootH, 0.17]));
+    parts.push(box(0x171615, [x, sleeping ? -0.31 : 0.015 - rootY, kneeZ + 0.08], [0.19, 0.03, 0.29]));
+    parts.push(ball(C.white, [x, ankleY, kneeZ], [0.085, 0.027, 0.085]));
+  }
+  const geometry = mergeGeometries(parts); parts.forEach(g => g.dispose());
+  return geometry;
 }
 
 export class Santa {
@@ -88,6 +130,11 @@ export class Santa {
     Object.assign(this, { day, sofa, rest, onStateChange, state: 'away', t: 0, greeting: 0 });
     this.fig = figure();
     this.object = this.fig.object;
+    if (sofa) {
+      const local = sofa.pickable.userData.rest.spots[Math.min(S.seatIndex, sofa.spots.length - 1)];
+      this.legPoses = { sitting: legGeometry(local, false), sleeping: legGeometry(local, true) };
+      this.fig.legs.geometry.dispose(); this.fig.legs.geometry = this.legPoses.sitting;
+    }
     this.object.visible = false;
     // Child of the furnishing, so F visibility, editing and every saved/moved pose are inherited.
     sofa?.pickable.add(this.object);
@@ -125,6 +172,7 @@ export class Santa {
     if (next !== this.state) {
       const prior = this.state;
       this.state = next; this.t = 0; this.greeting = 0;
+      if (this.legPoses) this.fig.legs.geometry = this.legPoses[this.sleeping ? 'sleeping' : 'sitting'];
       this.object.visible = this.present;
       this.onStateChange?.(next, prior);
     }
