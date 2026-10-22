@@ -18,3 +18,9 @@ Publik bedömning: `kvarteret-lunden` vid
 med tangentbord/mus/touch och touchanpassning. Chatten, spelstatistiken och personlig
 hemåterställning finns inte där och ska inte importeras. Ingen tillämplig
 kodöverföring behövs för denna omorganisation av originalets spelmeny.
+
+Bilderna publicerades före stängning i
+[issue-kommentaren](https://github.com/solwation/lunden-3d-apartment/issues/1518#issuecomment-6347943018),
+låsta till `d8322011a0f92f6b69fc75d5ca37fce8da462683`.
+[Pages-publiceringen](https://github.com/solwation/lunden-3d-apartment/actions/runs/39829651575)
+passerade.
