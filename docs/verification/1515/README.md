@@ -31,3 +31,9 @@ Ingen prestanda-, fysisk telefon- eller bred spelregression hävdas. Spelets
 lagringshjälpares befintliga hantering av tomma get-resultat spåras separat i
 #1516; proven söker i getAll-resultat. Gameplay överförs inte till det publika
 kvarteret-lunden.
+
+Resultatbilderna publicerades före stängning i
+[issue-kommentaren](https://github.com/solwation/lunden-3d-apartment/issues/1515#issuecomment-6347231414),
+med bildadresser låsta till implementationens commit
+`802ef6268b7a662f81c7f179e3f5ed31c63fee30`. [Pages-publiceringen](https://github.com/solwation/lunden-3d-apartment/actions/runs/39824566391)
+passerade efter implementationen.
