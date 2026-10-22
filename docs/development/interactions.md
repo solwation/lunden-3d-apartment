@@ -1927,3 +1927,8 @@ The step size is a usability choice in `PLAYROOM.cinemaSync.seekSeconds`.
 Lekstuga audio (#1330): the existing disco wall switch also gates a quiet local
 synth rhythm. Manual speaker playback/pause takes precedence; billiard strokes
 and contacts use positional, bounded effects. See [audio](animals-audio.md).
+
+Biljard (#1495): a single wall screen on the left from the BILJARD entrance
+replaces both rail controls. Its two E/touch targets select mode or start a new
+round; group points, turns and the winner come from the shared table/rules.
+Strokes still aim at the actual table. See [furniture](furniture.md#billiard-wall-control-and-points-1495).

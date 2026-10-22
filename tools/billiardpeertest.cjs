@@ -61,7 +61,7 @@ const until = async (f, n = 150) => { for (let i = 0; i < n; i++) { if (await f(
     // --- client B: component page at the north short end
     const B = await (await browser.newContext({ viewport: { width: 760, height: 500 } })).newPage(); B.on('pageerror', (e) => errors.push(e.message));
     await COMPONENT(B, [0, -1.45], 'Bertil');
-    const lookAtBoard = () => B.evaluate(() => { const c = window.__c.camera, b = window.__c.b, p = b.controlPickables[0].getWorldPosition(c.position.clone()); c.position.set(p.x - .7, 1.25, p.z); c.lookAt(p); });
+    const lookAtBoard = () => B.evaluate(() => { const c = window.__c.camera, b = window.__c.b, p = b.controlPickables[0].getWorldPosition(c.position.clone()); c.position.set(p.x + .95, 1.25, p.z); c.lookAt(p); });
     check(await until(() => B.evaluate(() => window.__c.b.seq > 0)), 'B: joined the existing table');
     const same = async (list, label, minQ = 0) => { const ok = await until(async () => { const s = await Promise.all(list.map((p) => p === A ? A.evaluate(() => window.__tbl()) : state(p))); return s.every((x) => x === s[0]) && JSON.parse(s[0]).q >= minQ && !(await Promise.all(list.map((p) => p === A ? bA().then((v) => v.moving) : p.evaluate(() => window.__c.b.physics.moving || window.__c.b.inShot)))).some(Boolean); }, 100);
       const s = await Promise.all(list.map((p) => p === A ? A.evaluate(() => window.__tbl()) : state(p))); check(ok, label, { q: JSON.parse(s[0]).q, mode: JSON.parse(s[0]).m, turn: JSON.parse(s[0]).t, msg: JSON.parse(s[0]).s }); return JSON.parse(s[0]); };

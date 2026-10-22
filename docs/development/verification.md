@@ -8312,3 +8312,32 @@ suite. `clubhousetest.mjs` + `clubhousefinishtest.mjs` now pass5/5. The actual
 also present inside; its unrelated front outer cinema-seat framing check failed
 (`screenInView:false`). That broader run was stopped after the scope checks;
 it is not reported as a passing full suite. The seat failure is tracked in #1496.
+
+## Single billiard wall screen (#1495)
+
+`tools/billiardwalltest.cjs GAME OUT` opens the actual World and checks one west
+wall screen, no old boards, two controls, world position/normal, real native
+pointer-locked E and touch action, points from a legal pot, the rules' winner,
+and reset. Opened full-quality desktop/844×390 captures show the readable screen;
+`/tmp/lekstuga1495-final/result.json` records zero page errors. The existing
+actual table image in `/tmp/lekstuga1495-regression-final/2-aim.png` shows bare
+rails with the old posts gone. Final screenshots use `frame(0)` after resizing;
+an earlier paused-loop resize produced an invalid sky capture and is not evidence.
+
+31 score/rule/physics/Worker/sound/music tests pass. The updated peer fixture is
+ALL PASSED on actual World plus two component clients: modes, stroke, turn,
+identical state, <1mm animation drift, simultaneous requests and late/reconnect.
+Score snapshot restoration is covered separately in `billiardscoretest.mjs`.
+The old full-quality billiard driver now stands in front of the wall; its final
+run passed table/aim/native E/physical break/collision/mode/rack/group/foul/game-over
+checks, then timed out taking the old game-over screenshot. It is not recorded
+as a passing full suite; reset and touch are independently green in the new
+wall fixture. No new scene lights or render batches; no public gameplay port.
+
+User clarification for #1496: cropped cinema edges from the front row are
+intentional. That issue was closed as not planned; the earlier screenInView=false
+observation is not a product defect and must not prompt seat/screen/camera changes.
+
+The cinema fixture now preserves its pose/reach/safe-standing checks while
+allowing front-row cropping per the explicit #1496 clarification; rear-row
+full-screen checks remain. No production cinema geometry or camera changed.

@@ -106,7 +106,8 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
       }
       else await page.keyboard.press('KeyC');
     };
-    // Sit in all eight individually selectable seats, view the screen, then stand safely from each one.
+    // User clarification #1496: front-row cropping is intentional; rear seats retain full-screen checks.
+    // Sit in all eight individually selectable seats, face the screen, then stand safely from each one.
     const seatCases = [[0, 0, 'front outer'], [0, 1, 'front aisle'], [0, 2, 'front aisle'], [0, 3, 'front outer'], [1, 0, 'rear outer'], [1, 1, 'rear aisle'], [1, 2, 'rear aisle'], [1, 3, 'rear outer']];
     for (const [row, i, name] of seatCases) {
       const x = cinema.seat.rowX[row], z = cinema.seat.z[i], seatName = `biostol ${row * cinema.seat.z.length + i + 1}`;
@@ -114,7 +115,7 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
       check(f?.kind === 'rest' && f.name === seatName, `E/touch focus reaches ${name} seat`, JSON.stringify(f));
       await nativeUse(); await page.waitForTimeout(300);
       const sat = await page.evaluate(async ({ x, z }) => { const { PLAYROOM: RM } = await import('/src/config.js'), { Vector3 } = await import('three'), a = window.__app; for (let i = 0; i < 12; i++) a.rest.update(0.1); window.__t.render(); const yaw = a.camera.rotation.y, expected = Math.atan2(-(RM.furniture.cinema.screen.x - x), -(RM.furniture.cinema.screen.z - z)); let d = Math.atan2(Math.sin(yaw - expected), Math.cos(yaw - expected)); const s = RM.furniture.cinema.screen, tx = RM.furniture.tv.x + 0.08, corners = [[s.z-s.w/2,s.bottom],[s.z+s.w/2,s.bottom],[s.z-s.w/2,s.bottom+s.h],[s.z+s.w/2,s.bottom+s.h]].map(([zz, yy]) => new Vector3(RM.x+tx, yy, RM.z+zz).project(a.camera)); return { active: a.rest.active, kind: a.rest.kind, x: a.camera.position.x, y: a.camera.position.y, yaw, viewError: d, screenInView: corners.every((p) => Math.abs(p.x)<1 && Math.abs(p.y)<1 && p.z>-1 && p.z<1) }; }, { x, z });
-      check(sat.active && sat.kind === 'sit' && sat.y > 0.8 && sat.y < 1.3 && Math.abs(sat.viewError) < 0.2 && sat.screenInView, `${name} seat sits with the full screen in view`, JSON.stringify(sat));
+      check(sat.active && sat.kind === 'sit' && sat.y > 0.8 && sat.y < 1.3 && Math.abs(sat.viewError) < 0.2 && (row === 0 || sat.screenInView), `${name} seat faces the screen${row === 0 ? ' (front-row cropping is intentional)' : ' with the full screen in view'}`, JSON.stringify(sat));
       if (row === 0 && i === 1) await page.screenshot({ path: `${shots}/6-front-seat.png` });
       if (row === 1 && i === 2) await page.screenshot({ path: `${shots}/7-rear-seat.png` });
       if ((row === 0 && i === 0) || (row === 1 && i === 3)) await nativeStand();

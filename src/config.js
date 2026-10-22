@@ -5751,7 +5751,11 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
   // #1328: local child-size billiards (all dimensions/rolling coefficients are visual/playability guesses).
   billiards: { x: 0, z: -1.83, yaw: Math.PI / 2, length: 1.8, width: 0.9, height: 0.58, rail: 0.09, railH: 0.06, leg: 0.08, // #1482: centre between north z=-5.2 and the partition inner face z=1.54; retain #1411 orientation.
     ballR: 0.024, pocketR: 0.052, cueLength: 1, strokeSpeed: 2.2, strokeSeconds: 0.24, cueTravel: 0.09,
-    friction: 0.45, bounce: 0.94, cushionBounce: 0.82, stopSpeed: 0.012, maxStep: 1 / 180 },
+    friction: 0.45, bounce: 0.94, cushionBounce: 0.82, stopSpeed: 0.012, maxStep: 1 / 180,
+    // #1495: assumed wall screen dimensions/height; west wall derived from the actual partition.
+    board: { width:1.2, height:.6, y:1.2, wallGap:.04, depth:.04, rim:.025, faceGap:.002, pickDepth:.08,
+      canvas:[768,384], buttonY:.39, buttonHeight:.2,
+      ui:{titleY:.12,modeY:.24,nameY:.37,scoreY:.51,messageY:.64,seatY:.72,buttonTop:.78,buttonH:.19,titleSize:.1,textSize:.065,scoreSize:.1,pad:.02} } },
   // #1330: assumed quiet synth mix/rhythm and impact throttling for the fantasy room.
   sound: { beat:.125, steps:16, musicGain:.09, melodyGain:.045, notes:[220,261.63,329.63,293.66,220,329.63,392,293.66],
     minSpeed:.08, hitInterval:.035, cueHz:1450, ballHz:2100, railHz:480, pocketHz:130, impactGain:.32,

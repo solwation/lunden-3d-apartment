@@ -5,6 +5,7 @@ import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {PLAYROOM as R} from './config.js';
 import {BilliardPhysics} from './billiardphysics.js';
 import {BilliardRules,MODE_NAMES} from './billiardrules.js';
+import {billiardScore} from './billiardscore.js';
 import {STEP,snapshotTable,restoreTable,validSnapshot} from './billiardsync.js';
 // #1355: refusal reasons the room can send (Swedish UI text)
 const NO_TEXT={stale:'Bordet hade ändrats – försök igen',busy:'Vänta tills bollarna ligger still',turn:'Det är inte din tur',away:'Gå närmare bordet',fast:'Inte så fort',over:'Spelet är slut – ställ upp en ny omgång på tavlan'};
@@ -21,8 +22,11 @@ export class Billiards {
     for(const x of[-L*.35,L*.35])for(const z of[-W*.32,W*.32])box(c.leg,H-.14,c.leg,x,(H-.14)/2,z,0x302820);
     for(const z of[-W/2-A/2,W/2+A/2])for(const x of[-L/4,L/4])box(L/2-c.pocketR*2,c.railH,A,x,H+c.railH/2,z,0x6e4c30);
     for(const x of[-L/2-A/2,L/2+A/2])box(A,c.railH,W-c.pocketR*2,x,H+c.railH/2,0,0x6e4c30);
-    const BW=.5,BH=.25,BZ=W/2+A+.045;this.boards=[[-L/4,-BZ,Math.PI],[L/4,BZ,0]]; // #1354: score/turn board on a post outside each long rail
-    for(const[bx,bz]of this.boards){const f=Math.sign(bz);box(BW+.02,BH+.02,.02,bx,H+.07+BH/2,bz,0x302820);box(.04,.1,.03,bx,H-.01,bz-f*.01,0x302820);}
+    const D=c.board,BW=D.width,BH=D.height;
+    this.object.updateWorldMatrix(true,false);
+    const boardPosition=this.object.worldToLocal(new T.Vector3(R.x-R.clubhouse.side+R.clubhouse.wall/2+D.wallGap,D.y,R.z+c.z));
+    const boardYaw=Math.PI/2-c.yaw,boardMatrix=new T.Matrix4().makeRotationY(boardYaw).setPosition(boardPosition);
+    parts.push(paint(new RoundedBoxGeometry(BW+2*D.rim,BH+2*D.rim,D.depth,R.appearance.frameSegments,R.appearance.edgeRadius).applyMatrix4(boardMatrix),0x302820));
     for(const[x,z]of this.physics.pockets)parts.push(paint(new T.CircleGeometry(c.pocketR,16).rotateX(-Math.PI/2).translate(x,H+.002,z),0x080b09));
     this.table=new T.Mesh(merge(parts),clubhouseMaterial());this.table.name='billiard-table';this.object.add(this.table);
     const geometry=new T.SphereGeometry(c.ballR,12,8),stripe=new Float32Array(16);
@@ -36,16 +40,21 @@ export class Billiards {
     this.physics.balls.forEach((b,i)=>this.mesh.setColorAt(i,new T.Color(colours[b.id<9?b.id:b.id-8])));this.object.add(this.mesh);
     const tip=c.cueLength*.04,cue=[paint(new T.CylinderGeometry(.004,.004,tip,8).translate(0,tip/2,0),0xe9dfc4),paint(new T.CylinderGeometry(.009,.004,c.cueLength-tip,8).translate(0,tip+(c.cueLength-tip)/2,0),0x976333)];
     this.cue=new T.Mesh(merge(cue),new T.MeshStandardMaterial({vertexColors:true,roughness:.6}));this.cue.name='billiard-cue';this.object.add(this.cue);
-    this.rules=new BilliardRules('free');this.net=null;this.seq=0;this.seats=[null,null];this.pendingEnd=null;this.waitT=0;this.acc=0;this.active=false;this.inShot=false;this.dirty=true;this.onEvent=null;this.blockReason='';this.physics.onPocket=id=>{if(this.inShot)this.rules.notePocket(id);};
-    this.canvas=document.createElement('canvas');this.canvas.width=512;this.canvas.height=256;this.ctx=this.canvas.getContext('2d');
+    this.rules=new BilliardRules('free');this.net=null;this.seq=0;this.seats=[null,null];this.pendingEnd=null;this.waitT=0;this.acc=0;this.active=false;this.inShot=false;this.dirty=true;this.onEvent=null;this.blockReason='';this.physics.onPocket=id=>{if(this.inShot)this.rules.notePocket(id);this.dirty=true;};
+    this.canvas=document.createElement('canvas');this.canvas.width=D.canvas[0];this.canvas.height=D.canvas[1];this.ctx=this.canvas.getContext('2d');
     this.texture=new T.CanvasTexture(this.canvas);this.texture.colorSpace=T.SRGBColorSpace;
     const faceMat=new T.MeshBasicMaterial({map:this.texture,toneMapped:false});
-    this.modeTarget={kind:'playroomBilliardsMode',name:'biljardtavlan',get verb(){return `byta till ${MODE_NAMES[self.rules.nextMode()].toLowerCase()} på`;}};
-    this.rackTarget={kind:'playroomBilliardsRack',name:'biljardtavlan',verb:'ställa upp nya bollar på'};
-    const self=this,faces=[];this.controlPickables=[];
-    for(const[bx,bz,ry]of this.boards){const f=Math.sign(bz);faces.push(new T.PlaneGeometry(BW,BH).rotateY(ry).translate(bx,H+.07+BH/2,bz+f*.011));
-      [[this.modeTarget,-1],[this.rackTarget,1]].forEach(([t,side])=>{const p=new T.Mesh(new T.BoxGeometry(BW/2-.01,BH*.3,.08),new T.MeshBasicMaterial({visible:false}));p.position.set(bx+side*(BW/4)*Math.sign(Math.cos(ry)),H+.07+BH*.14,bz+f*.03);p.userData.door=t;t.pickable??=p;this.object.add(p);this.controlPickables.push(p);});}
-    const boards=new T.Mesh(mergeGeometries(faces),faceMat);boards.name='billiard-boards';this.object.add(boards);faces.forEach(q=>q.dispose()); // one draw call for both boards
+    const self=this;
+    this.modeTarget={kind:'playroomBilliardsMode',name:'biljardskärmen på väggen',get verb(){return `välja ${MODE_NAMES[self.rules.nextMode()].toLowerCase()} på`;}};
+    this.rackTarget={kind:'playroomBilliardsRack',name:'biljardskärmen på väggen',verb:'starta en ny omgång på'};
+    this.controlPickables=[];
+    for(const [target,side] of [[this.modeTarget,-1],[this.rackTarget,1]]){
+      const pick=new T.Mesh(new T.BoxGeometry(BW/2-D.rim,BH*D.buttonHeight,D.pickDepth),new T.MeshBasicMaterial({visible:false}));
+      pick.position.copy(new T.Vector3(side*BW/4,-BH*D.buttonY,D.depth/2+D.faceGap).applyMatrix4(boardMatrix));pick.rotation.y=boardYaw;
+      pick.userData.door=target;target.pickable=pick;this.object.add(pick);this.controlPickables.push(pick);
+    }
+    this.boardMesh=new T.Mesh(new T.PlaneGeometry(BW,BH),faceMat);this.boardMesh.name='billiard-wall-screen';
+    this.boardMesh.position.copy(new T.Vector3(0,0,D.depth/2+D.faceGap).applyMatrix4(boardMatrix));this.boardMesh.rotation.y=boardYaw;this.object.add(this.boardMesh);
     this.target={kind:'playroomBilliards',name:'biljardbordet',verb:'stöt på'};
     const pick=this.target.pickable=new T.Mesh(new T.BoxGeometry(L+2*A,.14,W+2*A),new T.MeshBasicMaterial({visible:false}));pick.position.y=H+.05;pick.userData.door=this.target;this.object.add(pick);
     // Collision uses the same transformed corners as the rendered table; physics and network snapshots remain table-local.
@@ -88,19 +97,32 @@ export class Billiards {
   /** A newer message arrived while a shared stroke still animates: jump to its end state. */
   finishNow() { if(this.pendingEnd){const e=this.pendingEnd;this.drift=this.physics.moving?-1:Math.max(...this.physics.balls.map((b,i)=>b.active?Math.hypot(b.x*1000-e.p[i*2],b.z*1000-e.p[i*2+1]):0)); // mm the local fixed-step run missed the room's result by (-1: still rolling), diagnostics
       this.adopt(e);this.onEvent?.(this.rules.message);} }
+  seatLabel(n) {
+    const name=this.seats[n]&&this.net?.name?.(this.seats[n]);
+    return name?`${name} (Spelare ${n+1})`:`Spelare ${n+1}`;
+  }
   drawBoard() {
-    const g=this.ctx,r=this.rules,eight=r.mode==='eight';this.dirty=false;
-    g.fillStyle='#1d2b25';g.fillRect(0,0,512,256);g.strokeStyle='#d9c27a';g.lineWidth=6;g.strokeRect(3,3,506,250);g.textAlign='center';g.textBaseline='middle';
-    g.fillStyle='#f3f0e5';g.font='bold 52px sans-serif';g.fillText(eight?(r.over?`Spelare ${r.winner+1} vann`:`Tur: ${r.playerName}`):'Fri lek',256,48);
-    const me=this.net?.id?.(),seat=me?this.seats.indexOf(me):-1;if(seat>=0){g.fillStyle='#bfd8cc';g.font='20px sans-serif';g.fillText(`Du är Spelare ${seat+1}`,256,13);g.fillStyle='#f3f0e5';} // #1355
-    g.font='34px sans-serif';g.fillStyle='#e8b72b';
-    const gt={solid:'hela',stripe:'halva'};
-    g.fillText(eight?(r.over?'Ställ upp ny omgång':`Mål: ${r.target}`):'Ingen tur, inga mål',256,100);
-    g.fillStyle='#bfd8cc';g.font='28px sans-serif';
-    if(eight&&!r.over)g.fillText(r.groups[0]?`Spelare 1: ${gt[r.groups[0]]} · Spelare 2: ${gt[r.groups[1]]}`:'Bordet är öppet',256,138);
-    g.fillText(r.message.slice(0,42),256,eight&&!r.over?172:138);
-    g.font='bold 30px sans-serif';
-    [[8,`Läge: ${MODE_NAMES[r.mode]}`],[260,'Ny uppställning']].forEach(([x,t])=>{g.fillStyle='#3d5a4c';g.fillRect(x,188,244,60);g.fillStyle='#fff';g.fillText(t,x+122,218);});
+    const g=this.ctx,r=this.rules,eight=r.mode==='eight',w=this.canvas.width,h=this.canvas.height,U=this.c.board.ui;
+    const score=this.score=billiardScore(r,this.physics.balls),pad=w*U.pad;this.dirty=false;
+    g.fillStyle='#142b29';g.fillRect(0,0,w,h);g.strokeStyle='#78eee2';g.lineWidth=pad/4;g.strokeRect(pad/2,pad/2,w-pad,h-pad);
+    g.textAlign='center';g.textBaseline='middle';
+    const line=(text,x,y,size,color='#f3f0e5',width=w-2*pad)=>{g.font=`600 ${h*size}px sans-serif`;g.fillStyle=color;g.fillText(text,x,y,width);};
+    line(eight?(r.over?`${this.seatLabel(r.winner)} vinner!`:`Tur: ${this.seatLabel(r.turn)}`):'Biljard · Fri lek',w/2,h*U.titleY,U.titleSize);
+    line(eight?(r.over?'Omgången är slut':`8-boll · Mål: ${r.target}`):'Fri lek · välj 8-boll för turer och vinnare',w/2,h*U.modeY,U.textSize,'#b8d8d3');
+    if(eight){
+      const labels={solid:'hela',stripe:'halva'};
+      for(let i=0;i<2;i++){
+        const x=w*(i+.5)/2;line(this.seatLabel(i),x,h*U.nameY,U.textSize,'#b8d8d3',w/2-2*pad);
+        line(score.players[i]===null?'Grupp ej vald':`Poäng: ${score.players[i]} / 7 ${labels[r.groups[i]]}`,x,h*U.scoreY,U.scoreSize,'#ffe5a1',w/2-2*pad);
+      }
+    }else line(`Sänkta bollar: ${score.total} / 15`,w/2,h*U.scoreY,U.scoreSize,'#ffe5a1');
+    line(r.message,w/2,h*U.messageY,U.textSize,'#b8d8d3');
+    const mine=this.netReady()?this.seats.indexOf(this.net.id()):-1;
+    line(mine>=0?`Du är Spelare ${mine+1}`:'Stöt genom att sikta på biljardbordet',w/2,h*U.seatY,U.textSize,'#b8d8d3');
+    for(const [i,text] of [`Läge: ${MODE_NAMES[r.mode]}`,'Starta / Ny omgång'].entries()){
+      const x=i*w/2+pad;g.fillStyle='#375b51';g.fillRect(x,h*U.buttonTop,w/2-2*pad,h*U.buttonH);
+      line(text,w*(i+.5)/2,h*(U.buttonTop+U.buttonH/2),U.textSize,'#fff',w/2-3*pad);
+    }
     this.texture.needsUpdate=true;
   }
   shoot(camera) {

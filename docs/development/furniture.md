@@ -317,13 +317,13 @@ dressing on every board, no old board left, plants follow, migration), `tools/pl
 
 ## Children’s billiards (#1328)
 
-`src/billiards.js` adds the local child-size table to `Playroom`: merged cloth/frame/legs/six pocket mouths, 16 instanced rolling balls (solids/stripes and cue), one animated cue and the two scoreboards in one canvas-textured batch. These are four existing visible draws; the #1411 rotation adds no light, texture or draw. The complete group is hidden outside the room, and `Playroom.update` freezes its simulation outside. Four outer-frame segments block the player without obstructing the entrance/exit. `PLAYROOM.billiards` centralizes guessed dimensions, its quarter-turn yaw and playability coefficients; these are not measured apartment fittings. The group rotation turns the short end toward the south doorway while the table stays at the centre. Collision corners follow that rotation. Camera aim is inverse-rotated once before local physics or a shared stroke; incoming stroke directions, ball snapshots and Worker simulation stay in table-local coordinates. The rendered balls, cue, pick box and scoreboards inherit the group rotation.
+`src/billiards.js` adds the local child-size table to `Playroom`: merged cloth/frame/legs/six pocket mouths, 16 instanced rolling balls (solids/stripes and cue), one animated cue and one west-wall control screen (#1495). These are four existing visible draws; the #1411 rotation adds no light, texture or draw. The complete group is hidden outside the room, and `Playroom.update` freezes its simulation outside. Four outer-frame segments block the player without obstructing the entrance/exit. `PLAYROOM.billiards` centralizes guessed dimensions, its quarter-turn yaw and playability coefficients; these are not measured apartment fittings. The group rotation turns the short end toward the south doorway while the table stays at the centre. Collision corners follow that rotation. Camera aim is inverse-rotated once before local physics or a shared stroke; incoming stroke directions, ball snapshots and Worker simulation stay in table-local coordinates. The rendered balls, cue, pick box inherit the group rotation; the wall screen derives its position/orientation from the actual west partition.
 
 `src/billiardphysics.js` is a renderer-independent equal-mass local simulation with bounded substeps, linear friction, ball/ball and cushion restitution, six pockets and safe cue respotting after a scratch. Aim over the table and use E/touch; horizontal camera direction selects the stroke, a new stroke waits for rest, and the next stroke after all object balls are pocketed re-racks. Rules and authoritative multiplayer are delivered in #1354/#1355; positional cue, ball, cushion and pocket sounds in #1330. Verify with `tools/billiardtest.mjs`, real-app `tools/billiardtest.cjs` and the room lifecycle test. Gameplay is excluded from the public downstream.
 
 ### Rules and board (#1354)
 
-`src/billiardrules.js` is a renderer/network-free local rules model (reusable for the shared room, #1355): free play (no turns/goals/end) or simplified two-sided 8-ball. The table is open until the first legal pocketed ball picks solids (1-7) or stripes (9-15); a legal pocket keeps the turn; fouls (cue ball pocketed, no ball touched, wrong group or 8 first) pass the turn without ball in hand (the physics respots the cue ball); the 8 wins only once your group is cleared and without foul, otherwise it loses; a finished game blocks strokes until a new rack. `BilliardPhysics.firstHit` reports the first object ball the cue touches. `Billiards` settles each stroke into the rules once balls rest, and two canvas boards (one per long rail, a shared texture) show mode, whose turn, target and last verdict, with two real pickable buttons each (`playroomBilliardsMode`, `playroomBilliardsRack`; E / touch action button via the normal focus). Test: `tools/billiardtest.mjs` (rules) and the board section of `tools/billiardtest.cjs`. Gameplay: never transferred downstream.
+`src/billiardrules.js` is a renderer/network-free local rules model (reusable for the shared room, #1355): free play (no turns/goals/end) or simplified two-sided 8-ball. The table is open until the first legal pocketed ball picks solids (1-7) or stripes (9-15); a legal pocket keeps the turn; fouls (cue ball pocketed, no ball touched, wrong group or 8 first) pass the turn without ball in hand (the physics respots the cue ball); the 8 wins only once your group is cleared and without foul, otherwise it loses; a finished game blocks strokes until a new rack. `BilliardPhysics.firstHit` reports the first object ball the cue touches. `Billiards` settles each stroke into the rules once balls rest, and one canvas screen on the west wall (#1495) shows mode, turn, target, group-ball points and the rule model’s winner, with two real pickable buttons (`playroomBilliardsMode`, `playroomBilliardsRack`; E / touch action button via the normal focus). Test: `tools/billiardtest.mjs` (rules) and the board section of `tools/billiardtest.cjs`. Gameplay: never transferred downstream.
 
 ### Shared table (#1355)
 
@@ -519,3 +519,21 @@ Home-TV surfaces use their own plane ratio through the same implementation.
 Lekstuga signs (#1384): welcome/BIO/BILJARD/SPEL use the original merged sign
 planes with neon tube/glow atlas lettering. The already delivered wall edges,
 skirting, floor materials and contact shading (#1480/#1481) are preserved.
+
+
+### Billiard wall control and points (#1495)
+
+The single1.2×0.6m screen is centred1.2m above the west partition facing into
+BILJARD, with a frame merged into the existing table batch; both old rail screens
+and their posts are removed. Table/physics/collision dimensions and yaw are
+unchanged. Screen/button transforms inverse-rotate the real west-wall pose into
+table space. E/touch on the left control selects mode; the right starts a new
+round. `PLAYROOM.billiards.board` holds the assumed screen/layout values.
+
+`billiardscore.js` derives points from actual inactive coloured balls and assigned
+groups, excluding the cue/eight from group points. It keeps no separate score
+state. 8-ball shows each player's progress out of7, with names from existing peers
+when available, and uses `rules.winner` for the final headline. Free play counts
+sunk balls out of15 and explicitly has no turns/winner. Reset clears points/groups
+through the same authoritative snapshot. See `billiardscoretest.mjs`,
+`billiardwalltest.cjs` and existing billiard/peer tests.

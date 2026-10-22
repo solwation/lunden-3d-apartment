@@ -1761,7 +1761,7 @@ function use(thing) {
   }
   if (thing.kind === 'playroomDisco') { badge(playroom.toggleDisco(), false); return; } // #1365: the disco light on/off
   if (thing.kind === 'playroomDevice') { badge(thing.use(), false); return; } // #1365: local TV and computer, E/touch
-  if (thing.kind === 'playroomBilliardsMode') { const text = playroom.billiards.toggleMode(); if (text) badge(text, false); return; } // #1354: the board at the table
+  if (thing.kind === 'playroomBilliardsMode') { const text = playroom.billiards.toggleMode(); if (text) badge(text, false); return; } // #1495: the shared wall screen
   if (thing.kind === 'playroomBilliardsRack') { const text = playroom.billiards.requestRack(); if (text) badge(text, false); return; }
   if (thing.kind === 'ghost' && weaponKey()) { // focus may predate a weapon change (#872)
     const held = heldItem();
@@ -2764,7 +2764,7 @@ ghosts.onKiss = (m, at) => sfx.kiss(at);
 ghosts.onGreet = (m, g, other) => greet.say({ head: g.head, s: 1 }, (m.k === KISS.phrase ? KISS.line : GHOSTS.hello[m.k])?.replace('{n}', other ? other.name : (leaderboard.name || 'Anonym')) ?? 'Hej!', { pitch: 1.1, rate: 1.05, voice: 1 }, undefined, g.avatar);
 // someone else comes into / leaves the players' room (#1333, src/joinnotice.js): a short notice at the top, no sound
 ghosts.onNotice = (text) => badge(text, false);
-playroom.billiards.net = { ready: () => ghosts.connected, send: (m) => ghosts.pool(m), id: () => ghosts.me }; // #1355: the shared billiard table
+playroom.billiards.net = { ready: () => ghosts.connected, send: (m) => ghosts.pool(m), id: () => ghosts.me, name: id => id===ghosts.me?ghosts.name():ghosts.others.get(id)?.name }; // #1355/#1495: shared table, wall-screen names
 ghosts.onPool = (m) => playroom.billiards.onNet(m);
 cinema.net = { ready: () => ghosts.connected, send: m => ghosts.cinema(m), id: () => ghosts.me };
 tvMedia.connect(cinema.net);
