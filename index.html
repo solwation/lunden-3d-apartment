@@ -508,6 +508,10 @@
     #install { position: fixed; inset: 0; z-index: 25; display: grid; place-items: center; background: rgba(20, 35, 45, 0.85); padding: var(--st) var(--sr) var(--sb) var(--sl); }
     #install[hidden] { display: none; }
     /* "Återställ" (#303): asks first, touch-friendly */
+    #settings-dialog { position: fixed; inset: 0; z-index: 24; display: grid; place-items: center; background: rgba(20,35,45,.7); padding: var(--st) var(--sr) var(--sb) var(--sl); }
+    #settings-dialog[hidden] { display: none; }
+    #settings-dialog .menu-options { overflow-y: auto; min-height: 0; overscroll-behavior: contain; }
+    #settings-dialog .card { display: flex; flex-direction: column; overflow: hidden; width: min(520px, calc(100vw - 32px)); max-width: 520px; margin: 16px; box-sizing: border-box; }
     #reset-confirm { position: fixed; inset: 0; z-index: 25; display: grid; place-items: center; background: rgba(20, 35, 45, 0.85); padding: var(--st) var(--sr) var(--sb) var(--sl); }
     #reset-confirm[hidden] { display: none; }
     #reset-confirm .card { margin: 16px; }
@@ -939,7 +943,7 @@
       </div>
 
       <div class="menu-options">
-        <div class="menu-section-title">Navigering &amp; kontroller</div>
+        <div class="menu-section-title">Navigering</div>
         <button id="to-start" class="menu-btn" type="button">
           <span class="btn-text">
             <b>Gå till startplatsen</b>
@@ -954,13 +958,49 @@
           </span>
           <span class="btn-icon" aria-hidden="true">🏆</span>
         </button>
-        <button id="menu-privacy" class="menu-btn" type="button">
-          <span class="btn-text">
-            <b>Integritet och cookies</b>
-            <span class="btn-desc">Vad spelet sparar och skickar</span>
-          </span>
-          <span class="btn-icon" aria-hidden="true">🔒</span>
+        <button id="menu-settings" class="menu-btn" type="button" aria-haspopup="dialog" aria-controls="settings-dialog">
+          <span class="btn-text"><b>Inställningar</b><span class="btn-desc">Chatt, kontroller, återställning och data</span></span>
+          <span class="btn-icon" aria-hidden="true">⚙</span>
         </button>
+
+        <div class="menu-section-title">App &amp; fönster</div>
+        <button id="install-btn" class="menu-btn" hidden type="button">
+          <span class="btn-text">
+            <b>Installera som app</b>
+            <span class="btn-desc">Lägg till på hemskärmen för att spela i helskärm</span>
+          </span>
+          <span class="btn-icon" aria-hidden="true">📱</span>
+        </button>
+        <button id="quit" class="menu-btn danger" type="button">
+          <span class="btn-text">
+            <b>Avsluta</b>
+            <span class="btn-desc">Stäng webbläsarfliken eller fönstret</span>
+          </span>
+          <span class="btn-icon" aria-hidden="true">✕</span>
+        </button>
+        <p class="resume" id="quit-help" hidden role="status">Webbläsaren tillåter inte att sidan stänger fönstret. Stäng fliken eller fönstret med webbläsarens stängknapp.</p>
+      </div>
+    </div>
+  </div>
+  <aside id="corner-qr" aria-label="QR-kod till sidan">
+    <img src="icons/qr-site.svg" alt="QR-kod till solwation.github.io/lunden-3d-apartment" width="100" height="100">
+    <span>Skanna för mobil</span>
+  </aside>
+  <div id="settings-dialog" hidden role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    <div class="card dialog-card">
+      <button id="settings-close" type="button" class="dialog-close" aria-label="Stäng inställningar">×</button>
+      <div class="kicker">SPELETS INSTÄLLNINGAR</div>
+      <h1 id="settings-title">Inställningar</h1>
+      <div class="menu-options">
+        <div class="menu-section-title">Chatt och touch</div>
+        <button id="menu-chat-setting" class="menu-btn" type="button" aria-pressed="true">
+          <span class="btn-text"><b>Visa chat: PÅ</b><span class="btn-desc">Visa meddelanden och pratbubblor från andra spelare.</span></span>
+        </button>
+        <button id="menu-touch-layout" class="menu-btn" type="button" hidden>
+          <span class="btn-text"><b>Anpassa touchknappar</b><span class="btn-desc">Flytta knapparna och spaken, ändra storlek och genomskinlighet eller spegla för vänsterhänta.</span></span>
+          <span class="btn-icon" aria-hidden="true">✋</span>
+        </button>
+        <div class="menu-section-title">Kontroller</div>
         <button id="toggle-instructions" class="menu-btn" type="button" aria-expanded="false" aria-controls="instructions">
           <span class="btn-text">
             <b class="inst-btn-label">Visa instruktioner</b>
@@ -1003,14 +1043,6 @@
           </div>
         </div>
 
-        <div class="menu-section-title">Inställningar</div>
-        <button id="menu-chat-setting" class="menu-btn" type="button" aria-pressed="true">
-          <span class="btn-text"><b>Visa chat: PÅ</b><span class="btn-desc">Visa meddelanden och pratbubblor från andra spelare.</span></span>
-        </button>
-        <button id="menu-touch-layout" class="menu-btn" type="button" hidden>
-          <span class="btn-text"><b>Anpassa touchknappar</b><span class="btn-desc">Flytta knapparna och spaken, ändra storlek och genomskinlighet eller spegla för vänsterhänta.</span></span>
-          <span class="btn-icon" aria-hidden="true">✋</span>
-        </button>
         <div class="menu-section-title">Återställning &amp; data</div>
         <button id="reset-home" class="menu-btn" type="button">
           <span class="btn-text">
@@ -1027,29 +1059,16 @@
           <span class="btn-icon" aria-hidden="true">📊</span>
         </button>
 
-        <div class="menu-section-title">App &amp; fönster</div>
-        <button id="install-btn" class="menu-btn" hidden type="button">
+        <button id="menu-privacy" class="menu-btn" type="button">
           <span class="btn-text">
-            <b>Installera som app</b>
-            <span class="btn-desc">Lägg till på hemskärmen för att spela i helskärm</span>
+            <b>Integritet och cookies</b>
+            <span class="btn-desc">Vad spelet sparar och skickar</span>
           </span>
-          <span class="btn-icon" aria-hidden="true">📱</span>
+          <span class="btn-icon" aria-hidden="true">🔒</span>
         </button>
-        <button id="quit" class="menu-btn danger" type="button">
-          <span class="btn-text">
-            <b>Avsluta</b>
-            <span class="btn-desc">Stäng webbläsarfliken eller fönstret</span>
-          </span>
-          <span class="btn-icon" aria-hidden="true">✕</span>
-        </button>
-        <p class="resume" id="quit-help" hidden role="status">Webbläsaren tillåter inte att sidan stänger fönstret. Stäng fliken eller fönstret med webbläsarens stängknapp.</p>
       </div>
     </div>
   </div>
-  <aside id="corner-qr" aria-label="QR-kod till sidan">
-    <img src="icons/qr-site.svg" alt="QR-kod till solwation.github.io/lunden-3d-apartment" width="100" height="100">
-    <span>Skanna för mobil</span>
-  </aside>
   <div id="leaderboard-dialog" hidden role="dialog" aria-label="Topplistan">
     <div class="card dialog-card">
       <button id="leaderboard-dialog-close" type="button" aria-label="Stäng" class="dialog-close">×</button>

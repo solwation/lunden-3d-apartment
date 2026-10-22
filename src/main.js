@@ -1,3 +1,4 @@
+import { MenuSettings } from './menusettings.js';
 import { renderPlayingNow } from './playerportraits.js';
 import { saveStats } from './stats.js';
 import { playerLocalStorage as localStorage, playerSessionStorage as sessionStorage } from './playerprofiles.js';
@@ -173,6 +174,8 @@ import { Mess } from './mess.js';
 import { readTestMode, makeTestController } from './testmode.js';
 
 const overlay = document.getElementById('overlay');
+const menuSettings = new MenuSettings({ dialog: document.getElementById('settings-dialog'), trigger: document.getElementById('menu-settings'), menu: overlay,
+  children: [document.getElementById('reset-confirm'), document.getElementById('privacy-dialog')] });
 // Start the bounded shelf read while the renderer and plan are prepared; dev scenarios use only the prepared snapshot.
 const beerParams = new URLSearchParams(location.search);
 const beerShelfData = loadBeerShelf({ endpoint: beerParams.get('beers') || undefined, refresh: !beerParams.has('life') || beerParams.has('beers'), persist: !beerParams.has('life') });
@@ -1353,6 +1356,7 @@ function look(dyaw, dpitch) {
 
 let played = false; // left the start screen at least once this visit (an F5 then carries on, #203)
 function showOverlay(show) {
+  if (!show) menuSettings.close(false);
   resetFrameRate();
   if (!show) { played = true; document.getElementById('reset-done').hidden = true; if (loadingEl && startupSceneReady) loadingEl.hidden = true; } // "Hemmet är återställt" only until the visit starts (#303)
   overlay.hidden = !show;
@@ -1420,7 +1424,7 @@ function resumeFromMenu() {
   }
 }
 let unlockedAt = -1e9;
-const otherOverlay = () => ['loading', 'install', 'reset-confirm', 'player-dialog', 'leaderboard-dialog', 'privacy-dialog', 'note', 'task-note', 'terminal', 'cheat-note', 'binder-view', 'poster-panel'].some((id) => {
+const otherOverlay = () => ['settings-dialog', 'loading', 'install', 'reset-confirm', 'player-dialog', 'leaderboard-dialog', 'privacy-dialog', 'note', 'task-note', 'terminal', 'cheat-note', 'binder-view', 'poster-panel'].some((id) => {
   const el = document.getElementById(id);
   return el && !el.hidden && !el.classList.contains('done');
 })
@@ -1478,7 +1482,8 @@ document.getElementById('start-touch').addEventListener('click', () => {
 document.getElementById('start-go').addEventListener('click', () => document.getElementById('start-touch').click());
 document.getElementById('menu-touch-layout')?.addEventListener('click', () => {
   // the editor shows the HUD over the paused game (CSS body.touch-editing); the menu returns when it closes (#1090)
-  touchLayout.open(() => document.getElementById('menu-touch-layout')?.focus({ preventScroll: true }));
+  menuSettings.close(false);
+  touchLayout.open(() => { menuSettings.open(); document.getElementById('menu-touch-layout')?.focus({ preventScroll: true }); });
 });
 pauseBtn.addEventListener('click', () => {
   touch.enabled = false;

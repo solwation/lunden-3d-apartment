@@ -15,6 +15,13 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## Separate settings modal (#1518)
+
+`tools/menusettingstest.cjs BASE OUT` passes17actual-menu checks, including native
+click/tap, focus wrapping, child-dialog Escape, chat persistence, instructions,
+real touch editor return and reachable narrow-landscape actions with the close
+button kept visible. No page errors. [Images and scope](../verification/1518/README.md).
+
 ## Start-menu portraits (#1517)
 
 Seven `cloudflare/scores.test.mjs` tests and the six actual-menu checks in

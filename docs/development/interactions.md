@@ -1983,3 +1983,19 @@ The start menu’s Byt spelare dialog lists local UUID profiles with the existin
 Canvas2D avatar preview, choose buttons and confirmed local deletion. New names
 create profiles; an existing name selects its profile without replacing data.
 Avatar and persistence details: [local player profiles](storage.md#local-player-profiles-1515).
+
+## Separate settings panel (#1518)
+
+The start/pause menu exposes `#menu-settings`; `#settings-dialog` owns the existing
+chat toggle, instructions, touch-layout entry, home reset, statistics reset and
+privacy entry. IDs and action listeners are preserved. `MenuSettings` keeps the
+background menu inert, traps Tab, consumes settings keys before gameplay and
+restores focus on close. Existing reset/privacy dialogs remain above it and own
+Escape until dismissed; focus returns to the action that opened the child.
+The touch editor temporarily hides settings, then returns to its entry button.
+Leaving the menu closes settings without moving focus back into the hidden menu.
+
+The public project already keeps keyboard/mouse/touch help and its touch editor
+entry in a separate native `#help-dialog`; it has no chat, player statistics or
+personal home-reset sections. This original menu reorganization needs no public
+code transfer or gameplay import.

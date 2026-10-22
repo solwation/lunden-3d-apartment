@@ -8,6 +8,8 @@ Skriv en befintlig privat adminkod i den vanliga chattrutan. Efter lyckad inlogg
 
 **Byt spelare** i startmenyn låter dig välja en sparad spelare med avatarminiatyr eller ange ett nytt namn. Din avatar syns även vid spelarnamnet i startmenyn, och aktiva spelare visas med avatarer under **Spelar just nu**. Varje spelare behåller sitt utseende, hem, smuts, poäng, statistik och kattfoton i samma webbläsare. **Ta bort** frågar först och raderar den valda spelarens lokala data.
 
+**Inställningar** i start- och pausmenyn öppnar en egen ruta för chattvisning, kontroller för tangentbord/mus/touch, anpassning av touchknappar samt återställning och data.
+
 Chatten visar de senaste meddelandena även när utrymmet är trångt. Varje rad ligger kvar i upp till en minut; pratbubblan över spelaren försvinner efter tio sekunder.
 
 På telefonen ligger laddningsskärmen kvar medan grafiken förbereds i små steg, tills hela den första 3D-bilden är klar. Tillfälliga nätfel när planritningen hämtas får ett automatiskt återförsök. Om starten ändå misslyckas eller fastnar visas ”Försök igen”, utan att din sparade plats eller ditt hem raderas. Grafiken arbetar mindre när du läser en lapp eller pausar, och vilar bakom uppmaningen att vrida telefonen.

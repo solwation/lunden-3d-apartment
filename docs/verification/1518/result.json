@@ -1,0 +1,22 @@
+{
+  "checks": [
+    "all requested sections live only in settings modal",
+    "open button shows modal and makes start menu inert",
+    "reverse Tab wraps inside modal",
+    "Tab wraps back to close",
+    "moved chat setting still persists",
+    "keyboard mouse and touch instructions open inside modal",
+    "existing home reset confirmation opens above settings",
+    "Escape cancels child confirmation and returns to settings action",
+    "privacy child closes back to settings",
+    "Escape closes settings without starting game and restores focus",
+    "touch editor opens over paused game",
+    "touch editor returns to settings",
+    "narrow landscape modal fits viewport",
+    "last settings action remains reachable by scrolling",
+    "close button stays visible after scrolling settings",
+    "touch close button returns to start menu",
+    "zero browser errors"
+  ],
+  "errors": []
+}
