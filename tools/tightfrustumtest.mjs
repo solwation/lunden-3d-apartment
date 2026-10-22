@@ -4,7 +4,7 @@ import * as T from 'three';
 import {installTightFrustum} from '../src/tightfrustum.js';
 import {rememberFragmentCompile,hasNativeVertexCompile} from '../src/vertexcompile.js';
 
-function fixture() {
+function fixture(occluders = null) {
   const scene=new T.Scene(),camera=new T.PerspectiveCamera(60,1,.1,100);
   const material=new T.MeshStandardMaterial(),outside=new T.Mesh(new T.BoxGeometry(1,12,.2),material);
   outside.position.set(7,0,-5);outside.castShadow=true;scene.add(outside);
@@ -15,7 +15,7 @@ function fixture() {
     const objects=[];scene.traverseVisible(o=>{if(o.isMesh&&o.layers.test(camera.layers)&&(!o.frustumCulled||f.intersectsObject(o)))objects.push(o)});
     this.shadowMap.render();colors.push(objects);this.onRender?.(scene,camera);
   }};
-  const gate=installTightFrustum(renderer);
+  const gate=installTightFrustum(renderer, occluders);
   return{scene,camera,outside,inside,renderer,gate,colors,shadows,draw(){renderer.render(scene,camera)}};
 }
 test('tight full-position box removes only native sphere false positives; masks and authored bounds restore',()=>{
@@ -73,4 +73,22 @@ test('a nested render during shadows keeps original caster masks for the remaini
 test('only exact registered fragment chains can refine bounds; flags and unknown base callbacks cannot',()=>{
  const f=fixture(),native=T.Material.prototype.onBeforeCompile,leaf=()=>{},wash=()=>{};rememberFragmentCompile(leaf,native);rememberFragmentCompile(wash,leaf);f.outside.material.onBeforeCompile=wash;assert(hasNativeVertexCompile(f.outside.material));f.draw();assert(!f.colors[0].includes(f.outside));
  const unknown=()=>{},wrapped=()=>{};rememberFragmentCompile(wrapped,unknown);f.outside.material.onBeforeCompile=wrapped;f.outside.material.userData.staticVertex=true;assert(!hasNativeVertexCompile(f.outside.material));f.draw();assert(f.colors.at(-1).includes(f.outside));
+});
+
+
+test('optional actual opaque rectangles hide complete boxes, retain openings/near objects and preserve shadows',()=>{
+  let walls=[{x0:-2,x1:2,y0:-2,y1:2,z0:-4,z1:-4}];
+  const f=fixture(()=>walls);f.draw();assert(!f.colors[0].includes(f.inside));assert.deepEqual(f.shadows,[1]);assert.equal(f.inside.layers.mask,1);
+  walls=[{x0:-.01,x1:.01,y0:-2,y1:2,z0:-4,z1:-4}];f.draw();assert(f.colors.at(-1).includes(f.inside));
+  f.inside.position.z=-1;walls=[{x0:-2,x1:2,y0:-2,y1:2,z0:-.5,z1:-.5}];f.draw();assert(f.colors.at(-1).includes(f.inside));
+  f.inside.position.z=-5;f.inside.userData.noDetail=true;f.draw();assert(f.colors.at(-1).includes(f.inside));
+});
+test('opaque proofs use current object transforms and current rectangle availability without changing source arrays',()=>{
+  let walls=[{x0:-2,x1:2,y0:-2,y1:2,z0:-4,z1:-4}];const f=fixture(()=>walls),p=f.inside.geometry.attributes.position;
+  f.draw();assert(!f.colors.at(-1).includes(f.inside));walls=[];f.draw();assert(f.colors.at(-1).includes(f.inside));
+  walls=[{x0:-2,x1:2,y0:-2,y1:2,z0:-4,z1:-4}];f.inside.position.z=-3;f.draw();assert(f.colors.at(-1).includes(f.inside));assert.equal(f.inside.geometry.attributes.position,p);
+});
+
+test('desktop opaque extension leaves renderer-time LOD child masks authoritative',()=>{
+ const f=fixture(()=>[{x0:-2,x1:2,y0:-2,y1:2,z0:-4,z1:-4}]);f.scene.isLOD=true;f.draw();assert(f.colors[0].includes(f.inside));assert.equal(f.inside.layers.mask,1);
 });

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { wholeBoxOccluded } from './occlusion.js';
 import { PERF } from './config.js';
 import { hasNativeVertexCompile } from './vertexcompile.js';
 
@@ -19,8 +20,9 @@ function bounds(geometry) {
   return entry.box;
 }
 
-/** Additional exact-box color-frustum proof. Original masks still drive shadows and physical rays. */
-export function installTightFrustum(renderer) {
+/** Exact-box color visibility; optional already-drawn opaque rectangles add a whole-box proof.
+ * Original masks still drive shadows and physical rays. Without occluders the phone policy is unchanged. */
+export function installTightFrustum(renderer, occluders = null) {
   const control = {enabled:true};
   const render = renderer.render, shadow = renderer.shadowMap.render;
   let active = null;
@@ -47,6 +49,7 @@ export function installTightFrustum(renderer) {
       if (!camera.parent && camera.matrixWorldAutoUpdate) camera.updateMatrixWorld();
       const frustum = new THREE.Frustum().setFromProjectionMatrix(
         new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse), camera.coordinateSystem);
+      const eye = camera.getWorldPosition(new THREE.Vector3()), opaque = occluders?.();
       const box = new THREE.Box3(), part = new THREE.Box3(), matrix = new THREE.Matrix4();
       const state = []; active = state;
       scene.traverseVisible(object => {
@@ -54,7 +57,7 @@ export function installTightFrustum(renderer) {
             !object.layers.test(camera.layers) || object.onBeforeRender !== THREE.Object3D.prototype.onBeforeRender ||
             object.onAfterRender !== THREE.Object3D.prototype.onAfterRender || object.geometry?.morphAttributes.position?.length) return;
         // The entrance adapter owns both its color proxies and original shadow masks.
-        for (let p = object; p; p = p.parent) if (p.name === 'entrance-plants') return;
+        for (let p = object; p; p = p.parent) if (p.name === 'entrance-plants' || (opaque && p.isLOD)) return;
         const materials = [object.material].flat();
         if (!materials.length || materials.some(m => !m || m.isShaderMaterial || m.isRawShaderMaterial ||
             m.displacementMap || m.onBeforeRender !== THREE.Material.prototype.onBeforeRender || !hasNativeVertexCompile(m))) return;
@@ -80,7 +83,7 @@ export function installTightFrustum(renderer) {
         if (box.isEmpty() || !finiteBox(box)) return;
         // Numerical guard for Float32 shader transforms, independent of quality/distance/LOD.
         box.expandByScalar(PERF.frustumPad);
-        if (!frustum.intersectsBox(box)) state.push({object, mask:object.layers.mask});
+        if (!frustum.intersectsBox(box) || (opaque && !object.userData.noDetail && box.distanceToPoint(eye) > PERF.detail.minDist && wholeBoxOccluded(eye, box, opaque, PERF.detail.occlusionMargin))) state.push({object, mask:object.layers.mask});
       });
       hide(state);
       return render.call(this, scene, camera, ...args);

@@ -1,0 +1,94 @@
+{
+  "base": "8edc780e",
+  "desktop": {
+    "setup": {
+      "quality": 3,
+      "max": 3,
+      "phone": false,
+      "viewport": [
+        1280,
+        800
+      ],
+      "sources": 54
+    },
+    "views": [
+      {
+        "pose": "corner",
+        "before": {
+          "calls": 556,
+          "triangles": 1076659
+        },
+        "after": {
+          "calls": 514,
+          "triangles": 967709
+        },
+        "freshCasterTrianglesAndMasksEqual": true,
+        "changedPixels": 0
+      },
+      {
+        "pose": "entrance",
+        "before": {
+          "calls": 489,
+          "triangles": 861165
+        },
+        "after": {
+          "calls": 459,
+          "triangles": 762795
+        },
+        "freshCasterTrianglesAndMasksEqual": true,
+        "changedPixels": 0
+      },
+      {
+        "pose": "garage",
+        "before": {
+          "calls": 288,
+          "triangles": 956094
+        },
+        "after": {
+          "calls": 238,
+          "triangles": 751132
+        },
+        "freshCasterTrianglesAndMasksEqual": true,
+        "changedPixels": 0
+      }
+    ],
+    "identity": {
+      "sources": 54,
+      "positiveRays": 4,
+      "bookTaken": true,
+      "bookRestored": true,
+      "level": 3,
+      "max": 3
+    },
+    "pageErrors": []
+  },
+  "phone": {
+    "setup": {
+      "quality": 3,
+      "max": 3,
+      "phone": true,
+      "viewport": [
+        844,
+        390
+      ],
+      "sources": 0
+    },
+    "before": [
+      493,
+      961330
+    ],
+    "after": [
+      493,
+      961330
+    ],
+    "changedPixels": 0,
+    "pageErrors": [],
+    "existingOverrunIssue": 1498
+  },
+  "rebaseReview": {
+    "onto": "a6325985",
+    "outdoorDrawDelta": 0,
+    "textureGrowthMiBUpper": 0.84,
+    "textureTotalMiBUpper": 313
+  }
+}

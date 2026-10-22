@@ -1,0 +1,34 @@
+start: calls 459 tris 772387 geoms 473 tex 73
+kitchen: calls 303 tris 450518 geoms 630 tex 93
+living: calls 316 tris 761358 geoms 781 tex 109
+upstairs: calls 275 tris 507714 geoms 890 tex 121
+patio: calls 117 tris 454854 geoms 896 tex 121
+courtyard: calls 169 tris 436144 geoms 964 tex 126
+courtyard bikes: calls 287 tris 646780 geoms 1017 tex 129
+karpvagen: calls 123 tris 458095 geoms 1040 tex 131
+garage: calls 317 tris 792554 geoms 1091 tex 136
+bike yard: calls 278 tris 709120 geoms 1102 tex 136
+park: calls 463 tris 847038 geoms 1146 tex 140
+east: calls 69 tris 355974 geoms 1146 tex 140
+east lot: calls 50 tris 369852 geoms 1150 tex 140
+paddock: calls 39 tris 240771 geoms 1153 tex 141
+bus stop: calls 42 tris 289016 geoms 1153 tex 141
+paddock above: calls 40 tris 244937 geoms 1153 tex 141
+big hall: calls 238 tris 751132 geoms 1186 tex 144
+basement: calls 272 tris 736792 geoms 1191 tex 145
+bike room: calls 162 tris 613478 geoms 1193 tex 145
+patio toward house: calls 461 tris 800386 geoms 1336 tex 151
+patio corner: calls 514 tris 967709 geoms 1383 tex 157
+budget: most calls 514 at patio corner (≤ 520), most triangles 967709 at patio corner (≤ 1000000), textures ~311 MB in 333 (≤ 320 MB)
+PASS within the performance budget
+mess cap: calls 283 → 285 with 400 added, drawn crumb 48/48 dust 32/32 spots 80
+quality scale: kitchen calls high 302 → low 276
+PASS quality scale reduced draw calls
+PASS adaptive level drops on a low frame rate
+PASS repeated hitches drop a level within 0.36 s
+PASS no step up right after a step down
+PASS adaptive level recovers on a high frame rate
+level 0: resolution: px 0.60 · shadows: 1024² every 1 s · mirrors: off · weather: particles ×0.35 · detail: distance ×0.6
+level 3: resolution: px 1.00 · shadows: 2048² every 0.4 s · mirrors: 512² every 1 frame(s) · weather: particles ×1 · detail: distance ×1
+PASS quality knobs registered
+ALL PASS

@@ -15,6 +15,37 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## Patio corner (#1459)
+
+Run `node --test tools/siteinstancebatchtest.mjs tools/tightfrustumtest.mjs tools/occlusiontest.mjs`
+(30checks), then `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/patiocorner1459test.cjs BASE OUT`.
+The latter uses a normal1280×800 World at initial3/max3, the exact reported two-step
+corner order, fresh shadows and same-World original/current toggles. It also checks
+entry/garage images, source identities, four positive tree rays and actual book take/
+return methods. This is not a claim of native E/touch testing. The baseline disables
+only the new desktop hooks and restores the original six canonical book-face groups.
+Compare decoded RGBA before/after PNGs, not compressed bytes. All three desktop pairs
+are pixel-identical; fresh caster triangle totals/masks match, while book grouping can
+reduce the number of shadow submissions.
+
+`tools/perfcount.html?cloud=&weather=clear&freeze` retains the previous20 desktop views
+and appends the exact corner; phones retain their old19. The full21-view/quality/texture
+profile passes514calls/967709tri/~311MiB with unchanged limits. Run the targeted helper
+with `--phone` for the separate844×390 lowmem/touch corner branch; its readiness wait
+must release the normal loading cover before pausing. Do not call a loading-card image
+scene evidence. The earlier iPhone-UA pre-warm capture is retained only as diagnostic;
+its setup cancelled the warm-up too early, and its final count/PNG does not prove a
+normal phone startup or a visual regression. The phone corner's independently tracked
+budget report is #1498: the completed visible844×390 lowmem/touch pair is493calls/961330tri
+in both states with0changed pixels, initial3/max3 and no page errors. It is a pre-existing
+phone-corner overrun, not a phone budget pass; no physical-device/FPS or new full phone-profile claim is made.
+
+Current raw evidence and rejected probes are retained under `/tmp/finish1459/` and copied
+into the persistent delivery directory named in the [delivery record](../validation/issue-1459/README.md).
+The former physical-ray fixture incorrectly compared parked-car instance IDs across
+legitimate LOD repacks between poses; its failure remains raw. The corrected completed
+fixture uses four fixed tree sources, with exact positive-hit restoration.
+
 ## Film handoff and shared seeking (#1490)
 
 Scoped plan:9server cases in `node --test --test-isolation=none cloudflare/cinema.test.mjs`

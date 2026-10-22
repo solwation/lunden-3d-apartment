@@ -1,5 +1,39 @@
 # Rendering performance
 
+## Patio corner within the desktop budget (#1459)
+
+The exact normal1280×800 quality3/max3 repro is `spawn(6.5,19,0)`, one production
+step, `camera.lookAt(3,.7,17.2)`, then one production step and one render. Matched
+same-World source/current:556calls/1076659tri →514/967709. The unchanged full profile
+now appends this corner after its previous20 desktop views: ALL PASS,514calls/
+967709tri/~311MiB against520/1M/320. No quality/budget, camera or car-hysteresis
+rules changed. These are submission costs, not device frame-time measurements.
+
+`siteinstancebatch.js` collects only existing environment tree, street-lamp and
+parked-car batches on desktop. Shared geometry/material color proxies pack complete
+current instances whose full boxes meet the native camera frustum and are not wholly
+covered by an existing active opaque rectangle. Original objects/instance buffers,
+physical rays and fresh shadow submissions stay authoritative. The hook installs
+outside `tightfrustum`; reflection/target/all-layer renders use original populations,
+and all masks restore in `finally`. Renderer-time LOD children, unknown vertex shaders,
+wind/deformation and nonuniform/sheared/reflected source frames stay native.
+Changed matrices/counts/colors and position versions are read before each draw.
+
+The existing exact-box frustum hook also runs on desktop, with optional current
+Detail occluders and the existing near guard; noDetail and LOD-owned masks retain
+their policies. Phone frustum behavior is unchanged. Adjacent book-board groups with
+the same material coalesce12→4calls while preserving every vertex/index/material face;
+taking the same book and restoring its home still work. This private book change is
+excluded from public transfer.
+
+Fresh-shadow corner/entrance/garage image pairs have0changed pixels and equal per-source
+caster triangles/masks. Four positive actual physical rays retain their hits; native
+checks cover current transforms, buffers, count/color changes, openings, near objects,
+unsupported programs and nested/failed renders. A/B/C/L architectural geometry, glass,
+doors, ground/query contracts and their distinct builders are not remodeled. See
+[verification](verification.md#patio-corner-1459) and the [delivery record](../validation/issue-1459/README.md).
+The neutral public tree/lamp transfer is tracked in `solwation/kvarteret-lunden#139`.
+
 ## Highest phone quality within budget (#1453)
 
 Final published acceptance is separate from the local369-call result below:

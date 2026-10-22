@@ -49,7 +49,17 @@ function bookModel() {
   const cover = new THREE.MeshStandardMaterial({ map: coverTexture(), roughness: 0.7 });
   const pages = new THREE.Mesh(new THREE.BoxGeometry(w - 0.006, h - 0.004, l - 0.008), paper);
   pages.position.set(0.002, h / 2, 0);
-  const board = (y, m) => { const o = new THREE.Mesh(new THREE.BoxGeometry(w, 0.003, l), [cloth, cloth, m, cloth, cloth, cloth]); o.position.y = y; return o; };
+  const board = (y, m) => {
+    const geometry = new THREE.BoxGeometry(w, 0.003, l), materials = [cloth, cloth, m, cloth, cloth, cloth];
+    // Adjacent faces using the same material need only one draw; keep every original index and face.
+    for (let i = 1; i < geometry.groups.length;) {
+      const a = geometry.groups[i - 1], b = geometry.groups[i];
+      if (a.start + a.count === b.start && materials[a.materialIndex] === materials[b.materialIndex]) {
+        a.count += b.count; geometry.groups.splice(i, 1);
+      } else i++;
+    }
+    const o = new THREE.Mesh(geometry, materials); o.position.y = y; return o;
+  };
   const spine = new THREE.Mesh(new THREE.BoxGeometry(0.004, h, l), cloth);
   spine.position.set(-w / 2, h / 2, 0);
   g.add(pages, board(0.0015, cloth), board(h - 0.0015, cover), spine);
