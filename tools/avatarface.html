@@ -26,12 +26,13 @@ const avatars = codes.map((c, i) => {
 });
 const cam = new THREE.PerspectiveCamera(9.5, W / Hh, 0.05, 50);
 window.__shot = (view) => {
-  const yaw = { front: 0, q: -Math.PI / 4, side: -Math.PI / 2 }[view];
+  const yaw = { front: 0, q: -Math.PI / 4, side: -Math.PI / 2, below: -Math.PI / 4, belowSide: -Math.PI / 2 }[view];
   for (const a of avatars) { a.object.rotation.y = yaw; a.update(0, {}); }
   cam.fov = 7.6; cam.updateProjectionMatrix(); // 0.42 m per 340 px column
-  cam.position.set(0, 1.64, 4.8); cam.lookAt(0, 1.6, 0);
+  cam.position.set(0, view.startsWith('below') ? -0.1 : 1.64, 4.8); cam.lookAt(0, 1.6, 0);
   renderer.render(scene, cam);
   return renderer.info.render.calls;
 };
+window.__hatFixture = { avatars, renderer, scene, cam, THREE };
 window.__ready = true;
 </script></body></html>

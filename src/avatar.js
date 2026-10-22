@@ -159,10 +159,21 @@ function addHats(add, P) {
   };
   const az = (n, from = -180, to = 180) => Array.from({ length: n + 1 }, (_, i) => from + ((to - from) * i) / n);
   const lift = (e) => sideLift + (crownLift - sideLift) * smooth(10, 70, e);
+  // #1513: outside, lining and annular bottom seam; all remain in the same avatar draw.
+  const solid = (cols, rows, pos, closeTop = false) => {
+    const inner = (i, j) => {
+      const p = pos(i, j), d = new THREE.Vector3(...p).sub(new THREE.Vector3(...S.centre));
+      return d.multiplyScalar(1 - HAT.thickness / d.length()).add(new THREE.Vector3(...S.centre)).toArray();
+    };
+    const surfaces = [grid(cols, rows, true, pos), grid(cols, rows, true, inner, true),
+      grid(cols, 1, true, (i, j) => j ? pos(i, 0) : inner(i, 0))];
+    if (closeTop) surfaces.push(grid(cols, 1, true, (i, j) => j ? inner(i, rows) : pos(i, rows)));
+    return surfaces;
+  };
   // a dome from the lower edge `edge` (degrees by azimuth) to the crown; rows follow the elevation
   const dome = (edge, rows = 4, cols = 16, extra = 0) => {
     const A = az(cols);
-    return grid(cols, rows, true, (i, j) => { const a = A[i], e0 = table(edge, a), e = e0 + ((90 - e0) * j) / rows; return skull(a, e, lift(e) + extra); });
+    return solid(cols, rows, (i, j) => { const a = A[i], e0 = table(edge, a), e = e0 + ((90 - e0) * j) / rows; return skull(a, e, lift(e) + extra); });
   };
   const brim = (a0, a1, cols, edge, len, drop, double = true) => { // a flat plate from the dome's lower edge outwards, both sides
     const A = az(cols, a0, a1), pos = (i, j) => {
@@ -173,16 +184,16 @@ function addHats(add, P) {
     return double ? [top, under] : [top];
   };
   const put = (g, shade, id) => { add(g, 'top', 'head', [0, 0, 0], shade); mark(id); };
-  put(dome(HAT.edge.cap), 1, FACE_PART.hatDome); // a cap's crown (kinds 1 and 2)
+  for (const g of dome(HAT.edge.cap)) put(g, 1, FACE_PART.hatDome); // a cap's crown (kinds 1 and 2)
   const peak = (centre) => brim(centre - 52, centre + 52, 8, HAT.edge.cap, (a) => HAT.peak * Math.cos((a - centre) * deg * 1.2), centre === 0 ? -0.014 : 0.012);
   for (const g of peak(0)) put(g, 0.82, FACE_PART.peakFront);
   for (const g of peak(180)) put(g, 0.82, FACE_PART.peakBack);
   // the knitted hat: a fuller body that reaches over the ears, and a turned-up cuff round its lower edge
-  put(dome(HAT.edge.knit, 4, 16, 0.004), 1, FACE_PART.knit);
+  for (const g of dome(HAT.edge.knit, 4, 16, 0.004)) put(g, 1, FACE_PART.knit);
   const E = HAT.edge.knit, A = az(16);
-  put(grid(16, 2, true, (i, j) => { const a = A[i], e = table(E, a) - 2 + 12 * (j / 2); return skull(a, e, lift(e) + 0.012 * Math.sin(Math.min(1, j / 1.2) * Math.PI / 2) + 0.004); }), 0.8, FACE_PART.knit);
+  for (const g of solid(16, 2, (i, j) => { const a = A[i], e = table(E, a) - 2 + 12 * (j / 2); return skull(a, e, lift(e) + 0.012 * Math.sin(Math.min(1, j / 1.2) * Math.PI / 2) + 0.004); }, true)) put(g, 0.8, FACE_PART.knit);
   // the brimmed hat: a crown that is a little taller, and a brim round the head dipping towards its edge
-  put(dome(HAT.edge.hat, 4, 16, 0.012), 0.92, FACE_PART.hatCrown);
+  for (const g of dome(HAT.edge.hat, 4, 16, 0.012)) put(g, 0.92, FACE_PART.hatCrown);
   for (const g of brim(-180, 180, 16, HAT.edge.hat, () => HAT.brim, -0.012)) put(g, 0.8, FACE_PART.hatBrim);
 }
 /** #1322 (#1318): headphones, two kinds in the shared geometry (the shader keeps the chosen one, uPhones): 1 on the ears (head bone frame: a band arching over
@@ -527,17 +538,29 @@ function hairParts(style) {
   const [crown, side, back] = HC.thick[style] ?? HC.thick[0];
   const thick = (a, e) => { const ring = side + (back - side) * Math.max(0, -Math.cos(a * deg)); return ring + (crown - ring) * smooth(5, 75, e); };
   // the scalp shell from the hairline (or `low`) up to `high` (90: the crown), with an extra `bump(a, s, i)` lift
-  const shell = (az, low, high, rows, lift, shade) => sheet(az.length, rows, true, (i, j) => {
+  const shell = (az, low, high, rows, lift, shade, inward = false) => sheet(az.length, rows, true, (i, j) => {
     const a = az[i], e0 = low(a), s = j / rows;
     return onSkull(a, e0 + (high(a) - e0) * s, lift(a, e0 + (high(a) - e0) * s, s, i));
-  }, (i, j) => shade(az[i], j / rows, i));
+  }, (i, j) => shade(az[i], j / rows, i), inward);
   const hairline = (a) => table(HC.hairline, a), feather = (s) => 0.25 + 0.75 * smooth(0, 0.4, s);
   const az = turn(HC.hairline, HC.step), crownTop = () => 90;
   if (style === 3) { // the beanie: body (fuller at the back), the cuff rolled over its lower edge, hair below it
     const brim = (a) => table(HC.beanie, a), bz = turn(HC.beanie, 10);
     const rib = (i) => (i % 2 ? 1.05 : 0.94);
-    out.push([shell(bz, brim, crownTop, HC.rows, (a, e) => 0.012 + 0.014 * smooth(25, 85, e) + 0.014 * smooth(35, 75, e) * Math.max(0, -Math.cos(a * deg)) * (1 - smooth(75, 90, e)), (a, s, i) => rib(i)), 'top', 1]);
-    out.push([shell(bz, (a) => brim(a) - 2, (a) => brim(a) + 13, 3, (a, e, s) => 0.004 + 0.017 * Math.sin(Math.min(1, s / 0.34) * Math.PI / 2) - 0.008 * smooth(0.67, 1, s), (a, s, i) => rib(i) * (s > 0.2 && s < 0.8 ? 1 : 0.88)), 'top', 0.82]);
+    // #1513: the hairstyle beanie needs the same lining and closed edges as selected headwear.
+    const knit = (lo, hi, rows, lift, shade, tint, closeTop = false) => {
+      const inside = (a, e, s, i) => lift(a, e, s, i) - HAT.thickness;
+      out.push([shell(bz, lo, hi, rows, lift, shade), 'top', tint],
+        [shell(bz, lo, hi, rows, inside, shade, true), 'top', tint]);
+      const edge = (top) => sheet(bz.length, 1, true, (i, j) => {
+        const a = bz[i], e = top ? hi(a) : lo(a), depth = (top ? j : 1 - j) * HAT.thickness;
+        return onSkull(a, e, lift(a, e, top ? 1 : 0, i) - depth);
+      }, (i) => shade(bz[i], top ? 1 : 0, i));
+      out.push([edge(false), 'top', tint]);
+      if (closeTop) out.push([edge(true), 'top', tint]);
+    };
+    knit(brim, crownTop, HC.rows, (a, e) => 0.012 + 0.014 * smooth(25, 85, e) + 0.014 * smooth(35, 75, e) * Math.max(0, -Math.cos(a * deg)) * (1 - smooth(75, 90, e)), (a, s, i) => rib(i), 1);
+    knit((a) => brim(a) - 2, (a) => brim(a) + 13, 3, (a, e, s) => 0.004 + 0.017 * Math.sin(Math.min(1, s / 0.34) * Math.PI / 2) - 0.008 * smooth(0.67, 1, s), (a, s, i) => rib(i) * (s > 0.2 && s < 0.8 ? 1 : 0.88), 0.82, true);
     out.push([shell(turn(HC.hairline, 15), hairline, (a) => brim(a) + 3, 2, (a, e, s) => 0.0015 + 0.0035 * smooth(0, 0.6, s), (a, s, i) => strand(i) * 0.95), 'hair', 1]);
     return out;
   }
@@ -967,7 +990,7 @@ function makeMaterial(rim, headProjection) {
       diffuseColor.a = mix(diffuseColor.a, mix(uFill, uRim, edge), uOutline);
       #include <opaque_fragment>`);
   };
-  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-v10';
+  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-v11';
   return m;
 }
 
@@ -994,9 +1017,19 @@ function faceShape() {
           float hy = transformed.y - ${f(hb.y)} - ${f(HAIR.centre[1])}, lowK = 1.0 - smoothstep(-0.03, 0.0, hy);
           transformed.y += (uHair - 1.0) * hy * lowK;
           transformed.xz = vec2(${f(hb.x)}, ${f(hb.z)}) + (transformed.xz - vec2(${f(hb.x)}, ${f(hb.z)})) * (1.0 + (uHair > 1.0 ? 0.4 : 0.55) * (uHair - 1.0) * clamp(-hy / 0.3, 0.0, 1.0));
-          // #1321: under headwear the hair above the ears (a bun, curls) is drawn in towards the head's centre, inside the hat
+          // #1513: tuck bulky hair inside headwear without pushing the scalp through the skull.
           vec3 hc = vec3(${f(hb.x)}, ${f(hb.y + HAIR.centre[1])}, ${f(hb.z)});
-          transformed = hc + (transformed - hc) * (1.0 - 0.2 * step(0.5, uHat) * smoothstep(0.02, 0.06, hy));
+          vec3 hd = transformed - hc;
+          float tuck = 0.2 * step(0.5, uHat) * smoothstep(0.02, 0.06, hy);
+          if (tuck > 0.0) {
+            vec3 radii = vec3(${RH.skull.scale.map((s) => f(s * RH.skull.radius)).join(', ')});
+            vec3 origin = (hc - vec3(${f(hb.x + RH.skull.centre[0])}, ${f(hb.y + RH.skull.centre[1])}, ${f(hb.z + RH.skull.centre[2])})) / radii;
+            vec3 ray = hd / radii;
+            float qa = dot(ray, ray), qb = dot(origin, ray), qc = dot(origin, origin) - 1.0;
+            float skin = (-qb + sqrt(max(0.0, qb * qb - qa * qc))) / max(qa, 0.000001);
+            float minimum = skin + ${f(HAT.hairGap)} / max(length(hd), 0.000001);
+            transformed = hc + hd * min(1.0, max(1.0 - tuck, minimum));
+          }
         }
         else if (abs(facePart - ${P.rimRound}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(0.5, uGlasses) * step(uGlasses, 1.5);
         else if (abs(facePart - ${P.rimSquare}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(1.5, uGlasses);

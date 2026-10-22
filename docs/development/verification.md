@@ -8454,3 +8454,21 @@ Verified37/37 native checks plus both browser drivers and a real Canvas2D previe
 Inspected front/quarter/side/back, five colours and short/long/hat combinations.
 Style4 changes12,182→15,102 triangles (sleeveless), retaining one avatar draw and no new lights/textures.
 Other four styles have identical triangle counts. This is component Chromium evidence, not a full-world performance profile.
+
+## Hair under caps and opaque hat interiors (#1513)
+
+`PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/avatarhattest.cjs BASE OUT [frozen-avatar.js]`
+uses production avatars in `avatarface.html`, all five styles, four selected hats, short/long
+hair and the reported head-shape variants. Camera views `below`/`belowSide` actually look
+up at the head. The driver asserts one draw per avatar, no page errors,36FrontSide rays
+from inside each cap/knit/brimmed crown plus the hairstyle beanie, and12GPU part-colour
+cases (3views×4hats) with zero formerly-hair pixels turning into skin. Use
+`HAT_ORACLE_ONLY=1` for the bounded proof without repeating all screenshot rows.
+Pair with `node --test tools/avatarcustomizertest.mjs tools/avatarbodytest.mjs` (37checks).
+
+Final component checks pass144/144interior rays and all12skin-exposure cases. The frozen
+pre-change avatar fails the interior check (0/36each); keep its logs apart from pass results.
+The additional608triangles per shared avatar (plus912for the hairstyle beanie) add no
+draws, textures or lights. No full-world performance profile is claimed. Character content
+is excluded from the public downstream. Saved before/after pictures are in
+`docs/verification/1513/` and the issue comment.

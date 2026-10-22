@@ -5543,6 +5543,8 @@ export const AVATAR_BROWS = { tag: 'v' };
 // `edge` the lower edge's elevation (degrees from AVATAR_HAIR.centre) as [|azimuth|, elevation] corners (cap / knitted hat / brimmed hat), `peak` the
 // cap's visor length, `brim` the brimmed hat's brim width (m).
 export const AVATAR_HAT = { tag: 'q', names: ['Ingen', 'Keps framåt', 'Keps bakåt', 'Mössa', 'Hatt'], lift: [0.034, 0.02], peak: 0.075, brim: 0.05,
+  // #1513 aesthetic guesses in metres: solid shell thickness and minimum hair clearance from the skull.
+  thickness: 0.003, hairGap: 0.004,
   edge: { cap: [[0, 30], [60, 18], [100, 12], [180, 10]], knit: [[0, 27], [60, 12], [90, 0], [140, -6], [180, -10]], hat: [[0, 27], [90, 27], [180, 27]] } };
 // #1322 (#1318): headphones, look field `phones`: 0 none, 1 on the ears (a band over the head and two ear cups), 2 round the neck (a band behind the neck and
 // the cups resting on the chest); the extension's `f` tag (absent when 0, so old codes and looks are unchanged). Same mechanism as the headwear: both kinds are
