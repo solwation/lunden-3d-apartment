@@ -1,0 +1,63 @@
+{
+  "sitting": {
+    "focus": "santa",
+    "visible": true,
+    "target": [
+      3.77,
+      0.83,
+      11.545
+    ],
+    "camera": [
+      3.77,
+      1.65,
+      10.495
+    ]
+  },
+  "resume": {
+    "one": true,
+    "stable": true,
+    "held": true,
+    "pose": [
+      3.893378698845147,
+      1.8998981554663175e-10,
+      10.010461356885461
+    ],
+    "savedPose": [
+      3.893378698845147,
+      1.8998981554663175e-10,
+      10.010461356885461
+    ]
+  },
+  "sleeping": {
+    "focus": "santa",
+    "visible": true,
+    "target": [
+      3.79,
+      0.6700000000000002,
+      11.424999999999999
+    ],
+    "camera": [
+      3.79,
+      1.65,
+      10.374999999999998
+    ]
+  },
+  "boundaries": {
+    "states": [
+      "away",
+      "sitting",
+      "sitting",
+      "sleeping",
+      "sleeping",
+      "away",
+      "away"
+    ],
+    "retained": true,
+    "moved": true,
+    "lines": [
+      "HO HO HO",
+      "God jul"
+    ]
+  },
+  "errors": []
+}

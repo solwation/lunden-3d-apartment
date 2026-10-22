@@ -1370,3 +1370,7 @@ include the name while old-client retry hashes stay valid. Nameless old clients
 store `Okänd spelare`. Reviewed import retains the name in its journal and verifies
 GitHub title/`rapportör: <namn>` before acknowledgement. Existing image/body hashes
 remain unchanged; no name is guessed from old text. See [report import](report-import.md#reporter-names-1493).
+
+## Christmas presents (#1409/#1410)
+
+`keep.js` excludes dynamic `isChristmasGift` Holdables from the generic things map. The optional `christmasGifts` section records IDs, the once-chosen trinket, opening state, home/placed pose and held status. It restores after existing ordinary/Life hand owners; an occupied hand makes a restored gift return home safely. Duplicate IDs/restores never recreate a package. The temporary Santa/TV state is derived from the restored DayCycle rather than saved separately.

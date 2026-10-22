@@ -5,6 +5,10 @@ import { CinemaPlayer } from './cinemaplayer.js';
 import { CinemaSurface } from './cinemasurface.js';
 import { ComputerHub } from './computerhub.js';
 import { TVMedia } from './tvmedia.js';
+import { Santa } from './santa.js';
+import { ChristmasGifts } from './santagifts.js';
+import { SantaTV } from './santatv.js';
+import { SANTA, tvViewer } from './config.js';
 import { cloudUrl } from './cloud.js';
 import { AdminReports } from './adminreports.js';
 import { ReportCapture } from './reportcapture.js';
@@ -1297,7 +1301,7 @@ const closeVideoControls = reason => {
 const cinema = new CinemaPlayer(document.getElementById('cinema-player'),closeVideoControls,cloudUrl() ? `${cloudUrl()}/youtube-search` : '');
 const openVideoControls=()=>{reading=true;player.keys.clear();touch.analog.x=touch.analog.y=0;if(locked){binderFreed=true;document.exitPointerLock();}};
 const tvMedia=new TVMedia({canvas,targets:world.furnitureTargets,template:document.getElementById('cinema-player'),onClose:closeVideoControls,onOpen:openVideoControls,endpoint:cloudUrl()?`${cloudUrl()}/youtube-search`:''});
-remote.onVideo=tv=>tvMedia.show(tv);remote.onPower=tv=>tvMedia.power(tv);
+remote.onVideo=tv=>santaTV.active&&tv===santaTV.tv&&santaTV.activate()||tvMedia.show(tv);remote.onPower=tv=>tvMedia.power(tv);
 remote.onSeek=(tv,delta)=>{const ok=tvMedia.seek(tv,delta);if(!ok)badge('Någon annan styr TV:n just nu. Försök igen om en stund.',false);return ok;};
 const computerHub=new ComputerHub({onNotice:text=>badge(text,false),canvas,targets:[...world.furnitureTargets,...playroom.devices.computers.map(s=>s.target)],template:document.getElementById('cinema-player'),onClose:closeVideoControls,onOpen:openVideoControls,endpoint:cloudUrl()?`${cloudUrl()}/youtube-search`:''});
 playroom.devices.onComputerRequest=target=>computerHub.show(target);
@@ -1753,6 +1757,11 @@ function use(thing) {
   if (thing.kind === 'courtyardSlide') { if (slideRide.begin(thing)) life.interrupt('åker rutschkana'); else badge('Gå till stegen med tomma händer och utan annan utrustning',false); return; }
   if (player.riding && thing.kind !== 'bicycle') return; // both hands are reserved for the actual handlebars
   if (thing.kind === 'bicycle') { if (player.riding) { standUp(); return; } if (rest.active) return; if (!player.mountBicycle(thing.bicycle)) greet.sayMine('Här går det inte att ta ut cykeln säkert.'); return; }
+  if (thing.kind === 'santa') {
+    if (!santa.visible || santaDelivery) return;
+    if (handBusy()) { badge('Lägg ifrån dig det du håller först', false); return; }
+    santaTV.activate(); santa.greet(); return;
+  }
   if (thing.kind === 'playhouse') { enterPlayroom(); return; }
   if (thing.kind === 'playroomExit') { leavePlayroom(); return; }
   if (thing.kind === 'playroomBilliards') {
@@ -1831,6 +1840,7 @@ function use(thing) {
     if (thing.isOpen !== was) sfx.tvClick(thing.pickable.getWorldPosition(new THREE.Vector3()), thing.isOpen);
     else sfx.beat(thing.pickable.getWorldPosition(new THREE.Vector3()), 'hat', 0.2); // a soft swipe
   } else if (thing.kind === 'tv') {
+    if (thing === santaTV.tv && santaTV.activate()) return;
     if(tvMedia.show(thing))return;
     const on = thing.toggle();
     if (on) bump('tv', 1, idOf(thing));
@@ -2099,7 +2109,7 @@ function updateFocus() {
   raycaster.far = reach;
   // (the raycaster ignores visibility, so the cat is only a target while it is there)
   // the car key only while its cabinet is open
-  const extra = [...(cat.visible && !cat.held ? [cat.object] : []), ...(olofDriver.greetable(rest.active && rest.target?.car === car) ? [olofDriver.fig.pick] : []), ...(keyCabinet?.keyReachable ? [world.carKey.pickable] : []), ...car.targets(rest.target).map((t) => t.pickable), // our car's doors and front seats (#250)
+  const extra = [...(santa.visible ? [santa.pickable] : []), ...(cat.visible && !cat.held ? [cat.object] : []), ...(olofDriver.greetable(rest.active && rest.target?.car === car) ? [olofDriver.fig.pick] : []), ...(keyCabinet?.keyReachable ? [world.carKey.pickable] : []), ...car.targets(rest.target).map((t) => t.pickable), // our car's doors and front seats (#250)
     ...(paddock?.targets() ?? []), // the paddock's ponies: Klappa (#1293)
     ...jetpack.targets(), // the jetpack on its hook / where it was stood down (#359)
     ...(!weaponKey() ? ghosts.targets() : []), // only unarmed visitors greet other players (#872)
@@ -2403,6 +2413,30 @@ christmas.update(day, 0);
 const newYear = new NewYear({ scene, camera, day, tvs: world.furnitureTargets.filter((t) => t.kind === 'tv'), allowed: () => power.on && world.furnitureOn !== false,
   shown: () => world.furnitureOn !== false, onMidnight: () => showFireworks.start() });
 for (const f of newYear.flutes) { f.onSip = (drink) => { if (drink) bump(drink); }; breaker.add(f, 'glass'); holdables.push(f); } // real glasses (#1222): F and their visibility are newYear's
+// Christmas Eve: derived from the same editable calendar/clock as the tree and New Year.
+const christmasGifts = new ChristmasGifts(scene, camera, {
+  floorY: () => player.pos.y,
+  onChange: () => { ghostOf = null; detail?.refresh(); },
+  onMessage: text => badge(text, false),
+  onItem: item => {
+    holdables.push(item);
+    world.looseItems.push(item.holder, item.model);
+    item.model.visible = world.furnitureOn !== false;
+    detail?.refresh();
+  },
+});
+const santa = new Santa({ scene, day, rest, sofa: world.furnitureTargets.find(t => t.kind === 'rest' && t.name === 'soffan') });
+const santaTV = new SantaTV({ canvas, day, tv: world.furnitureTargets.find(t => t.mediaId === 'lounge'), tvMedia,
+  available: () => power.on && world.furnitureOn !== false && !document.hidden && santa.visible && !santa.sleeping
+    && tvViewer('lounge', [player.pos.x, player.pos.y, player.pos.z]), muted: isMuted });
+document.addEventListener('pointerdown', () => santaTV.activate(), { passive: true });
+document.addEventListener('keydown', () => santaTV.activate(), { passive: true });
+let santaDelivery = null;
+santa.onInteract = () => {
+  greet.say({ head: santa.head, s: 1 }, Math.random() < 0.5 ? 'HO HO HO' : 'God jul', { pitch: 0.65, rate: 0.85, voice: 3 }, SANTA.greetingSeconds);
+  santaDelivery = { left: SANTA.greetingSeconds, laughed: false };
+};
+
 const terminal = document.getElementById('terminal'), terminalInput = document.getElementById('terminal-code');
 const reportCapture = new ReportCapture(renderer);
 const adminReports = new AdminReports({ help: () => chat?.help ?? '', form: document.getElementById('terminal-form'), input: terminalInput,
@@ -2962,6 +2996,15 @@ function step(dt) {
   patio.update(day, dt);
   applySeason(day.month); // tree colours, snow (only does work when the month changes)
   christmas.update(day, dt); // the Christmas tree: up or not by the date, its lights shimmer (#571)
+  santa.update(dt);
+  if (santaDelivery) {
+    if (!santa.visible) santaDelivery = null;
+    else {
+      santaDelivery.left -= dt;
+      if (!santaDelivery.laughed && santaDelivery.left <= SANTA.laugh.seconds) { santaDelivery.laughed = true; sfx.santaLaugh(santa.head); }
+      if (santaDelivery.left <= 0) { santaDelivery = null; christmasGifts.give(); }
+    }
+  }
   newYear.update(); // before the TVs draw: their countdown overlay (#1199)
   for (const t of world.furnitureTargets) t.update?.(dt);
   nests.update(dt); // the smart speakers: talk, wake lights, the display (#325)
@@ -3076,6 +3119,7 @@ function step(dt) {
   // Media projection must use the final camera pose, just like the following WebGL frame.
   cinema.update(player.inPlayroom, camera, renderer);
   tvMedia.update(player,camera,renderer,power.on&&world.furnitureOn!==false&&!document.hidden);
+  santaTV.update(dt,camera,renderer);
   computerHub.update(player,camera,renderer,power.on&&!document.hidden,world.furnitureOn!==false);
 }
 // &perf: fps + what the renderer did last frame (draw calls, triangles, geometries, textures)
@@ -3422,7 +3466,7 @@ function continueAfterReload(r) {
   setTimeout(() => { reloadedEl.hidden = true; }, RELOAD_NOTE_S * 1000 + 700);
 }
 // the world's state for a reload made by the page (#277, keep.js): what each part needs
-const keepApp = { bicycleStow: { fruit, fish, fries, chicken }, life, jetpack, suit, car, world, lights, day, grill, sonos, patio, holdables, cups, beer, chicken, scene, rest, cat, BREEDS, VARIANTS,
+const keepApp = { christmasGifts, bicycleStow: { fruit, fish, fries, chicken }, life, jetpack, suit, car, world, lights, day, grill, sonos, patio, holdables, cups, beer, chicken, scene, rest, cat, BREEDS, VARIANTS,
   sitAt: (target, spot, stand) => sitAt(target, spot, stand, true) };
 Object.assign(keepApp.bicycleStow, { miele, heldDrawing, drawing: heldDrawing, toiletPaper, paper: toiletPaper });
 function keepWorld() { try { return saveWorld(keepApp); } catch (e) { console.warn('keep', e); return null; } }
@@ -3447,4 +3491,4 @@ hideLoading();
 
 crashlog.attach({ renderer, camera, quality, player, world, sun, scene, mirrorTarget, frameDiag, viewportBinding }); // what the crash heartbeat shows (#629)
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { colorFrustum, siteInstances, computerHub, tvMedia, phoneFrustum, slideRide, cinema, flare, outdoorSpot, paddock, birds, microwave, carLodState, showFireworks, newYear, sausages, frameRate, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, catCards, catCardsLoaded, binderPanel, showBinder, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };
+window.__app = { santa, santaTV, christmasGifts, colorFrustum, siteInstances, computerHub, tvMedia, phoneFrustum, slideRide, cinema, flare, outdoorSpot, paddock, birds, microwave, carLodState, showFireworks, newYear, sausages, frameRate, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, catCards, catCardsLoaded, binderPanel, showBinder, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };

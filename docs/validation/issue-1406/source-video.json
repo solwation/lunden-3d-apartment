@@ -1,0 +1,19 @@
+{
+  "source": "https://www.youtube.com/watch?v=I0SW0f0ww84",
+  "ready": true,
+  "state": 1,
+  "currentTime": 16.650834975204468,
+  "duration": 231.601,
+  "screenshot": "/tmp/santa-youtube-probe.png",
+  "visualReview": "Actual animated Donald Duck in Santa hat beside Christmas tree, not a placeholder.",
+  "scope": "Direct real embedded source; full app surface is verified separately by parent.",
+  "lifecycleChecks": {
+    "start": true,
+    "activateOnce": true,
+    "manualChannel": true,
+    "stickyAcrossAvailability": true,
+    "newWindow": true,
+    "sharedMovieWins": true,
+    "endRestoresOff": true
+  }
+}

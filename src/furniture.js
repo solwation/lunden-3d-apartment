@@ -3609,7 +3609,7 @@ function keepInside(obj, item, yaw) {
 
 /** Small things in the secretary's drawers (#118), each builds its meshes into group `g` around (0, 0, 0). Every one
  * can be taken out (#182): `name` is how the prompt calls it. */
-const TRINKETS = {
+export const TRINKETS = {
   clips: { name: 'gemen', build(g, M) { for (let i = 0; i < 4; i++) { const c = new THREE.Mesh(new THREE.TorusGeometry(0.008, 0.0012, 4, 12), M.steel); c.scale.set(1, 2, 1); c.rotation.x = -Math.PI / 2; c.rotation.z = i * 0.7; c.position.set(-0.05 + i * 0.022, 0.003, -0.01 + (i % 2) * 0.02); g.add(c); } } },
   stickers: { name: 'klistermärkena', build(g) { ['#d33', '#36c', '#3a3', '#f0a020'].forEach((col, i) => { const st = new THREE.Mesh(new THREE.BoxGeometry(0.022, 0.001, 0.026), new THREE.MeshStandardMaterial({ color: col, roughness: 0.8 })); st.position.set(0.03 + (i % 2) * 0.026, 0.002 + i * 0.001, -0.02 + Math.floor(i / 2) * 0.03); st.rotation.y = i * 0.3; g.add(st); }); } },
   buttons: { name: 'knapparna', build(g) { [0xd33, 0x36c, 0xfc3, 0x3a3, 0xfff, 0x222, 0xe6a].forEach((col, i) => { const b = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.003, 10), new THREE.MeshStandardMaterial({ color: col, roughness: 0.4 })); b.position.set(-0.06 + (i % 4) * 0.025, 0.002, -0.015 + Math.floor(i / 4) * 0.025); g.add(b); }); } },

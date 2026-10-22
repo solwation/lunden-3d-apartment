@@ -2,7 +2,7 @@
 // given a world position and is panned/attenuated relative to the camera.
 // The AudioContext can only start after a user gesture — call initAudio() from a click.
 
-import { SOUNDS, KISS, PLAYROOM } from './config.js';
+import { SOUNDS, KISS, PLAYROOM, SANTA } from './config.js';
 import { distanceGain, VoiceCap } from './spatialsound.js';
 
 let ctx = null, master = null, noiseBuf = null;
@@ -106,6 +106,17 @@ function thump(t, dest, gain = 0.8) {
 }
 
 export const sfx = {
+  /** A low, breathy three-beat chuckle after Santa's greeting; ordinary positional/mute output. */
+  santaLaugh(pos) {
+    if (!ready()) return;
+    const L = SANTA.laugh, d = out(pos, L.gain);
+    for (let i = 0; i < L.beats; i++) {
+      const t = ctx.currentTime + i * L.gap, hz = L.hz * (1 - i * 0.06);
+      tone(t, L.duration, d, { type: 'triangle', from: hz, to: hz * 0.72, gain: 0.7 });
+      tone(t, L.duration, d, { from: hz * 3, to: hz * 2.4, gain: 0.22 });
+      noise(t, L.duration, d, { freq: 550, q: 0.7, gain: 0.15, attack: 0.025 });
+    }
+  },
   /** #1398: a closed-lip 'mmm' followed by a wet smack, through the ordinary positional/mute path. */
   kiss(pos) {
     if (!ready()) return;

@@ -6551,3 +6551,8 @@ export const SNAKE = {
   // #1491: guessed screen coverage, leaving the monitor bezel and room visible.
   viewWidth:.82,viewHeight:.58,viewLift:.4,
 };
+
+// Original-only Christmas Eve gameplay tunables.
+export { SANTA } from './santaconfig.js';
+export { SANTA_GIFTS } from './santagiftconfig.js';
+export { SANTA_TV } from './santatvconfig.js';

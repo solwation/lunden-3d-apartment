@@ -15,6 +15,17 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## Christmas Eve guest (#1406–#1410)
+
+Scoped checks: `node --test tools/santatest.mjs`, `tools/santagiftstest.cjs BASE` and
+`tools/santaapptest.cjs BASE OUT`. The real-browser component and actual apartment
+E/touch route pass: date boundaries, sleeping interaction, hand protection, random
+trinkets, opening, saved poses/results and movable sofa. The separate actual-TV
+view plays advancing YouTube frames and removes the player/glass at 16:00. Inspect
+the local sitting, sleeping, sipping and TV images. No broad scene or performance
+profile is required by this isolated gameplay addition. Evidence and precise scope:
+[delivery record](../validation/issue-1406/README.md).
+
 ## Patio corner (#1459)
 
 Run `node --test tools/siteinstancebatchtest.mjs tools/tightfrustumtest.mjs tools/occlusiontest.mjs`

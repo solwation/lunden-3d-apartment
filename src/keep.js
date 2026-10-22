@@ -53,7 +53,7 @@ function holdKey(h) {
   const p = h.local?.pos ?? h.home?.pos;
   return `${h.keepName ?? h.name}|${p ? vec(p).join(',') : ''}`; // (keepName: a name that changes, the daily beers #587)
 }
-const keepable = (a, h) => h !== a.chicken && !h.broken && !h.flying && !h.isMiele; // chicken has its own Life extra (and a ball in the air); Miele in your arms is the cat's (#328)
+const keepable = (a, h) => h !== a.chicken && !h.isChristmasGift && !h.broken && !h.flying && !h.isMiele; // chicken has its own Life extra (and a ball in the air); Miele in your arms is the cat's (#328)
 
 const PARTS = {
   bicycleHand: {
@@ -354,6 +354,11 @@ const PARTS = {
     load: ({ life }, s) => { life?.load(s, { hand: true }); },
   },
 
+  christmasGifts: {
+    save: ({ christmasGifts }) => christmasGifts?.saveState(),
+    load: ({ christmasGifts }, state) => christmasGifts?.loadState(state),
+  },
+
   cat: {
     save({ cat, world, BREEDS, VARIANTS }) {
       if (!cat.visible || cat.leaving || cat.released || cat.held) return null; // (Miele held or just put down: not kept, #328)
@@ -390,7 +395,7 @@ const restKey = (t) => `${t.name}|${t.spots[0] ? vec(t.spots[0].pos).join(',') :
 
 // the order things come back in: the clock before the lamps (dusk), the car before its seat, fronts before what
 // lies in them, the TV before sitting in front of it
-const ORDER = ['clock', 'car', 'lift', 'open', 'lamps', 'on', 'grill', 'coffee', 'sonos', 'parasol', 'things', 'jetpack', 'spidersuit', 'life', 'rest', 'cat', 'bicycleHand'];
+const ORDER = ['clock', 'car', 'lift', 'open', 'lamps', 'on', 'grill', 'coffee', 'sonos', 'parasol', 'things', 'jetpack', 'spidersuit', 'life', 'christmasGifts', 'rest', 'cat', 'bicycleHand'];
 
 /** The world part of a reload record. */
 export function saveWorld(a) {

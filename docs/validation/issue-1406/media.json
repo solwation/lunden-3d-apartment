@@ -1,0 +1,13 @@
+{
+  "playback": {
+    "state": 1,
+    "time": 0.07362005340576172
+  },
+  "later": 46.58186891798401,
+  "end": {
+    "sleeping": true,
+    "videoStopped": true,
+    "glassGone": true
+  },
+  "errors": []
+}

@@ -1932,3 +1932,13 @@ Biljard (#1495): a single wall screen on the left from the BILJARD entrance
 replaces both rail controls. Its two E/touch targets select mode or start a new
 round; group points, turns and the winner come from the shared table/rules.
 Strokes still aim at the actual table. See [furniture](furniture.md#billiard-wall-control-and-points-1495).
+
+## Christmas Eve guest and presents (#1406–#1410)
+
+`src/santa.js` derives sitting (24 December 15:00–16:00), sleeping (16:00–21:00) and absence from DayCycle. Its merged figure, sipping tumbler and reused rising sleep sprite follow the actual sofa parent. Existing rest slots are reserved while present; an already occupied required seat makes Santa wait. E/touch works while sleeping too. Main routes one greeting, positional chuckle and delayed gift through the ordinary simulation step; leaving the visit cancels an unfinished interaction. Busy hands are preserved and concurrent clicks cannot create a second pending delivery.
+
+`src/santagifts.js` reuses the existing car/crayons/crystal TRINKETS builders. Each package is an ordinary Holdable with its result chosen once at receipt. Opening changes that same model immediately, leaving no paper. `keep.js` restores the separate `christmasGifts` section after the existing hand owners, with stable IDs/results and real poses; generic things skip those items. Gifts already received survive the visitor's departure. Gameplay tuning is re-exported from `config.js` (`SANTA`, `SANTA_GIFTS`, `SANTA_TV`).
+
+`src/santatv.js` uses the existing CinemaSurface/YouTube API on the living-room screen for the published Toy Tinkers excerpt `I0SW0f0ww84` (JoBlo Animated Videos), not the full Swedish Christmas broadcast. Automatic playback starts muted; a gesture activates sound subject to global mute. Manual power/channel controls and a user-selected shared film take precedence. At 16:00, loss of power or hidden furniture the temporary player is destroyed and the previous TV state restored. Playback needs the external YouTube source; vendor errors appear on the screen and ordinary film selection remains available.
+
+Original-only characters, gifts and seasonal gameplay: no downstream transfer. Verification is limited to `tools/santatest.mjs`, the real-browser component `tools/santagiftstest.cjs` and the integrated `tools/santaapptest.cjs` route.
