@@ -8291,3 +8291,17 @@ The fixture uses Chromium's autoplay flag to enable audio; it does not establish
 physical speaker quality or production visitor interactions. No new scene meshes,
 lights, media files, sockets or protocol messages are introduced. Gameplay is
 original-only. Raw measurements: `/tmp/lekstuga1330-final/result.json`.
+
+
+## Lekstuga neon (#1384)
+
+Run `BASELINE_JS=/path/to/original-clubhouse.js node tools/clubhouseneontest.cjs
+GAME OUT` with Playwright. The baseline is the pre-change `src/clubhouse.js` from
+26270355. Actual World/full-quality before/after captures cover all four signs;
+their generated positions/normals/UVs/indices remain identical, as does the ceiling
+swatch [255,246,220,255]. Four matched views retain20/17/20/20calls and
+39528/39344/39528/39350triangles; the room adds no lights and is hidden outside.
+Images were opened in `/tmp/lekstuga1384/`; no page errors. These are scoped room
+counts, not a new full-world performance profile. `clubhousefinishtest.mjs` passes
+3checks. The pre-existing `clubhousetest.mjs` height assertion fails after #1489's
+intentional removal of the160cm rule and is separately tracked in #1494.

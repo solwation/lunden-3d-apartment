@@ -544,3 +544,10 @@ projection axes use that derived viewport. The expanded6.34×1.90m cinema plane
 uses1280×384px; YouTube adds its normal fitting/bars instead of stretching a
 16:9 iframe across the wider physical plane. The idle poster is proportional
 as well. Curtain topology, material batch and light count are unchanged.
+
+Clubhouse neon signs (#1384): `clubhouseSigns` paints clipped coloured tube
+outlines, glow and a pale core into the existing512×256 atlas. Sign positions,
+UVs, geometry, unlit material, ceiling-light swatch and room visibility are
+unchanged. `PLAYROOM.clubhouse.neon` holds the assumed colours/pixel widths;
+there are no new lights, passes or draws. The private fantasy room has no
+public downstream counterpart. See [verification](verification.md#lekstuga-neon-1384).

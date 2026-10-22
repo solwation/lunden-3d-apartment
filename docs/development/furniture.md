@@ -515,3 +515,7 @@ The official iframe and idle canvas use the physical screen's aspect ratio.
 (384px high for this screen); CSS transforms use those same dimensions. The
 YouTube player fits each film within this wide viewport without stretching it.
 Home-TV surfaces use their own plane ratio through the same implementation.
+
+Lekstuga signs (#1384): welcome/BIO/BILJARD/SPEL use the original merged sign
+planes with neon tube/glow atlas lettering. The already delivered wall edges,
+skirting, floor materials and contact shading (#1480/#1481) are preserved.

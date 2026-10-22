@@ -363,7 +363,7 @@ Filmen stängs av när den sista personen lämnar lekstugan. Videon måste till�
 inbäddning. Lekstugan håller regn, snö och hagel utanför taket. Alla väggar har golvlister, tydliga hörn och mjuka
 kontaktskuggor, med samma grundteknik som i L1007. Rundade stoppade biostolar,
 veckade gardiner, trästruktur och ett plankgolv ger lekstugan ett mjukare uttryck.
-Biljardbordet står mitt i biljardrummet med fri yta innanför dörren. Discolampan styr också en lugn discorytm; biljarden har ljud för stötar, bollträffar, vallar och sänkta bollar.
+Biljardbordet står mitt i biljardrummet med fri yta innanför dörren. Välkomst- och rumsskyltarna lyser som neon. Discolampan styr också en lugn discorytm; biljarden har ljud för stötar, bollträffar, vallar och sänkta bollar.
 
 Husets tre TV-apparater kan också visa YouTube direkt på skärmen. Gå nära
 och använd E/tryckknappen, eller sikta med fjärrkontrollen i handen och klicka.

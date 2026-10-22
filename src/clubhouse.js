@@ -19,8 +19,14 @@ export function clubhouseSigns(plan,lights=[]) {
   const C=R.clubhouse,c=document.createElement('canvas');c.width=C.atlas[0];c.height=C.atlas[1];
   const ctx=c.getContext('2d'),row=c.height/plan.signs.length,geos=[];
   plan.signs.forEach((s,i)=>{
-    ctx.fillStyle=C.signBackground;ctx.fillRect(0,i*row,c.width,row);ctx.fillStyle=C.signInk;
-    ctx.font=`800 ${C.font}px system-ui,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(s.text,(c.width+C.swatch)/2,(i+.5)*row);
+    ctx.fillStyle=C.signBackground;ctx.fillRect(0,i*row,c.width,row);
+    const N=C.neon,color=N.colors[i%N.colors.length],x=(c.width+C.swatch)/2,y=(i+.5)*row;
+    // Clip each glow to its sign; ceiling panels retain their separate solid swatch.
+    ctx.save();ctx.beginPath();ctx.rect(C.swatch,i*row,c.width-C.swatch,row);ctx.clip();
+    ctx.font=`${N.weight} ${C.font}px system-ui,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';
+    ctx.shadowColor=color;ctx.shadowBlur=N.glow;ctx.strokeStyle=color;ctx.lineWidth=N.halo;ctx.strokeText(s.text,x,y);
+    ctx.lineWidth=N.tube;ctx.strokeText(s.text,x,y);
+    ctx.shadowBlur=0;ctx.strokeStyle=N.coreInk;ctx.lineWidth=N.core;ctx.strokeText(s.text,x,y);ctx.restore();
     const g=new THREE.PlaneGeometry(s.w,s.h).translate(R.x+s.x,s.y,R.z+s.z),uv=g.attributes.uv;
     for(let j=0;j<uv.count;j++){uv.setX(j,(C.swatch+(c.width-C.swatch)*uv.getX(j))/c.width);uv.setY(j,(plan.signs.length-i-1+uv.getY(j))/plan.signs.length);}
     geos.push(g);

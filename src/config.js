@@ -5770,7 +5770,9 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
   // #1374: a fantasy clubhouse, not measured building architecture; every size/colour is a guess.
   clubhouse: { side: 3, front: 1.6, wall: 0.12, passage: 1.5, passageH: 2.1,
     welcome: { x: 0, z: 2.3, y: 2.52, w: 3.2, h: 0.3 }, label: { y: 2.25, w: 1.8, h: 0.25, offset: 0.012 },
-    atlas: [512,256], swatch: 8, lightInk: '#fff6dc', font: 48, signBackground: '#17263b', signInk: '#78eee2' },
+    atlas: [512,256], swatch: 8, lightInk: '#fff6dc', font: 48, signBackground: '#17263b', signInk: '#78eee2',
+    // #1384: assumed neon tube colours/widths in atlas pixels; no extra scene lights.
+    neon: { colors:['#ff83d7','#ffb477','#78eee2','#9caaff'], glow:9, halo:5, tube:2, core:.7, coreInk:'#efffff', weight:500 } },
   // #1327: the child-sized fantasy furniture (all our own choices, *guess*); local metres from the room's centre (x east, z south, the door
   // at z +5.2). Cinema screen/seats in BIO west of BILJARD; COMPUTER_MEDIA places four desks/chairs in SPEL east of it.
   furniture: { seatHeight: 0.36, cinema: { screen: { x: -8.78, bottom: .4, topGap: .4, sideGap: .2 }, // #1415: user asks 40 cm below/above; assumed 20 cm side margins.
