@@ -35,3 +35,10 @@ Det publika kvarteret-lunden har inget ljudsystem/fotsteg. Ändringen gäller
 originalets befintliga spelljud; ingen relevant förbättring av gemensam geometri,
 rendering eller förflyttning behöver porteras och inget nytt publikt ljudsystem
 införs som sidoarbete.
+
+Ljudproven publicerades före stängning i
+[issue-kommentaren](https://github.com/solwation/lunden-3d-apartment/issues/1519#issuecomment-6349436592),
+låsta till `6c7f8dca9ea1a867efbf9ee0b6f7be496c87cccd`.
+[Pages](https://github.com/solwation/lunden-3d-apartment/actions/runs/39840305473)
+och [konfigurationsutlöst Worker-publicering](https://github.com/solwation/lunden-3d-apartment/actions/runs/39840305668)
+passerade.
