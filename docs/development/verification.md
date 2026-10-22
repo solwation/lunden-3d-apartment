@@ -8352,5 +8352,26 @@ The records/images then pass through64 importer tests (including actual local
 claim/ack integration) with a fake multi-issue GitHub API.13 Worker/name cases and
 3 portrait/landscape/mouse photo-field regressions pass. No real GitHub test issues
 or production report mutations are used. Raw scoped browser result/export:
-`/tmp/rapporter1493-browser/`. The older broad adminreportstest stops before its
-report stage on a hidden Klart button (#1497); it is not a green full suite.
+`/tmp/rapporter1493-browser/`. The older broad adminreportstest initially stopped before its
+report stage on a hidden Klart button; the separate fix and full rerun are recorded below (#1497).
+
+
+## Admin report fixture lifecycle (#1497)
+
+The fixture still declared `boardFreed` after production `showTerminal` had
+moved to `binderFreed`. The first native Escape/furniture-close calls raised
+`binderFreed is not defined`; furniture state changed, but the callback never
+reached its final HUD render. This is a fixture collaborator error, not a
+product visibility defect. Replacing the stale declaration restores the actual
+production callback path without forced clicks or manually unhiding Klart.
+
+A new guard checks page errors and the finish button's native visibility before
+clicking it. The guard reproduced the original failure before the correction.
+The complete `tools/adminreportstest.cjs GAME LOCAL_WORKER OUT` then passed all
+60 checks: authentication, native furniture entry/finish, report retry and
+immutable UUID/name, modal focus/Escape, draft preservation, logout, delayed
+responses and expiry. Zero browser errors; source hashes and screenshots are in
+`/tmp/rapporter1497-final/result.json`. Native index DOM and production callbacks
+use a local Worker; apartment/WebGL and image capture remain bounded fixture
+collaborators. No production report or real GitHub test issue was created.
+No product files or public downstream behaviour change in this test-only fix.

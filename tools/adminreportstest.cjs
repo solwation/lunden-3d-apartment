@@ -44,7 +44,7 @@ const sourceHashes=Object.fromEntries(['index.html','src/adminreports.js','src/m
     const leaderboard={name:'Rapporttest'};
     const editHelp=document.getElementById('rearrange-help'),editToggle=document.getElementById('rearrange-toggle');
     let editMenuPiece=null,editMenuSurfaceId=null,resetFurnitureRequest=null,editHUDKey='';
-    let reading=true,locked=false,boardFreed=false;
+    let reading=true,locked=false,binderFreed=false;
     const player={keys:new Set()},touch={analog:{x:0,y:0}},drawing={active:false};
     const canvas=document.createElement('canvas'),overlay=document.getElementById('overlay'),armEl=document.createElement('div');
     const active=()=>true,materialChoice=()=>null,renderMaterialLibrary=()=>{},requestFurnitureReset=()=>{};
@@ -109,6 +109,8 @@ const sourceHashes=Object.fromEntries(['index.html','src/adminreports.js','src/m
  await page.evaluate(()=>document.getElementById('hud').hidden=false);
  await page.locator('#rearrange-toggle').click();
  check(await page.evaluate(()=>fixture.rearrange.enabled&&document.getElementById('terminal').hidden&&!fixture.reading),'actual furniture click starts enabled mode and closes chat');
+ assert.deepEqual(errors,[],'furniture entry completes production callbacks without script errors');
+ check(await page.locator('#rearrange-finish').isVisible(),'production HUD exposes native furniture finish action');
  await page.locator('#rearrange-finish').click();
  check(await page.evaluate(()=>!fixture.rearrange.enabled&&fixture.reports.active),'existing furniture finish exits mode while keeping access');
  await page.evaluate(()=>{document.getElementById('hud').hidden=true;fixture.showTerminal(true);});

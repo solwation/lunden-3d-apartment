@@ -346,5 +346,6 @@ a lost response. `LUNDEN_REPORT_BROWSER_EXPORT=OUT/reports.json` feeds those exa
 records/images through the reviewed importer into a multi-issue fake GitHub API:
 one reporter label, two titles/attachments and no duplicate issue on retry. No
 real GitHub test issues or production reports are written. The older broad admin
-fixture stops before reporting on a hidden furniture-finish button (#1497), so
-it is not claimed as a passing full suite.
+fixture initially stopped on a stale lifecycle variable before reporting. The
+separate #1497 correction restores `binderFreed`; its full local Worker/browser
+rerun passes all60 checks with zero page errors (see the verification guide).
