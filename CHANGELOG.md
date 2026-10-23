@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.1 — 2026-10-23
+
+- Make resource conservation a default across models and runtimes: choose sufficient
+  capability/effort explicitly where supported, keep context and delegation bounded.
+- Escalate for a diagnosed gap, preserve existing work and return routine work to an
+  economical setting without weakening acceptance, authorization or required checks.
+- Include the resource decision and reassessment condition in the compact worker brief.
+
 ## 0.1.0 — 2026-10-23
 
 - Extract a provider-independent conductor/worker workflow with local project policy.

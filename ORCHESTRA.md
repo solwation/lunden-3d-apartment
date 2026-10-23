@@ -22,6 +22,53 @@ topic docs; do not inventory the entire application by default. Resolve a materi
 unknown with one focused investigation, then update the plan. A file count or elapsed
 time alone is a signal to reassess, not a reason to manufacture child issues.
 
+## Spend resources deliberately
+
+Minimize the total work needed for an accepted result: model effort, context, tool
+calls, setup and coordination as well as elapsed time. Apply this on every platform,
+even when only one model is available. Quality, authorization, required evidence and
+host queue/timer rules remain gates; do not save resources by silently weakening them.
+
+Before assigning work, choose the smallest sufficient capability and effort:
+
+| Task and risk | Starting choice |
+| --- | --- |
+| Clear implementation following an established pattern, bounded edits or routine checks | Lower-cost capable worker and low/moderate reasoning where selectable |
+| Uncertain diagnosis, coupled design, unfamiliar boundaries or high-impact failure | Stronger reasoning for the uncertain part; delegate resolved implementation economically |
+| Conductor planning and review | Enough reasoning for dependencies and risk; routine queue/status work does not automatically need maximum effort |
+
+Use actual available capabilities and known cost information; do not assume a provider's
+model names imply price or invent savings. The host adapter supplies concrete model
+identifiers and supported effort settings. When selection is supported and authorized,
+set these explicitly for the assignment rather than blindly inheriting the conductor's
+strongest setting. When selection is unavailable or locked, state that limitation once
+and conserve effort through scope, context, tools and verification. Never claim a model
+was selected unless the tool actually used it. Do not ask the user to choose routine
+resource settings unless their input is required.
+
+Keep the decision to a line in the existing plan/brief: capability/effort, why it fits,
+and a task-specific stop/reassessment condition. This is not a new reporting phase.
+Choose direct work when a handoff would cost more than it saves. A helper must save
+expected total work or materially shorten the critical path; idle capacity alone is
+not a reason to spawn one or duplicate an investigation.
+
+Give workers a compact brief, acceptance, relevant paths and the current findings.
+Keep mandatory host rules accessible, but do not copy the entire conversation, queue
+or repository into every assignment. Prefer targeted searches, bounded output and
+independent batched reads. Reuse valid setup, fetched data and source-bound evidence
+within their freshness requirements; do not replay startup on every poll or continue
+exploring alternatives once acceptance is met.
+
+Escalate for a concrete capability gap, unresolved ambiguity, high-impact risk or a
+failed bounded approach, not merely because a tool/check failed. Inspect the failure:
+fix a command/environment issue directly, make a scoped correction for a known defect,
+and use stronger reasoning/model only where it addresses the remaining difficulty.
+Starting stronger immediately is appropriate for demonstrated risk. If the same
+approach fails again without new evidence, stop repeating it and reassess. Preserve
+the checkout, patch, evidence and diagnosis for a handoff; do not restart the task
+blindly. Record the reason and changed capability/scope in the existing brief/status.
+Return routine follow-on work to the economical setting when the uncertainty is resolved.
+
 ## Choose the smallest useful team
 
 For a small cohesive change use one implementer and one conductor review. The conductor
