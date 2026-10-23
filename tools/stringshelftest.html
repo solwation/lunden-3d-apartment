@@ -26,7 +26,7 @@ try {
  check(C.y===2&&C.z===4.16&&K.z===C.z&&K.y===1.5,'wall clock and calendar are back at their old spots (z 4.16, y 2.0 / 1.5)');
  check(CFG.WALL_SHELVES===undefined&&!!CFG.SHELF_DRESSING,'the old oak wall boards are gone from the config');
  { // nothing of the old boards (z 0.56–1.56, tops 1.85 / 2.25) is left: rays 1 cm beside the String shelf's ends hit the wall itself
-   const ray=new T.Raycaster(),hits=[];
+   const ray=new T.Raycaster(),hits=[];ray.camera=A.camera;
    for(const [y,z] of [[2.24,.6],[2.24,1.52],[1.84,.6],[1.84,1.52]]){ray.set(new T.Vector3(3.4,y,z),new T.Vector3(-1,0,0));const h=ray.intersectObjects(A.scene.children,true).filter(o=>o.object.visible&&o.object.isMesh&&o.distance<1.5);hits.push(h[0]?.point.x);}
    check(hits.every(x=>x!==undefined&&x<2.16),'no oak board in the old spots (rays hit the wall, x '+hits.map(x=>x?.toFixed(3))+')');
  }

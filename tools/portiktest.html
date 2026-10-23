@@ -8,7 +8,7 @@ try{
  const aim=p=>{A.camera.lookAt(p);A.camera.updateMatrixWorld(true);A.step(0);return A.focus().focused};
  at(-15,-2);check(walk(-15,3)&&walk(-13,4),'walk through street mouth into widened open area');
  // Physical geometry, not just collision: rays cross both newly hollow spaces.
- const clear=(a,b)=>{const origin=new V(...a),end=new V(...b),ray=new T.Raycaster(origin,end.clone().sub(origin).normalize(),.001,origin.distanceTo(end)-.001);return !ray.intersectObjects(A.scene.children,true).some(h=>h.object.isMesh&&h.object.visible&&!h.object.userData.ghost&&!h.object.userData.door&&!h.object.material.transparent&&h.object.layers.test(A.camera.layers))};
+ const clear=(a,b)=>{const origin=new V(...a),end=new V(...b),ray=new T.Raycaster(origin,end.clone().sub(origin).normalize(),.001,origin.distanceTo(end)-.001);return !(ray.camera=A.camera,ray).intersectObjects(A.scene.children,true).some(h=>h.object.isMesh&&h.object.visible&&!h.object.userData.ghost&&!h.object.userData.door&&!h.object.material.transparent&&h.object.layers.test(A.camera.layers))};
  check(clear([-15,1.6,4],[-12.2,1.6,4]),'widened open space is not filled by an opaque mass');
  at(-12.8,6.5);check(!walk(-10.5,6.5,4)&&A.player.pos.x<-11.37&&A.player.pos.x>-11.7,'east wall holds at the visible room boundary');
  at(-15,10.03);check(!walk(-12.5,10.03,4)&&A.player.pos.x<D.hinge[0],'closed small-room door blocks entry');

@@ -53,7 +53,7 @@ async function run() {
     }
     return best;
   };
-  const rc = new THREE.Raycaster(); rc.layers.enableAll();
+  const rc = new THREE.Raycaster(); rc.layers.enableAll(); rc.camera = camera; // Sprite.raycast needs a camera
   const drawnTop = (x, z) => {
     rc.set(new THREE.Vector3(x, 150, z), new THREE.Vector3(0, -1, 0));
     const hits = rc.intersectObjects(scene.children, true).filter((h) => h.object.isMesh && h.object.visible !== false && !h.object.material?.transparent && h.point.y < 100);
