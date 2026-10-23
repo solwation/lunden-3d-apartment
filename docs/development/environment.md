@@ -698,6 +698,30 @@ planes and boxes are unchanged. Both lots lie south of `WALK.z1=250`: surface an
 Cost: `site-terrain` +236 (90043→90279), `south-backdrop` +174 (49910→50084); no new mesh, material or texture.
 Site parking: house A/B/C/L geometry is unaffected.
 
+## Parking west of houses 41-43 on civil sub-planes (#1444)
+
+OSM145221628 (the concave six-corner lot west of Sankt Lars väg41-43, raw capacity45/guess, no boxes invented) is the first
+lot drawn as a few *civil sub-planes* instead of one plane: `grade.tin: true` with a6m linear band (`grade.fade: 'linear'`,
+`transition` *guess*). `fitTin` triangulates the inset core over its own six corners only (no interior vertices), fits
+the corner heights by least squares to the existing ground along the core edge and prefers triangulations whose sub-planes
+stay <= `grade.maxSlope` (0.2, *guess*), then the smallest largest residual. None of the five triangulations keeps0.2;
+the best has four sub-planes, steepest0.231, residual1.74m. Adjacent sub-planes share their seam edges, so the surface is
+continuous. `grade.corePolys` are the drawn core triangles (a single-plane lot has its convex core parts), `grade.weld`
+(sub-plane lots and concave lots) makes `gradedCellTriangles` weld each band piece's edges with every neighbouring
+piece's corners across cells (`gradedCellPieces`, `onEdges`/`safeFan`); only `out` pieces stay plain, since the outline
+and core edges are straight at the old/plane height. Terrain cells under a welded lot also expose their drawn pieces
+(`terrainGrid.lotPieces`, used by `cutAtTerrain`) so path strips follow the real surface; `southbackdrop.js` drops the path
+triangles wholly inside such a lot (under its +5.2cm asphalt) because cutting them along the pieces cost ~1400 triangles.
+Slope (the user's decision, 2026-10-23, option A): the whole lot lies south of `WALK.z1=250` (from z288), so it is not
+reachable on foot and `WALK.maxSlope` 0.7 is its limit instead of "not steeper than the baseline": steepest overlapping
+triangle0.306 -> 0.532 (0.231 on the sub-planes, the rest in the band); the old triangles within6m outside stay0.287.
+Ground3cm outside the outline and within6m is unchanged (<=4.4e-16m, rays1.6e-6m), the emitted bases of houses41/42/43
+(1.833/3.762/2.424m) are unchanged, other graded lots' samples/planes are unchanged. Checked for houses A/B/C/L: no
+change (site parking only). Cost: `site-terrain` +380 over 08e60b01 (90279->90659), `south-backdrop` 50084->49276 (-808, the
+hidden path triangles), the lot's asphalt 1463->428 triangles; no new mesh, material or texture. Test:
+`tools/parking1444test.html` (its BASELINE line holds the c6a1653b measurements). `tools/parking1452test.html` pins the
+new totals (49276/90659).
+
 ## Southern road embankment (#1382)
 
 `SOUTH_BANK` holds the11road controls and five10-point cross-sections from the same77-point LM export.

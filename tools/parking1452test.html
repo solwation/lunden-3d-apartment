@@ -21,7 +21,7 @@ const HOUSES={'Sankt Lars väg 56':3.9920402297619626,'Sankt Lars väg 57':3.382
 const PLANES={'145221619':[1.26,.03158799285707848,.07912426278587559],'850235113':[3.009653082917458,.011330187438767663,.054482598196780974],'145221624':[4.1901745432360755,-.010991617805411736,.007965526934974137],'145221626':[4.4385869677820295,.02766665476138464,.03214510878838227],'1379042014':[5.334248932065599,.061421614227001486,-.003984240358332022],'1379042106':[6.976526156092158,.08889196838231268,.0198486174843599],'1379043164':[6.458065144658835,-.039292611081877274,-.11675017700688346],'1379043165':[6.6197051818842025,-.029600928020895263,-.10392228422325281]};
 const ROAD='[[170.45,303.9],[203.24,294.12],[206.07,293.22],[224.41,287.47]]';
 const BASE_COUNTS={south:49910,terrain:90043};
-const AFTER_COUNTS={south:50084,terrain:90279}; // measured after #1452 (+174 / +236)
+const AFTER_COUNTS={south:49276,terrain:90659}; // measured after #1452 (+174 / +236) and #1444 (-808 hidden path triangles / +380 terrain)
 try{
  const frame=document.createElement('iframe');frame.width=480;frame.height=300;frame.src='../index.html?test&shot&month=6&cloud=';document.body.append(frame);await new Promise(r=>frame.onload=r);const w=frame.contentWindow;for(let i=0;i<360&&!w.__app?.scene;i++)await wait(500);if(!w.__app?.scene)throw Error('actual World did not finish loading');
  const A=w.__app,T=await w.eval("import('three')"),C=await w.eval("import('/src/config.js')"),S=await w.eval("import('/src/surroundings.js')"),P=await w.eval("import('/src/parkinglot1442.js')"),R=await w.eval("import('/src/roads.js')");

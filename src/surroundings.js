@@ -21,7 +21,7 @@ import { buildHepcat, hepcatTexture, hepcatStone } from './hepcat.js';
 import { buildStreetSigns } from './streetsigns.js';
 import { buildGroundAO } from './groundao.js';
 import { onRoad, onWalk, pathStrip, filletGeometry, vehicleTrim } from './roads.js';
-import { createParkingGrade, gradedCellTriangles, fitDrawnPlane } from './parkinglot1442.js';
+import { createParkingGrade, gradedCellTriangles, gradedCellPieces, fitDrawnPlane, clipConvex } from './parkinglot1442.js';
 import { wallLine, wallRect } from './roofs.js';
 import { buildingRoofWalk } from './buildingroofs.js';
 import { schoolWallPlan } from './schoolwall.js';
@@ -281,6 +281,10 @@ function terrainGeometry(southeastCells = null) {
   for (const z of Z) for (const x of X) pos.push(x, terrainY(x, z) - 0.01, z);
   const nx = X.length;
   terrainGrid = { X, Z, subdivisions:S.river.terrainSubdivisions };
+  // #1444: a welded clipped lot (concave, civil sub-planes) first collects every cell piece's corners, so each
+  // piece can carry its neighbours' vertices along its edges (no T-junction in the non-linear fade band).
+  const welds=new Map();
+  for(const g of PARKING_GRADES.filter(g=>g.clip&&g.weld)){const pts=[];for(let j=0;j<Z.length-1;j++){if(Z[j+1]<g.bounds.z0||Z[j]>g.bounds.z1)continue;for(let i=0;i<nx-1;i++){if(X[i+1]<g.bounds.x0||X[i]>g.bounds.x1)continue;const gs=clippedGradesAt(X[i],X[i+1],Z[j],Z[j+1]);if(!gs.includes(g))continue;for(const{g:o,piece}of gradedCellPieces(gs[0],{x0:X[i],x1:X[i+1],z0:Z[j],z1:Z[j+1]},gs.slice(1)))if(o===g)pts.push(...piece);}}welds.set(g,pts);}
   for (let j = 0; j < Z.length - 1; j++) for (let i = 0; i < nx - 1; i++) {
     const a = j * nx + i, b = a + 1, c = a + nx, d = c + 1, c2 = c;
     const mx = (X[i] + X[i + 1]) / 2, mz = (Z[j] + Z[j + 1]) / 2;
@@ -297,11 +301,13 @@ function terrainGeometry(southeastCells = null) {
       // #1443: a cell touching a clipped parking lot is triangulated along the lot outline and its inset
       // core (gradedCellTriangles): outside the outline the old drawn triangles stay exactly, the core is
       // the lot's plane and only the band between them fades. The coarse corners are the old ungraded ones.
-      const c=[[X[i],Z[j]],[X[i+1],Z[j]],[X[i],Z[j+1]],[X[i+1],Z[j+1]]].map(([x,z])=>plateauTerrainY(x,z)),tris=gradedCellTriangles(lotGrade,lotGrade.polygon,{x0:X[i],x1:X[i+1],z0:Z[j],z1:Z[j+1],c},lotGrades.slice(1));
+      const c=[[X[i],Z[j]],[X[i+1],Z[j]],[X[i],Z[j+1]],[X[i+1],Z[j+1]]].map(([x,z])=>plateauTerrainY(x,z)),tris=gradedCellTriangles(lotGrade,lotGrade.polygon,{x0:X[i],x1:X[i+1],z0:Z[j],z1:Z[j+1],c},lotGrades.slice(1),welds);
       const shared=new Map([[a,[X[i],Z[j]]],[b,[X[i+1],Z[j]]],[c2,[X[i],Z[j+1]]],[d,[X[i+1],Z[j+1]]]].filter(([k])=>!lotGrades.some(g=>g.contains(pos[k*3],pos[k*3+2]))).map(([k,[x,z]])=>[`${x},${z}`,k]));
       const vertex=([x,z,y])=>{const key=`${x},${z}`;let k=shared.get(key);if(k===undefined){k=pos.length/3;pos.push(x,y-.01,z);shared.set(key,k);}return k;};
       const drawn=tris.filter(t=>t.kind!=='core'); // the core is drawn once below, as the lot's plane
-      lotCells.set(j*nx+i,{grades:lotGrades,tris:drawn.map(({kind,tri})=>({kind,tri:tri.map(([x,z,y])=>[x,z,y-.01])}))});
+      lotCells.set(j*nx+i,{grades:lotGrades,tris:drawn.map(({kind,tri})=>({kind,tri:tri.map(([x,z,y])=>[x,z,y-.01])})),
+        // #1444: a cell of a sub-plane lot also keeps its drawn pieces in plan (the core pieces cut along the sub-plane seams) for cutAtTerrain
+        cut:lotGrades.some(g=>g.weld)?tris.flatMap(({kind,grade:g,tri})=>{const t=tri.map(([x,z])=>[x,z]);return kind==='core'&&g.weld?g.corePolys.map(p=>clipConvex(t,p)).filter(q=>q.length>=3):[t];}):null});
       for(const{tri}of drawn){const k=tri.map(vertex);idx.push(k[0],k[2],k[1]);}
     }else if(fine(i,j)){
       const n=S.river.terrainSubdivisions,at=(u,v)=>{
@@ -327,9 +333,12 @@ function terrainGeometry(southeastCells = null) {
   // #1443: each clipped lot's planar core as one polygon (its edge vertices lie on the band's
   // core-side vertices' straight line at the plane's height), then all lot pieces for asphalt and paint.
   const cores=PARKING_GRADES.filter(g=>g.clip);
-  // #1451: a creased lot's core is drawn as its two planar parts (grade.coreParts).
-  for(const g of cores)for(const core of g.coreParts){const k0=pos.length/3,start=idx.length;for(const[x,z]of core)pos.push(x,g.planeY(x,z)-.01,z);const cw=Math.sign(core.reduce((s,q,k)=>{const r=core[(k+1)%core.length];return s+q[0]*r[1]-r[0]*q[1];},0));for(let k=1;k<core.length-1;k++)cw>0?idx.push(k0,k0+k+1,k0+k):idx.push(k0,k0+k,k0+k+1);if(southeastCells&&core.every(([x,z])=>x>=TERRAIN_FAR.renderSplit.x&&z>=TERRAIN_FAR.renderSplit.z))southeastCells.push([start,idx.length-start]);}
-  lotTriangles=[...cores.flatMap(g=>g.coreParts.map(core=>core.map(([x,z])=>[x,z,g.planeY(x,z)-.01]))),...[...lotCells.values()].flatMap(c=>c.tris.filter(t=>t.kind==='band').map(t=>t.tri))];
+  // #1451: a creased lot's core is drawn as its two planar parts; #1444: a lot on civil sub-planes as those few triangles (grade.corePolys).
+  for(const g of cores)for(const core of g.corePolys){const k0=pos.length/3,start=idx.length;for(const[x,z]of core)pos.push(x,g.planeY(x,z)-.01,z);const cw=Math.sign(core.reduce((s,q,k)=>{const r=core[(k+1)%core.length];return s+q[0]*r[1]-r[0]*q[1];},0));for(let k=1;k<core.length-1;k++)cw>0?idx.push(k0,k0+k+1,k0+k):idx.push(k0,k0+k,k0+k+1);if(southeastCells&&core.every(([x,z])=>x>=TERRAIN_FAR.renderSplit.x&&z>=TERRAIN_FAR.renderSplit.z))southeastCells.push([start,idx.length-start]);}
+  lotTriangles=[...cores.flatMap(g=>g.corePolys.map(core=>core.map(([x,z])=>[x,z,g.planeY(x,z)-.01]))),...[...lotCells.values()].flatMap(c=>c.tris.filter(t=>t.kind==='band').map(t=>t.tri))];
+  // #1444: mapped ways (145221573, 145221583) cross the sub-plane lot 145221628. Cut only along the grid, their strips would float over
+  // or sink into its non-planar band, so its cells hand cutAtTerrain their drawn pieces (null elsewhere: other strips stay as they were).
+  terrainGrid.lotPieces=terrainDetailGrid.lotPieces=(i,j)=>i>=0&&j>=0&&i<nx-1&&j<Z.length-1?lotCells.get(j*nx+i)?.cut??null:null;
   terrainSurface=(x,z)=>{
     const i=find(X,x),j=find(Z,z),lot=lotCells.get(j*nx+i);
     if(lot){const core=lot.grades.find(g=>g.inCore(x,z));if(core)return core.planeY(x,z)-.01;let best=null,bm=-Infinity;for(const{tri:[p,q,r]}of lot.tris){const det=(q[0]-p[0])*(r[1]-p[1])-(r[0]-p[0])*(q[1]-p[1]),l1=((x-p[0])*(r[1]-p[1])-(r[0]-p[0])*(z-p[1]))/det,l2=((q[0]-p[0])*(z-p[1])-(x-p[0])*(q[1]-p[1]))/det,m=Math.min(1-l1-l2,l1,l2);if(m>bm){bm=m;best=p[2]+(q[2]-p[2])*l1+(r[2]-p[2])*l2;}}return best;}

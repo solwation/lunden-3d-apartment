@@ -70,9 +70,14 @@ export function* southBackdropParts(ground){
  // Continuation overlaps only the old outer boundary. Fog fully covers its outer edges from every accessible camera.
  const G=S.ground;parts.land.push(tint(new THREE.PlaneGeometry(G.x1-G.x0,G.z1-SITE.backgroundGround.z1).rotateX(-Math.PI/2).translate((G.x0+G.x1)/2,-3.01,(G.z1+SITE.backgroundGround.z1)/2),COLORS.grass));
  for(const [x0,x1]of[[G.x0,SITE.backgroundGround.x0],[SITE.backgroundGround.x1,G.x1]])parts.land.push(tint(new THREE.PlaneGeometry(x1-x0,SITE.backgroundGround.z1-SITE.backgroundGround.z0).rotateX(-Math.PI/2).translate((x0+x1)/2,-3.01,(SITE.backgroundGround.z1+SITE.backgroundGround.z0)/2),COLORS.grass));
+ // #1444: path strips cut along a sub-plane lot's many drawn pieces would cost ~1 400 triangles under its asphalt; those wholly inside it are hidden and left out.
+ const weldedLots=(S.parking??[]).filter(p=>p.grade?.tin).map(p=>p.polygon),inPoly=inside;
  for(const f of S.fields){if(!(f.holes??[]).length){parts.land.push(tint(upGeometry(terrainTriangles(f.polygon,LAND_MESH,f.source===PADDOCK.field?farGround.surfaceGrid():null),(x,z)=>farGround(x,z)+.018+LAND_LIFT),f.color));continue;}const g=new THREE.ShapeGeometry(shape(f)).rotateX(-Math.PI/2),a=g.attributes.position;for(let i=0;i<a.count;i++)a.setY(i,farGround(a.getX(i),a.getZ(i))+.018);g.computeVertexNormals();parts.land.push(tint(g,f.color));}
  parts.land.push(...paddockLandParts(farGround)); // #1280: the pony paddock's worn track (soil colour, snow-covered with the rest of the land)
  yield .7;
+ // A non-indexed path strip without its triangles wholly inside such a lot (under the asphalt, +5.2 cm).
+ const uncovered=g=>{if(!weldedLots.length||g.index)return g;const a=g.attributes.position,drop=new Set();for(let i=0;i<a.count;i+=3){const t=[0,1,2].map(k=>[a.getX(i+k),a.getZ(i+k)]),c=[(t[0][0]+t[1][0]+t[2][0])/3,(t[0][1]+t[1][1]+t[2][1])/3];if(weldedLots.some(q=>t.every(([x,z])=>inPoly(x,z,q))&&inPoly(c[0],c[1],q)))drop.add(i);}
+  if(!drop.size)return g;const out=new THREE.BufferGeometry();for(const[name,at]of Object.entries(g.attributes)){const arr=[];for(let i=0;i<a.count;i+=3)if(!drop.has(i))for(let k=0;k<3;k++)for(let c=0;c<at.itemSize;c++)arr.push(at.array[(i+k)*at.itemSize+c]);out.setAttribute(name,new THREE.Float32BufferAttribute(arr,at.itemSize));}return out;};
  const surfColor=p=>p.color??(p.surface==='asphalt'?0x5f6164:p.surface==='gravel'?0xb5ac90:0xa7a397);
  const bayPolygons=[];
  for(const p of [...S.paths,...(S.access??[])]){
@@ -82,7 +87,7 @@ export function* southBackdropParts(ground){
    const a=drawn.attributes.position;
    for(let i=0;i<a.count;i+=3)bayPolygons.push([0,1,2].map(k=>[a.getX(i+k),a.getZ(i+k)]));
   }
-  parts.land.push(tint(drawn,surfColor(p)));
+  parts.land.push(tint(uncovered(drawn),surfColor(p)));
  }
  // #1417: inferred hard boarding apron, bounded by unchanged mapped features.
  // Only the three local bus-bay roads participate (88 triangles, not site-wide).

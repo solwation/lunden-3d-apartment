@@ -211,6 +211,9 @@ export function cutAtTerrain(tri,grid){
  for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++){
   const c=clipHalf(clipHalf(clipHalf(clipHalf(tri,-1,0,-X[i]),1,0,X[i+1]),0,-1,-Z[j]),0,1,Z[j+1]);
   if(c.length<3)continue;
+  // #1444: a cell under a sub-plane parking lot is drawn as its own convex pieces (planar each): cut along those instead.
+  const pieces=grid.lotPieces?.(i-1,j-1);
+  if(pieces){for(const t of pieces){const s=Math.sign((t[1][0]-t[0][0])*(t[2][1]-t[0][1])-(t[1][1]-t[0][1])*(t[2][0]-t[0][0]));let q=c;for(let e=0;e<t.length&&q.length>=3;e++){const a=t[e],b=t[(e+1)%t.length],A=s*(b[1]-a[1]),B=-s*(b[0]-a[0]);q=clipHalf(q,A,B,A*a[0]+B*a[1]);}if(q.length>=3)for(let m=1;m<q.length-1;m++){const u=[q[0],q[m],q[m+1]];if(Math.abs((u[1][0]-u[0][0])*(u[2][1]-u[0][1])-(u[1][1]-u[0][1])*(u[2][0]-u[0][0]))>1e-9)out.push(u);}}continue;}
   const subdivisions=grid.refined?.(i-1,j-1)??1; // #1420: explicitly requested emitted river cells only
   if(subdivisions>1){out.push(...cutAtTerrain(c,{X:Array.from({length:subdivisions+1},(_,k)=>X[i]+(X[i+1]-X[i])*k/subdivisions),Z:Array.from({length:subdivisions+1},(_,k)=>Z[j]+(Z[j+1]-Z[j])*k/subdivisions)}));continue;}
   // the cell's diagonal runs through (X[i+1],Z[j]) and (X[i],Z[j+1]); lower-left side first

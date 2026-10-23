@@ -8,7 +8,8 @@ const ring = (p) => p.length > 1 && p[0][0] === p.at(-1)[0] && p[0][1] === p.at(
 const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
 const area = (p) => p.reduce((s, a, i) => { const b = p[(i + 1) % p.length]; return s + a[0] * b[1] - b[0] * a[1]; }, 0) / 2;
 const cross = (a,b,p) => (b[0]-a[0])*(p[1]-a[1])-(b[1]-a[1])*(p[0]-a[0]);
-function clipConvex(subject,cutter){
+// #1444: exported for surroundings.js (a sub-plane lot's core pieces cut along its seams).
+export function clipConvex(subject,cutter){
   const sign=Math.sign(area(cutter));let inside=subject;
   for(let i=0;i<cutter.length&&inside.length;i++){
     const a=cutter[i],b=cutter[(i+1)%cutter.length],out=[];
@@ -25,6 +26,67 @@ function clipSegment(segment,poly){
 function insetConvex(poly,distance){
   const sign=Math.sign(area(poly)),lines=poly.map((a,i)=>{const b=poly[(i+1)%poly.length],dx=b[0]-a[0],dz=b[1]-a[1],len=Math.hypot(dx,dz),nx=-sign*dz/len,nz=sign*dx/len;return[[a[0]+nx*distance,a[1]+nz*distance],[dx,dz]];});
   return lines.map((line,i)=>{const prev=lines[(i+lines.length-1)%lines.length],[p,r]=prev,[q,s]=line,den=r[0]*s[1]-r[1]*s[0],t=((q[0]-p[0])*s[1]-(q[1]-p[1])*s[0])/den;return[p[0]+r[0]*t,p[1]+r[1]*t];});
+}
+
+const simple = (p) => p.every((a, i) => { const b = p[(i + 1) % p.length]; return p.every((c, k) => { const d = p[(k + 1) % p.length]; if (k === i || (k + 1) % p.length === i || (i + 1) % p.length === k) return true; return !(cross(a, b, c) * cross(a, b, d) < 0 && cross(c, d, a) * cross(c, d, b) < 0); }); });
+const isConvex = (p) => { const s = Math.sign(area(p)); return p.every((a, i) => s * cross(a, p[(i + 1) % p.length], p[(i + 2) % p.length]) >= -1e-9); };
+function solve(A, b) {
+  const n = A.length;
+  for (let i = 0; i < n; i++) {
+    let m = i; for (let k = i + 1; k < n; k++) if (Math.abs(A[k][i]) > Math.abs(A[m][i])) m = k;
+    [A[i], A[m]] = [A[m], A[i]]; [b[i], b[m]] = [b[m], b[i]];
+    for (let k = i + 1; k < n; k++) { const f = A[k][i] / A[i][i]; for (let j = i; j < n; j++) A[k][j] -= f * A[i][j]; b[k] -= f * b[i]; }
+  }
+  const x = Array(n).fill(0);
+  for (let i = n - 1; i >= 0; i--) { let v = b[i]; for (let j = i + 1; j < n; j++) v -= A[i][j] * x[j]; x[i] = v / A[i][i]; }
+  return x;
+}
+const slope = (a, b, c) => { const det = (b[0] - a[0]) * (c[1] - a[1]) - (c[0] - a[0]) * (b[1] - a[1]); return Math.hypot(((b[2] - a[2]) * (c[1] - a[1]) - (c[2] - a[2]) * (b[1] - a[1])) / det, ((b[0] - a[0]) * (c[2] - a[2]) - (c[0] - a[0]) * (b[2] - a[2])) / det); };
+const bary = (x, z, a, b, c) => { const det = (b[0] - a[0]) * (c[1] - a[1]) - (c[0] - a[0]) * (b[1] - a[1]), l1 = ((x - a[0]) * (c[1] - a[1]) - (c[0] - a[0]) * (z - a[1])) / det, l2 = ((b[0] - a[0]) * (z - a[1]) - (x - a[0]) * (b[1] - a[1])) / det; return [1 - l1 - l2, l1, l2]; };
+/** #1444: every triangulation of simple polygon P over its own corners (index triples; few for a hexagon). */
+function triangulations(P) {
+  const n = P.length, mid = (i, j) => [(P[i][0] + P[j][0]) / 2, (P[i][1] + P[j][1]) / 2];
+  const diagonal = (i, j) => { if ((j - i + n) % n <= 1 || (i - j + n) % n <= 1) return true; if (!pointIn(...mid(i, j), P)) return false; return P.every((a, k) => { const b = P[(k + 1) % n]; if (k === i || k === j || (k + 1) % n === i || (k + 1) % n === j) return true; return !(cross(P[i], P[j], a) * cross(P[i], P[j], b) < 0 && cross(a, b, P[i]) * cross(a, b, P[j]) < 0); }); };
+  const rec = (ids) => {
+    if (ids.length < 3) return [[]];
+    const out = [], a = ids[0], b = ids.at(-1);
+    for (let k = 1; k < ids.length - 1; k++) {
+      const c = ids[k];
+      if (!diagonal(a, c) || !diagonal(c, b) || Math.abs(area([P[a], P[c], P[b]])) < 1e-6) continue;
+      for (const L of rec(ids.slice(0, k + 1))) for (const R of rec(ids.slice(k))) out.push([...L, [a, c, b], ...R]);
+    }
+    return out;
+  };
+  return rec(P.map((_, i) => i));
+}
+/**
+ * #1444: least-squares heights for the corners of `core`, on its best triangulation; y(x, z) projects points outside
+ * the core onto its edge. Triangulations whose steepest sub-plane exceeds `maxSlope` (a thin sliver tilts steeply)
+ * lose to any that keep it; then the smallest largest residual wins. `candidates` keeps every one for inspection.
+ */
+function fitTin(core, samples, maxSlope = Infinity) {
+  let best = null;const candidates = [];
+  for (const triangles of triangulations(core)) {
+    const n = core.length, A = Array.from({ length: n }, () => Array(n).fill(0)), b = Array(n).fill(0);
+    // Inside the core a point weighs the corners of its triangle; outside (the band) the two ends of its nearest core edge.
+    const weights = (x, z) => {
+      let t0 = null, l0 = null, m0 = -Infinity;
+      for (const t of triangles) { const l = bary(x, z, core[t[0]], core[t[1]], core[t[2]]), m = Math.min(...l); if (m > m0) { m0 = m; t0 = t; l0 = l; } }
+      if (m0 >= -1e-9) return [[t0[0], l0[0]], [t0[1], l0[1]], [t0[2], l0[2]]];
+      let w = null, d = Infinity;
+      for (let k = 0; k < n; k++) { const p = core[k], q = core[(k + 1) % n], dx = q[0] - p[0], dz = q[1] - p[1], s = clamp(((x - p[0]) * dx + (z - p[1]) * dz) / (dx * dx + dz * dz), 0, 1), e = Math.hypot(x - p[0] - dx * s, z - p[1] - dz * s); if (e < d) { d = e; w = [[k, 1 - s], [(k + 1) % n, s]]; } }
+      return w;
+    };
+    for (const [x, z, y] of samples) { const w = weights(x, z); for (const [i, a] of w) { b[i] += a * y; for (const [j, c] of w) A[i][j] += a * c; } }
+    if (A.some((row, i) => !(row[i] > 1e-6))) continue; // every corner needs its own samples
+    const h = solve(A, b), y = (x, z) => weights(x, z).reduce((v, [i, a]) => v + a * h[i], 0);
+    let max = 0, sq = 0; for (const [x, z, v] of samples) { const e = Math.abs(y(x, z) - v); max = Math.max(max, e); sq += e * e; }
+    const rms = Math.sqrt(sq / samples.length), steepest = Math.max(...triangles.map(t => slope(...t.map(k => [...core[k], h[k]])))), ok = steepest <= maxSlope;
+    candidates.push({ triangles, steepest, maxResidual: max, rms });
+    if (!best || (ok && !best.ok) || (ok === best.ok && (max < best.maxResidual - 1e-9 || (Math.abs(max - best.maxResidual) <= 1e-9 && rms < best.rms)))) best = { triangles, heights: h, y, maxResidual: max, rms, steepest, ok };
+  }
+  if (best) best.candidates = candidates;
+  return best;
 }
 
 /**
@@ -100,7 +162,13 @@ export function createParkingGrade(lot, sampleBase, options = {}) {
     if (Math.abs(D) < 1e-10) throw new RangeError(`Parking crease of ${lot.source ?? ''} cannot be fitted`);
     sx = col(0) / D; sz = col(1) / D; k = col(2) / D; py = my - k * hm;
   }
-  const planeY = (x, z) => py + sx * (x - mx) + sz * (z - mz) + k * hinge(x, z);
+  let planeY = (x, z) => py + sx * (x - mx) + sz * (z - mz) + k * hinge(x, z);
+  // #1443: a clipped lot is drawn on terrain cells cut along its outline and the outline inset by the
+  // transition (its core). #1444: the outline may be concave; the inset then has a mitered reflex corner,
+  // which lies inside the true inset (every core point is ≥ transition from the outline), and both are split
+  // into convex parts for the cell clipping.
+  const clip = !!lot?.grade?.clip, core = clip ? insetConvex(poly, transition) : null;
+  if (clip && (Math.sign(area(core)) !== Math.sign(area(poly)) || core.some(([x, z]) => !contains(x, z)) || !simple(core))) throw new RangeError(`Parking polygon ${lot.source ?? ''} is too narrow for a ${transition} m clipped transition`);
   const edgeDistance = (x, z) => {
     let d = Infinity;
     for (let i = 0; i < poly.length; i++) {
@@ -110,10 +178,25 @@ export function createParkingGrade(lot, sampleBase, options = {}) {
     }
     return d;
   };
+  // #1444: a sub-plane lot fades linearly across its band (the drawn band samples the fade only at its piece
+  // corners, where the smooth step's 1.5× middle gradient steepened the edge); single planes keep the smooth step.
+  const fade = lot?.grade?.fade === 'linear' ? (t) => t : (t) => t * t * (3 - 2 * t);
+  // #1444: `grade.tin` replaces the single plane by a few civil sub-planes: the core triangulated over its
+  // own corners only (no interior or terrain-following vertices), the corner heights least-squares fitted to the
+  // existing ground along the core edge, preferring triangulations whose sub-planes stay ≤ `grade.maxSlope`, then
+  // the smallest largest residual. Adjacent sub-planes share their seam edges, so the surface is continuous by
+  // construction. All of it is a guess.
+  let tin = null;
+  if (clip && lot?.grade?.tin) {
+    if (anchor || crease || lot.grade.fit === 'minimax') throw new RangeError(`Parking grade ${lot.source ?? ''}: tin is not combined with an anchor, crease or minimax fit`);
+    tin = fitTin(core, points.filter(([x, z]) => Math.abs(edgeDistance(x, z) - transition) <= 1.5), lot.grade.maxSlope ?? Infinity);
+    if (!tin) throw new RangeError(`Parking polygon ${lot.source ?? ''} cannot fit its civil sub-planes`);
+    planeY = tin.y;
+  }
   const grade = (x, z) => {
     const y = sampleBase(x, z);
     if (!contains(x, z)) return y;
-    const t = clamp(edgeDistance(x, z) / transition, 0, 1), weight = t * t * (3 - 2 * t);
+    const weight = fade(clamp(edgeDistance(x, z) / transition, 0, 1));
     return y + (planeY(x, z) - y) * weight;
   };
   const maxResidual = Math.max(...points.map(([x, z, y]) => Math.abs(planeY(x, z) - y)));
@@ -122,19 +205,26 @@ export function createParkingGrade(lot, sampleBase, options = {}) {
   // #1443: the plane and the edge weight separately, so a refined terrain cell can fade from its
   // unchanged drawn surface (instead of the smooth sampler) to the plane.
   grade.planeY = planeY;
-  grade.weight = (x, z) => { if (!contains(x, z)) return 0; const t = clamp(edgeDistance(x, z) / transition, 0, 1); return t * t * (3 - 2 * t); };
+  grade.weight = (x, z) => { if (!contains(x, z)) return 0; return fade(clamp(edgeDistance(x, z) / transition, 0, 1)); };
   grade.edgeDistance = edgeDistance; // #1543: distance to the outline (either side), for groundY's seam outside the lot
-  grade.clip = !!lot?.grade?.clip; // #1443: drawn on terrain cells clipped along the outline (gradedCellTriangles)
+  grade.clip = clip; // #1443: drawn on terrain cells clipped along the outline (gradedCellTriangles)
   grade.polygon = poly;
-  // #1452: a concave clipped lot (1379042188) is cut as convex parts (convexParts); its inset core likewise. A convex lot
-  // keeps one part, so its pieces are unchanged.
-  if (grade.clip) { grade.core = insetConvex(poly, transition); grade.inCore = (x, z) => pointIn(x, z, grade.core); grade.parts = convexParts(poly); grade.coreCut = convexParts(grade.core); grade.coreParts = grade.coreCut.flatMap(p => creaseSplit(p, crease)); }
+  // #1452: a concave clipped lot is cut as convex parts (convexParts); its inset core likewise. A convex lot keeps one part.
+  if (clip) {
+    grade.core = core; grade.inCore = (x, z) => pointIn(x, z, core);
+    grade.parts = convexParts(poly); grade.coreCut = convexParts(core); grade.coreParts = grade.coreCut.flatMap(p => creaseSplit(p, crease));
+    // The core's drawn polygons: the sub-plane triangles (#1444), else the convex core parts, each cut along a crease (#1451).
+    grade.corePolys = tin ? tin.triangles.map(t => t.map(q => core[q])) : grade.coreParts;
+    grade.weld = !!tin || grade.parts.length > 1; // #1444: weld T-junctions between the lot's cell pieces (see gradedCellTriangles)
+  }
   grade.crease = crease;
   grade.hinge = hinge;
-  grade.plane = { origin: [mx, mz, py], slope: [sx, sz], maxResidual, anchored: !!anchor, fit: 'least-squares', ...(crease ? { crease: k } : {}) };
+  grade.plane = tin
+    ? { tin: { vertices: core, heights: tin.heights, triangles: tin.triangles, steepest: tin.steepest, candidates: tin.candidates }, maxResidual, rms: tin.rms, anchored: false, fit: 'tin' }
+    : { origin: [mx, mz, py], slope: [sx, sz], maxResidual, anchored: !!anchor, fit: 'least-squares', ...(crease ? { crease: k } : {}) };
   // #1450: `grade.fit: 'minimax'` lets fitDrawnPlane replace the plane once the drawn terrain cells are known.
-  grade.fit = lot?.grade?.fit ?? 'least-squares';
-  grade.setPlane = (y, slopeX, slopeZ, fit, bend = k) => { if (anchor) throw new RangeError(`Parking plane ${lot.source ?? ''} is anchored`); py = y; sx = slopeX; sz = slopeZ; k = crease ? bend : 0; grade.plane = { ...grade.plane, origin: [mx, mz, py], slope: [sx, sz], fit, ...(crease ? { crease: k } : {}) }; };
+  grade.fit = tin ? 'tin' : lot?.grade?.fit ?? 'least-squares';
+  grade.setPlane = (y, slopeX, slopeZ, fit, bend = k) => { if (anchor || tin) throw new RangeError(`Parking plane ${lot.source ?? ''} is ${tin ? 'on sub-planes' : 'anchored'}`); py = y; sx = slopeX; sz = slopeZ; k = crease ? bend : 0; grade.plane = { ...grade.plane, origin: [mx, mz, py], slope: [sx, sz], fit, ...(crease ? { crease: k } : {}) }; };
   grade.transition = transition;
   grade.source = lot.source;
   return grade;
@@ -271,46 +361,50 @@ export function fitDrawnPlane(grade, cells, { iterations = 200 } = {}) {
 
 /**
  * #1443: the drawn ground of one terrain cell [x0,x1]×[z0,z1] (corner heights `c` = [x0z0, x1z0, x0z1, x1z1],
- * split along the (x1,z0)–(x0,z1) diagonal like every terrain cell) under a graded convex lot, clipped
+ * split along the (x1,z0)–(x0,z1) diagonal like every terrain cell) under a graded lot, clipped
  * along the lot outline and along its outline inset by the grade's transition. Outside the outline the
  * pieces keep the cell's old planar triangles (the drawn ground there is unchanged); inside the inset
  * outline they lie exactly on the lot plane; only the transition band between them fades from the old
  * surface to the plane. Returns triangles of [x, z, y] with their kind ('out', 'band' or 'core'); the
- * caller draws the whole core once as `grade.core` (a few triangles) instead of its per-cell pieces.
+ * caller draws the whole core once as `grade.corePolys` (a few triangles) instead of its per-cell pieces.
  * #1451: `others` are further clipped lots touching the same cell (the lots never overlap). Each lot's band and
  * core pieces are cut from the whole cell half exactly as if it were alone (so a minimax fit on single-lot cells
  * stays exact); only the outside pieces are cut by every lot in turn. Band/core entries carry their `grade`.
+ * #1444: `welds` (Map grade → points, from gradedCellPieces over all the lot's cells) makes a welded lot's band and
+ * the outside pieces beside it carry every neighbouring piece vertex lying on their edges, so the non-linear fade
+ * band has no T-junction cracks between cells.
  */
-export function gradedCellTriangles(grade, polygon, { x0, x1, z0, z1, c }, others = []) {
-  const lots = [{ g: grade, poly: ring(polygon) }, ...others.map(g => ({ g, poly: g.polygon }))], out = [];
-  const halves = [[[x0, z0], [x1, z0], [x0, z1]], [[x1, z0], [x1, z1], [x0, z1]]];
+export function gradedCellTriangles(grade, polygon, { x0, x1, z0, z1, c }, others = [], welds = null) {
+  const out = [], inCell = ([x, z]) => x >= x0 - 1e-6 && x <= x1 + 1e-6 && z >= z0 - 1e-6 && z <= z1 + 1e-6;
+  const weldOf = new Map([grade, ...others].filter(g => welds?.has(g)).map(g => [g, welds.get(g).filter(inCell)]));
+  const old = (h, x, z) => { const f = (x - x0) / (x1 - x0), g = (z - z0) / (z1 - z0); return h === 0 ? c[0] + (c[1] - c[0]) * f + (c[2] - c[0]) * g : c[3] + (c[2] - c[3]) * (1 - f) + (c[1] - c[3]) * (1 - g); };
+  for (const { kind, h, g, piece } of gradedCellPieces(grade, { x0, x1, z0, z1 }, others, polygon)) {
+    if (kind === 'out') { for (const t of fan(piece)) out.push({ kind, tri: t.map(([x, z]) => [x, z, old(h, x, z)]) }); continue; }
+    if (kind === 'core') { for (const t of fan(piece)) out.push({ kind, grade: g, tri: t.map(([x, z]) => [x, z, g.planeY(x, z)]) }); continue; }
+    const weld = weldOf.get(g), p = weld ? onEdges(piece, weld) : withCorners(piece, g.core ?? insetConvex(g.polygon, g.transition));
+    for (const t of weld ? safeFan(p) : fan(p)) out.push({ kind, grade: g, tri: t.map(([x, z]) => { const y = old(h, x, z); return [x, z, y + (g.planeY(x, z) - y) * g.weight(x, z)]; }) });
+  }
+  return out;
+}
+/**
+ * #1444: the convex pieces of one terrain cell under clipped lots ({kind: 'out' | 'band' | 'core', h: cell half, g: grade
+ * (null outside), piece}), split along each lot's convex parts and core parts (one each for a convex lot) and crease.
+ * `polygon` overrides the first lot's outline (#1443's callers pass it explicitly).
+ */
+export function gradedCellPieces(grade, { x0, x1, z0, z1 }, others = [], polygon = grade.polygon) {
+  const out = [], halves = [[[x0, z0], [x1, z0], [x0, z1]], [[x1, z0], [x1, z1], [x0, z1]]];
+  const cut = (pieces, cutters) => { let rest = pieces; const inside = []; for (const P of cutters) { const next = []; for (const q of rest) { const sp = splitConvex(q, P); if (sp.inside) inside.push(sp.inside); next.push(...sp.outside); } rest = next; } return { inside, outside: rest }; };
+  const lots = [{ g: grade, poly: ring(polygon) }, ...others.map(g => ({ g, poly: g.polygon }))];
   for (let h = 0; h < 2; h++) {
-    const old = (x, z) => { const f = (x - x0) / (x1 - x0), g = (z - z0) / (z1 - z0); return h === 0 ? c[0] + (c[1] - c[0]) * f + (c[2] - c[0]) * g : c[3] + (c[2] - c[3]) * (1 - f) + (c[1] - c[3]) * (1 - g); };
     let rest = [halves[h]];
     for (const { g, poly } of lots) {
-      const parts = g.parts ?? [poly];
-      if (parts.length > 1) { // #1452: a concave lot, cut part by part; its band pieces are welded (see onEdges)
-        rest = rest.flatMap(piece => parts.reduce((acc, part) => acc.flatMap(q => splitConvex(q, part).outside), [piece]));
-        const cores = [], bands = [];
-        for (const part of parts) {
-          const inside = splitConvex(halves[h], part).inside;if (!inside) continue;
-          let r = [inside];
-          for (const cp of g.coreCut) r = r.flatMap(q => { const sp = splitConvex(q, cp);if (sp.inside) cores.push(...creaseSplit(sp.inside, g.crease));return sp.outside; });
-          bands.push(...r.flatMap(q => creaseSplit(q, g.crease)));
-        }
-        const pts = [...cores, ...bands].flat();
-        for (const part of cores) for (const t of fan(part)) out.push({ kind: 'core', grade: g, tri: t.map(([x, z]) => [x, z, g.planeY(x, z)]) });
-        for (const piece of bands) for (const t of safeFan(onEdges(piece, pts))) out.push({ kind: 'band', grade: g, tri: t.map(([x, z]) => { const y = old(x, z); return [x, z, y + (g.planeY(x, z) - y) * g.weight(x, z)]; }) });
-        continue;
-      }
-      const core = insetConvex(poly, g.transition), { inside } = splitConvex(halves[h], poly);
-      rest = rest.flatMap(piece => splitConvex(piece, poly).outside);
-      if (!inside) continue;
-      const split = splitConvex(inside, core);
-      if (split.inside) for (const part of creaseSplit(split.inside, g.crease)) for (const t of fan(part)) out.push({ kind: 'core', grade: g, tri: t.map(([x, z]) => [x, z, g.planeY(x, z)]) });
-      for (const piece of split.outside.flatMap(p => creaseSplit(p, g.crease)).map(p => withCorners(p, core))) for (const t of fan(piece)) out.push({ kind: 'band', grade: g, tri: t.map(([x, z]) => { const y = old(x, z); return [x, z, y + (g.planeY(x, z) - y) * g.weight(x, z)]; }) });
+      const own = poly === g.polygon, parts = own && g.parts ? g.parts : [poly], coreParts = own && g.coreParts ? g.coreParts : [insetConvex(poly, g.transition)];
+      rest = cut(rest, parts).outside;
+      const inner = cut(cut([halves[h]], parts).inside, coreParts);
+      for (const piece of inner.inside) for (const part of creaseSplit(piece, g.crease)) out.push({ kind: 'core', h, g, piece: part });
+      for (const piece of inner.outside) for (const part of creaseSplit(piece, g.crease)) out.push({ kind: 'band', h, g, piece: part });
     }
-    for (const piece of rest) for (const t of fan(piece)) out.push({ kind: 'out', tri: t.map(([x, z]) => [x, z, old(x, z)]) });
+    for (const piece of rest) out.push({ kind: 'out', h, g: null, piece });
   }
   return out;
 }
