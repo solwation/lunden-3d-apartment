@@ -39,6 +39,12 @@ export function farSegments() {
     out.push([c.x[0], z0, c.x[1], z0], [c.x[1], z0, c.x[1], z1], [c.x[1], z1, c.x[0], z1], [c.x[0], z1, c.x[0], z0]);
   }
   for (const b of SITE.blocks) if (b.style) out.push([b.x0, b.z0, b.x1, b.z0], [b.x1, b.z0, b.x1, b.z1], [b.x1, b.z1, b.x0, b.z1], [b.x0, b.z1, b.x0, b.z0]);
+  // #1542: the school's free-standing brick wall along the far pavement and the greenhouse behind it (surroundings.js
+  // draws both outside OUTDOOR, so only their roof walk knew them): solid from the ground too
+  const SW = SITE.school?.wall, SG = SITE.school?.greenhouse;
+  for (const r of [SW && { x0: SW.x0, x1: SW.x1, z0: SW.z - SW.t / 2, z1: SW.z + SW.t / 2 }, SG].filter(Boolean)) {
+    out.push([r.x0, r.z0, r.x1, r.z0], [r.x1, r.z0, r.x1, r.z1], [r.x1, r.z1, r.x0, r.z1], [r.x0, r.z1, r.x0, r.z0]);
+  }
   for (const r of bridgeRecords) rails.push(...railSegs(r.x, r.z, r.dx, r.dz, r.len, r.width / 2 - 0.03)); // the bridges' side rails (the deck ends stay open)
   for (const p of pierBoxes()) { // the road bridge's piers: a square each, turned with the bridge
     const c = (u, v) => [p.x + (u * p.dz + v * p.dx) * p.half, p.z + (-u * p.dx + v * p.dz) * p.half], q = [c(-1, -1), c(1, -1), c(1, 1), c(-1, 1)];
