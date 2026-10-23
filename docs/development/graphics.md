@@ -130,6 +130,11 @@ src/weather.js         weather (WEATHER, #248): a seeded draw per date (`showers
                        first time, a little each later shower; a badge every time)
 src/groundglow.js      light without lights (#434, #433): additive fall-off decals — `poolGeometry` (an ellipse draped over `groundY`),
                        `washGeometry` (an upright one on a wall; #1092: `holes` = the wall's openings, cut out so the glow lights the brick round a window/door, never its glass — the front-door and patio/terrace washes pass them; the Å-husen's loggia washes need none: their glazing stands in front of the wash and hides it), `glowMaterial` (one per set, opacity = the level), `fadeGlow`
+                       #1525: courtyard night ground light — every courtyard bollard gets a warm pool (`COURTYARD.bollards.pool`,
+                       one `courtyard-bollard-pools` mesh in courtyard.js, hysteresis fade, out in a power cut) and Hus A–C's lit
+                       ground-floor windows spill a faint pool in front (`COURTYARD.windowSpill`, one `windowSpillPools` mesh in
+                       surroundings.js `buildWindowLights`, per-vertex level = the window's routine level × night). Front-side only
+                       (one pass each), hidden by day, no light objects; radii/strengths *guess*. Night perfcount +2 calls max.
 src/daycycle.js        real-time day (#1145; DAY.minutes = 24 × 60, was 60): it follows the visitor's clock (frames lost to the dt cap or a hidden tab catch up from Date.now(); `toNow()` = the wall clock's "Nu"), real solar path for the month (55.7° N), sun → moon light, shader sky
                        (glow, stars, clouds), fog colour; paused / spooled by the wall clock. Daylight (#1073): `LIGHTING.sky`
                        blends `overcast` (even sky/ambient/fill, sun 2.2, exposure 1) → `clear` (darker shade side, sun 3.0,

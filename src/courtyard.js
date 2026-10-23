@@ -10,6 +10,7 @@ import { groundY } from './surroundings.js';
 import { restTarget } from './rest.js';
 import { surfaceBox } from './furniture.js';
 import { lobeGeometry, leafMaterial } from './foliage.js';
+import { glowMaterial, poolGeometry, fadeGlow, fadeGlowWithFog } from './groundglow.js';
 import { bikeGeometry, bikeSpokeTexture, standGeometry } from './streetlife.js';
 
 // The courtyard on the garage box (#80): stone walks, gravel round the playground (lawn elsewhere, #259), the Borggården's pergola
@@ -292,12 +293,14 @@ export function buildCourtyard() {
   for (const r of C.beds) { geos.wood.push(box(r.x0, r.x1, 0, BED_Y, r.z0, r.z1)); solid(r.x0, r.x1, r.z0, r.z1, BED_Y); geos.soil.push(plate({ x0: r.x0 + 0.05, x1: r.x1 - 0.05, z0: r.z0 + 0.05, z1: r.z1 - 0.05 }, 0.48)); }
 
   // #112: bollards along the walks (a glowing band under the cap), the playhouse, the bike rack
-  const glow = [], paint = [], bikes = [], bikeSpokes = [], bicycles = [];
+  const glow = [], pools = [], paint = [], bikes = [], bikeSpokes = [], bicycles = [];
   let bicycleRack;
   for (const row of C.bollards.rows) for (let x = row.x0; x <= row.x1; x += row.step) {
     const { h, r } = C.bollards;
     geos.metal.push(new THREE.CylinderGeometry(r, r, h - 0.12, 12).translate(x, (h - 0.12) / 2, row.z), new THREE.CylinderGeometry(r + 0.01, r + 0.01, 0.04, 12).translate(x, h - 0.02, row.z));
     glow.push(new THREE.CylinderGeometry(r - 0.005, r - 0.005, 0.08, 12).translate(x, h - 0.08, row.z));
+    const PL = C.bollards.pool; // #1525: its pool of light on the ground (no light object)
+    pools.push(poolGeometry(x, row.z, 1, 0, PL.r, PL.r, groundY, { rings: PL.rings, segs: PL.segs }));
     segments.push(...rectSegs(x - r, x + r, row.z - r, row.z + r));
   }
   {
@@ -553,6 +556,10 @@ export function buildCourtyard() {
   }
   const bollardGlow = new THREE.MeshBasicMaterial({ color: 0x8d8b84, toneMapped: false });
   add(glow, bollardGlow, false);
+  const PL = C.bollards.pool, bollardPools = new THREE.Mesh(mergeGeometries(pools), fadeGlowWithFog(glowMaterial(PL.color)));
+  Object.assign(bollardPools, { name: 'courtyard-bollard-pools', visible: false, renderOrder: 2 }); bollardPools.material.side = THREE.FrontSide; // seen from above only: one pass
+  group.add(bollardPools);
+  let poolLit = false, poolLevel = 0, poolT = performance.now();
   // shrubs and perennials in the plantings: instanced, some with flowers
   let seed = 9;
   const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
@@ -611,5 +618,10 @@ export function buildCourtyard() {
       }
     },
     /** night 0 … 1 (with the window lights): the pergola's bulbs glow after dusk (no lights, colour only). */
-    update(night, power = true) { const on = night > 0.35 && power; bulbMat.color.copy(on ? lit : off); bollardGlow.color.copy(on ? lit : bollardOff); } }; // the bollards too (#112); power: not in a power cut (#604)
+    update(night, power = true) { const on = night > 0.35 && power; bulbMat.color.copy(on ? lit : off); bollardGlow.color.copy(on ? lit : bollardOff); // the bollards too (#112); power: not in a power cut (#604)
+      // #1525: the bollards' ground pools fade in after dusk (hysteresis like the street lamps), out in a power cut
+      const now = performance.now(), dt = Math.min(1, (now - poolT) / 1000); poolT = now;
+      if (!poolLit && night > PL.on && power) poolLit = true; else if (poolLit && (night < PL.off || !power)) poolLit = false;
+      poolLevel = fadeGlow(bollardPools, poolLevel, poolLit, dt, PL.fade, PL.peak);
+    } };
 }

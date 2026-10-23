@@ -12,7 +12,7 @@ import { grassUV } from './grass.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE, CORE_A, CORE_B, CORE_C, NEIGHBOR_OPENINGS as O, HUS_L, FOLIAGE, ELEVATION, TERRAIN_FAR, SOUTH_PLATEAU, PADDOCK } from './config.js';
 import { gridGround, southPointGround } from './elevation.js';
-import { glowMaterial, poolGeometry, washGeometry, fadeGlow } from './groundglow.js';
+import { glowMaterial, poolGeometry, washGeometry, fadeGlow, fadeGlowWithFog } from './groundglow.js';
 import { neighborGlass } from './neighborglass.js';
 import { registerTrees, registerSnow } from './seasons.js';
 import { lobeGeometry, leafMaterial, trunkGeometry, barkMaterial } from './foliage.js';
@@ -1566,21 +1566,57 @@ export function buildWindowLights(detailed=[]) {
     };
     if(p.routine)routines.set(p.routine,habit);return habit;
   });
+  // #1525: Hus A–C's lit ground-floor windows spill a faint pool onto the ground in front (one additive mesh, no light
+  // object; per-vertex strength = the window's own lit level). Panes sharing a routine (one detailed window) make one pool.
+  const W = COURTYARD.windowSpill, spillGroups = new Map();
+  spots.forEach((p, i) => {
+    if (!p.lunden) return;
+    const out = [p.x + p.n[0] * W.out, p.z + p.n[1] * W.out], sill = p.y - p.s[1] * 0.725;
+    if (sill - groundY(out[0], out[1]) > W.maxUp) return;
+    const key = p.routine ?? i, half = p.s[0] * 0.625, along = [p.n[1], -p.n[0]];
+    const g = spillGroups.get(key) ?? { i, n: p.n, lo: Infinity, hi: -Infinity, c: 0 };
+    const a = p.x * along[0] + p.z * along[1];
+    g.lo = Math.min(g.lo, a - half); g.hi = Math.max(g.hi, a + half); g.c = p.x * p.n[0] + p.z * p.n[1];
+    spillGroups.set(key, g);
+  });
+  const spillGeos = [], spillRanges = [];
+  let spillVerts = 0;
+  for (const g of spillGroups.values()) {
+    const along = [g.n[1], -g.n[0]], a = (g.lo + g.hi) / 2, c = g.c + W.out; // back from (along, normal) coordinates
+    const cx = along[0] * a + g.n[0] * c, cz = along[1] * a + g.n[1] * c;
+    const geo = poolGeometry(cx, cz, along[0], along[1], Math.max(1, (g.hi - g.lo) * W.along), W.across, groundY, { rings: W.rings, segs: W.segs });
+    const n = geo.attributes.position.count;
+    spillRanges.push([g.i, spillVerts, n]); spillVerts += n; spillGeos.push(geo);
+  }
+  const spill = spillGeos.length ? new THREE.Mesh(mergeGeometries(spillGeos), fadeGlowWithFog(glowMaterial(W.color))) : null;
+  if (spill) {
+    spill.geometry.setAttribute('color', new THREE.Float32BufferAttribute(new Float32Array(spillVerts * 3), 3));
+    spill.material.vertexColors = true; spill.material.opacity = W.peak; spill.material.side = THREE.FrontSide; // seen from above only: one pass
+    Object.assign(spill, { name: 'windowSpillPools', visible: false, renderOrder: 2 });
+  }
   const col = new THREE.Color();
   let last = -1, lastPower = true;
   return {
-    object: mesh,
+    object: mesh, spill,
     /** hour 0–24, night 0 (day) … 1 (night): switch windows as their routines say; `power` false: Kv. Lunden's windows dark (#604). */
     update(hour, night, power = true) {
       if (Math.abs(hour - last) < 0.05 && last >= 0 && power === lastPower) return;
       last = hour; lastPower = power;
+      const levels = new Float32Array(habits.length);
       habits.forEach((h, i) => {
         const lit = h.home && ((hour > h.on && hour < h.off) || (h.off > 24 && hour < h.off - 24) || (h.early && hour > h.wake && hour < h.leave));
         const k = !power && h.lunden ? 0 : h.hall ? 0.85 * night : lit ? 0.25 + 0.75 * night : 0;
         col.setRGB(1.0 * k, (0.78 + 0.12 * h.tint) * k, (0.5 + 0.45 * h.tint) * k);
         mesh.setColorAt(i, col);
+        levels[i] = k;
       });
       mesh.instanceColor.needsUpdate = true;
+      if (spill) { // #1525: each pool as bright as its window (k ≤ 1), scaled by night so daytime-lit rooms leave the ground alone
+        const a = spill.geometry.attributes.color.array;
+        let any = false;
+        for (const [i, v0, n] of spillRanges) { const v = levels[i] * night; if (v > 0.01) any = true; a.fill(v, v0 * 3, (v0 + n) * 3); }
+        spill.geometry.attributes.color.needsUpdate = true; spill.visible = any;
+      }
     },
   };
 }
@@ -1858,7 +1894,7 @@ export function* surroundingsParts({ grass, husL = null }) {
   group.add(siteGroundAO(backdrops, husL)); // distant ground shadows under the trees and along the wall feet (#1079)
   yield 0.9;
   const windows = buildWindowLights(details.list), street = buildStreet(groundY, lampGroundY, treeFeet); // #1363: path poles/pools follow actual terrain
-  group.add(windows.object, street.object, buildStreetSigns(groundY)); // + street name signs at the junctions (#583)
+  group.add(windows.object, ...(windows.spill ? [windows.spill] : []), street.object, buildStreetSigns(groundY)); // + street name signs at the junctions (#583)
   group.userData.windows = { object: windows.object, update(hour, night, power = true) { for (const b of backdrops) b.userData.updateClocks(hour); windows.update(hour, night, power); updateLoggiaLamps(night, power); street.update(night);glassMaterial.envMapIntensity=THREE.MathUtils.lerp(O.reflectionDay,O.reflectionNight,night); } };
   return group;
 }

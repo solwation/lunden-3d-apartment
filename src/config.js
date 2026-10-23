@@ -1231,7 +1231,15 @@ export const COURTYARD = {
   // patio walk, the south walk and the walk along Hus A, a red wooden playhouse by the sandbox, a bike rack with bikes
   // by the portik walk
   bollards: { h: 0.8, r: 0.07, rows: [{ x0: -42.47, x1: 9.65, z: 17.85, step: 6 }, { x0: -43.5, x1: -21.5, z: 29.75, step: 7 },
-    { x0: -12, x1: 10, z: 26.85, step: 6 }] },
+    { x0: -12, x1: 10, z: 26.85, step: 6 }],
+    // #1525: each bollard lights the ground round it at night: an additive pool (groundglow.js, no light object) of
+    // radius `r` m, warm `color` at `peak` opacity; lit above `on` night, out below `off`, `fade` s (sizes/strength *guess*
+    // by eye, like the street lamps' #434 pools); 5 rings × 20 segments keep it to ~180 triangles a bollard
+    pool: { r: 3.4, color: 0xffcf8f, peak: 0.45, on: 0.35, off: 0.3, fade: 1.5, rings: 5, segs: 20 } },
+  // #1525: lit ground-floor windows of Hus A–C spill a faint pool onto the ground in front of them at night (one additive
+  // mesh, its per-window strength the window's own lit level). Windows whose sill is within `maxUp` m of the ground
+  // outside; the pool's centre `out` m out, radii `along` × window width and `across` m; `peak` opacity (all *guess* by eye)
+  windowSpill: { maxUp: 2.6, out: 1.6, along: 0.9, across: 2.2, color: 0xffd6a0, peak: 0.32, rings: 3, segs: 12 },
   playhouse: { x0: -29.9, x1: -27.8, z0: 23.8, z1: 25.7, h: 1.3, ridge: 1.9, color: 0x9c2f24, trim: 0xf2efe7 },
   // #681 (Peab's brochure p. 16 only promises "en lekplats för barnen"; the situation plan shows the gravel playground, so
   // the equipment, places and sizes are all *guess*): a wooden A-frame swing (beam `len` m along x at height `h`, legs
