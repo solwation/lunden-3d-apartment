@@ -2831,6 +2831,10 @@ export const QUALITY = {
   levels: 4, startLowMemory: 2, ignoreOver: 0.25, cooldown: 1.5, minPixelRatio: 0.5,
   down: { hitchMs: 50, hitches: 3, window: 0.5, fps: 30, slowFor: 1.5 },
   up: { fps: 52, after: 5, blocked: 20 },
+  // #1509: the player's frame-rate target moves Auto's thresholds only (60 = the values above; 30 accepts a slower scene
+  // before stepping down and a lower rate before stepping up). It is a load budget, not a promise, and no render cap (*guess*).
+  targets: { 60: { down: {}, up: {} }, 30: { down: { fps: 20, hitchMs: 80 }, up: { fps: 27 } } },
+  names: ['Lägsta', 'Låg', 'Medel', 'Hög'],
   pixelRatio: [0.6, 0.75, 0.9, 1],
   shadowSize: [1024, 1024, 2048, 2048],
   shadowInterval: [1.0, 0.75, 0.5, 0.4],

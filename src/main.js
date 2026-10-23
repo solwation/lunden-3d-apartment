@@ -81,6 +81,7 @@ import { updateReflections, reflectors, mirrorTarget } from './reflections.js';
 import { WarmUp } from './warmup.js';
 import { loadingStep, loadingYield } from './loadingstep.js';
 import { Quality } from './quality.js';
+import { QualitySetting } from './qualitysetting.js';
 import { HitchLog } from './hitchlog.js';
 import { applySeason } from './seasons.js';
 import { ChristmasSeason } from './christmas.js';
@@ -238,6 +239,7 @@ const params0 = new URLSearchParams(location.search);
 const shotMode = new URLSearchParams(location.search).has('shot'); // screenshots: always full resolution
 const pinned = params0.has('quality') ? +params0.get('quality') : (TEST ? 0 : shotMode ? QUALITY.levels - 1 : null);
 const quality = new Quality({ start: pinned ?? (lowMemory ? QUALITY.startLowMemory : QUALITY.levels - 1), remember: pinned === null });
+new QualitySetting(quality, { level: document.getElementById('quality-level'), fps: document.getElementById('quality-fps'), note: document.getElementById('quality-note') }, { pinned: pinned !== null });
 quality.register('resolution', { // the canvas's pixel ratio (a step reallocates the drawing buffer once)
   apply: (l) => { const r = Math.max(QUALITY.minPixelRatio, MAX_PIXEL_RATIO * QUALITY.pixelRatio[l]); if (Math.abs(renderer.getPixelRatio() - r) > 1e-3) renderer.setPixelRatio(r); },
   state: () => `px ${renderer.getPixelRatio().toFixed(2)}`, cost: 'fill rate: every pixel of every pass' });

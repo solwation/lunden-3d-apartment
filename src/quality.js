@@ -11,15 +11,27 @@ import { QUALITY as Q } from './config.js';
 // size and cadence, mirrors, culling distance, particles …). `cost` is a short note for the `&perf` overlay and the
 // docs (what the knob saves). The level reached is remembered per device (localStorage `lunden.quality`), so a weak
 // device starts where it ended instead of stuttering its way down every time.
-const KEY = 'lunden.quality';
+// #1509: the player's choice is saved apart from the last auto-chosen level: `lunden.quality` stays the LAST AUTO level
+// (so an old install keeps its level and simply counts as Auto), `lunden.quality.mode` is `auto` or `manual`,
+// `lunden.quality.manual` the manual level and `lunden.quality.fps` the 30/60 target. Auto never writes the manual keys
+// and a manual choice never writes `lunden.quality`. A URL/test/shot lock (`remember: false`) reads and writes none of them.
+const KEY = 'lunden.quality', KEY_MODE = 'lunden.quality.mode', KEY_MANUAL = 'lunden.quality.manual', KEY_FPS = 'lunden.quality.fps';
+const read = (k) => { try { return localStorage.getItem(k); } catch { return null; } };
+const write = (k, v) => { try { localStorage.setItem(k, String(v)); } catch { /* private mode */ } };
+const num = (v) => (v !== null && v !== '' && Number.isFinite(+v) ? +v : null);
 
 export class Quality {
   constructor({ start = Q.levels - 1, max = Q.levels - 1, remember = true } = {}) {
     this.max = max;
     this.remember = remember;
-    let saved = null;
-    try { saved = remember ? localStorage.getItem(KEY) : null; } catch { /* private mode */ }
-    this.level = Math.min(max, Math.max(0, saved !== null && saved !== '' && Number.isFinite(+saved) ? +saved : start));
+    this.locked = !remember;                                 // URL/test/shot lock: no saved choice is read or written
+    const clamp = (v) => Math.min(max, Math.max(0, Math.round(v)));
+    const autoSaved = this.locked ? null : num(read(KEY)), manualSaved = this.locked ? null : num(read(KEY_MANUAL));
+    this.autoLevel = clamp(autoSaved ?? start);              // the last level Auto chose
+    this.manualLevel = clamp(manualSaved ?? this.autoLevel);
+    this.mode = !this.locked && read(KEY_MODE) === 'manual' && manualSaved !== null ? 'manual' : 'auto';
+    this.target = !this.locked && num(read(KEY_FPS)) === 30 ? 30 : 60; // frame-rate target: steers Auto's budget, no promise
+    this.level = this.locked ? clamp(start) : this.mode === 'manual' ? this.manualLevel : this.autoLevel;
     this.knobs = new Map();
     this.hitches = [];     // times (s) of recent long frames
     this.slow = 0;         // seconds in a row under Q.down.fps
@@ -49,9 +61,32 @@ export class Quality {
     if (level < prev) this.lastDown = this.clock;
     this.hitches.length = 0; this.slow = this.fast = 0;
     for (const k of this.knobs.values()) k.apply(level, this);
-    if (this.remember) try { localStorage.setItem(KEY, String(level)); } catch { /* private mode */ }
+    if (why !== 'manual' && this.mode === 'auto') this.autoLevel = level;
+    if (this.remember && why !== 'manual' && this.mode === 'auto') write(KEY, level); // Auto's own level only
     this.why = why;
     for (const fn of this.listeners) fn(level, prev, why);
+    return true;
+  }
+
+  /** The player's choice: `'auto'` or a manual level 0…max. Returns false while a URL/test/shot lock holds. */
+  choose(choice) {
+    if (this.locked) return false;
+    if (choice === 'auto') {
+      this.mode = 'auto'; write(KEY_MODE, 'auto');
+      this.set(this.autoLevel, 'auto'); this.hitches.length = 0; this.slow = this.fast = 0;
+    } else {
+      const level = Math.min(this.max, Math.max(0, Math.round(+choice)));
+      this.mode = 'manual'; this.manualLevel = level; write(KEY_MODE, 'manual'); write(KEY_MANUAL, level);
+      if (!this.set(level, 'manual')) for (const fn of this.listeners) fn(level, level, 'manual');
+    }
+    return true;
+  }
+
+  /** The 30 or 60 FPS target: Auto's thresholds (`Q.targets`). Saved; a lock ignores it. */
+  setTarget(fps) {
+    if (this.locked) return false;
+    this.target = fps === 30 ? 30 : 60; write(KEY_FPS, this.target); this.reset();
+    for (const fn of this.listeners) fn(this.level, this.level, 'target');
     return true;
   }
 
@@ -62,7 +97,8 @@ export class Quality {
   update(dt) {
     if (!(dt > 0) || dt > Q.ignoreOver) { this.reset(); return false; } // a pause or tab switch, not a frame
     this.clock += dt;
-    const fps = 1 / dt, D = Q.down, U = Q.up;
+    if (this.mode !== 'auto') { this.reset(); return false; } // a manual level never moves
+    const T = Q.targets[this.target], fps = 1 / dt, D = { ...Q.down, ...T.down }, U = { ...Q.up, ...T.up };
     if (dt * 1000 >= D.hitchMs) this.hitches.push(this.clock);
     while (this.hitches.length && this.clock - this.hitches[0] > D.window) this.hitches.shift();
     this.slow = fps < D.fps ? this.slow + dt : Math.max(0, this.slow - dt * 0.5);

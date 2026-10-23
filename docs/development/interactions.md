@@ -1995,6 +1995,8 @@ Escape until dismissed; focus returns to the action that opened the child.
 The touch editor temporarily hides settings, then returns to its entry button.
 Leaving the menu closes settings without moving focus back into the hidden menu.
 
+The same dialog holds the Grafik / Bildmål choice (#1509, performance.md): plain buttons, so keyboard, mouse and touch all work.
+
 The public project already keeps keyboard/mouse/touch help and its touch editor
 entry in a separate native `#help-dialog`; it has no chat, player statistics or
 personal home-reset sections. This original menu reorganization needs no public

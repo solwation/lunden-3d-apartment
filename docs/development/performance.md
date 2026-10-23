@@ -831,6 +831,15 @@ while playing (not on the start screen or paused), after the warm-up, and not wi
 (`lowMemory`) start at 2, everything else at 3. perfcount checks the drop on a low frame rate, the drop within 0.6 s on
 repeated hitches, no step up right after a step down, the recovery, and that the knobs are registered.
 
+**Graphics choice (#1509).** The settings dialog (`#settings-dialog`, `src/qualitysetting.js`) offers Auto or a named manual
+level (Lägsta / Låg / Medel / Hög = levels 0–3, `QUALITY.names`) and a 30 / 60 FPS target. Saved separately in `localStorage`:
+`lunden.quality` stays the LAST AUTO level (an old install therefore migrates as Auto at its old level, no reset),
+`lunden.quality.mode` (`auto`/`manual`), `lunden.quality.manual`, `lunden.quality.fps`. Auto never writes the manual keys and a manual
+level never moves (`Quality.update` returns at once). The target only picks Auto's thresholds (`QUALITY.targets`: 60 = the
+existing values; 30 steps down under 20 fps / 80 ms hitches and up over 27 fps, *guess*); it is a load budget, not a promise and
+no render cap exists. `&quality=n`, `&test` and `&shot` lock the level (`remember: false`): they read and write no saved choice and
+the dialog disables its buttons with a note. Checks: `node tools/qualitychoicetest.mjs` (state), `tools/qualitysettingtest.cjs` (browser).
+
 The registry: a feature that costs frame time calls `quality.register(name, { apply(level, quality), state(level), cost })`
 (main.js, after the thing exists). `apply` runs at once and on every change and sets the feature's cost for that level,
 reading its per-level value from a `QUALITY` table; `state` is the line in the `&perf` overlay (`quality.describe()`),
