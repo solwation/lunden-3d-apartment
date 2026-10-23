@@ -10,6 +10,7 @@ import { buildContactShadows } from './contactshadow.js';
 import * as THREE from 'three';
 import { woodMaterial } from './woodgrain.js';
 import { freeCanvasAfterUpload } from './lowmemory.js';
+import { profilePath } from './resourceprofile.js';
 import { sfx } from './audio.js';
 import { mergeStatic } from './merge.js';
 import { buildBinderProp } from './catbinderprop.js';
@@ -3426,7 +3427,7 @@ function painting(item) {
   const g = new THREE.Group();
   const { w, h, frame: f, depth: d } = item;
   const black = new THREE.MeshStandardMaterial({ color: 0x111113, roughness: 0.5 });
-  const tex = new THREE.TextureLoader().load(new URL(`../${item.texture}`, import.meta.url).href);
+  const tex = new THREE.TextureLoader().load(new URL(`../${profilePath(item.texture)}`, import.meta.url).href); // light copy on light profiles (#1511)
   tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
   const pic = new THREE.Mesh(new THREE.PlaneGeometry(w - 2 * f, h - 2 * f), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.85 }));
   pic.position.set(0, 0, d - 0.004);
@@ -3506,7 +3507,7 @@ function pictures(item) {
   const [gc, gr] = item.grid;
   if (item.paint && !pictureAtlases.has(item.paint)) pictureAtlases.set(item.paint, paintedPicture(item.print));
   if (!item.paint && !pictureAtlases.has(item.atlas)) {
-    const tex = new THREE.TextureLoader().load(new URL(`../${item.atlas}`, import.meta.url).href);
+    const tex = new THREE.TextureLoader().load(new URL(`../${profilePath(item.atlas)}`, import.meta.url).href); // light copy on light profiles (#1511)
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = 4;
     pictureAtlases.set(item.atlas, tex);

@@ -761,6 +761,13 @@ source-hashed artifacts and limits. No full World, E/touch-dispatch or physical-
 
 # Browser verification and test selection
 
+Startup resource profile (#1511): `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/resourceprofiletest.cjs BASE
+[--base BASELINE] [--out DIR] [--skip-app]` checks the pure decision, `&res=` remember/forget, light copies of exactly
+three's upload size with matching GPU pixels, then real phone (`&lowmem` iPhone 844×390 touch) and desktop loads:
+network and image-creation logs, family sources, real allocation sizes and an interaction fingerprint (bounds, interact
+names, raycasts) against the baseline export. `--skip-app` is the ~20 s component part; the full run takes ~10 min under
+SwiftShader. After changing a listed picture, rerun `tools/lighttextures.cjs`.
+
 Static phone canvas policy (#1359): `PLAYWRIGHT_MODULE=… CHROME_PATH=… SHOTS=/tmp/static-canvas
 node tools/staticcanvascheck.cjs BASE` compares real WebGL pixels with Three's existing
 automatic512px resizing, first-upload release, desktop preservation and all A/B/C/L door

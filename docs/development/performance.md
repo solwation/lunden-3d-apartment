@@ -2,6 +2,45 @@
 
 Raw callback interval diagnostics (#1507): [capture protocol, state classification, statistics and measurement limits](frame-intervals.md).
 
+## Startup resource profile: light wall pictures (#1511, part of #1506)
+
+`src/resourceprofile.js` chooses `light` or `full` once in `main.js`, right after the renderer's texture cap is set
+and before `buildWorldSliced`, so nothing is fetched before the decision; it never changes live and is independent of
+the running Quality level. Auto rule: light when the renderer's real upload cap is ≤ `RESOURCE_PROFILE.light.max`
+(512, today the `LOW_MEMORY` cap, so the full file could not be shown larger anyway) or `navigator.deviceMemory` ≤ 2
+(*guess*, Chromium only). Device type is not read directly, but today the 512 cap itself still comes from the
+`lowMemory` UA rule; no RAM/VRAM detection is assumed. `&res=light|full` overrides and is remembered in
+`lunden.resProfile`; `&res=auto` forgets it. The decision and swapped files appear in the diag snapshot (`resources`).
+
+First family: the eight photographed wall pictures loaded by `furniture.js` `painting`/`pictures`. `profilePath` maps
+them to `textures/light/` copies made by `tools/lighttextures.cjs` at exactly the size three's upload resize produced
+from the full file under the 512 cap. Same meshes, materials, bounds, raycast targets and collision; only the fetched
+file differs. miele.jpg (600×440, also drawn by the Nest hub) and the drawing for the poster wall are left as they are.
+
+Inventory before the choice (phone profile, d1cf66e0): only ten fetched image files exist (1.2 MB); everything else is
+procedural. Existing pre-build variants: `CAMPUS_LOD` facades, car LOD, bird count, phone shadow tiles. Existing
+"build full, shrink afterwards" paths: the 512 upload cap on every texture, `freeCanvasAfterUpload` canvases (still
+painted at desktop size first) and freed geometry copies. `phonememtest` start route: 268 CPU canvases ~93 MiB after
+warm-up (largest makers ao, computer hub, frozen meals, cups, painted picture, bottle labels), textures ~92 MiB GPU,
+geometry CPU copies ~115 MiB. Those makers are the natural next families; each needs its own size parameter.
+
+Measured with `tools/resourceprofiletest.cjs` (headless Chromium 1248/SwiftShader, phone = iPhone UA + `&lowmem`
+844×390 touch, no physical phone; desktop 1280×800), against a baseline export of d1cf66e0:
+
+| | phone before | phone light | phone `&res=full` | desktop before/after |
+|---|---:|---:|---:|---:|
+| family bytes fetched | 1 084 604 | 344 546 | 1 084 604 | 1 084 604 |
+| all `textures/` bytes | 1 295 962 | 555 904 | 1 295 962 | 1 295 962 |
+| decoded family sources (w×h×4) | 31.9 MiB | 6.0 MiB | 31.9 MiB | 31.9 MiB |
+| family GPU allocations | 8, ≤ 512 px | identical sizes | identical | full sizes, unchanged |
+
+The full picture files are neither requested nor assigned to an `<img>` on the light profile. Light vs `&res=full`
+on the phone and the baseline give identical mesh bounds, vertex counts and raycast results; component pixels differ
+by 0.35–1.95/255 on average (JPEG/resampling). Time to `__app` (35–70 s) and JS heap (464–599 MiB) varied more between
+single runs than any effect, so no startup-time or heap gain is claimed. Decoded image memory is an estimate:
+browsers may discard or keep decoded bitmaps; the GPU texture memory is unchanged by design. Public downstream:
+the pictures are personal photos and are not in kvarteret-lunden, so no transfer applies.
+
 ## Merged furnishings seen from outside (#1540, partial #1537)
 
 Phones only (`DetailCuller.buildProxies`, `src/detail.js`). Once at start, right after `freeSceneGeometryCopies` has packed

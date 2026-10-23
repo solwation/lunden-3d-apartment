@@ -17,6 +17,8 @@ src/loadingstep.js     loadingStep(name, fraction): names the current startup st
 src/longtasks.js       startup long tasks (PerformanceObserver 'longtask', buffered) with their loading step, until the
                        card is done: __lundenLoading.long = {top: [[ms, step]…], n, sum}; crashlog.js beats it as `long` (#1133)
 src/bootstrap.js       lightweight startup gate: bounded version check before importing main.js (#512)
+src/resourceprofile.js startup resource profile (#1511): light/full chosen once in main.js after the renderer's texture
+                       cap and before the world is built; `profilePath` swaps listed files for their textures/light/ copies
 src/startup.js         fresh HTML/build check + cache-busted early update; loop guards; no scene on outgoing page
 src/version.js         BUILD/CONTENT stamps + polling for publications later during a visit
 src/changelog.js       changelog list + the note on the freezer (newest `t` first, "Nytt" by the highest `t` seen, #341; E to read; `scrollNote`: ↑ ↓ / W S, PageUp/Down, Space,

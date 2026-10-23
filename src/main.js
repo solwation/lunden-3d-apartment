@@ -28,6 +28,7 @@ import { buildCheatNote } from './cheatnote.js';
 import { REPORTS, CHEAT_NOTE, LOW_MEMORY, QUALITY, STANDARD, SHADOW_BOX, STARTUP, KITCHEN_TOWEL_MATERIAL, LIGHTING, VIEW_LOD, VIEW_NEAR, BIRDS } from './config.js';
 import { fetchStartupJSON } from './startuprecovery.js';
 import { lowMemory, reloadOnContextRestore, freeSceneGeometryCopies } from './lowmemory.js';
+import { decideResourceProfile, resourceProfileInfo } from './resourceprofile.js';
 import { addSceneShadowTiles, installShadowTiles } from './shadowtiles.js';
 import { addSceneCarLods, updateCarLods, carLodState } from './viewlod.js';
 import { loadBeerShelf } from './beershelfdata.js';
@@ -204,6 +205,8 @@ loadingStep('Startar 3D-grafiken', 0.1); // names a failed WebGL context in the 
 const renderer = new THREE.WebGLRenderer({ antialias: !TEST, alpha: true });
 // Phones and tablets get a smaller memory footprint (LOW_MEMORY, src/lowmemory.js): iOS otherwise kills the tab.
 if (lowMemory) renderer.capabilities.maxTextureSize = Math.min(renderer.capabilities.maxTextureSize, LOW_MEMORY.maxTextureSize);
+// #1511: the startup resource profile is fixed here, before the house's first fetch/build (src/resourceprofile.js).
+decideResourceProfile(renderer.capabilities.maxTextureSize);
 const MAX_PIXEL_RATIO = Math.min(window.devicePixelRatio, 1.5, lowMemory ? LOW_MEMORY.maxPixelRatio : Infinity);
 renderer.setPixelRatio(MAX_PIXEL_RATIO);
 renderer.shadowMap.enabled = !TEST;
@@ -3298,7 +3301,7 @@ hitch.intervals.metadata = () => {
     contextLost: gl.isContextLost(), acceleration: 'Check chrome://gpu; renderer string alone is not proof',
     viewport: { width: innerWidth, height: innerHeight, dpr: devicePixelRatio,
       renderWidth: renderer.domElement.width, renderHeight: renderer.domElement.height },
-    quality: quality.level, auto: quality.diagnostics(), pinned, lowMemory, test: TEST, warmup: warm.detail,
+    quality: quality.level, auto: quality.diagnostics(), pinned, lowMemory, resources: resourceProfileInfo(), test: TEST, warmup: warm.detail,
     scenario: Object.fromEntries(['time', 'month', 'day', 'freeze', 'weather', 'mess', 'life']
       .filter(k => params0.has(k)).map(k => [k, params0.get(k)])) };
 };

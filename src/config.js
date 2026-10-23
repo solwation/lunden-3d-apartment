@@ -2929,6 +2929,17 @@ export const LOW_MEMORY = { maxTextureSize: 512, shadowMapSize: 1536, maxPixelRa
 // 1.0 → 1.25 (+3 MB: level 2 now draws at 1.125×, the top level at 1.25×) and shadowMapSize 1024 → 1536 (+5 MB; the
 // quality levels 0–1 stay at 1024 through QUALITY.shadowSize). maxTextureSize 768 was measured and NOT taken (+42 MB).
 // To go back: maxPixelRatio 1.0, shadowMapSize 1024. The 600 MB iOS budget is a *guess*; the adaptive levels still step down.
+
+// Startup resource profile (#1511, src/resourceprofile.js): chosen once before the house is built. `light` fetches the
+// copies in textures/light/ of the listed photographed pictures instead of the full files. `max` = their longest side,
+// equal to LOW_MEMORY.maxTextureSize, so on a phone the GPU texture is the same size as before (three used to shrink the
+// full file at upload); made by tools/lighttextures.cjs. Auto picks light when the renderer's upload cap is ≤ `max` or
+// navigator.deviceMemory reports ≤ `deviceMemory` GB (*guess*: conservative, Chromium only); `&res=light|full` overrides
+// and is remembered (`&res=auto` forgets). Every listed file needs its light copy (tools/resourceprofiletest.cjs).
+export const RESOURCE_PROFILE = { light: { max: 512, deviceMemory: 2, textures: [
+  'textures/stair-pictures.jpg', 'textures/angsgras-sovrum1.jpg', 'textures/tavla-svartvit-trappan.jpg',
+  'textures/tavla-akvarell-schaslong.jpg', 'textures/the-gulag-sovrum2.jpg', 'textures/linjeteckning-sovrum1.jpg',
+  'textures/eat-sleep-game-repeat-sovrum2.jpg', 'textures/tavla-guld-lila-vardagsrum.jpg'] } };
 // #1195 (phones, src/shadowtiles.js): a shadow-casting InstancedMesh whose instances spread over more than `minSpread` m
 // (the site's trees, the parked cars) casts through `size` m squares, so the ±14 m shadow box no longer draws the whole
 // site's batch on every shadow redraw. `size` *guess*: about the shadow box's width; smaller squares mean more objects to
