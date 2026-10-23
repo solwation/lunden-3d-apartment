@@ -10,7 +10,7 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
 // renderedTerrainY on 934e51f3: ten points just outside the lot (within 0.5–5 m of its edge) and seven on the other graded lots.
 const BASE=[[66,380,4.018222482098145],[70,392,4.2156],[85,352,4.172859869376992],[104,352.5,4.186265334373502],[115,363,4.454632],[112,368,4.486060800000001],[80,393,4.656142399999999],[95,382.5,4.478836000000001],[100,356,4.189449585429727],[72,378.5,4.131683370610531],[0,240,1.1518181818181819],[10,250,1.4082485255717512],[30,235,1.3100727071075196],[143,295,4.181846448904654],[150,300,3.692054877236719],[60,222,2.2515462832697493],[80,236,3.2019605342714073]];
 // #1553: south/terrain are the whole-scene totals measured on main 0ff9d52f (they move whenever any other lot or street changes: re-pin then).
-const BASE_COUNTS={south:49955,terrain:90659,house47:4.20059429063928};
+const BASE_COUNTS={south:48348,terrain:91146,house47:4.20059429063928};
 try{
  const frame=document.createElement('iframe');frame.width=480;frame.height=300;frame.src='../index.html?test&shot&month=6&cloud=';document.body.append(frame);await new Promise(r=>frame.onload=r);const w=frame.contentWindow;for(let i=0;i<360&&!w.__app?.scene;i++)await wait(500);if(!w.__app?.scene)throw Error('actual World did not finish loading');
  const A=w.__app,T=await w.eval("import('three')"),C=await w.eval("import('/src/config.js')"),S=await w.eval("import('/src/surroundings.js')"),P=await w.eval("import('/src/parkinglot1442.js')"),B=await w.eval("import('/src/southbackdrop.js')");

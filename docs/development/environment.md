@@ -737,6 +737,20 @@ sub-planes through the existing `lotCells` pieces; cost: `south-backdrop` +583 (
 Test: `tools/parking1445test.html` (rays on asphalt/paint, containment, ways, aisle width, counts, cost); `parking1444test` allows
 the paint's triangles. Houses 41/42/43 bases unchanged; A/B/C/L not applicable (site parking only).
 
+### Parking south of Sankt Lars 44 on civil sub-planes (#1446)
+
+OSM 145221629 (the concave eight-corner lot south of Sankt Lars 44, raw capacity 40/guess, no boxes: that is #1447) uses the
+#1444 mechanism by configuration only: `grade: {transition: 6, clip, tin, maxSlope: 0.2, fade: 'linear'}` (all *guess*). The
+6 m inset core is triangulated over its eight corners (6 sub-planes; all 18 triangulations keep 0.2, the smallest largest
+residual 1.37 m wins; steepest sub-plane 0.127). The whole lot lies south of `WALK.z1=250` (from z 345.9), so it is not
+reachable on foot and `WALK.maxSlope` 0.7 is its limit (steepest overlapping triangle 0.282 -> 0.324; old triangles within 6 m
+outside 0.236 -> 0.245, ground there unchanged). The outline encloses houses 48 and 49 (OSM overlap), so their ground changes
+under the graded lot: their emitted bases are the hard height control and stay at the earlier values through
+`keepBase` on the two building records (`southbackdrop.js`: `base=b.keepBase??max corner ground`). Houses 47 and 44 lie
+outside the 6 m band and are unchanged. Cost: `site-terrain` +487 (90659->91146), `south-backdrop` -1607 (the lot's asphalt
+2597->743 triangles plus hidden path triangles); no new mesh, material or texture. Test: `tools/parking1446test.html`
+(pinned values of 8c5556ec; `parking1444/1445/1452test` pin the new totals 91146/48252). Houses A/B/C/L: not applicable.
+
 ## Southern road embankment (#1382)
 
 `SOUTH_BANK` holds the11road controls and five10-point cross-sections from the same77-point LM export.
