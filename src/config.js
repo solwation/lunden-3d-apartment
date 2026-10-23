@@ -907,6 +907,9 @@ export const SITE = {
       {"source":"145221585","highway":"service","surface":"asphalt","surfaceSource":"guess","widthSource":"guess","path":[[43.50,384.31],[26.85,362.85]],"w":4.5,"terrain":"triangles"},
       {"source":"145221592","highway":"service","surface":"asphalt","surfaceSource":"guess","widthSource":"guess","path":[[19.61,402.79],[38.47,427.10]],"w":4.5,"terrain":"triangles"},
       {"source":"145221599","highway":"service","surface":"asphalt","surfaceSource":"guess","widthSource":"guess","path":[[36.11,343.59],[58.24,372.91],[49.03,380.04]],"w":4.5,"terrain":"triangles"},
+      // #1463: whole western service way from the same saved 2026-10-08 OSM snapshot; it joins 30633546, 145221573 and 145221576 at mapped nodes.
+      // Its outer end (-68.60,417.65) is the mapped node toward future outer-ring way 95036048 (no invented link/turnaround). Width/asphalt are guesses.
+      {"source":"145221612","highway":"service","surface":"asphalt","surfaceSource":"guess","widthSource":"guess","path":[[-68.60,417.65],[-74.73,422.08],[-97.60,388.93],[-108.93,372.45],[-127.61,345.26],[-134.70,334.97]],"w":4.5,"terrain":"triangles"},
     ],
     // #1262: sourced parking areas and street-side bays south of Höje å (OSM snapshot 2026-10-18)
     parking: [

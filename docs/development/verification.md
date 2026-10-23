@@ -497,6 +497,14 @@ nodes to saved outer-ring way `95036048`, the inner loop and `145221588`, comple
 forests with a 0.5m tree margin, and unchanged `WALK.z1=250`. The distant loop is not a claimed
 walkable route. Terrain-triangle cuts apply only to these four new strips.
 
+Western service link (#1463): run `node --test tools/servicewest1463test.mjs` and open
+`tools/servicewest1463test.html` against the actual World. The whole highway=service way `145221612`
+(113.32m) uses the same saved `osm-south-2026-10-08.json` projection, with 4.5m asphalt as explicit guesses.
+It shares mapped nodes with `30633546`, `145221573` and `145221576`; its outer end is the bare mapped node toward
+future way `95036048` (no invented link). The World test casts centre and ±2.1m side rays on all five segments and
+rays around each joint/end against actual merged south-land faces at the 25mm lift. Lamp placement is unchanged:
+it adds four fittings on the way and drops two now obstructed A/B end fittings (net +2).
+
 Garage contents behind drawn ceilings (#1439):
 `node --test tools/garageocclusiontest.mjs tools/desktopocclusiontest.mjs tools/phonedetailunittest.mjs tools/occlusiontest.mjs`
 checks22cases, including exact included/excluded A/B/C/L ceiling rectangles,
