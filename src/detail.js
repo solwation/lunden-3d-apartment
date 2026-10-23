@@ -1,10 +1,11 @@
 import * as THREE from 'three';
 import { PERF, PLANT_WIND } from './config.js';
 import { computeDetailBounds } from './combatworld.js';
-import { lowMemory } from './lowmemory.js';
+import { lowMemory, freeGeometryAfterUpload } from './lowmemory.js';
 import { detailOccluders, wholeBoxOccluded } from './occlusion.js';
 import { garageCeilings } from './ceilingbatchgate.js';
 import { hasNativeVertexCompile } from './lampwash.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 // Small-detail culling (#189): from the street the whole flat is in the view frustum (the walls don't stop three's
 // culling), so every handle, knob, bottle and trinket inside was a draw call of its own. A mesh smaller than
@@ -34,6 +35,8 @@ import { hasNativeVertexCompile } from './lampwash.js';
 // `PERF.detail.lowMemoryOutside` × their usual distance (#695: the kitchen's cups and bottles from the street), and their
 // outline line sets (architecture edges) beyond `PERF.detail.lowMemoryEdgesOutside` m (#1223: ~28 draw calls at the start
 // view for one-pixel lines through the windows).
+// #1540 (phones): from outside and beyond reach, a furnishing whose parts would all be drawn is drawn as its proxy, one
+// merged mesh per material built once at start (`buildProxies`, `updateProxies`); any change to a part shows the parts again.
 
 export const DETAIL_HIDDEN_LAYER = 7; // render-only culling; physical traces include this layer
 const D = PERF.detail;
@@ -78,12 +81,15 @@ export class DetailCuller {
     this.moving = []; // the items under a root with userData.moving
     this.movers = []; // those roots: their matrices are brought up to date before they are judged (no render has run yet)
     root.updateMatrixWorld(true);
+    const furniture = [], unitOf = new Map(), itemOf = new Map(); // (#1540: the furnishings' merged outside proxies)
     const walk = (o, moving, unit) => {
       if (o.userData.moving && !moving) this.movers.push(o);
       moving ||= !!o.userData.moving;
+      if (!moving && 'phoneDetailUnit' in o.userData) furniture.push(o);
       if (('detailUnit' in o.userData || (lowMemory && o.userData.phoneDetailUnit)) && !unit) {
         unit = this.unit(o, lowMemory && !!o.userData.phoneDetailUnit);
         this.items.push(unit);
+        unitOf.set(o, unit);
         if (moving) this.moving.push(unit);
       }
       for (const c of o.children) walk(c, moving, unit);
@@ -99,12 +105,25 @@ export class DetailCuller {
       // but it belongs to the visible facade, not to contents behind a closed leaf (#519).
       const exteriorDoor = !!o.userData.door?.exterior;
       const it = { o, r, center: s.center.clone(), box: o.geometry.boundingBox, cut: baseCut, baseCut, far: false, lamp, exteriorDoor, edges: !!o.isLineSegments };
+      itemOf.set(o, it);
       if (unit) unit.parts.push(it); // judged one by one only while its unit's flag is off
       else { this.items.push(it); if (moving) this.moving.push(it); }
     };
     walk(root, false, null);
     this.qualityScale = 1.0;
     this.outsideScale = lowMemory ? D.lowMemoryOutside ?? 1 : 1;
+    this.proxies = [];
+    this.proxySources = lowMemory ? { furniture, unitOf, itemOf } : null;
+  }
+
+  /** #1540 (phones): build the furnishings' merged outside proxies under `parent`, once, after lowmemory.js has packed the
+   * normals and before anything is uploaded (the parts' normals / uv leave the CPU after their first upload, #628). */
+  buildProxies(parent) {
+    if (!this.proxySources || this.proxies.length) return 0;
+    const { furniture, unitOf, itemOf } = this.proxySources;
+    this.proxySources = null;
+    this.proxies = buildProxies(furniture, unitOf, itemOf, parent);
+    return this.proxies.length;
   }
 
   /** Whole-model bounds: the car keeps its original policy; opted-in furniture uses phone LOD only from outside the flat. */
@@ -178,12 +197,16 @@ export class DetailCuller {
     const open = !!this.doorOpen();
     if (open !== this.open) { this.open = open; this.openings = open ? this.full : this.shut; this.last.set(1e9, 0, 0); } // look again now
     const still = p.distanceToSquared(this.last) < D.move * D.move;
-    if (still && !this.moving.length) return;
+    const { W, D: Dz, roof } = this.box;
+    const outside = p.x < 0 || p.x > W || p.z < 0 || p.z > Dz || p.y > roof;
+    if (!(still && !this.moving.length)) this.judgeAll(p, still, outside);
+    if (this.proxies.length) this.updateProxies(p, outside);
+  }
+
+  judgeAll(p, still, outside) {
     if (!still) this.last.copy(p);
     for (const o of this.movers) o.updateMatrixWorld();
     this.w ??= new THREE.Vector3();
-    const { W, D: Dz, roof } = this.box;
-    const outside = p.x < 0 || p.x > W || p.z < 0 || p.z > Dz || p.y > roof;
     for (const it of still ? this.moving : this.items) {
       if (!it.parts) this.judge(it, p, outside);
       else if (it.phoneUnit && !outside) {
@@ -339,9 +362,123 @@ export class DetailCuller {
   /** Look again at the next update even if the camera has not moved (something was taken into the hand or put down). */
   refresh() { this.last.set(1e9, 0, 0); }
 
+  /** #1540 (phones): from outside the flat and beyond reach, a furnishing that would be drawn (see `partsDrawn`) is drawn as
+   * its proxy (one mesh per material, built once from its parts at start) instead; its parts then sit on the hidden layer,
+   * still physical. Any change to a part (a door, a drawer, a new geometry or material, hidden, taken) shows the parts again
+   * until it is back as built. Inside the flat, near, or with any part culled the parts draw as before. */
+  updateProxies(eye, outside) {
+    const c = this.w ??= new THREE.Vector3();
+    for (const x of this.proxies) {
+      let on = false;
+      if (outside && shownInScene(x.root)) {
+        c.copy(x.center).applyMatrix4(x.root.matrixWorld);
+        // (a whole phone model as judged; another furnishing as soon as any of its parts is drawn: the proxy then also shows
+        // its small parts that the distance alone had culled, never fewer)
+        on = c.distanceTo(eye) > D.minDist + x.r && (x.unit ? drawnFar(x.unit.far) : partsDrawn(x)) && proxyValid(x);
+      }
+      if (on) {
+        if (!x.root.matrixWorld.equals(x.group.matrix)) { x.group.matrix.copy(x.root.matrixWorld); x.group.matrixWorldNeedsUpdate = true; }
+        for (const m of x.members) m.o.layers.set(DETAIL_HIDDEN_LAYER);
+      }
+      if (on === x.on) continue;
+      x.on = on;
+      for (const mesh of x.group.children) mesh.layers.set(on ? 0 : DETAIL_HIDDEN_LAYER);
+      // back to the culler's own decision: the whole model's outside, else the part's (inside the flat, one by one)
+      if (!on) for (const m of x.members) m.o.layers.set((x.unit && x.unit.far !== null ? x.unit.far : m.item?.far) ? DETAIL_HIDDEN_LAYER : 0);
+    }
+  }
+
   /** Everything back on the normal layer (screenshots of detail, tests). */
   reset() {
+    for (const x of this.proxies) { x.on = false; for (const mesh of x.group.children) mesh.layers.set(DETAIL_HIDDEN_LAYER); }
     for (const it of this.items) { it.far = false; for (const o of it.meshes ?? [it.o]) o.layers.set(0); for (const q of it.parts ?? []) q.far = false; }
     this.last.set(1e9, 0, 0);
   }
+}
+
+// #1540: merged outside proxies of whole furnishings (phones). Built once from the parts' current CPU data (before
+// lowmemory.js frees normals / uv after the first upload), in the furnishing's own frame, so moving the whole piece keeps it.
+const proxyRel = new THREE.Matrix4(), proxyInv = new THREE.Matrix4();
+const nativeRender = THREE.Object3D.prototype.onBeforeRender;
+const noRaycast = () => {};
+const drawnFar = (far) => far === false || far === undefined; // (judge's `far` is falsy, not always false, when drawn; null: judged inside)
+function attachedShown(o, root) {
+  for (let p = o; p; p = p.parent) { if (!p.visible) return false; if (p === root) return true; }
+  return false;
+}
+function shownInScene(o) {
+  for (let p = o; p; p = p.parent) if (!p.visible) return false;
+  return true;
+}
+const versionOf = (g) => Object.values(g.attributes).reduce((v, a) => v + a.version, g.index?.version ?? 0);
+function relativeMatrix(o, root, out) {
+  return out.multiplyMatrices(proxyInv.copy(root.matrixWorld).invert(), o.matrixWorld);
+}
+/** Another furnishing's proxy (parts judged one by one): some part drawn, and the parts it would add (culled small things,
+ * parts behind a wall) at most `D.proxyExtraTris` triangles. */
+function partsDrawn(x) {
+  let any = false, extra = 0;
+  for (const m of x.members) if (!m.item || drawnFar(m.item.far)) any = true; else extra += m.tris;
+  return any && extra <= D.proxyExtraTris;
+}
+function proxyValid(x) {
+  for (const m of x.members) {
+    const o = m.o;
+    if (o.geometry !== m.geometry || o.material !== m.material || m.material.visible === false || versionOf(o.geometry) !== m.version ||
+        !attachedShown(o, x.root)) return false;
+    const a = relativeMatrix(o, x.root, proxyRel).elements, b = m.rel.elements;
+    for (let i = 0; i < 16; i++) if (Math.abs(a[i] - b[i]) > 1e-5) return false;
+  }
+  return true;
+}
+/** One proxy group per furnishing that saves at least one draw call; parts that cannot merge stay as they are. */
+function buildProxies(roots, unitOf, itemOf, parent) {
+  const out = [];
+  for (const root of roots) {
+    root.updateMatrixWorld(true);
+    const skip = new Set([...(root.userData.things ?? []).map(t => t.model), ...(root.userData.frames ?? []), ...(root.userData.wallMirrors ?? []).map(m => m.object)]);
+    const groups = new Map();
+    const visit = (o) => {
+      if (skip.has(o) || !o.visible || o.userData.moving) return;
+      for (const c of o.children) visit(c);
+      const g = o.geometry, mat = o.material;
+      if (!o.isMesh || o.isInstancedMesh || o.isSkinnedMesh || o.isBatchedMesh || !g || !mat || Array.isArray(mat) || mat.transparent ||
+          mat.visible === false || o.renderOrder || o.onBeforeRender !== nativeRender || o.userData.noDetail ||
+          g.morphAttributes.position?.length || g.drawRange.start !== 0 || g.drawRange.count !== Infinity || !g.attributes.position ||
+          g.attributes.position.count > D.proxyMaxVertices) return; // (a heavy part is a draw call worth its own memory)
+      const attrs = Object.entries(g.attributes);
+      // a freed CPU copy (#628) or a rewritten attribute cannot be merged
+      if (attrs.some(([, a]) => a.isInterleavedBufferAttribute || a.usage !== THREE.StaticDrawUsage || a.cpuFreed || a.array.length < a.count * a.itemSize)) return;
+      const rel = relativeMatrix(o, root, new THREE.Matrix4());
+      if (rel.determinant() <= 0) return; // (a mirrored part would need its winding flipped)
+      const key = [mat.uuid, o.castShadow, o.receiveShadow, o.customDepthMaterial?.uuid, o.customDistanceMaterial?.uuid, !!g.index,
+        ...attrs.map(([n, a]) => `${n}:${a.itemSize}:${a.normalized}:${a.array.constructor.name}`).sort()].join('|');
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push({ o, rel, geometry: g, material: mat, version: versionOf(g), item: itemOf.get(o), tris: (g.index ? g.index.count : g.attributes.position.count) / 3 });
+    };
+    visit(root);
+    const lists = [...groups.values()].filter(l => l.length > 1); // (a material used once keeps its own part)
+    if (!lists.length) continue;
+    const group = new THREE.Group(), members = [], box = new THREE.Box3();
+    group.name = 'phone-furniture-proxy'; group.matrixAutoUpdate = false; group.matrix.copy(root.matrixWorld);
+    for (const list of lists) {
+      const geometry = mergeGeometries(list.map(m => m.geometry.clone().applyMatrix4(m.rel)));
+      if (!geometry) continue;
+      const first = list[0].o, mesh = new THREE.Mesh(geometry, first.material);
+      Object.assign(mesh, { castShadow: first.castShadow, receiveShadow: first.receiveShadow, matrixAutoUpdate: false, raycast: noRaycast });
+      if (first.customDepthMaterial) mesh.customDepthMaterial = first.customDepthMaterial;
+      if (first.customDistanceMaterial) mesh.customDistanceMaterial = first.customDistanceMaterial;
+      mesh.userData.noDetail = true;
+      // never read back (no raycast, bounds already computed): every vertex attribute leaves the CPU once on the GPU (#628)
+      freeGeometryAfterUpload(geometry, Object.keys(geometry.attributes));
+      mesh.layers.set(DETAIL_HIDDEN_LAYER);
+      geometry.computeBoundingBox(); geometry.computeBoundingSphere(); box.union(geometry.boundingBox);
+      group.add(mesh); members.push(...list);
+    }
+    const sphere = box.getBoundingSphere(new THREE.Sphere());
+    parent.add(group);
+    out.push({ root, group, members, unit: unitOf.get(root) ?? null, center: sphere.center, r: sphere.radius, on: false });
+  }
+  if (out.length) parent.updateMatrixWorld(true);
+  return out;
 }

@@ -2,6 +2,40 @@
 
 Raw callback interval diagnostics (#1507): [capture protocol, state classification, statistics and measurement limits](frame-intervals.md).
 
+## Merged furnishings seen from outside (#1540, partial #1537)
+
+Phones only (`DetailCuller.buildProxies`, `src/detail.js`). Once at start, right after `freeSceneGeometryCopies` has packed
+the normals and before the first upload, every furniture root (`'phoneDetailUnit' in userData`) gets a proxy group: each
+material (with the same shadow flags, depth materials and attribute layout) used by at least two of its static, opaque,
+native parts becomes one merged mesh in the piece's own frame. Things to take, picture frames and wall mirrors, transparent,
+instanced, skinned, morphed, custom-render, mirrored or dynamic parts and parts over `PERF.detail.proxyMaxVertices`
+(10000, *guess*: a heavy part is worth its own call) stay as they are. The proxy meshes never raycast and sit on the hidden
+layer until used; their CPU copies leave once uploaded (the warm-up draws them).
+
+`updateProxies` runs after the culler's own judgement each frame (~0.04 ms at the patio view). A proxy replaces its parts
+(they go to layer 7, still physical) only from outside the flat, beyond `minDist` + its radius (so reach, E and focus use
+the real parts), while every merged part is still attached, shown, unchanged in geometry/version/material and at its
+built relative matrix. A whole phone model swaps as judged (#1383/#1456: all its layers still change together); another
+furnishing swaps while any part is drawn and the culled parts it would add stay under `PERF.detail.proxyExtraTris` (2000,
+*guess*), so the proxy may show a few small parts the distance had culled, never fewer. An opened door, a taken or hidden
+part or a new material shows the real parts until it is back as built; moving the whole piece keeps the proxy. Nothing is
+rebuilt while playing.
+
+Measured on 1152c9c2 (real World, 844×390 lowmem/touch, quality 3/3, July 12:00, clear), main-pass calls/triangles:
+
+| view | before | after |
+|---|---|---|
+| patio toward house (2.9,16, 0°, −5°) | 456 / 919258 | 414 / 932070 |
+| patio corner | 366 / 854910 | 348 / 861486 |
+| patio far (2.9,22, 0°, −3°) | 440 / 854162 | 409 / 860052 |
+| near door (2.0,13.5, 20°, −5°), patio, start | 305 / 133 / 360 | unchanged |
+
+22 proxies, 50 meshes from 380 parts: 10.5 MB geometry on the GPU, no textures. Without the vertex cap 17.3 MB saved
+4–6 more calls. Pixel diffs: 48 / 20 px at toward-house / far (small parts now kept), 0 elsewhere. The toward-house view
+still needs the site culling of #1539 and more: what remains inside are the bottles and glasses to take (two calls each,
+a material of their own per bottle), curtains and furniture within reach of the patio. Hus A/B/C and L1004 have no
+furniture roots in the culler: not applicable. Check: `node --test tools/phoneproxytest.mjs`.
+
 ## Patio screen walls and the phone corner (#1498)
 
 The exact phone repro (844×390 touch + lowmem, initial quality3/max3, July 12:00 clear,

@@ -654,6 +654,9 @@ for empty/populated/cleaned/loaded records and parent visibility, retaining nati
 material, geometry and raycast identity. Pair with `messplacementtest.html`, actual vacuum/cloth
 use, and complete `perfcount.html?lowmem&w=844&h=390&quality=0` plus390×844 and desktop.
 
+Merged furnishings from outside (#1540): `node --test tools/phoneproxytest.mjs tools/phonedetailunittest.mjs tools/phonewholeocclusiontest.mjs`,
+then phone calls/pixels at patio toward house, patio corner, patio far and the near-door view, and a walk in through the patio door.
+
 Phone visibility (#1383): `node --test tools/phonedetailunittest.mjs tools/occlusiontest.mjs`,
 actual `tools/detailtest.html`, `PLAYWRIGHT_MODULE=… CHROME_PATH=… SHOTS=… node tools/patiousetest.cjs GAME`,
 then full `perfcount.html` at844×390/390×844 with lowmem and quality0. Inspect matched start, living,

@@ -2905,7 +2905,7 @@ export const WARM = { frames: 3, sliceMs: 8, programs: 4, compileMs: 20, batch: 
 export const HUD_FPS = { everyMs: 500 };
 // #1383: phoneUnitK angular cutoff and phoneUnitPad bounding margin are visual LOD guesses for whole simple furnishings.
 export const PERF = { frustumPad: 0.01, // metres: conservative Float32 transform guard for exact-box frustum proof (#1453)
-  detail: { maxR: 0.5, k: 0.009, minDist: 3.2, maxOcclude: 4, move: 0.3, occlusionMargin: 0.005, phoneUnitK: 0.07, phoneUnitPad: 0.2, lowMemoryOutside: 0.7, lowMemoryEdgesOutside: 6 }, hitch: { ms: 50, keep: 100 },
+  detail: { maxR: 0.5, k: 0.009, minDist: 3.2, maxOcclude: 4, move: 0.3, occlusionMargin: 0.005, phoneUnitK: 0.07, phoneUnitPad: 0.2, lowMemoryOutside: 0.7, lowMemoryEdgesOutside: 6, proxyExtraTris: 2000, proxyMaxVertices: 10000 }, hitch: { ms: 50, keep: 100 }, // #1540 proxy limits: *guess* (docs/development/performance.md)
   // #1507: bounded ~60 s at 60 Hz; trace only gaps over 50 ms (diagnostic budget guesses).
   intervals: { keep: 3600, markMs: 50 },
   budget: { calls: 520, tris: 1000000, texMB: 320, lowMemory: { calls: 370, tris: 950000, texMB: 225 } } };

@@ -3221,6 +3221,7 @@ const warm = new WarmUp({ renderer, scene, camera, shadowCamera: sun.shadow.came
   onSlowFrame: () => clock.getDelta() }); // (a slow warm-up frame is no reason to lower the resolution)
 posters.onBuilt = (p) => warm.add(p.mesh); // #1514: saved drawings arrive from IndexedDB during/after the compile stages
 freeSceneGeometryCopies(scene, renderer); // phone: normals / uv / colours leave the CPU after the first upload (#628)
+detail.buildProxies(scene); // phone (#1540): whole furnishings seen from outside, one mesh per material; before the first upload
 let mirrorFrame = 0;
 // The slowest frame since the crash heartbeat last looked (#669): its CPU time, the new programs it compiled, whether it redrew the shadow map and the warm-up state
 const frameDiag = { ms: 0, progs: 0, shadow: 0, warm: '', passes: 0, held: 0 };
