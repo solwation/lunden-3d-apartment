@@ -1,7 +1,8 @@
 // Startup resource profile (#1511): which variant of a resource family is fetched, decided once BEFORE the house is
 // built, so a light device never downloads/decodes the full-size file first and scales it down afterwards. Separate
 // from the running Quality levels (src/quality.js): a profile is chosen at start/reload only, never swapped live.
-// First family: the photographed wall pictures (RESOURCE_PROFILE.light.textures), whose light copies are exactly the
+// Families: profileCanvas/Size paint AO, meal packaging and the kitchen print at the selected backing size.
+// The photographed wall pictures (RESOURCE_PROFILE.light.textures), whose light copies are exactly the
 // size three would upload under the light texture cap anyway (tools/lighttextures.cjs), so the picture on the GPU is
 // the same size in both profiles; meshes, materials, raycast targets and collision do not depend on the profile.
 import { RESOURCE_PROFILE as R } from './config.js';
@@ -58,3 +59,17 @@ export function profilePath(path) {
 
 /** Diagnostics (?perf / the diag snapshot / tests): profile, why, whether main.js decided it and the swapped files. */
 export const resourceProfileInfo = () => ({ ...current, decided, swapped: log.map((e) => e.used) });
+
+/** Same aspect-preserving integer dimensions as three's upload cap; never enlarge a small source. */
+export function profileCanvasSize(width, height) {
+  const scale = current.profile === 'light' ? Math.min(1, R.light.max / Math.max(width, height)) : 1;
+  return { width: Math.max(1, Math.floor(width * scale)), height: Math.max(1, Math.floor(height * scale)) };
+}
+
+/** Paint in the original coordinate system, directly into the selected backing bitmap. */
+export function profileCanvas(width, height) {
+  const canvas = document.createElement('canvas'), size = profileCanvasSize(width, height);
+  canvas.width = size.width; canvas.height = size.height;
+  canvas.getContext('2d').scale(size.width / width, size.height / height);
+  return canvas;
+}

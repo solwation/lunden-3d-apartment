@@ -1,3 +1,4 @@
+import { profileCanvas } from './resourceprofile.js';
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -16,8 +17,7 @@ const cardboard = () => lazy('cardboard', () => std(0xb89a72, 0.85));
 
 /** A canvas material: draw(g, w, h) paints it. */
 function canvasMat(w, h, draw, roughness = 0.55) {
-  const c = document.createElement('canvas');
-  c.width = w; c.height = h;
+  const c = profileCanvas(w, h);
   draw(c.getContext('2d'), w, h);
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;

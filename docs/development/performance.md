@@ -41,6 +41,31 @@ single runs than any effect, so no startup-time or heap gain is claimed. Decoded
 browsers may discard or keep decoded bitmaps; the GPU texture memory is unchanged by design. Public downstream:
 the pictures are personal photos and are not in kvarteret-lunden, so no transfer applies.
 
+## Paint procedural sources at startup profile size (#1549)
+
+`profileCanvasSize` in `src/resourceprofile.js` applies the existing `RESOURCE_PROFILE.light.max`
+(now tied to `LOW_MEMORY.maxTextureSize`) before allocating a backing bitmap; `profileCanvas` scales the
+2D context so painters keep their authored coordinates. The kitchen's painted picture and its temporary
+foil mask, and frozen-meal packaging, use it. Full keeps the original dimensions and pixels.
+AO retains its original distance/blocker/hole grid, but on light samples the original byte values directly
+into the capped canvas with bilinear interpolation. When dimensions already fit, including desktop/full,
+the original pixel loop remains. The static post-upload release policy is unchanged.
+
+The current computer posters are already 512 px wide, cups 512×192 and bottle labels 256×320;
+they remain unchanged. Their family totals in the earlier inventory count many individually small canvases.
+This is a bounded first procedural slice, not a cap on every canvas in the app. No material, geometry,
+UV, physical ray target, quality level or gameplay callback changes.
+
+`tools/canvasprofiletest.cjs BASE OUT BASELINE_DIR` compares actual AO, kitchen-print and Billys painters
+with saved pre-change module sources (see [verification](verification.md#procedural-startup-canvases-1549)).
+Full is pixel-exact; light average per-channel errors are 0.000013, 0.1824 and 0.6738/255 respectively.
+The actual Billys/Gorbys open/closed model fingerprints and AO geometry/rays are checked separately.
+Same actual World phone start route: 270/95.184475 MiB CPU canvases → 267/92.122463 MiB;
+1.125 MiB is unrelated variation in three random cup patterns, leaving 1.937012 MiB attributable to
+retained picture/packaging sources. AO saves construction canvas memory, not steady storage (already freed).
+Texture allocations remain 97,427,515 bytes/207, draws 346/730,811 triangles. No timing/heap gain is claimed.
+See [source-bound results and image](../verification/1549/README.md).
+
 ## Merged furnishings seen from outside (#1540, partial #1537)
 
 Phones only (`DetailCuller.buildProxies`, `src/detail.js`). Once at start, right after `freeSceneGeometryCopies` has packed

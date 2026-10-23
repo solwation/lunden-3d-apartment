@@ -8687,3 +8687,20 @@ Node: `tools/hugtest.mjs`, `tools/kisstest.mjs` and `cloudflare/players.test.mjs
 ## Höje å at the bridges (#1531)
 
 `node --test tools/riverfalltest.mjs tools/southbanktest.mjs` (11/11: water vertices, bank recovery, decks and path buffers unchanged) and `tools/farwalktest.cjs` (59/59: splash and dry recovery at both ends, the under-bridge path, piers, both jetpack undersides — the road-bridge spot now 4 m off the middle on the channel bank) pass. `tools/riverparktest.html` gains a #1531 row (reeds grounded on the bed/bank in the water margin, clear of paths and decks; the willow and weeping birch exist) and allows up to 180 patch trees; with `ray.camera` set on its deck raycaster all rows pass, the unmodified file still stops at the pre-existing `Sprite.raycast` error (#1547). Desktop `tools/perfcount.html` passes (most calls 459 at start ≤ 520, park 453 calls / 846 533 triangles). Before/after canvas views from the GC deck's west edge and the north shore in `docs/verification/1531/`, compared with the photo. Chromium/SwiftShader only.
+
+
+## Procedural startup canvases (#1549)
+
+`PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/canvasprofiletest.cjs BASE OUT BASELINE_DIR`
+uses actual private painters exposed only by the test's HTTP interceptor. Prepare `BASELINE_DIR` with
+`git show b9ed31bd:src/ao.js`, `src/furniture.js` and `src/frozenmealmodels.js` saved under their basenames.
+The test compares desktop/full byte-for-byte, then light at the original upload dimensions (mean
+per-channel error <2/255); it checks no upscaling, capped dimensions, original drawing coordinates,
+computer-menu/snake repaint, and actual Billys/Gorbys open/closed geometry, visibility and ray fingerprints.
+Its result image shows the three before/light pairs. No production-only test exports are added.
+
+Pair with the same `tools/phonememtest.cjs` start route before/after: iPhone UA, 844×390 touch/DPR3,
+`--route start --dwell 500 --query 'lowmem&quality=0&time=12&month=7&weather=clear&freeze&cloud=' --shots`.
+Retain normal startup warm-up; no `test` or `nowarm`. CPU canvas bytes are width×height×4 estimates
+of live weak-referenced canvases, not physical phone RAM. The local `/data/todo.json` 404 is present on
+both revisions and is unrelated to texture painting. No startup-time or total-heap improvement is claimed.

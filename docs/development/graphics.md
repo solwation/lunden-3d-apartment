@@ -563,3 +563,9 @@ brightness shaders and source-material appearance/lifetime remain unchanged; no
 extra geometry or render pass is added. See [performance](performance.md#first-focus-program-warm-up-1508).
 Saved drawings that arrive from IndexedDB after a compile stage started are queued
 via `WarmUp.add` and compiled a few per frame (#1514).
+
+
+Procedural startup backing sizes (#1549): AO, frozen-meal prints and the kitchen's painted picture use
+`resourceprofile.js` `profileCanvasSize`/`profileCanvas` before painting. Full retains authored pixels;
+light retains the GPU cap and authored drawing coordinates. AO preserves its blocker grid and hole edges.
+See [performance](performance.md#paint-procedural-sources-at-startup-profile-size-1549).

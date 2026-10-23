@@ -1,3 +1,4 @@
+import { profileCanvasSize } from './resourceprofile.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { freeCanvasAfterUpload } from './lowmemory.js';
@@ -44,17 +45,39 @@ function distanceField(nx, nz, rects) {
 function aoTexture(size, rects, strength, radius, hole) {
   const nx = Math.ceil(size.x / CELL), nz = Math.ceil(size.z / CELL);
   const dist = distanceField(nx, nz, rects);
-  const c = document.createElement('canvas');
-  c.width = nx; c.height = nz;
-  const g = c.getContext('2d');
-  const img = g.createImageData(nx, nz);
-  for (let i = 0; i < dist.length; i++) {
-    // inside a blocker the overlay is hidden anyway; keep it neutral there
-    const x = ((i % nx) + 0.5) * CELL, z = (Math.floor(i / nx) + 0.5) * CELL;
-    const inHole = hole && x > hole.x0 && x < hole.x1 && z > hole.z0 && z < hole.z1;
-    const v = dist[i] === 0 || inHole ? 255 : 255 * (1 - strength * Math.exp(-dist[i] / radius));
-    img.data[i * 4] = img.data[i * 4 + 1] = img.data[i * 4 + 2] = v;
-    img.data[i * 4 + 3] = 255;
+  const c = document.createElement('canvas'), target = profileCanvasSize(nx, nz);
+  c.width = target.width; c.height = target.height;
+  const g = c.getContext('2d'), img = g.createImageData(c.width, c.height);
+  if (c.width === nx && c.height === nz) {
+    for (let i = 0; i < dist.length; i++) {
+      // inside a blocker the overlay is hidden anyway; keep it neutral there
+      const x = ((i % nx) + 0.5) * CELL, z = (Math.floor(i / nx) + 0.5) * CELL;
+      const inHole = hole && x > hole.x0 && x < hole.x1 && z > hole.z0 && z < hole.z1;
+      const v = dist[i] === 0 || inHole ? 255 : 255 * (1 - strength * Math.exp(-dist[i] / radius));
+      img.data[i * 4] = img.data[i * 4 + 1] = img.data[i * 4 + 2] = v;
+      img.data[i * 4 + 3] = 255;
+    }
+  } else {
+    // Keep the authored distance grid and blocker/hole edges. Sample its original byte values at the
+    // upload-sized pixel centres, instead of painting a full bitmap and asking three to shrink it.
+    const values = new Uint8ClampedArray(nx * nz);
+    for (let k = 0; k < nz; k++) for (let i = 0; i < nx; i++) {
+      const x = (i + 0.5) * CELL, z = (k + 0.5) * CELL, d = dist[k * nx + i];
+      const inHole = hole && x > hole.x0 && x < hole.x1 && z > hole.z0 && z < hole.z1;
+      values[k * nx + i] = d === 0 || inHole ? 255 : 255 * (1 - strength * Math.exp(-d / radius));
+    }
+    const value = (i, k) => {
+      i = Math.max(0, Math.min(nx - 1, i)); k = Math.max(0, Math.min(nz - 1, k));
+      return values[k * nx + i];
+    };
+    for (let k = 0; k < c.height; k++) for (let i = 0; i < c.width; i++) {
+      const x = (i + 0.5) * nx / c.width - 0.5, z = (k + 0.5) * nz / c.height - 0.5;
+      const ix = Math.floor(x), iz = Math.floor(z), fx = x - ix, fz = z - iz;
+      const a = value(ix, iz) * (1 - fx) + value(ix + 1, iz) * fx;
+      const b = value(ix, iz + 1) * (1 - fx) + value(ix + 1, iz + 1) * fx;
+      const at = (k * c.width + i) * 4, v = a * (1 - fz) + b * fz;
+      img.data[at] = img.data[at + 1] = img.data[at + 2] = v; img.data[at + 3] = 255;
+    }
   }
   g.putImageData(img, 0, 0);
   const tex = freeCanvasAfterUpload(new THREE.CanvasTexture(c)); // drawn once (#628)

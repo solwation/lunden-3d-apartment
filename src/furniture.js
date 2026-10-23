@@ -10,7 +10,7 @@ import { buildContactShadows } from './contactshadow.js';
 import * as THREE from 'three';
 import { woodMaterial } from './woodgrain.js';
 import { freeCanvasAfterUpload } from './lowmemory.js';
-import { profilePath } from './resourceprofile.js';
+import { profilePath, profileCanvas } from './resourceprofile.js';
 import { sfx } from './audio.js';
 import { mergeStatic } from './merge.js';
 import { buildBinderProp } from './catbinderprop.js';
@@ -3460,8 +3460,7 @@ const pictureAtlases = new Map();
  * a tall condensed bold sans squeezed so the widest line is 60 % of the width, the block ~68 % of the paper's height a little
  * above the centre; the foil a light gold → bronze gradient with a fine grain, plus a faint diagonal glare of the glass. */
 function paintedPicture(P) {
-  const W = 720, H = 920, cv = document.createElement('canvas');
-  cv.width = W; cv.height = H;
+  const W = 720, H = 920, cv = profileCanvas(W, H);
   const c = cv.getContext('2d');
   c.fillStyle = P.paper; c.fillRect(0, 0, W, H);
   const lines = P.lines, n = lines.length, pitch = H * P.block / n, cap = pitch * 0.81, top = H * P.top;
@@ -3473,7 +3472,7 @@ function paintedPicture(P) {
   let sx = Math.min(1, W * P.width / wide);
   const smear = cap * P.stem * (1 - sx);
   sx = Math.min(1, (W * P.width - smear) / wide);
-  const foil = document.createElement('canvas'); foil.width = W; foil.height = H;
+  const foil = profileCanvas(W, H);
   const f = foil.getContext('2d');
   lines.forEach((t, i) => {
     const base = top + pitch * i + cap, g = f.createLinearGradient(0, base - cap, 0, base);
@@ -3491,7 +3490,7 @@ function paintedPicture(P) {
   const sheen = f.createLinearGradient(0, H * 0.25, W, H * 0.65);
   sheen.addColorStop(0.35, 'rgba(255,250,220,0)'); sheen.addColorStop(0.5, 'rgba(255,250,220,0.35)'); sheen.addColorStop(0.65, 'rgba(255,250,220,0)');
   f.fillStyle = sheen; f.fillRect(0, 0, W, H);
-  c.drawImage(foil, 0, 0);
+  c.drawImage(foil, 0, 0, W, H);
   const glare = c.createLinearGradient(0, 0, W, H); // the glass
   glare.addColorStop(0.1, 'rgba(255,255,255,0)'); glare.addColorStop(0.22, 'rgba(255,255,255,0.10)');
   glare.addColorStop(0.3, 'rgba(255,255,255,0)'); glare.addColorStop(0.7, 'rgba(255,255,255,0)');

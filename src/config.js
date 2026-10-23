@@ -3018,7 +3018,8 @@ export const LOW_MEMORY = { maxTextureSize: 512, shadowMapSize: 1536, maxPixelRa
 // full file at upload); made by tools/lighttextures.cjs. Auto picks light when the renderer's upload cap is ≤ `max` or
 // navigator.deviceMemory reports ≤ `deviceMemory` GB (*guess*: conservative, Chromium only); `&res=light|full` overrides
 // and is remembered (`&res=auto` forgets). Every listed file needs its light copy (tools/resourceprofiletest.cjs).
-export const RESOURCE_PROFILE = { light: { max: 512, deviceMemory: 2, textures: [
+// #1549: the same max also bounds procedural AO, meal packaging and the painted kitchen picture before painting.
+export const RESOURCE_PROFILE = { light: { max: LOW_MEMORY.maxTextureSize, deviceMemory: 2, textures: [
   'textures/stair-pictures.jpg', 'textures/angsgras-sovrum1.jpg', 'textures/tavla-svartvit-trappan.jpg',
   'textures/tavla-akvarell-schaslong.jpg', 'textures/the-gulag-sovrum2.jpg', 'textures/linjeteckning-sovrum1.jpg',
   'textures/eat-sleep-game-repeat-sovrum2.jpg', 'textures/tavla-guld-lila-vardagsrum.jpg'] } };
