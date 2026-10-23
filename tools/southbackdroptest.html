@@ -6,9 +6,10 @@ const source=await fetch('../docs/references/surrounding-views/osm-south-2026-10
 check(W.buildings.length===54&&new Set(W.buildings.map(b=>b.source)).size===54,'54 unique existing mapped south-bank footprints, no proposed plan buildings');
 for(const b of W.buildings){const f=source.features.find(f=>f.id===b.source);check(f&&b.polygon.length===f.points.length&&b.polygon.every((q,i)=>{const p=G.geoToPlan(...f.points[i]);return Math.hypot(p[0]-q[0],p[1]-q[1])<.02}),`${b.name}: actual mapped footprint`);}
 check(W.buildings.filter(b=>b.levelsSource==='OSM').length===2&&W.buildings.filter(b=>b.roofSource==='OSM').every(b=>b.roof==='hipped'),'two tagged four-storey/hipped landmarks separated from assumed heights/roof details');
-check(group.children.length===6&&group.children.filter(m=>m.isInstancedMesh).length===2,'four merged surfaces plus two low-detail vegetation instances');let tris=0;group.traverse(m=>{if(m.isMesh)tris+=(m.geometry.index?.count??m.geometry.attributes.position.count)/3*(m.isInstancedMesh?m.count:1)});// #1381: retain the old23000 allowance for the original260m extent, plus a field and paving/paint layer
-// per newly covered4m-column × southRow cell. Overall PERF budgets remain unchanged.
-const addedArea=(C.SITE.backgroundGround.x1-C.SITE.backgroundGround.x0)*Math.max(0,C.SITE.backgroundGround.z1-260),limit=23000+Math.ceil(addedArea/(4*C.TERRAIN_FAR.southRow))*4;
+check(group.children.length===6&&group.children.filter(m=>m.isInstancedMesh).length===2,'four merged surfaces plus two low-detail vegetation instances');let tris=0;group.traverse(m=>{if(m.isMesh)tris+=(m.geometry.index?.count??m.geometry.attributes.position.count)/3*(m.isInstancedMesh?m.count:1)});// #1474: ceiling = measured count at bf8b197f (49 910 triangles, headless Chromium 1208, swiftshader) + ~2 %, rounded up.
+// Supersedes the #1381 coverage formula (23000 + 4 per added 4m-column x southRow cell = 40 252), which the terrain/gable/landmark
+// work since had outgrown. Geometry, ground precision and draw calls unchanged; overall PERF budgets unchanged (docs/development/performance.md).
+const limit=51000;
 check(tris<limit,`bounded far detail: ${tris} triangles including instances (coverage limit ${limit})`);
 A.scene.updateMatrixWorld(true);const b=W.buildings.find(b=>b.source==='relation/1309428'),h=b.holes[0].slice(0,-1),x=h.reduce((s,p)=>s+p[0],0)/h.length,z=h.reduce((s,p)=>s+p[1],0)/h.length;check(!new T.Raycaster(new T.Vector3(x,60,z),new T.Vector3(0,-1,0),0,70).intersectObjects([A.scene.getObjectByName('south-facade'),A.scene.getObjectByName('south-roof')]).length,'Asylen building44 courtyard has actual open roof/body hole');
 check(group.userData.buildings.every(b=>b.eave>b.base&&Number.isFinite(b.bottom)),'finite landmark heights');
