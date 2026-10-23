@@ -441,8 +441,19 @@ export const SITE = {
   // docs/foton/hepcat-store-sidan-byggnadsstallning.jpg, sidogatan-tegelhus-plattak-byggplats.jpg): a storey and a
   // half of brick with white pilasters and a white rendered middle part with its own gable, a dark standing-seam
   // metal roof; behind it a long low brick building with dormers and yellow-framed windows. `rows` = window lights.
-  hepcat: { bay: 3.2, storey: 4.2, rows: [{ y: 1.7, s: [1.1, 1.0, 1] }] },
-  hepcatWhite: { bay: 4.0, storey: 6.0, rows: [{ y: 1.7, s: [1.1, 1.0, 1] }, { y: 4.4, s: [0.6, 0.8, 1] }] },
+  // #1533 (the user's photos docs/foton/hepcat-store-fasad-mot-lunden.jpg, hepcat-store-gavel-nr21-soder.jpg): drawn by
+  // src/hepcat.js from the two blocks below. `model`: every metre value is read off the photos (*guess*, no drawings).
+  // The north end (z0) is hipped, the south end (z1, nr 21 facing the school nr 20) a gable; the white middle a
+  // cross gable over two storeys. `bay` = one brick bay between the white pilasters (each wing 2 bays).
+  hepcat: { bay: 4.1, storey: 4.2, model: {
+    pitch: 0.75, overhang: 0.6, verge: 0.45,   // wing roof rise per m (~37°), eave overhang, verge at the nr 21 gable (*guess*)
+    whitePitch: 1.0, whiteOverhang: 0.5,       // the middle's cross gable, ~45° (*guess*)
+    pilaster: 0.45, plinth: 0.45,              // white pilasters / quoins, stone plinth height (*guess*)
+    pair: { w: 0.6, gap: 0.2, sill: 0.95, h: 1.5 }, // the paired windows with eared surrounds (*guess*)
+    door: { w: 2.2, h: 2.4 },                  // nr 21's dark double door (*guess*)
+    chimney: [32.6, 4.5, 0.55, 0.9],           // x, z, side, height over the ridge: one black chimney on the south wing (*guess*)
+    pxPerM: 40 } },                            // the façade atlas' resolution (one 512² canvas for the whole house)
+  hepcatWhite: { bay: 4.4, storey: 6.0 },
   longhouse: { bay: 2.6, storey: 3.8, rows: [{ y: 1.6, s: [0.9, 1.2, 1] }], dormers: 5 },
   blocks: [
     // Kv. Lunden, Å-husen (overview plans): storeys counted from `base`; red brick, low hip roof
@@ -464,7 +475,7 @@ export const SITE = {
     // white windows. Storey counts and heights are read off those pictures — guesses, not surveyed.
     // #261: outlines from the situation plan (the user's photos agree: HepCat right by the road, the long building
     // further south behind an open gap); the long building's east side and the annex's depth are off the sheet (guess)
-    { name: 'HepCat Store', x0: 28.2, x1: 36.4, z0: -10.8, z1: 10.0, base: 0, storeys: 1, roof: 'gable', style: 'hepcat', chimneys: [-5, 4] }, // #127
+    { name: 'HepCat Store', x0: 28.2, x1: 36.4, z0: -10.8, z1: 10.0, base: 0, storeys: 1, roof: 'gable', style: 'hepcat' }, // #127; roof/chimney: hepcat.model (#1533)
     { name: 'HepCat Store, the white middle', x0: 27.9, x1: 36.4, z0: -2.6, z1: 1.8, base: 0, storeys: 1, roof: 'gable', style: 'hepcatWhite' },
     // #535: school/longhouse placeholders moved to source-based SITE.east; the photo-based wall remains.
     { name: 'Villa', x0: -63, x1: -47.3, z0: 67.7, z1: 84.1, base: -3, storeys: 3, roof: 'hip', style: 'old' }, // brick house, hip roof

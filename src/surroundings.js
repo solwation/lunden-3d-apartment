@@ -17,6 +17,7 @@ import { neighborGlass } from './neighborglass.js';
 import { registerTrees, registerSnow } from './seasons.js';
 import { lobeGeometry, leafMaterial, trunkGeometry, barkMaterial } from './foliage.js';
 import { buildStreet } from './street.js';
+import { buildHepcat, hepcatTexture, hepcatStone } from './hepcat.js';
 import { buildStreetSigns } from './streetsigns.js';
 import { buildGroundAO } from './groundao.js';
 import { onRoad, onWalk, pathStrip, filletGeometry, vehicleTrim } from './roads.js';
@@ -514,34 +515,22 @@ const canvasTex = (c) => {
   return tex;
 };
 
-/** One bay of the buildings east of us (#127): 'hepcat' = brick with a white pilaster at the bay edge and a
- * pair of white-framed windows; 'hepcatWhite' = white render, a pair below and a small window in the gable;
- * 'longhouse' = brick with a dark window in a yellow frame. */
+/** One bay of the buildings east of us (#127): 'longhouse' = brick with a dark window in a yellow frame
+ * (HepCat Store's own atlas is src/hepcat.js, #1533). */
 function sideFacadeTexture(style) {
   const { bay, storey } = S[style];
   const pw = 160, ph = Math.round((pw * storey) / bay), c = document.createElement('canvas');
   c.width = pw; c.height = ph;
   const g = c.getContext('2d'), m = pw / bay, Y = (y) => ph - y * m;
-  if (style === 'hepcatWhite') { g.fillStyle = '#efede7'; g.fillRect(0, 0, pw, ph); }
-  else { g.fillStyle = '#d6cfc2'; g.fillRect(0, 0, pw, ph); brickCourses(g, pw, ph, m, style === 'hepcat' ? 37 : 41); }
+  g.fillStyle = '#d6cfc2'; g.fillRect(0, 0, pw, ph); brickCourses(g, pw, ph, m, 41);
   const win = (cx, y0, w, h, frame, bars = true) => {
     g.fillStyle = frame; g.fillRect(cx - w / 2 - 5, Y(y0 + h) - 5, w + 10, h * m + 10);
     const gr = g.createLinearGradient(0, Y(y0 + h), 0, Y(y0)); gr.addColorStop(0, '#61788a'); gr.addColorStop(1, '#2a3843');
     g.fillStyle = gr; g.fillRect(cx - w / 2, Y(y0 + h), w, h * m);
     if (bars) { g.fillStyle = frame; g.fillRect(cx - 2, Y(y0 + h), 4, h * m); }
   };
-  if (style === 'hepcat') {
-    g.fillStyle = '#f1efe9'; g.fillRect(0, 0, 0.45 * m, ph);               // pilaster
-    g.fillRect(0, Y(0.45), pw, 0.45 * m);                                    // plinth
-    g.fillRect(pw / 2 - 0.95 * m, Y(2.65), 1.9 * m, 0.22 * m);               // lintel over the pair
-    win(pw / 2 - 0.42 * m, 1.05, 0.62 * m, 1.35, '#f7f6f2'); win(pw / 2 + 0.42 * m, 1.05, 0.62 * m, 1.35, '#f7f6f2');
-  } else if (style === 'hepcatWhite') {
-    win(pw / 2 - 0.45 * m, 1.05, 0.66 * m, 1.35, '#ffffff'); win(pw / 2 + 0.45 * m, 1.05, 0.66 * m, 1.35, '#ffffff');
-    win(pw / 2, 3.9, 0.5 * m, 0.95, '#ffffff');
-  } else {
-    g.fillStyle = '#6b5d4c'; g.fillRect(0, Y(0.5), pw, 0.5 * m);            // a stone plinth
-    win(pw / 2, 0.9, 1.0 * m, 1.45, '#e8c43a', false);
-  }
+  g.fillStyle = '#6b5d4c'; g.fillRect(0, Y(0.5), pw, 0.5 * m);            // a stone plinth
+  win(pw / 2, 0.9, 1.0 * m, 1.45, '#e8c43a', false);
   return canvasTex(c);
 }
 
@@ -1320,6 +1309,9 @@ function plinth(b) {
   return faces.length ? mergeGeometries(faces.map((g) => g.toNonIndexed())) : null;
 }
 
+let hepcatParts;
+const hepcat = () => (hepcatParts ??= buildHepcat()); // HepCat Store's geometry, roof height and window lights (#1533)
+
 /** Box with façade UVs: u along the wall in bays, v in storeys from the ground. */
 function block(b) {
   const { bay, storey } = dims(b), h = b.storeys * storey;
@@ -1387,7 +1379,8 @@ function addSurroundingRoofWalk(b, walk) {
   const o = 0.3, h = b.base + b.storeys * dims(b).storey;
   const x0 = b.x0 - o, x1 = b.x1 + o, z0 = b.z0 - o, z1 = b.z1 + o;
   let roofY;
-  if (b.roof === 'hip') {
+  if (/^hepcat/.test(b.style) && hepcat()) roofY = hepcat().roofY; // the drawn hip / gable / cross gable (#1533)
+  else if (b.roof === 'hip') {
     const hx = (x1 - x0) / 2, hz = (z1 - z0) / 2, r = Math.min(hx, hz);
     const k = dims(b).roofPitch;
     const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
@@ -1602,6 +1595,7 @@ export function buildWindowLights(detailed=[]) {
   const spots = [];
   const lunden = (b) => /^Hus [A-C]$/.test(b.name); // Kv. Lunden's own houses go dark in a power cut (#604); the rest of the site does not
   for (const b of S.blocks) {
+    if (/^hepcat/.test(b.style) && hepcat()) { if (b.style === 'hepcat') spots.push(...hepcat().lights); continue; } // its own windows (#1533)
     const faces = [
       { along: 'x', c: b.z0 - 0.03, a0: b.x0, a1: b.x1, n: [0, -1], f: 'n' }, { along: 'x', c: b.z1 + 0.03, a0: b.x0, a1: b.x1, n: [0, 1], f: 's' },
       { along: 'z', c: b.x0 - 0.03, a0: b.z0, a1: b.z1, n: [-1, 0], f: 'w' }, { along: 'z', c: b.x1 + 0.03, a0: b.z0, a1: b.z1, n: [1, 0], f: 'e' },
@@ -1968,12 +1962,14 @@ export function* surroundingsParts({ grass, husL = null }) {
     const gm = new THREE.Mesh(mergeGeometries(sg.panes), glassMat);
     group.add(gm);
   }
-  if (side('hepcat').length) { // HepCat Store and the long brick building behind it (#127)
-    const metal = new THREE.MeshStandardMaterial({ color: 0x737a81, roughness: 0.5, metalness: 0.15, side: THREE.DoubleSide }); // standing-seam grey
-    for (const st of ['hepcat', 'hepcatWhite', 'longhouse']) mesh(side(st).map(block), new THREE.MeshStandardMaterial({ map: sideFacadeTexture(st), roughness: 0.95 }));
-    mesh([...['hepcat', 'hepcatWhite', 'longhouse'].flatMap((st) => side(st).map(roof)), ...dormers(side('longhouse'))], metal, SEASON.snow.roof);
-    mesh(side('hepcat').flatMap((b) => (b.chimneys ?? []).map((dz) => new THREE.BoxGeometry(0.6, 1.4, 0.6).translate((b.x0 + b.x1) / 2, b.base + S.hepcat.storey + 2.3, (b.z0 + b.z1) / 2 + dz))),
-      new THREE.MeshStandardMaterial({ color: 0x2a2b2d, roughness: 0.8 }));
+  const hc = hepcat();
+  if (hc) { // HepCat Store (#127, rebuilt from the photos in #1533: src/hepcat.js) and the long brick building behind it
+    const metal = new THREE.MeshStandardMaterial({ color: 0x2c3034, roughness: 0.6, metalness: 0.1, side: THREE.DoubleSide }); // black standing seam (#1533)
+    const skirts = [...side('hepcat'), ...side('hepcatWhite')].map(plinth).filter(Boolean).map(hepcatStone); // stone down the slope (#142)
+    mesh([hc.walls, ...skirts], new THREE.MeshStandardMaterial({ map: hepcatTexture(), roughness: 0.95 })).name = 'hepcat-walls';
+    mesh(side('longhouse').map(block), new THREE.MeshStandardMaterial({ map: sideFacadeTexture('longhouse'), roughness: 0.95 }));
+    mesh([hc.roof, ...side('longhouse').map(roof), ...dormers(side('longhouse'))], metal, SEASON.snow.roof).name = 'hepcat-roof';
+    mesh(hc.dark, new THREE.MeshStandardMaterial({ color: 0x2a2b2d, roughness: 0.8 })).name = 'hepcat-dark';
   }
   if (oldB.length) {
     mesh(oldB.map(block), new THREE.MeshStandardMaterial({ map: oldFacadeTexture(), roughness: 0.95 }));
@@ -1985,7 +1981,7 @@ export function* surroundingsParts({ grass, husL = null }) {
     }), new THREE.MeshStandardMaterial({ color: 0xf1eee6, roughness: 0.8 }));
   }
   // blocks on the slope south of Hus L stand on a plinth down to the ground (#142)
-  const plinths = S.blocks.map(plinth).filter(Boolean);
+  const plinths = S.blocks.filter((b) => !(/^hepcat/.test(b.style) && hepcat())).map(plinth).filter(Boolean); // (HepCat: stone, #1533)
   if (plinths.length) mesh(plinths, new THREE.MeshStandardMaterial({ color: 0x6e3326, roughness: 0.95 }));
   yield 0.8;
   group.add(...trees(rng(3)));
