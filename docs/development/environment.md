@@ -528,6 +528,19 @@ The final navigation rerun passes all53checks; the emitted parking/backdrop chec
 source/interpolation tests pass. Three new personal clubhouse reports were imported separately while
 this work ran; they are not part of the terrain source changes.
 
+## Parking 145221619 civil plane (#1436)
+
+The lot north of Sankt Lars väg45 uses the shared `createParkingGrade` (`src/parkinglot1442.js`, as #1440/#1442)
+with a new optional `grade.anchor`: the plane passes through the unmodified sampler's value at the sourced
+`SOUTH_PLATEAU` control(10,248)=1.26 and only its two slopes are least-squares fitted to the lot's existing
+ground (about3.2% east/7.9% south). The slopes and the6m inner edge transition are *guess*; OSM and the LM export
+have no civil levels. The correction fades to zero at the polygon edge, so terrain vertices outside the lot,
+the control(-20,262)=1.58, Sankt Lars väg45's base, roads and the other eleven parkings stay exact. Inside the lot
+`groundY` follows the emitted terrain triangles (max0.57m mismatch before), and asphalt/paint follow that
+surface. A4m transition raised the lot's steepest triangle from0.316 to0.384 and8m moved the control, so6m
+was chosen: max0.311, the same15 pre-existing >0.7 bank triangles north-west of the lot, unchanged89666
+terrain triangles. `PARKING_GRADES` now takes every lot with a `grade` entry. Stall paint is unchanged (#1437).
+
 ## Southern road embankment (#1382)
 
 `SOUTH_BANK` holds the11road controls and five10-point cross-sections from the same77-point LM export.

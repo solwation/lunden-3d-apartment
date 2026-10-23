@@ -174,10 +174,10 @@ function makeBuildingPads(raw=terrainRawY,limit=S.backgroundGround.z1,anchors=tr
   return pads;
 }
 const smooth=t=>t*t*(3-2*t);
-// #1440/#1442: OSM fixes only the lot outlines, not their levels. Fit an assumed
+// #1440/#1442/#1436: OSM fixes only the lot outlines, not their levels. Fit an assumed
 // plane to each lot's existing ground and blend it to the unchanged edge over the
 // configured transition; roads, building pads and all outside terrain stay anchored.
-const PARKING_GRADES=S.south.parking.filter(p=>['850235113','145221624'].includes(p.source)).map(lot=>createParkingGrade(lot,plateauTerrainY));
+const PARKING_GRADES=S.south.parking.filter(p=>p.grade).map(lot=>createParkingGrade(lot,plateauTerrainY));
 function parkingGradeAt(x,z){return PARKING_GRADES.find(g=>x>=g.bounds.x0&&x<=g.bounds.x1&&z>=g.bounds.z0&&z<=g.bounds.z1&&g.contains(x,z))??null;}
 /** #1305: 0 near the block, the river valley and the mesh's outer edges (today's levels), 1 in between (the grid's ground). */
 function elevationWeight(x,z,southEdge=S.backgroundGround.z1){

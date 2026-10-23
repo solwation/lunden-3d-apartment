@@ -8353,6 +8353,17 @@ the unchanged Sankt Lars väg46 building base, and mapped access850235115 agains
 existing 1cm strip tolerance. The OSM outline/capacity and `WALK` boundary are also
 checked; the assumed grade is not presented as surveyed civil levels.
 
+## #1436: parking 145221619 civil plane
+
+Run `node tools/runtests.cjs --test-only parkinggrade1436test.html`. In the actual World it checks the
+unchanged OSM outline, the anchored guessed plane, `groundY` 1.26/1.58 at the two source controls, emitted
+terrain slopes against the measured019a0ffe baseline (lot max0.3156; region max1.0142 with15 existing bank
+triangles over `WALK.maxSlope`), the unchanged89666 terrain triangles, ray/`renderedTerrainY`/`groundY`
+agreement on the lot and Sankt Lars väg45's base. Rerun `parkinggrade1440test.html`, `parking1442test.html`
+and `southbackdroptest.html` with it. `south-land` gains6 triangles from height-dependent path kinks
+(paddock grass −12, scene net −6); the existing far-detail check still fails as #1474 (42953→42959).
+Before/after images: `docs/verification/1436/`.
+
 ## Physical computer game (#1491)
 
 `tools/computerscreentest.cjs GAME LOCAL_WORKER OUT` opens actual Worlds on desktop

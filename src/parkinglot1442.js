@@ -51,9 +51,13 @@ export function createParkingGrade(lot, sampleBase, options = {}) {
   const points = [];
   for (let x = Math.ceil(bounds.x0); x <= bounds.x1; x++) for (let z = Math.ceil(bounds.z0); z <= bounds.z1; z++) if (contains(x, z)) points.push([x, z, sampleBase(x, z)]);
   if (points.length < 3) throw new RangeError(`Parking polygon ${lot.source ?? ''} contains too few terrain samples`);
-  const mx = points.reduce((s, p) => s + p[0], 0) / points.length;
-  const mz = points.reduce((s, p) => s + p[1], 0) / points.length;
-  const my = points.reduce((s, p) => s + p[2], 0) / points.length;
+  // #1436: an optional anchor pins the plane to a sourced height control inside the
+  // lot (the unmodified sampler's value there); only the two slopes are then fitted.
+  const anchor = options.anchor ?? lot?.grade?.anchor ?? null;
+  if (anchor && !contains(anchor[0], anchor[1])) throw new RangeError(`Parking anchor ${anchor} lies outside polygon ${lot.source ?? ''}`);
+  const mx = anchor ? anchor[0] : points.reduce((s, p) => s + p[0], 0) / points.length;
+  const mz = anchor ? anchor[1] : points.reduce((s, p) => s + p[1], 0) / points.length;
+  const my = anchor ? sampleBase(anchor[0], anchor[1]) : points.reduce((s, p) => s + p[2], 0) / points.length;
   let xx = 0, zz = 0, xz = 0, xy = 0, zy = 0;
   for (const [x, z, y] of points) { const dx = x - mx, dz = z - mz, dy = y - my; xx += dx * dx; zz += dz * dz; xz += dx * dz; xy += dx * dy; zy += dz * dy; }
   const det = xx * zz - xz * xz;
@@ -78,7 +82,7 @@ export function createParkingGrade(lot, sampleBase, options = {}) {
   const maxResidual = Math.max(...points.map(([x, z, y]) => Math.abs(planeY(x, z) - y)));
   grade.contains = contains;
   grade.bounds = bounds;
-  grade.plane = { origin: [mx, mz, my], slope: [sx, sz], maxResidual };
+  grade.plane = { origin: [mx, mz, my], slope: [sx, sz], maxResidual, anchored: !!anchor };
   grade.transition = transition;
   grade.source = lot.source;
   return grade;

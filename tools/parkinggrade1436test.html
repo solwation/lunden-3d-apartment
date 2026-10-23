@@ -1,0 +1,28 @@
+<!doctype html><html><meta charset="utf-8"><title>Parking grade #1436</title><pre id="out">running…</pre><script type="module">
+// #1436: the anchored civil plane of OSM parking 145221619. Measured baseline on 019a0ffe (actual emitted terrain):
+// 0.3156 max triangle slope with its centroid inside the lot, 15 triangles over WALK.maxSlope in the surrounding
+// region (all on the bank north-west of the lot, worst 1.0142), 89666 terrain triangles.
+const out=document.querySelector('#out'),lines=[];let pass=true;const check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);pass&&=!!ok;out.textContent=lines.join('\n');};
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const BASE={lotSlope:.3156,regionMax:1.0142,over:15,terrainTris:89666,house45:1.9497913924047237};
+try{
+ const frame=document.createElement('iframe');frame.width=480;frame.height=300;frame.src='../index.html?test&shot&month=6&cloud=';document.body.append(frame);await new Promise(r=>frame.onload=r);const w=frame.contentWindow;for(let i=0;i<360&&!w.__app?.scene;i++)await wait(500);if(!w.__app?.scene)throw Error('actual World did not finish loading');
+ const A=w.__app,T=await w.eval("import('three')"),C=await w.eval("import('/src/config.js')"),S=await w.eval("import('/src/surroundings.js')"),lot=C.SITE.south.parking.find(p=>p.source==='145221619'),poly=lot.polygon;
+ const inside=(x,z)=>{let yes=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++)if((poly[i][1]>z)!==(poly[j][1]>z)&&x<(poly[j][0]-poly[i][0])*(z-poly[i][1])/(poly[j][1]-poly[i][1])+poly[i][0])yes=!yes;return yes;};
+ check(lot.capacity===30&&JSON.stringify(poly)==='[[-19.37,258.81],[27.25,225.93],[37.02,239.75],[-9.59,272.63]]'&&lot.grade?.anchor?.join()==='10,248','keeps the OSM outline/capacity and anchors the guessed plane on the (10,248) control');
+ check(C.WALK.maxSlope===.7&&C.SITE.south.parking.length===12,'preserves the slope limit and all twelve parking polygons');
+ check(Math.abs(S.groundY(10,248)-1.26)<1e-6&&Math.abs(S.groundY(-20,262)-1.58)<1e-6,`source controls stay at 1.26 / 1.58 m: ${S.groundY(10,248).toFixed(6)} / ${S.groundY(-20,262).toFixed(6)}`);
+ const terrain=A.scene.getObjectByName('site-terrain'),g=terrain.geometry,pos=g.attributes.position,idx=g.index?.array,count=idx?idx.length:pos.count;let lotMax=0,lotN=0,regionMax=0,over=0;
+ for(let i=0;i<count;i+=3){const ids=idx?[idx[i],idx[i+1],idx[i+2]]:[i,i+1,i+2],p=ids.map(k=>[pos.getX(k),pos.getY(k),pos.getZ(k)]),cx=(p[0][0]+p[1][0]+p[2][0])/3,cz=(p[0][2]+p[1][2]+p[2][2])/3;if(cx<-35||cx>53||cz<212||cz>288)continue;const [a,b,c]=p,det=(b[0]-a[0])*(c[2]-a[2])-(c[0]-a[0])*(b[2]-a[2]);if(Math.abs(det)<1e-10)continue;const dx=((b[1]-a[1])*(c[2]-a[2])-(c[1]-a[1])*(b[2]-a[2]))/det,dz=((b[0]-a[0])*(c[1]-a[1])-(c[0]-a[0])*(b[1]-a[1]))/det,s=Math.hypot(dx,dz);regionMax=Math.max(regionMax,s);if(s>C.WALK.maxSlope)over++;if(inside(cx,cz)){lotMax=Math.max(lotMax,s);lotN++;}}
+ check(count/3===BASE.terrainTris,`terrain triangle count unchanged: ${count/3}`);
+ check(lotN>50&&lotMax<=BASE.lotSlope+1e-4,`lot triangles are no steeper than the baseline: ${lotN} triangles, max ${lotMax.toFixed(4)} (baseline ${BASE.lotSlope})`);
+ check(regionMax<=BASE.regionMax+1e-4&&over<=BASE.over,`no new climbing obstacle around the lot: max ${regionMax.toFixed(4)}, ${over} triangles over ${C.WALK.maxSlope} (baseline ${BASE.regionMax}/${BASE.over}, existing bank)`);
+ const ray=new T.Raycaster(),down=new T.Vector3(0,-1,0);let n=0,miss=0,err=0;
+ for(let x=-20;x<=38;x+=1)for(let z=225;z<=273;z+=1)if(inside(x,z)){ray.set(new T.Vector3(x,30,z),down);const hit=ray.intersectObject(terrain,true)[0];if(!hit){miss++;continue;}n++;err=Math.max(err,Math.abs(hit.point.y-S.renderedTerrainY(x,z)),Math.abs(hit.point.y+.01-S.groundY(x,z)));}
+ check(n>700&&miss===0&&err<1e-5,`emitted terrain, renderedTerrainY and groundY agree on the lot: ${n} rays, max error ${err.toExponential(2)} m`);
+ const house=A.scene.getObjectByName('south-backdrop')?.userData.buildings?.find(b=>b.name==='Sankt Lars väg 45');
+ check(!!house&&Math.abs(house.base-BASE.house45)<1e-6,`protected Sankt Lars väg 45 base stays at ${house?.base?.toFixed(6)} m`);
+ check(!frame.contentWindow.document.querySelector('#error'),'actual World remains loaded');
+}catch(e){check(false,`test error: ${e.message}`)}
+out.textContent+=`\n${pass?'ALL PASS':'SOME FAILED'}`;
+</script></html>
