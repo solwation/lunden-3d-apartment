@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { Holdable } from './holdable.js';
 import { sfx } from './audio.js';
 import { REMOTE as R, PLAYROOM } from './config.js';
+import { rugUnder } from './rugs.js';
 
 // The TV remote (#101): a slim black remote on the coffee table, a Holdable. Held and pointed at a TV
 // (the one in the look direction, not through walls — main.js finds it): a click / the touch button
@@ -33,12 +34,12 @@ export class Remote extends Holdable {
   /** findTv() → the TV target the camera points at (within reach, not behind a wall), or null. */
   constructor(scene, camera, findTv) {
     const { g, led } = remoteModel();
-    const home = new THREE.Vector3(R.x, R.y, R.z);
+    const home = new THREE.Vector3(R.x, R.y + rugUnder(0, R.x, R.z), R.z); // the coffee table stands on the rug (#317), so its top is that much higher (#1393)
     super(scene, camera, {
       name: 'fjärrkontrollen', verb: 'ta', backName: 'fjärrkontrollen på soffbordet', backVerb: 'lägga tillbaka',
       model: g, home: { pos: home, rot: new THREE.Euler(0, THREE.MathUtils.degToRad(R.turn), 0) },
       heldPose: { pos: new THREE.Vector3(R.held.x, R.held.y, R.held.z), rot: new THREE.Euler(0.25, 0.08, 0) }, // pointing ahead
-      pick: { pos: home.clone().setY(R.y + 0.02), size: [0.12, 0.05, 0.24] }, cooldown: 0.25, useLabel: 'Välj film på TV',
+      pick: { pos: home.clone().setY(home.y + 0.02), size: [0.12, 0.05, 0.24] }, cooldown: 0.25, useLabel: 'Välj film på TV',
     });
     Object.assign(this, { led, findTv, blink: 0, presses: 0 });
   }

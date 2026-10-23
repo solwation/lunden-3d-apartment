@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { forgetBicycleHand } from './keep.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { FRUIT as C } from './config.js';
+import { rugUnder } from './rugs.js';
 import { sfx } from './audio.js';
 import { heldItem, setHeld, handBusy } from './holdable.js';
 import { roomEnv } from './lights.js';
@@ -385,7 +386,7 @@ export class FruitBowl {
     Object.assign(this, { scene, camera, eatenCount: 0 });
     this.group = new THREE.Group();
     this.carryable = { model: this.group }; // bowl and fruit still inside travel as one (#475)
-    this.group.position.set(C.x, C.y, C.z);
+    this.group.position.set(C.x, C.y + rugUnder(0, C.x, C.z), C.z); // on the coffee table, which stands on the rug (#317, #1393)
     const copper = new THREE.MeshStandardMaterial({ color: C.copper, metalness: 0.9, roughness: 0.22, envMap: roomEnv(), side: THREE.DoubleSide });
     this.wires = new THREE.Mesh(bowlGeometry(), copper);
     this.wires.userData.noCat = true;
