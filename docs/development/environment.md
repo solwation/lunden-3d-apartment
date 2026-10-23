@@ -865,3 +865,5 @@ not use this builder. Native/actual navigation checks are in verification.md.
 Neutral downstream transfer is queued as
 [public#114](https://github.com/solwation/kvarteret-lunden/issues/114), priority low;
 original#1430 remains open after source delivery until that transfer is verified.
+
+Far ground edge (#1552): the flat far ground south of `SITE.backgroundGround.z1` (460) is vertex-coloured with `grassMeanColor()` (`src/grass.js`: the summer lawn colour times the detail map's mean), matching the grass mesh's lit colour instead of the old lighter `COLORS.grass`, and a 12 m ramp (`EDGE_RAMP`, `src/southbackdrop.js`, 96 triangles, same merged land mesh, no new draw call or material) meets the one span near x -92 where the grid edge stands up to 1.3 m above -3.01. `tools/southbackdroptest.html` checks the 0.5 m-step edge height (worst 0.5 cm) and the colour. Static colour: autumn's lawn tint is not followed by the far ground (as the other far land).

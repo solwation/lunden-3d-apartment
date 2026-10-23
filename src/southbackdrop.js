@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SITE, SEASON, COLORS, DECAL_OFFSET, PADDOCK } from './config.js';
+import { grassMeanColor } from './grass.js';
 import { pathStrip, cutAtTerrain } from './roads.js';
 import { registerTrees, registerSnow, registerSeasonal } from './seasons.js';
 import { lobeGeometry, leafMaterial, leafAtlasParts } from './foliage.js';
@@ -10,6 +11,7 @@ import { paddockLandParts } from './paddock.js';
 import { busStopApron } from './busstopgeo.js';
 import { parking1442Parts, parkingLayoutParts, cellTriangles, lotTriangles, streetApron } from './parkinglot1442.js';
 const S=SITE.south;
+const EDGE_RAMP=12; // m: #1552, where the sampled grid's south edge stands above the flat far ground (~1.3 m near x -92) a ramp this long meets it (*guess*)
 const LAND_MESH=6,LAND_LIFT=.03; // m: #1306, fields / car parks are cut into triangles <= LAND_MESH m where the sloping terrain lies and sit LAND_LIFT higher than the corner heights say (*guess*)
 const inside=(x,z,p)=>{let yes=false;for(let i=0,j=p.length-1;i<p.length;j=i++)if((p[i][1]>z)!==(p[j][1]>z)&&x<(p[j][0]-p[i][0])*(z-p[i][1])/(p[j][1]-p[i][1])+p[i][0])yes=!yes;return yes;};
 const ring=p=>(p[0][0]===p[p.length-1][0]&&p[0][1]===p[p.length-1][1]?p.slice(0,-1):p);
@@ -68,8 +70,13 @@ export function* southBackdropParts(ground){
  for(const b of records)parts.glass.push(...lowRiseWindowParts(b,b.base));
  yield .6;
  // Continuation overlaps only the old outer boundary. Fog fully covers its outer edges from every accessible camera.
- const G=S.ground;parts.land.push(tint(new THREE.PlaneGeometry(G.x1-G.x0,G.z1-SITE.backgroundGround.z1).rotateX(-Math.PI/2).translate((G.x0+G.x1)/2,-3.01,(G.z1+SITE.backgroundGround.z1)/2),COLORS.grass));
- for(const [x0,x1]of[[G.x0,SITE.backgroundGround.x0],[SITE.backgroundGround.x1,G.x1]])parts.land.push(tint(new THREE.PlaneGeometry(x1-x0,SITE.backgroundGround.z1-SITE.backgroundGround.z0).rotateX(-Math.PI/2).translate((x0+x1)/2,-3.01,(SITE.backgroundGround.z1+SITE.backgroundGround.z0)/2),COLORS.grass));
+ // #1552: the flat far ground wears the sampled grass's own lit colour (it was a lighter green: a straight colour step along the grid's south edge) and a short ramp meets the few spans where the grid edge itself stands above it.
+ const FAR_COLOR=grassMeanColor(),edgeZ=SITE.backgroundGround.z1,edgeDrop=x=>ground(x,edgeZ)+3.01;
+ const G=S.ground;parts.land.push(tint(new THREE.PlaneGeometry(G.x1-G.x0,G.z1-SITE.backgroundGround.z1).rotateX(-Math.PI/2).translate((G.x0+G.x1)/2,-3.01,(G.z1+SITE.backgroundGround.z1)/2),FAR_COLOR));
+ {const step=.5,pos=[],cols=[];let x=SITE.backgroundGround.x0;const quad=(xa,xb)=>{const da=edgeDrop(xa),db=edgeDrop(xb),top=[[xa,-3.01+da,edgeZ],[xb,-3.01+db,edgeZ]],bot=[[xa,-3.01,edgeZ+EDGE_RAMP],[xb,-3.01,edgeZ+EDGE_RAMP]];for(const t of [[top[0],bot[0],top[1]],[top[1],bot[0],bot[1]]])for(const q of t)pos.push(...q);};
+  for(;x<SITE.backgroundGround.x1;x+=step)if(Math.abs(edgeDrop(x))>.004||Math.abs(edgeDrop(x+step))>.004)quad(x,x+step);
+  if(pos.length){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.computeVertexNormals();const a=g.attributes.normal;for(let i=0;i<a.count;i++)if(a.getY(i)<0)a.setXYZ(i,-a.getX(i),-a.getY(i),-a.getZ(i));parts.land.push(tint(g,FAR_COLOR));}}
+ for(const [x0,x1]of[[G.x0,SITE.backgroundGround.x0],[SITE.backgroundGround.x1,G.x1]])parts.land.push(tint(new THREE.PlaneGeometry(x1-x0,SITE.backgroundGround.z1-SITE.backgroundGround.z0).rotateX(-Math.PI/2).translate((x0+x1)/2,-3.01,(SITE.backgroundGround.z1+SITE.backgroundGround.z0)/2),FAR_COLOR));
  // #1444: path strips cut along a sub-plane lot's many drawn pieces would cost ~1 400 triangles under its asphalt; those wholly inside it are hidden and left out.
  const weldedLots=(S.parking??[]).filter(p=>p.grade?.tin).map(p=>p.polygon),inPoly=inside;
  for(const f of S.fields){if(!(f.holes??[]).length){parts.land.push(tint(upGeometry(terrainTriangles(f.polygon,LAND_MESH,f.source===PADDOCK.field?farGround.surfaceGrid():null),(x,z)=>farGround(x,z)+.018+LAND_LIFT),f.color));continue;}const g=new THREE.ShapeGeometry(shape(f)).rotateX(-Math.PI/2),a=g.attributes.position;for(let i=0;i<a.count;i++)a.setY(i,farGround(a.getX(i),a.getZ(i))+.018);g.computeVertexNormals();parts.land.push(tint(g,f.color));}

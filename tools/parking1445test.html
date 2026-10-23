@@ -7,7 +7,7 @@ const check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);pass&&=!!ok;out.text
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 const POLY='[[-124.86,333.62],[-61.23,288.04],[-46.07,309.14],[-93.04,342.78],[-98.19,335.6],[-114.87,347.54]]';
 const GRADE='{"transition":6,"transitionSource":"guess","clip":true,"tin":true,"maxSlope":0.2,"fade":"linear"}';
-const BASE_TERRAIN=90659,BASE_SOUTH=49276,CAP={southDelta:600,terrainDelta:0}; // 6b2cc01c totals; the paint may add at most this much (measured: see the cost line)
+const BASE_TERRAIN=90659,BASE_SOUTH=49372,CAP={southDelta:600,terrainDelta:0}; // 6b2cc01c totals (south +96 from #1552's far-ground ramp); the paint may add at most this much (measured: see the cost line)
 try{
  const frame=document.createElement('iframe');frame.width=480;frame.height=300;frame.src='../index.html?test&shot&month=6&cloud=';document.body.append(frame);await new Promise(r=>frame.onload=r);const w=frame.contentWindow;for(let i=0;i<360&&!w.__app?.scene;i++)await wait(500);if(!w.__app?.scene)throw Error('actual World did not finish loading');
  const A=w.__app,T=await w.eval("import('three')"),C=await w.eval("import('/src/config.js')"),S=await w.eval("import('/src/surroundings.js')"),P=await w.eval("import('/src/parkinglot1442.js')"),B=await w.eval("import('/src/southbackdrop.js')");

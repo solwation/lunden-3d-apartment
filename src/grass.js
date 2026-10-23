@@ -42,6 +42,14 @@ export function grassUV(geometry) {
   return geometry;
 }
 
+/** #1552: the colour the summer lawn really shows at distance (its colour x the detail map's mean x the patches' mean warmth), for flat vertex-coloured ground that must meet the grass mesh without a visible step. */
+export function grassMeanColor(color = G.summer) {
+  const c = new THREE.Color(color), px = grassTexture().image.getContext('2d').getImageData(0, 0, G.textureSize, G.textureSize).data, sum = [0, 0, 0];
+  for (let i = 0; i < px.length; i += 4) for (let k = 0; k < 3; k++) sum[k] += (px[i + k] / 255 < 0.04045 ? px[i + k] / 255 / 12.92 : ((px[i + k] / 255 + 0.055) / 1.055) ** 2.4);
+  const n = px.length / 4;
+  return c.setRGB(c.r * sum[0] / n, c.g * sum[1] / n, c.b * sum[2] / n * (1 - 0.5 * G.patchWarmth));
+}
+
 /** Broad irregular tone patches use meter UVs too: no extra geometry, texture, lighting or render pass. */
 export function grassMaterial(color = G.summer) {
   const material = new THREE.MeshStandardMaterial({ color, map: grassTexture(), roughness: 1 });
