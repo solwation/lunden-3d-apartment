@@ -42,7 +42,7 @@ uses ordinary triage. Refresh the queue after label corrections before selecting
 | Ordering | high → medium → low, then `created_at`, full repo name, numeric issue |
 | Active ownership | `in-progress` and `orkester: <stable-session-id>` during actual work only |
 | Capacity | At most 2 workers including helpers per conductor, at least 1 while startable work exists |
-| Model preference | Cost-effective capable worker; stronger reasoning for conductor/review; escalate with a reason |
+| Resource policy | [Smallest sufficient capability/effort](shared/ORCHESTRA.md#spend-resources-deliberately); explicit supported selection, compact context, justified escalation |
 | Queue poll | Every 300 seconds during active work and idle; also before every new selection |
 | Idle watch | 60 minutes after latest resolved implementation issue in either repository, even with narrower scope |
 | Heartbeat | Swedish issue comment every 30 minutes, first at 25–30; done/current/remaining estimate |
@@ -161,7 +161,7 @@ independent defects become separate issues. No app changelog for instruction-onl
 
 ## Shared version and maintenance
 
-Shared release: **v0.1.0**, commit **67507ef71c4979d8340e03e84072719651ada7df**. Imported as a squashed subtree
+Shared release: **v0.1.1**, commit **3ab2b3a59a8deb5d8734c258af4016a8c03b6caf**. Imported as a squashed subtree
 at `.orchestra/shared`. See [installation/contribution instructions](shared/README.md).
 Improve the core in its own clean repository, release it, then explicitly update both
 Lunden pins. Keep this local policy outside the subtree; do not export project history.
