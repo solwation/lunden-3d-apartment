@@ -28,7 +28,7 @@ import { buildCheatNote } from './cheatnote.js';
 import { REPORTS, CHEAT_NOTE, LOW_MEMORY, QUALITY, STANDARD, SHADOW_BOX, STARTUP, KITCHEN_TOWEL_MATERIAL, LIGHTING, VIEW_LOD, VIEW_NEAR, BIRDS } from './config.js';
 import { fetchStartupJSON } from './startuprecovery.js';
 import { lowMemory, reloadOnContextRestore, freeSceneGeometryCopies } from './lowmemory.js';
-import { decideResourceProfile, resourceProfileInfo } from './resourceprofile.js';
+import { decideResourceProfile, resourceProfile, resourceProfileInfo } from './resourceprofile.js';
 import { addSceneShadowTiles, installShadowTiles } from './shadowtiles.js';
 import { addSceneCarLods, updateCarLods, carLodState } from './viewlod.js';
 import { loadBeerShelf } from './beershelfdata.js';
@@ -241,7 +241,9 @@ const params0 = new URLSearchParams(location.search);
 // reallocates the drawing buffer after the house is built: one ~12 s block on phones.
 const shotMode = new URLSearchParams(location.search).has('shot'); // screenshots: always full resolution
 const pinned = params0.has('quality') ? +params0.get('quality') : (TEST ? 0 : shotMode ? QUALITY.levels - 1 : null);
-const quality = new Quality({ start: pinned ?? (lowMemory ? QUALITY.startLowMemory : QUALITY.levels - 1), remember: pinned === null });
+// #1512: Ultra (QUALITY index `levels`) only where its resources may be allocated: never on phones or the light profile.
+const ultraAllowed = !lowMemory && !TEST && resourceProfile() === 'full';
+const quality = new Quality({ start: pinned ?? (lowMemory ? QUALITY.startLowMemory : QUALITY.levels - 1), top: ultraAllowed ? QUALITY.levels : QUALITY.levels - 1, remember: pinned === null });
 new QualitySetting(quality, { level: document.getElementById('quality-level'), fps: document.getElementById('quality-fps'), note: document.getElementById('quality-note') }, { pinned: pinned !== null });
 quality.register('resolution', { // the canvas's pixel ratio (a step reallocates the drawing buffer once)
   apply: (l) => { const r = Math.max(QUALITY.minPixelRatio, MAX_PIXEL_RATIO * QUALITY.pixelRatio[l]); if (Math.abs(renderer.getPixelRatio() - r) > 1e-3) renderer.setPixelRatio(r); },

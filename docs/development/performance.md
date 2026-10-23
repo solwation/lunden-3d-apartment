@@ -996,12 +996,23 @@ while playing (not on the start screen or paused), after the warm-up, and not wi
 repeated hitches, no step up right after a step down, the recovery, and that the knobs are registered.
 
 **Graphics choice (#1509).** The settings dialog (`#settings-dialog`, `src/qualitysetting.js`) offers Auto or a named manual
-level (Lägsta / Låg / Medel / Hög = levels 0–3, `QUALITY.names`) and a 30 / 60 FPS target. Saved separately in `localStorage`:
+level (Lägsta / Låg / Medel / Hög = levels 0–3, plus Ultra = 4 where allowed, #1512; `QUALITY.names`) and a 30 / 60 FPS target. Saved separately in `localStorage`:
 `lunden.quality` stays the LAST AUTO level (an old install therefore migrates as Auto at its old level, no reset),
 `lunden.quality.mode` (`auto`/`manual`), `lunden.quality.manual`, `lunden.quality.fps`. Auto never writes the manual keys and a manual
 level never moves (`Quality.update` returns at once). The target only sets Auto's frame budget (1000 / target ms, #1510 below);
 it is a load budget, not a promise and no render cap exists. `&quality=n`, `&test` and `&shot` lock the level (`remember: false`): they read and write no saved choice and
 the dialog disables its buttons with a note. Checks: `node tools/qualitychoicetest.mjs` (state), `tools/qualitysettingtest.cjs` (browser).
+
+**Ultra (#1512).** Level 4 of every `QUALITY` table, offered only as an explicit manual choice or `&quality=4`, never by Auto
+(`Quality.max` = 3 bounds Auto's steps and trials; `Quality.top` = 4 bounds manual/URL choices). main.js sets `top` to 4 only when
+`!lowMemory && !TEST && resourceProfile() === 'full'`; phones, `&lowmem`, `&res=light` and `&test` get `top` = 3, so a saved or pinned
+Ultra clamps to Hög there, the settings dialog has no Ultra button and Ultra's resources are never allocated. Ultra = Hög plus ONE richer
+family: the sun's shadow map 4096² instead of 2048² over the same ±14 m box (texel about 0.7 instead of 1.4 cm, so soft shadow edges are
+about half as wide). Pixel ratio (the 1.5 cap), the single shadow light, casters, cadence, mirrors and detail are identical to Hög. Cost
+(*estimate*, not measured: no strong GPU is available): about 4 x the shadow pass's fill and about +96 MB GPU memory for the map and
+depth buffer; the map is reallocated once on the switch. Ultra performance is NOT verified. Checks: `node tools/qualitychoicetest.mjs`,
+`tools/ultrabrowser1512.cjs BASE OUT` (desktop 2048 -> 4096 shadow map, same pixel ratio; phone UA, `&lowmem`, `&res=light` clamp to
+Hög with shadow map <= 2048 and no Ultra button; manual choice through the dialog).
 
 **Regulator (#1510).** `Quality.update(dt, cpuMs)` judges 1 s windows against the target's budget (`QUALITY.auto`, all
 *guess*): a window is over when its MEDIAN interval exceeds 1.3 × budget or ≥ 20 % of its frames are hitches (≥ 3 × budget);

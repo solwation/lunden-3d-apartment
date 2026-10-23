@@ -51,4 +51,19 @@ ok(new Quality({ start: 3 }).level === 0 && new Quality({ start: 3 }).mode === '
 store.clear(); store.set('lunden.quality.mode', 'manual'); store.set('lunden.quality.manual', 'x'); store.set('lunden.quality', '9');
 q = new Quality({ start: 3 });
 ok(q.mode === 'auto' && q.level === 3, 'bad manual value falls back to Auto and a clamped level');
+// #1512 Ultra: an explicit choice above Auto's range, only where `top` allows it
+store.clear();
+q = new Quality({ start: 3, top: 4 });
+ok(q.max === 3 && q.top === 4 && q.level === 3 && q.mode === 'auto', 'Auto starts at Hög even where Ultra is allowed');
+feed(q, 1 / 60, 60 * 120);
+ok(q.level === 3 && q.log.every((e) => (e.to ?? 0) <= 3), 'Auto with headroom never steps or trials into Ultra');
+q.choose(4);
+ok(q.level === 4 && q.mode === 'manual' && store.get('lunden.quality.manual') === '4' && store.get('lunden.quality') === undefined, 'manual Ultra applied and saved apart from Auto');
+ok(new Quality({ start: 3, top: 4 }).level === 4, 'manual Ultra restored after reload where allowed');
+ok(new Quality({ start: 3 }).level === 3, 'saved Ultra clamps to Hög on a device without Ultra (light profile / phone)');
+const noUltra = new Quality({ start: 3 }); noUltra.choose(4);
+ok(noUltra.level === 3 && noUltra.top === 3, 'choosing Ultra without top stays at Hög');
+q.choose('auto');
+ok(q.mode === 'auto' && q.level === 3, 'back to Auto leaves Ultra for Auto\'s last level');
+ok(new Quality({ start: 4, top: 4, remember: false }).level === 4 && new Quality({ start: 4, remember: false }).level === 3, 'URL pin quality=4 reaches Ultra only where allowed');
 console.log(`ALL PASS (${n})`);

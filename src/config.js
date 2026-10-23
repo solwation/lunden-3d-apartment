@@ -2963,13 +2963,19 @@ export const QUALITY = {
   // `minGain`: a down step that improves the median by < 8 % over `responseWindows` windows is reverted. `keep`: log size.
   auto: { window: 1, over: 1.3, hitch: 3, hitchShare: 0.2, downAfter: 2, stall: 6, headroom: 1.1, upAfter: 5, blocked: 20,
     settle: 0.6, trialWindows: 3, backoff: 60, backoffMax: 600, cpuShare: 0.8, minGain: 0.08, responseWindows: 2, keep: 24 },
-  names: ['Lägsta', 'Låg', 'Medel', 'Hög'],
-  pixelRatio: [0.6, 0.75, 0.9, 1],
-  shadowSize: [1024, 1024, 2048, 2048],
-  shadowInterval: [1.0, 0.75, 0.5, 0.4],
-  mirror: [0, 256, 256, 512], mirrorEvery: [1, 3, 2, 1], // mirror image size (0 = none) and drawn every n-th frame; #1207: level 1 keeps a cheap image (256², every 3rd frame, no extra memory: the shared target is 256² already) so a device that stepped down once does not see empty mirrors; only the lowest level has none
-  detail: [0.6, 0.75, 0.9, 1],
-  particles: [0.35, 0.6, 0.85, 1],
+  // #1512 Ultra = index `levels` (4) of every table below: an explicit choice only (Auto stays within 0…levels − 1),
+  // offered only on a non-phone device with the full resource profile (main.js `top`). It is Hög with ONE richer
+  // family, the sun's shadow map: 4096² instead of 2048² over the same ±14 m box (texel ≈ 0.7 instead of ≈ 1.4 cm,
+  // so the PCF-soft edges of blinds, leaves and chair legs are about half as wide). Same shadow programs (the map size
+  // is a uniform), same casters and cadence; cost: 4 × the shadow pass's fill and ~+96 MB of GPU memory for the map
+  // and its depth buffer (*estimate*, RGBA8 + 32-bit depth). Not measured on strong hardware (none available, #1512).
+  names: ['Lägsta', 'Låg', 'Medel', 'Hög', 'Ultra'],
+  pixelRatio: [0.6, 0.75, 0.9, 1, 1],
+  shadowSize: [1024, 1024, 2048, 2048, 4096],
+  shadowInterval: [1.0, 0.75, 0.5, 0.4, 0.4],
+  mirror: [0, 256, 256, 512, 512], mirrorEvery: [1, 3, 2, 1, 1], // mirror image size (0 = none) and drawn every n-th frame; #1207: level 1 keeps a cheap image (256², every 3rd frame, no extra memory: the shared target is 256² already) so a device that stepped down once does not see empty mirrors; only the lowest level has none
+  detail: [0.6, 0.75, 0.9, 1, 1],
+  particles: [0.35, 0.6, 0.85, 1, 1],
 };
 // #669 (phone, `sliced`): iPhone crash reports show ONE frame of 4.4-4.7 s (the heartbeat's lagMs) in the warm-up's
 // `compiling` phase right before WebGL context loss; ~110 programs of the mirror variants compile in one frame (SwiftShader:

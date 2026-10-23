@@ -5,7 +5,7 @@ import { QUALITY } from './config.js';
 export class QualitySetting {
   constructor(quality, { level, fps, note }, { pinned = false } = {}) {
     Object.assign(this, { quality, level, fps, note, pinned });
-    const options = [['auto', 'Auto'], ...QUALITY.names.map((n, i) => [i, n])];
+    const options = [['auto', 'Auto'], ...QUALITY.names.slice(0, quality.top + 1).map((n, i) => [i, n])]; // Ultra only where allowed (#1512)
     this.buttons = options.map(([value, text]) => {
       const b = document.createElement('button');
       Object.assign(b, { type: 'button', textContent: text }); b.setAttribute('role', 'radio'); b.dataset.value = String(value);

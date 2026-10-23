@@ -27,19 +27,23 @@ import { QUALITY as Q } from './config.js';
 // (so an old install keeps its level and simply counts as Auto), `lunden.quality.mode` is `auto` or `manual`,
 // `lunden.quality.manual` the manual level and `lunden.quality.fps` the 30/60 target. Auto never writes the manual keys
 // and a manual choice never writes `lunden.quality`. A URL/test/shot lock (`remember: false`) reads and writes none of them.
+// #1512: `top` (≥ `max`) is the highest level a manual choice or a URL pin may reach. Above `max` lies Ultra
+// (index `levels` of every QUALITY table): an explicit choice only — Auto's steps and trials never go past `max`, and a device that may not
+// have Ultra (phones, the light resource profile: main.js) gets `top = max`, so it never allocates Ultra's resources.
 const KEY = 'lunden.quality', KEY_MODE = 'lunden.quality.mode', KEY_MANUAL = 'lunden.quality.manual', KEY_FPS = 'lunden.quality.fps';
 const read = (k) => { try { return localStorage.getItem(k); } catch { return null; } };
 const write = (k, v) => { try { localStorage.setItem(k, String(v)); } catch { /* private mode */ } };
 const num = (v) => (v !== null && v !== '' && Number.isFinite(+v) ? +v : null);
 
 export class Quality {
-  constructor({ start = Q.levels - 1, max = Q.levels - 1, remember = true } = {}) {
+  constructor({ start = Q.levels - 1, max = Q.levels - 1, top = max, remember = true } = {}) {
     this.max = max;
+    this.top = Math.max(max, top);
     this.remember = remember;
     this.locked = !remember;                                 // URL/test/shot lock: no saved choice is read or written
-    const clamp = (v) => Math.min(max, Math.max(0, Math.round(v)));
+    const clamp = (v) => Math.min(this.top, Math.max(0, Math.round(v)));
     const autoSaved = this.locked ? null : num(read(KEY)), manualSaved = this.locked ? null : num(read(KEY_MANUAL));
-    this.autoLevel = clamp(autoSaved ?? start);              // the last level Auto chose
+    this.autoLevel = Math.min(max, clamp(autoSaved ?? start)); // the last level Auto chose (never Ultra)
     this.manualLevel = clamp(manualSaved ?? this.autoLevel);
     this.mode = !this.locked && read(KEY_MODE) === 'manual' && manualSaved !== null ? 'manual' : 'auto';
     this.target = !this.locked && num(read(KEY_FPS)) === 30 ? 30 : 60; // frame-rate target: steers Auto's budget, no promise
@@ -70,8 +74,8 @@ export class Quality {
   onChange(fn) { this.listeners.push(fn); }
 
   set(level, why = 'set', pixelLevel = level) {
-    level = Math.min(this.max, Math.max(0, Math.round(level)));
-    pixelLevel = Math.min(this.max, Math.max(level, Math.round(pixelLevel)));
+    level = Math.min(this.top, Math.max(0, Math.round(level)));
+    pixelLevel = Math.min(this.top, Math.max(level, Math.round(pixelLevel)));
     if (level === this.level && pixelLevel === this.pixelLevel) return false;
     const prev = this.level, prevPx = this.pixelLevel;
     this.level = level; this.pixelLevel = pixelLevel;
@@ -89,7 +93,7 @@ export class Quality {
     return true;
   }
 
-  /** The player's choice: `'auto'` or a manual level 0…max. Returns false while a URL/test/shot lock holds. */
+  /** The player's choice: `'auto'` or a manual level 0…top (top = Ultra where allowed, #1512). Returns false while a URL/test/shot lock holds. */
   choose(choice) {
     if (this.locked) return false;
     this.trial = this.response = null; this.backoffs = {}; this.downFails = 0;
@@ -97,7 +101,7 @@ export class Quality {
       this.mode = 'auto'; write(KEY_MODE, 'auto');
       this.set(this.autoLevel, 'auto'); this.reset();
     } else {
-      const level = Math.min(this.max, Math.max(0, Math.round(+choice)));
+      const level = Math.min(this.top, Math.max(0, Math.round(+choice)));
       this.mode = 'manual'; this.manualLevel = level; write(KEY_MODE, 'manual'); write(KEY_MANUAL, level);
       if (!this.set(level, 'manual')) for (const fn of this.listeners) fn(level, level, 'manual');
     }
@@ -250,7 +254,7 @@ export class Quality {
 
   /** Bounded state for diagnostics (&perf, frame-interval export). */
   diagnostics() {
-    return { mode: this.mode, target: this.target, budgetMs: +this.budget.toFixed(1), level: this.level, pixelLevel: this.pixelLevel,
+    return { mode: this.mode, target: this.target, budgetMs: +this.budget.toFixed(1), level: this.level, pixelLevel: this.pixelLevel, top: this.top,
       switches: this.switches, stalls: this.stalls.count, recentStalls: this.stalls.recent.slice(-8), last: this.last ?? null,
       trial: !!this.trial, paused: this.paused, gpuTime: false, log: this.log.slice() };
   }
