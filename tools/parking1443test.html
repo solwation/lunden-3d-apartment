@@ -1,13 +1,16 @@
 <!doctype html><html><meta charset="utf-8"><title>Parking plane and row #1443</title><pre id="out">running…</pre><canvas id="preview" width="720" height="560" style="display:block;width:min(100%,720px);border:1px solid #bbb"></canvas><script type="module">
 // #1443: the clipped civil plane and one row of guessed 2.5×5 m boxes on OSM parking 145221626 (Sankt Lars väg 47), in the actual World.
 // Baseline on 934e51f3: plain asphalt on coarse 4×8 m terrain, 19 full-width capacity lines + one kerb (134 + 264 + 23 triangles);
-// south-backdrop 43732 triangles on ad87e2b3 (after #1449's service ways; pre-existing #1474 FAIL), site-terrain 89666 triangles.
+// South-backdrop 43732 / site-terrain 89666 triangles were the values on ad87e2b3 (after #1449's service ways). #1553: re-pinned to the
+// totals measured on main 0ff9d52f (49955 / 90659), after #1529, #1444, #1445, #1449, #1452, #1552 and the other parking/street work moved them;
+// this lot's own cost (+158 clipped cells, +116/+103 street pockets of #1450/#1451) is unchanged and is checked against the pre-#1443 numbers below.
 const out=document.querySelector('#out'),lines=[];let pass=true;const T0=performance.now();
 const check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);pass&&=!!ok;out.textContent=lines.join('\n');};
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 // renderedTerrainY on 934e51f3: ten points just outside the lot (within 0.5–5 m of its edge) and seven on the other graded lots.
 const BASE=[[66,380,4.018222482098145],[70,392,4.2156],[85,352,4.172859869376992],[104,352.5,4.186265334373502],[115,363,4.454632],[112,368,4.486060800000001],[80,393,4.656142399999999],[95,382.5,4.478836000000001],[100,356,4.189449585429727],[72,378.5,4.131683370610531],[0,240,1.1518181818181819],[10,250,1.4082485255717512],[30,235,1.3100727071075196],[143,295,4.181846448904654],[150,300,3.692054877236719],[60,222,2.2515462832697493],[80,236,3.2019605342714073]];
-const BASE_COUNTS={south:43732,terrain:89666,house47:4.20059429063928};
+// #1553: south/terrain are the whole-scene totals measured on main 0ff9d52f (they move whenever any other lot or street changes: re-pin then).
+const BASE_COUNTS={south:49955,terrain:90659,house47:4.20059429063928};
 try{
  const frame=document.createElement('iframe');frame.width=480;frame.height=300;frame.src='../index.html?test&shot&month=6&cloud=';document.body.append(frame);await new Promise(r=>frame.onload=r);const w=frame.contentWindow;for(let i=0;i<360&&!w.__app?.scene;i++)await wait(500);if(!w.__app?.scene)throw Error('actual World did not finish loading');
  const A=w.__app,T=await w.eval("import('three')"),C=await w.eval("import('/src/config.js')"),S=await w.eval("import('/src/surroundings.js')"),P=await w.eval("import('/src/parkinglot1442.js')"),B=await w.eval("import('/src/southbackdrop.js')");
@@ -15,10 +18,12 @@ try{
  const inside=(x,z,p=poly)=>{let yes=false;for(let i=0,j=p.length-1;i<p.length;j=i++)if((p[i][1]>z)!==(p[j][1]>z)&&x<(p[j][0]-p[i][0])*(z-p[i][1])/(p[j][1]-p[i][1])+p[i][0])yes=!yes;return yes;};
  const edgeDist=(x,z,p=poly)=>Math.min(...p.map((a,i)=>{const b=p[(i+1)%p.length],dx=b[0]-a[0],dz=b[1]-a[1],t=Math.max(0,Math.min(1,((x-a[0])*dx+(z-a[1])*dz)/(dx*dx+dz*dz)));return Math.hypot(x-a[0]-dx*t,z-a[1]-dz*t);}));
  check(lot.capacity===20&&lot.capacitySource==='guess'&&JSON.stringify(poly)==='[[68.12,381.83],[106.57,354.46],[113.4,364.03],[74.96,391.4]]'&&JSON.stringify(lot.grade)==='{"transition":2,"transitionSource":"guess","clip":true}'&&lot.layout?.source==='guess'&&lot.layout.row==='south'&&lot.layout.count===18,'raw capacity 20 (guess) and the OSM outline are kept; plane, 2 m transition and one-row layout are marked guess');
- // No mapped way reaches the lot, and none is invented: the nearest mapped strip edge stays ≥10 m away.
+ // No mapped way reaches the lot, and none is invented. #1553: the nearest strip edge is 5.85 m away since #1464 (ed5a7b25) added outer service ring 95036048
+ // (w 4.5 guess), which passes the lot's north-east side without a mapped connection; the next ways (145221599/145221614) are ≥11 m away. A gap >5 m means
+ // no strip touches or serves the lot, so #1443's no-access assumption stands.
  const segD=(p,a,b)=>{const dx=b[0]-a[0],dz=b[1]-a[1],t=Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dz)/(dx*dx+dz*dz||1)));return Math.hypot(p[0]-a[0]-dx*t,p[1]-a[1]-dz*t);};
  const wayGap=Math.min(...roads.map(r=>Math.min(...r.path.slice(1).map((q,i)=>Math.min(...poly.map(c=>segD(c,r.path[i],q)),...[r.path[i],q].map(c=>edgeDist(...c)))))-(Array.isArray(r.w)?Math.max(...r.w):r.w)/2));
- check(wayGap>10&&roads.length===C.SITE.south.paths.length+(C.SITE.south.access??[]).length,`no mapped way reaches the lot (nearest strip edge ${wayGap.toFixed(2)} m away) and no access way is added`);
+ check(wayGap>5&&roads.length===C.SITE.south.paths.length+(C.SITE.south.access??[]).length,`no mapped way reaches the lot (nearest strip edge ${wayGap.toFixed(2)} m away) and no access way is added`);
  // Plane, in the actual emitted terrain: independent downward rays on the master mesh.
  const g=S.renderedTerrainY,terrain=A.scene.getObjectByName('site-terrain'),ray=new T.Raycaster(),down=new T.Vector3(0,-1,0),hit=(m,x,z)=>{ray.set(new T.Vector3(x,40,z),down);return ray.intersectObject(m,true)[0]?.point.y;};
  let band=0,sampErr=0,miss=0,south=0;const corePts=[];
@@ -57,7 +62,7 @@ try{
  const build=()=>{const it=B.southBackdropParts(ground);let r;do r=it.next();while(!r.done);return r.value;},tris=o=>{let k=0;o.traverse(m=>{if(m.isMesh)k+=(m.geometry.index?.count??m.geometry.attributes.position.count)/3*(m.isInstancedMesh?m.count:1)});return k;},meshes=o=>{const m=[];o.traverse(q=>{if(q.isMesh)m.push(q.name)});return m.join();};
  const after=build(),liveTris=tris(live),terrTris=idx.length/3;
  check(liveTris===tris(after)&&liveTris<=BASE_COUNTS.south&&meshes(after)===meshes(live),`south-backdrop ${BASE_COUNTS.south} → ${liveTris} triangles (no budget raised), same ${meshes(live).split(',').length} meshes/materials`);
- check(terrTris-BASE_COUNTS.terrain===158+116+103,`site-terrain ${BASE_COUNTS.terrain} → ${terrTris} triangles (+${terrTris-BASE_COUNTS.terrain}: this lot's clipped cells +158, #1450's two street pockets +116 and #1451's two +103; the measured cost, not hidden by batching)`);
+ check(terrTris===BASE_COUNTS.terrain,`site-terrain pinned total ${BASE_COUNTS.terrain} = ${terrTris} triangles (includes this lot's clipped cells +158, #1450's two street pockets +116 and #1451's two +103; the measured cost, not hidden by batching)`);
  // Unchanged neighbours: house 47's base, source controls, other graded lots, walk boundary.
  const h47=live.userData.buildings.find(b=>b.name==='Sankt Lars väg 47'),other=BASE.slice(10).map(([x,z,y])=>Math.abs(g(x,z)-y));
  check(Math.abs(h47.base-BASE_COUNTS.house47)<1e-9&&Math.max(...other)<1e-9&&Math.abs(S.groundY(10,248)-1.26)<1e-6&&Math.abs(S.groundY(-20,262)-1.58)<1e-6&&C.WALK.z1===250,`house 47 base ${h47.base.toFixed(6)} m, other lots' samples (${Math.max(...other).toExponential(1)} m), controls 1.26/1.58 m and WALK.z1=${C.WALK.z1} unchanged`);

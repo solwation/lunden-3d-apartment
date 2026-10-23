@@ -603,7 +603,7 @@ directly), `groundY` follows it as for the other graded lots, and the lot's asph
 (`lotTriangles`). One row (`layout.row: 'south'`, `count` 18) of whole 2.5×5m boxes runs along the south-east edge,
 away from the house, leaving a 6.76m clear aisle (≥6m *guess*; raw capacity 20 stays *guess*). Its 19 dividers are cut
 along the same pieces; there is no kerb and no line across the aisle, and the old 19 full-width capacity lines are gone.
-No mapped way reaches the lot (145221599/145221614, including the #1432 service ways, end ≥10m away), so no access is drawn.
+No mapped way reaches the lot, so no access is drawn: 145221599/145221614 (including the #1432 service ways) end ≥11m away, and since #1464 (ed5a7b25) the outer service ring 95036048 passes 5.85m from the outline (strip edge to lot edge, no mapped connection, w 4.5 *guess*). Reassessed in #1553: a gap of 5.85m is not access, so the assumption stands; the test guards "nearest strip >5m".
 Cost: `south-land` −98 (whole backdrop 43732→43634 on top of #1449's service ways; 42634→42536 measured before them), `site-terrain` 89666→89824 (+158 for the clipped cells);
 no new mesh, material or texture. The whole lot lies south of `WALK.z1=250`: surface and ray evidence only, not reachable
 on foot. Other lots, controls and `WALK` are unchanged.
