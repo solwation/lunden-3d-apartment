@@ -165,3 +165,30 @@ Shared release: **v0.1.1**, commit **3ab2b3a59a8deb5d8734c258af4016a8c03b6caf**.
 at `.orchestra/shared`. See [installation/contribution instructions](shared/README.md).
 Improve the core in its own clean repository, release it, then explicitly update both
 Lunden pins. Keep this local policy outside the subtree; do not export project history.
+
+
+### Upstream update discovery
+
+At conductor startup/resume, check stable releases **and version tags** in
+`solwation/dirigenten-och-orkestern` against the installed release/commit above.
+Reuse a successful check for the same upstream/pin for up to 24 hours; an explicit
+update request or suspected orchestra bug requires a fresh check. The conductor owns
+this check; workers and queue polls do not repeat it. Read candidate changelogs and
+the full intervening instruction diff at exact resolved commits; ignore drafts and
+prereleases by default. Compare version numbers, not dates/API order.
+
+Always create/update a proposal in the affected repository's issues for relevant
+bug/regression fixes, naming installed/target versions and SHAs, source links,
+applicability, compatibility/host-rule effects, checks and next action. Other upgrades
+are optional when clearly useful. Reuse existing proposals or recorded deferrals;
+respect explicit declines and ordinary priority/ownership rules. Mixed releases must
+disclose other changes and migrations. Unreleased main changes are pending, not
+stable targets. Do not automatically import a release or interrupt current work.
+
+Record UTC check time, upstream/pin, examined targets and outcome in private state
+or existing maintenance status. If the read fails or is incomplete, retain the pin, disclose
+the limitation once, retry on next session/resume and continue independent work;
+never cache failure as success. This check installs no background scheduler.
+The [shared procedure](https://github.com/solwation/dirigenten-och-orkestern/blob/cbddafa3193870c7f0693064ae303cc4d6657ff0/README.md#check-for-upstream-updates)
+is adopted here as local maintenance policy while the installed shared subtree stays
+on its reviewed release. A later import follows the existing explicit update procedure.
