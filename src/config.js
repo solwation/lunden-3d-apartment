@@ -609,7 +609,18 @@ export const SITE = {
     // No surveyed apartment-floor RH2000 datum or measured bathymetry. Riverbed at bedY (-6.8), shore/path at shoreY (-5.5), 0.7 m above water; gives 2.05 m clearance
     // under road slab and 2.32 m under GC bridge). Valley slopes up from shoreSpan (4.5 m past bank) over valleySpan
     // (8.5 m) to base terrain (-3), meeting the road bridge abutments (ends at z ~100 and z ~145.8) from bank to bank.
-    underpass:{floorY:-5.5,pier:.2}},
+    underpass:{floorY:-5.5,pier:.2},
+    // #1530: road-bridge cross-section and railings after the user's photos (docs/foton/hoje-a-vagbron-langs-vagen.jpg looks
+    // NE along the road = model north, so its left is model west, the GC side; hoje-a-fran-stora-bron-norrut.jpg shows the
+    // green parapet close up). Every size and colour here is a *guess* read from the photos; the 7.2 m deck width is kept.
+    // West (−x, towards GC): carriageway | verge with guard rail | granite kerb | raised footway | green parapet (wide top
+    // rail, X braces between posts, close vertical bars). East (+x): granite kerb | guard rail | black plate edge with a steel
+    // handrail. Concrete edge beams (kantbalkar) on both sides stand above the deck and keep the slab's underside (#1285).
+    roadDeck:{edge:{w:.3,up:.25,out:.05},walk:{w:1.4,h:.12},kerb:{w:.15,h:.13},verge:.4,
+      parapet:{h:1.15,inset:.08,top:[.15,.04],mid:.12,low:.33,post:.1,bay:2.6,brace:[.06,.02],slat:[.02,.012],slatStep:.11},
+      plate:{h:.9,t:.03,rail:1.1,post:.08,bay:2.6},
+      guard:{h:.6,beam:.3,t:.05,post:.1,step:3.2,gap:.15},
+      colors:{green:0x3d5a4e,black:0x1f2423,galv:0x9ea5a3,granite:0x8f8e8a,gcSteel:0x3d5a4e}}},
   // #532 foundation: sourced horizontal river centreline near the two bridges; #533 owns detailed banks/paths/vegetation.
   // Width and uniform depth remain assumptions; do not describe these as measured water levels or surveyed banks.
   // #1233: `bankScale` (guess) shortens every bank span (visual estimates below) so the slope down to the water is steeper; the real

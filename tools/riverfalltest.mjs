@@ -28,8 +28,10 @@ test('rendered water vertices follow the same continuous downstream level as the
  for(const[x,z]of R.path){const bed=groundBelowDeckY(x,z);near(bed,waterYAt(x,z)-.6);near(shoreYAt(x,z)-waterYAt(x,z),.7);assert(inWater(x,z,bed));}
 });
 
+// #1530 re-baselined the concrete/steel/asphalt snapshots for the photo-based road-bridge cross-section and vertex colours
+// (the river fall still does not touch them; deck datum and undersides are checked in southbanktest/bridgetest).
 test('the default constant-deck bridge geometry and mapped park paths retain the pre-fall buffers',()=>{
- const expected={'bridges-concrete':'06066984e9d7a9be656fe3fe026ae8c839306b0a05d3a58bc56eb649f306d94d','bridges-steel':'2c5342549c68d7789aa6ff6bdcc44675a51bf8c5e94e6b9be6b610774912ba1f','bridges-asphalt':'fbeda52e629caecfadb6b5125d5f68c35981ee35798779ac5fba1af0968eee44'};
+ const expected={'bridges-concrete':'2ab9dd8cc38f372130997549143a14de7811459c6e510fbbeeaa42d7d919a832','bridges-steel':'43a946866a9497d9941e4d495bc6049e90926b5047c2f73a37c1aa9c04423040','bridges-asphalt':'c49aa22d22c0b064737f2699c76076bd9913ce7d935345c70c5ee89e76411360'};
  for(const m of buildRiverBridges().children.filter(m=>m.name!=='bridges-water')){const h=createHash('sha256'),g=m.geometry;for(const k of Object.keys(g.attributes).sort())h.update(k).update(Buffer.from(g.attributes[k].array.buffer));if(g.index)h.update(Buffer.from(g.index.array.buffer));assert.equal(h.digest('hex'),expected[m.name]);}
  assert.equal(hash(JSON.stringify(SITE.riverPark.paths)),'2e682c6a3361bbdab008dafb210f8b24b8b5566f784932735b1aafb153173150');
 });
