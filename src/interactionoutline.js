@@ -100,7 +100,11 @@ export class InteractionOutline {
           original.blending===THREE.AdditiveBlending||original.blending===THREE.CustomBlending)continue;
         const program=renderer.properties.get(original).currentProgram;
         if(!program)continue;
-        const key=program.cacheKey+'|'+(index===null?'mesh':'instance');
+        // #1536: transparent + DoubleSide (+ !forceSinglePass) draws two passes, BackSide then FrontSide, but currentProgram
+        // is only the FrontSide one: without this suffix it would share a key with a single-sided material and skip the back variant.
+        // (Compiling the proxy's highlight material prepares both passes, like the original's own compile.)
+        const twoPass=original.transparent&&original.side===THREE.DoubleSide&&!original.forceSinglePass;
+        const key=program.cacheKey+'|'+(index===null?'mesh':'instance')+(twoPass?'|2pass':'');
         if(seen.has(key))continue;
         // Detached compile-only view: no scene child, buffers, draw call or physical ray is added.
         const proxy=Object.create(object);proxy.material=this.highlight(original,index);

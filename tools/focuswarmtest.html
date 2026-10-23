@@ -78,6 +78,15 @@ try {
   check(lateTicks.length>0&&lateTicks.every(c=>!c.some(x=>x.k==='compileSlice')&&c.every(x=>x.n<=8)),`phone sliced: late compile takes its own frame within the slice budget (${lateTicks.map(c=>c.map(x=>x.n).join('+')).join(', ')} programs)`);
   scene.remove(m);
  }
+ // #1536: transparent + DoubleSide + !forceSinglePass draws two passes (BackSide, FrontSide) but currentProgram is the FrontSide one,
+ // so a single-sided material of the same parameters must not mask the two-pass target's first-focus variants.
+ {
+  const mk=(x,opts)=>{const m=new T.Mesh(geometry,new T.MeshStandardMaterial({color:0x336699,fog:false,transparent:true,alphaTest:.04,...opts}));const t={pickable:m};m.userData.door=t;m.position.set(x,-1.6,0);scene.add(m);return [m,t]};
+  const [,t1]=mk(-.5,{}),[,t2]=mk(.5,{side:T.DoubleSide});
+  const w=new WarmUp({renderer,scene,camera,mirrorTarget:()=>target,compileExtras:outline.warmCompiler(renderer,scene)});
+  for(const rt of [null,target]){const ms=w.compileObjects(null,rt);await w.whenReady(ms,10000)}
+  const fresh=focusAll([t1,t2]);check(fresh===0,'#1536: single-sided + double-sided transparent targets of equal parameters: first screen+mirror focus adds zero programs: '+fresh);
+ }
  renderer.dispose();target.dispose();geometry.dispose();
  document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
 }catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack}
