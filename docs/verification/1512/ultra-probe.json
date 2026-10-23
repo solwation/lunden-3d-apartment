@@ -1,0 +1,114 @@
+{
+  "res": {
+    "desktop-q3": {
+      "level": 3,
+      "top": 4,
+      "mode": "auto",
+      "shadow": 2048,
+      "shadowTarget": 2048,
+      "pixelRatio": 1,
+      "buttons": [
+        "Auto",
+        "Lägsta",
+        "Låg",
+        "Medel",
+        "Hög",
+        "Ultra"
+      ]
+    },
+    "desktop-q4": {
+      "level": 4,
+      "top": 4,
+      "mode": "auto",
+      "shadow": 4096,
+      "shadowTarget": 4096,
+      "pixelRatio": 1,
+      "buttons": [
+        "Auto",
+        "Lägsta",
+        "Låg",
+        "Medel",
+        "Hög",
+        "Ultra"
+      ]
+    },
+    "phone-q4": {
+      "level": 3,
+      "top": 3,
+      "mode": "auto",
+      "shadow": 1536,
+      "shadowTarget": 1536,
+      "pixelRatio": 1,
+      "buttons": [
+        "Auto",
+        "Lägsta",
+        "Låg",
+        "Medel",
+        "Hög"
+      ]
+    },
+    "lowmem-q4": {
+      "level": 3,
+      "top": 3,
+      "mode": "auto",
+      "shadow": 1536,
+      "shadowTarget": 1536,
+      "pixelRatio": 1,
+      "buttons": [
+        "Auto",
+        "Lägsta",
+        "Låg",
+        "Medel",
+        "Hög"
+      ]
+    },
+    "light-q4": {
+      "level": 3,
+      "top": 3,
+      "mode": "auto",
+      "shadow": 2048,
+      "shadowTarget": 2048,
+      "pixelRatio": 1,
+      "buttons": [
+        "Auto",
+        "Lägsta",
+        "Låg",
+        "Medel",
+        "Hög"
+      ]
+    },
+    "desktop-manual": {
+      "level": 3,
+      "top": 4,
+      "mode": "auto",
+      "shadow": 2048,
+      "shadowTarget": 2048,
+      "pixelRatio": 1,
+      "buttons": [
+        "Auto",
+        "Lägsta",
+        "Låg",
+        "Medel",
+        "Hög",
+        "Ultra"
+      ]
+    },
+    "manualAfterClick": {
+      "level": 4,
+      "top": 4,
+      "mode": "manual",
+      "shadow": 4096,
+      "shadowTarget": null,
+      "pixelRatio": 1,
+      "buttons": [
+        "Auto",
+        "Lägsta",
+        "Låg",
+        "Medel",
+        "Hög",
+        "Ultra"
+      ]
+    }
+  },
+  "errors": []
+}
