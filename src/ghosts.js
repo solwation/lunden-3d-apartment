@@ -121,6 +121,11 @@ export class Ghost { // (exported for tools/ghostprops.html)
     this.heldCat = new GhostCat();
     this.waveT = 0;
     this.root.visible = false; // until its first state
+    // #1558: our mirror image is hidden outside the reflector pass, so its first mirror frame uploaded the skinned
+    // body's ~3 MB of buffers and bone texture and drew its programs for the first time: a ~230 ms stall in front of
+    // the living-room mirrors. The desktop warm-up's full draw passes (screen and mirror target) draw it once instead.
+    // (Sliced phone draws only show warmDraw renderables, not this group, so phones keep it lazy as before, #628.)
+    if (self) this.root.userData.warmDraw = true;
     this.body = 0; this.speed = 0; this.have = false;
     parent.add(this.root);
   }

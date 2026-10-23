@@ -2005,3 +2005,17 @@ objects, source identity/appearance/disposal and sliced compileObjects. See the
 strong-GPU uncertainty. The public project has neither WarmUp nor InteractionOutline;
 its opening fronts use an already-built focus uniform, so this private focus-material
 fix has no corresponding downstream code path.
+
+### Our own mirror avatar (#1558)
+
+The remaining first-visit stall in the living room (#1514: 270–380 ms on the UHD630, 0 new
+programs) was the first mirror pass that showed our own avatar (#691). Its root is hidden
+outside the reflector pass. The warm-up therefore compiled its programs but never drew it,
+and the first mirror frame uploaded its 13 skinned-body buffers (about 3.3 MB) and its 8×8
+bone texture. The next frame interval was about 230 ms on an RTX 3080/D3D11, most of it
+outside the app's callback. The self `Ghost` root now carries `userData.warmDraw`, so the
+desktop full warm-up passes draw it once on screen and once into the mirror target (one extra
+draw call each). The sliced phone passes only show `warmDraw` renderables in their slice, so
+phones keep it lazy as before (#628). Check with `tools/selfmirrorwarmtest.cjs desktop|phone`.
+See the [verification record](../verification/1558/README.md) for the matched first- and
+repeated-lap table.
