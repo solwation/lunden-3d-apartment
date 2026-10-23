@@ -117,6 +117,7 @@ export function createParkingGrade(lot, sampleBase, options = {}) {
  * surveyed driveway is created.
  */
 export function createParkingLayout(lot, { bayWidth = DEFAULTS.bayWidth, bayDepth = DEFAULTS.bayDepth, aisleWidth = DEFAULTS.aisleWidth, start = lot?.layout?.start ?? null, boxes = !!lot?.layout?.boxes } = {}) {
+  if (lot?.layout?.aisle) return createAisleLayout(lot, { bayWidth, bayDepth });
   const poly = ring(lot?.polygon ?? []);
   if (poly.length !== 4 || !(bayWidth > 0 && bayDepth > 0 && aisleWidth > 0)) throw new TypeError('Nattsländegatan layout needs its four-corner lot and positive dimensions');
   const edges = poly.map((a, i) => { const b = poly[(i + 1) % poly.length]; return { a, b, len: Math.hypot(b[0] - a[0], b[1] - a[1]) }; });
@@ -170,10 +171,89 @@ export function createParkingLayout(lot, { bayWidth = DEFAULTS.bayWidth, bayDept
   return { aisle, stalls, segments, markingSegments, entrance: skip, axes: { u, n }, origin: { u0, n0, n1 }, dimensions: { bayWidth, bayDepth, aisleWidth, lotWidth: width, rowDepth, clearAisle: width - 2 * rowDepth, length: u1-u0 } };
 }
 
-function lineGeometry(segment, width, ground, lift, grid, boundary) {
+const segDist = (p, q, a, b) => {
+  const d = (s, t, v) => { const dx = t[0] - s[0], dz = t[1] - s[1], k = clamp(((v[0] - s[0]) * dx + (v[1] - s[1]) * dz) / (dx * dx + dz * dz || 1), 0, 1); return Math.hypot(v[0] - s[0] - dx * k, v[1] - s[1] - dz * k); };
+  const c1 = cross(p, q, a), c2 = cross(p, q, b), c3 = cross(a, b, p), c4 = cross(a, b, q);
+  if (c1 * c2 < 0 && c3 * c4 < 0) return 0;
+  return Math.min(d(p, q, a), d(p, q, b), d(a, b, p), d(a, b, q));
+};
+const pointIn = (x, z, p) => { let yes = false; for (let i = 0, j = p.length - 1; i < p.length; j = i++) if ((p[i][1] > z) !== (p[j][1] > z) && x < (p[j][0] - p[i][0]) * (z - p[i][1]) / (p[j][1] - p[i][1]) + p[i][0]) yes = !yes; return yes; };
+
+/**
+ * #1441: rows of whole guessed boxes along a mapped way that runs through a
+ * concave lot (`lot.layout.aisle.road`). The way's straight centre line is the
+ * aisle axis; each `rows` entry is one side (−1/+1 along n) at a guessed
+ * `offset` from that line, optionally limited to `from`…`to` m along the way.
+ * Boxes are packed from the start of each range and kept only where the whole
+ * box (widened by half a paint line) lies inside the polygon and clear of the
+ * aisle way and every `clear` way strip (half width + margin), so the rows
+ * break around the lot's necks, notches, the house edge and the mapped entrance.
+ */
+function createAisleLayout(lot, { bayWidth, bayDepth }) {
+  const poly = ring(lot.polygon ?? []), L = lot.layout, ways = [...(SITE.south.paths ?? []), ...(SITE.south.access ?? [])], way = (s) => { const r = ways.find(w => w.source === s); if (!r) throw new RangeError(`Parking layout way ${s} is not mapped`); return r; };
+  const road = way(L.aisle.road), a = road.path[0], b = road.path.at(-1), len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+  const u = [(b[0] - a[0]) / len, (b[1] - a[1]) / len], n = [-u[1], u[0]], proj = (p, v) => p[0] * v[0] + p[1] * v[1];
+  const c = road.path.reduce((s, p) => s + proj(p, n), 0) / road.path.length, ua = proj(a, u);
+  if (road.path.some(p => Math.abs(proj(p, n) - c) > .1)) throw new RangeError(`Parking aisle way ${road.source} is not straight`);
+  const margin = L.margin ?? .25, paint = (L.paint ?? .08) / 2, at = (v, w) => [u[0] * v + n[0] * w, u[1] * v + n[1] * w];
+  const clear = [road, ...(L.clear ?? []).map(way)].map(r => ({ source: r.source, path: r.path, keep: (Array.isArray(r.w) ? Math.max(...r.w) : r.w) / 2 + margin }));
+  const us = poly.map(p => proj(p, u)), lotU0 = Math.min(...us), lotU1 = Math.max(...us), boxArea = (bayWidth + 2 * paint) * bayDepth;
+  const fits = (box) => box.every(([x, z]) => pointIn(x, z, poly)) && Math.abs(area(clipConvex(poly, box))) >= boxArea - 1e-6 && clear.every(r => r.path.slice(1).every((q, i) => box.every((p, k) => segDist(r.path[i], q, p, box[(k + 1) % 4]) >= r.keep - 1e-6) ) && r.path.every(q => !pointIn(q[0], q[1], box)));
+  const stalls = [], segments = [], runs = [];
+  for (const row of L.rows ?? []) {
+    const side = Math.sign(row.side), near = c + side * row.offset, far = near + side * bayDepth;
+    const lo = row.from == null ? lotU0 : ua + row.from, hi = row.to == null ? lotU1 : ua + row.to;
+    let run = null;
+    for (let t = lo; t + bayWidth <= hi + 1e-9;) {
+      const box = [at(t - paint, near), at(t + bayWidth + paint, near), at(t + bayWidth + paint, far), at(t - paint, far)];
+      if (!fits(box)) { t = Math.round((t + .01) * 100) / 100; run = null; continue; }
+      if (!run) runs.push(run = { side, offset: row.offset, cuts: [t] });
+      const footprint = [at(t, near), at(t + bayWidth, near), at(t + bayWidth, far), at(t, far)];
+      stalls.push({ polygon: footprint, center: at(t + bayWidth / 2, (near + far) / 2), width: bayWidth, depth: bayDepth, side, offset: row.offset, area: Math.abs(area(footprint)) });
+      t += bayWidth; run.cuts.push(t); run.near = near; run.far = far;
+    }
+  }
+  for (const r of runs) for (const v of r.cuts) segments.push([at(v, r.near), at(v, r.far)]);
+  return { aisle: null, stalls, segments, markingSegments: segments, entrance: null, clear: clear.map(r => r.source), runs, axes: { u, n }, origin: { u0: ua, n0: c, n1: c }, dimensions: { bayWidth, bayDepth, aisleWidth: Math.min(...(L.rows ?? []).map(r => r.offset)) * 2, length: lotU1 - lotU0 } };
+}
+
+/**
+ * #1441: a polygon's surface triangles cut along the terrain mesh, as cutAtTerrain
+ * does, but every terrain half-cell whose pieces together form one convex polygon
+ * is emitted as a fan over that polygon. renderedTerrainY is linear inside a
+ * half-cell, so the drawn surface is unchanged; only the pieces from the
+ * polygon's own triangulation seams disappear. Refined cells keep their pieces.
+ */
+export function cellTriangles(polygon, grid) {
+  const poly = ring(polygon), idx = THREE.ShapeUtils.triangulateShape(poly.map(([x, z]) => new THREE.Vector2(x, z)), []);
+  const pieces = idx.flatMap(t => grid ? cutAtTerrain(t.map(k => poly[k]), grid) : [t.map(k => poly[k])]);
+  if (!grid) return pieces;
+  const X = [grid.X[0] - 1e3, ...grid.X, grid.X.at(-1) + 1e3], Z = [grid.Z[0] - 1e3, ...grid.Z, grid.Z.at(-1) + 1e3], groups = new Map(), out = [];
+  for (const tri of pieces) {
+    const cx = (tri[0][0] + tri[1][0] + tri[2][0]) / 3, cz = (tri[0][1] + tri[1][1] + tri[2][1]) / 3;
+    let i = 0; while (i < X.length - 2 && X[i + 1] <= cx) i++;
+    let j = 0; while (j < Z.length - 2 && Z[j + 1] <= cz) j++;
+    if ((grid.refined?.(i - 1, j - 1) ?? 1) > 1) { out.push(tri); continue; }
+    const key = `${i},${j},${(cx - X[i]) / (X[i + 1] - X[i]) + (cz - Z[j]) / (Z[j + 1] - Z[j]) < 1 ? 0 : 1}`;
+    (groups.get(key) ?? groups.set(key, []).get(key)).push(tri);
+  }
+  const turn = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  for (const list of groups.values()) {
+    if (list.length === 1) { out.push(list[0]); continue; }
+    const pts = list.flat().sort((a, b) => a[0] - b[0] || a[1] - b[1]), lo = [], up = [];
+    for (const q of pts) { while (lo.length > 1 && turn(lo.at(-2), lo.at(-1), q) <= 1e-9) lo.pop(); lo.push(q); }
+    for (const q of pts.reverse()) { while (up.length > 1 && turn(up.at(-2), up.at(-1), q) <= 1e-9) up.pop(); up.push(q); }
+    const hull = lo.slice(0, -1).concat(up.slice(0, -1)), sum = list.reduce((s, t) => s + Math.abs(area(t)), 0);
+    if (hull.length >= 3 && hull.length - 2 < list.length && Math.abs(Math.abs(area(hull)) - sum) < 1e-6) for (let k = 1; k < hull.length - 1; k++) out.push([hull[0], hull[k], hull[k + 1]]);
+    else out.push(...list);
+  }
+  return out;
+}
+
+function lineGeometry(segment, width, ground, lift, grid, boundary, merge = false) {
   const [p0,p1]=segment, dx=p1[0]-p0[0], dz=p1[1]-p0[1], len=Math.hypot(dx,dz);
   if (len < 1e-8) return null;
-  const nx=-dz/len*width/2,nz=dx/len*width/2,quad=[[p0[0]-nx,p0[1]-nz],[p0[0]+nx,p0[1]+nz],[p1[0]+nx,p1[1]+nz],[p1[0]-nx,p1[1]-nz]],poly=boundary?clipConvex(quad,boundary):quad,triangles=poly.slice(1,-1).flatMap((_,i)=>{const tri=[poly[0],poly[i+1],poly[i+2]];return grid?cutAtTerrain(tri,grid):[tri];}),positions=[];
+  const nx=-dz/len*width/2,nz=dx/len*width/2,quad=[[p0[0]-nx,p0[1]-nz],[p0[0]+nx,p0[1]+nz],[p1[0]+nx,p1[1]+nz],[p1[0]-nx,p1[1]-nz]],poly=boundary?clipConvex(quad,boundary):quad,triangles=merge?cellTriangles(poly,grid):poly.slice(1,-1).flatMap((_,i)=>{const tri=[poly[0],poly[i+1],poly[i+2]];return grid?cutAtTerrain(tri,grid):[tri];}),positions=[];
   for(const tri of triangles)for(const [x,z] of tri)positions.push(x,ground(x,z)+lift,z);
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
   const color=new THREE.Color(0xeeeeea);g.setAttribute('color',new THREE.Float32BufferAttribute(Array.from({length:positions.length/3},()=>[color.r,color.g,color.b]).flat(),3));g.computeVertexNormals();
@@ -182,7 +262,7 @@ function lineGeometry(segment, width, ground, lift, grid, boundary) {
 
 /** Return paint meshes following the existing emitted terrain sampler. Asphalt itself is already drawn by southbackdrop. */
 export function parkingLayoutParts(lot, ground) {
-  const layout=createParkingLayout(lot),grid=ground.grid?.()??null,markings=layout.markingSegments.map(s=>lineGeometry(s,.08,ground,.052+.024,grid,insetConvex(ring(lot.polygon),.01))).filter(Boolean);
+  const layout=createParkingLayout(lot),grid=ground.grid?.()??null,aisle=!!lot.layout?.aisle,markings=layout.markingSegments.map(s=>lineGeometry(s,.08,ground,.052+.024,grid,aisle?null:insetConvex(ring(lot.polygon),.01),aisle)).filter(Boolean); // #1441: concave aisle lots keep each box (widened by half a line) inside the outline instead of clipping
   return{surface:null,markings,layout};
 }
 export function parking1442Parts(ground) {

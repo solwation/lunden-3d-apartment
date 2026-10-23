@@ -559,6 +559,24 @@ Walking out of the lot at the entrance, the Player steps up0.244m at(6.42,240.61
 sampler lies above the rendered terrain on the lot edge. It is identical on ea955902 (a pre-existing seam of the
 #1436 edge, not a new obstacle). Other eleven lots: unchanged.
 
+## Parking 850235113 boxes along its mapped way (#1441)
+
+The concave 14-point lot by Sankt Lars väg46 (OSM850235113, on the #1440 plane) gets a `layout` with an `aisle`:
+`createParkingLayout` then calls `createAisleLayout` (`src/parkinglot1442.js`). The mapped service way850235115,
+which runs straight through the lot to house46, is the aisle axis; mapped way850235114 (from Sankt Lars väg into
+the lot's north-west notch) is the entrance and is listed in `clear`. Each `rows` entry is one side at a guessed
+offset from the way's centre line, optionally limited to a range along it. Whole 2.5×5m boxes are packed from the
+start of each range and kept only where the box, widened by half a paint line, lies entirely inside the polygon
+and both way strips plus a0.25m margin stay free; so rows break at the 4.9m neck, the notches and the house edge
+without clipped boxes. With 3m offsets the east part has a6m clear aisle; west of the neck the north-east row sits
+2.55m out, where the south-west side has no room, so the aisle there is wider. Result: 18 boxes (5+8 north-east,
+5 south-west; raw capacity25 stays *guess*), 21 dividers, no kerb and no line across the aisle. All values are *guess*.
+One south-west box near house46 reaches past `WALK.z1=250`; it has ray evidence only, not a walking check.
+To pay for the paint, the lot's asphalt uses `cellTriangles`: the pieces that `cutAtTerrain` makes in one terrain
+half-cell are emitted as one fan when they form a convex polygon. `renderedTerrainY` is linear there, so the
+surface is unchanged (374→193 triangles); the dividers use it as well (130 triangles). `south-land`
+falls 32597→32546 (whole backdrop 42685→42634, same meshes/materials). Plane, outline, roads and other lots are unchanged.
+
 ## Southern road embankment (#1382)
 
 `SOUTH_BANK` holds the11road controls and five10-point cross-sections from the same77-point LM export.

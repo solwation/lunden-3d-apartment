@@ -8380,6 +8380,17 @@ The walk-out route allows the pre-existing0.244m lot-edge step (identical on ea9
 `parkinggrade1436test.html`, `parkinggrade1440test.html`, `parking1442test.html` and `southbackdroptest.html`
 (only the #1474 far-detail check fails, now42685). Before/after images: `docs/verification/1437/`.
 
+## #1441: parking 850235113 boxes
+
+Run `node tools/runtests.cjs --test-only parking1441test.html` (about80s). In the actual World it checks 18 whole
+2.5×5m boxes inside the unchanged 14-point outline and off house46's slab, ≥6m clear in front of every box,
+no box on mapped ways850235115/850235114, no divider reaching into the aisle, the unchanged #1440 terrain samples,
+house base, control and `WALK.z1`, and the old/new south-backdrop counts (42685→42634, same meshes). Independent
+rays compare old and merged asphalt and hit paint on every divider and asphalt at box centres. Two actual Player routes
+cover the reachable northern part (Sankt Lars väg → entrance → aisle → boxes); the one box past `WALK.z1` has
+ray evidence only. Rerun `parking1437test.html`, `parkinggrade1436test.html`, `parkinggrade1440test.html`,
+`parking1442test.html` and `southbackdroptest.html` (only #1474 fails, now42634). Images: `docs/verification/1441/`.
+
 ## Physical computer game (#1491)
 
 `tools/computerscreentest.cjs GAME LOCAL_WORKER OUT` opens actual Worlds on desktop

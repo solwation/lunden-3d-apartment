@@ -8,7 +8,7 @@ import { lowRiseWindowParts } from './southwindows.js';
 import { buildStLars41 } from './stlars41.js';
 import { paddockLandParts } from './paddock.js';
 import { busStopApron } from './busstopgeo.js';
-import { parking1442Parts, parkingLayoutParts } from './parkinglot1442.js';
+import { parking1442Parts, parkingLayoutParts, cellTriangles } from './parkinglot1442.js';
 const S=SITE.south;
 const LAND_MESH=6,LAND_LIFT=.03; // m: #1306, fields / car parks are cut into triangles <= LAND_MESH m where the sloping terrain lies and sit LAND_LIFT higher than the corner heights say (*guess*)
 const inside=(x,z,p)=>{let yes=false;for(let i=0,j=p.length-1;i<p.length;j=i++)if((p[i][1]>z)!==(p[j][1]>z)&&x<(p[j][0]-p[i][0])*(z-p[i][1])/(p[j][1]-p[i][1])+p[i][0])yes=!yes;return yes;};
@@ -86,12 +86,13 @@ export function* southBackdropParts(ground){
  for(const p of busStopApron(bayPolygons))parts.land.push(tint(upGeometry(terrainTriangles(p,LAND_MESH,farGround.surfaceGrid()),(x,z)=>farGround(x,z)+.025),0x5f6164));
  for(const p of (S.parking??[])){
   if(p.polygon){
-   if(!(p.holes??[]).length)parts.land.push(tint(upGeometry(terrainTriangles(p.polygon,LAND_MESH,farGround.grid()),(x,z)=>farGround(x,z)+.022+LAND_LIFT),surfColor(p)));
+   if(!(p.holes??[]).length)parts.land.push(tint(upGeometry(p.layout?.aisle?cellTriangles(p.polygon,farGround.grid()).flat():terrainTriangles(p.polygon,LAND_MESH,farGround.grid()),(x,z)=>farGround(x,z)+.022+LAND_LIFT),surfColor(p))); // #1441: an aisle lot's asphalt merges its pieces per terrain half-cell (same surface), paying for its box paint
    else{const g=new THREE.ShapeGeometry(shape(p)).rotateX(-Math.PI/2),a=g.attributes.position;
    for(let i=0;i<a.count;i++)a.setY(i,farGround(a.getX(i),a.getZ(i))+.022);
    g.computeVertexNormals();
    parts.land.push(tint(g,surfColor(p)));}
    if(p.source==='145221624')parts.land.push(...parking1442Parts(farGround).markings); // #1442: double-loaded bays around a clear aisle
+   else if(p.layout?.aisle)parts.land.push(...parkingLayoutParts(p,farGround).markings); // #1441: whole boxes either side of a mapped aisle way; no kerb, no line across the aisle
    else if(p.layout){ // #1437: complete guessed boxes around the mapped entrance, whose strip the n0-edge kerb leaves open
     const{markings,layout:L}=parkingLayoutParts(p,farGround),{u,n}=L.axes,{u0,n0}=L.origin,at=v=>[u[0]*v+n[0]*n0,u[1]*v+n[1]*n0],u1=u0+L.dimensions.length;
     parts.land.push(...markings);
