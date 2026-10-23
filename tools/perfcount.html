@@ -43,8 +43,9 @@ f.onload = async () => {
   const measure = () => { const auto = r.info.autoReset; r.info.autoReset = false; Object.assign(main, { calls: 0, tris: 0, other: 0 }); try { r.render(w.__app.scene, camera); } finally { r.info.autoReset = auto; } return { ...main }; };
   // #1454: the ordinary patio faces away from the house; include the formerly over-budget reverse view on desktop.
   // #1498: phones also count the steep patio corner (the reverse patio view is still over the phone budget, #1537).
+  // #1541: phones also count the patio seen from further out on the lawn (the car in its stall under the patio is no longer drawn).
   const corner = ['patio corner', 6.5, 19, 0, 0, 0];
-  const profileSpots = lowmem ? [...spots, corner] : [...spots, ['patio toward house', 2.9, 16, 0, -5, 0], corner];
+  const profileSpots = lowmem ? [...spots, corner, ['patio far', 2.9, 22, 0, -3, 0]] : [...spots, ['patio toward house', 2.9, 16, 0, -5, 0], corner];
   for (const [name, x, z, yaw, pitch, feet] of profileSpots) {
     player.spawn(x, z, yaw * Math.PI / 180);
     if (feet) { player.pos.y = feet; player.eyeY = feet + 1.62; camera.position.y = player.eyeY; }

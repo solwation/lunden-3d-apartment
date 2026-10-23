@@ -47,3 +47,21 @@ test('a large architectural outline remains when any part can be near, and goes 
  const d=new DetailCuller(scene,{W:10,D:10,roof:7,floor1:3,doorHeight:2},{north:[],south:[],walls:[]}),camera=new THREE.PerspectiveCamera();
  for(const[z,mask]of [[30,1],[80,1<<DETAIL_HIDDEN_LAYER]]){camera.position.set(20,1.6,z);camera.updateMatrixWorld(true);d.refresh();d.update(camera);assert.equal(edge.layers.mask,mask);}
 });
+
+// #1541: our car in its stall is not drawn while the garage draws nothing; it comes back whole the moment the garage does.
+test('a moving unit whose drawnHidden() holds is hidden as a whole and judged afresh once it no longer holds',()=>{
+ const scene=new THREE.Scene(),car=new THREE.Group();car.userData.moving=true;car.userData.detailUnit=false;car.position.set(20,-3,20);scene.add(car);
+ const body=new THREE.Mesh(new THREE.BoxGeometry(2,1,4),new THREE.MeshBasicMaterial()),wheel=new THREE.Mesh(new THREE.BoxGeometry(.6,.6,.2),new THREE.MeshBasicMaterial());
+ wheel.position.set(1,.3,1.3);car.add(body,wheel);
+ let hidden=true;car.userData.drawnHidden=()=>hidden;
+ const d=new DetailCuller(scene,{W:10,D:10,roof:7,floor1:3,doorHeight:2},{north:[],south:[],walls:[]}),camera=new THREE.PerspectiveCamera();
+ const view=()=>{camera.position.set(20,1.6,24);camera.updateMatrixWorld(true);d.update(camera);};
+ const H=1<<DETAIL_HIDDEN_LAYER;
+ view();for(const o of[body,wheel])assert.equal(o.layers.mask,H);
+ const ray=new THREE.Raycaster(new THREE.Vector3(20,-2.5,30),new THREE.Vector3(0,0,-1));ray.layers.enable(DETAIL_HIDDEN_LAYER);
+ assert(ray.intersectObject(car,true).length,'still physical');
+ view();for(const o of[body,wheel])assert.equal(o.layers.mask,H,'stays hidden while still');
+ hidden=false;view();for(const o of[body,wheel])assert.equal(o.layers.mask,1,'in its stall, parts judged one by one');
+ hidden=true;view();for(const o of[body,wheel])assert.equal(o.layers.mask,H);
+ car.userData.detailUnit=true;hidden=false;view();for(const o of[body,wheel])assert.equal(o.layers.mask,1,'out of its stall, judged whole');
+});

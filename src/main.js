@@ -802,6 +802,9 @@ const olofDriver = new OlofDriver(car);
 olofDriver.onSay = (line, secs) => greet.say({ head: olofDriver.fig.head, s: 1 }, line, { pitch: 0.85, rate: 1, voice: 3 }, secs, olofDriver.avatar); // (his mouth moves with it, #1156)
 car.driverTaken = () => olofDriver.visible; // he drives (#663): you sit beside him
 car.garage = garage; // it lives in the garage, its door opens for it (#358)
+// #1541: in its stall it is drawn only while the garage draws anything (garage.update: near it, or a bicycle out); otherwise
+// the garage itself is not drawn at all and the car under the patio was ~36 draw calls hidden by the ground (detail.js).
+car.object.userData.drawnHidden = () => car.state === 'garage' && !garage.object.visible;
 car.ground = (x, z) => (garage.inside(x, z) ? GARAGE.floor : groundY(x, z)); // the drive and Karpvägen slope, the garage's floor
 if (params0.has('car')) car.park(); // &car: parked out front (screenshots)
 else car.toGarage(); // in its stall (#358)

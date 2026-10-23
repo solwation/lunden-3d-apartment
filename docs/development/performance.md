@@ -109,9 +109,34 @@ Measured on 3c204143 (real World, 844×390 lowmem/touch, quality 3/3, July 12:00
 
 Triangles are unchanged and every pixel diff is 0 (also January 22:00 with the lamps: toward house 406 → 362, and all
 curtains drawn: 420 → 376). 8 proxies from 53 parts, +0.66 MB geometry, no textures; `updateProxies` ~0.13 ms instead of
-~0.06 ms per frame headless. *Patio far* still exceeds 370: its interior bottles and glasses are already culled there, what
-remains is mostly the site. Houses A/B/C and L1004 have no bottles, glasses or curtains in these proxies: not applicable.
+~0.06 ms per frame headless. *Patio far* still exceeded 370: its interior bottles and glasses are already culled there; the rest
+was mostly our car under the patio (#1541, below). Houses A/B/C and L1004 have no bottles, glasses or curtains in these proxies: not applicable.
 Check: `node --test tools/phoneproxytest.mjs`.
+
+## Our car in its stall while the garage is not drawn (#1541)
+
+`garage.update` draws nothing of the garage (`garage.object` hidden, the door's blackout shown) unless the camera is down
+there, at the stairwell's foot, by a park entrance or outside its door. Our car in its stall under the patio stayed drawn
+regardless: ~36 phone draw calls under the ground at *patio far*. `main.js` gives the car root
+`userData.drawnHidden = () => car.state === 'garage' && !garage.object.visible`; `DetailCuller.gated` (phone and desktop)
+then moves all its unit meshes to the hidden layer (still physical) and, once the gate no longer holds, judges every part
+afresh in the same update (`garage.update` runs before `detail.update`). Driving, parked outside or with the garage drawn,
+nothing changes.
+
+Measured on 5ba0493e (real World, 844×390 lowmem/touch, quality 3/3, July 12:00, clear), main-pass calls/triangles:
+
+| view | before | after |
+|---|---|---|
+| patio far (2.9,22, 0°, −3°) | 402 / 875358 | 364 / 852232 |
+| patio corner | 343 / 875087 | 325 / 860227 |
+| park | 355 / 765642 | 330 / 745554 |
+| bike yard | 241 / 737182 | 223 / 718442 |
+| living | 333 / 818812 | 329 / 811976 |
+| other phone profile views, patio toward house, near door | unchanged | unchanged |
+
+Pixel diffs before/after are within the base-vs-base noise in every view (0 px at patio far and patio corner). Down by
+the car its 38 draws are back. The phone perfcount profile now also counts *patio far*: ALL PASS, most calls 364 there.
+Houses A/B/C and L1004 have no car of ours: not applicable. Check: `node --test tools/phonedetailunittest.mjs`.
 
 ## Patio screen walls and the phone corner (#1498)
 

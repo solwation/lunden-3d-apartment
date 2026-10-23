@@ -690,6 +690,10 @@ Merged furnishings, bottles/glasses and curtains from outside (#1540, #1545): `n
 then phone calls/pixels at patio toward house, patio corner, patio far and the near-door view, and a walk in through the patio door;
 for #1545 also carry a bottle out (it is drawn itself, the rest stay merged) and draw the curtains from outside (the merged cloth follows).
 
+Our car hidden while the garage is not drawn (#1541): `node --test tools/phonedetailunittest.mjs`, the phone perfcount
+profile (`tools/perfcount.html?cloud=&lowmem&w=844&h=390&weather=clear&freeze`, includes *patio far*), canvas pixel
+diffs of every phone view against a base-vs-base pair, and the car drawn again when standing by it in the garage.
+
 Phone visibility (#1383): `node --test tools/phonedetailunittest.mjs tools/occlusiontest.mjs`,
 actual `tools/detailtest.html`, `PLAYWRIGHT_MODULE=… CHROME_PATH=… SHOTS=… node tools/patiousetest.cjs GAME`,
 then full `perfcount.html` at844×390/390×844 with lowmem and quality0. Inspect matched start, living,

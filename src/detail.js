@@ -213,6 +213,7 @@ export class DetailCuller {
     for (const o of this.movers) o.updateMatrixWorld();
     this.w ??= new THREE.Vector3();
     for (const it of still ? this.moving : this.items) {
+      if (it.parts && this.gated(it)) continue;
       if (!it.parts) this.judge(it, p, outside);
       else if (it.phoneUnit && !outside) {
         if(it.far!==null)for(const o of it.meshes)o.layers.set(0);
@@ -221,6 +222,21 @@ export class DetailCuller {
       else if (it.phoneUnit || it.o.userData.detailUnit) { if (this.judge(it, p, outside)) for (const q of it.parts) q.far = null; } // the whole
       else { it.far = null; for (const q of it.parts) this.judge(q, p, outside); } // its flag off: one by one
     }
+  }
+
+  /** #1541: a unit root whose `userData.drawnHidden()` holds is out of sight as a whole (our car in its stall while the garage
+   * draws nothing at all, main.js): all its meshes go to the hidden layer; once it no longer holds every part is judged afresh. */
+  gated(it) {
+    if (!it.o.userData.drawnHidden?.()) {
+      if (it.far === 'gated') { it.far = null; for (const q of it.parts) q.far = null; }
+      return false;
+    }
+    if (it.far !== 'gated') {
+      it.far = 'gated';
+      for (const o of it.meshes) o.layers.set(DETAIL_HIDDEN_LAYER);
+      for (const q of it.parts) q.far = null;
+    }
+    return true;
   }
 
   /** Is item `it` too far / hidden from `p`? Moves its mesh(es) to the right layer; true when that changed. */
