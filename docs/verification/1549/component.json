@@ -1,0 +1,193 @@
+{
+  "result": {
+    "rows": [
+      {
+        "name": "full AO",
+        "before": [
+          360,
+          800
+        ],
+        "after": [
+          360,
+          800
+        ],
+        "mae": 0,
+        "max": 0,
+        "changed": 0,
+        "exact": true
+      },
+      {
+        "name": "full painted",
+        "before": [
+          720,
+          920
+        ],
+        "after": [
+          720,
+          920
+        ],
+        "mae": 0,
+        "max": 0,
+        "changed": 0,
+        "exact": true
+      },
+      {
+        "name": "full meal",
+        "before": [
+          512,
+          563
+        ],
+        "after": [
+          512,
+          563
+        ],
+        "mae": 0,
+        "max": 0,
+        "changed": 0,
+        "exact": true
+      },
+      {
+        "name": "light AO",
+        "before": [
+          360,
+          800
+        ],
+        "after": [
+          230,
+          512
+        ],
+        "mae": 0.000012737771739130434,
+        "max": 1,
+        "changed": 6,
+        "exact": false
+      },
+      {
+        "name": "light painted",
+        "before": [
+          720,
+          920
+        ],
+        "after": [
+          400,
+          512
+        ],
+        "mae": 0.18242431640625,
+        "max": 107,
+        "changed": 65916,
+        "exact": false
+      },
+      {
+        "name": "light meal",
+        "before": [
+          512,
+          563
+        ],
+        "after": [
+          465,
+          512
+        ],
+        "mae": 0.6738302251344086,
+        "max": 202,
+        "changed": 47399,
+        "exact": false
+      },
+      {
+        "name": "drawComputerMenu",
+        "before": [
+          512,
+          288
+        ],
+        "after": [
+          512,
+          288
+        ],
+        "mae": 0,
+        "max": 0,
+        "changed": 0,
+        "exact": true
+      },
+      {
+        "name": "drawSnake",
+        "before": [
+          512,
+          288
+        ],
+        "after": [
+          512,
+          288
+        ],
+        "mae": 0,
+        "max": 0,
+        "changed": 0,
+        "exact": true
+      }
+    ],
+    "fullSizes": [
+      {
+        "width": 720,
+        "height": 920
+      },
+      {
+        "width": 512,
+        "height": 563
+      },
+      {
+        "width": 512,
+        "height": 192
+      },
+      {
+        "width": 256,
+        "height": 320
+      },
+      {
+        "width": 1024,
+        "height": 600
+      }
+    ],
+    "fingerprints": [
+      {
+        "name": "billysBox closed",
+        "equal": true
+      },
+      {
+        "name": "billysBox open",
+        "equal": true
+      },
+      {
+        "name": "gorbysBox closed",
+        "equal": true
+      },
+      {
+        "name": "gorbysBox open",
+        "equal": true
+      },
+      {
+        "name": "AO",
+        "equal": true
+      }
+    ],
+    "lightSizes": [
+      {
+        "width": 400,
+        "height": 512
+      },
+      {
+        "width": 465,
+        "height": 512
+      },
+      {
+        "width": 512,
+        "height": 192
+      },
+      {
+        "width": 256,
+        "height": 320
+      },
+      {
+        "width": 512,
+        "height": 300
+      }
+    ]
+  },
+  "errors": []
+}

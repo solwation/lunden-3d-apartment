@@ -1,0 +1,73 @@
+{
+  "baselineRevision": "b9ed31bd36d54cba7295b5233372c6e3eb6d15f8",
+  "environment": {
+    "chromium": "1208",
+    "playwright": "1.60.0",
+    "renderer": "SwiftShader",
+    "phone": "844x390/DPR3 iPhone UA/touch",
+    "query": "life&cloud=&lowmem&quality=0&time=12&month=7&weather=clear&freeze&cloud=",
+    "route": "start",
+    "dwellMs": 500,
+    "warmup": "normal"
+  },
+  "sourceHashes": {
+    "src/ao.js": "8ac49374f3f2a5319941dd19660068e7c4509e4d4935cdb402f9da95a8dabb14",
+    "src/resourceprofile.js": "513e0cf9a1e8b26297ec11eab4001cae80242ea67cd09eedecbe8e1c6b5fa930",
+    "src/config.js": "fd5327bd647260f9415035a0af83f225c61af213b2317439f8b78a13a694c5cc",
+    "src/furniture.js": "c85abd94aa3bf0bc3b4d5d59bf5efe2e33852c6288b091cbf85ca2a8c8fc02f9",
+    "src/frozenmealmodels.js": "431d80dde1e2d05b47f64ebc1e065f7c3745339e0549f28ee68ca0897b78baa1",
+    "tools/canvasprofiletest.cjs": "75c53764b169c0f4b01c7e0c84479ce8dffbfc9ba5a05250b60ec288094857e0"
+  },
+  "before": {
+    "nCanvas": 270,
+    "cpuCanvas": 99808156,
+    "tex": 97427515,
+    "nTex": 207,
+    "cpuGeom": 120990209,
+    "nGeom": 4191,
+    "info": {
+      "calls": 346,
+      "tris": 730811,
+      "geoms": 2182,
+      "texs": 207,
+      "programs": 416
+    },
+    "quality": 0,
+    "maxTex": 512,
+    "canvasPx": [
+      633,
+      292
+    ],
+    "errors": [
+      "HTTP 404 /data/todo.json",
+      "console.error: Failed to load resource: the server responded with a status of 404 (File not found)"
+    ]
+  },
+  "after": {
+    "nCanvas": 267,
+    "cpuCanvas": 96597404,
+    "tex": 97427515,
+    "nTex": 207,
+    "cpuGeom": 120990209,
+    "nGeom": 4191,
+    "info": {
+      "calls": 346,
+      "tris": 730811,
+      "geoms": 2182,
+      "texs": 207,
+      "programs": 416
+    },
+    "quality": 0,
+    "maxTex": 512,
+    "canvasPx": [
+      633,
+      292
+    ],
+    "errors": [
+      "HTTP 404 /data/todo.json",
+      "console.error: Failed to load resource: the server responded with a status of 404 (File not found)"
+    ]
+  },
+  "attributableSteadyCanvasSavingBytes": 2031104,
+  "unrelatedCupVariationBytes": 1179648
+}
