@@ -720,7 +720,22 @@ Ground3cm outside the outline and within6m is unchanged (<=4.4e-16m, rays1.6e-6m
 change (site parking only). Cost: `site-terrain` +380 over 08e60b01 (90279->90659), `south-backdrop` 50084->49276 (-808, the
 hidden path triangles), the lot's asphalt 1463->428 triangles; no new mesh, material or texture. Test:
 `tools/parking1444test.html` (its BASELINE line holds the c6a1653b measurements). `tools/parking1452test.html` pins the
-new totals (49276/90659).
+new totals (49859/90659 since #1445).
+
+### Boxes and aisle on lot 145221628 (#1445)
+
+The lot's `layout` uses the #1441 aisle mechanism (`createAisleLayout`) with mapped way 145221573 as the aisle axis: its straight
+run from vertex 0 to vertex 4 (new `layout.aisle.to`: the way bends again at (-58.09,295.24), and the axis is checked straight within
+0.1 m), `clear: ['145221583']` (the short branch way crosses the lot) and `margin` 0.25 (*guess*). Both ways' 4.5 m strips (+0.25 m)
+stay free of boxes. The lot is only about 7.8 m wide north-west of the way, so a 3 m offset cannot hold a 5 m box there: the
+north-west row stands 2.55 m (0.25 m clear of the strip) and the south-east row 3.45 m from the centre line, so the facing rows are
+exactly 6.0 m apart (clear aisle, *guess*). Result: 58 whole 2.5x5 m boxes (*guess*; 31 north-west, 27 south-east in two runs
+split by way 145221583), each wholly inside the outline and off houses 41/42, no divider across the aisle. The raw capacity 45
+(*guess*) is kept unchanged; the layout does not use it and fits more boxes than that guess. The paint follows the #1444
+sub-planes through the existing `lotCells` pieces; cost: `south-backdrop` +583 (49276->49859) as paint triangles in
+`south-land`, `site-terrain` unchanged (90659), no new mesh or material. Whole lot south of `WALK.z1`: ray evidence only.
+Test: `tools/parking1445test.html` (rays on asphalt/paint, containment, ways, aisle width, counts, cost); `parking1444test` allows
+the paint's triangles. Houses 41/42/43 bases unchanged; A/B/C/L not applicable (site parking only).
 
 ## Southern road embankment (#1382)
 

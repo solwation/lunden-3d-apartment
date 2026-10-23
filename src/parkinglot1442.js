@@ -509,8 +509,8 @@ const pointIn = (x, z, p) => { let yes = false; for (let i = 0, j = p.length - 1
 function createAisleLayout(lot, { bayWidth, bayDepth }) {
   const poly = ring(lot.polygon ?? []), L = lot.layout, ways = [...(SITE.south.paths ?? []), ...(SITE.south.access ?? [])], way = (s) => { const r = ways.find(w => w.source === s); if (!r) throw new RangeError(`Parking layout way ${s} is not mapped`); return r; };
   // #1452: `aisle.from` (a path vertex index) uses only the way's straight end from that vertex on as the aisle axis
-  // (service way 335403605 bends before it enters 1379042188); the whole way stays clear.
-  const road = way(L.aisle.road), axis = road.path.slice(L.aisle.from ?? 0), a = axis[0], b = axis.at(-1), len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+  // (service way 335403605 bends before it enters 1379042188); the whole way stays clear. #1445: `aisle.to` ends the axis at that vertex (way 145221573 bends again at (-58.09,295.24)).
+  const road = way(L.aisle.road), axis = road.path.slice(L.aisle.from ?? 0, L.aisle.to == null ? undefined : L.aisle.to + 1), a = axis[0], b = axis.at(-1), len = Math.hypot(b[0] - a[0], b[1] - a[1]);
   const u = [(b[0] - a[0]) / len, (b[1] - a[1]) / len], n = [-u[1], u[0]], proj = (p, v) => p[0] * v[0] + p[1] * v[1];
   const c = axis.reduce((s, p) => s + proj(p, n), 0) / axis.length, ua = proj(a, u);
   if (axis.some(p => Math.abs(proj(p, n) - c) > .1)) throw new RangeError(`Parking aisle way ${road.source} is not straight`);
