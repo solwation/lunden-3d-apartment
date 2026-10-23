@@ -66,3 +66,65 @@ test('a furnishing judged part by part swaps only while the culled parts it woul
  const was=PERF.detail.proxyExtraTris;PERF.detail.proxyExtraTris=1e9;
  try{g.view(20,26.5);assert(shown(g));}finally{PERF.detail.proxyExtraTris=was;}
 });
+
+// #1545: the bottles and glasses at home (one mesh per look across their materials) and each curtain's panels.
+function drinks(){
+ const scene=new THREE.Scene(),things=[],glassMats=[],liquidMats=[];
+ for(let i=0;i<3;i++){
+  const model=new THREE.Group();model.position.set(20+i*.1,1,20);scene.add(model);
+  const glassMat=new THREE.MeshStandardMaterial({color:0x102010*(i+1),roughness:.1+i*.02,metalness:.12,transparent:true,opacity:.9});
+  const liquidMat=new THREE.MeshStandardMaterial({color:0x300000*(i+1),roughness:.15});
+  const glass=new THREE.Mesh(new THREE.CylinderGeometry(.04,.04,.3),glassMat),liquid=new THREE.Mesh(new THREE.CylinderGeometry(.035,.035,.25),liquidMat);
+  const cap=new THREE.Mesh(new THREE.CylinderGeometry(.015,.015,.02),new THREE.MeshStandardMaterial({metalness:.5}));cap.position.y=.16;
+  model.add(glass,liquid,cap);glassMats.push(glassMat);liquidMats.push(liquidMat);things.push({model,kind:'whisky',backName:'vitrinskåpet'});
+ }
+ const curtainMat=new THREE.MeshStandardMaterial({transparent:true,opacity:.94,side:THREE.DoubleSide,forceSinglePass:true});
+ const panel=(x)=>{const g=new THREE.PlaneGeometry(1,2,4,2);for(const a of Object.values(g.attributes))a.setUsage(THREE.DynamicDrawUsage);const m=new THREE.Mesh(g,curtainMat);m.position.set(x,1.5,19);scene.add(m);return{mesh:m};};
+ const curtain={panels:[panel(19.4),panel(20.6)]};
+ const d=new DetailCuller(scene,{W:10,D:10,roof:7,floor1:3,doorHeight:2},{north:[],south:[],walls:[]});
+ assert.equal(d.buildProxies(scene,things,[curtain]),3);
+ const camera=new THREE.PerspectiveCamera();
+ const view=(x,z)=>{camera.position.set(x,1.6,z);camera.updateMatrixWorld(true);d.refresh();d.update(camera);};
+ const byMat=(pred)=>d.proxies.find(p=>pred(p.mesh.material));
+ return{scene,things,glassMats,liquidMats,curtain,curtainMat,d,view,
+  glassProxy:byMat(m=>m.transparent&&m.vertexColors),liquidProxy:byMat(m=>!m.transparent&&m.vertexColors),curtainProxy:byMat(m=>m===curtainMat)};
+}
+const drawnBy=(p,o)=>p.mesh.layers.mask===1&&p.members.some(m=>m.o===o&&m.ok)&&o.layers.mask===H;
+
+test('bottles at home: one vertex-coloured mesh per look, colour / roughness / metalness per vertex; a cap stays its own',()=>{
+ const f=drinks();assert(f.glassProxy&&f.liquidProxy);
+ const g=f.liquidProxy.mesh.geometry;assert(Math.abs(g.attributes.color.getX(0)-f.liquidMats[0].color.r)<1e-6);
+ assert(Math.abs(g.attributes.proxyRM.getX(g.attributes.position.count-1)-f.liquidMats[2].roughness)<1e-6);
+ assert.equal(f.liquidProxy.mesh.material.color.getHex(),0xffffff);
+ assert(f.d.proxies.every(p=>p.members.every(m=>m.o.position.y!==.16)),'a part always culled beyond reach is not merged');
+ f.view(20,26);for(const t of f.things)for(const o of t.model.children.slice(0,2))assert(drawnBy(o.material.transparent?f.glassProxy:f.liquidProxy,o));
+ f.view(5,5);assert(f.d.proxies.every(p=>p.mesh.layers.mask===H),'inside the flat: the real parts');
+ for(const p of f.d.proxies)for(const m of p.members)assert.equal(m.o.layers.mask,m.item.far?H:1,'(as the culler judges them)');
+});
+
+test('a bottle taken or recoloured is drawn itself; the others stay merged, exactly the drawn parts in the index',()=>{
+ const f=drinks();f.view(20,26);
+ const full=f.liquidProxy.mesh.geometry.drawRange.count;
+ f.things[0].model.position.x+=1;f.things[0].model.updateMatrixWorld(true);f.view(20,26.5);
+ const liquid0=f.things[0].model.children[1];
+ assert.equal(liquid0.layers.mask,1);assert(drawnBy(f.liquidProxy,f.things[1].model.children[1]));
+ assert(f.liquidProxy.mesh.geometry.drawRange.count<full,'(only the merged parts are drawn)');
+ f.things[0].model.position.x-=1;f.things[0].model.updateMatrixWorld(true);f.view(20,26);assert(drawnBy(f.liquidProxy,liquid0));
+ f.liquidMats[1].color.set(0x00ff00);f.view(20,26.5);assert.equal(f.things[1].model.children[1].layers.mask,1);
+ f.liquidMats[2].color.set(0x00ff00);f.view(20,26);assert.equal(f.liquidProxy.mesh.layers.mask,H,'one part left: no call to save');
+});
+
+test('see-through parts are drawn far to near from the eye',()=>{
+ const f=drinks(),p=f.glassProxy,first=()=>p.members.findIndex(m=>m.first===Math.min(...p.mesh.geometry.index.array.slice(0,3)));
+ f.view(26,20);assert.equal(first(),0,'from the east the westmost bottle first');
+ f.view(14,20);assert.equal(first(),2,'from the west the eastmost bottle first');
+});
+
+test('a curtain is one mesh that follows its cloth and its material',()=>{
+ const f=drinks(),p=f.curtainProxy;f.view(20,26);assert.equal(p.mesh.layers.mask,1);
+ const pos=f.curtain.panels[0].mesh.geometry.attributes.position;pos.setX(0,pos.getX(0)+.3);pos.needsUpdate=true;
+ f.view(20,26.5);assert.equal(p.mesh.layers.mask,1);assert(Math.abs(p.mesh.geometry.attributes.position.getX(0)-(19.4+pos.getX(0)))<1e-6);
+ const other=new THREE.MeshStandardMaterial({transparent:true});for(const q of f.curtain.panels)q.mesh.material=other;
+ f.view(20,26);assert.equal(p.mesh.material,other);assert.equal(p.mesh.layers.mask,1);
+ f.curtain.panels[1].mesh.material=f.curtainMat;f.view(20,26.5);assert.equal(p.mesh.layers.mask,H,'panels that differ: the panels');
+});

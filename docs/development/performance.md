@@ -71,9 +71,47 @@ Measured on 1152c9c2 (real World, 844×390 lowmem/touch, quality 3/3, July 12:00
 
 22 proxies, 50 meshes from 380 parts: 10.5 MB geometry on the GPU, no textures. Without the vertex cap 17.3 MB saved
 4–6 more calls. Pixel diffs: 48 / 20 px at toward-house / far (small parts now kept), 0 elsewhere. The toward-house view
-still needs the site culling of #1539 and more: what remains inside are the bottles and glasses to take (two calls each,
-a material of their own per bottle), curtains and furniture within reach of the patio. Hus A/B/C and L1004 have no
+still needed more: the bottles and glasses to take (two calls each, a material of their own per bottle) and the curtains
+followed in #1545 (below); furniture within reach of the patio keeps its real parts. Hus A/B/C and L1004 have no
 furniture roots in the culler: not applicable. Check: `node --test tools/phoneproxytest.mjs`.
+
+## Bottles, glasses and curtains seen from outside (#1545, part of #1537)
+
+Phones only, built in the same `buildProxies` call (`main.js` passes `things` and `blinds.curtains`), in the world frame:
+
+- **Bottles and glasses at home** (`buildThingProxies`; things of kind whisky/wine/champagne/glass, not held or placed):
+  static native parts without texture maps merge across materials that differ only in colour, roughness and metalness
+  (`lookKey`); the proxy material (`lookMaterial`) carries those three per vertex (`color`, `proxyRM` via a fragment-only
+  `onBeforeCompile`; the lamp wash patches it like any other). Identical physical materials (the BESTÅ crystal) merge as
+  they are. A part the distance alone always culls beyond reach (`baseCut × outsideScale ≤ minDist`: caps, corks) and the
+  textured labels stay their own items.
+- **Curtains** (`buildCurtainProxies`): a curtain's cloth panels share one material and become one mesh whose positions
+  and normals `refreshLive` rewrites from outside when the panels were rebuilt (drawn/opened); a material-library choice
+  for the whole curtain is adopted. The proxy keeps its CPU copy (a few KB per curtain).
+
+Unlike the furniture proxies these draw exactly the parts the culler would draw: `updateProxies` judges each part on its
+own (drawn by the culler, its box beyond `minDist`, `memberValid`: attached, shown, same geometry/version/material/look and
+relative matrix), `fillProxy` writes only those parts into the index (draw range), see-through ones far to near from the
+eye as three sorts separate see-through meshes, rewritten only when that list or order changes. A taken, moved, recoloured
+or near part is drawn itself while the rest stay merged; with fewer than two parts left the parts draw as before. Nothing
+moves for interaction: the parts stay physical on layer 7, proxies never raycast. The warm-up compiles the two new
+programs (vertex-coloured opaque and see-through); `?shot` skips the warm-up, so headless runs compile them on first view.
+
+Measured on 3c204143 (real World, 844×390 lowmem/touch, quality 3/3, July 12:00, clear), main-pass calls/triangles:
+
+| view | before | after |
+|---|---|---|
+| patio toward house (2.9,16, 0°, −5°) | 412 / 945886 | 368 / 945886 |
+| patio corner | 347 / 874539 | 340 / 874539 |
+| patio far (2.9,22, 0°, −3°) | 407 / 875086 | 402 / 875086 |
+| near door (2.0,13.5, 20°, −5°) | 304 / 719038 | 278 / 719038 |
+| start, patio | 364 / 135 | 361 / 135 |
+
+Triangles are unchanged and every pixel diff is 0 (also January 22:00 with the lamps: toward house 406 → 362, and all
+curtains drawn: 420 → 376). 8 proxies from 53 parts, +0.66 MB geometry, no textures; `updateProxies` ~0.13 ms instead of
+~0.06 ms per frame headless. *Patio far* still exceeds 370: its interior bottles and glasses are already culled there, what
+remains is mostly the site. Houses A/B/C and L1004 have no bottles, glasses or curtains in these proxies: not applicable.
+Check: `node --test tools/phoneproxytest.mjs`.
 
 ## Patio screen walls and the phone corner (#1498)
 

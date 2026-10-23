@@ -5,6 +5,7 @@ import { lowMemory, freeGeometryAfterUpload } from './lowmemory.js';
 import { detailOccluders, wholeBoxOccluded } from './occlusion.js';
 import { garageCeilings } from './ceilingbatchgate.js';
 import { hasNativeVertexCompile } from './lampwash.js';
+import { rememberFragmentCompile } from './vertexcompile.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 // Small-detail culling (#189): from the street the whole flat is in the view frustum (the walls don't stop three's
@@ -37,6 +38,9 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 // view for one-pixel lines through the windows).
 // #1540 (phones): from outside and beyond reach, a furnishing whose parts would all be drawn is drawn as its proxy, one
 // merged mesh per material built once at start (`buildProxies`, `updateProxies`); any change to a part shows the parts again.
+// #1545 (phones): the bottles and glasses standing at home likewise, one mesh per look across their materials (vertex colour,
+// roughness and metalness), and each curtain's panels as one mesh (`buildThingProxies`, `buildCurtainProxies`); these draw
+// exactly the parts the culler would draw, each part judged on its own, see-through ones far to near (`fillProxy`).
 
 export const DETAIL_HIDDEN_LAYER = 7; // render-only culling; physical traces include this layer
 const D = PERF.detail;
@@ -118,11 +122,12 @@ export class DetailCuller {
 
   /** #1540 (phones): build the furnishings' merged outside proxies under `parent`, once, after lowmemory.js has packed the
    * normals and before anything is uploaded (the parts' normals / uv leave the CPU after their first upload, #628). */
-  buildProxies(parent) {
+  buildProxies(parent, things = [], curtains = []) {
     if (!this.proxySources || this.proxies.length) return 0;
     const { furniture, unitOf, itemOf } = this.proxySources;
     this.proxySources = null;
-    this.proxies = buildProxies(furniture, unitOf, itemOf, parent);
+    this.proxies = [...buildProxies(furniture, unitOf, itemOf, parent), ...buildThingProxies(things, itemOf, parent, this.outsideScale),
+      ...buildCurtainProxies(curtains, itemOf, parent)];
     return this.proxies.length;
   }
 
@@ -371,14 +376,24 @@ export class DetailCuller {
     for (const x of this.proxies) {
       let on = false;
       if (outside && shownInScene(x.root)) {
+        if (x.live) refreshLive(x);
         c.copy(x.center).applyMatrix4(x.root.matrixWorld);
         // (a whole phone model as judged; another furnishing as soon as any of its parts is drawn: the proxy then also shows
         // its small parts that the distance alone had culled, never fewer)
-        on = c.distanceTo(eye) > D.minDist + x.r && (x.unit ? drawnFar(x.unit.far) : partsDrawn(x)) && proxyValid(x);
+        // (#1545: a thing / curtain proxy draws exactly the parts the culler would, each judged on its own: drawn, beyond
+        // `minDist` (its box, in the parent's frame) and as merged; one taken, moved, changed or near is drawn itself while the
+        // others stay merged, so two of them save a call)
+        if (x.slices) {
+          const local = proxyLocal.copy(eye).applyMatrix4(proxyInv.copy(x.group.matrixWorld).invert());
+          let n = 0;
+          for (const m of x.members) if ((m.ok = drawnFar(m.item.far) && m.box.distanceToPoint(local) > D.minDist && memberValid(m, x.root))) n++;
+          on = n > 1;
+        } else on = c.distanceTo(eye) > D.minDist + x.r && (x.unit ? drawnFar(x.unit.far) : partsDrawn(x)) && proxyValid(x);
       }
       if (on) {
         if (!x.root.matrixWorld.equals(x.group.matrix)) { x.group.matrix.copy(x.root.matrixWorld); x.group.matrixWorldNeedsUpdate = true; }
-        for (const m of x.members) m.o.layers.set(DETAIL_HIDDEN_LAYER);
+        for (const m of x.members) m.o.layers.set(x.slices && !m.ok && drawnFar(m.item.far) ? 0 : DETAIL_HIDDEN_LAYER);
+        if (x.slices) fillProxy(x, eye);
       }
       if (on === x.on) continue;
       x.on = on;
@@ -421,15 +436,25 @@ function partsDrawn(x) {
   for (const m of x.members) if (!m.item || drawnFar(m.item.far)) any = true; else extra += m.tris;
   return any && extra <= D.proxyExtraTris;
 }
-function proxyValid(x) {
-  for (const m of x.members) {
-    const o = m.o;
-    if (o.geometry !== m.geometry || o.material !== m.material || m.material.visible === false || versionOf(o.geometry) !== m.version ||
-        !attachedShown(o, x.root)) return false;
-    const a = relativeMatrix(o, x.root, proxyRel).elements, b = m.rel.elements;
-    for (let i = 0; i < 16; i++) if (Math.abs(a[i] - b[i]) > 1e-5) return false;
-  }
+function proxyValid(x) { return x.members.every((m) => memberValid(m, x.root)); }
+/** Part `m` still as merged: geometry, material (and a vertex-coloured one's look), place under `root`, shown. */
+function memberValid(m, root) {
+  const o = m.o;
+  if (o.geometry !== m.geometry || o.material !== m.material || m.material.visible === false || versionOf(o.geometry) !== m.version ||
+      !attachedShown(o, root) || (m.look !== undefined && lookOf(m.material) !== m.look)) return false;
+  const a = relativeMatrix(o, root, proxyRel).elements, b = m.rel.elements;
+  for (let i = 0; i < 16; i++) if (Math.abs(a[i] - b[i]) > 1e-5) return false;
   return true;
+}
+/** A plain static mesh whose CPU data can still be merged (#1540). */
+function plainPart(o) {
+  const g = o.geometry, mat = o.material;
+  if (!o.isMesh || o.isInstancedMesh || o.isSkinnedMesh || o.isBatchedMesh || !g || !mat || Array.isArray(mat) ||
+      mat.visible === false || o.renderOrder || o.onBeforeRender !== nativeRender || o.userData.noDetail ||
+      g.morphAttributes.position?.length || g.drawRange.start !== 0 || g.drawRange.count !== Infinity || !g.attributes.position ||
+      g.attributes.position.count > D.proxyMaxVertices) return false; // (a heavy part is a draw call worth its own memory)
+  // a freed CPU copy (#628) or a rewritten attribute cannot be merged
+  return !Object.values(g.attributes).some((a) => a.isInterleavedBufferAttribute || a.usage !== THREE.StaticDrawUsage || a.cpuFreed || a.array.length < a.count * a.itemSize);
 }
 /** One proxy group per furnishing that saves at least one draw call; parts that cannot merge stay as they are. */
 function buildProxies(roots, unitOf, itemOf, parent) {
@@ -442,13 +467,8 @@ function buildProxies(roots, unitOf, itemOf, parent) {
       if (skip.has(o) || !o.visible || o.userData.moving) return;
       for (const c of o.children) visit(c);
       const g = o.geometry, mat = o.material;
-      if (!o.isMesh || o.isInstancedMesh || o.isSkinnedMesh || o.isBatchedMesh || !g || !mat || Array.isArray(mat) || mat.transparent ||
-          mat.visible === false || o.renderOrder || o.onBeforeRender !== nativeRender || o.userData.noDetail ||
-          g.morphAttributes.position?.length || g.drawRange.start !== 0 || g.drawRange.count !== Infinity || !g.attributes.position ||
-          g.attributes.position.count > D.proxyMaxVertices) return; // (a heavy part is a draw call worth its own memory)
+      if (!plainPart(o) || mat.transparent) return;
       const attrs = Object.entries(g.attributes);
-      // a freed CPU copy (#628) or a rewritten attribute cannot be merged
-      if (attrs.some(([, a]) => a.isInterleavedBufferAttribute || a.usage !== THREE.StaticDrawUsage || a.cpuFreed || a.array.length < a.count * a.itemSize)) return;
       const rel = relativeMatrix(o, root, new THREE.Matrix4());
       if (rel.determinant() <= 0) return; // (a mirrored part would need its winding flipped)
       const key = [mat.uuid, o.castShadow, o.receiveShadow, o.customDepthMaterial?.uuid, o.customDistanceMaterial?.uuid, !!g.index,
@@ -482,3 +502,176 @@ function buildProxies(roots, unitOf, itemOf, parent) {
   if (out.length) parent.updateMatrixWorld(true);
   return out;
 }
+
+// #1545 (phones): the bottles and glasses you can take (things.js), while they stand at home, seen from outside as one mesh per
+// look. Parts with different colours, roughness or metalness but otherwise the same material merge with those three per
+// vertex (`lookMaterial`); identical materials (the BESTÅ's crystal) merge as they are. A proxy draws exactly the parts the
+// culler would draw, see-through ones in three's far-to-near order (`fillProxy`). Built in the world frame: a part taken, moved
+// or changed (its material included) is drawn itself again, the rest stay merged. A part the distance alone always culls beyond
+// reach (a cap, a cork) stays its own item.
+const DRINK_THINGS = new Set(['whisky', 'wine', 'champagne', 'glass']);
+const MAPS = ['map', 'alphaMap', 'aoMap', 'bumpMap', 'displacementMap', 'emissiveMap', 'envMap', 'lightMap', 'metalnessMap', 'normalMap', 'roughnessMap'];
+/** All of a standard material a vertex-coloured proxy keeps besides its colour, roughness and metalness. */
+const lookKey = (m) => [m.type, m.transparent, m.opacity, m.depthWrite, m.depthTest, m.side, m.forceSinglePass, m.blending, m.alphaTest,
+  m.emissive.getHex(), m.emissiveIntensity, m.envMapIntensity, m.flatShading, m.fog, m.toneMapped, m.polygonOffset, m.polygonOffsetFactor,
+  m.polygonOffsetUnits, m.colorWrite, m.premultipliedAlpha, m.dithering, m.wireframe, m.vertexColors, m.visible].join();
+function lookOf(m) { return `${lookKey(m)}|${m.color.r},${m.color.g},${m.color.b},${m.roughness},${m.metalness}`; }
+/** Roughness and metalness per vertex (attribute `proxyRM`); vertex positions are untouched. */
+function vertexRoughness(shader) {
+  shader.vertexShader = shader.vertexShader.replace('#include <common>', '#include <common>\nattribute vec2 proxyRM;\nvarying vec2 vProxyRM;')
+    .replace('#include <begin_vertex>', '#include <begin_vertex>\nvProxyRM = proxyRM;');
+  shader.fragmentShader = shader.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec2 vProxyRM;')
+    .replace('#include <roughnessmap_fragment>', 'float roughnessFactor = vProxyRM.x;')
+    .replace('#include <metalnessmap_fragment>', 'float metalnessFactor = vProxyRM.y;');
+}
+rememberFragmentCompile(vertexRoughness);
+const proxyRMKey = () => 'phone-thing-proxy-rm';
+function lookMaterial(src) {
+  const m = new THREE.MeshStandardMaterial().copy(src);
+  m.color.setRGB(1, 1, 1); m.vertexColors = true; m.name = 'phone-thing-proxy';
+  m.onBeforeCompile = vertexRoughness; m.customProgramCacheKey = proxyRMKey;
+  return m;
+}
+function buildThingProxies(things, itemOf, parent, outsideScale) {
+  const lists = new Map(), out = [];
+  parent.updateMatrixWorld(true);
+  for (const t of things) {
+    if (!DRINK_THINGS.has(t.kind) || !t.model || t.held || t.placed || t.broken) continue;
+    t.model.traverse((o) => {
+      const item = itemOf.get(o), mat = o.material;
+      if (!item || !plainPart(o) || !mat.isMeshStandardMaterial || mat.userData.lamp || MAPS.some((k) => mat[k]) || !o.geometry.attributes.normal ||
+          !attachedShown(o, parent) || item.baseCut * outsideScale <= D.minDist) return;
+      const rel = relativeMatrix(o, parent, new THREE.Matrix4());
+      if (rel.determinant() <= 0) return;
+      // (only a standard material merges across materials; a physical one with the same material object)
+      const key = [mat.isMeshPhysicalMaterial ? mat.uuid : lookKey(mat), o.castShadow, o.receiveShadow, o.customDepthMaterial?.uuid,
+        o.customDistanceMaterial?.uuid].join('|');
+      if (!lists.has(key)) lists.set(key, []);
+      const g = o.geometry;
+      lists.get(key).push({ o, rel, geometry: g, material: mat, version: versionOf(g), item, tris: (g.index ? g.index.count : g.attributes.position.count) / 3 });
+    });
+  }
+  for (const list of lists.values()) {
+    if (list.length < 2) continue;
+    const shared = list.every((m) => m.material === list[0].material);
+    if (!shared) for (const m of list) m.look = lookOf(m.material);
+    out.push(mergedProxy(list, parent, shared ? list[0].material : lookMaterial(list[0].material), { looks: !shared }));
+  }
+  if (out.length) parent.updateMatrixWorld(true);
+  return out;
+}
+/** #1545 (phones): a curtain's cloth panels share one material and are seen from outside as one mesh, rewritten (`refreshLive`)
+ * when the curtain is drawn or opened, and following the material library's choice for the whole curtain. */
+function buildCurtainProxies(curtains, itemOf, parent) {
+  const out = [];
+  for (const c of curtains) {
+    const list = [], mat = c.panels?.[0]?.mesh.material;
+    for (const { mesh: o } of c.panels ?? []) {
+      const g = o.geometry, item = itemOf.get(o);
+      if (!item || !o.isMesh || o.material !== mat || Array.isArray(mat) || o.renderOrder || o.onBeforeRender !== nativeRender || !g.index ||
+          !g.attributes.normal || !g.attributes.uv || g.morphAttributes.position?.length || !attachedShown(o, parent) ||
+          Object.values(g.attributes).some((a) => a.isInterleavedBufferAttribute || a.cpuFreed || a.array.length < a.count * a.itemSize)) continue;
+      const rel = relativeMatrix(o, parent, new THREE.Matrix4());
+      if (rel.determinant() <= 0) continue;
+      list.push({ o, rel, geometry: g, material: mat, version: versionOf(g), item, tris: g.index.count / 3 });
+    }
+    if (list.length > 1) out.push(mergedProxy(list, parent, mat, { uv: true, live: true }));
+  }
+  if (out.length) parent.updateMatrixWorld(true);
+  return out;
+}
+/** The proxy entry for `list` merged (hidden until `updateProxies` switches it on). */
+function mergedProxy(list, parent, material, { looks = false, uv = false, live = false } = {}) {
+  const { geometry, slices } = mergeParts(list, { looks, uv });
+  const first = list[0].o, mesh = new THREE.Mesh(geometry, material), group = new THREE.Group();
+  Object.assign(mesh, { castShadow: first.castShadow, receiveShadow: first.receiveShadow, matrixAutoUpdate: false, raycast: noRaycast });
+  if (first.customDepthMaterial) mesh.customDepthMaterial = first.customDepthMaterial;
+  if (first.customDistanceMaterial) mesh.customDistanceMaterial = first.customDistanceMaterial;
+  mesh.userData.noDetail = true;
+  // (the index stays: `fillProxy` rewrites it; a curtain's positions and normals are rewritten too)
+  if (live) for (const n of ['position', 'normal']) geometry.attributes[n].setUsage(THREE.DynamicDrawUsage);
+  else freeGeometryAfterUpload(geometry, Object.keys(geometry.attributes));
+  mesh.layers.set(DETAIL_HIDDEN_LAYER);
+  group.name = 'phone-thing-proxy'; group.matrixAutoUpdate = false; group.matrix.copy(parent.matrixWorld);
+  group.add(mesh); parent.add(group);
+  const sphere = geometry.boundingSphere;
+  return { root: parent, group, mesh, members: list, unit: null, center: sphere.center.clone(), r: sphere.radius, on: false,
+    slices, shown: [], index: geometry.index, sorted: material.transparent, live };
+}
+/** A curtain proxy follows its panels: their current cloth, and one new material shared by all of them. */
+function refreshLive(x) {
+  const mat = x.members[0].o.material;
+  if (mat !== x.mesh.material && x.members.every((m) => m.o.material === mat)) {
+    x.mesh.material = mat; x.sorted = !!mat.transparent; x.shown = [];
+    for (const m of x.members) m.material = mat;
+  }
+  let moved = false;
+  for (const m of x.members) {
+    const v = versionOf(m.geometry);
+    if (m.o.geometry !== m.geometry || v === m.version) continue;
+    writePart(x.mesh.geometry, m); m.version = v; moved = true;
+  }
+  if (moved) { x.mesh.geometry.attributes.position.needsUpdate = true; x.mesh.geometry.attributes.normal.needsUpdate = true; }
+}
+/** The parts in `list` in one geometry in the parent's frame: positions, packed normals (as lowmemory.js packs them), with `uv`
+ * the parts' uv and with `looks` each part's colour and roughness / metalness per vertex. `slices`: each part's indices (for
+ * `fillProxy`). Its bounds are the parts' own (a curtain's cover its whole track). */
+function mergeParts(list, { looks = false, uv = false } = {}) {
+  let verts = 0, count = 0;
+  for (const m of list) { const P = m.geometry.attributes.position; m.first = verts; verts += P.count; count += m.geometry.index ? m.geometry.index.count : P.count; }
+  const geometry = new THREE.BufferGeometry(), index = new (verts > 65535 ? Uint32Array : Uint16Array)(count), slices = [];
+  geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(verts * 3), 3));
+  geometry.setAttribute('normal', new THREE.BufferAttribute(new Int8Array(verts * 4), 4, true));
+  if (uv) geometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(verts * 2), 2));
+  if (looks) { geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(verts * 3), 3)); geometry.setAttribute('proxyRM', new THREE.BufferAttribute(new Float32Array(verts * 2), 2)); }
+  const box = new THREE.Box3(), part = new THREE.Box3();
+  let k = 0;
+  for (const m of list) {
+    const g = m.geometry, P = g.attributes.position;
+    writePart(geometry, m);
+    const start = k;
+    if (g.index) for (let i = 0; i < g.index.count; i++) index[k++] = g.index.getX(i) + m.first;
+    else for (let i = 0; i < P.count; i++) index[k++] = m.first + i;
+    slices.push(index.slice(start, k));
+    if (!g.boundingBox) g.computeBoundingBox();
+    m.box = part.copy(g.boundingBox).applyMatrix4(m.rel).clone(); box.union(m.box);
+    m.wc = m.box.getCenter(new THREE.Vector3()); // (the parent's frame)
+  }
+  geometry.setIndex(new THREE.BufferAttribute(index, 1));
+  geometry.boundingBox = box; geometry.boundingSphere = box.getBoundingSphere(new THREE.Sphere());
+  return { geometry, slices };
+}
+/** Part `m`'s vertices into the merged `geometry` (also again, for a curtain that moved). */
+function writePart(geometry, m) {
+  const g = m.geometry, P = g.attributes.position, N = g.attributes.normal, U = g.attributes.uv, c = m.material.color, A = geometry.attributes;
+  const pos = A.position.array, nor = A.normal.array, uv = A.uv?.array, col = A.color?.array, rm = A.proxyRM?.array;
+  const v = proxyEye, nm = proxyNormal.getNormalMatrix(m.rel);
+  for (let i = 0; i < P.count; i++) {
+    const j = m.first + i;
+    v.fromBufferAttribute(P, i).applyMatrix4(m.rel); pos[j * 3] = v.x; pos[j * 3 + 1] = v.y; pos[j * 3 + 2] = v.z;
+    v.fromBufferAttribute(N, i).applyMatrix3(nm).normalize();
+    nor[j * 4] = Math.round(v.x * 127); nor[j * 4 + 1] = Math.round(v.y * 127); nor[j * 4 + 2] = Math.round(v.z * 127);
+    if (uv) { uv[j * 2] = U.getX(i); uv[j * 2 + 1] = U.getY(i); }
+    if (col) { col[j * 3] = c.r; col[j * 3 + 1] = c.g; col[j * 3 + 2] = c.b; rm[j * 2] = m.material.roughness; rm[j * 2 + 1] = m.material.metalness; }
+  }
+}
+const proxyNormal = new THREE.Matrix3();
+/** A thing / curtain proxy draws the parts `updateProxies` found ok (drawn by the culler, beyond reach, as merged): its index
+ * holds only theirs, a see-through one's far to near from `eye` as three sorts separate see-through meshes. The index is
+ * rewritten only when that list or its order changes. */
+function fillProxy(x, eye) {
+  const shown = [];
+  x.members.forEach((m, k) => { if (m.ok) shown.push(k); });
+  if (x.sorted) {
+    const local = proxyEye.copy(eye).applyMatrix4(proxyInv.copy(x.group.matrixWorld).invert());
+    const d = x.members.map((m) => m.wc.distanceToSquared(local));
+    shown.sort((a, b) => d[b] - d[a]);
+  }
+  if (shown.length === x.shown.length && shown.every((k, i) => k === x.shown[i])) return;
+  x.shown = shown;
+  let at = 0;
+  for (const k of shown) { x.index.array.set(x.slices[k], at); at += x.slices[k].length; }
+  x.index.needsUpdate = true;
+  x.mesh.geometry.setDrawRange(0, at);
+}
+const proxyEye = new THREE.Vector3(), proxyLocal = new THREE.Vector3();
