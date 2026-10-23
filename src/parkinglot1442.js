@@ -126,7 +126,9 @@ export function createParkingGrade(lot, sampleBase, options = {}) {
   grade.edgeDistance = edgeDistance; // #1543: distance to the outline (either side), for groundY's seam outside the lot
   grade.clip = !!lot?.grade?.clip; // #1443: drawn on terrain cells clipped along the outline (gradedCellTriangles)
   grade.polygon = poly;
-  if (grade.clip) { grade.core = insetConvex(poly, transition); grade.inCore = (x, z) => pointIn(x, z, grade.core); grade.coreParts = creaseSplit(grade.core, crease); }
+  // #1452: a concave clipped lot (1379042188) is cut as convex parts (convexParts); its inset core likewise. A convex lot
+  // keeps one part, so its pieces are unchanged.
+  if (grade.clip) { grade.core = insetConvex(poly, transition); grade.inCore = (x, z) => pointIn(x, z, grade.core); grade.parts = convexParts(poly); grade.coreCut = convexParts(grade.core); grade.coreParts = grade.coreCut.flatMap(p => creaseSplit(p, crease)); }
   grade.crease = crease;
   grade.hinge = hinge;
   grade.plane = { origin: [mx, mz, py], slope: [sx, sz], maxResidual, anchored: !!anchor, fit: 'least-squares', ...(crease ? { crease: k } : {}) };
@@ -168,6 +170,55 @@ function withCorners(piece, corners) {
     if (t > 0 && t < 1 && Math.abs(cross(a, b, c)) / l < 1e-9) return [c, ...piece.slice(k + 1), ...piece.slice(0, k + 1)];
   }
   return piece;
+}
+/**
+ * #1452: a simple polygon split into convex parts: each reflex corner is cut along the extension of its incoming edge to
+ * the first outline edge it meets (the corner then lies straight inside one part's edge). Convex input is returned as is.
+ */
+export function convexParts(poly) {
+  const s = Math.sign(area(poly)), n = poly.length;
+  const k = poly.findIndex((v, i) => s * cross(poly[(i + n - 1) % n], v, poly[(i + 1) % n]) < -1e-9);
+  if (k < 0) return [poly];
+  const v = poly[k], p = poly[(k + n - 1) % n], d = [v[0] - p[0], v[1] - p[1]];
+  let best = null;
+  for (let j = 0; j < n; j++) {
+    const a = poly[j], b = poly[(j + 1) % n];
+    if (j === k || (j + 1) % n === k) continue;
+    const e = [b[0] - a[0], b[1] - a[1]], den = d[0] * e[1] - d[1] * e[0];
+    if (Math.abs(den) < 1e-12) continue;
+    const t = ((a[0] - v[0]) * e[1] - (a[1] - v[1]) * e[0]) / den, u = ((a[0] - v[0]) * d[1] - (a[1] - v[1]) * d[0]) / den;
+    if (t > 1e-9 && u >= -1e-12 && u <= 1 + 1e-12 && (!best || t < best.t)) best = { t, j, q: [v[0] + d[0] * t, v[1] + d[1] * t] };
+  }
+  if (!best) throw new RangeError('Parking outline cannot be split into convex parts');
+  const walk = (from, to) => { const out = []; for (let i = from; ; i = (i + 1) % n) { out.push(poly[i]); if (i === to) return out; } };
+  // drop repeated points and the straight corner (no degenerate fan triangle); both parts lie in one plane there
+  const near = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]) < 1e-9, clean = (q) => { q = q.filter((x, i) => !near(x, q[(i + 1) % q.length])); return q.filter((x, i) => Math.abs(cross(q[(i + q.length - 1) % q.length], x, q[(i + 1) % q.length])) > 1e-9 * Math.hypot(...[0, 1].map(c => q[(i + 1) % q.length][c] - q[(i + q.length - 1) % q.length][c]))); };
+  // part A: v … poly[j], q; part B: q, poly[j+1] … v
+  return [...convexParts(clean([...walk(k, best.j), best.q])), ...convexParts(clean([best.q, ...walk((best.j + 1) % n, k)]))];
+}
+// #1452 (the welded-edge idea of the unpublished #1444 candidate): insert the given points that lie strictly inside an edge of
+// convex `piece`, so neighbouring band pieces of a concave lot share every vertex in the non-linear fade band.
+function onEdges(piece, points) {
+  const out = [];
+  for (let k = 0; k < piece.length; k++) {
+    const a = piece[k], b = piece[(k + 1) % piece.length], l2 = (b[0] - a[0]) ** 2 + (b[1] - a[1]) ** 2;out.push(a);
+    if (l2 < 1e-18) continue;
+    const on = [];
+    for (const q of points) { const t = ((q[0] - a[0]) * (b[0] - a[0]) + (q[1] - a[1]) * (b[1] - a[1])) / l2; if (t > 1e-7 && t < 1 - 1e-7 && Math.abs(cross(a, b, q)) / Math.sqrt(l2) < 1e-7) on.push([t, q]); }
+    on.sort((u, v) => u[0] - v[0]);
+    for (const [, q] of on) if (Math.hypot(out.at(-1)[0] - q[0], out.at(-1)[1] - q[1]) > 1e-9) out.push(q);
+  }
+  return out;
+}
+// #1452: fan a convex polygon whose edges may carry collinear vertices from a true corner whose two edges carry none,
+// otherwise from its centroid, so every vertex is used.
+function safeFan(p) {
+  if (p.length === 3) return fan(p);
+  const n = p.length, corner = (k) => Math.abs(cross(p[(k + n - 1) % n], p[k], p[(k + 1) % n])) > 1e-9;
+  const r = p.findIndex((_, k) => corner(k) && corner((k + 1) % n) && corner((k + n - 1) % n));
+  if (r >= 0) return fan([...p.slice(r), ...p.slice(0, r)]);
+  const m = [p.reduce((s, q) => s + q[0], 0) / n, p.reduce((s, q) => s + q[1], 0) / n];
+  return p.map((q, k) => [m, q, p[(k + 1) % n]]).filter(t => Math.abs(area(t)) > 1e-9);
 }
 const fan = (p) => p.slice(1, -1).map((_, i) => [p[0], p[i + 1], p[i + 2]]).filter(t => Math.abs(area(t)) > 1e-9);
 // #1451: a convex piece cut along a grade's crease line into its (at most two) planar parts.
@@ -237,6 +288,21 @@ export function gradedCellTriangles(grade, polygon, { x0, x1, z0, z1, c }, other
     const old = (x, z) => { const f = (x - x0) / (x1 - x0), g = (z - z0) / (z1 - z0); return h === 0 ? c[0] + (c[1] - c[0]) * f + (c[2] - c[0]) * g : c[3] + (c[2] - c[3]) * (1 - f) + (c[1] - c[3]) * (1 - g); };
     let rest = [halves[h]];
     for (const { g, poly } of lots) {
+      const parts = g.parts ?? [poly];
+      if (parts.length > 1) { // #1452: a concave lot, cut part by part; its band pieces are welded (see onEdges)
+        rest = rest.flatMap(piece => parts.reduce((acc, part) => acc.flatMap(q => splitConvex(q, part).outside), [piece]));
+        const cores = [], bands = [];
+        for (const part of parts) {
+          const inside = splitConvex(halves[h], part).inside;if (!inside) continue;
+          let r = [inside];
+          for (const cp of g.coreCut) r = r.flatMap(q => { const sp = splitConvex(q, cp);if (sp.inside) cores.push(...creaseSplit(sp.inside, g.crease));return sp.outside; });
+          bands.push(...r.flatMap(q => creaseSplit(q, g.crease)));
+        }
+        const pts = [...cores, ...bands].flat();
+        for (const part of cores) for (const t of fan(part)) out.push({ kind: 'core', grade: g, tri: t.map(([x, z]) => [x, z, g.planeY(x, z)]) });
+        for (const piece of bands) for (const t of safeFan(onEdges(piece, pts))) out.push({ kind: 'band', grade: g, tri: t.map(([x, z]) => { const y = old(x, z); return [x, z, y + (g.planeY(x, z) - y) * g.weight(x, z)]; }) });
+        continue;
+      }
       const core = insetConvex(poly, g.transition), { inside } = splitConvex(halves[h], poly);
       rest = rest.flatMap(piece => splitConvex(piece, poly).outside);
       if (!inside) continue;
@@ -348,10 +414,12 @@ const pointIn = (x, z, p) => { let yes = false; for (let i = 0, j = p.length - 1
  */
 function createAisleLayout(lot, { bayWidth, bayDepth }) {
   const poly = ring(lot.polygon ?? []), L = lot.layout, ways = [...(SITE.south.paths ?? []), ...(SITE.south.access ?? [])], way = (s) => { const r = ways.find(w => w.source === s); if (!r) throw new RangeError(`Parking layout way ${s} is not mapped`); return r; };
-  const road = way(L.aisle.road), a = road.path[0], b = road.path.at(-1), len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+  // #1452: `aisle.from` (a path vertex index) uses only the way's straight end from that vertex on as the aisle axis
+  // (service way 335403605 bends before it enters 1379042188); the whole way stays clear.
+  const road = way(L.aisle.road), axis = road.path.slice(L.aisle.from ?? 0), a = axis[0], b = axis.at(-1), len = Math.hypot(b[0] - a[0], b[1] - a[1]);
   const u = [(b[0] - a[0]) / len, (b[1] - a[1]) / len], n = [-u[1], u[0]], proj = (p, v) => p[0] * v[0] + p[1] * v[1];
-  const c = road.path.reduce((s, p) => s + proj(p, n), 0) / road.path.length, ua = proj(a, u);
-  if (road.path.some(p => Math.abs(proj(p, n) - c) > .1)) throw new RangeError(`Parking aisle way ${road.source} is not straight`);
+  const c = axis.reduce((s, p) => s + proj(p, n), 0) / axis.length, ua = proj(a, u);
+  if (axis.some(p => Math.abs(proj(p, n) - c) > .1)) throw new RangeError(`Parking aisle way ${road.source} is not straight`);
   const margin = L.margin ?? .25, paint = (L.paint ?? .08) / 2, at = (v, w) => [u[0] * v + n[0] * w, u[1] * v + n[1] * w];
   const clear = [road, ...(L.clear ?? []).map(way)].map(r => ({ source: r.source, path: r.path, keep: (Array.isArray(r.w) ? Math.max(...r.w) : r.w) / 2 + margin }));
   const us = poly.map(p => proj(p, u)), lotU0 = Math.min(...us), lotU1 = Math.max(...us), boxArea = (bayWidth + 2 * paint) * bayDepth;

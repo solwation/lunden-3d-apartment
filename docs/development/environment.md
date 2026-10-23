@@ -672,6 +672,32 @@ not these bases). Ground 3cm outside every edge, roads, other lots and `WALK.z1`
 `WALK.z1=250`: surface and ray evidence only, not reachable on foot. Cost: `site-terrain` +103 (89940→90043), `south-backdrop`
 +187 (49539→49726); no new mesh, material or texture. Site parking: house A/B/C/L geometry is unaffected.
 
+## Parking by houses 56 and 59 (#1452)
+
+OSM1379042188 (by house59, a concave six-corner lot about18.5×18.3m, raw capacity8/guess) and OSM1379042235 (by house56,
+8.69×5.08m, raw capacity4/guess) both open onto service way335403605 (#1449), the only mapped driving connection; no new
+way is drawn and footway335403596 is not used. Both get `grade.clip` with `fit: 'minimax'`; every level, transition, box and
+apron is *guess*.
+- 1379042235 reuses the #1450 street pocket: one `layout.row` of three whole 2.5×5m boxes on the far (south) edge facing
+  `layout.street` 335403605 and a `streetApron` over the grass gap. Raw capacity4 would give 2.17m per car, so the visible
+  count is three and the raw tag stays.
+- 1379042188 is concave, so new `convexParts` cuts the outline (and its inset core) at the reflex corner, along the extension
+  of the incoming edge, into convex parts. A convex lot keeps one part, so its pieces stay bit-identical. `gradedCellTriangles`
+  then cuts a concave lot part by part and welds every band piece's edges with the other pieces' corners (`onEdges`/`safeFan`,
+  the idea of the unpublished #1444 candidate), so no T-junction is left in the non-linear fade band. The way's last segment
+  crosses the lot and ends inside it; `layout.aisle.from` (a path vertex index) uses that straight end as the aisle axis while
+  the whole way stays clear. Whole boxes stand 3m either side of it (a 6m clear aisle, guess): five on the north side up to
+  `to`16m along it and three on the south side up to the notch, eight in all (the raw capacity), leaving the turning space at
+  the way's end free.
+Slope (the user's #1436 rule): a 2m transition made 1379042188's band steeper (minimax 0.197 against 0.187 before), 3m gave
+0.185 and 4m gives 0.1798, so it uses 4m (*guess*). Steepest emitted triangle overlapping the lot: 0.186754→0.179815 (house59)
+and 0.170985→0.166870 (house56). The two lots lie within 6m of each other, so the region maximum is shared: the old
+0.186754 triangle now lies just outside 1379042188's outline, unchanged at 0.186755 (float32 noise). Ground 3cm outside every
+edge and within6m is unchanged (≤9e-16m); the emitted bases of houses 56/57/58/59/60/61 and the other eight graded lots'
+planes and boxes are unchanged. Both lots lie south of `WALK.z1=250`: surface and ray evidence only, not reachable on foot.
+Cost: `site-terrain` +236 (90043→90279), `south-backdrop` +174 (49910→50084); no new mesh, material or texture.
+Site parking: house A/B/C/L geometry is unaffected.
+
 ## Southern road embankment (#1382)
 
 `SOUTH_BANK` holds the11road controls and five10-point cross-sections from the same77-point LM export.

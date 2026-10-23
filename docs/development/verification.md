@@ -8496,6 +8496,17 @@ routes (south of `WALK.z1`). Rerun `parking1450test.html`, `parking1441test.html
 `parkinggrade1436test.html`, `parkinggrade1440test.html`, `parking1442test.html`, `parking1443test.html` (#1553's two
 stale lines) and `southbackdroptest.html` (#1474, now49726). Images: `docs/verification/1451/`.
 
+## #1452: parking by houses 56 and 59
+
+Run `node tools/runtests.cjs --test-only parking1452test.html`. In the actual World it checks, per lot, the unchanged OSM
+outline/raw capacity and service way335403605; 1379042188's two convex parts; terrain rays ≥ the transition inside on the
+minimax plane and every lot ray hitting the terrain (no crack) against `renderedTerrainY`/`groundY`; unchanged ground outside
+(b9ed31bd points 0.2–5m out and 3cm outside every edge, plus rays within6m); steepest overlapping and nearby terrain triangles
+against b9ed31bd; houses 56/58/59 gaps, footprints and bases; whole boxes inside the outline and off the way's emitted strip,
+free turning space at the way's end; dividers, paint/asphalt lifts and independent rays; 1379042235's apron and seams; exact
+triangle counts with unchanged meshes/materials; house bases, the other lots' planes/boxes, trees and `WALK.z1`. Rerun
+`parking1451test.html`, `parking1450test.html` and `parkinggrade1436test.html`. Images: `docs/verification/1452/`.
+
 ## Physical computer game (#1491)
 
 `tools/computerscreentest.cjs GAME LOCAL_WORKER OUT` opens actual Worlds on desktop

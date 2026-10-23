@@ -5,7 +5,7 @@
 const out=document.querySelector('#out'),lines=[];let pass=true;const check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);pass&&=!!ok;out.textContent=lines.join('\n');};
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 // #1443 adds 158 terrain triangles for the clipped cells of lot 145221626 (z354..391, away from this lot): 89666→89824.
-const BASE={lotSlope:.3156,regionMax:1.0142,over:15,terrainTris:90043,house45:1.9497913924047237}; // terrainTris: 89824 on ef5c6ef1, +116 for #1450's two clipped street pockets, +103 for #1451's two (89940 on 5547d41a)
+const BASE={lotSlope:.3156,regionMax:1.0142,over:15,terrainTris:90279,house45:1.9497913924047237}; // terrainTris: 89824 on ef5c6ef1, +116 for #1450's two clipped street pockets, +103 for #1451's two (89940 on 5547d41a), +236 for #1452's two lots (90043 on b9ed31bd)
 try{
  const frame=document.createElement('iframe');frame.width=480;frame.height=300;frame.src='../index.html?test&shot&month=6&cloud=';document.body.append(frame);await new Promise(r=>frame.onload=r);const w=frame.contentWindow;for(let i=0;i<360&&!w.__app?.scene;i++)await wait(500);if(!w.__app?.scene)throw Error('actual World did not finish loading');
  const A=w.__app,T=await w.eval("import('three')"),C=await w.eval("import('/src/config.js')"),S=await w.eval("import('/src/surroundings.js')"),lot=C.SITE.south.parking.find(p=>p.source==='145221619'),poly=lot.polygon;
