@@ -5,26 +5,33 @@ not executable code. Keep project details here, never in the shared instructions
 
 - Entry rules and relevant topic documents: <paths>.
 - User language: <language>. Explicit user scope: <argument or request>.
-- Mode: <single task or unattended queue>; reading docs never starts the queue.
+- Mode: <single task or unattended queue>; an empty scope runs one bounded pass
+  without timers, and reading docs never starts the queue.
 - Repositories and coordination issues: <owner/repo, status issue per repository>.
 - Issue workflow authority: shared ISSUE-WORKFLOW.md for GitHub; specify an adapter
   for other trackers. Local ancestor/port constraints: <policy>.
 - Excluded coordination labels; active/session labels: <names>.
 - Claims, race handling, expiry and handover: <rules>.
-- Capacity: <worker cap, includes helpers>; direct conductor implementation: <allowed?>.
+- Capacity: <concurrent issue workers, includes helpers>; whether the conductor's own
+  implementation counts as a slot; direct conductor implementation: <allowed?>.
+  Expensive shared verification: <browser/e2e/device runs and how they are queued>.
+- Per-worktree isolation: <port range or allocation, server/config overrides, no
+  `reuseExistingServer` across checkouts, check that the server serves this revision>.
 - Runtime/model selection: <available economical/stronger capabilities, concrete model
   identifiers/effort controls in the adapter, or selection unavailable/locked>. Follow
   the core resource policy; document limits rather than assuming inherited effort is
   economical. No provider-specific identifier is required by the shared core.
 - Poll interval, idle watch, heartbeat and stale-work limits: <durations or disabled>.
-- Questions/blocked work: <channel and label lifecycle>.
+- Questions/blocked work: <channel and label lifecycle, e.g. an issue comment with
+  options and a recommendation plus a `user question` label>; unattended passes never ask
+  in the chat. Release rule in a pass: <e.g. only once no open issues remain/never>.
 - Intake hooks: <local procedure and triggers, or none>; credentials never go here.
 - Workspace, server and browser setup: <relevant local docs>.
 - Required tests, release checks and evidence-before-close: <rules>.
 - Phase hooks: <definitions below or a link to project documentation; none if unused>.
 - Publishing: <branch/PR/direct policy and authorization>; no force push by default.
 - Cross-project boundaries and attribution/licenses: <rules>.
-- Installed shared version: <release and exact commit>; update using shared README.
+- Installed shared version: <release and exact commit>; update using shared INSTALL.md.
 - Upstream discovery: <official repository/release source>; check at conductor
   startup/resume, reuse successful results for 24 hours by default. Relevant bug fixes
   always get a proposal; other upgrades <optional/opt-in preference>. Proposal channel

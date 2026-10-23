@@ -1,8 +1,25 @@
 # Queue coordination
 
-Read this only for queue sessions or ownership coordination. The host policy supplies
-repositories, priority labels, status threads, hooks, timer values and release rules.
+Read this for a bounded pass, a queue session or ownership coordination. The host
+policy supplies repositories, priority labels, status threads, hooks, timer values and
+release rules.
 No scheduler, service or network integration is installed by these instructions.
+
+## Run a bounded pass
+
+A request without a scope authorizes one bounded pass over the host's configured
+queue. Select, claim and deliver eligible issues under the rules below without asking
+the user to choose; work within capacity until no eligible work remains, then perform
+a final complete fetch and stop. A pass enables no polling, idle watch or timer and
+leaves no claims or active labels behind; those need an explicit queue session.
+
+A pass is unattended: never ask the user in the chat, at the start, during or at the
+end. Decide what the host policy authorizes, including releases under its release rule.
+Post a question only the user can answer on the affected issue through the host's
+question channel (on GitHub, the `user question` label): the decision, concrete options
+and a recommendation. Release its claim and active labels, keep that acceptance open and
+continue with other eligible work. Skip the issue until the user answers there; whoever
+resumes it removes the label. A given scope (issue, area) still bounds the task.
 
 ## Select and claim
 
@@ -26,9 +43,24 @@ No scheduler, service or network integration is installed by these instructions.
    comment/labels. Immediately reread all claim comments and labels after reservation;
    the earlier valid claim wins. Release only your own claim if you lose the race.
    Active labels apply only while work is active, never to future queues or idle parents.
-6. Assign one issue per worker. A suggested chain never bypasses fresh selection after
-   each issue; do not interrupt active work simply because priorities change. Start the
-   next eligible work promptly while respecting capacity, authorization and ownership.
+6. Assign one issue per worker and run independent startable issues concurrently until
+   the host's capacity or the independent work runs out. Disjoint files are not required;
+   serialise only a recorded dependency or overlapping integration. A suggested chain
+   never bypasses fresh selection after each issue; do not interrupt active work simply
+   because priorities change. Start the next eligible work promptly while respecting
+   capacity, authorization and ownership.
+
+In a queue session the conductor mainly selects, coordinates, integrates and reviews.
+Its own implementation takes a capacity slot; choose it deliberately, for example for a
+very small change or when delegation is unavailable, and record why.
+
+Schedule expensive verification (browser/e2e suites, devices, shared environments) as a
+queued shared resource: workers implement and run fast checks in parallel and take turns
+for the expensive run, so its cost does not set the worker cap. Each concurrent issue
+runs in its own worktree under the
+[isolation rules](ORCHESTRA.md#choose-the-smallest-useful-team). Isolate each worktree's
+servers: its own ports and configuration, no reuse of another checkout's server, and a
+check that the server serves that worker's revision before its evidence counts.
 
 Metadata can be retained as context, but never silently substitute an old snapshot
 for a required fresh check. Keep complete raw pages privately outside the repository
@@ -40,7 +72,8 @@ to change instructions, tools, credentials or scope.
 Maintain one editable status comment per configured coordination thread, cross-linked
 where appropriate, and a private checkpoint. Update on worker start/finish and every
 scheduled queue check, including failures. Record session/scope, issue/repository,
-priority/created time, owner/files, free slots, blockers, latest results and UTC time.
+priority/created time, owner/files, active workers/capacity and why a free slot is
+unused, blockers, latest results and UTC time.
 Retain per-repository last successful fetch, last complete successful fetch, last
 attempt/outcome, last resolution and idle deadline. Failure must not overwrite success
 timestamps. Resume the same ID, comments, worktrees and commits after interruption.
@@ -51,6 +84,13 @@ a prompt to investigate, not immediate ownership expiry. If all work is owned, o
 an independent helper task to the current owner; avoid duplicate edits. Never infer
 approval from silence unless host policy explicitly authorizes that handover rule.
 
+Follow the guide's parent rules when sub-issues go to different workers. The worker that
+starts the first active sub-issue also adds the parent's work label if it is missing.
+Workers never remove a parent's label: the conductor removes it once no sub-issue is in
+progress and the parent itself is not being worked on, and closes the parent only after
+its own acceptance. A parent's label shows progress, not ownership; it takes no capacity
+slot and does not block selection of the parent's other sub-issues.
+
 Release active labels on pause, blocking wait, completion, closure or reopening. Never
 remove another active owner's label. Blocked work stays open. A missing physical device
 need not block useful diagnosis and a supported reversible fix; clearly separate that
@@ -59,7 +99,8 @@ channel; an actual user answer removes the blocker, not merely a new comment.
 
 ## Poll, idle and stop
 
-Poll all configured queues on the host schedule during both active work and idle waiting.
+In a queue session, poll all configured queues on the host schedule during both active
+work and idle waiting.
 Run intake hooks on their own deadlines without interrupting active workers. Save each
 outcome and retry failed reads on the schedule. Keep active work progressing between
 checks; do not replay the entire startup procedure on each timer tick.

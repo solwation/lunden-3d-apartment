@@ -16,6 +16,16 @@ Read and follow this guide when working with GitHub issues in a project displaye
 - When reopening, remove stale work labels. Add a work label again only when active work resumes, so a new work interval can be recorded.
 - Assignees and owner labels (for example `orkester: session-id`) describe ownership. They do not make an issue in progress and do not establish its priority.
 
+## Parent issues and sub-issues
+
+Issueflow places each issue by its own state and labels: a sub-issue in progress does not move its parent. Keep the parent's work label in step with its sub-issues so the parent shows real progress and timing.
+
+- When work starts on the first sub-issue, also add the work label (`in-progress`) to the parent if it does not already have it. The parent's **In progress** start time is then recorded from that moment.
+- Keep the parent's work label while any sub-issue is in progress or work continues on the parent itself. Pausing or finishing one sub-issue does not remove the parent's label while others are active.
+- When no sub-issue is in progress and the parent is not being worked on, remove the parent's work label, even if sub-issues remain open; the parent returns to **Backlog** until work resumes.
+- Close the parent only when all its sub-issues are closed or deliberately split out and the parent's own acceptance criteria are satisfied; remove its work labels when closing. Closing every sub-issue does not close the parent automatically.
+- A parent's priority stays its own. Sub-issues normally follow the same priority rules as any other issue.
+
 ## Labels understood by the default detection
 
 Matching is case-insensitive. Except for a custom work label described below, leading/trailing whitespace is ignored and runs of spaces, underscores, colons and hyphens are treated as spaces. For example, `in-progress`, `in_progress` and `IN PROGRESS` match the same built-in work label.
