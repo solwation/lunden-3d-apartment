@@ -8428,7 +8428,8 @@ Run `node tools/runtests.cjs --test-only parking1437test.html` (about40s). In th
 mapped ways145221573/145221582, the kerb gap and road surface over the grass strip at the entrance, paint vertices
 against the rendered surface, the old/new south-backdrop triangle counts (42959→42685), the source controls and
 `WALK.z1`, and three actual Player routes (mapped entrance → aisle → boxes and back; grass strip at u43/z234).
-The walk-out route allows the pre-existing0.244m lot-edge step (identical on ea955902). Rerun
+Since #1543 the walk-out route allows at most a0.01m frame step (measured0.007m), and the test checks the outline
+seam and walking slope within3m (was a pre-existing0.244m step). Rerun
 `parkinggrade1436test.html`, `parkinggrade1440test.html`, `parking1442test.html` and `southbackdroptest.html`
 (only the #1474 far-detail check fails, now42685). Before/after images: `docs/verification/1437/`.
 
@@ -8466,6 +8467,17 @@ and both seams, the local triangle cost with unchanged meshes/materials, house b
 routes (south of `WALK.z1`). Rerun `parking1441test.html`, `parking1437test.html`, `parkinggrade1436test.html`,
 `parkinggrade1440test.html`, `parking1442test.html`, `parking1443test.html` (#1553's two stale lines) and
 `southbackdroptest.html` (#1474, now49539). Images: `docs/verification/1450/`.
+
+## #1543: graded lot edges in groundY
+
+Run `node tools/runtests.cjs --test-only parking1437test.html`: the Player walk-out route through mapped entrance
+145221573 is bounded at0.01m per frame (0.243→0.007m), `groundY` on 145221619's outline has no step against the drawn
+surface (≤0.0061m, was0.29m) and no `slopeAt` sample within3m of it exceeds `WALK.maxSlope` (was17, max0.820→0.51).
+Rerun `parkinggrade1436test.html` (controls, unchanged89940 terrain triangles and lot slope), `parkinggrade1440test.html`,
+`parking1441test.html`, `parking1442test.html`, `parking1450test.html`, `servicepark1449test.html`, and
+`parking1443test.html`/`southbackdroptest.html` (only the same #1553/#1474 lines as on main, backdrop49539). The other
+five graded lots' outline steps (0.07–0.27m→≤0.007m) were measured with a scratch page, not a committed test. Fixed-camera
+screenshots before/after at the entrance differ by2 pixels, so no result images: the change is felt when walking.
 
 ## Physical computer game (#1491)
 

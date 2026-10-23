@@ -108,6 +108,7 @@ export function createParkingGrade(lot, sampleBase, options = {}) {
   // unchanged drawn surface (instead of the smooth sampler) to the plane.
   grade.planeY = planeY;
   grade.weight = (x, z) => { if (!contains(x, z)) return 0; const t = clamp(edgeDistance(x, z) / transition, 0, 1); return t * t * (3 - 2 * t); };
+  grade.edgeDistance = edgeDistance; // #1543: distance to the outline (either side), for groundY's seam outside the lot
   grade.clip = !!lot?.grade?.clip; // #1443: drawn on terrain cells clipped along the outline (gradedCellTriangles)
   grade.polygon = poly;
   if (grade.clip) { grade.core = insetConvex(poly, transition); grade.inCore = (x, z) => pointIn(x, z, grade.core); }

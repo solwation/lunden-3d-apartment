@@ -49,9 +49,16 @@ try{
  const roadNode=e.path.at(-1),entry=uAt((G[0]+G[1])/2,1),aisle=uAt((G[0]+G[1])/2,8.46),box=uAt(uOf(L.stalls.find(s=>s.side==='north'&&uOf(s.center)>G[1]).center),2.5),aisleW=uAt(30,8.46),boxW=uAt(uOf(L.stalls.filter(s=>s.side==='north'&&uOf(s.center)<G[0]).at(-1).center),2.5);
  const route=(name,start,pts,stepLimit=.1)=>{pl.keys.clear();pl.spawn(start[0],start[1],0);for(let i=0;i<30;i++)pl.update(dt);const r=walk(pts),yErr=Math.abs(pl.pos.y-S.groundY(pl.pos.x,pl.pos.z)),end=pts.at(-1);check(r.stuck<0&&yErr<.05&&r.maxStep<stepLimit&&Math.hypot(pl.pos.x-end[0],pl.pos.z-end[1])<.3,`actual Player ${name}: reached (${pl.pos.x.toFixed(1)}, ${pl.pos.z.toFixed(1)}) y=${pl.pos.y.toFixed(2)}, ground error ${yErr.toFixed(3)} m, largest frame step ${r.maxStep.toFixed(3)} m`);};
  route('walks road node → mapped entrance → aisle → box beyond it',roadNode,[entry,aisle,box]);
- // Walking out, the Player steps up 0.244 m at (6.42, 240.61) on the lot edge: groundY's smooth outside sampler sits above the
- // rendered terrain there. Identical on ea955902 (pre-existing #1436 edge seam, not a new obstacle); bounded at its baseline.
- route('walks road node → entrance → aisle → box before it and back out',roadNode,[entry,aisle,aisleW,boxW,aisleW,aisle,entry,roadNode],.25);
+ // #1543: walking out used to step up 0.244 m in one frame at (6.42, 240.61), where groundY switched from the drawn lot surface to
+ // the smooth sampler 0.24 m above the coarse drawn cells; groundY now eases back over PARKING_SEAM.fade (largest step 0.007 m).
+ route('walks road node → entrance → aisle → box before it and back out',roadNode,[entry,aisle,aisleW,boxW,aisleW,aisle,entry,roadNode],.01);
+ // #1543: no groundY step across the outline: just outside it equals the drawn surface, as just inside.
+ let seam=0,seamAt=null;for(let k=0;k<poly.length;k++){const a=poly[k],b=poly[(k+1)%poly.length],l=Math.hypot(b[0]-a[0],b[1]-a[1]),nx=(b[1]-a[1])/l,nz=-(b[0]-a[0])/l,s=inside(a[0]+(b[0]-a[0])/2+nx*.05,a[1]+(b[1]-a[1])/2+nz*.05)?-1:1;for(let t=.1;t<l-.1;t+=.25){const x=a[0]+(b[0]-a[0])*t/l,z=a[1]+(b[1]-a[1])*t/l,xo=x+s*nx*.01,zo=z+s*nz*.01,d=Math.max(Math.abs(S.groundY(xo,zo)-S.groundY(x-s*nx*.01,z-s*nz*.01)),Math.abs(S.groundY(xo,zo)-S.renderedTerrainY(xo,zo)-.01));if(d>seam){seam=d;seamAt=[x,z];}}}
+ // #1543: and no walking obstacle within 3 m of it (walking slope as farwalk's slopeAt; before: max 0.820, 17 samples over WALK.maxSlope).
+ const FW=await w.eval("import('/src/farwalk.js')"),edgeD=(x,z)=>Math.min(...poly.map((a,k)=>{const b=poly[(k+1)%poly.length],dx=b[0]-a[0],dz=b[1]-a[1],t=Math.max(0,Math.min(1,((x-a[0])*dx+(z-a[1])*dz)/(dx*dx+dz*dz)));return Math.hypot(x-a[0]-dx*t,z-a[1]-dz*t);}));let steep=0,steepN=0,steepMax=0;
+ for(let x=-22.4;x<=40;x+=.2)for(let z=223;z<=275.6;z+=.2)if(edgeD(x,z)<=3){steepN++;const q=FW.slopeAt(x,z,S.groundY(x,z)).s;steepMax=Math.max(steepMax,q);if(q>C.WALK.maxSlope)steep++;}
+ check(steepN>20000&&steep===0,`no walking obstacle within 3 m of the outline: ${steepN} samples, steepest ${steepMax.toFixed(3)}, ${steep} over ${C.WALK.maxSlope}`);
+ check(seam<.01,`groundY has no seam on the lot outline: largest jump/mismatch with the drawn surface ${seam.toFixed(4)} m at (${seamAt?.map(v=>v.toFixed(2)).join(', ')}) (0.29 m before #1543)`);
  const g43=uAt(43,-4.5);route('crosses the grass strip at u43/z234 into the free turning end',g43,[uAt(43,-.7),uAt(43,8.46)]);
  // Plan preview of the new paint.
  const renderer=new T.WebGLRenderer({canvas:document.querySelector('#preview'),antialias:true});renderer.setSize(720,560,false);renderer.setPixelRatio(1);const scene=new T.Scene();scene.background=new T.Color(0x8fae6a);scene.add(new T.AmbientLight(0xffffff,1.6));scene.add(landMesh);const cm=new T.OrthographicCamera(-36,36,28,-28,.1,200);cm.position.set(9,80,249);cm.up.set(0,0,-1);cm.lookAt(9,0,249);renderer.render(scene,cm);

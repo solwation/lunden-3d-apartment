@@ -1959,6 +1959,10 @@ export const TERRAIN_FAR = {
 // (CC BY 4.0 per provider). Relative to the existing 14.36 RH2000 origin, NOT a surveyed apartment floor.
 // Radius35m and a225..240m north fade are interpolation guesses; only local dry-ground samples, never bathymetry.
 export const SOUTH_PLATEAU = { radius: 35, fade: [225, 240], points: [[-150,255,-3.52],[-130,240,-3.51],[-170,272,-3.57],[-125,275,-2.54],[-40,286,1.83],[30,272,1.94],[10,248,1.26],[-20,262,1.58],[-90,265,-1.0],[-70,275,1.15]] };
+// #1543: outside a graded parking lot, groundY eases from the drawn terrain at the outline (where the lot's own
+// groundY follows the drawn triangles) back to the smooth sampler over `fade` m (*guess*: under the 2.36 m from lot
+// 145221619 to the (-20,262) control, which keeps its sourced value; the seam was up to 0.29 m in one frame).
+export const PARKING_SEAM = { fade: 2 };
 export const ELEVATION = { protect: { x0: -86, x1: 46, z0: -36, z1: 72 }, ramp: 30, river: [32, 30], edge: 30,
   pad: 10, padRamp: 8, padMin: 0.4, southAnchor: 3, southApron: 4 }; // #1306: far buildings stand on a level pad (the ground's mean under them) that grades back over `pad` m, unless the ground under the footprint varies by less than `padMin` m (*guess*)
 export const WALK = { x0: -260, x1: 320, z0: -200, z1: 250, cell: 40, maxSlope: 0.7, // gradient (rise/run, ~35°) above which the ground cannot be climbed and you slide back (#1281, *guess*; the park paths (0.3-0.45) stay under it; the drop from the shore path into the water (up to ~0.8), the steepest bank edges and the bridge embankments are over)

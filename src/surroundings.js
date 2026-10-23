@@ -10,7 +10,7 @@ import { buildRiverPark, parkDeckAt, parkFillAt, renderedParkFillY, parkRampFill
 import * as THREE from 'three';
 import { grassUV } from './grass.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE, CORE_A, CORE_B, CORE_C, NEIGHBOR_OPENINGS as O, HUS_L, FOLIAGE, ELEVATION, TERRAIN_FAR, SOUTH_PLATEAU, PADDOCK } from './config.js';
+import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE, CORE_A, CORE_B, CORE_C, NEIGHBOR_OPENINGS as O, HUS_L, FOLIAGE, ELEVATION, TERRAIN_FAR, SOUTH_PLATEAU, PADDOCK, PARKING_SEAM } from './config.js';
 import { gridGround, southPointGround } from './elevation.js';
 import { glowMaterial, poolGeometry, washGeometry, fadeGlow, fadeGlowWithFog } from './groundglow.js';
 import { neighborGlass } from './neighborglass.js';
@@ -105,7 +105,12 @@ export function groundY(x, z) {
   const y=fill===null?terrainY(x,z):Math.max(terrainY(x,z),fill);
   // Once terrainGeometry has built its actual triangles, collision/contact uses that same
   // local parking surface rather than the unsplit smooth sampler used to place its vertices.
-  return parkingGradeAt(x,z)&&terrainGrid?renderedTerrainY(x,z)+.01:y;
+  if(!terrainGrid)return y;
+  if(parkingGradeAt(x,z))return renderedTerrainY(x,z)+.01;
+  // #1543: just outside a graded lot, ease from that drawn surface back to the smooth sampler, so the
+  // outline is no step (the coarse cells there can lie 0.29 m under the smooth sampler).
+  const w=parkingSeamWeight(x,z);
+  return w>0?y+(renderedTerrainY(x,z)+.01-y)*w:y;
 }
 /** #1271: the ground UNDER a bridge deck (the cut the river footpath runs in); `groundY` returns the deck there. */
 export const groundBelowDeckY = (x, z) => terrainY(x, z);
@@ -181,6 +186,15 @@ const smooth=t=>t*t*(3-2*t);
 // configured transition; roads, building pads and all outside terrain stay anchored.
 const PARKING_GRADES=S.south.parking.filter(p=>p.grade).map(lot=>createParkingGrade(lot,plateauTerrainY));
 function parkingGradeAt(x,z){return PARKING_GRADES.find(g=>x>=g.bounds.x0&&x<=g.bounds.x1&&z>=g.bounds.z0&&z<=g.bounds.z1&&g.contains(x,z))??null;}
+// #1543: 1 on a graded lot's outline, easing to 0 at PARKING_SEAM.fade m outside it (the largest over all lots).
+function parkingSeamWeight(x,z){
+  const F=PARKING_SEAM.fade;let w=0;
+  for(const g of PARKING_GRADES){
+    const b=g.bounds;if(x<b.x0-F||x>b.x1+F||z<b.z0-F||z>b.z1+F)continue;
+    const t=g.edgeDistance(x,z)/F;if(t<1)w=Math.max(w,1-smooth(t));
+  }
+  return w;
+}
 // #1443: the clipped lot (grade.clip) whose polygon overlaps terrain cell [x0,x1]×[z0,z1], if any.
 function clippedGradeAt(x0,x1,z0,z1){
   for(const g of PARKING_GRADES){

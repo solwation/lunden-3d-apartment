@@ -568,9 +568,9 @@ off it, the aisle covers both ways, and the old north-west kerb is split so it n
 An aisle-side front line per row was tried and dropped: following the terrain it cost332 triangles.
 `south-land` falls32871→32597 triangles (whole backdrop42959→42685, no new draw call/material).
 The #1436 plane, its6m transition, the outline, roads, controls and `WALK.z1=250` are unchanged.
-Walking out of the lot at the entrance, the Player steps up0.244m at(6.42,240.61): `groundY`'s smooth outside
-sampler lies above the rendered terrain on the lot edge. It is identical on ea955902 (a pre-existing seam of the
-#1436 edge, not a new obstacle). Other eleven lots: unchanged.
+Walking out of the lot at the entrance, the Player stepped up0.244m at(6.42,240.61): `groundY`'s smooth outside
+sampler lay above the rendered terrain on the lot edge (pre-existing on ea955902; fixed in #1543 below). Other eleven
+lots: unchanged.
 
 ## Parking 850235113 boxes along its mapped way (#1441)
 
@@ -629,6 +629,23 @@ Roads, polygon edges, the ground outside both outlines, house bases (66/63/14522
 `WALK.z1` are unchanged; the old kerbs and capacity lines are gone. Both pockets lie south of `WALK.z1=250`: surface and
 ray evidence only, not reachable on foot. Cost: `site-terrain` +116 (89824→89940 on ef5c6ef1), `south-land` +193
 (whole backdrop 49346→49539); no new mesh, material or texture. This is site parking: house A/B/C/L geometry is unaffected.
+
+## Graded lot edges in groundY (#1543)
+
+Inside every graded lot (`grade`, clipped or not) `groundY` follows the drawn triangles, but outside it used the smooth
+sampler, which lies up to0.31m off the coarse 4m terrain cells there: a step on the outline in one frame (0.29m on
+145221619, 0.07–0.27m on the other five graded lots; on 145221619 the walking slope `slopeAt` reached0.82 at17 samples
+within3m of the outline). Neither `grade.clip` nor a sampler that follows the drawn cells across whole edge cells fixes
+it without side effects: clipping 145221619 left the step (0.236m: the drawn old cells themselves are the offset),
+added360 terrain triangles and steepened the lot (0.3109→0.3392); a whole-cell sampler would move the sourced control
+(-20,262), which lies in an edge cell 2.36m outside the lot where the drawn ground is1.649, to that value instead of1.58.
+So `groundY` (`src/surroundings.js`, `parkingSeamWeight`) now eases from the drawn surface on the outline back to the
+smooth sampler over `PARKING_SEAM.fade` = 2m (*guess*, `src/config.js`; smoothstep on `grade.edgeDistance`) outside every
+graded lot. The step on all six outlines is now ≤0.007m and the Player's largest frame step on the 145221619 entrance
+route0.007m (was0.243m); within3m of each outline the steepest walking slope fell (145221619 0.820→0.51 with no
+sample over `WALK.maxSlope`, the others 0.22–0.65→0.18–0.39). Drawn terrain, planes, controls, house bases, triangles
+(`site-terrain`89940, south backdrop49539) and draw calls are unchanged; only the eye height within2m outside a lot moves.
+Roads there use `max(groundY, renderedTerrainY)`; a fixed-camera view of the entrance differs by 2 pixels.
 
 ## Southern road embankment (#1382)
 
