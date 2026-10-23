@@ -130,8 +130,9 @@ const R = [
   // #1284: the jetpack lifting from the cut under a deck stops at the underside (like a jump), but flies freely beside the bridge
   const jetUp = (x, z, y0) => { player.spawn(x, z, 0); player.pos.y = y0; player.jet = { worn: true, lift: () => 20 }; player.keys = new Set(); let hi = player.pos.y; for (let i = 0; i < 240; i++) { player.update(dt); hi = Math.max(hi, player.pos.y); } player.jet = null; return hi; };
   for (const [name, rec] of [['vägbron', bridgeRecords[0]], ['GC-bron', bridgeRecords[1]]]) {
-    const hi = jetUp(rec.x - 1, rec.z - 6, groundBelowDeckY(rec.x - 1, rec.z - 6));
-    check(hi < B.deckY - rec.slab - PLAYER.headroom + 0.01 && hi > B.deckY - rec.slab - PLAYER.headroom - 0.2 && hi > groundBelowDeckY(rec.x - 1, rec.z - 6) + 0.3, `jetpacken under ${name} stoppas av däckets undersida (högst y=${hi.toFixed(2)}, undersida ${(B.deckY - rec.slab).toFixed(2)}, tjocklek ${rec.slab})`);
+    // #1531: 4 m off the bridge middle, on the bank of the narrowed channel (6 m off now lies on the shore flat, only 2.05 m under the road slab)
+    const hi = jetUp(rec.x - 1, rec.z - 4, groundBelowDeckY(rec.x - 1, rec.z - 4));
+    check(hi < B.deckY - rec.slab - PLAYER.headroom + 0.01 && hi > B.deckY - rec.slab - PLAYER.headroom - 0.2 && hi > groundBelowDeckY(rec.x - 1, rec.z - 4) + 0.3 && groundBelowDeckY(rec.x - 1, rec.z - 4) > waterYAt(rec.x - 1, rec.z - 4), `jetpacken under ${name} stoppas av däckets undersida (högst y=${hi.toFixed(2)}, undersida ${(B.deckY - rec.slab).toFixed(2)}, tjocklek ${rec.slab})`);
   }
   { const r = bridgeRecords[0], x = r.x + r.width / 2 + 3, hi = jetUp(x, r.z - 6, groundY(x, r.z - 6)); check(hi > B.deckY + 2, `jetpacken vid sidan om vägbron flyger fritt uppåt (högst y=${hi.toFixed(2)})`); }
 }

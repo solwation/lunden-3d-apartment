@@ -631,7 +631,12 @@ export const SITE = {
     // Existing water/bed/shore levels stay anchored at the road-bridge centre; the bank/valley cross-section is still a guess.
     fall: { perM: 0.0009170995546035121 },
     // #533 widths/bank spans are visual estimates from the aerial/2016 photos, not surveyed dimensions.
-    widths:[6,6,7,8,8,9,9,8,8,8,7,7,6,6,6,7,7,6,6],
+    // #1531: the user's photo from the bridges looking west (docs/foton/hoje-a-fran-stora-bron-norrut.jpg) shows a narrow, overgrown
+    // channel (~4–6 m of open water): vertices 6–10 (x 75 … −67, the stretch through the bridges) narrowed from 9,8,8,8,7 (*guess*).
+    // `valleyWidths` keeps the #533 widths for the shore flat/valley footprint (riverGround), so the walking shore, under-bridge paths
+    // and piers stay put: the bank from bed to shore keeps its slope and the wider shore flat carries the reeds and understory.
+    widths:[6,6,7,8,8,9,7,4,3.5,4,5.5,7,6,6,6,7,7,6,6],
+    valleyWidths:[6,6,7,8,8,9,9,8,8,8,7,7,6,6,6,7,7,6,6],
     banks:[13,14,15,12,11,12,13,11,10,10,12,14,13,7,3,3,13,12,10],
     terrainSubdivisions:3, terrainRefineRadius:28, path:[[204.64,74.37],[190.76,79.13],[131.38,74.61],[127.15,83.64],[124.35,101.96],
     [116.11,114.02],[105.35,119.29],[74.99,119.53],[44.31,119.8],[1.16,125.14],[-15.1,129.89],[-67.45,166.11],
@@ -683,6 +688,7 @@ export const SITE = {
       {"name":"bridge-east-bank","polygon":[[35,106],[74,105],[112,107],[120,121],[83,140],[39,144]],"n":14},
       {"name":"eastern-bend","polygon":[[121,61],[166,58],[202,61],[211,83],[183,95],[139,96],[139,114],[126,116],[115,93]],"n":15},
       {"name":"park-edge","polygon":[[-129,80],[-110,82],[-83,106],[-92,135],[-106,137],[-130,112]],"n":6},
+      {"name":"bridge-west","polygon":[[-64,112],[-8,106],[13,108],[13,140],[-8,144],[-64,146]],"n":18,"scale":[0.85,1.35],"kinds":{"tree":0.6,"birch":0.4}}, // #1531 (guess): the leafy wall west of the bridges, ordinary trees and birches with low crowns
     ],
     glades: [
       {"name":"central-lawn","polygon":[[-93,89],[-76,83],[-46,86],[-46,111],[-65,121],[-86,124]]},
@@ -703,6 +709,18 @@ export const SITE = {
       // #1378: grassLift retains the existing -1 cm rendered grass offset; shared by its mesh and lamp support.
       // `flank`: the fill's sides fall this much per metre sideways (under WALK.maxSlope, so they are walkable); `front`: the steep fill face towards the river under the deck end; `reach`: half-width of the fill (m, from its axis); `dirs`: each ramp's heading away from the deck end - towards the next points of the mapped park paths 51890086 (NW) and 1432565773 (SE; it also keeps the fill off the paddock fence beside that path). All *guess* values: the heights are the DSM estimate.
       "ramp":{"grassLift":-0.01,"slope":0.125,"length":14,"flank":0.6,"front":1,"reach":3.6,"dirs":[[-0.439,-0.898],[0.704,0.71]]}},
+    // #1531: the view west from the bridges after the user's photo (docs/foton/hoje-a-fran-stora-bron-norrut.jpg, true NNW = model west):
+    // a weeping birch on the south (left) bank and a weeping willow on the north (right) bank closest to the bridges, maples under the
+    // willow, reeds standing in the water margins and a dense leafy wall beyond. Positions, sizes and species are *guess* from the photo.
+    // `x`: the stretch [west, east] (plan x) the reeds/extra understory fill (east end just short of the GC deck); `specimens`: [x, z, scale,
+    // kind] (`weep`: the hanging birch/willow crowns in surroundings.js); `reeds`: tall shore-growth tufts from `edge` m inside the water edge
+    // (`edge[0]` by the bridge, `edge[1]` at the far end, so the reed narrows the channel further away) to `edge[2]` m up the bank;
+    // `shrubs`: extra understory on both banks of the stretch, `offset` [min, max] m from the water edge.
+    bridgeView: {x: [-60, 14],
+      specimens: [[7.5, 131.5, 1.25, 'weepingBirch'], [1.5, 134, 1.05, 'weepingBirch'], [9, 116.6, 1.3, 'willow'], [3.5, 118.6, 0.95, 'tree'], [-3, 117.6, 1.05, 'tree']],
+      reeds: {count: 240, height: [0.9, 1.9], radius: [0.12, 0.34], leaves: 8, edge: [0.6, 1.5, 0.8]},
+      shrubs: {count: 80, offset: [0.6, 5]},
+    },
     shoreRadius: [0.16,0.46],
     shoreLeaves: 5,
     shrubAspect: [1,0.65,0.8],

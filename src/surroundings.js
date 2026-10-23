@@ -1474,6 +1474,19 @@ function trees(rand) {
         lobes.push({ pos: at, rot: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, rand() * 6, 0)), scale: fitCrown(at, new THREE.Vector3(3.0, 2.6, 3.0).multiplyScalar(t.s * (0.8 + rand() * 0.3))), ...r });
       }
       aoTrees.push({ x: t.x, z: t.z, r: 4.6 * t.s, y: t.y + h + 2.2 * t.s }); // lobes 1.9·s out, ~2.7·s each
+    } else if (t.kind === 'weepingBirch' || t.kind === 'willow') { // #1531 (riverPark.bridgeView): the photo's hängbjörk / hängpil by the bridges
+      // The same trunk/crown batches: a tall crown plus a ring of narrow lobes hanging down round it (the weeping curtain).
+      const willow = t.kind === 'willow', h = (willow ? 3.0 : 5.2) * t.s, crownY = t.y + h + (willow ? 2.2 : 1.6) * t.s;
+      (willow ? trunkM : birchM).push(m.clone().compose(new THREE.Vector3(t.x, t.y, t.z), q.identity(), new THREE.Vector3((willow ? 1.6 : 0.7) * t.s, h, (willow ? 1.6 : 0.7) * t.s)));
+      const tone = willow ? { r1: 0.9 + r.r1 * 0.1, r2: 0.6 + r.r2 * 0.4 } : { r1: 0.75 + r.r1 * 0.25 }; // willows stay green longest, birches go yellow
+      const top = new THREE.Vector3(t.x, crownY, t.z);
+      lobes.push({ pos: top, rot: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, rand() * 6, 0)), scale: fitCrown(top, new THREE.Vector3(willow ? 3.4 : 2.0, willow ? 2.4 : 3.2, willow ? 3.4 : 2.0).multiplyScalar(t.s)), ...r, ...tone });
+      const n = willow ? 7 : 5, reach = (willow ? 3.6 : 2.0) * t.s;
+      for (let k = 0; k < n; k++) {
+        const a = (k / n) * 6.28 + rand() * 0.5, at = new THREE.Vector3(t.x + Math.cos(a) * reach, crownY - (willow ? 2.4 : 2.6) * t.s, t.z + Math.sin(a) * reach);
+        lobes.push({ pos: at, rot: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, rand() * 6, 0)), scale: fitCrown(at, new THREE.Vector3(willow ? 1.5 : 1.0, willow ? 2.6 : 2.4, willow ? 1.5 : 1.0).multiplyScalar(t.s)), ...r, ...tone });
+      }
+      aoTrees.push({ x: t.x, z: t.z, r: reach + (willow ? 1.5 : 1.0) * t.s, y: crownY });
     } else if (t.kind === 'birch') { // a tall white trunk, a narrow crown high up
       const h = 4.4 * t.s;
       birchM.push(m.clone().compose(new THREE.Vector3(t.x, t.y, t.z), q.identity(), new THREE.Vector3(0.55 * t.s, h, 0.55 * t.s)));

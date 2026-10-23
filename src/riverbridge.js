@@ -27,7 +27,7 @@ export function riverAt(x,z){
  let best={distance:Infinity};
  if(bi>0){const i=bi,[a,b]=P[i-1],[c,d]=P[i],dx=c-a,dz=d-b,len=Math.hypot(dx,dz),t=Math.max(0,Math.min(1,((x-a)*dx+(z-b)*dz)/(len*len)));
   const interp=(values,fallback)=>values?values[i-1]+(values[i]-values[i-1])*t:fallback;
-  best={distance:bd,x:a+t*dx,z:b+t*dz,nx:-dz/len,nz:dx/len,width:interp(R.widths,R.width),bank:interp(R.banks,R.bank)*(R.bankScale??1),segment:i,t,along:along[i-1]+len*t};}
+  best={distance:bd,x:a+t*dx,z:b+t*dz,nx:-dz/len,nz:dx/len,width:interp(R.widths,R.width),valley:interp(R.valleyWidths??R.widths,R.width),bank:interp(R.banks,R.bank)*(R.bankScale??1),segment:i,t,along:along[i-1]+len*t};}
  lastX=x;lastZ=z;lastR=best;return best;}
 export function riverDistance(x,z){return riverAt(x,z).distance;}
 // #1350: a relative interpretation of ground data; preserve the road crossing's existing vertical datum.
@@ -49,7 +49,9 @@ export function riverGround(x,z,base){
  const sm=t=>t*t*(3-2*t);
  if(d<=w2)return bedY;
  if(d<w2+bankSlope){const u=sm((d-w2)/bankSlope);return bedY+(shoreY-bedY)*u;}
- const shoreEnd=w2+bankSlope+shoreSpan;
+ // #1531: the shore flat and valley keep the #533 footprint (valleyWidths) where the open channel was narrowed after the photo,
+ // so the walking shore, the paths and piers under the bridges stay where they were; only the margin between channel and shore widens.
+ const shoreEnd=Math.max(w2,r.valley/2)+bankSlope+shoreSpan;
  if(d<shoreEnd)return shoreY;
  if(d<shoreEnd+valleySpan){const u=sm((d-shoreEnd)/valleySpan);return shoreY+(base+dy-shoreY)*u;}
  // Fade the floodplain's relative grade back into the existing terrain inside its protected river corridor.

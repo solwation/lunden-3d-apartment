@@ -130,13 +130,24 @@ export function parkTreeSpots(ground) {
   for(const patch of P.patches) {
     const xs=patch.polygon.map(p=>p[0]),zs=patch.polygon.map(p=>p[1]),x0=Math.min(...xs),z0=Math.min(...zs);
     const dx=Math.max(...xs)-x0,dz=Math.max(...zs)-z0; let count=0;const n=Math.round(patch.n*(P.treeDensity??1));
+    const scale=patch.scale??P.treeScale,kinds=Object.entries(patch.kinds??{big:1});
     for(let k=0;k<n*80&&count<n;k++) {
       const x=x0+rand()*dx,z=z0+rand()*dz;
       if(!inside(x,z,patch.polygon)||!clear(x,z)||spots.some(t=>Math.hypot(t.x-x,t.z-z)<P.treeSpacing))continue;
-      const s=P.treeScale[0]+rand()*(P.treeScale[1]-P.treeScale[0]);
-      spots.push({x,z,y:ground(x,z),s,kind:'big',patch:patch.name});count++;
+      const s=scale[0]+rand()*(scale[1]-scale[0]);
+      let pick=patch.kinds?rand():0,kind=kinds[0][0];for(const [name,share] of kinds){kind=name;if((pick-=share)<0)break;}
+      spots.push({x,z,y:ground(x,z),s,kind,patch:patch.name});count++;
     }
-  } return spots;
+  }
+  // #1531: the photo's specimen trees closest to the bridges (weeping birch, willow, maples); they take the same clearances.
+  for(const [x,z,s,kind] of P.bridgeView?.specimens??[])if(clear(x,z))spots.push({x,z,y:ground(x,z),s,kind,patch:'bridge-west',specimen:true});
+  return spots;
+}
+/** #1531: points along the river stretch seen west from the bridges (SITE.riverPark.bridgeView.x), as the shore loops sample the river path. */
+function bridgeStretch(rand) {
+  const [x0,x1]=P.bridgeView.x,x=x0+rand()*(x1-x0),p=SITE.river.path;
+  for(let i=1;i<p.length;i++){const[a,b]=p[i-1],[c,d]=p[i];if((a-x)*(c-x)<=0&&a!==c){const t=(x-a)/(c-a);return {cx:x,cz:b+(d-b)*t,u:(x1-x)/(x1-x0)};}}
+  return null;
 }
 export function parkShrubSpots(ground) {
   const rand=random(1533),spots=[];
@@ -147,9 +158,24 @@ export function parkShrubSpots(ground) {
     if(!clear(x,z)||!P.patches.some(p=>inside(x,z,p.polygon)))continue;
     const y=ground(x,z);if(y<=waterYAt(x,z))continue;
     spots.push({x,z,y,s:P.shrubScale[0]+rand()*(P.shrubScale[1]-P.shrubScale[0])});
-  }return spots;
+  }
+  // #1531: the photo's banks are overgrown down to the water: extra understory on both banks of the stretch west of the bridges.
+  const V=P.bridgeView?.shrubs,rand2=random(15310);let extra=0;
+  for(let k=0;V&&k<V.count*40&&extra<V.count;k++) {
+    const at=bridgeStretch(rand2);if(!at)continue;const r=riverAt(at.cx,at.cz),side=rand2()<.5?-1:1,off=r.width/2+V.offset[0]+rand2()*(V.offset[1]-V.offset[0]);
+    const x=at.cx+r.nx*off*side,z=at.cz+r.nz*off*side,s=P.shrubScale[0]+rand2()*(P.shrubScale[1]-P.shrubScale[0]);
+    if(!clear2(x,z,s))continue;const y=ground(x,z);if(y<=waterYAt(x,z))continue;
+    spots.push({x,z,y,s});extra++;
+  }
+  return spots;
+}
+/** Like `clear`, but a shrub may stand closer to the water than a tree (its crown sits low over the bank). */
+function clear2(x,z,s) {
+  return z>64&&!onParkPath(x,z,P.pathClearance+s*.4)&&!onRoad(x,z,P.bridgeClearance)&&deckAt(x,z)===null&&!underpassAt(x,z)&&parkDeckAt(x,z)===null&&!inParkGlade(x,z);
 }
 export const parkShoreFeet=[];
+/** #1531: the reed tufts' feet (river bed or bank under the water margin) and heights: [{ x, z, y, h }]. */
+export const parkReedFeet=[];
 /** Four merged background batches: asphalt paths, gravel paths, timber footbridge, low bank tussocks. */
 export function buildRiverPark(ground, terrain=ground) {
   const group=new THREE.Group();group.name='river-park';
@@ -179,6 +205,17 @@ export function buildRiverPark(ground, terrain=ground) {
     const h=P.shoreHeight[0]+rand()*(P.shoreHeight[1]-P.shoreHeight[0]);parkShoreFeet.push({x,z,y,h});
     for(let j=0;j<P.shoreLeaves;j++){const a=j*Math.PI*2/P.shoreLeaves+rand(),d=P.shoreRadius[0]+rand()*(P.shoreRadius[1]-P.shoreRadius[0]);
       pos.push(x+Math.cos(a)*d,y,z+Math.sin(a)*d,x,y+h,z,x+Math.cos(a+.9)*d,y,z+Math.sin(a+.9)*d);}
+  }
+  // #1531: reeds standing in the water margins of the stretch west of the bridges (the photo's vass): taller, thinner tufts in the same
+  // batch and seasonal colour. Feet on the bed or bank (`parkReedFeet`); the far end reaches further into the channel.
+  const V=P.bridgeView?.reeds,rr=random(25310);parkReedFeet.length=0;
+  for(let k=0;V&&k<V.count*30&&parkReedFeet.length<V.count;k++) {
+    const at=bridgeStretch(rr);if(!at)continue;const r=riverAt(at.cx,at.cz),inner=V.edge[0]+(V.edge[1]-V.edge[0])*at.u;
+    const off=Math.max(.3,r.width/2-inner+rr()*(inner+V.edge[2])),side=rr()<.5?-1:1,x=at.cx+r.nx*off*side,z=at.cz+r.nz*off*side;
+    if(deckAt(x,z)!==null||underpassAt(x,z)||onParkPath(x,z,.5)||onRoad(x,z,1))continue;
+    const y=ground(x,z),h=V.height[0]+rr()*(V.height[1]-V.height[0]);if(y+h<waterYAt(x,z)+.4)continue;parkReedFeet.push({x,z,y,h});
+    for(let j=0;j<V.leaves;j++){const a=j*Math.PI*2/V.leaves+rr(),d=V.radius[0]+rr()*(V.radius[1]-V.radius[0]),lean=.15+rr()*.25;
+      pos.push(x+Math.cos(a)*d,y,z+Math.sin(a)*d,x+Math.cos(a+.4)*lean,y+h*(.75+rr()*.25),z+Math.sin(a+.4)*lean,x+Math.cos(a+.5)*d,y,z+Math.sin(a+.5)*d);}
   }
   const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));geo.computeVertexNormals();
   const shoreMat=new THREE.MeshStandardMaterial({color:0x6e8342,roughness:1,side:THREE.DoubleSide});
