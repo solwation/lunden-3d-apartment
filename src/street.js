@@ -6,6 +6,7 @@ import { roadLampSpots } from './roadlamps.js';
 import { registerSeasonal } from './seasons.js';
 import { samples, onRoad, along, filletOutline } from './roads.js';
 import { glowMaterial, poolGeometry, fadeGlow, fadeGlowWithFog } from './groundglow.js';
+import { schoolWallPlan } from './schoolwall.js';
 
 // Sankt Lars väg's details (#128, SITE.street; the user's photos in docs/foton/): granite curbs, darker patches
 // in the asphalt, slender street lamps with a curved arm (their heads glow at night, and a soft pool of light lies on
@@ -103,11 +104,39 @@ export function bicycleCurbY(x,z,groundY) {
   return y;
 }
 
+/** #1534: the concrete slabs in front of the bus shelter in the school wall's east end (src/schoolwall.js), from the wall
+ * (in the shelter: its back wall) to the road's curb, following the bend; the timetable pillar and the two stones. */
+function shelterPaving(groundY) {
+  const P = S.shelterPaving, plan = schoolWallPlan();
+  if (!P || !plan) return [];
+  const sh = plan.shelter, front = SITE.school.wall.z + plan.t / 2;
+  const top = (x) => (sh && x > sh.x1 ? sh.backZ - P.behind : sh && x >= sh.x0 ? sh.backZ : front); // past the open end: on into the campus road's mouth
+  const xs = [];
+  for (let x = P.x0; x < P.x1; x += P.step) xs.push(x);
+  xs.push(P.x1);
+  if (sh) xs.push(sh.x0 - 1e-3, sh.x0, sh.x1, sh.x1 + 1e-3);
+  xs.sort((a, b) => a - b);
+  const col = xs.map((x) => { let z = top(x); while (z < 0 && !onRoad(x, z + 0.05, P.curb)) z += 0.05; return [x, top(x), z]; });
+  const pos = [], v = (x, z) => [x, groundY(x, z) + P.lift, z];
+  for (let i = 1; i < col.length; i++) {
+    const [xa, ta, ba] = col[i - 1], [xb, tb, bb] = col[i];
+    if (xb - xa < 1e-6) continue;
+    pos.push(...v(xa, ta), ...v(xa, ba), ...v(xb, bb), ...v(xa, ta), ...v(xb, bb), ...v(xb, tb)); // counter-clockwise seen from above
+  }
+  const slabs = new THREE.BufferGeometry();
+  slabs.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  slabs.computeVertexNormals();
+  const T = S.timetable, [tx, tz] = T.at;
+  const out = [slabs, new THREE.BoxGeometry(T.w, T.h, T.d).translate(tx, groundY(tx, tz) + T.h / 2, tz)];
+  for (const [x, z, r] of S.stones) out.push(new THREE.IcosahedronGeometry(r, 0).scale(1.25, 0.7, 1).translate(x, groundY(x, z) + r * 0.45, z));
+  return out;
+}
+
 export function buildStreet(groundY, pathGround = groundY, trees = []) {
   const group = new THREE.Group();
   const grey = new THREE.MeshStandardMaterial({ color: 0xa9a7a2, roughness: 0.85 });
   const curbs = curbGeometries(groundY);
-  group.add(merged(curbs, grey, false));
+  group.add(merged([...curbs, ...shelterPaving(groundY)], grey, false)); // #1534: the shelter's slabs, pillar and stones share the curbs' grey
   // patched asphalt: darker, smoother rectangles a hair above the road
   group.add(merged(S.patches.map(([x, z, w, d]) => flatRect(x - w / 2, x + w / 2, z - d / 2, z + d / 2, 0.016)),
     new THREE.MeshStandardMaterial({ color: 0x45484b, roughness: 0.5 }), false));

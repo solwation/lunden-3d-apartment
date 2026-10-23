@@ -24,6 +24,7 @@ import { onRoad, onWalk, pathStrip, filletGeometry, vehicleTrim } from './roads.
 import { createParkingGrade, gradedCellTriangles, fitDrawnPlane } from './parkinglot1442.js';
 import { wallLine, wallRect } from './roofs.js';
 import { buildingRoofWalk } from './buildingroofs.js';
+import { schoolWallPlan } from './schoolwall.js';
 import {buildRiverBridges,deckAt,riverGround,riverDistance,roadBridgeSpan,bridgeRecords} from './riverbridge.js';
 
 // The rest of Kv. Lunden and its neighbourhood (SITE in config): the brick point blocks Hus A, B, C
@@ -610,13 +611,31 @@ function quoins(b, h) {
   return geos;
 }
 
-/** The brick wall along the far pavement, its black metal coping, the school's chimneys and greenhouse (#126). */
+/** The brick wall along the far pavement, its black metal coping, the school's chimneys and greenhouse (#126), and the bus
+ * shelter in the wall's east end (#1534, src/schoolwall.js): brick gable and back wall in the wall's batch, the flat roof
+ * and the beam under it in the coping's, post, bench and bin in the greenhouse frame's (no new draw call or texture). */
 function schoolGrounds() {
-  const W = S.school.wall, G = S.school.greenhouse;
-  const wall = new THREE.BoxGeometry(W.x1 - W.x0, W.h, W.t).translate((W.x0 + W.x1) / 2, W.h / 2, W.z);
-  const p = wall.attributes.position, n = wall.attributes.normal, uv = wall.attributes.uv;
-  for (let i = 0; i < p.count; i++) uv.setXY(i, (Math.abs(n.getX(i)) > 0.5 ? p.getZ(i) : p.getX(i)) / 2, p.getY(i) / 2); // 2 × 2 m per tile
-  const coping = new THREE.BoxGeometry(W.x1 - W.x0 + 0.06, 0.06, W.t + 0.08).translate((W.x0 + W.x1) / 2, W.h + 0.03, W.z);
+  const G = S.school.greenhouse, plan = schoolWallPlan();
+  const walls = plan.rects.map((r) => {
+    const g = new THREE.BoxGeometry(r.x1 - r.x0, plan.h, r.z1 - r.z0).translate((r.x0 + r.x1) / 2, plan.h / 2, (r.z0 + r.z1) / 2);
+    const p = g.attributes.position, n = g.attributes.normal, uv = g.attributes.uv;
+    for (let i = 0; i < p.count; i++) uv.setXY(i, (Math.abs(n.getX(i)) > 0.5 ? p.getZ(i) : p.getX(i)) / 2, p.getY(i) / 2); // 2 × 2 m per tile
+    return g;
+  });
+  const wall = mergeGeometries(walls.map((g) => g.toNonIndexed()));
+  const copings = plan.rects.map((r) => new THREE.BoxGeometry(r.x1 - r.x0 + 0.06, 0.06, r.z1 - r.z0 + 0.08).translate((r.x0 + r.x1) / 2, plan.h + 0.03, (r.z0 + r.z1) / 2));
+  const fittings = [], sh = plan.shelter;
+  if (sh) {
+    const R = sh.roof, P = sh.post, B = sh.bench, I = sh.bin, box = (x0, x1, y0, y1, z0, z1) => new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0).translate((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
+    copings.push(box(R.x0, R.x1, R.y0, R.y1, R.z0, R.z1),                                  // the flat roof
+      box(sh.x0 - plan.t, sh.x1, plan.h + 0.06, R.y0, R.z0, R.z0 + plan.t + 0.05),          // the timber beam carrying it on the back wall
+      box(R.x0, R.x1, R.y0 - 0.12, R.y0, R.z1 - 0.12, R.z1));                                // the front fascia
+    fittings.push(box(P.x - P.s / 2, P.x + P.s / 2, 0, R.y0, P.z - P.s / 2, P.z + P.s / 2), // the post
+      box(B.x0, B.x1, B.h - B.t, B.h, B.z0, B.z1),                                           // the bench's seat
+      ...[B.x0 + 0.3, (B.x0 + B.x1) / 2, B.x1 - 0.3].map((x) => box(x - 0.04, x + 0.04, 0, B.h - B.t, B.z0 + 0.05, B.z1 - 0.05)), // its legs
+      box(I.x - I.w / 2, I.x + I.w / 2, I.y0, I.y1, I.z - I.d / 2, I.z + I.d / 2));         // the bin on the back wall
+  }
+  const coping = mergeGeometries(copings.map((g) => g.toNonIndexed()));
   const campus=S.east?.buildings.find(b=>b.source==='88457612'),main=S.blocks.find(b=>b.style==='school')??{base:0,x0:Math.min(...campus.polygon.map(p=>p[0])),x1:Math.max(...campus.polygon.map(p=>p[0])),z0:Math.min(...campus.polygon.map(p=>p[1])),z1:Math.max(...campus.polygon.map(p=>p[1]))};
   const chimneys=[],top=main.base+S.school.storey;
   const rise = S.school.roofPitch * Math.min(main.x1 - main.x0, main.z1 - main.z0) / 2 + 0.3;
@@ -630,6 +649,7 @@ function schoolGrounds() {
   for (const sgn of [-1, 1]) panes.push(new THREE.PlaneGeometry(G.x1 - G.x0, roofLen).rotateX(-Math.PI / 2 + sgn * tilt).translate(cx, G.h + G.ridge / 2, cz + sgn * d / 4));
   panes.push(new THREE.PlaneGeometry(G.x1 - G.x0, G.h).translate(cx, G.h / 2, G.z0), new THREE.PlaneGeometry(G.x1 - G.x0, G.h).translate(cx, G.h / 2, G.z1));
   for (const x of [G.x0, G.x1]) panes.push(new THREE.PlaneGeometry(d, G.h).rotateY(Math.PI / 2).translate(x, G.h / 2, cz));
+  frame.push(...fittings);
   return { wall: [wall], coping: [coping, ...chimneys], frame, panes };
 }
 
@@ -1934,10 +1954,18 @@ export function* surroundingsParts({ grass, husL = null }) {
     walk.surfaces.push({ id: 'greenhouse', name: 'Växthusets tak', x0: G.x0, x1: G.x1, z0: G.z0, z1: G.z1, y: (x, z) => G.h + G.ridge * Math.max(0, 1 - Math.abs(z - gcz) / halfGz) });
     wallRect(walk.walls, G.x0, G.x1, G.z0, G.z1, -10, G.h);
   }
-  const W = S.school?.wall;
-  if (W) {
-    walk.surfaces.push({ id: 'school-wall', name: 'Skolmuren', x0: W.x0, x1: W.x1, z0: W.z - W.t / 2, z1: W.z + W.t / 2, y: W.h + 0.06 });
-    wallRect(walk.walls, W.x0, W.x1, W.z - W.t / 2, W.z + W.t / 2, -10, W.h + 0.06);
+  const SWP = schoolWallPlan();
+  if (SWP) { // the wall's top (and the shelter's gable / back wall) and the shelter's flat roof (#1534) can be walked aloft
+    for (const r of SWP.rects) {
+      walk.surfaces.push({ id: 'school-wall', name: 'Skolmuren', x0: r.x0, x1: r.x1, z0: r.z0, z1: r.z1, y: SWP.h + 0.06 });
+      wallRect(walk.walls, r.x0, r.x1, r.z0, r.z1, -10, SWP.h + 0.06);
+    }
+    const R = SWP.shelter?.roof, P = SWP.shelter?.post;
+    if (R) {
+      walk.surfaces.push({ id: 'school-shelter', name: 'Busskurens tak', x0: R.x0, x1: R.x1, z0: R.z0, z1: R.z1, y: R.y1 });
+      wallRect(walk.walls, R.x0, R.x1, R.z0, R.z1, R.y0 - 0.12, R.y1);
+      wallRect(walk.walls, P.x - P.s / 2, P.x + P.s / 2, P.z - P.s / 2, P.z + P.s / 2, -10, R.y0);
+    }
   }
   const roofWalk = buildingRoofWalk([...backdrops, backdrops.south].flatMap((g) => g?.userData.buildings ?? [])); // every mapped building's roof and walls (#1294)
   walk.surfaces.push(...roofWalk.surfaces); walk.walls.push(...roofWalk.walls);

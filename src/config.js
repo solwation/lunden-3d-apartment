@@ -420,7 +420,7 @@ export const SITE = {
   // the school straight across Sankt Lars väg (#126, docs/foton/rakt-over-gatan-tegelmur-skolbyggnad.jpg): two high
   // storeys of brick with white quoins, trim and plinth, arched windows below, square ones above, a dark metal
   // roof with chimneys. One façade texture tile = a bay × the whole height (`storey`); `rows` = window-light
-  // centres and sizes. A greenhouse in its yard and a 2.3 m brick wall with a black coping along the pavement.
+  // centres and sizes. A greenhouse in its yard and a brick wall with a black coping along the pavement (2.0 m since #1534).
   school: { bay: 3.0, storey: 8.6, roofPitch: 0.32, rows: [{ y: 2.05, s: [0.95, 1.6, 1] }, { y: 5.95, s: [0.95, 1.35, 1] }],
     // #564 photo interpretation, not measured: see docs/validation/issue-564/README.md.
     mapped: { roofRise: 1.05, roofSlope: .24, roofGrid: 1.2, seam: .6,
@@ -435,7 +435,20 @@ export const SITE = {
       chimneys: [[-34,-62],[-12,-62],[11,-62]], chimney: [.65,1.45,.65], cap: [.82,.12,.82],
       brick: { mortar: '#96877b', base: [125,64,46], variation: 26 },
       metal: ['#53585b','#333a3e','#697074'] },
-    wall: { x0: -26, x1: 30, z: -32.15, h: 2.3, t: 0.3 }, greenhouse: { x0: 13, x1: 21, z0: -36.8, z1: -33.6, h: 2.2, ridge: 1.0 },
+    // #1534 (the user's photo docs/foton/mur-overgangsstalle-busskur-mittemot.jpg, taken from Lunden's verge west of the
+    // crossing looking NNE): the wall is ~2 m high and ends at the campus road into Realgymnasiet's yard (the photo's right,
+    // with the barrier, the long building and Klockhuset beyond: the EAST end) in a bus shelter. The wall turns back in a
+    // short angle (the shelter's west gable) to a recessed brick back wall; a flat dark roof juts out over the pavement on a
+    // single post at the open east corner; a long bench against the back wall, a bin on it. Every number is a *guess*
+    // read off the photo (heights from the bench seat), positioned so that the crossing (#128) lands just west of it.
+    wall: { x0: -26, x1: 13.6, z: -32.15, h: 2.0, t: 0.3,
+      shelter: { len: 6.0, depth: 1.3, // along the street from the wall's end (x1); the back wall's line `depth` m behind the wall's
+        roof: { y: 2.45, t: 0.16, front: 0.9, east: 0.5, west: 0.1 }, // underside y; out past the wall line / the open end / the gable
+        post: { s: 0.1, inset: 0.35 },                                  // one slender square post, inset from the roof's SE corner
+        bench: { len: 4.2, depth: 0.42, h: 0.45, t: 0.06, gap: 0.05 }, // timber bench along the back wall (gap = off the bricks)
+        bin: { w: 0.42, h: 0.55, d: 0.28, y: 0.5, from: 0.6 } } },      // a bin hung on the back wall `from` m inside the open end
+    // #1534: the greenhouse stands west of the shelter and the big maple (x 9) in the photo; it was x 13…21 (*guess*, #126)
+    greenhouse: { x0: 0, x1: 8, z0: -36.8, z1: -33.6, h: 2.2, ridge: 1.0 },
     chimneys: [-14, -3, 8, 17] },
   // HepCat Store and the long brick building behind it, east of our row across Sankt Lars väg (#127, the user's photos
   // docs/foton/hepcat-store-sidan-byggnadsstallning.jpg, sidogatan-tegelhus-plattak-byggplats.jpg): a storey and a
@@ -496,13 +509,18 @@ export const SITE = {
     // #434: the pool of light on the ground under each head (an additive decal, street.js): `along` / `across` the road
     // m (radii, guess), warm `color` at `peak` opacity; lit above `on` night (1 − daylight), out below `off`, `fade` s
     pool: { along: 8, across: 6.5, color: 0xffc887, peak: 0.55, on: 0.35, off: 0.3, fade: 1.5 } },
-    crossing: { x0: 9.5, x1: 12.5, z0: -30, z1: -24 },
+    crossing: { x0: 9.5, x1: 12.5, z0: -30, z1: -24 }, // #1534: checked against the photo: it lands on the far pavement just west of the shelter
+    // #1534: grey concrete slabs in front of the shelter, from the wall / the shelter's back wall to the road's curb, x0…x1
+    // (on to the campus road's mouth); a grey timetable pillar at its edge, two big stones by the campus road (all *guess*)
+    shelterPaving: { x0: 8.5, x1: 22.5, lift: 0.02, step: 0.5, curb: 0.1, behind: 2.5 }, // `behind`: m further north past the shelter's open end
+    timetable: { at: [21.3, -31.5], w: 0.38, d: 0.24, h: 1.85 },
+    stones: [[22.4, -33.3, 0.55], [25.6, -33.8, 0.5]], // [x, z, radius]
     trafficLight: { x: 8.6, z: -23.5 }, warnings: [[13.2, -23.0], [10.6, -23.2]],
     cobbles: { x0: 17.2, x1: 19.5, z0: -17.5, z1: -12.5 }, // inside the corner, by the end of our car park
     leaves: { n: 1400, months: [9, 10, 11], areas: [[-60, 12, -24, -18], [-30, 10, -32.1, -30.05], [19, 21, -12, 12]] },
-    // signs (#129, the user's photos): the bus stop on the far pavement, the red "Flyttad" sign on ours by the curb,
+    // signs (#129, the user's photos): the bus stop on the far pavement (#1534: by the shelter's open end, 1.7 m off the curb), the red "Flyttad" sign on ours by the curb,
     // a no-parking sign at the car park, HepCat's A-board on its pavement. [x, z, facing yaw°]
-    busStop: [2.5, -31.3, 0], moved: [6.5, -23.75, 0], noParking: [-13.6, -16.9, 0], aBoard: [28.4, -12.2, -60], // by HepCat's north corner (#261, photo)
+    busStop: [20.6, -28.7, 0], moved: [6.5, -23.75, 0], noParking: [-13.6, -16.9, 0], aBoard: [28.4, -12.2, -60], // by HepCat's north corner (#261, photo)
   },
   // Street name signs (#583, src/streetsigns.js; sources and selection: docs/validation/issue-583/README.md). One post at every
   // junction of two differently named streets in the model plus the two clear bends by the block (Sankt Lars väg round the

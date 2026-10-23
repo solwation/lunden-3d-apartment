@@ -95,10 +95,14 @@ const R = [
   ['vägbrons räcke stoppar: ut över sidan', [23.5, 125], [[30, 125]], () => player.pos.x < 27.5 + 0.3 && player.pos.y > -3.05],
   ['HepCat Store: byggnaden stoppar', [24, 0], [[34, 0]], () => player.pos.x < 28],
   ['Villan i parken: väggen stoppar', [-70, 75], [[-55, 75]], () => player.pos.x < -63],
-  // #1542: round the school wall's east end (it stands x -26…30 along the far pavement, solid from the ground)
-  ['skolområdet: längs Sankt Lars väg norrut till Klockhuset', [20, -10], [[31, -28], [31, -38], [21, -39], [20, -80], [24, -108], [45, -109]], () => player.pos.z < -108 && player.pos.x > 40],
+  // #1542: round the school wall's east end (it stands x -26…13.6 along the far pavement, solid from the ground); #1534: the
+  // wall ends in the bus shelter (gable x 13.3…13.6, back wall z -33.6…-33.3 to x 19.6, its post at (19.75, -31.45)):
+  // the route passes just east of the shelter's open end, into the campus road
+  ['skolområdet: längs Sankt Lars väg norrut till Klockhuset', [20, -10], [[22.5, -29], [21.5, -38], [21, -39], [20, -80], [24, -108], [45, -109]], () => player.pos.z < -108 && player.pos.x > 40],
   ['skolmuren: muren stoppar från gatan', [0, -28], [[0, -38]], () => player.pos.z > -32.0 && player.pos.z < -31],
-  ['skolmuren: muren stoppar vid östra änden', [28, -28], [[28, -38]], () => player.pos.z > -32.0 && player.pos.z < -31],
+  ['skolmuren: muren stoppar vid östra änden (vid busskuren)', [12.5, -28], [[12.5, -38]], () => player.pos.z > -32.0 && player.pos.z < -31],
+  ['busskuren: in under taket, bakväggen stoppar', [16.5, -29], [[16.5, -38]], () => player.pos.z < -32.3 && player.pos.z > -33.3],
+  ['busskuren: gaveln stoppar västerut inne i kuren', [16.5, -32.6], [[10, -32.6]], () => player.pos.x > 13.6 && player.pos.x < 14.3],
   ['Klockhuset: fasaden med klocktornet stoppar', [45, -109], [[45, -125]], () => player.pos.z > -113.5],
   ['skolområdet: öster om Klockhuset mellan byggnaderna', [45, -109], [[70, -108], [100, -108], [130, -105], [130, -60]], () => player.pos.z > -62 && player.pos.x > 125],
   ['skolbyggnaden öster om Klockhuset stoppar', [100, -108], [[100, -125]], () => player.pos.z > -112.6 && player.pos.z < -111.5],
