@@ -897,6 +897,16 @@ function buildStructure(scene, lower, l1, W, D, M, opening) {
   // Stairs + upstairs railing around the opening above flight A
   // treads: the very same Ek Chalk parquet material as the floors (our Peab choice, #54); white risers
   scene.add(buildStairs([M.floor, M.riser]));
+  // #1526: the north wall's recess (STAIR.niche) ran up to Entréplan's ceiling, a dark slot beside flight B's top treads.
+  // Close it from each tread's underside up to the wall's top; below the treads (the cupboard) it stays.
+  const N = STAIR.niche, bMid = (STAIR.bZ[0] + STAIR.bZ[1]) / 2;
+  if (lower.walls.some((w) => w.outer.some(([x, z]) => Math.abs(x - N.x0) < 0.01 && Math.abs(z - N.z0) < 0.01))) {
+    for (let x0 = N.x0, x = N.x0; x < N.x1; x0 = x) {
+      const y0 = stairUnderside(x + 0.005, bMid);
+      while (x < N.x1 && stairUnderside(x + 0.005, bMid) === y0) x = Math.min(N.x1, x + 0.01);
+      if (y0 !== null && y0 < slabY0) scene.add(box(x0, x, N.z0, N.z1, y0, slabY0, M.wall));
+    }
+  }
   const y1 = LEVELS[1].floor, rail = STAIR.railHeight;
   const midZ = (STAIR.aZ[0] + STAIR.bZ[1]) / 2; // the line between flight A (below) and flight B (above)
   const railSegs = [

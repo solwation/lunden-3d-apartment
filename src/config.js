@@ -3762,6 +3762,9 @@ export const STAIR = {
   treadSlab: 0.25,           // thickness of each tread under flight B and the winders (guess; flight A is solid)
   // Upstairs slab opening = stair outline on Övre plan.
   hole: { x0: 3.86, x1: 5.49, z0: 5.77, z1: 7.54 },
+  // Entréplan's north wall steps back 12 cm here (plan.json; Övre plan draws the same spot as a closed shaft inside the
+  // wall). The recess stays in the cupboard under flight B (cleaning.js); above the treads world.js closes it (#1526).
+  niche: { x0: 3.9814, x1: 4.5313, z0: 5.5844, z1: 5.7044 },
   railHeight: 1.1, // bofakta: H 1,1 m
   newel: 0.08,     // newel post at the railing's corner and ends, square (guess, Peab 3D plan shows heavier posts)
   // Handrails along the flights (#419, stairs.js `handrailRuns` / `buildHandrails`; no handrail detail for L1007 exists,
