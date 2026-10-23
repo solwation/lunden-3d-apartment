@@ -48,6 +48,11 @@ uses ordinary triage. Refresh the queue after label corrections before selecting
 | Idle watch | 60 minutes after latest resolved implementation issue in either repository, even with narrower scope |
 | Heartbeat | Swedish issue comment every 30 minutes, first at 25–30; done/current/remaining estimate |
 
+`/orkester` in this project, with or without an argument, starts an explicit queue
+session with the polling, idle watch and heartbeat above; the core's bounded pass
+(no polling or watch) applies only when the user explicitly asks for a single pass.
+Both stay unattended: user-only questions go on the issue (`user-question`), never chat.
+
 Default scope is both repositories. Explicit scope limits implementation, never visibility
 of the other queue. Fetch all open pages in both before each selection, reservation,
 takeover, chain continuation and idle check. Fetch the two repositories concurrently:
@@ -69,7 +74,11 @@ wins. Create the session label if missing and set both labels together at active
 reconcile own claims on resume/status updates. Remove recognized work labels and own
 owner label when paused, awaiting integration, released, closed or reopened. Reclaim
 when actual integration starts; one integration owner publishes. Do not alter another
-active session's labels. Same-file work needs distinct block/module ownership; actual
+active session's labels. Parents follow the guide's sub-issue rules: the worker or
+conductor starting a parent's first active sub-issue adds `in-progress` (not the owner
+label) to the parent; the conductor removes it once no sub-issue is active and the parent
+itself is idle, and closes the parent only after its own acceptance. A parent's label takes
+no capacity slot. Same-file work needs distinct block/module ownership; actual
 coupled dependencies may require serial work, not bypassing priority for convenience.
 
 Existing future reservations expire after 30 minutes without start. Announce taking
@@ -93,7 +102,8 @@ is sufficient. The current owner should offer helpable parts proactively.
 
 Save private state outside checkouts and update the same #420/#4 comments on every
 poll (also failures), worker start and completion. Include stable ID/label, scope,
-issue/repo/priority/creation time, worker/files/worktree, free slots, results and blockers.
+issue/repo/priority/creation time, worker/files/worktree, active workers/capacity and why a
+free slot is unused, results and blockers.
 Keep UTC `lastResolvedAt`, `lastQueueAttemptAt`, `lastQueueCheckAt`, `watchUntil`, and
 last successful fetch per repo. Failed/partial checks update attempt/outcome only;
 `lastQueueCheckAt` requires both complete successful queues. If no issue was resolved,
@@ -178,8 +188,8 @@ valid outcome rather than running the same intake twice.
 
 ## Shared version and maintenance
 
-Shared release: **v0.1.2**, commit **ce0d93613be74c0bf653377629500b404fb8b966**. Imported as a squashed subtree
-at `.orchestra/shared`. See [installation/contribution instructions](shared/README.md).
+Shared release: **v0.2.3**, commit **562f7e409cddff4ed38700c01c0fd8d47f7116c0**. Imported as a squashed subtree
+at `.orchestra/shared`. See [installation](shared/INSTALL.md) and [contribution](shared/CONTRIBUTING.md) instructions.
 Improve the core in its own clean repository, release it, then explicitly update both
 Lunden pins. Keep this local policy outside the subtree; do not export project history.
 
@@ -206,5 +216,5 @@ Record UTC check time, upstream/pin, examined targets and outcome in private sta
 or existing maintenance status. If the read fails or is incomplete, retain the pin, disclose
 the limitation once, retry on next session/resume and continue independent work;
 never cache failure as success. This check installs no background scheduler.
-This applies the core [update-discovery procedure](shared/README.md#check-for-upstream-updates).
+This applies the core [update-discovery procedure](shared/INSTALL.md#check-for-upstream-updates).
 A later import follows the existing explicit update procedure.
