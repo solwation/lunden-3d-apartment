@@ -195,6 +195,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   const seals = [], openingHardware = [], neighborOpenings = [], flashings = []; // flashings: the windows' sill flashings (#1076)
   const patios = [], hedges = site.hedge ? [patioHedgeGeometry(site.hedge)] : [], fences = [], copings = [];
   const segments = []; // collision for the neighbours' screen walls and hedges (lawn side)
+  const fenceRects = []; // #1498: the same solid patio screen walls as exact opaque rectangles (DetailCuller/color occluders)
   const loftD = H.loftgangDepth;
   const upperTop = roofTop + H.upperStoreys * H.storeyHeight;
   const entryHandles = [], entryWood = [], entryFrames = [], entryGlass = [], entryLeaves = [];
@@ -336,6 +337,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
       if (ox + fx(f.a[0]) > -0.25 && ox + fx(f.a[0]) < W + 0.25) continue;
       f = { a: [fx(f.a[0]), f.a[1]], b: [fx(f.b[0]), f.b[1]] };
       fences.push(boxGeo(ox + f.a[0] - 0.025, ox + f.b[0] + 0.025, 0, FENCE_HEIGHT, Math.min(f.a[1], f.b[1]), Math.max(f.a[1], f.b[1])));
+      fenceRects.push({ x0: ox + f.a[0] - 0.025, x1: ox + f.b[0] + 0.025, z0: Math.min(f.a[1], f.b[1]), z1: Math.max(f.a[1], f.b[1]), y0: 0, y1: FENCE_HEIGHT });
       segments.push([ox + f.a[0], f.a[1], ox + f.b[0], f.b[1]]);
     }
   }
@@ -735,6 +737,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   for (const parts of lowMemory ? [hedges] : hedges.map((g) => [g])) add(parts, mats.hedge);
   add(fences, mats.fence);
   group.userData.segments = segments;
+  group.userData.opaqueRects = fenceRects;
   group.add(group.userData.terraceDecor = buildTerraceDecor(group, D)); // #605: the furnished roof terraces (src/terracedecor.js)
   group.add(group.userData.patioDecor = buildPatioDecor({ units, site, xw, xe, D, roofTop })); // #888: furnished ground-floor patios on Hus L's back (src/patiodecor.js)
   return group;

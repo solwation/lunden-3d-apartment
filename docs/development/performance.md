@@ -2,6 +2,30 @@
 
 Raw callback interval diagnostics (#1507): [capture protocol, state classification, statistics and measurement limits](frame-intervals.md).
 
+## Patio screen walls and the phone corner (#1498)
+
+The exact phone repro (844×390 touch + lowmem, initial quality3/max3, July 12:00 clear,
+`spawn(6.5,19,0)`, step, `lookAt(3,.7,17.2)`, step, one render) drew 493calls/961330tri
+against 370/950000. An ID-render diagnosis showed ~290 of them were the flat and patio
+seen past the 1.8m patio screen walls (`site.fences`), which were not opaque
+rectangles. `world.js` now adds our two screen walls and `exterior.js`
+(`userData.opaqueRects`) the Hus L neighbours' identical ground-floor screen walls to
+`openings.opaque`; they are the exact rendered boxes (0–`FENCE_HEIGHT`). The
+DetailCuller (phone and desktop) and the desktop color hooks use them.
+
+Phones now pass the same Detail occluders to `tightfrustum.js` as desktop; it first keeps
+only rectangles that meet the view frustum (a sight line to a drawn point can only be
+blocked inside the view: fewer proofs, never a wrong one). The site-instance packing
+stays desktop-only: in the phone profile it cost ~8–21ms pure hook CPU per render
+(SwiftShader host) to save ~15calls. Measured hook CPU: frustum without occluders
+~3.5ms, with filtered occluders ~4–7ms.
+
+Result: phone corner 366/854832 (ALL PASS, now part of the phone perfcount profile);
+desktop corner 514/967709 → 380/810149; every phone view is equal or lower (start
+368→359, kitchen 357→343, garage 299→267). The reverse patio view (`patio toward house`,
+2.9,16 yaw0 pitch−5) is still over the phone budget (514→456 calls), tracked in #1537.
+Hus A/B/C have no patio screen walls; Hus L's upper roof-terrace screens are not added.
+
 ## Patio corner within the desktop budget (#1459)
 
 The exact normal1280×800 quality3/max3 repro is `spawn(6.5,19,0)`, one production

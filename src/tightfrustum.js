@@ -49,8 +49,9 @@ export function installTightFrustum(renderer, occluders = null) {
       if (!camera.parent && camera.matrixWorldAutoUpdate) camera.updateMatrixWorld();
       const frustum = new THREE.Frustum().setFromProjectionMatrix(
         new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse), camera.coordinateSystem);
-      const eye = camera.getWorldPosition(new THREE.Vector3()), opaque = occluders?.();
-      const box = new THREE.Box3(), part = new THREE.Box3(), matrix = new THREE.Matrix4();
+      const eye = camera.getWorldPosition(new THREE.Vector3()), box = new THREE.Box3(), part = new THREE.Box3(), matrix = new THREE.Matrix4();
+      // #1498: only rectangles meeting the view can block a sight line to a visible point; fewer proofs, never a wrong one.
+      const opaque = occluders?.().filter(r => frustum.intersectsBox(box.set(part.min.set(r.x0, r.y0, r.z0), part.max.set(r.x1, r.y1, r.z1))));
       const state = []; active = state;
       scene.traverseVisible(object => {
         if (!(object.isMesh || object.isLineSegments) || object.isSkinnedMesh || object.isBatchedMesh || !object.frustumCulled ||

@@ -209,6 +209,10 @@ function tuckOpening(o, walls, into = 0.005, eps = 0.01) {
   return r;
 }
 
+// #1498: the patio screen walls are solid boxes (built below); as opaque rectangles they hide what stands wholly behind them.
+const fenceRects = (site) => (site.fences ?? []).map(({ a: [ax, az], b: [bx, bz] }) =>
+  ({ x0: ax - 0.025, x1: bx + 0.025, z0: Math.min(az, bz), z1: Math.max(az, bz), y0: 0, y1: FENCE_HEIGHT }));
+
 /** A rectangle inside a wall's plan polygon, as long as the wall (#695, the DetailCuller's occluders): the bounding box
  * when the polygon is one (the plan's walls often carry an extra point on an edge), else the widest strip across its
  * thickness that the polygon covers along its whole length (sampled every cm; notches and recesses make it thinner). */
@@ -1366,7 +1370,7 @@ function* worldParts(plan) {
     hood: [...l0.appliances, ...l1.appliances].find((a) => a.kind === 'hood') ?? null, // the cooker hood's fan (#194)
     panDrawer: [...l0.appliances, ...l1.appliances].find((a) => a.panHome) ?? null, // the drawer under the hob (#159)
     toasterDrawer: [...l0.appliances, ...l1.appliances].find((a) => a.toasterHome) ?? null, // the toaster's drawer (#401)
-    openings: { north, south, roof: UNIT_TOP, walls: [...l0.wallRects, ...l1.wallRects], opaque: [...l0.opaqueRects, ...l1.opaqueRects, ...units.flatMap(u=>u.opaqueRects), ...(surroundings.userData.opaqueRects??[]), ...(site.patio?[{x0:site.patio.x0,x1:site.patio.x1,z0:D,z1:site.patio.z1,y0:0,y1:0}]:[])], slab: { y: l0.ceiling, hole: OURS.opening } }, // the façade openings (plan x, absolute y) and the roof height: what the flat can be seen through from outside (#189); its walls hide the rest (#695)
+    openings: { north, south, roof: UNIT_TOP, walls: [...l0.wallRects, ...l1.wallRects], opaque: [...l0.opaqueRects, ...l1.opaqueRects, ...units.flatMap(u=>u.opaqueRects), ...(surroundings.userData.opaqueRects??[]), ...fenceRects(site), ...(exterior.userData.opaqueRects ?? []), ...(site.patio?[{x0:site.patio.x0,x1:site.patio.x1,z0:D,z1:site.patio.z1,y0:0,y1:0}]:[])], slab: { y: l0.ceiling, hole: OURS.opening } }, // the façade openings (plan x, absolute y) and the roof height: what the flat can be seen through from outside (#189); its walls hide the rest (#695)
     blinds, // the pleated blinds (#273, src/blinds.js)
     carKey: hallWall.key, // only a target while the key cabinet is open (main.js)
     taps: [...l0.taps, ...l1.taps],

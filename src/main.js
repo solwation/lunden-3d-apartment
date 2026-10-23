@@ -3185,7 +3185,9 @@ if (lowMemory && !params0.has('noshadowtiles')) { const st = addSceneShadowTiles
 // #1246: desktop too, from the larger VIEW_LOD.carNearDesktop (the 42 parked cars were ~215 k triangles in every view)
 if (!params0.has('nocarlod')) { const n = addSceneCarLods(scene, lowMemory ? VIEW_LOD.carNear : VIEW_LOD.carNearDesktop); updateCarLods(camera); if (perfEl) console.log(`car lod: ${n} sets`); }
 // Warm-up (#432, #592, src/warmup.js): compile and upload everything behind the start screen, the mirrors' variants too.
-const colorFrustum = installTightFrustum(renderer, lowMemory ? null : () => detail.occluders);
+// #1498: phones use the same Detail occluders as desktop (#1459) for the steep patio corner; the site-instance packing
+// stays desktop-only (it cost ~15 ms CPU per render in the phone profile for ~15 calls).
+const colorFrustum = installTightFrustum(renderer, () => detail.occluders);
 const phoneFrustum = lowMemory ? colorFrustum : null;
 // Install outside the frustum hook so original source masks are restored before every shadow pass.
 const siteInstances = lowMemory ? null : installSiteInstanceBatch(renderer, scene, () => detail.occluders);

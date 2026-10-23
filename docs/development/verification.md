@@ -102,9 +102,11 @@ must release the normal loading cover before pausing. Do not call a loading-card
 scene evidence. The earlier iPhone-UA pre-warm capture is retained only as diagnostic;
 its setup cancelled the warm-up too early, and its final count/PNG does not prove a
 normal phone startup or a visual regression. The phone corner's independently tracked
-budget report is #1498: the completed visible844×390 lowmem/touch pair is493calls/961330tri
-in both states with0changed pixels, initial3/max3 and no page errors. It is a pre-existing
-phone-corner overrun, not a phone budget pass; no physical-device/FPS or new full phone-profile claim is made.
+budget report was #1498 (493calls/961330tri). Since #1498 the `--phone` branch asserts the
+phone budget (370/950000; measured366/854832) and the phone perfcount profile appends the
+same corner. After a screen-wall/occluder change, run the helper with and without `--phone`,
+phone844×390 and390×844 plus desktop perfcount, and compare canvas-only before/after PNGs
+(hide DOM overlays; a base-vs-base pair shows the normal run-to-run noise).
 
 Current raw evidence and rejected probes are retained under `/tmp/finish1459/` and copied
 into the persistent delivery directory named in the [delivery record](../validation/issue-1459/README.md).

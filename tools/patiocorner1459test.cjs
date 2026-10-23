@@ -57,7 +57,7 @@ const phone = process.argv.includes('--phone'); fs.mkdirSync(out, {recursive:tru
         await page.screenshot({path:path.join(out,`${pose}-${name}.png`),timeout:120000});
       }
       assert.deepEqual(entry.after.casters,entry.before.casters,`${pose}: fresh shadow caster triangles/masks`);
-      if(pose==='corner'&&!phone){assert(entry.after.calls<=520,`corner calls ${entry.after.calls}`);assert(entry.after.tris<=1000000,`corner triangles ${entry.after.tris}`);}
+      if(pose==='corner'){const [calls,tris]=phone?[370,950000]:[520,1000000];assert(entry.after.calls<=calls,`corner calls ${entry.after.calls}`);assert(entry.after.tris<=tris,`corner triangles ${entry.after.tris}`);} // #1498: the phone budget too
       results.views.push(entry);
       fs.writeFileSync(path.join(out,'result.json'),JSON.stringify(results,null,2));
     }
