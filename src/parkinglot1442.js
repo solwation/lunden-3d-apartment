@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { cutAtTerrain } from './roads.js';
+import { cutAtTerrain, samples } from './roads.js';
 import { SITE } from './config.js';
 
 const SOURCE = '145221624';
@@ -84,8 +84,8 @@ export function createParkingGrade(lot, sampleBase, options = {}) {
   for (const [x, z, y] of points) { const dx = x - mx, dz = z - mz, dy = y - my; xx += dx * dx; zz += dz * dz; xz += dx * dz; xy += dx * dy; zy += dz * dy; }
   const det = xx * zz - xz * xz;
   if (Math.abs(det) < 1e-10) throw new RangeError(`Parking polygon ${lot.source ?? ''} cannot fit a stable plane`);
-  const sx = (xy * zz - zy * xz) / det, sz = (zy * xx - xy * xz) / det;
-  const planeY = (x, z) => my + sx * (x - mx) + sz * (z - mz);
+  let sx = (xy * zz - zy * xz) / det, sz = (zy * xx - xy * xz) / det, py = my;
+  const planeY = (x, z) => py + sx * (x - mx) + sz * (z - mz);
   const edgeDistance = (x, z) => {
     let d = Infinity;
     for (let i = 0; i < poly.length; i++) {
@@ -111,7 +111,10 @@ export function createParkingGrade(lot, sampleBase, options = {}) {
   grade.clip = !!lot?.grade?.clip; // #1443: drawn on terrain cells clipped along the outline (gradedCellTriangles)
   grade.polygon = poly;
   if (grade.clip) { grade.core = insetConvex(poly, transition); grade.inCore = (x, z) => pointIn(x, z, grade.core); }
-  grade.plane = { origin: [mx, mz, my], slope: [sx, sz], maxResidual, anchored: !!anchor };
+  grade.plane = { origin: [mx, mz, my], slope: [sx, sz], maxResidual, anchored: !!anchor, fit: 'least-squares' };
+  // #1450: `grade.fit: 'minimax'` lets fitDrawnPlane replace the plane once the drawn terrain cells are known.
+  grade.fit = lot?.grade?.fit ?? 'least-squares';
+  grade.setPlane = (y, slopeX, slopeZ, fit) => { if (anchor) throw new RangeError(`Parking plane ${lot.source ?? ''} is anchored`); py = y; sx = slopeX; sz = slopeZ; grade.plane = { ...grade.plane, origin: [mx, mz, py], slope: [sx, sz], fit }; };
   grade.transition = transition;
   grade.source = lot.source;
   return grade;
@@ -151,6 +154,46 @@ function withCorners(piece, corners) {
 const fan = (p) => p.slice(1, -1).map((_, i) => [p[0], p[i + 1], p[i + 2]]).filter(t => Math.abs(area(t)) > 1e-9);
 
 /**
+ * #1450: for a clipped lot with `grade.fit: 'minimax'` (a *guess*, like every lot plane), replace the
+ * least-squares plane by the plane (height at the fit origin and both slopes) that makes the steepest drawn
+ * band/core triangle of the lot's terrain cells as gentle as possible. A shallow pocket's 1.5 m band otherwise
+ * steepens the old ground where the least-squares plane leaves its edge. `cells` are the terrain cells
+ * ({x0, x1, z0, z1, c} as for gradedCellTriangles) touching the lot. Deterministic Nelder–Mead from the
+ * least-squares plane; returns the steepest slope before and after.
+ */
+export function fitDrawnPlane(grade, cells, { iterations = 200 } = {}) {
+  const [mx, mz, y0] = grade.plane.origin, [sx0, sz0] = grade.plane.slope;
+  // The cut pieces do not depend on the plane and every drawn height is linear in it (old + (plane − old) · weight):
+  // cut once at the least-squares plane and once 1 m higher, then each candidate only re-weights the vertex heights.
+  const drawn = (dy) => { grade.setPlane(y0 + dy, sx0, sz0, 'least-squares'); return cells.flatMap(cell => gradedCellTriangles(grade, grade.polygon, cell).filter(t => t.kind !== 'out').map(t => t.tri)); };
+  const lo = drawn(0), hi = drawn(1), base = (x, z) => y0 + sx0 * (x - mx) + sz0 * (z - mz);
+  const V = Float64Array.from(lo.flatMap((t, i) => t.flatMap(([x, z, y], k) => [x - mx, z - mz, y - base(x, z) * (hi[i][k][2] - y), hi[i][k][2] - y])));
+  const steepest = (p) => {
+    let m = 0;
+    for (let i = 0; i < V.length; i += 12) {
+      const h = (o) => V[o + 2] + (y0 + p[0] + p[1] * V[o] + p[2] * V[o + 1]) * V[o + 3], ax = V[i], az = V[i + 1], bx = V[i + 4] - ax, bz = V[i + 5] - az, cx = V[i + 8] - ax, cz = V[i + 9] - az, det = bx * cz - cx * bz;
+      if (Math.abs(det) < 1e-10) continue;
+      const ay = h(i), by = h(i + 4) - ay, cy = h(i + 8) - ay;
+      m = Math.max(m, Math.hypot((by * cz - cy * bz) / det, (bx * cy - cx * by) / det));
+    }
+    return m;
+  };
+  const before = steepest([0, sx0, sz0]);
+  let simplex = [[0, sx0, sz0], [.05, sx0, sz0], [0, sx0 + .01, sz0], [0, sx0, sz0 + .01]].map(p => ({ p, f: steepest(p) }));
+  for (let it = 0; it < iterations; it++) {
+    simplex.sort((a, b) => a.f - b.f);
+    const worst = simplex[3], c = [0, 1, 2].map(k => (simplex[0].p[k] + simplex[1].p[k] + simplex[2].p[k]) / 3), at = (t) => c.map((v, k) => v + t * (worst.p[k] - v)), r = { p: at(-1) };r.f = steepest(r.p);
+    if (r.f < simplex[0].f) { const e = { p: at(-2) };e.f = steepest(e.p);simplex[3] = e.f < r.f ? e : r; }
+    else if (r.f < simplex[2].f) simplex[3] = r;
+    else { const k = { p: at(.5) };k.f = steepest(k.p);if (k.f < worst.f) simplex[3] = k;else for (let q = 1; q < 4; q++) { simplex[q].p = simplex[q].p.map((v, j) => simplex[0].p[j] + (v - simplex[0].p[j]) * .5);simplex[q].f = steepest(simplex[q].p); } }
+  }
+  simplex.sort((a, b) => a.f - b.f);
+  const best = before <= simplex[0].f ? { p: [0, sx0, sz0], f: before } : simplex[0];
+  grade.setPlane(y0 + best.p[0], best.p[1], best.p[2], best.f < before ? 'minimax' : 'least-squares');
+  return { before, after: best.f };
+}
+
+/**
  * #1443: the drawn ground of one terrain cell [x0,x1]×[z0,z1] (corner heights `c` = [x0z0, x1z0, x0z1, x1z1],
  * split along the (x1,z0)–(x0,z1) diagonal like every terrain cell) under a graded convex lot, clipped
  * along the lot outline and along its outline inset by the grade's transition. Outside the outline the
@@ -185,6 +228,9 @@ export function createParkingLayout(lot, { bayWidth = DEFAULTS.bayWidth, bayDept
   // #1443: `layout.row` ('north' = the n0 long edge, 'south' = n1) lays one row of `layout.count`
   // boxes along that edge only; the rest of the lot's width is the clear aisle (no second row).
   const single = lot?.layout?.row ?? null;
+  // #1450: a street-side pocket (`layout.street.road`) has no aisle of its own: the mapped street in front of
+  // its single row is the driving lane, so only one box depth must fit and the row stands on the far edge.
+  const street = single ? lot?.layout?.street ?? null : null;
   const poly = ring(lot?.polygon ?? []);
   if (poly.length !== 4 || !(bayWidth > 0 && bayDepth > 0 && aisleWidth > 0)) throw new TypeError('Nattsländegatan layout needs its four-corner lot and positive dimensions');
   const edges = poly.map((a, i) => { const b = poly[(i + 1) % poly.length]; return { a, b, len: Math.hypot(b[0] - a[0], b[1] - a[1]) }; });
@@ -200,7 +246,15 @@ export function createParkingLayout(lot, { bayWidth = DEFAULTS.bayWidth, bayDept
   // row was tried and dropped: following the terrain it cost 332 triangles,
   // more than the old full-width lines saved.
   const rowDepth = boxes || single ? bayDepth : (width - aisleWidth) / 2;
-  if (single ? width - aisleWidth + 1e-6 < bayDepth : (width - aisleWidth) / 2 + 1e-6 < bayDepth) throw new RangeError(`Parking polygon is too narrow for ${single ? 'one' : 'two'} guessed bay row${single ? '' : 's'} and a clear aisle`);
+  const need = street ? 0 : aisleWidth;
+  if (street) {
+    const road = [...(SITE.south.paths ?? []), ...(SITE.south.access ?? [])].find(r => r.source === street.road);
+    if (!road) throw new RangeError(`Parking street ${street.road} is not mapped`);
+    const near = road.path.reduce((best, p) => Math.abs(proj(p, u) - (u0 + u1) / 2) < Math.abs(proj(best, u) - (u0 + u1) / 2) ? p : best);
+    const streetSide = proj(near, n) < n0 ? 'north' : proj(near, n) > n1 ? 'south' : null;
+    if (!streetSide || streetSide === single) throw new RangeError(`Parking row ${single} must face street ${street.road} across the lot (street side ${streetSide})`);
+  }
+  if (single ? width - need + 1e-6 < bayDepth : (width - aisleWidth) / 2 + 1e-6 < bayDepth) throw new RangeError(`Parking polygon is too narrow for ${single ? 'one' : 'two'} guessed bay row${single ? '' : 's'}${street ? '' : ' and a clear aisle'}`);
   // #1443: a single row stands on its long edge's inner corner (the edges are not exactly parallel), so no box pokes out.
   const sortedN = [...ns].sort((a, b) => a - b), rowEdge = single === 'north' ? sortedN[1] : sortedN.at(-2);
   // The clear aisle is the guaranteed width: from the row's front to the opposite edge's inner corner.
@@ -238,7 +292,7 @@ export function createParkingLayout(lot, { bayWidth = DEFAULTS.bayWidth, bayDept
       const segment=clipSegment([[u[0]*at+n[0]*rowFar,u[1]*at+n[1]*rowFar],[u[0]*at+n[0]*rowNear,u[1]*at+n[1]*rowNear]],poly);if(segment){segments.push(segment);if(boxes||!outer)markingSegments.push(segment);}
     }
   }
-  return { aisle, stalls, segments, markingSegments, entrance: skip, axes: { u, n }, origin: { u0, n0, n1 }, dimensions: { bayWidth, bayDepth, aisleWidth, lotWidth: width, rowDepth, clearAisle: clear, length: u1-u0 } };
+  return { aisle: street ? null : aisle, stalls, segments, markingSegments, entrance: skip, street: street?.road ?? null, axes: { u, n }, origin: { u0, n0, n1 }, dimensions: { bayWidth, bayDepth, aisleWidth: street ? 0 : aisleWidth, lotWidth: width, rowDepth, clearAisle: clear, length: u1-u0 } };
 }
 
 const segDist = (p, q, a, b) => {
@@ -343,6 +397,43 @@ export const lotTriangles = (lot, ground) => lotCells(lot, ground).flatMap(fan);
 export function parkingLayoutParts(lot, ground) {
   const layout=createParkingLayout(lot),grid=ground.grid?.()??null,aisle=!!lot.layout?.aisle,cells=lotCells(lot,ground),markings=layout.markingSegments.map(s=>lineGeometry(s,.08,ground,.052+.024,grid,aisle?null:insetConvex(ring(lot.polygon),.01),aisle,cells)).filter(Boolean); // #1441: concave aisle lots keep each box (widened by half a line) inside the outline instead of clipping. #1443: a clipped lot's lines are cut along its own drawn terrain triangles
   return{surface:null,markings,layout};
+}
+/**
+ * #1450: a street-side pocket's narrow apron (`layout.street.apron`, *guess*) over the existing grass gap
+ * between its street edge and the mapped street's emitted strip edge, so its boxes open onto the asphalt.
+ * Neither the street nor the pocket outline moves: the apron runs from the pocket edge (the lot edge nearest
+ * the street) to the strip's offset polyline (road samples at half width, as pathStrip draws it), reaching
+ * `overlap` m under the street. Where the street bends away the strip is only followed up to `maxGap` m from
+ * the pocket edge; the apron then closes straight back to the pocket's corner. Returns the polygon and a lift
+ * that falls linearly from the lot asphalt's lift at the pocket edge to the street's at the strip edge, or null.
+ */
+export function streetApron(lot, { overlap = .02, maxGap = 2, lotLift = .052, streetLift = .025 } = {}) {
+  const st = lot?.layout?.street;if (!st?.apron) return null;
+  const road = [...(SITE.south.paths ?? []), ...(SITE.south.access ?? [])].find(r => r.source === st.road);
+  if (!road) throw new RangeError(`Parking street ${st.road} is not mapped`);
+  const poly = ring(lot.polygon), d2 = (p, a, b) => { const dx = b[0] - a[0], dz = b[1] - a[1], t = clamp(((p[0] - a[0]) * dx + (p[1] - a[1]) * dz) / (dx * dx + dz * dz || 1), 0, 1); return Math.hypot(p[0] - a[0] - dx * t, p[1] - a[1] - dz * t); };
+  const toRoad = p => Math.min(...road.path.slice(1).map((q, i) => d2(p, road.path[i], q)));
+  const e = poly.map((a, i) => [a, poly[(i + 1) % poly.length]]).reduce((best, s) => toRoad([(s[0][0] + s[1][0]) / 2, (s[0][1] + s[1][1]) / 2]) < toRoad([(best[0][0] + best[1][0]) / 2, (best[0][1] + best[1][1]) / 2]) ? s : best);
+  const [a, b] = e, len = Math.hypot(b[0] - a[0], b[1] - a[1]), u = [(b[0] - a[0]) / len, (b[1] - a[1]) / len];
+  let v = [-u[1], u[0]];const c = poly.reduce((s, p) => [s[0] + p[0] / poly.length, s[1] + p[1] / poly.length], [0, 0]);
+  if ((c[0] - a[0]) * v[0] + (c[1] - a[1]) * v[1] > 0) v = [-v[0], -v[1]]; // v points away from the lot, towards the street
+  const uv = p => [(p[0] - a[0]) * u[0] + (p[1] - a[1]) * u[1], (p[0] - a[0]) * v[0] + (p[1] - a[1]) * v[1]], xz = ([s, t]) => [a[0] + u[0] * s + v[0] * t, a[1] + u[1] * s + v[1] * t];
+  const S = samples(road), half = (Array.isArray(road.w) ? Math.max(...road.w) : road.w) / 2;
+  const sides = [1, -1].map(k => S.map(p => uv([p.x + p.nx * (p.w ?? half * 2) / 2 * k, p.z + p.nz * (p.w ?? half * 2) / 2 * k])));
+  const edge = sides.reduce((best, s) => Math.min(...s.filter(q => q[0] >= 0 && q[0] <= len).map(q => Math.abs(q[1])), Infinity) < Math.min(...best.filter(q => q[0] >= 0 && q[0] <= len).map(q => Math.abs(q[1])), Infinity) ? s : best);
+  // the strip edge inside [0, len] × [0, maxGap] (u along the pocket edge, v towards the street)
+  const box = [[0, 0], [len, 0], [len, maxGap], [0, maxGap]], pieces = [];
+  for (let i = 1; i < edge.length; i++) { const seg = clipSegment([edge[i - 1], edge[i]], box); if (seg && Math.hypot(seg[1][0] - seg[0][0], seg[1][1] - seg[0][1]) > 1e-9) pieces.push(seg); }
+  if (!pieces.length) return null;
+  // the strip edge's sample points along a straight street are collinear: keep only its corners
+  const line = [pieces[0][0], ...pieces.map(s => s[1])].sort((p, q) => p[0] - q[0]).filter((p, i, all) => i === 0 || i === all.length - 1 || Math.abs(cross(all[i - 1], all[i + 1], p)) / Math.hypot(all[i + 1][0] - all[i - 1][0], all[i + 1][1] - all[i - 1][1]) > 1e-4);
+  if (line.some(([, t]) => t < 0)) throw new RangeError(`Street ${st.road} overlaps parking ${lot.source}`);
+  const gapAt = s => { if (s <= line[0][0]) return line[0][1]; for (let i = 1; i < line.length; i++) if (s <= line[i][0]) { const p = line[i - 1], q = line[i], f = (s - p[0]) / (q[0] - p[0] || 1); return p[1] + (q[1] - p[1]) * f; } return line.at(-1)[1]; };
+  // reach `overlap` under the street: push the strip edge outward along v
+  const far = line.map(([s, t]) => [s, t + overlap]);
+  const polygon = [[0, 0], [len, 0], ...far.slice().reverse()].map(xz).filter((p, i, all) => i === 0 || Math.hypot(p[0] - all[i - 1][0], p[1] - all[i - 1][1]) > 1e-6);
+  const lift = (x, z) => { const [s, t] = uv([x, z]), g = gapAt(s); return lotLift - (lotLift - streetLift) * clamp(t / (g || 1), 0, 1 + overlap / (g || 1)); };
+  return { polygon, lift, edge: [a, b], gaps: line.map(([s, t]) => [s, t]), road: road.source, overlap, maxGap };
 }
 export function parking1442Parts(ground) {
   const lot=SITE.south.parking.find(p=>p.source===SOURCE);if(!lot)return{surface:null,markings:[],layout:null};

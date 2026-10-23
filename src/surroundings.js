@@ -21,7 +21,7 @@ import { buildHepcat, hepcatTexture, hepcatStone } from './hepcat.js';
 import { buildStreetSigns } from './streetsigns.js';
 import { buildGroundAO } from './groundao.js';
 import { onRoad, onWalk, pathStrip, filletGeometry, vehicleTrim } from './roads.js';
-import { createParkingGrade, gradedCellTriangles } from './parkinglot1442.js';
+import { createParkingGrade, gradedCellTriangles, fitDrawnPlane } from './parkinglot1442.js';
 import { wallLine, wallRect } from './roofs.js';
 import { buildingRoofWalk } from './buildingroofs.js';
 import {buildRiverBridges,deckAt,riverGround,riverDistance,roadBridgeSpan,bridgeRecords} from './riverbridge.js';
@@ -228,6 +228,8 @@ let terrainGrid = null, terrainDetailGrid = null;
 let lotTriangles = [];
 /** #1443: the drawn terrain triangles ([x, z, y] corners, y as renderedTerrainY) inside clipped parking lots. */
 renderedTerrainY.lotTriangles = () => lotTriangles;
+/** #1450: each graded lot's plane and, for a minimax fit, the steepest drawn lot triangle before/after the fit (tests). */
+renderedTerrainY.lotPlanes = () => PARKING_GRADES.map(g=>({source:g.source,plane:g.plane,fit:g.fitResult??null}));
 renderedTerrainY.grid = () => terrainGrid;
 // #1420: opt-in emitted river subdivisions for the paddock overlays; existing grid consumers are unchanged.
 renderedTerrainY.surfaceGrid = () => terrainDetailGrid;
@@ -256,6 +258,8 @@ function terrainGeometry(southeastCells = null) {
   for (const p of TERRAIN_PITS) { xs.add(p[0]); xs.add(p[1]); zs.add(p[2]); zs.add(p[3]); }
   for (const r of bridgeRecords) for (const e of [-1, 1]) { const ez = r.z + r.dz * r.len / 2 * e; zs.add(ez - 0.4 * e); zs.add(ez + 0.2 * e); } // #1271: the under-bridge cut ends inside the abutment blocks
   const X = [...xs].sort((a, b) => a - b), Z = [...zs].filter((z) => z >= z0).sort((a, b) => a - b);
+  // #1450: a minimax-fitted lot plane is chosen on the drawn cells it will be cut into, before any of them is emitted.
+  for(const g of PARKING_GRADES)if(g.clip&&g.fit==='minimax'){const cs=[];for(let i=0;i<X.length-1;i++)if(X[i+1]>=g.bounds.x0&&X[i]<=g.bounds.x1)for(let j=0;j<Z.length-1;j++)if(Z[j+1]>=g.bounds.z0&&Z[j]<=g.bounds.z1&&clippedGradeAt(X[i],X[i+1],Z[j],Z[j+1])===g)cs.push({x0:X[i],x1:X[i+1],z0:Z[j],z1:Z[j+1],c:[[X[i],Z[j]],[X[i+1],Z[j]],[X[i],Z[j+1]],[X[i+1],Z[j+1]]].map(([x,z])=>plateauTerrainY(x,z))});const t0=performance.now();g.fitResult={...fitDrawnPlane(g,cs),cells:cs.length,ms:performance.now()-t0};}
   const pos = [], idx = [], cells=new Map(), lotCells=new Map();
   for (const z of Z) for (const x of X) pos.push(x, terrainY(x, z) - 0.01, z);
   const nx = X.length;

@@ -1,0 +1,96 @@
+<!doctype html><html><meta charset="utf-8"><title>Street pockets by houses 64 and 66 #1450</title><pre id="out">running…</pre><script type="module">
+// #1450: the clipped civil planes, one row of six guessed 2.5×5 m boxes and a guessed apron to street 30633545 on
+// OSM street-side pockets 1379042014 (by house 66) and 1379043165 (by house 64), in the actual World.
+// Baseline (ef5c6ef1, before #1450): plain asphalt, a kerb and five full-width capacity lines per pocket on unchanged terrain.
+const out=document.querySelector('#out'),lines=[];let pass=true;const T0=performance.now();
+const check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);pass&&=!!ok;out.textContent=lines.join('\n');};
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const SRC={'1379042014':{poly:'[[223.09,383.62],[237.66,379.24],[236.23,374.21],[221.72,378.62]]',house:'Sankt Lars väg 66'},'1379043165':{poly:'[[268.36,365.42],[283,360.95],[284.54,365.98],[269.9,370.46]]',house:'Sankt Lars väg 64'}};
+// Measured on ef5c6ef1 in the actual emitted site-terrain: steepest triangle overlapping each pocket and steepest wholly outside within 6 m.
+const SLOPE={'1379042014':{lot:.17137005466094302,near:.05783207192329429},'1379043165':{lot:.13669250627388932,near:.05236754620298731}};
+// renderedTerrainY on ef5c6ef1 at 26 points 0.2–5 m outside the two pockets (including the grass gap the apron now covers).
+const PROBES=[[218.09,375.99,4.690434118931896],[219.46,381.64,4.8868906682055835],[220.83,383.9,5.007842400170201],[222.2,387.29,5.150023345768967],[224.94,375.99,5.042534212976825],[227.68,372.6,5.318533629689138],[229.05,382.77,5.399122320000001],[231.79,371.47,5.799865020532222],[233.16,381.64,5.604743999999999],[235.9,371.47,6.02149839600161],[237.27,380.51,5.82630752],[238.64,381.64,5.882629855351068],[241.38,374.86,6.15337524563454],[264.73,362.73,7.132201207342546],[266.1,368.38,6.490099857896073],[267.47,370.64,6.270755293650727],[268.84,374.03,6.1559956757443866],[271.58,362.73,7.015334282520372],[272.95,374.03,6.068299764645107],[275.69,362.73,6.967544765249492],[278.43,359.34,7.243583659918711],[279.8,369.51,6.233416051279997],[282.54,359.34,7.178721168175458],[283.91,368.38,6.247093995965297],[285.28,369.51,6.177721715279999],[288.02,361.6,6.6900290791144315]];
+// Emitted building bases on ef5c6ef1 (the issue's inventory values 4.616037/7.579844 are analytical footprint heights, not these bases).
+const HOUSES={'Sankt Lars väg 66':4.664484203069897,'Sankt Lars väg 63':7.692974837909902,'Sankt Lars 145221625':6.3438950096820275,'Sankt Lars väg 64':7.2633645349731255,'Sankt Lars väg 62':6.7263800494576245};
+// renderedTerrainY on the other graded lots (from parking1443test, 934e51f3) and their box counts.
+const OTHER=[[0,240,1.1518181818181819],[10,250,1.4082485255717512],[30,235,1.3100727071075196],[143,295,4.181846448904654],[150,300,3.692054877236719],[60,222,2.2515462832697493],[80,236,3.2019605342714073],[90,372.9,null]];
+const ROAD='[[194.62,384.62],[205.62,380.22],[279.48,359.11],[273.25,340.22],[265.3,314.56],[213.05,330.44],[173.12,342.21]]';
+// Local triangle cost allowances (before: 84+48 land triangles in and within 3 m of the pockets incl. the road; terrain cells unrefined).
+const CAP={land:350,terrain:100}; // measured after #1450: 337 / 84 (ef5c6ef1 had 132 land triangles centred in the pockets)
+try{
+ const frame=document.createElement('iframe');frame.width=480;frame.height=300;frame.src='../index.html?test&shot&month=6&cloud=';document.body.append(frame);await new Promise(r=>frame.onload=r);const w=frame.contentWindow;for(let i=0;i<360&&!w.__app?.scene;i++)await wait(500);if(!w.__app?.scene)throw Error('actual World did not finish loading');
+ const A=w.__app,T=await w.eval("import('three')"),C=await w.eval("import('/src/config.js')"),S=await w.eval("import('/src/surroundings.js')"),P=await w.eval("import('/src/parkinglot1442.js')"),R=await w.eval("import('/src/roads.js')");
+ const g=S.renderedTerrainY,terrain=A.scene.getObjectByName('site-terrain'),live=A.scene.getObjectByName('south-backdrop'),land=live.children.find(m=>m.name==='south-land'),lp=land.geometry.attributes.position,col=land.geometry.attributes.color;
+ const ray=new T.Raycaster(),down=new T.Vector3(0,-1,0),hit=(m,x,z)=>{ray.set(new T.Vector3(x,40,z),down);return ray.intersectObject(m,true)[0]?.point.y;};
+ const area=p=>p.reduce((s,a,i)=>{const b=p[(i+1)%p.length];return s+a[0]*b[1]-b[0]*a[1];},0)/2;
+ const clip=(subj,cut)=>{const sg=Math.sign(area(cut));let ins=subj;for(let i=0;i<cut.length&&ins.length;i++){const a=cut[i],b=cut[(i+1)%cut.length],o=[],cr=p=>sg*((b[0]-a[0])*(p[1]-a[1])-(b[1]-a[1])*(p[0]-a[0]));for(let j=0;j<ins.length;j++){const p=ins[j],q=ins[(j+1)%ins.length],dp=cr(p),dq=cr(q);if(dp>=0)o.push(p);if((dp<0&&dq>0)||(dp>0&&dq<0)){const t=dp/(dp-dq);o.push([p[0]+(q[0]-p[0])*t,p[1]+(q[1]-p[1])*t]);}}ins=o;}return ins;};
+ const inside=(x,z,p)=>{let yes=false;for(let i=0,j=p.length-1;i<p.length;j=i++)if((p[i][1]>z)!==(p[j][1]>z)&&x<(p[j][0]-p[i][0])*(z-p[i][1])/(p[j][1]-p[i][1])+p[i][0])yes=!yes;return yes;};
+ const segD=(p,a,b)=>{const dx=b[0]-a[0],dz=b[1]-a[1],t=Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dz)/(dx*dx+dz*dz||1)));return Math.hypot(p[0]-a[0]-dx*t,p[1]-a[1]-dz*t);};
+ const edgeDist=(x,z,p)=>Math.min(...p.map((a,i)=>segD([x,z],a,p[(i+1)%p.length])));
+ const road=[...C.SITE.south.paths,...(C.SITE.south.access??[])].find(r=>r.source==='30633545');
+ check(road&&JSON.stringify(road.path)===ROAD&&road.w===4.5,'street 30633545 keeps its mapped path and 4.5 m width; it is the pockets\' driving lane (no internal aisle is added)');
+ // The emitted street strip, as the backdrop draws it, for the box/divider/apron checks.
+ const strip=R.pathStrip(road,v=>-v/2,v=>v/2,.025,g,false,g.grid()),sp=strip.attributes.position,stripTris=[];for(let i=0;i<sp.count;i+=3)stripTris.push([0,1,2].map(k=>[sp.getX(i+k),sp.getZ(i+k)]));
+ const inTri=(x,z,t)=>{const[a,b,c]=t,d=(b[0]-a[0])*(c[1]-a[1])-(c[0]-a[0])*(b[1]-a[1]),l1=((x-a[0])*(c[1]-a[1])-(c[0]-a[0])*(z-a[1]))/d,l2=((b[0]-a[0])*(z-a[1])-(x-a[0])*(b[1]-a[1]))/d;return l1>=-1e-9&&l2>=-1e-9&&l1+l2<=1+1e-9;};
+ const onStrip=(x,z)=>stripTris.some(t=>inTri(x,z,t));
+ const planes=g.lotPlanes(),geo=terrain.geometry,pos=geo.attributes.position,idx=geo.index.array;
+ const triSlope=q=>{const[a,b,c]=q,det=(b[0]-a[0])*(c[2]-a[2])-(c[0]-a[0])*(b[2]-a[2]);if(Math.abs(det)<1e-10)return null;return Math.hypot(((b[1]-a[1])*(c[2]-a[2])-(c[1]-a[1])*(b[2]-a[2]))/det,((b[0]-a[0])*(c[1]-a[1])-(c[0]-a[0])*(b[1]-a[1]))/det);};
+ let localLand=0,localTerrain=0;
+ for(const [src,info] of Object.entries(SRC)){
+  const lot=C.SITE.south.parking.find(p=>p.source===src),poly=lot.polygon,tag=`${src} (${info.house})`;
+  check(JSON.stringify(poly)===info.poly&&lot.capacity===6&&lot.capacitySource==='OSM'&&lot.orientation==='perpendicular'&&JSON.stringify(lot.grade)==='{"transition":1.5,"transitionSource":"guess","clip":true,"fit":"minimax"}'&&lot.layout?.source==='guess'&&lot.layout.row==='south'&&lot.layout.count===6&&lot.layout.street?.road==='30633545'&&lot.layout.street.apron==='guess',`${tag}: OSM outline and raw capacity 6 kept; plane, 1.5 m transition, row and apron are marked guess`);
+  // Plane: independent rays on the emitted terrain.
+  const pl=planes.find(q=>q.source===src),[mx,mz,my]=pl.plane.origin,[sx,sz]=pl.plane.slope,planeY=(x,z)=>my+sx*(x-mx)+sz*(z-mz);
+  let core=0,band=0,coreErr=0,sampErr=0,miss=0;const xs=poly.map(q=>q[0]),zs=poly.map(q=>q[1]);
+  for(let x=Math.min(...xs);x<=Math.max(...xs);x+=.29)for(let z=Math.min(...zs);z<=Math.max(...zs);z+=.23){if(!inside(x,z,poly))continue;const y=hit(terrain,x,z);if(y==null){miss++;continue;}sampErr=Math.max(sampErr,Math.abs(y-g(x,z)),Math.abs(y+.01-S.groundY(x,z)));if(edgeDist(x,z,poly)>=1.5+1e-3){core++;coreErr=Math.max(coreErr,Math.abs(y+.01-planeY(x,z)));}else band++;}
+  check(pl.plane.fit==='minimax'&&core>200&&band>300&&miss===0&&coreErr<1e-5&&sampErr<1e-5,`${tag}: ${core} core rays (≥1.5 m inside) lie on the drawn plane (slopes ${(sx*100).toFixed(2)}/${(sz*100).toFixed(2)} %, off-plane ${coreErr.toExponential(1)} m); all ${core+band} rays agree with renderedTerrainY and groundY within ${sampErr.toExponential(1)} m`);
+  let outErr=0,outN=0;for(let x=Math.min(...xs)-6;x<=Math.max(...xs)+6;x+=.37)for(let z=Math.min(...zs)-6;z<=Math.max(...zs)+6;z+=.31){if(inside(x,z,poly)||edgeDist(x,z,poly)>6)continue;const y=hit(terrain,x,z);if(y==null)continue;outN++;outErr=Math.max(outErr,Math.abs(y-g(x,z)));}
+  const probes=PROBES.filter(([x,z])=>edgeDist(x,z,poly)<6),probeErr=Math.max(...probes.map(([x,z,y])=>Math.abs(g(x,z)-y))),probeRay=Math.max(...probes.map(([x,z,y])=>Math.abs(hit(terrain,x,z)-y)));
+  check(probes.length===13&&probeErr<1e-9&&probeRay<1e-5&&outN>1500&&outErr<1e-5,`${tag}: ground outside the outline unchanged: ${probes.length} baseline points ${probeErr.toExponential(1)} m (rays ${probeRay.toExponential(1)} m); ${outN} rays within 6 m match the sampler (${outErr.toExponential(1)} m)`);
+  // Slope before/after: steepest emitted terrain triangle overlapping the pocket, and wholly outside within 6 m.
+  let sLot=0,sNear=0,nLot=0,nNear=0;
+  for(let i=0;i<idx.length;i+=3){const q=[idx[i],idx[i+1],idx[i+2]].map(k=>[pos.getX(k),pos.getY(k),pos.getZ(k)]),t2=q.map(v=>[v[0],v[2]]),cx=(t2[0][0]+t2[1][0]+t2[2][0])/3,cz=(t2[0][1]+t2[1][1]+t2[2][1])/3;if(Math.abs(cx-poly[0][0])>40||Math.abs(cz-poly[0][1])>40)continue;const s=triSlope(q);if(s==null)continue;if(Math.abs(area(clip(t2,poly)))>1e-4){sLot=Math.max(sLot,s);nLot++;}else if(edgeDist(cx,cz,poly)<=6){sNear=Math.max(sNear,s);nNear++;}}
+  const before=Math.max(SLOPE[src].lot,SLOPE[src].near),after=Math.max(sLot,sNear);
+  check(sLot<=SLOPE[src].lot+1e-5&&after<=before+1e-5&&after<C.WALK.maxSlope,`${tag}: no steeper ground: overlapping triangles ${SLOPE[src].lot.toFixed(4)} → ${sLot.toFixed(4)} (${nLot}), within 6 m outside ${SLOPE[src].near.toFixed(4)} → ${sNear.toFixed(4)} (old pieces of the same edge triangles), region ${before.toFixed(4)} → ${after.toFixed(4)}; minimax fit ${pl.fit.before.toFixed(4)} → ${pl.fit.after.toFixed(4)} (${pl.fit.cells} cells)`);
+  localTerrain+=nLot;
+  // Boxes.
+  const L=P.createParkingLayout(lot),{u,n}=L.axes,uOf=([x,z])=>x*u[0]+z*u[1],nOf=([x,z])=>x*n[0]+z*n[1];
+  const boxPts=s=>{const p=s.polygon,pts=[];for(let i=0;i<=20;i++)for(let j=0;j<=40;j++){const a=i/20,b=j/40;pts.push([p[0][0]+(p[1][0]-p[0][0])*a+(p[3][0]-p[0][0])*b,p[0][1]+(p[1][1]-p[0][1])*a+(p[3][1]-p[0][1])*b]);}return pts;};
+  const sizes=L.stalls.every(s=>{const us=s.polygon.map(uOf),vs=s.polygon.map(nOf);return s.polygon.length===4&&Math.abs(Math.max(...us)-Math.min(...us)-2.5)<1e-6&&Math.abs(Math.max(...vs)-Math.min(...vs)-5)<1e-6&&Math.abs(s.area-12.5)<1e-6;});
+  const outBox=L.stalls.filter(s=>boxPts(s).some(([x,z])=>!inside(x,z,poly)&&edgeDist(x,z,poly)>1e-6)).length,roadBox=L.stalls.filter(s=>boxPts(s).some(([x,z])=>onStrip(x,z))).length;
+  const front=Math.min(...L.stalls.flatMap(s=>s.polygon.map(nOf))),stripGap=Math.min(...L.stalls.map(s=>{let best=Infinity;for(let k=0;k<=10;k++){const q=s.polygon,a=[q[0][0]+(q[1][0]-q[0][0])*k/10,q[0][1]+(q[1][1]-q[0][1])*k/10],b=[q[3][0]+(q[2][0]-q[3][0])*k/10,q[3][1]+(q[2][1]-q[3][1])*k/10],f=nOf(a)<nOf(b)?a:b;for(let d=0;d<4;d+=.01)if(onStrip(f[0]-n[0]*d,f[1]-n[1]*d)){best=Math.min(best,d);break;}}return best;}));
+  check(L.stalls.length===6&&sizes&&outBox===0&&roadBox===0&&L.street==='30633545'&&L.aisle===null&&stripGap>.1&&stripGap<3,`${tag}: one row of ${L.stalls.length} whole 2.5×5 m boxes on the far edge (lot ${L.dimensions.length.toFixed(2)}×${L.dimensions.lotWidth.toFixed(2)} m), all inside the outline (${outBox} outside), none on the street strip (${roadBox}); box fronts ${L.dimensions.clearAisle.toFixed(2)} m from the pocket edge, ≥${stripGap.toFixed(2)} m from the street asphalt`);
+  const lens=L.markingSegments.map(([a,b])=>Math.hypot(b[0]-a[0],b[1]-a[1])),divOnRoad=L.markingSegments.filter(([a,b])=>[0,.25,.5,.75,1].some(t=>onStrip(a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t))).length;
+  check(L.markingSegments.length===7&&lens.every(l=>Math.abs(l-5)<1e-6)&&divOnRoad===0&&L.markingSegments.every(([a,b])=>Math.min(nOf(a),nOf(b))>=front-1e-6),`${tag}: ${L.markingSegments.length} 5 m dividers close the six boxes; none reaches the street (${divOnRoad})`);
+  // Emitted paint and asphalt.
+  let paint=0,paintErr=0,kerb=0,asph=0,asphErr=0;for(let i=0;i<lp.count;i++){const x=lp.getX(i),z=lp.getZ(i);if(!inside(x,z,poly)&&edgeDist(x,z,poly)>.05)continue;const d=lp.getY(i)-g(x,z),white=col.getX(i)>.85&&col.getY(i)>.85;if(white){paint++;paintErr=Math.max(paintErr,Math.abs(d-.076));}else if(col.getX(i)<.15){if(inside(x,z,poly)){asph++;asphErr=Math.max(asphErr,Math.abs(d-.052));}}else if(col.getX(i)>.4&&col.getX(i)<.75)kerb++;}
+  const parts=P.parkingLayoutParts(lot,g),expect=parts.markings.reduce((k,m)=>k+m.attributes.position.count,0);
+  check(paint===expect&&paintErr<1e-5&&kerb===0&&asph>0&&asphErr<1e-5,`${tag}: paint ${paint}/${expect} vertices at +7.6 cm (${paintErr.toExponential(1)} m), 2.4 cm above the asphalt at +5.2 cm (${asphErr.toExponential(1)} m); old kerb and capacity lines gone (${kerb})`);
+  let pb=0,pr=0,bb=0;for(const s of L.stalls){const q=s.polygon;for(const k of [.2,.5,.8])for(const e of [[0,3],[1,2]]){const x=q[e[0]][0]+(q[e[1]][0]-q[e[0]][0])*k,z=q[e[0]][1]+(q[e[1]][1]-q[e[0]][1])*k,y=hit(land,x,z);pr++;if(y==null||Math.abs(y-g(x,z)-.076)>2e-5)pb++;}const y=hit(land,...s.center);if(y==null||Math.abs(y-g(...s.center)-.052)>2e-5)bb++;}
+  check(pb===0&&bb===0,`${tag}: independent rays: ${pr} on dividers hit paint, 6 box centres hit asphalt on the plane (failures ${pb}/${bb})`);
+  // Apron over the grass gap and the seam to the street.
+  const ap=P.streetApron(lot),[ea,eb]=ap.edge,el=Math.hypot(eb[0]-ea[0],eb[1]-ea[1]),eu=[(eb[0]-ea[0])/el,(eb[1]-ea[1])/el];let ev=[-eu[1],eu[0]];if(inside(ea[0]+(eb[0]-ea[0])/2+ev[0]*.1,ea[1]+(eb[1]-ea[1])/2+ev[1]*.1,poly))ev=[-ev[0],-ev[1]];
+  // Perpendicular from the pocket's street edge to the emitted strip: inside the apron every ray hits asphalt; where the
+  // street bends away (beyond the apron's maxGap reach) the apron closes straight back to the pocket corner instead.
+  let gapN=0,gapBad=0,seamN=0,seamMax=0,edgeMax=0,maxGap=0,beyond=0,open=0;
+  for(let t=.05;t<el-.05;t+=.25){const p0=[ea[0]+eu[0]*t,ea[1]+eu[1]*t];let gap=null;for(let d=0;d<3;d+=.005)if(onStrip(p0[0]+ev[0]*d,p0[1]+ev[1]*d)){gap=d;break;}if(gap==null||gap>ap.maxGap){beyond++;continue;}maxGap=Math.max(maxGap,gap);
+   for(let d=.02;d<gap-.01;d+=.05){const x=p0[0]+ev[0]*d,z=p0[1]+ev[1]*d;if(!inside(x,z,ap.polygon)){open++;continue;}const y=hit(land,x,z);gapN++;if(y==null||y-g(x,z)<.024||y-g(x,z)>.0525)gapBad++;}
+   {const x=p0[0]+ev[0]*(gap-.01),z=p0[1]+ev[1]*(gap-.01);if(inside(x,z,ap.polygon)){const y=hit(land,x,z);seamN++;seamMax=Math.max(seamMax,y==null?1:Math.abs(y-g(x,z)-.025));}}
+   {const x=p0[0]+ev[0]*.01,z=p0[1]+ev[1]*.01,y=hit(land,x,z);edgeMax=Math.max(edgeMax,y==null?1:Math.abs(y-g(x,z)-.052));}}
+  check(gapN>40&&gapBad===0&&seamN>40&&seamMax<.003&&edgeMax<.001&&open<=gapN/50&&ap.polygon.every(([x,z])=>!inside(x,z,poly)||edgeDist(x,z,poly)<1e-6),`${tag}: the guessed apron covers the grass gap up to ${maxGap.toFixed(2)} m (${gapN} rays hit asphalt, ${gapBad} miss, ${open} gap points left open at the bend, ${beyond} edge positions where the street bends away beyond ${ap.maxGap} m); seam to the street ${(seamMax*1000).toFixed(1)} mm at ${seamN} points, to the pocket ${(edgeMax*1000).toFixed(2)} mm; road and outline unmoved`);
+  for(let i=0;i<lp.count;i+=3){const cx=(lp.getX(i)+lp.getX(i+1)+lp.getX(i+2))/3,cz=(lp.getZ(i)+lp.getZ(i+1)+lp.getZ(i+2))/3;if(inside(cx,cz,poly)||inside(cx,cz,ap.polygon))localLand++;}
+  check(Math.min(...poly.map(q=>q[1]))>C.WALK.z1,`${tag}: the pocket lies south of WALK.z1=${C.WALK.z1} (from z ${Math.min(...poly.map(q=>q[1]))}): surface and ray evidence only, not reachable on foot`);
+ }
+ // Budget, houses, other lots.
+ const tris=o=>{let k=0;o.traverse(m=>{if(m.isMesh)k+=(m.geometry.index?.count??m.geometry.attributes.position.count)/3*(m.isInstancedMesh?m.count:1)});return k;},meshes=[];live.traverse(q=>{if(q.isMesh)meshes.push(`${q.name}:${q.material.type}:${q.material.map?'map':'-'}`)});
+ check(localLand<=CAP.land&&localTerrain<=CAP.terrain&&meshes.length===6&&meshes.every(m=>m.endsWith(':-')||m.startsWith('south-crowns')),`local cost: ${localLand} land triangles on the two pockets and aprons (asphalt + paint), ${localTerrain} terrain triangles overlapping them; south-backdrop ${tris(live)} / site-terrain ${idx.length/3} triangles in total (ef5c6ef1: 49346 / 89824); same ${meshes.length} backdrop meshes and materials, no new texture`);
+ const recs=live.userData.buildings,hd=Object.entries(HOUSES).map(([nm,b])=>Math.abs(recs.find(r=>r.name===nm).base-b));
+ check(Math.max(...hd)<1e-9,`house bases unchanged: ${Object.keys(HOUSES).map(nm=>`${nm} ${recs.find(r=>r.name===nm).base.toFixed(6)}`).join(', ')} (max ${Math.max(...hd).toExponential(1)} m)`);
+ const other=OTHER.filter(p=>p[2]!=null).map(([x,z,y])=>Math.abs(g(x,z)-y));
+ check(Math.max(...other)<1e-9&&['145221619','850235113','145221624','145221626'].map(s=>P.createParkingLayout(C.SITE.south.parking.find(p=>p.source===s)).stalls.length).join()==='30,18,15,18'&&Math.abs(S.groundY(10,248)-1.26)<1e-6&&C.WALK.z1===250,`other graded lots' samples (${Math.max(...other).toExponential(1)} m), their 30/18/15/18 boxes, control (10,248)=1.26 m and WALK.z1 unchanged`);
+ const trunks=live.children.filter(m=>m.isInstancedMesh);let treeHit=0;const M=new T.Matrix4(),v=new T.Vector3();for(const m of trunks)for(let i=0;i<m.count;i++){m.getMatrixAt(i,M);v.setFromMatrixPosition(M);for(const s of Object.keys(SRC)){const lot=C.SITE.south.parking.find(p=>p.source===s);if(inside(v.x,v.z,lot.polygon)||inside(v.x,v.z,P.streetApron(lot).polygon))treeHit++;}}
+ check(treeHit===0,`no backdrop tree stands on the pockets or aprons (${treeHit})`);
+ check(!w.document.querySelector('#error'),'actual World remains loaded');
+}catch(e){check(false,`test error: ${e.message}`)}
+out.textContent+=`\ntime ${((performance.now()-T0)/1000).toFixed(1)} s\n${pass?'ALL PASS':'SOME FAILED'}`;
+</script></html>

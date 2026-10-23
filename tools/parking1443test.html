@@ -57,7 +57,7 @@ try{
  const build=()=>{const it=B.southBackdropParts(ground);let r;do r=it.next();while(!r.done);return r.value;},tris=o=>{let k=0;o.traverse(m=>{if(m.isMesh)k+=(m.geometry.index?.count??m.geometry.attributes.position.count)/3*(m.isInstancedMesh?m.count:1)});return k;},meshes=o=>{const m=[];o.traverse(q=>{if(q.isMesh)m.push(q.name)});return m.join();};
  const after=build(),liveTris=tris(live),terrTris=idx.length/3;
  check(liveTris===tris(after)&&liveTris<=BASE_COUNTS.south&&meshes(after)===meshes(live),`south-backdrop ${BASE_COUNTS.south} → ${liveTris} triangles (no budget raised), same ${meshes(live).split(',').length} meshes/materials`);
- check(terrTris-BASE_COUNTS.terrain===158,`site-terrain ${BASE_COUNTS.terrain} → ${terrTris} triangles (+${terrTris-BASE_COUNTS.terrain}: the clipped cells; the measured cost, not hidden by batching)`);
+ check(terrTris-BASE_COUNTS.terrain===158+116,`site-terrain ${BASE_COUNTS.terrain} → ${terrTris} triangles (+${terrTris-BASE_COUNTS.terrain}: this lot's clipped cells +158 and #1450's two street pockets +116; the measured cost, not hidden by batching)`);
  // Unchanged neighbours: house 47's base, source controls, other graded lots, walk boundary.
  const h47=live.userData.buildings.find(b=>b.name==='Sankt Lars väg 47'),other=BASE.slice(10).map(([x,z,y])=>Math.abs(g(x,z)-y));
  check(Math.abs(h47.base-BASE_COUNTS.house47)<1e-9&&Math.max(...other)<1e-9&&Math.abs(S.groundY(10,248)-1.26)<1e-6&&Math.abs(S.groundY(-20,262)-1.58)<1e-6&&C.WALK.z1===250,`house 47 base ${h47.base.toFixed(6)} m, other lots' samples (${Math.max(...other).toExponential(1)} m), controls 1.26/1.58 m and WALK.z1=${C.WALK.z1} unchanged`);

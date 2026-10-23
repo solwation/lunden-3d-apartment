@@ -8455,6 +8455,18 @@ controls and `WALK.z1`. The lot lies wholly south of `WALK.z1`, so there are no 
 `parking1437test.html`, `parkinggrade1436test.html`, `parkinggrade1440test.html`, `parking1442test.html` and
 `southbackdroptest.html` (only #1474 fails, now42536). Images: `docs/verification/1443/`.
 
+## #1450: street pockets by houses 64 and 66
+
+Run `node tools/runtests.cjs --test-only parking1450test.html` (about3–6min). In the actual World it checks, per pocket,
+the unchanged OSM outline/capacity and street30633545, that terrain rays ≥1.5m inside lie on the reported minimax plane
+and all pocket rays agree with `renderedTerrainY`/`groundY`, unchanged ground outside (26 ef5c6ef1 points and rays within6m),
+steepest overlapping/nearby terrain triangles against the ef5c6ef1 values, six whole 2.5×5m boxes inside the outline and
+off the emitted street strip, seven 5m dividers, paint/asphalt lifts and independent rays, apron coverage of the grass gap
+and both seams, the local triangle cost with unchanged meshes/materials, house bases, other lots and trees. No walking
+routes (south of `WALK.z1`). Rerun `parking1441test.html`, `parking1437test.html`, `parkinggrade1436test.html`,
+`parkinggrade1440test.html`, `parking1442test.html`, `parking1443test.html` (#1553's two stale lines) and
+`southbackdroptest.html` (#1474, now49539). Images: `docs/verification/1450/`.
+
 ## Physical computer game (#1491)
 
 `tools/computerscreentest.cjs GAME LOCAL_WORKER OUT` opens actual Worlds on desktop

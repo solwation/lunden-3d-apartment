@@ -8,7 +8,7 @@ import { lowRiseWindowParts } from './southwindows.js';
 import { buildStLars41 } from './stlars41.js';
 import { paddockLandParts } from './paddock.js';
 import { busStopApron } from './busstopgeo.js';
-import { parking1442Parts, parkingLayoutParts, cellTriangles, lotTriangles } from './parkinglot1442.js';
+import { parking1442Parts, parkingLayoutParts, cellTriangles, lotTriangles, streetApron } from './parkinglot1442.js';
 const S=SITE.south;
 const LAND_MESH=6,LAND_LIFT=.03; // m: #1306, fields / car parks are cut into triangles <= LAND_MESH m where the sloping terrain lies and sit LAND_LIFT higher than the corner heights say (*guess*)
 const inside=(x,z,p)=>{let yes=false;for(let i=0,j=p.length-1;i<p.length;j=i++)if((p[i][1]>z)!==(p[j][1]>z)&&x<(p[j][0]-p[i][0])*(z-p[i][1])/(p[j][1]-p[i][1])+p[i][0])yes=!yes;return yes;};
@@ -98,6 +98,7 @@ export function* southBackdropParts(ground){
     parts.land.push(...markings);
     for(const[a,b]of L.entrance?[[u0,L.entrance[0]],[L.entrance[1],u1]]:[[u0,u1]]){const curb=lineQuad(at(a),at(b),0.14,.022+LAND_LIFT+.024,0xb0aba2,farGround);if(curb)parts.land.push(curb);}
    }
+   const apron=streetApron(p,{lotLift:.022+LAND_LIFT});if(apron)parts.land.push(tint(upGeometry(terrainTriangles(apron.polygon,LAND_MESH,farGround.grid()),(x,z)=>farGround(x,z)+apron.lift(x,z)),surfColor(p))); // #1450: a street-side pocket's guessed apron over the grass gap to its mapped street's strip edge
    if(p.capacity&&p.polygon.length>=4&&p.source!=='145221624'&&!p.layout){
     const poly=ring(p.polygon);
     if(poly.length===4){

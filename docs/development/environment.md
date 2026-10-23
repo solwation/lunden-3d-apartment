@@ -603,6 +603,28 @@ Cost: `south-land` −98 (whole backdrop 43732→43634 on top of #1449's service
 no new mesh, material or texture. The whole lot lies south of `WALK.z1=250`: surface and ray evidence only, not reachable
 on foot. Other lots, controls and `WALK` are unchanged.
 
+## Street pockets by houses 64 and 66 (#1450)
+
+The two shallow perpendicular street pockets OSM1379042014 (by house66, 15.21×5.23m) and OSM1379043165 (by house64,
+15.31×5.27m) along the already drawn service road30633545 use the #1443 clipped plane (`grade.clip`, 1.5m transition,
+*guess*) and one `layout.row` of six whole 2.5×5m boxes on the far edge (raw OSM capacity6 is kept, not forced: six
+boxes fit with 0.18/0.26m left at the street edge). New `layout.street` names the mapped street as the driving lane:
+`createParkingLayout` then only needs one box depth (no internal aisle) and checks that the row faces the street.
+New `grade.fit: 'minimax'`: a least-squares plane steepened the drawn band where the pocket edge cuts an old steep
+terrain triangle (0.187/0.166), so `fitDrawnPlane` (`src/parkinglot1442.js`, called from `terrainGeometry` before any
+cell is emitted) picks the plane height and slopes that make the steepest drawn lot triangle as gentle as possible,
+reweighting the cut pieces only (deterministic Nelder–Mead, about3ms warm per pocket, ≤40ms cold on the test VM).
+Steepest emitted terrain triangle overlapping the pocket: 0.1714→0.1599 (house66) and 0.1367→0.1366 (house64); the
+steepest triangles within6m outside are the unchanged old pieces of those same edge triangles (region maxima unchanged).
+`streetApron` (`layout.street.apron`, *guess*) fills the existing grass gap (0.38–0.64m and 0.56–1.17m) between the
+pocket edge and the street strip's actual edge (road samples at half width, as `pathStrip` draws it), reaching 2cm under
+the street; its lift falls from the lot asphalt (+5.2cm) to the street (+2.5cm), so both seams are within1mm. Where
+road30633545 bends north beyond house64's pocket the apron follows the strip up to 2m and closes back to the corner.
+Roads, polygon edges, the ground outside both outlines, house bases (66/63/145221625/64/62), other lots, controls and
+`WALK.z1` are unchanged; the old kerbs and capacity lines are gone. Both pockets lie south of `WALK.z1=250`: surface and
+ray evidence only, not reachable on foot. Cost: `site-terrain` +116 (89824→89940 on ef5c6ef1), `south-land` +193
+(whole backdrop 49346→49539); no new mesh, material or texture. This is site parking: house A/B/C/L geometry is unaffected.
+
 ## Southern road embankment (#1382)
 
 `SOUTH_BANK` holds the11road controls and five10-point cross-sections from the same77-point LM export.
