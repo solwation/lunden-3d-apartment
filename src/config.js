@@ -3052,8 +3052,9 @@ export const DECAL_OFFSET = { factor: -1, units: -2 };
 // LOW_MEMORY devices campusfacades.js and schoolfacade.js keep every body, roof, colour, window and the clock tower but
 // drop dentils, quoin joints and the finer glazing bars (centre post and one rail stay), merge each stepped cornice into
 // one profile, draw sills and window crowns as flat planes, round arches with `curve` segments and lay the roofs on a
-// `roofGrid`× coarser grid. `maxTris` = the east backdrop's triangle budget on phones (eastbackdroptest); all *guess*.
-export const CAMPUS_LOD = { curve: 3, roofGrid: 2, maxTris: 36000 };
+// `roofGrid`× coarser grid. `maxTris` = the east backdrop's triangle budget on phones (eastbackdroptest); all *guess*, except that
+// `maxTris` was re-measured in #1468: 41 367 triangles at c6a1653b + ~2 % = 42 200 (desktop budget: CAMPUS_TRIS in the test).
+export const CAMPUS_LOD = { curve: 3, roofGrid: 2, maxTris: 42200 };
 
 // Marks on surfaces (#96, src/marks.js): one ring buffer of at most `max` flat decals in all, one instanced
 // mesh per kind, canvas textures. Per kind: size (m, randomised ±25 %), life (s; the last `fade` s fade out).
