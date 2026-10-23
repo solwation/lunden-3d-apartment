@@ -1,0 +1,15 @@
+PASS desktop: old saved level 2 migrates to Auto at Medel, 60 FPS default
+PASS desktop: Lägsta applied (pixel ratio 0.6), last auto level untouched
+PASS desktop: 30 FPS target saved
+PASS desktop: keyboard Enter on a level button selects it
+PASS desktop: reload restores manual Låg and 30 FPS
+PASS desktop: quality=3 lock wins, controls disabled, saved choice untouched
+PASS desktop: back to Auto resumes the last auto level 2
+PASS touch: old saved level 2 migrates to Auto at Medel, 60 FPS default
+PASS touch: old saved level 2 migrates to Auto at Medel, 60 FPS default
+PASS touch: Lägsta applied (pixel ratio 0.6), last auto level untouched
+PASS touch: 30 FPS target saved
+PASS touch: reload restores manual Låg and 30 FPS
+PASS touch: quality=3 lock wins, controls disabled, saved choice untouched
+PASS touch: back to Auto resumes the last auto level 2
+PASS zero browser errors
