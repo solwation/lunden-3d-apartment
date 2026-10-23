@@ -110,7 +110,10 @@ function buildBackdrop(W,key,ground,brick=null,reflectiveGlass=null,karp=null){
   const top=q=>eave+(b.roof==='flat'?0:rise*Math.max(0,1-Math.abs(v(q)-mid)/half));
   const clip=sign=>{const out=[];for(let i=0;i<p.length;i++){const a=p[i],b=p[(i+1)%p.length],va=(v(a)-mid)*sign,vb=(v(b)-mid)*sign;if(va>=0)out.push(a);if((va>=0)!==(vb>=0)){const t=va/(va-vb);out.push([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]);}}return out;};
   if(b.roof==='flat'){const g=new THREE.ShapeGeometry(footprint);g.rotateX(-Math.PI/2).translate(0,eave,0);parts.roof.push(plain(g));}else for(const sign of [-1,1]){const poly=clip(sign),ps=[],contour=poly.map(q=>new THREE.Vector2(q[0],q[1]));for(const tri of THREE.ShapeUtils.triangulateShape(contour,[]))for(const i of tri)ps.push(poly[i][0],top(poly[i]),poly[i][1]);const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(ps,3));g.computeVertexNormals();parts.roof.push(g);}
-  for(const [ring,hole]of [[p,false],...holes.map(h=>[h,true])])for(let i=0;i<ring.length;i++){const a=ring[i],c=ring[(i+1)%ring.length];const gable=strip(a,c,eave,[top(a),top(c)]);gable.userData.tint=b.facade??W.facade;wallParts.push(gable);
+  for(const [ring,hole]of [[p,false],...holes.map(h=>[h,true])])for(let i=0;i<ring.length;i++){const a=ring[i],c=ring[(i+1)%ring.length];
+   // #1527: a wall under the ridge (a gable end, or a long wing's side across it) is split where it crosses, so its top follows the pitched roof instead of leaving a triangle open between the eave line and the ridge
+   const va=v(a)-mid,vc=v(c)-mid,m=b.roof!=='flat'&&va*vc<0?[a[0]+(c[0]-a[0])*va/(va-vc),a[1]+(c[1]-a[1])*va/(va-vc)]:null;
+   for(const[s,e]of m?[[a,m],[m,c]]:[[a,c]]){const gable=strip(s,e,eave,[top(s),top(e)]);gable.userData.tint=b.facade??W.facade;wallParts.push(gable);}
    const dx=c[0]-a[0],dz=c[1]-a[1],len=Math.hypot(dx,dz);
    const orientation=(hole?-1:1)*Math.sign(ring.reduce((sum,q,j)=>{const r=ring[(j+1)%ring.length];return sum+q[0]*r[1]-r[0]*q[1];},0));
    const nx=orientation*dz/len,nz=-orientation*dx/len; // A double-sided decal avoids assuming footprint winding from map data.
