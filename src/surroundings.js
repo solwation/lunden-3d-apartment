@@ -195,15 +195,17 @@ function parkingSeamWeight(x,z){
   }
   return w;
 }
-// #1443: the clipped lot (grade.clip) whose polygon overlaps terrain cell [x0,x1]×[z0,z1], if any.
-function clippedGradeAt(x0,x1,z0,z1){
+// #1443: the clipped lots (grade.clip) whose polygons overlap terrain cell [x0,x1]×[z0,z1]. #1451: a 12 m cell can touch
+// two neighbouring street pockets (1379043164 and 1379043165), so all of them are returned, in config order.
+function clippedGradesAt(x0,x1,z0,z1){
+  const found=[];
   for(const g of PARKING_GRADES){
     if(!g.clip||x1<g.bounds.x0||x0>g.bounds.x1||z1<g.bounds.z0||z0>g.bounds.z1)continue;
     const poly=g.polygon,inCell=([x,z])=>x>x0&&x<x1&&z>z0&&z<z1,cross=(a,b,c,d)=>{const o=(p,q,r)=>Math.sign((q[0]-p[0])*(r[1]-p[1])-(q[1]-p[1])*(r[0]-p[0]));return o(a,b,c)*o(a,b,d)<0&&o(c,d,a)*o(c,d,b)<0;};
     const rect=[[x0,z0],[x1,z0],[x1,z1],[x0,z1]];
-    if(poly.some(inCell)||rect.some(([x,z])=>g.contains(x,z))||poly.some((a,k)=>rect.some((c,m)=>cross(a,poly[(k+1)%poly.length],c,rect[(m+1)%4]))))return g;
+    if(poly.some(inCell)||rect.some(([x,z])=>g.contains(x,z))||poly.some((a,k)=>rect.some((c,m)=>cross(a,poly[(k+1)%poly.length],c,rect[(m+1)%4]))))found.push(g);
   }
-  return null;
+  return found;
 }
 /** #1305: 0 near the block, the river valley and the mesh's outer edges (today's levels), 1 in between (the grid's ground). */
 function elevationWeight(x,z,southEdge=S.backgroundGround.z1){
@@ -274,7 +276,7 @@ function terrainGeometry(southeastCells = null) {
   for (const r of bridgeRecords) for (const e of [-1, 1]) { const ez = r.z + r.dz * r.len / 2 * e; zs.add(ez - 0.4 * e); zs.add(ez + 0.2 * e); } // #1271: the under-bridge cut ends inside the abutment blocks
   const X = [...xs].sort((a, b) => a - b), Z = [...zs].filter((z) => z >= z0).sort((a, b) => a - b);
   // #1450: a minimax-fitted lot plane is chosen on the drawn cells it will be cut into, before any of them is emitted.
-  for(const g of PARKING_GRADES)if(g.clip&&g.fit==='minimax'){const cs=[];for(let i=0;i<X.length-1;i++)if(X[i+1]>=g.bounds.x0&&X[i]<=g.bounds.x1)for(let j=0;j<Z.length-1;j++)if(Z[j+1]>=g.bounds.z0&&Z[j]<=g.bounds.z1&&clippedGradeAt(X[i],X[i+1],Z[j],Z[j+1])===g)cs.push({x0:X[i],x1:X[i+1],z0:Z[j],z1:Z[j+1],c:[[X[i],Z[j]],[X[i+1],Z[j]],[X[i],Z[j+1]],[X[i+1],Z[j+1]]].map(([x,z])=>plateauTerrainY(x,z))});const t0=performance.now();g.fitResult={...fitDrawnPlane(g,cs),cells:cs.length,ms:performance.now()-t0};}
+  for(const g of PARKING_GRADES)if(g.clip&&g.fit==='minimax'){const cs=[];for(let i=0;i<X.length-1;i++)if(X[i+1]>=g.bounds.x0&&X[i]<=g.bounds.x1)for(let j=0;j<Z.length-1;j++)if(Z[j+1]>=g.bounds.z0&&Z[j]<=g.bounds.z1&&clippedGradesAt(X[i],X[i+1],Z[j],Z[j+1]).includes(g))cs.push({x0:X[i],x1:X[i+1],z0:Z[j],z1:Z[j+1],c:[[X[i],Z[j]],[X[i+1],Z[j]],[X[i],Z[j+1]],[X[i+1],Z[j+1]]].map(([x,z])=>plateauTerrainY(x,z))});const t0=performance.now();g.fitResult={...fitDrawnPlane(g,cs),cells:cs.length,ms:performance.now()-t0};}
   const pos = [], idx = [], cells=new Map(), lotCells=new Map();
   for (const z of Z) for (const x of X) pos.push(x, terrainY(x, z) - 0.01, z);
   const nx = X.length;
@@ -290,16 +292,16 @@ function terrainGeometry(southeastCells = null) {
     // Boundary samples interpolate any adjacent coarse edge, so mixed cells remain watertight.
     const fine=(i,j)=>i>=0&&j>=0&&i<X.length-1&&j<Z.length-1&&
       (Z[j]+Z[j+1])/2>60&&riverDistance((X[i]+X[i+1])/2,(Z[j]+Z[j+1])/2)<S.river.terrainRefineRadius;
-    const start = idx.length, lotGrade = clippedGradeAt(X[i],X[i+1],Z[j],Z[j+1]);
+    const start = idx.length, lotGrades = clippedGradesAt(X[i],X[i+1],Z[j],Z[j+1]), lotGrade = lotGrades[0];
     if(lotGrade){
       // #1443: a cell touching a clipped parking lot is triangulated along the lot outline and its inset
       // core (gradedCellTriangles): outside the outline the old drawn triangles stay exactly, the core is
       // the lot's plane and only the band between them fades. The coarse corners are the old ungraded ones.
-      const c=[[X[i],Z[j]],[X[i+1],Z[j]],[X[i],Z[j+1]],[X[i+1],Z[j+1]]].map(([x,z])=>plateauTerrainY(x,z)),tris=gradedCellTriangles(lotGrade,lotGrade.polygon,{x0:X[i],x1:X[i+1],z0:Z[j],z1:Z[j+1],c});
-      const shared=new Map([[a,[X[i],Z[j]]],[b,[X[i+1],Z[j]]],[c2,[X[i],Z[j+1]]],[d,[X[i+1],Z[j+1]]]].filter(([k])=>!lotGrade.contains(pos[k*3],pos[k*3+2])).map(([k,[x,z]])=>[`${x},${z}`,k]));
+      const c=[[X[i],Z[j]],[X[i+1],Z[j]],[X[i],Z[j+1]],[X[i+1],Z[j+1]]].map(([x,z])=>plateauTerrainY(x,z)),tris=gradedCellTriangles(lotGrade,lotGrade.polygon,{x0:X[i],x1:X[i+1],z0:Z[j],z1:Z[j+1],c},lotGrades.slice(1));
+      const shared=new Map([[a,[X[i],Z[j]]],[b,[X[i+1],Z[j]]],[c2,[X[i],Z[j+1]]],[d,[X[i+1],Z[j+1]]]].filter(([k])=>!lotGrades.some(g=>g.contains(pos[k*3],pos[k*3+2]))).map(([k,[x,z]])=>[`${x},${z}`,k]));
       const vertex=([x,z,y])=>{const key=`${x},${z}`;let k=shared.get(key);if(k===undefined){k=pos.length/3;pos.push(x,y-.01,z);shared.set(key,k);}return k;};
       const drawn=tris.filter(t=>t.kind!=='core'); // the core is drawn once below, as the lot's plane
-      lotCells.set(j*nx+i,{grade:lotGrade,tris:drawn.map(({kind,tri})=>({kind,tri:tri.map(([x,z,y])=>[x,z,y-.01])}))});
+      lotCells.set(j*nx+i,{grades:lotGrades,tris:drawn.map(({kind,tri})=>({kind,tri:tri.map(([x,z,y])=>[x,z,y-.01])}))});
       for(const{tri}of drawn){const k=tri.map(vertex);idx.push(k[0],k[2],k[1]);}
     }else if(fine(i,j)){
       const n=S.river.terrainSubdivisions,at=(u,v)=>{
@@ -325,11 +327,12 @@ function terrainGeometry(southeastCells = null) {
   // #1443: each clipped lot's planar core as one polygon (its edge vertices lie on the band's
   // core-side vertices' straight line at the plane's height), then all lot pieces for asphalt and paint.
   const cores=PARKING_GRADES.filter(g=>g.clip);
-  for(const g of cores){const k0=pos.length/3,start=idx.length;for(const[x,z]of g.core)pos.push(x,g.planeY(x,z)-.01,z);const cw=Math.sign(g.core.reduce((s,q,k)=>{const r=g.core[(k+1)%g.core.length];return s+q[0]*r[1]-r[0]*q[1];},0));for(let k=1;k<g.core.length-1;k++)cw>0?idx.push(k0,k0+k+1,k0+k):idx.push(k0,k0+k,k0+k+1);if(southeastCells&&g.core.every(([x,z])=>x>=TERRAIN_FAR.renderSplit.x&&z>=TERRAIN_FAR.renderSplit.z))southeastCells.push([start,idx.length-start]);}
-  lotTriangles=[...cores.map(g=>g.core.map(([x,z])=>[x,z,g.planeY(x,z)-.01])),...[...lotCells.values()].flatMap(c=>c.tris.filter(t=>t.kind==='band').map(t=>t.tri))];
+  // #1451: a creased lot's core is drawn as its two planar parts (grade.coreParts).
+  for(const g of cores)for(const core of g.coreParts){const k0=pos.length/3,start=idx.length;for(const[x,z]of core)pos.push(x,g.planeY(x,z)-.01,z);const cw=Math.sign(core.reduce((s,q,k)=>{const r=core[(k+1)%core.length];return s+q[0]*r[1]-r[0]*q[1];},0));for(let k=1;k<core.length-1;k++)cw>0?idx.push(k0,k0+k+1,k0+k):idx.push(k0,k0+k,k0+k+1);if(southeastCells&&core.every(([x,z])=>x>=TERRAIN_FAR.renderSplit.x&&z>=TERRAIN_FAR.renderSplit.z))southeastCells.push([start,idx.length-start]);}
+  lotTriangles=[...cores.flatMap(g=>g.coreParts.map(core=>core.map(([x,z])=>[x,z,g.planeY(x,z)-.01]))),...[...lotCells.values()].flatMap(c=>c.tris.filter(t=>t.kind==='band').map(t=>t.tri))];
   terrainSurface=(x,z)=>{
     const i=find(X,x),j=find(Z,z),lot=lotCells.get(j*nx+i);
-    if(lot){if(lot.grade.inCore(x,z))return lot.grade.planeY(x,z)-.01;let best=null,bm=-Infinity;for(const{tri:[p,q,r]}of lot.tris){const det=(q[0]-p[0])*(r[1]-p[1])-(r[0]-p[0])*(q[1]-p[1]),l1=((x-p[0])*(r[1]-p[1])-(r[0]-p[0])*(z-p[1]))/det,l2=((q[0]-p[0])*(z-p[1])-(x-p[0])*(q[1]-p[1]))/det,m=Math.min(1-l1-l2,l1,l2);if(m>bm){bm=m;best=p[2]+(q[2]-p[2])*l1+(r[2]-p[2])*l2;}}return best;}
+    if(lot){const core=lot.grades.find(g=>g.inCore(x,z));if(core)return core.planeY(x,z)-.01;let best=null,bm=-Infinity;for(const{tri:[p,q,r]}of lot.tris){const det=(q[0]-p[0])*(r[1]-p[1])-(r[0]-p[0])*(q[1]-p[1]),l1=((x-p[0])*(r[1]-p[1])-(r[0]-p[0])*(z-p[1]))/det,l2=((q[0]-p[0])*(z-p[1])-(x-p[0])*(q[1]-p[1]))/det,m=Math.min(1-l1-l2,l1,l2);if(m>bm){bm=m;best=p[2]+(q[2]-p[2])*l1+(r[2]-p[2])*l2;}}return best;}
     const row=cells.get(j*nx+i),n=row?row.length-1:1;
     const u=Math.max(0,Math.min(n-1e-8,(x-X[i])/(X[i+1]-X[i])*n)),v=Math.max(0,Math.min(n-1e-8,(z-Z[j])/(Z[j+1]-Z[j])*n)),a=Math.floor(u),b=Math.floor(v),f=u-a,g=v-b;
     const y=(du,dv)=>pos[(row?row[b+dv][a+du]:(j+dv)*nx+i+du)*3+1];

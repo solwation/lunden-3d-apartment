@@ -8479,6 +8479,18 @@ Rerun `parkinggrade1436test.html` (controls, unchanged89940 terrain triangles an
 `parking1443test.html`/`southbackdroptest.html` (only the same #1553/#1474 lines as on main, backdrop49539). The other
 five graded lots' outline steps (0.07–0.27m→≤0.007m) were measured with a scratch page, not a committed test. Fixed-camera
 screenshots before/after at the entrance differ by2 pixels, so no result images: the change is felt when walking.
+## #1451: street pockets by houses 61 and 62
+
+Run `node tools/runtests.cjs --test-only parking1451test.html` (about4min). In the actual World it checks, per pocket, the
+unchanged OSM outline/capacity and street30633545; terrain rays ≥ the transition inside on the reported (creased) minimax
+plane and all pocket rays against `renderedTerrainY`/`groundY`; unchanged ground outside (5547d41a points 0.2–5m out and
+3cm outside every edge, plus rays within6m); steepest overlapping and nearby (whole-triangle distance ≤6m) terrain
+triangles against 5547d41a; the critical neighbour house's gap, footprint and base; whole boxes inside the outline and off
+the emitted street strip; dividers, paint/asphalt lifts and independent rays; apron coverage and both seams; local cost with
+unchanged meshes/materials; all neighbouring house bases, other lots, #1450's two planes, trees and `WALK.z1`. No walking
+routes (south of `WALK.z1`). Rerun `parking1450test.html`, `parking1441test.html`, `parking1437test.html`,
+`parkinggrade1436test.html`, `parkinggrade1440test.html`, `parking1442test.html`, `parking1443test.html` (#1553's two
+stale lines) and `southbackdroptest.html` (#1474, now49726). Images: `docs/verification/1451/`.
 
 ## Physical computer game (#1491)
 

@@ -646,6 +646,31 @@ route0.007m (was0.243m); within3m of each outline the steepest walking slope fel
 sample over `WALK.maxSlope`, the others 0.22–0.65→0.18–0.39). Drawn terrain, planes, controls, house bases, triangles
 (`site-terrain`89940, south backdrop49539) and draw calls are unchanged; only the eye height within2m outside a lot moves.
 Roads there use `max(groundY, renderedTerrainY)`; a fixed-camera view of the entrance differs by 2 pixels.
+## Street pockets by houses 61 and 62 (#1451)
+
+OSM1379042106 (by house61, 20.23×5.25m, raw capacity8) and OSM1379043164 (by house62, 9.03×4.83m, raw capacity3), both
+along road30633545, reuse the #1450 mechanism: `grade.clip`, `fit: 'minimax'`, one `layout.row` facing `layout.street` (the
+street is the driving lane, no internal aisle) and `streetApron` over the grass gap (0.10–0.37m and 0.44–0.64m). All
+levels, transitions, box sizes and aprons are *guess*. Eight whole 2.5×5m boxes stand on 1379042106's north edge; 1379043164
+is shallower than 5m, so new `layout.bayDepth` gives its three 2.5m boxes a 4.8m depth (*guess*) and they stay inside the
+outline instead of being forced past the house side.
+1379042106 lies across the drawn ground's ridge on terrain grid line x=250 (about0.9m higher than both ends), where one
+plane made the band steeper than before (0.112→0.24, still 0.156 with a 2.5m transition). New `grade.crease` (a line, *guess*)
+adds k·(distance right of the line) to the plane: `createParkingGrade` fits all four parameters by least squares,
+`fitDrawnPlane` runs the minimax search in four dimensions, and `gradedCellTriangles`/`grade.coreParts` cut core and band
+pieces along the crease so every drawn piece stays planar. With the crease on x=250 and a 2m transition the pocket's two
+planes fall about9% west and7% east of the ridge. Steepest emitted triangle overlapping the pocket: 0.111830→0.111831 (house61;
+minimax optimum 0.11183033 against 0.11183032 before in double precision) and 0.123185→0.123188 (house62; 0.12318487 against
+0.12318481; float32 mesh noise). Triangles reaching within6m outside keep their old pieces (0.154520 and 0.133890).
+A 12m terrain cell touches both 1379043164 and #1450's 1379043165, so `clippedGradesAt` returns every clipped lot of a cell
+and `gradedCellTriangles(grade, polygon, cell, others)` cuts each lot's band/core from the whole cell half as if alone (the
+minimax fit stays exact: #1450's planes are bit-identical) and only the outside pieces by every lot in turn.
+Critical neighbours: house59 stays 0.774m off 1379042106's west end and house145221625 0.064m off 1379043164's far edge; the
+civil surface ends at the outline (no halo), no lot triangle lies in a footprint, and the emitted bases of houses
+59/61/62/64/145221625/63/66 are unchanged (≤9e-16m; the inventory's 5.84/5.75/6.15/7.04m are analytical footprint heights,
+not these bases). Ground 3cm outside every edge, roads, other lots and `WALK.z1` are unchanged. Both pockets lie south of
+`WALK.z1=250`: surface and ray evidence only, not reachable on foot. Cost: `site-terrain` +103 (89940→90043), `south-backdrop`
++187 (49539→49726); no new mesh, material or texture. Site parking: house A/B/C/L geometry is unaffected.
 
 ## Southern road embankment (#1382)
 

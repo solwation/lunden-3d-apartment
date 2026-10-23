@@ -84,8 +84,23 @@ export function createParkingGrade(lot, sampleBase, options = {}) {
   for (const [x, z, y] of points) { const dx = x - mx, dz = z - mz, dy = y - my; xx += dx * dx; zz += dz * dz; xz += dx * dz; xy += dx * dy; zy += dz * dy; }
   const det = xx * zz - xz * xz;
   if (Math.abs(det) < 1e-10) throw new RangeError(`Parking polygon ${lot.source ?? ''} cannot fit a stable plane`);
-  let sx = (xy * zz - zy * xz) / det, sz = (zy * xx - xy * xz) / det, py = my;
-  const planeY = (x, z) => py + sx * (x - mx) + sz * (z - mz);
+  let sx = (xy * zz - zy * xz) / det, sz = (zy * xx - xy * xz) / det, py = my, k = 0;
+  // #1451: an optional `grade.crease` line [[x, z], [x, z]] (a guess) bends the plane along it: k · (distance on the
+  // line's right-hand side) is added, so a pocket on a ridge of the drawn ground gets two planes meeting at the
+  // ridge instead of one plane cutting through it. The least-squares start then fits all four parameters.
+  const crease = anchor ? null : lot?.grade?.crease ?? null;
+  let hinge = () => 0;
+  if (crease) {
+    const [[ax, az], [bx, bz]] = crease, len = Math.hypot(bx - ax, bz - az), cx = (bz - az) / len, cz = -(bx - ax) / len;
+    hinge = (x, z) => Math.max(0, (x - ax) * cx + (z - az) * cz);
+    const hm = points.reduce((s, [x, z]) => s + hinge(x, z), 0) / points.length, M = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+    for (const [x, z, y] of points) { const r = [x - mx, z - mz, hinge(x, z) - hm], dy = y - my; for (let i = 0; i < 3; i++) { for (let j = 0; j < 3; j++) M[i][j] += r[i] * r[j]; M[i][3] += r[i] * dy; } }
+    const d3 = (m) => m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) - m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) + m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
+    const D = d3(M), col = (c) => d3(M.map(r => r.map((v, j) => j === c ? r[3] : v)));
+    if (Math.abs(D) < 1e-10) throw new RangeError(`Parking crease of ${lot.source ?? ''} cannot be fitted`);
+    sx = col(0) / D; sz = col(1) / D; k = col(2) / D; py = my - k * hm;
+  }
+  const planeY = (x, z) => py + sx * (x - mx) + sz * (z - mz) + k * hinge(x, z);
   const edgeDistance = (x, z) => {
     let d = Infinity;
     for (let i = 0; i < poly.length; i++) {
@@ -111,11 +126,13 @@ export function createParkingGrade(lot, sampleBase, options = {}) {
   grade.edgeDistance = edgeDistance; // #1543: distance to the outline (either side), for groundY's seam outside the lot
   grade.clip = !!lot?.grade?.clip; // #1443: drawn on terrain cells clipped along the outline (gradedCellTriangles)
   grade.polygon = poly;
-  if (grade.clip) { grade.core = insetConvex(poly, transition); grade.inCore = (x, z) => pointIn(x, z, grade.core); }
-  grade.plane = { origin: [mx, mz, my], slope: [sx, sz], maxResidual, anchored: !!anchor, fit: 'least-squares' };
+  if (grade.clip) { grade.core = insetConvex(poly, transition); grade.inCore = (x, z) => pointIn(x, z, grade.core); grade.coreParts = creaseSplit(grade.core, crease); }
+  grade.crease = crease;
+  grade.hinge = hinge;
+  grade.plane = { origin: [mx, mz, py], slope: [sx, sz], maxResidual, anchored: !!anchor, fit: 'least-squares', ...(crease ? { crease: k } : {}) };
   // #1450: `grade.fit: 'minimax'` lets fitDrawnPlane replace the plane once the drawn terrain cells are known.
   grade.fit = lot?.grade?.fit ?? 'least-squares';
-  grade.setPlane = (y, slopeX, slopeZ, fit) => { if (anchor) throw new RangeError(`Parking plane ${lot.source ?? ''} is anchored`); py = y; sx = slopeX; sz = slopeZ; grade.plane = { ...grade.plane, origin: [mx, mz, py], slope: [sx, sz], fit }; };
+  grade.setPlane = (y, slopeX, slopeZ, fit, bend = k) => { if (anchor) throw new RangeError(`Parking plane ${lot.source ?? ''} is anchored`); py = y; sx = slopeX; sz = slopeZ; k = crease ? bend : 0; grade.plane = { ...grade.plane, origin: [mx, mz, py], slope: [sx, sz], fit, ...(crease ? { crease: k } : {}) }; };
   grade.transition = transition;
   grade.source = lot.source;
   return grade;
@@ -153,6 +170,11 @@ function withCorners(piece, corners) {
   return piece;
 }
 const fan = (p) => p.slice(1, -1).map((_, i) => [p[0], p[i + 1], p[i + 2]]).filter(t => Math.abs(area(t)) > 1e-9);
+// #1451: a convex piece cut along a grade's crease line into its (at most two) planar parts.
+function creaseSplit(piece, crease) {
+  if (!crease) return [piece];
+  return [1, -1].map(side => halfClip(piece, crease[0], crease[1], side)).filter(q => q.length >= 3 && Math.abs(area(q)) > 1e-9);
+}
 
 /**
  * #1450: for a clipped lot with `grade.fit: 'minimax'` (a *guess*, like every lot plane), replace the
@@ -163,34 +185,36 @@ const fan = (p) => p.slice(1, -1).map((_, i) => [p[0], p[i + 1], p[i + 2]]).filt
  * least-squares plane; returns the steepest slope before and after.
  */
 export function fitDrawnPlane(grade, cells, { iterations = 200 } = {}) {
-  const [mx, mz, y0] = grade.plane.origin, [sx0, sz0] = grade.plane.slope;
+  const [mx, mz, y0] = grade.plane.origin, [sx0, sz0] = grade.plane.slope, k0 = grade.plane.crease ?? 0, bend = !!grade.crease, S = bend ? 5 : 4;
   // The cut pieces do not depend on the plane and every drawn height is linear in it (old + (plane − old) · weight):
   // cut once at the least-squares plane and once 1 m higher, then each candidate only re-weights the vertex heights.
-  const drawn = (dy) => { grade.setPlane(y0 + dy, sx0, sz0, 'least-squares'); return cells.flatMap(cell => gradedCellTriangles(grade, grade.polygon, cell).filter(t => t.kind !== 'out').map(t => t.tri)); };
-  const lo = drawn(0), hi = drawn(1), base = (x, z) => y0 + sx0 * (x - mx) + sz0 * (z - mz);
-  const V = Float64Array.from(lo.flatMap((t, i) => t.flatMap(([x, z, y], k) => [x - mx, z - mz, y - base(x, z) * (hi[i][k][2] - y), hi[i][k][2] - y])));
+  // #1451: a creased plane adds its bend k as a fourth parameter (each vertex also keeps its hinge distance).
+  const drawn = (dy) => { grade.setPlane(y0 + dy, sx0, sz0, 'least-squares', k0); return cells.flatMap(cell => gradedCellTriangles(grade, grade.polygon, cell).filter(t => t.kind !== 'out').map(t => t.tri)); };
+  const lo = drawn(0), hi = drawn(1), base = (x, z) => y0 + sx0 * (x - mx) + sz0 * (z - mz) + k0 * grade.hinge(x, z);
+  const V = Float64Array.from(lo.flatMap((t, i) => t.flatMap(([x, z, y], q) => [x - mx, z - mz, y - base(x, z) * (hi[i][q][2] - y), hi[i][q][2] - y, ...(bend ? [grade.hinge(x, z)] : [])])));
   const steepest = (p) => {
     let m = 0;
-    for (let i = 0; i < V.length; i += 12) {
-      const h = (o) => V[o + 2] + (y0 + p[0] + p[1] * V[o] + p[2] * V[o + 1]) * V[o + 3], ax = V[i], az = V[i + 1], bx = V[i + 4] - ax, bz = V[i + 5] - az, cx = V[i + 8] - ax, cz = V[i + 9] - az, det = bx * cz - cx * bz;
+    for (let i = 0; i < V.length; i += 3 * S) {
+      const h = (o) => { let b = y0 + p[0] + p[1] * V[o] + p[2] * V[o + 1]; if (bend) b += p[3] * V[o + 4]; return V[o + 2] + b * V[o + 3]; }, ax = V[i], az = V[i + 1], bx = V[i + S] - ax, bz = V[i + S + 1] - az, cx = V[i + 2 * S] - ax, cz = V[i + 2 * S + 1] - az, det = bx * cz - cx * bz;
       if (Math.abs(det) < 1e-10) continue;
-      const ay = h(i), by = h(i + 4) - ay, cy = h(i + 8) - ay;
+      const ay = h(i), by = h(i + S) - ay, cy = h(i + 2 * S) - ay;
       m = Math.max(m, Math.hypot((by * cz - cy * bz) / det, (bx * cy - cx * by) / det));
     }
     return m;
   };
-  const before = steepest([0, sx0, sz0]);
-  let simplex = [[0, sx0, sz0], [.05, sx0, sz0], [0, sx0 + .01, sz0], [0, sx0, sz0 + .01]].map(p => ({ p, f: steepest(p) }));
+  const start = bend ? [0, sx0, sz0, k0] : [0, sx0, sz0], D = start.length, step = [.05, .01, .01, .01];
+  const before = steepest(start);
+  let simplex = [start, ...start.map((_, d) => start.map((v, e) => e === d ? v + step[d] : v))].map(p => ({ p, f: steepest(p) }));
   for (let it = 0; it < iterations; it++) {
     simplex.sort((a, b) => a.f - b.f);
-    const worst = simplex[3], c = [0, 1, 2].map(k => (simplex[0].p[k] + simplex[1].p[k] + simplex[2].p[k]) / 3), at = (t) => c.map((v, k) => v + t * (worst.p[k] - v)), r = { p: at(-1) };r.f = steepest(r.p);
-    if (r.f < simplex[0].f) { const e = { p: at(-2) };e.f = steepest(e.p);simplex[3] = e.f < r.f ? e : r; }
-    else if (r.f < simplex[2].f) simplex[3] = r;
-    else { const k = { p: at(.5) };k.f = steepest(k.p);if (k.f < worst.f) simplex[3] = k;else for (let q = 1; q < 4; q++) { simplex[q].p = simplex[q].p.map((v, j) => simplex[0].p[j] + (v - simplex[0].p[j]) * .5);simplex[q].f = steepest(simplex[q].p); } }
+    const worst = simplex[D], c = start.map((_, d) => { let sum = 0; for (let q = 0; q < D; q++) sum += simplex[q].p[d]; return sum / D; }), at = (t) => c.map((v, d) => v + t * (worst.p[d] - v)), r = { p: at(-1) };r.f = steepest(r.p);
+    if (r.f < simplex[0].f) { const e = { p: at(-2) };e.f = steepest(e.p);simplex[D] = e.f < r.f ? e : r; }
+    else if (r.f < simplex[D - 1].f) simplex[D] = r;
+    else { const kk = { p: at(.5) };kk.f = steepest(kk.p);if (kk.f < worst.f) simplex[D] = kk;else for (let q = 1; q <= D; q++) { simplex[q].p = simplex[q].p.map((v, j) => simplex[0].p[j] + (v - simplex[0].p[j]) * .5);simplex[q].f = steepest(simplex[q].p); } }
   }
   simplex.sort((a, b) => a.f - b.f);
-  const best = before <= simplex[0].f ? { p: [0, sx0, sz0], f: before } : simplex[0];
-  grade.setPlane(y0 + best.p[0], best.p[1], best.p[2], best.f < before ? 'minimax' : 'least-squares');
+  const best = before <= simplex[0].f ? { p: start, f: before } : simplex[0];
+  grade.setPlane(y0 + best.p[0], best.p[1], best.p[2], best.f < before ? 'minimax' : 'least-squares', bend ? best.p[3] : 0);
   return { before, after: best.f };
 }
 
@@ -202,18 +226,25 @@ export function fitDrawnPlane(grade, cells, { iterations = 200 } = {}) {
  * outline they lie exactly on the lot plane; only the transition band between them fades from the old
  * surface to the plane. Returns triangles of [x, z, y] with their kind ('out', 'band' or 'core'); the
  * caller draws the whole core once as `grade.core` (a few triangles) instead of its per-cell pieces.
+ * #1451: `others` are further clipped lots touching the same cell (the lots never overlap). Each lot's band and
+ * core pieces are cut from the whole cell half exactly as if it were alone (so a minimax fit on single-lot cells
+ * stays exact); only the outside pieces are cut by every lot in turn. Band/core entries carry their `grade`.
  */
-export function gradedCellTriangles(grade, polygon, { x0, x1, z0, z1, c }) {
-  const poly = ring(polygon), core = insetConvex(poly, grade.transition), out = [];
+export function gradedCellTriangles(grade, polygon, { x0, x1, z0, z1, c }, others = []) {
+  const lots = [{ g: grade, poly: ring(polygon) }, ...others.map(g => ({ g, poly: g.polygon }))], out = [];
   const halves = [[[x0, z0], [x1, z0], [x0, z1]], [[x1, z0], [x1, z1], [x0, z1]]];
   for (let h = 0; h < 2; h++) {
     const old = (x, z) => { const f = (x - x0) / (x1 - x0), g = (z - z0) / (z1 - z0); return h === 0 ? c[0] + (c[1] - c[0]) * f + (c[2] - c[0]) * g : c[3] + (c[2] - c[3]) * (1 - f) + (c[1] - c[3]) * (1 - g); };
-    const { inside, outside } = splitConvex(halves[h], poly);
-    for (const piece of outside) for (const t of fan(piece)) out.push({ kind: 'out', tri: t.map(([x, z]) => [x, z, old(x, z)]) });
-    if (!inside) continue;
-    const split = splitConvex(inside, core);
-    if (split.inside) for (const t of fan(split.inside)) out.push({ kind: 'core', tri: t.map(([x, z]) => [x, z, grade.planeY(x, z)]) });
-    for (const piece of split.outside.map(p => withCorners(p, core))) for (const t of fan(piece)) out.push({ kind: 'band', tri: t.map(([x, z]) => { const y = old(x, z); return [x, z, y + (grade.planeY(x, z) - y) * grade.weight(x, z)]; }) });
+    let rest = [halves[h]];
+    for (const { g, poly } of lots) {
+      const core = insetConvex(poly, g.transition), { inside } = splitConvex(halves[h], poly);
+      rest = rest.flatMap(piece => splitConvex(piece, poly).outside);
+      if (!inside) continue;
+      const split = splitConvex(inside, core);
+      if (split.inside) for (const part of creaseSplit(split.inside, g.crease)) for (const t of fan(part)) out.push({ kind: 'core', grade: g, tri: t.map(([x, z]) => [x, z, g.planeY(x, z)]) });
+      for (const piece of split.outside.flatMap(p => creaseSplit(p, g.crease)).map(p => withCorners(p, core))) for (const t of fan(piece)) out.push({ kind: 'band', grade: g, tri: t.map(([x, z]) => { const y = old(x, z); return [x, z, y + (g.planeY(x, z) - y) * g.weight(x, z)]; }) });
+    }
+    for (const piece of rest) for (const t of fan(piece)) out.push({ kind: 'out', tri: t.map(([x, z]) => [x, z, old(x, z)]) });
   }
   return out;
 }
@@ -224,8 +255,9 @@ export function gradedCellTriangles(grade, polygon, { x0, x1, z0, z1, c }) {
  * capacity; 8+7 bays use 2.5×5 m footprints and a 6 m clear aisle. No road or
  * surveyed driveway is created.
  */
-export function createParkingLayout(lot, { bayWidth = DEFAULTS.bayWidth, bayDepth = DEFAULTS.bayDepth, aisleWidth = DEFAULTS.aisleWidth, start = lot?.layout?.start ?? null, boxes = !!lot?.layout?.boxes } = {}) {
+export function createParkingLayout(lot, { bayWidth = lot?.layout?.bayWidth ?? DEFAULTS.bayWidth, bayDepth = lot?.layout?.bayDepth ?? DEFAULTS.bayDepth, aisleWidth = DEFAULTS.aisleWidth, start = lot?.layout?.start ?? null, boxes = !!lot?.layout?.boxes } = {}) {
   if (lot?.layout?.aisle) return createAisleLayout(lot, { bayWidth, bayDepth });
+  // #1451: `layout.bayDepth`/`bayWidth` (guess) size one lot's boxes, so a pocket shallower than 5 m keeps whole boxes inside its outline.
   // #1443: `layout.row` ('north' = the n0 long edge, 'south' = n1) lays one row of `layout.count`
   // boxes along that edge only; the rest of the lot's width is the clear aisle (no second row).
   const single = lot?.layout?.row ?? null;
