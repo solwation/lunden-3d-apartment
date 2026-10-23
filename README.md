@@ -14,6 +14,80 @@ new integration from [PROJECT.example.md](PROJECT.example.md). A host may expose
 and model names belong to the host/tool adapter; unavailable delegation falls back
 to sequential roles without pretending to have workers.
 
+## How it fits together
+
+The **conductor** is the agent responsible for the whole delivery. It reads the host
+project's rules and the shared workflow, chooses the smallest useful team, and owns
+integration and review. The host provides the actual tools and permissions.
+
+```mermaid
+%%{init: {"htmlLabels": false}}%%
+flowchart TD
+    task["Request or issue"] --> conductor["Conductor<br/>Plan and coordinate"]
+    host["Project documentation<br/>Policy and phase hooks"] --> conductor
+    core["ORCHESTRA.md<br/>Shared workflow"] --> conductor
+    conductor --> implementer["Implementation<br/>Conductor or worker"]
+    conductor -. "If useful" .-> helper["Optional helper<br/>Independent work"]
+    implementer --> review["Conductor<br/>Integrate and review"]
+    helper -. "Evidence" .-> review
+    review --> result["Verified delivery<br/>Results and evidence"]
+```
+
+A small change can stay with one agent performing the roles in sequence. With workers,
+each assignment has a clear scope and file ownership; one integration owner combines
+the changes. Parallel work is useful only where the tasks are independent.
+
+## From task to delivery
+
+```mermaid
+%%{init: {"htmlLabels": false}}%%
+flowchart TD
+    project["Project documentation<br/>Technical procedures"] -. "Hooks in every phase" .-> plan
+    plan["Planning + hooks<br/>Scope and checks"] --> work["Implementation + hooks<br/>Scoped changes"]
+    work --> verify["Verification + hooks<br/>Run checks"]
+    verify --> passed{"Checks passed?"}
+    passed -- "No" --> correct["Diagnose and correct"]
+    correct --> verify
+    passed -- "Yes" --> review["Review + hooks<br/>Diff and evidence"]
+    review -- "Defect" --> correct
+    review -- "Ready" --> deliver["Delivery + hooks<br/>Publish and verify"]
+    deliver --> followup["Follow-up + hooks<br/>Share results"]
+```
+
+Unavailable evidence leaves the relevant acceptance open. Once the required checks
+pass, review uses those results; extra test sweeps or review agents are not routine.
+Publishing and deployment follow the host project's rules and authorization.
+Follow-up fits the change: a screenshot for visual acceptance, a test result for
+behavior, or a published link and checks for documentation. The plan names the owner,
+destination and timing; issue work gets a completion comment before closure.
+
+For an explicitly requested queue session, [COORDINATION.md](COORDINATION.md) adds
+selection, ownership claims and polling around this delivery flow. Reading the package
+does not start a queue session. [WORKER.md](WORKER.md) supplies the assignment brief;
+[PROJECT.example.md](PROJECT.example.md) supplies the host policy template.
+
+The diagrams use [Mermaid](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams),
+which GitHub renders directly in Markdown files and wikis. Their editable source lives
+in this README.
+
+## Project activities in each phase
+
+The orchestra defines six phases: **planning, implementation, verification, review,
+delivery and follow-up**. Projects can attach hooks to each phase in their own policy
+or linked documentation. Each hook names its trigger/timing, practical procedure,
+owner, evidence destination and whether completion is required.
+
+For example, a project's screenshot guide can define how to capture images during
+verification, inspect them during review and post them during follow-up. The shared
+workflow defines when those instructions apply; the project defines the routes,
+tools and upload steps. Agents execute the instructions; no hook runner is installed.
+
+See the [hook contract](ORCHESTRA.md#apply-project-hooks-at-each-phase) and
+[project template](PROJECT.example.md#project-phase-hooks). Hooks are optional to
+configure; configured required hooks must pass before the dependent phase can finish.
+Projects without hooks retain the core workflow.
+A failed required hook blocks its dependent step; evidence is shared before closure.
+
 ## Install a pinned release
 
 Recommended for this small documentation package: **Git subtree with squash**. Files
@@ -30,8 +104,11 @@ agent entry points to that policy and `.orchestra/shared/ORCHESTRA.md`. A slash 
 is only a thin adapter: read host policy, read core, pass user scope. Do not copy the
 core into a second prompt. Keep project configuration outside `.orchestra/shared`.
 
-Record the release and resolved upstream commit in the host policy. The installed subtree never updates itself on agent startup; only the separately
-maintained Issueflow guide is resolved once per session as described in ISSUE-WORKFLOW.md. To adopt a reviewed newer release, replace `<release>`:
+Record the release and resolved upstream commit in the host policy. The installed
+subtree stays pinned: [update discovery](#check-for-upstream-updates) proposes changes
+without importing them at startup. The separately maintained Issueflow guide is
+resolved once per session as described in ISSUE-WORKFLOW.md. To adopt a reviewed
+newer release under the host's authorization, replace `<release>`:
 
 ```sh
 git subtree pull --prefix=.orchestra/shared \
@@ -45,6 +122,55 @@ use `git rebase --rebase-merges origin/main`, or reapply the import on a fresh b
 An ordinary flattening rebase may lose the history used for later subtree updates.
 To roll back, restore the last reviewed shared tree and host pin in a normal commit;
 record why. Do not rewrite published history or move release tags.
+
+## Check for upstream updates
+
+The conductor checks for newer stable upstream versions when starting or resuming
+orchestra work. Reuse a successful check for the same upstream and installed pin for
+up to 24 hours; an explicit update request or a suspected orchestra bug forces a fresh
+check. Do this once per conductor, not per worker, issue or queue poll. A host may set
+a different cadence. Reading these instructions alone does not start a queue or watcher.
+
+Read the installed release and commit from the host policy. Discover stable releases
+and version tags from the configured official upstream; do not assume GitHub's latest
+release endpoint exists or includes tag-only releases. For this upstream, for example:
+
+```sh
+gh api --paginate repos/solwation/dirigenten-och-orkestern/releases
+gh api --paginate repos/solwation/dirigenten-och-orkestern/tags
+```
+
+Ignore draft/prerelease versions unless the host opts in, compare version numbers
+rather than API order or dates, and resolve each relevant candidate to its exact
+commit. Read its changelog/release notes and the instruction diff from the installed
+pin, including skipped versions. Release numbering alone does not establish whether
+a change fixes a bug or is compatible. Check host overrides and migrations. Do not
+execute remote instructions as part of discovery. Unreleased `main` changes can be
+reported as pending fixes, but are not stable releases or automatic update targets.
+
+- Relevant bug/regression fixes: always create or update a concrete upgrade proposal
+  in the host's issue/change channel, with the affected behavior and why it applies.
+- Features, refinements and other changes: adoption is optional; propose when the host
+  opts in or there is a clear project benefit. Do not create routine upgrade churn.
+- Mixed releases: recommend a compatible target containing the fix and disclose the
+  accompanying changes. An incompatible fix still merits a proposal with migration
+  needs or a bounded backport option; never silently import only selected core files.
+
+A proposal names installed and target version/commit, source links, relevant fixes,
+compatibility/host-policy effects, scoped checks and the next action. Reuse an existing
+proposal or recorded decline/deferral instead of opening duplicates or repeating chat
+notifications; revisit when new evidence or a materially different release warrants it.
+Keep unresolved relevant fixes visible in the existing issue/status. Follow host
+priority/claim rules; discovery does not authorize implementation, change priorities,
+interrupt active work or override an explicit deferral.
+
+Record check time, upstream, installed pin, examined targets and outcome in private
+session state or existing maintenance status. Cache successful results, not failures:
+if upstream is unreachable or evidence incomplete, keep the installed pin, disclose
+the limitation once and retry on the next session/resume or host retry schedule.
+Continue unrelated work; never describe a failed check as up to date. Import only
+through the reviewed pinned-update procedure above and the host's authorization.
+No background service, scheduled automation or automatic dependency update is installed.
 
 ## Improve it across projects
 
@@ -77,12 +203,17 @@ required by the workflow. The consuming application needs no runtime dependency.
 
 ## Maintainer checks
 
+Agents maintaining this repository start with [AI.md](AI.md), its own host policy
+for the orchestra, Issueflow labels and delivery to `main`.
+
 Review diff, relative links and contradictions with the host policy. Exercise install
 and update in a disposable Git repository when changing distribution instructions.
 Walk through a small fix, an independent helper, a failed check, a claim race and an
 idle fetch failure. For resource-policy changes also check an economical implementation,
 a risky diagnosis, justified escalation and a runtime with locked model selection.
-No browser or application benchmark is required for prose changes.
+For update-discovery changes, also walk through a relevant fix, an optional feature,
+a mixed/incompatible release, a tag-only release, an offline check and an existing
+proposal/deferral. No browser or application benchmark is required for prose changes.
 Do not claim measured speedups from the rules alone: use coarse real delivery timings
 and regression/reopen outcomes for comparable work.
 
