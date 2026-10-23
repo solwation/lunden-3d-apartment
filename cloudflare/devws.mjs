@@ -144,6 +144,8 @@ export function bridge(req, socket, ws) {
       } else if (op === 9) socket.write(frame(10, data));
     }
   });
-  const gone = () => { if (!done) { done = true; ws.close(1006, 'gone'); } };
-  socket.on('close', gone); socket.on('error', gone);
+  // A browser killed abruptly can leave only a FIN (half-close): http servers keep such sockets half-open, so 'close' never
+  // fires and the player would stay in the room (#1484). Treat 'end' like a drop and destroy our side.
+  const gone = () => { if (!done) { done = true; ws.close(1006, 'gone'); } socket.destroy(); };
+  socket.on('end', gone); socket.on('close', gone); socket.on('error', gone);
 }

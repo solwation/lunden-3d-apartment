@@ -315,7 +315,7 @@ cloudflare/players.js  the PlayerRoom Durable Object (#666; binding PLAYERS, mig
                        nothing stored, counted in the monthly cap like any message; #676 the typing flag { t: 'k', on } (a change
                        only: off always, on ≥ 0.5 s apart, a refresh ≥ 5 s; a line ends it); #719 `censor`: ROUGH words → ***
                        in every line (cloudflare/chat.test.mjs). Tests: cloudflare/players.test.mjs
-                       (runtime stand-ins cloudflare/devws.mjs, also used by dev.mjs for real ws://), tools/ghosttest.cjs (two pages)
+                       (runtime stand-ins cloudflare/devws.mjs, also used by dev.mjs for real ws://; its bridge drops a player on TCP end/half-close too, #1484: cloudflare/devws-bridge.test.mjs), tools/ghosttest.cjs (two pages)
 cloudflare/crash.js    POST /crash, admin GET /crash and /crash/<id>, DELETE /admin/crash: size cap 16 kB, plain-data cleaning, per-IP hour
                        limit, one report per browser+signature+day, 400 reports in all, KV TTL 14 days (test: cloudflare/crash.test.mjs)
                        #720 preserves snap/beat warm and history warm/worst through ingest and publicView, with a field-specific
