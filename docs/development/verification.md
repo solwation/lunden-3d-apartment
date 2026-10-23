@@ -505,6 +505,16 @@ future way `95036048` (no invented link). The World test casts centre and ±2.1m
 rays around each joint/end against actual merged south-land faces at the 25mm lift. Lamp placement is unchanged:
 it adds four fittings on the way and drops two now obstructed A/B end fittings (net +2).
 
+Parking service links (#1449): run `node --test tools/servicepark1449test.mjs` and open
+`tools/servicepark1449test.html` against the actual World. Highway=service ways `335403605` (56.399m, no
+surface/width) and `335403606` (~31m, surface=paved, no width) use the saved `osm-south-2026-10-08.json` projection
+with a 4.5m guessed width; `335403605` asphalt is a guess, `335403606` renders as asphalt from its sourced `paved`
+tag (`surfaceSource:"osm:paved"`). They share the mapped start node (170.45,303.90); `335403606` ends at the shared
+node of `36918924`/`1147690112`, and `335403605` ends inside parking `1379042188`, whose data and boxes are untouched,
+so the strip may overlap parking surfaces visually (as #1435). Footways `335403596`/`1379042689` stay footways.
+The World test casts centre and ±2.1m side rays on all seven segments and rays at every node and 1.5m inside each
+end against actual merged south-land faces at the 25mm lift. Unchanged lamp rule: +2 fittings (128 to 130).
+
 Garage contents behind drawn ceilings (#1439):
 `node --test tools/garageocclusiontest.mjs tools/desktopocclusiontest.mjs tools/phonedetailunittest.mjs tools/occlusiontest.mjs`
 checks22cases, including exact included/excluded A/B/C/L ceiling rectangles,

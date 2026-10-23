@@ -910,6 +910,10 @@ export const SITE = {
       // #1463: whole western service way from the same saved 2026-10-08 OSM snapshot; it joins 30633546, 145221573 and 145221576 at mapped nodes.
       // Its outer end (-68.60,417.65) is the mapped node toward future outer-ring way 95036048 (no invented link/turnaround). Width/asphalt are guesses.
       {"source":"145221612","highway":"service","surface":"asphalt","surfaceSource":"guess","widthSource":"guess","path":[[-68.60,417.65],[-74.73,422.08],[-97.60,388.93],[-108.93,372.45],[-127.61,345.26],[-134.70,334.97]],"w":4.5,"terrain":"triangles"},
+      // #1449: parking-access service ways from the same saved 2026-10-08 OSM snapshot. 335403605 (highway=service only) ends inside parking 1379042188; width/asphalt are guesses.
+      // 335403606 is tagged surface=paved, which this file renders as asphalt (#1235 convention; surfaceSource records the tag); no width tag -> width is a guess; it ends at the shared node of 36918924/1147690112. No parking data touched.
+      {"source":"335403605","highway":"service","surface":"asphalt","surfaceSource":"guess","widthSource":"guess","path":[[170.45,303.90],[203.24,294.12],[206.07,293.22],[224.41,287.47]],"w":4.5,"terrain":"triangles"},
+      {"source":"335403606","highway":"service","surface":"asphalt","surfaceSource":"osm:paved","widthSource":"guess","path":[[170.45,303.90],[169.79,315.10],[168.79,322.27],[168.17,327.49],[167.10,334.61]],"w":4.5,"terrain":"triangles"},
     ],
     // #1262: sourced parking areas and street-side bays south of Höje å (OSM snapshot 2026-10-18)
     parking: [
