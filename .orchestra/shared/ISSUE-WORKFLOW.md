@@ -18,7 +18,7 @@ gh api -H 'Accept: application/vnd.github.raw+json' \
 ```
 
 The reviewed [bundled snapshot](issueflow/ISSUEFLOW.md) is byte-for-byte from revision
-`fb5df25bbc8257b8345f90454151d91bd74ce3de`, with its [license](issueflow/LICENSE.md).
+`fec18ccd69c2ea056101a6ed2bb60e08cf121aba`, with its [license](issueflow/LICENSE.md).
 Use it if the source is temporarily unreachable, disclose the fallback and retry on
 resume; do not interpret failure as a policy change. Keep one resolved guide per
 session instead of fetching it per label operation. Re-read after an explicit user

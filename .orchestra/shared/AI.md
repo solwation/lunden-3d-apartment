@@ -18,9 +18,29 @@ of two agents including the conductor. Use [WORKER.md](WORKER.md) for assignment
 Respect platform limits on delegation and model selection; disclose unavailable
 controls once rather than pretending they were used.
 
-Each maintainer request starts a single scoped task. Queue polling and idle watching
-are disabled unless explicitly requested. For an authorized queue session, also read
-[COORDINATION.md](COORDINATION.md) and establish its scope and timer settings.
+Each maintainer request starts a single scoped task. A request without a scope starts
+one bounded pass over this repository's open issues under
+[COORDINATION.md](COORDINATION.md#run-a-bounded-pass). The pass is unattended: ask
+nothing in the chat. Post a question only the maintainer can answer as a comment on
+the affected issue with options and a recommendation, add the `user question` label
+and continue with other work; skip such issues until answered, and whoever resumes
+one removes the label.
+Queue polling and idle watching are disabled unless explicitly requested. For an
+authorized queue session, also read COORDINATION.md and establish its scope and timer
+settings.
+
+## Consume the orchestra from this checkout
+
+This repository is its own consumer. The root files of the current checkout are the
+installed core; there is no `.orchestra/shared` subtree, release pin or separate
+project policy, and this file takes the role of `.orchestra/project.md`. Upstream
+update discovery does not apply: the conductor already runs the newest revision.
+`/orkester` is the thin adapter in
+[.claude/commands/orkester.md](.claude/commands/orkester.md). A change to the core
+governs the session that makes it from the point it is read again, and any later
+session; record which revision a delivery followed when that matters. Consumers
+importing this repository by subtree receive the adapter under
+`.orchestra/shared/.claude/`, where hosts do not load it.
 
 ## Project phase hooks
 
@@ -82,7 +102,13 @@ the actual blocker.
 
 For documentation changes, check the diff, relative links and consistency with the
 shared rules. Exercise distribution changes in a disposable repository as required
-by the README. Do not create a release or move tags unless requested.
+by [CONTRIBUTING.md](CONTRIBUTING.md#maintainer-checks). Release only when a fresh complete fetch shows no open issues in this
+repository (or when the maintainer requests one), bundling everything under
+*Unreleased* in CHANGELOG; choose patch/minor under the
+[versioning rules](CONTRIBUTING.md#improve-it-across-projects), while a major
+release needs an answered issue question. Close an issue whose only remaining
+criterion is inclusion in a release once its change is on `main` under *Unreleased*.
+Never move or delete existing tags.
 
 Verify that the delivered commit is on remote `main`. Report the outcome, GitHub
 links, revision, checks and any unmet acceptance accurately.

@@ -1,5 +1,44 @@
 # Changelog
 
+## 0.2.3 — 2026-10-23
+
+- Rewrite README as a short, concrete introduction with benefits, one diagram, a
+  quick start and a file map. Move installation, updates, upstream discovery and the
+  distribution rationale verbatim to INSTALL.md, and cross-project improvement,
+  versioning and maintainer checks to CONTRIBUTING.md; update links into them.
+- Require concurrent agents sharing a filesystem to work in separate checkouts: no
+  edits or state-changing git commands in another agent's or the integration checkout,
+  separate ports, temporary/evidence/build paths, concurrency-safe shared resources,
+  and worktree removal only after integration or preservation.
+- Offer a one-line prompt in the README quick start that lets the agent install the
+  orchestra by following INSTALL.md.
+
+## 0.2.2 — 2026-10-23
+
+- Let a bounded pass release only under the host's release rule; the template shows
+  releasing once no open issues remain rather than per issue.
+
+## 0.2.1 — 2026-10-23
+
+- Make a bounded pass unattended: never ask in the chat; post user-only questions on
+  the affected issue with options, a recommendation and the `user question` label,
+  skip it until answered and continue with other work. Hosts state whether a pass
+  may release. The label's general rule is proposed for Issueflow in
+  solwation/github-dashboard#285.
+
+## 0.2.0 — 2026-10-23
+
+- Treat a request without a scope as one bounded pass: select and deliver eligible
+  issues without asking which to take, batch user-only decisions at the end and stop
+  without polling, idle watching or timers.
+- Refresh the bundled Issueflow snapshot to `fec18cc` with its parent/sub-issue rules;
+  the worker starting the first sub-issue labels the parent, the conductor removes the
+  label and closes the parent, and a parent's label takes no capacity slot.
+- Run independent issues concurrently up to host capacity in queue sessions and bounded
+  passes; keep the smallest-team rules within one issue, make the conductor's own
+  implementation a deliberate slot, queue expensive shared verification and isolate
+  ports/servers per worktree. Report active workers/capacity and unused slots.
+
 ## 0.1.2 — 2026-10-23
 
 - Shorten and wrap README diagram labels, use SVG text for label layout, and show

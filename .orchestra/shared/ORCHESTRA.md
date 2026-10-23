@@ -7,11 +7,14 @@ before creating issues or changing labels/state. This file defines the
 shared method; repository names, issue systems, permissions, release rules and timers
 belong in the host policy. User instructions and platform restrictions take precedence.
 Reading or maintaining these files does not start an unattended queue session.
+A request without a scope, such as a bare `/orkester`, asks the conductor to choose
+the work: run one unattended [bounded pass](COORDINATION.md#run-a-bounded-pass) that
+asks no chat questions and posts user-only questions on the affected issue.
 
 ## Check the installed workflow
 
 At conductor startup/resume, follow the host's upstream/version settings and
-[update-discovery procedure](README.md#check-for-upstream-updates). Reuse a successful
+[update-discovery procedure](INSTALL.md#check-for-upstream-updates). Reuse a successful
 check for up to 24 hours by default. Always propose relevant published bug fixes;
 other upgrades are optional. Keep the installed workflow pinned until a reviewed
 update is authorized; discovery does not enable unattended work or automatic imports.
@@ -101,7 +104,9 @@ Keep the decision to a line in the existing plan/brief: capability/effort, why i
 and a task-specific stop/reassessment condition. This is not a new reporting phase.
 Choose direct work when a handoff would cost more than it saves. A helper must save
 expected total work or materially shorten the critical path; idle capacity alone is
-not a reason to spawn one or duplicate an investigation.
+not a reason to add one to the same issue or duplicate an investigation. In a queue
+session or bounded pass, the next independent issue is a separate delivery, not a
+helper; [coordination](COORDINATION.md#select-and-claim) fills capacity with those.
 
 Give workers a compact brief, acceptance, relevant paths and the current findings.
 Keep mandatory host rules accessible, but do not copy the entire conversation, queue
@@ -122,6 +127,9 @@ Return routine follow-on work to the economical setting when the uncertainty is 
 
 ## Choose the smallest useful team
 
+These team rules apply within one issue. Across independent issues in a queue session
+or bounded pass, run separate deliveries concurrently up to the host's capacity.
+
 For a small cohesive change use one implementer and one conductor review. The conductor
 may implement directly when project policy allows; if delegation is unavailable,
 perform the roles sequentially and report that limitation. Do not simulate subagents.
@@ -135,8 +143,20 @@ fetches too, without adding agents just to run shell commands.
 One integration owner combines changes and publishes each issue. A helper can work
 under that issue without creating a child just for tests, docs or review. It must use
 the implementation owner's exact revision before claiming final verification. Keep
-closely coupled edits together. Serialise overlapping writes and integration; separate
-checkouts, ports and evidence directories avoid interference.
+closely coupled edits together. Serialise overlapping writes and integration.
+
+Agents running at the same time share one filesystem, so isolate them:
+
+- Each writing agent, including the conductor when it implements, works in its own
+  checkout, such as a `git worktree` on its own branch. Never edit files or run
+  state-changing git commands (checkout, switch, stash, reset, clean, rebase, commit)
+  in a checkout you do not own; the integration checkout belongs to the integration
+  owner. Reading another checkout is fine.
+- Give each checkout its own ports, server configuration, temporary/evidence
+  directories and build output. Share a cache, database or device only when it is
+  safe for concurrent use or taken in turns.
+- Only the integration owner brings changes into the integration checkout. Remove a
+  worktree only after its work is integrated or preserved.
 
 Create child issues only for independently useful deliveries that genuinely reduce
 coordination or unblock work. Keep parent acceptance visible; children inherit project
@@ -229,5 +249,6 @@ reasons. Do not infer implementation duration from issue creation/closure timest
 Compare similar tasks and reopen/regression rates before claiming a speed improvement;
 collect this information in normal delivery, not a new benchmark project.
 
-For an unattended queue session, also read [coordination](COORDINATION.md) and the
-host's queue/timer settings. For a worker assignment use [the compact brief](WORKER.md).
+For a bounded pass or an unattended queue session, also read
+[coordination](COORDINATION.md) and the host's queue/timer settings. For a worker
+assignment use [the compact brief](WORKER.md).

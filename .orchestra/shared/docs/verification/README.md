@@ -1,8 +1,9 @@
 # README diagram verification
 
-These browser captures render the Mermaid blocks from [README.md](../../README.md)
-as delivered in the same commit, using Mermaid 11.17.2 and headless Chromium on
-2026-10-23. They are verification artifacts; the editable source remains in README.
+These browser captures render the two Mermaid blocks from [README.md](../../README.md)
+as delivered in v0.1.2 (the README now keeps only the first), using Mermaid 11.17.2 and headless Chromium on
+2026-10-23. They are verification artifacts; the editable source of the
+remaining diagram is in README.
 
 - [Desktop preview, 960 px](readme-diagrams-desktop.png)
 - [Narrow preview, 375 px](readme-diagrams-narrow.png)
