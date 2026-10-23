@@ -8,7 +8,9 @@ fs.mkdirSync(out, {recursive:true});
 const source = fs.readFileSync(path.join(__dirname,'../src/main.js'),'utf8');
 function section(start,end) {
   const a=source.indexOf(start),b=source.indexOf(end,a+start.length);
-  if(a<0||b<0||source.indexOf(start,a+1)>=0)throw Error('ambiguous production source anchor: '+start);
+  if(a<0)throw Error('missing start anchor in src/main.js (renamed or moved?): '+start);
+  if(b<0)throw Error('missing end anchor in src/main.js after the start anchor (renamed or moved?): '+end+' (start: '+start+')');
+  if(source.indexOf(start,a+1)>=0)throw Error('ambiguous production source anchor: '+start);
   return source.slice(a,b).trim();
 }
 const parts = {
@@ -62,7 +64,7 @@ const check=(ok,text)=>{console.log(`${ok?'PASS':'FAIL'} ${text}`);if(!ok)failur
    window.shadowState={};window.hand={reach:()=>{}};window.greetedPlayers=new Set();window.greet={sayMine:line=>effects.lines.push(line)};window.bump=()=>effects.points++;
    window.rearrange={enabled:false};window.measure={active:false};window.setPressed=()=>{};window.setIcon=()=>{};
    window.cat={visible:false};window.olof={waveable:false};window.olofDriver={greetable:()=>false};window.keyCabinet=null;
-   window.car={targets:()=>[]};window.world={furnitureOn:false,courtyardTargets:[],cupSurfaces:[],bicycles:[]};window.cups={cups:[]};
+   window.car={targets:()=>[]};window.world={furnitureOn:false,courtyardTargets:[],cupSurfaces:[],bicycles:[],boule:{active:false,controlPickables:[],near:()=>false}};window.cups={cups:[]};
    window.power={reachable:false,on:true,state:'on',release:()=>{}};window.target={object:{visible:false}};
    window.fish=null;window.fries=null;window.airFryer={open:false};window.fruit={targets:()=>[]};
    window.life={targets:()=>[],runner:{job:null}};window.toiletPaper={targets:()=>[],aim:()=>null};
@@ -89,7 +91,7 @@ const check=(ok,text)=>{console.log(`${ok?'PASS':'FAIL'} ${text}`);if(!ok)failur
   check(!armed.kind&&armed.label==='Skjut'&&!armed.hidden&&!armed.clickIsE,'armed close player has shoot touch action and no greet focus');
   const shots=await page.evaluate(()=>effects.weapon);await page.locator('#action').click();check(await page.evaluate(n=>effects.weapon===n+1&&effects.lines.length===1,shots),'touch close-range action dispatches weapon use without greeting');
   for(const [key,item] of [['saber','saber'],['nerf','nerf'],['wand','wand'],['rifle','rifle'],['ball','ball'],['bow','bow']]){
-   check(await page.evaluate(({key,item})=>{fixtureHeld=window[item];focused=near.door;const before=effects.weapon,lines=effects.lines.length;fns.use(focused);fns.greetPlayer(near);return fns.weaponKey()===key&&effects.weapon===before+1&&effects.lines.length===lines&&!fns.clickIsE()&&!rifle.firing;},{key,item}),key+': old ghost action checks current weapon, fires and cannot greet');
+   check(await page.evaluate(({key,item})=>{fixtureHeld=window[item];focused=near.door;ghosts.greetAt=-Infinity;ghosts.lastSent=-Infinity;/*#1544: no greet cooldown, so only the armed guard can stop the call*/const before=effects.weapon,lines=effects.lines.length;fns.use(focused);fns.greetPlayer(near);return fns.weaponKey()===key&&effects.weapon===before+1&&effects.lines.length===lines&&!fns.clickIsE()&&!rifle.firing;},{key,item}),key+': old ghost action checks current weapon, fires and cannot greet');
   }
   await page.evaluate(()=>{fixtureHeld=rifle;focused=near.door;});
   const beforePointer=await page.evaluate(()=>effects.weapon);await page.locator('#action').dispatchEvent('pointerdown');await page.locator('#action').dispatchEvent('pointerup');await page.locator('#action').dispatchEvent('click');
@@ -99,9 +101,9 @@ const check=(ok,text)=>{console.log(`${ok?'PASS':'FAIL'} ${text}`);if(!ok)failur
   check(await page.evaluate(n=>effects.weapon===n+1&&!rifle.firing,beforeMouse),'primary mouse listener still fires against stale nearby ghost focus');
   const beforeKey=await page.evaluate(()=>effects.weapon);await page.keyboard.press('e');
   check(await page.evaluate(n=>effects.weapon===n+1&&!rifle.firing,beforeKey),'actual keyboard E/keyup uses stale ghost weapon once without latching trigger');
-  await page.evaluate(()=>{fixtureHeld=null;suit.worn=true;focused=near.door;});
+  await page.evaluate(()=>{fixtureHeld=null;suit.worn=true;focused=near.door;ghosts.greetAt=-Infinity;ghosts.lastSent=-Infinity;});
   check(await page.evaluate(()=>{const n=effects.weapon,l=effects.lines.length;const result=fns.click(0);fns.use(near.door);fns.greetPlayer(near);return fns.weaponKey()==='web'&&result==='web'&&effects.weapon===n+2&&effects.lines.length===l;}),'empty suit hands keep web action and block stale greeting');
-  await page.evaluate(()=>{suit.worn=false;jetpack.worn=true;focused=near.door;});const jet=await focus();
+  await page.evaluate(()=>{suit.worn=false;jetpack.worn=true;focused=near.door;ghosts.greetAt=-Infinity;ghosts.lastSent=-Infinity;});const jet=await focus();
   check(!jet.kind&&await page.evaluate(()=>{const n=effects.lines.length;fns.greetPlayer(near);return fns.weaponKey()==='jetpack'&&effects.lines.length===n;}),'worn jetpack is armed for greeting eligibility even with empty hands');
   await page.evaluate(()=>{jetpack.worn=false;fixtureHeld=null;touch.enabled=true;locked=false;ghosts.greetAt=-Infinity;ghosts.lastSent=-Infinity;});
   const back=await focus();check(back.kind==='ghost'&&/hälsa på/i.test(back.label),'putting weapon away restores unarmed greeting focus');

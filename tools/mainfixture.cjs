@@ -7,14 +7,20 @@ const DEFAULTS = {
   binderFreed: 'false',                  // cat binder intentionally frees pointer lock (#1255)
   slideRide: '{active:false,cancel:()=>false,begin:()=>false,savePlace:()=>null}', // #1414: transient slide excerpts
   paddock: 'null',                       // main.js: `nopaddock` -> null (no ponies)
-  playroom: '{inside:false}',
+  playroom: '{inside:false,devices:{cinemaTarget:null}}', // #1544: updateFocus compares focus with the cinema target
+  cinema: '{state:null}',
+  computerHub: '{sessions:new Map()}',
   SOUNDS: '{}',
   ringBell: '()=>false',
+  santa: '{visible:false,pickable:{}}',  // #1544: updateFocus offers santa.pickable only while visible
+  santaDelivery: 'null',
+  santaTV: '{tv:null,active:false,activate:()=>false}',
+  tvMedia: '{seekable:()=>false,show(){},power(){}}',
   lightModes: '{page:"top",rows:()=>[],release(){},update(){}}',
 };
 // DOM elements main.js looks up at load: the init script runs before the DOM exists, so they resolve lazily (a test's own
 // assignment replaces the getter).
-const ELEMENTS = { bellBtn: 'bell-btn' };
+const ELEMENTS = { bellBtn: 'bell-btn', remoteSeekControls: 'remote-seek' }; // #1544: updateFocus reads remoteSeekControls
 const initScript = '(()=>{for(const [k,id] of Object.entries(' + JSON.stringify(ELEMENTS) + '))if(!(k in window))Object.defineProperty(window,k,{configurable:true,get:()=>document.getElementById(id),set(v){Object.defineProperty(window,k,{value:v,writable:true,configurable:true});}});const d={' + Object.entries(DEFAULTS).map(([k, v]) => `${k}:()=>(${v})`).join(',') + '};' +
   'for(const k in d)if(!(k in window))try{window[k]=d[k]();}catch(e){window[k]=null;}})();';
 // Functions main.js imports from modules cannot be stubbed before load; the real ones are imported once the page is up.
