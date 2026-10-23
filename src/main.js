@@ -3191,9 +3191,10 @@ const phoneFrustum = lowMemory ? colorFrustum : null;
 const siteInstances = lowMemory ? null : installSiteInstanceBatch(renderer, scene, () => detail.occluders);
 const warm = new WarmUp({ renderer, scene, camera, shadowCamera: sun.shadow.camera, mirrorTarget,
   compileExtras: skipWarmUp ? null : interactionOutline.warmCompiler(renderer, scene), // #1508: first-focus variants share the existing compile/readiness budget
-  prepare: () => { lights.wash?.patch(scene); visitLights.wash?.patch(scene); }, // (#668: both lamp washes' periodic patch, now)
+  prepare: (root = scene) => { lights.wash?.patch(root); visitLights.wash?.patch(root); }, // (#668: both lamp washes' periodic patch, now; #1514: one late object)
   skip: skipWarmUp, lazyHidden: lowMemory, sliced: lowMemory, log: perfEl ? (t) => console.log(t) : null,
   onSlowFrame: () => clock.getDelta() }); // (a slow warm-up frame is no reason to lower the resolution)
+posters.onBuilt = (p) => warm.add(p.mesh); // #1514: saved drawings arrive from IndexedDB during/after the compile stages
 freeSceneGeometryCopies(scene, renderer); // phone: normals / uv / colours leave the CPU after the first upload (#628)
 let mirrorFrame = 0;
 // The slowest frame since the crash heartbeat last looked (#669): its CPU time, the new programs it compiled, whether it redrew the shadow map and the warm-up state
@@ -3213,6 +3214,7 @@ function frame(raw) {
     || (lowMemory && (reading || portraitCover.matches))) quality.reset();
   else quality.update(raw);
   if (!warm.done && warm.tick()) hitch.frameInfo.warm = true;
+  else if (warm.done) warm.lateSlice(); // #1514: late drawings' programs, a few per frame
   hitch.phase('adapt');
   step(dt);
   ghosts.update(dt);

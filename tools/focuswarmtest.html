@@ -1,4 +1,4 @@
-<!doctype html><html><meta charset="utf-8"><title>First-focus warm-up #1508</title><pre id="out">running…</pre>
+<!doctype html><html><meta charset="utf-8"><title>First-focus warm-up #1508/#1514</title><pre id="out">running…</pre>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"}}</script>
 <script type="module">
 import * as T from 'three';
@@ -44,6 +44,40 @@ try {
  const materials=sliced.compileObjects([a,b,leaf,batch],null);await sliced.whenReady(materials,10000);
  const warmed=programs;for(const t of [ta,tb,th,ti(1),null])draw(t);
  check(programs===warmed,'sliced compileObjects includes first-focus variants too');
+ // #1514: a drawing that arrives from IndexedDB after a compile stage has started (its stage's object list is
+ // already taken) and is then re-keyed by the lamp-wash patch (prepare) — the real arrival/patch order.
+ const wash=(root=scene)=>root.traverse(o=>{for(const m of [o.material].flat()){if(!m||m.userData.washed||m.isRawShaderMaterial)continue;
+  m.userData.washed=true;const key=m.customProgramCacheKey;m.customProgramCacheKey=function(){return key.call(this)+'|wash1514'};m.needsUpdate=true;}});
+ const poster=(color,opts={})=>{const m=new T.Mesh(new T.PlaneGeometry(.4,.5),new T.MeshStandardMaterial({color,transparent:true,alphaTest:.04,...opts}));
+  const t={pickable:m};m.userData.door=t;m.userData.poster=t;m.position.set(Math.random()-.5,-.8,0);return [m,t]};
+ const focusAll=(ts,rts=[null,target])=>{const n=programs;for(const rt of rts){renderer.setRenderTarget(rt);for(const t of [...ts,null])draw(t)}renderer.setRenderTarget(null);return programs-n};
+ const run=async(w,{at,add,perTick})=>{for(let i=0;i<4000&&!w.done;i++){if(at(w))add();const n=programs;w.tick();perTick?.push(programs-n);await new Promise(r=>setTimeout(r,4))}};
+ {
+  const w=new WarmUp({renderer,scene,camera,mirrorTarget:()=>target,prepare:wash,compileExtras:outline.warmCompiler(renderer,scene)});
+  const [m,t]=poster(0x8899aa);let added=false;
+  await run(w,{at:w=>!added&&w.state==='compiling'&&!w.job,add:()=>{added=true;scene.add(m);w.add?.(m)}});
+  check(added&&w.done,'desktop: drawing added while the screen programs compile, warm-up still finishes');
+  check(m.material.userData.washed,'late drawing gets its final (lamp-wash) material key before it is compiled');
+  const fresh=focusAll([t]);check(fresh===0,'desktop late arrival: first screen+mirror focus on the drawing adds zero programs: '+fresh);
+  const [m2,t2]=poster(0x445566,{dithering:true});scene.add(m2);w.add?.(m2);
+  const n=programs;w.lateSlice?.();const compiled=programs-n;
+  const after=focusAll([t2]);check(after===0&&compiled>0,`after warm.done: lateSlice compiles ${compiled} programs, first focus adds ${after}`);
+  const [m3]=poster(0x112233,{flatShading:true});scene.add(m3);w.add?.(m3);m3.removeFromParent();const n3=programs;w.lateSlice?.();
+  check(programs===n3&&!(w.late?.length),'a drawing taken down before its turn is dropped from the queue, nothing compiled');
+  scene.remove(m,m2);
+  const skipped=new WarmUp({renderer,scene,camera,skip:true});skipped.add?.(m);check(!(skipped.late?.length)&&!skipped.lateSlice?.(),'skipped warm-up (tests) queues nothing');
+ }
+ {
+  const w=new WarmUp({renderer,scene,camera,mirrorTarget:()=>target,prepare:wash,sliced:true,lazyHidden:true,compileExtras:outline.warmCompiler(renderer,scene)});
+  const [m,t]=poster(0x9a7b6c,{vertexColors:true}),perTick=[],calls=[];
+  for(const k of ['lateSlice','compileSlice']){const f=w[k];if(f)w[k]=function(){const n=programs,r=f.apply(this,arguments);calls.push({k,n:programs-n,r});return r}}m.geometry.setAttribute('color',new T.Float32BufferAttribute(new Array(12).fill(1),3));let added=false;
+  await run(w,{at:w=>!added&&w.state==='compiling'&&w.job?.i>0,add:()=>{added=true;scene.add(m);w.add?.(m)},perTick:{push:()=>{perTick.push(calls.splice(0))}}});
+  check(added&&w.done,'phone sliced: drawing added between compile slices, warm-up still finishes');
+  const fresh=focusAll([t]);check(fresh===0,'phone sliced late arrival: first screen+mirror focus adds zero programs: '+fresh);
+  const lateTicks=perTick.filter(c=>c.some(x=>x.k==='lateSlice'&&x.r));
+  check(lateTicks.length>0&&lateTicks.every(c=>!c.some(x=>x.k==='compileSlice')&&c.every(x=>x.n<=8)),`phone sliced: late compile takes its own frame within the slice budget (${lateTicks.map(c=>c.map(x=>x.n).join('+')).join(', ')} programs)`);
+  scene.remove(m);
+ }
  renderer.dispose();target.dispose();geometry.dispose();
  document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
 }catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack}

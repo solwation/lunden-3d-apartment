@@ -38,6 +38,8 @@ export class WarmUp {
     this.wait = sliced ? 1 : WARM.frames; // phones compile before their first normal render (#697)
     this.textures = null;
     this.job = null;
+    this.targets = []; // #1514: render targets whose compile stage has started (null = the screen)
+    this.late = []; // #1514: renderables added after that start, compiled a few per frame for each of those targets
   }
 
   get done() { return this.state === 'done' || this.state === 'skipped'; }
@@ -51,8 +53,36 @@ export class WarmUp {
     return j && (this.state === 'compiling' || this.state === 'drawing') ? `${this.state} ${j.i}/${j.n}${j.target ? ' mirror' : ''}` : this.state;
   }
 
+  /** #1514: `object` (and what it holds) joined the scene after a compile stage began — saved drawings come back from
+   *  IndexedDB while the screen programs are compiling or later. A stage's object list was taken when it started, so
+   *  they would compile at their first draw / first focus instead. Queue them for every target already started;
+   *  `lateSlice()` compiles them (with `compileExtras`) within the usual per-frame budget. Before the first stage the
+   *  whole-scene compile covers them anyway; nothing to do when the warm-up is skipped. */
+  add(object) {
+    if (this.state === 'skipped' || !this.targets.length || !object) return;
+    object.traverse((o) => { if ((o.isMesh || o.isPoints || o.isLine || o.isSprite) && o.material && !this.late.includes(o)) this.late.push(o); });
+  }
+
+  /** Compile queued late objects (#1514): at most `WARM.programs` new programs / `WARM.compileMs` per call, for every started
+   *  target. Called by `tick()` and, after the warm-up, by the game loop. Returns true when it compiled something. */
+  lateSlice() {
+    if (!this.late.length) return false;
+    const r = this.renderer, t0 = performance.now(), n0 = r.info.programs?.length ?? 0;
+    try {
+      while (this.late.length) {
+        const batch = this.late.splice(0, WARM.batch).filter((o) => o.parent); // (taken down again meanwhile: nothing to prepare)
+        for (const o of batch) this.prepare(o); // their final material keys (#668: the lamp washes patch new materials)
+        for (const target of this.targets) if (batch.length) this.compileObjects(batch, target);
+        if ((r.info.programs?.length ?? 0) - n0 >= WARM.programs || performance.now() - t0 > WARM.compileMs) break;
+      }
+    } catch (e) { this.log?.(`warm-up: late compile failed: ${e?.message}`); this.late.length = 0; }
+    this.onSlowFrame();
+    return true;
+  }
+
   /** Call once per frame before the frame's own work; returns true when this frame did a heavy warm-up draw. */
   tick() {
+    if (this.state !== 'pending' && this.lateSlice() && this.sliced) return false; // (phones: one compile budget per frame)
     switch (this.state) {
       case 'pending':
         if (--this.wait <= 0) this.startCompile(null, 'draw');
@@ -126,6 +156,7 @@ export class WarmUp {
     const t = performance.now(), r = this.renderer;
     this.prepare(); // (#668: the lamp washes' patch of materials made since, now rather than 120 frames later; in sliced mode also before each stage)
     this.state = 'compiling';
+    if (!this.targets.includes(target)) this.targets.push(target); // (#1514: objects added from now on are queued for it)
     const finish = () => { this.job = null; this.state = next; this.log?.(`warm-up: programs${target ? ' (mirror)' : ''} ${Math.round(performance.now() - t)} ms, ${r.info.programs.length} in all`); };
     if (this.sliced) {
       const items = this.renderables();

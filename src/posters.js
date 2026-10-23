@@ -150,6 +150,7 @@ export class Posters {
     mesh.userData.poster = p;
     parent.add(mesh);
     this.list.push(p);
+    this.onBuilt?.(p); // (main.js: the warm-up compiles a drawing that arrives after its compile stage started, #1514)
     loadImage(rec.image).then((img) => { tex.image = paintPoster(img, rec.time); tex.needsUpdate = true; });
     return p;
   }

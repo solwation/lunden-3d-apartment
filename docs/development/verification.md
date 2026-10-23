@@ -8517,3 +8517,12 @@ Run `tools/focuswarmtest.html` (9 checks) plus existing `tools/focusperftest.htm
 warm-up check. Verify first-focus program counts, ordinary focused appearance and
 real interaction, not merely repeated focus after its shader already compiled.
 See [performance](performance.md#first-focus-program-warm-up-1508).
+
+## Late-arriving drawings in warm-up (#1514)
+
+`tools/focuswarmtest.html` now has18 checks. Nine new checks cover a drawing added while
+desktop screen programs compile, between phone compile slices and after `warm.done`,
+including the lamp-wash key, the per-frame phone budget, removal before compilation and
+skipped warm-up. On base `b1711188` four of them fail. The matched native-GPU kitchen lap,
+`postertest`/`homedrawingtest` and the IndexedDB-failure check are in
+[the verification record](../verification/1514/README.md).

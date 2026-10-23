@@ -1751,9 +1751,26 @@ with different geometry flags remain distinct while equivalent material families
 reuse a representative. Extras join the existing readiness set and phone compile
 budget; no extra scene children, draw passes, textures or geometry are introduced.
 The original focus shaders, source-driven appearance, cache/disposal and fallback
-for objects arriving after the relevant compile stage remain intact; the remaining
-asynchronous drawing case is tracked separately in #1514. Headless/test-mode skip avoids
+for objects arriving after the relevant compile stage remain intact; late drawings
+are covered below (#1514). Headless/test-mode skip avoids
 building this warm-up discovery map when no warm-up runs.
+
+### Late-arriving drawings (#1514)
+
+Saved drawings are built when `Posters.load` reads IndexedDB. On the Intel UHD630
+native-GPU route the read finished about 4 s after the screen compile started, while
+WarmUp waited for those programs: the drawing missed the screen compile, got its
+base program in the draw-everything pass and its mirror focus variant in the mirror
+compile, but never its screen focus variant (first focus: 1 new program, a 313 ms frame).
+`Posters.onBuilt` now calls `WarmUp.add(mesh)`. Once a compile stage has started,
+`add` queues the late renderables; `lateSlice()` patches them with the lamp washes
+(`prepare(root)`, giving their final key) and compiles them with `compileExtras` for
+every target already started, within `WARM.programs`/`WARM.compileMs`. `tick()` runs it
+during warm-up (phones: in a frame of its own, not together with a compile slice);
+the game loop runs it after `warm.done`, so a drawing that arrives later is compiled
+a frame after arrival rather than at first focus. Startup does not await IndexedDB,
+no whole-scene compile is added and nothing is created in advance; the warm-up skip
+in tests leaves the queue empty. A drawing removed before its turn is dropped.
 
 Run `tools/focuswarmtest.html` and the existing `tools/focusperftest.html`. The new
 fixture checks the very first focus for screen/mirror, hidden/double-sided/instance

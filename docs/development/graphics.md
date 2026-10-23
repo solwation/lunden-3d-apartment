@@ -556,3 +556,5 @@ First-focus stalls (#1508): `InteractionOutline.warmCompiler` feeds the existing
 screen/mirror and sliced phone warm-up with compile-only focus variants. Runtime
 brightness shaders and source-material appearance/lifetime remain unchanged; no
 extra geometry or render pass is added. See [performance](performance.md#first-focus-program-warm-up-1508).
+Saved drawings that arrive from IndexedDB after a compile stage started are queued
+via `WarmUp.add` and compiled a few per frame (#1514).

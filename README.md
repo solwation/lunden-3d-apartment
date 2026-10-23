@@ -521,7 +521,7 @@ TV-ljudet dämpas när du går bort från skärmen eller vänder dig bort. Bilja
 
 Diagnostic frame intervals (`?perf`, #1507): see the [fixed capture protocol](docs/development/frame-intervals.md) for raw callback gaps, bounded export and Chrome Performance correlation.
 
-First-focus graphics (#1508): door/item highlight programs join the existing startup warm-up, reducing stalls when looking around; see [performance](docs/development/performance.md#first-focus-program-warm-up-1508).
+First-focus graphics (#1508): door/item highlight programs join the existing startup warm-up, reducing stalls when looking around; late-loaded saved drawings are queued into it too (#1514); see [performance](docs/development/performance.md#first-focus-program-warm-up-1508).
 
 ## Gemensam orkester
 
