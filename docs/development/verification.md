@@ -515,6 +515,20 @@ so the strip may overlap parking surfaces visually (as #1435). Footways `3354035
 The World test casts centre and ±2.1m side rays on all seven segments and rays at every node and 1.5m inside each
 end against actual merged south-land faces at the 25mm lift. Unchanged lamp rule: +2 fittings (128 to 130).
 
+Outer service ring and footway (#1464): run `node --test tools/servicering1464test.mjs` and open
+`tools/servicering1464test.html` against the actual World. The whole highway=service way `95036048` (514.2255m, 4.5m)
+and the separate highway=footway `199056947` (40.3685m, 2m, not a vehicle way and below the lamp width) use the saved
+`osm-south-2026-10-08.json` projection; widths and asphalt are explicit guesses. The ring's source ends join `36918924`
+at (167.10,334.61) and (100.69,298.56), it shares the inner loop's mapped nodes and the formerly bare outer end of
+`145221612` (-68.60,417.65); the footway joins `145221576` (16.04,308.22) to the ring (39.28,341.23). Native tests check
+the source nodes/types, joints and full-strip building/forest(+0.5m) clearance. The World test casts centre and side rays
+on all17segments and around all19nodes against merged south-land faces at the 25mm lift; the ring's southern arc lies
+beyond the terrain grid edge (`backgroundGround.z1` 460), where the reference is the emitted grass face below the ray.
+Measured on ad87e2b3: +3620 south-land triangles; the unchanged lamp rule adds 15 fittings on the ring and drops three
+now-obstructed ones (`1147690112`, `145221614`, `145221599`), 130→142. The existing global batches absorb it with no new
+draw calls: desktop 21-view peak 459calls/847891tri (was 844271), phone 844×390 360/869079 (was 863059), 390×844
+292/680669; limits unchanged, so no separate bounded submission was added.
+
 Garage contents behind drawn ceilings (#1439):
 `node --test tools/garageocclusiontest.mjs tools/desktopocclusiontest.mjs tools/phonedetailunittest.mjs tools/occlusiontest.mjs`
 checks22cases, including exact included/excluded A/B/C/L ceiling rectangles,

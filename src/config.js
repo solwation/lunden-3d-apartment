@@ -914,6 +914,11 @@ export const SITE = {
       // 335403606 is tagged surface=paved, which this file renders as asphalt (#1235 convention; surfaceSource records the tag); no width tag -> width is a guess; it ends at the shared node of 36918924/1147690112. No parking data touched.
       {"source":"335403605","highway":"service","surface":"asphalt","surfaceSource":"guess","widthSource":"guess","path":[[170.45,303.90],[203.24,294.12],[206.07,293.22],[224.41,287.47]],"w":4.5,"terrain":"triangles"},
       {"source":"335403606","highway":"service","surface":"asphalt","surfaceSource":"osm:paved","widthSource":"guess","path":[[170.45,303.90],[169.79,315.10],[168.79,322.27],[168.17,327.49],[167.10,334.61]],"w":4.5,"terrain":"triangles"},
+      // #1464: whole outer service ring 95036048 and its separate footway 199056947 from the same saved 2026-10-08 OSM snapshot (unchanged geoToPlan).
+      // Both carry only highway tags: 4.5 m / 2 m widths and asphalt are guesses. The ring joins 36918924 at (167.10,334.61) and (100.69,298.56), the inner loop
+      // at its mapped nodes and 145221612's bare outer end (-68.60,417.65); the footway stays a footway linking 145221576 (16.04,308.22) to the ring (39.28,341.23).
+      {"source":"95036048","highway":"service","surface":"asphalt","surfaceSource":"guess","widthSource":"guess","path":[[167.10,334.61],[159.81,341.58],[97.32,385.52],[68.88,405.62],[38.47,427.10],[-12.64,463.26],[-18.96,467.75],[-23.66,470.88],[-25.66,471.59],[-27.58,471.64],[-30.00,471.18],[-32.38,469.61],[-68.60,417.65],[-10.57,376.93],[36.11,343.59],[39.28,341.23],[100.69,298.56]],"w":4.5,"terrain":"triangles"},
+      {"source":"199056947","highway":"footway","surface":"asphalt","surfaceSource":"guess","widthSource":"guess","path":[[16.04,308.22],[39.28,341.23]],"w":2,"terrain":"triangles"},
     ],
     // #1262: sourced parking areas and street-side bays south of Höje å (OSM snapshot 2026-10-18)
     parking: [

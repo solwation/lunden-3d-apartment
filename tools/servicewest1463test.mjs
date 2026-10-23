@@ -25,14 +25,14 @@ test('western service way follows the whole saved OSM way with guessed dimension
  assert(road.path.every(([,z])=>z>WALK.z1));assert.equal(WALK.z1,250);
 });
 
-test('it joins the three existing roads at mapped nodes and keeps the future outer end bare',()=>{
+test('it joins the three existing roads at mapped nodes and meets outer ring 95036048 at its mapped outer node',()=>{
  const main=SITE.south.paths.find(r=>r.source==='30633546'),a=SITE.south.access.find(r=>r.source==='145221573'),b=SITE.south.access.find(r=>r.source==='145221576');
  assert.deepEqual(road.path.at(-1),[-134.7,334.97]);assert(has(main.path,road.path.at(-1)));
  assert.deepEqual(a.path[0],[-127.61,345.26]);assert(has(road.path,a.path[0]));
  assert.deepEqual(b.path[0],[-97.6,388.93]);assert(has(road.path,b.path[0]));
  assert.deepEqual(road.path[0],[-68.6,417.65]);assert(has(plan(source.features.find(f=>f.id==='95036048')),road.path[0]));
  const all=Object.values(SITE).flatMap(s=>[...(s?.paths??[]),...(s?.access??[])]).filter(r=>r.path&&r!==road);
- assert(!all.some(r=>has(r.path,road.path[0])),'no invented link at the outer end');
+ assert.deepEqual(all.filter(r=>has(r.path,road.path[0])).map(r=>r.source),['95036048'],'outer end joins only the mapped ring 95036048 (#1464), no invented link');
 });
 
 test('complete emitted strip clears southern buildings and woodland plus tree margin',()=>{
