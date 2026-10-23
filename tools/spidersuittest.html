@@ -12,7 +12,7 @@
 // edge) cannot be climbed; a click shoots a web that sticks to the façade, at most SPIDER.web.max at once, gone after
 // `life`; keep.js round trip; F home to the drawer; the `spiderman` cheat; touch: the stick climbs, 🕸 shoots.
 // #600: no fall hurts in the suit, Space jumps high (once per press), a web on the façade pulls you there onto the wall,
-// Space mid-swing lets go and the speed carries on, a web on the street pulls you there; the jump button by 🕸 jumps;
+// Space mid-swing lets go and the speed carries on, a web on the street pulls you there; the jump button (right of 🧎) jumps;
 // without the suit 8 m hurts.
 // #636: the arms: climbing shows both hands (they follow the direction and the tempo, grip when still), a shot web shows the
 // right hand in the web pose (the left one stays down), swinging both reach for the anchor; the suit's jump also works
@@ -32,7 +32,7 @@ async function run() {
   while (!w.__app) await wait(100);
   const A = w.__app, { player, fall, world, step, camera, renderer, suit, toggleFurniture, touch, keepWorld, cheats, scene } = A;
   const mod = (p) => w.eval(`import('${new URL(p, location.href).href}')`);
-  const { PLAYER, SPIDER, SITE, LEVELS, HAND, OUTDOOR } = await mod('../src/config.js');
+  const { PLAYER, SPIDER, SITE, LEVELS, HAND, OUTDOOR, COURTYARD } = await mod('../src/config.js');
   const lines = [];
   let pass = true;
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
@@ -190,12 +190,19 @@ async function run() {
   for (let ts2 = 0; ts2 < 5 && !player.climb; ts2 += dt) step(dt);
   run(0.05, ['Space']); run(4);
   check(!player.climb && Math.abs(player.pos.y - sy) < 0.05 && !landings.some((l) => l.r === 'hurt'), 'Space: off the wall, down unhurt');
-  // a web on the pergola in the courtyard (held back under it): let go when getting no closer
-  place(cx, C.z1 + 10, undefined, 0, 25); landings.length = 0;
+  // a web on the pergola in the courtyard (held back under it): let go when getting no closer. The pergola is open timber
+  // (its vines are sparse leaf cards since #679), so aim at a cross frame (z of the second post row, 2.85-3.05 m up) on purpose
+  // instead of relying on a ray that may slip through the slats.
+  const P2 = COURTYARD.pergolas[1], frameZ = P2.z0 + (P2.z1 - P2.z0) / 3, startZ = P2.z1 - 1.9, frameY = 2.95;
+  place((P2.x0 + P2.x1) / 2, startZ, undefined, 0, 0);
+  const pitchP = Math.atan2(frameY - player.eyeY, player.pos.z - frameZ) * 180 / Math.PI;
+  place((P2.x0 + P2.x1) / 2, startZ, undefined, 0, pitchP); landings.length = 0;
   A.click(0);
+  const anchorP = suit.shot?.to;
   for (let i = 0; i < 120 && !player.swing; i++) step(dt);
   let tp = 0; for (; tp < SPIDER.swing.max + 1 && player.swing; tp += dt) step(dt);
   run(2);
+  check(anchorP && Math.abs(anchorP.z - frameZ) < 0.3 && anchorP.y > 2.5 && anchorP.y < 3.2, `the web sticks to the pergola's cross frame (${anchorP && [anchorP.x, anchorP.y, anchorP.z].map(f2)}, frame z ${f2(frameZ)})`);
   check(!player.swing && !player.climb && !fall.active && Math.abs(player.pos.y - player.groundAt(player.pos.x, player.pos.z, player.pos.y)) < 0.05, `a web held back by the pergola: let go after ${f2(tp)} s, standing`);
   // Space mid-swing lets go: the speed carries on, then down
   place(cx, C.z1 + 14, undefined, 0, 22); landings.length = 0;
@@ -243,11 +250,13 @@ async function run() {
   camera.rotation.x = 0.4; for (let i = 0; i < 3; i++) step(dt);
   const act = d.getElementById('action');
   check(/Ta av dig dräkten/i.test(act.textContent) && !act.hidden, `the action button says "${act.textContent}"`);
-  // the jump button (#600, moved by #657): directly left of 🧎, 🕸 straight above it
+  // the jump button (#600): in the thumb arc (#1089, src/hudicons.css) ring 1 is jump (right) then 🧎 directly left of it, on
+  // one row; 🕸 sits in the fourth equipment column, left of 🧎 and above the ring-1 row (not overlapping either)
   const jb = d.getElementById('jump-btn'), cb = d.getElementById('crouch-btn');
   const jr = jb.getBoundingClientRect(), wr = web2.getBoundingClientRect(), cbr = cb.getBoundingClientRect();
-  check(!jb.hidden && w.getComputedStyle(jb).display !== 'none' && Math.abs(jr.top - cbr.top) < 2 && jr.right <= cbr.left && cbr.left - jr.right < 20, `touch: the jump button directly left of 🧎 (${f2(cbr.left - jr.right)} px apart)`);
-  check(Math.abs(wr.left - jr.left) < 2 && wr.bottom <= jr.top && jr.top - wr.bottom < 20, `touch: 🕸 straight above the jump button (${f2(jr.top - wr.bottom)} px apart)`);
+  check(!jb.hidden && w.getComputedStyle(jb).display !== 'none' && Math.abs(jr.top - cbr.top) < 2 && cbr.right <= jr.left && jr.left - cbr.right < 20, `touch: the jump button directly right of 🧎 (${f2(jr.left - cbr.right)} px apart)`);
+  check(wr.right <= cbr.left, `touch: 🕸 in the equipment column left of 🧎 (${f2(cbr.left - wr.right)} px apart), above the ring-1 row (${f2(jr.top - wr.bottom)} px)`);
+  check(wr.bottom <= jr.top, `touch: 🕸 clear of the ring-1 row (${f2(jr.top - wr.bottom)} px above it)`);
   place(cx, C.z1 + 8, undefined, 0, 0); top = player.pos.y;
   jb.dispatchEvent(new w.PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch' }));
   for (let i = 0; i < 180; i++) { step(dt); top = Math.max(top, player.pos.y); }

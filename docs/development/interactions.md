@@ -298,7 +298,7 @@ src/spidersuit.js      the Spider-Man suit (#597, SPIDER, all values *guess*): o
                        The base look/colour attribute, skeleton, head silhouette, crouch and held props are untouched; removal restores the existing
                        solid/outline appearance. A suited unarmed figure is visually solid, while Ghost.solid/HP/combat eligibility keeps its armed rule.
                        The same temporary outfit appears in the local mirror; powers/fall/combat mechanics do not change.
-                       #600: with it on fall.js never hurts (a soft landing). Space / the touch jump button (#jump-btn, directly left of 🧎 in the #1057 touch cluster;
+                       #600: with it on fall.js never hurts (a soft landing). Space / the touch jump button (#jump-btn, directly right of 🧎 in the #1089 thumb-arc touch cluster;
                        on touch always, #636) is a *press* (`player.spaceDown` / `jumpPress`): standing it jumps at `jump` m/s (indoors
                        too, the ceiling stops it, `player.ceilingAt`); without the suit it is the low jump `PLAYER.jump`; on a wall it
                        lets go. A strand that sticks outdoors calls `player.attach`:
@@ -708,7 +708,7 @@ tools/spidersuittest.html headless test (#597): the suit in the MALM drawer (no 
                        `life`), F home, the `spiderman` cheat, touch: the stick climbs, 🕸 shoots, "Ta av dig dräkten";
                        #600: an 8 m drop is soft in the suit, Space jumps high (once per press), a web on the façade pulls you up
                        to it onto the wall, one held back by the pergola lets go, Space mid-swing flies on and lands unhurt, a
-                       web on the street pulls you there; the jump button by 🕸 jumps; without the suit 8 m hurts;
+                       web on the street pulls you there; the jump button (right of 🧎) jumps; without the suit 8 m hurts;
                        #636: both hands climb (direction, tempo, resting grip), the web pose after a shot at the sky, both arms swinging;
                        (#1471: landing on / climbing onto the Å-husen's upper loggias, and the climb held under a loggia slab
                        overhead, are tools/loggia1471test.cjs)
