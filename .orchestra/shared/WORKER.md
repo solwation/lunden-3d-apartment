@@ -12,7 +12,9 @@ Resolved Issueflow revision/content (reuse conductor's session snapshot):
 Capability/effort choice (or selection limit), reason and stop/reassessment condition:
 Short plan and independent helper output (if any):
 2–3 risk-based checks and mandatory release gates:
+Applicable project hooks: names/phases, triggers/timing, procedure links, owner and required/optional evidence:
 Integration/publishing owner:
+Follow-up owner, evidence format, destination and timing:
 Heartbeat, question channel and required result evidence:
 ```
 
