@@ -19,6 +19,41 @@ const keepPN = (g) => { g = nonIndexed(g); for (const k of Object.keys(g.attribu
 const merged = (geos, mat, shadow = true) => { const m = new THREE.Mesh(mergeGeometries(geos.map(keepPN)), mat); m.castShadow = shadow; m.receiveShadow = true; return m; };
 const flatRect = (x0, x1, z0, z1, y) => new THREE.PlaneGeometry(x1 - x0, z1 - z0).rotateX(-Math.PI / 2).translate((x0 + x1) / 2, y, (z0 + z1) / 2);
 
+/** #1554: a quad whose four corners follow the ground (a crossing bar on the sloping bridge approach), `lift` m over it. */
+const groundRect = (x0, x1, z0, z1, lift, groundY, step = 0.5) => {
+  // cut into `step` m cells so the bar follows the terrain's folds (the road under it is cut along them), each cell flat between its corners' ground heights
+  const pos = [], nx = Math.max(1, Math.round((x1 - x0) / step)), nz = Math.max(1, Math.round((z1 - z0) / step)), v = (x, z) => [x, groundY(x, z) + lift, z];
+  for (let i = 0; i < nx; i++) for (let j = 0; j < nz; j++) {
+    const a = x0 + (x1 - x0) * i / nx, b = x0 + (x1 - x0) * (i + 1) / nx, c = z0 + (z1 - z0) * j / nz, d = z0 + (z1 - z0) * (j + 1) / nz;
+    pos.push(...v(a, c), ...v(a, d), ...v(b, d), ...v(a, c), ...v(b, d), ...v(b, c));
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.computeVertexNormals();
+  return g;
+};
+
+/** #1554: the road's refuge island at the bridge's north end: a low kerb block whose top and sides follow the sloping ground, and its yellow bollards. */
+export function bridgeheadIsland(groundY) {
+  const I = S.bridgehead.island, c = [[I.x0, I.z0], [I.x1, I.z0], [I.x1, I.z1], [I.x0, I.z1]];
+  const top = c.map(([x, z]) => [x, groundY(x, z) + I.lift + I.h, z]), bot = c.map(([x, z]) => [x, groundY(x, z) - 0.02, z]), pos = [];
+  const quad = (a, b, d, e) => pos.push(...a, ...b, ...d, ...a, ...d, ...e);
+  quad(top[0], top[3], top[2], top[1]); // up
+  for (let i = 0; i < 4; i++) { const j = (i + 1) % 4; quad(top[i], bot[i], bot[j], top[j]); } // sides, whichever way they wind: normals are fixed below
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.computeVertexNormals();
+  const n = g.attributes.normal, cx = (I.x0 + I.x1) / 2, cz = (I.z0 + I.z1) / 2, p = g.attributes.position;
+  for (let t = 0; t < p.count; t += 3) { // turn every side face outwards (away from the centre)
+    const fx = (p.getX(t) + p.getX(t + 1) + p.getX(t + 2)) / 3 - cx, fz = (p.getZ(t) + p.getZ(t + 1) + p.getZ(t + 2)) / 3 - cz;
+    if (n.getY(t) > 0.5) continue;
+    if (n.getX(t) * fx + n.getZ(t) * fz < 0) { const a = [p.getX(t + 1), p.getY(t + 1), p.getZ(t + 1)], b = [p.getX(t + 2), p.getY(t + 2), p.getZ(t + 2)]; p.setXYZ(t + 1, ...b); p.setXYZ(t + 2, ...a); }
+  }
+  g.computeVertexNormals();
+  const bollards = I.bollards.map(([x, z]) => new THREE.CylinderGeometry(I.bollardR, I.bollardR, I.bollardH, 8).translate(x, groundY(x, z) + I.lift + I.h + I.bollardH / 2, z));
+  return { kerb: g, bollards };
+}
+
 function cobbleTexture() {
   const c = document.createElement('canvas'); c.width = c.height = 128;
   const g = c.getContext('2d');
@@ -136,13 +171,18 @@ export function buildStreet(groundY, pathGround = groundY, trees = []) {
   const group = new THREE.Group();
   const grey = new THREE.MeshStandardMaterial({ color: 0xa9a7a2, roughness: 0.85 });
   const curbs = curbGeometries(groundY);
-  group.add(merged([...curbs, ...shelterPaving(groundY)], grey, false)); // #1534: the shelter's slabs, pillar and stones share the curbs' grey
+  const island = bridgeheadIsland(pathGround); // #1554: the road's own surface follows the rendered terrain (pathGround), not the analytic groundY
+  group.add(merged([...curbs, ...shelterPaving(groundY), island.kerb], grey, false)); // #1534: the shelter's slabs, pillar and stones share the curbs' grey
   // patched asphalt: darker, smoother rectangles a hair above the road
   group.add(merged(S.patches.map(([x, z, w, d]) => flatRect(x - w / 2, x + w / 2, z - d / 2, z + d / 2, 0.016)),
     new THREE.MeshStandardMaterial({ color: 0x45484b, roughness: 0.5 }), false));
   // zebra crossing: 50 cm white bars along the traffic, across the road
   const cr = S.crossing, bars = [];
   for (let z = cr.z0 + 0.25; z + 0.5 <= cr.z1; z += 1.0) bars.push(flatRect(cr.x0, cr.x1, z, z + 0.5, 0.018));
+  for (const c of S.bridgehead.crossings) { // #1554: across the north-south road at the bridge, bars clear of the island
+    const I = S.bridgehead.island;
+    for (let x = c.x0 + 0.25; x + 0.5 <= c.x1 + 1e-9; x += 1.0) if (x + 0.5 <= I.x0 || x >= I.x1) bars.push(groundRect(x, x + 0.5, c.z0, c.z1, 0.045, pathGround));
+  }
   group.add(merged(bars, new THREE.MeshStandardMaterial({ color: 0xeeeeea, roughness: 0.7 }), false));
   // cobbled corner
   const cb = S.cobbles;
@@ -205,14 +245,19 @@ export function buildStreet(groundY, pathGround = groundY, trees = []) {
     black.push(new THREE.CylinderGeometry(0.025, 0.025, 1.0, 6).translate(x, 0.5, z), new THREE.BoxGeometry(0.5, 0.05, 0.35).translate(x, 0.03, z));
     yellow.push(new THREE.CylinderGeometry(0.0001, 0.4, 0.05, 3).rotateX(Math.PI / 2).rotateZ(Math.PI).translate(x, 1.2, z - 0.03)); // the triangle
   }
+  yellow.push(...island.bollards); // #1554: the island's bollards share the yellow batch
   group.add(merged(yellow, new THREE.MeshStandardMaterial({ color: 0xf2c014, roughness: 0.5 })), merged(black, new THREE.MeshStandardMaterial({ color: 0x1b1c1e, roughness: 0.6 })));
   const signalMats = lamps.map(([geo, col], i) => { const mat = new THREE.MeshStandardMaterial({ color: 0x222222, emissive: col, emissiveIntensity: i === 0 ? 1.2 : 0.05 }); group.add(new THREE.Mesh(geo, mat)); return mat; });
   // signs (#129): canvas faces on both sides, poles merged
   const poles = [], faces = [];
+  const texCache = new Map(); // #1554: signs of one kind (the two crossing signs) share one texture
   const sign = (draw, w, h, [x, z, yaw], y, { pole = true, tex = 256 } = {}) => {
-    const c = document.createElement('canvas'); c.width = tex; c.height = Math.round((tex * h) / w);
-    draw(c.getContext('2d'), c.width, c.height);
-    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+    let t = texCache.get(draw);
+    if (!t) {
+      const c = document.createElement('canvas'); c.width = tex; c.height = Math.round((tex * h) / w);
+      draw(c.getContext('2d'), c.width, c.height);
+      t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; texCache.set(draw, t);
+    }
     const r = THREE.MathUtils.degToRad(yaw);
     for (const back of [0, Math.PI]) {
       const pl = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshStandardMaterial({ map: t, roughness: 0.6 }));
@@ -238,6 +283,19 @@ export function buildStreet(groundY, pathGround = groundY, trees = []) {
   sign((g, w, h) => { g.fillStyle = '#151515'; g.fillRect(0, 0, w, h); g.fillStyle = '#f2e2c6'; g.textAlign = 'center';
     g.font = 'bold 50px Georgia, serif'; g.fillText('HEPCAT', w / 2, h * 0.3); g.font = 'italic 38px Georgia, serif'; g.fillText('Store', w / 2, h * 0.45);
     g.font = '22px sans-serif'; g.fillText('Välkommen in!', w / 2, h * 0.75); }, 0.6, 0.9, S.aBoard, 0.55, { pole: false });
+  // #1554: the blue "pedestrian crossing" signs at the bridge's crossing and the orange vertical HEMSÖ flag by the school's yard (all guess, see SITE.street.bridgehead)
+  const BH = S.bridgehead;
+  const crossingSign = (g, w, h) => {
+    g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); g.fillStyle = '#1d4f91'; g.fillRect(w * 0.05, h * 0.05, w * 0.9, h * 0.9);
+    g.fillStyle = '#fff'; g.beginPath(); g.moveTo(w * 0.5, h * 0.14); g.lineTo(w * 0.86, h * 0.82); g.lineTo(w * 0.14, h * 0.82); g.closePath(); g.fill();
+    g.fillStyle = '#111'; g.beginPath(); g.arc(w * 0.5, h * 0.4, w * 0.045, 0, 7); g.fill(); g.fillRect(w * 0.47, h * 0.45, w * 0.06, h * 0.22);
+  };
+  for (const at of BH.signs) sign(crossingSign, 0.6, 0.6, at, BH.signY, { tex: 128 });
+  const F = BH.flag;
+  sign((g, w, h) => {
+    g.fillStyle = '#e8883a'; g.fillRect(0, 0, w, h); g.fillStyle = '#fff'; g.translate(w / 2, h / 2); g.rotate(-Math.PI / 2);
+    g.font = `bold ${Math.round(w * 0.72)}px sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('HEMSÖ', 0, 0);
+  }, F.w, F.h, [...F.at, F.yaw], F.pole - F.h / 2, { tex: 128 });
   group.add(merged(poles, new THREE.MeshStandardMaterial({ color: 0x8e9296, roughness: 0.4, metalness: 0.5 })), ...faces);
   // fallen leaves on the pavements and verges in the autumn months (one instanced mesh)
   let seed = 9; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);

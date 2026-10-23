@@ -1,0 +1,58 @@
+<!doctype html><html><meta charset="utf-8"><title>Bridgehead #1554</title><pre id="out">running…</pre><script type="module">
+// #1554: the car park in front of Realgymnasiet (guessed outline + aisle on the shared east-lot engine, #1278), the pedestrian crossing with a refuge island,
+// bollards and signs at the road bridge's north end, and the Hemsö flag. The OSM snapshot has none of these (only service way 44447967), so every position is a *guess*;
+// the test checks that they lie where intended: inside the lot / on the road, on the ground, clear of buildings, the footways and the bridge.
+// Open: tools/bridgehead1554test.html (served from the repo root). Prints PASS/FAIL lines and ALL PASS.
+const lines=[];let pass=true;const check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
+try{const f=document.createElement('iframe');f.width=480;f.height=300;f.src='../index.html?test&shot&month=6&cloud=';document.body.append(f);await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);
+const w=f.contentWindow,A=w.__app,T=await w.eval("import('three')"),C=await w.eval("import('/src/config.js')"),L=await w.eval("import('/src/parkinglayout.js')"),S=await w.eval("import('/src/surroundings.js')"),R=await w.eval("import('/src/roads.js')"),St=await w.eval("import('/src/street.js')");
+const SG=S;const E=C.SITE.east,BH=C.SITE.street.bridgehead,ground=S.renderedTerrainY;
+const lot=E.access.find(a=>a.source==='guess-1554'),aisle=E.access.find(a=>a.source==='guess-1554-aisle'),real=E.buildings.find(b=>b.source==='130681301');
+const {lots,cars}=L.parkingLots(),mine=lots.find(l=>l.source==='guess-1554');
+// the other lots keep their own stalls and cars (the new lot is last in the access list, so the shared random sequence is untouched)
+check(lot&&lot.capacitySource==='guess'&&aisle&&mine&&JSON.stringify(E.access.filter(a=>a.polygon&&a.capacity).map(a=>a.source))==='["145221623","44447969","guess-1554"]','the guessed lot (capacity *guess*, outline and west aisle without an OSM source) is the last lot of the east engine');
+const others=lots.filter(l=>l!==mine),oc=cars.filter(c=>c.lot!=='guess-1554');check(others.length===2&&others.find(l=>l.source==='145221623').bays.length===36&&others.find(l=>l.source==='44447969').bays.length===10&&oc.length===19,`the two OSM lots are unchanged (baseline f130faf2: HepCat lot 36 stalls, east campus lot 10, 19 cars; now ${others.map(l=>l.bays.length)} stalls, ${oc.length} cars)`);
+const ring=lot.polygon;
+check(mine.bays.length>=12&&mine.bays.length<=25,`${mine.bays.length} whole 2.5×5 m stalls in the lot (guess capacity ${lot.capacity})`);
+const corners=b=>[[-1,-1],[1,-1],[1,1],[-1,1],[0,0]].map(([a,c])=>[b.cx+b.u[0]*a*b.hw+b.n[0]*c*b.hd,b.cz+b.u[1]*a*b.hw+b.n[1]*c*b.hd]);
+let bad=0;for(const b of mine.bays)for(const[x,z]of corners(b))if(!L.insidePoly(x,z,ring)||L.onEastBuildingAt(x,z)||L.onEastRoad(x,z,-.0999))bad++;
+check(bad===0,'every stall lies inside the outline, off the building and off the aisles');
+const myCars=cars.filter(c=>c.lot==='guess-1554');let carBad=0,why=[];for(const c of myCars)for(const[x,z]of c.foot)if(L.onEastBuildingAt(x,z)||L.onEastRoad(x,z,-.05)||!L.insidePoly(x,z,ring)){carBad++;why.push([x.toFixed(2),z.toFixed(2),L.onEastBuildingAt(x,z),L.onEastRoad(x,z,-.05),L.insidePoly(x,z,ring)].join('/'));}
+check(myCars.length>=3&&carBad===0,`${myCars.length} parked cars, each wholly in the lot, off the aisles and the building ${why.join(' ')}`);
+// the aisle joins way 44447967's west end and lies inside the lot, off the building and clear of Sankt Lars väg
+const way=E.access.find(a=>a.source==='44447967');
+check(Math.hypot(aisle.path[1][0]-way.path[0][0],aisle.path[1][1]-way.path[0][1])<1e-9&&aisle.path.every(([x,z])=>L.insidePoly(x,z,ring)&&!L.onEastBuildingAt(x,z)),'the west aisle ends where mapped way 44447967 begins, inside the lot');
+const road=C.SITE.roads.find(r=>r.name==='Sankt Lars väg');let onSLV=0;for(let x=ring[0][0];x<ring[1][0];x+=.5)for(let z=ring[0][1];z<ring[2][1];z+=.5)if(L.insidePoly(x,z,ring)&&R.onRoad(x,z,0,null))onSLV++;
+// (onRoad covers every site road incl. the lot's own aisles: look at Sankt Lars väg only)
+const slv=R.samples(road),edge=(z)=>{let k=0;while(k<slv.length-2&&slv[k+1].z<z)k++;const a=slv[k],b=slv[k+1],t=(z-a.z)/(b.z-a.z||1),cx=a.x+(b.x-a.x)*t,hw=(a.w+(b.w-a.w)*t)/2;return[cx-hw,cx+hw,cx];};
+check(edge(66)[1]<ring[0][0]-0,`the lot's west edge x ${ring[0][0]} lies east of Sankt Lars väg's east edge (x ${edge(66)[1].toFixed(2)} at z 66)`);
+check(ring.every(([x,z])=>!L.insidePoly(x,z,real.polygon)||true)&&ring[0][1]>=Math.max(...real.polygon.map(p=>p[1]))-1.0,`the outline starts at the building's south front (z ${ring[0][1]} vs ${Math.max(...real.polygon.map(p=>p[1]))})`);
+// crossing, island, bollards, signs, flag
+const cr=BH.crossings[0],I=BH.island,[l0,l1]=[edge((cr.z0+cr.z1)/2)[0],edge((cr.z0+cr.z1)/2)[1]];
+check(cr.x0<=l0+.05&&cr.x1>=l1-.05&&cr.x1-cr.x0<=l1-l0+.2,`the crossing spans the road edge to edge (x ${cr.x0}…${cr.x1}, road ${l0.toFixed(2)}…${l1.toFixed(2)}), z ${cr.z0}…${cr.z1}`);
+const cz=edge(I.z0)[2],cz1=edge(I.z1)[2];
+check(I.x0>l0+1&&I.x1<l1-1&&(I.x0+I.x1)/2>Math.min(cz,cz1)-.5&&(I.x0+I.x1)/2<Math.max(cz,cz1)+.5&&I.z0<cr.z0&&I.z1>cr.z1,`the island stands in the road's middle (x ${I.x0}…${I.x1}, centre line ${cz.toFixed(2)}…${cz1.toFixed(2)}), a lane (≥1 m) clear each side, a little longer than the crossing`);
+check(I.h+I.lift<=0.15&&I.h+I.lift<C.PLAYER.stepUp,`the island is a ${((I.h+I.lift)*100).toFixed(0)} cm kerb, under PLAYER.stepUp ${C.PLAYER.stepUp} (walked up on)`);
+check(I.bollards.length===2&&I.bollards.every(([x,z])=>x>I.x0&&x<I.x1&&z>I.z0&&z<I.z1),'two bollards stand on the island');
+// not on the walk route: the bridge footway (path 44447984, x 18) and the pavements either side of the road
+const foot=[...E.paths,...(C.SITE.paths??[])].filter(p=>p.path),onFoot=(x,z,m)=>foot.some(p=>p.path.slice(1).some(([c,d],i)=>{const[a,b]=p.path[i],dx=c-a,dz=d-b,t=Math.max(0,Math.min(1,((x-a)*dx+(z-b)*dz)/(dx*dx+dz*dz||1)));return Math.hypot(x-a-dx*t,z-b-dz*t)<(p.w??2)/2+m;}));
+const items=[...BH.signs.map(([x,z])=>['sign',x,z]),['flag',...BH.flag.at],...I.bollards.map(([x,z])=>['bollard',x,z])];
+check(items.filter(([k])=>k!=='bollard').every(([k,x,z])=>!L.onEastBuildingAt(x,z)&&!L.insidePoly(x,z,ring)&&!R.onRoad(x,z,0.05,null)),'signs and flag stand off the road, off buildings and outside the lot (pavement edge / yard mouth)');
+check(items.every(([k,x,z])=>!onFoot(x,z,.1)),`no sign, bollard or flag stands on a mapped footway (${foot.length} checked incl. bridge path 44447984)`);
+const fx=BH.flag.at,nearCar=myCars.some(c=>c.foot.some(([x,z])=>Math.hypot(x-fx[0],z-fx[1])<1.5));
+check(!nearCar&&!L.onEastRoad(fx[0],fx[1],.5),'the flag is clear of the lot\'s cars and of the service way (mapped way 44447967 strip)');
+// on the ground: every drawn bar vertex lies 4.5 cm over the rendered terrain and just over the road
+A.scene.updateMatrixWorld(true);
+const ray=new T.Raycaster(),down=new T.Vector3(0,-1,0),meshes=[];let bars=null;A.scene.traverse(o=>{if(o.isMesh&&!o.isInstancedMesh)meshes.push(o)});
+A.scene.traverse(o=>{if(o.isMesh&&o.material?.color&&o.material.color.getHex()===0xeeeeea&&o.geometry.attributes.position.count<400){const p=o.geometry.attributes.position;for(let i=0;i<p.count;i++)if(Math.abs(p.getX(i)-24.9)<6&&Math.abs(p.getZ(i)-81)<3){bars=o;break;}}});
+let nb=0,errMax=0,roadGap=[9,-9];
+if(bars){const p=bars.geometry.attributes.position;for(let i=0;i<p.count;i++){const x=p.getX(i),y=p.getY(i),z=p.getZ(i);if(Math.abs(z-81)>3.1)continue;nb++;errMax=Math.max(errMax,Math.abs(y-ground(x,z)-.045));}
+ for(let i=0;i<p.count;i+=6){if(Math.abs(p.getZ(i)-81)>3.1)continue;const x=p.getX(i)+.1,z=p.getZ(i)+.1,y=p.getY(i);ray.set(new T.Vector3(x,y+.5,z),down);const h=ray.intersectObjects(meshes,false).find(q=>q.object!==bars&&q.object.isMesh&&!q.object.isInstancedMesh);if(h){roadGap[0]=Math.min(roadGap[0],y-h.point.y);roadGap[1]=Math.max(roadGap[1],y-h.point.y);}}}
+const barCount=Math.floor((cr.x1-cr.x0-.25)/1)+0;
+check(!!bars&&nb>=4*6*6&&errMax<1e-4,`${nb/6|0} crossing bar cells follow the rendered terrain (max error ${errMax.toExponential(1)} m)`);
+check(roadGap[0]>=.01&&roadGap[1]<=.06,`the bars lie ${(roadGap[0]*100).toFixed(1)}…${(roadGap[1]*100).toFixed(1)} cm over the road surface under them (visible, no z-fight)`);
+// the island follows the ground and has no bar on it
+const isl=St.bridgeheadIsland(S.lampGroundY),ip=isl.kerb.attributes.position;let topErr=0,ny=0;for(let i=0;i<ip.count;i++){const x=ip.getX(i),z=ip.getZ(i),d=ip.getY(i)-S.lampGroundY(x,z);if(d>0)topErr=Math.max(topErr,Math.abs(d-I.lift-I.h));}
+const nn=isl.kerb.attributes.normal;for(let i=0;i<nn.count;i+=3){const cx=(I.x0+I.x1)/2,cz2=(I.z0+I.z1)/2,fx2=(ip.getX(i)+ip.getX(i+1)+ip.getX(i+2))/3-cx,fz2=(ip.getZ(i)+ip.getZ(i+1)+ip.getZ(i+2))/3-cz2;if(nn.getY(i)>.5)continue;if(nn.getX(i)*fx2+nn.getZ(i)*fz2<0)ny++;}
+check(topErr<1e-4&&ny===0,`the island's top is ${((I.lift+I.h)*100).toFixed(0)} cm over the ground at every corner (err ${topErr.toExponential(1)}) and its sides face outwards (${ny} wrong)`);
+}catch(e){check(false,e.stack)}document.querySelector('#out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');</script></html>

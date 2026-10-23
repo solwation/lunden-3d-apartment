@@ -58,7 +58,7 @@ export function parkingLots() {
       }
     }
     for (const bay of bays) { // a car in some of the stalls, nose to the back (a few the other way)
-      if (R() > P.fill) { R(); R(); continue; }
+      if (R() > (lot.fill ?? P.fill)) { R(); R(); continue; } // #1554: a lot may set its own `fill` (the same three draws either way, so the other lots' cars stay put)
       const nose = R() < P.reversed ? -1 : 1, jitter = (R() - 0.5) * 0.3;
       const f = [bay.n[0] * nose, bay.n[1] * nose], yaw = Math.atan2(-f[1], f[0]);
       const cx = bay.cx + bay.u[0] * jitter, cz = bay.cz + bay.u[1] * jitter, c = Math.cos(yaw), s = Math.sin(yaw);

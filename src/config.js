@@ -515,6 +515,15 @@ export const SITE = {
     shelterPaving: { x0: 8.5, x1: 22.5, lift: 0.02, step: 0.5, curb: 0.1, behind: 2.5 }, // `behind`: m further north past the shelter's open end
     timetable: { at: [21.3, -31.5], w: 0.38, d: 0.24, h: 1.85 },
     stones: [[22.4, -33.3, 0.55], [25.6, -33.8, 0.5]], // [x, z, radius]
+    // #1554 (docs/foton/skolbyggnad-fran-brofastet.jpg): the pedestrian crossing at the road bridge's north end with a refuge island and two yellow bollards, blue crossing signs
+    // either side, and the orange vertical HEMSÖ flag by the school's yard mouth. The snapshot has no crossing/island/flag nodes: every position and size is a *guess*, placed by eye from the photo.
+    // `crossings`: bars 50 cm wide along the traffic, repeated across the road (`axis: 'x'`: the road runs north-south here) between x0…x1, z0…z1 deep; bars stay clear of the island.
+    bridgehead: {
+      crossings: [{ x0: 21.4, x1: 28.4, z0: 79.5, z1: 82.5, axis: 'x' }],
+      island: { x0: 24.1, x1: 25.7, z0: 78.3, z1: 83.7, h: 0.12, lift: 0.025, bollards: [[24.9, 78.9], [24.9, 83.1]], bollardH: 0.8, bollardR: 0.05 },
+      signs: [[29.4, 78.4, 0], [20.4, 83.6, 0]], signY: 2.3, // [x, z, yaw°], on the pavements either side of the road, sign face centre height
+      flag: { at: [76.5, 62], pole: 6.4, w: 0.9, h: 2.8, yaw: 0 }, // a banner hanging from the top of the pole
+    },
     trafficLight: { x: 8.6, z: -23.5 }, warnings: [[13.2, -23.0], [10.6, -23.2]],
     cobbles: { x0: 17.2, x1: 19.5, z0: -17.5, z1: -12.5 }, // inside the corner, by the end of our car park
     leaves: { n: 1400, months: [9, 10, 11], areas: [[-60, 12, -24, -18], [-30, 10, -32.1, -30.05], [19, 21, -12, 12]] },
@@ -1144,6 +1153,10 @@ export const SITE = {
       {"source":"145221567","name":"Förskolan Freinet gård","surface":"paved","polygon":[[129.42,-89.2],[66.93,-86.35],[66.75,-136.67],[66.68,-157.77],[128.42,-159.55],[128.56,-151.91]]},
       {"source":"145221572","name":"Sankt Thomas skolgård","surface":"gravel","polygon":[[18.5,-86.12],[66.93,-86.35],[66.75,-136.67],[17.39,-134.96]]},
       {"source":"145221740","name":"Realgymnasiet gård","surface":"paved","polygon":[[22.16,-40.01],[21.34,-85.05],[62.29,-83.09],[60.36,-26.09],[37.75,-26.74],[27.84,-26.65],[23.63,-26.86],[21.37,-33.48]]},
+      // #1554: the car park in front of Realgymnasiet's gable house (docs/foton/skolbyggnad-fran-brofastet.jpg: an asphalt car park with cars between the road and the building's south front). The OSM snapshot has NO parking area or aisle there
+      // (only service way 44447967 along the south front, which becomes the lot's east aisle), so the outline, the west aisle `guess-1554-aisle` (continues that way to the road) and the capacity are all *guess*; stalls, lines, kerb strip and cars come from the shared east-lot engine (PARKING_LOT, #1278).
+      {"source":"guess-1554","name":"Parkering framför Realgymnasiet (guess)","surface":"asphalt","capacity":25,"capacitySource":"guess","fill":0.4,"polygon":[[30.5,59.2],[75,59.2],[75,74.8],[30.5,74.8]]},
+      {"source":"guess-1554-aisle","name":"Parkeringsgång framför Realgymnasiet (guess)","surface":"asphalt","path":[[31.5,65.4],[52.88,64.43]],"w":4.5},
       {"source":"94054863","name":"Höjebroskolan skolgård","surface":"paved","polygon":[[130.09,-49.96],[129.42,-89.2],[128.56,-151.91],[167.4,-153.51],[171.8,-51.62]]},
       {"source":"145221570","name":"Lunds Montessorigrundskola gård","surface":"gravel","polygon":[[-105.75,-85.22],[-106.28,-142.26],[-76.54,-155.82],[-44.43,-155.28],[-47.41,-52.64],[-84.23,-55.41],[-103.88,-73.75]]},
     ],
