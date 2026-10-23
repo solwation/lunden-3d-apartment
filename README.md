@@ -535,7 +535,8 @@ buggfixar ska ge uppdateringsförslag; övriga uppgraderingar är valfria. Impor
 Kärnan kräver minsta tillräckliga modellkapacitet och resonemang när val stöds,
 korta arbetsuppdrag och motiverad eskalering med bevarat arbete. Samma
 resurshushållning gäller när modellvalet är låst; verifieringskraven behålls.
-[Projektpolicy](.orchestra/project.md) anger Lundens köer och publiceringskrav;
+[Projektpolicy](.orchestra/project.md) anger Lundens köer och publiceringskrav samt
+projektets hooks per fas (planering till uppföljning) och rapportintaget;
 [Issueflow](.orchestra/shared/ISSUE-WORKFLOW.md) styr gemensamma etiketter och status.
 Andra agentverktyg kan läsa samma filer direkt. Gemensamma förbättringar görs i
 kärnans repo och införs här genom en granskad versionsuppdatering.
