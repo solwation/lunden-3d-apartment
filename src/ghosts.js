@@ -2,7 +2,7 @@ import { playerLocalStorage as localStorage } from './playerprofiles.js';
 import { applyRestPose } from './remote-pose.js';
 import { poseOlof } from './olof.js';
 import * as THREE from 'three';
-import { FALL, TOAST, SOUNDS, KISS } from './config.js';
+import { FALL, TOAST, SOUNDS, KISS, HUG } from './config.js';
 import { makesSteps, strideFor } from './spatialsound.js';
 import { GHOSTS as G, COMBAT, AVATAR, AVATAR_CROUCH, CHAT, encodeAvatarLook, encodeAvatarWireLook, decodeAvatarLook, splitAvatarCode, playerBodySegment } from './config.js';
 import { Avatar, armTarget } from './avatar.js';
@@ -12,6 +12,7 @@ import { setMirrorExtra } from './reflections.js';
 import { GhostCat } from './ghostcat.js';
 import { JoinNotice } from './joinnotice.js';
 import { canKiss, kissAmount } from './kiss.js';
+import { canHug, hugAmount, playerChoices } from './hug.js';
 import { Hearts } from './pingping.js';
 import { cleanHeldCategory } from './heldcategory.js';
 import { ghostProp, ghostJetpack, ghostBike, ghostItem } from './ghostprops.js'; // what an armed player holds: their weapon's own model (#667, #1126)
@@ -113,7 +114,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
       this.pick = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.8, 0.6), pickMat);
       this.pick.position.y = 0.9;
       this.pick.visible = false;
-      this.door = { name: this.name, kind: 'ghost', verb: 'hälsa på', ghost: this, pickable: this.pick };
+      this.door = { name: this.name, kind: 'ghost', verb: 'hälsa på', ghost: this, pickable: this.pick, options: () => this.menu?.(this) ?? [] }; // (#1405: Ghosts sets `menu`)
       this.pick.userData.door = this.door;
       this.root.add(this.pick);
     }
@@ -233,6 +234,20 @@ export class Ghost { // (exported for tools/ghostprops.html)
       hands: [1, -1].map((s) => ({ at: [s * 0.27, 0.95, 0.31], pole: [s, 0, -0.5] })), can: null });
   }
 
+  /** A hug (#1405), `amount` 0 … 1: the body turns to the partner and steps half the way in (the feet's network
+   * positions stay; only the drawn figure moves), the arms go round them. */
+  poseHug(hug, amount, hands) {
+    const dx = hug.toward.x - this.root.position.x, dz = hug.toward.z - this.root.position.z;
+    const direction = Math.atan2(dx, dz), shift = Math.max(0, Math.hypot(dx, dz) - HUG.gap) / 2 * amount;
+    this.avatar.object.rotation.y = lerpAngle(this.avatar.object.rotation.y, direction - this.root.rotation.y, amount);
+    const yaw = -this.root.rotation.y, sx = Math.sin(direction) * shift, sz = Math.cos(direction) * shift; // world → root frame
+    this.avatar.object.position.set(sx * Math.cos(yaw) + sz * Math.sin(yaw), 0, -sx * Math.sin(yaw) + sz * Math.cos(yaw));
+    for (const [key, side] of [['L', 1], ['R', -1]]) {
+      const from = hands[key] ?? armTarget.rest(side), to = HUG.hands[key];
+      hands[key] = { at: from.at.map((v, i) => v + (to[i] - v) * amount), pole: from.pole.map((v, i) => v + ((i ? HUG.pole[i] : side * HUG.pole[0]) - v) * amount) };
+    }
+  }
+
   /** A wave (#673): the right arm up and waving for GHOSTS.wave s (armTarget.up, the surface #705 left for it). */
   wave() { this.waveT = G.wave; }
 
@@ -284,6 +299,9 @@ export class Ghost { // (exported for tools/ghostprops.html)
   animate(t, d, vx, vz) {
     const dt = this.lastDraw ? Math.min(0.1, (t - this.lastDraw) / 1000) : 0;
     this.lastDraw = t;
+    const hug = this.hug, hugAge = hug ? (t - hug.start) / 1000 : -1, hugged = hugAmount(hugAge); // (#1405)
+    if (hug && hugAge >= HUG.duration) this.hug = null;
+    if (!hugged) this.avatar.object.position.set(0, 0, 0); // back where the body stands after a hug, also when not posed
     if (d > AVATAR.poseFar) { if (this.itemProp) this.itemProp.visible = false; return; } // (#1297: the hand prop only near, with the posed avatar)
     const gaze = this.root.rotation.y, sp = this.pose ? 0 : Math.hypot(vx, vz);
     this.speed += ((sp > 8 ? 0 : sp) - this.speed) * Math.min(1, dt * 10);
@@ -316,13 +334,15 @@ export class Ghost { // (exported for tools/ghostprops.html)
     if (this.heldCat.object) Object.assign(hands, this.heldCat.hands());
     Object.assign(hands, this.hands);
     const kiss = this.kiss;
-    const age = kiss ? (t - kiss.start) / 1000 : -1, amount = kissAmount(age);
+    const age = kiss ? (t - kiss.start) / 1000 : -1, kissed = kissAmount(age);
     if (kiss && age >= KISS.duration) this.kiss = null;
-    if (amount) {
+    if (kissed) {
       const direction = Math.atan2(kiss.toward.x - this.root.position.x, kiss.toward.z - this.root.position.z);
-      this.avatar.object.rotation.y = lerpAngle(this.avatar.object.rotation.y, direction - this.root.rotation.y, amount);
+      this.avatar.object.rotation.y = lerpAngle(this.avatar.object.rotation.y, direction - this.root.rotation.y, kissed);
     }
-    this.avatar.update(dt, { speed: this.speed * (1 - amount), turn: turn * (1 - amount), pitch: (this.look?.[1] ?? 0) * (1 - amount), hands, crouch: this.crouch ?? 0, kiss: amount, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0 });
+    if (hugged) this.poseHug(hug, hugged, hands);
+    const amount = Math.max(kissed, hugged); // (the look and gait give way to either embrace)
+    this.avatar.update(dt, { speed: this.speed * (1 - amount), turn: turn * (1 - amount), pitch: (this.look?.[1] ?? 0) * (1 - amount) - HUG.head * hugged, hands, crouch: this.crouch ?? 0, kiss: kissed, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0 });
     applyRestPose(this.avatar, this.pose, this.look);
     if (this.bikeMesh) this.poseBike(dt, Math.hypot(vx, vz), turn);
     this.heldCat.update(this.avatar, this.root);
@@ -432,7 +452,7 @@ export class Ghosts {
     this.reset();
   }
 
-  reset() { this.kisses = []; this.myGhost && (this.myGhost.kiss = null); if (this.kissHearts) this.kissHearts.points.visible = false; this.finishFall(null); this.finishConsume(null); this.myGhost?.clearMirrorTyping(); this.me = null; this.sent = null; this.outbox = []; this.talkbox = []; for (const g of this.others.values()) g.dispose(); this.others.clear(); this.notice?.reset(); this.onTypingReset?.(); }
+  reset() { this.kisses = []; this.hugs = []; this.myGhost && (this.myGhost.kiss = this.myGhost.hug = null); if (this.kissHearts) this.kissHearts.points.visible = false; this.finishFall(null); this.finishConsume(null); this.myGhost?.clearMirrorTyping(); this.me = null; this.sent = null; this.outbox = []; this.talkbox = []; for (const g of this.others.values()) g.dispose(); this.others.clear(); this.notice?.reset(); this.onTypingReset?.(); }
 
   closed(ws, code) {
     if (ws !== this.ws) return;
@@ -466,6 +486,7 @@ export class Ghosts {
     else if (m.t === 'a') { const g = this.others.get(m.i); if (g) this.onShot?.(m, g); }
     else if (m.t === 'g') {
       if (m.k === KISS.phrase) this.startKiss(m, t);
+      else if (m.k === HUG.phrase) this.startHug(m, t);
       else { const g = this.others.get(m.i); if (g) { g.wave(); this.greetsSeen++; this.onGreet?.(m, g, this.others.get(m.to) ?? null); } }
     }
     else if (m.t === 'c') { const g = this.others.get(m.i); if (g) this.onToast?.(m, g); } // a toast (#1222): the room sends it only from within PLAYERS.toastRange
@@ -534,6 +555,7 @@ export class Ghosts {
     const eye = this.camera.position, armed = !!s.h;
     for (const g of this.others.values()) { g.draw(t, eye); g.setSolid(armed && !!g.h); }
     this.updateKisses(t);
+    this.updateHugs(t);
     if (this.onStep || this.onJet) this.soundTick(t);
   }
 
@@ -684,8 +706,57 @@ export class Ghosts {
 
   /** The other players one can greet (#673): their invisible pick boxes (main.js adds them to what the look ray tries). */
   targets() { return this.connected ? [...this.others.values()].filter((g) => g.pick && g.root.visible && g.snaps.length).map((g) => {
-    g.door.verb = this.canKiss(g) ? 'pussa' : 'hälsa på'; return g.pick;
+    g.door.verb = this.canKiss(g) ? 'pussa' : 'hälsa på'; g.menu ??= (x) => this.choices(x); return g.pick;
   }) : []; }
+
+  /** #1405: the menu rows for another player (main.js shows them with the other choice menus): greet and hug for everybody,
+   * kiss as well for a Sarah/Olof pair. A row too far away stays listed with its reason, so the rows never shift; `run`
+   * goes to `onChoose(ghost, kind)` (main.js). Kiss/hug rows don't reach out the hand: the embrace waits for the room. */
+  choices(g) {
+    const labels = { greet: 'hälsa på', hug: 'krama', kiss: 'pussa' };
+    return playerChoices(this.name(), g.name).map(id => {
+      const ok = id === 'greet' || (id === 'hug' ? this.canHug(g) : this.canKiss(g));
+      return { id, label: `${labels[id]} ${g.name}`, ...(ok ? {} : { reason: 'gå närmare' }), ...(id === 'greet' ? {} : { noReach: true }), run: () => this.onChoose?.(g, id) };
+    });
+  }
+
+  canHug(g) { return !this.weapon() && !g.h && canHug(this.state().p, g.root.position.toArray()); }
+
+  /** An accepted hug (#1405) from the room: both avatars (and our mirror image) for HUG.duration s; same receipts as kisses. */
+  startHug(m, now) {
+    if (typeof m.id !== 'string' || m.id.length > 80 || !Number.isFinite(m.at)) return; // old server: a plain greeting, no embrace
+    this.kissSeen ??= new Set();
+    if (this.kissSeen.has(m.id)) return;
+    const a = m.i === this.me ? this.selfGhost() : this.others.get(m.i);
+    const b = m.to === this.me ? this.selfGhost() : this.others.get(m.to);
+    if (!a || !b || a === b) return;
+    const from = m.i === this.me ? this.state().p : a.root.position.toArray();
+    const to = m.to === this.me ? this.state().p : b.root.position.toArray();
+    if (!canHug(from, to, HUG.serverRange)) return;
+    this.kissSeen.add(m.id);
+    if (this.kissSeen.size > KISS.receipts) this.kissSeen.delete(this.kissSeen.values().next().value);
+    a.waveT = b.waveT = 0;
+    a.hug = { start: now, toward: new THREE.Vector3(...to) };
+    b.hug = { start: now, toward: new THREE.Vector3(...from) };
+    (this.hugs ??= []).push({ m, a, b, start: now });
+    this.onHug?.(m, a, b);
+  }
+
+  /** Let go early when a partner leaves, draws a weapon or walks off; otherwise drop the event once it is over. */
+  updateHugs(now) {
+    if (!this.hugs?.length) return;
+    this.hugs = this.hugs.filter(({ m, a, b, start }) => {
+      const from = m.i === this.me ? this.state().p : this.others.get(m.i)?.root.position.toArray();
+      const to = m.to === this.me ? this.state().p : this.others.get(m.to)?.root.position.toArray();
+      const over = (now - start) / 1000 >= HUG.duration;
+      if (over || !canHug(from, to, HUG.serverRange) || (m.i === this.me ? this.weapon() : a.h) || (m.to === this.me ? this.weapon() : b.h)) {
+        if (a.hug?.start === start) a.hug = null; // (the next animate puts the drawn body back on its feet)
+        if (b.hug?.start === start) b.hug = null;
+        return false;
+      }
+      return true;
+    });
+  }
 
   canKiss(g) { return !this.weapon() && !g.h && canKiss(this.name(), g.name, this.state().p, g.root.position.toArray()); }
 
@@ -740,15 +811,17 @@ export class Ghosts {
 
   /** Greet `g` (#673): a phrase from GHOSTS.hello (an index, never free text), one message to the room, at most one every
    * GHOSTS.greetEvery s. Returns the line said ("{n}" = their name), or null. */
-  greet(g) {
+  greet(g, kind = 'greet') { // #1405: kind 'greet' | 'hug' | 'kiss', chosen by the player (never upgraded automatically)
     const t = performance.now();
     if (!this.connected || t - this.greetAt < G.greetEvery * 1000 || !this.others.has(g.id)) return null;
+    const kiss = kind === 'kiss', hug = kind === 'hug';
+    if ((kiss && !this.canKiss(g)) || (hug && !this.canHug(g))) return null;
     this.greetAt = t;
-    const kiss = this.canKiss(g), k = kiss ? KISS.phrase : Math.floor(Math.random() * G.hello.length);
-    this.outbox.push({ t: 'g', to: g.id, k, ...(kiss ? { q: this.kissSeq = (this.kissSeq ?? 0) + 1 } : {}) });
+    const k = kiss ? KISS.phrase : hug ? HUG.phrase : Math.floor(Math.random() * G.hello.length);
+    this.outbox.push({ t: 'g', to: g.id, k, ...(kiss || hug ? { q: this.kissSeq = (this.kissSeq ?? 0) + 1 } : {}) });
     while (this.outbox.length > G.outbox) this.outbox.splice(this.outbox.findIndex(m => m.t !== 'fall' && m.t !== 'consume'), 1);
     this.sendShot();
-    return (kiss ? KISS.line : G.hello[k]).replace('{n}', g.name);
+    return (kiss ? KISS.line : hug ? HUG.line : G.hello[k]).replace('{n}', g.name);
   }
 
   /** Our toast (#1222): line index `k` of TOAST_LINES (never text), `back` when it answers one. One small message; the room

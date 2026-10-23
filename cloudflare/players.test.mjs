@@ -1667,6 +1667,41 @@ test('kiss #1398: server pair matrix, ambiguous names and replayed request IDs',
  }
 });
 
+test('hug #1405: any nearby unarmed pair, echoed receipt, busy window shared with kisses, replay', async()=>{
+ const {HUG,KISS}=await import('../src/config.js');
+ for(const [na,nb] of [['Bertil','Anna'],['Sarah','Sarah'],['Olof','Olof'],['Sarah','Olof'],['Olof','Sarah'],['Sarah Olof','Bertil']]){
+  const env=setup(),a=await connect(env,na),b=await connect(env,nb),c=await connect(env,'Observer'),ia=a.got[0].i,ib=b.got[0].i;
+  const hugs=x=>x.got.filter(m=>m.t==='g'&&m.k===HUG.phrase);
+  const state=async(x,p,h='')=>{now+=5000;x.send({p,r:0,h});await settle(env);};
+  const hug=async(q,k=HUG.phrase,to=ib)=>{now+=5000;a.send({t:'g',to,k,...(q?{q}:{})});await settle(env);};
+  await hug(1);assert.equal(hugs(b).length,0,`${na}/${nb}: no known positions`);
+  await state(a,[0,0,0]);await state(b,[0,0,1]);await state(c,[3,0,0]);await hug(2);
+  assert.deepEqual(hugs(b),[{t:'g',i:ia,to:ib,k:HUG.phrase,id:`${ia}:${now}`,at:now}],`${na}/${nb}`);
+  assert.equal(hugs(a).length,1,'initiator gets the receipt');assert.equal(hugs(c).length,1,'observer sees it');
+  await hug(2);assert.equal(hugs(b).length,1,'replayed q rejected');
+  await state(b,[0,0,HUG.serverRange+.05]);await hug(3);assert.equal(hugs(b).length,1,'too far');
+  await state(b,[0,3,0]);await hug(4);assert.equal(hugs(b).length,1,'other floor');
+  await state(b,[0,0,1],'rifle');await hug(5);assert.equal(hugs(b).length,1,'armed recipient');
+  await state(b,[0,0,1]);await state(a,[0,0,0],'saber');await hug(6);assert.equal(hugs(b).length,1,'armed sender');
+  await state(a,[0,0,0]);await hug(7);assert.equal(hugs(b).length,2,'unarmed again');
+  // busy: within the hug's own window a second embrace (another hug, or a kiss for the pair) is refused
+  now+=PLAYERS.greetEvery*800;a.send({t:'g',to:ib,k:HUG.phrase,q:8});await settle(env);
+  if(HUG.duration*1000>PLAYERS.greetEvery*800)assert.equal(hugs(b).length,2,'no overlapping hug');
+  now+=PLAYERS.greetEvery*800;a.send({t:'g',to:ib,k:0});await settle(env);assert(b.got.some(m=>m.t==='g'&&m.k===0&&!m.id),'ordinary greeting unchanged');
+  a.ws.close();b.ws.close();c.ws.close();await settle(env);
+ }
+ { // a kiss right after a hug waits for the hug to end (shared busy window)
+  const env=setup(),a=await connect(env,'Sarah'),b=await connect(env,'Olof'),ib=b.got[0].i;
+  now+=5000;a.send({p:[0,0,0],r:0});b.send({p:[0,0,1],r:0});await settle(env);
+  now+=5000;a.send({t:'g',to:ib,k:HUG.phrase,q:1});await settle(env);
+  now+=PLAYERS.greetEvery*800;a.send({t:'g',to:ib,k:KISS.phrase,q:2});await settle(env);
+  const kisses=()=>b.got.filter(m=>m.t==='g'&&m.k===KISS.phrase).length;
+  assert.equal(kisses(),HUG.duration*1000>PLAYERS.greetEvery*800?0:1,'kiss blocked during the hug');
+  now+=HUG.duration*1000;a.send({t:'g',to:ib,k:KISS.phrase,q:3});await settle(env);assert.equal(kisses(),1,'kiss after the hug');
+  a.ws.close();b.ws.close();await settle(env);
+ }
+});
+
 // #1504: only seated look angles, bounded like the existing camera limits.
 test('seated look forwards, survives late join and clears with invalid or standing state', async () => {
   const env = setup(), a = await connect(env, 'Seated'), b = await connect(env, 'Observer');

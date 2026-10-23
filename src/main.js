@@ -3,7 +3,7 @@ import { MenuSettings } from './menusettings.js';
 import { renderPlayingNow } from './playerportraits.js';
 import { saveStats } from './stats.js';
 import { playerLocalStorage as localStorage, playerSessionStorage as sessionStorage } from './playerprofiles.js';
-import { KISS } from './config.js';
+import { KISS, HUG } from './config.js';
 import { MATERIAL_CHOICES, materialChoices, materialChoice } from './materialcatalog.js';
 import { crashlog } from './crashlog.js'; // first: its heartbeat and error hooks start before the rest loads (#629; inert without the cloud)
 import { CinemaPlayer } from './cinemaplayer.js';
@@ -1690,6 +1690,7 @@ function shortButtonLabel(target, label) {
     : target?.kind === 'wipe' ? { torka: 'Torka' }
     : target?.kind === 'tap' ? { 'sätta på': 'Sätt på', 'stänga av': 'Stäng av' }
     : target?.kind === 'speaker' ? { 'spela musik på': 'Spela musik', 'styra musiken på': 'Styr musiken' }
+    : target?.kind === 'ghost' ? { 'hälsa på': 'Hälsa', krama: 'Krama', pussa: 'Pussa' } // another player (#1405)
     : null;
   if (verbs && name) for (const [verb, short] of Object.entries(verbs)) {
     if (text === `${verb} ${name}`) return short;
@@ -1721,7 +1722,7 @@ function runChoice(i) {
   const r = choices.rows?.[i];
   if (!r) return false;
   if (r.reason) { sfx.click(camera.position); return false; }
-  if (!heldItem() && focusPoint) hand.reach(focusPoint);
+  if (!heldItem() && focusPoint && !r.noReach) hand.reach(focusPoint); // (#1405: a hug/kiss row waits for the room instead)
   shadowState.hold = 1.5;
   r.run();
   choices.key = ''; // (re-render with the new state)
@@ -1813,7 +1814,7 @@ function use(thing) {
   if (thing.kind === 'fusebox') { thing.power.use(); return; } // the power cut (#604): trip it, or mend it while held
   if (thing.visit && thing.kind !== 'mirror') { visitUse(thing); return; } // a visited flat's door, window or lid (#574; its mirrors: the avatar editor below, #1110)
   if (thing.kind !== 'note') shadowState.hold = 1.5; // reading the DOM note moves no shadow caster (#669)
-  if (!heldItem() && !(thing.kind === 'ghost' && ghosts.canKiss(thing.ghost)) && !['rest', 'place', 'note', 'taskNote', 'clock', 'calendar', 'binder', 'poster', 'paper', 'mirror'].includes(thing.kind) && focusPoint && thing === focused) hand.reach(focusPoint); // the arm reaches out (#195)
+  if (!heldItem() && thing.kind !== 'ghost' && !['rest', 'place', 'note', 'taskNote', 'clock', 'calendar', 'binder', 'poster', 'paper', 'mirror'].includes(thing.kind) && focusPoint && thing === focused) hand.reach(focusPoint); // the arm reaches out (#195)
   if (thing.options && thing.kind !== 'life' && choices.rows && choices.target === thing) { // a lamp with a choice (#428): the marked row
     runChoice(choices.sel);
     if (thing.kind === 'lamp' && thing.isOpen) bump('lights', 1, idOf(thing));
@@ -2810,14 +2811,20 @@ if (rifle) { const shot = rifle.onShot; rifle.onShot = () => { shot?.(); combat.
 // greeting other players (#673): our line at the bottom (greet.js), one small message; the greeted and everyone else see
 // our avatar wave, with the line in a bubble over it. Points: SCORE.first.greets per player, once a session.
 const greetedPlayers = new Set();
-function greetPlayer(g) {
+// #1405: the player picks greet / hug / (Sarah↔Olof) kiss from the choice menu (Ghosts.choices); nothing is upgraded automatically.
+function greetPlayer(g, kind = 'greet') {
   if (weaponKey()) return; // guard the current hand, including calls with an old target (#872)
-  const line = ghosts.greet(g);
+  const line = ghosts.greet(g, kind);
   if (!line) return;
-  if (ghosts.canKiss(g)) return; // effects/reward follow the room's accepted kiss, never an optimistic greeting
+  if (kind !== 'greet') return; // a hug/kiss: effects (and the kiss's reward) follow the room's accepted event, never optimistic; no greeting points
   greet.sayMine(line);
   if (!greetedPlayers.has(g.name)) { greetedPlayers.add(g.name); bump('greets', 1, `player:${g.name}`); }
 }
+ghosts.onChoose = (g, kind) => greetPlayer(g, kind);
+ghosts.onHug = (m, a, b) => { // an accepted hug (#1405): the hugger's line, as their bubble (ours at the bottom); no points
+  const line = HUG.line.replace('{n}', b.name || 'Anonym');
+  if (m.i === ghosts.me) greet.sayMine(line); else greet.say({ head: a.head, s: 1 }, line, { pitch: 1.1, rate: 1.05, voice: 1 }, undefined, a.avatar);
+};
 ghosts.onLove = awardLove;
 ghosts.onKiss = (m, at) => sfx.kiss(at);
 ghosts.onGreet = (m, g, other) => greet.say({ head: g.head, s: 1 }, (m.k === KISS.phrase ? KISS.line : GHOSTS.hello[m.k])?.replace('{n}', other ? other.name : (leaderboard.name || 'Anonym')) ?? 'Hej!', { pitch: 1.1, rate: 1.05, voice: 1 }, undefined, g.avatar);

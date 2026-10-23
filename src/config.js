@@ -1785,6 +1785,13 @@ export const KISS = { phrase: 15, range: 1.35, serverRange: 1.6, hearts: 10, sca
   hum: .36, humHz: 180, smackHz: 850, soundGain: .7,
   humGain: .3, overtoneGain: .08, smackGain: .7, smackDuration: .085, smackQ: 2, smackAttack: .003,
   popDuration: .075, popHz: [480, 140], popGain: .3 };
+// #1405: a hug between any two nearby players, chosen from the same E/touch menu as greeting (and kissing for Sarah/Olof).
+// `phrase` is a reserved greeting index (below PLAYERS.greetPhrases, never chosen at random); ranges as KISS (client / server
+// margin, m); `gap` the distance between the two bodies' centres in the embrace, `duration`/`contact`/`release` s of the
+// shared envelope; `hands` the arm targets in the figure frame (L high over the shoulder, R round the waist), `pole` the
+// elbows. All playability guesses (*guess*); no score.
+export const HUG = { phrase: 14, range: 1.35, serverRange: 1.6, gap: 0.34, duration: 2.6, contact: 0.7, release: 1.9,
+  line: 'Kram på dig, {n}!', hands: { L: [0.13, 1.36, 0.36], R: [-0.13, 1.12, 0.33] }, pole: [1, -0.1, 0.25], head: 0.25 };
 
 // Olof at the wheel (#900): shared figure colours and the existing car greeting/pose rules.
 export const OLOF = {

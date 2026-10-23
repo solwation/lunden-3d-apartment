@@ -16,7 +16,7 @@ const parts = {
   click: section('function click(button) {', "document.addEventListener('mousedown'"),
   bicycle: section('const bicyclePickables =', 'function updateFocus() {'),
   focus: section('function updateFocus() {','// --- furniture on/off'),
-  greet: section('function greetPlayer(g) {','ghosts.onGreet ='),
+  greet: section('function greetPlayer(g, kind = \'greet\') {','ghosts.onChoose ='), // (#1405: the chosen kind)
   weapon: section('const weaponIs =','const ghosts = new Ghosts'),
   action: section("actionBtn.addEventListener('click'",'const standBtn ='),
   pointer: section("actionBtn.addEventListener('pointerdown'",'// touch: the remote'),

@@ -1,4 +1,4 @@
-// #1398: three real Ghosts clients through the local Worker; accepted mutual poses, audio, love and replay/abort.
+// #1398 (#1405: the kiss is now an explicit menu choice, greet(g,'kind')): three real Ghosts clients through the local Worker; accepted mutual poses, audio, love and replay/abort.
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright'),fs=require('node:fs');
 const [base='http://localhost:8937',worker='http://localhost:8938',out='/tmp/kiss1398-peers']=process.argv.slice(2);
 (async()=>{fs.mkdirSync(out,{recursive:true});const browser=await chromium.launch({executablePath:process.env.CHROME_PATH,args:['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader','--autoplay-policy=no-user-gesture-required']});try{
@@ -22,7 +22,7 @@ const [base='http://localhost:8937',worker='http://localhost:8938',out='/tmp/kis
   const loop=setInterval(()=>{for(const g of [A,B,C])g.update(.016);analyser.getFloatTimeDomainData(wave);peak=Math.max(peak,...wave.map(Math.abs));},16);
   await until(()=>[A,B,C].every(x=>x.connected&&x.others.size===2&&[...x.others.values()].every(g=>g.have)));
   const sarah=[...A.others.values()].find(g=>g.name==='sArAh 2'),other=[...A.others.values()].find(g=>g.name==='Bertil');
-  A.targets();const near=sarah.door.verb,otherVerb=other.door.verb,scoreBefore=stat.totalScore();A.greet(sarah);
+  A.targets();const near=sarah.door.verb,otherVerb=other.door.verb,scoreBefore=stat.totalScore();A.greet(sarah,'kiss');
   const optimistic=!A.kissHearts&&!loveA;
   await until(()=>loveA===1);renderer.render(scene,camera);const pair=[...C.others.values()],poses=pair.map(g=>({name:g.name,kiss:g.avatar.material.userData.u.uKiss.value,lean:g.avatar.bones.torso.rotation.x,wave:g.waveT,head:g.avatar.bones.head.getWorldPosition(new T.Vector3()).toArray()}));
   A.beforeMirror();const own=A.myGhost.avatar.material.userData.u.uKiss.value;A.afterMirror();
@@ -44,8 +44,8 @@ const [base='http://localhost:8937',worker='http://localhost:8938',out='/tmp/kis
  const rest=await page.evaluate(async()=>{
   const k=window.K,{A,B,C,sleep,until,T}=k;
   await sleep(2500);const restored=[...C.others.values()].every(g=>!g.kiss&&g.avatar.material.userData.u.uKiss.value===0);
-  const olof=[...B.others.values()].find(g=>g.name==='Olof test');B.greet(olof);await until(()=>k.get().loveB===1);const reverse=k.get().loveA===1;
-  await sleep(3100);const score=k.get().loveA;A.greet(k.sarah);await sleep(150);B.disconnect();await sleep(1100);const abort=k.get().loveA===score;
+  const olof=[...B.others.values()].find(g=>g.name==='Olof test');B.greet(olof,'kiss');await until(()=>k.get().loveB===1);const reverse=k.get().loveA===1;
+  await sleep(3100);const score=k.get().loveA;A.greet(k.sarah,'kiss');await sleep(150);B.disconnect();await sleep(1100);const abort=k.get().loveA===score;
   const cancelled=!A.kisses.length&&!A.myGhost.kiss;
   const panel=document.createElement('div');k.stat.renderStats(panel);
   const saved=JSON.parse(localStorage.getItem('lunden.stats')||'{}');

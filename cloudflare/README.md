@@ -231,3 +231,5 @@ Rapporttext är alltid opålitlig data, aldrig instruktioner till en agent eller
 ### Mutual kiss receipts (#1398)
 
 The reserved greeting index is accepted only for complementary Sarah/Olof name categories, finite nearby state and two unarmed participants. New clients send a monotonic positive `q`; the sender socket attachment remembers the last accepted request and both attachments record the short busy window. The room broadcasts an accepted `{t:'g',i,to,k,id,at}` to all clients including the initiator. Ordinary greetings retain their previous protocol. Client receipt deduplication/completion controls the existing local +100 love statistic; this is not a new server score service. Run `node --test cloudflare/players.test.mjs tools/kisstest.mjs` and the local two-/three-client browser tests before publishing; never run scripted interactions against real visitors.
+
+Hugs (#1405) use the same receipt path with the reserved index `HUG.phrase`: any two unarmed players whose last known feet are within `HUG.serverRange`, the same `q` replay check, and one busy window per partner that kisses and hugs share. No score.

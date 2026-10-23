@@ -1,6 +1,7 @@
 import { REST, TV_MEDIA, tvViewer, COMPUTER_MEDIA, computerViewer } from '../src/config.js';
 import { canKiss } from '../src/kiss.js';
-import { KISS } from '../src/config.js';
+import { KISS, HUG } from '../src/config.js';
+import { canHug } from '../src/hug.js';
 import { ballHeadContact } from '../src/ballflight.js';
 import { nerfHeadContact } from '../src/nerf.js';
 import { bowHeadContact } from '../src/bowflight.js';
@@ -34,6 +35,7 @@ import { RoomSnake, cleanSnake } from './snake.js';
 // A sound event (#1302) { t: 'snd', k } (k: a key of PLAYERS.sounds, today only 'bell' = the bicycle bell) goes to the players
 // within PLAYERS.soundRange m as { t: 'snd', i, k }; no text, at most one per soundEvery s per connection, never echoed.
 // #1398 reserves KISS.phrase for a complementary Sarah/Olof pair; accepted kisses echo id/at, optional q rejects replay.
+// #1405 reserves HUG.phrase for a hug between any two nearby unarmed players: accepted the same way (id/at echo, q, busy).
 // A greeting (#673) { t: 'g', to, k } goes to everybody else as { t: 'g', i, to, k } (k: a phrase index, no text).
 // The children's-room billiard table (#1355, src/billiardsync.js): ONE shared game owned by the room. A player standing in the
 // children's room (their last state's position, PLAYERS.pool) sends { t: 'pool', k: 's', q, d: [dx, dz] } (a stroke direction),
@@ -501,15 +503,17 @@ export class PlayerRoom {
     else if (talk) this.talk(ws, a, talk, now);
     else if (hello) { // #673: to someone here, not too often; everybody else sees the greeter wave
       const target = this.open().find((x) => x !== ws && att(x).i === hello.to), recipient = target && att(target);
-      const allowed = hello.k !== KISS.phrase || (recipient && !a.s?.h && !recipient.s?.h && canKiss(a.n, recipient.n, a.s?.p, recipient.s?.p, KISS.serverRange));
+      const kiss = hello.k === KISS.phrase, hug = hello.k === HUG.phrase;
+      const allowed = (!kiss && !hug) || (recipient && !a.s?.h && !recipient.s?.h && (kiss ? canKiss(a.n, recipient.n, a.s?.p, recipient.s?.p, KISS.serverRange) : canHug(a.s?.p, recipient.s?.p, HUG.serverRange)));
       if (now - (a.gt ?? 0) >= PLAYERS.greetEvery * 800 && hello.to !== a.i && target && allowed) {
-        if (hello.k === KISS.phrase) {
-          if ((hello.q !== undefined && hello.q <= (a.kq ?? 0)) || now - (recipient.kt ?? 0) < KISS.duration * 1000 || now - (a.kt ?? 0) < KISS.duration * 1000) return;
+        if (kiss || hug) { // #1405: kiss and hug share the replay counter and one busy window per partner (no overlapping embraces)
+          const busy = (x) => now - (x.kt ?? 0) < KISS.duration * 1000 || now - (x.ht ?? 0) < HUG.duration * 1000;
+          if ((hello.q !== undefined && hello.q <= (a.kq ?? 0)) || busy(recipient) || busy(a)) return;
           if (hello.q !== undefined) a.kq = hello.q;
-          a.kt = recipient.kt = now;
+          if (kiss) a.kt = recipient.kt = now; else a.ht = recipient.ht = now;
           a.gt = now;
           target.serializeAttachment(recipient);
-          // Echo only accepted kisses: no optimistic effects or rewards, stable receipt for duplicates.
+          // Echo only accepted kisses/hugs: no optimistic effects or rewards, stable receipt for duplicates.
           this.broadcast({ t: 'g', i: a.i, to: hello.to, k: hello.k, id: `${a.i}:${now}`, at: now });
         } else {
           a.gt = now;
