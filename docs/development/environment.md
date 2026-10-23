@@ -30,6 +30,8 @@ src/courtyard.js       the courtyard on the garage box (COURTYARD): walks, pergo
                        #453: no bench within 1 m of a way in at the ground (surroundings.js `groundWaysIn`: the loggias' parapet
                        openings, the entrance recesses; resttest checks); Hus A's two north benches stand between loggia and entrance
                        #637, #638, #639: Hus A's, B's and C's main entrance recesses are `walkIn` (SITE.blocks; A / B face 'n', C face 'e'): a real door into the stair core (corehouse.js, architecture.md)
+src/boule.js           #1370: local pétanque on the boule court (BOULE): throwing circle, instanced boules + jack, the scoreboard lectern;
+                       rules/physics in boulerules.js / boulephysics.js (details: interactions.md "Courtyard pétanque")
 src/terracedecor.js    the furnished roof terraces (#605, TERRACE_DECOR, all *guess*): one style per terrace L1202–L1209 (palms /
                        bananas / agaves from patio.js `planter`, olive and box trees, loungers, tables and chairs, parasols, grills,
                        rugs, a sofa, raised beds, railing boxes, string lights); L1201 stays EMPTY (#573). Decoration only (no

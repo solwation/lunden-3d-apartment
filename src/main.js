@@ -34,7 +34,7 @@ import { loadBeerShelf } from './beershelfdata.js';
 import { BeerShelf } from './beershelf.js';
 import { initHudIcons, fitChoiceLabels, setIcon, setPressed, setWeatherIcon, formatTemp } from './hudicons.js';
 import * as THREE from 'three';
-import { UNIT_TOP, SITE, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS, GARAGE, OLOF, CORE_A, CORE_B, CORE_C, PLAYROOM, encodeAvatarWireLook, decodeAvatarLook, avatarLook, avatarBody, avatarHeightCm } from './config.js';
+import { UNIT_TOP, SITE, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS, GARAGE, OLOF, CORE_A, CORE_B, CORE_C, PLAYROOM, BOULE, encodeAvatarWireLook, decodeAvatarLook, avatarLook, avatarBody, avatarHeightCm } from './config.js';
 import { setupAvatarCustomizer, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen } from './customizer.js';
 import { MieleHeld, HeartFireworks } from './miele.js';
 import * as showFireworks from './fireworks.js';
@@ -261,6 +261,7 @@ const cheatNote = await buildCheatNote(garage, () => showCheatNote(true));
 scene.add(garage.object, garage.blackout, garage.door.object, garage.parkObject); // (+ its door, #358)
 const playroom = world.playroom = new Playroom(); // #1319: the playhouse's secret children's room, hidden (and undrawn) until you go in
 playroom.billiards.onEvent = (text) => badge(text, false); // #1354: the rules' verdict after each stroke
+world.boule.onEvent = (text) => badge(text, false); // #1370: the pétanque rules' verdict when a throw comes to rest
 scene.add(playroom.object);
 await loadingYield(0.47);
 const core = world.core = new Core(); // Hus L's stairwell and lift by the portik (#415)
@@ -1788,6 +1789,12 @@ function use(thing) {
     if (!playroom.billiards.shoot(camera)) badge(playroom.billiards.blockReason || 'Vänta tills bollarna ligger still', false);
     return;
   }
+  if (thing.kind === 'boule') { // #1370: throw the jack / the next boule at the aimed spot
+    if (heldItem()) { badge('Lägg ifrån dig det du håller först', false); return; }
+    badge(world.boule.throw(camera, focusPoint), false); return;
+  }
+  if (thing.kind === 'bouleMene') { badge(world.boule.newMene(), false); return; }
+  if (thing.kind === 'bouleGame') { badge(world.boule.newGame(), false); return; }
   if (thing.kind === 'playroomDisco') { badge(playroom.toggleDisco(), false); return; } // #1365: the disco light on/off
   if (thing.kind === 'playroomDevice') { badge(thing.use(), false); return; } // #1365: local TV and computer, E/touch
   if (thing.kind === 'playroomBilliardsMode') { const text = playroom.billiards.toggleMode(); if (text) badge(text, false); return; } // #1495: the shared wall screen
@@ -2134,6 +2141,7 @@ function updateFocus() {
     ...(!weaponKey() ? ghosts.targets() : []), // only unarmed visitors greet other players (#872)
     ...suit.targets(), // the Spider-Man suit in its drawer / where it was laid (#597)
     ...world.courtyardTargets.map((t) => t.pickable),
+    ...(world.boule.active ? world.boule.controlPickables : []), // #1370: the scoreboard's two buttons
     ...(playroom.inside ? [playroom.exitTarget.pickable, playroom.billiards.target.pickable, ...playroom.targets.map((t) => t.pickable), ...playroom.billiards.controlPickables, ...playroom.controlPickables] : []), // the way out of the children's room (#1319), the billiard table (#1328), the sofa and stool (#1327)
     ...bicyclePickables(), // the courtyard's benches (#438): F keeps them
     ...(power.reachable ? [power.target.pickable] : []), // the fuse box while its cabinet is open (#604)
@@ -2154,6 +2162,11 @@ function updateFocus() {
       && camera.position.z < PLAYROOM.z + PLAYROOM.clubhouse.front - PLAYROOM.clubhouse.wall / 2) {
     raycaster.far = PLAYROOM.furniture.cinema.reach;
     hit = raycaster.intersectObject(playroom.devices.cinemaTarget.pickable)[0];
+    raycaster.far = reach;
+  }
+  if (!hit && !playroom.inside && world.boule.active && world.boule.near(camera.position)) { // #1370: the gravel can be aimed at across the court
+    raycaster.far = BOULE.reach;
+    hit = raycaster.intersectObject(world.boule.target.pickable)[0];
     raycaster.far = reach;
   }
   focused = hit && !behindWall(hit.point) ? hit.object.userData.door : null;
@@ -3023,6 +3036,7 @@ function step(dt) {
   nests.update(dt); // the smart speakers: talk, wake lights, the display (#325)
   for (const h of holdables) h.update(dt);
   grill.update(dt);
+  world.boule.update(dt, player.pos); // #1370: drawn and simulated only near the court
   sausages.update(dt); // #1124
   microwave?.update(dt); // #1210
   airFryer.update(dt);

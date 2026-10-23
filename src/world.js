@@ -22,6 +22,7 @@ import { Pack, frameMatrix, hallWardrobe } from './contents.js';
 import { buildSillPlants } from './sillplants.js';
 import { registerSnow } from './seasons.js';
 import { buildCourtyard } from './courtyard.js';
+import { Boule } from './boule.js';
 import { grassMaterial } from './grass.js';
 import { buildStreetLife } from './streetlife.js';
 import { buildEastLotCars } from './eastlot.js';
@@ -1225,6 +1226,9 @@ function* worldParts(plan) {
   const courtyard = buildCourtyard(); // walks, pergola, grill, sandboxes, boule, benches, beds (#80)
   scene.add(courtyard.object);
   outdoor.push(...courtyard.segments);
+  const boule = new Boule(); // #1370: pétanque on the boule court, with its scoreboard lectern
+  scene.add(boule.object);
+  outdoor.push(...boule.segments);
   const entrances = [...l0.openings.north.filter(o=>o.entryPane), ...exterior.userData.entryLeaves.filter(o=>o.y0<.05)];
   yield 0.72;
   const life = buildStreetLife({entrances}); // parked cars, bikes, the square in front of Hus C (#113)
@@ -1352,6 +1356,7 @@ function* worldParts(plan) {
     sillPlants, // the window boards' pots (main.js makes each one a Holdable, #185)
     courtyardTargets: courtyard.targets, // the courtyard's benches to sit on (#438): kept with F
     courtyardSwings: courtyard.swings,
+    boule, // #1370: the local pétanque game (main.js: focus, E, update)
     updateSwings: (dt, target) => courtyard.updateSwings(dt, target),
     furnitureTargets: furniture.interactives, // E targets among the furniture (the TV), hidden with F
     /** Collision of moving furniture parts (the secretary's open flap, #118) on `level`. */

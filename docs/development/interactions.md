@@ -2001,3 +2001,24 @@ The public project already keeps keyboard/mouse/touch help and its touch editor
 entry in a separate native `#help-dialog`; it has no chat, player statistics or
 personal home-reset sections. This original menu reorganization needs no public
 code transfer or gameplay import.
+
+## Courtyard pétanque (#1370)
+
+`src/boule.js` adds a local pétanque game to the courtyard's boule court (`COURTYARD.boule`, *guess*). It is built in
+`world.js` beside the courtyard (`world.boule`; the lectern's foot joins the outdoor collision) and wired in `main.js`
+like the playroom billiards: standing in the throwing circle at the court's north end, the gravel is focusable across
+the court (`BOULE.reach`, an extra raycast only when near the court) as kind `boule`; E / the touch action button throws
+the jack or the next boule. A throw flies in a short arc to `BOULE.roll` m short of the aimed spot (with a small
+distance-scaled scatter) and rolls on; E after a scored mène collects the boules. A lectern (pulpet) east of the court
+carries one canvas scoreboard (sides, points, mène, whose turn, boules left, message, winner) with two real pickable
+buttons, `bouleMene` ("Ny omgång": restart the mène, points kept) and `bouleGame` ("Nytt parti": 0–0). Three visible
+draws (lectern + circle, seven instanced spheres, the board), no lights; hidden and frozen beyond `BOULE.near`.
+Landings and impacts reuse `sfx.billiard`. Local only: no shared/multiplayer state.
+
+`src/boulephysics.js` is renderer-free: constant gravel deceleration, mass-weighted boule/jack collisions, a weak timber
+edge rebound and landing clamped into the court. `src/boulerules.js` is renderer-free pétanque for two sides of three
+boules: the jack (valid `BOULE.jackMin`–`jackMax` m from the circle, shortened from the rules' 6–10 m to fit the court),
+the side not holding the point plays, a side out of boules hands over, scoring per boule nearer than the opponent's
+nearest, a tie scores nothing, the mène winner throws the next jack, first to 13 wins and a finished game blocks
+throws. Sizes in `BOULE` follow the FIPJP ball/jack dimensions; the rest are playability guesses. Tests:
+`tools/bouletest.mjs` (node) and `tools/bouletest.cjs` (real app, `MOBILE=1` for touch). Gameplay: never downstream.

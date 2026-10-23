@@ -1175,6 +1175,29 @@ export const GRILL = { flames: 16, height: 1.0, sparks: 40, light: 3.2, burnSeco
   big: { r: 0.335, rim: 0.76, depth: 0.3, lidH: 0.26, grate: 0.08, coal: 0.18, leg: 0.014, wheel: 0.18, ash: 0.4, ashY: 0.25,
     table: { w: 0.5, d: 0.42, h: 0.76, t: 0.022, gap: 0.03, slats: 6, shelf: 0.3, top: 0x3a3c3e, frame: 0x161718 } } };
 
+// #1370: a local pétanque game on the courtyard's boule court (COURTYARD.boule). Ball and jack sizes follow the
+// FIPJP rules (boule 70.5–80 mm, 650–800 g; jack 30 ± 1 mm wooden); the rest are playability *guess*es scaled to the
+// 3.2 × 8.8 m court (the rules' 6–10 m jack distance does not fit, so `jackMin`/`jackMax` are shortened).
+export const BOULE = {
+  ballR: 0.0375, ballMass: 0.7, jackR: 0.015, jackMass: 0.015, // FIPJP sizes; masses in kg
+  surface: 0.03, edge: 0.08,         // the gravel's top and the timber edge's thickness (courtyard.js draws them)
+  friction: 1.6,                     // rolling deceleration on stenmjöl, m/s² (*guess*: a boule stops ~0.5 m after landing)
+  bounce: 0.55, edgeBounce: 0.3,     // ball/ball and timber-edge restitution (*guess*)
+  stopSpeed: 0.02, maxStep: 1 / 240, // m/s at rest, s per substep
+  circle: { dz: 0.7, r: 0.25, reach: 1.0 }, // the throwing circle 0.7 m in from the north edge (rules: 35–50 cm across);
+                                     // `reach`: how far from its centre you may stand (*guess*, eases touch play)
+  jackMin: 4, jackMax: 8,            // valid jack distance from the circle, m (*guess*, scaled from the rules' 6–10 m)
+  roll: 0.5, minLand: 0.4,           // a throw lands `roll` m short of the aimed spot and rolls on to it (*guess*)
+  scatter: 0.025,                    // landing spread per metre thrown (*guess*)
+  flight: 0.45, flightPerM: 0.07, arc: 0.25, // throw flight time (s) and apex height per metre (*guess*)
+  balls: 3, target: 13,              // tête-à-tête: three boules each, the game is to 13
+  reach: 11,                         // m: the court can be aimed at from the circle across its full length
+  near: 40,                          // m: drawn and simulated only this close (like the playroom's billiards)
+  // the lectern (pulpet) with the scoreboard east of the court, facing it (west); sizes *guess*
+  desk: { x: -32.85, z: 21.2, w: 0.62, d: 0.42, h: 1.05, tilt: 0.42, board: [0.56, 0.36], canvas: [512, 330],
+    buttonY: 0.36, buttonH: 0.17 }, // the two buttons: bottom strip of the board (fraction of its height from the centre / tall)
+};
+
 // #688: grass appearance, all *guess* by eye from the realism screenshots; no botanical survey.
 export const GRASS = {
   textureSize: 256, tile: 1.6, seed: 688, blades: 2300, bladeLength: [2, 7],
