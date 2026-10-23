@@ -242,7 +242,7 @@ const quality = new Quality({ start: pinned ?? (lowMemory ? QUALITY.startLowMemo
 new QualitySetting(quality, { level: document.getElementById('quality-level'), fps: document.getElementById('quality-fps'), note: document.getElementById('quality-note') }, { pinned: pinned !== null });
 quality.register('resolution', { // the canvas's pixel ratio (a step reallocates the drawing buffer once)
   apply: (l) => { const r = Math.max(QUALITY.minPixelRatio, MAX_PIXEL_RATIO * QUALITY.pixelRatio[l]); if (Math.abs(renderer.getPixelRatio() - r) > 1e-3) renderer.setPixelRatio(r); },
-  state: () => `px ${renderer.getPixelRatio().toFixed(2)}`, cost: 'fill rate: every pixel of every pass' });
+  state: () => `px ${renderer.getPixelRatio().toFixed(2)}`, cost: 'fill rate: every pixel of every pass', kind: 'gpu' }); // #1510: held on a CPU-bound step
 loadingStep('Hämtar planritningen', 0.15); // loading steps on the card (#1130)
 const plan = await fetchStartupJSON('data/plan.json', { timeout: STARTUP.planTimeout });
 // Finish network/cache callbacks before CPU-heavy construction can starve them past their existing deadlines.
@@ -3221,16 +3221,18 @@ const frameDiag = { ms: 0, progs: 0, shadow: 0, warm: '', passes: 0, held: 0 };
 const portraitCover = window.matchMedia('(orientation: portrait) and (pointer: coarse) and (max-width: 1100px)');
 deferViewportResize = () => lowMemory && !shotMode && warm.done && startupSceneReady
   && (document.hidden || portraitCover.matches);
-let lastViewDraw = -Infinity, shadowElapsed = 0;
+let lastViewDraw = -Infinity, shadowElapsed = 0, lastFrameMs = null;
 /** One frame of the game loop; `raw` = seconds since the last one (tools/turntest.html calls it with the loop stopped). */
 function frame(raw) {
   const dt = Math.min(raw, 0.05), f0 = performance.now(), p0 = renderer.info.programs?.length ?? 0;
   hitch.begin();
   viewportBinding.flush(); // catch up before the first uncovered frame; include resize work in its CPU diagnostics
   // only while playing, after the warm-up, and not with a pinned level
-  if (!overlay.hidden || document.hidden || pinned !== null || !warm.done
-    || (lowMemory && (reading || portraitCover.matches))) quality.reset();
-  else quality.update(raw);
+  // #1510: explicit holds; an active frame feeds its interval and the previous frame's main-thread work (lastFrameMs)
+  const hold = document.hidden ? 'hidden' : !overlay.hidden ? 'menu' : pinned !== null ? 'pinned' : !warm.done ? 'warmup'
+    : lowMemory && (reading || portraitCover.matches) ? 'covered' : null;
+  if (hold) quality.pause(hold);
+  else quality.update(raw, lastFrameMs);
   if (!warm.done && warm.tick()) hitch.frameInfo.warm = true;
   else if (warm.done) warm.lateSlice(); // #1514: late drawings' programs, a few per frame
   hitch.phase('adapt');
@@ -3272,7 +3274,7 @@ function frame(raw) {
   showFrameRate(performance.now(), drewView, warm.done && startupSceneReady && overlay.hidden && !document.hidden && !portraitCover.matches);
   hitch.phase('render');
   hitch.intervals.complete(hitch.end());
-  const fMs = performance.now() - f0;
+  const fMs = lastFrameMs = performance.now() - f0;
   if (fMs > frameDiag.ms) Object.assign(frameDiag, { ms: fMs, progs: (renderer.info.programs?.length ?? 0) - p0, shadow: renderer.shadowMap.needsUpdate ? 1 : 0, warm: warm.detail });
   if (perfEl) showPerf();
 }
@@ -3288,7 +3290,7 @@ hitch.intervals.metadata = () => {
     contextLost: gl.isContextLost(), acceleration: 'Check chrome://gpu; renderer string alone is not proof',
     viewport: { width: innerWidth, height: innerHeight, dpr: devicePixelRatio,
       renderWidth: renderer.domElement.width, renderHeight: renderer.domElement.height },
-    quality: quality.level, pinned, lowMemory, test: TEST, warmup: warm.detail,
+    quality: quality.level, auto: quality.diagnostics(), pinned, lowMemory, test: TEST, warmup: warm.detail,
     scenario: Object.fromEntries(['time', 'month', 'day', 'freeze', 'weather', 'mess', 'life']
       .filter(k => params0.has(k)).map(k => [k, params0.get(k)])) };
 };

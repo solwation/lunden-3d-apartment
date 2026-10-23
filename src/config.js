@@ -2851,20 +2851,25 @@ export const RESET_KEEP = [
 // Warm-up (#432, #592, src/warmup.js): starts `frames` frames after the scene is built; the idle texture uploads take at
 // most `sliceMs` ms per idle slot (*guess*: half a 60 Hz frame).
 // Adaptive graphics level (#592, src/quality.js): 0 = lowest … levels − 1 = highest; the tables below give each knob's
-// value per level. Down a level when `down.hitches` frames of ≥ `down.hitchMs` fall within `down.window` s (repeated
-// hitches) or the frame rate stays under `down.fps` for `down.slowFor` s; up a level after `up.after` s in a row over
-// `up.fps`, never within `up.blocked` s of the last step down; at most one step per `cooldown` s. Frames longer than
-// `ignoreOver` s are excluded from quality adaptation, not evidence of a pause. Phones (lowMemory) start at `startLowMemory`; the level reached is remembered
+// value per level. The regulator (#1510, `auto`, see quality.js) judges `window`-second windows against the target's frame
+// budget (1000 / 30 or 60 ms); at most one step per `cooldown` s. Frames longer than `ignoreOver` s are stalls: kept in
+// the diagnostics, excluded from adaptation. Phones (lowMemory) start at `startLowMemory`; the level reached is remembered
 // per device (localStorage). pixelRatio is a factor of the device's (capped) ratio, never below `minPixelRatio`; the
 // shadow map size is also capped by LOW_MEMORY on phones; mirror 0 = no mirror images. All values *guess*, from
 // #460's tiers (0.65 / 0.85 / 1.0 resolution, 0.7 / 0.85 / 1.0 detail, shadows every 1.0 / 0.6 / 0.4 s).
 export const QUALITY = {
   levels: 4, startLowMemory: 2, ignoreOver: 0.25, cooldown: 1.5, minPixelRatio: 0.5,
-  down: { hitchMs: 50, hitches: 3, window: 0.5, fps: 30, slowFor: 1.5 },
-  up: { fps: 52, after: 5, blocked: 20 },
-  // #1509: the player's frame-rate target moves Auto's thresholds only (60 = the values above; 30 accepts a slower scene
-  // before stepping down and a lower rate before stepping up). It is a load budget, not a promise, and no render cap (*guess*).
-  targets: { 60: { down: {}, up: {} }, 30: { down: { fps: 20, hitchMs: 80 }, up: { fps: 27 } } },
+  // #1509/#1510: the player's 30/60 FPS target sets the budget (1000 / target ms) every ratio below is relative to; a load
+  // budget, not a promise, and no render cap. All *guess* unless noted, chosen against the UHD 630 route (#1510 README):
+  // window 1 s (a median over ~30–60 frames; one load/save stall cannot move it); over 1.3 × budget (60: 21.7 ms ≈ 46 fps,
+  // 30: 43 ms ≈ 23 fps) or ≥ 20 % hitches of ≥ 3 × budget (60: 50 ms, #592's hitch) in `downAfter` 2 windows in a row → down;
+  // a stall is one frame ≥ 6 × budget (diagnostics only); headroom = median ≤ 1.1 × budget without hitches for `upAfter`
+  // 5 windows (#592's 5 s), `blocked` 20 s after a down (#592); a step up is a trial judged over `trialWindows` windows
+  // after `settle` s (the reallocation frames after a step / pause), reverted on failure and then not retried for `backoff`
+  // s, doubling to `backoffMax`. `cpuShare`: a median main-thread work ≥ 0.8 × the median interval counts as CPU-bound.
+  // `minGain`: a down step that improves the median by < 8 % over `responseWindows` windows is reverted. `keep`: log size.
+  auto: { window: 1, over: 1.3, hitch: 3, hitchShare: 0.2, downAfter: 2, stall: 6, headroom: 1.1, upAfter: 5, blocked: 20,
+    settle: 0.6, trialWindows: 3, backoff: 60, backoffMax: 600, cpuShare: 0.8, minGain: 0.08, responseWindows: 2, keep: 24 },
   names: ['Lägsta', 'Låg', 'Medel', 'Hög'],
   pixelRatio: [0.6, 0.75, 0.9, 1],
   shadowSize: [1024, 1024, 2048, 2048],

@@ -823,22 +823,39 @@ hit whatever was drawn then (mess meshes, drop-off, instanced things); in turnte
 Materials created later (cups, cat coats) are still patched by the 120-frame loop and compile when first drawn.
 
 **Adaptive quality level (step C).** `src/quality.js` (`Quality`, `__app.quality`, `QUALITY` in config) replaces #460's
-three pixel-ratio tiers (`dynRes`). One level 0 (lowest) … 3 (highest), steered by the real frame time: down one level
-when 3 frames of ≥ 50 ms fall within 0.5 s (repeated hitches) or after 1.5 s under 30 fps; up one level only after 5 s
-in a row over 52 fps and never within 20 s of a step down; at most one step per 1.5 s (all *guess*). It only adapts
+three pixel-ratio tiers (`dynRes`). One level 0 (lowest) … 3 (highest), steered by the real frame time (the original
+#592 thresholds — 3 hitches in 0.5 s, 1.5 s under 30 fps, 5 s over 52 fps — are replaced by the #1510 regulator below). It only adapts
 while playing (not on the start screen or paused), after the warm-up, and not with `&shot` (highest) or `&quality=n`
 (pinned; both not remembered). The level reached is remembered per device (`localStorage` `lunden.quality`); phones
-(`lowMemory`) start at 2, everything else at 3. perfcount checks the drop on a low frame rate, the drop within 0.6 s on
+(`lowMemory`) start at 2, everything else at 3. perfcount checks the drop on a low frame rate, the drop within 3.5 s on
 repeated hitches, no step up right after a step down, the recovery, and that the knobs are registered.
 
 **Graphics choice (#1509).** The settings dialog (`#settings-dialog`, `src/qualitysetting.js`) offers Auto or a named manual
 level (Lägsta / Låg / Medel / Hög = levels 0–3, `QUALITY.names`) and a 30 / 60 FPS target. Saved separately in `localStorage`:
 `lunden.quality` stays the LAST AUTO level (an old install therefore migrates as Auto at its old level, no reset),
 `lunden.quality.mode` (`auto`/`manual`), `lunden.quality.manual`, `lunden.quality.fps`. Auto never writes the manual keys and a manual
-level never moves (`Quality.update` returns at once). The target only picks Auto's thresholds (`QUALITY.targets`: 60 = the
-existing values; 30 steps down under 20 fps / 80 ms hitches and up over 27 fps, *guess*); it is a load budget, not a promise and
-no render cap exists. `&quality=n`, `&test` and `&shot` lock the level (`remember: false`): they read and write no saved choice and
+level never moves (`Quality.update` returns at once). The target only sets Auto's frame budget (1000 / target ms, #1510 below);
+it is a load budget, not a promise and no render cap exists. `&quality=n`, `&test` and `&shot` lock the level (`remember: false`): they read and write no saved choice and
 the dialog disables its buttons with a note. Checks: `node tools/qualitychoicetest.mjs` (state), `tools/qualitysettingtest.cjs` (browser).
+
+**Regulator (#1510).** `Quality.update(dt, cpuMs)` judges 1 s windows against the target's budget (`QUALITY.auto`, all
+*guess*): a window is over when its MEDIAN interval exceeds 1.3 × budget or ≥ 20 % of its frames are hitches (≥ 3 × budget);
+two over windows in a row step down. A single frame ≥ 6 × budget, or one past `ignoreOver`, is a stall: counted in
+`quality.stalls`/`diagnostics()` (also in the `&perf` interval export's metadata `auto`), never a level change by itself.
+Up only after 5 headroom windows (median ≤ 1.1 × budget, no hitches) and 20 s after a step down; because 60 FPS at a vsync cap
+proves no GPU headroom, every step up is a trial judged over the next 3 windows and reverted when it loses the budget,
+then that step is backed off 60 s, doubling to 600 s. The 0.6 s after any step (pixel-ratio / shadow-map reallocation) or
+pause are discarded, so the reallocation frame never feeds back into a decision. `quality.pause(why)` holds it explicitly
+(main.js: hidden, menu, pinned, warmup, covered). Classification uses the previous frame's main-thread work and is always
+uncertain (no GPU timer is read, `diagnostics().gpuTime` is false; on the UHD 630 route GL calls block on GPU back-pressure,
+so lowering the resolution also lowered main-thread time): median CPU ≥ 0.8 × median interval = `cpu?` → first a step of
+`level` alone with the `kind: 'gpu'` resolution knob held at `pixelLevel`; otherwise `gpu?` → a held resolution steps first,
+else both. Response measurement decides: a down step whose next 2 windows improve the median by < 8 % (and stay over
+budget) is reverted as `ineffective`, that kind is backed off (60 s, doubling per ineffective step in a row) and the next
+overload tries the other kind. A median ≥ 8 % WORSE after a cheaper step means the scene changed under the measurement
+(moving route, loading): `step-unclear`, the cheaper step is kept, no backoff. No gameplay, physics, save or simulation rate is touched. Checks: `node
+tools/qualityautotest.mjs` (decision logic only), perfcount's adaptive lines; the matched UHD 630 route is in
+[the #1510 validation record](../validation/issue-1510/README.md).
 
 The registry: a feature that costs frame time calls `quality.register(name, { apply(level, quality), state(level), cost })`
 (main.js, after the thing exists). `apply` runs at once and on every change and sets the feature's cost for that level,
