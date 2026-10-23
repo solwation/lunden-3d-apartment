@@ -2,8 +2,9 @@
 
 Reusable instructions for an AI coding conductor and its workers. Plain Markdown,
 independent of LLM provider, agent API, editor, language and package manager. The goal
-is a shorter path to a verified result: brief planning, useful parallelism, bounded
-checks and one review. This is an instruction package, not an autonomous runtime.
+is a shorter path to a verified result: deliberate resource use, brief planning,
+useful parallelism, bounded checks and one review. This is an instruction package,
+not an autonomous runtime.
 
 Read [ORCHESTRA.md](ORCHESTRA.md) with a host project policy. Queue sessions also use
 [COORDINATION.md](COORDINATION.md); assignments use [WORKER.md](WORKER.md). GitHub issue labels/state follow [Issueflow](ISSUE-WORKFLOW.md), maintained in
@@ -21,7 +22,7 @@ Install into a clean working tree (requires Git's `subtree` command):
 
 ```sh
 git subtree add --prefix=.orchestra/shared \
-  https://github.com/solwation/dirigenten-och-orkestern.git v0.1.0 --squash
+  https://github.com/solwation/dirigenten-och-orkestern.git v0.1.1 --squash
 ```
 
 Copy the project example to `.orchestra/project.md`, fill it in, then link the host's
@@ -79,7 +80,9 @@ required by the workflow. The consuming application needs no runtime dependency.
 Review diff, relative links and contradictions with the host policy. Exercise install
 and update in a disposable Git repository when changing distribution instructions.
 Walk through a small fix, an independent helper, a failed check, a claim race and an
-idle fetch failure. No browser or application benchmark is required for prose changes.
+idle fetch failure. For resource-policy changes also check an economical implementation,
+a risky diagnosis, justified escalation and a runtime with locked model selection.
+No browser or application benchmark is required for prose changes.
 Do not claim measured speedups from the rules alone: use coarse real delivery timings
 and regression/reopen outcomes for comparable work.
 

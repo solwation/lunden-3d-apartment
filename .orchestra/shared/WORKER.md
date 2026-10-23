@@ -9,6 +9,7 @@ Scope, likely files, boundaries:
 Checkout/base revision, port and evidence directory:
 Owner/session label and other workers' file responsibilities:
 Resolved Issueflow revision/content (reuse conductor's session snapshot):
+Capability/effort choice (or selection limit), reason and stop/reassessment condition:
 Short plan and independent helper output (if any):
 2–3 risk-based checks and mandatory release gates:
 Integration/publishing owner:
@@ -17,7 +18,9 @@ Heartbeat, question channel and required result evidence:
 
 Work only the assigned scope. Preserve others' changes. Use existing helpers/harnesses;
 verify the agreed risks, then stop expanding the task. Tell the conductor promptly if
-new evidence changes the plan, a check fails or access is denied. Do not bypass denial.
+new evidence changes the plan, a check fails or access is denied. Include a concise
+diagnosis and preserved patch/evidence when requesting escalation; do not blindly retry
+or raise model effort for an ordinary command/environment failure. Do not bypass denial.
 A helper returns its revision/patch, checks and limitations to the integration owner;
 it does not independently publish or close the issue.
 

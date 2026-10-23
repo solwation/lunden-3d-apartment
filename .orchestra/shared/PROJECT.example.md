@@ -12,8 +12,10 @@ not executable code. Keep project details here, never in the shared instructions
 - Excluded coordination labels; active/session labels: <names>.
 - Claims, race handling, expiry and handover: <rules>.
 - Capacity: <worker cap, includes helpers>; direct conductor implementation: <allowed?>.
-- Runtime/model selection: <inherit or available capability/cost preference>; no
-  provider-specific identifier is required by the shared core.
+- Runtime/model selection: <available economical/stronger capabilities, concrete model
+  identifiers/effort controls in the adapter, or selection unavailable/locked>. Follow
+  the core resource policy; document limits rather than assuming inherited effort is
+  economical. No provider-specific identifier is required by the shared core.
 - Poll interval, idle watch, heartbeat and stale-work limits: <durations or disabled>.
 - Questions/blocked work: <channel and label lifecycle>.
 - Intake hooks: <local procedure and triggers, or none>; credentials never go here.
