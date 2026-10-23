@@ -539,7 +539,25 @@ the control(-20,262)=1.58, Sankt Lars väg45's base, roads and the other eleven 
 `groundY` follows the emitted terrain triangles (max0.57m mismatch before), and asphalt/paint follow that
 surface. A4m transition raised the lot's steepest triangle from0.316 to0.384 and8m moved the control, so6m
 was chosen: max0.311, the same15 pre-existing >0.7 bank triangles north-west of the lot, unchanged89666
-terrain triangles. `PARKING_GRADES` now takes every lot with a `grade` entry. Stall paint is unchanged (#1437).
+terrain triangles. `PARKING_GRADES` now takes every lot with a `grade` entry. Stall paint is replaced in #1437 below.
+
+## Parking 145221619 boxes and entrance (#1437)
+
+The lot's 29 full-width capacity lines are replaced by `createParkingLayout` (`src/parkinglot1442.js`, as #1442)
+with the lot's new `layout` entry: `boxes` keeps each bay exactly2.5×5m and also paints both row-end dividers, so
+the lot edge closes every box; `start` aligns the rows1.5m from the south-west end; `entrance` names a mapped way
+whose strip (plus a0.25m margin) the north-west row skips. Two rows of15 (raw capacity30 *guess*) leave a6.93m
+clear aisle and a free12.95×16.93m north-east end for turning. All of these are *guess*; OSM has no stall data.
+The inventory behind #1425 assumed no source connector, but #1432 had already added mapped service ways
+145221573 (from road30633546 straight across the1.4–2.3m grass strip into the lot at about29–34m along it)
+and145221582 (along the aisle). That mapped asphalt is the entrance: no guessed apron is invented. The boxes stay
+off it, the aisle covers both ways, and the old north-west kerb is split so it no longer crosses the entrance.
+An aisle-side front line per row was tried and dropped: following the terrain it cost332 triangles.
+`south-land` falls32871→32597 triangles (whole backdrop42959→42685, no new draw call/material).
+The #1436 plane, its6m transition, the outline, roads, controls and `WALK.z1=250` are unchanged.
+Walking out of the lot at the entrance, the Player steps up0.244m at(6.42,240.61): `groundY`'s smooth outside
+sampler lies above the rendered terrain on the lot edge. It is identical on ea955902 (a pre-existing seam of the
+#1436 edge, not a new obstacle). Other eleven lots: unchanged.
 
 ## Southern road embankment (#1382)
 

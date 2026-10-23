@@ -8364,6 +8364,17 @@ and `southbackdroptest.html` with it. `south-land` gains6 triangles from height-
 (paddock grass −12, scene net −6); the existing far-detail check still fails as #1474 (42953→42959).
 Before/after images: `docs/verification/1436/`.
 
+## #1437: parking 145221619 boxes and entrance
+
+Run `node tools/runtests.cjs --test-only parking1437test.html` (about40s). In the actual World it checks30 complete
+2.5×5m boxes inside the unchanged outline, the ≥6m clear aisle, the free north-east turning end, that no box covers
+mapped ways145221573/145221582, the kerb gap and road surface over the grass strip at the entrance, paint vertices
+against the rendered surface, the old/new south-backdrop triangle counts (42959→42685), the source controls and
+`WALK.z1`, and three actual Player routes (mapped entrance → aisle → boxes and back; grass strip at u43/z234).
+The walk-out route allows the pre-existing0.244m lot-edge step (identical on ea955902). Rerun
+`parkinggrade1436test.html`, `parkinggrade1440test.html`, `parking1442test.html` and `southbackdroptest.html`
+(only the #1474 far-detail check fails, now42685). Before/after images: `docs/verification/1437/`.
+
 ## Physical computer game (#1491)
 
 `tools/computerscreentest.cjs GAME LOCAL_WORKER OUT` opens actual Worlds on desktop

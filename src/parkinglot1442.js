@@ -28,6 +28,28 @@ function insetConvex(poly,distance){
 }
 
 /**
+ * #1437: the u interval (lot coordinates) that a mapped access way's strip
+ * occupies (absolute u) where it crosses the n0 row band [n0, n0 + depth], widened by its
+ * half width over the crossing angle and by a guessed margin. Null without one.
+ */
+function entranceGap(lot, { u, n, n0, depth }) {
+  const e = lot?.layout?.entrance;if (!e) return null;
+  const road = [...(SITE.south.paths ?? []), ...(SITE.south.access ?? [])].find(r => r.source === e.road);
+  if (!road) throw new RangeError(`Parking entrance road ${e.road} is not mapped`);
+  const half = (Array.isArray(road.w) ? Math.max(...road.w) : road.w) / 2, margin = e.margin ?? .25, uv = ([x, z]) => [x * u[0] + z * u[1], x * n[0] + z * n[1] - n0];
+  let lo = Infinity, hi = -Infinity;
+  for (let i = 1; i < road.path.length; i++) {
+    const a = uv(road.path[i - 1]), b = uv(road.path[i]), dn = b[1] - a[1], len = Math.hypot(b[0] - a[0], dn);
+    if (Math.abs(dn) < 1e-9) continue;
+    const t0 = clamp((0 - a[1]) / dn, 0, 1), t1 = clamp((depth - a[1]) / dn, 0, 1);
+    if (t0 === t1) continue;
+    const widen = half * len / Math.abs(dn);
+    for (const t of [t0, t1]) { const v = a[0] + (b[0] - a[0]) * t; lo = Math.min(lo, v - widen); hi = Math.max(hi, v + widen); }
+  }
+  return lo < hi ? [lo - margin, hi + margin] : null;
+}
+
+/**
  * Fit the smallest useful civil plane to the existing terrain samples inside one
  * sourced parking polygon. Both the fitted plane and its transition width are
  * guesses: OSM contains no floor levels. The returned sampler leaves the old
@@ -94,7 +116,7 @@ export function createParkingGrade(lot, sampleBase, options = {}) {
  * capacity; 8+7 bays use 2.5×5 m footprints and a 6 m clear aisle. No road or
  * surveyed driveway is created.
  */
-export function createParkingLayout(lot, { bayWidth = DEFAULTS.bayWidth, bayDepth = DEFAULTS.bayDepth, aisleWidth = DEFAULTS.aisleWidth } = {}) {
+export function createParkingLayout(lot, { bayWidth = DEFAULTS.bayWidth, bayDepth = DEFAULTS.bayDepth, aisleWidth = DEFAULTS.aisleWidth, start = lot?.layout?.start ?? null, boxes = !!lot?.layout?.boxes } = {}) {
   const poly = ring(lot?.polygon ?? []);
   if (poly.length !== 4 || !(bayWidth > 0 && bayDepth > 0 && aisleWidth > 0)) throw new TypeError('Nattsländegatan layout needs its four-corner lot and positive dimensions');
   const edges = poly.map((a, i) => { const b = poly[(i + 1) % poly.length]; return { a, b, len: Math.hypot(b[0] - a[0], b[1] - a[1]) }; });
@@ -104,15 +126,27 @@ export function createParkingLayout(lot, { bayWidth = DEFAULTS.bayWidth, bayDept
   const n = [-u[1], u[0]], proj = (p, v) => p[0] * v[0] + p[1] * v[1];
   const us = poly.map((p) => proj(p, u)), ns = poly.map((p) => proj(p, n));
   const u0 = Math.min(...us), u1 = Math.max(...us), n0 = Math.min(...ns), n1 = Math.max(...ns), width = n1 - n0;
-  const rowDepth = (width - aisleWidth) / 2;
-  if (rowDepth + 1e-6 < bayDepth) throw new RangeError('Parking polygon is too narrow for two guessed bays and a clear aisle');
-  const mid = (n0 + n1) / 2, aisleRect = [[u0,mid-aisleWidth/2],[u1,mid-aisleWidth/2],[u1,mid+aisleWidth/2],[u0,mid+aisleWidth/2]].map(([v,w])=>[u[0]*v+n[0]*w,u[1]*v+n[1]*w]), aisle=clipConvex(aisleRect,poly);
-  const centers = (count) => { const span = count * bayWidth, start = (u0 + u1 - span) / 2; return Array.from({ length: count }, (_, i) => start + (i + .5) * bayWidth); };
+  // #1437: a `boxes` layout keeps bays exactly bayDepth deep (the remaining width
+  // widens the clear aisle) and also paints each row's two end dividers, so every
+  // bay is a box closed by the lot edge behind it. An aisle-side front line per
+  // row was tried and dropped: following the terrain it cost 332 triangles,
+  // more than the old full-width lines saved.
+  const rowDepth = boxes ? bayDepth : (width - aisleWidth) / 2;
+  if ((width - aisleWidth) / 2 + 1e-6 < bayDepth) throw new RangeError('Parking polygon is too narrow for two guessed bays and a clear aisle');
+  const mid = (n0 + n1) / 2, clear = width - 2 * rowDepth, aisleRect = [[u0,mid-clear/2],[u1,mid-clear/2],[u1,mid+clear/2],[u0,mid+clear/2]].map(([v,w])=>[u[0]*v+n[0]*w,u[1]*v+n[1]*w]), aisle=clipConvex(aisleRect,poly);
+  // #1437: an optional `start` (m from the lot's u0 end) aligns both rows there
+  // instead of centring them, freeing the other end for an entrance and turning.
+  const rowStart = (count) => start == null ? (u0 + u1 - count * bayWidth) / 2 : u0 + start;
+  // #1437: a mapped way crossing the n0 row (`lot.layout.entrance.road`) keeps its
+  // own strip, plus `margin`, free of bays; later bays in that row move past it.
+  const skip = entranceGap(lot, { u, n, n0, depth: boxes ? bayDepth : (width - aisleWidth) / 2 });
+  const centers = (count, side) => { let at = rowStart(count); return Array.from({ length: count }, () => { if (side === 'north' && skip && at < skip[1] && at + bayWidth > skip[0]) at = skip[1]; const c = at + bayWidth / 2; at += bayWidth; return c; }); };
   const rowSpecs = [{ side: 'north', edge: n0, count: Math.ceil(lot.capacity / 2), inward: 1 }, { side: 'south', edge: n1, count: Math.floor(lot.capacity / 2), inward: -1 }];
   const stalls = [], segments = [], markingSegments = [];
   for (const row of rowSpecs) {
     const rowNear = row.edge + row.inward * rowDepth, rowFar = row.edge;
-    for (const center of centers(row.count)) {
+    const rowCenters = centers(row.count, row.side);
+    for (const center of rowCenters) {
       const half = bayWidth / 2, a = center - half, b = center + half;
       const corners = [
         [u[0]*a+n[0]*rowFar,u[1]*a+n[1]*rowFar], [u[0]*b+n[0]*rowFar,u[1]*b+n[1]*rowFar],
@@ -125,12 +159,15 @@ export function createParkingLayout(lot, { bayWidth = DEFAULTS.bayWidth, bayDept
     // The polygon's long edges delimit the outer bays, so render only the
     // internal aisle-side dividers. Keeping the two edge segments in the
     // layout still helps footprint inspection without spending draw triangles.
-    for (let i = 0; i <= count; i++) {
-      const at = (u0 + u1 - count * bayWidth) / 2 + i * bayWidth;
-      const segment=clipSegment([[u[0]*at+n[0]*rowFar,u[1]*at+n[1]*rowFar],[u[0]*at+n[0]*rowNear,u[1]*at+n[1]*rowNear]],poly);if(segment){segments.push(segment);if(i>0&&i<count)markingSegments.push(segment);}
+    // (#1437 `boxes` paints those outer dividers too.) Divider positions: both
+    // edges of every bay, shared where bays touch.
+    const cuts = rowCenters.flatMap(c => [c - bayWidth / 2, c + bayWidth / 2]).filter((v, i, all) => i === 0 || Math.abs(v - all[i - 1]) > 1e-6);
+    for (let i = 0; i < cuts.length; i++) {
+      const at = cuts[i], outer = i === 0 || i === cuts.length - 1;
+      const segment=clipSegment([[u[0]*at+n[0]*rowFar,u[1]*at+n[1]*rowFar],[u[0]*at+n[0]*rowNear,u[1]*at+n[1]*rowNear]],poly);if(segment){segments.push(segment);if(boxes||!outer)markingSegments.push(segment);}
     }
   }
-  return { aisle, stalls, segments, markingSegments, axes: { u, n }, dimensions: { bayWidth, bayDepth, aisleWidth, lotWidth: width, rowDepth, length: u1-u0 } };
+  return { aisle, stalls, segments, markingSegments, entrance: skip, axes: { u, n }, origin: { u0, n0, n1 }, dimensions: { bayWidth, bayDepth, aisleWidth, lotWidth: width, rowDepth, clearAisle: width - 2 * rowDepth, length: u1-u0 } };
 }
 
 function lineGeometry(segment, width, ground, lift, grid, boundary) {
@@ -144,8 +181,11 @@ function lineGeometry(segment, width, ground, lift, grid, boundary) {
 }
 
 /** Return paint meshes following the existing emitted terrain sampler. Asphalt itself is already drawn by southbackdrop. */
-export function parking1442Parts(ground) {
-  const lot=SITE.south.parking.find(p=>p.source===SOURCE);if(!lot)return{surface:null,markings:[],layout:null};
+export function parkingLayoutParts(lot, ground) {
   const layout=createParkingLayout(lot),grid=ground.grid?.()??null,markings=layout.markingSegments.map(s=>lineGeometry(s,.08,ground,.052+.024,grid,insetConvex(ring(lot.polygon),.01))).filter(Boolean);
   return{surface:null,markings,layout};
+}
+export function parking1442Parts(ground) {
+  const lot=SITE.south.parking.find(p=>p.source===SOURCE);if(!lot)return{surface:null,markings:[],layout:null};
+  return parkingLayoutParts(lot,ground);
 }

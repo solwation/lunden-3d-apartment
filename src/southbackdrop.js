@@ -8,7 +8,7 @@ import { lowRiseWindowParts } from './southwindows.js';
 import { buildStLars41 } from './stlars41.js';
 import { paddockLandParts } from './paddock.js';
 import { busStopApron } from './busstopgeo.js';
-import { parking1442Parts } from './parkinglot1442.js';
+import { parking1442Parts, parkingLayoutParts } from './parkinglot1442.js';
 const S=SITE.south;
 const LAND_MESH=6,LAND_LIFT=.03; // m: #1306, fields / car parks are cut into triangles <= LAND_MESH m where the sloping terrain lies and sit LAND_LIFT higher than the corner heights say (*guess*)
 const inside=(x,z,p)=>{let yes=false;for(let i=0,j=p.length-1;i<p.length;j=i++)if((p[i][1]>z)!==(p[j][1]>z)&&x<(p[j][0]-p[i][0])*(z-p[i][1])/(p[j][1]-p[i][1])+p[i][0])yes=!yes;return yes;};
@@ -92,7 +92,12 @@ export function* southBackdropParts(ground){
    g.computeVertexNormals();
    parts.land.push(tint(g,surfColor(p)));}
    if(p.source==='145221624')parts.land.push(...parking1442Parts(farGround).markings); // #1442: double-loaded bays around a clear aisle
-   if(p.capacity&&p.polygon.length>=4&&p.source!=='145221624'){
+   else if(p.layout){ // #1437: complete guessed boxes around the mapped entrance, whose strip the n0-edge kerb leaves open
+    const{markings,layout:L}=parkingLayoutParts(p,farGround),{u,n}=L.axes,{u0,n0}=L.origin,at=v=>[u[0]*v+n[0]*n0,u[1]*v+n[1]*n0],u1=u0+L.dimensions.length;
+    parts.land.push(...markings);
+    for(const[a,b]of L.entrance?[[u0,L.entrance[0]],[L.entrance[1],u1]]:[[u0,u1]]){const curb=lineQuad(at(a),at(b),0.14,.022+LAND_LIFT+.024,0xb0aba2,farGround);if(curb)parts.land.push(curb);}
+   }
+   if(p.capacity&&p.polygon.length>=4&&p.source!=='145221624'&&!p.layout){
     const poly=ring(p.polygon);
     if(poly.length===4){
      const[p0,p1,p2,p3]=poly;

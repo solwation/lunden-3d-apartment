@@ -1,0 +1,61 @@
+<!doctype html><html><meta charset="utf-8"><title>Parking boxes #1437</title><pre id="out">running…</pre><canvas id="preview" width="720" height="560" style="display:block;width:min(100%,720px);border:1px solid #bbb"></canvas><script type="module">
+// #1437: complete guessed 2.5×5 m boxes, a clear aisle over the mapped service ways and an open mapped entrance for OSM parking 145221619, in the actual World.
+// Baseline on ea955902: 29 full-width capacity lines + one kerb on this lot; south-backdrop 42959 triangles (pre-existing #1474 FAIL).
+const out=document.querySelector('#out'),lines=[];let pass=true;const T0=performance.now();
+const check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);pass&&=!!ok;out.textContent=lines.join('\n');};
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+try{
+ const frame=document.createElement('iframe');frame.width=480;frame.height=300;frame.src='../index.html?test&shot&month=6&cloud=';document.body.append(frame);await new Promise(r=>frame.onload=r);const w=frame.contentWindow;for(let i=0;i<360&&!w.__app?.scene;i++)await wait(500);if(!w.__app?.scene)throw Error('actual World did not finish loading');
+ const A=w.__app,T=await w.eval("import('three')"),C=await w.eval("import('/src/config.js')"),S=await w.eval("import('/src/surroundings.js')"),P=await w.eval("import('/src/parkinglot1442.js')"),B=await w.eval("import('/src/southbackdrop.js')");
+ const lot=C.SITE.south.parking.find(p=>p.source==='145221619'),poly=lot.polygon,roads=[...C.SITE.south.paths,...(C.SITE.south.access??[])];
+ const inside=(x,z,p=poly)=>{let yes=false;for(let i=0,j=p.length-1;i<p.length;j=i++)if((p[i][1]>z)!==(p[j][1]>z)&&x<(p[j][0]-p[i][0])*(z-p[i][1])/(p[j][1]-p[i][1])+p[i][0])yes=!yes;return yes;};
+ const near=(x,z,p,e=1e-6)=>inside(x,z,p)||p.some((a,i)=>{const b=p[(i+1)%p.length],dx=b[0]-a[0],dz=b[1]-a[1],t=Math.max(0,Math.min(1,((x-a[0])*dx+(z-a[1])*dz)/(dx*dx+dz*dz)));return Math.hypot(x-a[0]-dx*t,z-a[1]-dz*t)<e;});
+ check(lot.capacity===30&&lot.capacitySource==='guess'&&JSON.stringify(poly)==='[[-19.37,258.81],[27.25,225.93],[37.02,239.75],[-9.59,272.63]]'&&lot.grade?.anchor?.join()==='10,248'&&lot.layout?.source==='guess'&&lot.layout.boxes===true&&lot.layout.entrance?.road==='145221573','raw capacity 30 (guess), OSM outline and #1436 plane are kept; the layout is marked guess and names mapped entrance 145221573');
+ const L=P.createParkingLayout(lot),D=L.dimensions;
+ check(L.stalls.length===30&&L.stalls.filter(s=>s.side==='north').length===15&&L.stalls.every(s=>Math.abs(s.area-12.5)<.02&&s.polygon.every(([x,z])=>near(x,z,poly))),`30 complete 2.5×5 m boxes (15+15) inside the outline, areas ${Math.min(...L.stalls.map(s=>s.area)).toFixed(3)}..${Math.max(...L.stalls.map(s=>s.area)).toFixed(3)} m²`);
+ check(D.bayWidth===2.5&&D.bayDepth===5&&D.rowDepth===5&&D.clearAisle>=6&&L.aisle.every(([x,z])=>near(x,z,poly)),`lot ${D.length.toFixed(2)}×${D.lotWidth.toFixed(2)} m: two 5 m rows leave a ${D.clearAisle.toFixed(2)} m clear aisle (≥6 m) inside the outline`);
+ const uOf=([x,z])=>x*L.axes.u[0]+z*L.axes.u[1]-L.origin.u0,nOf=([x,z])=>x*L.axes.n[0]+z*L.axes.n[1]-L.origin.n0,G=L.entrance.map(v=>v-L.origin.u0);
+ const north=L.stalls.filter(s=>s.side==='north').map(s=>s.polygon.map(uOf)),south=L.stalls.filter(s=>s.side==='south').map(s=>s.polygon.map(uOf));
+ const nEnd=Math.max(...north.flat()),sEnd=Math.max(...south.flat()),turn=D.length-Math.max(nEnd,sEnd);
+ check(turn>=11,`free north-east end ${turn.toFixed(2)}×${D.lotWidth.toFixed(2)} m holds a ~11 m car turning circle (rows end at ${nEnd.toFixed(2)}/${sEnd.toFixed(2)} m)`);
+ const aisleHit=L.stalls.some(s=>s.polygon.some(p=>{const v=nOf(p);return v>5+1e-6&&v<D.lotWidth-5-1e-6;}));
+ check(!aisleHit,'no box reaches into the clear aisle');
+ // The mapped service entrance 145221573 (from road 30633546) and the mapped aisle way 145221582 stay free of boxes.
+ const acc=src=>roads.find(r=>r.source===src),seg=(r,i)=>[r.path[i],r.path[i+1]],strip=(r,i,step=.25)=>{const[a,b]=seg(r,i),dx=b[0]-a[0],dz=b[1]-a[1],l=Math.hypot(dx,dz),pts=[];for(let t=0;t<=l;t+=step)for(let o=-r.w/2;o<=r.w/2+1e-9;o+=r.w/8)pts.push([a[0]+dx*t/l-dz/l*o,a[1]+dz*t/l+dx/l*o]);return pts;};
+ const e=acc('145221573'),ei=e.path.length-2,entryPts=strip(e,ei).filter(p=>inside(...p)),aislePts=[...strip(acc('145221582'),0),...strip(e,ei-1)].filter(p=>inside(...p));
+ const inBox=p=>L.stalls.some(s=>inside(p[0],p[1],s.polygon));
+ check(G[0]>25&&G[1]<37&&G[1]-G[0]>=4.5&&north.every(b=>b.every(v=>v<=G[0]+1e-6||v>=G[1]-1e-6)),`north-west row leaves the mapped 145221573 entrance open at ${G.map(v=>v.toFixed(2)).join('–')} m along the lot`);
+ check(entryPts.length>50&&!entryPts.some(inBox)&&aislePts.length>200&&!aislePts.some(inBox),`no box covers the mapped entrance strip (${entryPts.length} samples) or the mapped aisle ways (${aislePts.length} samples)`);
+ // Old vs new emitted backdrop, built from the same actual sampler.
+ const build=()=>{const g=B.southBackdropParts(S.renderedTerrainY);let r;do r=g.next();while(!r.done);return r.value;},tris=g=>{let n=0;g.traverse(m=>{if(m.isMesh)n+=(m.geometry.index?.count??m.geometry.attributes.position.count)/3*(m.isInstancedMesh?m.count:1)});return n;};
+ const saved=lot.layout;delete lot.layout;const before=build();lot.layout=saved;const after=build(),liveTris=tris(A.scene.getObjectByName('south-backdrop'));
+ const landOf=g=>g.children.find(c=>c.name==='south-land').geometry,bl=landOf(before).attributes.position.count/3,al=landOf(after).attributes.position.count/3;
+ check(tris(after)<=tris(before)&&tris(after)===liveTris,`south-backdrop triangles ${tris(before)} → ${tris(after)} (live ${liveTris}); south-land ${bl} → ${al}; no extra draw call`);
+ const land=landOf(after),pos=land.attributes.position,col=land.attributes.color,ground=S.renderedTerrainY;let paint=0,paintErr=0,kerbIn=0;
+ for(let i=0;i<pos.count;i++){const x=pos.getX(i),y=pos.getY(i),z=pos.getZ(i),d=y-ground(x,z);if(near(x,z,poly,.2)&&col.getX(i)>.85&&col.getY(i)>.85&&Math.abs(d-.076)<.01){paint++;paintErr=Math.max(paintErr,Math.abs(d-.076));}if(col.getX(i)<.75&&col.getX(i)>.65&&Math.abs(d-.076)<.01&&entryPts.some(p=>Math.hypot(p[0]-x,p[1]-z)<.3)&&nOf([x,z])<.5)kerbIn++;}
+ const parts=P.parkingLayoutParts(lot,ground),expectPaint=parts.markings.reduce((n,g)=>n+g.attributes.position.count,0);
+ check(paint===expectPaint&&paintErr<1e-5,`emitted paint follows the rendered surface: ${paint}/${expectPaint} vertices at +7.6 cm, max error ${paintErr.toExponential(2)} m (${L.markingSegments.length} lines)`);
+ check(kerbIn===0,`the north-west kerb is open across the mapped entrance (${kerbIn} kerb vertices there)`);
+ const ray=new T.Raycaster(),down=new T.Vector3(0,-1,0),landMesh=after.children.find(c=>c.name==='south-land'),gapPts=strip(e,ei,.1).filter(p=>{const v=nOf(p);return v<0&&v>-1.5&&Math.abs(uOf(p)-(G[0]+G[1])/2)<1.8;});let holes=0,paintHit=0;
+ for(const[x,z]of gapPts){ray.set(new T.Vector3(x,30,z),down);const hit=ray.intersectObject(landMesh)[0];if(!hit||hit.point.y<ground(x,z)+.02)holes++;else if(hit.point.y>ground(x,z)+.06)paintHit++;}
+ check(gapPts.length>20&&holes===0&&paintHit===0,`${gapPts.length} rays over the grass strip at the entrance hit the mapped road surface (holes ${holes}, kerb/paint ${paintHit})`);
+ const trunks=A.scene.getObjectByName('south-backdrop').children.filter(m=>m.isInstancedMesh);let treeHit=0;const M=new T.Matrix4(),v=new T.Vector3();
+ for(const m of trunks)for(let i=0;i<m.count;i++){m.getMatrixAt(i,M);v.setFromMatrixPosition(M);if(inside(v.x,v.z))treeHit++;}
+ check(treeHit===0,`no backdrop tree stands on the lot (${treeHit})`);
+ check(Math.abs(S.groundY(10,248)-1.26)<1e-6&&Math.abs(S.groundY(-20,262)-1.58)<1e-6&&C.WALK.z1===250,`controls 1.26/1.58 m and WALK.z1=${C.WALK.z1} unchanged`);
+ // Actual Player routes through the mapped entrance and over the grass strip (synchronous, so the app loop cannot interleave).
+ const pl=A.player,cam=A.camera,dt=1/60,uAt=(s,v)=>[L.axes.u[0]*(L.origin.u0+s)+L.axes.n[0]*(L.origin.n0+v),L.axes.u[1]*(L.origin.u0+s)+L.axes.n[1]*(L.origin.n0+v)];
+ const walk=pts=>{let maxStep=0,prevY=pl.pos.y;for(let i=0;i<pts.length;i++){const[x,z]=pts[i];let t=0;const limit=8+Math.hypot(pl.pos.x-x,pl.pos.z-z)/1.2;while(Math.hypot(pl.pos.x-x,pl.pos.z-z)>.2){cam.rotation.y=Math.atan2(-(x-pl.pos.x),-(z-pl.pos.z));pl.keys=new Set(['KeyW']);pl.update(dt);maxStep=Math.max(maxStep,Math.abs(pl.pos.y-prevY));prevY=pl.pos.y;t+=dt;if(t>limit){pl.keys=new Set();return{stuck:i,maxStep};}}}pl.keys=new Set();return{stuck:-1,maxStep};};
+ const roadNode=e.path.at(-1),entry=uAt((G[0]+G[1])/2,1),aisle=uAt((G[0]+G[1])/2,8.46),box=uAt(uOf(L.stalls.find(s=>s.side==='north'&&uOf(s.center)>G[1]).center),2.5),aisleW=uAt(30,8.46),boxW=uAt(uOf(L.stalls.filter(s=>s.side==='north'&&uOf(s.center)<G[0]).at(-1).center),2.5);
+ const route=(name,start,pts,stepLimit=.1)=>{pl.keys.clear();pl.spawn(start[0],start[1],0);for(let i=0;i<30;i++)pl.update(dt);const r=walk(pts),yErr=Math.abs(pl.pos.y-S.groundY(pl.pos.x,pl.pos.z)),end=pts.at(-1);check(r.stuck<0&&yErr<.05&&r.maxStep<stepLimit&&Math.hypot(pl.pos.x-end[0],pl.pos.z-end[1])<.3,`actual Player ${name}: reached (${pl.pos.x.toFixed(1)}, ${pl.pos.z.toFixed(1)}) y=${pl.pos.y.toFixed(2)}, ground error ${yErr.toFixed(3)} m, largest frame step ${r.maxStep.toFixed(3)} m`);};
+ route('walks road node → mapped entrance → aisle → box beyond it',roadNode,[entry,aisle,box]);
+ // Walking out, the Player steps up 0.244 m at (6.42, 240.61) on the lot edge: groundY's smooth outside sampler sits above the
+ // rendered terrain there. Identical on ea955902 (pre-existing #1436 edge seam, not a new obstacle); bounded at its baseline.
+ route('walks road node → entrance → aisle → box before it and back out',roadNode,[entry,aisle,aisleW,boxW,aisleW,aisle,entry,roadNode],.25);
+ const g43=uAt(43,-4.5);route('crosses the grass strip at u43/z234 into the free turning end',g43,[uAt(43,-.7),uAt(43,8.46)]);
+ // Plan preview of the new paint.
+ const renderer=new T.WebGLRenderer({canvas:document.querySelector('#preview'),antialias:true});renderer.setSize(720,560,false);renderer.setPixelRatio(1);const scene=new T.Scene();scene.background=new T.Color(0x8fae6a);scene.add(new T.AmbientLight(0xffffff,1.6));scene.add(landMesh);const cm=new T.OrthographicCamera(-36,36,28,-28,.1,200);cm.position.set(9,80,249);cm.up.set(0,0,-1);cm.lookAt(9,0,249);renderer.render(scene,cm);
+ check(!w.document.querySelector('#error'),'actual World remains loaded');
+}catch(e){check(false,`test error: ${e.message}`)}
+out.textContent+=`\ntime ${((performance.now()-T0)/1000).toFixed(1)} s\n${pass?'ALL PASS':'SOME FAILED'}`;
+</script></html>
