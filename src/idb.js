@@ -28,7 +28,7 @@ export async function withStore(store, mode, fn) {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(store, mode);
     const out = fn(tx.objectStore(store));
-    tx.oncomplete = () => resolve(out?.result ?? out);
+    tx.oncomplete = () => resolve(out instanceof IDBRequest ? out.result : out); // (#1516: a request's undefined result stays undefined)
     tx.onerror = () => reject(tx.error);
   });
 }

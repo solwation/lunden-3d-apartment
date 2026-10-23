@@ -234,6 +234,7 @@ src/keep.js            the world's state across a page-made reload (#277): saveW
 src/realweather.js    the weather cache (#674): localStorage `lunden.weather.<YYYY-MM>` = `{ v:1, at, final, d:{ y, m, t, p, s, c } }` (hourly temperature, precipitation, snowfall, weather code of one month, ~15–20 KB); archive months (`final`) never expire, forecast months are used for 3 h and refreshed in the background; at most `WEATHER.real.keepMonths` (12) kept, the oldest dropped first, and all of them if the quota is full; a bad/short entry is ignored. Not in RESET_KEEP: "Återställ" clears it (it is only a cache)
 src/reset.js           "Återställ" on the start screen (#303): clears every local 'lunden.*' key except RESET_KEEP (config)
 src/idb.js             the shared IndexedDB 'lunden' (version 3: catPhotos + drawings + catCards, #1249) — every module opens it here
+                       withStore resolves a request to its result (undefined for a missing key, #1516), else fn's return (test: tools/idbtest.cjs BASE)
 src/cloud.js           the shared world (#178, #119): inert unless CLOUD_URL (config) is set on the published site, or the
                        page has &cloud=<url>. Taped-up drawings (posters.onPut/onDelete) and the desk sheet (drawing.onSaved)
                        go into a queue (localStorage 'lunden.cloud.queue', kept offline)
