@@ -8429,6 +8429,18 @@ cover the reachable northern part (Sankt Lars väg → entrance → aisle → bo
 ray evidence only. Rerun `parking1437test.html`, `parkinggrade1436test.html`, `parkinggrade1440test.html`,
 `parking1442test.html` and `southbackdroptest.html` (only #1474 fails, now42634). Images: `docs/verification/1441/`.
 
+## #1443: parking 145221626 plane and row
+
+Run `node tools/runtests.cjs --test-only parking1443test.html` (about2min). In the actual World it checks the unchanged
+outline and guessed values, that no mapped way reaches the lot, that rays on the emitted terrain ≥2m inside the outline
+lie on one plane and all lot rays agree with `renderedTerrainY`/`groundY`, that ground within6m outside is unchanged
+(baseline points from934e51f3 and rays), lot triangle slopes, 18 whole 2.5×5m boxes in one row inside the outline,
+the ≥6m clear aisle, 19 dividers that never reach into it, paint/asphalt lifts and independent paint/box/aisle rays,
+the south-backdrop count (43732→43634 after #1449, same meshes) and the measured terrain cost (+158), house47's base, the other lots,
+controls and `WALK.z1`. The lot lies wholly south of `WALK.z1`, so there are no walking routes. Rerun `parking1441test.html`,
+`parking1437test.html`, `parkinggrade1436test.html`, `parkinggrade1440test.html`, `parking1442test.html` and
+`southbackdroptest.html` (only #1474 fails, now42536). Images: `docs/verification/1443/`.
+
 ## Physical computer game (#1491)
 
 `tools/computerscreentest.cjs GAME LOCAL_WORKER OUT` opens actual Worlds on desktop

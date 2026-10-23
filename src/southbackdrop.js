@@ -8,7 +8,7 @@ import { lowRiseWindowParts } from './southwindows.js';
 import { buildStLars41 } from './stlars41.js';
 import { paddockLandParts } from './paddock.js';
 import { busStopApron } from './busstopgeo.js';
-import { parking1442Parts, parkingLayoutParts, cellTriangles } from './parkinglot1442.js';
+import { parking1442Parts, parkingLayoutParts, cellTriangles, lotTriangles } from './parkinglot1442.js';
 const S=SITE.south;
 const LAND_MESH=6,LAND_LIFT=.03; // m: #1306, fields / car parks are cut into triangles <= LAND_MESH m where the sloping terrain lies and sit LAND_LIFT higher than the corner heights say (*guess*)
 const inside=(x,z,p)=>{let yes=false;for(let i=0,j=p.length-1;i<p.length;j=i++)if((p[i][1]>z)!==(p[j][1]>z)&&x<(p[j][0]-p[i][0])*(z-p[i][1])/(p[j][1]-p[i][1])+p[i][0])yes=!yes;return yes;};
@@ -45,7 +45,7 @@ export function* southBackdropParts(ground){
  const group=new THREE.Group();group.name='south-backdrop';const parts={facade:[],roof:[],glass:[],land:[]},records=[];
  const farGround=(x,z)=>z<=SITE.backgroundGround.z1?ground(x,z):-3.01; // sampled-grid coverage; the distant fog boundary retains its old level
  farGround.surfaceGrid=()=>ground.surfaceGrid?.()??ground.grid?.()??null; // #1420: only the paddock field/track request detailed cells
- farGround.grid=()=>ground.grid?.()??null; // #1313: the terrain mesh's grid, so the paths are cut along it
+ farGround.grid=()=>ground.grid?.()??null;farGround.lotTriangles=()=>ground.lotTriangles?.()??[]; // #1443: clipped parking lots' own drawn triangles // #1313: the terrain mesh's grid, so the paths are cut along it
  let built=0;for(const b of S.buildings){if(built++%6===5)yield .6*built/S.buildings.length;const foot=shape(b),p=b.polygon.slice(0,-1),base=Math.max(...p.map(q=>farGround(...q))),bottom=Math.min(...p.map(q=>farGround(...q)))-.1,eave=base+b.levels*S.storey;
   if(b.template==='stlars41'){records.push({...b,base,bottom,...buildStLars41(b,p,base,bottom,parts)});continue;}
   parts.facade.push(tint(new THREE.ExtrudeGeometry(foot,{depth:eave-bottom,bevelEnabled:false}).rotateX(-Math.PI/2).translate(0,bottom,0),b.facade));
@@ -86,13 +86,13 @@ export function* southBackdropParts(ground){
  for(const p of busStopApron(bayPolygons))parts.land.push(tint(upGeometry(terrainTriangles(p,LAND_MESH,farGround.surfaceGrid()),(x,z)=>farGround(x,z)+.025),0x5f6164));
  for(const p of (S.parking??[])){
   if(p.polygon){
-   if(!(p.holes??[]).length)parts.land.push(tint(upGeometry(p.layout?.aisle?cellTriangles(p.polygon,farGround.grid()).flat():terrainTriangles(p.polygon,LAND_MESH,farGround.grid()),(x,z)=>farGround(x,z)+.022+LAND_LIFT),surfColor(p))); // #1441: an aisle lot's asphalt merges its pieces per terrain half-cell (same surface), paying for its box paint
+   if(!(p.holes??[]).length)parts.land.push(tint(upGeometry(p.grade?.clip?lotTriangles(p,farGround).flat():p.layout?.aisle?cellTriangles(p.polygon,farGround.grid()).flat():terrainTriangles(p.polygon,LAND_MESH,farGround.grid()),(x,z)=>farGround(x,z)+.022+LAND_LIFT),surfColor(p))); // #1441: an aisle lot's asphalt merges its pieces per terrain half-cell (same surface), paying for its box paint; #1443: a clipped lot's asphalt is exactly its drawn terrain triangles
    else{const g=new THREE.ShapeGeometry(shape(p)).rotateX(-Math.PI/2),a=g.attributes.position;
    for(let i=0;i<a.count;i++)a.setY(i,farGround(a.getX(i),a.getZ(i))+.022);
    g.computeVertexNormals();
    parts.land.push(tint(g,surfColor(p)));}
    if(p.source==='145221624')parts.land.push(...parking1442Parts(farGround).markings); // #1442: double-loaded bays around a clear aisle
-   else if(p.layout?.aisle)parts.land.push(...parkingLayoutParts(p,farGround).markings); // #1441: whole boxes either side of a mapped aisle way; no kerb, no line across the aisle
+   else if(p.layout?.aisle||p.layout?.row)parts.land.push(...parkingLayoutParts(p,farGround).markings); // #1441: whole boxes either side of a mapped aisle way; #1443: one row along a long edge; no kerb, no line across the aisle
    else if(p.layout){ // #1437: complete guessed boxes around the mapped entrance, whose strip the n0-edge kerb leaves open
     const{markings,layout:L}=parkingLayoutParts(p,farGround),{u,n}=L.axes,{u0,n0}=L.origin,at=v=>[u[0]*v+n[0]*n0,u[1]*v+n[1]*n0],u1=u0+L.dimensions.length;
     parts.land.push(...markings);

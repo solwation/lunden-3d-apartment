@@ -104,10 +104,74 @@ export function createParkingGrade(lot, sampleBase, options = {}) {
   const maxResidual = Math.max(...points.map(([x, z, y]) => Math.abs(planeY(x, z) - y)));
   grade.contains = contains;
   grade.bounds = bounds;
+  // #1443: the plane and the edge weight separately, so a refined terrain cell can fade from its
+  // unchanged drawn surface (instead of the smooth sampler) to the plane.
+  grade.planeY = planeY;
+  grade.weight = (x, z) => { if (!contains(x, z)) return 0; const t = clamp(edgeDistance(x, z) / transition, 0, 1); return t * t * (3 - 2 * t); };
+  grade.clip = !!lot?.grade?.clip; // #1443: drawn on terrain cells clipped along the outline (gradedCellTriangles)
+  grade.polygon = poly;
+  if (grade.clip) { grade.core = insetConvex(poly, transition); grade.inCore = (x, z) => pointIn(x, z, grade.core); }
   grade.plane = { origin: [mx, mz, my], slope: [sx, sz], maxResidual, anchored: !!anchor };
   grade.transition = transition;
   grade.source = lot.source;
   return grade;
+}
+
+// #1443: keep the part of convex `subject` on one side (side × cross ≥ 0) of line a→b.
+function halfClip(subject, a, b, side) {
+  const out = [];
+  for (let j = 0; j < subject.length; j++) {
+    const p = subject[j], q = subject[(j + 1) % subject.length], dp = side * cross(a, b, p), dq = side * cross(a, b, q);
+    if (dp >= -1e-12) out.push(p);
+    if ((dp < -1e-12 && dq > 1e-12) || (dp > 1e-12 && dq < -1e-12)) { const t = dp / (dp - dq); out.push([p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t]); }
+  }
+  return out;
+}
+// #1443: convex `subject` split by convex `cutter` into its inside part and convex outside pieces.
+function splitConvex(subject, cutter) {
+  const s = Math.sign(area(cutter)), outside = [];let inside = subject;
+  for (let k = 0; k < cutter.length && inside.length >= 3; k++) {
+    const a = cutter[k], b = cutter[(k + 1) % cutter.length], out = halfClip(inside, a, b, -s);
+    if (out.length >= 3 && Math.abs(area(out)) > 1e-9) outside.push(out);
+    inside = halfClip(inside, a, b, s);
+  }
+  return { inside: inside.length >= 3 && Math.abs(area(inside)) > 1e-9 ? inside : null, outside };
+}
+// #1443: a band piece cut by an inset line beyond the core corner carries that corner inside one
+// edge; make it a vertex (and the fan's root) so the band meets the core there without a T-junction.
+function withCorners(piece, corners) {
+  for (const c of corners) for (let k = 0; k < piece.length; k++) {
+    const a = piece[k], b = piece[(k + 1) % piece.length], l = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    if (l < 1e-9 || Math.hypot(c[0] - a[0], c[1] - a[1]) < 1e-9 || Math.hypot(c[0] - b[0], c[1] - b[1]) < 1e-9) continue;
+    const t = ((c[0] - a[0]) * (b[0] - a[0]) + (c[1] - a[1]) * (b[1] - a[1])) / (l * l);
+    if (t > 0 && t < 1 && Math.abs(cross(a, b, c)) / l < 1e-9) return [c, ...piece.slice(k + 1), ...piece.slice(0, k + 1)];
+  }
+  return piece;
+}
+const fan = (p) => p.slice(1, -1).map((_, i) => [p[0], p[i + 1], p[i + 2]]).filter(t => Math.abs(area(t)) > 1e-9);
+
+/**
+ * #1443: the drawn ground of one terrain cell [x0,x1]×[z0,z1] (corner heights `c` = [x0z0, x1z0, x0z1, x1z1],
+ * split along the (x1,z0)–(x0,z1) diagonal like every terrain cell) under a graded convex lot, clipped
+ * along the lot outline and along its outline inset by the grade's transition. Outside the outline the
+ * pieces keep the cell's old planar triangles (the drawn ground there is unchanged); inside the inset
+ * outline they lie exactly on the lot plane; only the transition band between them fades from the old
+ * surface to the plane. Returns triangles of [x, z, y] with their kind ('out', 'band' or 'core'); the
+ * caller draws the whole core once as `grade.core` (a few triangles) instead of its per-cell pieces.
+ */
+export function gradedCellTriangles(grade, polygon, { x0, x1, z0, z1, c }) {
+  const poly = ring(polygon), core = insetConvex(poly, grade.transition), out = [];
+  const halves = [[[x0, z0], [x1, z0], [x0, z1]], [[x1, z0], [x1, z1], [x0, z1]]];
+  for (let h = 0; h < 2; h++) {
+    const old = (x, z) => { const f = (x - x0) / (x1 - x0), g = (z - z0) / (z1 - z0); return h === 0 ? c[0] + (c[1] - c[0]) * f + (c[2] - c[0]) * g : c[3] + (c[2] - c[3]) * (1 - f) + (c[1] - c[3]) * (1 - g); };
+    const { inside, outside } = splitConvex(halves[h], poly);
+    for (const piece of outside) for (const t of fan(piece)) out.push({ kind: 'out', tri: t.map(([x, z]) => [x, z, old(x, z)]) });
+    if (!inside) continue;
+    const split = splitConvex(inside, core);
+    if (split.inside) for (const t of fan(split.inside)) out.push({ kind: 'core', tri: t.map(([x, z]) => [x, z, grade.planeY(x, z)]) });
+    for (const piece of split.outside.map(p => withCorners(p, core))) for (const t of fan(piece)) out.push({ kind: 'band', tri: t.map(([x, z]) => { const y = old(x, z); return [x, z, y + (grade.planeY(x, z) - y) * grade.weight(x, z)]; }) });
+  }
+  return out;
 }
 
 /**
@@ -118,6 +182,9 @@ export function createParkingGrade(lot, sampleBase, options = {}) {
  */
 export function createParkingLayout(lot, { bayWidth = DEFAULTS.bayWidth, bayDepth = DEFAULTS.bayDepth, aisleWidth = DEFAULTS.aisleWidth, start = lot?.layout?.start ?? null, boxes = !!lot?.layout?.boxes } = {}) {
   if (lot?.layout?.aisle) return createAisleLayout(lot, { bayWidth, bayDepth });
+  // #1443: `layout.row` ('north' = the n0 long edge, 'south' = n1) lays one row of `layout.count`
+  // boxes along that edge only; the rest of the lot's width is the clear aisle (no second row).
+  const single = lot?.layout?.row ?? null;
   const poly = ring(lot?.polygon ?? []);
   if (poly.length !== 4 || !(bayWidth > 0 && bayDepth > 0 && aisleWidth > 0)) throw new TypeError('Nattsländegatan layout needs its four-corner lot and positive dimensions');
   const edges = poly.map((a, i) => { const b = poly[(i + 1) % poly.length]; return { a, b, len: Math.hypot(b[0] - a[0], b[1] - a[1]) }; });
@@ -132,9 +199,12 @@ export function createParkingLayout(lot, { bayWidth = DEFAULTS.bayWidth, bayDept
   // bay is a box closed by the lot edge behind it. An aisle-side front line per
   // row was tried and dropped: following the terrain it cost 332 triangles,
   // more than the old full-width lines saved.
-  const rowDepth = boxes ? bayDepth : (width - aisleWidth) / 2;
-  if ((width - aisleWidth) / 2 + 1e-6 < bayDepth) throw new RangeError('Parking polygon is too narrow for two guessed bays and a clear aisle');
-  const mid = (n0 + n1) / 2, clear = width - 2 * rowDepth, aisleRect = [[u0,mid-clear/2],[u1,mid-clear/2],[u1,mid+clear/2],[u0,mid+clear/2]].map(([v,w])=>[u[0]*v+n[0]*w,u[1]*v+n[1]*w]), aisle=clipConvex(aisleRect,poly);
+  const rowDepth = boxes || single ? bayDepth : (width - aisleWidth) / 2;
+  if (single ? width - aisleWidth + 1e-6 < bayDepth : (width - aisleWidth) / 2 + 1e-6 < bayDepth) throw new RangeError(`Parking polygon is too narrow for ${single ? 'one' : 'two'} guessed bay row${single ? '' : 's'} and a clear aisle`);
+  // #1443: a single row stands on its long edge's inner corner (the edges are not exactly parallel), so no box pokes out.
+  const sortedN = [...ns].sort((a, b) => a - b), rowEdge = single === 'north' ? sortedN[1] : sortedN.at(-2);
+  // The clear aisle is the guaranteed width: from the row's front to the opposite edge's inner corner.
+  const clear = single === 'south' ? rowEdge - rowDepth - sortedN[1] : single === 'north' ? sortedN.at(-2) - rowEdge - rowDepth : width - 2 * rowDepth, mid = single === 'south' ? rowEdge - rowDepth - clear / 2 : single === 'north' ? rowEdge + rowDepth + clear / 2 : (n0 + n1) / 2, aisleRect = [[u0,mid-clear/2],[u1,mid-clear/2],[u1,mid+clear/2],[u0,mid+clear/2]].map(([v,w])=>[u[0]*v+n[0]*w,u[1]*v+n[1]*w]), aisle=clipConvex(aisleRect,poly);
   // #1437: an optional `start` (m from the lot's u0 end) aligns both rows there
   // instead of centring them, freeing the other end for an entrance and turning.
   const rowStart = (count) => start == null ? (u0 + u1 - count * bayWidth) / 2 : u0 + start;
@@ -142,7 +212,7 @@ export function createParkingLayout(lot, { bayWidth = DEFAULTS.bayWidth, bayDept
   // own strip, plus `margin`, free of bays; later bays in that row move past it.
   const skip = entranceGap(lot, { u, n, n0, depth: boxes ? bayDepth : (width - aisleWidth) / 2 });
   const centers = (count, side) => { let at = rowStart(count); return Array.from({ length: count }, () => { if (side === 'north' && skip && at < skip[1] && at + bayWidth > skip[0]) at = skip[1]; const c = at + bayWidth / 2; at += bayWidth; return c; }); };
-  const rowSpecs = [{ side: 'north', edge: n0, count: Math.ceil(lot.capacity / 2), inward: 1 }, { side: 'south', edge: n1, count: Math.floor(lot.capacity / 2), inward: -1 }];
+  const rowSpecs = single ? [{ side: single, edge: rowEdge, count: lot.layout.count, inward: single === 'north' ? 1 : -1 }] : [{ side: 'north', edge: n0, count: Math.ceil(lot.capacity / 2), inward: 1 }, { side: 'south', edge: n1, count: Math.floor(lot.capacity / 2), inward: -1 }];
   const stalls = [], segments = [], markingSegments = [];
   for (const row of rowSpecs) {
     const rowNear = row.edge + row.inward * rowDepth, rowFar = row.edge;
@@ -168,7 +238,7 @@ export function createParkingLayout(lot, { bayWidth = DEFAULTS.bayWidth, bayDept
       const segment=clipSegment([[u[0]*at+n[0]*rowFar,u[1]*at+n[1]*rowFar],[u[0]*at+n[0]*rowNear,u[1]*at+n[1]*rowNear]],poly);if(segment){segments.push(segment);if(boxes||!outer)markingSegments.push(segment);}
     }
   }
-  return { aisle, stalls, segments, markingSegments, entrance: skip, axes: { u, n }, origin: { u0, n0, n1 }, dimensions: { bayWidth, bayDepth, aisleWidth, lotWidth: width, rowDepth, clearAisle: width - 2 * rowDepth, length: u1-u0 } };
+  return { aisle, stalls, segments, markingSegments, entrance: skip, axes: { u, n }, origin: { u0, n0, n1 }, dimensions: { bayWidth, bayDepth, aisleWidth, lotWidth: width, rowDepth, clearAisle: clear, length: u1-u0 } };
 }
 
 const segDist = (p, q, a, b) => {
@@ -233,8 +303,9 @@ export function cellTriangles(polygon, grid) {
     const cx = (tri[0][0] + tri[1][0] + tri[2][0]) / 3, cz = (tri[0][1] + tri[1][1] + tri[2][1]) / 3;
     let i = 0; while (i < X.length - 2 && X[i + 1] <= cx) i++;
     let j = 0; while (j < Z.length - 2 && Z[j + 1] <= cz) j++;
-    if ((grid.refined?.(i - 1, j - 1) ?? 1) > 1) { out.push(tri); continue; }
-    const key = `${i},${j},${(cx - X[i]) / (X[i + 1] - X[i]) + (cz - Z[j]) / (Z[j + 1] - Z[j]) < 1 ? 0 : 1}`;
+    // #1443: a refined cell is grouped per half of each of its n×n sub-cells (renderedTerrainY is linear there).
+    const s = grid.refined?.(i - 1, j - 1) ?? 1, fx = (cx - X[i]) / (X[i + 1] - X[i]) * s, fz = (cz - Z[j]) / (Z[j + 1] - Z[j]) * s, a = Math.min(s - 1, Math.floor(fx)), b = Math.min(s - 1, Math.floor(fz));
+    const key = `${i},${j},${a},${b},${fx - a + fz - b < 1 ? 0 : 1}`;
     (groups.get(key) ?? groups.set(key, []).get(key)).push(tri);
   }
   const turn = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
@@ -250,19 +321,27 @@ export function cellTriangles(polygon, grid) {
   return out;
 }
 
-function lineGeometry(segment, width, ground, lift, grid, boundary, merge = false) {
+function lineGeometry(segment, width, ground, lift, grid, boundary, merge = false, cells = null) {
   const [p0,p1]=segment, dx=p1[0]-p0[0], dz=p1[1]-p0[1], len=Math.hypot(dx,dz);
   if (len < 1e-8) return null;
-  const nx=-dz/len*width/2,nz=dx/len*width/2,quad=[[p0[0]-nx,p0[1]-nz],[p0[0]+nx,p0[1]+nz],[p1[0]+nx,p1[1]+nz],[p1[0]-nx,p1[1]-nz]],poly=boundary?clipConvex(quad,boundary):quad,triangles=merge?cellTriangles(poly,grid):poly.slice(1,-1).flatMap((_,i)=>{const tri=[poly[0],poly[i+1],poly[i+2]];return grid?cutAtTerrain(tri,grid):[tri];}),positions=[];
+  const nx=-dz/len*width/2,nz=dx/len*width/2,quad=[[p0[0]-nx,p0[1]-nz],[p0[0]+nx,p0[1]+nz],[p1[0]+nx,p1[1]+nz],[p1[0]-nx,p1[1]-nz]],poly=boundary?clipConvex(quad,boundary):quad,triangles=cells?cells.flatMap(t=>fan(clipConvex(poly,t))):merge?cellTriangles(poly,grid):poly.slice(1,-1).flatMap((_,i)=>{const tri=[poly[0],poly[i+1],poly[i+2]];return grid?cutAtTerrain(tri,grid):[tri];}),positions=[];
   for(const tri of triangles)for(const [x,z] of tri)positions.push(x,ground(x,z)+lift,z);
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
   const color=new THREE.Color(0xeeeeea);g.setAttribute('color',new THREE.Float32BufferAttribute(Array.from({length:positions.length/3},()=>[color.r,color.g,color.b]).flat(),3));g.computeVertexNormals();
   return g;
 }
 
+/** #1443: a clipped lot's drawn terrain pieces inside its outline (its whole planar core and the band's triangles), as convex [x, z] polygons; null for other lots. */
+export function lotCells(lot, ground) {
+  if (!lot?.grade?.clip) return null;
+  const poly = ring(lot.polygon);
+  return (ground.lotTriangles?.() ?? []).filter(t => pointIn(t.reduce((s, q) => s + q[0], 0) / t.length, t.reduce((s, q) => s + q[1], 0) / t.length, poly)).map(t => t.map(([x, z]) => [x, z]));
+}
+/** #1443: the same pieces as triangles, for the lot's asphalt. */
+export const lotTriangles = (lot, ground) => lotCells(lot, ground).flatMap(fan);
 /** Return paint meshes following the existing emitted terrain sampler. Asphalt itself is already drawn by southbackdrop. */
 export function parkingLayoutParts(lot, ground) {
-  const layout=createParkingLayout(lot),grid=ground.grid?.()??null,aisle=!!lot.layout?.aisle,markings=layout.markingSegments.map(s=>lineGeometry(s,.08,ground,.052+.024,grid,aisle?null:insetConvex(ring(lot.polygon),.01),aisle)).filter(Boolean); // #1441: concave aisle lots keep each box (widened by half a line) inside the outline instead of clipping
+  const layout=createParkingLayout(lot),grid=ground.grid?.()??null,aisle=!!lot.layout?.aisle,cells=lotCells(lot,ground),markings=layout.markingSegments.map(s=>lineGeometry(s,.08,ground,.052+.024,grid,aisle?null:insetConvex(ring(lot.polygon),.01),aisle,cells)).filter(Boolean); // #1441: concave aisle lots keep each box (widened by half a line) inside the outline instead of clipping. #1443: a clipped lot's lines are cut along its own drawn terrain triangles
   return{surface:null,markings,layout};
 }
 export function parking1442Parts(ground) {

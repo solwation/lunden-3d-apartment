@@ -20,7 +20,7 @@ import { buildStreet } from './street.js';
 import { buildStreetSigns } from './streetsigns.js';
 import { buildGroundAO } from './groundao.js';
 import { onRoad, onWalk, pathStrip, filletGeometry, vehicleTrim } from './roads.js';
-import { createParkingGrade } from './parkinglot1442.js';
+import { createParkingGrade, gradedCellTriangles } from './parkinglot1442.js';
 import { wallLine, wallRect } from './roofs.js';
 import { buildingRoofWalk } from './buildingroofs.js';
 import {buildRiverBridges,deckAt,riverGround,riverDistance,roadBridgeSpan,bridgeRecords} from './riverbridge.js';
@@ -179,6 +179,16 @@ const smooth=t=>t*t*(3-2*t);
 // configured transition; roads, building pads and all outside terrain stay anchored.
 const PARKING_GRADES=S.south.parking.filter(p=>p.grade).map(lot=>createParkingGrade(lot,plateauTerrainY));
 function parkingGradeAt(x,z){return PARKING_GRADES.find(g=>x>=g.bounds.x0&&x<=g.bounds.x1&&z>=g.bounds.z0&&z<=g.bounds.z1&&g.contains(x,z))??null;}
+// #1443: the clipped lot (grade.clip) whose polygon overlaps terrain cell [x0,x1]×[z0,z1], if any.
+function clippedGradeAt(x0,x1,z0,z1){
+  for(const g of PARKING_GRADES){
+    if(!g.clip||x1<g.bounds.x0||x0>g.bounds.x1||z1<g.bounds.z0||z0>g.bounds.z1)continue;
+    const poly=g.polygon,inCell=([x,z])=>x>x0&&x<x1&&z>z0&&z<z1,cross=(a,b,c,d)=>{const o=(p,q,r)=>Math.sign((q[0]-p[0])*(r[1]-p[1])-(q[1]-p[1])*(r[0]-p[0]));return o(a,b,c)*o(a,b,d)<0&&o(c,d,a)*o(c,d,b)<0;};
+    const rect=[[x0,z0],[x1,z0],[x1,z1],[x0,z1]];
+    if(poly.some(inCell)||rect.some(([x,z])=>g.contains(x,z))||poly.some((a,k)=>rect.some((c,m)=>cross(a,poly[(k+1)%poly.length],c,rect[(m+1)%4]))))return g;
+  }
+  return null;
+}
 /** #1305: 0 near the block, the river valley and the mesh's outer edges (today's levels), 1 in between (the grid's ground). */
 function elevationWeight(x,z,southEdge=S.backgroundGround.z1){
   const P=ELEVATION.protect,dx=Math.max(P.x0-x,0,x-P.x1),dz=Math.max(P.z0-z,0,z-P.z1);
@@ -214,6 +224,9 @@ export const lampGroundY = (x,z) => Math.max(renderedTerrainY(x,z),renderedParkF
 /** #1309: the terrain mesh's grid lines ({X, Z}, sorted; set by terrainGeometry) so a surface laid on it can be cut along the same
  * cells: each cell is two triangles split along the (X[i+1],Z[j])-(X[i],Z[j+1]) diagonal, and `renderedTerrainY` is exactly linear in each. */
 let terrainGrid = null, terrainDetailGrid = null;
+let lotTriangles = [];
+/** #1443: the drawn terrain triangles ([x, z, y] corners, y as renderedTerrainY) inside clipped parking lots. */
+renderedTerrainY.lotTriangles = () => lotTriangles;
 renderedTerrainY.grid = () => terrainGrid;
 // #1420: opt-in emitted river subdivisions for the paddock overlays; existing grid consumers are unchanged.
 renderedTerrainY.surfaceGrid = () => terrainDetailGrid;
@@ -242,12 +255,12 @@ function terrainGeometry(southeastCells = null) {
   for (const p of TERRAIN_PITS) { xs.add(p[0]); xs.add(p[1]); zs.add(p[2]); zs.add(p[3]); }
   for (const r of bridgeRecords) for (const e of [-1, 1]) { const ez = r.z + r.dz * r.len / 2 * e; zs.add(ez - 0.4 * e); zs.add(ez + 0.2 * e); } // #1271: the under-bridge cut ends inside the abutment blocks
   const X = [...xs].sort((a, b) => a - b), Z = [...zs].filter((z) => z >= z0).sort((a, b) => a - b);
-  const pos = [], idx = [], cells=new Map();
+  const pos = [], idx = [], cells=new Map(), lotCells=new Map();
   for (const z of Z) for (const x of X) pos.push(x, terrainY(x, z) - 0.01, z);
   const nx = X.length;
   terrainGrid = { X, Z, subdivisions:S.river.terrainSubdivisions };
   for (let j = 0; j < Z.length - 1; j++) for (let i = 0; i < nx - 1; i++) {
-    const a = j * nx + i, b = a + 1, c = a + nx, d = c + 1;
+    const a = j * nx + i, b = a + 1, c = a + nx, d = c + 1, c2 = c;
     const mx = (X[i] + X[i + 1]) / 2, mz = (Z[j] + Z[j + 1]) / 2;
     if (mz >= terrainNorth && mz < T.north && mx > westEdge(mz) && mx < E.gable) continue; // world.js's flat plate
     if (inPit(mx, mz)) continue; // under Hus A / B (see above)
@@ -257,8 +270,18 @@ function terrainGeometry(southeastCells = null) {
     // Boundary samples interpolate any adjacent coarse edge, so mixed cells remain watertight.
     const fine=(i,j)=>i>=0&&j>=0&&i<X.length-1&&j<Z.length-1&&
       (Z[j]+Z[j+1])/2>60&&riverDistance((X[i]+X[i+1])/2,(Z[j]+Z[j+1])/2)<S.river.terrainRefineRadius;
-    const start = idx.length;
-    if(fine(i,j)){
+    const start = idx.length, lotGrade = clippedGradeAt(X[i],X[i+1],Z[j],Z[j+1]);
+    if(lotGrade){
+      // #1443: a cell touching a clipped parking lot is triangulated along the lot outline and its inset
+      // core (gradedCellTriangles): outside the outline the old drawn triangles stay exactly, the core is
+      // the lot's plane and only the band between them fades. The coarse corners are the old ungraded ones.
+      const c=[[X[i],Z[j]],[X[i+1],Z[j]],[X[i],Z[j+1]],[X[i+1],Z[j+1]]].map(([x,z])=>plateauTerrainY(x,z)),tris=gradedCellTriangles(lotGrade,lotGrade.polygon,{x0:X[i],x1:X[i+1],z0:Z[j],z1:Z[j+1],c});
+      const shared=new Map([[a,[X[i],Z[j]]],[b,[X[i+1],Z[j]]],[c2,[X[i],Z[j+1]]],[d,[X[i+1],Z[j+1]]]].filter(([k])=>!lotGrade.contains(pos[k*3],pos[k*3+2])).map(([k,[x,z]])=>[`${x},${z}`,k]));
+      const vertex=([x,z,y])=>{const key=`${x},${z}`;let k=shared.get(key);if(k===undefined){k=pos.length/3;pos.push(x,y-.01,z);shared.set(key,k);}return k;};
+      const drawn=tris.filter(t=>t.kind!=='core'); // the core is drawn once below, as the lot's plane
+      lotCells.set(j*nx+i,{grade:lotGrade,tris:drawn.map(({kind,tri})=>({kind,tri:tri.map(([x,z,y])=>[x,z,y-.01])}))});
+      for(const{tri}of drawn){const k=tri.map(vertex);idx.push(k[0],k[2],k[1]);}
+    }else if(fine(i,j)){
       const n=S.river.terrainSubdivisions,at=(u,v)=>{
         const x=X[i]+(X[i+1]-X[i])*u/n,z=Z[j]+(Z[j+1]-Z[j])*v/n;
         let y=terrainY(x,z)-.01;
@@ -279,8 +302,15 @@ function terrainGeometry(southeastCells = null) {
   terrainDetailGrid = { X, Z, refined: (i, j) => i >= 0 && i < X.length - 1 && j >= 0 && j < Z.length - 1 ? (cells.get(j * nx + i)?.length - 1 || 1) : 1 };
   // Same barycentric interpolation as the emitted triangles: bank paths/plants cannot hover over a curved cell.
   const find=(list,v)=>{let lo=0,hi=list.length-1;while(hi-lo>1){const mid=(lo+hi)>>1;if(list[mid]<=v)lo=mid;else hi=mid;}return lo;};
+  // #1443: each clipped lot's planar core as one polygon (its edge vertices lie on the band's
+  // core-side vertices' straight line at the plane's height), then all lot pieces for asphalt and paint.
+  const cores=PARKING_GRADES.filter(g=>g.clip);
+  for(const g of cores){const k0=pos.length/3,start=idx.length;for(const[x,z]of g.core)pos.push(x,g.planeY(x,z)-.01,z);const cw=Math.sign(g.core.reduce((s,q,k)=>{const r=g.core[(k+1)%g.core.length];return s+q[0]*r[1]-r[0]*q[1];},0));for(let k=1;k<g.core.length-1;k++)cw>0?idx.push(k0,k0+k+1,k0+k):idx.push(k0,k0+k,k0+k+1);if(southeastCells&&g.core.every(([x,z])=>x>=TERRAIN_FAR.renderSplit.x&&z>=TERRAIN_FAR.renderSplit.z))southeastCells.push([start,idx.length-start]);}
+  lotTriangles=[...cores.map(g=>g.core.map(([x,z])=>[x,z,g.planeY(x,z)-.01])),...[...lotCells.values()].flatMap(c=>c.tris.filter(t=>t.kind==='band').map(t=>t.tri))];
   terrainSurface=(x,z)=>{
-    const i=find(X,x),j=find(Z,z),row=cells.get(j*nx+i),n=row?row.length-1:1;
+    const i=find(X,x),j=find(Z,z),lot=lotCells.get(j*nx+i);
+    if(lot){if(lot.grade.inCore(x,z))return lot.grade.planeY(x,z)-.01;let best=null,bm=-Infinity;for(const{tri:[p,q,r]}of lot.tris){const det=(q[0]-p[0])*(r[1]-p[1])-(r[0]-p[0])*(q[1]-p[1]),l1=((x-p[0])*(r[1]-p[1])-(r[0]-p[0])*(z-p[1]))/det,l2=((q[0]-p[0])*(z-p[1])-(x-p[0])*(q[1]-p[1]))/det,m=Math.min(1-l1-l2,l1,l2);if(m>bm){bm=m;best=p[2]+(q[2]-p[2])*l1+(r[2]-p[2])*l2;}}return best;}
+    const row=cells.get(j*nx+i),n=row?row.length-1:1;
     const u=Math.max(0,Math.min(n-1e-8,(x-X[i])/(X[i+1]-X[i])*n)),v=Math.max(0,Math.min(n-1e-8,(z-Z[j])/(Z[j+1]-Z[j])*n)),a=Math.floor(u),b=Math.floor(v),f=u-a,g=v-b;
     const y=(du,dv)=>pos[(row?row[b+dv][a+du]:(j+dv)*nx+i+du)*3+1];
     return f+g<=1?y(0,0)+(y(1,0)-y(0,0))*f+(y(0,1)-y(0,0))*g:y(1,1)+(y(0,1)-y(1,1))*(1-f)+(y(1,0)-y(1,1))*(1-g);

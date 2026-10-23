@@ -577,6 +577,24 @@ half-cell are emitted as one fan when they form a convex polygon. `renderedTerra
 surface is unchanged (374→193 triangles); the dividers use it as well (130 triangles). `south-land`
 falls 32597→32546 (whole backdrop 42685→42634, same meshes/materials). Plane, outline, roads and other lots are unchanged.
 
+## Parking 145221626 clipped plane and one row (#1443)
+
+The narrow lot by Sankt Lars väg47 (OSM145221626, 47.2×11.76m, about2.27m from house47) gets
+`grade.clip`: `createParkingGrade` fits its plane as before (no source control lies in the lot, so no anchor), but the
+terrain cells touching it are triangulated by `gradedCellTriangles` (`src/parkinglot1442.js`) instead of sampling the
+smooth fade on the coarse 4×8m grid, where the plane would barely show. Each cell half is split along the outline and
+along the outline inset by the transition (2m, *guess*): outside pieces keep the cell's old planar triangle, so the drawn
+ground, roads and house47's base outside the outline are unchanged (≤2e-15m); band pieces fade from the old surface to the
+plane; the whole core is drawn once as one polygon on the plane. `renderedTerrainY` evaluates these pieces (and the core
+directly), `groundY` follows it as for the other graded lots, and the lot's asphalt is exactly the drawn pieces
+(`lotTriangles`). One row (`layout.row: 'south'`, `count` 18) of whole 2.5×5m boxes runs along the south-east edge,
+away from the house, leaving a 6.76m clear aisle (≥6m *guess*; raw capacity 20 stays *guess*). Its 19 dividers are cut
+along the same pieces; there is no kerb and no line across the aisle, and the old 19 full-width capacity lines are gone.
+No mapped way reaches the lot (145221599/145221614, including the #1432 service ways, end ≥10m away), so no access is drawn.
+Cost: `south-land` −98 (whole backdrop 43732→43634 on top of #1449's service ways; 42634→42536 measured before them), `site-terrain` 89666→89824 (+158 for the clipped cells);
+no new mesh, material or texture. The whole lot lies south of `WALK.z1=250`: surface and ray evidence only, not reachable
+on foot. Other lots, controls and `WALK` are unchanged.
+
 ## Southern road embankment (#1382)
 
 `SOUTH_BANK` holds the11road controls and five10-point cross-sections from the same77-point LM export.
