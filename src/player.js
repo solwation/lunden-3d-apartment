@@ -341,8 +341,11 @@ export class Player {
     if (pressed || !this.canClimb) { this.letGo(); return false; }
     const c = this.climb, p = this.pos, R = this.world.roofs;
     const up = THREE.MathUtils.clamp(fwd, -1, 1), sd = THREE.MathUtils.clamp(side, -1, 1);
-    const x0 = p.x, z0 = p.z;
+    const x0 = p.x, z0 = p.z, y0 = p.y;
     p.y += up * SPIDER.climb * dt;
+    // an upper loggia's floor over the head (climbing its inner wall from the loggia below, #1471): no climbing through it
+    const over = R.overhead(p.x, p.z, y0 + PLAYER.stepUp), cap = over?.surface.slab ? over.y - PLAYER.headroom : Infinity;
+    if (p.y > cap) p.y = Math.max(Math.min(p.y, y0), cap);
     p.x += c.nz * sd * SPIDER.side * dt; p.z += -c.nx * sd * SPIDER.side * dt; // right of facing the wall = (nz, −nx)
     // hug it: lean in, its segments push back out (that push is the wall's normal here, round a bend too)
     p.x -= c.nx * 0.04; p.z -= c.nz * 0.04;

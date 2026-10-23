@@ -9,7 +9,7 @@ const result=await page.evaluate(async initial=>{const a=__app,T=await import('t
 const ways=S.groundWaysIn().filter(w=>w.kind==='loggia'),level=a.world.levels[0],open=level.segments,closed=[...open,...ways.map(w=>[w.x0,w.z0,w.x1,w.z1])];
 // Adding back just these source intervals reconstructs the original continuous wall's exact collision union.
 const rows=[],blocked=[],isolated=[];let knownFloor=0;
-const walk=(x,z,n,reverse=false)=>{const yaw=Math.atan2(-n[0],-n[1]);a.player.keys.clear();a.player.spawn(x,z,yaw);const start={...a.player.pos};a.player.keys.add('KeyW');for(let i=0;i<72;i++)a.player.update(1/60);a.player.keys.clear();return{start,end:{...a.player.pos},below:a.player.below}};
+const walk=(x,z,n,reverse=false)=>{const yaw=Math.atan2(-n[0],-n[1]);a.player.keys.clear();a.player.spawn(x,z,yaw);a.player.pos.y=a.player.groundAt(x,z,S.groundY(x,z));/* #1471: stand on the ground there, not on an upper loggia floor within a step of spawn's fictitious feet 0 */const start={...a.player.pos};a.player.keys.add('KeyW');for(let i=0;i<72;i++)a.player.update(1/60);a.player.keys.clear();return{start,end:{...a.player.pos},below:a.player.below}};
 for(const [i,w]of ways.entries()){
  const x=(w.x0+w.x1)/2,z=(w.z0+w.z1)/2,n=w.n;level.segments=closed;const old=walk(x+n[0]*.8,z+n[1]*.8,[-n[0],-n[1]]);const oldCross=-(old.end.x-x)*n[0]-(old.end.z-z)*n[1];
  level.segments=open;a.player.spawn(x+n[0]*.8,z+n[1]*.8,0);isolated.push({i,name:w.name,free:a.player.isFree(x,z,0),oldCross});

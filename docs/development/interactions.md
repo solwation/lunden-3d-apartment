@@ -710,6 +710,8 @@ tools/spidersuittest.html headless test (#597): the suit in the MALM drawer (no 
                        to it onto the wall, one held back by the pergola lets go, Space mid-swing flies on and lands unhurt, a
                        web on the street pulls you there; the jump button by 🕸 jumps; without the suit 8 m hurts;
                        #636: both hands climb (direction, tempo, resting grip), the web pose after a shot at the sky, both arms swinging;
+                       (#1471: landing on / climbing onto the Å-husen's upper loggias, and the climb held under a loggia slab
+                       overhead, are tools/loggia1471test.cjs)
                        the jump button stays without the suit; the low jump (#696: ~0.7 m, plain landing) with Space and the button, no web / no
                        climbing without the suit; the hedge holds a walker (z −3.64) and is cleared by Space from its edge with the suit
                        (walking) and without it at a sprint (Shift); indoors on both levels the head stays under the ceiling (suit or not), lower under the soffit,

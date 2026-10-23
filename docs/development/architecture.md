@@ -91,6 +91,14 @@ src/roofs.js           the walkable roofs (#360, `world.roofs`): surfaces (rect 
                        −1 (no pool light for the flat's lamps: the lampwash shows them), `behindWall` hides the flat under the roof,
                        the rain stops on the surface (`weather.surfaceAt`), the HUD says "Utomhus · <roof>", stats `roofs` (first
                        per roof, SCORE.first.roofs). Not walkable: the old S:t Lars houses, the school, HepCat, pergolas, parapet tops
+                       #1471: surroundings.js `loggiaWalk` gives every upper Å-hus loggia (A/B/C corner loggias' railed storeys, Hus
+                       C's east recess above its entrance) a floor surface (`id` loggia-<hus>, `visit: false` = no roof stat, `slab`
+                       = Spider-Man does not climb through it, player.js `climbStep` + `Roofs.overhead`) and replaces the old solid
+                       façade rectangle (−10 m … eave) with the façade open across each loggia front above its lowest floor: walls only
+                       where the meshes stand (slab `SITE.loggia.slab` + railing per storey, a ground loggia's parapet with its
+                       opening free, the top slab to the eave, piers, the inner walls, a recess's back/sides). Data only, no meshes;
+                       ground-level loggias stay groundY / the level's segments (#1428, #1430). Hus L has no loggias (its terraces
+                       and loftgång were already surfaces). Test: tools/loggia1471test.cjs
 src/garage.js          the garage under the courtyard + Hus L's basement (#357, #417, GARAGE in config): the våning −1 plan's layout
                        (DRAWING, measured on docs/peab/kalibrerad/vaning-m1-300dpi.png with the #253 transform; heights, stalls,
                        cages, lights = ASSUMPTION): `GARAGE.rects` = walkable rooms (room name + sensor area; doorways are thin

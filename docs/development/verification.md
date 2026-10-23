@@ -961,6 +961,7 @@ tools/powertest.html   the power cut (#604): fuse box, flicker, Kv. Lunden dark 
                        #612: fridge/freezer/oven/microwave lamps dark, brew/dishwasher/washer/dryer paused and resumed, the lift's rescue drive
 tools/visitlightstest.html  the visitable flats' lamps (#620): a switch with a wall behind it in every room of L1004 and L1201, E lights / puts out, the frame gets brighter, power cut + mend, no extra light object
 tools/farwalktest.html / .cjs (#1236) the real Player outside the home block: slope down to the river, water as obstacle, bridges and rails, far buildings, the WALK edge, water rescue (`node tools/farwalktest.cjs http://localhost:8776`)
+tools/loggia1471test.cjs (#1471) every upper Å-hus loggia: standing, walking, jetpack landing, Spider-Man climb, railing / slab hold (see "Upper loggias carry the visitor")
 tools/roofaudittest.html (#1294) a landing on every roof inside WALK (the drawn roof read by a ray; real Player dropped on it) and the walls hold at head height; run after changing buildings' roof geometry (sitebackdrop / southbackdrop / campusfacades / karpfacade / schoolfacade / stlars41), src/buildingroofs.js, src/roofs.js or `BUILDING_ROOFS`
 tools/depthprecisiontest.cjs   far-house flicker (#1276): glass polygon offsets, near plane indoors/outdoors/flying, depth step at 300 m (`node tools/depthprecisiontest.cjs PORT`);
 tools/perfcount.html   draw calls / triangles at a few spots (compare before/after optimising); fails past PERF.budget (#592), `?lowmem&w=390&h=844` for phones;
@@ -8199,6 +8200,18 @@ unions stop at0.22m; open paths finish1.12m beyond each facade. Surroundings
 26,453,512bytes/502attributes are unchanged; matched A-NE/C-NE images differ by
 0pixels, with156/533062 and160/638359draws/triangles identical in both states.
 [Persistent raw logs, pixel comparison and fixture notes](/home/olw/.local/state/lunden-orkester/codex-surface-20261020/loggia1430/README.md).
+
+## Upper loggias carry the visitor (#1471)
+
+`PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/loggia1471test.cjs BASE [SHOTS]` uses one real World and native
+`Player.update`: the inventory of every upper loggia floor (A 14, B 10, C 20 incl. Hus C's east recess, all aloft),
+standing and walking on each of the 44 (in, then 2 s into the railing: never off the floor), per house a low and a high
+loggia (and the C recess) with a jetpack landing in over the railing and a Spider-Man climb (straight up the front, or
+up the solid façade beside it and sideways onto a higher front) followed by walking, the climb held under the slab of
+the loggia above, Hus L's terrace landing as its equivalent, and identical draw calls / triangles of a fixed view
+(`RENDER_ONLY=1` prints just those, to compare with another checkout: 123 / 491 250 on both). Run it with
+`tools/loggiawalktest.cjs` (#1430; its spawn now stands on the ground under an upper loggia floor within a step of
+spawn's feet 0) and `tools/loggiabasementtest.cjs` (#1153) after changing loggias, `loggiaWalk` or roofs.js.
 
 Roof-terrace batches (#1448): `tools/terracedecortest.html` now expects21 desktop
 or3 phone meshes; all68 existing asset/layout/gate/night/power checks pass against

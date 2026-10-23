@@ -21,7 +21,7 @@ import { buildStreetSigns } from './streetsigns.js';
 import { buildGroundAO } from './groundao.js';
 import { onRoad, onWalk, pathStrip, filletGeometry, vehicleTrim } from './roads.js';
 import { createParkingGrade } from './parkinglot1442.js';
-import { wallRect } from './roofs.js';
+import { wallLine, wallRect } from './roofs.js';
 import { buildingRoofWalk } from './buildingroofs.js';
 import {buildRiverBridges,deckAt,riverGround,riverDistance,roadBridgeSpan,bridgeRecords} from './riverbridge.js';
 
@@ -1055,6 +1055,62 @@ export function groundWaysIn(blocks = S.blocks.filter((b) => !b.style && b.corne
   return out;
 }
 
+/** #1471: an Å-hus's façades and loggias for walking aloft (roofs.js; at the ground the level's segments rule, #355, #1430).
+ * Every upper loggia floor — the corner loggias' storeys with a railing, Hus C's east recess above its entrance — is a
+ * surface at its storey's floor; the façade line is solid from below the ground to the eave except across a loggia's
+ * front, where only what the meshes (`loggias`) stand there blocks, each over its own heights: the slab under each upper
+ * floor with the railing on it, a ground loggia's brick parapet (its opening left free), the top slab up to the eave, the
+ * brick piers. The loggias' inner walls (the flats' closed glazing) and a recess's back and sides are solid. Data only. */
+function loggiaWalk(b, eave, walk) {
+  const L = S.loggia, p = L.pier, P = L.parapet, yOf = (st) => b.base + st * S.storey, name = `Loggian, ${b.name}`;
+  const line = (ax, az, bx, bz, y0, y1) => { if (y1 > y0 && Math.hypot(bx - ax, bz - az) > 1e-3) wallLine(walk.walls, ax, az, bx, bz, y0, y1); };
+  const box = (xa, xb, za, zb, y0, y1) => wallRect(walk.walls, Math.min(xa, xb), Math.max(xa, xb), Math.min(za, zb), Math.max(za, zb), y0, y1);
+  // (`visit: false`: a loggia is no roof for the first-visit stats, main.js, the HUD names it; `slab`: not climbed through, player.js)
+  const floor = (xa, xb, za, zb, y) => walk.surfaces.push({ id: `loggia-${b.name}`, name, visit: false, slab: true, x0: Math.min(xa, xb), x1: Math.max(xa, xb), z0: Math.min(za, zb), z1: Math.max(za, zb), y });
+  const open = { n: [], e: [], s: [], w: [] }; // per face: [a0, a1, y] = the façade line open above y (a loggia's front)
+  for (const l of cornerLoggias(b)) {
+    const { cx, cz, sx, sz, lx, lz, ix, iz } = l, g = frontGround(l);
+    let st0 = 0; while (buriedLoggia(b, l, st0)) st0++; // (#1153: the solid corner below is the façade's)
+    const y0 = yOf(st0);
+    open[cz === b.z0 ? 'n' : 's'].push([Math.min(cx, ix), Math.max(cx, ix), y0]);
+    open[cx === b.x0 ? 'w' : 'e'].push([Math.min(cz, iz), Math.max(cz, iz), y0]);
+    const fronts = (ax, az, ya, yb) => { line(cx, cz, cx + sx * ax, cz, ya, yb); line(cx, cz, cx, cz + sz * az, ya, yb); }; // the front along x, along z
+    for (let st = st0; st < b.storeys; st++) {
+      const y = yOf(st), kind = loggiaKind(b, st, y, g), under = st > st0 ? y - L.slab : y;
+      if (kind === 'ground') fronts(lx - (lx >= lz ? P.open : 0), lz - (lx >= lz ? 0 : P.open), under, Math.max(y, g) + P.h + P.coping); // the parapet, its opening free
+      else { fronts(lx, lz, under, y + L.rail); floor(cx, ix, cz, iz, y); } // the slab, the railing on it; the floor
+    }
+    fronts(lx, lz, yOf(b.storeys) - L.slab, eave); // the top slab up to the eave
+    box(cx, cx + sx * p, cz, cz + sz * p, y0, eave); // the piers
+    if (lx > L.mid) box(cx + sx * (L.midAt - p / 2), cx + sx * (L.midAt + p / 2), cz, cz + sz * p, y0, eave);
+    if (lz > L.mid) box(cx, cx + sx * p, cz + sz * (L.midAt - p / 2), cz + sz * (L.midAt + p / 2), y0, eave);
+    line(cx, iz, ix, iz, y0, eave); line(ix, cz, ix, iz, y0, eave); // the inner walls
+  }
+  for (const r of b.recesses ?? []) { // a recess with railed floors above (Hus C's east entrance): the same rules as its meshes
+    const nz = r.face === 'n' || r.face === 's', out = r.face === 's' || r.face === 'e' ? 1 : -1, ln = { n: b.z0, s: b.z1, w: b.x0, e: b.x1 }[r.face], back = ln - out * r.depth;
+    const at = (a, c) => (nz ? [a, c] : [c, a]), s0 = r.from ?? 0, s1 = Math.min(r.to ?? Infinity, b.storeys - 1), [mx, mz] = at((r.a0 + r.a1) / 2, (ln + back) / 2);
+    const ups = [];
+    for (let st = s0; st <= s1; st++) if (st !== r.door && yOf(st) >= groundY(mx, mz) + 1.2) ups.push(st);
+    if (!ups.length) continue;
+    const yc = yOf(ups[0]), yt = yOf(s1 + 1);
+    open[r.face].push([r.a0, r.a1, yc]);
+    for (let st = ups[0]; st <= s1; st++) { // (a storey between without a railing: closed across the mouth)
+      const y = yOf(st), up = ups.includes(st);
+      line(...at(r.a0, ln), ...at(r.a1, ln), y - L.slab, up ? y + L.rail : yOf(st + 1));
+      if (up) { const [xa, za] = at(r.a0, ln), [xb, zb] = at(r.a1, back); floor(xa, xb, za, zb, y); }
+    }
+    line(...at(r.a0, ln), ...at(r.a1, ln), yt - L.slab, eave); // over it up to the eave
+    line(...at(r.a0, back), ...at(r.a1, back), yc, yt); line(...at(r.a0, back), ...at(r.a0, ln), yc, yt); line(...at(r.a1, back), ...at(r.a1, ln), yc, yt);
+  }
+  // the façade line: below a loggia's lowest floor and everywhere else solid
+  for (const [f, [lo, hi], fixed] of [['n', [b.x0, b.x1], b.z0], ['s', [b.x0, b.x1], b.z1], ['w', [b.z0, b.z1], b.x0], ['e', [b.z0, b.z1], b.x1]]) {
+    const seg = (a0, a1, y1) => (f === 'n' || f === 's' ? line(a0, fixed, a1, fixed, -10, y1) : line(fixed, a0, fixed, a1, -10, y1));
+    let a = lo;
+    for (const [a0, a1, y] of open[f].sort((u, v) => u[0] - v[0])) { if (a0 > a) seg(a, a0, eave); seg(a0, a1, y); a = Math.max(a, a1); }
+    if (a < hi) seg(a, hi, eave);
+  }
+}
+
 /** A box from the line (xa, za)–(xb, zb), `t` thick towards (nx, nz), y0…y1 — UVs in façade bays / storeys from
  * `base` (for the plain brick tile, #266). */
 function brickBox(xa, za, xb, zb, nx, nz, t, y0, y1, base) {
@@ -1134,7 +1190,7 @@ function loggias(blocks) {
       for (let st = 0; st <= b.storeys; st++) {
         const y = b.base + st * S.storey, kind = loggiaKind(b, st, y, g);
         // #1203: no slab side at the solid corner's top (st0): it would fight the brick. Its exposed top still needs a floor (#1428).
-        if (st > st0) slabs.push(new THREE.BoxGeometry(lx, 0.22, lz).translate(mx, y - 0.11, mz)); // floor above / ceiling below
+        if (st > st0) slabs.push(new THREE.BoxGeometry(lx, L.slab, lz).translate(mx, y - L.slab / 2, mz)); // floor above / ceiling below
         else if (st === st0 && st0 > 0 && kind === 'ground') slabs.push(new THREE.PlaneGeometry(lx, lz).rotateX(-Math.PI / 2).translate(mx, y, mz));
         else if (kind === 'ground' && st0 === 0) slabs.push(new THREE.BoxGeometry(lx, 0.06, lz).translate(mx, y + 0.03, mz)); // over the plinth (#1212: not on a solid corner's top, st0 > 0: its sides stand flush with the brick, a thin light line)
         if (kind === 'ground') { // brick, with the opening next to the flat's wall on the longer front (#266)
@@ -1160,7 +1216,7 @@ function loggias(blocks) {
       const [mx, mz] = at((r.a0 + r.a1) / 2, (line + back) / 2), [w, d] = nz ? [r.a1 - r.a0, r.depth] : [r.depth, r.a1 - r.a0];
       for (let st = s0; st <= s1 + 1; st++) {
         const y = b.base + st * S.storey;
-        if (st > s0) slabs.push(new THREE.BoxGeometry(w, 0.22, d).translate(mx, y - 0.11, mz)); // a ceiling, a loggia floor
+        if (st > s0) slabs.push(new THREE.BoxGeometry(w, L.slab, d).translate(mx, y - L.slab / 2, mz)); // a ceiling, a loggia floor
         else if (r.basement) { // #729: one threshold floor, butt-joined to the inner passage (no duplicate Garage doorway floor).
           const fb=r.basement.floorEdge, [fx,fz]=at((r.a0+r.a1)/2,(line+fb)/2), depth=Math.abs(line-fb);
           slabs.push(new THREE.BoxGeometry(nz?w:depth,2*GARAGE.floorLift,nz?depth:d).translate(fx,y,fz));
@@ -1808,7 +1864,7 @@ export function* surroundingsParts({ grass, husL = null }) {
     const hx = (b.x1 - b.x0) / 2 + o, hz = (b.z1 - b.z0) / 2 + o, k = R.rise / Math.min(hx, hz);
     const roofY = (x, z) => eave + k * Math.min(hx - Math.abs(x - cx), hz - Math.abs(z - cz)); // on the hip roof
     walk.surfaces.push({ id: `roof-${b.name}`, name: `${b.name}s tak`, x0: b.x0 - o, x1: b.x1 + o, z0: b.z0 - o, z1: b.z1 + o, y: roofY }); // you stand on the slope
-    wallRect(walk.walls, b.x0, b.x1, b.z0, b.z1, -10, eave); // its façades: a fall past them stays outside (loggias, recesses: no way in)
+    loggiaWalk(b, eave, walk); // its façades (a fall past them stays outside) with the loggias open, their floors walkable (#1471)
     if (R.box) { // from the eave line up to `h` over the highest point of the roof under it
       const B = R.box, hi = roofY(THREE.MathUtils.clamp(cx, B.x0, B.x1), THREE.MathUtils.clamp(cz, B.z0, B.z1)); // its point nearest the ridge
       roofBoxes.push(new THREE.BoxGeometry(B.x1 - B.x0, hi + B.h - eave, B.z1 - B.z0).translate((B.x0 + B.x1) / 2, (eave + hi + B.h) / 2, (B.z0 + B.z1) / 2));

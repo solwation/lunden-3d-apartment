@@ -7,7 +7,9 @@
 // collision is `walls(feet + stepUp, feet + headroom)` instead of a level's segments. Walking off an edge is a fall.
 //
 // A surface: { id, name, x0, x1, z0, z1, y } — a rectangle (plan x/z), or a disk with `r` round (cx, cz); `y` is a
-// number (flat) or a function (x, z) → y (a slope). `id` names the roof for the stats (the first visit, SCORE.first.roofs).
+// number (flat) or a function (x, z) → y (a slope). `id` names the roof for the stats (the first visit, SCORE.first.roofs);
+// `visit: false` keeps a surface out of them, `slab: true` = a floor that is also the ceiling below, not climbed through
+// (an Å-hus loggia's floor, #1471).
 // A polygon roof (#1294, src/buildingroofs.js: every mapped building): `poly` (outer ring [[x, z], …], first = last or not) and
 // optional `holes` (courtyards, open), with x0…z1 as its bounding box; `y` is usually a function (the roof's slope).
 // Lookups go through a coarse grid (`Roofs.CELL` m) built on first use, so hundreds of roofs cost no more per frame than a few.
@@ -102,6 +104,13 @@ export class Roofs {
     let lo = Infinity;
     for (const s of this.near(x, z)) if (Roofs.on(s, x, z)) { const h = Roofs.height(s, x, z); if (h > y && h < lo) lo = h; }
     return lo;
+  }
+
+  /** The lowest surface at (x, z) above `y` with its height ({ surface, y }), or null (#1471). */
+  overhead(x, z, y) {
+    let best = null, lo = Infinity;
+    for (const s of this.near(x, z)) if (Roofs.on(s, x, z)) { const h = Roofs.height(s, x, z); if (h > y && h < lo) { lo = h; best = s; } }
+    return best ? { surface: best, y: lo } : null;
   }
 
   /** The walls in the way of a body from y0 to y1 (collision segments). With a position (x, z): only those in the cells round it

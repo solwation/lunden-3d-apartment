@@ -3118,7 +3118,7 @@ function step(dt) {
   const outside = player.outdoors; // (the loftgång and the terraces over the flat too, #360)
   // up on a roof (#360): the first time on each one counts; the HUD names it
   const roof = outside && player.aloft && !player.fall ? world.roofs.standingOn(player.pos.x, player.pos.z, player.pos.y) : null;
-  if (roof && roof.id !== lastRoof && active()) bump('roofs', 1, roof.id);
+  if (roof && roof.visit !== false && roof.id !== lastRoof && active()) bump('roofs', 1, roof.id);
   if (roof || !player.fall) lastRoof = roof?.id ?? null;
   if (roof) roofName = roof.name; else if (!player.aloft) roofName = null;
   const under = player.inCore ? `${core.houseAt(player.pos.x, player.pos.z, player.pos.y)} · ${core.roomAt(player.pos.x, player.pos.z, player.pos.y)}` // the stairwell, the lift (#415)
