@@ -1,7 +1,7 @@
 # Verification policy
 
 Choose 2–3 minimum sufficient, risk-based checks before starting; stop when they pass.
-The [orchestra policy](../../.claude/commands/orkester.md#minsta-tillräckliga-verifiering-användaren-2026-10-21)
+The [orchestra policy](../../.orchestra/shared/ORCHESTRA.md#verify-the-affected-behavior)
 applies to ongoing work too: docs need only diff/link/contradiction review; local changes
 need the affected component and route/view. Extra platforms/orientations or broad scene
 profiles require changed branches/UI or concrete global risk. Reuse valid source-SHA,

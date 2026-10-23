@@ -40,32 +40,18 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   (lower, middle, smaller top), preserving implemented gameplay. Old per-polygon acceptance demands are superseded;
   use ordinary functional head/body/wall/damage tests. Preserve unfinished work at a safe checkpoint and close
   superseded detail stories once the replacement works. Do not turn this refinement into a dependency for unrelated work.
-- **Orchestra covers both repositories (user, 2026-10-16).** Starting `/orkester` in either repository makes it
-  responsible for both `solwation/lunden-3d-apartment` and `solwation/kvarteret-lunden`. Fetch both complete open queues
-  before every selection and idle check. Explicit user scope may limit implementation, never visibility of the other
-  queue; record outside-scope work. Select globally by high → medium → low, then `created_at`, full repository name
-  and numeric issue number. Use separate agents/checkouts and each repository’s own issues, claims, labels, verification
-  and publishing rules. Maintain cross-linked status comments in original #420 and public #4. Preserve report-import
-  requirements for original work and the public-content boundaries above.
-- **Orchestra idle watch (user, 2026-10-16).** An active `/orkester` polls both complete open queues every five minutes
-  (300 seconds), during active agent work and idle waiting, and continues until 60 minutes after the last resolved
-  implementation issue. Include older issues, not only those
-  created after session start; asking to create an issue during an active orchestra does not permanently exclude it
-  from implementation. Select in-scope work by the ordinary priority and ownership rules; skip only explicitly paused,
-  out-of-scope, validly owned/reserved or concretely blocked work. Resolving another issue in either repository resets
-  the full hour. Update the saved checkpoint and existing cross-linked #420/#4 status comments on every check, including
-  failures; retain the UTC time of the latest complete successful check of both queues and the last successful check
-  per repository, alongside last-resolution/deadline. Preserve report-import checks.
-  Send chat updates only for state changes, new work, blockers or completion, without recurring empty-queue messages.
-  Do not keep active labels during idle waiting. Keep waits interruptible in steps of at most 60 seconds and stop
-  promptly on the user’s pause/stop. See `.claude/commands/orkester.md` for the full lifecycle and final-check rules.
-- **Orchestra capacity (user, 2026-10-18).** At most 2 worker agents **per orchestrator** (not per machine) and always
-  at least 1 active agent per orchestrator while startable work exists, regardless of machine load or how many agents
-  other orchestrators on the same machine run. Aim for ~30 minutes per issue; split large issues rather than adding agents.
-- **Heartbeat comment every 30 minutes (user, 2026-10-19).** An agent working an issue posts a short Swedish comment on it
-  at least every 30 minutes (first one when approaching ~25–30 min): what is done, what is in progress, and an estimated time
-  remaining. A partial-delivery comment counts if posted in the same window. Rule 11 in `.claude/commands/orkester.md`;
-  the conductor treats a missing heartbeat (>~35 min) as a stalled agent.
+- **Shared orchestra (user, 2026-10-23).** `/orkester` follows the versioned
+  [.orchestra/project.md](.orchestra/project.md) and its model-independent shared core.
+  That policy retains both repositories, global priority, ownership, 300-second polling,
+  60-minute idle watch, two-worker capacity, heartbeats and original report intake.
+  Use a short scope/risk plan, parallel helpers only when useful, one complete delivery
+  for small changes, and scoped verification without routine duplicate runs.
+- **Issueflow authority (user, 2026-10-23).** Follow
+  [.orchestra/shared/ISSUE-WORKFLOW.md](.orchestra/shared/ISSUE-WORKFLOW.md), sourced from
+  github-dashboard's public Issue workflow instructions, for labels/status/closure.
+  Remove all recognized work labels when inactive, including while awaiting integration.
+  Ownership labels are separate from status and priority. Existing child/port constraints
+  below remain in force. Do not copy github-dashboard's own deployment-specific workflow.
 - **No branches, no PRs.** Commit and push directly to `main`.
 - **Basic function first.** Work that isn't needed right now goes into a GitHub issue
   (`gh issue create`) instead of being done on the side. Keep issues small and concrete;
@@ -86,13 +72,13 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   one house is not evidence that its siblings work; use representative checks rather than new chains of micro-stories.
 - **Several agents work in parallel (other computers push to `main` too).** Never take an issue that
   is labelled `in-progress` (`gh issue list --state open --json number,title,labels`). Before starting
-  **each** new issue: `git pull --rebase origin main`, then inspect `git status`. Preserve any uncommitted changes; use an isolated checkout when another agent
+  **each** new issue: `git pull --rebase origin main` (use `--rebase=merges` for unpublished subtree imports), then inspect `git status`. Preserve any uncommitted changes; use an isolated checkout when another agent
   shares the directory, and never discard their work.
   Re-check the issue's label right before labelling it. Work on one issue at a time until done.
 - **Label issues `in-progress` when you start on them** (`gh issue edit N --add-label
   in-progress`). The label must never outlive the work: **remove it** (`--remove-label
   in-progress`) when you stop without finishing, when you close the issue after implementing it
-  (`Fixes #N` closes it, but does not remove the label — do that too), and when you **reopen** an
+  (`Fixes #N` closes it, but does not remove work labels — remove all recognized ones too), and when you **reopen** an
   issue. A reopened issue starts without the label until someone picks it up again.
 - **Orchestrated work also gets `orkester: <id>`.** Use the orchestrator's stable session id, matching its #420
   status/reservations. Add it together with `in-progress` on each actively worked issue; remove both when finished,
@@ -100,22 +86,18 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   The orchestrator creates the label if missing, reconciles its own active issues on resume/status updates, and
   records the exact label in #420. Never remove another active orchestrator's label. The `orkester:` prefix is
   ownership metadata, distinct from the `orkester` coordination label, and does not change priority or replace claims.
-- **Priorities are labels.** Every issue carries exactly one of `priority: high`, `priority: medium`,
-  `priority: low`, set when creating the issue. **Whoever creates the issue (the agent/LLM, not the reporter) judges the
-  priority (user, 2026-10-17):** subject to the child-priority ceiling below, bugs (`Bugg:`, broken behaviour, crashes,
-  data loss, wrong geometry/rendering) get
-  `priority: high`; features are triaged by value: `high` for what blocks or clearly hurts everyday play/use, `medium`
-  for solid improvements, `low` for nice-to-have, cosmetic polish or "some day" ideas. Do not default everything to
-  medium; reporters never have to state a priority.
-  When picking work, take the highest-priority open issue that is not `in-progress` (oldest first within a level;
-  `gh issue list --state open --label "priority: high"`); an issue without a priority label counts as medium. Change an existing
-  issue's priority only when the user asks, except for the automatic child-priority corrections below. Topic labels
-  (e.g. `architecture`) are optional extras. Architecture issues whose
+- **Priorities follow Issueflow.** Every new issue has exactly one canonical priority,
+  assessed by impact and urgency with a short rationale; do not assign high automatically
+  because it is a bug. Preserve explicit user priorities and existing labels unless
+  directed otherwise, except the automatic child/port corrections below. Missing priority
+  counts as medium. Choose highest-priority startable work, oldest first; the complete
+  cross-repository selection/claim rules are in [.orchestra/project.md](.orchestra/project.md).
+  Architecture issues whose
   exact measurements are missing from Peab's material keep their geometry preliminary: centralise and mark the values as
   assumptions (*guess*), never replace one guess with another and call it verified (docs/peab/arkitekturgranskning-2026-10-04.md).
 - **Child priorities never exceed their parents (user, 2026-10-20).** New child stories default to the parent's
   priority; a lower priority is allowed and must be preserved. This applies to every child, including bugs,
-  regressions, test/support stories and further subdivisions, and overrides the default high priority for bugs.
+  regressions, test/support stories and further subdivisions, and also constrains the impact-based priority of bugs.
   Use the lowest priority in the complete ancestor chain as the ceiling, including closed parents and explicit
   cross-repository parentage; a missing priority counts as medium. Read GitHub parent/sub-issue links and explicit
   parentage in titles, bodies and comments (`Del av #N`); an ordinary reference, dependency, transfer link or a bug
@@ -138,7 +120,7 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   Docs-only changes need diff/link/contradiction review, no browser or triangle counts. Local behaviour needs a
   relevant component and affected route/view; wider profiles need concrete global risk. Reuse source-bound green
   evidence across unrelated rebases; the conductor reviews it rather than automatically rerunning it. Reassess
-  verification cost near 10 minutes. Follow the [orchestra policy](.claude/commands/orkester.md#minsta-tillräckliga-verifiering-användaren-2026-10-21)
+  verification cost near 10 minutes. Follow the [orchestra policy](.orchestra/shared/ORCHESTRA.md#verify-the-affected-behavior)
   and [verification guide](docs/development/verification.md#verification-policy). Never claim untested behaviour as tested.
 - **Result images before closing (user, 2026-10-22).** Before closing an implementation issue, save
   representative screenshots of the finished result under `docs/verification/<issue-number>/`, commit and push
