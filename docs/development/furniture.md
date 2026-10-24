@@ -134,9 +134,13 @@ has no put-down surface, so loose items cannot overlap the devices. The setup is
 computer (#1566): the landscape monitor is the shared `pc-olof` station
 (`COMPUTER_MEDIA`, [shared computers](interactions.md#shared-computers-1488)). A
 separate unmerged plane with whole-screen UVs shows the app/game while powered;
-off, the decorative atlas remains. E/touch anywhere on the desk targets the computer,
+off, it is hidden. E/touch anywhere on the desk targets the computer,
 also while seated in the Batman chair. The portrait monitor and accessories stay
-decorative. This is personal furnishing and gameplay, excluded from the public downstream.
+decorative. Power (#1576): the desk starts off and the shared power snapshot (`media(on)`)
+drives its lights. Off, the shared screen atlas, RGB/fan-ring and LED materials are
+recoloured (`TILLY_DESK.colors.screenOff`/`unlit`) and the LED wall wash goes to opacity 0;
+on, the portrait monitor shows the static desktop atlas. Same meshes, merged batches and
+draw calls in both desk shapes; the app plane is the only extra draw while on. This is personal furnishing and gameplay, excluded from the public downstream.
 
 Corner variant (#1569): in Möblera om the desk switches between straight (default)
 and an L-shaped corner desk ([interactions](interactions.md#module-and-test-map)).

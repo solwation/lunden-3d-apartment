@@ -5174,7 +5174,9 @@ export const TILLY_DESK = {
   appLift: .002, // #1566: the shared computer-app plane floats this far (m) in front of the decorative main-screen atlas
   detail: { sides: 10, tubeSides: 5, ringSides: 24, sphere: [12,8], texture: [512,256], carbonPx: 64, skin: .002, thin: .003, offset: .001, cable: .012, cableInset: .025, glowGap: .010 },
   colors: { wood: 0x853b32, black: 0x15171b, rubber: 0x08090c, steel: 0x43474e, seam: 0xdedbd0,
-    blue: 0x426dff, pink: 0xda51f3, cream: 0xe5d7b8 },
+    blue: 0x426dff, pink: 0xda51f3, cream: 0xe5d7b8,
+    // #1576 computer off (guesses by eye): the screen atlas multiplied to black, unlit RGB/LED parts as dark plastic
+    screenOff: 0x000000, unlit: 0x24272e },
 };
 
 // Tilly's laptop on the vanity (#283, src/laptop.js): a thin unbranded rose-gold laptop, 30 × 21 cm, lid open ~110°,

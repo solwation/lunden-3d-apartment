@@ -151,6 +151,14 @@ function deskShape(g, P, wood, cream) {
 let glassMat;
 const glassMaterial=()=>glassMat??=new THREE.MeshStandardMaterial({color:0x8c9fc2,transparent:true,opacity:.20,roughness:.12,side:THREE.DoubleSide,depthWrite:false});
 const noRaycast=()=>{};
+/** #1576: the desk's lights follow the shared computer power. Off, both screens go black, the case RGB/fan rings, the
+ * mouse mark and the LED strip are unlit plastic and the wall wash is clear. Only colours/opacity of the shared materials
+ * change (same meshes, merged batches and draw calls; no shader recompile). */
+function deskPower(on) {
+  screens().color.set(on?0xffffff:K.screenOff);
+  blue.color.set(on?K.blue:K.unlit);pink.color.set(on?K.pink:K.unlit);
+  glow().opacity=on?C.led.opacity:0;
+}
 const DESK_VARIANTS = DESK_VARIANT_CHOICES.map(c => c.id); // #1569: 'original' = the straight desk (layout default)
 export function tillydesk(item={}) {
   const g=new THREE.Group(),wood=woodMaterial(K.wood,.48),cream=new THREE.MeshStandardMaterial({color:K.cream,roughness:1});
@@ -171,12 +179,14 @@ export function tillydesk(item={}) {
       g.userData.footprint=variant.footprintFor(v);return true;}};
   variant.apply('original');
   g.userData.variant=variant;
+  deskPower(false); // #1576: off until the shared ComputerHub power state turns it on
   if(item.mediaId)computerStation(g,item.mediaId);
   // Occupied tabletop has no generic put-down plane: loose items cannot overlap the devices.
   g.userData.setup='tilly';return g;
 }
 /** #1566: the landscape monitor joins the shared ComputerHub (#1488) as Olof's computer. A separate unmerged
- * plane with whole-screen UVs carries the app/game texture while powered; off, the decorative atlas shows. */
+ * plane with whole-screen UVs carries the app/game texture while powered; #1576: off, the screens/RGB/LED are dark, and on,
+ * the portrait monitor shows the static desktop atlas. */
 function computerStation(g,mediaId) {
   const M=C.monitors[0],app=new THREE.Mesh(new THREE.PlaneGeometry(M.size[0]-C.bezel*2,M.size[1]-C.bezel*2),
     new THREE.MeshBasicMaterial({color:0,toneMapped:false}));
@@ -185,7 +195,7 @@ function computerStation(g,mediaId) {
   let on=false;
   g.userData.interact={name:'Olofs dator',kind:'pc',pickable:g,mesh:app,mediaId,
     get isOpen(){return on;},get verb(){return on?'välja på':'starta';},
-    toggle(){return on=!on;},media(v){app.visible=v;},watch(){}};
+    toggle(){return on=!on;},media(v){app.visible=v;deskPower(v);},watch(){}};
 }
 export function batmanchair() {
   const g=new THREE.Group(),B=C.chair,textile=upholsterySurface(g),cloth=textile.material(black),weave=textile.material(carbon());
