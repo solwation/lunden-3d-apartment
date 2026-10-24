@@ -49,7 +49,8 @@ only the current profile plus shared settings, never the registry or other playe
 on player change, page hide and visibility loss. Life/statistics retain their
 existing frequent saves. Returning through the menu restores the home behind the
 start screen; ordinary tab resume still takes precedence for position. Profile
-world data fills a position-only tab resume. The developer `&life` scenario does
+world data fills a position-only tab resume. The snapshot's clock (paused/picked date) is restored too and
+wins over `&time`/`&month`/`&day` of that visit (#1588; `reloadtest` clears it before its dated step). The developer `&life` scenario does
 not read or save the persistent world. Avatar codes use the existing complete
 codec and default looks are persisted so later name changes cannot change them.
 `Leaderboard.renderPlayers` reuses the customizer's Canvas2D preview for each row.

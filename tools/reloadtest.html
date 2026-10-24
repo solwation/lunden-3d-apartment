@@ -127,7 +127,8 @@ const KEY = 'lunden.resume', SESSION = 'lunden.session', HOME = 'lunden.playerWo
   sessionStorage.removeItem(SESSION);
   // (9) #277: a reload made by the page keeps the world — the car on its way, a cup of coffee in the hand, the fridge
   // open, a ceiling lamp on, a small lamp put out by hand, sitting in the sofa, the game's clock (spooled and paused)
-  sessionStorage.removeItem(SESSION); localStorage.removeItem(KEY);
+  // the saved home (lunden.playerWorld, #1515) restores its clock over &time/&month/&day on a new visit, so clear it too (#1588)
+  sessionStorage.removeItem(SESSION); localStorage.removeItem(KEY); localStorage.removeItem(HOME);
   f = await load('?time=21.5&month=1&day=10');
   d = f.contentDocument; app = f.contentWindow.__app;
   d.getElementById('start-touch').click();
