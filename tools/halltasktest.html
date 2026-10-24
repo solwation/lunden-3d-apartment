@@ -44,10 +44,11 @@ try{
  check(count()==='1/1'&&hall()==='hallCoatRack,hallShoeRack','reading the list after the task is done brings nothing back to the floor');
  L.flush();A=await load(Q);L=A.life;I=L.items;
  check(count()==='1/1'&&hall()==='hallCoatRack,hallShoeRack'&&A.tasks.tasks.find(t=>t.id==='tidyHall').isDone,'real reload: tidied pair stays put, task stays done, no floor copies');
+ // (#1565: a seeded old save has no lunden.playerWorld (#1515); that snapshot of the last visit would otherwise replace the life record on load.)
  // A save from before #594: the jacket and shoes exist (on the floor), the tasks record knows nothing of the hall task.
  const old=JSON.parse(ls().getItem(LIFE.save.key));
  for(const it of old.items??[])if(it.type==='hallJacket'||it.type==='hallShoes')it.place={...it.home};
- old.x.tasks={v:1,goals:{}};await blank();{const s=JSON.parse(ls().getItem('lunden.stats'));delete s.taskDay;ls().setItem('lunden.stats',JSON.stringify(s));}window.hallDate=null;ls().setItem(LIFE.save.key,JSON.stringify(old));
+ old.x.tasks={v:1,goals:{}};await blank();{const s=JSON.parse(ls().getItem('lunden.stats'));delete s.taskDay;ls().setItem('lunden.stats',JSON.stringify(s));}window.hallDate=null;ls().removeItem('lunden.playerWorld');ls().setItem(LIFE.save.key,JSON.stringify(old));
  A=await load(Q);L=A.life;I=L.items;
  check(count()==='1/1'&&hall()==='hallFloorjacket,hallFloorshoes'&&!A.tasks.isShown('tidyHall'),'pre-#594 save with the pair on the floor loads it once, task not yet listed');
  A.showTaskNote(true);A.showTaskNote(false);L.restock();
@@ -55,7 +56,7 @@ try{
  // A save from before #594 where they were already tidied.
  const tidy=JSON.parse(JSON.stringify(old)),score1=A.totalScore();
  for(const it of tidy.items??[]){if(it.type==='hallJacket')it.place={at:'slot',store:'hallCoatRack',slot:0};if(it.type==='hallShoes')it.place={at:'slot',store:'hallShoeRack',slot:0};}
- await blank();{const s=JSON.parse(ls().getItem('lunden.stats'));delete s.taskDay;ls().setItem('lunden.stats',JSON.stringify(s));}window.hallDate=null;ls().setItem(LIFE.save.key,JSON.stringify(tidy));A=await load(Q);L=A.life;I=L.items;const s1=A.totalScore();
+ await blank();{const s=JSON.parse(ls().getItem('lunden.stats'));delete s.taskDay;ls().setItem('lunden.stats',JSON.stringify(s));}window.hallDate=null;ls().removeItem('lunden.playerWorld');ls().setItem(LIFE.save.key,JSON.stringify(tidy));A=await load(Q);L=A.life;I=L.items;const s1=A.totalScore();
  A.showTaskNote(true);A.showTaskNote(false);L.restock();
  check(count()==='1/1'&&hall()==='hallCoatRack,hallShoeRack'&&A.tasks.tasks.find(t=>t.id==='tidyHall').isDone&&A.totalScore()===s1,'pre-#594 save already tidied: reading lists the task as done, no bonus, nothing on the floor');
  check(I.audit().length===0,'inventory invariants hold');
