@@ -99,8 +99,8 @@ export class CinemaPosters {
     return this.loading;
   }
 
-  saved() { try { const v = JSON.parse(localStorage.getItem(STORE) ?? 'null'); return v?.v === 1 ? posterItems(v.items) : []; } catch { return []; } }
-  store(items) { try { localStorage.setItem(STORE, JSON.stringify({ v: 1, day: day(), items })); } catch { /* a full/blocked store only loses the fallback */ } }
+  saved() { try { const v = JSON.parse(localStorage.getItem(STORE) ?? 'null'); return v?.v === 2 ? posterItems(v.items) : []; } catch { return []; } }
+  store(items) { try { localStorage.setItem(STORE, JSON.stringify({ v: 2, day: day(), items })); } catch { /* a full/blocked store only loses the fallback */ } }
 
   /** Load the thumbnails (bounded), then redraw the atlas once; the same list is not redrawn. */
   async show(items, source) {

@@ -5,17 +5,27 @@ import { PLAYROOM } from '../src/config.js';
 import worker from './worker.js';
 
 // #1575: the BIO's daily poster list, offline (a fake fetcher for YouTube's search.list and a Map for KV).
-const item = (id, title = 'Film', channel = 'Kanal') => ({ id: { videoId: id }, snippet: { title, channelTitle: channel } });
+const GOOD = 'UC' + 'g'.repeat(22), BAD = 'UC' + 'b'.repeat(22), BIG = 'UC' + 'B'.repeat(22), SMALL = 'UC' + 's'.repeat(22), KIDS = 'UC' + 'k'.repeat(22);
+const item = (id, title = 'Film', channel = 'Kanal', channelId = GOOD) => ({ id: { videoId: id }, snippet: { title, channelTitle: channel, channelId } });
 const vid = (n) => `film${String(n).padStart(7, '0')}`; // 11 valid id characters
 const kv = () => { const m = new Map(); return { m, async get(k, t) { const v = m.get(k); return v === undefined ? null : t === 'json' ? JSON.parse(v) : v; }, async put(k, v) { m.set(k, v); } }; };
 const NOON = Date.parse('2026-10-24T10:00:00Z'), DAY = 86400e3;
 const W = PLAYROOM.cinemaPosters.worker, COUNT = PLAYROOM.cinemaPosters.spots.length;
 
-function youtube({ fail = false } = {}) {
+const okVideo = { status: { madeForKids: true, embeddable: true, privacyStatus: 'public' }, contentDetails: {} };
+// videos.list: every id is a fine, made-for-kids film unless `videoOverride(id)` changes it; channels.list: GOOD/KIDS/BIG pass, SMALL/BAD do not.
+function youtube({ fail = false, videoOverride = () => ({}), searchItems = null, channelList = null, videosFail = false } = {}) {
   const calls = [];
   const fetcher = async (url) => {
     const u = new URL(url); calls.push(u);
     if (fail) return new Response('{"error":{}}', { status: 403 });
+    if (u.pathname.endsWith('/videos')) {
+      if (videosFail) return new Response('{}', { status: 500 });
+      return Response.json({ items: u.searchParams.get('id').split(',').map((id) => { const o = videoOverride(id);
+        return { id, status: { ...okVideo.status, ...o.status }, contentDetails: { ...o.contentDetails }, snippet: { channelId: o.channelId ?? GOOD } }; }) });
+    }
+    if (u.pathname.endsWith('/channels')) return Response.json({ items: channelList ?? [{ id: GOOD, status: { madeForKids: true } }] });
+    if (searchItems) return Response.json({ items: searchItems });
     const q = W.queries.indexOf(u.searchParams.get('q'));
     // every query returns the same first film (deduplicated), one bad id, an escaped title and its own films
     return Response.json({ items: [item('shared00001', 'Alla &amp; ingen'), item('bad', 'Ignored'), item('x'.repeat(11), '   '),
@@ -27,8 +37,9 @@ function youtube({ fail = false } = {}) {
 test('one day of posters: child-safe, embeddable searches merged without repeats and with plain text', async () => {
   const { calls, fetcher } = youtube();
   const items = await fetchPosters({ key: 'test-key', fetcher, now: NOON });
-  assert.equal(calls.length, W.queries.length);
-  for (const u of calls) {
+  const searches = calls.filter((u) => u.pathname.endsWith('/search'));
+  assert.equal(searches.length, W.queries.length);
+  for (const u of searches) {
     assert.equal(u.origin + u.pathname, 'https://www.googleapis.com/youtube/v3/search');
     for (const [k, v] of Object.entries({ type: 'video', videoEmbeddable: 'true', videoSyndicated: 'true', safeSearch: 'strict', regionCode: 'SE',
       relevanceLanguage: 'sv', videoDuration: 'long', order: 'viewCount', maxResults: String(W.perQuery), key: 'test-key' })) assert.equal(u.searchParams.get(k), v, k);
@@ -57,9 +68,9 @@ test('the day list is cached: a second call that day makes no upstream request, 
   resetPosterMemory(); // a fresh isolate reads KV instead of searching
   const again = await dailyPosters(env, { fetcher, now: NOON + 7200e3 });
   assert.deepEqual(again.items, first.items);
-  assert.equal(calls.length, W.queries.length, 'only one round of searches that day');
+  assert.equal(calls.length, W.queries.length + 2, 'only one round of searches + videos.list + channels.list that day');
   const next = await dailyPosters(env, { fetcher, now: NOON + DAY });
-  assert.equal(next.day, posterDay(NOON + DAY)); assert.equal(calls.length, 2 * W.queries.length);
+  assert.equal(next.day, posterDay(NOON + DAY)); assert.equal(calls.length, 2 * (W.queries.length + 2));
   // Stockholm's midnight, not UTC's: 23:30 UTC on 24 Oct is already 25 Oct in Sweden
   assert.equal(posterDay(Date.parse('2026-10-24T23:30:00Z')), '2026-10-25');
 });
@@ -109,4 +120,74 @@ test('the Worker route: GET only, site CORS, cacheable success and generic error
     const failing = await cinemaPostersFetch(new Request('https://w/cinema/posters'), { YOUTUBE_API_KEY: 'k', LUNDEN: kv() }, {}, { fetcher: youtube({ fail: true }).fetcher });
     assert.equal(failing.status, 502); assert.deepEqual(await failing.json(), { error: 'posters unavailable' });
   } finally { globalThis.fetch = old; resetPosterMemory(); }
+});
+
+// #1589: only vetted films
+const withChannels = async (channels, fn) => { const old = W.channels.slice(); W.channels.splice(0, W.channels.length, ...channels); try { await fn(); } finally { W.channels.splice(0, W.channels.length, ...old); } };
+const films = (...xs) => xs.map(([id, title = 'Film', channel = 'Kanal', channelId = GOOD]) => item(id, title, channel, channelId));
+
+test('vetting: not made for kids, age-restricted, private/non-embeddable and block words are dropped; quota is bounded', async () => {
+  const yt = youtube({ searchItems: films(['aaaaaaaaaaa'], ['bbbbbbbbbbb'], ['ccccccccccc'], ['ddddddddddd'], ['eeeeeeeeeee'], ['fffffffffff', 'Bajssången'], ['ggggggggggg', 'Film', 'Poop TV'], ['hhhhhhhhhhh', 'PRANK film']),
+    videoOverride: (id) => ({ bbbbbbbbbbb: { status: { madeForKids: false } }, ccccccccccc: { contentDetails: { contentRating: { ytRating: 'ytAgeRestricted' } } },
+      ddddddddddd: { status: { privacyStatus: 'unlisted' } }, eeeeeeeeeee: { status: { embeddable: false } } })[id] ?? {} });
+  const out = await fetchPosters({ key: 'k', fetcher: yt.fetcher, now: NOON });
+  assert.deepEqual(out.map((i) => i.id), ['aaaaaaaaaaa']);
+  assert.ok(out.every((i) => !('channelId' in i)));
+  const paths = yt.calls.map((u) => u.pathname.split('/').pop());
+  assert.equal(paths.filter((p) => p === 'search').length, W.queries.length);
+  assert.equal(paths.filter((p) => p === 'videos').length, 1); assert.equal(paths.filter((p) => p === 'channels').length, 1);
+  const v = yt.calls.find((u) => u.pathname.endsWith('/videos'));
+  assert.equal(v.searchParams.get('part'), 'status,contentDetails,snippet');
+  assert.ok(v.searchParams.get('id').split(',').length <= 50);
+  assert.equal(yt.calls.length, W.queries.length + 2, 'quota: 3x100 + 1 + 1 units');
+});
+
+test('vetting: a non-empty channel allow-list is mandatory (no channels.list); unknown channels are dropped', async () => {
+  await withChannels([GOOD], async () => {
+    const yt = youtube({ searchItems: films(['aaaaaaaaaaa'], ['bbbbbbbbbbb', 'Film', 'Okänd', BAD]), videoOverride: (id) => (id === 'bbbbbbbbbbb' ? { channelId: BAD } : {}) });
+    const out = await fetchPosters({ key: 'k', fetcher: yt.fetcher, now: NOON });
+    assert.deepEqual(out.map((i) => i.id), ['aaaaaaaaaaa']);
+    assert.ok(!yt.calls.some((u) => u.pathname.endsWith('/channels')));
+    const none = youtube({ searchItems: films(['bbbbbbbbbbb', 'Film', 'Okänd', BAD]), videoOverride: () => ({ channelId: BAD }) });
+    await assert.rejects(fetchPosters({ key: 'k', fetcher: none.fetcher, now: NOON }), /upstream/);
+  });
+});
+
+test('vetting: with an empty allow-list the channel must be made-for-kids or large with a visible subscriber count', async () => {
+  assert.equal(W.channels.length, 0);
+  const channelList = [{ id: KIDS, status: { madeForKids: true } },
+    { id: BIG, status: {}, statistics: { subscriberCount: String(W.minSubscribers) } },
+    { id: SMALL, status: {}, statistics: { subscriberCount: '1000' } },
+    { id: BAD, status: {}, statistics: { subscriberCount: '9999999', hiddenSubscriberCount: true } }];
+  const ids = { kkkkkkkkkkk: KIDS, BBBBBBBBBBB: BIG, sssssssssss: SMALL, bbbbbbbbbbb: BAD };
+  const yt = youtube({ channelList, searchItems: films(...Object.entries(ids).map(([id, c]) => [id, 'Film', 'K', c])), videoOverride: (id) => ({ channelId: ids[id] }) });
+  const out = await fetchPosters({ key: 'k', fetcher: yt.fetcher, now: NOON });
+  assert.deepEqual(out.map((i) => i.id).sort(), ['BBBBBBBBBBB', 'kkkkkkkkkkk']);
+});
+
+test('vetting: zero approved or a failing videos.list throws upstream, serving yesterday filtered list; old unfiltered KV is ignored', async () => {
+  resetPosterMemory();
+  const env = { YOUTUBE_API_KEY: 'k', LUNDEN: kv() };
+  const first = await dailyPosters(env, { fetcher: youtube().fetcher, now: NOON });
+  assert.equal(JSON.parse(env.LUNDEN.m.get('cinema-posters')).filter, W.filterVersion);
+  for (const bad of [youtube({ videoOverride: () => ({ status: { madeForKids: false } }) }), youtube({ videosFail: true })]) {
+    const stale = await dailyPosters(env, { fetcher: bad.fetcher, now: NOON + DAY });
+    assert.equal(stale.stale, true); assert.deepEqual(stale.items, first.items);
+    resetPosterMemory(); env.LUNDEN.m.set('cinema-posters', JSON.stringify({ day: posterDay(NOON), filter: W.filterVersion, items: first.items }));
+  }
+  // an old unfiltered list (no `filter`) is never served: fresh filtered fetch, or an error when that fails
+  resetPosterMemory();
+  const old = kv(); old.m.set('cinema-posters', JSON.stringify({ day: posterDay(NOON), items: first.items }));
+  const yt = youtube();
+  const fresh = await dailyPosters({ YOUTUBE_API_KEY: 'k', LUNDEN: old }, { fetcher: yt.fetcher, now: NOON });
+  assert.equal(fresh.stale, false); assert.ok(yt.calls.length > 0);
+  resetPosterMemory();
+  const old2 = kv(); old2.m.set('cinema-posters', JSON.stringify({ day: posterDay(NOON), items: first.items }));
+  await assert.rejects(dailyPosters({ YOUTUBE_API_KEY: 'k', LUNDEN: old2 }, { fetcher: youtube({ fail: true }).fetcher, now: NOON }), /upstream/);
+  resetPosterMemory();
+});
+
+test('vetting: fewer approved films than spots → only the approved ones', async () => {
+  const yt = youtube({ searchItems: films(['aaaaaaaaaaa'], ['bbbbbbbbbbb']), videoOverride: (id) => (id === 'bbbbbbbbbbb' ? { status: { madeForKids: false } } : {}) });
+  assert.deepEqual((await fetchPosters({ key: 'k', fetcher: yt.fetcher, now: NOON })).map((i) => i.id), ['aaaaaaaaaaa']);
 });

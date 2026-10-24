@@ -5987,7 +5987,14 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
   // = 'north' (z -5.2, facing south), 'south' (the partition z 1.54, facing north) or 'east' (x -3.06, facing west), `at` along that wall, `y` the centre.
   cinemaPosters: { w: .56, h: .84, frame: .035, depth: .025, cell: [256, 384], timeoutMs: 8000, titleMax: 40,
     spots: [{ wall: 'north', at: -6.8 }, { wall: 'north', at: -5.3 }, { wall: 'south', at: -7.12 }, { wall: 'east', at: -4.4 }, { wall: 'east', at: -2.4 }, { wall: 'east', at: -.6 }], y: 1.25,
-    worker: { queries: ['barnfilm på svenska', 'tecknat på svenska hela filmen', 'tecknad film för barn'], perQuery: 10, recentDays: 730, retryHours: 6 } },
+    // #1589: only vetted films become posters: videos.list must say madeForKids + embeddable + public + not age-restricted, the channel must be on
+    // `channels` and no block word may appear in title/channel. `channels` = allow-list of VERIFIED YouTube channel IDs (UC + 22 chars). It is EMPTY
+    // because the build environment cannot reach YouTube to verify IDs (none are invented): it must be filled with verified IDs of serious children's
+    // channels (SVT Barn, UR, official studio channels ...). A non-empty list is the mandatory gate; while it is empty a transitional gate (channels.list,
+    // 1 unit) needs the channel to be made-for-kids or to have a public subscriber count >= minSubscribers. blockWords/minSubscribers are *guess*.
+    // Quota per day: 3 searches x 100 + videos.list 1 + channels.list 1 = 302 units. `filterVersion`: KV lists without it are never served.
+    worker: { queries: ['barnfilm på svenska', 'tecknat på svenska hela filmen', 'tecknad film för barn'], perQuery: 10, recentDays: 730, retryHours: 6,
+      channels: [], minSubscribers: 500000, filterVersion: 1, blockWords: ['bajs', 'poop', 'kiss', 'prank', 'skibidi', '18+', 'toalett', 'toilet'] } },
   // #1574: own generated posters (one canvas atlas, one extra draw), neon, pub lamps and per-room light levels. Everything here is a *guess*
   // (local metres from the room's centre; every wall is named for its room: hall / BILJARD / SPEL; BIO is #1575's). `along` is x on the north/south walls
   // and z on the east/west walls; `designs` index the atlas cells (0-9 hall mix, 10-18 SPEL gaming, 19-27 BILJARD/DJ) and repeat; `y` is a poster's centre height.
