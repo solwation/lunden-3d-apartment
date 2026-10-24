@@ -123,6 +123,14 @@ test('the Worker route: GET only, site CORS, cacheable success and generic error
 });
 
 // #1589: only vetted films
+// #1589: the shipped allow-list is real data; the mechanics below run against an empty list unless a test sets one.
+const SHIPPED = W.channels.slice();
+test('the shipped channel allow-list is non-empty, unique, well-formed channel ids', () => {
+  assert.ok(SHIPPED.length > 0);
+  assert.equal(new Set(SHIPPED).size, SHIPPED.length);
+  for (const id of SHIPPED) assert.match(id, /^UC[\w-]{22}$/);
+});
+W.channels.length = 0;
 const withChannels = async (channels, fn) => { const old = W.channels.slice(); W.channels.splice(0, W.channels.length, ...channels); try { await fn(); } finally { W.channels.splice(0, W.channels.length, ...old); } };
 const films = (...xs) => xs.map(([id, title = 'Film', channel = 'Kanal', channelId = GOOD]) => item(id, title, channel, channelId));
 

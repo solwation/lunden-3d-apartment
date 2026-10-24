@@ -5988,13 +5988,42 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
   cinemaPosters: { w: .56, h: .84, frame: .035, depth: .025, cell: [256, 384], timeoutMs: 8000, titleMax: 40,
     spots: [{ wall: 'north', at: -6.8 }, { wall: 'north', at: -5.3 }, { wall: 'south', at: -7.12 }, { wall: 'east', at: -4.4 }, { wall: 'east', at: -2.4 }, { wall: 'east', at: -.6 }], y: 1.25,
     // #1589: only vetted films become posters: videos.list must say madeForKids + embeddable + public + not age-restricted, the channel must be on
-    // `channels` and no block word may appear in title/channel. `channels` = allow-list of VERIFIED YouTube channel IDs (UC + 22 chars). It is EMPTY
-    // because the build environment cannot reach YouTube to verify IDs (none are invented): it must be filled with verified IDs of serious children's
-    // channels (SVT Barn, UR, official studio channels ...). A non-empty list is the mandatory gate; while it is empty a transitional gate (channels.list,
-    // 1 unit) needs the channel to be made-for-kids or to have a public subscriber count >= minSubscribers. blockWords/minSubscribers are *guess*.
+    // `channels` and no block word may appear in title/channel. `channels` = hand-picked allow-list of official YouTube channel IDs (UC + 22 chars),
+    // the mandatory gate (the user's choice on #1589: SVT/SR/UR, Swedish film distributors, official children's series, Disney/Pixar and similar studios).
+    // Each was looked up on 2026-10-24 and kept only if YouTube shows its verified badge or the owner's own site/official channel links to it; being
+    // verified alone is not enough (verified song/game-replay channels are left out on purpose). Not found or not provable: SVT Bolibompa Mini, UR Barn,
+    // UR Play, Warner Bros. Pictures Sverige, DreamWorks Animation Sweden. Add channels the same way, with a comment. An empty list would fall back to
+    // a transitional gate (channels.list, 1 unit): made-for-kids channel or a public subscriber count >= minSubscribers. blockWords/minSubscribers are *guess*.
     // Quota per day: 3 searches x 100 + videos.list 1 + channels.list 1 = 302 units. `filterVersion`: KV lists without it are never served.
     worker: { queries: ['barnfilm på svenska', 'tecknat på svenska hela filmen', 'tecknad film för barn'], perQuery: 10, recentDays: 730, retryHours: 6,
-      channels: [], minSubscribers: 500000, filterVersion: 1, blockWords: ['bajs', 'poop', 'kiss', 'prank', 'skibidi', '18+', 'toalett', 'toilet'] } },
+      channels: [
+        'UCG4t_7XwB_DXdrpvf4U1pgg', // SVT Barn (verified)
+        'UCLuECFhnmqnX0bJ_3RSy_DA', // Barnradion, Sveriges Radio (linked from sverigesradio.se/barnradion)
+        'UCMZaJz1iJiU6L4wvpzwMBxQ', // SF Studios (linked from sfstudios.se)
+        'UClAEnyvAkPzPjnHZPVgv7zQ', // SF Studios Classics (linked from sfstudios.se)
+        'UC_4Nc4NeEG-SIaetcgMTtfw', // SF Studios, @ABSvenskFilmindustri (featured by SF Studios Classics)
+        'UCkllgTNY4dg8qdMfpPlnmyQ', // Nordisk Film Sverige (verified)
+        'UCvpNIQlTMpDfR8kv9Z64f5g', // Babblarna (verified)
+        'UCvoi9I4_wUxWsYAb6KKx6Ow', // Bamse Världens starkaste björn (verified)
+        'UC4a70Q5T62wFT-aegFqQQCA', // Pippi Långstrump (verified)
+        'UC-htUfM7MKigpNxJeITBZ4Q', // Alfons Åberg, @alfonsofficiell (linked from alfons.se)
+        'UCL6vFAZiH2DCeYkRdc3zN8A', // Nicke Nyfiken (verified)
+        'UChL6e-L1iqub4AQNcUZgmrQ', // Bluey - Officiella Svenska Kanalen (verified)
+        'UCdCV7Dg8EQg8Vx98q4ow64w', // Bing Svenska - Officiella Kanalen (verified)
+        'UCT9rMDBO4QCG60JVRNaRwZg', // Greta Gris - Officiella Kanal (verified)
+        'UCfPfqRi_UmyHvsA2Ih-tb5w', // Smurfarna • Svenska (verified)
+        'UCKmcWe6P05FQ6TEmpIWHOSQ', // Brandman Sam Svenska (verified)
+        'UCC-RivmZEYZZ6yOVh8hSLsQ', // Peppy Pals (verified)
+        'UCQ8eoZdZP4gvGiVkqAh05VA', // Disney Sverige (linked from disney.se)
+        'UC2qqJdj6dq_D6tGlKCTopNA', // Disney Junior Sverige (verified)
+        'UCjMDyYSgLkOwpPlUkvcoB7A', // Disney Channel Sverige (verified)
+        'UCNcdbMyA59zE-Vk668bKWOg', // Disney Jr. (verified)
+        'UC_IRYSp4auq7hKLvziWVH6w', // Pixar (verified)
+        'UCia2_wzvSZrQBzbopXT1Fcg', // DreamWorks (verified)
+        'UCHaHZJAWfrlnysph7LReiYA', // DreamWorksTV World (verified)
+        'UCq7OHvWO6Z3u-LztFdrcU-g', // Illumination (verified)
+        'UCaOPA9kDa-s27ju1XG17Q1w', // Cartoon Network Sverige (verified)
+      ], minSubscribers: 500000, filterVersion: 2, blockWords: ['bajs', 'poop', 'kiss', 'prank', 'skibidi', '18+', 'toalett', 'toilet'] } },
   // #1574: own generated posters (one canvas atlas, one extra draw), neon, pub lamps and per-room light levels. Everything here is a *guess*
   // (local metres from the room's centre; every wall is named for its room: hall / BILJARD / SPEL; BIO is #1575's). `along` is x on the north/south walls
   // and z on the east/west walls; `designs` index the atlas cells (0-9 hall mix, 10-18 SPEL gaming, 19-27 BILJARD/DJ) and repeat; `y` is a poster's centre height.
