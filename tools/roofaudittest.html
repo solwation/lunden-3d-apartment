@@ -14,7 +14,7 @@ const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const f = document.createElement('iframe');
 f.width = 900; f.height = 600;
-f.src = '../index.html?shot&time=12&month=6&freeze';
+f.src = '../index.html?shot&time=12&month=6&freeze&cloud=';
 document.body.append(f);
 f.onload = () => run().catch((e) => { out.textContent = `FAIL ${e}\n${e.stack}\nSOME FAILED`; });
 async function run() {
@@ -22,7 +22,7 @@ async function run() {
   while (!w.__app) await wait(100);
   const { player, fall, world, step, scene, renderer, camera } = w.__app;
   const mod = (p) => w.eval(`import('${p.startsWith('.') ? new URL(p, location.href).href : p}')`);
-  const { SITE, WALK, PLAYER } = await mod('../src/config.js');
+  const { SITE, WALK, PLAYER, ROOFS } = await mod('../src/config.js');
   const THREE = await mod('three');
   const { groundY } = await mod('../src/surroundings.js');
   const lines = [];
@@ -37,7 +37,7 @@ async function run() {
   const ringDist = (rings, x, z) => { let m = Infinity; for (const p of rings) for (let i = 0; i + 1 < p.length; i++) { const [ax, az] = p[i], [bx, bz] = p[i + 1], dx = bx - ax, dz = bz - az, l2 = dx * dx + dz * dz || 1, t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / l2)); m = Math.min(m, Math.hypot(x - ax - t * dx, z - az - t * dz)); } return m; };
   // every building from the data: { name, outer, holes }
   const buildings = [];
-  for (const g of ['west', 'east', 'north', 'south']) SITE[g].buildings.forEach((b, i) => buildings.push({ name: `${g}/${b.name ?? b.source ?? i}`, outer: b.polygon, holes: b.holes ?? [] }));
+  for (const g of ['west', 'east', 'north', 'south']) SITE[g].buildings.forEach((b, i) => buildings.push({ name: `${g}/${b.name ?? b.source ?? i}`, outer: b.polygon, holes: b.holes ?? [], source: b.source }));
   for (const b of SITE.blocks) buildings.push({ name: `block/${b.name}`, outer: [[b.x0, b.z0], [b.x1, b.z0], [b.x1, b.z1], [b.x0, b.z1], [b.x0, b.z0]], holes: [] });
   const inWalk = (b) => b.outer.some(([x, z]) => x > WALK.x0 && x < WALK.x1 && z > WALK.z0 && z < WALK.z1);
   const list = buildings.filter(inWalk);
@@ -54,9 +54,10 @@ async function run() {
     return best;
   };
   const rc = new THREE.Raycaster(); rc.layers.enableAll(); rc.camera = camera; // Sprite.raycast needs a camera
-  const drawnTop = (x, z) => {
+  const drawnTop = (x, z, includeTrees = false) => {
     rc.set(new THREE.Vector3(x, 150, z), new THREE.Vector3(0, -1, 0));
-    const hits = rc.intersectObjects(scene.children, true).filter((h) => h.object.isMesh && h.object.visible !== false && !h.object.material?.transparent && h.point.y < 100);
+    // Trees can overhang a building without becoming part of its roof (e.g. both west buildings in #1555).
+    const hits = rc.intersectObjects(scene.children, true).filter((h) => h.object.isMesh && h.object.visible !== false && !h.object.material?.transparent && (includeTrees || !h.object.name.startsWith('tree-crowns ')) && h.point.y < 100);
     return hits.length ? hits[0].point.y : null;
   };
   const settle = async () => { for (let i = 0; i < 200 && fall.pending; i++) await wait(10); while (fall.t >= 0) step(dt); };
@@ -69,17 +70,18 @@ async function run() {
     const y = player.pos.y;
     return { y, ok: still >= 8 && y > top - TOL && y < top + 0.4 && Math.hypot(player.pos.x - x, player.pos.z - z) < 1.5 };
   };
-  const missing = [], rows = [], walled = [], leaks = [];
+  const missing = [], rows = [], walled = [], leaks = [], audited = [], edgeAudited = [];
   for (const b of list) {
     const c = deepest(b);
     if (!c) { rows.push(`skip ${b.name}: no interior point inside WALK`); continue; }
     const top = drawnTop(c.x, c.z), gy = groundY(c.x, c.z);
     if (top === null || top < gy + 1.5) { rows.push(`skip ${b.name}: nothing drawn over ${f2(gy)} m (top ${top})`); continue; }
+    audited.push(b.name);
     const { ok, y } = land(c.x, c.z, top);
     rows.push(`${ok ? 'ok  ' : 'MISS'} ${b.name} at (${f2(c.x)}, ${f2(c.z)}): drawn roof ${f2(top)} m, landed ${f2(y)} m (ground ${f2(gy)})`);
     if (!ok) missing.push(b.name);
-    // the walls: hover 3 m up (aloft, below the roof) just outside the longest edge and fly at the building: it must stay out
-    if (top - gy > 5.5) {
+    // The walls: fly at a height where the body overlaps the edge, including low outbuildings.
+    if (top - gy > ROOFS.aloft + PLAYER.stepUp + 0.2) {
       const ring = b.outer; let best = null;
       for (let i = 0; i + 1 < ring.length; i++) { const l = Math.hypot(ring[i + 1][0] - ring[i][0], ring[i + 1][1] - ring[i][1]); if (!best || l > best.l) best = { l, i }; }
       const [ax, az] = ring[best.i], [bx, bz] = ring[best.i + 1], mx = (ax + bx) / 2, mz = (az + bz) / 2;
@@ -87,25 +89,34 @@ async function run() {
       if (inRing(ring, mx + nx * 0.5, mz + nz * 0.5)) { nx = -nx; nz = -nz; } // outward
       const ex = mx - nx * 1.2, ez = mz - nz * 1.2, etop = drawnTop(ex, ez); // 1.2 m in from the edge: the slope of a gable / hip
       if (inRing(ring, ex, ez) && !b.holes.some((h) => inRing(h, ex, ez)) && etop > gy + 1.5) {
+        edgeAudited.push(b.name);
         const e = land(ex, ez, etop);
         rows.push(`${e.ok ? 'ok  ' : 'MISS'} ${b.name} 1.2 m from the edge (${f2(ex)}, ${f2(ez)}): drawn ${f2(etop)} m, landed ${f2(e.y)} m`);
         if (!e.ok) missing.push(`${b.name} (edge)`);
       }
       const sx = mx + nx * 2.5, sz = mz + nz * 2.5;
-      if (!(sx > WALK.x0 + 3 && sx < WALK.x1 - 3 && sz > WALK.z0 + 3 && sz < WALK.z1 - 3) || inRing(ring, sx, sz) || drawnTop(sx, sz) > groundY(sx, sz) + 1) continue; // (not from inside another building / a tree)
+      if (!(sx > WALK.x0 + 3 && sx < WALK.x1 - 3 && sz > WALK.z0 + 3 && sz < WALK.z1 - 3) || inRing(ring, sx, sz) || drawnTop(sx, sz, true) > groundY(sx, sz) + 1) continue; // (not from inside another building / a tree)
       player.spawn(sx, sz, 0);
-      const fy = groundY(sx, sz) + 3.0;
+      // Keep the body below this edge's wall top. On a low outbuilding, ground + 3 m is already above its eave.
+      const roofWall = b.source && world.roofs.list.find(({ s }) =>
+        s[0] === ax && s[1] === az && s[2] === bx && s[3] === bz);
+      if (b.source && !roofWall) { leaks.push(`${b.name} (missing roof wall)`); continue; }
+      const fy = Math.min(groundY(sx, sz) + 3.0, roofWall ? roofWall.y1 - PLAYER.stepUp - 0.1 : Infinity);
+      if (fy <= groundY(sx, sz) + ROOFS.aloft) { rows.push(`skip ${b.name}: no aloft wall below the roof`); continue; }
       camera.rotation.y = Math.atan2(nx, nz); // facing the building (yaw 0 = −z)
       player.keys = new Set(['KeyW']);
       for (let i = 0; i < 150; i++) { player.pos.y = fy; player.vy = 0; step(dt); }
       player.keys = new Set();
       const inside = inRing(ring, player.pos.x, player.pos.z);
       walled.push(b.name);
-      if (inside) { leaks.push(b.name); rows.push(`LEAK ${b.name}: flew into the building at ${f2(player.pos.x)}, ${f2(player.pos.z)}`); }
+      rows.push(`${inside ? 'LEAK' : 'ok wall'} ${b.name}: flew to ${f2(player.pos.x)}, ${f2(player.pos.z)} at feet ${f2(fy)} m${roofWall ? ` (wall top ${f2(roofWall.y1)} m)` : ''}`);
+      if (inside) leaks.push(b.name);
     }
   }
   lines.push(...rows.map((r) => `INFO ${r}`));
   check(list.length >= 55, `${list.length} buildings inside WALK audited`);
+  const targets = ['west/Karpvägen 10', 'west/Komplementbyggnad 476125238'];
+  check(targets.every((name) => audited.includes(name) && edgeAudited.includes(name)) && walled.includes(targets[1]), 'both west roof centres and edges audited; outbuilding wall exercised');
   check(walled.length >= 30 && leaks.length === 0, `walls stop a body flying into the building: ${walled.length} tried, ${leaks.length} got in: ${leaks.join(', ')}`);
   check(missing.length === 0, `every roof can be landed on; ${missing.length} without: ${missing.join(', ')}`);
   out.textContent = lines.join('\n') + `\n${pass ? 'ALL PASS' : 'SOME FAILED'}`;
