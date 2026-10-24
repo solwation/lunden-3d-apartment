@@ -1,0 +1,32 @@
+{
+  "inside": {
+    "without": {
+      "calls": 14,
+      "triangles": 73767
+    },
+    "with": {
+      "calls": 16,
+      "triangles": 96919
+    },
+    "close": {
+      "calls": 15,
+      "triangles": 115059
+    },
+    "extra": 2
+  },
+  "seated": {
+    "sitting": true,
+    "held": true,
+    "bites": 5,
+    "button": "Ät"
+  },
+  "outside": {
+    "visible": false,
+    "before": 295,
+    "removed": 295,
+    "lights": 0,
+    "inGroup": true,
+    "hiddenHand": true
+  },
+  "errors": []
+}

@@ -1,0 +1,10 @@
+{
+  "src/popcorn.js": "a74858871eb9e3f7123c3b80ba12f9e399804809abf40f69366565c9ef657f2b",
+  "src/main.js": "0c0fcea143478dbad426dbfd7aa4c69c1ddbf27582ad4ef7a5ae46bb8ae9809e",
+  "src/playroom.js": "b5f32c0e55bc920393ddd899f9901a129dc245cd71f7a8ef9b09ec59f9f88893",
+  "src/config.js": "fc94dd2258456e6624c44973eb136afd8d24afac95028c16227e9a8f25938b87",
+  "src/clubhouse.js": "89ce6ccf0df68563b57ccf5fd636d6a67ea1f992f61116e696dd35e2e4cfa1e9",
+  "src/heldcategory.js": "2fb51bbb19d1f07cb1703314536e8258cd504e87864942461aff20c7698ad472",
+  "tools/popcorntest.html": "d3679bb97dbc574a1b83a3ed5e3b58e8ee44b8cc530e7f9c4f61b34459de0af1",
+  "tools/popcorndrawtest.cjs": "437a6d4dedb5c6bdceabde99624c616247b5e808c7471675ed7c8ff42cc69644"
+}
