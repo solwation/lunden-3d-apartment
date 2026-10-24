@@ -5985,17 +5985,19 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
   // place is a *guess*. Frames hang where #1570's sconces/speakers, the screen, curtains, the passage and the signs leave wall free (a fixture's
   // depth counts as clearance so it never hides a poster at an angle; tools/cinemapostertest.cjs checks it); local metres, `wall`
   // = 'north' (z -5.2, facing south), 'south' (the partition z 1.54, facing north) or 'east' (x -3.06, facing west), `at` along that wall, `y` the centre.
-  cinemaPosters: { w: .56, h: .84, frame: .035, depth: .025, cell: [256, 384], timeoutMs: 8000, titleMax: 40,
+  cinemaPosters: { w: .56, h: .84, frame: .035, depth: .025, cell: [256, 384], timeoutMs: 8000,
     spots: [{ wall: 'north', at: -6.8 }, { wall: 'north', at: -5.3 }, { wall: 'south', at: -7.12 }, { wall: 'east', at: -4.4 }, { wall: 'east', at: -2.4 }, { wall: 'east', at: -.6 }], y: 1.25,
-    // #1589: only vetted films become posters: videos.list must say madeForKids + embeddable + public + not age-restricted, the channel must be on
+    // #1591: posters are only trailers: the searches ask for short videos (`videoDuration: short`, under 4 min) with "trailer" in the query, and a hit must
+    // have "trailer" in its title and a length of at most `maxTrailerSeconds`, so no full episode or film ever becomes a poster; `maxPerChannel` keeps one
+    // channel from filling the six spots (all *guess*). #1589: only vetted videos become posters: videos.list must say madeForKids + embeddable + public + not age-restricted, the channel must be on
     // `channels` and no block word may appear in title/channel. `channels` = hand-picked allow-list of official YouTube channel IDs (UC + 22 chars),
     // the mandatory gate (the user's choice on #1589: SVT/SR/UR, Swedish film distributors, official children's series, Disney/Pixar and similar studios).
     // Each was looked up on 2026-10-24 and kept only if YouTube shows its verified badge or the owner's own site/official channel links to it; being
     // verified alone is not enough (verified song/game-replay channels are left out on purpose). Not found or not provable: SVT Bolibompa Mini, UR Barn,
     // UR Play, Warner Bros. Pictures Sverige, DreamWorks Animation Sweden. Add channels the same way, with a comment. An empty list would fall back to
     // a transitional gate (channels.list, 1 unit): made-for-kids channel or a public subscriber count >= minSubscribers. blockWords/minSubscribers are *guess*.
-    // Quota per day: 3 searches x 100 + videos.list 1 + channels.list 1 = 302 units. `filterVersion`: KV lists without it are never served.
-    worker: { queries: ['barnfilm på svenska', 'tecknat på svenska hela filmen', 'tecknad film för barn'], perQuery: 10, recentDays: 730, retryHours: 6,
+    // Quota per day: 3 searches x 100 + videos.list 1 + channels.list 1 = 302 units. `filterVersion` (3 since #1591): KV lists without it are never served. The same 302 units (the trailer searches replace the film searches).
+    worker: { queries: ['trailer svenska barnfilm', 'officiell trailer svenska', 'trailer tecknad film barn'], perQuery: 15, maxTrailerSeconds: 300, maxPerChannel: 2, recentDays: 730, retryHours: 6,
       channels: [
         'UCG4t_7XwB_DXdrpvf4U1pgg', // SVT Barn (verified)
         'UCLuECFhnmqnX0bJ_3RSy_DA', // Barnradion, Sveriges Radio (linked from sverigesradio.se/barnradion)
@@ -6023,7 +6025,7 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
         'UCHaHZJAWfrlnysph7LReiYA', // DreamWorksTV World (verified)
         'UCq7OHvWO6Z3u-LztFdrcU-g', // Illumination (verified)
         'UCaOPA9kDa-s27ju1XG17Q1w', // Cartoon Network Sverige (verified)
-      ], minSubscribers: 500000, filterVersion: 2, blockWords: ['bajs', 'poop', 'kiss', 'prank', 'skibidi', '18+', 'toalett', 'toilet'] } },
+      ], minSubscribers: 500000, filterVersion: 3, blockWords: ['bajs', 'poop', 'kiss', 'prank', 'skibidi', '18+', 'toalett', 'toilet'] } },
   // #1574: own generated posters (one canvas atlas, one extra draw), neon, pub lamps and per-room light levels. Everything here is a *guess*
   // (local metres from the room's centre; every wall is named for its room: hall / BILJARD / SPEL; BIO is #1575's). `along` is x on the north/south walls
   // and z on the east/west walls; `designs` index the atlas cells (0-9 hall mix, 10-18 SPEL gaming, 19-27 BILJARD/DJ) and repeat; `y` is a poster's centre height.

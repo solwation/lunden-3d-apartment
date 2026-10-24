@@ -52,7 +52,7 @@ async function requestSearch(params, { key, fetcher, max }) {
   return items;
 }
 
-// #1575: the BIO's daily film posters. A few fixed child-safe searches (PLAYROOM.cinemaPosters.worker, *guess*) at most once per
+// #1575: the BIO's daily film posters. A few fixed child-safe trailer searches (PLAYROOM.cinemaPosters.worker, *guess*) at most once per
 // Europe/Stockholm day: 100 quota units per query, a failed day retried after `retryHours`. The last good list (KV 'cinema-posters')
 // is served (`stale: true`) while a new day cannot be fetched. #1589: only vetted films become posters (`vetPosters`); KV lists without the current `filter` version are never served. Titles/channels stay untrusted plain text for the client's canvas.
 const P = PLAYROOM.cinemaPosters, POSTER_KEY = 'cinema-posters', MAX_VETTED = 50; // videos.list takes at most 50 ids
@@ -68,7 +68,7 @@ export async function fetchPosters({ key, fetcher = fetch, now = Date.now(), cou
   const W = P.worker, after = new Date(now - W.recentDays * 86400e3).toISOString().replace(/\.\d+Z$/, 'Z');
   // One failing query does not cost the day: the others' films still make posters (nothing at all → error, yesterday's list stays).
   const lists = (await Promise.allSettled(W.queries.map((q) => requestSearch({ maxResults: String(W.perQuery), safeSearch: 'strict', regionCode: 'SE',
-    relevanceLanguage: 'sv', videoDuration: 'long', order: 'viewCount', publishedAfter: after, q: validQuery(q) }, { key, fetcher, max: W.perQuery })))).map((r) => (r.status === 'fulfilled' ? r.value : []));
+    relevanceLanguage: 'sv', videoDuration: 'short', order: 'viewCount', publishedAfter: after, q: validQuery(q) }, { key, fetcher, max: W.perQuery })))).map((r) => (r.status === 'fulfilled' ? r.value : []));
   // #1589: candidates (deduplicated, round-robin) are vetted before anything is published; unvetted hits never leave this function.
   const seen = new Set(), candidates = [];
   for (let i = 0; candidates.length < MAX_VETTED && lists.some((l) => i < l.length); i++) {
@@ -85,9 +85,14 @@ export async function fetchPosters({ key, fetcher = fetch, now = Date.now(), cou
   return items;
 }
 
+/** ISO 8601 duration ("PT2M30S", "P0D" …) → seconds, or Infinity when unknown/unparseable (so it never passes a length limit). */
+export const isoSeconds = (iso) => { const m = /^P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$/.exec(iso ?? ''); return m && iso !== 'P' && iso !== 'PT' ? (+m[1] || 0) * 86400 + (+m[2] || 0) * 3600 + (+m[3] || 0) * 60 + (+m[4] || 0) : Infinity; };
+const trailerLength = (seconds) => seconds > 0 && seconds <= P.worker.maxTrailerSeconds; // 0 = a live stream / premiere (P0D)
+const isTrailer = (title) => /trailer/i.test(title);
+
 const blocked = (text) => { const t = text.toLowerCase(); return P.worker.blockWords.some((w) => t.includes(w.toLowerCase())); };
 
-/** #1589: keep only embeddable, public, made-for-kids, not age-restricted videos (videos.list, 1 unit) from an allow-listed channel
+/** #1589/#1591: keep only trailers ("trailer" in the title, short) that are embeddable, public, made-for-kids, not age-restricted videos (videos.list, 1 unit) from an allow-listed channel
  *  (`worker.channels`) or, while that list is empty, from a made-for-kids / large channel (channels.list, 1 unit); then drop block words.
  *  Any API failure throws 'upstream' (nothing unvetted is ever returned). */
 async function vetPosters(candidates, { key, fetcher }) {
@@ -98,6 +103,8 @@ async function vetPosters(candidates, { key, fetcher }) {
   for (const v of videos.items) {
     if (v?.status?.madeForKids !== true || v.status.embeddable !== true || v.status.privacyStatus !== 'public') continue;
     if (v.contentDetails?.contentRating?.ytRating === 'ytAgeRestricted') continue;
+    // #1591: trailers only: a short video whose own title says "trailer" (never a full episode or film).
+    if (!isTrailer(v.snippet?.title ?? '') || !trailerLength(isoSeconds(v.contentDetails?.duration))) continue;
     if (typeof v.id === 'string' && CHANNEL.test(v.snippet?.channelId ?? '')) good.set(v.id, v.snippet.channelId);
   }
   let kept = candidates.filter((c) => good.has(c.id)).map((c) => ({ ...c, channelId: good.get(c.id) }));
@@ -110,7 +117,8 @@ async function vetPosters(candidates, { key, fetcher }) {
       || (ch.statistics?.hiddenSubscriberCount !== true && Number(ch.statistics?.subscriberCount) >= W.minSubscribers))).map((ch) => ch.id));
     kept = kept.filter((c) => ok.has(c.channelId));
   }
-  return kept.filter((c) => !blocked(c.title) && !blocked(c.channel));
+  const perChannel = new Map(); // #1591: at most `maxPerChannel` posters per channel, in the merged (round-robin) order
+  return kept.filter((c) => !blocked(c.title) && !blocked(c.channel)).filter((c) => { const n = perChannel.get(c.channelId) ?? 0; perChannel.set(c.channelId, n + 1); return n < W.maxPerChannel; });
 }
 
 const validPosters = (v) => v && v.filter === P.worker.filterVersion && typeof v.day === 'string' && Array.isArray(v.items) && v.items.length > 0 && v.items.length <= 12

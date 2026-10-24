@@ -50,7 +50,7 @@ export class CinemaPosters {
       // the pick box sits in its own group, hidden for a generic (non-clickable) poster: main.js's `shown` skips it
       const holder = new THREE.Group(), pick = new THREE.Mesh(new THREE.BoxGeometry(P.w + 2 * P.frame, P.h + 2 * P.frame, .08), new THREE.MeshBasicMaterial({ visible: false }));
       pick.rotation.y = p.yaw; pick.position.set(R.x + p.x + p.n[0] * .04, P.y, R.z + p.z + p.n[1] * .04);
-      const target = { kind: 'playroomPoster', name: 'affischen', verb: 'starta', video: null, title: '', pickable: pick, holder, index: i };
+      const target = { kind: 'playroomPoster', name: 'affischen', verb: 'visa', video: null, title: '', pickable: pick, holder, index: i };
       pick.userData.door = target; holder.add(pick); holder.visible = false; this.object.add(holder);
       this.targets.push(target); this.pickables.push(pick);
     });
@@ -99,8 +99,8 @@ export class CinemaPosters {
     return this.loading;
   }
 
-  saved() { try { const v = JSON.parse(localStorage.getItem(STORE) ?? 'null'); return v?.v === 2 ? posterItems(v.items) : []; } catch { return []; } }
-  store(items) { try { localStorage.setItem(STORE, JSON.stringify({ v: 2, day: day(), items })); } catch { /* a full/blocked store only loses the fallback */ } }
+  saved() { try { const v = JSON.parse(localStorage.getItem(STORE) ?? 'null'); return v?.v === 3 ? posterItems(v.items) : []; } catch { return []; } }
+  store(items) { try { localStorage.setItem(STORE, JSON.stringify({ v: 3, day: day(), items })); } catch { /* a full/blocked store only loses the fallback */ } }
 
   /** Load the thumbnails (bounded), then redraw the atlas once; the same list is not redrawn. */
   async show(items, source) {
@@ -133,7 +133,7 @@ export class CinemaPosters {
       c.restore();
       const t = this.targets[i];
       t.video = item?.id ?? null; t.title = item?.title ?? '';
-      t.name = item ? `filmen ”${item.title.length > P.titleMax ? `${item.title.slice(0, P.titleMax - 1)}…` : item.title}”` : 'affischen';
+      t.name = item ? 'trailer' : 'affischen'; // #1591: the prompt/button reads "visa trailer" (the poster itself shows the title)
       t.holder.visible = !!item;
     });
     this.texture.needsUpdate = true;

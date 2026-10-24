@@ -34,13 +34,13 @@ local Worker and live YouTube access.
 
 BIO film posters (#1575, `src/cinemaposters.js`): six framed posters on the BIO's north wall, south partition and east wall
 (PLAYROOM.cinemaPosters, *guess*: clear of the screen, curtains, passage, signs and #1570's sconces/speakers) show the day's
-popular children's films from the Worker's `GET /cinema/posters` ([cloudflare/README.md](../../cloudflare/README.md#bions-affischer-1575)).
+popular children's *trailers* (#1591: only short videos titled "trailer" from allow-listed channels, at most two per channel) from the Worker's `GET /cinema/posters` ([cloudflare/README.md](../../cloudflare/README.md#bions-affischer-1575)).
 Each shows the video's own `i.ytimg.com/vi/<id>/hqdefault.jpg` thumbnail (that host answers `Access-Control-Allow-Origin: *`, so
 no image proxy is needed) and its title, painted on one canvas atlas; the frames join the room's furniture batch and the faces are
 one extra MeshBasic draw inside (none outside), dimmed with the sconces while a film runs. The atlas is repainted only when the list
 changes. The fetch starts when the visitor enters the playhouse (8 s deadline; once a day after a success, a failure waits 5 minutes);
-start-up never waits for it. Fallback: the last good list in localStorage `lunden.cinemaPosters`, else generic "Snart på bion"
-posters whose pick boxes are hidden (not clickable). E / click / the touch action button on a poster calls
+start-up never waits for it. Fallback: the last good list in localStorage `lunden.cinemaPosters` (`v: 3`), else generic "Snart på bion"
+posters whose pick boxes are hidden (not clickable). E / click / the touch action button on a poster (prompt "visa trailer", button "Visa trailer") calls
 `CinemaPlayer.playPoster(id)`: claim if the screen is free, the ordinary `choose` → `select`, release: the same `RoomCinema`
 ownership and sync rules as the dialog; a refusal shows the dialog's wording as a badge (`cinema.onNotice`). Ids are
 pattern-checked again in the client; titles/channels are drawn on the canvas or shown as `textContent` only. Test:

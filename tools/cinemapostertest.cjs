@@ -6,14 +6,14 @@
 const fs = require('node:fs'), assert = require('node:assert/strict'), kit = require('./testkit.cjs');
 const [game = 'http://localhost:8180', out = '/tmp/bio1575'] = process.argv.slice(2);
 const CLOUD = 'http://localhost:8181';
-// real search results (GET /youtube-search, 2026-10-24) so the pictures show real thumbnails; any 11-character ids would do for the checks
+// trailer-style titles (#1591); the ids are real videos so thumbnails show where the network reaches i.ytimg.com (any 11-character ids would do for the checks)
 const ITEMS = [
-  { id: 'CRPxvIdtLz4', title: 'Bluey Säsong 1 Fullständiga avsnitt | Bluey Officiella Svenska Kanalen', channel: 'Bluey - Officiella Svenska Kanalen' },
-  { id: '3YpOOPh5_8I', title: 'Nicke Nyfiken | Ett helt avsnitt | Benbrottet | Tecknad Film för Barn', channel: 'Nicke Nyfiken' },
-  { id: 'Njxv_cnsBjk', title: '🌞Busters dag på stranden | Go Buster Svenska', channel: 'Go Buster Svenska - tecknade filmer för barn' },
-  { id: 'afeEKpKM608', title: 'Unicorn Academy FULL FILM 🦄 | Unicorn Academy Svenska', channel: 'Unicorn Academy Svenska' },
-  { id: 'O63MJNQh02I', title: 'Episoder 1-10 | 1- Timma+ | Bings Hela Avsnitt | Bing Svenska', channel: 'Bing Svenska - Officiella Kanalen' },
-  { id: 'kkdBWpijGag', title: 'Prinsessan Rapunzel – Saga för barn | Godnattsaga', channel: 'PapaKids Svenska' },
+  { id: 'CRPxvIdtLz4', title: 'Bluey - Officiell trailer | Svenska', channel: 'Bluey - Officiella Svenska Kanalen' },
+  { id: '3YpOOPh5_8I', title: 'Nicke Nyfiken - Trailer | Tecknad film för barn', channel: 'Nicke Nyfiken' },
+  { id: 'Njxv_cnsBjk', title: 'Bamse och tjuvstaden - Officiell trailer', channel: 'Bamse Världens starkaste björn' },
+  { id: 'afeEKpKM608', title: 'Pippi Långstrump - Trailer', channel: 'Pippi Långstrump' },
+  { id: 'O63MJNQh02I', title: 'Bing - Trailer | Svenska', channel: 'Bing Svenska - Officiella Kanalen' },
+  { id: 'kkdBWpijGag', title: 'Alfons Åberg - Officiell trailer', channel: 'Alfons Åberg' },
 ];
 /** No poster rectangle (frame included) overlaps a fixture on the same wall, in the wall plane; each fixture is grown by its own depth
  * (how far it stands out, so it cannot hide a poster seen at an angle), the passage by 3 cm, and the screen/curtain end is kept clear. */
@@ -121,7 +121,7 @@ async function clearance() {
     await page.evaluate(() => __app.renderer.domElement.requestPointerLock()); await page.waitForFunction(() => document.pointerLockElement);
     { const s = spot(1); await view(s.from, s.at); }
     const desk = await focus();
-    assert.equal(desk.kind, 'playroomPoster'); assert.equal(desk.video, ITEMS[1].id); assert.match(desk.prompt, /starta filmen/, JSON.stringify(desk));
+    assert.equal(desk.kind, 'playroomPoster'); assert.equal(desk.video, ITEMS[1].id); assert.match(desk.prompt, /visa trailer/, JSON.stringify(desk));
     await page.keyboard.press('KeyE');
     await page.waitForFunction((id) => __app.cinema.state?.video === id && !__app.cinema.state.owner, ITEMS[1].id, { timeout: 10000 });
     const deskRun = await page.evaluate(() => ({ sent: [...__sent], video: __app.cinema.state.video, owner: __app.cinema.state.owner, dialog: __app.cinema.open }));
