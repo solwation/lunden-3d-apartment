@@ -739,7 +739,7 @@ the paint's triangles. Houses 41/42/43 bases unchanged; A/B/C/L not applicable (
 
 ### Parking south of Sankt Lars 44 on civil sub-planes (#1446)
 
-OSM 145221629 (the concave eight-corner lot south of Sankt Lars 44, raw capacity 40/guess, no boxes: that is #1447) uses the
+OSM 145221629 (the concave eight-corner lot south of Sankt Lars 44, raw capacity 40/guess; boxes since #1447, below) uses the
 #1444 mechanism by configuration only: `grade: {transition: 6, clip, tin, maxSlope: 0.2, fade: 'linear'}` (all *guess*). The
 6 m inset core is triangulated over its eight corners (6 sub-planes; all 18 triangulations keep 0.2, the smallest largest
 residual 1.37 m wins; steepest sub-plane 0.127). The whole lot lies south of `WALK.z1=250` (from z 345.9), so it is not
@@ -750,6 +750,21 @@ under the graded lot: their emitted bases are the hard height control and stay a
 outside the 6 m band and are unchanged. Cost: `site-terrain` +487 (90659->91146), `south-backdrop` -1607 (the lot's asphalt
 2597->743 triangles plus hidden path triangles); no new mesh, material or texture. Test: `tools/parking1446test.html`
 (pinned values of 8c5556ec; `parking1444/1445/1452test` pin the new totals 91146/48252). Houses A/B/C/L: not applicable.
+
+### Boxes facing the mapped ways on lot 145221629 (#1447)
+
+The lot has no single through aisle: OSM maps a small network of 4.5 m ways inside it (145221614 in three straight legs,
+145221585/588/592/599) around houses 48 and 49, with 95036048 along its north-west edge. `createAisleLayout` therefore takes a
+per-row `aisle` ({road, from, to}); such a row runs only along its own way's straight axis (never its extension), and the boxes
+of all rows may not overlap. Every way in `clear` (and every row's own way) keeps 4.5/2 + `margin` 0.75 m = 3 m free each side,
+so each mapped way is a 6 m clear aisle (*guess*). New `layout.buildings: true` also keeps every box `margin` (0.75 m, *guess*)
+off all mapped building footprints, because this OSM outline encloses houses 48 and 49. Rows that produced no box were left out
+of the config. Result: 56 whole 2.5x5 m boxes (*guess*) in 12 runs, each wholly inside the outline, front 3 m from its own way
+and with a free 6 m apron in front; no divider crosses an aisle; houses 44/47/48/49 untouched (≥0.79 m). Raw capacity 40
+(*guess*) stays unchanged and unused. Other aisle lots (850235113, 145221628, 1379042188) give byte-identical layouts.
+Cost: `south-backdrop` +333 (48348->48681; 54724->55057 on top of #1556) paint triangles in `south-land`, `site-terrain` unchanged (91146), no new mesh or
+material. Whole lot south of `WALK.z1`: ray evidence only. Test: `tools/parking1447test.html`; `parking1443/1445/1452test`
+pin the new total, `parking1446test` accepts the guessed layout. Houses A/B/C/L: not applicable (site parking only).
 
 ## Southern road embankment (#1382)
 

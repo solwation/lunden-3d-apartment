@@ -1,0 +1,72 @@
+<!doctype html><html><meta charset="utf-8"><title>Parking boxes #1447</title><pre id="out">running…</pre><canvas id="preview" width="720" height="720" style="display:block;width:min(100%,720px);border:1px solid #bbb"></canvas><script type="module">
+// #1447: whole guessed 2.5×5 m boxes facing the mapped ways inside the concave OSM parking 145221629 south of Sankt Lars 44 (it encloses houses 48 and 49),
+// drawn on the civil sub-planes of #1446, in the actual World. Baseline b361f59a: plain asphalt without paint (south-backdrop 48348, site-terrain 91146).
+// The whole lot lies south of WALK.z1 (not reachable on foot): surface and ray evidence only.
+const out=document.querySelector('#out'),lines=[];let pass=true;const T0=performance.now();
+const check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);pass&&=!!ok;out.textContent=lines.join('\n');};
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const SRC='145221629',POLY='[[-13.78,384],[39.85,345.93],[61.52,376.34],[54.83,381.08],[68.7,400.55],[30.48,427.69],[19.81,412.72],[11.1,418.91]]';
+const GRADE='{"transition":6,"transitionSource":"guess","clip":true,"tin":true,"maxSlope":0.2,"fade":"linear"}';
+const WAYS=['145221614','145221585','145221588','145221592','145221599','95036048'],HOUSES={'Sankt Lars väg 48':'88457584','Sankt Lars väg 49':'88457589','Sankt Lars väg 47':'88457594','Sankt Lars 44':'relation/1309428'};
+const BASE_TERRAIN=91146,BASE_SOUTH=54724,CAP={southDelta:400,terrainDelta:0}; // b361f59a totals plus #1556's brick pavilions (+6376); the paint may add at most this much (measured: see the cost line)
+try{
+ const frame=document.createElement('iframe');frame.width=480;frame.height=300;frame.src='../index.html?test&shot&month=6&cloud=';document.body.append(frame);await new Promise(r=>frame.onload=r);const w=frame.contentWindow;for(let i=0;i<360&&!w.__app?.scene;i++)await wait(500);if(!w.__app?.scene)throw Error('actual World did not finish loading');
+ const A=w.__app,T=await w.eval("import('three')"),C=await w.eval("import('/src/config.js')"),S=await w.eval("import('/src/surroundings.js')"),P=await w.eval("import('/src/parkinglot1442.js')"),B=await w.eval("import('/src/southbackdrop.js')");
+ const lot=C.SITE.south.parking.find(p=>p.source===SRC),poly=lot.polygon,roads=[...C.SITE.south.paths,...(C.SITE.south.access??[])],acc=src=>roads.find(r=>r.source===src);
+ const houses=Object.values(HOUSES).map(s=>C.SITE.south.buildings.find(b=>b.source===s).polygon.slice(0,-1));
+ const inside=(x,z,p=poly)=>{let yes=false;for(let i=0,j=p.length-1;i<p.length;j=i++)if((p[i][1]>z)!==(p[j][1]>z)&&x<(p[j][0]-p[i][0])*(z-p[i][1])/(p[j][1]-p[i][1])+p[i][0])yes=!yes;return yes;};
+ const segD=(p,a,b)=>{const dx=b[0]-a[0],dz=b[1]-a[1],t=Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dz)/(dx*dx+dz*dz||1)));return Math.hypot(p[0]-a[0]-dx*t,p[1]-a[1]-dz*t);};
+ const lineD=(p,path)=>Math.min(...path.slice(1).map((b,i)=>segD(p,path[i],b)));
+ const onEdge=(x,z,p,e)=>p.some((a,i)=>segD([x,z],a,p[(i+1)%p.length])<e);
+ const area=p=>p.reduce((s,a,i)=>{const b=p[(i+1)%p.length];return s+a[0]*b[1]-b[0]*a[1];},0)/2;
+ check(lot.capacity===40&&lot.capacitySource==='guess'&&JSON.stringify(poly)===POLY&&JSON.stringify(lot.grade)===GRADE&&lot.layout?.source==='guess'&&lot.layout.buildings===true&&lot.layout.rows.every(r=>WAYS.includes(r.aisle?.road)),'OSM outline, raw capacity 40 (guess) and the #1446 grade kept; the layout (ways, rows, margin, house clearance) is marked guess and uses only mapped ways');
+ const L=P.createParkingLayout(lot);
+ const boxPts=s=>{const p=s.polygon,pts=[];for(let i=0;i<=20;i++)for(let j=0;j<=40;j++){const a=i/20,b=j/40;pts.push([p[0][0]+(p[1][0]-p[0][0])*a+(p[3][0]-p[0][0])*b,p[0][1]+(p[1][1]-p[0][1])*a+(p[3][1]-p[0][1])*b]);}return pts;};
+ const sizes=L.stalls.every(s=>{const p=s.polygon,e=(i,j)=>Math.hypot(p[j][0]-p[i][0],p[j][1]-p[i][1]);return Math.abs(e(0,1)-2.5)<1e-6&&Math.abs(e(1,2)-5)<1e-6&&Math.abs(s.area-12.5)<1e-6;});
+ const byWay=WAYS.map(s=>`${s}:${L.stalls.filter(t=>t.road===s).length}`).join(' ');
+ check(L.stalls.length>=40&&sizes,`${L.stalls.length} whole 2.5×5 m boxes in ${L.runs.length} runs (${byWay}); the guessed raw capacity stays 40`);
+ const outLot=L.stalls.filter(s=>boxPts(s).some(([x,z])=>!inside(x,z)&&!onEdge(x,z,poly,1e-6))).length;
+ let houseGap=Infinity;for(const s of L.stalls)for(const h of houses){for(const q of boxPts(s))houseGap=Math.min(houseGap,inside(q[0],q[1],h)?-1:Math.min(...h.map((a,i)=>segD(q,a,h[(i+1)%h.length]))));for(const q of h)if(inside(q[0],q[1],s.polygon))houseGap=-1;}
+ let overlap=0;for(const s of L.stalls)for(const o of L.stalls)if(o!==s&&Math.abs(area(P.clipConvex(s.polygon,o.polygon)))>1e-6)overlap++;
+ check(outLot===0&&houseGap>=.75-1e-6&&overlap===0,`every box lies wholly inside the concave outline (${outLot} outside), none overlaps another (${overlap}), all stay ${houseGap.toFixed(2)} m (≥0.75, guess) off the footprints of houses 48, 49, 47 and 44`);
+ // Clear aisle: no box within 3 m of any mapped way's centre line, and the 6 m in front of every box (towards its own way) holds no other box.
+ let wayGap=Infinity,blocked=0,front=Infinity;for(const s of L.stalls){for(const src of WAYS)for(const q of boxPts(s))wayGap=Math.min(wayGap,lineD(q,acc(src).path));
+  const p=s.polygon,d=[(p[0][0]-p[3][0])/5*6,(p[0][1]-p[3][1])/5*6],zone=[p[0],p[1],[p[1][0]+d[0],p[1][1]+d[1]],[p[0][0]+d[0],p[0][1]+d[1]]];
+  front=Math.min(front,lineD([(p[0][0]+p[1][0])/2,(p[0][1]+p[1][1])/2],acc(s.road).path));
+  for(const o of L.stalls)if(o!==s&&Math.abs(area(P.clipConvex(zone,o.polygon)))>1e-6)blocked++;}
+ check(wayGap>=3-1e-6&&blocked===0&&Math.abs(front-3)<1e-6,`a clear 6 m aisle (guess) along every mapped way in the lot: boxes stay ${wayGap.toFixed(3)} m from the centre lines of ${WAYS.join('/')} (4.5 m strips + 0.75 m), every box front is ${front.toFixed(2)} m from its own way and its 6 m apron holds no other box (${blocked})`);
+ const across=L.markingSegments.filter(([a,b])=>Math.abs(Math.hypot(b[0]-a[0],b[1]-a[1])-5)>1e-6||WAYS.some(src=>Math.min(lineD(a,acc(src).path),lineD(b,acc(src).path))<3-1e-6)).length;
+ check(L.markingSegments.length>=L.stalls.length&&across===0,`${L.markingSegments.length} 5 m dividers, none crosses or reaches into an aisle (${across})`);
+ // Rendered surface: rays on the emitted merged asphalt/paint over the #1446 sub-planes.
+ const build=()=>{const g=B.southBackdropParts(S.renderedTerrainY);let r;do r=g.next();while(!r.done);return r.value;},tris=g=>{let k=0;g.traverse(m=>{if(m.isMesh)k+=(m.geometry.index?.count??m.geometry.attributes.position.count)/3*(m.isInstancedMesh?m.count:1)});return k;},meshes=g=>{const m=[];g.traverse(o=>{if(o.isMesh)m.push(o.name)});return m.join();};
+ const saved=lot.layout;delete lot.layout;const before=build();lot.layout=saved;const after=build(),live=A.scene.getObjectByName('south-backdrop'),liveTris=tris(live),terrain=A.scene.getObjectByName('site-terrain'),terrTris=terrain.geometry.index.count/3;
+ const landOf=g=>g.children.find(m=>m.name==='south-land'),bl=landOf(before).geometry.attributes.position.count/3,al=landOf(after).geometry.attributes.position.count/3;
+ const dSouth=tris(after)-tris(before);
+ check(tris(before)===BASE_SOUTH&&tris(after)===liveTris&&dSouth>0&&dSouth<=CAP.southDelta&&terrTris===BASE_TERRAIN&&meshes(after)===meshes(before)&&meshes(live)===meshes(before),`cost: south-backdrop ${tris(before)} → ${tris(after)} (+${dSouth}, cap +${CAP.southDelta}; live ${liveTris}); south-land ${bl} → ${al}; site-terrain ${terrTris} (unchanged); same ${meshes(after).split(',').length} meshes, no extra draw call or material`);
+ const ray=new T.Raycaster(),down=new T.Vector3(0,-1,0),hitY=(m,x,z)=>{ray.set(new T.Vector3(x,40,z),down);return ray.intersectObject(m)[0]?.point.y;},ground=S.renderedTerrainY;
+ const onWay=(x,z)=>WAYS.some(src=>{const r=acc(src);return lineD([x,z],r.path)<r.w/2+.1;});
+ const nearPaint=(x,z)=>L.markingSegments.some(([a,b])=>segD([x,z],a,b)<.1);
+ const inHouse=(x,z)=>houses.some(h=>inside(x,z,h)||onEdge(x,z,h,.3));
+ const xs=poly.map(q=>q[0]),zs=poly.map(q=>q[1]);
+ let rays=0,miss=0,surfErr=0;for(let x=Math.min(...xs);x<Math.max(...xs);x+=.7)for(let z=Math.min(...zs);z<Math.max(...zs);z+=.7){if(!inside(x,z)||onEdge(x,z,poly,.05)||onWay(x,z)||nearPaint(x,z)||inHouse(x,z))continue;
+  const yb=hitY(landOf(before),x,z),ya=hitY(landOf(after),x,z);if(yb==null||ya==null){miss++;continue;}rays++;surfErr=Math.max(surfErr,Math.abs(ya-yb),Math.abs(ya-ground(x,z)-.052));}
+ check(rays>1500&&miss===0&&surfErr<2e-5,`${rays} rays on asphalt off the paint (all south of WALK.z1=${C.WALK.z1}): merged surface equals the old one and sits 5.2 cm over the rendered #1446 surface (max error ${surfErr.toExponential(2)} m, misses ${miss})`);
+ let paintRays=0,paintBad=0,boxRays=0,boxBad=0;for(const s of L.stalls){const q=s.polygon;for(const k of [.2,.5,.8])for(const e of [[0,3],[1,2]]){const x=q[e[0]][0]+(q[e[1]][0]-q[e[0]][0])*k,z=q[e[0]][1]+(q[e[1]][1]-q[e[0]][1])*k,y=hitY(landOf(after),x,z);paintRays++;if(y==null||Math.abs(y-ground(x,z)-.076)>2e-5)paintBad++;}
+  const y=hitY(landOf(after),...s.center);boxRays++;if(y==null||Math.abs(y-ground(...s.center)-.052)>2e-5)boxBad++;}
+ let aisleRays=0,aisleBad=0;for(const src of WAYS){const r=acc(src);for(let i=1;i<r.path.length;i++){const a=r.path[i-1],b=r.path[i],l=Math.hypot(b[0]-a[0],b[1]-a[1]);for(let t=0;t<=l;t+=.5){const x=a[0]+(b[0]-a[0])*t/l,z=a[1]+(b[1]-a[1])*t/l;if(!inside(x,z))continue;aisleRays++;const y=hitY(landOf(after),x,z);if(y!=null&&y>ground(x,z)+.07)aisleBad++;}}}
+ const pos=landOf(after).geometry.attributes.position,col=landOf(after).geometry.attributes.color;let paint=0,paintErr=0,paintOut=0;for(let i=0;i<pos.count;i++){const x=pos.getX(i),z=pos.getZ(i),d=pos.getY(i)-ground(x,z);if(col.getX(i)>.85&&col.getY(i)>.85&&Math.abs(d-.076)<.01&&(inside(x,z)||onEdge(x,z,poly,.2))){paint++;paintErr=Math.max(paintErr,Math.abs(d-.076));if(!inside(x,z)&&!onEdge(x,z,poly,5e-5))paintOut++;}}
+ const parts=P.parkingLayoutParts(lot,ground),expect=parts.markings.reduce((k,g)=>k+g.attributes.position.count,0);
+ check(paint===expect&&paintErr<1e-5&&paintOut===0&&paintBad===0&&boxBad===0&&aisleRays>100&&aisleBad===0,`emitted paint follows the rendered surface: ${paint}/${expect} vertices at +7.6 cm (max error ${paintErr.toExponential(2)} m, ${paintOut} outside the outline); ${paintRays} divider rays hit paint, ${boxRays} box-centre rays hit asphalt, no paint along the ways' centre lines (${aisleBad} of ${aisleRays})`);
+ // #1446 and neighbours unchanged.
+ const planes=S.renderedTerrainY.lotPlanes?.()??[],tin=planes.find(p=>p.source===SRC)?.plane?.tin;
+ const recs=live.userData.buildings,hb=Object.fromEntries(recs.filter(r=>r.name in HOUSES).map(r=>[r.name,r.base]));
+ const HB={'Sankt Lars väg 48':null,'Sankt Lars väg 49':null};for(const r of C.SITE.south.buildings)if(r.source==='88457584'||r.source==='88457589')HB[r.name]=r.keepBase;
+ check(tin?.triangles.length===6&&Object.keys(hb).length===4&&Math.abs(hb['Sankt Lars väg 48']-HB['Sankt Lars väg 48'])<1e-9&&Math.abs(hb['Sankt Lars väg 49']-HB['Sankt Lars väg 49'])<1e-9&&Math.abs(S.groundY(10,248)-1.26)<1e-6&&C.WALK.z1===250,`#1446 sub-planes (${tin?.triangles.length}) kept; emitted bases ${Object.entries(hb).map(([k,v])=>`${k} ${v.toFixed(3)}`).join(', ')} (48/49 = their keepBase), control (10,248) and WALK.z1=${C.WALK.z1} kept`);
+ const trunks=live.children.filter(m=>m.isInstancedMesh);let treeHit=0;const M=new T.Matrix4(),v=new T.Vector3();for(const m of trunks)for(let i=0;i<m.count;i++){m.getMatrixAt(i,M);v.setFromMatrixPosition(M);if(L.stalls.some(s=>inside(v.x,v.z,s.polygon)))treeHit++;}
+ check(treeHit===0,`no backdrop tree stands in a box (${treeHit})`);
+ check(L.stalls.every(s=>s.polygon.every(([,z])=>z>C.WALK.z1)),'every box lies south of WALK.z1: surface/ray evidence only, honestly not reachable on foot');
+ const renderer=new T.WebGLRenderer({canvas:document.querySelector('#preview'),antialias:true});renderer.setSize(720,720,false);renderer.setPixelRatio(1);const scene=new T.Scene();scene.background=new T.Color(0x8fae6a);scene.add(new T.AmbientLight(0xffffff,1.6));scene.add(landOf(after));const cm=new T.OrthographicCamera(-48,48,48,-48,.1,200);cm.position.set(27,80,387);cm.up.set(0,0,-1);cm.lookAt(27,0,387);renderer.render(scene,cm);
+ check(!w.document.querySelector('#error'),'actual World remains loaded');
+}catch(e){check(false,`test error: ${e.message}`)}
+out.textContent+=`\ntime ${((performance.now()-T0)/1000).toFixed(1)} s\n${pass?'ALL PASS':'SOME FAILED'}`;
+</script></html>

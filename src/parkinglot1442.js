@@ -505,35 +505,52 @@ const pointIn = (x, z, p) => { let yes = false; for (let i = 0, j = p.length - 1
  * box (widened by half a paint line) lies inside the polygon and clear of the
  * aisle way and every `clear` way strip (half width + margin), so the rows
  * break around the lot's necks, notches, the house edge and the mapped entrance.
+ * #1447: rows may line other mapped ways (`row.aisle`), boxes never overlap, and
+ * `buildings: true` keeps them `margin` off every mapped building footprint.
  */
 function createAisleLayout(lot, { bayWidth, bayDepth }) {
   const poly = ring(lot.polygon ?? []), L = lot.layout, ways = [...(SITE.south.paths ?? []), ...(SITE.south.access ?? [])], way = (s) => { const r = ways.find(w => w.source === s); if (!r) throw new RangeError(`Parking layout way ${s} is not mapped`); return r; };
   // #1452: `aisle.from` (a path vertex index) uses only the way's straight end from that vertex on as the aisle axis
   // (service way 335403605 bends before it enters 1379042188); the whole way stays clear. #1445: `aisle.to` ends the axis at that vertex (way 145221573 bends again at (-58.09,295.24)).
-  const road = way(L.aisle.road), axis = road.path.slice(L.aisle.from ?? 0, L.aisle.to == null ? undefined : L.aisle.to + 1), a = axis[0], b = axis.at(-1), len = Math.hypot(b[0] - a[0], b[1] - a[1]);
-  const u = [(b[0] - a[0]) / len, (b[1] - a[1]) / len], n = [-u[1], u[0]], proj = (p, v) => p[0] * v[0] + p[1] * v[1];
-  const c = axis.reduce((s, p) => s + proj(p, n), 0) / axis.length, ua = proj(a, u);
-  if (axis.some(p => Math.abs(proj(p, n) - c) > .1)) throw new RangeError(`Parking aisle way ${road.source} is not straight`);
-  const margin = L.margin ?? .25, paint = (L.paint ?? .08) / 2, at = (v, w) => [u[0] * v + n[0] * w, u[1] * v + n[1] * w];
-  const clear = [road, ...(L.clear ?? []).map(way)].map(r => ({ source: r.source, path: r.path, keep: (Array.isArray(r.w) ? Math.max(...r.w) : r.w) / 2 + margin }));
-  const us = poly.map(p => proj(p, u)), lotU0 = Math.min(...us), lotU1 = Math.max(...us), boxArea = (bayWidth + 2 * paint) * bayDepth;
-  const fits = (box) => box.every(([x, z]) => pointIn(x, z, poly)) && Math.abs(area(clipConvex(poly, box))) >= boxArea - 1e-6 && clear.every(r => r.path.slice(1).every((q, i) => box.every((p, k) => segDist(r.path[i], q, p, box[(k + 1) % 4]) >= r.keep - 1e-6) ) && r.path.every(q => !pointIn(q[0], q[1], box)));
-  const stalls = [], segments = [], runs = [];
+  // #1447: a row may name its own `aisle` ({road, from, to}) so one lot lines several mapped ways; the lot's `aisle` stays the main axis.
+  const proj = (p, v) => p[0] * v[0] + p[1] * v[1];
+  const frame = (A) => {
+    const road = way(A.road), axis = road.path.slice(A.from ?? 0, A.to == null ? undefined : A.to + 1), a = axis[0], b = axis.at(-1), len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    const u = [(b[0] - a[0]) / len, (b[1] - a[1]) / len], n = [-u[1], u[0]], c = axis.reduce((s, p) => s + proj(p, n), 0) / axis.length;
+    if (axis.some(p => Math.abs(proj(p, n) - c) > .1)) throw new RangeError(`Parking aisle way ${road.source} is not straight`);
+    return { road, u, n, c, len, ua: proj(a, u), at: (v, w) => [u[0] * v + n[0] * w, u[1] * v + n[1] * w] };
+  };
+  const main = frame(L.aisle), { u, n, c, ua } = main;
+  const margin = L.margin ?? .25, paint = (L.paint ?? .08) / 2;
+  const roads = [main.road, ...(L.rows ?? []).filter(r => r.aisle).map(r => way(r.aisle.road)), ...(L.clear ?? []).map(way)].filter((r, i, all) => all.indexOf(r) === i);
+  const clear = roads.map(r => ({ source: r.source, path: r.path, keep: (Array.isArray(r.w) ? Math.max(...r.w) : r.w) / 2 + margin }));
+  // #1447: `buildings: true` also keeps every box `margin` clear of the mapped building footprints (an OSM outline may enclose houses).
+  const houses = L.buildings ? (SITE.south.buildings ?? []).map(b => ring(b.polygon)) : [];
+  const boxArea = (bayWidth + 2 * paint) * bayDepth, stalls = [], segments = [], runs = [];
+  const edgesOf = (p) => p.map((q, i) => [q, p[(i + 1) % p.length]]);
+  const fits = (box, foot) => box.every(([x, z]) => pointIn(x, z, poly)) && Math.abs(area(clipConvex(poly, box))) >= boxArea - 1e-6
+    && clear.every(r => r.path.slice(1).every((q, i) => box.every((p, k) => segDist(r.path[i], q, p, box[(k + 1) % 4]) >= r.keep - 1e-6)) && r.path.every(q => !pointIn(q[0], q[1], box)))
+    && houses.every(h => !h.some(([x, z]) => pointIn(x, z, box)) && !box.some(([x, z]) => pointIn(x, z, h)) && edgesOf(h).every(([p, q]) => edgesOf(box).every(([s, t]) => segDist(p, q, s, t) >= margin - 1e-6)))
+    && stalls.every(s => Math.abs(area(clipConvex(foot, s.polygon))) < 1e-6);
   for (const row of L.rows ?? []) {
-    const side = Math.sign(row.side), near = c + side * row.offset, far = near + side * bayDepth;
-    const lo = row.from == null ? lotU0 : ua + row.from, hi = row.to == null ? lotU1 : ua + row.to;
+    const F = row.aisle ? frame(row.aisle) : main, at = F.at;
+    const side = Math.sign(row.side), near = F.c + side * row.offset, far = near + side * bayDepth;
+    // a row on its own `aisle` runs only along that way's axis (from/to default to its ends), so it never lines the axis's extension.
+    const us = poly.map(p => proj(p, F.u)), lo = row.from == null ? (row.aisle ? F.ua : Math.min(...us)) : F.ua + row.from, hi = row.to == null ? (row.aisle ? F.ua + F.len : Math.max(...us)) : F.ua + row.to;
     let run = null;
     for (let t = lo; t + bayWidth <= hi + 1e-9;) {
       const box = [at(t - paint, near), at(t + bayWidth + paint, near), at(t + bayWidth + paint, far), at(t - paint, far)];
-      if (!fits(box)) { t = Math.round((t + .01) * 100) / 100; run = null; continue; }
-      if (!run) runs.push(run = { side, offset: row.offset, cuts: [t] });
       const footprint = [at(t, near), at(t + bayWidth, near), at(t + bayWidth, far), at(t, far)];
-      stalls.push({ polygon: footprint, center: at(t + bayWidth / 2, (near + far) / 2), width: bayWidth, depth: bayDepth, side, offset: row.offset, area: Math.abs(area(footprint)) });
+      if (!fits(box, footprint)) { t = Math.round((t + .01) * 100) / 100; run = null; continue; }
+      if (!run) runs.push(run = { side, offset: row.offset, road: F.road.source, at, cuts: [t] });
+      stalls.push({ polygon: footprint, center: at(t + bayWidth / 2, (near + far) / 2), width: bayWidth, depth: bayDepth, side, offset: row.offset, road: F.road.source, area: Math.abs(area(footprint)) });
       t += bayWidth; run.cuts.push(t); run.near = near; run.far = far;
     }
   }
-  for (const r of runs) for (const v of r.cuts) segments.push([at(v, r.near), at(v, r.far)]);
-  return { aisle: null, stalls, segments, markingSegments: segments, entrance: null, clear: clear.map(r => r.source), runs, axes: { u, n }, origin: { u0: ua, n0: c, n1: c }, dimensions: { bayWidth, bayDepth, aisleWidth: Math.min(...(L.rows ?? []).map(r => r.offset)) * 2, length: lotU1 - lotU0 } };
+  for (const r of runs) for (const v of r.cuts) segments.push([r.at(v, r.near), r.at(v, r.far)]);
+  for (const r of runs) delete r.at;
+  const lotU = poly.map(p => proj(p, u));
+  return { aisle: null, stalls, segments, markingSegments: segments, entrance: null, clear: clear.map(r => r.source), runs, axes: { u, n }, origin: { u0: ua, n0: c, n1: c }, dimensions: { bayWidth, bayDepth, aisleWidth: Math.min(...(L.rows ?? []).map(r => r.offset)) * 2, length: Math.max(...lotU) - Math.min(...lotU) } };
 }
 
 /**

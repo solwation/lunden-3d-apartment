@@ -8515,6 +8515,16 @@ free turning space at the way's end; dividers, paint/asphalt lifts and independe
 triangle counts with unchanged meshes/materials; house bases, the other lots' planes/boxes, trees and `WALK.z1`. Rerun
 `parking1451test.html`, `parking1450test.html` and `parkinggrade1436test.html`. Images: `docs/verification/1452/`.
 
+## #1447: parking 145221629 boxes
+
+Run `node tools/runtests.cjs --test-only parking1447test.html` (about 80 s). In the actual World it checks the unchanged OSM
+outline/raw capacity/#1446 grade; whole 2.5x5 m boxes inside the outline, without overlap and ≥0.75 m off houses 44/47/48/49;
+≥3 m from every mapped way's centre line, each front 3 m from its own way with a free 6 m apron; 5 m dividers outside the
+aisles; rays on asphalt (+5.2 cm, unchanged surface) and paint (+7.6 cm) over the sub-planes; the exact south-backdrop delta
+with unchanged meshes and terrain; the #1446 sub-planes, house bases and `WALK.z1`. The lot lies south of `WALK.z1`: no walking
+routes. Rerun `parking1441/1443/1444/1445/1446/1452test.html` (shared aisle engine and pinned totals) and `southbackdroptest.html`.
+Images: `docs/verification/1447/`.
+
 ## Physical computer game (#1491)
 
 `tools/computerscreentest.cjs GAME LOCAL_WORKER OUT` opens actual Worlds on desktop
