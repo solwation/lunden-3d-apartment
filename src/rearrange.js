@@ -250,7 +250,7 @@ export class Rearrange {
     if (!piece || piece.materialOnly || this.saving) return false;
     if (this.selected?.piece !== piece && !this.begin(piece)) return false;
     this.candidate = piece.home.clone(); this.valid = true;
-    return this.confirm(); // same attachments, atomic write and conflict handling as a normal move
+    return this.confirm(this.variantResets([piece])); // same attachments, atomic write and conflict handling as a normal move
   }
   async write(moves, extra = {}) {
     if (this.url) {
@@ -262,6 +262,7 @@ export class Rearrange {
     }
     const next = structuredClone(this.state); next.revision++;
     for (const p of moves) next.pieces[p.id] = { pos: p.pos, quat: p.quat, revision: next.revision };
+    for (const m of extra.materials ?? []) { next.materials ??= {}; next.materials[m.id] = { ...next.materials[m.id], [m.surface]: { choice: m.choice, revision: next.revision } }; }
     return next;
   }
   beginMaterial(piece, surfaceId) {
@@ -303,20 +304,56 @@ export class Rearrange {
     const moves = this.pieces.map(p => ({ id: p.id, base: p.revision, ...poseOf(p.home) }));
     this.saving = true;
     try {
-      const next = await this.write(moves, { resetAll: true, expectedRevision });
+      const next = await this.write(moves, { resetAll: true, expectedRevision, ...this.variantResets(this.pieces) });
       this.saving = false; this.pending = null; this.apply(next);
       this.say(this.url ? 'All möblering är återställd för alla besökare.' : 'All möblering är återställd lokalt.'); return true;
     } catch (e) {
       this.saving = false; this.cancel(); this.say(e.message); await this.sync(); return false;
     }
   }
-  async confirm() {
+  /** #1569: a piece with switchable shapes (Olof's desk): its stored choice for one layout write. */
+  variantPatch(p, choice) {
+    const v = p.object.userData.variant;
+    return { id: p.id, surface: v.surface, choice, base: this.state.materials?.[p.id]?.[v.surface]?.revision ?? 0 };
+  }
+  /** Restoring returns a reshaped piece to its default shape in the same write; nothing extra while none is stored. */
+  variantResets(pieces) {
+    const materials = pieces.filter(p => p.object.userData.variant && (this.state.materials?.[p.id]?.[p.object.userData.variant.surface]?.choice ?? 'original') !== 'original')
+      .map(p => this.variantPatch(p, 'original'));
+    return materials.length ? { materials } : {};
+  }
+  /** Do footprint rectangles `rects` stay clear of the walls with the piece where it stands now? */
+  fits(piece, rects, matrix = piece.object.matrixWorld) {
+    const walls = this.world.levels[piece.level].wallSegments;
+    return rects.every((r) => {
+      const poly = [[r.x0,r.z0],[r.x1,r.z0],[r.x1,r.z1],[r.x0,r.z1]].map(([x,z]) => { const v = new V(x,0,z).applyMatrix4(matrix); return [v.x,v.z]; });
+      return !walls.some((wall) => inPoly(poly, wall[0], wall[1]) || poly.some((p,i) => crosses(...p, ...poly[(i+1)%4], wall)));
+    });
+  }
+  /** #1569: switch the piece's shape where it stands (Olof's desk: straight ↔ corner), saved like a material choice. */
+  async toggleVariant(piece = this.selected?.piece ?? this.target?.piece) {
+    const v = piece?.object.userData.variant;
+    if (!this.enabled || this.saving || this.busy() || !v) return false;
+    this.cancel(); this.scene.updateMatrixWorld(true); // (a piece being moved is hidden behind its preview until then)
+    if (!shown(piece.object)) return false;
+    const next = v.choice === 'corner' ? 'original' : 'corner';
+    if (!this.fits(piece, v.footprintFor(next))) { this.say('Hörnskrivbordet får inte plats här. Flytta skrivbordet först.'); return false; }
+    if (this.url && this.materialVersion !== MATERIAL_VERSION) { this.say('Skrivbordet kan inte ändras nu. Kontrollera anslutningen och försök igen.'); return false; }
+    this.saving = true;
+    try {
+      const state = await this.write([], { materials: [this.variantPatch(piece, next)] });
+      if (this.url && state.materialVersion !== MATERIAL_VERSION) throw Error('Servern stöder inte skrivbordsvalet ännu. Försök igen senare.');
+      this.saving = false; this.pending = null; this.apply(state);
+      this.say(`${next === 'corner' ? 'Skrivbordet är nu ett hörnskrivbord.' : 'Skrivbordet är rakt igen.'} ${this.url ? 'Det delas med alla.' : 'Sparat lokalt.'}`); return true;
+    } catch (e) { this.saving = false; this.cancel(); this.say(e.message); await this.sync(); return false; }
+  }
+  async confirm(extra = {}) {
     if (!this.selected || !this.valid || this.saving) return false;
     const selection = this.selected, delta = this.candidate.clone().multiply(selection.original.clone().invert());
     const moves = selection.group.map((p) => ({ id: p.id, base: selection.base[p.id], ...poseOf(delta.clone().multiply(p.object.matrixWorld)) }));
     this.saving = true;
     try {
-      const next = await this.write(moves);
+      const next = await this.write(moves, extra);
       this.saving = false; this.pending = null; this.cancel(); this.apply(next); this.say(this.url ? 'Möbleringen är sparad och delas med alla.' : 'Möbleringen är sparad lokalt.'); return true;
     } catch (e) {
       this.saving = false; this.cancel(); this.say(e.message || 'Kunde inte spara flytten.'); await this.sync(); return false;
@@ -491,6 +528,11 @@ export class Rearrange {
       surface.apply(state.materials?.[p.id]?.[surface.id]?.choice ?? 'original');
     }
     changes.push(...this.reconcileRugSupport(support, new Set(changes.map(c => c.p))));
+    // #1569: a piece's stored shape (missing = its default); its footprint changes, so collision is rebuilt below
+    for (const p of this.pieces) {
+      const v = p.object.userData.variant;
+      if (v?.apply(state.materials?.[p.id]?.[v.surface]?.choice ?? 'original')) { this.marks.invalidate(p.object); changes.push({ p, matrix: p.object.matrixWorld.clone(), delta: new M() }); }
+    }
     this.state = state;
     try { localStorage.setItem(CACHE, JSON.stringify(state)); } catch {}
     if (this.overlay && (revealed || changes.length)) this.overlay.recompute(); // (+ refresh)

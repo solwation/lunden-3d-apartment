@@ -3,6 +3,8 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { TILLY_DESK as C } from './config.js';
 import { woodMaterial } from './woodgrain.js';
 import { upholsterySurface } from './upholstery.js';
+import { mergeStatic } from './merge.js';
+import { DESK_VARIANT_CHOICES } from './materialcatalog.js';
 
 // Personal, photo-led furniture (#1557). Dimensions/proportions are guesses in config.
 // The normal furniture merge batches rigid details by shared material; no live canvas or lamp.
@@ -66,18 +68,36 @@ function glow() {
   glowMat=new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c),color:K.blue,transparent:true,opacity:C.led.opacity,
     blending:THREE.CustomBlending,blendSrc:THREE.SrcAlphaFactor,blendDst:THREE.OneMinusSrcAlphaFactor,depthWrite:false,toneMapped:false});return glowMat;
 }
-export function tillydesk(item={}) {
-  const g=new THREE.Group(),h=C.h,L=C.leg;
-  box(g,[C.w,C.top,C.d],[0,h-C.top/2,0],woodMaterial(K.wood,.48));
+/** The placements of the things that move between the two desk shapes (#1569); everything else is shared. */
+function layoutFor(corner) {
+  const X = C.corner;
+  return corner ? { wing: X.wing, panel: X.panel, charger: X.charger, puck: X.puck, dac: X.dac, figure: X.figure, speakers: X.speakers, pc: X.pc }
+    : { wing: null, panel: C.panel.at, charger: C.charger.at, puck: C.puck.at, dac: C.dac.at, figure: C.figure.at,
+      speakers: C.speakers.xs.map(x => [x, C.speakers.at[1]]), pc: C.pc.at };
+}
+/** One complete desk (straight or L-shaped corner) into `g`; returns its footprint rectangles. */
+function deskShape(g, P, wood, cream) {
+  const h=C.h,L=C.leg;
+  box(g,[C.w,C.top,C.d],[0,h-C.top/2,0],wood);
   for(const s of [-1,1]) {
     box(g,L.foot,[s*L.x,L.foot[1]/2,0]);
     box(g,[L.width,L.lower,L.depth],[s*L.x,L.lower/2+L.foot[1],0]);
     box(g,[L.width*.72,L.upper,L.depth*.72],[s*L.x,h-C.top-L.upper/2,0],steel);
   }
   box(g,[2*L.x,...L.brace],[0,h-C.top-L.brace[0]/2,0]);
-  box(g,C.panel.size,C.panel.at);
+  const footprint=[{x0:-C.w/2,x1:C.w/2,z0:-C.d/2,z1:C.d/2}];
+  if(P.wing) { // the return wing at the +x end, its own T leg at the far end (foot along x) and a brace back to the main frame
+    const W=P.wing,x0=C.w/2-W.d,z1=-C.d/2+W.out,cx=(x0+C.w/2)/2,lz=W.legZ;
+    box(g,[W.d,C.top,z1-C.d/2],[cx,h-C.top/2,(z1+C.d/2)/2],wood);
+    box(g,[L.foot[2]*W.d/C.d,L.foot[1],L.foot[0]],[cx,L.foot[1]/2,lz]);
+    box(g,[L.depth,L.lower,L.width],[cx,L.lower/2+L.foot[1],lz]);
+    box(g,[L.depth*.72,L.upper,L.width*.72],[cx,h-C.top-L.upper/2,lz],steel);
+    box(g,[L.brace[1],L.brace[0],lz],[cx,h-C.top-L.brace[0]/2,lz/2]);
+    footprint.push({x0,x1:C.w/2,z0:C.d/2,z1});
+  }
+  box(g,C.panel.size,P.panel);
   for(let i=0;i<C.panel.buttons;i++)box(g,[C.panel.size[0]/12,C.panel.size[1]/5,D.skin],
-    [C.panel.at[0]+(i-2.5)*C.panel.size[0]/7,C.panel.at[1],C.panel.at[2]+C.panel.size[2]/2],seam);
+    [P.panel[0]+(i-2.5)*C.panel.size[0]/7,P.panel[1],P.panel[2]+C.panel.size[2]/2],seam);
   const hook=ring(g,C.hook.r,C.hook.tube,[C.hook.x,C.hook.y,C.hook.z],steel);hook.rotation.x=Math.PI/2;
   box(g,[C.hook.tube,C.top,C.hook.r*2],[C.w/2,C.hook.y+C.top/2,C.hook.z],steel);
   box(g,C.mat.size,C.mat.at,rubber);
@@ -103,30 +123,54 @@ export function tillydesk(item={}) {
   // Small three-stroke mark on the Razer-style mouse.
   for(let i=-1;i<=1;i++)box(g,C.mouse.mark,[C.mouse.at[0]+i*C.mouse.markStep,C.mouse.at[1]+C.mouse.scale[1]-D.skin,C.mouse.at[2]+C.mouse.markZ],pink,0);
   const S=C.speakers;
-  for(const x of S.xs){box(g,S.size,[x,...S.at]);ring(g,S.r,S.r/5,[x,S.at[0],S.at[1]+S.size[2]/2],steel);
-    const cone=cylinder(g,S.r*.7,D.thin,[x,S.at[0],S.at[1]+S.size[2]/2]);cone.rotation.x=Math.PI/2;}
-  for(const A of [C.puck,C.charger])cylinder(g,A.r,A.h,A.at);
-  box(g,C.dac.size,C.dac.at);ring(g,C.dac.knob,C.dac.knob/4,[C.dac.at[0]+C.dac.size[0]/4,C.dac.at[1],C.dac.at[2]+C.dac.size[2]/2],steel);
-  const F=C.figure,cream=new THREE.MeshStandardMaterial({color:K.cream,roughness:1});sphere(g,F.scale,F.at,cream);
-  for(let i=0;i<F.rings;i++) {const m=ring(g,F.scale[0]*(1-i/(F.rings+1)),F.stitch,[F.at[0],F.at[1]+i*F.scale[1]/F.rings,F.at[2]],cream);m.rotation.x=Math.PI/2;}
-  for(const s of [-1,1])sphere(g,F.eye,[F.at[0]+s*F.eyeAt[0],F.at[1]+F.eyeAt[1],F.at[2]+F.eyeAt[2]],black);
-  const P=C.pc,[px,py,pz]=P.at,[pw,ph,pd]=P.size,t=P.shell;
+  for(const [x,z] of P.speakers){box(g,S.size,[x,S.at[0],z]);ring(g,S.r,S.r/5,[x,S.at[0],z+S.size[2]/2],steel);
+    const cone=cylinder(g,S.r*.7,D.thin,[x,S.at[0],z+S.size[2]/2]);cone.rotation.x=Math.PI/2;}
+  cylinder(g,C.puck.r,C.puck.h,P.puck);cylinder(g,C.charger.r,C.charger.h,P.charger);
+  box(g,C.dac.size,P.dac);ring(g,C.dac.knob,C.dac.knob/4,[P.dac[0]+C.dac.size[0]/4,P.dac[1],P.dac[2]+C.dac.size[2]/2],steel);
+  const F=C.figure;sphere(g,F.scale,P.figure,cream);
+  for(let i=0;i<F.rings;i++) {const m=ring(g,F.scale[0]*(1-i/(F.rings+1)),F.stitch,[P.figure[0],P.figure[1]+i*F.scale[1]/F.rings,P.figure[2]],cream);m.rotation.x=Math.PI/2;}
+  for(const s of [-1,1])sphere(g,F.eye,[P.figure[0]+s*F.eyeAt[0],P.figure[1]+F.eyeAt[1],P.figure[2]+F.eyeAt[2]],black);
+  const Pc=C.pc,[px,py,pz]=P.pc,[pw,ph,pd]=Pc.size,t=Pc.shell;
   // Hollow case: fans/GPU remain visibly behind the tinted glass.
   for(const s of [-1,1]){box(g,[t,ph,pd],[px+s*(pw-t)/2,py,pz]);box(g,[pw,t,pd],[px,py+s*(ph-t)/2,pz]);}
   box(g,[pw,ph,t],[px,py,pz-pd/2]);
   box(g,[pw*.72,ph*.10,pd*.70],[px,py,pz],steel);
   for(let i=-1;i<=1;i++) {
-    ring(g,P.fan,P.tube,[px,py+i*P.spacing,pz+pd/2-t*2],blue);
-    ring(g,P.fan*.80,P.tube*.55,[px,py+i*P.spacing,pz+pd/2-t*1.9],pink);
-    for(let k=0;k<5;k++){const a=k*Math.PI*2/5;const blade=box(g,[P.fan*.60,P.fan*.17,D.thin],[px+Math.sin(a)*P.fan*.40,py+i*P.spacing+Math.cos(a)*P.fan*.40,pz+pd/2-t*2.2],steel);blade.rotation.z=-a+.5;}
+    ring(g,Pc.fan,Pc.tube,[px,py+i*Pc.spacing,pz+pd/2-t*2],blue);
+    ring(g,Pc.fan*.80,Pc.tube*.55,[px,py+i*Pc.spacing,pz+pd/2-t*1.9],pink);
+    for(let k=0;k<5;k++){const a=k*Math.PI*2/5;const blade=box(g,[Pc.fan*.60,Pc.fan*.17,D.thin],[px+Math.sin(a)*Pc.fan*.40,py+i*Pc.spacing+Math.cos(a)*Pc.fan*.40,pz+pd/2-t*2.2],steel);blade.rotation.z=-a+.5;}
   }
-  const glass=new THREE.Mesh(new THREE.PlaneGeometry(pw-t*2,ph-t*2),new THREE.MeshStandardMaterial({color:0x8c9fc2,transparent:true,opacity:.20,roughness:.12,side:THREE.DoubleSide,depthWrite:false}));
+  const glass=new THREE.Mesh(new THREE.PlaneGeometry(pw-t*2,ph-t*2),glassMaterial());
   glass.position.set(px,py,pz+pd/2);g.add(glass);
   box(g,C.led.size,C.led.at,blue);
   const wash=new THREE.Mesh(new THREE.PlaneGeometry(...C.led.glow),glow());wash.position.set(0,C.led.y,-C.d/2-D.glowGap);g.add(wash);
   box(g,[D.cable,h-C.top,D.cable],[C.leg.x,(h-C.top)/2,-C.d/2+D.cableInset]);
-  g.userData.footprint=[{x0:-C.w/2,x1:C.w/2,z0:-C.d/2,z1:C.d/2},
-    {x0:px-pw/2,x1:px+pw/2,z0:pz-pd/2,z1:pz+pd/2}];
+  footprint.push({x0:px-pw/2,x1:px+pw/2,z0:pz-pd/2,z1:pz+pd/2});
+  return footprint;
+}
+let glassMat;
+const glassMaterial=()=>glassMat??=new THREE.MeshStandardMaterial({color:0x8c9fc2,transparent:true,opacity:.20,roughness:.12,side:THREE.DoubleSide,depthWrite:false});
+const noRaycast=()=>{};
+const DESK_VARIANTS = DESK_VARIANT_CHOICES.map(c => c.id); // #1569: 'original' = the straight desk (layout default)
+export function tillydesk(item={}) {
+  const g=new THREE.Group(),wood=woodMaterial(K.wood,.48),cream=new THREE.MeshStandardMaterial({color:K.cream,roughness:1});
+  // #1569: both shapes are built whole from the same parts/materials and merged on their own, so only the shown one draws
+  // (the same draw calls either way); the layout's `variant` choice shows one and hides the other.
+  const shapes=DESK_VARIANTS.map(v=>{const s=new THREE.Group();s.name=`tillydesk-${v}`;g.add(s);
+    s.userData.footprint=deskShape(s,layoutFor(v==='corner'),wood,cream);mergeStatic(s);return s;});
+  g.userData.keep=[...shapes];
+  g.userData.shadowParts=shapes.map(s=>({object:s,rects:s.userData.footprint}));
+  let choice=null;
+  const variant={surface:'variant',get choice(){return choice;},
+    label(next=choice==='corner'?'original':'corner'){return next==='corner'?'Gör till hörnskrivbord':'Gör till rakt skrivbord';},
+    footprintFor:v=>shapes[Math.max(0,DESK_VARIANTS.indexOf(v))].userData.footprint,
+    /** Show variant `v` (unknown = original); true when it changed. */
+    apply(v){v=DESK_VARIANTS.includes(v)?v:'original';if(v===choice)return false;choice=v;
+      for(const [i,s] of shapes.entries()){const on=DESK_VARIANTS[i]===v;s.visible=on;
+        s.traverse(o=>{if(o.isMesh)o.raycast=on?THREE.Mesh.prototype.raycast:noRaycast;});}
+      g.userData.footprint=variant.footprintFor(v);return true;}};
+  variant.apply('original');
+  g.userData.variant=variant;
   if(item.mediaId)computerStation(g,item.mediaId);
   // Occupied tabletop has no generic put-down plane: loose items cannot overlap the devices.
   g.userData.setup='tilly';return g;

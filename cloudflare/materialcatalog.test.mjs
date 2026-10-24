@@ -28,3 +28,13 @@ test('every rug accepts a short/long pile surface; other families and choices do
  for(const id of [M.CURTAIN_MATERIAL_IDS[0],M.UPHOLSTERY_MATERIAL_IDS[0],'f-rug-0-9-9-0-0'])assert.ok(!M.validMaterialChoice(id,'pile','pile-long'));
  assert.equal(M.materialChoice('pile-long').name,'Lång lugg');
 });
+
+test("Olof's desk shape is a 'variant' surface of the actual desk only (#1569)", async () => {
+ const M=await import('../src/materialcatalog.js');
+ assert.deepEqual(M.DESK_VARIANT_IDS,['f-tillydesk-1-2.292-9.43-0-0']);
+ const desk=M.DESK_VARIANT_IDS[0];
+ for(const c of ['original','corner'])assert.ok(M.validMaterialChoice(desk,'variant',c),c);
+ for(const c of ['straight','upholstery-black',undefined])assert.ok(!M.validMaterialChoice(desk,'variant',c));
+ for(const id of [M.RUG_MATERIAL_IDS[0],M.UPHOLSTERY_MATERIAL_IDS[0],'f-tillydesk-1-0-0-0-0'])assert.ok(!M.validMaterialChoice(id,'variant','corner'));
+ assert.ok(!M.validMaterialChoice(desk,'textile','upholstery-black')); // a shape, never a material-library surface
+});

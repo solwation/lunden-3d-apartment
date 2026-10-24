@@ -5158,6 +5158,13 @@ export const TILLY_DESK = {
     post: .025, postZ: -.02, armZ: .025, stemR: .035, stemGap: .08, spoke: [.027,.035], spokeY: .065, casterWidth: .032, casterInset: .025, wingZ: .03, bolsterY: .035, paddingRound: .025,
     pillow: [.28,.12,.065], pillowAt: [0,1.20,-.125], seam: .0015, wheel: .028, legs: 5,
     logo: { w: .24, h: .08, at: [0,1.04,-.143] }, rest: { x: 0, y: .515, z: -.01 } },
+  // #1569 L-shaped corner variant (Möblera om), every value guess: the same 150 × 65 cm main top plus a 55 cm deep return
+  // wing at the local +x end (south in Sovrum 4), 1.00 m out from the wall (back edge), on a third T leg (legZ). In the
+  // default spot the wing ends at x 1.62, ~0.51 m from the daybed's north-east corner; the door end stays as it was.
+  // The main monitor, keyboard and mouse keep their places (the #1566 computer screen is unchanged); the right speaker,
+  // DAC + figure, charger and puck lamp move onto the wing and the PC stands under it. Positions are desk-local [x,y,z].
+  corner: { wing: { d: .55, out: 1.0, legZ: .625 }, panel: [.06,.702,.32], charger: [.30,.765,.45], puck: [.30,.773,.60],
+    dac: [.46,.774,.52], figure: [.46,.835,.52], speakers: [[-.64,-.19],[.66,.50]], pc: [.45,.265,.36] },
   appLift: .002, // #1566: the shared computer-app plane floats this far (m) in front of the decorative main-screen atlas
   detail: { sides: 10, tubeSides: 5, ringSides: 24, sphere: [12,8], texture: [512,256], carbonPx: 64, skin: .002, thin: .003, offset: .001, cable: .012, cableInset: .025, glowGap: .010 },
   colors: { wood: 0x853b32, black: 0x15171b, rubber: 0x08090c, steel: 0x43474e, seam: 0xdedbd0,

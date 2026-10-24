@@ -2499,7 +2499,7 @@ const editHelp = document.getElementById('rearrange-help'), editToggle = documen
 let editMenuPiece = null, editMenuSurfaceId = null, resetFurnitureRequest = null, editHUDKey = '';
 let chat = null; // the console as a chat (#675, src/chat.js), set up with the ghosts below
 function renderRearrangeHUD() {
-  const p=rearrange.selected?.piece,m=rearrange.materialEdit,key=`${rearrange.enabled}|${rearrange.saving}|${p?.id??''}|${m?.piece.id??''}|${m?.surface.id??''}|${m?.choice??''}|${reading}`;
+  const p=rearrange.selected?.piece,m=rearrange.materialEdit,v=p?.object.userData.variant,key=`${rearrange.enabled}|${rearrange.saving}|${p?.id??''}|${v?.choice??''}|${m?.piece.id??''}|${m?.surface.id??''}|${m?.choice??''}|${reading}`;
   if(key===editHUDKey)return;editHUDKey=key;
   editHelp.hidden=!rearrange.enabled||reading;
   document.getElementById('rearrange-step').textContent=rearrange.saving?'Sparar möbleringen…':m?`${m.surface.name}: ${materialChoice(m.choice)?.name??'Original'}`:p?`2. Placera ${p.name}`:'1. Välj ett föremål';
@@ -2508,6 +2508,7 @@ function renderRearrangeHUD() {
   document.getElementById('rearrange-cancel').textContent=m?'Avbryt materialval':'Avbryt flytt';
   document.getElementById('rearrange-menu').disabled=rearrange.saving;
   const materialConfirm=document.getElementById('rearrange-material-confirm');materialConfirm.hidden=!m;materialConfirm.disabled=rearrange.saving;
+  const variant=document.getElementById('rearrange-variant');variant.hidden=!v;variant.disabled=rearrange.saving;if(v)variant.textContent=v.label(); // #1569: straight ↔ corner desk
 }
 function editUI() {
   renderRearrangeHUD(); editToggle.hidden = !rearrange.unlocked || !!resetFurnitureRequest;
@@ -2530,7 +2531,14 @@ function editUI() {
   const matCancel = document.getElementById('terminal-cancel-material');
   if (matCancel) { matCancel.hidden = !rearrange.materialEdit; matCancel.disabled = rearrange.saving; }
   renderMaterialLibrary();
+  // #1569: the chosen piece's other shape (Olof's desk: straight ↔ corner), an option of the piece, not a mode
+  const variant = editMenuPiece?.object.userData.variant, variantButton = document.getElementById('terminal-variant');
+  variantButton.hidden = !variant || !rearrange.enabled || !!resetFurnitureRequest || !!rearrange.materialEdit;
+  variantButton.disabled = rearrange.saving; if (variant) variantButton.textContent = variant.label();
 }
+async function toggleVariant(piece) { const saved = rearrange.toggleVariant(piece); editUI(); await saved; editUI(); }
+document.getElementById('terminal-variant').addEventListener('click', () => toggleVariant(editMenuPiece));
+document.getElementById('rearrange-variant').addEventListener('click', () => toggleVariant(rearrange.selected?.piece));
 // #1022: direct material selection without intermediate button, surface selector when multiple surfaces, no command field.
 function renderMaterialLibrary() {
   const edit = rearrange.materialEdit;

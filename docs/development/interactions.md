@@ -384,6 +384,11 @@ src/rearrange.js       furniture cheat (#465): § / Enter (#596; not from a focu
                        hanging part's height, so older layouts need no new field. tools/pendanttest.html.
                        Wine racks use wall placement with their detached bottles; SYMFONISK lamps/speakers use support surfaces like the TV (#482).
                        tools/rearrangeplacementtest.html verifies wall rotation, bottle followers, sill/table placement and reload.
+                       #1569: a piece with `userData.variant` (only Olof's desk) gets a shape button, "Gör till hörnskrivbord" /
+                       "Gör till rakt skrivbord", in the menu (§ / Meny, for the aimed or selected piece) and in the edit panel while it
+                       is selected (touch). `toggleVariant` cancels a preview, refuses a shape whose footprint would cross a wall where
+                       the piece stands, and writes the choice as one revision-checked `materials` patch (surface `variant`); both
+                       resets put the default shape back in the same write. tools/tillydeskvarianttest.cjs.
                        The Christmas tree (#571) is an ordinary piece ('julgranen') while it stands; out of season it is hidden and
                        not selectable. Pieces it hides (`userData.seasonHidden`, src/christmas.js) are not selectable either and
                        keep their poses; `apply` reveals them while poses change, `refresh` skips them; tools/christmastest.html.

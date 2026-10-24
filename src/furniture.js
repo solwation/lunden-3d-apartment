@@ -4348,7 +4348,8 @@ export function* furnitureParts() {
     if (obj.userData.footprint?.length && !CONTACT_SHADOW.skip.includes(item.type)) { // a contact shadow if it stands on the floor (#1075)
       obj.updateMatrixWorld(true);
       const base = obj.position.y, low = new THREE.Box3().setFromObject(obj).min.y; // (the floor is at 0 here, the piece's origin at `base`)
-      if (low < CONTACT_SHADOW.maxBase) shadowed.push({ object: obj, rects: obj.userData.footprint, base: -base });
+      // #1569: a piece with switchable shapes gives each shape's own rectangles, drawn only while that shape is shown
+      if (low < CONTACT_SHADOW.maxBase) for (const s of obj.userData.shadowParts ?? [{ object: obj, rects: obj.userData.footprint }]) shadowed.push({ object: s.object, rects: s.rects, base: -base });
     }
     if (item.walls) keepInside(obj, item, yaw); // plants by a wall: no leaves through it (#137)
     obj.rotation.y = yaw;

@@ -138,6 +138,20 @@ off, the decorative atlas remains. E/touch anywhere on the desk targets the comp
 also while seated in the Batman chair. The portrait monitor and accessories stay
 decorative. This is personal furnishing and gameplay, excluded from the public downstream.
 
+Corner variant (#1569): in Möblera om the desk switches between straight (default)
+and an L-shaped corner desk ([interactions](interactions.md#module-and-test-map)).
+`tillydesk` builds both shapes whole, from the same parts and materials, as two
+subgroups merged on their own; only the shown one draws, so the corner costs the
+same draw calls as the straight desk (17 for the desk object, both shapes). The corner keeps the
+main top, monitors, keyboard and mouse in place (the #1566 computer screen is
+unchanged) and adds a 55 cm deep return wing at the south end, 1.00 m out from the
+wall, on a third T leg; the right speaker, DAC + figure, charger and puck lamp move
+onto it and the PC stands under it (`TILLY_DESK.corner`, all **guess**). In the
+default spot the wing ends ~0.51 m from the daybed's north-east corner and the door
+end is unchanged. The hidden shape has no raycast; `userData.footprint` and the
+per-shape contact shadows (`userData.shadowParts`) follow the shown one. The Batman
+chair stays an independent piece in front of the main monitor, inside the corner.
+
 ## Recent implementation notes
 
 BESTÅ wall placement (#492): the whole cabinet is a wall-mounted movable root (including doors, contents and spots), and its preview must fit vertically within the floor/ceiling. Existing misplaced saves remain selectable and can be moved or restored individually. Regression: tools/bestaplacementtest.html.
