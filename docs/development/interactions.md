@@ -9,7 +9,7 @@ keyboard E and touch action path. The cinema screen opens Bion with film
 suggestions and search (#1475); the armrest remote is removed. The screen can
 be selected from either seat row within BIO; hall and billiards-room positions
 never gain the longer screen-only reach. The four computer screens open the shared
-app selector (#1488). Cinema and computer chairs use normal rest reach and stand-up handling. [Device lifecycle and tests](furniture.md#clubhouse-tv-and-computer-1365).
+app selector (#1488). Cinema and computer chairs use normal rest reach and stand-up handling. The idle screen (#1570, `PlayroomDevices.drawIdle`) is a cinema vignette with no instruction line: the ordinary aim/action prompt says how to choose a film. While a film runs (`cinema.state.video`, read by main.js into `Playroom.setFilm`) the BIO's wall sconces and the room's ambient dim softly and the disco spots rest; the disco light switch overrides the dimming until the film changes, and the 7.1/height speakers and sconces live in `src/playroomcinema.js` (PLAYROOM.cinemaAudio / sconces, *guess*). [Device lifecycle and tests](furniture.md#clubhouse-tv-and-computer-1365).
 
 Cinema search (#1472 first slice): the Bion dialog queries the Worker's
 `/youtube-search?q=…` endpoint and renders returned titles/channels as text.

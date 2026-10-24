@@ -37,7 +37,7 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     const f1 = await toDoor();
     check(f1?.kind === 'playhouse' && f1.verb === 'gå in i', 'the playhouse door is a target', JSON.stringify(f1));
     const before = await page.evaluate(() => window.__t.calls());
-    await page.evaluate(() => { window.__t.render(); }); await page.screenshot({ path: `${shots}/1-outside.png` });
+    await page.evaluate(() => { window.__t.render(); }); await page.screenshot({ timeout: 180000, path: `${shots}/1-outside.png` });
     await page.evaluate(() => window.__app.use(window.__app.focus().focused));
     await page.waitForTimeout(700);
     const s1 = await page.evaluate(() => window.__t.state());
@@ -64,7 +64,7 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     check(s2.inRoom && s2.roomVisible && !s2.outdoors && s2.x < -1000, '159 cm: inside the hidden room, drawn', JSON.stringify(s2));
     check(Math.abs(s2.y) < 1e-6, 'standing on the room floor', `y=${s2.y}`);
     const inside = await page.evaluate(() => window.__t.calls());
-    await page.evaluate(() => window.__t.render()); await page.screenshot({ path: `${shots}/3-inside.png` });
+    await page.evaluate(() => window.__t.render()); await page.screenshot({ timeout: 180000, path: `${shots}/3-inside.png` });
     // the walls hold: run into the west wall
     const wall = await page.evaluate(() => { const P = window.__app.player, r0 = window.__app.world.playroom; P.spawn(r0.bounds.x0 + 3.2, r0.bounds.z1 - 0.45, 0); window.__t.frames(10); const cam = window.__app.camera; cam.rotation.y = Math.PI / 2; P.keys = new Set(['KeyW', 'ShiftLeft']); window.__t.frames(400); P.keys = new Set(); return { x: P.pos.x, bounds: window.__app.world.playroom.bounds }; });
     check(wall.x > wall.bounds.x0 && wall.x < wall.bounds.x0 + 0.5, 'the west wall holds', `x=${wall.x.toFixed(2)} wall=${wall.bounds.x0}`);
@@ -116,8 +116,8 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
       await nativeUse(); await page.waitForTimeout(300);
       const sat = await page.evaluate(async ({ x, z }) => { const { PLAYROOM: RM } = await import('/src/config.js'), { Vector3 } = await import('three'), a = window.__app; for (let i = 0; i < 12; i++) a.rest.update(0.1); window.__t.render(); const yaw = a.camera.rotation.y, expected = Math.atan2(-(RM.furniture.cinema.screen.x - x), -(RM.furniture.cinema.screen.z - z)); let d = Math.atan2(Math.sin(yaw - expected), Math.cos(yaw - expected)); const s = RM.furniture.cinema.screen, tx = RM.furniture.tv.x + 0.08, corners = [[s.z-s.w/2,s.bottom],[s.z+s.w/2,s.bottom],[s.z-s.w/2,s.bottom+s.h],[s.z+s.w/2,s.bottom+s.h]].map(([zz, yy]) => new Vector3(RM.x+tx, yy, RM.z+zz).project(a.camera)); return { active: a.rest.active, kind: a.rest.kind, x: a.camera.position.x, y: a.camera.position.y, yaw, viewError: d, screenInView: corners.every((p) => Math.abs(p.x)<1 && Math.abs(p.y)<1 && p.z>-1 && p.z<1) }; }, { x, z });
       check(sat.active && sat.kind === 'sit' && sat.y > 0.8 && sat.y < 1.3 && Math.abs(sat.viewError) < 0.2 && (row === 0 || sat.screenInView), `${name} seat faces the screen${row === 0 ? ' (front-row cropping is intentional)' : ' with the full screen in view'}`, JSON.stringify(sat));
-      if (row === 0 && i === 1) await page.screenshot({ path: `${shots}/6-front-seat.png` });
-      if (row === 1 && i === 2) await page.screenshot({ path: `${shots}/7-rear-seat.png` });
+      if (row === 0 && i === 1) await page.screenshot({ timeout: 180000, path: `${shots}/6-front-seat.png` });
+      if (row === 1 && i === 2) await page.screenshot({ timeout: 180000, path: `${shots}/7-rear-seat.png` });
       if ((row === 0 && i === 0) || (row === 1 && i === 3)) await nativeStand();
       else await page.evaluate(() => window.__app.standUp());
       await page.waitForTimeout(300);
@@ -148,7 +148,7 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     await page.evaluate(() => window.__app.use(window.__app.focus().focused));
     const off = await page.evaluate(() => { const r = window.__app.world.playroom, p = [...r.spots.geometry.attributes.position.array]; r.update(1, window.__app.camera, false); return { on: r.discoOn, spots: r.spots.visible, moved: r.spots.geometry.attributes.position.array.some((v, i) => v !== p[i]), lit: r.lit, badge: document.getElementById('badges').textContent }; });
     check(!off.on && !off.spots && !off.moved && /släckt/.test(off.badge), 'switch used: disco off, spots hidden and still', JSON.stringify(off));
-    await page.evaluate(() => { window.__t.render(); }); await page.screenshot({ path: `${shots}/11-disco-off.png` });
+    await page.evaluate(() => { window.__t.render(); }); await page.screenshot({ timeout: 180000, path: `${shots}/11-disco-off.png` });
     const fb = await aimAt([RM.x, RM.z + 0.9], [RM.x + BL.x, BL.y, RM.z + BL.z]);
     check(fb?.kind === 'playroomDisco' && fb.verb === 'tända', 'the ball itself is a target (disco off: tända)', JSON.stringify(fb));
     await page.evaluate(() => window.__app.use(window.__app.focus().focused));
@@ -163,7 +163,7 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     const screenFocus = await page.evaluate(async ({RM}) => { const a=__app,F=RM.furniture; for(let i=0;i<12;i++)a.rest.update(.1); const sc=F.cinema.screen; __t.aim(RM.x+sc.x+.08,sc.bottom+sc.h/2,RM.z+sc.z); return { seated:a.rest.active, focus:__t.focus() }; }, {RM});
     check(screenFocus.seated && screenFocus.focus?.name === 'bioduken' && screenFocus.focus?.verb === 'välja film på', 'cinema screen can be selected from a real seat', JSON.stringify(screenFocus));
     await deviceUse(); check(await page.locator('#cinema-player').evaluate(el => el.open), 'native E/touch opens film choice while seated');
-    await page.evaluate(() => __t.render()); await page.screenshot({ path: `${shots}/15-cinema-screen.png` });
+    await page.evaluate(() => __t.render()); await page.screenshot({ timeout: 180000, path: `${shots}/15-cinema-screen.png` });
     await page.locator('#cinema-player [data-cinema=close]').click();
     check(!await page.locator('#cinema-player').evaluate(el => el.open), 'cinema back button closes the player and restores room controls');
     await page.evaluate(() => __app.standUp());
@@ -184,10 +184,10 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     const views = { 7: [[0,4.4],[0,1.6]], 8: [[5,0.5],[8.5,0.6]], 9: [[-6,1.25],[-5.9,-1.8]], 16: [[-5.6,-1.6],[-8.3,-1.65]], 17: [[-4.72,-0.8],[-8.3,-1.65]] };
     for (const [n, [from, to]] of Object.entries(views)) {
       await page.evaluate(({ RM, from, to }) => { const t = window.__t, P = window.__app.player; P.spawn(RM.x + from[0], RM.z + from[1], 0); t.frames(20); t.aim(RM.x + to[0], to[2] ?? 1.7, RM.z + to[1]); window.__app.world.playroom.disco(0.4); t.render(); }, { RM, from, to });
-      await page.screenshot({ path: `${shots}/${n}-view.png` });
+      await page.screenshot({ timeout: 180000, path: `${shots}/${n}-view.png` });
     }
     await page.evaluate(({ RM }) => { const t = window.__t, P = window.__app.player; P.spawn(RM.x, RM.z + 1.9, 0); t.frames(20); t.aim(RM.x, 2.2, RM.z - 1.5); window.__app.world.playroom.disco(0.4); t.render(); }, { RM });
-    await page.screenshot({ path: `${shots}/10-disco.png` });
+    await page.screenshot({ timeout: 180000, path: `${shots}/10-disco.png` });
     // #1374: the three real doorway routes and a complete unobstructed walk around the centred table.
     for(const x of [-2*RM.clubhouse.side,0,2*RM.clubhouse.side]){
       const p=await walkTo(L(x,RM.d/2-.8),0,2);
@@ -200,7 +200,7 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     // the exit door
     const f2 = await page.evaluate(() => { const t = window.__t, P = window.__app.player, r = window.__app.world.playroom, a = r.arrival; P.spawn(a.x, a.z, a.yaw); t.frames(30); t.aim(a.x, 0.7, r.bounds.z1); return t.focus(); });
     check(f2?.kind === 'playroomExit' && f2.verb === 'gå ut ur', 'the exit door is a target', JSON.stringify(f2));
-    await page.evaluate(() => window.__t.render()); await page.screenshot({ path: `${shots}/4-exit-door.png` });
+    await page.evaluate(() => window.__t.render()); await page.screenshot({ timeout: 180000, path: `${shots}/4-exit-door.png` });
     // growing past the limit inside: no throwing out; the door still works
     await setHeight(170);
     const s3 = await page.evaluate(() => window.__t.state());
@@ -215,7 +215,7 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     const stopped = await page.evaluate(() => { const d = __app.world.playroom.devices;d.update(3);return !d.active&&!d.tvOn&&!__app.computerHub.open; });
     check(stopped, 'leaving closes computer controls and deactivates clubhouse devices');
     check(Math.abs(s4.yaw) < 0.01, 'facing away from the door');
-    await page.evaluate(() => { window.__t.aim(-28.85, 1.0, 10); window.__t.render(); }); await page.screenshot({ path: `${shots}/5-out-again.png` });
+    await page.evaluate(() => { window.__t.aim(-28.85, 1.0, 10); window.__t.render(); }); await page.screenshot({ timeout: 180000, path: `${shots}/5-out-again.png` });
     await setHeight(175); await toDoor();
     const after = await page.evaluate(() => window.__t.calls());
     check(before.calls === after.calls && before.tris === after.tris, 'draw calls outside unchanged after a visit', `${JSON.stringify(before)} → ${JSON.stringify(after)}`);

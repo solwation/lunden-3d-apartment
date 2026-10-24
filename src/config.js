@@ -5963,6 +5963,16 @@ export function avatarBody(look) {
 // our own choices (*guess*): the room is much bigger than the playhouse's 2.1 × 1.9 m shell on purpose.
 export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // centre (m), size (x, z) and height (m)
   dj: { x: 2, z: -4.6, w: 1.4, d: .65, h: .68, top: .06 }, // guess: child-sized corner bench, clear of table/cue and passage
+  // #1570: the BIO's 7.1 + 2 height speakers, wall sconces and their dimming. All sizes/positions/levels are *guess*es (local metres from the room's
+  // centre; x east, z south, y up). BIO runs x -9 .. -3.06 and z -5.2 .. 1.54; the screen is on its west wall, the passage in the south partition at x -6.75 .. -5.25.
+  cinemaAudio: { frontX: -8, tower: { w: .2, d: .26, h: 1, plinth: .04, wallGap: .03 }, // floor-standing left/right fronts along the side walls, clear of the screen and curtains from every seat
+    center: { x: -8.45, w: .62, d: .22, h: .2, y: .07 }, // the centre speaker on short feet below the screen (the screen starts at .4 m)
+    sub: { x: -8.45, z: -4.3, w: .42, d: .42, h: .38 }, // subwoofer on the floor, below the screen's lower edge
+    surround: { x: -4.7, y: 1.9, w: .2, h: .3, d: .16 }, // side surrounds on the north wall and the south partition
+    rear: { x: -3.12, z: [-3.4, .4], y: 2, w: .2, h: .3, d: .16 }, // rear surrounds on the BIO's east wall (facing west)
+    ceiling: { x: [-7.4, -4.6], z: [-3.6, -.3], w: .22, d: .22, h: .09 } }, // four height speakers under the ceiling, clear of the ceiling panels
+  // #1570: wall sconces on the BIO's side walls and the BIO's ceiling panel share one emissive mesh (no light source); `dimmed` scales their colour while a film runs.
+  sconces: { x: { north: [-7.7, -5.9, -3.9], south: [-7.7, -3.9] }, y: 1.65, w: .14, h: .3, d: .1, lit: 0xffcf8a, panel: 0xfff6dc, dimmed: .25, fadeSeconds: 1.6, ambientDim: .4 },
   speakers: { x: [-2.2, 2.2], y: 1.1, z: -4.98, w: .25, h: .38, d: .18 }, // guess: small wall-mounted pair, clear of cue/walking space
   door: { w: 0.8, h: 1.7 }, // Assumed low playhouse-style exit; its interaction works for every avatar height.
   standOff: 0.75, // m from the door wall where you arrive inside

@@ -2440,6 +2440,7 @@ per issue). Each needs its own actual full/test runs and unchanged assertions:
 | Objects and motion | baskettest, cartest, breaktest |
 | Beer objects | beercantest, beershelfmodeltest, beertest, bottletest |
 | Playroom popcorn cart (#1567) | popcorntest.html, popcorndrawtest.cjs |
+| BIO vignette, speakers and sconce dimming (#1570) | biovignettetest.cjs |
 | Placement and stored photos (#808 accepted) | bestaplacementtest, artleveltest, boardtest; actual evidence below, default optional art cloud coverage remains unexecuted |
 | Care and persistence | bedcaretest, clothtest, colddrawertest |
 | Interaction | cheattest, booktest, crouchtest |

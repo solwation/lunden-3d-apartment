@@ -14,6 +14,7 @@ import { architectureEdges } from './architectureedges.js';
 import { buildContactShadows } from './contactshadow.js';
 import { clubhouseSurface, clubhouseMaterial, FINISH } from './clubhousematerials.js';
 import { clubhouseRoundedBox, cinemaChair, cinemaCurtain } from './clubhousefurnishings.js';
+import { playroomCinema } from './playroomcinema.js';
 import { PopcornCart, popcornCartParts, popcornSign, popcornLamp, popcornFootprints } from './popcorn.js';
 
 // #1319 / #1326: the playhouse's secret children's room. A hidden interior, far outside the walkable area (see PLAYROOM in
@@ -60,8 +61,9 @@ export class Playroom {
     const door = [box(R.x - dw, R.x + dw, 0, dh, Z1 - 0.03, Z1)];
     const handle = [box(R.x + dw - 0.2, R.x + dw - 0.12, 0.72, 0.78, Z1 - 0.07, Z1 - 0.03)];
     const lamp = [];
+    // #1570: the BIO's own ceiling panel (x<0, north half) is built by playroomcinema.js so it can dim during a film
     for(const x of [-2*R.clubhouse.side,0,2*R.clubhouse.side])for(const z of [(Z0+R.z+R.clubhouse.front)/2,(Z1+R.z+R.clubhouse.front)/2])
-      lamp.push(box(R.x+x-0.6,R.x+x+0.6,h-0.03,h,z-0.6,z+0.6));
+      if(!(x<0&&z<R.z))lamp.push(box(R.x+x-0.6,R.x+x+0.6,h-0.03,h,z-0.6,z+0.6));
     lamp.push(popcornLamp()); layout.signs.push(popcornSign()); // #1567: the popcorn cart's heat lamp and sign share the atlas draw
     this.object.add(clubhouseSigns(layout,lamp));
     // ---- furniture (#1327), local metres from the room's centre: x east, z south (the door), y up
@@ -112,12 +114,15 @@ export class Playroom {
     for(const x of [-.065,.065])for(const z of [-.1,0])
       fur.push(paint(new THREE.CylinderGeometry(.018,.018,.025,6).translate(R.x+DJ.x+x,DJ.h+.0775,R.z+DJ.z+z),col.dark));
     fur.push(djBox(col.dark,-.075,.075,DJ.h+.065,DJ.h+.069,.09,.11),djBox(col.red,-.012,.012,DJ.h+.069,DJ.h+.085,.075,.125));
+    const cinemaParts = playroomCinema(cbox, paint, col.dark, col.steel); // #1570: 7.1 + height speakers, wall sconces (dimmed while a film runs)
+    fur.push(...cinemaParts.fur);
     const furMat = clubhouseMaterial();
     // Collision edges stop at each chair; the wide center aisle and the route behind the rear row stay open.
     this.footprints = [rect(DJ.x-DJ.w/2,DJ.x+DJ.w/2,DJ.z-DJ.d/2,DJ.z+DJ.d/2), ...cinema.seat.rowX.flatMap((x) => cinema.seat.z.map((z) => rect(x - S.depth / 2, x + S.depth / 2, z - S.width / 2, z + S.width / 2))),
       rect(tvx - 0.02, tvx + 0.075, -R.d/2, R.clubhouse.front-R.clubhouse.wall/2),
       ...COMPUTER_MEDIA.stations.filter(s=>s.clubhouse).flatMap(s=>{const D=COMPUTER_MEDIA.desk,x=s.x-R.x,z=s.z-R.z,cx=x+Math.sin(s.yaw)*D.seatOffset;return[rect(x-D.depth/2,x+D.depth/2,z-D.width/2,z+D.width/2),rect(cx-D.chair[2]/2,cx+D.chair[2]/2,z-D.chair[0]/2,z+D.chair[0]/2)];}),
-      ...popcornFootprints().map(([a,b,c,d])=>rect(a,b,c,d))]; // #1567: the popcorn cart and its bin
+      ...popcornFootprints().map(([a,b,c,d])=>rect(a,b,c,d)), // #1567: the popcorn cart and its bin
+      ...cinemaParts.footprints.map(([a,b,c,d])=>rect(a,b,c,d))]; // #1570: floor-standing fronts, centre speaker and subwoofer
     for (const q of this.footprints) for (let i = 0; i < 4; i++) { const a = q[i], b = q[(i + 1) % 4]; this.segments.push([a[0], a[1], b[0], b[1]]); }
     // the individual cinema and computer chairs carry invisible pick boxes for the ordinary E / touch rest targets
     this.targets = [];
@@ -199,6 +204,8 @@ export class Playroom {
     source.geometry.dispose();
     const parts = [merged([...shell, ...fur], furMat)]; // shell and furniture share one vertex-coloured mesh; screens animate separately
     for (const m of parts) { m.matrixAutoUpdate = false; this.object.add(m); }
+    this.sconces = cinemaParts.sconces; this.setSconceDim = cinemaParts.setDim; this.object.add(this.sconces);
+    this.film = false; this.filmOverride = false; this.filmDim = 0; // #1570: a film is running / the light switch overrode the dimming / smoothed dim 0..1
     this.popcorn = new PopcornCart(this.object, furMat); this.controlPickables.push(...this.popcorn.pickables); // #1567 (tubs: main.js, makeTubs)
     // the way out: an invisible pick box in front of the door (the raycaster ignores `visible: false` materials)
     this.exitTarget = { name: 'lekstugan', kind: 'playroomExit', verb: 'gå ut ur' };
@@ -230,7 +237,7 @@ export class Playroom {
     this.inside = false;
   }
 
-  update(dt,camera,aimed) { if(this.inside){this.sound.update(dt,this.discoOn,this.music.state!=='off');this.billiards.update(dt,camera,aimed);this.devices.update(dt);this.popcorn.update(dt);if(this.discoOn)this.disco(dt);} }
+  update(dt,camera,aimed) { if(this.inside){this.sound.update(dt,this.discoOn,this.music.state!=='off');this.billiards.update(dt,camera,aimed);this.devices.update(dt);this.popcorn.update(dt);this.fadeCinema(dt);if(this.discoOn)this.disco(dt);} }
 
   /** #1365: switch the disco light on or off (the ball stops and goes dull, the light spots vanish). Returns the badge text. */
   setDisco(on) {
@@ -240,10 +247,24 @@ export class Playroom {
     this.onSwitch?.('disco', this.discoOn);
     return this.discoOn ? 'Discolampan är tänd' : 'Discolampan är släckt';
   }
-  toggleDisco() { return this.setDisco(!this.discoOn); }
+  toggleDisco() { if (this.film) this.filmOverride = true; return this.setDisco(!this.discoOn); } // #1570: the light switch beats the film dimming
+
+  /** #1570: a film is running on the BIO screen (read from the cinema state by main.js each frame). */
+  setFilm(on) {
+    on = !!on;
+    if (on === this.film) return;
+    this.film = on; this.filmOverride = false; // each start/stop begins again with the automatic dimming
+  }
+  /** Ease the sconces/ambient toward dimmed (a film runs, no switch override) or lit; the disco spots rest while dimmed. */
+  fadeCinema(dt) {
+    const target = this.film && !this.filmOverride ? 1 : 0, step = dt / R.sconces.fadeSeconds;
+    this.filmDim = dt <= 0 ? this.filmDim : target > this.filmDim ? Math.min(target, this.filmDim + step) : Math.max(target, this.filmDim - step);
+    this.setSconceDim(this.filmDim);
+    this.spots.visible = this.discoOn && this.filmDim < 0.5;
+  }
 
   /** Ambient light inside (day.lit): a touch dimmer with the disco on, so its colours read. */
-  get lit() { return R.lit * (this.discoOn ? R.litDisco : 1); }
+  get lit() { return R.lit * (this.discoOn ? R.litDisco : 1) * (1 - (1 - R.sconces.ambientDim) * this.filmDim); }
 
   /** The disco ball turns and its light spots sweep round the room (only while inside; each spot is where a fixed ray from the ball meets a wall, the floor or the ceiling). */
   disco(dt) {
