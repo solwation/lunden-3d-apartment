@@ -1,0 +1,190 @@
+{
+  "checks": [
+    {
+      "ok": true,
+      "name": "new furniture in actual app",
+      "data": [
+        {
+          "min": [
+            1.94850001168251,
+            3.2499999856948856,
+            8.68
+          ],
+          "max": [
+            2.627,
+            4.771000000685453,
+            10.240000002384186
+          ]
+        },
+        {
+          "min": [
+            1.0816187906265258,
+            3.250000007152557,
+            8.889999997615813
+          ],
+          "max": [
+            1.678381209373474,
+            4.555000066757202,
+            9.50750000476837
+          ]
+        }
+      ]
+    },
+    {
+      "ok": true,
+      "name": "full room/wardrobe door sweep",
+      "data": {
+        "doors": [
+          {
+            "hinge": [
+              2.6287,
+              7.8042
+            ],
+            "len": 0.8557000000000006,
+            "closed": -1.5707963267948966,
+            "open": 0
+          }
+        ],
+        "lids": 2,
+        "samples": 303,
+        "overlaps": []
+      }
+    },
+    {
+      "ok": true,
+      "name": "no existing furniture/poster overlap",
+      "data": []
+    },
+    {
+      "ok": true,
+      "name": "desk, PC and chair block standing"
+    },
+    {
+      "ok": true,
+      "name": "player-radius route from door to vanity/daybed",
+      "data": {
+        "start": [
+          1.9,
+          8.2
+        ],
+        "goal": [
+          1.6,
+          10.75
+        ],
+        "radius": 0.22,
+        "margin": 0,
+        "grid": 0.025,
+        "reachable": 3012
+      }
+    },
+    {
+      "ok": true,
+      "name": "local batching and no new lights",
+      "data": {
+        "batmanchair": {
+          "before": {
+            "meshes": 30,
+            "triangles": 2648,
+            "lights": 0
+          },
+          "after": {
+            "meshes": 6,
+            "triangles": 2648,
+            "lights": 0
+          }
+        },
+        "tillydesk": {
+          "before": {
+            "meshes": 182,
+            "triangles": 11900,
+            "lights": 0
+          },
+          "after": {
+            "meshes": 17,
+            "triangles": 11900,
+            "lights": 0
+          }
+        }
+      }
+    },
+    {
+      "ok": true,
+      "name": "normal focused action sits in Batman chair",
+      "data": {
+        "aimed": true,
+        "label": "Sitt ner",
+        "active": true,
+        "camera": [
+          1.3699999999999999,
+          4.485,
+          9.2
+        ],
+        "yaw": -1.5707963267948968
+      }
+    },
+    {
+      "ok": true,
+      "name": "normal action stands back in free space",
+      "data": {
+        "position": [
+          1.9916099682706645,
+          3.25,
+          8.416673090372516
+        ]
+      }
+    },
+    {
+      "ok": true,
+      "name": "chair moves and rotates through Rearrange",
+      "data": {
+        "selected": true,
+        "preview": {
+          "valid": true,
+          "turn": 0.7853981633974483,
+          "candidate": [
+            1.6,
+            3.25,
+            9.5
+          ]
+        },
+        "confirmed": true,
+        "moved": [
+          1.5999999999999996,
+          3.25,
+          9.5
+        ],
+        "yaw": 0.7853981633974485
+      }
+    },
+    {
+      "ok": true,
+      "name": "chair original placement restores"
+    }
+  ],
+  "local": {
+    "batmanchair": {
+      "before": {
+        "meshes": 30,
+        "triangles": 2648,
+        "lights": 0
+      },
+      "after": {
+        "meshes": 6,
+        "triangles": 2648,
+        "lights": 0
+      }
+    },
+    "tillydesk": {
+      "before": {
+        "meshes": 182,
+        "triangles": 11900,
+        "lights": 0
+      },
+      "after": {
+        "meshes": 17,
+        "triangles": 11900,
+        "lights": 0
+      }
+    }
+  }
+}

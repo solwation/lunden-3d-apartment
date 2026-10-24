@@ -5120,6 +5120,38 @@ export const VANITY = {
   stool: { r: 0.18, h: 0.42, color: 0xc7a6e0 },
 };
 
+// #1557 personal setup, source: docs/datorsetup-secretlab-batman.jpg. ALL dimensions,
+// placement, colours and detail proportions below are guess from that photo, not manufacturer measurements.
+// East wall: desk starts z8.68 beyond the room door's 8.616 sweep; chair leaves the west passage
+// and 0.53 m to DAYBED_Z - HEMNES_DAYBED.L/2. No posters on this wall.
+export const TILLY_DESK = {
+  at: { x: 2.292, z: 9.43, rot: 90 }, chairAt: { x: 1.38, z: 9.20, rot: -90 },
+  w: 1.5, d: .65, h: .75, top: .03, round: .006,
+  leg: { x: .63, width: .07, depth: .065, foot: [.09,.035,.58], lower: .4, upper: .31, brace: [.05,.05] },
+  panel: { size: [.18,.032,.045], at: [.59,.702,.32], buttons: 6 },
+  hook: { x: .77, y: .70, z: .24, r: .035, tube: .005 },
+  mat: { size: [1.04,.004,.37], at: [-.1,.754,.10] },
+  monitors: [ { at: [-.23,1.105,-.13], size: [.66,.38,.027] }, { at: [.45,1.14,-.11], size: [.30,.54,.027] } ],
+  arm: { r: .012, z: -.24, clamp: [.065,.03,.06] }, bezel: .012,
+  ring: { at: [-.06,1.46,-.13], r: .053, tube: .008 }, webcam: { size: [.10,.024,.025], at: [-.23,1.315,-.115] },
+  keyboard: { size: [.46,.022,.15], at: [-.22,.768,.10], rows: 5, cols: 19, key: [.018,.006,.019] },
+  mouse: { at: [.20,.774,.12], scale: [.032,.021,.058], wheel: [.009,.005,.018], wheelZ: -.015, mark: [.002,.002,.014], markStep: .005, markZ: .016 },
+  speakers: { xs: [-.64,.65], at: [.82,-.19], size: [.105,.14,.10], r: .030 },
+  puck: { at: [.12,.773,-.10], r: .029, h: .025 }, charger: { at: [.63,.765,.19], r: .042, h: .022 },
+  dac: { size: [.13,.04,.09], at: [.30,.774,-.18], knob: .014 },
+  figure: { at: [.30,.835,-.18], scale: [.025,.041,.023], stitch: .003, rings: 5, eye: [.002,.003,.002], eyeAt: [.009,.012,.020] },
+  pc: { at: [.45,.265,.00], size: [.24,.52,.43], shell: .012, fan: .052, tube: .006, spacing: .135 },
+  led: { size: [1.33,.012,.012], at: [0,.80,-.307], glow: [1.5,.75], y: 1.03, opacity: .42, px: 64 },
+  chair: { radius: .31, seat: [.51,.09,.49], seatY: .47, back: [.47,.79,.105], backAt: [0,.91,-.205],
+    wing: [.08,.40,.11], wingX: .235, arm: [.075,.035,.27], armX: .27, armY: .68,
+    post: .025, postZ: -.02, armZ: .025, stemR: .035, stemGap: .08, spoke: [.027,.035], spokeY: .065, casterWidth: .032, casterInset: .025, wingZ: .03, bolsterY: .035, paddingRound: .025,
+    pillow: [.28,.12,.065], pillowAt: [0,1.20,-.125], seam: .0015, wheel: .028, legs: 5,
+    logo: { w: .24, h: .08, at: [0,1.04,-.143] }, rest: { x: 0, y: .515, z: -.01 } },
+  detail: { sides: 10, tubeSides: 5, ringSides: 24, sphere: [12,8], texture: [512,256], carbonPx: 64, skin: .002, thin: .003, offset: .001, cable: .012, cableInset: .025, glowGap: .010 },
+  colors: { wood: 0x853b32, black: 0x15171b, rubber: 0x08090c, steel: 0x43474e, seam: 0xdedbd0,
+    blue: 0x426dff, pink: 0xda51f3, cream: 0xe5d7b8 },
+};
+
 // Tilly's laptop on the vanity (#283, src/laptop.js): a thin unbranded rose-gold laptop, 30 × 21 cm, lid open ~110°,
 // two stickers on the lid. E on the screen: on, then the next clip; E on the keyboard: on / off. On, it shows an invented
 // short-video app ("Klipp": no real brand, no real people) — a phone-shaped column of canvas-drawn clips that swipes up
@@ -5525,6 +5557,8 @@ export const FURNITURE = [
   // corner; the drawer column at the north end, the free end (the laptop, #283) towards the window; the stool in front
   { type: 'vanity', level: 1, x: 2.632 - VANITY.d / 2 - 0.004, z: 11.45, rot: 90 },
   { type: 'vanitystool', level: 1, x: 2.632 - VANITY.d - 0.2, z: 11.55, rot: -90 },
+  { type: 'tillydesk', level: 1, ...TILLY_DESK.at },
+  { type: 'batmanchair', level: 1, ...TILLY_DESK.chairAt },
   // her wardrobe (#305, #311, SMASTAD): back to the north wall in the NW corner, its west side 4 mm off the west wall
   // (face x 0.202); it faces the room (south)
   { type: 'smastad', level: 1, x: 0.202 + 0.004 + SMASTAD.W / 2, z: 7.804 + 0.004 + SMASTAD.D / 2, rot: 180 },

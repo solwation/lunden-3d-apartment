@@ -317,7 +317,13 @@ material/              screenshots of our choices in Peab's option portal (local
   an IKEA ALEX 100 × 48 with a drawer column (make-up, hair things, clothes), make-up on the top, a Hollywood mirror with
   14 globe bulbs (a lamp of its own, `sminkspegelns lampor`, at dusk like #234; a Reflector) and a lilac stool (a seat
   with an invisible pick box over it); on its free end a rose-gold laptop (#283, `src/laptop.js`, `LAPTOP`) playing an
-  invented short-video feed ("Klipp"). Bunks: IKEA MYDAL, white, 97 × 207 × 157 (`MYDAL`, #227: posts, end boards, a two-board guard rail, a straight
+  invented short-video feed ("Klipp"). North of the vanity, the east wall carries Tilly's personal
+  computer corner (#1557, `TILLY_DESK`, `src/tillydesk.js`): a guessed 150 × 65 cm red/black T-leg desk,
+  landscape + portrait monitors, photo-led accessories and a floor RGB PC. The black Batman chair
+  is a normal seat and separately movable/rotatable. Desk starts at z8.68, beyond the room door's
+  sweep; the chair is slightly north of the desk centre to keep the route to the daybed free.
+  No north/west poster moves or becomes covered. All new measurements remain guesses from
+  docs/datorsetup-secretlab-batman.jpg. Bunks: IKEA MYDAL, white, 97 × 207 × 157 (`MYDAL`, #227: posts, end boards, a two-board guard rail, a straight
   ladder on the room side at the foot end); long side to the side wall, head end to the façade; a white IKEA MALM chest of 6 drawers
   (80 × 124 × 50, `malm`, #235: 2 small + 4 big, clothes inside; in Sovrum 2 the second drawer holds only the folded
   Spider-Man suit, item `suit`, #597, src/spidersuit.js) with its back against each bunk's foot end on top (`MALM_DECO`, item `deco`) a themed lamp of its own (a Death Star in Sovrum 2, a unicorn in Sovrum 3) and

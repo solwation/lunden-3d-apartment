@@ -109,6 +109,8 @@ En liten kompass överst visar N, S, V och Ö. Den röda pilen pekar mot geograf
 
 Diskreta kantlinjer på väggar, dörrar och fast inredning gör hörn och rumsgeometri lättare att urskilja, även i trapphuset och hissen. Skarvar mellan byggdelar på samma plana väggyta filtreras bort; verkliga hörn och öppningar behåller sina accenter.
 
+Tillys rum har en personlig datorhörna på östra väggen med två skärmar, röd skrivbordsskiva och RGB-dator. Batman-stolen går att sitta i och att flytta och vrida i Möblera om.
+
 ## Styrning
 
 | Tangent | |

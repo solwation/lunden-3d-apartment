@@ -112,6 +112,28 @@ tools/bestatest.html   headless test: the BESTÅ display cabinet's six doors ope
                        lit glass section switch with the room (#191)
 ```
 
+## Tilly's personal desk corner (#1557)
+
+`src/tillydesk.js` builds `tillydesk` and `batmanchair`; `TILLY_DESK` in config
+centralizes every dimensional assumption, including the east-wall placement north
+of the vanity. Source: [the user's setup photo](../datorsetup-secretlab-batman.jpg).
+All sizes and proportions are **guess**; no manufacturer dimensions were verified.
+The mahogany-red top has telescopic T legs and a memory control panel, modelled at
+sitting height (no height-control interaction). Two arm-mounted monitors share one
+static invented editor/dashboard atlas. Accessories, keyboard keys and case details
+merge per material. The three fan rings, rear LED and wall wash are unlit materials;
+there is no new light, animation, private screen capture, mail or wall photograph.
+The floor PC has a hollow shell and tinted glass in front of the fans.
+
+The Batman chair has black upholstery, carbon-pattern sides, white seams, pillow
+and a stylized bat emblem. It uses normal E sitting/standing and the existing
+independent furniture move/rotate path; there is no extra in-place swivel mechanic.
+Its upholstery opts into the existing explicit material-library handle. Desk,
+floor PC and chair have ordinary footprint collision. The busy tabletop intentionally
+has no put-down surface, so loose items cannot overlap the devices. Screens/accessories
+are decorative, with no new computer-media station. This is personal furnishing and
+is excluded from the public downstream.
+
 ## Recent implementation notes
 
 BESTÅ wall placement (#492): the whole cabinet is a wall-mounted movable root (including doors, contents and spots), and its preview must fit vertically within the floor/ceiling. Existing misplaced saves remain selectable and can be moved or restored individually. Regression: tools/bestaplacementtest.html.

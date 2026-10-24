@@ -1,0 +1,41 @@
+{
+  "base": "b361f59a",
+  "date": "2026-10-24",
+  "environment": "Chrome for Testing 145.0.7632.6 / Playwright 1.58.2 / Linux headless SwiftShader; loopback 8357; fresh browser profile; cloud= disabled",
+  "sha256": {
+    "src/tillydesk.js": "ae666ea75cc130d827ae4c1cd825d8d8a7352687fce4ac03ea1f548462f2c624",
+    "src/config.js": "d6176402d7430a755da9e94663867e18462b9ec28458cfa46d5dab8aa7785b54",
+    "src/furniture.js": "2de580a25edaa30e1bdc4f29de15ec6204f9ca800fbf3d8a3de8c21e5b3565a7",
+    "src/rearrange.js": "671d9120d3066be4f26d06754e9532b83452be32558c976544819d3243399bab",
+    "src/rest.js": "b5c72434df08e2fe4a3bbdbb49b43116287d41b1078cf0d09b45171605129c7b",
+    "src/player.js": "dc0bf7a2e5c080bbadba9e2fc7ce877f89416215fb7a749d3c71d1861e6aed8e",
+    "src/merge.js": "f9c01799dbb3b9ebcd2e0408933f62a08a93059d3406d8b082eac9878b7b2819",
+    "docs/datorsetup-secretlab-batman.jpg": "31f4e4993f033f8f2cce2d400ea164e6e2f2310c7ee2f493fdcfe21d4e9eb65d"
+  },
+  "capture": {
+    "viewport": [
+      1280,
+      800
+    ],
+    "deviceScaleFactor": 1,
+    "quality": 3,
+    "shadows": true,
+    "antialias": false,
+    "datorhornan": "?cloud=&shot&at=1.55,11,-26,-25,3.25&time=12&freeze&mess=0 (profile skipped)",
+    "rumsoversikt": {
+      "at": [
+        1.82,
+        8.18,
+        172,
+        -12,
+        3.25
+      ],
+      "touch": true
+    }
+  },
+  "evidenceSha256": {
+    "checks.json": "eb5e2df60a447ccc1e44031527a632b15f012398bbb08ea741f04cd64cfa2450",
+    "datorhornan.png": "bd1c00ce170a7121e86018067a3a059d92e8b55fda5e603c5c5299680f5315f2",
+    "rumsoversikt.png": "ca97dbf17a5b24f6222ede7965eb8013c42fc7b741de698d2f274d119431aca0"
+  }
+}
