@@ -1,0 +1,78 @@
+{
+  "mode": "before",
+  "counts": {
+    "hall1": {
+      "calls": 20,
+      "triangles": 67872,
+      "lit": 0.55
+    },
+    "hall2": {
+      "calls": 15,
+      "triangles": 76775,
+      "lit": 0.55
+    },
+    "hall3": {
+      "calls": 20,
+      "triangles": 80969,
+      "lit": 0.55
+    },
+    "spel1": {
+      "calls": 16,
+      "triangles": 40462,
+      "lit": 0.55
+    },
+    "spel2": {
+      "calls": 23,
+      "triangles": 68056,
+      "lit": 0.55
+    },
+    "spel3": {
+      "calls": 15,
+      "triangles": 40460,
+      "lit": 0.55
+    },
+    "bilj1": {
+      "calls": 20,
+      "triangles": 44902,
+      "lit": 0.55
+    },
+    "bilj2": {
+      "calls": 20,
+      "triangles": 44832,
+      "lit": 0.55
+    },
+    "bilj3": {
+      "calls": 19,
+      "triangles": 44900,
+      "lit": 0.55
+    }
+  },
+  "light": {
+    "on": {
+      "on": true,
+      "lit": 0.451,
+      "ball": 1,
+      "spots": true
+    },
+    "toggled": {
+      "on": false,
+      "lit": 0.55,
+      "ball": 0.28,
+      "spots": false
+    },
+    "on2": {
+      "on": true,
+      "lit": 0.451,
+      "ball": 1,
+      "spots": true
+    },
+    "zones": null,
+    "lights": 0
+  },
+  "outside": {
+    "visible": false,
+    "before": 258,
+    "removed": 258
+  },
+  "errors": []
+}
