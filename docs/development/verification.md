@@ -8200,6 +8200,14 @@ Ordinary drop tracking seeded by the existing top deck is cleared on validated e
 fatal fall recovery still prevents entry. Top native entry and actual session save use feetY0.
 [Persistent raw logs, screenshots and fixture notes](/home/olw/.local/state/lunden-orkester/codex-surface-20261020/slide1414/README.md).
 
+## Old Sankt Lars pavilions in nr 41's brick style (#1556)
+
+`node --test tools/brickstyletest.mjs tools/stlars41test.mjs` (Node needs a resolver for the bare `three` import, e.g.
+an `--import` hook pointing at a local three@0.170.0) checks the pavilion selection, footprints, heights, colours, one
+pane per generic window position and one geometry per batch; nr 41's geometry was hash-identical before/after the move
+to `src/brickstyle.js`. `tools/southbackdroptest.html` "bounded far detail" grows by the pavilions' +6 376 triangles;
+desktop and 844×390 phone perfcount keep identical calls and maxima (the south is not in the maximum views).
+
 ## Southern low-rise glazing (#1418)
 
 `node --test tools/southwindowstest.mjs` verifies39 explicit addressed source IDs,

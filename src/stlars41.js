@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { BRICK_STYLE as C, rgb, brickKit, brickFacade } from './brickstyle.js';
 
 // Sankt Lars väg 41 (#1117, rebuilt from the user's photos in #1529: docs/foton/stlars41-hornvy-41a.jpg and
 // docs/foton/stlars41-fasad-41b-entre.jpg). The OSM outline (way 145221569) is kept: a 28.2 x 24.3 m main block with a
@@ -9,16 +9,8 @@ import * as THREE from 'three';
 // (`model`, every one *guess*); colours are read from the photos. Everything is pushed into the southbackdrop facade / roof /
 // glass batches as one geometry each: no extra draw calls, textures or lights.
 
-const BRICK = 0x924530;      // warm red-orange brick (photos)
-const BRICK_DARK = 0x7a3a28; // arch heads, blind niches
-const FRIEZE = 0x833d2b;     // corbel friezes and belt courses
-const PLINTH = 0xe6e3dc;     // white rendered plinth
-const BASEMENT = 0xc3c8c4;   // glass-block basement windows
-const FRAME = 0xf2f1ec;      // white window frames and mullions
-const DOOR = 0x2f4a45;       // dark green double doors
-const PIPE = 0x3b3f43;       // downpipes, chimney caps
-
-const rgb = hex => new THREE.Color(hex).toArray();
+// The facade vocabulary (colours, walls, friezes, belt courses, windows) is the shared old-hospital brick style in
+// src/brickstyle.js (#1556), which the other old pavilions of the southern backdrop wear too.
 
 /** Build Sankt Lars väg 41; returns `eave` and `roofY(x, z)` (the drawn roof's height, for the walkable roof, #1294). */
 export function buildStLars41(b, p, base, bottom, parts) {
@@ -35,57 +27,10 @@ export function buildStLars41(b, p, base, bottom, parts) {
   const floorY = k => plinthTop + k * S;
   const eave = floorY(3) + M.frieze, wingEave = floorY(M.wingLevels) + M.wingEaveLift, towerEave = eave + T.extra;
 
-  const F = { pos: [], nrm: [], col: [] }, G = { pos: [], nrm: [] }, R = { pos: [], nrm: [] };
-  const tri = (B, a, c, d, n, col) => { for (const q of [a, c, d]) { B.pos.push(...q); B.nrm.push(...n); if (col) B.col.push(...col); } };
-  const quad = (B, a, c, d, e, n, col) => { tri(B, a, c, d, n, col); tri(B, a, d, e, n, col); };
-  const upTri = (a, c, d) => { // roof triangle, its normal turned upwards
-    const n = new THREE.Vector3(c[0] - a[0], c[1] - a[1], c[2] - a[2]).cross(new THREE.Vector3(d[0] - a[0], d[1] - a[1], d[2] - a[2])).normalize();
-    if (n.y < 0) n.negate();
-    tri(R, a, c, d, n.toArray());
-  };
+  const kit = brickKit(W, (nu, nv) => [nu * ux + nv * vx, 0, nu * uz + nv * vz]), { F, G, R, quad, upTri, face } = kit;
+  const brick = rgb(C.brick), dark = rgb(C.brickDark), frieze = rgb(C.frieze), basement = rgb(C.basement), door = rgb(C.door), pipe = rgb(C.pipe);
 
-  // A face: the local line (u0, v0) -> (u1, v1) with outward local normal (nu, nv). s runs along it, y is the height,
-  // t the offset outwards.
-  const face = (u0, v0, u1, v1, nu, nv) => {
-    const len = Math.hypot(u1 - u0, v1 - v0), du = (u1 - u0) / len, dv = (v1 - v0) / len, n = [nu * ux + nv * vx, 0, nu * uz + nv * vz];
-    const at = (s, y, t = 0) => W(u0 + du * s + nu * t, v0 + dv * s + nv * t, y);
-    return {
-      u0, v0, du, dv, nu, nv, len, at,
-      rect(s0, s1, y0, y1, t, col, B = F) { quad(B, at(s0, y0, t), at(s1, y0, t), at(s1, y1, t), at(s0, y1, t), n, col); },
-      arch(sc, half, y, rise, t, col, B = F, seg = 6) { // a circular segment on top of y, `rise` high and 2*half wide
-        const r = (half * half + rise * rise) / (2 * rise), cy = y + rise - r, a0 = Math.asin(Math.min(1, half / r));
-        const pt = a => at(sc + r * Math.sin(a), Math.max(y, cy + r * Math.cos(a)), t);
-        for (let i = 0; i < seg; i++) tri(B, at(sc, y, t), pt(-a0 + 2 * a0 * i / seg), pt(-a0 + 2 * a0 * (i + 1) / seg), n, col);
-      },
-      under(s0, s1, y, t0, t1, col) { quad(F, at(s0, y, t1), at(s1, y, t1), at(s1, y, t0), at(s0, y, t0), [0, -1, 0], col); },
-    };
-  };
-  const brick = rgb(BRICK), dark = rgb(BRICK_DARK), frieze = rgb(FRIEZE), plinth = rgb(PLINTH), basement = rgb(BASEMENT), frame = rgb(FRAME), door = rgb(DOOR), pipe = rgb(PIPE);
-
-  // A wall: white plinth from yLo to plinthTop, brick above it up to yTop.
-  const wall = (f, s0, s1, yLo, yTop) => {
-    if (yLo < plinthTop) f.rect(s0, s1, yLo, Math.min(plinthTop, yTop), 0, plinth);
-    if (yTop > plinthTop) f.rect(s0, s1, Math.max(yLo, plinthTop), yTop, 0, brick);
-  };
-  // A projecting band (front + underside); its ends run past s0/s1 by the projection, so corners close.
-  const band = (f, s0, s1, yTop, h, proj, col) => { f.rect(s0 - proj, s1 + proj, yTop - h, yTop, proj, col); if (proj > 0.1) f.under(s0 - proj, s1 + proj, yTop - h, 0, proj, col); }; // thin belts: no underside
-  const eaveFrieze = (f, s0, s1, y) => { band(f, s0, s1, y, 0.18, M.overhang * 0.6, frieze); band(f, s0, s1, y - 0.18, 0.32, 0.16, dark); };
-  const beltCourses = (f, s0, s1, n) => { band(f, s0, s1, plinthTop + 0.1, 0.12, 0.06, plinth); for (let k = 1; k < n; k++) band(f, s0, s1, floorY(k) + 0.55, 0.16, 0.08, frieze); };
-
-  // Windows: 'seg' segmental head, 'round' round head, 'blind' bricked-up niche, 'pair' two seg lights side by side.
-  const opening = (f, s, y0, w, h, kind) => {
-    if (kind === 'pair') { opening(f, s - w * 0.58, y0, w, h, 'seg'); opening(f, s + w * 0.58, y0, w, h, 'seg'); return; }
-    const round = kind === 'round', rise = round ? w / 2 : 0.18, y1 = y0 + h - rise, seg = round ? 5 : 2;
-    f.arch(s, w / 2 + 0.2, y1, rise + 0.22, 0.012, dark, F, seg); // brick arch head
-    if (kind === 'blind') { f.rect(s - w / 2, s + w / 2, y0, y1, 0.012, dark); return; }
-    f.rect(s - w / 2 - 0.06, s + w / 2 + 0.06, y0 - 0.06, y1, 0.02, frame);
-    f.arch(s, w / 2 + 0.06, y1, rise + 0.03, 0.02, frame, F, seg);
-    f.rect(s - w / 2 + 0.06, s + w / 2 - 0.06, y0 + 0.04, y1, 0.03, null, G);
-    f.arch(s, w / 2 - 0.06, y1, Math.max(0.05, rise - 0.06), 0.03, null, G, seg);
-    f.rect(s - 0.035, s + 0.035, y0 + 0.04, y1 + rise - 0.08, 0.045, frame); // mullion
-    const yt = y0 + (y1 - y0) * 0.68; f.rect(s - w / 2 + 0.06, s + w / 2 - 0.06, yt, yt + 0.07, 0.045, frame); // transom
-    f.rect(s - w / 2 - 0.1, s + w / 2 + 0.1, y0 - 0.12, y0 - 0.04, 0.05, frame); // sill
-  };
+  const { wall, band, eaveFrieze, beltCourses, opening } = brickFacade(kit, { plinthTop, floorY, overhang: M.overhang });
   const doorway = (f, s, w) => { // arched green double door with a fanlight, its foot at the ground
     const y1 = base + 2.3;
     f.rect(s - w / 2, s + w / 2, bottom, y1, 0.03, door);
@@ -187,14 +132,7 @@ export function buildStLars41(b, p, base, bottom, parts) {
     quad(F, W(cu - hw - 0.08, cv - hd - 0.08, top), W(cu + hw + 0.08, cv - hd - 0.08, top), W(cu + hw + 0.08, cv + hd + 0.08, top), W(cu - hw - 0.08, cv + hd + 0.08, top), [0, 1, 0], pipe);
   }
 
-  const geom = (B, colour) => {
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.Float32BufferAttribute(B.pos, 3));
-    g.setAttribute('normal', new THREE.Float32BufferAttribute(B.nrm, 3));
-    if (colour) g.setAttribute('color', new THREE.Float32BufferAttribute(B.col, 3));
-    return g;
-  };
-  parts.facade.push(geom(F, true)); parts.roof.push(geom(R)); parts.glass.push(geom(G));
+  kit.flush(parts);
 
   return {
     eave,

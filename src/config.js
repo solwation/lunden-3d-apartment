@@ -870,6 +870,15 @@ export const SITE = {
       '333642384', '333642387', '333642391', '333642393', '333642395', '367079610', '367079611', '367079612', '367079613', '367079616', // Nattsländegatan
       '333642386', '333642390', '333642397', '403628164', '403628170', '403628176', // Hattsnäckegränden
     ] },
+    // #1556 (the user's in-game report): the old four-storey hospital pavilions take nr 41's brick style (#1529,
+    // src/brickstyle.js) on their own OSM footprints, storeys, eaves and roofs. Their facades are not photographed:
+    // every value is *guess*, chosen to echo nr 41. `plinth` white plinth height over the base, `frieze` the eave
+    // frieze's projection, `belts` the storey lines with a belt course (floor k), `beltLift` its top over that floor,
+    // `rise` the segmental head's peak over the window's sides, `frame` the white frame's width (all m).
+    // The small two-storey houses and the Sävsländegatan/Nattsländegatan/Hattsnäckegränden terraces keep their style.
+    brickStyle: { plinth: 0.7, frieze: 0.15, belts: [1], beltLift: 0.1, rise: 0.2, frame: 0.07, sources: [
+      '88457576', '88457590', 'relation/1309428', '88457592', '88457598', '88457594', '88457599', // Sankt Lars väg 42, 43, 44, 45, 46, 47, 54
+    ] },
     buildings: [
       {"source":"88457551","polygon":[[246.3,350.37],[250.7,348.97],[251.42,351.23],[255.49,349.95],[258.92,360.68],[244.6,365.21],[241.15,354.37],[246.99,352.53],[246.3,350.37]],"levels":2,"levelsSource":"visual assumption","name":"Sankt Lars väg 64","roof":"gable","roofSource":"visual assumption","rise":1.6,"facade":13024420},
       {"source":"88457554","polygon":[[42.86,466.69],[57.77,455.6],[62.18,461.53],[47.28,472.62],[42.86,466.69]],"levels":2,"levelsSource":"visual assumption","name":"Sankt Lars 88457554","roof":"gable","roofSource":"visual assumption","rise":1.6,"facade":13024420},

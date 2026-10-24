@@ -7,6 +7,7 @@ import { registerTrees, registerSnow, registerSeasonal } from './seasons.js';
 import { lobeGeometry, leafMaterial, leafAtlasParts } from './foliage.js';
 import { lowRiseWindowParts } from './southwindows.js';
 import { buildStLars41 } from './stlars41.js';
+import { brickPavilion, BRICK_STYLE } from './brickstyle.js';
 import { paddockLandParts } from './paddock.js';
 import { busStopApron } from './busstopgeo.js';
 import { parking1442Parts, parkingLayoutParts, cellTriangles, lotTriangles, streetApron } from './parkinglot1442.js';
@@ -50,7 +51,8 @@ export function* southBackdropParts(ground){
  farGround.grid=()=>ground.grid?.()??null;farGround.lotTriangles=()=>ground.lotTriangles?.()??[]; // #1443: clipped parking lots' own drawn triangles // #1313: the terrain mesh's grid, so the paths are cut along it
  let built=0;for(const b of S.buildings){if(built++%6===5)yield .6*built/S.buildings.length;const foot=shape(b),p=b.polygon.slice(0,-1),base=b.keepBase??Math.max(...p.map(q=>farGround(...q))),bottom=Math.min(...p.map(q=>farGround(...q)))-.1,eave=base+b.levels*S.storey;
   if(b.template==='stlars41'){records.push({...b,base,bottom,...buildStLars41(b,p,base,bottom,parts)});continue;}
-  parts.facade.push(tint(new THREE.ExtrudeGeometry(foot,{depth:eave-bottom,bevelEnabled:false}).rotateX(-Math.PI/2).translate(0,bottom,0),b.facade));
+  const pav=S.brickStyle.sources.includes(b.source)?brickPavilion(b,base,bottom,eave):null,wallColor=pav?BRICK_STYLE.brick:b.facade; // #1556: the old pavilions in nr 41's brick style
+  if(!pav)parts.facade.push(tint(new THREE.ExtrudeGeometry(foot,{depth:eave-bottom,bevelEnabled:false}).rotateX(-Math.PI/2).translate(0,bottom,0),b.facade));
   let edge=0,len=0;for(let i=0;i<p.length;i++){const q=p[(i+1)%p.length],d=Math.hypot(q[0]-p[i][0],q[1]-p[i][1]);if(d>len){len=d;edge=i;}}
   const a=p[edge],c=p[(edge+1)%p.length],ux=(c[0]-a[0])/len,uz=(c[1]-a[1])/len,u=q=>ux*q[0]+uz*q[1],v=q=>-uz*q[0]+ux*q[1],us=p.map(u),vs=p.map(v),u0=Math.min(...us),u1=Math.max(...us),v0=Math.min(...vs),v1=Math.max(...vs),half=(v1-v0)/2;
   const planes=[q=>(v(q)-v0)/half,q=>(v1-v(q))/half];if(b.roof==='hipped')planes.push(q=>(u(q)-u0)/half,q=>(u1-u(q))/half);
@@ -62,9 +64,10 @@ export function* southBackdropParts(ground){
   for(const [ring,hole]of [[p,false],...(b.holes??[]).map(h=>[h.slice(0,-1),true])]){const sign=(hole?-1:1)*Math.sign(ring.reduce((s,q,i)=>{const r=ring[(i+1)%ring.length];return s+q[0]*r[1]-r[0]*q[1]},0));for(let i=0;i<ring.length;i++){const a=ring[i],c=ring[(i+1)%ring.length],dx=c[0]-a[0],dz=c[1]-a[1],d=Math.hypot(dx,dz);
     // #1550 (as #1527): a gabled wall crossing the ridge line is split there, so its top follows both roof slopes instead of leaving a sky-coloured triangle under the ridge
     const va=v(a)-(v0+v1)/2,vc=v(c)-(v0+v1)/2,m=b.roof!=='hipped'&&va*vc<0?[a[0]+(c[0]-a[0])*va/(va-vc),a[1]+(c[1]-a[1])*va/(va-vc)]:null;
-    for(const[s,e]of m?[[a,m],[m,c]]:[[a,c]])parts.facade.push(tint(geo([[s[0],eave,s[1]],[e[0],eave,e[1]],[e[0],roofHeight(e),e[1]],[s[0],eave,s[1]],[e[0],roofHeight(e),e[1]],[s[0],roofHeight(s),s[1]]]),b.facade));
+    for(const[s,e]of m?[[a,m],[m,c]]:[[a,c]])parts.facade.push(tint(geo([[s[0],eave,s[1]],[e[0],eave,e[1]],[e[0],roofHeight(e),e[1]],[s[0],eave,s[1]],[e[0],roofHeight(e),e[1]],[s[0],roofHeight(s),s[1]]]),wallColor));
+    if(pav){pav.edge(a,c,sign);continue;}
     if(b.levels<4)continue;const nx=sign*dz/d,nz=-sign*dx/d;for(let k=1;k*S.bay+S.window[0]/2<d;k++)for(let floor=0;floor<b.levels;floor++)parts.glass.push(plain(new THREE.PlaneGeometry(...S.window).rotateY(Math.atan2(nx,nz)).translate(a[0]+dx/d*k*S.bay+nx*.025,base+floor*S.storey+S.sill+S.window[1]/2,a[1]+dz/d*k*S.bay+nz*.025)));
-  }}records.push({...b,base,bottom,eave,roofY:(x,z)=>roofHeight([x,z])}); // roofY: the drawn roof's height, for the walkable roof (#1294)
+  }}pav?.flush(parts);records.push({...b,base,bottom,eave,roofY:(x,z)=>roofHeight([x,z])}); // roofY: the drawn roof's height, for the walkable roof (#1294)
  }
  // Append new panes after all old glass: existing landmark/special facade geometry stays an exact prefix.
  for(const b of records)parts.glass.push(...lowRiseWindowParts(b,b.base));
