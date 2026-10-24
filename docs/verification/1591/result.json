@@ -1,0 +1,101 @@
+{
+  "geometry": {
+    "posters": 6,
+    "fixtures": 18
+  },
+  "posterCalls": 4,
+  "playing": false,
+  "generic": {
+    "source": "generic",
+    "items": 0,
+    "drawn": 1,
+    "clickable": 0
+  },
+  "genericFocus": {
+    "kind": null,
+    "name": null,
+    "video": null,
+    "prompt": "",
+    "action": "",
+    "actionHidden": true
+  },
+  "live": {
+    "source": "live",
+    "ids": [
+      "CRPxvIdtLz4",
+      "3YpOOPh5_8I",
+      "Njxv_cnsBjk",
+      "afeEKpKM608",
+      "O63MJNQh02I",
+      "kkdBWpijGag"
+    ],
+    "drawn": 2,
+    "thumbs": 0,
+    "stored": 6,
+    "names": [
+      "trailer",
+      "trailer",
+      "trailer",
+      "trailer",
+      "trailer",
+      "trailer"
+    ],
+    "clickable": 6
+  },
+  "desk": {
+    "kind": "playroomPoster",
+    "name": "trailer",
+    "video": "3YpOOPh5_8I",
+    "prompt": "Klicka för att visa trailer",
+    "action": "",
+    "actionHidden": true
+  },
+  "deskRun": {
+    "sent": [
+      "get",
+      "claim",
+      "select",
+      "release"
+    ],
+    "video": "3YpOOPh5_8I",
+    "owner": null,
+    "dialog": false
+  },
+  "refusal": "Någon annan styr skärmen just nu.",
+  "touch": {
+    "kind": "playroomPoster",
+    "name": "trailer",
+    "video": "O63MJNQh02I",
+    "prompt": "Klicka för att visa trailer",
+    "action": "Visa trailer",
+    "actionHidden": false
+  },
+  "saved": {
+    "a": {
+      "source": "saved",
+      "ids": [
+        "CRPxvIdtLz4",
+        "3YpOOPh5_8I",
+        "Njxv_cnsBjk",
+        "afeEKpKM608",
+        "O63MJNQh02I",
+        "kkdBWpijGag"
+      ]
+    },
+    "b": {
+      "source": "generic",
+      "items": 0,
+      "clickable": 0
+    }
+  },
+  "draws": {
+    "withIt": 25,
+    "without": 24,
+    "extra": 1,
+    "lights": 0,
+    "outA": 258,
+    "outB": 258,
+    "outside": false
+  },
+  "errors": []
+}
