@@ -6,8 +6,7 @@
 <script>
 // no &test: PASS labels include the real wall clock across many scene loads; exact paired output is not comparable
 // "Ladda om" keeps the place (#74): (1) a stored record puts the visitor back there (position, level,
-// view, clock), the start screen says so, and the record is gone after reading; (2) without a record
-// (F5) the visit starts at START; (3) "Börja från start" goes back to START; (4) a record inside a wall
+// view, clock), the start screen says so, and the record is gone after reading; (2) a new tab (no tab record) starts at START, or at the saved home; (3) "Börja från start" goes back to START; (4) a record inside a wall
 // is ignored; (5) a record made mid-visit (#181): no start screen, "Ny version laddad" fades out after ~3 s; touch
 // plays at once, mouse & keyboard: the next click takes the mouse; the mute choice is kept; (6) F5 (#203) carries
 // on from the tab's running record without a note; (7) a record from an older build shows "Ny version laddad";
@@ -24,7 +23,7 @@ const load = (q = '') => new Promise((resolve) => {
   document.body.append(f);
   f.onload = async () => { while (!f.contentWindow.__app) await wait(100); resolve(f); };
 });
-const KEY = 'lunden.resume', SESSION = 'lunden.session';
+const KEY = 'lunden.resume', SESSION = 'lunden.session', HOME = 'lunden.playerWorld';
 (async () => {
   let pass = true;
   // (1) upstairs hall, looking west, 20:30 in March
@@ -45,11 +44,19 @@ const KEY = 'lunden.resume', SESSION = 'lunden.session';
   pass &= check(Math.abs(day.hour - realH) < 0.1 && day.month === now.getMonth() + 1 && day.date === now.getDate() && !day.paused, `restart → the real time and date (${day.clock}, ${day.date}/${day.month})`);
   pass &= check(player.pos.z < -5 && f.contentDocument.getElementById('resume').hidden, `"Börja från start" → start (z ${player.pos.z.toFixed(2)})`);
   f.remove();
-  // (2) a new visit: no record → START
+  // (2) a new tab / visit (#203): no tab record. The saved home (lunden.playerWorld in localStorage) still brings the visitor
+  // back to the saved place with the start screen's "Du fortsätter där du var"; with no saved home either → START, no note.
+  // (F5 in the same tab carries on from the tab's session record, see (6).)
   sessionStorage.removeItem(SESSION);
+  const homeKept = !!localStorage.getItem(HOME);
   f = await load();
   ({ player } = f.contentWindow.__app);
-  pass &= check(player.pos.z < -5 && f.contentDocument.getElementById('resume').hidden, `F5 starts at the start (z ${player.pos.z.toFixed(2)})`);
+  pass &= check(homeKept && !f.contentDocument.getElementById('resume').hidden, 'a new tab with a saved home: "Du fortsätter där du var" (start screen)');
+  f.remove();
+  sessionStorage.removeItem(SESSION); localStorage.removeItem(HOME);
+  f = await load();
+  ({ player } = f.contentWindow.__app);
+  pass &= check(player.pos.z < -5 && f.contentDocument.getElementById('resume').hidden, `a new tab, nothing saved: starts at the start (z ${player.pos.z.toFixed(2)})`);
   f.remove();
   // (4) a record inside a wall is ignored
   localStorage.setItem(KEY, JSON.stringify({ ...rec, x: 2.65, z: 3.0, feetY: 3.25, ts: Date.now() }));
@@ -210,7 +217,7 @@ const KEY = 'lunden.resume', SESSION = 'lunden.session';
     f.remove();
   }
   // (10) a new tab after that: fresh, at START, the real time
-  sessionStorage.removeItem(SESSION); localStorage.removeItem(KEY);
+  sessionStorage.removeItem(SESSION); localStorage.removeItem(KEY); localStorage.removeItem(HOME);
   f = await load();
   app = f.contentWindow.__app;
   {

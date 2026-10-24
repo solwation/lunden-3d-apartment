@@ -348,7 +348,7 @@ tools/glrestoretest.cjs  phone WebGL context loss (#628): a restored context mak
 tools/playroomresumetest.cjs  a reload inside the playhouse's children's room (#1572): the resume/session record carries `room: true` with the real
                        in-room position and view; `resumeAt` (main.js) re-enters through `playroom.setInside(true)` before spawning there (a rejected
                        spot undraws the room again). `lunden.playerWorld` (new visits) still stores the door spot outside, never the room.
-tools/reloadtest.html  headless test: resume after "Ladda om", F5 starts at START, "Börja från start", bad record;
+tools/reloadtest.html  headless test: resume after "Ladda om", F5 carries on (#203), a new tab starts at START or the saved home, "Börja från start", bad record;
                        the world kept (#277): the car still arriving then parks, a cup of coffee in the hand, the fridge open, lamps,
                        sitting, a bottle put down, the TV, the cat, the game's clock; a new tab fresh at the real time
                        the life sim (#371): an opened butter with 185 g, a cut cucumber + slices on the board, a used plate with half a
