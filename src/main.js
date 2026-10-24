@@ -1534,7 +1534,8 @@ function sitAt(target, spot, stand, now = false) {
 }
 /** Seats position the monitor; registered computers require an explicit power-on (#1492). */
 function usePc(spot) {
-  const pc = world.furnitureTargets.find((t) => t.kind === 'pc' && t.pickable.getWorldPosition(new THREE.Vector3()).distanceTo(spot.pos) < 3);
+  let pc = null, best = 3; // the nearest PC: Olof's desk (#1566) is within 3 m of the gaming chair too
+  for (const t of world.furnitureTargets) if (t.kind === 'pc') { const d = t.pickable.getWorldPosition(new THREE.Vector3()).distanceTo(spot.pos); if (d < best) { best = d; pc = t; } }
   if (!pc) return;
   pc.watch(spot.pc === 'film' ? spot.pos : null);
   if (!pc.isOpen&&!computerHub.sessions.has(pc.mediaId)) { pc.toggle(); sfx.tvClick(pc.pickable.getWorldPosition(new THREE.Vector3()), true); }

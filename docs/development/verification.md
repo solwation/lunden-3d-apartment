@@ -8528,7 +8528,7 @@ Images: `docs/verification/1447/`.
 ## Physical computer game (#1491)
 
 `tools/computerscreentest.cjs GAME LOCAL_WORKER OUT` opens actual Worlds on desktop
-and emulated touch. It uses all six real screen meshes, checks the absence of a
+and emulated touch. It uses all seven real screen meshes (Olof's desk, #1566), checks the absence of a
 modal/second arena canvas, native WASD and pointer steering on projected monitor
 points, unchanged avatar feet, restored camera and keyboard/touch exit. Two
 simultaneous stations share the arena; app switching removes only that snake and
@@ -8536,10 +8536,13 @@ a second visitor cannot control an occupied computer. Screenshots use normal
 quality/shadows through the existing testMode full render. The placement helper
 waits for the actual clubhouse exit before positioning the laptop camera.
 
-Keep `tools/computerpowertest.cjs` for all six power/session lifecycle paths and
+Keep `tools/computerpowertest.cjs` for all seven power/session lifecycle paths and
 `tools/snakearenatest.mjs` / `cloudflare/snake.test.mjs` for authoritative rules
 and exclusive leases. This is Chromium emulation with a local Worker, not a
 physical phone test or a production multiplayer session. Gameplay is original-only.
+`tools/olofcomputertest.cjs GAME FRESH_LOCAL_WORKER OUT` (#1566) sits in the Batman chair with
+native E (desktop) and `#action` (touch), starts and plays Olofs dator while seated, checks the
+restored seated view and standing up, and that the gaming chair/bunk still reach Speldatorn.
 
 The final #1491 toolbar was separately checked at844×390,390×844 and568×320
 using the actual ComputerHub and production CSS (`/tmp/snake1491-layout.cjs`).

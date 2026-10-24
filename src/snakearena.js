@@ -15,7 +15,8 @@ export class SnakeArena {
     let x,y,angle;
     for(let attempt=0;attempt<COMPUTER_MEDIA.stations.length*2;attempt++) {
       const slot=(index+this.serial+attempt)%COMPUTER_MEDIA.stations.length;
-      x=C.width*C.spawn[slot][0];y=C.height*C.spawn[slot][1];angle=C.spawn[slot][1]<.5?Math.PI/2:-Math.PI/2;
+      const [sx,sy]=C.spawn[slot%C.spawn.length]; // more stations than slots share them; clearance picks a free one (#1566)
+      x=C.width*sx;y=C.height*sy;angle=sy<.5?Math.PI/2:-Math.PI/2;
       if(![...this.snakes.values()].some(s=>s.alive&&s.points.some(p=>dist2(p,[x,y])<C.spawnClearance**2)))break;
       if(attempt===COMPUTER_MEDIA.stations.length*2-1)return null;
     }

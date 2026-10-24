@@ -1,4 +1,4 @@
-// Scoped actual ComputerHub fixture plus one world route across all six stations.
+// Scoped actual ComputerHub fixture plus one world route across all seven stations.
 const fs=require('node:fs'),assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 const [game,worker,out]=process.argv.slice(2);
 (async()=>{fs.mkdirSync(out,{recursive:true});const b=await chromium.launch({executablePath:process.env.CHROME_PATH,args:['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader']});const errors=[];let page;
@@ -18,11 +18,11 @@ try{
    connected=false;hub.update({pos},null,null,true);const disconnected=s.target.mesh.material===hub.offMaterial;connected=true;hub.update({pos},null,null,true);
    results.push({id:s.info.id,passive,startup,on,choice,off,disconnected});
   }return{initial,results};
- });assert(component.initial);for(const s of component.results)for(const [k,v]of Object.entries(s))if(k!=='id')assert(v,`${s.id} ${k}`);console.log('PASS actual six-station component: dark startup, passive presence, explicit power, chooser, shutdown and disconnect',component);
+ });assert(component.initial);for(const s of component.results)for(const [k,v]of Object.entries(s))if(k!=='id')assert(v,`${s.id} ${k}`);console.log('PASS actual seven-station component: dark startup, passive presence, explicit power, chooser, shutdown and disconnect',component);
  await page.close();if(process.env.COMPONENT_ONLY)return;
  page=await b.newPage({viewport:{width:1100,height:760},hasTouch:true});page.on('pageerror',e=>errors.push(e.message));await page.addInitScript(()=>{localStorage.setItem('lunden.name','Starttest');sessionStorage.setItem('lunden.nameSkipped','1');});await page.goto(`${game}/?shot&test=lazy&cloud=${encodeURIComponent(worker)}&freeze&time=12&month=6`,{waitUntil:'commit'});await page.waitForFunction(()=>window.__app?.computerHub,null,{timeout:180000});await page.evaluate(()=>{__app.showOverlay(false);__app.touch.enabled=true;document.body.classList.add('touch');});
  assert(await page.evaluate(()=>[...__app.computerHub.sessions.values()].every(s=>!s.target.isOpen&&!s.player.open)));const results=[];
- for(const id of ['pc-home','laptop-home','pc-lime','pc-cyan','pc-rose','pc-amber']){
+ for(const id of ['pc-home','laptop-home','pc-lime','pc-cyan','pc-rose','pc-amber','pc-olof']){
   await page.evaluate(id=>{if(__app.computerHub.sessions.get(id).info.clubhouse&&!__app.player.inPlayroom)__app.use({kind:'playhouse'});},id);await page.waitForFunction(id=>!__app.computerHub.sessions.get(id).info.clubhouse||__app.player.inPlayroom,id);await page.waitForTimeout(700);
   await page.evaluate(async id=>{const a=__app,T=await import('three'),C=await import('/src/config.js'),s=a.computerHub.sessions.get(id),m=s.target.mesh;m.updateWorldMatrix(true,false);const center=m.getWorldPosition(new T.Vector3()),pos=center.clone().addScaledVector(new T.Vector3(0,0,1).transformDirection(m.matrixWorld),.95);if(id==='laptop-home'){pos.x=center.x-.75;pos.z=center.z-.1;}a.player.spawn(pos.x,pos.z,0);a.player.pos.y=s.info.clubhouse?0:C.LEVELS[1].floor;a.player.eyeY=a.player.pos.y+(s.info.clubhouse?1.4:1.62);for(let i=0;i<4;i++)a.step(1/60);a.camera.position.set(a.player.pos.x,a.player.eyeY,a.player.pos.z);a.camera.lookAt(center);a.camera.updateMatrixWorld(true);a.step(0);},id);
   await page.waitForFunction(id=>__ghosts.connected&&__app.computerHub.sessions.get(id).player.state&&__app.focus().focused?.mediaId===id,id,{timeout:30000});assert(await page.evaluate(id=>{const s=__app.computerHub.sessions.get(id);return !s.target.isOpen&&!s.player.open&&s.target.verb==='starta';},id));

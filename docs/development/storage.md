@@ -98,8 +98,8 @@ No additional playback ticker/media stream is introduced.
 
 ## Shared computer arena (#1487, part of #1486)
 
-`COMPUTER_MEDIA` identifies six stations (home gaming PC/laptop and four
-clubhouse desks) with room/floor viewer bounds and2.8m join reach. The existing
+`COMPUTER_MEDIA` identifies seven stations (home gaming PC/laptop, four
+clubhouse desks and Olof's desk corner, #1566) with room/floor viewer bounds and2.8m join reach. The existing
 RoomCinema authority also serves these IDs; computer snapshots add
 `app:menu|youtube|snake`. Owner/revision-checked app changes stop previous media;
 selecting a movie sets the YouTube app. Original cinema/TV fields remain compatible.

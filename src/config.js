@@ -5158,6 +5158,7 @@ export const TILLY_DESK = {
     post: .025, postZ: -.02, armZ: .025, stemR: .035, stemGap: .08, spoke: [.027,.035], spokeY: .065, casterWidth: .032, casterInset: .025, wingZ: .03, bolsterY: .035, paddingRound: .025,
     pillow: [.28,.12,.065], pillowAt: [0,1.20,-.125], seam: .0015, wheel: .028, legs: 5,
     logo: { w: .24, h: .08, at: [0,1.04,-.143] }, rest: { x: 0, y: .515, z: -.01 } },
+  appLift: .002, // #1566: the shared computer-app plane floats this far (m) in front of the decorative main-screen atlas
   detail: { sides: 10, tubeSides: 5, ringSides: 24, sphere: [12,8], texture: [512,256], carbonPx: 64, skin: .002, thin: .003, offset: .001, cable: .012, cableInset: .025, glowGap: .010 },
   colors: { wood: 0x853b32, black: 0x15171b, rubber: 0x08090c, steel: 0x43474e, seam: 0xdedbd0,
     blue: 0x426dff, pink: 0xda51f3, cream: 0xe5d7b8 },
@@ -5568,7 +5569,7 @@ export const FURNITURE = [
   // corner; the drawer column at the north end, the free end (the laptop, #283) towards the window; the stool in front
   { type: 'vanity', level: 1, x: 2.632 - VANITY.d / 2 - 0.004, z: 11.45, rot: 90 },
   { type: 'vanitystool', level: 1, x: 2.632 - VANITY.d - 0.2, z: 11.55, rot: -90 },
-  { type: 'tillydesk', level: 1, ...TILLY_DESK.at },
+  { type: 'tillydesk', mediaId: 'pc-olof', level: 1, ...TILLY_DESK.at }, // Olof's own setup; a shared computer (#1566)
   { type: 'batmanchair', level: 1, ...TILLY_DESK.chairAt },
   // her wardrobe (#305, #311, SMASTAD): back to the north wall in the NW corner, its west side 4 mm off the west wall
   // (face x 0.202); it faces the room (south)
@@ -6749,6 +6750,9 @@ export const COMPUTER_MEDIA = {
       ['pc-amber','Guld',8.6,-.3,-Math.PI/2,'#ffc369'],
     ].map(([id,name,x,z,yaw,color])=>({id,name:`Dator · ${name}`,x:PLAYROOM.x+x,z:PLAYROOM.z+z,y:0,level:0,yaw,color,clubhouse:true,
       bounds:[PLAYROOM.x+PLAYROOM.clubhouse.side+PLAYROOM.clubhouse.wall/2,PLAYROOM.x+PLAYROOM.w/2,PLAYROOM.z-PLAYROOM.d/2,PLAYROOM.z+PLAYROOM.clubhouse.front-PLAYROOM.clubhouse.wall/2]})),
+    // #1566: Olof's own desk corner (#1557, src/tillydesk.js) in Sovrum 4, appended so existing
+    // stations keep their spawn slots; its landscape monitor is the app screen.
+    { id:'pc-olof', name:'Olofs dator', x:TILLY_DESK.at.x, z:TILLY_DESK.at.z, level:1, bounds:[.18,2.75,7.8,12.52], color:'#5b82ff' },
   ],
 };
 export function computerViewer(id,p) {
@@ -6764,7 +6768,7 @@ export function nearComputer(id,p) {
 // #1487: first shared snake game. Tuned for a small arena/5 Hz existing socket budget; not measured real-world values.
 export const SNAKE = {
   width:32,height:20,step:1/30,catchUp:.5,inputMs:210,snapshotMs:190,
-  spawn:[[.2,.25],[.5,.25],[.8,.25],[.2,.75],[.5,.75],[.8,.75]],
+  spawn:[[.2,.25],[.5,.25],[.8,.25],[.2,.75],[.5,.75],[.8,.75],[.35,.5]], // #1566: a seventh, heading up between the columns
   speed:2.8,turnRate:3.8,initialSegments:24,maxSegments:160,radius:.22,radiusGrowth:.0012,
   foodCount:110,foodMax:200,foodMargin:.7,foodRadius:.12,foodGrowth:2,dropStride:3,
   headAdvantage:1.08,collisionScale:.8,respawnMs:1400,staleMs:2000,spawnClearance:2,

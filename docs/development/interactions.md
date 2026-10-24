@@ -1893,7 +1893,9 @@ selectors; `showNote(false)` also closes an open TV chooser.
 ## Shared computers (#1488)
 
 `ComputerHub` opens an independent YouTube/Spel app selector through ordinary
-E/touch on each of the six registered computers, within `COMPUTER_MEDIA.reach`.
+E/touch on each of the seven registered computers, within `COMPUTER_MEDIA.reach`.
+Olof's desk corner in Sovrum 4 (#1566) is the seventh: its landscape monitor is the
+app screen, and the Batman chair is the ordinary seat in front of it.
 All start off: the first interaction requests shared power-on without opening a modal;
 the next opens app selection. Walking near or sitting in a gaming/bunk chair never
 powers a registered station on. The laptop keyboard toggles shared power, and every

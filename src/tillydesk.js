@@ -66,7 +66,7 @@ function glow() {
   glowMat=new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c),color:K.blue,transparent:true,opacity:C.led.opacity,
     blending:THREE.CustomBlending,blendSrc:THREE.SrcAlphaFactor,blendDst:THREE.OneMinusSrcAlphaFactor,depthWrite:false,toneMapped:false});return glowMat;
 }
-export function tillydesk() {
+export function tillydesk(item={}) {
   const g=new THREE.Group(),h=C.h,L=C.leg;
   box(g,[C.w,C.top,C.d],[0,h-C.top/2,0],woodMaterial(K.wood,.48));
   for(const s of [-1,1]) {
@@ -127,8 +127,21 @@ export function tillydesk() {
   box(g,[D.cable,h-C.top,D.cable],[C.leg.x,(h-C.top)/2,-C.d/2+D.cableInset]);
   g.userData.footprint=[{x0:-C.w/2,x1:C.w/2,z0:-C.d/2,z1:C.d/2},
     {x0:px-pw/2,x1:px+pw/2,z0:pz-pd/2,z1:pz+pd/2}];
+  if(item.mediaId)computerStation(g,item.mediaId);
   // Occupied tabletop has no generic put-down plane: loose items cannot overlap the devices.
   g.userData.setup='tilly';return g;
+}
+/** #1566: the landscape monitor joins the shared ComputerHub (#1488) as Olof's computer. A separate unmerged
+ * plane with whole-screen UVs carries the app/game texture while powered; off, the decorative atlas shows. */
+function computerStation(g,mediaId) {
+  const M=C.monitors[0],app=new THREE.Mesh(new THREE.PlaneGeometry(M.size[0]-C.bezel*2,M.size[1]-C.bezel*2),
+    new THREE.MeshBasicMaterial({color:0,toneMapped:false}));
+  app.position.set(M.at[0],M.at[1],M.at[2]+M.size[2]/2+D.offset+C.appLift);app.visible=false;g.add(app);
+  (g.userData.keep??=[]).push(app);
+  let on=false;
+  g.userData.interact={name:'Olofs dator',kind:'pc',pickable:g,mesh:app,mediaId,
+    get isOpen(){return on;},get verb(){return on?'välja på':'starta';},
+    toggle(){return on=!on;},media(v){app.visible=v;},watch(){}};
 }
 export function batmanchair() {
   const g=new THREE.Group(),B=C.chair,textile=upholsterySurface(g),cloth=textile.material(black),weave=textile.material(carbon());

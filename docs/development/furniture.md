@@ -130,9 +130,13 @@ and a stylized bat emblem. It uses normal E sitting/standing and the existing
 independent furniture move/rotate path; there is no extra in-place swivel mechanic.
 Its upholstery opts into the existing explicit material-library handle. Desk,
 floor PC and chair have ordinary footprint collision. The busy tabletop intentionally
-has no put-down surface, so loose items cannot overlap the devices. Screens/accessories
-are decorative, with no new computer-media station. This is personal furnishing and
-is excluded from the public downstream.
+has no put-down surface, so loose items cannot overlap the devices. The setup is Olof's own
+computer (#1566): the landscape monitor is the shared `pc-olof` station
+(`COMPUTER_MEDIA`, [shared computers](interactions.md#shared-computers-1488)). A
+separate unmerged plane with whole-screen UVs shows the app/game while powered;
+off, the decorative atlas remains. E/touch anywhere on the desk targets the computer,
+also while seated in the Batman chair. The portrait monitor and accessories stay
+decorative. This is personal furnishing and gameplay, excluded from the public downstream.
 
 ## Recent implementation notes
 
