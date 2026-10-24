@@ -389,6 +389,14 @@ src/rearrange.js       furniture cheat (#465): § / Enter (#596; not from a focu
                        is selected (touch). `toggleVariant` cancels a preview, refuses a shape whose footprint would cross a wall where
                        the piece stands, and writes the choice as one revision-checked `materials` patch (surface `variant`); both
                        resets put the default shape back in the same write. tools/tillydeskvarianttest.cjs.
+                       #1568: Tilly's basketball holder (`ball.holder`, src/basket.js `basketHolderFrame`) is a wall piece (`picture: true`, id
+                       `f-basketholder-1-0.2-0-0`, pushed to `world.furniture.movable` in src/main.js before `new Rearrange`, type `basketholder`) placed
+                       like a poster: origin on the wall, local +z out. The ball's home is local to the holder (`homeParent`/`local`, `Basketball.goHome`
+                       adds the model to the holder), so a ball at rest moves with it and "lägga tillbaka" lands at the new place. A ball out of the
+                       holder (hand, flight, floor) stays where it is: Möblera om needs an empty hand (`busy()`), and the ball goes home to the holder's
+                       new place on its next return. Default place above the daybed = the piece's home pose (restore/reset). Saved in the ordinary
+                       `pieces` layout format (no migration). Ball/holder dimensions are unchanged (BASKET.ball); no new draw calls.
+                       tools/rearrangebaskettest.html: move, reload, take/put back at the new place, restore.
                        The Christmas tree (#571) is an ordinary piece ('julgranen') while it stands; out of season it is hidden and
                        not selectable. Pieces it hides (`userData.seasonHidden`, src/christmas.js) are not selectable either and
                        keep their poses; `apply` reveals them while poses change, `refresh` skips them; tools/christmastest.html.

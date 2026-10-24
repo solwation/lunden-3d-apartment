@@ -1,0 +1,51 @@
+<!doctype html><html><meta charset="utf-8"><title>Tilly's basketball holder in Möblera om (#1568)</title><pre id="out">running…</pre><script src="./rearrangesetup.js"></script><script type="module">
+const lines=[];let pass=true;const check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);pass&&=!!ok;};
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+try {
+ localStorage.removeItem('lunden.furniture.layout');
+ const f=document.createElement('iframe');f.width=480;f.height=300;document.body.append(f);
+ async function load(){f.src='../index.html?test&life&shot&r='+Math.random();await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const A=f.contentWindow.__app;f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();setupRearrangeForFixture(A.rearrange,f.contentWindow);return A;}
+ let A=await load(),R=A.rearrange,T=await f.contentWindow.eval("import('three')");
+ const world=o=>{o.updateWorldMatrix(true,false);return o.matrixWorld;},close=(a,b)=>a.elements.every((v,i)=>Math.abs(v-b.elements[i])<.001),pos=o=>o.getWorldPosition(new T.Vector3());
+ const holderOf=()=>R.pieces.find(p=>p.item.type==='basketholder');
+ let h=holderOf(),ball=A.ball;const id=h.id;
+ check(!!h&&h.picture,'the basketball holder is a wall piece of Möblera om');
+ const home=h.home.clone(),ballHome=ball.model.matrixWorld.clone();
+ check(ball.model.parent===ball.holder&&!ball.out,'the ball rests inside its holder');
+ check(pos(ball.model).distanceTo(new T.Vector3(.202+.012+ball.model.geometry?.parameters?.radius||.202+.012+.115,0,0).setY(pos(ball.model).y).setZ(pos(ball.model).z))<.02,'default ball position is unchanged (west wall, x 0.33)');
+ // aim at the holder itself: it is a rearrange target
+ const at=pos(h.object),n=new T.Vector3(0,0,1).transformDirection(h.home);
+ A.player.pos.set(2.7,at.y-1.5+.01,at.z);A.camera.position.copy(at).addScaledVector(n,1.2);A.camera.lookAt(at);R.update();
+ check(R.target?.piece===h&&R.target.verb==='flytta','aiming at the holder or ball selects it for moving');
+ check(R.begin(h)&&!h.object.visible,'selected: holder and ball leave for the transparent preview');
+ // find another wall of the room: scan yaw from the room centre
+ const eye=new T.Vector3(2.7,A.world.levels?1.6+0:1.6,at.z);eye.y=at.y+.1;
+ let found=null;
+ for(let yaw=0;yaw<360&&!found;yaw+=10){A.camera.position.copy(eye);A.camera.rotation.set(0,yaw*Math.PI/180,0,'YXZ');R.update();
+  if(R.valid&&R.candidate){const nn=new T.Vector3(0,0,1).transformDirection(R.candidate);if(nn.x<.5)found={yaw,nn:nn.clone()};}}
+ check(!!found,'a different wall of the room accepts the holder (normal '+(found?found.nn.toArray().map(v=>v.toFixed(2)).join(','):'-')+')');
+ R.rotate();R.update();
+ const target=R.candidate.clone();
+ check(await R.confirm(),'save the new place');
+ check(close(h.object.matrixWorld,target)&&!close(h.object.matrixWorld,home),'holder stands at the new wall pose');
+ const moved=world(ball.model).clone();
+ check(ball.model.parent===ball.holder&&ball.model.visible&&!close(moved,ballHome),'the ball followed its holder');
+ // take the ball: hand busy, rearrange refuses; put back at the new place
+ ball.take();R.update();check(ball.held&&!R.begin(h),'while the ball is out of the holder Möblera om refuses to move the holder (hand busy)');
+ ball.putBack();check(close(world(ball.model),moved)&&ball.model.parent===ball.holder,'put back: the ball goes into the holder at the new place');
+ // ball lying away from home while the holder moves: it stays, comes home to the new place
+ ball.take();ball.placeAt(new T.Vector3(3,A.world.levels?0:0,5).setY(pos(ball.model).y-1.2));const lying=pos(ball.model);
+ check(ball.placed&&ball.out,'ball can lie outside the holder');
+ const savedHolder=h.object.matrixWorld.clone(),savedBall=moved.clone();
+ A.ball.goHome();check(close(world(ball.model),savedBall),'sent home it returns to the holder, wherever it hangs');
+ // reload: the saved place persists, the ball is in the holder there
+ A=await load();R=A.rearrange;h=R.byId.get(id);ball=A.ball;
+ check(close(h.object.matrixWorld,savedHolder),'the holder place survives a reload');
+ check(close(world(ball.model),savedBall)&&ball.model.parent===ball.holder,'after reload the ball sits in the holder at the saved place');
+ ball.take();ball.putBack();check(close(world(ball.model),savedBall),'take and put back after reload uses the new place');
+ // restore
+ check(await R.restoreOriginal(h)&&close(h.object.matrixWorld,home),'restore puts the holder back above the daybed');
+ check(close(world(ball.model),ballHome),'the ball is back at the default place');
+ document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+}catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack+'\nSOME FAILED';}
+</script></html>

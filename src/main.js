@@ -171,7 +171,7 @@ import { Ghosts } from './ghosts.js';
 import { Combat } from './combat.js';
 import { Bow, Arrows } from './bow.js';
 import { Chat } from './chat.js';
-import { COMBAT, CHAT, GHOSTS, TOUCH, NEW_YEAR, TOAST, TOAST_LINES, CAT_CARD, SOUNDS } from './config.js';
+import { BASKET, COMBAT, CHAT, GHOSTS, TOUCH, NEW_YEAR, TOAST, TOAST_LINES, CAT_CARD, SOUNDS } from './config.js';
 import { Basketball, Hoop } from './basket.js';
 import { Mess } from './mess.js';
 import { readTestMode, makeTestController } from './testmode.js';
@@ -2436,6 +2436,8 @@ for (const piece of [...world.furniture.movable, ...curtainMaterialTargets, ...t
   surface.prepare = mesh => { lights.wash?.patch(mesh); visitLights.wash?.patch(mesh); };
 }
 world.furniture.movable.push(...lights.pendants); // the pendants move too (#1106)
+// #1568: Tilly's basketball holder is a wall piece like the posters; the ball's home is local to it, so it follows
+world.furniture.movable.push({ id: 'f-basketholder-1-0.2-0-0', item: { type: 'basketholder', level: BASKET.ball.level }, object: ball.holder, level: BASKET.ball.level, picture: true, name: 'basketbollshållaren' });
 const rearrange = new Rearrange({ scene, camera, world, player, life, marks, materialOnly: [...curtainMaterialTargets, ...towelMaterialTargets],
   carryables: () => [...holdables, ...cups.cups, ...life.views.values(), fruit.carryable, ...fruit.placed],
   busy: () => !!heldItem() || rest.active || drawing.active || !world.furnitureOn,

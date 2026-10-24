@@ -34,12 +34,13 @@ function ballModel() {
   return g2;
 }
 
-/** The holder on the wall: a back plate and three prongs that cup the ball from below (faces +x, west wall). */
-function holderParts(c) {
+/** The holder on the wall: a back plate and three prongs that cup the ball from below. Built facing +x with the wall at
+ * x = wallX (the ball centre c); basketHolderFrame() turns it into the picture-like frame Möblera om places (local +z out). */
+function holderParts(c, wallX) {
   const mat = new THREE.MeshStandardMaterial({ color: 0x2b2d31, roughness: 0.5, metalness: 0.3 });
   const r = B.ball.r, parts = [];
   const plate = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.09, 0.09), mat);
-  plate.position.set(B.ball.x + 0.006, c.y - r * 0.55, c.z);
+  plate.position.set(wallX + 0.006, c.y - r * 0.55, c.z);
   parts.push(plate);
   for (let i = 0; i < 3; i++) { // prongs from the plate out under the ball, curving up round it
     const a = (i - 1) * 0.75;
@@ -55,6 +56,16 @@ function holderParts(c) {
   parts.push(ring);
   for (const p of parts) p.castShadow = true;
   return parts;
+}
+
+/** The holder as a wall piece (#1568): origin on the wall point (the rearrange offset of 8 mm already in), local +z out of
+ * the wall like a picture, so the picture placement of rearrange.js applies. The ball rests at (0, 0, r + 0.004). */
+function basketHolderFrame() {
+  const r = B.ball.r, wallX = -0.008, c = new THREE.Vector3(wallX + 0.012 + r, 0, 0);
+  const frame = new THREE.Group();
+  frame.rotation.y = -Math.PI / 2; // the +x built parts face local +z
+  for (const p of holderParts(c, wallX)) frame.add(p);
+  return frame;
 }
 
 /** Build FIBA-proportioned court markings in local hoop coordinates (extending in +z into the court). */
@@ -312,15 +323,19 @@ export class Hoop {
 export class Basketball extends Holdable {
   constructor(scene, camera, { marks, hoop, world }) {
     const b = B.ball, y0 = LEVELS[b.level].floor + b.y;
-    const home = new THREE.Vector3(b.x + 0.012 + b.r, y0, b.z);
+    // #1568: the ball's home is local to its holder, a wall piece of Möblera om (the holder's pose is the saved layout)
+    const local = { pos: new THREE.Vector3(0, 0, b.r + 0.004), rot: new THREE.Euler(0, -Math.PI / 2, 0) }; // (world-upright at the default wall)
     super(scene, camera, {
-      name: 'basketbollen', backName: 'hållaren', backVerb: 'lägga tillbaka basketbollen i', model: ballModel(), parts: holderParts(home),
-      home: { pos: home, rot: new THREE.Euler(0, 0, 0) },
+      name: 'basketbollen', backName: 'hållaren', backVerb: 'lägga tillbaka basketbollen i', model: ballModel(), parts: [basketHolderFrame()],
+      home: { pos: new THREE.Vector3(), rot: new THREE.Euler() }, local,
       heldPose: { pos: new THREE.Vector3(b.held.x, b.held.y, b.held.z), rot: new THREE.Euler(0, 0, 0) },
-      pick: { pos: home.clone(), size: [0.3, 0.3, 0.3] },
+      pick: { pos: local.pos.clone(), size: [0.3, 0.3, 0.3] },
       cooldown: 0.4, useLabel: 'Skjut', grip: [b.r * 0.25, -b.r - 0.002, 0.015], handPose: 'palm', // carried on the open palm (#238, #914)
     });
     Object.assign(this, { marks, hoop, world, clickIsUse: true, hitsTarget: false, flying: false, v: new THREE.Vector3(), air: 0, dribbling: false, armed: true, returning: false, outOfBoundsTimer: 0 });
+    this.homeParent = this.holder;
+    this.holder.position.set(b.x + 0.008, y0, b.z); this.holder.rotation.y = Math.PI / 2; // default: west wall, +z out = +x
+    this.holder.updateMatrixWorld(true);
     hoop.ball = this;
     this.isFreeThrow = false;
     this.altIcon = '🏀'; this.altLabel = 'Studsa bollen';
@@ -344,7 +359,10 @@ export class Basketball extends Holdable {
     this.flying = false;
     this.returning = false;
     this.outOfBoundsTimer = 0;
-    super.goHome();
+    this.placed = false;
+    this.holder.add(this.model); // into the holder, wherever Möblera om has put it (#1568)
+    this.model.position.copy(this.local.pos);
+    this.model.rotation.copy(this.local.rot);
   }
 
   /** Target position on the court at the free throw line / court centre (#1036). */
