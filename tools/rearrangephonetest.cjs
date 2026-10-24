@@ -6,13 +6,15 @@
 // ordinary view programs are already there; phones skip the target highlight, whose variants are not warmed), a piece can
 // be selected with the touch action button without a new program (the preview shares a program the scene already has), and
 // Klart leaves the mode. Then a desktop pass (`&test`, mouse UA) checks that the highlight still marks the aimed piece
-// there. Screenshots: OUT/phone-*.png.
+// there. #1593: the JS heap after a forced GC must stay within HEAP_MARGIN of what it was before the Möblera om aim sweep
+// (it grew ~410 MB when the wall check built whole-site triangle grids). Screenshots: OUT/phone-*.png.
 //   python3 -m http.server 8407 &   PLAYWRIGHT_MODULE=… node tools/rearrangephonetest.cjs http://localhost:8407 /tmp/rearrangephone
 // Offline sandboxes: three.js is served from $THREE_DIR (default ~/.cache/three-0.170.0) when that folder exists.
 const fs = require('node:fs'), path = require('node:path');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const base = process.argv[2] || 'http://localhost:8407', out = process.argv[3] || '/tmp/rearrangephone';
 const THREE_DIR = process.env.THREE_DIR || path.join(process.env.HOME || '', '.cache/three-0.170.0');
+const HEAP_MARGIN = 40; // MB retained by one aim sweep (measured after the fix: +6.5 MB; before: +408 MB)
 const UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1';
 fs.mkdirSync(out, { recursive: true });
 
@@ -48,6 +50,7 @@ fs.mkdirSync(out, { recursive: true });
       }
       return { programs: R.info.programs.length - p0, frames: R.info.render.frame - f0, targets: [...names] };
     });
+    const heap = async () => { await cdp.send('HeapProfiler.collectGarbage'); await cdp.send('HeapProfiler.collectGarbage'); return (await cdp.send('Runtime.getHeapUsage')).usedSize / 1048576; };
     const off = await sweep(); // ordinary view programs for these views (no warm-up with &test)
     check('console opens from the >_ badge with a touch tap', await tap('#terminal-btn') && await page.evaluate(() => !document.getElementById('terminal').hidden));
     await page.evaluate(() => { __app.rearrange.unlocked = true; document.getElementById('terminal-admin-menu').hidden = false; document.getElementById('rearrange-toggle').hidden = false; });
@@ -56,7 +59,10 @@ fs.mkdirSync(out, { recursive: true });
     const on = await page.evaluate(() => ({ enabled: __app.rearrange.enabled, help: !document.getElementById('rearrange-help').hidden, terminal: document.getElementById('terminal').hidden, step: document.getElementById('rearrange-step').textContent }));
     check('Möblera om is on with the edit panel and the console closed', on.enabled && on.help && on.terminal && on.step === '1. Välj ett föremål', on);
     await shot('on');
+    const heap0 = await heap();
     const aim = await sweep();
+    const heap1 = await heap();
+    check(`JS heap stays within ${HEAP_MARGIN} MB of its level before the aim sweep (#1593)`, heap1 - heap0 < HEAP_MARGIN, { beforeMB: +heap0.toFixed(1), afterMB: +heap1.toFixed(1) });
     check('frames keep coming while aiming in Möblera om', aim.frames > 20, aim.frames);
     check('aiming finds furniture', aim.targets.length >= 3, aim.targets);
     check('no new shader programs while aiming at pieces on a phone (#1586)', aim.programs === 0, { off: off.programs, on: aim.programs });

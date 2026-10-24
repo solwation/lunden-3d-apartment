@@ -34,6 +34,8 @@ aimed piece is still highlighted. 2026-10-24 (SwiftShader, about 30 min): the fi
 picking; base 8d7c661 compiled 1 new program in the same sweep (13 on Entréplan without the warm-up, up to 5 in one
 frame). No page error reproduced the reported crash in Chromium; rotation with Möblera on was not tested. Physical iPhone
 verification is outstanding.
+#1593 adds a heap check: after a forced GC the JS heap may grow less than 40 MB over the Möblera aim sweep (it grew
+~410 MB before lazy TriGrid tiles). CDP `HeapProfiler.collectGarbage` + `Runtime.getHeapUsage`, no extra flags needed.
 
 ## Computer games and top lists (#1577)
 
@@ -1170,6 +1172,7 @@ tools/trigridcopytest.cjs / .html (#715): independent unchanged a336e30 TriGrid 
                        membership and hit parity, indexed/transformed/BackSide/drawRange/authored-bounds preservation;
                        balanced reversed-order uninstrumented construction and actual local Marks/Darts cold/warm samples.
                        No renderer/app/physical phone; run marksphysicstest.html too after TriGrid changes.
+                       #1593: membership is checked through the lazy tiles (`cell`/`refine`); hits still compared exactly.
 tools/hitmarkertest.cjs (#875): actual index DOM/Ghosts/Combat with local Worker WebSocket receipts, no bootstrap/WebGL;
                        accepted hit+sound/score callback, miss/rejected weapon, renew/expire/reset/paused timer, optional head
                        receipt, phone 844×390/667×375/568×320 + desktop 1280×720 layout/pointer/action-click captures.

@@ -627,6 +627,10 @@ src/breaking.js        shooting things to pieces (#263, BREAK): glasses, bottles
                        a cat near meows; `mend()` after BREAK.back s or F. Stats shattered (first per kind) + shatterRange
                        (`Breaker.points`: distance × weapon)
 src/trigrid.js         world-space triangle grid per big static mesh, so short segment hits skip three's full raycast
+                       #1593: fine 0.5 m cells are refined lazily per 8 m tile (TILE = 16 cells), so a whole-site mesh (terrain,
+                       south land, facades) whose bounds contain the flat no longer gets millions of cell arrays on the first short
+                       indoor segment. Möblera om's per-frame wall check (`marks.hit`) retained ~410 MB that way on the phone profile.
+                       Cell membership/order and hit visit order are unchanged (tools/trigridcopytest.cjs: exact hit parity with a336e30).
 src/remote.js          the TV remote on the coffee table (REMOTE), a Holdable: click opens shared film choice;
                        right click / ⏻ = ordinary power or shared-film controls, with the existing wall/reach ray
 src/toys.js            Nerf blasters (#236: pistol, drum, long — rounded profiles merged per material) + darts (Sovrum 2), magic wands + sparkles (Sovrum 3), the flashlight

@@ -22,7 +22,11 @@ try{
  for(const {mesh,label}of cases){
   const a=new Reference(mesh),b=new TriGrid(mesh);
   check(equalArray(a.tri,b.tri),label+' identical Float32 world triangle values');check(equalArray(a.mat,b.mat),label+' identical material groups');check(a.box.equals(b.box),label+' identical private world bounds');
-  check(a.cells.size===b.cells.size&&[...a.cells].every(([key,list])=>equalArray(list,b.cells.get(key)||[]))&&equalArray(a.big,b.big),label+' identical cell membership/order and big list');
+  // #1593: the candidate refines its fine cells per tile on demand; every non-big triangle is in each of its cells, lists ascend, same entry total and big list
+  let refEntries=0;for(const list of a.cells.values())refEntries+=list.length;let ok=equalArray(a.big,b.big),entries=0;const big=new Set(b.big);
+  for(let t=0;t<b.tri.length/9&&ok;t++){if(big.has(t))continue;const [x0,y0,z0,x1,y1,z1]=b.triCells(t);for(let x=x0;x<=x1;x++)for(let y=y0;y<=y1;y++)for(let z=z0;z<=z1;z++){const l=b.cell(x,y,z);if(!l||!l.includes(t))ok=false;}}
+  for(const tile of b.tiles.values())for(const l of tile.cells??b.refine(tile))if(l){entries+=l.length;if(!l.every((t,i)=>!i||l[i-1]<t))ok=false;}
+  check(ok&&entries===refEntries,label+' identical cell membership/order and big list (lazy tiles, '+b.tiles.size+' tiles, '+entries+' entries)');
   const centre=a.box.getCenter(new T.Vector3()),size=a.box.getSize(new T.Vector3());
   for(let axis=0;axis<3;axis++)for(const sign of[-1,1]){
    const from=centre.clone(),to=centre.clone();from.setComponent(axis,centre.getComponent(axis)+sign*(size.getComponent(axis)+1));to.setComponent(axis,centre.getComponent(axis)-sign*(size.getComponent(axis)+1));

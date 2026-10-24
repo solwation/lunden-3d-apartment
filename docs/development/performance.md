@@ -1536,7 +1536,29 @@ Independent historical-source parity and balanced uninstrumented construction/ac
 less cold work in those component fixtures; no measured reduction of the earlier full apartment's 625 ms spike
 or physical-phone FPS is asserted. [Measurements and limits](../validation/issue-715/README.md#cold-triangle-copy-follow-up-2026-10-13).
 
-## Phone panels and covered rendering (#669)
+## Lazy TriGrid tiles (#1593, 2026-10-24)
+
+Möblera om checks every frame whether a wall stands between the eye and the aimed piece (`Marks.hit`). The private
+broad-phase (#715) cannot reject whole-site meshes whose bounds contain the flat, so the first indoor segment built a
+full 0.5 m `TriGrid` for `site-terrain` (91 k triangles, 2.5 M cells, 6.1 M entries), `south-land`, the east access
+and facades. Each cell was a JS array in a Map; the grids are cached for the page's life. iPhone profile (852×393 @3,
+iOS UA, phone warm-up), heap after forced GC: 108 MB before an aim sweep (3 spots × 18 directions), **516 MB** after it,
+517 MB after a second sweep. The same sweep with Möblera om off: +2 MB. A sampling heap profile put 404 MB of the
+retained growth in the `TriGrid` constructor called from `Rearrange.update` → `Marks.hit`.
+
+`src/trigrid.js` now buckets non-big triangles into coarse tiles of 16 × 16 × 16 cells (8 m) at construction and builds a
+tile's fine cells the first time a segment visits one of them. The fine cells hold the same triangles in the same
+order, and `hits` visits cells in the same x/y/z order, so hit results are unchanged. tools/trigridcopytest.cjs
+checks this against a336e30: exact hits, membership, big list and Darts parity, all 93 checks pass. Construction
+is also faster in that fixture: median 22.5 → 15.8 ms for the largest furniture mesh. Darts, the sabre and the other
+`Marks.hit` callers share the fix. A first shot indoors used to build the same whole-site grids: 12 short indoor dart
+segments (`&test`, desktop) took the heap 88 → 488 MB in 3.5 s on base 06fe0be, and 88 → 93 MB in 0.6 s with the fix.
+The Möblera targets aimed in 54 directions are identical, and select → place → confirm still moves the piece.
+After the fix the phone profile went 109 → 116 MB over the aim sweep.
+tools/rearrangephonetest.cjs now fails if one aim sweep retains 40 MB or more. These are Chromium measurements, not
+physical-iPhone memory.
+
+
 
 Reading the freezer note previously set the moving-shadow hold for 1.5 seconds even
 though it only opened DOM. This requested the full shadow pass on every frame.

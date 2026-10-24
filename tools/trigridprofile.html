@@ -15,8 +15,8 @@ try{
  const sphere=new T.Mesh(new T.SphereGeometry(1,128,64),new T.MeshBasicMaterial({side:T.DoubleSide}));sphere.position.set(4,1.5,9);sphere.rotation.set(.2,.4,.1);sphere.scale.set(1.2,.8,1.3);sphere.updateMatrixWorld(true);
  const cases=[...largest.map((mesh,i)=>({mesh,label:`production furniture largest ${i+1}`})),{mesh:sphere,label:'controlled sphere (not apartment)'}];
  for(const {mesh,label} of cases){for(let repetition=0;repetition<5;repetition++){
-  const grid=new TriGrid(mesh);let memberships=0;for(const a of grid.cells.values())memberships+=a.length;
-  result.samples.push({label,repetition,triangles:triangles(mesh),copyMs:grid.__phases.copyMs,binMs:grid.__phases.binMs,totalMs:grid.__phases.totalMs,cells:grid.cells.size,memberships,big:grid.big.length});
+  const grid=new TriGrid(mesh);let memberships=0,cellCount=0;const lists=grid.cells?grid.cells.values():[...grid.tiles.values()].flatMap(t=>(t.cells??grid.refine(t)).filter(Boolean));/* #1593: current source refines per tile */for(const a of lists){memberships+=a.length;cellCount++;}
+  result.samples.push({label,repetition,triangles:triangles(mesh),copyMs:grid.__phases.copyMs,binMs:grid.__phases.binMs,totalMs:grid.__phases.totalMs,cells:cellCount,memberships,big:grid.big.length});
   check(grid.__phases.copyMs>=0&&grid.__phases.binMs>=0&&grid.__phases.totalMs>=grid.__phases.copyMs+grid.__phases.binMs,'phase intervals fit total '+label+'/'+repetition);
  }}
  result.pass=result.checks.every(x=>x.startsWith('PASS'));
