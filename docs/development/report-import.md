@@ -20,7 +20,8 @@ repository, or in an issue. The existing in-game admin codes and their visit-onl
 cannot import reports. Admin and rearrangement are the same game mode. Private files and journals belong outside the checkout.
 
 For `/orkester`, this fetch/review/import is the **first work step before choosing
-GitHub issues**. Repeat it at least every 30 minutes while the session runs, and
+GitHub issues**. Repeat it at least every 30 minutes while the session runs, after
+each resolved issue before the conductor selects the next one (user, 2026-10-24), and
 sooner when the fresh GitHub queue has at most three startable unclaimed issues or
 before declaring the queue exhausted. A successful full fetch from the last five
 minutes may cover repeated low-queue assignments. Record its UTC time and outcome
