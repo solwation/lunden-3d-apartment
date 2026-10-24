@@ -15,6 +15,7 @@ import { buildContactShadows } from './contactshadow.js';
 import { clubhouseSurface, clubhouseMaterial, FINISH } from './clubhousematerials.js';
 import { clubhouseRoundedBox, cinemaChair, cinemaCurtain } from './clubhousefurnishings.js';
 import { playroomCinema } from './playroomcinema.js';
+import { CinemaPosters } from './cinemaposters.js';
 import { PopcornCart, popcornCartParts, popcornSign, popcornLamp, popcornFootprints } from './popcorn.js';
 
 // #1319 / #1326: the playhouse's secret children's room. A hidden interior, far outside the walkable area (see PLAYROOM in
@@ -116,6 +117,7 @@ export class Playroom {
     fur.push(djBox(col.dark,-.075,.075,DJ.h+.065,DJ.h+.069,.09,.11),djBox(col.red,-.012,.012,DJ.h+.069,DJ.h+.085,.075,.125));
     const cinemaParts = playroomCinema(cbox, paint, col.dark, col.steel); // #1570: 7.1 + height speakers, wall sconces (dimmed while a film runs)
     fur.push(...cinemaParts.fur);
+    this.posters = new CinemaPosters(); fur.push(...this.posters.frames(cbox, col.brass, col.dark)); // #1575: the BIO's film posters (frames in this batch, faces one atlas)
     const furMat = clubhouseMaterial();
     // Collision edges stop at each chair; the wide center aisle and the route behind the rear row stay open.
     this.footprints = [rect(DJ.x-DJ.w/2,DJ.x+DJ.w/2,DJ.z-DJ.d/2,DJ.z+DJ.d/2), ...cinema.seat.rowX.flatMap((x) => cinema.seat.z.map((z) => rect(x - S.depth / 2, x + S.depth / 2, z - S.width / 2, z + S.width / 2))),
@@ -205,6 +207,7 @@ export class Playroom {
     const parts = [merged([...shell, ...fur], furMat)]; // shell and furniture share one vertex-coloured mesh; screens animate separately
     for (const m of parts) { m.matrixAutoUpdate = false; this.object.add(m); }
     this.sconces = cinemaParts.sconces; this.setSconceDim = cinemaParts.setDim; this.object.add(this.sconces);
+    this.object.add(this.posters.object); this.controlPickables.push(...this.posters.pickables);
     this.film = false; this.filmOverride = false; this.filmDim = 0; // #1570: a film is running / the light switch overrode the dimming / smoothed dim 0..1
     this.popcorn = new PopcornCart(this.object, furMat); this.controlPickables.push(...this.popcorn.pickables); // #1567 (tubs: main.js, makeTubs)
     // the way out: an invisible pick box in front of the door (the raycaster ignores `visible: false` materials)
@@ -259,7 +262,7 @@ export class Playroom {
   fadeCinema(dt) {
     const target = this.film && !this.filmOverride ? 1 : 0, step = dt / R.sconces.fadeSeconds;
     this.filmDim = dt <= 0 ? this.filmDim : target > this.filmDim ? Math.min(target, this.filmDim + step) : Math.max(target, this.filmDim - step);
-    this.setSconceDim(this.filmDim);
+    this.setSconceDim(this.filmDim); this.posters.setDim(this.filmDim);
     this.spots.visible = this.discoOn && this.filmDim < 0.5;
   }
 
@@ -303,7 +306,7 @@ export class Playroom {
   get arrival() { return { x: R.x, z: Z1 - R.standOff, yaw: 0 }; }
 
   /** Drawn (and its exit pickable live) only while inside. */
-  setInside(on) { this.inside = on; this.sound.setInside(on); this.billiards.active = on; this.object.visible = on; this.devices.setInside(on); this.music.setInside(on); }
+  setInside(on) { this.inside = on; this.sound.setInside(on); this.billiards.active = on; this.object.visible = on; this.devices.setInside(on); this.music.setInside(on); this.posters.setInside(on); }
 
   /** Where you stand when you come out: just north of the playhouse's door, facing away from it. */
   static get outsideSpot() {

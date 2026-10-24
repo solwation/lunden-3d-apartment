@@ -1341,6 +1341,8 @@ playroom.devices.onVideoRequest = () => {
   cinema.show();
 };
 playroom.devices.onLeave = () => cinema.leave('exit');
+playroom.posters.endpoint = cloudUrl() ? `${cloudUrl()}/cinema/posters` : ''; // #1575: the BIO's daily film posters (fetched on entering)
+cinema.onNotice = text => badge(text, false); // #1575: a poster's start/refusal, shown without the dialog
 
 // Native mouse lock picks the crosshair on mousedown. Free touch/pen picks the
 // tapped canvas coordinate on release; drags, cancelled and secondary touches do not pick.
@@ -1808,6 +1810,7 @@ function use(thing) {
   if (thing.kind === 'bouleGame') { badge(world.boule.newGame(), false); return; }
   if (thing.kind === 'playroomDisco') { badge(playroom.toggleDisco(), false); return; } // #1365: the disco light on/off
   if (thing.kind === 'playroomPopcorn') { const text = thing.use(); if (text) badge(text, false); return; } // #1567: the popcorn cart
+  if (thing.kind === 'playroomPoster') { if (thing.video) badge(cinema.playPoster(thing.video), false); return; } // #1575: a BIO poster starts its film on the screen
   if (thing.kind === 'playroomDevice') { badge(thing.use(), false); return; } // #1365: local TV and computer, E/touch
   if (thing.kind === 'playroomBilliardsMode') { const text = playroom.billiards.toggleMode(); if (text) badge(text, false); return; } // #1495: the shared wall screen
   if (thing.kind === 'playroomBilliardsRack') { const text = playroom.billiards.requestRack(); if (text) badge(text, false); return; }

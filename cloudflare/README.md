@@ -166,6 +166,7 @@ eller sparas. Test: `node --test cloudflare/chat.test.mjs`.
 | `PUT /drawings/:id` | metadata + `image` (data-URL); senaste `updated` vinner |
 | `DELETE /drawings/:id` | slängd |
 | `GET` / `PUT /paper` | teckningen på skrivbordet `{ image, updated }` (ingen 24h-gräns) |
+| `GET /cinema/posters` | bions dagliga affischer (#1575): `{ day, items: [{ id, title, channel }], stale }`; 503 utan nyckel, 502 när det aldrig funnits en lyckad lista |
 | `GET /beer-shelf` | complete global DIPA/TIPA selection with original label images; 503 on any source failure |
 | `GET /scores` | topp 20 `[{ name, score }]` |
 | `POST /scores` | `{ id, name, score }` (text/plain eller JSON); `name` tomt = "Anonym" (#677: en rad per id, ett namn byter samma rad, anonym tar aldrig bort ett namn; lika poäng: namngivna först) |
@@ -185,6 +186,16 @@ The client polls every three seconds and on returning online/to the tab. Local d
 Whole-layout reset adds `resetAll: true` and `expectedRevision` to the PUT body. It accepts up to 500 registered pieces (ordinary moves: 100), with a 128 kB request limit. The global revision must still match the revision shown when confirmation opened; otherwise the entire reset returns 409 without writing anything. Per-piece revision checks also apply.
 
 Tilly-poster migration (#493): GET /furniture removes the obsolete group pose once, records migrations.individualPosters, and increments the global revision. Existing individual poster poses and other furniture are preserved; obsolete group PUTs return 410. To reproduce locally, set LUNDEN_LAYOUT_FIXTURE to a JSON layout path when starting dev.mjs.
+
+## Bions affischer (#1575)
+
+`GET /cinema/posters` ger lekstugans bio dagens populära barnfilmer. Den använder samma `YOUTUBE_API_KEY`, storleksgräns och id-/titelvalidering som `/youtube-search` (`cloudflare/youtubesearch.js`). Den gör några fasta sökningar i `PLAYROOM.cinemaPosters.worker` (*guess*). Alla sökningar har `safeSearch=strict`, `regionCode=SE`, `relevanceLanguage=sv`, `videoDuration=long`, `order=viewCount`, `publishedAfter` (`recentDays` bakåt), `videoEmbeddable` och `videoSyndicated`. Resultaten slås ihop turvis utan dubbletter till sex filmer. HTML-entiteterna i YouTubes titlar avkodas till ren text. Klienten ritar bara texten på en canvas.
+
+- **Kvot:** en lyckad omgång per dygn (Europe/Stockholm), 100 enheter per sökning, alltså 300 med tre frågor. En misslyckad dag försöker igen tidigast efter `retryHours` (6 h). Det blir högst omkring 1 200 enheter på en dålig dag av YouTubes standardkvot på 10 000.
+- **Cache:** KV-nyckeln `cinema-posters` = `{ day, items, triedDay?, tried? }`, plus en kopia i isolatets minne. Ett isolat utan dagens lista läser KV innan det söker, så att andra isolat inte söker om. Svaret har `Cache-Control: public, max-age=1800`.
+- **Reserv:** misslyckas dagens sökning (eller en av frågorna, då används de andra) lämnas den senaste lyckade listan ut med `stale: true`. Har det aldrig funnits en lista blir svaret 503 (ingen nyckel) eller 502. Klienten visar då sin egen sparade lista eller generiska affischer utan klick.
+- **Bilder:** miniatyrerna hämtas direkt från `i.ytimg.com`, som svarar `Access-Control-Allow-Origin: *`, så det behövs ingen bildproxy i Workern.
+- **Test:** `node --test cloudflare/cinemaposters.test.mjs` (falsk fetcher och KV: urval och filter, dygnscache, validering, fel och reserv).
 
 ## Daily beer shelf (#511)
 

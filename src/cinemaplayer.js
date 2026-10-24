@@ -93,7 +93,7 @@ export class CinemaPlayer {
     this.awaitingPresence=!this.state;this.status.textContent=`Begär kontroll över ${this.label}…`;this.command('claim');this.controls();
   }
   close(reason='button') {
-    this.wantsControl=false;this.pendingSeek=undefined;this.searchGeneration++;
+    this.wantsControl=false;this.pendingSeek=undefined;this.pendingChoice=undefined;this.searchGeneration++;
     if(this.owns)this.command('release');
     if(this.open){this.el.close();this.onClose(reason);}
   }
@@ -123,9 +123,11 @@ export class CinemaPlayer {
   receive(m) {
     if(!this.inside)return;
     if(m.k==='no') {
+      const poster=this.pendingChoice;this.pendingChoice=undefined;
       this.pendingSeek=undefined;this.pendingVideo=null;this.surface?.loading(false);if(!this.open)this.wantsControl=false;
       if(m.why==='away'&&this.wantsControl)this.awaitingPresence=true;
       this.status.textContent=({off:'Starta datorn först.',owned:'Någon annan styr skärmen just nu.',owner:'Bara den som styr får ändra filmen.',stale:'Filmen har ändrats. Försök igen.',away:`Gå fram till ${this.place} för att välja film.`})[m.why]??'Bion kunde inte ändras.';
+      if(poster&&!this.open)this.onNotice?.(this.status.textContent);
       return;
     }
     const s=m.s;
@@ -136,9 +138,11 @@ export class CinemaPlayer {
     if(this.ended&&s.position!==this.state?.position)this.ended=false;
     this.state=s;if(!this.owns)this.releasePending=false;
     if(this.pendingVideo===s.video)this.pendingVideo=null;
+    if(this.pendingChoice&&s.owner&&!this.owns){this.pendingChoice=undefined;this.awaitingPresence=false;if(!this.open)this.wantsControl=false;this.onNotice?.('Någon annan styr skärmen just nu.');} // #1575
     if(this.awaitingPresence&&this.wantsControl&&!s.owner){this.awaitingPresence=false;this.command('claim');}
     this.receivedServerNow=m.now;this.receivedAt=performance.now();this.controls();
     if(this.owns&&this.pendingSeek!==undefined){const delta=this.pendingSeek;this.pendingSeek=undefined;this.seek(delta);if(!this.open)this.wantsControl=false;}
+    if(this.owns&&this.pendingChoice){const id=this.pendingChoice;this.pendingChoice=undefined;this.choose(id);}
     if(this.owns&&!this.wantsControl)this.command('release');
     this.status.textContent=this.owns?`Du styr ${this.label}. Filmen visas på ${this.place}.`:s.owner?`${s.name} styr ${this.label}. Du tittar på samma film.`:`Ingen styr ${this.label} just nu.`;
     if(this.owns&&!hadControl&&this.open){this.input.focus();if(!this.results.childElementCount&&this.searchEndpoint)this.search('animerad kortfilm',true);}
@@ -187,6 +191,18 @@ export class CinemaPlayer {
     const duration=this.ready?this.player.getDuration():0,max=duration>0?Math.min(duration,PLAYROOM.cinemaSync.maxPosition):PLAYROOM.cinemaSync.maxPosition;
     this.ended=false;
     return this.command('seek',{p:Math.max(0,Math.min(max,this.position()+delta))});
+  }
+  /** #1575: start a film from a BIO poster without the dialog: claim control if free, select (the same `select` as choosing in the dialog), release.
+   * Returns the badge text; a refusal arrives later through `onNotice` with the same wording as in the dialog. */
+  playPoster(value) {
+    const id=youtubeId(value);
+    if(!id)return 'Filmen kan inte startas.';
+    if(!this.connected)return `${this.label} saknar anslutning. Försök igen när ni är anslutna.`;
+    if(this.state?.owner&&!this.owns)return 'Någon annan styr skärmen just nu.';
+    if(this.owns){this.choose(id);return 'Filmen startar på bioduken';}
+    this.pendingChoice=id;this.wantsControl=true;this.awaitingPresence=!this.state;
+    if(this.state)this.command('claim');
+    return 'Filmen startar på bioduken';
   }
   remoteSeek(delta) {
     if(!this.connected||!this.state?.video||this.state.owner&&!this.owns)return false;
@@ -249,7 +265,7 @@ export class CinemaPlayer {
     if(this.wasConnected!==connected){
       this.wasConnected=connected;
       if(connected)this.command('get');
-      else{this.wantsControl=false;this.pendingSeek=undefined;this.releasePending=false;this.awaitingPresence=false;this.destroyMedia();this.state=null;this.watch.hidden=true;this.status.textContent=`${this.label} väntar på anslutning till de andra spelarna.`;}
+      else{this.wantsControl=false;this.pendingSeek=undefined;this.pendingChoice=undefined;this.releasePending=false;this.awaitingPresence=false;this.destroyMedia();this.state=null;this.watch.hidden=true;this.status.textContent=`${this.label} väntar på anslutning till de andra spelarna.`;}
       this.controls();
     }
     this.surface?.update(camera,renderer);

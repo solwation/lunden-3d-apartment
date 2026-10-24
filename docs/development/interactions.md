@@ -32,6 +32,20 @@ continues on the physical screen. Viewers enable local audio separately. Tests: 
 two-client world playback is covered by `tools/cinemapeertest.cjs` with an isolated
 local Worker and live YouTube access.
 
+BIO film posters (#1575, `src/cinemaposters.js`): six framed posters on the BIO's north wall, south partition and east wall
+(PLAYROOM.cinemaPosters, *guess*: clear of the screen, curtains, passage, signs and #1570's sconces/speakers) show the day's
+popular children's films from the Worker's `GET /cinema/posters` ([cloudflare/README.md](../../cloudflare/README.md#bions-affischer-1575)).
+Each shows the video's own `i.ytimg.com/vi/<id>/hqdefault.jpg` thumbnail (that host answers `Access-Control-Allow-Origin: *`, so
+no image proxy is needed) and its title, painted on one canvas atlas; the frames join the room's furniture batch and the faces are
+one extra MeshBasic draw inside (none outside), dimmed with the sconces while a film runs. The atlas is repainted only when the list
+changes. The fetch starts when the visitor enters the playhouse (8 s deadline; once a day after a success, a failure waits 5 minutes);
+start-up never waits for it. Fallback: the last good list in localStorage `lunden.cinemaPosters`, else generic "Snart på bion"
+posters whose pick boxes are hidden (not clickable). E / click / the touch action button on a poster calls
+`CinemaPlayer.playPoster(id)`: claim if the screen is free, the ordinary `choose` → `select`, release: the same `RoomCinema`
+ownership and sync rules as the dialog; a refusal shows the dialog's wording as a badge (`cinema.onNotice`). Ids are
+pattern-checked again in the client; titles/channels are drawn on the canvas or shown as `textContent` only. Test:
+`tools/cinemapostertest.cjs` (fallback, live list, desktop E, touch, refusal, saved list, draws).
+
 Clubhouse speakers (#1423): either `playroomMusic` target uses the shared choices
 for play/pause/resume/OFF and volume ±, through E/number keys or touch rows. No new
 panel; leaving the room or hiding the document stops playback without auto-resume.

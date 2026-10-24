@@ -1,6 +1,6 @@
 import { reportsFetch } from './reports.js';
 import { beerShelfFetch } from './beershelf.js';
-import { youtubeSearchFetch } from './youtubesearch.js';
+import { youtubeSearchFetch, cinemaPostersFetch } from './youtubesearch.js';
 import { layoutFetch } from './layout.js';
 import { crashFetch } from './crash.js';
 import { PlayerRoom, refuse, CLOSE, cleanAvatar, cleanAvatarExt } from './players.js';
@@ -22,6 +22,7 @@ export { PlayerRoom };
 //                                  SCORE_RATE per minute since that row's last post (SCORE_START for a new row). name '' = "Anonym" (#677;
 //                                  an anonymous post never strips the name of an existing row; equal points: named first)
 //   PUT    /presence/:id          ← { name, score } (name '' = anonymous) → { count, names, players, anon }; GET /presence the same without joining
+//   GET    /cinema/posters        → { day, items: [{ id, title, channel }], stale } the BIO's daily YouTube film posters (#1575, youtubesearch.js)
 //   POST   /crash                 ← a crash report from the game (#629, cloudflare/crash.js); GET /crash, /crash/:id read them (admin token)
 //   GET    /players               WebSocket upgrade → the PlayerRoom Durable Object (#666, cloudflare/players.js): other players as ghosts
 //   DELETE /admin/:what           (what = drawings | paper | scores | crash | players | all; /admin/scores?id=<id or name>: one row) with "Authorization: Bearer <ADMIN_TOKEN>"
@@ -29,7 +30,7 @@ export { PlayerRoom };
 //                                  — the emergency brake; ADMIN_TOKEN is a Worker secret (cloudflare/setup.sh sets one)
 //
 // KV keys: 'drawings' (the metadata list), 'drawing:<id>' (image bytes, metadata { type }), 'paper' (JSON),
-// 'scores' (all rows { id, name, score, updated }, the best MAX_SCORES), 'presence:<id>' (short-lived visitors).
+// 'scores' (all rows { id, name, score, updated }, the best MAX_SCORES), 'presence:<id>' (short-lived visitors), 'cinema-posters' (#1575: the last good poster day).
 // Cat photos are personal and stay in each visitor's browser (#211).
 
 // Same compact appearance validation as the existing multiplayer protocol.
@@ -121,6 +122,10 @@ const worker = {
     if (what === 'youtube-search' && !id) {
       if (await limited(request, env)) return fail(429, 'too many requests', h);
       return youtubeSearchFetch(request, env, h);
+    }
+    if (what === 'cinema' && id === 'posters') { // #1575: the BIO's daily film posters (KV-cached day list, see youtubesearch.js)
+      if (await limited(request, env)) return fail(429, 'too many requests', h);
+      return cinemaPostersFetch(request, env, h);
     }
     if (what === 'crash') return crashFetch(request, env, h, id); // #629
     if (what === 'players' && !id) { // #666: only a WebSocket from the site (a request without Origin is not a browser page)

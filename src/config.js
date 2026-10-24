@@ -5973,6 +5973,13 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
     ceiling: { x: [-7.4, -4.6], z: [-3.6, -.3], w: .22, d: .22, h: .09 } }, // four height speakers under the ceiling, clear of the ceiling panels
   // #1570: wall sconces on the BIO's side walls and the BIO's ceiling panel share one emissive mesh (no light source); `dimmed` scales their colour while a film runs.
   sconces: { x: { north: [-7.7, -5.9, -3.9], south: [-7.7, -3.9] }, y: 1.65, w: .14, h: .3, d: .1, lit: 0xffcf8a, panel: 0xfff6dc, dimmed: .25, fadeSeconds: 1.6, ambientDim: .4 },
+  // #1575: the BIO's daily film posters (src/cinemaposters.js, Worker GET /cinema/posters in cloudflare/youtubesearch.js). Every query, count, size and
+  // place is a *guess*. Frames hang where #1570's sconces/speakers, the screen, curtains, the passage and the signs leave wall free (a fixture's
+  // depth counts as clearance so it never hides a poster at an angle; tools/cinemapostertest.cjs checks it); local metres, `wall`
+  // = 'north' (z -5.2, facing south), 'south' (the partition z 1.54, facing north) or 'east' (x -3.06, facing west), `at` along that wall, `y` the centre.
+  cinemaPosters: { w: .56, h: .84, frame: .035, depth: .025, cell: [256, 384], timeoutMs: 8000, titleMax: 40,
+    spots: [{ wall: 'north', at: -6.8 }, { wall: 'north', at: -5.3 }, { wall: 'south', at: -7.12 }, { wall: 'east', at: -4.4 }, { wall: 'east', at: -2.4 }, { wall: 'east', at: -.6 }], y: 1.25,
+    worker: { queries: ['barnfilm på svenska', 'tecknat på svenska hela filmen', 'tecknad film för barn'], perQuery: 10, recentDays: 730, retryHours: 6 } },
   speakers: { x: [-2.2, 2.2], y: 1.1, z: -4.98, w: .25, h: .38, d: .18 }, // guess: small wall-mounted pair, clear of cue/walking space
   door: { w: 0.8, h: 1.7 }, // Assumed low playhouse-style exit; its interaction works for every avatar height.
   standOff: 0.75, // m from the door wall where you arrive inside
