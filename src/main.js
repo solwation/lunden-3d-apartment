@@ -1143,6 +1143,7 @@ if (resumed && !resumed.world && savedPlayerWorld?.world) {
   resumed.world = savedPlayerWorld.world; resumed.playerSnapshot = true;
 }
 function resumeAt(r) {
+  if (r.room) playroom.setInside(true); // the children's room (#1572): the same entry the door uses, drawn before the checks
   player.spawn(r.x, r.z, r.yaw);
   player.pos.y = r.feetY;
   player.eyeY = r.feetY + PLAYER.eye;
@@ -1152,7 +1153,7 @@ function resumeAt(r) {
   // reject spots inside a wall: one standing step must not push the visitor away
   const before = player.pos.clone();
   player.update(1 / 60);
-  if (player.pos.distanceTo(before) > 0.05 || Math.abs(player.groundAt(r.x, r.z, r.feetY) - r.feetY) > 0.3) { spawnAtStart(); return false; }
+  if (player.pos.distanceTo(before) > 0.05 || Math.abs(player.groundAt(r.x, r.z, r.feetY) - r.feetY) > 0.3) { playroom.setInside(false); spawnAtStart(); return false; }
   return true;
 }
 
@@ -3359,7 +3360,10 @@ function onTap(el, fn) {
 }
 // reload to a fresh URL, so neither the browser's nor GitHub Pages' cache hands back the old page
 /** Where the visitor is, for a reload: place, view, mute, mode (none = still on the first start screen), the build. */
-const placeNow = () => {
+const placeNow = (keepRoom = true) => {
+  if (player.inPlayroom && keepRoom) { // a reload of the same tab (#1572): back inside the room, same spot and view; resumeAt re-enters it
+    return { x: player.pos.x, z: player.pos.z, feetY: player.pos.y, yaw: camera.rotation.y, pitch: camera.rotation.x, room: true, hour: day.hour, month: day.month, muted: isMuted(), fullscreen: !!document.fullscreenElement, build: BUILD, mode: isPhoneDevice() ? 'touch' : (activeMode ?? (touch.enabled ? 'touch' : locked ? 'mouse' : (!armEl.hidden || played) ? 'mouse' : undefined)) };
+  }
   if (player.inPlayroom) { const o = Playroom.outsideSpot; return { x: o.x, z: o.z, feetY: groundY(o.x, o.z), yaw: o.yaw, pitch: 0, hour: day.hour, month: day.month, muted: isMuted(), fullscreen: !!document.fullscreenElement, build: BUILD, mode: isPhoneDevice() ? 'touch' : (activeMode ?? (touch.enabled ? 'touch' : locked ? 'mouse' : (!armEl.hidden || played) ? 'mouse' : undefined)) }; } // a reload inside the children's room (#1319): back out at the playhouse door
   const slideStanding = slideRide.savePlace();
   const p = slideStanding ?? (player.riding ? player.bicycleSavePlace() : player.pos);
@@ -3375,7 +3379,7 @@ setInterval(keepSession, 2000);
 window.addEventListener('pagehide', keepSession);
 function savePlayerWorld() {
   if (resetHome.going || lifeDev()) return;
-  const p = placeNow();
+  const p = placeNow(false); // a later new visit starts outside the playhouse door, never inside the room (#1572)
   if (p) localStorage.setItem('lunden.playerWorld', JSON.stringify({ ...p, mode: undefined, playerSnapshot: true, world: keepWorld() }));
 }
 const persistPlayerWorld = () => { try { savePlayerWorld(); } catch { /* keep earlier record if storage is full */ } };
