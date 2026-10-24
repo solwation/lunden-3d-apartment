@@ -15,7 +15,12 @@ Prefer the reports-only `REPORT_IMPORT_TOKEN` Worker secret. Keep its local valu
 `~/.config/lunden-l1007/report-import-token` (mode `600`, parent directory `700`),
 or provide it through `LUNDEN_REPORT_IMPORT_TOKEN`. Existing `ADMIN_TOKEN` environment
 credentials are also supported. `--credential-file /private/path` explicitly chooses
-a private local file. Never put secrets on the command line, in a manifest, in the
+a private local file. It is a **global** flag and goes before the subcommand, for example
+`python3 tools/ingame_reports.py --credential-file ~/.config/lunden-l1007/admin-token fetch`
+(also before `import`); this local `admin-token` file (mode `600`) is the working fallback when
+`report-import-token` is absent. A missing file gives the message "No report credential found"
+(#1581); a file that is a symlink, not regular or not mode `600` gives the separate
+"must be a private regular file (mode 600)" error. Never put secrets on the command line, in a manifest, in the
 repository, or in an issue. The existing in-game admin codes and their visit-only session token
 cannot import reports. Admin and rearrangement are the same game mode. Private files and journals belong outside the checkout.
 
@@ -137,9 +142,9 @@ labels come from reviewed priority and the fixed reporter-label policy. Export d
 ## Wrangler first (user, 2026-10-19)
 
 **Read reports with Wrangler whenever it is installed and logged in** (`npx wrangler whoami` from `cloudflare/`);
-do not first try the importer's token fetch, which fails with 403 when the local `REPORT_IMPORT_TOKEN` is stale.
+do not first try the importer's token fetch, which fails with 403 only if the local credential is actually rejected by the Worker (a missing file is reported separately, see above).
 If Wrangler is not logged in, ask the user to run `! npx wrangler login`. Use the fallback below for the
-read/export; use the importer (token) only for issue creation and acknowledgement. If the token is stale
+read/export; use the importer (token) only for issue creation and acknowledgement. If the token is rejected
 and the user has not approved replacing it, create the issues by hand (original image committed to
 `docs/ingame-reports/`, `in-game` label, one reviewed priority) and leave the KV keys for the user to acknowledge.
 

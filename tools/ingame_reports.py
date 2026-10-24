@@ -672,6 +672,10 @@ def credential(args):
         if value:
             return value
         path = Path('~/.config/lunden-l1007/report-import-token').expanduser()
+    if not path.is_symlink() and not path.exists():
+        fail('No report credential found: the credential file does not exist. Set LUNDEN_REPORT_IMPORT_TOKEN, '
+             'or pass the global flag --credential-file /private/path before fetch/import '
+             '(for example ~/.config/lunden-l1007/admin-token).')
     if path.is_symlink() or not path.is_file() or stat.S_IMODE(path.stat().st_mode) & 0o077:
         fail('Admin credential file must be a private regular file (mode 600).')
     with path.open() as stream:

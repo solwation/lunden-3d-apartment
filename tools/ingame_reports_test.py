@@ -113,6 +113,32 @@ class FakeGitHub(m.GitHub):
         return sum(method == 'POST' and endpoint == m.API for method, endpoint, _ in self.calls)
 
 
+class CredentialFileTests(unittest.TestCase):
+    def args(self, path):
+        return type('Args', (), {'credential_file': path})()
+
+    def test_missing_file_has_its_own_message(self):
+        with tempfile.TemporaryDirectory() as d:
+            with self.assertRaises(m.ImportErrorSafe) as caught:
+                m.credential(self.args(os.path.join(d, 'absent')))
+        self.assertIn('No report credential found', str(caught.exception))
+        self.assertIn('--credential-file', str(caught.exception))
+        self.assertNotIn('mode 600', str(caught.exception))
+
+    def test_wrong_mode_keeps_permission_message(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, 'token')
+            with open(path, 'w') as f:
+                f.write('secret')
+            os.chmod(path, 0o644)
+            with self.assertRaises(m.ImportErrorSafe) as caught:
+                m.credential(self.args(path))
+            self.assertIn('mode 600', str(caught.exception))
+            self.assertNotIn('No report credential found', str(caught.exception))
+            os.chmod(path, 0o600)
+            self.assertEqual(m.credential(self.args(path)), 'secret')
+
+
 class ImportTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
