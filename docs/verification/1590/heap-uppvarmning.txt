@@ -1,0 +1,57 @@
+# iPhone 14 Pro landscape profile, sliced phone warm-up, JS heap every ~2 s
+## before (a7ab4ef)
+21.6s compiling 0/5000             prog 0 geo 0 tex 0 heap 585.8 MB
+23.6s compiling 1632/5000          prog 109 geo 9 tex 3 heap 592.0 MB
+25.6s compiling 2784/5000          prog 140 geo 10 tex 5 heap 590.7 MB
+27.9s drawing 1/46                 prog 214 geo 117 tex 14 heap 616.2 MB
+30.1s drawing 3/46                 prog 214 geo 216 tex 24 heap 618.7 MB
+32.2s drawing 11/46                prog 214 geo 736 tex 64 heap 532.2 MB
+34.3s drawing 20/46                prog 214 geo 1409 tex 121 heap 534.8 MB
+36.7s drawing 23/46                prog 219 geo 1484 tex 132 heap 535.3 MB
+38.7s drawing 28/46                prog 220 geo 1595 tex 151 heap 534.5 MB
+41.1s drawing 41/46                prog 221 geo 1989 tex 189 heap 535.5 MB
+43.1s compiling 304/5001 mirror    prog 222 geo 2199 tex 212 heap 539.2 MB
+45.1s drawing 41/46 mirror         prog 222 geo 2199 tex 212 heap 539.5 MB
+47.1s done                         prog 222 geo 2199 tex 212 heap 539.8 MB
+# baseline: peak heap 618.7 MB at "drawing 3/46", total 47 s
+
+## after
+20.7s compiling 0/5000             prog 0 geo 0 tex 0 heap 445.3 MB
+24.1s compiling 1976/5000          prog 121 geo 10 tex 5 heap 444.6 MB
+26.4s drawing 1/46                 prog 214 geo 117 tex 14 heap 446.2 MB
+28.6s drawing 5/46                 prog 214 geo 382 tex 40 heap 450.6 MB
+30.6s drawing 16/46                prog 214 geo 1164 tex 99 heap 348.2 MB
+32.8s drawing 23/46                prog 219 geo 1484 tex 132 heap 349.2 MB
+34.9s drawing 34/46                prog 220 geo 1608 tex 153 heap 352.7 MB
+37.0s drawing 43/46                prog 222 geo 2146 tex 209 heap 352.6 MB
+39.0s drawing 21/46 mirror         prog 222 geo 2199 tex 212 heap 317.9 MB
+41.0s done                         prog 222 geo 2199 tex 212 heap 317.4 MB
+# fix2: peak heap 450.6 MB at "drawing 5/46", total 41 s
+
+## sampled live allocations at compile start, before
+total sampled live 217.9 MB
+
+## self sites
+   50.3 MB  solidTree src/architectureedges.js:5
+   30.0 MB  Box3 __three/build/three.module.js:4696
+   23.8 MB  add src/architectureedges.js:146
+    9.3 MB  (anon) src/architectureedges.js:8
+    8.0 MB  push :0
+    7.6 MB  Object3D __three/build/three.module.js:7258
+    7.2 MB  BufferGeometry __three/build/three.module.js:10608
+    6.4 MB  build src/architectureedges.js:12
+    6.4 MB  clone __three/build/three.module.js:4060
+
+## after
+total sampled live 70.3 MB
+
+## self sites
+    8.3 MB  Object3D __three/build/three.module.js:7258
+    6.0 MB  BufferGeometry __three/build/three.module.js:10608
+    5.1 MB  Float32BufferAttribute __three/build/three.module.js:10589
+    3.8 MB  push :0
+    3.5 MB  Float32Array :0
+    2.1 MB  at src/surroundings.js:313
+    1.8 MB  (V8 API) :0
+    1.1 MB  line src/roads.js:22
+    0.9 MB  Uint16BufferAttribute __three/build/three.module.js:10406
