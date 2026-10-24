@@ -1,8 +1,10 @@
 import { BLOCKS, METEORS } from './config.js';
 import { SHAPES, COLORS } from './blocks.js';
+import { drawPortraitThumb } from './playerportraits.js';
 
 // #1577: Klossar and Meteoriter drawn on the computer's existing monitor canvas (no extra meshes or draw calls).
-// Names are always canvas text. `top` is [{name, score}] from src/gameboards.js.
+// Names are always canvas text. `top` is [{name, score, avatar?, me?}] from src/gameboards.js; #1585 draws each row's
+// avatar thumbnail (cached per look code) before the name.
 const ANON='Anonym';
 
 /** A compact top list box; returns nothing. */
@@ -13,9 +15,10 @@ export function drawTopList(c,x,y,w,h,top,title='Topplista',me='') {
   c.font=`${line*.68}px system-ui`;
   if(!top?.length){c.fillStyle='#9fb0c8';c.fillText('Inga resultat än',x+w/2,y+line*2);}
   (top??[]).slice(0,10).forEach((r,i)=>{
-    const ty=y+line*(1.75+i);c.fillStyle=me&&r.name===me?'#ffe28a':'#c9d6ea';
-    const score=String(r.score),room=w*.82-c.measureText(score).width;let name=`${i+1}. ${String(r.name||ANON)}`;while(name.length>4&&c.measureText(name).width>room)name=name.slice(0,-2)+'…';
-    c.textAlign='left';c.fillText(name,x+w*.06,ty);
+    const ty=y+line*(1.75+i),face=line*.86,nx=x+w*.04+face+line*.25;c.fillStyle=(r.me??(me&&r.name===me))?'#ffe28a':'#c9d6ea';
+    drawPortraitThumb(c,r.avatar,x+w*.04,ty-face/2,face);
+    const score=String(r.score),room=x+w*.88-nx-c.measureText(score).width;let name=`${i+1}. ${String(r.name||ANON)}`;while(name.length>4&&c.measureText(name).width>room)name=name.slice(0,-2)+'…';
+    c.textAlign='left';c.fillText(name,nx,ty);
     c.textAlign='right';c.fillText(String(r.score),x+w*.94,ty);
   });
   c.restore();

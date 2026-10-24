@@ -26,14 +26,14 @@ test('OK locks identity; offline New player retains old result and gives Tuva an
     const source = (await readFile(new URL('../src/leaderboard.js', import.meta.url), 'utf8')).replace(/^import .*;\r?$/gm, '')
       .replace(/^/, ['const L = { show: 10, every: 30, nameMax: 20 };',
         'const profiles = globalThis.__testProfiles, localStorage = profiles.local, sessionStorage = profiles.session;',
-        'const drawPlayerPortrait = () => {}, drawAvatarPreview = () => {}, decodeAvatarLook = () => ({}), deletePlayerPhotos = async () => {};', ''].join('\n'));
+        'const drawPlayerPortrait = () => {}, drawAvatarPreview = () => {}, decodeAvatarLook = () => ({}), deletePlayerPhotos = async () => {}, portraitThumb = () => ({}), rowKey = async () => "";', ''].join('\n'));
     let loads = 0;
     const load = async () => {
       globalThis.__testProfiles = createProfiles(globalThis.localStorage, globalThis.sessionStorage);
       return (await import(`data:text/javascript,${encodeURIComponent(`${source}\n// load ${++loads}`)}`)).Leaderboard;
     };
     const Leaderboard = await load();
-    const el = () => ({ value: '', hidden: false, disabled: false, addEventListener() {}, focus() {}, blur() {} });
+    const el = () => ({ value: '', hidden: false, disabled: false, addEventListener() {}, focus() {}, blur() {}, replaceChildren() {} });
     const controls = () => ({ nameRow: el(), input: el(), list: el(), ok: el(), newPlayer: el() });
     const ui = controls();
     const olof = new Leaderboard('https://test', () => score, { ...ui, onNewPlayer: (select) => { score = 0; select(); } });

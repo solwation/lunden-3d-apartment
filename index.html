@@ -356,7 +356,6 @@
     #stats .stats-header button { border: 0; border-radius: 6px; padding: 6px 14px; min-height: 38px; cursor: pointer; font: 600 13px system-ui, sans-serif; background: rgba(255,255,255,.15); color: #fff; }
     #stats .stats-header button:hover { background: rgba(255,255,255,.25); }
     #stats-body { flex: 1 1 0; min-height: 0; height: 100%; overflow-y: auto; overscroll-behavior: contain; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); align-content: start; gap: 0 36px; padding-right: 4px; }
-    #stats-body > .lb, #stats-body > .lb-head, #stats-body > .lb-presence { grid-column: 1 / -1; }
     #stats-body:focus-visible { outline: 2px solid #fff; outline-offset: -2px; }
     #stats-body > div { break-inside: avoid; margin-bottom: 6px; }
     /* Badge layout and shared shell live in src/hudicons.css (#707). Existing score IDs stay intact. */
@@ -429,11 +428,12 @@
     #lb-name button.alt { background: #fff; color: var(--accent); box-shadow: inset 0 0 0 2px var(--accent); }
     #lb-name button[hidden] { display: none; }
     ol.lb { list-style: none; margin: 6px 0 10px; padding: 0; font-size: 13px; }
-    ol.lb li { display: flex; justify-content: space-between; gap: 10px; padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,.06); }
+    ol.lb li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,.06); }
+    ol.lb .lb-who { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .lb-face { width: 22px; height: 22px; flex: none; border-radius: 4px; } /* #1585: avatar thumbnail */
     ol.lb li.me { font-weight: 700; color: #ffd76a; }
     ol.lb b { font-variant-numeric: tabular-nums; }
     ol.lb small { margin-left: 4px; opacity: .65; font-size: 11px; }
-    .lb-head { margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,.25); display: flex; justify-content: space-between; font-weight: 700; }
     .menu-presence { margin: 12px 0 6px; display: flex; align-items: flex-start; gap: 10px; background: #eaf1f5; border: 1px solid #c8d6df; border-radius: 8px; padding: 10px 12px; }
     .menu-presence[hidden] { display: none; }
     .menu-presence .presence-icon { font-size: 18px; line-height: 1.2; flex: none; }
@@ -813,6 +813,8 @@
     .computer-top-title { margin:8px 0 2px; font-size:14px; }
     .computer-world-controls .computer-top-title { display:none; }
     .computer-world-controls .computer-top { display:flex; flex-wrap:wrap; gap:2px 18px; max-height:2.8em; overflow:auto; font-size:12px; margin:2px 0; }
+    .computer-top .lb-face { width:18px; height:18px; vertical-align:middle; margin-right:6px; } /* #1585 */
+    .computer-top li.me { font-weight:700; }
     .computer-player.computer-world-controls > .cinema-row:first-child { position:static; grid-column:auto; padding:0; }
     .computer-world-controls .computer-apps { margin:0; }
     .computer-world-controls .computer-game { grid-column:1 / -1; }

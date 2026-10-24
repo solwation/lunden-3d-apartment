@@ -15,6 +15,24 @@ Existing same-name aggregation keeps the highest-score row's own portrait.
 Anonymous rows remain separate. `renderPlayingNow` builds text-safe DOM rows
 with the customizer's Canvas2D preview; no WebGL contexts or extra polling.
 
+## Top-list identity and avatars (#1585)
+
+Top-list rows (`scores`, `game:<game>`) are keyed by the posted player `id`, never by the
+name. The id is treated as an **opaque player identity**, separate from the display name:
+today it is each local profile's random UUID (`lunden.playerId`); a future account id can
+replace or be linked to it without changing the row format or the endpoints. No login exists.
+Two players with the same nickname on different devices are therefore two rows.
+GET answers (and POST answers) never contain the id: each row carries `key` = `rowKey(id)`
+(`src/rowkey.js`, a one-way 64-bit SHA-256 prefix) so clients can tell rows apart and mark
+their own. Admin removal still takes the id (or a name).
+The row also stores the validated look code (`avatar` = `av` digits + `ax` extension, the
+players' room rules; `cloudflare/games.js` `cleanLook`) in the same KV value, so there are no
+new keys per player. A missing or invalid code is ignored and keeps the row's earlier look;
+it never refuses the score. Old rows without a look stay valid and are served without one.
+Ormstriden rows take the look the player broadcast when joining. Clients draw thumbnails in
+2D (`portraitThumb` for DOM lists, `drawPortraitThumb` on the computer monitor canvases),
+cached per code; no WebGL or extra draw calls.
+
 ## Local player profiles (#1515)
 
 `src/playerprofiles.js` maintains `lunden.players.v1`: version, active UUID and
@@ -245,14 +263,19 @@ src/cloud.js           the shared world (#178, #119): inert unless CLOUD_URL (co
                        never synced (#211). Silent; &sync=debug logs
 src/leaderboard.js     the global leaderboard (#198), only with the cloud on: optional name on the start screen (#lb-name,
                        never blocks starting; localStorage 'lunden.name', a random 'lunden.playerId'), the top list there
-                       (#lb-start) and under the stats (setStatsExtra); the score (stats.js totalScore, SCORE in config) is
+                       (#lb-start) and in the start menu's Topplista dialog (#1585 removed it from the Tab stats); the score (stats.js totalScore, SCORE in config) is
                        POSTed as text/plain when changed, every LEADERBOARD.every s, sendBeacon when hidden; names escaped.
                        #677: without a name you are "Anonym": the row has name '' (one per scoped 'lunden.playerId', created for everybody;
                        a name later renames the same row; the Worker never lets an anonymous post strip a name; equal points list
                        named first), anonymous players are online too (presence.js sends name '' + score; the Worker lists them
                        one by one and counts `anon`) and ghosts. Everybody is visible (#723 removed the opt-out box "Visa mig inte för andra"; an old
                        localStorage 'lunden.share' is deleted at start, no other effect); the start screen says so (`#share-note`: online + avatar, #730) and the privacy page opens with "Vad andra spelare ser".
+                       #1585: each POST carries the avatar's look code (`avatar`, the players' room `av` + `ax`); rows show a
+                       small portrait (playerportraits.js portraitThumb/drawPortraitThumb, a cached Canvas2D crop of the
+                       customizer preview; a neutral silhouette without a look) and the own row is found by the public row key.
                        `node --test cloudflare/scores.test.mjs`, `tools/anontest.cjs`
+src/rowkey.js          #1585: rowKey(id) = 16 hex of SHA-256('lunden-row:' + id), the public key GET /scores and /games return
+                       instead of the private player id; shared by the Worker and the page ('' without WebCrypto → name match)
 src/gameboards.js      the computer games' top lists (#1577): GET/POST the Worker's /games/<ormstriden|klossar|meteoriter>
                        with the same player id and name; KV 'game:<game>' holds one best row per id (cloudflare/games.js,
                        written only when a row improves; Ormstriden rows come from PlayerRoom's server arena). Client scores

@@ -13,8 +13,8 @@ export function cleanSnake(text){
 /** Advances on the existing ≤5 Hz input slots, with 30 Hz bounded authoritative substeps. No background ticker/storage. */
 export class RoomSnake {
  constructor(peers,displays,send,onResult=null){this.peers=peers;this.displays=displays;this.send=send;this.onResult=onResult;this.arena=null;this.inputs=new Map();this.pids=new Map();this.lastBroadcast=0;}
- /** #1577: a finished snake (death or leaving) reports its server score once, keyed by the player's own UUID. */
- ended(s){const pid=this.pids.get(s.id);if(pid&&s.score>0)this.onResult?.({id:pid,name:s.name,score:s.score});}
+ /** #1577: a finished snake (death or leaving) reports its server score once, keyed by the player's own UUID (+ look, #1585). */
+ ended(s){const p=this.pids.get(s.id);if(p&&s.score>0)this.onResult?.({id:p.id,name:s.name,score:s.score,...(p.avatar?{avatar:p.avatar}:{})});}
  audience(){return this.peers().filter(p=>COMPUTER_MEDIA.stations.some(s=>p.a[`tv_${s.id}`]===true));}
  message(){return JSON.stringify({t:'snake',k:'state',s:this.arena?.snapshot()??null});}
  snapshot(ws){this.send(ws,this.message());}
@@ -41,7 +41,8 @@ export class RoomSnake {
   if(m.k==='join'){
    const old=this.arena.snakes.get(a.i);if(old&&old.screen!==m.screen)this.arena.remove(a.i);
    if(!this.arena.join(a.i,a.n??'Spelare',m.screen,now))return this.refuse(ws,'wait');
-   if(m.pid)this.pids.set(a.i,m.pid);else this.pids.delete(a.i);
+   // #1585: the row's look is the player's validated broadcast look (`av` + `ax`) at joining; games.js checks it again.
+   if(m.pid)this.pids.set(a.i,{id:m.pid,avatar:a.s?.av?a.s.av+(a.s.ax??''):''});else this.pids.delete(a.i);
    this.inputs.delete(a.i);this.broadcast();return;
   }
   const s=this.arena.snakes.get(a.i),last=this.inputs.get(a.i);

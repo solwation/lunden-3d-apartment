@@ -421,13 +421,11 @@ export function statRows() {
 }
 
 /** Render into `el` (cheap enough to call a few times a second). */
-let extra = () => '';
-/** More HTML under the rows (the leaderboard, #198). */
-export const setStatsExtra = (fn) => { extra = fn; };
+// (#1585: the leaderboard no longer sits under the rows; it is only in the start menu's "Topplista" dialog.)
 
 export function renderStats(el) {
   const html = statRows().map(([label, value, sub]) =>
-    `<div class="stat-row"><span>${label}</span><b>${value}</b>${sub ? `<small>${sub}</small>` : ''}</div>`).join('') + extra();
+    `<div class="stat-row"><span>${label}</span><b>${value}</b>${sub ? `<small>${sub}</small>` : ''}</div>`).join('');
   if (el.innerHTML !== html) el.innerHTML = html;
 }
 

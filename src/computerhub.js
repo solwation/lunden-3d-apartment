@@ -6,6 +6,7 @@ import { drawSnake, drawComputerMenu } from './snakeview.js';
 import { BlocksGame } from './blocks.js';
 import { MeteorsGame } from './meteors.js';
 import { drawBlocks, drawMeteors, drawArcadeCard } from './arcadeview.js';
+import { portraitThumb } from './playerportraits.js';
 
 // #1577: single-player games run only in the controlling client while its panel is open; `board` names the top list.
 const ARCADE={
@@ -201,7 +202,8 @@ export class ComputerHub {
     if(!list||!this.boards)return;
     const key=`${this.boards.version}:${board}:${this.boards.global(board)}`;if(list.dataset.key===key)return;list.dataset.key=key;
     const top=this.boards.top(board);title.textContent=this.boards.global(board)?'Topplista':'Dina bästa omgångar (lokalt)';
-    list.replaceChildren(...(top.length?top:[null]).map(r=>{const li=document.createElement('li');li.textContent=r?`${r.name||'Anonym'}: ${r.score}`:'Inga resultat än';return li;}));
+    list.replaceChildren(...(top.length?top:[null]).map(r=>{const li=document.createElement('li');if(!r){li.textContent='Inga resultat än';return li;}
+      if(r.me)li.className='me';li.append(portraitThumb(r.avatar,18),document.createTextNode(`${r.name||'Anonym'}: ${r.score}`));return li;})); // #1585: avatar thumbnail, name as text
   }
   requestPower(s,on) {
     if(s.pendingPower!==undefined)return false;

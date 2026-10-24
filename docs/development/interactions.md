@@ -1967,7 +1967,10 @@ its top 10 (names from the #198 leaderboard profile, `Anonym` without a name, al
 the monitor shows it between rounds (Ormstriden: no snakes, or ours is out). A finished
 Klossar/Meteoriter round is POSTed with its time (and lines/wave); Ormstriden results are
 computed by the server arena and written by the players' room when a snake dies or leaves,
-keyed by the player UUID sent with `join` (never broadcast). Without the cloud or on any
+keyed by the player UUID sent with `join` (never broadcast). #1585: every row shows a small
+avatar thumbnail before the name (the panel list and the monitor's canvas list; a neutral
+silhouette without a stored look), the own row is marked by the Worker's public row key, and
+Ormstriden rows store the look the player had when joining. Without the cloud or on any
 error the panel shows "Dina bästa omgångar (lokalt)" from `lunden.gameBest.<spel>`; requests
 time out after GAME_BOARDS.timeoutMs and nothing waits on them. The computers themselves
 still need the shared room (#1488) to be powered and controlled.

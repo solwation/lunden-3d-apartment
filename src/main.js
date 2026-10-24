@@ -65,7 +65,7 @@ import { stairHeight, stairUnderside } from './stairs.js';
 import { rugLift } from './rugs.js';
 import { loadChangelog, retryChangelog, renderChangelog, buildNote, scrollNote } from './changelog.js';
 import { loadTodo, buildTodoNotes } from './todo.js';
-import { setScoreElement, totalScore, setStatsExtra, stats, keepMieleDay, bump, awardLove, badge, catFound, keepCatCounts, secretFound, renderStats, resetStats, visitRoom, setRoomTotal, setBadgeElement, penalize } from './stats.js';
+import { setScoreElement, totalScore, stats, keepMieleDay, bump, awardLove, badge, catFound, keepCatCounts, secretFound, renderStats, resetStats, visitRoom, setRoomTotal, setBadgeElement, penalize } from './stats.js';
 import { Minimap } from './minimap.js';
 import { Compass } from './compass.js';
 import { Measure } from './measure.js';
@@ -999,7 +999,6 @@ document.getElementById('leaderboard-dialog-close')?.addEventListener('click', (
 const privacyDialog = document.getElementById('privacy-dialog'); // #723: what is stored and sent
 document.getElementById('menu-privacy')?.addEventListener('click', () => { privacyDialog.hidden = false; });
 document.getElementById('privacy-dialog-close')?.addEventListener('click', () => { privacyDialog.hidden = true; });
-setStatsExtra(() => leaderboard.html());
 cloud.gate = postersLoaded.catch(() => {}); // no send before the saved drawings are up (#1308)
 cloud.ready = cloud.on ? Promise.all([postersLoaded, catCardsLoaded]).then(() => cloud.sync()) : Promise.resolve(); // (tests wait on it)
 cat.onPet = () => { bump('petted'); if (cat.kitten) bump('kittenPets'); catCards.recordPet(cat.breed.name); }; // a kitten's pat is worth more (#363)
@@ -1330,7 +1329,7 @@ const openVideoControls=()=>{reading=true;player.keys.clear();touch.analog.x=tou
 const tvMedia=new TVMedia({canvas,targets:world.furnitureTargets,template:document.getElementById('cinema-player'),onClose:closeVideoControls,onOpen:openVideoControls,endpoint:cloudUrl()?`${cloudUrl()}/youtube-search`:''});
 remote.onVideo=tv=>santaTV.active&&tv===santaTV.tv&&santaTV.activate()||tvMedia.show(tv);remote.onPower=tv=>tvMedia.power(tv);
 remote.onSeek=(tv,delta)=>{const ok=tvMedia.seek(tv,delta);if(!ok)badge('Någon annan styr TV:n just nu. Försök igen om en stund.',false);return ok;};
-const computerHub=new ComputerHub({onNotice:text=>badge(text,false),canvas,targets:[...world.furnitureTargets,...playroom.devices.computers.map(s=>s.target)],template:document.getElementById('cinema-player'),onClose:closeVideoControls,onOpen:openVideoControls,endpoint:cloudUrl()?`${cloudUrl()}/youtube-search`:'',boards:new GameBoards({url:cloudUrl(),id:()=>leaderboard.id,name:()=>leaderboard.name})}); // #1577: game top lists
+const computerHub=new ComputerHub({onNotice:text=>badge(text,false),canvas,targets:[...world.furnitureTargets,...playroom.devices.computers.map(s=>s.target)],template:document.getElementById('cinema-player'),onClose:closeVideoControls,onOpen:openVideoControls,endpoint:cloudUrl()?`${cloudUrl()}/youtube-search`:'',boards:new GameBoards({url:cloudUrl(),id:()=>leaderboard.id,name:()=>leaderboard.name,look:()=>leaderboard.lookCode})}); // #1577: game top lists
 playroom.devices.onComputerRequest=target=>computerHub.show(target);
 cinema.surface = new CinemaSurface(canvas, playroom.devices.tv.mesh);
 cinema.soundSource = playroom.devices.tv.mesh;

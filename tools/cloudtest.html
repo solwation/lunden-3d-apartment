@@ -122,7 +122,8 @@ const sheet = (color) => { const c = document.createElement('canvas'); c.width =
   await app.leaderboard.refresh();
   const lis = [...d.querySelectorAll('#lb-start li')].map((li) => li.textContent);
   check(lis.some((t) => t.includes("Tilly O'Test")) && !d.querySelector('#lb-start img'), `the top list on the start screen: ${lis.join(' | ')}`);
-  check(app.leaderboard.html().includes('Din poäng'), 'and under the statistics');
+  check(d.querySelectorAll('#lb-start li .lb-face').length === lis.length, 'each row has an avatar thumbnail (#1585)');
+  check(!d.querySelector('#stats-body ol.lb, #stats-body .lb-head'), 'the statistics panel has no top list (#1585)');
   // 9. locally without &cloud: off, no requests
   w = await load(''); app = w.__app;
   check(!app.cloud.on, 'locally without &cloud: off');

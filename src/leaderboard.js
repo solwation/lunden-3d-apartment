@@ -1,4 +1,5 @@
-import { drawPlayerPortrait } from './playerportraits.js';
+import { drawPlayerPortrait, portraitThumb } from './playerportraits.js';
+import { rowKey } from './rowkey.js';
 import { profiles } from './playerprofiles.js';
 import { deletePlayerPhotos } from './idb.js';
 import { drawAvatarPreview } from './customizer.js';
@@ -7,9 +8,11 @@ import { playerLocalStorage as localStorage, playerSessionStorage as sessionStor
 import { LEADERBOARD as L } from './config.js';
 
 // The global leaderboard (#198): with the shared world on (cloud.js's address) the start screen asks for a name
-// (optional — skipping it never holds up the start) and shows the top list, which is also at the bottom of the
-// statistics panel (Tab). The score (stats.js totalScore) is sent when it has changed, at most every L.every s, and
-// with sendBeacon when the tab is hidden or closed. One row per local player UUID. Without a
+// (optional — skipping it never holds up the start) and shows the top list (the start menu's "Topplista" dialog; #1585
+// took it out of the statistics panel). The score (stats.js totalScore) is sent when it has changed, at most every L.every s, and
+// with sendBeacon when the tab is hidden or closed. One row per player id (#1585: an opaque identity, today the local
+// UUID; the Worker answers with a one-way row key instead, src/rowkey.js), with the avatar's look code so each row shows
+// a small portrait (playerportraits.js portraitThumb; a neutral silhouette without one). Without a
 // name you are "Anonym" (#677: an own row with the name '', shown as "Anonym"; a name later renames the same row).
 // Everybody shows up for others (#723 removed the opt-out box; an old 'lunden.share' value is just deleted). Names are
 // only ever shown as text (escaped). Off (no address): nothing shows, nothing is sent.
@@ -21,7 +24,6 @@ const remove = (k) => { try { localStorage.removeItem(k); } catch { /* blocked *
 const cleanName = (name) => String(name ?? '').replace(/[\u0000-\u001f<>&"]/g, '').trim().slice(0, L.nameMax);
 const uid = () => crypto.randomUUID?.() ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
 const pending = () => { try { const q = JSON.parse(get(QUEUE) ?? '[]'); return Array.isArray(q) ? q : []; } catch { return []; } };
-const esc = (t) => String(t).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
 const SKIP = 'lunden.nameSkipped', OLD_SHARE = 'lunden.share'; // OLD_SHARE: the removed opt-out box (#723), cleaned away
 export const ANON_NAME = 'Anonym';
@@ -32,10 +34,11 @@ export class Leaderboard {
   /** url: the Worker ('' = off); score(): the current score; elements: dialog, badge, input, list, etc. */
   constructor(url, score, { dialog, badge, display, nameRow, input, list, ok, skip, newPlayer, lbDialog, dialogList, onNewPlayer = () => {} }) {
     Object.assign(this, { url, score, dialog, badge, display, nameRow, input, list, ok, skip, newPlayer, lbDialog, dialogList, onNewPlayer,
-      top: [], sent: null, switching: false, dialogMode: 'initial', activePlayers: null });
+      top: [], sent: null, sentLook: null, lookCode: '', myKey: '', switching: false, dialogMode: 'initial', activePlayers: null });
     this.confirmedName = cleanName(get(NAME));
     this.id = get(PID) || uid(); // anonymous players have a row too (#677)
     set(PID, this.id);
+    rowKey(this.id).then((k) => { this.myKey = k; if (this.top.length) this.show(this.top); }); // #1585: find our own row
     remove(OLD_SHARE);
     if (nameRow) nameRow.hidden = false;
     const note = document.getElementById?.('share-note'); if (note) note.hidden = !this.on; // #723: you are visible to others
@@ -75,6 +78,7 @@ export class Leaderboard {
   }
 
   renderAvatar(code = get('lunden.avatar')) {
+    this.lookCode = typeof code === 'string' ? code : ''; // #1585: sent with the score (the Worker validates it)
     drawPlayerPortrait(this.badge?.querySelector('#player-avatar'), code, this.name);
   }
 
@@ -120,8 +124,7 @@ export class Leaderboard {
 
   renderDialogList() {
     if (!this.dialogList) return;
-    const r = this.rows();
-    this.dialogList.innerHTML = r || '<li><span>Inga resultat ännu</span></li>';
+    this.fill(this.dialogList, 'Inga resultat ännu');
   }
 
   handleSkip() {
@@ -224,7 +227,7 @@ export class Leaderboard {
         const top = await r.json();
         set(QUEUE, JSON.stringify(pending().filter((p) => JSON.stringify(p) !== body)));
         if (!this.switching) {
-          if (payload.id === this.id && payload.name === this.name) this.sent = payload.score;
+          if (payload.id === this.id && payload.name === this.name) { this.sent = payload.score; this.sentLook = payload.avatar ?? ''; }
           this.show(top);
         }
       } catch { return; } // offline: retain completed players and retry after reconnect/reload
@@ -239,7 +242,8 @@ export class Leaderboard {
     } catch { /* offline: the old list stays */ }
   }
 
-  body() { return JSON.stringify({ id: this.id, name: this.name, score: this.score() }); }
+  body() { return JSON.stringify({ id: this.id, name: this.name, score: this.score(), ...(this.lookCode ? { avatar: this.lookCode } : {}) }); }
+  unchanged() { return this.score() === this.sent && this.lookCode === this.sentLook; }
 
   /** Send the score if it changed (and there is a name); the answer is the new top list. */
   async send() {
@@ -247,13 +251,13 @@ export class Leaderboard {
     const s = this.score();
     if (!this.name && !s) return this.flush(); // nothing to show for an anonymous player yet
 
-    if (s !== this.sent) this.enqueue();
+    if (!this.unchanged()) this.enqueue();
     await this.flush();
-    if (s === this.sent) this.refresh();
+    if (this.unchanged()) this.refresh();
   }
 
   beacon() {
-    if (!this.on || (!this.name && !this.score()) || this.switching || this.score() === this.sent) return;
+    if (!this.on || (!this.name && !this.score()) || this.switching || this.unchanged()) return;
     this.enqueue();
     navigator.sendBeacon?.(`${this.url}/scores`, new Blob([this.body()], { type: 'text/plain' }));
   }
@@ -261,32 +265,31 @@ export class Leaderboard {
   show(top) {
     this.top = Array.isArray(top) ? top.slice(0, L.show) : [];
     this.list.hidden = !this.top.length;
-    this.list.innerHTML = this.rows();
+    this.fill(this.list);
     this.renderDialogList();
   }
 
-  rows() {
-    const me = this.name;
-    return this.top.map((r, i) => {
+  /** Is this row ours? The public row key (#1585); a name match only for an old Worker without keys. */
+  mine(r) { return r.key ? !!this.myKey && r.key === this.myKey : !!this.name && r.name === this.name; }
+
+  /** #1585: the rows as DOM (names only ever as text), each with its avatar thumbnail. */
+  fill(el, empty = '') {
+    if (!el) return;
+    const items = this.top.map((r, i) => {
+      const li = document.createElement('li'); if (this.mine(r)) li.className = 'me';
+      const who = document.createElement('span'); who.className = 'lb-who';
       const date = Number.isFinite(r.updated) ? new Date(r.updated).toLocaleDateString('sv-SE') : '';
-      return `<li${me && r.name === me ? ' class="me"' : ''}><span>${i + 1}. ${esc(r.name || ANON_NAME)}${date ? ` <small>${date}</small>` : ''}</span><b>${Number(r.score) | 0}</b></li>`;
-    }).join('');
+      const label = document.createElement('span'); label.textContent = `${i + 1}. ${r.name || ANON_NAME}`;
+      if (date) { const small = document.createElement('small'); small.textContent = date; label.append(' ', small); }
+      who.append(portraitThumb(r.avatar), label);
+      const score = document.createElement('b'); score.textContent = String(Number(r.score) | 0);
+      li.append(who, score); return li;
+    });
+    if (!items.length && empty) { const li = document.createElement('li'), t = document.createElement('span'); t.textContent = empty; li.append(t); items.push(li); }
+    el.replaceChildren(...items);
   }
 
   getActiveNames() {
     return typeof this.activePlayers === 'function' ? this.activePlayers() : (this.activePlayers || []);
-  }
-
-  activePlayersHtml() {
-    const list = this.getActiveNames();
-    if (!list || !list.length) return '';
-    const namesText = list.map((n) => esc(n)).join(', ');
-    return `<div class="lb-presence"><h3>Aktiva spelare just nu (${list.length})</h3><p>${namesText}</p></div>`;
-  }
-
-  /** The statistics panel's part (stats.js renders it under its rows). */
-  html() {
-    if (!this.on) return '';
-    return `<div class="lb-head"><span>⭐ Din poäng</span><b>${this.score()}</b></div>${this.top.length ? `<ol class="lb">${this.rows()}</ol>` : ''}`;
   }
 }

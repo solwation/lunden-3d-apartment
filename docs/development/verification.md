@@ -15,6 +15,16 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## Top-list avatars and identity (#1585)
+
+Scoped plan: `node --test cloudflare/scores.test.mjs cloudflare/games.test.mjs` (look code stored and
+returned, invalid code ignored without refusing the score, same name from two ids = two rows, no private
+id in GET, old rows served) plus one real-app run against a fresh local Worker:
+`node tools/leaderboardavatartest.cjs SITE LOCAL_WORKER OUT`. It seeds rows (with, without and with an
+invalid look), checks the Topplista dialog rows all have thumbnails and the own row is marked by key,
+draws the Klossar board through the real GameBoards/arcade view, and checks the Tab statistics panel has
+rows but no top list. Result images: `docs/verification/1585/`.
+
 ## Computer games and top lists (#1577)
 
 Scoped plan: game rules in `node --test tools/arcadegamestest.mjs` (bag, line clears, levels/gravity,

@@ -3,8 +3,8 @@ import { beerShelfFetch } from './beershelf.js';
 import { youtubeSearchFetch, cinemaPostersFetch } from './youtubesearch.js';
 import { layoutFetch } from './layout.js';
 import { crashFetch } from './crash.js';
-import { gamesFetch } from './games.js';
-import { PlayerRoom, refuse, CLOSE, cleanAvatar, cleanAvatarExt } from './players.js';
+import { gamesFetch, cleanLook, publicRows } from './games.js';
+import { PlayerRoom, refuse, CLOSE } from './players.js';
 export { PlayerRoom };
 // Kv. Lunden L1007 — the shared world (#178, #119): a small Cloudflare Worker with one KV namespace (binding
 // LUNDEN). It keeps the drawings taped up in the flat, and the sheet on the Sovrum 3 desk,
@@ -18,12 +18,14 @@ export { PlayerRoom };
 //   DELETE /drawings/:id
 //   GET    /paper                 → { image, updated } (or 404)
 //   PUT    /paper                 ← { image: data URL, updated }
-//   GET    /scores                → [{ name, score }] the top SCORE_TOP (#198)
-//   POST   /scores                ← { id, name, score } — one row per browser (id); a score can't grow faster than
+//   GET    /scores                → [{ key, name, score, updated, avatar? }] the top SCORE_TOP (#198; #1585: key = rowKey(id), a
+//                                  one-way public row key — the private id is never returned; avatar = the row's look code)
+//   POST   /scores                ← { id, name, score, avatar? } — one row per player id (an opaque identity, today the browser's
+//                                  local UUID; an invalid avatar is ignored and keeps the row's old look); a score can't grow faster than
 //                                  SCORE_RATE per minute since that row's last post (SCORE_START for a new row). name '' = "Anonym" (#677;
 //                                  an anonymous post never strips the name of an existing row; equal points: named first)
-//   GET    /games/:game           → [{ name, score, updated }] the top 10 of ormstriden | klossar | meteoriter (#1577, games.js)
-//   POST   /games/:game           ← { id, name, score, ms, lines | wave } klossar / meteoriter only: one best row per id and
+//   GET    /games/:game           → [{ key, name, score, updated, avatar? }] the top 10 of ormstriden | klossar | meteoriter (#1577, games.js)
+//   POST   /games/:game           ← { id, name, score, ms, lines | wave, avatar? } klossar / meteoriter only: one best row per id and
 //                                  game, bounded by what the rules allow in ms (Ormstriden rows come from the players' room)
 //   PUT    /presence/:id          ← { name, score } (name '' = anonymous) → { count, names, players, anon }; GET /presence the same without joining
 //   GET    /cinema/posters        → { day, items: [{ id, title, channel }], stale } the BIO's daily YouTube film posters (#1575, youtubesearch.js)
@@ -34,16 +36,11 @@ export { PlayerRoom };
 //                                  — the emergency brake; ADMIN_TOKEN is a Worker secret (cloudflare/setup.sh sets one)
 //
 // KV keys: 'drawings' (the metadata list), 'drawing:<id>' (image bytes, metadata { type }), 'paper' (JSON),
-// 'scores' (all rows { id, name, score, updated }, the best MAX_SCORES), 'game:<game>' (#1577: the same rows per computer game), 'presence:<id>' (short-lived visitors), 'cinema-posters' (#1575: the last good poster day).
+// 'scores' (all rows { id, name, score, updated, avatar? }, the best MAX_SCORES), 'game:<game>' (#1577: the same rows per computer game), 'presence:<id>' (short-lived visitors), 'cinema-posters' (#1575: the last good poster day).
 // Cat photos are personal and stay in each visitor's browser (#211).
 
-// Same compact appearance validation as the existing multiplayer protocol.
-const presenceAvatar = code => {
-  if (typeof code !== 'string' || code.length > 72) return null;
-  const match = /^([0-9]+)(.*)$/.exec(code);
-  if (!match || !cleanAvatar(match[1]) || (match[2] && !cleanAvatarExt(match[2]))) return null;
-  return code;
-};
+// Same compact appearance validation as the existing multiplayer protocol (games.js cleanLook, #1585).
+const presenceAvatar = cleanLook;
 
 const ORIGINS = [/^https:\/\/solwation\.github\.io$/, /^http:\/\/localhost(:\d+)?$/, /^http:\/\/127\.0\.0\.1(:\d+)?$/];
 const MAX_IMAGE = 300 * 1024;  // bytes per image
@@ -260,8 +257,8 @@ const worker = {
 
     if (what === 'scores' && !id) {
       const byScore = (a, b) => b.score - a.score || (b.name ? 1 : 0) - (a.name ? 1 : 0); // equal points: the named first (#677)
-      const top = (l) => l.sort(byScore).slice(0, SCORE_TOP).map(({ name, score, updated }) => ({ name, score, updated }));
-      if (m === 'GET') return json(top(await getList(env, 'scores')), 200, h);
+      const top = (l) => publicRows(l.sort(byScore).slice(0, SCORE_TOP)); // #1585: { key, name, score, updated, avatar? }, never the id
+      if (m === 'GET') return json(await top(await getList(env, 'scores')), 200, h);
       if (m === 'POST') {
         const name = typeof body.name === 'string' ? body.name.replace(/[\u0000-\u001f<>&"]/g, '').trim().slice(0, 20) : '';
         if (!ID.test(body.id ?? '') || !Number.isInteger(body.score) || body.score < 0 || body.score > 1e7) return fail(400, 'bad score', h);
@@ -269,10 +266,11 @@ const worker = {
         const now = Date.now(), old = list.find((r) => r.id === body.id);
         const cap = old ? old.score + SCORE_RATE * ((now - old.updated) / 60000 + 1) : SCORE_START;
         const score = Math.max(Math.min(body.score, Math.floor(cap)), old?.score ?? 0); // not faster than anyone can play
-        list = [...list.filter((r) => r.id !== body.id), { id: body.id, name: name || old?.name || '', score, updated: now }]; // #677: an anonymous post never strips a name
+        const avatar = cleanLook(body.avatar) || old?.avatar || ''; // #1585: a missing/invalid look is ignored, never refuses the score
+        list = [...list.filter((r) => r.id !== body.id), { id: body.id, name: name || old?.name || '', score, updated: now, ...(avatar ? { avatar } : {}) }]; // #677: an anonymous post never strips a name
         list.sort(byScore);
         await env.LUNDEN.put('scores', JSON.stringify(list.slice(0, MAX_SCORES)));
-        return json(top(list), 200, h);
+        return json(await top(list), 200, h);
       }
     }
 

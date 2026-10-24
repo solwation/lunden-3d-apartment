@@ -42,15 +42,33 @@ test('Ormstriden rows come from the server arena when a snake ends, keyed by the
   const env={LUNDEN:kv()};env.PLAYERS=fakeNamespace(PlayerRoom,env);const settle=async()=>{for(let i=0;i<3;i++){await new Promise(r=>setTimeout(r,0));await env.PLAYERS.ctx('world').idle();}};
   const r=await worker.fetch(new Request('https://w/players?n=Anna',{headers:{Upgrade:'websocket',Origin:'https://solwation.github.io'}}),env),ws=r.webSocket,m=[];ws.addEventListener('message',e=>{if(e.data!=='q')m.push(JSON.parse(e.data));});
   const send=async x=>{now+=510;ws.send(JSON.stringify(x));await settle();};await settle();
-  const st=COMPUTER_MEDIA.stations.find(s=>s.id==='pc-home');await send({p:[st.x,LEVELS[st.level].floor,st.z],r:0});
+  const st=COMPUTER_MEDIA.stations.find(s=>s.id==='pc-home');await send({p:[st.x,LEVELS[st.level].floor,st.z],r:0,av:'3102200',ax:'e2'});
   const q=()=>m.filter(x=>x.t==='cinema'&&x.screen==='pc-home'&&x.k==='state').at(-1).s.q;
   await send({t:'cinema',screen:'pc-home',k:'power',on:true,q:q()});await send({t:'cinema',screen:'pc-home',k:'claim',q:q()});await send({t:'cinema',screen:'pc-home',k:'app',app:'snake',q:q()});
   await send({t:'snake',k:'join',screen:'pc-home',pid:'player-anna-1'});
   const room=env.PLAYERS.object('world'),snake=room.snake.arena.snakes.values().next().value;
   assert(!m.some(x=>x.t==='snake'&&JSON.stringify(x).includes('player-anna-1')),'the UUID never leaves the room');
   snake.score=17;room.snake.arena.kill(snake,'väggen');await room.gameWrites;
-  const top=await (await call(env,'/games/ormstriden')).json();assert.deepEqual(top.map(r=>[r.name,r.score]),[['Anna',17]]);
+  const res=await call(env,'/games/ormstriden'),text=await res.clone().text(),top=await res.json();assert.deepEqual(top.map(r=>[r.name,r.score,r.avatar]),[['Anna',17,'3102200e2']]);
+  assert(!text.includes('player-anna-1')&&/^[0-9a-f]{16}$/.test(top[0].key),'#1585: a public row key and the look, never the UUID');
   // a client cannot post an Ormstriden score, and an invalid pid simply records nothing
   await send({t:'cinema',screen:'pc-home',k:'app',app:'blocks',q:q()});assert.equal(m.filter(x=>x.t==='cinema'&&x.k==='state').at(-1).s.app,'blocks');
  }finally{Date.now=real;}
+});
+
+test('#1585: game rows keep the look code; invalid codes are ignored; same name from two ids is two rows; no ids in GET',async()=>{
+ const env={LUNDEN:kv()};
+ assert.equal((await post(env,'meteoriter',{id:'player-look-1',name:'Sam',score:300,ms:60000,avatar:'3102200'})).status,200);
+ assert.equal((await post(env,'meteoriter',{id:'player-look-2',name:'Sam',score:200,ms:60000,avatar:'<svg>'})).status,200);
+ let res=await call(env,'/games/meteoriter'),text=await res.clone().text(),top=await res.json();
+ assert.deepEqual(top.map(r=>[r.name,r.score,r.avatar]),[['Sam',300,'3102200'],['Sam',200,undefined]]);
+ assert(top[0].key&&top[0].key!==top[1].key&&!text.includes('player-look')&&!top.some(r=>'id' in r));
+ // a worse round with a new look updates the look only; an older client without a look keeps it
+ top=await (await post(env,'meteoriter',{id:'player-look-2',name:'Sam',score:100,ms:60000,avatar:'3102200e5'})).json();
+ assert.deepEqual(top.map(r=>[r.score,r.avatar]),[[300,'3102200'],[200,'3102200e5']]);
+ top=await (await post(env,'meteoriter',{id:'player-look-2',name:'Sam',score:250,ms:60000})).json();
+ assert.deepEqual(top.map(r=>[r.score,r.avatar]),[[300,'3102200'],[250,'3102200e5']]);
+ // old stored rows (no look, no key) are still served
+ await env.LUNDEN.put('game:klossar',JSON.stringify([{id:'player-old-1',name:'Gammal',score:50,updated:1}]));
+ assert.deepEqual((await (await call(env,'/games/klossar')).json()).map(r=>[r.name,r.score,r.avatar]),[['Gammal',50,undefined]]);
 });

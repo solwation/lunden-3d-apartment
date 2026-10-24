@@ -83,3 +83,45 @@ test('presence same-name aggregation keeps the best-score players own portrait',
   const data = await (await call(env, '/presence/portrait-b', 'PUT', { name:'Olof', score:20, avatar:'053124101h2q1' })).json();
   assert.deepEqual(data.players,[{name:'Olof',score:20,avatar:'053124101h2q1'}]);
 });
+
+// #1585: avatar thumbnails and public row keys.
+const LOOK = '210331011175e2h1', LOOK2 = '3102200';
+test('the look code is stored with the row and returned; an invalid one is ignored, never refuses the score', async () => {
+  const env = { LUNDEN: kv() };
+  let top = await (await post(env, { id: 'look-aaaaaa', name: 'Ada', score: 10, avatar: LOOK })).json();
+  assert.equal(top[0].avatar, LOOK);
+  const bad = await post(env, { id: 'look-bbbbbb', name: 'Bea', score: 5, avatar: '99<img>' });
+  assert.equal(bad.status, 200);
+  top = await (await call(env, '/scores', 'GET')).json();
+  assert.deepEqual(top.map((r) => [r.name, r.avatar]), [['Ada', LOOK], ['Bea', undefined]]);
+  for (const avatar of ['x', '1'.repeat(80), '2104310111z', 42]) assert.equal((await post(env, { id: 'look-cccccc', name: '', score: 1, avatar })).status, 200);
+  assert.equal((await (await call(env, '/scores', 'GET')).json()).find((r) => r.score === 1).avatar, undefined);
+  // an older client (no avatar) keeps the row's earlier look; a new valid code replaces it
+  top = await (await post(env, { id: 'look-aaaaaa', name: 'Ada', score: 12 })).json();
+  assert.equal(top.find((r) => r.name === 'Ada').avatar, LOOK);
+  top = await (await post(env, { id: 'look-aaaaaa', name: 'Ada', score: 13, avatar: LOOK2 })).json();
+  assert.equal(top.find((r) => r.name === 'Ada').avatar, LOOK2);
+});
+
+test('the same name from two ids is two rows with their own keys and looks; GET never returns a private id', async () => {
+  const env = { LUNDEN: kv() };
+  await post(env, { id: 'device-one-1', name: 'Sam', score: 30, avatar: LOOK });
+  await post(env, { id: 'device-two-2', name: 'Sam', score: 20, avatar: LOOK2 });
+  const res = await call(env, '/scores', 'GET'), text = await res.clone().text(), top = await res.json();
+  assert.deepEqual(top.map((r) => [r.name, r.score, r.avatar]), [['Sam', 30, LOOK], ['Sam', 20, LOOK2]]);
+  assert.ok(top.every((r) => /^[0-9a-f]{16}$/.test(r.key)) && top[0].key !== top[1].key);
+  assert.ok(!text.includes('device-one-1') && !text.includes('device-two-2') && !top.some((r) => 'id' in r));
+  const { rowKey } = await import('../src/rowkey.js');
+  assert.equal(top[0].key, await rowKey('device-one-1')); // the client can find its own row
+  // admin removal by id works as before
+  const admin = { ...env, ADMIN_TOKEN: 't' };
+  await worker.fetch(new Request('https://w.test/admin/scores?id=device-one-1', { method: 'DELETE', headers: { Authorization: 'Bearer t' } }), admin);
+  assert.deepEqual((await (await call(env, '/scores', 'GET')).json()).map((r) => r.score), [20]);
+});
+
+test('old stored rows without a look are still served', async () => {
+  const env = { LUNDEN: kv() };
+  await env.LUNDEN.put('scores', JSON.stringify([{ id: 'legacy-aaaaaa', name: 'Gammal', score: 99, updated: 1 }]));
+  const top = await (await call(env, '/scores', 'GET')).json();
+  assert.deepEqual(top.map((r) => [r.name, r.score, r.avatar, typeof r.key]), [['Gammal', 99, undefined, 'string']]);
+});
