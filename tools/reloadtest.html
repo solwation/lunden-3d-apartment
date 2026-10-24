@@ -170,7 +170,13 @@ const KEY = 'lunden.resume', SESSION = 'lunden.session', HOME = 'lunden.playerWo
     pass &= check(rest.active && car.state === 'arriving' && !!stood, `before: sitting ${rest.active}, the car arriving (${d0.toFixed(1)} m along)`);
     const world0 = app.keepWorld();
     const size = JSON.stringify(world0).length;
-    pass &= check(world0 && world0.v === 1 && size < 6000, `the world record: v ${world0?.v}, ${size} bytes`);
+    // The ceiling is only a sanity bound against runaway growth (#1587), not a product limit: the record lives in
+    // sessionStorage/localStorage (src/resume.js; ~5 MB per origin, no app-side cap), and the cloud copies are far larger
+    // (Worker crash cap 16 kB is a separate path). The old 6000 was an arbitrary first guess (b361f59); the record was
+    // 6.4 kB on 2026-10-24 and grows with each new persisted feature, so 12000 leaves ~2x headroom (~0.2% of the quota).
+    const WORLD_MAX = 12000;
+    const big = Object.entries(world0 || {}).map(([k, v]) => [k, JSON.stringify(v)?.length ?? 0]).sort((a, b) => b[1] - a[1]).slice(0, 4).map((e) => e.join(':')).join(' ');
+    pass &= check(world0 && world0.v === 1 && size < WORLD_MAX, `the world record: v ${world0?.v}, ${size} bytes (< ${WORLD_MAX}; largest ${big})`);
     sessionStorage.setItem(KEY, JSON.stringify({ x: player.pos.x, z: player.pos.z, feetY: player.pos.y, yaw: camera.rotation.y, pitch: camera.rotation.x, mode: 'touch', build: null, world: world0, ts: Date.now() }));
     f.remove();
     f = await load();
