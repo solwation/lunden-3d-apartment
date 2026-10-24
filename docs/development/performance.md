@@ -733,6 +733,24 @@ not proof of an iPhone crash fix: the aggregate estimate remains above the guess
 and landscape draw calls independently exceed the existing budget (#1361).
 See [commands, results and limits](../validation/issue-1359/README.md).
 
+## Phone mirrors reuse the screen programs (#1561)
+
+iPhone 14 Pro crash reports (builds 52a03e4–8c5556e) lost the WebGL context 15–21 s after start, nearly always in
+the warm-up's `compiling …/~4900 mirror` stage with 300–420 programs. A render target makes three choose a second
+program per material (no tone mapping, linear output), so the mirror stage roughly doubled the program count. On
+`lowMemory` devices `src/reflections.js` (`SCREEN_OUTPUT_MIRROR`) marks the shared mirror target `isXRRenderTarget`
+with an sRGB, plain `RGBA8` texture (resolve texture and MSAA buffer must match, or the blit fails and the mirror is
+black): three r170 then uses the screen's tone mapping and output encoding for it, i.e. the same programs. The
+reflector decodes the image (`sRGBTransferEOTF`) and skips its own tone mapping. The target is 8-bit instead of
+half-float (half the memory). The image differs slightly from desktop: tone mapping happens before the glass tint.
+Desktop is unchanged (no flag, half-float target, 58 new programs at the first hall-mirror frame as before).
+
+Headless Chromium/SwiftShader, iPhone UA + `&lowmem&warm`, 852×393: programs after the warm-up 416 → 220, the
+mirror compile stage 3.5 → 0.8 s and 0 new programs; with `?shot` (no warm-up) the first hall-mirror frame compiles
+45 → 0 programs. Hall-mirror pixels: desktop identical (max channel difference 11, 23 px), phone mirror within
+tone-mapping/8-bit differences. Not measured on a device; physical acceptance is the user's iPhone 14 Pro. Evidence
+images: `docs/verification/1561/`.
+
 ## Conservative phone occlusion (#1361, partial delivery)
 
 `detail.js` calls the pure `occlusion.js` helper for boxes beyond the existing 3.2 m near distance on

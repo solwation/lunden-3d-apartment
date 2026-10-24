@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { Reflector } from 'three/addons/objects/Reflector.js';
+import { lowMemory } from './lowmemory.js';
 
 // Mirror images (#50): every mirror gets a planar reflector over its glass, but only ONE is ever
 // active — the nearest mirror the visitor is looking at, within MAX_DIST, on the visitor's level —
@@ -10,12 +11,26 @@ import { Reflector } from 'three/addons/objects/Reflector.js';
 // when another took over — a new GPU texture + framebuffers every time the active mirror changed. The shared one is
 // allocated once (and warmed by main.js's warm-up, `mirrorTarget()`), so turning between mirrors uploads nothing.
 
+// #1561 (phones): a render target makes three pick a second program for every material it draws (no tone mapping,
+// linear output), ~200 more programs in the warm-up's mirror stage (headless phone profile: 220 → 416), and the
+// iPhone 14 Pro lost its WebGL context in the middle of that stage (crash reports: `compiling …/~4900 mirror`, 300–420
+// programs). On `lowMemory` devices the target instead claims three's screen-output path (`isXRRenderTarget` + an sRGB
+// texture: the same tone mapping and output encoding as the canvas, three r170 `getProgramParameters` / `setProgram`),
+// so the mirror pass reuses the screen's programs; it is 8-bit (tone-mapped sRGB fits; half the memory), and the
+// reflector decodes it back to linear and skips its own tone mapping (`SCREEN_OUTPUT_MIRROR`). Desktop is unchanged.
+// The image differs slightly: tone mapping happens before the glass tint instead of after it (*not measured on a device*).
+const SCREEN_OUTPUT_MIRROR = lowMemory;
 const MAX_DIST = 4;
 const RES = 512;
 const mirrors = [];
 let shared = null;
 /** The one render target every mirror reflects into. */
 export function mirrorTarget() {
+  if (!shared && SCREEN_OUTPUT_MIRROR) {
+    shared = new THREE.WebGLRenderTarget(RES, RES, { samples: 4, type: THREE.UnsignedByteType, colorSpace: THREE.SRGBColorSpace });
+    shared.isXRRenderTarget = true; // (three: screen tone mapping / output colour space for this target, and plain RGBA8 storage…)
+    shared.texture.internalFormat = 'RGBA8'; // (…for its resolve texture too: an sRGB8 one does not match the RGBA8 MSAA buffer, the blit fails → black)
+  }
   shared ??= new THREE.WebGLRenderTarget(RES, RES, { samples: 4, type: THREE.HalfFloatType });
   return shared;
 }
@@ -46,6 +61,11 @@ class SharedReflector extends Reflector {
 /** Put a reflector over a mirror. `geometry` lies in the parent's local frame facing +z. */
 export function addReflector(parent, geometry, { level = 0, offset = 0.0015, color = 0xc6ccd0, name = '', dim = 1 } = {}) {
   const r = new SharedReflector(geometry, { color, clipBias: 0.003 });
+  if (SCREEN_OUTPUT_MIRROR) { // #1561: the image is already tone-mapped and sRGB-encoded: decode it, tint, encode once
+    const m = r.material;
+    m.toneMapped = false;
+    m.fragmentShader = m.fragmentShader.replace('vec4 base = texture2DProj( tDiffuse, vUv );', 'vec4 base = sRGBTransferEOTF( texture2DProj( tDiffuse, vUv ) );');
+  }
   if (dim !== 1) { // a lit mirror's image (#339): scaled down after the overlay tint (the overlay cannot dim highlights)
     const m = r.material;
     m.uniforms.dim = { value: dim };
