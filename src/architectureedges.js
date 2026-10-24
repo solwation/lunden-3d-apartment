@@ -25,7 +25,7 @@ function solidTree(geometry) {
 // `creases` holds all creases of the anchor: an edge is also split where another
 // block's crease meets or crosses it (#603), since a merged batch's bounds say
 // nothing about the blocks inside it (the worktop round the sink).
-function unionEdges(values, solids, creases) {
+function unionEdges(values, colors, solids, creases) {
   const sample = new THREE.Vector3(), local = new THREE.Vector3();
   const ray = new THREE.Ray(), directionProbe = new THREE.Vector3(.371, .529, .763).normalize(), intersection = new THREE.Vector3();
   const trees = new WeakMap();
@@ -64,6 +64,7 @@ function unionEdges(values, solids, creases) {
     probe(s.tree); return winding > 0;
   });
   const result = [], a = new THREE.Vector3(), b = new THREE.Vector3(), direction = new THREE.Vector3();
+  result.colors = [];
   const u = new THREE.Vector3(), v = new THREE.Vector3(), bounds = new THREE.Box3();
   for (let i = 0; i < values.length; i += 6) {
     a.fromArray(values, i); b.fromArray(values, i + 3); direction.subVectors(b, a);
@@ -93,7 +94,10 @@ function unionEdges(values, solids, creases) {
       if (sharp && start === null) start = cuts[j];
       if (start !== null && (!sharp || j === cuts.length - 2)) {
         const end = sharp ? cuts[j + 1] : cuts[j];
-        if ((end - start) * length >= .06) result.push(...a.clone().lerp(b, start).toArray(), ...a.clone().lerp(b, end).toArray());
+        if ((end - start) * length >= .06) {
+          result.push(...a.clone().lerp(b, start).toArray(), ...a.clone().lerp(b, end).toArray());
+          result.colors.push(...colors.slice(i / 6 * 6, i / 6 * 6 + 3));
+        }
         start = null;
       }
     }
@@ -174,12 +178,54 @@ function creaseIndex() {
   };
 }
 
+// If a source mesh has material groups, carry the colors of their actual face
+// edges into the line batch. This is construction-time work and adds no draws.
+function edgeSurfaceColors(geometry, edges, materials, darken) {
+  if (materials.length < 2 || !geometry.groups?.length) return null;
+  const average = new THREE.Color();
+  for (const material of materials) average.add(material.color ?? new THREE.Color(0xffffff));
+  average.multiplyScalar(darken / materials.length);
+
+  const positions = geometry.attributes.position, index = geometry.index, vertexColors = geometry.attributes.color;
+  const keyPoint = (x, y, z) => [x, y, z].map(n => Math.round(n * 100000)).join(',');
+  const keyVertex = i => keyPoint(positions.getX(i), positions.getY(i), positions.getZ(i));
+  const edgeKey = (a, b) => a < b ? `${a}|${b}` : `${b}|${a}`;
+  const sums = new Map();
+  for (const group of geometry.groups) {
+    const material = materials[group.materialIndex] ?? materials[0];
+    const base = material.color ?? new THREE.Color(0xffffff), end = Math.min(group.start + group.count, index?.count ?? positions.count);
+    for (let i = group.start; i + 2 < end; i += 3) {
+      const ids = [0, 1, 2].map(k => index ? index.getX(i + k) : i + k);
+      for (const [ia, ib] of [[ids[0], ids[1]], [ids[1], ids[2]], [ids[2], ids[0]]]) {
+        const color = base.clone();
+        if (vertexColors) {
+          const a = new THREE.Color(vertexColors.getX(ia), vertexColors.getY(ia), vertexColors.getZ(ia));
+          const b = new THREE.Color(vertexColors.getX(ib), vertexColors.getY(ib), vertexColors.getZ(ib));
+          color.multiply(a.add(b).multiplyScalar(.5));
+        }
+        const key = edgeKey(keyVertex(ia), keyVertex(ib));
+        let sum = sums.get(key); if (!sum) sums.set(key, sum = [0, 0, 0, 0]);
+        sum[0] += color.r; sum[1] += color.g; sum[2] += color.b; sum[3]++;
+      }
+    }
+  }
+  const p = edges.attributes.position, result = [];
+  for (let i = 0; i < p.count; i += 2) {
+    const key = edgeKey(keyPoint(p.getX(i), p.getY(i), p.getZ(i)), keyPoint(p.getX(i + 1), p.getY(i + 1), p.getZ(i + 1)));
+    const sum = sums.get(key);
+    result.push(...(sum ? sum.slice(0, 3).map(c => c / sum[3] * darken) : [average.r, average.g, average.b]));
+  }
+  return result;
+}
+
 // #474: only call on a construction-only scene, before furniture/decoration is added.
 // Bake sharp edges once, in the nearest animated fitting's frame (or a floor batch).
-export function architectureEdges(root, { moving = [], exclude = [], floor = 3, opacity = 0.3 } = {}) {
+// The 0.62 linear-light surface darkening is a visual guess (#1579).
+export function architectureEdges(root, { moving = [], exclude = [], floor = 3, opacity = 0.3, surfaceDarken = 0.62 } = {}) {
+  surfaceDarken = THREE.MathUtils.clamp(surfaceDarken, 0, 1);
   const anchors = new Set(moving.filter(Boolean)), skipped = new Set(exclude.filter(Boolean));
   const batches = new Map(), solids = new Map(), creases = new Map(), cache = new WeakMap(), point = new THREE.Vector3();
-  const material = new THREE.LineBasicMaterial({ color: 0x394047, transparent: true, opacity, depthTest: true, depthWrite: false });
+  const material = new THREE.LineBasicMaterial({ color: 0xffffff, vertexColors: true, transparent: true, opacity, depthTest: true, depthWrite: false });
   // Move the depth toward the eye, not the geometry: stable on coplanar faces, with ordinary depth testing still hiding
   // edges behind walls and furniture. 1 mm plus 0.4 % of the distance (#1247): a flat 1 mm broke a corner line seen
   // obliquely from 4-5 m into dots, since a wall's depth changes by more than that across one pixel there.
@@ -201,18 +247,26 @@ export function architectureEdges(root, { moving = [], exclude = [], floor = 3, 
           let bodies = solids.get(anchor); if (!bodies) solids.set(anchor, bodies = []);
           let index = creases.get(anchor); if (!index) creases.set(anchor, index = creaseIndex());
           const pos = edges.getAttribute('position');
+          const edgeColors = edgeSurfaceColors(geometry, edges, mats, surfaceDarken);
           geometry.computeBoundingBox();
           bodies.push({ geometry, transform });
           geometry.boundingBox.getCenter(point).applyMatrix4(o.matrixWorld);
           const cell = anchor === root ? (point.y < floor ? 'lower' : 'upper') : 'moving';
           let byCell = batches.get(anchor); if (!byCell) batches.set(anchor, byCell = new Map());
-          let values = byCell.get(cell); if (!values) byCell.set(cell, values = []);
+          let values = byCell.get(cell); if (!values) byCell.set(cell, values = { positions: [], colors: [] });
+          const surfaceColor = new THREE.Color();
+          for (const mat of mats) surfaceColor.add(mat.color ?? new THREE.Color(0xffffff));
+          surfaceColor.multiplyScalar(surfaceDarken / mats.length);
           const a = new THREE.Vector3(), b = new THREE.Vector3();
           for (let i = 0; i < pos.count; i += 2) {
             a.fromBufferAttribute(pos, i).applyMatrix4(transform); b.fromBufferAttribute(pos, i + 1).applyMatrix4(transform);
             index.add(a, b); // short ones too: they still mark block boundaries
             if (a.distanceToSquared(b) < 0.06 ** 2) continue; // no tiny handle/tessellation detail
-            values.push(a.x, a.y, a.z, b.x, b.y, b.z);
+            values.positions.push(a.x, a.y, a.z, b.x, b.y, b.z);
+            if (edgeColors) {
+              const ci = i / 2 * 3;
+              values.colors.push(edgeColors[ci], edgeColors[ci + 1], edgeColors[ci + 2], edgeColors[ci], edgeColors[ci + 1], edgeColors[ci + 2]);
+            } else values.colors.push(surfaceColor.r, surfaceColor.g, surfaceColor.b, surfaceColor.r, surfaceColor.g, surfaceColor.b);
           }
         }
       }
@@ -222,15 +276,16 @@ export function architectureEdges(root, { moving = [], exclude = [], floor = 3, 
   visit(root);
   const lines = [];
   for (const [anchor, cells] of batches) for (const raw of cells.values()) {
-    const values = unionEdges(raw, solids.get(anchor), creases.get(anchor));
+    const values = unionEdges(raw.positions, raw.colors, solids.get(anchor), creases.get(anchor));
     if (!values.length) continue;
     // Coincident box edges need only one segment (avoid darker seams/overdraw).
-    const seen = new Set(), unique = [], key = (v, i) => v.slice(i, i + 3).map(x => Math.round(x * 10000)).join(',');
+    const seen = new Set(), unique = [], uniqueColors = [], key = (v, i) => v.slice(i, i + 3).map(x => Math.round(x * 10000)).join(',');
     for (let i = 0; i < values.length; i += 6) {
       const a = key(values, i), b = key(values, i + 3), k = a < b ? `${a}|${b}` : `${b}|${a}`;
-      if (!seen.has(k)) { seen.add(k); unique.push(...values.slice(i, i + 6)); }
+      if (!seen.has(k)) { seen.add(k); unique.push(...values.slice(i, i + 6)); uniqueColors.push(...values.colors.slice(i / 2, i / 2 + 3), ...values.colors.slice(i / 2, i / 2 + 3)); }
     }
-    const geometry = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(unique, 3));
+    const geometry = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(unique, 3))
+      .setAttribute('color', new THREE.Uint8BufferAttribute(uniqueColors.map(c => Math.round(c * 255)), 3, true));
     geometry.computeBoundingSphere();
     const line = new THREE.LineSegments(geometry, material);
     line.name = 'architecture-edges'; line.userData.architectureEdges = true;
