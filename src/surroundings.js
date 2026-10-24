@@ -1733,7 +1733,9 @@ export function buildWindowLights(detailed=[]) {
   }
   const spill = spillGeos.length ? new THREE.Mesh(mergeGeometries(spillGeos), fadeGlowWithFog(glowMaterial(W.color))) : null;
   if (spill) {
-    spill.geometry.setAttribute('color', new THREE.Float32BufferAttribute(new Float32Array(spillVerts * 3), 3));
+    // DynamicDraw: update() rewrites the colours whenever the clock moves, so the phone profile must not free them after
+    // upload (lowmemory.js freeGeometryAfterUpload skips dynamic geometry); a freed array threw in render → blue screen (#1560)
+    spill.geometry.setAttribute('color', new THREE.Float32BufferAttribute(new Float32Array(spillVerts * 3), 3).setUsage(THREE.DynamicDrawUsage));
     spill.material.vertexColors = true; spill.material.opacity = W.peak; spill.material.side = THREE.FrontSide; // seen from above only: one pass
     Object.assign(spill, { name: 'windowSpillPools', visible: false, renderOrder: 2 });
   }
