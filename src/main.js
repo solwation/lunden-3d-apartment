@@ -2516,6 +2516,7 @@ function renderRearrangeHUD() {
   document.getElementById('rearrange-menu').disabled=rearrange.saving;
   const materialConfirm=document.getElementById('rearrange-material-confirm');materialConfirm.hidden=!m;materialConfirm.disabled=rearrange.saving;
   const variant=document.getElementById('rearrange-variant');variant.hidden=!v;variant.disabled=rearrange.saving;if(v)variant.textContent=v.label(); // #1569: straight ↔ corner desk
+  document.getElementById('rearrange-variant-hint').hidden=!v; // #1582: the V key in the keyboard hint
 }
 function editUI() {
   renderRearrangeHUD(); editToggle.hidden = !rearrange.unlocked || !!resetFurnitureRequest;
@@ -2771,6 +2772,9 @@ document.addEventListener('keydown', (e) => {
   const enterKey = (e.code === 'Enter' || e.code === 'NumpadEnter' || e.key === 'Enter') && !e.isComposing && !rearrange.enabled
     && !e.target?.closest?.('input, textarea, select, [contenteditable=""], [contenteditable="true"]') && (locked || !e.target?.closest?.('button, a[href], summary'));
   if ((e.code === 'Backquote'||e.key === '§'||enterKey) && active() && !reading && !drawing.active && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); e.stopImmediatePropagation(); showTerminal(true); return; }
+  if (e.code === 'KeyV' && rearrange.enabled && !reading && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey && (rearrange.selected?.piece ?? rearrange.target?.piece)?.object.userData.variant) { // #1582: same as the shape button
+    e.preventDefault(); e.stopImmediatePropagation(); toggleVariant(rearrange.selected?.piece ?? rearrange.target?.piece); return;
+  }
   if (rearrange.enabled && !reading && ['KeyR', 'KeyX', 'KeyF', 'Home', 'PageUp', 'PageDown'].includes(e.code)) {
     e.preventDefault(); e.stopImmediatePropagation();
     if (e.code === 'PageUp' || e.code === 'PageDown') rearrange.raise(e.code === 'PageUp' ? 1 : -1); // a pendant's height (#1106)

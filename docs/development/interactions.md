@@ -403,6 +403,8 @@ src/rearrange.js       furniture cheat (#465): § / Enter (#596; not from a focu
                        is selected (touch). `toggleVariant` cancels a preview, refuses a shape whose footprint would cross a wall where
                        the piece stands, and writes the choice as one revision-checked `materials` patch (surface `variant`); both
                        resets put the default shape back in the same write. tools/tillydeskvarianttest.cjs.
+                       #1582: V toggles the selected/aimed piece's shape via `toggleVariant` (main.js keydown, only when the piece has a variant); each
+                       `#rearrange-help` button has `data-key` shown as a CSS `::after` label, hidden under `body.touch`; V is added to the keyboard hint.
                        #1568: Tilly's basketball holder (`ball.holder`, src/basket.js `basketHolderFrame`) is a wall piece (`picture: true`, id
                        `f-basketholder-1-0.2-0-0`, pushed to `world.furniture.movable` in src/main.js before `new Rearrange`, type `basketholder`) placed
                        like a poster: origin on the wall, local +z out. The ball's home is local to the holder (`homeParent`/`local`, `Basketball.goHome`

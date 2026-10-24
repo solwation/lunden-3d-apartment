@@ -32,7 +32,8 @@ const [game,worker,out]=process.argv.slice(2),log=(s,v)=>console.log('PASS',s,v!
   a.camera.position.set(at[0],f+1.62,at[1]);a.camera.lookAt(to[0],f+to[1],to[2]);a.camera.updateMatrixWorld(true);a.step(0);
   a.camera.position.set(at[0],f+1.62,at[1]);a.camera.lookAt(to[0],f+to[1],to[2]);a.camera.updateMatrixWorld(true);},[at,to]);
  const VIEWS={nv:[[.62,8.55],[2.05,.45,9.75]],sv:[[1.3,11.05],[2.15,.45,9.45]]}; // from the wardrobe corner / from the daybed's foot
- const shot=async(p,name)=>{await p.evaluate(()=>{__app.testMode.setFull(true);});
+ const shot=async(p,name)=>{if(process.env.NO_SCENE_SHOTS)return; // local software-GL runs may skip the slow scene views
+  await p.evaluate(()=>{__app.testMode.setFull(true);});
   for(const [view,[at,to]] of Object.entries(VIEWS)){await look(p,at,to);
    await p.evaluate(()=>{document.getElementById('rearrange-help').hidden=true;__app.testMode.draw();});
    await p.screenshot({path:`${out}/${name}-${view}.png`,timeout:240000});}
@@ -62,7 +63,27 @@ const [game,worker,out]=process.argv.slice(2),log=(s,v)=>console.log('PASS',s,v!
   assert(corner.calls<=straight.calls,JSON.stringify({straight,corner}));
   log('menu button switches to the corner desk: saved, footprint and collision follow; draw calls corner ≤ straight',{straight:[straight.calls,Math.round(straight.tris)],corner:[corner.calls,Math.round(corner.tris)],status:await p.locator('#rearrange-status').textContent()});
   await p.locator('#terminal-close').click();
-  await p.evaluate(()=>{__app.rearrange.enable(false);});
+  // #1582: the V key does the same as the buttons (aimed desk), and every HUD button names its key on keyboard devices.
+  await p.waitForFunction(()=>__app.rearrange.target?.piece?.item.type==='tillydesk',null,{timeout:20000});
+  const saved=()=>p.evaluate(()=>__app.rearrange.state.materials?.[__app.rearrange.pieces.find(x=>x.item.type==='tillydesk').id]?.variant?.choice??'original');
+  await p.keyboard.press('KeyV');await p.waitForFunction(()=>__app.rearrange.pieces.find(x=>x.item.type==='tillydesk').object.userData.variant.choice==='original'&&!__app.rearrange.saving);
+  assert.equal(await saved(),'original');
+  await p.keyboard.press('KeyV');await p.waitForFunction(()=>__app.rearrange.pieces.find(x=>x.item.type==='tillydesk').object.userData.variant.choice==='corner'&&!__app.rearrange.saving);
+  assert.equal(await saved(),'corner');log('V switches the aimed desk straight and back to corner, saved each time');
+  await p.evaluate(()=>{const R=__app.rearrange;R.begin(R.pieces.find(x=>x.item.type==='tillydesk'));__app.step(0);});
+  await p.waitForFunction(()=>!document.getElementById('rearrange-variant').hidden);
+  assert(!(await p.locator('#rearrange-variant-hint').isHidden()));
+  await p.keyboard.press('KeyV');await p.waitForFunction(()=>__app.rearrange.pieces.find(x=>x.item.type==='tillydesk').object.userData.variant.choice==='original'&&!__app.rearrange.saving);
+  await p.keyboard.press('KeyV');await p.waitForFunction(()=>__app.rearrange.pieces.find(x=>x.item.type==='tillydesk').object.userData.variant.choice==='corner'&&!__app.rearrange.saving);
+  await p.evaluate(()=>{const R=__app.rearrange;R.begin(R.pieces.find(x=>x.item.type==='tillydesk'));__app.step(0);}); // (the shape switch ends the move: select again for the view)
+  await p.waitForFunction(()=>!document.getElementById('rearrange-variant').hidden&&!document.getElementById('rearrange-variant-hint').hidden);
+  const keys=()=>p.evaluate(()=>Object.fromEntries([...document.querySelectorAll('#rearrange-help button[data-key]')].map(b=>[b.id,[b.dataset.key,getComputedStyle(b,'::after').display,getComputedStyle(b,'::after').content]])));
+  const dk=await keys();
+  assert.deepEqual(Object.fromEntries(Object.entries(dk).map(([k,v])=>[k,v[0]])),{'rearrange-rotate':'R','rearrange-raise':'PgUp','rearrange-lower':'PgDn','rearrange-variant':'V','rearrange-material-confirm':'E','rearrange-cancel':'X','rearrange-menu':'§','rearrange-finish':'Esc'});
+  assert(Object.values(dk).every(v=>v[1]!=='none'&&v[2]!=='none'&&v[2]!=='normal'),JSON.stringify(dk));
+  await p.screenshot({path:`${out}/redigeringsrad-desktop.png`,clip:{x:0,y:90,width:420,height:260},timeout:240000});
+  log('desktop: every edit-row button shows its key; V in the keyboard hint',Object.values(dk).map(v=>v[0]));
+  await p.evaluate(()=>{__app.rearrange.cancel();__app.rearrange.enable(false);});
   await shot(p,'horn');
   await p.close();
   // Reload: the shared layout brings the corner desk back.
@@ -89,7 +110,7 @@ const [game,worker,out]=process.argv.slice(2),log=(s,v)=>console.log('PASS',s,v!
   await p.locator('#computer-pc-olof [data-snake=join]').click();
   await p.waitForFunction(()=>__app.computerHub.arena?.snakes.some(s=>s.id===__ghosts.me&&s.alive&&s.screen==='pc-olof'));
   for(let i=0;i<12;i++){await p.waitForTimeout(100);await p.evaluate(()=>__app.step(1/30));}
-  await p.evaluate(()=>{__app.testMode.setFull(true);__app.step(0);__app.testMode.draw();});await p.screenshot({path:`${out}/horn-spel.png`});await p.evaluate(()=>__app.testMode.setFull(false));
+  await p.evaluate(()=>{__app.testMode.setFull(true);__app.step(0);__app.testMode.draw();});if(!process.env.NO_SCENE_SHOTS)await p.screenshot({path:`${out}/horn-spel.png`});await p.evaluate(()=>__app.testMode.setFull(false));
   assert(await p.evaluate(()=>__app.rest.active));log('corner desk: Ormstriden runs on the main monitor while seated');
   await p.keyboard.press('Escape');await p.waitForFunction(()=>!__app.computerHub.open);
   await p.evaluate(()=>__app.standUp());await p.waitForFunction(()=>!__app.rest.active);
@@ -100,6 +121,9 @@ const [game,worker,out]=process.argv.slice(2),log=(s,v)=>console.log('PASS',s,v!
   await p.evaluate(()=>{const R=__app.rearrange;R.begin(R.pieces.find(x=>x.item.type==='tillydesk'));__app.step(0);});
   await p.waitForFunction(()=>!document.getElementById('rearrange-variant').hidden);
   assert.equal(await p.locator('#rearrange-variant').textContent(),'Gör till rakt skrivbord');
+  const tk=await p.evaluate(()=>[...document.querySelectorAll('#rearrange-help button[data-key]')].filter(b=>!b.hidden).map(b=>getComputedStyle(b,'::after').display));
+  assert(tk.length>0&&tk.every(d=>d==='none'),JSON.stringify(tk));
+  await p.screenshot({path:`${out}/redigeringsrad-touch.png`,timeout:240000});log('touch: no key names on the edit-row buttons');
   await p.locator('#rearrange-variant').tap();
   await p.waitForFunction(()=>__app.rearrange.pieces.find(x=>x.item.type==='tillydesk').object.userData.variant.choice==='original'&&!__app.rearrange.saving);
   const back=await desk(p);assert.equal(back.stored,'original');assert(!back.wingBlocked);log('touch: tapping the button switches back to straight',back.stored);

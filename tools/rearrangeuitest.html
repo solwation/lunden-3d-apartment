@@ -23,6 +23,7 @@ try{
  check(R.enabled&&!d.getElementById('rearrange-help').hidden&&d.getElementById('rearrange-step').textContent==='1. Välj ett föremål','unlock flows straight into clear selection step without an extra menu');
  key('Enter','Enter');check(term.hidden&&R.enabled,'Enter in rearrange mode does not open the console menu');
  check(d.getElementById('rearrange-rotate').hidden&&d.getElementById('rearrange-cancel').hidden,'idle edit toolbar presents menu/done without irrelevant move controls');
+ check(['rotate','raise','lower','variant','material-confirm','cancel','menu','finish'].every(n=>d.getElementById('rearrange-'+n).dataset.key)&&[...d.querySelectorAll('#rearrange-help button[data-key]')].every(b=>w.getComputedStyle(b,'::after').display==='none'),'#1582: every edit button carries its key name, hidden in touch mode');
  const piece=R.pieces.find(p=>p.item.type==='coffeetable'),before=piece.object.matrixWorld.clone();R.begin(piece);A.step(0);
  check(d.getElementById('rearrange-step').textContent.includes('2. Placera '+piece.name)&&!d.getElementById('rearrange-rotate').hidden&&!d.getElementById('rearrange-cancel').hidden&&d.getElementById('turn-btn').hidden,'selected step names the item and exposes one consistent rotate/cancel pair');
  const turn=R.turn;click('rearrange-rotate');check(R.turn>turn,'visible rotate button rotates the preview');click('rearrange-cancel');

@@ -734,6 +734,9 @@
     #rearrange-help .primary { background: #4c6857; }
     #rearrange-help .keyboard-hint { display: block; margin-top: 8px; opacity: .7; font-size: 11px; }
     body.touch #rearrange-help .keyboard-hint { display: none; }
+    /* #1582: each button names its key (data-key); touch devices have no keyboard, so no labels there */
+    #rearrange-help button[data-key]::after { content: attr(data-key); margin-left: 8px; padding: 1px 6px; border: 1px solid #ffffff80; border-radius: 4px; font-size: 11px; opacity: .8; }
+    body.touch #rearrange-help button[data-key]::after { display: none; }
     /* #1112: on touch the panel stays compact and ends above the stick hint's corner (as #chat-box, #1087): Vrid/Höj/Sänk
        become icon buttons so the actions fit one row on a phone; the desktop layout is unchanged */
     body.touch #rearrange-help { padding: 8px 10px; max-height: max(88px, calc(100dvh - 112px - var(--st) - max(150px, var(--stick-base) + 20px) - var(--sb) - 8px)); overflow-y: auto; overscroll-behavior: contain; }
@@ -1545,9 +1548,9 @@
   <div id="hud" hidden>
     <button id="terminal-btn" aria-label="Öppna konsolen">&gt;_</button>
     <div id="rearrange-help" hidden role="region" aria-label="Möblera om"><strong id="rearrange-step">1. Välj ett föremål</strong><span id="rearrange-status" aria-live="polite"></span>
-      <div class="rearrange-actions"><button id="rearrange-rotate" title="Vrid" hidden>Vrid</button><button id="rearrange-raise" type="button" title="Höj" hidden>Höj</button><button id="rearrange-lower" type="button" title="Sänk" hidden>Sänk</button><button id="rearrange-variant" type="button" hidden>Gör till hörnskrivbord</button><button id="rearrange-material-confirm" type="button" hidden>Bekräfta material</button>
-        <button id="rearrange-cancel" hidden>Avbryt flytt</button><button id="rearrange-menu">Meny</button><button id="rearrange-finish" class="primary">Klart</button></div>
-      <small class="keyboard-hint">E: välj / placera · R: vrid · hjul / PgUp / PgDn: taklampans höjd · X: avbryt · §: meny · Esc: klart</small>
+      <div class="rearrange-actions"><button id="rearrange-rotate" data-key="R" title="Vrid" hidden>Vrid</button><button id="rearrange-raise" data-key="PgUp" type="button" title="Höj" hidden>Höj</button><button id="rearrange-lower" data-key="PgDn" type="button" title="Sänk" hidden>Sänk</button><button id="rearrange-variant" data-key="V" type="button" hidden>Gör till hörnskrivbord</button><button id="rearrange-material-confirm" data-key="E" type="button" hidden>Bekräfta material</button>
+        <button id="rearrange-cancel" data-key="X" hidden>Avbryt flytt</button><button id="rearrange-menu" data-key="§">Meny</button><button id="rearrange-finish" data-key="Esc" class="primary">Klart</button></div>
+      <small class="keyboard-hint">E: välj / placera · R: vrid · hjul / PgUp / PgDn: taklampans höjd · X: avbryt · §: meny · Esc: klart<span id="rearrange-variant-hint" hidden> · V: byt form</span></small>
     </div>
     <div id="crosshair"></div>
     <div id="stats" aria-live="off" hidden>
