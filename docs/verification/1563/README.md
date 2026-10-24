@@ -6,12 +6,14 @@ En separat osynlig yta täcker lämpliga mittpunkter på bordets fria högra del
 
 ![Datorn tillbaka på sminkbordet](laptop-tillbaka-pa-sminkbordet.png)
 
+Resultatbilden togs om med slutlig kod `84e428b6`: laptopen flyttades först till golvet, förhandsvisades sedan giltigt på `(2,35; 4,01; 11,75)` och bekräftades med appens touchknapp (revision 2). Profilvalet var stängt, inga sidfel uppstod och `testkit.shot` tog bilden med full kvalitet och skuggor. Råresultat: `/tmp/orkester-codex-20261024/verify1563/final-shot.json`. Bildens SHA-256: `2b78e6beb7da19c78b2e74ceb937cd53cd5d2d6a0db640d025a838b19547dead`.
+
 ## Avgränsad verifiering
 
 - Verklig lokal Chromium-app, `?cloud=&shot&test=lazy&time=12&freeze&mess=0`, port 8363. Profilvalet stängdes med **Hoppa över** före kontroll och bild. Inga originaltjänster användes.
 - Den första funktionskörningen flyttade laptopen från golvets 3,25 m tillbaka till avställningsytans 4,01 m via faktisk rayträff och giltig förhandsvisning. Två lokala sparningar gav revision 2; `groupFor(vanity)` innehöll därefter både sminkbordet och laptopen. Inga sidfel. Råresultat i `/tmp/orkester-codex-20261024/verify1563/result.json`.
 - Appens touchknapp valde och bekräftade placering på bordet (revision 3). Efter byte till musläge med verkligt Pointer Lock valde och bekräftade E samma placeringsyta (revision 4). E ignoreras avsiktligt i touchläge.
-- Slutlig kantkontroll i verkliga appen: [edge.json](edge.json) visar giltig kandidat på 4,01 m vid 0°, 45° och 90° relativt valt ursprungsläge samt från motsatt kameravinkel. Alla fyra hörn för bas och öppet lock ligger inom fri skiva. En ray på ytans yttre hörn får ogiltig kandidat efter snappning: x når lokalt 0,542 m utanför gränsen 0,495 m. Inga sidfel.
+- Slutlig kantkontroll i verkliga appen: [edge.json](edge.json) visar giltig kandidat på 4,01 m vid 0°, 45° och 90° extra vridning från laptopens ursprungsriktning samt från motsatt kameravinkel. Alla fyra hörn för bas och öppet lock ligger inom fri skiva. En ray på ytans yttre hörn får ogiltig kandidat efter snappning: x når lokalt 0,542 m utanför gränsen 0,495 m. Inga sidfel.
 - Det enda befintliga följdprovet [rearrangeplacementtest.log](rearrangeplacementtest.log) passerade alla 15 kontroller, inklusive Symfonisk på fönsterbänk/bord, `groupFor(table)`, sparning och omladdning. `rearrangeSurfaces ?? []` håller äldre fixtureworld utan det nya valfria fältet fungerande.
 - Datorhörnans och stolens kollision är oförändrad: `src/tillydesk.js` och `TILLY_DESK`-delen i `src/config.js` är oförändrade från [#1557:s uppmätta kontroll](../1557/README.md). Den nya ytan är osynlig och saknar footprint, skuggor och fysikkollision.
 
