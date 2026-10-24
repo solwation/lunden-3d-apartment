@@ -1571,6 +1571,17 @@ function daybed() {
   // the top mattress (ÅFJÄLL), quilted in channels across
   const n = HD.channels, cw = (iw - 0.01) / n, mz = 0.01, md = D - 0.1;
   for (let i = 0; i < n; i++) g.add(topCloth.part(rbox(cw + 0.02, m1 - m0, md, -(iw - 0.01) / 2 + cw * (i + 0.5), (m0 + m1) / 2, mz, topCloth.material(M.mattress), 0.03)));
+  // #1578: the fitted bottom sheet over the top mattress (a thin slab with a short drop over the open front edge) and one
+  // sleeping pillow at the head end, in front of the decorative cushions. The sheet reuses the top mattress's cloth
+  // surface and material, the pillow the faux-fur cushion's cream one, so both merge into existing batches (no extra draw
+  // call) and follow those cover choices (#991)
+  const [sheetT, sheetDrop] = HD.sheet, mw = iw - 0.012;
+  g.add(topCloth.part(rbox(mw, sheetT, md - 0.008, 0, m1 + sheetT / 2 - 0.001, mz, topCloth.material(M.mattress), 0.002)));
+  g.add(topCloth.part(rbox(mw, sheetDrop, 0.006, 0, m1 - sheetDrop / 2 + sheetT, mz + (md - 0.008) / 2 + 0.001, topCloth.material(M.mattress), 0.002)));
+  const P = HD.pillow;
+  const sleepPillow = furCloth.part(new THREE.Mesh(pillow(P.w, P.d, P.h, { seed: 1578, under: 0.2, uv: 0.8 }), furCloth.material(M.fur)));
+  sleepPillow.position.set(P.x, m1 + sheetT, P.z);
+  g.add(sleepPillow);
   // the bedspread over the foot end (+x), quilted in channels, soft over the front edge and tucked in at the back
   // (#309, `duvet` in bedding.js: its length runs along x, so it is turned a quarter round; its −x side = the front)
   const sx0 = -0.48, sx1 = iw / 2 - 0.005, S = BEDDING.spread, st = S.th;

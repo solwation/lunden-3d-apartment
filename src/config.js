@@ -5008,6 +5008,12 @@ export const HEMNES_DAYBED = {
   drawer: [0.05, 0.22], pullout: [0.29, 0.345], apron: [0.335, 0.375, 0.42], mattress: [0.42, 0.56], channels: 10,
   colors: { frame: 0xf3f2ee, mattress: 0xf6f6f3, knob: 0x55585c, spread: '#202127', bolt: '#b79cff', star: '#f4f1ff',
     black: 0x18181b, fur: 0xe8e2d8, pink: 0xc7949f },
+  // #1578: Tilly's bed has a fitted bottom sheet over the top mattress and one sleeping pillow at the head (-x) end, in front
+  // of the decorative cushions (those stay as they are). The sheet is in the top mattress's cover colour (`colors.mattress`), the pillow in the
+  // cream of the fur cushion (`colors.fur`), so both share existing draw calls (*guess*). All sizes in m are *guesses*: `sheet` = [thickness, front drop],
+  // `pillow` = { w along the bed, d across it, h in the middle, x / z centre }.
+  sheet: [0.005, 0.1],
+  pillow: { w: 0.42, d: 0.6, h: 0.15, x: -0.74, z: 0.1 },
 };
 // Low furniture you can jump up on and stand on (#693, #699): piece type → its standing surface's top over the piece's floor
 // (m), the same numbers as the models' seats / mattresses (LANDSKRONA.seatHeight 0.44 + cushion, OTTOMAN.h, the IDANÄS
