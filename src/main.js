@@ -9,6 +9,7 @@ import { crashlog } from './crashlog.js'; // first: its heartbeat and error hook
 import { CinemaPlayer } from './cinemaplayer.js';
 import { CinemaSurface } from './cinemasurface.js';
 import { ComputerHub } from './computerhub.js';
+import { GameBoards } from './gameboards.js';
 import { TVMedia } from './tvmedia.js';
 import { Santa } from './santa.js';
 import { ChristmasGifts } from './santagifts.js';
@@ -1329,7 +1330,7 @@ const openVideoControls=()=>{reading=true;player.keys.clear();touch.analog.x=tou
 const tvMedia=new TVMedia({canvas,targets:world.furnitureTargets,template:document.getElementById('cinema-player'),onClose:closeVideoControls,onOpen:openVideoControls,endpoint:cloudUrl()?`${cloudUrl()}/youtube-search`:''});
 remote.onVideo=tv=>santaTV.active&&tv===santaTV.tv&&santaTV.activate()||tvMedia.show(tv);remote.onPower=tv=>tvMedia.power(tv);
 remote.onSeek=(tv,delta)=>{const ok=tvMedia.seek(tv,delta);if(!ok)badge('Någon annan styr TV:n just nu. Försök igen om en stund.',false);return ok;};
-const computerHub=new ComputerHub({onNotice:text=>badge(text,false),canvas,targets:[...world.furnitureTargets,...playroom.devices.computers.map(s=>s.target)],template:document.getElementById('cinema-player'),onClose:closeVideoControls,onOpen:openVideoControls,endpoint:cloudUrl()?`${cloudUrl()}/youtube-search`:''});
+const computerHub=new ComputerHub({onNotice:text=>badge(text,false),canvas,targets:[...world.furnitureTargets,...playroom.devices.computers.map(s=>s.target)],template:document.getElementById('cinema-player'),onClose:closeVideoControls,onOpen:openVideoControls,endpoint:cloudUrl()?`${cloudUrl()}/youtube-search`:'',boards:new GameBoards({url:cloudUrl(),id:()=>leaderboard.id,name:()=>leaderboard.name})}); // #1577: game top lists
 playroom.devices.onComputerRequest=target=>computerHub.show(target);
 cinema.surface = new CinemaSurface(canvas, playroom.devices.tv.mesh);
 cinema.soundSource = playroom.devices.tv.mesh;

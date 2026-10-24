@@ -6841,6 +6841,24 @@ export const SNAKE = {
   viewWidth:.82,viewHeight:.58,viewLift:.4,
 };
 
+// #1577: the single-player computer games, drawn on the existing monitor texture (src/blocks.js, src/meteors.js,
+// src/arcadeview.js). Classic-style speeds, sizes and points, all our picks (*guess*). `ms` timings are game time.
+export const BLOCKS = { cols:10, rows:20, startMs:800, levelFactor:.85, minMs:80, linesPerLevel:10,
+  lineScores:[0,100,300,500,800], softDrop:1, hardDrop:2 };
+export const METEORS = { width:32, height:20, step:1/60, catchUp:.25, turn:4.2, thrust:10, drag:.5, maxSpeed:11,
+  bulletSpeed:17, bulletLife:1.1, fireMs:230, maxBullets:5, shipRadius:.42, lives:3, invulnMs:2200, respawnMs:1200,
+  sizes:[1.5,.85,.45], speeds:[1.8,3,4.4], points:[20,50,100], waveStart:3, waveSpeedUp:.08, spawnClearance:6, splitSpread:.6 };
+// #1577: global top lists for the three computer games (cloudflare/games.js, src/gameboards.js). One row per player id and
+// game (the best round). Single-player scores come from the client, so they are only bounded: a round lasts `minMs`..`maxMs`
+// and a score must fit what the rules can give in that time. All limits are our picks (*guess*).
+export const GAME_BOARDS = { top:10, maxRows:500, local:10, timeoutMs:6000, cacheMs:30_000, refreshMs:1200,
+  minMs:2000, maxMs:4*3600_000, maxScore:1e7,
+  // Klossar: at most `piecesPerSecond` pieces may hard-drop the full height, and every cleared line is worth at most
+  // a four-line clear's share at the level it was reached on.
+  blocks: { piecesPerSecond:8, linesPerSecond:4 },
+  // Ormstriden: computed by the server arena (cloudflare/snake.js); clamped like the others.
+  games: { ormstriden:'Ormstriden', klossar:'Klossar', meteoriter:'Meteoriter' } };
+
 // Original-only Christmas Eve gameplay tunables.
 export { SANTA } from './santaconfig.js';
 export { SANTA_GIFTS } from './santagiftconfig.js';

@@ -12,6 +12,7 @@ import { PLAYROOM, TOYS, SCORE, pvpHitPoints, PVP_RIFLE_HEAD as RH, rifleHeadCon
 import { freshTable, validSnapshot, cleanDirection, simulateStroke } from '../src/billiardsync.js';
 import { RoomCinema, cleanCinema } from './cinema.js';
 import { RoomSnake, cleanSnake } from './snake.js';
+import { recordGame } from './games.js';
 
 // Other players as ghosts (#666): one Durable Object room for everybody (`idFromName('world')`), WebSockets with the
 // Hibernation API. A client sends its position / heading at most 5 times a second and only when it changed (a heartbeat
@@ -284,7 +285,9 @@ export class PlayerRoom {
     this.pool = null; this.poolWrite = null; // #1355: { snap, st: [id|null, id|null], busy: ms } while anybody is in the children's room
     this.cinema=new RoomCinema(ctx,()=>this.open().map(ws=>({ws,a:att(ws)})),send);
     this.tvs=[...TV_MEDIA.screens,...COMPUTER_MEDIA.stations].map(s=>new RoomCinema(ctx,()=>this.open().map(ws=>({ws,a:att(ws)})),send,s.id));
-    this.snake=new RoomSnake(()=>this.open().map(ws=>({ws,a:att(ws)})),()=>this.tvs,send);
+    // #1577: Ormstriden results go to the shared top list in KV; writes are chained so this room never races itself.
+    this.gameWrites=Promise.resolve();
+    this.snake=new RoomSnake(()=>this.open().map(ws=>({ws,a:att(ws)})),()=>this.tvs,send,row=>{if(env?.LUNDEN)this.gameWrites=this.gameWrites.then(()=>recordGame(env.LUNDEN,'ormstriden',row)).catch(()=>{});});
     ctx.blockConcurrencyWhile?.(async () => { this.pool = (await ctx.storage.get('pool')) ?? null;await this.cinema.load();for(const tv of this.tvs)await tv.load(); });
     if (typeof WebSocketRequestResponsePair === 'function') ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('p', 'q'));
   }

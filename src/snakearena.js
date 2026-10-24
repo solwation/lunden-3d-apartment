@@ -29,8 +29,9 @@ export class SnakeArena {
     s.alive=false;s.why=why;s.killer=killer?.name??'';s.deadAt=now;
     for(let i=0;i<s.points.length&&this.food.length<C.foodMax;i+=C.dropStride)this.food.push(this.pellet(...s.points[i],C.foodGrowth));
     s.points=[];if(killer){killer.kills++;killer.score+=s.length;}this.q++;
+    this.onEnd?.(s); // #1577: the round's server-computed result for the Ormstriden top list
   }
-  remove(id){if(this.snakes.delete(id))this.q++;}
+  remove(id){const s=this.snakes.get(id);if(s?.alive)this.onEnd?.(s);if(this.snakes.delete(id))this.q++;}
   advance(now) {
     const elapsed=Math.max(0,Math.min(C.catchUp,(now-this.at)/1000));this.at=now;this.remainder+=elapsed;
     while(this.remainder>=C.step){this.remainder-=C.step;this.tick(C.step,now);}

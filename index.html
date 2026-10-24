@@ -804,7 +804,12 @@
     .computer-apps [aria-pressed=true] { background:#93dfb0; }
     .computer-game p { font-size:14px; }
     .computer-player.computer-world-controls[open] { position:fixed; inset:auto 0 max(8px, var(--sb)); margin:0 auto; width:max-content; max-width:calc(100% - 16px - var(--sl) - var(--sr)); max-height:38vh; padding:8px; border:0; background:rgba(20,33,44,.94); display:grid; grid-template-columns:1fr auto; gap:4px; }
-    .computer-world-controls h2, .computer-world-controls > [role=status], .computer-world-controls > [data-computer-claim], .computer-world-controls > [data-computer-power], .computer-world-controls .computer-game > h3, .computer-world-controls .computer-game > p:first-of-type, .computer-world-controls .computer-players, .computer-world-controls [data-app=snake] { display:none; }
+    .computer-world-controls h2, .computer-world-controls > [role=status], .computer-world-controls > [data-computer-claim], .computer-world-controls > [data-computer-power], .computer-world-controls .computer-game > h3, .computer-world-controls .computer-game > p:first-of-type, .computer-world-controls .computer-players, .computer-world-controls .computer-apps [aria-pressed=true] { display:none; }
+    /* #1577: the game top lists; a compact wrapped row inside the nonmodal game toolbar */
+    .computer-top { margin:4px 0; padding-left:22px; font-size:14px; }
+    .computer-top-title { margin:8px 0 2px; font-size:14px; }
+    .computer-world-controls .computer-top-title { display:none; }
+    .computer-world-controls .computer-top { display:flex; flex-wrap:wrap; gap:2px 18px; max-height:2.8em; overflow:auto; font-size:12px; margin:2px 0; }
     .computer-player.computer-world-controls > .cinema-row:first-child { position:static; grid-column:auto; padding:0; }
     .computer-world-controls .computer-apps { margin:0; }
     .computer-world-controls .computer-game { grid-column:1 / -1; }

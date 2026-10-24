@@ -1945,6 +1945,32 @@ and44px directional buttons never feed the avatar movement keys. A join/restart
 is explicit. Food grows length/girth; larger head collisions win, equal heads
 both die, and body collisions leave edible remains. Names/scores show actual peers.
 
+Klossar and Meteoriter (#1577) are the picker's "Spel · Klossar" and "Spel · Meteoriter"
+(server app ids `blocks`/`meteors`). They are single-player per computer: the controller's
+client runs the pure rules (`src/blocks.js`: seven-piece bag, rotation with wall kicks, soft/hard
+drop, line clears ×level, faster gravity every ten lines; `src/meteors.js`: turning/thrusting
+ship with inertia and wrap-around, bullets, meteors that split large → medium → small, lives,
+harder waves; tunables BLOCKS/METEORS in config, *guess*) only while its panel is open, and
+`src/arcadeview.js` paints them on that monitor's existing canvas texture (no new meshes or
+draw calls; idle/start/end screens upload only when they change). They use the same nonmodal
+toolbar, screen framing, window input capture and Esc/E/Startsida exits as Ormstriden; the
+toolbar has Starta/Spela igen and 44px touch pads (Meteoriter's pads act while held). Space
+starts a round, then hard-drops or fires. Leaving, switching app or powering off ends a
+running round. Other visitors see a cheap "<namn> spelar …" card with the top list instead
+of a synced picture.
+
+Top lists (#1577, `src/gameboards.js`, Worker `cloudflare/games.js`): each game's panel shows
+its top 10 (names from the #198 leaderboard profile, `Anonym` without a name, always text), and
+the monitor shows it between rounds (Ormstriden: no snakes, or ours is out). A finished
+Klossar/Meteoriter round is POSTed with its time (and lines/wave); Ormstriden results are
+computed by the server arena and written by the players' room when a snake dies or leaves,
+keyed by the player UUID sent with `join` (never broadcast). Without the cloud or on any
+error the panel shows "Dina bästa omgångar (lokalt)" from `lunden.gameBest.<spel>`; requests
+time out after GAME_BOARDS.timeoutMs and nothing waits on them. The computers themselves
+still need the shared room (#1488) to be powered and controlled.
+Tests: `node --test tools/arcadegamestest.mjs cloudflare/games.test.mjs` and
+`node tools/computergamestest.cjs GAME LOCAL_WORKER OUT` ([verification](verification.md#computer-games-and-top-lists-1577)).
+
 `Ghosts.snake` coalesces pending headings within the existing shared5Hz socket
 budget, without extra sockets. App, lease and join/leave commands take precedence
 over superseded inputs. Closing controls, changing apps, leaving reach/room,

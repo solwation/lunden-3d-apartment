@@ -5,13 +5,16 @@ export function cleanSnake(text){
  if(m?.t!=='snake'||!['get','join','input','leave'].includes(m.k))return null;
  if(['get','leave'].includes(m.k))return{k:m.k};
  if(!COMPUTER_MEDIA.stations.some(s=>s.id===m.screen))return null;
- if(m.k==='join')return{k:'join',screen:m.screen};
+ // #1577: the optional local player UUID (as for /scores) names this player's Ormstriden top-list row; never broadcast.
+ if(m.k==='join')return{k:'join',screen:m.screen,...(typeof m.pid==='string'&&/^[A-Za-z0-9-]{6,64}$/.test(m.pid)?{pid:m.pid}:{})};
  if(!Number.isSafeInteger(m.seq)||m.seq<0||!Number.isFinite(m.angle)||Math.abs(m.angle)>Math.PI)return null;
  return{k:'input',screen:m.screen,seq:m.seq,angle:m.angle};
 }
 /** Advances on the existing ≤5 Hz input slots, with 30 Hz bounded authoritative substeps. No background ticker/storage. */
 export class RoomSnake {
- constructor(peers,displays,send){this.peers=peers;this.displays=displays;this.send=send;this.arena=null;this.inputs=new Map();this.lastBroadcast=0;}
+ constructor(peers,displays,send,onResult=null){this.peers=peers;this.displays=displays;this.send=send;this.onResult=onResult;this.arena=null;this.inputs=new Map();this.pids=new Map();this.lastBroadcast=0;}
+ /** #1577: a finished snake (death or leaving) reports its server score once, keyed by the player's own UUID. */
+ ended(s){const pid=this.pids.get(s.id);if(pid&&s.score>0)this.onResult?.({id:pid,name:s.name,score:s.score});}
  audience(){return this.peers().filter(p=>COMPUTER_MEDIA.stations.some(s=>p.a[`tv_${s.id}`]===true));}
  message(){return JSON.stringify({t:'snake',k:'state',s:this.arena?.snapshot()??null});}
  snapshot(ws){this.send(ws,this.message());}
@@ -22,7 +25,7 @@ export class RoomSnake {
   let changed=false;const peers=this.peers().filter(p=>p.ws!==except);
   for(const[id,s]of this.arena.snakes){const peer=peers.find(p=>p.a.i===id),display=this.displays().find(d=>d.id===s.screen);
    if(!peer||!nearComputer(s.screen,peer.a.s?.p)||display?.state?.owner!==id||display.state.app!=='snake'){this.arena.remove(id);this.inputs.delete(id);changed=true;}}
-  if(!this.arena.snakes.size){this.arena=null;this.inputs.clear();changed=true;}
+  if(!this.arena.snakes.size){this.arena=null;this.inputs.clear();this.pids.clear();changed=true;}
   if(changed)this.broadcast();
  }
  handle(ws,a,m,now){
@@ -33,11 +36,12 @@ export class RoomSnake {
   if(!nearComputer(m.screen,a.s?.p))return this.refuse(ws,'away');
   if(display?.state?.owner!==a.i)return this.refuse(ws,'owner');
   if(display.state.app!=='snake')return this.refuse(ws,'app');
-  this.arena??=new SnakeArena(now);
+  if(!this.arena){this.arena=new SnakeArena(now);this.arena.onEnd=s=>this.ended(s);}
   this.arena.advance(now);
   if(m.k==='join'){
    const old=this.arena.snakes.get(a.i);if(old&&old.screen!==m.screen)this.arena.remove(a.i);
    if(!this.arena.join(a.i,a.n??'Spelare',m.screen,now))return this.refuse(ws,'wait');
+   if(m.pid)this.pids.set(a.i,m.pid);else this.pids.delete(a.i);
    this.inputs.delete(a.i);this.broadcast();return;
   }
   const s=this.arena.snakes.get(a.i),last=this.inputs.get(a.i);

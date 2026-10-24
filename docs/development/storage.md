@@ -253,6 +253,11 @@ src/leaderboard.js     the global leaderboard (#198), only with the cloud on: op
                        one by one and counts `anon`) and ghosts. Everybody is visible (#723 removed the opt-out box "Visa mig inte för andra"; an old
                        localStorage 'lunden.share' is deleted at start, no other effect); the start screen says so (`#share-note`: online + avatar, #730) and the privacy page opens with "Vad andra spelare ser".
                        `node --test cloudflare/scores.test.mjs`, `tools/anontest.cjs`
+src/gameboards.js      the computer games' top lists (#1577): GET/POST the Worker's /games/<ormstriden|klossar|meteoriter>
+                       with the same player id and name; KV 'game:<game>' holds one best row per id (cloudflare/games.js,
+                       written only when a row improves; Ormstriden rows come from PlayerRoom's server arena). Client scores
+                       are bounded by GAME_BOARDS (*guess*) and the per-IP write limiter. Offline/error: localStorage
+                       'lunden.gameBest.<game>' (this browser's ten best rounds). `node --test cloudflare/games.test.mjs`
 src/startuprecovery.js One bounded `lunden.startupFailure` sessionStorage record (#1065), also written by the dependency-free
                        index guard before imports. Name/message/stack/build/time plus the failed loading step and cause class (#1132) only, URL query/fragment values removed.
                        Enabled CrashLog consumes valid records no older than one hour once at next startup; no world or

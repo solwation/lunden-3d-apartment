@@ -15,6 +15,20 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## Computer games and top lists (#1577)
+
+Scoped plan: game rules in `node --test tools/arcadegamestest.mjs` (bag, line clears, levels/gravity,
+rotation kicks, game over; inertia, wrap-around, splitting, lives, waves), Worker top lists in
+`node --test cloudflare/games.test.mjs` (one best row per player/game, separate lists, name cleaning,
+the *guess* limits, Ormstriden from the server arena without leaking the UUID) and one real-app run:
+`node tools/computergamestest.cjs GAME LOCAL_WORKER OUT` with a fresh `node cloudflare/dev.mjs PORT`.
+It starts Klossar on Speldatorn by keyboard, Ormstriden there until the server snake hits a wall, and
+Meteoriter on a playhouse computer with touch pads (a phone-sized touch page), checks each monitor
+uses the drawn game texture and that the result appears in the panel's global list and the Worker,
+then aborts `/games/**` and checks the local list keeps the round. In a sandbox without CDN access the
+script serves three.js from `~/.cache/three-0.170.0`; full-frame screenshots take minutes under
+software WebGL. Result images: `docs/verification/1577/`.
+
 ## Playhouse popcorn cart (#1567)
 
 `tools/popcorntest.html` covers the actual action button, cart collision, gradual

@@ -1,5 +1,8 @@
 import { PLAYROOM, TV_MEDIA, COMPUTER_MEDIA, nearComputer } from '../src/config.js';
 
+// #1577: blocks = Klossar, meteors = Meteoriter (single-player, run in the controlling client).
+const APPS=['menu','youtube','snake','blocks','meteors'];
+
 export function cleanCinema(text) {
   let m;
   try { m=JSON.parse(text); } catch { return null; }
@@ -7,7 +10,7 @@ export function cleanCinema(text) {
   if(m.screen!==undefined&&![...TV_MEDIA.screens,...COMPUTER_MEDIA.stations].some(s=>s.id===m.screen))return null;
   const screen=m.screen===undefined?{}:{screen:m.screen};
   if(m.k==='power'&&(!COMPUTER_MEDIA.stations.some(s=>s.id===m.screen)||typeof m.on!=='boolean'))return null;
-  if(m.k==='app'&&(!COMPUTER_MEDIA.stations.some(s=>s.id===m.screen)||!['menu','youtube','snake'].includes(m.app)))return null;
+  if(m.k==='app'&&(!COMPUTER_MEDIA.stations.some(s=>s.id===m.screen)||!APPS.includes(m.app)))return null;
   if(['claim','release','get'].includes(m.k)) return {k:m.k,...screen};
   if(!Number.isSafeInteger(m.q)||m.q<0) return null;
   if(m.k==='select' && (typeof m.v!=='string'||!/^[A-Za-z0-9_-]{11}$/.test(m.v))) return null;
@@ -20,7 +23,7 @@ const fresh = () => ({q:0,owner:null,name:'',video:'',playing:false,position:0,a
 const valid = s => s && Number.isSafeInteger(s.q) && s.q>=0 &&
   (s.owner===null||typeof s.owner==='string') && typeof s.name==='string' &&
   (s.video===''||/^[A-Za-z0-9_-]{11}$/.test(s.video)) && typeof s.playing==='boolean' &&
-  (s.app===undefined||['menu','youtube','snake'].includes(s.app))&&(s.power===undefined||typeof s.power==='boolean')&&
+  (s.app===undefined||APPS.includes(s.app))&&(s.power===undefined||typeof s.power==='boolean')&&
   Number.isFinite(s.position)&&s.position>=0&&s.position<=PLAYROOM.cinemaSync.maxPosition&&Number.isFinite(s.at);
 
 /** One authoritative cinema per players room; no playback ticker or ball/media stream. */

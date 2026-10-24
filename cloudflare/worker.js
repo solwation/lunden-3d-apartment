@@ -3,6 +3,7 @@ import { beerShelfFetch } from './beershelf.js';
 import { youtubeSearchFetch, cinemaPostersFetch } from './youtubesearch.js';
 import { layoutFetch } from './layout.js';
 import { crashFetch } from './crash.js';
+import { gamesFetch } from './games.js';
 import { PlayerRoom, refuse, CLOSE, cleanAvatar, cleanAvatarExt } from './players.js';
 export { PlayerRoom };
 // Kv. Lunden L1007 — the shared world (#178, #119): a small Cloudflare Worker with one KV namespace (binding
@@ -21,16 +22,19 @@ export { PlayerRoom };
 //   POST   /scores                ← { id, name, score } — one row per browser (id); a score can't grow faster than
 //                                  SCORE_RATE per minute since that row's last post (SCORE_START for a new row). name '' = "Anonym" (#677;
 //                                  an anonymous post never strips the name of an existing row; equal points: named first)
+//   GET    /games/:game           → [{ name, score, updated }] the top 10 of ormstriden | klossar | meteoriter (#1577, games.js)
+//   POST   /games/:game           ← { id, name, score, ms, lines | wave } klossar / meteoriter only: one best row per id and
+//                                  game, bounded by what the rules allow in ms (Ormstriden rows come from the players' room)
 //   PUT    /presence/:id          ← { name, score } (name '' = anonymous) → { count, names, players, anon }; GET /presence the same without joining
 //   GET    /cinema/posters        → { day, items: [{ id, title, channel }], stale } the BIO's daily YouTube film posters (#1575, youtubesearch.js)
 //   POST   /crash                 ← a crash report from the game (#629, cloudflare/crash.js); GET /crash, /crash/:id read them (admin token)
 //   GET    /players               WebSocket upgrade → the PlayerRoom Durable Object (#666, cloudflare/players.js): other players as ghosts
-//   DELETE /admin/:what           (what = drawings | paper | scores | crash | players | all; /admin/scores?id=<id or name>: one row) with "Authorization: Bearer <ADMIN_TOKEN>"
+//   DELETE /admin/:what           (what = drawings | paper | scores | games | crash | players | all; /admin/scores?id=<id or name>: one row) with "Authorization: Bearer <ADMIN_TOKEN>"
 //   PUT    /admin/players         switch the players' room on again after the brake; GET /admin/players: its month's count
 //                                  — the emergency brake; ADMIN_TOKEN is a Worker secret (cloudflare/setup.sh sets one)
 //
 // KV keys: 'drawings' (the metadata list), 'drawing:<id>' (image bytes, metadata { type }), 'paper' (JSON),
-// 'scores' (all rows { id, name, score, updated }, the best MAX_SCORES), 'presence:<id>' (short-lived visitors), 'cinema-posters' (#1575: the last good poster day).
+// 'scores' (all rows { id, name, score, updated }, the best MAX_SCORES), 'game:<game>' (#1577: the same rows per computer game), 'presence:<id>' (short-lived visitors), 'cinema-posters' (#1575: the last good poster day).
 // Cat photos are personal and stay in each visitor's browser (#211).
 
 // Same compact appearance validation as the existing multiplayer protocol.
@@ -252,6 +256,8 @@ const worker = {
       }
     }
 
+    if (what === 'games' && id) return gamesFetch(env, m, id, body, json, fail, h); // #1577
+
     if (what === 'scores' && !id) {
       const byScore = (a, b) => b.score - a.score || (b.name ? 1 : 0) - (a.name ? 1 : 0); // equal points: the named first (#677)
       const top = (l) => l.sort(byScore).slice(0, SCORE_TOP).map(({ name, score, updated }) => ({ name, score, updated }));
@@ -286,6 +292,7 @@ const worker = {
       const one = url.searchParams.get('id');
       if (id === 'scores' && one) await env.LUNDEN.put('scores', JSON.stringify((await getList(env, 'scores')).filter((r) => r.id !== one && r.name !== one)));
       else if (all || id === 'scores') await env.LUNDEN.delete('scores');
+      if (id === 'games') for (const g of ['ormstriden', 'klossar', 'meteoriter']) await env.LUNDEN.delete(`game:${g}`); // #1577
       return json({ ok: true }, 200, h);
     }
     return fail(404, 'not found', h);

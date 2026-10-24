@@ -1,7 +1,9 @@
 import { SNAKE as C } from './config.js';
+import { drawTopList } from './arcadeview.js';
 
 /** Shared arena rendered on each physical computer monitor. */
-export function drawSnake(canvas,state,me,theme,previous=null,blend=1) {
+/** `top` (#1577): the Ormstriden top list, drawn between rounds (no snakes, or ours is out). */
+export function drawSnake(canvas,state,me,theme,previous=null,blend=1,top=null) {
   const c=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
   c.fillStyle='#0a1220';c.fillRect(0,0,w,h);
   const scale=Math.min(w/C.width,h/C.height),ox=(w-C.width*scale)/2,oy=(h-C.height*scale)/2;
@@ -22,7 +24,9 @@ export function drawSnake(canvas,state,me,theme,previous=null,blend=1) {
     }
   }
   c.restore();
-  if(!state?.snakes.length){c.fillStyle='#e9f1ff';c.font=`bold ${h/13}px system-ui`;c.textAlign='center';c.fillText('ORMSTRIDEN',w/2,h*.45);c.font=`${h/20}px system-ui`;c.fillText('Gå med och möt de andra datorerna',w/2,h*.58);}
+  const cx=top?w*.3:w/2;
+  if(!state?.snakes.length){c.fillStyle='#e9f1ff';c.font=`bold ${h/13}px system-ui`;c.textAlign='center';c.fillText('ORMSTRIDEN',cx,h*.45);c.font=`${h/(top?26:20)}px system-ui`;c.fillText('Gå med och möt de andra datorerna',cx,h*.58);}
+  if(top)drawTopList(c,w*.58,h*.08,w*.38,h*.84,top);
 }
 export function drawComputerMenu(canvas,info,app,owner) {
   const c=canvas.getContext('2d'),w=canvas.width,h=canvas.height;c.fillStyle='#101622';c.fillRect(0,0,w,h);
