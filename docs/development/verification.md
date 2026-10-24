@@ -15,6 +15,17 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## Playhouse popcorn cart (#1567)
+
+`tools/popcorntest.html` covers the actual action button, cart collision, gradual
+popping, tubs/fill, seated eating, refill, both bin cases, automatic stack renewal,
+re-pop and page-made reload (38 PASS in test-only mode). `tools/popcorndrawtest.cjs`
+adds native keyboard E with real pointer lock, 844×390 native touch tap, full-quality
+result views, +2 dynamic draws inside and none outside including the held tub,
+with no lights/page errors. Existing clubhouse layout/trim checks pass5/5.
+[Evidence, source hashes, images and limits](../verification/1567/README.md).
+Gameplay is original-only; no downstream transfer.
+
 ## Softer surface footsteps (#1519)
 
 `tools/footstepstest.cjs BASE OUT` passes13checks: real OfflineAudioContext
@@ -2428,6 +2439,7 @@ per issue). Each needs its own actual full/test runs and unchanged assertions:
 | Basement and scene state | basementhudtest, basementvisittest, boxwoodtest, bridgetest |
 | Objects and motion | baskettest, cartest, breaktest |
 | Beer objects | beercantest, beershelfmodeltest, beertest, bottletest |
+| Playroom popcorn cart (#1567) | popcorntest.html, popcorndrawtest.cjs |
 | Placement and stored photos (#808 accepted) | bestaplacementtest, artleveltest, boardtest; actual evidence below, default optional art cloud coverage remains unexecuted |
 | Care and persistence | bedcaretest, clothtest, colddrawertest |
 | Interaction | cheattest, booktest, crouchtest |

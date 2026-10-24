@@ -15,7 +15,7 @@ const BY_CLASS = {
   Cup: 'cup', Glass: 'cup', Jug: 'bottle', Bottle: 'bottle', Milk: 'bottle', Beer: 'bottle', BeerCan: 'bottle',
   Book: 'book', HeldDrawing: 'paper', ToiletPaper: 'paper', Photo: 'paper',
   Pan: 'tool', Cloth: 'tool', Vacuum: 'tool', Flashlight: 'tool', Remote: 'tool', Scoop: 'tool', Toaster: 'box',
-  SillPot: 'plant', Fruit: 'food', FishFinger: 'food', FishPack: 'box', FriesBag: 'food', FriesBunch: 'food', Chicken: 'food', ChickenPiece: 'food',
+  SillPot: 'plant', Fruit: 'food', FishFinger: 'food', FishPack: 'box', FriesBag: 'food', FriesBunch: 'food', PopcornTub: 'food', Chicken: 'food', ChickenPiece: 'food',
 };
 const WEAPON_CLASSES = new Set(['Saber', 'Blaster', 'Wand', 'Bow', 'Basketball', 'MieleHeld']);
 

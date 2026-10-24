@@ -27,7 +27,7 @@ export function clubhouseSigns(plan,lights=[]) {
     ctx.shadowColor=color;ctx.shadowBlur=N.glow;ctx.strokeStyle=color;ctx.lineWidth=N.halo;ctx.strokeText(s.text,x,y);
     ctx.lineWidth=N.tube;ctx.strokeText(s.text,x,y);
     ctx.shadowBlur=0;ctx.strokeStyle=N.coreInk;ctx.lineWidth=N.core;ctx.strokeText(s.text,x,y);ctx.restore();
-    const g=new THREE.PlaneGeometry(s.w,s.h).translate(R.x+s.x,s.y,R.z+s.z),uv=g.attributes.uv;
+    const g=new THREE.PlaneGeometry(s.w,s.h);if(s.ry)g.rotateY(s.ry);g.translate(R.x+s.x,s.y,R.z+s.z);const uv=g.attributes.uv; // (#1567: `ry` turns a sign, e.g. the popcorn cart's)
     for(let j=0;j<uv.count;j++){uv.setX(j,(C.swatch+(c.width-C.swatch)*uv.getX(j))/c.width);uv.setY(j,(plan.signs.length-i-1+uv.getY(j))/plan.signs.length);}
     geos.push(g);
   });

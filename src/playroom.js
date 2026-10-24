@@ -14,6 +14,7 @@ import { architectureEdges } from './architectureedges.js';
 import { buildContactShadows } from './contactshadow.js';
 import { clubhouseSurface, clubhouseMaterial, FINISH } from './clubhousematerials.js';
 import { clubhouseRoundedBox, cinemaChair, cinemaCurtain } from './clubhousefurnishings.js';
+import { PopcornCart, popcornCartParts, popcornSign, popcornLamp, popcornFootprints } from './popcorn.js';
 
 // #1319 / #1326: the playhouse's secret children's room. A hidden interior, far outside the walkable area (see PLAYROOM in
 // config.js): the playhouse door teleports any avatar in, the door in the room's south wall back out.
@@ -61,6 +62,7 @@ export class Playroom {
     const lamp = [];
     for(const x of [-2*R.clubhouse.side,0,2*R.clubhouse.side])for(const z of [(Z0+R.z+R.clubhouse.front)/2,(Z1+R.z+R.clubhouse.front)/2])
       lamp.push(box(R.x+x-0.6,R.x+x+0.6,h-0.03,h,z-0.6,z+0.6));
+    lamp.push(popcornLamp()); layout.signs.push(popcornSign()); // #1567: the popcorn cart's heat lamp and sign share the atlas draw
     this.object.add(clubhouseSigns(layout,lamp));
     // ---- furniture (#1327), local metres from the room's centre: x east, z south (the door), y up
     const F = R.furniture, cinema = F.cinema, S = cinema.seat, scr = cinema.screen, tv = F.tv;
@@ -85,6 +87,7 @@ export class Playroom {
       cbox(col.steel, F.ball.x - 0.04, F.ball.x + 0.04, h - 0.03, h, F.ball.z - 0.04, F.ball.z + 0.04), cbox(col.steel, F.ball.x - 0.005, F.ball.x + 0.005, F.ball.y + F.ball.r, h - 0.03, F.ball.z - 0.005, F.ball.z + 0.005),
     ];
     fur.push(...computerFurniture());
+    fur.push(...popcornCartParts()); // #1567: the popcorn cart and its bin in the entry
     // Shallow diffusers sit inside a slim rounded frame instead of floating light squares.
     const rim=R.appearance.panelRimWidth;
     for(const x of [-2*R.clubhouse.side,0,2*R.clubhouse.side])for(const z of [(-R.d/2+R.clubhouse.front)/2,(R.d/2+R.clubhouse.front)/2]) {
@@ -113,7 +116,8 @@ export class Playroom {
     // Collision edges stop at each chair; the wide center aisle and the route behind the rear row stay open.
     this.footprints = [rect(DJ.x-DJ.w/2,DJ.x+DJ.w/2,DJ.z-DJ.d/2,DJ.z+DJ.d/2), ...cinema.seat.rowX.flatMap((x) => cinema.seat.z.map((z) => rect(x - S.depth / 2, x + S.depth / 2, z - S.width / 2, z + S.width / 2))),
       rect(tvx - 0.02, tvx + 0.075, -R.d/2, R.clubhouse.front-R.clubhouse.wall/2),
-      ...COMPUTER_MEDIA.stations.filter(s=>s.clubhouse).flatMap(s=>{const D=COMPUTER_MEDIA.desk,x=s.x-R.x,z=s.z-R.z,cx=x+Math.sin(s.yaw)*D.seatOffset;return[rect(x-D.depth/2,x+D.depth/2,z-D.width/2,z+D.width/2),rect(cx-D.chair[2]/2,cx+D.chair[2]/2,z-D.chair[0]/2,z+D.chair[0]/2)];})];
+      ...COMPUTER_MEDIA.stations.filter(s=>s.clubhouse).flatMap(s=>{const D=COMPUTER_MEDIA.desk,x=s.x-R.x,z=s.z-R.z,cx=x+Math.sin(s.yaw)*D.seatOffset;return[rect(x-D.depth/2,x+D.depth/2,z-D.width/2,z+D.width/2),rect(cx-D.chair[2]/2,cx+D.chair[2]/2,z-D.chair[0]/2,z+D.chair[0]/2)];}),
+      ...popcornFootprints().map(([a,b,c,d])=>rect(a,b,c,d))]; // #1567: the popcorn cart and its bin
     for (const q of this.footprints) for (let i = 0; i < 4; i++) { const a = q[i], b = q[(i + 1) % 4]; this.segments.push([a[0], a[1], b[0], b[1]]); }
     // the individual cinema and computer chairs carry invisible pick boxes for the ordinary E / touch rest targets
     this.targets = [];
@@ -195,6 +199,7 @@ export class Playroom {
     source.geometry.dispose();
     const parts = [merged([...shell, ...fur], furMat)]; // shell and furniture share one vertex-coloured mesh; screens animate separately
     for (const m of parts) { m.matrixAutoUpdate = false; this.object.add(m); }
+    this.popcorn = new PopcornCart(this.object, furMat); this.controlPickables.push(...this.popcorn.pickables); // #1567 (tubs: main.js, makeTubs)
     // the way out: an invisible pick box in front of the door (the raycaster ignores `visible: false` materials)
     this.exitTarget = { name: 'lekstugan', kind: 'playroomExit', verb: 'gå ut ur' };
     const pick = new THREE.Mesh(new THREE.BoxGeometry(R.door.w + 0.1, R.door.h + 0.1, 0.5), new THREE.MeshBasicMaterial({ visible: false }));
@@ -225,7 +230,7 @@ export class Playroom {
     this.inside = false;
   }
 
-  update(dt,camera,aimed) { if(this.inside){this.sound.update(dt,this.discoOn,this.music.state!=='off');this.billiards.update(dt,camera,aimed);this.devices.update(dt);if(this.discoOn)this.disco(dt);} }
+  update(dt,camera,aimed) { if(this.inside){this.sound.update(dt,this.discoOn,this.music.state!=='off');this.billiards.update(dt,camera,aimed);this.devices.update(dt);this.popcorn.update(dt);if(this.discoOn)this.disco(dt);} }
 
   /** #1365: switch the disco light on or off (the ball stops and goes dull, the light spots vanish). Returns the badge text. */
   setDisco(on) {

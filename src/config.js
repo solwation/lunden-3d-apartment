@@ -5994,7 +5994,7 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
   // #1374: a fantasy clubhouse, not measured building architecture; every size/colour is a guess.
   clubhouse: { side: 3, front: 1.6, wall: 0.12, passage: 1.5, passageH: 2.1,
     welcome: { x: 0, z: 2.3, y: 2.52, w: 3.2, h: 0.3 }, label: { y: 2.25, w: 1.8, h: 0.25, offset: 0.012 },
-    atlas: [512,256], swatch: 8, lightInk: '#fff6dc', font: 48, signBackground: '#17263b', signInk: '#78eee2',
+    atlas: [512,320], swatch: 8, lightInk: '#fff6dc', font: 48, signBackground: '#17263b', signInk: '#78eee2',
     // #1384: assumed neon tube colours/widths in atlas pixels; no extra scene lights.
     neon: { colors:['#ff83d7','#ffb477','#78eee2','#9caaff'], glow:9, halo:5, tube:2, core:.7, coreInk:'#efffff', weight:500 } },
   // #1327: the child-sized fantasy furniture (all our own choices, *guess*); local metres from the room's centre (x east, z south, the door
@@ -6007,6 +6007,23 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
     discoSwitch: { x: 0.9, y: 1.05, z: 5.2 }, // #1365/#1374: the wall switch east of the door (south wall, z +5.2; height reachable for children, guess)
     ball: { x: 0, z: -1.5, y: 1.95, r: 0.17, spin: 0.5, spots: 26, spotSpin: 0.35 }, // the disco ball hangs under the ceiling, the light spots sweep round it
   } };
+// #1567: the popcorn cart in the playhouse entry (hall south of the BIO/BILJARD/SPEL partition), left of the door against the
+// south wall, facing north into the hall. Every size, count and time here is a *guess* (a fantasy-room prop, no product data).
+// Local metres from the room's centre (as PLAYROOM.furniture), cart parts from the cart's floor centre (x east, z south).
+export const POPCORN = {
+  cart: { x: -1.9, z: 4.9, w: 0.84, d: 0.52, base: 0.2, top: 0.86, counter: 0.03, wheelR: 0.17 }, // guess: child-height cart
+  glass: { x0: -0.38, x1: 0.14, z0: -0.2, z1: 0.2, h: 0.5, roof: 0.06, opacity: 0.14 }, // guess: the glass case on the counter
+  kettle: { r: 0.075, h: 0.07, drop: 0.13 }, // guess: the kettle hangs this far below the roof
+  button: { x: 0.26, y: 0.72, r: 0.035 }, // guess: the round pop button on the front panel
+  sign: { y: 0.11, w: 0.6, h: 0.08 }, // guess: "POPCORN" above the roof (y above the roof's top), shares the clubhouse sign atlas
+  bin: { x: -2.66, z: 4.95, r: 0.17, h: 0.6 }, // guess: a small bin west of the cart
+  kernels: 260, kernelSize: 0.017, heap: 0.24, // popped kernels shown in the glass case when it is full, heap height (guess)
+  fills: 6, // guess: tubs filled from one full glass case
+  popSeconds: 4, // guess: one press pops the case full in this time
+  stack: { count: 8, min: 2, nest: 0.02, x: 0.27 }, // guess: tubs nested on the counter; refilled to `count` below `min`
+  tub: { top: 0.066, bottom: 0.048, h: 0.13, stripes: 12, kernels: 44, bites: 6, loose: 4, cooldown: 0.45, // guess: tub size/bites; `loose` tubs out at once
+    held: { x: 0.2, y: -0.25, z: -0.42 } },
+};
 // #1415: derive the large screen from the actual BIO wall span, with one source for the device plane.
 {
   const R=PLAYROOM,s=R.furniture.cinema.screen;
