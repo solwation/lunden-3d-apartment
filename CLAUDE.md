@@ -120,7 +120,7 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   the user's own experience (a phone crash, touch behaviour on a specific phone), diagnose, fix and verify what can
   be verified, state plainly in the completion comment what could not be tested, and close with `Fixes #N`. The user
   reports again if it persists. Do not add `user-question` for a device test; reserve it for genuine product decisions.
-  The orchestra should be as autonomous as possible. Core proposal: solwation/dirigenten-och-orkestern#17.
+  The orchestra should be as autonomous as possible; the shared core has the same rule since v0.3.0.
 - **Risk-based verification (user, 2026-10-21):** choose 2–3 sufficient checks before work; stop when they pass.
   Docs-only changes need diff/link/contradiction review, no browser or triangle counts. Local behaviour needs a
   relevant component and affected route/view; wider profiles need concrete global risk. Reuse source-bound green

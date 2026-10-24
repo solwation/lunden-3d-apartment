@@ -188,7 +188,7 @@ valid outcome rather than running the same intake twice.
 
 ## Shared version and maintenance
 
-Shared release: **v0.2.3**, commit **562f7e409cddff4ed38700c01c0fd8d47f7116c0**. Imported as a squashed subtree
+Shared release: **v0.3.2**, commit **ebe2cb8738d9f1ce52f68497e8cfa26b90a01bc1**. Imported as a squashed subtree
 at `.orchestra/shared`. See [installation](shared/INSTALL.md) and [contribution](shared/CONTRIBUTING.md) instructions.
 Improve the core in its own clean repository, release it, then explicitly update both
 Lunden pins. Keep this local policy outside the subtree; do not export project history.
