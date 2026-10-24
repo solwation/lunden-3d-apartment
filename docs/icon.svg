@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-labelledby="t">
+  <title id="t">Dirigenten och orkestern</title>
+  <rect width="128" height="128" rx="28" fill="#16213a"/>
+  <circle cx="36.1" cy="87.0" r="4.4" fill="#f2c14e"/>
+  <circle cx="47.1" cy="73.2" r="4.4" fill="#f2c14e"/>
+  <circle cx="64.0" cy="68.0" r="4.4" fill="#f2c14e"/>
+  <circle cx="80.9" cy="73.2" r="4.4" fill="#f2c14e"/>
+  <circle cx="91.9" cy="87.0" r="4.4" fill="#f2c14e"/>
+  <circle cx="22.2" cy="81.4" r="4.8" fill="#5cc8b8"/>
+  <circle cx="31.8" cy="66.5" r="4.8" fill="#5cc8b8"/>
+  <circle cx="46.6" cy="56.5" r="4.8" fill="#5cc8b8"/>
+  <circle cx="64.0" cy="53.0" r="4.8" fill="#5cc8b8"/>
+  <circle cx="81.4" cy="56.5" r="4.8" fill="#5cc8b8"/>
+  <circle cx="96.2" cy="66.5" r="4.8" fill="#5cc8b8"/>
+  <circle cx="105.8" cy="81.4" r="4.8" fill="#5cc8b8"/>
+  <circle cx="8.2" cy="75.9" r="5.2" fill="#7aa7ff"/>
+  <circle cx="17.2" cy="60.5" r="5.2" fill="#7aa7ff"/>
+  <circle cx="30.3" cy="48.4" r="5.2" fill="#7aa7ff"/>
+  <circle cx="46.4" cy="40.7" r="5.2" fill="#7aa7ff"/>
+  <circle cx="64.0" cy="38.0" r="5.2" fill="#7aa7ff"/>
+  <circle cx="81.6" cy="40.7" r="5.2" fill="#7aa7ff"/>
+  <circle cx="97.7" cy="48.4" r="5.2" fill="#7aa7ff"/>
+  <circle cx="110.8" cy="60.5" r="5.2" fill="#7aa7ff"/>
+  <circle cx="119.8" cy="75.9" r="5.2" fill="#7aa7ff"/>
+  <!-- the conductor on the podium in front of the orchestra, baton raised with a motion trail -->
+  <path d="M30 30 Q62 10 100 24" fill="none" stroke="#ffffff" stroke-opacity=".4" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="1 6"/>
+  <rect x="50" y="110" width="28" height="7" rx="3" fill="#f5efe0"/>
+  <circle cx="64" cy="90" r="6" fill="#f5efe0"/>
+  <path d="M54 110 Q54 97 64 97 Q74 97 74 110 Z" fill="#f5efe0"/>
+  <path d="M71 100 L100 24" stroke="#f5efe0" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="100" cy="24" r="3" fill="#f2c14e"/>
+</svg>

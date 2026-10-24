@@ -1,50 +1,89 @@
+<p align="center">
+  <img src="docs/icon.svg" width="112" height="112" alt="A conductor on a podium, baton raised, in front of an orchestra seated in a semicircle">
+</p>
+
 # Dirigenten och orkestern
 
-**Turn your AI coding agent into a conductor that delivers verified changes — not
-just diffs.**
+**You talk to the conductor. The conductor runs the orchestra.**
+
+Give your AI coding agent a baton. Instead of one agent juggling everything in a single
+thread, the agent you talk to becomes **dirigenten**, the conductor. It reads the
+score (your issues and project rules), hands each part to a musician in
+**orkestern**, the orchestra of worker agents, listens to every section and only
+lets verified work reach your main branch.
+
+Plain Markdown files. No runtime, no service, no lock-in. Works with any agent that
+can read files.
+
+## Why a conductor?
 
 Agents left to themselves over-plan, spawn helpers they don't need, rerun the same
-test suite over and over and close issues nobody checked. This package is a handful of
-plain Markdown files that give any agent a disciplined way to work: plan briefly,
-use workers only where work is truly independent, run the checks that matter, review
-once, and deliver with evidence.
+test suite again and again, wait for you to answer questions they could have settled,
+and close issues nobody checked. A conductor fixes that by keeping one job in one
+place: **decide, delegate, listen, deliver.**
 
-## What you get
+| Without a conductor | With dirigenten och orkestern |
+| --- | --- |
+| One long chat that you have to babysit | You give one instruction; the queue runs unattended |
+| "Should I…?" prompts mid-task | The conductor decides with ordinary judgement; real product questions land on the issue with options and a recommendation |
+| Agents editing the same files and stepping on each other | Each worker plays its own part in its own checkout and ports |
+| Test suites rerun "just in case" | 2–3 checks chosen for the actual risk, then stop |
+| "Should work" | Evidence before closing: test results, screenshots, the delivered revision |
+| Issues parked waiting for "please test on your phone" | Best-guess fix, honest note of what could not be tested, closed; you report again if it persists |
 
-- **Verified delivery.** Every change goes plan → implement → verify → review →
-  deliver → follow up. A failed check loops back; nothing ships on "should work".
-- **Right-sized teams.** A small fix stays with one agent. Independent issues run in
-  parallel up to your capacity, each worker in its own checkout with a clear scope, so
-agents sharing a machine never trample each other's files.
-- **Hands-off issue queue.** Run `/orkester` with no scope and the conductor picks
-  eligible GitHub issues, delivers them and stops. Questions only you can answer land
-  on the issue with options and a recommendation — never as a chat prompt you have to
-  babysit.
-- **Your rules, your tools.** Project policy and phase hooks (screenshots, deploy
-  checks, release rules) live in your repository; the shared workflow decides when
-  they apply.
-- **No lock-in.** Independent of LLM provider, agent API, editor, language and
-  package manager. No runtime, no service, no dependency — just text your agent reads.
-
-## How it works
+## Who plays what
 
 ```mermaid
 %%{init: {"htmlLabels": false}}%%
 flowchart TD
-    task["Request or issue"] --> conductor["Conductor<br/>Plan and coordinate"]
-    host["Project documentation<br/>Policy and phase hooks"] --> conductor
-    core["ORCHESTRA.md<br/>Shared workflow"] --> conductor
-    conductor --> implementer["Implementation<br/>Conductor or worker"]
-    conductor -. "If useful" .-> helper["Optional helper<br/>Independent work"]
-    implementer --> review["Conductor<br/>Integrate and review"]
-    helper -. "Evidence" .-> review
-    review --> result["Verified delivery<br/>Results and evidence"]
+    you["You<br/>One request or /orkester"] --> conductor
+    score["The score<br/>Issues, project policy, ORCHESTRA.md"] --> conductor
+    conductor["Dirigenten (conductor)<br/>Plans, assigns, monitors"]
+    conductor --> w1["Worker<br/>Issue A, own checkout"]
+    conductor --> w2["Worker<br/>Issue B, own checkout"]
+    conductor -. "only if it saves work" .-> helper["Helper<br/>Independent part"]
+    w1 --> review["Dirigenten<br/>Integrates and reviews"]
+    w2 --> review
+    helper -. evidence .-> review
+    review --> main["Verified delivery<br/>Pushed, evidenced, issue closed"]
 ```
 
-The **conductor** owns the whole delivery: it reads your project policy and the
-shared workflow, chooses the smallest useful team, integrates and reviews. Where
-delegation isn't available it plays the roles in sequence instead of pretending to
-have workers.
+- **Dirigenten (the conductor)** is the agent thread you talk to. It picks the work,
+  writes a short plan, spawns the workers and gives each one a compact brief, keeps an
+  eye on their progress, integrates their results and reviews them once before
+  delivery. Where delegation isn't available it plays the parts itself in sequence,
+  without pretending to have workers.
+- **Orkestern (the orchestra)** is the worker agents. Each one gets a single issue, its
+  own checkout and ports, and returns a commit with evidence. None of them goes off to
+  play a solo nobody asked for.
+
+## What a run looks like
+
+1. You type `/orkester` (or just describe a change).
+2. The conductor fetches the issue queue, chooses the highest-priority startable work,
+   claims it and starts up to your configured number of workers in parallel.
+3. Each worker plans briefly, implements, runs the checks that matter and hands back.
+4. The conductor reviews the combined diff and evidence, pushes, posts the result on
+   the issue and closes it, then picks the next issue.
+5. Anything only you can decide waits on its issue, not in your chat. Everything else
+   keeps moving.
+
+## What you get
+
+- **Verified delivery.** Plan → implement → verify → review → deliver → follow up. A
+  failed check loops back; nothing ships on "should work".
+- **Right-sized teams.** A small fix stays with one agent. Independent issues run in
+  parallel up to your capacity, and nobody tramples anybody's files.
+- **Autonomy by default.** The conductor decides what reasonable judgement can settle
+  and closes device-dependent bugs after its best fix. You are interrupted only for
+  decisions that are really yours.
+- **Your rules, your instruments.** Project policy and phase hooks (screenshots, deploy
+  checks, release rules) live in your repository; the shared workflow decides when
+  they apply.
+- **Spend where it matters.** The cheapest capable worker for routine edits, stronger
+  reasoning only where the risk is.
+- **No lock-in.** Independent of LLM provider, agent API, editor, language and package
+  manager.
 
 ## Get started in two minutes
 
@@ -58,7 +97,7 @@ have workers.
 
 ```sh
 git subtree add --prefix=.orchestra/shared \
-  https://github.com/solwation/dirigenten-och-orkestern.git v0.2.3 --squash
+  https://github.com/solwation/dirigenten-och-orkestern.git v0.3.2 --squash
 cp .orchestra/shared/PROJECT.example.md .orchestra/project.md
 ```
 
@@ -71,7 +110,7 @@ the upstream release check are in [INSTALL.md](INSTALL.md).
 
 | File | Purpose |
 | --- | --- |
-| [ORCHESTRA.md](ORCHESTRA.md) | The shared workflow the conductor follows |
+| [ORCHESTRA.md](ORCHESTRA.md) | The conductor's score: the shared workflow |
 | [WORKER.md](WORKER.md) | The brief each worker receives |
 | [COORDINATION.md](COORDINATION.md) | Bounded passes and queue sessions over open issues |
 | [ISSUE-WORKFLOW.md](ISSUE-WORKFLOW.md) | GitHub labels and issue state via Issueflow |

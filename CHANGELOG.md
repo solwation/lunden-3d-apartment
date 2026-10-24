@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.3.2 — 2026-10-24
+
+- Rewrite the README around the concept: you talk to the conductor (*dirigenten*),
+  which runs the orchestra (*orkestern*) of workers; add a before/after table, a
+  who-plays-what diagram, a run walkthrough and a project icon (`docs/icon.svg`) (#19).
+- Warn that worktrees share one stash: concurrent agents must not use `git stash`,
+  after two workers' `stash pop` swapped each other's changes in a Lunden session.
+
+## 0.3.1 — 2026-10-24
+
+- Explain the name in README and ORCHESTRA.md: *dirigenten* is the conductor thread
+  that spawns, briefs, monitors, integrates and reviews; *orkestern* is its workers (#18).
+
+## 0.3.0 — 2026-10-24
+
+- Close device-dependent issues after a best-guess fix by default: when only a physical
+  device or the user's own experience could verify the result, diagnose, fix, verify
+  what is possible and close with an honest note of what remained untested; the user
+  reports again if it persists. Device tests are no longer user-only questions. Hosts or
+  issues can still make device acceptance an explicit closing gate (#17).
+
 ## 0.2.3 — 2026-10-23
 
 - Rewrite README as a short, concrete introduction with benefits, one diagram, a
