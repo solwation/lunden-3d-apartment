@@ -21,7 +21,7 @@ export class HallCare {
       if(this.armed)for(const id of floors)life.restock(id);
     });
     life.items.on((kind,item)=>{ // tidied away: the hall task's goal (tasks.js)
-      if(kind==='move'&&item.place?.at==='slot'&&P.tidy[item.place.store]===item.type)life.emit('hallTidied',{item,store:item.place.store});
+      if(!this.quiet&&kind==='move'&&item.place?.at==='slot'&&P.tidy[item.place.store]===item.type)life.emit('hallTidied',{item,store:item.place.store});
     });
     for(const piece of world.furniture.movable.filter(p=>p.object.userData.hallCare)){
       const c=piece.object.userData.hallCare;
@@ -38,6 +38,14 @@ export class HallCare {
       store.pick.position.z=Math.abs(w.front-w.back)-P.frontGap;root.visible=open();this.wardrobes.push({spec:w,root,store,open});
       for(const d of w.doors){const update=d.update.bind(d);d.update=dt=>{update(dt);root.visible=open();};}
     }
+  }
+  /** #1564 (`städa`): floor jacket/shoes onto a free hook/rack/wardrobe rod, quietly (a shortcut earns no task goal). */
+  tidyAll(){
+    const I=this.life.items;this.quiet=true;
+    try{
+      for(const it of I.all())if(it.place?.at==='slot'&&it.place.store.startsWith('hallFloor'))
+        for(const [id,type] of Object.entries(P.tidy))if(type===it.type&&this.stores.has(id)&&I.freeSlot(id,it)>=0&&!I.move(it,{at:'slot',store:id,slot:I.freeSlot(id,it)},{ignoreShut:true}))break;
+    }finally{this.quiet=false;}
   }
   add(id,type,name,root,pos,size,isOpen){
     const anchor=new THREE.Object3D();anchor.position.set(...pos);root.add(anchor);

@@ -43,3 +43,23 @@ export function cleanHome({ life, cups, pan, vacuum, cloth, marks, breaker, hold
   life.dirty = true; life.flush();
   return 'Hemmet och uteplatsen städade.';
 }
+
+// #1564 `städa`: everything `clean` does, plus the chores `clean` deliberately leaves: laundry washed, dried, folded and
+// on a free wardrobe shelf (else folded where it lies), every unmade bed made (not the one being lain in) and the hall
+// jacket/shoes off the floor onto their hook/rack. Plain Items/BedCare state: saved with the life record, no task credit.
+export function cleanEverything(ctx) {
+  const { life, laundry, bedCare, hallCare, rest } = ctx;
+  cleanHome(ctx);
+  const I = life.items;
+  laundry?.cancel(); // a running wash/dry must not reapply stale state to garments that left the drum
+  const shelves = laundry?.wardrobes.map((w) => w.store.id) ?? [];
+  for (const item of I.all()) if (I.has(item, 'laundry')) {
+    I.set(item, { clean: 'clean', moisture: 'dry', machine: { folded: true } });
+    if (item.place.at === 'slot' && shelves.includes(item.place.store)) continue;
+    for (const id of shelves) { const k = I.freeSlot(id, item); if (k >= 0 && !I.move(item, { at: 'slot', store: id, slot: k }, { ignoreShut: true })) break; }
+  }
+  for (const unit of bedCare?.units ?? []) if (!unit.made && !(rest?.active && rest.target === unit.restTarget)) unit.apply(true);
+  hallCare?.tidyAll();
+  life.dirty = true; life.flush();
+  return 'Allt städat: disk, tvätt, sängar, hallen och golven.';
+}

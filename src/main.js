@@ -23,7 +23,7 @@ import { installTightFrustum } from './tightfrustum.js';
 import { installSiteInstanceBatch } from './siteinstancebatch.js';
 import { installEntrancePlantBatch } from './entranceplantbatch.js';
 import { runCheat, cheatList, isCommand } from './cheats.js';
-import { cleanHome } from './cheatclean.js';
+import { cleanHome, cleanEverything } from './cheatclean.js';
 import { buildCheatNote } from './cheatnote.js';
 import { REPORTS, CHEAT_NOTE, LOW_MEMORY, QUALITY, STANDARD, SHADOW_BOX, STARTUP, KITCHEN_TOWEL_MATERIAL, LIGHTING, VIEW_LOD, VIEW_NEAR, BIRDS } from './config.js';
 import { fetchStartupJSON } from './startuprecovery.js';
@@ -2660,6 +2660,7 @@ document.getElementById('terminal-btn').addEventListener('click', () => showTerm
 document.getElementById('terminal-close').addEventListener('click', () => showTerminal(false));
 const cheats = {
   clean: () => cleanHome({life,cups,pan,vacuum,cloth,marks,breaker,holdables,dishProg,toiletPaper}),
+  'städa': () => cleanEverything({life,cups,pan,vacuum,cloth,marks,breaker,holdables,dishProg,toiletPaper,laundry,bedCare,hallCare,rest}),
   jetpack: () => {
     if (jetpack.worn) return 'Jetpacken är redan på.';
     if (!player.outdoors) return 'Gå ut först. Jetpacken kan inte användas inne i hemmet.';

@@ -6,6 +6,7 @@ import { isPrivateCode } from './privatecodes.js';
 // #675: the console is a chat while the players' room is on. A line that is a code (exactly, any case / spacing) or starts
 // with '/' (`/day`) is a command: run here, never sent and never kept; anything else is a chat message.
 export const CHEATS = [
+  { code: 'städa', text: 'Städa allt: disk, tvätt, sängar och golv' }, // #1564: `clean` plus laundry, beds and the hall
   { code: 'clean', text: 'Städa hemmet och uteplatsen' },
   { code: 'jetpack', text: 'Ta på jetpacken utomhus' },
   { code: 'spiderman', text: 'Ta på Spindelmannendräkten' },
@@ -15,7 +16,7 @@ export const CHEATS = [
   { code: 'lights off', text: 'Släck hemmets lampor' },
   { code: 'handsfree', text: 'Ställ undan det du håller' },
 ];
-const normal = (line) => line.trim().replace(/^\//, '').trim().toLowerCase().replace(/\s+/g, ' ');
+const normal = (line) => line.normalize('NFC').trim().replace(/^\//, '').trim().toLowerCase().replace(/\s+/g, ' ');
 export const publicCheats = () => CHEATS.filter(c => !c.secret);
 /** The graffiti's lines (the single source for what is written on the wall). */
 export const cheatList = () => publicCheats().map(c => `${c.code} — ${c.text}`).join('\n');
