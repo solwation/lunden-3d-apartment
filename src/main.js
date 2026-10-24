@@ -412,7 +412,7 @@ if (params0.has('temp')) weather.forceTemp = Number(params0.get('temp')); // &te
 weather.surfaceAt = (x, z) => world.roofs.topAt(x, z); // the rain falls on the roofs you can stand on, and on you up there (#360)
 const lastWeatherPos = new THREE.Vector3();
 // out in it (#249): walking about outdoors in rain / snow / hail / a thunderstorm counts once per shower
-const WEATHER_WALKS = { rain: ['walkRain', '🌧 Ute i regnet'], snow: ['walkSnow', '❄️ Ute i snön'], hail: ['walkHail', '🧊 Ute i haglet'], storm: ['walkStorm', '⛈ Ute i åskvädret'] };
+const WEATHER_WALKS = { rain: ['walkRain', '🌧 Ute i regnet'], snow: ['walkSnow', '❄️ Ute i snön'], hail: ['walkHail', '🌨 Ute i haglet'], storm: ['walkStorm', '⛈ Ute i åskvädret'] };
 weather.onExperience = (kind) => { const [key, text] = WEATHER_WALKS[kind]; bump(key); badge(text, false); };
 day.paused = params0.has('freeze');
 // the kitchen wall clock: shows the time; E opens the strip to spool / pause it (the date: the calendar)

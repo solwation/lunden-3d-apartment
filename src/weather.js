@@ -104,7 +104,7 @@ function flakeTexture() {
   return flakeTex;
 }
 
-const KINDS = { rain: '🌧', snow: '❄️', hail: '🧊' };
+const KINDS = { rain: '🌧', snow: '❄️', hail: '🌨' };
 
 /** What gets into the cabin of our car (#664): `open` 0 (all doors shut) … 1 (a door wide open) → the gain and low-pass
  * cutoff for the rain, and the gain for thunder (CAR.cabin; dB and Hz interpolated, so a swinging door fades it). */
@@ -320,6 +320,6 @@ export class Weather {
     sfx.thunder(dist / 343, near, inside || (mix && mix.thunder < 1), mix?.thunder ?? 1);
   }
 
-  /** For the HUD: 🌧 / ❄️ / 🧊 while it falls, ⛈ in a thunderstorm. */
+  /** For the HUD: 🌧 / ❄️ / 🌨 while it falls, ⛈ in a thunderstorm. */
   get icon() { return this.rain > 0.15 && this.kind ? ` · ${this.storm ? '⛈' : KINDS[this.kind]}` : ''; }
 }
