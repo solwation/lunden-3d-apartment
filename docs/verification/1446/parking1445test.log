@@ -1,0 +1,15 @@
+PASS OSM outline, raw capacity 45 (guess) and the #1444 grade kept; the layout (aisle way, rows, margin) is marked guess
+PASS 58 whole 2.5×5 m boxes (north-west row 31 in runs 31, south-east row 27 in runs 9+18); the guessed raw capacity stays 45
+PASS every box lies wholly inside the concave outline (0 outside) and off the slabs of houses 41 and 42 (0 touching them)
+PASS a clear aisle ≥6 m (guess) lies in front of every box (facing rows 6.000 m apart, nearest rows -2.55 / +3.45 m from the way's centre line)
+PASS no box covers mapped way 145221573 (3290 strip samples in the lot) or the crossing way 145221583 (549 samples)
+PASS 61 5 m dividers, none crosses or reaches into the aisle (0)
+PASS cost: south-backdrop 47765 → 48348 (+583, cap +600; live 48348); south-land 35401 → 35984; site-terrain 91146 (unchanged); same 6 meshes, no extra draw call or material
+PASS 2609 rays on asphalt off the paint (all south of WALK.z1=250): merged surface equals the old one and sits 5.2 cm over the rendered #1444 surface (max error 3.95e-6 m, misses 0)
+PASS emitted paint follows the rendered surface: 1749/1749 vertices at +7.6 cm (max error 4.69e-6 m, 0 outside the outline beyond float32 rounding); 348 divider rays hit paint, 58 box-centre rays hit asphalt, no paint along the aisle (0)
+PASS #1444 sub-planes (4) and the bases of houses 41/42/43 (3.762/2.424/1.833) unchanged, control (10,248) and WALK.z1=250 kept
+PASS no backdrop tree stands on the lot (0)
+PASS every box lies south of WALK.z1: surface/ray evidence only, honestly not reachable on foot
+PASS actual World remains loaded
+time 64.6 s
+ALL PASS

@@ -1,0 +1,28 @@
+{
+  "source": "b361f59ab3253d8d0b4155945c15b31bf124f8eb",
+  "url": "http://localhost:8359/?test=lazy&shot&cloud=&month=7&day=15&time=12&weather=clear&freeze&at=27,389,0,-90,110",
+  "state": {
+    "camera": [
+      27,
+      111.62,
+      389
+    ],
+    "rotation": [
+      -1.5707963267948966,
+      0,
+      0,
+      "YXZ"
+    ],
+    "month": 7,
+    "hour": 12.00000027777778,
+    "scenario": "?test=lazy&shot&cloud=&month=7&day=15&time=12&weather=clear&freeze&at=27,389,0,-90,110",
+    "profileDialogHidden": true
+  },
+  "errors": [],
+  "httpErrors": [
+    {
+      "url": "http://localhost:8359/data/todo.json",
+      "status": 404
+    }
+  ]
+}

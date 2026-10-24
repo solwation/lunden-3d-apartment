@@ -1,0 +1,4 @@
+before overhead {"camera":[27,111.62,389],"rotation":[-1.5707963267948966,0,0,"YXZ"],"month":7,"hour":12,"scenario":"?test=lazy&shot&cloud=&month=7&day=15&time=12&weather=clear&freeze&at=27,389,0,-90,110","profileDialogHidden":true}
+before ground {"camera":[-3,5.82,402],"rotation":[-0.045,-1.5707963267948966,0,"YXZ"],"month":7,"hour":12,"scenario":"?test=lazy&shot&cloud=&month=7&day=15&time=12&weather=clear&freeze&at=27,389,0,-90,110","profileDialogHidden":true}
+after overhead {"camera":[27,111.62,389],"rotation":[-1.5707963267948966,0,0,"YXZ"],"month":7,"hour":12.00000027777778,"scenario":"?test=lazy&shot&cloud=&month=7&day=15&time=12&weather=clear&freeze&at=27,389,0,-90,110","profileDialogHidden":true}
+after ground {"camera":[-3,5.82,402],"rotation":[-0.045,-1.5707963267948966,0,"YXZ"],"month":7,"hour":12.00000027777778,"scenario":"?test=lazy&shot&cloud=&month=7&day=15&time=12&weather=clear&freeze&at=27,389,0,-90,110","profileDialogHidden":true}

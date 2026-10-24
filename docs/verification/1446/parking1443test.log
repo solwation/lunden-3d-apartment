@@ -1,0 +1,19 @@
+PASS raw capacity 20 (guess) and the OSM outline are kept; plane, 2 m transition and one-row layout are marked guess
+PASS no mapped way reaches the lot (nearest strip edge 5.85 m away) and no access way is added
+PASS 1036 core rays (≥2 m inside) lie on one plane (slopes 2.77/3.21 %, max off-plane 1.87e-7 m, 0.47 m fall); all 1717 rays (1717 south of WALK.z1) agree with renderedTerrainY and groundY within 1.91e-6 m
+PASS outside the clipped outline the drawn ground is unchanged: 10 baseline points 8.9e-16 m, rays there 2.0e-7 m; 1593 rays within 6 m outside match the sampler (1.0e-6 m)
+PASS 132 emitted terrain triangles on the lot (the core is one polygon), steepest 0.186 < WALK.maxSlope 0.7
+PASS one row of 18 whole 2.5×5 m boxes along the south-east edge, all wholly inside the outline (0 outside); no second row
+PASS lot 47.21×11.76 m: 5 m row + 6.76 m clear aisle (≥6 m) from the row front to the north-west edge, inside the outline
+PASS 19 5 m dividers close every box; none reaches into or crosses the aisle (0; lengths 5.000000..5.000000 m)
+PASS paint 636/636 vertices at +7.6 cm (max error 1.73e-6 m), none in the aisle (old full-width lines gone: 0), no kerb (0); asphalt vertices at +5.2 cm (1.48e-6 m)
+PASS independent rays: 108 on dividers hit paint, 18 box centres and 94 points along the aisle hit asphalt on the drawn plane (failures 0/0/0)
+PASS south-backdrop 48348 → 48348 triangles (no budget raised), same 6 meshes/materials
+PASS site-terrain pinned total 91146 = 91146 triangles (includes this lot's clipped cells +158, #1450's two street pockets +116 and #1451's two +103; the measured cost, not hidden by batching)
+PASS house 47 base 4.200594 m, other lots' samples (0.0e+0 m), controls 1.26/1.58 m and WALK.z1=250 unchanged
+PASS other laid-out lots keep 30/18/15 boxes
+PASS no backdrop tree stands on the lot (0)
+PASS the whole lot lies south of WALK.z1=250 (from z 354.46): surface and ray evidence only, honestly unreachable on foot
+PASS actual World remains loaded
+time 149.5 s
+ALL PASS

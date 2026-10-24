@@ -1,0 +1,28 @@
+PASS street 30633545 keeps its mapped path and 4.5 m width; it is the pockets' driving lane (no internal aisle is added)
+PASS 1379042014 (Sankt Lars väg 66): OSM outline and raw capacity 6 kept; plane, 1.5 m transition, row and apron are marked guess
+PASS 1379042014 (Sankt Lars väg 66): 403 core rays (≥1.5 m inside) lie on the drawn plane (slopes 6.14/-0.40 %, off-plane 6.4e-7 m); all 1184 rays agree with renderedTerrainY and groundY within 1.5e-6 m
+PASS 1379042014 (Sankt Lars väg 66): ground outside the outline unchanged: 13 baseline points 8.9e-16 m (rays 1.8e-7 m); 3119 rays within 6 m match the sampler (5.7e-7 m)
+PASS 1379042014 (Sankt Lars väg 66): no steeper ground: overlapping triangles 0.1714 → 0.1599 (52), within 6 m outside 0.0578 → 0.1714 (old pieces of the same edge triangles), region 0.1714 → 0.1714; minimax fit 0.1870 → 0.1599 (9 cells)
+PASS 1379042014 (Sankt Lars väg 66): one row of 6 whole 2.5×5 m boxes on the far edge (lot 15.29×5.23 m), all inside the outline (0 outside), none on the street strip (0); box fronts 0.18 m from the pocket edge, ≥0.62 m from the street asphalt
+PASS 1379042014 (Sankt Lars väg 66): 7 5 m dividers close the six boxes; none reaches the street (0)
+PASS 1379042014 (Sankt Lars väg 66): paint 333/333 vertices at +7.6 cm (2.0e-6 m), 2.4 cm above the asphalt at +5.2 cm (1.4e-6 m); old kerb and capacity lines gone (0)
+PASS 1379042014 (Sankt Lars väg 66): independent rays: 36 on dividers hit paint, 6 box centres hit asphalt on the plane (failures 0/0)
+PASS 1379042014 (Sankt Lars väg 66): the guessed apron covers the grass gap up to 0.64 m (623 rays hit asphalt, 0 miss, 0 gap points left open at the bend, 0 edge positions where the street bends away beyond 2 m); seam to the street 0.8 mm at 61 points, to the pocket 0.64 mm; road and outline unmoved
+PASS 1379042014 (Sankt Lars väg 66): the pocket lies south of WALK.z1=250 (from z 374.21): surface and ray evidence only, not reachable on foot
+PASS 1379043165 (Sankt Lars väg 64): OSM outline and raw capacity 6 kept; plane, 1.5 m transition, row and apron are marked guess
+PASS 1379043165 (Sankt Lars väg 64): 416 core rays (≥1.5 m inside) lie on the drawn plane (slopes -2.96/-10.39 %, off-plane 1.7e-6 m); all 1206 rays agree with renderedTerrainY and groundY within 2.1e-6 m
+PASS 1379043165 (Sankt Lars väg 64): ground outside the outline unchanged: 13 baseline points 8.9e-16 m (rays 1.1e-6 m); 3135 rays within 6 m match the sampler (1.6e-6 m)
+PASS 1379043165 (Sankt Lars väg 64): no steeper ground: overlapping triangles 0.1367 → 0.1366 (32), within 6 m outside 0.0524 → 0.1367 (old pieces of the same edge triangles), region 0.1367 → 0.1367; minimax fit 0.1662 → 0.1366 (4 cells)
+PASS 1379043165 (Sankt Lars väg 64): one row of 6 whole 2.5×5 m boxes on the far edge (lot 15.31×5.27 m), all inside the outline (0 outside), none on the street strip (0); box fronts 0.26 m from the pocket edge, ≥0.82 m from the street asphalt
+PASS 1379043165 (Sankt Lars väg 64): 7 5 m dividers close the six boxes; none reaches the street (0)
+PASS 1379043165 (Sankt Lars väg 64): paint 288/288 vertices at +7.6 cm (2.5e-6 m), 2.4 cm above the asphalt at +5.2 cm (2.0e-6 m); old kerb and capacity lines gone (0)
+PASS 1379043165 (Sankt Lars väg 64): independent rays: 36 on dividers hit paint, 6 box centres hit asphalt on the plane (failures 0/0)
+PASS 1379043165 (Sankt Lars väg 64): the guessed apron covers the grass gap up to 1.17 m (814 rays hit asphalt, 0 miss, 0 gap points left open at the bend, 4 edge positions where the street bends away beyond 2 m); seam to the street 0.7 mm at 57 points, to the pocket 0.44 mm; road and outline unmoved
+PASS 1379043165 (Sankt Lars väg 64): the pocket lies south of WALK.z1=250 (from z 360.95): surface and ray evidence only, not reachable on foot
+PASS local cost: 337 land triangles on the two pockets and aprons (asphalt + paint), 84 terrain triangles overlapping them; south-backdrop 48348 / site-terrain 91146 triangles in total (ef5c6ef1: 49346 / 89824); same 6 backdrop meshes and materials, no new texture
+PASS house bases unchanged: Sankt Lars väg 66 4.664484, Sankt Lars väg 63 7.692975, Sankt Lars 145221625 6.343895, Sankt Lars väg 64 7.263365, Sankt Lars väg 62 6.726380 (max 8.9e-16 m)
+PASS other graded lots' samples (0.0e+0 m), their 30/18/15/18 boxes, control (10,248)=1.26 m and WALK.z1 unchanged
+PASS no backdrop tree stands on the pockets or aprons (0)
+PASS actual World remains loaded
+time 150.4 s
+ALL PASS

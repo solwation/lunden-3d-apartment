@@ -1,0 +1,60 @@
+{
+  "source": "b361f59ab3253d8d0b4155945c15b31bf124f8eb",
+  "fixtures": [
+    {
+      "fixture": "parking1443test",
+      "pass": 17,
+      "fail": 0,
+      "allPass": true
+    },
+    {
+      "fixture": "parking1444test",
+      "pass": 9,
+      "fail": 0,
+      "allPass": true
+    },
+    {
+      "fixture": "parking1445test",
+      "pass": 13,
+      "fail": 0,
+      "allPass": true
+    },
+    {
+      "fixture": "parking1446test",
+      "pass": 9,
+      "fail": 0,
+      "allPass": true
+    },
+    {
+      "fixture": "parking1450test",
+      "pass": 26,
+      "fail": 0,
+      "allPass": true
+    },
+    {
+      "fixture": "parking1451test",
+      "pass": 28,
+      "fail": 0,
+      "allPass": true
+    },
+    {
+      "fixture": "parking1452test",
+      "pass": 32,
+      "fail": 0,
+      "allPass": true
+    },
+    {
+      "fixture": "southbackdroptest",
+      "pass": 72,
+      "fail": 0,
+      "allPass": true
+    }
+  ],
+  "initialRunner": "7 passed, parking1452 timed out at311s with a 5min cap; initial CLI1",
+  "retry": "only parking1452 on same source, unchanged authored mode/viewport,20min cap; CLI0;187.413s wall; fixture time200.2s",
+  "limitations": [
+    "Authored test mode, not a full/test parity test",
+    "Surface/ray evidence beyond WALK.z1, no walking-route claim",
+    "No physical device or FPS acceptance"
+  ]
+}
