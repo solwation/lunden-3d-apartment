@@ -1253,6 +1253,25 @@ Not done: positions (48 MB CPU, 48 GPU; needed by raycast, could move to TriGrid
 (Float32 → byte would band dark tones), uv, merged non-indexed geometry (indexing would cut vertices but costs frame time),
 the transient +19 MB at load (pack in place), the ~106 MB of CPU canvases and the heap's remaining ~300 MB.
 
+## Architecture-edge construction data released (#1590)
+
+The live edge-line material and lines held closures created inside `architectureEdges()` (`onBeforeCompile`, `raycast`), and
+V8 keeps a function's whole scope alive while any closure from it lives. So the construction-only solids, triangle trees
+(`solidTree`) and crease index stayed on the heap for the whole session. Both callbacks are now module-level functions.
+Measured in an iPhone 14 Pro landscape profile (852×393, DPR 3, iOS UA, touch; SwiftShader; sampled with CDP, MB):
+
+| | before | after |
+|---|---|---|
+| JS heap when the warm-up starts compiling | 586 | 445 |
+| JS heap peak during the warm-up | 620 | 451 |
+| JS heap after the warm-up | 520–540 | 317 |
+| sampled live allocations at compile start (`HeapProfiler` sampling) | 218 (architectureedges ≈ 140) | 70 |
+
+Two iPhone `killed` reports (builds b63394c, 8c5556e) died during `compiling` with only 18–27 MB of estimated GPU memory,
+the heap's peak; a smaller peak is the expected effect, *not verified on a device*. A closure created inside a construction
+function and kept on a long-lived object (material, mesh, listener) retains everything that function's other closures use;
+define such callbacks at module level.
+
 ## Phone graphics a little finer (#662 — not verified on a device)
 
 The iPhone crash (#585/#628) can no longer be reproduced, so `LOW_MEMORY` was raised carefully, one knob at a time, measured

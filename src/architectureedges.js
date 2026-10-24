@@ -218,6 +218,17 @@ function edgeSurfaceColors(geometry, edges, materials, darken) {
   return result;
 }
 
+// Move the depth toward the eye, not the geometry: stable on coplanar faces, with ordinary depth testing still hiding
+// edges behind walls and furniture. 1 mm plus 0.4 % of the distance (#1247): a flat 1 mm broke a corner line seen
+// obliquely from 4-5 m into dots, since a wall's depth changes by more than that across one pixel there.
+// This and noRaycast are module level on purpose (#1590): a closure made inside architectureEdges() shares its scope, so
+// the live material and lines kept the construction-only solids, triangle trees and crease index for the whole session.
+function noRaycast() {}
+function edgeDepthOffset(shader) {
+  shader.vertexShader = shader.vertexShader.replace('#include <project_vertex>', `#include <project_vertex>
+      gl_Position = projectionMatrix * vec4(mvPosition.xyz * max(0.0, 1.0 - 0.001 / max(length(mvPosition.xyz), 0.001) - 0.004), mvPosition.w);`);
+}
+
 // #474: only call on a construction-only scene, before furniture/decoration is added.
 // Bake sharp edges once, in the nearest animated fitting's frame (or a floor batch).
 // The 0.62 linear-light surface darkening is a visual guess (#1579).
@@ -226,13 +237,7 @@ export function architectureEdges(root, { moving = [], exclude = [], floor = 3, 
   const anchors = new Set(moving.filter(Boolean)), skipped = new Set(exclude.filter(Boolean));
   const batches = new Map(), solids = new Map(), creases = new Map(), cache = new WeakMap(), point = new THREE.Vector3();
   const material = new THREE.LineBasicMaterial({ color: 0xffffff, vertexColors: true, transparent: true, opacity, depthTest: true, depthWrite: false });
-  // Move the depth toward the eye, not the geometry: stable on coplanar faces, with ordinary depth testing still hiding
-  // edges behind walls and furniture. 1 mm plus 0.4 % of the distance (#1247): a flat 1 mm broke a corner line seen
-  // obliquely from 4-5 m into dots, since a wall's depth changes by more than that across one pixel there.
-  material.onBeforeCompile = (shader) => {
-    shader.vertexShader = shader.vertexShader.replace('#include <project_vertex>', `#include <project_vertex>
-      gl_Position = projectionMatrix * vec4(mvPosition.xyz * max(0.0, 1.0 - 0.001 / max(length(mvPosition.xyz), 0.001) - 0.004), mvPosition.w);`);
-  };
+  material.onBeforeCompile = edgeDepthOffset;
   root.updateWorldMatrix(true, true);
   function visit(o, anchor = root) {
     if (skipped.has(o) || !o.visible || o.name === 'contents' || o.userData.noArchitectureEdges) return;
@@ -289,7 +294,7 @@ export function architectureEdges(root, { moving = [], exclude = [], floor = 3, 
     geometry.computeBoundingSphere();
     const line = new THREE.LineSegments(geometry, material);
     line.name = 'architecture-edges'; line.userData.architectureEdges = true;
-    line.raycast = () => {}; anchor.add(line); lines.push(line);
+    line.raycast = noRaycast; anchor.add(line); lines.push(line);
   }
   return lines;
 }
