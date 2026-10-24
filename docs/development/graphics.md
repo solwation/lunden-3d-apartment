@@ -569,3 +569,13 @@ Procedural startup backing sizes (#1549): AO, frozen-meal prints and the kitchen
 `resourceprofile.js` `profileCanvasSize`/`profileCanvas` before painting. Full retains authored pixels;
 light retains the GPU cap and authored drawing coordinates. AO preserves its blocker grid and hole edges.
 See [performance](performance.md#paint-procedural-sources-at-startup-profile-size-1549).
+
+## Playhouse posters, neon and zoned light (#1574)
+
+`src/playroomposters.js` builds the hall's, SPEL's and BILJARD's own generated posters (canvas shapes and pixel bitmaps in `src/posterdesigns.js`, no real logos or artwork) on one atlas,
+together with SPEL's neon ceiling runs and the two wall neon signs ("GAME ON", "8-BALL"), BILJARD's two green pendants and the warm wall lamps. All of it is one unlit
+vertex-coloured mesh (no light source); `src/posterlayout.js` is the pure layout (wall planes, keep-out checks) and every placement, size, colour and level lives in
+`PLAYROOM.posters` / `PLAYROOM.zones` (*guess*). BIO is not touched (its posters are #1575's); the hall's west short wall stays free for the popcorn cart.
+Per-room light: `clubhousematerials.js` exports `CLUB_ZONES` (Vector4 [BIO, BILJARD, SPEL, hall]); each clubhouse fragment scales its ceiling-lamp and ambient terms by the room it is in, so SPEL is
+dim and BILJARD pub-like while BIO and the hall are unchanged. The values are live uniforms (set a component, no recompile), meant to be reused for further per-room moods. The light switch (#1365) and
+the disco ball work as before; the neon and lamps stay on when the disco light is off.

@@ -4,6 +4,10 @@ import { rememberFragmentCompile } from './vertexcompile.js';
 
 export const FINISH = { paint: 0, wood: 1, fabric: 2, metal: 3, floor: 4 };
 
+// #1574: per-room light levels shared by every clubhouse material, [BIO, BILJARD, SPEL, hall] (PLAYROOM.zones): the ceiling-lamp term and the ambient term of
+// each fragment are scaled by the room it is in. The Vector4s are live: set a component and every clubhouse surface follows next frame (no recompile).
+export const CLUB_ZONES = { lamp: new THREE.Vector4(...R.zones.lamp), ambient: new THREE.Vector4(...R.zones.ambient) };
+
 // Linear vertex colours and a per-surface finish keep the room in one PBR batch.
 export function clubhouseSurface(geometry, hex, finish = FINISH.paint) {
   const g = geometry.index ? geometry.toNonIndexed() : geometry;
@@ -28,6 +32,8 @@ export function clubhouseMaterial() {
     shader.uniforms.uClubLight = { value: new THREE.Color(C.lampColor).multiplyScalar(C.lampStrength) };
     shader.uniforms.uClubLayout = { value: new THREE.Vector4(R.clubhouse.side, R.clubhouse.front, R.d / 2, R.ceiling - C.lampDrop) };
     shader.uniforms.uClubFalloff = { value: C.lampFalloff };
+    shader.uniforms.uClubZoneLamp = { value: CLUB_ZONES.lamp };
+    shader.uniforms.uClubZoneAmbient = { value: CLUB_ZONES.ambient };
     shader.vertexShader = shader.vertexShader.replace('#include <common>', `#include <common>
       attribute float aClubFinish;
       varying float vClubFinish;
@@ -41,6 +47,10 @@ export function clubhouseMaterial() {
       uniform vec3 uClubPlank, uClubSurface, uClubLight;
       uniform vec4 uClubLayout;
       uniform float uClubFalloff;
+      uniform vec4 uClubZoneLamp, uClubZoneAmbient;
+      float clubZone(vec4 z, vec3 p) { // BIO / BILJARD / SPEL (x), the hall south of the partition (w)
+        return p.z > uClubLayout.y ? z.w : (p.x < -uClubLayout.x ? z.x : (p.x > uClubLayout.x ? z.z : z.y));
+      }
       float clubHash(vec2 p) { return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453); }
       vec2 clubUV(vec3 p, vec3 n) {
         vec3 a = abs(n);
@@ -88,7 +98,8 @@ export function clubhouseMaterial() {
         (uClubLayout.z+uClubLayout.y)*.5 : (-uClubLayout.z+uClubLayout.y)*.5;
       vec3 clubDelta = vec3(clubRoomX,uClubLayout.w,clubLampZ)-vClubPosition;
       float clubLambert = max(dot(clubWorldNormal,normalize(clubDelta)),0.0);
-      reflectedLight.directDiffuse += BRDF_Lambert(material.diffuseColor)*uClubLight*
+      reflectedLight.indirectDiffuse *= clubZone(uClubZoneAmbient,vClubPosition);
+      reflectedLight.directDiffuse += BRDF_Lambert(material.diffuseColor)*uClubLight*clubZone(uClubZoneLamp,vClubPosition)*
         clubLambert/(1.0+uClubFalloff*dot(clubDelta,clubDelta));
       if(vClubFinish>1.5 && vClubFinish<2.5) {
         float clubGrazing = pow(1.0-max(dot(normal,normalize(vViewPosition)),0.0),3.0);

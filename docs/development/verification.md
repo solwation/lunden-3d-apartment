@@ -2443,6 +2443,7 @@ per issue). Each needs its own actual full/test runs and unchanged assertions:
 | Playroom popcorn cart (#1567) | popcorntest.html, popcorndrawtest.cjs |
 | BIO vignette, speakers and sconce dimming (#1570) | biovignettetest.cjs |
 | BIO film posters from the daily Worker list (#1575) | cinemapostertest.cjs (fakes `/cinema/posters`, no Worker needed); `node --test cloudflare/cinemaposters.test.mjs` |
+| Playhouse posters, neon, pub light: draws, switch, zones (#1574) | playroomposterstest.cjs, playroomposterslayout.test.mjs |
 | Placement and stored photos (#808 accepted) | bestaplacementtest, artleveltest, boardtest; actual evidence below, default optional art cloud coverage remains unexecuted |
 | Care and persistence | bedcaretest, clothtest, colddrawertest |
 | Interaction | cheattest, booktest, crouchtest |

@@ -12,10 +12,11 @@ import { clubhouseWallBoxes, clubhouseSkirting } from './clubhousefinish.js';
 import { buildAO, buildWallAO, rectPts } from './ao.js';
 import { architectureEdges } from './architectureedges.js';
 import { buildContactShadows } from './contactshadow.js';
-import { clubhouseSurface, clubhouseMaterial, FINISH } from './clubhousematerials.js';
+import { clubhouseSurface, clubhouseMaterial, FINISH, CLUB_ZONES } from './clubhousematerials.js';
 import { clubhouseRoundedBox, cinemaChair, cinemaCurtain } from './clubhousefurnishings.js';
 import { playroomCinema } from './playroomcinema.js';
 import { CinemaPosters } from './cinemaposters.js';
+import { roomPosters } from './playroomposters.js';
 import { PopcornCart, popcornCartParts, popcornSign, popcornLamp, popcornFootprints } from './popcorn.js';
 
 // #1319 / #1326: the playhouse's secret children's room. A hidden interior, far outside the walkable area (see PLAYROOM in
@@ -62,9 +63,9 @@ export class Playroom {
     const door = [box(R.x - dw, R.x + dw, 0, dh, Z1 - 0.03, Z1)];
     const handle = [box(R.x + dw - 0.2, R.x + dw - 0.12, 0.72, 0.78, Z1 - 0.07, Z1 - 0.03)];
     const lamp = [];
-    // #1570: the BIO's own ceiling panel (x<0, north half) is built by playroomcinema.js so it can dim during a film
+    // #1570: the BIO's own ceiling panel (x<0, north half) is built by playroomcinema.js so it can dim during a film; #1574: BILJARD's and SPEL's panels are in the poster mesh (zone levels)
     for(const x of [-2*R.clubhouse.side,0,2*R.clubhouse.side])for(const z of [(Z0+R.z+R.clubhouse.front)/2,(Z1+R.z+R.clubhouse.front)/2])
-      if(!(x<0&&z<R.z))lamp.push(box(R.x+x-0.6,R.x+x+0.6,h-0.03,h,z-0.6,z+0.6));
+      if(z>R.z)lamp.push(box(R.x+x-0.6,R.x+x+0.6,h-0.03,h,z-0.6,z+0.6));
     lamp.push(popcornLamp()); layout.signs.push(popcornSign()); // #1567: the popcorn cart's heat lamp and sign share the atlas draw
     this.object.add(clubhouseSigns(layout,lamp));
     // ---- furniture (#1327), local metres from the room's centre: x east, z south (the door), y up
@@ -206,6 +207,8 @@ export class Playroom {
     source.geometry.dispose();
     const parts = [merged([...shell, ...fur], furMat)]; // shell and furniture share one vertex-coloured mesh; screens animate separately
     for (const m of parts) { m.matrixAutoUpdate = false; this.object.add(m); }
+    this.zones = CLUB_ZONES; // #1574: per-room lamp/ambient levels [BIO, BILJARD, SPEL, hall] (live uniforms)
+    this.roomPosters = roomPosters(); this.object.add(this.roomPosters.mesh); // #1574: posters, SPEL neon, BILJARD pendants and lamps: one unlit draw, hidden with the room
     this.sconces = cinemaParts.sconces; this.setSconceDim = cinemaParts.setDim; this.object.add(this.sconces);
     this.object.add(this.posters.object); this.controlPickables.push(...this.posters.pickables);
     this.film = false; this.filmOverride = false; this.filmDim = 0; // #1570: a film is running / the light switch overrode the dimming / smoothed dim 0..1
@@ -240,7 +243,7 @@ export class Playroom {
     this.inside = false;
   }
 
-  update(dt,camera,aimed) { if(this.inside){this.sound.update(dt,this.discoOn,this.music.state!=='off');this.billiards.update(dt,camera,aimed);this.devices.update(dt);this.popcorn.update(dt);this.fadeCinema(dt);if(this.discoOn)this.disco(dt);} }
+  update(dt,camera,aimed) { if(this.inside){this.sound.update(dt,this.discoOn,this.music.state!=='off');this.billiards.update(dt,camera,aimed);this.devices.update(dt);this.popcorn.update(dt);this.fadeCinema(dt);this.roomPosters.setLevel(this.lit/R.lit);if(this.discoOn)this.disco(dt);} }
 
   /** #1365: switch the disco light on or off (the ball stops and goes dull, the light spots vanish). Returns the badge text. */
   setDisco(on) {

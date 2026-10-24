@@ -5980,6 +5980,27 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
   cinemaPosters: { w: .56, h: .84, frame: .035, depth: .025, cell: [256, 384], timeoutMs: 8000, titleMax: 40,
     spots: [{ wall: 'north', at: -6.8 }, { wall: 'north', at: -5.3 }, { wall: 'south', at: -7.12 }, { wall: 'east', at: -4.4 }, { wall: 'east', at: -2.4 }, { wall: 'east', at: -.6 }], y: 1.25,
     worker: { queries: ['barnfilm på svenska', 'tecknat på svenska hela filmen', 'tecknad film för barn'], perQuery: 10, recentDays: 730, retryHours: 6 } },
+  // #1574: own generated posters (one canvas atlas, one extra draw), neon, pub lamps and per-room light levels. Everything here is a *guess*
+  // (local metres from the room's centre; every wall is named for its room: hall / BILJARD / SPEL; BIO is #1575's). `along` is x on the north/south walls
+  // and z on the east/west walls; `designs` index the atlas cells (0-9 hall mix, 10-18 SPEL gaming, 19-27 BILJARD/DJ) and repeat; `y` is a poster's centre height.
+  posters: { atlas: [1536, 1280], cell: [192, 256], cols: 8, sign: [768, 256], size: [.6, .8], offset: .012, tint: { hall: 1, biljard: .8, spel: .62 }, // atlas px; poster size in m; tint = the poster's brightness in its room at normal ambient (it also follows playroom.lit)
+    walls: {
+      hallN: { y: 1.2, along: [-8.3, -7.5, -4.65, -3.7, -2.75, -1.8, 1.8, 2.75, 3.7, 4.65, 7.5, 8.3], designs: [6, 3, 5, 1, 7, 0, 2, 9, 4, 8, 6, 7] }, // between the BIO/BILJARD/SPEL passages, below the signs
+      hallS: { y: 1.25, along: [-7.4, -6.3, -5.2, -4.1, -3, -1.9, -.95, 1.9, 3, 4.1, 5.2, 6.3, 7.4, 8.4], designs: [0, 8, 3, 5, 2, 7, 9, 1, 4, 6, 7, 0, 3, 5] }, // beside the exit door (x -.47 .. .47) and its switch
+      hallE: { y: 1.25, along: [2.9, 4.1], designs: [3, 9] }, // hall's east short wall (the west one is the popcorn cart's)
+      spelN: { y: 1.5, along: [3.9, 4.7, 7.3, 8.1], designs: [10, 13, 17, 11] }, spelS: { y: 1.5, along: [3.9, 4.65, 7.4, 8.2], designs: [12, 15, 18, 16] },
+      spelW: { y: 1.9, along: [-4.75, -3.5, -1.9, -.3, 1], designs: [13, 14, 16, 12, 10] }, spelE: { y: 1.9, along: [-4.75, -3.5, -1.9, -.3, 1], designs: [11, 17, 15, 18, 14] }, // above the desks' monitors
+      biljN: { y: 1.75, along: [-2.45, .6, 1.5], designs: [19, 22, 24] }, biljS: { y: 1.4, along: [-2.3, -1.5, 1.5, 2.3], designs: [21, 26, 23, 27] },
+      biljE: { y: 1.5, along: [-4.4, -3.3, -2.2, -1.1, 0, 1], designs: [20, 25, 22, 19, 24, 26] }, biljW: { y: 1.5, along: [-4.4, -3.6, -.5, .3, 1.1], designs: [23, 27, 21, 20, 25] } }, // BILJARD's west wall holds the score board (z -2.43 .. -1.23)
+    neon: { // ceiling runs round SPEL (colours 0xRRGGBB) and the two wall signs (atlas cells in the strip below the poster cells)
+      run: { y: 2.52, h: .035, d: .03, colors: { north: 0x59f3ff, east: 0xff59cc, west: 0xa670ff, south: 0xff59cc } },
+      signs: { spel: { x: 6, y: 1.9, w: 1.6, h: .53, wall: 'spelN' }, biljard: { x: -.95, y: 1.85, w: 1.3, h: .43, wall: 'biljN' } } },
+    // the BILJARD pub: two pendants over the table (the disco ball hangs between them at z -1.5, clear of both) and warm wall lamps; the lamps are unlit emissive meshes
+    pendants: { x: 0, z: [-2.6, -1], bottom: 1.62, h: .17, rTop: .05, rBottom: .22, cord: .012, shade: 0x1f5a3c, rim: 0xb8874d, glow: 0xffd9a0 },
+    sconces: { w: .14, h: .26, d: .09, y: 1.75, lit: 0xffb866, east: [-3.85, -1.65, .5], west: [-2.9, -1], north: [-1.88, 1.05] } },
+  // #1574: per-room light levels [BIO, BILJARD, SPEL, hall] (*guess*): the clubhouse material scales its ceiling-lamp term and its ambient term by room, so SPEL
+  // is dim (neon and screens carry it), BILJARD is dull and pub-like, and BIO/hall stay as they were. BIO's film dimming (#1570) stays as is.
+  zones: { lamp: [1, .45, .22, 1], ambient: [1, .62, .38, 1], panel: [1, .55, .22, 1] }, // panel: the ceiling light panels' glow (BILJARD/SPEL are in the poster mesh; BIO's follows #1570's sconces)
   speakers: { x: [-2.2, 2.2], y: 1.1, z: -4.98, w: .25, h: .38, d: .18 }, // guess: small wall-mounted pair, clear of cue/walking space
   door: { w: 0.8, h: 1.7 }, // Assumed low playhouse-style exit; its interaction works for every avatar height.
   standOff: 0.75, // m from the door wall where you arrive inside
