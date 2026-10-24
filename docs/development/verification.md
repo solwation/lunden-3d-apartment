@@ -25,6 +25,16 @@ invalid look), checks the Topplista dialog rows all have thumbnails and the own 
 draws the Klossar board through the real GameBoards/arcade view, and checks the Tab statistics panel has
 rows but no top list. Result images: `docs/verification/1585/`.
 
+## Möblera om on a phone (#1586)
+
+`PLAYWRIGHT_MODULE=… [THREE_DIR=…] node tools/rearrangephonetest.cjs GAME OUT` runs the real app in an iPhone profile
+(852×393 @3, iPhone UA = lowMemory, touch) with its phone warm-up, taps >_ and the admin menu's Möblera, sweeps three
+spots, picks a piece with the touch action button and leaves with Avbryt/Klart; then a desktop `&test` pass checks that the
+aimed piece is still highlighted. 2026-10-24 (SwiftShader, about 30 min): the fix had 0 new programs while aiming and
+picking; base 8d7c661 compiled 1 new program in the same sweep (13 on Entréplan without the warm-up, up to 5 in one
+frame). No page error reproduced the reported crash in Chromium; rotation with Möblera on was not tested. Physical iPhone
+verification is outstanding.
+
 ## Computer games and top lists (#1577)
 
 Scoped plan: game rules in `node --test tools/arcadegamestest.mjs` (bag, line clears, levels/gravity,

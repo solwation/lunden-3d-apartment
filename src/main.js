@@ -2140,7 +2140,10 @@ function updateFocus() {
     promptEl.textContent = `${text} · E / klick · R: vrid · X: avbryt`;
     promptEl.hidden = touch.enabled; powerBtn.hidden = true;
     turnBtn.hidden = true; // the edit panel owns its visible rotate control (#501)
-    interactionOutline.update(focused && !focused.blocked ? {...focused,outlineRoot:rearrange.selected?rearrange.ghost:focused.piece?.object} : null); return;
+    // #1586: phones skip the brightness highlight here. Rearrangement targets (and the preview ghost) are not part of the
+    // warm-up's first-focus variants, so a newly aimed piece could compile new shader programs mid-game, the work iOS
+    // kills the page for (#669). The action button and prompt already name the target.
+    interactionOutline.update(!lowMemory && focused && !focused.blocked ? {...focused,outlineRoot:rearrange.selected?rearrange.ghost:focused.piece?.object} : null); return;
   }
   // sitting / lying (#184): what is within arm's reach can be used as usual (not the seat itself, nothing to sit on);
   // E with nothing in reach, Space / C or the "Res dig" button get you up

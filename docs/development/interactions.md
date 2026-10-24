@@ -413,6 +413,12 @@ src/rearrange.js       furniture cheat (#465): § / Enter (#596; not from a focu
                        new place on its next return. Default place above the daybed = the piece's home pose (restore/reset). Saved in the ordinary
                        `pieces` layout format (no migration). Ball/holder dimensions are unchanged (BASKET.ball); no new draw calls.
                        tools/rearrangebaskettest.html: move, reload, take/put back at the new place, restore.
+                       #1586 (phones, best guess without a physical device): with lowMemory, Möblera om shows no brightness highlight on the
+                       aimed piece or the preview (main.js updateFocus). Those first-focus variants are not warmed (warmCompiler covers
+                       ordinary interaction targets only), so a newly aimed piece could compile new shader programs mid-game, the work iOS
+                       kills the page for (#669). The action button/prompt still name the target; desktop keeps the highlight. The preview's
+                       own `ghostMat` shares a program the warmed scene already has (measured: 0 new on pick). tools/rearrangephonetest.cjs:
+                       iPhone profile, touch taps on >_ and Möblera, 0 new programs while aiming/picking/following, desktop highlight unchanged.
                        The Christmas tree (#571) is an ordinary piece ('julgranen') while it stands; out of season it is hidden and
                        not selectable. Pieces it hides (`userData.seasonHidden`, src/christmas.js) are not selectable either and
                        keep their poses; `apply` reveals them while poses change, `refresh` skips them; tools/christmastest.html.
