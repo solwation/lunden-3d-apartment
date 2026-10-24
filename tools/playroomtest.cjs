@@ -131,7 +131,8 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
       check(focus.f?.kind === 'rest' && focus.f.name === focus.expected, `140 cm avatar focuses the ${row ? 'rear' : 'front'} seat`, JSON.stringify(focus));
       await nativeUse(); await page.waitForTimeout(300);
       const view = await page.evaluate(async () => { const { PLAYROOM: RM } = await import('/src/config.js'), { Vector3 } = await import('three'), a = window.__app, s = RM.furniture.cinema.screen, tx = RM.furniture.tv.x + 0.08; for (let i=0;i<12;i++) a.rest.update(.1); a.camera.updateMatrixWorld(true); const p = [[s.z-s.w/2,s.bottom],[s.z+s.w/2,s.bottom],[s.z-s.w/2,s.bottom+s.h],[s.z+s.w/2,s.bottom+s.h]].map(([z,y])=>new Vector3(RM.x+tx,y,RM.z+z).project(a.camera)); return { active: a.rest.active, kind: a.rest.kind, visible: p.every(v=>Math.abs(v.x)<1&&Math.abs(v.y)<1&&v.z>-1&&v.z<1), camera: [a.camera.position.x,a.camera.position.y,a.camera.position.z,a.camera.rotation.x,a.camera.rotation.y], corners:p.map(v=>[v.x,v.y,v.z]) }; });
-      check(view.visible, `140 cm avatar sees the whole ${row ? 'rear' : 'front'} row screen in landscape`, JSON.stringify(view));
+      // Front-row cropping is intentional (#1496); only the seated state is required there, the rear row keeps the full-screen check.
+      check(view.active && view.kind === 'sit' && (row === 0 || view.visible), `140 cm avatar ${row ? 'sees the whole rear row screen in landscape' : 'sits in the front row (cropping is intentional)'}`, JSON.stringify(view));
       await page.evaluate(() => window.__app.standUp());
     }
     await setHeight(159);
@@ -205,9 +206,10 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     await setHeight(170);
     const s3 = await page.evaluate(() => window.__t.state());
     check(s3.inRoom, 'height changed inside: still in the room');
-    // a reload inside is saved at the playhouse door
-    const saved = await page.evaluate(() => { window.__app.player.pos.x; sessionStorage.clear(); window.dispatchEvent(new Event('pagehide')); return Object.entries(sessionStorage).map(([k, v]) => [k, v.slice(0, 200)]); });
-    check(saved.some(([, v]) => /"z":22\.8|"z":22\.9/.test(v) || /-28\.85/.test(v)), 'the saved place is at the playhouse door', JSON.stringify(saved));
+    // #1572: a reload of the same tab inside is saved inside the room (session record, room: true); a later new visit (player-world record) starts at the playhouse door.
+    const saved = await page.evaluate(() => { window.__app.player.pos.x; sessionStorage.clear(); localStorage.removeItem('lunden.playerWorld'); window.dispatchEvent(new Event('pagehide')); return { session: JSON.parse(sessionStorage.getItem('lunden.session') || 'null'), world: JSON.parse(localStorage.getItem('lunden.playerWorld') || 'null') }; });
+    check(saved.session?.room === true && saved.session.x < -1000, 'the saved reload place is inside the room (#1572)', JSON.stringify(saved.session)?.slice(0, 200));
+    check(saved.world && !saved.world.room && Math.abs(saved.world.x + 28.85) < 0.5 && saved.world.z > 22 && saved.world.z < 23.5, 'the saved new-visit place is at the playhouse door', JSON.stringify(saved.world)?.slice(0, 200));
     await page.evaluate(() => window.__app.use(window.__app.focus().focused));
     await page.waitForTimeout(900);
     const s4 = await page.evaluate(() => { window.__t.frames(60); return window.__t.state(); });
@@ -219,7 +221,12 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     await setHeight(175); await toDoor();
     const after = await page.evaluate(() => window.__t.calls());
     check(before.calls === after.calls && before.tris === after.tris, 'draw calls outside unchanged after a visit', `${JSON.stringify(before)} → ${JSON.stringify(after)}`);
-    check(inside.calls <= 20, 'inside, only the room is drawn: cinema plus four computer planes', `outside ${before.calls}, inside ${inside.calls}`);
+    // Inside budget (#1583): 26 calls at the arrival view, measured on origin/main b63394ce. 7 are the always-drawn world
+    // (sky, dust points, park-basement door/glass meshes, one door prop with its contact shadow); 19 are the room: furniture,
+    // disco ball, cinema screen + 3 visible computer planes, signs (#1574), billiard table/balls/wall screen (#1328/#1495),
+    // architecture edges, contact shadows, wall AO + floor/ceiling AO quads, disco spots, #1570 sconces, #1575 poster faces
+    // and #1574 posters. The popcorn cart's kernel/glass meshes (#1567) are outside this view's frustum. Raise only with a named source.
+    check(inside.calls <= 26, 'inside, only the room is drawn: cinema, computer planes, billiards and decor in merged batches', `outside ${before.calls}, inside ${inside.calls}`);
     check(errors.length === 0, 'no page errors', errors.join(' | '));
   } finally { await browser.close(); }
   console.log(failed ? `${failed} FAILED` : 'ALL PASSED');
