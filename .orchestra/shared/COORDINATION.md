@@ -17,7 +17,8 @@ A pass is unattended: never ask the user in the chat, at the start, during or at
 end. Decide what the host policy authorizes, including releases under its release rule.
 Post a question only the user can answer on the affected issue through the host's
 question channel (on GitHub, the `user question` label): the decision, concrete options
-and a recommendation. Release its claim and active labels, keep that acceptance open and
+and a recommendation. Decide anything ordinary judgement can settle; a request to test
+on the user's device is not such a question. Release its claim and active labels, keep that acceptance open and
 continue with other eligible work. Skip the issue until the user answers there; whoever
 resumes it removes the label. A given scope (issue, area) still bounds the task.
 
@@ -93,8 +94,9 @@ slot and does not block selection of the parent's other sub-issues.
 
 Release active labels on pause, blocking wait, completion, closure or reopening. Never
 remove another active owner's label. Blocked work stays open. A missing physical device
-need not block useful diagnosis and a supported reversible fix; clearly separate that
-from acceptance that still needs the device. Product questions go through the configured
+or user test is not a blocker: diagnose, deliver the best supported fix and close under
+[best-guess closure](ORCHESTRA.md#close-after-a-best-guess-fix), stating what remained
+unverified, unless the host or issue explicitly gates closure on that device. Product questions go through the configured
 channel; an actual user answer removes the blocker, not merely a new comment.
 
 ## Poll, idle and stop
