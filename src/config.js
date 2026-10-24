@@ -4553,6 +4553,10 @@ export const LIGHTING = {
     overcast: { hemi: 2.0, ambient: 0.6, fill: 0.9, sun: 2.2, exposure: 1.0 },
     clear: { hemi: 1.5, ambient: 0.25, fill: 0.35, sun: 3.0, exposure: 1.5 },
   },
+  // Architectural edge lines (#1592, src/architectureedges.js) are unlit: their surface tint is scaled by
+  // (hemi + ambient intensity) × exposure / `edgeRef`, capped at 1. 2.6 = that sum by day under both `overcast` and
+  // `clear` above, so daytime edges keep #1579's look; at night (DAY.nightAmbient) they fall to ~0.03, i.e. dark again.
+  edgeRef: 2.6,
   pool: 4,
   switchHeight: 1.05,                     // centre of the switch above the floor
   ceiling: { intensity: 2.4, range: 6, color: 0xffe2b8 },

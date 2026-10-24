@@ -5,7 +5,7 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
 try {
  const f=document.createElement('iframe');f.width=480;f.height=300;f.src='../index.html?life&shot';document.body.append(f);
  await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);
- const w=f.contentWindow,d=f.contentDocument,A=w.__app,T=await w.eval("import('three')"),{architectureEdges}=await w.eval("import('../src/architectureedges.js')"),{mergeGeometries}=await w.eval("import('three/addons/utils/BufferGeometryUtils.js')");
+ const w=f.contentWindow,d=f.contentDocument,A=w.__app,T=await w.eval("import('three')"),{architectureEdges,setEdgeLight}=await w.eval("import('../src/architectureedges.js')"),{mergeGeometries}=await w.eval("import('three/addons/utils/BufferGeometryUtils.js')");
  d.documentElement.requestFullscreen=undefined;d.getElementById('start-touch').click();
  const all=A.world.edgeLines;check(all.length>2&&all.length<150,'architectural lines batched per floor and moving fitting');
  check(all.every(l=>l.parent&&l.material.depthTest&&!l.material.depthWrite),'lines survive static merge and retain depth occlusion');
@@ -25,6 +25,8 @@ try {
  const tintRoot=new T.Group();for(const [x,color] of [[-1,0xffffff],[1,0x305070]]){const m=new T.Mesh(new T.BoxGeometry(1,1,1),new T.MeshBasicMaterial({color}));m.position.x=x*1.2;tintRoot.add(m);}
  const tintBatch=architectureEdges(tintRoot),tintColors=tintBatch[0].geometry.attributes.color,seenTints=new Set();for(let i=0;i<tintColors.count;i++)seenTints.add([0,1,2].map(k=>Math.round(tintColors.getComponent(i,k)*1000)).join(','));
  check(tintBatch.length===1&&tintBatch[0].material.vertexColors&&seenTints.size>1,'different construction surfaces receive different tints in one material and draw batch');
+ const fakeShader=()=>({uniforms:{},vertexShader:'#include <project_vertex>',fragmentShader:'#include <color_fragment>'}),sa=fakeShader(),sb=fakeShader();all[0].material.onBeforeCompile(sa);tintBatch[0].material.onBeforeCompile(sb);setEdgeLight(0.2);const lightShared=sa.uniforms.uEdgeLight===sb.uniforms.uEdgeLight&&sa.uniforms.uEdgeLight.value===0.2&&/diffuseColor\.rgb \*= uEdgeLight/.test(sa.fragmentShader);setEdgeLight(7);const capped=sa.uniforms.uEdgeLight.value===1;
+ check(lightShared&&capped&&[...all,...A.world.core.edgeLines].every(l=>l.material.onBeforeCompile===all[0].material.onBeforeCompile),'#1592: every edge batch scales its tint by one shared light-level uniform (capped at 1), no per-material closure');
  const groupedRoot=new T.Group(),groupGeo=mergeGeometries([new T.BoxGeometry(1,1,1).translate(-1.2,0,0),new T.BoxGeometry(1,1,1).translate(1.2,0,0)],true);
  groupedRoot.add(new T.Mesh(groupGeo,[new T.MeshBasicMaterial({color:0xff0000}),new T.MeshBasicMaterial({color:0x0000ff})]));
  const groupedColors=architectureEdges(groupedRoot)[0].geometry.attributes.color,groupTints=new Set();for(let i=0;i<groupedColors.count;i++)groupTints.add([0,1,2].map(k=>Math.round(groupedColors.getComponent(i,k)*1000)).join(','));

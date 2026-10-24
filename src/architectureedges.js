@@ -224,7 +224,15 @@ function edgeSurfaceColors(geometry, edges, materials, darken) {
 // This and noRaycast are module level on purpose (#1590): a closure made inside architectureEdges() shares its scope, so
 // the live material and lines kept the construction-only solids, triangle trees and crease index for the whole session.
 function noRaycast() {}
+// #1592: LineBasicMaterial is unlit, so the surface-tinted colors (#1579) kept their daylight brightness at night and
+// glowed. One module-level uniform shared by every edge material scales them by the scene's light level (main.js sets
+// it each frame from the daylight/ambient intensities via setEdgeLight); no extra program, material or closure.
+const edgeLight = { value: 1 };
+export function setEdgeLight(level) { edgeLight.value = THREE.MathUtils.clamp(level, 0, 1); }
 function edgeDepthOffset(shader) {
+  shader.uniforms.uEdgeLight = edgeLight;
+  shader.fragmentShader = 'uniform float uEdgeLight;\n' + shader.fragmentShader.replace('#include <color_fragment>', `#include <color_fragment>
+      diffuseColor.rgb *= uEdgeLight;`);
   shader.vertexShader = shader.vertexShader.replace('#include <project_vertex>', `#include <project_vertex>
       gl_Position = projectionMatrix * vec4(mvPosition.xyz * max(0.0, 1.0 - 0.001 / max(length(mvPosition.xyz), 0.001) - 0.004), mvPosition.w);`);
 }

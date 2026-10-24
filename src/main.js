@@ -74,6 +74,7 @@ import { bindGroundAOShadow } from './groundao.js';
 import { Jetpack } from './jetpack.js';
 import { SpiderSuit } from './spidersuit.js';
 import { DayCycle } from './daycycle.js';
+import { setEdgeLight } from './architectureedges.js';
 import { Flare } from './flare.js';
 import { Birds } from './birds.js';
 import { Paddock } from './paddock.js';
@@ -3060,6 +3061,7 @@ function step(dt) {
     if (sun.target.position.x !== fx || sun.target.position.z !== fz) { sun.target.position.x = fx; sun.target.position.z = fz; sun.target.updateMatrixWorld(); shadowState.hold = Math.max(shadowState.hold, 0.1); }
   }
   day.update(dt);
+  setEdgeLight((hemi.intensity + ambient.intensity) * renderer.toneMappingExposure / LIGHTING.edgeRef); // edges follow the light, not glow (#1592)
   wallClock.update(day.hour);
   calendar.update(); // redraws only when the page or the date changed
   patio.update(day, dt);
