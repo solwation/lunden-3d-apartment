@@ -38,8 +38,10 @@ async function load(q = 'life&shot&cloud=') {
     const kernels = () => pc.batch.shown.slice(0, P.kernels).filter(Boolean).length;
     const stackShown = () => pc.batch.shown.slice(P.kernels).filter(Boolean).length;
     const tubKernels = (t) => t.batch.shown.slice(1).filter(Boolean).length;
+    // (#1573: the cart faces east; the offsets are written for a cart facing north and turned by its yaw: (dx, dz) -> (-dz, dx) at -PI/2)
     const lookAt = (p, re, offs = [[0, -0.9], [0.2, -1.0], [-0.2, -0.8], [0, -1.2], [0.4, -0.9], [-0.4, -0.9], [0, -0.7]]) => {
-      for (const [dx0, dz0] of offs) {
+      for (const [dx1, dz1] of offs) {
+        const dx0 = dx1 * Math.cos(P.cart.yaw) + dz1 * Math.sin(P.cart.yaw), dz0 = -dx1 * Math.sin(P.cart.yaw) + dz1 * Math.cos(P.cart.yaw);
         player.spawn(p.x + dx0, p.z + dz0, 0); for (let i = 0; i < 3; i++) step(1 / 60);
         scene.updateMatrixWorld(true);
         const dx = p.x - camera.position.x, dz = p.z - camera.position.z;
@@ -55,14 +57,29 @@ async function load(q = 'life&shot&cloud=') {
     check(player.inPlayroom && room.inside && room.object.visible, 'into the playhouse room');
     check(tubs?.length === P.tub.loose && tubs.every((t) => t.away && !t.model.visible), `${tubs?.length} tubs, all in the stack's pool`);
     check(stackShown() === P.stack.count && kernels() === 0 && pc.portions === 0, `the stack ${stackShown()} tubs, the case empty`);
-    // the cart stands in the entry, left of the door against the south wall, clear of the door and the light switch
-    const cartX = R.x + P.cart.x, door = R.door.w / 2;
-    check(P.cart.x + P.cart.w / 2 + 0.06 < -door - 0.4 && P.cart.z > R.clubhouse.front + 2 && P.bin.x < P.cart.x, `cart at x ${P.cart.x} (door ±${door}), bin west of it`);
-    check(room.footprints.some((q) => Math.abs(q[0][0] - (cartX - P.cart.w / 2 - 0.06)) < 1e-6), 'the cart has a collision footprint');
-    // walking into the cart is stopped
-    player.spawn(cartX, R.z + P.cart.z - 0.9, 0); camera.rotation.set(0, Math.PI, 0); player.keys.add('KeyW');
+    // #1573: the cart stands against the hall's west short wall (the end next to BIO), facing east, its bin in the corner beside it;
+    // the BIO passage, the door and the light switch stay clear and the hall's lane along the partition stays open
+    const cartX = R.x + P.cart.x, cartZ = R.z + P.cart.z, west = -R.w / 2, door = R.door.w / 2, C = R.clubhouse, hallN = C.front + C.wall / 2;
+    const fp = room.footprints.filter((q) => q.every(([x, z]) => x < R.x + west + 1.2 && z > R.z + hallN));
+    const box = (q) => ({ x0: Math.min(...q.map((v) => v[0])), x1: Math.max(...q.map((v) => v[0])), z0: Math.min(...q.map((v) => v[1])), z1: Math.max(...q.map((v) => v[1])) });
+    check(Math.abs(P.cart.yaw + Math.PI / 2) < 1e-9 && P.cart.x - P.cart.d / 2 > west && P.cart.x - P.cart.d / 2 < west + 0.2, `cart facing east against the west wall (x ${P.cart.x}, yaw ${P.cart.yaw.toFixed(2)})`);
+    const bio = { x0: -2 * C.side - C.passage / 2, x1: -2 * C.side + C.passage / 2 }; // the passage into BIO (room-local x)
+    check(fp.length === 2 && fp.every((q) => box(q).x1 < bio.x0 - 0.5), `cart and bin footprints (${fp.length}) end ${(bio.x0 - Math.max(...fp.map((q) => box(q).x1)) + R.x).toFixed(2)} m west of the BIO passage`);
+    const lane = Math.min(...fp.map((q) => box(q).z0)) - (R.z + hallN);
+    check(lane > 1.2 && P.bin.z + P.bin.r < R.d / 2 && P.bin.x - P.bin.r > west, `a ${lane.toFixed(2)} m lane along the partition, the bin inside the south-west corner`);
+    check(Math.abs(P.cart.x) > door + 5 && P.cart.x < R.furniture.discoSwitch.x - 5, 'clear of the door and the light switch');
+    check(room.footprints.some((q) => Math.abs(box(q).x0 - (cartX - P.cart.d / 2 - 0.03)) < 1e-6), 'the cart has a collision footprint');
+    // the sconces and speakers of BIO (#1570) are on the other side of the partition: no footprint overlap
+    const overlap = fp.some((a) => room.footprints.filter((q) => !fp.includes(q)).some((q) => { const A = box(a), B = box(q); return A.x0 < B.x1 && A.x1 > B.x0 && A.z0 < B.z1 && A.z1 > B.z0; }));
+    check(!overlap, 'the cart footprints overlap no other footprint (BIO speakers, chairs, desks)');
+    // walking into the cart (from the east) is stopped
+    player.spawn(cartX + 1.2, cartZ, 0); camera.rotation.set(0, Math.PI / 2, 0); player.keys.add('KeyW');
     secs(1.5); player.keys.delete('KeyW');
-    check(player.pos.z < R.z + P.cart.z - P.cart.d / 2, `walking south into the cart stops at z ${(player.pos.z - R.z).toFixed(2)}`);
+    check(player.pos.x > cartX + P.cart.d / 2 && player.pos.x < cartX + 1.2, `walking west into the cart stops at x ${(player.pos.x - R.x).toFixed(2)}`);
+    // the way into BIO is open: walk north through the passage from the hall
+    player.spawn(R.x + C.side * -2, R.z + hallN + 1.0, 0); camera.rotation.set(0, 0, 0); player.keys.add('KeyW');
+    secs(1.5); player.keys.delete('KeyW');
+    check(player.pos.z < R.z + C.front - C.wall, `walking north through the BIO passage reaches z ${(player.pos.z - R.z).toFixed(2)}`);
     // pop
     check(lookAt(centre(pc.button), /^trycka på popkornsknappen/i), `the button: "${btn.textContent}"`);
     btn.click(); step(1 / 60);
@@ -131,20 +148,31 @@ async function load(q = 'life&shot&cloud=') {
     const spot = new V(R.x - 1, 0, R.z + 3.4);
     t1.placeAt(spot, 0); step(1 / 60);
     check(t1.placed && inRoom(t1.model) && t1.model.visible && t1.bites === P.tub.bites - 2, `a tub on the hall floor (${t1.bites} bites)`);
+    // #1573: a tub saved standing on the counter of the cart's OLD place (#1567, x/z/yaw in P.legacy) moves to the new counter after a reload
+    pc.stackTarget.use(); pc.case.use(); step(1 / 60);
+    const t3 = heldItem(), i3 = tubs.indexOf(t3), L = P.legacy, oldCounter = [R.x + L.x + 0.2, pc.y0, R.z + L.z + 0.1]; // (0.2 east / 0.1 south of the old cart's centre)
+    t3.placeAt(new V(R.x - 3, 0, R.z + 3.4), 0); step(1 / 60); // (the saved copy below is edited to the old counter)
     pc.stackTarget.use(); pc.case.use(); step(1 / 60);
     const t2 = heldItem(), portions = pc.portions, stack = pc.stack, i1 = tubs.indexOf(t1), i2 = tubs.indexOf(t2);
     check(t2 !== t1 && t2.bites === P.tub.bites, 'another one full in the hand');
     const world0 = A.keepWorld();
+    const lh = [R.x + L.x + P.stack.x, pc.y0 + P.stack.count * P.stack.nest, R.z + L.z].map((v) => Math.round(v * 1000) / 1000); // (the #1567 save key of a tub: its name and the OLD stack position)
+    const key3 = `popkornsbyttan ${i3}|${lh.join(',')}`;
+    check(!!key3 && Array.isArray(world0.things.items[key3].p), `saved: tub ${i3} placed (${key3})`);
+    world0.things.items[key3].p = oldCounter.map((v) => +v.toFixed(3));
     check(world0?.life?.x?.popcorn?.p === portions, `saved: the case ${JSON.stringify(world0?.life?.x?.popcorn)}`);
     sessionStorage.setItem('lunden.resume', JSON.stringify({ x: R.x - 1, z: R.z + 4, feetY: 0, yaw: 0, pitch: 0, mode: 'touch', build: null, world: world0, ts: Date.now() }));
     f.remove();
     const f2 = await load('cloud=');
-    const B = f2.contentWindow.__app, pc2 = B.world.playroom.popcorn, u1 = B.popcornTubs[i1], u2 = B.popcornTubs[i2];
+    const B = f2.contentWindow.__app, pc2 = B.world.playroom.popcorn, u1 = B.popcornTubs[i1], u2 = B.popcornTubs[i2], u3 = B.popcornTubs[i3];
     check(pc2.portions === portions && pc2.stack === stack, `after a reload: the case ${pc2.portions} portions, the stack ${pc2.stack}`);
     const inRoom2 = (o) => { for (let p = o; p; p = p.parent) if (p === B.world.playroom.object) return true; return false; };
     check(u1.placed && u1.model.getWorldPosition(new V()).distanceTo(spot) < 0.05 && u1.bites === P.tub.bites - 2 && inRoom2(u1.model), `after a reload: the tub on the hall floor in the room's group, ${u1.bites} bites`);
+    B.step(1 / 60); B.step(1 / 60);
+    const cy = Math.cos(P.cart.yaw), sy = Math.sin(P.cart.yaw), want = new V(R.x + P.cart.x + 0.2 * cy + 0.1 * sy, pc.y0, R.z + P.cart.z - 0.2 * sy + 0.1 * cy), at3 = u3.model.getWorldPosition(new V());
+    check(u3.placed && at3.distanceTo(want) < 0.01 && inRoom2(u3.model), `after a reload: the tub saved on the old counter now stands on the new one (${at3.x.toFixed(2)}, ${at3.y.toFixed(2)}, ${at3.z.toFixed(2)})`);
     check(B.heldItem() === u2 && u2.bites === P.tub.bites, `after a reload: the full tub in the hand (${u2.bites} bites)`);
-    check(B.popcornTubs.filter((t) => t !== u1 && t !== u2).every((t) => t.away), 'the other tubs in the pool');
+    check(B.popcornTubs.filter((t) => ![u1, u2, u3].includes(t)).every((t) => t.away), 'the other tubs in the pool');
     sessionStorage.removeItem('lunden.resume'); sessionStorage.removeItem('lunden.session');
     if (!shots) f2.remove();
   } catch (e) { check(false, e.stack); }

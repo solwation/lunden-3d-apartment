@@ -6024,16 +6024,18 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
     discoSwitch: { x: 0.9, y: 1.05, z: 5.2 }, // #1365/#1374: the wall switch east of the door (south wall, z +5.2; height reachable for children, guess)
     ball: { x: 0, z: -1.5, y: 1.95, r: 0.17, spin: 0.5, spots: 26, spotSpin: 0.35 }, // the disco ball hangs under the ceiling, the light spots sweep round it
   } };
-// #1567: the popcorn cart in the playhouse entry (hall south of the BIO/BILJARD/SPEL partition), left of the door against the
-// south wall, facing north into the hall. Every size, count and time here is a *guess* (a fantasy-room prop, no product data).
+// #1567: the popcorn cart in the playhouse entry (hall south of the BIO/BILJARD/SPEL partition). #1573: it stands against the
+// hall's west short wall (the end next to BIO), facing east into the hall, its bin in the south-west corner beside it (x -9..-6.75
+// is clear of the BIO passage at x -6.75..-5.25 and of the door/switch at x 0..0.9); #1567 had it left of the door, facing north. Every size, count and time here is a *guess* (a fantasy-room prop, no product data).
 // Local metres from the room's centre (as PLAYROOM.furniture), cart parts from the cart's floor centre (x east, z south).
 export const POPCORN = {
-  cart: { x: -1.9, z: 4.9, w: 0.84, d: 0.52, base: 0.2, top: 0.86, counter: 0.03, wheelR: 0.17 }, // guess: child-height cart
+  cart: { x: -8.68, z: 3.9, yaw: -Math.PI / 2, w: 0.84, d: 0.52, base: 0.2, top: 0.86, counter: 0.03, wheelR: 0.17 }, // guess: child-height cart
   glass: { x0: -0.38, x1: 0.14, z0: -0.2, z1: 0.2, h: 0.5, roof: 0.06, opacity: 0.14 }, // guess: the glass case on the counter
   kettle: { r: 0.075, h: 0.07, drop: 0.13 }, // guess: the kettle hangs this far below the roof
   button: { x: 0.26, y: 0.72, r: 0.035 }, // guess: the round pop button on the front panel
   sign: { y: 0.11, w: 0.6, h: 0.08 }, // guess: "POPCORN" above the roof (y above the roof's top), shares the clubhouse sign atlas
-  bin: { x: -2.66, z: 4.95, r: 0.17, h: 0.6 }, // guess: a small bin west of the cart
+  bin: { x: -8.78, z: 4.98, r: 0.17, h: 0.6 }, // guess: a small bin in the south-west corner, south of the cart
+  legacy: { x: -1.9, z: 4.9, yaw: 0 }, // #1573: where #1567 had the cart (same size): a tub saved standing on its counter moves with it to the new one
   kernels: 260, kernelSize: 0.017, heap: 0.24, // popped kernels shown in the glass case when it is full, heap height (guess)
   fills: 6, // guess: tubs filled from one full glass case
   popSeconds: 4, // guess: one press pops the case full in this time

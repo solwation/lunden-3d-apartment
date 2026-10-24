@@ -145,7 +145,7 @@ data/beer-shelf-default.json prepared real four-beer snapshot with embedded orig
 tools/beershelfcachetest.html real image decoding, atomic daily caching, offline/timeout/partial failure and actual reload;
                        #711 slow local decode + CPU startup stall/late promise handoff; #718 local fetch/body/schema/decode failures return an uncached empty runtime shelf, actual BeerShelf label textures, successful live recovery and reload.
 tools/beercantest.html closed fridge blocks, take/back, drink empty, the bin, back on reopening, F, a page-made reload.
-src/popcorn.js         #1567: the popcorn cart in the playhouse room's entry (POPCORN, every size/count *guess*): the yellow button
+src/popcorn.js         #1567: the popcorn cart in the playhouse room's entry (POPCORN, every size/count *guess*; #1573: it stands against the hall's west wall facing east, turned by `POPCORN.cart.yaw` through one `turn`/`at` helper for geometry, sign, lamp, pick boxes and footprint; a tub saved on the old counter, `POPCORN.legacy`, is moved to the new one by `PopcornTub.migrate`): the yellow button
                        (target kind 'playroomPopcorn') pops the glass case full over popSeconds (kernels fill from the bottom), a
                        PopcornTub (Holdable) from the nested stack is filled at the case (one of `fills` portions), eaten in
                        `bites` (click / E / "Ät", fewer kernels each bite; seated in a cinema chair the screen does not take the

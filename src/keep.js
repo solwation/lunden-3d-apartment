@@ -50,7 +50,7 @@ const openKey = (o) => `${o.kind ?? ''}|${o.name ?? ''}`;
 
 // --- things you hold ------------------------------------------------------
 function holdKey(h) {
-  const p = h.local?.pos ?? h.home?.pos;
+  const p = h.keepPos ?? h.local?.pos ?? h.home?.pos; // (keepPos: a fixed key position for a thing whose home moved, #1573)
   return `${h.keepName ?? h.name}|${p ? vec(p).join(',') : ''}`; // (keepName: a name that changes, the daily beers #587)
 }
 const keepable = (a, h) => h !== a.chicken && !h.isChristmasGift && !h.broken && !h.flying && !h.isMiele; // chicken has its own Life extra (and a ball in the air); Miele in your arms is the cat's (#328)

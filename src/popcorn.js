@@ -18,16 +18,25 @@ import { sfx } from './audio.js';
 
 const C = P.cart, G = P.glass, T = P.tub;
 const OX = R.x + C.x, OZ = R.z + C.z; // the cart's floor centre (world)
+const YAW = C.yaw ?? 0; // #1573: the cart is turned by this much about its centre (0 = front towards -z, -PI/2 = front towards +x)
+const SIN = Math.sin(YAW), COS = Math.cos(YAW);
+/** The cart's own (x east of it, z south of it, as drawn) offset as a room-local-turned world offset [dx, dz] (the same turn as rotateY(YAW)). */
+const turn = (x, z) => [x * COS + z * SIN, -x * SIN + z * COS];
+const at = (x, z) => { const [a, b] = turn(x, z); return [OX + a, OZ + b]; };
 const Y0 = C.top + C.counter, Y1 = Y0 + G.h; // the glass case: counter top to roof
 const COL = { red: 0xc8202a, dark: 0x9e1820, yellow: 0xf2c230, cream: 0xf3ead2, tyre: 0x1d1d1d, steel: 0x8b9099, gold: 0xd4a83a,
   bin: 0x3f5a4a, binDark: 0x1a1d1c, hole: 0x0c0c0c, white: 0xf7f3ea, plate: 0x17263b, kernel: [0xfbf1d2, 0xf6e3a8, 0xfff8e6, 0xe9c25c] };
 const rng = (seed) => () => { seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 const paint = (g, hex, finish = FINISH.paint) => clubhouseSurface(g, hex, finish);
-const cbox = (hex, x0, x1, y0, y1, z0, z1, finish) => paint(clubhouseRoundedBox(OX + x0, OX + x1, y0, y1, OZ + z0, OZ + z1), hex, finish);
+const cbox = (hex, x0, x1, y0, y1, z0, z1, finish) => { // (a quarter turn keeps the box axis-aligned: its two corners are enough)
+  const [ax, az] = at(x0, z0), [bx, bz] = at(x1, z1);
+  return paint(clubhouseRoundedBox(Math.min(ax, bx), Math.max(ax, bx), y0, y1, Math.min(az, bz), Math.max(az, bz)), hex, finish);
+};
 const cyl = (hex, r, h, seg, x, y, z, axis, finish) => {
   const g = new THREE.CylinderGeometry(r, r, h, seg);
   if (axis === 'x') g.rotateZ(Math.PI / 2); else if (axis === 'z') g.rotateX(Math.PI / 2);
-  return paint(g.translate(OX + x, y, OZ + z), hex, finish);
+  const [wx, wz] = at(x, z);
+  return paint(g.rotateY(YAW).translate(wx, y, wz), hex, finish);
 };
 /** Turn a painted (non-indexed) surface inside out: the tub's inner wall. */
 const flip = (g) => {
@@ -108,7 +117,8 @@ export function popcornCartParts() {
   out.push(cbox(COL.yellow, G.x0 - 0.036, G.x1 + 0.036, Y1, Y1 + 0.016, G.z0 - 0.036, G.z1 + 0.036));
   const kx = (G.x0 + G.x1) / 2, K = P.kettle, ky = Y1 - K.drop, top = Y1 + G.roof, sy = top + P.sign.y;
   out.push(cyl(COL.steel, 0.007, Y1 - ky, 6, kx, (Y1 + ky) / 2, 0, null, FINISH.metal)); // the kettle on its rod
-  out.push(paint(new THREE.CylinderGeometry(K.r, K.r * 0.8, K.h, 16).translate(OX + kx, ky - K.h / 2, OZ), COL.steel, FINISH.metal));
+  const [kwx, kwz] = at(kx, 0);
+  out.push(paint(new THREE.CylinderGeometry(K.r, K.r * 0.8, K.h, 16).translate(kwx, ky - K.h / 2, kwz), COL.steel, FINISH.metal));
   out.push(cyl(COL.steel, K.r * 1.06, 0.01, 16, kx, ky, 0, null, FINISH.metal));
   for (const s of [-1, 1]) out.push(cyl(COL.gold, 0.008, sy - top, 6, kx + s * P.sign.w * 0.4, (sy + top) / 2, 0.01, null, FINISH.metal)); // the sign's posts
   out.push(cbox(COL.plate, kx - P.sign.w / 2 - 0.012, kx + P.sign.w / 2 + 0.012, sy - P.sign.h / 2 - 0.012, sy + P.sign.h / 2 + 0.012, 0.002, 0.016)); // its back plate
@@ -123,11 +133,13 @@ export function popcornCartParts() {
 }
 
 /** The "POPCORN" sign above the roof, a row of the clubhouse sign atlas (room-local, turned to face north into the hall). */
-export const popcornSign = () => ({ text: 'POPCORN', x: C.x + (G.x0 + G.x1) / 2, z: C.z - 0.001, y: Y1 + G.roof + P.sign.y, w: P.sign.w, h: P.sign.h, ry: Math.PI });
+export const popcornSign = () => { const [x, z] = turn((G.x0 + G.x1) / 2, -0.001); return { text: 'POPCORN', x: C.x + x, z: C.z + z, y: Y1 + G.roof + P.sign.y, w: P.sign.w, h: P.sign.h, ry: Math.PI + YAW }; };
 /** The heat lamp under the roof: an unlit box on the atlas's light swatch (as the ceiling panels; no light source). */
-export const popcornLamp = () => new THREE.BoxGeometry(G.x1 - G.x0 - 0.06, 0.008, G.z1 - G.z0 - 0.06).translate(OX + (G.x0 + G.x1) / 2, Y1 - 0.008, OZ);
+export const popcornLamp = () => { const [x, z] = at((G.x0 + G.x1) / 2, 0); return new THREE.BoxGeometry(G.x1 - G.x0 - 0.06, 0.008, G.z1 - G.z0 - 0.06).rotateY(YAW).translate(x, Y1 - 0.008, z); }
+/** The cart's (turned) box [x0, x1, z0, z1], room-local, for half extents hx (along the cart's x) and hz (along its z). */
+const cartRect = (hx, hz) => { const [a, b] = turn(hx, hz), [c, d] = turn(hx, -hz), ex = Math.max(Math.abs(a), Math.abs(c)), ez = Math.max(Math.abs(b), Math.abs(d)); return [C.x - ex, C.x + ex, C.z - ez, C.z + ez]; };
 /** Collision footprints, room-local [x0, x1, z0, z1]: the cart (with its wheels) and the bin. */
-export const popcornFootprints = () => [[C.x - C.w / 2 - 0.06, C.x + C.w / 2 + 0.06, C.z - C.d / 2 - 0.03, C.z + C.d / 2 + 0.03],
+export const popcornFootprints = () => [cartRect(C.w / 2 + 0.06, C.d / 2 + 0.03),
   [P.bin.x - P.bin.r * 1.06, P.bin.x + P.bin.r * 1.06, P.bin.z - P.bin.r * 1.06, P.bin.z + P.bin.r * 1.06]];
 
 const inRoom = (x, z) => Math.abs(x - R.x) < R.w / 2 + 1 && Math.abs(z - R.z) < R.d / 2 + 1;
@@ -143,10 +155,12 @@ export class PopcornTub extends Holdable {
     }
     pts.sort((p, q) => p[1] - q[1]);
     const batch = new Batch([tubParts(), ...pts.map(([x, y, z]) => [kernel(rand, x, y, z, 0.014)])], cart.material, 'popcorn-tub');
-    const home = new THREE.Vector3(OX + P.stack.x, Y0 + P.stack.count * P.stack.nest, OZ);
+    const legacyHome = new THREE.Vector3(R.x + P.legacy.x + P.stack.x, Y0 + P.stack.count * P.stack.nest, R.z + P.legacy.z);
+    const [hx, hz] = at(P.stack.x, 0), home = new THREE.Vector3(hx, Y0 + P.stack.count * P.stack.nest, hz);
     super(scene, camera, {
       name: 'popkornsbyttan', verb: 'ta', backName: 'stapeln', backVerb: 'ställa tillbaka byttan på', placeVerb: 'ställa ner',
       model: batch.mesh, cart, batch, bites: 0, away: true, nibble: 0, placedAt: 0, keepName: `popkornsbyttan ${i}`,
+      keepPos: legacyHome, // (#1573: the save key keeps the #1567 stack position, so saves from before the move still find their tubs)
       home: { pos: home, rot: new THREE.Euler() }, pick: { pos: home.clone(), size: [0.01, 0.01, 0.01] }, cooldown: T.cooldown,
       heldPose: { pos: new THREE.Vector3(T.held.x, T.held.y, T.held.z), rot: new THREE.Euler(0.45, 0, 0) }, // (tipped towards you: the popcorn shows)
     });
@@ -206,8 +220,17 @@ export class PopcornTub extends Holdable {
     this.model.position.set(p.x - 0.1 * k, p.y + 0.14 * k, p.z + 0.1 * k);
     this.model.rotation.set(r.x + 0.5 * k, r.y, r.z);
   }
+  /** #1573: a tub saved on/at the cart's old place (#1567) moves to the same spot of the cart's new one (its height and turn follow). */
+  migrate() {
+    const L = P.legacy, m = this.model.position, dx = m.x - (R.x + L.x), dz = m.z - (R.z + L.z), c = Math.cos(L.yaw), s = Math.sin(L.yaw);
+    const lx = dx * c - dz * s, lz = dx * s + dz * c; // (into the old cart's own axes)
+    if (Math.abs(lx) > C.w / 2 + 0.06 || Math.abs(lz) > C.d / 2 + 0.03 || m.y < 0.3) return;
+    const [wx, wz] = at(lx, lz);
+    m.set(wx, m.y, wz); this.model.quaternion.premultiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), YAW - L.yaw));
+  }
   update(dt) {
     super.update(dt);
+    if (this.placed && !this.held) this.migrate();
     this.model.visible = !this.away && this.cart.group.visible; // held/placed tubs obey the same room gate as the cart
   }
   keepState() { return this.bites > 0 ? { b: this.bites } : null; }
@@ -224,7 +247,7 @@ export class PopcornCart {
       new THREE.BoxGeometry(t, G.h - 0.02, G.z1 - G.z0 - 2 * e).translate(G.x0 - (G.x0 + G.x1) / 2, 0, 0), new THREE.BoxGeometry(t, G.h - 0.02, G.z1 - G.z0 - 2 * e).translate(G.x1 - (G.x0 + G.x1) / 2, 0, 0)];
     this.glass = new THREE.Mesh(mergeGeometries(panes), new THREE.MeshBasicMaterial({ color: 0xdff2ff, transparent: true, opacity: G.opacity, depthWrite: false }));
     panes.forEach((g) => g.dispose());
-    this.glass.position.set(OX + (G.x0 + G.x1) / 2, Y0 + (G.h - 0.02) / 2, OZ); this.glass.name = 'popcorn-glass'; this.glass.renderOrder = 1;
+    const [gx, gz] = at((G.x0 + G.x1) / 2, 0); this.glass.position.set(gx, Y0 + (G.h - 0.02) / 2, gz); this.glass.rotation.y = YAW; this.glass.name = 'popcorn-glass'; this.glass.renderOrder = 1;
     // the kernels in the case (lowest first: they fill from the bottom) and the stacked tubs, one mesh
     const rand = rng(1567), cx = (G.x0 + G.x1) / 2, hx = (G.x1 - G.x0) / 2 - 0.025, hz = (G.z1 - G.z0) / 2 - 0.025, pts = [];
     for (let k = 0; k < P.kernels; k++) {
@@ -232,16 +255,17 @@ export class PopcornCart {
       pts.push([cx + u * hx, Y0 + P.kernelSize * 0.6 + rand() * cap, v * hz]);
     }
     pts.sort((p, q) => p[1] - q[1]);
-    const groups = pts.map(([x, y, z]) => [kernel(rand, OX + x, y, OZ + z, P.kernelSize)]), tub = tubParts();
-    for (let i = 0; i < P.stack.count; i++) groups.push(tub.map((g) => g.clone().translate(OX + P.stack.x, Y0 + i * P.stack.nest, OZ)));
+    const groups = pts.map(([x, y, z]) => { const [wx, wz] = at(x, z); return [kernel(rand, wx, y, wz, P.kernelSize)]; }), tub = tubParts(), [sx, sz] = at(P.stack.x, 0);
+    for (let i = 0; i < P.stack.count; i++) groups.push(tub.map((g) => g.clone().translate(sx, Y0 + i * P.stack.nest, sz)));
     tub.forEach((g) => g.dispose());
     this.batch = new Batch(groups, material, 'popcorn');
     for (const m of [this.glass, this.batch.mesh]) { m.updateMatrix(); m.matrixAutoUpdate = false; group.add(m); }
     // what you aim at: the button, the case, the stack and the bin (invisible pick boxes)
     const self = this, kind = 'playroomPopcorn', tubIn = () => (heldItem() instanceof PopcornTub ? heldItem() : null);
-    const pick = (target, size, x, y, z) => {
+    const pick = (target, size, x, y, z, abs = false) => { // (x/z: the cart's own offsets, or room-local world offsets with `abs`: the bin)
       const m = new THREE.Mesh(new THREE.BoxGeometry(...size), new THREE.MeshBasicMaterial({ visible: false }));
-      m.position.set(OX + x, y, OZ + z); m.userData.door = target; target.pickable = m;
+      if (abs) m.position.set(R.x + x, y, R.z + z); else { const [wx, wz] = at(x, z); m.position.set(wx, y, wz); m.rotation.y = YAW; }
+      m.userData.door = target; target.pickable = m;
       group.add(m); this.pickables.push(m);
     };
     this.button = { kind, name: 'popkornsknappen', verb: 'trycka på',
@@ -260,7 +284,7 @@ export class PopcornCart {
     pick(this.button, [0.12, 0.12, 0.08], P.button.x, P.button.y, -d - 0.02);
     pick(this.case, [G.x1 - G.x0 + 0.03, G.h, G.z1 - G.z0 + 0.03], (G.x0 + G.x1) / 2, Y0 + G.h / 2, 0);
     pick(this.stackTarget, [T.top * 2 + 0.03, T.h + P.stack.count * P.stack.nest + 0.02, T.top * 2 + 0.03], P.stack.x, Y0 + (T.h + P.stack.count * P.stack.nest) / 2, 0);
-    pick(this.bin, [P.bin.r * 2.2, P.bin.h + 0.06, P.bin.r * 2.2], P.bin.x - C.x, (P.bin.h + 0.06) / 2, P.bin.z - C.z);
+    pick(this.bin, [P.bin.r * 2.2, P.bin.h + 0.06, P.bin.r * 2.2], P.bin.x, (P.bin.h + 0.06) / 2, P.bin.z, true);
     this.targets = [this.button, this.case, this.stackTarget, this.bin];
     this.show();
   }

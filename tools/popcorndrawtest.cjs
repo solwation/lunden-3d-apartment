@@ -1,4 +1,4 @@
-// #1567: the popcorn cart's draw cost and visibility, plus the result pictures. In the actual World: the extra draws inside
+// #1567 / #1573: the popcorn cart's draw cost and visibility, plus the result pictures. In the actual World: the extra draws inside
 // the room (the case's kernels + the stack are one mesh, the glass one more), none at all outside (the room's group is
 // hidden and holds every part), no lights; pictures of the cart in the entry, the full case and eating in a cinema seat (touch).
 //   PLAYWRIGHT_MODULE=… node tools/popcorndrawtest.cjs http://localhost:8158 /tmp/popcorn1567
@@ -32,7 +32,7 @@ const [game = 'http://localhost:8158', out = '/tmp/popcorn1567'] = process.argv.
     const focused = await page.evaluate(async () => {
       const a = __app, pc = a.world.playroom.popcorn, V = a.camera.position.constructor;
       const p = pc.button.pickable.getWorldPosition(new V());
-      a.player.spawn(p.x, p.z - 0.9, 0); a.step(1 / 60);
+      a.player.spawn(p.x + 0.9, p.z, 0); a.step(1 / 60); // (#1573: the cart faces east; stand in front of its button)
       a.camera.lookAt(p); a.step(1 / 60);
       return a.focus().focused?.name;
     });
@@ -42,11 +42,15 @@ const [game = 'http://localhost:8158', out = '/tmp/popcorn1567'] = process.argv.
     await page.evaluate(() => { const pc = __app.world.playroom.popcorn; for (let i = 0; i < 400; i++) pc.update(1 / 60); document.exitPointerLock(); });
     await page.waitForFunction(() => !document.pointerLockElement);
     await page.evaluate(() => __app.showOverlay(false));
-    const hall = [[-0.5, 1.35, 2.3], [-1.75, 0.95, 4.8]];
+    const hall = [[-4.0, 1.5, 3.0], [-8.7, 0.95, 3.9]]; // #1573: from the corridor towards the BIO end, where the cart stands
     const without = await view(...hall, false), withIt = await view(...hall, true);
     await page.screenshot({ path: `${out}/cart-entry.png` });
-    const close = await view([-2.05, 1.3, 3.85], [-2.05, 1.05, 4.9]);
+    const close = await view([-7.5, 1.3, 3.9], [-8.7, 1.05, 3.9]);
     await page.screenshot({ path: `${out}/glass-full.png` });
+    await view([-0.8, 1.55, 3.45], [-8.0, 1.1, 3.7]);
+    await page.screenshot({ path: `${out}/cart-corridor.png` });
+    await view([-4.5, 1.5, 3.0], [-1.0, 1.0, 4.6]); // (#1573: where the cart stood before: the entry by the door is empty now)
+    await page.screenshot({ path: `${out}/door-end.png` });
     const inside = { without, with: withIt, close, extra: withIt.calls - without.calls };
     assert.ok(inside.extra >= 1 && inside.extra <= 2, `extra draws inside: ${inside.extra}`);
     // eating in a cinema seat, touch: the button says "Ät"

@@ -25,6 +25,7 @@ result views, +2 dynamic draws inside and none outside including the held tub,
 with no lights/page errors. Existing clubhouse layout/trim checks pass5/5.
 [Evidence, source hashes, images and limits](../verification/1567/README.md).
 Gameplay is original-only; no downstream transfer.
+#1573 moved the cart to the hall's west wall (facing east): `popcorntest.html` also checks footprints against the BIO passage, door and switch, walking into the cart and through the passage, and a tub saved on the old counter moving to the new one; `popcorndrawtest.cjs` views are from the corridor ([evidence](../verification/1573/)).
 
 ## Softer surface footsteps (#1519)
 
