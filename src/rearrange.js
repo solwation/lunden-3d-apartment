@@ -14,7 +14,7 @@ const NAMES = { tillydesk: 'datorskrivbordet', batmanchair: 'Batman-stolen', bes
 const crossesLevels = (piece) => ['pictures', 'painting', 'kposters'].includes(piece.item.type);
 // Floors have disjoint height intervals; the saved world transform identifies the storey.
 const levelAt = (y) => LEVELS.findIndex(l => y > l.floor && y < l.floor + l.ceiling);
-const usesSupport = (piece) => piece.item.type === 'symfonisk' || (piece.item.type === 'tv' && piece.item.mount !== 'wall');
+const usesSupport = (piece) => piece.item.type === 'laptop' || piece.item.type === 'symfonisk' || (piece.item.type === 'tv' && piece.item.mount !== 'wall');
 const V = THREE.Vector3, Q = THREE.Quaternion, M = THREE.Matrix4;
 const shown = (o) => { for (; o; o = o.parent) if (!o.visible) return false; return true; };
 const within = (o, root) => { for (; o; o = o.parent) if (o === root) return true; return false; };
@@ -81,7 +81,7 @@ export class Rearrange {
   say(text) { this.message = text; this.status?.(text); }
   supports(piece) {
     if (piece.item.type === 'rug' || piece.picture) return [];
-    return this.world.furniture.surfaces.filter((s) => within(s, piece.object) && shown(s.parent)).map((s) => new THREE.Box3().setFromObject(s));
+    return [...this.world.furniture.surfaces, ...(this.world.furniture.rearrangeSurfaces ?? [])].filter((s) => within(s, piece.object) && shown(s.parent)).map((s) => new THREE.Box3().setFromObject(s));
   }
   onTop(o, surfaces) {
     if (!surfaces.length) return false;
@@ -170,7 +170,7 @@ export class Rearrange {
     }
     if (this.saving) { this.target = { kind: 'rearrange', blocked: true, blockedText: 'Sparar möbleringen…' }; return; }
     const { piece, original, bounds } = this.selected;
-    const old = poseOf(original), q = new Q(...old.quat), pos = new V(); let valid = true, destination = piece.level;
+    const old = poseOf(original), q = new Q(...old.quat), pos = new V(); let valid = true, destination = piece.level, supportHit = null;
     if (piece.place) { // a pendant (#1106): along the ceiling of its room, at the height asked for
       const r = piece.place({ ray: this.ray.ray, camera: this.camera, original, turn: this.turn, lift: this.lift, reach: REARRANGE.reach, grid: LIFE.place.floorGrid });
       valid = r.valid && this.player.level === piece.level;
@@ -193,15 +193,17 @@ export class Rearrange {
       const plane = new THREE.Plane(new V(0, 1, 0), -floor);
       let at = this.ray.ray.intersectPlane(plane, new V()), height = floor;
       if (usesSupport(piece)) {
-        const surfaces = this.world.cupSurfaces.filter(s => shown(s.parent) && !s.userData.soft
+        const surfaces = [...this.world.cupSurfaces, ...(this.world.furniture.rearrangeSurfaces ?? [])].filter(s => shown(s.parent) && !s.userData.soft
+          && !(piece.item.type === 'laptop' && s.userData.noLaptop)
+          && (!s.userData.rearrangeType || s.userData.rearrangeType === piece.item.type)
           && !this.selected.group.some(p => within(s, p.object))
           && s.userData.surface >= floor && s.userData.surface < floor + LEVELS[piece.level].ceiling);
         const hit = this.ray.intersectObjects(surfaces, false).find(h => h.face?.normal.y > 0.9);
-        if (hit) { at = hit.point; height = hit.object.userData.surface; }
+        if (hit) { at = hit.point; height = hit.object.userData.surface; supportHit = hit.object; }
       }
       valid = !!at && at.distanceTo(this.camera.position) <= REARRANGE.reach && this.player.level === piece.level;
       if (valid) {
-        const grid = LIFE.place.floorGrid;
+        const grid = supportHit?.userData.rearrangeType === 'laptop' ? LIFE.place.grid : LIFE.place.floorGrid;
         pos.set(Math.round(at.x / grid) * grid, height + old.pos[1] - bounds.min.y, Math.round(at.z / grid) * grid);
         q.premultiply(new Q().setFromAxisAngle(new V(0, 1, 0), this.turn));
         if (height === floor) {
@@ -213,6 +215,15 @@ export class Rearrange {
     }
     if (valid) {
       this.candidate = new M().compose(pos, q, new V(1, 1, 1));
+      // The centre ray can be safe while a rotated or snapped open laptop overhangs the vanity.
+      if (supportHit?.userData.supportArea && piece.object.userData.supportOutline) {
+        supportHit.parent.updateWorldMatrix(true, false);
+        const local = supportHit.parent.matrixWorld.clone().invert(), area = supportHit.userData.supportArea;
+        for (const [x, z] of piece.object.userData.supportOutline) {
+          const p = new V(x, 0, z).applyMatrix4(this.candidate).applyMatrix4(local);
+          if (p.x < area.x0 || p.x > area.x1 || p.z < area.z0 || p.z > area.z1) { valid = false; break; }
+        }
+      }
       if (!piece.picture && piece.item.type !== 'rug') {
         const walls = this.world.levels[piece.level].wallSegments;
         for (const r of piece.object.userData.footprint ?? []) {

@@ -5124,6 +5124,8 @@ export const NYMANE_WALL = {
 // lamps, #234), a mirror image (#50); a small round lilac velvet stool in front (a seat; 40 cm high, Ø 36, guess).
 export const VANITY = {
   w: 1.0, d: 0.48, h: 0.76, drawers: { w: 0.36, n: 5 },
+  laptopClearX: 0.075, // guess: just past the hair straightener's +x end (~0.07 m), for a rotated laptop (#1563)
+  laptopTarget: { x0: 0.24, x1: 0.34, z0: -0.015, z1: 0.10 }, // guess: centres that fit the open 30 × 21 cm laptop on the free end; checked after grid snap/turn (#1563)
   mirror: { w: 0.6, h: 0.8, frame: 0.018, depth: 0.03, bottom: 0.1, bulb: 0.026, top: 3, side: 4, bottomRow: 3 },
   light: { intensity: 0.5, range: 2.5, color: 0xffe6c4 }, // its pool light, a little whiter than the shaded lamps; halved (#339)
   stool: { r: 0.18, h: 0.42, color: 0xc7a6e0 },

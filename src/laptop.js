@@ -324,6 +324,10 @@ export function laptop(item) {
   g.userData.keep = [base, lid];
   g.userData.laptop = self;
   g.userData.footprint = [];
+  // Projection of both the base and the open lid onto a supporting tabletop (#1563).
+  g.userData.supportOutline = [[-w / 2, d / 2], [w / 2, d / 2],
+    [w / 2, -d / 2 - (d - 0.005) * Math.sin(THREE.MathUtils.degToRad(L.open - 90)) - L.lid],
+    [-w / 2, -d / 2 - (d - 0.005) * Math.sin(THREE.MathUtils.degToRad(L.open - 90)) - L.lid]];
   g.position.y = item.y ?? 0;
   return g;
 }

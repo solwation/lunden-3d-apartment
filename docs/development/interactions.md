@@ -319,6 +319,9 @@ src/rearrange.js       furniture cheat (#465): § / Enter (#596; not from a focu
                        buildFurniture exposes stable movable ids and separates framed pictures before per-frame merging.
                        E/click selects and confirms, R/turn rotates, X/cancel abandons the local 35%-opacity ghost. Rugs never
                        carry things above them; support surfaces identify carried furniture and local Holdables/life items.
+                       #1563: the laptop uses a separate rearrangement target on Tilly's vanity. After the 5 cm grid
+                       and rotation, its base and open lid must fit the free top ahead of the mirror. The ordinary
+                       narrow cup surface stays unchanged; the laptop also follows the vanity when it is moved.
                        Confirmed world poses update footprints, seat targets, surface heights, light anchors/washes, rug data
                        and Marks caches. Local cached authoritative layout is lunden.furniture.layout; unlock is a convenience.
                        GET/PUT /furniture uses DrawingRoom's serialized durable storage, revision-checked atomic batches;

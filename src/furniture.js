@@ -2989,7 +2989,10 @@ function vanity(item, lights) {
     ] });
   g.userData.vanity = { mirror, glass };
   g.userData.wallMirrors = [{ object: mirror, name: 'sminkspegeln' }];
-  g.userData.surfaces = [{ x0: 0.0, x1: 0.13, z0: -hd + 0.2, z1: hd - 0.03, y: h }]; // in front of the stool, beside the laptop (#283)
+  g.userData.surfaces = [{ x0: 0.0, x1: 0.13, z0: -hd + 0.2, z1: hd - 0.03, y: h, noLaptop: true }]; // in front of the stool, beside the laptop (#283)
+  // Laptop-sized centres on the free end. This is for rearranging only: cups retain the narrow clear strip above.
+  g.userData.rearrangeSurfaces = [{ ...V.laptopTarget, y: h, type: 'laptop',
+    supportArea: { x0: V.laptopClearX, x1: hw - 0.005, z0: -hd + V.mirror.depth + 0.01, z1: hd - 0.01 } }];
   g.userData.footprint = [{ x0: -hw, x1: hw, z0: -hd, z1: hd }];
   return g;
 }
@@ -4270,6 +4273,7 @@ export function surfaceBox(r, list) {
   m.visible = false;
   m.userData.surface = r.y;
   if (r.soft) m.userData.soft = true; // a bed / a sofa: only for things that are `soft` (#269)
+  if (r.noLaptop) m.userData.noLaptop = true;
   list?.push(m);
   return m;
 }
@@ -4326,7 +4330,7 @@ export function buildFurniture() {
 export function* furnitureParts() {
   const group = new THREE.Group();
   const segments = [[], []], footprints = [[], []];
-  const lights = [], interactives = [], surfaces = [], things = [], movable = [];
+  const lights = [], interactives = [], surfaces = [], rearrangeSurfaces = [], things = [], movable = [];
   const ids = new Map(), shadowed = [];
   const n = FURNITURE.length;
   for (let i = 0; i < n; i++) {
@@ -4359,6 +4363,13 @@ export function* furnitureParts() {
       m.userData.surface += obj.position.y; // its height in the world (upstairs too, #269)
       (r.gate ?? obj).add(m); // `gate`: a group the piece shows only while the surface is there (the secretary's open flap, #447)
       if (r.gate) { m.userData.gate = true; r.mesh = m; m.userData.occupied = () => standingOn(m, obj); m.userData.door = r.door; } // (E on it = on the flap / lid it lies on)
+    }
+    for (const r of obj.userData.rearrangeSurfaces ?? []) {
+      const m = surfaceBox(r, rearrangeSurfaces);
+      m.userData.surface += obj.position.y;
+      m.userData.rearrangeType = r.type;
+      m.userData.supportArea = r.supportArea;
+      obj.add(m);
     }
     if (obj.userData.rest) obj.userData.interact = restTarget(obj, item, floor); // sit / lie (#71/#72)
     if (obj.userData.interact) { // E targets among the furniture (the TV, seats, beds)
@@ -4395,5 +4406,5 @@ export function* furnitureParts() {
   }
   group.add(buildContactShadows(shadowed)); // last child: the pieces' matrices are current when it follows them (#1075)
   linkPatioTextiles(movable); // #1015: canonical outdoor cushion choices also drive stored copies.
-  return { object: group, segments, footprints, lights, interactives, surfaces, things, movable };
+  return { object: group, segments, footprints, lights, interactives, surfaces, rearrangeSurfaces, things, movable };
 }

@@ -1,0 +1,17 @@
+PASS wine rack uses wall placement
+PASS all eight wine bottles belong to rack
+PASS bottles join transparent preview
+PASS real wall ray keeps rack above floor
+PASS rack rotates on wall
+PASS save wall placement
+PASS every bottle follows wall movement and rotation once
+PASS living-room window sill is a placement surface
+PASS lamp base rests on window sill instead of floor
+PASS save lamp on sill
+PASS lamp can also be placed on table
+PASS lamp follows its new supporting furniture
+PASS wall rack and supported lamp survive reload
+PASS rack can return to original wall position
+PASS lamp can return to original window position
+ALL PASS
+[runner] iteration/test-only, NOT full/test parity
