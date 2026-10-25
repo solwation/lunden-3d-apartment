@@ -77,7 +77,8 @@ test('#1597 film names: the trailer wording, channel tags and hashtags are dropp
   for (const [title, film] of [['Minions & Monsters | Final Trailer', 'Minions & Monsters'], ['Bluey: Filmen | Officiell Teasertrailer | Bluey - Officiella Svenska Kanalen', 'Bluey: Filmen'],
     ['Bus och mysterier med Alfons Åberg – Biopremiär 11 september #alfonsåberg #shorts #trailer', 'Bus och mysterier med Alfons Åberg'],
     ['GRÅBEN VS ACME | OFFICIELL TRAILER - Svenskt tal', 'GRÅBEN VS ACME'], ['Trailer: Kung Fu Panda', 'Kung Fu Panda'], ['Not Alone - Official Teaser Trailer', 'Not Alone'],
-    ['Spider-Man trailer', 'Spider-Man trailer'], ['Officiell trailer', 'Officiell trailer']]) assert.equal(filmTitle(title), film, title);
+    ['Spider-Man trailer', 'Spider-Man trailer'], ['Officiell trailer', 'Officiell trailer'],
+    ['HÅKAN BRÅKAN 003 ⏐ Officiell trailer ⏐ Biopremiär 19 december', 'HÅKAN BRÅKAN 003'], ['Film │ Trailer', 'Film'], ['Film ｜ Trailer', 'Film']]) assert.equal(filmTitle(title), film, title); // #1602
 });
 
 test('#1597 candidates: only recent uploads whose title says "trailer"; one poster per film; an empty allow-list makes no calls', async () => {
@@ -270,6 +271,7 @@ test('#1600 language: Swedish, then English, then unknown, then other languages,
   const yt = youtube({ uploads: spread(...dubs), videoOverride: (id) => (lang[id] ? { language: { defaultAudioLanguage: lang[id] } } : {}) });
   const out = await fetchPosters({ key: 'k', fetcher: yt.fetcher, now: NOON });
   assert.deepEqual(out.map((i) => i.id), [vid(4), vid(2), vid(3), vid(0)], 'sv, en, unknown, then one dub fills the channel\'s second spot');
+  assert.deepEqual(out.map((i) => i.lang), ['sv-SE/', 'en/', '/', 'nl/'], 'each item says which language tags the ranking saw');
   // with enough better trailers the dubs drop out entirely
   const many = Array.from({ length: COUNT }, (_, i) => [vid(10 + i), `Svensk ${i} | Trailer`, 'S', chan(1 + (i % 3)), 20 + i]);
   const svOnly = Object.fromEntries(many.map(([id]) => [id, 'sv']));

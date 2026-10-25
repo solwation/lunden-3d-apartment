@@ -6014,7 +6014,7 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
     // verified alone is not enough (verified song/game-replay channels are left out on purpose). Not found or not provable: SVT Bolibompa Mini, UR Barn,
     // UR Play, Warner Bros. Pictures Sverige, DreamWorks Animation Sweden. Add channels the same way, with a comment. An empty list gives no posters.
     // blockWords are *guess*. Quota per day: 26 channels x 1 + videos.list 1 per 50 candidates (<= 3) = at most 29 units (#1597; the searches cost 302).
-    // `filterVersion` (5 since #1600): KV lists without it are never served, and a failed day under an older version is retried at once.
+    // `filterVersion` (6 since #1600's language tags): KV lists without it are never served, and a failed day under an older version is retried at once.
     // #1600: `languages` = preferred spoken languages in order (videos.list defaultAudioLanguage/defaultLanguage); unknown comes next and every other
     // language last, so e.g. DreamWorksTV World's Dutch/Finnish dubs only fill spots no Swedish/English/unknown trailer wants (*guess*).
     worker: { perChannel: 50, maxVetted: 150, maxTrailerSeconds: 300, maxPerChannel: 2, recentDays: 730, retryHours: 6,
@@ -6045,7 +6045,7 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
         'UCHaHZJAWfrlnysph7LReiYA', // DreamWorksTV World (verified)
         'UCq7OHvWO6Z3u-LztFdrcU-g', // Illumination (verified)
         'UCaOPA9kDa-s27ju1XG17Q1w', // Cartoon Network Sverige (verified)
-      ], languages: ['sv', 'en'], filterVersion: 5, blockWords: ['bajs', 'poop', 'kiss', 'prank', 'skibidi', '18+', 'toalett', 'toilet'] } },
+      ], languages: ['sv', 'en'], filterVersion: 6, blockWords: ['bajs', 'poop', 'kiss', 'prank', 'skibidi', '18+', 'toalett', 'toilet'] } },
   // #1574: own generated posters (one canvas atlas, one extra draw), neon, pub lamps and per-room light levels. Everything here is a *guess*
   // (local metres from the room's centre; every wall is named for its room: hall / BILJARD / SPEL; BIO is #1575's). `along` is x on the north/south walls
   // and z on the east/west walls; `designs` index the atlas cells (0-9 hall mix, 10-18 SPEL gaming, 19-27 BILJARD/DJ) and repeat; `y` is a poster's centre height.

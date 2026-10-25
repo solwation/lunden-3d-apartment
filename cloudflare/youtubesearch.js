@@ -64,11 +64,11 @@ const ENTITIES = { amp: '&', quot: '"', apos: "'", lt: '<', gt: '>', '#39': "'",
 export const plainText = (text, max) => text.replace(/&(amp|quot|apos|lt|gt|#39|#34|#38);/g, (_, e) => ENTITIES[e])
   .replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
 /** #1597: a poster shows the film's name, not the upload's full title: "Minions & Monsters | Final Trailer" → "Minions & Monsters",
- *  "Bus med Alfons – Biopremiär 11 september #shorts" → "Bus med Alfons". The first " | ", " – " or " - " part that is not itself the
+ *  "Bus med Alfons – Biopremiär 11 september #shorts" → "Bus med Alfons". The first " | " (also ⏐ │ ｜, #1602), " – " or " - " part that is not itself the
  *  trailer/premiere wording wins; otherwise the whole (hashtag-free) title is kept. */
 export const filmTitle = (title) => {
   const t = title.replace(/#[\p{L}\p{N}_]+/gu, ' ').replace(/\s+/g, ' ').trim();
-  const parts = t.split(/\s+[|–—]\s+|\s+-\s+/).map((x) => x.replace(/^(?:officiell|official|ny|new)?\s*(?:teaser)?\s*trailer\s*:\s*/i, '').trim());
+  const parts = t.split(/\s+[|–—⏐│｜]\s+|\s+-\s+/).map((x) => x.replace(/^(?:officiell|official|ny|new)?\s*(?:teaser)?\s*trailer\s*:\s*/i, '').trim());
   return parts.find((x) => x.length >= 2 && !/trailer|teaser|biopremi[äa]r|premi[äe]re/i.test(x)) ?? t;
 };
 
@@ -104,7 +104,7 @@ export async function fetchPosters({ key, fetcher = fetch, now = Date.now(), cou
       seen.add(item.id); candidates.push({ ...item, title, channel });
     }
   }
-  const items = (await vetPosters(candidates, { key, fetcher })).slice(0, count).map(({ id, title, channel }) => ({ id, title: filmTitle(title).slice(0, 120), channel }));
+  const items = (await vetPosters(candidates, { key, fetcher })).slice(0, count).map(({ id, title, channel, lang }) => ({ id, title: filmTitle(title).slice(0, 120), channel, lang }));
   if (!items.length) throw new Error('upstream');
   return items;
 }
@@ -124,6 +124,11 @@ export const languageRank = (snippet) => {
   return i >= 0 ? i : L.length + 1;
 };
 
+/** #1600: "audio/metadata" language tags as videos.list gave them (each checked, else empty), kept on the poster item so the live list shows
+ *  what the ranking saw; the client ignores it. */
+const TAG = /^[A-Za-z]{2,3}(?:[-_][A-Za-z0-9]{1,8}){0,2}$/;
+const languageTags = (snippet) => [snippet?.defaultAudioLanguage, snippet?.defaultLanguage].map((t) => (typeof t === 'string' && TAG.test(t) ? t : '')).join('/');
+
 const blocked = (text) => { const t = text.toLowerCase(); return P.worker.blockWords.some((w) => t.includes(w.toLowerCase())); };
 
 /** #1589/#1591: keep only trailers ("trailer" in the title, short) that are embeddable, public, made-for-kids, not age-restricted videos
@@ -140,18 +145,18 @@ async function vetPosters(candidates, { key, fetcher }) {
       if (v.contentDetails?.contentRating?.ytRating === 'ytAgeRestricted') continue;
       // #1591: trailers only: a short video whose own title says "trailer" (never a full episode or film).
       if (!isTrailer(v.snippet?.title ?? '') || !trailerLength(isoSeconds(v.contentDetails?.duration))) continue;
-      if (typeof v.id === 'string' && W.channels.includes(v.snippet?.channelId)) good.set(v.id, { channelId: v.snippet.channelId, rank: languageRank(v.snippet) });
+      if (typeof v.id === 'string' && W.channels.includes(v.snippet?.channelId)) good.set(v.id, { channelId: v.snippet.channelId, rank: languageRank(v.snippet), lang: languageTags(v.snippet) });
     }
   }
   const kept = candidates.filter((c) => good.get(c.id)?.channelId === c.channelId && !blocked(c.title) && !blocked(c.channel))
-    .map((c) => ({ ...c, rank: good.get(c.id).rank })).sort((a, b) => a.rank - b.rank || b.published - a.published);
+    .map((c) => ({ ...c, ...good.get(c.id) })).sort((a, b) => a.rank - b.rank || b.published - a.published);
   const perChannel = new Map(), films = new Set(); // #1591: at most `maxPerChannel` posters per channel; #1597: one poster per film
   return kept.filter((c) => { const film = filmTitle(c.title).toLowerCase(); if (films.has(film)) return false; films.add(film); return true; })
     .filter((c) => { const n = perChannel.get(c.channelId) ?? 0; perChannel.set(c.channelId, n + 1); return n < W.maxPerChannel; });
 }
 
 const validPosters = (v) => v && v.filter === P.worker.filterVersion && typeof v.day === 'string' && Array.isArray(v.items) && v.items.length > 0 && v.items.length <= 12
-  && v.items.every((i) => VIDEO.test(i?.id ?? '') && typeof i.title === 'string' && i.title.length > 0 && i.title.length <= 120 && typeof i.channel === 'string' && i.channel.length <= 80);
+  && v.items.every((i) => VIDEO.test(i?.id ?? '') && typeof i.title === 'string' && i.title.length > 0 && i.title.length <= 120 && typeof i.channel === 'string' && i.channel.length <= 80 && (i.lang === undefined || (typeof i.lang === 'string' && i.lang.length <= 40)));
 let memory = null, inflight = null; // this isolate's copy of the KV record { day, items, tried? } and the running refresh
 export const resetPosterMemory = () => { memory = null; inflight = null; };
 
