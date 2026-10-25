@@ -2448,7 +2448,8 @@ world.furniture.movable.push(...lights.pendants); // the pendants move too (#110
 world.furniture.movable.push({ id: 'f-basketholder-1-0.2-0-0', item: { type: 'basketholder', level: BASKET.ball.level }, object: ball.holder, level: BASKET.ball.level, picture: true, name: 'basketbollshållaren' });
 const rearrange = new Rearrange({ scene, camera, world, player, life, marks, materialOnly: [...curtainMaterialTargets, ...towelMaterialTargets],
   carryables: () => [...holdables, ...cups.cups, ...life.views.values(), fruit.carryable, ...fruit.placed],
-  busy: () => !!heldItem() || rest.active || drawing.active || !world.furnitureOn,
+  // #1601: the reason (truthy) Möblera om cannot start or act now, shown to the player instead of a silent no
+  busy: () => (heldItem() ? 'Lägg ifrån dig det du håller först.' : rest.active ? 'Res dig först.' : drawing.active ? 'Avsluta teckningen först.' : !world.furnitureOn ? 'Visa möblerna med F först.' : ''),
   changed: (changes) => {
     if (rest.active && changes.some(({ p }) => p.object === rest.target?.pickable)) standUp();
     shadowState.hold = 1.5;
@@ -2735,7 +2736,9 @@ document.addEventListener('keydown', e => {
   if(document.getElementById('cheat-note').hidden)return;
   if(['Escape','KeyE'].includes(e.code)){e.preventDefault();showCheatNote(false,e.code);}e.stopImmediatePropagation();
 },true);
-editToggle.addEventListener('click', () => { rearrange.enable(true); editUI(); showTerminal(false); });
+// #1601: the button stands you up and shows hidden furniture first; if the mode still cannot start (something held, a drawing),
+// the console stays open with the reason, because the mode's own status line is hidden while the mode is off.
+editToggle.addEventListener('click', () => { if (rest.active) standUp(); if (!world.furnitureOn) toggleFurniture(true); if (rearrange.enable(true)) { editUI(); showTerminal(false); } else { editUI(); document.getElementById('terminal-message').textContent = rearrange.message; } });
 function requestFurnitureReset(all = false, piece = editMenuPiece) {
   if (rearrange.saving || (!all && (!piece || piece.materialOnly))) return;
   if (terminal.hidden) showTerminal(true);

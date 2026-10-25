@@ -49,6 +49,7 @@ const sourceHashes=Object.fromEntries(['index.html','src/adminreports.js','src/m
     const canvas=document.createElement('canvas'),overlay=document.getElementById('overlay'),armEl=document.createElement('div');
     const active=()=>true,materialChoice=()=>null,renderMaterialLibrary=()=>{},requestFurnitureReset=()=>{};
     const life={flush(){}},cheats={};
+    const rest={active:false},standUp=()=>{},world={furnitureOn:true},toggleFurniture=()=>{};
     ${binding}
     ${ui}
     ${terminalFns}

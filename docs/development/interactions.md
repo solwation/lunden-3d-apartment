@@ -386,6 +386,9 @@ src/rearrange.js       furniture cheat (#465): § / Enter (#596; not from a focu
                        including native pointer-unlock events. Touch keeps its input mode when leaving the menu.
                        The compact edit panel shows selection/placement steps, selected-only Rotate/Cancel, Menu and Done.
                        Reset controls sit in a collapsible menu section and retain both confirmations; Enter inside the console only submits the code.
+                       #1601: the admin menu's Möblera button stands a seated player up and shows hidden furniture (F) before starting;
+                       when the mode still cannot start (something held, a drawing open) the console stays open with the specific reason
+                       from main.js `busy` (rearrange.js `enable`), since the mode's own status line is hidden while the mode is off.
                        tools/rearrangeuitest.html covers the touch badge hit area, § and Enter (opens in play; submits inside; ignored in other fields, focused buttons and rearrange mode), panel states, cancellation and menu scrolling.
                        Original-position reset (button / Home) asks for confirmation and uses the same atomic move; detached Thing supports and the fruit bowl follow
                        furniture, including layouts saved before #475.

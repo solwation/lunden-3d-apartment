@@ -74,7 +74,7 @@ export class Rearrange {
     this.enable(true); return true;
   }
   enable(on) {
-    if (on && (!this.unlocked || this.busy())) { this.say('Lägg ifrån dig det du håller och res dig först.'); return false; }
+    if (on && (!this.unlocked || this.busy())) { const why = this.unlocked && this.busy(); this.say(typeof why === 'string' ? why : 'Lägg ifrån dig det du håller och res dig först.'); return false; }
     if (this.saving) { if (!on) this.enabled = false; return !on; } // a confirmed write finishes even if the user exits
     this.cancel(); this.enabled = !!on; this.say(on ? 'Sikta på en möbel, tavla eller spegel och välj den.' : 'Ommöblering avslutad'); return true;
   }
