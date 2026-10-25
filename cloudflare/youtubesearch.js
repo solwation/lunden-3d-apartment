@@ -114,11 +114,22 @@ export const isoSeconds = (iso) => { const m = /^P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(
 const trailerLength = (seconds) => seconds > 0 && seconds <= P.worker.maxTrailerSeconds; // 0 = a live stream / premiere (P0D)
 const isTrailer = (title) => /trailer/i.test(title);
 
+/** #1600: a vetted video's language rank from videos.list `snippet.defaultAudioLanguage` (else `defaultLanguage`), BCP-47 like "sv" or "en-US":
+ *  its place in `worker.languages` (Swedish, English), then unknown, then every other language last. */
+export const languageRank = (snippet) => {
+  const L = P.worker.languages, known = (t) => typeof t === 'string' && /^[a-z]{2,3}(?![a-z])/i.test(t) && !/^(zxx|und|mul)(?![a-z])/i.test(t);
+  const tag = [snippet?.defaultAudioLanguage, snippet?.defaultLanguage].find(known); // "und"/"zxx"/"mul" say nothing; fall back to the metadata language
+  if (!tag) return L.length;
+  const i = L.indexOf(tag.toLowerCase().split(/[-_]/)[0]);
+  return i >= 0 ? i : L.length + 1;
+};
+
 const blocked = (text) => { const t = text.toLowerCase(); return P.worker.blockWords.some((w) => t.includes(w.toLowerCase())); };
 
 /** #1589/#1591: keep only trailers ("trailer" in the title, short) that are embeddable, public, made-for-kids, not age-restricted videos
  *  (videos.list, 1 unit per 50) whose channel is on the allow-list (`worker.channels`); then drop block words, the same film twice
- *  (one trailer per film name) and more than `maxPerChannel` per channel, newest first. Any API failure throws 'upstream'. */
+ *  (one trailer per film name) and more than `maxPerChannel` per channel. #1600: Swedish, then English, then unknown, then other languages, so
+ *  a channel's foreign-language dubs only fill spots nothing better wants; newest first within each language. Any API failure throws 'upstream'. */
 async function vetPosters(candidates, { key, fetcher }) {
   if (!candidates.length) return [];
   const W = P.worker, good = new Map();
@@ -129,10 +140,11 @@ async function vetPosters(candidates, { key, fetcher }) {
       if (v.contentDetails?.contentRating?.ytRating === 'ytAgeRestricted') continue;
       // #1591: trailers only: a short video whose own title says "trailer" (never a full episode or film).
       if (!isTrailer(v.snippet?.title ?? '') || !trailerLength(isoSeconds(v.contentDetails?.duration))) continue;
-      if (typeof v.id === 'string' && W.channels.includes(v.snippet?.channelId)) good.set(v.id, v.snippet.channelId);
+      if (typeof v.id === 'string' && W.channels.includes(v.snippet?.channelId)) good.set(v.id, { channelId: v.snippet.channelId, rank: languageRank(v.snippet) });
     }
   }
-  const kept = candidates.filter((c) => good.get(c.id) === c.channelId && !blocked(c.title) && !blocked(c.channel)).sort((a, b) => b.published - a.published);
+  const kept = candidates.filter((c) => good.get(c.id)?.channelId === c.channelId && !blocked(c.title) && !blocked(c.channel))
+    .map((c) => ({ ...c, rank: good.get(c.id).rank })).sort((a, b) => a.rank - b.rank || b.published - a.published);
   const perChannel = new Map(), films = new Set(); // #1591: at most `maxPerChannel` posters per channel; #1597: one poster per film
   return kept.filter((c) => { const film = filmTitle(c.title).toLowerCase(); if (films.has(film)) return false; films.add(film); return true; })
     .filter((c) => { const n = perChannel.get(c.channelId) ?? 0; perChannel.set(c.channelId, n + 1); return n < W.maxPerChannel; });

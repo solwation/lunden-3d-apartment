@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { fetchPosters, dailyPosters, cinemaPostersFetch, resetPosterMemory, posterDay, plainText, isoSeconds, filmTitle } from './youtubesearch.js';
+import { fetchPosters, dailyPosters, cinemaPostersFetch, resetPosterMemory, posterDay, plainText, isoSeconds, filmTitle, languageRank } from './youtubesearch.js';
 import { PLAYROOM } from '../src/config.js';
 import worker from './worker.js';
 
@@ -28,7 +28,7 @@ function youtube({ fail = false, videoOverride = () => ({}), uploads = null, vid
     if (u.pathname.endsWith('/videos')) {
       if (videosFail) return new Response('{}', { status: 500 });
       return Response.json({ items: u.searchParams.get('id').split(',').map((id) => { const o = videoOverride(id);
-        return { id, status: { ...okVideo.status, ...o.status }, contentDetails: { ...okVideo.contentDetails, ...o.contentDetails }, snippet: { title: o.title ?? titles.get(id) ?? 'Trailer', channelId: o.channelId ?? owners.get(id) ?? GOOD } }; }) });
+        return { id, status: { ...okVideo.status, ...o.status }, contentDetails: { ...okVideo.contentDetails, ...o.contentDetails }, snippet: { title: o.title ?? titles.get(id) ?? 'Trailer', channelId: o.channelId ?? owners.get(id) ?? GOOD, ...o.language } }; }) });
     }
     assert.ok(u.pathname.endsWith('/playlistItems'), `unexpected call ${u.pathname}`);
     const channelId = 'UC' + u.searchParams.get('playlistId').slice(2), n = TEST_CHANNELS.indexOf(channelId);
@@ -255,4 +255,25 @@ test('#1591 per-channel cap: one channel never fills more than maxPerChannel spo
   // a single-channel day still yields posters (up to the cap) instead of failing
   const only = youtube({ uploads: spread(...busy) });
   assert.equal((await fetchPosters({ key: 'k', fetcher: only.fetcher, now: NOON })).length, W.maxPerChannel);
+});
+
+test('#1600 language: Swedish, then English, then unknown, then other languages, before the per-channel cap; newest first within a language', async () => {
+  assert.deepEqual(W.languages, ['sv', 'en']);
+  const rank = (defaultAudioLanguage, defaultLanguage) => languageRank({ defaultAudioLanguage, defaultLanguage });
+  assert.deepEqual([rank('sv'), rank('sv-SE'), rank('en-US'), rank('EN_gb'), rank(), rank('zxx'), rank('und', 'en'), rank(undefined, 'sv'), rank('nl'), rank('fi'), rank('sv-x', 'nl')],
+    [0, 0, 1, 1, 2, 2, 1, 0, 3, 3, 0], 'the audio language wins over the metadata language; und/zxx say nothing');
+  // DreamWorksTV World's case: the newest uploads are Dutch and Finnish dubs of one series; an older English trailer on the same channel and a
+  // Swedish one elsewhere must come first, and the dubs may only take what the per-channel cap leaves.
+  const dubs = [[vid(0), "Doozie's Hondenhuis | Trailer seizoen 1 | Netflix", 'DreamWorksTV World', chan(0), 1], [vid(1), 'Doozien hauvatalo | Kausi 1 traileri | Netflix', 'DreamWorksTV World', chan(0), 1.1],
+    [vid(2), 'Gabby | Official Trailer', 'DreamWorksTV World', chan(0), 9], [vid(3), 'Okänd | Trailer', 'Okänd', chan(1), 2], [vid(4), 'Bamse | Officiell trailer', 'Bamse', chan(2), 30]];
+  const lang = { [vid(0)]: 'nl', [vid(1)]: 'fi', [vid(2)]: 'en', [vid(4)]: 'sv-SE' };
+  const yt = youtube({ uploads: spread(...dubs), videoOverride: (id) => (lang[id] ? { language: { defaultAudioLanguage: lang[id] } } : {}) });
+  const out = await fetchPosters({ key: 'k', fetcher: yt.fetcher, now: NOON });
+  assert.deepEqual(out.map((i) => i.id), [vid(4), vid(2), vid(3), vid(0)], 'sv, en, unknown, then one dub fills the channel\'s second spot');
+  // with enough better trailers the dubs drop out entirely
+  const many = Array.from({ length: COUNT }, (_, i) => [vid(10 + i), `Svensk ${i} | Trailer`, 'S', chan(1 + (i % 3)), 20 + i]);
+  const svOnly = Object.fromEntries(many.map(([id]) => [id, 'sv']));
+  const full = youtube({ uploads: spread(...dubs.slice(0, 2), ...many), videoOverride: (id) => ({ language: { defaultAudioLanguage: lang[id] ?? svOnly[id] } }) });
+  const top = await fetchPosters({ key: 'k', fetcher: full.fetcher, now: NOON });
+  assert.equal(top.length, COUNT); assert.ok(top.every((i) => i.channel === 'S'), 'no foreign dub when Swedish trailers fill every spot');
 });
