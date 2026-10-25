@@ -254,7 +254,7 @@ export class Playroom {
     this.onSwitch?.('disco', this.discoOn);
     return this.discoOn ? 'Discolampan är tänd' : 'Discolampan är släckt';
   }
-  toggleDisco() { if (this.film) this.filmOverride = true; return this.setDisco(!this.discoOn); } // #1570: the light switch beats the film dimming
+  toggleDisco() { if (this.film) this.filmOverride = !this.discoOn; return this.setDisco(!this.discoOn); } // #1570: switching the disco on beats the film dimming; #1610: switching it off keeps (or restores) it
 
   /** #1570: a film is running on the BIO screen (read from the cinema state by main.js each frame). */
   setFilm(on) {
@@ -270,14 +270,15 @@ export class Playroom {
     this.spots.visible = this.discoOn && this.filmDim < 0.5;
   }
 
-  /** Ambient light inside (day.lit): a touch dimmer with the disco on, so its colours read. */
-  get lit() { return R.lit * (this.discoOn ? R.litDisco : 1) * (1 - (1 - R.sconces.ambientDim) * this.filmDim); }
+  /** Ambient light inside (day.lit): a touch dimmer with the disco on, so its colours read; a film dims it further. */
+  get lit() { return R.lit * (this.discoOn ? R.litDisco : 1 - (1 - R.litDisco) * this.filmDim) * (1 - (1 - R.sconces.ambientDim) * this.filmDim); } // #1610: dimmed, the disco makes no difference (switching it off is never brighter)
 
   /** The disco ball turns and its light spots sweep round the room (only while inside; each spot is where a fixed ray from the ball meets a wall, the floor or the ceiling). */
   disco(dt) {
     const F = R.furniture.ball, h = R.ceiling;
     this.spin += dt;
     this.ball.rotation.y = this.spin * F.spin * Math.PI * 2;
+    if (!this.spots.visible) return; // #1610: no beam work or upload while a film keeps the spots hidden
     const ox = R.x + F.x, oy = F.y, oz = R.z + F.z, a = this.spin * F.spotSpin * Math.PI * 2, ca = Math.cos(a), sa = Math.sin(a), pos = this.spots.geometry.attributes.position.array;
     this.rays.forEach((ry, k) => {
       const dx = ry.d[0] * ca - ry.d[2] * sa, dy = ry.d[1], dz = ry.d[0] * sa + ry.d[2] * ca;

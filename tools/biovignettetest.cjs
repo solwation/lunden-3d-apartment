@@ -1,5 +1,5 @@
 // #1570: the BIO's idle screen (no instruction line, vignette), the aim/action prompt on desktop and touch, the sconces dimming while a film
-// runs and returning when it stops, the light switch beating the dimming, draws inside/outside, and the result pictures.
+// runs and returning when it stops, switching the disco on beating the dimming (off keeps it, no hidden beam work, #1610), draws inside/outside, and the result pictures.
 //   PLAYWRIGHT_MODULE=… node tools/biovignettetest.cjs http://localhost:8171 docs/verification/1570
 const fs = require('node:fs'), assert = require('node:assert/strict'), kit = require('./testkit.cjs');
 const [game = 'http://localhost:8171', out = '/tmp/bio1570'] = process.argv.slice(2);
@@ -55,10 +55,15 @@ const [game = 'http://localhost:8171', out = '/tmp/bio1570'] = process.argv.slic
       for (let i = 0; i < 400; i++) a.step(1 / 60); snap('film');
       a.cinema.state = { ...a.cinema.state, video: '' };
       for (let i = 0; i < 400; i++) a.step(1 / 60); snap('stopped');
-      // switch beats the film
+      // #1610: while the film hides the spots no beam work is uploaded; switching the disco off keeps the dimming
       a.cinema.state = { ...a.cinema.state, video: 'abcdefghijk' };
-      for (let i = 0; i < 400; i++) a.step(1 / 60);
+      for (let i = 0; i < 400; i++) a.step(1 / 60); snap('filmDisco');
+      const pos = room.spots.geometry.attributes.position, v0 = pos.version;
+      for (let i = 0; i < 60; i++) a.step(1 / 60); out.hiddenUploads = pos.version - v0;
+      room.toggleDisco(); for (let i = 0; i < 400; i++) a.step(1 / 60); snap('discoOff');
+      // switching the disco on beats the film; the spots are recomputed again
       room.toggleDisco(); for (let i = 0; i < 400; i++) a.step(1 / 60); snap('override');
+      const v1 = pos.version; for (let i = 0; i < 10; i++) a.step(1 / 60); out.shownUploads = pos.version - v1;
       a.cinema.state = { ...a.cinema.state, video: '' }; room.setDisco(true);
       for (let i = 0; i < 200; i++) a.step(1 / 60);
       a.cinema.state = null; out.R = R.sconces; return out;
@@ -66,7 +71,11 @@ const [game = 'http://localhost:8171', out = '/tmp/bio1570'] = process.argv.slic
     assert.equal(levels.idle.dim, 0); assert.equal(levels.film.dim, 1); assert.ok(levels.film.film);
     assert.ok(levels.film.lit < levels.idle.lit && levels.film.color < levels.idle.color && !levels.film.spots, JSON.stringify(levels));
     assert.equal(levels.stopped.dim, 0); assert.equal(levels.stopped.color, levels.idle.color); assert.ok(levels.stopped.spots);
-    assert.equal(levels.override.dim, 0, 'the light switch beats the dimming'); assert.equal(levels.override.film, true);
+    assert.equal(levels.hiddenUploads, 0, 'no disco beam upload while the film hides the spots');
+    assert.equal(levels.discoOff.dim, 1, 'switching the disco off keeps the film dimming');
+    assert.ok(levels.discoOff.lit <= levels.filmDisco.lit && levels.discoOff.color === levels.filmDisco.color && !levels.discoOff.spots, 'disco off during a film is not brighter');
+    assert.equal(levels.override.dim, 0, 'switching the disco on beats the dimming'); assert.equal(levels.override.film, true);
+    assert.ok(levels.override.spots && levels.shownUploads > 0, 'the spots move again once shown');
     // pictures: lit / dimmed salon with the speakers, and the front speakers from the seats
     const pics = async (name, film) => {
       await page.evaluate(async (film) => { const a = __app; a.world.playroom.setDisco(false); a.cinema.state = film ? { video: 'abcdefghijk', playing: true, position: 0, at: 0, q: 1 } : null; for (let i = 0; i < 400; i++) a.step(1 / 60); }, film);
