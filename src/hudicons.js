@@ -48,10 +48,11 @@ export function formatTemp(t) {
  const v=Math.round(t);
  return `${v<0?'\u2212':''}${Math.abs(v)}\u00b0`;
 }
+const iconSvg=name=>`<svg class="hud-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${paths[name]}</svg>`;
 export function setIcon(button,name,label) {
  if(!button)return;
  if(button.dataset.hudIcon!==name||!button.querySelector('.hud-icon')){
-   button.innerHTML=`<svg class="hud-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${paths[name]}</svg>`;
+   button.innerHTML=iconSvg(name);
    button.dataset.hudIcon=name;
  }
  button.classList.add('hud-button','hud-icon-button');
@@ -86,6 +87,8 @@ export function initHudIcons() {
  document.querySelectorAll('[data-close-target]').forEach(button=>button.addEventListener('click',()=>document.getElementById(button.dataset.closeTarget)?.click()));
  const ids={'furniture-btn':'sofa','measure-btn':'ruler','crouch-btn':'crouch','stats-btn':'stats','power-btn':'power','turn-btn':'rotate','bell-btn':'bell','jet-up':'up','jet-down':'down','jump-btn':'jump','web-btn':'web',pause:'pause',mute:'volume','terminal-btn':'terminal'};
  for(const [id,icon] of Object.entries(ids))setIcon(document.getElementById(id),icon);
+ // #1612: the touch help shows the buttons' own icons (the 🧎 emoji is Unicode 12 and an empty box on older phones)
+ document.querySelectorAll('[data-help-icon]').forEach(el=>{el.innerHTML=iconSvg(el.dataset.helpIcon);});
  const panels='#book-panel, #poster-panel, #cal-panel, #clock-panel, #blind-panel, #sonos-panel, #draw-panel, #terminal, #rearrange-help, #update, #binder-view, #task-note';
  document.querySelectorAll(panels).forEach(el=>el.classList.add('hud-controls'));
  document.querySelectorAll('#hud button, '+panels.split(', ').map(p=>p+' button').join(', ')).forEach(b=>b.classList.add('hud-button'));
