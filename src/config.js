@@ -6873,9 +6873,10 @@ export const COMPUTER_MEDIA = {
     monitorWidth:.65, monitorHeight:.38, monitorY:1, monitorDepth:.04, bezel:.025,
     top:.04, leg:.04, keyboard:[.4,.025,.14], chair:[.42,.06,.42], backHeight:.35,
     case:[.18,.32,.3], homePlaneOffset:.085 },
+  // #1613: `roomReach` = the furniture can be moved (Möblera om), so its reach is its whole room (`bounds`), not `reach` from x/z.
   stations: [
-    { id:'pc-home', name:'Speldatorn', x:3.1, z:11.45, level:1, bounds:[2.75,5.57,7.8,12.52], color:'#73e66b' },
-    { id:'laptop-home', name:'Laptopen', x:2.332, z:11.74, level:1, bounds:[.18,2.75,7.8,12.52], color:'#c89aff' },
+    { id:'pc-home', name:'Speldatorn', x:3.1, z:11.45, level:1, bounds:[2.75,5.57,7.8,12.52], roomReach:true, color:'#73e66b' },
+    { id:'laptop-home', name:'Laptopen', x:2.332, z:11.74, level:1, bounds:[.18,2.75,7.8,12.52], roomReach:true, color:'#c89aff' },
     ...[
       ['pc-lime','Lime',3.4,-3.5,Math.PI/2,'#94e76b'],
       ['pc-cyan','Turkos',3.4,-.3,Math.PI/2,'#58d9ec'],
@@ -6885,7 +6886,7 @@ export const COMPUTER_MEDIA = {
       bounds:[PLAYROOM.x+PLAYROOM.clubhouse.side+PLAYROOM.clubhouse.wall/2,PLAYROOM.x+PLAYROOM.w/2,PLAYROOM.z-PLAYROOM.d/2,PLAYROOM.z+PLAYROOM.clubhouse.front-PLAYROOM.clubhouse.wall/2]})),
     // #1566: Olof's own desk corner (#1557, src/tillydesk.js) in Sovrum 4, appended so existing
     // stations keep their spawn slots; its landscape monitor is the app screen.
-    { id:'pc-olof', name:'Olofs dator', x:TILLY_DESK.at.x, z:TILLY_DESK.at.z, level:1, bounds:[.18,2.75,7.8,12.52], color:'#5b82ff' },
+    { id:'pc-olof', name:'Olofs dator', x:TILLY_DESK.at.x, z:TILLY_DESK.at.z, level:1, bounds:[.18,2.75,7.8,12.52], roomReach:true, color:'#5b82ff' },
   ],
 };
 export function computerViewer(id,p) {
@@ -6896,7 +6897,7 @@ export function computerViewer(id,p) {
 }
 export function nearComputer(id,p) {
   const s=COMPUTER_MEDIA.stations.find(s=>s.id===id);
-  return !!s&&computerViewer(id,p)&&Math.hypot(p[0]-s.x,p[2]-s.z)<=COMPUTER_MEDIA.reach;
+  return !!s&&computerViewer(id,p)&&(s.roomReach||Math.hypot(p[0]-s.x,p[2]-s.z)<=COMPUTER_MEDIA.reach);
 }
 // #1487: first shared snake game. Tuned for a small arena/5 Hz existing socket budget; not measured real-world values.
 export const SNAKE = {
