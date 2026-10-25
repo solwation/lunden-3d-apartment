@@ -90,9 +90,15 @@ class Batch {
     const [a, n] = this.ranges[i], p = this.geometry.attributes.position.array, o = this.orig;
     if (on) p.set(o.subarray(a * 3, (a + n) * 3), a * 3);
     else for (let k = a; k < a + n; k++) { p[k * 3] = o[a * 3]; p[k * 3 + 1] = o[a * 3 + 1]; p[k * 3 + 2] = o[a * 3 + 2]; }
-    this.dirty = true;
+    this.lo = Math.min(this.lo ?? a, a); this.hi = Math.max(this.hi ?? a + n, a + n); // the changed vertices (#1609)
   }
-  flush() { if (this.dirty) { this.geometry.attributes.position.needsUpdate = true; this.dirty = false; } }
+  /** Uploads only the vertices changed since the last flush (#1609: one kernel a frame while popping, not the whole buffer). */
+  flush() {
+    if (this.lo === undefined) return;
+    const pos = this.geometry.attributes.position;
+    pos.addUpdateRange(this.lo * 3, (this.hi - this.lo) * 3); pos.needsUpdate = true; // (three merges the ranges and clears them on upload)
+    this.lo = this.hi = undefined;
+  }
   count() { return this.shown.filter(Boolean).length; }
 }
 
