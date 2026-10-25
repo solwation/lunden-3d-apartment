@@ -114,14 +114,14 @@ export const isoSeconds = (iso) => { const m = /^P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(
 const trailerLength = (seconds) => seconds > 0 && seconds <= P.worker.maxTrailerSeconds; // 0 = a live stream / premiere (P0D)
 const isTrailer = (title) => /trailer/i.test(title);
 
-/** #1600: a vetted video's language rank from videos.list `snippet.defaultAudioLanguage` (else `defaultLanguage`), BCP-47 like "sv" or "en-US":
- *  its place in `worker.languages` (Swedish, English), then unknown, then every other language last. */
+/** #1600: a vetted video's language rank from videos.list `snippet.defaultAudioLanguage` and `defaultLanguage` (BCP-47 like "sv" or "en-US"):
+ *  its place in `worker.languages` (Swedish, English), then unknown, then every other language last. The worse of the two known tags wins:
+ *  DreamWorksTV World's Dutch/Finnish dubs carry the channel's default audio "en" but their own metadata "nl"/"fi" (checked live 2026-10-25). */
 export const languageRank = (snippet) => {
   const L = P.worker.languages, known = (t) => typeof t === 'string' && /^[a-z]{2,3}(?![a-z])/i.test(t) && !/^(zxx|und|mul)(?![a-z])/i.test(t);
-  const tag = [snippet?.defaultAudioLanguage, snippet?.defaultLanguage].find(known); // "und"/"zxx"/"mul" say nothing; fall back to the metadata language
-  if (!tag) return L.length;
-  const i = L.indexOf(tag.toLowerCase().split(/[-_]/)[0]);
-  return i >= 0 ? i : L.length + 1;
+  const ranks = [snippet?.defaultAudioLanguage, snippet?.defaultLanguage].filter(known) // "und"/"zxx"/"mul" say nothing
+    .map((tag) => { const i = L.indexOf(tag.toLowerCase().split(/[-_]/)[0]); return i >= 0 ? i : L.length + 1; });
+  return ranks.length ? Math.max(...ranks) : L.length;
 };
 
 /** #1600: "audio/metadata" language tags as videos.list gave them (each checked, else empty), kept on the poster item so the live list shows
@@ -133,7 +133,7 @@ const blocked = (text) => { const t = text.toLowerCase(); return P.worker.blockW
 
 /** #1589/#1591: keep only trailers ("trailer" in the title, short) that are embeddable, public, made-for-kids, not age-restricted videos
  *  (videos.list, 1 unit per 50) whose channel is on the allow-list (`worker.channels`); then drop block words, the same film twice
- *  (one trailer per film name) and more than `maxPerChannel` per channel. #1600: Swedish, then English, then unknown, then other languages, so
+ *  (one trailer per film name) and more than `maxPerChannel` per channel. #1600: Swedish, then English, then unknown, then other languages (`languageRank`), so
  *  a channel's foreign-language dubs only fill spots nothing better wants; newest first within each language. Any API failure throws 'upstream'. */
 async function vetPosters(candidates, { key, fetcher }) {
   if (!candidates.length) return [];
