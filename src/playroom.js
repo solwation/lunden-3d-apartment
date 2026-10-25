@@ -159,9 +159,10 @@ export class Playroom {
       return { d: [r * Math.cos(a), y, r * Math.sin(a)], c: new THREE.Color().setHSL((i * 0.137) % 1, 1, 0.5) };
     });
     const sg = new THREE.BufferGeometry();
-    sg.setAttribute('position', new THREE.BufferAttribute(new Float32Array(N * 12), 3));
+    sg.setAttribute('position', new THREE.BufferAttribute(new Float32Array(N * 12), 3).setUsage(THREE.DynamicDrawUsage));
     sg.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(N * 8).map((_, k) => [0, 0, 1, 0, 1, 1, 0, 1][k % 8]), 2));
     sg.setAttribute('color', new THREE.BufferAttribute(new Float32Array(N * 12), 3));
+    sg.userData.keepCpu = true;
     for (let k = 0; k < N; k++) for (let v = 0; v < 4; v++) this.rays[k].c.toArray(sg.attributes.color.array, k * 12 + v * 3);
     sg.setIndex(Array.from({ length: N }, (_, k) => [k * 4, k * 4 + 1, k * 4 + 2, k * 4, k * 4 + 2, k * 4 + 3]).flat());
     const cv = document.createElement('canvas'); cv.width = cv.height = 32;

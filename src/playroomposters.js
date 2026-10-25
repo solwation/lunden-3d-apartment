@@ -68,6 +68,10 @@ export function roomPosters() {
   }
   const mesh = new THREE.Mesh(mergeGeometries(geos), new THREE.MeshBasicMaterial({ map: freeCanvasAfterUpload(Object.assign(new THREE.CanvasTexture(canvas), { colorSpace: THREE.SRGBColorSpace, anisotropy: 4 })), vertexColors: true, toneMapped: false }));
   mesh.name = 'playroom-posters'; mesh.matrixAutoUpdate = false; geos.forEach((g) => g.dispose());
+  // DynamicDraw/keepCpu: setLevel() rewrites the colours whenever the room's ambient changes (e.g. toggling the disco
+  // light), so the phone profile must not free them after upload; a freed array threw in render → blue screen (#1560, #1595).
+  mesh.geometry.attributes.color.setUsage(THREE.DynamicDrawUsage);
+  mesh.geometry.userData.keepCpu = true;
   // Posters follow the room's ambient light and the ceiling panels the zone's panel level (rewritten vertex colours, only when the level changes); neon and lamps keep their glow.
   const colours = mesh.geometry.attributes.color, panelLevel = { biljard: R.zones.panel[1], spel: R.zones.panel[2] };
   let last = NaN;

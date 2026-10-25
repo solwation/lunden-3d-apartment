@@ -1192,6 +1192,15 @@ runs below. A new maker that rewrites or clones a mesh's vertex arrays after the
 `&keepgeo` (with `&lowmem`/phone) turns all of it off for an A/B run. Not touched: desktop.
 
 
+**Playhouse disco lamp re-upload (#1595).** `src/playroomposters.js` rewrites its vertex
+colors whenever the ambient room lighting level changes (e.g. when toggling the disco lamp
+in the playhouse clubhouse). On lowMemory devices (phones) `freeGeometryAfterUpload` freed
+the color array after initial upload; the subsequent `colours.needsUpdate = true` on the
+zero-length array caused Three.js's WebGLAttributes to throw a buffer resize error in the
+render loop, halting rendering and leaving the canvas on the blue clear color. Marking the
+color attribute as `DynamicDrawUsage` and flagging `userData.keepCpu` on the poster and spot
+geometries preserves the CPU copy on phones so dimming and disco spot animation update cleanly.
+
 **Courtyard bicycle re-upload (#1047).** The two merged bike batches in
 `src/courtyard.js` now declare their rewritten position/normal attributes as
 `DynamicDrawUsage` before the low-memory pass. `Player.mountBicycle → bikePose →

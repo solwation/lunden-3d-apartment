@@ -15,6 +15,13 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## Playhouse disco lamp on a phone (#1595)
+
+`node tools/verify_1595.cjs SITE OUT` runs the real app in an iPhone profile (852×393 @3, iPhone UA = lowMemory, touch)
+with its phone warm-up, enters the secret clubhouse/playroom, aims at the wall switch, toggles the disco lamp off,
+aims at the disco ball and toggles it on again, and verifies that the render loop continues stepping without buffer resize
+exceptions or page crashes. Result images: `docs/verification/1595/`.
+
 ## Top-list avatars and identity (#1585)
 
 Scoped plan: `node --test cloudflare/scores.test.mjs cloudflare/games.test.mjs` (look code stored and
