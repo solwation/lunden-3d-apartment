@@ -1,0 +1,75 @@
+{
+  "issue": 1595,
+  "timestamp": "2026-10-25T10:35:47.355Z",
+  "passed": true,
+  "checks": [
+    {
+      "name": "phone profile lowMemory active",
+      "ok": true
+    },
+    {
+      "name": "disco initially on",
+      "ok": true,
+      "info": {
+        "discoOn": true,
+        "spotsVisible": true,
+        "lit": 0.451,
+        "ballColor": 1
+      }
+    },
+    {
+      "name": "switch aimed to turn off",
+      "ok": true
+    },
+    {
+      "name": "disco switched off without error",
+      "ok": true,
+      "info": {
+        "discoOn": false,
+        "spotsVisible": false,
+        "lit": 0.55,
+        "ballColor": 0.28,
+        "actionText": "Tända discolampan"
+      }
+    },
+    {
+      "name": "disco switched back on and rendered 60 frames cleanly",
+      "ok": true,
+      "info": {
+        "discoOn": true,
+        "spotsVisible": true,
+        "lit": 0.451,
+        "ballColor": 1,
+        "inPlayroom": true
+      }
+    },
+    {
+      "name": "zero page errors throughout",
+      "ok": true,
+      "info": []
+    }
+  ],
+  "errors": [],
+  "states": {
+    "initialOn": {
+      "discoOn": true,
+      "spotsVisible": true,
+      "lit": 0.451,
+      "ballColor": 1
+    },
+    "turnedOff": {
+      "discoOn": false,
+      "spotsVisible": false,
+      "lit": 0.55,
+      "ballColor": 0.28,
+      "actionText": "Tända discolampan"
+    },
+    "backOn": {
+      "discoOn": true,
+      "spotsVisible": true,
+      "lit": 0.451,
+      "ballColor": 1,
+      "inPlayroom": true
+    }
+  }
+}
