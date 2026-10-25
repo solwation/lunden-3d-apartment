@@ -328,6 +328,8 @@ export class Basketball extends Holdable {
     super(scene, camera, {
       name: 'basketbollen', backName: 'hållaren', backVerb: 'lägga tillbaka basketbollen i', model: ballModel(), parts: [basketHolderFrame()],
       home: { pos: new THREE.Vector3(), rot: new THREE.Euler() }, local,
+      // #1611: the save key keeps the ball's world home from before the movable holder (#1568), so older saves still find it
+      keepPos: new THREE.Vector3(b.x + 0.012 + b.r, y0, b.z),
       heldPose: { pos: new THREE.Vector3(b.held.x, b.held.y, b.held.z), rot: new THREE.Euler(0, 0, 0) },
       pick: { pos: local.pos.clone(), size: [0.3, 0.3, 0.3] },
       cooldown: 0.4, useLabel: 'Skjut', grip: [b.r * 0.25, -b.r - 0.002, 0.015], handPose: 'palm', // carried on the open palm (#238, #914)

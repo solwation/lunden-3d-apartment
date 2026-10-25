@@ -415,7 +415,11 @@ src/rearrange.js       furniture cheat (#465): § / Enter (#596; not from a focu
                        holder (hand, flight, floor) stays where it is: Möblera om needs an empty hand (`busy()`), and the ball goes home to the holder's
                        new place on its next return. Default place above the daybed = the piece's home pose (restore/reset). Saved in the ordinary
                        `pieces` layout format (no migration). Ball/holder dimensions are unchanged (BASKET.ball); no new draw calls.
-                       tools/rearrangebaskettest.html: move, reload, take/put back at the new place, restore.
+                       #1611: the ball's save key (src/keep.js `holdKey`) uses `keepPos`, fixed to the pre-#1568 world home (west wall above the
+                       daybed), not the holder-local `local.pos`, so saves from before the movable holder still find the ball; the key is only an
+                       identity, the saved place is a world position, so a moved holder does not change it.
+                       tools/rearrangebaskettest.html: move, reload, take/put back at the new place, a hand-built pre-#1568 save and a new save
+                       restoring the ball on the court, restore.
                        #1586 (phones, best guess without a physical device): with lowMemory, Möblera om shows no brightness highlight on the
                        aimed piece or the preview (main.js updateFocus). Those first-focus variants are not warmed (warmCompiler covers
                        ordinary interaction targets only), so a newly aimed piece could compile new shader programs mid-game, the work iOS

@@ -1,10 +1,10 @@
-<!doctype html><html><meta charset="utf-8"><title>Tilly's basketball holder in Möblera om (#1568)</title><pre id="out">running…</pre><script src="./rearrangesetup.js"></script><script type="module">
+<!doctype html><html><meta charset="utf-8"><title>Tilly's basketball holder in Möblera om (#1568, #1611)</title><pre id="out">running…</pre><script src="./rearrangesetup.js"></script><script type="module">
 const lines=[];let pass=true;const check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);pass&&=!!ok;};
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 try {
  localStorage.removeItem('lunden.furniture.layout');
  const f=document.createElement('iframe');f.width=480;f.height=300;document.body.append(f);
- async function load(){f.src='../index.html?test&life&shot&r='+Math.random();await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const A=f.contentWindow.__app;f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();setupRearrangeForFixture(A.rearrange,f.contentWindow);return A;}
+ async function load(q='test&life&shot'){f.src='../index.html?'+q+'&r='+Math.random();await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const A=f.contentWindow.__app;f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();setupRearrangeForFixture(A.rearrange,f.contentWindow);return A;}
  let A=await load(),R=A.rearrange,T=await f.contentWindow.eval("import('three')");
  const world=o=>{o.updateWorldMatrix(true,false);return o.matrixWorld;},close=(a,b)=>a.elements.every((v,i)=>Math.abs(v-b.elements[i])<.001),pos=o=>o.getWorldPosition(new T.Vector3());
  const holderOf=()=>R.pieces.find(p=>p.item.type==='basketholder');
@@ -43,6 +43,26 @@ try {
  check(close(h.object.matrixWorld,savedHolder),'the holder place survives a reload');
  check(close(world(ball.model),savedBall)&&ball.model.parent===ball.holder,'after reload the ball sits in the holder at the saved place');
  ball.take();ball.putBack();check(close(world(ball.model),savedBall),'take and put back after reload uses the new place');
+ // #1611: a save made before the movable holder (#1568) keys the ball by its old WORLD home; it must still be found
+ const Cf=await f.contentWindow.eval(`import('${new URL('../src/config.js',location.href)}')`),Bb=Cf.BASKET.ball,r3=v=>Math.round(v*1000)/1000;
+ const legacyKey='basketbollen|'+[Bb.x+.012+Bb.r,Cf.LEVELS[Bb.level].floor+Bb.y,Bb.z].map(r3).join(',');
+ const resume=(Aw,w)=>{const p=Aw.player.pos;f.contentWindow.sessionStorage.setItem('lunden.resume',JSON.stringify({x:p.x,z:p.z,feetY:p.y,yaw:0,pitch:0,mode:'touch',build:null,world:w,ts:Date.now()}));};
+ const court=ball.courtReturnSpot(),spot1=court.clone().add(new T.Vector3(.6,0,.4));
+ ball.take();ball.placeAt(spot1.clone());A.step(1/60);const at1=pos(ball.model);
+ const w0=A.keepWorld(),bkeys=Object.keys(w0.things.items).filter(k=>k.startsWith('basketbollen|'));
+ check(bkeys.length===1&&bkeys[0]===legacyKey,`a new save keys the ball by the fixed pre-#1568 home (${bkeys.join(';')} vs ${legacyKey})`);
+ const legacy=JSON.parse(JSON.stringify(w0));for(const k of bkeys)delete legacy.things.items[k];
+ legacy.things.items[legacyKey]={p:[at1.x,at1.y,at1.z].map(r3),q:[0,0,0,1]}; // (hand-built in the old format: the old key, a world spot on the court)
+ resume(A,legacy); // (the page reads lunden.resume once: a world made mid-visit, as the "Ladda om" button stores it)
+ A=await load('test&shot&cloud=');R=A.rearrange;h=R.byId.get(id);ball=A.ball;A.step(1/60);A.step(1/60); // (no &life: it skips resume records)
+ check(ball.placed&&ball.model.parent!==ball.holder&&pos(ball.model).distanceTo(at1)<.05,`a pre-#1568 save restores the ball on the court where it lay (${pos(ball.model).toArray().map(v=>v.toFixed(2))})`);
+ check(close(h.object.matrixWorld,savedHolder),'the moved holder keeps its place alongside');
+ // a new save round-trips: ball moved elsewhere on the court, saved, reloaded
+ const spot2=court.clone().add(new T.Vector3(-.5,0,-.3));ball.take();ball.placeAt(spot2.clone());A.step(1/60);const at2=pos(ball.model);
+ resume(A,A.keepWorld());
+ A=await load('test&shot&cloud=');R=A.rearrange;h=R.byId.get(id);ball=A.ball;A.step(1/60);A.step(1/60); // (no &life: it skips resume records)
+ check(ball.placed&&pos(ball.model).distanceTo(at2)<.05&&pos(ball.model).distanceTo(at1)>.3,`a new save restores the ball where it was put (${pos(ball.model).toArray().map(v=>v.toFixed(2))})`);
+ ball.goHome();check(close(world(ball.model),savedBall),'sent home after the reloads it returns to the moved holder');
  // restore
  check(await R.restoreOriginal(h)&&close(h.object.matrixWorld,home),'restore puts the holder back above the daybed');
  check(close(world(ball.model),ballHome),'the ball is back at the default place');
