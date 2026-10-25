@@ -52,35 +52,59 @@ async function requestSearch(params, { key, fetcher, max }) {
   return items;
 }
 
-// #1575: the BIO's daily film posters. A few fixed child-safe trailer searches (PLAYROOM.cinemaPosters.worker, *guess*) at most once per
-// Europe/Stockholm day: 100 quota units per query, a failed day retried after `retryHours`. The last good list (KV 'cinema-posters')
-// is served (`stale: true`) while a new day cannot be fetched. #1589: only vetted films become posters (`vetPosters`); KV lists without the current `filter` version are never served. Titles/channels stay untrusted plain text for the client's canvas.
-const P = PLAYROOM.cinemaPosters, POSTER_KEY = 'cinema-posters', MAX_VETTED = 50; // videos.list takes at most 50 ids
+// #1575: the BIO's daily film posters, fetched at most once per Europe/Stockholm day (a failed day retried after `retryHours`). The last good list
+// (KV 'cinema-posters') is served (`stale: true`) while a new day cannot be fetched. #1589: only vetted films become posters (`vetPosters`); KV lists
+// without the current `filter` version are never served. #1597: the candidates are the allow-listed channels' own newest uploads (playlistItems.list,
+// 1 unit each) instead of keyword searches (100 units each), which hardly ever returned an allow-listed made-for-kids trailer, so the BIO showed only
+// its generic posters. Titles/channels stay untrusted plain text for the client's canvas.
+const P = PLAYROOM.cinemaPosters, POSTER_KEY = 'cinema-posters', BATCH = 50; // videos.list takes at most 50 ids
 export const posterDay = (time) => new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Stockholm', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(time));
 const ENTITIES = { amp: '&', quot: '"', apos: "'", lt: '<', gt: '>', '#39': "'", '#34': '"', '#38': '&' };
 /** YouTube's snippet text is HTML-escaped; decode the few common entities to plain text and drop control characters. */
 export const plainText = (text, max) => text.replace(/&(amp|quot|apos|lt|gt|#39|#34|#38);/g, (_, e) => ENTITIES[e])
   .replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
+/** #1597: a poster shows the film's name, not the upload's full title: "Minions & Monsters | Final Trailer" → "Minions & Monsters",
+ *  "Bus med Alfons – Biopremiär 11 september #shorts" → "Bus med Alfons". The first " | ", " – " or " - " part that is not itself the
+ *  trailer/premiere wording wins; otherwise the whole (hashtag-free) title is kept. */
+export const filmTitle = (title) => {
+  const t = title.replace(/#[\p{L}\p{N}_]+/gu, ' ').replace(/\s+/g, ' ').trim();
+  const parts = t.split(/\s+[|–—]\s+|\s+-\s+/).map((x) => x.replace(/^(?:officiell|official|ny|new)?\s*(?:teaser)?\s*trailer\s*:\s*/i, '').trim());
+  return parts.find((x) => x.length >= 2 && !/trailer|teaser|biopremi[äa]r|premi[äe]re/i.test(x)) ?? t;
+};
 
-/** Run the day's searches and merge them (round-robin, no repeats) into at most `count` posters. */
+/** One allow-listed channel's newest uploads (its "UU…" uploads playlist, 1 quota unit) → [{ id, title, channel, channelId, published }]. */
+async function requestUploads(channelId, { key, fetcher, max }) {
+  const data = await apiGet('playlistItems', { part: 'snippet,contentDetails', playlistId: `UU${channelId.slice(2)}`, maxResults: String(max) }, { key, fetcher });
+  const items = [];
+  for (const item of data.items) {
+    const id = item?.contentDetails?.videoId ?? item?.snippet?.resourceId?.videoId, title = item?.snippet?.title, channel = item?.snippet?.channelTitle;
+    const published = Date.parse(item?.contentDetails?.videoPublishedAt ?? item?.snippet?.publishedAt ?? '');
+    if (typeof id !== 'string' || !VIDEO.test(id) || typeof title !== 'string' || typeof channel !== 'string' || !Number.isFinite(published)) continue;
+    items.push({ id, title: title.slice(0, 200), channel: channel.slice(0, 100), channelId, published });
+    if (items.length === max) break;
+  }
+  return items;
+}
+
+/** The day's posters: recent trailers from the allow-listed channels' uploads, vetted, newest first, at most `count`. */
 export async function fetchPosters({ key, fetcher = fetch, now = Date.now(), count = P.spots.length } = {}) {
   if (!key) throw new Error('unavailable');
-  const W = P.worker, after = new Date(now - W.recentDays * 86400e3).toISOString().replace(/\.\d+Z$/, 'Z');
-  // One failing query does not cost the day: the others' films still make posters (nothing at all → error, yesterday's list stays).
-  const lists = (await Promise.allSettled(W.queries.map((q) => requestSearch({ maxResults: String(W.perQuery), safeSearch: 'strict', regionCode: 'SE',
-    relevanceLanguage: 'sv', videoDuration: 'short', order: 'viewCount', publishedAfter: after, q: validQuery(q) }, { key, fetcher, max: W.perQuery })))).map((r) => (r.status === 'fulfilled' ? r.value : []));
-  // #1589: candidates (deduplicated, round-robin) are vetted before anything is published; unvetted hits never leave this function.
+  const W = P.worker, after = now - W.recentDays * 86400e3, channels = W.channels.filter((c) => CHANNEL.test(c));
+  // One failing channel does not cost the day: the others' trailers still make posters (nothing at all → error, yesterday's list stays).
+  const lists = (await Promise.allSettled(channels.map((c) => requestUploads(c, { key, fetcher, max: W.perChannel }))))
+    .map((r) => (r.status === 'fulfilled' ? r.value.filter((v) => v.published >= after && isTrailer(v.title)) : []));
+  // #1589: candidates (deduplicated, round-robin over the channels, each channel newest first) are vetted before anything is published.
   const seen = new Set(), candidates = [];
-  for (let i = 0; candidates.length < MAX_VETTED && lists.some((l) => i < l.length); i++) {
+  for (let i = 0; candidates.length < W.maxVetted && lists.some((l) => i < l.length); i++) {
     for (const list of lists) {
       const item = list[i];
-      if (!item || seen.has(item.id) || candidates.length >= MAX_VETTED) continue;
+      if (!item || seen.has(item.id) || candidates.length >= W.maxVetted) continue;
       const title = plainText(item.title, 120), channel = plainText(item.channel, 80);
       if (!title) continue;
-      seen.add(item.id); candidates.push({ id: item.id, title, channel, channelId: item.channelId });
+      seen.add(item.id); candidates.push({ ...item, title, channel });
     }
   }
-  const items = (await vetPosters(candidates, { key, fetcher })).slice(0, count).map(({ id, title, channel }) => ({ id, title, channel }));
+  const items = (await vetPosters(candidates, { key, fetcher })).slice(0, count).map(({ id, title, channel }) => ({ id, title: filmTitle(title).slice(0, 120), channel }));
   if (!items.length) throw new Error('upstream');
   return items;
 }
@@ -92,33 +116,26 @@ const isTrailer = (title) => /trailer/i.test(title);
 
 const blocked = (text) => { const t = text.toLowerCase(); return P.worker.blockWords.some((w) => t.includes(w.toLowerCase())); };
 
-/** #1589/#1591: keep only trailers ("trailer" in the title, short) that are embeddable, public, made-for-kids, not age-restricted videos (videos.list, 1 unit) from an allow-listed channel
- *  (`worker.channels`) or, while that list is empty, from a made-for-kids / large channel (channels.list, 1 unit); then drop block words.
- *  Any API failure throws 'upstream' (nothing unvetted is ever returned). */
+/** #1589/#1591: keep only trailers ("trailer" in the title, short) that are embeddable, public, made-for-kids, not age-restricted videos
+ *  (videos.list, 1 unit per 50) whose channel is on the allow-list (`worker.channels`); then drop block words, the same film twice
+ *  (one trailer per film name) and more than `maxPerChannel` per channel, newest first. Any API failure throws 'upstream'. */
 async function vetPosters(candidates, { key, fetcher }) {
   if (!candidates.length) return [];
-  const W = P.worker;
-  const videos = await apiGet('videos', { part: 'status,contentDetails,snippet', id: candidates.map((c) => c.id).join(','), maxResults: '50' }, { key, fetcher });
-  const good = new Map();
-  for (const v of videos.items) {
-    if (v?.status?.madeForKids !== true || v.status.embeddable !== true || v.status.privacyStatus !== 'public') continue;
-    if (v.contentDetails?.contentRating?.ytRating === 'ytAgeRestricted') continue;
-    // #1591: trailers only: a short video whose own title says "trailer" (never a full episode or film).
-    if (!isTrailer(v.snippet?.title ?? '') || !trailerLength(isoSeconds(v.contentDetails?.duration))) continue;
-    if (typeof v.id === 'string' && CHANNEL.test(v.snippet?.channelId ?? '')) good.set(v.id, v.snippet.channelId);
+  const W = P.worker, good = new Map();
+  for (let i = 0; i < candidates.length; i += BATCH) {
+    const videos = await apiGet('videos', { part: 'status,contentDetails,snippet', id: candidates.slice(i, i + BATCH).map((c) => c.id).join(','), maxResults: String(BATCH) }, { key, fetcher });
+    for (const v of videos.items) {
+      if (v?.status?.madeForKids !== true || v.status.embeddable !== true || v.status.privacyStatus !== 'public') continue;
+      if (v.contentDetails?.contentRating?.ytRating === 'ytAgeRestricted') continue;
+      // #1591: trailers only: a short video whose own title says "trailer" (never a full episode or film).
+      if (!isTrailer(v.snippet?.title ?? '') || !trailerLength(isoSeconds(v.contentDetails?.duration))) continue;
+      if (typeof v.id === 'string' && W.channels.includes(v.snippet?.channelId)) good.set(v.id, v.snippet.channelId);
+    }
   }
-  let kept = candidates.filter((c) => good.has(c.id)).map((c) => ({ ...c, channelId: good.get(c.id) }));
-  if (W.channels.length) kept = kept.filter((c) => W.channels.includes(c.channelId));
-  else if (kept.length) {
-    // Transitional gate while the allow-list is empty: a made-for-kids channel, or one with a public subscriber count >= minSubscribers.
-    const ids = [...new Set(kept.map((c) => c.channelId))];
-    const channels = await apiGet('channels', { part: 'statistics,status', id: ids.join(','), maxResults: '50' }, { key, fetcher });
-    const ok = new Set(channels.items.filter((ch) => typeof ch?.id === 'string' && (ch.status?.madeForKids === true
-      || (ch.statistics?.hiddenSubscriberCount !== true && Number(ch.statistics?.subscriberCount) >= W.minSubscribers))).map((ch) => ch.id));
-    kept = kept.filter((c) => ok.has(c.channelId));
-  }
-  const perChannel = new Map(); // #1591: at most `maxPerChannel` posters per channel, in the merged (round-robin) order
-  return kept.filter((c) => !blocked(c.title) && !blocked(c.channel)).filter((c) => { const n = perChannel.get(c.channelId) ?? 0; perChannel.set(c.channelId, n + 1); return n < W.maxPerChannel; });
+  const kept = candidates.filter((c) => good.get(c.id) === c.channelId && !blocked(c.title) && !blocked(c.channel)).sort((a, b) => b.published - a.published);
+  const perChannel = new Map(), films = new Set(); // #1591: at most `maxPerChannel` posters per channel; #1597: one poster per film
+  return kept.filter((c) => { const film = filmTitle(c.title).toLowerCase(); if (films.has(film)) return false; films.add(film); return true; })
+    .filter((c) => { const n = perChannel.get(c.channelId) ?? 0; perChannel.set(c.channelId, n + 1); return n < W.maxPerChannel; });
 }
 
 const validPosters = (v) => v && v.filter === P.worker.filterVersion && typeof v.day === 'string' && Array.isArray(v.items) && v.items.length > 0 && v.items.length <= 12
@@ -132,14 +149,14 @@ export async function dailyPosters(env, { fetcher = fetch, now = Date.now() } = 
   // Re-read KV whenever this isolate lacks today's list: another isolate may already have refreshed (or tried) today.
   if (!(memory?.day === today && validPosters(memory)) && env.LUNDEN) { const stored = await env.LUNDEN.get(POSTER_KEY, 'json').catch(() => null); if (stored && (validPosters(stored) || Number.isFinite(stored.tried))) memory = stored; }
   if (memory?.day === today && validPosters(memory)) return { day: memory.day, items: memory.items, stale: false };
-  const waiting = memory?.triedDay === today && now - memory.tried < P.worker.retryHours * 3600e3;
+  const waiting = memory?.triedDay === today && memory.triedFilter === P.worker.filterVersion && now - memory.tried < P.worker.retryHours * 3600e3; // #1597: a new filter retries at once
   if (!waiting && env.YOUTUBE_API_KEY) {
     inflight ??= (async () => {
       const before = memory;
       try {
         memory = { day: today, filter: P.worker.filterVersion, items: await fetchPosters({ key: env.YOUTUBE_API_KEY, fetcher, now }) };
       } catch {
-        memory = { ...(validPosters(before) ? { day: before.day, filter: before.filter, items: before.items } : {}), triedDay: today, tried: now };
+        memory = { ...(validPosters(before) ? { day: before.day, filter: before.filter, items: before.items } : {}), triedDay: today, tried: now, triedFilter: P.worker.filterVersion };
       }
       await env.LUNDEN?.put(POSTER_KEY, JSON.stringify(memory)).catch(() => {});
     })().finally(() => { inflight = null; });
