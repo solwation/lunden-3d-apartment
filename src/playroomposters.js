@@ -27,13 +27,19 @@ export function roomPosters() {
   const canvas = document.createElement('canvas'); canvas.width = AW; canvas.height = AH;
   const ctx = canvas.getContext('2d');
   ctx.fillStyle = '#10121a'; ctx.fillRect(0, 0, AW, AH);
-  posterDesigns().forEach((draw, i) => {
+  const designs = posterDesigns();
+  designs.forEach((draw, i) => {
     ctx.save(); ctx.translate((i % P.cols) * cw, Math.floor(i / P.cols) * ch); ctx.beginPath(); ctx.rect(0, 0, cw, ch); ctx.clip(); ctx.scale(cw / 192, ch / 256); draw(ctx); ctx.restore();
   });
   const stripY = AH - P.sign[1];
   for (const [i, name] of Object.keys(P.neon.signs).entries()) { ctx.save(); ctx.translate(i * P.sign[0], stripY); ctx.beginPath(); ctx.rect(0, 0, P.sign[0], P.sign[1]); ctx.clip(); neonSignCell(ctx, name, P.sign); ctx.restore(); }
-  const SW = 16; ctx.fillStyle = '#fff'; ctx.fillRect(AW - SW, AH - SW, SW, SW); // a solid white swatch: emissive runs, lamps and shades take their colour from the vertices
-  const swatch = (g) => { const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, 1 - SW / 2 / AW, SW / 2 / AH); return g; };
+  // A solid white swatch: emissive runs, lamps and shades take their colour from the vertices. It fills the last poster
+  // cell, which no design uses (#1608: in the atlas's corner it showed as a white square on the 8-BALL sign below it).
+  const free = P.cols * Math.floor(stripY / ch) - 1;
+  if (designs.length > free) throw new Error(`playroom posters: ${designs.length} designs leave no free atlas cell for the swatch`);
+  const sx = (free % P.cols) * cw, sy = Math.floor(free / P.cols) * ch;
+  ctx.fillStyle = '#fff'; ctx.fillRect(sx, sy, cw, ch);
+  const swatch = (g) => { const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, (sx + cw / 2) / AW, 1 - (sy + ch / 2) / AH); return g; };
   const geos = [], meta = [], box = (rect, colour, kind = 'lamp', zone) => {
     const g = new THREE.BoxGeometry(rect.x1 - rect.x0, rect.y1 - rect.y0, rect.z1 - rect.z0).translate((rect.x0 + rect.x1) / 2, (rect.y0 + rect.y1) / 2, (rect.z0 + rect.z1) / 2);
     const t = tintGeometry(swatch(g.toNonIndexed()), colour).translate(R.x, 0, R.z); geos.push(t); meta.push({ kind, zone, base: new THREE.Color(colour), n: t.attributes.position.count });
