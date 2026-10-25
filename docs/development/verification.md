@@ -15,6 +15,32 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## Browser memory
+
+Run every browser test through `tools/browsertest.sh` (#1599), e.g.
+`tools/browsertest.sh node tools/playroomtest.cjs http://localhost:8137`. It takes the shared lock
+`~/.local/state/orkester/browser.lock`, so parallel agents run one browser at a time. Each test gets its own systemd
+user scope with `BROWSERTEST_MEM` (default 4G, no swap) and `BROWSERTEST_TIMEOUT` (default 30m). A test that exceeds
+either limit is the only thing stopped, with a `browsertest: FAIL — memory ceiling …` or `… time limit …` line, and the
+peak is printed after every run. Raise the ceiling only for a measured reason, never above 8G on the 16 GB WSL machine.
+Do not edit the wrapper while runs are going: bash reads scripts as it runs them, so replace the file in one step.
+
+Use full Chromium, not Playwright's default `chrome-headless-shell`. The wrapper sets `CHROME_PATH` to the newest
+`~/.cache/ms-playwright/chromium-*/chrome-linux64/chrome` when it is unset, and every `tools/*.cjs` that honours `CHROME_PATH` picks
+it up. Measured on 2026-10-25 with headless-shell 1208: `requestPointerLock()` alone grows the browser and renderer by
+~120 MB/s, even on a blank canvas page. The growth stays after unlock. `playroomtest.cjs` locks the pointer for its native
+E/C seat checks and reached 12 GB in four minutes, which was the cause of the 8–14 GB OOM kills. Full Chromium 1248 in
+the same probe stays flat at ~440 MB. Without systemd user scopes (CI) the wrapper runs the command directly.
+
+Measured peaks (cgroup `memory.peak`, SwiftShader, full Chromium unless stated):
+
+| Run | Peak |
+| --- | --- |
+| Whole site loaded at 900×600, `quality=3`, 60 s idle (headless-shell, no pointer lock) | 1.6 GB |
+| Same with `&test` / with `&lowmem` | 1.4 GB / 1.3 GB |
+| Blank page, 15 s pointer lock: headless-shell 1208 / full Chromium 1248 | 2.5 GB / 0.45 GB |
+| `playroomtest.cjs`: headless-shell 1208 / full Chromium 1248 | >12 GB (killed) / 1.9 GB, all 74 checks pass |
+
 ## Playhouse disco lamp on a phone (#1595)
 
 `node tools/verify_1595.cjs SITE OUT` runs the real app in an iPhone profile (852×393 @3, iPhone UA = lowMemory, touch)
