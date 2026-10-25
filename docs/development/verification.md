@@ -8635,7 +8635,7 @@ the picker offers YouTube and Spel, Stäng av datorn darkens again, and desk dra
 (17/18, the app plane). Result images `av-*`/`pa-*` share one desk-local view.
 `tools/tillydeskvarianttest.cjs GAME FRESH_LOCAL_WORKER OUT` (#1569, #1596) switches the desk to the triangular corner
 shape through the menu (§, mouse) and back through the edit panel (touch tap), checks the saved
-choice across a reload, footprint/collision of the corner-only front area, desk draw calls corner ≤ straight, plays
+choice across a reload, footprint/collision of the corner-only front area, the corner wall wash within 3 cm of the straight sides (#1603), desk draw calls corner ≤ straight, plays
 Ormstriden seated in the Batman chair at the corner desk, and that both resets give the straight desk.
 `node --test cloudflare/materialcatalog.test.mjs` covers the whitelisted `variant` surface.
 

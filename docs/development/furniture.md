@@ -153,7 +153,8 @@ goes into a room corner with the sides along both walls; in the default spot the
 east wall. Three T legs (two front, one under the peak) carry it. Monitors, keyboard, mouse and the
 #1566 app screen move forward onto the front half (`userData.placeScreen` keeps the app plane on the
 shown shape's main monitor); DAC + figure and the LED strip sit in the corner behind the screens, the
-PC under the peak. `userData.footprint` uses rectangles inscribed in the triangle so its collision does
+PC under the peak. The wall wash behind the peak is only 0.13 m wide (#1603), so in a corner it stays within
+3 cm of the walls instead of shining through them; `tillydeskvarianttest` checks that margin. `userData.footprint` uses rectangles inscribed in the triangle so its collision does
 not touch the walls in a corner. All values are guesses in `TILLY_DESK.corner`. The hidden shape has no
 raycast; `userData.footprint` and the per-shape contact shadows (`userData.shadowParts`) follow the shown
 one. The Batman chair stays an independent piece in front of the main monitor.

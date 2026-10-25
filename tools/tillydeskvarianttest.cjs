@@ -61,6 +61,10 @@ const [game,worker,out]=process.argv.slice(2),log=(s,v)=>console.log('PASS',s,v!
   const corner=await desk(p);
   assert.equal(corner.choice,'corner');assert.equal(corner.stored,'corner');assert.equal(corner.rects,4);assert(corner.wingBlocked);
   assert(corner.calls<=straight.calls,JSON.stringify({straight,corner}));
+  // #1603: the wall wash behind the peak stays within 3 cm of the two straight sides (walls there when turned into a corner).
+  const washOut=await p.evaluate(async()=>{const X=(await import('/src/config.js')).TILLY_DESK.corner,[,a,b]=X.topShape,hw=X.led.glow[0]/2,z=X.led.washZ;
+   return ((hw-a[0])*(b[1]-a[1])-(z-a[1])*(b[0]-a[0]))/Math.hypot(b[0]-a[0],b[1]-a[1]);});
+  assert(washOut<=.03,`corner wash ${washOut.toFixed(3)} m outside the straight sides`);
   log('menu button switches to the corner desk: saved, footprint and collision follow; draw calls corner ≤ straight',{straight:[straight.calls,Math.round(straight.tris)],corner:[corner.calls,Math.round(corner.tris)],status:await p.locator('#rearrange-status').textContent()});
   await p.locator('#terminal-close').click();
   // #1582: the V key does the same as the buttons (aimed desk), and every HUD button names its key on keyboard devices.

@@ -5186,7 +5186,10 @@ export const TILLY_DESK = {
     speakers: [[-.58,.38],[.58,.38]], panel: [.25,.702,.42], charger: [.40,.761,.36], puck: [-.47,.773,.37],
     dac: [.20,.774,.04], figure: [.20,.835,.04], pc: [0,.265,.09],
     hook: { x: .68, y: .70, z: .475, r: .035, tube: .005 }, // under the front edge (straight desk: its +x end)
-    led: { size: [.36,.012,.012], at: [0,.756,-.12], glow: [.50,.60], washZ: -.335 }, cable: [.06,-.20] },
+    // #1603: the wall wash stands just behind the peak, where the top is only ~6 cm wide; turned into a corner the two
+    // walls run along the straight sides, so a wider wash would pass through them (the 0.50 m one stuck ~16 cm out,
+    // through the 12 cm wall into Speldatorn). 0.13 m keeps its ends within 3 cm of the side lines (*guess*).
+    led: { size: [.36,.012,.012], at: [0,.756,-.12], glow: [.13,.60], washZ: -.335 }, cable: [.06,-.20] },
   appLift: .002, // #1566: the shared computer-app plane floats this far (m) in front of the decorative main-screen atlas
   detail: { sides: 10, tubeSides: 5, ringSides: 24, sphere: [12,8], texture: [512,256], carbonPx: 64, skin: .002, thin: .003, offset: .001, cable: .012, cableInset: .025, glowGap: .010 },
   colors: { wood: 0x853b32, black: 0x15171b, rubber: 0x08090c, steel: 0x43474e, seam: 0xdedbd0,
