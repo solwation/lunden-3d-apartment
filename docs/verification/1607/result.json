@@ -1,0 +1,38 @@
+{
+  "inside": {
+    "without": {
+      "calls": 17,
+      "triangles": 53760
+    },
+    "with": {
+      "calls": 19,
+      "triangles": 76912
+    },
+    "close": {
+      "calls": 15,
+      "triangles": 76824
+    },
+    "extra": 2
+  },
+  "seated": {
+    "sitting": true,
+    "held": true,
+    "bites": 5,
+    "button": "Ät"
+  },
+  "outside": {
+    "visible": false,
+    "before": 296,
+    "removed": 296,
+    "lights": 0,
+    "inGroup": true,
+    "shownHand": true,
+    "handDraws": 1
+  },
+  "apartment": {
+    "placed": true,
+    "drawn": true,
+    "parentIsScene": true
+  },
+  "errors": []
+}
