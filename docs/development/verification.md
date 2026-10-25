@@ -8633,9 +8633,9 @@ Since #1576 it also checks the desk's own lights (desktop on the straight desk, 
 desk): off at start (screen atlas black, RGB/LED unlit, wall wash opacity 0), power-on lights them,
 the picker offers YouTube and Spel, Stäng av datorn darkens again, and desk draw calls off ≤ on
 (17/18, the app plane). Result images `av-*`/`pa-*` share one desk-local view.
-`tools/tillydeskvarianttest.cjs GAME FRESH_LOCAL_WORKER OUT` (#1569) switches the desk to the corner
+`tools/tillydeskvarianttest.cjs GAME FRESH_LOCAL_WORKER OUT` (#1569, #1596) switches the desk to the triangular corner
 shape through the menu (§, mouse) and back through the edit panel (touch tap), checks the saved
-choice across a reload, footprint/collision of the wing, desk draw calls corner ≤ straight, plays
+choice across a reload, footprint/collision of the corner-only front area, desk draw calls corner ≤ straight, plays
 Ormstriden seated in the Batman chair at the corner desk, and that both resets give the straight desk.
 `node --test cloudflare/materialcatalog.test.mjs` covers the whitelisted `variant` surface.
 

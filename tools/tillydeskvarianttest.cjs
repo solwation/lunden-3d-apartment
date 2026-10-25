@@ -1,4 +1,4 @@
-// #1569: Olof's desk switches between straight and an L-shaped corner desk in Möblera om. Real app + a fresh local
+// #1569, #1596: Olof's desk switches between straight and a triangular corner desk in Möblera om. Real app + a fresh local
 // Worker: the button (HUD + menu), saved shape across a reload, footprint/collision follow the shape, the #1566
 // computer starts and runs Ormstriden on the main monitor while seated in the corner variant, switching back, and
 // both resets (one piece, everything) give the straight desk. Draw calls/triangles: corner ≤ straight.
@@ -13,7 +13,7 @@ const [game,worker,out]=process.argv.slice(2),log=(s,v)=>console.log('PASS',s,v!
   const p=await browser.newPage({viewport:mobile?{width:844,height:600}:{width:1100,height:800},isMobile:mobile,hasTouch:mobile});
   p.on('pageerror',e=>errors.push(e.message));
   await p.addInitScript(()=>{localStorage.setItem('lunden.name','Olof');sessionStorage.setItem('lunden.nameSkipped','1');});
-  await p.goto(`${game}/?shot&test=lazy&time=12&freeze&cloud=${encodeURIComponent(worker)}`);
+  await p.goto(`${game}/?shot&test=lazy&time=12&freeze&lowmem&cloud=${encodeURIComponent(worker)}`);
   await p.waitForFunction(()=>window.__app?.computerHub?.sessions.has('pc-olof')&&window.__ghosts?.connected,null,{timeout:180000});
   await p.evaluate(()=>__app.rearrange.ready);
   if(mobile)await p.evaluate(()=>{__app.activeMode='touch';__app.touch.enabled=true;__app.showOverlay(false);document.body.classList.add('touch');});
@@ -23,7 +23,7 @@ const [game,worker,out]=process.argv.slice(2),log=(s,v)=>console.log('PASS',s,v!
  const desk=p=>p.evaluate(()=>{const R=__app.rearrange,d=R.pieces.find(x=>x.item.type==='tillydesk'),v=d.object.userData.variant;
   const T=d.object.matrixWorld,pt=(x,z)=>{const e=T.elements;return [e[0]*x+e[8]*z+e[12],e[2]*x+e[10]*z+e[14]];};
   let calls=0,tris=0;d.object.traverse(o=>{if(!o.isMesh)return;for(let q=o;q;q=q.parent)if(!q.visible)return;calls++;const g=o.geometry;tris+=(g.index?g.index.count:g.attributes.position.count)/3;});
-  const C=__app.world.furniture,wing=pt(.475,.5),inQuad=(q,[x,z])=>{let s=0;for(let i=0;i<4;i++){const a=q[i],b=q[(i+1)%4];const c=(b[0]-a[0])*(z-a[1])-(b[1]-a[1])*(x-a[0]);if(c!==0){if(s&&Math.sign(c)!==s)return false;s=Math.sign(c);}}return true;};
+  const C=__app.world.furniture,wing=pt(0,.40),inQuad=(q,[x,z])=>{let s=0;for(let i=0;i<4;i++){const a=q[i],b=q[(i+1)%4];const c=(b[0]-a[0])*(z-a[1])-(b[1]-a[1])*(x-a[0]);if(c!==0){if(s&&Math.sign(c)!==s)return false;s=Math.sign(c);}}return true;};
   return {id:d.id,choice:v.choice,stored:R.state.materials?.[d.id]?.variant?.choice??'original',rects:d.object.userData.footprint.length,
    wingBlocked:C.footprints[1].some(q=>inQuad(q,wing)),calls,tris,label:v.label()};});
  // One fixed view of the desk corner from the room (the same for both shapes): stand at `at`, look at `to`.
@@ -43,7 +43,7 @@ const [game,worker,out]=process.argv.slice(2),log=(s,v)=>console.log('PASS',s,v!
   let p=await open();
   const straight=await desk(p);
   assert.equal(straight.choice,'original');assert.equal(straight.rects,2);assert(!straight.wingBlocked);
-  log('default is the straight desk; the wing area is walkable',straight);
+  log('default is the straight desk; the corner-only area is walkable',straight);
   await p.evaluate(()=>document.getElementById('game-canvas').requestPointerLock());await p.waitForFunction(()=>!!document.pointerLockElement);
   await shot(p,'rakt');
   // Keyboard + mouse: in Möblera om aim at the desk, § opens the menu, whose button switches to the corner desk and saves it.
@@ -59,7 +59,7 @@ const [game,worker,out]=process.argv.slice(2),log=(s,v)=>console.log('PASS',s,v!
   await p.waitForFunction(()=>__app.rearrange.state.materials?.[__app.rearrange.pieces.find(x=>x.item.type==='tillydesk').id]?.variant?.choice==='corner'&&!__app.rearrange.saving);
   assert.equal(await p.locator('#terminal-variant').textContent(),'Gör till rakt skrivbord');
   const corner=await desk(p);
-  assert.equal(corner.choice,'corner');assert.equal(corner.stored,'corner');assert.equal(corner.rects,3);assert(corner.wingBlocked);
+  assert.equal(corner.choice,'corner');assert.equal(corner.stored,'corner');assert.equal(corner.rects,4);assert(corner.wingBlocked);
   assert(corner.calls<=straight.calls,JSON.stringify({straight,corner}));
   log('menu button switches to the corner desk: saved, footprint and collision follow; draw calls corner ≤ straight',{straight:[straight.calls,Math.round(straight.tris)],corner:[corner.calls,Math.round(corner.tris)],status:await p.locator('#rearrange-status').textContent()});
   await p.locator('#terminal-close').click();

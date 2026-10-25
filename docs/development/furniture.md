@@ -142,19 +142,21 @@ recoloured (`TILLY_DESK.colors.screenOff`/`unlit`) and the LED wall wash goes to
 on, the portrait monitor shows the static desktop atlas. Same meshes, merged batches and
 draw calls in both desk shapes; the app plane is the only extra draw while on. This is personal furnishing and gameplay, excluded from the public downstream.
 
-Corner variant (#1569): in Möblera om the desk switches between straight (default)
-and an L-shaped corner desk ([interactions](interactions.md#module-and-test-map)).
+Corner variant (#1569 L-shape, replaced by a triangle in #1596): in Möblera om the desk switches between straight
+(default) and a triangular corner desk ([interactions](interactions.md#module-and-test-map)).
 `tillydesk` builds both shapes whole, from the same parts and materials, as two
-subgroups merged on their own; only the shown one draws, so the corner costs the
-same draw calls as the straight desk (17 for the desk object, both shapes). The corner keeps the
-main top, monitors, keyboard and mouse in place (the #1566 computer screen is
-unchanged) and adds a 55 cm deep return wing at the south end, 1.00 m out from the
-wall, on a third T leg; the right speaker, DAC + figure, charger and puck lamp move
-onto it and the PC stands under it (`TILLY_DESK.corner`, all **guess**). In the
-default spot the wing ends ~0.51 m from the daybed's north-east corner and the door
-end is unchanged. The hidden shape has no raycast; `userData.footprint` and the
-per-shape contact shadows (`userData.shadowParts`) follow the shown one. The Batman
-chair stays an independent piece in front of the main monitor, inside the corner.
+subgroups merged on their own; only the shown one draws, so the corner costs no more
+draw calls than the straight desk. The corner top is an isosceles right triangle in desk-local
+coordinates: two straight ~1.06 m sides meet at the rear peak (−z, the wall side) and the 1.50 m
+front edge faces the room and the Batman chair. Turned 45° (Möblera om turns in 45° steps) the peak
+goes into a room corner with the sides along both walls; in the default spot the peak just clears the
+east wall. Three T legs (two front, one under the peak) carry it. Monitors, keyboard, mouse and the
+#1566 app screen move forward onto the front half (`userData.placeScreen` keeps the app plane on the
+shown shape's main monitor); DAC + figure and the LED strip sit in the corner behind the screens, the
+PC under the peak. `userData.footprint` uses rectangles inscribed in the triangle so its collision does
+not touch the walls in a corner. All values are guesses in `TILLY_DESK.corner`. The hidden shape has no
+raycast; `userData.footprint` and the per-shape contact shadows (`userData.shadowParts`) follow the shown
+one. The Batman chair stays an independent piece in front of the main monitor.
 
 ## Recent implementation notes
 

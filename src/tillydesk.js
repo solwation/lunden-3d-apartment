@@ -68,60 +68,72 @@ function glow() {
   glowMat=new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c),color:K.blue,transparent:true,opacity:C.led.opacity,
     blending:THREE.CustomBlending,blendSrc:THREE.SrcAlphaFactor,blendDst:THREE.OneMinusSrcAlphaFactor,depthWrite:false,toneMapped:false});return glowMat;
 }
-/** The placements of the things that move between the two desk shapes (#1569); everything else is shared. */
+/** The placements of the things that differ between the two desk shapes (#1569, #1596); everything else is shared. */
 function layoutFor(corner) {
   const X = C.corner;
-  return corner ? { wing: X.wing, panel: X.panel, charger: X.charger, puck: X.puck, dac: X.dac, figure: X.figure, speakers: X.speakers, pc: X.pc }
-    : { wing: null, panel: C.panel.at, charger: C.charger.at, puck: C.puck.at, dac: C.dac.at, figure: C.figure.at,
-      speakers: C.speakers.xs.map(x => [x, C.speakers.at[1]]), pc: C.pc.at };
+  return corner ? { corner: true, panel: X.panel, charger: X.charger, puck: X.puck, dac: X.dac, figure: X.figure, speakers: X.speakers,
+      pc: X.pc, monitors: X.monitors, armZ: X.armZ, mat: X.mat, keyboard: X.keyboard, mouse: X.mouse, hook: X.hook,
+      led: X.led, cable: X.cable }
+    : { corner: false, panel: C.panel.at, charger: C.charger.at, puck: C.puck.at, dac: C.dac.at, figure: C.figure.at,
+      speakers: C.speakers.xs.map(x => [x, C.speakers.at[1]]), pc: C.pc.at, monitors: C.monitors, armZ: C.arm.z, mat: C.mat,
+      keyboard: C.keyboard.at, mouse: C.mouse.at, hook: C.hook, led: { ...C.led, washZ: -C.d/2-D.glowGap },
+      cable: [C.leg.x, -C.d/2+D.cableInset] };
 }
-/** One complete desk (straight or L-shaped corner) into `g`; returns its footprint rectangles. */
+/** #1596: the triangular corner top (desk-local [x, z] outline from config) as a flat slab C.top thick, top face at C.h. */
+function triangleTop(points) {
+  const shape=new THREE.Shape(points.map(([x,z])=>new THREE.Vector2(x,-z))); // shape y = -z: rotateX(-90°) maps it back to +z
+  const geo=new THREE.ExtrudeGeometry(shape,{depth:C.top,bevelEnabled:false});
+  geo.rotateX(-Math.PI/2);geo.translate(0,C.h-C.top,0);return geo;
+}
+/** One complete desk (straight or triangular corner) into `g`; returns its footprint rectangles. */
 function deskShape(g, P, wood, cream) {
   const h=C.h,L=C.leg;
-  box(g,[C.w,C.top,C.d],[0,h-C.top/2,0],wood);
-  for(const s of [-1,1]) {
-    box(g,L.foot,[s*L.x,L.foot[1]/2,0]);
-    box(g,[L.width,L.lower,L.depth],[s*L.x,L.lower/2+L.foot[1],0]);
-    box(g,[L.width*.72,L.upper,L.depth*.72],[s*L.x,h-C.top-L.upper/2,0],steel);
-  }
-  box(g,[2*L.x,...L.brace],[0,h-C.top-L.brace[0]/2,0]);
-  const footprint=[{x0:-C.w/2,x1:C.w/2,z0:-C.d/2,z1:C.d/2}];
-  if(P.wing) { // the return wing at the +x end, its own T leg at the far end (foot along x) and a brace back to the main frame
-    const W=P.wing,x0=C.w/2-W.d,z1=-C.d/2+W.out,cx=(x0+C.w/2)/2,lz=W.legZ;
-    box(g,[W.d,C.top,z1-C.d/2],[cx,h-C.top/2,(z1+C.d/2)/2],wood);
-    box(g,[L.foot[2]*W.d/C.d,L.foot[1],L.foot[0]],[cx,L.foot[1]/2,lz]);
-    box(g,[L.depth,L.lower,L.width],[cx,L.lower/2+L.foot[1],lz]);
-    box(g,[L.depth*.72,L.upper,L.width*.72],[cx,h-C.top-L.upper/2,lz],steel);
-    box(g,[L.brace[1],L.brace[0],lz],[cx,h-C.top-L.brace[0]/2,lz/2]);
-    footprint.push({x0,x1:C.w/2,z0:C.d/2,z1});
+  const leg=([x,z],foot)=>{box(g,foot,[x,L.foot[1]/2,z]);box(g,[L.width,L.lower,L.depth],[x,L.lower/2+L.foot[1],z]);
+    box(g,[L.width*.72,L.upper,L.depth*.72],[x,h-C.top-L.upper/2,z],steel);};
+  let footprint;
+  if(!P.corner) {
+    box(g,[C.w,C.top,C.d],[0,h-C.top/2,0],wood);
+    for(const s of [-1,1])leg([s*L.x,0],L.foot);
+    box(g,[2*L.x,...L.brace],[0,h-C.top-L.brace[0]/2,0]);
+    footprint=[{x0:-C.w/2,x1:C.w/2,z0:-C.d/2,z1:C.d/2}];
+  } else { // #1596: triangle top on three T legs (two at the front, one under the peak), a T-shaped brace frame
+    const X=C.corner,top=new THREE.Mesh(triangleTop(X.topShape),wood);top.castShadow=top.receiveShadow=true;g.add(top);
+    for(const l of X.legs)leg(l.at,l.foot);
+    const [fl,fr]=[X.legs[1].at,X.legs[2].at],rear=X.legs[0].at,by=h-C.top-L.brace[0]/2;
+    box(g,[fr[0]-fl[0],...L.brace],[(fl[0]+fr[0])/2,by,fl[1]]);
+    box(g,[L.brace[1],L.brace[0],fl[1]-rear[1]],[rear[0],by,(fl[1]+rear[1])/2]);
+    footprint=X.footprint.map(([x0,x1,z0,z1])=>({x0,x1,z0,z1}));
   }
   box(g,C.panel.size,P.panel);
   for(let i=0;i<C.panel.buttons;i++)box(g,[C.panel.size[0]/12,C.panel.size[1]/5,D.skin],
     [P.panel[0]+(i-2.5)*C.panel.size[0]/7,P.panel[1],P.panel[2]+C.panel.size[2]/2],seam);
-  const hook=ring(g,C.hook.r,C.hook.tube,[C.hook.x,C.hook.y,C.hook.z],steel);hook.rotation.x=Math.PI/2;
-  box(g,[C.hook.tube,C.top,C.hook.r*2],[C.w/2,C.hook.y+C.top/2,C.hook.z],steel);
-  box(g,C.mat.size,C.mat.at,rubber);
-  for(const [i,M] of C.monitors.entries()) {
+  const Hk=P.hook,hook=ring(g,Hk.r,Hk.tube,[Hk.x,Hk.y,Hk.z],steel);hook.rotation.x=Math.PI/2;
+  if(P.corner)box(g,[Hk.r*2,C.top,Hk.tube],[Hk.x,Hk.y+C.top/2,C.corner.topShape[3][1]],steel); // clamped to the front edge
+  else box(g,[Hk.tube,C.top,Hk.r*2],[C.w/2,Hk.y+C.top/2,Hk.z],steel);
+  box(g,P.mat.size,P.mat.at,rubber);
+  for(const [i,M] of P.monitors.entries()) {
     box(g,M.size,M.at);
     const geo=new THREE.PlaneGeometry(M.size[0]-C.bezel*2,M.size[1]-C.bezel*2);
     const uv=geo.attributes.uv;for(let j=0;j<uv.count;j++)uv.setX(j,uv.getX(j)*.5+i*.5);
     const m=new THREE.Mesh(geo,screens());m.position.set(M.at[0],M.at[1],M.at[2]+M.size[2]/2+D.offset);g.add(m);
-    box(g,C.arm.clamp,[M.at[0],h,C.arm.z]);
-    cylinder(g,C.arm.r,M.at[1]-h,[M.at[0],(M.at[1]+h)/2,C.arm.z]);
-    box(g,[C.arm.r*2,C.arm.r*2,M.at[2]-C.arm.z],[M.at[0],M.at[1],(M.at[2]+C.arm.z)/2]);
+    box(g,C.arm.clamp,[M.at[0],h,P.armZ]);
+    cylinder(g,C.arm.r,M.at[1]-h,[M.at[0],(M.at[1]+h)/2,P.armZ]);
+    box(g,[C.arm.r*2,C.arm.r*2,M.at[2]-P.armZ],[M.at[0],M.at[1],(M.at[2]+P.armZ)/2]);
   }
-  box(g,C.webcam.size,C.webcam.at);
-  ring(g,C.webcam.size[1]/3,C.webcam.size[1]/8,[C.webcam.at[0],C.webcam.at[1],C.webcam.at[2]+C.webcam.size[2]/2],steel);
-  ring(g,C.ring.r,C.ring.tube,C.ring.at,seam);
-  const main=C.monitors[0];box(g,[C.arm.r,C.ring.at[1]-main.at[1]-main.size[1]/2,C.arm.r],
-    [C.ring.at[0],(C.ring.at[1]+main.at[1]+main.size[1]/2)/2,C.ring.at[2]]);
-  const B=C.keyboard;box(g,B.size,B.at);
+  // Webcam and ring light keep their offsets from the main monitor (#1596: it moves forward on the corner desk).
+  const main=P.monitors[0],[ox,,oz]=main.at.map((v,i)=>v-C.monitors[0].at[i]),cam=[C.webcam.at[0]+ox,C.webcam.at[1],C.webcam.at[2]+oz],
+    rl=[C.ring.at[0]+ox,C.ring.at[1],C.ring.at[2]+oz];
+  box(g,C.webcam.size,cam);
+  ring(g,C.webcam.size[1]/3,C.webcam.size[1]/8,[cam[0],cam[1],cam[2]+C.webcam.size[2]/2],steel);
+  ring(g,C.ring.r,C.ring.tube,rl,seam);
+  box(g,[C.arm.r,rl[1]-main.at[1]-main.size[1]/2,C.arm.r],[rl[0],(rl[1]+main.at[1]+main.size[1]/2)/2,rl[2]]);
+  const B=C.keyboard,kb=P.keyboard;box(g,B.size,kb);
   for(let r=0;r<B.rows;r++)for(let c=0;c<B.cols;c++)box(g,B.key,
-    [B.at[0]+(c-(B.cols-1)/2)*B.size[0]/(B.cols+1),B.at[1]+B.size[1]/2,(r-(B.rows-1)/2)*B.size[2]/(B.rows+1)+B.at[2]],steel,0);
-  sphere(g,C.mouse.scale,C.mouse.at,black);
-  box(g,C.mouse.wheel,[C.mouse.at[0],C.mouse.at[1]+C.mouse.scale[1],C.mouse.at[2]+C.mouse.wheelZ],steel);
+    [kb[0]+(c-(B.cols-1)/2)*B.size[0]/(B.cols+1),kb[1]+B.size[1]/2,(r-(B.rows-1)/2)*B.size[2]/(B.rows+1)+kb[2]],steel,0);
+  const Ms=C.mouse,ms=P.mouse;sphere(g,Ms.scale,ms,black);
+  box(g,Ms.wheel,[ms[0],ms[1]+Ms.scale[1],ms[2]+Ms.wheelZ],steel);
   // Small three-stroke mark on the Razer-style mouse.
-  for(let i=-1;i<=1;i++)box(g,C.mouse.mark,[C.mouse.at[0]+i*C.mouse.markStep,C.mouse.at[1]+C.mouse.scale[1]-D.skin,C.mouse.at[2]+C.mouse.markZ],pink,0);
+  for(let i=-1;i<=1;i++)box(g,Ms.mark,[ms[0]+i*Ms.markStep,ms[1]+Ms.scale[1]-D.skin,ms[2]+Ms.markZ],pink,0);
   const S=C.speakers;
   for(const [x,z] of P.speakers){box(g,S.size,[x,S.at[0],z]);ring(g,S.r,S.r/5,[x,S.at[0],z+S.size[2]/2],steel);
     const cone=cylinder(g,S.r*.7,D.thin,[x,S.at[0],z+S.size[2]/2]);cone.rotation.x=Math.PI/2;}
@@ -142,9 +154,9 @@ function deskShape(g, P, wood, cream) {
   }
   const glass=new THREE.Mesh(new THREE.PlaneGeometry(pw-t*2,ph-t*2),glassMaterial());
   glass.position.set(px,py,pz+pd/2);g.add(glass);
-  box(g,C.led.size,C.led.at,blue);
-  const wash=new THREE.Mesh(new THREE.PlaneGeometry(...C.led.glow),glow());wash.position.set(0,C.led.y,-C.d/2-D.glowGap);g.add(wash);
-  box(g,[D.cable,h-C.top,D.cable],[C.leg.x,(h-C.top)/2,-C.d/2+D.cableInset]);
+  box(g,P.led.size,P.led.at,blue);
+  const wash=new THREE.Mesh(new THREE.PlaneGeometry(...P.led.glow),glow());wash.position.set(0,C.led.y,P.led.washZ);g.add(wash);
+  box(g,[D.cable,h-C.top,D.cable],[P.cable[0],(h-C.top)/2,P.cable[1]]);
   footprint.push({x0:px-pw/2,x1:px+pw/2,z0:pz-pd/2,z1:pz+pd/2});
   return footprint;
 }
@@ -176,7 +188,7 @@ export function tillydesk(item={}) {
     apply(v){v=DESK_VARIANTS.includes(v)?v:'original';if(v===choice)return false;choice=v;
       for(const [i,s] of shapes.entries()){const on=DESK_VARIANTS[i]===v;s.visible=on;
         s.traverse(o=>{if(o.isMesh)o.raycast=on?THREE.Mesh.prototype.raycast:noRaycast;});}
-      g.userData.footprint=variant.footprintFor(v);return true;}};
+      g.userData.footprint=variant.footprintFor(v);g.userData.placeScreen?.(v==='corner');return true;}};
   variant.apply('original');
   g.userData.variant=variant;
   deskPower(false); // #1576: off until the shared ComputerHub power state turns it on
@@ -190,7 +202,9 @@ export function tillydesk(item={}) {
 function computerStation(g,mediaId) {
   const M=C.monitors[0],app=new THREE.Mesh(new THREE.PlaneGeometry(M.size[0]-C.bezel*2,M.size[1]-C.bezel*2),
     new THREE.MeshBasicMaterial({color:0,toneMapped:false}));
-  app.position.set(M.at[0],M.at[1],M.at[2]+M.size[2]/2+D.offset+C.appLift);app.visible=false;g.add(app);
+  // #1596: the app plane sits on the shown shape's main monitor (same size in both shapes).
+  g.userData.placeScreen=corner=>{const A=layoutFor(corner).monitors[0];app.position.set(A.at[0],A.at[1],A.at[2]+A.size[2]/2+D.offset+C.appLift);};
+  g.userData.placeScreen(g.userData.variant?.choice==='corner');app.visible=false;g.add(app);
   (g.userData.keep??=[]).push(app);
   let on=false;
   g.userData.interact={name:'Olofs dator',kind:'pc',pickable:g,mesh:app,mediaId,

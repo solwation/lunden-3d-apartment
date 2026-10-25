@@ -5168,13 +5168,25 @@ export const TILLY_DESK = {
     post: .025, postZ: -.02, armZ: .025, stemR: .035, stemGap: .08, spoke: [.027,.035], spokeY: .065, casterWidth: .032, casterInset: .025, wingZ: .03, bolsterY: .035, paddingRound: .025,
     pillow: [.28,.12,.065], pillowAt: [0,1.20,-.125], seam: .0015, wheel: .028, legs: 5,
     logo: { w: .24, h: .08, at: [0,1.04,-.143] }, rest: { x: 0, y: .515, z: -.01 } },
-  // #1569 L-shaped corner variant (Möblera om), every value guess: the same 150 × 65 cm main top plus a 55 cm deep return
-  // wing at the local +x end (south in Sovrum 4), 1.00 m out from the wall (back edge), on a third T leg (legZ). In the
-  // default spot the wing ends at x 1.62, ~0.51 m from the daybed's north-east corner; the door end stays as it was.
-  // The main monitor, keyboard and mouse keep their places (the #1566 computer screen is unchanged); the right speaker,
-  // DAC + figure, charger and puck lamp move onto the wing and the PC stands under it. Positions are desk-local [x,y,z].
-  corner: { wing: { d: .55, out: 1.0, legZ: .625 }, panel: [.06,.702,.32], charger: [.30,.765,.45], puck: [.30,.773,.60],
-    dac: [.46,.774,.52], figure: [.46,.835,.52], speakers: [[-.64,-.19],[.66,.50]], pc: [.45,.265,.36] },
+  // #1596 triangular corner variant (Möblera om; replaces the #1569 L-shape), every value a **guess** from the player
+  // report ("en trekant in mot ett hörn med två raka sidor"). All points are desk-local [x, z] like the straight desk:
+  // -z is the back (the wall), +z the front where the Batman chair stands. The top is an isosceles right triangle whose
+  // two straight ~1.06 m sides meet at the rear peak (z -0.33, tip cut 6 cm) and whose 1.50 m front edge (z +0.45) faces
+  // the room and the chair. Turned 45° (Möblera om turns in 45° steps) the peak goes into a room corner with the sides
+  // along both walls; in the default spot (rot 90, wall at z -0.34) the peak just clears the wall. Everything below sits
+  // inside that triangle: monitors, keyboard, mouse and app screen stand at the front (#1566 computer still works),
+  // DAC + figure and the LED strip in the corner behind the screens, the PC under the peak. `footprint` holds rectangles
+  // inscribed in the triangle, so the desk fits into a corner without its collision touching the walls.
+  corner: {
+    topShape: [[-.03,-.33],[.03,-.33],[.78,.42],[.75,.45],[-.75,.45],[-.78,.42]],
+    footprint: [[-.70,.70,.34,.45],[-.45,.45,.09,.34],[-.20,.20,-.16,.09]], // [x0,x1,z0,z1]
+    legs: [{ at: [0,-.22], foot: [.16,.035,.09] }, { at: [-.42,.30], foot: [.09,.035,.30] }, { at: [.42,.30], foot: [.09,.035,.30] }],
+    monitors: [ { at: [-.17,1.105,.21], size: [.66,.38,.027] }, { at: [.33,1.14,.21], size: [.30,.54,.027] } ], armZ: .08,
+    mat: { size: [.80,.004,.24], at: [-.10,.754,.32] }, keyboard: [-.17,.768,.34], mouse: [.20,.774,.35],
+    speakers: [[-.58,.38],[.58,.38]], panel: [.25,.702,.42], charger: [.40,.761,.36], puck: [-.47,.773,.37],
+    dac: [.20,.774,.04], figure: [.20,.835,.04], pc: [0,.265,.09],
+    hook: { x: .68, y: .70, z: .475, r: .035, tube: .005 }, // under the front edge (straight desk: its +x end)
+    led: { size: [.36,.012,.012], at: [0,.756,-.12], glow: [.50,.60], washZ: -.335 }, cable: [.06,-.20] },
   appLift: .002, // #1566: the shared computer-app plane floats this far (m) in front of the decorative main-screen atlas
   detail: { sides: 10, tubeSides: 5, ringSides: 24, sphere: [12,8], texture: [512,256], carbonPx: 64, skin: .002, thin: .003, offset: .001, cable: .012, cableInset: .025, glowGap: .010 },
   colors: { wood: 0x853b32, black: 0x15171b, rubber: 0x08090c, steel: 0x43474e, seam: 0xdedbd0,
