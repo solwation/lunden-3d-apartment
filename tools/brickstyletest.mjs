@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { SITE } from '../src/config.js';
 import { brickPavilion, BRICK_STYLE } from '../src/brickstyle.js';
+import { buildStLars41 } from '../src/stlars41.js';
 
 const S = SITE.south, P = S.brickStyle;
 const pavilions = S.buildings.filter(b => P.sources.includes(b.source));
@@ -39,4 +40,49 @@ test('walls, friezes and windows stay on the footprint, between the ground and t
     assert.ok(has(brick) && has(plinth) && has(frame), `${b.name}: brick, white plinth and white frames`);
     for (const g of [...parts.facade, ...parts.glass]) g.dispose();
   }
+});
+
+// #1614: each triangle's winding must agree with its explicit normal. The facade / roof / glass materials are DoubleSide,
+// and three r170 flips the normal on back faces (`normal *= faceDirection`), so a triangle wound against its normal is lit
+// as if it faced the other way: the sun side dark, the shade side lit. Checked for every brickKit user.
+const reversed = g => {
+  const p = g.attributes.position, n = g.attributes.normal, a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3(), m = new THREE.Vector3();
+  let bad = 0, all = 0;
+  for (let i = 0; i < p.count; i += 3) {
+    a.fromBufferAttribute(p, i); b.fromBufferAttribute(p, i + 1).sub(a); c.fromBufferAttribute(p, i + 2).sub(a);
+    const geo = b.cross(c); if (geo.length() < 1e-9) continue; // degenerate (clamped arch slivers)
+    all++; if (geo.dot(m.fromBufferAttribute(n, i)) <= 0) bad++;
+  }
+  return [bad, all];
+};
+const assertWound = (parts, name) => {
+  for (const key of ['facade', 'roof', 'glass']) for (const g of parts[key]) {
+    const [bad, all] = reversed(g);
+    assert.ok(all > 0, `${name} ${key}: has triangles`);
+    assert.equal(bad, 0, `${name} ${key}: ${bad} of ${all} triangles wound against their normal`);
+    g.dispose();
+  }
+};
+
+test('every pavilion triangle winds the way its normal points, outer rings and holes alike (#1614)', () => {
+  const base = 2, bottom = 1.5;
+  for (const b of pavilions) {
+    const p = b.polygon.slice(0, -1), eave = base + b.levels * S.storey, parts = { facade: [], roof: [], glass: [] }, pav = brickPavilion(b, base, bottom, eave);
+    for (const [ring, hole] of [[p, false], ...(b.holes ?? []).map(h => [h.slice(0, -1), true])]) {
+      const sign = (hole ? -1 : 1) * Math.sign(ring.reduce((s, q, i) => { const r = ring[(i + 1) % ring.length]; return s + q[0] * r[1] - r[0] * q[1]; }, 0));
+      for (let i = 0; i < ring.length; i++) pav.edge(ring[i], ring[(i + 1) % ring.length], sign);
+      // the same footprint walked the other way round must come out right as well
+      const back = [...ring].reverse(); for (let i = 0; i < back.length; i++) pav.edge(back[i], back[(i + 1) % back.length], -sign);
+    }
+    pav.flush(parts);
+    assertWound(parts, b.name);
+  }
+});
+
+test('every Sankt Lars väg 41 triangle winds the way its normal points (#1614)', () => {
+  const b = S.buildings.find(q => q.template === 'stlars41'), parts = { facade: [], roof: [], glass: [] };
+  assert.ok(b, 'nr 41 is listed');
+  buildStLars41(b, b.polygon.slice(0, -1), 2, 1.5, parts);
+  assert.ok(parts.facade.length && parts.roof.length && parts.glass.length, 'nr 41 fills all three batches');
+  assertWound(parts, b.name);
 });

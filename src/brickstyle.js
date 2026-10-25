@@ -25,9 +25,17 @@ export const rgb = hex => new THREE.Color(hex).toArray();
  */
 export function brickKit(W = (u, v, y) => [u, y, v], dir = (nu, nv) => [nu, 0, nv]) {
   const F = { pos: [], nrm: [], col: [] }, G = { pos: [], nrm: [] }, R = { pos: [], nrm: [] };
-  const tri = (B, a, c, d, n, col) => { for (const q of [a, c, d]) { B.pos.push(...q); B.nrm.push(...n); if (col) B.col.push(...col); } };
+  // #1614: every triangle is wound so its geometric normal agrees with the explicit one. The batches are DoubleSide and
+  // three flips the normal of a back face, so a triangle wound against `n` was lit as if it faced the other way (the
+  // pavilions' walls and nr 41's faces, chimney caps and roof slopes lit from the shade side). Face lines may run either
+  // way round a footprint, so the order follows the normal instead of each caller's direction convention.
+  const tri = (B, a, c, d, n, col) => {
+    const e = [c[0] - a[0], c[1] - a[1], c[2] - a[2]], f = [d[0] - a[0], d[1] - a[1], d[2] - a[2]];
+    if ((e[1] * f[2] - e[2] * f[1]) * n[0] + (e[2] * f[0] - e[0] * f[2]) * n[1] + (e[0] * f[1] - e[1] * f[0]) * n[2] < 0) [c, d] = [d, c];
+    for (const q of [a, c, d]) { B.pos.push(...q); B.nrm.push(...n); if (col) B.col.push(...col); }
+  };
   const quad = (B, a, c, d, e, n, col) => { tri(B, a, c, d, n, col); tri(B, a, d, e, n, col); };
-  const upTri = (a, c, d) => { // roof triangle, its normal turned upwards
+  const upTri = (a, c, d) => { // roof triangle, its normal turned upwards (and its winding with it, #1614)
     const n = new THREE.Vector3(c[0] - a[0], c[1] - a[1], c[2] - a[2]).cross(new THREE.Vector3(d[0] - a[0], d[1] - a[1], d[2] - a[2])).normalize();
     if (n.y < 0) n.negate();
     tri(R, a, c, d, n.toArray());

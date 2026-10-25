@@ -8293,6 +8293,9 @@ an `--import` hook pointing at a local three@0.170.0) checks the pavilion select
 pane per generic window position and one geometry per batch; nr 41's geometry was hash-identical before/after the move
 to `src/brickstyle.js`. `tools/southbackdroptest.html` "bounded far detail" grows by the pavilions' +6 376 triangles;
 desktop and 844×390 phone perfcount keep identical calls and maxima (the south is not in the maximum views).
+#1614: `brickstyletest` also checks every pavilion (both ring directions) and nr 41 triangle winds the way its normal
+points; before the fix 816/1632 (nr 42) and 926/1946 (nr 41) facade triangles were reversed. Noon sun before/after:
+[images](../verification/1614/).
 
 ## Southern low-rise glazing (#1418)
 
