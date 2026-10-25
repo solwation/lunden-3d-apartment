@@ -250,7 +250,7 @@ apartment or physical-phone performance claim).
 ```text
 src/interactionoutline.js  subtle target-only material brightness, normal depth testing, no edge geometry (#531)
 src/compass.js         camera-relative geographic compass; shares DAY.planNorth calibration (#528)
-src/hudicons.js        shared neutral SVG icons, pressed states and accessible labels (#525); `[data-help-icon]` spans in the touch help get the same SVGs (#1612: no Unicode 12 🧎 there)
+src/hudicons.js        shared neutral SVG icons, pressed states and accessible labels (#525); `[data-help-icon]` spans in the touch help get the same SVGs (#1612: no Unicode 12 🧎 there); `setLabelIcon` gives the remote/cinema 10 s seek buttons (`[data-remote-seek]`, `[data-cinema-seek]`) rewind/forward SVGs beside their label, keeping their aria-label (#1616)
 src/hudicons.css       neutral mobile/desktop button surfaces, focus states and no-blur fallback (#525)
 index.html             page shell, HUD, start overlay, import map (three from jsDelivr, pinned)
 src/player.js          WASD/arrow/joystick movement, circle-vs-segment collision, step-up, gravity; outdoors the terrain (`groundY`, #256);

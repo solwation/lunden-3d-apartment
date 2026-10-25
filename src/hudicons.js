@@ -62,6 +62,13 @@ export function setIcon(button,name,label) {
 export function setTextIcon(button,name,text) {
  setIcon(button,name,text);button.classList.remove('hud-icon-button');button.replaceChildren(button.querySelector('.hud-icon'),document.createTextNode(' '+text));
 }
+/** #1616: a text button with an outline icon before (or after) its label; keeps the button's classes and aria-label. */
+export function setLabelIcon(button,name,text,after=false) {
+ if(!button)return;
+ button.innerHTML=iconSvg(name);const icon=button.querySelector('.hud-icon');
+ if(after)button.replaceChildren(document.createTextNode(text+' '),icon);else button.replaceChildren(icon,document.createTextNode(' '+text));
+ button.dataset.hudIcon=name;
+}
 export function setPressed(button,on) {
  if(!button)return;
  if(button?.getAttribute('aria-pressed')!==String(!!on)){button.setAttribute('aria-pressed',!!on);button.classList.toggle('on',!!on)}
@@ -96,6 +103,8 @@ export function initHudIcons() {
  for(const p of ['book','cal'])for(const [act,icon] of [['prev','left'],['next','right']])setIcon(document.querySelector('#'+p+'-panel [data-act='+act+']'),icon);
  for(const [act,icon] of [['prev','previous'],['next','next'],['down','volume-down'],['up','volume-up']])setIcon(document.querySelector('#sonos-panel [data-act='+act+']'),icon);
  for(const [act,icon] of [['back','rewind'],['fwd','forward']])setIcon(document.querySelector('#clock-panel [data-act='+act+']'),icon);
+ // #1616: the 10-second seek buttons of the touch remote and the cinema player (were ⏪/⏩ emoji)
+ document.querySelectorAll('[data-remote-seek], [data-cinema-seek]').forEach(b=>{const fwd=Number(b.dataset.remoteSeek??b.dataset.cinemaSeek)>0;setLabelIcon(b,fwd?'forward':'rewind','10 s',fwd);});
  const trash=document.querySelector('#poster-panel [data-act=throw]');setTextIcon(trash,'trash','Släng');
  for(const [id,icon] of [['jetpack','rocket'],['vacuum-hud','vacuum']]){const el=document.getElementById(id),holder=document.createElement('span');setIcon(holder,icon);holder.className='hud-indicator-icon';el.firstChild.replaceWith(holder)}
 }
