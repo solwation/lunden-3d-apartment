@@ -31,6 +31,18 @@ try {
  groupedRoot.add(new T.Mesh(groupGeo,[new T.MeshBasicMaterial({color:0xff0000}),new T.MeshBasicMaterial({color:0x0000ff})]));
  const groupedColors=architectureEdges(groupedRoot)[0].geometry.attributes.color,groupTints=new Set();for(let i=0;i<groupedColors.count;i++)groupTints.add([0,1,2].map(k=>Math.round(groupedColors.getComponent(i,k)*1000)).join(','));
  check(groupTints.size===2,'material groups tint their own edges instead of averaging the mesh colors');
+ // #1615: one vertex-coloured material (the stair cores, the playhouse shell): the edges follow the painted vertices, not the white base
+ const paintGeo=mergeGeometries([new T.BoxGeometry(1,1,1).translate(-1.2,0,0),new T.BoxGeometry(1,1,1).translate(1.2,0,0)]),pc=[];
+ for(let i=0;i<paintGeo.attributes.position.count;i++)pc.push(...(paintGeo.attributes.position.getX(i)<0?[.1,.1,.12]:[.9,.8,.7]));
+ paintGeo.setAttribute('color',new T.Float32BufferAttribute(pc,3));const paintRoot=new T.Group();paintRoot.add(new T.Mesh(paintGeo,new T.MeshBasicMaterial({vertexColors:true})));
+ const paintColors=architectureEdges(paintRoot)[0].geometry.attributes.color,paintTints=new Set();let darkest=1;for(let i=0;i<paintColors.count;i++){paintTints.add([0,1,2].map(k=>Math.round(paintColors.getComponent(i,k)*1000)).join(','));darkest=Math.min(darkest,paintColors.getComponent(i,0));}
+ check(paintTints.size===2&&darkest<.1,`a single vertex-coloured material tints its edges by the painted vertices (#1615: ${paintTints.size} tints, darkest r ${darkest.toFixed(3)})`);
+ const tintsOf=lines=>{const t=new Set();for(const l of lines){const c=l.geometry.attributes.color;for(let i=0;i<c.count;i++)t.add([0,1,2].map(k=>c.array[i*3+k]).join(','));}return t.size;};
+ const houses=[['L',A.world.core.edgeLines],...A.world.core.parts.map((p,i)=>[p.name??'ABC'[i],p.edgeLines??[]])];
+ const houseTints=houses.map(([n,l])=>`${n}:${tintsOf(l)}`);
+ check(houses.length===4&&houses.every(([,l])=>tintsOf(l)>15),`each stair core's edges follow its painted surfaces, not one light grey (#1615: before 10/7/7/7 tints; now ${houseTints.join(' ')})`);
+ const clubLines=[];A.world.playroom.object.traverse(o=>{if(o.userData.architectureEdges)clubLines.push(o);});
+ check(clubLines.length>0&&tintsOf(clubLines)>3,`the playhouse shell's edges follow its painted walls, trim and doors (#1615: ${tintsOf(clubLines)} tints)`);
  // #505: construction seams must disappear, while real corners/openings remain.
  const wallMat=new T.MeshBasicMaterial(),wall=new T.Group();
  const block=(root,x0,x1,y0,y1,z0,z1)=>{const m=new T.Mesh(new T.BoxGeometry(x1-x0,y1-y0,z1-z0),wallMat);m.position.set((x0+x1)/2,(y0+y1)/2,(z0+z1)/2);root.add(m);return m;};

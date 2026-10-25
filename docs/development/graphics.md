@@ -82,6 +82,8 @@ src/architectureedges.js sharp architectural edges (#474), captured before loose
                        that tint by (hemi + ambient) × exposure / `LIGHTING.edgeRef` (2.6 = the daytime sum, capped at 1). main.js
                        sets it after `day.update`: day keeps #1579's look, night/blinds/garage darkness pull the lines dark again
                        instead of glowing. Lamps (point lights) are not counted, so lit rooms at night get darker-than-surface lines.
+                       #1615: a single vertex-coloured material (the A/B/C/L stair cores incl. door leaves, the playhouse shell) counts as
+                       one group over the whole geometry, so its edges take the painted vertex colours, not the white base (light grey).
 textures/              image textures the page loads (published by stamp.sh): stair-pictures.jpg = the 2 × 2 atlas
                        of the stair pictures (#220), cropped/straightened from docs/tavla-trappa-*.jpg; angsgras-sovrum1.jpg = the picture over the
                        Sovrum 1 bed (#284), straightened, reflections painted out; miele.jpg = the cat photo in the window-board

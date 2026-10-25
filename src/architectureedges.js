@@ -180,8 +180,12 @@ function creaseIndex() {
 
 // If a source mesh has material groups, carry the colors of their actual face
 // edges into the line batch. This is construction-time work and adds no draws.
+// #1615: a single vertex-coloured material (the A/B/C/L stair cores, the playhouse shell) is one group over the whole
+// geometry, so its edges follow the painted vertices instead of the material's white base colour.
 function edgeSurfaceColors(geometry, edges, materials, darken) {
-  if (materials.length < 2 || !geometry.groups?.length) return null;
+  const painted = materials.length === 1 && materials[0].vertexColors && geometry.attributes.color;
+  if (!painted && (materials.length < 2 || !geometry.groups?.length)) return null;
+  const groups = painted ? [{ start: 0, count: Infinity, materialIndex: 0 }] : geometry.groups;
   const average = new THREE.Color();
   for (const material of materials) average.add(material.color ?? new THREE.Color(0xffffff));
   average.multiplyScalar(darken / materials.length);
@@ -191,7 +195,7 @@ function edgeSurfaceColors(geometry, edges, materials, darken) {
   const keyVertex = i => keyPoint(positions.getX(i), positions.getY(i), positions.getZ(i));
   const edgeKey = (a, b) => a < b ? `${a}|${b}` : `${b}|${a}`;
   const sums = new Map();
-  for (const group of geometry.groups) {
+  for (const group of groups) {
     const material = materials[group.materialIndex] ?? materials[0];
     const base = material.color ?? new THREE.Color(0xffffff), end = Math.min(group.start + group.count, index?.count ?? positions.count);
     for (let i = group.start; i + 2 < end; i += 3) {

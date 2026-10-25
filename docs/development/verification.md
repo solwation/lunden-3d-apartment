@@ -8840,3 +8840,10 @@ Pair with the same `tools/phonememtest.cjs` start route before/after: iPhone UA,
 Retain normal startup warm-up; no `test` or `nowarm`. CPU canvas bytes are width×height×4 estimates
 of live weak-referenced canvases, not physical phone RAM. The local `/data/todo.json` 404 is present on
 both revisions and is unrelated to texture painting. No startup-time or total-heap improvement is claimed.
+
+## Edge tint on vertex-coloured surfaces (#1615)
+
+`tools/architecturetest.html` ALL PASS: a synthetic single vertex-coloured mesh gets 2 edge tints (darkest r 0.063), the
+stair cores L/A/B/C get 166/29/24/24 distinct edge tints (10/7/7/7 before) and the playhouse shell 6 (1 before); with the old
+`src/architectureedges.js` the synthetic and playhouse checks fail. Houses A, B, C and L checked through the shared
+`CoreHouse`/`Core` edges, plus the playhouse. [Before/after](../verification/1615/).
