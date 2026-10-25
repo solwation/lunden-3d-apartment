@@ -65,9 +65,10 @@ export const plainText = (text, max) => text.replace(/&(amp|quot|apos|lt|gt|#39|
   .replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
 /** #1597: a poster shows the film's name, not the upload's full title: "Minions & Monsters | Final Trailer" → "Minions & Monsters",
  *  "Bus med Alfons – Biopremiär 11 september #shorts" → "Bus med Alfons". The first " | " (also ⏐ │ ｜, #1602), " – " or " - " part that is not itself the
- *  trailer/premiere wording wins; otherwise the whole (hashtag-free) title is kept. */
+ *  trailer/premiere wording wins; otherwise the whole (hashtag-free) title is kept. #1605: a title of nothing but hashtags ("#Moana2 #Trailer")
+ *  keeps them rather than becoming '' (an empty title fails validPosters). */
 export const filmTitle = (title) => {
-  const t = title.replace(/#[\p{L}\p{N}_]+/gu, ' ').replace(/\s+/g, ' ').trim();
+  const t = title.replace(/#[\p{L}\p{N}_]+/gu, ' ').replace(/\s+/g, ' ').trim() || title.replace(/\s+/g, ' ').trim();
   const parts = t.split(/\s+[|–—⏐│｜]\s+|\s+-\s+/).map((x) => x.replace(/^(?:officiell|official|ny|new)?\s*(?:teaser)?\s*trailer\s*:\s*/i, '').trim());
   return parts.find((x) => x.length >= 2 && !/trailer|teaser|biopremi[äa]r|premi[äe]re/i.test(x)) ?? t;
 };
@@ -104,7 +105,9 @@ export async function fetchPosters({ key, fetcher = fetch, now = Date.now(), cou
       seen.add(item.id); candidates.push({ ...item, title, channel });
     }
   }
-  const items = (await vetPosters(candidates, { key, fetcher })).slice(0, count).map(({ id, title, channel, lang }) => ({ id, title: filmTitle(title).slice(0, 120), channel, lang }));
+  // #1605: an item that would fail validPosters is dropped on its own, so one odd upload never costs the whole day.
+  const items = (await vetPosters(candidates, { key, fetcher })).map(({ id, title, channel, lang }) => ({ id, title: filmTitle(title).slice(0, 120), channel, lang }))
+    .filter(validPoster).slice(0, count);
   if (!items.length) throw new Error('upstream');
   return items;
 }
@@ -155,8 +158,10 @@ async function vetPosters(candidates, { key, fetcher }) {
     .filter((c) => { const n = perChannel.get(c.channelId) ?? 0; perChannel.set(c.channelId, n + 1); return n < W.maxPerChannel; });
 }
 
-const validPosters = (v) => v && v.filter === P.worker.filterVersion && typeof v.day === 'string' && Array.isArray(v.items) && v.items.length > 0 && v.items.length <= 12
-  && v.items.every((i) => VIDEO.test(i?.id ?? '') && typeof i.title === 'string' && i.title.length > 0 && i.title.length <= 120 && typeof i.channel === 'string' && i.channel.length <= 80 && (i.lang === undefined || (typeof i.lang === 'string' && i.lang.length <= 40)));
+// #1605: `lang` is two TAGs of at most 21 characters joined by '/' (43; the limit was 40).
+const validPoster = (i) => VIDEO.test(i?.id ?? '') && typeof i.title === 'string' && i.title.length > 0 && i.title.length <= 120 && typeof i.channel === 'string' && i.channel.length <= 80
+  && (i.lang === undefined || (typeof i.lang === 'string' && i.lang.length <= 43));
+const validPosters = (v) => v && v.filter === P.worker.filterVersion && typeof v.day === 'string' && Array.isArray(v.items) && v.items.length > 0 && v.items.length <= 12 && v.items.every(validPoster);
 let memory = null, inflight = null; // this isolate's copy of the KV record { day, items, tried? } and the running refresh
 export const resetPosterMemory = () => { memory = null; inflight = null; };
 
@@ -164,18 +169,22 @@ export const resetPosterMemory = () => { memory = null; inflight = null; };
 export async function dailyPosters(env, { fetcher = fetch, now = Date.now() } = {}) {
   const today = posterDay(now);
   // Re-read KV whenever this isolate lacks today's list: another isolate may already have refreshed (or tried) today.
-  if (!(memory?.day === today && validPosters(memory)) && env.LUNDEN) { const stored = await env.LUNDEN.get(POSTER_KEY, 'json').catch(() => null); if (stored && (validPosters(stored) || Number.isFinite(stored.tried))) memory = stored; }
+  let unread = false; // #1605: the KV read failed, so KV may hold a good list this isolate has never seen
+  if (!(memory?.day === today && validPosters(memory)) && env.LUNDEN) { const stored = await env.LUNDEN.get(POSTER_KEY, 'json').catch(() => { unread = true; return null; }); if (stored && (validPosters(stored) || Number.isFinite(stored.tried))) memory = stored; }
   if (memory?.day === today && validPosters(memory)) return { day: memory.day, items: memory.items, stale: false };
   const waiting = memory?.triedDay === today && memory.triedFilter === P.worker.filterVersion && now - memory.tried < P.worker.retryHours * 3600e3; // #1597: a new filter retries at once
   if (!waiting && env.YOUTUBE_API_KEY) {
     inflight ??= (async () => {
       const before = memory;
       try {
-        memory = { day: today, filter: P.worker.filterVersion, items: await fetchPosters({ key: env.YOUTUBE_API_KEY, fetcher, now }) };
+        const next = { day: today, filter: P.worker.filterVersion, items: await fetchPosters({ key: env.YOUTUBE_API_KEY, fetcher, now }) };
+        if (!validPosters(next)) throw new Error('upstream'); // #1605: never store or serve an invalid list; it is a failed attempt (tried, retryHours)
+        memory = next;
       } catch {
         memory = { ...(validPosters(before) ? { day: before.day, filter: before.filter, items: before.items } : {}), triedDay: today, tried: now, triedFilter: P.worker.filterVersion };
       }
-      await env.LUNDEN?.put(POSTER_KEY, JSON.stringify(memory)).catch(() => {});
+      // #1605: after a failed KV read, an item-less failure record is kept in this isolate only, never written over a good list in KV.
+      if (validPosters(memory) || !unread) await env.LUNDEN?.put(POSTER_KEY, JSON.stringify(memory)).catch(() => {});
     })().finally(() => { inflight = null; });
     await inflight;
   }

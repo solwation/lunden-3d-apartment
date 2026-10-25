@@ -279,3 +279,57 @@ test('#1600 language: Swedish, then English, then unknown, then other languages,
   const top = await fetchPosters({ key: 'k', fetcher: full.fetcher, now: NOON });
   assert.equal(top.length, COUNT); assert.ok(top.every((i) => i.channel === 'S'), 'no foreign dub when Swedish trailers fill every spot');
 });
+
+test('#1605 a hashtag-only title still makes a valid poster; an item that fails validation is dropped, never the whole day', async () => {
+  assert.equal(filmTitle('#Moana2 #Trailer'), '#Moana2 #Trailer', 'nothing but hashtags: the hashtags stay instead of an empty title');
+  assert.equal(filmTitle('Vaiana 2 | Trailer #Moana2'), 'Vaiana 2');
+  resetPosterMemory();
+  const env = { YOUTUBE_API_KEY: 'k', LUNDEN: kv() };
+  const first = await dailyPosters(env, { fetcher: youtube().fetcher, now: NOON });
+  const yt = youtube({ uploads: films(['aaaaaaaaaaa', '#Moana2 #Trailer'], ['bbbbbbbbbbb', 'Lång tagg | Trailer', 'K', chan(1)]),
+    videoOverride: (id) => (id === 'bbbbbbbbbbb' ? { language: { defaultAudioLanguage: 'swe-abcdefgh-abcdefgh', defaultLanguage: 'eng-abcdefgh-abcdefgh' } } : {}) });
+  const day = await dailyPosters(env, { fetcher: yt.fetcher, now: NOON + DAY });
+  assert.equal(day.stale, false);
+  assert.deepEqual(day.items.map((i) => [i.id, i.title]), [['aaaaaaaaaaa', '#Moana2 #Trailer'], ['bbbbbbbbbbb', 'Lång tagg']]);
+  assert.equal(day.items[1].lang.length, 43, 'the longest possible language tags (2 x 21 + "/") are within the limit');
+  const calls = yt.calls.length;
+  resetPosterMemory();
+  assert.deepEqual((await dailyPosters(env, { fetcher: yt.fetcher, now: NOON + DAY + 60e3 })).items, day.items, 'stored, so another isolate does not refetch');
+  assert.equal(yt.calls.length, calls); assert.notDeepEqual(day.items, first.items);
+  resetPosterMemory();
+});
+
+test('#1605 a fetched list that fails validation is a failed attempt: yesterday stays served and stored, at most one try per retryHours', async () => {
+  resetPosterMemory();
+  const env = { YOUTUBE_API_KEY: 'k', LUNDEN: kv() };
+  const first = await dailyPosters(env, { fetcher: youtube().fetcher, now: NOON });
+  const spots = PLAYROOM.cinemaPosters.spots, oldSpots = spots.slice(), oldMax = W.maxPerChannel;
+  spots.push(...Array.from({ length: 13 - spots.length }, () => spots[0])); W.maxPerChannel = 6; // 13 posters: more than validPosters allows (12)
+  try {
+    const yt = youtube();
+    const stale = await dailyPosters(env, { fetcher: yt.fetcher, now: NOON + DAY });
+    assert.equal(stale.stale, true); assert.deepEqual(stale.items, first.items);
+    const stored = JSON.parse(env.LUNDEN.m.get('cinema-posters'));
+    assert.deepEqual(stored.items, first.items, 'the last good list is not overwritten'); assert.equal(stored.triedDay, posterDay(NOON + DAY));
+    const tries = yt.calls.length;
+    for (const at of [NOON + DAY + 60e3, NOON + DAY + 3600e3]) { resetPosterMemory(); assert.deepEqual((await dailyPosters(env, { fetcher: yt.fetcher, now: at })).items, first.items); }
+    assert.equal(yt.calls.length, tries, 'no new YouTube calls within retryHours, also from other isolates');
+    await dailyPosters(env, { fetcher: yt.fetcher, now: NOON + DAY + (W.retryHours + .1) * 3600e3 });
+    assert.equal(yt.calls.length, 2 * tries, 'one retry after retryHours');
+  } finally { spots.splice(0, spots.length, ...oldSpots); W.maxPerChannel = oldMax; resetPosterMemory(); }
+});
+
+test('#1605 a failed KV read never lets a failed attempt overwrite the stored good list', async () => {
+  resetPosterMemory();
+  const store = kv();
+  await dailyPosters({ YOUTUBE_API_KEY: 'k', LUNDEN: store }, { fetcher: youtube().fetcher, now: NOON });
+  const good = store.m.get('cinema-posters');
+  const flaky = { m: store.m, async get() { throw new Error('kv'); }, put: store.put };
+  resetPosterMemory(); // a new isolate whose KV read fails while YouTube fails too
+  await assert.rejects(dailyPosters({ YOUTUBE_API_KEY: 'k', LUNDEN: flaky }, { fetcher: youtube({ fail: true }).fetcher, now: NOON + DAY }), /upstream/);
+  assert.equal(store.m.get('cinema-posters'), good, 'the good list survives');
+  resetPosterMemory(); // the same isolate, but YouTube works: the new good list is stored
+  const fresh = await dailyPosters({ YOUTUBE_API_KEY: 'k', LUNDEN: flaky }, { fetcher: youtube().fetcher, now: NOON + DAY });
+  assert.equal(JSON.parse(store.m.get('cinema-posters')).day, fresh.day);
+  resetPosterMemory();
+});
