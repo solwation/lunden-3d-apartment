@@ -13,8 +13,8 @@ import { sfx } from './audio.js';
 // The stack refills itself below POPCORN.stack.min, so it never runs out. Draws: the static cart and bin join the room's
 // merged furniture mesh, the "POPCORN" sign and the heat lamp the clubhouse sign atlas (emissive, no light); the kernels in
 // the case and the stack are ONE mesh whose hidden parts collapse to a point, the glass panes one more. All of it is in the
-// room's group, so nothing draws outside. A loose tub is one mesh (tub + its kernels). The case and stack are kept with the
-// life sim's extras (`keepState`), the tubs with the other holdables (keep.js).
+// room's group, so nothing draws outside. A loose tub is one mesh (tub + its kernels); one carried out of the room (#1607) is
+// drawn outside too. The case and stack are kept with the life sim's extras (`keepState`), the tubs with the other holdables (keep.js).
 
 const C = P.cart, G = P.glass, T = P.tub;
 const OX = R.x + C.x, OZ = R.z + C.z; // the cart's floor centre (world)
@@ -166,6 +166,9 @@ export class PopcornTub extends Holdable {
     });
     this.backTarget.pickable.raycast = () => {}; // a used tub does not go back on the stack: the bin takes it
     this.rest = { q: new THREE.Quaternion(), lift: 0 }; // it stands when put down (its origin is its bottom centre)
+    // #1607: judged by the detail culler every update (like a thrown toy, #267): the hand carries it ~2 km out of the room while
+    // the visitor stands still, and a judgement made from the room's last position would keep it culled until they walk
+    this.model.userData.moving = true;
     this.show();
   }
 
@@ -231,7 +234,9 @@ export class PopcornTub extends Holdable {
   update(dt) {
     super.update(dt);
     if (this.placed && !this.held) this.migrate();
-    this.model.visible = !this.away && this.cart.group.visible; // held/placed tubs obey the same room gate as the cart
+    // #1607: the room gate is the parent's: a tub in the stack's pool / put down in the room is in the room's group (hidden
+    // outside); one in the hand (the camera's) or put down outside the room (the scene's) stays visible wherever it is carried
+    this.model.visible = !this.away;
   }
   keepState() { return this.bites > 0 ? { b: this.bites } : null; }
   loadKeep(s) { if (Number.isInteger(s?.b)) { this.bites = Math.max(0, Math.min(T.bites, s.b)); this.show(); } }

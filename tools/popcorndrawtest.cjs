@@ -1,6 +1,6 @@
 // #1567 / #1573: the popcorn cart's draw cost and visibility, plus the result pictures. In the actual World: the extra draws inside
 // the room (the case's kernels + the stack are one mesh, the glass one more), none at all outside (the room's group is
-// hidden and holds every part), no lights; pictures of the cart in the entry, the full case and eating in a cinema seat (touch).
+// hidden and holds every part but a tub carried out in the hand, #1607), no lights; pictures of the cart in the entry, the full case and eating in a cinema seat (touch).
 //   PLAYWRIGHT_MODULE=… node tools/popcorndrawtest.cjs http://localhost:8158 /tmp/popcorn1567
 const fs = require('node:fs'), assert = require('node:assert/strict'), kit = require('./testkit.cjs');
 const [game = 'http://localhost:8158', out = '/tmp/popcorn1567'] = process.argv.slice(2);
@@ -81,16 +81,30 @@ const [game = 'http://localhost:8158', out = '/tmp/popcorn1567'] = process.argv.
       const o = room.constructor.outsideSpot; a.player.spawn(o.x, o.z, o.yaw); a.step(1 / 60);
       const count = () => { a.renderer.info.reset(); a.testMode.draw(); return a.renderer.info.render.calls; };
       for (let i = 0; i < 20; i++) { a.step(1 / 60); count(); } // (settle the outside view first)
-      const hiddenHand = !held.model.visible;
-      const before = count(), parts = [pc.batch.mesh, pc.glass, ...a.popcornTubs.map((t) => t.model)], parents = parts.map((m) => m.parent);
+      let shownHand = true; for (let o = held.model; o; o = o.parent) shownHand &&= o.visible; // (#1607: the tub in the hand is carried out with you)
+      const before = count(), parts = [pc.batch.mesh, pc.glass, ...a.popcornTubs.filter((t) => t !== held).map((t) => t.model)], parents = parts.map((m) => m.parent);
       parts.forEach((m) => m.removeFromParent()); const removed = count(); parts.forEach((m, i) => parents[i].add(m));
+      held.model.visible = false; const handDraws = before - count(); held.model.visible = true; // (#1607: the hand's tub is one draw, not culled)
       let lights = 0, inGroup = true; room.object.traverse((o) => { if (o.isLight) lights++; });
-      for (const m of parts.filter((m) => m !== held.model)) { let p = m; while (p && p !== room.object) p = p.parent; inGroup &&= !!p; }
-      return { visible: room.object.visible, before, removed, lights, inGroup, hiddenHand };
+      for (const m of parts) { let p = m; while (p && p !== room.object) p = p.parent; inGroup &&= !!p; }
+      return { visible: room.object.visible, before, removed, lights, inGroup, shownHand, handDraws };
     });
-    assert.equal(outside.visible, false); assert.equal(outside.before, outside.removed); assert.equal(outside.lights, 0); assert.ok(outside.inGroup); assert.ok(outside.hiddenHand, 'held tub hidden outside');
+    assert.equal(outside.visible, false); assert.equal(outside.before, outside.removed); assert.equal(outside.lights, 0); assert.ok(outside.inGroup); assert.ok(outside.shownHand, 'held tub drawn outside (#1607)'); assert.equal(outside.handDraws, 1, 'held tub drawn outside (#1607)');
+    // #1607: the tub carried out: in the hand by the playhouse, then put down on the living-room floor
+    await page.evaluate(() => { const a = __app; a.camera.rotation.set(-0.05, Math.PI, 0); a.step(1 / 60); a.testMode.draw(); });
+    await page.screenshot({ path: `${out}/held-outside.png` });
+    const apartment = await page.evaluate(() => {
+      const a = __app, tub = a.heldItem(), V = a.camera.position.constructor;
+      a.player.spawn(3.5, 3.6, 0); a.step(1 / 60);
+      const p = new V(3.5, 0, 2.8); tub.placeAt(p, 0.4); a.step(1 / 60);
+      a.camera.position.set(3.9, 1.0, 3.6); a.camera.lookAt(p.x, 0.12, p.z); a.camera.updateMatrixWorld(true); a.testMode.draw();
+      let drawn = true; for (let o = tub.model; o; o = o.parent) drawn &&= o.visible;
+      return { placed: tub.placed, drawn, parentIsScene: tub.model.parent === a.scene };
+    });
+    await page.screenshot({ path: `${out}/placed-apartment.png` });
+    assert.ok(apartment.placed && apartment.drawn && apartment.parentIsScene, JSON.stringify(apartment));
     assert.deepEqual(errors, []);
-    const result = { inside, seated, outside, errors };
+    const result = { inside, seated, outside, apartment, errors };
     fs.writeFileSync(`${out}/result.json`, JSON.stringify(result, null, 2));
     console.log('PASS popcorn draws inside, none outside, no lights, pictures', JSON.stringify(result));
   } finally { await browser.close(); }

@@ -154,8 +154,10 @@ src/popcorn.js         #1567: the popcorn cart in the playhouse room's entry (PO
                        below `min`; `loose` tubs exist, the oldest put-down one is reused. Static cart/bin join the room's merged
                        mesh, sign and heat lamp the clubhouse sign atlas; case kernels + stack are one mesh (hidden parts collapse
                        to a point), the glass one more; tubs are keep.js holdables (`keepName`, bites), the case/stack a life
-                       extra ('popcorn'). Held/placed tubs also obey the room visibility gate. tools/popcorntest.html: pop, fill, eat seated (touch), refill, bin, auto-refill, re-pop,
-                       reload; tools/popcorndrawtest.cjs: +2 draws inside, none outside, no lights, result pictures.
+                       extra ('popcorn'). #1607: the room gate is the model's parent (pool and room-placed tubs are in the room's group); a
+                       tub carried out stays visible (`userData.moving`: the detail culler re-judges it while you stand still) and can be eaten, put down, taken, kept and binned (`package`) in the apartment.
+                       tools/popcorntest.html: pop, fill, eat seated (touch), refill, bin, auto-refill, re-pop, reload, carried out
+                       (#1607); tools/popcorndrawtest.cjs: +2 draws inside, none outside but the tub in the hand, no lights, result pictures.
 tools/beershelfmodeltest.html shelf clearance, real canvas labels, can/bottle sizes and stable package count.
 tools/beerrecoverytest.cjs headless test (#1006): real BeerCan/Beer portion consumption, terminal +1 life, dedup, HUD policy, offline replica and WebSocket sync.
 src/beer.js            the big beer (BEER, #117), a Holdable: served on the lounge table when you sit in the lounge sofa,

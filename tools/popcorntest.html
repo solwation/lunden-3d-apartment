@@ -8,7 +8,8 @@
 // into the room, press the pop button (the case fills while it pops), take a tub from the stack, fill it at the case,
 // sit in a cinema seat and eat it empty in bites ("Ät", fewer kernels each time), stand up and fill it again, throw it in
 // the bin (full or not), the stack refills itself below its minimum, an emptied case pops again, everything is inside the
-// room's group (nothing draws outside) and a page-made reload keeps the case, the stack, a tub on the floor and one in the hand.
+// room's group (nothing draws outside) and a page-made reload keeps the case, the stack, a tub on the floor and one in the hand;
+// #1607: that tub carried out of the playhouse stays drawn, is eaten from, put down, picked up, kept by a reload and binned in the apartment.
 //   chrome --headless=new --dump-dom http://localhost:8158/tools/popcorntest.html   (?shots keeps the reloaded page)
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -173,8 +174,55 @@ async function load(q = 'life&shot&cloud=') {
     check(u3.placed && at3.distanceTo(want) < 0.01 && inRoom2(u3.model), `after a reload: the tub saved on the old counter now stands on the new one (${at3.x.toFixed(2)}, ${at3.y.toFixed(2)}, ${at3.z.toFixed(2)})`);
     check(B.heldItem() === u2 && u2.bites === P.tub.bites, `after a reload: the full tub in the hand (${u2.bites} bites)`);
     check(B.popcornTubs.filter((t) => ![u1, u2, u3].includes(t)).every((t) => t.away), 'the other tubs in the pool');
+    // #1607: carried out of the playhouse, the tub stays visible (and usable) in the apartment; the ones left in the room do not draw
+    const d2 = f2.contentDocument, btn2 = d2.getElementById('action'), room2 = B.world.playroom;
+    const drawn = (o) => { for (let p = o; p; p = p.parent) if (!p.visible) return false; return true; };
+    const look2 = (p, re) => {
+      for (const [dx0, dz0] of [[0, -0.9], [0.2, -1.0], [-0.2, -0.8], [0, -1.2], [0.9, 0], [-0.9, 0], [0, 0.9]]) {
+        B.player.spawn(p.x + dx0, p.z + dz0, 0); for (let i = 0; i < 3; i++) B.step(1 / 60);
+        B.scene.updateMatrixWorld(true);
+        const dx = p.x - B.camera.position.x, dz = p.z - B.camera.position.z;
+        B.camera.rotation.y = Math.atan2(-dx, -dz); B.camera.rotation.x = Math.atan2(p.y - B.camera.position.y, Math.hypot(dx, dz));
+        B.step(1 / 60);
+        if (!btn2.hidden && re.test(btn2.textContent)) return true;
+      }
+      return false;
+    };
+    if (!B.player.inPlayroom) { B.use({ kind: 'playhouse' }); await wait(900); }
+    B.use({ kind: 'playroomExit' }); await wait(900); B.step(1 / 60);
+    check(!B.player.inPlayroom && !room2.object.visible && B.heldItem() === u2 && drawn(u2.model) && u2.model.layers.test(B.camera.layers), 'out of the playhouse: the tub in the hand is drawn (#1607; not detail-culled while standing still)');
+    check(!drawn(u1.model) && !drawn(u3.model) && B.popcornTubs.filter((t) => t.away).every((t) => !drawn(t.model)), 'out of the playhouse: the tubs left in the room (and the pool) do not draw');
+    B.player.spawn(3.5, 3.6, 0); for (let i = 0; i < 3; i++) B.step(1 / 60);
+    B.camera.rotation.x = 0; B.camera.rotation.y = 0; B.step(1 / 60);
+    const eat = B.heldItem().bites; B.camera.rotation.x = 1.4; B.step(1 / 60); // (at the ceiling: nothing in focus)
+    check(btn2.textContent === 'Ät', `in the apartment, in the hand: "${btn2.textContent}"`);
+    btn2.click(); B.step(1 / 60);
+    check(u2.bites === eat - 1, `eaten from in the apartment (${u2.bites} bites)`);
+    let put = false;
+    for (const pitch of [-0.9, -1.1, -0.7, -1.3]) { B.camera.rotation.x = pitch; B.step(1 / 60); if (!btn2.hidden && /^Ställ ner$/.test(btn2.textContent) && B.placement.target()?.item === u2) { btn2.click(); B.step(1 / 60); put = true; break; } }
+    const spot2 = u2.model.getWorldPosition(new V());
+    check(put && u2.placed && !u2.held && u2.model.parent === B.scene && drawn(u2.model), `put down on the apartment floor: drawn (${spot2.x.toFixed(2)}, ${spot2.z.toFixed(2)})`);
+    check(look2(spot2.clone().setY(spot2.y + 0.08), /ta popkornsbyttan/i), `aimed at in the apartment: "${btn2.textContent}"`);
+    btn2.click(); B.step(1 / 60);
+    check(B.heldItem() === u2 && drawn(u2.model), 'picked up again in the apartment');
+    u2.placeAt(spot2, 0); B.step(1 / 60);
+    const world1 = B.keepWorld(), b2 = u2.bites;
+    sessionStorage.setItem('lunden.resume', JSON.stringify({ x: 3.5, z: 3.6, feetY: 0, yaw: 0, pitch: 0, mode: 'touch', build: null, world: world1, ts: Date.now() }));
+    f2.remove();
+    const f3 = await load('cloud='), C3 = f3.contentWindow.__app, w2 = C3.popcornTubs[i2];
+    C3.step(1 / 60); C3.step(1 / 60);
+    check(w2.placed && drawn(w2.model) && w2.model.parent === C3.scene && w2.model.getWorldPosition(new V()).distanceTo(spot2) < 0.05 && w2.bites === b2, `after a reload: the tub on the apartment floor is drawn (${w2.bites} bites)`);
+    w2.take(); C3.step(1 / 60);
+    for (let i = 0; i < 20 && w2.bites > 0; i++) w2.onUse(); // (the bites themselves: use() has a cooldown)
+    const I3 = C3.life.items, binLid = C3.world.lids.find((l) => l.bin), bin = I3.ofType('binPack')[0];
+    const tog = (o) => { if (o && !o.isOpen) { o.toggle(); for (let i = 0; i < 40; i++) o.update(0.1); } };
+    tog(binLid); tog(binLid?.leftDoor); C3.scene.updateMatrixWorld(true);
+    const tr = C3.life.options({ item: C3.life.view(bin) }).find((o) => o.id === 'throwAway'), amt = bin.amount;
+    check(tr && !tr.reason, `the empty tub at the apartment's bin: "${tr?.label}" ${tr?.reason ?? ''}`);
+    tr?.run(); C3.step(1 / 60);
+    check(!C3.heldItem() && w2.away && !w2.model.visible && bin.amount > amt, 'thrown in the apartment\'s bin, back in the pool');
     sessionStorage.removeItem('lunden.resume'); sessionStorage.removeItem('lunden.session');
-    if (!shots) f2.remove();
+    if (!shots) f3.remove();
   } catch (e) { check(false, e.stack); }
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 })();
