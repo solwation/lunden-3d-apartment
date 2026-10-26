@@ -15,7 +15,6 @@ import { buildContactShadows } from './contactshadow.js';
 import { clubhouseSurface, clubhouseMaterial, FINISH, CLUB_ZONES } from './clubhousematerials.js';
 import { clubhouseRoundedBox, cinemaChair } from './clubhousefurnishings.js';
 import { CinemaCurtains } from './cinemacurtains.js';
-import { clubhouseExitSigns } from './clubhouseexit.js';
 import { playroomCinema } from './playroomcinema.js';
 import { CinemaPosters } from './cinemaposters.js';
 import { roomPosters } from './playroomposters.js';
@@ -213,7 +212,6 @@ export class Playroom {
     this.zones = CLUB_ZONES; // #1574: per-room lamp/ambient levels [BIO, BILJARD, SPEL, hall] (live uniforms)
     this.roomPosters = roomPosters(); this.object.add(this.roomPosters.mesh); // #1574: posters, SPEL neon, BILJARD pendants and lamps: one unlit draw, hidden with the room
     this.curtains = new CinemaCurtains(furMat); this.object.add(this.curtains.mesh); // #1619: the masking curtains follow the film's picture ratio
-    this.exitSigns = clubhouseExitSigns(); this.object.add(this.exitSigns); // #1619
     this.sconces = cinemaParts.sconces; this.setSconceDim = cinemaParts.setDim; this.object.add(this.sconces);
     this.object.add(this.posters.object); this.controlPickables.push(...this.posters.pickables);
     this.film = false; this.filmOverride = false; this.filmDim = 0; // #1570: a film is running / the light switch overrode the dimming / smoothed dim 0..1

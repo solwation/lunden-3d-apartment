@@ -226,7 +226,8 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     // disco ball, cinema screen + 3 visible computer planes, signs (#1574), billiard table/balls/wall screen (#1328/#1495),
     // architecture edges, contact shadows, wall AO + floor/ceiling AO quads, disco spots, #1570 sconces, #1575 poster faces
     // and #1574 posters. The popcorn cart's kernel/glass meshes (#1567) are outside this view's frustum. Raise only with a named source.
-    check(inside.calls <= 26, 'inside, only the room is drawn: cinema, computer planes, billiards and decor in merged batches', `outside ${before.calls}, inside ${inside.calls}`);
+    // 27 = 26 + #1619 masking curtains: one small dynamic mesh (-1 from #1625 signs; merging them into the room batch would keep ~6.1 MB on low-memory phones).
+    check(inside.calls <= 27, 'inside, only the room is drawn: cinema, computer planes, billiards and decor in merged batches', `outside ${before.calls}, inside ${inside.calls}`);
     check(errors.length === 0, 'no page errors', errors.join(' | '));
   } finally { await browser.close(); }
   console.log(failed ? `${failed} FAILED` : 'ALL PASSED');

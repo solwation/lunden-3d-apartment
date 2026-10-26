@@ -1,5 +1,3 @@
-import * as THREE from 'three';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { PLAYROOM as R } from './config.js';
 
 /** #1619: where the green emergency-exit signs hang (local metres from the room's centre): above each passage's north face and above the playhouse door. */
@@ -8,8 +6,8 @@ export function exitSignSpots() {
   return [...[-2, 0, 2].map((i) => ({ x: i * C.side, z })), { x: 0, z: R.d / 2 - R.exitSigns.offset }];
 }
 
-/** The ISO-style running-man pictogram with the word NÖDUTGÅNG on a green field. */
-function drawSign(c, w, h) {
+/** The ISO-style (#1625: painted into playroomposters' atlas, the signs are quads of its one unlit mesh). running-man pictogram with the word NÖDUTGÅNG on a green field. */
+export function drawSign(c, w, h) {
   const E = R.exitSigns;
   c.fillStyle = E.green; c.fillRect(0, 0, w, h);
   c.strokeStyle = E.ink; c.fillStyle = E.ink; c.lineWidth = h * .03; c.strokeRect(h * .05, h * .05, w - h * .1, h - h * .1);
@@ -24,16 +22,4 @@ function drawSign(c, w, h) {
   c.moveTo(cx, cy - dh * .14); c.lineTo(cx + dw * .24, cy - dh * .06); c.moveTo(cx, cy - dh * .14); c.lineTo(cx - dw * .2, cy - dh * .02); c.stroke(); // arms
   c.font = `700 ${h * .2}px system-ui,sans-serif`; c.textAlign = 'center'; c.textBaseline = 'middle';
   c.fillText(E.text, x0 + dw + (w - x0 - dw) / 2, h / 2, w - x0 - dw - h * .12);
-}
-
-/** One small unlit draw (MeshBasicMaterial, no light source): the signs stay readable while a film darkens the room, yet do not light it. */
-export function clubhouseExitSigns() {
-  const E = R.exitSigns, canvas = document.createElement('canvas');
-  canvas.width = E.atlas[0]; canvas.height = E.atlas[1]; drawSign(canvas.getContext('2d'), canvas.width, canvas.height);
-  const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace; texture.anisotropy = 4;
-  const geos = exitSignSpots().map(({ x, z }) => new THREE.PlaneGeometry(E.w, E.h).rotateY(Math.PI).translate(R.x + x, E.y, R.z + z)); // facing north, into the rooms
-  const merged = mergeGeometries(geos); geos.forEach((g) => g.dispose());
-  const mesh = new THREE.Mesh(merged, new THREE.MeshBasicMaterial({ map: texture, toneMapped: false, color: new THREE.Color().setScalar(E.brightness) }));
-  mesh.name = 'bio-exit-signs'; mesh.matrixAutoUpdate = false;
-  return mesh;
 }

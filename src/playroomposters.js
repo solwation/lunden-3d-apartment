@@ -3,6 +3,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { PLAYROOM as R } from './config.js';
 import { freeCanvasAfterUpload } from './lowmemory.js';
 import { posterDesigns, neonSignCell } from './posterdesigns.js';
+import { drawSign, exitSignSpots } from './clubhouseexit.js';
 import { POSTER_WALLS, posterLayout } from './posterlayout.js';
 
 // #1574: the playhouse's own posters, neon runs, neon signs, pub pendants and wall lamps. One canvas atlas, one unlit vertex-coloured mesh (a single extra
@@ -39,6 +40,10 @@ export function roomPosters() {
   if (designs.length > free) throw new Error(`playroom posters: ${designs.length} designs leave no free atlas cell for the swatch`);
   const sx = (free % P.cols) * cw, sy = Math.floor(free / P.cols) * ch;
   ctx.fillStyle = '#fff'; ctx.fillRect(sx, sy, cw, ch);
+  // #1625: the green emergency-exit sign (one 2:1 image) takes the three free cells before the swatch, so its four quads cost no draw of their own.
+  const E = R.exitSigns, ex = designs.length * cw % AW, ey = Math.floor(designs.length * cw / AW) * ch, ew = 2 * ch;
+  if (designs.length + 3 > free || ex + ew > AW) throw new Error('playroom posters: no room in the atlas for the exit sign');
+  ctx.save(); ctx.translate(ex, ey); ctx.beginPath(); ctx.rect(0, 0, ew, ch); ctx.clip(); drawSign(ctx, ew, ch); ctx.restore();
   const swatch = (g) => { const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, (sx + cw / 2) / AW, 1 - (sy + ch / 2) / AH); return g; };
   const geos = [], meta = [], box = (rect, colour, kind = 'lamp', zone) => {
     const g = new THREE.BoxGeometry(rect.x1 - rect.x0, rect.y1 - rect.y0, rect.z1 - rect.z0).translate((rect.x0 + rect.x1) / 2, (rect.y0 + rect.y1) / 2, (rect.z0 + rect.z1) / 2);
@@ -52,6 +57,10 @@ export function roomPosters() {
   };
   for (const p of layout.posters) quad(p.wall, p.rect, [(p.design % P.cols) * cw, Math.floor(p.design / P.cols) * ch, cw, ch], new THREE.Color(0xffffff), POSTER_WALLS[p.wall].zone);
   layout.signs.forEach((s, i) => quad(s.wall, s.rect, [i * P.sign[0], stripY, P.sign[0], P.sign[1]], new THREE.Color(0xffffff)));
+  for (const { x, z } of exitSignSpots()) { // facing north, into the rooms; a constant brightness (kind 'lamp') so they stay readable while a film darkens the room
+    const g = new THREE.PlaneGeometry(E.w, E.h).rotateY(Math.PI).translate(x, E.y, z); cellUV(g, ex, ey, ew, ch, P.atlas);
+    const t = tintGeometry(g.toNonIndexed(), new THREE.Color().setScalar(E.brightness)).translate(R.x, 0, R.z); geos.push(t); meta.push({ kind: 'lamp', n: t.attributes.position.count });
+  }
   for (const r of layout.runs) box(r.rect, r.color);
   { // #1620: the DJ booth's LED strips (emissive vertex colours, no light): the podium's south and west edges and the counter's front
     const J = R.dj, D = J.podium, L = J.led, [c0, c1] = L.colors, y0 = D.h * .3, cy = D.h + .1;

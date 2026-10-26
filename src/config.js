@@ -6007,7 +6007,7 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
   // #1570: wall sconces on the BIO's side walls and the BIO's ceiling panel share one emissive mesh (no light source); `dimmed` scales their colour while a film runs.
   sconces: { x: { north: [-7.7, -5.9, -3.9], south: [-7.7, -3.9] }, y: 1.65, w: .14, h: .3, d: .1, lit: 0xffcf8a, panel: 0xfff6dc, dimmed: .06, fadeSeconds: 6, ambientDim: .18 }, // #1619: a film darkens the salon much further (the colour/ambient scale) and slowly (6 s down and up), *guess*
   // #1619: green emergency-exit signs (one emissive mesh, no light) above the three passages (north face, seen from inside each room) and the playhouse door. All sizes are *guess*es.
-  exitSigns: { w: .4, h: .2, y: 2.5, offset: .012, brightness: .85, atlas: [256, 128], green: '#0b8a3e', ink: '#ffffff', text: 'NÖDUTGÅNG' },
+  exitSigns: { w: .4, h: .2, y: 2.5, offset: .012, brightness: .85, green: '#0b8a3e', ink: '#ffffff', text: 'NÖDUTGÅNG' },
   // #1575: the BIO's daily film posters (src/cinemaposters.js, Worker GET /cinema/posters in cloudflare/youtubesearch.js). Every query, count, size and
   // place is a *guess*. Frames hang where #1570's sconces/speakers, the screen, curtains, the passage and the signs leave wall free (a fixture's
   // depth counts as clearance so it never hides a poster at an angle; tools/cinemapostertest.cjs checks it); local metres, `wall`

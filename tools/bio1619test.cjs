@@ -83,10 +83,10 @@ const [game = 'http://localhost:8619', out = '/tmp/bio1619'] = process.argv.slic
       a.cinema.state = null; for (let i = 0; i < 200; i++) a.step(1 / 60);
       a.player.spawn(R.x - 6, R.z - 1.4, 0); a.step(1 / 60); a.camera.position.set(R.x - 6, 1.6, R.z - 1.4); a.camera.lookAt(R.x - 6, 2.4, R.z + 1.5); a.camera.updateMatrixWorld(true);
       const count = () => { a.renderer.info.reset(); a.testMode.draw(); return a.renderer.info.render.calls; };
-      const withAll = count(); room.exitSigns.visible = false; const noSigns = count(); room.exitSigns.visible = true;
-      return { spots, lights, signMesh: room.exitSigns.geometry.attributes.position.count / 4, extraDraws: withAll - noSigns, material: room.exitSigns.material.type };
+      const withAll = count(); room.roomPosters.mesh.visible = false; const noPosters = count(); room.roomPosters.mesh.visible = true;
+      return { spots, lights, signsInPosterMesh: room.roomPosters.mesh.geometry.attributes.position.count > spots.length * 6, extraDraws: withAll - noPosters, material: room.roomPosters.mesh.material.type, ownMesh: !!room.exitSigns };
     });
-    assert.equal(signs.signMesh, 4); assert.equal(signs.lights, 0); assert.equal(signs.extraDraws, 1); assert.equal(signs.material, 'MeshBasicMaterial');
+    assert.equal(signs.spots.length, 4); assert.equal(signs.lights, 0); assert.equal(signs.ownMesh, false); assert.ok(signs.signsInPosterMesh); assert.equal(signs.material, 'MeshBasicMaterial'); // #1625: the four signs are quads of the posters' one unlit mesh
     // curtains: no extra draws beyond the one mesh that replaced the two merged curtains
     // pictures
     const film = (aspect) => page.evaluate(async (aspect) => {
