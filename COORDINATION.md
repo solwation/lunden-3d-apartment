@@ -9,9 +9,9 @@ No scheduler, service or network integration is installed by these instructions.
 
 A request without a scope authorizes one bounded pass over the host's configured
 queue. Select, claim and deliver eligible issues under the rules below without asking
-the user to choose; work within capacity until no eligible work remains, then perform
-a final complete fetch and stop. A pass enables no polling, idle watch or timer and
-leaves no claims or active labels behind; those need an explicit queue session.
+the user to choose; work within capacity until no eligible work remains, run the
+[session review](#review-the-session), then perform a final complete fetch and stop.
+A pass enables no polling, idle watch or timer and leaves no claims or active labels behind; those need an explicit queue session.
 
 A pass is unattended: never ask the user in the chat, at the start, during or at the
 end. Decide what the host policy authorizes, including releases under its release rule.
@@ -24,9 +24,8 @@ resumes it removes the label. A given scope (issue, area) still bounds the task.
 
 ## Select and claim
 
-1. Run required intake hooks. Fetch every page of every configured open queue before
-   each selection, reservation, takeover and idle check. Fetch independent repositories
-   concurrently. A failed/partial fetch is neither an empty queue nor a global ordering.
+1. Fetch every page of every configured open queue before each selection, reservation,
+   takeover and idle check. Fetch independent repositories concurrently. A failed/partial fetch is neither an empty queue nor a global ordering.
 2. Exclude pull requests and configured coordination issues, but retain issue identity
    and ownership labels. Apply scope, priority corrections and the complete ancestor
    ceiling. Fetch missing parents, including closed/cross-repository parents. A link
@@ -50,6 +49,13 @@ resumes it removes the label. A given scope (issue, area) still bounds the task.
    never bypasses fresh selection after each issue; do not interrupt active work simply
    because priorities change. Start the next eligible work promptly while respecting
    capacity, authorization and ownership.
+
+Intake hooks (for example importing external reports into issues) never delay work
+that is already startable. At session start, and whenever a slot frees up, dispatch the
+startable work first and run due intake hooks while the workers are busy; issues they
+create join the next selection. When nothing is startable, run due intake before
+declaring the queue drained, reviewing the session or going idle. Host deadlines for
+intake still apply; the host may name an intake that must precede selection.
 
 In a queue session the conductor mainly selects, coordinates, integrates and reviews.
 Its own implementation takes a capacity slot; choose it deliberately, for example for a
@@ -99,6 +105,34 @@ or user test is not a blocker: diagnose, deliver the best supported fix and clos
 unverified, unless the host or issue explicitly gates closure on that device. Product questions go through the configured
 channel; an actual user answer removes the blocker, not merely a new comment.
 
+## Review the session
+
+When the queue drains (no eligible startable work and no active worker) and work was
+delivered since the last session review, the conductor reviews that work as a whole
+before stopping or entering the idle watch. Individual deliveries were already
+reviewed; this pass looks for what only shows up across them:
+
+- conflicting or duplicated changes between deliveries, and integration regressions;
+- acceptance that a closed issue claimed but the delivered revision does not show;
+- documentation, configuration or instructions left inconsistent with the changes;
+- leftover claims, active labels, worktrees, servers or unpublished commits.
+
+Base it on the combined diff from the session's starting revision (per repository),
+the closed issues and their evidence. Rerun a check only for a concrete suspicion.
+Keep it bounded, roughly the effort of one ordinary review per few deliveries. Split it
+into independent read-only parts (by repository, area or issue group) for workers when
+that shortens it, within capacity and the resource rules; the conductor merges the
+results. Workers in a review part do not fix anything.
+
+Each finding becomes a separately scoped issue with normal priority triage and parent
+constraints, linking the delivering issue and revision; reopen an issue instead when
+its own acceptance is plainly unmet. Clean up the conductor's own leftover claims and
+labels directly. Record the review (range, parts, findings, created issues) in the
+status comment. If it created eligible work, resume selection; the next drain reviews
+only work delivered after this review. A drain with nothing new delivered skips the
+review. The review does not restart an idle deadline; only resolving an issue does.
+A host policy can add areas to inspect or disable the review.
+
 ## Poll, idle and stop
 
 In a queue session, poll all configured queues on the host schedule during both active
@@ -114,7 +148,8 @@ issues and issues created during the session remain eligible unless explicitly e
 Keep no active labels while idle. Use interruptible waits of at most 60 seconds; stop
 promptly on user pause/stop, save a checkpoint and release inactive claims.
 
-At the deadline, perform a final successful complete fetch and required final intake
-check. Finish only if no eligible work remains; otherwise resume delivery. Report blocked
-and out-of-scope work honestly. Do not close unfinished issues or treat network errors
+During the idle watch, intake hooks keep their own schedule, so new external reports
+can still become issues and end the wait. At the deadline, perform a final successful
+complete fetch and required final intake check. Finish only if no eligible work
+remains; otherwise resume delivery. Report blocked and out-of-scope work honestly. Do not close unfinished issues or treat network errors
 as success. Chat updates are for state changes, blockers and completion, not empty polls.
