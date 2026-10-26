@@ -24,10 +24,12 @@ a private local file. It is a **global** flag and goes before the subcommand, fo
 repository, or in an issue. The existing in-game admin codes and their visit-only session token
 cannot import reports. Admin and rearrangement are the same game mode. Private files and journals belong outside the checkout.
 
-For `/orkester`, this fetch/review/import is the **first work step before choosing
-GitHub issues**. Repeat it at least every 30 minutes while the session runs, after
-each resolved issue before the conductor selects the next one (user, 2026-10-24), and
-sooner when the fresh GitHub queue has at most three startable unclaimed issues or
+For `/orkester`, the conductor runs this fetch/review/import **while the workers are
+busy**; it never delays startable GitHub issues (user, 2026-10-26, see the
+[session loop](../../.orchestra/project.md#session-loop-user-2026-10-26)). Run it right
+after the first workers are dispatched (first only when nothing is startable), at least
+every 30 minutes while the session runs, after each resolved issue once the freed slot
+has its next issue, and sooner when the fresh GitHub queue has at most three startable unclaimed issues or
 before declaring the queue exhausted. A successful full fetch from the last five
 minutes may cover repeated low-queue assignments. Record its UTC time and outcome
 outside the repository and in #420. Failed fetches do not advance the successful
