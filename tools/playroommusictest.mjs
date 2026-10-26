@@ -39,3 +39,19 @@ test('genuine decode fallback stays paused; ordinary appliance transport still s
  const f=new MusicFile(audioParts(),new Node(),{files:['test-failed.ogg','test-good.mp3']});f.pause();f.el.dispatchEvent(new Event('error'));assert.equal(f.src,'test-good.mp3');assert.equal(f.el.paused,true);assert.equal(f.paused,true);assert.equal(failedFiles.has('test-failed.ogg'),true);f.resume();assert.equal(f.el.paused,false);f.stop();
  const appliance=new MusicFile(audioParts(),new Node(),{files:['test-appliance.ogg']});assert.equal(appliance.el.paused,false);assert.equal(appliance.paused,false);appliance.stop();assert.equal(appliance.el,null);
 });
+
+test('#1621: next track cuts; mix crossfades two overlapping decks, equal power, then drops the old one',async()=>{
+ const { MUSIC }=await import('../src/config.js');const { PLAYROOM_TRACKS }=await import('../src/playroommusic.js');
+ const m=new PlayroomMusic();m.setInside(true);assert.equal(m.options().some((o)=>/låt/.test(o.label)),false);m.play();
+ const labels=m.options().map((o)=>o.label);assert.match(labels[2],/^Nästa låt$/);assert.match(labels[3],/^Mixa till nästa låt$/);
+ const a=m.file;m.options()[2].run();assert.notEqual(m.file,a);assert.equal(a.el,null);assert.match(m.file.el.src,new RegExp(PLAYROOM_TRACKS[1].files[0]));
+ const old=MUSIC.crossfade;MUSIC.crossfade=.2;
+ try{
+  const first=m.deck;m.options()[3].run();assert.ok(m.mixing);assert.equal(m.options()[3].reason,'Mixar redan');
+  const mid=m.mixing;assert.equal(mid.outgoing,first);assert.equal(first.file.el.paused,false);assert.equal(mid.incoming.file.el.paused,false);
+  await new Promise((r)=>setTimeout(r,100));assert.ok(m.mixing);const o=mid.outgoing.fade.gain.value,i=mid.incoming.fade.gain.value;assert.ok(o>0&&o<1&&i>0&&i<1);assert.ok(Math.abs(o*o+i*i-1)<1e-6);
+  await new Promise((r)=>setTimeout(r,250));assert.equal(m.mixing,null);assert.equal(first.file.el,null);assert.equal(m.file,mid.incoming.file);assert.equal(mid.incoming.fade.gain.value,1);
+  m.next(true);const inc=m.mixing.incoming;m.stop();assert.equal(m.mixing,null);assert.equal(inc.file.el,null);assert.equal(m.file,null);
+ }finally{MUSIC.crossfade=old}
+ m.dispose();
+});

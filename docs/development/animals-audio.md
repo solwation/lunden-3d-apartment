@@ -499,3 +499,18 @@ remains nonzero, snow remains silent and mute retains control.
 `TVVolume` (`src/tvsound.js`) applies scalar distance/head-direction volume through YouTube's API for the three home TVs, clubhouse TV and Santa's local loop. TV_MEDIA.sound centralises falloff, rear gain, range and message cadence. Global mute is immediate. This intentionally implements the user's approved volume approximation, not stereo/HRTF panning of inaccessible iframe audio.
 
 Playroom billiards retain physical cue/ball/pocket event positions and the existing positional master graph. Impact mix is stronger and square-root strength makes soft collisions audible; pocket drops no longer depend on horizontal ball speed. `sfx.billiard` adds a short pocket rattle after the drop. Scoped tests include real Web Audio RMS and mute/exit silence; no physics rules changed.
+
+### DJ bench: change track and crossfade (#1621)
+
+The speakers and the DJ bench share one target, so the choices work wherever the pair is aimed at.
+While music is on, the menu adds `Nästa låt` (hard cut) and `Mixa till nästa låt` (equal-power
+crossfade, `MUSIC.crossfade` = 6 s). Tracks are `PLAYROOM_TRACKS` (all Sonos channel tracks, in order;
+the list wraps). Each track runs on its own deck (`MusicFile` → fader gain → shared volume gain), so
+two decks overlap during a mix; a mix tick (50 ms) moves the faders `cos`/`sin`, then drops the old deck.
+Pause waits the fade, volume/mute/OFF/exit/pagehide release both decks, a new track that fails to
+load keeps the old one, and a new mix/cut is refused while mixing (menu reason "Mixar redan").
+**Not synced:** the room music was and is local to each visitor (no music message exists in
+`cloudflare/players.js`); syncing track/mix state for players in the room needs a new room-owned
+message like the billiard table's (#1355) and is tracked separately. Tests:
+`node --test tools/playroommusictest.mjs` (6 tests) and the real-app touch check
+`tools/playroommixtest.cjs GAME OUT` (menu rows, tap cut and mix, deck gains/elements over time).

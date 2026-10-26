@@ -4745,6 +4745,7 @@ export const SYMFONISK = {
 // Channel ids remain stable so saved selections keep their genre after the new names.
 const track = (id, title, artist) => ({ title, artist, files: [`music/${id}.ogg`, `music/${id}.mp3`] });
 export const MUSIC = {
+  crossfade: 6, // #1621: seconds of the DJ bench's equal-power crossfade (a design choice)
   loadTimeout: 8000, // stalled streams try the alternative format, then stay quiet
   lofi: [track('morning-blue','Morning Blue','Josh Woodward'),track('will-not-let-you','I Will Not Let You Let Me Down','Josh Woodward')],
   jazz: [track('bossa-antigua','Bossa Antigua','Kevin MacLeod'),track('jazz-brunch','Jazz Brunch','Kevin MacLeod')],
