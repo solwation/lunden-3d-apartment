@@ -2118,3 +2118,26 @@ draw call each). The sliced phone passes only show `warmDraw` renderables in the
 phones keep it lazy as before (#628). Check with `tools/selfmirrorwarmtest.cjs desktop|phone`.
 See the [verification record](../verification/1558/README.md) for the matched first- and
 repeated-lap table.
+
+## Android death in Sovrum 4 after "Klar": the 1.25M triangles are the shadow pass (#1628)
+
+Crash report (Android 10 Chrome 155, 892×412 @2.63, `low` 1, q 2, build c7a9eee, `tap rearrange-finish` one second before the
+kill) showed the heartbeat alternating between ~280 calls / ~780k triangles and 530–660 calls / 1.25–1.36M. Both stated causes
+were checked on an emulated Android profile (same viewport/UA, real warm-up, SwiftShader, `tools`-free probes):
+
+- **Quality ceiling is not the cause.** Phones start at `QUALITY.startLowMemory` 2 and Auto may reach 3 (`Quality.max`); there is no lower ceiling and
+  none is bypassed. Level only changes pixel ratio, shadow cadence, mirror size and detail distance: over 72 upstairs views
+  (Sovrum 4, corridor, stairs; 12 yaws × 2 pitches × 3 spots) the main pass peaks at 355 / 372 / 384 calls and 822k / 824k / 825k triangles
+  at level 1 / 2 / 3, and no view exceeds 950k. A cap would not have removed the figures.
+- **The jump is the shadow pass.** `renderer.info.render` is per `render()` and includes the sun's shadow-map draws. In the real
+  loop on the emulated phone, frames with a shadow redraw read 689 calls / 1.41M triangles, the others 364 / 812k
+  (same as the crash report's two levels; see also the first row of the table "The draw-call jump is the shadow pass" above).
+  So the report does not show a view over the phone budget. Crash heartbeat samples now carry `gl3.sf` (history `sf`): 1 when the frame's
+  totals include the shadow pass, so the next report can be read without guessing (`frameDiag.lastShadow` in `main.js`).
+- **Möblera om leaves nothing behind.** Three enable → move (confirm) → Klar cycles in Sovrum 4: scene object count 6556 before and
+  after, ghost group empty, geometries 2202 → 2204 and textures 211 → 212 once (the moved pieces' first redraw), then unchanged in
+  cycles 2–3; programs 221 throughout; JS heap flat (335 → 345 / 343 / 346 MB). Compare #1586/#1593 (programs, `TriGrid` heap), both already fixed.
+
+The cause of the death itself is **not proven**; no real Android was available. Not tested: a physical device, the GPU's real
+memory behaviour, rotation or the system's own process kill (a `killed` report only means the heartbeat stopped).
+Evidence image: `docs/verification/1628/matning.png`.

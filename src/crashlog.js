@@ -122,7 +122,7 @@ class CrashLog {
         const i = renderer.info, t = performance.now(), f = this.lastFrame, n = i.render.frame;
         if (t - f.t > 500) { f.fps = round(((n - f.n) * 1000) / (t - f.t)); f.n = n; f.t = t; }
         s.fps = f.fps; s.px = round(renderer.getPixelRatio(), 2);
-        s.gl3 = { geo: i.memory.geometries, tex: i.memory.textures, prog: i.programs?.length ?? 0, calls: i.render.calls, tris: i.render.triangles };
+        s.gl3 = { geo: i.memory.geometries, tex: i.memory.textures, prog: i.programs?.length ?? 0, calls: i.render.calls, tris: i.render.triangles, sf: c.frameDiag?.lastShadow ? 1 : 0 }; // #1628: sf = the last frame's totals include the shadow-map pass (about +250 calls / +470k tris on a phone), not just the view
         s.frame = n;
         s.phase = window.__app?.warm?.state ?? 'scene';
         if (window.__app?.warm && !window.__app.warm.done) s.warm = window.__app.warm.detail; // where the sliced warm-up is (#669)
@@ -206,7 +206,7 @@ class CrashLog {
       const sh = fd?.passes, shHold = fd?.held; // shadow-map redraws since the last beat: all / during a hold after Använd (#1100)
       if (fd) { fd.ms = 0; fd.passes = 0; fd.held = 0; }
       this.history.push({ up: s.up, phase: s.phase, warm: s.warm, worst, frame: s.frame, q: s.q?.lvl, px: s.px,
-        fps: s.fps, geo: s.gl3?.geo, tex: s.gl3?.tex, prog: s.gl3?.prog, calls: s.gl3?.calls,
+        fps: s.fps, geo: s.gl3?.geo, tex: s.gl3?.tex, prog: s.gl3?.prog, calls: s.gl3?.calls, sf: s.gl3?.sf,
         tris: s.gl3?.tris, sourceTexMB: s.gpuMB?.tex, jsMB: s.jsMB?.[0], lagMs, sh, shHold, panel: s.panel,
         gl: this.glLost ? 'lost' : 'ok' });
       if (this.history.length > C.historySamples) this.history.shift();

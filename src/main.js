@@ -3267,7 +3267,7 @@ freeSceneGeometryCopies(scene, renderer); // phone: normals / uv / colours leave
 detail.buildProxies(scene, things, blinds.curtains); // phone (#1540, #1545): whole furnishings, the bottles / glasses at home and each curtain seen from outside, merged; before the first upload
 let mirrorFrame = 0;
 // The slowest frame since the crash heartbeat last looked (#669): its CPU time, the new programs it compiled, whether it redrew the shadow map and the warm-up state
-const frameDiag = { ms: 0, progs: 0, shadow: 0, warm: '', passes: 0, held: 0 };
+const frameDiag = { ms: 0, progs: 0, shadow: 0, warm: '', passes: 0, held: 0, lastShadow: 0 };
 // The portrait instruction covers the entire game surface; use the same media query as #rotate in index.html.
 const portraitCover = window.matchMedia('(orientation: portrait) and (pointer: coarse) and (max-width: 1100px)');
 deferViewportResize = () => lowMemory && !shotMode && warm.done && startupSceneReady
@@ -3311,6 +3311,7 @@ function frame(raw) {
   let drewView = false;
   if (!warm.blocksView) {
     if (viewDue && (testMode?.wantsFrame() ?? true)) {
+      frameDiag.lastShadow = renderer.shadowMap.needsUpdate ? 1 : 0; // #1628: this frame's renderer.info totals include the shadow pass (crash heartbeat `gl3.sf`)
       renderer.render(scene, camera);
       reportCapture.afterRender();
       drewView = true;
