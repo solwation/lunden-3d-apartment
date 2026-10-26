@@ -20,3 +20,11 @@ test('YT volume updates are coalesced, mute and disabled media are immediate',()
  sound.at=-Infinity;sound.update(player,camera,mesh);assert.equal(volumes.at(-1),100);
  sound.update(player,camera,mesh,false);assert.equal(volumes.at(-1),0);
 });
+test('#1641 cinema speakers add omnidirectional gain: the nearer speaker is louder, never above 100',()=>{
+ const screen={x:0,y:0,z:-5},sp=[{x:3,y:0,z:0,kind:'rear'},{x:-3,y:0,z:0,kind:'surround'}];
+ const here=tvVolume(screen,listener,front,undefined,sp),plain=tvVolume(screen,listener,front);
+ const nearRear=tvVolume(screen,{x:2.5,y:0,z:0},front,undefined,sp),nearSurround=tvVolume(screen,{x:-2.5,y:0,z:0},front,undefined,sp);
+ assert(here>plain);assert(nearRear>here&&nearSurround>here);
+ const back={x:0,y:0,z:1},at={x:2.5,y:0,z:0};assert(tvVolume(screen,at,back,undefined,sp)>tvVolume(screen,at,back)); // speakers ignore head direction
+ assert(tvVolume({x:0,y:0,z:-.5},listener,front,undefined,sp)<=100);
+});

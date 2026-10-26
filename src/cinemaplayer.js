@@ -269,7 +269,7 @@ export class CinemaPlayer {
       this.controls();
     }
     this.surface?.update(camera,renderer);
-    if(this.ready&&this.soundSource)this.soundVolume.update(this.player,camera,this.soundSource,this.soundEnabled);
+    if(this.ready&&this.soundSource)this.soundVolume.update(this.player,camera,this.soundSource,this.soundEnabled,this.soundSpeakers);
     if(performance.now()-(this.lastSync??0)>PLAYROOM.cinemaSync.syncEveryMs){this.lastSync=performance.now();this.synchronize();}
   }
 }

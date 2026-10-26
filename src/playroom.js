@@ -212,7 +212,7 @@ export class Playroom {
     this.zones = CLUB_ZONES; // #1574: per-room lamp/ambient levels [BIO, BILJARD, SPEL, hall] (live uniforms)
     this.roomPosters = roomPosters(); this.object.add(this.roomPosters.mesh); // #1574: posters, SPEL neon, BILJARD pendants and lamps: one unlit draw, hidden with the room
     this.curtains = new CinemaCurtains(furMat); this.object.add(this.curtains.mesh); // #1619: the masking curtains follow the film's picture ratio
-    this.sconces = cinemaParts.sconces; this.setSconceDim = cinemaParts.setDim; this.object.add(this.sconces);
+    this.cinemaSpeakers = cinemaParts.speakers; this.sconces = cinemaParts.sconces; this.setSconceDim = cinemaParts.setDim; this.object.add(this.sconces);
     this.object.add(this.posters.object); this.controlPickables.push(...this.posters.pickables);
     this.film = false; this.filmOverride = false; this.filmDim = 0; // #1570: a film is running / the light switch overrode the dimming / smoothed dim 0..1
     this.popcorn = new PopcornCart(this.object, furMat); this.controlPickables.push(...this.popcorn.pickables); // #1567 (tubs: main.js, makeTubs)

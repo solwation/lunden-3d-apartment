@@ -6883,7 +6883,10 @@ export const FIREWORKS = {
 // Stable identities survive rearranging; only the personal home's three TV targets participate.
 export const TV_MEDIA = {
   // Scalar YouTube volume: Sonos-like inverse distance plus head-facing attenuation (visual/audio guesses).
-  sound: { ref: 1, rolloff: 1.1, range: 14, behind: 0.35, intervalMs: 100 },
+  sound: { ref: 1, rolloff: 1.1, range: 14, behind: 0.35, intervalMs: 100,
+    // #1641: the BIO adds its speakers (src/playroomcinema.js) as extra omnidirectional sources next to the screen; each adds its inverse-distance gain
+    // times the weight below in power (RMS), so the nearest speaker dominates. Levels are *guess*es.
+    speakerGain: { front: .25, center: .3, surround: .25, rear: .25, height: .15 } },
   floorTolerance: .7, // Feet/crouch/stair-edge tolerance around the current storey's finished floor.
   screens: [
     { id: 'lounge', name: 'TV · Vardagsrummet', level: 0, bounds: [.18,5.57,7.8,12.52] },

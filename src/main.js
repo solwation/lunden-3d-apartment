@@ -1333,7 +1333,7 @@ remote.onSeek=(tv,delta)=>{const ok=tvMedia.seek(tv,delta);if(!ok)badge('Någon 
 const computerHub=new ComputerHub({onNotice:text=>badge(text,false),canvas,targets:[...world.furnitureTargets,...playroom.devices.computers.map(s=>s.target)],template:document.getElementById('cinema-player'),onClose:closeVideoControls,onOpen:openVideoControls,endpoint:cloudUrl()?`${cloudUrl()}/youtube-search`:'',boards:new GameBoards({url:cloudUrl(),id:()=>leaderboard.id,name:()=>leaderboard.name,look:()=>leaderboard.lookCode})}); // #1577: game top lists
 playroom.devices.onComputerRequest=target=>computerHub.show(target);
 cinema.surface = new CinemaSurface(canvas, playroom.devices.tv.mesh);
-cinema.soundSource = playroom.devices.tv.mesh;
+cinema.soundSource = playroom.devices.tv.mesh; cinema.soundSpeakers = playroom.cinemaSpeakers; // #1641
 playroom.devices.onVideoRequest = () => {
   if (!playroom.inside) return;
   if(cinema.activate())return;
