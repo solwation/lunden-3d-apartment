@@ -121,6 +121,10 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   be verified, state plainly in the completion comment what could not be tested, and close with `Fixes #N`. The user
   reports again if it persists. Do not add `user-question` for a device test; reserve it for genuine product decisions.
   The orchestra should be as autonomous as possible; the shared core has the same rule since v0.3.0.
+  The same applies to crash-report bugs (user, 2026-10-26): once diagnosis or better crash instrumentation is
+  delivered, close the issue even if no root cause is proven, instead of keeping it open or `blocked` while waiting
+  for new reports. State in the closing comment what was done and that nothing is proven; a later crash report
+  becomes a new issue linking back.
 - **Risk-based verification (user, 2026-10-21):** choose 2–3 sufficient checks before work; stop when they pass.
   Docs-only changes need diff/link/contradiction review, no browser or triangle counts. Local behaviour needs a
   relevant component and affected route/view; wider profiles need concrete global risk. Reuse source-bound green
