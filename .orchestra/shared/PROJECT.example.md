@@ -25,7 +25,9 @@ not executable code. Keep project details here, never in the shared instructions
 - Questions/blocked work: <channel and label lifecycle, e.g. an issue comment with
   options and a recommendation plus a `user question` label>; unattended passes never ask
   in the chat. Release rule in a pass: <e.g. only once no open issues remain/never>.
-- Intake hooks: <local procedure and triggers, or none>; credentials never go here.
+- Intake hooks: <local procedure and triggers, or none>; they run while workers are
+  busy, never delaying startable work. Credentials never go here.
+- Session review on queue drain: <default, extra areas to inspect, or disabled>.
 - Workspace, server and browser setup: <relevant local docs>.
 - Required tests, release checks and evidence-before-close: <rules>.
 - Phase hooks: <definitions below or a link to project documentation; none if unused>.

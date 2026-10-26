@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.0 — 2026-10-26
+
+- Dispatch before intake: intake hooks run while workers are busy and never delay
+  startable work; they still run before a drain, review or idle decision (#20).
+- Review the session when the queue drains: one bounded review of all work delivered
+  since the last review, optionally split into read-only worker parts; findings become
+  issues and the loop resumes. Hosts can configure or disable it (#20).
+
 ## 0.3.2 — 2026-10-24
 
 - Rewrite the README around the concept: you talk to the conductor (*dirigenten*),

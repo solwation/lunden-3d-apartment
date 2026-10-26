@@ -272,5 +272,6 @@ Compare similar tasks and reopen/regression rates before claiming a speed improv
 collect this information in normal delivery, not a new benchmark project.
 
 For a bounded pass or an unattended queue session, also read
-[coordination](COORDINATION.md) and the host's queue/timer settings. For a worker
+[coordination](COORDINATION.md) and the host's queue/timer settings, including the
+[session review](COORDINATION.md#review-the-session) when the queue drains. For a worker
 assignment use [the compact brief](WORKER.md).

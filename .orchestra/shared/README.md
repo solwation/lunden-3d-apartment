@@ -62,10 +62,15 @@ flowchart TD
 1. You type `/orkester` (or just describe a change).
 2. The conductor fetches the issue queue, chooses the highest-priority startable work,
    claims it and starts up to your configured number of workers in parallel.
-3. Each worker plans briefly, implements, runs the checks that matter and hands back.
-4. The conductor reviews the combined diff and evidence, pushes, posts the result on
-   the issue and closes it, then picks the next issue.
-5. Anything only you can decide waits on its issue, not in your chat. Everything else
+3. While they work, the conductor runs your intake hooks, for example turning incoming
+   reports into new issues.
+4. Each worker plans briefly, implements, runs the checks that matter and hands back.
+5. The conductor reviews the combined diff and evidence, pushes, posts the result on
+   the issue and closes it, then gives the free worker the next issue.
+6. When the queue is empty, the conductor reviews everything delivered in the session
+   (with workers for parts if that helps); findings become new issues and the loop
+   continues. With nothing left, an optional idle watch waits for new issues.
+7. Anything only you can decide waits on its issue, not in your chat. Everything else
    keeps moving.
 
 ## What you get
@@ -97,7 +102,7 @@ flowchart TD
 
 ```sh
 git subtree add --prefix=.orchestra/shared \
-  https://github.com/solwation/dirigenten-och-orkestern.git v0.3.2 --squash
+  https://github.com/solwation/dirigenten-och-orkestern.git v0.4.0 --squash
 cp .orchestra/shared/PROJECT.example.md .orchestra/project.md
 ```
 
