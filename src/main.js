@@ -3041,7 +3041,7 @@ function step(dt) {
   core.update(dt, player, camera); // the stairwell's doors, the lift, drawn only near (#415)
   garage.update(dt, player, camera, car); // its door (#358), the förråd doors, the tubes' motion sensor, drawn only near (#357)
   if (playroom.inside && !playroom.contains(player.pos.x, player.pos.z)) playroom.setInside(false); // (respawned / resumed elsewhere: the room is undrawn again)
-  playroom.setFilm(!!cinema.state?.video); // #1570: the BIO's sconces dim while a film runs
+  playroom.setFilm(!!cinema.state?.video, cinema.surface?.aspect); // #1570: the BIO's sconces dim while a film runs; #1619: the curtains follow its picture ratio
   playroom.update(dt, camera, focused?.kind === 'playroomBilliards');
   day.under = player.inPlayroom ? 1 : garage.under; // down there no daylight (nor in the children's room, #1319)
   day.lit = player.inPlayroom ? playroom.lit : garage.lit; // … but the tubes' light on the cars (#440), the room's own lamp

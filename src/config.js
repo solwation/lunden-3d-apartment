@@ -5999,7 +5999,9 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
     rear: { x: -3.12, z: [-3.4, .4], y: 2, w: .2, h: .3, d: .16 }, // rear surrounds on the BIO's east wall (facing west)
     ceiling: { x: [-7.4, -4.6], z: [-3.6, -.3], w: .22, d: .22, h: .09 } }, // four height speakers under the ceiling, clear of the ceiling panels
   // #1570: wall sconces on the BIO's side walls and the BIO's ceiling panel share one emissive mesh (no light source); `dimmed` scales their colour while a film runs.
-  sconces: { x: { north: [-7.7, -5.9, -3.9], south: [-7.7, -3.9] }, y: 1.65, w: .14, h: .3, d: .1, lit: 0xffcf8a, panel: 0xfff6dc, dimmed: .25, fadeSeconds: 1.6, ambientDim: .4 },
+  sconces: { x: { north: [-7.7, -5.9, -3.9], south: [-7.7, -3.9] }, y: 1.65, w: .14, h: .3, d: .1, lit: 0xffcf8a, panel: 0xfff6dc, dimmed: .06, fadeSeconds: 6, ambientDim: .18 }, // #1619: a film darkens the salon much further (the colour/ambient scale) and slowly (6 s down and up), *guess*
+  // #1619: green emergency-exit signs (one emissive mesh, no light) above the three passages (north face, seen from inside each room) and the playhouse door. All sizes are *guess*es.
+  exitSigns: { w: .4, h: .2, y: 2.5, offset: .012, brightness: .85, atlas: [256, 128], green: '#0b8a3e', ink: '#ffffff', text: 'NÖDUTGÅNG' },
   // #1575: the BIO's daily film posters (src/cinemaposters.js, Worker GET /cinema/posters in cloudflare/youtubesearch.js). Every query, count, size and
   // place is a *guess*. Frames hang where #1570's sconces/speakers, the screen, curtains, the passage and the signs leave wall free (a fixture's
   // depth counts as clearance so it never hides a poster at an angle; tools/cinemapostertest.cjs checks it); local metres, `wall`
@@ -6114,7 +6116,8 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
   // #1327: the child-sized fantasy furniture (all our own choices, *guess*); local metres from the room's centre (x east, z south, the door
   // at z +5.2). Cinema screen/seats in BIO west of BILJARD; COMPUTER_MEDIA places four desks/chairs in SPEL east of it.
   furniture: { seatHeight: 0.36, cinema: { screen: { x: -8.78, bottom: .4, topGap: .4, sideGap: .2 }, // #1415: user asks 40 cm below/above; assumed 20 cm side margins.
-      curtain: { overlap: .06, bottom: .12 }, // Assumed small screen-edge overlap; hem clears the existing skirting.
+      curtain: { overlap: .06, bottom: .12, // Assumed small screen-edge overlap; hem clears the existing skirting.
+        aspect: 16 / 9, pad: .03, seconds: 2.5 }, // #1619: masking curtains close to a film's picture width (+ pad of black each side) when its ratio is unknown/16:9 `aspect`; ~2.5 s to settle, *guess*
       reach: 6, // Assumed screen-selection distance covering both cinema seat rows, only within BIO.
       seat: { width: 0.78, depth: 0.82, height: 0.39, back: 0.83, rowX: [-6.55, -4.72], z: [-3.25, -2.4, -0.8, 0.05] } },
     tv: {},

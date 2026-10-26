@@ -219,7 +219,7 @@ export class CinemaPlayer {
   mediaError(text){clearTimeout(this.timer);this.failed=true;this.status.textContent=text;this.watchText.textContent=text;this.surface?.loading(true,text,true);this.updateWatch();}
   async load(id) {
     this.destroyMedia();this.video=id;this.failed=false;this.ended=false;this.autoplayBlocked=false;
-    this.surface?.show(true);this.surface?.loading(true);
+    this.surface?.show(true);this.surface?.measure?.(id);this.surface?.loading(true);
     const generation=this.generation,current=()=>this.inside&&this.video===id&&generation===this.generation;
     this.timer=setTimeout(()=>{if(current())this.mediaError('YouTube svarar inte. Välj film igen eller kontrollera anslutningen.');},PLAYROOM.devices.videoTimeoutMs);
     try{

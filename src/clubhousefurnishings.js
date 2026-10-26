@@ -53,21 +53,28 @@ export function cinemaChair(x,z) {
   return parts;
 }
 
-/** Continuous fabric folds, replacing the row of rectangular curtain ribs. */
-export function cinemaCurtain(side) {
+/** Curtain grid for one side. `half` is the half width of the opening it leaves (default: the screen's, less the overlap); #1619 narrows it to a film's picture. */
+export function cinemaCurtainGrid(side,half) {
   const s=R.furniture.cinema.screen,curtain=R.furniture.cinema.curtain,C=R.appearance,n=C.curtainSegments,rows=6;
   const wall=side<0?-R.d/2:R.clubhouse.front-R.clubhouse.wall/2;
-  const edge=s.z+side*(s.w/2-curtain.overlap),width=Math.abs(wall-edge);
-  const pos=[],indices=[];
+  const edge=s.z+side*(half??(s.w/2-curtain.overlap)),width=Math.abs(wall-edge);
+  const pos=new Float32Array((rows+1)*(n+1)*3),indices=[];let k=0;
   for(let j=0;j<=rows;j++)for(let i=0;i<=n;i++) {
     const u=i/n,v=j/rows;
-    pos.push(R.x+s.x+.09+C.curtainDepth*(.5+.5*Math.cos(u*C.curtainFolds*Math.PI*2)),
-      curtain.bottom+v*(R.ceiling-curtain.bottom),R.z+edge+side*u*width);
+    pos[k++]=R.x+s.x+.09+C.curtainDepth*(.5+.5*Math.cos(u*C.curtainFolds*Math.PI*2));
+    pos[k++]=curtain.bottom+v*(R.ceiling-curtain.bottom);
+    pos[k++]=R.z+edge+side*u*width;
   }
   for(let j=0;j<rows;j++)for(let i=0;i<n;i++) {
     const a=j*(n+1)+i,b=a+1,c=a+n+1,d=c+1;
     indices.push(...(side>0?[a,c,b,b,c,d]:[a,b,c,b,d,c]));
   }
-  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setIndex(indices);g.computeVertexNormals();
+  return {pos,indices};
+}
+
+/** Continuous fabric folds, replacing the row of rectangular curtain ribs. */
+export function cinemaCurtain(side) {
+  const {pos,indices}=cinemaCurtainGrid(side);
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.setIndex(indices);g.computeVertexNormals();
   return clubhouseSurface(g,0x8e2635,FINISH.fabric);
 }

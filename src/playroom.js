@@ -13,7 +13,9 @@ import { buildAO, buildWallAO, rectPts } from './ao.js';
 import { architectureEdges } from './architectureedges.js';
 import { buildContactShadows } from './contactshadow.js';
 import { clubhouseSurface, clubhouseMaterial, FINISH, CLUB_ZONES } from './clubhousematerials.js';
-import { clubhouseRoundedBox, cinemaChair, cinemaCurtain } from './clubhousefurnishings.js';
+import { clubhouseRoundedBox, cinemaChair } from './clubhousefurnishings.js';
+import { CinemaCurtains } from './cinemacurtains.js';
+import { clubhouseExitSigns } from './clubhouseexit.js';
 import { playroomCinema } from './playroomcinema.js';
 import { CinemaPosters } from './cinemaposters.js';
 import { roomPosters } from './playroomposters.js';
@@ -82,7 +84,6 @@ export class Playroom {
       // The large west-wall screen has a shallow frame, gathered red velvet curtains and a wall-wide dark velvet valance.
       cbox(col.wood, tvx - 0.02, tvx + 0.06, scr.bottom - 0.08, scr.bottom + scr.h + 0.08, tvz - scr.w / 2 - 0.08, tvz + scr.w / 2 + 0.08),
       cbox(col.dark, tvx + 0.06, tvx + 0.075, scr.bottom - 0.02, scr.bottom + scr.h + 0.02, tvz - scr.w / 2 - 0.02, tvz + scr.w / 2 + 0.02),
-      cinemaCurtain(-1), cinemaCurtain(1),
       cbox(col.velvet, tvx + 0.025, tvx + 0.13, scr.bottom + scr.h + 0.08, h, -R.d/2, R.clubhouse.front-R.clubhouse.wall/2),
       ...cinema.seat.rowX.flatMap(x => cinema.seat.z.flatMap(z => cinemaChair(x,z))),
       // #1365: the light switch by the door (the disco ball, TV and PC are also targets themselves)
@@ -210,6 +211,8 @@ export class Playroom {
     for (const m of parts) { m.matrixAutoUpdate = false; this.object.add(m); }
     this.zones = CLUB_ZONES; // #1574: per-room lamp/ambient levels [BIO, BILJARD, SPEL, hall] (live uniforms)
     this.roomPosters = roomPosters(); this.object.add(this.roomPosters.mesh); // #1574: posters, SPEL neon, BILJARD pendants and lamps: one unlit draw, hidden with the room
+    this.curtains = new CinemaCurtains(furMat); this.object.add(this.curtains.mesh); // #1619: the masking curtains follow the film's picture ratio
+    this.exitSigns = clubhouseExitSigns(); this.object.add(this.exitSigns); // #1619
     this.sconces = cinemaParts.sconces; this.setSconceDim = cinemaParts.setDim; this.object.add(this.sconces);
     this.object.add(this.posters.object); this.controlPickables.push(...this.posters.pickables);
     this.film = false; this.filmOverride = false; this.filmDim = 0; // #1570: a film is running / the light switch overrode the dimming / smoothed dim 0..1
@@ -244,7 +247,7 @@ export class Playroom {
     this.inside = false;
   }
 
-  update(dt,camera,aimed) { if(this.inside){this.sound.update(dt,this.discoOn,this.music.state!=='off');this.billiards.update(dt,camera,aimed);this.devices.update(dt);this.popcorn.update(dt);this.fadeCinema(dt);this.roomPosters.setLevel(this.lit/R.lit);if(this.discoOn)this.disco(dt);} }
+  update(dt,camera,aimed) { if(this.inside){this.sound.update(dt,this.discoOn,this.music.state!=='off');this.billiards.update(dt,camera,aimed);this.devices.update(dt);this.popcorn.update(dt);this.fadeCinema(dt);this.curtains.update(dt);this.roomPosters.setLevel(this.lit/R.lit);if(this.discoOn)this.disco(dt);} }
 
   /** #1365: switch the disco light on or off (the ball stops and goes dull, the light spots vanish). Returns the badge text. */
   setDisco(on) {
@@ -257,8 +260,9 @@ export class Playroom {
   toggleDisco() { if (this.film) this.filmOverride = !this.discoOn; return this.setDisco(!this.discoOn); } // #1570: switching the disco on beats the film dimming; #1610: switching it off keeps (or restores) it
 
   /** #1570: a film is running on the BIO screen (read from the cinema state by main.js each frame). */
-  setFilm(on) {
+  setFilm(on, aspect = 0) {
     on = !!on;
+    this.curtains.setAspect(on ? aspect || R.furniture.cinema.curtain.aspect : 0); // #1619: the picture ratio (width / height) of the film, 16:9 while unknown
     if (on === this.film) return;
     this.film = on; this.filmOverride = false; // each start/stop begins again with the automatic dimming
   }

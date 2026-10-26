@@ -589,3 +589,14 @@ atlas corner it showed as a white square on the 8-BALL sign); `roomPosters` thro
 Per-room light: `clubhousematerials.js` exports `CLUB_ZONES` (Vector4 [BIO, BILJARD, SPEL, hall]); each clubhouse fragment scales its ceiling-lamp and ambient terms by the room it is in, so SPEL is
 dim and BILJARD pub-like while BIO and the hall are unchanged. The values are live uniforms (set a component, no recompile), meant to be reused for further per-room moods. The light switch (#1365) and
 the disco ball work as before; the neon and lamps stay on when the disco light is off.
+
+## BIO film darkening, masking curtains and exit signs (#1619)
+
+A running film darkens the BIO further and slower than #1570: `PLAYROOM.sconces` `dimmed .06`, `ambientDim .18`, `fadeSeconds 6` (both ways; the light switch override from #1570/#1610 is unchanged).
+The two velvet curtains are no longer in the room's static batch: `src/cinemacurtains.js` (`CinemaCurtains`, one mesh, one draw, shared `furMat`) rewrites their vertices from
+`cinemaCurtainGrid(side, half)` (`src/clubhousefurnishings.js`) while the opening eases (`PLAYROOM.furniture.cinema.curtain`: `aspect 16/9` default, `pad .03` m of black frame, `seconds 2.5`).
+The picture is `screen.h * aspect` wide (the iframe letterboxes the video inside the 3.3:1 screen), clamped to the screen. The ratio comes from `CinemaSurface.measure(id)` (`src/cinemasurface.js`): YouTube's
+iframe API exposes no video size and the iframe is cross-origin, so the CORS-readable `i.ytimg.com/.../mqdefault.jpg` (16:9) is read and `pictureAspect` cuts away symmetric pure-black bars
+(4:3 pillarbox, 2.39:1 letterbox); anything unreadable or offline stays 16:9. `main.js` passes `cinema.surface.aspect` to `playroom.setFilm`; 0 / no film = curtains fully apart.
+`src/clubhouseexit.js`: four green NÖDUTGÅNG signs (`PLAYROOM.exitSigns`, one unlit draw, no light) above the BIO/BILJARD/SPEL passages (north face, seen from inside each room) and the playhouse door.
+Test: `tools/bio1619test.cjs`. Limitation: thumbnails of films whose first frame has black edges, or whose uploader added burnt-in bars, can mislead; real devices were not tested.
