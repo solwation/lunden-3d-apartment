@@ -514,3 +514,17 @@ load keeps the old one, and a new mix/cut is refused while mixing (menu reason "
 message like the billiard table's (#1355) and is tracked separately. Tests:
 `node --test tools/playroommusictest.mjs` (6 tests) and the real-app touch check
 `tools/playroommixtest.cjs GAME OUT` (menu rows, tap cut and mix, deck gains/elements over time).
+
+### Playroom floss dance (#1622)
+
+While the local room music plays, the speaker/DJ menu adds `Dansa floss` (last row; `Sluta dansa` while
+dancing). `PlayroomMusic.dancing` ends when the music is paused or stopped, the player leaves the room or
+walks further than `DANCE.stepAway` from where the dance began (`tick`, called from `Playroom.update`).
+The pose is a boolean in the existing player state: `dn: 1` (main.js `state()`, sent in the normal 5 Hz
+state; a change counts as movement; Worker `cleanState` keeps only literal `1`, also in the late welcome).
+`Ghost.push/draw` carry it per snapshot (`g.dance`), the own mirror image copies it from our state.
+`Avatar.update({ dance })` blends `danceAmt` in over `DANCE.ease`: hips sway one way with the feet targets
+moved the other way (planted), both arms sweep across the hips (one forward, one back), a small bob and lean;
+no new mesh, light or message. Tunables: `DANCE` in `src/config.js` (*guess*, by eye). The music itself is
+still local (#1624). Tests: `node --test tools/playroommusictest.mjs cloudflare/players.test.mjs` and
+`tools/flosstest.cjs GAME WORKER OUT [--render]` (dancer + observer through the Worker, mirror, two render phases).

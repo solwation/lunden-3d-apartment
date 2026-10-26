@@ -55,3 +55,12 @@ test('#1621: next track cuts; mix crossfades two overlapping decks, equal power,
  }finally{MUSIC.crossfade=old}
  m.dispose();
 });
+
+test('#1622: the floss is offered only while the music plays and ends with pause, off, leaving or walking away',()=>{
+ const m=new PlayroomMusic();m.setInside(true);const row=()=>m.options().find((o)=>/floss|Sluta dansa/.test(o.label));
+ assert.equal(row(),undefined);m.play();assert.equal(row().label,'Dansa floss');row().run();assert.equal(m.dancing,true);assert.equal(row().label,'Sluta dansa');
+ m.tick({x:1,z:1});m.tick({x:1.2,z:1});assert.equal(m.dancing,true);m.tick({x:1.6,z:1});assert.equal(m.dancing,false);
+ row().run();m.tick({x:0,z:0});m.pause();m.tick({x:0,z:0});assert.equal(m.dancing,false);assert.equal(row(),undefined);
+ m.play();row().run();m.stop();assert.equal(m.dancing,false);
+ m.play();row().run();m.setInside(false);assert.equal(m.dancing,false);m.dispose();
+});

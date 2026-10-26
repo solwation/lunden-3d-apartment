@@ -563,6 +563,19 @@ test('crouch pose uses literal actual true in states/late welcome and survives h
   }
 });
 
+test('#1622: dance flag dn is forwarded only as literal 1, also in the late welcome', async () => {
+  const env = setup(), a = await connect(env, 'Dancer'), b = await connect(env, 'Watcher');
+  const state = { p:[0,0,0], r:0, h:'', score:0 };
+  a.send({ ...state, dn:1 }); await settle(env);
+  assert.equal(b.states().at(-1).dn, 1);
+  const late = await connect(env, 'Late');
+  assert.equal(late.got[0].ps.find(p => p.i === a.got[0].i).dn, 1);
+  for (const dn of [0, false, true, 2, -1, '1', {}, null, undefined]) {
+    now += 200; a.send({ ...state, dn }); await settle(env);
+    assert.equal(b.states().at(-1).dn, undefined, 'anything but 1 is not dancing');
+  }
+});
+
 test('distance reward shared rule: near, first bonus, middle, cap, invalid and monotonic geometry', () => {
   assert.equal(COMBAT.points, SCORE.each.pvpHits);
   for (const d of [0, 2, PVP_SCORE.nearMetres, PVP_SCORE.nearMetres + PVP_SCORE.metresPerPoint - .001]) assert.equal(pvpHitPoints(d), COMBAT.points);

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { KISS, AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_EARRINGS as EARR, AVATAR_HAT as HAT, AVATAR_PHONES as PHONES, AVATAR_NECKLACE as NECK_L, AVATAR_RING as RING, AVATAR_WRIST as WRIST, wristValue, AVATAR_CLOTHES, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
+import { KISS, AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_EARRINGS as EARR, AVATAR_HAT as HAT, AVATAR_PHONES as PHONES, AVATAR_NECKLACE as NECK_L, AVATAR_RING as RING, AVATAR_WRIST as WRIST, wristValue, AVATAR_CLOTHES, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, DANCE, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
 import { topTexture } from './spidersuit.js';
 import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, SHIN, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
 
@@ -1129,6 +1129,8 @@ function mouthSlots(text) {
   return { open, at };
 }
 
+/** #1622: a floss arm target (figure frame): straight across the hips by `sn` (−1 … 1), `depth` ±1 one forward / one back by `cs`. */
+const flossArm = (side, depth, sn, cs) => ({ at: [sn * DANCE.floss.armSide, DANCE.floss.armY, 0.14 + depth * DANCE.floss.armDepth * cs], pole: [side * 0.5, -0.4, -0.8] });
 const STRIDE = 0.78; // m per step cycle (one leg's whole swing; *guess*: a calm walk)
 const KNEE_REST = [0, 0.25, 1]; // poseOlof's default knee pole
 /** #1149: how far a shoulder moves (figure frame [x, y, z]) when the hips drop by `dy`, move by `dz` and the torso leans
@@ -1238,19 +1240,22 @@ export class Avatar {
 
   /** Pose it. `speed`: m/s along the ground (walks when above A.walkSpeed, the legs' phase follows the distance), `turn`:
    * the head's yaw against the body (rad), `pitch`: camera elevation (rad), `hands`: { L, R } overrides (see `armTarget`), `crouch`: 0 … 1. */
-  update(dt, { speed = 0, turn = 0, pitch = 0, hands = {}, crouch = 0, kiss = 0, kissReach = 1, kissLift = 0 } = {}) {
+  update(dt, { speed = 0, turn = 0, pitch = 0, hands = {}, crouch = 0, kiss = 0, kissReach = 1, kissLift = 0, dance = 0 } = {}) {
     this.time += dt;
+    const da = this.danceAmt = THREE.MathUtils.lerp(this.danceAmt ?? 0, dance ? 1 : 0, Math.min(1, dt * DANCE.ease)); // #1622: 0 … 1 into the floss
     const walking = speed > A.walkSpeed, k = THREE.MathUtils.clamp(speed / 1.6, 0.4, 1.4);
     if (walking) this.phase += dt * speed / STRIDE * Math.PI * 2;
     this.gait = THREE.MathUtils.lerp(this.gait ?? 0, walking ? 1 : 0, Math.min(1, dt * 8));
     const g = this.gait, ph = this.phase, s = Math.sin(ph), sw = s * 0.3 * k * g; // the leg swing (m forward / back of the hip)
     const breathe = Math.sin(this.time * 1.7) * 0.004;
     // #1149: crouching is a deep squat (AVATAR_CROUCH), every term linear in `crouch` (the head boxes follow the same hips and lean)
+    const FL = DANCE.floss, flossPh = this.time * FL.hz * Math.PI * 2, flossSn = Math.sin(flossPh), flossCs = Math.cos(flossPh);
+    const sway = -flossSn * FL.hipSway * da, flossBob = FL.bob * (1 - Math.cos(2 * flossPh)) / 2 * da;
     const c = THREE.MathUtils.clamp(crouch, 0, 1), F = CR.feet, step = sw * (1 - CR.step * c);
-    const hipY = HIP - 0.02 - CR.hipDrop * c + kissLift * kiss + breathe - 0.012 * g * Math.abs(Math.cos(ph)) * k, hipZ = CR.hipForward * c;
+    const hipY = HIP - 0.02 - CR.hipDrop * c + kissLift * kiss - flossBob + breathe - 0.012 * g * Math.abs(Math.cos(ph)) * k, hipZ = CR.hipForward * c;
     const lift = (v) => Math.max(0, v) * 0.12 * g * k * (1 - 0.5 * c);
     const fx = 0.11 + (F.x - 0.11) * c, fz = 0.02 + (F.z - 0.02) * c;
-    const feet = [[fx, F.y + lift(Math.cos(ph)), fz + step], [-fx, F.y + lift(-Math.cos(ph)), fz - step]];
+    const feet = [[fx - sway, F.y + lift(Math.cos(ph)), fz + step], [-fx - sway, F.y + lift(-Math.cos(ph)), fz - step]];
     const armSwing = -step * 0.55;
     const rest = (side, swing) => {
       const r = armTarget.rest(side, swing), R = CR.rest;
@@ -1258,13 +1263,19 @@ export class Avatar {
     };
     // a hand held out (a weapon, a wave) moves with the shoulder as the body goes down
     const held = (h) => { if (!c || !h) return h; const d = shoulderShift(c, hipY - (HIP - 0.02 + breathe), hipZ); return { ...h, at: h.at.map((v, i) => v + d[i]) }; };
-    const handL = held(hands.L) ?? rest(1, armSwing), handR = held(hands.R) ?? rest(-1, -armSwing);
+    let handL = held(hands.L) ?? rest(1, armSwing), handR = held(hands.R) ?? rest(-1, -armSwing);
+    if (da > 0.001) { // #1622: the floss. Both straight arms swing across the hips one way while the hips go the other; the arms pass each other in depth.
+      const mix = (a, b) => ({ at: a.at.map((v, i) => v + (b.at[i] - v) * da), pole: a.pole.map((v, i) => v + (b.pole[i] - v) * da) });
+      if (!hands.L) handL = mix(handL, flossArm(1, 1, flossSn, flossCs));
+      if (!hands.R) handR = mix(handR, flossArm(-1, -1, flossSn, flossCs));
+    }
     this.updateMouth(dt);
     this.material.userData.u.uKiss.value = kiss;
     if (kiss) this.material.userData.u.uMouth.value = 0;
     const knee = c ? CR.knees.map((v, i) => KNEE_REST[i] + (v - KNEE_REST[i]) * c) : KNEE_REST;
-    poseOlof(this, { hip: [hipY, hipZ + KISS.forward * kiss * kissReach], lean: 0.03 * g + CR.lean * c - KISS.lean * kiss * kissReach, head: Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch)) + 0.03 * Math.sin(this.time * 0.6) + KISS.head * kiss * kissReach, turn, feet, hands: [handL, handR], can: null,
+    poseOlof(this, { hip: [hipY, hipZ + KISS.forward * kiss * kissReach], lean: 0.03 * g + FL.lean * da + CR.lean * c - KISS.lean * kiss * kissReach, head: Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch)) + 0.03 * Math.sin(this.time * 0.6) + KISS.head * kiss * kissReach, turn, feet, hands: [handL, handR], can: null,
       knee, flat: c, toes: F.turn * c });
+    if (sway) this.bones.hips.position.x = sway; // #1622: the feet targets were moved the other way, so they stay planted
   }
 
   /** The talking mouth follows its line (#1122); `update` calls it, a figure posed otherwise (Olof, #1156) calls it itself. */

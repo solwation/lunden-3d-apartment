@@ -6599,6 +6599,15 @@ export const AVATAR_CROUCH = {
   time: .2, // s, our own mirror image going down or up (others follow their sent states)
 };
 
+// #1622: the playroom dance, offered at the speakers while the room music plays. `dn: 1` in the player state (like `c`).
+// Floss: the hips swing one way while both straight arms swing across the body the other way, one arm forward while the
+// other goes back. *guess*: by eye against the well-known move, not measured.
+export const DANCE = {
+  floss: { hz: 1.9, hipSway: .075, bob: .025, armSide: .36, armDepth: .14, armY: .88, lean: .1 }, // hz: whole left-right cycles per second; metres / rad
+  ease: 6, // 1/s, how fast the pose blends in and out
+  stepAway: .4, // m, walking further than this from where the dance started ends it
+};
+
 // #974: ordinary gameplay approximation, independent of hair, facial polygons and animation history.
 // Three stacked head boxes (metres in the unscaled standing avatar), narrower at the crown; *guess* by the existing head.
 export const PVP_HEAD_BOXES = {

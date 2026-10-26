@@ -27,7 +27,7 @@ import { recordGame } from './games.js';
 // after PLAYERS.idleMs without a message or heartbeat. The admin emergency brake (DELETE /admin/players or /admin/all)
 // switches the room off (4003) until PUT /admin/players.
 //
-// Protocol (JSON text; client → room): { p: [x, y, z] feet in metres, r: yaw (rad), c?: true when actually crouched, jp?: 1 jetpack worn / 2 thrusting, bk?: the bicycle's heading in rad while riding (#1286), hi?: the held thing's category key (src/heldcategory.js whitelist, #1297; unknown values are dropped), h: weapon key or '', score: integer 0…1e7,
+// Protocol (JSON text; client → room): { p: [x, y, z] feet in metres, r: yaw (rad), c?: true when actually crouched, jp?: 1 jetpack worn / 2 thrusting, dn?: 1 while dancing the floss (#1622; anything else = not dancing), bk?: the bicycle's heading in rad while riding (#1286), hi?: the held thing's category key (src/heldcategory.js whitelist, #1297; unknown values are dropped), h: weapon key or '', score: integer 0…1e7,
 // av?: the look code's digits, ax?: its face extension (#1138) } and a shot
 // { t: 'a', w, o, d, s?, to? } (#667, `cleanShot`; forwarded to the armed others as { t: 'a', i, w, o, d, s? }) — anything
 // else is dropped.
@@ -207,7 +207,7 @@ export function cleanState(text) {
   const seated = m.pose === 1 || m.pose === 3;
   const pitch = seated ? REST.sit.pitch : [-Math.PI / 2, Math.PI / 2];
   const look = m.pose !== 2 && Array.isArray(m.look) && m.look.length === 2 && fin(m.look[0], seated ? REST.sit.yaw + 0.01 : 0) && Number.isFinite(m.look[1]) && m.look[1] >= pitch[0] - 0.01 && m.look[1] <= pitch[1] + 0.01 ? { look: m.look.map(r2) } : {};
-  return { ...cat, ...look, p: m.p.map(r2), r: r2(m.r), score, h: typeof m.h === 'string' && Object.hasOwn(COMBAT.weapons, m.h) ? m.h : '', ...(m.c === true ? { c: true } : {}), ...(m.pose === 1 || m.pose === 2 || m.pose === 3 ? { pose: m.pose } : {}), ...(m.sp === true ? { sp: true } : {}), ...(m.jp === 1 || m.jp === 2 ? { jp: m.jp } : {}), ...(fin(m.bk, 100) ? { bk: r2(m.bk) } : {}), ...(cleanHeldCategory(m.hi) ? { hi: m.hi } : {}), ...(av ? { av } : {}), ...(ax ? { ax } : {}) };
+  return { ...cat, ...look, p: m.p.map(r2), r: r2(m.r), score, h: typeof m.h === 'string' && Object.hasOwn(COMBAT.weapons, m.h) ? m.h : '', ...(m.c === true ? { c: true } : {}), ...(m.pose === 1 || m.pose === 2 || m.pose === 3 ? { pose: m.pose } : {}), ...(m.sp === true ? { sp: true } : {}), ...(m.jp === 1 || m.jp === 2 ? { jp: m.jp } : {}), ...(m.dn === 1 ? { dn: 1 } : {}), ...(fin(m.bk, 100) ? { bk: r2(m.bk) } : {}), ...(cleanHeldCategory(m.hi) ? { hi: m.hi } : {}), ...(av ? { av } : {}), ...(ax ? { ax } : {}) };
 }
 
 /** A shot from a client, or null: { t: 'a', w, o: [x, y, z] start, d: [dx, dy, dz] unit direction, s?: speed m/s, to?: id hit }

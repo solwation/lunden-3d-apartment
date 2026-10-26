@@ -1,6 +1,6 @@
 import { initAudio, audioParts } from './audio.js';
 import { MusicFile } from './music.js';
-import { MUSIC, SONOS } from './config.js';
+import { MUSIC, SONOS, DANCE } from './config.js';
 
 // #1621: the DJ bench plays any shipped track; the list is the Sonos channels' tracks in order.
 export const PLAYROOM_TRACKS = SONOS.channels.flatMap((c) => c.tracks);
@@ -8,7 +8,7 @@ export const PLAYROOM_TRACKS = SONOS.channels.flatMap((c) => c.tracks);
 // Local clubhouse transport. Media is created only by a visitor's play action.
 export class PlayroomMusic {
   constructor() {
-    this.active = false; this.state = 'off'; this.volume = SONOS.start; this.generation = 0; this.index = 0; this.mixing = null;
+    this.active = false; this.state = 'off'; this.volume = SONOS.start; this.generation = 0; this.index = 0; this.mixing = null; this.dancing = false; this.danceAt = null;
     this.hidden = () => { if (document.hidden) this.stop(); };
     this.leave = () => this.stop();
     document.addEventListener('visibilitychange', this.hidden);
@@ -25,7 +25,19 @@ export class PlayroomMusic {
       ]),
       { label: `Volym − (${this.volume}/${SONOS.steps})`, reason: this.volume === 0 ? 'Lägsta volym' : '', run: () => this.setVolume(this.volume - 1) },
       { label: `Volym + (${this.volume}/${SONOS.steps})`, reason: this.volume === SONOS.steps ? 'Högsta volym' : '', run: () => this.setVolume(this.volume + 1) },
+      // #1622: the floss is offered only while the music plays (not paused or off)
+      ...(this.state === 'playing' || this.dancing ? [{ label: this.dancing ? 'Sluta dansa' : 'Dansa floss', run: () => this.dancing ? this.stopDance() : this.startDance() }] : []),
     ];
+  }
+  /** #1622: the dance is sent as `dn: 1` in the player state (main.js); it ends with the music, a pause, leaving or walking away. */
+  startDance() { if (this.state === 'playing') { this.dancing = true; this.danceAt = null; } }
+  stopDance() { this.dancing = false; this.danceAt = null; }
+  /** Each frame while inside: `pos` the player's {x, z}. */
+  tick(pos) {
+    if (!this.dancing) return;
+    if (this.state !== 'playing') { this.stopDance(); return; }
+    this.danceAt ??= { x: pos.x, z: pos.z };
+    if (Math.hypot(pos.x - this.danceAt.x, pos.z - this.danceAt.z) > DANCE.stepAway) this.stopDance();
   }
   setVolume(n) {
     this.volume = Math.max(0, Math.min(SONOS.steps, n));
@@ -93,7 +105,7 @@ export class PlayroomMusic {
     this.generation++; clearInterval(this.mixTimer);
     if (this.mixing) { this.killDeck(this.mixing.incoming); this.killDeck(this.mixing.outgoing); this.mixing = null; }
     this.killDeck(this.deck); this.mix?.disconnect();
-    this.file = this.mix = this.deck = null; this.state = 'off';
+    this.file = this.mix = this.deck = null; this.state = 'off'; this.stopDance();
   }
   setInside(on) { this.active = on; if (!on) this.stop(); }
   dispose() {
