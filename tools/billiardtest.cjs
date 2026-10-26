@@ -28,13 +28,13 @@ let failed=0;const check=(ok,name,data='')=>{console.log(`${ok?'PASS':'FAIL'} ${
  const m1=await press('playroomBilliardsMode');check(m1.kind==='playroomBilliardsMode'&&m1.mode==='eight','board mode control switches to 8-ball',m1);
  const m2=await press('playroomBilliardsRack');check(m2.kind==='playroomBilliardsRack'&&m2.mode==='eight','board rack control re-racks in the same mode',m2);
  const legal=await page.evaluate(async()=>{const a=window.__app,b=a.world.playroom.billiards,ph=b.physics,o=b.object.position;
-  ph.balls.forEach(q=>{if(q.id!==0&&q.id!==9)q.active=false;});Object.assign(ph.balls[0],{x:.5,z:.05});Object.assign(ph.balls[9],{x:.8,z:.35});
+  ph.balls.forEach(q=>{if(q.id!==0&&q.id!==9)q.active=false;});Object.assign(ph.balls[0],{x:.75,z:.15});Object.assign(ph.balls[9],{x:1.05,z:.45}); // #1617: on the diagonal into the larger table's corner pocket (1.2, .6)
   a.player.spawn(o.x+.2,o.z+.9,0);for(let i=0;i<30;i++)a.player.update(1/60);window.__bt.aim(o.x,b.c.height,o.z);window.__bt.focus();const f=a.focus().focused;a.camera.rotation.set(0,Math.atan2(-1,-1),0,'YXZ');
   a.camera.rotation.y+=b.object.rotation.y;a.use(f);const started=b.inShot;const render=a.renderer.render;a.renderer.render=()=>{};for(let i=0;i<400;i++)a.step(1/60);a.renderer.render=render;window.__bt.render();
   return{started,inShot:b.inShot,groups:b.rules.groups,turn:b.rules.turn,msg:b.rules.message,pocketed:ph.balls[9].active===false,kind:f?.kind};});
  check(legal.started&&!legal.inShot&&legal.pocketed&&legal.groups[0]==='stripe'&&legal.turn===0,'legal pocket assigns stripes and keeps the turn',legal);
  await stand(-1.2,.45);await page.evaluate(()=>{const a=window.__app;a.camera.rotation.set(-.35,Math.PI/2,0,'YXZ');window.__bt.render();});await page.screenshot({path:shots+'/4-board-turn.png'});
- const foul=await page.evaluate(()=>{const a=window.__app,b=a.world.playroom.billiards,ph=b.physics;ph.balls.forEach(q=>{q.active=q.id===0||q.id===9||q.id===3;});Object.assign(ph.balls[0],{x:.5,z:.05,vx:0,vz:0});Object.assign(ph.balls[9],{x:-.5,z:-.3,vx:0,vz:0});Object.assign(ph.balls[3],{x:.8,z:.35,vx:0,vz:0});
+ const foul=await page.evaluate(()=>{const a=window.__app,b=a.world.playroom.billiards,ph=b.physics;ph.balls.forEach(q=>{q.active=q.id===0||q.id===9||q.id===3;});Object.assign(ph.balls[0],{x:.75,z:.15,vx:0,vz:0});Object.assign(ph.balls[9],{x:-.5,z:-.3,vx:0,vz:0});Object.assign(ph.balls[3],{x:1.05,z:.45,vx:0,vz:0});
   a.camera.rotation.set(0,Math.atan2(-1,-1)+b.object.rotation.y,0,'YXZ');a.use({kind:'playroomBilliards'});const render=a.renderer.render;a.renderer.render=()=>{};for(let i=0;i<400;i++)a.step(1/60);a.renderer.render=render;return{turn:b.rules.turn,msg:b.rules.message};});
  check(foul.turn===1&&/Foul/.test(foul.msg),'wrong group first is a foul and passes the turn',foul);
  const over=await page.evaluate(()=>{const a=window.__app,b=a.world.playroom.billiards;b.rules.over=true;b.rules.winner=1;b.rules.message='Spelare 2 sänkte åttan och vinner';b.dirty=true;window.__bt.render();a.use({kind:'playroomBilliards'});return{blocked:b.blockReason,vx:b.physics.balls[0].vx};});

@@ -6067,7 +6067,7 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
       run: { y: 2.52, h: .035, d: .03, colors: { north: 0x59f3ff, east: 0xff59cc, west: 0xa670ff, south: 0xff59cc } },
       signs: { spel: { x: 6, y: 1.9, w: 1.6, h: .53, wall: 'spelN' }, biljard: { x: -.95, y: 1.85, w: 1.3, h: .43, wall: 'biljN' } } },
     // the BILJARD pub: two pendants over the table (the disco ball hangs between them at z -1.5, clear of both) and warm wall lamps; the lamps are unlit emissive meshes
-    pendants: { x: 0, z: [-2.6, -1], bottom: 1.62, h: .17, rTop: .05, rBottom: .22, cord: .012, shade: 0x1f5a3c, rim: 0xb8874d, glow: 0xffd9a0 },
+    pendants: { x: 0, z: [-2.6, -1], bottom: 1.74, /* #1617: 1.02 m above the taller table cloth */ h: .17, rTop: .05, rBottom: .22, cord: .012, shade: 0x1f5a3c, rim: 0xb8874d, glow: 0xffd9a0 },
     sconces: { w: .14, h: .26, d: .09, y: 1.75, lit: 0xffb866, east: [-3.85, -1.65, .5], west: [-2.9, -1], north: [-1.88, 1.05] } },
   // #1574: per-room light levels [BIO, BILJARD, SPEL, hall] (*guess*): the clubhouse material scales its ceiling-lamp term and its ambient term by room, so SPEL
   // is dim (neon and screens carry it), BILJARD is dull and pub-like, and BIO/hall stay as they were. BIO's film dimming (#1570) stays as is.
@@ -6084,8 +6084,10 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
     canvas: [512, 288] },
   cinemaSync: { maxPosition: 604800, driftSeconds: 1.5, syncEveryMs: 2000, seekSeconds: 10, width: 1280 }, // Assumed media bounds, local drift correction and iframe viewport.
   // #1328: local child-size billiards (all dimensions/rolling coefficients are visual/playability guesses).
-  billiards: { x: 0, z: -1.83, yaw: Math.PI / 2, length: 1.8, width: 0.9, height: 0.58, rail: 0.09, railH: 0.06, leg: 0.08, // #1482: centre between north z=-5.2 and the partition inner face z=1.54; retain #1411 orientation.
-    ballR: 0.024, pocketR: 0.052, cueLength: 1, strokeSpeed: 2.2, strokeSeconds: 0.24, cueTravel: 0.09,
+  billiards: { x: 0, z: -1.83, yaw: Math.PI / 2, length: 2.4, width: 1.2, height: 0.72, rail: 0.11, railH: 0.07, leg: 0.09, // #1617: bigger, taller 'children and 10-year-olds' table (about 3/4 of a 8-foot pool table, 72 cm playing height; *guess*) // #1482: centre between north z=-5.2 and the partition inner face z=1.54; retain #1411 orientation.
+    ballR: 0.03, pocketR: 0.066, cueLength: 1.2, // #1617: balls/pockets/cue scaled with the table (ratios unchanged)
+    rug: { radius: 2.3, ring: [.26, .2], colour: 0x8a3a46, ringColour: 0xe3cfa4, edge: .04 }, // #1617: big round soft rug (m, *guess*): clears the table's 2.62 x 1.42 m footprint and the DJ bench; ring = inner/outer inset of the cream stripe, edge = rounded rim width
+    strokeSpeed: 2.2, strokeSeconds: 0.24, cueTravel: 0.09,
     friction: 0.45, bounce: 0.94, cushionBounce: 0.82, stopSpeed: 0.012, maxStep: 1 / 180,
     // #1495: assumed wall screen dimensions/height; west wall derived from the actual partition.
     board: { width:1.2, height:.6, y:1.2, wallGap:.04, depth:.04, rim:.025, faceGap:.002, pickDepth:.08,

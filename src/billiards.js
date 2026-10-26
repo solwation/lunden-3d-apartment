@@ -10,18 +10,22 @@ import {STEP,snapshotTable,restoreTable,validSnapshot} from './billiardsync.js';
 // #1355: refusal reasons the room can send (Swedish UI text)
 const NO_TEXT={stale:'Bordet hade ändrats – försök igen',busy:'Vänta tills bollarna ligger still',turn:'Det är inte din tur',away:'Gå närmare bordet',fast:'Inte så fort',over:'Spelet är slut – ställ upp en ny omgång på tavlan'};
 // #1328: local children's table. Three visible batches (table, instanced balls, moving cue); no lights/textures/services.
-const paint=(g,hex)=>clubhouseSurface(g,hex,hex===0x226b55?FINISH.fabric:FINISH.wood);
+const paint=(g,hex,finish=hex===0x226b55?FINISH.fabric:FINISH.wood)=>clubhouseSurface(g,hex,finish);
 const merge=list=>{const flat=list.map(q=>q.index?q.toNonIndexed():q),g=mergeGeometries(flat);new Set([...list,...flat]).forEach(q=>q.dispose());return g;};
 export class Billiards {
   constructor() {
     const c=this.c=R.billiards,L=c.length,W=c.width,H=c.height,A=c.rail;this.physics=new BilliardPhysics(c);
     const soundPoint=new T.Vector3();this.physics.onSound=(kind,x,z,speed)=>{if(this.active&&this.onSound){this.object.updateWorldMatrix(true,false);this.onSound(kind,this.object.localToWorld(soundPoint.set(x,c.height+c.ballR,z)),speed);}};
     this.object=new T.Group();this.object.name='playroom-billiards';this.object.position.set(R.x+c.x,0,R.z+c.z);this.object.rotation.y=c.yaw;
-    const parts=[],box=(w,h,d,x,y,z,col)=>parts.push(paint(new RoundedBoxGeometry(w,h,d,R.appearance.frameSegments,Math.min(R.appearance.edgeRadius,w/2.01,h/2.01,d/2.01)).translate(x,y,z),col));
-    box(L+2*A,.12,W+2*A,0,H-.08,0,0x593c29);box(L,.025,W,0,H-.0125,0,0x226b55);
-    for(const x of[-L*.35,L*.35])for(const z of[-W*.32,W*.32])box(c.leg,H-.14,c.leg,x,(H-.14)/2,z,0x302820);
-    for(const z of[-W/2-A/2,W/2+A/2])for(const x of[-L/4,L/4])box(L/2-c.pocketR*2,c.railH,A,x,H+c.railH/2,z,0x6e4c30);
-    for(const x of[-L/2-A/2,L/2+A/2])box(A,c.railH,W-c.pocketR*2,x,H+c.railH/2,0,0x6e4c30);
+    const parts=[],box=(w,h,d,x,y,z,col,rr=R.appearance.edgeRadius,seg=R.appearance.frameSegments)=>parts.push(paint(new RoundedBoxGeometry(w,h,d,seg,Math.min(rr,w/2.01,h/2.01,d/2.01)).translate(x,y,z),col));
+    // #1617: softer table: rounded apron, pill-shaped cushions, tapered round legs and a big round soft rug underneath (all merged into the one table draw).
+    box(L+2*A,.16,W+2*A,0,H-.1,0,0x593c29,.06,3);box(L,.025,W,0,H-.0125,0,0x226b55);
+    for(const x of[-L/2+.16,L/2-.16])for(const z of[-W/2+.1,W/2-.1])parts.push(paint(new T.CylinderGeometry(c.leg/2,c.leg/2*.78,H-.18,14).translate(x,(H-.18)/2,z),0x302820));
+    for(const z of[-W/2-A/2,W/2+A/2])for(const x of[-L/4,L/4])box(L/2-c.pocketR*2,c.railH,A,x,H+c.railH/2,z,0x6e4c30,c.railH*.48,3);
+    for(const x of[-L/2-A/2,L/2+A/2])box(A,c.railH,W-c.pocketR*2,x,H+c.railH/2,0,0x6e4c30,c.railH*.48,3);
+    const U=c.rug,rh=R.finish.rugHeight,rp=[[0,rh],[U.radius-U.edge,rh],[U.radius-U.edge*.35,rh*.9],[U.radius-.004,rh*.55],[U.radius,.001],[0,.001]].map(([x,y])=>new T.Vector2(x,y));
+    parts.push(paint(new T.LatheGeometry(rp,72),U.colour,FINISH.fabric));
+    parts.push(paint(new T.RingGeometry(U.radius-U.ring[0],U.radius-U.ring[1],72).rotateX(-Math.PI/2).translate(0,rh+.001,0),U.ringColour,FINISH.fabric));
     const D=c.board,BW=D.width,BH=D.height;
     this.object.updateWorldMatrix(true,false);
     const boardPosition=this.object.worldToLocal(new T.Vector3(R.x-R.clubhouse.side+R.clubhouse.wall/2+D.wallGap,D.y,R.z+c.z));
