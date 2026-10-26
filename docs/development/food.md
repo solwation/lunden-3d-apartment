@@ -82,6 +82,8 @@ src/frozenmealmodels.js #1209 (part of #1206): Billys Pan Pizza and Gorby's piro
                        Box prints are our own canvas versions of the brands' colours; FROZEN_MEALS sizes/counts are *guess*.
 tools/frozenmealtest.html real game: drawer homes, shut freezer/drawer/closed box refusals, wrapped piece in the hand, unwrap, frozen
                        refusal, onto a plate, save/load, restock for an old save, the v2 → v3 drawer migration.
+(#1640) eggs.js: the kitchen frying pan store also accepts a 'sausage' (put in with E on the pan, fries only on a lit hob with
+                       the grill's SAUSAGE seconds/burnAt; `pan.egg` is whatever lies in the pan). tools/sausagepantest.html covers it.
 src/sausagemodels.js   #1124 builders for lifemodels.js: pack, sausage (browns with cook), bun bag, split bun with its sausage part.
 tools/sausagetest.html real game (?life&shot&test): stock homes, closed fridge, raw refusal, both grates, lit-only grilling, burn,
                        chicken/sausage sharing, save/load, bun assembly, one per bun, eating and score.

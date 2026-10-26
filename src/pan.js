@@ -40,7 +40,7 @@ export class Pan extends Holdable {
     smear.position.y = .0045; smear.visible = false; smear.raycast = () => {}; this.model.add(smear); this.smear = smear;
     Object.defineProperties(this.backTarget, {
       blocked: { get: () => !!this.egg || (LIFE.rules.washFirst && this.dirty) },
-      blockedText: { get: () => this.egg ? 'Ta ur ägget först' : 'Diska stekpannan först' },
+      blockedText: { get: () => this.egg ? 'Ta ur maten först' : 'Diska stekpannan först' },
     });
     this.goHome();
   }

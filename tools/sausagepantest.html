@@ -1,0 +1,25 @@
+<!doctype html><html><meta charset="utf-8"><title>Sausage in the kitchen frying pan (#1640)</title><pre id="out">running…</pre><script type="module">
+// #1640: a raw sausage from the fridge pack is fried in the pan on the hob (cooks only while lit), served in a bun. The real game (?life&shot&test).
+const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS':'FAIL')+' '+s);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
+try{
+ const frame=document.createElement('iframe');frame.width=480;frame.height=300;frame.src='../index.html?life&shot&test';document.body.append(frame);await new Promise(r=>frame.onload=r);while(!frame.contentWindow.__app)await wait(100);
+ const w=frame.contentWindow,A=w.__app,T=await w.eval("import('three')"),{SAUSAGE:S}=await w.eval("import('../src/config.js')"),L=A.life,I=L.items,P=A.pan;
+ frame.contentDocument.documentElement.requestFullscreen=undefined;frame.contentDocument.getElementById('start-touch').click();A.renderer.setAnimationLoop(null);
+ const action=(target,id)=>L.options(target).find(a=>a.id===id),run=(target,id)=>action(target,id)?.run(),finish=s=>L.runner.update(s??1);
+ const pack=I.all().find(i=>i.type==='sausagePack');
+ A.fridge.toggle();A.fridge.update(1);run(L.view(pack).target,'open');run(L.view(pack).target,'dispense');finish();
+ const s=I.held();check(s?.type==='sausage','raw sausage out of the pack');
+ check(action(A.eggs.target,'putIn')?.reason==='Ställ stekpannan på hällen först','pan must stand on the hob first');
+ L.view(s).placeAt(new T.Vector3(5.25,.931,3));P.take();P.placeAt(A.world.hob.zone);L.view(s).take();
+ const put=action(A.eggs.target,'putIn');check(put&&!put.reason,'raw sausage can go in the pan on the hob');
+ put.run();finish();check(s.place.store==='fryingPan'&&P.egg===s&&!I.held(),'sausage lies in the pan');
+ P.update(3);check(!s.machine.cook,'unlit hob does not fry it');
+ A.world.hob.set(true);P.update(3);check(s.machine.cook===3,'lit hob fries it');
+ P.update(S.seconds);check(s.machine.cooked&&I.name(s)==='den grillade korven','sausage becomes fried');
+ const rec=JSON.parse(JSON.stringify(L.serialize()));L.load(rec);const s2=I.get(s.id);check(s2?.place.store==='fryingPan'&&s2.machine.cooked,'fried sausage survives save/load in the pan');
+ const bun=L.create('hotdogBun',{at:'world',pos:[5.25,.931,3.3]});L.view(s2).take();run(L.view(bun).target,'addTopping');
+ check(!I.get(s.id)||I.get(s.id).place.parent===bun.id,'fried sausage goes into a bun');
+ A.world.hob.set(false);
+}catch(e){check(false,'exception '+e.stack)}
+document.getElementById('out').textContent=(pass?'ALL PASS\n':'FAILURES\n')+lines.join('\n');
+</script></html>
