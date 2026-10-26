@@ -161,7 +161,7 @@ export class Player {
 
   /** Highest walkable surface at (x, z) that can be reached from feet height `feet`. */
   groundAt(x, z, feet) {
-    if (this.world.playroom?.inside && this.world.playroom.contains(x, z)) return this.world.playroom.floorY; // the secret children's room (#1319)
+    if (this.world.playroom?.inside && this.world.playroom.contains(x, z)) return this.world.playroom.floorAt(x, z); // (the DJ podium, #1620) the secret children's room (#1319)
     const { x: W, z: D } = this.world.size;
     const inside = x > 0 && x < W && z > 0 && z < D;
     const h = STAIR.hole;

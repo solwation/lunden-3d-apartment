@@ -489,7 +489,18 @@ The tracked app has no CSP declaration and the Pages HTTP response checked on
 2026-10-20 has no CSP header; no policy relaxation was needed. The iframe remains
 cross-origin. This personal clubhouse gameplay has no public downstream transfer.
 
-## Clubhouse DJ bench (#1424)
+## Clubhouse DJ booth (#1620, replaces the #1424 bench)
+
+The bench became a booth in the same NE corner of BILJARD: `PLAYROOM.dj.podium` (1.6 × 1.34 m, .2 m high, *guess*) is a step-up
+platform and the 1.2 × .5 m counter (top .82 m) stands on its south edge, so you enter from the west, stand behind it and look out
+over the room. The old legs are gone; platters/mixer are unchanged and the pick box still uses `PlayroomMusic.target`.
+Floor height: `Playroom.floorAt(x, z)` returns the podium top inside its rectangle (`Player.groundAt` calls it instead of the flat
+`floorY`); .2 < `PLAYER.stepUp` so walking up/down needs no jump and the podium edges have no collision edges. Only the counter has
+collision edges. LED strips (podium south/west edges, counter front; `PLAYROOM.dj.led`) are three boxes in the unlit poster mesh
+(`roomPosters`, vertex colours): no light, no new draw. The podium stays clear of #1617's rug (radius 2.3 m around the table centre
+(0, −1.83)): its nearest corner is 2.40 m from the centre. Personal clubhouse gameplay: no downstream transfer.
+
+### Former bench notes (#1424)
 
 `PLAYROOM.dj` describes a guessed 1.4 × .65 m corner bench, .68 m high, at
 local (2, −4.6), under the right speaker. The top, four legs, two platters and

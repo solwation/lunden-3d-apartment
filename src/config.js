@@ -5990,7 +5990,12 @@ export function avatarBody(look) {
 // ordinary pose stream already hides a player who goes in and shows him again inside to the others there. All values are
 // our own choices (*guess*): the room is much bigger than the playhouse's 2.1 × 1.9 m shell on purpose.
 export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // centre (m), size (x, z) and height (m)
-  dj: { x: 2, z: -4.6, w: 1.4, d: .65, h: .68, top: .06 }, // guess: child-sized corner bench, clear of table/cue and passage
+  // #1620: the DJ booth in the north-east corner (replaces the #1424 bench): a low podium to step up on (`podium`, under PLAYER.stepUp, entered from the west end) and
+  // the DJ counter on its south edge, so you stand behind it looking out over the room. `x`/`z`/`w`/`d`/`h` (top, above the floor)/`top` are the counter as before; `led`
+  // = strip thickness/height and colours (unlit vertex colours in the poster mesh, no light). All values are *guess*es, clear of table/cue and passage.
+  dj: { x: 2.25, z: -4.2, w: 1.2, d: .5, h: .82, top: .05,
+    podium: { x0: 1.3, x1: 2.9, z0: -5.19, z1: -3.85, h: .2 },
+    led: { t: .03, h: .035, colors: [0xff3fd0, 0x2fe6ff] } },
   // #1570: the BIO's 7.1 + 2 height speakers, wall sconces and their dimming. All sizes/positions/levels are *guess*es (local metres from the room's
   // centre; x east, z south, y up). BIO runs x -9 .. -3.06 and z -5.2 .. 1.54; the screen is on its west wall, the passage in the south partition at x -6.75 .. -5.25.
   cinemaAudio: { frontX: -8, tower: { w: .2, d: .26, h: 1, plinth: .04, wallGap: .03 }, // floor-standing left/right fronts along the side walls, clear of the screen and curtains from every seat

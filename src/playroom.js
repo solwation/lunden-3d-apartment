@@ -105,9 +105,10 @@ export class Playroom {
     }
     // #1424: a small DJ bench; every dimension/placement is a fantasy-room guess.
     const DJ = R.dj, djBox = (color, a,b,c,d,e,f) => cbox(color, DJ.x+a,DJ.x+b,c,d,DJ.z+e,DJ.z+f);
-    fur.push(djBox(col.wood,-DJ.w/2,DJ.w/2,DJ.h-DJ.top,DJ.h,-DJ.d/2,DJ.d/2));
-    for (const x of [-1,1]) for (const z of [-1,1])
-      fur.push(djBox(col.steel,x*(DJ.w/2-.07)-.025,x*(DJ.w/2-.07)+.025,0,DJ.h-DJ.top,z*(DJ.d/2-.07)-.025,z*(DJ.d/2-.07)+.025));
+    // #1620: the podium (a low step-up platform, floorAt below) and the counter body on its south edge; the legs of the old bench are gone
+    const PD = DJ.podium, pbox = (color, y0, y1) => cbox(color, PD.x0, PD.x1, y0, y1, PD.z0, PD.z1);
+    fur.push(pbox(col.dark, 0, PD.h - .012), pbox(col.wood, PD.h - .012, PD.h));
+    fur.push(djBox(col.dark,-DJ.w/2,DJ.w/2,PD.h,DJ.h-DJ.top,-DJ.d/2,DJ.d/2),djBox(col.wood,-DJ.w/2-.02,DJ.w/2+.02,DJ.h-DJ.top,DJ.h,-DJ.d/2-.02,DJ.d/2+.02));
     fur.push(djBox(col.dark,-.57,.57,DJ.h,DJ.h+.055,-.22,.22),djBox(col.steel,-.12,.12,DJ.h+.055,DJ.h+.065,-.18,.18));
     for (const x of [-.35,.35]) {
       fur.push(paint(new THREE.CylinderGeometry(.16,.16,.018,12).translate(R.x+DJ.x+x,DJ.h+.064,R.z+DJ.z),col.steel));
@@ -122,7 +123,7 @@ export class Playroom {
     this.posters = new CinemaPosters(); fur.push(...this.posters.frames(cbox, col.brass, col.dark)); // #1575: the BIO's film posters (frames in this batch, faces one atlas)
     const furMat = clubhouseMaterial();
     // Collision edges stop at each chair; the wide center aisle and the route behind the rear row stay open.
-    this.footprints = [rect(DJ.x-DJ.w/2,DJ.x+DJ.w/2,DJ.z-DJ.d/2,DJ.z+DJ.d/2), ...cinema.seat.rowX.flatMap((x) => cinema.seat.z.map((z) => rect(x - S.depth / 2, x + S.depth / 2, z - S.width / 2, z + S.width / 2))),
+    this.footprints = [rect(DJ.x-DJ.w/2-.02,DJ.x+DJ.w/2+.02,DJ.z-DJ.d/2-.02,DJ.z+DJ.d/2+.02), ...cinema.seat.rowX.flatMap((x) => cinema.seat.z.map((z) => rect(x - S.depth / 2, x + S.depth / 2, z - S.width / 2, z + S.width / 2))),
       rect(tvx - 0.02, tvx + 0.075, -R.d/2, R.clubhouse.front-R.clubhouse.wall/2),
       ...COMPUTER_MEDIA.stations.filter(s=>s.clubhouse).flatMap(s=>{const D=COMPUTER_MEDIA.desk,x=s.x-R.x,z=s.z-R.z,cx=x+Math.sin(s.yaw)*D.seatOffset;return[rect(x-D.depth/2,x+D.depth/2,z-D.width/2,z+D.width/2),rect(cx-D.chair[2]/2,cx+D.chair[2]/2,z-D.chair[0]/2,z+D.chair[0]/2)];}),
       ...popcornFootprints().map(([a,b,c,d])=>rect(a,b,c,d)), // #1567: the popcorn cart and its bin
@@ -310,6 +311,9 @@ export class Playroom {
   }
 
   contains(x, z) { return inPlayroom(x, z); }
+
+  /** #1620: the floor height under (x, z) in the room: the DJ podium's top inside it (a step under PLAYER.stepUp), else the plain floor. */
+  floorAt(x, z) { const P = R.dj.podium, lx = x - R.x, lz = z - R.z; return lx > P.x0 && lx < P.x1 && lz > P.z0 && lz < P.z1 ? this.floorY + P.h : this.floorY; }
 
   /** Where you stand when you come in (the door behind you, facing into the room). */
   get arrival() { return { x: R.x, z: Z1 - R.standOff, yaw: 0 }; }

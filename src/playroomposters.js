@@ -53,6 +53,12 @@ export function roomPosters() {
   for (const p of layout.posters) quad(p.wall, p.rect, [(p.design % P.cols) * cw, Math.floor(p.design / P.cols) * ch, cw, ch], new THREE.Color(0xffffff), POSTER_WALLS[p.wall].zone);
   layout.signs.forEach((s, i) => quad(s.wall, s.rect, [i * P.sign[0], stripY, P.sign[0], P.sign[1]], new THREE.Color(0xffffff)));
   for (const r of layout.runs) box(r.rect, r.color);
+  { // #1620: the DJ booth's LED strips (emissive vertex colours, no light): the podium's south and west edges and the counter's front
+    const J = R.dj, D = J.podium, L = J.led, [c0, c1] = L.colors, y0 = D.h * .3, cy = D.h + .1;
+    box({ x0: D.x0, x1: D.x1, y0, y1: y0 + L.h, z0: D.z1, z1: D.z1 + L.t }, c0);
+    box({ x0: D.x0 - L.t, x1: D.x0, y0, y1: y0 + L.h, z0: D.z0, z1: D.z1 }, c1);
+    box({ x0: J.x - J.w / 2, x1: J.x + J.w / 2, y0: cy, y1: cy + L.h, z0: J.z + J.d / 2, z1: J.z + J.d / 2 + L.t }, c1);
+  }
   for (const p of layout.panels) box(p.rect, PANEL, 'panel', p.zone);
   // pendants: a cord, a green shade with a brass rim and a glowing warm underside (the shade seen from below is the inside, so its inner face is drawn warm)
   const D = P.pendants;
