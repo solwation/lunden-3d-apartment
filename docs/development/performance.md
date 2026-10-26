@@ -1362,6 +1362,36 @@ The first-frame burst above is addressed by #697 below. Still open: materials ma
 life items) compile on first sight; `worst`/`warm` in the next iPhone report will show whether those cause a long frame.
 Context-loss prevention still needs verification on a real iPhone; #669 remains open.
 
+## Reading crash reports: 10 fps is the covered throttle, `surface` is the last resize (#1626 — no device check)
+
+Three iPhone losses on 24–26 Oct builds (kitchen and living room, `q.lvl` 0, px 0.75) looked like two new triggers.
+Neither is one; both come from misreading the heartbeat:
+
+- **"fps falls to exactly 10 after `tap action`" is the reading-panel throttle.** The heartbeat's `fps` is
+  `renderer.info.render.frame` per second, i.e. drawn frames. Under a reading/pause panel a phone draws at most once per
+  `LOW_MEMORY.coveredFrameMs` (100 ms), so an open panel shows as exactly 20 frames per 2 s beat. In build d08b1f4 the action at
+  x 3.9 z 3.4 opened the freezer's changelog note (1.5 m away; `shHold` stayed 0 because `use()` sets no shadow hold for
+  `note`; `tap SPAN` = a touch in the note's list). Draw calls, triangles, geometries, textures and programs stayed constant
+  for the 18 s until the loss *while the note was still open*, at about a third of the normal GPU work. Older reports show
+  the same 10 fps periods under the start menu and the clock strip. Measured (iPhone profile below, without `?shot`):
+  25.5 drawn frames/s playing, 9.2 with the note open, 31.8 after closing it.
+- **`context.surface` is the last resize/orientation event of the session**, not one at the loss: `viewport-resize` at up 2 s
+  (loss 65.4 s, c7a9eee) and at up 65 s (loss 83.8 s after a 4.2 s main-thread stall, f6e227b). Compare `surface.up` with
+  `lossUp` before calling a loss resize-related.
+
+Probe (`google-chrome --headless --use-angle=gl`, Iris 640, 852×393 @3, iPhone UA, touch, `?quality=0`; buffer 639×294,
+`maxTextureSize` 512; GL create calls hooked): kitchen at the reported spot, the note open for 20 s, hob, hood, fridge and
+freezer used, then the living room with 40 viewport changes (393×852, 852×393, 852×340). Nothing grows. The only change is
+the one-time upload of the fridge/freezer contents on first opening (+37 geometries, +10 textures, +142 buffers, 0 programs).
+The 40 resizes created 0 textures, framebuffers, renderbuffers, buffers or programs: the resize path is only
+`renderer.setSize` (`src/viewport.js`), which leaves render targets, the shadow map and the mirror target alone.
+`tools/phonememtest.cjs --route kitchen,living`: GPU estimate 244 MB (textures 99, buffers 120, renderbuffers 11, canvas 14),
+0.0 MB growth from `playing` to the end of the route. Result image: `docs/verification/1626/matning.png`.
+
+No code changed: no loop, upload, compile or resize leak was found. The d08b1f4 loss at reduced GPU load points away from
+per-frame load and towards something the frame counters do not show (resident GPU memory or iOS itself). That needs a
+device or richer reports. The heartbeat does not record which panel is open; that diagnostic is a follow-up.
+
 ## Triangle budget over by the basement's bike racks (#704)
 
 `tools/perfcount.html` failed on desktop (big hall 1 020 495 > 1 000 000) after #683's realistic bikes. Cause, found by hooking `onBeforeRender` on every drawn mesh at the view and diffing against c5a1a9e: the garage bakes every rack's bikes (2 104 triangles each: frame 620, tyres 816, metal 664) and stalls (384 each) into the *area shell* mesh. That mesh is one per area, so its whole bounding sphere is always in the frustum and every bike in the area is drawn from anywhere in the basement: the L-house shell 22.6 k → 77.3 k, the next 14.9 k → 55.3 k, three smaller shells +25 k (about +105 k together), the rest of the increase being doors and the courtyard rack. Not the courtyard's Hus A–C or the other models listed in the issue.
