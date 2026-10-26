@@ -472,6 +472,15 @@
     /* the jetpack (#359): its heat bar under the score, the nozzles' glow at the bottom, ⬆ ⬇ on touch two steps left of 🧎 */
     #jetpack { position: fixed; left: calc(16px + var(--sl)); top: var(--hud-badge-bottom); display: flex; align-items: center; gap: 6px; background: rgba(20, 35, 45, 0.45); color: #fff; padding: 4px 10px; border-radius: 8px; font-size: 13px; pointer-events: none; }
         #jetpack[hidden] { display: none; }
+    /* #1637: the charged billiard stroke's power meter, low in the middle so it never covers the cue (also on touch) */
+    #cue-power { position: fixed; left: 50%; bottom: calc(150px + var(--sb, 0px)); transform: translateX(-50%); width: max-content; display: flex; align-items: center; gap: 8px; background: rgba(20,35,45,.8); color: #fff; padding: 5px 12px; border-radius: 8px; font: 600 13px system-ui, sans-serif; pointer-events: none; white-space: nowrap; }
+    #cue-power[hidden] { display: none; }
+    #cue-power .bar { width: 120px; height: 8px; background: rgba(255,255,255,.3); border-radius: 4px; overflow: hidden; }
+    #cue-power .bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #7fd36b, #f2c230 60%, #e8642a); }
+    #cue-power kbd { padding: 1px 6px; border-radius: 4px; background: rgba(255,255,255,.25); font: 600 12px system-ui, sans-serif; }
+    #cue-power .keys { display: flex; align-items: center; gap: 4px; font-weight: 400; }
+    #cue-power kbd { display: inline-block; }
+    body.touch #cue-power .keys { display: none; }
     #jetpack .bar { width: 80px; height: 6px; background: rgba(255,255,255,.3); border-radius: 3px; overflow: hidden; }
     #jetpack .bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #f2c230, #e8642a); }
     #jetpack.hot .bar i { background: #e5484d; }
@@ -1578,6 +1587,7 @@
     <div id="chat-box"><div id="chat-log" role="log" aria-live="polite" aria-label="Chatt" hidden></div></div>
     <div id="stick-hint" class="stick-face" hidden aria-hidden="true"><div class="knob"></div></div>
     <div id="stick" class="stick-face" hidden><div class="knob"></div></div>
+    <div id="cue-power" hidden aria-live="off">Kraft<span class="bar"><i></i></span><b>15 %</b><span class="keys"><kbd>E</kbd> stöt · <kbd>Esc</kbd> avbryt</span></div>
     <div id="jetpack" hidden title="Jetpacken: värme">🚀<span class="bar"><i></i></span></div>
     <div id="vacuum-hud" hidden title="Dammsugaren: dammbehållare">🧹<span class="bar"><i></i></span></div>
     <div id="jet-glow" aria-hidden="true"></div>

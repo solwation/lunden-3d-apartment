@@ -10,7 +10,7 @@ import { cleanHeldCategory } from '../src/heldcategory.js';
 import { SONOS, MUSIC } from '../src/config.js';
 import { PLAYROOM, TOYS, SCORE, pvpHitPoints, PVP_RIFLE_HEAD as RH, rifleHeadContact, PVP_HEAD_BOXES as HB, rifleBoxHeadContact, straightBoxHeadContact, avatarCodeValid } from '../src/config.js';
 
-import { freshTable, validSnapshot, cleanDirection, simulateStroke } from '../src/billiardsync.js';
+import { freshTable, validSnapshot, cleanDirection, cleanPower, simulateStroke } from '../src/billiardsync.js';
 import { RoomCinema, cleanCinema } from './cinema.js';
 import { RoomSnake, cleanSnake } from './snake.js';
 import { recordGame } from './games.js';
@@ -40,11 +40,11 @@ import { recordGame } from './games.js';
 // #1405 reserves HUG.phrase for a hug between any two nearby unarmed players: accepted the same way (id/at echo, q, busy).
 // A greeting (#673) { t: 'g', to, k } goes to everybody else as { t: 'g', i, to, k } (k: a phrase index, no text).
 // The children's-room billiard table (#1355, src/billiardsync.js): ONE shared game owned by the room. A player standing in the
-// children's room (their last state's position, PLAYERS.pool) sends { t: 'pool', k: 's', q, d: [dx, dz] } (a stroke direction),
+// children's room (their last state's position, PLAYERS.pool) sends { t: 'pool', k: 's', q, d: [dx, dz], w } (a stroke direction and #1637 power),
 // { k: 'm', q } (next rule mode, new rack) or { k: 'r', q } (new rack); q = the table sequence number the client last saw. The
 // room accepts only q === current (a stale or simultaneous second request is refused), only when no stroke is still rolling,
 // only for the player whose turn it is in 8-ball (the first to shoot takes a free seat), runs the stroke through the same
-// deterministic physics + rules as the clients and sends everybody in the room { t: 'pool', k: 'S', i, d, ms, e: end snapshot,
+// deterministic physics + rules as the clients and sends everybody in the room { t: 'pool', k: 'S', i, d, w, ms, e: end snapshot,
 // st: seats } (a stroke) or { k: 'T', e, st } (the table: on entering the room, after a new rack, to a stale sender); a refusal is
 // { k: 'no', why } to the sender only. No ball stream. The table lives in memory + storage 'pool' until the last player leaves the room.
 // The children's-room music (#1624, src/playroommusic.js): ONE shared transport owned by the room. A player inside the room (same
@@ -168,14 +168,15 @@ export function cleanToast(text) {
   return m?.t === 'c' && Number.isInteger(m.k) && m.k >= 0 && m.k < PLAYERS.toastPhrases && (m.b === undefined || m.b === true) ? { k: m.k, ...(m.b ? { b: true } : {}) } : null;
 }
 
-/** A billiard table request (#1355) { t: 'pool', k: 's' | 'm' | 'r', q, d? } → { k, q, d? } (d: a rounded unit direction, only for 's'), or null. */
+/** A billiard table request (#1355) { t: 'pool', k: 's' | 'm' | 'r', q, d?, w? } → { k, q, d?, w? } (d: a rounded unit direction and
+ * w: the stroke power clamped to PLAYROOM.billiards.minPower..1, #1637 — both only for 's'; a missing w is a full stroke), or null. */
 export function cleanPool(text) {
   let m;
   try { m = JSON.parse(text); } catch { return null; }
   if (m?.t !== 'pool' || !['s', 'm', 'r'].includes(m.k) || !Number.isSafeInteger(m.q) || m.q < 0) return null;
   if (m.k !== 's') return { k: m.k, q: m.q };
-  const d = cleanDirection(m.d);
-  return d ? { k: 's', q: m.q, d } : null;
+  const d = cleanDirection(m.d), w = cleanPower(m.w, PLAYROOM.billiards);
+  return d && w !== null ? { k: 's', q: m.q, d, w } : null;
 }
 
 const MUSIC_TRACKS = SONOS.channels.flatMap((c) => c.tracks).length; // #1624: the client's PLAYROOM_TRACKS, in this order
@@ -211,6 +212,10 @@ export function cleanAvatarExt(v) {
   return typeof v === 'string' && v.length > 0 && v.length <= 60 && /^(?:[a-z][0-9]{1,3})+$/.test(v) ? v : null;
 }
 
+/** #1637: a player's billiard cue while aiming at the table: [dx, dz] table-local direction (about unit length), w 0 = aiming,
+ * else the stroke power being charged (≤ 1). Only drawn by the others; the stroke itself still goes through 'pool'. */
+const cleanCue = (cq) => Array.isArray(cq) && cq.length === 3 && fin(cq[0], 1.01) && fin(cq[1], 1.01) && Math.abs(Math.hypot(cq[0], cq[1]) - 1) < 0.1 && fin(cq[2], 1) && cq[2] >= 0;
+
 /** A checked, rounded state from a client's message, or null. */
 export function cleanState(text) {
   let m;
@@ -226,7 +231,7 @@ export function cleanState(text) {
   const seated = m.pose === 1 || m.pose === 3;
   const pitch = seated ? REST.sit.pitch : [-Math.PI / 2, Math.PI / 2];
   const look = m.pose !== 2 && Array.isArray(m.look) && m.look.length === 2 && fin(m.look[0], seated ? REST.sit.yaw + 0.01 : 0) && Number.isFinite(m.look[1]) && m.look[1] >= pitch[0] - 0.01 && m.look[1] <= pitch[1] + 0.01 ? { look: m.look.map(r2) } : {};
-  return { ...cat, ...look, p: m.p.map(r2), r: r2(m.r), score, h: typeof m.h === 'string' && Object.hasOwn(COMBAT.weapons, m.h) ? m.h : '', ...(m.c === true ? { c: true } : {}), ...(m.pose === 1 || m.pose === 2 || m.pose === 3 ? { pose: m.pose } : {}), ...(m.sp === true ? { sp: true } : {}), ...(m.jp === 1 || m.jp === 2 ? { jp: m.jp } : {}), ...(m.dn === 1 ? { dn: 1 } : {}), ...(fin(m.bk, 100) ? { bk: r2(m.bk) } : {}), ...(cleanHeldCategory(m.hi) ? { hi: m.hi } : {}), ...(av ? { av } : {}), ...(ax ? { ax } : {}) };
+  return { ...cat, ...look, p: m.p.map(r2), r: r2(m.r), score, h: typeof m.h === 'string' && Object.hasOwn(COMBAT.weapons, m.h) ? m.h : '', ...(m.c === true ? { c: true } : {}), ...(m.pose === 1 || m.pose === 2 || m.pose === 3 ? { pose: m.pose } : {}), ...(m.sp === true ? { sp: true } : {}), ...(m.jp === 1 || m.jp === 2 ? { jp: m.jp } : {}), ...(m.dn === 1 ? { dn: 1 } : {}), ...(fin(m.bk, 100) ? { bk: r2(m.bk) } : {}), ...(cleanCue(m.cq) ? { cq: m.cq.map((v) => Math.round(v * 100) / 100) } : {}), ...(cleanHeldCategory(m.hi) ? { hi: m.hi } : {}), ...(av ? { av } : {}), ...(ax ? { ax } : {}) };
 }
 
 /** A shot from a client, or null: { t: 'a', w, o: [x, y, z] start, d: [dx, dy, dz] unit direction, s?: speed m/s, to?: id hit }
@@ -468,10 +473,10 @@ export class PlayerRoom {
         table.st[seat] = a.i;
       }
     }
-    const r = simulateStroke(PLAYROOM.billiards, snap, m.d);
+    const r = simulateStroke(PLAYROOM.billiards, snap, m.d, m.w);
     if (r.error) return this.poolRefuse(ws, r.error);
     table.snap = { ...r.snap, q: snap.q + 1 }; table.busy = now + r.ms + 200; this.poolSave();
-    const out = JSON.stringify({ t: 'pool', k: 'S', i: a.i, d: m.d, ms: r.ms, e: table.snap, st: table.st });
+    const out = JSON.stringify({ t: 'pool', k: 'S', i: a.i, d: m.d, w: m.w, ms: r.ms, e: table.snap, st: table.st });
     for (const w of this.poolPlayers()) send(w, out);
   }
 

@@ -20,12 +20,13 @@ const COMPONENT = async (page, at, name, look = [0, 0.58, 0]) => { // a light cl
     scene.background = new T.Color(0x20252b); scene.add(new T.HemisphereLight(0xffffff, 0x445566, 2.2), new T.AmbientLight(0xffffff, 1));
     const b = new Billiards(); b.active = true; scene.add(b.object);
     const ox = R.x + R.billiards.x, oz = R.z + R.billiards.z; camera.position.set(ox + at[0], 1.35, oz + at[1]); camera.lookAt(ox + look[0], look[1], oz + look[2]);
-    const g = new Ghosts({ scene: new T.Scene(), camera, url: worker, name: () => name, state: () => ({ p: [camera.position.x, 0, camera.position.z], r: camera.rotation.y }), score: () => 0, weapon: () => '', active: () => true });
-    b.net = { ready: () => g.connected, send: (m) => g.pool(m), id: () => g.me }; g.onPool = (m) => b.onNet(m);
+    const g = new Ghosts({ scene, camera, url: worker, name: () => name, state: () => ({ p: [camera.position.x, 0, camera.position.z], r: camera.rotation.y }), score: () => 0, weapon: () => '', active: () => true });
+    b.net = { ready: () => g.connected, send: (m) => g.pool(m), id: () => g.me }; g.onPool = (m) => { (window.__strokes ??= []).push(m); b.onNet(m); };
+    b.peers = () => g.others.values(); // #1637: the others' cues, wired like main.js
     b.events = []; b.onEvent = (t) => b.events.push(t);
     const renderer = new T.WebGLRenderer({ antialias: false }); renderer.setSize(720, 480); document.body.prepend(renderer.domElement); renderer.domElement.style.cssText = 'position:fixed;left:0;top:0;z-index:9';
     let last = performance.now();
-    setInterval(() => { const t = performance.now(), dt = (t - last) / 1000; last = t; g.update(); b.update(Math.min(dt, 0.1), camera, true); renderer.render(scene, camera); }, 33);
+    setInterval(() => { const t = performance.now(), dt = (t - last) / 1000; last = t; g.update(); b.update(Math.min(dt, 0.1), camera, window.__aimed ?? true); renderer.render(scene, camera); }, 33);
     window.__c = { b, g, camera, table: () => JSON.stringify(S.snapshotTable(b.physics, b.rules, b.seq)), S };
   }, { worker, at, name, look });
 };
@@ -72,7 +73,7 @@ const until = async (f, n = 150) => { for (let i = 0; i < n; i++) { if (await f(
     const s1 = await same([A, B], 'B switches the mode: A and B both in 8-ball with a new rack', 2); check(s1.m === 'eight' && t === '', 'shared mode switch answered by the room, not locally', { t, m: s1.m });
 
     // A strokes through the real use() on the table; both animate and end on the same state
-    await standA(); await A.evaluate(() => { const b = window.__app.world.playroom.billiards, o = b.object.position; window.__bt.aim(o.x, b.c.height, o.z); window.__bt.focus(); window.__app.use(window.__app.focus().focused); });
+    await standA(); await A.evaluate(() => { const b = window.__app.world.playroom.billiards, o = b.object.position; window.__bt.aim(o.x, b.c.height, o.z); window.__bt.focus(); const f = window.__app.focus().focused; window.__app.use(f); b.charge.t = b.c.chargeSeconds; window.__app.use(f); }); // (#1637: E charges, E strikes; full power as before)
     const started = await until(() => B.evaluate(() => window.__c.b.inShot || window.__c.b.seq > 2), 30);
     check(started, 'B sees A\'s stroke start');
     const s2 = await same([A, B], 'after A\'s stroke both clients rest in the same state (balls, turn, verdict)', 3);
@@ -101,6 +102,51 @@ const until = async (f, n = 150) => { for (let i = 0; i < n; i++) { if (await f(
     check(s3.q <= q0 + 2, 'no more than the two requests were applied (a request on a stale q is refused; the Worker tests race exactly the same q)', { q0, q: s3.q });
     await A.evaluate(() => { const a = window.__app, r = a.renderer.render; a.renderer.render = window.__render; window.__bt.render(); a.renderer.render = () => {}; });
     await A.screenshot({ path: `${shots}/A-app.png` }); await B.screenshot({ path: `${shots}/B-table.png` }); await lookAtBoard(); await sleep(500); await B.screenshot({ path: `${shots}/B-board.png` });
+
+    // --- #1637: B sees A's cue while A aims and charges, and A's charged stroke; a short vs a long charge = a weak vs a hard stroke
+    if (s3.m !== 'free') { await B.evaluate(() => window.__c.b.toggleMode()); await same([A, B], 'back to free play for the power checks', s3.q + 1); }
+    await sleep(700);
+    await B.evaluate(() => { window.__aimed = false; const c = window.__c.camera, o = window.__c.b.object.position; c.position.set(o.x + 1.6, 1.45, o.z - .9); c.lookAt(o.x, .72, o.z + .4); });
+    const aimA = () => A.evaluate(() => { const a = window.__app, b = a.world.playroom.billiards, o = b.object.position; a.player.spawn(o.x - .35, o.z + b.c.length / 2 + .65, 0); window.__bt.aim(o.x - .1, b.c.height, o.z); a.touch.enabled = true; a.step(0); a.step(0); return a.focus().focused?.kind; });
+    check((await aimA()) === 'playroomBilliards', 'A aims at the table (touch-enabled focus)');
+    const remote = () => B.evaluate(async () => { const T = await import('three'), b = window.__c.b, m = b.remoteCues.find((q) => q.visible), ball = b.physics.balls[0];
+      if (!m) return { visible: false, count: b.remoteCues.filter((q) => q.visible).length };
+      const back = new T.Vector3(m.position.x - ball.x, 0, m.position.z - ball.z), dist = back.length(); back.normalize();
+      return { visible: true, count: b.remoteCues.filter((q) => q.visible).length, dir: [-back.x, -back.z], dist, pull: m.userData.pull, cue: [...(window.__c.g.others.values())].map((g) => g.cue).find(Boolean) }; });
+    check(await until(async () => (await remote()).visible, 30), 'B draws A\'s cue at the cue ball while A only aims', await remote());
+    const aimDir = await A.evaluate(() => window.__app.world.playroom.billiards.cueState);
+    await until(async () => { const r = await remote(); return r.visible && r.dir[0] * aimDir[0] + r.dir[1] * aimDir[1] > .995; }, 20); // (the 5 Hz state catches up with the new aim)
+    let r1 = await remote(); check(r1.count === 1 && r1.dir[0] * aimDir[0] + r1.dir[1] * aimDir[1] > .995 && r1.pull < .01, 'B\'s copy points the way A aims (table-local), not drawn back', { r1, aimDir });
+    await A.evaluate(() => { const a = window.__app; a.use(a.focus().focused); }); // A starts charging
+    await sleep(1300);
+    const chargeA = await A.evaluate(() => { const b = window.__app.world.playroom.billiards; return { power: b.chargePower, label: document.getElementById('action')?.textContent, meter: !document.getElementById('cue-power').hidden }; });
+    const r2 = await remote();
+    check(chargeA.power > .5 && chargeA.meter && /^Stöt \d+ %$/.test(chargeA.label) && r2.visible && r2.pull > .04 && r2.dist > r1.dist + .04, 'A charging (touch label + meter): B sees A\'s cue drawn back', { chargeA, r2 });
+    await B.screenshot({ path: `${shots}/B-sees-A-charge.png` });
+    await A.evaluate(() => { const a = window.__app; a.renderer.render = window.__render; window.__bt.render(); a.renderer.render = () => {}; }); await A.screenshot({ path: `${shots}/A-charge-touch.png` });
+    const drawCalls = await B.evaluate(() => { const b = window.__c.b; return { remoteMeshes: b.remoteCues.length, sharedGeometry: b.remoteCues.every((m) => m.geometry === b.cue.geometry && m.material === b.cue.material) }; });
+    check(drawCalls.remoteMeshes === 1 && drawCalls.sharedGeometry, 'one extra cue mesh (one draw) per remote aimer, sharing the cue geometry + material', drawCalls);
+    await B.evaluate(() => { window.__strokes = []; });
+    const powerA = await A.evaluate(() => { const a = window.__app, b = a.world.playroom.billiards, w = Math.round(b.chargePower * 100) / 100; a.use(a.focus().focused); return w; });
+    check(await until(() => B.evaluate(() => window.__c.b.strokeT > 0 && window.__c.b.strokePull > 0), 30), 'B animates A\'s charged stroke with A\'s cue', await B.evaluate(() => ({ strokeT: window.__c.b.strokeT, pull: window.__c.b.strokePull })));
+    await sleep(60); await B.screenshot({ path: `${shots}/B-sees-A-stroke.png` });
+    const sMsg = await B.evaluate(() => window.__strokes.find((m) => m.k === 'S'));
+    check(sMsg && Math.abs(sMsg.w - powerA) < .011, 'the stroke reaches B with A\'s power', { sent: powerA, got: sMsg?.w });
+    check(await until(async () => !(await remote()).visible, 20), 'B hides A\'s aiming cue while the balls roll');
+    const s4 = await same([A, B], 'after A\'s charged stroke both clients rest in the same state', s3.q + 1);
+    const strokeWith = async (wait) => { // new rack, then E, wait, E from A; what B saw of it
+      const q0 = JSON.parse(await state(B)).q;
+      await until(async () => { if (JSON.parse(await state(B)).q > q0) return true; await B.evaluate(() => window.__c.b.requestRack()); await sleep(800); return JSON.parse(await state(B)).q > q0; }, 10); // (refused while the room still counts the last stroke as rolling)
+      const start = await same([A, B], 'new rack before a power stroke', q0 + 1);
+      await aimA(); await B.evaluate(() => { window.__strokes = []; });
+      await A.evaluate(() => { const a = window.__app; a.use(a.focus().focused); }); if (wait) await sleep(wait);
+      await A.evaluate(() => { const a = window.__app; a.use(a.focus().focused); });
+      const end = await same([A, B], `after a ${wait ? 'long' : 'short'} charge both clients agree`, start.q + 1);
+      const m = await B.evaluate(() => window.__strokes.find((q) => q.k === 'S'));
+      return { w: m?.w, ms: m?.ms, cue: Math.hypot(end.p[0] - start.p[0], end.p[1] - start.p[1]), moved: end.p.filter((v, i) => v !== start.p[i]).length };
+    };
+    const weak = await strokeWith(0), hard = await strokeWith(2200);
+    check(weak.w === 0.15 && hard.w === 1 && weak.ms < hard.ms && weak.moved < hard.moved, 'a short charge = a weak stroke (15 %), a long one = full power: shorter roll, fewer balls moved', { weak, hard });
 
     // --- a late client C and a reconnect: the existing table, not a new rack
     await B.evaluate(() => window.__c.g.disconnect()); await B.close();

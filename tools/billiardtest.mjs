@@ -21,3 +21,8 @@ test('8-ball: the 8 wins only after the group is cleared without foul',()=>{let 
  r=eight();shot(r,8,[8]);assert.equal(r.winner,1,'8 on an open table loses');});
 test('groups and reset',()=>{assert.equal(groupOf(8),'eight');assert.equal(groupOf(7),'solid');assert.equal(groupOf(9),'stripe');assert.equal(groupOf(0),null);const r=eight();shot(r,1,[1]);r.reset('free');assert.equal(r.mode,'free');assert.equal(r.remaining.size,15);assert.equal(r.nextMode(),'eight');});
 test('physics reports the first object ball the cue touches',()=>{const p=make();only(p,[0,5,6]);Object.assign(p.balls[0],{x:-.3,z:0});Object.assign(p.balls[5],{x:-.1,z:0});Object.assign(p.balls[6],{x:.3,z:.2});assert(p.shoot(1,0));for(let i=0;i<120;i++)p.step(1/120);assert.equal(p.firstHit,5);assert(p.shoot(0,1)||true);});
+// #1637: the charged stroke: power scales the cue-ball speed, clamped to minPower..1
+test('stroke power scales the cue-ball speed and is clamped',()=>{const speed=w=>{const p=make();only(p,[0]);assert(p.shoot(1,0,w));return Math.hypot(p.balls[0].vx,p.balls[0].vz);};
+ assert(Math.abs(speed(1)-C.strokeSpeed)<1e-12);assert(Math.abs(speed()-C.strokeSpeed)<1e-12,'default = the old full stroke');assert(Math.abs(speed(.5)-C.strokeSpeed*.5)<1e-12);
+ assert(Math.abs(speed(0)-C.strokeSpeed*C.minPower)<1e-12);assert(Math.abs(speed(9)-C.strokeSpeed)<1e-12);assert(!make().shoot(1,0,NaN));
+ const roll=w=>{const p=make();only(p,[0]);p.shoot(1,0,w);const x=p.balls[0].x;for(let i=0;i<1200;i++)p.step(1/120);return Math.abs(p.balls[0].x-x)+Math.abs(p.balls[0].vx);};assert(roll(C.minPower)<roll(.5));});

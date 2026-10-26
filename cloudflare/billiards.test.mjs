@@ -5,9 +5,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { installRuntime, fakeNamespace } from './devws.mjs';
 import worker, { PlayerRoom } from './worker.js';
-import { PLAYERS, cleanPool, inPlayroom } from './players.js';
+import { PLAYERS, cleanPool, cleanState, inPlayroom } from './players.js';
 import { PLAYROOM } from '../src/config.js';
-import { freshTable, validSnapshot, simulateStroke, cleanDirection } from '../src/billiardsync.js';
+import { freshTable, validSnapshot, simulateStroke, cleanDirection, cleanPower } from '../src/billiardsync.js';
 
 installRuntime();
 let now = Date.UTC(2026, 9, 18, 12);
@@ -33,7 +33,7 @@ const rest = (ms) => { now += ms + 400; };
 const table = (env) => env.PLAYERS.object('world').pool;
 
 test('cleanPool / inPlayroom / cleanDirection validate bounded input', () => {
-  assert.deepEqual(cleanPool(JSON.stringify({ t: 'pool', k: 's', q: 3, d: [3, 4] })), { k: 's', q: 3, d: [0.6, 0.8] });
+  assert.deepEqual(cleanPool(JSON.stringify({ t: 'pool', k: 's', q: 3, d: [3, 4] })), { k: 's', q: 3, d: [0.6, 0.8], w: 1 });
   assert.deepEqual(cleanPool(JSON.stringify({ t: 'pool', k: 'r', q: 0, d: 'x' })), { k: 'r', q: 0 });
   for (const bad of [{ k: 's', q: 1 }, { k: 's', q: 1, d: [0, 0] }, { k: 's', q: 1, d: [NaN, 1] }, { k: 's', q: 1, d: [1e9, 1] }, { k: 's', q: -1, d: [1, 0] }, { k: 's', q: 1.5, d: [1, 0] },
     { k: 'x', q: 1 }, { k: 's', d: [1, 0] }, { k: 's', q: 1, d: [1, 0, 0] }, { k: 's', q: 1, d: ['1', 0] }]) assert.equal(cleanPool(JSON.stringify({ t: 'pool', ...bad })), null, JSON.stringify(bad));
@@ -154,4 +154,48 @@ test('table messages are counted like any other message and stay small; no ball 
   assert.ok(JSON.stringify({ t: 'pool', k: 's', q: 1, d: [0.1234, -0.5678] }).length < PLAYERS.maxBytes);
   assert.equal(a.pool().filter((m) => m.k === 'S').length, 1, 'a stroke is ONE message, not a position stream');
   assert.ok(a.pool().every((m) => JSON.stringify(m).length < 700));
+});
+
+// #1637: the charged stroke's power travels with the stroke; the room clamps it so every client simulates the same number.
+test('stroke power: missing = full, clamped to minPower..1, non-numbers refused; cue state is bounded', () => {
+  const C = PLAYROOM.billiards, sp = (w) => cleanPool(JSON.stringify({ t: 'pool', k: 's', q: 1, d: [1, 0], ...(w === undefined ? {} : { w }) }));
+  assert.equal(sp().w, 1); assert.equal(sp(0.5).w, 0.5); assert.equal(sp(0.333).w, 0.33);
+  assert.equal(sp(7).w, 1, 'too hard is clamped to full power'); assert.equal(sp(0).w, C.minPower); assert.equal(sp(-3).w, C.minPower, 'too weak / negative is clamped to the minimum');
+  for (const bad of ['0.5', null, true, [1], { x: 1 }]) assert.equal(sp(bad), null, JSON.stringify(bad));
+  assert.equal(cleanPower(Infinity, C), null); assert.equal(cleanPower(NaN, C), null);
+  assert.deepEqual(cleanPool(JSON.stringify({ t: 'pool', k: 'r', q: 1, w: 9 })), { k: 'r', q: 1 }, 'power only belongs to a stroke');
+  const st = (cq) => cleanState(JSON.stringify({ p: ROOM, r: 0, cq })).cq;
+  assert.deepEqual(st([0.6, -0.8, 0]), [0.6, -0.8, 0]); assert.deepEqual(st([0.7071, 0.7071, 0.456]), [0.71, 0.71, 0.46]);
+  for (const bad of [[1, 0], [1, 0, 2], [1, 0, -0.1], [0, 0, 0], [3, 4, 0], ['1', 0, 0], 'x']) assert.equal(st(bad), undefined, JSON.stringify(bad));
+});
+
+test('a weak and a hard stroke from the same table: the cue ball runs slower / shorter, deterministically', () => {
+  const C = PLAYROOM.billiards, s = freshTable(C, 'free', 1);
+  const run = (w) => simulateStroke(C, s, [1, 0.02], w), weak = run(0.2), hard = run(1), again = run(0.2);
+  assert.deepEqual(weak, again, 'same power, same result');
+  const moved = (r) => r.snap.p.reduce((n, v, i) => n + (v !== s.p[i] ? 1 : 0), 0);
+  assert.ok(weak.ms < hard.ms, `a weak stroke rolls for a shorter time (${weak.ms} < ${hard.ms} ms)`);
+  assert.ok(moved(weak) < moved(hard), 'a weak stroke moves fewer ball coordinates than the hard break');
+  assert.deepEqual(run(undefined), hard, 'no power = the old full stroke');
+});
+
+test('the room runs the stroke with the clamped power and tells everybody that power', async () => {
+  const env = setup();
+  const a = await connect(env), b = await connect(env);
+  await place(env, a, ROOM); await place(env, b, ROOM);
+  const start = a.last().e;
+  await act(env, a, { k: 's', q: 1, d: [1, 0.02], w: 0.2 });
+  const weak = a.last();
+  assert.equal(weak.k, 'S'); assert.equal(weak.w, 0.2); assert.deepEqual(b.last(), weak, 'both clients get the same power and end state');
+  const local = simulateStroke(PLAYROOM.billiards, start, weak.d, weak.w);
+  assert.deepEqual({ ...local.snap, q: 2 }, weak.e, 'a client reproduces the room\'s result from direction + power');
+  rest(weak.ms);
+  await act(env, a, { k: 's', q: 2, d: [-1, 0], w: 40 });
+  assert.equal(a.last().k, 'S'); assert.equal(a.last().w, 1, 'an out-of-range power is played (and announced) clamped');
+  rest(a.last().ms);
+  await act(env, a, { k: 's', q: 3, d: [-1, 0], w: 'max' });
+  assert.equal(a.last().k, 'S'); assert.equal(table(env).snap.q, 3, 'a malformed power is dropped like any malformed message');
+  await place(env, a, ROOM); // (the state that carried the cue: relayed to b like any other state field)
+  now += 250; a.send({ p: ROOM, r: 0, cq: [0.6, 0.8, 0.5] }); await settle(env);
+  assert.deepEqual(b.got.filter((m) => m.t === 's').at(-1).cq, [0.6, 0.8, 0.5], 'the aiming cue reaches the other player');
 });

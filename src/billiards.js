@@ -44,6 +44,8 @@ export class Billiards {
     this.physics.balls.forEach((b,i)=>this.mesh.setColorAt(i,new T.Color(colours[b.id<9?b.id:b.id-8])));this.object.add(this.mesh);
     const tip=c.cueLength*.04,cue=[paint(new T.CylinderGeometry(.004,.004,tip,8).translate(0,tip/2,0),0xe9dfc4),paint(new T.CylinderGeometry(.009,.004,c.cueLength-tip,8).translate(0,tip+(c.cueLength-tip)/2,0),0x976333)];
     this.cue=new T.Mesh(merge(cue),new T.MeshStandardMaterial({vertexColors:true,roughness:.6}));this.cue.name='billiard-cue';this.object.add(this.cue);
+    // #1637: the other players' cues while they aim / charge (one shared geometry + material; a draw only per visible remote aimer)
+    this.peers=null;this.remoteCues=[];this.remoteDir=new T.Vector3();this.charge=null;this.chargeOff=0;this.strokePull=0;
     this.rules=new BilliardRules('free');this.net=null;this.seq=0;this.seats=[null,null];this.pendingEnd=null;this.waitT=0;this.acc=0;this.active=false;this.inShot=false;this.dirty=true;this.onEvent=null;this.blockReason='';this.physics.onPocket=id=>{if(this.inShot)this.rules.notePocket(id);this.dirty=true;};
     this.canvas=document.createElement('canvas');this.canvas.width=D.canvas[0];this.canvas.height=D.canvas[1];this.ctx=this.canvas.getContext('2d');
     this.texture=new T.CanvasTexture(this.canvas);this.texture.colorSpace=T.SRGBColorSpace;
@@ -59,7 +61,8 @@ export class Billiards {
     }
     this.boardMesh=new T.Mesh(new T.PlaneGeometry(BW,BH),faceMat);this.boardMesh.name='billiard-wall-screen';
     this.boardMesh.position.copy(new T.Vector3(0,0,D.depth/2+D.faceGap).applyMatrix4(boardMatrix));this.boardMesh.rotation.y=boardYaw;this.object.add(this.boardMesh);
-    this.target={kind:'playroomBilliards',name:'biljardbordet',verb:'stöt på'};
+    // #1637: E / touch starts charging a stroke, the next press strikes with the power built up so far
+    this.target={kind:'playroomBilliards',name:'biljardbordet',get verb(){const w=self.chargePower;return w===null?'ladda en stöt på':`stöta med ${Math.round(w*100)} % kraft på`;}};
     const pick=this.target.pickable=new T.Mesh(new T.BoxGeometry(L+2*A,.14,W+2*A),new T.MeshBasicMaterial({visible:false}));pick.position.y=H+.05;pick.userData.door=this.target;this.object.add(pick);
     // Collision uses the same transformed corners as the rendered table; physics and network snapshots remain table-local.
     this.object.updateMatrixWorld(true);
@@ -78,7 +81,7 @@ export class Billiards {
   /** The board's "Ny uppställning": shared → asks the room (everybody gets the new rack), else local. Returns the text to show. */
   requestRack() { if(this.netReady()&&this.netSend('r'))return '';this.newRack();return 'Nya bollar uppställda'; }
   netReady() { return !!this.net?.ready(); }
-  netSend(k,d) { this.waitT=2;return this.net.send({t:'pool',k,q:this.seq,...(d?{d}:{})}); }
+  netSend(k,d,w) { this.waitT=2;return this.net.send({t:'pool',k,q:this.seq,...(d?{d}:{}),...(w!==undefined?{w}:{})}); }
   /** The room's table messages (#1355): 'T' the table, 'S' a stroke (direction + end snapshot), 'no' a refusal of our request. */
   onNet(m) {
     if(m.k==='no'){this.waitT=0;const t=NO_TEXT[m.why];if(t){this.blockReason=t;this.onEvent?.(t);}return;}
@@ -86,15 +89,15 @@ export class Billiards {
     this.waitT=0;this.seats=Array.isArray(m.st)?m.st:[null,null];this.dirty=true;
     this.finishNow();
     const first=this.seq===0,e=m.e;
-    if(m.k==='S'&&this.active&&e.q===this.seq+1&&Array.isArray(m.d)&&!this.physics.moving&&this.playStroke(m.d,e))return;
+    if(m.k==='S'&&this.active&&e.q===this.seq+1&&Array.isArray(m.d)&&!this.physics.moving&&this.playStroke(m.d,e,Number.isFinite(m.w)?m.w:1))return;
     this.adopt(e);if(m.k==='T'&&!first)this.onEvent?.(this.rules.message);
   }
   /** Take the room's snapshot as the table (balls at rest). */
   adopt(e) { restoreTable(this.physics,this.rules,e);this.seq=e.q;this.pendingEnd=null;this.inShot=false;this.strokeT=0;this.dirty=true;this.physics.balls.forEach((b,i)=>{this.last[i]=[b.x,b.z];}); }
   /** Whoever's stroke arrived animates it with the same fixed-step physics; the end snapshot is adopted once the balls rest. */
-  playStroke(d,e) {
-    this.direction.set(d[0],0,d[1]);this.rules.beginShot();
-    if(!this.physics.shoot(d[0],d[1]))return false;
+  playStroke(d,e,w=1) {
+    this.cancelCharge();this.direction.set(d[0],0,d[1]);this.rules.beginShot();
+    if(!this.physics.shoot(d[0],d[1],w))return false;this.strokePull=w*this.c.chargePull;
     this.inShot=true;this.pendingEnd=e;this.seq=e.q;this.acc=0;
     const b=this.physics.balls[0];this.strokeOrigin.set(b.x,this.c.height+this.c.ballR,b.z);this.strokeDirection.copy(this.direction);this.strokeT=this.c.strokeSeconds;return true;
   }
@@ -129,29 +132,61 @@ export class Billiards {
     }
     this.texture.needsUpdate=true;
   }
+  /** #1637: the power being charged (minPower..1, then it stays at 1), or null when not charging. */
+  get chargePower() { if(!this.charge)return null;const c=this.c;return Math.min(1,c.minPower+(1-c.minPower)*this.charge.t/c.chargeSeconds); }
+  cancelCharge() { this.charge=null;this.chargeOff=0; }
+  /** E / touch on the table (#1637): the first press starts charging, the next one strikes with the power built up so far. */
   shoot(camera) {
     this.blockReason='';
-    if(!this.rules.canShoot){this.blockReason='Spelet är slut – ställ upp en ny omgång på tavlan';return false;}
-    if(this.physics.moving||this.inShot||this.waitT>0){this.blockReason='Vänta tills bollarna ligger still';return false;}
+    if(!this.rules.canShoot){this.cancelCharge();this.blockReason='Spelet är slut – ställ upp en ny omgång på tavlan';return false;}
+    if(this.physics.moving||this.inShot||this.waitT>0){this.cancelCharge();this.blockReason='Vänta tills bollarna ligger still';return false;}
+    if(!this.charge){this.charge={t:0};this.chargeOff=0;return true;}
+    const power=Math.round(this.chargePower*100)/100;this.cancelCharge();
+    return this.strike(camera,power);
+  }
+  /** One stroke with `power` (minPower..1): shared → the room runs it (#1355), else locally. */
+  strike(camera,power=1) {
     this.aim(camera);
-    if(this.netReady()){const r4=v=>Math.round(v*1e4)/1e4;return this.netSend('s',[r4(this.direction.x),r4(this.direction.z)]);} // #1355: the room runs the stroke and tells everybody
-    if(!this.physics.shoot(this.direction.x,this.direction.z)){this.blockReason='Vänta tills bollarna ligger still';return false;}
-    this.rules.beginShot();this.inShot=true;this.acc=0;
+    if(this.netReady()){const r4=v=>Math.round(v*1e4)/1e4;return this.netSend('s',[r4(this.direction.x),r4(this.direction.z)],power);} // #1355: the room runs the stroke and tells everybody
+    if(!this.physics.shoot(this.direction.x,this.direction.z,power)){this.blockReason='Vänta tills bollarna ligger still';return false;}
+    this.rules.beginShot();this.inShot=true;this.acc=0;this.strokePull=power*this.c.chargePull;
     const b=this.physics.balls[0];
     this.strokeOrigin.set(b.x,this.c.height+this.c.ballR,b.z);this.strokeDirection.copy(this.direction);this.strokeT=this.c.strokeSeconds;return true;
+  }
+  /** #1637: what the other players get in our state while we aim at the table: [dx, dz] table-local, power (0: only aiming). */
+  get cueState() { return this.cue.visible&&this.strokeT<=0?[this.direction.x,this.direction.z,this.chargePower??0]:null; }
+  /** Place a cue behind the cue ball pointing along table-local `dir`, `back` m drawn back (+ forward). */
+  placeCue(mesh,origin,dir,back) {
+    const c=this.c;mesh.position.copy(origin).addScaledVector(dir,-c.ballR*2-back);
+    this.axis.set(-dir.x,.12,-dir.z).normalize();mesh.quaternion.setFromUnitVectors(this.up,this.axis);
+  }
+  /** #1637: one cue per other player aiming at the table (their [dx, dz, power] from the player state), hidden while balls roll. */
+  updateRemoteCues(dt,origin) {
+    let n=0;const c=this.c,still=!this.physics.moving&&!this.inShot&&this.strokeT<=0;
+    if(still&&this.peers)for(const g of this.peers()){
+      const q=g.cue;if(!q||!(Math.hypot(q[0],q[1])>.5))continue;
+      let m=this.remoteCues[n];
+      if(!m){m=this.remoteCues[n]=new T.Mesh(this.cue.geometry,this.cue.material);m.name='billiard-cue-remote';m.userData.pull=0;this.object.add(m);}
+      const goal=q[2]>0?q[2]*c.chargePull:0;m.userData.pull+=(goal-m.userData.pull)*Math.min(1,dt*8); // eased between the 5 Hz states
+      m.visible=true;this.placeCue(m,origin,this.remoteDir.set(q[0],0,q[1]).normalize(),m.userData.pull);n++;
+    }
+    for(let i=n;i<this.remoteCues.length;i++)this.remoteCues[i].visible=false;
   }
   update(dt,camera=null,aimed=false) {
     const c=this.c;this.acc=Math.min(this.acc+dt,.1);while(this.acc>=STEP){this.physics.step(STEP);this.acc-=STEP;} // fixed step: every client and the room integrate identically (#1355)
     this.strokeT=Math.max(0,this.strokeT-dt);this.waitT=Math.max(0,this.waitT-dt);
     if(camera)this.aim(camera);
+    if(this.charge){this.charge.t+=dt;this.chargeOff=aimed?0:this.chargeOff+dt;if(this.chargeOff>c.chargeGrace||this.physics.moving||this.inShot||this.waitT>0)this.cancelCharge();} // #1637: walking / looking away cancels
     this.physics.balls.forEach((b,i)=>{const last=this.last[i],dx=b.x-last[0],dz=b.z-last[1],distance=Math.hypot(dx,dz);if(b.active&&distance>1e-8){this.axis.set(dz,0,-dx).normalize();this.rotations[i].premultiply(this.spin.setFromAxisAngle(this.axis,distance/c.ballR));}last[0]=b.x;last[1]=b.z;
       this.pos.set(b.x,c.height+c.ballR,b.z);this.scale.setScalar(b.active?1:0);this.mesh.setMatrixAt(i,this.matrix.compose(this.pos,this.rotations[i],this.scale));});this.mesh.instanceMatrix.needsUpdate=true;
     if(this.inShot&&this.strokeT<=0&&!this.physics.moving){this.inShot=false;if(this.pendingEnd){this.finishNow();}else{const m=this.rules.endShot(this.physics.firstHit);this.dirty=true;this.onEvent?.(m);}}
     if(this.dirty)this.drawBoard();
-    const moving=this.physics.moving;this.cue.visible=this.strokeT>0||(!moving&&aimed);
-    const b=this.physics.balls[0],dir=this.strokeT>0?this.strokeDirection:this.direction;
-    this.cue.position.copy(this.strokeT>0?this.strokeOrigin:this.pos.set(b.x,c.height+c.ballR,b.z));
-    const advance=this.strokeT>0?Math.sin((1-this.strokeT/c.strokeSeconds)*Math.PI)*c.cueTravel:0;
-    this.cue.position.addScaledVector(dir,-c.ballR*2+advance);this.axis.set(-dir.x,.12,-dir.z).normalize();this.cue.quaternion.setFromUnitVectors(this.up,this.axis);
+    const moving=this.physics.moving;this.cue.visible=this.strokeT>0||(!moving&&(aimed||!!this.charge));
+    const b=this.physics.balls[0],dir=this.strokeT>0?this.strokeDirection:this.direction,ball=this.pos.set(b.x,c.height+c.ballR,b.z);
+    // the stroke: from drawn back (the charged power, #1637) through the ball and a little back; charging: drawn back more and more
+    const k=this.strokeT>0?1-this.strokeT/c.strokeSeconds:0;
+    const back=this.strokeT>0?this.strokePull*(1-k)*(1-k)-Math.sin(k*Math.PI)*c.cueTravel:(this.chargePower??0)*c.chargePull;
+    this.placeCue(this.cue,this.strokeT>0?this.strokeOrigin:ball,dir,back);
+    this.updateRemoteCues(dt,ball);
   }
 }

@@ -1705,6 +1705,7 @@ function shortButtonLabel(target, label) {
     : target?.kind === 'speaker' ? { 'spela musik på': 'Spela musik', 'styra musiken på': 'Styr musiken' }
     : target?.kind === 'ghost' ? { 'hälsa på': 'Hälsa', krama: 'Krama', pussa: 'Pussa' } // another player (#1405)
     : null;
+  if (target?.kind === 'playroomBilliards') { const w = playroom.billiards.chargePower; return w === null ? 'Ladda stöt' : `Stöt ${Math.round(w * 100)} %`; } // #1637
   if (verbs && name) for (const [verb, short] of Object.entries(verbs)) {
     if (text === `${verb} ${name}`) return short;
   }
@@ -1936,6 +1937,7 @@ document.addEventListener('pointerlockchange', () => {
   if (!drawing.active && !binderFreed && !statsFreed) showOverlay(!locked); // drawing and the binder panel free the mouse on purpose: no start screen
   if (!locked) { player.keys.clear(); if (!statsFreed) holdStats(false); if (!touch.enabled) player.crouch = false; }
   if (!locked && reading && !binderFreed) showNote(false);
+  if (!locked) playroom.billiards.cancelCharge(); // #1637: Esc (it frees the mouse) cancels a charging billiard stroke
 });
 document.addEventListener('mousemove', (e) => {
   if (locked && !statsOpen) look(e.movementX * PLAYER.mouseSens, e.movementY * PLAYER.mouseSens);
@@ -2022,12 +2024,13 @@ document.addEventListener('keydown', (e) => {
   if (choices.rows && /^Digit[1-9]$/.test(e.code) && runChoice(Number(e.code.slice(5)) - 1)) e.preventDefault(); // a menu row (#367)
   if (e.code === 'KeyE' && slideRide.active) { if (!e.repeat) slideRide.cancel(); }
   else if (e.code === 'KeyE' && (player.riding || focused?.kind === 'bicycle')) { if (!e.repeat) { if (player.riding) standUp(); else use(focused); } }
-  else if (e.code === 'KeyE' && focused) { if (focused.kind === 'playroomDevice') e.preventDefault(); if (!(e.repeat && focused.kind === 'fusebox')) use(focused); } // also while sitting: what is within reach (#184); the fuse box: a fresh press (#604)
+  else if (e.code === 'KeyE' && focused) { if (focused.kind === 'playroomDevice') e.preventDefault(); if (!(e.repeat && (focused.kind === 'fusebox' || focused.kind === 'playroomBilliards'))) use(focused); } // (#1637: a held E must not strike the stroke it just started charging) // also while sitting: what is within reach (#184); the fuse box: a fresh press (#604)
   else if (e.code === 'KeyE' && heldItem()?.useLabel) heldItem().use();
   else if (e.code === 'KeyE' && rest.active) standUp();
   else if ((e.code === 'Space' || e.code === 'KeyC') && (rest.active || player.riding || slideRide.active)) { e.preventDefault(); player.keys.delete(e.code); standUp(); } // seated, C gets you up (the Space that does it is no jump, #636)
   else if (e.code === 'KeyC' && !e.repeat) player.crouch = true; // (the repeats of the C that just stood you up do not crouch)
   if (e.code === SOUNDS.bellKey && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) ringBell();
+  if (e.code === 'Escape') playroom.billiards.cancelCharge(); // #1637 (without pointer lock: touch, the binder's free mouse)
   if (e.code === 'KeyG' && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey && !drawing.active && !rearrange.enabled) toggleDance(); // dance in the disco room (#1636)
   if (e.code === 'KeyM') updateMute(toggleMuted());
   if (e.code === 'KeyT') toggleStats();
@@ -2826,7 +2829,7 @@ const weaponIs = { saber: (h) => h === saber, nerf: (h) => toys.blasters.include
   rifle: (h) => !!h?.isRifle, ball: (h) => h === ball, bow: (h) => !!bow && h === bow, web: (h) => !h && suit.worn, jetpack: () => jetpack.worn };
 const weaponKey = () => { if (player.riding) return ''; const h = heldItem(); return COMBAT.weapons.find((k) => weaponIs[k]?.(h)) ?? ''; };
 const ghosts = new Ghosts({ scene, camera, url: cloud.url, name: () => leaderboard.name, active: () => overlay.hidden, weapon: weaponKey, mirrored: () => !rest.active,
-  state: () => ({ p: [player.pos.x, player.pos.y, player.pos.z], r: camera.rotation.y, look: [0, camera.rotation.x], c: player.crouched, dn: playroom.music.dancing ? 1 : 0, sp: suit.worn, bk: player.riding ? Math.atan2(-Math.cos(player.riding.yaw), Math.sin(player.riding.yaw)) : null, jp: jetpack.worn ? (jetpack.k > 0.3 ? 2 : 1) : 0, hi: player.riding ? '' : heldCategory(heldItem()), cat: heldCatState(miele, cat), ...restState(rest, ghosts.avatarCode, ghosts.me) }) });
+  state: () => ({ p: [player.pos.x, player.pos.y, player.pos.z], r: camera.rotation.y, look: [0, camera.rotation.x], c: player.crouched, dn: playroom.music.dancing ? 1 : 0, sp: suit.worn, bk: player.riding ? Math.atan2(-Math.cos(player.riding.yaw), Math.sin(player.riding.yaw)) : null, jp: jetpack.worn ? (jetpack.k > 0.3 ? 2 : 1) : 0, hi: player.riding ? '' : heldCategory(heldItem()), cat: heldCatState(miele, cat), cq: playroom.inside ? playroom.billiards.cueState : null, ...restState(rest, ghosts.avatarCode, ghosts.me) }) });
 const combat = new Combat({ ghosts, camera, scene, weapon: weaponKey, feet: () => player.pos, jetpack, basket: ball, sfx, darts: toys.darts, sparkles: toys.sparkles, arrows, life, fruit, fish, chicken, fries, beer, beerCans,
   onHit: () => bump('pvpHits'), onHurt: () => penalize('pvpHurt'),
   onDie: () => { goToStart(() => respawnOutdoors(player)); badge('💀 Slut på liv – du lever igen', false); } }); // only the place changes (#665)
@@ -2872,6 +2875,7 @@ ghosts.onGreet = (m, g, other) => greet.say({ head: g.head, s: 1 }, (m.k === KIS
 ghosts.onNotice = (text) => badge(text, false);
 playroom.billiards.net = { ready: () => ghosts.connected, send: (m) => ghosts.pool(m), id: () => ghosts.me, name: id => id===ghosts.me?ghosts.name():ghosts.others.get(id)?.name }; // #1355/#1495: shared table, wall-screen names
 ghosts.onPool = (m) => playroom.billiards.onNet(m);
+playroom.billiards.peers = () => ghosts.others.values(); // #1637: the others' cues while they aim at the table
 playroom.music.net = { ready: () => ghosts.connected, send: (m) => ghosts.music(m) }; // #1624: the room's shared music
 ghosts.onMusic = (m) => playroom.music.sync(m);
 cinema.net = { ready: () => ghosts.connected, send: m => ghosts.cinema(m), id: () => ghosts.me };
@@ -2908,6 +2912,15 @@ ghosts.onPlayerSound = (m, g) => { if (m.k === 'bell') sfx.playAt(g.head, 'bell'
 ghosts.onStep = (g) => sfx.playAt(g.feet, 'step', 1, stepSurface(world, g.feet));
 ghosts.onJet = (g) => sfx.playAt(g.head, 'jet');
 const bellBtn = document.getElementById('bell-btn');
+// #1637: the charged billiard stroke's power meter (desktop and touch), only while charging
+const cuePowerEl = document.getElementById('cue-power'), cuePowerBar = cuePowerEl.querySelector('i'), cuePowerText = cuePowerEl.querySelector('b');
+let cuePowerShown = -1;
+function updateCuePower() {
+  const w = playroom.inside && !reading ? playroom.billiards.chargePower : null, pct = w === null ? -1 : Math.round(w * 100);
+  if (pct === cuePowerShown) return;
+  cuePowerShown = pct; cuePowerEl.hidden = pct < 0;
+  if (pct >= 0) { cuePowerBar.style.width = `${pct}%`; cuePowerText.textContent = `${pct} %`; }
+}
 // #1636: everybody in the disco room gets a dance button / the G key while the music plays (no aiming at the booth or speaker)
 const danceBtn = document.getElementById('dance-btn');
 let danceShown = '';
@@ -3165,6 +3178,7 @@ function step(dt) {
     updateFocus();
   }
   updateDanceButton();
+  updateCuePower();
   power.update(dt, focused === power.target); // the power cut (#604): flicker, bang, mending (after the focus: mending needs it)
   lights.setSupply(power.supply);
   patio.supply = power.supply;

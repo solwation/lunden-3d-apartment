@@ -6103,7 +6103,8 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
   billiards: { x: 0, z: -1.83, yaw: Math.PI / 2, length: 2.4, width: 1.2, height: 0.72, rail: 0.11, railH: 0.07, leg: 0.09, // #1617: bigger, taller 'children and 10-year-olds' table (about 3/4 of a 8-foot pool table, 72 cm playing height; *guess*) // #1482: centre between north z=-5.2 and the partition inner face z=1.54; retain #1411 orientation.
     ballR: 0.03, pocketR: 0.066, cueLength: 1.2, // #1617: balls/pockets/cue scaled with the table (ratios unchanged)
     rug: { radius: 2.3, ring: [.26, .2], colour: 0x8a3a46, ringColour: 0xe3cfa4, edge: .04 }, // #1617: big round soft rug (m, *guess*): clears the table's 2.62 x 1.42 m footprint and the DJ bench; ring = inner/outer inset of the cream stripe, edge = rounded rim width
-    strokeSpeed: 2.2, strokeSeconds: 0.24, cueTravel: 0.09,
+    strokeSpeed: 2.2, strokeSeconds: 0.24, cueTravel: 0.09, // strokeSpeed: m/s of a full-power stroke (#1637: the old fixed stroke = 100 %)
+    minPower: 0.15, chargeSeconds: 1.75, chargePull: 0.14, chargeGrace: 0.35, // #1637 charged stroke (*guess*): a tap = 15 %, 100 % after 1.75 s (then it stays); the cue draws back up to 14 cm; looking off the table this long cancels
     friction: 0.45, bounce: 0.94, cushionBounce: 0.82, stopSpeed: 0.012, maxStep: 1 / 180,
     // #1495: assumed wall screen dimensions/height; west wall derived from the actual partition.
     board: { width:1.2, height:.6, y:1.2, wallGap:.04, depth:.04, rim:.025, faceGap:.002, pickDepth:.08,

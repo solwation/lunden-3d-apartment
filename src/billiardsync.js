@@ -52,14 +52,22 @@ export function cleanDirection(d) {
   return [r(d[0]), r(d[1])];
 }
 
+/** #1637: a stroke power: missing → 1 (the old fixed stroke, older clients), a finite number → clamped to minPower..1 and
+ * rounded to 2 decimals (so the room and every client simulate the very same number), anything else → null (refused). */
+export function cleanPower(w, config) {
+  if (w === undefined) return 1;
+  if (typeof w !== 'number' || !Number.isFinite(w)) return null;
+  return Math.round(Math.min(1, Math.max(config.minPower ?? 0, w)) * 100) / 100;
+}
+
 /** Run one stroke from snapshot `s` (the physics config's units): { snap, ms } with the end snapshot (`q` not touched) and the
- * simulated duration, or { error: 'over' | 'busy' }. Deterministic: same input, same output, on any machine. */
-export function simulateStroke(config, s, dir) {
+ * simulated duration, or { error: 'over' | 'busy' }. `power`: cleanPower's value (#1637). Deterministic: same input, same output, on any machine. */
+export function simulateStroke(config, s, dir, power = 1) {
   const physics = new BilliardPhysics(config), rules = new BilliardRules(s.m);
   restoreTable(physics, rules, s);
   if (!rules.canShoot) return { error: 'over' };
   physics.onPocket = (id) => rules.notePocket(id);
-  if (!physics.shoot(dir[0], dir[1])) return { error: 'busy' };
+  if (!physics.shoot(dir[0], dir[1], power)) return { error: 'busy' };
   rules.beginShot();
   let t = 0;
   while ((t < config.strokeSeconds || physics.moving) && t < MAX_STROKE_S) { physics.step(STEP); t += STEP; }

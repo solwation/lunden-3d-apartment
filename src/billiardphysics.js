@@ -14,13 +14,15 @@ export class BilliardPhysics {
     for(let x=-c.length/2+r*3;x<c.length/2-r*2;x+=r*3)for(let z=-c.width/2+r*3;z<c.width/2-r*2;z+=r*3)if(free(x,z))return place(x,z);
     return false;
   }
-  shoot(dx,dz) {
-    if(this.moving||!Number.isFinite(dx)||!Number.isFinite(dz))return false;
+  /** #1637: `power` (minPower..1, clamped; default 1 = the old fixed stroke) scales strokeSpeed. */
+  shoot(dx,dz,power=1) {
+    if(this.moving||!Number.isFinite(dx)||!Number.isFinite(dz)||!Number.isFinite(power))return false;
     const len=Math.hypot(dx,dz);if(len<1e-6)return false;
     if(this.balls.slice(1).every(b=>!b.active))this.reset();
     const b=this.balls[0];if(!b.active&&!this.respotCue())return false;
     this.firstHit=null; // #1354: the first object ball the cue ball touches in this stroke (rules)
-    b.vx=dx/len*this.c.strokeSpeed;b.vz=dz/len*this.c.strokeSpeed;this.onSound?.('cue',b.x,b.z,this.c.strokeSpeed);return true;
+    const speed=this.c.strokeSpeed*Math.min(1,Math.max(this.c.minPower??0,power));
+    b.vx=dx/len*speed;b.vz=dz/len*speed;this.onSound?.('cue',b.x,b.z,speed);return true;
   }
   boundary(b) {
     const c=this.c,r=c.ballR;
