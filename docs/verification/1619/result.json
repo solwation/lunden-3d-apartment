@@ -1,0 +1,247 @@
+{
+  "fade": {
+    "samples": [
+      {
+        "phase": "idle",
+        "t": 0,
+        "dim": 0,
+        "lit": 0.55,
+        "sconce": 1,
+        "posters": 1
+      },
+      {
+        "phase": "start",
+        "t": 1,
+        "dim": 0.167,
+        "lit": 0.461,
+        "sconce": 0.843,
+        "posters": 0.908
+      },
+      {
+        "phase": "start",
+        "t": 2,
+        "dim": 0.333,
+        "lit": 0.376,
+        "sconce": 0.687,
+        "posters": 0.817
+      },
+      {
+        "phase": "start",
+        "t": 3,
+        "dim": 0.5,
+        "lit": 0.295,
+        "sconce": 0.53,
+        "posters": 0.725
+      },
+      {
+        "phase": "start",
+        "t": 4,
+        "dim": 0.667,
+        "lit": 0.219,
+        "sconce": 0.373,
+        "posters": 0.633
+      },
+      {
+        "phase": "start",
+        "t": 5,
+        "dim": 0.833,
+        "lit": 0.148,
+        "sconce": 0.217,
+        "posters": 0.542
+      },
+      {
+        "phase": "start",
+        "t": 6,
+        "dim": 1,
+        "lit": 0.081,
+        "sconce": 0.06,
+        "posters": 0.45
+      },
+      {
+        "phase": "start",
+        "t": 7,
+        "dim": 1,
+        "lit": 0.081,
+        "sconce": 0.06,
+        "posters": 0.45
+      },
+      {
+        "phase": "start",
+        "t": 8,
+        "dim": 1,
+        "lit": 0.081,
+        "sconce": 0.06,
+        "posters": 0.45
+      },
+      {
+        "phase": "start",
+        "t": 9,
+        "dim": 1,
+        "lit": 0.081,
+        "sconce": 0.06,
+        "posters": 0.45
+      },
+      {
+        "phase": "stop",
+        "t": 1,
+        "dim": 0.833,
+        "lit": 0.148,
+        "sconce": 0.217,
+        "posters": 0.542
+      },
+      {
+        "phase": "stop",
+        "t": 2,
+        "dim": 0.667,
+        "lit": 0.219,
+        "sconce": 0.373,
+        "posters": 0.633
+      },
+      {
+        "phase": "stop",
+        "t": 3,
+        "dim": 0.5,
+        "lit": 0.295,
+        "sconce": 0.53,
+        "posters": 0.725
+      },
+      {
+        "phase": "stop",
+        "t": 4,
+        "dim": 0.333,
+        "lit": 0.376,
+        "sconce": 0.687,
+        "posters": 0.817
+      },
+      {
+        "phase": "stop",
+        "t": 5,
+        "dim": 0.167,
+        "lit": 0.461,
+        "sconce": 0.843,
+        "posters": 0.908
+      },
+      {
+        "phase": "stop",
+        "t": 6,
+        "dim": 0,
+        "lit": 0.55,
+        "sconce": 1,
+        "posters": 1
+      },
+      {
+        "phase": "stop",
+        "t": 7,
+        "dim": 0,
+        "lit": 0.55,
+        "sconce": 1,
+        "posters": 1
+      },
+      {
+        "phase": "stop",
+        "t": 8,
+        "dim": 0,
+        "lit": 0.55,
+        "sconce": 1,
+        "posters": 1
+      },
+      {
+        "phase": "stop",
+        "t": 9,
+        "dim": 0,
+        "lit": 0.55,
+        "sconce": 1,
+        "posters": 1
+      }
+    ],
+    "cfg": {
+      "x": {
+        "north": [
+          -7.7,
+          -5.9,
+          -3.9
+        ],
+        "south": [
+          -7.7,
+          -3.9
+        ]
+      },
+      "y": 1.65,
+      "w": 0.14,
+      "h": 0.3,
+      "d": 0.1,
+      "lit": 16764810,
+      "panel": 16774876,
+      "dimmed": 0.06,
+      "fadeSeconds": 6,
+      "ambientDim": 0.18
+    }
+  },
+  "curtains": {
+    "apart": 6.219970703125,
+    "screenW": 6.34,
+    "4:3": {
+      "gap": 2.594,
+      "expected": 2.593,
+      "picture": 2.533
+    },
+    "traceTo169": [
+      2.872,
+      3.058,
+      3.183,
+      3.267,
+      3.324,
+      3.361,
+      3.386,
+      3.403,
+      3.415,
+      3.422,
+      3.427,
+      3.431
+    ],
+    "16:9": {
+      "gap": 3.438,
+      "expected": 3.438,
+      "picture": 3.378
+    },
+    "2.39:1": {
+      "gap": 4.601,
+      "expected": 4.601,
+      "picture": 4.541
+    },
+    "after": 6.219970703125,
+    "aspects": {
+      "full": 1.7777777777777777,
+      "p43": 1.3333333333333333,
+      "p43noise": 1.3333333333333333,
+      "l239": 2.388059701492537,
+      "none": 0
+    }
+  },
+  "real": 1.3333333333333333,
+  "signs": {
+    "spots": [
+      {
+        "x": -6,
+        "z": 1.528
+      },
+      {
+        "x": 0,
+        "z": 1.528
+      },
+      {
+        "x": 6,
+        "z": 1.528
+      },
+      {
+        "x": 0,
+        "z": 5.188000000000001
+      }
+    ],
+    "lights": 0,
+    "signMesh": 4,
+    "extraDraws": 1,
+    "material": "MeshBasicMaterial"
+  },
+  "errors": []
+}
