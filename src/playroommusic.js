@@ -31,6 +31,9 @@ export class PlayroomMusic {
     ];
   }
   /** #1622: the dance is sent as `dn: 1` in the player state (main.js); it ends with the music, a pause, leaving or walking away. */
+  /** #1636: the dance button/key (main.js) is offered to everybody inside while the music plays (or while they are already dancing, to stop). */
+  get canDance() { return this.active && (this.state === 'playing' || this.dancing); }
+  toggleDance() { if (!this.canDance) return false; if (this.dancing) this.stopDance(); else this.startDance(); return true; }
   startDance() { if (this.state === 'playing') { this.dancing = true; this.danceAt = null; } }
   stopDance() { this.dancing = false; this.danceAt = null; }
   /** Each frame while inside: `pos` the player's {x, z}. */

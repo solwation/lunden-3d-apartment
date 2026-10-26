@@ -161,6 +161,8 @@ body.touch #touch-controls #measure-btn { right: var(--c0); bottom: var(--r2); }
 body.touch #touch-controls #power-btn { right: var(--c1); bottom: var(--r2); }
 body.touch #touch-controls #turn-btn { right: var(--c2); bottom: calc(var(--side) + var(--tu)); }
 body.touch #touch-controls #bell-btn { right: var(--c2); bottom: calc(var(--side) + var(--tu)); } /* the bicycle bell (#1302): the turn button's slot, never shown together (riding holds nothing to turn) */
+/* #1636: the dance button (everyone in the disco room while music plays): a short text pill in a third ring above the power button */
+body.touch #touch-controls #dance-btn { right: var(--c1); bottom: calc(var(--r2) + var(--tu)); width: calc(var(--touch-size) * 1.5); border-radius: 16px; font: 600 14px system-ui,sans-serif; background: rgba(176,40,156,.8); }
 body.touch #touch-controls #jet-down { right: var(--c3); bottom: 0; }
 body.touch #touch-controls #jet-up { right: var(--c3); bottom: var(--tu); }
 body.touch #touch-controls #web-btn { right: var(--c3); bottom: calc(2 * var(--tu)); }

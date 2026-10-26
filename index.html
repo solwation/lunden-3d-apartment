@@ -465,6 +465,10 @@
     #stand-btn[hidden] { display: none; }
     #bell-btn { position: fixed; right: calc(24px + var(--sr)); bottom: calc(222px + var(--sb)); width: 48px; height: 48px; border: 0; border-radius: 50%; background: var(--panel); font-size: 22px; touch-action: manipulation; } /* the bicycle bell (#1302) */
     #bell-btn[hidden] { display: none; }
+    #dance-btn { position: fixed; right: calc(24px + var(--sr)); bottom: calc(100px + var(--sb)); touch-action: manipulation; padding: 12px 18px; border: 0; border-radius: 40px; background: #b0289c; color: #fff; font: 600 15px system-ui, sans-serif; box-shadow: 0 4px 14px rgba(0,0,0,.3); cursor: pointer; } /* #1636: dance for everyone in the disco room */
+    #dance-btn[hidden] { display: none; }
+    #dance-btn kbd { margin-left: 6px; padding: 1px 6px; border-radius: 4px; background: rgba(255,255,255,.25); font: 600 13px system-ui, sans-serif; }
+    body.touch #dance-btn kbd { display: none; }
     /* the jetpack (#359): its heat bar under the score, the nozzles' glow at the bottom, ⬆ ⬇ on touch two steps left of 🧎 */
     #jetpack { position: fixed; left: calc(16px + var(--sl)); top: var(--hud-badge-bottom); display: flex; align-items: center; gap: 6px; background: rgba(20, 35, 45, 0.45); color: #fff; padding: 4px 10px; border-radius: 8px; font-size: 13px; pointer-events: none; }
         #jetpack[hidden] { display: none; }
@@ -1586,6 +1590,7 @@
       <button id="power-btn" class="touch-only" hidden aria-label="Stäng av / slå på TV:n">⏻</button>
       <button id="turn-btn" class="touch-only" hidden aria-label="Vrid">⟳</button>
       <button id="stand-btn" class="touch-only" hidden>Res dig</button>
+      <button id="dance-btn" hidden></button>
       <button id="bell-btn" class="touch-only" hidden aria-label="Ringa cykelklockan" title="Ringa cykelklockan (B)">🔔</button>
       <button id="jet-up" class="touch-only" hidden aria-label="Jetpack: upp">⬆</button>
       <button id="jet-down" class="touch-only" hidden aria-label="Jetpack: ner">⬇</button>

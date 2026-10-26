@@ -66,6 +66,13 @@ test('#1622: the floss is offered only while the music plays and ends with pause
  m.play();row().run();m.setInside(false);assert.equal(m.dancing,false);m.dispose();
 });
 
+test('#1636: the dance button is offered to everybody inside while the music plays, wherever they aim',()=>{
+ const m=new PlayroomMusic();assert.equal(m.canDance,false);m.setInside(true);assert.equal(m.canDance,false,'no music');assert.equal(m.toggleDance(),false);
+ m.play();assert.equal(m.canDance,true);assert.equal(m.toggleDance(),true);assert.equal(m.dancing,true);assert.equal(m.canDance,true,'still offered to stop');
+ assert.equal(m.toggleDance(),true);assert.equal(m.dancing,false);m.toggleDance();m.pause();m.tick({x:0,z:0});assert.equal(m.dancing,false);assert.equal(m.canDance,false);
+ m.play();m.setInside(false);assert.equal(m.canDance,false);m.dispose();
+});
+
 test('#1624 room state: commands go to the room when connected, sync applies idempotently, early state waits for entry, bad state ignored',()=>{
  const m=new PlayroomMusic(),sent=[];m.net={ready:()=>true,send:x=>{sent.push(x);return true}};
  m.setInside(true);m.play();assert.deepEqual(sent.pop(),{t:'mus',k:'p'});assert.equal(m.state,'off','the room answers, nothing local yet');

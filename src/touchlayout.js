@@ -13,7 +13,7 @@ const KEY = 'lunden.touchLayout';
 const STICK = 'stick-hint';
 /** Customisable controls, in the order the editor lists them, with their Swedish names. */
 export const TOUCH_CONTROLS = [
-  ['action', 'Handling'], ['jump-btn', 'Hoppa'], ['crouch-btn', 'Huka'], ['stand-btn', 'Res dig'], ['bell-btn', 'Ringklocka'],
+  ['action', 'Handling'], ['jump-btn', 'Hoppa'], ['crouch-btn', 'Huka'], ['stand-btn', 'Res dig'], ['bell-btn', 'Ringklocka'], ['dance-btn', 'Dansa'],
   ['measure-btn', 'Mät'], ['power-btn', 'Extra (TV/boll)'], ['turn-btn', 'Vrid'], ['web-btn', 'Nät'],
   ['jet-up', 'Jetpack upp'], ['jet-down', 'Jetpack ner'], [STICK, 'Spaken'],
 ];

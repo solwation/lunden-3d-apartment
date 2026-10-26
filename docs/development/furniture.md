@@ -491,6 +491,12 @@ cross-origin. This personal clubhouse gameplay has no public downstream transfer
 
 ## Clubhouse DJ booth (#1620, replaces the #1424 bench)
 
+**Adult size (#1636, *guess*):** `PLAYROOM.dj` is now a 1.8 × .65 m counter, .97 m high, on a 1.9 × 1.29 m podium (x 1.0..2.9, z −5.19..−3.9)
+with about .6 m behind the counter for one or two people (was 1.2 × .5 × .82 m on 1.6 × 1.34 m). The limits are the billiard/disco zone's
+east partition (x 3 − .06) and the rug: the podium's south-west corner (1.0, −3.9) is 2.31 m from the rug centre (radius 2.3). Platter/mixer
+plates were widened to the new counter; pick box, collision footprint, LED strips and floor height all read `PLAYROOM.dj`. No new meshes
+(58 room meshes before and after). The sizes quoted below are the #1620 originals.
+
 The bench became a booth in the same NE corner of BILJARD: `PLAYROOM.dj.podium` (1.6 × 1.34 m, .2 m high, *guess*) is a step-up
 platform and the 1.2 × .5 m counter (top .82 m) stands on its south edge, so you enter from the west, stand behind it and look out
 over the room. The old legs are gone; platters/mixer are unchanged and the pick box still uses `PlayroomMusic.target`.

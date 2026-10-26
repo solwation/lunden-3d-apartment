@@ -516,6 +516,12 @@ Tests:
 
 ### Playroom floss dance (#1622)
 
+**Dance button (#1636):** everybody inside the room gets their own `#dance-btn` ("Dansa" / "Sluta dansa", key **G** shown on the
+button on desktop) while `PlayroomMusic.canDance` (inside and playing, or already dancing) — no need to aim at the booth or speaker.
+main.js `updateDanceButton()` runs each frame; click/tap or G calls `toggleDance()`. On touch it is a short pill in a third ring above
+the power button (`hudicons.css`) and is registered in `touchlayout.js` TOUCH_CONTROLS. The speaker menu row below stays. Test:
+`tools/playroommusictest.mjs`.
+
 While the local room music plays, the speaker/DJ menu adds `Dansa floss` (last row; `Sluta dansa` while
 dancing). `PlayroomMusic.dancing` ends when the music is paused or stopped, the player leaves the room or
 walks further than `DANCE.stepAway` from where the dance began (`tick`, called from `Playroom.update`).

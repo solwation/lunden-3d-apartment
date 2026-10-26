@@ -2028,6 +2028,7 @@ document.addEventListener('keydown', (e) => {
   else if ((e.code === 'Space' || e.code === 'KeyC') && (rest.active || player.riding || slideRide.active)) { e.preventDefault(); player.keys.delete(e.code); standUp(); } // seated, C gets you up (the Space that does it is no jump, #636)
   else if (e.code === 'KeyC' && !e.repeat) player.crouch = true; // (the repeats of the C that just stood you up do not crouch)
   if (e.code === SOUNDS.bellKey && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) ringBell();
+  if (e.code === 'KeyG' && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey && !drawing.active && !rearrange.enabled) toggleDance(); // dance in the disco room (#1636)
   if (e.code === 'KeyM') updateMute(toggleMuted());
   if (e.code === 'KeyT') toggleStats();
   if (e.code === 'Tab') { e.preventDefault(); if (!e.repeat) holdStats(true); }
@@ -2907,6 +2908,16 @@ ghosts.onPlayerSound = (m, g) => { if (m.k === 'bell') sfx.playAt(g.head, 'bell'
 ghosts.onStep = (g) => sfx.playAt(g.feet, 'step', 1, stepSurface(world, g.feet));
 ghosts.onJet = (g) => sfx.playAt(g.head, 'jet');
 const bellBtn = document.getElementById('bell-btn');
+// #1636: everybody in the disco room gets a dance button / the G key while the music plays (no aiming at the booth or speaker)
+const danceBtn = document.getElementById('dance-btn');
+let danceShown = '';
+function updateDanceButton() {
+  const show = playroom.inside && playroom.music.canDance && !reading && !measure.active && !isAvatarCustomizerOpen();
+  const key = show ? (playroom.music.dancing ? 'Sluta dansa' : 'Dansa') : '';
+  if (key !== danceShown) { danceShown = key; danceBtn.hidden = !show; if (show) danceBtn.innerHTML = `${key}<kbd>G</kbd>`; }
+}
+const toggleDance = () => { if (!reading && playroom.inside) playroom.music.toggleDance(); updateDanceButton(); };
+danceBtn.addEventListener('click', toggleDance);
 /** Ring the bicycle bell (#1302, B / the 🔔 button while riding): we hear it right away, the players nearby hear it from us. */
 function ringBell() {
   if (!player.riding || reading || bellAt > performance.now() - SOUNDS.every * 1000) return false;
@@ -3153,6 +3164,7 @@ function step(dt) {
     if (!player.riding) footsteps();
     updateFocus();
   }
+  updateDanceButton();
   power.update(dt, focused === power.target); // the power cut (#604): flicker, bang, mending (after the focus: mending needs it)
   lights.setSupply(power.supply);
   patio.supply = power.supply;

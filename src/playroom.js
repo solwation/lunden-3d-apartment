@@ -108,8 +108,8 @@ export class Playroom {
     const PD = DJ.podium, pbox = (color, y0, y1) => cbox(color, PD.x0, PD.x1, y0, y1, PD.z0, PD.z1);
     fur.push(pbox(col.dark, 0, PD.h - .012), pbox(col.wood, PD.h - .012, PD.h));
     fur.push(djBox(col.dark,-DJ.w/2,DJ.w/2,PD.h,DJ.h-DJ.top,-DJ.d/2,DJ.d/2),djBox(col.wood,-DJ.w/2-.02,DJ.w/2+.02,DJ.h-DJ.top,DJ.h,-DJ.d/2-.02,DJ.d/2+.02));
-    fur.push(djBox(col.dark,-.57,.57,DJ.h,DJ.h+.055,-.22,.22),djBox(col.steel,-.12,.12,DJ.h+.055,DJ.h+.065,-.18,.18));
-    for (const x of [-.35,.35]) {
+    fur.push(djBox(col.dark,-.85,.85,DJ.h,DJ.h+.055,-DJ.d/2+.06,DJ.d/2-.06),djBox(col.steel,-.12,.12,DJ.h+.055,DJ.h+.065,-.18,.18));
+    for (const x of [-.55,.55]) {
       fur.push(paint(new THREE.CylinderGeometry(.16,.16,.018,12).translate(R.x+DJ.x+x,DJ.h+.064,R.z+DJ.z),col.steel));
       fur.push(paint(new THREE.CylinderGeometry(.035,.035,.02,8).translate(R.x+DJ.x+x,DJ.h+.074,R.z+DJ.z),col.dark));
       for(const z of [-.15,.15])fur.push(djBox(col.blue,x-.025,x+.025,DJ.h+.055,DJ.h+.065,z-.018,z+.018));
@@ -194,7 +194,7 @@ export class Playroom {
       pk.position.set(R.x+x, speaker.y, R.z+speaker.z); pk.userData.door = this.music.target;
       this.music.target.pickable ??= pk; this.object.add(pk); this.controlPickables.push(pk);
     }
-    const djPick = new THREE.Mesh(new THREE.BoxGeometry(1.18,.14,.48), new THREE.MeshBasicMaterial({ visible: false }));
+    const djPick = new THREE.Mesh(new THREE.BoxGeometry(DJ.w-.02,.14,DJ.d-.02), new THREE.MeshBasicMaterial({ visible: false }));
     djPick.position.set(R.x+DJ.x,DJ.h+.07,R.z+DJ.z); djPick.userData.door=this.music.target;
     this.object.add(djPick); this.controlPickables.push(djPick);
     this.devices = new PlayroomDevices((name, on) => this.onSwitch?.(name, on));
