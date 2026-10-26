@@ -11,6 +11,13 @@ export function trackSrc(track, canPlay = (type) => new Audio().canPlayType(type
 }
 export const failedFiles = new Set();
 
+// #1629: Chrome keeps a MediaElementAudioSourceNode, and with it the element and its listeners, alive for as long as its AudioContext
+// lives, even after disconnect() and a removed src; an element can also feed only one source node. A fresh Audio per track therefore
+// leaked one element + node per start (+2 per DJ track change, measured with queryObjects). Released slots are reused instead.
+const idleSlots = new WeakMap(); // AudioContext -> [{ el, node }]
+const leaseSlot = (ctx) => idleSlots.get(ctx)?.pop() ?? (() => { const el = new Audio(); return { el, node: ctx.createMediaElementSource(el) }; })();
+const releaseSlot = (ctx, slot) => { const free = idleSlots.get(ctx) ?? []; idleSlots.set(ctx, free); if (!free.includes(slot)) free.push(slot); };
+
 export class MusicFile {
   constructor(A, dest, track, { loop = false, ended = () => {}, failed = () => {} } = {}) {
     Object.assign(this, { A, dest, track, loop, ended, failed, el: null, node: null, src: null, stopped: false, paused: false, playGeneration: 0 });
@@ -19,8 +26,8 @@ export class MusicFile {
   start() {
     const src = trackSrc({ files: this.track.files.filter((f) => !failedFiles.has(f)) });
     if (!src) { this.failed(); return; }
-    const el = new Audio(), node = this.A.ctx.createMediaElementSource(el);
-    Object.assign(this, { el, node, src });
+    const slot = leaseSlot(this.A.ctx), { el, node } = slot, ac = new AbortController(), { signal } = ac;
+    Object.assign(this, { el, node, src, slot, ac });
     node.connect(this.dest); el.preload = 'auto'; el.loop = this.loop;
     const bad = (remember = true) => {
       if (this.stopped || this.el !== el) return;
@@ -33,10 +40,10 @@ export class MusicFile {
       if (this.stopped || this.paused || this.el !== el) return;
       clearTimeout(this.timer); this.timer = setTimeout(() => bad(), MUSIC.loadTimeout);
     };
-    el.addEventListener('error', () => bad());
-    el.addEventListener('playing', () => clearTimeout(this.timer));
-    el.addEventListener('waiting', arm);
-    el.addEventListener('ended', () => { if (!this.stopped && this.el === el) this.ended(); });
+    el.addEventListener('error', () => bad(), { signal });
+    el.addEventListener('playing', () => clearTimeout(this.timer), { signal });
+    el.addEventListener('waiting', arm, { signal });
+    el.addEventListener('ended', () => { if (!this.stopped && this.el === el) this.ended(); }, { signal });
     this.run = () => {
       const generation = ++this.playGeneration;
       arm();
@@ -55,8 +62,10 @@ export class MusicFile {
     this.playGeneration++;
     clearTimeout(this.timer);
     const el = this.el; this.el = null;
+    this.ac?.abort(); this.ac = null;
     if (el) { el.pause(); el.removeAttribute('src'); el.load(); }
     this.node?.disconnect(); this.node = null;
+    if (this.slot) { releaseSlot(this.A.ctx, this.slot); this.slot = null; }
   }
   stop() { this.stopped = true; this.drop(); }
 }

@@ -291,7 +291,9 @@ src/crashlog.js        crash reports (#629), inert without the cloud (same switc
                        render loop) writes place, quality level, fps, renderer.info, a GPU-memory ESTIMATE (canvas, shadow map,
                        mirror target, source texture images — walked in short slices; incomplete, not measured GPU usage), last keys/taps and console.error lines to localStorage
                        'lunden.crash.beat' (state run / bg on hidden, including the first hidden load / clean on pagehide). At the next start a beat still 'run' (and not
-                       a live other tab) = the last run died → sent as typ 'död' (a hypothesis: memory); window error, unhandledrejection,
+                       a live other tab) = the last run died → sent as typ 'död' (a hypothesis: memory; #1629: `why` is 'quick' when the next start came within
+                       `CRASHLOG.quickReturnS` = 180 s, a reload after an Aw-Snap or OS kill, and 'late' after that, which is how a quit browser, a power-off or a tab
+                       closed mid-debugging looks, since none of those runs pagehide; both are still reported); window error, unhandledrejection,
                        webglcontextlost/restored → typ 'fel'. POST /crash as text/plain (fetch, sendBeacon when hidden; unsent ones wait
                        in 'lunden.crash.out'); v2 keeps 12 heartbeat samples (~24 s) with frame progress, load phase and timer lag.
                        Since #669 each sample also has `warm` (the sliced warm-up's position, e.g. `compiling 12/113`) and `worst` = the slowest
@@ -1481,3 +1483,17 @@ remain unchanged; no name is guessed from old text. See [report import](report-i
 `keep.js` excludes dynamic `isChristmasGift` Holdables from the generic things map. The optional `christmasGifts` section records IDs, the once-chosen trinket, opening state, home/placed pose and held status. It restores after existing ordinary/Life hand owners; an occupied hand makes a restored gift return home safely. Duplicate IDs/restores never recreate a package. The temporary Santa/TV state is derived from the restored DayCycle rather than saved separately.
 
 Santa follow-ups (#1500/#1501): the optional `santa` section restores completed sip count for the same game-calendar date after clock restoration. Gift records additionally retain support IDs for stacks; validated existing package poses remain backward compatible. Taking a lower package settles descendants and updates their saved homes. No Cloudflare protocol changes.
+
+### 'killed' reports from the clubhouse (#1629)
+
+Four `död/killed` reports from the clubhouse (25–26 Oct, three Windows Chrome 155, one Android 10) were checked against all
+public reports. The desktop ones are not a memory kill: JS heap 447–598 MB is a stable sawtooth (limit 4.2 GB, ±15 MB over the
+24 s history), geometry/texture/program counts are flat, and the same heap and `killed` rows occur in every room and build
+(Hall, Sovrum 4, kitchen), not only the clubhouse. Their `gap` (time from the last heartbeat to the next start) is 7 000 s to 3.8 days;
+an Aw-Snap is reloaded within seconds. That pattern is a closed browser or machine and not a crash: Chrome runs no `pagehide` /
+`visibilitychange` when the browser quits or Windows shuts down, so no listener can mark it clean. Two of the four have
+`admin-report-open/send/cancel` and `terminal-close` as their last actions, which fits a developer closing the browser during debugging.
+There is therefore no lifecycle event to add; the report now carries `why: 'quick' | 'late'` (see above) so analysis separates the two.
+Not proved: that the Windows machines were shut down (no direct evidence), and the Android case (no JS heap above 12.8 MB visible,
+fps dips to 9.5 and `sh 13`, last actions many button taps and the jump button) stays unexplained. Tests: `tools/crashheartbeattest.cjs`
+checks `why` for stale (late) and 40 s (quick) beats.

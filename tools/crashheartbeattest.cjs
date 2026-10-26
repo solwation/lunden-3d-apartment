@@ -89,7 +89,7 @@ const proc = pid => { const p='/proc/'+pid; const s=fs.readFileSync(p+'/stat','u
       const sent=result.reports.slice(n);
       check(sent.length===want,label,{old,sent});
       if(want){
-        const r=sent[0];assert.equal(r.kind,'killed');assert.equal(r.build,old.build);assert.equal(r.gap,Math.round((r.ts-old.t)/1000));
+        const r=sent[0];assert.equal(r.kind,'killed');assert.equal(r.build,old.build);assert.equal(r.gap,Math.round((r.ts-old.t)/1000));assert.equal(r.why,r.gap<=180?'quick':'late','#1629 why: back within 180 s is quick, later is late');
         const rows=await (await fetch('http://127.0.0.1:8878/crash/public')).json();
         result.projections.push(rows);write();
         check(rows.some(r=>r.kind==='killed'&&r.build===old.build&&r.state.background===(old.hidden?1:0)),'actual Worker POST/public keeps original build/background and seconds');
@@ -100,6 +100,7 @@ const proc = pid => { const p='/proc/'+pid; const s=fs.readFileSync(p+'/stat','u
     const old={...persisted,t:Date.now()-21926_000,tab:'old-hidden-source',build:'7834406',s:'run',hidden:1};
     await restart('legacy hidden run remains an ambiguous abrupt signal',old,1);
     await restart('stale visible run still reports abrupt ending',{...old,tab:'actual-foreground',hidden:0},1);
+    await restart('#1629 a visitor back after 40 s is a quick return',{...old,tab:'quick-return',t:Date.now()-40_000,hidden:0,build:'quick1629'},1);
     for(const s of ['bg','clean'])await restart('stale '+s+' does not report',{...old,tab:'old-'+s,s,hidden:0},0);
     await restart('fresh visible run from another tab does not report',{...old,tab:'fresh-tab',t:Date.now(),hidden:0},0);
     // Duplicate old foreground record remains deduplicated without resetting its daily record.

@@ -3367,6 +3367,7 @@ export const CLOUD_URL = 'https://lunden-l1007.olw.workers.dev';
 export const CRASHLOG = {
   beatMs: 2000,        // heartbeat to localStorage: one small JSON write, outside the render loop
   deadIfWithinMs: 6000, // a "running" beat this fresh at start = another tab of the same browser is alive, not a crash
+  quickReturnS: 180,   // #1629: a 'killed' report whose next start came within this many seconds is `why: 'quick'`, later ones `late` (likely closed browser / power-off); a classification, not a filter
   maxBytes: 12_000,    // a report is trimmed below this before sending (the Worker refuses > 16 kB)
   perSession: 12, perDay: 20, // bounded reports; ordinary errors once a day, distinct WebGL episodes separately (#642)
   historySamples: 12, // ~24 seconds of cheap pre-failure counters at beatMs; diagnostic choice, not a device limit

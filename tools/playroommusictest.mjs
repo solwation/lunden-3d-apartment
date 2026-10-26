@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { PlayroomMusic } from '../src/playroommusic.js';
+import { MusicFile } from '../src/music.js';
 import { audioParts, toggleMuted } from '../src/audio.js';
 const doc = new EventTarget(), win = new EventTarget(); doc.hidden=false;
 globalThis.document=doc; globalThis.window=win;
@@ -23,14 +24,14 @@ test('exit/background/pagehide release media and never restart on return',()=>{
  m.play();win.dispatchEvent(new Event('pagehide'));assert.equal(m.file,null);assert.equal(m.state,'off');m.dispose();
 });
 test('late rejected resume cannot stop a newer session; current failure releases mix',async()=>{
- const m=new PlayroomMusic();m.setInside(true);m.play();m.pause();let reject;m.file.el.play=()=>new Promise((_,r)=>reject=r);m.play();m.stop();m.play();const next=m.file;reject(Error('old refusal'));await Promise.resolve();assert.equal(m.file,next);
- m.file.failed();await Promise.resolve();assert.equal(m.file,null);assert.equal(m.state,'off');m.dispose();
+ const m=new PlayroomMusic();m.setInside(true);m.play();m.pause();let reject;const patched=m.file.el;patched.play=()=>new Promise((_,r)=>reject=r);m.play();m.stop();m.play();const next=m.file;reject(Error('old refusal'));await Promise.resolve();assert.equal(m.file,next);
+ m.file.failed();await Promise.resolve();assert.equal(m.file,null);assert.equal(m.state,'off');m.dispose();delete patched.play; // the element is pooled (#1629): drop the per-instance override
 });
 
 test('pause during pending initial play never retries/poisons files, even when resume precedes AbortError', async()=>{
  const { MusicFile, failedFiles }=await import('../src/music.js');const Original=globalThis.Audio;let pending=[], plays=0;
  globalThis.Audio=class extends Original {play(){plays++;this.paused=false;return new Promise((resolve,reject)=>pending.push({resolve,reject}))}};
- try { const file=new MusicFile(audioParts(),new Node(),{files:['test-delayed.ogg','test-delayed.mp3']});const el=file.el;file.pause();file.resume();pending[0].reject(Object.assign(Error('interrupted'),{name:'AbortError'}));await Promise.resolve();assert.equal(file.el,el);assert.equal(file.src,'test-delayed.ogg');assert.equal(failedFiles.has('test-delayed.ogg'),false);assert.equal(plays,2);
+ try { const file=new MusicFile({...audioParts(),ctx:new win.AudioContext()},new Node(),{files:['test-delayed.ogg','test-delayed.mp3']});const el=file.el;file.pause();file.resume();pending[0].reject(Object.assign(Error('interrupted'),{name:'AbortError'}));await Promise.resolve();assert.equal(file.el,el);assert.equal(file.src,'test-delayed.ogg');assert.equal(failedFiles.has('test-delayed.ogg'),false);assert.equal(plays,2);
  file.pause();pending[1].reject(Object.assign(Error('interrupted'),{name:'AbortError'}));await Promise.resolve();assert.equal(file.el,el);assert.equal(file.paused,true);assert.equal(plays,2);file.resume();file.stop();pending[2].reject(Object.assign(Error('removed'),{name:'AbortError'}));await Promise.resolve();assert.equal(file.el,null);assert.equal(plays,3);assert.equal(failedFiles.has('test-delayed.ogg'),false);
  }finally{globalThis.Audio=Original}
 });
@@ -78,4 +79,16 @@ test('#1624 room state: commands go to the room when connected, sync applies ide
  m.sync({st:'off',ix:3,pos:0});assert.equal(m.state,'off');assert.equal(m.file,null);
  m.setInside(false);m.sync({st:'playing',ix:1,pos:0});assert.equal(m.state,'off','not inside: stored, not played');m.setInside(true);assert.equal(m.state,'playing');assert.equal(m.index,1);
  m.setInside(false);m.setInside(true);assert.equal(m.state,'off','a stored state is not replayed after leaving');m.dispose();
+});
+test('#1629: released media elements and source nodes are reused, old listeners and seeks do not follow them', () => {
+ const ctx = new win.AudioContext(), sources = [], make = ctx.createMediaElementSource.bind(ctx); ctx.createMediaElementSource = (el) => { sources.push(el); return make(el); };
+ const A = { ...audioParts(), ctx }, before = created;
+ const a = new MusicFile(A, new Node(), { files: ['one.ogg'] }), el = a.el;
+ let ended = 0; a.ended = () => ended++; a.stop();
+ const b = new MusicFile(A, new Node(), { files: ['two.ogg'] });
+ assert.equal(b.el, el, 'the next track gets the released element'); assert.equal(sources.length, 1, 'one source node per element');
+ b.el.dispatchEvent(new Event('ended')); assert.equal(ended, 0, 'the first file no longer hears the element');
+ const c = new MusicFile(A, new Node(), { files: ['three.ogg'] }); assert.notEqual(c.el, b.el, 'a busy element is never shared'); assert.equal(sources.length, 2);
+ for (let i = 0; i < 20; i++) { const x = new MusicFile(A, new Node(), { files: ['x.ogg'] }); x.stop(); }
+ assert.equal(sources.length, 3, 'twenty more starts add one slot at most, not twenty'); b.stop(); c.stop();
 });

@@ -102,7 +102,7 @@ export class PlayroomMusic {
     const deck = { fade, file: null };
     deck.file = new MusicFile(A, fade, track, { loop: true, failed });
     const el = deck.file.el; // #1624: join a running track at its position (loops, so wrap by the length once known)
-    if (el && offset > 0) { const seek = () => { if (el.duration > 0) el.currentTime = offset % el.duration; }; if (el.readyState >= 1) seek(); else el.addEventListener('loadedmetadata', seek, { once: true }); }
+    if (el && offset > 0) { const seek = () => { if (el.duration > 0) el.currentTime = offset % el.duration; }; if (el.readyState >= 1) seek(); else el.addEventListener('loadedmetadata', seek, { once: true, signal: deck.file.ac?.signal }); } // the element is reused (music.js): the file's signal drops this with it
     return deck;
   }
   killDeck(deck) { if (!deck) return; deck.file.stop(); deck.fade.disconnect(); }

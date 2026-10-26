@@ -549,3 +549,17 @@ playing). The floss (#1622) stays a local choice offered while `state === 'playi
 answered with a resync. Tests: `cloudflare/roommusic.test.mjs` (validation, outside sender, stale/mix/pause, late welcome,
 hibernation, empty room), the `#1624` case in `tools/playroommusictest.mjs`, and `tools/roommusictest.cjs GAME WORKER OUT`
 (four real pages through `node cloudflare/dev.mjs PORT`: start, next, mix, late joiner, pause, off, outsider silent).
+
+### Reused media elements (#1629)
+
+Chrome keeps every `MediaElementAudioSourceNode`, with its element and listeners, alive for as long as its `AudioContext`
+lives, even after `disconnect()`, a removed `src` and `load()`; an element can feed only one source node. `MusicFile` used to
+create `new Audio()` plus a source node per start, so every DJ track change, crossfade or appliance restart left one element,
+about four listeners and two audio nodes behind (measured with `Runtime.queryObjects` after forced GC: +2 elements and +8
+listeners per cycle). `src/music.js` now leases `{ el, node }` slots per `AudioContext` (`leaseSlot`/`releaseSlot`); `drop()` aborts the
+file's listeners (`AbortController`), resets the element and returns the slot. Anything that hangs a listener on `file.el`
+must use `file.ac.signal` (as the DJ join seek in `playroommusic.js` does), otherwise it follows the element to the next track.
+Measured over 3 min in the clubhouse (track changes, disco, billiards, computers, console every ~10 s): elements 0 → 30 before,
+constant 2 after; listeners 745 → 865 before, constant after; JS heap about +1.3 MB before, flat after
+([graph](../verification/1629/heap.png)). The leak was small (tens of KB per track), so it does not explain a 450–600 MB desktop heap.
+Test: the `#1629` case in `tools/playroommusictest.mjs` (9 tests).

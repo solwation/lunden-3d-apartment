@@ -71,7 +71,10 @@ class CrashLog {
     });
     // read the old beat BEFORE the first new one is written
     if (old && old.s === 'run' && old.tab !== this.tab && Date.now() - (old.t || 0) > C.deadIfWithinMs) {
-      this.report('död', 'killed', { beat: old, gap: round((Date.now() - old.t) / 1000, 0) });
+      // #1629: 'quick' = the visitor was back within C.quickReturnS (an Aw-Snap / OS kill is reloaded at once); 'late' = hours or days
+      // later, which is how a browser quit, a power-off or a tab closed mid-debugging looks (no pagehide runs then). Both stay reported.
+      const gap = round((Date.now() - old.t) / 1000, 0);
+      this.report('död', 'killed', { beat: old, gap, why: gap <= C.quickReturnS ? 'quick' : 'late' });
     }
     this.beat();
     this.timer = setInterval(() => { if (!document.hidden) this.beat(); }, C.beatMs);
