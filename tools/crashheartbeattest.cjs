@@ -1,11 +1,12 @@
 // #669: actual native Chromium visibility + production CrashLog/Worker, no renderer/WebGL.
-// Run from repo root: PLAYWRIGHT_MODULE=... CHROME_PATH=... node tools/crashheartbeattest.cjs OUTPUT [--baseline]
+// Run from repo root: PLAYWRIGHT_MODULE=... CHROME_PATH=... node tools/crashheartbeattest.cjs [OUTPUT_DIR] [--baseline]
+// A URL or flag argument (e.g. http://localhost:8634) is never an output path: the test runs its own server, results default to /tmp/crash-heartbeat (#1634).
 // Controlled timestamps below model stale storage; they are not elapsed phone/crash measurements.
 const fs = require('node:fs'), path = require('node:path'), os = require('node:os'), http = require('node:http');
 const { spawn } = require('node:child_process'), { pathToFileURL } = require('node:url');
 const assert = require('node:assert/strict'), crypto = require('node:crypto');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
-const out = path.resolve(process.argv[2] || '/tmp/crash-heartbeat'), baseline = process.argv.includes('--baseline');
+const out = path.resolve(process.argv.slice(2).find(a => !a.startsWith('--') && !/^[a-z][a-z0-9+.-]*:\/\//i.test(a)) || '/tmp/crash-heartbeat'), baseline = process.argv.includes('--baseline');
 fs.mkdirSync(out, { recursive: true });
 const root = process.cwd(), sourceFiles = ['src/crashlog.js','src/config.js','src/cloud.js','src/version.js','src/lowmemory.js','cloudflare/crash.js','cloudflare/worker.js','tools/crashheartbeattest.cjs'];
 const hashes = () => Object.fromEntries(sourceFiles.map(f => [f,crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex')]));
