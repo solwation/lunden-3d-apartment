@@ -146,7 +146,9 @@ do not first try the importer's token fetch, which fails with 403 only if the lo
 If Wrangler is not logged in, ask the user to run `! npx wrangler login`. Use the fallback below for the
 read/export; use the importer (token) only for issue creation and acknowledgement. If the token is rejected
 and the user has not approved replacing it, create the issues by hand (original image committed to
-`docs/ingame-reports/`, `in-game` label, one reviewed priority) and leave the KV keys for the user to acknowledge.
+`docs/ingame-reports/`, `in-game` label, one reviewed priority, first-line marker
+`<!-- lunden-in-game-report:v1:<UUID> -->`), then remove each report as described in
+[Wrangler removal after a manual issue](#wrangler-removal-after-a-manual-issue).
 
 ## Wrangler fallback
 
@@ -195,11 +197,28 @@ existing manifests and journals. Never replace `ADMIN_TOKEN` or
 Continue with the reviewed importer; reading or preparing a manifest is not task
 completion. For every approved report, create and verify the GitHub issue and its
 original image, then acknowledge through the report API so the report is deleted
-from KV. Never delete through Wrangler or before verification. Check the queue
+from KV. Never delete before verification; Wrangler deletion is only the manual-issue path below. Check the queue
 again after acknowledgement, accounting for eventual consistency, and record
 created/acknowledged/remaining counts. Fetch the fresh priority queue and start
 orchestration on its issues. Only an actual remaining failure after attempting
 access recovery is an import blocker; it is not a reason to silently stop at export.
+
+## Wrangler removal after a manual issue
+
+A report must not stay in KV once it has an issue (user, 2026-10-26); otherwise every later
+intake re-reads it and risks a duplicate. When the issue was created by hand because the
+importer could not run, delete the report with Wrangler after verifying, for each UUID:
+
+1. a fresh `gh issue view N` whose body's first line is exactly
+   `<!-- lunden-in-game-report:v1:<UUID> -->` and whose labels include `in-game`;
+2. any original image is committed at `docs/ingame-reports/<UUID>.jpg` (and `-2.jpg`) and embedded.
+
+Then, from `cloudflare/`, pass the validated key as an argv value:
+`npx wrangler kv key delete "report:<UUID>" --binding LUNDEN --remote`. This also applies to
+a report that already has an issue (open or closed) but was never acknowledged. Finish with a
+fresh `kv key list` and record the remaining count. Never delete a report without such an
+issue, and prefer the importer's acknowledgement whenever a working token exists — it also
+records the Worker's claim and receipt, which Wrangler deletion skips.
 
 ## Commit the original image before creating the issue
 
