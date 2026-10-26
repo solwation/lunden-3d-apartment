@@ -218,8 +218,8 @@ export class Playroom {
     this.popcorn = new PopcornCart(this.object, furMat); this.controlPickables.push(...this.popcorn.pickables); // #1567 (tubs: main.js, makeTubs)
     // the way out: an invisible pick box in front of the door (the raycaster ignores `visible: false` materials)
     this.exitTarget = { name: 'lekstugan', kind: 'playroomExit', verb: 'gå ut ur' };
-    const pick = new THREE.Mesh(new THREE.BoxGeometry(R.door.w + 0.1, R.door.h + 0.1, 0.5), new THREE.MeshBasicMaterial({ visible: false }));
-    pick.position.set(R.x, (R.door.h + 0.1) / 2, Z1 - 0.2);
+    const pick = new THREE.Mesh(new THREE.BoxGeometry(R.door.w + 0.1, R.ceiling, 0.5), new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide })); // #1643: up to the ceiling and double-sided, so a tall avatar standing at the door (inside the box) still hits it
+    pick.position.set(R.x, R.ceiling / 2, Z1 - 0.2);
     pick.userData.door = this.exitTarget;
     this.exitTarget.pickable = pick;
     this.object.add(pick);

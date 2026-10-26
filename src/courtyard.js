@@ -352,8 +352,10 @@ export function buildCourtyard() {
     geos.metal.push(new THREE.BoxGeometry(0.12, 0.04, d + 0.32).translate(cx, P.ridge + 0.04, cz)); // the ridge cap
     segments.push(...rectSegs(P.x0, P.x1, P.z0, P.z1));
     // #1319: the door is the way into the secret children's room (main.js `use`: kind 'playhouse'); an invisible pick box over the door leaf
-    const doorPick = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.0, 0.3), new THREE.MeshBasicMaterial({ visible: false }));
-    doorPick.position.set(cx, 0.6, P.z0 - 0.12);
+    // #1643: the whole door wall up to the ridge, and double-sided: the body stops 0.22 m (scaled with height) from the wall,
+    // i.e. inside a deeper box, where a one-sided box is never hit; a small low box also needed a steep look down for tall avatars.
+    const doorPick = new THREE.Mesh(new THREE.BoxGeometry(P.x1 - P.x0, P.ridge, 0.3), new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide }));
+    doorPick.position.set(cx, P.ridge / 2, P.z0 - 0.12);
     const doorTarget = { name: 'lekstugan', kind: 'playhouse', verb: 'gå in i', pickable: doorPick };
     doorPick.userData.door = doorTarget;
     group.add(doorPick); targets.push(doorTarget);
