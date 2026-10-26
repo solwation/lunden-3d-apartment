@@ -60,15 +60,15 @@ const check = (ok, text) => { checks++; if (!ok) failures++; console.log(`${ok ?
     check(inv===false,'a non-1 dn is not dancing');
     check((await Promise.all(pages.map(p=>p.evaluate(()=>glCalls)))).every(n=>n===0),'zero WebGL calls in the native phase');
     if(render){
-      await b.evaluate(()=>{HTMLCanvasElement.prototype.getContext=originalContext;scene.background=new T.Color('#c1d5e1');scene.add(new T.HemisphereLight(0xffffff,0x465b35,2));
+      await b.evaluate(()=>{HTMLCanvasElement.prototype.getContext=originalContext;scene.background=new T.Color('#e9eef2');scene.add(new T.HemisphereLight(0xffffff,0x465b35,2));
         const light=new T.DirectionalLight(0xffffff,2);light.position.set(4,5,3);scene.add(light);window.renderCamera=new T.PerspectiveCamera(40,640/420,.1,100);
         window.renderer=new T.WebGLRenderer({antialias:true});renderer.setPixelRatio(1);renderer.setSize(640,420);document.body.replaceChildren(renderer.domElement);document.body.style.padding='0';});
       await a.evaluate(()=>{dancing=true;}); await b.waitForFunction(()=>peer().dance===true&&peer().avatar.danceAmt>.95);
       await b.evaluate(()=>clearInterval(tick));
-      for(const [name,q] of [['left',.25],['right',.75]]){
-        await b.evaluate(async q=>{const {DANCE}=await import('/src/config.js');const g=peer();g.avatar.time=q/DANCE.floss.hz;g.avatar.update(0,{dance:1});
+      for(const [name,q,cam] of [['left',.25,[-.4,1.5,-3.2]],['right',.75,[-.4,1.5,-3.2]],['three-quarter',.25,[-2.2,1.3,-2.4]]]){
+        await b.evaluate(async ([q,cam])=>{const {DANCE}=await import('/src/config.js');const g=peer();g.avatar.time=q/DANCE.floss.hz;g.avatar.update(0,{dance:1});
           g.root.updateMatrixWorld(true);g.avatar.mesh.skeleton.update();
-          renderCamera.position.copy(g.root.position).add(new T.Vector3(-.4,1.5,-3.2));renderCamera.lookAt(g.root.position.clone().add(new T.Vector3(0,.95,0)));renderer.render(scene,renderCamera);renderer.getContext().finish();},q);
+          renderCamera.position.copy(g.root.position).add(new T.Vector3(...cam));renderCamera.lookAt(g.root.position.clone().add(new T.Vector3(0,.95,0)));renderer.render(scene,renderCamera);renderer.getContext().finish();},[q,cam]);
         await b.screenshot({path:`${out}/floss-${name}.png`});}
       await b.evaluate(()=>renderer.dispose());
     }

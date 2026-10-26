@@ -6603,7 +6603,7 @@ export const AVATAR_CROUCH = {
 // Floss: the hips swing one way while both straight arms swing across the body the other way, one arm forward while the
 // other goes back. *guess*: by eye against the well-known move, not measured.
 export const DANCE = {
-  floss: { hz: 1.9, hipSway: .075, bob: .025, armSide: .36, armDepth: .14, armY: .88, lean: .1 }, // hz: whole left-right cycles per second; metres / rad
+  floss: { hz: 1.9, hipSway: .07, bob: .025, armSide: .4, armDepth: .17, armFwd: .03, reach: .54, lean: .08 }, // hz: whole left-right cycles per second; metres / rad; reach: the straight arm's shoulder-to-hand distance (arm is .57 long)
   ease: 6, // 1/s, how fast the pose blends in and out
   stepAway: .4, // m, walking further than this from where the dance started ends it
 };

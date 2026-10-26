@@ -1130,7 +1130,11 @@ function mouthSlots(text) {
 }
 
 /** #1622: a floss arm target (figure frame): straight across the hips by `sn` (−1 … 1), `depth` ±1 one forward / one back by `cs`. */
-const flossArm = (side, depth, sn, cs) => ({ at: [sn * DANCE.floss.armSide, DANCE.floss.armY, 0.14 + depth * DANCE.floss.armDepth * cs], pole: [side * 0.5, -0.4, -0.8] });
+const flossArm = (side, depth, sn, cs) => { // straight (reach = DANCE.floss.reach), swung out to `sn` and passing in front (+) or behind (−) the hips
+  const F = DANCE.floss, dx = sn * F.armSide, dz = F.armFwd + depth * F.armDepth * cs, y0 = HIP - 0.02 + SH[1] * 0.98;
+  const dy = -Math.sqrt(Math.max(0.01, F.reach ** 2 - dx * dx - dz * dz));
+  return { at: [side * SH[0] + dx, y0 + dy, dz], pole: [side * 0.2, -0.3, -1] };
+};
 const STRIDE = 0.78; // m per step cycle (one leg's whole swing; *guess*: a calm walk)
 const KNEE_REST = [0, 0.25, 1]; // poseOlof's default knee pole
 /** #1149: how far a shoulder moves (figure frame [x, y, z]) when the hips drop by `dy`, move by `dz` and the torso leans
