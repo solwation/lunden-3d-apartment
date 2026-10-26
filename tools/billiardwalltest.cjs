@@ -3,7 +3,7 @@ const fs=require('node:fs'),assert=require('node:assert/strict'),kit=require('./
 const [game='http://localhost:8191',out='/tmp/lekstuga1495']=process.argv.slice(2);
 (async()=>{fs.mkdirSync(out,{recursive:true});const browser=await kit.launch();try{
  const {page}=await kit.open(browser,`${game}/?shot&cloud=&mp=0&freeze&time=12&month=6`,{lazy:true,timeout:180000,viewport:{width:1000,height:700},contextOptions:{hasTouch:true}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.locator('#player-skip').click();/* #441: the first-visit name dialog focuses its input and covers the HUD; a player leaves it with "Hoppa över" */
+ await kit.skipNameDialog(page);/* #441/#1635: the first-visit name dialog covers the HUD and eats E */
  await page.evaluate(async()=>{const a=__app,C=await import('/src/config.js');a.showOverlay(false);a.touch.enabled=true;a.avatarCustomizer.setLook({...C.decodeAvatarLook('241302112','me'),height:140});a.use({kind:'playhouse'});});await page.waitForFunction(()=>__app.player.inPlayroom);await page.waitForTimeout(300);
  const model=await page.evaluate(async()=>{const a=__app,{PLAYROOM:R}=await import('/src/config.js'),T=await import('three'),b=a.world.playroom.billiards;a.renderer.setAnimationLoop(null);
  const p=b.boardMesh.getWorldPosition(new T.Vector3()),n=new T.Vector3(0,0,1).transformDirection(b.boardMesh.matrixWorld);

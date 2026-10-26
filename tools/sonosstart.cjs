@@ -53,8 +53,7 @@ if (require.main === module) {
     console.log('[sonos-start-ready] ' + JSON.stringify({ frames: page.frames().map(f => f.url()), ...readiness }));
     // #441: the first-visit name dialog covers the start button; a player leaves it with "Hoppa över" (#1633, like #1623).
     // Native click, only when the dialog is actually shown, and before the single start click the fixture waits for.
-    const skip = frame.locator('#player-skip');
-    if (await skip.isVisible()) await skip.click({ timeout: 30000 });
+    await require('./testkit.cjs').skipNameDialog(frame);
     // Exactly one native input, after the fixture itself reports app/cover/listener readiness.
     await frame.locator('#start-touch').click({ timeout: 30000 });
     await frame.waitForFunction(() => window.__sonosStart?.beforeFirstMedia, null, { timeout: 30000 });

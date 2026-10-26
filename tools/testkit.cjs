@@ -29,6 +29,14 @@ async function open(browser, url, { viewport = SMALL, test = true, lazy = false,
   return { ctx, page };
 }
 
+/** #441/#1635: the first-visit name dialog focuses `#player-name` and covers the HUD in a fresh profile. Leaves it like a player does
+ *  (native click on "Hoppa över") when it is shown; no-op otherwise. `pageOrFrame` is anything with `.locator()`. Call after the page is up. */
+async function skipNameDialog(pageOrFrame, { timeout = 30000 } = {}) {
+  const skip = pageOrFrame.locator('#player-skip');
+  if (await skip.isVisible()) { await skip.click({ timeout }); return true; }
+  return false;
+}
+
 /** A full-size screenshot of what the page shows now: raises the viewport, quality and shadows, waits `frames` rendered frames, restores. */
 async function shot(page, path, { viewport = FULL, frames = 3, restore, timeout = 300000 } = {}) {
   const was = restore || page.viewportSize() || SMALL;
@@ -44,4 +52,4 @@ async function shot(page, path, { viewport = FULL, frames = 3, restore, timeout 
   return path;
 }
 
-module.exports = { chromium, launch, open, shot, SMALL, FULL };
+module.exports = { chromium, launch, open, shot, skipNameDialog, SMALL, FULL };

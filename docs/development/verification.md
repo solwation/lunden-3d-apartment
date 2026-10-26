@@ -2228,7 +2228,7 @@ the gate, restoring the original manual-step/media setup order. Read-only
 first-media ordering; those observations do not alter raw result rows.
 
 The companion first leaves the #441 first-visit name dialog (which covers the start button) with a native click on
-`#player-skip` when it is shown, as a player would (#1633).
+`#player-skip` when it is shown, as a player would (#1633), via the shared `testkit.skipNameDialog(page)` (#1635; opt-in, `testkit.open` does not call it).
 
 Use the explicit companion with the published runner:
 
