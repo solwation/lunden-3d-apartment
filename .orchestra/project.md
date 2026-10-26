@@ -201,8 +201,8 @@ The conductor runs this loop in every `/orkester` queue session:
    routine reruns) before delivery.
 4. Give the freed slot the next priority issue after a fresh selection.
 5. When nothing is startable and no worker is active, review all work delivered in the
-   session since the last review, across both repositories (the core's "Review the
-   session", added in shared v0.4.0). Workers may
+   session since the last review, across both repositories (the core's
+   [session review](shared/COORDINATION.md#review-the-session)). Workers may
    take read-only review parts within the two-worker cap. Also check changelog ids,
    result images on closed issues, public transfer issues and leftover labels/worktrees.
 6. Findings become issues under the normal priority/ancestor rules (`Bugg: …` for defects).
@@ -212,7 +212,7 @@ The conductor runs this loop in every `/orkester` queue session:
 
 ## Shared version and maintenance
 
-Shared release: **v0.3.2**, commit **ebe2cb8738d9f1ce52f68497e8cfa26b90a01bc1**. Imported as a squashed subtree
+Shared release: **v0.4.0**, commit **d317d0d8733f548d5e62cf8cb1717c495f316c91**. Imported as a squashed subtree
 at `.orchestra/shared`. See [installation](shared/INSTALL.md) and [contribution](shared/CONTRIBUTING.md) instructions.
 Improve the core in its own clean repository, release it, then explicitly update both
 Lunden pins. Keep this local policy outside the subtree; do not export project history.
