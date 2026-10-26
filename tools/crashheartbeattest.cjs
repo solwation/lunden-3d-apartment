@@ -107,6 +107,20 @@ const proc = pid => { const p='/proc/'+pid; const s=fs.readFileSync(p+'/stat','u
     const caps=await p.evaluate(()=>{const b={tab:'same-dead',s:'run',hidden:0,t:Date.now()-10000};const a=crash.report('död','killed',{beat:b,gap:10}),dup=crash.report('död','killed',{beat:b,gap:10});for(let i=0;i<30;i++)crash.report('fel','error',{msg:'cap '+i});return{a,dup,n:crash.sessionSent,max:crash.stats.sent.length,drops:crash.stats.dropped.length};});
     check(caps.a&&!caps.dup&&caps.n===12&&caps.max===12&&caps.drops>0,'foreground dedup and original per-session cap survive',caps);
     await p.close();
+    // #1626: the covering panel and the age of the last resize reach the heartbeat, the loss report and the public view.
+    const q=await make();await q.bringToFront();await q.waitForFunction(()=>!document.hidden);await clear(q);await q.evaluate(()=>loadCrash());
+    env.LUNDEN={...kv};const n1626=result.reports.length;
+    const panel=await q.evaluate(async()=>{const c=document.createElement('canvas');document.body.append(c);let open='note';
+      crash.attach({renderer:{domElement:c,getPixelRatio:()=>1},panel:()=>open});crash.beat();const beat=JSON.parse(localStorage.getItem('lunden.crash.beat'));
+      dispatchEvent(new Event('resize'));await new Promise(r=>setTimeout(r,1200));open=null;crash.beat();
+      c.dispatchEvent(new Event('webglcontextlost'));await fetch('/fixture?barrier');
+      return{beatPanel:beat.panel,rows:JSON.parse(localStorage.getItem('lunden.crash.beat')).history.map(r=>r.panel)};});
+    await sleep(80);
+    const lost=result.reports.slice(n1626).find(r=>r.kind==='webglcontextlost');
+    const pub=(await (await fetch('http://127.0.0.1:8878/crash/public')).json()).find(r=>r.kind==='webglcontextlost');
+    check(panel.beatPanel==='note'&&panel.rows.at(-2)==='note'&&panel.rows.at(-1)===null&&lost?.context.panel===null&&lost.context.surfaceAgeS>=1.1&&lost.context.surfaceAgeS<10
+      &&pub?.context.surfaceAgeS===lost.context.surfaceAgeS&&pub.context.surface.kind==='window-resize'&&pub.state.history.at(-2).panel==='note','#1626 panel and surface age reach heartbeat, loss report and public view',{panel,context:lost?.context,public:pub?.context});
+    await q.close();
     check(result.errors.length===0,'no page/server errors and no canvas contexts');
     assert.deepEqual(hashes(),result.frozen,'frozen source bytes unchanged');result.finished=new Date().toISOString();write();
   }finally{

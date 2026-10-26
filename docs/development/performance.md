@@ -1390,7 +1390,8 @@ The 40 resizes created 0 textures, framebuffers, renderbuffers, buffers or progr
 
 No code changed: no loop, upload, compile or resize leak was found. The d08b1f4 loss at reduced GPU load points away from
 per-frame load and towards something the frame counters do not show (resident GPU memory or iOS itself). That needs a
-device or richer reports. The heartbeat does not record which panel is open; that diagnostic is a follow-up.
+device or richer reports. Since #1631 the heartbeat records the covering `panel` and the loss report `surfaceAgeS`
+(see [storage](storage.md)), so the next report names both directly.
 
 ## Triangle budget over by the basement's bike racks (#704)
 

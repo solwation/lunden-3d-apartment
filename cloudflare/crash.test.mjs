@@ -269,6 +269,20 @@ test('#669: event snapshot diagnostics and surface timing survive POST/KV/public
   assert.equal(visible.context.surface.secret, undefined);
 });
 
+test('#1626: the covering panel and the last resize age are public, unknown panels are dropped', async () => {
+  const env = { LUNDEN: kv(), ADMIN_TOKEN: 'tok' };
+  await post(env, { v: 2, typ: 'fel', kind: 'webglcontextlost', pid: 'p1626', sig: 'p1626',
+    snap: { panel: 'note', history: [{ up: 90, panel: 'note' }, { up: 92, panel: 'Olof private' }, { up: 94 }] },
+    context: { episode: 1, lossUp: 92.1, surface: { kind: 'viewport-resize', up: 2 }, surfaceAgeS: 90.1, panel: 'note' } }, '66.9.0.2');
+  const [visible] = await (await get(env, '/crash/public')).json();
+  assert.equal(visible.state.panel, 'note');
+  assert.deepEqual(visible.state.history.map(r => r.panel), ['note', null, null]);
+  assert.equal(visible.context.surfaceAgeS, 90.1);
+  assert.equal(visible.context.panel, 'note');
+  const bad = publicView({ received: 1, context: { surfaceAgeS: -3, panel: 'x' }, snap: { panel: '<b>' } });
+  assert.deepEqual([bad.context.surfaceAgeS, bad.context.panel, bad.state.panel], [null, null, null]);
+});
+
 test('#669: malformed and missing snapshot/surface diagnostics remain bounded', async () => {
   const env = { LUNDEN: kv(), ADMIN_TOKEN: 'tok' };
   const { id } = await (await post(env, { v: 2, typ: 'fel', pid: 'bad669', sig: 'bad669',

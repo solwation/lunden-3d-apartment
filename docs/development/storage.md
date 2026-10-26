@@ -298,6 +298,11 @@ src/crashlog.js        crash reports (#629), inert without the cloud (same switc
                        frame since the last beat when it took 50 ms or more: [CPU ms, new shader programs, shadow-map redraw 0/1, warm-up state].
                        Since #1100 each sample has `sh` = shadow-map redraws since the last beat and `shHold` = how many of them were
                        held redraws after "Använd"/a choice (public numbers; older reports have null).
+                       Since #1631 (part of #1626) the snapshot and each sample have `panel` = what covers the game (`menu`, `portrait`,
+                       `note`, `terminal`, `tasks`, `binder`, `clock`, `sonos`, `calendar`, `blind`, `book`, `poster`, `avatar`,
+                       `video`, `other`; null while playing; main.js `openPanel`), which explains a 10 fps sample (the covered throttle).
+                       Loss/restore `context` adds `panel` and `surfaceAgeS` = seconds since `context.surface` (that field is the session's
+                       last resize, not one at the loss). The public view keeps only the listed panel names and a nonnegative age.
                        #669 also reads pending `worst` non-destructively in event snapshots, with `beatAgeMs` since the last
                        actual heartbeat (not a CPU/GPU loss-frame measurement). Loss/restore reports include current `layout`
                        measures and `context.surface` = last actual resize/orientation event `{kind, up}`; absent event is null.

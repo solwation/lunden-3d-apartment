@@ -112,6 +112,7 @@ class CrashLog {
     if (!c) { s.phase = 'load'; return s; }
     try {
       const { renderer, quality, player, world, sun, mirrorTarget } = c;
+      s.panel = c.panel ? this.panelNow() : undefined; // #1626: the panel covering the game (its 10 fps throttle), null while playing
       if (player) {
         const p = player.pos, lvl = player.level;
         s.at = { x: round(p.x), y: round(p.y), z: round(p.z), lvl, room: (player.aloft ? 'uppe' : world?.roomAt?.(lvl, p.x, p.z)) ?? 'ute' };
@@ -206,7 +207,7 @@ class CrashLog {
       if (fd) { fd.ms = 0; fd.passes = 0; fd.held = 0; }
       this.history.push({ up: s.up, phase: s.phase, warm: s.warm, worst, frame: s.frame, q: s.q?.lvl, px: s.px,
         fps: s.fps, geo: s.gl3?.geo, tex: s.gl3?.tex, prog: s.gl3?.prog, calls: s.gl3?.calls,
-        tris: s.gl3?.tris, sourceTexMB: s.gpuMB?.tex, jsMB: s.jsMB?.[0], lagMs, sh, shHold,
+        tris: s.gl3?.tris, sourceTexMB: s.gpuMB?.tex, jsMB: s.jsMB?.[0], lagMs, sh, shHold, panel: s.panel,
         gl: this.glLost ? 'lost' : 'ok' });
       if (this.history.length > C.historySamples) this.history.shift();
       s.history = this.history.slice();
@@ -383,11 +384,15 @@ class CrashLog {
     this.report('fel', lost ? 'webglcontextlost' : 'webglcontextrestored', {
       context: { episode: loss?.episode ?? 0, lossUp: loss?.up ?? null,
         durationMs: lost || !loss ? null : round(now - loss.at, 0),
-        status: clip(e.statusMessage, 160), missingLoss: !loss, surface: this.surfaceEvent },
+        status: clip(e.statusMessage, 160), missingLoss: !loss, surface: this.surfaceEvent,
+        // #1626: `surface` is the session's last resize, not one at the loss: its age (s) at this event, and the panel now
+        surfaceAgeS: this.surfaceEvent ? round((now - T0) / 1000 - this.surfaceEvent.up, 1) : null, panel: this.panelNow() },
       layout: this.layoutMeasure(false), // current CSS/viewport/buffer at loss and restore; no forced GL work
     });
     if (!lost) this.contextLoss = null;
   }
+
+  panelNow() { try { return this.ctx?.panel ? clip(this.ctx.panel() ?? '', 12) || null : null; } catch { return null; } }
 
   hookActions() {
     const add = (what) => { this.acts.push([round((performance.now() - T0) / 1000, 0), what]); if (this.acts.length > C.actions) this.acts.shift(); };

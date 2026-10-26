@@ -16,6 +16,9 @@ const CRASH_TTL = 14 * 24 * 60 * 60;   // seconds
 const DUP_TTL = 24 * 60 * 60;
 const PER_IP_HOUR = 20;
 const MAX_REPORTS = 400;
+// #1626: the panel covering the game (src/main.js openPanel); anything else is dropped from the public view
+const PANELS = ['menu', 'portrait', 'note', 'terminal', 'tasks', 'binder', 'clock', 'sonos', 'calendar', 'blind', 'book', 'poster', 'avatar', 'video', 'other'];
+const panelView = (v) => (PANELS.includes(v) ? v : null);
 const LAYOUT_FAULT_CLASSES = ['surface-css', 'surface-vv', 'foreground-projection', 'background-projection', 'covered-projection'];
 const TYPES = ['död', 'fel', 'layout']; // layout (#567): the game canvas not filling the screen
 
@@ -113,6 +116,7 @@ function stateView(b) {
   if (worst !== undefined) o.worst = worst;
   o.beatAgeMs = typeof b.beatAgeMs === 'number' && b.beatAgeMs >= 0 ? nm(b.beatAgeMs) : null;
   o.phase = txt(b.phase, 16); o.frame = nm(b.frame); o.buffer = nums(b.buffer, 2);
+  o.panel = panelView(b.panel);
   o.background = b.hidden ? 1 : 0; o.standalone = b.standalone ? 1 : 0; o.maxTextureSize = nm(b.maxTextureSize);
   const warm = warmView(b.warm);
   if (warm !== undefined) o.warm = warm;
@@ -120,7 +124,7 @@ function stateView(b) {
     const row = v && typeof v === 'object' ? v : {};
     return { ...Object.fromEntries(['up', 'frame', 'q', 'px', 'fps', 'geo', 'tex', 'prog', 'calls', 'tris', 'sourceTexMB', 'jsMB', 'lagMs', 'sh', 'shHold'].map(k => [k, nm(row[k])])),
       phase: ['load', 'scene', 'pending', 'compiling', 'draw', 'mirror', 'mirror-draw', 'textures', 'uploading', 'done', 'drawn', 'skipped'].includes(row.phase) ? row.phase : null,
-      gl: row.gl === 'lost' ? 'lost' : row.gl === 'ok' ? 'ok' : null, ...historyDiagnostics(row) };
+      gl: row.gl === 'lost' ? 'lost' : row.gl === 'ok' ? 'ok' : null, panel: panelView(row.panel), ...historyDiagnostics(row) };
   });
   if (b.at) o.at = { room: txt(b.at.room, 40), lvl: nm(b.at.lvl), x: nm(b.at.x), y: nm(b.at.y), z: nm(b.at.z) };
   if (b.q) o.q = { lvl: nm(b.q.lvl), max: nm(b.q.max) };
@@ -153,6 +157,8 @@ export function publicView(r) {
       surface: ['window-resize', 'viewport-resize', 'orientationchange', 'orientation-change'].includes(r.context.surface?.kind) &&
         Number.isFinite(r.context.surface.up) && r.context.surface.up >= 0
         ? { kind: r.context.surface.kind, up: nm(r.context.surface.up) } : null,
+      surfaceAgeS: typeof r.context.surfaceAgeS === 'number' && r.context.surfaceAgeS >= 0 ? nm(r.context.surfaceAgeS) : null,
+      panel: panelView(r.context.panel),
     } : null,
     state: stateView(state), layout: layoutView(r.layout), errs: Array.isArray(r.errs) ? r.errs.slice(-5).map((e) => txt(e, 100)) : undefined };
 }
