@@ -1442,6 +1442,8 @@ Kiss greeting (#1343): reserved `KISS.phrase`15 in existing `{t:'g',to,k}`; no n
 
 Shared billiard table (#1355): the players room also owns the children's-room billiard game (`{ t: 'pool', k: 's'|'m'|'r', q, d? }` requests, `T`/`S`/`no` answers, storage key `pool`, authoritative `simulateStroke` from `src/billiardsync.js`); protocol, limits, seats and empty-room behaviour in [furniture.md](furniture.md#shared-table-1355). `cloud.yml` redeploys on `src/billiard*.js` changes.
 
+Shared playroom music (#1624): the same room also owns the children's-room music transport (`{ t: 'mus', k: 'p'|'z'|'o'|'n'|'m', ix? }` commands, `{ t: 'mus', st, ix, pos, mx? }` answers, storage key `mus`, cleared with the table when the room empties); protocol in [animals-audio.md](animals-audio.md#shared-playroom-music-1624). `cloud.yml` redeploys on `cloudflare/` changes.
+
 
 ## Love receipts in visitor statistics (#1398)
 

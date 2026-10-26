@@ -64,3 +64,18 @@ test('#1622: the floss is offered only while the music plays and ends with pause
  m.play();row().run();m.stop();assert.equal(m.dancing,false);
  m.play();row().run();m.setInside(false);assert.equal(m.dancing,false);m.dispose();
 });
+
+test('#1624 room state: commands go to the room when connected, sync applies idempotently, early state waits for entry, bad state ignored',()=>{
+ const m=new PlayroomMusic(),sent=[];m.net={ready:()=>true,send:x=>{sent.push(x);return true}};
+ m.setInside(true);m.play();assert.deepEqual(sent.pop(),{t:'mus',k:'p'});assert.equal(m.state,'off','the room answers, nothing local yet');
+ m.stop();assert.deepEqual(sent.pop(),{t:'mus',k:'o'});
+ m.sync({st:'playing',ix:2,pos:5000});assert.equal(m.state,'playing');assert.equal(m.index,2);const file=m.file;
+ m.sync({st:'playing',ix:2,pos:5100});assert.equal(m.file,file,'same track and state: nothing is rebuilt');
+ m.next(false);assert.deepEqual(sent.pop(),{t:'mus',k:'n',ix:2});m.next(true);assert.deepEqual(sent.pop(),{t:'mus',k:'m',ix:2});assert.equal(m.index,2);
+ m.sync({st:'playing',ix:2,pos:7000,mx:{to:3,el:2000}});assert.ok(m.mixing);assert.equal(m.index,3);assert.equal(m.mixing.outgoing.fade.gain.value<1&&m.mixing.incoming.fade.gain.value>0,true);
+ m.sync({st:'paused',ix:3,pos:9000});assert.equal(m.state,'paused');
+ m.sync({st:'playing',ix:'x',pos:0});m.sync({st:'playing',ix:99,pos:0});m.sync({st:'playing',ix:1,pos:-1});m.sync(null);assert.equal(m.index,3);
+ m.sync({st:'off',ix:3,pos:0});assert.equal(m.state,'off');assert.equal(m.file,null);
+ m.setInside(false);m.sync({st:'playing',ix:1,pos:0});assert.equal(m.state,'off','not inside: stored, not played');m.setInside(true);assert.equal(m.state,'playing');assert.equal(m.index,1);
+ m.setInside(false);m.setInside(true);assert.equal(m.state,'off','a stored state is not replayed after leaving');m.dispose();
+});

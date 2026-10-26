@@ -7,6 +7,7 @@ import { nerfHeadContact } from '../src/nerf.js';
 import { bowHeadContact } from '../src/bowflight.js';
 import { fallDamage } from '../src/falldamage.js';
 import { cleanHeldCategory } from '../src/heldcategory.js';
+import { SONOS, MUSIC } from '../src/config.js';
 import { PLAYROOM, TOYS, SCORE, pvpHitPoints, PVP_RIFLE_HEAD as RH, rifleHeadContact, PVP_HEAD_BOXES as HB, rifleBoxHeadContact, straightBoxHeadContact, avatarCodeValid } from '../src/config.js';
 
 import { freshTable, validSnapshot, cleanDirection, simulateStroke } from '../src/billiardsync.js';
@@ -46,6 +47,12 @@ import { recordGame } from './games.js';
 // deterministic physics + rules as the clients and sends everybody in the room { t: 'pool', k: 'S', i, d, ms, e: end snapshot,
 // st: seats } (a stroke) or { k: 'T', e, st } (the table: on entering the room, after a new rack, to a stale sender); a refusal is
 // { k: 'no', why } to the sender only. No ball stream. The table lives in memory + storage 'pool' until the last player leaves the room.
+// The children's-room music (#1624, src/playroommusic.js): ONE shared transport owned by the room. A player inside the room (same
+// presence as the table) sends { t: 'mus', k: 'p' | 'z' | 'o' | 'n' | 'm', ix? } (play/resume, pause, off, next track = cut, mix to the next
+// track; ix = the track the sender saw, a stale next/mix is refused). The room keeps { st: off|playing|paused, ix, at (server ms when
+// position 0 was), pos (ms while paused), mx: { to, at, el } while a crossfade runs } and sends everybody inside { t: 'mus', st, ix, pos,
+// mx?: { to, el } } (pos / el = elapsed ms, so no clock sync is needed), to a player entering the room when something plays, and to a
+// refused or too-fast sender (a resync). No per-frame traffic; held in memory + storage 'mus' until the last player leaves the room.
 // Room → client: { t: 'w', i: your id, ps: [{ i, n, p, r, h, score, l }], c: { lives, weapons } } on joining; { t: 'j', i, n, l } someone
 // joined; { t: 's', i, p, r, h, score, l } a state (l = server-owned remaining lives); { t: 'x', i } someone left; 'hit' / 'hurt' (#667). n = the name ('' = "Anonym").
 // Chat (#675, `cleanTalk` / `talk`): { t: 'm', m: text } → the others get { t: 'm', i, n, m } (a sender over the limits gets
@@ -69,6 +76,7 @@ export const PLAYERS = {
   soundRange: 45,      // #1302: only players within this many metres of the sender's last known position get it (*guess*; the client fades it out earlier)
   sounds: ['bell'],    // #1302: the whitelist of sound-event keys (the client's SOUNDS.kinds), never free text
   pool: { every: 0.5, reach: 3, margin: 0.3 }, // #1355: one table action per connection at most this often (s); within `reach` m of the table; room edge slack (m) (*guess*)
+  music: { every: 0.4 }, // #1624: one room-music command per connection at most this often (s)
   toastPhrases: 8,     // #1222: the line is an index below this into the client's TOAST.all, never text
 };
 
@@ -168,6 +176,17 @@ export function cleanPool(text) {
   if (m.k !== 's') return { k: m.k, q: m.q };
   const d = cleanDirection(m.d);
   return d ? { k: 's', q: m.q, d } : null;
+}
+
+const MUSIC_TRACKS = SONOS.channels.flatMap((c) => c.tracks).length; // #1624: the client's PLAYROOM_TRACKS, in this order
+const MUSIC_KEYS = ['p', 'z', 'o', 'n', 'm'];
+/** A room-music command (#1624) { t: 'mus', k: 'p' | 'z' | 'o' | 'n' | 'm', ix? } → { k, ix? }, or null. */
+export function cleanMusic(text) {
+  let m;
+  try { m = JSON.parse(text); } catch { return null; }
+  if (m?.t !== 'mus' || !MUSIC_KEYS.includes(m.k)) return null;
+  if (m.ix === undefined) return { k: m.k };
+  return Number.isInteger(m.ix) && m.ix >= 0 && m.ix < MUSIC_TRACKS ? { k: m.k, ix: m.ix } : null;
 }
 
 /** Is a position (feet, metres) inside the children's room (#1355)? */
@@ -282,13 +301,14 @@ const att = (ws) => { try { return ws.deserializeAttachment() ?? null; } catch {
 export class PlayerRoom {
   constructor(ctx, env) {
     this.ctx = ctx; this.env = env; this.bill = null; this.unsaved = 0;
+    this.mus = null; this.musWrite = null; // #1624
     this.pool = null; this.poolWrite = null; // #1355: { snap, st: [id|null, id|null], busy: ms } while anybody is in the children's room
     this.cinema=new RoomCinema(ctx,()=>this.open().map(ws=>({ws,a:att(ws)})),send);
     this.tvs=[...TV_MEDIA.screens,...COMPUTER_MEDIA.stations].map(s=>new RoomCinema(ctx,()=>this.open().map(ws=>({ws,a:att(ws)})),send,s.id));
     // #1577: Ormstriden results go to the shared top list in KV; writes are chained so this room never races itself.
     this.gameWrites=Promise.resolve();
     this.snake=new RoomSnake(()=>this.open().map(ws=>({ws,a:att(ws)})),()=>this.tvs,send,row=>{if(env?.LUNDEN)this.gameWrites=this.gameWrites.then(()=>recordGame(env.LUNDEN,'ormstriden',row)).catch(()=>{});});
-    ctx.blockConcurrencyWhile?.(async () => { this.pool = (await ctx.storage.get('pool')) ?? null;await this.cinema.load();for(const tv of this.tvs)await tv.load(); });
+    ctx.blockConcurrencyWhile?.(async () => { this.pool = (await ctx.storage.get('pool')) ?? null; this.mus = (await ctx.storage.get('mus')) ?? null;await this.cinema.load();for(const tv of this.tvs)await tv.load(); });
     if (typeof WebSocketRequestResponsePair === 'function') ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('p', 'q'));
   }
 
@@ -375,17 +395,54 @@ export class PlayerRoom {
   // --- #1355: the shared children's-room billiard table ---
   poolPlayers(except) { return this.open().filter((w) => w !== except && att(w).pr === true); }
   poolSave() { this.poolWrite = this.pool ? ['put', this.pool] : ['delete']; }
-  async poolFlush() { const w = this.poolWrite; this.poolWrite = null; if (w?.[0] === 'put') await this.ctx.storage.put('pool', w[1]); else if (w) await this.ctx.storage.delete('pool'); }
+  async poolFlush() { const mw = this.musWrite; this.musWrite = null; if (mw?.[0] === 'put') await this.ctx.storage.put('mus', mw[1]); else if (mw) await this.ctx.storage.delete('mus');
+    const w = this.poolWrite; this.poolWrite = null; if (w?.[0] === 'put') await this.ctx.storage.put('pool', w[1]); else if (w) await this.ctx.storage.delete('pool'); }
   /** The table; a fresh free-play rack when the room had none. */
   poolTable() { if (!this.pool || !validSnapshot(this.pool.snap)) { this.pool = { snap: freshTable(PLAYROOM.billiards, 'free', 1), st: [null, null], busy: 0 }; this.poolSave(); } return this.pool; }
   /** Nobody (but `except`) left in the room: the table is forgotten, the next visitor gets a new free-play rack. */
-  poolTrim(except) { if (this.pool && !this.poolPlayers(except).length) { this.pool = null; this.poolSave(); } }
+  poolTrim(except) { if (!this.poolPlayers(except).length) { if (this.pool) { this.pool = null; this.poolSave(); } if (this.mus) { this.mus = null; this.musSave(); } } }
   poolTableMsg(table, k = 'T') { return JSON.stringify({ t: 'pool', k, e: table.snap, st: table.st }); }
   /** A state arrived: entering the room gets the existing table, leaving it may empty the room. */
   poolPresence(ws, a) {
     const inside = inPlayroom(a.s?.p);
-    if (inside && a.pr !== true) { a.pr = true; send(ws, this.poolTableMsg(this.poolTable())); }
+    if (inside && a.pr !== true) { a.pr = true; send(ws, this.poolTableMsg(this.poolTable())); if (this.mus && this.musState(Date.now()).st !== 'off') send(ws, this.musMsg(Date.now())); }
     else if (!inside && a.pr === true) { a.pr = false; this.poolTrim(ws); }
+  }
+  // --- #1624: the shared children's-room music transport ---
+  musSave() { this.musWrite = this.mus ? ['put', this.mus] : ['delete']; }
+  /** The transport (off, track 0 when the room had none); a finished crossfade is settled lazily here. */
+  musState(now) {
+    const s = this.mus ??= { st: 'off', ix: 0, at: 0, pos: 0, mx: null };
+    if (s.st === 'playing' && s.mx && now - s.mx.at >= MUSIC.crossfade * 1000) { s.ix = s.mx.to; s.at = s.mx.at; s.mx = null; this.musSave(); }
+    return s;
+  }
+  musMsg(now) {
+    const s = this.musState(now), play = s.st === 'playing';
+    return JSON.stringify({ t: 'mus', st: s.st, ix: s.ix, pos: Math.round(play ? now - s.at : s.pos), ...(s.mx ? { mx: { to: s.mx.to, el: Math.round(play ? now - s.mx.at : s.mx.el) } } : {}) });
+  }
+  musCmd(ws, a, m, now) {
+    if (a.pr !== true) return; // not in the room: nothing to say
+    const s = this.musState(now);
+    if (now - (a.mu ?? 0) < PLAYERS.music.every * 800) return send(ws, this.musMsg(now));
+    a.mu = now;
+    let changed = false;
+    if (m.k === 'p') {
+      if (s.st === 'off') { Object.assign(s, { st: 'playing', at: now, pos: 0, mx: null }); changed = true; }
+      else if (s.st === 'paused') { s.st = 'playing'; s.at = now - s.pos; if (s.mx) s.mx.at = now - s.mx.el; changed = true; }
+    } else if (m.k === 'z') {
+      if (s.st === 'playing') { s.pos = now - s.at; if (s.mx) s.mx.el = now - s.mx.at; s.st = 'paused'; changed = true; }
+    } else if (m.k === 'o') {
+      if (s.st !== 'off') { Object.assign(s, { st: 'off', pos: 0, mx: null }); changed = true; }
+    } else if (s.st !== 'off' && !s.mx && (m.ix === undefined || m.ix === s.ix)) { // 'n' next / 'm' mix; refused while off, mixing or stale
+      const to = (s.ix + 1) % MUSIC_TRACKS;
+      if (m.k === 'm' && s.st === 'playing') s.mx = { to, at: now, el: 0 };
+      else Object.assign(s, { ix: to, st: 'playing', at: now, pos: 0 });
+      changed = true;
+    }
+    if (!changed) return send(ws, this.musMsg(now));
+    this.musSave();
+    const out = this.musMsg(now);
+    for (const w of this.open()) if (att(w).pr === true) send(w, out);
   }
   poolRefuse(ws, why, table) { send(ws, JSON.stringify({ t: 'pool', k: 'no', why })); if (table && why === 'stale') send(ws, this.poolTableMsg(table)); }
   poolMsg(ws, a, m, now) {
@@ -468,7 +525,7 @@ export class PlayerRoom {
       else if (m?.t === 'consume' && Number.isSafeInteger(m.id) && m.id > 0 && typeof m.portion === 'string' && m.portion.length > 0 && m.portion.length <= 64) consuming = m;
     } catch {}
     let lifeChanged = false;
-    const talk = cleanTalk(message), hello = !talk && cleanGreet(message), toast = !talk && !hello && cleanToast(message), sound = !talk && !hello && !toast && cleanSound(message), pool = !talk && !hello && !toast && !sound && cleanPool(message), cinema = !talk && !hello && !toast && !sound && !pool && cleanCinema(message), snake = !talk && !hello && !toast && !sound && !pool && !cinema && cleanSnake(message), shot = !talk && !hello && !toast && !sound && !pool && !cinema && !snake && cleanShot(message);
+    const talk = cleanTalk(message), hello = !talk && cleanGreet(message), toast = !talk && !hello && cleanToast(message), sound = !talk && !hello && !toast && cleanSound(message), pool = !talk && !hello && !toast && !sound && cleanPool(message), mus = !talk && !hello && !toast && !sound && !pool && cleanMusic(message), cinema = !talk && !hello && !toast && !sound && !pool && !mus && cleanCinema(message), snake = !talk && !hello && !toast && !sound && !pool && !mus && !cinema && cleanSnake(message), shot = !talk && !hello && !toast && !sound && !pool && !mus && !cinema && !snake && cleanShot(message);
     if (falling) {
       const damage = fallDamage(falling.drop, falling.gap, COMBAT.lives);
       if (damage !== null) {
@@ -542,6 +599,7 @@ export class PlayerRoom {
         }
       }
     } else if (pool) this.poolMsg(ws, a, pool, now); // #1355
+    else if (mus) this.musCmd(ws, a, mus, now); // #1624
     else if(cinema){const screen=cinema.screen?this.tvs.find(tv=>tv.id===cinema.screen):this.cinema;screen?.handle(ws,a,cinema,now);}
     else if(snake)this.snake.handle(ws,a,snake,now);
     else if (shot) {

@@ -509,10 +509,9 @@ the list wraps). Each track runs on its own deck (`MusicFile` → fader gain →
 two decks overlap during a mix; a mix tick (50 ms) moves the faders `cos`/`sin`, then drops the old deck.
 Pause waits the fade, volume/mute/OFF/exit/pagehide release both decks, a new track that fails to
 load keeps the old one, and a new mix/cut is refused while mixing (menu reason "Mixar redan").
-**Not synced:** the room music was and is local to each visitor (no music message exists in
-`cloudflare/players.js`); syncing track/mix state for players in the room needs a new room-owned
-message like the billiard table's (#1355) and is tracked separately. Tests:
-`node --test tools/playroommusictest.mjs` (6 tests) and the real-app touch check
+**Synced since #1624:** see the next section.
+Tests:
+`node --test tools/playroommusictest.mjs` (8 tests) and the real-app touch check
 `tools/playroommixtest.cjs GAME OUT` (menu rows, tap cut and mix, deck gains/elements over time).
 
 ### Playroom floss dance (#1622)
@@ -526,5 +525,27 @@ state; a change counts as movement; Worker `cleanState` keeps only literal `1`, 
 `Avatar.update({ dance })` blends `danceAmt` in over `DANCE.ease`: hips sway one way with the feet targets
 moved the other way (planted), both arms sweep across the hips (one forward, one back), a small bob and lean;
 no new mesh, light or message. Tunables: `DANCE` in `src/config.js` (*guess*, by eye). The music itself is
-still local (#1624). Tests: `node --test tools/playroommusictest.mjs cloudflare/players.test.mjs` and
+shared since #1624 (section below). Tests: `node --test tools/playroommusictest.mjs cloudflare/players.test.mjs` and
 `tools/flosstest.cjs GAME WORKER OUT [--render]` (dancer + observer through the Worker, mirror, two render phases).
+
+### Shared playroom music (#1624)
+
+The room owns ONE transport, like the billiard table (#1355) and under the same presence (`a.pr`, the last state's
+position inside the children's room). Protocol (details in the `cloudflare/players.js` header):
+client → room `{ t: 'mus', k, ix? }` with `k` = `p` play/resume, `z` pause, `o` off, `n` next (cut), `m` mix to the next track
+(`ix` = the track the sender saw, a stale `n`/`m` is refused; both are also refused while off or mixing); the room
+answers everybody inside (the sender too) with `{ t: 'mus', st: off|playing|paused, ix, pos, mx?: { to, el } }`. `pos`/`el`
+are elapsed milliseconds, so no clock sync is needed (latency error only). Server state `{ st, ix, at, pos, mx }` lives in
+memory + storage `mus`, a finished crossfade is settled lazily, pausing freezes `pos` and the fade, and the state is dropped
+when the last player leaves the room (`poolTrim`). A player entering the room while something plays gets the state at once (late
+welcome); a refused or too-fast (`PLAYERS.music.every`) sender gets a resync. Only commands are sent, never per frame.
+Client: `PlayroomMusic.play/pause/stop/next` send the command when `net.ready()` (main.js wires `net` to `ghosts.music`) and
+do nothing locally; the room's answer is applied by `sync(m)`, which is idempotent (same track and state: no rebuild),
+seeks a joining deck to `pos % duration`, starts a running mix at its fade position, ignores malformed state and keeps a state that
+arrives before the client is inside until `setInside(true)`. Without a connection the old local behaviour remains
+(`playLocal/pauseLocal/stopLocal/nextLocal`; visibility/pagehide/leaving the room stop only the local playback, the room keeps
+playing). The floss (#1622) stays a local choice offered while `state === 'playing'`, which now follows the shared state.
+*Limits:* positions are approximate (media load/seek, latency), and a second command within `every` x 0.8 s is only
+answered with a resync. Tests: `cloudflare/roommusic.test.mjs` (validation, outside sender, stale/mix/pause, late welcome,
+hibernation, empty room), the `#1624` case in `tools/playroommusictest.mjs`, and `tools/roommusictest.cjs GAME WORKER OUT`
+(four real pages through `node cloudflare/dev.mjs PORT`: start, next, mix, late joiner, pause, off, outsider silent).
