@@ -31,5 +31,30 @@ const stub = "document.getElementById('loading').hidden=true;window.mainStarted=
       }
       await page.close();
     }
+    // #1630: a hung import (never settles) counts as a load failure only while nothing finishes downloading.
+    const page = await browser.newPage(); await page.goto(base, { waitUntil: 'domcontentloaded' });
+    const r = await page.evaluate(async () => {
+      const { importWithRetry } = await import('./src/startuprecovery.js');
+      const fake = () => { const m = {}; return { getItem: k => m[k] ?? null, setItem: (k, v) => { m[k] = v; } }; };
+      const base = { retries: 1, delay: 10, stallTimeout: 300, storage: fake(), downloading: () => true, watchProgress: () => () => {} };
+      const never = new Promise(() => {}), out = {};
+      let calls = [];
+      out.once = { value: await importWithRetry('http://x.test/src/main.js', { ...base, reload: () => { out.reloaded = 1; },
+        importer: u => { calls.push(u); return calls.length === 1 ? never : Promise.resolve('ok'); } }), calls };
+      calls = []; let reloads = 0;
+      out.always = { value: await importWithRetry('http://x.test/src/main.js', { ...base, reload: () => { reloads++; }, importer: u => { calls.push(u); return never; } }), calls, reloads };
+      const t0 = Date.now();
+      out.notDownloading = await importWithRetry('http://x.test/src/main.js', { ...base, downloading: () => false, importer: () => new Promise(res => setTimeout(() => res('late'), 700)) });
+      let arm;
+      const slow = importWithRetry('http://x.test/src/main.js', { ...base, watchProgress: cb => { arm = setInterval(cb, 100); return () => clearInterval(arm); },
+        importer: () => new Promise(res => setTimeout(() => res('slow-but-progressing'), 800)) });
+      out.progressing = await slow;
+      return out;
+    });
+    assert.equal(r.once.value, 'ok'); assert.equal(r.once.calls.length, 2); assert.match(r.once.calls[1], /[?&]r=1/); assert.equal(r.reloaded, undefined);
+    assert.equal(r.always.value, true); assert.equal(r.always.calls.length, 2); assert.equal(r.always.reloads, 1);
+    assert.equal(r.notDownloading, 'late'); assert.equal(r.progressing, 'slow-but-progressing');
+    console.log('PASS stall: hung import retried once then guarded reload; no stall while building or while downloads finish', JSON.stringify({ once: r.once.calls.length, always: r.always.calls.length }));
+    await page.close();
   } finally { await browser.close(); }
 })().catch(e => { console.error(e); process.exitCode = 1; });

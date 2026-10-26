@@ -86,11 +86,37 @@ export function takeStartupFailure() {
 // failed static dependency (same URL) is only forgotten by one guarded page reload. Before each retry the published
 // build is checked again, so a Pages deploy that was in progress can finish (and a newer build is navigated to).
 const RELOAD_KEY = 'lunden.importReload';
+/** #1630: reject like a load failure when nothing finishes downloading for `timeout` ms while the import is pending (a hung
+ *  connection never rejects); the import itself cannot be aborted, so the retry/guarded reload takes over. */
+function importStalled(promise, timeout, watchProgress, downloading) {
+  if (!(timeout > 0)) return promise;
+  let timer, stop = () => {};
+  const stalled = new Promise((_, reject) => {
+    // main.js's top-level await covers the whole start (plan, build, warm-up: long CPU work, no downloads), so the watch only
+    // applies while the card still says "Hämtar programfilerna"; main.js's first loading step ends it.
+    const arm = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => { if (downloading()) reject(Error(`Importing a module script failed: stalled ${Math.round(timeout / 1000)} s`)); }, timeout);
+    };
+    arm(); stop = watchProgress(arm);
+  });
+  return Promise.race([promise, stalled]).finally(() => { clearTimeout(timer); stop(); });
+}
 const moduleOf = (error, fallback) => String(error?.message || '').match(/https?:\/\/[^\s'")]+/)?.[0] || fallback;
+/** Call `onProgress` whenever a request finishes (Resource Timing), so a stall is "no request finished for a while", not
+ *  "slow": a slow network keeps finishing files. Returns a stop function; without PerformanceObserver there is no watch. */
+function watchResources(onProgress) {
+  try {
+    const observer = new PerformanceObserver(onProgress);
+    observer.observe({ type: 'resource' });
+    return () => observer.disconnect();
+  } catch { return () => {}; }
+}
+
 /** Import `url`, retrying; resolves true when a retry navigates/reloads away. Throws the first error (with startupModule/startupTries). */
 export async function importWithRetry(url, {
   importer = u => import(u), recheck = async () => true, reload = () => location.reload(),
-  retries = STARTUP.importRetries, delay = STARTUP.importRetryDelay, storage, now = Date.now,
+  retries = STARTUP.importRetries, stallTimeout = STARTUP.importStallTimeout, watchProgress = watchResources, downloading = () => currentStep() === 'Hämtar programfilerna', delay = STARTUP.importRetryDelay, storage, now = Date.now,
   sleep = ms => new Promise(resolve => setTimeout(resolve, ms)),
 } = {}) {
   if (storage === undefined) { try { storage = globalThis.sessionStorage; } catch { /* blocked: no reload */ } }
@@ -100,7 +126,7 @@ export async function importWithRetry(url, {
       if (attempt) { await sleep(delay); if (!(await recheck())) return true; }
       const next = new URL(url);
       if (attempt) next.searchParams.set('r', attempt);
-      return await importer(next.href);
+      return await importStalled(importer(next.href), stallTimeout, watchProgress, downloading);
     } catch (error) {
       if (startupCause(error) !== 'import') throw error; // scene/WebGL/data errors thrown by main.js itself are not load failures
       if (!first) { first = error; try { first.startupModule = moduleOf(error, String(url)); } catch { /* frozen */ } }
