@@ -61,6 +61,8 @@ export function recordStartupFailure(error, step = currentStep()) {
       at: Date.now(), build, name: clean(error?.name || 'Error').slice(0, 40),
       message: clean(error?.message || 'Startup deadline exceeded').slice(0, 300),
       stack: clean(error?.stack).slice(0, 1500), step, cause: error ? startupCause(error) : 'timeout',
+      // #1627: the first module URL that failed to load (query stripped) and how many import tries were made.
+      ...(error?.startupModule ? { module: clean(error.startupModule).slice(0, 200), tries: Number(error.startupTries) || 1 } : {}),
     }));
   } catch { /* Storage can be unavailable; recovery must still work. */ }
 }
@@ -75,8 +77,47 @@ export function takeStartupFailure() {
       || typeof record.name !== 'string' || typeof record.message !== 'string' || typeof record.build !== 'string') return null;
     return { name: record.name.slice(0, 40), message: record.message.slice(0, 300),
       build: record.build.slice(0, 40), stack: typeof record.stack === 'string' ? record.stack.slice(0, 1500) : '',
-      step: typeof record.step === 'string' ? record.step.slice(0, 60) : '', cause: typeof record.cause === 'string' ? record.cause.slice(0, 20) : '' };
+      step: typeof record.step === 'string' ? record.step.slice(0, 60) : '', cause: typeof record.cause === 'string' ? record.cause.slice(0, 20) : '',
+      module: typeof record.module === 'string' ? record.module.slice(0, 200) : '', tries: Number.isFinite(record.tries) ? record.tries : 0 };
   } catch { return null; }
+}
+
+// Import retry (#1627): a failed module import is cached by the browser per URL, so a retry uses a new `r=` URL; a
+// failed static dependency (same URL) is only forgotten by one guarded page reload. Before each retry the published
+// build is checked again, so a Pages deploy that was in progress can finish (and a newer build is navigated to).
+const RELOAD_KEY = 'lunden.importReload';
+const moduleOf = (error, fallback) => String(error?.message || '').match(/https?:\/\/[^\s'")]+/)?.[0] || fallback;
+/** Import `url`, retrying; resolves true when a retry navigates/reloads away. Throws the first error (with startupModule/startupTries). */
+export async function importWithRetry(url, {
+  importer = u => import(u), recheck = async () => true, reload = () => location.reload(),
+  retries = STARTUP.importRetries, delay = STARTUP.importRetryDelay, storage, now = Date.now,
+  sleep = ms => new Promise(resolve => setTimeout(resolve, ms)),
+} = {}) {
+  if (storage === undefined) { try { storage = globalThis.sessionStorage; } catch { /* blocked: no reload */ } }
+  let first;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      if (attempt) { await sleep(delay); if (!(await recheck())) return true; }
+      const next = new URL(url);
+      if (attempt) next.searchParams.set('r', attempt);
+      return await importer(next.href);
+    } catch (error) {
+      if (startupCause(error) !== 'import') throw error; // scene/WebGL/data errors thrown by main.js itself are not load failures
+      if (!first) { first = error; try { first.startupModule = moduleOf(error, String(url)); } catch { /* frozen */ } }
+      console.warn('Startup import failed, try', attempt + 1, error);
+    }
+  }
+  try { first.startupTries = retries + 1; } catch { /* frozen */ }
+  try { // last resort: one reload per session window clears the browser's cached failure for static dependencies
+    const last = JSON.parse(storage?.getItem(RELOAD_KEY) || 'null');
+    if (storage && !(last && now() - last.at < STARTUP.importReloadWindow)) {
+      storage.setItem(RELOAD_KEY, JSON.stringify({ at: now() }));
+      await sleep(delay);
+      reload();
+      return true;
+    }
+  } catch { /* storage blocked: fail visibly */ }
+  throw first;
 }
 
 /** Keep the scene covered, but offer recovery for failed imports or stalled startup/warm-up. */

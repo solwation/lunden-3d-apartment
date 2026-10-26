@@ -1,4 +1,5 @@
 [
+  {"id": 1266, "date": "2026-10-26", "text": "Om spelet inte kan hämta en programfil när det startar försöker det nu igen av sig självt innan det ger upp."},
   {"id": 1265, "date": "2026-10-26", "text": "Alla som är i lekstugan hör nu samma musik: spela, pausa, byt låt och mixa syns för alla, och den som kommer in senare hör låten där den är."},
   {"id": 1264, "date": "2026-10-26", "text": "När musiken spelar i lekstugan kan du välja Dansa floss vid högtalarna, och de andra spelarna ser dig dansa."},
   {"id": 1263, "date": "2026-10-26", "text": "DJ-bänken i lekstugan är nu ett litet DJ-bås: kliv upp på podiet och spela musik bakom disken med lysande LED-lister."},

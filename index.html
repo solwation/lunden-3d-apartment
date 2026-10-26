@@ -1664,6 +1664,7 @@
             at: Date.now(), build, name: clean(error?.name || 'Error').slice(0, 40),
             message: clean(error?.message || 'Startup deadline exceeded').slice(0, 300),
             stack: clean(error?.stack).slice(0, 1500), step, cause,
+            ...(error?.startupModule ? { module: clean(error.startupModule).slice(0, 200), tries: Number(error.startupTries) || 1 } : {}), // #1627
           }));
         } catch { /* Blocked storage must not prevent retry. */ }
         if (error) showError(step, cause);

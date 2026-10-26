@@ -54,6 +54,8 @@ fs.mkdirSync(output, { recursive: true });
           if (!before) assert.equal(await page.locator('[data-startup-slow]').isVisible(), true);
         }
         if (mode === 'abort' && !before) {
+          // #1627: the failed import is retried after STARTUP.importRetryDelay (virtual time here), then once more after a reload
+          for (let i = 0; i < 40 && !(await page.locator('[data-startup-retry]').count()); i++) { await page.clock.fastForward(1500).catch(() => {}); await page.waitForTimeout(150); }
           await page.locator('[data-startup-retry]').waitFor();
           // Error view (#1132): an import failure names the running step; bootstrap's own deps fail before any step.
           const view = await page.evaluate(() => { const e = document.querySelector('[data-startup-error]'); return e && [e.textContent, e.dataset.cause]; });

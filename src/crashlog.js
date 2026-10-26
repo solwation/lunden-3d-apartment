@@ -67,7 +67,7 @@ class CrashLog {
     const startup = takeStartupFailure();
     if (startup) this.report('fel', 'startup', {
       build: startup.build, msg: `${startup.step ? `[${startup.step}] ` : ''}${startup.name}: ${startup.message}`, stack: startup.stack, why: 'next-load',
-      step: startup.step, cause: startup.cause, // the failed loading step and its cause class (#1132)
+      step: startup.step, cause: startup.cause, ...(startup.module ? { module: startup.module, tries: startup.tries } : {}), // the failed loading step and its cause class (#1132)
     });
     // read the old beat BEFORE the first new one is written
     if (old && old.s === 'run' && old.tab !== this.tab && Date.now() - (old.t || 0) > C.deadIfWithinMs) {

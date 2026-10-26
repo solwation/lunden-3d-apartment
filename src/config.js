@@ -5731,7 +5731,10 @@ export const STARTUP = { dataTimeout: 5000, planTimeout: 15000, dataAttempts: 2,
   // above a normal phone "Bygger huset", below the 120 s hard limit; SwiftShader/headless can exceed it harmlessly.
   stallSeconds: 40,
   // #1133: how many of the longest startup main-thread tasks (PerformanceObserver 'longtask', ≥ 50 ms) the crash log keeps.
-  longTasksKept: 5 };
+  longTasksKept: 5,
+  // #1627 (*guess*): a failed main.js/dependency import is retried this many times (new URL, fresh version check) after
+  // importRetryDelay ms, then the page reloads once per importReloadWindow ms before the error view is shown.
+  importRetries: 1, importRetryDelay: 3000, importReloadWindow: 300000 };
 
 // #892: canonical appearance shared by Avatar and future authoritative contact profiles.
 export const SKIN = [0xf1c9a8, 0xe0ae8a, 0xc68863, 0x9a6643, 0x6b4430];
