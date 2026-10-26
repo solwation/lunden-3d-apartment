@@ -33,11 +33,18 @@ export class Billiards {
     parts.push(paint(new RoundedBoxGeometry(BW+2*D.rim,BH+2*D.rim,D.depth,R.appearance.frameSegments,R.appearance.edgeRadius).applyMatrix4(boardMatrix),0x302820));
     for(const[x,z]of this.physics.pockets)parts.push(paint(new T.CircleGeometry(c.pocketR,16).rotateX(-Math.PI/2).translate(x,H+.002,z),0x080b09));
     this.table=new T.Mesh(merge(parts),clubhouseMaterial());this.table.name='billiard-table';this.object.add(this.table);
-    const geometry=new T.SphereGeometry(c.ballR,12,8),stripe=new Float32Array(16);
-    this.physics.balls.forEach((b,i)=>stripe[i]=b.id>=9?1:0);geometry.setAttribute('aStripe',new T.InstancedBufferAttribute(stripe,1));
-    const material=new T.MeshStandardMaterial({roughness:.25,metalness:.05});
-    material.onBeforeCompile=s=>{s.vertexShader=s.vertexShader.replace('#include <common>','#include <common>\nattribute float aStripe; varying float vStripe; varying float vBallY;').replace('#include <begin_vertex>','#include <begin_vertex>\nvStripe=aStripe;vBallY=position.y;');s.fragmentShader=s.fragmentShader.replace('#include <common>','#include <common>\nvarying float vStripe; varying float vBallY;').replace('#include <color_fragment>','#include <color_fragment>\nif(vStripe>.5 && abs(vBallY)>'+String(c.ballR*.4)+') diffuseColor.rgb=vec3(.92);');};
-    material.customProgramCacheKey=()=> 'playroom-billiard-stripes-v1';
+    // #1638: glossy balls with numerals. One material, one instanced mesh; the numerals come from a 4x4 canvas atlas (cell = ball id)
+    // sampled in the existing stripe shader from the sphere-local normal, on two opposite spots (+/-X), so they turn with each ball.
+    const B=c.ball,geometry=new T.SphereGeometry(c.ballR,B.segments[0],B.segments[1]),stripe=new Float32Array(16),number=new Float32Array(16);
+    this.physics.balls.forEach((b,i)=>{stripe[i]=b.id>=9?1:0;number[i]=b.id;});geometry.setAttribute('aStripe',new T.InstancedBufferAttribute(stripe,1));geometry.setAttribute('aNum',new T.InstancedBufferAttribute(number,1));
+    const atlas=document.createElement('canvas'),cell=B.atlasCell;atlas.width=atlas.height=cell*4;const actx=atlas.getContext('2d');actx.fillStyle='#fff';actx.fillRect(0,0,atlas.width,atlas.height);actx.fillStyle='#000';actx.textAlign='center';actx.textBaseline='middle';actx.font=`bold ${Math.round(cell*B.fontScale)}px Arial, sans-serif`;
+    for(let n=1;n<16;n++)actx.fillText(String(n),(n%4+.5)*cell,(Math.floor(n/4)+.52)*cell);
+    const numbers=new T.CanvasTexture(atlas);numbers.colorSpace=T.SRGBColorSpace;numbers.anisotropy=4;
+    const material=new T.MeshStandardMaterial({roughness:B.roughness,metalness:.05});
+    material.onBeforeCompile=s=>{s.uniforms.tNum={value:numbers};
+      s.vertexShader=s.vertexShader.replace('#include <common>','#include <common>\nattribute float aStripe; attribute float aNum; varying float vStripe; varying float vNum; varying vec3 vBallP;').replace('#include <begin_vertex>','#include <begin_vertex>\nvStripe=aStripe;vNum=aNum;vBallP=position;');
+      s.fragmentShader=s.fragmentShader.replace('#include <common>','#include <common>\nuniform sampler2D tNum; varying float vStripe; varying float vNum; varying vec3 vBallP;').replace('#include <color_fragment>','#include <color_fragment>\nif(vStripe>.5 && abs(vBallP.y)>'+String(c.ballR*.4)+') diffuseColor.rgb=vec3(.92);\nif(vNum>.5){vec3 bn=normalize(vBallP);float side=bn.x>=0.?1.:-1.;vec2 q=vec2(-side*bn.z,bn.y)/'+B.spotRadius.toFixed(3)+';if(bn.x*side>.3&&dot(q,q)<1.){float id=floor(vNum+.5);vec2 cuv=(vec2(mod(id,4.),floor(id/4.))+q*.5+.5)/4.;float ink=texture2D(tNum,cuv).r;diffuseColor.rgb=mix(vec3(.02),vec3(.97),ink)*smoothstep(1.,.88,length(q))+diffuseColor.rgb*(1.-smoothstep(1.,.88,length(q)));}}').replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n{vec3 up=normalize((viewMatrix*vec4(0.,1.,0.,0.)).xyz);vec3 rl=reflect(-geometryViewDir,geometryNormal);reflectedLight.directSpecular+=vec3('+B.lampGloss.toFixed(3)+')*pow(max(dot(rl,up),0.),'+B.lampSharp.toFixed(1)+');}');};
+    material.customProgramCacheKey=()=> 'playroom-billiard-stripes-v2';
     this.mesh=new T.InstancedMesh(geometry,material,16);this.mesh.name='billiard-balls';this.mesh.instanceMatrix.setUsage(T.DynamicDrawUsage);
     this.mesh.boundingSphere=new T.Sphere(new T.Vector3(0,H,0),Math.hypot(L,W));
     const colours=[0xf3f0e5,0xe8b72b,0x265bb6,0xb92528,0x643d83,0xdf762a,0x247046,0x7e292e,0x17191a];

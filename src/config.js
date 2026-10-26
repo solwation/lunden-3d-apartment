@@ -6101,7 +6101,8 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
   cinemaSync: { maxPosition: 604800, driftSeconds: 1.5, syncEveryMs: 2000, seekSeconds: 10, width: 1280 }, // Assumed media bounds, local drift correction and iframe viewport.
   // #1328: local child-size billiards (all dimensions/rolling coefficients are visual/playability guesses).
   billiards: { x: 0, z: -1.83, yaw: Math.PI / 2, length: 2.4, width: 1.2, height: 0.72, rail: 0.11, railH: 0.07, leg: 0.09, // #1617: bigger, taller 'children and 10-year-olds' table (about 3/4 of a 8-foot pool table, 72 cm playing height; *guess*) // #1482: centre between north z=-5.2 and the partition inner face z=1.54; retain #1411 orientation.
-    ballR: 0.03, pocketR: 0.066, cueLength: 1.2, // #1617: balls/pockets/cue scaled with the table (ratios unchanged)
+    ballR: 0.03, ball: { segments: [16, 12], roughness: 0.1, spotRadius: 0.5, atlasCell: 128, fontScale: 0.62, lampGloss: 0.9, lampSharp: 60 }, // #1638: glossy balls (roughness 0.08-0.12), two numeral discs of 0.5 sphere radii (*guess*) from a 4x4 atlas; lampGloss/lampSharp = the overhead pendant lamp's reflection as a cheap specular term (no extra light/env map)
+    pocketR: 0.066, cueLength: 1.2, // #1617: balls/pockets/cue scaled with the table (ratios unchanged)
     rug: { radius: 2.3, ring: [.26, .2], colour: 0x8a3a46, ringColour: 0xe3cfa4, edge: .04 }, // #1617: big round soft rug (m, *guess*): clears the table's 2.62 x 1.42 m footprint and the DJ bench; ring = inner/outer inset of the cream stripe, edge = rounded rim width
     strokeSpeed: 2.2, strokeSeconds: 0.24, cueTravel: 0.09, // strokeSpeed: m/s of a full-power stroke (#1637: the old fixed stroke = 100 %)
     minPower: 0.15, chargeSeconds: 1.75, chargePull: 0.14, chargeGrace: 0.35, // #1637 charged stroke (*guess*): a tap = 15 %, 100 % after 1.75 s (then it stays); the cue draws back up to 14 cm; looking off the table this long cancels
