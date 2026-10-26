@@ -1,0 +1,203 @@
+{
+  "s0": {
+    "idx": 0,
+    "state": "playing",
+    "mixing": false,
+    "decks": [
+      {
+        "src": "morning-blue.ogg",
+        "paused": false,
+        "t": 2.65,
+        "g": 1
+      }
+    ]
+  },
+  "s1": {
+    "idx": 1,
+    "state": "playing",
+    "mixing": false,
+    "decks": [
+      {
+        "src": "will-not-let-you.ogg",
+        "paused": false,
+        "t": 0.45,
+        "g": 1
+      }
+    ]
+  },
+  "seq": [
+    {
+      "idx": 2,
+      "state": "playing",
+      "mixing": true,
+      "decks": [
+        {
+          "src": "will-not-let-you.ogg",
+          "paused": false,
+          "t": 0.87,
+          "g": 0.999
+        },
+        {
+          "src": "bossa-antigua.ogg",
+          "paused": false,
+          "t": 0.16,
+          "g": 0.052
+        }
+      ]
+    },
+    {
+      "idx": 2,
+      "state": "playing",
+      "mixing": true,
+      "decks": [
+        {
+          "src": "will-not-let-you.ogg",
+          "paused": false,
+          "t": 1.78,
+          "g": 0.959
+        },
+        {
+          "src": "bossa-antigua.ogg",
+          "paused": false,
+          "t": 1.07,
+          "g": 0.284
+        }
+      ]
+    },
+    {
+      "idx": 2,
+      "state": "playing",
+      "mixing": true,
+      "decks": [
+        {
+          "src": "will-not-let-you.ogg",
+          "paused": false,
+          "t": 2.68,
+          "g": 0.866
+        },
+        {
+          "src": "bossa-antigua.ogg",
+          "paused": false,
+          "t": 1.97,
+          "g": 0.5
+        }
+      ]
+    },
+    {
+      "idx": 2,
+      "state": "playing",
+      "mixing": true,
+      "decks": [
+        {
+          "src": "will-not-let-you.ogg",
+          "paused": false,
+          "t": 3.58,
+          "g": 0.723
+        },
+        {
+          "src": "bossa-antigua.ogg",
+          "paused": false,
+          "t": 2.87,
+          "g": 0.69
+        }
+      ]
+    },
+    {
+      "idx": 2,
+      "state": "playing",
+      "mixing": true,
+      "decks": [
+        {
+          "src": "will-not-let-you.ogg",
+          "paused": false,
+          "t": 4.49,
+          "g": 0.545
+        },
+        {
+          "src": "bossa-antigua.ogg",
+          "paused": false,
+          "t": 3.78,
+          "g": 0.839
+        }
+      ]
+    },
+    {
+      "idx": 2,
+      "state": "playing",
+      "mixing": true,
+      "decks": [
+        {
+          "src": "will-not-let-you.ogg",
+          "paused": false,
+          "t": 5.4,
+          "g": 0.334
+        },
+        {
+          "src": "bossa-antigua.ogg",
+          "paused": false,
+          "t": 4.68,
+          "g": 0.943
+        }
+      ]
+    },
+    {
+      "idx": 2,
+      "state": "playing",
+      "mixing": true,
+      "decks": [
+        {
+          "src": "will-not-let-you.ogg",
+          "paused": false,
+          "t": 6.3,
+          "g": 0.105
+        },
+        {
+          "src": "bossa-antigua.ogg",
+          "paused": false,
+          "t": 5.59,
+          "g": 0.995
+        }
+      ]
+    },
+    {
+      "idx": 2,
+      "state": "playing",
+      "mixing": false,
+      "decks": [
+        {
+          "src": "bossa-antigua.ogg",
+          "paused": false,
+          "t": 6.49,
+          "g": 1
+        }
+      ]
+    },
+    {
+      "idx": 2,
+      "state": "playing",
+      "mixing": false,
+      "decks": [
+        {
+          "src": "bossa-antigua.ogg",
+          "paused": false,
+          "t": 7.39,
+          "g": 1
+        }
+      ]
+    },
+    {
+      "idx": 2,
+      "state": "playing",
+      "mixing": false,
+      "decks": [
+        {
+          "src": "bossa-antigua.ogg",
+          "paused": false,
+          "t": 8.3,
+          "g": 1
+        }
+      ]
+    }
+  ],
+  "errors": []
+}
