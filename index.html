@@ -467,6 +467,11 @@
     #bell-btn[hidden] { display: none; }
     #dance-btn { position: fixed; right: calc(24px + var(--sr)); bottom: calc(100px + var(--sb)); touch-action: manipulation; padding: 12px 18px; border: 0; border-radius: 40px; background: #b0289c; color: #fff; font: 600 15px system-ui, sans-serif; box-shadow: 0 4px 14px rgba(0,0,0,.3); cursor: pointer; } /* #1636: dance for everyone in the disco room */
     #dance-btn[hidden] { display: none; }
+    .react-btn { position: fixed; right: calc(24px + var(--sr)); touch-action: manipulation; padding: 9px 16px; border: 0; border-radius: 40px; background: #3a4a6b; color: #fff; font: 600 14px system-ui, sans-serif; box-shadow: 0 3px 10px rgba(0,0,0,.3); cursor: pointer; } /* #1639: cry / laugh / scream in the BIO (touch slots: src/hudicons.css) */
+    .react-btn[hidden] { display: none; }
+    #react-cry { bottom: calc(220px + var(--sb)); } #react-laugh { bottom: calc(264px + var(--sb)); } #react-scream { bottom: calc(308px + var(--sb)); }
+    .react-btn kbd { margin-left: 6px; padding: 1px 6px; border-radius: 4px; background: rgba(255,255,255,.25); font: 600 13px system-ui, sans-serif; }
+    body.touch .react-btn kbd { display: none; }
     #dance-btn kbd { margin-left: 6px; padding: 1px 6px; border-radius: 4px; background: rgba(255,255,255,.25); font: 600 13px system-ui, sans-serif; }
     body.touch #dance-btn kbd { display: none; }
     /* the jetpack (#359): its heat bar under the score, the nozzles' glow at the bottom, ⬆ ⬇ on touch two steps left of 🧎 */
@@ -1601,6 +1606,9 @@
       <button id="turn-btn" class="touch-only" hidden aria-label="Vrid">⟳</button>
       <button id="stand-btn" class="touch-only" hidden>Res dig</button>
       <button id="dance-btn" hidden></button>
+      <button id="react-cry" class="react-btn" data-react="0" hidden>Gråta<kbd>Y</kbd></button>
+      <button id="react-laugh" class="react-btn" data-react="1" hidden>Skratta<kbd>U</kbd></button>
+      <button id="react-scream" class="react-btn" data-react="2" hidden>Skrika<kbd>I</kbd></button>
       <button id="bell-btn" class="touch-only" hidden aria-label="Ringa cykelklockan" title="Ringa cykelklockan (B)">🔔</button>
       <button id="jet-up" class="touch-only" hidden aria-label="Jetpack: upp">⬆</button>
       <button id="jet-down" class="touch-only" hidden aria-label="Jetpack: ner">⬇</button>

@@ -3,7 +3,7 @@ import { MenuSettings } from './menusettings.js';
 import { renderPlayingNow } from './playerportraits.js';
 import { saveStats } from './stats.js';
 import { playerLocalStorage as localStorage, playerSessionStorage as sessionStorage } from './playerprofiles.js';
-import { KISS, HUG } from './config.js';
+import { KISS, HUG, REACT } from './config.js';
 import { MATERIAL_CHOICES, materialChoices, materialChoice } from './materialcatalog.js';
 import { crashlog } from './crashlog.js'; // first: its heartbeat and error hooks start before the rest loads (#629; inert without the cloud)
 import { CinemaPlayer } from './cinemaplayer.js';
@@ -2032,6 +2032,7 @@ document.addEventListener('keydown', (e) => {
   if (e.code === SOUNDS.bellKey && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) ringBell();
   if (e.code === 'Escape') playroom.billiards.cancelCharge(); // #1637 (without pointer lock: touch, the binder's free mouse)
   if (e.code === 'KeyG' && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey && !drawing.active && !rearrange.enabled) toggleDance(); // dance in the disco room (#1636)
+  if (!e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) { const rk = REACT.kinds.findIndex(k => k.key === e.code); if (rk >= 0) doReact(rk); } // #1639 (in the BIO)
   if (e.code === 'KeyM') updateMute(toggleMuted());
   if (e.code === 'KeyT') toggleStats();
   if (e.code === 'Tab') { e.preventDefault(); if (!e.repeat) holdStats(true); }
@@ -2931,6 +2932,17 @@ function updateDanceButton() {
 }
 const toggleDance = () => { if (!reading && playroom.inside) playroom.music.toggleDance(); updateDanceButton(); };
 danceBtn.addEventListener('click', toggleDance);
+// #1639: cry / laugh / scream in the BIO (the clubhouse's film room, seated or standing): three buttons (touch) / keys Y U I; our
+// mirror image plays it and the others in range see it (ghosts.react, a one-shot 'rx' message).
+const reactBtns = [...document.querySelectorAll('.react-btn')];
+const bioHere = () => playroom.inside && camera.position.x < PLAYROOM.x - PLAYROOM.clubhouse.side - PLAYROOM.clubhouse.wall / 2 && camera.position.z < PLAYROOM.z + PLAYROOM.clubhouse.front - PLAYROOM.clubhouse.wall / 2;
+let reactShown = false;
+function updateReactBar() {
+  const show = bioHere() && !reading && !measure.active && !isAvatarCustomizerOpen() && !cinema.open && !computerHub.open && !tvMedia.open && !drawing.active && !rearrange.enabled;
+  if (show !== reactShown) { reactShown = show; for (const b of reactBtns) b.hidden = !show; }
+}
+const doReact = (k) => { updateReactBar(); return reactShown && ghosts.react(k); };
+for (const b of reactBtns) b.addEventListener('click', () => doReact(Number(b.dataset.react)));
 /** Ring the bicycle bell (#1302, B / the 🔔 button while riding): we hear it right away, the players nearby hear it from us. */
 function ringBell() {
   if (!player.riding || reading || bellAt > performance.now() - SOUNDS.every * 1000) return false;
@@ -3178,6 +3190,7 @@ function step(dt) {
     updateFocus();
   }
   updateDanceButton();
+  updateReactBar();
   updateCuePower();
   power.update(dt, focused === power.target); // the power cut (#604): flicker, bang, mending (after the focus: mending needs it)
   lights.setSupply(power.supply);

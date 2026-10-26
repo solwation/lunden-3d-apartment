@@ -534,6 +534,23 @@ no new mesh, light or message. Tunables: `DANCE` in `src/config.js` (*guess*, by
 shared since #1624 (section below). Tests: `node --test tools/playroommusictest.mjs cloudflare/players.test.mjs` and
 `tools/flosstest.cjs GAME WORKER OUT [--render]` (dancer + observer through the Worker, mirror, two render phases).
 
+### BIO reactions: cry, laugh, scream (#1639)
+
+Inside the BIO (the clubhouse's film room, west of the hall and billiards walls; main.js `bioHere()`, standing or seated) three
+pills `#react-cry` / `#react-laugh` / `#react-scream` ("Gråta", "Skratta", "Skrika"; keys **Y / U / I** shown on the buttons on desktop)
+appear (`updateReactBar`, hidden while reading / measuring / in the avatar editor / with a cinema, computer or TV dialog, drawing or
+rearranging). Keys need pointer lock like the other game keys; touch uses the buttons, a text-pill column in a fifth column in
+`hudicons.css` (clear of the jetpack column), registered in `touchlayout.js` TOUCH_CONTROLS.
+`Ghosts.react(k)` (k an index of `REACT.kinds`, never text) starts our mirror image's pose and sends ONE event `{ t: 'rx', k }`; the
+Worker (`cleanReact`, `PLAYERS.reactions` / `reactEvery`) forwards `{ t: 'rx', i, k }` only for a sender whose last state is in the BIO
+(`inBio`) to the players within `PLAYERS.soundRange`, never echoed. It is deliberately NOT a player-state field (the state is near
+`PLAYERS.maxBytes`, #1637). `Ghost.startReact` plays it for `REACT.duration` s; `src/reactpose.js` `reactionPose` returns the pose
+(hips bob, lean, head, mouth, hand targets) that `Avatar.update({ react })` (standing) and `applyRestPose(..., react)` (seated) blend in
+over `REACT.ease`: cry = hands over the face, head down, shoulders shaking; laugh = head back, hands on the belly, bobbing, mouth
+opening; scream = hands up beside the head, head back, mouth wide open, trembling. No mesh, light or draw call; no sound. Tunables:
+`REACT` in `src/config.js` (*guess*, by eye). Tests: `node --test cloudflare/players.test.mjs` (the `reactions` test) and
+`tools/reactpeertest.cjs GAME WORKER OUT` (two real apps: keys / buttons, outside-BIO hidden, B sees A's pose, rate limit, seated, draw calls).
+
 ### Shared playroom music (#1624)
 
 The room owns ONE transport, like the billiard table (#1355) and under the same presence (`a.pr`, the last state's

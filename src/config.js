@@ -6611,6 +6611,18 @@ export const AVATAR_CROUCH = {
   time: .2, // s, our own mirror image going down or up (others follow their sent states)
 };
 
+// #1639: reactions in the BIO (cry, laugh, scream in terror). One-shot event { t: 'rx', k } (the room's PLAYERS.reactions = kinds.length),
+// never a state field. `duration` s of procedural pose, eased in / out over `ease`; `every` = our minimum gap between two (the room's
+// PLAYERS.reactEvery * .8 is shorter). Keys and labels are the player-facing controls. Pose numbers are by eye (*guess*): m / rad / Hz.
+export const REACT = {
+  kinds: [
+    { id: 'cry', label: 'Gråta', key: 'KeyY', keyLabel: 'Y', hz: 7, head: -.45, lean: -.12, shake: .012, mouth: .25 },
+    { id: 'laugh', label: 'Skratta', key: 'KeyU', keyLabel: 'U', hz: 4.5, head: .38, lean: .2, shake: .03, mouth: .85 },
+    { id: 'scream', label: 'Skrika', key: 'KeyI', keyLabel: 'I', hz: 18, head: .35, lean: .1, shake: .008, mouth: 1 },
+  ],
+  duration: 3.5, ease: .3, every: 4,
+};
+
 // #1622: the playroom dance, offered at the speakers while the room music plays. `dn: 1` in the player state (like `c`).
 // Floss: the hips swing one way while both straight arms swing across the body the other way, one arm forward while the
 // other goes back. *guess*: by eye against the well-known move, not measured.

@@ -2,7 +2,7 @@ import { playerLocalStorage as localStorage } from './playerprofiles.js';
 import { applyRestPose } from './remote-pose.js';
 import { poseOlof } from './olof.js';
 import * as THREE from 'three';
-import { FALL, TOAST, SOUNDS, KISS, HUG } from './config.js';
+import { FALL, TOAST, SOUNDS, KISS, HUG, REACT } from './config.js';
 import { makesSteps, strideFor } from './spatialsound.js';
 import { GHOSTS as G, COMBAT, AVATAR, AVATAR_CROUCH, CHAT, encodeAvatarLook, encodeAvatarWireLook, decodeAvatarLook, splitAvatarCode, playerBodySegment } from './config.js';
 import { Avatar, armTarget } from './avatar.js';
@@ -257,6 +257,9 @@ export class Ghost { // (exported for tools/ghostprops.html)
   /** A wave (#673): the right arm up and waving for GHOSTS.wave s (armTarget.up, the surface #705 left for it). */
   wave() { this.waveT = G.wave; }
 
+  /** A BIO reaction (#1639): kind `k` of REACT.kinds from time `t` (ms) for REACT.duration s. */
+  startReact(k, t = performance.now()) { if (REACT.kinds[k]) this.react = { kind: k, start: t }; }
+
   /** Over its head (the speech bubble's anchor, greet.js). */
   get head() { return this.pose ? this.avatar.bones.head.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0, 0.1, 0)) : this.root.position.clone().setY(this.root.position.y + 1.78 * this.avatar.look.tall); }
 
@@ -348,9 +351,11 @@ export class Ghost { // (exported for tools/ghostprops.html)
       this.avatar.object.rotation.y = lerpAngle(this.avatar.object.rotation.y, direction - this.root.rotation.y, kissed);
     }
     if (hugged) this.poseHug(hug, hugged, hands);
+    let react = null; // #1639
+    if (this.react) { const ra = (t - this.react.start) / 1000; if (ra >= REACT.duration) this.react = null; else if (!kissed && !hugged) react = { kind: this.react.kind, age: ra }; }
     const amount = Math.max(kissed, hugged); // (the look and gait give way to either embrace)
-    this.avatar.update(dt, { speed: this.speed * (1 - amount), turn: turn * (1 - amount), pitch: (this.look?.[1] ?? 0) * (1 - amount) - HUG.head * hugged, hands, crouch: this.crouch ?? 0, dance: !!this.dance && !amount, kiss: kissed, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0 });
-    applyRestPose(this.avatar, this.pose, this.look);
+    this.avatar.update(dt, { speed: this.speed * (1 - amount), turn: turn * (1 - amount), pitch: (this.look?.[1] ?? 0) * (1 - amount) - HUG.head * hugged, hands, crouch: this.crouch ?? 0, dance: !!this.dance && !amount && !react, react, kiss: kissed, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0 });
+    applyRestPose(this.avatar, this.pose, this.look, react);
     if (this.bikeMesh) this.poseBike(dt, Math.hypot(vx, vz), turn);
     this.heldCat.update(this.avatar, this.root);
     if (this.tag) {
@@ -497,6 +502,7 @@ export class Ghosts {
       else { const g = this.others.get(m.i); if (g) { g.wave(); this.greetsSeen++; this.onGreet?.(m, g, this.others.get(m.to) ?? null); } }
     }
     else if (m.t === 'c') { const g = this.others.get(m.i); if (g) this.onToast?.(m, g); } // a toast (#1222): the room sends it only from within PLAYERS.toastRange
+    else if (m.t === 'rx') { const g = this.others.get(m.i); if (g && Number.isInteger(m.k)) g.startReact(m.k, t); } // a BIO reaction (#1639): the room sends it only from within PLAYERS.soundRange
     else if (m.t === 'snd') { const g = this.others.get(m.i); if (g && SOUNDS.kinds.includes(m.k)) this.onPlayerSound?.(m, g); } // a sound event (#1302): the room sends it only from within PLAYERS.soundRange
     else if (m.t === 'cinema') this.onCinema?.(m);
     else if (m.t === 'snake') this.onSnake?.(m);
@@ -592,6 +598,21 @@ export class Ghosts {
     }
   }
 
+  /** Our own BIO reaction (#1639): kind `k` of REACT.kinds (an index, never text) - our mirror image plays it and one small message tells
+   * the room, which passes it to the players near us. At most one every REACT.every s (and not while one plays). False when too soon / not connected. */
+  react(k) {
+    const t = performance.now();
+    if (!REACT.kinds[k] || t - (this.reactAt ?? -1e9) < REACT.every * 1000) return false;
+    this.reactAt = t;
+    this.myReact = { kind: k, start: t };
+    if (this.connected) {
+      this.outbox.push({ t: 'rx', k });
+      while (this.outbox.length > G.outbox) this.outbox.splice(this.outbox.findIndex(m => m.t !== 'fall' && m.t !== 'consume'), 1);
+      this.sendShot();
+    }
+    return true;
+  }
+
   /** Our own sound event (#1302): `k` a key of SOUNDS.kinds (never text). One small message; the room passes it to the players
    * near us. At most one every SOUNDS.every s. False when not connected / too soon. */
   sound(k) {
@@ -672,6 +693,7 @@ export class Ghosts {
     g.avatar.setSuit(m.sp);
     g.setJetpack(m.jp);
     g.dance = m.dn === 1; // #1622
+    g.react = this.myReact ?? null; // #1639 (a Ghost drops it when over)
     g.root.position.copy(m.p);
     g.root.rotation.y = m.r;
     g.bikeAt({ bk: m.bk }, { bk: m.bk }, 1);

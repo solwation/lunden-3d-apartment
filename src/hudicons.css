@@ -163,6 +163,9 @@ body.touch #touch-controls #turn-btn { right: var(--c2); bottom: calc(var(--side
 body.touch #touch-controls #bell-btn { right: var(--c2); bottom: calc(var(--side) + var(--tu)); } /* the bicycle bell (#1302): the turn button's slot, never shown together (riding holds nothing to turn) */
 /* #1636: the dance button (everyone in the disco room while music plays): a short text pill in a third ring above the power button */
 body.touch #touch-controls #dance-btn { right: var(--c1); bottom: calc(var(--r2) + var(--tu)); width: calc(var(--touch-size) * 1.5); border-radius: 16px; font: 600 14px system-ui,sans-serif; background: rgba(176,40,156,.8); }
+/* #1639: the BIO reactions (cry / laugh / scream): a column of text pills in a fifth column, clear of the jetpack's column and the pill */
+body.touch #touch-controls .react-btn { right: calc(var(--c3) + var(--tu)); width: calc(var(--touch-size) * 1.5); border-radius: 16px; font: 600 14px system-ui,sans-serif; background: rgba(58,74,107,.85); }
+body.touch #touch-controls #react-cry { bottom: 0; } body.touch #touch-controls #react-laugh { bottom: var(--tu); } body.touch #touch-controls #react-scream { bottom: calc(2 * var(--tu)); }
 body.touch #touch-controls #jet-down { right: var(--c3); bottom: 0; }
 body.touch #touch-controls #jet-up { right: var(--c3); bottom: var(--tu); }
 body.touch #touch-controls #web-btn { right: var(--c3); bottom: calc(2 * var(--tu)); }

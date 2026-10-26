@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import { installRuntime, fakeNamespace } from './devws.mjs';
 import worker, { PlayerRoom } from './worker.js';
 import { PLAYERS, CLOSE, COMBAT, CHAT, cleanText } from './players.js';
-import { SOUNDS } from '../src/config.js';
+import { SOUNDS, PLAYROOM, REACT } from '../src/config.js';
 
 installRuntime();
 const realNow = Date.now;
@@ -1639,6 +1639,39 @@ test('sound events (#1302): a whitelisted key only, to the players within range,
   now += 1000;
   a.send({ t: 'snd', k: 'bell' }); await settle(env);
   assert.equal(snds(b).length, 2, 'allowed again after the gap');
+  assert.equal(a.closed, null);
+});
+
+test('reactions (#1639): cry / laugh / scream only from the BIO, an index only, to players in range, rate-limited, never echoed', async () => {
+  assert.equal(PLAYERS.reactions, REACT.kinds.length, 'the room\'s kinds count equals the client\'s');
+  assert.ok(PLAYERS.reactEvery * 800 <= REACT.every * 1000);
+  const env = setup();
+  const a = await connect(env, 'A'), b = await connect(env, 'B'), c = await connect(env, 'C'), d = await connect(env, 'D');
+  const ia = a.got[0].i;
+  const rxs = (x) => x.got.filter((m) => m.t === 'rx');
+  const R = PLAYROOM, bio = [R.x - R.clubhouse.side - R.clubhouse.wall / 2 - 2, 0, R.z - 2], hall = [R.x + 1, 0, R.z + R.clubhouse.front + 1];
+  now += 5000;
+  a.send({ p: bio, r: 0 }); b.send({ p: [bio[0] + 1, 0, bio[2]], r: 0 }); c.send({ p: [PLAYERS.soundRange + 500, 0, 0], r: 0 }); // d: unknown position
+  await settle(env);
+  now += 5000;
+  a.send({ t: 'rx', k: 1 }); await settle(env);
+  assert.deepEqual(rxs(b), [{ t: 'rx', i: ia, k: 1 }]);
+  assert.equal(rxs(c).length, 0, 'out of range');
+  assert.equal(rxs(d).length, 0, 'unknown position');
+  assert.equal(rxs(a).length, 0, 'not echoed');
+  a.send({ t: 'rx', k: 2 }); await settle(env);
+  assert.equal(rxs(b).length, 1, 'not more often than reactEvery');
+  now += 5000;
+  for (const bad of [{ t: 'rx', k: 3 }, { t: 'rx', k: -1 }, { t: 'rx', k: 1.5 }, { t: 'rx', k: '1' }, { t: 'rx' }, { t: 'rx', k: [0] }]) a.send(bad);
+  await settle(env);
+  assert.equal(rxs(b).length, 1, 'out-of-range, fractional, string, none, array: dropped');
+  now += 1000;
+  a.send({ p: hall, r: 0 }); await settle(env); now += 5000;
+  a.send({ t: 'rx', k: 0 }); await settle(env);
+  assert.equal(rxs(b).length, 1, 'outside the BIO: dropped');
+  a.send({ p: bio, r: 0 }); await settle(env); now += 5000;
+  a.send({ t: 'rx', k: 0 }); await settle(env);
+  assert.deepEqual(rxs(b).map((m) => m.k), [1, 0], 'back in the BIO and past the gap: accepted');
   assert.equal(a.closed, null);
 });
 

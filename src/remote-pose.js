@@ -1,5 +1,6 @@
 import { REST, decodeAvatarLook, avatarProportions } from './config.js';
 import { poseOlof, seatedPose } from './olof.js';
+import { reactionPose, mixHand } from './reactpose.js';
 
 /** Actual rest spot, never the camera's eased position or the old standing location. */
 export function restState(rest, code, seed) {
@@ -19,9 +20,13 @@ export function restState(rest, code, seed) {
 }
 
 /** Reuse the existing skeleton/IK; standing is restored by the ordinary Avatar.update each frame. */
-export function applyRestPose(avatar, pose, look = [0, 0]) {
+export function applyRestPose(avatar, pose, look = [0, 0], react = null) { // react: { kind, age } of a BIO reaction (#1639), seated only
   const gaze = { turn: Math.max(-REST.sit.yaw, Math.min(REST.sit.yaw, look[0])), head: Math.max(REST.sit.pitch[0], Math.min(REST.sit.pitch[1], look[1])) };
-  if (pose === 1) poseOlof(avatar, { ...seatedPose(REST.avatarSeat), ...gaze });
+  if (pose === 1) {
+    const p = seatedPose(REST.avatarSeat), r = react && reactionPose(react.kind, react.age, p.hip);
+    if (r) poseOlof(avatar, { ...p, hip: [p.hip[0] + r.dy, p.hip[1]], lean: p.lean + r.lean, hands: p.hands.map((h, i) => mixHand(h, r.hands[i], r.amt)), ...gaze, head: gaze.head + r.head });
+    else poseOlof(avatar, { ...p, ...gaze });
+  }
   else if (pose === 3) {
     // long sit (#1237): the ordinary seated torso, the legs stretched out forwards resting on the seat / mattress
     const p = seatedPose(REST.avatarSeat), y = REST.avatarSeat + REST.avatarLegsUp, z = REST.avatarLegsReach;

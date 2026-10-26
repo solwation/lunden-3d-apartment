@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { KISS, AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_EARRINGS as EARR, AVATAR_HAT as HAT, AVATAR_PHONES as PHONES, AVATAR_NECKLACE as NECK_L, AVATAR_RING as RING, AVATAR_WRIST as WRIST, wristValue, AVATAR_CLOTHES, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, DANCE, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
 import { topTexture } from './spidersuit.js';
+import { reactionPose, mixHand } from './reactpose.js';
 import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, SHIN, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
 
 // The players' avatars (#705): a neutral human figure for the other players (src/ghosts.js) and for our own reflection in the
@@ -1244,7 +1245,7 @@ export class Avatar {
 
   /** Pose it. `speed`: m/s along the ground (walks when above A.walkSpeed, the legs' phase follows the distance), `turn`:
    * the head's yaw against the body (rad), `pitch`: camera elevation (rad), `hands`: { L, R } overrides (see `armTarget`), `crouch`: 0 … 1. */
-  update(dt, { speed = 0, turn = 0, pitch = 0, hands = {}, crouch = 0, kiss = 0, kissReach = 1, kissLift = 0, dance = 0 } = {}) {
+  update(dt, { speed = 0, turn = 0, pitch = 0, hands = {}, crouch = 0, kiss = 0, kissReach = 1, kissLift = 0, dance = 0, react = null } = {}) { // react: { kind, age } of a BIO reaction (#1639, src/reactpose.js)
     this.time += dt;
     const da = this.danceAmt = THREE.MathUtils.lerp(this.danceAmt ?? 0, dance ? 1 : 0, Math.min(1, dt * DANCE.ease)); // #1622: 0 … 1 into the floss
     const walking = speed > A.walkSpeed, k = THREE.MathUtils.clamp(speed / 1.6, 0.4, 1.4);
@@ -1256,7 +1257,8 @@ export class Avatar {
     const FL = DANCE.floss, flossPh = this.time * FL.hz * Math.PI * 2, flossSn = Math.sin(flossPh), flossCs = Math.cos(flossPh);
     const sway = -flossSn * FL.hipSway * da, flossBob = FL.bob * (1 - Math.cos(2 * flossPh)) / 2 * da;
     const c = THREE.MathUtils.clamp(crouch, 0, 1), F = CR.feet, step = sw * (1 - CR.step * c);
-    const hipY = HIP - 0.02 - CR.hipDrop * c + kissLift * kiss - flossBob + breathe - 0.012 * g * Math.abs(Math.cos(ph)) * k, hipZ = CR.hipForward * c;
+    const rp = react ? reactionPose(react.kind, react.age, [HIP - 0.02, CR.hipForward * c]) : null;
+    const hipY = HIP - 0.02 - CR.hipDrop * c + (rp?.dy ?? 0) + kissLift * kiss - flossBob + breathe - 0.012 * g * Math.abs(Math.cos(ph)) * k, hipZ = CR.hipForward * c;
     const lift = (v) => Math.max(0, v) * 0.12 * g * k * (1 - 0.5 * c);
     const fx = 0.11 + (F.x - 0.11) * c, fz = 0.02 + (F.z - 0.02) * c;
     const feet = [[fx - sway, F.y + lift(Math.cos(ph)), fz + step], [-fx - sway, F.y + lift(-Math.cos(ph)), fz - step]];
@@ -1273,11 +1275,16 @@ export class Avatar {
       if (!hands.L) handL = mix(handL, flossArm(1, 1, flossSn, flossCs));
       if (!hands.R) handR = mix(handR, flossArm(-1, -1, flossSn, flossCs));
     }
+    if (rp && !c) { // #1639: a BIO reaction (a crouch keeps its own pose)
+      if (!hands.L) handL = mixHand(handL, rp.hands[0], rp.amt);
+      if (!hands.R) handR = mixHand(handR, rp.hands[1], rp.amt);
+    }
     this.updateMouth(dt);
+    if (rp) { this.mouth = Math.max(this.mouth, rp.mouth); this.material.userData.u.uMouth.value = this.mouth; }
     this.material.userData.u.uKiss.value = kiss;
     if (kiss) this.material.userData.u.uMouth.value = 0;
     const knee = c ? CR.knees.map((v, i) => KNEE_REST[i] + (v - KNEE_REST[i]) * c) : KNEE_REST;
-    poseOlof(this, { hip: [hipY, hipZ + KISS.forward * kiss * kissReach], lean: 0.03 * g + FL.lean * da + CR.lean * c - KISS.lean * kiss * kissReach, head: Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch)) + 0.03 * Math.sin(this.time * 0.6) + KISS.head * kiss * kissReach, turn, feet, hands: [handL, handR], can: null,
+    poseOlof(this, { hip: [hipY, hipZ + KISS.forward * kiss * kissReach], lean: 0.03 * g + (rp?.lean ?? 0) + FL.lean * da + CR.lean * c - KISS.lean * kiss * kissReach, head: Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch)) + (rp?.head ?? 0) + 0.03 * Math.sin(this.time * 0.6) + KISS.head * kiss * kissReach, turn, feet, hands: [handL, handR], can: null,
       knee, flat: c, toes: F.turn * c });
     if (sway) this.bones.hips.position.x = sway; // #1622: the feet targets were moved the other way, so they stay planted
   }

@@ -332,6 +332,8 @@ src/ghosts.js          other players as ghosts with a name tag (#666), inert wit
                        #1222: a toast { t: 'c', k, b? } (k an index into config.js TOAST_LINES below PLAYERS.toastPhrases, b = an answer
                        that is never answered) goes to the players within PLAYERS.toastRange m of the sender's last known position, at most
                        one per PLAYERS.toastEvery s per connection (GHOSTS.toast / ghosts.onToast; room test in players.test.mjs);
+                       #1639: a reaction { t: 'rx', k } (k an integer below PLAYERS.reactions: cry / laugh / scream; `cleanReact`) goes as { t: 'rx', i, k }
+                       to the players within PLAYERS.soundRange of a sender last seen in the BIO (`inBio`), at most one per PLAYERS.reactEvery * .8 s, not echoed.
                        #1302: a sound event { t: 'snd', k } (k only a key of PLAYERS.sounds = config.js SOUNDS.kinds, today 'bell' = the bicycle
                        bell; `cleanSound`) goes as { t: 'snd', i, k } to the players within PLAYERS.soundRange (45 m) of the sender's last known
                        position, at most one per PLAYERS.soundEvery s (the client's SOUNDS.every is longer), never echoed, no text; an old Worker

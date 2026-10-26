@@ -36,6 +36,9 @@ import { recordGame } from './games.js';
 // PLAYERS.toastRange m as { t: 'c', i, k, b? }; no text, at most one per toastEvery s per connection.
 // A sound event (#1302) { t: 'snd', k } (k: a key of PLAYERS.sounds, today only 'bell' = the bicycle bell) goes to the players
 // within PLAYERS.soundRange m as { t: 'snd', i, k }; no text, at most one per soundEvery s per connection, never echoed.
+// A reaction (#1639) { t: 'rx', k } (k: an integer below PLAYERS.reactions: 0 cry, 1 laugh, 2 scream in terror) goes to the players
+// within PLAYERS.soundRange m as { t: 'rx', i, k }, only from a sender last seen in the BIO (PLAYERS.bio); no text, at most one per
+// reactEvery s per connection, never echoed. A one-shot event, not a state field: the player state is already near maxBytes.
 // #1398 reserves KISS.phrase for a complementary Sarah/Olof pair; accepted kisses echo id/at, optional q rejects replay.
 // #1405 reserves HUG.phrase for a hug between any two nearby unarmed players: accepted the same way (id/at echo, q, busy).
 // A greeting (#673) { t: 'g', to, k } goes to everybody else as { t: 'g', i, to, k } (k: a phrase index, no text).
@@ -73,6 +76,8 @@ export const PLAYERS = {
   toastEvery: 2,       // #1222: a toast at most this often per connection (s; the client's TOAST.every)
   toastRange: 6,       // #1222: only players within this many metres of the toaster's last known position get it (*guess*)
   soundEvery: 0.4,     // #1302: a sound event at most this often per connection (s; the client's SOUNDS.every is a little longer)
+  reactions: 3,        // #1639: reaction kinds (0 cry, 1 laugh, 2 scream), an index into the client's REACT.kinds
+  reactEvery: 3,       // #1639: a reaction at most this often per connection (s; the client's REACT.duration is a little longer, so ×.8 here)
   soundRange: 45,      // #1302: only players within this many metres of the sender's last known position get it (*guess*; the client fades it out earlier)
   sounds: ['bell'],    // #1302: the whitelist of sound-event keys (the client's SOUNDS.kinds), never free text
   pool: { every: 0.5, reach: 3, margin: 0.3 }, // #1355: one table action per connection at most this often (s); within `reach` m of the table; room edge slack (m) (*guess*)
@@ -194,6 +199,8 @@ export function cleanMusic(text) {
 export function inPlayroom(p, margin = PLAYERS.pool.margin) {
   return !!p && Math.abs(p[0] - PLAYROOM.x) <= PLAYROOM.w / 2 + margin && Math.abs(p[2] - PLAYROOM.z) <= PLAYROOM.d / 2 + margin && p[1] > -1 && p[1] < 2;
 }
+/** #1639: inside the BIO (the clubhouse's west part, as the client's `bioHere` in src/main.js decides): x / z below the hall and billiards-room walls. */
+const inBio = (p) => inPlayroom(p) && p[0] < PLAYROOM.x - PLAYROOM.clubhouse.side - PLAYROOM.clubhouse.wall / 2 && p[2] < PLAYROOM.z + PLAYROOM.clubhouse.front - PLAYROOM.clubhouse.wall / 2;
 const nearTable = (p) => inPlayroom(p) && Math.hypot(p[0] - PLAYROOM.x - PLAYROOM.billiards.x, p[2] - PLAYROOM.z - PLAYROOM.billiards.z) <= PLAYERS.pool.reach;
 
 /** A sound event (#1302) { t: 'snd', k: whitelisted key }, or null. */
@@ -201,6 +208,13 @@ export function cleanSound(text) {
   let m;
   try { m = JSON.parse(text); } catch { return null; }
   return m?.t === 'snd' && typeof m.k === 'string' && PLAYERS.sounds.includes(m.k) ? { k: m.k } : null;
+}
+
+/** A reaction (#1639) { t: 'rx', k: kind index }, or null. */
+export function cleanReact(text) {
+  let m;
+  try { m = JSON.parse(text); } catch { return null; }
+  return m?.t === 'rx' && Number.isInteger(m.k) && m.k >= 0 && m.k < PLAYERS.reactions ? { k: m.k } : null;
 }
 
 export function cleanAvatar(v) {
@@ -530,7 +544,7 @@ export class PlayerRoom {
       else if (m?.t === 'consume' && Number.isSafeInteger(m.id) && m.id > 0 && typeof m.portion === 'string' && m.portion.length > 0 && m.portion.length <= 64) consuming = m;
     } catch {}
     let lifeChanged = false;
-    const talk = cleanTalk(message), hello = !talk && cleanGreet(message), toast = !talk && !hello && cleanToast(message), sound = !talk && !hello && !toast && cleanSound(message), pool = !talk && !hello && !toast && !sound && cleanPool(message), mus = !talk && !hello && !toast && !sound && !pool && cleanMusic(message), cinema = !talk && !hello && !toast && !sound && !pool && !mus && cleanCinema(message), snake = !talk && !hello && !toast && !sound && !pool && !mus && !cinema && cleanSnake(message), shot = !talk && !hello && !toast && !sound && !pool && !mus && !cinema && !snake && cleanShot(message);
+    const talk = cleanTalk(message), hello = !talk && cleanGreet(message), toast = !talk && !hello && cleanToast(message), sound = !talk && !hello && !toast && cleanSound(message), react = !talk && !hello && !toast && !sound && cleanReact(message), pool = !talk && !hello && !toast && !sound && !react && cleanPool(message), mus = !talk && !hello && !toast && !sound && !react && !pool && cleanMusic(message), cinema = !talk && !hello && !toast && !sound && !react && !pool && !mus && cleanCinema(message), snake = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && cleanSnake(message), shot = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && !snake && cleanShot(message);
     if (falling) {
       const damage = fallDamage(falling.drop, falling.gap, COMBAT.lives);
       if (damage !== null) {
@@ -598,6 +612,15 @@ export class PlayerRoom {
       if (now - (a.sd ?? 0) >= PLAYERS.soundEvery * 800 && a.s?.p) {
         a.sd = now;
         const out = JSON.stringify({ t: 'snd', i: a.i, k: sound.k });
+        for (const x of this.open()) {
+          const q = x !== ws && att(x).s?.p;
+          if (q && Math.hypot(q[0] - a.s.p[0], q[1] - a.s.p[1], q[2] - a.s.p[2]) <= PLAYERS.soundRange) send(x, out);
+        }
+      }
+    } else if (react) { // #1639: a cry / laugh / scream, from the BIO only, to the players near the sender, not too often
+      if (now - (a.rx ?? 0) >= PLAYERS.reactEvery * 800 && a.s?.p && inBio(a.s.p)) {
+        a.rx = now;
+        const out = JSON.stringify({ t: 'rx', i: a.i, k: react.k });
         for (const x of this.open()) {
           const q = x !== ws && att(x).s?.p;
           if (q && Math.hypot(q[0] - a.s.p[0], q[1] - a.s.p[1], q[2] - a.s.p[2]) <= PLAYERS.soundRange) send(x, out);
