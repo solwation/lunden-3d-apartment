@@ -116,7 +116,8 @@ fs.mkdirSync(out,{recursive:true});
   for(const end of ['pointerup','pointercancel','pointerleave']){ev('pointerdown');ev(end);}
   const jumpStart=source.indexOf("document.getElementById('jump-btn').addEventListener('pointerdown'");
   const jumpEnd=source.indexOf('const stripKeys',jumpStart);const player={jumpPress:false};
-  new Function('active','player',source.slice(jumpStart,jumpEnd))(()=>true,player);
+  const slideRide={active:false,cancel:()=>calls.push('slide')}; // #1649: the jump listener cancels a slide ride first
+  new Function('active','player','slideRide',source.slice(jumpStart,jumpEnd))(()=>true,player,slideRide);
   document.getElementById('jump-btn').dispatchEvent(new PointerEvent('pointerdown',{pointerId:11,pointerType:'touch',bubbles:true,cancelable:true}));
   return {calls,jumpPress:player.jumpPress,pass:player.jumpPress&&JSON.stringify(calls)===JSON.stringify([true,false,'release',true,false,'release',true,false,'release'])};
  });
