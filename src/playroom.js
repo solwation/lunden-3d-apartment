@@ -184,18 +184,21 @@ export class Playroom {
       this.object.add(pk); this.controlPickables.push(pk);
     }
     this.music = new PlayroomMusic();this.sound = new PlayroomSound();
-    const speaker = R.speakers;
-    for (const x of speaker.x) {
-      fur.push(cbox(col.dark, x-speaker.w/2, x+speaker.w/2, speaker.y-speaker.h/2, speaker.y+speaker.h/2, speaker.z-speaker.d/2, speaker.z+speaker.d/2));
-      for (const [dy, radius, segments] of [[-.065, .075, 10], [.105, .035, 8]]) {
-        fur.push(paint(new THREE.CylinderGeometry(radius, radius, .012, segments).rotateX(Math.PI/2).translate(R.x+x, speaker.y+dy, R.z+speaker.z+speaker.d/2), col.steel));
+    // #1645: four ceiling speakers in the corners, tilted toward the centre; decor only (merged into the furniture mesh), no pick box, no action.
+    const speaker = R.speakers; this.speakerPositions = [];
+    for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+      const lx = sx * (R.w/2 - speaker.inset), lz = sz * (R.d/2 - speaker.inset), ly = R.ceiling - speaker.drop;
+      this.speakerPositions.push({ x: R.x+lx, y: ly, z: R.z+lz });
+      const yaw = Math.atan2(-sx, -sz), place = (g) => g.rotateX(speaker.tilt).rotateY(yaw).translate(R.x+lx, ly, R.z+lz); // front (+z) toward the centre, nose down
+      fur.push(paint(place(new THREE.BoxGeometry(speaker.w, speaker.h, speaker.d)), col.dark));
+      for (const [dy, radius, segments] of [[-.12, .13, 14], [.15, .05, 10]]) {
+        fur.push(paint(place(new THREE.CylinderGeometry(radius, radius, .014, segments).rotateX(Math.PI/2).translate(0, dy, speaker.d/2)), col.steel));
       }
-      const pk = new THREE.Mesh(new THREE.BoxGeometry(speaker.w, speaker.h, speaker.d+.04), new THREE.MeshBasicMaterial({ visible: false }));
-      pk.position.set(R.x+x, speaker.y, R.z+speaker.z); pk.userData.door = this.music.target;
-      this.music.target.pickable ??= pk; this.object.add(pk); this.controlPickables.push(pk);
+      fur.push(paint(new THREE.BoxGeometry(.06, speaker.drop, .06).translate(R.x+lx, R.ceiling - speaker.drop/2, R.z+lz), col.steel)); // ceiling bracket
     }
+    this.music.setSpeakers(this.speakerPositions);
     const djPick = new THREE.Mesh(new THREE.BoxGeometry(DJ.w-.02,.14,DJ.d-.02), new THREE.MeshBasicMaterial({ visible: false }));
-    djPick.position.set(R.x+DJ.x,DJ.h+.07,R.z+DJ.z); djPick.userData.door=this.music.target;
+    djPick.position.set(R.x+DJ.x,DJ.h+.07,R.z+DJ.z); djPick.userData.door=this.music.target;this.music.target.pickable=djPick;
     this.object.add(djPick); this.controlPickables.push(djPick);
     this.devices = new PlayroomDevices((name, on) => this.onSwitch?.(name, on));
     this.object.add(this.devices.object); this.controlPickables.push(...this.devices.pickables);
@@ -246,7 +249,7 @@ export class Playroom {
     this.inside = false;
   }
 
-  update(dt,camera,aimed) { if(this.inside){this.music.tick(camera.position);this.sound.update(dt,this.discoOn,this.music.state!=='off');this.billiards.update(dt,camera,aimed);this.devices.update(dt);this.popcorn.update(dt);this.fadeCinema(dt);this.curtains.update(dt);this.roomPosters.setLevel(this.lit/R.lit);if(this.discoOn)this.disco(dt);} }
+  update(dt,camera,aimed) { if(this.inside){this.music.tick(camera.position);this.music.listen(camera);this.sound.update(dt,this.discoOn,this.music.state!=='off');this.billiards.update(dt,camera,aimed);this.devices.update(dt);this.popcorn.update(dt);this.fadeCinema(dt);this.curtains.update(dt);this.roomPosters.setLevel(this.lit/R.lit);if(this.discoOn)this.disco(dt);} }
 
   /** #1365: switch the disco light on or off (the ball stops and goes dull, the light spots vanish). Returns the badge text. */
   setDisco(on) {

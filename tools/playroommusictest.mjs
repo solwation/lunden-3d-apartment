@@ -99,3 +99,17 @@ test('#1629: released media elements and source nodes are reused, old listeners 
  for (let i = 0; i < 20; i++) { const x = new MusicFile(A, new Node(), { files: ['x.ogg'] }); x.stop(); }
  assert.equal(sources.length, 3, 'twenty more starts add one slot at most, not twenty'); b.stop(); c.stop();
 });
+test('#1645: four positional sources at the corner speakers, the speakers expose no interaction', async () => {
+ const made=[];
+ win.AudioContext=class {sampleRate=4;destination={};currentTime=0;listener={};createGain(){return new Node()}createPanner(){const n=new Node();n.positionX={value:0};n.positionY={value:0};n.positionZ={value:0};made.push(n);return n}createBuffer(){return{getChannelData:()=>new Float32Array(8)}}createMediaElementSource(el){const n=new Node();n.el=el;return n}resume(){}};
+ const {PLAYROOM:R}=await import('../src/config.js');
+ // fresh context: audio.js keeps the one created earlier, so patch its factory instead
+ const A=audioParts(),ctx=A.ctx;ctx.createPanner=()=>{const n=new Node();n.positionX={value:0};n.positionY={value:0};n.positionZ={value:0};made.push(n);return n};
+ const m=new PlayroomMusic(),pos=[[-1,-1],[-1,1],[1,-1],[1,1]].map(([sx,sz])=>({x:R.x+sx*(R.w/2-R.speakers.inset),y:R.ceiling-R.speakers.drop,z:R.z+sz*(R.d/2-R.speakers.inset)}));
+ m.setSpeakers(pos);m.setInside(true);m.play();
+ assert.equal(made.length,4);assert.deepEqual(made.map(n=>[n.positionX.value,n.positionY.value,n.positionZ.value]),pos.map(p=>[p.x,p.y,p.z]));
+ assert(made.every(n=>n.dest===A.master));
+ m.stop();assert.equal(made.every(n=>n.dest===null),true);m.dispose();
+ const src=(await import('node:fs')).readFileSync(new URL('../src/playroom.js',import.meta.url),'utf8');
+ assert(!/speaker[^\n]*pickable|pk\.userData\.door = this\.music/.test(src));
+});

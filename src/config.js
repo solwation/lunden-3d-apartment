@@ -6088,7 +6088,11 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
   // #1574: per-room light levels [BIO, BILJARD, SPEL, hall] (*guess*): the clubhouse material scales its ceiling-lamp term and its ambient term by room, so SPEL
   // is dim (neon and screens carry it), BILJARD is dull and pub-like, and BIO/hall stay as they were. BIO's film dimming (#1570) stays as is.
   zones: { lamp: [1, .45, .22, 1], ambient: [1, .62, .38, 1], panel: [1, .55, .22, 1] }, // panel: the ceiling light panels' glow (BILJARD/SPEL are in the poster mesh; BIO's follows #1570's sconces)
-  speakers: { x: [-2.2, 2.2], y: 1.1, z: -4.98, w: .25, h: .38, d: .18 }, // guess: small wall-mounted pair, clear of cue/walking space
+  // #1645: four larger ceiling speakers, one in each corner of the clubhouse, tilted down toward the room's centre (*guess* sizes). `inset` = distance
+  // (m) from both walls to the speaker's centre, `drop` = how far the box's centre hangs below the ceiling, `tilt` = pitch down toward the centre (rad),
+  // `w`/`h`/`d` = box size (m; d is the depth the front faces out). Not interactive: the music is controlled only from the DJ booth. `ref`/`rolloff`: the
+  // Web Audio distance model of each of the four music sources (inverse; ref distance m, rolloff factor), our choice so the whole 18 m room stays audible.
+  speakers: { inset: .35, drop: .15, tilt: .35, w: .36, h: .4, d: .3, ref: 4, rolloff: 0.8 },
   door: { w: 0.8, h: 1.7 }, // Assumed low playhouse-style exit; its interaction works for every avatar height.
   standOff: 0.75, // m from the door wall where you arrive inside
   outside: 0.95, // m north of the playhouse's door wall where you stand when you come out

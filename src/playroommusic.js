@@ -1,6 +1,6 @@
 import { initAudio, audioParts } from './audio.js';
 import { MusicFile } from './music.js';
-import { MUSIC, SONOS, DANCE } from './config.js';
+import { MUSIC, SONOS, DANCE, PLAYROOM } from './config.js';
 
 // #1621: the DJ bench plays any shipped track; the list is the Sonos channels' tracks in order.
 export const PLAYROOM_TRACKS = SONOS.channels.flatMap((c) => c.tracks);
@@ -36,6 +36,27 @@ export class PlayroomMusic {
   toggleDance() { if (!this.canDance) return false; if (this.dancing) this.stopDance(); else this.startDance(); return true; }
   startDance() { if (this.state === 'playing') { this.dancing = true; this.danceAt = null; } }
   stopDance() { this.dancing = false; this.danceAt = null; }
+  /** #1645: the four ceiling speakers' world positions; the mix then reaches the master through one positional (panner) source per speaker. */
+  setSpeakers(positions) { this.speakers = positions; }
+  routeMix(A) {
+    this.panners = [];
+    if (!this.speakers?.length || !A.ctx.createPanner) { this.mix.connect(A.master); return; }
+    const S = PLAYROOM.speakers, share = A.ctx.createGain(); share.gain.value = 1 / this.speakers.length ** .5; // power-wise four sources sum to one
+    this.mix.connect(share);
+    for (const p of this.speakers) {
+      const n = A.ctx.createPanner(); n.panningModel = 'equalpower'; n.distanceModel = 'inverse'; n.refDistance = S.ref; n.rolloffFactor = S.rolloff;
+      if (n.positionX) { n.positionX.value = p.x; n.positionY.value = p.y; n.positionZ.value = p.z; } else n.setPosition?.(p.x, p.y, p.z);
+      share.connect(n); n.connect(A.master); this.panners.push(n);
+    }
+    this.share = share;
+  }
+  /** #1645: each frame inside, the Web Audio listener follows the camera (position + facing); only these panners use it. */
+  listen(camera) {
+    const L = audioParts()?.ctx.listener; if (!L || !this.panners?.length) return;
+    const p = camera.position, e = camera.matrixWorld.elements, fx = -e[8], fy = -e[9], fz = -e[10];
+    if (L.positionX) { L.positionX.value = p.x; L.positionY.value = p.y; L.positionZ.value = p.z; L.forwardX.value = fx; L.forwardY.value = fy; L.forwardZ.value = fz; L.upX.value = 0; L.upY.value = 1; L.upZ.value = 0; }
+    else { L.setPosition?.(p.x, p.y, p.z); L.setOrientation?.(fx, fy, fz, 0, 1, 0); }
+  }
   /** Each frame while inside: `pos` the player's {x, z}. */
   tick(pos) {
     if (!this.dancing) return;
@@ -67,7 +88,7 @@ export class PlayroomMusic {
   /** Start the decks from the beginning, or (room state) from `pos` ms with a crossfade `mx` { to, el } already running. */
   begin(A, { ix, pos, mx }) {
     const generation = this.generation, failed = () => queueMicrotask(() => { if (generation === this.generation) this.stopLocal(); });
-    this.mix = A.ctx.createGain(); this.setVolume(this.volume); this.mix.connect(A.master);
+    this.mix = A.ctx.createGain(); this.setVolume(this.volume); this.routeMix(A);
     this.state = 'playing'; this.index = ix;
     const t = mx ? Math.min(1, mx.el / 1000 / MUSIC.crossfade) : 0;
     this.deck = this.makeDeck(A, PLAYROOM_TRACKS[ix], Math.cos(t * Math.PI / 2), failed, pos / 1000);
@@ -154,7 +175,7 @@ export class PlayroomMusic {
   stopLocal() {
     this.generation++; clearInterval(this.mixTimer);
     if (this.mixing) { this.killDeck(this.mixing.incoming); this.killDeck(this.mixing.outgoing); this.mixing = null; }
-    this.killDeck(this.deck); this.mix?.disconnect();
+    this.killDeck(this.deck); this.mix?.disconnect(); this.share?.disconnect(); this.panners?.forEach((n) => n.disconnect()); this.panners = []; this.share = null;
     this.file = this.mix = this.deck = null; this.state = 'off'; this.stopDance();
   }
   setInside(on) {
