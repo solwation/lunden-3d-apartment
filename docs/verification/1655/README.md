@@ -1,6 +1,7 @@
 # Basketball visibility (#1655)
 
-Source: `4f3bc36a` plus the scoped basketball/detail-culler patch committed with this evidence.
+Verified implementation and images: `579b6e8f3da7def105939cb99e5861ab6e83d37c`
+(based on `4f3bc36a`).
 Chromium 1248, SwiftShader, 1280×800, DPR 1, normal production quality 0 (no test mode),
 noon in July, clear weather. Culler quality scale: 0.6. These are software-rendering
 counts, not native device performance measurements.
