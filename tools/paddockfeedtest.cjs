@@ -8,6 +8,7 @@ let failed=0;const check=(ok,name,data)=>{console.log(`${ok?'PASS':'FAIL'} ${nam
  page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'&&/shader|THREE|WebGL/.test(m.text()))errors.push(m.text());});
  await page.goto(base+'/?shot&quality=3&time=12&month=7&weather=clear&freeze&cloud=',{waitUntil:'commit'});
  await page.waitForFunction(()=>window.__app?.paddock,null,{timeout:420000});
+ await require('./testkit.cjs').skipNameDialog(page);/* #441/#1650: the first-visit name dialog covers the HUD and eats the Klappa click */
  await page.evaluate(()=>{
   const a=__app,P=a.paddock,s=P.spots.shelter;a.renderer.setAnimationLoop(null);a.showOverlay(false);
   const sn=Math.sin(s.yaw),cs=Math.cos(s.yaw),point=(x,z)=>[s.x+x*cs+z*sn,s.z-x*sn+z*cs];
