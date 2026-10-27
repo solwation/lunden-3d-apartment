@@ -152,6 +152,11 @@ src/daycycle.js        real-time day (#1145; DAY.minutes = 24 × 60, was 60): it
                        above `top` + `fade` m `above` = 1: `oc` = 0 so the lighting is the clear-day blend (sun 3.0, exposure 1.5) whatever the weather below (night keeps the moon),
                        and weather.js drops the rain / flakes / sound by (1 − above). One shadow-casting light as before. #1266: sky and cloud deck shaders include `colorspace_fragment` so their fragment colors match the
                        output color space of the fogged ground, eliminating the horizon edge band. `node` check: climb with `&weather=rain&jetpack`, log `day.above`, `scene.fog`, sun.
+src/balloon.js         hot-air balloon above the cloud deck (#1646, `BALLOON`, all numbers *guess*): one merged vertex-coloured Lambert mesh (envelope, basket, rim, ropes; ~900
+                       triangles, no shadows, no light). `src/balloongeo.js` holds the pure parts: a wall-clock (`Date.now`) schedule so every client agrees (visible `window` s of
+                       every `period` s, scaled in/out at the ends), the circling drift above the deck, the basket floor (`basketFloor`, a standable surface in Player.groundAt)
+                       and the rim wall (`basketCollide`). `update` runs before player.update and carries a player standing in the basket; outside its window, underground or far
+                       away the mesh is hidden and update returns at once. It stays up while the player is aboard. `&balloon` forces it on; `window.__app.balloon`.
 src/birds.js           gulls (#1252, `BIRDS`, all numbers *guess*): ONE instanced draw call (`InstancedBufferGeometry`, 3 triangles per bird: tail wedge + two wings), no lights, no textures, no sound, no
                        raycast. Circling, banking and the wing flap are computed in the vertex shader from per-instance seeds (fixed mulberry32 seed, same flock every visit) and the accumulated game
                        time, so `update(dt, rain, hidden)` only sets uniforms (no allocations). `count` birds (`lowMemoryCount` on phones), the last `high` at `highAlt` m above the cloud deck

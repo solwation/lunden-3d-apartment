@@ -483,9 +483,13 @@ pagehide release media/nodes and never restart automatically. No new engine or t
 cannot misclassify AbortError as a corrupt track or start the fallback while paused.
 Real decode fallback retains pause; existing auto-start callers keep their behaviour.
 
-Pair dimensions/placement in `PLAYROOM.speakers` are guesses; the high rear-wall pair
-adds 168 triangles to the existing furniture batch: no new visible mesh, material or
-texture. Outside the whole room remains hidden; collision and billiard yaw π/2 match
+Speaker dimensions/placement in `PLAYROOM.speakers` are guesses. Originally a high rear-wall pair; since #1645
+four larger ceiling speakers hang in the clubhouse's corners (`inset`, `drop`, `tilt` toward the centre), merged
+into the existing furniture batch (no new mesh, material or texture) and exposed as `Playroom.speakerPositions`.
+They have no pick box: only the DJ booth (`music.target.pickable`) controls the music. `PlayroomMusic.setSpeakers`
+routes the mix through one Web Audio `PannerNode` per speaker (inverse distance, `ref`/`rolloff` *guess*), and
+`listen(camera)` moves the listener each frame while inside; without speakers or `createPanner` it falls back to the
+direct connection. `tools/playroommusictest.mjs` checks four panners at the speaker positions and no speaker pick. Outside the whole room remains hidden; collision and billiard yaw π/2 match
 14530bfe exactly. Matched actual-app desktop 960×600 and touch 844×390 views measured
 17 calls / 11,966 → 12,134 triangles; these are targeted interior views, not global profiles.
 `node --test tools/playroommusictest.mjs`: five native lifecycle/race/fallback tests.
@@ -511,7 +515,7 @@ remains nonzero, snow remains silent and mute retains control.
 
 ## TV volume and audible billiards (#1502/#1503)
 
-`TVVolume` (`src/tvsound.js`) applies scalar distance/head-direction volume through YouTube's API for the three home TVs, clubhouse TV and Santa's local loop. TV_MEDIA.sound centralises falloff, rear gain, range and message cadence. Global mute is immediate. This intentionally implements the user's approved volume approximation, not stereo/HRTF panning of inaccessible iframe audio. #1641: the BIO film also counts the clubhouse's speakers (`playroomCinema().speakers`, world centres of the fronts, centre, surrounds, rears and height speakers; `playroom.cinemaSpeakers` → `CinemaPlayer.soundSpeakers`): each is an omnidirectional source weighted by `TV_MEDIA.sound.speakerGain`, added in power to the screen's gain and clamped to 100, so the nearest speaker dominates and walking up to one raises the volume. This is still one scalar iframe volume: there is no per-speaker direction or panning (no Web Audio nodes exist). `tools/cinemaspeakertest.cjs` and `tools/tvvolumetest.mjs` cover it.
+`TVVolume` (`src/tvsound.js`) applies scalar distance/head-direction volume through YouTube's API for the three home TVs, clubhouse TV and Santa's local loop. TV_MEDIA.sound centralises falloff, rear gain, range and message cadence. Global mute is immediate. This intentionally implements the user's approved volume approximation, not stereo/HRTF panning of inaccessible iframe audio. #1641: the BIO film also counts the clubhouse's speakers (`playroomCinema().speakers`, world centres of the fronts, centre, surrounds, rears and height speakers; `playroom.cinemaSpeakers` → `CinemaPlayer.soundSpeakers`): each is an omnidirectional source weighted by `TV_MEDIA.sound.speakerGain`, added in power to the screen's gain and clamped to 100, so the nearest speaker dominates and walking up to one raises the volume. This is still one scalar iframe volume: there is no per-speaker direction or panning for the film (its iframe audio has no Web Audio nodes; the clubhouse music's own panners from #1645 are separate). `tools/cinemaspeakertest.cjs` and `tools/tvvolumetest.mjs` cover it.
 
 Playroom billiards retain physical cue/ball/pocket event positions and the existing positional master graph. Impact mix is stronger and square-root strength makes soft collisions audible; pocket drops no longer depend on horizontal ball speed. `sfx.billiard` adds a short pocket rattle after the drop. Scoped tests include real Web Audio RMS and mute/exit silence; no physics rules changed.
 
