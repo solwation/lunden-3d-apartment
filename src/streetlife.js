@@ -241,7 +241,7 @@ export function buildStreetLife({ entrances = [] } = {}) {
   for (const mesh of components) mesh.userData.moving = true; // culling follows changed batch bounds
   group.add(...components);
   // #905: register only actual seeded models, in source order; keep all four shared batches.
-  const pickGeometry = new THREE.BoxGeometry(1.7, 1.05, .6), pickMaterial = new THREE.MeshBasicMaterial({ visible: false });
+  const pickGeometry = new THREE.BoxGeometry(1.7, 1.05, .6), pickMaterial = new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide });
   const bicycles = bikeRecords.map(record => {
     const original = bikes[record.index].clone(), pos = new THREE.Vector3(), q = new THREE.Quaternion(), scale = new THREE.Vector3();
     original.decompose(pos, q, scale);

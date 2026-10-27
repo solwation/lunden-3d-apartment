@@ -521,7 +521,7 @@ export function buildCourtyard() {
     bikeSpokes[0].index?.count ?? bikeSpokes[0].attributes.position.count];
   for (const bicycle of bicycles) {
     const original = new THREE.Matrix4().makeTranslation(...bicycle.position.toArray());
-    const pick = new THREE.Mesh(new THREE.BoxGeometry(1.7, 1.05, .6), new THREE.MeshBasicMaterial({ visible: false }));
+    const pick = new THREE.Mesh(new THREE.BoxGeometry(1.7, 1.05, .6), new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide }));
     pick.userData.moving = true; group.add(pick);
     const ranges = components.map((mesh, k) => {
       const start = bicycle.index * counts[k], count = counts[k], a = mesh.geometry.attributes;

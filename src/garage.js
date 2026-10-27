@@ -491,7 +491,7 @@ export class Garage {
     this.bikeSpokesMesh = bikeSpokesMesh;
 
     // #986: Register rideable bicycles with detached/restore contract.
-    const pickGeometry = new THREE.BoxGeometry(1.7, 1.05, .6), pickMaterial = new THREE.MeshBasicMaterial({ visible: false });
+    const pickGeometry = new THREE.BoxGeometry(1.7, 1.05, .6), pickMaterial = new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide }); // #1647: double-sided, a rider/avatar standing at the bike (0.22 m from its frame, inside the 0.3 m half-depth) still hits it
     const selfGarage = this;
     this.bicycles = bikeRecords.map((record, index) => {
       const original = new THREE.Matrix4().makeRotationY(record.yaw).setPosition(record.pos);
