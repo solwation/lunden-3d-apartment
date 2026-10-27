@@ -1,0 +1,78 @@
+{
+  "checks": [
+    {
+      "name": "disco initially on with spots sweeping directly",
+      "ok": true,
+      "info": {
+        "discoOn": true,
+        "spotsVisible": true,
+        "moved": true,
+        "lit": 0.231,
+        "ballColor": 1,
+        "zoneLamp": 0.05,
+        "zoneAmbient": 0.35,
+        "panelProbe": {
+          "poster": 0.41999998688697815,
+          "panel_biljard": 0.07999999821186066,
+          "panel_spel": 0.2199999988079071
+        }
+      }
+    },
+    {
+      "name": "disco initial lighting is cozy dark in BILJARD",
+      "ok": true,
+      "info": {
+        "discoOn": true,
+        "spotsVisible": true,
+        "moved": true,
+        "lit": 0.231,
+        "ballColor": 1,
+        "zoneLamp": 0.05,
+        "zoneAmbient": 0.35,
+        "panelProbe": {
+          "poster": 0.41999998688697815,
+          "panel_biljard": 0.07999999821186066,
+          "panel_spel": 0.2199999988079071
+        }
+      }
+    },
+    {
+      "name": "disco switched off: spots hidden, normal pub lighting restored",
+      "ok": true,
+      "info": {
+        "discoOn": false,
+        "spotsVisible": false,
+        "lit": 0.55,
+        "ballColor": 0.28,
+        "zoneLamp": 0.45,
+        "zoneAmbient": 0.62,
+        "panelProbe": {
+          "poster": 1,
+          "panel_biljard": 0.550000011920929,
+          "panel_spel": 0.2199999988079071
+        }
+      }
+    },
+    {
+      "name": "disco switched back on: spots sweep directly and cozy dark returns",
+      "ok": true,
+      "info": {
+        "discoOn": true,
+        "spotsVisible": true,
+        "moved": true,
+        "lit": 0.231,
+        "ballColor": 1,
+        "zoneLamp": 0.05,
+        "zoneAmbient": 0.35,
+        "panelProbe": {
+          "poster": 0.41999998688697815,
+          "panel_biljard": 0.07999999821186066,
+          "panel_spel": 0.2199999988079071
+        },
+        "inPlayroom": true
+      }
+    }
+  ],
+  "errors": [],
+  "pass": true
+}
