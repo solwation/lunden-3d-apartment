@@ -2113,3 +2113,10 @@ the side not holding the point plays, a side out of boules hands over, scoring p
 nearest, a tie scores nothing, the mène winner throws the next jack, first to 13 wins and a finished game blocks
 throws. Sizes in `BOULE` follow the FIPJP ball/jack dimensions; the rest are playability guesses. Tests:
 `tools/bouletest.mjs` (node) and `tools/bouletest.cjs` (real app, `MOBILE=1` for touch). Gameplay: never downstream.
+
+Basketball flight visibility (#1655): only the ball mesh opts into `userData.noDistanceCull`;
+`DetailCuller` keeps wall/opening occlusion, but no longer removes it by angular size or quality
+distance. Boule uses one InstancedMesh, already excluded from DetailCuller. Paper balls are
+created after its one-time collection and are not distance culled. This basketball gameplay
+opt-in has no public downstream consumer. Checks: `tools/basketdistanceculltest.mjs` and
+`tools/basketvisibilitytest.cjs`; saved app views in `docs/verification/1655/`.

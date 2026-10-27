@@ -8853,3 +8853,14 @@ both revisions and is unrelated to texture painting. No startup-time or total-he
 stair cores L/A/B/C get 166/29/24/24 distinct edge tints (10/7/7/7 before) and the playhouse shell 6 (1 before); with the old
 `src/architectureedges.js` the synthetic and playhouse checks fail. Houses A, B, C and L checked through the shared
 `CoreHouse`/`Core` edges, plus the playhouse. [Before/after](../verification/1615/).
+
+## Basketball flight visibility (#1655)
+
+Run `node --test tools/basketdistanceculltest.mjs` for distance opt-in, ordinary detail
+culling and retained wall occlusion. Run `PLAYWRIGHT_MODULE=… tools/browsertest.sh node
+tools/basketvisibilitytest.cjs http://localhost:PORT docs/verification/1655` for actual
+shots above the rim from the three-point line and far court, matched original distance
+culling along each shot, saved result images and street draw-call parity. Uses normal
+1280×800 quality 0 rendering without test mode; it records the actual culler quality
+scale and reproduces the old distance cutoff on the far-court shot. Quality 3 can
+already show these distances under the old policy, so it is not the regression case.

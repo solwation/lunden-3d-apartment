@@ -21,6 +21,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 // camera has moved (#267 — the car's wheels and rear windows stayed hidden from when it was far away).
 // The lit parts of the lamps (materials with `userData.lamp`, set by lights.js) are never culled for being small: a
 // glowing shade or bulb that vanished a few metres off made the lamp look off (#294); from outside, walls still hide them.
+// A mesh with `userData.noDistanceCull` stays visible across long trajectories; wall/opening tests still apply (#1655).
 // A root whose `userData.detailUnit` is true is judged as one thing (#598): all its meshes are shown or hidden together, by
 // the size of the whole (the car: its wheels went at ~40 m while the body, too big to cull, drove on floating). The flag
 // may change while running (the car sets it except in its garage stall): while false its meshes are judged one by one.
@@ -104,7 +105,7 @@ export class DetailCuller {
       const r = s.radius * o.matrixWorld.getMaxScaleOnAxis();
       if (!(r > 0 && (r < D.maxOcclude || (lowMemory && o.isLineSegments && o.userData.architectureEdges)))) return;
       const lamp = [o.material].flat().some((m) => m?.userData.lamp); // a lamp's lit parts: never too small to draw (#294)
-      const baseCut = r < D.maxR && !lamp ? Math.max(D.minDist, r / D.k) : Infinity;
+      const baseCut = r < D.maxR && !lamp && !o.userData.noDistanceCull ? Math.max(D.minDist, r / D.k) : Infinity;
       // Exterior door hardware may have a merged centre on/inside the footprint,
       // but it belongs to the visible facade, not to contents behind a closed leaf (#519).
       const exteriorDoor = !!o.userData.door?.exterior;

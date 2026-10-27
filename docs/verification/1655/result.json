@@ -1,0 +1,1577 @@
+{
+  "result": [
+    {
+      "name": "three-point",
+      "distance": 6.75,
+      "eye": [
+        5.069999999999999,
+        1.62,
+        -9.899999999999999
+      ],
+      "rim": [
+        11.819999999999999,
+        3.05,
+        -9.9
+      ],
+      "apex": {
+        "n": 92,
+        "y": 4.539188215271134,
+        "pos": [
+          9.26882489093838,
+          4.539188215271134,
+          -9.865168165236616
+        ]
+      },
+      "captured": {
+        "n": 93,
+        "y": 4.5390769332687935,
+        "pos": [
+          9.30833508721472,
+          4.5390769332687935,
+          -9.86570760787357
+        ],
+        "oldMask": 1
+      },
+      "frames": [
+        {
+          "y": 1.6207324094864255,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 1.6834664399840853,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 1.7455192204817451,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 1.806890750979405,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 1.8675810314770647,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 1.9275900619747244,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 1.9869178424723841,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.045564372970044,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.103529653467704,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.1608136839653636,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.2174164644630237,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.2733379949606833,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.328578275458343,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.383137305956003,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.4370150864536626,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.4902116169513224,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.5427268974489823,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.594560927946642,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.645713708444302,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.696185238941962,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.7459755194396216,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.7950845499372816,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.8435123304349412,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.8912588609326013,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.938324141430261,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.984708171927921,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.030410952425581,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.0754324829232407,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.1197727634209005,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.1634317939185603,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.20640957441622,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.24870610491388,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.29032138541154,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.3312554159092,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.37150819640686,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.4110797269045197,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.4499700074021797,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.4881790378998394,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.5257068183974996,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.5625533488951593,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.5987186293928195,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.6342026598904793,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.669005440388139,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.703126970885799,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.736567251383459,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.769326281881119,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.801404062378779,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.832800592876439,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.863515873374099,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.893549903871759,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.9229026843694186,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.9515742148670787,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.9795644953647384,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.006873525862399,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.033501306360058,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.059447836857718,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.084713117355378,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.109297147853038,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.133199928350698,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.1564214588483575,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.1789617393460174,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.200820769843678,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.221998550341337,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.242495080838997,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.262310361336657,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.2814443918343175,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.299897172331977,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.3176687028296366,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.334758983327297,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.351168013824957,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.366895794322616,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.381942324820276,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.396307605317936,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.4099916358155955,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.422994416313255,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.435315946810915,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.446956227308576,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.457915257806235,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.468193038303895,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.477789568801555,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.4867048492992145,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.494938879796874,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.502491660294534,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.509363190792194,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.515553471289854,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.520892189287514,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.525549657285174,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.529525875282833,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.5328208432804935,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.535434561278153,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.5373670292758135,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.538618247273473,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.539188215271134,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.5390769332687935,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        }
+      ],
+      "newMask": 1,
+      "oldCut": 7.66666691693154,
+      "qualityScale": 0.6,
+      "cut": "Infinity"
+    },
+    {
+      "name": "far-court",
+      "distance": 8.4,
+      "eye": [
+        3.419999999999998,
+        1.62,
+        -9.899999999999999
+      ],
+      "rim": [
+        11.819999999999999,
+        3.05,
+        -9.9
+      ],
+      "apex": {
+        "n": 98,
+        "y": 4.897344056598608,
+        "pos": [
+          8.352283112845091,
+          4.897344056598608,
+          -9.862587594615853
+        ]
+      },
+      "captured": {
+        "n": 152,
+        "y": 3.916291670182456,
+        "pos": [
+          10.75819833766276,
+          3.916291670182456,
+          -9.888544464406316
+        ],
+        "oldMask": 128
+      },
+      "frames": [
+        {
+          "y": 1.603708919909397,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 1.6704136789572461,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 1.7364371880050953,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 1.801722676219611,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 1.8663269144341266,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 1.9302499026486422,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 1.9934916408631578,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.056052129077673,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.117931367292189,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.1791293555067046,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.2396460937212206,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.299481581935736,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.3586358201502517,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.4171088083647674,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.474900546579283,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.5320110347937987,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.5884402730083145,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.6441882612228302,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.699254999437346,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.753640487651862,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.8073447258663773,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.860367714080893,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.9127094522954087,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 2.9643699405099246,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.01534917872444,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.0656471669389562,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.115263905153472,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.1641993933679875,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.212453631582503,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.260026619797019,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.3069183580115347,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.3531288462260505,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.3986580844405663,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.443506072655082,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.487672810869598,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.5311582990841135,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.5739625372986294,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.616085525513145,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.657527263727661,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.6982877519421766,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.7383669901566927,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.7777649783712084,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.816481716585724,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.85451720480024,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.8918714430147556,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.9285444312292714,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.9645361694437873,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.999846657658303,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.034475895872819,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.068423884087335,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.101690622301851,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.134276110516367,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.166180348730882,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.197403336945398,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.227945075159915,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.25780556337443,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.286984801588946,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.315482789803462,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.343299528017978,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.370435016232493,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.396889254447009,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.422662242661525,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.4477539808760405,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.472164469090556,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.495893707305072,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.5189416955195885,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.541308433734104,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.562993921948619,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.583998160163135,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.604321148377651,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.6239628865921665,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.642923374806682,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.6612026130211985,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.678800601235714,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.69571733945023,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.711952827664746,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.727507065879262,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.742380054093777,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.756571792308293,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.770082280522809,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.782911518737325,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.79505950695184,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.8065262451663555,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.817311733380872,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.8274159715953875,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.836838959809903,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.845580698024419,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.853641186238935,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.86102042445345,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.867718412667966,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.8737351508824815,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.879070639096998,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.883724877311513,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.887697865526029,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.890989603740545,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.893600091955061,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.895529330169576,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.896777318384092,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.897344056598608,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.897229544813124,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.896433783027639,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.894956771242155,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.8927985094566715,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.889958997671187,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.886438235885702,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.882236224100218,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.877352962314734,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.871788450529249,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.865542688743765,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.858615676958281,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.851007415172797,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.842717903387312,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.833747141601828,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.824095129816344,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.813761868030859,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.802747356245375,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.791051594459891,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.778674582674407,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.765616320888922,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.751876809103438,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.737456047317954,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.72235403553247,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.706570773746985,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.690106261961501,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.672960500176017,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.655133488390533,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.636625226605048,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.617435714819564,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.59756495303408,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.577012941248595,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.555779679463111,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.533865167677627,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.5112694058921425,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.487992394106658,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.464034132321173,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.43939462053569,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.414073858750205,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.388071846964721,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.361388585179236,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.334024073393753,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.305978311608268,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.277251299822783,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.247843038037299,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.2177535262518155,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.186982764466331,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.155530752680846,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.123397490895362,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.090582979109878,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.057087217324393,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 4.022910205538909,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.9880519437534248,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.9525124319679406,
+          "mask": 1,
+          "oldMask": 1,
+          "flying": true
+        },
+        {
+          "y": 3.916291670182456,
+          "mask": 1,
+          "oldMask": 128,
+          "flying": true
+        }
+      ],
+      "newMask": 1,
+      "oldCut": 7.66666691693154,
+      "qualityScale": 0.6,
+      "cut": "Infinity"
+    }
+  ],
+  "street": [
+    {
+      "calls": 386,
+      "triangles": 774223,
+      "ballMask": 128
+    },
+    {
+      "calls": 386,
+      "triangles": 774223,
+      "ballMask": 128
+    }
+  ],
+  "errors": []
+}

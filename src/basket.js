@@ -29,6 +29,7 @@ function ballModel() {
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
   const m = new THREE.Mesh(new THREE.SphereGeometry(B.ball.r, 28, 18), new THREE.MeshStandardMaterial({ map: t, roughness: 0.75 }));
   m.castShadow = true;
+  m.userData.noDistanceCull = true; // follow long shots across the court; keep wall/opening occlusion (#1655)
   const g2 = new THREE.Group(); g2.add(m);
   g2.userData.moving = true; // it bounces and rolls while the visitor stands still (detail culler, #267)
   return g2;
