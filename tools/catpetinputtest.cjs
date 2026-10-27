@@ -18,7 +18,7 @@ const parts = {
   click: section('function click(button) {', "document.addEventListener('mousedown'"),
   bicycle: section('const bicyclePickables =', 'function updateFocus() {'),
   focus: section('function updateFocus() {','// --- furniture on/off'),
-  greet: section('function greetPlayer(g) {','ghosts.onGreet ='),
+  greet: section('function greetPlayer(g, kind = \'greet\') {','ghosts.onChoose ='), // #1653: signature since #1405
   weapon: section('const weaponIs =','const ghosts = new Ghosts'),
   action: section("actionBtn.addEventListener('click'",'const standBtn ='),
   pointer: section("actionBtn.addEventListener('pointerdown'",'// touch: the remote'),
@@ -71,7 +71,7 @@ const check=(ok,text)=>{checks.push({ok:!!ok,label:text});console.log(`${ok?'PAS
    window.petCounts={pets:0,photos:0};cat.onPet=()=>petCounts.pets++;cat.onPhoto=()=>petCounts.photos++;
    window.spawnCat=(kind)=>{cat.hide();window.countsBefore={...petCounts};cat.setCat(BREEDS.find(b=>kind==='Miele'?b.superRare:b.name==='huskatt'),BREEDS.find(b=>kind==='Miele'?b.superRare:b.name==='huskatt').coats[0],kind==='kitten');cat.object.visible=true;cat.object.position.set(0,0,-1);cat.object.rotation.set(0,0,0);cat.update(0);scene.updateMatrixWorld(true);camera.lookAt(cat.head.getWorldPosition(new THREE.Vector3()));camera.updateMatrixWorld(true);scene.updateMatrixWorld(true);};
    window.olof={waveable:false};window.olofDriver={greetable:()=>false};window.keyCabinet=null;
-   window.car={targets:()=>[]};window.world={furnitureOn:false,courtyardTargets:[],cupSurfaces:[],bicycles:[]};window.cups={cups:[]};
+   window.car={targets:()=>[]};window.world={boule:{active:false},furnitureOn:false,courtyardTargets:[],cupSurfaces:[],bicycles:[]};window.cups={cups:[]};
    window.power={reachable:false,on:true,state:'on',release:()=>{}};window.target={object:{visible:false}};
    window.fish=null;window.fries=null;window.airFryer={open:false};window.fruit={targets:()=>[]};
    window.life={targets:()=>[],runner:{job:null}};window.toiletPaper={targets:()=>[],aim:()=>null};

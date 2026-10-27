@@ -7,7 +7,7 @@ const DEFAULTS = {
   binderFreed: 'false',                  // cat binder intentionally frees pointer lock (#1255)
   slideRide: '{active:false,cancel:()=>false,begin:()=>false,savePlace:()=>null}', // #1414: transient slide excerpts
   paddock: 'null',                       // main.js: `nopaddock` -> null (no ponies)
-  playroom: '{inside:false,devices:{cinemaTarget:null}}', // #1544: updateFocus compares focus with the cinema target
+  playroom: '{inside:false,devices:{cinemaTarget:null},music:{dancing:false},billiards:{cancelCharge(){}}}', // #1544: updateFocus compares focus with the cinema target; #1653: state callback reads music.dancing (#1636), Esc calls billiards.cancelCharge (#1637)
   cinema: '{state:null}',
   computerHub: '{sessions:new Map()}',
   SOUNDS: '{}',
@@ -16,6 +16,7 @@ const DEFAULTS = {
   santaDelivery: 'null',
   santaTV: '{tv:null,active:false,activate:()=>false}',
   tvMedia: '{seekable:()=>false,show(){},power(){}}',
+  remote: '{findTv:()=>null,seek(){},update(){}}', // #1653: the key handler / updateFocus compare heldItem() with the TV remote
   lightModes: '{page:"top",rows:()=>[],release(){},update(){}}',
 };
 // DOM elements main.js looks up at load: the init script runs before the DOM exists, so they resolve lazily (a test's own

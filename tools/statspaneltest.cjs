@@ -82,7 +82,7 @@ if(before){await page.screenshot({path:out+'/before.png'});}else{
   await page.evaluate(async()=>{if(document.fullscreenElement)await document.exitFullscreen();});
  }
  // Existing menu reset dialog is dismissed in this isolated context; no visitor data or reset behavior changes.
- await page.evaluate(()=>{touch.enabled=false;armEl.hidden=true;showOverlay(true);for(const d of document.querySelectorAll('details'))d.open=true;});let dialogs=0;page.on('dialog',async dialog=>{dialogs++;await dialog.dismiss();});await page.locator('#stats-reset').click();
+ await page.evaluate(()=>{touch.enabled=false;armEl.hidden=true;showOverlay(true);document.getElementById('settings-dialog').hidden=false;/* #1653: the reset lives in the settings dialog since #1518 */for(const d of document.querySelectorAll('details'))d.open=true;});let dialogs=0;page.on('dialog',async dialog=>{dialogs++;await dialog.dismiss();});await page.locator('#stats-reset').click();
  check(dialogs===1&&await page.evaluate(()=>S.stats.target===123&&S.stats.cats===37&&effects.reset===0),'existing menu reset confirmation remains usable and cancellation preserves isolated statistics');
 }
 check(errors.length===0,'no native page errors');fs.writeFileSync(out+'/result.json',JSON.stringify({before,lines,failures,errors,source:{main:crypto.createHash('sha256').update(source).digest('hex'),index:crypto.createHash('sha256').update(html).digest('hex'),parts:Object.fromEntries(Object.entries(parts).map(([k,v])=>[k,crypto.createHash('sha256').update(v).digest('hex')]))},scope:'Original DOM/CSS, genuine pointer lock/touch gestures, complete verbatim main blocks, real StatsPanel/Player/touch/statistics; controlled world/weapon collaborators, no apartment/WebGL/real visitor statistics'},null,2));
