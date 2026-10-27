@@ -3815,6 +3815,14 @@ export const SKYLAYER = { base: 150, top: 190, fade: 30, approach: 70, radius: 9
 // eye is further than `far` m from the centre.
 export const BIRDS = { center: { x: -30, z: 30 }, count: 10, lowMemoryCount: 5, high: 3, radius: [30, 100], alt: [30, 90], highAlt: [215, 290], speed: [6, 10], span: 3.2, flap: 2.6, bank: 0.35, day: 0.3, rain: 0.1, fade: 1.5, far: 500 };
 
+// Hot-air balloon (#1646, src/balloon.js, src/balloongeo.js): now and then one drifts round the area above the cloud deck (SKYLAYER) and a
+// visitor who flies up (jetpack) can land in its basket and be carried along. All numbers *guess*. Visible `window` s of every `period` s of
+// the shared wall clock (so every client agrees), circling the plan point `center` at `radius` m and `speed` m/s at the floor height `floor` m
+// (above the deck's top + fade). `fadeIn` s: scales up / down at the ends of the window (no collision until fully grown). Basket: a round
+// floor of `basketR` m with a `rim` m high wall (low enough for a jump to clear, so you can step out; flying clears it too). Envelope: radius
+// `envR` m, its lowest point `envLow` m over the floor; `stripes` coloured gores. Not drawn / not updated outside the window (nor underground).
+export const BALLOON = { center: { x: -30, z: 30 }, radius: 260, speed: 3.5, floor: 250, period: 1500, window: 600, fadeIn: 25, basketR: 1.15, rim: 0.6, envR: 8.5, envLow: 5, stripes: 12, far: 900 };
+
 // The pony paddock (#1280, src/paddock.js, src/paddockgeo.js): the kidney-shaped meadow south of the timber footbridge (OSM landuse
 // way `field` below, SITE.south.fields) is fenced in and holds two C ponies. Everything here is a *guess* (no survey, the report only
 // names the animals): `inset` m from the mapped outline to the fence line; post-and-rail fence `post`/`rails`/`rail` sizes (m, rail

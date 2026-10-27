@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { basketFloor, basketCollide } from './balloongeo.js';
 import { SITE, WALK, LEVELS, PLAYER, STAIR, UNIT_TOP, ROOFS, GARAGE, JETPACK, jetThin, SPIDER, SOFFITS, BICYCLE } from './config.js';
 import { stairHeight, stairUnderside } from './stairs.js';
 import { groundY, groundBelowDeckY } from './surroundings.js';
@@ -180,6 +181,8 @@ export class Player {
     if (r) cands.push(r.y);
     const P = this.world.platforms; // a low seat (sofa, bench) the feet are already up at: its top is the floor (#693)
     if (P) for (let i = 0; i < P.length; i++) { const q = P[i]; if (feet >= q.top - PLAYER.hurdle && x > q.x0 && x < q.x1 && z > q.z0 && z < q.z1 && inPoly(q.pts, x, z)) cands.push(q.top); }
+    const bl = this.world.balloon; // the hot-air balloon's basket floor (#1646)
+    if (bl?.active) { const t = basketFloor(bl.pos, x, z); if (t !== null) cands.push(t); }
     let best = -Infinity;
     for (const c of cands) if (c <= feet + PLAYER.stepUp && c > best) best = c;
     return best;
@@ -797,6 +800,7 @@ export class Player {
           else { this.pos.x = prev.x; this.pos.z = prev.z; }
         }
       }
+      if (this.world.balloon?.active) basketCollide(this.world.balloon.pos, this.pos, prev, PLAYER.radius); // the basket's rim (#1646)
       const g = this.groundAt(this.pos.x, this.pos.z, this.pos.y);
       if (g >= this.pos.y) { this.pos.y = g; this.vy = 0; }
     }
