@@ -423,6 +423,21 @@ walk/neck animation, native pat target, hearts/whinny and score callback remain 
 Patting interrupts bites, then the pony can finish its portion. Feeding does not crop the grass mask.
 See environment.md for assumed dimensions/timing, refill and shelter priorities.
 
+### Shared paddock (#1644)
+
+The ponies, their hay and the grass mask are shared by the players near the paddock. `cloudflare/paddock.js` (`RoomPaddock`, relay
+only, no storage) makes ONE player within `PADDOCK_SYNC.enter` m (= `PADDOCK.viewDist`, leave hysteresis +15 m) the leader: the
+earliest to arrive, the next one when it walks away or disconnects. The leader's client simulates exactly as before and, only while
+others are present (`{ t: 'pk', k: 'L', n }` with n > 0), sends a snapshot `{ t: 'pk', k: 's', p: [[x, z, yaw, state, gone]…], h }`
+every second and the grass mask `{ t: 'pkg', W, H, v }` (one base64 character = 6 bits per cell; the one message the room accepts above
+`PLAYERS.maxBytes`) every 30 s and when somebody arrives (`need`). Followers (`Paddock.following()`) glide each pony to the latest
+snapshot over one interval, animate legs/neck/ears/head turn locally (`Paddock.animate`, shared with the leader), crop the mask
+locally where a pony grazes and take the leader's mask when it comes. A follower's pat shows hearts and scores at once and goes to
+the leader as `{ t: 'pk', k: 'pet', i }`; the room adds the patter's feet, and the leader's pony stops and turns to that player
+(`pony.face`) without scoring. Snapshots older than 3.5 s, no room or solo play: the local simulation as before (`Paddock.resume`).
+Tests: `node --test cloudflare/paddock.test.mjs` and `node tools/paddockpeertest.cjs GAME WORKER OUT` (two real Ghosts + Paddock
+clients through `node cloudflare/dev.mjs PORT`, plus an offline one); `tools/paddocktest.cjs` for the solo paddock.
+
 ## Mutual kiss sound (#1398)
 
 `sfx.kiss(pos)` synthesizes a short two-part closed-lip hum followed by filtered noise and a falling pop for “mmm-smack”. It uses the existing AudioContext, positional panner and master mute; it creates no file or speech-synthesis utterance. `Ghosts.updateKisses` starts the hum before contact so the smack aligns with hearts and love points. Only a server-accepted complementary Sarah/Olof pair creates the effect, within `KISS.soundRange`. See the mutual-kiss contract in interactions.md and `tools/kisspeertest.cjs` for native Web Audio signal, pose and three-client checks.

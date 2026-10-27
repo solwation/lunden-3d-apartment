@@ -1453,6 +1453,10 @@ Shared billiard table (#1355): the players room also owns the children's-room bi
 
 Shared playroom music (#1624): the same room also owns the children's-room music transport (`{ t: 'mus', k: 'p'|'z'|'o'|'n'|'m', ix? }` commands, `{ t: 'mus', st, ix, pos, mx? }` answers, storage key `mus`, cleared with the table when the room empties); protocol in [animals-audio.md](animals-audio.md#shared-playroom-music-1624). `cloud.yml` redeploys on `cloudflare/` changes.
 
+Shared pony paddock (#1644): the room also picks one leader among the players near the paddock and relays its pony snapshots
+(`{ t: 'pk', k: 's' }`), grass mask (`{ t: 'pkg' }`, up to `PADDOCK_SYNC.maxGrass` characters) and the others' pats; nothing is stored.
+Protocol in [animals-audio.md](animals-audio.md#shared-paddock-1644). `cloud.yml` also redeploys on `src/paddockgeo.js` changes.
+
 
 ## Love receipts in visitor statistics (#1398)
 

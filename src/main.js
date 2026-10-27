@@ -2881,6 +2881,7 @@ ghosts.onPool = (m) => playroom.billiards.onNet(m);
 playroom.billiards.peers = () => ghosts.others.values(); // #1637: the others' cues while they aim at the table
 playroom.music.net = { ready: () => ghosts.connected, send: (m) => ghosts.music(m) }; // #1624: the room's shared music
 ghosts.onMusic = (m) => playroom.music.sync(m);
+if (paddock) { paddock.net = { ready: () => ghosts.connected, send: (m) => ghosts.paddock(m) }; ghosts.onPaddock = (m) => paddock.onNet(m); } // #1644: the ponies and the grass shared with the players near the paddock
 cinema.net = { ready: () => ghosts.connected, send: m => ghosts.cinema(m), id: () => ghosts.me };
 tvMedia.connect(cinema.net);
 computerHub.connect({...cinema.net,snake:m=>ghosts.snake(m)});

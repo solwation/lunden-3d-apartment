@@ -14,6 +14,7 @@ import { freshTable, validSnapshot, cleanDirection, cleanPower, simulateStroke }
 import { RoomCinema, cleanCinema } from './cinema.js';
 import { RoomSnake, cleanSnake } from './snake.js';
 import { recordGame } from './games.js';
+import { RoomPaddock, cleanPaddock, PADDOCK_SYNC, GRASS_PREFIX } from './paddock.js';
 
 // Other players as ghosts (#666): one Durable Object room for everybody (`idFromName('world')`), WebSockets with the
 // Hibernation API. A client sends its position / heading at most 5 times a second and only when it changed (a heartbeat
@@ -326,6 +327,7 @@ export class PlayerRoom {
     this.tvs=[...TV_MEDIA.screens,...COMPUTER_MEDIA.stations].map(s=>new RoomCinema(ctx,()=>this.open().map(ws=>({ws,a:att(ws)})),send,s.id));
     // #1577: Ormstriden results go to the shared top list in KV; writes are chained so this room never races itself.
     this.gameWrites=Promise.resolve();
+    this.paddock = new RoomPaddock(() => this.open().map((ws) => ({ ws, a: att(ws) })), send); // #1644: the shared pony paddock (relay only)
     this.snake=new RoomSnake(()=>this.open().map(ws=>({ws,a:att(ws)})),()=>this.tvs,send,row=>{if(env?.LUNDEN)this.gameWrites=this.gameWrites.then(()=>recordGame(env.LUNDEN,'ormstriden',row)).catch(()=>{});});
     ctx.blockConcurrencyWhile?.(async () => { this.pool = (await ctx.storage.get('pool')) ?? null; this.mus = (await ctx.storage.get('mus')) ?? null;await this.cinema.load();for(const tv of this.tvs)await tv.load(); });
     if (typeof WebSocketRequestResponsePair === 'function') ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('p', 'q'));
@@ -397,7 +399,7 @@ export class PlayerRoom {
     const a = att(ws);
     try { ws.close(code, reason); } catch { /* gone */ }
     if (a) this.broadcast({ t: 'x', i: a.i }, ws);
-    this.poolTrim(ws);
+    this.poolTrim(ws); this.paddock.trim(ws, a);
     this.cinema.trim(ws);for(const tv of this.tvs)tv.trim(ws);this.snake.trim(ws);
     const cinemaSave=Promise.all([this.cinema.flush(),...this.tvs.map(tv=>tv.flush())]);this.ctx.waitUntil?.(cinemaSave);
   }
@@ -527,7 +529,7 @@ export class PlayerRoom {
     if (this.billed() >= PLAYERS.monthlyCap) { await this.save(); this.closeAll(CLOSE.cap, 'cap'); await this.ctx.storage.deleteAlarm(); this.recoveryAlarm = null; return; }
     const a = att(ws);
     if (!a) return;
-    if (typeof message !== 'string' || message.length > PLAYERS.maxBytes) { this.drop(ws, CLOSE.big, 'too big'); return; }
+    if (typeof message !== 'string' || message.length > (message.startsWith(GRASS_PREFIX) ? PADDOCK_SYNC.maxGrass + 64 : PLAYERS.maxBytes)) { this.drop(ws, CLOSE.big, 'too big'); return; } // (#1644: the paddock's grass mask is the one bigger message)
     const now = Date.now();
     if (now - a.w >= 1000) { if (!a.over) a.k = Math.max(0, a.k - 1); a.w = now; a.c = 0; a.over = false; }
     a.c++; a.t = now;
@@ -544,7 +546,7 @@ export class PlayerRoom {
       else if (m?.t === 'consume' && Number.isSafeInteger(m.id) && m.id > 0 && typeof m.portion === 'string' && m.portion.length > 0 && m.portion.length <= 64) consuming = m;
     } catch {}
     let lifeChanged = false;
-    const talk = cleanTalk(message), hello = !talk && cleanGreet(message), toast = !talk && !hello && cleanToast(message), sound = !talk && !hello && !toast && cleanSound(message), react = !talk && !hello && !toast && !sound && cleanReact(message), pool = !talk && !hello && !toast && !sound && !react && cleanPool(message), mus = !talk && !hello && !toast && !sound && !react && !pool && cleanMusic(message), cinema = !talk && !hello && !toast && !sound && !react && !pool && !mus && cleanCinema(message), snake = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && cleanSnake(message), shot = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && !snake && cleanShot(message);
+    const talk = cleanTalk(message), hello = !talk && cleanGreet(message), toast = !talk && !hello && cleanToast(message), sound = !talk && !hello && !toast && cleanSound(message), react = !talk && !hello && !toast && !sound && cleanReact(message), pool = !talk && !hello && !toast && !sound && !react && cleanPool(message), mus = !talk && !hello && !toast && !sound && !react && !pool && cleanMusic(message), cinema = !talk && !hello && !toast && !sound && !react && !pool && !mus && cleanCinema(message), snake = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && cleanSnake(message), paddock = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && !snake && cleanPaddock(message), shot = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && !snake && !paddock && cleanShot(message);
     if (falling) {
       const damage = fallDamage(falling.drop, falling.gap, COMBAT.lives);
       if (damage !== null) {
@@ -630,6 +632,7 @@ export class PlayerRoom {
     else if (mus) this.musCmd(ws, a, mus, now); // #1624
     else if(cinema){const screen=cinema.screen?this.tvs.find(tv=>tv.id===cinema.screen):this.cinema;screen?.handle(ws,a,cinema,now);}
     else if(snake)this.snake.handle(ws,a,snake,now);
+    else if (paddock) this.paddock.handle(ws, a, paddock, now); // #1644
     else if (shot) {
       // a shot is drawn by the others only from someone armed with that weapon, starting near where the room has them,
       // and only for those armed too (a fight is between two armed players)
@@ -676,6 +679,7 @@ export class PlayerRoom {
         if (!a.s || s.r !== a.s.r || s.p.some((v, i) => v !== a.s.p[i])) a.movedAt = now;
         a.s = s; this.publishState(ws, a);
         this.poolPresence(ws, a); // #1355
+        this.paddock.presence(ws, a, now); // #1644
         this.cinema.presence(ws,a,inPlayroom(a.s?.p));for(const tv of this.tvs)tv.presence(ws,a,tv.computer?computerViewer(tv.id,a.s?.p):tvViewer(tv.id,a.s?.p));
       }
     }
@@ -758,7 +762,7 @@ export class PlayerRoom {
     const a = att(ws);
     try { ws.close(code === 1005 || code === 1006 ? 1000 : code, 'bye'); } catch { /* already closed */ }
     if (a) this.broadcast({ t: 'x', i: a.i }, ws);
-    this.poolTrim(ws); await this.poolFlush();
+    this.poolTrim(ws); this.paddock.trim(ws, a); await this.poolFlush();
     this.cinema.trim(ws);for(const tv of this.tvs)tv.trim(ws);this.snake.trim(ws);await this.cinema.flush();for(const tv of this.tvs)await tv.flush();
     await this.scheduleRecovery();
   }

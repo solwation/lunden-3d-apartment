@@ -293,6 +293,14 @@ function grassMaterial(mask, box) {
 }
 
 const GRASS_KEY = 'lunden.paddockGrass';
+// #1644: the shared paddock. The room (cloudflare/paddock.js) makes ONE player near the paddock the leader: its client simulates as
+// before and, while others are near, sends a pony snapshot every `NET.every` s and the grass mask on request / every `NET.grass` s.
+// The others follow: they draw the ponies gliding to the latest snapshot (one interval behind), animate legs / neck / ears locally,
+// graze the mask locally where a pony grazes and take the leader's mask when it comes. A pat from a follower goes to the leader.
+// Without the room (offline, solo, a stale leader) everything runs locally exactly as before.
+export const PONY_STATES = ['idle', 'graze', 'walk', 'watch', 'pet', 'feed'];
+const NET = { every: 1, grass: 30, stale: 3500, jump: 6 }; // s between snapshots / masks, ms without a snapshot before simulating locally again, m beyond which a pony is placed, not glided
+const B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 export class Paddock {
   /** `ground(x, z)` → the surface y; `trees`: [{x, z}] trunks to keep clear of (surroundings' treeFeet). */
@@ -359,6 +367,7 @@ export class Paddock {
     this.initShelter();
     this.feed = new PaddockFeed(scene, ground, this.spots.shelter, this.sheds);
     this.winterDecor = shelterWinter(ground, this.spots.shelter); scene.add(this.winterDecor);
+    this.net = null; this.lead = false; this.followers = 0; this.followUntil = 0; this.netT = 0; this.grassT = 0; // #1644: set by main.js: { ready(), send(m) }
     this.write();
   }
 
@@ -495,23 +504,32 @@ export class Paddock {
   /** What E can aim at: the ponies' pick boxes while the paddock is within view distance. */
   targets() { return this.mesh.visible ? this.picks.filter((_, i) => !this.ponies[i].gone) : []; }
   /** Pat pony `i`: it stops, turns its head to the hand, flicks its ears, lowers its muzzle and nickers (a short sound), its tail swishes. */
-  pet(i) {
+  pet(i, from = null) {
     const p = this.ponies[i]; if (!p) return false;
     const fresh = p.state !== 'pet'; // a pat while it is already being petted renews it but scores and nickers once
-    p.state = 'pet'; p.petT = p.left = P.pony.pet; p.target = null; p.goal = null; p.earP = 0; p.earT = 0.5;
+    if (this.following()) { // #1644: the leader's pony stops; here the pat shows at once and is scored
+      if (fresh) this.petShow(p, i);
+      p.state = 'pet'; p.petT = P.pony.pet; p.petAt = performance.now(); p.earP = 0; p.earT = 0.5;
+      if (fresh) this.onPet?.(p.name);
+      this.net?.send({ t: 'pk', k: 'pet', i });
+      return true;
+    }
+    p.state = 'pet'; p.petT = p.left = P.pony.pet; p.target = null; p.goal = null; p.earP = 0; p.earT = 0.5; p.feedGoal = null;
+    p.face = from; // #1644: a follower's pat (from = its feet [x, z]): the pony turns to that player instead of this camera
     if (fresh) {
-      const head = this.headPos(p);
-      sfx.whinny(head, i ? 0.92 : 1.08); // a happy whinny (#1320)
-      this.hearts[i].burst(head);
-      this.onPet?.(p.name);
+      this.petShow(p, i);
+      if (!from) this.onPet?.(p.name);
     }
     return true;
   }
+  petShow(p, i) { const head = this.headPos(p); sfx.whinny(head, i ? 0.92 : 1.08); this.hearts[i].burst(head); } // a happy whinny and hearts (#1320)
   /** World point just above pony `p`'s head (the muzzle end of the neck, lifted a little so hearts rise clear of it). */
   headPos(p) {
-    const s = p.scale, n = P.pony.neck, c = this.camera.position, d = Math.hypot(c.x - p.x, c.z - p.z) || 1; // it turns to face the visitor while petted, so its head ends up on that side
+    const s = p.scale, n = P.pony.neck, c = this.lookAt(p), d = Math.hypot(c.x - p.x, c.z - p.z) || 1; // it turns to face the visitor while petted, so its head ends up on that side
     return new THREE.Vector3(p.x + (c.x - p.x) / d * n[2] * s, p.y + (n[1] + 0.25) * s, p.z + (c.z - p.z) / d * n[2] * s);
   }
+  /** What pony `p` faces while watched / petted: the player who patted it (#1644), else this camera. */
+  lookAt(p) { return p.state === 'pet' && p.face ? { x: p.face[0], z: p.face[1] } : this.camera.position; }
   treeNear(x, z, r) { for (const t of this.trees) if (Math.abs(t.x - x) < r && Math.abs(t.z - z) < r && Math.hypot(t.x - x, t.z - z) < r) return true; return false; }
   /** Is the straight walk (x0, z0) → (x1, z1) inside the fence (at least `keep` - 0.8 m from it) and clear of trunks? */
   clear(x0, z0, x1, z1) {
@@ -561,8 +579,8 @@ export class Paddock {
     return best;
   }
   stepPony(p, i, dt) {
-    const R = P.pony, c = this.camera.position;
-    p.left -= dt; p.tailT += dt; p.chew += dt;
+    const R = P.pony, c = this.lookAt(p);
+    p.left -= dt;
     let walking = false;
     if (p.state === 'walk') {
       const tx = p.target[0] - p.x, tz = p.target[1] - p.z, dist = Math.hypot(tx, tz);
@@ -581,16 +599,9 @@ export class Paddock {
       const turn = p.state === 'pet' ? 1.4 : 0.8;
       p.yaw += Math.max(-turn * dt, Math.min(turn * dt, da));
     }
-    {
-      let da = Math.atan2(c.x - p.x, c.z - p.z) - p.yaw; da = Math.atan2(Math.sin(da), Math.cos(da));
-      const t = (p.state === 'pet' ? 1 : p.state === 'watch' ? 0.6 : 0) * Math.max(-0.8, Math.min(0.8, da));
-      p.headYaw += (t - p.headYaw) * Math.min(1, dt * 3); // the head turns to the visitor while it is petted or watching
-    }
     this.feed.step(p, i, dt, this); // #1396: arrival, head alignment and consumption; petting pauses feeding
-    if (p.petT > 0) p.petT -= dt;
-    if (p.earP >= 0) { p.earP += dt / 0.35; if (p.earP > 1) p.earP = -1; } else { p.earT -= dt; if (p.earT <= 0) { p.earP = 0; p.earT = p.state === 'pet' ? 0.6 : 3 + p.rnd() * 7; } }
-    p.ear = p.earP >= 0 ? 0.6 * Math.sin(p.earP * Math.PI) : 0;
     if (p.state !== 'walk' && p.left <= 0) this.decide(p, i);
+    if (p.state !== 'pet') p.face = null;
     // Keep apart in the field. Winter occupants and active feeding stalls are
     // closer than the field gap; do not push an eater away from its portion.
     if (!(this.winter && p.spot === this.stable(i)) && p.state !== 'feed') for (let j = 0; j < this.ponies.length; j++) {
@@ -598,6 +609,28 @@ export class Paddock {
       const q = this.ponies[j], dx = p.x - q.x, dz = p.z - q.z, d = Math.hypot(dx, dz);
       if (d < R.gap && d > 1e-3) { const k = (R.gap - d) * Math.min(1, 1.5 * dt) * 0.5, nx = p.x + dx / d * k, nz = p.z + dz / d * k; if (insideFence(nx, nz, P.keep - 1.2)) { p.x = nx; p.z = nz; } }
     }
+    this.animate(p, dt, walking);
+  }
+  /** #1644: a follower's pony glides from where it was drawn to the latest snapshot over one snapshot interval. */
+  followPony(p, dt) {
+    const f = p.net; if (!f) return;
+    f.t = Math.min(1, f.t + dt / NET.every);
+    const ox = p.x, oz = p.z;
+    p.x = f.x0 + (f.x1 - f.x0) * f.t; p.z = f.z0 + (f.z1 - f.z0) * f.t; p.yaw = f.a0 + f.da * f.t;
+    this.animate(p, dt, Math.hypot(p.x - ox, p.z - oz) > 0.08 * dt);
+  }
+  /** The local part of a pony's look, the same for the leader and a follower: head turn, ears, legs, neck, tail; and its grazing of the mask. */
+  animate(p, dt, walking) {
+    const R = P.pony, c = this.lookAt(p);
+    p.tailT += dt; p.chew += dt;
+    {
+      let da = Math.atan2(c.x - p.x, c.z - p.z) - p.yaw; da = Math.atan2(Math.sin(da), Math.cos(da));
+      const t = (p.state === 'pet' ? 1 : p.state === 'watch' ? 0.6 : 0) * Math.max(-0.8, Math.min(0.8, da));
+      p.headYaw += (t - p.headYaw) * Math.min(1, dt * 3); // the head turns to the visitor while it is petted or watching
+    }
+    if (p.petT > 0) p.petT -= dt;
+    if (p.earP >= 0) { p.earP += dt / 0.35; if (p.earP > 1) p.earP = -1; } else { p.earT -= dt; if (p.earT <= 0) { p.earP = 0; p.earT = p.state === 'pet' ? 0.6 : 3 + p.rnd() * 7; } }
+    p.ear = p.earP >= 0 ? 0.6 * Math.sin(p.earP * Math.PI) : 0;
     p.y = this.ground(p.x, p.z);
     // poses: legs swing while walking (diagonal pairs); the neck is down while grazing; the tail swishes now and then
     const k = Math.min(1, dt * 4), moving = walking ? 1 : 0;
@@ -621,6 +654,60 @@ export class Paddock {
     });
     e.needsUpdate = true; this.anim.needsUpdate = true; this.anim2.needsUpdate = true;
   }
+  /** #1644: following a leader's snapshots (fresh within NET.stale ms) instead of simulating here. */
+  following() { return !this.lead && performance.now() < this.followUntil; }
+  /** Back to the local simulation (now leading, or the snapshots stopped): every pony decides afresh from where it stands. */
+  resume() {
+    this.followUntil = 0;
+    this.ponies.forEach((p, i) => { p.net = null; p.face = null; p.target = p.goal = null; p.feedGoal = null; p.eat = false; if (p.state !== 'pet') { p.state = 'idle'; p.left = 0.3 + i; } else p.left = Math.max(0.3, p.petT); });
+  }
+  /** A message from the room (#1644): { t: 'pk', k: 'L' | 's' | 'pet', … } or the grass { t: 'pkg', W, H, v }. */
+  onNet(m) {
+    if (m.t === 'pkg') return this.takeGrass(m);
+    if (m.k === 'L') {
+      if (m.off) { this.lead = false; this.followers = 0; return; }
+      if (!this.lead) { this.lead = true; this.resume(); }
+      this.followers = m.n | 0;
+      if (m.need) this.netT = this.grassT = 0; // somebody arrived: snapshot and grass at once
+      return;
+    }
+    if (m.k === 'pet') { if (this.lead && this.ponies[m.i]) this.pet(m.i, [m.x, m.z]); return; }
+    if (m.k !== 's' || this.lead || !Array.isArray(m.p)) return;
+    const now = performance.now();
+    this.followUntil = now + NET.stale;
+    m.p.forEach((q, i) => {
+      const p = this.ponies[i]; if (!p || !Array.isArray(q)) return;
+      const state = PONY_STATES[q[3]] ?? 'idle';
+      if (state === 'pet' && p.state !== 'pet' && !(now - (p.petAt ?? -1e9) < P.pony.pet * 1000) && this.mesh.visible) { this.petShow(p, i); p.earP = 0; p.earT = 0.5; } // somebody else patted it
+      if (state === 'pet' && p.state !== 'pet') p.petT = P.pony.pet;
+      p.state = state; p.gone = q[4] === 1; p.target = p.goal = null;
+      let da = q[2] - p.yaw; da = Math.atan2(Math.sin(da), Math.cos(da));
+      const jump = !p.net || Math.hypot(q[0] - p.x, q[1] - p.z) > NET.jump;
+      p.net = jump ? { x0: q[0], z0: q[1], a0: q[2], x1: q[0], z1: q[1], da: 0, t: 1 } : { x0: p.x, z0: p.z, a0: p.yaw, x1: q[0], z1: q[1], da, t: 0 };
+      if (jump) { p.x = q[0]; p.z = q[1]; p.yaw = q[2]; p.y = this.ground(p.x, p.z); }
+    });
+    if (Array.isArray(m.h)) m.h.forEach((v, i) => { if (i < this.feed.amount.length && Number.isFinite(v)) this.feed.amount[i] = v; }), this.feed.level.needsUpdate = true;
+  }
+  /** The leader's grass mask (6 bits a cell) replaces this one. */
+  takeGrass(m) {
+    const g = this.gm;
+    if (this.lead || m.W !== g.W || m.H !== g.H || typeof m.v !== 'string' || m.v.length !== g.v.length) return;
+    for (let k = 0; k < g.v.length; k++) { const n = B64.indexOf(m.v[k]); if (n >= 0) g.v[k] = n / 63; }
+    this.uploadGrass();
+  }
+  grassMessage() { const g = this.gm; let v = ''; for (let k = 0; k < g.v.length; k++) v += B64[Math.round(Math.min(1, Math.max(0, g.v[k])) * 63)]; return { t: 'pkg', W: g.W, H: g.H, v }; }
+  snapshot() {
+    const r2 = (v) => Math.round(v * 100) / 100;
+    return { t: 'pk', k: 's', p: this.ponies.map((p) => [r2(p.x), r2(p.z), r2(Math.atan2(Math.sin(p.yaw), Math.cos(p.yaw))), Math.max(0, PONY_STATES.indexOf(p.state)), p.gone ? 1 : 0]), ...(this.feed.amount.length ? { h: Array.from(this.feed.amount, r2) } : {}) };
+  }
+  /** The leader's share: a snapshot every NET.every s and the mask every NET.grass s, only while somebody else is near. */
+  netTick(dt) {
+    if (this.lead && !this.net?.ready()) { this.lead = false; this.followers = 0; } // (the room went away: a new welcome decides again)
+    if (!this.lead || this.followers <= 0) return;
+    this.netT -= dt; this.grassT -= dt;
+    if (this.grassT <= 0) { this.grassT = NET.grass; this.net.send(this.grassMessage()); }
+    else if (this.netT <= 0) { this.netT = NET.every; this.net.send(this.snapshot()); }
+  }
   /** Per frame: nothing is simulated or drawn beyond PADDOCK.viewDist m from the paddock, or underground. No allocations. */
   update(dt, hidden = false, rain = 0) {
     for (const h of this.hearts) h.update(dt);
@@ -632,7 +719,10 @@ export class Paddock {
     this.growGrass(Math.min(dt, 0.1)); // #1342: 72 h regrowth in real time, also while far away
     if (!show) return;
     dt = Math.min(dt, 0.1); this.time += dt;
-    this.ponies.forEach((p, i) => { if (!p.gone) this.stepPony(p, i, dt); });
+    const follow = this.following();
+    if (!follow && this.ponies.some((p) => p.net)) this.resume(); // #1644: the leader's snapshots stopped: simulate here again
+    this.ponies.forEach((p, i) => { if (!p.gone) { if (follow) this.followPony(p, dt); else this.stepPony(p, i, dt); } });
+    this.netTick(dt);
     const g = this.gm; g.t += dt;
     if (g.dirty && g.t >= P.grass.period) { g.t = 0; this.uploadGrass(); }
     this.write();
