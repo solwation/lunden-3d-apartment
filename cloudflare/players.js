@@ -39,7 +39,7 @@ import { RoomPaddock, cleanPaddock, PADDOCK_SYNC, GRASS_PREFIX } from './paddock
 // within PLAYERS.soundRange m as { t: 'snd', i, k }; no text, at most one per soundEvery s per connection, never echoed.
 // A reaction (#1639) { t: 'rx', k } (k: an integer below PLAYERS.reactions: 0 cry, 1 laugh, 2 scream in terror) goes to the players
 // within PLAYERS.soundRange m as { t: 'rx', i, k }, only from a sender last seen in the BIO (PLAYERS.bio); no text, at most one per
-// reactEvery s per connection, never echoed. A one-shot event, not a state field: the player state is already near maxBytes.
+// reactEvery s per connection, never echoed. A one-shot event, not a state field: the player state is still the largest regular message (#1648).
 // #1398 reserves KISS.phrase for a complementary Sarah/Olof pair; accepted kisses echo id/at, optional q rejects replay.
 // #1405 reserves HUG.phrase for a hug between any two nearby unarmed players: accepted the same way (id/at echo, q, busy).
 // A greeting (#673) { t: 'g', to, k } goes to everybody else as { t: 'g', i, to, k } (k: a phrase index, no text).
@@ -66,7 +66,7 @@ export const PLAYERS = {
   monthlyCap: 800_000, // billed requests per calendar month; Workers Paid includes 1 000 000 (price list, verify), so the room stays below it
   msgPerRequest: 20,   // incoming WebSocket messages per billed request (price list, verify)
   maxPlayers: 30,      // sockets at once (*guess*: plenty for a family game)
-  maxBytes: 256,       // per message; a state is ~45 bytes
+  maxBytes: 512,       // per message (#1648: was 256). A typical state is ~45 bytes, but the widest one cleanState accepts (every optional field at its maximum, ax 60 characters) is ~293, which the old limit silently dropped (the sender froze for the others); 512 keeps >200 bytes for new fields (cloudflare/statesize.test.mjs). Billing counts messages, not bytes, and perSecond bounds the traffic, so this costs nothing; an old Worker (256) still accepts every normal state
   perSecond: 6,        // messages per connection and second (the client sends at most 5)
   strikes: 5,          // seconds over perSecond (one forgiven per calm second) before the socket is closed
   idleMs: 60_000,      // no message / heartbeat for this long: closed
