@@ -187,9 +187,11 @@ export class Playroom {
     // #1645: four ceiling speakers in the corners, tilted toward the centre; decor only (merged into the furniture mesh), no pick box, no action.
     const speaker = R.speakers; this.speakerPositions = [];
     for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
-      const lx = sx * (R.w/2 - speaker.inset), lz = sz * (R.d/2 - speaker.inset), ly = R.ceiling - speaker.drop;
+      const b = speaker.bounds;
+      const lx = sx < 0 ? b.x0 + speaker.inset : b.x1 - speaker.inset;
+      const lz = sz < 0 ? b.z0 + speaker.inset : b.z1 - speaker.inset, ly = R.ceiling - speaker.drop;
       this.speakerPositions.push({ x: R.x+lx, y: ly, z: R.z+lz });
-      const yaw = Math.atan2(-sx, -sz), place = (g) => g.rotateX(speaker.tilt).rotateY(yaw).translate(R.x+lx, ly, R.z+lz); // front (+z) toward the centre, nose down
+      const yaw = Math.atan2((b.x0+b.x1)/2-lx, (b.z0+b.z1)/2-lz), place = (g) => g.rotateX(speaker.tilt).rotateY(yaw).translate(R.x+lx, ly, R.z+lz); // front (+z) toward the centre, nose down
       fur.push(paint(place(new THREE.BoxGeometry(speaker.w, speaker.h, speaker.d)), col.dark));
       for (const [dy, radius, segments] of [[-.12, .13, 14], [.15, .05, 10]]) {
         fur.push(paint(place(new THREE.CylinderGeometry(radius, radius, .014, segments).rotateX(Math.PI/2).translate(0, dy, speaker.d/2)), col.steel));

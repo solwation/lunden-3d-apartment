@@ -105,7 +105,7 @@ test('#1645: four positional sources at the corner speakers, the speakers expose
  const {PLAYROOM:R}=await import('../src/config.js');
  // fresh context: audio.js keeps the one created earlier, so patch its factory instead
  const A=audioParts(),ctx=A.ctx;ctx.createPanner=()=>{const n=new Node();n.positionX={value:0};n.positionY={value:0};n.positionZ={value:0};made.push(n);return n};
- const m=new PlayroomMusic(),pos=[[-1,-1],[-1,1],[1,-1],[1,1]].map(([sx,sz])=>({x:R.x+sx*(R.w/2-R.speakers.inset),y:R.ceiling-R.speakers.drop,z:R.z+sz*(R.d/2-R.speakers.inset)}));
+ const m=new PlayroomMusic(),pos=[[-1,-1],[-1,1],[1,-1],[1,1]].map(([sx,sz])=>({x:R.x+(sx<0?R.speakers.bounds.x0+R.speakers.inset:R.speakers.bounds.x1-R.speakers.inset),y:R.ceiling-R.speakers.drop,z:R.z+(sz<0?R.speakers.bounds.z0+R.speakers.inset:R.speakers.bounds.z1-R.speakers.inset)}));
  m.setSpeakers(pos);m.setInside(true);m.play();
  assert.equal(made.length,4);assert.deepEqual(made.map(n=>[n.positionX.value,n.positionY.value,n.positionZ.value]),pos.map(p=>[p.x,p.y,p.z]));
  assert(made.every(n=>n.dest===A.master));

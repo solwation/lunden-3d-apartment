@@ -605,3 +605,10 @@ Measured over 3 min in the clubhouse (track changes, disco, billiards, computers
 constant 2 after; listeners 745 → 865 before, constant after; JS heap about +1.3 MB before, flat after
 ([graph](../verification/1629/heap.png)). The leak was small (tens of KB per track), so it does not explain a 450–600 MB desktop heap.
 Test: the `#1629` case in `tools/playroommusictest.mjs` (9 tests).
+
+### Speaker placement correction (#1658)
+
+The four ceiling music speakers and their positional audio sources use the inner
+BILJARD/DJ bounds (`PLAYROOM.speakers.bounds`), rather than the full clubhouse.
+They face the centre of that room; no DJ speaker sits in BIO, SPEL or the hall.
+This gameplay-only room has no A/B/C/L house variant or public downstream equivalent.
