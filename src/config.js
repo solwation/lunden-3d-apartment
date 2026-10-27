@@ -6101,12 +6101,13 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
   // `w`/`h`/`d` = box size (m; d is the depth the front faces out). Not interactive: the music is controlled only from the DJ booth. `ref`/`rolloff`: the
   // Web Audio distance model of each of the four music sources (inverse; ref distance m, rolloff factor), our choice so the whole 18 m room stays audible.
   speakers: { inset: .35, drop: .15, tilt: .35, w: .36, h: .4, d: .3, ref: 4, rolloff: 0.8 },
+  disco: { lampDim: 0.05, ambientDim: 0.35, panelDim: 0.08 }, // #1642: cozy dark disco in BILJARD (*guess*)
   door: { w: 0.8, h: 1.7 }, // Assumed low playhouse-style exit; its interaction works for every avatar height.
   standOff: 0.75, // m from the door wall where you arrive inside
   outside: 0.95, // m north of the playhouse's door wall where you stand when you come out
   fadeMs: [220, 320], // black fade out before the move / back in after it
   lit: 0.55, // ambient light added inside (day.lit): enough to see by, not so bright it looks like a day-lit hall
-  litDisco: 0.82, // #1365: that ambient times this while the disco light is on (mood; our own choice)
+  litDisco: 0.42, // #1642: that ambient times this while the disco light is on (cozy dark, replaces #1365's 0.82)
   // Cinema poster dimensions and network timeout are visual/usability guesses.
   devices: { videoTimeoutMs: 20000, // Assumed network timeout for the optional cinema player (#1376).
     canvas: [512, 288] },

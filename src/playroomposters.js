@@ -108,7 +108,12 @@ export function roomPosters() {
     colours.needsUpdate = true;
   };
   setLevel(1);
+  /** #1642: dim the BILJARD ceiling light panel while the disco light is on. */
+  const setDisco = (on) => {
+    panelLevel.biljard = on ? (R.disco?.panelDim ?? 0.08) : R.zones.panel[1];
+    last = NaN;
+  };
   /** Current brightness of the first poster and the last panel of each zone (for tests). */
   const probe = () => { let i = 0; const o = {}; for (const m of meta) { if (m.kind === 'poster' && o.poster === undefined) o.poster = colours.getX(i); if (m.kind === 'panel') o[`panel_${m.zone}`] = colours.getX(i); i += m.n; } return o; };
-  return { mesh, layout, setLevel, probe };
+  return { mesh, layout, setLevel, setDisco, probe };
 }

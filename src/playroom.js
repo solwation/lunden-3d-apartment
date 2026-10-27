@@ -246,17 +246,24 @@ export class Playroom {
     shadows.push({ object:this.object, base:0, rects:[{x0:R.x+B.x-bw/2,x1:R.x+B.x+bw/2,z0:R.z+B.z-bd/2,z1:R.z+B.z+bd/2}] });
     this.object.add(buildContactShadows(shadows));
     this.finishInfo = { skirtingRuns:skirtBoxes.length, edgeBatches:edges.length, contactFootprints:shadows.length };
+    this.setDisco(this.discoOn);
     this.inside = false;
   }
 
   update(dt,camera,aimed) { if(this.inside){this.music.tick(camera.position);this.music.listen(camera);this.sound.update(dt,this.discoOn,this.music.state!=='off');this.billiards.update(dt,camera,aimed);this.devices.update(dt);this.popcorn.update(dt);this.fadeCinema(dt);this.curtains.update(dt);this.roomPosters.setLevel(this.lit/R.lit);if(this.discoOn)this.disco(dt);} }
 
-  /** #1365: switch the disco light on or off (the ball stops and goes dull, the light spots vanish). Returns the badge text. */
+  /** #1365: switch the disco light on or off (the ball stops and goes dull, the light spots vanish). #1642: dims BILJARD ceiling lamp, panel and ambient to cozy dark. Returns the badge text. */
   setDisco(on) {
     this.discoOn = !!on;
     this.ball.material.color.setScalar(this.discoOn ? 1 : 0.28);
     this.spots.visible = this.discoOn;
+    if (CLUB_ZONES) {
+      CLUB_ZONES.lamp.y = this.discoOn ? (R.disco?.lampDim ?? 0.05) : R.zones.lamp[1];
+      CLUB_ZONES.ambient.y = this.discoOn ? (R.disco?.ambientDim ?? 0.35) : R.zones.ambient[1];
+    }
+    this.roomPosters?.setDisco?.(this.discoOn);
     this.onSwitch?.('disco', this.discoOn);
+    if (this.discoOn) this.disco(0);
     return this.discoOn ? 'Discolampan är tänd' : 'Discolampan är släckt';
   }
   toggleDisco() { if (this.film) this.filmOverride = !this.discoOn; return this.setDisco(!this.discoOn); } // #1570: switching the disco on beats the film dimming; #1610: switching it off keeps (or restores) it
