@@ -45,7 +45,7 @@ uses ordinary triage. Refresh the queue after label corrections before selecting
 | Phase hooks | [Project phase hooks](#project-phase-hooks); report intake under [queue intake hooks](#queue-intake-hooks) |
 | Resource policy | [Smallest sufficient capability/effort](shared/ORCHESTRA.md#spend-resources-deliberately); explicit supported selection, compact context, justified escalation |
 | Queue poll | Every 300 seconds during active work and idle; also before every new selection |
-| Idle watch | 60 minutes after latest resolved implementation issue in either repository, even with narrower scope |
+| Idle watch | 60 minutes after latest resolved implementation issue by this session in either repository, else from first idle entry |
 | Heartbeat | Swedish issue comment every 30 minutes, first at 25–30; done/current/remaining estimate |
 
 `/orkester` in this project, with or without an argument, starts an explicit queue
@@ -106,8 +106,8 @@ issue/repo/priority/creation time, worker/files/worktree, active workers/capacit
 free slot is unused, results and blockers.
 Keep UTC `lastResolvedAt`, `lastQueueAttemptAt`, `lastQueueCheckAt`, `watchUntil`, and
 last successful fetch per repo. Failed/partial checks update attempt/outcome only;
-`lastQueueCheckAt` requires both complete successful queues. If no issue was resolved,
-start the hour on first idle entry. Resolution in either repo restarts the full hour.
+`lastQueueCheckAt` requires both complete successful queues. If no issue was resolved
+by this session, start the hour on first idle entry. Resolution by this session in either repo restarts the full hour.
 Preserve intake-hook timestamps too. Use interruptible waits ≤60 seconds and stop on
 user pause/stop. No active labels while idle. Final exit requires elapsed watch plus
 successful complete queues and required intake, with no startable in-scope work.
@@ -212,7 +212,7 @@ The conductor runs this loop in every `/orkester` queue session:
 
 ## Shared version and maintenance
 
-Shared release: **v0.4.0**, commit **d317d0d8733f548d5e62cf8cb1717c495f316c91**. Imported as a squashed subtree
+Shared release: **v0.4.1**, commit **5e48d8370f051f5a15bbb740881dbf51187316a9**. Imported as a squashed subtree
 at `.orchestra/shared`. See [installation](shared/INSTALL.md) and [contribution](shared/CONTRIBUTING.md) instructions.
 Improve the core in its own clean repository, release it, then explicitly update both
 Lunden pins. Keep this local policy outside the subtree; do not export project history.
