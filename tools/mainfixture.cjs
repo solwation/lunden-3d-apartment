@@ -24,7 +24,7 @@ const ELEMENTS = { bellBtn: 'bell-btn', remoteSeekControls: 'remote-seek' }; // 
 const initScript = '(()=>{for(const [k,id] of Object.entries(' + JSON.stringify(ELEMENTS) + '))if(!(k in window))Object.defineProperty(window,k,{configurable:true,get:()=>document.getElementById(id),set(v){Object.defineProperty(window,k,{value:v,writable:true,configurable:true});}});const d={' + Object.entries(DEFAULTS).map(([k, v]) => `${k}:()=>(${v})`).join(',') + '};' +
   'for(const k in d)if(!(k in window))try{window[k]=d[k]();}catch(e){window[k]=null;}})();';
 // Functions main.js imports from modules cannot be stubbed before load; the real ones are imported once the page is up.
-const IMPORTS = { fitChoiceLabels: '/src/hudicons.js' };
+const IMPORTS = { fitChoiceLabels: '/src/hudicons.js', REACT: '/src/config.js' }; // REACT: #1639 key handler
 async function installMainImports(page) {
   await page.evaluate(async imports => { for (const [k, url] of Object.entries(imports)) if (!(k in window)) window[k] = (await import(url))[k]; }, IMPORTS);
 }
