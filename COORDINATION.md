@@ -82,7 +82,7 @@ scheduled queue check, including failures. Record session/scope, issue/repositor
 priority/created time, owner/files, active workers/capacity and why a free slot is
 unused, blockers, latest results and UTC time.
 Retain per-repository last successful fetch, last complete successful fetch, last
-attempt/outcome, last resolution and idle deadline. Failure must not overwrite success
+attempt/outcome, the session's last resolution and idle deadline. Failure must not overwrite success
 timestamps. Resume the same ID, comments, worktrees and commits after interruption.
 
 Do not seize a visibly active issue. Follow host expiry/takeover rules, announce a
@@ -130,7 +130,7 @@ its own acceptance is plainly unmet. Clean up the conductor's own leftover claim
 labels directly. Record the review (range, parts, findings, created issues) in the
 status comment. If it created eligible work, resume selection; the next drain reviews
 only work delivered after this review. A drain with nothing new delivered skips the
-review. The review does not restart an idle deadline; only resolving an issue does.
+review. The review does not restart an idle deadline; only the session resolving an issue does.
 A host policy can add areas to inspect or disable the review.
 
 ## Poll, idle and stop
@@ -142,9 +142,13 @@ outcome and retry failed reads on the schedule. Keep active work progressing bet
 checks; do not replay the entire startup procedure on each timer tick.
 
 An idle watch is enabled only when the host/user asks for it. Its deadline starts at
-the latest resolved implementation issue across the configured scope, or first idle
-entry if none was resolved. Each new resolution restarts the full interval. Older open
-issues and issues created during the session remain eligible unless explicitly excluded.
+the latest implementation issue resolved **by this session** across the configured
+scope, or at the session's first idle entry if it has resolved none. Each new
+resolution by the session restarts the full interval. Resolutions by earlier or other
+sessions never shorten the watch: with a one-hour interval, a session that starts at
+13:30 with an empty queue waits until 14:30, even if another session closed an issue
+at 13:25. Older open issues and issues created during the session remain eligible
+unless explicitly excluded.
 Keep no active labels while idle. Use interruptible waits of at most 60 seconds; stop
 promptly on user pause/stop, save a checkpoint and release inactive claims.
 

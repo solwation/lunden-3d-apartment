@@ -26,6 +26,15 @@ Issueflow places each issue by its own state and labels: a sub-issue in progress
 - Close the parent only when all its sub-issues are closed or deliberately split out and the parent's own acceptance criteria are satisfied; remove its work labels when closing. Closing every sub-issue does not close the parent automatically.
 - A parent's priority stays its own. Sub-issues normally follow the same priority rules as any other issue.
 
+## User questions
+
+Use the `user question` label when unattended work needs a decision that only the user can make.
+
+- Questions never pause unattended work. Make routine decisions yourself from sensible defaults and record the reasoning on the issue.
+- When a decision genuinely needs the user, post one issue comment with concrete options and a recommendation, add `user question`, remove your work labels and claim, and continue with other work.
+- Skip `user question` issues when selecting work until the user has answered. Whoever resumes the work removes the label. A new comment alone is not an answer.
+- `user question` is not a work label: the issue stays in **Backlog**, and the dashboard does not display the label specially. It is not `blocked` either; reserve `blocked` for real technical blockers.
+
 ## Labels understood by the default detection
 
 Matching is case-insensitive. Except for a custom work label described below, leading/trailing whitespace is ignored and runs of spaces, underscores, colons and hyphens are treated as spaces. For example, `in-progress`, `in_progress` and `IN PROGRESS` match the same built-in work label.
@@ -41,6 +50,10 @@ Matching is case-insensitive. Except for a custom work label described below, le
 Coordination labels identify coordination issues that the dashboard can hide using its coordination filter. They do not set priority or work status. A label such as `orkester: session-id` is ownership metadata and does not match the coordination label `orkester`.
 
 Repositories can override the work label and labels for high, medium and low in the dashboard's label settings. A custom work label **replaces** the default work labels and uses case-insensitive exact matching (the configured value is trimmed; the issue label itself is not normalized). A matching custom priority label is checked before built-in priorities, in high/medium/low order. Built-in priority detection still applies if no custom priority matches. Settings are local dashboard configuration, not GitHub-wide workflow rules; share them separately if others need the same view. Prefer the canonical labels above for a portable workflow.
+
+### Optional story points
+
+Agents may optionally add one `sp-N` label after estimating an issue’s size, where `N` is a positive integer (for example `sp-1`, `sp-2` or `sp-4`, up to JavaScript’s safe-integer limit 9007199254740991). This value replaces the dashboard’s local size estimate and is shown without `≈`; time forecasts remain approximate. Existing `SP: 5`, `points: N` and `story points N` labels also work. Equivalent labels agree; labels with different valid values fall back to local sizing. Without a valid points label, the dashboard estimates size locally. Totals containing local estimates retain `≈`. Story points do not set priority or work status.
 
 ## Timing, order and limitations
 
