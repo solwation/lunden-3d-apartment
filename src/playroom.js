@@ -109,11 +109,44 @@ export class Playroom {
     fur.push(pbox(col.dark, 0, PD.h - .012), pbox(col.wood, PD.h - .012, PD.h));
     fur.push(djBox(col.dark,-DJ.w/2,DJ.w/2,PD.h,DJ.h-DJ.top,-DJ.d/2,DJ.d/2),djBox(col.wood,-DJ.w/2-.02,DJ.w/2+.02,DJ.h-DJ.top,DJ.h,-DJ.d/2-.02,DJ.d/2+.02));
     fur.push(djBox(col.dark,-.85,.85,DJ.h,DJ.h+.055,-DJ.d/2+.06,DJ.d/2-.06),djBox(col.steel,-.12,.12,DJ.h+.055,DJ.h+.065,-.18,.18));
-    for (const x of [-.55,.55]) {
-      fur.push(paint(new THREE.CylinderGeometry(.16,.16,.018,12).translate(R.x+DJ.x+x,DJ.h+.064,R.z+DJ.z),col.steel));
-      fur.push(paint(new THREE.CylinderGeometry(.035,.035,.02,8).translate(R.x+DJ.x+x,DJ.h+.074,R.z+DJ.z),col.dark));
-      for(const z of [-.15,.15])fur.push(djBox(col.blue,x-.025,x+.025,DJ.h+.055,DJ.h+.065,z-.018,z+.018));
-    }
+    // #1424, #1659: turntable platters spin when playing
+    this.turntables = [];
+    this.turntableAngles = [0, 0];
+    const deckMat = new THREE.MeshBasicMaterial({ color: 0x161616 }); // vinyl
+    const labelMatLeft = new THREE.MeshBasicMaterial({ color: 0xd9534f }); // red center label (Deck A)
+    const labelMatRight = new THREE.MeshBasicMaterial({ color: 0x337ab7 }); // blue center label (Deck B)
+    const markerMat = new THREE.MeshBasicMaterial({ color: 0xffffff }); // high-contrast white cue marker
+    const spindleMat = new THREE.MeshBasicMaterial({ color: 0xdcdcdc }); // spindle
+
+    [-.55, .55].forEach((x, i) => {
+      // Recessed platter housing and cue buttons in the static furniture batch
+      fur.push(paint(new THREE.CylinderGeometry(.168, .168, .010, 16).translate(R.x + DJ.x + x, DJ.h + .058, R.z + DJ.z), col.steel));
+      for (const z of [-.15, .15]) fur.push(djBox(col.blue, x - .025, x + .025, DJ.h + .055, DJ.h + .065, z - .018, z + .018));
+      // Tonearm base and arm in stationary batch
+      fur.push(djBox(col.steel, x + .12, x + .15, DJ.h + .055, DJ.h + .075, -.14, -.10));
+      fur.push(djBox(col.steel, x + .02, x + .13, DJ.h + .072, DJ.h + .076, -.12, -.04));
+
+      // Rotating turntable assembly
+      const grp = new THREE.Group();
+      grp.position.set(R.x + DJ.x + x, DJ.h + .064, R.z + DJ.z);
+      // Vinyl record disc
+      grp.add(new THREE.Mesh(new THREE.CylinderGeometry(.155, .155, .008, 20), deckMat));
+      // Center label
+      grp.add(new THREE.Mesh(new THREE.CylinderGeometry(.052, .052, .009, 16), i === 0 ? labelMatLeft : labelMatRight));
+      // Center spindle
+      grp.add(new THREE.Mesh(new THREE.CylinderGeometry(.010, .010, .020, 8), spindleMat));
+      // Radial cue marker (distinct white stripe)
+      const stripe = new THREE.Mesh(new THREE.BoxGeometry(.014, .010, .07), markerMat);
+      stripe.position.set(0, .001, .08);
+      grp.add(stripe);
+      // Center label dot
+      const dot = new THREE.Mesh(new THREE.CylinderGeometry(.009, .009, .011, 8), markerMat);
+      dot.position.set(0, .001, -.032);
+      grp.add(dot);
+
+      this.object.add(grp);
+      this.turntables.push(grp);
+    });
     for(const x of [-.065,.065])for(const z of [-.1,0])
       fur.push(paint(new THREE.CylinderGeometry(.018,.018,.025,6).translate(R.x+DJ.x+x,DJ.h+.0775,R.z+DJ.z+z),col.dark));
     fur.push(djBox(col.dark,-.075,.075,DJ.h+.065,DJ.h+.069,.09,.11),djBox(col.red,-.012,.012,DJ.h+.069,DJ.h+.085,.075,.125));
@@ -252,7 +285,18 @@ export class Playroom {
     this.inside = false;
   }
 
-  update(dt,camera,aimed) { if(this.inside){this.music.tick(camera.position);this.music.listen(camera);this.sound.update(dt,this.discoOn,this.music.state!=='off');this.billiards.update(dt,camera,aimed);this.devices.update(dt);this.popcorn.update(dt);this.fadeCinema(dt);this.curtains.update(dt);this.roomPosters.setLevel(this.lit/R.lit);if(this.discoOn)this.disco(dt);} }
+  updateTurntables(dt) {
+    if (!this.inside || !this.music) return;
+    const speed = Math.PI * 1.1; // #1659: ~33 RPM
+    for (let i = 0; i < 2; i++) {
+      if (this.music.isDeckSpinning(i)) {
+        this.turntableAngles[i] = (this.turntableAngles[i] + dt * speed) % (Math.PI * 2);
+        this.turntables[i].rotation.y = this.turntableAngles[i];
+      }
+    }
+  }
+
+  update(dt,camera,aimed) { if(this.inside){this.music.tick(camera.position);this.music.listen(camera);this.sound.update(dt,this.discoOn,this.music.state!=='off');this.updateTurntables(dt);this.billiards.update(dt,camera,aimed);this.devices.update(dt);this.popcorn.update(dt);this.fadeCinema(dt);this.curtains.update(dt);this.roomPosters.setLevel(this.lit/R.lit);if(this.discoOn)this.disco(dt);} }
 
   /** #1365: switch the disco light on or off (the ball stops and goes dull, the light spots vanish). #1642: dims BILJARD ceiling lamp, panel and ambient to cozy dark. Returns the badge text. */
   setDisco(on) {

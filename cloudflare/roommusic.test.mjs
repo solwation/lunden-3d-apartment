@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { installRuntime, fakeNamespace } from './devws.mjs';
 import worker, { PlayerRoom } from './worker.js';
 import { PLAYERS, cleanMusic } from './players.js';
-import { PLAYROOM, MUSIC, SONOS } from '../src/config.js';
+import { PLAYROOM, MUSIC, SONOS, PLAYROOM_TRACKS } from '../src/config.js';
 
 installRuntime();
 let now = Date.UTC(2026, 9, 26, 12);
@@ -27,13 +27,14 @@ async function connect(env) {
 const ROOM = [PLAYROOM.x + 1, 0, PLAYROOM.z + 1], OUT = [0, 0, 0];
 const place = async (env, c, p) => { now += 250; c.send({ p, r: 0 }); await settle(env); };
 const cmd = async (env, c, m, wait = 700) => { now += wait; c.send({ t: 'mus', ...m }); await settle(env); };
-const N = SONOS.channels.flatMap((c) => c.tracks).length;
+const N = PLAYROOM_TRACKS.length;
 const room = (env) => env.PLAYERS.object('world');
 
 test('cleanMusic validates keys and track index', () => {
   assert.deepEqual(cleanMusic('{"t":"mus","k":"p"}'), { k: 'p' });
   assert.deepEqual(cleanMusic('{"t":"mus","k":"n","ix":3}'), { k: 'n', ix: 3 });
-  for (const bad of ['{"t":"mus"}', '{"t":"mus","k":"x"}', `{"t":"mus","k":"n","ix":${N}}`, '{"t":"mus","k":"n","ix":-1}', '{"t":"mus","k":"n","ix":"1"}', '{"t":"mus","k":"n","ix":1.5}', 'nope', '{"t":"pool","k":"p"}']) assert.equal(cleanMusic(bad), null, bad);
+  assert.deepEqual(cleanMusic('{"t":"mus","k":"n","ix":3,"to":5}'), { k: 'n', ix: 3, to: 5 });
+  for (const bad of ['{"t":"mus"}', '{"t":"mus","k":"x"}', `{"t":"mus","k":"n","ix":${N}}`, '{"t":"mus","k":"n","ix":-1}', '{"t":"mus","k":"n","ix":"1"}', '{"t":"mus","k":"n","ix":1.5}', `{"t":"mus","k":"n","ix":3,"to":${N}}`, '{"t":"mus","k":"n","ix":3,"to":-1}', 'nope', '{"t":"pool","k":"p"}']) assert.equal(cleanMusic(bad), null, bad);
 });
 
 test('play/pause/next/mix/off are room-owned and reach only players inside', async () => {
@@ -42,18 +43,20 @@ test('play/pause/next/mix/off are room-owned and reach only players inside', asy
   await cmd(env, far, { k: 'p' }); assert.equal(a.mus().length, 0, 'a sender outside the room is ignored');
   await cmd(env, a, { k: 'p' });
   assert.deepEqual(a.last(), { t: 'mus', st: 'playing', ix: 0, pos: 0 }); assert.deepEqual(b.last(), a.last()); assert.equal(far.mus().length, 0);
-  now += 5000; await cmd(env, b, { k: 'n', ix: 0 });
-  assert.equal(a.last().ix, 1); assert.equal(a.last().pos, 0); assert.deepEqual(a.last(), b.last());
-  await cmd(env, a, { k: 'n', ix: 0 }); assert.equal(a.last().ix, 1, 'a stale next (old index) is refused with a resync'); assert.equal(b.last().ix, 1);
+  now += 5000; await cmd(env, b, { k: 'n', ix: 0, to: 7 });
+  assert.equal(a.last().ix, 7, 'next with specific destination to sets track 7'); assert.equal(a.last().pos, 0); assert.deepEqual(a.last(), b.last());
+  now += 5000; await cmd(env, b, { k: 'n', ix: 7 });
+  assert.equal(a.last().ix, 8); assert.equal(a.last().pos, 0); assert.deepEqual(a.last(), b.last());
+  await cmd(env, a, { k: 'n', ix: 7 }); assert.equal(a.last().ix, 8, 'a stale next (old index) is refused with a resync'); assert.equal(b.last().ix, 8);
   const before = b.mus().length;
-  now += 2000; await cmd(env, a, { k: 'm', ix: 1 });
-  assert.equal(a.last().ix, 1); assert.deepEqual(a.last().mx, { to: 2, el: 0 }); assert.equal(b.mus().length, before + 1);
-  await cmd(env, b, { k: 'n', ix: 1 }); assert.deepEqual(b.last().mx.to, 2, 'refused while mixing');
+  now += 2000; await cmd(env, a, { k: 'm', ix: 8, to: 12 });
+  assert.equal(a.last().ix, 8); assert.deepEqual(a.last().mx, { to: 12, el: 0 }); assert.equal(b.mus().length, before + 1);
+  await cmd(env, b, { k: 'n', ix: 8 }); assert.deepEqual(b.last().mx.to, 12, 'refused while mixing');
   assert.ok(b.last().mx.el > 0, 'the resync carries the elapsed fade');
   now += MUSIC.crossfade * 1000; await cmd(env, b, { k: 'z' });
-  assert.equal(b.last().st, 'paused'); assert.equal(b.last().ix, 2); assert.equal(b.last().mx, undefined); assert.ok(b.last().pos >= 1000);
+  assert.equal(b.last().st, 'paused'); assert.equal(b.last().ix, 12); assert.equal(b.last().mx, undefined); assert.ok(b.last().pos >= 1000);
   await cmd(env, a, { k: 'p' }); assert.equal(a.last().st, 'playing');
-  await cmd(env, a, { k: 'o' }); assert.deepEqual(b.last(), { t: 'mus', st: 'off', ix: 2, pos: 0 });
+  await cmd(env, a, { k: 'o' }); assert.deepEqual(b.last(), { t: 'mus', st: 'off', ix: 12, pos: 0 });
   await cmd(env, a, { k: 'n' }); assert.equal(a.last().st, 'off', 'next while off is refused');
 });
 

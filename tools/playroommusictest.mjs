@@ -113,3 +113,68 @@ test('#1645: four positional sources at the corner speakers, the speakers expose
  const src=(await import('node:fs')).readFileSync(new URL('../src/playroom.js',import.meta.url),'utf8');
  assert(!/speaker[^\n]*pickable|pk\.userData\.door = this\.music/.test(src));
 });
+
+test('#1659: expanded clubhouse tracks, shuffle mode, and turntable deck rotation', async () => {
+ const { PLAYROOM_TRACKS } = await import('../src/playroommusic.js');
+ assert.equal(PLAYROOM_TRACKS.length, 24, '24 clubhouse tracks shipped');
+ const m = new PlayroomMusic();
+ m.setInside(true);
+ assert.equal(m.isDeckSpinning(0), false);
+ assert.equal(m.isDeckSpinning(1), false);
+ assert.equal(m.shuffle, false);
+
+ m.play();
+ assert.equal(m.state, 'playing');
+ assert.equal(m.isDeckSpinning(0), true, 'active deck 0 spins while playing');
+ assert.equal(m.isDeckSpinning(1), false, 'inactive deck 1 is stopped');
+
+ m.toggleShuffle();
+ assert.equal(m.shuffle, true);
+ const opts = m.options().map(o => o.label);
+ assert.ok(opts.some(l => /Slumpad låtordning: På/.test(l)));
+
+ // Shuffle pickNextIndex picks an index different from current
+ for (let i = 0; i < 20; i++) {
+   const nextIdx = m.pickNextIndex();
+   assert.notEqual(nextIdx, m.index);
+   assert.ok(nextIdx >= 0 && nextIdx < PLAYROOM_TRACKS.length);
+ }
+
+ // Pause stops rotation on both decks
+ m.pause();
+ assert.equal(m.state, 'paused');
+ assert.equal(m.isDeckSpinning(0), false);
+ assert.equal(m.isDeckSpinning(1), false);
+
+ // Resume starts rotation again
+ m.play();
+ assert.equal(m.isDeckSpinning(0), true);
+
+ // Cut to next track alternates deckSide
+ m.next(false, 5);
+ assert.equal(m.index, 5);
+ assert.equal(m.isDeckSpinning(0), false);
+ assert.equal(m.isDeckSpinning(1), true, 'cut switched active deck to deck 1');
+
+ // Mix makes both decks spin
+ const { MUSIC } = await import('../src/config.js');
+ const oldCf = MUSIC.crossfade; MUSIC.crossfade = 0.2;
+ try {
+   m.next(true, 8);
+   assert.ok(m.mixing);
+   assert.equal(m.isDeckSpinning(0), true, 'deck 0 spins during mix');
+   assert.equal(m.isDeckSpinning(1), true, 'deck 1 spins during mix');
+   await new Promise(r => setTimeout(r, 250));
+   assert.equal(m.mixing, null);
+   assert.equal(m.index, 8);
+   assert.equal(m.isDeckSpinning(0), true, 'mix completed: deck 0 is now active');
+   assert.equal(m.isDeckSpinning(1), false, 'deck 1 stopped after mix');
+ } finally {
+   MUSIC.crossfade = oldCf;
+ }
+
+ m.stop();
+ assert.equal(m.isDeckSpinning(0), false);
+ assert.equal(m.isDeckSpinning(1), false);
+ m.dispose();
+});

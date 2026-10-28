@@ -1,14 +1,15 @@
 import { initAudio, audioParts } from './audio.js';
 import { MusicFile } from './music.js';
-import { MUSIC, SONOS, DANCE, PLAYROOM } from './config.js';
+import { MUSIC, SONOS, DANCE, PLAYROOM, PLAYROOM_TRACKS } from './config.js';
 
-// #1621: the DJ bench plays any shipped track; the list is the Sonos channels' tracks in order.
-export const PLAYROOM_TRACKS = SONOS.channels.flatMap((c) => c.tracks);
+// #1621, #1659: the DJ bench plays any shipped clubhouse track
+export { PLAYROOM_TRACKS };
 
 // Local clubhouse transport. Media is created only by a visitor's play action.
 export class PlayroomMusic {
   constructor() {
     this.active = false; this.state = 'off'; this.volume = SONOS.start; this.generation = 0; this.index = 0; this.mixing = null; this.dancing = false; this.danceAt = null;
+    this.shuffle = false; this.deckSide = 0; // #1659: shuffle mode and active turntable deck (0: left, 1: right)
     this.net = null; this.remote = null; // #1624: { ready(), send(msg) } set by main.js; a room state that arrived before we were inside
     this.hidden = () => { if (document.hidden) this.stopLocal(); };
     this.leave = () => this.stopLocal();
@@ -16,18 +17,37 @@ export class PlayroomMusic {
     window.addEventListener('pagehide', this.leave);
     this.target = { kind: 'playroomMusic', name: 'biljardrummets högtalare', options: () => this.options() };
   }
+  isDeckSpinning(side) {
+    if (this.state !== 'playing') return false;
+    if (this.mixing) return true;
+    return this.deckSide === side;
+  }
+  toggleShuffle() {
+    this.shuffle = !this.shuffle;
+    return this.shuffle;
+  }
+  pickNextIndex() {
+    const total = PLAYROOM_TRACKS.length;
+    if (total <= 1) return 0;
+    if (!this.shuffle) return (this.index + 1) % total;
+    const offset = 1 + Math.floor(Math.random() * (total - 1));
+    return (this.index + offset) % total;
+  }
   options() {
+    const cur = PLAYROOM_TRACKS[this.index];
     return [
       { label: this.state === 'playing' ? 'Pausa musiken' : this.state === 'paused' ? 'Fortsätt musiken' : 'Spela musik', run: () => this.state === 'playing' ? this.pause() : this.play() },
       ...(this.state === 'off' ? [] : [{ label: 'Stäng av musiken', run: () => this.stop() }]),
       ...(this.state === 'off' ? [] : [
         { label: 'Nästa låt', reason: this.mixing ? 'Mixar redan' : '', run: () => this.next(false) },
         { label: 'Mixa till nästa låt', reason: this.mixing ? 'Mixar redan' : '', run: () => this.next(true) },
+        { label: this.shuffle ? 'Slumpad låtordning: På' : 'Slumpad låtordning: Av', run: () => this.toggleShuffle() },
       ]),
       { label: `Volym − (${this.volume}/${SONOS.steps})`, reason: this.volume === 0 ? 'Lägsta volym' : '', run: () => this.setVolume(this.volume - 1) },
       { label: `Volym + (${this.volume}/${SONOS.steps})`, reason: this.volume === SONOS.steps ? 'Högsta volym' : '', run: () => this.setVolume(this.volume + 1) },
       // #1622: the floss is offered only while the music plays (not paused or off)
       ...(this.state === 'playing' || this.dancing ? [{ label: this.dancing ? 'Sluta dansa' : 'Dansa floss', run: () => this.dancing ? this.stopDance() : this.startDance() }] : []),
+      ...(this.state === 'off' || !cur ? [] : [{ label: `Låt: ${cur.title} (${cur.artist})`, reason: `${this.index + 1}/${PLAYROOM_TRACKS.length}`, run: () => {} }]),
     ];
   }
   /** #1622: the dance is sent as `dn: 1` in the player state (main.js); it ends with the music, a pause, leaving or walking away. */
@@ -68,11 +88,11 @@ export class PlayroomMusic {
     this.volume = Math.max(0, Math.min(SONOS.steps, n));
     if (this.mix) this.mix.gain.value = SONOS.gain * (this.volume / SONOS.steps) ** 1.5;
   }
-  /** #1624: a user action goes to the room when connected (the room answers everybody inside, us too, and `sync` applies it); else it is local as before. */
-  command(k) {
+  /** #1624, #1659: a user action goes to the room when connected (the room answers everybody inside, us too, and `sync` applies it); else it is local as before. */
+  command(k, to) {
     if (!this.active || !this.net?.ready()) return false;
     initAudio();
-    return !!this.net.send({ t: 'mus', k, ...(k === 'n' || k === 'm' ? { ix: this.index } : {}) });
+    return !!this.net.send({ t: 'mus', k, ...(k === 'n' || k === 'm' ? { ix: this.index, ...(to !== undefined ? { to } : {}) } : {}) });
   }
   play() { if (this.active && !this.command('p')) this.playLocal(); }
   playLocal() {
@@ -90,6 +110,7 @@ export class PlayroomMusic {
     const generation = this.generation, failed = () => queueMicrotask(() => { if (generation === this.generation) this.stopLocal(); });
     this.mix = A.ctx.createGain(); this.setVolume(this.volume); this.routeMix(A);
     this.state = 'playing'; this.index = ix;
+    this.deckSide = ix % 2;
     const t = mx ? Math.min(1, mx.el / 1000 / MUSIC.crossfade) : 0;
     this.deck = this.makeDeck(A, PLAYROOM_TRACKS[ix], Math.cos(t * Math.PI / 2), failed, pos / 1000);
     this.file = this.deck.file;
@@ -99,6 +120,7 @@ export class PlayroomMusic {
       this.endMix(false); this.index = ix;
     }), mx.el / 1000);
     this.index = mx.to;
+    this.deckSide = 1 - this.deckSide;
     this.mixing = { incoming, outgoing: this.deck, t, last: performance.now() };
     this.mixTimer = setInterval(() => this.tickMix(), 50);
   }
@@ -131,14 +153,18 @@ export class PlayroomMusic {
   }
   killDeck(deck) { if (!deck) return; deck.file.stop(); deck.fade.disconnect(); }
   /** Next track: a hard cut, or (mix) an equal-power crossfade over MUSIC.crossfade seconds. */
-  next(mix) {
-    if (this.state === 'off' || this.mixing || this.command(mix ? 'm' : 'n')) return;
-    this.nextLocal(mix);
+  next(mix, targetIndex) {
+    if (this.state === 'off' || this.mixing) return;
+    const to = targetIndex !== undefined ? targetIndex : (this.shuffle ? this.pickNextIndex() : undefined);
+    if (this.command(mix ? 'm' : 'n', to)) return;
+    this.nextLocal(mix, to);
   }
-  nextLocal(mix) {
+  nextLocal(mix, to) {
     if (this.state === 'off' || this.mixing) return;
     const A = audioParts(); if (!A) return;
-    this.index = (this.index + 1) % PLAYROOM_TRACKS.length;
+    const prev = this.index;
+    this.index = to !== undefined ? to : (this.shuffle ? this.pickNextIndex() : (this.index + 1) % PLAYROOM_TRACKS.length);
+    this.deckSide = 1 - this.deckSide;
     const generation = this.generation;
     if (this.state === 'paused' || !mix) { // cut: the new track replaces the old one at once (and starts playing)
       this.killDeck(this.deck); this.state = 'playing';
@@ -148,7 +174,8 @@ export class PlayroomMusic {
     const incoming = this.makeDeck(A, PLAYROOM_TRACKS[this.index], 0, () => queueMicrotask(() => {
       if (generation !== this.generation || this.mixing?.incoming !== incoming) return;
       this.endMix(false); // the new track will not load: keep the old one, step the index back
-      this.index = (this.index + PLAYROOM_TRACKS.length - 1) % PLAYROOM_TRACKS.length;
+      this.index = prev;
+      this.deckSide = 1 - this.deckSide;
     }));
     this.mixing = { incoming, outgoing: this.deck, t: 0, last: performance.now() };
     this.mixTimer = setInterval(() => this.tickMix(), 50);
@@ -165,6 +192,7 @@ export class PlayroomMusic {
     const m = this.mixing; if (!m) return; clearInterval(this.mixTimer); this.mixing = null;
     this.killDeck(done ? m.outgoing : m.incoming);
     if (done) { this.deck = m.incoming; this.file = this.deck.file; }
+    else { this.deckSide = 1 - this.deckSide; }
   }
   pause() { if (this.state === 'playing' && !this.command('z')) this.pauseLocal(); }
   pauseLocal() {

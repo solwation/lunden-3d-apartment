@@ -4777,6 +4777,28 @@ export const SONOS = {
   steps: 10, start: 5, gain: 0.5, wall: 0.45, floor: 0.2,
 };
 
+// #1659: additional tracks available at the clubhouse DJ bench (CC0 1.0, music/previous-sources-416.json)
+export const DJ_EXTRA_TRACKS = [
+  track('as-fast-as-you-can', 'As fast as you can', 'Centurion_of_war'),
+  track('face-the-facts', 'Face The Facts', 'Zane Little Music'),
+  track('lofi-hip-hop', 'lofi hip hop', 'omfgdude'),
+  track('revelation', 'Revelation', 'Indieteur'),
+  track('happy', 'Happy', 'Alex McCulloch'),
+  track('background-space-track', 'Background space track', 'yd'),
+  track('wild-jazz', 'Wild Jazz', 'Alex McCulloch'),
+  track('lofi-again', 'Lofi again', 'omfgdude'),
+  track('basically-not-fusion-jazz', '(Basically not) Fusion Jazz', 'Spring Spring'),
+  track('happy-moments', 'Happy moments', 'Centurion_of_war'),
+  track('happy-lullaby-song17', 'Happy Lullaby', 'cynicmusic'),
+  track('from-here-to-where', 'From Here to Where?', 'Écrivain'),
+];
+
+// #1621, #1659: the DJ bench playlist combines the Sonos channels and extra clubhouse tracks
+export const PLAYROOM_TRACKS = [
+  ...SONOS.channels.flatMap((c) => c.tracks),
+  ...DJ_EXTRA_TRACKS,
+];
+
 // The ILVA Woodstock coffee table's shape (#410, furniture.js `coffeetable`, read off ILVA's product photo
 // docs/soffbord-ilva-woodstock.jpg; only 120 × 60 × 47 is ILVA's, the rest is *guess*): `top` thickness, corner `radius`,
 // how far the long sides `bulge` out past straight (the ends half that), the leg tops set in `legIn` [x, z] from the edges,

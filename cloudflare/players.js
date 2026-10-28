@@ -7,7 +7,7 @@ import { nerfHeadContact } from '../src/nerf.js';
 import { bowHeadContact } from '../src/bowflight.js';
 import { fallDamage } from '../src/falldamage.js';
 import { cleanHeldCategory } from '../src/heldcategory.js';
-import { SONOS, MUSIC } from '../src/config.js';
+import { SONOS, MUSIC, PLAYROOM_TRACKS } from '../src/config.js';
 import { PLAYROOM, TOYS, SCORE, pvpHitPoints, PVP_RIFLE_HEAD as RH, rifleHeadContact, PVP_HEAD_BOXES as HB, rifleBoxHeadContact, straightBoxHeadContact, avatarCodeValid } from '../src/config.js';
 
 import { freshTable, validSnapshot, cleanDirection, cleanPower, simulateStroke } from '../src/billiardsync.js';
@@ -185,15 +185,23 @@ export function cleanPool(text) {
   return d && w !== null ? { k: 's', q: m.q, d, w } : null;
 }
 
-const MUSIC_TRACKS = SONOS.channels.flatMap((c) => c.tracks).length; // #1624: the client's PLAYROOM_TRACKS, in this order
+const MUSIC_TRACKS = PLAYROOM_TRACKS.length; // #1624, #1659: the client's PLAYROOM_TRACKS, in this order
 const MUSIC_KEYS = ['p', 'z', 'o', 'n', 'm'];
-/** A room-music command (#1624) { t: 'mus', k: 'p' | 'z' | 'o' | 'n' | 'm', ix? } → { k, ix? }, or null. */
+/** A room-music command (#1624, #1659) { t: 'mus', k: 'p' | 'z' | 'o' | 'n' | 'm', ix?, to? } → { k, ix?, to? }, or null. */
 export function cleanMusic(text) {
   let m;
   try { m = JSON.parse(text); } catch { return null; }
   if (m?.t !== 'mus' || !MUSIC_KEYS.includes(m.k)) return null;
-  if (m.ix === undefined) return { k: m.k };
-  return Number.isInteger(m.ix) && m.ix >= 0 && m.ix < MUSIC_TRACKS ? { k: m.k, ix: m.ix } : null;
+  const res = { k: m.k };
+  if (m.ix !== undefined) {
+    if (!Number.isInteger(m.ix) || m.ix < 0 || m.ix >= MUSIC_TRACKS) return null;
+    res.ix = m.ix;
+  }
+  if (m.to !== undefined) {
+    if (!Number.isInteger(m.to) || m.to < 0 || m.to >= MUSIC_TRACKS) return null;
+    res.to = m.to;
+  }
+  return res;
 }
 
 /** Is a position (feet, metres) inside the children's room (#1355)? */
@@ -455,7 +463,7 @@ export class PlayerRoom {
     } else if (m.k === 'o') {
       if (s.st !== 'off') { Object.assign(s, { st: 'off', pos: 0, mx: null }); changed = true; }
     } else if (s.st !== 'off' && !s.mx && (m.ix === undefined || m.ix === s.ix)) { // 'n' next / 'm' mix; refused while off, mixing or stale
-      const to = (s.ix + 1) % MUSIC_TRACKS;
+      const to = m.to !== undefined && m.to >= 0 && m.to < MUSIC_TRACKS ? m.to : (s.ix + 1) % MUSIC_TRACKS;
       if (m.k === 'm' && s.st === 'playing') s.mx = { to, at: now, el: 0 };
       else Object.assign(s, { ix: to, st: 'playing', at: now, pos: 0 });
       changed = true;

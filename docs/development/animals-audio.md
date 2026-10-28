@@ -519,19 +519,32 @@ remains nonzero, snow remains silent and mute retains control.
 
 Playroom billiards retain physical cue/ball/pocket event positions and the existing positional master graph. Impact mix is stronger and square-root strength makes soft collisions audible; pocket drops no longer depend on horizontal ball speed. `sfx.billiard` adds a short pocket rattle after the drop. Scoped tests include real Web Audio RMS and mute/exit silence; no physics rules changed.
 
-### DJ bench: change track and crossfade (#1621)
+### DJ bench: change track and crossfade (#1621, #1659)
 
 The speakers and the DJ bench share one target, so the choices work wherever the pair is aimed at.
 While music is on, the menu adds `Nästa låt` (hard cut) and `Mixa till nästa låt` (equal-power
-crossfade, `MUSIC.crossfade` = 6 s). Tracks are `PLAYROOM_TRACKS` (all Sonos channel tracks, in order;
-the list wraps). Each track runs on its own deck (`MusicFile` → fader gain → shared volume gain), so
+crossfade, `MUSIC.crossfade` = 6 s). Tracks are `PLAYROOM_TRACKS` (24 tracks since #1659: all twelve
+Sonos channel recordings in order followed by the twelve CC0 clubhouse recordings from
+`music/previous-sources-416.json`). Each track runs on its own deck (`MusicFile` → fader gain → shared volume gain), so
 two decks overlap during a mix; a mix tick (50 ms) moves the faders `cos`/`sin`, then drops the old deck.
 Pause waits the fade, volume/mute/OFF/exit/pagehide release both decks, a new track that fails to
 load keeps the old one, and a new mix/cut is refused while mixing (menu reason "Mixar redan").
+
+**Shuffle mode (#1659):** the menu offers `Slumpad låtordning: På` / `Slumpad låtordning: Av` (off by
+default). When enabled, advancing via cut or crossfade chooses a random non-current track index
+and communicates destination `to` in `{ t: 'mus', k, ix, to }` so the room stays synchronized.
+
+**Spinning vinyl turntables (#1659):** the DJ bench features two rotating turntable assemblies
+(deck 0 left with red label, deck 1 right with blue label; each with spindle and high-contrast radial
+marker). The active deck rotates at ~33 RPM (3.5 rad/s) while playing; during an equal-power
+crossfade mix, both decks rotate simultaneously. When paused, rotation freezes immediately at the current
+angular position; when playback resumes, it continues spinning from that angle; when switched off or
+leaving the clubhouse, rotation stops.
+
 **Synced since #1624:** see the next section.
 Tests:
-`node --test tools/playroommusictest.mjs` (8 tests) and the real-app touch check
-`tools/playroommixtest.cjs GAME OUT` (menu rows, tap cut and mix, deck gains/elements over time).
+`node --test tools/playroommusictest.mjs` (12 tests), `node --test cloudflare/roommusic.test.mjs` (6 tests),
+`tools/playroommixtest.cjs GAME OUT`, and browser verification `tools/playroomdj1659test.cjs GAME OUT`.
 
 ### Playroom floss dance (#1622)
 
