@@ -234,11 +234,20 @@ applicability, compatibility/host-rule effects, checks and next action. Other up
 are optional when clearly useful. Reuse existing proposals or recorded deferrals;
 respect explicit declines and ordinary priority/ownership rules. Mixed releases must
 disclose other changes and migrations. Unreleased main changes are pending, not
-stable targets. Do not automatically import a release or interrupt current work.
+stable targets.
+
+**Always update automatically (user, 2026-10-28).** When a newer stable release exists,
+import it without asking the user: never add `user-question` or wait for approval for
+an orchestra update. Track the import as an ordinary `priority: low` maintenance issue,
+read the full intervening diff, import the exact reviewed release per the installation
+procedure, update pin/provenance and review links and contradictions against host rules.
+Do not interrupt current work; start the import at the next queue selection. Apply the
+same release to both lunden-3d-apartment and kvarteret-lunden with cross-linked issues.
+Only a genuine conflict with an explicit host rule becomes a `user-question`.
 
 Record UTC check time, upstream/pin, examined targets and outcome in private state
 or existing maintenance status. If the read fails or is incomplete, retain the pin, disclose
 the limitation once, retry on next session/resume and continue independent work;
 never cache failure as success. This check installs no background scheduler.
 This applies the core [update-discovery procedure](shared/INSTALL.md#check-for-upstream-updates).
-A later import follows the existing explicit update procedure.
+The import follows the existing update procedure, without a user decision.
