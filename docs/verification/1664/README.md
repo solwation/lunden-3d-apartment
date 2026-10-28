@@ -37,3 +37,20 @@ is claimed. Physical device testing is not a closure gate under the project poli
 Public downstream: AGENTS.md and docs/upstream.md reviewed. Clubhouse music/gameplay
 and its Cloudflare transport are explicitly excluded; no port applies. A/B/C/L house
 variants are not applicable to this original-only clubhouse interaction.
+
+## Publication
+
+Implementation and result images: `0b9c2f7d8c181dcc25e102a807238c311fc85883`.
+Images were embedded in the [issue comment](https://github.com/solwation/lunden-3d-apartment/issues/1664#issuecomment-6469230820)
+and both pinned raw URLs returned HTTP 200 before closure.
+
+- [Pages deployment passed](https://github.com/solwation/lunden-3d-apartment/actions/runs/40689681531), including the actual deploy-pages step.
+- [Worker deployment passed](https://github.com/solwation/lunden-3d-apartment/actions/runs/40689681597), including the actual wrangler-action step.
+
+One implementation worker plus conductor review. Approximate phase costs: setup and
+implementation 10 minutes, verification/fixture correction/review 30 minutes, release
+3 minutes. Repeated browser work was driven by the fade/matrix fixture race, slow
+headless full-world construction, a stopped local server and the fixture's relative
+media path. The final test renders only its two result frames; native input assertions
+use the unchanged production target matrices and handlers. No performance improvement
+is claimed from these emulated timings.
