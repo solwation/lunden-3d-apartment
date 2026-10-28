@@ -6140,7 +6140,8 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
   // `w`/`h`/`d` = box size (m; d is the depth the front faces out). Not interactive: the music is controlled only from the DJ booth. `ref`/`rolloff`: the
   // Web Audio distance model of each of the four music sources (inverse; ref distance m, rolloff factor), our choice for the billiard/DJ room. `bounds` are its inner partition faces (#1658).
   // #1658: rotated half-height = (.4*cos(.35)+.3*sin(.35))/2 = .2393 m; .32 m drop leaves about 8 cm below the ceiling.
-  speakers: { bounds: { x0: -2.94, x1: 2.94, z0: -5.2, z1: 1.54 }, inset: .35, drop: .32, tilt: .35, w: .36, h: .4, d: .3, ref: 4, rolloff: 0.8 },
+  // #1669: wooferY = -h/2 + 0.13 m cone radius + 0.005 m edge margin (visual guess); keeps the cone within the front.
+  speakers: { bounds: { x0: -2.94, x1: 2.94, z0: -5.2, z1: 1.54 }, inset: .35, drop: .32, tilt: .35, w: .36, h: .4, d: .3, wooferY: -.065, ref: 4, rolloff: 0.8 },
   disco: { lampDim: 0.05, ambientDim: 0.35, panelDim: 0.08 }, // #1642: cozy dark disco in BILJARD (*guess*)
   door: { w: 0.8, h: 1.7 }, // Assumed low playhouse-style exit; its interaction works for every avatar height.
   standOff: 0.75, // m from the door wall where you arrive inside

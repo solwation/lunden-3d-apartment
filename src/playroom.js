@@ -225,7 +225,7 @@ export class Playroom {
       this.speakerPositions.push({ x: R.x+lx, y: ly, z: R.z+lz });
       const yaw = Math.atan2((b.x0+b.x1)/2-lx, (b.z0+b.z1)/2-lz), place = (g) => g.rotateX(speaker.tilt).rotateY(yaw).translate(R.x+lx, ly, R.z+lz); // front (+z) toward the centre, nose down
       fur.push(paint(place(new THREE.BoxGeometry(speaker.w, speaker.h, speaker.d)), col.dark));
-      for (const [dy, radius, segments] of [[-.12, .13, 14], [.15, .05, 10]]) {
+      for (const [dy, radius, segments] of [[speaker.wooferY, .13, 14], [.15, .05, 10]]) {
         fur.push(paint(place(new THREE.CylinderGeometry(radius, radius, .014, segments).rotateX(Math.PI/2).translate(0, dy, speaker.d/2)), col.steel));
       }
       fur.push(paint(new THREE.BoxGeometry(.06, speaker.drop, .06).translate(R.x+lx, R.ceiling - speaker.drop/2, R.z+lz), col.steel)); // ceiling bracket
