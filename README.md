@@ -532,9 +532,10 @@ First-focus graphics (#1508): door/item highlight programs join the existing sta
 [dirigenten-och-orkestern](https://github.com/solwation/dirigenten-och-orkestern),
 versionslåst som Git subtree i `.orchestra/shared`. Vanlig kloning räcker.
 Vid start eller återupptagning kontrollerar dirigenten nya stabila releaser och
-versionstaggar, med högst ett dygns återanvändning av en lyckad kontroll. Relevanta
-buggfixar ska ge uppdateringsförslag; övriga uppgraderingar är valfria. Importen
-är fortsatt granskad och uttrycklig, utan automatisk uppdatering.
+versionstaggar, med högst ett dygns återanvändning av en lyckad kontroll. Nya stabila
+releaser importeras automatiskt som lågprioriterat underhåll vid nästa köval, utan
+att avbryta pågående arbete. Hela mellanliggande diffen granskas och importen låses
+till exakt release/SHA enligt projektpolicyn. Ingen bakgrundsschemaläggare installeras.
 Kärnan kräver minsta tillräckliga modellkapacitet och resonemang när val stöds,
 korta arbetsuppdrag och motiverad eskalering med bevarat arbete. Samma
 resurshushållning gäller när modellvalet är låst; verifieringskraven behålls.

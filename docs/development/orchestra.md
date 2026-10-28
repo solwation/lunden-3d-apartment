@@ -52,8 +52,12 @@ eller appkod från Lunden exporteras. Båda projekten använder en squashad Git 
 Subtree ger direkt läsbara filer efter vanlig kloning. Submodul hade också gett en exakt
 pin men krävt initierad separat checkout. En flytande URL hade gett nätberoende och
 föränderligt beteende; ett paketregister tillför ingen nytta för en liten textsamling.
-Kärnändringar görs i eget rent repo och får en ny release; båda projekten uppdateras
-uttryckligen. Importens mergehistorik bevaras vid rebase. Ingen automatisk import/push.
+Kärnändringar görs i eget rent repo och får en ny release. Sedan användarens beslut
+2026-10-28 importerar dirigenten nya stabila releaser automatiskt i båda projekten
+som lågprioriterat underhåll vid nästa köval, utan att avbryta pågående arbete.
+Hela mellanliggande diffen granskas, importen låses till exakt release/SHA och
+mergehistoriken bevaras vid rebase. Se [projektpolicyn](../../.orchestra/project.md#upstream-update-discovery).
+Ingen bakgrundsschemaläggare installeras.
 
 ## Avgränsad verifiering
 
