@@ -6112,7 +6112,7 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
     neon: { // ceiling runs round SPEL (colours 0xRRGGBB) and the two wall signs (atlas cells in the strip below the poster cells)
       run: { y: 2.52, h: .035, d: .03, colors: { north: 0x59f3ff, east: 0xff59cc, west: 0xa670ff, south: 0xff59cc } },
       signs: { spel: { x: 6, y: 1.9, w: 1.6, h: .53, wall: 'spelN' }, biljard: { x: -.95, y: 1.85, w: 1.3, h: .43, wall: 'biljN' } } },
-    // the BILJARD pub: two pendants over the table (the disco ball hangs between them at z -1.5, clear of both) and warm wall lamps; the lamps are unlit emissive meshes
+    // the BILJARD pub: two pendants over the table and warm wall lamps; the lamps are unlit emissive meshes
     pendants: { x: 0, z: [-2.6, -1], bottom: 1.74, /* #1617: 1.02 m above the taller table cloth */ h: .17, rTop: .05, rBottom: .22, cord: .012, shade: 0x1f5a3c, rim: 0xb8874d, glow: 0xffd9a0 },
     sconces: { w: .14, h: .26, d: .09, y: 1.75, lit: 0xffb866, east: [-3.85, -1.65, .5], west: [-2.9, -1], north: [-1.88, 1.05] } },
   // #1574: per-room light levels [BIO, BILJARD, SPEL, hall] (*guess*): the clubhouse material scales its ceiling-lamp term and its ambient term by room, so SPEL
@@ -6178,7 +6178,7 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
       seat: { width: 0.78, depth: 0.82, height: 0.39, back: 0.83, rowX: [-6.55, -4.72], z: [-3.25, -2.4, -0.8, 0.05] } },
     tv: {},
     discoSwitch: { x: 0.9, y: 1.05, z: 5.2 }, // #1365/#1374: the wall switch east of the door (south wall, z +5.2; height reachable for children, guess)
-    ball: { x: 0, z: -1.5, y: 1.95, r: 0.17, spin: 0.5, spots: 26, spotSpin: 0.35 }, // the disco ball hangs under the ceiling, the light spots sweep round it
+    ball: { x: 1.95, z: -4.1, y: 2.25, r: 0.17, spin: 0.5, spots: 26, spotSpin: 0.35 }, // #1662: the disco ball hangs above the DJ booth (was above the billiard table at 0, -1.5), the light spots sweep round it
   } };
 // #1567: the popcorn cart in the playhouse entry (hall south of the BIO/BILJARD/SPEL partition). #1573: it stands against the
 // hall's west short wall (the end next to BIO), facing east into the hall, its bin in the south-west corner beside it (x -9..-6.75

@@ -45,3 +45,12 @@ test('the pendants hang clear of the disco ball and over the table', () => {
     assert.ok(Math.abs(p.rect.z0 + R.posters.pendants.rBottom - B.z) < B.length / 2 + B.rail, 'over the table');
   }
 });
+test('the disco ball hangs above the DJ booth clear of the ceiling, speaker and avatar headroom', () => {
+  const b = R.furniture.ball, DJ = R.dj, S = R.speakers;
+  assert.ok(b.x >= DJ.podium.x0 && b.x <= DJ.podium.x1, 'disco ball x above podium');
+  assert.ok(b.z >= DJ.podium.z0 && b.z <= DJ.podium.z1 + .2, 'disco ball z above DJ area');
+  assert.ok(b.y - b.r - DJ.podium.h >= 1.85, 'headroom above podium');
+  assert.ok(b.y + b.r < R.ceiling - .05, 'below ceiling');
+  const spkX = S.bounds.x1 - S.inset, spkZ = S.bounds.z0 + S.inset;
+  assert.ok(Math.hypot(spkX - b.x, spkZ - b.z) > .6, 'clear of corner speaker');
+});

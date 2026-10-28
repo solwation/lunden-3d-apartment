@@ -150,7 +150,7 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     const off = await page.evaluate(() => { const r = window.__app.world.playroom, p = [...r.spots.geometry.attributes.position.array]; r.update(1, window.__app.camera, false); return { on: r.discoOn, spots: r.spots.visible, moved: r.spots.geometry.attributes.position.array.some((v, i) => v !== p[i]), lit: r.lit, badge: document.getElementById('badges').textContent }; });
     check(!off.on && !off.spots && !off.moved && /släckt/.test(off.badge), 'switch used: disco off, spots hidden and still', JSON.stringify(off));
     await page.evaluate(() => { window.__t.render(); }); await page.screenshot({ timeout: 180000, path: `${shots}/11-disco-off.png` });
-    const fb = await aimAt([RM.x, RM.z + 0.9], [RM.x + BL.x, BL.y, RM.z + BL.z]);
+    const fb = await aimAt([RM.x + BL.x, RM.z + BL.z + 1.2], [RM.x + BL.x, BL.y, RM.z + BL.z]);
     check(fb?.kind === 'playroomDisco' && fb.verb === 'tända', 'the ball itself is a target (disco off: tända)', JSON.stringify(fb));
     await page.evaluate(() => window.__app.use(window.__app.focus().focused));
     const on = await page.evaluate(() => { const r = window.__app.world.playroom, p = [...r.spots.geometry.attributes.position.array]; r.update(1, window.__app.camera, false); return { on: r.discoOn, spots: r.spots.visible, moved: r.spots.geometry.attributes.position.array.some((v, i) => v !== p[i]) }; });
@@ -226,8 +226,8 @@ const check = (ok, label, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}
     // disco ball, cinema screen + 3 visible computer planes, signs (#1574), billiard table/balls/wall screen (#1328/#1495),
     // architecture edges, contact shadows, wall AO + floor/ceiling AO quads, disco spots, #1570 sconces, #1575 poster faces
     // and #1574 posters. The popcorn cart's kernel/glass meshes (#1567) are outside this view's frustum. Raise only with a named source.
-    // 27 = 26 + #1619 masking curtains: one small dynamic mesh (-1 from #1625 signs; merging them into the room batch would keep ~6.1 MB on low-memory phones).
-    check(inside.calls <= 27, 'inside, only the room is drawn: cinema, computer planes, billiards and decor in merged batches', `outside ${before.calls}, inside ${inside.calls}`);
+    // 34 = 27 + #1659 spinning DJ turntables (vinyl, labels, markers) and #1661 billiard cue rack on right wall.
+    check(inside.calls <= 34, 'inside, only the room is drawn: cinema, computer planes, billiards and decor in merged batches', `outside ${before.calls}, inside ${inside.calls}`);
     check(errors.length === 0, 'no page errors', errors.join(' | '));
   } finally { await browser.close(); }
   console.log(failed ? `${failed} FAILED` : 'ALL PASSED');
