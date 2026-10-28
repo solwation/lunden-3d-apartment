@@ -105,6 +105,8 @@ let checks=0;const check=(ok,text)=>{assert.ok(ok,text);checks++;console.log(`PA
       const hidden=await sample(2,20);check(hidden.draws===0&&hidden.value===null,'controlled hidden flag stops phone draws and keeps FPS unknown');
       await page.evaluate(()=>{delete document.hidden;document.dispatchEvent(new Event('visibilitychange'));__app.showOverlay(false);__app.frame(.02);});
       const resumed=await sample(1,600);check(resumed.draws===1&&resumed.value===2,'actual resume starts fresh controlled 2-FPS window with no stale spike');
+      const redundant=await page.evaluate(()=>{const before=document.querySelector('.fps-value').textContent;__app.showOverlay(false);return {before,after:document.querySelector('.fps-value').textContent,events:__app.fpsDiag.events};});
+      check(redundant.before==='2'&&redundant.after==='2'&&redundant.events.length>0&&redundant.events.some(e=>e.type==='reset'),'redundant showOverlay(false) retains active FPS without resetting, diag events recorded');
       clearTimeout(phaseTimer);
       checkpoint({errors,ordinary,reading,hidden,resumed,extra,stage:'all assertions before image'});
       results.push({ordinary,reading,hidden,resumed,extra,warmSkipped:await page.evaluate(()=>warmSkipped),elapsedMs:Date.now()-started,evidence:'actual WebGL apartment with320×180 draw buffer; controlled clock/visibility and callback cadence, not physical phone or measured hardware FPS'});

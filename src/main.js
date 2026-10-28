@@ -1373,8 +1373,9 @@ function look(dyaw, dpitch) {
 
 let played = false; // left the start screen at least once this visit (an F5 then carries on, #203)
 function showOverlay(show) {
+  if (overlay.hidden === !show) return;
   if (!show) menuSettings.close(false);
-  resetFrameRate();
+  resetFrameRate('overlay-' + (show ? 'show' : 'hide'));
   if (!show) { played = true; document.getElementById('reset-done').hidden = true; if (loadingEl && startupSceneReady) loadingEl.hidden = true; } // "Hemmet är återställt" only until the visit starts (#303)
   overlay.hidden = !show;
   hud.hidden = show;
@@ -1936,7 +1937,7 @@ document.addEventListener('pointerlockchange', () => {
   if (wasLocked && !locked && !binderFreed && !reading && !statsFreed) onEditPointerUnlock?.();
   armEl.hidden = locked || !statsFreed || statsOpen;
   if (locked) { touch.enabled = false; statsFreed = false; }
-  if (!drawing.active && !binderFreed && !statsFreed) showOverlay(!locked); // drawing and the binder panel free the mouse on purpose: no start screen
+  if (wasLocked !== locked && !drawing.active && !binderFreed && !statsFreed && !touch.enabled) showOverlay(!locked); // drawing and the binder panel free the mouse on purpose: no start screen
   if (!locked) { player.keys.clear(); if (!statsFreed) holdStats(false); if (!touch.enabled) player.crouch = false; }
   if (!locked && reading && !binderFreed) showNote(false);
   if (!locked) playroom.billiards.cancelCharge(); // #1637: Esc (it frees the mouse) cancels a charging billiard stroke
@@ -2818,9 +2819,26 @@ const presence = new Presence(cloud.url, document.getElementById('presence'), {
 });
 leaderboard.activePlayers = () => presence.names;
 const frameRate = new FrameRate(), fpsEl = presence.el.querySelector('.fps-value');
-resetFrameRate = () => { frameRate.reset(); fpsEl.textContent = '—'; };
-document.addEventListener('visibilitychange', resetFrameRate);
-function showFrameRate(now, drawn, active) {
+const fpsDiagEvents = []; // #1660: rolling ring of state transitions and resets for diagnosis
+const debugFps = new URLSearchParams(location.search).has('debugfps');
+const pushFpsDiag = (ev) => {
+  fpsDiagEvents.push({ t: Math.round(performance.now()), ...ev });
+  if (fpsDiagEvents.length > 50) fpsDiagEvents.shift();
+  if (debugFps) console.debug('[fps]', ev);
+};
+resetFrameRate = (reason = 'manual') => {
+  pushFpsDiag({ type: 'reset', reason });
+  frameRate.reset();
+  fpsEl.textContent = '—';
+};
+document.addEventListener('visibilitychange', () => resetFrameRate('visibility-' + document.visibilityState));
+let lastFpsActiveState = null, lastFpsActiveReason = '';
+function showFrameRate(now, drawn, active, activeDetail) {
+  if (active !== lastFpsActiveState) {
+    lastFpsActiveState = active;
+    lastFpsActiveReason = activeDetail?.whyNot || (active ? 'active' : 'inactive');
+    pushFpsDiag({ type: 'active', active, why: lastFpsActiveReason, detail: activeDetail });
+  }
   const previous = frameRate.value;
   const value = frameRate.sample(now, drawn, active);
   if (value !== previous) fpsEl.textContent = value === null ? '—' : String(value);
@@ -3366,7 +3384,10 @@ function frame(raw) {
       hideLoading(); // the full scene is now on the canvas; sliced uploads never show through the cover
     }
   }
-  showFrameRate(performance.now(), drewView, warm.done && startupSceneReady && overlay.hidden && !document.hidden && !portraitCover.matches);
+  const warmDone = warm.done, sceneReady = startupSceneReady, overlayHidden = overlay.hidden, docVisible = !document.hidden, portraitClear = !portraitCover.matches;
+  const fpsActive = warmDone && sceneReady && overlayHidden && docVisible && portraitClear;
+  const fpsWhyNot = !warmDone ? 'warmup' : !sceneReady ? 'startup' : !overlayHidden ? 'overlay' : !docVisible ? 'hidden' : !portraitClear ? 'portrait' : '';
+  showFrameRate(performance.now(), drewView, fpsActive, { warmDone, sceneReady, overlayHidden, docVisible, portraitClear, whyNot: fpsWhyNot });
   hitch.phase('render');
   hitch.intervals.complete(hitch.end());
   const fMs = lastFrameMs = performance.now() - f0;
@@ -3660,4 +3681,4 @@ const openPanel = () => !overlay.hidden ? 'menu' : !reading ? (lowMemory && port
   : viewing ? 'poster' : isAvatarCustomizerOpen() ? 'avatar' : cinema.open || computerHub.open || tvMedia.open ? 'video' : 'other';
 crashlog.attach({ renderer, camera, quality, player, world, sun, scene, mirrorTarget, frameDiag, viewportBinding, panel: openPanel }); // what the crash heartbeat shows (#629)
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { balloon, popcornTubs, santa, santaTV, christmasGifts, colorFrustum, siteInstances, computerHub, tvMedia, phoneFrustum, slideRide, cinema, flare, outdoorSpot, paddock, birds, microwave, carLodState, showFireworks, newYear, sausages, frameRate, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, catCards, catCardsLoaded, binderPanel, showBinder, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };
+window.__app = { balloon, popcornTubs, santa, santaTV, christmasGifts, colorFrustum, siteInstances, computerHub, tvMedia, phoneFrustum, slideRide, cinema, flare, outdoorSpot, paddock, birds, microwave, carLodState, showFireworks, newYear, sausages, frameRate, fpsDiag: { events: fpsDiagEvents, get active() { return lastFpsActiveState; }, get whyNot() { return lastFpsActiveReason; } }, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, catCards, catCardsLoaded, binderPanel, showBinder, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };

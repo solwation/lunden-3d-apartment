@@ -129,6 +129,7 @@ class CrashLog {
         s.frame = n;
         s.phase = window.__app?.warm?.state ?? 'scene';
         if (window.__app?.warm && !window.__app.warm.done) s.warm = window.__app.warm.detail; // where the sliced warm-up is (#669)
+        if (window.__app?.fpsDiag?.whyNot) s.fpsWhyNot = window.__app.fpsDiag.whyNot; // #1660
         const gl = renderer.getContext();
         s.buffer = [gl.drawingBufferWidth, gl.drawingBufferHeight];
         s.maxTextureSize = renderer.capabilities.maxTextureSize;
