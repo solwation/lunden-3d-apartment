@@ -1,0 +1,131 @@
+{
+  "st0": {
+    "musicState": "off",
+    "trackIndex": 0,
+    "shuffle": false,
+    "deckSide": 0,
+    "mixing": false,
+    "turntableAngles": [
+      0,
+      0
+    ],
+    "deck0Spinning": false,
+    "deck1Spinning": false,
+    "curTrack": "Morning Blue",
+    "curArtist": "Josh Woodward",
+    "totalTracks": 24
+  },
+  "st1": {
+    "musicState": "playing",
+    "trackIndex": 0,
+    "shuffle": false,
+    "deckSide": 0,
+    "mixing": false,
+    "turntableAngles": [
+      4.793127911581946,
+      0
+    ],
+    "deck0Spinning": true,
+    "deck1Spinning": false,
+    "curTrack": "Morning Blue",
+    "curArtist": "Josh Woodward",
+    "totalTracks": 24
+  },
+  "st2": {
+    "musicState": "playing",
+    "trackIndex": 0,
+    "shuffle": true,
+    "deckSide": 0,
+    "mixing": false,
+    "turntableAngles": [
+      6.265969379602694,
+      0
+    ],
+    "deck0Spinning": true,
+    "deck1Spinning": false,
+    "curTrack": "Morning Blue",
+    "curArtist": "Josh Woodward",
+    "totalTracks": 24
+  },
+  "st3": {
+    "musicState": "playing",
+    "trackIndex": 7,
+    "shuffle": true,
+    "deckSide": 1,
+    "mixing": true,
+    "turntableAngles": [
+      5.420294525096574,
+      4.0317105721069
+    ],
+    "deck0Spinning": true,
+    "deck1Spinning": true,
+    "curTrack": "Together On Our Own",
+    "curArtist": "Josh Woodward",
+    "totalTracks": 24
+  },
+  "st4": {
+    "musicState": "playing",
+    "trackIndex": 7,
+    "shuffle": true,
+    "deckSide": 1,
+    "mixing": false,
+    "turntableAngles": [
+      1.839632882158675,
+      2.697287676485701
+    ],
+    "deck0Spinning": false,
+    "deck1Spinning": true,
+    "curTrack": "Together On Our Own",
+    "curArtist": "Josh Woodward",
+    "totalTracks": 24
+  },
+  "st5": {
+    "musicState": "paused",
+    "trackIndex": 7,
+    "shuffle": true,
+    "deckSide": 1,
+    "mixing": false,
+    "turntableAngles": [
+      1.839632882158675,
+      3.5612256562228937
+    ],
+    "deck0Spinning": false,
+    "deck1Spinning": false,
+    "curTrack": "Together On Our Own",
+    "curArtist": "Josh Woodward",
+    "totalTracks": 24
+  },
+  "st6": {
+    "musicState": "playing",
+    "trackIndex": 7,
+    "shuffle": true,
+    "deckSide": 1,
+    "mixing": false,
+    "turntableAngles": [
+      1.839632882158675,
+      5.807464403539595
+    ],
+    "deck0Spinning": false,
+    "deck1Spinning": true,
+    "curTrack": "Together On Our Own",
+    "curArtist": "Josh Woodward",
+    "totalTracks": 24
+  },
+  "st7": {
+    "musicState": "playing",
+    "trackIndex": 21,
+    "shuffle": true,
+    "deckSide": 0,
+    "mixing": false,
+    "turntableAngles": [
+      3.9130840335279373,
+      0.20886355148316238
+    ],
+    "deck0Spinning": true,
+    "deck1Spinning": false,
+    "curTrack": "Happy moments",
+    "curArtist": "Centurion_of_war",
+    "totalTracks": 24
+  },
+  "errors": []
+}
