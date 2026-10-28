@@ -139,8 +139,8 @@ export class Billiards {
     }
     this.texture.needsUpdate=true;
   }
-  /** #1637: the power being charged (minPower..1, then it stays at 1), or null when not charging. */
-  get chargePower() { if(!this.charge)return null;const c=this.c;return Math.min(1,c.minPower+(1-c.minPower)*this.charge.t/c.chargeSeconds); }
+  /** #1657: the power being charged (minPower..1 oscillating back and forth), or null when not charging. */
+  get chargePower() { if(!this.charge)return null;const c=this.c,u=(this.charge.t/c.chargeSeconds)%2,k=u<=1?u:2-u;return c.minPower+(1-c.minPower)*k; }
   cancelCharge() { this.charge=null;this.chargeOff=0; }
   /** E / touch on the table (#1637): the first press starts charging, the next one strikes with the power built up so far. */
   shoot(camera) {

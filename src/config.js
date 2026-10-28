@@ -6117,8 +6117,8 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
     ballR: 0.03, ball: { segments: [16, 12], roughness: 0.1, spotRadius: 0.5, atlasCell: 128, fontScale: 0.62, lampGloss: 0.9, lampSharp: 60 }, // #1638: glossy balls (roughness 0.08-0.12), two numeral discs of 0.5 sphere radii (*guess*) from a 4x4 atlas; lampGloss/lampSharp = the overhead pendant lamp's reflection as a cheap specular term (no extra light/env map)
     pocketR: 0.066, cueLength: 1.2, // #1617: balls/pockets/cue scaled with the table (ratios unchanged)
     rug: { radius: 2.3, ring: [.26, .2], colour: 0x8a3a46, ringColour: 0xe3cfa4, edge: .04 }, // #1617: big round soft rug (m, *guess*): clears the table's 2.62 x 1.42 m footprint and the DJ bench; ring = inner/outer inset of the cream stripe, edge = rounded rim width
-    strokeSpeed: 2.2, strokeSeconds: 0.24, cueTravel: 0.09, // strokeSpeed: m/s of a full-power stroke (#1637: the old fixed stroke = 100 %)
-    minPower: 0.15, chargeSeconds: 1.75, chargePull: 0.14, chargeGrace: 0.35, // #1637 charged stroke (*guess*): a tap = 15 %, 100 % after 1.75 s (then it stays); the cue draws back up to 14 cm; looking off the table this long cancels
+    strokeSpeed: 3.8, strokeSeconds: 0.24, cueTravel: 0.09, // #1657: harder max stroke (3.8 m/s; smack to break the rack; *guess*) // #1637: was 2.2
+    minPower: 0.15, chargeSeconds: 1.25, chargePull: 0.14, chargeGrace: 0.35, // #1657: oscillating power meter (1.25 s per sweep, ping-pongs between minPower and 100 %; *guess*) // #1637: was 1.75 s fixed
     friction: 0.45, bounce: 0.94, cushionBounce: 0.82, stopSpeed: 0.012, maxStep: 1 / 180,
     // #1495: assumed wall screen dimensions/height; west wall derived from the actual partition.
     board: { width:1.2, height:.6, y:1.2, wallGap:.04, depth:.04, rim:.025, faceGap:.002, pickDepth:.08,

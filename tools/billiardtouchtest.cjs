@@ -23,7 +23,7 @@ let failed=0;const check=(ok,name,data)=>{console.log(`${ok?'PASS':'FAIL'} ${nam
  const away=await page.evaluate(()=>{const a=window.__app,b=a.world.playroom.billiards,o=b.object.position;a.player.spawn(o.x+1.6,o.z+2.4,Math.PI);for(let i=0;i<30;i++){a.player.update(1/60);a.step(1/60);}return{power:b.chargePower,meter:!document.getElementById('cue-power').hidden,vx:b.physics.balls[0].vx,kind:a.focus().focused?.kind};});
  check(away.power===null&&!away.meter&&away.vx===0,'touch: walking away from the table cancels the charge without a stroke',away);
  await page.evaluate(()=>{const a=window.__app,b=a.world.playroom.billiards,o=b.object.position;a.player.spawn(o.x,o.z+b.c.length/2+.65,0);for(let i=0;i<30;i++)a.player.update(1/60);const d=new a.camera.position.constructor(o.x,b.c.height,o.z).sub(a.camera.position);a.camera.rotation.set(Math.atan2(d.y,Math.hypot(d.x,d.z)),Math.atan2(-d.x,-d.z),0,'YXZ');a.step(0);a.step(0);});
- await action.tap();await steps(150);await action.tap();
+ await action.tap();await steps(75);await action.tap();
  const shot=await page.evaluate(()=>{const a=window.__app,b=a.world.playroom.billiards,started=b.strokeT>0,v=[b.physics.balls[0].vx,b.physics.balls[0].vz],start=b.physics.balls.map(q=>[q.x,q.z]),render=a.renderer.render;a.renderer.render=()=>{};for(let i=0;i<90;i++)a.step(1/60);a.renderer.render=render;a.testMode.draw();return{started,v,moved:b.physics.balls.filter((q,i)=>Math.hypot(q.x-start[i][0],q.z-start[i][1])>.02).length};});
  check(shot.started&&shot.v[0]>2&&Math.abs(shot.v[1])<.01&&shot.moved>5,'native touch sends a local forward break through the rotated rack',shot);
  await page.screenshot({path:`${shots}/touch-after.png`});check(errors.length===0,'no page errors',errors);

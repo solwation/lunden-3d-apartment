@@ -145,7 +145,7 @@ const until = async (f, n = 150) => { for (let i = 0; i < n; i++) { if (await f(
       const m = await B.evaluate(() => window.__strokes.find((q) => q.k === 'S'));
       return { w: m?.w, ms: m?.ms, cue: Math.hypot(end.p[0] - start.p[0], end.p[1] - start.p[1]), moved: end.p.filter((v, i) => v !== start.p[i]).length };
     };
-    const weak = await strokeWith(0), hard = await strokeWith(2200);
+    const weak = await strokeWith(0), hard = await strokeWith(1250);
     check(weak.w === 0.15 && hard.w === 1 && weak.ms < hard.ms && weak.moved < hard.moved, 'a short charge = a weak stroke (15 %), a long one = full power: shorter roll, fewer balls moved', { weak, hard });
 
     // --- a late client C and a reconnect: the existing table, not a new rack

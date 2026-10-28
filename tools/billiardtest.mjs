@@ -26,3 +26,14 @@ test('stroke power scales the cue-ball speed and is clamped',()=>{const speed=w=
  assert(Math.abs(speed(1)-C.strokeSpeed)<1e-12);assert(Math.abs(speed()-C.strokeSpeed)<1e-12,'default = the old full stroke');assert(Math.abs(speed(.5)-C.strokeSpeed*.5)<1e-12);
  assert(Math.abs(speed(0)-C.strokeSpeed*C.minPower)<1e-12);assert(Math.abs(speed(9)-C.strokeSpeed)<1e-12);assert(!make().shoot(1,0,NaN));
  const roll=w=>{const p=make();only(p,[0]);p.shoot(1,0,w);const x=p.balls[0].x;for(let i=0;i<1200;i++)p.step(1/120);return Math.abs(p.balls[0].x-x)+Math.abs(p.balls[0].vx);};assert(roll(C.minPower)<roll(.5));});
+// #1657: oscillating power meter (ping-pongs between minPower and 100 %)
+test('charge power oscillates between minPower and 1 and stays bounded',()=>{
+  const calc=t=>{const u=(t/C.chargeSeconds)%2,k=u<=1?u:2-u;return C.minPower+(1-C.minPower)*k;};
+  assert.equal(calc(0),C.minPower);
+  assert(Math.abs(calc(C.chargeSeconds)-1)<1e-12);
+  assert(Math.abs(calc(C.chargeSeconds*2)-C.minPower)<1e-12);
+  assert(Math.abs(calc(C.chargeSeconds*3)-1)<1e-12);
+  assert(calc(C.chargeSeconds*.5)>C.minPower&&calc(C.chargeSeconds*.5)<1);
+  assert(calc(C.chargeSeconds*1.5)>C.minPower&&calc(C.chargeSeconds*1.5)<1);
+  for(let t=0;t<=10;t+=.05){const w=calc(t);assert(w>=C.minPower-1e-12&&w<=1+1e-12);}
+});
