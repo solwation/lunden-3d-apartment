@@ -10,7 +10,8 @@ not executable code. Keep project details here, never in the shared instructions
 - Repositories and coordination issues: <owner/repo, status issue per repository>.
 - Issue workflow authority: shared ISSUE-WORKFLOW.md for GitHub; specify an adapter
   for other trackers. Local ancestor/port constraints: <policy>.
-- Excluded coordination labels; active/session labels: <names>.
+- Excluded coordination labels; active/session labels: <names>. Session ID project
+  short name and label prefix: <name, default repository name; `orkester: `>.
 - Claims, race handling, expiry and handover: <rules>.
 - Capacity: <concurrent issue workers, includes helpers>; whether the conductor's own
   implementation counts as a slot; direct conductor implementation: <allowed?>.
