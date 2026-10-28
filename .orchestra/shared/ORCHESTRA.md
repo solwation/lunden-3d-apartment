@@ -21,6 +21,34 @@ check for up to 24 hours by default. Always propose relevant published bug fixes
 other upgrades are optional. Keep the installed workflow pinned until a reviewed
 update is authorized; discovery does not enable unattended work or automatic imports.
 
+## Resume unfinished work first
+
+At conductor startup/resume of any run (scoped task, bounded pass or queue session),
+before selecting new work, look for unfinished work in the checkouts this run will use:
+uncommitted changes, local commits not on the remote main branch, leftover worktrees
+and branches, and open claims or active labels left by an earlier session. Fetch the
+remote, then decide each item from evidence, not from its age:
+
+- **Already on main.** Another orchestra or session may have delivered the same work.
+  Treat it as delivered when its content is in `origin/main`: for example
+  `git diff origin/main -- <paths>` shows nothing, `git cherry origin/main <branch>`
+  marks every commit `-`, or the linked issue was closed with a revision on main that
+  contains the change. Then discard the local copy (restore the files, drop the
+  commits, remove the worktree and branch, release the stale claim) and continue with
+  the next issue. If only part of it landed, keep and resume just the missing part.
+- **Not on main.** Resume it before new selection: identify its issue (branch or
+  worktree name, commit message, claim, matching open issue), claim it under the
+  host's rules and finish it as a normal delivery. Still-useful work without an issue
+  is delivered under a matching or new one.
+- **Owned by someone else.** Never touch a checkout, worktree or claim of a visibly
+  active agent ([isolation](#choose-the-smallest-useful-team),
+  [takeover](COORDINATION.md#coordinate-and-recover)); it is not leftover work.
+
+Discard only after the check proves the content is on main; when in doubt, preserve it
+(a commit on a private branch) and resume or record it. Note what was resumed or
+discarded in the status or result note. Keep the check brief; it does not replace the
+fresh queue fetch before selection.
+
 ## Start with a short delivery plan
 
 Before implementation, write at most a few lines in the assignment or issue:
