@@ -3,11 +3,12 @@
 // action button (touch) starting that poster's id on the screen through the real RoomCinema rules (claim → select → release), a refusal while
 // somebody else controls the screen, the saved list as yesterday's fallback, draws inside/outside, and the result pictures.
 //   PLAYWRIGHT_MODULE=… node tools/cinemapostertest.cjs http://localhost:8180 docs/verification/1575
+// #1663: POSTER_ITEMS=<file> uses a saved GET /cinema/posters answer (six items, e.g. the live day's list) instead of the fixed ITEMS below.
 const fs = require('node:fs'), assert = require('node:assert/strict'), kit = require('./testkit.cjs');
 const [game = 'http://localhost:8180', out = '/tmp/bio1575'] = process.argv.slice(2);
 const CLOUD = 'http://localhost:8181';
 // trailer-style titles (#1591); the ids are real videos so thumbnails show where the network reaches i.ytimg.com (any 11-character ids would do for the checks)
-const ITEMS = [
+const ITEMS = process.env.POSTER_ITEMS ? JSON.parse(fs.readFileSync(process.env.POSTER_ITEMS, 'utf8')).items.map(({ id, title, channel }) => ({ id, title, channel })) : [
   { id: 'CRPxvIdtLz4', title: 'Bluey - Officiell trailer | Svenska', channel: 'Bluey - Officiella Svenska Kanalen' },
   { id: '3YpOOPh5_8I', title: 'Nicke Nyfiken - Trailer | Tecknad film för barn', channel: 'Nicke Nyfiken' },
   { id: 'Njxv_cnsBjk', title: 'Bamse och tjuvstaden - Officiell trailer', channel: 'Bamse Världens starkaste björn' },
