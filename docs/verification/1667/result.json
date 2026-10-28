@@ -1,0 +1,37 @@
+{
+  "desktop": "native E/play, side-specific arrows, crossfader/channel fader",
+  "touch": "native physical play, next, crossfader endpoint, shuffle, master down/up, dance, stop",
+  "gates": "ready/menu and walls refuse actions",
+  "noMenu": true,
+  "layout": {
+    "outside": [],
+    "inkOccluded": [],
+    "picks": 15,
+    "ink": 23,
+    "roughness": 0.28,
+    "vinylRange": 75,
+    "lights": 1,
+    "off": {
+      "y": 1.0390000343322754,
+      "lit": false,
+      "labelY": 1.0405000448226929
+    }
+  },
+  "pressed": {
+    "y": 1.0329999923706055,
+    "lit": true,
+    "labelY": 1.034500002861023
+  },
+  "observed": {
+    "on": [
+      false,
+      true
+    ],
+    "shuffle": true,
+    "dancing": false,
+    "danceActive": true,
+    "lit": 72
+  },
+  "errors": [],
+  "scope": "Production DJInput + actual Playroom, Chromium SwiftShader, emulated touch. Whole-world startup and physical phone not verified."
+}

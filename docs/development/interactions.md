@@ -53,7 +53,10 @@ only its track; on a fader/master it adjusts the value. Each record also has phy
 previous/next buttons for touch. Crossfader/channel rail taps choose the tapped position.
 A drag remains camera look, and secondary/cancelled touches do nothing. All controls
 are labelled on the table, with track displays and concise prompts; there is no DJ HUD
-choice menu. See [audio](animals-audio.md#dj-bench-physical-two-deck-controls-1664).
+choice menu. Since #1667 every target/label stays on the real black panel; active
+PLAY/SLUMP/DANSA buttons glow and depress with their labels. DANSA lights while anybody
+in the room dances (the existing shared pose); the action still changes only your dance.
+See [audio](animals-audio.md#dj-bench-physical-two-deck-controls-1664).
 
 Cats (#1061): free-hand E / touch action takes adults and kittens into both arms; click / Krama cuddles, E on floor/bed/sofa puts them down. Occupied-hand E still pets. The shared `MieleHeld` preserves cat scale and adjusts hug grips; carry purrs cancel on release/hide/bicycle stow. See [animal behavior and verification](animals-audio.md#cat-and-sound).
 ## Two-point measurement (#1069)

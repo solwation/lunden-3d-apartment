@@ -544,9 +544,21 @@ unchanged; SLUMP chooses a random different track when a record's next/previous 
 is used. The vinyl spins only for its own playing deck. STOP, leaving, background and
 pagehide release media; dancing still ends when all music stops or the visitor walks away.
 
-Static controls/rails join the furniture batch; labels/displays use one canvas atlas and
-all moving handles share one merged mesh. No light is added. `PLAYROOM.dj.controls`
-centralizes the fantasy layout dimensions (guesses). The UI has no DJ choice menu.
+#1667 seats the controls on `PLAYROOM.dj.panel` (the actual 1.7 × .53 m black surface),
+not above the wider wooden counter. Front/rear controls and LCDs have a checked margin;
+the mixer inset is flush so it cannot hide the channel labels. Static bezels/rails join
+the furniture batch. All button faces share two small batches (inactive and emissive),
+with active PLAY, SLUMP and DANSA faces/label quads depressed 6 mm. Other labels/displays
+and moving button-label quads share one atlas; handles retain their existing batch.
+No lights are added. `PLAYROOM.dj.controls` centralizes the design guesses. Vinyl uses
+a 128² groove/soft-reflection map and restrained Standard-material gloss (parameters
+in `PLAYROOM.dj.vinyl`); the reflection is painted, not a live mirror.
+
+PLAY and SLUMP follow authoritative `djState` on every visitor. DANSA indicates anyone
+currently dancing in the room: local `dancing` or an existing peer's synchronized
+`dance`/feet state, supplied by `ghosts.others`. Pressing it still toggles only your own
+dance; no new pose, protocol, polling or per-frame network message is introduced.
+The UI has no DJ choice menu.
 
 The room protocol adds `{t:'mus',k:'d',c,s?,v?}` operations (`play`, `track`, `gain`,
 `cross`, `volume`, `shuffle`, `stop`). The same room-owned `mus` storage carries `dj`

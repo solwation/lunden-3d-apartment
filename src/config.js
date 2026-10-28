@@ -6035,10 +6035,15 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
   // so those two limits decide the size; the podium is still entered from its west end (*guess*).
   dj: { x: 1.95, z: -4.245, w: 1.8, d: .65, h: .97, top: .05,
     // #1664: compact two-turntable mixer layout, local x/z metres; all sizes and positions are design guesses.
-    controls: { deckX: [.55,-.55], playZ: .23, browseZ: .23, displayZ: -.245,
-      crossZ: .21, crossSpan: .26, faderX: [.095,-.095], faderZ: -.015, faderSpan: .17,
-      button: [.10,.065], pickHeight: .06, step: .1, labelPixels: [1024,384],
-      master: [0,-.23], stop: [-.29,-.23], shuffle: [.29,-.23], dance: [.29,.23] },
+    // #1667: actual black panel, not the larger wooden counter; heights/margins and finishes are visual guesses.
+    panel: { w: 1.7, d: .53, top: .055, mixerLift: .0005, margin: .015 },
+    vinyl: { color: 0x16191c, roughness: .28, metalness: .1, textureSize: 128, grooves: 40, streakWidth: .22, streakStrength: .24 },
+    controls: { deckX: [.55,-.55], playZ: .205, browseZ: .205, displayZ: -.215,
+      crossZ: .15, crossLabelZ: .235, crossSpan: .26, faderX: [.095,-.095], faderZ: -.015, faderSpan: .17,
+      button: [.10,.065], buttonHeight: .014, pressDepth: .006, bezel: .004, labelLift: .0015,
+      activeColor: 0x39c78b, emissive: 0x37efa4, emissiveIntensity: .75,
+      pickHeight: .025, step: .1, labelPixels: [1024,384],
+      master: [0,-.205], stop: [-.29,-.205], shuffle: [.29,-.205], dance: [.29,.205] },
     podium: { x0: 1, x1: 2.9, z0: -5.19, z1: -3.9, h: .2 },
     led: { t: .03, h: .035, colors: [0xff3fd0, 0x2fe6ff] } },
   // #1570: the BIO's 7.1 + 2 height speakers, wall sconces and their dimming. All sizes/positions/levels are *guess*es (local metres from the room's

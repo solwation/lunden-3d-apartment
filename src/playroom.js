@@ -6,7 +6,7 @@ import { PLAYROOM as R, COURTYARD, COMPUTER_MEDIA } from './config.js';
 import { computerFurniture } from './computerfurniture.js';
 import { restTarget } from './rest.js';
 import { PlayroomDevices } from './playroomdevices.js';
-import { PlayroomDJ } from './playroomdj.js';
+import { PlayroomDJ, djVinylMaterial } from './playroomdj.js';
 import { PlayroomMusic } from './playroommusic.js';
 import { PlayroomSound } from './playroomsound.js';
 import { clubhouseWallBoxes, clubhouseSkirting } from './clubhousefinish.js';
@@ -110,11 +110,11 @@ export class Playroom {
     const PD = DJ.podium, pbox = (color, y0, y1) => cbox(color, PD.x0, PD.x1, y0, y1, PD.z0, PD.z1);
     fur.push(pbox(col.dark, 0, PD.h - .012), pbox(col.wood, PD.h - .012, PD.h));
     fur.push(djBox(col.dark,-DJ.w/2,DJ.w/2,PD.h,DJ.h-DJ.top,-DJ.d/2,DJ.d/2),djBox(col.wood,-DJ.w/2-.02,DJ.w/2+.02,DJ.h-DJ.top,DJ.h,-DJ.d/2-.02,DJ.d/2+.02));
-    fur.push(djBox(col.dark,-.85,.85,DJ.h,DJ.h+.055,-DJ.d/2+.06,DJ.d/2-.06),djBox(col.steel,-.12,.12,DJ.h+.055,DJ.h+.065,-.18,.18));
+    fur.push(djBox(col.dark,-DJ.panel.w/2,DJ.panel.w/2,DJ.h,DJ.h+DJ.panel.top,-DJ.panel.d/2,DJ.panel.d/2),djBox(col.steel,-.12,.12,DJ.h+DJ.panel.top,DJ.h+DJ.panel.top+DJ.panel.mixerLift,-.18,.18));
     // #1424, #1659: turntable platters spin when playing
     this.turntables = [];
     this.turntableAngles = [0, 0];
-    const deckMat = new THREE.MeshBasicMaterial({ color: 0x161616 }); // vinyl
+    const deckMat = djVinylMaterial(); // #1667: shallow grooves/reflection in the existing record draw, no lights
     const labelMatLeft = new THREE.MeshBasicMaterial({ color: 0xd9534f }); // red center label (Deck A)
     const labelMatRight = new THREE.MeshBasicMaterial({ color: 0x337ab7 }); // blue center label (Deck B)
     const markerMat = new THREE.MeshBasicMaterial({ color: 0xffffff }); // high-contrast white cue marker

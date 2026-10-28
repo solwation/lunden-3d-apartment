@@ -605,3 +605,15 @@ iframe API exposes no video size and the iframe is cross-origin, so the CORS-rea
 (4:3 pillarbox, 2.39:1 letterbox); anything unreadable or offline stays 16:9. `main.js` passes `cinema.surface.aspect` to `playroom.setFilm`; 0 / no film = curtains fully apart.
 `src/clubhouseexit.js`: four green NÖDUTGÅNG signs (`PLAYROOM.exitSigns`; #1625: painted into three free cells of the `playroom-posters` atlas and four quads of that unlit mesh, so no draw of their own, no light; the brightness is a constant vertex colour) above the BIO/BILJARD/SPEL passages (north face, seen from inside each room) and the playhouse door.
 Test: `tools/bio1619test.cjs`. Limitation: thumbnails of films whose first frame has black edges, or whose uploader added burnt-in bars, can mislead; real devices were not tested.
+
+## DJ surface and active controls (#1667)
+
+`PLAYROOM.dj.panel` is the actual black mixer/deck surface. Controls and atlas ink are
+kept inside its footprint; labels on active buttons move with their 6 mm depression.
+Inactive/active button faces use two small merged Standard-material batches; the active
+one is emissive, so no new light or bloom pass is needed. Static bezels/rails keep the
+existing furniture batch. Vinyl uses one shared Standard material and a 128² procedural
+groove/paired-highlight texture, a painted ceiling-reflection approximation rather than
+a live reflection. All gloss/press/emission values are centralized visual guesses.
+The scoped native-input/room render in `tools/playroomdjcontroltest.cjs` checks label
+occlusion, edge clearance and observer state; see [result images](../verification/1667/).

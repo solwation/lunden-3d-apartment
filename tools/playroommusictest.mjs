@@ -200,3 +200,12 @@ test('#1664 manual decks: independent track/pause, equal-power fader, channel/ma
  old.file.failed();await Promise.resolve();assert.equal(m.manualDecks[0],null);assert.equal(m.isDeckSpinning(0),false);assert.equal(m.manualDecks[1].file.paused,false);
  m.djAction({c:'play',s:0});const current=m.manualDecks[0];old.file.failed();await Promise.resolve();assert.equal(m.manualDecks[0],current);m.dispose();
  });
+
+test('#1667: dance activity includes synchronized in-room peers without toggling their personal dance',async()=>{
+ const {PLAYROOM:R}=await import('../src/config.js');
+ const m=new PlayroomMusic(),peer={dance:true,feet:{x:R.x,z:R.z}};m.peers=()=>[peer];m.setInside(true);
+ assert.equal(m.danceActive,false,'no music');m.djAction({c:'play',s:0});assert.equal(m.danceActive,true);assert.equal(m.dancing,false,'a peer does not start our pose');
+ peer.feet.x=0;assert.equal(m.danceActive,false,'outside dancer ignored');peer.feet.x=R.x;
+ m.toggleDance();assert.equal(m.dancing,true);m.toggleDance();assert.equal(m.dancing,false);assert.equal(peer.dance,true);assert.equal(m.danceActive,true,'their dance stays on');
+ m.djAction({c:'stop'});assert.equal(m.danceActive,false,'stale pose cannot keep the lamp on after stop');m.dispose();
+});

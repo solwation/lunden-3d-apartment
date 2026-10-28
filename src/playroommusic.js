@@ -70,6 +70,16 @@ export class PlayroomMusic {
       this.mix = this.share = null; this.panners=[];
     }
   }
+  /** #1667: a shared activity lamp, without changing anybody else's individual dance toggle. */
+  get danceActive() {
+    if (this.dancing) return true;
+    if (this.state !== 'playing') return false;
+    for (const g of this.peers?.() ?? []) {
+      const p=g.feet;
+      if (g.dance && p && Math.abs(p.x-PLAYROOM.x)<PLAYROOM.w/2 && Math.abs(p.z-PLAYROOM.z)<PLAYROOM.d/2) return true;
+    }
+    return false;
+  }
   toggleShuffle() {
     this.shuffle = !this.shuffle;
     return this.shuffle;

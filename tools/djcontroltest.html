@@ -10,8 +10,16 @@ try {
   const draw=()=>{room.djControls.update();scene.updateMatrixWorld(true);camera.updateMatrixWorld(true);};
   const view=()=>{camera.position.set(R.x+R.dj.x,1.85,R.z+R.dj.z-.7);camera.lookAt(R.x+R.dj.x,R.dj.h,R.z+R.dj.z);draw();};
   const focus=()=>{camera.updateMatrixWorld(true);scene.updateMatrixWorld(true);ray.setFromCamera(new T.Vector2(0,0),camera);const hit=ray.intersectObjects(room.djControls.pickables)[0];const t=hit?.object.userData.door;t?.aimAt(hit.point);return t;};
+  let observer;
+  const observe=async()=>{
+    const {snapshotDJ}=await import('../src/djstate.js');
+    observer??=new Playroom();if(!observer.object.parent)scene.add(observer.object);observer.setInside(true);
+    observer.music.sync({dj:snapshotDJ(room.music.dj,performance.now())});
+    observer.music.peers=()=>[{dance:room.music.dancing,feet:{x:R.x,z:R.z}}];
+    observer.djControls.update();room.object.visible=false;observer.object.visible=true;draw();return observer;
+  };
   const input=new DJInput({canvas:renderer.domElement,room,camera,touch:()=>state.touch,ready:()=>state.ready,blocked:()=>state.blocked,use:t=>{t.toggle();draw();}});
   document.addEventListener('keydown',e=>{input.key(e,focus());draw();});
-  window.fixture={room,R,camera,scene,renderer,state,draw,view,focus,input};view();window.done=true;
+  window.fixture={room,R,camera,scene,renderer,state,draw,view,focus,input,observe,get observer(){return observer}};view();window.done=true;
 }catch(e){window.error=e.stack;document.body.textContent=e.stack;console.error(e);window.done=true;}
 </script>

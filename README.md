@@ -546,4 +546,4 @@ Andra agentverktyg kan läsa samma filer direkt. Gemensamma förbättringar gör
 kärnans repo och införs här genom en granskad versionsuppdatering.
 Analys och motiv finns i [utvecklingsanteckningen](docs/development/orchestra.md).
 
-DJ-bordet i klubbhuset har egna PLAY-knappar, låtval på skivorna, kanalvolym, crossfader och mastervolym. Sikta och tryck E/klicka, eller tryck direkt på kontrollen på touch; ←/→ finjusterar den kontroll du siktar på.
+DJ-bordet i klubbhuset har egna PLAY-knappar, låtval på skivorna, kanalvolym, crossfader och mastervolym. Sikta och tryck E/klicka, eller tryck direkt på kontrollen på touch; ←/→ finjusterar den kontroll du siktar på. Aktiva knappar är nedsänkta och lyser; dansknappen visar om någon i rummet dansar.
