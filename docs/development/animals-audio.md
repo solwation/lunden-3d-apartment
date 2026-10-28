@@ -487,6 +487,10 @@ Real decode fallback retains pause; existing auto-start callers keep their behav
 Speaker dimensions/placement in `PLAYROOM.speakers` are guesses. Originally a high rear-wall pair; since #1645
 four larger ceiling speakers hang in the clubhouse's corners (`inset`, `drop`, `tilt` toward the centre), merged
 into the existing furniture batch (no new mesh, material or texture) and exposed as `Playroom.speakerPositions`.
+#1658 keeps them in the billiard/DJ room corners and uses a 0.32 m centre drop: the tilted 0.4 × 0.3 m box
+extends 0.2393 m upward, leaving about 8 cm below the ceiling. The panner positions follow the same drop.
+`tools/playroomspeakerstest.cjs` observes the actual transformed production boxes before merging and checks
+ceiling clearance, inward/downward orientation, room bounds and sound-source alignment; it captures the north/south views.
 They have no pick box: only the DJ booth (`djControls.pickables`) controls the music. `PlayroomMusic.setSpeakers`
 routes the mix through one Web Audio `PannerNode` per speaker (inverse distance, `ref`/`rolloff` *guess*), and
 `listen(camera)` moves the listener each frame while inside; without speakers or `createPanner` it falls back to the

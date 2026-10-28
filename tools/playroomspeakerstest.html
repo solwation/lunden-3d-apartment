@@ -1,0 +1,17 @@
+<!doctype html><html><head><style>body{margin:0}canvas{display:block}</style><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script></head><body><script type="module">
+import * as T from 'three';
+import {Playroom} from '../src/playroom.js';
+import {PLAYROOM as R,GARAGE} from '../src/config.js';
+// Observe the actual production box AFTER its tilt/yaw/translation, before the furniture merge.
+const boxes=[],original=T.BoxGeometry.prototype.translate;
+T.BoxGeometry.prototype.translate=function(...args){const g=original.apply(this,args),p=this.parameters,S=R.speakers;if(p.width===S.w&&p.height===S.h&&p.depth===S.d)boxes.push(g.clone());return g;};
+const room=new Playroom();T.BoxGeometry.prototype.translate=original;
+room.object.visible=true;room.setDisco(false);
+window.speakers=boxes.map((g,i)=>{const box=new T.Box3().setFromBufferAttribute(g.attributes.position),center=box.getCenter(new T.Vector3()),source=room.music.speakers[i],front=new T.Vector3().fromBufferAttribute(g.attributes.normal,16),toward=new T.Vector3(R.x+(R.speakers.bounds.x0+R.speakers.bounds.x1)/2,center.y,R.z+(R.speakers.bounds.z0+R.speakers.bounds.z1)/2).sub(center).normalize();return{min:box.min.toArray(),max:box.max.toArray(),center:center.toArray(),source,sourceError:center.distanceTo(new T.Vector3(source.x,source.y,source.z)),front:front.toArray(),toward:front.x*toward.x+front.z*toward.z,clearance:R.ceiling-box.max.y};});
+window.ceiling=R.ceiling;
+const scene=new T.Scene();scene.add(room.object,new T.AmbientLight(0xffffff,room.lit*GARAGE.lights.carLight));
+const renderer=new T.WebGLRenderer({antialias:true});renderer.setSize(1400,900);renderer.setPixelRatio(1);renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1;document.body.append(renderer.domElement);
+const camera=new T.PerspectiveCamera(55,1400/900,.03,100);
+window.view=(south)=>{camera.position.set(R.x,1.5,R.z+(south?-4.5:.7));camera.lookAt(R.x,2.05,R.z+(south?1.54:-5.2));renderer.render(scene,camera);return{calls:renderer.info.render.calls,triangles:renderer.info.render.triangles};};
+window.ready=true;
+</script></body></html>

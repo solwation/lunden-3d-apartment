@@ -2,6 +2,7 @@
 // the monitors, the wall speakers or the popcorn cart, nothing overlaps (or leaves its room), and the pendants clear the disco ball.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import * as THREE from 'three';
 import { PLAYROOM as R, COMPUTER_MEDIA as M, POPCORN } from '../src/config.js';
 import { posterLayout, POSTER_WALLS } from '../src/posterlayout.js';
 
@@ -15,7 +16,14 @@ const keepOut = [
   ...['BIO', 'BILJARD', 'SPEL'].map((n, i) => ({ name: `${n} sign`, x0: (i - 1) * 2 * C.side - C.label.w / 2, x1: (i - 1) * 2 * C.side + C.label.w / 2, y0: C.label.y - C.label.h / 2, y1: C.label.y + C.label.h / 2, z0: F, z1: F + t / 2 + .05 })),
   { name: "LET'S PLAY!", x0: C.welcome.x - C.welcome.w / 2, x1: C.welcome.x + C.welcome.w / 2, y0: C.welcome.y - C.welcome.h / 2, y1: C.welcome.y + C.welcome.h / 2, z0: C.welcome.z - t, z1: C.welcome.z },
   (() => { const B = R.billiards.board, z = R.billiards.z; return { name: 'score board', x0: -C.side, x1: -C.side + t / 2 + B.wallGap + B.depth + .02, y0: B.y - B.height / 2 - B.rim, y1: B.y + B.height / 2 + B.rim, z0: z - B.width / 2 - B.rim, z1: z + B.width / 2 + B.rim }; })(),
-  ...[-1, 1].flatMap((sx) => [-1, 1].map((sz) => { const S = R.speakers, r = .5,  cx = sx < 0 ? S.bounds.x0 + S.inset : S.bounds.x1 - S.inset, cz = sz < 0 ? S.bounds.z0 + S.inset : S.bounds.z1 - S.inset; return { name: 'ceiling speaker', x0: cx - r, x1: cx + r, y0: R.ceiling - S.drop - S.h / 2 - S.d / 2 * Math.sin(S.tilt), y1: R.ceiling, z0: cz - r, z1: cz + r }; })), // #1645 (conservative box)
+  // #1658: the real tilted/yawed box; the previous ±0.5m cube crossed into neighbouring rooms.
+  ...[-1, 1].flatMap((sx) => [-1, 1].map((sz) => {
+    const S = R.speakers, cx = sx < 0 ? S.bounds.x0 + S.inset : S.bounds.x1 - S.inset, cz = sz < 0 ? S.bounds.z0 + S.inset : S.bounds.z1 - S.inset;
+    const yaw = Math.atan2((S.bounds.x0+S.bounds.x1)/2-cx, (S.bounds.z0+S.bounds.z1)/2-cz);
+    const geometry = new THREE.BoxGeometry(S.w,S.h,S.d).rotateX(S.tilt).rotateY(yaw).translate(cx,R.ceiling-S.drop,cz);
+    geometry.computeBoundingBox(); const {min,max} = geometry.boundingBox; geometry.dispose();
+    return { name:'ceiling speaker', x0:min.x, x1:max.x, y0:min.y, y1:max.y, z0:min.z, z1:max.z };
+  })),
   ...M.stations.filter((s) => s.clubhouse).map((s) => { const D = M.desk, x = s.x - R.x, z = s.z - R.z, top = D.monitorY + D.monitorHeight / 2 + D.bezel; return { name: `monitor ${s.id}`, x0: x - D.depth / 2, x1: x + D.depth / 2, y0: 0, y1: top, z0: z - D.width / 2, z1: z + D.width / 2 }; }),
   { name: 'popcorn cart and bin', x0: -R.w / 2, x1: POPCORN.cart.x + POPCORN.cart.d / 2 + .1, y0: 0, y1: 1.6, z0: POPCORN.cart.z - POPCORN.cart.w / 2, z1: R.d / 2 },
   (() => { const K = R.billiards.cueRack; return { name: 'cue rack', x0: K.x - K.d - .02, x1: K.x + .02, y0: K.y - K.h / 2, y1: K.y + K.h / 2, z0: K.z - K.w / 2 - .02, z1: K.z + K.w / 2 + .02 }; })(),
