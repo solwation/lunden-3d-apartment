@@ -178,3 +178,25 @@ test('#1659: expanded clubhouse tracks, shuffle mode, and turntable deck rotatio
  assert.equal(m.isDeckSpinning(1), false);
  m.dispose();
 });
+
+test('#1664 manual decks: independent track/pause, equal-power fader, channel/master gains, sync and cleanup',()=>{
+ const m=new PlayroomMusic();m.setInside(true);
+ m.djAction({c:'play',s:0});assert.equal(m.manualDecks[0].file.paused,false);assert.equal(m.isDeckSpinning(1),false);
+ m.changeDJTrack(1,1);assert.equal(m.dj.ix[1],2);assert.equal(m.dj.ix[0],0);
+ m.djAction({c:'play',s:1});const a=m.manualDecks[0],b=m.manualDecks[1];
+ m.djAction({c:'cross',v:.5});assert.ok(Math.abs(a.fade.gain.value**2+b.fade.gain.value**2-1)<1e-8);
+ m.djAction({c:'gain',s:0,v:.4});assert.ok(Math.abs(a.fade.gain.value-Math.SQRT1_2*.4)<1e-8);
+ m.djAction({c:'cross',v:1});assert.ok(a.fade.gain.value<1e-8);assert.equal(b.fade.gain.value,1);
+ m.djAction({c:'play',s:0});assert.equal(a.file.paused,true);assert.equal(b.file.paused,false);
+ m.djAction({c:'volume',v:0});assert.equal(m.mix.gain.value,0);
+ const peer=new PlayroomMusic();peer.setInside(true);peer.sync({dj:m.dj});assert.equal(peer.dj.cross,1);assert.equal(peer.manualDecks[1].ix,2);assert.equal(peer.isDeckSpinning(0),false);
+ const same=peer.manualDecks[1];peer.sync({dj:m.dj});assert.equal(peer.manualDecks[1],same);
+ m.djAction({c:'stop'});assert(m.manualDecks.every(x=>x===null));assert.equal(m.state,'off');
+ peer.setInside(false);assert.equal(same.file.el,null);assert.equal(peer.dj,null);m.dispose();peer.dispose();
+});
+
+ test('#1664: a failed manual file stops only its deck and a stale failure cannot stop its replacement',async()=>{
+ const m=new PlayroomMusic();m.setInside(true);m.djAction({c:'play',s:0});m.djAction({c:'play',s:1});const old=m.manualDecks[0];
+ old.file.failed();await Promise.resolve();assert.equal(m.manualDecks[0],null);assert.equal(m.isDeckSpinning(0),false);assert.equal(m.manualDecks[1].file.paused,false);
+ m.djAction({c:'play',s:0});const current=m.manualDecks[0];old.file.failed();await Promise.resolve();assert.equal(m.manualDecks[0],current);m.dispose();
+ });

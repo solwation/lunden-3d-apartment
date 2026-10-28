@@ -153,6 +153,7 @@ import { Breaker } from './breaking.js';
 import { Target } from './target.js';
 import { Car } from './car.js';
 import { Garage } from './garage.js';
+import { DJInput } from './djinput.js';
 import { Playroom } from './playroom.js';
 import { Core } from './core.js';
 import { CoreHouse } from './corehouse.js';
@@ -1365,6 +1366,11 @@ canvas.addEventListener('pointerup', (e) => {
   measure.press(new THREE.Vector2((e.clientX - rect.left) / rect.width * 2 - 1, 1 - (e.clientY - rect.top) / rect.height * 2));
 });
 
+// #1664: DJ taps use the physical control coordinate; drags keep ordinary touch look.
+const djInput = new DJInput({canvas,room:playroom,camera,touch:()=>touch.enabled,
+  ready:()=>active() && overlay.hidden && !reading && !measure.active,
+  blocked:p=>behindWall(p),use:t=>use(t)});
+
 function look(dyaw, dpitch) {
   camera.rotation.y -= dyaw;
   camera.rotation.x = THREE.MathUtils.clamp(camera.rotation.x - dpitch, -1.45, 1.45);
@@ -1844,6 +1850,7 @@ function use(thing) {
     runChoice(choices.sel);
     if (thing.kind === 'lamp' && thing.isOpen) bump('lights', 1, idOf(thing));
   } else if (thing.blocked && (thing.kind === 'appliance' || thing.kind === 'cabinet')) sfx.click(camera.position); // something stands on the secretary's flap / the cushion box's lid (#447)
+  else if (thing.kind === 'djControl') thing.toggle();
   else if (thing.kind === 'note') showNote(true);
   else if (thing.kind === 'mirror') openAvatarCustomizer();
   else if (thing.kind === 'taskNote') showTaskNote(true);
@@ -2023,6 +2030,7 @@ document.addEventListener('keydown', (e) => {
     return;
   }
   if(heldItem()===remote&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&['KeyJ','KeyL','BracketLeft','BracketRight'].includes(e.code)){e.preventDefault();if(!e.repeat)remote.seek(['KeyJ','BracketLeft'].includes(e.code)?-1:1);return;}
+  if (djInput.key(e,focused)) return;
   player.keys.add(e.code);
   if (e.code === 'Space') e.preventDefault(); // jump (#636), thrust (#359), let go of a wall (#597): never scrolls or presses a focused button
   // crouch while held (#70): C, so crouching and walking is never Ctrl+W = close the tab (#274); Ctrl still works,

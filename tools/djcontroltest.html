@@ -1,0 +1,17 @@
+<!doctype html><meta charset="utf-8"><base href="../"><title>Production DJ input integration</title>
+<style>body{margin:0;background:#141619}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<script type="module">
+try {
+  const T=await import('three'),{Playroom}=await import('../src/playroom.js'),{DJInput}=await import('../src/djinput.js'),{PLAYROOM:R}=await import('../src/config.js');
+  const room=new Playroom(),scene=new T.Scene(),camera=new T.PerspectiveCamera(65,innerWidth/innerHeight,.01,30),renderer=new T.WebGLRenderer({antialias:true});
+  renderer.setSize(innerWidth,innerHeight);document.body.append(renderer.domElement);scene.add(room.object);room.setInside(true);scene.add(new T.AmbientLight(0xffffff,2));
+  const state={touch:false,ready:true,blocked:false},ray=new T.Raycaster();
+  const draw=()=>{room.djControls.update();scene.updateMatrixWorld(true);camera.updateMatrixWorld(true);};
+  const view=()=>{camera.position.set(R.x+R.dj.x,1.85,R.z+R.dj.z-.7);camera.lookAt(R.x+R.dj.x,R.dj.h,R.z+R.dj.z);draw();};
+  const focus=()=>{camera.updateMatrixWorld(true);scene.updateMatrixWorld(true);ray.setFromCamera(new T.Vector2(0,0),camera);const hit=ray.intersectObjects(room.djControls.pickables)[0];const t=hit?.object.userData.door;t?.aimAt(hit.point);return t;};
+  const input=new DJInput({canvas:renderer.domElement,room,camera,touch:()=>state.touch,ready:()=>state.ready,blocked:()=>state.blocked,use:t=>{t.toggle();draw();}});
+  document.addEventListener('keydown',e=>{input.key(e,focus());draw();});
+  window.fixture={room,R,camera,scene,renderer,state,draw,view,focus,input};view();window.done=true;
+}catch(e){window.error=e.stack;document.body.textContent=e.stack;console.error(e);window.done=true;}
+</script>

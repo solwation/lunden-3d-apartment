@@ -544,3 +544,5 @@ projektets hooks per fas (planering till uppföljning) och rapportintaget;
 Andra agentverktyg kan läsa samma filer direkt. Gemensamma förbättringar görs i
 kärnans repo och införs här genom en granskad versionsuppdatering.
 Analys och motiv finns i [utvecklingsanteckningen](docs/development/orchestra.md).
+
+DJ-bordet i klubbhuset har egna PLAY-knappar, låtval på skivorna, kanalvolym, crossfader och mastervolym. Sikta och tryck E/klicka, eller tryck direkt på kontrollen på touch; ←/→ finjusterar den kontroll du siktar på.

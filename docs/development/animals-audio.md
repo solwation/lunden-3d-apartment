@@ -475,8 +475,9 @@ existing cat carry / card model regressions; see verification.md for the actual 
 
 `PlayroomMusic` uses one existing licensed local recording (Morning Blue, Josh Woodward;
 `music/CREDITS.md`) through `MusicFile` → local gain → `audioParts().master`.
-Aiming at either speaker uses the normal E/number-key/touch choices: play, pause,
-resume the same media/time, OFF and volume ± (the existing SONOS 0–10 gain curve).
+Since #1664 the DJ booth has separate physical play/pause, record selection, fader,
+master, stop, shuffle and dance targets; the speakers have no interaction.
+The master uses the existing SONOS 0–10 gain curve.
 No request before a play gesture. Global mute applies; exit, hidden document and
 pagehide release media/nodes and never restart automatically. No new engine or track.
 `MusicFile.pause/resume` invalidate pending play promises, so pause during loading
@@ -486,7 +487,7 @@ Real decode fallback retains pause; existing auto-start callers keep their behav
 Speaker dimensions/placement in `PLAYROOM.speakers` are guesses. Originally a high rear-wall pair; since #1645
 four larger ceiling speakers hang in the clubhouse's corners (`inset`, `drop`, `tilt` toward the centre), merged
 into the existing furniture batch (no new mesh, material or texture) and exposed as `Playroom.speakerPositions`.
-They have no pick box: only the DJ booth (`music.target.pickable`) controls the music. `PlayroomMusic.setSpeakers`
+They have no pick box: only the DJ booth (`djControls.pickables`) controls the music. `PlayroomMusic.setSpeakers`
 routes the mix through one Web Audio `PannerNode` per speaker (inverse distance, `ref`/`rolloff` *guess*), and
 `listen(camera)` moves the listener each frame while inside; without speakers or `createPanner` it falls back to the
 direct connection. `tools/playroommusictest.mjs` checks four panners at the speaker positions and no speaker pick. Outside the whole room remains hidden; collision and billiard yaw π/2 match
@@ -519,32 +520,43 @@ remains nonzero, snow remains silent and mute retains control.
 
 Playroom billiards retain physical cue/ball/pocket event positions and the existing positional master graph. Impact mix is stronger and square-root strength makes soft collisions audible; pocket drops no longer depend on horizontal ball speed. `sfx.billiard` adds a short pocket rattle after the drop. Scoped tests include real Web Audio RMS and mute/exit silence; no physics rules changed.
 
-### DJ bench: change track and crossfade (#1621, #1659)
+### DJ bench: physical two-deck controls (#1664)
 
-The speakers and the DJ bench share one target, so the choices work wherever the pair is aimed at.
-While music is on, the menu adds `Nästa låt` (hard cut) and `Mixa till nästa låt` (equal-power
-crossfade, `MUSIC.crossfade` = 6 s). Tracks are `PLAYROOM_TRACKS` (24 tracks since #1659: all twelve
-Sonos channel recordings in order followed by the twelve CC0 clubhouse recordings from
-`music/previous-sources-416.json`). Each track runs on its own deck (`MusicFile` → fader gain → shared volume gain), so
-two decks overlap during a mix; a mix tick (50 ms) moves the faders `cos`/`sin`, then drops the old deck.
-Pause waits the fade, volume/mute/OFF/exit/pagehide release both decks, a new track that fails to
-load keeps the old one, and a new mix/cut is refused while mixing (menu reason "Mixar redan").
+`PlayroomDJ` replaces the single choice-menu pick box with separate labelled targets:
+PLAY/PAUSE per record, previous/next track buttons, channel VOLYM faders, CROSSFADER,
+MASTER, STOP, SLUMP and DANSA. Aim + E/click operates a control; ←/→ changes the aimed
+record, channel fader, crossfader or master. Touch taps the actual control; each record
+also has physical previous/next buttons. Taps on the fader rails set their position;
+looking around by dragging does not activate a control. The crossfader blends the two
+independently playing decks with cosine/sine equal-power gains, multiplied by channel
+volume and then the shared master. Load the next record, press its PLAY, then move the
+crossfader toward it. Pausing one deck preserves its position and leaves the other alone.
 
-**Shuffle mode (#1659):** the menu offers `Slumpad låtordning: På` / `Slumpad låtordning: Av` (off by
-default). When enabled, advancing via cut or crossfade chooses a random non-current track index
-and communicates destination `to` in `{ t: 'mus', k, ix, to }` so the room stays synchronized.
+The two displays show the track title/artist. The 24 licensed `PLAYROOM_TRACKS` remain
+unchanged; SLUMP chooses a random different track when a record's next/previous button
+is used. The vinyl spins only for its own playing deck. STOP, leaving, background and
+pagehide release media; dancing still ends when all music stops or the visitor walks away.
 
-**Spinning vinyl turntables (#1659):** the DJ bench features two rotating turntable assemblies
-(deck 0 left with red label, deck 1 right with blue label; each with spindle and high-contrast radial
-marker). The active deck rotates at ~33 RPM (3.5 rad/s) while playing; during an equal-power
-crossfade mix, both decks rotate simultaneously. When paused, rotation freezes immediately at the current
-angular position; when playback resumes, it continues spinning from that angle; when switched off or
-leaving the clubhouse, rotation stops.
+Static controls/rails join the furniture batch; labels/displays use one canvas atlas and
+all moving handles share one merged mesh. No light is added. `PLAYROOM.dj.controls`
+centralizes the fantasy layout dimensions (guesses). The UI has no DJ choice menu.
 
-**Synced since #1624:** see the next section.
-Tests:
-`node --test tools/playroommusictest.mjs` (12 tests), `node --test cloudflare/roommusic.test.mjs` (6 tests),
-`tools/playroommixtest.cjs GAME OUT`, and browser verification `tools/playroomdj1659test.cjs GAME OUT`.
+The room protocol adds `{t:'mus',k:'d',c,s?,v?}` operations (`play`, `track`, `gain`,
+`cross`, `volume`, `shuffle`, `stop`). The same room-owned `mus` storage carries `dj`
+with two indices, playing flags and elapsed positions plus the faders/master/shuffle.
+Operations are validated with `src/djstate.js`, rate-limited as before, broadcast only to
+inside players and restored after hibernation. Only commands generate messages; no
+frame traffic or new polling. Legacy transport commands remain supported. A late join
+starts each playing deck at its elapsed position; unchanged decks are reused on a fader
+change. Media-load/seek latency remains approximate, as in the previous transport.
+
+Tests: `node --test tools/playroommusictest.mjs cloudflare/roommusic.test.mjs`;
+`tools/browsertest.sh node tools/playroomdjcontroltest.cjs GAME OUT` checks native desktop
+E/arrows and emulated touch surface taps against the production `DJInput` module and actual
+`Playroom` in a small integration fixture. Main retains its locked/stats/reading gates,
+passes its overlay/measurement readiness, wall and ordinary `use` callbacks, and invokes
+the DJ key handler before movement keys. This is scoped input/room evidence, not a full-world
+startup, physical-phone or hardware-performance claim. Clubhouse gameplay is excluded downstream.
 
 ### Playroom floss dance (#1622)
 
@@ -554,8 +566,8 @@ main.js `updateDanceButton()` runs each frame; click/tap or G calls `toggleDance
 the power button (`hudicons.css`) and is registered in `touchlayout.js` TOUCH_CONTROLS. The speaker menu row below stays. Test:
 `tools/playroommusictest.mjs`.
 
-While the local room music plays, the speaker/DJ menu adds `Dansa floss` (last row; `Sluta dansa` while
-dancing). `PlayroomMusic.dancing` ends when the music is paused or stopped, the player leaves the room or
+While the local room music plays, the physical DJ dance button and the room-wide dance button
+toggle `Dansa floss` / `Sluta dansa`. `PlayroomMusic.dancing` ends when the music is paused or stopped, the player leaves the room or
 walks further than `DANCE.stepAway` from where the dance began (`tick`, called from `Playroom.update`).
 The pose is a boolean in the existing player state: `dn: 1` (main.js `state()`, sent in the normal 5 Hz
 state; a change counts as movement; Worker `cleanState` keeps only literal `1`, also in the late welcome).
@@ -599,7 +611,7 @@ do nothing locally; the room's answer is applied by `sync(m)`, which is idempote
 seeks a joining deck to `pos % duration`, starts a running mix at its fade position, ignores malformed state and keeps a state that
 arrives before the client is inside until `setInside(true)`. Without a connection the old local behaviour remains
 (`playLocal/pauseLocal/stopLocal/nextLocal`; visibility/pagehide/leaving the room stop only the local playback, the room keeps
-playing). The floss (#1622) stays a local choice offered while `state === 'playing'`, which now follows the shared state.
+playing). The floss (#1622) stays local and is offered while `state === 'playing'`, which follows the shared state.
 *Limits:* positions are approximate (media load/seek, latency), and a second command within `every` x 0.8 s is only
 answered with a resync. Tests: `cloudflare/roommusic.test.mjs` (validation, outside sender, stale/mix/pause, late welcome,
 hibernation, empty room), the `#1624` case in `tools/playroommusictest.mjs`, and `tools/roommusictest.cjs GAME WORKER OUT`

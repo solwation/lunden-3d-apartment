@@ -1,0 +1,8 @@
+{
+  "desktop": "native E/play, side-specific arrows, crossfader/channel fader",
+  "touch": "native physical play, next, crossfader endpoint, shuffle, master down/up, dance, stop",
+  "gates": "ready/menu and walls refuse actions",
+  "noMenu": true,
+  "errors": [],
+  "scope": "Production DJInput + actual Playroom, Chromium SwiftShader, emulated touch. Whole-world startup and physical phone not verified."
+}

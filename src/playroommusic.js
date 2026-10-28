@@ -1,3 +1,4 @@
+import { freshDJ, cleanDJ, validDJ, applyDJ, djLevel } from './djstate.js';
 import { initAudio, audioParts } from './audio.js';
 import { MusicFile } from './music.js';
 import { MUSIC, SONOS, DANCE, PLAYROOM, PLAYROOM_TRACKS } from './config.js';
@@ -18,9 +19,56 @@ export class PlayroomMusic {
     this.target = { kind: 'playroomMusic', name: 'biljardrummets högtalare', options: () => this.options() };
   }
   isDeckSpinning(side) {
+    if (this.dj) return this.dj.on[side];
     if (this.state !== 'playing') return false;
     if (this.mixing) return true;
     return this.deckSide === side;
+  }
+  /** Manual controls use the same authoritative room transport, with no frame traffic. */
+  get djState() { return this.dj ?? freshDJ(this.volume); }
+  djAction(action) {
+    const a = cleanDJ(action, PLAYROOM_TRACKS.length, SONOS.steps); if (!a || !this.active) return false;
+    initAudio();
+    if (this.net?.ready() && this.net.send({ t: 'mus', k: 'd', ...a })) return true;
+    if (!this.dj) {
+      const d = freshDJ(this.volume); d.ix[0] = this.index;
+      if (this.state !== 'off') { d.on[0] = this.state === 'playing'; d.pos[0] = (this.file?.el?.currentTime ?? 0)*1000; d.at[0] = performance.now()-d.pos[0]; }
+      this.stopLocal(); this.dj = d;
+    }
+    applyDJ(this.dj, a, performance.now()); this.applyManual(this.dj); return true;
+  }
+  changeDJTrack(side, direction) {
+    const d = this.djState, cur = d.ix[side], n = PLAYROOM_TRACKS.length;
+    const to = d.shuffle ? (cur + 1 + Math.floor(Math.random()*(n-1)))%n : (cur+direction+n)%n;
+    return this.djAction({ c:'track', s:side, v:to });
+  }
+  applyManual(d, late = 0) {
+    if (!this.dj) this.stopLocal();
+    this.dj = structuredClone(d); this.shuffle = d.shuffle; this.volume = d.volume;
+    this.manualDecks ??= [null,null];
+    const A = audioParts();
+    if (!this.mix && d.on.some(Boolean) && A) { this.mix = A.ctx.createGain(); this.setVolume(d.volume); this.routeMix(A); }
+    this.setVolume(d.volume);
+    for (let s=0;s<2;s++) {
+      let deck = this.manualDecks[s];
+      if (deck && (deck.ix !== d.ix[s] || (!d.on[s] && d.pos[s] === 0))) { this.killDeck(deck); deck = this.manualDecks[s] = null; }
+      if (!deck && d.on[s] && A) {
+        const generation=this.generation;
+        deck = this.makeDeck(A, PLAYROOM_TRACKS[d.ix[s]], djLevel(d,s), () => queueMicrotask(() => {
+          if (generation!==this.generation || this.manualDecks?.[s]!==deck) return;
+          const next=structuredClone(this.dj);next.on[s]=false;next.pos[s]=0;this.applyManual(next);
+        }), (d.pos[s]+late)/1000);
+        deck.ix = d.ix[s]; this.manualDecks[s] = deck;
+      }
+      if (deck) { deck.fade.gain.value = djLevel(d,s); if (d.on[s]) { if (deck.file.paused) deck.file.resume(); } else deck.file.pause(); }
+    }
+    this.state = d.on.some(Boolean) ? 'playing' : this.manualDecks.some(Boolean) ? 'paused' : 'off';
+    this.index = d.ix[d.cross > .5 ? 1 : 0]; this.deckSide = d.cross > .5 ? 1 : 0;
+    if (this.state !== 'playing') this.stopDance();
+    if (!d.on.some(Boolean) && d.pos.every(p=>p===0)) {
+      this.mix?.disconnect(); this.share?.disconnect(); this.panners?.forEach(n=>n.disconnect());
+      this.mix = this.share = null; this.panners=[];
+    }
   }
   toggleShuffle() {
     this.shuffle = !this.shuffle;
@@ -126,9 +174,15 @@ export class PlayroomMusic {
   }
   /** #1624: the room's transport { st, ix, pos, mx? } (ms elapsed). Idempotent: nothing changes when we already play that track in that state. */
   sync(m, arrived = performance.now()) {
+    if (m?.dj !== undefined) {
+      if (!validDJ(m.dj, PLAYROOM_TRACKS.length, SONOS.steps)) return;
+      if (!this.active) { this.remote = {m,arrived}; return; }
+      this.remote = null; initAudio(); this.applyManual(m.dj, Math.max(0,performance.now()-arrived)); return;
+    }
     const tracks = PLAYROOM_TRACKS.length, ok = (i) => Number.isInteger(i) && i >= 0 && i < tracks;
     if (!m || !['off', 'playing', 'paused'].includes(m.st) || !ok(m.ix) || !Number.isFinite(m.pos) || m.pos < 0
       || (m.mx !== undefined && !(ok(m.mx?.to) && Number.isFinite(m.mx.el) && m.mx.el >= 0))) return;
+    if (this.dj) this.stopLocal();
     if (!this.active) { this.remote = { m, arrived }; return; }
     this.remote = null;
     if (m.st === 'off') { if (this.state !== 'off') this.stopLocal(); this.index = m.ix; return; }
@@ -202,6 +256,7 @@ export class PlayroomMusic {
   stop() { if (!this.command('o')) this.stopLocal(); }
   stopLocal() {
     this.generation++; clearInterval(this.mixTimer);
+    this.manualDecks?.forEach(d=>this.killDeck(d)); this.manualDecks = null; this.dj = null;
     if (this.mixing) { this.killDeck(this.mixing.incoming); this.killDeck(this.mixing.outgoing); this.mixing = null; }
     this.killDeck(this.deck); this.mix?.disconnect(); this.share?.disconnect(); this.panners?.forEach((n) => n.disconnect()); this.panners = []; this.share = null;
     this.file = this.mix = this.deck = null; this.state = 'off'; this.stopDance();

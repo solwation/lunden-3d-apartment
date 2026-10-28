@@ -6,6 +6,7 @@ import { PLAYROOM as R, COURTYARD, COMPUTER_MEDIA } from './config.js';
 import { computerFurniture } from './computerfurniture.js';
 import { restTarget } from './rest.js';
 import { PlayroomDevices } from './playroomdevices.js';
+import { PlayroomDJ } from './playroomdj.js';
 import { PlayroomMusic } from './playroommusic.js';
 import { PlayroomSound } from './playroomsound.js';
 import { clubhouseWallBoxes, clubhouseSkirting } from './clubhousefinish.js';
@@ -119,10 +120,10 @@ export class Playroom {
     const markerMat = new THREE.MeshBasicMaterial({ color: 0xffffff }); // high-contrast white cue marker
     const spindleMat = new THREE.MeshBasicMaterial({ color: 0xdcdcdc }); // spindle
 
-    [-.55, .55].forEach((x, i) => {
+    DJ.controls.deckX.forEach((x, i) => {
       // Recessed platter housing and cue buttons in the static furniture batch
       fur.push(paint(new THREE.CylinderGeometry(.168, .168, .010, 16).translate(R.x + DJ.x + x, DJ.h + .058, R.z + DJ.z), col.steel));
-      for (const z of [-.15, .15]) fur.push(djBox(col.blue, x - .025, x + .025, DJ.h + .055, DJ.h + .065, z - .018, z + .018));
+
       // Tonearm base and arm in stationary batch
       fur.push(djBox(col.steel, x + .12, x + .15, DJ.h + .055, DJ.h + .075, -.14, -.10));
       fur.push(djBox(col.steel, x + .02, x + .13, DJ.h + .072, DJ.h + .076, -.12, -.04));
@@ -148,9 +149,6 @@ export class Playroom {
       this.object.add(grp);
       this.turntables.push(grp);
     });
-    for(const x of [-.065,.065])for(const z of [-.1,0])
-      fur.push(paint(new THREE.CylinderGeometry(.018,.018,.025,6).translate(R.x+DJ.x+x,DJ.h+.0775,R.z+DJ.z+z),col.dark));
-    fur.push(djBox(col.dark,-.075,.075,DJ.h+.065,DJ.h+.069,.09,.11),djBox(col.red,-.012,.012,DJ.h+.069,DJ.h+.085,.075,.125));
     const cinemaParts = playroomCinema(cbox, paint, col.dark, col.steel); // #1570: 7.1 + height speakers, wall sconces (dimmed while a film runs)
     fur.push(...cinemaParts.fur);
     this.posters = new CinemaPosters(); fur.push(...this.posters.frames(cbox, col.brass, col.dark)); // #1575: the BIO's film posters (frames in this batch, faces one atlas)
@@ -233,9 +231,8 @@ export class Playroom {
       fur.push(paint(new THREE.BoxGeometry(.06, speaker.drop, .06).translate(R.x+lx, R.ceiling - speaker.drop/2, R.z+lz), col.steel)); // ceiling bracket
     }
     this.music.setSpeakers(this.speakerPositions);
-    const djPick = new THREE.Mesh(new THREE.BoxGeometry(DJ.w-.02,.14,DJ.d-.02), new THREE.MeshBasicMaterial({ visible: false }));
-    djPick.position.set(R.x+DJ.x,DJ.h+.07,R.z+DJ.z); djPick.userData.door=this.music.target;this.music.target.pickable=djPick;
-    this.object.add(djPick); this.controlPickables.push(djPick);
+    this.djControls = new PlayroomDJ(this.music, this.object, fur, paint);
+    this.controlPickables.push(...this.djControls.pickables);
     this.devices = new PlayroomDevices((name, on) => this.onSwitch?.(name, on));
     this.object.add(this.devices.object); this.controlPickables.push(...this.devices.pickables);
     this.disco(0);
@@ -298,7 +295,7 @@ export class Playroom {
     }
   }
 
-  update(dt,camera,aimed) { if(this.inside){this.music.tick(camera.position);this.music.listen(camera);this.sound.update(dt,this.discoOn,this.music.state!=='off');this.updateTurntables(dt);this.billiards.update(dt,camera,aimed);this.cueRack.update(dt);this.devices.update(dt);this.popcorn.update(dt);this.fadeCinema(dt);this.curtains.update(dt);this.roomPosters.setLevel(this.lit/R.lit);if(this.discoOn)this.disco(dt);} }
+  update(dt,camera,aimed) { if(this.inside){this.music.tick(camera.position);this.music.listen(camera);this.sound.update(dt,this.discoOn,this.music.state!=='off');this.updateTurntables(dt);this.djControls.update();this.billiards.update(dt,camera,aimed);this.cueRack.update(dt);this.devices.update(dt);this.popcorn.update(dt);this.fadeCinema(dt);this.curtains.update(dt);this.roomPosters.setLevel(this.lit/R.lit);if(this.discoOn)this.disco(dt);} }
 
   /** #1365: switch the disco light on or off (the ball stops and goes dull, the light spots vanish). #1642: dims BILJARD ceiling lamp, panel and ambient to cozy dark. Returns the badge text. */
   setDisco(on) {

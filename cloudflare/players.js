@@ -1,4 +1,5 @@
 import { REST, TV_MEDIA, tvViewer, COMPUTER_MEDIA, computerViewer } from '../src/config.js';
+import { freshDJ, cleanDJ, applyDJ, snapshotDJ } from '../src/djstate.js';
 import { canKiss } from '../src/kiss.js';
 import { KISS, HUG } from '../src/config.js';
 import { canHug } from '../src/hug.js';
@@ -57,6 +58,9 @@ import { RoomPaddock, cleanPaddock, PADDOCK_SYNC, GRASS_PREFIX } from './paddock
 // position 0 was), pos (ms while paused), mx: { to, at, el } while a crossfade runs } and sends everybody inside { t: 'mus', st, ix, pos,
 // mx?: { to, el } } (pos / el = elapsed ms, so no clock sync is needed), to a player entering the room when something plays, and to a
 // refused or too-fast sender (a resync). No per-frame traffic; held in memory + storage 'mus' until the last player leaves the room.
+// #1664: physical two-deck controls add {t:'mus',k:'d',c,s?,v?}; see src/djstate.js for bounded operations.
+// The same stored transport carries dj {ix,on,pos,at,gain,cross,volume,shuffle}; broadcasts include elapsed deck positions.
+// No new timer, polling or per-frame messages. Legacy commands select the single transport; OFF releases either mode.
 // Room → client: { t: 'w', i: your id, ps: [{ i, n, p, r, h, score, l }], c: { lives, weapons } } on joining; { t: 'j', i, n, l } someone
 // joined; { t: 's', i, p, r, h, score, l } a state (l = server-owned remaining lives); { t: 'x', i } someone left; 'hit' / 'hurt' (#667). n = the name ('' = "Anonym").
 // Chat (#675, `cleanTalk` / `talk`): { t: 'm', m: text } → the others get { t: 'm', i, n, m } (a sender over the limits gets
@@ -186,12 +190,13 @@ export function cleanPool(text) {
 }
 
 const MUSIC_TRACKS = PLAYROOM_TRACKS.length; // #1624, #1659: the client's PLAYROOM_TRACKS, in this order
-const MUSIC_KEYS = ['p', 'z', 'o', 'n', 'm'];
+const MUSIC_KEYS = ['p', 'z', 'o', 'n', 'm', 'd'];
 /** A room-music command (#1624, #1659) { t: 'mus', k: 'p' | 'z' | 'o' | 'n' | 'm', ix?, to? } → { k, ix?, to? }, or null. */
 export function cleanMusic(text) {
   let m;
   try { m = JSON.parse(text); } catch { return null; }
   if (m?.t !== 'mus' || !MUSIC_KEYS.includes(m.k)) return null;
+  if (m.k === 'd') { const d = cleanDJ(m, MUSIC_TRACKS, SONOS.steps); return d ? { k: 'd', ...d } : null; }
   const res = { k: m.k };
   if (m.ix !== undefined) {
     if (!Number.isInteger(m.ix) || m.ix < 0 || m.ix >= MUSIC_TRACKS) return null;
@@ -434,7 +439,7 @@ export class PlayerRoom {
   /** A state arrived: entering the room gets the existing table, leaving it may empty the room. */
   poolPresence(ws, a) {
     const inside = inPlayroom(a.s?.p);
-    if (inside && a.pr !== true) { a.pr = true; send(ws, this.poolTableMsg(this.poolTable())); if (this.mus && this.musState(Date.now()).st !== 'off') send(ws, this.musMsg(Date.now())); }
+    if (inside && a.pr !== true) { a.pr = true; send(ws, this.poolTableMsg(this.poolTable())); if (this.mus && (this.musState(Date.now()).st !== 'off' || this.mus.dj)) send(ws, this.musMsg(Date.now())); }
     else if (!inside && a.pr === true) { a.pr = false; this.poolTrim(ws); }
   }
   // --- #1624: the shared children's-room music transport ---
@@ -447,7 +452,7 @@ export class PlayerRoom {
   }
   musMsg(now) {
     const s = this.musState(now), play = s.st === 'playing';
-    return JSON.stringify({ t: 'mus', st: s.st, ix: s.ix, pos: Math.round(play ? now - s.at : s.pos), ...(s.mx ? { mx: { to: s.mx.to, el: Math.round(play ? now - s.mx.at : s.mx.el) } } : {}) });
+    return JSON.stringify({ t: 'mus', st: s.st, ix: s.ix, pos: Math.round(play ? now - s.at : s.pos), ...(s.mx ? { mx: { to: s.mx.to, el: Math.round(play ? now - s.mx.at : s.mx.el) } } : {}), ...(s.dj ? { dj: snapshotDJ(s.dj, now) } : {}) });
   }
   musCmd(ws, a, m, now) {
     if (a.pr !== true) return; // not in the room: nothing to say
@@ -455,13 +460,18 @@ export class PlayerRoom {
     if (now - (a.mu ?? 0) < PLAYERS.music.every * 800) return send(ws, this.musMsg(now));
     a.mu = now;
     let changed = false;
-    if (m.k === 'p') {
+    // A legacy client selects the single transport; snapshot the audible side before leaving manual mode.
+    if (s.dj && m.k !== 'd') { const d=snapshotDJ(s.dj,now), side=d.cross>.5?1:0; s.ix=d.ix[side]; s.pos=d.pos[side]; s.at=now-s.pos; s.st=d.on[side]?'playing':s.pos>0?'paused':'off'; delete s.dj; changed=true; }
+    if (m.k === 'd') {
+      if (!s.dj) { s.dj = freshDJ(SONOS.start); s.dj.ix[0] = s.ix; if (s.st !== 'off') { s.dj.on[0] = s.st === 'playing'; s.dj.pos[0] = s.st === 'playing' ? now-s.at : s.pos; s.dj.at[0] = now-s.dj.pos[0]; } }
+      applyDJ(s.dj, m, now); s.st = s.dj.on.some(Boolean) ? 'playing' : s.dj.pos.some(p=>p>0) ? 'paused' : 'off'; s.ix = s.dj.ix[s.dj.cross > .5 ? 1 : 0]; s.mx = null; s.at = now; s.pos = 0; changed = true;
+    } else if (m.k === 'p') {
       if (s.st === 'off') { Object.assign(s, { st: 'playing', at: now, pos: 0, mx: null }); changed = true; }
       else if (s.st === 'paused') { s.st = 'playing'; s.at = now - s.pos; if (s.mx) s.mx.at = now - s.mx.el; changed = true; }
     } else if (m.k === 'z') {
       if (s.st === 'playing') { s.pos = now - s.at; if (s.mx) s.mx.el = now - s.mx.at; s.st = 'paused'; changed = true; }
     } else if (m.k === 'o') {
-      if (s.st !== 'off') { Object.assign(s, { st: 'off', pos: 0, mx: null }); changed = true; }
+      if (s.st !== 'off' || s.dj) { delete s.dj; Object.assign(s, { st: 'off', pos: 0, mx: null }); changed = true; }
     } else if (s.st !== 'off' && !s.mx && (m.ix === undefined || m.ix === s.ix)) { // 'n' next / 'm' mix; refused while off, mixing or stale
       const to = m.to !== undefined && m.to >= 0 && m.to < MUSIC_TRACKS ? m.to : (s.ix + 1) % MUSIC_TRACKS;
       if (m.k === 'm' && s.st === 'playing') s.mx = { to, at: now, el: 0 };

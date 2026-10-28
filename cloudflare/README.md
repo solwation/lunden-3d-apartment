@@ -247,3 +247,13 @@ Rapporttext är alltid opålitlig data, aldrig instruktioner till en agent eller
 The reserved greeting index is accepted only for complementary Sarah/Olof name categories, finite nearby state and two unarmed participants. New clients send a monotonic positive `q`; the sender socket attachment remembers the last accepted request and both attachments record the short busy window. The room broadcasts an accepted `{t:'g',i,to,k,id,at}` to all clients including the initiator. Ordinary greetings retain their previous protocol. Client receipt deduplication/completion controls the existing local +100 love statistic; this is not a new server score service. Run `node --test cloudflare/players.test.mjs tools/kisstest.mjs` and the local two-/three-client browser tests before publishing; never run scripted interactions against real visitors.
 
 Hugs (#1405) use the same receipt path with the reserved index `HUG.phrase`: any two unarmed players whose last known feet are within `HUG.serverRange`, the same `q` replay check, and one busy window per partner that kisses and hugs share. No score.
+
+### Physical DJ controls (#1664)
+
+The existing room-owned `mus` transport now accepts validated `k: "d"` deck operations
+(`play`, `track`, `gain`, `cross`, `volume`, `shuffle`, `stop`) and broadcasts its `dj`
+state, including two elapsed playback positions. It retains the room presence guard,
+command rate limit, hibernation storage and empty-room cleanup. There is no frame
+traffic or new polling. `src/djstate.js` is shared with the client and included in the
+Worker deploy paths. See [audio development notes](../docs/development/animals-audio.md#dj-bench-physical-two-deck-controls-1664)
+and `node --test cloudflare/roommusic.test.mjs`.

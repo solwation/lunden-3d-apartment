@@ -6034,6 +6034,11 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
   // billiard/disco zone ends at its east partition (x 3 - .06), and the podium's south-west corner (x 1.0, z -3.9) stays outside the round rug (#1617, radius 2.3 about the table at 0, -1.83),
   // so those two limits decide the size; the podium is still entered from its west end (*guess*).
   dj: { x: 1.95, z: -4.245, w: 1.8, d: .65, h: .97, top: .05,
+    // #1664: compact two-turntable mixer layout, local x/z metres; all sizes and positions are design guesses.
+    controls: { deckX: [.55,-.55], playZ: .23, browseZ: .23, displayZ: -.245,
+      crossZ: .21, crossSpan: .26, faderX: [.095,-.095], faderZ: -.015, faderSpan: .17,
+      button: [.10,.065], pickHeight: .06, step: .1, labelPixels: [1024,384],
+      master: [0,-.23], stop: [-.29,-.23], shuffle: [.29,-.23], dance: [.29,.23] },
     podium: { x0: 1, x1: 2.9, z0: -5.19, z1: -3.9, h: .2 },
     led: { t: .03, h: .035, colors: [0xff3fd0, 0x2fe6ff] } },
   // #1570: the BIO's 7.1 + 2 height speakers, wall sconces and their dimming. All sizes/positions/levels are *guess*es (local metres from the room's

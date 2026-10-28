@@ -96,3 +96,15 @@ test('messages are tiny and one command is one message', async () => {
   await cmd(env, a, { k: 'p' }); await cmd(env, a, { k: 'm' });
   assert.equal(a.mus().length, 2); assert.ok(JSON.stringify(a.last()).length < PLAYERS.maxBytes / 2);
 });
+
+test('#1664: bounded physical controls share both decks, faders and positions with observers and late/hibernated joins',async()=>{
+ for(const bad of [{c:'gain',s:3,v:1},{c:'cross',v:2},{c:'track',s:0,v:N},{c:'volume',v:1.5},{c:'play',s:'0'},{c:'hack'}])assert.equal(cleanMusic(JSON.stringify({t:'mus',k:'d',...bad})),null);
+ const env=setup(),a=await connect(env),b=await connect(env),far=await connect(env);await place(env,a,ROOM);await place(env,b,ROOM);await place(env,far,OUT);
+ const control=async m=>cmd(env,a,{k:'d',...m});
+ await control({c:'play',s:0});await control({c:'track',s:1,v:7});await control({c:'play',s:1});now+=5000;
+ await control({c:'cross',v:.5});await control({c:'gain',s:0,v:.4});await control({c:'volume',v:3});
+ assert.deepEqual(a.last(),b.last());assert.equal(far.mus().length,0);assert.deepEqual(b.last().dj.ix,[0,7]);assert.deepEqual(b.last().dj.on,[true,true]);assert.equal(b.last().dj.cross,.5);assert.equal(b.last().dj.gain[0],.4);assert.equal(b.last().dj.volume,3);
+ await control({c:'play',s:0});const pos=a.last().dj.pos[0];env.PLAYERS.hibernate('world');await settle(env);now+=5000;
+ const late=await connect(env);await place(env,late,ROOM);assert.deepEqual(late.last().dj.on,[false,true]);assert.equal(late.last().dj.pos[0],pos);assert.ok(late.last().dj.pos[1]>5000);
+ await control({c:'stop'});assert.equal(b.last().st,'off');assert.deepEqual(b.last().dj.pos,[0,0]);
+});
