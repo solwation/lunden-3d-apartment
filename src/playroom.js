@@ -19,6 +19,7 @@ import { playroomCinema } from './playroomcinema.js';
 import { CinemaPosters } from './cinemaposters.js';
 import { roomPosters } from './playroomposters.js';
 import { PopcornCart, popcornCartParts, popcornSign, popcornLamp, popcornFootprints } from './popcorn.js';
+import { PlayroomCueRack } from './playroomcues.js';
 
 // #1319 / #1326: the playhouse's secret children's room. A hidden interior, far outside the walkable area (see PLAYROOM in
 // config.js): the playhouse door teleports any avatar in, the door in the room's south wall back out.
@@ -262,6 +263,7 @@ export class Playroom {
     this.exitTarget.pickable = pick;
     this.object.add(pick);
     this.billiards = new Billiards();this.billiards.onSound=(...args)=>this.sound.hit(...args);this.object.add(this.billiards.object);this.segments.push(...this.billiards.segments);
+    this.cueRack = new PlayroomCueRack(this.object, furMat); this.controlPickables.push(this.cueRack.pickable); // #1661: wall cue rack on right wall
     // Reuse L1007's baked floor/ceiling and wall/corner shading, in a small local
     // coordinate frame. Door headers only occlude the ceiling, never the passage floor.
     const ox = -R.w/2-t, oz = -R.d/2-t, size = { x: R.w+2*t, z: R.d+2*t };
@@ -296,7 +298,7 @@ export class Playroom {
     }
   }
 
-  update(dt,camera,aimed) { if(this.inside){this.music.tick(camera.position);this.music.listen(camera);this.sound.update(dt,this.discoOn,this.music.state!=='off');this.updateTurntables(dt);this.billiards.update(dt,camera,aimed);this.devices.update(dt);this.popcorn.update(dt);this.fadeCinema(dt);this.curtains.update(dt);this.roomPosters.setLevel(this.lit/R.lit);if(this.discoOn)this.disco(dt);} }
+  update(dt,camera,aimed) { if(this.inside){this.music.tick(camera.position);this.music.listen(camera);this.sound.update(dt,this.discoOn,this.music.state!=='off');this.updateTurntables(dt);this.billiards.update(dt,camera,aimed);this.cueRack.update(dt);this.devices.update(dt);this.popcorn.update(dt);this.fadeCinema(dt);this.curtains.update(dt);this.roomPosters.setLevel(this.lit/R.lit);if(this.discoOn)this.disco(dt);} }
 
   /** #1365: switch the disco light on or off (the ball stops and goes dull, the light spots vanish). #1642: dims BILJARD ceiling lamp, panel and ambient to cozy dark. Returns the badge text. */
   setDisco(on) {
@@ -373,7 +375,7 @@ export class Playroom {
   get arrival() { return { x: R.x, z: Z1 - R.standOff, yaw: 0 }; }
 
   /** Drawn (and its exit pickable live) only while inside. */
-  setInside(on) { this.inside = on; this.sound.setInside(on); this.billiards.active = on; this.object.visible = on; this.devices.setInside(on); this.music.setInside(on); this.posters.setInside(on); }
+  setInside(on) { this.inside = on; this.sound.setInside(on); this.billiards.active = on; this.object.visible = on; this.devices.setInside(on); this.music.setInside(on); this.posters.setInside(on); this.cueRack?.setInside?.(on); }
 
   /** Where you stand when you come out: just north of the playhouse's door, facing away from it. */
   static get outsideSpot() {

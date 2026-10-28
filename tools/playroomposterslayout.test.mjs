@@ -18,8 +18,9 @@ const keepOut = [
   ...[-1, 1].flatMap((sx) => [-1, 1].map((sz) => { const S = R.speakers, r = .5,  cx = sx < 0 ? S.bounds.x0 + S.inset : S.bounds.x1 - S.inset, cz = sz < 0 ? S.bounds.z0 + S.inset : S.bounds.z1 - S.inset; return { name: 'ceiling speaker', x0: cx - r, x1: cx + r, y0: R.ceiling - S.drop - S.h / 2 - S.d / 2 * Math.sin(S.tilt), y1: R.ceiling, z0: cz - r, z1: cz + r }; })), // #1645 (conservative box)
   ...M.stations.filter((s) => s.clubhouse).map((s) => { const D = M.desk, x = s.x - R.x, z = s.z - R.z, top = D.monitorY + D.monitorHeight / 2 + D.bezel; return { name: `monitor ${s.id}`, x0: x - D.depth / 2, x1: x + D.depth / 2, y0: 0, y1: top, z0: z - D.width / 2, z1: z + D.width / 2 }; }),
   { name: 'popcorn cart and bin', x0: -R.w / 2, x1: POPCORN.cart.x + POPCORN.cart.d / 2 + .1, y0: 0, y1: 1.6, z0: POPCORN.cart.z - POPCORN.cart.w / 2, z1: R.d / 2 },
+  (() => { const K = R.billiards.cueRack; return { name: 'cue rack', x0: K.x - K.d - .02, x1: K.x + .02, y0: K.y - K.h / 2, y1: K.y + K.h / 2, z0: K.z - K.w / 2 - .02, z1: K.z + K.w / 2 + .02 }; })(),
 ];
-test('nothing covers a doorway, door, switch, sign, board, monitor, speaker or the popcorn cart', () => {
+test('nothing covers a doorway, door, switch, sign, board, monitor, speaker, popcorn cart or cue rack', () => {
   for (const a of all) for (const k of keepOut) assert.ok(!hit(a.rect, k), `${a.kind} on ${a.wall} (${JSON.stringify(a.rect)}) covers ${k.name}`);
 });
 test('nothing overlaps another poster, sign or lamp', () => {

@@ -53,6 +53,7 @@ export class Billiards {
     this.cue=new T.Mesh(merge(cue),new T.MeshStandardMaterial({vertexColors:true,roughness:.6}));this.cue.name='billiard-cue';this.object.add(this.cue);
     // #1637: the other players' cues while they aim / charge (one shared geometry + material; a draw only per visible remote aimer)
     this.peers=null;this.remoteCues=[];this.remoteDir=new T.Vector3();this.charge=null;this.chargeOff=0;this.strokePull=0;
+    this.hasCue=()=>true; // #1661: overridden by playroom to check held billiard cue
     this.rules=new BilliardRules('free');this.net=null;this.seq=0;this.seats=[null,null];this.pendingEnd=null;this.waitT=0;this.acc=0;this.active=false;this.inShot=false;this.dirty=true;this.onEvent=null;this.blockReason='';this.physics.onPocket=id=>{if(this.inShot)this.rules.notePocket(id);this.dirty=true;};
     this.canvas=document.createElement('canvas');this.canvas.width=D.canvas[0];this.canvas.height=D.canvas[1];this.ctx=this.canvas.getContext('2d');
     this.texture=new T.CanvasTexture(this.canvas);this.texture.colorSpace=T.SRGBColorSpace;
@@ -69,7 +70,7 @@ export class Billiards {
     this.boardMesh=new T.Mesh(new T.PlaneGeometry(BW,BH),faceMat);this.boardMesh.name='billiard-wall-screen';
     this.boardMesh.position.copy(new T.Vector3(0,0,D.depth/2+D.faceGap).applyMatrix4(boardMatrix));this.boardMesh.rotation.y=boardYaw;this.object.add(this.boardMesh);
     // #1637: E / touch starts charging a stroke, the next press strikes with the power built up so far
-    this.target={kind:'playroomBilliards',name:'biljardbordet',get verb(){const w=self.chargePower;return w===null?'ladda en stöt på':`stöta med ${Math.round(w*100)} % kraft på`;}};
+    this.target={kind:'playroomBilliards',name:'biljardbordet',get blocked(){return !self.hasCue();},get blockedText(){return 'Hämta en kö i stället först';},get verb(){const w=self.chargePower;return w===null?'ladda en stöt på':`stöta med ${Math.round(w*100)} % kraft på`;}};
     const pick=this.target.pickable=new T.Mesh(new T.BoxGeometry(L+2*A,.14,W+2*A),new T.MeshBasicMaterial({visible:false}));pick.position.y=H+.05;pick.userData.door=this.target;this.object.add(pick);
     // Collision uses the same transformed corners as the rendered table; physics and network snapshots remain table-local.
     this.object.updateMatrixWorld(true);
@@ -145,6 +146,7 @@ export class Billiards {
   /** E / touch on the table (#1637): the first press starts charging, the next one strikes with the power built up so far. */
   shoot(camera) {
     this.blockReason='';
+    if(!this.hasCue()){this.cancelCharge();this.blockReason='Hämta en kö i stället först';return false;}
     if(!this.rules.canShoot){this.cancelCharge();this.blockReason='Spelet är slut – ställ upp en ny omgång på tavlan';return false;}
     if(this.physics.moving||this.inShot||this.waitT>0){this.cancelCharge();this.blockReason='Vänta tills bollarna ligger still';return false;}
     if(!this.charge){this.charge={t:0};this.chargeOff=0;return true;}
@@ -188,7 +190,7 @@ export class Billiards {
       this.pos.set(b.x,c.height+c.ballR,b.z);this.scale.setScalar(b.active?1:0);this.mesh.setMatrixAt(i,this.matrix.compose(this.pos,this.rotations[i],this.scale));});this.mesh.instanceMatrix.needsUpdate=true;
     if(this.inShot&&this.strokeT<=0&&!this.physics.moving){this.inShot=false;if(this.pendingEnd){this.finishNow();}else{const m=this.rules.endShot(this.physics.firstHit);this.dirty=true;this.onEvent?.(m);}}
     if(this.dirty)this.drawBoard();
-    const moving=this.physics.moving;this.cue.visible=this.strokeT>0||(!moving&&(aimed||!!this.charge));
+    const moving=this.physics.moving,hasCue=this.hasCue();this.cue.visible=this.strokeT>0||(!moving&&hasCue&&(aimed||!!this.charge));
     const b=this.physics.balls[0],dir=this.strokeT>0?this.strokeDirection:this.direction,ball=this.pos.set(b.x,c.height+c.ballR,b.z);
     // the stroke: from drawn back (the charged power, #1637) through the ball and a little back; charging: drawn back more and more
     const k=this.strokeT>0?1-this.strokeT/c.strokeSeconds:0;

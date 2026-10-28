@@ -6108,7 +6108,7 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
       spelN: { y: 1.5, along: [3.9, 4.7, 7.3, 8.1], designs: [10, 13, 17, 11] }, spelS: { y: 1.5, along: [3.9, 4.65, 7.4, 8.2], designs: [12, 15, 18, 16] },
       spelW: { y: 1.9, along: [-4.75, -3.5, -1.9, -.3, 1], designs: [13, 14, 16, 12, 10] }, spelE: { y: 1.9, along: [-4.75, -3.5, -1.9, -.3, 1], designs: [11, 17, 15, 18, 14] }, // above the desks' monitors
       biljN: { y: 1.75, along: [-2.45, .6, 1.5], designs: [19, 22, 24] }, biljS: { y: 1.4, along: [-2.3, -1.5, 1.5, 2.3], designs: [21, 26, 23, 27] },
-      biljE: { y: 1.5, along: [-4.4, -3.3, -2.2, -1.1, 0, 1], designs: [20, 25, 22, 19, 24, 26] }, biljW: { y: 1.5, along: [-4.4, -3.6, -.5, .3, 1.1], designs: [23, 27, 21, 20, 25] } }, // BILJARD's west wall holds the score board (z -2.43 .. -1.23)
+      biljE: { y: 1.5, along: [-4.4, -3.35, -2.1, -1.1, 0, 1], designs: [20, 25, 22, 19, 24, 26] }, biljW: { y: 1.5, along: [-4.4, -3.6, -.5, .3, 1.1], designs: [23, 27, 21, 20, 25] } }, // BILJARD's west wall holds the score board (z -2.43 .. -1.23); biljE holds the cue rack (#1661) at z -2.75
     neon: { // ceiling runs round SPEL (colours 0xRRGGBB) and the two wall signs (atlas cells in the strip below the poster cells)
       run: { y: 2.52, h: .035, d: .03, colors: { north: 0x59f3ff, east: 0xff59cc, west: 0xa670ff, south: 0xff59cc } },
       signs: { spel: { x: 6, y: 1.9, w: 1.6, h: .53, wall: 'spelN' }, biljard: { x: -.95, y: 1.85, w: 1.3, h: .43, wall: 'biljN' } } },
@@ -6138,6 +6138,7 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
   billiards: { x: 0, z: -1.83, yaw: Math.PI / 2, length: 2.4, width: 1.2, height: 0.72, rail: 0.11, railH: 0.07, leg: 0.09, // #1617: bigger, taller 'children and 10-year-olds' table (about 3/4 of a 8-foot pool table, 72 cm playing height; *guess*) // #1482: centre between north z=-5.2 and the partition inner face z=1.54; retain #1411 orientation.
     ballR: 0.03, ball: { segments: [16, 12], roughness: 0.1, spotRadius: 0.5, atlasCell: 128, fontScale: 0.62, lampGloss: 0.9, lampSharp: 60 }, // #1638: glossy balls (roughness 0.08-0.12), two numeral discs of 0.5 sphere radii (*guess*) from a 4x4 atlas; lampGloss/lampSharp = the overhead pendant lamp's reflection as a cheap specular term (no extra light/env map)
     pocketR: 0.066, cueLength: 1.2, // #1617: balls/pockets/cue scaled with the table (ratios unchanged)
+    cueRack: { wall: 'biljE', x: 2.94, z: -2.75, y: 1.15, w: 0.40, h: 1.30, d: 0.08, count: 4, spacing: 0.08 }, // #1661: wall rack with 4 cues on the right wall
     rug: { radius: 2.3, ring: [.26, .2], colour: 0x8a3a46, ringColour: 0xe3cfa4, edge: .04 }, // #1617: big round soft rug (m, *guess*): clears the table's 2.62 x 1.42 m footprint and the DJ bench; ring = inner/outer inset of the cream stripe, edge = rounded rim width
     strokeSpeed: 3.8, strokeSeconds: 0.24, cueTravel: 0.09, // #1657: harder max stroke (3.8 m/s; smack to break the rack; *guess*) // #1637: was 2.2
     minPower: 0.15, chargeSeconds: 1.25, chargePull: 0.14, chargeGrace: 0.35, // #1657: oscillating power meter (1.25 s per sweep, ping-pongs between minPower and 100 %; *guess*) // #1637: was 1.75 s fixed
