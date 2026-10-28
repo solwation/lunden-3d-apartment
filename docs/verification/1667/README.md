@@ -49,3 +49,20 @@ shared dance toggles were added.
 A/B/C/L: no equivalent house variants for this original-only clubhouse control.
 Public AGENTS.md/docs/upstream.md were reviewed earlier in this session: personal
 music/gameplay and Cloudflare are excluded, so no downstream port is applicable.
+
+## Publication
+
+Implementation and all result images: `8969efade27aed06c46cd871931233b169fe6852`.
+All six pinned raw image URLs returned HTTP 200 and were embedded in the
+[issue comment](https://github.com/solwation/lunden-3d-apartment/issues/1667#issuecomment-6469975120)
+before closure. The tested DJ/input sources stayed byte-identical across the
+unrelated speaker/woofer/docs rebase; only the changelog needed conflict resolution.
+
+- [Actual Pages deployment passed](https://github.com/solwation/lunden-3d-apartment/actions/runs/40694658209), including deploy-pages.
+- [Actual Worker deployment passed](https://github.com/solwation/lunden-3d-apartment/actions/runs/40694658332), including wrangler-action.
+
+One worker plus conductor review. Approximate phase costs: planning/implementation
+10 minutes, scoped verification/image correction/review 10 minutes, release 3 minutes.
+The only render rerun corrected the raised centre inset hiding the newly lowered
+labels; an added visibility ray check guards that regression. No full-world startup
+or broad repeated test suite was used.
