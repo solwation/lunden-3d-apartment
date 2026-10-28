@@ -212,8 +212,11 @@ The conductor runs this loop in every `/orkester` queue session:
 
 ## Shared version and maintenance
 
-Shared release: **v0.4.1**, commit **5e48d8370f051f5a15bbb740881dbf51187316a9**. Imported as a squashed subtree
-at `.orchestra/shared`. See [installation](shared/INSTALL.md) and [contribution](shared/CONTRIBUTING.md) instructions.
+Shared release: **v0.6.0**, commit **aecd631907c3374800e562c98125d905863ff925**. Imported as a squashed subtree
+at `.orchestra/shared`; upgraded from v0.4.1 in original #1666, with the matching public import tracked in
+[public #172](https://github.com/solwation/kvarteret-lunden/issues/172). Existing session IDs remain valid; new
+sessions follow the shared host/model format, and startup resumes unfinished work before new selection.
+See [installation](shared/INSTALL.md) and [contribution](shared/CONTRIBUTING.md) instructions.
 Improve the core in its own clean repository, release it, then explicitly update both
 Lunden pins. Keep this local policy outside the subtree; do not export project history.
 
