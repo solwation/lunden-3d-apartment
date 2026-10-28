@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { fetchPosters, dailyPosters, cinemaPostersFetch, resetPosterMemory, posterDay, plainText, isoSeconds, filmTitle, languageRank } from './youtubesearch.js';
+import { fetchPosters, dailyPosters, cinemaPostersFetch, resetPosterMemory, posterDay, plainText, isoSeconds, filmTitle, languageRank, pickPosters } from './youtubesearch.js';
 import { PLAYROOM } from '../src/config.js';
 import worker from './worker.js';
 
@@ -40,14 +40,16 @@ function youtube({ fail = false, videoOverride = () => ({}), uploads = null, vid
 }
 
 // #1589: the shipped allow-list is real data; the mechanics below run against TEST_CHANNELS.
-const SHIPPED = W.channels.slice();
-test('the shipped channel allow-list is non-empty, unique, well-formed channel ids', () => {
-  assert.ok(SHIPPED.length > 0);
-  assert.equal(new Set(SHIPPED).size, SHIPPED.length);
-  for (const id of SHIPPED) assert.match(id, /^UC[\w-]{22}$/);
+const SHIPPED = W.channels.slice(), SHIPPED_CINEMA = W.cinemaChannels.slice();
+test('the shipped channel allow-lists are non-empty, unique, well-formed channel ids, no channel in both', () => {
+  assert.ok(SHIPPED.length > 0); assert.ok(SHIPPED_CINEMA.length > 0);
+  assert.equal(new Set([...SHIPPED, ...SHIPPED_CINEMA]).size, SHIPPED.length + SHIPPED_CINEMA.length);
+  for (const id of [...SHIPPED, ...SHIPPED_CINEMA]) assert.match(id, /^UC[\w-]{22}$/);
+  assert.ok(W.kidsShare > 0 && W.kidsShare < 1); assert.ok(W.cinemaRecentDays < W.recentDays);
 });
-W.channels.splice(0, W.channels.length, ...TEST_CHANNELS);
-const withChannels = async (channels, fn) => { const old = W.channels.slice(); W.channels.splice(0, W.channels.length, ...channels); try { await fn(); } finally { W.channels.splice(0, W.channels.length, ...old); } };
+W.channels.splice(0, W.channels.length, ...TEST_CHANNELS); W.cinemaChannels.splice(0, W.cinemaChannels.length);
+const swap = (list, next) => { const old = list.slice(); list.splice(0, list.length, ...next); return () => list.splice(0, list.length, ...old); };
+const withChannels = async (channels, fn, cinema = []) => { const a = swap(W.channels, channels), b = swap(W.cinemaChannels, cinema); try { await fn(); } finally { a(); b(); } };
 const CALLS_PER_DAY = TEST_CHANNELS.length + 1; // one playlistItems.list per channel + one videos.list
 
 test('one day of posters: the allow-listed channels\' newest trailers, newest first, plain text, film names', async () => {
@@ -61,10 +63,12 @@ test('one day of posters: the allow-listed channels\' newest trailers, newest fi
   }
   assert.equal(calls.length, CALLS_PER_DAY, `quota: ${TEST_CHANNELS.length} x 1 + 1 units`);
   assert.equal(items.length, COUNT);
-  assert.deepEqual(items.slice(0, 3).map((i) => i.id), [vid(0), vid(10), vid(20)], 'newest first');
+  const age = (id) => { const n = Number(id.slice(4)); return Math.floor(n / 10) + (n % 10) * 5; }; // the fake uploads' age in days
+  assert.deepEqual(items.map((i) => age(i.id)), items.map((i) => age(i.id)).sort((a, b) => a - b), 'the day\'s pick is shown newest first');
   assert.equal(new Set(items.map((i) => i.id)).size, items.length);
-  assert.equal(items[0].title, "Film 0-0 '<b>", 'entities decoded to plain text (drawn on a canvas, never HTML), the trailer wording dropped');
-  assert.equal(items[0].channel, 'Kanal 0');
+  const n = Number(items[0].id.slice(4));
+  assert.equal(items[0].title, `Film ${Math.floor(n / 10)}-${n % 10} '<b>`, 'entities decoded to plain text (drawn on a canvas, never HTML), the trailer wording dropped');
+  assert.equal(items[0].channel, `Kanal ${Math.floor(n / 10)}`);
   assert.equal(plainText('a\n\tb  c', 3), 'a b');
   const shared = youtube().fetcher;
   const partial = await fetchPosters({ key: 'k', now: NOON, fetcher: async (url) => (new URL(url).searchParams.get('playlistId') === 'UU' + TEST_CHANNELS[0].slice(2)
@@ -252,7 +256,7 @@ test('#1591 per-channel cap: one channel never fills more than maxPerChannel spo
   const yt = youtube({ uploads: spread(...busy, [vid(20), 'A | Trailer', 'A', chan(1), 2], [vid(21), 'B | Trailer', 'B', chan(2), 3], [vid(22), 'C | Trailer', 'C', chan(3), 4]) });
   const out = await fetchPosters({ key: 'k', fetcher: yt.fetcher, now: NOON });
   assert.equal(out.filter((i) => i.channel === 'Busy').length, W.maxPerChannel);
-  assert.deepEqual(out.map((i) => i.id), [vid(0), vid(1), vid(20), vid(21), vid(22)], 'the busy channel keeps its newest two, the others follow');
+  assert.deepEqual(out.filter((i) => i.channel !== 'Busy').map((i) => i.id), [vid(20), vid(21), vid(22)], 'every other channel is shown, newest first');
   // a single-channel day still yields posters (up to the cap) instead of failing
   const only = youtube({ uploads: spread(...busy) });
   assert.equal((await fetchPosters({ key: 'k', fetcher: only.fetcher, now: NOON })).length, W.maxPerChannel);
@@ -270,8 +274,10 @@ test('#1600 language: Swedish, then English, then unknown, then other languages,
   const lang = { [vid(0)]: ['en', 'nl'], [vid(1)]: ['en', 'fi'], [vid(2)]: ['en'], [vid(4)]: ['sv-SE'] }; // the live tags (audio, metadata)
   const yt = youtube({ uploads: spread(...dubs), videoOverride: (id) => (lang[id] ? { language: { defaultAudioLanguage: lang[id][0], defaultLanguage: lang[id][1] } } : {}) });
   const out = await fetchPosters({ key: 'k', fetcher: yt.fetcher, now: NOON });
-  assert.deepEqual(out.map((i) => i.id), [vid(4), vid(2), vid(3), vid(0)], 'sv, en, unknown, then one dub fills the channel\'s second spot');
-  assert.deepEqual(out.map((i) => i.lang), ['sv-SE/', 'en/', '/', 'en/nl'], 'each item says which language tags the ranking saw');
+  assert.deepEqual(out.slice(0, 3).map((i) => i.id), [vid(4), vid(2), vid(3)], 'sv, en, unknown first');
+  assert.equal(out.length, 4); assert.ok([vid(0), vid(1)].includes(out[3].id), 'then one dub (the day\'s) fills the channel\'s second spot');
+  assert.deepEqual(out.slice(0, 3).map((i) => i.lang), ['sv-SE/', 'en/', '/'], 'each item says which language tags the ranking saw');
+  assert.match(out[3].lang, /^en\/(nl|fi)$/);
   // with enough better trailers the dubs drop out entirely
   const many = Array.from({ length: COUNT }, (_, i) => [vid(10 + i), `Svensk ${i} | Trailer`, 'S', chan(1 + (i % 3)), 20 + i]);
   const svOnly = Object.fromEntries(many.map(([id]) => [id, 'sv']));
@@ -332,4 +338,53 @@ test('#1605 a failed KV read never lets a failed attempt overwrite the stored go
   const fresh = await dailyPosters({ YOUTUBE_API_KEY: 'k', LUNDEN: flaky }, { fetcher: youtube().fetcher, now: NOON + DAY });
   assert.equal(JSON.parse(store.m.get('cinema-posters')).day, fresh.day);
   resetPosterMemory();
+});
+
+// #1663: cinema channels (no madeForKids needed, only new uploads), the kids/other mix and the daily rotation.
+const CINEMA = [chan(10), chan(11)];
+const kidsOff = (ids) => (id) => (ids.includes(id) ? { status: { madeForKids: false } } : {});
+
+test('#1663 cinema channels: trailers need not be made for kids, but age limits, block words and the allow-list still apply; only recent uploads', async () => {
+  await withChannels([GOOD], async () => {
+    const yt = youtube({ uploads: { ...films(['aaaaaaaaaaa'], ['kkkkkkkkkkk']), ...spread(['bbbbbbbbbbb', 'Bio | Trailer', 'SF', CINEMA[0], 3], ['ccccccccccc', 'Vuxen | Trailer', 'SF', CINEMA[0], 4],
+      ['ddddddddddd', 'Skräckfilm | Officiell trailer', 'SF', CINEMA[1], 2], ['eeeeeeeeeee', 'Gammal | Trailer', 'SF', CINEMA[1], W.cinemaRecentDays + 1], ['fffffffffff', 'Annan | Trailer', 'X', CINEMA[1], 5]) },
+      videoOverride: (id) => ({ kkkkkkkkkkk: { status: { madeForKids: false } }, bbbbbbbbbbb: { status: { madeForKids: false } },
+        ccccccccccc: { status: { madeForKids: false }, contentDetails: { contentRating: { ytRating: 'ytAgeRestricted' } } }, fffffffffff: { channelId: BAD } })[id] ?? {} });
+    const out = await fetchPosters({ key: 'k', fetcher: yt.fetcher, now: NOON });
+    assert.deepEqual(out.map((i) => i.id).sort(), ['aaaaaaaaaaa', 'bbbbbbbbbbb'], 'a children\'s channel still needs madeForKids; a cinema trailer does not; age-restricted, blocked and foreign-channel ones never');
+    const vetted = yt.calls.filter((u) => u.pathname.endsWith('/videos')).flatMap((u) => u.searchParams.get('id').split(','));
+    assert.ok(!vetted.includes('eeeeeeeeeee'), 'a cinema upload older than cinemaRecentDays is not even vetted');
+    assert.equal(yt.calls.filter((u) => u.pathname.endsWith('/playlistItems')).length, 3, 'one unit per channel in both lists');
+  }, CINEMA);
+});
+
+const pool = (kids, other) => [...Array.from({ length: kids }, (_, i) => ({ id: vid(i), channelId: chan(i % 8), kids: true, rank: 0, published: i })),
+  ...Array.from({ length: other }, (_, i) => ({ id: vid(100 + i), channelId: chan(8 + (i % 8)), kids: false, rank: 0, published: i }))];
+
+test('#1663 mix: kidsShare of the spots are made-for-kids trailers, the rest others; a short group is filled from the other', () => {
+  const want = Math.round(COUNT * W.kidsShare);
+  for (const day of ['2026-10-28', '2026-10-29', '2026-11-03']) {
+    const out = pickPosters(pool(20, 20), { day });
+    assert.equal(out.length, COUNT); assert.equal(out.filter((i) => i.kids).length, want, day);
+  }
+  assert.equal(pickPosters(pool(1, 20), { day: '2026-10-28' }).filter((i) => i.kids).length, 1, 'one kids trailer: the others fill the rest');
+  assert.equal(pickPosters(pool(20, 1), { day: '2026-10-28' }).filter((i) => !i.kids).length, 1);
+  assert.equal(pickPosters(pool(2, 1), { day: '2026-10-28' }).length, 3, 'fewer trailers than spots: all of them');
+  const capped = pickPosters(pool(20, 20).map((c) => ({ ...c, channelId: c.kids ? GOOD : BAD })), { day: '2026-10-28' });
+  assert.equal(capped.length, 2 * W.maxPerChannel, 'maxPerChannel still holds');
+});
+
+test('#1663 daily rotation: the same day gives the same pick, other days a different one; language still comes first', async () => {
+  const ids = (day) => pickPosters(pool(30, 30), { day }).map((i) => i.id).join();
+  assert.equal(ids('2026-10-28'), ids('2026-10-28'));
+  const days = Array.from({ length: 7 }, (_, i) => posterDay(NOON + i * DAY));
+  assert.equal(new Set(days.map(ids)).size, days.length, 'a week of different picks');
+  const sv = pool(30, 30).map((c, i) => ({ ...c, rank: i % 10 === 0 ? 0 : 1 }));
+  for (const day of days) assert.equal(pickPosters(sv, { day }).filter((i) => i.rank === 0).length, COUNT, 'Swedish trailers are always picked first');
+  // the whole chain: two days of the same uploads give different posters, the same day (another isolate) the same
+  const many = Object.fromEntries(TEST_CHANNELS.map((c, n) => [c, Array.from({ length: 8 }, (_, i) => up(vid(n * 10 + i), `Film ${n}-${i} | Trailer`, 'K', i + 1))]));
+  const a = await fetchPosters({ key: 'k', fetcher: youtube({ uploads: many }).fetcher, now: NOON });
+  const b = await fetchPosters({ key: 'k', fetcher: youtube({ uploads: many }).fetcher, now: NOON + 3600e3 });
+  const c = await fetchPosters({ key: 'k', fetcher: youtube({ uploads: many }).fetcher, now: NOON + DAY });
+  assert.deepEqual(a, b); assert.notDeepEqual(a.map((i) => i.id), c.map((i) => i.id));
 });

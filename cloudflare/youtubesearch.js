@@ -87,13 +87,40 @@ async function requestUploads(channelId, { key, fetcher, max }) {
   return items;
 }
 
-/** The day's posters: recent trailers from the allow-listed channels' uploads, vetted, newest first, at most `count`. */
+/** #1663: every allow-listed channel (children's channels, then cinema channels), each well-formed id once. */
+const allowedChannels = () => [...new Set([...P.worker.channels, ...P.worker.cinemaChannels])].filter((c) => CHANNEL.test(c));
+const isCinemaChannel = (c) => P.worker.cinemaChannels.includes(c) && !P.worker.channels.includes(c); // a children's channel keeps madeForKids
+
+/** #1663: a small deterministic PRNG (FNV-1a hash of the seed text → mulberry32), so one day's shuffle is the same in every isolate. */
+const seededRandom = (seed) => {
+  let h = 2166136261;
+  for (const ch of seed) h = Math.imul(h ^ ch.codePointAt(0), 16777619);
+  return () => { h = (h + 0x6d2b79f5) | 0; let t = Math.imul(h ^ (h >>> 15), 1 | h); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+};
+
+/** #1663: the day's posters from the vetted pool: shuffled with `day` as seed, then ordered by language (#1600, stable, so the day's order decides within a
+ *  language); at most `maxPerChannel` per channel (#1591); `kidsShare` of the spots for made-for-kids trailers, the rest for the others, a short group
+ *  filled from the other. The chosen ones are shown best language first, newest first within it. */
+export function pickPosters(pool, { day, count = P.spots.length }) {
+  const W = P.worker, random = seededRandom(day), order = pool.slice();
+  for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(random() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+  order.sort((a, b) => a.rank - b.rank);
+  const perChannel = new Map();
+  const capped = order.filter((c) => { const n = perChannel.get(c.channelId) ?? 0; perChannel.set(c.channelId, n + 1); return n < W.maxPerChannel; });
+  const kidsSpots = Math.round(count * W.kidsShare);
+  const chosen = [...capped.filter((c) => c.kids).slice(0, kidsSpots), ...capped.filter((c) => !c.kids).slice(0, count - kidsSpots)];
+  for (const c of capped) if (chosen.length < count && !chosen.includes(c)) chosen.push(c);
+  return chosen.sort((a, b) => a.rank - b.rank || b.published - a.published);
+}
+
+/** The day's posters: recent trailers from the allow-listed channels' uploads, vetted, then the day's pick (`pickPosters`), at most `count`. */
 export async function fetchPosters({ key, fetcher = fetch, now = Date.now(), count = P.spots.length } = {}) {
   if (!key) throw new Error('unavailable');
-  const W = P.worker, after = now - W.recentDays * 86400e3, channels = W.channels.filter((c) => CHANNEL.test(c));
+  const W = P.worker, channels = allowedChannels();
+  const after = (c) => now - (isCinemaChannel(c) ? W.cinemaRecentDays : W.recentDays) * 86400e3; // #1663: cinema channels: only what is new (on at the cinemas)
   // One failing channel does not cost the day: the others' trailers still make posters (nothing at all → error, yesterday's list stays).
   const lists = (await Promise.allSettled(channels.map((c) => requestUploads(c, { key, fetcher, max: W.perChannel }))))
-    .map((r) => (r.status === 'fulfilled' ? r.value.filter((v) => v.published >= after && isTrailer(v.title)) : []));
+    .map((r, i) => (r.status === 'fulfilled' ? r.value.filter((v) => v.published >= after(channels[i]) && isTrailer(v.title)) : []));
   // #1589: candidates (deduplicated, round-robin over the channels, each channel newest first) are vetted before anything is published.
   const seen = new Set(), candidates = [];
   for (let i = 0; candidates.length < W.maxVetted && lists.some((l) => i < l.length); i++) {
@@ -106,8 +133,8 @@ export async function fetchPosters({ key, fetcher = fetch, now = Date.now(), cou
     }
   }
   // #1605: an item that would fail validPosters is dropped on its own, so one odd upload never costs the whole day.
-  const items = (await vetPosters(candidates, { key, fetcher })).map(({ id, title, channel, lang }) => ({ id, title: filmTitle(title).slice(0, 120), channel, lang }))
-    .filter(validPoster).slice(0, count);
+  const pool = (await vetPosters(candidates, { key, fetcher })).map((c) => ({ ...c, title: filmTitle(c.title).slice(0, 120) })).filter(validPoster);
+  const items = pickPosters(pool, { day: posterDay(now), count }).map(({ id, title, channel, lang }) => ({ id, title, channel, lang }));
   if (!items.length) throw new Error('upstream');
   return items;
 }
@@ -134,28 +161,28 @@ const languageTags = (snippet) => [snippet?.defaultAudioLanguage, snippet?.defau
 
 const blocked = (text) => { const t = text.toLowerCase(); return P.worker.blockWords.some((w) => t.includes(w.toLowerCase())); };
 
-/** #1589/#1591: keep only trailers ("trailer" in the title, short) that are embeddable, public, made-for-kids, not age-restricted videos
- *  (videos.list, 1 unit per 50) whose channel is on the allow-list (`worker.channels`); then drop block words, the same film twice
- *  (one trailer per film name) and more than `maxPerChannel` per channel. #1600: Swedish, then English, then unknown, then other languages (`languageRank`), so
- *  a channel's foreign-language dubs only fill spots nothing better wants; newest first within each language. Any API failure throws 'upstream'. */
+/** #1589/#1591: keep only trailers ("trailer" in the title, short) that are embeddable, public, not age-restricted videos (videos.list, 1 unit per 50)
+ *  whose channel is on the allow-list, made for kids unless the channel is one of #1663's `cinemaChannels`; then drop block words and the same film
+ *  twice (one trailer per film name: the best language, then the newest). #1600: Swedish, then English, then unknown, then other languages (`languageRank`).
+ *  The per-channel cap and the day's pick follow in `pickPosters`. Any API failure throws 'upstream'. */
 async function vetPosters(candidates, { key, fetcher }) {
   if (!candidates.length) return [];
-  const W = P.worker, good = new Map();
+  const allowed = new Set(allowedChannels()), good = new Map();
   for (let i = 0; i < candidates.length; i += BATCH) {
     const videos = await apiGet('videos', { part: 'status,contentDetails,snippet', id: candidates.slice(i, i + BATCH).map((c) => c.id).join(','), maxResults: String(BATCH) }, { key, fetcher });
     for (const v of videos.items) {
-      if (v?.status?.madeForKids !== true || v.status.embeddable !== true || v.status.privacyStatus !== 'public') continue;
+      const channelId = v?.snippet?.channelId, kids = v?.status?.madeForKids === true;
+      if (!(kids || isCinemaChannel(channelId)) || v.status.embeddable !== true || v.status.privacyStatus !== 'public') continue;
       if (v.contentDetails?.contentRating?.ytRating === 'ytAgeRestricted') continue;
       // #1591: trailers only: a short video whose own title says "trailer" (never a full episode or film).
       if (!isTrailer(v.snippet?.title ?? '') || !trailerLength(isoSeconds(v.contentDetails?.duration))) continue;
-      if (typeof v.id === 'string' && W.channels.includes(v.snippet?.channelId)) good.set(v.id, { channelId: v.snippet.channelId, rank: languageRank(v.snippet), lang: languageTags(v.snippet) });
+      if (typeof v.id === 'string' && allowed.has(channelId)) good.set(v.id, { channelId, kids, rank: languageRank(v.snippet), lang: languageTags(v.snippet) });
     }
   }
   const kept = candidates.filter((c) => good.get(c.id)?.channelId === c.channelId && !blocked(c.title) && !blocked(c.channel))
     .map((c) => ({ ...c, ...good.get(c.id) })).sort((a, b) => a.rank - b.rank || b.published - a.published);
-  const perChannel = new Map(), films = new Set(); // #1591: at most `maxPerChannel` posters per channel; #1597: one poster per film
-  return kept.filter((c) => { const film = filmTitle(c.title).toLowerCase(); if (films.has(film)) return false; films.add(film); return true; })
-    .filter((c) => { const n = perChannel.get(c.channelId) ?? 0; perChannel.set(c.channelId, n + 1); return n < W.maxPerChannel; });
+  const films = new Set(); // #1597: one poster per film
+  return kept.filter((c) => { const film = filmTitle(c.title).toLowerCase(); if (films.has(film)) return false; films.add(film); return true; });
 }
 
 // #1605: `lang` is two TAGs of at most 21 characters joined by '/' (43; the limit was 40).

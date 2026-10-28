@@ -34,7 +34,7 @@ local Worker and live YouTube access.
 
 BIO film posters (#1575, `src/cinemaposters.js`): six framed posters on the BIO's north wall, south partition and east wall
 (PLAYROOM.cinemaPosters, *guess*: clear of the screen, curtains, passage, signs and #1570's sconces/speakers) show the day's
-popular children's *trailers* (#1591: only short videos titled "trailer" from allow-listed channels, at most two per channel) from the Worker's `GET /cinema/posters` ([cloudflare/README.md](../../cloudflare/README.md#bions-affischer-1575)).
+*trailers* (#1591: only short videos titled "trailer" from allow-listed channels, at most two per channel; #1663: half children's films, half current cinema films from Swedish distributor/cinema channels, a new deterministic pick every day) from the Worker's `GET /cinema/posters` ([cloudflare/README.md](../../cloudflare/README.md#bions-affischer-1575)).
 Each shows the video's own `i.ytimg.com/vi/<id>/hqdefault.jpg` thumbnail (that host answers `Access-Control-Allow-Origin: *`, so
 no image proxy is needed) and its title, painted on one canvas atlas; the frames join the room's furniture batch and the faces are
 one extra MeshBasic draw inside (none outside), dimmed with the sconces while a film runs. The atlas is repainted only when the list

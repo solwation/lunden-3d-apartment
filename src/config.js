@@ -6064,18 +6064,21 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
     // Each was looked up on 2026-10-24 and kept only if YouTube shows its verified badge or the owner's own site/official channel links to it; being
     // verified alone is not enough (verified song/game-replay channels are left out on purpose). Not found or not provable: SVT Bolibompa Mini, UR Barn,
     // UR Play, Warner Bros. Pictures Sverige, DreamWorks Animation Sweden. Add channels the same way, with a comment. An empty list gives no posters.
-    // blockWords are *guess*. Quota per day: 26 channels x 1 + videos.list 1 per 50 candidates (<= 3) = at most 29 units (#1597; the searches cost 302).
-    // `filterVersion` (7 since #1600: the worse of the audio/metadata language tags): KV lists without it are never served, and a failed day under an older version is retried at once.
+    // #1663: `channels` are the children's channels (madeForKids still required); `cinemaChannels` are Swedish film distributors and cinemas whose
+    // trailers need not be made for kids (the user's choice on #1663: anything not age-restricted on YouTube, with blockWords against horror/violence as an
+    // extra guard). Only their uploads from the last `cinemaRecentDays` count, as an estimate of what is on at the cinemas now (*guess*). Looked up
+    // 2026-10-28 the same way: not found or not provable then: Warner Bros. Pictures Sverige (UCCA7NCuVYoYmqH4hXg1NBZg exists, but no verified badge
+    // or owner link), Paramount Sverige, UIP Sverige and TriArt Film (no verified badge, triart.se links no channel).
+    // #1663 daily rotation: the whole vetted pool is shuffled with the Stockholm day as seed (the same for every visitor that day, new the next day), then
+    // ordered by language (#1600); `kidsShare` of the spots go to made-for-kids trailers, the rest to the others, a short group filled from the other (*guess*).
+    // blockWords are *guess*. Quota per day: 21 + 8 channels x 1 + videos.list 1 per 50 candidates (<= 4) = at most 33 units (#1597; the searches cost 302).
+    // `filterVersion` (8 since #1663: cinema channels and daily rotation): KV lists without it are never served, and a failed day under an older version is retried at once.
     // #1600: `languages` = preferred languages in order (videos.list defaultAudioLanguage and defaultLanguage, the worse of the two); unknown comes next and every other
     // language last, so e.g. DreamWorksTV World's Dutch/Finnish dubs only fill spots no Swedish/English/unknown trailer wants (*guess*).
-    worker: { perChannel: 50, maxVetted: 150, maxTrailerSeconds: 300, maxPerChannel: 2, recentDays: 730, retryHours: 6,
+    worker: { perChannel: 50, maxVetted: 200, maxTrailerSeconds: 300, maxPerChannel: 2, recentDays: 730, cinemaRecentDays: 90, kidsShare: .5, retryHours: 6,
       channels: [
         'UCG4t_7XwB_DXdrpvf4U1pgg', // SVT Barn (verified)
         'UCLuECFhnmqnX0bJ_3RSy_DA', // Barnradion, Sveriges Radio (linked from sverigesradio.se/barnradion)
-        'UCMZaJz1iJiU6L4wvpzwMBxQ', // SF Studios (linked from sfstudios.se)
-        'UClAEnyvAkPzPjnHZPVgv7zQ', // SF Studios Classics (linked from sfstudios.se)
-        'UC_4Nc4NeEG-SIaetcgMTtfw', // SF Studios, @ABSvenskFilmindustri (featured by SF Studios Classics)
-        'UCkllgTNY4dg8qdMfpPlnmyQ', // Nordisk Film Sverige (verified)
         'UCvpNIQlTMpDfR8kv9Z64f5g', // Babblarna (verified)
         'UCvoi9I4_wUxWsYAb6KKx6Ow', // Bamse Världens starkaste björn (verified)
         'UC4a70Q5T62wFT-aegFqQQCA', // Pippi Långstrump (verified)
@@ -6087,7 +6090,6 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
         'UCfPfqRi_UmyHvsA2Ih-tb5w', // Smurfarna • Svenska (verified)
         'UCKmcWe6P05FQ6TEmpIWHOSQ', // Brandman Sam Svenska (verified)
         'UCC-RivmZEYZZ6yOVh8hSLsQ', // Peppy Pals (verified)
-        'UCQ8eoZdZP4gvGiVkqAh05VA', // Disney Sverige (linked from disney.se)
         'UC2qqJdj6dq_D6tGlKCTopNA', // Disney Junior Sverige (verified)
         'UCjMDyYSgLkOwpPlUkvcoB7A', // Disney Channel Sverige (verified)
         'UCNcdbMyA59zE-Vk668bKWOg', // Disney Jr. (verified)
@@ -6096,7 +6098,17 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
         'UCHaHZJAWfrlnysph7LReiYA', // DreamWorksTV World (verified)
         'UCq7OHvWO6Z3u-LztFdrcU-g', // Illumination (verified)
         'UCaOPA9kDa-s27ju1XG17Q1w', // Cartoon Network Sverige (verified)
-      ], languages: ['sv', 'en'], filterVersion: 7, blockWords: ['bajs', 'poop', 'kiss', 'prank', 'skibidi', '18+', 'toalett', 'toilet'] } },
+      ], cinemaChannels: [ // #1663: distributors and cinemas (madeForKids not required); the first five moved here from `channels`
+        'UCMZaJz1iJiU6L4wvpzwMBxQ', // SF Studios (linked from sfstudios.se)
+        'UClAEnyvAkPzPjnHZPVgv7zQ', // SF Studios Classics (linked from sfstudios.se)
+        'UC_4Nc4NeEG-SIaetcgMTtfw', // SF Studios, @ABSvenskFilmindustri (featured by SF Studios Classics)
+        'UCkllgTNY4dg8qdMfpPlnmyQ', // Nordisk Film Sverige (verified)
+        'UCQ8eoZdZP4gvGiVkqAh05VA', // Disney Sverige (linked from disney.se)
+        'UCcTXsW3K6Wk2NS_w8sZtc7g', // Filmstaden (verified, 2026-10-28)
+        'UC6aZ7fwmSRr00_rDYG3MvBQ', // Sony Pictures Sverige (its videos are the ones embedded on sonypictures.se, 2026-10-28)
+        'UClVKPJ5CFDyRWjYpPGj3qGA', // Universal Pictures Sweden, youtube.com/user/universalpicturesswe (linked from universalpictures.se, 2026-10-28)
+      ], languages: ['sv', 'en'], filterVersion: 8, blockWords: ['bajs', 'poop', 'kiss', 'prank', 'skibidi', '18+', 'toalett', 'toilet',
+        'skräck', 'horror', 'terror', 'slasher', 'zombie', 'exorcis', 'demon', 'massaker', 'massacre', 'blodig', 'bloody', 'murder', 'mördar', 'killer', 'scream'] } },
   // #1574: own generated posters (one canvas atlas, one extra draw), neon, pub lamps and per-room light levels. Everything here is a *guess*
   // (local metres from the room's centre; every wall is named for its room: hall / BILJARD / SPEL; BIO is #1575's). `along` is x on the north/south walls
   // and z on the east/west walls; `designs` index the atlas cells (0-9 hall mix, 10-18 SPEL gaming, 19-27 BILJARD/DJ) and repeat; `y` is a poster's centre height.
