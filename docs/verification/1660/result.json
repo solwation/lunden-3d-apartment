@@ -1,0 +1,37 @@
+{
+  "checks": 20,
+  "errors": [],
+  "results": [
+    {
+      "ordinary": {
+        "draws": 1,
+        "value": 2,
+        "text": "2"
+      },
+      "reading": {
+        "draws": 2,
+        "value": 3,
+        "text": "3"
+      },
+      "hidden": {
+        "draws": 0,
+        "value": null,
+        "text": "—"
+      },
+      "resumed": {
+        "draws": 1,
+        "value": 2,
+        "text": "2"
+      },
+      "extra": true,
+      "warmSkipped": true,
+      "elapsedMs": 41807,
+      "evidence": "actual WebGL apartment with320×180 draw buffer; controlled clock/visibility and callback cadence, not physical phone or measured hardware FPS",
+      "capture": {
+        "mode": "paired actual canvas and DOM; no composited/full-app image",
+        "gameCanvas": "actual-game-canvas.png",
+        "hudDOM": "actual-hud-dom.png"
+      }
+    }
+  ]
+}
