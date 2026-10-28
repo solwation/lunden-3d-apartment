@@ -1,0 +1,10 @@
+<!doctype html><html><head><style>body{margin:0;background:#10191c}canvas{display:block}</style><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script></head><body><script type="module">
+import * as T from 'three';
+import {Playroom} from '../src/playroom.js';
+import {GARAGE} from '../src/config.js';
+const scene=new T.Scene(),room=new Playroom();room.object.visible=true;room.setDisco(false);scene.add(room.object);scene.add(new T.AmbientLight(0xffffff,room.lit*GARAGE.lights.carLight));
+const renderer=new T.WebGLRenderer({antialias:true});renderer.setSize(1400,900);renderer.setPixelRatio(1);renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1;document.body.append(renderer.domElement);
+const camera=new T.PerspectiveCamera(55,1400/900,.03,100),b=room.billiards;
+window.view=(from,to)=>{camera.position.copy(b.object.localToWorld(new T.Vector3(...from)));camera.lookAt(b.object.localToWorld(new T.Vector3(...to)));renderer.render(scene,camera);return{calls:renderer.info.render.calls,triangles:renderer.info.render.triangles};};
+window.ready=true;
+</script></body></html>

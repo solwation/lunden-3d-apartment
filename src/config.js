@@ -6149,6 +6149,10 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
   // #1328: local child-size billiards (all dimensions/rolling coefficients are visual/playability guesses).
   billiards: { x: 0, z: -1.83, yaw: Math.PI / 2, length: 2.4, width: 1.2, height: 0.72, rail: 0.11, railH: 0.07, leg: 0.09, // #1617: bigger, taller 'children and 10-year-olds' table (about 3/4 of a 8-foot pool table, 72 cm playing height; *guess*) // #1482: centre between north z=-5.2 and the partition inner face z=1.54; retain #1411 orientation.
     ballR: 0.03, ball: { segments: [16, 12], roughness: 0.1, spotRadius: 0.5, atlasCell: 128, fontScale: 0.62, lampGloss: 0.9, lampSharp: 60 }, // #1638: glossy balls (roughness 0.08-0.12), two numeral discs of 0.5 sphere radii (*guess*) from a 4x4 atlas; lampGloss/lampSharp = the overhead pendant lamp's reflection as a cheap specular term (no extra light/env map)
+    // #1665: visual guesses for polished walnut rails, ivory sights and fine wool felt; no physics changes.
+    finish: { woodColour: 0x72482c, railRoughness: .19, lampGloss: .5, lampSharp: 24,
+      feltRoughness: .96, feltScale: 720, feltStrength: .1, cushionShare: .3,
+      pocketSegments: 12, sightSize: .012, sightColour: 0xeadcb5 },
     pocketR: 0.066, cueLength: 1.2, // #1617: balls/pockets/cue scaled with the table (ratios unchanged)
     cueRack: { wall: 'biljE', x: 2.94, z: -2.75, y: 1.15, w: 0.40, h: 1.30, d: 0.08, count: 4, spacing: 0.08 }, // #1661: wall rack with 4 cues on the right wall
     rug: { radius: 2.3, ring: [.26, .2], colour: 0x8a3a46, ringColour: 0xe3cfa4, edge: .04 }, // #1617: big round soft rug (m, *guess*): clears the table's 2.62 x 1.42 m footprint and the DJ bench; ring = inner/outer inset of the cream stripe, edge = rounded rim width

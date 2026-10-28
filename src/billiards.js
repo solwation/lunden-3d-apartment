@@ -1,4 +1,5 @@
 import * as T from 'three';
+import { rememberFragmentCompile } from './vertexcompile.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { clubhouseSurface, clubhouseMaterial, FINISH } from './clubhousematerials.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
@@ -9,20 +10,74 @@ import {billiardScore} from './billiardscore.js';
 import {STEP,snapshotTable,restoreTable,validSnapshot} from './billiardsync.js';
 // #1355: refusal reasons the room can send (Swedish UI text)
 const NO_TEXT={stale:'Bordet hade ändrats – försök igen',busy:'Vänta tills bollarna ligger still',turn:'Det är inte din tur',away:'Gå närmare bordet',fast:'Inte så fort',over:'Spelet är slut – ställ upp en ny omgång på tavlan'};
-// #1328: local children's table. Three visible batches (table, instanced balls, moving cue); no lights/textures/services.
-const paint=(g,hex,finish=hex===0x226b55?FINISH.fabric:FINISH.wood)=>clubhouseSurface(g,hex,finish);
+// #1665: table-only surface IDs keep polished rails and fine felt in the existing table draw.
+const paint=(g,hex,finish=hex===0x226b55?FINISH.fabric:FINISH.wood,surface=0)=>{
+  const out=clubhouseSurface(g,hex,finish);out.setAttribute('aBilliardFinish',new T.BufferAttribute(new Float32Array(out.attributes.position.count).fill(surface),1));return out;
+};
+function tableMaterial(c) {
+  const material=clubhouseMaterial(),before=material.onBeforeCompile,F=c.finish;
+  material.onBeforeCompile=shader=>{
+    before.call(material,shader);
+    shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nattribute float aBilliardFinish; varying float vBilliardFinish;').replace('#include <begin_vertex>','#include <begin_vertex>\nvBilliardFinish=aBilliardFinish;');
+    shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying float vBilliardFinish;');
+    // Append after the shared finish's roughness selection. No vertex deformation or texture allocations.
+    shader.fragmentShader=shader.fragmentShader.replace('#include <metalnessmap_fragment>',`
+      if(vBilliardFinish>.5 && vBilliardFinish<1.5) roughnessFactor=${F.railRoughness};
+      if(vBilliardFinish>1.5) {
+        roughnessFactor=${F.feltRoughness};
+        vec2 feltP=clubP*${F.feltScale.toFixed(1)};
+        vec2 feltAA=fwidth(feltP);
+        float feltFade=1.-smoothstep(.6,2.,max(feltAA.x,feltAA.y));
+        float nap=sin(feltP.x)*sin(feltP.y*.83)+.35*sin(feltP.x*.37+feltP.y*.61);
+        diffuseColor.rgb*=1.+${F.feltStrength}*feltFade*nap;
+      }
+      #include <metalnessmap_fragment>`);
+    shader.fragmentShader=shader.fragmentShader.replace('#include <opaque_fragment>',`
+      if(vBilliardFinish>.5 && vBilliardFinish<1.5) {
+        vec3 billiardLamp=normalize((viewMatrix*vec4(normalize(clubDelta),0.)).xyz);
+        float billiardGloss=pow(max(dot(reflect(-geometryViewDir,geometryNormal),billiardLamp),0.),${F.lampSharp.toFixed(1)});
+        outgoingLight+=uClubLight*${F.lampGloss}*billiardGloss*clubZone(uClubZoneLamp,vClubPosition);
+      }
+      #include <opaque_fragment>`);
+  };
+  rememberFragmentCompile(material.onBeforeCompile,before);
+  material.customProgramCacheKey=()=> 'billiard-table-finish-v1';return material;
+}
 const merge=list=>{const flat=list.map(q=>q.index?q.toNonIndexed():q),g=mergeGeometries(flat);new Set([...list,...flat]).forEach(q=>q.dispose());return g;};
 export class Billiards {
   constructor() {
     const c=this.c=R.billiards,L=c.length,W=c.width,H=c.height,A=c.rail;this.physics=new BilliardPhysics(c);
     const soundPoint=new T.Vector3();this.physics.onSound=(kind,x,z,speed)=>{if(this.active&&this.onSound){this.object.updateWorldMatrix(true,false);this.onSound(kind,this.object.localToWorld(soundPoint.set(x,c.height+c.ballR,z)),speed);}};
     this.object=new T.Group();this.object.name='playroom-billiards';this.object.position.set(R.x+c.x,0,R.z+c.z);this.object.rotation.y=c.yaw;
-    const parts=[],box=(w,h,d,x,y,z,col,rr=R.appearance.edgeRadius,seg=R.appearance.frameSegments)=>parts.push(paint(new RoundedBoxGeometry(w,h,d,seg,Math.min(rr,w/2.01,h/2.01,d/2.01)).translate(x,y,z),col));
+    const parts=[],box=(w,h,d,x,y,z,col,rr=R.appearance.edgeRadius,seg=R.appearance.frameSegments,surface=0)=>parts.push(paint(new RoundedBoxGeometry(w,h,d,seg,Math.min(rr,w/2.01,h/2.01,d/2.01)).translate(x,y,z),col,undefined,surface));
     // #1617: softer table: rounded apron, pill-shaped cushions, tapered round legs and a big round soft rug underneath (all merged into the one table draw).
-    box(L+2*A,.16,W+2*A,0,H-.1,0,0x593c29,.06,3);box(L,.025,W,0,H-.0125,0,0x226b55);
+    box(L+2*A,.16,W+2*A,0,H-.1,0,0x593c29,.06,3);box(L,.025,W,0,H-.0125,0,0x226b55,.008,1,2);
     for(const x of[-L/2+.16,L/2-.16])for(const z of[-W/2+.1,W/2-.1])parts.push(paint(new T.CylinderGeometry(c.leg/2,c.leg/2*.78,H-.18,14).translate(x,(H-.18)/2,z),0x302820));
-    for(const z of[-W/2-A/2,W/2+A/2])for(const x of[-L/4,L/4])box(L/2-c.pocketR*2,c.railH,A,x,H+c.railH/2,z,0x6e4c30,c.railH*.48,3);
-    for(const x of[-L/2-A/2,L/2+A/2])box(A,c.railH,W-c.pocketR*2,x,H+c.railH/2,0,0x6e4c30,c.railH*.48,3);
+    const F=c.finish,cushion=A*F.cushionShare;
+    // Wood behind every mouth: 270-degree corner surrounds and half-circle side surrounds.
+    // Their open quadrant faces the cloth; the centres/radii of all six physics pockets stay intact.
+    for(const [x,z] of this.physics.pockets) {
+      const corner=Math.abs(x)>L/4,sx=Math.sign(x)||1,sz=Math.sign(z);
+      const start=corner?-Math.PI/2:0,end=Math.PI;
+      const shape=new T.Shape();
+      shape.absarc(0,0,A,start,end,false);shape.absarc(0,0,c.pocketR,end,start,true);shape.closePath();
+      const g=new T.ExtrudeGeometry(shape,{depth:c.railH,bevelEnabled:false,curveSegments:F.pocketSegments});
+      // Shape y maps outward along z; mirroring retains the outward opening for every corner.
+      g.rotateX(Math.PI/2);g.scale(sx,1,sz);g.translate(x,H+c.railH,z);
+      // A mirrored BufferGeometry also needs its triangle winding reversed.
+      if(sx*sz<0) { const p=g.attributes.position,n=g.attributes.normal;for(let i=0;i<p.count;i+=3)for(const attr of [p,n])for(let k=0;k<3;k++){const v=attr.getComponent(i+1,k);attr.setComponent(i+1,k,attr.getComponent(i+2,k));attr.setComponent(i+2,k,v);} }
+      parts.push(paint(g,F.woodColour,FINISH.wood,1));
+    }
+    for(const z of[-W/2-A/2,W/2+A/2])for(const x of[-L/4,L/4]) {
+      box(L/2-c.pocketR*2,c.railH,A-cushion,x,H+c.railH/2,z+Math.sign(z)*cushion/2,F.woodColour,.012,2,1);
+      box(L/2-c.pocketR*2,c.railH*.72,cushion,x,H+c.railH*.36,Math.sign(z)*(W/2+cushion/2),0x226b55,.012,2,2);
+      for(const t of[-1,0,1])box(F.sightSize,.002,F.sightSize,x+t*L/8,H+c.railH+.001,z,F.sightColour,.002,1,1);
+    }
+    for(const x of[-L/2-A/2,L/2+A/2]) {
+      box(A-cushion,c.railH,W-c.pocketR*2,x+Math.sign(x)*cushion/2,H+c.railH/2,0,F.woodColour,.012,2,1);
+      box(cushion,c.railH*.72,W-c.pocketR*2,Math.sign(x)*(L/2+cushion/2),H+c.railH*.36,0,0x226b55,.012,2,2);
+      for(const t of[-1,0,1])box(F.sightSize,.002,F.sightSize,x,H+c.railH+.001,t*W/4,F.sightColour,.002,1,1);
+    }
     const U=c.rug,rh=R.finish.rugHeight,rp=[[0,rh],[U.radius-U.edge,rh],[U.radius-U.edge*.35,rh*.9],[U.radius-.004,rh*.55],[U.radius,.001],[0,.001]].map(([x,y])=>new T.Vector2(x,y));
     parts.push(paint(new T.LatheGeometry(rp,72),U.colour,FINISH.fabric));
     parts.push(paint(new T.RingGeometry(U.radius-U.ring[0],U.radius-U.ring[1],72).rotateX(-Math.PI/2).translate(0,rh+.001,0),U.ringColour,FINISH.fabric));
@@ -32,7 +87,7 @@ export class Billiards {
     const boardYaw=Math.PI/2-c.yaw,boardMatrix=new T.Matrix4().makeRotationY(boardYaw).setPosition(boardPosition);
     parts.push(paint(new RoundedBoxGeometry(BW+2*D.rim,BH+2*D.rim,D.depth,R.appearance.frameSegments,R.appearance.edgeRadius).applyMatrix4(boardMatrix),0x302820));
     for(const[x,z]of this.physics.pockets)parts.push(paint(new T.CircleGeometry(c.pocketR,16).rotateX(-Math.PI/2).translate(x,H+.002,z),0x080b09));
-    this.table=new T.Mesh(merge(parts),clubhouseMaterial());this.table.name='billiard-table';this.object.add(this.table);
+    this.table=new T.Mesh(merge(parts),tableMaterial(c));this.table.name='billiard-table';this.object.add(this.table);
     // #1638: glossy balls with numerals. One material, one instanced mesh; the numerals come from a 4x4 canvas atlas (cell = ball id)
     // sampled in the existing stripe shader from the sphere-local normal, on two opposite spots (+/-X), so they turn with each ball.
     const B=c.ball,geometry=new T.SphereGeometry(c.ballR,B.segments[0],B.segments[1]),stripe=new Float32Array(16),number=new Float32Array(16);
