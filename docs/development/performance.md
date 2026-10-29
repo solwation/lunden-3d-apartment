@@ -1187,8 +1187,10 @@ normal from `position`. `mergeStatic` hooks its outputs, and `freeSceneGeometryC
 normalized Int8 ×4 (12 → 4 bytes on the GPU; axis-aligned normals exact, smooth ones within 0.4 %) while nothing is uploaded yet.
 Opt-outs: skinned meshes, morph targets, geometries with any dynamic attribute or a `bedCare` attribute, and
 `geometry.userData.keepCpu` (set by watering, fruit and the drawing sheet, which rewrite their arrays or read `hit.uv`). A
-console canary warns (`freed vertex attribute …`) if a freed attribute is cloned or marked `needsUpdate`; none fired in the
-runs below. A new maker that rewrites or clones a mesh's vertex arrays after the first draw must set `geometry.userData.keepCpu`.
+console canary reports through `console.error` (so `src/crashlog.js` keeps it; `attribute=… geometry=…` names, once per
+attribute) if a freed attribute is cloned or marked `needsUpdate`; the `needsUpdate` setter then does not raise `version`, so
+the GPU data goes stale instead of three throwing "Resizing buffer attributes" (#1691; regression test
+`tools/lowmemcanarytest.mjs`, needs a bare-`three` resolver hook). None fired in the runs below. A new maker that rewrites or clones a mesh's vertex arrays after the first draw must set `geometry.userData.keepCpu`.
 `&keepgeo` (with `&lowmem`/phone) turns all of it off for an A/B run. Not touched: desktop.
 
 
