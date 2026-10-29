@@ -23,6 +23,11 @@ export class CinemaCurtains {
     this.half = this.target = pictureHalf(0);
     this.write();
     this.geometry = clubhouseSurface(this.source, 0x8e2635, FINISH.fabric);
+    // #1688: refresh() rewrites position and normal whenever a film changes the picture ratio. Without this the phone profile
+    // (lowmemory.js) packed the normals into bytes and freed them after upload, so the first curtain move marked an empty
+    // array for upload and three threw "WebGLAttributes … Resizing buffer attributes is not supported" in render: the game froze.
+    this.geometry.userData.keepCpu = true;
+    for (const name of ['position', 'normal']) this.geometry.attributes[name].setUsage(THREE.DynamicDrawUsage);
     this.mesh = new THREE.Mesh(this.geometry, material);
     this.mesh.name = 'bio-curtains'; this.mesh.receiveShadow = false; this.mesh.matrixAutoUpdate = false; this.mesh.frustumCulled = false;
     this.refresh();

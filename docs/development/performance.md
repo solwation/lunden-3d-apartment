@@ -1201,6 +1201,14 @@ render loop, halting rendering and leaving the canvas on the blue clear color. M
 color attribute as `DynamicDrawUsage` and flagging `userData.keepCpu` on the poster and spot
 geometries preserves the CPU copy on phones so dimming and disco spot animation update cleanly.
 
+**BIO masking curtains (#1688).** The same failure froze phones when a film started: `src/cinemacurtains.js` (#1619)
+rewrites the curtains' position and normals while they follow the picture ratio, but its geometry was static, so
+`freeSceneGeometryCopies` packed the normals into Int8 x4 and freed them after the first draw; the first curtain move
+threw `WebGLAttributes … Resizing buffer attributes is not supported` in render. Both public Android reports (2026-10-26
+19:00Z, 2026-10-29 16:00Z) stood in the playroom right after starting a film. The curtain geometry now sets
+`userData.keepCpu` and marks position/normal `DynamicDrawUsage`. `tools/cinema1688lowmemtest.cjs` runs `&lowmem`, starts a
+film and draws while the curtains move (`CURTAINS_FILE=… EXPECT_CRASH=1` reproduces the error with an older file).
+
 **Courtyard bicycle re-upload (#1047).** The two merged bike batches in
 `src/courtyard.js` now declare their rewritten position/normal attributes as
 `DynamicDrawUsage` before the low-memory pass. `Player.mountBicycle → bikePose →

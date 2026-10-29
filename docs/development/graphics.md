@@ -612,7 +612,7 @@ The picture is `screen.h * aspect` wide (the iframe letterboxes the video inside
 iframe API exposes no video size and the iframe is cross-origin, so the CORS-readable `i.ytimg.com/.../mqdefault.jpg` (16:9) is read and `pictureAspect` cuts away symmetric pure-black bars
 (4:3 pillarbox, 2.39:1 letterbox); anything unreadable or offline stays 16:9. `main.js` passes `cinema.surface.aspect` to `playroom.setFilm`; 0 / no film = curtains fully apart.
 `src/clubhouseexit.js`: four green NÖDUTGÅNG signs (`PLAYROOM.exitSigns`; #1625: painted into three free cells of the `playroom-posters` atlas and four quads of that unlit mesh, so no draw of their own, no light; the brightness is a constant vertex colour) above the BIO/BILJARD/SPEL passages (north face, seen from inside each room) and the playhouse door.
-Test: `tools/bio1619test.cjs`. Limitation: thumbnails of films whose first frame has black edges, or whose uploader added burnt-in bars, can mislead; real devices were not tested.
+Test: `tools/bio1619test.cjs`; phone profile `tools/cinema1688lowmemtest.cjs` (#1688: the curtain geometry keeps its CPU arrays, see performance.md). Limitation: thumbnails of films whose first frame has black edges, or whose uploader added burnt-in bars, can mislead; real devices were not tested.
 
 ## DJ surface and active controls (#1667)
 
