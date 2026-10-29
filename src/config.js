@@ -3420,6 +3420,7 @@ export const SCORE = {
     love: 100, // #1398: the initiator earns +100 for a completed, server-accepted kiss (user).
     petted: 8, catPhotos: 2, catFish: 25,                 // a pat (a cat to find first), its photo; feeding one takes a plan
     ponyPets: 1,                                          // a pat of a paddock pony (#1320)
+    squirrelFeeds: 6,                                     // a squirrel took a nut from the hand (#1672, *guess*)
     kittenPets: 12,                                       // a kitten's pat on top of `petted` (#363)
     target: 1, splashes: 0.2, cuts: 0.1, magic: 0.3,      // Nerf target: per target point (rings × distance = skill)
     baskets: 6, threes: 6, dribbles: 0.1,                 // a three = a basket + a three (12)
@@ -7070,4 +7071,35 @@ export const FOOTSTEPS = {
     grass:  { duration: .22, hz: 64, endHz: 36, body: .07, noise: .085, cutoff: 480 },
     gravel: { duration: .20, hz: 76, endHz: 42, body: .09, noise: .12, cutoff: 1050 },
   },
+};
+
+// ---- Squirrels (#1672, src/squirrelbrain.js, src/squirrels.js) ----
+// Three squirrels live in the crowns round the river park (riverpark.js patches) and the pony paddock (PADDOCK.trees); they hop between
+// trees, come down to look for nuts, and a visitor who crouches still with a nut in the hand can feed one. None of this exists while the
+// ground is snowy (SEASON.snowMonths: no mesh visible, no AI, no nuts). All numbers are our picks (*guess*) except the animals' looks,
+// which follow the issue (big one, white tail tip, slim darker one).
+//  simDist/farDist: m from the eye to a squirrel's tree; nearer than `simDist` it thinks every frame, up to `farDist` every `farStep` s
+//    (and is not drawn beyond `drawDist`), further away it sleeps (no AI cost at all). A squirrel keeps the tree it was in.
+//  leapRange: longest hop from crown to crown (m); groundHop: how far from its tree it may run on the ground to another tree.
+//  speeds in m/s: run (ground), flee (frightened), climb (up/down the trunk), leap (in the air); `perch` [min, max] s sitting in a crown,
+//  `forage` [min, max] s on the ground before it goes back up, `search` [min, max] s standing up to look around, `eat` s with a nut.
+//  Personality per animal: `ground` chance to go down after a perch (else it hops on), `shy` m the ground animal flees from a standing
+//  visitor, `lure` m from which it notices a crouching visitor with a nut, `delay` s it takes to dare, `speed` multiplier, `scale` size.
+//  Nuts (acorns and hazelnuts): at most `maxNuts` lie out at once at 1.5-`spread` m from a squirrel tree (never on road/walk/in water),
+//  each lies `life` [min, max] s unless picked up, a new one appears `respawn` [min, max] s after one is gone; `sense` m a ground squirrel
+//  smells one.
+//  Feeding: crouched (player.crouched), still (< `still` m/s) with a nut in the hand and a squirrel within its `lure`: it creeps up, stops
+//  `reach` m from the hand, rises `take` s and takes the nut; the visitor gets SCORE.each.squirrelFeeds points and `hearts` hearts,
+//  the squirrel carries the nut `carry` s (visible in its mouth) up a tree.
+export const SQUIRRELS = {
+  simDist: 70, farDist: 130, drawDist: 150, farStep: 0.25, leapRange: 11, groundHop: 22,
+  run: 3.4, flee: 6.5, climb: 2.6, leap: 5.5, perch: [5, 12], forage: [14, 32], search: [1.2, 3.5], eat: 2.2,
+  maxNuts: 6, spread: 9, life: [240, 600], respawn: [20, 60], sense: 6, nutSize: 1.5,
+  still: 0.4, reach: 0.45, take: 0.6, hearts: 8, heartScale: 2.5, carry: 14, handAhead: 0.45,
+  starts: [[-150, 215], [-30, 128], [-62, 168]], // first tree = nearest eligible tree to these plan points (*guess*: by the paddock bridge, the foot bridge, the south bank)
+  animals: [
+    { name: 'Den stora', scale: 1.25, width: 1, color: 0x8a5632, belly: 0xd9c3a0, tail: 0x9a6338, tip: null, ground: 0.7, shy: 4, lure: 24, delay: 0.8, speed: 1.0, perch: 1 },
+    { name: 'Vitsvansen', scale: 1.0, width: 1, color: 0xa4673a, belly: 0xe6d4b4, tail: 0xb3733f, tip: 0xf4f1e8, ground: 0.45, shy: 6.5, lure: 18, delay: 0.5, speed: 1.15, perch: 0.7 },
+    { name: 'Den smala', scale: 0.92, width: 0.78, color: 0x4f3626, belly: 0xb9a88c, tail: 0x5c4130, tip: null, ground: 0.3, shy: 9, lure: 12, delay: 1.4, speed: 1.3, perch: 1.4 },
+  ],
 };

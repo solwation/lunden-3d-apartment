@@ -658,3 +658,18 @@ The four ceiling music speakers and their positional audio sources use the inner
 BILJARD/DJ bounds (`PLAYROOM.speakers.bounds`), rather than the full clubhouse.
 They face the centre of that room; no DJ speaker sits in BIO, SPEL or the hall.
 This gameplay-only room has no A/B/C/L house variant or public downstream equivalent.
+
+## Squirrels and nuts (#1672)
+
+Three squirrels (the big one, the white-tail-tip one, the slim darker one) live in the crowns round the river park and the pony
+paddock. `src/squirrelbrain.js` (no three.js, node-testable) holds the per-animal state machine (perch, leap, down, forage, search,
+fetch, eat, toTree, flee, up, approach, take) and the `NutField` (at most `SQUIRRELS.maxNuts` acorns/hazelnuts on the ground 1.5-9 m
+from a squirrel tree, expiring and respawning). `src/squirrels.js` draws them (one merged vertex-coloured mesh per squirrel, shared
+material, no light or shadow caster; the nut in the mouth is a child shown only while carried) and wires them to the game: trees come
+from `treeFeet`/`aoTrees` (patches of `SITE.riverPark` plus `PADDOCK.trees`, so trees added there are used automatically), the nuts are
+ordinary `Holdable`s pushed onto main.js `holdables` (flag `isSquirrelNut`, excluded from keep.js), and a crouched (`player.crouched`),
+still (< `SQUIRRELS.still` m/s) visitor holding a nut lures squirrels within their personality's `lure` range; the take scores
+`SCORE.each.squirrelFeeds` (stats key `squirrelFeeds`) and bursts hearts (`Hearts` from pingping.js). Standing up or moving aborts the approach.
+In the snow months (`registerSeasonal`, `SEASON.snowMonths`) nothing is visible, no AI runs and no nuts exist. Cost control: AI every frame
+within `simDist`, every `farStep` s up to `farDist`, asleep beyond; `&nosquirrels` disables the module. Config: the `SQUIRRELS` block at the end
+of `src/config.js` (all *guess*). Test: `node --test tools/squirrelbraintest.mjs`; browser check `tools/squirrelstest.cjs`.
