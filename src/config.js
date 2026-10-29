@@ -284,6 +284,8 @@ const SOUTH_VILLAS = [
       '333642384', '333642387', '333642391', '333642393', '333642395', '367079610', '367079611', '367079612', '367079613', '367079616', // Nattsländegatan
       '333642386', '333642390', '333642397', '403628164', '403628170', '403628176', // Hattsnäckegränden
 ];
+// #1678: OSM ids of the houses along Sankt Lars väg south of the hospital (nr 56-66; shared by the window rows and `south.whiteHouses`).
+const SOUTH_LARS_VAG = ['88457551', '88457559', '88457560', '88457562', '88457571', '88457572', '88457578', '88457584', '88457587', '88457589', '88457593', '88457596', '88457604'];
 export const SITE = {
   // Terrain (#79). Kv. Lunden stands on a garage box: the courtyard ("den upphöjda gården", info brochure
   // p. 16) lies on the garage deck at our Entréplan / patio level (y 0; the lower row houses have their
@@ -879,7 +881,7 @@ export const SITE = {
     // #1418: OSM 2026-10-08 addressed main bodies; building=yes does not verify use or window positions.
     // Seven unaddressed/uncertain bodies stay blank. Longitudinal-only rows, face cutoff and spacing are visual guesses.
     lowRiseWindows: { parallelCos: .98, minFaceShare: .45, sources: [
-      '88457551', '88457559', '88457560', '88457562', '88457571', '88457572', '88457578', '88457584', '88457587', '88457589', '88457593', '88457596', '88457604', // Sankt Lars väg
+      ...SOUTH_LARS_VAG,
       ...SOUTH_VILLAS,
     ] },
     // #1677: the terraced houses and villas by Nattsländegatan, Sävsländegatan and Hattsnäckegränden (the `lowRiseWindows` rows
@@ -891,6 +893,14 @@ export const SITE = {
         '367079611', '367079612', '333642395', '333642390', '403628164', '403628176', '333642385', '403628172',
       ] },
       sources: SOUTH_VILLAS },
+    // #1678: the white rendered two-storey houses with red tile roofs along Sankt Lars väg furthest south (ThinkTank, Skinnsömmeriet, the
+    // small farm houses by the road) in the Google 3D view of 2026-10-29: the `lowRiseWindows` Sankt Lars väg rows plus the unnumbered
+    // small bodies 88457554, 88457611, 145221620, 145221625, 145221627. Which OSM body is which house is read from the overview and is
+    // a *guess*, like every colour. `barn`: the tall narrow barn-like body (OSM 88457556, 45 m long) has a dark, steeper and higher
+    // gable roof (`rise` replaces the 1.6 m gable). Same vertex-colour batches as `villas`: no new draw call.
+    whiteHouses: { facade: 0xf0ebe0, roof: 0x9c3b27, rise: 1.6,
+      barn: { roof: 0x3a3d43, rise: 4.6, sources: ['88457556'] },
+      sources: [...SOUTH_LARS_VAG, '88457554', '88457611', '145221620', '145221625', '145221627', '88457556'] },
     // #1556 (the user's in-game report): the old four-storey hospital pavilions take nr 41's brick style (#1529,
     // src/brickstyle.js) on their own OSM footprints, storeys, eaves and roofs. Their facades are not photographed:
     // every value is *guess*, chosen to echo nr 41. `plinth` white plinth height over the base, `frieze` the eave
