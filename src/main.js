@@ -2983,6 +2983,7 @@ danceBtn.addEventListener('click', toggleDance);
 // #1639: cry / laugh / scream in the BIO (the clubhouse's film room, seated or standing): three buttons (touch) / keys Y U I; our
 // mirror image plays it and the others in range see it (ghosts.react, a one-shot 'rx' message).
 const reactBtns = [...document.querySelectorAll('.react-btn[data-react]')];
+const bioHere = () => playroom.inside && camera.position.x < PLAYROOM.x - PLAYROOM.clubhouse.side - PLAYROOM.clubhouse.wall / 2 && camera.position.z < PLAYROOM.z + PLAYROOM.clubhouse.front - PLAYROOM.clubhouse.wall / 2;
 const reactToggle = document.getElementById('react-toggle');
 // #1683: on touch the three pills stay folded behind one "Känslor" button (they covered the view on a phone); a tap on a
 // reaction or on the button folds them again. Keys and the desktop buttons are unchanged (the toggle is touch-only).
