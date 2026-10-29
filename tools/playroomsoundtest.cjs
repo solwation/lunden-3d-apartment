@@ -22,7 +22,9 @@ const [game='http://localhost:8191',out='/tmp/lekstuga1330']=process.argv.slice(
  await goto(0,3.4);await page.waitForTimeout(800);const hall=await rms();
  assert(billiardRoom>.001,`music in BILJARD ${billiardRoom}`);assert(cinemaRoom<billiardRoom*.01,`BIO ${cinemaRoom}`);assert(gameRoom<billiardRoom*.01,`SPEL ${gameRoom}`);assert(hall>gameRoom&&hall<billiardRoom,`hall ${hall}`);
  console.log('PASS music room gating',{billiardRoom,cinemaRoom,gameRoom,hall});await page.evaluate(()=>__app.world.playroom.music.stop());
- assert(await page.evaluate(()=>__app.world.playroom.billiards.shoot(__app.camera)));
+ // #1661/#1657: take a cue from the wall rack; the first shoot() only starts charging, the second strikes
+ await page.evaluate(()=>__app.billiardCues[0].take());
+ assert(await page.evaluate(()=>{const b=__app.world.playroom.billiards;if(!b.shoot(__app.camera))return false;b.charge.t=b.c.chargeSeconds;return b.shoot(__app.camera);}));
  const stroke=await rms();assert(stroke>.0001);await page.waitForFunction(()=>hits.some(e=>e.kind==='ball'&&e.ok));
  await page.evaluate(()=>{const p=__app.world.playroom.billiards.physics;p.balls.forEach(b=>{b.vx=b.vz=0;});const [x,z]=p.pockets[0];Object.assign(p.balls[1],{active:true,x:x+.01,z:z+.01,vx:0,vz:0});});
  const pocket=await rms();assert(pocket>.0001);await page.waitForFunction(()=>hits.some(e=>e.kind==='pocket'&&e.ok));
