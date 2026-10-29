@@ -53,6 +53,7 @@ const until = async (f, n = 150) => { for (let i = 0; i < n; i++) { if (await f(
       setInterval(() => { a.step(0.05); window.__ghosts.update(0.05); }, 50); // (ghosts.update runs in main.js's frame(), not step())
     });
     await sleep(1500);
+    await A.evaluate(() => { window.__app.billiardCues[0].take(); }); // #1661/#1693: striking needs a cue in hand (billiards.hasCue); A takes one from the rack
     const standA = () => A.evaluate(() => { const a = window.__app, r = a.world.playroom, c = r.billiards.c, o = r.billiards.object.position; a.player.spawn(o.x, o.z + c.length / 2 + .65, 0); window.__bt.aim(o.x, c.height, o.z); });
     await standA();
     const bA = () => A.evaluate(() => { const b = window.__app.world.playroom.billiards; return { seq: b.seq, ready: b.netReady(), inside: window.__app.world.playroom.inside, mode: b.rules.mode, turn: b.rules.turn, moving: b.physics.moving || b.inShot, events: window.__ev ?? [] }; });
