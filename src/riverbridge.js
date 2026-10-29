@@ -126,7 +126,10 @@ export function buildRiverBridges(approachGround=()=>B.deckY){
  }
  const gc=bridgeRecords[1],ends=[-1,1].map(s=>[gc.x+gc.dx*gc.len/2*s,gc.z+gc.dz*gc.len/2*s]);
  for(let i=0;i<2;i++){const[x,z]=ends[i],sign=i===0?-1:1;parts.asphalt.push(pathStrip({path:[[x,z],[x+.8,z+sign*B.approach],[20,z+sign*B.approach*1.6]],w:B.gc.width},w=>-w/2,w=>w/2,.025,approachGround));}
- parts.water.push(pathStrip({path:R.path,w:R.widths??R.width},w=>-w/2,w=>w/2,0,waterYAt));
+ // #1684: the water ribbon runs under the whole bank slope (the same span riverGround uses, per vertex), so the visible shoreline is where the sloping
+ // bank meets the water line, not a hard-edged sheet floating over a strip of bank below the water line. The bank above it hides the extra width.
+ const slope=i=>Math.min((R.banks?R.banks[i]:R.bank)*(R.bankScale??1)*.4,2.5),widths=R.path.map((_,i)=>(R.widths?R.widths[i]:R.width)+2*slope(i));
+ parts.water.push(pathStrip({path:R.path,w:widths},w=>-w/2,w=>w/2,0,waterYAt));
  const mats={concrete:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.95}),steel:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,metalness:.45,roughness:.55}),asphalt:new THREE.MeshStandardMaterial({color:COLORS.asphalt,roughness:.85}),water:new THREE.MeshStandardMaterial({color:COLORS.water,roughness:.15,metalness:.2})};
  for(const[k,list]of Object.entries(parts)){const geo=mergeGeometries(list.map(g=>g.index?g.toNonIndexed():g));const mesh=new THREE.Mesh(geo,mats[k]);mesh.name=`bridges-${k}`;mesh.castShadow=k!=='water';mesh.receiveShadow=true;group.add(mesh);list.forEach(g=>g.dispose());}
  group.userData.records=bridgeRecords;return group;

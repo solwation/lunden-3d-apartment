@@ -641,10 +641,13 @@ export const SITE = {
   // All heights, widths, pier dimensions, rail/truss section sizes and colours below are visual ASSUMPTIONS.
   bridges: {road:{ends:[[23.9,100],[23.3,145.8]],width:7.2,slab:.45,pier:.75,foot:1.8},
     gc:{ends:[[18.1,101],[17.8,146.5]],length:40,width:3,slab:.18,truss:1.45,panels:10,steel:.10},
-    deckY:-3,waterY:-6.2,bedY:-6.8,shoreY:-5.5,shoreSpan:7.5,valleySpan:8.5,rail:1.1,post:.07,railStep:1.9,approach:8,pierMargin:.2,
+    deckY:-3,waterY:-7,bedY:-7.6,shoreY:-5.5,shoreSpan:7.5,valleySpan:8.5,rail:1.1,post:.07,railStep:1.9,approach:8,pierMargin:.2,
     // #1285 (supersedes #1271 local underpass cut): Höje å and its valley lie generally lower than the road bridge.
-    // Road deck at deckY (-3); waterY (-6.2), bedY and shoreY below are visual guesses at the road-bridge centre (#1350).
-    // No surveyed apartment-floor RH2000 datum or measured bathymetry. Riverbed at bedY (-6.8), shore/path at shoreY (-5.5), 0.7 m above water; gives 2.05 m clearance
+    // Road deck at deckY (-3); waterY (-7), bedY and shoreY below are visual guesses at the road-bridge centre (#1350).
+    // #1684: waterY/bedY were -6.2/-6.8, which left the water only 0.7 m under the 15 m wide shore flat (a player report: the river looked like it floated
+    // over the ground). Both are 0.8 m lower now (*guess*), the shore flat unchanged, so the water lies 1.5 m under the bank crest; the water
+    // ribbon also runs under the whole bank slope (riverbridge.js) and surfaces exactly where the sloping bank meets the water line.
+    // No surveyed apartment-floor RH2000 datum or measured bathymetry. Riverbed at bedY (-7.6), shore/path at shoreY (-5.5), 1.5 m above water (#1684); gives 2.05 m clearance
     // under road slab and 2.32 m under GC bridge). Valley slopes up from shoreSpan (4.5 m past bank) over valleySpan
     // (8.5 m) to base terrain (-3), meeting the road bridge abutments (ends at z ~100 and z ~145.8) from bank to bank.
     underpass:{floorY:-5.5,pier:.2},

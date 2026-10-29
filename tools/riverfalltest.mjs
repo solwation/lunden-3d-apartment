@@ -16,7 +16,7 @@ const near=(a,b,e=1e-9)=>assert(Math.abs(a-b)<e,`${a} close to ${b}`);
 test('interpreted relative fall is tied to the checked source and preserves the road-bridge datum',()=>{
  assert.equal(hash(readFileSync(report.source)),report.sourceSha256);assert.equal(report.count,19);assert.equal(report.pairCount,171);
  near(R.fall.perM,report.fallPerM);near(report.totalFallM,0.4820700143316592);
- const r=bridgeRecords[0];near(riverFallAt(r.x,r.z),0);near(waterYAt(r.x,r.z),-6.2);
+ const r=bridgeRecords[0];near(riverFallAt(r.x,r.z),0);near(waterYAt(r.x,r.z),-7);
  let last=Infinity;
  for(let i=0;i<R.path.length;i++){const[x,z]=R.path[i],a=riverAt(x,z);near(a.along,report.samples[i].alongM);const y=waterYAt(x,z);assert(y<last);last=y;}
 });
@@ -25,13 +25,14 @@ test('rendered water vertices follow the same continuous downstream level as the
  const p=buildRiverBridges().getObjectByName('bridges-water').geometry.attributes.position;let lo=Infinity,hi=-Infinity;
  for(let i=0;i<p.count;i++){const x=p.getX(i),z=p.getZ(i),y=p.getY(i);near(y,waterYAt(x,z),2e-5);lo=Math.min(lo,y);hi=Math.max(hi,y);}
  assert(hi-lo>.48&&hi-lo<.49);
- for(const[x,z]of R.path){const bed=groundBelowDeckY(x,z);near(bed,waterYAt(x,z)-.6);near(shoreYAt(x,z)-waterYAt(x,z),.7);assert(inWater(x,z,bed));}
+ for(const[x,z]of R.path){const bed=groundBelowDeckY(x,z);near(bed,waterYAt(x,z)-.6);near(shoreYAt(x,z)-waterYAt(x,z),1.5);assert(inWater(x,z,bed));}
 });
 
+// #1684 re-baselined the concrete snapshot again: the abutments/piers reach the 0.8 m lower bed (SITE.bridges.bedY).
 // #1530 re-baselined the concrete/steel/asphalt snapshots for the photo-based road-bridge cross-section and vertex colours
 // (the river fall still does not touch them; deck datum and undersides are checked in southbanktest/bridgetest).
 test('the default constant-deck bridge geometry and mapped park paths retain the pre-fall buffers',()=>{
- const expected={'bridges-concrete':'2ab9dd8cc38f372130997549143a14de7811459c6e510fbbeeaa42d7d919a832','bridges-steel':'43a946866a9497d9941e4d495bc6049e90926b5047c2f73a37c1aa9c04423040','bridges-asphalt':'c49aa22d22c0b064737f2699c76076bd9913ce7d935345c70c5ee89e76411360'};
+ const expected={'bridges-concrete':'337755dbf32c55eb0115d3957f5c0e7fd3d3ec25753bc8b66220220758f6e15c','bridges-steel':'43a946866a9497d9941e4d495bc6049e90926b5047c2f73a37c1aa9c04423040','bridges-asphalt':'c49aa22d22c0b064737f2699c76076bd9913ce7d935345c70c5ee89e76411360'};
  for(const m of buildRiverBridges().children.filter(m=>m.name!=='bridges-water')){const h=createHash('sha256'),g=m.geometry;for(const k of Object.keys(g.attributes).sort())h.update(k).update(Buffer.from(g.attributes[k].array.buffer));if(g.index)h.update(Buffer.from(g.index.array.buffer));assert.equal(h.digest('hex'),expected[m.name]);}
  assert.equal(hash(JSON.stringify(SITE.riverPark.paths)),'2e682c6a3361bbdab008dafb210f8b24b8b5566f784932735b1aafb153173150');
 });
@@ -52,4 +53,23 @@ test('the timber deck and its ramp tops stay fixed while the front toes remain b
   const front=(b.deckY-shoreYAt(e.x,e.z)+.1)/b.ramp.front,x=e.x-e.dx*front,z=e.z-e.dz*front;
   assert(parkFillAt(x,z)<groundBelowDeckY(x,z)-.07);
  }
+});
+
+// #1684: the river lies IN the ground: wherever the ground is the shore flat, the bank crest stands at least MIN_DEPTH over the local water line,
+// the bank slopes without a step from the bed up to the crest, and every clearly submerged ground point lies under the water ribbon (so the visible
+// shoreline is where bank meets water, with no gap of bare bank under the water line). Sampled on a grid over the corridor of the whole river.
+test('the water lies well under the bank crest along the whole river and the ribbon covers every submerged bank point',()=>{
+ const MIN_DEPTH=1.3,base=-3;let flat=0,submerged=0,minDepth=Infinity;
+ const P=R.path;
+ for(let i=1;i<P.length;i++)for(let t=0;t<1;t+=.1)for(let o=-22;o<=22;o+=.5){
+  const[ax,az]=P[i-1],[bx,bz]=P[i],len=Math.hypot(bx-ax,bz-az),x=ax+(bx-ax)*t-(bz-az)/len*o,z=az+(bz-az)*t+(bx-ax)/len*o;
+  const r=riverAt(x,z),w2=r.width/2,slope=Math.min(r.bank*.4,2.5),ground=riverGround(x,z,base),water=waterYAt(x,z,r);
+  if(r.distance>w2+slope+.5&&r.distance<Math.max(w2,r.valley/2)+slope+3){flat++;minDepth=Math.min(minDepth,ground-water);assert(ground-water>=MIN_DEPTH-1e-9,`crest ${ground} vs water ${water} at ${x},${z}`);}
+  if(ground<water-.05){submerged++;assert(r.distance<=w2+slope+.15,`submerged ground outside the ribbon at ${x},${z}`);}
+ }
+ assert(flat>500&&submerged>500,`${flat}/${submerged}`);
+ // the ribbon's outermost vertices reach beyond the open channel, out to the end of the bank slope
+ const geo=buildRiverBridges().getObjectByName('bridges-water').geometry.attributes.position;let wide=0;
+ for(let i=0;i<geo.count;i++){const r=riverAt(geo.getX(i),geo.getZ(i));if(r.distance>r.width/2+.2)wide++;}
+ assert(wide>0);
 });
