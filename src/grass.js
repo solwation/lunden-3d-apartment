@@ -7,7 +7,8 @@ let texture;
 export function grassTexture() {
   if (texture) return texture;
   const n = G.textureSize, canvas = document.createElement('canvas'); canvas.width = canvas.height = n;
-  const ctx = canvas.getContext('2d'), pixels = ctx.createImageData(n, n);
+  // #1695: grassMeanColor() reads this canvas back; a CPU-backed canvas keeps getImageData reliable (a GPU-backed one can return all zeros under memory pressure -> black far ground).
+  const ctx = canvas.getContext('2d', { willReadFrequently: true }), pixels = ctx.createImageData(n, n);
   let seed = G.seed;
   const rand = () => ((seed = seed * 16807 % 2147483647) / 2147483647);
   for (let i = 0; i < n * n; i++) {
@@ -46,6 +47,7 @@ export function grassUV(geometry) {
 export function grassMeanColor(color = G.summer) {
   const c = new THREE.Color(color), px = grassTexture().image.getContext('2d').getImageData(0, 0, G.textureSize, G.textureSize).data, sum = [0, 0, 0];
   for (let i = 0; i < px.length; i += 4) for (let k = 0; k < 3; k++) sum[k] += (px[i + k] / 255 < 0.04045 ? px[i + k] / 255 / 12.92 : ((px[i + k] / 255 + 0.055) / 1.055) ** 2.4);
+  if (!px.some((v) => v > 0)) return c.multiplyScalar(0.8); // failed readback: never paint the far ground black (rough detail-map mean, *guess*)
   const n = px.length / 4;
   return c.setRGB(c.r * sum[0] / n, c.g * sum[1] / n, c.b * sum[2] / n * (1 - 0.5 * G.patchWarmth));
 }
