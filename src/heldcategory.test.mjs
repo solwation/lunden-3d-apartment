@@ -35,3 +35,10 @@ test('every result is on the whitelist; cleanHeldCategory drops anything else', 
   for (const v of ['', 'sword', 'CUP', 1, null, undefined, {}, ['cup'], 'cup ', '__proto__', 'constructor']) assert.equal(cleanHeldCategory(v), '', String(v));
   for (const it of [make('Cup'), make('Fruit'), life(['x']), make('Zzz')]) { const k = heldCategory(it); assert.ok(k === '' || HELD_CATEGORIES.includes(k)); }
 });
+
+test('#1687: a billiard cue is a cue (by flag and by class name), never the generic box', () => {
+  assert.equal(heldCategory({ isBilliardCue: true }), 'cue');
+  class BilliardCue {}
+  assert.equal(heldCategory(new BilliardCue()), 'cue');
+  assert.ok(HELD_CATEGORIES.includes('cue'));
+});

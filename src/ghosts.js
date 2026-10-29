@@ -334,7 +334,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
       hands.R = armTarget.forward(-1, 0.04);
       hands.R.at[0] += 0.45 * sw; hands.R.at[1] += 0.1 * sw;
     }
-    const showItem = !!this.itemProp && !this.prop && !this.bikeMesh; // a weapon or the handlebar has the hands (#1297)
+    const showItem = !!this.itemProp && !this.prop && !this.bikeMesh && !(this.hi === 'cue' && this.cue); // (while aiming at the table billiards.js draws their cue, #1637 / #1687) // a weapon or the handlebar has the hands (#1297)
     if (this.itemProp) this.itemProp.visible = showItem;
     if (showItem) hands.R = armTarget.forward(-1, 0.04);
     if (this.waveT > 0) { // (#673) up for the wave, the hand going side to side; down again at the end

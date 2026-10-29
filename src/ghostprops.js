@@ -133,6 +133,9 @@ const ITEM_PARTS = {
   paper: () => [[new THREE.BoxGeometry(0.21, 0.003, 0.297), 0xf7f6f0, [0, 0, -0.17]]],
   tool: () => [[new THREE.BoxGeometry(0.022, 0.022, 0.3), 0x8a8f94, [0, 0, -0.14]], [new THREE.BoxGeometry(0.075, 0.035, 0.07), 0xd1862a, [0, 0, -0.3]]],
   plant: () => [[new THREE.CylinderGeometry(0.065, 0.048, 0.1, 8), 0xb5603a, [0, 0.02, -0.1]], [new THREE.IcosahedronGeometry(0.085, 0), 0x3f8a3c, [0, 0.13, -0.1]]],
+  // #1687: a billiard cue (1.2 m, as the local one in playroomcues.js), gripped 0.35 m from the butt, pointing ahead and a little down (the local held pose)
+  cue: () => { const L = 1.2, tilt = -Math.PI / 2 - 0.3, bit = (g) => g.translate(0, -0.35, 0).rotateX(tilt);
+    return [[bit(new THREE.CylinderGeometry(0.004, 0.009, L - 0.05, 6).translate(0, (L - 0.05) / 2, 0)), 0x976333, [0, 0, 0]], [bit(new THREE.CylinderGeometry(0.004, 0.004, 0.05, 6).translate(0, L - 0.025, 0)), 0xe9dfc4, [0, 0, 0]]]; },
   box: () => [[new THREE.BoxGeometry(0.13, 0.09, 0.13), 0xb98f5c, [0, 0.02, -0.1]]],
 };
 const itemCache = new Map();

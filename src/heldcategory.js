@@ -4,7 +4,7 @@
 // Weapons keep their own wire field `h`; this covers the ordinary held things heldItem() (holdable.js) can return.
 
 /** The whitelist: one simple proxy model per key (ghostprops.js ghostItem). */
-export const HELD_CATEGORIES = Object.freeze(['cup', 'plate', 'food', 'bottle', 'book', 'paper', 'tool', 'plant', 'box']);
+export const HELD_CATEGORIES = Object.freeze(['cup', 'plate', 'food', 'bottle', 'book', 'paper', 'tool', 'plant', 'cue', 'box']);
 const SET = new Set(HELD_CATEGORIES);
 /** `hi` as it goes on the wire / into a Ghost: a whitelisted key, else '' (none). */
 export const cleanHeldCategory = (v) => (typeof v === 'string' && SET.has(v) ? v : '');
@@ -15,7 +15,7 @@ const BY_CLASS = {
   Cup: 'cup', Glass: 'cup', Jug: 'bottle', Bottle: 'bottle', Milk: 'bottle', Beer: 'bottle', BeerCan: 'bottle',
   Book: 'book', HeldDrawing: 'paper', ToiletPaper: 'paper', Photo: 'paper',
   Pan: 'tool', Cloth: 'tool', Vacuum: 'tool', Flashlight: 'tool', Remote: 'tool', Scoop: 'tool', Toaster: 'box',
-  SillPot: 'plant', Fruit: 'food', FishFinger: 'food', FishPack: 'box', FriesBag: 'food', FriesBunch: 'food', PopcornTub: 'food', Chicken: 'food', ChickenPiece: 'food',
+  SillPot: 'plant', BilliardCue: 'cue', Fruit: 'food', FishFinger: 'food', FishPack: 'box', FriesBag: 'food', FriesBunch: 'food', PopcornTub: 'food', Chicken: 'food', ChickenPiece: 'food',
 };
 const WEAPON_CLASSES = new Set(['Saber', 'Blaster', 'Wand', 'Bow', 'Basketball', 'MieleHeld']);
 
@@ -40,6 +40,7 @@ export function heldCategory(item) {
     const def = item.life?.items?.def?.(item.item);
     return byTags(def?.tags) || 'box';
   }
+  if (item.isBilliardCue) return 'cue'; // #1687: not the generic box
   if (item.isCup) return 'cup';
   if (item.isCloth) return 'tool';
   if (item.isPaper) return 'paper';

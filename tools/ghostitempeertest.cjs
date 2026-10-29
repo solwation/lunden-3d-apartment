@@ -54,6 +54,13 @@ const check = (ok, label, d = '') => { console.log(`${ok ? 'PASS' : 'FAIL'} ${la
     if (s3?.hi) await shot('thing');
     await app.evaluate(() => { const a = window.__app; a.heldItem()?.putBack(); });
     await wait((s) => s.hi === '');
+    // #1687: the real billiard cue is a cue on the peer's side, not the generic box
+    const tc = await app.evaluate(() => { const a = window.__app, c = a.billiardCues?.[0]; if (!c) return null; c.take(); return { cls: a.heldItem()?.constructor?.name }; });
+    const sc = await wait((s) => s.hi === 'cue' || s.hi === 'box');
+    check(tc?.cls === 'BilliardCue' && sc?.hi === 'cue' && sc.item === 'ghost-item:cue', 'real BilliardCue taken: the peer sees a cue proxy, not a box', JSON.stringify({ tc, sc }));
+    if (sc?.hi) await shot('cue');
+    await app.evaluate(() => { const a = window.__app; a.heldItem()?.putBack?.(); });
+    await wait((s) => s.hi === '');
     check(errors.length === 0, 'no page errors', errors.join(' | '));
   } finally { await b1.close(); await b2.close(); }
   process.exit(failed ? 1 : 0);

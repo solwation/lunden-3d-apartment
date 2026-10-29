@@ -3,7 +3,7 @@
 const fs = require('fs'), os = require('os'), path = require('path');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const [base = 'http://localhost:8791', out = '/tmp/shots1297'] = process.argv.slice(2);
-const CATS = ['cup', 'plate', 'food', 'bottle', 'book', 'paper', 'tool', 'plant', 'box'];
+const CATS = ['cup', 'plate', 'food', 'bottle', 'book', 'paper', 'tool', 'plant', 'cue', 'box'];
 (async () => {
   fs.mkdirSync(out, { recursive: true });
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ghostitem-'));
@@ -19,11 +19,11 @@ const CATS = ['cup', 'plate', 'food', 'bottle', 'book', 'paper', 'tool', 'plant'
     const r = await page.evaluate(() => window.__shot());
     console.log(JSON.stringify(r));
     CATS.forEach((k, i) => { if (r.items[i] !== `ghost-item:${k}`) errors.push(`category ${k}: ${r.items[i]}`); });
-    if (r.items[9] !== null) errors.push('no category must show no proxy: ' + r.items[9]);
-    if (r.items[10] !== null) errors.push('a weapon must win over a category: ' + r.items[10]);
+    if (r.items[CATS.length] !== null) errors.push('no category must show no proxy: ' + r.items[CATS.length]);
+    if (r.items[CATS.length + 1] !== null) errors.push('a weapon must win over a category: ' + r.items[CATS.length + 1]);
     for (const k of CATS) if (!(r.itemTris[k] > 0 && r.itemTris[k] <= 80)) errors.push(`${k} proxy ${r.itemTris[k]} triangles`);
     const bare = await page.evaluate(() => window.__shot(null, true)); // beyond poseFar: avatars without any proxy
-    if (r.calls - bare.calls !== 9) errors.push(`proxies must cost one draw call each: ${r.calls} vs ${bare.calls}`); // 9 proxies (the saber prop is drawn in both)
+    if (r.calls - bare.calls !== CATS.length) errors.push(`proxies must cost one draw call each: ${r.calls} vs ${bare.calls}`); // one per category (the saber prop is drawn in both)
     console.log('draw calls', r.calls, 'without proxies', bare.calls);
     await page.evaluate(() => window.__shot());
     await page.locator('canvas').screenshot({ path: path.join(out, 'ghostitem-all.png') });
