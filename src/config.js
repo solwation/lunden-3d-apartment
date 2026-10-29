@@ -787,7 +787,7 @@ export const SITE = {
   // Heights, colours, windows and roof details are visual assumptions. Access paving/tree locations are approximate aerial traces.
   west: {
     buildings: [
-      {"source":"88457595","polygon":[[-158.68,-1.64],[-133.86,21.34],[-132.7,20.1],[-125.0,27.23],[-126.15,28.48],[-101.59,51.23],[-93.17,42.14],[-114.82,22.09],[-112.14,19.2],[-125.86,6.5],[-128.67,9.53],[-150.39,-10.6],[-158.68,-1.64]],"name":"\u00d6stra l\u00e4ngan vid Karpv\u00e4gen","levels":3,"levelsSource":"visual assumption"},
+      {"source":"88457595","polygon":[[-158.68,-1.64],[-133.86,21.34],[-132.7,20.1],[-125.0,27.23],[-126.15,28.48],[-101.59,51.23],[-93.17,42.14],[-114.82,22.09],[-112.14,19.2],[-125.86,6.5],[-128.67,9.53],[-150.39,-10.6],[-158.68,-1.64]],"name":"\u00d6stra l\u00e4ngan vid Karpv\u00e4gen","levels":4,"levelsSource":"visual assumption"}, // #1680: four storeys, pale grey façade, dark roof as the light buildings by Watson Detective Dogs in the Google 3D view (*guess*)
       {"source":"342815181","polygon":[[-130.47,90.14],[-121.66,80.77],[-113.22,88.71],[-102.44,98.85],[-111.26,108.21],[-130.47,90.14]],"name":"Karpv\u00e4gen 10","levels":4,"levelsSource":"OSM","karp":{"hus":1,"stairs":[0.5]}},
       {"source":"342815182","polygon":[[-153.7,124.37],[-192.7,87.66],[-183.95,78.35],[-173.43,88.24],[-155.62,105.01],[-144.94,115.06],[-153.7,124.37]],"name":"Karpv\u00e4gen 6\u20138","levels":4,"levelsSource":"OSM","karp":{"hus":2,"stairs":[0.3,0.7]}},
       {"source":"342815183","polygon":[[-231.56,32.51],[-224.31,39.32],[-222.72,40.83],[-207.76,54.91],[-197.32,64.74],[-206.06,74.02],[-231.46,50.11],[-236.1,55.04],[-244.93,46.73],[-231.56,32.51]],"name":"Karpv\u00e4gen 2\u20134","levels":4,"levelsSource":"Brf facts","karp":{"hus":3,"stairs":[0.3,0.7]}},
@@ -822,8 +822,8 @@ export const SITE = {
     sill: 0.85,
     bay: 3.5,
     frame: 0.08,
-    facade: 13747890,
-    roof: 5660765,
+    facade: 0xe3e1dc, // #1680: pale grey-white (was beige 0xd1c6b2) as the light four-storey houses in the Google 3D view of 2026-10-29 (colour read from the image, *guess*)
+    roof: 0x4a5664,   // #1680: dark blue-grey (was green-grey 0x56605d), as every roof in that view (*guess*)
     plinth: 9999754,
     glass: 3230037,
     pathLift: 0.025,
@@ -855,7 +855,7 @@ export const SITE = {
       roofBox: [2.4, 1.3, 1.2], // white roof housings (render; size *guess*)
       brick: { mortar: '#c4beb5', base: [172, 96, 82], variation: 24 }, // the photo's salmon-red brick, light mortar (colours read from the photo)
       colors: { render: 0xeeeeea, metal: 0x3b3f43, coping: 0x2f3236, frame: 0xf2f1ec, panel: 0xdfe9e3, plinth: 0xb4b1aa,
-        slab: 0xf3f2ee, rail: 0xd9e4e5, roofBox: 0xe6e6e2, roof: 0x34373a, canopy: 0x3b3f43 },
+        slab: 0xf3f2ee, rail: 0xd9e4e5, roofBox: 0xe6e6e2, roof: 0x465263, canopy: 0x3b3f43 }, // #1680: roof 0x465263 dark blue-grey instead of 0x34373a, matching the dark roofs on the brick houses (Audionom, Lingua Montessori) in the Google 3D view (*guess*)
     },
   },
   // #535: east-campus source polygons replace old illustrative school/longhouse blocks; HepCat is preserved.
