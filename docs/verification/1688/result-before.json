@@ -1,0 +1,40 @@
+{
+  "result": {
+    "lowMemory": true,
+    "before": {
+      "normal": {
+        "itemSize": 4,
+        "length": 0,
+        "count": 4032,
+        "freed": true,
+        "dynamic": false
+      },
+      "position": {
+        "itemSize": 3,
+        "length": 12096,
+        "count": 4032,
+        "freed": false,
+        "dynamic": false
+      },
+      "keepCpu": false,
+      "gap": 6.219970703125
+    },
+    "after": {
+      "normal": {
+        "itemSize": 4,
+        "length": 0,
+        "count": 4032,
+        "freed": true,
+        "dynamic": false
+      },
+      "gap": 5.941162109375,
+      "unitNormals": 0
+    },
+    "expected43": 2.5933333333333337,
+    "thrown": [
+      "THREE.WebGLAttributes: The size of the buffer attribute's array buffer does not match the original size. Resizing buffer attributes is not supported.",
+      "THREE.WebGLAttributes: The size of the buffer attribute's array buffer does not match the original size. Resizing buffer attributes is not supported."
+    ]
+  },
+  "errors": []
+}

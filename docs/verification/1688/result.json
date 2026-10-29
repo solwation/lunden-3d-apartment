@@ -1,0 +1,37 @@
+{
+  "result": {
+    "lowMemory": true,
+    "before": {
+      "normal": {
+        "itemSize": 3,
+        "length": 12096,
+        "count": 4032,
+        "freed": false,
+        "dynamic": true
+      },
+      "position": {
+        "itemSize": 3,
+        "length": 12096,
+        "count": 4032,
+        "freed": false,
+        "dynamic": true
+      },
+      "keepCpu": true,
+      "gap": 6.219970703125
+    },
+    "after": {
+      "normal": {
+        "itemSize": 3,
+        "length": 12096,
+        "count": 4032,
+        "freed": false,
+        "dynamic": true
+      },
+      "gap": 2.5933837890625,
+      "unitNormals": 1
+    },
+    "expected43": 2.5933333333333337,
+    "thrown": []
+  },
+  "errors": []
+}
