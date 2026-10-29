@@ -6136,7 +6136,12 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
       signs: { spel: { x: 6, y: 1.9, w: 1.6, h: .53, wall: 'spelN' }, biljard: { x: -.95, y: 1.85, w: 1.3, h: .43, wall: 'biljN' } } },
     // the BILJARD pub: two pendants over the table and warm wall lamps; the lamps are unlit emissive meshes
     pendants: { x: 0, z: [-2.6, -1], bottom: 1.74, /* #1617: 1.02 m above the taller table cloth */ h: .17, rTop: .05, rBottom: .22, cord: .012, shade: 0x1f5a3c, rim: 0xb8874d, glow: 0xffd9a0 },
-    sconces: { w: .14, h: .26, d: .09, y: 1.75, lit: 0xffb866, east: [-3.85, -1.65, .5], west: [-2.9, -1], north: [-1.88, 1.05] } },
+    sconces: { w: .14, h: .26, d: .09, y: 1.75, lit: 0xffb866, east: [-3.85, -1.65, .5], west: [-2.9, -1], north: [-1.88, 1.05] },
+    // #1670: real posters from the Worker's GET /playroom/posters (Wikimedia Commons, see cloudflare/playroomposters.js), painted into the same atlas
+    // cells as the designs they replace: `cells` = each room's first design index and count (hall 0-9, SPEL 10-18, BILJARD 19-27, posterdesigns.js).
+    // `timeoutMs` per request/image and `retryMs` after a failed request (as the BIO's posters), `credit` = the px band under a CC BY/BY-SA poster
+    // for its author and licence (our choice), `mat` = the dark mount around a letterboxed picture (*guess*).
+    online: { cells: { hall: [0, 10], spel: [10, 9], biljard: [19, 9] }, timeoutMs: 8000, retryMs: 300000, credit: 15, mat: 5 } },
   // #1574: per-room light levels [BIO, BILJARD, SPEL, hall] (*guess*): the clubhouse material scales its ceiling-lamp term and its ambient term by room, so SPEL
   // is dim (neon and screens carry it), BILJARD is dull and pub-like, and BIO/hall stay as they were. BIO's film dimming (#1570) stays as is.
   zones: { lamp: [1, .45, .22, 1], ambient: [1, .62, .38, 1], panel: [1, .55, .22, 1] }, // panel: the ceiling light panels' glow (BILJARD/SPEL are in the poster mesh; BIO's follows #1570's sconces)

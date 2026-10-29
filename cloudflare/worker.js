@@ -1,6 +1,7 @@
 import { reportsFetch } from './reports.js';
 import { beerShelfFetch } from './beershelf.js';
 import { youtubeSearchFetch, cinemaPostersFetch } from './youtubesearch.js';
+import { playroomPostersFetch } from './playroomposters.js';
 import { layoutFetch } from './layout.js';
 import { crashFetch } from './crash.js';
 import { gamesFetch, cleanLook, publicRows } from './games.js';
@@ -29,6 +30,8 @@ export { PlayerRoom };
 //                                  game, bounded by what the rules allow in ms (Ormstriden rows come from the players' room)
 //   PUT    /presence/:id          ← { name, score } (name '' = anonymous) → { count, names, players, anon }; GET /presence the same without joining
 //   GET    /cinema/posters        → { day, items: [{ id, title, channel }], stale } the BIO's daily YouTube film posters (#1575, youtubesearch.js)
+//   GET    /playroom/posters      → { day, rooms: { hall, spel, biljard: [{ src, w, h, title, artist, licence, licenceUrl, page }] }, stale } the
+//                                  playhouse's daily Wikimedia Commons posters (#1670, playroomposters.js)
 //   POST   /crash                 ← a crash report from the game (#629, cloudflare/crash.js); GET /crash, /crash/:id read them (admin token)
 //   GET    /players               WebSocket upgrade → the PlayerRoom Durable Object (#666, cloudflare/players.js): other players as ghosts
 //   DELETE /admin/:what           (what = drawings | paper | scores | games | crash | players | all; /admin/scores?id=<id or name>: one row) with "Authorization: Bearer <ADMIN_TOKEN>"
@@ -36,7 +39,7 @@ export { PlayerRoom };
 //                                  — the emergency brake; ADMIN_TOKEN is a Worker secret (cloudflare/setup.sh sets one)
 //
 // KV keys: 'drawings' (the metadata list), 'drawing:<id>' (image bytes, metadata { type }), 'paper' (JSON),
-// 'scores' (all rows { id, name, score, updated, avatar? }, the best MAX_SCORES), 'game:<game>' (#1577: the same rows per computer game), 'presence:<id>' (short-lived visitors), 'cinema-posters' (#1575: the last good poster day).
+// 'scores' (all rows { id, name, score, updated, avatar? }, the best MAX_SCORES), 'game:<game>' (#1577: the same rows per computer game), 'presence:<id>' (short-lived visitors), 'cinema-posters' (#1575: the last good poster day), 'playroom-posters' (#1670: the last vetted Commons pool).
 // Cat photos are personal and stay in each visitor's browser (#211).
 
 // Same compact appearance validation as the existing multiplayer protocol (games.js cleanLook, #1585).
@@ -127,6 +130,10 @@ const worker = {
     if (what === 'cinema' && id === 'posters') { // #1575: the BIO's daily film posters (KV-cached day list, see youtubesearch.js)
       if (await limited(request, env)) return fail(429, 'too many requests', h);
       return cinemaPostersFetch(request, env, h);
+    }
+    if (what === 'playroom' && id === 'posters') { // #1670: the playhouse's daily Commons posters (KV-cached pool, see playroomposters.js)
+      if (await limited(request, env)) return fail(429, 'too many requests', h);
+      return playroomPostersFetch(request, env, h);
     }
     if (what === 'crash') return crashFetch(request, env, h, id); // #629
     if (what === 'players' && !id) { // #666: only a WebSocket from the site (a request without Origin is not a browser page)

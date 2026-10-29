@@ -595,6 +595,14 @@ Per-room light: `clubhousematerials.js` exports `CLUB_ZONES` (Vector4 [BIO, BILJ
 dim and BILJARD pub-like while BIO and the hall are unchanged. The values are live uniforms (set a component, no recompile), meant to be reused for further per-room moods. The light switch (#1365) and
 the disco ball work as before; the neon and lamps stay on when the disco light is off.
 
+Real posters (#1670): `src/playroomphotos.js` fetches the Worker's `GET /playroom/posters` (Wikimedia Commons, see `cloudflare/README.md`) when the visitor
+enters the playhouse. It loads the day's 28 thumbnails (CORS `*`, 330 px wide) and asks `roomPosters().setPhotos(cells)` to repaint. That paints the whole
+atlas on a fresh canvas with each real poster in the cell of the design it replaces (hall 0-9, SPEL 10-18, BILJARD 19-27, `PLAYROOM.posters.online.cells`),
+swaps the material's map and disposes the old texture. The mesh, material, atlas size (1536×1280), draw calls and texture count are unchanged, and
+`freeCanvasAfterUpload` still frees the canvas on phones because every repaint is a new canvas. Each picture is letterboxed in its own proportions on a dark
+mount (`mat`); a CC BY/BY-SA picture gets its author and licence in a `credit` band below it. A picture that fails to load keeps its canvas design. Fallbacks: the
+last good list in localStorage `lunden.playroomPosters`, else the designs. [Before/after](../verification/1670/).
+
 ## BIO film darkening, masking curtains and exit signs (#1619)
 
 A running film darkens the BIO further and slower than #1570: `PLAYROOM.sconces` `dimmed .06`, `ambientDim .18`, `fadeSeconds 6` (both ways; the light switch override from #1570/#1610 is unchanged).

@@ -2522,6 +2522,7 @@ per issue). Each needs its own actual full/test runs and unchanged assertions:
 | BIO vignette, speakers and sconce dimming (#1570) | biovignettetest.cjs |
 | BIO film posters from the daily Worker list (#1575) | cinemapostertest.cjs (fakes `/cinema/posters`, no Worker needed); `node --test cloudflare/cinemaposters.test.mjs` |
 | Playhouse posters, neon, pub light: draws, switch, zones (#1574) | playroomposterstest.cjs, playroomposterslayout.test.mjs |
+| Playhouse real posters: Commons pool, daily pick, fallback, same draws/atlas (#1670) | cloudflare/playroomposters.test.mjs, playroomphotos.test.mjs, playroomphotostest.cjs (`POSTER_ROOMS=<saved answer>`) |
 | Placement and stored photos (#808 accepted) | bestaplacementtest, artleveltest, boardtest; actual evidence below, default optional art cloud coverage remains unexecuted |
 | Care and persistence | bedcaretest, clothtest, colddrawertest |
 | Interaction | cheattest, booktest, crouchtest |

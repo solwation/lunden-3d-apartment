@@ -254,6 +254,8 @@ src/keep.js            the world's state across a page-made reload (#277): saveW
 src/realweather.js    the weather cache (#674): localStorage `lunden.weather.<YYYY-MM>` = `{ v:1, at, final, d:{ y, m, t, p, s, c } }` (hourly temperature, precipitation, snowfall, weather code of one month, ~15–20 KB); archive months (`final`) never expire, forecast months are used for 3 h and refreshed in the background; at most `WEATHER.real.keepMonths` (12) kept, the oldest dropped first, and all of them if the quota is full; a bad/short entry is ignored. Not in RESET_KEEP: "Återställ" clears it (it is only a cache)
 src/cinemaposters.js   the BIO's film posters (#1575): localStorage `lunden.cinemaPosters` = `{ v:2, day, items:[{ id, title, channel }] }`, the last good daily list from
                        GET /cinema/posters, shown when the Worker cannot be reached (validated again on read; a bad record → generic posters). Only a cache: "Återställ" clears it
+src/playroomphotos.js  the playhouse's real posters (#1670): localStorage `lunden.playroomPosters` = `{ v:1, day, rooms:{ hall, spel, biljard:[{ src, w, h, title, artist, licence }] } }`,
+                       the last good list from GET /playroom/posters, painted when the Worker cannot be reached (validated again on read; nothing valid → the canvas designs). Only a cache
 src/reset.js           "Återställ" on the start screen (#303): clears every local 'lunden.*' key except RESET_KEEP (config)
 src/idb.js             the shared IndexedDB 'lunden' (version 3: catPhotos + drawings + catCards, #1249) — every module opens it here
                        withStore resolves a request to its result (undefined for a missing key, #1516), else fn's return (test: tools/idbtest.cjs BASE)
@@ -372,7 +374,7 @@ cloudflare/crash.js    POST /crash, admin GET /crash and /crash/<id>, DELETE /ad
                        Additive v2 fields: older reports stay readable, missing worst omitted and age/surface null.
                        `tools/crashsnapshottest.cjs` tests production CrashLog with native browser DOM/events and synthetic renderer
                        counters/context events, without loading the apartment or WebGL; not a physical phone reproduction.
-cloudflare/            the Worker (NOT published on Pages): worker.js (API, limits, CORS, admin emergency brake), `youtubesearch.js` (`GET /youtube-search`, server-only `YOUTUBE_API_KEY`; #1575 `GET /cinema/posters`, KV `cinema-posters` = the last good day list (`filter` = `worker.filterVersion`, #1589: unfiltered lists are ignored) + retry marker), wrangler.toml,
+cloudflare/            the Worker (NOT published on Pages): worker.js (API, limits, CORS, admin emergency brake), `youtubesearch.js` (`GET /youtube-search`, server-only `YOUTUBE_API_KEY`; #1575 `GET /cinema/posters`, KV `cinema-posters` = the last good day list (`filter` = `worker.filterVersion`, #1589: unfiltered lists are ignored) + retry marker), `playroomposters.js` (#1670 `GET /playroom/posters`, KV `playroom-posters` = the last vetted Commons pool + retry marker), wrangler.toml,
                        setup.sh (the user's one-command setup: login, KV, deploy, ADMIN_TOKEN, CLOUD_URL into config),
                        dev.mjs (the same Worker on Node with an in-memory KV, for tests), README.md (Swedish, for the user);
                        .github/workflows/cloud.yml redeploys on cloudflare/** and shared schema/verifier changes when the repo has Cloudflare secrets

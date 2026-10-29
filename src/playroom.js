@@ -19,6 +19,7 @@ import { CinemaCurtains } from './cinemacurtains.js';
 import { playroomCinema } from './playroomcinema.js';
 import { CinemaPosters } from './cinemaposters.js';
 import { roomPosters } from './playroomposters.js';
+import { PlayroomPhotos } from './playroomphotos.js';
 import { PopcornCart, popcornCartParts, popcornSign, popcornLamp, popcornFootprints } from './popcorn.js';
 import { PlayroomCueRack } from './playroomcues.js';
 
@@ -246,7 +247,7 @@ export class Playroom {
     const parts = [merged([...shell, ...fur], furMat)]; // shell and furniture share one vertex-coloured mesh; screens animate separately
     for (const m of parts) { m.matrixAutoUpdate = false; this.object.add(m); }
     this.zones = CLUB_ZONES; // #1574: per-room lamp/ambient levels [BIO, BILJARD, SPEL, hall] (live uniforms)
-    this.roomPosters = roomPosters(); this.object.add(this.roomPosters.mesh); // #1574: posters, SPEL neon, BILJARD pendants and lamps: one unlit draw, hidden with the room
+    this.roomPosters = roomPosters(); this.object.add(this.roomPosters.mesh); this.roomPhotos = new PlayroomPhotos({ paint: (cells) => this.roomPosters.setPhotos(cells) }); // #1670: real posters, fetched on entering (main.js sets the endpoint) // #1574: posters, SPEL neon, BILJARD pendants and lamps: one unlit draw, hidden with the room
     this.curtains = new CinemaCurtains(furMat); this.object.add(this.curtains.mesh); // #1619: the masking curtains follow the film's picture ratio
     this.cinemaSpeakers = cinemaParts.speakers; this.sconces = cinemaParts.sconces; this.setSconceDim = cinemaParts.setDim; this.object.add(this.sconces);
     this.object.add(this.posters.object); this.controlPickables.push(...this.posters.pickables);
@@ -372,7 +373,7 @@ export class Playroom {
   get arrival() { return { x: R.x, z: Z1 - R.standOff, yaw: 0 }; }
 
   /** Drawn (and its exit pickable live) only while inside. */
-  setInside(on) { this.inside = on; this.sound.setInside(on); this.billiards.active = on; this.object.visible = on; this.devices.setInside(on); this.music.setInside(on); this.posters.setInside(on); this.cueRack?.setInside?.(on); }
+  setInside(on) { this.inside = on; this.sound.setInside(on); this.billiards.active = on; this.object.visible = on; this.devices.setInside(on); this.music.setInside(on); this.posters.setInside(on); this.roomPhotos.setInside(on); this.cueRack?.setInside?.(on); }
 
   /** Where you stand when you come out: just north of the playhouse's door, facing away from it. */
   static get outsideSpot() {

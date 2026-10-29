@@ -1346,6 +1346,7 @@ playroom.devices.onVideoRequest = () => {
 };
 playroom.devices.onLeave = () => cinema.leave('exit');
 playroom.posters.endpoint = cloudUrl() ? `${cloudUrl()}/cinema/posters` : ''; // #1575: the BIO's daily film posters (fetched on entering)
+playroom.roomPhotos.endpoint = cloudUrl() ? `${cloudUrl()}/playroom/posters` : ''; // #1670: real posters for the hall, SPEL and BILJARD (fetched on entering)
 cinema.onNotice = text => badge(text, false); // #1575: a poster's start/refusal, shown without the dialog
 
 // Native mouse lock picks the crosshair on mousedown. Free touch/pen picks the

@@ -92,7 +92,7 @@ const allowedChannels = () => [...new Set([...P.worker.channels, ...P.worker.cin
 const isCinemaChannel = (c) => P.worker.cinemaChannels.includes(c) && !P.worker.channels.includes(c); // a children's channel keeps madeForKids
 
 /** #1663: a small deterministic PRNG (FNV-1a hash of the seed text → mulberry32), so one day's shuffle is the same in every isolate. */
-const seededRandom = (seed) => {
+export const seededRandom = (seed) => {
   let h = 2166136261;
   for (const ch of seed) h = Math.imul(h ^ ch.codePointAt(0), 16777619);
   return () => { h = (h + 0x6d2b79f5) | 0; let t = Math.imul(h ^ (h >>> 15), 1 | h); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };

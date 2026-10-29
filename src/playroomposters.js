@@ -22,28 +22,49 @@ const tintGeometry = (g, colour) => {
 };
 const flip = (g) => { const a = g.index ? g.toNonIndexed() : g, p = a.attributes; for (const k of Object.keys(p)) { const s = p[k].itemSize, arr = p[k].array; for (let i = 0; i < p[k].count; i += 3) for (let j = 0; j < s; j++) { const x = arr[(i + 1) * s + j]; arr[(i + 1) * s + j] = arr[(i + 2) * s + j]; arr[(i + 2) * s + j] = x; } } return a; };
 
+/** #1670: one real poster in its cell: letterboxed on a dark mount (its own proportions), a CC BY/BY-SA poster with its author and licence underneath.
+ *  The title/author are untrusted plain text, drawn on the canvas only. */
+function photoCell(ctx, { img, item }, w, h) {
+  const O = P.online, credit = /^CC BY/.test(item.licence), band = credit ? O.credit : 0, m = O.mat, aw = w - 2 * m, ah = h - 2 * m - band;
+  ctx.fillStyle = '#17140f'; ctx.fillRect(0, 0, w, h);
+  const iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height, k = Math.min(aw / iw, ah / ih), dw = iw * k, dh = ih * k;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(img, m + (aw - dw) / 2, m + (ah - dh) / 2, dw, dh);
+  if (!credit) return;
+  ctx.fillStyle = 'rgba(236,228,210,.85)'; ctx.font = `${Math.round(band * .62)}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  let text = `${item.artist || 'Okänd'} · ${item.licence} · Wikimedia Commons`;
+  if (ctx.measureText(text).width > w - 6) text = `${item.artist || 'Okänd'} · ${item.licence}`;
+  while (text.length > 4 && ctx.measureText(text).width > w - 6) text = `${text.slice(0, -2).trimEnd()}…`;
+  ctx.fillText(text, w / 2, h - m - band / 2);
+}
+
 /** Builds the mesh (the group's child) and returns it with the layout it came from. */
 export function roomPosters() {
-  const [AW, AH] = P.atlas, [cw, ch] = P.cell, layout = posterLayout();
-  const canvas = document.createElement('canvas'); canvas.width = AW; canvas.height = AH;
-  const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#10121a'; ctx.fillRect(0, 0, AW, AH);
-  const designs = posterDesigns();
-  designs.forEach((draw, i) => {
-    ctx.save(); ctx.translate((i % P.cols) * cw, Math.floor(i / P.cols) * ch); ctx.beginPath(); ctx.rect(0, 0, cw, ch); ctx.clip(); ctx.scale(cw / 192, ch / 256); draw(ctx); ctx.restore();
-  });
-  const stripY = AH - P.sign[1];
-  for (const [i, name] of Object.keys(P.neon.signs).entries()) { ctx.save(); ctx.translate(i * P.sign[0], stripY); ctx.beginPath(); ctx.rect(0, 0, P.sign[0], P.sign[1]); ctx.clip(); neonSignCell(ctx, name, P.sign); ctx.restore(); }
+  const [AW, AH] = P.atlas, [cw, ch] = P.cell, layout = posterLayout(), designs = posterDesigns(), stripY = AH - P.sign[1];
   // A solid white swatch: emissive runs, lamps and shades take their colour from the vertices. It fills the last poster
   // cell, which no design uses (#1608: in the atlas's corner it showed as a white square on the 8-BALL sign below it).
   const free = P.cols * Math.floor(stripY / ch) - 1;
   if (designs.length > free) throw new Error(`playroom posters: ${designs.length} designs leave no free atlas cell for the swatch`);
   const sx = (free % P.cols) * cw, sy = Math.floor(free / P.cols) * ch;
-  ctx.fillStyle = '#fff'; ctx.fillRect(sx, sy, cw, ch);
   // #1625: the green emergency-exit sign (one 2:1 image) takes the three free cells before the swatch, so its four quads cost no draw of their own.
   const E = R.exitSigns, ex = designs.length * cw % AW, ey = Math.floor(designs.length * cw / AW) * ch, ew = 2 * ch;
   if (designs.length + 3 > free || ex + ew > AW) throw new Error('playroom posters: no room in the atlas for the exit sign');
-  ctx.save(); ctx.translate(ex, ey); ctx.beginPath(); ctx.rect(0, 0, ew, ch); ctx.clip(); drawSign(ctx, ew, ch); ctx.restore();
+  /** #1670: the whole atlas on a fresh canvas; `photos` (design index → { img, item }) replaces those designs with real posters. */
+  const paint = (photos = new Map()) => {
+    const canvas = document.createElement('canvas'); canvas.width = AW; canvas.height = AH;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#10121a'; ctx.fillRect(0, 0, AW, AH);
+    designs.forEach((draw, i) => {
+      ctx.save(); ctx.translate((i % P.cols) * cw, Math.floor(i / P.cols) * ch); ctx.beginPath(); ctx.rect(0, 0, cw, ch); ctx.clip();
+      const photo = photos.get(i);
+      if (photo) photoCell(ctx, photo, cw, ch); else { ctx.scale(cw / 192, ch / 256); draw(ctx); }
+      ctx.restore();
+    });
+    for (const [i, name] of Object.keys(P.neon.signs).entries()) { ctx.save(); ctx.translate(i * P.sign[0], stripY); ctx.beginPath(); ctx.rect(0, 0, P.sign[0], P.sign[1]); ctx.clip(); neonSignCell(ctx, name, P.sign); ctx.restore(); }
+    ctx.fillStyle = '#fff'; ctx.fillRect(sx, sy, cw, ch);
+    ctx.save(); ctx.translate(ex, ey); ctx.beginPath(); ctx.rect(0, 0, ew, ch); ctx.clip(); drawSign(ctx, ew, ch); ctx.restore();
+    return freeCanvasAfterUpload(Object.assign(new THREE.CanvasTexture(canvas), { colorSpace: THREE.SRGBColorSpace, anisotropy: 4 }));
+  };
   const swatch = (g) => { const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, (sx + cw / 2) / AW, 1 - (sy + ch / 2) / AH); return g; };
   const geos = [], meta = [], box = (rect, colour, kind = 'lamp', zone) => {
     const g = new THREE.BoxGeometry(rect.x1 - rect.x0, rect.y1 - rect.y0, rect.z1 - rect.z0).translate((rect.x0 + rect.x1) / 2, (rect.y0 + rect.y1) / 2, (rect.z0 + rect.z1) / 2);
@@ -87,7 +108,7 @@ export function roomPosters() {
     const sh = { ...r }; if (W.axis === 'x') { if (W.n > 0) sh.z0 = W.plane + .02; else sh.z1 = W.plane - .02; } else if (W.n > 0) sh.x0 = W.plane + .02; else sh.x1 = W.plane - .02;
     box(sh, L.lit);
   }
-  const mesh = new THREE.Mesh(mergeGeometries(geos), new THREE.MeshBasicMaterial({ map: freeCanvasAfterUpload(Object.assign(new THREE.CanvasTexture(canvas), { colorSpace: THREE.SRGBColorSpace, anisotropy: 4 })), vertexColors: true, toneMapped: false }));
+  const mesh = new THREE.Mesh(mergeGeometries(geos), new THREE.MeshBasicMaterial({ map: paint(), vertexColors: true, toneMapped: false }));
   mesh.name = 'playroom-posters'; mesh.matrixAutoUpdate = false; geos.forEach((g) => g.dispose());
   // DynamicDraw/keepCpu: setLevel() rewrites the colours whenever the room's ambient changes (e.g. toggling the disco
   // light), so the phone profile must not free them after upload; a freed array threw in render → blue screen (#1560, #1595).
@@ -115,5 +136,7 @@ export function roomPosters() {
   };
   /** Current brightness of the first poster and the last panel of each zone (for tests). */
   const probe = () => { let i = 0; const o = {}; for (const m of meta) { if (m.kind === 'poster' && o.poster === undefined) o.poster = colours.getX(i); if (m.kind === 'panel') o[`panel_${m.zone}`] = colours.getX(i); i += m.n; } return o; };
-  return { mesh, layout, setLevel, setDisco, probe };
+  /** #1670: repaint the atlas with real posters (PlayroomPhotos): a new canvas texture on the same material and mesh, the old one freed. */
+  const setPhotos = (photos) => { const old = mesh.material.map; mesh.material.map = paint(photos); old?.dispose(); };
+  return { mesh, layout, setLevel, setDisco, probe, setPhotos };
 }
