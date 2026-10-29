@@ -1319,7 +1319,11 @@ export const BOULE = {
 // #688: grass appearance, all *guess* by eye from the realism screenshots; no botanical survey.
 export const GRASS = {
   textureSize: 256, tile: 1.6, seed: 688, blades: 2300, bladeLength: [2, 7],
-  summer: 0x718b50, autumn: 0x94845b, autumnMix: 0.55,
+  // #1681: the ground read olive/khaki from the air: the old summer 0x718b50 (x detail map ~ 87,107,56) was dull, and the autumn
+  // khaki 0x94845b was mixed in at 55 % for ALL of September, so early-autumn lawns were already straw (~103,104,60) while the
+  // far land (summer mean) stayed green. Greener summer base; `autumnMix` by month (0 = none): September barely turns, the
+  // browning arrives in October/November (*guess* by eye from the Google 3D references, docs/references/google-3d-2026-10-29).
+  summer: 0x609548, autumn: 0x94845b, autumnMix: { 9: 0.12, 10: 0.5, 11: 0.6 },
   detailRange: [190, 244], detailNoise: 24, strawTint: 0.94, bladeTint: 0.91, strokeWidth: 0.7,
   patchScale: 0.45, patchStrength: 0.10, patchWarmth: 0.035, patchFrequencies: [0.73, 0.87, 0.31],
 };

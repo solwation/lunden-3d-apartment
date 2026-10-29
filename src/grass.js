@@ -72,7 +72,7 @@ export function grassMaterial(color = G.summer) {
   registerSnow(material, SEASON.snow.ground); // seasons removes/reinstates the shared detail map under snow
   registerSeasonal((month) => {
     snow.value = SEASON.snowMonths.includes(month) ? 1 : 0;
-    if (!snow.value) material.color.copy(base).lerp(autumn, month >= 9 && month <= 11 ? G.autumnMix : 0);
+    if (!snow.value) material.color.copy(base).lerp(autumn, G.autumnMix[month] ?? 0);
   });
   return material;
 }
