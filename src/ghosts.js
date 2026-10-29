@@ -507,6 +507,7 @@ export class Ghosts {
     else if (m.t === 'cinema') this.onCinema?.(m);
     else if (m.t === 'snake') this.onSnake?.(m);
     else if (m.t === 'mus') this.onMusic?.(m); // the shared children's-room music (#1624, src/playroommusic.js): only sent to players inside the room
+    else if (m.t === 'sq') this.onSquirrels?.(m); // the shared squirrels and nuts (#1686, src/squirrelsync.js): only sent to players near them
     else if (m.t === 'pk' || m.t === 'pkg') this.onPaddock?.(m); // the shared pony paddock (#1644, src/paddock.js): only sent to players near it
     else if (m.t === 'pool') this.onPool?.(m); // the shared billiard table (#1355, src/billiards.js): only sent to players inside the children's room
     else if (m.t === 'm' || m.t === 'mx' || m.t === 'k') this.onTalk?.(m, this.others.get(m.i)); // chat (#675) and "skriver…" (#676), src/chat.js
@@ -647,6 +648,16 @@ export class Ghosts {
   paddock(msg) {
     if (!this.connected) return false;
     this.outbox = this.outbox.filter((m) => m.t !== msg.t || m.k !== msg.k); // only the newest snapshot / mask waits
+    this.outbox.push(msg);
+    while (this.outbox.length > G.outbox) this.outbox.splice(this.outbox.findIndex(m => m.t !== 'fall' && m.t !== 'consume'), 1);
+    this.sendShot();
+    return true;
+  }
+
+  /** A squirrel message (#1686): the leader's pose / nut snapshots ('s' / 'n': only the newest waits) and the one-off take / put / feed events. */
+  squirrels(msg) {
+    if (!this.connected) return false;
+    if (msg.k === 's' || msg.k === 'n') this.outbox = this.outbox.filter((m) => m.t !== 'sq' || m.k !== msg.k);
     this.outbox.push(msg);
     while (this.outbox.length > G.outbox) this.outbox.splice(this.outbox.findIndex(m => m.t !== 'fall' && m.t !== 'consume'), 1);
     this.sendShot();

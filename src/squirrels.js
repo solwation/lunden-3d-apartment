@@ -5,6 +5,7 @@ import { Holdable, heldItem, setHeld } from './holdable.js';
 import { Hearts } from './pingping.js';
 import { registerSeasonal } from './seasons.js';
 import { SquirrelBrain, NutField, linkTrees, winterMonth } from './squirrelbrain.js';
+import { SquirrelSync } from './squirrelsync.js';
 
 // Squirrels and the nuts they look for (#1672). The brains live in squirrelbrain.js (no three.js); this file draws them and ties them to
 // the game: the crowns and ground come from the trees built in surroundings.js (river park patches and the paddock's shade trees, read
@@ -13,8 +14,11 @@ import { SquirrelBrain, NutField, linkTrees, winterMonth } from './squirrelbrain
 // Cost: one merged mesh per squirrel (3 draw calls, shared material, no extra light or shadow caster), a nut mesh only while it lies out,
 // a hidden squirrel/nut in winter costs nothing; the AI thinks every frame only within `simDist` m of the eye, every `farStep` s up to
 // `farDist`, and not at all beyond.
+// #1686: 18 nuts (not 6), bigger, each lying under an additive glint (a flat ring + a thin beam: ONE instanced mesh for all of them, so no draw
+// call per nut; the nut's own mesh is drawn only within `nutNear` m), and the squirrels + nuts are shared between the players near them through
+// squirrelsync.js (`net`: { send(m), remotes(), me() }, set by main.js): the leader simulates, the others adopt its snapshots.
 
-const V = new THREE.Vector3(), tint = new THREE.Color();
+const V = new THREE.Vector3(), tint = new THREE.Color(), MAT = new THREE.Matrix4();
 const paint = (geo, hex) => {
   const n = geo.attributes.position.count, c = new Float32Array(n * 3); tint.setHex(hex);
   for (let i = 0; i < n; i++) tint.toArray(c, i * 3);
@@ -57,23 +61,35 @@ const nutGeos = [
   mergeGeometries([blob(0.0145, 0.0155, 0.0145, 0, 0.0145, 0, 0xc19a5b), blob(0.012, 0.007, 0.012, 0, 0.004, 0, 0x7d6038)]),
 ];
 
+/** #1686: the glint under every nut lying out: a flat ring and a thin crossed beam, vertex colours fading the beam to black (additive), one geometry. */
+function markGeometry() {
+  const parts = [], paintFade = (g, top) => {
+    const pos = g.attributes.position, c = new Float32Array(pos.count * 3);
+    for (let i = 0; i < pos.count; i++) { const k = top ? Math.max(0, 1 - pos.getY(i) / C.markBeam) : 1; c[i * 3] = 1 * k * 0.8; c[i * 3 + 1] = 0.82 * k * 0.8; c[i * 3 + 2] = 0.45 * k * 0.8; }
+    g.setAttribute('color', new THREE.BufferAttribute(c, 3)); return g;
+  };
+  const ring = new THREE.RingGeometry(C.markRing * 0.7, C.markRing, 20); ring.rotateX(-Math.PI / 2); ring.translate(0, 0.03, 0); ring.deleteAttribute('uv'); parts.push(paintFade(ring, false));
+  for (const a of [0, Math.PI / 2]) { const q = new THREE.PlaneGeometry(0.05, C.markBeam, 1, 4); q.translate(0, C.markBeam / 2 + 0.02, 0); q.rotateY(a); q.deleteAttribute('uv'); parts.push(paintFade(q, true)); }
+  const g = mergeGeometries(parts); for (const p of parts) p.dispose(); return g;
+}
+
 /** A nut on the ground you can take (E), carry and put down like anything else. Its slot (NutField) says whether it lies out. */
 class Nut extends Holdable {
-  constructor(scene, camera, slot, material) {
+  constructor(scene, camera, slot, material, host) {
     const mesh = new THREE.Mesh(nutGeos[0], material);
     mesh.scale.setScalar(C.nutSize); mesh.visible = false; mesh.userData.noDetail = true;
     const sphere = new THREE.Sphere(), hit = new THREE.Vector3();
-    mesh.raycast = function (rc, out) { // a generous 8 cm ball to aim at: the nut itself is 3 cm
-      sphere.set(this.getWorldPosition(V), 0.08);
+    mesh.raycast = function (rc, out) { // a generous 12 cm ball to aim at: the nut itself is 3 cm (7 cm drawn)
+      sphere.set(this.getWorldPosition(V), 0.12);
       if (rc.ray.intersectSphere(sphere, hit)) out.push({ distance: rc.ray.origin.distanceTo(hit), point: hit.clone(), object: this });
     };
     super(scene, camera, { name: 'en nöt', verb: 'ta', backName: 'marken', backVerb: 'lägga', model: mesh, home: { pos: new THREE.Vector3(), rot: new THREE.Euler() },
       heldPose: { pos: new THREE.Vector3(0.14, -0.15, -0.36), rot: new THREE.Euler(0.5, 0.7, 0.3) }, pick: { pos: new THREE.Vector3(), size: [0.1, 0.1, 0.1] } });
-    Object.assign(this, { slot, isSquirrelNut: true, broken: true });
+    Object.assign(this, { slot, host, isSquirrelNut: true, broken: true });
     this.pickMesh = this.holder.children[this.holder.children.length - 1];
   }
-  onTake() { this.slot.held = true; this.slot.age = 0; }
-  onPut() { this.slot.held = false; this.slot.age = 0; }
+  onTake() { this.slot.held = true; this.slot.by = null; this.slot.age = 0; this.host.sync.take(this.slot); }
+  onPut() { this.slot.held = false; this.slot.age = 0; this.putPending = true; } // (where it lies is known once placeAt / goHome has moved the model: sync())
   /** Out of the world (eaten, fed, expired, winter): no target, no mesh. */
   vanish() {
     if (this.held) { this.held = false; if (heldItem() === this) setHeld(null); }
@@ -85,10 +101,16 @@ class Nut extends Holdable {
     this.home.pos.set(s.x, s.y + 0.004, s.z); this.home.rot.set(0, Math.random() * 6.28, s.kind ? 0 : 1.2);
     this.pickMesh.position.copy(this.home.pos); this.goHome(); this.model.visible = true;
   }
+  /** Out of play for everybody else: another player holds it (the leader keeps the slot, #1686). */
+  get away() { return this.slot.held && !!this.slot.by; }
   sync() {
-    const s = this.slot;
-    if (s.alive === this.broken) { s.alive ? this.appear() : this.vanish(); }
-    if (s.alive && !this.held && !this.broken) s.x = this.model.position.x, s.y = this.model.position.y, s.z = this.model.position.z;
+    const s = this.slot, want = s.alive && !this.away;
+    if (want === this.broken) { want ? this.appear() : this.vanish(); }
+    if (want && !this.held && !this.broken) {
+      s.x = this.model.position.x; s.y = this.model.position.y; s.z = this.model.position.z;
+      if (this.putPending) { this.putPending = false; this.host.sync.put(s, s.x, s.z); }
+      const cam = this.camera.position; this.model.visible = Math.hypot(cam.x - s.x, cam.z - s.z) < C.nutNear; // far away only the glint is drawn
+    }
   }
 }
 
@@ -96,20 +118,24 @@ export class Squirrels {
   /** `feet`: surroundings.js treeFeet, `crowns`: its aoTrees, `ground(x, z)`: the walkable surface, `walkable(x, z)` / `nutOk(x, z)`: where it may run / a nut may lie,
    * `onFeed(brain)`: scoring. `rnd`: injectable for tests. */
   constructor({ scene, camera, player, feet, crowns, ground, walkable, nutOk, onFeed, rnd = Math.random }) {
-    Object.assign(this, { scene, camera, player, ground, onFeed, rnd, winter: true, time: 0, speed: 0, acc: [], lastX: NaN, lastZ: NaN, lure: false });
+    Object.assign(this, { scene, camera, player, ground, onFeed, rnd, winter: true, time: 0, speed: 0, acc: [], lastX: NaN, lastZ: NaN, lure: false, net: null, cand: [], remoteSpeed: new Map(), markT: 0 });
     const parkPatches = new Set([...(SITE.riverPark.patches ?? []).map((q) => q.name), 'bridge-west']), // (the other `patch` names in treeFeet belong to the street/backdrop areas)
       paddock = PADDOCK.trees ?? [], same = (a, b) => Math.abs(a.x - b[0]) < 0.01 && Math.abs(a.z - b[1]) < 0.01;
     this.trees = linkTrees(feet.filter((f) => parkPatches.has(f.patch) || paddock.some(([x, z]) => same(f, [x, z]))).map((f) => {
       let best = null, bd = 0.05; for (const c of crowns) { const d = Math.hypot(c.x - f.x, c.z - f.z); if (d < bd) { bd = d; best = c; } }
       return { x: f.x, z: f.z, y: f.y, cy: best ? best.y : f.y + 5, r: best ? best.r : 3 };
     }));
-    this.player_ = { x: 0, z: 0, lure: false, hx: 0, hz: 0 };
+    this.player_ = { x: 0, z: 0, lure: false, hx: 0, hz: 0, id: '' };
     this.nuts = new NutField(this.trees, ground, nutOk, rnd);
+    this.nuts.anchors = () => [{ x: camera.position.x, z: camera.position.z }, ...(this.net?.remotes?.() ?? []).map((r) => ({ x: r.x, z: r.z }))];
     const env = { trees: this.trees, ground, walkable, nuts: this.nuts, player: this.player_, rnd, onTake: (b) => this.take(b) };
     this.material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92 });
     this.nutMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.6 });
     this.hearts = new Hearts(scene, C.hearts, C.heartScale);
-    this.nutItems = this.nuts.slots.map((s) => new Nut(scene, camera, s, this.nutMaterial));
+    this.sync = new SquirrelSync({ field: this.nuts, brains: [], send: (m) => this.net?.send(m) ?? false, hooks: { fed: (an, who) => this.fedBy(an, who), dropHeld: (slot) => this.dropHeld(slot) } });
+    this.nutItems = this.nuts.slots.map((s) => new Nut(scene, camera, s, this.nutMaterial, this));
+    this.marks = new THREE.InstancedMesh(markGeometry(), new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false, side: THREE.DoubleSide }), C.maxNuts);
+    Object.assign(this.marks, { frustumCulled: false, raycast: () => {}, visible: false, count: 0 }); this.marks.userData.noDetail = true; this.marks.userData.warmDraw = true; this.marks.name = 'squirrel-nut-marks'; scene.add(this.marks);
     const taken = new Set();
     this.animals = this.trees.length ? C.animals.map((spec, i) => {
       const [sx, sz] = C.starts[i % C.starts.length]; let best = 0, bd = Infinity;
@@ -123,6 +149,7 @@ export class Squirrels {
       this.acc.push(0);
       return { brain, group, mouth, body, spec };
     }) : [];
+    this.sync.brains.push(...this.animals.map((a) => a.brain));
     registerSeasonal((month) => { this.winter = winterMonth(month); });
     this.hide();
   }
@@ -136,16 +163,57 @@ export class Squirrels {
     p.x = pos.x; p.z = pos.z; p.lure = !!(this.player.crouched && it?.isSquirrelNut && this.speed < C.still);
     const d = this.camera.getWorldDirection(new THREE.Vector3()), l = Math.hypot(d.x, d.z) || 1;
     p.hx = pos.x + d.x / l * C.handAhead; p.hz = pos.z + d.z / l * C.handAhead;
+    p.id = this.net?.me?.() ?? '';
+    // #1686: the leader also lets the other players' lures count (what it knows of their ghosts), but only for a nut the room says they hold
+    this.cand.length = 0; this.cand.push({ id: p.id, x: p.x, z: p.z, lure: p.lure, hx: p.hx, hz: p.hz });
+    if (this.sync.lead && this.sync.sharing) for (const r of this.net?.remotes?.() ?? []) {
+      const lure = r.hi === 'nut' && r.crouch > 0.85 && r.vh < C.still && this.sync.remoteHeld.has(r.id);
+      this.cand.push({ id: r.id, x: r.x, z: r.z, lure, hx: r.x - Math.sin(r.yaw) * C.handAhead, hz: r.z - Math.cos(r.yaw) * C.handAhead });
+    }
   }
-  /** A squirrel reaches the hand: the nut in it is theirs; points and hearts for the visitor. */
+  /** The visitor a squirrel pays attention to: the nearest one holding a lure within its range, else the nearest of all. Copied into the brains' `player`. */
+  focus(b) {
+    let best = null, bd = Infinity;
+    for (const c of this.cand) { const d = Math.hypot(c.x - b.x, c.z - b.z) - (c.lure && Math.hypot(c.x - b.x, c.z - b.z) < b.spec.lure ? 1e4 : 0); if (d < bd) { bd = d; best = c; } }
+    Object.assign(this.player_, best ?? { x: 1e5, z: 1e5, lure: false, hx: 1e5, hz: 1e5, id: '' }); b.who = this.player_.id;
+  }
+  /** A squirrel reaches a hand: the nut in it is theirs; points and hearts for whoever fed it (#1686: the leader may be feeding another player's nut). */
   take(brain) {
-    const it = heldItem();
-    if (!it?.isSquirrelNut) return false;
-    const a = this.animals.find((q) => q.brain === brain);
-    this.nuts.remove(it.slot); it.sync(); // gone from the hand
+    const a = this.animals.find((q) => q.brain === brain), an = this.animals.indexOf(a), me = this.net?.me?.() ?? '', who = brain.who ?? me;
+    if (who === me) {
+      const it = heldItem();
+      if (!it?.isSquirrelNut) return false;
+      this.sync.feed(it.slot, me, an);
+      this.nuts.remove(it.slot); it.sync(); // gone from the hand
+      this.onFeed?.(brain, a);
+    } else { // another player's hand (we lead): their nut is claimed in the room
+      const i = this.sync.remoteHeld.get(who), slot = this.nuts.slots[i];
+      if (!slot || !slot.held) return false;
+      this.sync.feed(slot, who, an); this.nuts.remove(slot); this.nutItems[i].sync();
+    }
     V.set(brain.x, brain.y + 0.2 * brain.spec.scale, brain.z); this.hearts.burst(V);
-    this.onFeed?.(brain, a);
     return true;
+  }
+  /** Follower: the leader's squirrel `an` took `who`'s nut: hearts for everybody, the nut and the points for the feeder. */
+  fedBy(an, who) {
+    const a = this.animals[an]; if (!a) return;
+    V.set(a.brain.x, a.brain.y + 0.2 * a.brain.spec.scale, a.brain.z); this.hearts.burst(V);
+    if (who !== (this.net?.me?.() ?? '')) return;
+    const it = heldItem(); if (!it?.isSquirrelNut) return;
+    it.slot.alive = false; it.slot.held = false; it.sync(); this.onFeed?.(a.brain, a);
+  }
+  /** The room refused our take (somebody was first): the nut leaves the hand again. */
+  dropHeld(slot) { const it = this.nutItems[this.nuts.slots.indexOf(slot)]; if (!it?.held) return; slot.alive = false; slot.held = false; it.sync(); }
+  /** Per frame: the glint under each nut lying out within `markDist` m (one instanced mesh). */
+  updateMarks() {
+    const m = this.marks, cam = this.camera.position; let n = 0;
+    for (const s of this.nuts.slots) {
+      if (!s.alive || s.held) continue;
+      const d = Math.hypot(cam.x - s.x, cam.z - s.z); if (d > C.markDist) continue;
+      const k = (1 + Math.max(0, d - 5) * 0.07) * (1 + 0.1 * Math.sin(this.time * 3 + n));
+      m.setMatrixAt(n++, MAT.makeScale(k, k, k).setPosition(s.x, s.y, s.z));
+    }
+    m.count = n; m.visible = n > 0; m.instanceMatrix.needsUpdate = true;
   }
   /** Per frame. `hidden`: underground (nothing runs). */
   update(dt, hidden = false) {
@@ -153,16 +221,27 @@ export class Squirrels {
     const on = !this.winter && !hidden && this.animals.length > 0;
     this.nuts.setActive(!this.winter && this.animals.length > 0);
     if (!on) { if (this.animals.some((a) => a.group.visible)) this.hide(); }
-    if (this.nuts.active) { this.nuts.update(dt); }
+    const cam = this.camera.position, follow = this.sync.follow;
+    if (on) { // near the squirrels (hysteresis): join the shared group (#1686)
+      const near = this.animals.reduce((m, a) => Math.min(m, Math.hypot(cam.x - a.brain.x, cam.z - a.brain.z)), Infinity);
+      this.sync.setNear(!!this.net?.ready() && near < (this.sync.near ? C.sync.leave : C.sync.enter));
+    } else this.sync.setNear(false);
+    if (this.nuts.active && !follow) { this.nuts.update(dt); }
     for (const n of this.nutItems) if (this.nuts.active || !n.broken) n.sync();
+    if (this.nuts.active) this.updateMarks(); else if (this.marks.visible) this.marks.visible = false;
     if (!on) return;
     this.time += dt;
     this.watchPlayer(dt);
-    const cam = this.camera.position;
+    this.sync.tick(dt);
     this.animals.forEach((a, i) => {
       const b = a.brain, d = Math.hypot(cam.x - b.x, cam.z - b.z);
-      if (d > C.farDist) { a.group.visible = false; return; }
-      if (d > C.simDist) { this.acc[i] += dt; if (this.acc[i] < C.farStep) return; b.update(this.acc[i]); this.acc[i] = 0; } else { b.update(this.acc[i] + dt); this.acc[i] = 0; }
+      // #1686: the leader simulates for everybody: a squirrel is awake when ANY player near the squirrels is within range of it
+      let ds = d; if (!follow) for (const c of this.cand) ds = Math.min(ds, Math.hypot(c.x - b.x, c.z - b.z));
+      if (d > C.farDist && (follow || ds > C.farDist)) { a.group.visible = false; return; }
+      if (!follow) {
+        this.focus(b);
+        if (ds > C.simDist) { this.acc[i] += dt; if (this.acc[i] < C.farStep) return; b.update(this.acc[i]); this.acc[i] = 0; } else { b.update(this.acc[i] + dt); this.acc[i] = 0; }
+      }
       this.pose(a, d);
     });
   }

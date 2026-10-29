@@ -24,11 +24,17 @@ export function climbPoint(t, ang, k, ground, o = {}) {
   o.x = f.x + (p.x - f.x) * out; o.z = f.z + (p.z - f.z) * out; o.y = f.y + (p.y - f.y) * up; return o;
 }
 
-/** Nut spots round the squirrels' trees: one random place 1.5 … `spread` m from a random trunk, where `ok(x, z)` agrees. Null after `tries` misses. */
-export function pickNutSpot(trees, rnd, ok, tries = 12) {
+/** Nut spots round the squirrels' trees: one random place 1.5 … `spread` m from a random trunk, where `ok(x, z)` agrees. Null after `tries` misses.
+ * #1686: `anchors` (the visitors' places): most of the time the trunk is one within `nutNearPlayer` m of a random visitor, so nuts turn up where somebody looks. */
+export function pickNutSpot(trees, rnd, ok, tries = 12, anchors = null) {
   if (!trees.length) return null;
+  let pool = trees;
+  if (anchors?.length && rnd() < C.nutBias) {
+    const a = anchors[Math.floor(rnd() * anchors.length)], near = trees.filter((t) => Math.hypot(t.x - a.x, t.z - a.z) <= C.nutNearPlayer);
+    if (near.length) pool = near;
+  }
   for (let i = 0; i < tries; i++) {
-    const t = trees[Math.floor(rnd() * trees.length)], a = rnd() * Math.PI * 2, d = 1.5 + rnd() * (C.spread - 1.5), x = t.x + Math.cos(a) * d, z = t.z + Math.sin(a) * d;
+    const t = pool[Math.floor(rnd() * pool.length)], a = rnd() * Math.PI * 2, d = 1.5 + rnd() * (C.spread - 1.5), x = t.x + Math.cos(a) * d, z = t.z + Math.sin(a) * d;
     if (ok(x, z)) return { x, z };
   }
   return null;
@@ -37,29 +43,40 @@ export function pickNutSpot(trees, rnd, ok, tries = 12) {
 /** The nuts lying out: `n` slots, each { alive, x, y, z, kind (0 acorn / 1 hazelnut), age, life, wait, held }. Pure bookkeeping; squirrels.js draws them. */
 export class NutField {
   constructor(trees, ground, ok, rnd, n = C.maxNuts) {
-    Object.assign(this, { trees, ground, ok, rnd, active: false, spawned: 0 });
-    this.slots = Array.from({ length: n }, (_, i) => ({ alive: false, x: 0, y: 0, z: 0, kind: 0, age: 0, life: 0, wait: 1 + i * 2, held: false, born: 0 }));
+    Object.assign(this, { trees, ground, ok, rnd, active: false, spawned: 0, anchors: () => [] }); // anchors(): [{ x, z }] the visitors (#1686)
+    this.slots = Array.from({ length: n }, (_, i) => ({ alive: false, x: 0, y: 0, z: 0, kind: 0, age: 0, life: 0, wait: 1 + i * 0.5, held: false, born: 0, by: null }));
   }
   get count() { return this.slots.reduce((n, s) => n + (s.alive ? 1 : 0), 0); }
   /** Winter (or underground): everything gone, nothing counts down. Back in spring: the first ones come after a short while. */
   setActive(on) {
     if (on === this.active) return;
     this.active = on;
-    this.slots.forEach((s, i) => { s.alive = false; s.held = false; s.wait = 1 + i * 2; });
+    this.slots.forEach((s, i) => { s.alive = false; s.held = false; s.by = null; s.wait = 1 + i * 0.5; });
   }
   update(dt) {
     if (!this.active) return;
     for (const s of this.slots) {
       if (s.alive) { if (!s.held && (s.age += dt) > s.life) this.remove(s); continue; }
       if ((s.wait -= dt) > 0) continue;
-      const at = pickNutSpot(this.trees, this.rnd, this.ok);
+      const at = this.spot();
       if (!at) { s.wait = 5; continue; }
       Object.assign(s, { alive: true, x: at.x, z: at.z, y: this.ground(at.x, at.z), kind: this.rnd() < 0.55 ? 0 : 1, age: 0, life: between(C.life, this.rnd), held: false });
       s.born++; this.spawned++;
     }
   }
+  /** #1686: a place for a new nut: a heap beside one already lying out (`heap`), else under a tree (near the visitors first). */
+  spot() {
+    if (this.rnd() < C.heap) {
+      const out = this.slots.filter((q) => q.alive && !q.held);
+      if (out.length) {
+        const q = out[Math.floor(this.rnd() * out.length)];
+        for (let i = 0; i < 4; i++) { const a = this.rnd() * Math.PI * 2, d = between(C.heapRadius, this.rnd), x = q.x + Math.cos(a) * d, z = q.z + Math.sin(a) * d; if (this.ok(x, z)) return { x, z }; }
+      }
+    }
+    return pickNutSpot(this.trees, this.rnd, this.ok, 12, this.anchors());
+  }
   /** Gone (eaten, fed, expired); a new one appears after `respawn` s. */
-  remove(s) { s.alive = false; s.held = false; s.wait = between(C.respawn, this.rnd); }
+  remove(s) { s.alive = false; s.held = false; s.by = null; s.wait = between(C.respawn, this.rnd); }
   /** The nearest nut lying on the ground within `r` m of (x, z), or null. */
   near(x, z, r) {
     let best = null, bd = r;

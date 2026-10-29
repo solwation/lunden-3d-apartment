@@ -45,7 +45,7 @@ test('nuts: at most maxNuts at once, new ones after a while, all on valid ground
   let max = 0; run(w, [], 3000, 0.5, () => { max = Math.max(max, w.nuts.count); });
   assert.equal(max, C.maxNuts);
   assert.ok(w.nuts.spawned > C.maxNuts, 'new nuts appeared after the first ones expired');
-  for (const s of w.nuts.slots) if (s.alive) { assert.ok(w.ts.some((t) => Math.hypot(t.x - s.x, t.z - s.z) <= C.spread + 1e-6), 'by a squirrel tree'); seen.push(s.kind); }
+  for (const s of w.nuts.slots) if (s.alive) { assert.ok(w.ts.some((t) => Math.hypot(t.x - s.x, t.z - s.z) <= C.spread + C.heapRadius[1] * 3 + 1e-6), 'by a squirrel tree (or in a heap beside a nut that is)'); seen.push(s.kind); }
   const before = w.nuts.spawned, s0 = w.nuts.slots[0]; if (!s0.alive) s0.alive = true;
   w.nuts.remove(s0); assert.ok(!s0.alive);
   run(w, [], C.respawn[1] + 5, 0.5); assert.ok(w.nuts.spawned > before, 'a replacement came within the respawn window');
@@ -93,4 +93,24 @@ test('standing up or moving cancels the approach', () => {
   let reached = false; run(w, [b], 80, 0.05, () => { if (b.state === 'approach') { reached = true; w.player.lure = false; } });
   assert.ok(reached && w.taken.length === 0, 'no nut taken after the visitor stood up');
   assert.ok(b.state !== 'approach' && b.state !== 'take');
+});
+
+test('#1686: 18 nuts, bigger than before, new ones appear near the visitors and in heaps', () => {
+  assert.ok(C.maxNuts >= 15 && C.maxNuts <= 20, 'fifteen to twenty at once');
+  assert.ok(C.nutSize >= 2, 'noticeably larger than the first 4.5 cm');
+  const w = world(5); w.nuts.anchors = () => [{ x: 22, z: 8 }]; w.nuts.setActive(true);
+  run(w, [], 40, 0.5);
+  assert.ok(w.nuts.count >= 12, `most of them are out after 40 s: ${w.nuts.count}`);
+  const out = w.nuts.slots.filter((s) => s.alive), near = out.filter((s) => Math.hypot(s.x - 22, s.z - 8) < C.nutNearPlayer);
+  assert.ok(near.length / out.length > 0.8, `biased towards the visitor: ${near.length}/${out.length}`);
+  let heaps = 0; for (const s of out) if (out.some((q) => q !== s && Math.hypot(q.x - s.x, q.z - s.z) < C.heapRadius[1] + 1e-6)) heaps++;
+  assert.ok(heaps >= 3, `some lie in heaps: ${heaps}`);
+});
+
+test('#1686: a nut another player holds (held + by) is not found by a squirrel and does not expire', () => {
+  const w = world(9); w.nuts.setActive(true); run(w, [], 20, 0.5);
+  const s = w.nuts.slots.find((q) => q.alive); Object.assign(s, { held: true, by: 'p2' }); const born = s.born;
+  assert.notEqual(w.nuts.near(s.x, s.z, 0.01), s);
+  run(w, [], 2000, 1); assert.ok(s.alive && s.born === born, 'a held nut stays');
+  w.nuts.remove(s); assert.equal(s.by, null);
 });

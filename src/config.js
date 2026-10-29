@@ -7106,7 +7106,10 @@ export const FOOTSTEPS = {
 export const SQUIRRELS = {
   simDist: 70, farDist: 130, drawDist: 150, farStep: 0.25, leapRange: 11, groundHop: 22,
   run: 3.4, flee: 6.5, climb: 2.6, leap: 5.5, perch: [5, 12], forage: [14, 32], search: [1.2, 3.5], eat: 2.2,
-  maxNuts: 6, spread: 9, life: [240, 600], respawn: [20, 60], sense: 6, nutSize: 1.5,
+  maxNuts: 18, spread: 9, life: [360, 900], respawn: [6, 20], sense: 4.5, nutSize: 2.4, // #1686: 18 at once (was 6), twice-as-big nuts, quicker respawn, a calmer nose (the squirrels ate most of the six before anyone found one) (all *guess*)
+  nutNearPlayer: 60, nutBias: 0.7, heap: 0.4, heapRadius: [0.15, 0.6], // #1686: 70 % of new nuts under the trees within 60 m of a visitor; 40 % land in a heap beside a nut already out
+  markDist: 45, markRing: 0.2, markBeam: 1.1, nutNear: 14, // #1686: the glint ring + beam (one instanced mesh) shows up to 45 m; the nut's own mesh only within 14 m (draw calls stay low)
+  sync: { every: 0.5, nutEvery: 0.4, enter: 120, leave: 160, reach: 6, follow: 3 }, // #1686: the shared leader's snapshot every 0.5 s; nuts at most every 0.4 s; a visitor within 120 m of a squirrel joins (leaves beyond 160); a put-down within 6 m; followers simulate on their own again after 3 s without a snapshot
   still: 0.4, reach: 0.45, take: 0.6, hearts: 8, heartScale: 2.5, carry: 14, handAhead: 0.45,
   starts: [[-150, 215], [-30, 128], [-62, 168]], // first tree = nearest eligible tree to these plan points (*guess*: by the paddock bridge, the foot bridge, the south bank)
   animals: [

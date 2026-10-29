@@ -553,6 +553,8 @@ const squirrelWalk = (x, z) => parkGround(x, z) > waterYAt(x, z) + 0.3;
 const squirrels = params0.has('nosquirrels') ? null : new Squirrels({ scene, camera, player, feet: treeFeet, crowns: aoTrees, ground: parkGround, walkable: squirrelWalk,
   nutOk: (x, z) => squirrelWalk(x, z) && !onRoad(x, z, 0.5) && !onWalk(x, z, 0.5) && !onParkPath(x, z, 0.4), onFeed: () => bump('squirrelFeeds') });
 if (squirrels) holdables.push(...squirrels.nutItems);
+// #1686: the squirrels and nuts shared with the players near them (src/squirrelsync.js, cloudflare/squirrels.js); the ghosts give the leader the others' lures
+// (set after the ghosts exist, below)
 const cups = buildCups(scene, camera, world, world.cupCabinet); // coffee cups in the wall cabinet (#90)
 const hand = new Hand(camera, scene); // the visitor's arm and hand: holding things, reaching for doors (#195)
 suit.hand = hand; // the Spider-Man suit's arms: climbing, shooting webs, swinging (#636)
@@ -2926,6 +2928,10 @@ playroom.billiards.peers = () => ghosts.others.values(); // #1637: the others' c
 playroom.music.net = { ready: () => ghosts.connected, send: (m) => ghosts.music(m) }; // #1624: the room's shared music
 ghosts.onMusic = (m) => playroom.music.sync(m);
 playroom.music.peers = () => ghosts.others.values(); // #1667: existing dn poses also light the shared DJ dance-activity button
+if (squirrels) { // #1686
+  squirrels.net = { ready: () => ghosts.connected, send: (m) => ghosts.squirrels(m), me: () => ghosts.me ?? '', remotes: () => [...ghosts.others.values()].map((g) => ({ id: g.id, x: g.root.position.x, z: g.root.position.z, yaw: g.root.rotation.y, crouch: g.crouch ?? 0, hi: g.hi, vh: g.vh ?? 0 })) };
+  ghosts.onSquirrels = (m) => squirrels.sync.receive(m);
+}
 if (paddock) { paddock.net = { ready: () => ghosts.connected, send: (m) => ghosts.paddock(m) }; ghosts.onPaddock = (m) => paddock.onNet(m); } // #1644: the ponies and the grass shared with the players near the paddock
 cinema.net = { ready: () => ghosts.connected, send: m => ghosts.cinema(m), id: () => ghosts.me };
 tvMedia.connect(cinema.net);

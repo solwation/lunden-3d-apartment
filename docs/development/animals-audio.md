@@ -672,4 +672,28 @@ still (< `SQUIRRELS.still` m/s) visitor holding a nut lures squirrels within the
 `SCORE.each.squirrelFeeds` (stats key `squirrelFeeds`) and bursts hearts (`Hearts` from pingping.js). Standing up or moving aborts the approach.
 In the snow months (`registerSeasonal`, `SEASON.snowMonths`) nothing is visible, no AI runs and no nuts exist. Cost control: AI every frame
 within `simDist`, every `farStep` s up to `farDist`, asleep beyond; `&nosquirrels` disables the module. Config: the `SQUIRRELS` block at the end
-of `src/config.js` (all *guess*). Test: `node --test tools/squirrelbraintest.mjs`; browser check `tools/squirrelstest.cjs`.
+of `src/config.js` (all *guess*). Test: `node --test tools/squirrelbraintest.mjs`; browser check `tools/squirrelstest.cjs`. #1686 below.
+
+### More nuts and shared squirrels (#1686)
+
+Diagnosis of "impossible to find a nut": only 6 nuts over the whole river park (a handful of trees each), 4.5 cm and the colour of the
+ground, no marker, and the squirrels ate them quickly (sense 6 m, respawn 20-60 s). Now `SQUIRRELS.maxNuts` is 18 (all *guess*), `nutSize`
+2.4 (7 cm), respawn 6-20 s, `sense` 4.5; `NutField.spot()` puts 70 % of new nuts under the trees within `nutNearPlayer` (60 m) of a visitor
+(`anchors()`: you and the other players' ghosts) and 40 % in a heap (`heap`, `heapRadius`) beside a nut already out. Every nut lying out has
+a glint, a flat ring and a thin fading beam (`markGeometry`, ONE `InstancedMesh`, additive, up to `markDist` 45 m, growing with distance);
+a nut's own mesh is drawn only within `nutNear` 14 m, so the draw calls stay at the nuts nearby + 1.
+
+Sharing (`src/squirrelsync.js` client, `cloudflare/squirrels.js` room relay; message type `{ t: 'sq', k }`, protocol in both file headers):
+the room, like the pony paddock (#1644), simulates nothing and stores nothing (memory only, **no KV**, no timers). The players within
+`SQUIRRELS.sync.enter` (120 m) of a squirrel send `on` (`off` beyond 160 m); the earliest is the leader and keeps simulating the brains and
+the `NutField`; it sends the animals' poses (`s`, every 0.5 s) and the nuts lying out (`n`, on change, at most every 0.4 s, 4 ints per nut).
+The others follow: no simulation, they adopt the snapshots and glide (dead reckoning, 8/s); 3 s without a snapshot and they simulate on
+their own again. A solo visitor leads with nobody to tell and sends nothing. A take is `t { s, b }` (slot, spawn count): the room arbitrates
+(first wins `ok`, a later or stale one gets `no` and its nut leaves the hand), everybody else gets `g`, the leader `t` and keeps the slot
+out of play (`slot.held` + `slot.by`). A put-down is `p` (within `sync.reach` of the player), a feeding is the leader's `f` and the others
+get `F`: hearts for all, the point and the nut for the feeder only. Other players lure through their ghosts (`hi: 'nut'`, crouched, still;
+the new held category in `heldcategory.js`) and only for a nut the room says they hold. If the leader leaves, the next one leads from the
+snapshots it has, the room hands it the claims (`L.c`); a player leaving with a nut drops it. Tests: `node --test cloudflare/squirrels.test.mjs`
+(validation, arbitration, hand-over, through the real PlayerRoom) and the two-browser `tools/squirrelsynctest.cjs` (needs `cloudflare/dev.mjs`).
+Known limits: the squirrels' poses are 2 Hz snapshots (visible smoothing, no per-frame sync); the leader is whoever came first, not the
+nearest; ghosts further than the others' `G.max` are not lures.

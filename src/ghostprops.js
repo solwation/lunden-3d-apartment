@@ -137,6 +137,7 @@ const ITEM_PARTS = {
   cue: () => { const L = 1.2, tilt = -Math.PI / 2 - 0.3, bit = (g) => g.translate(0, -0.35, 0).rotateX(tilt);
     return [[bit(new THREE.CylinderGeometry(0.004, 0.009, L - 0.05, 6).translate(0, (L - 0.05) / 2, 0)), 0x976333, [0, 0, 0]], [bit(new THREE.CylinderGeometry(0.004, 0.004, 0.05, 6).translate(0, L - 0.025, 0)), 0xe9dfc4, [0, 0, 0]]]; },
   box: () => [[new THREE.BoxGeometry(0.13, 0.09, 0.13), 0xb98f5c, [0, 0.02, -0.1]]],
+  nut: () => [[new THREE.IcosahedronGeometry(0.035, 0), 0xc19a5b, [0, 0.03, -0.1]]], // #1686: a squirrel nut in the hand
 };
 const itemCache = new Map();
 /** A new proxy mesh for held-item category `key`, or null for an unknown one; geometry and material shared by every ghost. */
