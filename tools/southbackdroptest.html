@@ -11,7 +11,8 @@ check(group.children.length===6&&group.children.filter(m=>m.isInstancedMesh).len
 // work since had outgrown. Geometry, ground precision and draw calls unchanged; overall PERF budgets unchanged (docs/development/performance.md).
 // #1556 (same rule, applied per the #1474 ruling): the old pavilions in nr 41's brick style add 6 376 triangles; measured 54 724
 // at 36f7846d (headless Chromium 1208, swiftshader) + ~2 %, rounded up to the hundred. Draw calls and desktop/phone PERF budgets unchanged.
-const limit=55900;
+// #1675 (same rule): 27 big hospital-lawn trees add 1 404 triangles (55 057 → 56 461 measured, desktop); 54 637 → 55 879 with &lowmem. Draw calls unchanged (same two instanced meshes).
+const limit=57600;
 check(tris<limit,`bounded far detail: ${tris} triangles including instances (coverage limit ${limit})`);
 A.scene.updateMatrixWorld(true);const b=W.buildings.find(b=>b.source==='relation/1309428'),h=b.holes[0].slice(0,-1),x=h.reduce((s,p)=>s+p[0],0)/h.length,z=h.reduce((s,p)=>s+p[1],0)/h.length;check(!new T.Raycaster(new T.Vector3(x,60,z),new T.Vector3(0,-1,0),0,70).intersectObjects([A.scene.getObjectByName('south-facade'),A.scene.getObjectByName('south-roof')]).length,'Asylen building44 courtyard has actual open roof/body hole');
 check(group.userData.buildings.every(b=>b.eave>b.base&&Number.isFinite(b.bottom)),'finite landmark heights');
@@ -20,6 +21,10 @@ function pointIn(x,z,p){let yes=false;for(let i=0,j=p.length-1;i<p.length;j=i++)
 check(A.camera.far===W.view.cameraFar&&A.scene.fog.far>600&&W.ground.x1>W.view.fogFar&&W.ground.z1>W.view.fogFar+64,'clear-weather visibility reaches existing far groups and hides outer ground edge');
 const oldOvercast=A.day.overcast;A.day.overcast=1;A.day.update(0);check(Math.abs(A.scene.fog.far-C.WEATHER.fogFar)<.001,'rain still shortens visibility to existing weather target');A.day.overcast=oldOvercast;A.day.update(0);
 check(group.userData.trees.every(t=>!W.paths.some(p=>p.path.slice(1).some(([c,d],i)=>{const[a,b]=p.path[i],dx=c-a,dz=d-b,k=Math.max(0,Math.min(1,((t.x-a)*dx+(t.z-b)*dz)/(dx*dx+dz*dz)));return Math.hypot(t.x-a-k*dx,t.z-b-k*dz)<p.w/2+.5;}))),'far woodland leaves actual mapped roads clear');
+{const big=group.userData.bigTrees,BT=W.bigTrees,near=(t,poly,m)=>pointIn(t.x,t.z,poly)||poly.some((a,i)=>{const b=poly[(i+1)%poly.length],dx=b[0]-a[0],dz=b[1]-a[1],k=Math.max(0,Math.min(1,((t.x-a[0])*dx+(t.z-a[1])*dz)/(dx*dx+dz*dz)));return Math.hypot(t.x-a[0]-k*dx,t.z-a[1]-k*dz)<m});
+ check(big.length>=20&&big.every(t=>t.r>=BT.radius[0]&&t.r>W.treeRadius[1]&&BT.groups.some(g=>g.name===t.source&&pointIn(t.x,t.z,g.polygon))),`#1675 ${big.length} big lawn trees, crowns larger than the woodland's (r ${BT.radius})`);
+ check(big.every(t=>!W.buildings.some(b=>near(t,b.polygon,BT.clearance.building-.01))&&!(W.parking??[]).some(p=>p.polygon&&near(t,p.polygon,BT.clearance.parking-.01))&&!W.paths.some(p=>p.path.slice(1).some(([c,d],i)=>{const[a,b]=p.path[i],dx=c-a,dz=d-b,k=Math.max(0,Math.min(1,((t.x-a)*dx+(t.z-b)*dz)/(dx*dx+dz*dz)));return Math.hypot(t.x-a-k*dx,t.z-b-k*dz)<p.w/2+BT.clearance.road-.01;}))),'#1675 big trees keep clear of footprints, car parks and roads');
+ check(A.scene.getObjectByName('south-crowns').count===group.userData.trees.length+big.length&&group.children.filter(m=>m.isInstancedMesh).length===2,'#1675 big trees are instances of the two existing batches');}
 check(C.OUTDOOR.x0===-78.5&&C.OUTDOOR.x1===27.5&&C.OUTDOOR.z1===64,'walking boundary remains unchanged');
 // Actual emitted land, not a callback compared against itself: long paint bands must not hover over a hill.
 const parkingRay=new T.Raycaster(),land=group.getObjectByName('south-land');let parkingSamples=0,parkingPaint=0,parkingError=0;

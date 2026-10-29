@@ -1034,6 +1034,23 @@ export const SITE = {
       3,
       5,
     ],
+    // #1675: old, broad-crowned broadleaf trees on the lawns between the hospital pavilions (nr 41–47, Asylen, Lime, Repligen) as in Google 3D / the aerial photo:
+    // `height` / `radius` m of the crown ellipsoid (clearly bigger than the sparse woodland's treeHeight/treeRadius), `spacing` m between big trees, `clearance` m kept from
+    // pavilion footprints / roads (beyond half their width) / car parks / the sparse woodland's trees. Groups are open lawn polygons (OSM has no tree rows here → positions
+    // and counts are *guess*, kept few: they share the two instanced woodland batches, ~62 triangles each on phones, within the #1474 far-detail budget).
+    bigTrees: {
+      height: [15, 21],
+      radius: [7.5, 10.5],
+      spacing: 15,
+      clearance: { building: 5, road: 3.5, parking: 3, forest: 8 },
+      groups: [
+        {"name":"lawn-south-of-41","polygon":[[-52,306],[-8,306],[-8,352],[-52,352]],"n":9},
+        {"name":"lawn-between-45-and-47","polygon":[[2,306],[46,306],[46,372],[2,372]],"n":10},
+        {"name":"lawn-east-of-45","polygon":[[56,276],[90,276],[90,334],[56,334]],"n":5},
+        {"name":"lawn-south-of-44","polygon":[[6,418],[46,418],[46,460],[6,460]],"n":6},
+        {"name":"allee-along-road","polygon":[[-30,300],[-22,300],[24,372],[16,376]],"n":6,"spacing":14},
+      ],
+    },
     ground: {"x0":-1000,"x1":1000,"z1":1000},
     view: {"fogNear":45,"fogFar":650,"cameraFar":1000},
     roofColor: 5396570,
