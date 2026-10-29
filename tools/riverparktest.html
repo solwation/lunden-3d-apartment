@@ -4,7 +4,13 @@ try{const f=document.createElement('iframe');f.width=480;f.height=300;f.src='../
 const source=await fetch('../docs/references/surrounding-views/osm-2026-10-08.json').then(r=>r.json());
 check(cfg.paths.length>=14&&cfg.paths.every(p=>{const f=source.features.find(f=>f.id===p.source);return f&&p.path.every(q=>f.points.some(v=>{const pp=G.geoToPlan(...v);return Math.hypot(q[0]-pp[0],q[1]-pp[1])<.02}))}),'all main paths use actual mapped way coordinates');
 check(C.OUTDOOR.z1===64,'background paths and terrain do not extend walking boundary');
-const trees=S.treeFeet.filter(t=>t.patch&&!['west-street','east-park','north-park'].includes(t.patch)),spots=P.parkTreeSpots(S.renderedTerrainY),shrubs=P.parkShrubSpots(S.renderedTerrainY);check(trees.length>=65&&trees.length<=180,`patch-constrained mature canopy: ${trees.length} trees`);
+const trees=S.treeFeet.filter(t=>t.patch&&!['west-street','east-park','north-park'].includes(t.patch)),spots=P.parkTreeSpots(S.renderedTerrainY),shrubs=P.parkShrubSpots(S.renderedTerrainY);check(trees.length>=65&&trees.length<=260,`patch-constrained mature canopy: ${trees.length} trees`);
+{ // #1674: the OSM landuse=forest patches are filled with big, broad crowns (spacing 8.5 m), clear of paths, the paddock fence and the squirrels' patch list
+ const forest=cfg.patches.filter(p=>p.name.startsWith('forest-')),PG=await w.eval("import('/src/paddockgeo.js')"),ft=S.treeFeet.filter(t=>t.patch?.startsWith('forest-'));
+ let close=0;for(let i=0;i<ft.length;i++)for(let j=i+1;j<ft.length;j++)if(Math.hypot(ft[i].x-ft[j].x,ft[i].z-ft[j].z)<8.5-1e-6)close++;
+ check(forest.length===2&&forest.every(p=>p.source&&ft.filter(t=>t.patch===p.name).length>=3)&&ft.length>=30,`#1674 forest patches ${forest.map(p=>p.source+':'+ft.filter(t=>t.patch===p.name).length+'/'+p.n).join(' ')}`);
+ check(ft.every(t=>!PG.insideFence(t.x,t.z)&&!P.onParkPath(t.x,t.z,cfg.pathClearance)&&!P.inParkGlade(t.x,t.z))&&close===0,'#1674 forest trees stand outside the paddock fence, paths and glade, spaced at least 8.5 m apart');
+}
 check(trees.every(t=>!P.inParkGlade(t.x,t.z)&&!P.onParkPath(t.x,t.z,cfg.pathClearance)&&Math.abs(t.y-S.renderedTerrainY(t.x,t.z))<1e-7),'tree feet follow terrain and leave actual paths/glade clear');
 check(new Set(spots.map(t=>Math.round(t.s*10))).size>5&&new Set(trees.map(t=>t.patch)).size===cfg.patches.length,'canopy heights vary across all sourced patches');
 check(shrubs.length>=70&&shrubs.every(t=>t.y>R.waterYAt(t.x,t.z)&&Math.abs(t.y-S.renderedTerrainY(t.x,t.z))<1e-7),`woody understory on banks above water: ${shrubs.length}`);

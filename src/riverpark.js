@@ -129,14 +129,14 @@ export function parkTreeSpots(ground) {
   const rand=random(533),spots=[];
   for(const patch of P.patches) {
     const xs=patch.polygon.map(p=>p[0]),zs=patch.polygon.map(p=>p[1]),x0=Math.min(...xs),z0=Math.min(...zs);
-    const dx=Math.max(...xs)-x0,dz=Math.max(...zs)-z0; let count=0;const n=Math.round(patch.n*(P.treeDensity??1));
+    const dx=Math.max(...xs)-x0,dz=Math.max(...zs)-z0; let count=0;const n=Math.round(patch.n*(patch.exact?1:P.treeDensity??1)),gap=patch.spacing??P.treeSpacing;
     const scale=patch.scale??P.treeScale,kinds=Object.entries(patch.kinds??{big:1});
     for(let k=0;k<n*80&&count<n;k++) {
       const x=x0+rand()*dx,z=z0+rand()*dz;
-      if(!inside(x,z,patch.polygon)||!clear(x,z)||spots.some(t=>Math.hypot(t.x-x,t.z-z)<P.treeSpacing))continue;
+      if(!inside(x,z,patch.polygon)||!clear(x,z)||spots.some(t=>Math.hypot(t.x-x,t.z-z)<Math.max(gap,t.gap??0)))continue;
       const s=scale[0]+rand()*(scale[1]-scale[0]);
       let pick=patch.kinds?rand():0,kind=kinds[0][0];for(const [name,share] of kinds){kind=name;if((pick-=share)<0)break;}
-      spots.push({x,z,y:ground(x,z),s,kind,patch:patch.name});count++;
+      spots.push({x,z,y:ground(x,z),s,kind,patch:patch.name,gap});count++;
     }
   }
   // #1531: the photo's specimen trees closest to the bridges (weeping birch, willow, maples); they take the same clearances.

@@ -727,6 +727,11 @@ export const SITE = {
       {"name":"eastern-bend","polygon":[[121,61],[166,58],[202,61],[211,83],[183,95],[139,96],[139,114],[126,116],[115,93]],"n":15},
       {"name":"park-edge","polygon":[[-129,80],[-110,82],[-83,106],[-92,135],[-106,137],[-130,112]],"n":6},
       {"name":"bridge-west","polygon":[[-64,112],[-8,106],[13,108],[13,140],[-8,144],[-64,146]],"n":18,"scale":[0.85,1.35],"kinds":{"tree":0.6,"birch":0.4}}, // #1531 (guess): the leafy wall west of the bridges, ordinary trees and birches with low crowns
+      // #1674: the valley's two OSM landuse=forest areas that lie inside the river park (way 165719099: the wooded south slope towards the bus stop; way 333646812: the north bank under Karpvägen),
+      // filled with big, broad crowns spaced `spacing` m apart (fewer, larger crowns than the older patches; the same shared instanced batches, so no extra draw calls). Polygons are the OSM nodes
+      // (docs/references/surrounding-views/osm-south-2026-10-08.json) projected by sitegeo.js; `n` (exact, not multiplied by treeDensity) and `scale` are *guess* values for the dense canopy of the Google 3D view.
+      {"name":"forest-165719099","source":"165719099","polygon":[[-48.6,180.3],[-31,171.5],[-11.9,165.3],[7.6,166.3],[14.2,171.7],[14.2,184.9],[10.9,213.3],[2.1,223.5],[-25.6,230.1],[-37.7,231.7],[-52.6,219.1],[-57.1,205.9]],"n":34,"exact":true,"spacing":8.5,"scale":[1.7,2.5]},
+      {"name":"forest-333646812","source":"333646812","polygon":[[-129.1,196],[-119.7,176],[-120.2,169.1],[-110.1,164.7],[-98.8,159.9],[-87.5,153.1],[-70.7,143.9],[-61.4,139],[-56,140.4],[-48.9,145],[-46.2,147.4],[-59.3,155.1],[-75.5,166.3],[-90.1,177.7],[-101.7,189.8],[-112.9,198.5],[-121.8,201.5],[-127.3,201]],"n":16,"exact":true,"spacing":8.5,"scale":[1.7,2.5]},
     ],
     glades: [
       {"name":"central-lawn","polygon":[[-93,89],[-76,83],[-46,86],[-46,111],[-65,121],[-86,124]]},
