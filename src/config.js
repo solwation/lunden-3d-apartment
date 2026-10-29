@@ -1231,6 +1231,15 @@ export const SITE = {
         cornice: [[-.4, .3, .12], [-.2, .14, .24], [-.06, .16, .36]], dentil: { step: .5, width: .16, height: .22, depth: .09 },
         quoin: .7, frame: .12, mullion: .045, roof: { rise: 2.2, slope: .3, grid: 2 }, chimney: [.65, 1.4, .65] },
     },
+    // #1679 (docs/references/google-3d-2026-10-29/): roof colours read off Google's 3D views, where the campus roofs are
+    // blue-grey slate rather than the old near-black metal. All values are *guess*es, not measurements; they tint the one
+    // shared roof batch through vertex colours (no extra draw call). `styles` by `campus.style`, `classic` for the
+    // school-style NTI building, `sources` = an OSM id's own colour (wins over its style; a building's `campus.roofColor` too).
+    roofColors: {
+      styles: { ward: 0x7a8cab, stenhammar: 0x6f819f, anshelm: 0x5f7090, laundry: 0x4d5564, klockhuset: 0x6a7792 },
+      classic: 0x76889f,
+      sources: {},
+    },
 
     storey: 3.6,
     roofRise: 3,

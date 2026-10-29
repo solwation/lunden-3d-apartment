@@ -118,6 +118,14 @@ export function buildSchoolFacade(p, base, bottom, eave, parts, lite = lowMemory
   return {windows,ridge:eave+P.roofRise,roofY:top};
 }
 
+// #1679: the roof batch's seam texture is neutral grey so every roof's colour comes from its vertex tint (per building,
+// `SITE.east.roofColors`); a roof without a tint keeps the school's dark metal (`P.metal[0]`) through `schoolRoofTint()`.
+const ROOF_TEXTURE=['#c8c8c8','#7c7c7c','#ffffff'];
+export function schoolRoofTint(hex = P.metal[0]) {
+  const c = new THREE.Color(hex), base = new THREE.Color(ROOF_TEXTURE[0]);
+  return new THREE.Color(Math.min(1, c.r / base.r), Math.min(1, c.g / base.g), Math.min(1, c.b / base.b));
+}
+
 /** Deterministic muted masonry and metal seams, each shared by the whole school. */
 export function schoolTextures() {
   const brick=document.createElement('canvas');brick.width=brick.height=256;const g=brick.getContext('2d');
@@ -128,7 +136,7 @@ export function schoolTextures() {
     g.fillRect(col*32+(row%2)*16+1,row*16+1,30,14);
   }
   const metal=document.createElement('canvas');metal.width=metal.height=64;const m=metal.getContext('2d');
-  m.fillStyle=P.metal[0];m.fillRect(0,0,64,64);m.fillStyle=P.metal[1];m.fillRect(0,0,2,64);m.fillStyle=P.metal[2];m.fillRect(2,0,1,64);
+  m.fillStyle=ROOF_TEXTURE[0];m.fillRect(0,0,64,64);m.fillStyle=ROOF_TEXTURE[1];m.fillRect(0,0,2,64);m.fillStyle=ROOF_TEXTURE[2];m.fillRect(2,0,1,64);
   const make=c=>{const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;return t;};
   return {brick:make(brick),roof:make(metal)};
 }
