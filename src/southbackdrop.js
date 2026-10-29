@@ -53,15 +53,19 @@ export function* southBackdropParts(ground){
  farGround.grid=()=>ground.grid?.()??null;farGround.lotTriangles=()=>ground.lotTriangles?.()??[]; // #1443: clipped parking lots' own drawn triangles // #1313: the terrain mesh's grid, so the paths are cut along it
  let built=0;for(const b of S.buildings){if(built++%6===5)yield .6*built/S.buildings.length;const foot=shape(b),p=b.polygon.slice(0,-1),base=b.keepBase??Math.max(...p.map(q=>farGround(...q))),bottom=Math.min(...p.map(q=>farGround(...q)))-.1,eave=base+b.levels*S.storey;
   if(b.template==='stlars41'){records.push({...b,base,bottom,...buildStLars41(b,p,base,bottom,parts)});continue;}
-  const pav=S.brickStyle.sources.includes(b.source)?brickPavilion(b,base,bottom,eave):null,wallColor=pav?BRICK_STYLE.brick:b.facade; // #1556: the old pavilions in nr 41's brick style
-  if(!pav)parts.facade.push(tint(new THREE.ExtrudeGeometry(foot,{depth:eave-bottom,bevelEnabled:false}).rotateX(-Math.PI/2).translate(0,bottom,0),b.facade));
+  const pav=S.brickStyle.sources.includes(b.source)?brickPavilion(b,base,bottom,eave):null,V=S.villas.sources.includes(b.source)?S.villas:null,wallColor=pav?BRICK_STYLE.brick:V?V.facade:b.facade,rise=V?V.rise:b.rise; // #1556: the old pavilions in nr 41's brick style
+  if(!pav)parts.facade.push(tint(new THREE.ExtrudeGeometry(foot,{depth:eave-bottom,bevelEnabled:false}).rotateX(-Math.PI/2).translate(0,bottom,0),wallColor));
   let edge=0,len=0;for(let i=0;i<p.length;i++){const q=p[(i+1)%p.length],d=Math.hypot(q[0]-p[i][0],q[1]-p[i][1]);if(d>len){len=d;edge=i;}}
   const a=p[edge],c=p[(edge+1)%p.length],ux=(c[0]-a[0])/len,uz=(c[1]-a[1])/len,u=q=>ux*q[0]+uz*q[1],v=q=>-uz*q[0]+ux*q[1],us=p.map(u),vs=p.map(v),u0=Math.min(...us),u1=Math.max(...us),v0=Math.min(...vs),v1=Math.max(...vs),half=(v1-v0)/2;
   const planes=[q=>(v(q)-v0)/half,q=>(v1-v(q))/half];if(b.roof==='hipped')planes.push(q=>(u(q)-u0)/half,q=>(u1-u(q))/half);
-  const roofHeight=q=>eave+b.rise*Math.max(0,Math.min(...planes.map(f=>f(q))));
+  const roofHeight=q=>eave+rise*Math.max(0,Math.min(...planes.map(f=>f(q))));
   const flat=new THREE.ShapeGeometry(foot),pos=flat.attributes.position,index=flat.index.array;
-  for(let i=0;i<index.length;i+=3){const tri=Array.from(index.slice(i,i+3),j=>[pos.getX(j),-pos.getY(j)]);for(let j=0;j<planes.length;j++){let poly=tri;for(let k=0;k<planes.length&&poly.length;k++)if(j!==k)poly=clip(poly,q=>planes[k](q)-planes[j](q));if(poly.length<3)continue;for(let k=1;k<poly.length-1;k++)parts.roof.push(tint(geo([poly[0],poly[k],poly[k+1]].map(q=>[q[0],roofHeight(q),q[1]])),pav?S.pavilionRoof.roof:S.roofColor));}}
+  for(let i=0;i<index.length;i+=3){const tri=Array.from(index.slice(i,i+3),j=>[pos.getX(j),-pos.getY(j)]);for(let j=0;j<planes.length;j++){let poly=tri;for(let k=0;k<planes.length&&poly.length;k++)if(j!==k)poly=clip(poly,q=>planes[k](q)-planes[j](q));if(poly.length<3)continue;for(let k=1;k<poly.length-1;k++)parts.roof.push(tint(geo([poly[0],poly[k],poly[k+1]].map(q=>[q[0],roofHeight(q),q[1]])),pav?S.pavilionRoof.roof:V?V.roof:S.roofColor));}}
   flat.dispose();
+  if(V?.solar.sources.includes(b.source)&&b.roof!=='hipped'){ // #1677: one dark quad on the south-facing slope, in the roof batch (vertex colour: no extra draw call)
+   const SO=V.solar,sg=ux>=0?1:-1,vm=(v0+v1)/2,pt=(uu,w)=>{const x=uu*ux-w*uz,z=uu*uz+w*ux;return[x,roofHeight([x,z])+SO.lift,z];};
+   const ua=u0+(u1-u0)*SO.along[0],ub=u0+(u1-u0)*SO.along[1],wa=vm+sg*half*SO.across[0],wb=vm+sg*half*SO.across[1],c=[pt(ua,wa),pt(ub,wa),pt(ub,wb),pt(ua,wb)];
+   parts.roof.push(tint(geo([c[0],c[1],c[2],c[0],c[2],c[3]]),SO.color));}
   // Far facades: only landmark windows, no individual trims, handles, interiors or small shadows.
   for(const [ring,hole]of [[p,false],...(b.holes??[]).map(h=>[h.slice(0,-1),true])]){const sign=(hole?-1:1)*Math.sign(ring.reduce((s,q,i)=>{const r=ring[(i+1)%ring.length];return s+q[0]*r[1]-r[0]*q[1]},0));for(let i=0;i<ring.length;i++){const a=ring[i],c=ring[(i+1)%ring.length],dx=c[0]-a[0],dz=c[1]-a[1],d=Math.hypot(dx,dz);
     // #1550 (as #1527): a gabled wall crossing the ridge line is split there, so its top follows both roof slopes instead of leaving a sky-coloured triangle under the ridge

@@ -278,6 +278,12 @@ export const SILL_PLANTS = {
 // ~3 m south of the courtyard (A/B have a suterräng floor) towards S:t Lars park and Höje å.
 // Buildings outside the plot (schools, shop, villa) are placed from the Google Maps screenshot
 // (docs/tomten-google-maps.jpg) — illustrative boxes, not surveyed.
+// #1677: OSM ids of the houses by Sävsländegatan, Nattsländegatan and Hattsnäckegränden (shared by the window rows and `south.villas`).
+const SOUTH_VILLAS = [
+      '333642383', '333642385', '333642389', '333642392', '333642396', '403628166', '403628168', '403628172', '403628174', '403628178', // Sävsländegatan
+      '333642384', '333642387', '333642391', '333642393', '333642395', '367079610', '367079611', '367079612', '367079613', '367079616', // Nattsländegatan
+      '333642386', '333642390', '333642397', '403628164', '403628170', '403628176', // Hattsnäckegränden
+];
 export const SITE = {
   // Terrain (#79). Kv. Lunden stands on a garage box: the courtyard ("den upphöjda gården", info brochure
   // p. 16) lies on the garage deck at our Entréplan / patio level (y 0; the lower row houses have their
@@ -874,10 +880,17 @@ export const SITE = {
     // Seven unaddressed/uncertain bodies stay blank. Longitudinal-only rows, face cutoff and spacing are visual guesses.
     lowRiseWindows: { parallelCos: .98, minFaceShare: .45, sources: [
       '88457551', '88457559', '88457560', '88457562', '88457571', '88457572', '88457578', '88457584', '88457587', '88457589', '88457593', '88457596', '88457604', // Sankt Lars väg
-      '333642383', '333642385', '333642389', '333642392', '333642396', '403628166', '403628168', '403628172', '403628174', '403628178', // Sävsländegatan
-      '333642384', '333642387', '333642391', '333642393', '333642395', '367079610', '367079611', '367079612', '367079613', '367079616', // Nattsländegatan
-      '333642386', '333642390', '333642397', '403628164', '403628170', '403628176', // Hattsnäckegränden
+      ...SOUTH_VILLAS,
     ] },
+    // #1677: the terraced houses and villas by Nattsländegatan, Sävsländegatan and Hattsnäckegränden (the `lowRiseWindows` rows
+    // after Sankt Lars väg) are red-brown with dark grey, low-pitched roofs, some with solar panels, in the Google 3D view of
+    // 2026-10-29. Every colour, pitch and panel placement is a *guess* read from that image. `rise` replaces the 1.6 m gable (annexes `annexRise`);
+    // `solar`: dark quad on the south slope, `along`/`across` fractions of the ridge length / half the span, `lift` over the roof (m).
+    villas: { facade: 0x9a4f3f, roof: 0x4b4e53, rise: 0.95,
+      solar: { color: 0x1f2735, lift: 0.04, along: [0.12, 0.88], across: [0.1, 0.85], sources: [
+        '367079611', '367079612', '333642395', '333642390', '403628164', '403628176', '333642385', '403628172',
+      ] },
+      sources: SOUTH_VILLAS },
     // #1556 (the user's in-game report): the old four-storey hospital pavilions take nr 41's brick style (#1529,
     // src/brickstyle.js) on their own OSM footprints, storeys, eaves and roofs. Their facades are not photographed:
     // every value is *guess*, chosen to echo nr 41. `plinth` white plinth height over the base, `frieze` the eave
