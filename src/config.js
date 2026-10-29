@@ -6146,7 +6146,9 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
   // Web Audio distance model of each of the four music sources (inverse; ref distance m, rolloff factor), our choice for the billiard/DJ room. `bounds` are its inner partition faces (#1658).
   // #1658: rotated half-height = (.4*cos(.35)+.3*sin(.35))/2 = .2393 m; .32 m drop leaves about 8 cm below the ceiling.
   // #1669: wooferY = -h/2 + 0.13 m cone radius + 0.005 m edge margin (visual guess); keeps the cone within the front.
-  speakers: { bounds: { x0: -2.94, x1: 2.94, z0: -5.2, z1: 1.54 }, inset: .35, drop: .32, tilt: .35, w: .36, h: .4, d: .3, wooferY: -.065, ref: 4, rolloff: 0.8 },
+  speakers: { bounds: { x0: -2.94, x1: 2.94, z0: -5.2, z1: 1.54 }, inset: .35, drop: .32, tilt: .35, w: .36, h: .4, d: .3, wooferY: -.065, ref: 4, rolloff: 0.8,
+    // DJ music stays in BILJARD: the open passages are no sound barrier, so the mix is gated by the listener's room (levels/fade seconds *guess*).
+    rooms: { hall: .3, other: 0, fade: .12 } },
   disco: { lampDim: 0.05, ambientDim: 0.35, panelDim: 0.08 }, // #1642: cozy dark disco in BILJARD (*guess*)
   door: { w: 0.8, h: 1.7 }, // Assumed low playhouse-style exit; its interaction works for every avatar height.
   standOff: 0.75, // m from the door wall where you arrive inside
@@ -6175,9 +6177,8 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
     board: { width:1.2, height:.6, y:1.2, wallGap:.04, depth:.04, rim:.025, faceGap:.002, pickDepth:.08,
       canvas:[768,384], buttonY:.39, buttonHeight:.2,
       ui:{titleY:.12,modeY:.24,nameY:.37,scoreY:.51,messageY:.64,seatY:.72,buttonTop:.78,buttonH:.19,titleSize:.1,textSize:.065,scoreSize:.1,pad:.02} } },
-  // Assumed quiet disco mix and clearly audible nearby billiard impacts; drop gain includes gravity, not only table speed.
-  sound: { beat:.125, steps:16, musicGain:.09, melodyGain:.045, notes:[220,261.63,329.63,293.66,220,329.63,392,293.66],
-    minSpeed:.08, hitInterval:.035, cueHz:1450, ballHz:2100, railHz:480, pocketHz:130, impactGain:.75,
+  // Assumed clearly audible nearby billiard impacts; drop gain includes gravity, not only table speed.
+  sound: { minSpeed:.08, hitInterval:.035, cueHz:1450, ballHz:2100, railHz:480, pocketHz:130, impactGain:.75,
     voiceSeconds:.12, hitDuration:.045, pocketDuration:.12, minGain:.25, pitchDrop:.6, toneGain:.35, pocketNoise:.3, hitNoise:.14,
     pocketRattleDelay:.045, pocketRattleDuration:.08, pocketRattleHz:720, pocketRattleGain:.24 },
   colors: { floor: 0x9c7956, wall: 0x526876, ceiling: 0xe0e7ef, trim: 0xc5a77c, door: 0x9c2f24 },

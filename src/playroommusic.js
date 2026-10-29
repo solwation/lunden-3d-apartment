@@ -66,8 +66,8 @@ export class PlayroomMusic {
     this.index = d.ix[d.cross > .5 ? 1 : 0]; this.deckSide = d.cross > .5 ? 1 : 0;
     if (this.state !== 'playing') this.stopDance();
     if (!d.on.some(Boolean) && d.pos.every(p=>p===0)) {
-      this.mix?.disconnect(); this.share?.disconnect(); this.panners?.forEach(n=>n.disconnect());
-      this.mix = this.share = null; this.panners=[];
+      this.mix?.disconnect(); this.room?.disconnect(); this.share?.disconnect(); this.panners?.forEach(n=>n.disconnect());
+      this.mix = this.room = this.share = null; this.panners=[];
     }
   }
   /** #1667: a shared activity lamp, without changing anybody else's individual dance toggle. */
@@ -118,9 +118,10 @@ export class PlayroomMusic {
   setSpeakers(positions) { this.speakers = positions; }
   routeMix(A) {
     this.panners = [];
-    if (!this.speakers?.length || !A.ctx.createPanner) { this.mix.connect(A.master); return; }
+    this.room = A.ctx.createGain(); this.room.gain.value = this.roomLevel ?? 1; this.mix.connect(this.room);
+    if (!this.speakers?.length || !A.ctx.createPanner) { this.room.connect(A.master); return; }
     const S = PLAYROOM.speakers, share = A.ctx.createGain(); share.gain.value = 1 / this.speakers.length ** .5; // power-wise four sources sum to one
-    this.mix.connect(share);
+    this.room.connect(share);
     for (const p of this.speakers) {
       const n = A.ctx.createPanner(); n.panningModel = 'equalpower'; n.distanceModel = 'inverse'; n.refDistance = S.ref; n.rolloffFactor = S.rolloff;
       if (n.positionX) { n.positionX.value = p.x; n.positionY.value = p.y; n.positionZ.value = p.z; } else n.setPosition?.(p.x, p.y, p.z);
@@ -130,10 +131,23 @@ export class PlayroomMusic {
   }
   /** #1645: each frame inside, the Web Audio listener follows the camera (position + facing); only these panners use it. */
   listen(camera) {
+    this.hear(camera.position);
     const L = audioParts()?.ctx.listener; if (!L || !this.panners?.length) return;
     const p = camera.position, e = camera.matrixWorld.elements, fx = -e[8], fy = -e[9], fz = -e[10];
     if (L.positionX) { L.positionX.value = p.x; L.positionY.value = p.y; L.positionZ.value = p.z; L.forwardX.value = fx; L.forwardY.value = fy; L.forwardZ.value = fz; L.upX.value = 0; L.upY.value = 1; L.upZ.value = 0; }
     else { L.setPosition?.(p.x, p.y, p.z); L.setOrientation?.(fx, fy, fz, 0, 1, 0); }
+  }
+  /** The music belongs to BILJARD: full there, quieter in the hall, silent in BIO and SPEL (whose own film/game sound plays). */
+  static roomLevel(pos) {
+    const x = pos.x - PLAYROOM.x, z = pos.z - PLAYROOM.z, B = PLAYROOM.speakers.bounds, L = PLAYROOM.speakers.rooms;
+    if (z > PLAYROOM.clubhouse.front) return L.hall;
+    return x >= B.x0 && x <= B.x1 ? 1 : L.other;
+  }
+  hear(pos) {
+    const level = PlayroomMusic.roomLevel(pos), changed = level !== this.roomLevel; this.roomLevel = level;
+    const g = this.room?.gain; if (!g || !changed) return;
+    const ctx = audioParts()?.ctx;
+    if (ctx && g.setTargetAtTime) { g.cancelScheduledValues?.(ctx.currentTime); g.setTargetAtTime(level, ctx.currentTime, PLAYROOM.speakers.rooms.fade); } else g.value = level;
   }
   /** Each frame while inside: `pos` the player's {x, z}. */
   tick(pos) {
@@ -268,7 +282,7 @@ export class PlayroomMusic {
     this.generation++; clearInterval(this.mixTimer);
     this.manualDecks?.forEach(d=>this.killDeck(d)); this.manualDecks = null; this.dj = null;
     if (this.mixing) { this.killDeck(this.mixing.incoming); this.killDeck(this.mixing.outgoing); this.mixing = null; }
-    this.killDeck(this.deck); this.mix?.disconnect(); this.share?.disconnect(); this.panners?.forEach((n) => n.disconnect()); this.panners = []; this.share = null;
+    this.killDeck(this.deck); this.mix?.disconnect(); this.room?.disconnect(); this.share?.disconnect(); this.panners?.forEach((n) => n.disconnect()); this.panners = []; this.share = this.room = null;
     this.file = this.mix = this.deck = null; this.state = 'off'; this.stopDance();
   }
   setInside(on) {

@@ -295,7 +295,7 @@ export class Playroom {
     }
   }
 
-  update(dt,camera,aimed) { if(this.inside){this.music.tick(camera.position);this.music.listen(camera);this.sound.update(dt,this.discoOn,this.music.state!=='off');this.updateTurntables(dt);this.djControls.update();this.billiards.update(dt,camera,aimed);this.cueRack.update(dt);this.devices.update(dt);this.popcorn.update(dt);this.fadeCinema(dt);this.curtains.update(dt);this.roomPosters.setLevel(this.lit/R.lit);if(this.discoOn)this.disco(dt);} }
+  update(dt,camera,aimed) { if(this.inside){this.music.tick(camera.position);this.music.listen(camera);this.sound.update(dt);this.updateTurntables(dt);this.djControls.update();this.billiards.update(dt,camera,aimed);this.cueRack.update(dt);this.devices.update(dt);this.popcorn.update(dt);this.fadeCinema(dt);this.curtains.update(dt);this.roomPosters.setLevel(this.lit/R.lit);if(this.discoOn)this.disco(dt);} }
 
   /** #1365: switch the disco light on or off (the ball stops and goes dull, the light spots vanish). #1642: dims BILJARD ceiling lamp, panel and ambient to cozy dark. Returns the badge text. */
   setDisco(on) {

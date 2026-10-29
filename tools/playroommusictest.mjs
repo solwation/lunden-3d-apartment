@@ -11,7 +11,7 @@ let created=0;
 globalThis.Audio=class extends EventTarget {constructor(){super();created++;this.currentTime=0;this.paused=true}canPlayType(){return'probably'}load(){}play(){this.paused=false;this.dispatchEvent(new Event('playing'));return Promise.resolve()}pause(){this.paused=true}removeAttribute(k){delete this[k]}};
 test('lazy start, same real MusicFile transport pauses/resumes, volume and master mute, OFF releases',()=>{
  const m=new PlayroomMusic();m.play();assert.equal(created,0);m.setInside(true);assert.equal(created,0);m.options()[0].run();
- const file=m.file,el=file.el,node=file.node,mix=m.mix;assert.equal(m.state,'playing');assert.match(el.src,/morning-blue/);assert.equal(el.loop,true);assert.equal(mix.dest,audioParts().master);
+ const file=m.file,el=file.el,node=file.node,mix=m.mix;assert.equal(m.state,'playing');assert.match(el.src,/morning-blue/);assert.equal(el.loop,true);assert.equal(mix.dest,m.room);assert.equal(m.room.dest,audioParts().master);
  el.currentTime=12.5;m.options()[0].run();assert.equal(el.paused,true);assert.equal(m.state,'paused');assert.equal(file.paused,true);
  m.options()[0].run();assert.equal(m.file,file);assert.equal(m.file.el,el);assert.equal(el.currentTime,12.5);assert.equal(el.paused,false);
  m.setVolume(-1);assert.equal(mix.gain.value,0);m.setVolume(99);assert.equal(m.volume,10);assert.equal(mix.gain.value,.5);
@@ -109,6 +109,12 @@ test('#1645: four positional sources at the corner speakers, the speakers expose
  m.setSpeakers(pos);m.setInside(true);m.play();
  assert.equal(made.length,4);assert.deepEqual(made.map(n=>[n.positionX.value,n.positionY.value,n.positionZ.value]),pos.map(p=>[p.x,p.y,p.z]));
  assert(made.every(n=>n.dest===A.master));
+ // the music stays in BILJARD: full there, quieter in the hall, silent in BIO and SPEL (smoothly, through the room gain)
+ const at=(x,z)=>({x:R.x+x,z:R.z+z}),cam=(x,z)=>({position:{...at(x,z),y:1.5},matrixWorld:{elements:new Array(16).fill(0)}});
+ assert.equal(PlayroomMusic.roomLevel(at(0,-2)),1);assert.equal(PlayroomMusic.roomLevel(at(-6,-2)),R.speakers.rooms.other);assert.equal(PlayroomMusic.roomLevel(at(6,-2)),R.speakers.rooms.other);assert.equal(PlayroomMusic.roomLevel(at(0,3)),R.speakers.rooms.hall);
+ assert.equal(R.speakers.rooms.other,0);assert(R.speakers.rooms.hall<1);
+ m.listen(cam(-6,-2));assert.equal(m.room.gain.value,0);m.listen(cam(6,-2));assert.equal(m.room.gain.value,0);m.listen(cam(0,-2));assert.equal(m.room.gain.value,1);
+ m.listen(cam(6,-2));m.stop();m.play();assert.equal(m.room.gain.value,0,'music restarted from the SPEL room starts muted there');
  m.stop();assert.equal(made.every(n=>n.dest===null),true);m.dispose();
  const src=(await import('node:fs')).readFileSync(new URL('../src/playroom.js',import.meta.url),'utf8');
  assert(!/speaker[^\n]*pickable|pk\.userData\.door = this\.music/.test(src));

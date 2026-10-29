@@ -4,14 +4,10 @@ import { PlayroomSound } from '../src/playroomsound.js';
 import { BilliardPhysics } from '../src/billiardphysics.js';
 import { PLAYROOM as R } from '../src/config.js';
 globalThis.document={hidden:false};
-test('disco follows room/lamp, yields to manual music, and never catches up in a burst',()=>{
- const events=[],s=new PlayroomSound({beat:(...a)=>events.push(a)});
- s.update(1,true);assert.equal(events.length,0);s.setInside(true);s.update(.01,true);assert.equal(events.length,2);
- s.update(100,true);assert.equal(events.length,3);
- for(const [inside,disco,manual,hidden] of [[true,false,false,false],[true,true,true,false],[true,true,false,true],[false,true,false,false]]){
-  s.setInside(inside);document.hidden=hidden;const n=events.length;s.update(.5,disco,manual);assert.equal(events.length,n);
- }
- document.hidden=false;s.setInside(true);s.update(.1,true);assert.equal(events.at(-2)[1],'kick');
+test('the disco lamp makes no sound of its own (no ticking drum loop without music)',()=>{
+ const events=[],s=new PlayroomSound({beat:(...a)=>events.push(a),billiard(){}});
+ s.setInside(true);for(let i=0;i<100;i++)s.update(.1,true,false);assert.equal(events.length,0);
+ assert.equal(R.sound.steps,undefined);assert.equal(R.sound.notes,undefined);
 });
 test('quiet contacts, repeated contacts in one frame and hidden/outside contacts stay silent',()=>{
  const hits=[],s=new PlayroomSound({beat(){},billiard:(...a)=>hits.push(a)}),pos={x:1,y:2,z:3};

@@ -12,10 +12,12 @@ Read [CLAUDE.md](../../CLAUDE.md) first for shared workflow rules. Paths in code
 Related: [interactions](interactions.md), [graphics](graphics.md).
 
 Clubhouse media uses the shared screen apps (see [interactions](interactions.md#shared-computers-1488)).
-`PlayroomSound` (#1330) supplies a quiet positional synth disco while the lamp is
-on and the visitor is inside. Manual speaker music, including paused transport,
-suppresses that rhythm. No beat catch-up runs after a slow/hidden frame; switching
-the disco off or leaving stops new notes. Master mute applies to all effects.
+The disco lamp makes no sound of its own: the #1330 synth drum loop ticked whenever
+no music played and was removed (2026-10-29). The DJ/speaker music (`PlayroomMusic`)
+belongs to BILJARD: its mix passes a room gain set each frame from the listener's
+room (`PLAYROOM.speakers.rooms`: full in BILJARD, `hall` in the hall, `other` = 0 in
+BIO and SPEL, eased over `fade` s), since the open passages are no sound barrier.
+Master mute applies to all effects.
 
 `BilliardPhysics.onSound` reports cue, approaching ball, cushion and pocket contacts
 without changing simulation values. `Billiards` transforms their positions through
