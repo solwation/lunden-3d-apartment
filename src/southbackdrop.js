@@ -11,6 +11,7 @@ import { brickPavilion, BRICK_STYLE } from './brickstyle.js';
 import { pavilionRoofDetail } from './pavilionroof.js';
 import { paddockLandParts } from './paddock.js';
 import { busStopApron } from './busstopgeo.js';
+import { edgeTreeSpots } from './edgebackdrop.js';
 import { parking1442Parts, parkingLayoutParts, cellTriangles, lotTriangles, streetApron } from './parkinglot1442.js';
 const S=SITE.south;
 const EDGE_RAMP=12; // m: #1552, where the sampled grid's south edge stands above the flat far ground (~1.3 m near x -92) a ramp this long meets it (*guess*)
@@ -156,6 +157,7 @@ export function* southBackdropParts(ground){
    for(let i=0;i<g.n*60&&placed.length<g.n;i++){const x=x0+rand()*(x1-x0),z=z0+rand()*(z1-z0);
     if(!inside(x,z,g.polygon)||nearAccess(x,z,B.clearance.road)||S.buildings.some(b=>near(x,z,b.polygon,B.clearance.building))||(S.parking??[]).some(p=>p.polygon&&near(x,z,p.polygon,B.clearance.parking))||S.fields.some(f=>inside(x,z,f.polygon))||trees.some(t=>Math.hypot(t.x-x,t.z-z)<(t.big?gap:B.clearance.forest)))continue;
     const t={x,z,y:farGround(x,z),source:g.name,big:true,h:B.height[0]+rand()*(B.height[1]-B.height[0]),r:B.radius[0]+rand()*(B.radius[1]-B.radius[0])};trees.push(t);placed.push(t);}}}
+ trees.push(...edgeTreeSpots()); // #1682: the world-edge tree rows and woods, more instances of the same two batches
  const trunks=new THREE.InstancedMesh(new THREE.CylinderGeometry(.2,.35,1,4).translate(0,.5,0),new THREE.MeshStandardMaterial({color:0x5a4636,roughness:1}),trees.length),crowns=new THREE.InstancedMesh(lobeGeometry('far'),leafMaterial(),trees.length),seeds=[],m=new THREE.Matrix4(),q=new THREE.Quaternion();
- trees.forEach((t,i)=>{trunks.setMatrixAt(i,m.compose(new THREE.Vector3(t.x,t.y,t.z),q,new THREE.Vector3(t.big?2.4:1,t.h*.65,t.big?2.4:1)));const sd={pos:new THREE.Vector3(t.x,t.y+t.h*.7,t.z),rot:q.clone(),scale:new THREE.Vector3(t.r,t.h*.4,t.r),r1:rand(),r2:rand(),r3:rand(),r4:1};crowns.setMatrixAt(i,m.compose(sd.pos,sd.rot,sd.scale));crowns.setColorAt(i,new THREE.Color(0x718a49));seeds.push(sd)});registerTrees(crowns,seeds);trunks.name='south-trunks';crowns.name='south-crowns';group.add(trunks,crowns);group.userData={buildings:records,trees:trees.filter(t=>!t.big),bigTrees:trees.filter(t=>t.big)};return group;
+ trees.forEach((t,i)=>{trunks.setMatrixAt(i,m.compose(new THREE.Vector3(t.x,t.y,t.z),q,new THREE.Vector3(t.big?2.4:1,t.h*.65,t.big?2.4:1)));const sd={pos:new THREE.Vector3(t.x,t.y+t.h*.7,t.z),rot:q.clone(),scale:new THREE.Vector3(t.r,t.h*.4,t.r),r1:rand(),r2:rand(),r3:rand(),r4:1};crowns.setMatrixAt(i,m.compose(sd.pos,sd.rot,sd.scale));crowns.setColorAt(i,new THREE.Color(0x718a49));seeds.push(sd)});registerTrees(crowns,seeds);trunks.name='south-trunks';crowns.name='south-crowns';group.add(trunks,crowns);group.userData={buildings:records,trees:trees.filter(t=>!t.big&&!t.edge),bigTrees:trees.filter(t=>t.big),edgeTrees:trees.filter(t=>t.edge)};return group;
 }

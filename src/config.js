@@ -7148,3 +7148,59 @@ export const SQUIRRELS = {
     { name: 'Den smala', scale: 0.92, width: 0.78, color: 0x4f3626, belly: 0xb9a88c, tail: 0x5c4130, tip: null, ground: 0.3, shy: 9, lure: 12, delay: 1.4, speed: 1.3, perch: 1.4 },
   ],
 };
+
+/**
+ * #1682: the world's edge. Far scenery outside SITE.backgroundGround (the modelled terrain rectangle): a feathered band round the
+ * terrain, a ground slab north of it, fields, a cycle path, Malmövägen, low box silhouettes and tree rows. All plan coordinates
+ * (x east, z south) and every number are *guess*: positions were read off the Google 3D views of 2026-10-29
+ * (docs/references/google-3d-2026-10-29, camera maths in its README) to roughly ±50 m, sizes are typical for the building type.
+ * Nothing is collidable and `WALK` / `OUTDOOR` are untouched. Two merged draw calls (land, boxes); the trees are more instances
+ * of the south backdrop's two tree batches.
+ */
+export const EDGE_BACKDROP = {
+  level: -3.01,                    // m: the flat far ground the south backdrop already draws (SITE.south.ground)
+  lift: { skirt: 0.08, field: 0.18, path: 0.28, road: 0.38 }, // m above it, one step per layer: from the ground at 600 m the depth buffer resolves ~0.2 m (VIEW_NEAR)
+  north: { x0: -1000, x1: 1000, z0: -1000 }, // m: ground north of SITE.backgroundGround.z0 (nothing was drawn there), same tone as the far ground
+  // the feathered band round the terrain rectangle: terrain tone at the edge (the far ground's colour × `innerTone`, read off the lit terrain edge vs plane in a render: 113/100, 162/161, 62/55) → far-ground tone `width` m out. Only where no mapped
+  // field/forest crosses the edge (east z > 30 and the field south of it, the pony fields and the woodland at the south edge).
+  skirt: { width: 70, innerTone: [1.13, 1, 1.13], step: 8, sides: [
+    { side: 'west', from: -340, to: 460 }, { side: 'north', from: -350, to: 340 }, { side: 'east', from: -340, to: 30 },
+    { side: 'south', from: -350, to: -180 }, { side: 'south', from: -12, to: 205 },
+  ] },
+  fields: [
+    { name: 'Åker sydväst', color: 0xa9ad62, polygon: [[-700, 430], [-380, 400], [-350, 640], [-640, 660]] },
+    { name: 'Åker väst om skogen', color: 0x8aa14e, polygon: [[-340, 490], [-218, 480], [-218, 650], [-340, 670]] },
+    { name: 'Åker syd 1', color: 0xb9a35c, polygon: [[-400, 690], [-120, 670], [-60, 900], [-380, 930]] },
+    { name: 'Åker syd 2', color: 0x7f9a4f, polygon: [[-110, 670], [180, 640], [260, 880], [-50, 900]] },
+    { name: 'Åker syd 3', color: 0x9c8f5a, polygon: [[190, 640], [470, 600], [560, 860], [270, 890]] },
+    { name: 'Åker öster om fältet', color: 0xa9ad62, polygon: [[560, 140], [900, 60], [960, 400], [900, 560], [680, 520]] },
+    { name: 'Åker öster 2', color: 0x6f8f46, polygon: [[700, 580], [940, 580], [990, 860], [740, 880]] },
+  ],
+  // cycle path along the field edge in the south (asphalt, guess 3 m) and Malmövägen / väg 108 (guess 9 m); drawn only outside the terrain
+  paths: [{ name: 'Gång- och cykelväg', width: 3, color: 0x8b8a84, path: [[-640, 560], [-470, 600], [-330, 650], [-200, 660], [-30, 650], [110, 600], [250, 570], [330, 560]] }],
+  roads: [{ name: 'Malmövägen / väg 108', width: 9, color: 0x5f6164, path: [[-440, -860], [-260, -660], [170, -313], [357, -100], [476, 25], [560, 130], [620, 250], [650, 380], [640, 500], [600, 600], [540, 680], [470, 760], [380, 880], [300, 1000]] }],
+  // house groups: `rows` × `cols` boxes w × d × h (m) from `at`, turned `angle`° about y, `colGap`/`rowGap` m apart; walls / roofs cycle through the palettes
+  houses: [
+    { name: 'Radhus Kallby ängaväg', at: [-480, 210], angle: -35, rows: 6, cols: 4, w: 38, d: 10.5, h: 7.5, colGap: 6, rowGap: 16, walls: [0xd8cdb8, 0xc9bda6], roofs: [0x4a4f58, 0x55484a] },
+    { name: 'Radhus Höjeådalen', at: [-660, 330], angle: -20, rows: 4, cols: 3, w: 34, d: 10.5, h: 7.5, colGap: 6, rowGap: 16, walls: [0xd8cdb8, 0xc9bda6], roofs: [0x4a4f58, 0x55484a] },
+    { name: 'Villor Tors väg öst', at: [-100, -610], angle: 20, rows: 3, cols: 6, w: 11, d: 9, h: 6.2, colGap: 10, rowGap: 12, walls: [0xe0d8c8, 0xd9c9a8, 0xc9b8a0], roofs: [0x8b4a3c, 0x4d5058, 0x7a3f36] },
+    { name: 'Villor Tors väg väst', at: [-270, -560], angle: 20, rows: 2, cols: 4, w: 11, d: 9, h: 6.2, colGap: 10, rowGap: 12, walls: [0xe0d8c8, 0xd9c9a8, 0xc9b8a0], roofs: [0x8b4a3c, 0x4d5058, 0x7a3f36] },
+    { name: 'Villor Tors väg nord', at: [60, -540], angle: 20, rows: 2, cols: 4, w: 11, d: 9, h: 6.2, colGap: 10, rowGap: 12, walls: [0xe0d8c8, 0xd9c9a8, 0xc9b8a0], roofs: [0x8b4a3c, 0x4d5058, 0x7a3f36] },
+  ],
+  halls: [ // industrial halls (Scania, Bepps): at, w, d, h, angle
+    { at: [-80, -830], w: 120, d: 46, h: 12, angle: 20, wall: 0xb4bcc6, roof: 0x6f7d92 }, { at: [60, -770], w: 70, d: 40, h: 10, angle: 20, wall: 0xaab2bd, roof: 0x7b8798 },
+    { at: [-200, -880], w: 90, d: 50, h: 13, angle: 20, wall: 0xb4bcc6, roof: 0x5f6d82 }, { at: [-10, -700], w: 50, d: 28, h: 9, angle: 20, wall: 0xc2c4c4, roof: 0x7b8798 },
+    { at: [170, -860], w: 80, d: 36, h: 11, angle: 20, wall: 0xaab2bd, roof: 0x6f7d92 }, { at: [-390, -640], w: 60, d: 30, h: 9, angle: 20, wall: 0xc2c4c4, roof: 0x6f7d92 },
+  ],
+  // trees: rows (spacing m, jitter m) along the field edges, woods as random fills; sizes follow SITE.south.treeHeight / treeRadius
+  treeRows: [
+    { path: [[-700, 425], [-380, 395]], spacing: 14 }, { path: [[-120, 672], [-60, 900]], spacing: 13 }, { path: [[190, 640], [270, 890]], spacing: 13 },
+    { path: [[470, 600], [560, 860]], spacing: 14 }, { path: [[560, 140], [680, 520]], spacing: 13 }, { path: [[-640, 572], [-330, 662], [-30, 662], [110, 612], [330, 572]], spacing: 24 },
+  ],
+  woods: [
+    { name: 'Höjeådalen', n: 90, polygon: [[-900, -80], [-560, -40], [-520, 60], [-760, 140], [-900, 120]] },
+    { name: 'Dalgången väster om radhusen', n: 40, polygon: [[-760, 160], [-620, 130], [-560, 250], [-700, 300]] },
+    { name: 'Trädgårdar Tors väg', n: 50, polygon: [[-330, -660], [120, -620], [140, -520], [-300, -500]] },
+  ],
+  lowMemory: { houses: false, trees: false }, // phones: the land mesh only (viewlod.js's idea: far detail is the first to go)
+};

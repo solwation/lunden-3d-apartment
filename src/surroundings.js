@@ -5,6 +5,7 @@ import { mergeOpaqueRects } from './occlusion.js';
 import { southBankGround } from './southbank.js';
 import { buildBusStop } from './busstop.js';
 import {southBackdropParts} from './southbackdrop.js';
+import {buildEdgeBackdrop} from './edgebackdrop.js';
 import {buildWestBackdrop,buildEastBackdrop,buildNorthBackdrop,westTreeSpots,eastTreeSpots,northTreeSpots} from './sitebackdrop.js';
 import { buildRiverPark, parkDeckAt, parkFillAt, renderedParkFillY, parkRampFill, parkTreeSpots, parkShrubSpots } from './riverpark.js';
 import * as THREE from 'three';
@@ -1897,6 +1898,7 @@ export function* surroundingsParts({ grass, husL = null }) {
   let south; // the longest part of the startup build in #1133's measurement: in parts too
   for (const parts = southBackdropParts(renderedTerrainY);;) { const r = parts.next(); if (r.done) { south = r.value; break; } yield 0.46 + 0.09 * r.value; }
   group.add(south);
+  group.add(buildEdgeBackdrop(renderedTerrainY)); // #1682: the world's edge (fields, road, boxes beyond the terrain rectangle)
   yield 0.55;
   backdrops.south = south;
   // Kv. Lunden's own blocks and the old S:t Lars buildings: own façade texture and roof colour each,
