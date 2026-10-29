@@ -1,0 +1,13 @@
+browsertest: waiting for /home/olw/.local/state/orkester/browser.lock (another browser test is running)
+PASS alone near the squirrels: leader, nobody to tell, nothing sent {"lead":true,"follow":false,"near":true,"n":0,"sent":0,"me":"2a7cd65f","others":1}
+PASS the second visitor follows the first [{"lead":true,"follow":false,"near":true,"n":1,"sent":19,"me":"2a7cd65f","others":1},{"lead":false,"follow":true,"near":true,"n":0,"sent":0,"me":"e03b53bc","others":1}]
+PASS both see the same nuts (slot, place, spawn) {"a":11,"b":10,"soloNuts":2}
+PASS the squirrels are in about the same places for both {"posA":[[-151.81972933450675,211.45570757904014,"perch"],[-32.17839649286457,123.52520530960074,"perch"],[-69.8513658472228,164.7855246720366,"perch"]],"posB":[[-151.82,211.46,"perch"],[-32.18,123.53,"perch"],[-69.85,164.79,"perch"]]}
+PASS B takes a nut {"i":5,"born":1,"held":true,"me":"e03b53bc","x":-184.49,"z":204.27}
+PASS the nut B took is gone at A (kept out of play, held by B) {"alive":true,"held":true,"by":"e03b53bc","shown":false,"listed":false}
+PASS A cannot pick the nut B holds 
+PASS B fed the squirrel A simulates: the point goes to B only, the nut leaves B's hand {"f0":[0,0],"fed":{"feeds":1,"held":false},"aft":[{"feeds":0,"nut":true,"slot":false},{"feeds":1,"held":false,"nut":true}]}
+PASS both see the squirrel with the nut in its mouth [{"feeds":0,"nut":true,"slot":false},{"feeds":1,"held":false,"nut":true}]
+PASS no page errors []
+ALL PASSED
+browsertest: peak 2666 MiB of 4G
