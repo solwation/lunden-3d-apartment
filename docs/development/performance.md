@@ -2151,3 +2151,5 @@ were checked on an emulated Android profile (same viewport/UA, real warm-up, Swi
 The cause of the death itself is **not proven**; no real Android was available. Not tested: a physical device, the GPU's real
 memory behaviour, rotation or the system's own process kill (a `killed` report only means the heartbeat stopped).
 Evidence image: `docs/verification/1628/matning.png`.
+
+#1676: the hospital pavilions' roof detail (dormers, risalit gables, chimneys; `src/pavilionroof.js`) adds 1 342 triangles to `south-backdrop` (56 461 -> 57 803, swiftshader; lowmem 55 879 -> 56 839), draw calls unchanged (perfcount-style spots norr 115 and broarna 474 calls before and after, lowmem 129 and 387); `southbackdroptest.html` ceiling raised to 59 000 (+~2 %).

@@ -8,6 +8,7 @@ import { lobeGeometry, leafMaterial, leafAtlasParts } from './foliage.js';
 import { lowRiseWindowParts } from './southwindows.js';
 import { buildStLars41 } from './stlars41.js';
 import { brickPavilion, BRICK_STYLE } from './brickstyle.js';
+import { pavilionRoofDetail } from './pavilionroof.js';
 import { paddockLandParts } from './paddock.js';
 import { busStopApron } from './busstopgeo.js';
 import { parking1442Parts, parkingLayoutParts, cellTriangles, lotTriangles, streetApron } from './parkinglot1442.js';
@@ -58,7 +59,7 @@ export function* southBackdropParts(ground){
   const planes=[q=>(v(q)-v0)/half,q=>(v1-v(q))/half];if(b.roof==='hipped')planes.push(q=>(u(q)-u0)/half,q=>(u1-u(q))/half);
   const roofHeight=q=>eave+b.rise*Math.max(0,Math.min(...planes.map(f=>f(q))));
   const flat=new THREE.ShapeGeometry(foot),pos=flat.attributes.position,index=flat.index.array;
-  for(let i=0;i<index.length;i+=3){const tri=Array.from(index.slice(i,i+3),j=>[pos.getX(j),-pos.getY(j)]);for(let j=0;j<planes.length;j++){let poly=tri;for(let k=0;k<planes.length&&poly.length;k++)if(j!==k)poly=clip(poly,q=>planes[k](q)-planes[j](q));if(poly.length<3)continue;for(let k=1;k<poly.length-1;k++)parts.roof.push(geo([poly[0],poly[k],poly[k+1]].map(q=>[q[0],roofHeight(q),q[1]])));}}
+  for(let i=0;i<index.length;i+=3){const tri=Array.from(index.slice(i,i+3),j=>[pos.getX(j),-pos.getY(j)]);for(let j=0;j<planes.length;j++){let poly=tri;for(let k=0;k<planes.length&&poly.length;k++)if(j!==k)poly=clip(poly,q=>planes[k](q)-planes[j](q));if(poly.length<3)continue;for(let k=1;k<poly.length-1;k++)parts.roof.push(tint(geo([poly[0],poly[k],poly[k+1]].map(q=>[q[0],roofHeight(q),q[1]])),pav?S.pavilionRoof.roof:S.roofColor));}}
   flat.dispose();
   // Far facades: only landmark windows, no individual trims, handles, interiors or small shadows.
   for(const [ring,hole]of [[p,false],...(b.holes??[]).map(h=>[h.slice(0,-1),true])]){const sign=(hole?-1:1)*Math.sign(ring.reduce((s,q,i)=>{const r=ring[(i+1)%ring.length];return s+q[0]*r[1]-r[0]*q[1]},0));for(let i=0;i<ring.length;i++){const a=ring[i],c=ring[(i+1)%ring.length],dx=c[0]-a[0],dz=c[1]-a[1],d=Math.hypot(dx,dz);
@@ -67,7 +68,8 @@ export function* southBackdropParts(ground){
     for(const[s,e]of m?[[a,m],[m,c]]:[[a,c]])parts.facade.push(tint(geo([[s[0],eave,s[1]],[e[0],eave,e[1]],[e[0],roofHeight(e),e[1]],[s[0],eave,s[1]],[e[0],roofHeight(e),e[1]],[s[0],roofHeight(s),s[1]]]),wallColor));
     if(pav){pav.edge(a,c,sign);continue;}
     if(b.levels<4)continue;const nx=sign*dz/d,nz=-sign*dx/d;for(let k=1;k*S.bay+S.window[0]/2<d;k++)for(let floor=0;floor<b.levels;floor++)parts.glass.push(plain(new THREE.PlaneGeometry(...S.window).rotateY(Math.atan2(nx,nz)).translate(a[0]+dx/d*k*S.bay+nx*.025,base+floor*S.storey+S.sill+S.window[1]/2,a[1]+dz/d*k*S.bay+nz*.025)));
-  }}pav?.flush(parts);records.push({...b,base,bottom,eave,roofY:(x,z)=>roofHeight([x,z])}); // roofY: the drawn roof's height, for the walkable roof (#1294)
+  }}pav?.flush(parts);if(pav)pavilionRoofDetail(b,[p,...(b.holes??[]).map(h=>h.slice(0,-1))],roofHeight,parts); // #1676
+  records.push({...b,base,bottom,eave,roofY:(x,z)=>roofHeight([x,z])}); // roofY: the drawn roof's height, for the walkable roof (#1294)
  }
  // Append new panes after all old glass: existing landmark/special facade geometry stays an exact prefix.
  for(const b of records)parts.glass.push(...lowRiseWindowParts(b,b.base));
@@ -137,9 +139,10 @@ export function* southBackdropParts(ground){
   }
  }
  yield .8;
- const mats={facade:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.95,side:THREE.DoubleSide}),roof:new THREE.MeshStandardMaterial({color:S.roofColor,roughness:.95,side:THREE.DoubleSide}),glass:new THREE.MeshStandardMaterial({color:0x35444d,roughness:.7,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:DECAL_OFFSET.factor,polygonOffsetUnits:DECAL_OFFSET.units}),land:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:1,side:THREE.DoubleSide})};
+ const mats={facade:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.95,side:THREE.DoubleSide}),roof:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.95,side:THREE.DoubleSide}),glass:new THREE.MeshStandardMaterial({color:0x35444d,roughness:.7,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:DECAL_OFFSET.factor,polygonOffsetUnits:DECAL_OFFSET.units}),land:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:1,side:THREE.DoubleSide})};
  registerSnow(mats.roof,SEASON.snow.roof);registerSnow(mats.land,SEASON.snow.ground);
- registerSeasonal(month=>{const colored=!SEASON.snowMonths.includes(month);if(mats.land.vertexColors!==colored){mats.land.vertexColors=colored;mats.land.needsUpdate=true;}});
+ registerSeasonal(month=>{const colored=!SEASON.snowMonths.includes(month);if(mats.land.vertexColors!==colored){mats.land.vertexColors=colored;mats.land.needsUpdate=true;}if(mats.roof.vertexColors!==colored){mats.roof.vertexColors=colored;mats.roof.needsUpdate=true;}}); // #1676: roofs carry vertex colours; snow months draw them white
+ {const dc=new THREE.Color(S.roofColor);for(const g of parts.roof)if(!g.attributes.color){const n=g.attributes.position.count;g.setAttribute('color',new THREE.Float32BufferAttribute(Array.from({length:n},()=>[dc.r,dc.g,dc.b]).flat(),3));}} // nr 41's roof batch geometry keeps the shared roof colour
  for(const[k,list]of Object.entries(parts)){if(!list.length)continue;const m=new THREE.Mesh(mergeGeometries(list),mats[k]);m.name='south-'+k;group.add(m);list.forEach(g=>g.dispose());}
  yield .9;
  for(const parts=leafAtlasParts();!parts.next().done;)yield .9; // the shared leaf atlas, drawn on first use: a long block of its own (#1133)

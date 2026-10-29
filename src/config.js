@@ -887,6 +887,19 @@ export const SITE = {
     brickStyle: { plinth: 0.7, frieze: 0.15, belts: [1], beltLift: 0.1, rise: 0.2, frame: 0.07, sources: [
       '88457576', '88457590', 'relation/1309428', '88457592', '88457598', '88457594', '88457599', // Sankt Lars väg 42, 43, 44, 45, 46, 47, 54
     ] },
+    // #1676: the old hospital pavilions' roofs (src/pavilionroof.js), read roughly from the Google 3D views of 2026-10-29
+    // (docs/references/google-3d-2026-10-29): dark blue-grey slate/sheet hips, rows of gabled dormers, a wider gable in the middle
+    // of each long eave and brick chimneys. All *guess*. `roof` the hip colour; `dormer` dormer cheeks, `roof` dormer roofs share it;
+    // dormers every `spacing` m along an eave (`endMargin` from the corners, edges under `minEdge` m left out), `inset` m inward of
+    // the eave line, `dormerWidth/Height/Gable/Depth` m; the risalit gable on edges of at least `risalitEdge` m (and 60 % of the
+    // longest) is `risalitWidth` wide. Chimneys: `chimneys` at most, `chimneySpacing` m apart, within `chimneyBand` m of the highest
+    // roof point and `chimneyEdge` m from every wall, `chimneySize` m square rising `chimneyRise` above the roof. On phones
+    // (`?lowmem`) panes are dropped and `liteSkip` leaves out every other dormer; `liteChimneys` keeps the chimneys.
+    pavilionRoof: { roof: 0x4a5663, dormer: 0x8a8c8c, chimney: 0x7a3a28, spacing: 7.5, endMargin: 4, minEdge: 14, inset: 1.6,
+      dormerWidth: 1.5, dormerHeight: 1.2, dormerGable: 0.7, dormerDepth: 1.8,
+      risalitEdge: 24, risalitWidth: 4.5, risalitHeight: 2.0, risalitGable: 1.4, risalitDepth: 2.2, risalitInset: 0.6,
+      chimneys: 4, chimneySpacing: 18, chimneyBand: 1.0, chimneyEdge: 3, chimneySize: 0.9, chimneyRise: 1.6,
+      liteSkip: true, liteChimneys: true },
     buildings: [
       {"source":"88457551","polygon":[[246.3,350.37],[250.7,348.97],[251.42,351.23],[255.49,349.95],[258.92,360.68],[244.6,365.21],[241.15,354.37],[246.99,352.53],[246.3,350.37]],"levels":2,"levelsSource":"visual assumption","name":"Sankt Lars väg 64","roof":"gable","roofSource":"visual assumption","rise":1.6,"facade":13024420},
       {"source":"88457554","polygon":[[42.86,466.69],[57.77,455.6],[62.18,461.53],[47.28,472.62],[42.86,466.69]],"levels":2,"levelsSource":"visual assumption","name":"Sankt Lars 88457554","roof":"gable","roofSource":"visual assumption","rise":1.6,"facade":13024420},
