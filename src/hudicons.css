@@ -165,7 +165,11 @@ body.touch #touch-controls #bell-btn { right: var(--c2); bottom: calc(var(--side
 body.touch #touch-controls #dance-btn { right: var(--c1); bottom: calc(var(--r2) + var(--tu)); width: calc(var(--touch-size) * 1.5); border-radius: 16px; font: 600 14px system-ui,sans-serif; background: rgba(176,40,156,.8); }
 /* #1639: the BIO reactions (cry / laugh / scream): a column of text pills in a fifth column, clear of the jetpack's column and the pill */
 body.touch #touch-controls .react-btn { right: calc(var(--c3) + var(--tu)); width: calc(var(--touch-size) * 1.5); border-radius: 16px; font: 600 14px system-ui,sans-serif; background: rgba(58,74,107,.85); }
-body.touch #touch-controls #react-cry { bottom: 0; } body.touch #touch-controls #react-laugh { bottom: var(--tu); } body.touch #touch-controls #react-scream { bottom: calc(2 * var(--tu)); }
+/* #1683: folded by default behind one toggle (react-toggle, bottom of the column); unfolded, the pills stack above it */
+body.touch #touch-controls #react-toggle { display: grid; }
+body.touch #touch-controls #react-toggle[hidden] { display: none; }
+body.touch #touch-controls #react-toggle[aria-expanded=true] { background: rgba(255,255,255,.88); color: #18232b; border-color: #fff; }
+body.touch #touch-controls #react-toggle { bottom: 0; } body.touch #touch-controls #react-cry { bottom: var(--tu); } body.touch #touch-controls #react-laugh { bottom: calc(2 * var(--tu)); } body.touch #touch-controls #react-scream { bottom: calc(3 * var(--tu)); }
 body.touch #touch-controls #jet-down { right: var(--c3); bottom: 0; }
 body.touch #touch-controls #jet-up { right: var(--c3); bottom: var(--tu); }
 body.touch #touch-controls #web-btn { right: var(--c3); bottom: calc(2 * var(--tu)); }

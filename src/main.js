@@ -2982,15 +2982,25 @@ const toggleDance = () => { if (!reading && playroom.inside) playroom.music.togg
 danceBtn.addEventListener('click', toggleDance);
 // #1639: cry / laugh / scream in the BIO (the clubhouse's film room, seated or standing): three buttons (touch) / keys Y U I; our
 // mirror image plays it and the others in range see it (ghosts.react, a one-shot 'rx' message).
-const reactBtns = [...document.querySelectorAll('.react-btn')];
-const bioHere = () => playroom.inside && camera.position.x < PLAYROOM.x - PLAYROOM.clubhouse.side - PLAYROOM.clubhouse.wall / 2 && camera.position.z < PLAYROOM.z + PLAYROOM.clubhouse.front - PLAYROOM.clubhouse.wall / 2;
-let reactShown = false;
+const reactBtns = [...document.querySelectorAll('.react-btn[data-react]')];
+const reactToggle = document.getElementById('react-toggle');
+// #1683: on touch the three pills stay folded behind one "Känslor" button (they covered the view on a phone); a tap on a
+// reaction or on the button folds them again. Keys and the desktop buttons are unchanged (the toggle is touch-only).
+let reactShown = false, reactOpen = false, reactFold = 0;
+function applyReactButtons() {
+  clearTimeout(reactFold); if (reactOpen) reactFold = setTimeout(() => { reactOpen = false; applyReactButtons(); }, 6000); // folds itself again
+  const touch = document.body.classList.contains('touch');
+  reactToggle.hidden = !(reactShown && touch);
+  reactToggle.setAttribute('aria-expanded', String(reactOpen && touch));
+  for (const b of reactBtns) b.hidden = !reactShown || (touch && !reactOpen);
+}
 function updateReactBar() {
   const show = bioHere() && !reading && !measure.active && !isAvatarCustomizerOpen() && !cinema.open && !computerHub.open && !tvMedia.open && !drawing.active && !rearrange.enabled;
-  if (show !== reactShown) { reactShown = show; for (const b of reactBtns) b.hidden = !show; }
+  if (show !== reactShown) { reactShown = show; reactOpen = false; applyReactButtons(); }
 }
+reactToggle.addEventListener('click', () => { reactOpen = !reactOpen; applyReactButtons(); });
 const doReact = (k) => { updateReactBar(); return reactShown && ghosts.react(k); };
-for (const b of reactBtns) b.addEventListener('click', () => doReact(Number(b.dataset.react)));
+for (const b of reactBtns) b.addEventListener('click', () => { doReact(Number(b.dataset.react)); if (reactOpen) { reactOpen = false; applyReactButtons(); } });
 /** Ring the bicycle bell (#1302, B / the 🔔 button while riding): we hear it right away, the players nearby hear it from us. */
 function ringBell() {
   if (!player.riding || reading || bellAt > performance.now() - SOUNDS.every * 1000) return false;

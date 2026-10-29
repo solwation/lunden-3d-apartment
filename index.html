@@ -469,6 +469,7 @@
     #dance-btn[hidden] { display: none; }
     .react-btn { position: fixed; right: calc(24px + var(--sr)); touch-action: manipulation; padding: 9px 16px; border: 0; border-radius: 40px; background: #3a4a6b; color: #fff; font: 600 14px system-ui, sans-serif; box-shadow: 0 3px 10px rgba(0,0,0,.3); cursor: pointer; } /* #1639: cry / laugh / scream in the BIO (touch slots: src/hudicons.css) */
     .react-btn[hidden] { display: none; }
+    #react-toggle { display: none; } /* #1683: touch only (src/hudicons.css): one button that folds the three reactions out */
     #react-cry { bottom: calc(220px + var(--sb)); } #react-laugh { bottom: calc(264px + var(--sb)); } #react-scream { bottom: calc(308px + var(--sb)); }
     .react-btn kbd { margin-left: 6px; padding: 1px 6px; border-radius: 4px; background: rgba(255,255,255,.25); font: 600 13px system-ui, sans-serif; }
     body.touch .react-btn kbd { display: none; }
@@ -1606,6 +1607,7 @@
       <button id="turn-btn" class="touch-only" hidden aria-label="Vrid">⟳</button>
       <button id="stand-btn" class="touch-only" hidden>Res dig</button>
       <button id="dance-btn" hidden></button>
+      <button id="react-toggle" class="react-btn" aria-expanded="false" aria-controls="react-cry react-laugh react-scream" hidden>Känslor</button>
       <button id="react-cry" class="react-btn" data-react="0" hidden>Gråta<kbd>Y</kbd></button>
       <button id="react-laugh" class="react-btn" data-react="1" hidden>Skratta<kbd>U</kbd></button>
       <button id="react-scream" class="react-btn" data-react="2" hidden>Skrika<kbd>I</kbd></button>
