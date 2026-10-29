@@ -1,0 +1,49 @@
+{
+  "before": {
+    "state": {
+      "source": "generic",
+      "painted": 0,
+      "loaded": 0,
+      "atlas": [
+        1536,
+        1280
+      ],
+      "textures": 21,
+      "lights": 0
+    },
+    "calls": {
+      "hall": 17,
+      "spel": 23,
+      "spel2": 37,
+      "biljard": 35,
+      "hallnear": 33
+    }
+  },
+  "after": {
+    "state": {
+      "source": "live",
+      "painted": 1,
+      "loaded": 28,
+      "atlas": [
+        1536,
+        1280
+      ],
+      "textures": 21,
+      "lights": 0
+    },
+    "calls": {
+      "hall": 17,
+      "spel": 23,
+      "spel2": 37,
+      "biljard": 35,
+      "hallnear": 33
+    }
+  },
+  "calls": 2,
+  "stored": {
+    "hall": 10,
+    "spel": 9,
+    "biljard": 9
+  },
+  "errors": []
+}
