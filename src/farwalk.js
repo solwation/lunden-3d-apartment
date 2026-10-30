@@ -5,7 +5,7 @@
 import { SITE, WALK, PLAYER, OUTDOOR, PADDOCK } from './config.js';
 import { riverAt, waterYAt, deckAt, bridgeRecords, pierBoxes } from './riverbridge.js';
 import { parkDeckAt } from './riverpark.js';
-import { groundY, groundBelowDeckY, treeFeet } from './surroundings.js';
+import { groundY, groundBelowDeckY, treeFeet, southTreeFeet } from './surroundings.js';
 import { fenceSegments, stile, stileWalls } from './paddockgeo.js';
 import { parkedCarSegments } from './parkinglayout.js';
 import { busStopSegments } from './busstopgeo.js';
@@ -56,7 +56,7 @@ export function farSegments() {
   out.push(...fenceSegments(), ...stileWalls()); // #1280: the pony paddock's fence, closed gate included (nothing is walkable through it); #1295: the stile's opening has side walls
   out.push(...busStopSegments()); // #1301: the bus shelter's glass back and ends
   out.push(...parkedCarSegments()); // the east campus car parks' parked cars (#1278, eastlot.js draws the same footprints)
-  for (const t of treeFeet) { // trunks outside the home block (the park woods, the campus avenues): a small diamond each (*guess* radii)
+  for (const t of [...treeFeet, ...southTreeFeet]) { // trunks outside the home block (the park woods, the campus avenues): a small diamond each (*guess* radii)
     if (t.x > OUTDOOR.x0 && t.x < OUTDOOR.x1 && t.z > OUTDOOR.z0 && t.z < OUTDOOR.z1) continue;
     const r = W.trunk[t.kind] ?? W.trunk.tree;
     out.push([t.x - r, t.z, t.x, t.z - r], [t.x, t.z - r, t.x + r, t.z], [t.x + r, t.z, t.x, t.z + r], [t.x, t.z + r, t.x - r, t.z]);

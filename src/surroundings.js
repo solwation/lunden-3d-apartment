@@ -1458,6 +1458,8 @@ function addSurroundingRoofWalk(b, walk) {
 
 /** Every tree's foot as built: [{ x, z, kind }] (tools/terraintest.html: none on asphalt or paving, #435). */
 export const treeFeet = [];
+/** #1714: the south backdrop's woodland and hospital-grass trunks ([{ x, z, kind: 'tree' | 'big' }], not the edge rows) so the walkable south (WALK.z1 ≈ 452) blocks on them like on `treeFeet`. */
+export const southTreeFeet = [];
 /** Every tree's crown as built: [{ x, z, r (m), y (its centre) }] (groundao.js, #1079; flare.js, #1283). */
 export const aoTrees = [];
 
@@ -1908,6 +1910,8 @@ export function* surroundingsParts({ grass, husL = null }) {
   group.add(buildEdgeBackdrop(renderedTerrainY)); // #1682: the world's edge (fields, road, boxes beyond the terrain rectangle)
   yield 0.55;
   backdrops.south = south;
+  southTreeFeet.length = 0;
+  southTreeFeet.push(...(south.userData.trees ?? []).map((t) => ({ x: t.x, z: t.z, kind: 'tree' })), ...(south.userData.bigTrees ?? []).map((t) => ({ x: t.x, z: t.z, kind: 'big' })));
   // Kv. Lunden's own blocks and the old S:t Lars buildings: own façade texture and roof colour each,
   // plus a white cornice under the old roofs (#47)
   const modern = S.blocks.filter((b) => !b.style), oldB = S.blocks.filter((b) => b.style === 'old'), school = S.blocks.filter((b) => b.style === 'school');

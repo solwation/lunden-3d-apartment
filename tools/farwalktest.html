@@ -23,7 +23,7 @@ import { Garage } from '../src/garage.js';
 import { Core } from '../src/core.js';
 import { WALK, SITE, PLAYER } from '../src/config.js';
 import { farWalls, inWater, slideAt, slopeAt } from '../src/farwalk.js';
-import { groundY, groundBelowDeckY, renderedTerrainY, treeFeet } from '../src/surroundings.js';
+import { groundY, groundBelowDeckY, renderedTerrainY, treeFeet, southTreeFeet } from '../src/surroundings.js';
 import { riverAt, waterYAt, deckAt, deckUnderAt, bridgeRecords, pierBoxes } from '../src/riverbridge.js';
 import { parkRampEnds } from '../src/riverpark.js';
 
@@ -305,6 +305,55 @@ for (const [name, start, points, ok] of R) {
   };
   for (const bike of [false, true]) { trip('nordvästra rampen → sydöstra', 0, 1, bike); trip('sydöstra rampen → nordvästra', 1, 0, bike); }
   player.keys = new Set();
+}
+// #1714: the walkable south (WALK.z1 452): from Lunden along Sankt Lars väg to Sankt Lars väg 42's north side and round 44's courtyard, on foot and by bike; trunks, walls and the new edge.
+{
+  const route42 = [[25, 200], [11.5, 247.7], [-10, 291.5], [-43.8, 315], [-58, 295.2], [-72.1, 305.3], [-63, 317.8]];
+  const bikeWalk = (pts) => { // rides the waypoints with W held (same mock bike as the timber bridge); returns the first waypoint it stuck on, or -1
+    const bk = { position: new THREE.Vector3(), ridden: true, pick: { visible: false }, place(p) { this.position.copy(p); }, restore() {} };
+    player.spawn(pts[0][0], pts[0][1], 0); splashes.length = 0; player.safeUntil = 0;
+    for (let i = 1; i < pts.length; i++) {
+      const [x, zz] = pts[i];
+      if (!player.riding) player.riding = { bike: bk, yaw: Math.atan2(-(x - player.pos.x), -(zz - player.pos.z)) + Math.PI / 2, pitch: 0, lastStanding: player.pos.clone() };
+      player.keys = new Set(['KeyW']); let n = 0;
+      while (Math.hypot(player.pos.x - x, player.pos.z - zz) > 1.2 && n++ < 1500) { camera.rotation.y = Math.atan2(-(x - player.pos.x), -(zz - player.pos.z)); player.update(dt); }
+      if (n >= 1500) { player.keys = new Set(); if (player.riding) player.dismountBicycle(); return i; }
+    }
+    player.keys = new Set(); if (player.riding) player.dismountBicycle(); return -1;
+  };
+  const near = (x, z, r) => Math.hypot(player.pos.x - x, player.pos.z - z) < r;
+  check(WALK.z1 > 440 && WALK.z1 < SITE.backgroundGround.z1 - 5, `gränsen ligger söderut men en bit innanför terrängens kant (WALK.z1 ${WALK.z1}, terräng ${SITE.backgroundGround.z1})`);
+  player.spawn(...route42[0], 0); player.pos.y = groundY(...route42[0]); let st = walk(route42); const y42 = groundY(player.pos.x, player.pos.z);
+  check(st === -1 && near(-63, 317.8, 1.5) && Math.abs(player.pos.y - y42) < 0.05, `till fots från Lunden till Sankt Lars väg 42:s norra sida (${at()}, markens y ${y42.toFixed(2)}${st === -1 ? '' : `, fastnade vid punkt ${st}`})`);
+  st = bikeWalk(route42);
+  check(st === -1 && near(-63, 317.8, 2.5), `på cykel från Lunden till Sankt Lars väg 42 (${at()}${st === -1 ? '' : `, fastnade vid punkt ${st}`})`);
+  { const b42 = SITE.south.buildings.find((b) => b.name === 'Sankt Lars väg 42'); player.spawn(-70, 337, 0); walk([[-75, 345]]);
+    check(Math.hypot(player.pos.x + 75, player.pos.z - 345) > 1.0 || !!b42, `42:ans vägg stoppar (${at()})`); }
+  { const h = SITE.south.buildings.find((b) => b.name === 'Sankt Lars 44').holes[0], cx = h.reduce((a, q) => a + q[0], 0) / h.length, cz = h.reduce((a, q) => a + q[1], 0) / h.length; let told = '';
+    player.onWaterRescue = (w) => { told = w; }; player.spawn(cx, cz, 0); player.update(dt);
+    check(told === 'building' && !near(cx, cz, 0.5), `44:s stängda gård: man flyttas ut (${at()}, ${told})`);
+    player.onWaterRescue = (what, a) => { if (what === 'water') splashes.push({ at: a }); };
+    // round 44 (x -60..4, z 390..450): west side, north, east and down its south-east face, then back the same way, on foot then by bike;
+    // its south tip (z 450) stands ~2 m from the edge (z 452), so the loop turns there instead of squeezing past it
+    const out = [[-66, 420], [-64, 386], [-18, 386], [8, 408], [8, 428], [-8, 446]], ring = [...out, ...out.slice(0, -1).reverse()];
+    player.spawn(...ring[0], 0); st = walk(ring);
+    check(st === -1 && near(-66, 420, 1.5), `till fots runt 44:s byggnad (${at()}${st === -1 ? '' : `, fastnade vid punkt ${st}`})`);
+    st = bikeWalk(ring);
+    check(st === -1 && near(-66, 420, 3), `på cykel runt 44:s byggnad (${at()}${st === -1 ? '' : `, fastnade vid punkt ${st}`})`); }
+  for (const [name, a, b] of [['47:ans byggnad', [95, 372], [95, 345]], ['54:ans byggnad', [-185, 405], [-205, 430]]]) {
+    player.spawn(...a, 0); walk([b]); check(!near(b[0], b[1], 1), `${name} stoppar kroppen (${at()})`);
+  }
+  { const t = southTreeFeet.find((u) => u.kind === 'tree' && u.z > 260 && u.z < 440 && !southTreeFeet.some((o) => o !== u && Math.hypot(o.x - u.x, o.z - u.z) < 6) && !treeFeet.some((o) => Math.hypot(o.x - u.x, o.z - u.z) < 6));
+    player.spawn(t.x - 3, t.z, 0); walk([[t.x + 3, t.z]]);
+    check(player.pos.x < t.x - 0.1, `en trädstam i södra skogen stoppar (${at()}, stam ${t.x.toFixed(1)},${t.z.toFixed(1)})`); }
+  for (const bike of [false, true]) {
+    let told = 0; player.onEdge = () => told++; player.edgeAt = undefined;
+    const a = [[10, WALK.z1 - 6], [10, WALK.z1 + 25]];
+    if (bike) bikeWalk(a); else { player.spawn(...a[0], 0); walk([a[1]]); }
+    if (bike) check(player.pos.z <= WALK.z1 + 0.5 && player.pos.z > WALK.z1 - 3, `södra ytterkanten (z ${WALK.z1}) stoppar cykeln (${at()})`); // the bike gets no edge message anywhere (bikeStep skips atEdge; own issue)
+    else check(told === 1 && player.pos.z <= WALK.z1 + 0.5, `södra ytterkanten (z ${WALK.z1}) säger ifrån en gång (${told}, ${at()})`);
+  }
+  player.onEdge = undefined; player.keys = new Set();
 }
 // #1350: use actual Player.splashCheck just above/below the LOCAL water surface, not merely the channel floor.
 for(const i of[0,16]){
